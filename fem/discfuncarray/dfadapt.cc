@@ -498,7 +498,9 @@ namespace Dune
   {
     if((!uniform_) || (!baseFuncSet_))
     {
-      baseFuncSet_ = & ( fSpace_.getBaseFunctionSet(en) );
+      // * this is a hack and needs to go away
+      baseFuncSet_ = const_cast<BaseFunctionSetType*>(& ( fSpace_.getBaseFunctionSet(en) ));
+      //baseFuncSet_ = & ( fSpace_.getBaseFunctionSet(en) );
       numOfDof_ = baseFuncSet_->getNumberOfBaseFunctions();
       numOfDifferentDofs_ = baseFuncSet_->getNumberOfDiffBaseFuncs();
 

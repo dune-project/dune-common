@@ -78,7 +78,7 @@ namespace Dune {
 
     // ***********  Interface  *************************
     //! return object of type LocalFunctionType
-    LocalFunctionArray<DiscreteFunctionSpaceType> newLocalFunction ( );
+    LocalFunctionArray<DiscreteFunctionSpaceType> newLocalFunction ();
 
     //! return reference to this
     //! this methods is only to fullfill the interface as parameter classes
