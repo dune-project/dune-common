@@ -55,7 +55,7 @@ void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeGrid(const GridType& gr
   for (; vertex!=endvertex; ++vertex)
   {
     int index = vertex->index();
-    Vec<3, double> coords = vertex->geometry()[0];
+    FieldVector<double, 3> coords = vertex->geometry()[0];
 
     ((float*)geo_node_data->dataPtr())[3*index+0] = coords(0);
     ((float*)geo_node_data->dataPtr())[3*index+1] = coords(1);
@@ -218,10 +218,10 @@ void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeGrid(const GridType& gr
   for (; vertex!=endvertex; ++vertex)
   {
     int index = vertex->index();
-    Vec<DIM, double> coords = vertex->geometry()[0];
+    FieldVector<double, DIM> coords = vertex->geometry()[0];
 
-    ((float*)geo_node_data->dataPtr())[2*index+0] = coords(0);
-    ((float*)geo_node_data->dataPtr())[2*index+1] = coords(1);
+    ((float*)geo_node_data->dataPtr())[2*index+0] = coords[0];
+    ((float*)geo_node_data->dataPtr())[2*index+1] = coords[1];
 
   }
 
