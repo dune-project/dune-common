@@ -5,9 +5,87 @@
 
 #include <dune/common/iteratorfacades.hh>
 
+/** \file
+    \brief Wrapper and interface classe for a static iterator (EntityPointer)
+ */
+
 namespace Dune
 {
 
+  /** \brief Encapsulates the static part of an arbitrary Grid::Iterator
+      \ingroup GridCommon
+
+      The EntityPointer can be used like a static iterator. It point to a
+      Dune::Entity and can be dereferenced, compared and knows the
+      Entities level.
+
+      You should be able to initialize and interpret every Dune::XxxIterator
+      as Dune::EntityPointer. There for we need an inheritance hierarchy of
+      the Iterator wrappers:
+      \code
+      class Dune::EntityPointer<...>;
+
+      class Dune::LevelIterator<...> :
+         public Dune::EntityPointer<...>;
+
+      class Dune::HierarchicIterator<...> :
+         public Dune::EntityPointer<...>;
+
+      class Dune::LeafIterator<...> :
+         public Dune::EntityPointer<...>;
+
+      class Dune::IntersectionIterator<...> :
+         public Dune::EntityPointer<...>;
+      \endcode
+
+      This hierarchy must be resambled in the implementation (i.e. SGrid):
+      \code
+      class SEntityPointer<...> :
+         public Dune::EntityPointerDefault<..., SEntityPointer>;
+
+      class SLevelIterator<...> :
+         public SEntityPointer <...>,
+         public Dune::LevelIteratorDefault <..., SLevelIterator>;
+
+      class SHierarchicIterator<...> :
+         public SEntityPointer <...>,
+         public Dune::HierarchicIteratorDefault <..., SHierarchicIterator>;
+
+      ...
+      \endcode
+      Please note that dereference(...), equals(...) and level() are only
+      implemented in SEntityPointer, SLevelIterator inherits these methods.
+      And it is not possible to specialize these, because EntityPointer always
+      uses the base class.
+
+      This leads to a hierarchy where
+      Dune::LevelIterator<..., SLevelIterator> inherits
+      Dune::EntityPointer<..., SLevelIterator> and
+      Dune::HierarchicIterator<..., SHierarchicIterator> inherits
+      Dune::EntityPointer<..., SHierarchicIterator>.
+      And vitualy all Dune::EntityPointer<..., SXxxIterator> are descendents
+      of Dune::EntityPointer<..., SEntityPointer>.
+
+      Now you can compare Dune::LevelIterator with Dune::EntityPointer and
+      Dune::LeafIterator with Dune::IntersectionIterator. And you can assign
+      Dune::EntityPointer from any Dune::XxxIterator class. Even more you can
+      cast an Iterator refence to a reference pointing to Dune::EntityPointer.
+
+      The compiler take care that you only assign/compare Iterators from the same
+      Grid.
+
+      The downside (or advantage) of this inheritance is that you can
+      not use different comparsion operators and different dereference
+      oprators for the different Iterators in one Grid. On the first
+      sight it is a downside because one might consider it a good idea
+      to have special treatment for different iterators. On the other
+      hand it's very confusing for the user if different Iterators show
+      different behavior in the same situation. So now you are forced to
+      show the same behavior.
+
+      \tparam GridImp The grid class whose elements we are encapsulating
+      \tparam IteratorImp The class that implements the actual Iterator/Pointer
+   */
   template<class GridImp, class IteratorImp>
   class EntityPointer
   {
