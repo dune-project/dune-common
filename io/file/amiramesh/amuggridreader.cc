@@ -601,7 +601,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
   assert(grid.multigrid_);
 
   int maxBndNodeID = -1;
-  for (theNode=UG_NS<dim>::PFirstNode(grid.multigrid_->grids[0]); theNode!=NULL; theNode=theNode->succ)
+  for (theNode=UG_NS<3>::PFirstNode(grid.multigrid_->grids[0]); theNode!=NULL; theNode=theNode->succ)
   {
     // The following two lines ought to be in here, but the
     // OBJT macros is somewhat complicated, so I leave it out
