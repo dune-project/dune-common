@@ -119,7 +119,59 @@ namespace Dune
       return realGeometry.integrationElement(local);
     }
 
-    //! can only be called for mydim=cdim!
+    /** \brief can only be called for mydim=cdim!
+
+       @par Calculating the inverse Jacobian
+       <!---------------------------------->
+
+       The definition of the inverse Jacobian is:
+
+       \f[x^l=J^{-1}\cdot x^g\f]
+
+       Consider \f$\vec{x}\f$ represented in two bases: \f$x^l\f$ for the
+       local base of the reference geometry \f$\vec{l}_\alpha\f$ and
+       \f$x^g\f$ for the global base \f$\vec{g}_\alpha\f$.
+
+       \f[\vec{x}=\vec{g}_\alpha\cdot x^g_\alpha=\vec{l}_\alpha\cdot x^l_\alpha\f]
+
+       Or, for two dimensions:
+
+       \f[\vec{x}=\left(\begin{array}{cc}\vec{g}_0&\vec{g}_1\end{array}\right)
+               \cdot\left(\begin{array}{c}x^g_0\\x^g_1\end{array}\right)
+              =\left(\begin{array}{cc}\vec{l}_0&\vec{l}_1\end{array}\right)
+               \cdot\left(\begin{array}{c}x^l_0\\x^l_1\end{array}\right)\f]
+
+       We can represent the global base in terms of the local base as well:
+
+       \f[\vec{g}_\alpha=\left(\begin{array}{cc}\vec{l}_0&\vec{l}_1\end{array}\right)
+                      \cdot\left(\begin{array}{c}g^l_{\alpha,0}\\g^l_{\alpha,1}\end{array}\right)\f]
+
+       Which leads to
+
+       \f[\left(\begin{array}{cc}\vec{g}_0&\vec{g}_1\end{array}\right)=
+       \left(\begin{array}{cc}\vec{l}_0&\vec{l}_1\end{array}\right)
+       \cdot\left(\begin{array}{cc}g^l_{0,0}&g^l_{0,1}\\g^l_{1,0}&g^l_{1,1}\end{array}\right)\f]
+
+       We can plug that into the formula above and identify the things to
+       the right side of
+       \f$\left(\begin{array}{cc}\vec{l}_0&\vec{l}_1\end{array}\right)\f$:
+
+       \f[\left(\begin{array}{c}x^l_0\\x^l_1\end{array}\right)=
+       \left(\begin{array}{cc}g^l_{0,0}&g^l_{0,1}\\g^l_{1,0}&g^l_{1,1}\end{array}\right)
+       \cdot\left(\begin{array}{c}x^g_0\\x^g_1\end{array}\right)\f]
+
+       To get back to the general case:
+
+       \f[x^l_\alpha=g^l_{\beta,\alpha}\cdot x^g_\beta\f]
+
+       So:
+
+       \f[\left(J^{-1}\right)_{\alpha,\beta}=g^l_{\beta,\alpha}\f]
+
+       To get the inverse Jacobian, we have to take the global unit vectors
+       \f$g^g_\alpha\f$, tranform them into local coordinates
+       \f$g^l_\alpha\f$ and use them as rows of the matrix.
+     */
     const FieldMatrix<ct,mydim,mydim>& jacobianInverse (const FieldVector<ct, mydim>& local) const
     {
       IsTrue< ( mydim == cdim ) >::yes();
