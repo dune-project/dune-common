@@ -274,6 +274,8 @@ namespace Dune {
     //! return size of grid entities per level and codim
     int size ( int level , int codim ) const
     {
+      // this index set works only for codim = 0 at the moment
+      assert(codim == 0);
       return nextFreeIndex_;
     }
 
@@ -298,6 +300,8 @@ namespace Dune {
     //! for dof mapper
     int oldSize ( int level , int codim ) const
     {
+      // this index set works only for codim = 0 at the moment
+      assert(codim == 0);
       return state_.size();
     }
 
