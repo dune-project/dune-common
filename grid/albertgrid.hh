@@ -1182,8 +1182,8 @@ namespace Albert
       // relations are calced diffrent, on ervery level there are neighbor
       // realtions ( in ALBERT only on leaf level ), so we needed a new
       // fill_elinfo.
-      void fillElInfo(int ichild, int actLevel ,
-                      const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo) const;
+      void fillElInfo(int ichild, int actLevel ,const ALBERT EL_INFO *elinfo_old,
+                      ALBERT EL_INFO *elinfo, bool hierachical ) const;
 
       // needed for VertexIterator, mark on which element a vertex is treated
       AlbertMarkerVector * vertexMarker_;
