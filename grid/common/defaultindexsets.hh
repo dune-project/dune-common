@@ -309,25 +309,28 @@ namespace Dune {
     }
   };
 
-
+  /*! \brief
+     DefaultLevelIndexSet creates a LevelIndexSet for a Grid by using its
+     HierarchicIndexSet
+   */
   template <class GridType>
   class DefaultLevelIndexSet
   {
     enum { dim = GridType :: dimension };
     enum { numCodim = dim + 1 };
+
     typedef typename GridType :: HierarchicIndexSetType HierarchicIndexSetType;
-    typedef typename GridType :: Traits :: template codim<0> :: Entity EntityCodim0Type;
 
     typedef DefaultLevelIndexSet<GridType> MyType;
   public:
+    //! create LevelIndex by using the HierarchicIndexSet of a grid
     DefaultLevelIndexSet(const GridType & grid ) :
       grid_(grid) , hIndexSet_ ( grid.hierarchicIndexSet() )
     {
-      std::cout << "Created new DefaultLevelIndex! \n";
       calcNewIndex ();
-      std::cout << "End new DefaultLevelIndex! \n";
     }
 
+    //! return LevelIndex of given entity
     template <class EntityType>
     int index (const EntityType & en) const
     {
@@ -335,26 +338,30 @@ namespace Dune {
       return indexOnLevel< cd > (hIndexSet_.index(en),en.level());
     }
 
+    //! return subIndex (LevelIndex) for a given Entity of codim = 0 and a
+    //! given SubEntity codim and number of SubEntity
     template <int cd>
-    int subIndex (const typename GridType::Traits::template codim<0>::Entity & en, int i) const
+    int subIndex (const typename GridType::template codim<0>::Entity & en, int i) const
     {
-      return 0;
+      return indexOnLevel< cd > (hIndexSet_.template subIndex<cd>(en,i),en.level());
     }
 
+    //! return size of IndexSet for a given level and codim
     int size ( int level, int codim ) const
     {
       return size_[level*numCodim + codim];
     }
 
   private:
+    // grid this level set belongs to
     const GridType & grid_;
+    // the grids HierarchicIndexSet
     const HierarchicIndexSetType & hIndexSet_;
 
-    //! map the global index from the Albert Mesh to the local index on Level
+    //! map the hierarchicIndex from the grid to the index on Level
     template <int cd>
     int indexOnLevel(int hIndex, int level ) const
     {
-      assert((hIndex  >= 0) && (level >= 0));
       return levelIndex_[cd][level][hIndex];
     };
 
@@ -365,9 +372,10 @@ namespace Dune {
       int nEntities = hIndexSet_.size(grid_.maxlevel(),cd);
       for(int level=0; level <= grid_.maxlevel(); level++)
       {
+        Array<int> & levIndex = levelIndex_[cd][level];
         // resize memory if necessary
-        if(nEntities > levelIndex_[cd][level].size())
-          makeNewSize(levelIndex_[cd][level], nEntities);
+        if(nEntities > levIndex.size())
+          makeNewSize(levIndex, nEntities);
 
         // walk grid and store index
         typedef typename GridType::Traits::template codim<cd>::LevelIterator LevelIterator;
@@ -376,7 +384,7 @@ namespace Dune {
         for(LevelIterator it = grid_.template lbegin< cd > (level); it != endit; ++it)
         {
           int no = hIndexSet_.index(*it);
-          levelIndex_[cd][level][no] = num;
+          levIndex[no] = num;
           num++;
         }
         // remember the number of entity on level and cd = 0
@@ -405,12 +413,11 @@ namespace Dune {
     }
 
     // number of entitys of each level an codim
-    mutable Array<int> size_;
+    Array<int> size_;
 
     //*********************************************************
-    // Methods for mapping the global Index to local on Level
-    // contains the index on level for each unique el->index of Albert
-    enum { MAXL = 128 };
+    // Methods for mapping the hierarchic Index to index on Level
+    enum { MAXL = 128 }; // to be revised
     Array<int> levelIndex_[dim+1][MAXL];
   };
 
