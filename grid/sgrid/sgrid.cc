@@ -50,14 +50,14 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline void SElement<dim,dimworld>::make (Mat<dimworld,dim+1,sgrid_ctype>& As)
+  inline void SElement<dim,dimworld>::make(Mat<dimworld,dim+1,sgrid_ctype>& __As)
   {
     // clear jacobian
     builtinverse = false;
 
     // copy arguments
-    s = As(dim);
-    for (int j=0; j<dim; j++) A(j) = As(j);
+    s = __As(dim);
+    for (int j=0; j<dim; j++) A(j) = __As(j);
 
     // make corners
     for (int i=0; i<(1<<dim); i++)     // there are 2^d corners
@@ -141,7 +141,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline Mat<dim,dim>& SElement<dim,dimworld>::Jacobian_inverse (const FieldVector<sgrid_ctype, dim>& local)
+  inline Mat<dim,dim,sgrid_ctype>& SElement<dim,dimworld>::Jacobian_inverse (const FieldVector<sgrid_ctype, dim>& local)
   {
     assert(dim==dimworld);
 
@@ -190,9 +190,9 @@ namespace Dune {
   }
 
   template<int dimworld>
-  inline void SElement<0,dimworld>::make (Mat<dimworld,1,sgrid_ctype>& As)
+  inline void SElement<0,dimworld>::make (Mat<dimworld,1,sgrid_ctype>& __As)
   {
-    s = As(0);
+    s = __As(0);
   }
 
   template<int dimworld>
@@ -231,9 +231,9 @@ namespace Dune {
   }
 
   template<int codim, int dim, int dimworld>
-  inline SEntityBase<codim,dim,dimworld>::SEntityBase (SGrid<dim,dimworld>& _grid, int _l, int _id) : geo(false)
+  inline SEntityBase<codim,dim,dimworld>::SEntityBase (SGrid<dim,dimworld>* _grid, int _l, int _id) : geo(false)
   {
-    grid = &_grid;
+    grid = _grid;
     l = _l;
     id = _id;
     z = grid->z(_l,_id,codim);
@@ -247,9 +247,9 @@ namespace Dune {
   }
 
   template<int codim, int dim, int dimworld>
-  inline void SEntityBase<codim,dim,dimworld>::make (SGrid<dim,dimworld>& _grid, int _l, int _id)
+  inline void SEntityBase<codim,dim,dimworld>::make (SGrid<dim,dimworld>* _grid, int _l, int _id)
   {
-    grid = &_grid;
+    grid = _grid;
     l = _l;
     id = _id;
     z = grid->z(_l,_id,codim);
@@ -295,7 +295,7 @@ namespace Dune {
     if (builtgeometry) return geo;
 
     // find dim-codim direction vectors and reference point
-    Mat<dimworld,dim-codim+1,sgrid_ctype> As;
+    Mat<dimworld,dim-codim+1,sgrid_ctype> __As;
 
     // count number of direction vectors found
     int dir=0;
@@ -312,7 +312,7 @@ namespace Dune {
         t[i] -= 2;                 // direction i => even
         p1 = grid->pos(l,t);
         t[i] += 1;                 // revert t to original state
-        As(dir) = p2-p1;
+        __As(dir) = p2-p1;
         dir++;
       }
 
@@ -320,10 +320,10 @@ namespace Dune {
     for (int i=0; i<dim; i++)
       if (t[i]%2==1)
         t[i] -= 1;
-    As(dir) =grid->pos(l,t);     // all components of t are even
+    __As(dir) =grid->pos(l,t);     // all components of t are even
 
     // make element
-    geo.make(As);
+    geo.make(__As);
     builtgeometry = true;
 
     // return result
@@ -392,25 +392,25 @@ namespace Dune {
   template<int dim, int dimworld>
   inline SIntersectionIterator<dim,dimworld> SEntity<0,dim,dimworld>::ibegin ()
   {
-    return SIntersectionIterator<dim,dimworld>(*(this->grid),*this,0);
+    return SIntersectionIterator<dim,dimworld>(this->grid,*this,0);
   }
 
   template<int dim, int dimworld>
   inline void SEntity<0,dim,dimworld>::ibegin (SIntersectionIterator<dim,dimworld>& i)
   {
-    return i.make(*(this->grid),*this,0);
+    return i.make(this->grid,*this,0);
   }
 
   template<int dim, int dimworld>
   inline SIntersectionIterator<dim,dimworld> SEntity<0,dim,dimworld>::iend ()
   {
-    return SIntersectionIterator<dim,dimworld>(*(this->grid),*this,count<1>());
+    return SIntersectionIterator<dim,dimworld>(this->grid,*this,count<1>());
   }
 
   template<int dim, int dimworld>
   inline void SEntity<0,dim,dimworld>::iend (SIntersectionIterator<dim,dimworld>& i)
   {
-    return i.make(*(this->grid),*this,count<1>());
+    return i.make(this->grid,*this,count<1>());
   }
 
 
@@ -450,16 +450,16 @@ namespace Dune {
     father_id = this->grid->n((this->l)-1,this->grid->expand((this->l)-1,zz,partition));
 
     // now make a subcube of size 1/2 in each direction
-    Mat<dim,dim+1,sgrid_ctype> As;
+    Mat<dim,dim+1,sgrid_ctype> __As;
     FieldVector<sgrid_ctype, dim> v;
     for (int i=0; i<dim; i++)
     {
       v = 0.0; v[i] = 0.5;
-      As(i) = v;
+      __As(i) = v;
     }
     for (int i=0; i<dim; i++) v[i] = 0.5*delta[i];
-    As(dim) =v;
-    in_father_local.make(As);     // build geometry
+    __As(dim) =v;
+    in_father_local.make(__As);     // build geometry
 
     built_father = true;
   }
@@ -501,13 +501,13 @@ namespace Dune {
   template<int dim, int dimworld>
   inline SHierarchicIterator<dim,dimworld> SEntity<0,dim,dimworld>::hbegin (int maxlevel)
   {
-    return SHierarchicIterator<dim,dimworld>(*(this->grid),*this,maxlevel,false);
+    return SHierarchicIterator<dim,dimworld>(this->grid,*this,maxlevel,false);
   }
 
   template<int dim, int dimworld>
   inline SHierarchicIterator<dim,dimworld> SEntity<0,dim,dimworld>::hend (int maxlevel)
   {
-    return SHierarchicIterator<dim,dimworld>(*(this->grid),*this,maxlevel,true);
+    return SHierarchicIterator<dim,dimworld>(this->grid,*this,maxlevel,true);
   }
 
 
@@ -612,7 +612,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline SHierarchicIterator<dim,dimworld>::SHierarchicIterator (SGrid<dim,dimworld>& _grid,
+  inline SHierarchicIterator<dim,dimworld>::SHierarchicIterator (SGrid<dim,dimworld>* _grid,
                                                                  SEntity<0,dim,dimworld>& _e, int _maxlevel, bool makeend) :
     grid(_grid),e(_e)
   {
@@ -724,11 +724,11 @@ namespace Dune {
 
   template<int dim, int dimworld>
   inline SIntersectionIterator<dim,dimworld>::SIntersectionIterator
-    (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count)
+    (SGrid<dim,dimworld>* _grid, SEntity<0,dim,dimworld>& _self, int _count)
     : e(_grid,_self.l, _self.id), is_self_local(false), is_global(false),
       is_nb_local(false)
   {
-    grid = &_grid;
+    grid = _grid;
     self = &_self;
 
     // compute own compressed coordinates once
@@ -745,9 +745,9 @@ namespace Dune {
   { }
 
   template<int dim, int dimworld>
-  inline void SIntersectionIterator<dim,dimworld>::make (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count)
+  inline void SIntersectionIterator<dim,dimworld>::make (SGrid<dim,dimworld>* _grid, SEntity<0,dim,dimworld>& _self, int _count)
   {
-    grid = &_grid;
+    grid = _grid;
     self = &_self;
 
     e.make(_grid,_self.l, _self.id);
@@ -822,14 +822,14 @@ namespace Dune {
       z1[dir] -= 1;           // even
 
     // z1 is even in direction dir, all others must be odd because it is codim 1
-    Mat<dim,dim,sgrid_ctype> As;
+    Mat<dim,dim,sgrid_ctype> __As;
     FieldVector<sgrid_ctype, dim> p1,p2;
     int t;
 
     // local coordinates in self
     p1 = 0.0;
     p1[dir] = c;        // all points have p[dir]=c in entity
-    As(dim-1) = p1;     // position vector
+    __As(dim-1) = p1;     // position vector
     t = 0;
     for (int i=0; i<dim; ++i)     // this loop makes dim-1 direction vectors
       if (i!=dir)
@@ -837,15 +837,15 @@ namespace Dune {
         // each i!=dir gives one direction vector
         p2 = p1;
         p2[i] = 1.0;
-        As(t) = p2-p1;                 // a direction vector
+        __As(t) = p2-p1;                 // a direction vector
         ++t;
       }
-    is_self_local.make(As);     // build geometry
+    is_self_local.make(__As);     // build geometry
 
     // local coordinates in neighbor
     p1 = 0.0;
     p1[dir] = 1-c;        // all points have p[dir]=1-c in entity
-    As(dim-1) = p1;       // position vector
+    __As(dim-1) = p1;       // position vector
     t = 0;
     for (int i=0; i<dim; ++i)     // this loop makes dim-1 direction vectors
       if (i!=dir)
@@ -853,10 +853,10 @@ namespace Dune {
         // each i!=dir gives one direction vector
         p2 = p1;
         p2[i] = 1.0;
-        As(t) = p2-p1;                 // a direction vector
+        __As(t) = p2-p1;                 // a direction vector
         ++t;
       }
-    is_nb_local.make(As);     // build geometry
+    is_nb_local.make(__As);     // build geometry
 
     // global coordinates
     t = 0;
@@ -869,14 +869,14 @@ namespace Dune {
         z1[i] -= 2;                 // direction i => even
         p1 = grid->pos(self->level(),z1);
         z1[i] += 1;                 // revert t to original state
-        As(t) = p2-p1;
+        __As(t) = p2-p1;
         ++t;
       }
     for (int i=0; i<dim; i++)
       if (i!=dir)
         z1[i] -= 1;
-    As(t) =grid->pos(self->level(),z1);
-    is_global.make(As);     // build geometry
+    __As(t) =grid->pos(self->level(),z1);
+    is_global.make(__As);     // build geometry
 
     built_intersections = true;
   }
@@ -939,7 +939,7 @@ namespace Dune {
   // inline methods for SLevelIterator
 
   template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
-  inline SLevelIterator<codim,dim,dimworld,pitype>::SLevelIterator (SGrid<dim,dimworld>& _grid, int _l, int _id) : grid(_grid),e(_grid,_l,_id)
+  inline SLevelIterator<codim,dim,dimworld,pitype>::SLevelIterator (SGrid<dim,dimworld>* _grid, int _l, int _id) : grid(_grid),e(_grid,_l,_id)
   {
     l = _l;
     id = _id;
@@ -956,13 +956,13 @@ namespace Dune {
   template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
   inline bool SLevelIterator<codim,dim,dimworld,pitype>::operator== (const SLevelIterator<codim,dim,dimworld,pitype>& i) const
   {
-    return (id==i.id)&&(l==i.l)&&(&grid==&i.grid);
+    return (id==i.id)&&(l==i.l)&&(grid==i.grid);
   }
 
   template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
   inline bool SLevelIterator<codim,dim,dimworld,pitype>::operator!= (const SLevelIterator<codim,dim,dimworld,pitype>& i) const
   {
-    return (id!=i.id)||(l!=i.l)||(&grid!=&i.grid);
+    return (id!=i.id)||(l!=i.l)||(grid!=i.grid);
   }
 
   template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
@@ -1064,25 +1064,25 @@ namespace Dune {
   template <int dim, int dimworld> template <int cd, PartitionIteratorType pitype>
   inline SLevelIterator<cd,dim,dimworld,pitype> SGrid<dim,dimworld>::lbegin (int level)
   {
-    return SLevelIterator<cd,dim,dimworld,pitype> (*this,level,0);
+    return SLevelIterator<cd,dim,dimworld,pitype> (this,level,0);
   }
 
   template <int dim, int dimworld> template <int cd, PartitionIteratorType pitype>
   inline SLevelIterator<cd,dim,dimworld,pitype> SGrid<dim,dimworld>::lend (int level)
   {
-    return SLevelIterator<cd,dim,dimworld,pitype> (*this,level,size(level,cd));
+    return SLevelIterator<cd,dim,dimworld,pitype> (this,level,size(level,cd));
   }
 
   template <int dim, int dimworld> template <int cd>
   inline SLevelIterator<cd,dim,dimworld,All_Partition> SGrid<dim,dimworld>::lbegin (int level)
   {
-    return SLevelIterator<cd,dim,dimworld,All_Partition> (*this,level,0);
+    return SLevelIterator<cd,dim,dimworld,All_Partition> (this,level,0);
   }
 
   template <int dim, int dimworld> template <int cd>
   inline SLevelIterator<cd,dim,dimworld,All_Partition> SGrid<dim,dimworld>::lend (int level)
   {
-    return SLevelIterator<cd,dim,dimworld,All_Partition> (*this,level,size(level,cd));
+    return SLevelIterator<cd,dim,dimworld,All_Partition> (this,level,size(level,cd));
   }
 
   template <int dim, int dimworld>
