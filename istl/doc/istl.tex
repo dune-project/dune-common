@@ -1,0 +1,153 @@
+\documentclass[11pt]{article}
+\usepackage{multicol}
+\usepackage{ifthen}
+%\usepackage{multitoc}
+%\usepackage{german}
+%\usepackage{bibgerm}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage[dvips]{epsfig}
+\usepackage[dvips]{graphicx}
+\usepackage[a4paper,body={154mm,240mm,nohead}]{geometry}
+\usepackage[ansinew]{inputenc}
+\usepackage{listings}
+\lstset{language=C++, indent=20pt, basicstyle=\small\ttfamily,
+  stringstyle=\ttfamily, commentstyle=\it, extendedchars=true}
+
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+\pdffalse % we are not running PDFLaTeX
+\else
+\pdfoutput=1 % we are running PDFLaTeX
+\pdftrue
+\fi
+
+\ifpdf
+\usepackage[pdftex]{graphicx}
+\else
+\usepackage{graphicx}
+\fi
+
+\ifpdf
+\DeclareGraphicsExtensions{.pdf, .jpg, .tif}
+\else
+\DeclareGraphicsExtensions{.eps, .jpg}
+\fi
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\K}{\mathbb{K}}
+
+
+\title{Iterative Solver Template Library\thanks{Part of the
+    Distributed and Unified Numerics Environment (DUNE) which is
+    available from the site
+    \texttt{http://www.dune.uni-hd.de/}}}
+
+\author{%
+Peter Bastian\\
+Interdisziplinäres Zentrum für Wissenschaftliches Rechnen,\\
+Universität Heidelberg, Im Neuenheimer Feld 368, D-69120 Heidelberg, \\
+email: \texttt{Peter.Bastian@iwr.uni-heidelberg.de}}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document describes the rationale behind and use of the Iterative
+Solver Template Library (ISTL) which provides a set of C++
+templates to represent vectors, (sparse) matrices and some generic
+algorithms based on these. The most prominent features of the
+matrix/vector classes is that they support a recursive block structure
+in a bottom up way. The classes can be used, e.~g., to efficiently implement
+block preconditioners for $hp$-finite elements.
+\end{abstract}
+
+\begin{multicols}{2}
+{\small\tableofcontents}
+\end{multicols}
+
+\section{Introduction}
+
+The numerical solution of partial differential equations frequently requires the
+solution of large and sparse linear systems. Naturally,
+there are many libraries available on the internet for doing sparse matrix/vector
+computations. A comprehensive overview is given in \cite{LALinks}. 
+
+The
+widely availably Basic Linear Algebra Subprograms (BLAS) standard has
+been extended to cover als sparse matrices \cite{BLASTForum}. BLAS
+divides the available functions into level 1 (vector operations),
+level 2 (vector/matrix operations) and level 3 (matrix/matrix
+operations). BLAS for sparse matrices contains only level 1 and 2
+functionality and is quite different to the standard for dense
+matrices. The standard uses procedural programming style and offers
+only a FORTRAN and C interface. As a consequence, the interface is
+``coarse grained'', meaning that ``small'' functions such as access to
+individual matrix elements is relatively slow. 
+
+Generic programming techniqes in C++ offer the possibility to combine
+flexibility and reuse (``efficiency of the programmer'') with fast
+execution (``efficieny of the program'') as has been demonstrated with
+the Standard Template Library (STL), \cite{Stroustrup} or the Blitz++
+library for multidimensional arrays \cite{Blitz}. A variety of
+template programming techniques such as traits, template metaprograms,
+expression templates or the Barton-Nackman trick are used in the
+implementations, see \cite{BN,Veldhui99} for an introduction.
+Application of these ideas to matrix/vector operations is available
+with the Matrix Template Library (MTL), \cite{MTL}. The Iterative
+Template Library (ITL), \cite{ITL}, implements iterative solvers for
+linear systems (mostly Krylov subspace methods) in a generic way based
+on MTL. The Distributed and Unified Numerics Environment (DUNE),
+\cite{Dune,DuneWeb}, applies the STL ideas to finite element
+computations. 
+
+
+
+\section{Vectors}
+
+You can define a variable block size vector via
+\begin{lstlisting}{}
+const int N=1;
+typedef Dune::FieldVector<double,N> RN;
+
+typedef Dune::VariableBlockVector<RN> Vector;
+
+Vector x(20); // make a vector with 20 blocks
+
+for (Vector::CreateIterator i=x.createbegin(); i!=x.createend(); ++i)
+  i.setblocksize((i.index()%10)+1);
+\end{lstlisting}
+and then get the result
+\begin{lstlisting}{}
+... bla
+\end{lstlisting}
+
+\subsection{Making a vector from a field}
+
+\section{Matrices}
+
+\section{Algorithms}
+
+% bibtex bibliography
+\bibliographystyle{plain}
+\bibliography{istl.bib}
+
+% some links
+% http://www.netlib.org/blas/blast-forum/
+% http://www.osl.iu.edu/research/mtl/
+% http://www.osl.iu.edu/research/itl/ (based on MTL, mostly Krylov)
+% http://netlib.org/utk/people/JackDongarra/la-sw.html
+% the last one: FREELY AVAILABLE SOFTWARE FOR
+% LINEAR ALGEBRA ON THE WEB (May 2004) by Jack Dongarra
+% http://www.oonumerics.org/blitz/
+
+\end{document}
