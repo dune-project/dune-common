@@ -15,8 +15,8 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& fS, int cL, 
 
   typedef typename FunctionSpaceType::GridType GridType;
 
-  int rows = fS.size(coarseLevel);
-  int cols = fS.size(fineLevel);
+  int rows = fS.size(fineLevel);
+  int cols = fS.size(coarseLevel);
 
   GridType& grid = fS.getGrid();
 
@@ -78,7 +78,7 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& fS, int cL, 
 
           //std::cout << "value: " << value << "\n";
 
-          matrix_.set(globalCoarse, globalFine, value[0]);
+          matrix_.set(globalFine, globalCoarse, value[0]);
         }
 
 
@@ -88,22 +88,20 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& fS, int cL, 
 
   }
 
-  //matrix_.print(std::cout);
 }
 
 
 template<class DiscFuncType>
-void Dune::MGTransfer<DiscFuncType>::restrict (const DiscFuncType & f, DiscFuncType& t) const
+void Dune::MGTransfer<DiscFuncType>::prolong(const DiscFuncType& f, DiscFuncType& t) const
 {
-  assert(t.getFunctionSpace().size(coarseLevel) == matrix_.rows());
-  assert(f.getFunctionSpace().size(fineLevel)   == matrix_.cols());
+  assert(t.getFunctionSpace().size(fineLevel)   == matrix_.rows());
+  assert(f.getFunctionSpace().size(coarseLevel) == matrix_.cols());
 
   typedef typename DiscFuncType::DofIteratorType DofIteratorType;
   typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
 
-
-  DofIteratorType tIt = t.dbegin( coarseLevel );
-  DofIteratorType fIt = f.dbegin( fineLevel );
+  DofIteratorType tIt = t.dbegin( fineLevel );
+  DofIteratorType fIt = f.dbegin( coarseLevel );
 
   for(int row=0; row<matrix_.rows(); row++) {
 
@@ -121,18 +119,18 @@ void Dune::MGTransfer<DiscFuncType>::restrict (const DiscFuncType & f, DiscFuncT
 }
 
 template<class DiscFuncType>
-void Dune::MGTransfer<DiscFuncType>::prolong(const DiscFuncType& f, DiscFuncType& t) const
+void Dune::MGTransfer<DiscFuncType>::restrict (const DiscFuncType & f, DiscFuncType& t) const
 {
-  assert(f.getFunctionSpace().size(coarseLevel) == matrix_.rows());
-  assert(t.getFunctionSpace().size(fineLevel)   == matrix_.cols());
+  assert(f.getFunctionSpace().size(fineLevel)   == matrix_.rows());
+  assert(t.getFunctionSpace().size(coarseLevel) == matrix_.cols());
 
   typedef typename DiscFuncType::DofIteratorType DofIteratorType;
   typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
 
-  t.clearLevel(fineLevel);
+  t.clearLevel(coarseLevel);
 
-  DofIteratorType tIt = t.dbegin( fineLevel );
-  DofIteratorType fIt = f.dbegin( coarseLevel );
+  DofIteratorType tIt = t.dbegin( coarseLevel );
+  DofIteratorType fIt = f.dbegin( fineLevel );
 
 
   for (int row=0; row<matrix_.rows(); row++) {
@@ -145,6 +143,7 @@ void Dune::MGTransfer<DiscFuncType>::prolong(const DiscFuncType& f, DiscFuncType
       tIt[cIt.col()] += fIt[row] * (*cIt);
 
   }
+
 }
 
 
@@ -152,59 +151,35 @@ template<class DiscFuncType>
 Dune::SparseRowMatrix<double> Dune::MGTransfer<DiscFuncType>::
 galerkinRestrict(const Dune::SparseRowMatrix<double>& fineMat) const
 {
+
   typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
-  //return matrix_.applyFromLeftAndRightTo(fineMat);
 
-  // Hack: We need the transposed matrix
+  SparseRowMatrix<double> result(matrix_.cols() ,matrix_.cols() , fineMat.numNonZeros());
 
-  SparseRowMatrix<double> transpose(matrix_.cols(), matrix_.rows(), matrix_.numNonZeros());
-
-  for (int row=0; row<matrix_.rows(); row++) {
-
-    /** \todo Remove casts */
-    ColumnIterator cIt    = const_cast<SparseRowMatrix<double>&>(matrix_).template rbegin(row);
-    ColumnIterator cEndIt = const_cast<SparseRowMatrix<double>&>(matrix_).template rend(row);
-
-    for(; cIt!=cEndIt; ++cIt)
-      transpose.set(cIt.col(), row, *cIt);
-
-  }
-
-  SparseRowMatrix<double> result(matrix_.rows() ,matrix_.rows() , fineMat.numNonZeros());
-
-  //for (v=FIRSTVECTOR(FineGrid); v!=NULL; v=SUCCVC(v))
   for (int row=0; row<fineMat.rows(); row++) {
 
-    //         for (m=VSTART(v); m!=NULL; m=MNEXT(m)) {
-    //             w = MDEST(m);
     ColumnIterator cIt    = const_cast<SparseRowMatrix<double>&>(fineMat).template rbegin(row);
     ColumnIterator cEndIt = const_cast<SparseRowMatrix<double>&>(fineMat).template rend(row);
 
     for(; cIt!=cEndIt; ++cIt) {
 
-      //mvalue = MVALUE(m,mc);
       double mvalue = *cIt;
 
-      ColumnIterator tciIt    = transpose.template rbegin(row);
-      ColumnIterator tciEndIt = transpose.template rend(row);
+      ColumnIterator tciIt    = const_cast<SparseRowMatrix<double>&>(matrix_).template rbegin(row);
+      ColumnIterator tciEndIt = const_cast<SparseRowMatrix<double>&>(matrix_).template rend(row);
 
-      //for (im=VISTART(v); im!= NULL; im = NEXT(im)) {
       for (; tciIt!=tciEndIt; ++tciIt) {
 
-        //fac = mvalue*MVALUE(im,0);
         double fac = mvalue* (*tciIt);
 
-        ColumnIterator tcjIt    = transpose.template rbegin(cIt.col());
-        ColumnIterator tcjEndIt = transpose.template rend(cIt.col());
+        ColumnIterator tcjIt    = const_cast<SparseRowMatrix<double>&>(matrix_).template rbegin(cIt.col());
+        ColumnIterator tcjEndIt = const_cast<SparseRowMatrix<double>&>(matrix_).template rend(cIt.col());
 
-        //for (jm=VISTART(v); jm!= NULL; jm = NEXT(jm)) {
         for (; tcjIt!=tcjEndIt; ++tcjIt) {
 
-          //                             jv = MDEST(jm);
-          //                             cm = GetMatrix(iv,jv);
-          //                             MVALUE(cm,mc) +=
-          //                                 fac * MVALUE(jm,0);
-          result.add( tciIt.col(), tcjIt.col(), fac* (*tcjIt));
+          //result.add( tciIt.col(), tcjIt.col(), fac* (*tcjIt));
+          result.add( tcjIt.col(), tciIt.col(), fac* (*tcjIt));
+
         }
 
       }
