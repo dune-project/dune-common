@@ -119,30 +119,6 @@ index() const
   return UG_NS<dim>::index(target_);
 }
 
-#if 0
-template< int dim, class GridImp>
-inline bool UGGridEntity < 0, dim ,GridImp>::
-mark( int refCount )
-{
-#ifdef _3
-  if (!UG3d::EstimateHere(target_))
-    return false;
-
-  return UG3d::MarkForRefinement(target_,
-                                 UG3d::RED,
-                                 0);    // no user data
-#else
-  if (!UG2d::EstimateHere(target_))
-    return false;
-
-  return UG2d::MarkForRefinement(target_,
-                                 UG2d::RED,   // red refinement rule
-                                 0);    // no user data
-#endif
-}
-
-#endif
-
 //*****************************************************************8
 // count
 template <int dim, class GridImp>
@@ -198,8 +174,6 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
     i = renumbering[i];
   }
 
-  //     typename TargetType<dim,dim>::T* node = UG_NS<dim>::Corner(target_,i);
-  //     return node->id;
   return UG_NS<dim>::Corner(target_,i)->id;
 }
 
@@ -229,9 +203,7 @@ UGGridEntity<0,dim,GridImp>::entity ( int i ) const
 
 template<int dim, class GridImp>
 inline UGGridEntity < 0, dim ,GridImp >::
-UGGridEntity(int level) :
-  //geo_(),
-  level_ (level)
+UGGridEntity(int level) : level_ (level)
 {}
 
 template<int dim, class GridImp>
@@ -283,41 +255,16 @@ UGGridEntity < 0, dim ,GridImp >::hbegin(int maxlevel) const
 
   if (level()<=maxlevel) {
 
-    // The 30 is the macro MAX_SONS from ug/gm/gm.h
-    UGElementType* sonList[30];
-#ifdef _2
-    UG2d::GetSons(target_,sonList);
-#else
-    UG3d::GetSons(target_,sonList);
-#endif
-
-#ifdef _2
-#define NSONS(p) UG2d::ReadCW(p, UG2d::NSONS_CE)
-#else
-#define NSONS(p) UG3d::ReadCW(p, UG3d::NSONS_CE)
-#endif
-    // Load sons of entity into the iterator
-    for (unsigned int i=0; i<NSONS(target_); i++) {
-      typename UGGridHierarchicIterator<GridImp>::StackEntry se;
-      se.element = sonList[i];
-      se.level   = level()+1;
-      it.elemStack.push(se);
-    }
-#undef NSONS
-
     // Put myself on the stack
     typename UGGridHierarchicIterator<GridImp>::StackEntry se;
     se.element = target_;
     se.level   = level();
     it.elemStack.push(se);
 
-  }
-
-  if (it.elemStack.empty()) {
-    it.virtualEntity_.setToTarget(0);
+    // Set intersection iterator to myself
+    it.virtualEntity_.setToTarget(target_, level());
   } else {
-    // Set intersection iterator to first son
-    it.virtualEntity_.setToTarget(it.elemStack.top().element, it.elemStack.top().level);
+    it.virtualEntity_.setToTarget(0);
   }
 
   return it;
@@ -355,13 +302,4 @@ UGGridEntity < 0, dim, GridImp>::father() const
   UGGridLevelIterator<0,All_Partition,GridImp> it(level()-1);
   it.setToTarget(UG_NS<dim>::EFather(target_));
   return it;
-}
-
-/** \todo Method not implemented yet! */
-template<int dim, class GridImp>
-inline UGGridGeometry<dim,dim,GridImp>&
-UGGridEntity < 0, dim, GridImp>::father_relative_local()
-{
-  DUNE_THROW(GridError, "UGGridEntity < 0, dim, dimworld>::father_relative_local() not implemented yet!");
-  return fatherReLocal_;
 }
