@@ -60,6 +60,10 @@ namespace Dune {
   template<class T>
   inline T Stack<T>::pop_front ()
   {
+    if (isempty()) {
+      std::cerr << "Stack::pop_front(): The stack is empty!\n";
+      assert(false);
+    }
     typename DoubleLinkedList<T>::Iterator i=this->rbegin();
     T t = *i;
     erase(i);
@@ -69,6 +73,10 @@ namespace Dune {
   template<class T>
   inline T Stack<T>::front () const
   {
+    if (isempty()) {
+      std::cerr << "Stack::front(): The stack is empty!\n";
+      assert(false);
+    }
     typename DoubleLinkedList<T>::Iterator i=this->rbegin();
     T t = *i;
     return t;
