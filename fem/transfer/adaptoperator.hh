@@ -26,6 +26,7 @@ namespace Dune {
 #define PARAM_CLASSNAME CombinedRestProl
 #define PARAM_FUNC_1 restrictLocal
 #define PARAM_FUNC_2 prolongLocal
+#define PARAM_FUNC_3 calcFatherChildWeight
 #include <dune/fem/common/combine.hh>
 
   /*! Combination of different AdaptOperators
@@ -62,6 +63,7 @@ namespace Dune {
     AdaptMapping *am_;
   };
 
+
   /** \brief ???
    * \todo Please doc me!
    */
@@ -74,7 +76,7 @@ namespace Dune {
   public:
     //! create DiscreteOperator with a LocalOperator
     AdaptOperator (GridType & grid, DofManagerType & dm, RestProlOperatorImp & rpOp) :
-      grid_(grid) , dm_ ( dm ), rpOp_ (rpOp)  {}
+      grid_(grid) , dm_ ( dm ), rpOp_ (rpOp) , calcedWeight_(false) {}
 
     virtual ~AdaptOperator () {}
 
@@ -99,7 +101,7 @@ namespace Dune {
 
       // memorize this new generated object because is represents this
       // operator and is deleted if this operator is deleted
-      saveObjPointer( adaptOp );
+      saveObjPointer( adaptOp , newRPOp );
 
       //std::cout << "Created " << adaptOp << " \n";
       return *adaptOp;
@@ -122,6 +124,8 @@ namespace Dune {
 
       if(restr)
       {
+        if(!calcedWeight_) calcWeight();
+
         dm_.resizeTmp();
         typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
 
@@ -159,6 +163,9 @@ namespace Dune {
       if(restr || ref)
         dm_.dofCompress();
 
+      grid_.loadBalance( dm_ );
+      grid_.communicate( dm_ );
+
       // do cleanup
       grid_.postAdapt();
     }
@@ -174,9 +181,10 @@ namespace Dune {
         HierarchicIterator it    = en.hbegin( en.level() + 1 );
 
         // if the children have children then we have to go deeper
-        if(it->hasChildren()) return;
-
         HierarchicIterator endit = en.hend  ( en.level() + 1 );
+
+        // ok because we checked en.hasChildren
+        if(it->hasChildren()) return;
 
         // true for first child, otherwise false
         bool initialize = true;
@@ -218,6 +226,44 @@ namespace Dune {
       }
     }
 
+    // calc ratio of volume of father and volume of child
+    template <class EntityType>
+    bool hierarchicCalcWeight ( EntityType &en) const
+    {
+      typedef typename EntityType::Traits::HierarchicIterator HierarchicIterator;
+      HierarchicIterator it    = en.hbegin( en.level() + 1 );
+      HierarchicIterator endit = en.hend  ( en.level() + 1 );
+
+      if(it != endit)
+      {
+        rpOp_.calcFatherChildWeight( en, *it );
+        return true;
+      }
+      else
+        return false;
+    }
+
+    // calc ratio between volume of father and volume of child
+    void calcWeight() const
+    {
+      typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
+      // make run through grid
+      LevelIterator it    = grid_.template lbegin<0> ( 0 );
+      LevelIterator endit = grid_.template lend<0>   ( 0 );
+
+      bool done = false;
+      for( ; it != endit; ++it )
+      {
+        done = hierarchicCalcWeight( *it );
+        if(done) break;
+      }
+
+      calcedWeight_ = true;
+    }
+
+    // assume constant weihgt, i.e. grid is refined and coarsend
+    // the same way every step
+    mutable bool calcedWeight_;
 
     //! corresponding grid
     mutable GridType & grid_;
@@ -244,18 +290,24 @@ namespace Dune {
     typedef typename DiscreteFunctionType::RangeFieldType RangeFieldType;
     typedef typename DiscreteFunctionType::DomainType DomainType;
     typedef BaryCenterQuad < RangeFieldType , DomainType , 0 > BaryQuadType;
+    int myRank_;
   public:
     //! ???
     RestProlOperatorFV ( DiscreteFunctionType & df , ElementType eltype = tetrahedron  ) : df_ (df) ,
-                                                                                           vati_ ( df_.newLocalFunction() ) , sohn_ ( df_.newLocalFunction() ) , quad_(eltype)
-    {}
+                                                                                           vati_ ( df_.newLocalFunction() ) , sohn_ ( df_.newLocalFunction() ) , quad_(eltype) , weight_(-1.0)
+    {
+      myRank_ = df.getFunctionSpace().getGrid().myRank();
+    }
 
     template <class EntityType>
     void calcFatherChildWeight (EntityType &father, EntityType &son) const
     {
-      weight_ =
+      // volume of son / volume of father
+      const_cast<RangeFieldType &> (weight_) =
         son.geometry().integration_element(quad_.point(0))/
         father.geometry().integration_element(quad_.point(0));
+
+      std::cout << "on proc " << myRank_ << " : weight = " << weight_ << "\n";
     }
 
     //! restrict data to father
@@ -266,6 +318,9 @@ namespace Dune {
       {
         if(son.state() == COARSEN)
         {
+          // if weight < 0.0 , weight has not been calced
+          assert(weight_ > 0.0);
+
           df_.localFunction( father, vati_ );
           df_.localFunction( son   , sohn_ );
 
@@ -274,16 +329,18 @@ namespace Dune {
 
           if(initialize)
           {
-            calcFatherChildWeight(father,son);
             for(int i=0; i<vati_.numberOfDofs(); i++)
+            {
               vati_[i] = weight_ * sohn_[i];
+            }
           }
           else
           {
             for(int i=0; i<vati_.numberOfDofs(); i++)
+            {
               vati_[i] += weight_ * sohn_[i];
+            }
           }
-
         }
       }
     }
@@ -307,7 +364,7 @@ namespace Dune {
     mutable LocalFunctionType vati_;
     mutable LocalFunctionType sohn_;
 
-    mutable RangeFieldType weight_;
+    const RangeFieldType weight_;
     const BaryQuadType quad_;
   };
 
