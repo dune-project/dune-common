@@ -100,44 +100,44 @@ namespace Dune {
     }
 
     //! Return origin in direction i
-    int origin (int i)
+    int origin (int i) const
     {
       return _origin[i];
     }
 
     //! Set origin in direction i
-    void origin (int i, int oi)
+    void origin (int i, int oi) const
     {
       _origin[i] = oi;
     }
 
     //! return reference to origin
-    iTupel& origin ()
+    const iTupel& origin () const
     {
       return _origin;
     }
 
     //! Return size in direction i
-    int size (int i)
+    int size (int i) const
     {
       return _size[i];
     }
 
     //! Set size in direction i
-    void size (int i, int si)
+    void size (int i, int si) const
     {
       _size[i] = si;
       if (_size[i]<0) _size[i] = 0;
     }
 
     //! Return reference to size tupel
-    iTupel& size ()
+    const iTupel& size () const
     {
       return _size;
     }
 
     //! Return total size of index set which is the product of all size per direction.
-    int totalsize ()
+    int totalsize () const
     {
       int s=1;
       for (int i=0; i<d; ++i) s=s*_size[i];
@@ -145,13 +145,13 @@ namespace Dune {
     }
 
     //! Return minimum index in direction i
-    int min (int i)
+    int min (int i) const
     {
       return _origin[i];
     }
 
     //! Set minimum index in direction i
-    void min (int i, int mi)
+    void min (int i, int mi) const
     {
       _size[i] = max(i)-mi+1;
       _origin[i] = mi;
@@ -159,20 +159,20 @@ namespace Dune {
     }
 
     //! Return maximum index in direction i
-    int max (int i)
+    int max (int i) const
     {
       return _origin[i]+_size[i]-1;
     }
 
     //! Set maximum index in direction i
-    void max (int i, int mi)
+    void max (int i, int mi) const
     {
       _size[i] = mi-min(i)+1;
       if (_size[i]<0) _size[i] = 0;
     }
 
     //! Return reference to mesh size tupel for read write access
-    fTupel& meshsize ()
+    const fTupel& meshsize () const
     {
       return _h;
     }
@@ -184,31 +184,31 @@ namespace Dune {
     }
 
     //! Set mesh size in direction i
-    void meshsize (int i, int hi)
+    void meshsize (int i, int hi) const
     {
       _h[i] = hi;
     }
 
     //! Return shift tupel
-    fTupel& shift ()
+    const fTupel& shift () const
     {
       return _r;
     }
 
     //! Return shift in direction i
-    ct shift (int i)
+    ct shift (int i) const
     {
       return _r[i];
     }
 
     //! Set shift in direction i
-    void shift (int i, int ri)
+    void shift (int i, int ri) const
     {
       _r[i] = ri;
     }
 
     //! Return true if YGrid is empty, i.e. has size 0 in all directions.
-    bool empty ()
+    bool empty () const
     {
       for (int i=0; i<d; ++i) if (_size[i]<=0) return true;
       return false;
@@ -236,7 +236,7 @@ namespace Dune {
     }
 
     //! Return new SubYGrid of self which is the intersection of self and another YGrid
-    virtual SubYGrid<d,ct> intersection ( YGrid<d,ct>& r)
+    virtual SubYGrid<d,ct> intersection ( YGrid<d,ct>& r) const
     {
       // check if the two grids can be intersected, must have same mesh size and shift
       for (int i=0; i<d; i++)
@@ -265,7 +265,7 @@ namespace Dune {
     }
 
     //! return grid moved by the vector v
-    YGrid<d,ct> move (iTupel v)
+    YGrid<d,ct> move (iTupel v) const
     {
       for (int i=0; i<d; i++) v[i] += _origin[i];
       return YGrid<d,ct>(v,_size,_h,_r);
@@ -280,7 +280,7 @@ namespace Dune {
     class Iterator {
     public:
       //! Make iterator pointing to first cell in a grid.
-      Iterator (YGrid<d,ct>& r)
+      Iterator (const YGrid<d,ct>& r)
       {
         // copy data coming from grid to iterate over
         for (int i=0; i<d; ++i) _origin[i] = r.origin(i);
@@ -300,7 +300,7 @@ namespace Dune {
       }
 
       //! Make iterator pointing to given cell in a grid.
-      Iterator (YGrid<d,ct>& r, iTupel& coord)
+      Iterator (const YGrid<d,ct>& r, const iTupel& coord)
       {
         // copy data coming from grid to iterate over
         for (int i=0; i<d; ++i) _origin[i] = r.origin(i);
@@ -320,7 +320,7 @@ namespace Dune {
       }
 
       //! reinitialize iterator to given position
-      void reinit (YGrid<d,ct>& r, iTupel& coord)
+      void reinit (const YGrid<d,ct>& r, const iTupel& coord)
       {
         // copy data coming from grid to iterate over
         for (int i=0; i<d; ++i) _origin[i] = r.origin(i);
@@ -364,25 +364,25 @@ namespace Dune {
       }
 
       //! Return coordinate of the cell as reference (do not modify).
-      iTupel& coord ()
+      const iTupel& coord () const
       {
         return _coord;
       }
 
       //! Get index of cell which is dist cells away in direction i.
-      int neighbor (int i, int dist)
+      int neighbor (int i, int dist) const
       {
         return _index+dist*_increment[i];
       }
 
       //! Get index of neighboring cell which is -1 away in direction i.
-      int down (int i)
+      int down (int i) const
       {
         return _index-_increment[i];
       }
 
       //! Get index of neighboring cell which is +1 away in direction i.
-      int up (int i)
+      int up (int i) const
       {
         return _index+_increment[i];
       }
@@ -422,10 +422,10 @@ namespace Dune {
     };
 
     //! return iterator to first element of index set
-    Iterator begin () {return Iterator(*this);}
+    Iterator begin () const { return Iterator(*this); }
 
     //! return iterator to one past the last element of index set
-    Iterator end () {
+    Iterator end () const {
       iTupel last;
       for (int i=0; i<d; i++) last[i] = max(i);
       last[0] += 1;
@@ -477,25 +477,25 @@ namespace Dune {
       }
 
       //! Return position of current cell in direction i.
-      ct position (int i)
+      ct position (int i) const
       {
         return _position[i];
       }
 
       //! Return position of current cell as reference.
-      fTupel& position ()
+      const fTupel& position () const
       {
         return _position;
       }
 
       //! Return meshsize in direction i
-      ct meshsize (int i)
+      ct meshsize (int i) const
       {
         return _h[i];
       }
 
       //! Return meshsize of current cell as reference.
-      fTupel& meshsize ()
+      const fTupel& meshsize () const
       {
         return _h;
       }
@@ -625,31 +625,31 @@ namespace Dune {
     }
 
     //! Return offset to origin of enclosing grid
-    int offset (int i)
+    int offset (int i) const
     {
       return _offset[i];
     }
 
     //! Return offset to origin of enclosing grid
-    iTupel offset ()
+    const iTupel & offset () const
     {
       return _offset;
     }
 
     //! return size of enclosing grid
-    int supersize (int i)
+    int supersize (int i) const
     {
       return _supersize[i];
     }
 
     //! return size of enclosing grid
-    iTupel supersize ()
+    const iTupel & supersize () const
     {
       return _supersize;
     }
 
     //! Return SubYGrid of supergrid of self which is the intersection of self and another YGrid
-    virtual SubYGrid<d,ct> intersection ( YGrid<d,ct>& r)
+    virtual SubYGrid<d,ct> intersection ( YGrid<d,ct>& r) const
     {
       // check if the two grids can be intersected, must have same mesh size and shift
       for (int i=0; i<d; i++)
@@ -683,7 +683,7 @@ namespace Dune {
     class SubIterator : public YGrid<d,ct>::Iterator {
     public:
       //! Make iterator pointing to first cell in subgrid.
-      SubIterator (SubYGrid<d,ct>& r) : YGrid<d,ct>::Iterator::Iterator (r)
+      SubIterator (const SubYGrid<d,ct>& r) : YGrid<d,ct>::Iterator::Iterator (r)
       {
         //! store some grid information
         for (int i=0; i<d; ++i) _size[i] = r.size(i);
@@ -703,7 +703,7 @@ namespace Dune {
       }
 
       //! Make iterator pointing to given cell in subgrid.
-      SubIterator (SubYGrid<d,ct>& r, iTupel& coord) : YGrid<d,ct>::Iterator::Iterator (r,coord)
+      SubIterator (const SubYGrid<d,ct>& r, const iTupel& coord) : YGrid<d,ct>::Iterator::Iterator (r,coord)
       {
         //! store some grid information
         for (int i=0; i<d; ++i) _size[i] = r.size(i);
@@ -723,11 +723,11 @@ namespace Dune {
       }
 
       //! Make transforming iterator from iterator (used for automatic conversion of end)
-      SubIterator (typename YGrid<d,ct>::Iterator& i) : YGrid<d,ct>::Iterator::Iterator(i)
-      {       }
+      SubIterator (const typename YGrid<d,ct>::Iterator& i) : YGrid<d,ct>::Iterator::Iterator(i)
+      {}
 
       //! Make iterator pointing to given cell in subgrid.
-      void reinit (SubYGrid<d,ct>& r, iTupel& coord)
+      void reinit (const SubYGrid<d,ct>& r, const iTupel& coord)
       {
         YGrid<d,ct>::Iterator::reinit(r,coord);
 
@@ -755,19 +755,19 @@ namespace Dune {
       }
 
       //! Get index of cell which is dist cells away in direction i in enclosing grid.
-      int superneighbor (int i, int dist)
+      int superneighbor (int i, int dist) const
       {
         return _superindex+dist*_superincrement[i];
       }
 
       //! Get index of neighboring cell which is -1 away in direction i in enclosing grid.
-      int superdown (int i)
+      int superdown (int i) const
       {
         return _superindex-_superincrement[i];
       }
 
       //! Get index of neighboring cell which is +1 away in direction i in enclosing grid.
-      int superup (int i)
+      int superup (int i) const
       {
         return _superindex+_superincrement[i];
       }
@@ -811,10 +811,10 @@ namespace Dune {
     };
 
     //! return subiterator to first element of index set
-    SubIterator subbegin () {return SubIterator(*this);}
+    SubIterator subbegin () const { return SubIterator(*this); }
 
     //! return subiterator to last element of index set
-    SubIterator subend ()
+    SubIterator subend () const
     {
       iTupel last;
       for (int i=0; i<d; i++) last[i] = this->max(i);
@@ -829,7 +829,7 @@ namespace Dune {
     class TransformingSubIterator : public SubIterator {
     public:
       //! Make iterator pointing to first cell in a grid.
-      TransformingSubIterator (SubYGrid<d,ct>& r) : SubIterator(r)
+      TransformingSubIterator (const SubYGrid<d,ct>& r) : SubIterator(r)
       {
         for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
         for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
@@ -837,7 +837,7 @@ namespace Dune {
       }
 
       //! Make iterator pointing to given cell in a grid.
-      TransformingSubIterator (SubYGrid<d,ct>& r, iTupel& coord) : SubIterator(r,coord)
+      TransformingSubIterator (const SubYGrid<d,ct>& r, const iTupel& coord) : SubIterator(r,coord)
       {
         for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
         for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
@@ -845,16 +845,16 @@ namespace Dune {
       }
 
       //! Make transforming iterator from iterator (used for automatic conversion of end)
-      TransformingSubIterator (SubIterator& i) :
+      TransformingSubIterator (const SubIterator& i) :
         SubIterator(i)
       {}
 
       TransformingSubIterator (const TransformingSubIterator & t) :
         SubIterator(t), _h(t._h), _begin(t._begin), _position(t._position)
-      {       }
+      {}
 
       //! Make iterator pointing to given cell in a grid.
-      void reinit (SubYGrid<d,ct>& r, iTupel& coord)
+      void reinit (const SubYGrid<d,ct>& r, const iTupel& coord)
       {
         SubIterator::reinit(r,coord);
         for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
@@ -891,19 +891,19 @@ namespace Dune {
       }
 
       //! Return position of current cell as reference.
-      fTupel& position ()
+      const fTupel& position () const
       {
         return _position;
       }
 
       //! Return meshsize in direction i
-      ct meshsize (int i)
+      ct meshsize (int i) const
       {
         return _h[i];
       }
 
       //! Return meshsize of current cell as reference.
-      fTupel& meshsize ()
+      const fTupel& meshsize () const
       {
         return _h;
       }
@@ -931,19 +931,19 @@ namespace Dune {
     };
 
     //! return iterator to first element of index set
-    TransformingSubIterator tsubbegin ()
+    TransformingSubIterator tsubbegin () const
     {
       return TransformingSubIterator(*this);
     }
 
     //! return iterator to given element of index set
-    TransformingSubIterator tsubbegin (iTupel& co)
+    TransformingSubIterator tsubbegin (iTupel& co) const
     {
       return TransformingSubIterator(*this,co);
     }
 
     //! return subiterator to last element of index set
-    TransformingSubIterator tsubend ()
+    TransformingSubIterator tsubend () const
     {
       SubIterator endit = subend();
       return TransformingSubIterator(endit);
@@ -1044,57 +1044,59 @@ namespace Dune {
     }
 
     //! return own rank
-    int rank ()
+    int rank () const
     {
       return _rank;
     }
 
     //! return own coordinates
-    iTupel coord ()
+    iTupel coord () const
     {
       return rank_to_coord(_rank);
     }
 
     //! return number of processes
-    int procs ()
+    int procs () const
     {
       return _procs;
     }
 
     //! return dimensions of torus
-    iTupel dims ()
+    const iTupel & dims () const
     {
       return _dims;
     }
 
     //! return dimensions of torus in direction i
-    int dims (int i)
+    int dims (int i) const
     {
       return _dims[i];
     }
 
+    #warning should this be a reference?
     //! return MPI communicator
-    MPI_Comm comm ()
+    MPI_Comm comm () const
     {
       return _comm;
     }
 
     //! return tag used by torus
-    int tag ()
+    int tag () const
     {
       return _tag;
     }
 
     //! return true if coordinate is inside torus
-    bool inside (iTupel c)
+    bool inside (iTupel c) const
     {
       for (int i=d-1; i>=0; i--)
         if (c[i]<0 || c[i]>=_dims[i]) return false;
       return true;
     }
 
+    #warning should this be a reference?
     //! map rank to coordinate in torus using lexicographic ordering
-    iTupel rank_to_coord (int rank)
+    iTupel rank_to_coord (int rank) const
     {
       iTupel coord;
       rank = rank%_procs;
@@ -1107,7 +1109,7 @@ namespace Dune {
     }
 
     //! map coordinate in torus to rank using lexicographic ordering
-    int coord_to_rank (iTupel coord)
+    int coord_to_rank (iTupel coord) const
     {
       for (int i=0; i<d; i++) coord[i] = coord[i]%_dims[i];
       int rank = 0;
@@ -1116,7 +1118,7 @@ namespace Dune {
     }
 
     //! return rank of process where its coordinate in direction dir has offset cnt (handles periodic case)
-    int rank_relative (int rank, int dir, int cnt)
+    int rank_relative (int rank, int dir, int cnt) const
     {
       iTupel coord = rank_to_coord(rank);
       coord[dir] = (coord[dir]+dims[dir]+cnt)%dims[dir];
@@ -1124,7 +1126,7 @@ namespace Dune {
     }
 
     //! assign color to given coordinate
-    int color (iTupel coord)
+    int color (const iTupel & coord) const
     {
       int c = 0;
       int power = 1;
@@ -1147,13 +1149,13 @@ namespace Dune {
     }
 
     //! assign color to given rank
-    int color (int rank)
+    int color (int rank) const
     {
       return color(rank_to_coord(rank));
     }
 
     //! return the number of neighbors, which is \f$3^d-1\f$
-    int neighbors ()
+    int neighbors () const
     {
       int n=1;
       for (int i=0; i<d; ++i)
@@ -1162,7 +1164,7 @@ namespace Dune {
     }
 
     //! return true if neighbor with given delta is a neighbor under the given periodicity
-    bool is_neighbor (iTupel delta, bTupel periodic)
+    bool is_neighbor (iTupel delta, bTupel periodic) const
     {
       iTupel coord = rank_to_coord(_rank);     // my own coordinate with 0 <= c_i < dims_i
 
@@ -1184,7 +1186,7 @@ namespace Dune {
     }
 
     //! partition the given grid onto the torus and return the piece of the process with given rank; returns load imbalance
-    double partition (int rank, iTupel origin_in, iTupel size_in, iTupel& origin_out, iTupel& size_out)
+    double partition (int rank, iTupel origin_in, iTupel size_in, iTupel& origin_out, iTupel& size_out) const
     {
       iTupel coord = rank_to_coord(rank);
       double maxsize = 1;
@@ -1224,31 +1226,31 @@ namespace Dune {
     class ProcListIterator {
     public:
       //! make an iterator
-      ProcListIterator (typename std::deque<CommPartner>::iterator iter)
+      ProcListIterator (typename std::deque<CommPartner>::const_iterator iter)
       {
         i = iter;
       }
 
       //! return rank of neighboring process
-      int rank ()
+      int rank () const
       {
         return i->rank;
       }
 
       //! return distance vector
-      iTupel delta ()
+      iTupel delta () const
       {
         return i->delta;
       }
 
       //! return index in proclist
-      int index ()
+      int index () const
       {
         return i->index;
       }
 
       //! return 1-norm of distance vector
-      int distance ()
+      int distance () const
       {
         int dist = 0;
         iTupel delta=i->delta;
@@ -1278,29 +1280,29 @@ namespace Dune {
       }
 
     private:
-      typename std::deque<CommPartner>::iterator i;
+      typename std::deque<CommPartner>::const_iterator i;
     };
 
     //! first process in send list
-    ProcListIterator sendbegin ()
+    ProcListIterator sendbegin () const
     {
       return ProcListIterator(_sendlist.begin());
     }
 
     //! end of send list
-    ProcListIterator sendend ()
+    ProcListIterator sendend () const
     {
       return ProcListIterator(_sendlist.end());
     }
 
     //! first process in receive list
-    ProcListIterator recvbegin ()
+    ProcListIterator recvbegin () const
     {
       return ProcListIterator(_recvlist.begin());
     }
 
     //! last process in receive list
-    ProcListIterator recvend ()
+    ProcListIterator recvend () const
     {
       return ProcListIterator(_recvlist.end());
     }
@@ -1684,7 +1686,7 @@ namespace Dune {
     }
 
     //! return reference to torus
-    Torus<d>& torus ()
+    const Torus<d>& torus () const
     {
       return _torus;
     }
@@ -1705,14 +1707,14 @@ namespace Dune {
     class YGridLevelIterator {
     private:
       int l;
-      YGridLevel* i;
+      const YGridLevel* i;
     public:
       //! empty constructor, use with care
       YGridLevelIterator ()
       {}
 
       //! make iterator pointing to level k (no check made)
-      YGridLevelIterator (YGridLevel* start, int level)
+      YGridLevelIterator (const YGridLevel* start, int level)
       {
         i=start; l=level;
       }
@@ -1730,7 +1732,7 @@ namespace Dune {
       }
 
       //! return pointer to multigrid object that contains this level
-      MultiYGrid<d,ct>* mg ()
+      const MultiYGrid<d,ct>* mg () const
       {
         return i->mg;
       }
@@ -1764,31 +1766,31 @@ namespace Dune {
       }
 
       //! get iterator to next finer grid level
-      YGridLevelIterator finer ()
+      YGridLevelIterator finer () const
       {
         return YGridLevelIterator(i+1,l+1);
       }
 
       //! get iterator to next coarser grid level
-      YGridLevelIterator coarser ()
+      YGridLevelIterator coarser () const
       {
         return YGridLevelIterator(i-1,l-1);
       }
 
       //! reference to global cell grid
-      YGrid<d,ct>& cell_global ()
+      const YGrid<d,ct>& cell_global () const
       {
         return i->cell_global;
       }
 
       //! reference to local cell grid which is a subgrid of the global cell grid
-      SubYGrid<d,ct>& cell_overlap ()
+      const SubYGrid<d,ct>& cell_overlap () const
       {
         return i->cell_overlap;
       }
 
       //! reference to cell master grid which is a subgrid of the local cell grid
-      SubYGrid<d,ct>& cell_interior ()
+      const SubYGrid<d,ct>& cell_interior () const
       {
         return i->cell_interior;
       }
@@ -1814,27 +1816,27 @@ namespace Dune {
 
 
       //! reference to global vertex grid
-      YGrid<d,ct>& vertex_global ()
+      const YGrid<d,ct>& vertex_global () const
       {
         return i->vertex_global;
       }
       //! reference to vertex grid, up to front; there are no ghosts in this implementation
-      SubYGrid<d,ct>& vertex_overlapfront ()
+      const SubYGrid<d,ct>& vertex_overlapfront () const
       {
         return i->vertex_overlapfront;
       }
       //! reference to overlap vertex grid; is subgrid of overlapfront vertex grid
-      SubYGrid<d,ct>& vertex_overlap ()
+      const SubYGrid<d,ct>& vertex_overlap () const
       {
         return i->vertex_overlap;
       }
       //! reference to interiorborder vertex grid; is subgrid of overlapfront vertex grid
-      SubYGrid<d,ct>& vertex_interiorborder ()
+      const SubYGrid<d,ct>& vertex_interiorborder () const
       {
         return i->vertex_interiorborder;
       }
       //! reference to interior vertex grid; is subgrid of overlapfront vertex grid
-      SubYGrid<d,ct>& vertex_interior ()
+      const SubYGrid<d,ct>& vertex_interior () const
       {
         return i->vertex_interior;
       }
@@ -1875,13 +1877,13 @@ namespace Dune {
     };
 
     //! return iterator pointing to coarsest level
-    YGridLevelIterator begin ()
+    YGridLevelIterator begin () const
     {
       return YGridLevelIterator(_levels,0);
     }
 
     //! return iterator pointing to given level
-    YGridLevelIterator begin (int i)
+    YGridLevelIterator begin (int i) const
     {
       if (i<0 << i>maxlevel())
         DUNE_THROW(GridError, "level not existing");
@@ -1889,25 +1891,25 @@ namespace Dune {
     }
 
     //! return iterator pointing to one past the finest level
-    YGridLevelIterator end ()
+    YGridLevelIterator end () const
     {
       return YGridLevelIterator(_levels+(_maxlevel+1),_maxlevel+1);
     }
 
     //! return iterator pointing to the finest level
-    YGridLevelIterator rbegin ()
+    YGridLevelIterator rbegin () const
     {
       return YGridLevelIterator(_levels+_maxlevel,_maxlevel);
     }
 
     //! return iterator pointing to one before the coarsest level
-    YGridLevelIterator rend ()
+    YGridLevelIterator rend () const
     {
       return YGridLevelIterator(_levels-1,-1);
     }
 
     //! print function for multigrids
-    inline void print (std::ostream& s)
+    inline void print (std::ostream& s) const
     {
       int rank = torus().rank();
 
@@ -2120,7 +2122,7 @@ namespace Dune {
     //   size: needed to shift local grid in periodic case
     //   returns two lists: Intersections to be sent and Intersections to be received
     // Note: sendgrid/recvgrid may be SubYGrids. Since intersection method is virtual it should work properly
-    void intersections (SubYGrid<d,ct>& sendgrid, SubYGrid<d,ct>& recvgrid, iTupel& size,
+    void intersections (const SubYGrid<d,ct>& sendgrid, const SubYGrid<d,ct>& recvgrid, const iTupel& size,
                         std::deque<Intersection>& sendlist, std::deque<Intersection>& recvlist)
     {
       // the exchange buffers
