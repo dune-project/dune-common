@@ -174,28 +174,8 @@ namespace Dune {
   class ElementDefault : public Element <dim,dimworld,ct,ElementImp>
   {
   public:
-    //! remeber the template types
-    struct Traits
-    {
-      typedef ct CoordType;
-      typedef ElementImp<dim,dimworld>  Element;
-    };
-
-    //! know dimension
-    enum { dimension=dim };
-
-    //! know dimension of world
-    enum { dimensionworld=dimworld };
-
-    //! define type used for coordinates in grid module
-    typedef ct ctype;
-
-    //! calculates the bary center of the element
-    Vec<dimworld,ctype>& barycenter ();
 
   protected:
-    //! bary center of the element
-    Vec<dimworld,ctype> baryCenter_;
 
   private:
     //! Barton-Nackman trick
