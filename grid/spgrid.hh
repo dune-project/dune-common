@@ -36,6 +36,12 @@ namespace Dune {
 
   typedef int level;
 
+  // We have a structured grid, so we only have right and left sides
+  enum side {
+    left = -1,
+    right = 1
+  };
+
   const int exchange_tag=42;
 
   // consts for flag-index
@@ -46,7 +52,8 @@ namespace Dune {
   };
 
   namespace SPGridStubs {
-    template <int DIM> class InitExchange;
+    template <int DIM> class Vec2Buf;
+    template <int DIM> class Buf2Vec;
   };
 
   ////////////////////////////////////////////////////////////////////////////
@@ -63,7 +70,6 @@ namespace Dune {
     class remotelist;
     friend class iterator;
     friend class index;
-    friend class SPGridStubs::InitExchange<DIM>;
     /// fixed number of max levels
     enum {
       maxlevels=64
@@ -113,19 +119,14 @@ namespace Dune {
   private:
     const array<DIM> &id_to_coord_impl(level l, int id) const;
   public:
-    //! datatyp for exchange
-    typedef struct {
-      int size;
-      int* id;
-    } exchange_data;
     MPI_Status mpi_status;
-    //! prepare dataexchange
-    void   initExchange();
     //! exchange data on level l
     void   exchange(level l, Vector< spgrid<DIM> > & ex);
+    void   Send(int dir, Dune::side s,
+                level l, Vector< spgrid<DIM> > & ex);
+    void   Recv(int dir, Dune::side s,
+                level l, Vector< spgrid<DIM> > & ex);
   private:
-    exchange_data** exchange_data_from;
-    exchange_data** exchange_data_to;
     //! initialize the grid
     void init();
   private:
@@ -161,18 +162,8 @@ namespace Dune {
       overlap_[levels]=o; overlap_[levels+1]=0;
       init();
     };
-    ~spgrid() {
-      /*
-            std::cerr << "exchange_data_from not cleaned up!!!\n";
-            std::cerr << "exchange_data_to not cleaned up!!!\n";
-       */
-      /*
-         free(exchange_data_from);
-         free(exchange_data_to);
-       */
-    }
+    ~spgrid() {}
     //! our dimension
-    // const static int griddim = DIM;
     enum { griddim = DIM };
     //! give access to our communicator
     const MPI_Comm & comm() const { return comm_; };
@@ -194,8 +185,8 @@ namespace Dune {
     //! loop over all border vertices
     template <class stubEngine>
     void loop_border(level l, stubEngine & stub) const {
-      static array<2> a(0);
-      static array<DIM, array<2> > b(a);
+      array<2> a(0);
+      array<DIM, array<2> > b(a);
       loop_border(l, stub, a);
     };
     template <class stubEngine>
@@ -266,7 +257,8 @@ namespace Dune {
     int father_id(level l, const array<DIM> & coord) const;
     int coord_shift(level, int d) const;
     //! return the step size on level l in direction d
-    double h(level l, int d) const { return h_[d] / (1<<(l)); };
+    double h(level l, int d) const
+    { assert(d>=0 && d<DIM); return h_[d] / (1<<(l)); };
     //! inform about periodic boundry conditions
     bool periodic(int dir) const { return periodic_[dir]; }
     //! inform about global arrangement of the processors

@@ -7,38 +7,34 @@ namespace Dune {
 
   namespace SPGridStubs {
     template <int DIM>
-    class InitExchange {
-      spgrid<DIM> & g;
+    class Vec2Buf {
+      Vector< spgrid<DIM> > & in;
+      double * out;
+      int size;
+      int count;
     public:
-      InitExchange(spgrid<DIM> & g_) :
-        g(g_) {}
+      Vec2Buf (Vector< spgrid<DIM> > & _in, double * _out, int _size) :
+        in(_in), out(_out), size(_size), count(0) {}
       void evaluate(level l, const array<DIM> & coord, int id) {
-        typename spgrid<DIM>::iterator it(id,g);
-        typename spgrid<DIM>::index i=*it;
-        if (! i.overlap()) return;
-        typename spgrid<DIM>::remotelist remote=i.remote();
-        /* if i own the data, I'll search all processes
-           to receive the data */
-        if(i.owner()) {
-          for (int r=0; r<remote.size; r++) {
-            int & size = g.exchange_data_to[l][remote.list[r].process()].size;
-            realloc<int>(g.exchange_data_to[l][remote.list[r].process()].id, size + 1);
-            g.exchange_data_to[l][remote.list[r].process()].id[size] = it.id();
-            size ++;
-          }
-        }
-        /* if I share the data, find the owner-processes */
-        else {
-          for (int r=0; r<remote.size; r++) {
-            if (remote.list[r].owner()) {
-              int & size = g.exchange_data_from[l][remote.list[r].process()].size;
-              realloc<int>(g.exchange_data_from[l][remote.list[r].process()].id, size + 1);
-              g.exchange_data_from[l][remote.list[r].process()].id[size] = it.id();
-              size ++;
-              continue;
-            }
-          }
-        }
+        assert(count < size);
+        out[count] = in[id];
+        count ++;
+      }
+    };
+
+    template <int DIM>
+    class Buf2Vec {
+      double * in;
+      int size;
+      Vector< spgrid<DIM> > & out;
+      int count;
+    public:
+      Buf2Vec (double * _in, int _size, Vector< spgrid<DIM> > & _out) :
+        in(_in), size(_size), out(_out), count(0) {}
+      void evaluate(level l, const array<DIM> & coord, int id) {
+        assert(count < size);
+        out[id] = in[count];
+        count ++;
       }
     };
   } // namespace SPGridStubs
@@ -293,101 +289,127 @@ namespace Dune {
 
   ////////////////////////////////////////////////////////////////////////////
 
-  /**
-      Datenabgleich auf Level l vorbereiten
-   */
-  template <int DIM>
-  void spgrid<DIM>::initExchange() {
-    int P;
-    /* Size of Communicator */
-    MPI_Comm_size(comm_, &P);
-    exchange_data_from = new exchange_data*[smoothest()+1];
-    exchange_data_to = new exchange_data*[smoothest()+1];
-    for (level l=roughest(); l<=smoothest(); l++) {
-      exchange_data_from[l] = new exchange_data[P];
-      exchange_data_to[l] = new exchange_data[P];
-      for (int p=0; p<P; p++) {
-        exchange_data_from[l][p].size = 0;
-        exchange_data_from[l][p].id = malloc<int>(1);
-        exchange_data_to[l][p].size = 0;
-        exchange_data_to[l][p].id = malloc<int>(1);
-      }
-      SPGridStubs::InitExchange<DIM> stub(*this);
-      loop_overlap(l, stub);
-    }
-  };
-
-  /**
-      Datenabgleich auf Level l
-   */
   template <int DIM>
   void spgrid<DIM>::exchange(level l, Vector< spgrid<DIM> > & ex) {
-    TIME_EX -= MPI_Wtime();
+    //    TIME_EX -= MPI_Wtime();
     for (int d=0; d<DIM; d++) {
-      for (int s=-1; s<=2; s+=2) {
-        /* remote rank */
-        array<DIM> remote_process = process();
-        int shift;
-        if ( process()[d] % 2 == 0 ) {
-          shift = s;
-        }
-        else {
-          shift = -s;
-        }
-        // calc neighbour coord
-        remote_process[d] += shift;
-
-        // check cart boundries
-        if (shift==-1) {
-          if (! do_front_share(d) ) continue;
-        }
-        else {
-          if (! do_end_share(d) ) continue;
-        }
-
-        int remote_rank;
-        MPI_Cart_rank(comm_, remote_process, &remote_rank);
-        if (remote_rank < 0 )
-          continue;
-
-        /* data buffers and ids */
-        int* & id_from =
-          exchange_data_from[l][remote_rank].id;
-        int* & id_to =
-          exchange_data_to[l][remote_rank].id;
-        int size_from = exchange_data_from[l][remote_rank].size;
-        int size_to = exchange_data_to[l][remote_rank].size;
-        double* data_from = new double[size_from];
-        double* data_to = new double[size_to];
-
-        /* collect data */
-        for (int i=0; i<size_to; i++)
-          data_to[i] = ex[id_to[i]];
-
-        /* the real exchange */
-        if ( process()[d] % 2 == 0 ) {
-          MPI_Send( data_to, size_to, MPI_DOUBLE, remote_rank,
-                    exchange_tag, comm_);
-          MPI_Recv( data_from, size_from, MPI_DOUBLE, remote_rank,
-                    exchange_tag, comm_, &mpi_status);
-        }
-        else {
-          MPI_Recv( data_from, size_from, MPI_DOUBLE, remote_rank,
-                    exchange_tag, comm_, &mpi_status);
-          MPI_Send( data_to, size_to, MPI_DOUBLE, remote_rank,
-                    exchange_tag, comm_);
-        }
-
-        /* store data */
-        for (int i=0; i<size_from; i++)
-          ex[id_from[i]] = data_from[i];
-
-        /* clean up */
-        delete[] data_from;
-        delete[] data_to;
+      /* every Process who's d'th coord is even */
+      if(process(d)%2 == 0) {
+        Send(d, Dune::left, l, ex);
+        Recv(d, Dune::left, l, ex);
+        Send(d, Dune::right, l, ex);
+        Recv(d, Dune::right, l, ex);
+      }
+      /* every Process who's d'th coord is odd */
+      else {
+        Recv(d, Dune::right, l, ex);
+        Send(d, Dune::right, l, ex);
+        Recv(d, Dune::left, l, ex);
+        Send(d, Dune::left, l, ex);
       }
     }
-    TIME_EX += MPI_Wtime();
+    //    TIME_EX += MPI_Wtime();
   }; /* end exchange() */
 
+  /**
+     Send Overlap on face [dir,s] to neigbour [dir,s]
+   */
+  template <int DIM>
+  void spgrid<DIM>::Send(int dir, Dune::side s,
+                         level l, Vector< spgrid<DIM> > & ex) {
+    /* Calc the slab which we need to send */
+    int sz = 1;
+    array<DIM> begin;
+    array<DIM> end;
+    for (int d=0; d<DIM; d++) {
+      if (d!=dir) {
+        begin[d] = 0;
+        end[d] = front_overlap(l, d) + size(l, d) + end_overlap(l, d);
+      }
+      else {
+        switch (s) {
+        case left :
+          begin[d] = front_overlap(l, d);
+          end[d] = 2*front_overlap(l, d);
+          break;
+        case right :
+          begin[d] = front_overlap(l, d) + size(l, d) - end_overlap(l, d);
+          end[d] = front_overlap(l, d) + size(l, d);
+          break;
+        default :
+          throw std::string("Invalid Side");
+        }
+      }
+      sz *= end[d] - begin[d];
+    }
+    /* Do we have anything to send?! */
+    if (sz > 0) {
+      /* Collect the data */
+      double * buffer = new double[sz];
+      SPGridStubs::Vec2Buf<DIM> stub(ex, buffer, sz);
+      loop3D(l, begin, end, end, end, stub);
+      /* Calc the remote rank */
+      array<DIM> remote_process = process();
+      remote_process[dir] += s;
+      int remote_rank;
+      MPI_Cart_rank(comm_, remote_process, &remote_rank);
+      if (remote_rank < 0 ) throw std::string("Remote Rank wrong");
+      /* Send the data */
+      MPI_Send( buffer, sz, MPI_DOUBLE, remote_rank,
+                exchange_tag, comm_);
+      /* Clean up */
+      delete[] buffer;
+    }
+  }; /* end Send() */
+
+  /**
+     Recv Overlap on face [dir,s] from neigbour [dir,s]
+   */
+  template <int DIM>
+  void spgrid<DIM>::Recv(int dir, Dune::side s,
+                         level l, Vector< spgrid<DIM> > & ex) {
+    /* Calc the slab which we need to send */
+    int sz = 1;
+    array<DIM> begin;
+    array<DIM> end;
+    for (int d=0; d<DIM; d++) {
+      if (d!=dir) {
+        begin[d] = 0;
+        end[d] = front_overlap(l, d) + size(l, d) + end_overlap(l, d);
+      }
+      else {
+        switch (s) {
+        case left :
+          begin[d] = 0;
+          end[d] = front_overlap(l, d);
+          break;
+        case right :
+          begin[d] = front_overlap(l, d) + size(l, d);
+          end[d] = front_overlap(l, d) + size(l, d) + end_overlap(l, d);
+          break;
+        default :
+          throw std::string("Invalid Side");
+        }
+      }
+      sz *= end[d] - begin[d];
+    }
+    /* Do we have anything to send?! */
+    if (sz > 0) {
+      double * buffer = new double[sz];
+      /* Calc the remote rank */
+      array<DIM> remote_process = process();
+      remote_process[dir] += s;
+      int remote_rank;
+      MPI_Cart_rank(comm_, remote_process, &remote_rank);
+      if (remote_rank < 0 ) throw std::string("Remote Rank wrong");
+      /* Recv the data */
+      MPI_Recv( buffer, sz, MPI_DOUBLE, remote_rank,
+                exchange_tag, comm_, &mpi_status);
+      /* Store the data */
+      SPGridStubs::Buf2Vec<DIM> stub(buffer, sz, ex);
+      loop3D(l, begin, end, end, end, stub);
+      /* Clean up */
+      delete[] buffer;
+    }
+  } /* end Recv() */
 }
