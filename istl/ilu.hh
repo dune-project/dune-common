@@ -26,7 +26,7 @@ namespace Dune {
 
   //! compute ILU decomposition of A. A is overwritten by its decomposition
   template<class M>
-  void ilu0_decomposition (M& A)
+  void bilu0_decomposition (M& A)
   {
     // iterator types
     typedef typename M::RowIterator rowiterator;
@@ -80,7 +80,7 @@ namespace Dune {
 
   //! LU backsolve with stored inverse
   template<class M, class X, class Y>
-  void ilu_backsolve (const M& A, X& v, const Y& d)
+  void bilu_backsolve (const M& A, X& v, const Y& d)
   {
     // iterator types
     typedef typename M::ConstRowIterator rowiterator;
