@@ -8,4 +8,5 @@ depcomp
 install-sh
 missing
 mkinstalldirs
+libtool
 dune.pc
