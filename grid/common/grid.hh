@@ -1096,8 +1096,17 @@ namespace Dune {
   //
   //************************************************************************
   //
-  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+
+  /** \brief The Default Methods of Grid
+   *
+   * \todo Please doc me!
+   */
+  template<int dim,
+      int dimworld,
+      class ct,
+      template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int> class EntityImp>
   class GridDefault : public Grid <dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>
   {
   public:
@@ -1105,12 +1114,22 @@ namespace Dune {
     template <int codim>
     struct Traits
     {
+
+      //! Please doc me!
       typedef ct CoordType;
+
+      //! Please doc me!
       typedef GridImp<dim,dimworld>                 ImpGrid;
+
+      //! Please doc me!
       typedef LevelIteratorImp<codim,dim,dimworld>  LevelIterator;
+
+      //! Please doc me!
       typedef EntityImp<codim,dim,dimworld>         Entity;
+
     };
 
+    //! Please doc me!
     class LeafIterator;
 
     //! A grid exports its dimension
@@ -1128,9 +1147,11 @@ namespace Dune {
     //! return LeafIterator which points behind the last entity in maxLevel
     LeafIterator leafend(int maxLevel);
 
-    //! write Grid with GridType file filename and time
-    //! this method use the Grid Interface Method writeGrid
-    //! is not the same
+    /** Write Grid with GridType file filename and time
+     *
+     * This method use the Grid Interface Method writeGrid
+     * is not the same
+     */
     bool write (const FileFormatType ftype, const char * filename , ct time=0.0, int timestep=0,
                 bool adaptive=false , int processor = 0);
 
@@ -1161,10 +1182,18 @@ namespace Dune {
     //! HierarchicIterator
     struct Traits
     {
+      //! Please doc me!
       typedef ct CoordType;
+
+      //! Please doc me!
       typedef GridImp<dim,dimworld>             ImpGrid;
+
+      //! Please doc me!
       typedef LevelIteratorImp<0,dim,dimworld>  LevelIterator;
+
+      //! Please doc me!
       typedef EntityImp<0,dim,dimworld>         Entity;
+
     };
 
     //! Constructor making new LeafIterator
