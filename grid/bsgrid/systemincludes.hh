@@ -20,10 +20,7 @@
 
 #include <rpc/rpc.h>
 
-#include "bsgrid_src/alloca.hh"
-
 #ifdef _ANSI_HEADER
-using namespace std;
   #include <memory>
   #include <iostream>
   #include <fstream>
