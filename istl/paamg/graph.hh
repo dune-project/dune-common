@@ -5,6 +5,7 @@
 #define DUNE_AMG_GRAPH_HH
 
 #include <iostream>
+#include <vector>
 #include <dune/common/typetraits.hh>
 namespace Dune
 {
@@ -59,11 +60,13 @@ namespace Dune
       typedef int VertexDescriptor;
 
       /**
-       * @brief Const iterator over all egdes starting from a vertex.
+       * @brief Iterator over all egdes starting from a vertex.
        */
       template<class C>
       class EdgeIteratorT
       {
+
+      public:
         /**
          *  @brief The mutable type of the container type.
          */
@@ -90,7 +93,6 @@ namespace Dune
             const typename M::block_type>::Type
         Weight;
 
-      public:
         /**
          * @brief Constructor.
          * @param source The source vertex of the edges.
@@ -104,7 +106,8 @@ namespace Dune
          * @brief Copy Constructor.
          * @param other The iterator to copy.
          */
-        EdgeIteratorT(const EdgeIteratorT<typename RemoveConst<C>::Type>& other);
+        template<class C1>
+        EdgeIteratorT(const EdgeIteratorT<C1>& other);
 
         /**
          * @brief Access the edge weight
@@ -121,6 +124,12 @@ namespace Dune
 
         /** @brief Inequality operator. */
         bool operator!=(const EdgeIteratorT<const typename RemoveConst<C>::Type>& other) const;
+
+        /** @brief Equality operator. */
+        bool operator==(const EdgeIteratorT<typename RemoveConst<C>::Type>& other) const;
+
+        /** @brief Equality operator. */
+        bool operator==(const EdgeIteratorT<const typename RemoveConst<C>::Type>& other) const;
 
         /** @brief The index of the target vertex of the current edge. */
         VertexDescriptor target() const;
@@ -147,7 +156,7 @@ namespace Dune
       template<class C>
       class VertexIteratorT
       {
-
+      public:
         /**
          *  @brief The mutable type of the container type.
          */
@@ -165,7 +174,6 @@ namespace Dune
           isMutable = SameType<C, MutableContainer>::value
         };
 
-      public:
         /**
          * @brief Constructor.
          * @param graph The graph we are a vertex iterator for.
@@ -324,12 +332,216 @@ namespace Dune
        */
       const Matrix& matrix() const;
 
+      /**
+       * @brief Get the number of vertices in the graph.
+       */
+      int noVertices() const;
+
+      /**
+       * @brief Get the number of edges in the graph.
+       */
+      int noEdges() const;
+
     private:
       /** @brief The matrix we are the graph for. */
       Matrix& matrix_;
       /** @brief The number of vertices in the graph. */
       int noVertices_;
+      /** @brief The number of edges in the graph. */
+      int noEdges_;
     };
+
+    /**
+     * @brief A subgraph of a graph.
+     *
+     * This is a (cached) view of a graph where certain
+     * vertices and edges pointing to and leading from them
+     * are skipped.
+     *
+     * The vertex descriptors are not changed.
+     */
+    template<class G>
+    class SubGraph
+    {
+    public:
+      /**
+       * @brief The type of the graph we are a sub graph for.
+       */
+      typedef G Graph;
+
+      /**
+       * @brief The vertex descriptor.
+       */
+      typedef typename Graph::VertexDescriptor VertexDescriptor;
+
+      typedef typename Graph::VertexDescriptor* EdgeDescriptor;
+
+      /**
+       * @brief The edge iterator of the graph.
+       */
+      class EdgeIterator
+      {
+      public:
+        /**
+         * @brief Constructor.
+         * @param source The source vertex of the edge.
+         * @param target The edge the iterator is positioned on.
+         */
+        EdgeIterator(const VertexDescriptor& source, EdgeDescriptor target);
+
+        /** @brief Inequality operator. */
+        bool operator!=(const EdgeIterator& other) const;
+
+        /** @brief Equality operator. */
+        bool operator==(const EdgeIterator& other) const;
+
+        /** @brief Preincrement operator. */
+        EdgeIterator& operator++();
+
+        /** @brief The index of the target vertex of the current edge. */
+        VertexDescriptor target() const;
+
+        /** @brief The index of the source vertex of the current edge. */
+        VertexDescriptor source() const;
+
+      private:
+        /** @brief The source vertex of the edge. */
+        VertexDescriptor source_;
+        /** @brief The target vertex of the edge. */
+        EdgeDescriptor target_;
+      };
+
+      /**
+       * @brief The vertex iterator of the graph.
+       */
+      class VertexIterator
+      {
+      public:
+        /**
+         * @param Constructor.
+         * @param current The position of the iterator.
+         * @param end The last vertex of the graph.
+         */
+        VertexIterator(const SubGraph<G>* graph, const VertexDescriptor& current,
+                       const VertexDescriptor& end);
+
+        /** @brief Preincrement operator. */
+        VertexIterator& operator++();
+
+        /** @brief Equality iterator. */
+        bool operator==(const VertexIterator& other) const;
+
+        /** @brief Inequality iterator. */
+        bool operator!=(const VertexIterator& other) const;
+
+        /**
+         * @brief Get the descriptor of the current vertex.
+         * @return The index of the currently referenced vertex.
+         */
+        const VertexDescriptor& index() const;
+
+        /**
+         * @brief Get an iterator over all edges starting at the
+         * current vertex.
+         * @return Iterator position on the first edge to another vertex.
+         */
+        EdgeIterator begin() const;
+
+        /**
+         * @brief Get an iterator over all edges starting at the
+         * current vertex.
+         * @return Iterator position on the first edge to another vertex.
+         */
+        EdgeIterator end() const;
+
+      private:
+        /** @brief The graph we are a vertex iterator for. */
+        const SubGraph<Graph>* graph_;
+        /** @brief The current position. */
+        VertexDescriptor current_;
+        /** @brief The number of vertices of the graph. */
+        VertexDescriptor end_;
+      };
+
+      /**
+       * @brief The constant edge iterator type.
+       */
+      typedef EdgeIterator ConstEdgeIterator;
+
+      /**
+       * @brief The constant vertex iterator type.
+       */
+      typedef VertexIterator ConstVertexIterator;
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned at the first vertex.
+       */
+      ConstVertexIterator begin() const;
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned behind the last vertex.
+       */
+      ConstVertexIterator end() const;
+
+      /**
+       * @brief Get an iterator over the edges starting at a vertex.
+       * @param source The vertex where the edges should start.
+       * @return An edge iterator positioned at the first edge starting
+       * from vertex source.
+       */
+      ConstEdgeIterator beginEdges(const VertexDescriptor& source) const;
+
+      /**
+       * @brief Get an iterator over the edges starting at a vertex.
+       * @param source The vertex where the edges should start.
+       * @return An edge iterator positioned behind the last edge starting
+       * from vertex source.
+       */
+      ConstEdgeIterator endEdges(const VertexDescriptor& source) const;
+
+      /**
+       * @brief Get the number of vertices in the graph.
+       */
+      int noVertices() const;
+
+      /**
+       * @brief Get the number of edges in the graph.
+       */
+      int noEdges() const;
+
+      /**
+       * @brief Constructor.
+       *
+       * @param graph The graph we are a sub graph for.
+       * @param excluded If excluded[i] is true then vertex i will not appear
+       * in the sub graph.
+       */
+      SubGraph(const Graph& graph, const std::vector<bool>& excluded);
+
+      /**
+       * @brief Destructor.
+       */
+      ~SubGraph();
+
+    private:
+      /** @brief flags indication which vertices are excluded. */
+      std::vector<bool> excluded_;
+      /** @brief The number of vertices in this sub graph. */
+      int noVertices_;
+      /** @brief Vertex behind the last valid vertex of this sub graph. */
+      VertexDescriptor endVertex_;
+      /** @brief The number of edges in this sub graph.*/
+      int noEdges_;
+      /** @brief The edges of this sub graph. */
+      VertexDescriptor* edges_;
+      /** @brief The start of the out edges of each vertex. */
+      int* start_;
+      /** @brief The edge behind the last out edge of each vertex. */
+      int* end_;
+    };
+
 
     /**
      * @brief The weighted matrix graph with properties attached to the vertices
@@ -868,11 +1080,25 @@ namespace Dune
 
     template<class M>
     MatrixGraph<M>::MatrixGraph(M& matrix)
-      : matrix_(matrix), noVertices_(0)
+      : matrix_(matrix), noVertices_(0), noEdges_(0)
     {
       typedef typename M::ConstIterator Iterator;
-      for(Iterator row=matrix_.begin(); row != matrix_.end(); ++row)
+      for(Iterator row=matrix_.begin(); row != matrix_.end(); ++row) {
+        noEdges_+=row->size();
         ++noVertices_;
+      }
+    }
+
+    template<class M>
+    int MatrixGraph<M>::noEdges() const
+    {
+      return noEdges_;
+    }
+
+    template<class M>
+    int MatrixGraph<M>::noVertices() const
+    {
+      return noVertices_;
     }
 
     template<class M>
@@ -903,7 +1129,8 @@ namespace Dune
 
     template<class M>
     template<class C>
-    MatrixGraph<M>::EdgeIteratorT<C>::EdgeIteratorT(const EdgeIteratorT<typename RemoveConst<C>::Type>& other)
+    template<class C1>
+    MatrixGraph<M>::EdgeIteratorT<C>::EdgeIteratorT(const EdgeIteratorT<C1>& other)
       : source_(other.source_), block_(other.block_), blockEnd_(other.blockEnd_)
     {}
 
@@ -943,6 +1170,20 @@ namespace Dune
     inline bool MatrixGraph<M>::EdgeIteratorT<C>::operator!=(const MatrixGraph<M>::EdgeIteratorT<const typename RemoveConst<C>::Type>& other) const
     {
       return block_!=other.block_;
+    }
+
+    template<class M>
+    template<class C>
+    inline bool MatrixGraph<M>::EdgeIteratorT<C>::operator==(const MatrixGraph<M>::EdgeIteratorT<typename RemoveConst<C>::Type>& other) const
+    {
+      return block_==other.block_;
+    }
+
+    template<class M>
+    template<class C>
+    inline bool MatrixGraph<M>::EdgeIteratorT<C>::operator==(const MatrixGraph<M>::EdgeIteratorT<const typename RemoveConst<C>::Type>& other) const
+    {
+      return block_==other.block_;
     }
 
     template<class M>
@@ -1107,6 +1348,189 @@ namespace Dune
       return ConstEdgeIterator(source, matrix_.operator[](source).end(),
                                matrix_.operator[](source).end());
     }
+
+
+    template<class G>
+    SubGraph<G>::EdgeIterator::EdgeIterator(const VertexDescriptor& source,
+                                            EdgeDescriptor target)
+      : source_(source), target_(target)
+    {}
+
+    template<class G>
+    bool SubGraph<G>::EdgeIterator::operator==(const EdgeIterator& other) const
+    {
+      return other.target_==target_;
+    }
+
+    template<class G>
+    bool SubGraph<G>::EdgeIterator::operator!=(const EdgeIterator& other) const
+    {
+      return other.target_!=target_;
+    }
+
+    template<class G>
+    typename SubGraph<G>::EdgeIterator& SubGraph<G>::EdgeIterator::operator++()
+    {
+      ++target_;
+      return *this;
+    }
+
+    template<class G>
+    typename G::VertexDescriptor SubGraph<G>::EdgeIterator::source() const
+    {
+      return source_;
+    }
+
+    template<class G>
+    typename G::VertexDescriptor SubGraph<G>::EdgeIterator::target() const
+    {
+      return *target_;
+    }
+
+    template<class G>
+    SubGraph<G>::VertexIterator::VertexIterator(const SubGraph<G>* graph,
+                                                const VertexDescriptor& current,
+                                                const VertexDescriptor& end)
+      : graph_(graph), current_(current), end_(end)
+    {
+      // Skip excluded vertices
+      typedef typename std::vector<bool>::const_iterator Iterator;
+
+      for(Iterator vertex = graph_->excluded_.begin();
+          current_ != end_ && *vertex;
+          ++vertex)
+        ++current_;
+      assert(current_ == end_ || !graph_->excluded_[current_]);
+    }
+
+    template<class G>
+    typename SubGraph<G>::VertexIterator& SubGraph<G>::VertexIterator::operator++()
+    {
+      ++current_;
+      //Skip excluded vertices
+      while(current_ != end_ && graph_->excluded_[current_])
+        ++current_;
+
+      assert(current_ == end_ || !graph_->excluded_[current_]);
+      return *this;
+    }
+
+    template<class G>
+    bool SubGraph<G>::VertexIterator::operator==(const VertexIterator& other) const
+    {
+      return current_==other.current_;
+    }
+
+    template<class G>
+    bool SubGraph<G>::VertexIterator::operator!=(const VertexIterator& other) const
+    {
+      return current_!=other.current_;
+    }
+
+    template<class G>
+    const typename G::VertexDescriptor& SubGraph<G>::VertexIterator::index() const
+    {
+      return current_;
+    }
+
+    template<class G>
+    typename SubGraph<G>::EdgeIterator SubGraph<G>::VertexIterator::begin() const
+    {
+      return graph_->beginEdges(current_);
+    }
+
+    template<class G>
+    typename SubGraph<G>::EdgeIterator SubGraph<G>::VertexIterator::end() const
+    {
+      return graph_->endEdges(current_);
+    }
+
+    template<class G>
+    typename SubGraph<G>::VertexIterator SubGraph<G>::begin() const
+    {
+      return VertexIterator(this, 0, endVertex_);
+    }
+
+
+    template<class G>
+    typename SubGraph<G>::VertexIterator SubGraph<G>::end() const
+    {
+      return VertexIterator(this, endVertex_, endVertex_);
+    }
+
+
+    template<class G>
+    typename SubGraph<G>::EdgeIterator SubGraph<G>::beginEdges(const VertexDescriptor& source) const
+    {
+      return EdgeIterator(source, edges_+start_[source]);
+    }
+
+    template<class G>
+    typename SubGraph<G>::EdgeIterator SubGraph<G>::endEdges(const VertexDescriptor& source) const
+    {
+      return EdgeIterator(source, edges_+end_[source]);
+    }
+
+    template<class G>
+    int SubGraph<G>::noVertices() const
+    {
+      return noVertices_;
+    }
+
+    template<class G>
+    int SubGraph<G>::noEdges() const
+    {
+      return noEdges_;
+    }
+
+    template<class G>
+    SubGraph<G>::~SubGraph()
+    {
+      delete[] edges_;
+      delete[] end_;
+      delete[] start_;
+    }
+
+    template<class G>
+    SubGraph<G>::SubGraph(const G& graph, const std::vector<bool>& excluded)
+      : excluded_(excluded), noVertices_(0), endVertex_(0)
+    {
+      start_ = new int[graph.noVertices()];
+      end_ = new int[graph.noEdges()];
+      edges_ = new VertexDescriptor[graph.noEdges()];
+
+      VertexDescriptor* edge=edges_;
+
+      typedef typename Graph::ConstVertexIterator Iterator;
+      Iterator endVertex=graph.end();
+
+      for(Iterator vertex = graph.begin(); vertex != endVertex; ++vertex)
+        if(excluded_[vertex.index()])
+          start_[vertex.index()]=end_[vertex.index()]=-1;
+        else{
+          ++noVertices_;
+          endVertex_ = std::max(vertex.index(), endVertex_);
+
+          start_[vertex.index()]=end_[vertex.index()]=edge-edges_;
+
+          typedef typename Graph::ConstEdgeIterator Iterator;
+          Iterator endEdge = vertex.end();
+
+          for(Iterator iter=vertex.begin(); iter!= endEdge; ++iter)
+            if(!excluded[iter.target()]) {
+              *edge = iter.target();
+              ++edge;
+              ++end_[vertex.index()];
+            }
+
+          // Sort the edges
+          //std::sort(edges_+start_[vertex.index()], edges_+end[vertex.index()]);
+        }
+      noEdges_ = edge-edges_;
+      ++endVertex_;
+    }
+
+
 
     template<class M, class VP, class EP>
     Graph<M,VP,EP>::Graph()
