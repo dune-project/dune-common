@@ -1,5 +1,6 @@
 .deps
 doxygen-tag
+doxygen.log
 html
 latex
 Makefile
