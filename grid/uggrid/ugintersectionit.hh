@@ -116,7 +116,7 @@ namespace Dune {
     //! Returns true if the iterator represents an actual intersection
     bool isValid() const;
 
-    UGGridEntity<0,dim,GridImp> virtualEntity_;
+    mutable UGMakeableEntity<0,dim,GridImp> virtualEntity_;
 
     //! vector storing the outer normal
     mutable FieldVector<UGCtype, dimworld> outerNormal_;
