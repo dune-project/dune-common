@@ -661,19 +661,48 @@ namespace Dune {
   //  --EnPointer
   //
   //*******************************************************************
-  template<int codim, PartitionIteratorType pitype, class GridImp >
-  inline ALU3dGridEntityPointer<codim,pitype,GridImp> ::
-  ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HElementType &item)
-    : grid_(grid) , entity_ ( grid_.entityProvider_.getNewObjectEntity( grid_, item.level()))
+  template<>
+  inline ALU3dGridEntityPointer<0, All_Partition, const ALU3dGrid<3,3> > ::
+  ALU3dGridEntityPointer(const ALU3dGrid<3,3> & grid, const ALU3DSPACE HElementType &item)
+    : grid_(grid)
+      , entity_ ( grid_.entityProvider_.getNewObjectEntity( grid_, item.level() ))
   {
     (*entity_).setElement( const_cast<ALU3DSPACE HElementType &> (item) );
+  }
+
+  template<>
+  inline ALU3dGridEntityPointer<1, All_Partition, const ALU3dGrid<3,3> > ::
+  ALU3dGridEntityPointer(const ALU3dGrid<3,3> & grid, const ALU3DSPACE HFaceType &item)
+    : grid_(grid)
+  {
+    entity_ = new EntityImp ( grid_ , item.level() );
+    (*entity_).setElement( const_cast<ALU3DSPACE HFaceType &> (item) );
+  }
+
+  template<>
+  inline ALU3dGridEntityPointer<2, All_Partition, const ALU3dGrid<3,3> > ::
+  ALU3dGridEntityPointer(const ALU3dGrid<3,3> & grid, const ALU3DSPACE HEdgeType &item)
+    : grid_(grid)
+  {
+    entity_ = new EntityImp ( grid_ , item.level() );
+    (*entity_).setElement( const_cast<ALU3DSPACE HEdgeType &> (item) );
+  }
+
+  template<>
+  inline ALU3dGridEntityPointer<3, All_Partition, const ALU3dGrid<3,3> > ::
+  ALU3dGridEntityPointer(const ALU3dGrid<3,3> & grid, const ALU3DSPACE VertexType &item)
+    : grid_(grid)
+      , entity_ ( grid_.vertexProvider_.getNewObjectEntity( grid_, item.level() ))
+  {
+    (*entity_).setElement( const_cast<ALU3DSPACE VertexType &> (item) );
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp >
   inline ALU3dGridEntityPointer<codim,pitype,GridImp> ::
   ALU3dGridEntityPointer(const GridImp & grid)
-    : grid_(grid) , entity_ ( grid_.entityProvider_.getNewObjectEntity( grid_, 0 ))
+    : grid_(grid) , entity_ (0)
   {
+    entity_ = new EntityImp ( grid_, 0 );
     assert(false);
   }
 
@@ -681,7 +710,21 @@ namespace Dune {
   inline ALU3dGridEntityPointer<codim,pitype,GridImp> ::
   ~ALU3dGridEntityPointer()
   {
+    if(entity_) delete entity_;
+  }
+
+  template<>
+  inline ALU3dGridEntityPointer<0,All_Partition, const ALU3dGrid<3,3> > ::
+  ~ALU3dGridEntityPointer()
+  {
     grid_.entityProvider_.freeObjectEntity ( entity_ );
+  }
+
+  template<>
+  inline ALU3dGridEntityPointer<3,All_Partition, const ALU3dGrid<3,3> > ::
+  ~ALU3dGridEntityPointer()
+  {
+    grid_.vertexProvider_.freeObjectEntity ( entity_ );
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp >
@@ -1384,6 +1427,35 @@ namespace Dune {
   inline typename ALU3dGridEntity<0,dim,GridImp> :: template codim<cc>:: EntityPointer
   ALU3dGridEntity<0,dim,GridImp> :: entity (int i) const
   {
+    switch (cc)
+    {
+    case 1 :
+    {
+      ALU3dGridEntityPointer<cc,All_Partition,GridImp> ep (grid_, (*(*item_).myhface3(i)) );
+      return ep;
+    }
+    case 2 :
+    {
+      if(i<3)
+      {
+        ALU3dGridEntityPointer<cc,All_Partition,GridImp> ep (grid_, (*(*item_).myhface3(0)->myhedge1(i)) );
+        return ep;
+      }
+      else
+      {
+        std::cout << "method not tested yet. !\n " << __FILE__ << " " << __LINE__ << "\n";
+        ALU3dGridEntityPointer<cc,All_Partition,GridImp> ep (grid_, (*(*item_).myhface3(i-2)->myhedge1(i-3)) );
+        return ep;
+      }
+    }
+    case 3 :
+    {
+      ALU3dGridEntityPointer<cc,All_Partition,GridImp> ep (grid_, (*(*item_).myvertex(i)) );
+      return ep;
+    }
+    default :
+      DUNE_THROW(ALU3dGridError,"wrong codim in method entity \n");
+    }
     ALU3dGridEntityPointer<cc,All_Partition,GridImp> ep (grid_);
     return ep;
   }

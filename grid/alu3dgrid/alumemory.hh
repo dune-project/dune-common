@@ -58,12 +58,14 @@ MemoryProvider<Object>::getNewObjectEntity
 template <class Object>
 inline MemoryProvider<Object>::~MemoryProvider()
 {
-  while ( !objStack_.empty() )
-  {
-    ObjectType * obj = objStack_.top();
-    objStack_.pop();
-    if( obj ) delete obj;
-  }
+  /*
+     while ( !objStack_.empty() )
+     {
+     ObjectType * obj = objStack_.top();
+     objStack_.pop();
+     if( obj ) delete obj;
+     }
+   */
 }
 
 template <class Object>

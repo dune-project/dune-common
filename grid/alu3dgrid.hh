@@ -941,6 +941,9 @@ namespace Dune
 
     //! Constructor for father
     ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HElementType & item);
+    ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HFaceType & item);
+    ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HEdgeType & item);
+    ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE VertexType & item);
 
     //! make empty entity pointer (to be revised)
     ALU3dGridEntityPointer(const GridImp & grid);
@@ -1220,7 +1223,11 @@ namespace Dune
     typedef ALU3dGridMakeableEntity<0,dim,const MyType> EntityImp;
     typedef ALU3DSPACE MemoryProvider< EntityImp > EntityProvider;
 
+    typedef ALU3dGridMakeableEntity<3,dim,const MyType> VertexImp;
+    typedef ALU3DSPACE MemoryProvider< VertexImp > VertexProvider;
+
     mutable EntityProvider entityProvider_;
+    mutable VertexProvider vertexProvider_;
 
   }; // end Class ALU3dGridGrid
 
