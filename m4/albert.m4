@@ -43,25 +43,28 @@ else
   ALBERTROOT="/usr/local/albert"
 fi
 
+ALBERT_LIB_PATH="$ALBERTROOT/lib"
+ALBERT_INCLUDE_PATH="$ALBERTROOT/include"
+
 # Albert needs special defined symbols
 
-ALBERTDEF="-DDIM_OF_WORLD=$with_world_dim -DDIM=$with_problem_dim -DEL_INDEX=$with_albert_elindex"
+ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim -DEL_INDEX=$with_albert_elindex"
 
 # set variables so that tests can use them
 LDFLAGS="$LDFLAGS -L$ALBERTROOT/lib"
-CPPFLAGS="$CPPFLAGS $ALBERTDEF -I$ALBERTROOT/include"
+CPPFLAGS="$CPPFLAGS $ALBERTDEF -I$ALBERT_INCLUDE_PATH"
 
 # check for header
 AC_CHECK_HEADER([albert.h], 
-   [ALBERT_CPPFLAGS="$ALBERTDEF -I$ALBERTROOT/include"
+   [ALBERT_CPPFLAGS="$ALBERTDEF -I$ALBERT_INCLUDE_PATH"
 	HAVE_ALBERT="1"],
-  AC_MSG_WARN([albert.h not found in $ALBERTROOT]))
+  AC_MSG_WARN([albert.h not found in $ALBERT_INCLUDE_PATH]))
 
 # if header is found...
 if test x$HAVE_ALBERT = x1 ; then
   AC_CHECK_LIB(albert_util,[albert_calloc],
 	[ALBERT_LIBS="-lalbert_util"
-         ALBERT_LDFLAGS="-L$ALBERTROOT/lib"
+         ALBERT_LDFLAGS="-L$ALBERT_LIB_PATH"
          LIBS="$LIBS $ALBERT_LIBS"],
 	[HAVE_ALBERT="0"
 	AC_MSG_WARN(libalbert_util not found!)])
@@ -73,7 +76,7 @@ if test x$HAVE_ALBERT = x1 ; then
   # the zero is the sign of the no-debug-lib
   albertlibname="ALBERT${with_problem_dim}${with_world_dim}_0${with_albert_elindex}"
   AC_CHECK_LIB($albertlibname,[mesh_traverse],
-	[ALBERT_LIBS="$ALBERT_LIBS -l$albertlibname"
+	[ALBERT_LIBS="-l$albertlibname $ALBERT_LIBS"
    LIBS="$LIBS $ALBERT_LIBS"],
 	[HAVE_ALBERT="0"
 	AC_MSG_WARN(lib$albertlibname not found!)])
