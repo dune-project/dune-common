@@ -13,56 +13,19 @@ namespace Dune {
 
   template<int mydim, int coorddim, class GridImp>
   class OneDMakeableGeometry : public Geometry<mydim, coorddim, GridImp, OneDGridGeometry>
-  {};
-
-  template<int coorddim, class GridImp>
-  class OneDMakeableGeometry<1,coorddim,GridImp> : public Geometry<1, coorddim, GridImp, OneDGridGeometry>
   {
   public:
 
     OneDMakeableGeometry() :
-      Geometry<1, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<1, coorddim, GridImp>())
+      Geometry<mydim, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<mydim, coorddim, GridImp>())
     {};
 
-    void setToTarget(OneDEntityImp<1>* target) {
+    void setToTarget(OneDEntityImp<mydim>* target) {
       this->realGeometry.target_ = target;
     }
 
-
-#if 0
-    OneDGridEntity<1,1,GridImp>*& vertex(int n) {
-      return this->realGeometry.vertex_[n];
-    }
-
-    OneDGridEntity<1,1,GridImp>* const & vertex(int n) const {
-      return this->realGeometry.vertex_[n];
-    }
-#endif
   };
 
-  template<int coorddim, class GridImp>
-  class OneDMakeableGeometry<0,coorddim,GridImp> : public Geometry<0, coorddim, GridImp, OneDGridGeometry>
-  {
-  public:
-#if 0
-    OneDMakeableGeometry(const double& x) :
-      Geometry<0, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<0, coorddim, GridImp>(x))
-    {};
-#endif
-    OneDMakeableGeometry() :
-      Geometry<0, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<0, coorddim, GridImp>())
-    {};
-
-    void setToTarget(OneDEntityImp<0>* target) {
-      this->realGeometry.target_ = target;
-    }
-
-#if 0
-    FieldVector<double, coorddim>& pos() {
-      return this->realGeometry.pos_;
-    }
-#endif
-  };
 
   template <int codim, int dim, class GridImp>
   class OneDGridEntity;
@@ -86,13 +49,6 @@ namespace Dune {
 
 
   public:
-
-#if 0
-    /** \todo Constructor with a given coordinate */
-    OneDGridGeometry(const double& x) {
-      pos_[0] = x;
-    }
-#endif
 
     /** \brief Return reference element corresponding to this element.
      */
