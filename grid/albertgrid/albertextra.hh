@@ -141,10 +141,10 @@ void enlargeTraverseStack(TRAVERSE_STACK *stack)
   stack->save_info_stack   = MEM_REALLOC(stack->save_info_stack,
                                          stack->stack_size,
                                          new_stack_size, U_CHAR);
-
+#if 0
   MSG("increase stack at %8X from %d to %d\n", stack,
       stack->stack_size, new_stack_size);
-
+#endif
 
   stack->stack_size = new_stack_size;
 }
