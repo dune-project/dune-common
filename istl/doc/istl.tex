@@ -427,7 +427,66 @@ structure can be generated simply with the copy constructor.
 
 \subsection{Input/output}
 
+\subsection{Block recursion}
+
+\subsection{Triangular solves}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{function} & \textbf{computation}\\
+\hline
+\hline
+\texttt{bltsolve(A,v,d)}  & $v=(L+D)^{-1}d$\\
+\texttt{bltsolve(A,v,d,$\omega$)}  & $v=\omega(L+D)^{-1}d$\\
+\texttt{ubltsolve(A,v,d)}  & $v=L^{-1}d$\\
+\texttt{ubltsolve(A,v,d,$\omega$)}  & $v=\omega L^{-1}d$\\
+\hline
+\texttt{butsolve(A,v,d)}  & $v=(D+U)^{-1}d$\\
+\texttt{butsolve(A,v,d,$\omega$)}  & $v=\omega(D+U)^{-1}d$\\
+\texttt{ubutsolve(A,v,d)}  & $v=U^{-1}d$\\
+\texttt{ubutsolve(A,v,d,$\omega$)}  & $v=\omega U^{-1}d$\\
+\hline
+\texttt{bdsolve(A,v,d)}  & $v=D^{-1}d$\\
+\texttt{bdsolve(A,v,d,$\omega$)}  & $v=\omega D^{-1}d$\\
+\hline
+\end{tabular}
+\end{center}
+
+\caption{Functions available for block triangular and block diagonal
+  solves. The matrix $A$ is decomposed into $A=L+D+U$ where $L$ is
+  strictly lower block triangular, $D$ is block diagonal and $U$ is
+  strictly upper block triangular. Standard is one level of block
+  recursion, arbitrary level can be given by additional parameter.}
+\label{Fig:TriangularSolves}
+\end{figure}
+
 \subsection{Simple iterative solvers}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{function} & \textbf{computation}\\
+\hline
+\hline
+\texttt{dbjac(A,x,b,$\omega$)}  & $x=x+\omega D^{-1}(b-Ax)$ \\
+\texttt{bgs(A,x,b)}  & $x = x + (L+D)^{-1}(b-Ax)$\\
+\texttt{bsor(A,x,b,$\omega$)}  & $x = x + \omega(L+D)^{-1}(b-Ax)$\\
+\texttt{bssor(A,x,b,$\omega$)}  & $x' = x + \omega(L+D)^{-1}(b-Ax)$; $x
+= x' + \omega(U+D)^{-1}(b-Ax')$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\caption{Kernels for iterative solvers. 
+  The matrix $A$ is decomposed into $A=L+D+U$ where $L$ is
+  strictly lower block triangular, $D$ is block diagonal and $U$ is
+  strictly upper block triangular. Standard is one level of block
+  recursion, arbitrary level can be given by additional parameter.}
+\label{Fig:IterativeSolvers}
+\end{figure}
 
 \subsection{Sparse LU decomposition}
 
