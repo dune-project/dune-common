@@ -22,10 +22,10 @@ template< int dim, int dimworld>
 inline UGGridHierarchicIterator<dim,dimworld>&
 UGGridHierarchicIterator< dim,dimworld >::operator ++()
 {
-  if (elemStack.isempty())
+  if (elemStack.empty())
     return (*this);
 
-  StackEntry old_target = elemStack.pop_front();
+  StackEntry old_target = elemStack.pop();
 
   // Traverse the tree no deeper than maxlevel
   if (old_target.level < maxlevel_) {
@@ -48,15 +48,15 @@ UGGridHierarchicIterator< dim,dimworld >::operator ++()
       StackEntry se;
       se.element = sonList[i];
       se.level   = old_target.level + 1;
-      elemStack.push_front(se);
+      elemStack.push(se);
     }
 #undef NSONS
   }
 
-  if (elemStack.isempty())
+  if (elemStack.empty())
     virtualEntity_.setToTarget(0);
   else
-    virtualEntity_.setToTarget(elemStack.front().element, elemStack.front().level);
+    virtualEntity_.setToTarget(elemStack.top().element, elemStack.top().level);
 
   return (*this);
 }
@@ -68,7 +68,7 @@ operator ==(const UGGridHierarchicIterator& I) const
 {
   return ( (elemStack.size()==0 && I.elemStack.size()==0) ||
            ((elemStack.size() == I.elemStack.size()) &&
-            (elemStack.front().element == I.elemStack.front().element)));
+            (elemStack.top().element == I.elemStack.top().element)));
 }
 
 template< int dim, int dimworld>

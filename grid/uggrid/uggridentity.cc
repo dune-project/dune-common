@@ -310,17 +310,17 @@ UGGridEntity < 0, dim ,dimworld >::hbegin(int maxlevel)
       se.element = sonList[i];
       //printf("new element %d\n", se.element);
       se.level   = level()+1;
-      it.elemStack.push_front(se);
+      it.elemStack.push(se);
     }
 #undef NSONS
 
   }
 
-  if (it.elemStack.isempty()) {
+  if (it.elemStack.empty()) {
     it.virtualEntity_.setToTarget(0);
   } else {
     // Set intersection iterator to first son
-    it.virtualEntity_.setToTarget(it.elemStack.front().element, it.elemStack.front().level);
+    it.virtualEntity_.setToTarget(it.elemStack.top().element, it.elemStack.top().level);
   }
 
   return it;

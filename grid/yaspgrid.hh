@@ -1015,12 +1015,12 @@ namespace Dune {
       {
         StackElem se(_g);
         se.coord = _it.coord();
-        stack.push_front(se);
+        stack.push(se);
         push_sons();
       }
 
       // and make iterator point to first son if stack is not empty
-      if (!stack.isempty())
+      if (!stack.empty())
         pop_tos();
     }
 
@@ -1028,7 +1028,7 @@ namespace Dune {
     YaspHierarchicIterator<dim,dimworld>& operator++()
     {
       // sanity check: do nothing when stack is empty
-      if (stack.isempty()) return *this;
+      if (stack.empty()) return *this;
 
       // if maxlevel not reached then push sons
       if (_g.level()<_maxlevel)
@@ -1103,14 +1103,14 @@ namespace Dune {
             se.coord[k] = _it.coord(k)*2+1;
           else
             se.coord[k] = _it.coord(k)*2;
-        stack.push_front(se);
+        stack.push(se);
       }
     }
 
     // make TOS the current element
     void pop_tos ()
     {
-      StackElem se = stack.pop_front();
+      StackElem se = stack.pop();
       _g = se.g;
       _it.reinit(_g.cell_overlap(),se.coord);
     }

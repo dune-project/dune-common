@@ -20,7 +20,7 @@ namespace Dune {
    */
 
   //! Exception thrown by the stack
-  class StackException : public Exception {};
+  class StackException : public RangeError {};
 
   /** dynamic stack implemented with a double linked list
 
@@ -29,27 +29,25 @@ namespace Dune {
      example, it is unknown if a copy of an empty STL-stack requires
      time or not
 
-     \todo change interface to be STL-conforming
    */
   template<class T>
   class Stack : private DoubleLinkedList<T> {
   public:
 
     //! Returns true if the stack is emptry
-    bool isempty () const;
+    bool empty () const;
 
     //! Always returns false because the stack is never full
-    bool isfull () const;
+    bool full () const;
 
     //! Put a new object onto the stack
-    void push_front (T& t);
-
+    void push (T& t);
 
     //! Removes and returns the uppermost object from the stack
-    T pop_front ();
+    T pop ();
 
     //! Returns the uppermost object from the stack
-    T front () const;
+    T top () const;
 
     //! Number of elements on the stack
     int size() const;
@@ -62,28 +60,28 @@ namespace Dune {
   }
 
   template<class T>
-  inline bool Stack<T>::isempty () const
+  inline bool Stack<T>::empty () const
   {
     return size()==0;
   }
 
   template<class T>
-  inline bool Stack<T>::isfull () const
+  inline bool Stack<T>::full () const
   {
     return false;
   }
 
   template<class T>
-  inline void Stack<T>::push_front (T& t)
+  inline void Stack<T>::push (T& t)
   {
     insert_after(this->rbegin(),t);
   }
 
   template<class T>
-  inline T Stack<T>::pop_front ()
+  inline T Stack<T>::pop ()
   {
-    if (isempty())
-      DUNE_THROW(StackException,  "Stack::pop_front(): The stack is empty!");
+    if (empty())
+      DUNE_THROW(StackException,  "cannot pop() empty stack!");
 
     typename DoubleLinkedList<T>::Iterator i=this->rbegin();
     T t = *i;
@@ -92,10 +90,10 @@ namespace Dune {
   }
 
   template<class T>
-  inline T Stack<T>::front () const
+  inline T Stack<T>::top () const
   {
-    if (isempty())
-      DUNE_THROW(StackException,  "Stack::front(): The stack is empty!");
+    if (empty())
+      DUNE_THROW(StackException,  "no top() in empty stack!");
 
     typename DoubleLinkedList<T>::Iterator i=this->rbegin();
     T t = *i;
@@ -106,7 +104,8 @@ namespace Dune {
   /** \brief A stack with static memory allocation
 
      This class implements a very efficient stack where the maximum
-     depth is known in advance
+     depth is known in advance. Note that no error checking is
+     performed!
 
      \tparam n Maximum number of stack entries
    */
@@ -115,31 +114,31 @@ namespace Dune {
   public:
 
     //! Returns true if the stack is empty
-    bool isempty () const
+    bool empty () const
     {
       return f==0;
     }
 
     //! Returns true if the stack is full
-    bool isfull () const
+    bool full () const
     {
       return f>=n;
     }
 
     //! Puts a new object onto the stack
-    void push_front (const T& t)
+    void push (const T& t)
     {
       s[f++] = t;
     }
 
     //! Removes and returns the uppermost object from the stack
-    T pop_front ()
+    T pop ()
     {
       return s[--f];
     }
 
     //! Returns the uppermost object on the stack
-    T front () const
+    T top () const
     {
       return s[f-1];
     }

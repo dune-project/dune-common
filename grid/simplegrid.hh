@@ -1,10 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __SIMPLEGRID_HH__
-#define __SIMPLEGRID_HH__
+#ifndef SIMPLEGRID_HH
+#define SIMPLEGRID_HH
 
 #include "../common/matvec.hh"
-#include "../common/stack.hh"
 #include "common/grid.hh"
 #include <iostream>
 #include <assert.h>

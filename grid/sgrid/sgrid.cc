@@ -606,8 +606,8 @@ namespace Dune {
 
       // push son on stack
       StackElem son(level+1,sonid);
-      //stack.push_front(StackElem(level+1,sonid));
-      stack.push_front(son);
+      //stack.push(StackElem(level+1,sonid));
+      stack.push(son);
     }
   }
 
@@ -625,7 +625,7 @@ namespace Dune {
 
     // push original element on stack
     StackElem originalElement(orig_l, orig_id);
-    stack.push_front(originalElement);
+    stack.push(originalElement);
 
     // compute maxlevel
     maxlevel = MIN(_maxlevel,grid.maxlevel());
@@ -641,10 +641,10 @@ namespace Dune {
   inline SHierarchicIterator<dim,dimworld>& SHierarchicIterator<dim,dimworld>::operator++ ()
   {
     // check empty stack
-    if (stack.isempty()) return *this;
+    if (stack.empty()) return *this;
 
     // OK, lets pop
-    StackElem newe = stack.pop_front();
+    StackElem newe = stack.pop();
     e.make(newe.l,newe.id);     // here is our new element
 
     // push all sons of this element if it is not the original element

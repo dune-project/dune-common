@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_INDEXSTACK_HH__
-#define __DUNE_INDEXSTACK_HH__
+#ifndef DUNE_INDEXSTACK_HH
+#define DUNE_INDEXSTACK_HH
 
 //******************************************************
 //
@@ -52,7 +52,7 @@ namespace Dune {
     //! restore index from stack or create new index
     T getIndex ()
     {
-      if(stack_->isempty())
+      if(stack_->empty())
       {
         if( fullStackList_.size() <= 0)
         {
@@ -66,13 +66,13 @@ namespace Dune {
           fullStackList_.erase( it );
         }
       }
-      return stack_->pop_front();
+      return stack_->pop();
     }
 
     //! store index on stack
     void freeIndex(T index)
     {
-      if(stack_->isfull())
+      if(stack_->full())
       {
         fullStackList_.insert_before( fullStackList_.begin() , stack_ );
         if(emptyStackList_.size() <= 0)
@@ -86,7 +86,7 @@ namespace Dune {
           emptyStackList_.erase( it );
         }
       }
-      stack_->push_front(index);
+      stack_->push(index);
     }
 
     //! test stack funtcionality
