@@ -15,8 +15,8 @@ namespace Dune {
   {
     typedef ObjPointer<ObjType> ObjPointerType;
     // remember object item and next pointer
-    ObjPointerType *next;
     ObjType * item;
+    ObjPointerType *next;
 
     // new ObjPointer is only created with pointer for item
     ObjPointer () : item (NULL) , next (NULL) {}

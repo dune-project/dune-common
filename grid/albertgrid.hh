@@ -360,6 +360,9 @@ namespace Dune
     ALBERT EL_INFO *elInfo_;
     ALBERT TRAVERSE_STACK * travStack_;
 
+    //! level
+    int level_;
+
     //! the cuurent geometry
     AlbertGridElement<dim-codim,dimworld> geo_;
     bool builtgeometry_;       //!< true if geometry has been constructed
@@ -368,9 +371,6 @@ namespace Dune
 
     //! element number
     int elNum_;
-
-    //! level
-    int level_;
 
     //! Which Face of the Element
     int face_;
@@ -558,23 +558,24 @@ namespace Dune
     //! the corresponding grid
     AlbertGrid<dim,dimworld> &grid_;
 
-    //! for vertex access, to be revised, filled on demand
-    AlbertGridLevelIterator<dim,dim,dimworld> vxEntity_;
-
-    //! the cuurent geometry
-    AlbertGridElement<dim,dimworld> geo_;
-    bool builtgeometry_; //!< true if geometry has been constructed
-
-    //! pointer to the real Albert element data
-    ALBERT EL_INFO *elInfo_;
-
     //! the level of the entity
     int level_;
+
+    //! for vertex access, to be revised, filled on demand
+    AlbertGridLevelIterator<dim,dim,dimworld> vxEntity_;
 
     //! pointer to the Albert TRAVERSE_STACK data
     ALBERT TRAVERSE_STACK * travStack_;
 
+    //! pointer to the real Albert element data
+    ALBERT EL_INFO *elInfo_;
+
+    // local coordinates within father
     AlbertGridElement <dim,dim> fatherReLocal_;
+
+    //! the cuurent geometry
+    AlbertGridElement<dim,dimworld> geo_;
+    bool builtgeometry_; //!< true if geometry has been constructed
   }; // end of AlbertGridEntity codim = 0
 
   //**********************************************************************
@@ -706,14 +707,13 @@ namespace Dune
         _elInfo = NULL;
     };
 
-    int _neigh;
-
     // AlbertGrid<dim,dimworld> & _grid;
     AlbertGridElement<dim,dimworld> _geom;
 
     // cooresponding el_info
     ALBERT EL_INFO * _elInfo;
 
+    int _neigh;
   };
   //**********************************************************************
   //
@@ -835,19 +835,23 @@ namespace Dune
     //! the actual level
     int level_;
 
+    //! count on which neighbor we are lookin' at
+    int neighborCount_;
+
     //! implement with virtual element
     //! Most of the information can be generated from the ALBERT EL_INFO
     //! therefore this element is only created on demand.
     bool builtNeigh_;
     AlbertGridEntity<0,dim,dimworld> *virtualEntity_;
 
+    //! pointer to the EL_INFO struct storing the real element information
+    ALBERT EL_INFO * elInfo_;
+
     // for memory management
     typename AlbertGrid<dim,dimworld>::EntityProvider::ObjectEntity *manageObj_;
     typename AlbertGrid<dim,dimworld>::IntersectionSelfProvider::ObjectEntity  *manageInterEl_;
     typename AlbertGrid<dim,dimworld>::IntersectionNeighProvider::ObjectEntity *manageNeighEl_;
 
-    //! defined in agmemory.hh
-    typename ElInfoProvider::ObjectEntity *manageNeighInfo_;
 
     //! vector storing the outer normal
     //Vec<dimworld,albertCtype> outerNormal_;
@@ -863,16 +867,14 @@ namespace Dune
     //! BoundaryEntity
     AlbertGridBoundaryEntity<dim,dimworld> *boundaryEntity_;
 
-    //! pointer to the EL_INFO struct storing the real element information
-    ALBERT EL_INFO * elInfo_;
+    //! defined in agmemory.hh
+    typename ElInfoProvider::ObjectEntity *manageNeighInfo_;
 
     //! EL_INFO th store the information of the neighbor if needed
     ALBERT EL_INFO * neighElInfo_;
 
     Vec<dimworld,albertCtype> outNormal_;
 
-    //! count on which neighbor we are lookin' at
-    int neighborCount_;
   };
 
 
@@ -932,8 +934,6 @@ namespace Dune
     int level ();
 
   private:
-    bool okReturn_;
-    bool leafIt_;
 
     // private Methods
     void makeIterator();
@@ -964,6 +964,9 @@ namespace Dune
     //! the grid were it all comes from
     AlbertGrid<dim,dimworld> &grid_;
 
+    //! level
+    int level_;
+
     // private Members
     AlbertGridEntity<codim,dim,dimworld> virtualEntity_;
 
@@ -973,9 +976,6 @@ namespace Dune
     //! element number
     int elNum_;
 
-    //! level
-    int level_;
-
     //! which face, edge and vertex are we watching of an elInfo
     int face_;
     int edge_;
@@ -983,6 +983,12 @@ namespace Dune
 
     // knows on which element a point is viewed
     AlbertMarkerVector * vertexMarker_;
+
+    // variable for operator++
+    bool okReturn_;
+
+    // true if we use LeafIterator
+    bool leafIt_;
 
     // variables for parallelisation
     // my iterator type, see IteratorType in grid.hh

@@ -255,7 +255,7 @@ namespace Dune {
       Dest.clearLevel ( this->level_ );
 
       // run through grid and apply the local operator
-      for( it ; it != endit; ++it )
+      for( ; it != endit; ++it )
       {
         localOp_.prepareLocal (*it);
         localOp_.applyLocal   (*it);
@@ -267,7 +267,7 @@ namespace Dune {
     void applyOnGrid ( GridIteratorType &it, GridIteratorType &endit ) const
     {
       // run through grid and apply the local operator
-      for( it ; it != endit; ++it )
+      for( ; it != endit; ++it )
       {
         localOp_.prepareLocal (*it);
         localOp_.applyLocal   (*it);
@@ -275,16 +275,16 @@ namespace Dune {
       }
     }
 
-    //! true if operator was prepared for apply
-    mutable bool prepared_;
+    //! Operator which is called on each entity
+    LocalOperatorImp & localOp_;
 
     //! if true use LeafIterator else LevelIterator
     mutable bool leaf_;
 
-    bool printMsg_;
+    //! true if operator was prepared for apply
+    mutable bool prepared_;
 
-    //! Operator which is called on each entity
-    LocalOperatorImp & localOp_;
+    bool printMsg_;
 
     //*******************************************************
     // derived from mappiung, don't need this here

@@ -149,18 +149,19 @@ namespace Dune
 
     //*****************************************************************
     //!
-    //!   Dune reference element triangles (2d)
-    //!
-    //!    (0,1)
-    //!     2|\    coordinates and local node numbers
-    //!      | \
-    // //!      |  \
-    //!     1|   \0
-    //!      |    \
-    // //!      |     \
-    // //!     0|______\1
-    //!    (0,0) 2  (1,0)
-    //
+    /*!
+       Dune reference element triangles (2d)
+
+        (0,1)
+         2|\    coordinates and local node numbers
+     | \
+     |  \
+         1|   \0
+     |    \
+     |     \
+         0|______\1
+        (0,0) 2  (1,0)
+     */
     //*****************************************************************
 
     // set reference coordinates
@@ -1038,8 +1039,9 @@ namespace Dune
   inline AlbertGridEntity < 0, dim ,dimworld >::
   AlbertGridEntity(AlbertGrid<dim,dimworld> &grid, int level) : grid_(grid)
                                                                 , level_ (level)
-                                                                , vxEntity_ ( grid_ , NULL, 0, 0, 0, 0)
-                                                                , geo_(false) , travStack_ (NULL) , elInfo_ (NULL)
+                                                                , vxEntity_ ( grid_ , -1, NULL, 0, 0, 0, 0)
+                                                                , travStack_ (NULL) , elInfo_ (NULL)
+                                                                , geo_(false)
                                                                 , builtgeometry_ (false)
   {}
 
@@ -1553,11 +1555,12 @@ namespace Dune
   inline AlbertGridIntersectionIterator<dim,dimworld>::
   AlbertGridIntersectionIterator(AlbertGrid<dim,dimworld> &grid, int level) :
     grid_( &grid ), level_ (level) , neighborCount_ (dim+1), virtualEntity_ (NULL)
-    , fakeNeigh_ (NULL)
-    , neighGlob_ (NULL) , elInfo_ (NULL)
+    , elInfo_ (NULL)
     , manageObj_ (NULL)
     , manageInterEl_ (NULL)
     , manageNeighEl_ (NULL)
+    , fakeNeigh_ (NULL)
+    , neighGlob_ (NULL)
     , boundaryEntity_ (NULL)
     , manageNeighInfo_ (NULL) , neighElInfo_ (NULL) {}
 
@@ -1565,13 +1568,14 @@ namespace Dune
   template< int dim, int dimworld>
   inline AlbertGridIntersectionIterator<dim,dimworld>::AlbertGridIntersectionIterator
     (AlbertGrid<dim,dimworld> & grid, int level, ALBERT EL_INFO *elInfo ) :
-    grid_( &grid ) , level_ (level), neighborCount_ (0), elInfo_ ( elInfo )
-    , fakeNeigh_ (NULL) , neighGlob_ (NULL)
-    , virtualEntity_ (NULL)
+    grid_( &grid ) , level_ (level), neighborCount_ (0)
     , builtNeigh_ (false)
+    , virtualEntity_ (NULL)
+    , elInfo_ ( elInfo )
     , manageObj_ (NULL)
     , manageInterEl_ (NULL)
     , manageNeighEl_ (NULL)
+    , fakeNeigh_ (NULL) , neighGlob_ (NULL)
     , boundaryEntity_ (NULL)
   {
     manageNeighInfo_ = elinfoProvider.getNewObjectEntity();
@@ -1582,13 +1586,14 @@ namespace Dune
   template< int dim, int dimworld>
   inline AlbertGridIntersectionIterator<dim,dimworld>::
   AlbertGridIntersectionIterator ( ) :
-    grid_( NULL ) , level_ ( -1 ), neighborCount_ ( -1 ), elInfo_ ( NULL )
-    , fakeNeigh_ (NULL) , neighGlob_ (NULL)
-    , virtualEntity_ (NULL)
+    grid_( NULL ) , level_ ( -1 ), neighborCount_ ( -1 )
     , builtNeigh_ (false)
+    , virtualEntity_ (NULL)
+    , elInfo_ ( NULL )
     , manageObj_ (NULL)
     , manageInterEl_ (NULL)
     , manageNeighEl_ (NULL)
+    , fakeNeigh_ (NULL) , neighGlob_ (NULL)
     , boundaryEntity_ (NULL) {}
 
   template< int dim, int dimworld>
@@ -2080,8 +2085,8 @@ namespace Dune
   AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid,
                           AlbertMarkerVector * vertexMark,
                           int travLevel, IteratorType IType , int proc, bool leafIt)
-    : grid_(grid) , level_ (travLevel), leafIt_(leafIt)
-      , virtualEntity_(grid,travLevel) , myType_ (IType), proc_(proc)
+    : grid_(grid) , level_ (travLevel), virtualEntity_(grid,travLevel)
+      , leafIt_(leafIt), myType_ (IType), proc_(proc)
   {
     ALBERT MESH * mesh = grid_.getMesh();
 
@@ -2650,7 +2655,6 @@ namespace Dune
     ALBERT EL *el;
     int i;
     okReturn_ = false;
-    const int searchProc = (proc_ == -1) ? grid_.myProcessor() : proc_;
 
     if (stack->stack_used == 0) /* first call */
     {
@@ -2864,8 +2868,10 @@ namespace Dune
   //***********************************************************************
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::AlbertGrid() :
-    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
-    , isMarked_ (false) , indexManager_ (NULL)
+    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false)
+    , isMarked_ (false)
+    , time_ (0.0)
+    , indexManager_ (NULL)
     , nv_ (dim+1) , dof_ (0) , myProc_ (0)
   {
     vertexMarker_ = new AlbertMarkerVector ();
@@ -2901,8 +2907,10 @@ namespace Dune
 
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename) :
-    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
-    , isMarked_ (false) , indexManager_ (NULL)
+    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false)
+    , isMarked_ (false)
+    , time_ (0.0)
+    , indexManager_ (NULL)
     , nv_ (dim+1) , dof_ (0) , myProc_ (-1)
   {
     assert(dimworld == DIM_OF_WORLD);
@@ -2937,8 +2945,10 @@ namespace Dune
 
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::AlbertGrid(AlbertGrid<dim,dimworld> & oldGrid, int proc) :
-    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
-    , isMarked_ (false) , indexManager_ (NULL)
+    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false)
+    , isMarked_ (false)
+    , time_ (0.0)
+    , indexManager_ (NULL)
     , nv_ (dim+1) , dof_ (0), myProc_ (proc)
   {
     assert(dimworld == DIM_OF_WORLD);
@@ -3091,7 +3101,6 @@ namespace Dune
   inline bool AlbertGrid < dim, dimworld >::
   globalRefine(int refCount)
   {
-    unsigned char flag;
     typedef LeafIterator LeafIt;
     LeafIt endit = leafend(maxlevel());
 
@@ -3108,18 +3117,9 @@ namespace Dune
       {
         (*it).mark(refCount);
       }
+
       this->adapt();
-
-#if 0
-      flag = ALBERT AlbertRefine ( mesh_ );
-      wasChanged_ = (flag == 0) ? false : true;
-      if(wasChanged_)
-      {
-        calcExtras();
-      }
-#endif
-
-      postAdapt();
+      this->postAdapt();
     }
     return wasChanged_;
   }
