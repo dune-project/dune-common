@@ -9,7 +9,7 @@ namespace Dune {
 
   /*!
      The DefaultGridIndexSet is a wrapper for the grid index which can be
-     index of entity or global_index. The DofMapper uses an IndexSet for
+     index of entity or globalIndex. The DofMapper uses an IndexSet for
      mapping the dofs, so we can hide the real grid index behind the index
      set. Furthermore if a grid doesn't provide the consecutive index set
      then this can be calculated in the IndexSet. These two following index
@@ -234,7 +234,7 @@ namespace Dune {
     {
       static inline int index (EntityType & en , int num )
       {
-        return en.global_index();
+        return en.globalIndex();
       }
     };
 
@@ -243,7 +243,7 @@ namespace Dune {
     {
       static inline int index (EntityType & en , int num )
       {
-        return en.global_index();
+        return en.globalIndex();
       }
     };
 
