@@ -5,9 +5,9 @@
 
 #include <dune/grid/common/grid.hh>
 
-#include "common/discretefunctionspace.hh"
-#include "lagrangebase/lagrangebasefunctions.hh"
-#include "dofmanager.hh"
+#include <dune/common/discretefunctionspace.hh>
+#include <dune/fem/dgspace/monomialbase.hh>
+#include <dune/fem/dofmanager.hh>
 
 namespace Dune {
 
@@ -73,17 +73,16 @@ namespace Dune {
   //
   //  DiscreteFunctionSpace for discontinous functions
   //
-  //  some method are inherited from LagrangeDiscreteFunctionSpace
-  //
   //**********************************************************************
   template< class FunctionSpaceType, class GridType, int polOrd , class
       DofManagerType = DofManager<GridType,DefaultGridIndexSet<GridType,LevelIndex> > >
   class DGDiscreteFunctionSpace
-    : public LagrangeDiscreteFunctionSpace < FunctionSpaceType , GridType, polOrd , DofManagerType >
+    : public DiscreteFunctionSpaceInterface
+      <  FunctionSpaceType , GridType,
+          DGDiscreteFunctionSpace < FunctionSpaceType , GridType,
+              polOrd, DofManagerType >,
+          MonomialBaseFunctionSet < FunctionSpaceType > >
   {
-    typedef LagrangeDiscreteFunctionSpace < FunctionSpaceType , GridType,polOrd, DofManagerType >
-    LagrangeDiscreteFunctionSpaceType;
-
     // to be revised, see LagrangeDiscreteFunctionSpace
     DofManagerType dm_;
 
@@ -97,29 +96,23 @@ namespace Dune {
     typedef typename DofManagerType::MemObjectType MemObjectType;
 
     // BaseFunctionSet we are using
-    typedef typename  LagrangeDiscreteFunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
+    typedef MonomialBaseFunctionSet<FunctionSpaceType> BaseFunctionSetType;
+
+    typedef DGDiscreteFunctionSpace
+    < FunctionSpaceType , GridType , polOrd , DofManagerType >
+    DGDiscreteFunctionSpaceType;
+
+    typedef DiscreteFunctionSpaceInterface
+    <FunctionSpaceType , GridType, DGDiscreteFunctionSpaceType,
+        MonomialBaseFunctionSet <FunctionSpaceType> >
+    DiscreteFunctionSpaceType;
 
     /** \todo Please doc me! */
     DGDiscreteFunctionSpace ( GridType & g ) :
-      LagrangeDiscreteFunctionSpaceType (g, dm_ ) , dm_ ( g ), mapper_ (0)
-    {
-
-      // search for different element types of the grid and generate a base
-      // function set for each element type
-      typedef typename GridType::template Traits<0>::LevelIterator LevelIteratorType;
-      LevelIteratorType endit = g.template lend<0>(0);
-      for(LevelIteratorType it = g.template lbegin<0>(0); it != endit; ++it)
-      {
-        if(!mapper_)
-        {
-          ElementType type = (*it).geometry().type(); // Hack
-          int numDofs = (*(this->baseFuncSet_)( type )).getNumberOfBaseFunctions();
-
-          mapper_ = new DGMapperType (dm_.indexSet(),numDofs);
-          break;
-        }
-      }
-    }
+      DiscreteFunctionSpaceType (g, 123456789),
+      dm_ ( g ), base_(*this, polOrd),
+      mapper_(dm_.indexSet(), base_.getNumberOfBaseFunctions())
+    {}
 
     /** \todo Please doc me! */
     template <class DiscFuncType>
@@ -136,15 +129,21 @@ namespace Dune {
     }
 
     /** \todo Please doc me! */
-    ~DGDiscreteFunctionSpace ()
-    {
-      if(mapper_) delete mapper_;
-    }
+    virtual ~DGDiscreteFunctionSpace () {}
 
     /** \todo Please doc me! */
     DFSpaceIdentifier type () const
     {
       return DGSpace_id;
+    }
+
+    //! Get base function set for given entity.
+    //! For a type of element the base function set is unique.
+    template <class EntityType>
+    const BaseFunctionSetType &
+    getBaseFunctionSet ( EntityType &en ) const
+    {
+      return base_;
     }
 
     //! return true if we have continuous discrete functions
@@ -170,19 +169,20 @@ namespace Dune {
     //! size knows the correct way to calculate the size of the functionspace
     int size ( int level ) const
     {
-      return mapper_->size ( level );
+      return mapper_.size ( level );
     };
 
     //! for given entity map local dof number to global dof number
     template <class EntityType>
     int mapToGlobal ( EntityType &en, int localNum ) const
     {
-      return mapper_->mapToGlobal ( en , localNum );
+      return mapper_.mapToGlobal ( en , localNum );
     };
 
   private:
+    BaseFunctionSetType base_;
     // mapper for function space
-    DGMapperType *mapper_;
+    DGMapperType mapper_;
   };
 
 } // end namespace Dune
