@@ -100,11 +100,15 @@ namespace Dune {
     //! get id from coord
     int coord_to_id(level, const array<DIM>&, const array<DIM>&) const;
     int coord_to_id(level, const array<DIM>&) const;
+  private:
     int coord_to_id_impl(level, const array<DIM>&) const;
+  public:
     //! get local coord from local id
     const array<DIM> &id_to_coord(level l, int id) const;
     const array<DIM> &id_to_coord(level l, int id, const array<DIM> &) const;
+  private:
     const array<DIM> &id_to_coord_impl(level l, int id) const;
+  public:
     //! datatyp for exchange
     typedef struct {
       int size;
