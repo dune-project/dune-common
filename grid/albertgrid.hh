@@ -48,7 +48,11 @@ extern "C"
 #endif
 
 // the original ALBERT header
+#ifdef USE_OLD_ALBERT
 #include <albert.h>
+#else
+#include <alberta.h>
+#endif
 
 #ifndef __ALBERTpp__
 } // end extern "C"
