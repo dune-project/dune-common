@@ -102,8 +102,8 @@ autoconf
 
 #### start configure with special environment
 
-export CC=$COMP
-export CXX=$CXXCOMP
+export CC="$COMP"
+export CXX="$CXXCOMP"
 export CPP="$COMP -E"
 
 export CFLAGS="$COMPFLAGS"
