@@ -33,7 +33,6 @@ namespace Dune {
     UGMakeableGeometry() :
       Geometry<2, 3, GridImp, UGGridGeometry>(UGGridGeometry<2,3,GridImp>())
     {};
-    //void make (Mat<cdim,mydim+1,sgrid_ctype>& __As) { this->realGeometry.make(__As); }
 
     void setCoords(int n, const FieldVector<UGCtype, 3>& pos) {
       this->realGeometry.coord_[n] = pos;
@@ -44,7 +43,22 @@ namespace Dune {
     }
   };
 
+  template<class GridImp>
+  class UGMakeableGeometry<1,2,GridImp> : public Geometry<1, 2, GridImp, UGGridGeometry>
+  {
+  public:
+    UGMakeableGeometry() :
+      Geometry<1, 2, GridImp, UGGridGeometry>(UGGridGeometry<1,2,GridImp>())
+    {};
 
+    void setCoords(int n, const FieldVector<UGCtype, 2>& pos) {
+      this->realGeometry.coord_[n] = pos;
+    }
+
+    // Empty.  Boundary elements in a 2d grid have always two corners
+    void setNumberOfCorners(int n) {}
+
+  };
 
   //**********************************************************************
   //
