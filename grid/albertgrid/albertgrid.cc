@@ -645,7 +645,7 @@ namespace Dune
       return Jinv_;
 
     // builds the jacobian inverse and calculates the volume
-    buildJacobianInverse(global);
+    buildJacobianInverse();
     return Jinv_;
   }
 
