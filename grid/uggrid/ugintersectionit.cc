@@ -160,8 +160,7 @@ intersectionGlobal() const
 
     int cornerIdx = UG_NS<GridImp::dimensionworld>::Corner_Of_Side(center_, neighborCount_, i);
     typename TargetType<dim,dim>::T* node = UG_NS<GridImp::dimensionworld>::Corner(center_, cornerIdx);
-    //         for (int j=0; j<GridImp::dimensionworld; j++)
-    //             neighGlob_.coord_[i][j] = node->myvertex->iv.x[j];
+
     /** \todo Avoid the temporary */
     FieldVector<UGCtype, dimworld> tmp;
     for (int j=0; j<GridImp::dimensionworld; j++)
@@ -186,11 +185,23 @@ template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
 numberInSelf ()  const
 {
+#ifdef _3
   const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);
-  if (nSides==6)    // Hexahedron
-    return (neighborCount_ + nSides -1)%nSides;
-  else
+  if (nSides==6) {   // Hexahedron
+    // Dune numbers the faces of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+    return renumbering[neighborCount_];
+  } else if (nSides==4) {   // Tetrahedron
+    // Dune numbers the faces of a tetrahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[4] = {3, 0, 1, 2};
+    return renumbering[neighborCount_];
+  } else
     return neighborCount_;
+#else
+  return neighborCount_;
+#endif
 }
 
 template< class GridImp>
@@ -199,7 +210,7 @@ numberInNeighbor () const
 {
   const typename TargetType<0,GridImp::dimensionworld>::T* other = target();
 
-  /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
+  /** \todo Programm this correctly */
   const int nSides = UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(other);
 
   int i;
