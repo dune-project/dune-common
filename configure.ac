@@ -111,6 +111,8 @@ AC_CONFIG_FILES([Makefile
          istl/doc/Makefile
          istl/tutorial/Makefile
 	 istl/test/Makefile
+	 istl/paamg/Makefile
+	 istl/paamg/test/Makefile
          lib/Makefile
          lib/test/Makefile
          operator/Makefile
