@@ -4,32 +4,32 @@
 #define __DLIST_CC__
 
 #include <iostream>
-#include <new.h> // fuer std::nothrow
+#include <new> // fuer std::nothrow
 
 namespace Dune {
 
   // Iterator interface
-  template<class T>
-  inline DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::begin () const
+  template<class T> inline
+  typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::begin () const
   {
     return head;
   }
 
-  template<class T>
-  inline DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::end () const
+  template<class T> inline
+  typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::end () const
   {
     Iterator tmp;     // Iterator mit 0 Zeiger !
     return tmp;
   }
 
-  template<class T>
-  inline DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::rbegin () const
+  template<class T> inline
+  typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::rbegin () const
   {
     return tail;
   }
 
-  template<class T>
-  inline DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::rend () const
+  template<class T> inline
+  typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::rend () const
   {
     Iterator tmp;     // Iterator mit 0 Zeiger !
     return tmp;
@@ -83,7 +83,7 @@ namespace Dune {
 
 
   template<class T>
-  inline DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::insert_after (Iterator i, T t)
+  inline typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::insert_after (Iterator i, T t)
   {
     // Teste Eingabe
     if (i.p==0 && head.p!=0) {std::cerr << "wo einfuegen?" << std::endl; return end();}
@@ -117,7 +117,7 @@ namespace Dune {
   }
 
   template<class T>
-  inline DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::insert_before (Iterator i, T t)
+  inline typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::insert_before (Iterator i, T t)
   {
     // Teste Eingabe
     if (i.p==0 && head.p!=0) {std::cerr << "wo einfuegen?" << std::endl; return end();}
@@ -178,7 +178,7 @@ namespace Dune {
   {
     T t;
     s << "dlist " << a.size() << " elements = (" << std::endl;
-    for (DoubleLinkedList<T>::Iterator i=a.begin(); i!=a.end(); i++)
+    for (typename DoubleLinkedList<T>::Iterator i=a.begin(); i!=a.end(); i++)
     {
       t = *i;
       s << "    " << t << std::endl;
@@ -215,14 +215,14 @@ namespace Dune {
   }
 
   template<class T>
-  inline DoubleLinkedList<T>::Iterator
+  inline typename DoubleLinkedList<T>::Iterator
   DoubleLinkedList<T>::Iterator::operator++ () // prefix
   {
     p = p->next; return *this;
   }
 
   template<class T>
-  inline DoubleLinkedList<T>::Iterator
+  inline typename DoubleLinkedList<T>::Iterator
   DoubleLinkedList<T>::Iterator::operator++ (int) // postfix
   {
     Iterator tmp = *this;
@@ -231,14 +231,14 @@ namespace Dune {
   }
 
   template<class T>
-  inline DoubleLinkedList<T>::Iterator
+  inline typename DoubleLinkedList<T>::Iterator
   DoubleLinkedList<T>::Iterator::operator-- () // prefix
   {
     p = p->prev; return *this;
   }
 
   template<class T>
-  inline DoubleLinkedList<T>::Iterator
+  inline typename DoubleLinkedList<T>::Iterator
   DoubleLinkedList<T>::Iterator::operator-- (int) // postfix
   {
     Iterator tmp = *this;

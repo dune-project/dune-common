@@ -45,7 +45,7 @@ namespace Dune {
   template<class T>
   inline T Stack<T>::pop_front ()
   {
-    DoubleLinkedList<T>::Iterator i=rbegin();
+    typename DoubleLinkedList<T>::Iterator i=rbegin();
     T t = *i;
     erase(i);
     return t;
@@ -54,7 +54,7 @@ namespace Dune {
   template<class T>
   inline T Stack<T>::front () const
   {
-    DoubleLinkedList<T>::Iterator i=rbegin();
+    typename DoubleLinkedList<T>::Iterator i=rbegin();
     T t = *i;
     return t;
   }

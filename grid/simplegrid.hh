@@ -167,11 +167,12 @@ public:
   {
 	Vec<dim,simplegrid_ctype> l; // result
 	Vec<dimworld,simplegrid_ctype> rhs;
-	for (int k=0; k<dimworld; k++)
+	int k;
+	for (k=0; k<dimworld; k++)
 	  if (k!=c) rhs(k) = global(k)-e.s[k];
 	rhs(c) -= d*e.li->h[k];
 
-	int lk=0
+	int lk=0;
 	for (int k=0; k<dimworld; k++)
 	  if (k!=c)
 		{

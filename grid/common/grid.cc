@@ -873,7 +873,7 @@ namespace Dune {
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
+  inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafbegin (int maxLevel )
   {
     // return LeafIterator pointing to first leaf entity of maxlevel
@@ -883,7 +883,7 @@ namespace Dune {
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
+  inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafend (int maxLevel )
   {
     // return LeafIterator pointing behind the last leaf entity of maxlevel
@@ -987,7 +987,7 @@ namespace Dune {
   // operator ++, i.e. goNextEntity
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator &
+  inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator &
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator ++ ()
   {
     en_ = goNextEntity();
@@ -996,7 +996,7 @@ namespace Dune {
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator &
+  inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator &
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator ++ (int i)
   {
     for(int j=0; j<i; j++)
