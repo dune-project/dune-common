@@ -126,13 +126,13 @@ namespace Dune {
       }
 
       //! dereferencing
-      B& operator* ()
+      B& operator* () const
       {
         return p[i];
       }
 
       //! arrow
-      B* operator-> ()
+      B* operator-> () const
       {
         return p+i;
       }
@@ -684,13 +684,13 @@ namespace Dune {
       }
 
       //! dereferencing
-      B& operator* ()
+      B& operator* () const
       {
         return p[i];
       }
 
       //! arrow
-      B* operator-> ()
+      B* operator-> () const
       {
         return p+i;
       }
@@ -705,6 +705,18 @@ namespace Dune {
       void setindex (int k)
       {
         return j[i] = k;
+      }
+
+      /**
+       * @brief offset from the fist entry.
+       *
+       * An iterator positioned at the beginning
+       * has to be increment this amount of times to
+       * the same position.
+       */
+      int offset () const
+      {
+        return i;
       }
 
       friend class const_iterator;
@@ -834,6 +846,18 @@ namespace Dune {
       int index () const
       {
         return j[i];
+      }
+
+      /**
+       * @brief offset from the fist entry.
+       *
+       * An iterator positioned at the beginning
+       * has to be increment this amount of times to
+       * the same position.
+       */
+      int offset () const
+      {
+        return i;
       }
 
       friend class iterator;
