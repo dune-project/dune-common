@@ -44,7 +44,7 @@ namespace Dune {
   enum ElementType {unknown,vertex,line, triangle, quadrilateral, tetrahedron, pyramid, prism, hexahedron,
                     iso_triangle, iso_quadrilateral};
 
-  enum GridIdentifier { SGrid_Id, AlbertGrid_Id };
+  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_id };
 
   enum FileFormatType { ascii , xdr , USPM };
 
@@ -190,6 +190,12 @@ namespace Dune {
     //! define type used for coordinates in grid module
     typedef ct ctype;
 
+    //! calculates the bary center of the element
+    Vec<dimworld,ctype>& barycenter ();
+
+  protected:
+    //! bary center of the element
+    Vec<dimworld,ctype> baryCenter_;
 
   private:
     //! Barton-Nackman trick
