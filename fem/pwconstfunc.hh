@@ -3,6 +3,8 @@
 #ifndef __DUNE__PWCONSTFUNC_H__
 #define __DUNE__PWCONSTFUNC_H__
 
+#include "discretefunctionspace.hh"
+
 namespace Dune {
 
   template<class FunctionSpaceType>
@@ -61,8 +63,9 @@ namespace Dune {
   };
 
   template< typename DomainFieldType, typename RangeFieldType, int n, int m, class GridType >
-  class ConstDiscreteFunctionSpace : public DiscreteFunctionSpace < DomainFieldType, RangeFieldType, n, m, GridType,
-                                         ConstDiscreteFunctionSpace <DomainFieldType,RangeFieldType,n,m,GridType> > {
+  class ConstDiscreteFunctionSpace
+    : public DiscreteFunctionSpace < DomainFieldType, RangeFieldType, n, m, GridType,
+          ConstDiscreteFunctionSpace <DomainFieldType,RangeFieldType,n,m,GridType> > {
 
     typedef DiscreteFunctionSpace < DomainFieldType, RangeFieldType, n, m, GridType,
         ConstDiscreteFunctionSpace <DomainFieldType,RangeFieldType,n,m,GridType> >

@@ -21,9 +21,9 @@ FastBaseFunctionSet( FunctionSpaceType & fuspace, int numOfBaseFct )
 
 template <class FunctionSpaceType> template <int diffOrd>
 void FastBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const Vec<diffOrd,char> &diffVariable, Domain & x,  Range & phi ) const
+evaluate( int baseFunct, const Vec<diffOrd,char> &diffVariable, const Domain & x,  Range & phi ) const
 {
-  std::cout << "eval \n";
+  std::cout << "FastBaseFunctionSet::evaluate \n";
   getBaseFunction( baseFunct ).evaluate( diffVariable, x, phi );
 }
 

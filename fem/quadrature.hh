@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "dynamictype.hh"
+#include "../common/dynamictype.hh"
 #include "basefunctions.hh"
 
 template< class FunctionSpaceType> class BaseFunctionSet;
@@ -37,8 +37,8 @@ namespace Dune {
     std::vector< RangeFieldType > weights_ ;
     std::vector< DomainType > points_ ;
 
-  };
+  }; // end class Quadrature
 
-}
+} // end namespace Dune
 
 #endif

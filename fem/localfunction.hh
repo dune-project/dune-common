@@ -5,35 +5,54 @@
 
 namespace Dune {
 
-
-  template < class DiscreteFunctionType, class EntityType,
-      class LocalFunctionImp >
+  //************************************************************************
+  //!
+  //! LocalFunction is the Interface for a local DofEntity which is on the
+  //! dof point of view the equivalent to an grid entity. The
+  //! LocalFunction provides the interface methods for a DofEntity. The dof
+  //! Entities can be stored hierarchic like the grid or stored in a dof
+  //! vector. This decicion is left to the programer and user.
+  //!
+  //
+  //************************************************************************
+  //template < class DiscreteFunctionType, class EntityType,
+  //           class LocalFunctionImp >
+  template < typename RangeField, class LocalFunctionImp>
   class LocalFunction : public DynamicType {
 
-    typedef BaseFunctionSet < DiscreteFunctionType::FunctionSpace > BaseFunctionSetType;
-    typedef DiscreteFunctionType::FunctionSpace::Range Range;
-    typedef DiscreteFunctionType::FunctionSpace::RangeField RangeField;
+    //typedef BaseFunctionSet < DiscreteFunctionType::FunctionSpace > BaseFunctionSetType;
+    //typedef DiscreteFunctionType::FunctionSpace::Range Range;
+    //typedef DiscreteFunctionType::FunctionSpace::RangeField RangeField;
+
+    //! Lenght of the tupel , i.e. level and element number
+    enum { indexMax = 2 };
 
   public:
+    typedef Vec<indexMax,int> MapTupel;
 
-    LocalFunction ( int ident, DiscreteFunctionType & dfunct) :
-      DynamicType (ident), discreteFunction_(dfunct) ;
+    //! Constructor
+    LocalFunction ( int ident ) : //, DiscreteFunctionType & dfunct) :
+                                 DynamicType (ident) {} ; // , discreteFunction_(dfunct) ;
 
+    //! return number of local dofs
     int numberOfDofs() const ;
 
+    //! return reference to local dof 'number'
     RangeField & operator [] ( int number ) ;
 
-    Vec<2,int> mapToGlobal(int localDofNum ) const;
+    //! returns level and element number for this localfunction
+    MapTupel mapToGlobal(int localDofNum ) const;
 
+    //! init localfunction with a given entity
+    template <class EntityType >
     void init ( EntityType & ) ;
 
-
   protected:
-    DiscreteFunctionType & discreteFunction_ ;
+    //  DiscreteFunctionType & discreteFunction_ ;
 
   };
 
-
+#if 0
   template < class FunctionSpaceType , class GridType, class MapperImp, class
       LocalFunctionType>
   class Mapper {
@@ -50,6 +69,8 @@ namespace Dune {
 
 
   };
+#endif
+
 
 }
 #endif
