@@ -1,0 +1,5 @@
+if INKSCAPE
+.svg.png:
+	$(INKSCAPE) -e $@ $<
+endif INKSCAPE
+

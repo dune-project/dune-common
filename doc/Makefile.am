@@ -10,13 +10,14 @@ WEBDIR = /var/www/dune/doxygen
 WEBFILES = html/*.html html/*.css html/*.png doxygen.log
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
-DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.css -o -name \*.html
+DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.css -o -name \*.html -o -name \*.png
 
 # check dependency ourself to be robust
 doxygen-tag: FORCE
+	set -e; \
 	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
 	  echo Running doxygen. This may take a while... ; \
-	  $(DOXYGEN) > doxygen.log 2>&1 ; \
+	  $(DOXYGEN) > doxygen.log 2>&1 <&- ; \
 	  touch doxygen-tag ; \
 	fi
 

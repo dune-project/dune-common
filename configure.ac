@@ -22,6 +22,7 @@ AC_CHECK_PROGS([TEX], [latex], [true])
 AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
 AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
 AC_CHECK_PROGS([DVIPS], [dvips], [true])
+DUNE_INKSCAPE
 
 echo
 echo Checking for libraries the self-test could use:
@@ -102,6 +103,7 @@ AC_CONFIG_FILES([Makefile
          grid/albertagrid/Makefile
          grid/bsgrid/Makefile
          grid/common/Makefile
+	 grid/common/refinement/Makefile
          grid/onedgrid/Makefile
          grid/sgrid/Makefile
          grid/test/Makefile
@@ -126,5 +128,6 @@ AC_CONFIG_FILES([Makefile
          solver/pmgsolver/Makefile
          doc/Makefile
          m4/Makefile
+	 am/Makefile
          dune.pc])
 AC_OUTPUT
