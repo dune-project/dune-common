@@ -117,7 +117,8 @@ AC_DEFUN([DUNE_PATH_UG],[
       if test x$HAVE_UG = x1 ; then
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
-	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
+	  # !!! domain !!!
+	  AC_SUBST(UG_CPPFLAGS, "-D_$UG_DIM -D_STD_DOMAIN_ $UG_CPPFLAGS")
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
           # add to global list
