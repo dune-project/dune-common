@@ -83,7 +83,7 @@ namespace Dune
 #endif
 
   template <class T>
-  T SparseRowMatrix<T>::operator()(int row, int col) const
+  const T& SparseRowMatrix<T>::operator()(int row, int col) const
   {
     for (int i=0; i<nz_; i++)
     {

@@ -83,11 +83,19 @@ namespace Dune
     //! ???
     void kroneckerKill(int row, int col);
 
-    //! Multiply with a vector
+    /** \brief Multiply with a vector
+     *
+     * This method works on arrays and expects the template
+     * parameter type to have an index operator.
+     */
     template <class VECtype>
     void mult(VECtype &ret, VECtype& x) const;
 
-    //! Multiply with a vector
+    /** \brief Multiply with a vector
+     *
+     * This method works on discrete functions and expects
+     * the template parameter types to have DofIterators.
+     */
     template <class DiscFType, class DiscFuncType>
     void apply(const DiscFType &f, DiscFuncType &ret) const;
 
