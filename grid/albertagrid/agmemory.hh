@@ -36,7 +36,7 @@ namespace Dune
 
     //! i.e. return pointer to Entity
     template <class GridType>
-    ObjectEntity *getNewObjectEntity(GridType &grid, int level);
+    ObjectEntity *getNewObjectEntity(const GridType &grid, int level);
 
     //! i.e. return pointer to Entity
     template <class FuncSpaceType, class DofVecType>
@@ -61,7 +61,7 @@ namespace Dune
   template <class Object> template <class GridType>
   inline typename MemoryProvider<Object>::ObjectEntity *
   MemoryProvider<Object>::getNewObjectEntity
-    (GridType &grid, int level )
+    (const GridType &grid, int level )
   {
     if(!freeEntity_)
     {
