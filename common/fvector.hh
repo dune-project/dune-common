@@ -793,20 +793,6 @@ namespace Dune {
       return *this;
     }
 
-    //===== access to data
-
-    //! random access
-    K& operator() () DUNE_DEPRECATED
-    {
-      return p;
-    }
-
-    //! same for read only access
-    const K& operator() () const DUNE_DEPRECATED
-    {
-      return p;
-    }
-
     //===== vector space arithmetic
 
     //! vector space addition
