@@ -36,12 +36,6 @@ namespace Dune {
     template <int codim_, int dim_, int dimworld_>
     friend class UGGridEntity;
 
-    //     friend class UGGridEntity<0,dim,dimworld>;
-    //     friend class UGGridEntity<2,dim,dimworld>;
-    //     friend class UGGridEntity<2,2,dimworld>;
-    //     friend class UGGridEntity<3,dim,dimworld>;
-    //     friend class UGGridEntity<3,3,dimworld>;
-
   public:
 
     /** Default constructor.
@@ -72,11 +66,11 @@ namespace Dune {
 
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
-    FieldVector<UGCtype, dimworld> global (const FieldVector<UGCtype, dim>& local);
+    FieldVector<UGCtype, dimworld> global (const FieldVector<UGCtype, dim>& local) const;
 
     /** \brief Maps a global coordinate within the element to a
      * local coordinate in its reference element */
-    FieldVector<UGCtype, dim> local (const FieldVector<UGCtype, dimworld>& global);
+    FieldVector<UGCtype, dim> local (const FieldVector<UGCtype, dimworld>& global) const;
 
     //! Returns true if the point is in the current element
     bool checkInside(const FieldVector<UGCtype, dimworld> &global);
@@ -146,6 +140,9 @@ namespace Dune {
     template <int codim_, int dim_, int dimworld_>
     friend class UGGridEntity;
 
+    template <int dim_, int dimworld_>
+    friend class UGGridIntersectionIterator;
+
   public:
 
     //! for makeRefElement == true a Element with the coordinates of the
@@ -155,10 +152,10 @@ namespace Dune {
     }
 
     //! return the element type identifier (triangle or quadrilateral)
-    ElementType type ();
+    ElementType type () const {return elementType_;}
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
+    int corners () const {return (elementType_==triangle) ? 3 : 4;}
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<UGCtype, 3>& operator[] (int i);
@@ -170,11 +167,11 @@ namespace Dune {
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
-    FieldVector<UGCtype, 3> global (const FieldVector<UGCtype, 2>& local);
+    FieldVector<UGCtype, 3> global (const FieldVector<UGCtype, 2>& local) const;
 
     //! Maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    FieldVector<UGCtype, 2> local (const FieldVector<UGCtype, 3>& global);
+    FieldVector<UGCtype, 2> local (const FieldVector<UGCtype, 3>& global) const;
 
     //! Returns true if the point is in the current element
     bool checkInside(const FieldVector<UGCtype, 3> &global);
@@ -190,6 +187,14 @@ namespace Dune {
     void setToTarget(TargetType<2,3>::T* target) {
       DUNE_THROW(GridError, "UGGridElement<2,3>::setToTarget called!");
     }
+
+    void setNumberOfCorners(int n) {
+      assert(n==3 || n==4);
+      elementType_ = (n==3) ? triangle : quadrilateral;
+    }
+
+    //! The element type, either triangle or quadrilateral
+    ElementType elementType_;
 
     //! built the reference element
     void makeRefElemCoords();
@@ -222,6 +227,9 @@ namespace Dune {
 
     template <int codim_, int dim_, int dimworld_>
     friend class UGGridEntity;
+
+    template <int dim_, int dimworld_>
+    friend class UGGridIntersectionIterator;
 
   public:
 

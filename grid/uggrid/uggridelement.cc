@@ -240,7 +240,7 @@ refelem()
 
 template< int dim, int dimworld>
 inline FieldVector<UGCtype, dimworld> UGGridElement<dim,dimworld>::
-global(const FieldVector<UGCtype, dim>& local)
+global(const FieldVector<UGCtype, dim>& local) const
 {
   FieldVector<UGCtype, dimworld> globalCoord;
 
@@ -271,7 +271,7 @@ global(const FieldVector<UGCtype, 1>& local)
 // Specialization for dim==2, dimworld==3.  This is necessary
 // because we specialized the whole class
 inline FieldVector<UGCtype, 3> UGGridElement<2,3>::
-global(const FieldVector<UGCtype, 2>& local)
+global(const FieldVector<UGCtype, 2>& local) const
 {
   DUNE_THROW(GridError, "UGGridElement<2,3>::global not implemented yet!");
   //return FieldVector<UGCtype, 3> dummy;
@@ -282,7 +282,7 @@ global(const FieldVector<UGCtype, 2>& local)
 // local coordinate in its reference element
 template< int dim, int dimworld>
 inline FieldVector<UGCtype, dim> UGGridElement<dim,dimworld>::
-local (const FieldVector<UGCtype, dimworld>& global)
+local (const FieldVector<UGCtype, dimworld>& global) const
 {
   FieldVector<UGCtype, dim> result;
   UGCtype localCoords[dim];
