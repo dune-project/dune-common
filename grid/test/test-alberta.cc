@@ -30,7 +30,7 @@ int main () {
 
     // extra-environment to check destruction
     {
-
+      factorEpsilon = 500.0;
       Dune::AlbertaGrid<DIM,DIM_OF_WORLD> grid(filename.str().c_str());
       for(int i=0; i<3; i++)
       {
