@@ -3,6 +3,7 @@
 #ifndef __DUNE_GRID_HH__
 #define __DUNE_GRID_HH__
 
+#include <string>
 #include <dune/common/matvec.hh>
 
 namespace Dune {
@@ -44,13 +45,14 @@ namespace Dune {
       all element types.
    */
 
-  enum ElementType {unknown,vertex,line, triangle, quadrilateral, tetrahedron, pyramid, prism, hexahedron,
-                    iso_triangle, iso_quadrilateral};
+  enum ElementType {vertex=0,line=1, triangle=2, quadrilateral=3, tetrahedron=4,
+                    pyramid=5, prism=6, hexahedron=7,
+                    iso_triangle=8, iso_quadrilateral=9, unknown=127};
 
   /*! \internal
-     Used for grid I/O
+        Used for grid I/O
    */
-  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, UGGrid_Id };
+  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, UGGrid_Id, YaspGrid_Id };
 
   /*!
      Specify the format to store grid and vector data
@@ -70,37 +72,176 @@ namespace Dune {
                       Periodic     //!< Periodic boundary
   };
 
-  enum AdaptationState { NONE ,     //!< notin' to do and notin' was done
-                         COARSEN,   //!< entity could be coarsen in adaptation step
-                         REFINED    //!< enity was refined in adaptation step
+  enum AdaptationState { NONE ,   //!< notin' to do and notin' was done
+                         COARSEN,                         //!< entity could be coarsen in adaptation step
+                         REFINED                          //!< enity was refined in adaptation step
   };
 
 
-  /*! IteratorType specify the set of entities over which an
-      LevelIterator or HierarchicIterator or LeafIterator iterates.
-      Default value is InteriorBorder
+  /*! Parameter to be used for the communication functions
    */
-  enum IteratorType { Master  ,   //!< iterate over all entities which belong to this processor
-                      Interior,   //!< iterate over all interior entities
-                      Border  ,   //!< iterate over entities which define the processor
-                                  //!< border , all codims possible
-                      Ghosts ,    //!< iterate over all ghost cells
-                      InteriorBorder,    //!< iterate over Interior and Border
-                      All ,      //!< iterate over all cells on this processor
+  enum InterfaceType {
+    InteriorBorder_InteriorBorder_Interface=0,
+    InteriorBorder_All_Interface=1,
+    Overlap_OverlapFront_Interface=2,
+    Overlap_All_Interface=3,
+    All_All_Interface=4
   };
 
-  enum PartitionType { InteriorEntity,   //!< all interior entities
-                       OverlapEntity ,   //!< all entites lying in the overlap zone
-                       BorderEntity  ,   //!< all entities which have neighboring ghosts
-                       GhostEntity       //!< ghost entities
+  /*! Parameter to be used for the parallel level iterators
+   */
+  enum PartitionIteratorType {
+    Interior_Partition=0,
+    InteriorBorder_Partition=1,
+    Overlap_Partition=2,
+    OverlapFront_Partition=3,
+    All_Partition=4,
+    Ghost_Partition=5
   };
+
+
+  /*! Define a type for communication direction parameter
+   */
+  enum CommunicationDirection {
+    ForwardCommunication,
+    BackwardCommunication
+  };
+
+  /*! Attributes used in the generic overlap model
+   */
+  enum PartitionType {
+    InteriorEntity=0,     //!< all interior entities
+    BorderEntity=1  ,     //!< on boundary between interior and overlap
+    OverlapEntity=2 ,     //!< all entites lying in the overlap zone
+    FrontEntity=3  ,      //!< on boundary between overlap and ghost
+    GhostEntity=4         //!< ghost entities
+  };
+
+  //! provide names for the partition types
+  std::string PartitionName[5] = {"interior","border","overlap","front","ghost"};
 
   /*! GridIndexType specifies which Index of the Entities of the grid
-      should be used, i.e. global_index() or index()
+        should be used, i.e. global_index() or index()
    */
-  enum GridIndexType { GlobalIndex ,   //!< use global_index() of entity
-                       LevelIndex      //!< use index() of entity
+  enum GridIndexType { GlobalIndex , //!< use global_index() of entity
+                       LevelIndex                        //!< use index() of entity
   };
+
+  //************************************************************************
+  // G R I D E R R O R
+  //************************************************************************
+
+  /*!
+     A simple class for throwing exceptions in Dune grid modules.
+   */
+
+  class GridError {
+  public:
+    //! make object from error message
+    GridError(std::string s) : _message(s) {}
+
+    //! make object from error message, file and line
+    GridError(std::string s, std::string f, int l)
+      : _message(s), _file(f), _line(l) {}
+
+    //! return the error message
+    std::string message () {return _message;}
+
+    //! return the file
+    std::string file () {return _file;}
+
+    //! return the line
+    int line () {return _line;}
+
+  private:
+    std::string _message;
+    std::string _file;
+    int _line;
+  };
+
+  // print error message
+  std::ostream& operator<< (std::ostream& s, GridError& e)
+  {
+    s << e.message() << " in " << e.file() << " line " << e.line();
+    return s;
+  }
+
+  //************************************************************************
+  // R E F E R E N C E T O P O L O G Y
+  //************************************************************************
+
+  /*!
+     The reference topology defines the numbering of all entities of an
+     element as well as their position in the reference element.
+   */
+  template<int dim, class ct>
+  class ReferenceTopology {
+  public:
+    //! default constructor will build up all the internal data
+    ReferenceTopology ();
+
+    //! return local coordinates of center in reference element
+    Vec<dim,ct>& center_codim0_local (int elemtype);
+
+    //! return local coordinates of center of ith codim 1 subentity
+    Vec<dim-1,ct>& center_codim1_local (int elemtype, int i);
+  };
+
+  // Specialization dim=1
+  template<class ct>
+  class ReferenceTopology<1,ct> {
+  public:
+    //! default constructor will build up all the internal data
+    ReferenceTopology ();
+
+    //! return local coordinates of center in reference element
+    Vec<1,ct>& center_codim0_local (int elemtype);
+
+    //! return local coordinates of center of ith codim 1 subentity
+    Vec<0,ct>& center_codim1_local (int elemtype, int i);
+
+  private:
+    Vec<1,ct> center0_local[1];  // ElementType
+    Vec<0,ct> center1_local[1];  // ElementType x faces
+  };
+
+  // Specialization dim=2
+  template<class ct>
+  class ReferenceTopology<2,ct> {
+  public:
+    //! default constructor will build up all the internal data
+    ReferenceTopology ();
+
+    //! return local coordinates of center in reference element
+    Vec<2,ct>& center_codim0_local (int elemtype);
+
+    //! return local coordinates of center of ith codim 1 subentity
+    Vec<1,ct>& center_codim1_local (int elemtype, int i);
+
+  private:
+    Vec<2,ct> center0_local[2];  // ElementType
+    Vec<1,ct> center1_local[2];  // ElementType x faces
+  };
+
+
+  // Specialization dim=3
+  template<class ct>
+  class ReferenceTopology<3,ct> {
+  public:
+    //! default constructor will build up all the internal data
+    ReferenceTopology ();
+
+    //! return local coordinates of center in reference element
+    Vec<3,ct>& center_codim0_local (int elemtype);
+
+    //! return local coordinates of center of ith codim 1 subentity
+    Vec<2,ct>& center_codim1_local (int elemtype, int i);
+
+  private:
+    Vec<3,ct> center0_local[4];    // ElementType
+    Vec<2,ct> center1_local[4][6]; // ElementType x faces
+  };
+
 
   //************************************************************************
   // E L E M E N T
@@ -632,7 +773,7 @@ namespace Dune {
   template<int codim, int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -644,7 +785,7 @@ namespace Dune {
     {
       typedef ct CoordType;
       typedef ElementImp<dim,dimworld>             Element;
-      typedef LevelIteratorImp<codim,dim,dimworld> LevelIterator;
+      typedef LevelIteratorImp<codim,dim,dimworld,All_Partition> LevelIterator;
       typedef IntersectionIteratorImp<dim,dimworld>    IntersectionIterator;
       typedef HierarchicIteratorImp<dim,dimworld>  HierarchicIterator;
     };
@@ -666,6 +807,9 @@ namespace Dune {
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
     int index ();
+
+    //! return partition type attribute
+    PartitionType partition_type ();
 
     //! index of the boundary which is associated with the entity, 0 for inner entities
     int boundaryId ();
@@ -695,7 +839,7 @@ namespace Dune {
   template<int codim, int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -727,7 +871,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -741,7 +885,7 @@ namespace Dune {
       typedef ct CoordType;
       typedef ElementImp<dim,dimworld>             Element;
       typedef EntityImp<0,dim,dimworld>            Entity;
-      typedef LevelIteratorImp<0,dim,dimworld>     LevelIterator;
+      typedef LevelIteratorImp<0,dim,dimworld,All_Partition>     LevelIterator;
       typedef IntersectionIteratorImp<dim,dimworld>    IntersectionIterator;
       typedef HierarchicIteratorImp<dim,dimworld>  HierarchicIterator;
     };
@@ -765,6 +909,9 @@ namespace Dune {
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
     int index ();
 
+    //! return partition type attribute
+    PartitionType partition_type ();
+
     //! geometry of this entity
     ElementImp<dim,dimworld>& geometry ();
 
@@ -776,7 +923,7 @@ namespace Dune {
     /*! Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
      */
-    template<int cc> LevelIteratorImp<cc,dim,dimworld> entity (int i); // 0 <= i < count()
+    template<int cc> LevelIteratorImp<cc,dim,dimworld,All_Partition> entity (int i); // 0 <= i < count()
 
     /*! Intra-level access to intersections with neighboring elements.
        A neighbor is an entity of codimension 0
@@ -790,7 +937,7 @@ namespace Dune {
     IntersectionIteratorImp<dim,dimworld> iend ();
 
     //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
-    LevelIteratorImp<0,dim,dimworld> father ();
+    LevelIteratorImp<0,dim,dimworld,All_Partition> father ();
 
     /*! Location of this element relative to the reference element of the father.
        This is sufficient to interpolate all dofs in conforming case.
@@ -834,7 +981,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -850,7 +997,7 @@ namespace Dune {
       typedef ct CoordType;
       typedef ElementImp<dim,dimworld>             Element;
       typedef EntityImp<0,dim,dimworld>            Entity;
-      typedef LevelIteratorImp<0,dim,dimworld>     LevelIterator;
+      typedef LevelIteratorImp<0,dim,dimworld,All_Partition>     LevelIterator;
       typedef IntersectionIteratorImp<dim,dimworld>    IntersectionIterator;
       typedef HierarchicIteratorImp<dim,dimworld>  HierarchicIterator;
     };
@@ -910,7 +1057,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -922,7 +1069,7 @@ namespace Dune {
       typedef ct CoordType;
       typedef ElementImp<dim,dimworld>               Element;
       typedef EntityImp<dim,dim,dimworld>            Entity;
-      typedef LevelIteratorImp<dim,dim,dimworld>     LevelIterator;
+      typedef LevelIteratorImp<dim,dim,dimworld,All_Partition>     LevelIterator;
       typedef IntersectionIteratorImp<dim,dimworld>  IntersectionIterator;
       typedef HierarchicIteratorImp<dim,dimworld>    HierarchicIterator;
     };
@@ -945,6 +1092,9 @@ namespace Dune {
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
     int index ();
 
+    //! return partition type attribute
+    PartitionType partition_type ();
+
     //! geometry of this entity
     ElementImp<0,dimworld>& geometry ();
 
@@ -952,7 +1102,7 @@ namespace Dune {
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    LevelIteratorImp<0,dim,dimworld> father ();
+    LevelIteratorImp<0,dim,dimworld,All_Partition> father ();
 
     //! local coordinates within father
     Vec<dim,ct>& local ();
@@ -970,7 +1120,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -992,8 +1142,8 @@ namespace Dune {
 
   /** \brief Enables iteration over all entities of a given codimension and level of a grid.
    */
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
   class LevelIterator
@@ -1008,9 +1158,23 @@ namespace Dune {
       /** \todo Please doc me! */
       typedef EntityImp<codim,dim,dimworld>        Entity;
 
-      /** \todo Please doc me! */
-      typedef LevelIteratorImp<codim,dim,dimworld> LevelIterator;
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,All_Partition>             LevelIterator;
 
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Interior_Partition>        InteriorLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,InteriorBorder_Partition>  InteriorBorderLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Overlap_Partition>         OverlapLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,OverlapFront_Partition>    OverlapFrontLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Ghost_Partition>           GhostLevelIterator;
     };
 
     //! know your own codimension
@@ -1026,13 +1190,13 @@ namespace Dune {
     typedef ct ctype;
 
     //! prefix increment
-    LevelIteratorImp<codim,dim,dimworld>& operator++();
+    LevelIteratorImp<codim,dim,dimworld,pitype>& operator++();
 
     //! equality
-    bool operator== (const LevelIteratorImp<codim,dim,dimworld>& i) const;
+    bool operator== (const LevelIteratorImp<codim,dim,dimworld,pitype>& i) const;
 
     //! inequality
-    bool operator!= (const LevelIteratorImp<codim,dim,dimworld>& i) const;
+    bool operator!= (const LevelIteratorImp<codim,dim,dimworld,pitype>& i) const;
 
     //! dereferencing
     EntityImp<codim,dim,dimworld>& operator*() ;
@@ -1050,10 +1214,10 @@ namespace Dune {
 
   private:
     //! \internal Barton-Nackman trick
-    LevelIteratorImp<codim,dim,dimworld>& asImp ()
-    {return static_cast<LevelIteratorImp<codim,dim,dimworld>&>(*this);}
-    const LevelIteratorImp<codim,dim,dimworld>& asImp () const
-    {return static_cast<const LevelIteratorImp<codim,dim,dimworld>&>(*this);}
+    LevelIteratorImp<codim,dim,dimworld,pitype>& asImp ()
+    {return static_cast<LevelIteratorImp<codim,dim,dimworld,pitype>&>(*this);}
+    const LevelIteratorImp<codim,dim,dimworld,pitype>& asImp () const
+    {return static_cast<const LevelIteratorImp<codim,dim,dimworld,pitype>&>(*this);}
   };
 
   //**********************************************************************
@@ -1063,23 +1227,23 @@ namespace Dune {
   //! Default implementation of LevelIterator.
   //
   //**********************************************************************
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
   class LevelIteratorDefault
-    : public LevelIterator <codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>
+    : public LevelIterator <codim,dim,dimworld,pitype,ct,LevelIteratorImp,EntityImp>
   {
   public:
 
   private:
     //! \internal Barton-Nackman trick
-    LevelIteratorImp<codim,dim,dimworld>& asImp () {
-      return static_cast<LevelIteratorImp<codim,dim,dimworld>&>(*this);
+    LevelIteratorImp<codim,dim,dimworld,pitype>& asImp () {
+      return static_cast<LevelIteratorImp<codim,dim,dimworld,pitype>&>(*this);
     }
 
-    const LevelIteratorImp<codim,dim,dimworld>& asImp () const {
-      return static_cast<const LevelIteratorImp<codim,dim,dimworld>&>(*this);
+    const LevelIteratorImp<codim,dim,dimworld,pitype>& asImp () const {
+      return static_cast<const LevelIteratorImp<codim,dim,dimworld,pitype>&>(*this);
     }
 
   }; // end LevelIteratorDefault
@@ -1105,7 +1269,7 @@ namespace Dune {
      Template class Grid defines a "base class" for all grids.
    */
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   class Grid {
   public:
 
@@ -1119,8 +1283,23 @@ namespace Dune {
       /** \todo Please doc me! */
       typedef GridImp<dim,dimworld>                 ImpGrid;
 
-      /** \todo Please doc me! */
-      typedef LevelIteratorImp<codim,dim,dimworld>  LevelIterator;
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,All_Partition>             LevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Interior_Partition>        InteriorLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,InteriorBorder_Partition>  InteriorBorderLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Overlap_Partition>         OverlapLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,OverlapFront_Partition>    OverlapFrontLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Ghost_Partition>           GhostLevelIterator;
 
       /** \todo Please doc me! */
       typedef EntityImp<codim,dim,dimworld>         Entity;
@@ -1144,13 +1323,31 @@ namespace Dune {
     //! Return number of grid entities of a given codim on a given level
     int size (int level, int codim) const;
 
+    //! return size (= distance in graph) of overlap region
+    int overlap_size (int level, int codim);
+
+    //! return size (= distance in graph) of ghost region
+    int ghost_size (int level, int codim);
+
     //! Iterator to first entity of given codim on level
-    template<int codim>
-    LevelIteratorImp<codim,dim,dimworld> lbegin (int level);
+    template<int codim, PartitionIteratorType pitype>
+    LevelIteratorImp<codim,dim,dimworld,pitype> lbegin (int level);
 
     //! one past the end on this level
+    template<int codim, PartitionIteratorType pitype>
+    LevelIteratorImp<codim,dim,dimworld,pitype> lend (int level);
+
+    //! version without second template parameter to run sequential code
     template<int codim>
-    LevelIteratorImp<codim,dim,dimworld> lend (int level);
+    LevelIteratorImp<codim,dim,dimworld,All_Partition> lbegin (int level);
+
+    //! version without second template parameter to run sequential code
+    template<int codim>
+    LevelIteratorImp<codim,dim,dimworld,All_Partition> lend (int level);
+
+    //! the generic communication function
+    template<class T, template<class> class P, int codim>
+    void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level);
 
     //! return GridIdentifierType of Grid, i.e. SGrid_Id or AlbertGrid_Id ...
     GridIdentifier type();
@@ -1191,7 +1388,7 @@ namespace Dune {
       int dimworld,
       class ct,
       template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp>
   class GridDefault : public Grid <dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>
   {
@@ -1209,11 +1406,25 @@ namespace Dune {
       typedef GridImp<dim,dimworld>                 ImpGrid;
 
       //! Please doc me!
-      typedef LevelIteratorImp<codim,dim,dimworld>  LevelIterator;
+      typedef LevelIteratorImp<codim,dim,dimworld,All_Partition>             LevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Interior_Partition>        InteriorLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,InteriorBorder_Partition>  InteriorBorderLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Overlap_Partition>         OverlapLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,OverlapFront_Partition>    OverlapFrontLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<codim,dim,dimworld,Ghost_Partition>           GhostLevelIterator;
 
       //! Please doc me!
       typedef EntityImp<codim,dim,dimworld>         Entity;
-
     };
 
     //! Please doc me!
@@ -1259,7 +1470,7 @@ namespace Dune {
 
   /** \brief Iterates over the leaves of a hierarchical grid. */
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   class GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
   {
     // some typedefs
@@ -1281,7 +1492,22 @@ namespace Dune {
       typedef GridImp<dim,dimworld>             ImpGrid;
 
       //! Please doc me!
-      typedef LevelIteratorImp<0,dim,dimworld>  LevelIterator;
+      typedef LevelIteratorImp<0,dim,dimworld,All_Partition>             LevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<0,dim,dimworld,Interior_Partition>        InteriorLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<0,dim,dimworld,InteriorBorder_Partition>  InteriorBorderLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<0,dim,dimworld,Overlap_Partition>         OverlapLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<0,dim,dimworld,OverlapFront_Partition>    OverlapFrontLevelIterator;
+
+      //! Please doc me!
+      typedef LevelIteratorImp<0,dim,dimworld,Ghost_Partition>           GhostLevelIterator;
 
       //! Please doc me!
       typedef EntityImp<0,dim,dimworld>         Entity;

@@ -10,6 +10,97 @@
 namespace Dune {
 
   //************************************************************************
+  // R E F E R E N C E T O P O L O G Y
+  //************************************************************************
+
+  // the general version, throws only exception ...
+  template<int dim, class ct>
+  inline ReferenceTopology<dim,ct>::ReferenceTopology ()
+  {
+    throw GridError("dimension too large");
+  }
+
+  template<int dim, class ct>
+  inline Vec<dim,ct>& ReferenceTopology<dim,ct>::center_codim0_local (int elemtype)
+  {
+    throw GridError("dimension too large");
+  }
+
+  template<int dim, class ct>
+  inline Vec<dim-1,ct>& ReferenceTopology<dim,ct>::center_codim1_local (int elemtype, int i)
+  {
+    throw GridError("dimension too large");
+  }
+
+  // Specialization for dim=1, ElementType=1
+  template<class ct>
+  inline ReferenceTopology<1,ct>::ReferenceTopology ()
+  {
+    center0_local[0] = Vec<1,ct>(0.5);
+  }
+
+  template<class ct>
+  inline Vec<1,ct>& ReferenceTopology<1,ct>::center_codim0_local (int elemtype)
+  {
+    return center0_local[0];
+  }
+
+  template<class ct>
+  inline Vec<0,ct>& ReferenceTopology<1,ct>::center_codim1_local (int elemtype, int i)
+  {
+    return center1_local[0];
+  }
+
+  // Specialization for dim=2, ElementType=2,3
+  template<class ct>
+  inline ReferenceTopology<2,ct>::ReferenceTopology ()
+  {
+    center0_local[0] = Vec<2,ct>(1.0/3.0);
+    center0_local[1] = Vec<2,ct>(0.5);
+    center1_local[0] = Vec<1,ct>(0.5);
+  }
+
+  template<class ct>
+  inline Vec<2,ct>& ReferenceTopology<2,ct>::center_codim0_local (int elemtype)
+  {
+    return center0_local[elemtype-2];
+  }
+
+  template<class ct>
+  inline Vec<1,ct>& ReferenceTopology<2,ct>::center_codim1_local (int elemtype, int i)
+  {
+    return center1_local[0];
+  }
+
+  // Specialization for dim=3, ElementType=4..7
+  template<class ct>
+  inline ReferenceTopology<3,ct>::ReferenceTopology ()
+  {
+    center0_local[0] = Vec<3,ct>(0.25);
+    center0_local[1] = Vec<3,ct>(0.0); // pyramid is missing !
+    center0_local[2] = Vec<3,ct>(0.0); // prism is missing
+    center0_local[3] = Vec<3,ct>(0.5);
+    for (int i=0; i<6; i++) center1_local[0][i] = Vec<2,ct>(1.0/3.0);
+    for (int i=0; i<6; i++) center1_local[1][i] = Vec<2,ct>(0.0);
+    for (int i=0; i<6; i++) center1_local[2][i] = Vec<2,ct>(0.0);
+    for (int i=0; i<6; i++) center1_local[3][i] = Vec<2,ct>(0.5);
+  }
+
+  template<class ct>
+  inline Vec<3,ct>& ReferenceTopology<3,ct>::center_codim0_local (int elemtype)
+  {
+    return center0_local[elemtype-4];
+  }
+
+  template<class ct>
+  inline Vec<2,ct>& ReferenceTopology<3,ct>::center_codim1_local (int elemtype, int i)
+  {
+    return center1_local[elemtype-4][i];
+  }
+
+
+
+  //************************************************************************
   // E L E M E N T
   //************************************************************************
 
@@ -437,7 +528,7 @@ namespace Dune {
   template<int codim, int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -449,7 +540,7 @@ namespace Dune {
   template<int codim, int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -461,7 +552,19 @@ namespace Dune {
   template<int codim, int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      >
+  inline PartitionType Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::partition_type ()
+  {
+    return asImp().partition_type();
+  }
+
+  template<int codim, int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -473,7 +576,7 @@ namespace Dune {
   template<int codim, int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -488,7 +591,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -500,7 +603,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -512,7 +615,19 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      >
+  inline PartitionType Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::partition_type ()
+  {
+    return asImp().partition_type();
+  }
+
+  template<int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -524,7 +639,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -537,12 +652,12 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
   template<int cc>
-  inline LevelIteratorImp<cc,dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::entity (int i)
+  inline LevelIteratorImp<cc,dim,dimworld,All_Partition> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::entity (int i)
   {
     return asImp().entity<cc>(i);
   }
@@ -550,7 +665,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -563,7 +678,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -576,11 +691,11 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline LevelIteratorImp<0,dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::father ()
+  inline LevelIteratorImp<0,dim,dimworld,All_Partition> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::father ()
   {
     return asImp().father();
   }
@@ -588,7 +703,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -600,7 +715,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -612,7 +727,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -624,7 +739,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -649,7 +764,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -661,7 +776,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -673,7 +788,19 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      >
+  inline PartitionType Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::partition_type ()
+  {
+    return asImp().partition_type();
+  }
+
+  template<int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -685,11 +812,11 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline LevelIteratorImp<0,dim,dimworld> Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::father ()
+  inline LevelIteratorImp<0,dim,dimworld,All_Partition> Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::father ()
   {
     return asImp().father();
   }
@@ -697,7 +824,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -709,7 +836,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
@@ -728,7 +855,7 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       > template <int cc>
@@ -743,65 +870,65 @@ namespace Dune {
   // L E V E L I T E R A T O R
   //************************************************************************
 
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
-  inline LevelIteratorImp<codim,dim,dimworld>& LevelIterator<codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>::operator++ ()
+  inline LevelIteratorImp<codim,dim,dimworld,pitype>& LevelIterator<codim,dim,dimworld,pitype,ct,LevelIteratorImp,EntityImp>::operator++ ()
   {
     return asImp().operator++();
   }
 
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
-  inline bool LevelIterator<codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>::operator== (const LevelIteratorImp<codim,dim,dimworld>& i) const
+  inline bool LevelIterator<codim,dim,dimworld,pitype,ct,LevelIteratorImp,EntityImp>::operator== (const LevelIteratorImp<codim,dim,dimworld,pitype>& i) const
   {
     return asImp().operator==(i);
   }
 
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
-  inline bool LevelIterator<codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>::operator!= (const LevelIteratorImp<codim,dim,dimworld>& i) const
+  inline bool LevelIterator<codim,dim,dimworld,pitype,ct,LevelIteratorImp,EntityImp>::operator!= (const LevelIteratorImp<codim,dim,dimworld,pitype>& i) const
   {
     return asImp().operator!=(i);
   }
 
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
-  inline EntityImp<codim,dim,dimworld>& LevelIterator<codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>::operator* ()
+  inline EntityImp<codim,dim,dimworld>& LevelIterator<codim,dim,dimworld,pitype,ct,LevelIteratorImp,EntityImp>::operator* ()
   {
     return asImp().operator*();
   }
 
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
-  inline EntityImp<codim,dim,dimworld>* LevelIterator<codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>::operator-> ()
+  inline EntityImp<codim,dim,dimworld>* LevelIterator<codim,dim,dimworld,pitype,ct,LevelIteratorImp,EntityImp>::operator-> ()
   {
     return asImp().operator->();
   }
 
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
-  inline int LevelIterator<codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>::level ()
+  inline int LevelIterator<codim,dim,dimworld,pitype,ct,LevelIteratorImp,EntityImp>::level ()
   {
     return asImp().level();
   }
 
-  template<int codim, int dim, int dimworld, class ct,
-      template<int,int,int> class LevelIteratorImp,
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype, class ct,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
       template<int,int,int> class EntityImp
       >
-  inline void LevelIterator<codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>::checkIF ()
+  inline void LevelIterator<codim,dim,dimworld,pitype,ct,LevelIteratorImp,EntityImp>::checkIF ()
   {
     operator++();
     operator==(asImp());
@@ -819,33 +946,71 @@ namespace Dune {
   //************************************************************************
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline int Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::maxlevel () const
   {
     return asImp().maxlevel();
   }
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline int Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::size (int level, int codim) const
   {
     return asImp().size(level,codim);
   }
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline int Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::overlap_size (int level, int codim)
+  {
+    return asImp().overlap_size(level,codim);
+  }
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline int Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::ghost_size (int level, int codim)
+  {
+    return asImp().ghost_size(level,codim);
+  }
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  template<int codim, PartitionIteratorType pitype>
+  inline LevelIteratorImp<codim,dim,dimworld,pitype> Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::lbegin (int level)
+  {
+    return asImp().template lbegin<codim,pitype>(level);
+  }
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  template<int codim, PartitionIteratorType pitype>
+  inline LevelIteratorImp<codim,dim,dimworld,pitype> Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::lend (int level)
+  {
+    return asImp().template lend<codim,pitype>(level);
+  }
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   template<int codim>
-  inline LevelIteratorImp<codim,dim,dimworld> Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::lbegin (int level)
+  inline LevelIteratorImp<codim,dim,dimworld,All_Partition> Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::lbegin (int level)
   {
     return asImp().template lbegin<codim>(level);
   }
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   template<int codim>
-  inline LevelIteratorImp<codim,dim,dimworld> Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::lend (int level)
+  inline LevelIteratorImp<codim,dim,dimworld,All_Partition> Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::lend (int level)
   {
     return asImp().template lend<codim>(level);
+  }
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  template<class T, template<class> class P, int codim>
+  inline void Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
+  {
+    asImp().template communicate<T,P,codim>(t,iftype,dir,level);
   }
 
   // tester code
@@ -853,13 +1018,13 @@ namespace Dune {
   struct meta_grid_checkIF {
 
     template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-        template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+        template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
     static void f (Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>& g)
     {
       // iterate over codimension cc
       std::cout << "checking LevelIterator with codim=" << cc
                 << ", dim=" << dim << ", dimworld=" << dimworld;
-      LevelIteratorImp<cc,dim,dimworld> i = g.template lbegin<cc>(0);
+      LevelIteratorImp<cc,dim,dimworld,All_Partition> i = g.template lbegin<cc,All_Partition>(0);
       i.checkIF();
       std::cout << " OK."  << std::endl;
 
@@ -886,14 +1051,14 @@ namespace Dune {
     enum { cc=0 };
 
     template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-        template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+        template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
     static void f (Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>& g)
     {
       // iterate over codimension cc
       std::cout << "checking LevelIterator with codim=" << cc
                 << ", dim=" << dim << ", dimworld=" << dimworld;
 
-      LevelIteratorImp<cc,dim,dimworld> i = g.template lbegin<cc>(0);
+      LevelIteratorImp<cc,dim,dimworld,All_Partition> i = g.template lbegin<cc,All_Partition>(0);
       if( g.size(0,cc) <= 1 )
       {
         std::cerr << "\nUse grid with more entities, at least 2 entities! \n";
@@ -931,7 +1096,7 @@ namespace Dune {
   };
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline void Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::checkIF ()
   {
     std::cout << "checking Grid with dim=" << dim << ", dimworld=" << dimworld;
@@ -948,7 +1113,7 @@ namespace Dune {
   //************************************************************************
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafbegin (int maxLevel )
   {
@@ -958,7 +1123,7 @@ namespace Dune {
   };
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafend (int maxLevel )
   {
@@ -968,7 +1133,7 @@ namespace Dune {
   };
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
   write ( const FileFormatType ftype, const char * filename , ct time, int timestep,
           bool adaptive, int processor)
@@ -996,7 +1161,7 @@ namespace Dune {
   } // end grid2File
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
   read ( const char * filename , ct & time, int timestep ,
          bool adaptive, int processor )
@@ -1044,7 +1209,7 @@ namespace Dune {
   //  G R I D Default :: LeafIterator
   //************************************************************************
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
   LeafIterator::LeafIterator (GridType &grid, int maxlevel, bool end) :
     it_ (NULL) , endit_ (NULL) , hierit_(NULL) , endhierit_(NULL)
@@ -1092,7 +1257,7 @@ namespace Dune {
 
   // operator ++, i.e. goNextEntity
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator &
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator ++ ()
   {
@@ -1101,7 +1266,7 @@ namespace Dune {
   }
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator &
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator ++ (int i)
   {
@@ -1113,7 +1278,7 @@ namespace Dune {
 
   // operator ==
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
   LeafIterator::operator == (const LeafIterator& i) const
   {
@@ -1121,7 +1286,7 @@ namespace Dune {
   }
   // operator !=
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
   LeafIterator::operator != (const LeafIterator& i) const
   {
@@ -1131,7 +1296,7 @@ namespace Dune {
 #if 0
   // operator * ()
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline EntityImp<0,dim,dimworld> &
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator*()
   {
@@ -1140,7 +1305,7 @@ namespace Dune {
 
   // operator -> ()
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline EntityImp<0,dim,dimworld> *
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator * ()
   {
@@ -1151,7 +1316,7 @@ namespace Dune {
 
   // level
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline int GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
   LeafIterator::level ()
   {
@@ -1159,7 +1324,7 @@ namespace Dune {
   }
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline EntityImp<0,dim,dimworld> *
   GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::goNextEntity  ()
   {
