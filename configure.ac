@@ -7,6 +7,9 @@ AC_CONFIG_SRCDIR([grid/common/grid.hh])
 # do almost nothing, an application using Dune should provide the
 # checks (use the macro provided in m4/dune.m4 to do this)
 
+# Checks for programs.
+AC_PROG_CXX
+
 # don't build shared libs per default, this is way better for debugging...
 AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
