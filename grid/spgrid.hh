@@ -32,7 +32,6 @@ namespace Dune {
 
   typedef int level;
 
-#warning we need an intelligent way of coordinating the MPI_Send-Tags
   const int exchange_tag=42;
 
   // consts for flag-index
