@@ -1291,7 +1291,7 @@ namespace Dune
     // new LevelIterator with EL_INFO one level above
 
     AlbertaGridLevelIterator<0,All_Partition,GridImp>
-    vati(grid,fatherLevel,fatherInfo,fatherIndex,0,0,0);
+    vati(grid_,fatherLevel,fatherInfo,fatherIndex,0,0,0);
     return vati;
   }
 
