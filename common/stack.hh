@@ -1,17 +1,35 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_STACK_HH__
-#define __DUNE_STACK_HH__
+#ifndef DUNE_STACK_HH
+#define DUNE_STACK_HH
 
 #include <dune/common/dlist.hh>
 #include <dune/common/exceptions.hh>
 
 namespace Dune {
 
+  /*! \addtogroup Common
+     @{
+   */
+
+  /*! \file
+
+     This file implements two stack-classes Stack and FiniteStack. They are
+     mainly used by the grid iterators where exact knowledge of the stack
+     implementation is needed to guarantee efficient execution
+   */
+
   //! Exception thrown by the stack
   class StackException : public Exception {};
 
-  /** \brief A dynamic stack
+  /** dynamic stack implemented with a double linked list
+
+     This class can be used instead of the standard STL-stack if
+     detailed knowledge about the stacks implementation is needed. For
+     example, it is unknown if a copy of an empty STL-stack requires
+     time or not
+
+     \todo change interface to be STL-conforming
    */
   template<class T>
   class Stack : private DoubleLinkedList<T> {
@@ -86,8 +104,11 @@ namespace Dune {
 
 
   /** \brief A stack with static memory allocation
-   *
-   * \tparam n Maximum number of stack entries
+
+     This class implements a very efficient stack where the maximum
+     depth is known in advance
+
+     \tparam n Maximum number of stack entries
    */
   template<class T, int n>
   class FiniteStack {
@@ -141,5 +162,7 @@ namespace Dune {
   };
 
 }
+
+//! @}
 
 #endif

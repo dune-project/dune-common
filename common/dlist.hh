@@ -5,8 +5,17 @@
 
 namespace Dune {
 
-  /** \brief A doubly-linked list
+  /*! \addtogroup Common
+     @{
    */
+
+  /*! \file
+
+     Declaration of a doubly linked list
+   */
+
+
+  /*! A doubly-linked list */
   template <class T>
   class DoubleLinkedList {
   private:
@@ -21,13 +30,13 @@ namespace Dune {
       Element* p;
     public:
 
-      //! ???
+      //! constructor
       Iterator();
 
-      //! ???
+      //! comparison
       bool operator!= (Iterator x);
 
-      //! ???
+      //! comparison
       bool operator== (Iterator x);
 
       //! Prefix increment
@@ -42,51 +51,50 @@ namespace Dune {
       //! Postfix decrement
       Iterator operator-- (int);
 
-      //! ???
+      //! dereferenciation
       T& operator* () const;
 
-      //! ???
-      T* operator-> () const;     // Stroustrup p. 289
+      //! dereferenciation (Stroustrup p. 289)
+      T* operator-> () const;
 
-      //! ???
       friend class DoubleLinkedList<T>;
     } ;
 
-    //! ???
+    //! iterator at the lists start
     Iterator begin () const;
 
-    //! ???
+    //! iterator behind last element
     Iterator end () const;
 
-    //! ???
+    //! iterator at the lists end
     Iterator rbegin () const;
 
-    //! ???
+    //! iterator before the lists start
     Iterator rend () const;
 
 
-    //! ???
+    //! empty constructor
     DoubleLinkedList();
 
-    //! ???
+    //! copy constructor
     DoubleLinkedList (const DoubleLinkedList<T>&);
 
-    //! ???
+    //! destructor
     ~DoubleLinkedList();
 
-    //! ???
+    //!
     DoubleLinkedList<T>& operator= (const DoubleLinkedList<T>&);
 
-    //! ???
+    //! current list size
     int size () const;
 
-    //! ???
+    //! insert after an iterators position
     Iterator insert_after (Iterator i, T& t);
 
-    //! ???
+    //! insert befor an iterators position
     Iterator insert_before (Iterator i, T& t);
 
-    //! ???
+    //! remove selected element
     void erase (Iterator i);
 
   private:
@@ -103,6 +111,8 @@ namespace Dune {
   } ;
 
 }
+
+//! }@
 
 #include "dlist.cc"
 

@@ -16,21 +16,29 @@
 
 #include "exceptions.hh"
 
-
-/*! \file
-    A simple timing class.
- */
-
 namespace Dune {
 
-  class TimerError : public SystemError {} ;
-
-  /** @addtogroup common
+  /** @addtogroup Common
      @{
    */
 
-  //! a simple stop watch
-  //! using the C command getrusage
+  /*! \file
+      A simple timing class.
+   */
+
+  class TimerError : public SystemError {} ;
+
+
+  /*! a simple stop watch
+
+     this class reports the elapsed user-time, i.e. time spent computing,
+     after the last call to Timer::reset(). The results are seconds and
+     fractional seconds. Note that the resolution of the timing depends
+     on your OS kernel which should be somewhere in the milisecond range.
+
+     The class is basically a wrapper for the libc-function getrusage()
+
+   */
   class Timer
   {
   public:
@@ -49,7 +57,7 @@ namespace Dune {
       cstart = ru.ru_utime;
     }
 
-    //! get elapsed user+sys time in seconds
+    //! get elapsed user-time in seconds
     double elapsed () const throw (TimerError)
     {
       rusage ru;

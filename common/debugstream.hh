@@ -8,7 +8,7 @@
 #include <iostream>
 #include <stack>
 
-#include "exceptions.hh"
+#include <dune/common/exceptions.hh>
 
 namespace Dune {
 
@@ -22,6 +22,7 @@ namespace Dune {
    */
 
   /*! \defgroup DebugOut Debug output
+     \ingroup Common
 
      The debug output is implemented by instaces of DebugStream which
      provides the following features:
