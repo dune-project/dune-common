@@ -3,7 +3,6 @@
 #ifndef DUNE__MONOMIALBASE_HH
 #define DUNE__MONOMIALBASE_HH
 
-#include <dune/common/matvec.hh>
 #include <dune/common/simplevector.hh>
 #include <dune/fem/common/basefunctions.hh>
 
