@@ -11,7 +11,7 @@
 
 /*! \file simplegrid.hh
    This is the implementation of the grid interface for a structured grid
-   supporting only elements (codim=0) and vertices (codim=0).
+   supporting only elements (codim=0) and vertices (codim=dim).
    Most functions are defined through template specialization to get
    a maximum of performance.
  */
@@ -20,6 +20,7 @@ namespace Dune {
 
   /** @defgroup SimpleGrid SimpleGrid
       @ingroup GridCommon
+
           This module describes the pilot implementation of the Dune grid interface.
           It implements the grid interface for simple structured meshes.
 

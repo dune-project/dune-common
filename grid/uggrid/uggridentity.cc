@@ -97,6 +97,13 @@ index()
   return elNum_;
 }
 
+template<>
+inline int UGGridEntity < 0, 3 ,3 >::
+index()
+{
+  return ((UG3d::element*)target_)->ge.id;
+}
+
 template< int codim, int dim, int dimworld>
 inline UGGridElement<dim-codim,dimworld>&
 UGGridEntity < codim, dim ,dimworld >::
@@ -398,7 +405,21 @@ UGGridEntity < codim, dim ,dimworld >::ibegin()
   UGGridIntersectionIterator<dim,dimworld> it;
 
   if (codim==0) {
-    it.setToTarget((UG3d::element*)target_, 0);
+    int i;
+#define TAG(p) ReadCW(p, UG3d::TAG_CE)
+#define NBELEM(p,i) ((UG3d::ELEMENT *) (p)->ge.refs[UG3d::nb_offset[TAG(p)]+(i)])
+#define SIDES_OF_ELEM(p) (UG3d::element_descriptors[TAG(p)]->sides_of_elem)
+    for (i=0; i<SIDES_OF_ELEM((UG3d::element*)target_); i++) {
+      if (NBELEM(((UG3d::element*)target_), i) != NULL)
+        break;
+    }
+    it.setToTarget((UG3d::element*)target_, i);
+    //         printf("element has %d neighbors:\n", SIDES_OF_ELEM(((UG3d::element*)target_)));
+    //         for (i=0; i<4; i++)
+    //             printf("Neighbor %d:  %d\n", i, NBELEM(((UG3d::element*)target_), i));
+#undef TAG
+#undef NBELEM
+#undef SIDES_OF_ELEM
   } else
     printf("UGGridEntity <%d, %d, %d>::ibegin() not implemented\n", codim, dim, dimworld);
 
@@ -413,8 +434,7 @@ UGGridEntity < codim, dim ,dimworld >::iend()
   UGGridIntersectionIterator<dim,dimworld> it;
 
   if (codim==0) {
-    //printf("This is ibegin\n");
-    //printf("This is ib2egin\n");
+    it.setToTarget(NULL, -1);
   } else
     printf("UGGridEntity <%d, %d, %d>::iend() not implemented\n", codim, dim, dimworld);
 

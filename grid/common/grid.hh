@@ -1,13 +1,14 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __GRID_HH__
-#define __GRID_HH__
+#ifndef __DUNE_GRID_HH__
+#define __DUNE_GRID_HH__
 
 #include <dune/common/matvec.hh>
 
 namespace Dune {
 
-  /** @defgroup GridCommon Grid
+  /** @defgroup GridCommon Dune Grid
+
      The Dune Grid module defines a general interface to a hierarchical finite element mesh.
      The interface is independent of dimension and element type. Various implementations
      of this interface exits:
@@ -37,7 +38,7 @@ namespace Dune {
    */
 
   //************************************************************************
-  /*! \enum ElementType
+  /*!
       Enum that declares identifiers for different element types. This
       list can be extended in the future. Not all meshes need to implement
       all element types.
@@ -46,13 +47,21 @@ namespace Dune {
   enum ElementType {unknown,vertex,line, triangle, quadrilateral, tetrahedron, pyramid, prism, hexahedron,
                     iso_triangle, iso_quadrilateral};
 
+  /*! \internal
+     Used for grid I/O
+   */
   enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, Ug_Grid_Id };
 
   enum IteratorType { Master, Interior, Border, Ghost, InteriorBorder, All };
 
-  enum FileFormatType { ascii , xdr , USPM , pgm };
-
-  enum BoundaryType { Neumann , Dirichlet };
+  /*!
+     Specify the format to store grid and vector data
+   */
+  enum FileFormatType { ascii ,   //!< store data in a human readable form
+                        xdr ,   //!< store data in SUN's library routines
+                                //!< for external data representation (xdr)
+                        USPM ,   //!< strange format ... ask Robert Kloefkorn
+                        pgm };   //!< store data in portable graymap file format (pgm)
 
   //************************************************************************
   // E L E M E N T
@@ -158,13 +167,14 @@ namespace Dune {
     //! can only be called for dim=dimworld!
     Mat<dim,dim>& Jacobian_inverse (const Vec<dim,ct>& local);
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal
+       Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     ElementImp<dim,dimworld>& asImp () {return static_cast<ElementImp<dim,dimworld>&>(*this);}
   };
 
@@ -182,7 +192,7 @@ namespace Dune {
   protected:
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     ElementImp<dim,dimworld>& asImp () {return static_cast<ElementImp<dim,dimworld>&>(*this);}
   }; // end ElementDefault
      //************************************************************
@@ -216,13 +226,13 @@ namespace Dune {
     //! access to coordinates of corners. Index is the number of the corner
     Vec<dimworld,ct>& operator[] (int i);
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     ElementImp<0,dimworld>& asImp () {return static_cast<ElementImp<0,dimworld>&>(*this);}
   };
 
@@ -256,7 +266,7 @@ namespace Dune {
     //! define type used for coordinates in grid module
     typedef ct ctype;
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     ElementImp<0,dimworld>& asImp () {return static_cast<ElementImp<0,dimworld>&>(*this);}
   }; // end ElementDefault, dim = 0
      //****************************************************************************
@@ -289,7 +299,7 @@ namespace Dune {
     Vec<dimworld,ct>& outerPoint ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     BoundaryEntityImp<dim,dimworld> & asImp ()
     {return static_cast<BoundaryEntityImp<dim,dimworld>&>(*this);}
   };
@@ -310,7 +320,7 @@ namespace Dune {
   public:
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     BoundaryEntityImp<dim,dimworld> & asImp ()
     {return static_cast<BoundaryEntityImp<dim,dimworld>&>(*this);}
   };
@@ -410,13 +420,13 @@ namespace Dune {
     //! local number of codim 1 entity in neighbor where intersection is contained in
     int number_in_neighbor ();
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     IntersectionIteratorImp<dim,dimworld>& asImp ()
     {return static_cast<IntersectionIteratorImp<dim,dimworld>&>(*this);}
     const IntersectionIteratorImp<dim,dimworld>& asImp () const
@@ -457,7 +467,7 @@ namespace Dune {
     Vec<dim-1,ct> tmp_;
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     IntersectionIteratorImp<dim,dimworld>& asImp ()
     {return static_cast<IntersectionIteratorImp<dim,dimworld>&>(*this);}
     const IntersectionIteratorImp<dim,dimworld>& asImp () const
@@ -514,13 +524,13 @@ namespace Dune {
     //! arrow
     EntityImp<0,dim,dimworld>* operator->();
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     HierarchicIteratorImp<dim,dimworld>& asImp ()
     {return static_cast<HierarchicIteratorImp<dim,dimworld>&>(*this);}
     const HierarchicIteratorImp<dim,dimworld>& asImp () const
@@ -563,7 +573,7 @@ namespace Dune {
     typedef ct ctype;
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     HierarchicIteratorImp<dim,dimworld>& asImp ()
     {return static_cast<HierarchicIteratorImp<dim,dimworld>&>(*this);}
     const HierarchicIteratorImp<dim,dimworld>& asImp () const
@@ -621,13 +631,13 @@ namespace Dune {
     //! geometry of this entity
     ElementImp<dim-codim,dimworld>& geometry ();
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     EntityImp<codim,dim,dimworld>& asImp () {return static_cast<EntityImp<codim,dim,dimworld>&>(*this);}
   };
 
@@ -653,7 +663,7 @@ namespace Dune {
   public:
     // at this moment no default implementation
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     EntityImp<codim,dim,dimworld>& asImp () {return static_cast<EntityImp<codim,dim,dimworld>&>(*this);}
 
   }; // end EntityDefault
@@ -760,13 +770,13 @@ namespace Dune {
     //! Returns iterator to one past the last son
     HierarchicIteratorImp<dim,dimworld> hend (int maxlevel);
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     EntityImp<0,dim,dimworld>& asImp () {return static_cast<EntityImp<0,dim,dimworld>&>(*this);}
   };
 
@@ -820,7 +830,7 @@ namespace Dune {
     template <int cc> int subIndex ( int i );
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     EntityImp<0,dim,dimworld>& asImp () {return static_cast<EntityImp<0,dim,dimworld>&>(*this);}
   };
   // end EntityDefault
@@ -883,13 +893,13 @@ namespace Dune {
     //! local coordinates within father
     Vec<dim,ct>& local ();
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     EntityImp<dim,dim,dimworld>& asImp () {return static_cast<EntityImp<dim,dim,dimworld>&>(*this);}
   };
 
@@ -906,7 +916,7 @@ namespace Dune {
   public:
     // no default implementation at the moment
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     EntityImp<dim,dim,dimworld>& asImp () {return static_cast<EntityImp<dim,dim,dimworld>&>(*this);}
   };
 
@@ -969,13 +979,13 @@ namespace Dune {
     //! ask for level of entity
     int level ();
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     LevelIteratorImp<codim,dim,dimworld>& asImp ()
     {return static_cast<LevelIteratorImp<codim,dim,dimworld>&>(*this);}
     const LevelIteratorImp<codim,dim,dimworld>& asImp () const
@@ -999,7 +1009,7 @@ namespace Dune {
   public:
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     LevelIteratorImp<codim,dim,dimworld>& asImp () {
       return static_cast<LevelIteratorImp<codim,dim,dimworld>&>(*this);
     }
@@ -1089,15 +1099,15 @@ namespace Dune {
     template <FileFormatType ftype>
     bool readGrid ( const char * filename , ctype &time );
 
-    /*! Checking presence and format of all interface functions. With
+    /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
 
   private:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     const GridImp<dim,dimworld>& asImp () const {return static_cast<const GridImp<dim,dimworld>&>(*this);}
   };
 
@@ -1164,7 +1174,7 @@ namespace Dune {
                 bool adaptive= false, int processor=0 );
 
   protected:
-    //! Barton-Nackman trick
+    //! \internal Barton-Nackman trick
     GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
   };
 

@@ -21,6 +21,7 @@
 namespace Dune {
 
   /** @defgroup yaspgrid Yet Another Structured Parallel Grid
+      \ingroup GridCommon
 
      This is the basis of a parallel implementation of the dune grid interface
      supporting codim 0 and dim.

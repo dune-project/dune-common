@@ -19,10 +19,22 @@
 
 namespace Dune
 {
-  /** @defgroup UGGrid UGGrid Module
+  /** @defgroup UGGrid UGGrid
+      \ingroup GridCommon
 
      This is the implementation of the grid interface
      using the UG grid management system.
+
+     To use this module you need UG (the tool from second floor -
+     http://cox.iwr.uni-heidelberg.de/~ug).
+
+     After compiling UG you must tell %Dune where to find UG, which
+     dimension to use and which dimension your world should have:
+     <tt> ./autogen.sh [OPTIONS] --with-ug=PATH_TO_UG --with-problem-dim=DIM --with-world-dim=DIMWORLD
+     </tt>
+
+     Now you must use the UGGrid with DIM and DIMWORLD, otherwise
+     unpredictable results may occur.
 
      @{
    */

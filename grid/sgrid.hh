@@ -15,7 +15,8 @@
 
 namespace Dune {
 
-  /** @defgroup SGrid Structured Grid Module
+  /** @defgroup SGrid Structured Grid
+      \ingroup GridCommon
 
           This module describes the pilot implementation of the Dune grid interface.
           It implements the grid interface for simple structured meshes.

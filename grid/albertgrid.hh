@@ -65,10 +65,26 @@ namespace Albert
   {
     /** @defgroup AlbertGrid AlbertGrid
        @ingroup GridCommon
+
        This is one implementation of the grid interface providing 2d triangle
        and 3d tetrahedra grids by using the FE Box ALBERT ( ALBERT
        was written by Kunibert Siebert
-       and Alfred Schmidt).
+       and Alfred Schmidt)
+       (http://mathematik.uni-freiburg.de/IAM/Research/projectsdz/albert/).
+
+       Get a copy of the lib and albert.h.
+       Now you must take care to have the two directories
+       PATH_TO_ALBERT/lib and PATH_TO_ALBERT/include. Otherwise %Dune can't
+       find ALBERT.
+
+       Then you must tell %Dune where to find ALBERT, which
+       dimension to use and which dimension your world should have:
+
+       <tt> ./autogen.sh [OPTIONS] --with-albert=PATH_TO_ALBERT --with-problem-dim=DIM --with-world-dim=DIMWORLD
+       </tt>
+
+       Now you must use the AlbertGrid with DIM and DIMWORLD, otherwise
+       unpredictable results may occur.
 
        @{
      */
