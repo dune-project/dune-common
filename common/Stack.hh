@@ -12,7 +12,7 @@ namespace Dune {
   public:
     bool isempty () const;     // Stack leer ?
     bool isfull () const;      // Stack voll (nur bei vorgegebener Groesse)
-    void push_front (T t);     // Einfuegen eines Elementes
+    void push_front (T& t);     // Einfuegen eines Elementes
     T pop_front ();            // Entfernen eines Elementes
     T front () const;          // Inspizieren des obersten Elementes
     int size() const;          // get number of elements in stack
@@ -37,7 +37,7 @@ namespace Dune {
   }
 
   template<class T>
-  inline void Stack<T>::push_front (T t)
+  inline void Stack<T>::push_front (T& t)
   {
     insert_after(this->rbegin(),t);
   }
@@ -59,51 +59,50 @@ namespace Dune {
     return t;
   }
 
+
+  template<class T, int n>
+  class FiniteStack {
+  public:
+    bool isempty () const
+    {
+      return f==0;
+    }
+
+    bool isfull () const
+    {
+      return f>=n;
+    }
+
+    void push_front (T t)
+    {
+      s[f++] = t;
+    }
+
+    T pop_front ()
+    {
+      return s[--f];
+    }
+
+    T front () const
+    {
+      return s[f-1];
+    }
+
+    int size ()
+    {
+      return f;
+    }
+
+    FiniteStack ()
+    {
+      f = 0;
+    }
+
+  private:
+    T s[n];
+    int f;
+  };
+
 }
-
-template<class T, int n>
-class FiniteStack {
-public:
-  bool isempty () const
-  {
-    return f==0;
-  }
-
-  bool isfull () const
-  {
-    return f>=n;
-  }
-
-  void push_front (T t)
-  {
-    s[f++] = t;
-  }
-
-  T pop_front ()
-  {
-    return s[--f];
-  }
-
-  T front () const
-  {
-    return s[f-1];
-  }
-
-  int size ()
-  {
-    return f;
-  }
-
-  FiniteStack ()
-  {
-    f = 0;
-  }
-
-private:
-  T s[n];
-  int f;
-} ;
-
-
 
 #endif
