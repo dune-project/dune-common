@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __GRID_CC__
-#define __GRID_CC__
+#ifndef __DUNE_GRID_CC__
+#define __DUNE_GRID_CC__
 
 #include "../../common/misc.hh"
 
@@ -71,14 +71,43 @@ namespace Dune {
   {
     // simply call all members, this forces compiler to compile them ...
     type();
-    corners();
-    operator[](0);
-    refelem();
+
     Vec<dim,ct> l;
     Vec<dimworld,ct> g;
-    global(l);
-    local(g);
-    checkInside(l);
+
+    // check the methods local,global, refelem and checkInside
+    for(int i=0; i<corners(); i++)
+    {
+      Vec<dimworld,ct> & coord = operator[] (i);
+      l = local  ( coord );
+      if( !checkInside (l) )
+      {
+        coord.print(std::cerr,1);
+        std::cerr << " mapping with local() went wrong! \n";
+      }
+
+      for(int j=0; j<dim; j++)
+      {
+        if( l(j) != refelem()[i](j) )
+        {
+          l.print(std::cerr,1); refelem()[i].print(std::cerr,1);
+          std::cerr << "\nMapping to local coord went wrong! \n";
+        }
+      }
+
+      g = global ( l );
+      for(int j=0; j<dimworld; j++)
+      {
+        if( g(j) != coord(j) )
+        {
+          std::cerr << "\nglobal--local of coord " << i << " failed! \n";
+          std::cerr << "started with "; coord.print(std::cerr,1);
+          std::cerr << "and got: ";     g.print(std::cerr,1);
+          std::cerr << "\n";
+        }
+      }
+    }
+
     integration_element(l);
     if (dim==dimworld) Jacobian_inverse(l);
   }
@@ -861,7 +890,15 @@ namespace Dune {
       // iterate over codimension cc
       std::cout << "checking LevelIterator with codim=" << cc
                 << ", dim=" << dim << ", dimworld=" << dimworld;
-      LevelIteratorImp<cc,dim,dimworld> i = g.lbegin<cc>(0);
+
+      LevelIteratorImp<cc,dim,dimworld> i = g.template lbegin<cc>(0);
+      if( g.size(0,cc) <= 1 )
+      {
+        std::cerr << "\nUse grid with more entities, at least 2 entities! \n";
+        abort();
+      }
+
+      // make ++ on i , so we need a least 2 entities
       i.checkIF();
       std::cout << " OK."  << std::endl;
 
@@ -890,7 +927,6 @@ namespace Dune {
       std::cout << " OK."  << std::endl;
     }
   };
-
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
