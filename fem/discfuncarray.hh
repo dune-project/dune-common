@@ -15,7 +15,9 @@
 namespace Dune {
 
   template <class DiscreteFunctionSpaceType > class LocalFunctionArray;
-  template < class DofType > class DofIteratorArray;
+  template < class DiscreteFunctionType, class GridIteratorType >
+  class LocalFunctionArrayIterator;
+  template < class DofType >                  class DofIteratorArray;
 
   //**********************************************************************
   //
@@ -29,19 +31,30 @@ namespace Dune {
   class DiscFuncArray
     : public DiscreteFunctionDefault < DiscreteFunctionSpaceType,
           DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
-          LocalFunctionArray <DiscreteFunctionSpaceType > ,
+          LocalFunctionArrayIterator ,
           DiscFuncArray <DiscreteFunctionSpaceType> >
   {
     typedef DiscreteFunctionDefault < DiscreteFunctionSpaceType,
         DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
-        LocalFunctionArray <DiscreteFunctionSpaceType > ,
+        LocalFunctionArrayIterator ,
         DiscFuncArray <DiscreteFunctionSpaceType > >
     DiscreteFunctionDefaultType;
+
+    typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscreteFunctionType;
+    typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
 
     enum { myId_ = 0};
   public:
 
+    template <class GridIteratorType>
+    struct Type
+    {
+      typedef LocalFunctionArrayIterator < DiscreteFunctionType,
+          GridIteratorType> LocalFunctionIteratorType;
+    };
+
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
+    typedef DiscFuncArray <typename FunctionSpaceType::Next> Next;
     //typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
 
     //! Constructor make empty DiscFuncArray
@@ -59,14 +72,14 @@ namespace Dune {
     ~DiscFuncArray ();
 
     // ***********  Interface  *************************
-
-    //! access to dof entity corresponding grid entity en
-    //! default implementation is via GlobalDofIterator
-    template <class EntityType>
-    LocalFunctionType & access (EntityType & en );
-
-    //! free access to LocalFunction for next use
-    void done (LocalFunctionType & lf );
+    template <class GridIteratorType>
+    LocalFunctionArrayIterator<DiscreteFunctionType,GridIteratorType>
+    localFunction ( GridIteratorType &it )
+    {
+      LocalFunctionArrayIterator<DiscreteFunctionType,GridIteratorType>
+      tmp ( *this , it );
+      return tmp;
+    }
 
     // we use the default implementation
     // Warning!!! returns reference to local object!
@@ -81,11 +94,11 @@ namespace Dune {
     void clear( );
 
     //! set all dof to value x
-    void set( RangeField x );
-    void setLevel( RangeField x, int level );
+    void set( RangeFieldType x );
+    void setLevel( RangeFieldType x, int level );
 
     void addScaled (const DiscFuncArray <DiscreteFunctionSpaceType> & g,
-                    const RangeField &scalar);
+                    const RangeFieldType &scalar);
 
     //! print all dofs
     void print(std::ostream& s, int level);
@@ -113,7 +126,15 @@ namespace Dune {
     //! read function data from pgm fromat file
     bool read_pgm(const char *filename, int timestep);
 
+    //***** methods that not belong to the interface ************
+
+    //! get local function pointer, if not exists new object is created
+    LocalFunctionType * getLocalFunction ();
+
+    //! free access to LocalFunction for next use
+    void freeLocalFunction (LocalFunctionType * lf );
   private:
+
     // get memory for discrete function
     void getMemory()
     {
@@ -150,16 +171,13 @@ namespace Dune {
     //! maxlevel which is occupied
     int level_;
 
-    //! Vector of Array for each level, the array holds
-    //! the dofs of each level
-    //std::vector < LocalFunctionArray < DiscreteFunctionSpaceType > > vecLocalFunc_;
-    //std::vector < LocalFunctionArray < DiscreteFunctionSpaceType > *> vecLocalFunc_;
-    //int numLocalFunc_;
-    //MemoryProviderType localFuncProvider_;
+    //! pointer to next free local function object
+    //! if this pointer is NULL, new object is created at the class of
+    //! localFunction
     LocalFunctionType * freeLocalFunc_;
 
     //! for all level an Array < RangeField > , the data
-    std::vector < Array < RangeField > > dofVec_;
+    std::vector < Array < RangeFieldType > > dofVec_;
   }; // end class DiscFuncArray
 
 
@@ -177,24 +195,32 @@ namespace Dune {
   {
     typedef FastBaseFunctionSet < DiscreteFunctionSpaceType > BaseFunctionSetType;
     typedef LocalFunctionArray < DiscreteFunctionSpaceType > MyType;
+    typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscFuncType;
 
+    friend class DiscFuncArray <DiscreteFunctionSpaceType>;
   public:
     //! Constructor
     LocalFunctionArray ( const DiscreteFunctionSpaceType &f ,
-                         std::vector < Array < RangeField > > & dofVec );
+                         std::vector < Array < RangeFieldType > > & dofVec );
 
     //! Destructor
     ~LocalFunctionArray ();
 
     //! access to dof number num, all dofs of the dof entity
-    RangeField & operator [] (int num);
+    RangeFieldType & operator [] (int num);
 
     //! return number of degrees of freedom
     int numberOfDofs () const;
 
     //! sum over all local base functions
     template <class EntityType>
-    void evaluate (EntityType &en, const Domain & x, Range & ret);
+    void evaluate (EntityType &en, const DomainType & x, RangeType & ret);
+
+    //********* Method that no belong to the interface *************
+    //! methods that do not belong to the interface but have to be public
+    //! used like setElInfo and so on
+    template <class EntityType > bool init ( EntityType &en );
+  protected:
 
     //! get pointer to next LocalFunction
     MyType * getNext() const;
@@ -202,13 +228,8 @@ namespace Dune {
     //! set pointer to next LocalFunction
     void setNext (MyType * n);
 
-    //! methods that do not belong to the interface but have to be public
-    //! used like setElInfo and so on
-    template <class EntityType > void init ( EntityType &en);
-
-  protected:
     //! needed once
-    Range tmp;
+    RangeType tmp;
 
     //! remember pointer to next LocalFunction
     MyType * next_;
@@ -223,10 +244,10 @@ namespace Dune {
     const DiscreteFunctionSpaceType &fSpace_;
 
     //! Array holding pointers to the local dofs
-    Array < RangeField * > values_;
+    Array < RangeFieldType * > values_;
 
     //! dofVec from all levels of the discrete function
-    std::vector < Array < RangeField > > & dofVec_;
+    std::vector < Array < RangeFieldType > > & dofVec_;
 
     //! do we have the same base function set for all elements
     bool uniform_;
@@ -249,40 +270,29 @@ namespace Dune {
     DofIteratorArray ( Array < DofType > & dofArray , int count )
       :  dofArray_ ( dofArray ) , count_ ( count ) {};
 
-    DofType & operator *()
-    {
-      return dofArray_ [ count_ ];
-    };
+    //! return dof
+    DofType & operator *();
 
-    DofIteratorType & operator++ ()
-    {
-      count_++;
-      return (*this);
-    };
+    //! go next dof
+    DofIteratorArray<DofType> & operator++ ();
 
-    DofIteratorType & operator++ (int i)
-    {
-      count_ += i;
-      return (*this);
-    };
+    //! go next i steps
+    DofIteratorArray<DofType> & operator++ (int i);
 
-    DofType& operator[] (int i) {
-      return dofArray_[i];
-    }
+    //! random access
+    DofType& operator[] (int i);
 
-    bool operator == (const DofIteratorType & I ) const
-    {
-      return count_  == I.count_;
-    }
+    //! compare
+    bool operator == (const DofIteratorArray<DofType> & I ) const;
 
-    bool operator != (const DofIteratorType & I ) const
-    {
-      return count_  != I.count_;
-    }
+    //! compare
+    bool operator != (const DofIteratorArray<DofType> & I ) const;
 
-    int index () { return count_; }
+    //! return actual index
+    int index () const;
 
-    void reset () { count_ = 0; };
+    //! set dof iterator back to begin
+    void reset ();
 
   private:
     //! index
@@ -292,6 +302,75 @@ namespace Dune {
     Array < DofType > &dofArray_;
 
   }; // end DofIteratorArray
+
+  //**************************************************************************
+  //
+  //  --LocalFunctionArrayIterator
+  //
+  //! Iterator to navigate through the local functions
+  //! The Storage of the dofs is implemented via an array
+  //
+  //**************************************************************************
+  template < class DiscFunctionType , class GridIteratorType >
+  class LocalFunctionArrayIterator
+    : public LocalFunctionIteratorDefault <
+          LocalFunctionArray < typename DiscFunctionType::FunctionSpace > ,
+          LocalFunctionArrayIterator < DiscFunctionType, GridIteratorType >
+          >
+
+  {
+    typedef LocalFunctionArray < typename DiscFunctionType::FunctionSpace >
+    LocalFunctionType;
+
+    // just for readability
+    typedef LocalFunctionArrayIterator < DiscFunctionType , GridIteratorType >
+    LocalFunctionArrayIteratorType;
+
+  public:
+
+    //! Constructor
+    LocalFunctionArrayIterator ( DiscFunctionType &df , GridIteratorType & it);
+
+    //! Copy Constructor
+    LocalFunctionArrayIterator ( const LocalFunctionArrayIteratorType & copy);
+
+    //! Desctructor
+    ~LocalFunctionArrayIterator ();
+
+    //! we use localFunc_ as Interface
+    LocalFunctionType & operator *();
+
+    //! we use localFunc_ as Interface
+    LocalFunctionType * operator ->();
+
+    //! go next local function, means go netx grid entity an map to dofs
+    LocalFunctionArrayIteratorType& operator++ ();
+
+    //! go next i steps
+    LocalFunctionArrayIteratorType& operator++ (int i);
+
+    //! compare LocalFucntionIterator
+    bool operator == (const LocalFunctionArrayIteratorType & I ) const;
+
+    //! compare LocalFucntionIterator
+    bool operator != (const LocalFunctionArrayIteratorType & I ) const;
+
+    int index () const;
+
+  private:
+    //! true if local function init was called already
+    bool built_;
+
+    //! GridIteratorType can be LevelIterator, HierarchicIterator or
+    //! NeighborIterator
+    GridIteratorType &it_;
+
+    //! needed for access of local functions
+    DiscFunctionType &df_;
+
+    //! pointer to the local function
+    LocalFunctionType *lf_;
+  }; // end LocalFunctionArrayIterator
 
 } // end namespace Dune
 

@@ -53,7 +53,7 @@ namespace Dune
 
 
   template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::setLevel ( RangeField x, int level )
+  inline void DiscFuncArray< DiscreteFunctionSpaceType >::setLevel ( RangeFieldType x, int level )
   {
     if(!allLevels_ && level != level_)
     {
@@ -61,27 +61,27 @@ namespace Dune
       return;
     }
     int size = dofVec_[level].size();
-    Array < RangeField > &vec = dofVec_[level];
+    Array < RangeFieldType > &vec = dofVec_[level];
     for(int i=0; i<size; i++)
       vec[i] = x;
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::set ( RangeField x )
+  inline void DiscFuncArray< DiscreteFunctionSpaceType >::set ( RangeFieldType x )
   {
     if(allLevels_)
     {
       for(int l=0; l<level_; l++)
       {
         int size = dofVec_[l].size();
-        Array < RangeField > &vec = dofVec_[l];
+        Array < RangeFieldType > &vec = dofVec_[l];
         for(int i=0; i<size; i++)
           vec[i] = x;
       }
     }
 
     int size = dofVec_[level_].size();
-    Array < RangeField > &vec = dofVec_[level_];
+    Array < RangeFieldType > &vec = dofVec_[level_];
     for(int i=0; i<size; i++)
       vec[i] = x;
   }
@@ -101,12 +101,12 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::print(std::ostream &s, int level )
   {
-    RangeField sum = 0.;
+    RangeFieldType sum = 0.;
     int numLevel = const_cast<GridType &> (functionSpace_.getGrid()).maxlevel();
     DofIteratorType enddof = dend ( numLevel );
     for(DofIteratorType itdof = dbegin ( numLevel ); itdof != enddof; ++itdof)
     {
-      s << (*itdof) << " DofValue \n";
+      //    s << (*itdof) << " DofValue \n";
       sum += *itdof;
     }
     s << "sum = " << sum << "\n";
@@ -114,32 +114,33 @@ namespace Dune
   //*************************************************************************
   //  Interface Methods
   //*************************************************************************
-  template<class DiscreteFunctionSpaceType > template <class EntityType>
-  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType&
-  DiscFuncArray< DiscreteFunctionSpaceType >::access (EntityType &en)
+  template<class DiscreteFunctionSpaceType >
+  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType *
+  DiscFuncArray< DiscreteFunctionSpaceType >::getLocalFunction ()
   {
+    //std::cout << "Free Local Function!\n";
     if(!freeLocalFunc_)
     {
       LocalFunctionType *lf = new LocalFunctionType (functionSpace_,dofVec_);
-      lf->init(en);
-      return (*lf);
+      return lf;
     }
     else
     {
       LocalFunctionType *lf = freeLocalFunc_;
       freeLocalFunc_ = lf->getNext();
-      lf->init(en);
-      return (*lf);
+      return lf;
     }
   }
 
   template<class DiscreteFunctionSpaceType >
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::
-  done ( typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType &lf)
+  freeLocalFunction ( typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType *lf)
   {
-    lf.setNext(freeLocalFunc_);
-    freeLocalFunc_ = &lf;
+    //std::cout << "Free Local Function!\n";
+    lf->setNext(freeLocalFunc_);
+    freeLocalFunc_ = lf;
   }
+
 
   template<class DiscreteFunctionSpaceType >
   inline typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
@@ -413,13 +414,13 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::
   addScaled( const DiscFuncArray<DiscreteFunctionSpaceType> &g,
-             const RangeField &scalar )
+             const RangeFieldType &scalar )
   {
     int level = functionSpace_.getGrid().maxlevel();
     int length = dofVec_[level].size();
 
-    Array<RangeField> &v = dofVec_[level];
-    const Array<RangeField> &gvec = g.dofVec_[level];
+    Array<RangeFieldType> &v = dofVec_[level];
+    const Array<RangeFieldType> &gvec = g.dofVec_[level];
 
     for(int i=0; i<length; i++)
       v[i] += scalar*gvec[i];
@@ -431,7 +432,7 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline LocalFunctionArray < DiscreteFunctionSpaceType >::
   LocalFunctionArray( const DiscreteFunctionSpaceType &f ,
-                      std::vector < Array < RangeField > > & dofVec )
+                      std::vector < Array < RangeFieldType > > & dofVec )
     : fSpace_ ( f ), dofVec_ ( dofVec )  , next_ (NULL)
       , baseFuncSet_ (NULL)
       , uniform_(true)
@@ -444,7 +445,7 @@ namespace Dune
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline LocalFunctionArray < DiscreteFunctionSpaceType >::RangeField &
+  inline LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
   LocalFunctionArray < DiscreteFunctionSpaceType >::operator [] (int num)
   {
     return (* (values_[num]));
@@ -459,7 +460,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType > template <class EntityType>
   inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
-  evaluate (EntityType &en, const Domain & x, Range & ret)
+  evaluate (EntityType &en, const DomainType & x, RangeType & ret)
   {
     ret = 0.0;
     for(int i=0; i<numOfDof_; i++)
@@ -484,7 +485,7 @@ namespace Dune
   }
 
   template<class DiscreteFunctionSpaceType > template <class EntityType>
-  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
+  inline bool LocalFunctionArray < DiscreteFunctionSpaceType >::
   init (EntityType &en )
   {
     if((!uniform_) || (!baseFuncSet_))
@@ -498,6 +499,143 @@ namespace Dune
 
     for(int i=0; i<numOfDof_; i++)
       values_ [i] = &((dofVec_[ en.level() ])[fSpace_.mapToGlobal ( en , i)]);
+    return true;
+  }
+
+  //**********************************************************************
+  //
+  //  DofIteratorArray
+  //
+  //**********************************************************************
+  template <class DofType>
+  inline DofType& DofIteratorArray<DofType>::operator *()
+  {
+    return dofArray_ [ count_ ];
+  }
+
+  template <class DofType>
+  inline DofIteratorArray<DofType>& DofIteratorArray<DofType>::operator ++()
+  {
+    count_++;
+    return (*this);
+  }
+
+  template <class DofType>
+  inline DofIteratorArray<DofType>& DofIteratorArray<DofType>::operator ++(int i)
+  {
+    count_ += i;
+    return (*this);
+  }
+
+  template <class DofType>
+  inline DofType& DofIteratorArray<DofType>::operator [](int i)
+  {
+    return dofArray_[i];
+  }
+
+  template <class DofType>
+  inline bool DofIteratorArray<DofType>::
+  operator ==(const DofIteratorArray<DofType> & I) const
+  {
+    return count_ == I.count_;
+  }
+
+  template <class DofType>
+  inline bool DofIteratorArray<DofType>::
+  operator !=(const DofIteratorArray<DofType> & I) const
+  {
+    return count_ != I.count_;
+  }
+
+  template <class DofType>
+  inline int DofIteratorArray<DofType>::index() const
+  {
+    return count_;
+  }
+
+  template <class DofType>
+  inline void DofIteratorArray<DofType>::reset()
+  {
+    count_ = 0;
+  }
+  //**********************************************************************
+  //
+  //  LocalFunctionArrayIterator
+  //
+  //**********************************************************************
+  template <class DiscFuncType , class GridIteratorType >
+  inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
+  LocalFunctionArrayIterator (DiscFuncType &df , GridIteratorType & it) :
+    it_ ( it ) , df_ ( df ) , built_ ( false ) , lf_ ( df_.getLocalFunction() ) {}
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
+  LocalFunctionArrayIterator (const LocalFunctionArrayIteratorType & copy)
+    : it_ ( copy.it_ ) , df_ ( copy.df_ ) , built_ (false)
+      , lf_ ( df_.getLocalFunction() ) {}
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
+  ~LocalFunctionArrayIterator ()
+  {
+    df_.freeLocalFunction( lf_ );
+  }
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline typename LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
+  LocalFunctionType & LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
+  operator *()
+  {
+    if(!built_) lf_->init ( *it_ );
+    return (*lf_);
+  }
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline typename LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
+  LocalFunctionType * LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
+  operator ->()
+  {
+    if(!built_) lf_->init ( *it_ );
+    return lf_;
+  }
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType> &
+  LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::operator ++()
+  {
+    ++it_;
+    built_ = false;
+    return (*this);
+  }
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType> &
+  LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::operator ++(int i)
+  {
+    ++it_.operator ++(i);
+    built_ = false;
+    return (*this);
+  }
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline bool LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
+  operator ==(const LocalFunctionArrayIteratorType & I) const
+  {
+    return it_ == I.it_;
+  }
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline bool LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
+  operator !=(const LocalFunctionArrayIteratorType & I) const
+  {
+    return it_ != I.it_;
+  }
+
+  template <class DiscFuncType , class GridIteratorType >
+  inline int LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
+  index() const
+  {
+    return it_->index();
   }
 
 } // end namespace
