@@ -1,5 +1,6 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+#include "dune/common/misc.hh"
 #include "../spgrid.hh"
 
 namespace Dune {
@@ -12,9 +13,10 @@ namespace Dune {
       InitExchange(spgrid<DIM> & g_) :
         g(g_) {}
       void evaluate(level l, const array<DIM> & coord, int id) {
-        spgrid<DIM>::iterator it(id,g);
-        spgrid<DIM>::index i=*it;
-        spgrid<DIM>::remotelist remote=i.remote();
+        typename spgrid<DIM>::iterator it(id,g);
+        typename spgrid<DIM>::index i=*it;
+        if (! i.overlap()) return;
+        typename spgrid<DIM>::remotelist remote=i.remote();
         /* if i own the data, I'll search all processes
            to receive the data */
         if(i.owner()) {
@@ -47,127 +49,35 @@ namespace Dune {
   template<int DIM> inline
   int spgrid<DIM>::
   front_overlap(level l, int d, const array<DIM> &process) const {
-    int ov1=
-      overlap_[l+1]*(dim_[d]>1)*
-      // and not (perodic and front border process)
-      (!((periodic_[d]==false)&&(process[d]==0)));
-    int ov2=
+    int ov=
       overlap_[l+1]*do_front_share(d,process);
-    if (ov1 != ov2) {
-      std::cout << rank_ << " expected front_overlap[process]=" << ov2
-                << " got " << ov1 << std::endl;
-      throw std::string("ERROR");
-    }
-    return ov2;
-    // return  overlap  if ( >1 processes in this direction
-    return overlap_[l+1]*(dim_[d]>1)*
-           // and not (perodic and front border process)
-           (!((periodic_[d]==false)&&(process[d]==0)));
+    return ov;
   };
 
   template<int DIM> inline
   int spgrid<DIM>::
   front_overlap(level l, int d) const {
-    int ov1=
-      overlap_[l+1]*(dim_[d]>1)*
-      // and not (perodic and front border process)
-      (!((periodic_[d]==false)&&(process_[d]==0)));
-    int ov2=
+    int ov=
       overlap_[l+1]*do_front_share(d);
-    if (ov1 != ov2) {
-      std::cout << rank_ << " expected front_overlap=" << ov2
-                << " got " << ov1 << std::endl;
-      throw std::string("ERROR");
-    }
-    return ov2;
-    // return  overlap  if ( >1 processes in this direction
-    return overlap_[l+1]*(dim_[d]>1)*
-           // and not (perodic and front border process)
-           (!((periodic_[d]==false)&&(process_[d]==0)));
+    return ov;
   };
 
   /** overlap size at end */
   template<int DIM> inline
   int spgrid<DIM>::
   end_overlap(level l, int d, const array<DIM> &process) const {
-    int ov1=
-      overlap_[l+1]*(dim_[d]>1)*
-      // and not (perodic and front border process)
-      (!((periodic_[d]==false)&&(process[d]==dim_[d]-1)));
-    int ov2=
+    int ov=
       overlap_[l+1]*do_end_share(d,process);
-    if (ov1 != ov2) {
-      std::cout << rank_ << " expected front_overlap[process]=" << ov2
-                << " got " << ov1 << std::endl;
-      throw std::string("ERROR");
-    }
-    return ov2;
-    // return  overlap  if ( >1 processes in this direction
-    return overlap_[+1]*(dim_[d]>1)*
-           // and not (perodic and end border process)
-           (!((periodic_[d]==false)&&(process[d]==dim_[d]-1)));
+    return ov;
   };
 
   template<int DIM> inline
   int spgrid<DIM>::
   end_overlap(level l, int d) const {
-    int ov1=
-      overlap_[l+1]*(dim_[d]>1)*
-      // and not (perodic and front border process)
-      (!((periodic_[d]==false)&&(process_[d]==dim_[d]-1)));
-    int ov2=
+    int ov=
       overlap_[l+1]*do_end_share(d);
-    if (ov1 != ov2) {
-      std::cout << rank_ << " expected front_overlap=" << ov2
-                << " got " << ov1 << std::endl;
-      throw std::string("ERROR");
-    }
-    return ov2;
-    // return  overlap  if ( >1 processes in this direction
-    return overlap_[l+1]*(dim_[d]>1)*
-           // and not (perodic and end border process)
-           (!((periodic_[d]==false)&&(process_[d]==dim_[d]-1)));
+    return ov;
   };
-
-#if 0
-  /** overlap size at front */
-  template<int DIM> inline
-  int spgrid<DIM>::
-  front_overlap(level l, int d, const array<DIM> &process) const {
-    // return  overlap  if ( >1 processes in this direction
-    return overlap_[l+1]*(dim_[d]>1)*
-           // and not (perodic and front border process)
-           (!((periodic_[d]==false)&&(process[d]==0)));
-  };
-
-  template<int DIM> inline
-  int spgrid<DIM>::
-  front_overlap(level l, int d) const {
-    // return  overlap  if ( >1 processes in this direction
-    return overlap_[l+1]*(dim_[d]>1)*
-           // and not (perodic and front border process)
-           (!((periodic_[d]==false)&&(process_[d]==0)));
-  };
-
-  /** overlap size at end */
-  template<int DIM> inline
-  int spgrid<DIM>::
-  end_overlap(level l, int d, const array<DIM> &process) const {
-    // return  overlap  if ( >1 processes in this direction
-    return overlap_[+1]*(dim_[d]>1)*
-           // and not (perodic and end border process)
-           (!((periodic_[d]==false)&&(process[d]==dim_[d]-1)));
-  };
-
-  template<int DIM> inline
-  int spgrid<DIM>::
-  end_overlap(level l, int d) const {
-    // return  overlap  if ( >1 processes in this direction
-    return overlap_[l+1]*(dim_[d]>1)*
-           // and not (perodic and end border process)
-           (!((periodic_[d]==false)&&(process_[d]==dim_[d]-1)));
-  };
-#endif
 
   /** maximum index in level l */
   template<int DIM> inline
@@ -245,25 +155,7 @@ namespace Dune {
   const array<DIM>& spgrid<DIM>::
   id_to_coord(level l, int id) const {
     init_add(l);
-#if 0
-    cout << rank_ << " level = " << l << " id = " << id << endl;
-    for (int d=0; d<DIM; d++)
-      cout << rank_ << " " << "d=" << d
-           << " front " << front_overlap(l,d) << endl
-           << rank_ << " " << "d=" << d
-           << " size " << size(l,d) << endl
-           << rank_ << " " << "d=" << d
-           << " end " << end_overlap(l,d) << endl;
-
-    cout << rank_ << " add = " << add << endl;
-    array<DIM> & c = id_to_coord_impl(l,id);
-    for (int d=0; d<DIM; d++)
-      cout << rank_ << " " << "d=" << d
-           << " coord = " << c[d] << endl;
-    return c;
-#else
     return id_to_coord_impl(l,id);
-#endif
   } /* end id_to_coord */
 
   template<int DIM> inline
@@ -381,46 +273,22 @@ namespace Dune {
   int spgrid<DIM>::father_id(level l, const array<DIM> & coord) const {
     assert (l > 0);
     /*
-       A: refined via KeepNumber
+       f[d] = ( x[d] - f_overlap(l,d) ) / 2 + f_overlap(l-1,d)
 
-       |0,1,2,3,4,5|6, , , , , |
-     | 0 ' 1 ' 2 | 3 '   '   |
-
-     | , , , , ,0|1,2,3,4,5,6|
-     |   '   ' 0 | 1 ' 2 ' 3 |
-
-       coord-trafo: f(x_i) = (x_i + 1)/2
-
-       B: refined via KeepSize
-
-     ||0,1,2,3,4,5|6,7, , , , |
-     | 0 ' 1 ' 2 | 3 '   '   |
-
-     | , , , ,0,1|2,3,4,5,6,7|
-     |   '   ' 0 | 1 ' 2 ' 3 |
-
-       coord-trafo: f(x_i) = x_i/2
+       =>       f[d]  =  ( x[d] + shift[d] ) / 2
+           shift[d]  =  2 * f_overlap(l-1,d) - f_overlap(l,d)
      */
     array<DIM> father_coord;
     for (int d=0; d<DIM; d++) {
-      if ( has_coord_shift(l,d) ) {
-        father_coord[d] = (coord[d] + 1) / 2;
-        assert((coord[d] + 1) % 2 == 0);
-      }
-      else {
-        father_coord[d] = coord[d]/ 2;
-        assert((coord[d]) % 2 == 0);
-      }
+      father_coord[d] = (coord[d] + coord_shift(l,d)) / 2;
+      assert((coord[d] + coord_shift(l,d)) % 2 == 0);
     }
     return coord_to_id(l-1, father_coord);
   }; /* end father */
 
   template<int DIM> inline
-  int spgrid<DIM>::has_coord_shift(level l, int d) const {
-    if ( front_overlap(l,d) &&
-         (front_overlap(l,d) == front_overlap(l-1,d)) )
-      return 1;
-    return 0;
+  int spgrid<DIM>::coord_shift(level l, int d) const {
+    return 2 * front_overlap(l-1,d) - front_overlap(l,d);
   }
 
   ////////////////////////////////////////////////////////////////////////////
