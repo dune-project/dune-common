@@ -75,7 +75,6 @@ namespace Dune {
     friend class OneDGridHierarchicIterator<dim,dimworld>;
     friend class OneDGridIntersectionIterator<dim,dimworld>;
 
-
     /** \brief OneDGrid is only implemented for 1d */
     CompileTimeChecker< (dim==1 && dimworld==1) >   Use_OneDGrid_only_for_1d;
 

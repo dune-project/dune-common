@@ -38,7 +38,7 @@ namespace Dune {
   public:
 
     //! Constructor with a given grid level
-    OneDGridEntity(int level, double coord) : level_(level), geo_(coord) {
+    OneDGridEntity(int level, double coord) : geo_(coord), level_(level) {
       std::cout << "Creating vertex at " << coord << std::endl;
     }
 
@@ -157,7 +157,7 @@ namespace Dune {
     template<int cc>
     int count () const {
       assert(cc==0 || cc==1);
-      return (cc=0) ? 1 : 2;
+      return (cc==0) ? 1 : 2;
     }
 
     /** \brief Return index of sub entity with codim = cc and local number i
@@ -174,19 +174,20 @@ namespace Dune {
      *  are numbered 0 ... count<cc>()-1
      */
     template<int cc>
-    OneDGridLevelIterator<cc,dim,dimworld, All_Partition> entity (int i) {
-      assert(i==0 || i==1);
-      return OneDGridLevelIterator<cc,dim,dimworld,All_Partition>(geo_.vertex[i]);
-    }
+    OneDGridLevelIterator<cc,dim,dimworld, All_Partition> entity (int i);
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
-    OneDGridIntersectionIterator<dim,dimworld> ibegin ();
+    OneDGridIntersectionIterator<dim,dimworld> ibegin (){
+      DUNE_THROW(NotImplemented, "OneDGrid::ibegin() not implemented!");
+    }
 
     //! Reference to one past the last neighbor
-    OneDGridIntersectionIterator<dim,dimworld> iend ();
+    OneDGridIntersectionIterator<dim,dimworld> iend (){
+      DUNE_THROW(NotImplemented, "OneDGrid::iend() not implemented!");
+    }
 
     //! returns true if Entity has children
     bool hasChildren () const {
@@ -207,17 +208,57 @@ namespace Dune {
        several times. If we store interpolation matrices, this is tolerable.
        We assume that on-the-fly implementation of numerical algorithms
        is only done for simple discretizations. Assumes that meshes are nested.
+       \todo Implement this!
      */
-    OneDGridElement<dim,dim>& father_relative_local ();
+    OneDGridElement<dim,dim>& father_relative_local () {
+      DUNE_THROW(NotImplemented, "OneDGrid::father_relative_local() not implemented!");
+    }
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
      */
-    OneDGridHierarchicIterator<dim,dimworld> hbegin (int maxlevel);
+    OneDGridHierarchicIterator<dim,dimworld> hbegin (int maxlevel) {
+
+      OneDGridHierarchicIterator<dim,dimworld> it(maxlevel);
+
+      if (level()<maxlevel) {
+
+        // Load sons of old target onto the iterator stack
+        if (hasChildren()) {
+          typename OneDGridHierarchicIterator<dim,dimworld>::StackEntry se0;
+          se0.element = sons_[0];
+          se0.level   = level() + 1;
+          it.elemStack.push(se0);
+
+          typename OneDGridHierarchicIterator<dim,dimworld>::StackEntry se1;
+          se1.element = sons_[1];
+          se1.level   = level() + 1;
+          it.elemStack.push(se1);
+        }
+
+      }
+
+      if (it.elemStack.empty()) {
+        //it.virtualEntity_.setToTarget(0);
+        it.target_ = ElementIterator();
+      } else {
+        // Set intersection iterator to first son
+        //it.virtualEntity_.setToTarget(it.elemStack.top().element, it.elemStack.top().level);
+        it.target_ = it.elemStack.top().element;
+      }
+
+      return it;
+    }
 
     //! Returns iterator to one past the last son
-    OneDGridHierarchicIterator<dim,dimworld> hend (int maxlevel);
+    OneDGridHierarchicIterator<dim,dimworld> hend (int maxlevel) {
+      OneDGridHierarchicIterator<dim,dimworld> it(maxlevel);
+
+      it.target_ = ElementIterator();
+
+      return it;
+    }
 
     // ***************************************************************
     //  Interface for Adaptation
@@ -236,6 +277,7 @@ namespace Dune {
         adaptationState = REFINED;
       else
         adaptationState = NONE;
+      return false;
     }
 
     /** \todo Please doc me! */
@@ -262,8 +304,15 @@ namespace Dune {
 
   }; // end of OneDGridEntity codim = 0
 
-  // Include class method definitions
-  //#include "uggridentity.cc"
+#if 0
+  template<>
+  OneDGridLevelIterator<1,1,1, All_Partition>
+  OneDGridEntity<0,1,1>::entity<1>(int i)
+  {
+    assert(i==0 || i==1);
+    return OneDGridLevelIterator<cc,dim,dimworld,All_Partition>(geo_.vertex[i]);
+  }
+#endif
 
 } // namespace Dune
 

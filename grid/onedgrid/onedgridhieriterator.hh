@@ -33,34 +33,80 @@ namespace Dune {
 
     friend class OneDGridEntity<0,dim,dimworld>;
 
-    // Either OneD3d::ELEMENT or OneD2d:ELEMENT
-    //typedef typename TargetType<0,dim>::T OneDElementType;
+    typedef typename DoubleLinkedList<OneDGridEntity<0,dim,dimworld> >::Iterator ElementIterator;
 
     // Stack entry
     struct StackEntry {
-      OneDGridElement<0,dim>* element;
+      ElementIterator element;
+      /** \todo Do we need the level ? */
       int level;
     };
 
   public:
 
     //! the default Constructor
-    OneDGridHierarchicIterator(int actLevel,int maxLevel);
+    OneDGridHierarchicIterator(int maxlevel) : elemStack() {
+      maxlevel_ = maxlevel;
+      target_   = ElementIterator();
+    }
 
     //! prefix increment
-    OneDGridHierarchicIterator& operator ++();
+    OneDGridHierarchicIterator& operator ++() {
+
+      if (elemStack.empty())
+        return (*this);
+
+      StackEntry old_target = elemStack.pop();
+
+      // Traverse the tree no deeper than maxlevel
+      if (old_target.level < maxlevel_) {
+
+        // Load sons of old target onto the iterator stack
+        if (old_target.element.hasChildren()) {
+          StackEntry se0;
+          se0.element = old_target.element.sons_[0];
+          se0.level   = old_target.level + 1;
+          elemStack.push(se0);
+
+          StackEntry se1;
+          se1.element = old_target.element.sons_[1];
+          se1.level   = old_target.level + 1;
+          elemStack.push(se1);
+        }
+
+      }
+
+      if (elemStack.empty())
+        //virtualEntity_.setToTarget(0);
+        target_ = ElementIterator();
+      else
+        //virtualEntity_.setToTarget(elemStack.top().element, elemStack.top().level);
+        target_ = elemStack.top().element;
+
+      return (*this);
+    }
 
     //! equality
-    bool operator== (const OneDGridHierarchicIterator& i) const;
+    bool operator== (const OneDGridHierarchicIterator& other) const {
+      return ( (elemStack.size()==0 && other.elemStack.size()==0) ||
+               ((elemStack.size() == other.elemStack.size()) &&
+                (elemStack.top().element == other.elemStack.top().element)));
+    }
 
     //! inequality
-    bool operator!= (const OneDGridHierarchicIterator& i) const;
+    bool operator!= (const OneDGridHierarchicIterator& other) const {
+      return !((*this) == other);
+    }
 
     //! dereferencing
-    OneDGridEntity<0,dim,dimworld>& operator*();
+    OneDGridEntity<0,dim,dimworld>& operator*() {
+      return *target_;
+    }
 
     //! arrow
-    OneDGridEntity<0,dim,dimworld>* operator->();
+    OneDGridEntity<0,dim,dimworld>* operator->() {
+      return target_;
+    }
 
   private:
 
@@ -68,6 +114,8 @@ namespace Dune {
     int maxlevel_;
 
     Stack<StackEntry> elemStack;
+
+    ElementIterator target_;
 
   };
 
