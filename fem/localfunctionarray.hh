@@ -44,7 +44,7 @@ namespace Dune {
 
     int numberOfDofs ()
     {
-      if (!built_) std::cout << "Warning: LocalFunction nout built!\n";
+      if (!built_) std::cout << "Warning: LocalFunction not built!\n";
       return numOfDof_;
     };
 
@@ -66,16 +66,25 @@ namespace Dune {
     void init ( EntityType &en )
     {
       built_  = false;
-      //std::cout << "Init LocalFunctionArray! \n";
+      //std::cout << en.index() << " Init LocalFunctionArray! \n";
       dofArray_ = & dofVec_ [ en.level() ];
       baseFuncSet_ = & ( fSpace_.getBaseFunctionSet(en) );
       numOfDof_ = baseFuncSet_->getNumberOfBaseFunctions();
       if(numOfDof_ > map_.size())
         map_.resize( numOfDof_ );
       for(int i=0; i<numOfDof_; i++)
+      {
         map_ [i] = fSpace_.mapToGlobal ( en , i);
+      }
+
       built_ = true;
     };
+
+    void print()
+    {
+      for(int i=0; i<numOfDof_; i ++)
+        std::cout << this->operator [] (i) << " Dof "<< i << "\n";
+    }
 
   protected:
     //! needed once
