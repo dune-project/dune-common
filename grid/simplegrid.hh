@@ -44,26 +44,54 @@ namespace Dune {
   template<int dim, int dimworld>            class SimpleNeighborIterator;
   template<int dim, int dimworld>            class SimpleHierarchicIterator;
 
+  /** \todo Please doc me! */
   template<int dim>
   struct levelinfo {
-    int level;                    // level of this info struct
-    int ne[dim];                  // number of elements per level and direction
-    int nv[dim];                  // number of vertices per level and direction
-    simplegrid_ctype h[dim];      // mesh size per direction
-    int ne_offset[dim];           // offset of element neighbor in lexicographic ordering
-    int nv_offset[dim];           // offset of vertex neighbor in lexicographic ordering
-    int nelements;                // total number of elements on this level
-    int nvertices;                // total number of vertices on this level
-    simplegrid_ctype volume;      // integration element codim 0
-    simplegrid_ctype ie_codim_1[2*dim]; // integration element codim 1
+
+    /** \brief Level of this info struct */
+    int level;
+
+    /** \brief Number of elements per level and direction */
+    int ne[dim];
+
+    /** \brief Number of vertices per level and direction */
+    int nv[dim];
+
+    /** \brief Mesh size for each direction */
+    simplegrid_ctype h[dim];
+
+    /** \brief Offset of element neighbor in lexicographic ordering */
+    int ne_offset[dim];
+
+    /** \brief Offset of vertex neighbor in lexicographic ordering */
+    int nv_offset[dim];
+
+    /** \brief Total number of elements on this level */
+    int nelements;
+
+    /** \brief Total number of vertices on this level */
+    int nvertices;
+
+    /** \brief Integration element codim 0 */
+    simplegrid_ctype volume;
+
+    /** \brief integration element codim 1 */
+    simplegrid_ctype ie_codim_1[2*dim];
+
+    /** \todo Please doc me! */
     simplegrid_ctype h_face[2*dim][dim-1];
+
+    /** \todo Please doc me! */
     short dir_face[2*dim][dim-1];
+
+    /** \todo Please doc me! */
     simplegrid_ctype facevol[dim];
   };
 
   //=======================================================================================================
   // The reference elements
-  // singleton holding reference elements
+
+  /** Singleton holding reference elements */
   template<int dim>
   struct SimpleReferenceElement {
     static levelinfo<dim> li;
@@ -409,10 +437,10 @@ namespace Dune {
 
     //   SimpleElement<dim,dim>& operator= (const SimpleElement<dim,dim>& x)
     //   {
-    //  id = x.id;
-    //  for (int i=0; i<dim; ++i) {coord[i]=x.coord[i]; s[i]=x.s[i];}
-    //  li = x.li;
-    //  return *this;
+    //      id = x.id;
+    //      for (int i=0; i<dim; ++i) {coord[i]=x.coord[i]; s[i]=x.s[i];}
+    //      li = x.li;
+    //      return *this;
     //   }
 
   private:
@@ -843,14 +871,14 @@ namespace Dune {
     SimpleLevelIterator<dim,dim,dimworld> entity<dim> (int i)
     {
       // THIS FUNCTION IS NOT IMPLEMENTED CORRECTLY
-      //        int n=0;
-      //        for (int k=0; k<dim; ++k)
-      //          {
-      //                n += coord[k]*li->nv_offset[k];
-      //                if (i&(1<<k))
-      //                  n += li->nv_offset[k];
-      //          }
-      //        return SimpleLevelIterator<dim,dim,dimworld>(li,n);
+      //      int n=0;
+      //      for (int k=0; k<dim; ++k)
+      //        {
+      //              n += coord[k]*li->nv_offset[k];
+      //              if (i&(1<<k))
+      //                n += li->nv_offset[k];
+      //        }
+      //      return SimpleLevelIterator<dim,dim,dimworld>(li,n);
     }
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
@@ -1192,9 +1220,10 @@ namespace Dune {
     // these are all members specific to sgrid
 
     /*! constructor, subject to change!
-       H_: size of domain
-       N_: coarse grid size, #elements in one direction
-       L_: number of levels 0,...,L_-1, maxlevel = L_-1
+       @param H_ size of domain
+       @param N_ coarse grid size, #elements in one direction
+       \todo The following parameter doesn't actually exist!
+       @param L_ number of levels 0,...,L_-1, maxlevel = L_-1
      */
     SimpleGrid (int* N_, double* H_)
     {
@@ -1252,6 +1281,7 @@ namespace Dune {
         li[L-1].nvertices *= (li[L-1].ne[i]+1);
     }
 
+    /// \todo Doc me!!
     void globalRefine (int refCount)
     {
       // refine grid once
@@ -1312,6 +1342,10 @@ namespace Dune {
         li[L-1].nvertices *= (li[L-1].ne[i]+1);
     }
 
+    /** \brief Returns information about a given grid level
+     *
+     * \todo Make sure the level exists!
+     */
     levelinfo<dim>* get_levelinfo (int l) {return &li[l];}
 
     //! write Grid to file filename and store time
