@@ -124,6 +124,32 @@ namespace Dune
     return *this;
   }
 
+  // operator +=
+  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
+      class LocalFunctionImp, class DiscreteFunctionImp >
+  inline void DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
+      DofIteratorImp , LocalFunctionImp,DiscreteFunctionImp >::
+  addScaled( const Vector< DiscreteFunctionSpaceType::RangeField > & g ,
+             const DiscreteFunctionSpaceType::RangeField &scalar)
+  {
+    typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
+        DofIteratorImp , LocalFunctionImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
+
+    DiscreteFunctionDefaultType &gc =
+      const_cast<DiscreteFunctionDefaultType &>( static_cast<const DiscreteFunctionDefaultType &> ( g ));
+    // we would need const_iterators.....
+
+    int level = getFunctionSpace().getGrid().maxlevel();
+
+    DofIteratorImp endit = dend ( level );
+    DofIteratorImp git = gc.dbegin ( level );
+    for(DofIteratorImp it = dbegin( level ); it != endit; ++it)
+    {
+      *it += (scalar* (*git));
+      ++git;
+    }
+  }
+
   // operator -=
   template<class DiscreteFunctionSpaceType, class DofIteratorImp,
       class LocalFunctionImp, class DiscreteFunctionImp >
