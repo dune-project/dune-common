@@ -849,9 +849,13 @@ namespace Dune
   inline AlbertGridEntity < 0, 2, 2 >::
   ~AlbertGridEntity()
   {
+    // we only delete faceEntity_ because edgeEntity_ can only be
+    // created in entity<2,3,3> which is not the same class
     if(faceEntity_) delete faceEntity_;
   }
 
+  //template <int dim, int dimworld>
+  //inline AlbertGridEntity < 0, dim, dimworld >::
   inline AlbertGridEntity < 0, 3, 3 >::
   ~AlbertGridEntity()
   {
@@ -947,6 +951,7 @@ namespace Dune
     return (*edgeEntity_);
   }
   //***************************
+
   template<int dim, int dimworld>
   inline ALBERT EL_INFO* AlbertGridEntity < 0 , dim ,dimworld >::
   getElInfo() const
@@ -975,7 +980,7 @@ namespace Dune
       // because the global index of elinfo is unique for all levels
       return grid_.indexOnLevel<0>(num,0);
 #endif
-    return grid_.indexOnLevel<0>(globalIndex(),0);
+    return grid_.indexOnLevel<0>( this->globalIndex() , 0);
   }
 
   template< int dim, int dimworld>
@@ -1783,9 +1788,9 @@ namespace Dune
   {
     // die 0 ist wichtig, weil Face 0, heist hier jetzt Element
     ALBERT EL_INFO *elInfo =
-      goNextEntity<codim>(&travStack_, virtualEntity_.getElInfo());
+      goNextEntity<codim>(manageStack_.getStack(), virtualEntity_.getElInfo());
     for(int i=1; i<= steps; i++)
-      elInfo = goNextEntity<codim>(&travStack_,virtualEntity_.getElInfo());
+      elInfo = goNextEntity<codim>(manageStack_.getStack(),virtualEntity_.getElInfo());
 
     virtualEntity_.setElInfo(elInfo,face_,edge_,vertex_);
 
@@ -2074,7 +2079,7 @@ namespace Dune
     for(int level=0; level <= maxlevel; level++)
     {
       typedef typename Grid::Traits<0>::LevelIterator LevelIterator;
-      LevelIterator endit = grid.lend<0>(level);
+      LevelIterator endit = grid.lend<0> (level);
       for(LevelIterator it = grid.lbegin<0> (level); it != endit; ++it)
       {
         for(int local=0; local<Grid::dimension+1; local++)
@@ -2086,26 +2091,6 @@ namespace Dune
       }
       // remember the number of entity on level and codim = 0
     }
-#if 0
-    ALBERT FLAGS travFlags = FILL_NOTHING | CALL_LEAF_EL;
-
-    // get traverse_stack
-    //ALBERT TRAVERSE_STACK * travStack = ALBERT get_traverse_stack();
-    ALBERT TRAVERSE_STACK travStack;
-    initTraverseStack(&travStack);
-
-    // diese Methode muss neu geschrieben werden, da man
-    // die ParentElement explizit speichern moechte.
-    ALBERT EL_INFO* elInfo =
-      ALBERT traverse_first(&travStack, mesh, -1,travFlags);
-
-    while(elInfo)
-    {
-      for(int i=0; i<N_VERTICES; i++)
-        checkMark(elInfo,i);
-      elInfo = ALBERT traverse_next(&travStack,elInfo);
-    }
-#endif
   }
 
   void AlbertMarkerVector::print()
@@ -2459,44 +2444,48 @@ namespace Dune
       return levelIndex_[codim][globalIndex];
   }
 
+  // create lookup table for indices of the elements
   template < int dim, int dimworld >
   inline void AlbertGrid < dim, dimworld >::markNew()
   {
+    // only for gcc, means notin'
+    typedef AlbertGrid < dim ,dimworld > GridType;
 
     if(mesh_->n_hier_elements > levelIndex_[0].size())
-      makeNewSize(levelIndex_[0], 2*mesh_->n_hier_elements);
+      makeNewSize(levelIndex_[0], mesh_->n_hier_elements);
 
     if((maxlevel_+1)*(numCodim) > size_.size())
       makeNewSize(size_, 2*((maxlevel_+1)*numCodim));
 
-    AlbertGrid<dim,dimworld> &grid = (*this);
+    //  AlbertGrid<dim,dimworld> &grid = (*this);
 
-    for(int level=0; level <= grid.maxlevel(); level++)
+    // the easiest way, in Albert all elements have unique global element
+    // numbers, therefore we make one big array from which we get with the
+    // global unique number the local level number
+    for(int level=0; level <= maxlevel_; level++)
     {
-      typedef typename Traits<0>::LevelIterator LevelIterator;
+      typedef AlbertGridLevelIterator<0,dim,dimworld> LevelIterator;
       int num = 0;
-      LevelIterator endit = grid.lend<0>(level);
-      for(LevelIterator it = grid.lbegin<0> (level); it != endit; ++it)
+      LevelIterator endit = lend<0>(level);
+      for(LevelIterator it = lbegin<0> (level); it != endit; ++it)
       {
         int no = it->globalIndex();
-        //      printf("Global %d , local %d , level %d \n",no,num,level);
         levelIndex_[0][no] = num;
         num++;
       }
       // remember the number of entity on level and codim = 0
       size_[level*numCodim + 0] = num;
-      //std::cout << size_[level*maxlevel_ + 0] << " size \n";
     };
 
     if((maxlevel_+1) * mesh_->n_vertices > levelIndex_[dim].size())
       makeNewSize(levelIndex_[dim], ((maxlevel_+1)* mesh_->n_vertices));
 
-    for(int level=0; level <= grid.maxlevel(); level++)
+    for(int level=0; level <= maxlevel_; level++)
     {
-      typedef typename Traits<dim>::LevelIterator LevelIterator;
+      typedef AlbertGridLevelIterator<dim,dim,dimworld> LevelIterator;
       int num = 0;
-      LevelIterator endit = grid.lend<dim>(level);
-      for(LevelIterator it = grid.lbegin<dim> (level); it != endit; ++it)
+      LevelIterator endit = lend<dim>(level);
+      for(LevelIterator it = lbegin<dim> (level); it != endit; ++it)
       {
         int no = it->globalIndex();
         levelIndex_[dim][level*mesh_->n_vertices + no] = num;
@@ -2505,8 +2494,7 @@ namespace Dune
       // remember the number of entity on level and codim = 0
       size_[level*numCodim + dim] = num;
     };
-  } // end class AlbertGrid
-
+  }
 
 
 } // end namespace dune
