@@ -1128,7 +1128,7 @@ namespace Dune
   AlbertaGridEntity <0,dim,GridImp>::entity ( int i ) const
   {
     AlbertaGridLevelIterator<cc,All_Partition,GridImp> tmp (grid_, level() ,elInfo_,
-                                                            grid_. template indexOnLevel<cc>( el_index() ,level()),i,0,0);
+                                                            grid_. template indexOnLevel<cc>( globalIndex() ,level()),i,0,0);
     return tmp;
   }
 
