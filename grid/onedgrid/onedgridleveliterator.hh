@@ -11,6 +11,41 @@
 
 namespace Dune {
 
+  template<int codim, class GridImp>
+  class OneDGridEntityPointer
+    : public EntityPointerDefault <codim, GridImp, Dune::OneDGridEntityPointer<codim,GridImp> >
+  {
+    enum { dim = GridImp::dimension };
+  public:
+    typedef typename GridImp::template codim<codim>::Entity Entity;
+
+    //! equality
+    bool equals(const OneDGridEntityPointer<codim,GridImp>& other) const {
+      return other.target_ == target_;
+    }
+
+    //! dereferencing
+    Entity& dereference() const {return virtualEntity_;}
+
+    //! ask for level of entity
+    int level () const {return target_->level();}
+
+  protected:
+
+    /** \brief Constructor from a given iterator */
+    OneDGridEntityPointer(OneDEntityImp<dim-codim>* it)
+    /*: virtualEntity_()*/ {
+      target_ = it;
+      virtualEntity_.setToTarget(it);
+    };
+
+  protected:
+    mutable OneDEntityWrapper<codim,GridImp::dimension,GridImp> virtualEntity_;
+
+    OneDEntityImp<dim-codim>* target_;
+  };
+
+
   //**********************************************************************
   //
   // --OneDGridLevelIterator
@@ -20,9 +55,10 @@ namespace Dune {
    */
   template<int codim, PartitionIteratorType pitype, class GridImp>
   class OneDGridLevelIterator :
+    public OneDGridEntityPointer <codim, GridImp>,
     public LevelIteratorDefault <codim, pitype, GridImp, OneDGridLevelIterator>
   {
-
+  public:
     enum {dim=GridImp::dimension};
     friend class OneDGridLevelIteratorFactory<codim>;
     friend class OneDGrid<dim,GridImp::dimensionworld>;
@@ -35,36 +71,16 @@ namespace Dune {
 
     /** \brief Constructor from a given iterator */
     OneDGridLevelIterator<codim,pitype, GridImp>(OneDEntityImp<dim-codim>* it)
-    /*: virtualEntity_()*/ {
-      target_ = it;
-      virtualEntity_.setToTarget(it);
-    }
+      : OneDGridEntityPointer<codim, GridImp>(it)
+    {}
 
   public:
 
     //! prefix increment
     void increment() {
-      target_ = target_->succ_;
-      virtualEntity_.setToTarget(target_);
+      this->target_ = this->target_->succ_;
+      this->virtualEntity_.setToTarget(this->target_);
     }
-
-    //! equality
-    bool equals (const OneDGridLevelIterator<codim, pitype, GridImp>& other) const {
-      return other.target_ == target_;
-    }
-
-    //! dereferencing
-    Entity& dereference() const {return virtualEntity_;}
-
-    //! ask for level of entity
-    int level () const {return target_->level();}
-
-  private:
-
-    mutable OneDEntityWrapper<codim,GridImp::dimension,GridImp> virtualEntity_;
-
-    OneDEntityImp<dim-codim>* target_;
-
   };
 
 }  // namespace Dune
