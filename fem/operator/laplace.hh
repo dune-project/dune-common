@@ -157,7 +157,7 @@ namespace Dune
 
       for(i=0; i<matSize; i++)
         for (j=0; j<=i; j++ )
-          mat(i,j)=0.0;
+          mat[j][i]=0.0;
 
       for ( int pt=0; pt < quad.nop(); pt++ )
       {
@@ -176,12 +176,12 @@ namespace Dune
           ret[0] *= quad.weight( pt );
           for(i=0; i<matSize; i++)
             for (j=0; j<=i; j++ )
-              mat(i,j) += ( mygrad[i][0] * mygrad[j][0] ) * ret[0];
+              mat[j][i] += ( mygrad[i][0] * mygrad[j][0] ) * ret[0];
         }
         else{
           for(i=0; i<matSize; i++)
             for (j=0; j<=i; j++ )
-              mat(i,j) += ( mygrad[i][0] * mygrad[j][0] ) * quad.weight( pt );
+              mat[j][i] += ( mygrad[i][0] * mygrad[j][0] ) * quad.weight( pt );
         }
 
 
@@ -190,11 +190,11 @@ namespace Dune
 
       for(i=0; i<matSize; i++)
         for (j=0; j<=i; j++ )
-          mat(i,j) *= vol;
+          mat[j][i] *= vol;
 
       for(i=0; i<matSize; i++)
         for (j=matSize; j>i; j--)
-          mat(i,j) = mat(j,i);
+          mat[j][i] = mat[i][j];
 
       return;
     }
