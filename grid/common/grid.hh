@@ -1075,11 +1075,13 @@ namespace Dune {
     //! return GridIdentifierType of Grid, i.e. SGrid_Id or AlbertGrid_Id ...
     GridIdentifier type();
 
-    //! write Grid to file filename
-    bool writeGrid ( const char * filename );
+    //! write Grid to file filename , only ascii supported
+    template <FileFormatType ftype>
+    bool writeGrid ( const char * filename , ctype time );
 
-    //! read Grid from file filename
-    bool readGrid ( const char * filename );
+    //! read Grid from file filename , only ascii supported
+    template <FileFormatType ftype>
+    bool readGrid ( const char * filename , ctype &time );
 
     /*! Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
