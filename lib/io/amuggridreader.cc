@@ -451,9 +451,10 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::read(Dune::UGGrid<3,3>& g
   /** \todo Check whether this release is necessary */
   /* here all temp memory since CreateMultiGrid is released */
   //UG3d::ReleaseTmpMem(MGHEAP(theMG),MG_MARK_KEY(theMG));
-#define FROM_TOP   1
-#define ReleaseTmpMem(p,k) Release(p,FROM_TOP,k)
+  //#define FROM_TOP   1
+#define ReleaseTmpMem(p,k) Release(p, UG3d::FROM_TOP,k)
   ReleaseTmpMem(theMG->theHeap, theMG->MarkKey);
+#undef ReleaseTmpMem
   theMG->MarkKey = 0;
 
   UG3d::UserWriteF("Coarse grid fixed. Do not call fixcoarsegrid.\n");

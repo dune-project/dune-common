@@ -17,21 +17,17 @@
 #include "../common/array.hh"
 #include "common/grid.hh"
 
-//#include "albertgrid/agmemory.hh"
-
 namespace Dune
 {
   /** @defgroup UGGrid UGGrid Module
 
-     This is one implementation of the grid interface providing 2d triangle
-     and 3d tetrahedra grids by using the FE Box ALBERT ( ALBERT
-     was written by Kunibert Siebert
-     and Alfred Schmidt).
+     This is the implementation of the grid interface
+     using the UG grid management system.
 
      @{
    */
 
-  // i.e. double or float
+  /** \brief The type used by UG to store coordinates */
   typedef double UGCtype;
 
 
@@ -219,164 +215,8 @@ namespace Dune
     ALBERT EL_INFO * _elInfo;
 #endif
   };
-  //**********************************************************************
-  //
-  // --UGGridIntersectionIterator
-  // --IntersectionIterator
-  /*!
-     Mesh entities of codimension 0 ("elements") allow to visit all neighbors, wh
-     a neighbor is an entity of codimension 0 which has a common entity of codimens
-     These neighbors are accessed via a IntersectionIterator. This allows the implement
-     non-matching meshes. The number of neigbors may be different from the number o
-     of an element!
-   */
-  template<int dim, int dimworld>
-  class UGGridIntersectionIterator :
-    public IntersectionIteratorDefault <dim,dimworld, UGCtype,
-        UGGridIntersectionIterator,UGGridEntity,
-        UGGridElement, UGGridBoundaryEntity>
-  {
-  public:
-    //! know your own dimension
-    //enum { dimension=dim };
 
-    //! know your own dimension of world
-    //enum { dimensionworld=dimworld };
-
-    //! prefix increment
-    UGGridIntersectionIterator& operator ++();
-
-    //! postfix increment
-    UGGridIntersectionIterator& operator ++(int i);
-
-    //! The default Constructor
-    UGGridIntersectionIterator(UGGrid<dim,dimworld> &grid,int level);
-
-#if 0
-    //! The Constructor
-    UGGridIntersectionIterator(UGGrid<dim,dimworld> &grid,int level,
-                               ALBERT EL_INFO *elInfo);
-#endif
-
-    //! The Destructor
-    ~UGGridIntersectionIterator();
-
-    //! equality
-    bool operator== (const UGGridIntersectionIterator& i) const;
-
-    //! inequality
-    bool operator!= (const UGGridIntersectionIterator& i) const;
-
-    //! access neighbor, dereferencing
-    UGGridEntity<0,dim,dimworld>& operator*();
-
-    //! access neighbor, arrow
-    UGGridEntity<0,dim,dimworld>* operator->();
-
-    //! return true if intersection is with boundary. \todo connection with
-    //! boundary information, processor/outer boundary
-    bool boundary ();
-
-    //! return true if across the edge an neighbor on this level exists
-    bool neighbor ();
-
-    //! return information about the Boundary
-    UGGridBoundaryEntity<dim,dimworld> & boundaryEntity ();
-
-    //! return unit outer normal, this should be dependent on local
-    //! coordinates for higher order boundary
-    Vec<dimworld,UGCtype>& unit_outer_normal (Vec<dim-1,UGCtype>& local);
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    Vec<dimworld,UGCtype>& unit_outer_normal ();
-
-    //! intersection of codimension 1 of this neighbor with element where
-    //! iteration started.
-    //! Here returned element is in LOCAL coordinates of the element
-    //! where iteration started.
-    UGGridElement<dim-1,dim>& intersection_self_local ();
-
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    UGGridElement<dim-1,dimworld>& intersection_self_global ();
-
-    //! local number of codim 1 entity in self where intersection is contained in
-    int number_in_self ();
-
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in LOCAL coordinates of neighbor
-    UGGridElement<dim-1,dim>& intersection_neighbor_local ();
-
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in LOCAL coordinates of neighbor
-    UGGridElement<dim-1,dimworld>& intersection_neighbor_global ();
-
-    //! local number of codim 1 entity in neighbor where intersection is contained
-    int number_in_neighbor ();
-
-    //! return outer normal, this should be dependent on local
-    //! coordinates for higher order boundary
-    Vec<dimworld,UGCtype>& outer_normal (Vec<dim-1,UGCtype>& local);
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    Vec<dimworld,UGCtype>& outer_normal ();
-
-  private:
-    //**********************************************************
-    //  private methods
-    //**********************************************************
-
-    //! setup the virtual neighbor
-    void setupVirtEn ();
-
-    //! know the grid were im comming from
-    UGGrid<dim,dimworld> &grid_;
-
-    //! the actual level
-    int level_;
-
-    //! implement with virtual element
-    //! Most of the information can be generated from the ALBERT EL_INFO
-    //! therefore this element is only created on demand.
-    bool builtNeigh_;
-    UGGridEntity<0,dim,dimworld> *virtualEntity_;
-
-    // for memory management
-    typename UGGrid<dim,dimworld>::EntityProvider::ObjectEntity *manageObj_;
-    typename UGGrid<dim,dimworld>::IntersectionSelfProvider::ObjectEntity  *manageInterEl_;
-    typename UGGrid<dim,dimworld>::IntersectionNeighProvider::ObjectEntity *manageNeighEl_;
-
-    //! defined in agmemory.hh
-    //typename ElInfoProvider::ObjectEntity *manageNeighInfo_;
-
-    //! vector storing the outer normal
-    //Vec<dimworld,albertCtype> outerNormal_;
-
-    //! pointer to element holding the self_local and self_global information.
-    //! This element is created on demand.
-    UGGridElement<dim-1,dim> *fakeNeigh_;
-
-    //! pointer to element holding the neighbor_global and neighbor_local
-    //! information. This element is created on demand.
-    UGGridElement<dim-1,dimworld> *neighGlob_;
-
-    //! BoundaryEntity
-    UGGridBoundaryEntity<dim,dimworld> *boundaryEntity_;
-
-#if 0
-    //! pointer to the EL_INFO struct storing the real element information
-    ALBERT EL_INFO * elInfo_;
-
-    //! EL_INFO th store the information of the neighbor if needed
-    ALBERT EL_INFO * neighElInfo_;
-#endif
-
-    Vec<dimworld,UGCtype> outNormal_;
-
-    //! count on which neighbor we are lookin' at
-    int neighborCount_;
-  };
-
+#include "uggrid/ugintersectionit.hh"
 #include "uggrid/uggridleveliterator.hh"
 
   //**********************************************************************
@@ -558,13 +398,14 @@ namespace Dune
 #endif
 
   protected:
-    /** \brief True if the UG used has been initialized.
+    /** \brief Number of UGGrids currently in use.
      *
-     * All constructors that find this variable set to 'false'
-     * call the UG init routines and set hasInitializedUG to
-     * true.  That way, UG gets initialized only once.
+     * This counts the number of UGGrids currently instantiated.  All
+     * constructors of UGGrid look at this variable.  If it zero, they
+     * initialize UG before proceeding.  Destructors use the same mechanism
+     * to safely shut down UG after deleting the last UGGrid object.
      */
-    static bool hasInitializedUG;
+    static int numOfUGGrids;
 
   }; // end Class UGGrid
 
