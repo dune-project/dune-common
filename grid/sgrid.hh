@@ -877,6 +877,13 @@ namespace Dune {
     bool exists (int level, const FixedArray<int,dim>& zred) const;
 
   private:
+
+    template<int codim>
+    SEntity<codim,dim,const SGrid<dim,dimworld> >& getRealEntity(typename Traits::template codim<codim>::Entity& e );
+
+    template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
+    friend class Entity;
+
     // diasable copy and assign
     SGrid(const SGrid &) {};
     SGrid & operator = (const SGrid &) { return *this; };
