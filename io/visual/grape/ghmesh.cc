@@ -1157,16 +1157,8 @@ int switchMethods(GENMESHnD *actHmesh)
       printf("Warning: Only data on leaf level, use LeafIterator! \n");
   }
 
-  if(leafButton->on_off == OFF)
-  {
-    /* the button is not pressed */
-    dune->first_macro = dune->fst_macro;
-    dune->next_macro  = dune->nxt_macro;
-    actHmesh->first_child = &first_child;
-    actHmesh->next_child = &next_child;
-    /*printf("Leaf is off \n");*/
-  }
-  else
+  // this marks the state before
+  if(leafButton->on_off == OFF) // off means it is going to be on
   {
     /* the button is pressed */
     dune->first_macro = dune->fst_leaf;
@@ -1175,6 +1167,15 @@ int switchMethods(GENMESHnD *actHmesh)
     actHmesh->next_child = &fake_child;
     isLeaf = 1;
     /*printf("Leaf is on \n");*/
+  }
+  else
+  {
+    /* the button is not pressed */
+    dune->first_macro = dune->fst_macro;
+    dune->next_macro  = dune->nxt_macro;
+    actHmesh->first_child = &first_child;
+    actHmesh->next_child = &next_child;
+    /*printf("Leaf is off \n");*/
   }
 
   return isLeaf;
