@@ -853,8 +853,8 @@ namespace Dune
 
     for(int i=0; i<dim; i++)
     {
-      sum += local.get(i);
-      if(local.get(i) < 0.0) return false;
+      sum += local(i);
+      if(local(i) < 0.0) return false;
     }
 
     if( sum > 1.0 ) return false;
@@ -1458,22 +1458,20 @@ namespace Dune
   //
   //***************************************************************
 
-  //static ALBERT EL_INFO neighElInfo_;
-
   // these object should be generated with new by Entity, because
   // for a LevelIterator we only need one virtualNeighbour Entity, which is
   // given to the Neighbour Iterator, we need a list of Neighbor Entitys
   template< int dim, int dimworld>
-  inline AlbertGridIntersectionIterator<dim,dimworld>::~AlbertGridIntersectionIterator ()
+  inline void AlbertGridIntersectionIterator<dim,dimworld>::freeObjects ()
   {
     if(manageObj_)
-      grid_.entityProvider_.freeObjectEntity(manageObj_);
+      grid_->entityProvider_.freeObjectEntity(manageObj_);
 
     if(manageInterEl_)
-      grid_.interSelfProvider_.freeObjectEntity(manageInterEl_);
+      grid_->interSelfProvider_.freeObjectEntity(manageInterEl_);
 
     if(manageNeighEl_)
-      grid_.interNeighProvider_.freeObjectEntity(manageNeighEl_);
+      grid_->interNeighProvider_.freeObjectEntity(manageNeighEl_);
 
     if(boundaryEntity_) delete boundaryEntity_;
 
@@ -1481,9 +1479,15 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
+  inline AlbertGridIntersectionIterator<dim,dimworld>::~AlbertGridIntersectionIterator ()
+  {
+    freeObjects();
+  }
+
+  template< int dim, int dimworld>
   inline AlbertGridIntersectionIterator<dim,dimworld>::
   AlbertGridIntersectionIterator(AlbertGrid<dim,dimworld> &grid, int level) :
-    grid_(grid), level_ (level) , neighborCount_ (dim+1), virtualEntity_ (NULL)
+    grid_( &grid ), level_ (level) , neighborCount_ (dim+1), virtualEntity_ (NULL)
     , fakeNeigh_ (NULL)
     , neighGlob_ (NULL) , elInfo_ (NULL)
     , manageObj_ (NULL)
@@ -1492,10 +1496,11 @@ namespace Dune
     , boundaryEntity_ (NULL)
     , manageNeighInfo_ (NULL) , neighElInfo_ (NULL) {}
 
+
   template< int dim, int dimworld>
   inline AlbertGridIntersectionIterator<dim,dimworld>::AlbertGridIntersectionIterator
-    (AlbertGrid<dim,dimworld> &grid, int level, ALBERT EL_INFO *elInfo ) :
-    grid_(grid) , level_ (level), neighborCount_ (0), elInfo_ ( elInfo )
+    (AlbertGrid<dim,dimworld> & grid, int level, ALBERT EL_INFO *elInfo ) :
+    grid_( &grid ) , level_ (level), neighborCount_ (0), elInfo_ ( elInfo )
     , fakeNeigh_ (NULL) , neighGlob_ (NULL)
     , virtualEntity_ (NULL)
     , builtNeigh_ (false)
@@ -1506,6 +1511,48 @@ namespace Dune
   {
     manageNeighInfo_ = elinfoProvider.getNewObjectEntity();
     neighElInfo_ = manageNeighInfo_->item;
+  }
+
+  // empty constructor
+  template< int dim, int dimworld>
+  inline AlbertGridIntersectionIterator<dim,dimworld>::
+  AlbertGridIntersectionIterator ( ) :
+    grid_( NULL ) , level_ ( -1 ), neighborCount_ ( -1 ), elInfo_ ( NULL )
+    , fakeNeigh_ (NULL) , neighGlob_ (NULL)
+    , virtualEntity_ (NULL)
+    , builtNeigh_ (false)
+    , manageObj_ (NULL)
+    , manageInterEl_ (NULL)
+    , manageNeighEl_ (NULL)
+    , boundaryEntity_ (NULL) {}
+
+  template< int dim, int dimworld>
+  inline void AlbertGridIntersectionIterator<dim,dimworld>::makeBegin
+    (AlbertGrid<dim,dimworld> &grid, int level, ALBERT EL_INFO *elInfo )
+  {
+    grid_ = &grid;
+    level_ = level;
+    elInfo_ = elInfo;
+    neighborCount_ = 0;
+
+    // remove old objects
+    freeObjects();
+
+    manageNeighInfo_ = elinfoProvider.getNewObjectEntity();
+    neighElInfo_ = manageNeighInfo_->item;
+  }
+
+  template< int dim, int dimworld>
+  inline void AlbertGridIntersectionIterator<dim,dimworld>::makeEnd
+    (AlbertGrid<dim,dimworld> &grid, int level )
+  {
+    grid_ = &grid;
+    level_ = level;
+    elInfo_ = NULL;
+    neighborCount_ = dim+1;
+
+    // remove old objects
+    freeObjects();
   }
 
   template< int dim, int dimworld>
@@ -1553,7 +1600,7 @@ namespace Dune
     {
       if(!manageObj_)
       {
-        manageObj_ = grid_.entityProvider_.getNewObjectEntity(grid_,level_);
+        manageObj_ = grid_->entityProvider_.getNewObjectEntity( *grid_ ,level_);
         virtualEntity_ = manageObj_->item;
         virtualEntity_->setLevel(level_);
         memcpy(neighElInfo_,elInfo_,sizeof(ALBERT EL_INFO));
@@ -1573,7 +1620,7 @@ namespace Dune
     {
       if(!manageObj_)
       {
-        manageObj_ = grid_.entityProvider_.getNewObjectEntity(grid_,level_);
+        manageObj_ = grid_->entityProvider_.getNewObjectEntity( *grid_ ,level_);
         virtualEntity_ = manageObj_->item;
         virtualEntity_->setLevel(level_);
         memcpy(neighElInfo_,elInfo_,sizeof(ALBERT EL_INFO));
@@ -1698,7 +1745,7 @@ namespace Dune
     std::cout << "intersection_self_local not check until now! \n";
     if(!manageInterEl_)
     {
-      manageInterEl_ = grid_.interSelfProvider_.getNewObjectEntity();
+      manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();
       fakeNeigh_ = manageInterEl_->item;
     }
 
@@ -1713,7 +1760,7 @@ namespace Dune
   {
     if(!manageNeighEl_)
     {
-      manageNeighEl_ = grid_.interNeighProvider_.getNewObjectEntity();
+      manageNeighEl_ = grid_->interNeighProvider_.getNewObjectEntity();
       neighGlob_ = manageNeighEl_->item;
     }
 
@@ -1732,7 +1779,7 @@ namespace Dune
     std::cout << "intersection_neighbor_local not check until now! \n";
     if(!manageInterEl_)
     {
-      manageInterEl_ = grid_.interSelfProvider_.getNewObjectEntity();
+      manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();
       fakeNeigh_ = manageInterEl_->item;
     }
 
@@ -1753,7 +1800,7 @@ namespace Dune
     std::cout << "intersection_neighbor_global not check until now! \n";
     if(!manageNeighEl_)
     {
-      manageNeighEl_ = grid_.interNeighProvider_.getNewObjectEntity();
+      manageNeighEl_ = grid_->interNeighProvider_.getNewObjectEntity();
       neighGlob_ = manageNeighEl_->item;
     }
 
@@ -2284,8 +2331,6 @@ namespace Dune
     return it;
   }
 
-
-
   template< int dim, int dimworld>
   inline AlbertGridIntersectionIterator<dim,dimworld>
   AlbertGridEntity < 0, dim ,dimworld >::ibegin()
@@ -2302,6 +2347,19 @@ namespace Dune
     return it;
   }
 
+  template< int dim, int dimworld>
+  inline void AlbertGridEntity < 0, dim ,dimworld >::
+  ibegin(AlbertGridIntersectionIterator<dim,dimworld> &it)
+  {
+    it.makeBegin( grid_ , level() , elInfo_ );
+  }
+
+  template< int dim, int dimworld>
+  inline void AlbertGridEntity < 0, dim ,dimworld >::
+  iend(AlbertGridIntersectionIterator<dim,dimworld> &it)
+  {
+    it.makeEnd( grid_ , level() );
+  }
   //*********************************************************************
   //
   //  AlbertMarkerVertex
