@@ -4,8 +4,10 @@
 
 # TODO:
 #
-# - wenn X gefunden ist -> devX, sonst devS
+
+# - nicht nur X suchen, sondern auch Xaw (und Xt?)
 # - $UGROOT auswerten, wenn es schon gesetzt ist
+# - gefundenes $MAKE verwenden, nicht einfach "make"
 # - ug.conf auswerten
 
           # IF = X|S
@@ -64,17 +66,51 @@ AC_DEFUN([DUNE_PATH_UG],[
 #	      HAVE_UG="1"],
 #	  [HAVE_UG="0"]
 #      )
-      
-      # !!! AC_CHECK_FILE sollte hier gehen
-      echo -n checking for gm.h... 
-      if test -e $UG_INCLUDE_PATH/gm.h ; then
-	  UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
-	  HAVE_UG="1"
-	  echo yes
-      else
-	  HAVE_UG="0"
-	  echo no
+
+      # check for central header
+      AC_CHECK_FILE([$UG_INCLUDE_PATH/gm.h],
+	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
+	      HAVE_UG="1"],
+	  [HAVE_UG="0"]
+      )
+
+      # check if config is found
+      if test x$HAVE_UG = x1 ; then
+	  AC_CHECK_FILE([$UGROOT/ug.conf],
+	      [UG_CONF="$UGROOT/ug.conf"],
+	      [HAVE_UG="0"])
       fi
+
+# define local function for getting the Makefile-Variable-Values from ug.conf
+dune_ug_getopt () {
+    retval=`make -f - <<EOF
+include $UG_CONF
+all:
+	@echo \\$($UGCONFVAL)
+EOF`
+}
+
+      echo Reading ug.conf...
+
+      echo -n "UG-domain-module... "
+      UGCONFVAL="DOM_MODULE"
+      dune_ug_getopt
+      UGDOMAIN=$retval
+      echo $UGDOMAIN      
+
+      # the libs have a single character defining the domain
+      case "$UGDOMAIN" in
+	  STD_DOMAIN)  UGDCHAR=S ;;
+	  LGM_DOMAIN)  UGDCHAR=L ;;
+	  *)   AC_MSG_ERROR([I don't know this UG-domain-module!]) ;;
+      esac
+
+      echo -n "UG-GRAPE-bindings... "
+      UGCONFVAL="GRAPE"
+      dune_ug_getopt
+      UGGRAPE=$retval
+      echo $UGGRAPE
+      # !!! check for grape-lib if this is set!
 
 #      if test x$HAVE_UG = x1 ; then
 #	  AC_CHECK_LIB([devX], [UserWrite], 
@@ -105,9 +141,9 @@ AC_DEFUN([DUNE_PATH_UG],[
       if test x$HAVE_UG = x1 ; then
 	  AC_CHECK_LIB([ug$UG_DIM],[InitUg],
 	      [UG_LDFLAGS="$UG_LDFLAGS"
-	       UG_LIBS="-lgrapeOFF$UG_DIM -ldevS -ldomS$UG_DIM -lgg$UG_DIM -lug$UG_DIM"],
+	       UG_LIBS="-lgrape$UGGRAPE$UG_DIM -ldevS -ldom$UGDCHAR$UG_DIM -lgg$UG_DIM -lug$UG_DIM"],
 	      [HAVE_UG="0"],
-	      [-lgrapeOFF$UG_DIM -ldevS -ldomS$UG_DIM -lgg$UG_DIM])
+	      [-lgrape$UGGRAPE$UG_DIM -ldevS -ldom$UGDCHAR$UG_DIM -lgg$UG_DIM])
       fi
 
       # pre-set variable for summary
@@ -118,7 +154,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
 	  # !!! domain !!!
-	  AC_SUBST(UG_CPPFLAGS, "-D_$UG_DIM -D_STD_DOMAIN_ $UG_CPPFLAGS")
+	  AC_SUBST(UG_CPPFLAGS, "-D_$UG_DIM -D_${UGDOMAIN}_ $UG_CPPFLAGS")
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
           # add to global list
