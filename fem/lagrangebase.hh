@@ -9,6 +9,7 @@
 #include "lagrangebase/lagrangebasefunctions.hh"
 #include "lagrangebase/lagrangemapper.hh"
 #include "dofmanager.hh"
+#include "dgspace/dgmapper.hh"
 
 namespace Dune {
 
@@ -155,6 +156,108 @@ namespace Dune {
   private:
     //! the corresponding LagrangeMapper
     LagrangeMapperType *mapper_;
+
+  }; // end class LagrangeDiscreteFunctionSpace
+
+
+  //*******************************************************************
+  //
+  // DGSpace using Lagrange basis functions, used for visualisation
+  //
+  //*******************************************************************
+  template< class FunctionSpaceType, class GridType,int polOrd, class
+      DofManagerType = DofManager<GridType> >
+  class LagrangeDGSpace
+    : public LagrangeDiscreteFunctionSpace<  FunctionSpaceType , GridType,
+          polOrd , DofManagerType >
+  {
+  public:
+    typedef LagrangeDiscreteFunctionSpace
+    < FunctionSpaceType , GridType , polOrd , DofManagerType > ChefType;
+    typedef ChefType LagrangeDiscreteFunctionSpaceType;
+
+    typedef DiscreteFunctionSpaceInterface <
+        FunctionSpaceType , GridType, LagrangeDiscreteFunctionSpaceType,
+        FastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType > >  DiscreteFunctionSpaceType;
+
+    typedef FastBaseFunctionSet <ChefType> BaseFunctionSetType;
+    typedef BaseFunctionSetType FastBaseFunctionSetType;
+
+    //! id is neighbor of the beast
+    static const IdentifierType id = 668;
+
+    // Lagrange 1 , to be revised in this matter
+    enum { numOfDiffBase_ = 20 };
+    enum { DimRange = FunctionSpaceType::DimRange };
+
+  public:
+    typedef DGMapper<typename DofManagerType::IndexSetType,polOrd,DimRange> DGMapperType;
+
+    typedef typename DofManagerType::MemObjectType MemObjectType;
+
+    // for gcc ( gcc sucks )
+    typedef typename FunctionSpaceType::Domain Domain;
+    typedef typename FunctionSpaceType::Range Range;
+    typedef typename FunctionSpaceType::RangeField DofType;
+    typedef typename FunctionSpaceType::DomainField DomainField;
+
+    //! dimension of value
+    enum { dimVal = 1 };
+
+    //! remember polynomial order
+    enum { polynomialOrder =  polOrd };
+
+    //! Constructor generating for each different element type of the grid a
+    //! LagrangeBaseSet with polOrd
+    LagrangeDGSpace ( GridType & g, DofManagerType & dm , int level ) :
+      ChefType (g,dm,level) , mapper_(0)
+    {
+      typedef typename GridType::template Traits<0> :: LevelIterator LevIt;
+      LevIt it = g.template lbegin<0>(0);
+      if(it != g.template lend<0>(0))
+      {
+        int basenum = this->getBaseFunctionSet(*it).getNumberOfBaseFunctions();
+        mapper_ = new DGMapperType ( this->dm_.indexSet() , basenum , level );
+      }
+    };
+
+    ~LagrangeDGSpace () {
+      if (mapper_) delete mapper_;
+    }
+
+    /** \todo Please doc me! */
+    template <class DiscFuncType>
+    MemObjectType & signIn (DiscFuncType & df)
+    {
+      // only for gcc to pass type DofType
+      assert(mapper_ != 0);
+      DofType *fake=0;
+      return this->dm_.addDofSet( fake, this->grid_ , *mapper_, df.name() );
+      // do notin' at the moment
+    }
+
+    //! return max number of baseset that holds this space
+    int maxNumberBase () const;
+
+    //! return type of this fucntion space
+    DFSpaceIdentifier type () const { return DGSpace_id; }
+
+    //! return true if we have continuous discrete functions
+    bool continuous () const { return false; }
+
+    //! number of unknows for this function space
+    int size () const { return mapper_->size() ; }
+
+    //! for given entity map local dof number to global dof number
+    template <class EntityType>
+    int mapToGlobal ( EntityType &en, int localNum ) const
+    {
+      return mapper_->mapToGlobal(en,localNum);
+    }
+
+  private:
+    //! the corresponding LagrangeMapper
+    DGMapperType *mapper_;
 
   }; // end class LagrangeDiscreteFunctionSpace
 
