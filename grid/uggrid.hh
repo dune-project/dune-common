@@ -52,8 +52,6 @@ namespace Dune
 
 
   // forward declarations
-  //class UGMarkerVector;
-
   template<int codim, int dim, int dimworld> class UGGridEntity;
   template<int codim, int dim, int dimworld> class UGGridLevelIterator;
 
@@ -99,8 +97,6 @@ namespace Dune {
     //friend class UGGridEntity <1,dim,dimworld>;
     //friend class UGGridEntity <1 << dim-1 ,dim,dimworld>;
     friend class UGGridEntity <dim,dim,dimworld>;
-
-    friend class UGMarkerVector;
 
     // friends because of fillElInfo
     friend class UGGridLevelIterator<0,dim,dimworld>;
@@ -159,7 +155,9 @@ namespace Dune {
     // End of Interface Methods
     //**********************************************************
 
+#if 0
     UGCtype getTime () const { return time_; };
+#endif
 
     void makeNewUGMultigrid();
 

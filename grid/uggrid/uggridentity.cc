@@ -223,34 +223,11 @@ UGGridEntity<codim,dim,dimworld>::entity ( int i )
 }
 
 
-template<int codim, int dim, int dimworld>
-inline UGGridIntersectionIterator<dim,dimworld>
-UGGridEntity < codim, dim ,dimworld >::ibegin()
-{
-  UGGridIntersectionIterator<dim,dimworld> it;
-
-  if (codim==0) {
-    it.setToTarget(target_, 0);
-  } else
-    printf("UGGridEntity <%d, %d, %d>::ibegin() not implemented\n", codim, dim, dimworld);
-
-  return it;
-}
-
-
-template< int codim, int dim, int dimworld>
-inline UGGridIntersectionIterator<dim,dimworld>
-UGGridEntity < codim, dim ,dimworld >::iend()
-{
-  UGGridIntersectionIterator<dim,dimworld> it;
-
-  if (codim==0) {
-    it.setToTarget(NULL, -1);
-  } else
-    printf("UGGridEntity <%d, %d, %d>::iend() not implemented\n", codim, dim, dimworld);
-
-  return it;
-}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//     Specializations for codim == 0                                     //
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 template<>
 template< int dim, int dimworld>
@@ -264,26 +241,12 @@ template <int dim, int dimworld>
 template <int cc>
 inline int UGGridEntity<0, dim, dimworld>::subIndex(int i)
 {
-#if 0
-
-#define TAG(p) ReadCW(p, UG3d::TAG_CE)
-#define CORNER(p,i) ((UG3d::node *) (p)->ge.refs[UG3d::n_offset[TAG(p)]+(i)])
-  UG3d::node* node = CORNER(target_,i);
-#undef CORNER
-#undef TAG
-  UG3d::vertex* vertex = node->myvertex;
-  return vertex->iv.id;
-
-#else
-
 #ifdef _3
   UG3d::node* node = (UG3d::node*)UG<dimworld>::Corner(target_,i);
 #else
   UG2d::node* node = (UG2d::node*)UG<dimworld>::Corner(target_,i);
 #endif
   return node->myvertex->iv.id;
-
-#endif
 }
 
 template<int dim, int dimworld>
@@ -299,4 +262,35 @@ setToTarget(typename TargetType<0,dim>::T* target)
 {
   target_ = target;
   geo_.setToTarget(target);
+}
+
+template<int dim, int dimworld>
+inline UGGridIntersectionIterator<dim,dimworld>
+UGGridEntity < 0, dim ,dimworld >::ibegin()
+{
+  UGGridIntersectionIterator<dim,dimworld> it;
+  //printf("ibegin:  target: %d\n", (int)target_);
+  // Set intersection iterator to zeroth neighbor of target_
+  it.setToTarget(target_, 0);
+
+  return it;
+}
+
+
+template< int dim, int dimworld>
+inline UGGridIntersectionIterator<dim,dimworld>
+UGGridEntity < 0, dim ,dimworld >::iend()
+{
+  UGGridIntersectionIterator<dim,dimworld> it;
+
+  it.setToTarget(NULL, -1);
+
+  return it;
+}
+
+template<int dim, int dimworld>
+inline int UGGridEntity < 0, dim ,dimworld >::
+level()
+{
+  return level_;
 }

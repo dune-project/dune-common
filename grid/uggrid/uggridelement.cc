@@ -273,15 +273,15 @@ template< int dim, int dimworld>
 inline UGCtype UGGridElement<dim,dimworld>::
 integration_element (const Vec<dim,UGCtype>& local)
 {
-  // dimworld*dimworld is an upper bound for the number of vertices
-  UGCtype* cornerCoords[dimworld*dimworld];
-  UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
+  //     // dimworld*dimworld is an upper bound for the number of vertices
+  //     UGCtype* cornerCoords[dimworld*dimworld];
+  //     UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
 
-  // compute the transformation onto the reference element (or vice versa?)
-  Mat<dimworld,dimworld> mat;
-  UG<dimworld>::Transformation(corners(), cornerCoords, local, mat);
+  //     // compute the transformation onto the reference element (or vice versa?)
+  //     Mat<dimworld,dimworld> mat;
+  //     UG<dimworld>::Transformation(corners(), cornerCoords, local, mat);
 
-  return ABS(mat.determinant());
+  return ABS(Jacobian_inverse(local).determinant());
 }
 
 template< int dim, int dimworld>
@@ -294,8 +294,7 @@ Jacobian_inverse (const Vec<dim,UGCtype>& local)
 
 
   // compute the transformation onto the reference element (or vice versa?)
-  Mat<dimworld,dimworld> mat;
-  UG<dimworld>::Transformation(corners(), cornerCoords, local, mat);
+  UG<dimworld>::Transformation(corners(), cornerCoords, local, jac_inverse_);
 
-  return mat;
+  return jac_inverse_;
 }

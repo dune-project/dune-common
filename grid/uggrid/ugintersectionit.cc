@@ -4,62 +4,56 @@ namespace Dune {
 
   template< int dim, int dimworld>
   inline UGGridIntersectionIterator<dim,dimworld>::
-  UGGridIntersectionIterator() : center_(NULL), neighborCount_(-1),
-                                 virtualEntity_(-1)
+  UGGridIntersectionIterator() : virtualEntity_(-1), center_(0), neighborCount_(-1)
   {}
 
   template< int dim, int dimworld>
   inline typename TargetType<0,dimworld>::T* UGGridIntersectionIterator<dim,dimworld>::
   target() const
   {
-
-#if 0
-#define TAG(p) ReadCW(p, UG3d::TAG_CE)
-#define SIDES_OF_ELEM(p) (UG3d::element_descriptors[TAG(p)]->sides_of_elem)
-    if (!center_
-        || neighborCount_<0
-        || neighborCount_>=SIDES_OF_ELEM(center_))
+    if (!isValid())
       return NULL;
-#undef SIDES_OF_ELEM
 
-#else
-
-    if (!center_
-        || neighborCount_<0
-        || neighborCount_>=UG<dimworld>::Sides_Of_Elem(center_))
-      return NULL;
-#endif
-
-
-    //#define NBELEM(p,i) ((UG3d::ELEMENT *) (p)->ge.refs[UG3d::nb_offset[TAG(p)]+(i)])
-    //return NBELEM(center_, neighborCount_);
     return UG<dimworld>::NbElem(center_, neighborCount_);
-    //#undef NBELEM
-    //#undef TAG
   }
 
   template< int dim, int dimworld>
   inline void UGGridIntersectionIterator<dim,dimworld>::
   setToTarget(typename TargetType<0,dimworld>::T* center, int nb)
   {
-    //printf("entering II::setToTarget %d %d\n", center, nb);
+    //printf("entering II::setToTarget %d %d\n", (int)center, nb);
     center_ = center;
     neighborCount_ = nb;
     virtualEntity_.setToTarget(target());
   }
 
   template< int dim, int dimworld>
+  inline bool
+  UGGridIntersectionIterator<dim,dimworld>::
+  isValid() const
+  {
+    return center_
+           && neighborCount_ >=0
+           && neighborCount_ < UG<dimworld>::Sides_Of_Elem(center_);
+  }
+
+  template< int dim, int dimworld>
   inline bool UGGridIntersectionIterator<dim,dimworld>::
   operator ==(const UGGridIntersectionIterator& I) const
   {
-    return (target() == I.target());
+    // Two intersection iterators are equal iff they have the same
+    // validity.  Furthermore, if they are both valid, they have
+    // to have the same center and neighborCount_
+    return (!isValid() && !I.isValid())
+           || (isValid() && I.isValid() &&
+               (center_ == I.center_ && neighborCount_ == I.neighborCount_));
   }
 
   template< int dim, int dimworld>
   inline bool UGGridIntersectionIterator<dim,dimworld>::
   operator !=(const UGGridIntersectionIterator& I) const
   {
-    return target()!=I.target();
+    return !((*this)==I);
   }
 
   template<int dim, int dimworld>
@@ -82,10 +76,17 @@ namespace Dune {
   UGGridIntersectionIterator < 3,3 >::operator++()
   {
     //printf("This is II::operator++\n");
-    if (!target())
-      return (*this);
+    setToTarget(center_, neighborCount_+1);
 
+    return (*this);
+  }
+#endif
 
+#ifdef _2
+  template<>
+  inline UGGridIntersectionIterator < 2,2 >&
+  UGGridIntersectionIterator < 2,2 >::operator++()
+  {
     setToTarget(center_, neighborCount_+1);
 
     return (*this);
@@ -97,11 +98,16 @@ namespace Dune {
   inline bool
   UGGridIntersectionIterator < 3,3 >::boundary()
   {
-#define TAG(p) ReadCW(p, UG3d::TAG_CE)
-#define NBELEM(p,i) ((UG3d::ELEMENT *) (p)->ge.refs[UG3d::nb_offset[TAG(p)]+(i)])
-    return NBELEM(center_, neighborCount_) == NULL;
-#undef TAG
-#undef NBELEM
+    return UG<3>::NbElem(center_, neighborCount_) == NULL;
+  }
+#endif
+
+#ifdef _2
+  template<>
+  inline bool
+  UGGridIntersectionIterator < 2,2 >::boundary()
+  {
+    return UG<2>::NbElem(center_, neighborCount_) == NULL;
   }
 #endif
 
@@ -139,15 +145,6 @@ namespace Dune {
   intersection_self_local()
   {
     std::cout << "\nintersection_self_local not implemented yet!\n";
-#if 0
-    if(!manageInterEl_)
-    {
-      manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();
-      fakeNeigh_ = manageInterEl_->item;
-    }
-
-    fakeNeigh_->builtGeom(elInfo_,neighborCount_,0,0);
-#endif
     return (*fakeNeigh_);
   }
 
@@ -157,18 +154,6 @@ namespace Dune {
   intersection_self_global()
   {
     std::cout << "\nintersection_self_global not implemented yet!\n";
-#if 0
-    if(!manageNeighEl_)
-    {
-      manageNeighEl_ = grid_->interNeighProvider_.getNewObjectEntity();
-      neighGlob_ = manageNeighEl_->item;
-    }
-
-    if(neighGlob_->builtGeom(elInfo_,neighborCount_,0,0))
-      return (*neighGlob_);
-    else
-      abort();
-#endif
     return (*neighGlob_);
   }
 
@@ -178,20 +163,6 @@ namespace Dune {
   intersection_neighbor_local()
   {
     std::cout << "\nintersection_neighbor_local not implemented yet!\n";
-#if 0
-    if(!manageInterEl_)
-    {
-      manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();
-      fakeNeigh_ = manageInterEl_->item;
-    }
-
-    if(!builtNeigh_)
-    {
-      setupVirtEn();
-    }
-
-    fakeNeigh_->builtGeom(neighElInfo_,neighborCount_,0,0);
-#endif
     return (*fakeNeigh_);
   }
 
@@ -201,20 +172,6 @@ namespace Dune {
   intersection_neighbor_global()
   {
     std::cout << "\nintersection_neighbor_global not implemented yet!\n";
-#if 0
-    if(!manageNeighEl_)
-    {
-      manageNeighEl_ = grid_->interNeighProvider_.getNewObjectEntity();
-      neighGlob_ = manageNeighEl_->item;
-    }
-
-    // built neighGlob_ first
-    if(!builtNeigh_)
-    {
-      setupVirtEn();
-    }
-    neighGlob_->builtGeom(elInfo_,neighborCount_,0,0);
-#endif
     return (*neighGlob_);
   }
 
@@ -222,39 +179,36 @@ namespace Dune {
   inline int UGGridIntersectionIterator<dim,dimworld>::
   number_in_self ()
   {
-    return neighborCount_;
+    /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
+    const int nSides = UG<dimworld>::Sides_Of_Elem(center_);
+
+    return (neighborCount_ + nSides -1)%nSides;
   }
 
   template< int dim, int dimworld>
   inline int UGGridIntersectionIterator<dim,dimworld>::
   number_in_neighbor ()
   {
-#if 0
-#define TAG(p) ReadCW(p, UG3d::TAG_CE)
-#define SIDES_OF_ELEM(p) (UG3d::element_descriptors[TAG(p)]->sides_of_elem)
-#define NBELEM(p,i) ((UG3d::ELEMENT *) (p)->ge.refs[UG3d::nb_offset[TAG(p)]+(i)])
-    const UG3d::element* other = target();
-    int i;
-    for (i=0; i<SIDES_OF_ELEM(other); i++)
-      if (NBELEM(other,i) == center_)
-        break;
-
-    return i;
-#undef SIDES_OF_ELEM
-#undef NBELEM
-#undef TAG
-
-#else
-
     const typename TargetType<0,dimworld>::T* other = target();
+
+    /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
+    const int nSides = UG<dimworld>::Sides_Of_Elem(other);
+
     int i;
     for (i=0; i<Sides_Of_Elem(other); i++)
       if (NbElem(other,i) == center_)
         break;
 
-    return i;
+    return (i+nSides-1)%nSides;
+  }
 
-#endif
+  template<int dim, int dimworld>
+  inline
+  UGGridBoundaryEntity<dim,dimworld>&
+  UGGridIntersectionIterator<dim,dimworld>::
+  boundaryEntity ()
+  {
+    return boundaryEntity_;
   }
 
 };

@@ -95,37 +95,14 @@ namespace Dune {
     //***********************************************************************
     //  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
-#if 0
-    //! generate the geometry for the ALBERT EL_INFO
-    bool builtGeom(ALBERT EL_INFO *elInfo, unsigned char face,
-                   unsigned char edge, unsigned char vertex);
-    // init geometry with zeros
-    void initGeom();
-
-    //! print internal data
-    void print (std::ostream& ss, int indent);
-#endif
 
     void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}
 
   private:
 
 
-    // calc the local barycentric coordinates
-    template <int dimbary>
-    Vec<dimbary, UGCtype>& localB (const Vec<dimworld, UGCtype>& global)
-    {
-      localBary_ = localBary(global);
-      return localBary_;
-    }
-
     //! built the reference element
     void makeRefElemCoords();
-
-    //! built the jacobian inverse and store the volume
-    void builtJacobianInverse (const Vec<dim, UGCtype>& local);
-
-    //Vec<dim+1, UGCtype> tmpVec_;
 
     //! maps a global coordinate within the elements local barycentric
     //! koordinates
@@ -135,11 +112,11 @@ namespace Dune {
     // coords with face_,edge_ and vertex_ , needes for operator []
     int mapVertices (int i) const;
 
-    //! Calculates the volume of the element
-    UGCtype elVolume () const;
-
     //! the vertex coordinates
     Mat<dimworld,dim+1, UGCtype> coord_;
+
+    //! The jacobian inverse
+    Mat<dimworld,dimworld> jac_inverse_;
 
     //! storage for global coords
     Vec<dimworld, UGCtype> globalCoord_;

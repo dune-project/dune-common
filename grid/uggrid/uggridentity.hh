@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUNE_UGGRIDENTITY_HH
-#define DUNE_UGGRIDENTITY_HH
+#ifndef __DUNE_UGGRIDENTITY_HH__
+#define __DUNE_UGGRIDENTITY_HH__
 
 #include "ugtypes.hh"
 
@@ -61,13 +61,13 @@ namespace Dune {
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
-    UGGridIntersectionIterator<dim,dimworld> ibegin ();
+    //UGGridIntersectionIterator<dim,dimworld> ibegin ();
 
     //! same method for fast access
     //void ibegin (AlbertGridIntersectionIterator<dim,dimworld> &it);
 
     //! Reference to one past the last intersection with neighbor
-    UGGridIntersectionIterator<dim,dimworld> iend ();
+    //UGGridIntersectionIterator<dim,dimworld> iend ();
 
     //! geometry of this entity
     UGGridElement<dim-codim,dimworld>& geometry ();
@@ -90,8 +90,6 @@ namespace Dune {
 
     // private Methods
     void makeDescription();
-
-    //UGGrid<dim,dimworld> &grid_;
 
     //! the current geometry
     UGGridElement<dim-codim,dimworld> geo_;
@@ -134,7 +132,6 @@ namespace Dune {
         UGGridHierarchicIterator>
   {
     friend class UGGrid < dim , dimworld >;
-    friend class UGMarkerVector;
     friend class UGGridIntersectionIterator < dim, dimworld>;
     friend class UGGridHierarchicIterator < dim, dimworld>;
     friend class UGGridLevelIterator <0,dim,dimworld>;
@@ -177,10 +174,10 @@ namespace Dune {
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
-    UGGridIntersectionIterator<dim,dimworld> nbegin ();
+    UGGridIntersectionIterator<dim,dimworld> ibegin ();
 
     //! Reference to one past the last neighbor
-    UGGridIntersectionIterator<dim,dimworld> nend ();
+    UGGridIntersectionIterator<dim,dimworld> iend ();
 
     //! returns true if Entity has children
     bool hasChildren ();
