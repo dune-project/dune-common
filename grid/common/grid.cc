@@ -237,6 +237,34 @@ namespace Dune {
   //  E L E M E N T  Default
   //***********************************************************************
 
+  //***********************************************************************
+  //  B O U N D A R Y  E N T I T Y
+  //***********************************************************************
+
+  template<int dim , int dimworld, class ct,template<int,int> class ElementImp ,
+      template<int,int> class BoundaryEntityImp >
+  inline int BoundaryEntity<dim,dimworld,ct,ElementImp,BoundaryEntityImp>::id() const
+  {
+    return asImp().id();
+  }
+
+  template<int dim , int dimworld, class ct,template<int,int> class ElementImp ,
+      template<int,int> class BoundaryEntityImp >
+  inline bool BoundaryEntity<dim,dimworld,ct,ElementImp,BoundaryEntityImp>::hasGeometry() const
+  {
+    return asImp().hasGeometry();
+  }
+
+  template<int dim , int dimworld, class ct,template<int,int> class ElementImp ,
+      template<int,int> class BoundaryEntityImp >
+  inline ElementImp<dim,dimworld> & BoundaryEntity<dim,dimworld,ct,ElementImp,BoundaryEntityImp>::geometry()
+  {
+    return asImp().geometry();
+  }
+
+  //***********************************************************************
+  //  B O U N D A R Y  E N T I T Y Default
+  //***********************************************************************
 
   //************************************************************************
   // N E I G H B O R I T E R A T O R
@@ -556,6 +584,19 @@ namespace Dune {
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
+  inline int Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::
+  boundaryId () const
+  {
+    return asImp().boundaryId();
+  }
+
+  template<int codim, int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      >
   inline PartitionType Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::partition_type ()
   {
     return asImp().partition_type();
@@ -859,10 +900,24 @@ namespace Dune {
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       > template <int cc>
-  inline int EntityDefault <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::subIndex (int i)
+  inline int EntityDefault <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::subIndex (int i) const
   {
     // return index of sub Entity number i
     return (asImp().template entity<cc>(i))->index();
+  }
+
+  template<int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      > template <int cc>
+  inline int EntityDefault <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::
+  subBoundaryId (int i) const
+  {
+    // return index of sub Entity number i
+    return (asImp().template entity<cc>(i))->boundaryId();
   }
 
 
@@ -1135,12 +1190,10 @@ namespace Dune {
      };
    */
 
-
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  write ( const FileFormatType ftype, const char * filename , ct time, int timestep,
-          bool adaptive, int processor)
+  write ( const FileFormatType ftype, const char * filename , ct time, int timestep)
   {
     const char *fn;
     const char *path = 0;
@@ -1153,7 +1206,6 @@ namespace Dune {
     {
     case xdr  :   return asImp().template writeGrid<xdr>(fn,time);
     case ascii :   return asImp().template writeGrid<ascii>(fn,time);
-    case pgm  :   return asImp().template writeGrid<pgm>(fn,time);
     default :
     {
       std::cerr << ftype << " FileFormatType not supported at the moment! \n";
@@ -1167,8 +1219,7 @@ namespace Dune {
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  read ( const char * filename , ct & time, int timestep ,
-         bool adaptive, int processor )
+  read ( const char * filename , ct & time, int timestep)
   {
     const char * fn;
     std::fstream file (filename,std::ios::in);
@@ -1179,7 +1230,7 @@ namespace Dune {
     type = ( GridIdentifier ) helpType;
     if(type != asImp().type())
     {
-      std::cerr << "Cannot read different GridIdentifier!\n";
+      derr << "\nERROR: " << GridName(asImp().type()) << " tries to read " << GridName(type) << " file. \n\n";
       assert(type == asImp().type());
       abort();
     }
@@ -1196,7 +1247,6 @@ namespace Dune {
     {
     case xdr  :   return asImp().template readGrid<xdr>  (fn,time);
     case ascii :   return asImp().template readGrid<ascii>(fn,time);
-    case pgm  :   return asImp().template readGrid<pgm>  (fn,time);
     default :
     {
       std::cerr << ftype << " FileFormatType not supported at the moment! \n";
@@ -1207,6 +1257,25 @@ namespace Dune {
     return false;
   } // end file2Grid
 
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  template <FileFormatType ftype>
+  inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  writeGrid ( const char * filename , ctype time )
+  {
+    std::cerr << "WARNING: writeGrid not implemented! \n";
+    return false;
+  }
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  template <FileFormatType ftype>
+  inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  readGrid ( const char * filename , ctype & time )
+  {
+    std::cerr << "WARNING: readGrid not implemented! \n";
+    return false;
+  }
 
 
 

@@ -10,6 +10,8 @@
 
 namespace Dune {
 
+
+#define DUNE_DEPRECATED
   /** @defgroup GridCommon Grid Interface
 
      The Dune Grid module defines a general interface to a hierarchical finite element mesh.
@@ -58,24 +60,15 @@ namespace Dune {
   /*!
      Specify the format to store grid and vector data
    */
-  enum FileFormatType { ascii ,   //!< store data in a human readable form
-                        xdr ,     //!< store data in SUN's library routines
-                                  //!< for external data representation (xdr)
-                        pgm };    //!< store data in portable graymap file format (pgm)
-
-  /*!
-     To specify the boundary type of an face at the boundary.
-     This specifier should be located in a geometry class.
-   */
-  enum BoundaryType { Neumann ,    //!< Neumann type boundary
-                      Dirichlet,   //!< Dirichlet type boundary
-                      Periodic     //!< Periodic boundary
-  };
+  enum FileFormatType { ascii , //!< store data in a human readable form
+                        xdr ,   //!< store data in SUN's library routines
+                                //!< for external data representation (xdr)
+                        pgm };  //!< store data in portable graymap file format (pgm)
 
   enum AdaptationState {
     NONE ,            //!< notin' to do and notin' was done
-    COARSEN,                                              //!< entity could be coarsend in adaptation step
-    REFINED                                               //!< enity was refined in adaptation step
+    COARSEN,          //!< entity could be coarsend in adaptation step
+    REFINED           //!< enity was refined in adaptation step
   };
 
 
@@ -132,8 +125,10 @@ namespace Dune {
       return "front";
     case GhostEntity :
       return "ghost";
+    default :
+      return "unknown";
     }
-  };
+  }
 
   /*! GridIndexType specifies which Index of the Entities of the grid
         should be used, i.e. global_index() or index()
@@ -437,12 +432,15 @@ namespace Dune {
   }; // end ElementDefault, dim = 0
      //****************************************************************************
 
+
   //********************************************************************
-  //  BoundaryEntity
+  //  --BoundaryEntity
   //
-  //! First Version of a BoundaryEntity which holds some information about
-  //! the boundary on an intersection with the boundary
-  //
+  /*!
+     First Version of a BoundaryEntity which holds some information about
+     the boundary on an intersection with the boundary or and ghost boundary
+     cell.
+   */
   //********************************************************************
   template<int dim , int dimworld, class ct,
       template<int,int> class ElementImp ,
@@ -450,31 +448,14 @@ namespace Dune {
   class BoundaryEntity
   {
   public:
-    //! return boundary identifier
-    BoundaryType type ()
-    {
-      std::cerr << "WARNING: BoundaryEntity::type(): default implementation called!\n";
-      return Dirichlet;
-    }
+    //! return id of booundary segment, any integer but != 0
+    int id () const;
 
-    int id ()
-    {
-      std::cerr << "WARNING: BoundaryEntity::id(): default implementation called!\n";
-      return -1 ;
-    }
+    //! return true if ghost boundary cell was generated
+    bool hasGeometry () const;
 
-    //! return true if ghost cell was filled
-    bool hasGeometry ()
-    {
-      std::cerr << "WARNING: BoundaryEntity::hasGeometry(): default implementation called!\n";
-      return false;
-    }
-
-    //! return geometry of ghostcell
+    //! return geometry of ghost boundary cell
     ElementImp<dim,dimworld> & geometry ();
-
-    //! return barycenter of ghostcell
-    FieldVector<ct, dimworld>& outerPoint ();
 
   private:
     //!  Barton-Nackman trick
@@ -484,10 +465,9 @@ namespace Dune {
 
   //********************************************************************
   //
-  // BoundaryEntityDefault
+  // --BoundaryEntityDefault
   //
-  //! Default implementations for the BoundaryEntity
-  //!
+  //! Default implementations for the BoundaryEntity class.
   //********************************************************************
   template<int dim , int dimworld, class ct,
       template<int,int> class ElementImp  ,
@@ -809,8 +789,9 @@ namespace Dune {
     //! return partition type attribute
     PartitionType partition_type ();
 
-    //! index of the boundary which is associated with the entity, 0 for inner entities
-    int boundaryId ();
+    //! id of the boundary which is associated with
+    //! the entity, returns 0 for inner entities, arbitrary int otherwise
+    int boundaryId () const ;
 
     //! geometry of this entity
     ElementImp<dim-codim,dimworld>& geometry ();
@@ -1020,7 +1001,16 @@ namespace Dune {
      * Default implementation for access to subIndex via interface method entity
      * default is to return the index of the sub entity, is very slow, but works
      */
-    template <int cc> int subIndex ( int i );
+    template <int cc> int subIndex ( int i ) const ;
+
+    /** \brief Default implementation for access to boundaryId of sub entities
+     *
+     * Default implementation for access to boundaryId via interface method
+     * entity<codim>.boundaryId(), default is very slow, but works, can be
+     * overloaded be the actual grid implementation, works the same way as
+     * subIndex
+     */
+    template <int cc> int subBoundaryId  ( int i ) const ;
 
     //***************************************************************
     //  Interface for Adaptation
@@ -1036,13 +1026,6 @@ namespace Dune {
     //! @return The default implementation returns NONE for grid with no
     //! adaptation
     AdaptationState state () { return NONE; }
-
-    //! ???
-    EntityImp<0,dim,dimworld> newEntity ()
-    {
-      EntityImp<0,dim,dimworld> tmp (asImp());
-      return tmp;
-    }
 
   private:
     //!  Barton-Nackman trick
@@ -1356,14 +1339,6 @@ namespace Dune {
     //! return GridIdentifierType of Grid, i.e. SGrid_Id or AlbertGrid_Id ...
     GridIdentifier type();
 
-    //! write Grid to file filename , only ascii supported
-    template <FileFormatType ftype>
-    bool writeGrid ( const char * filename , ctype time );
-
-    //! read Grid from file filename , only ascii supported
-    template <FileFormatType ftype>
-    bool readGrid ( const char * filename , ctype &time );
-
     /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
@@ -1455,20 +1430,26 @@ namespace Dune {
     bool preAdapt () { return false; }
 
     //! clean up some markers
-    bool postAdapt() { return false; }
-
+    void postAdapt() {}
 
     /** Write Grid with GridType file filename and time
      *
-     * This method use the Grid Interface Method writeGrid
-     * is not the same
+     * This method uses the Grid Interface Method writeGrid
+     * to actually write the grid, within this method the real file name is
+     * generated out of filename and timestep
      */
-    bool write (const FileFormatType ftype, const char * filename , ct time=0.0, int timestep=0,
-                bool adaptive=false , int processor = 0);
+    bool write (const FileFormatType ftype, const char * fnprefix , ct time=0.0, int timestep=0);
 
     //! get Grid from file with time and timestep , return true if ok
-    bool read ( const char * filename , ct & time , int timestep,
-                bool adaptive= false, int processor=0 );
+    bool read ( const char * fnprefix , ct & time , int timestep);
+
+    //! write Grid to file filename and store time
+    template <FileFormatType ftype>
+    bool writeGrid ( const char * filename , ctype time );
+
+    //! read Grid from file filename and also read time of grid
+    template <FileFormatType ftype>
+    bool readGrid ( const char * filename , ctype &time );
 
   protected:
     //! Barton-Nackman trick
@@ -1577,7 +1558,28 @@ namespace Dune {
     int maxLev_;
   };
 
-
+  //! provide names for the partition types
+  inline std::string GridName(GridIdentifier type)
+  {
+    switch(type) {
+    case SGrid_Id :
+      return "SGrid";
+    case AlbertGrid_Id :
+      return "AlbertGrid";
+    case SimpleGrid_Id :
+      return "SimpleGrid";
+    case UGGrid_Id :
+      return "UGGrid";
+    case YaspGrid_Id :
+      return "YaspGrid";
+    case BSGrid_Id :
+      return "BSGrid";
+    case OneDGrid_Id :
+      return "OneDGrid";
+    default :
+      return "unknown";
+    }
+  }
 
   /** @} */
 
