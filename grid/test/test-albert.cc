@@ -2,6 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
+#include <config.h>
+
 /*
 
    Instantiate Albert-Grid and feed it to the generic gridcheck()
