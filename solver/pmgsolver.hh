@@ -13,25 +13,6 @@
 
 namespace Dune {
 
-  template <class T>
-  T* realloc(T* & pointer, int size) {
-    if (size==0) {
-      std::cerr << "Warning request for realloc with size=0\n";
-      size = 1;
-    }
-    pointer =
-      static_cast<T*>(::realloc(static_cast<void*>(pointer),
-                                size*sizeof(T)));
-    if (pointer == 0)
-      throw std::string("Bad realloc");
-    return pointer;
-  }
-
-  template <class T>
-  T* malloc(int size) {
-    return static_cast<T*>(::malloc(size*sizeof(T)));
-  }
-
   enum smootherTyp { GaussSeidel, Jacobi };
 
   double TIME_SMOOTHER;
@@ -113,27 +94,6 @@ namespace Dune {
             if (bd.typ == dirichlet) x[i]=bd.value;
           }
         }
-    }
-    #warning debugcode
-    void restricttest() {
-      init();
-      level l=g.smoothest();
-      for(typename GRID::iterator it=g.begin(l);
-          it != g.end(l); ++it)
-        x[it.id()] = 0;
-      for(typename GRID::iterator it=g.begin(l-1);
-          it != g.end(l-1); ++it) {
-        //        if ( discrete.bc.isdirichlet(it) ) continue;
-        x[it.id()] = it.coord(0)+it.coord(1)+it.coord(2);
-        std::cout << it.coord()
-                  << it.coord(0)+it.coord(1)+it.coord(2)
-                  << std::endl;
-      }
-      dump(g,l,x,"restrict","D before restrict");
-      dump(g,l-1,x,"restrict","B before restrict");
-      prolongate(l);
-      dump(g,l,x,"restrict","D after restrict");
-      dump(g,l-1,x,"restrict","B after restrict");
     }
   }; // class pmgsolver
 
