@@ -352,4 +352,24 @@ void gridcheck (Grid &g)
    * now the runtime-tests
    */
   //  g.checkIF();
+  typedef typename Grid::template Traits<0>::LevelIterator LevelIterator;
+  typedef typename Grid::template Traits<0>::Entity::Traits::IntersectionIterator IntersectionIterator;
+  LevelIterator e = g.template lbegin<0>(0);
+  LevelIterator eend = g.template lend<0>(0);
+  for (; e != eend; ++e)
+  {
+    IntersectionIterator endit = e->iend();
+    IntersectionIterator it = e->ibegin();
+    assert(e->index() != -1);
+    for(; it != endit; ++it)
+    {
+      if (it.neighbor())
+      {
+        assert(it->index() != -1);
+        LevelIterator n = g.template lbegin<0>(it->level());
+        LevelIterator nend = g.template lend<0>(it->level());
+        while (n->index() != it->index()&& n != nend) ++n;
+      }
+    }
+  }
 };
