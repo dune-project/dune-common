@@ -1177,9 +1177,29 @@ namespace Dune
       neighElInfo->bound[i] = 0;
     }
 
-    for(int j =0; j< dimworld; j++)
+    if(elInfo->neigh[neigh])
+      for(int j =0; j< dimworld; j++)
+        neighElInfo->coord[neigh][j] = elInfo->opp_coord[neigh][j];
+    else
     {
-      neighElInfo->coord[neigh][j] = elInfo->opp_coord[neigh][j];
+      Vec<dimworld> midPoint (0.0);
+      Vec<dimworld> newPoint (0.0);
+      Vec<dimworld> oldPoint (static_cast<double *> (elInfo->coord[neigh]));
+
+      for(int i=0; i< dim+1; i++)
+      {
+        double *coord = static_cast<double *> (elInfo->coord[i]);
+        for(int j=0; j< dimworld; j++)
+        {
+          midPoint(j) += 0.5 * coord[j];
+        }
+      }
+      newPoint = oldPoint + 2.0 * (oldPoint - midPoint);
+
+      for(int j =0; j< dimworld; j++)
+      {
+        neighElInfo->coord[neigh][j] = newPoint(j);
+      }
     }
   }
 
