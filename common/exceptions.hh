@@ -146,6 +146,19 @@ namespace Dune {
    */
   class MathError : public Exception {};
 
+  /*! default exception class for Range errors
+
+     This is the superclass for all errors which are caused because
+     the user tries to access data, that was not allocated before.
+     These can be problems like
+
+     - accessing array entries behind the last entry
+     - adding the fourth non zero entry in a sparse matrix
+       with only three non zero entries per row
+
+   */
+  class RangeError : public Exception {};
+
 } // end namespace
 
 #endif

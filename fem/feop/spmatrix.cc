@@ -1,6 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 #include <cmath>
+#include <limits>
+#include <dune/common/exceptions.hh>
 
 namespace Dune
 {
@@ -184,8 +186,10 @@ namespace Dune
     int whichCol = colIndex(row,col);
     if(whichCol < 0)
     {
-      std::cerr << "Error in SparseRowMatrix::set: Entry (" << row << ", " << col << ") "
-                << "could neither be found nor newly allocated!\n";
+      DUNE_THROW(RangeError,
+                 "Error in SparseRowMatrix::set: Entry ("
+                 << row << ", " << col << ") "
+                 << "could neither be found nor newly allocated!");
     }
     else
     {
@@ -197,14 +201,19 @@ namespace Dune
   template <class T>
   void SparseRowMatrix<T>::add(int row, int col, const T& val)
   {
+    if (std::numeric_limits<T>::has_quiet_NaN &&
+        std::numeric_limits<T>::quiet_NaN() == val)
+      DUNE_THROW(MathError, "trying to add NAN to a matrix entry.");
     if(std::abs(val) < EPS)
       return;
 
     int whichCol = colIndex(row,col);
     if(whichCol < 0)
     {
-      std::cerr << "Error in SparseRowMatrix::add: Entry (" << row << ", " << col << ") "
-                << "could neither be found nor newly allocated!\n";
+      DUNE_THROW(RangeError,
+                 "Error in SparseRowMatrix::add: Entry ("
+                 << row << ", " << col << ") "
+                 << "could neither be found nor newly allocated!");
     }
     else
     {
@@ -219,8 +228,10 @@ namespace Dune
     int whichCol = colIndex(row,col);
     if(whichCol < 0)
     {
-      std::cerr << "Error in SparseRowMatrix::multScalar: Entry Entry (" << row << ", " << col << ") "
-                << "could neither be found nor newly allocated!\n";
+      DUNE_THROW(RangeError,
+                 "Error in SparseRowMatrix::multScalar: Entry Entry ("
+                 << row << ", " << col << ") "
+                 << "could neither be found nor newly allocated!");
     }
     else
     {
@@ -434,15 +445,21 @@ namespace Dune
 
 
   template <class T>
-  void SparseRowMatrix<T>::print(std::ostream& s) const
+  void SparseRowMatrix<T>::print(std::ostream& s, int width) const
   {
+    char txt[20];
     for(int row=0; row<dim_[0]; row++)
     {
       for(int col=0; col<dim_[1]; col++)
       {
-        s << (*this)(row,col) << " ";
+        T t = (*this)(row,col);
+        if (t == 0.0)
+          snprintf(txt, 20, "%*i.0 ", width+5, 0);
+        else
+          snprintf(txt, 20, "% 1.*e ", width, t);
+        s << txt;
       }
-      s << "\n";
+      s << std::endl;
     }
   }
 
@@ -495,7 +512,7 @@ namespace Dune
     // non zero values before this line
     nzval_.resize(dim_[0]+1);
     for (int i=0; i<nzval_.size(); i++)
-      nzval_[i] = 3*i;
+      nzval_[i] = nz_*i;
     // fill missing entries
     for (int row = 0; row < dim_[0]; row++)
     {
