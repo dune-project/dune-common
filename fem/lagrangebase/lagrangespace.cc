@@ -11,7 +11,7 @@ namespace Dune {
   template< class FunctionSpaceType, class GridType,int polOrd, class DofManagerType >
   inline LagrangeDiscreteFunctionSpace<FunctionSpaceType,GridType,polOrd,DofManagerType>::
   LagrangeDiscreteFunctionSpace ( GridType & g, DofManagerType & dm , int level) :
-    DiscreteFunctionSpaceType (g,id) , dm_ ( dm ) , level_ (level)
+    DiscreteFunctionSpaceType (g,id, level) , dm_ ( dm )
   {
     mapper_ = 0;
     maxNumBase_ = 0;
@@ -210,7 +210,7 @@ namespace Dune {
 
     BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
 
-    mapper_ = new LagrangeMapperType (dm_.indexSet(), baseFuncSet->getNumberOfBaseFunctions() , level_ );
+    mapper_ = new LagrangeMapperType (dm_.indexSet(), baseFuncSet->getNumberOfBaseFunctions() , this->level_ );
 
     return baseFuncSet;
   }

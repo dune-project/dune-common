@@ -23,7 +23,7 @@ namespace Dune {
   template< class FunctionSpaceType, class GridType,int polOrd, class
       DofManagerType = DofManager<GridType> >
   class LagrangeDiscreteFunctionSpace
-    : public DiscreteFunctionSpaceInterface <  FunctionSpaceType , GridType,
+    : public DiscreteFunctionSpaceDefault <  FunctionSpaceType , GridType,
           LagrangeDiscreteFunctionSpace < FunctionSpaceType , GridType, polOrd, DofManagerType >,
           FastBaseFunctionSet < LagrangeDiscreteFunctionSpace
               < FunctionSpaceType , GridType, polOrd, DofManagerType > > >
@@ -34,7 +34,7 @@ namespace Dune {
     < FunctionSpaceType , GridType , polOrd , DofManagerType > LagrangeDiscreteFunctionSpaceType;
 
     /** \todo Please doc me! */
-    typedef DiscreteFunctionSpaceInterface <
+    typedef DiscreteFunctionSpaceDefault <
         FunctionSpaceType , GridType, LagrangeDiscreteFunctionSpaceType,
         FastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType > >  DiscreteFunctionSpaceType;
 
@@ -116,9 +116,6 @@ namespace Dune {
     //! number of unknows for this function space
     int size () const;
 
-    //! The grid level that this space belongs to
-    int level () const {return level_;}
-
     //! return boundary type for given boundary id
     //! uses the parameter class BoundaryIdentifierType
     BoundaryType boundaryType ( int id ) const;
@@ -158,9 +155,6 @@ namespace Dune {
   private:
     //! the corresponding LagrangeMapper
     LagrangeMapperType *mapper_;
-
-    // the level of the function space
-    int level_;
 
   }; // end class LagrangeDiscreteFunctionSpace
 
