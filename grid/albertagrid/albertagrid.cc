@@ -9,6 +9,7 @@
 //************************************************************************
 
 #include <algorithm>
+#include <dune/io/file/grapedataio.hh>
 
 namespace Dune
 {
@@ -855,9 +856,10 @@ namespace Dune
   template<int codim, int dim, class GridImp>
   inline AlbertaGridEntity<codim,dim,GridImp>::
   AlbertaGridEntity(const GridImp &grid, int level,
-                    ALBERTA TRAVERSE_STACK * travStack) : grid_(grid)
-                                                          , level_ ( level )
-                                                          , geo_ (false)
+                    ALBERTA TRAVERSE_STACK * travStack)
+    : grid_(grid)
+      , level_ ( level )
+      , geo_ (false)
   {
     travStack_ = travStack;
     makeDescription();
@@ -913,10 +915,8 @@ namespace Dune
   inline int AlbertaGridEntity<codim,dim,GridImp>::
   index() const
   {
-    assert(elNum_ >= 0);
-    return elNum_;
-    //Entity en(*this);
-    //return grid_.levelIndexSet().index(en);
+    const Entity en (*this);
+    return grid_.levelIndexSet().index(en);
   }
 
   // default
@@ -969,7 +969,8 @@ namespace Dune
   globalIndex() const
   {
     assert(codim == dim);
-    return elInfo_->el->dof[vertex_][0];
+    const Entity en (*this);
+    return grid_.hierarchicIndexSet().index(en);
   }
 
   template<int codim, int dim, class GridImp>
@@ -1096,39 +1097,12 @@ namespace Dune
   }
 
   //*****************************************************************
-
-  template <class GridImp, int dim, int dimworld, int cc>
-  struct AlbertaGridSubIndex
-  {
-    static int subIndex(GridImp & grid, const AlbertaGridEntity<0,dim,GridImp> &en, int i)
-    {
-      return en.template entity<cc>(i)->index();
-    }
-  };
-
-  template <class GridImp, int dim>
-  struct AlbertaGridSubIndex<GridImp,dim,dim,dim>
-  {
-    static int subIndex(GridImp & grid, const AlbertaGridEntity<0,dim,GridImp> &en, int i)
-    {
-      return en.getElInfo()->el->dof[i][0];
-    }
-  };
-
-  template <class GridImp, int dim, int dimworld>
-  struct AlbertaGridSubIndex<GridImp,dim,dimworld,dim>
-  {
-    static int subIndex(GridImp & grid, const AlbertaGridEntity<0,dim,GridImp> &en, int i)
-    {
-      return grid.indexOnLevel<dim>(en.getElInfo()->el->dof[i][0],en.level());
-    }
-  };
-
   // subIndex
   template<int dim, class GridImp> template <int cc>
   inline int AlbertaGridEntity <0,dim,GridImp>::subIndex ( int i ) const
   {
-    return AlbertaGridSubIndex<GridImp,dim,GridImp::dimensionworld,cc>::subIndex(grid_,*this,i);
+    const Entity en (*this);
+    return grid_.hierarchicIndexSet().template subIndex<cc> (en);
   }
 
   // default is faces
@@ -1137,8 +1111,8 @@ namespace Dune
   inline typename AlbertaGridEntity <0,dim,GridImp>::template codim<cc>::EntityPointer
   AlbertaGridEntity <0,dim,GridImp>::entity ( int i ) const
   {
-    AlbertaGridLevelIterator<cc,All_Partition,GridImp> tmp (grid_, level() ,elInfo_,
-                                                            grid_. template indexOnLevel<cc>( globalIndex() ,level()),i,0,0);
+    AlbertaGridLevelIterator<cc,All_Partition,GridImp>
+    tmp (grid_, level() ,elInfo_, -1,i,0,0);
     return tmp;
   }
 
@@ -1233,9 +1207,8 @@ namespace Dune
   inline int AlbertaGridEntity <0,dim,GridImp>::
   index() const
   {
-    //Entity en(*this);
-    //return grid_.levelIndexSet().index(en);
-    return grid_.template indexOnLevel<0>( globalIndex() , level_ );
+    const Entity en (*this);
+    return grid_.levelIndexSet().index(en);
   }
 
   template<int dim, class GridImp>
@@ -1291,11 +1264,8 @@ namespace Dune
       fatherLevel = 0;
     }
 
-    int fatherIndex = grid_.template indexOnLevel<0>(grid_.getElementNumber(fatherInfo->el),fatherLevel);
-    // new LevelIterator with EL_INFO one level above
-
     AlbertaGridLevelIterator<0,All_Partition,GridImp>
-    vati(grid_,fatherLevel,fatherInfo,fatherIndex,0,0,0);
+    vati(grid_,fatherLevel,fatherInfo,-1,0,0,0);
     return vati;
   }
 
@@ -2648,14 +2618,15 @@ namespace Dune
 
       for(int i=0; i<vec.size(); i++) vec[i] = -1;
 
+      //typedef AlbertaGridMakeableEntity<0,dim,const GridType> MakeableEntityImp;
       typedef typename GridType::template codim<0>::LevelIterator LevelIteratorType;
       LevelIteratorType endit = grid.template lend<0> (level);
       for(LevelIteratorType it = grid.template lbegin<0> (level); it != endit; ++it)
       {
         for(int local=0; local<dim+1; local++)
         {
-          int num = (grid.template getRealEntity<0>(*it)).getElInfo()->el->dof[local][0]; // vertex num
-          if( vec[num] == -1 ) vec[num] = it->globalIndex();
+          int num = (grid.template getRealEntity<0> (*it)).getElInfo()->el->dof[local][0]; // vertex num
+          if( vec[num] == -1 ) vec[num] = grid.hierarchicIndexSet().index(*it); //->globalIndex();
         }
       }
       // remember the number of entity on level and codim = 0
@@ -2776,6 +2747,8 @@ namespace Dune
     bool makeNew = true;
     {
       std::fstream file (MacroTriangFilename,std::ios::in);
+      if(!file) DUNE_THROW(AlbertaIOError,"could not open grid file " << MacroTriangFilename);
+
       std::basic_string <char> str,str1;
       file >> str1; str = str1.assign(str1,0,3);
       // With that Albert MacroTriang starts DIM or DIM_OF_WORLD
@@ -2796,7 +2769,8 @@ namespace Dune
     }
     else
     {
-      //    this->readGrid<xdr>(MacroTriangFilename,time_,0);
+      GrapeDataIO < AlbertaGrid <dim,dimworld> > dataIO;
+      dataIO.readGrid ( *this, MacroTriangFilename,time_,0);
     }
   }
 
@@ -2967,11 +2941,11 @@ namespace Dune
 
   template<int dim, int dimworld>
   inline bool AlbertaGrid < dim, dimworld >::
-  mark( int refCount , typename Traits::template codim<0>::Entity & en )
+  mark( int refCount , typename Traits::template codim<0>::Entity & ep )
   {
-    ALBERTA EL_INFO * elInfo = (this->template getRealEntity<0>(en)).getElInfo();
+    ALBERTA EL_INFO * elInfo = (this->template getRealEntity<0>(ep)).getElInfo();
     assert(elInfo);
-    if( en.isLeaf() )
+    if( ep.isLeaf() )
     {
       // we can not mark for coarsening if already marked for refinement
       if((refCount < 0) && (elInfo->el->mark > 0))
@@ -3361,20 +3335,6 @@ namespace Dune
     for(int i=0; i<a.size(); i++) a[i] = -1;
   }
 
-  template < int dim, int dimworld > template <int codim>
-  inline int AlbertaGrid < dim, dimworld >::
-  indexOnLevel(int globalIndex, int level) const
-  {
-    assert(hasLevelIndex_ == true);
-    // level = 0 is not interesting for this implementation
-    // +1, because if Entity is Boundary then globalIndex == -1
-    // an therefore we add 1 and get Entry 0, which schould be -1
-    if (globalIndex < 0)
-      return globalIndex;
-    else
-      return levelIndex_[codim][level][globalIndex];
-  }
-
   // create lookup table for indices of the elements
   template < int dim, int dimworld >
   inline void AlbertaGrid < dim, dimworld >::markNew()
@@ -3386,58 +3346,10 @@ namespace Dune
     if((maxlevel_+1)*(numCodim) > size_.size())
       makeNewSize(size_, 2*((maxlevel_+1)*numCodim));
 
-    for(int l=0; l<=maxlevel_; l++)
-    {
-      if(nElements > levelIndex_[0][l].size())
-        makeNewSize(levelIndex_[0][l], nElements);
-    }
-
     // if hasLevelIndex_ == false then the LevelIndex should not be generated
-    if(!hasLevelIndex_) return;
+    if(levelIndexSet_) (*levelIndexSet_).calcNewIndex();
 
-
-
-    // the easiest way, in Albert all elements have unique global element
-    // numbers, therefore we make one big array from which we get with the
-    // global unique number the local level number
-    for(int level=0; level <= maxlevel_; level++)
-    {
-      typedef typename Traits::template codim<0>::template partition<All_Partition>::LevelIterator LevelIteratorType;
-      int num = 0;
-      LevelIteratorType endit = lend<0>(level);
-      for(LevelIteratorType it = lbegin<0> (level); it != endit; ++it)
-      {
-        int no = it->globalIndex();
-
-        levelIndex_[0][level][no] = num;
-        num++;
-      }
-      // remember the number of entity on level and codim = 0
-      size_[level*numCodim /* +0 */] = num;
-    };
-
-    for(int l=0; l<=maxlevel_; l++)
-    {
-      if(nVertices > levelIndex_[dim][l].size())
-      {
-        makeNewSize(levelIndex_[dim][l], nVertices);
-      }
-    }
-
-    for(int level=0; level <= maxlevel_; level++)
-    {
-      typedef typename Traits::template codim<dim>::template partition<All_Partition>::LevelIterator LevelIteratorType;
-      int num = 0;
-      LevelIteratorType endit = lend<dim> (level);
-      for(LevelIteratorType it = lbegin<dim> (level); it != endit; ++it)
-      {
-        int no = it->globalIndex();
-        levelIndex_[dim][level][no] = num;
-        num++;
-      }
-      // remember the number of entity on level and codim = 0
-      size_[level*numCodim + dim] = num;
-    };
+    return ;
   }
 
 
