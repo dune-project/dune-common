@@ -212,6 +212,8 @@ namespace Dune {
      */
     int size (int level, int codim) const;
 
+    int global_size (int codim) const { return size(maxlevel(),codim); }
+
     /** \brief Mark entity for refinement
      *
      * This only works for entities of codim 0.
