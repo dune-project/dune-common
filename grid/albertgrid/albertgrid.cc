@@ -4055,13 +4055,12 @@ namespace Dune
 #if DIM == 3
   template <>
   inline void AlbertGrid<3,3>::
-  fillElInfo(int ichild, int actLevel , const ALBERT EL_INFO *elinfo_old,
-             ALBERT EL_INFO *elinfo, bool hierarchical) const
+  fillElInfo(int ichild, int actLevel , const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, bool hierarchical, bool leaf) const
   {
     enum { dim = 3 };
     enum { dimworld = 3 };
 
-#if 0
+#if 1
     ALBERT fill_elinfo(ichild,elinfo_old,elinfo);
 #else
     static S_CHAR child_orientation[3][2] = {{1,1}, {1,-1}, {1,-1}};
