@@ -6,35 +6,55 @@
 namespace Dune {
 
   /** \brief The mass matrix
+   *
+   * \tparam polOrd The quadrature order
+   *
+   * \todo Giving the quadrature order as a template parameter is
+   * a hack.  It would be better to determine the optimal order automatically.
    */
-  template <class DiscFunctionType>
+  template <class DiscFunctionType, int polOrd>
   class MassMatrixFEOp :
+
     public FiniteElementOperator<DiscFunctionType,
         SparseRowMatrix<double>,
-        MassMatrixFEOp<DiscFunctionType> > {
+        MassMatrixFEOp<DiscFunctionType, polOrd> > {
     typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
     typedef typename FiniteElementOperator<DiscFunctionType,
         SparseRowMatrix<double>,
-        MassMatrixFEOp<DiscFunctionType> >::OpMode OpMode;
+        MassMatrixFEOp<DiscFunctionType, polOrd> >::OpMode OpMode;
 
     typedef typename FunctionSpaceType::RangeField RangeFieldType;
     typedef typename FunctionSpaceType::GridType GridType;
     typedef typename FunctionSpaceType::Range RangeType;
 
   public:
+    //! ???
     FastQuad < typename FunctionSpaceType::RangeField, typename
-        FunctionSpaceType::Domain , 1 > quad;
+        FunctionSpaceType::Domain , polOrd > quad;
 
-    MassMatrixFEOp( const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :   //= ON_THE_FLY ) :
-                                                                                           FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,MassMatrixFEOp<DiscFunctionType> >( f, opMode ) ,
-                                                                                           quad ( *(f.getGrid().template lbegin<0> (0))) {}
 
+    //! Returns the actual matrix if it is assembled
+    /** \todo Should this be in a base class? */
+    const SparseRowMatrix<double>* getMatrix() const {
+      assert(this->matrix_);
+      return this->matrix_;
+    }
+
+    //! ???
+    MassMatrixFEOp( const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) : //= ON_THE_FLY ) :
+                                                                                        FiniteElementOperator<DiscFunctionType,
+                                                                                            SparseRowMatrix<double>,
+                                                                                            MassMatrixFEOp<DiscFunctionType, polOrd> >( f, opMode ) ,
+                                                                                        quad ( *(f.getGrid().template lbegin<0> (0))) {}
+
+    //! ???
     SparseRowMatrix<double>* newEmptyMatrix( ) const {
       return new SparseRowMatrix<double>( this->functionSpace_.size ( this->functionSpace_.getGrid().maxlevel() ) ,
                                           this->functionSpace_.size ( this->functionSpace_.getGrid().maxlevel() ) ,
-                                          10, 0.0 );
+                                          10);
     }
 
+    //! ???
     template <class EntityType>
     double getLocalMatrixEntry( EntityType &entity, const int i, const int j ) const
     {
@@ -61,6 +81,7 @@ namespace Dune {
       return val;
     }
 
+    //! ???
     template < class EntityType, class MatrixType>
     void getLocalMatrix( EntityType &entity, const int matSize, MatrixType& mat) const
     {
@@ -95,7 +116,6 @@ namespace Dune {
       for(i=0; i<matSize; i++)
         for (j=matSize; j>i; j--)
           mat(i,j) = mat(j,i);
-
 
       return;
     }
