@@ -359,7 +359,22 @@ namespace Dune {
   template<int dim, int dimworld> template<int cc>
   inline int SEntity<0,dim,dimworld>::subIndex (int i)
   {
-    return entity<cc>(i)->index();
+    if(cc == dim) // the vertex case
+    {
+      // find expanded coordinates of entity in reference cube
+      // has components in {0,1,2}
+      // the grid hold the memory because its faster
+      Tupel<int,dim> &zref = grid->zrefStatic;
+      Tupel<int,dim> &zentity = grid->zentityStatic;
+
+      zref = SUnitCubeMapper<dim>::mapper.z(i,dim);
+      for (int i=0; i<dim; i++) zentity[i] = z[i] + zref[i] - 1;
+      return grid->n(l,zentity);
+    }
+    else
+    {
+      return entity<cc>(i)->index();
+    }
   }
 
   template<int dim, int dimworld>
@@ -652,7 +667,7 @@ namespace Dune {
     count = _count;
 
     // check if count is valid
-    if (count<0 || count>=self->count<1>()) return;     // done, this is end iterator
+    if (count<0 || count>=self->template count<1>()) return;     // done, this is end iterator
     valid_count = true;
 
     // and compute compressed coordinates of neighbor
@@ -1003,16 +1018,16 @@ namespace Dune {
     return L-1;
   }
 
-  template <int dim, int dimworld> template <int codim>
-  inline SLevelIterator<codim,dim,dimworld> SGrid<dim,dimworld>::lbegin (int level)
+  template <int dim, int dimworld> template <int cd>
+  inline SLevelIterator<cd,dim,dimworld> SGrid<dim,dimworld>::lbegin (int level)
   {
-    return SLevelIterator<codim,dim,dimworld>(*this,level,0);
+    return SLevelIterator<cd,dim,dimworld> (*this,level,0);
   }
 
-  template <int dim, int dimworld> template <int codim>
-  inline SLevelIterator<codim,dim,dimworld> SGrid<dim,dimworld>::lend (int level)
+  template <int dim, int dimworld> template <int cd>
+  inline SLevelIterator<cd,dim,dimworld> SGrid<dim,dimworld>::lend (int level)
   {
-    return SLevelIterator<codim,dim,dimworld>(*this,level,size(level,codim));
+    return SLevelIterator<cd,dim,dimworld> (*this,level,size(level,cd));
   }
 
   template<int dim, int dimworld>

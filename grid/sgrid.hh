@@ -550,20 +550,6 @@ namespace Dune {
     //! return global index of entity<cc> number i
     template <int cc> int subIndex ( int i );
 
-    //! specialization for vertices
-    template <> int subIndex<dim> ( int i )
-    {
-      // find expanded coordinates of entity in reference cube
-      // has components in {0,1,2}
-      // the grid hold the memory because its faster
-      Tupel<int,dim> &zref = grid->zrefStatic;
-      Tupel<int,dim> &zentity = grid->zentityStatic;
-
-      zref = SUnitCubeMapper<dim>::mapper.z(i,dim);
-      for (int i=0; i<dim; i++) zentity[i] = z[i] + zref[i] - 1;
-      return grid->n(l,zentity);
-    };
-
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
