@@ -452,12 +452,24 @@ namespace Dune {
   {
   public:
     //! return boundary identifier
-    BoundaryType type ();
+    BoundaryType type ()
+    {
+      std::cerr << "WARNING: BoundaryEntity::type(): default implementation called!\n";
+      return Dirichlet;
+    }
 
-    int id ();
+    int id ()
+    {
+      std::cerr << "WARNING: BoundaryEntity::id(): default implementation called!\n";
+      return -1 ;
+    }
 
     //! return true if ghost cell was filled
-    bool hasGeometry ();
+    bool hasGeometry ()
+    {
+      std::cerr << "WARNING: BoundaryEntity::hasGeometry(): default implementation called!\n";
+      return false;
+    }
 
     //! return geometry of ghostcell
     ElementImp<dim,dimworld> & geometry ();
