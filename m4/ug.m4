@@ -154,12 +154,12 @@ EOF`
 	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
-          # add to global list
+    # add to global list
 	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $UG_LDFLAGS"
 	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $UG_LIBS"
-	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CFLAGS $UG_CPPFLAGS"
-
-          # re-set variable correctly
+	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $UG_CPPFLAGS"
+    
+    # re-set variable correctly
 	  with_ug="yes"
       fi 
 
