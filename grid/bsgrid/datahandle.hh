@@ -5,7 +5,6 @@
 
 namespace BernhardSchuppGrid {
 
-
   //! the corresponding interface class is defined in bsinclude.hh
   template <class EntityType, class DataCollectorType >
   class GatherScatterImpl : public GatherScatter
@@ -36,6 +35,22 @@ namespace BernhardSchuppGrid {
       // set element and then start
       en_.setelement(elem,-1);
       dc_.xtractData(str,en_);
+    }
+
+    // write Data of one lement to stream
+    virtual void sendData ( ObjectStreamType & str , const HElementType & elem )
+    {
+      en_.setelement( const_cast<HElementType &> (elem) , -1 );
+      dc_.scatter(str, en_);
+    }
+
+    // read Data of one element from stream
+    virtual void recvData ( ObjectStreamType & str , HGhostType & ghost )
+    {
+      BNDFaceType & bnd = static_cast <BNDFaceType &> (ghost);
+
+      en_.setGhost( bnd ,-1);
+      dc_.gather(str, en_);
     }
 
   };
