@@ -13,6 +13,14 @@ template <bool flag> class CompileTimeChecker;
 template <> class CompileTimeChecker<true> { };
 
 
+//! Map an integer value to a type
+//! This comes in handy if one tries to emulate member function specialization.
+//! The idea how to do it is presented in "Modern C++ Design" by Alexandrescu.
+template <int N>
+struct Int2Type {
+  enum { value = N };
+};
+
 namespace Dune {
   /** @addtogroup Common
 
