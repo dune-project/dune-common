@@ -57,6 +57,9 @@ AC_DEFUN([DUNE_PATH_HDF5],[
    with_hdf5="yes"
  fi
 
+ # also tell automake
+ AM_CONDITIONAL(HDF5, test x$HAVE_HDF5 == x1)
+
  # reset values					    
  CFLAGS="$ac_save_CFLAGS"
  LIBS="$ac_save_LIBS"
