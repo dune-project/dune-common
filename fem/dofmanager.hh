@@ -77,6 +77,13 @@ namespace Dune {
     template <class T>
     const T& get ( int i ) const { return static_cast<T *> ((void *)vec_)[i]; }
 
+    //! return vector for cg scheme
+    template <class T>
+    T* vector () { return static_cast<T *> ((void *)vec_); }
+
+    template <class T>
+    const T* vector () const { return static_cast<T *> ((void *)vec_); }
+
     //! write data to xdr stream
     template <class T>
     bool processXdr(XDR *xdrs)
@@ -182,6 +189,9 @@ namespace Dune {
       for(int i=0; i<size(); i ++) this->operator [] (i) = t;
       return *this;
     }
+
+    T* vector() { return array_.vector<T> (); }
+    const T* vector() const { return array_.vector<T> (); }
 
     //! read and write xdr
     bool processXdr(XDR *xdrs)
@@ -429,6 +439,7 @@ namespace Dune {
         // create new memory, which smaller than the mem we have
         int newSize  = indexSet_.tmpSize();
 
+        // if we have enough, do notin'
         if(newSize <= memSize) continue;
 
         // alloc new mem an copy old mem
@@ -438,6 +449,7 @@ namespace Dune {
         (*it)->resize(newMem,newSize,newSize);
 
         // free old mem
+        //std::cout << mem << " free Mem\n";
         ghmm_.Free(mem);
       }
     }
@@ -456,12 +468,19 @@ namespace Dune {
 
       for( ; it != endit ; ++it)
       {
+
         int newSize = (*it)->newSize(grid_.maxlevel());
         int memSize  = (*it)->memSize();
-        if(newSize <= memSize) continue;
+        MemPointerType * mem  = (*it)->myMem();
+
+        if(newSize <= memSize)
+        {
+          (*it)->resize(mem,memSize,newSize);
+          continue;
+        }
 
         // alloc new mem an copy old mem
-        MemPointerType * mem    = (*it)->myMem();
+        assert(mem != 0);
         MemPointerType * newMem = (MemPointerType *) ghmm_.Malloc((*it)->objSize()*newSize);
         std::memcpy(newMem,mem, memSize * (*it)->objSize());
         (*it)->resize(newMem,newSize,newSize);
@@ -495,8 +514,6 @@ namespace Dune {
               int oldInd = indexSet_.oldIndex(i);
               int newInd = indexSet_.newIndex(i);
 
-              //std::cout << newInd << " New | Old " << oldInd << "\n";
-
               // copy value form old to new place
               MemPointerType * t1 = (mem + (newInd*objSize));
               MemPointerType * t2 = (mem + (oldInd*objSize));
@@ -510,6 +527,8 @@ namespace Dune {
           (*it)->resize(mem,memSize,newSize);
         }
       }
+
+      //std::cout << "Dof Compress Done! \n";
     }
 
     //! return indexSet for dofmappers
