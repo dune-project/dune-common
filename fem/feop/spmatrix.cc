@@ -248,33 +248,10 @@ namespace Dune
     return result;
   }
 
-  // template <class T>
-  // SparseRowMatrix<T> SparseRowMatrix<T>::operator*(const SparseRowMatrix<T>& other) const
-  // {
-  //     assert(cols() == other.rows());
-
-  //     SparseRowMatrix<T> result(rows(), other.cols(), other.numNonZeros(), 0);
-
-  //     for (int i=0; i<rows(); i++)
-  //         for (int j=0; j<rows(); j++) {
-
-  //             T sum = T(0);
-  //             for (int k=0; k<cols(); k++)
-  //                 sum += (*this)(i,k) * other(k,j);
-
-  //             result.set(i, j, sum);
-
-  //         }
-
-  //     return result;
-  // }
-
   template <class T>
   SparseRowMatrix<T> SparseRowMatrix<T>::applyFromLeftAndRightTo(const SparseRowMatrix<T>& A) const
   {
     assert(A.rows() == A.cols());
-
-    //SparseRowMatrix<T> temp = (*this) * A;
 
     SparseRowMatrix<T> result(rows(), rows(), A.numNonZeros(), 0);
 
@@ -282,9 +259,20 @@ namespace Dune
       for (int j=0; j<rows(); j++) {
 
         T sum = T(0);
-        for (int k=0; k<cols(); k++)
-          for (int l=0; l<cols(); l++)
-            sum += (*this)(i,k) * A(k, l) * (*this)(j,l);
+        for (int k=0; k<numNonZeros(); k++) {
+
+          int kCol = col_[i*nz_ + k];
+          if (kCol >= 0) {
+            for (int l=0; l<numNonZeros(); l++) {
+
+              int lCol = col_[j*nz_ + l];
+              if (lCol >= 0)
+                sum += val(i*nz_ + k) * A(kCol, lCol) * val(j*nz_ + l);
+            }
+
+          }
+
+        }
 
         result.set(i, j, sum);
 
