@@ -102,7 +102,7 @@ namespace Dune {
      The resulting system is diagonal since the direction vectors are required to be orthogonal.
    */
   template<int dim, int dimworld>
-  class SElement : public Element<dim,dimworld,sgrid_ctype,SElement>
+  class SElement : public ElementDefault<dim,dimworld,sgrid_ctype,SElement>
   {
   public:
     //! know dimension
@@ -182,7 +182,7 @@ namespace Dune {
 
   //! specialization for dim=0, this is a vertex
   template<int dimworld>
-  class SElement<0,dimworld> : public Element<0,dimworld,sgrid_ctype,SElement>
+  class SElement<0,dimworld> : public ElementDefault <0,dimworld,sgrid_ctype,SElement>
   {
   public:
     //! know dimension
@@ -231,7 +231,7 @@ namespace Dune {
      of an element!
    */
   template<int dim, int dimworld>
-  class SNeighborIterator : public NeighborIterator<dim,dimworld,sgrid_ctype,SNeighborIterator,SEntity,SElement>
+  class SNeighborIterator : public NeighborIteratorDefault <dim,dimworld,sgrid_ctype,SNeighborIterator,SEntity,SElement>
   {
   public:
     //! know your own dimension
@@ -327,7 +327,7 @@ namespace Dune {
      hierarchically refined meshes.
    */
   template<int dim, int dimworld>
-  class SHierarchicIterator : public HierarchicIterator<dim,dimworld,sgrid_ctype,SHierarchicIterator,SEntity>
+  class SHierarchicIterator : public HierarchicIteratorDefault <dim,dimworld,sgrid_ctype,SHierarchicIterator,SEntity>
   {
   public:
     //! know your own dimension
@@ -425,7 +425,7 @@ namespace Dune {
    */
   template<int codim, int dim, int dimworld>
   class SEntity : public SEntityBase<codim,dim,dimworld>,
-                  public Entity<codim,dim,dimworld,sgrid_ctype,SEntity,SElement,
+                  public EntityDefault <codim,dim,dimworld,sgrid_ctype,SEntity,SElement,
                       SLevelIterator,SNeighborIterator,SHierarchicIterator>
   {
   public:
@@ -473,7 +473,7 @@ namespace Dune {
    */
   template<int dim, int dimworld>
   class SEntity<0,dim,dimworld> : public SEntityBase<0,dim,dimworld>,
-                                  public Entity<0,dim,dimworld,sgrid_ctype,SEntity,SElement,
+                                  public EntityDefault <0,dim,dimworld,sgrid_ctype,SEntity,SElement,
                                       SLevelIterator,SNeighborIterator,SHierarchicIterator>
   {
   public:
@@ -594,7 +594,7 @@ namespace Dune {
    */
   template<int dim, int dimworld>
   class SEntity<dim,dim,dimworld> : public SEntityBase<dim,dim,dimworld>,
-                                    public Entity<dim,dim,dimworld,sgrid_ctype,SEntity,SElement,
+                                    public EntityDefault <dim,dim,dimworld,sgrid_ctype,SEntity,SElement,
                                         SLevelIterator,SNeighborIterator,SHierarchicIterator>
   {
   public:
@@ -652,7 +652,7 @@ namespace Dune {
   /*! Enables iteration over all entities of a given codimension and level of a grid.
    */
   template<int codim, int dim, int dimworld>
-  class SLevelIterator : public LevelIterator<codim,dim,dimworld,sgrid_ctype,SLevelIterator,SEntity>
+  class SLevelIterator : public LevelIteratorDefault <codim,dim,dimworld,sgrid_ctype,SLevelIterator,SEntity>
   {
   public:
     //! know your own codimension
@@ -706,7 +706,7 @@ namespace Dune {
      data structures (which are not part of this module).
    */
   template<int dim, int dimworld>
-  class SGrid : public Grid<dim,dimworld,sgrid_ctype,SGrid,SLevelIterator,SEntity>
+  class SGrid : public GridDefault <dim,dimworld,sgrid_ctype,SGrid,SLevelIterator,SEntity>
   {
   public:
     //! maximum number of levels allowed

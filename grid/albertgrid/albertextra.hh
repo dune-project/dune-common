@@ -312,4 +312,144 @@ inline static U_CHAR AlbertCoarsen ( MESH * mesh )
 }
 
 
+
+//*********************************************************************
+//
+//  Help Routines for the ALBERT Mesh
+//
+//*********************************************************************
+namespace AlbertHelp
+{
+
+
+  void AlbertLeafRefine(EL *parent, EL *child[2]){};
+  void AlbertLeafCoarsen(EL *parent, EL *child[2]){};
+
+
+  //**************************************************************************
+  //  calc Maxlevel of AlbertGrid and remember on wich level an element lives
+  //**************************************************************************
+
+  static int Albert_MaxLevel_help=-1;
+  static std::vector<int> *Albert_neighArray_help;
+
+  // function for mesh_traverse, is called on every element
+  inline static void calcMaxLevel (const EL_INFO * elf)
+  {
+    int level = elf->level;
+    if(Albert_MaxLevel_help < level) Albert_MaxLevel_help = level;
+    (* Albert_neighArray_help )[elf->el->index] = level;
+  }
+
+
+  // remember on which level an element realy lives
+  inline int calcMaxLevelAndMarkNeighbours ( MESH * mesh, std::vector< int > &nb )
+  {
+    // determine new maxlevel
+    nb.resize( mesh->n_hier_elements );
+
+    Albert_neighArray_help = &nb;
+    Albert_MaxLevel_help = -1;
+
+    // see ALBERT Doc page 72, traverse over all hierarchical elements
+    mesh_traverse(mesh,-1, CALL_EVERY_EL_PREORDER|FILL_NOTHING,calcMaxLevel);
+
+    if(Albert_MaxLevel_help == -1)
+    {
+      std::cerr << "Error: in calcMaxLevelAndMarkNeighbours!\n";
+      abort();
+    }
+    return Albert_MaxLevel_help;
+  }
+
+  //**************************************************************************
+  inline static void printNeighbour (const EL_INFO * elf)
+  {
+    int i;
+    printf("%d EL \n",elf->el->index);
+    for(i=0; i<3; i++)
+      if(elf->neigh[i])
+        printf("%d Neigh \n",elf->neigh[i]->index);
+      else printf("%d Neigh \n",-1);
+    printf("----------------------------------\n");
+  }
+
+  // we dont need Leaf Data
+  void initLeafData(LEAF_DATA_INFO * linfo)
+  {
+    linfo->leaf_data_size = sizeof(NULL); //AlbertLeafData);
+    linfo->refine_leaf_data = NULL; // &AlbertLeafRefine;
+    linfo->coarsen_leaf_data =NULL; //&AlbertLeafCoarsen;
+
+    return;
+  }
+
+  // initialize dofAdmin for vertex numbering
+  void initDofAdmin(MESH *mesh)
+  {
+    FUNCNAME("initDofAdmin");
+    int degree = 1;
+    const BAS_FCTS  *lagrange;
+    const FE_SPACE  *feSpace;
+
+    // just for vertex numbering
+    lagrange = get_lagrange(degree);
+    TEST_EXIT(lagrange) ("no lagrange BAS_FCTS\n");
+    feSpace = get_fe_space(mesh, "Linear Lagrangian Elements", nil, lagrange);
+
+    return;
+  }
+
+  const BOUNDARY *initBoundary(MESH * Spmesh, int bound)
+  {
+    FUNCNAME("initBoundary");
+    static const BOUNDARY Diet1 = { NULL, 1 };
+    static const BOUNDARY PaulN1 = { NULL, -1 };
+
+    static const BOUNDARY Diet2 = { NULL, 2 };
+    static const BOUNDARY PaulN2 = { NULL, -2 };
+
+    static const BOUNDARY Diet3 = { NULL, 3 };
+    static const BOUNDARY PaulN3 = { NULL, -3 };
+
+    static const BOUNDARY Diet4 = { NULL, 4 };
+    static const BOUNDARY PaulN4 = { NULL, -4 };
+
+    static const BOUNDARY Diet5 = { NULL, 5 };
+    static const BOUNDARY PaulN5 = { NULL, -5 };
+
+
+    switch (bound)
+    {
+    case 1 :
+      return (&Diet1);
+    case 2 :
+      return (&Diet2);
+    case 3 :
+      return (&Diet3);
+    case 4 :
+      return (&Diet4);
+    case 5 :
+      return (&Diet5);
+
+    case -1 :
+      return (&PaulN1);
+    case -2 :
+      return (&PaulN2);
+    case -3 :
+      return (&PaulN3);
+    case -4 :
+      return (&PaulN4);
+    case -5 :
+      return (&PaulN5);
+    default :
+      ALBERT_ERROR_EXIT("no Boundary for %d. Och! \n", bound);
+    }
+    return &Diet1;
+  }
+
+} // end namespace AlbertHelp
+
+
+
 #endif  /* !_ALBERTEXTRA_H_ */
