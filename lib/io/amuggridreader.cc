@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// ///////////////////////////////////////////////
-// Specialization of the AmiraMesh reader for UGGrid<3,3>
-// ///////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////
+// Specialization of the AmiraMesh reader for UGGrid<3,3> and UGGrid<2,2>
+// /////////////////////////////////////////////////////////////////////////
 
 #include "../../grid/uggrid.hh"
 
@@ -51,8 +51,6 @@ static int SegmentDescriptionByAmira(void *data, double *param, double *result)
 
   int triNum = * (int*) data;
 
-  //printf("tri = %d, l0 = %5.5f, l1 = %5.5f\n", triNum, param[0], param[1]);
-
   double barCoords[2];
   double A[4] = {-1, 1, 0, -1};
   double b[2] = {1, 0};
@@ -64,17 +62,13 @@ static int SegmentDescriptionByAmira(void *data, double *param, double *result)
   barCoords[0] += b[0];
   barCoords[1] += b[1];
 
-  /*
-     An dieser Stelle wird vorausgesetzt, dass das bereits gesetzte Gebiet
-     nicht mehr geaendert wird
-   */
-  //printf("barCoords:  (%g %g)\n", barCoords[0], barCoords[1]);
-
+#ifndef NDEBUG
   const float eps = 1e-6;
   if (barCoords[0]<-eps || barCoords[1]<-eps || (1-barCoords[0]-barCoords[1])<-eps) {
     printf("Illegal barycentric coordinate\n");
     assert(false);
   }
+#endif
 
   AmiraCallPositionParametrization(triNum, barCoords, result);
 
@@ -87,24 +81,22 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
                                                             const std::string& filename)
 {
   const int CORNERS_OF_BND_SEG = 4;
-
-
   int point[CORNERS_OF_BND_SEG] = {-1, -1, -1, -1};
-  double radius, MidPoint[3], alpha[2], beta[2];
-
-  /* Alle Aufrufe an Deine Bibliothek beginnen mit "Amira" */
+  double alpha[2], beta[2];
 
   /* Load data */
   if(AmiraLoadMesh(domainName.c_str(), filename.c_str()) != AMIRA_OK)
   {
-    UG3d::PrintErrorMessage('E', "CreateAmiraParametrization", "Domain not found");
-    return(1);
+    cerr << "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain:"
+         << "Domain file could not be opened!" << endl;
+    return 1;
   }
 
   if(AmiraStartEditingDomain(domainName.c_str()) != AMIRA_OK)
   {
-    UG3d::PrintErrorMessage('E', "AmiraStartEditing", "Domain not found");
-    return(1);
+    cerr << "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain:"
+         << "StartEditing failed!" << endl;
+    return 1;
   }
 
 
@@ -126,15 +118,10 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
   }
 
 
-  /* Das naechste ist neu. Wir brauchen eine Kugel, die das Gebiet komplett  enthaelt.
-     Diese Information wird fuer die UG-Graphik benoetigt, die Kugel kann also durchaus
-     zu gross oder zu klein sein */
-
-  AmiraGetMidpointAndRadius(MidPoint, &radius);
-
-  //     printf("Amira radius = %5.2f, Midpoint = (%5.2f, %5.2f, %5.2f)\n",
-  //            radius, MidPoint[0], MidPoint[1], MidPoint[2]);
-
+  /* Wir brauchen eine Kugel, die das Gebiet komplett  enthaelt.  Diese Information
+     wird für die UG-Graphik benoetigt, die Werte sind hier also komplett egal. */
+  double radius = 1;
+  double MidPoint[3] = {0, 0, 0};
 
   /* Jetzt geht es an's eingemachte. Zuerst wird ein neues gebiet konstruiert und
      in der internen UG Datenstruktur eingetragen */
@@ -166,29 +153,21 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
 
   for(int i = 0; i < noOfSegments; i++) {
 
-    //std::string segmentName;
     char segmentName[200];
     int left, right;
 
+    // Gets the vertices of a boundary segment
     AmiraGetNodeNumbersOfSegment(point, i);
 
-    /* Es werden die Ecknummern eines Randsegmentes zurueckgegeben
-       point[0] = 0; point[1]=1; point[2]=2; point[3]=3; */
-
-    //segmentName = "AmiraSegment";
     if(sprintf(segmentName, "AmiraSegment %d", i) < 0)
       return(1);
 
     /* left = innerRegion, right = outerRegion */
     AmiraGetLeftAndRightSideOfSegment(&left, &right, i);
 
-    //             printf("id = %d l = %d, r = %d\n", i, left, right);
-    //             printf("id = %d nd0 = %d, nd1 = %d, nd2 = %d\n", i, point[0], point[1], point[2]);
-
     segmentIndexList[i] = i;
 
     /* map Amira Material ID's to UG material ID's */
-
     left++;
     right++;
 
@@ -220,7 +199,6 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
 
 
 /** \todo Clear grid before reading! */
-//template<>
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
                                                      const std::string& filename)  try
 {
@@ -241,6 +219,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   //loaddomain $file @PARA_FILE $name @DOMAIN
   CreateDomain(grid, "olisDomain", "cube.par.am");
 
+  grid.makeNewUGMultigrid();
+#if 0
   //configure @PROBLEM $d @DOMAIN;
   char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
   UG3d::ConfigureCommand(2, configureArgs);
@@ -249,7 +229,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   char* newArgs[4] = {"new DuneMG", "b DuneDummyProblem", "f DuneFormat", "h 1G"};
   if (UG3d::NewCommand(4, newArgs))
     assert(false);
-
+#endif
 
   // ////////////////////////////////////////////
   // loadmesh $file @GRID_FILE $name @DOMAIN;
@@ -402,10 +382,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
 
   delete am;
 
-
-
-  //   if (MG_COARSE_FIXED(theMG))
-  //     return (GM_OK);
   UG3d::SetEdgeAndNodeSubdomainFromElements(theMG->grids[0]);
 
 
@@ -1364,14 +1340,14 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   for (theElement=theMG->grids[0]->elements[0]; theElement!=NULL; theElement=theElement->ge.succ)
   {
 
-    /* get subdomain of element */
-    int id = material_ids[i];
 
 #define ControlWord(p,ce) (((unsigned int *)(p))[UG2d::control_entries[ce].offset_in_object])
 #define CW_WRITE(p, ce, n)   ControlWord(p,ce) = (ControlWord(p,ce)&UG2d::control_entries[ce].xor_mask)|(((n)<<UG2d::control_entries[ce].offset_in_word)&UG2d::control_entries[ce].mask)
 #define SETSUBDOMAIN(p,n) CW_WRITE(p,UG2d::SUBDOMAIN_CE,n)
-
-    SETSUBDOMAIN(theElement, /*id+*/ 1);
+    /* get subdomain of element */
+    //       int id = material_ids[i];
+    //       SETSUBDOMAIN(theElement, id+1);
+    SETSUBDOMAIN(theElement, 0);
 
 #undef ControlWord
 #undef CW_WRITE
@@ -1388,8 +1364,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
 
   /** \bug This needs to be back in for grid refinement! */
-  //   if (CreateAlgebra(theMG) != UG2d::GM_OK)
-  //       return;
+  if (CreateAlgebra(theMG) != UG2d::GM_OK)
+    return;
 
   /* here all temp memory since CreateMultiGrid is released */
 #define ReleaseTmpMem(p,k) Release(p, UG2d::FROM_TOP,k)
