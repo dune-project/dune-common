@@ -36,6 +36,10 @@ DUNE_PATH_UG
 DUNE_PATH_AMIRAMESH
 # Yaspgrid-check
 DUNE_MPI
+
+# check for ALU3dGrid (needs MPI to build parallel version)
+DUNE_PATH_ALU3DGRID
+
 # how to create a deprecated warning
 DUNE_CHECKDEPRECATED
 
