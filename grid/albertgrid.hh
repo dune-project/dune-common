@@ -711,6 +711,7 @@ namespace Albert
 
 
 #define NEIGH_DEBUG
+
     template<int dim, int dimworld>
     class AlbertGridBoundaryEntity
       : public BoundaryEntityDefault <dim,dimworld,albertCtype,

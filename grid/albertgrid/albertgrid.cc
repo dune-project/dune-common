@@ -2144,7 +2144,7 @@ namespace Dune
     }
     else
     {
-      file2Grid <xdr> (MacroTriangFilename,time_,0);
+      read (MacroTriangFilename,time_,0);
     }
   }
 
@@ -2344,33 +2344,6 @@ namespace Dune
   template < int dim, int dimworld >
   inline bool AlbertGrid < dim, dimworld >::writeGridXdr (const char * filename, albertCtype time )
   {
-#if 0
-    //const ALBERT FE_SPACE *feSpace = ALBERT AlbertHelp::getFeSpace();
-    //assert(feSpace != NULL);
-    int degree = 1;
-    const ALBERT BAS_FCTS  *lagrange;
-    const ALBERT FE_SPACE  *feSpace;
-
-    // just for vertex numbering
-    lagrange = ALBERT get_lagrange(degree);
-    TEST_EXIT(lagrange) ("no lagrange BAS_FCTS\n");
-    feSpace = ALBERT get_fe_space(mesh_, "Linear Lagrangian Elements", nil, lagrange);
-
-    ALBERT DOF_REAL_D_VEC *vec = ALBERT get_dof_real_d_vec ("vec", feSpace );
-
-    int n = mesh_->n_vertices;
-
-    REAL_D *u = vec->vec;
-
-    for(int i=0; i<n; i++)
-    {
-      for(int j=0; j<dim; j++) u[i][j] = 0.0;
-      u[i][0] = 1.0;
-    }
-    ALBERT write_dof_real_d_vec(vec,"vec000000");
-#endif
-
-
     // use write_mesh_xdr, but works mot correctly
     return static_cast<bool> (ALBERT write_mesh (mesh_ , filename, time) );
   }
