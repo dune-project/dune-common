@@ -24,7 +24,7 @@ namespace Dune {
   class UG_NS {
   public:
 
-    /** \brief The PFIRSTNODE macros which returns the first node in a
+    /** \brief The PFIRSTNODE macro which returns the first node in a
      * grid even in a parallel setting.
      */
     static typename TargetType<dim,dim>::T* PFirstNode(typename UGTypes<dim>::GridType* grid) {
@@ -34,6 +34,18 @@ namespace Dune {
       using UG::PrioMaster;
       using UG::PrioBorder;
       return PFIRSTNODE(grid);
+    }
+
+    /** \brief The PFIRSTELEMENT macro which returns the first element in a
+     * grid even in a parallel setting.
+     */
+    static typename TargetType<0,dim>::T* PFirstElement(typename UGTypes<dim>::GridType* grid) {
+      using UG::PrioHGhost;
+      using UG::PrioVGhost;
+      using UG::PrioVHGhost;
+      using UG::PrioMaster;
+      using UG::PrioBorder;
+      return PFIRSTELEMENT(grid);
     }
 
 
