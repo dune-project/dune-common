@@ -1399,6 +1399,20 @@ namespace Dune {
       return det;
     }
 
+    //! calculates ret = matrix * x
+    template <typename K, int dim>
+    static void multAssign(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
+    {
+      for(int i=0; i<dim; i++)
+      {
+        ret[i] = 0.0;
+        for(int j=0; j<dim; j++)
+        {
+          ret[i] += matrix[i][j]*x[j];
+        }
+      }
+    }
+
   } // end namespace FMatrixHelp
 
 
