@@ -3,13 +3,6 @@
 #ifndef __DUNE_ARRAY_HH
 #define __DUNE_ARRAY_HH
 
-
-//***********************************************************************
-//
-//  implementation of peter array
-//
-//***********************************************************************
-
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -22,14 +15,14 @@ namespace Dune
      @{
    */
 
-  //! a simple dynamic array class with copy semantics
+  //! A simple dynamic array class
   template <class T>
   class Array {
   public:
 
     /** \brief An iterator to access all components of array.
-    *
-    * This iterator currently has no range checking!       */
+     *
+     * This iterator currently has no range checking! */
     class Iterator {
     private:
       T* p;             // Iterator ist Zeiger auf Feldelement
@@ -103,6 +96,12 @@ namespace Dune
 
     //! return number of components in array
     int size () const;
+
+    //! Sets all entries to the same value
+    void set(const T& v) {
+      for (int i=0; i<size(); i++)
+        (*this)[i] = v;
+    }
 
     //! random access operator
     T& operator[](int i);
