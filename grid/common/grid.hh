@@ -59,10 +59,9 @@ namespace Dune {
      Specify the format to store grid and vector data
    */
   enum FileFormatType { ascii ,   //!< store data in a human readable form
-                        xdr ,   //!< store data in SUN's library routines
-                                //!< for external data representation (xdr)
-                        USPM ,   //!< strange format ... ask Robert Kloefkorn
-                        pgm };   //!< store data in portable graymap file format (pgm)
+                        xdr ,     //!< store data in SUN's library routines
+                                  //!< for external data representation (xdr)
+                        pgm };    //!< store data in portable graymap file format (pgm)
 
   /*!
      To specify the boundary type of an face at the boundary.
