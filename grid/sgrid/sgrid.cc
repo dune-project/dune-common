@@ -358,7 +358,7 @@ namespace Dune {
 
 
   template<int dim, class GridImp> template<int cc>
-  inline const typename SEntity<0,dim,GridImp>::template codim<cc>::LevelIterator SEntity<0,dim,GridImp>::entity (int i) const
+  inline typename SEntity<0,dim,GridImp>::template codim<cc>::EntityPointer SEntity<0,dim,GridImp>::entity (int i) const
   {
     // find expanded coordinates of entity in reference cube
     // has components in {0,1,2}
@@ -457,7 +457,7 @@ namespace Dune {
   }
 
   template<int dim, class GridImp>
-  inline const typename SEntity<0,dim,GridImp>::LevelIterator SEntity<0,dim,GridImp>::father () const
+  inline typename SEntity<0,dim,GridImp>::EntityPointer SEntity<0,dim,GridImp>::father () const
   {
     if (!built_father) make_father();
     if (this->l>0)
@@ -539,13 +539,13 @@ namespace Dune {
   }
 
   template<int dim, class GridImp>
-  inline const typename SEntity<dim,dim,GridImp>::LevelIterator SEntity<dim,dim,GridImp>::ownersFather () const
+  inline typename SEntity<dim,dim,GridImp>::EntityPointer SEntity<dim,dim,GridImp>::ownersFather () const
   {
     if (!built_father) make_father();
     if (this->l>0)
-      return LevelIterator(SLevelIterator<0,All_Partition,GridImp>((this->grid),(this->l)-1,father_id));
+      return EntityPointer(SLevelIterator<0,All_Partition,GridImp>((this->grid),(this->l)-1,father_id));
     else
-      return LevelIterator(SLevelIterator<0,All_Partition,GridImp>((this->grid),this->l,this->id));
+      return EntityPointer(SLevelIterator<0,All_Partition,GridImp>((this->grid),this->l,this->id));
   }
 
   template<int dim, class GridImp>

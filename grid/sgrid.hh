@@ -391,7 +391,7 @@ namespace Dune {
     /*! Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
      */
-    template<int cc> const typename codim<cc>::EntityPointer entity (int i) const;
+    template<int cc> typename codim<cc>::EntityPointer entity (int i) const;
 
     //! return global index of entity<cc> number i
     template <int cc> int subIndex ( int i ) const;
@@ -407,7 +407,7 @@ namespace Dune {
     IntersectionIterator iend () const;
 
     //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
-    const EntityPointer father () const;
+    EntityPointer father () const;
 
     //! return true if the entity is leaf
     bool isLeaf ()
@@ -501,7 +501,7 @@ namespace Dune {
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    const EntityPointer ownersFather () const;
+    EntityPointer ownersFather () const;
 
     //! local coordinates within father
     FieldVector<sgrid_ctype, dim>& positionInOwnersFather () const;
