@@ -3,6 +3,7 @@
 #ifndef __DUNE_DEFAULTINDEXSETS_HH__
 #define __DUNE_DEFAULTINDEXSETS_HH__
 
+#include <dune/common/misc.hh>
 
 namespace Dune {
 
