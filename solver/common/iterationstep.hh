@@ -20,6 +20,12 @@ namespace Dune {
       rhs_ = &rhs;
     }
 
+    void setProblem(OP_TYPE& mat, VECTOR_TYPE& x, VECTOR_TYPE& rhs) {
+      mat_ = &mat;
+      x_   = &x;
+      rhs_ = &rhs;
+    }
+
     virtual void iterate() = 0;
 
     virtual VECTOR_TYPE getSol() = 0;
