@@ -18,7 +18,7 @@ doxygen-tag: $(doxygen_FILES) $(doxygen_DEPS)
 	touch doxygen-tag
 
 WEBDIR = /var/www/dune/doxygen
-WEBFILES = "html/*.html wildcard html/*.css"
+WEBFILES = html/*.html html/*.css html/*.png
 
 web-install: doxygen-tag
 	if [ ! -d $(WEBDIR) ]; then \
