@@ -20,10 +20,17 @@ namespace Dune
   /** @defgroup BSGrid BSGrid Module
      @ingroup GridCommon
      Adaptive parallel grid supporting dynamic load balancing, written by
-     Bernard Schupp. (See Bernhard Schupp:  Entwicklung eines
+     Bernard Schupp. This grid supports hexahedrons and tetrahedrons.
+
+     (See Bernhard Schupp:  Entwicklung eines
      effizienten Verfahrens zur Simulation kompressibler Stroemungen
       in 3D auf Parallelrechnern. 1999
-     http://www.freidok.uni-freiburg.de/volltexte/68/
+     http://www.freidok.uni-freiburg.de/volltexte/68/ )
+
+     For partitioning two tools can be used:
+      - Metis ( version 4.0 and higher, see http://www-users.cs.umn.edu/~karypis/metis/metis/ )
+      - Party Lib ( version 1.1 and higher, see http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html)
+
      @{
    */
 
@@ -58,6 +65,8 @@ namespace Dune
 
      dimworld: Each corner is a point with dimworld coordinates.
    */
+
+  static int __MyRank__ = -1;
 
   template<int dim, int dimworld>
   class BSGridElement :
@@ -298,10 +307,10 @@ namespace Dune
     BSGridEntity(BSGrid<dim,dimworld> &grid) : grid_(grid) { }
 
     //! set original element pointer to fake entity
-    void setelement(BSSPACE HElementType &element,int index);
+    void setElement(BSSPACE HElementType &element);
 
     //! set original element pointer to fake entity
-    void setGhost(BSSPACE PLLBndFaceType & ghost,int index);
+    void setGhost(BSSPACE PLLBndFaceType  &ghost);
 
     //! level of this element
     int level ();
@@ -392,10 +401,14 @@ namespace Dune
     AdaptationState state () const;
 
   private:
+    // corresponding grid
     BSGrid<dim,dimworld> &grid_;
+
+    // the current element of grid
     BSSPACE GEOElementType *item_;
 
-    BSSPACE PLLBndFaceType *ghost_;
+    // the current ghost, if element is ghost
+    BSSPACE PLLBndFaceType * ghost_;
 
     //! the cuurent geometry
     BSGridElement<dim,dimworld> geo_;
@@ -405,8 +418,8 @@ namespace Dune
     bool builtgeometry_; //!< true if geometry has been constructed
     int index_;
 
-    int glIndex_;
-    int level_;
+    int glIndex_; //!< global index of element
+    int level_;  //!< level of element
 
     //BSGridElement <dim,dim> fatherReLocal_;
   }; // end of BSGridEntity codim = 0
@@ -473,6 +486,8 @@ namespace Dune
   public:
     BSGridBoundaryEntity () : _geom (false) , _id(-1) {};
 
+    //! return identifier of boundary segment which is an
+    //! abitrary integer not zero
     int id () { return _id; }
 
     //! return true if geometry of ghost cells was filled
@@ -601,10 +616,13 @@ namespace Dune
     BSGridEntity<0,dim,dimworld> entity_; //! neighbour entity
 
     // current element from which we started the intersection iterator
-    typename BSSPACE GEOElementType *item_;
+    BSSPACE GEOElementType *item_;
 
     //! current neighbour
-    typename BSSPACE GEOElementType *neigh_;
+    BSSPACE GEOElementType *neigh_;
+
+    //! current ghost if we have one
+    BSSPACE PLLBndFaceType *ghost_;
 
     int index_;       //! internal index of intersection
     int numberInNeigh_; //! index of intersection in neighbor
@@ -614,7 +632,7 @@ namespace Dune
                             //! see bsgrid.cc for descritption
 
     bool isBoundary_; //! true if intersection is with boundary
-    bool ghost_; //! true if intersection is with internal boundary (only parallel grid)
+    bool isGhost_; //! true if intersection is with internal boundary (only parallel grid)
 
     FieldVector<bs_ctype, dimworld> outNormal_; //! outerNormal of current intersection
     FieldVector<bs_ctype, dimworld> unitOuterNormal_; //! unitOuterNormal of current intersection
@@ -742,7 +760,8 @@ namespace Dune
 
     typedef BSSPACE ObjectStream ObjectStreamType;
 
-    typedef typename std::pair < ObjectStreamType * , BSGridEntity<0,dim,dimworld> * > DataCollectorParamType;
+    typedef typename std::pair < ObjectStreamType * , BSGridEntity<0,dim,dimworld> * >
+    DataCollectorParamType;
 
     /** \todo Please doc me! */
     enum { numCodim = dim+1 };
@@ -758,8 +777,10 @@ namespace Dune
     BSGrid(const char* macroTriangFilename );
 #endif
 
+#ifndef _BSGRID_PARALLEL_
     //! empty Constructor
-    BSGrid();
+    BSGrid(int myrank = -1);
+#endif
 
     //! Desctructor
     ~BSGrid();
@@ -800,7 +821,7 @@ namespace Dune
     int size (int level, int codim) const;
 
     //! number of grid entities on all levels for given codim
-    int global_size (int codim);
+    int global_size (int codim) const ;
 
     //! refine all positive marked leaf entities
     //! return true if the grid was changed
@@ -848,14 +869,26 @@ namespace Dune
     //! calculate max edge length
     double calcGridWidth () { return 1; }
 
+    //! return pointer to org BSGrid
     BSSPACE BSGitterType *mygrid();
 
-    const int myRank () const { return mpAccess_.myrank(); }
+    //! return my rank (only parallel)
+    int myRank () const { return myRank_; }
 
+    double communicateValue (double val) const ;
+    double communicateSum  (double val) const ;
+    int communicateInt (int val) const ;
+
+    void updateStatus ();
   private:
+    // reset size and global size
     void calcExtras();
 
+    // calculate maxlevel
     void calcMaxlevel();
+
+    // make grid walkthrough and calc global size
+    void recalcGlobalSize();
 
     // set _coarsenMark to true
     void setCoarsenMark();
@@ -876,6 +909,8 @@ namespace Dune
 
     // true if at least one element is marked for coarsening
     bool coarsenMark_;
+
+    const int myRank_;
   public:
     //template<int codim, int dim, int dimworld,PartitionIteratorType pitype>
     class BSGridLeafIterator
