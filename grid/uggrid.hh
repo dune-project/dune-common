@@ -75,6 +75,8 @@ namespace Dune
   typedef double UGCtype;
 
 
+  /** @} end documentation group */
+
   // forward declarations
   template<int codim, int dim, int dimworld> class UGGridEntity;
   template<int codim, int dim, int dimworld, PartitionIteratorType pitype> class UGGridLevelIterator;
@@ -90,7 +92,6 @@ namespace Dune
   // singleton holding reference elements
   template<int dim> struct UGGridReferenceElement;
 
-  /** @} end documentation group */
 
 }  // namespace Dune
 
@@ -110,7 +111,7 @@ namespace Dune {
   //**********************************************************************
 
   /** \brief The UG %Grid class
-   *
+   * \ingroup UGGrid
    *
    * \todo Please doc me!
    */
@@ -135,8 +136,8 @@ namespace Dune {
     friend class UGGridIntersectionIterator<dim,dimworld>;
 
 
-    //! UGGrid is only implemented for 2 and 3 dimension
-    //! for 1d use SGrid or SimpleGrid
+    /** \brief UGGrid is only implemented for 2 and 3 dimension
+     * for 1d use SGrid or SimpleGrid  */
     CompileTimeChecker< (dimworld==dim) && ((dim==2) || (dim==3)) >   Use_UGGrid_only_for_2d_and_3d;
     // #ifdef _2
     //   CompileTimeChecker< (dimworld==dim) && (dim==2) >   Use_UGGrid_only_for_2d_when_built_for_2d;
@@ -158,7 +159,7 @@ namespace Dune {
     typedef UGGridLevelIterator<0,dim,dimworld, All_Partition> LeafIterator;
 
     /** \todo Please doc me! */
-    enum { numCodim = dim+1 };
+    //   enum { numCodim = dim+1 };
 
     /** \brief Constructor with control over UG's memory requirements
      *
@@ -220,6 +221,19 @@ namespace Dune {
     // **********************************************************
     // End of Interface Methods
     // **********************************************************
+
+    /** \brief The different forms of grid refinement that UG supports */
+    enum AdaptationType {
+      /** \brief New level consists only of the refined elements */
+      LOCAL,
+      /** \brief New level consists of the refined elements and the unrefined ones, too */
+      COPY,
+      /** \brief %Grid hierarchy is collapsed into a single grid level after refinement */
+      COLLAPSE
+    };
+
+    /** \brief Sets the type of grid refinement */
+    void setAdaptationType(AdaptationType type);
 
     /** \brief Read access to the UG-internal grid name */
     const std::string& name() const {return name_;}
@@ -291,7 +305,6 @@ namespace Dune {
 
 
   }; // end Class UGGrid
-
 
 
 

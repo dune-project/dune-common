@@ -6,7 +6,9 @@
 
 namespace Dune {
 
-  /** \todo Please doc me! */
+  /** \todo Please doc me!
+   * \ingroup UGGrid
+   */
   template<int dim, int dimworld>
   class UGGridBoundaryEntity
     : public BoundaryEntityDefault <dim,dimworld, UGCtype,

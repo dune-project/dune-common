@@ -14,6 +14,7 @@ namespace Dune {
   // --Entity
   //
   /** \brief The implementation of entities in a UGGrid
+     \ingroup UGGrid
 
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
      An entity of codimension c in dimension d is a d-c dimensional object.
@@ -28,7 +29,7 @@ namespace Dune {
     //friend class UGGrid < dim , dimworld >;
     //friend class UGGridEntity < 0, dim, dimworld>;
     //friend class UGGridLevelIterator < codim, dim, dimworld>;
-    //friend class UGGridLevelIterator < dim, dim, dimworld>;
+    friend class UGGridLevelIterator < dim, dim, dimworld, All_Partition>;
     //friend class UGGridIntersectionIterator < dim, dimworld>;
   public:
 
@@ -54,25 +55,14 @@ namespace Dune {
     //!  are numbered 0 ... count<cc>()-1
     template<int cc> UGGridLevelIterator<cc,dim,dimworld,All_Partition> entity (int i);
 
+    //! Constructor for an entity in a given grid level
     UGGridEntity(int level);
-
-    /*! Intra-level access to intersection with neighboring elements.
-       A neighbor is an entity of codimension 0
-       which has an entity of codimension 1 in commen with this entity. Access to neighbors
-       is provided using iterators. This allows meshes to be nonmatching. Returns iterator
-       referencing the first neighbor. */
-    //UGGridIntersectionIterator<dim,dimworld> ibegin ();
-
-    //! same method for fast access
-    //void ibegin (AlbertGridIntersectionIterator<dim,dimworld> &it);
-
-    //! Reference to one past the last intersection with neighbor
-    //UGGridIntersectionIterator<dim,dimworld> iend ();
 
     //! geometry of this entity
     UGGridElement<dim-codim,dimworld>& geometry ();
 
-    /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
+    /** \brief Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
+     *
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
@@ -83,7 +73,7 @@ namespace Dune {
 
 
 
-  public:
+  private:
 
 
     void setToTarget(typename TargetType<codim,dim>::T* target);
@@ -98,7 +88,7 @@ namespace Dune {
     bool builtgeometry_;       //!< true if geometry has been constructed
 
     FieldVector<UGCtype, dim> localFatherCoords_;
-  public:
+
     //! element number
     int elNum_;
 
@@ -108,25 +98,22 @@ namespace Dune {
     typename TargetType<codim,dim>::T* target_;
   };
 
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
-
-     Entities of codimension 0 ("elements") are defined through template specialization. Note
-     that this specialization has an extended interface compared to the general case
-
-     Entities of codimension 0  allow to visit all neighbors, where
-     a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the
-     These neighbors are accessed via an iterator. This allows the implementation of
-     non-matching meshes. The number of neigbors may be different from the number of faces/edges
-     of an element!
-   */
   //***********************
   //
   //  --UGGridEntity
   //  --0Entity
   //
   //***********************
+
+  /** \brief Specialization for codim-0-entities.
+   * \ingroup UGGrid
+   *
+   * This class embodies the topological parts of elements of the grid.
+   * It has an extended interface compared to the general entity class.
+   * For example, Entities of codimension 0  allow to visit all neighbors.
+   *
+   * UGGrid only implements the cases dim==dimworld==2 and dim=dimworld==3.
+   */
   template<int dim, int dimworld>
   class UGGridEntity<0,dim,dimworld> :
     public EntityDefault<0,dim,dimworld, UGCtype,UGGridEntity,UGGridElement,
@@ -136,41 +123,52 @@ namespace Dune {
     friend class UGGrid < dim , dimworld >;
     friend class UGGridIntersectionIterator < dim, dimworld>;
     friend class UGGridHierarchicIterator < dim, dimworld>;
-    //friend class UGGridLevelIterator <0,dim,dimworld>;
+    friend class UGGridLevelIterator <0,dim,dimworld,All_Partition>;
 
     // Either UG3d::ELEMENT or UG2d:ELEMENT
     typedef typename TargetType<0,dim>::T UGElementType;
+
   public:
+
+    //! The Iterator over neighbors
     typedef UGGridIntersectionIterator<dim,dimworld> IntersectionIterator;
+
+    //! Iterator over descendants of the entity
     typedef UGGridHierarchicIterator<dim,dimworld> HierarchicIterator;
 
-    //! there are only implementations for dim==dimworld 2,3
-    ~UGGridEntity() {};
-
+    //! Constructor with a given grid level
     UGGridEntity(int level);
 
-    //! level of this element
+    //! Destructor
+    ~UGGridEntity() {};
+
+    //! Level of this element
     int level ();
 
-    //! index is unique and consecutive per level and codim used for access to degrees of freedo
+    //! Index is unique and consecutive per level and codim
     int index ();
 
-    //! geometry of this entity
+    /** \brief Return the global unique index in mesh
+     * \todo So far returns the same as index()
+     */
+    int globalIndex() { return index(); }
+
+    //! Geometry of this entity
     UGGridElement<dim,dimworld>& geometry ();
 
-    /*! Intra-element access to entities of codimension cc > codim. Return number of entities
-       with codimension cc.
+    /** \brief Return the number of subentities of codimension cc.
      */
-    //!< Default codim 1 Faces and codim == dim Vertices
     template<int cc> int count ();
 
-    //! return index of sub entity with codim = cc and local number i
-    //! i.e. return global number of vertex i
+    /** \brief Return index of sub entity with codim = cc and local number i
+     */
     template<int cc> int subIndex (int i);
 
-    //! Provide access to mesh entity i of given codimension. Entities
-    //!  are numbered 0 ... count<cc>()-1
-    template<int cc> UGGridLevelIterator<cc,dim,dimworld, All_Partition> entity (int i);
+    /** \brief Provide access to sub entity i of given codimension. Entities
+     *  are numbered 0 ... count<cc>()-1
+     */
+    template<int cc>
+    UGGridLevelIterator<cc,dim,dimworld, All_Partition> entity (int i);
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
@@ -183,9 +181,6 @@ namespace Dune {
 
     //! returns true if Entity has children
     bool hasChildren ();
-
-    //! return number of layers far from refined elements of this level
-    int refDistance ();
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
@@ -232,23 +227,15 @@ namespace Dune {
 
   private:
 
-#if 0
-    // return the global unique index in mesh
-    int globalIndex() { return elInfo_->el->index; }
-#endif
-
-    //! make a new UGGridEntity
-    //void makeDescription();
-  public:
     void setToTarget(typename TargetType<0,dim>::T* target, int level);
 
     //! Leaves the level untouched
     void setToTarget(typename TargetType<0,dim>::T* target);
 
-    //! the cuurent geometry
+    //! the current geometry
     UGGridElement<dim,dimworld> geo_;
     bool builtgeometry_; //!< true if geometry has been constructed
-  public:
+
     //! element number
     int elNum_;
 
@@ -259,6 +246,8 @@ namespace Dune {
     //UGGridElement <dim,dim> fatherReLocal_;
   }; // end of UGGridEntity codim = 0
 
+  // Include class method definitions
+#include "uggridentity.cc"
 
 } // namespace Dune
 

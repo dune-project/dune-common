@@ -11,7 +11,8 @@ namespace Dune {
   //
   // --UGGridHierarchicIterator
   // --HierarchicIterator
-  /*!
+  /** \brief Iterator over the descendants of an entity.
+   * \ingroup UGGrid
      Mesh entities of codimension 0 ("elements") allow to visit all entities of
      codimension 0 obtained through nested, hierarchic refinement of the entity.
      Iteration over this set of entities is provided by the HIerarchicIterator,
@@ -26,9 +27,11 @@ namespace Dune {
         UGGridHierarchicIterator,UGGridEntity>
   {
 
+    friend class UGGridEntity<0,dim,dimworld>;
+
     // Either UG3d::ELEMENT or UG2d:ELEMENT
     typedef typename TargetType<0,dim>::T UGElementType;
-  public:
+
     // Stack entry
     struct StackEntry {
       UGElementType* element;
@@ -55,21 +58,21 @@ namespace Dune {
     //! arrow
     UGGridEntity<0,dim,dimworld>* operator->();
 
+  private:
+
     //! implement with virtual element
     UGGridEntity<0,dim,dimworld> virtualEntity_;
-
-  private:
-    //! know the grid were im comming from
-    //UGGrid<dim,dimworld> &grid_;
 
     //! max level to go down
     int maxlevel_;
 
-  public:
     Stack<StackEntry> elemStack;
 
     UGElementType* target_;
   };
+
+  // Include class method definitions
+#include "uggridhieriterator.cc"
 
 }  // end namespace Dune
 

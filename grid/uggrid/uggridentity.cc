@@ -139,45 +139,15 @@ mark( int refCount )
 #endif
 }
 
-template< int dim, int dimworld>
-inline UGGridElement<dim,dimworld>&
-UGGridEntity < 0, dim ,dimworld >::
-geometry()
-{
-  return geo_;
-}
+
 
 //*****************************************************************8
 // count
 template <int codim, int dim, int dimworld> template <int cc>
 inline int UGGridEntity<codim,dim,dimworld>::count ()
 {
-  if (dim==3) {
-
-    switch (cc) {
-    case 0 :
-      return 1;
-    case 1 :
-
-      return UG_NS<3>::Sides_Of_Elem(target_);
-    case 2 :
-      return UG_NS<3>::Edges_Of_Elem(target_);
-    case 3 :
-      return UG_NS<3>::Corners_Of_Elem(target_);
-    }
-
-  } else {
-
-    switch (cc) {
-    case 0 :
-      return 1;
-    case 1 :
-      return UG_NS<2>::Edges_Of_Elem(target_);
-    case 2 :
-      return UG_NS<2>::Corners_Of_Elem(target_);
-    }
-
-  }
+  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim << ", " << dimworld
+                                        << ">::count() not implemented yet!");
   return -1;
 }
 
@@ -185,18 +155,18 @@ template <int codim, int dim, int dimworld>
 template <int cc>
 inline int UGGridEntity<codim, dim, dimworld>::subIndex(int i)
 {
-  typename TargetType<dim,dim>::T* node = CORNER(target_,i);
-  return node->myvertex->iv.id;
+  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim << ", " << dimworld
+                                        << ">::subIndex(int i) not implemented yet!");
+  return 0;
 }
 
 
-
-// default is faces
 template <int codim, int dim, int dimworld> template <int cc>
 inline UGGridLevelIterator<cc,dim,dimworld,All_Partition>
 UGGridEntity<codim,dim,dimworld>::entity ( int i )
 {
-  std::cout << "entity not implemented yet!\n";
+  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim << ", " << dimworld
+                                        << ">::entity(int i) not implemented yet!");
   UGGridLevelIterator<cc,dim,dimworld,All_Partition> tmp (level_);
   return tmp;
 }
@@ -214,12 +184,50 @@ inline AdaptationState UGGridEntity < 0, dim ,dimworld >::state() const
   std::cerr << "UGGridEntity::state() not yet implemented!\n";
   return NONE;
 }
+//*****************************************************************8
+// count
+template <int dim, int dimworld>
+template <int cc>
+inline int UGGridEntity<0,dim,dimworld>::count ()
+{
+  if (dim==3) {
+
+    switch (cc) {
+    case 0 :
+      return 1;
+#ifdef _3
+    case 1 :
+      return UG_NS<3>::Sides_Of_Elem(target_);
+    case 2 :
+      return UG_NS<3>::Edges_Of_Elem(target_);
+    case 3 :
+      return UG_NS<3>::Corners_Of_Elem(target_);
+#endif
+    }
+
+  } else {
+
+    switch (cc) {
+    case 0 :
+      return 1;
+#ifdef _2
+    case 1 :
+      return UG_NS<2>::Edges_Of_Elem(target_);
+    case 2 :
+      return UG_NS<2>::Corners_Of_Elem(target_);
+#endif
+    }
+
+  }
+  return -1;
+}
+
 
 template <int dim, int dimworld>
 template <int cc>
 inline int UGGridEntity<0, dim, dimworld>::subIndex(int i)
 {
-  //assert(i>=0 && i<count());
+  assert(i>=0 && i<count<cc>());
 
   if (cc!=dim)
     DUNE_THROW(GridError, "UGGrid::subIndex isn't implemented for cc != dim");
@@ -233,6 +241,29 @@ inline int UGGridEntity<0, dim, dimworld>::subIndex(int i)
 
   typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(target_,i);
   return node->myvertex->iv.id;
+}
+
+template <int dim, int dimworld>
+template <int cc>
+inline UGGridLevelIterator<cc,dim,dimworld,All_Partition>
+UGGridEntity<0,dim,dimworld>::entity ( int i )
+{
+  assert(i>=0 && i<count<cc>());
+
+  if (cc!=dim)
+    DUNE_THROW(GridError, "UGGrid::subIndex isn't implemented for cc != dim");
+
+  if (geometry().type()==hexahedron) {
+    // Dune numbers the vertices of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    i = renumbering[i];
+  }
+
+  typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(target_,i);
+  UGGridLevelIterator<cc,dim,dimworld,All_Partition> it (level_);
+  it.setToTarget(node, level_);
+  return it;
 }
 
 template<int dim, int dimworld>
@@ -333,7 +364,6 @@ UGGridEntity < 0, dim ,dimworld >::hend(int maxlevel)
 {
   UGGridHierarchicIterator<dim,dimworld> it(level(), maxlevel);
 
-  //it.elemStack.clear();
   it.target_ = 0;
 
   return it;
@@ -345,4 +375,12 @@ inline int UGGridEntity < 0, dim ,dimworld >::
 level()
 {
   return level_;
+}
+
+template< int dim, int dimworld>
+inline UGGridElement<dim,dimworld>&
+UGGridEntity < 0, dim ,dimworld >::
+geometry()
+{
+  return geo_;
 }

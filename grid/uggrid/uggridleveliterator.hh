@@ -6,33 +6,31 @@
 
 namespace Dune {
 
+  // Forward declaration
+  template <int codim, int dim, int dimworld, PartitionIteratorType PiType>
+  class UGGridLevelIteratorFactory;
+
   //**********************************************************************
   //
   // --UGGridLevelIterator
   // --LevelIterator
-  /*!
-     Enables iteration over all entities of a given codimension and level of a grid.
+  /** \brief Iterator over all entities of a given codimension and level of a grid.
+   * \ingroup UGGrid
    */
-
-  template <int codim, int dim, int dimworld, PartitionIteratorType PiType>
-  class LevelIteratorFactory;
-
   template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
   class UGGridLevelIterator :
     public LevelIteratorDefault <codim,dim,dimworld, pitype, UGCtype,
         UGGridLevelIterator,UGGridEntity>
   {
-    friend class UGGridEntity<2,dim,dimworld>;
-    friend class UGGridEntity<1,dim,dimworld>;
-    friend class UGGridEntity<0,dim,dimworld>;
-    friend class UGGrid < dim , dimworld >;
+    //   friend class UGGridEntity<2,dim,dimworld>;
+    //   friend class UGGridEntity<1,dim,dimworld>;
+    //   friend class UGGridEntity<0,dim,dimworld>;
+    //   friend class UGGrid < dim , dimworld >;
 
-    friend class LevelIteratorFactory<2,2,2,All_Partition>;
-    friend class LevelIteratorFactory<0,2,2,All_Partition>;
+    friend class UGGridLevelIteratorFactory<2,2,2,All_Partition>;
+    friend class UGGridLevelIteratorFactory<0,2,2,All_Partition>;
 
   public:
-
-    //friend class UGGrid<dim,dimworld>;
 
     //! Constructor
     explicit UGGridLevelIterator(int travLevel);
@@ -82,6 +80,9 @@ namespace Dune {
     typename TargetType<codim,dim>::T* target_;
 
   };
+
+  // Include method definitions
+#include "uggridleveliterator.cc"
 
 }  // namespace Dune
 
