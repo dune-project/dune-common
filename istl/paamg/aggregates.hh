@@ -1,5 +1,6 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+// $Id$
 #ifndef AGGREGATES_HH
 #define AGGREGATES_HH
 
@@ -171,24 +172,16 @@ namespace Dune
     /**
      * @brief Dependency policy for symmetric matrices.
      */
-    template<class M, template<typename> class N >
+    template<class G, class M, template<typename> class N >
     class SymmetricDependency : public DependencyParameters
     {
     public:
-
-      /**
-       * @brief The matrix graph we build the dependecies of.
-       */
-      typedef Graph<M,VertexProperties,EdgeProperties> MatrixGraph;
-
-      //typedef G MatrixGraph;
-
       /**
        * @brief The matrix type we build the dependency of.
        */
       typedef M Matrix;
 
-      //typedef typename MatrixGraph::Matrix Matrix;
+      typedef G MatrixGraph;
 
       /**
        * @brief The norm to use for examining the matrix entries.
@@ -210,18 +203,20 @@ namespace Dune
        */
       typedef typename MatrixGraph::EdgeIterator EdgeIter;
 
-      void init(MatrixGraph* graph);
+      void init(MatrixGraph* graph, const Matrix* matrix);
 
       void initRow(const Row& row, int index);
 
       void examine(const ColIter& col);
 
-      void examine(const EdgeIter& edge);
+      void examine(const EdgeIter& edge, const ColIter& col);
 
       bool isIsolated();
     private:
-      /** @brief The matrix we work on. */
+      /** @brief The graph we work on. */
       MatrixGraph *graph_;
+      /** @brief The matrix we work on. */
+      const Matrix* matrix_;
       /** @brief The current max value.*/
       double maxValue_;
       /** @brief The funktor for calculating the norm. */
@@ -243,32 +238,27 @@ namespace Dune
     };
 
 
-    template<class G, template<typename>class Norm>
-    class SymmetricCriterion : public AggregationCriterion<SymmetricDependency<G,Norm> >
+    template<class G, class M, template<typename>class Norm>
+    class SymmetricCriterion : public AggregationCriterion<SymmetricDependency<G,M,Norm> >
     {};
 
     // forward declaration
-    template<class M> class Aggregates;
+    template<class G> class Aggregates;
 
     /**
      * @brief A class for temporarily storing the vertices of an
      * aggregate in.
      */
-    template<class M>
+    template<class G>
     class Aggregate
     {
 
     public:
 
-      /**
-       * @brief The type of the matrix we aggregate.
-       */
-      typedef M Matrix;
-
       /***
        * @brief The type of the matrix graph we work with.
        */
-      typedef Graph<Matrix,VertexProperties, EdgeProperties> MatrixGraph;
+      typedef G MatrixGraph;
       /**
        * @brief The vertex descriptor type.
        */
@@ -299,7 +289,7 @@ namespace Dune
        * @brief Constructor.
        * @param graph The matrix graph we work on.
        */
-      Aggregate(const MatrixGraph& graph, Aggregates<Matrix>& aggregates, VertexSet& connectivity);
+      Aggregate(const MatrixGraph& graph, Aggregates<MatrixGraph>& aggregates, VertexSet& connectivity);
 
       /**
        * @brief Reconstruct the aggregat from an seed node.
@@ -363,7 +353,7 @@ namespace Dune
       /**
        * @brief The aggregate mapping we build.
        */
-      Aggregates<Matrix>& aggregates_;
+      Aggregates<G>& aggregates_;
 
       /**
        * @brief The connections to other aggregates.
@@ -375,7 +365,7 @@ namespace Dune
     /**
      * @brief Class providing information about the aggregates.
      */
-    template<class M>
+    template<class G>
     class Aggregates
     {
     public:
@@ -387,14 +377,9 @@ namespace Dune
       };
 
       /**
-       * @brief The matrix type we build the aggregates from.
-       */
-      typedef M Matrix;
-
-      /**
        * @brief The matrix graph type used.
        */
-      typedef Graph<Matrix,VertexProperties, EdgeProperties> MatrixGraph;
+      typedef G MatrixGraph;
 
       /**
        * @brief The vertex identifier
@@ -419,11 +404,11 @@ namespace Dune
        * The template parameter C Is the type of the coarsening Criterion to
        * use.
        * @param m The matrix to build the aggregates accordingly.
+       * @param graph A (sub) graph of the matrix.
        * @param c The coarsening criterion to use.
-       * @param cc The coarsen context containing the parameters.
        */
       template<class C>
-      void build(const M& m, const C& c);
+      void build(const typename C::Matrix& m, G& graph, const C& c);
 
       /**
        * @brief Get the aggregate the vertex belongs to.
@@ -475,7 +460,7 @@ namespace Dune
       /**
        * @brief The vertices of the current aggregate-
        */
-      Aggregate<Matrix>* aggregate_;
+      Aggregate<MatrixGraph>* aggregate_;
 
       /**
        * @brief The vertices of the current aggregate front.
@@ -503,7 +488,7 @@ namespace Dune
       class Stack
       {
       public:
-        Stack(const MatrixGraph& graph, const Aggregates<M>& aggregates);
+        Stack(const MatrixGraph& graph, const Aggregates<G>& aggregates);
         ~Stack();
         void push(const Vertex& v);
         void fill();
@@ -514,7 +499,7 @@ namespace Dune
         /** @brief The graph we work on. */
         const MatrixGraph& graph_;
         /** @brief The aggregates information. */
-        const Aggregates<M>& aggregates_;
+        const Aggregates<G>& aggregates_;
         /** @brief The current size. */
         int size_;
         int maxSize_;
@@ -535,6 +520,7 @@ namespace Dune
        */
       template<class C>
       void buildDependency(MatrixGraph& graph,
+                           const typename C::Matrix& matrix,
                            C criterion);
 
       /**
@@ -890,58 +876,58 @@ namespace Dune
       void growAggregate(const Vertex& vertex, const C& c);
     };
 
-    template<class G, template<class> class N>
-    inline void SymmetricDependency<G,N>::init(MatrixGraph* graph)
+    template<class G, class M, template<class> class N>
+    inline void SymmetricDependency<G,M,N>::init(MatrixGraph* graph, const Matrix* matrix)
     {
       graph_ = graph;
+      matrix_ = matrix;
     }
 
-    template<class G, template<class> class N>
-    inline void SymmetricDependency<G,N>::initRow(const Row& row, int index)
+    template<class G, class M, template<class> class N>
+    inline void SymmetricDependency<G,M,N>::initRow(const Row& row, int index)
     {
       maxValue_ = - std::numeric_limits<double>::max();
       row_ = index;
-      diagonal_ = norm_(graph_->matrix()[row_][row_]);
+      diagonal_ = norm_(matrix_->operator[](row_)[row_]);
     }
 
-    template<class G, template<class> class N>
-    inline void SymmetricDependency<G,N>::examine(const ColIter& col)
+    template<class G, class M, template<class> class N>
+    inline void SymmetricDependency<G,M,N>::examine(const ColIter& col)
     {
       maxValue_ = std::max(maxValue_,
-                           (norm_(*col) * norm_(graph_->matrix()[col.index()][row_]))/
-                           (norm_(graph_->matrix()[col.index()][col.index()]) * diagonal_));
+                           (norm_(*col) * norm_(matrix_->operator[](col.index())[row_]))/
+                           (norm_(matrix_->operator[](col.index())[col.index()]) * diagonal_));
     }
 
-    template<class G, template<class> class N>
-    inline void SymmetricDependency<G,N>::examine(const EdgeIter& edge)
+    template<class G, class M, template<class> class N>
+    inline void SymmetricDependency<G,M,N>::examine(const EdgeIter& edge, const ColIter& col)
     {
-      if(norm_(graph_->matrix()[edge.target()][edge.source()]) * norm_(edge.weight())/
-         (norm_(graph_->matrix()[edge.target()][edge.target()]) * diagonal_) > alpha() * maxValue_) {
+      if(norm_(matrix_->operator[](edge.target())[edge.source()]) * norm_(*col)/
+         (norm_(matrix_->operator[](edge.target())[edge.target()]) * diagonal_) > alpha() * maxValue_) {
         edge.properties().setDepends();
         edge.properties().setInfluences();
 
-        typename MatrixGraph::EdgeProperties& other = graph_->operator()(edge.target(), edge.source());
-
+        typename MatrixGraph::EdgeProperties& other = graph_->getEdgeProperties(edge.target(), edge.source());
         other.setInfluences();
         other.setDepends();
       }
     }
 
-    template<class G, template<class> class N>
-    inline bool SymmetricDependency<G,N>::isIsolated()
+    template<class G, class M, template<class> class N>
+    inline bool SymmetricDependency<G,M,N>::isIsolated()
     {
       return maxValue_  < beta();
     }
 
-    template<class M>
-    Aggregate<M>::Aggregate(const MatrixGraph& graph, Aggregates<Matrix>& aggregates,
+    template<class G>
+    Aggregate<G>::Aggregate(const MatrixGraph& graph, Aggregates<G>& aggregates,
                             VertexSet& connected)
       : vertices_(), id_(-1), graph_(graph), aggregates_(aggregates),
         connected_(connected)
     {}
 
-    template<class M>
-    void Aggregate<M>::reconstruct(const Vertex& vertex)
+    template<class G>
+    void Aggregate<G>::reconstruct(const Vertex& vertex)
     {
       assert(!graph_[vertex].excluded());
       vertices_.push_back(vertex);
@@ -955,8 +941,8 @@ namespace Dune
 
     }
 
-    template<class M>
-    inline void Aggregate<M>::seed(const Vertex& vertex)
+    template<class G>
+    inline void Aggregate<G>::seed(const Vertex& vertex)
     {
       connected_.clear();
       vertices_.clear();
@@ -966,8 +952,8 @@ namespace Dune
     }
 
 
-    template<class M>
-    inline void Aggregate<M>::add(const Vertex& vertex)
+    template<class G>
+    inline void Aggregate<G>::add(const Vertex& vertex)
     {
       vertices_.push_back(vertex);
       aggregates_[vertex]=id_;
@@ -977,77 +963,74 @@ namespace Dune
         connected_.insert(aggregates_[edge.target()]);
 
     }
-    template<class M>
-    inline void Aggregate<M>::clear()
+    template<class G>
+    inline void Aggregate<G>::clear()
     {
       vertices_.clear();
       connected_.clear();
       id_=-1;
     }
 
-    template<class M>
-    inline int Aggregate<M>::size()
+    template<class G>
+    inline int Aggregate<G>::size()
     {
       return vertices_.size();
     }
 
-    template<class M>
-    inline int Aggregate<M>::id()
+    template<class G>
+    inline int Aggregate<G>::id()
     {
       return id_;
     }
 
-    template<class M>
-    Aggregates<M>::Aggregates()
+    template<class G>
+    Aggregates<G>::Aggregates()
       : graph_(0), aggregate_(0), front_(), connected_(), aggregates_(0), size_(-1)
     {}
 
-    template<class M>
-    Aggregates<M>::~Aggregates()
+    template<class G>
+    Aggregates<G>::~Aggregates()
     {
       if(size_>0)
         delete[] aggregates_;
       size_=-1;
     }
 
-    template<class M>
+    template<class G>
     template<class C>
-    void Aggregates<M>::buildDependency(MatrixGraph& graph,
+    void Aggregates<G>::buildDependency(MatrixGraph& graph,
+                                        const typename C::Matrix& matrix,
                                         C criterion)
     {
       // The Criterion we use for building the dependency.
       typedef C Criterion;
 
       //      assert(graph.isBuilt());
-
+      typedef typename C::Matrix Matrix;
       typedef typename MatrixGraph::VertexIterator VertexIterator;
 
-      VertexIterator vertex = graph.begin();
-      criterion.init(graph_);
+      criterion.init(&graph, &matrix);
 
       for(VertexIterator vertex = graph.begin(); vertex != graph.end(); ++vertex) {
         typedef typename Matrix::row_type Row;
 
-        Row row=graph.matrix()[vertex.index()];
+        Row row = matrix[*vertex];
 
         // Tell the criterion what row we will examine now
         // This might for example be used for calculating the
         // maximum offdiagonal value
-        criterion.initRow(row, vertex.index());
+        criterion.initRow(row, *vertex);
 
         // On a first path all columns are examined. After this
         // the calculator should know whether the vertex is isolated.
         typedef typename Matrix::ConstColIterator ColIterator;
         ColIterator end = row.end();
         for(ColIterator col = row.begin(); col != end; ++col)
-          if(col.index()!=vertex.index())
+          if(col.index()!=*vertex)
             criterion.examine(col);
 
         // reset the vertex properties
         vertex.properties().reset();
-
-        // Mark the vertex as unaggregated
-        aggregates_[vertex.index()] = UNAGGREGATED;
 
         // Check whether the vertex is isolated.
         if(criterion.isIsolated()) {
@@ -1055,33 +1038,39 @@ namespace Dune
         }else{
           // Examine all the edges beginning at this vertex.
           typedef typename MatrixGraph::EdgeIterator EdgeIterator;
+          typedef typename Matrix::ConstColIterator ColIterator;
           EdgeIterator end = vertex.end();
+          ColIterator col = matrix[*vertex].begin();
 
-          for(EdgeIterator edge = vertex.begin(); edge!= end; ++edge)
-            criterion.examine(edge);
+          for(EdgeIterator edge = vertex.begin(); edge!= end; ++edge, ++col) {
+            // Move to the right column.
+            while(col.index()!=edge.target())
+              ++col;
+            criterion.examine(edge, col);
+          }
         }
 
       }
     }
 
-    template<class M>
-    int Aggregates<M>::breadthFirstSearch(const Vertex& start, int aggregate,
+    template<class G>
+    int Aggregates<G>::breadthFirstSearch(const Vertex& start, int aggregate,
                                           MatrixGraph& graph)
     {
       VertexList vlist;
       return breadthFirstSearch<true>(start, aggregate, graph, vlist);
     }
 
-    template<class M>
+    template<class G>
     template<bool remove, class L>
-    int Aggregates<M>::breadthFirstSearch(const Vertex& start, int aggregate,
+    int Aggregates<G>::breadthFirstSearch(const Vertex& start, int aggregate,
                                           MatrixGraph& graph, L& visited)
     {
       typedef typename L::const_iterator iterator;
       int visitedSpheres = 0;
 
       visited.push_back(start);
-      graph(start).setVisited();
+      graph.getVertexProperties(start).setVisited();
 
       iterator current = visited.begin();
       iterator end = visited.end();
@@ -1099,9 +1088,9 @@ namespace Dune
               edge != end; ++edge) {
 
             if(aggregates_[edge.target()]==aggregate &&
-               !graph(edge.target()).visited()) {
+               !graph.getVertexProperties(edge.target()).visited()) {
 
-              graph(edge.target()).setVisited();
+              graph.getVertexProperties(edge.target()).setVisited();
               visited.push_back(edge.target());
             }
           }
@@ -1113,7 +1102,7 @@ namespace Dune
       }
 
       for(current = visited.begin(); current != end;) {
-        graph(*current).resetVisited();
+        graph.getVertexProperties(*current).resetVisited();
         ++current;
         if(remove)
           visited.pop_front();
@@ -1123,24 +1112,24 @@ namespace Dune
     }
 
 
-    template<class M>
+    template<class G>
     template<class V>
-    inline Aggregates<M>::AggregateVisitor<V>::AggregateVisitor(const AggregateDescriptor* aggregates,
+    inline Aggregates<G>::AggregateVisitor<V>::AggregateVisitor(const AggregateDescriptor* aggregates,
                                                                 int aggregate, V& visitor)
       : aggregates_(aggregates), aggregate_(aggregate), visitor_(visitor)
     {}
 
-    template<class M>
+    template<class G>
     template<class V>
-    inline void Aggregates<M>::AggregateVisitor<V>::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
+    inline void Aggregates<G>::AggregateVisitor<V>::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
       if(aggregates_[edge.target()]==aggregate_)
         visitor_(edge);
     }
 
-    template<class M>
+    template<class G>
     template<class V>
-    inline void Aggregates<M>::visitAggregateNeighbours(const Vertex& vertex,
+    inline void Aggregates<G>::visitAggregateNeighbours(const Vertex& vertex,
                                                         int aggregate,
                                                         V& visitor) const
     {
@@ -1149,9 +1138,9 @@ namespace Dune
       visitNeighbours(vertex, v);
     }
 
-    template<class M>
+    template<class G>
     template<class V>
-    inline void Aggregates<M>::visitNeighbours(const Vertex& vertex, V& visitor) const
+    inline void Aggregates<G>::visitNeighbours(const Vertex& vertex, V& visitor) const
     {
       typedef typename MatrixGraph::ConstEdgeIterator iterator;
       const iterator end = graph_->endEdges(vertex);
@@ -1159,67 +1148,67 @@ namespace Dune
         visitor(edge);
     }
 
-    template<class M>
-    inline Aggregates<M>::Counter::Counter()
+    template<class G>
+    inline Aggregates<G>::Counter::Counter()
       : count_(0)
     {}
 
-    template<class M>
-    inline void Aggregates<M>::Counter::increment()
+    template<class G>
+    inline void Aggregates<G>::Counter::increment()
     {
       ++count_;
     }
 
-    template<class M>
-    inline void Aggregates<M>::Counter::decrement()
+    template<class G>
+    inline void Aggregates<G>::Counter::decrement()
     {
       --count_;
     }
-    template<class M>
-    inline int Aggregates<M>::Counter::value()
+    template<class G>
+    inline int Aggregates<G>::Counter::value()
     {
       return count_;
     }
 
-    template<class M>
-    inline void Aggregates<M>::TwoWayCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
+    template<class G>
+    inline void Aggregates<G>::TwoWayCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
       if(edge.properties().isTwoWay())
         Counter::increment();
     }
 
-    template<class M>
-    int Aggregates<M>::twoWayConnections(const Vertex& vertex, int aggregate) const
+    template<class G>
+    int Aggregates<G>::twoWayConnections(const Vertex& vertex, int aggregate) const
     {
       TwoWayCounter counter;
       visitAggregateNeighbours(vertex, aggregate, counter);
       return counter.value();
     }
 
-    template<class M>
-    int Aggregates<M>::oneWayConnections(const Vertex& vertex, int aggregate) const
+    template<class G>
+    int Aggregates<G>::oneWayConnections(const Vertex& vertex, int aggregate) const
     {
       OneWayCounter counter;
       visitAggregateNeighbours(vertex, aggregate, counter);
       return counter.value();
     }
 
-    template<class M>
-    inline void Aggregates<M>::OneWayCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
+    template<class G>
+    inline void Aggregates<G>::OneWayCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
       if(edge.properties().isOneWay())
         Counter::increment();
     }
 
-    template<class M>
-    inline Aggregates<M>::ConnectivityCounter::ConnectivityCounter(const VertexSet& connected,
+    template<class G>
+    inline Aggregates<G>::ConnectivityCounter::ConnectivityCounter(const VertexSet& connected,
                                                                    const AggregateDescriptor* aggregates)
       : Counter(), connected_(connected), aggregates_(aggregates)
     {}
 
 
-    template<class M>
-    inline void Aggregates<M>::ConnectivityCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
+    template<class G>
+    inline void Aggregates<G>::ConnectivityCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
       if(connected_.find(aggregates_[edge.target()]) != connected_.end() || aggregates_[edge.target()]==UNAGGREGATED)
         Counter::increment();
@@ -1229,21 +1218,21 @@ namespace Dune
       }
     }
 
-    template<class M>
-    inline int Aggregates<M>::connectivity(const Vertex& vertex) const
+    template<class G>
+    inline int Aggregates<G>::connectivity(const Vertex& vertex) const
     {
       ConnectivityCounter counter(connected_, aggregates_);
       visitNeighbours(vertex, counter);
       return counter.value();
     }
 
-    template<class M>
-    inline Aggregates<M>::DependencyCounter::DependencyCounter(const AggregateDescriptor* aggregates)
+    template<class G>
+    inline Aggregates<G>::DependencyCounter::DependencyCounter(const AggregateDescriptor* aggregates)
       : Counter(), aggregates_(aggregates)
     {}
 
-    template<class M>
-    inline void Aggregates<M>::DependencyCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
+    template<class G>
+    inline void Aggregates<G>::DependencyCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
       if(edge.properties().depends())
         Counter::increment();
@@ -1251,57 +1240,57 @@ namespace Dune
         Counter::increment();
     }
 
-    template<class M>
-    int Aggregates<M>::unusedNeighbours(const Vertex& vertex) const
+    template<class G>
+    int Aggregates<G>::unusedNeighbours(const Vertex& vertex) const
     {
       return aggregateNeighbours(vertex, UNAGGREGATED);
     }
 
-    template<class M>
-    int Aggregates<M>::aggregateNeighbours(const Vertex& vertex, int aggregate) const
+    template<class G>
+    int Aggregates<G>::aggregateNeighbours(const Vertex& vertex, int aggregate) const
     {
       DependencyCounter counter(aggregates_);
       visitAggregateNeighbours(vertex, aggregate, counter);
       return counter.value();
     }
 
-    template<class M>
-    int Aggregates<M>::distance(const Vertex& vertex)
+    template<class G>
+    int Aggregates<G>::distance(const Vertex& vertex)
     {
       return breadthFirstSearch(vertex, aggregate_->id(), *graph_);
     }
 
-    template<class M>
-    inline Aggregates<M>::FrontMarker::FrontMarker(VertexList& front, MatrixGraph& graph)
+    template<class G>
+    inline Aggregates<G>::FrontMarker::FrontMarker(VertexList& front, MatrixGraph& graph)
       : front_(front), graph_(graph)
     {}
 
-    template<class M>
-    inline void Aggregates<M>::FrontMarker::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
+    template<class G>
+    inline void Aggregates<G>::FrontMarker::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
       Vertex target = edge.target();
 
-      if(!graph_(target).front()) {
+      if(!graph_.getVertexProperties(target).front()) {
         front_.push_back(target);
-        graph_(target).setFront();
+        graph_.getVertexProperties(target).setFront();
       }
     }
 
 
-    template<class M>
-    void Aggregates<M>::markFront()
+    template<class G>
+    void Aggregates<G>::markFront()
     {
       front_.clear();
       FrontMarker frontBuilder(front_, *graph_);
 
-      typedef typename Aggregate<M>::const_iterator Iterator;
+      typedef typename Aggregate<G>::const_iterator Iterator;
 
       for(Iterator vertex=aggregate_->begin(); vertex != aggregate_->end(); ++vertex)
         visitAggregateNeighbours(*vertex, UNAGGREGATED, frontBuilder);
     }
 
-    template<class M>
-    inline bool Aggregates<M>::admissible(const Vertex& vertex, int aggregate) const
+    template<class G>
+    inline bool Aggregates<G>::admissible(const Vertex& vertex, int aggregate) const
     {
       // Todo
       std::cerr<<" Admissible not yet implemented!"<<std::endl;
@@ -1309,27 +1298,27 @@ namespace Dune
       return true;
     }
 
-    template<class M>
-    void Aggregates<M>::unmarkFront()
+    template<class G>
+    void Aggregates<G>::unmarkFront()
     {
       typedef typename VertexList::const_iterator Iterator;
 
       for(Iterator vertex=front_.begin(); vertex != front_.end(); ++vertex)
-        graph_->operator()(*vertex).resetFront();
+        graph_->getVertexProperties(*vertex).resetFront();
 
       front_.clear();
     }
 
-    template<class M>
-    inline typename Graph<M,VertexProperties,EdgeProperties>::VertexDescriptor Aggregates<M>::mergeNeighbour(const Vertex& vertex) const
+    template<class G>
+    inline typename G::VertexDescriptor Aggregates<G>::mergeNeighbour(const Vertex& vertex) const
     {
       typedef typename MatrixGraph::ConstEdgeIterator Iterator;
 
       Iterator end = graph_->endEdges(vertex);
       for(Iterator edge = graph_->beginEdges(vertex); edge != end; ++edge) {
         if(aggregates_[edge.target()] != UNAGGREGATED &&
-           graph_->operator()(edge.target()).isolated() == graph_->operator()(edge.source()).isolated()) {
-          if( graph_->operator()(vertex).isolated() ||
+           graph_->getVertexProperties(edge.target()).isolated() == graph_->getVertexProperties(edge.source()).isolated()) {
+          if( graph_->getVertexProperties(vertex).isolated() ||
               ((edge.properties().depends() || edge.properties().influences())
                && admissible(vertex, aggregates_[edge.target()])))
             return edge.target();
@@ -1338,29 +1327,29 @@ namespace Dune
       return -1;
     }
 
-    template<class M>
-    Aggregates<M>::FrontNeighbourCounter::FrontNeighbourCounter(const MatrixGraph& graph)
+    template<class G>
+    Aggregates<G>::FrontNeighbourCounter::FrontNeighbourCounter(const MatrixGraph& graph)
       : Counter(), graph_(graph)
     {}
 
-    template<class M>
-    void Aggregates<M>::FrontNeighbourCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
+    template<class G>
+    void Aggregates<G>::FrontNeighbourCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
-      if(graph_(edge.target()).front())
+      if(graph_.getVertexProperties(edge.target()).front())
         Counter::increment();
     }
 
-    template<class M>
-    int Aggregates<M>::noFrontNeighbours(const Vertex& vertex) const
+    template<class G>
+    int Aggregates<G>::noFrontNeighbours(const Vertex& vertex) const
     {
       FrontNeighbourCounter counter(*graph_);
       visitNeighbours(vertex, counter);
       return counter.value();
     }
 
-    template<class M>
+    template<class G>
     template<class C>
-    void Aggregates<M>::growAggregate(const Vertex& seed, const C& c)
+    void Aggregates<G>::growAggregate(const Vertex& seed, const C& c)
     {
       while(aggregate_->size() < c.minAggregateSize()) {
         int maxTwoCons=0, maxOneCons=0, maxNeighbours=-1, maxCon=-std::numeric_limits<int>::max();
@@ -1374,7 +1363,7 @@ namespace Dune
 
         for(Iterator vertex = front_.begin(); vertex != front_.end(); ++vertex) {
           // Only nonisolated nodes are considered
-          if(graph_->operator()(*vertex).isolated())
+          if(graph_->getVertexProperties(*vertex).isolated())
             continue;
 
           if(c.maxDistance() < distance(*vertex))
@@ -1453,27 +1442,25 @@ namespace Dune
 
 
 
-    template<class M>
+    template<class G>
     template<class C>
-    void Aggregates<M>::build(const M& m, const C& c)
+    void Aggregates<G>::build(const typename C::Matrix& m, G& graph, const C& c)
     {
-      // The aggregation process works on the matrix graph.
-      MatrixGraph graph;
-
       // Stack for fast vertex access
       Stack stack_(graph, *this);
 
-      graph.build(m);
-
       graph_ = &graph;
 
-      aggregate_ = new Aggregate<M>(graph, *this, connected_);
+      aggregate_ = new Aggregate<G>(graph, *this, connected_);
 
       // Allocate the mapping to aggregate.
-      size_=graph.noVertices();
-      aggregates_ = new AggregateDescriptor[graph.noVertices()];
+      size_ = graph.maxVertex();
+      aggregates_ = new AggregateDescriptor[size_];
 
-      buildDependency(graph, c);
+      for(int i=0; i < size_; i++)
+        aggregates_[i] = UNAGGREGATED;
+
+      buildDependency(graph, m, c);
 
       int noAggregates, conAggregates, isoAggregates, oneAggregates;
       noAggregates = conAggregates = isoAggregates = oneAggregates = 0;
@@ -1494,7 +1481,7 @@ namespace Dune
         aggregate_->seed(seed);
 
 
-        if(graph(seed).isolated())
+        if(graph.getVertexProperties(seed).isolated())
           throw "Juhu!";
         //aggregateIsolated();
         else
@@ -1512,7 +1499,7 @@ namespace Dune
 
           for(Iterator vertex = front_.begin(); vertex != front_.end(); ++vertex) {
 
-            if(graph(*vertex).isolated())
+            if(graph.getVertexProperties(*vertex).isolated())
               continue; // No isolated nodes here
 
             if(distance(*vertex) > c.maxDistance())
@@ -1538,7 +1525,7 @@ namespace Dune
 
         // try to merge aggregates consisting of only one nonisolated vertex with other aggregates
         if(aggregate_->size()==1)
-          if(!graph(seed).isolated()) {
+          if(!graph.getVertexProperties(seed).isolated()) {
             int mergedNeighbour = mergeNeighbour(seed);
 
             if(mergedNeighbour > -1)
@@ -1553,7 +1540,7 @@ namespace Dune
             isoAggregates++;
           }
         else{
-          if(graph(seed).isolated())
+          if(graph.getVertexProperties(seed).isolated())
             isoAggregates++;
           else
             conAggregates++;
@@ -1561,7 +1548,7 @@ namespace Dune
         std::cout<<"size"<<aggregate_->size()<<" ";
         unmarkFront();
         markFront();
-        seedFromFront(stack_, graph(seed).isolated());
+        seedFromFront(stack_, graph.getVertexProperties(seed).isolated());
         unmarkFront();
       }
 
@@ -1571,12 +1558,10 @@ namespace Dune
       }
 
       delete aggregate_;
-      graph.free();
-
     }
 
-    template<class M>
-    inline void Aggregates<M>::seedFromFront(Stack& stack_, bool isolated)
+    template<class G>
+    inline void Aggregates<G>::seedFromFront(Stack& stack_, bool isolated)
     {
       typedef typename VertexList::const_iterator Iterator;
 
@@ -1588,51 +1573,51 @@ namespace Dune
         std::cerr<< " no vertices pushed!"<<std::endl;
     }
 
-    template<class M>
-    inline const typename Graph<M,VertexProperties, EdgeProperties>::VertexDescriptor&
-    Aggregates<M>::operator[](const Vertex& vertex) const
+    template<class G>
+    inline const typename G::VertexDescriptor&
+    Aggregates<G>::operator[](const Vertex& vertex) const
     {
       return aggregates_[vertex];
     }
 
-    template<class M>
-    inline typename Graph<M,VertexProperties, EdgeProperties>::VertexDescriptor&
-    Aggregates<M>::operator[](const Vertex& vertex)
+    template<class G>
+    inline typename G::VertexDescriptor&
+    Aggregates<G>::operator[](const Vertex& vertex)
     {
       return aggregates_[vertex];
     }
 
-    template<class M>
-    Aggregates<M>::Stack::Stack(const MatrixGraph& graph, const Aggregates<M>& aggregates)
+    template<class G>
+    Aggregates<G>::Stack::Stack(const MatrixGraph& graph, const Aggregates<G>& aggregates)
       : graph_(graph), aggregates_(aggregates), size_(0), maxSize_(0), head_(0), filled_(0)
     {
       vals_ = new  Vertex[N];
     }
 
-    template<class M>
-    Aggregates<M>::Stack::~Stack()
+    template<class G>
+    Aggregates<G>::Stack::~Stack()
     {
       std::cout << "Max stack size was "<<maxSize_<<" filled="<<filled_<<std::endl;
       delete[] vals_;
     }
 
-    template<class M>
-    inline void Aggregates<M>::Stack::push(const Vertex & v)
+    template<class G>
+    inline void Aggregates<G>::Stack::push(const Vertex & v)
     {
       if(aggregates_[v] == UNAGGREGATED)
         localPush(v);
     }
 
-    template<class M>
-    inline void Aggregates<M>::Stack::localPush(const Vertex & v)
+    template<class G>
+    inline void Aggregates<G>::Stack::localPush(const Vertex & v)
     {
       vals_[head_] = v;
       size_ = std::min<int>(size_+1, N);
       head_ = (head_+N+1)%N;
     }
 
-    template<class M>
-    void Aggregates<M>::Stack::fill()
+    template<class G>
+    void Aggregates<G>::Stack::fill()
     {
       int isolated = 0, connected=0;
       int isoumin, umin;
@@ -1647,14 +1632,14 @@ namespace Dune
 
       for(Iterator vertex = graph_.begin(); vertex != end; ++vertex) {
         // Skip already aggregated vertices
-        if(aggregates_[vertex.index()] != UNAGGREGATED)
+        if(aggregates_[*vertex] != UNAGGREGATED)
           continue;
 
         if(vertex.properties().isolated()) {
-          isoumin = std::min(isoumin, aggregates_.unusedNeighbours(vertex.index()));
+          isoumin = std::min(isoumin, aggregates_.unusedNeighbours(*vertex));
           isolated++;
         }else{
-          umin = std::min(umin, aggregates_.unusedNeighbours(vertex.index()));
+          umin = std::min(umin, aggregates_.unusedNeighbours(*vertex));
           connected++;
         }
       }
@@ -1666,20 +1651,20 @@ namespace Dune
       if(connected > 0) {
         // Connected vertices have higher priority.
         for(Iterator vertex = graph_.begin(); vertex != end; ++vertex)
-          if(aggregates_[vertex.index()] == UNAGGREGATED && !vertex.properties().isolated()
-             && aggregates_.unusedNeighbours(vertex.index()) == umin)
-            localPush(vertex.index());
+          if(aggregates_[*vertex] == UNAGGREGATED && !vertex.properties().isolated()
+             && aggregates_.unusedNeighbours(*vertex) == umin)
+            localPush(*vertex);
       }else{
         for(Iterator vertex = graph_.begin(); vertex != end; ++vertex)
-          if(aggregates_[vertex.index()] == UNAGGREGATED && vertex.properties().isolated()
-             && aggregates_.unusedNeighbours(vertex.index()) == umin)
-            localPush(vertex.index());
+          if(aggregates_[*vertex] == UNAGGREGATED && vertex.properties().isolated()
+             && aggregates_.unusedNeighbours(*vertex) == umin)
+            localPush(*vertex);
       }
       maxSize_ = std::max(size_, maxSize_);
     }
 
-    template<class M>
-    inline typename Graph<M,VertexProperties,EdgeProperties>::VertexDescriptor Aggregates<M>::Stack::pop()
+    template<class G>
+    inline typename G::VertexDescriptor Aggregates<G>::Stack::pop()
     {
       while(size_>0) {
         head_ = (head_ + N -1) % N;
@@ -1702,8 +1687,8 @@ namespace Dune
       return -1;
     }
 
-    template<class M>
-    void Aggregates<M>::print2d(int n,  std::ostream& os)
+    template<class G>
+    void Aggregates<G>::print2d(int n,  std::ostream& os)
     {
       std::ios_base::fmtflags oldOpts=os.flags();
 

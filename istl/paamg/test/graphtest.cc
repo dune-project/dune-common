@@ -345,8 +345,8 @@ void setupAnisotropic(Dune::BCRSMatrix<B>& A, double eps)
   }
 }
 
-template<class G>
-void printWeightedGraph(G& graph, std::ostream& os)
+template<class N, class G>
+void printWeightedGraph(G& graph, std::ostream& os, const N& norm=N())
 {
   using Dune::RemoveConst;
   using Dune::SelectType;
@@ -362,7 +362,7 @@ void printWeightedGraph(G& graph, std::ostream& os)
       typename G::ConstEdgeIterator>::Type EdgeIterator;
   for(VertexIterator vertex = graph.begin(); vertex!=graph.end(); ++vertex) {
     const EdgeIterator endEdge = vertex.end();
-    os<<"Edges starting from Vertex "<<*vertex<<" (weight="<<vertex.weight();
+    os<<"Edges starting from Vertex "<<*vertex<<" (weight="<<norm(vertex.weight());
     os<<") to vertices ";
 
     for(EdgeIterator edge = vertex.begin(); edge != endEdge; ++edge)
@@ -414,7 +414,7 @@ void printGraph(G& graph, std::ostream& os)
       typename G::ConstEdgeIterator>::Type EdgeIterator;
   for(VertexIterator vertex = graph.begin(); vertex!=graph.end(); ++vertex) {
     const EdgeIterator endEdge = vertex.end();
-    os<<"Edges starting from Vertex "<<vertex.index()<<" to vertices ";
+    os<<"Edges starting from Vertex "<<*vertex<<" to vertices ";
 
     for(EdgeIterator edge = vertex.begin(); edge != endEdge; ++edge)
       os<<edge.target()<<", ";
@@ -447,8 +447,11 @@ void testGraph ()
   typedef Dune::amg::MatrixGraph<BCRSMat> MatrixGraph;
 
   MatrixGraph mg(laplacian2d);
-  printWeightedGraph(mg,std::cout);
-  printWeightedGraph(static_cast<const MatrixGraph&>(mg),std::cout);
+
+  using Dune::amg::FirstDiagonal;
+  printWeightedGraph(mg,std::cout,FirstDiagonal<BCRSMat::block_type>());
+  printWeightedGraph(static_cast<const MatrixGraph&>(mg),
+                     std::cout,FirstDiagonal<BCRSMat::block_type>());
 
   std::vector<bool> excluded(N*N, false);
 
@@ -472,21 +475,24 @@ void testGraph ()
       Dune::amg::VertexProperties,
       Dune::amg::EdgeProperties> PropertiesGraph;
 
-  std::cout<<std::endl<<"PropertiesGraph:"<<std::endl;
+  std::cout<<std::endl<<"PropertiesGraph: ";
   PropertiesGraph pgraph(mg);
 
+  std::cout<<" noVertices="<<pgraph.noVertices()<<std::endl; //" noEdges=";
+  //std::cout<<pgraph.noEdges()<<std:endl
+
   printPropertiesGraph(pgraph, std::cout);
-  printPropertiesGraph(static_cast<const PropertiesGraph&>(pgraph), std::cout);
-  using Dune::amg::FirstDiagonal;
+  //printPropertiesGraph(static_cast<const PropertiesGraph&>(pgraph), std::cout);
+
   using Dune::amg::SymmetricDependency;
   using Dune::amg::SymmetricCriterion;
 
   //SymmetricCriterion<BCRSGraph, FirstDiagonal<typename BCRSMat::block_type> > crit;
-  SymmetricCriterion<BCRSMat, FirstDiagonal> crit;
+  SymmetricCriterion<PropertiesGraph,BCRSMat,FirstDiagonal> crit;
 
-  Dune::amg::Aggregates<BCRSMat> aggregates;
+  Dune::amg::Aggregates<PropertiesGraph> aggregates;
 
-  aggregates.build(laplacian2d, crit);
+  aggregates.build(laplacian2d, pgraph,  crit);
   aggregates.print2d(N, std::cout);
 
 }
@@ -504,25 +510,48 @@ void testAggregate(double eps)
   setupSparsityPattern<N>(mat);
   setupAnisotropic<N>(mat, .001);
 
-  typedef Dune::amg::Graph<BCRSMat,int,int> BCRSGraph;
+  typedef Dune::amg::MatrixGraph<BCRSMat> BCRSGraph;
+  typedef Dune::amg::SubGraph<BCRSGraph> SubGraph;
+  typedef Dune::amg::PropertiesGraph<BCRSGraph,Dune::amg::VertexProperties,Dune::amg::EdgeProperties> PropertiesGraph;
+  typedef Dune::amg::PropertiesGraph<SubGraph,Dune::amg::VertexProperties,Dune::amg::EdgeProperties> SPropertiesGraph;
 
-  BCRSGraph graph;
+  BCRSGraph graph(mat);
+  PropertiesGraph pgraph(graph);
 
-  //Dune::printmatrix(std::cout, mat,"aniso","row",9,1);
-  graph.build(mat);
-  //graph.print(std::cout);
+  std::vector<bool> excluded(N*N, false);
+
+  for(int i=0; i < N; i++) {
+    excluded[i]=excluded[(N-1)*N+i]=true;
+    excluded[i*N]=excluded[i*N+N-1]=true;
+  }
+
+  SubGraph sgraph(graph, excluded);
+  SPropertiesGraph spgraph(sgraph);
+
 
   using Dune::amg::FirstDiagonal;
   using Dune::amg::SymmetricDependency;
   using Dune::amg::SymmetricCriterion;
 
   //SymmetricCriterion<BCRSGraph, FirstDiagonal<typename BCRSMat::block_type> > crit;
-  SymmetricCriterion<BCRSMat, FirstDiagonal> crit;
+  SymmetricCriterion<PropertiesGraph,BCRSMat, FirstDiagonal> crit;
 
-  Dune::amg::Aggregates<BCRSMat> aggregates;
+  Dune::amg::Aggregates<PropertiesGraph> aggregates;
 
-  aggregates.build(mat, crit);
+  SymmetricCriterion<SPropertiesGraph,BCRSMat, FirstDiagonal> scrit;
+
+  Dune::amg::Aggregates<SPropertiesGraph> saggregates;
+  aggregates.build(mat, pgraph, crit);
+
   aggregates.print2d(N, std::cout);
+
+  std::cout<<"Excluded!"<<std::endl;
+
+  saggregates.build(mat, spgraph, scrit);
+  saggregates.print2d(N, std::cout);
+
+
+
 }
 
 int main (int argc , char ** argv)
