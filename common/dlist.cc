@@ -48,7 +48,7 @@ namespace Dune {
   { // ruft vorher Default_konstruktor fuer head, tail
     numelements=0;
     // kopiere alle Elemente der Argumentliste
-    for (DoubleLinkedList<T>::Iterator i=l.begin(); i!=l.end(); i++)
+    for (typename DoubleLinkedList<T>::Iterator i=l.begin(); i!=l.end(); i++)
       insert_after(rbegin(),*i);
   }
 
@@ -62,7 +62,7 @@ namespace Dune {
       while (begin()!=end()) erase(begin());
 
       // kopiere alle Elemente der Liste auf der rechten Seite
-      for (DoubleLinkedList<T>::Iterator i=l.begin(); i!=l.end(); i++)
+      for (typename DoubleLinkedList<T>::Iterator i=l.begin(); i!=l.end(); i++)
         insert_after(rbegin(),*i);
     }
     return *this;
@@ -202,14 +202,14 @@ namespace Dune {
 
   template<class T>
   inline bool DoubleLinkedList<T>::Iterator::operator!=
-    (DoubleLinkedList<T>::Iterator x)
+    (typename DoubleLinkedList<T>::Iterator x)
   {
     return p != x.p;
   }
 
   template<class T>
   inline bool DoubleLinkedList<T>::Iterator::operator==
-    (DoubleLinkedList::Iterator x)
+    (typename DoubleLinkedList::Iterator x)
   {
     return p == x.p;
   }

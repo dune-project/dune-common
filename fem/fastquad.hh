@@ -104,7 +104,7 @@ namespace Dune {
 
       int myType = (int) ElType;
       myType *= 100;
-      setIdentifier( myType + order_);
+      this->setIdentifier( myType + order_);
 
       //std::cout << (*this) << "\n";
     }
@@ -213,7 +213,7 @@ namespace Dune {
       }
       int myType = (int) ElType;
       myType *= 10 * codim;
-      setIdentifier( myType + order_);
+      this->setIdentifier( myType + order_);
 
       //std::cout << (*this) << "\n";
     }
@@ -313,7 +313,7 @@ namespace Dune {
 
       int myType = (int) ElType;
       myType *= 100;
-      setIdentifier( myType + polynomialOrder );
+      this->setIdentifier( myType + polynomialOrder );
 
     };
 

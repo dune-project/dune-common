@@ -184,6 +184,7 @@ namespace Dune {
   class BaseFunctionSetDefault
     : public BaseFunctionSetInterface < FunctionSpaceType , BaseFunctionSetImp>
   {
+    typedef typename FunctionSpaceType::JacobianRange JacobianRange;
     enum { dimRow = JacobianRange::dimRow };
     enum { dimCol = JacobianRange::dimCol };
 
