@@ -17,10 +17,10 @@ AC_DEFUN([DUNE_PATH_DUNE],[
 
   # the usual option...
   AC_ARG_WITH(dune,
-    AC_HELP_STRING([--with-dune=PATH],[directory with Dune inside]))
+    AC_HELP_STRING([--with-dune=PATH],[dune/-directory or the one above]))
 
-  AC_ARG_ENABLE(localdune,
-    AC_HELP_STRING([--enable-localdune],[use Dune-headers/lib]))
+  AC_ARG_ENABLE(dunedevel,
+    AC_HELP_STRING([--enable-dunedevel],[activate Dune-Developer-mode]))
 
   # backup of flags
   ac_save_CPPFLAGS="$CPPFLAGS"
@@ -35,6 +35,11 @@ AC_DEFUN([DUNE_PATH_DUNE],[
     if test -d $with_dune ; then
       # expand tilde / other stuff
       DUNEROOT=`cd $with_dune && pwd`
+
+      # automagically use directory above if complete Dune-dir was supplied
+      if test `basename $DUNEROOT` = "dune" ; then
+        DUNEROOT=`cd $DUNEROOT/.. && pwd`
+      fi
     
       # expand search path (otherwise empty CPPFLAGS)
       CPPFLAGS="-I$DUNEROOT"
@@ -100,6 +105,10 @@ AC_DEFUN([DUNE_PATH_DUNE],[
     AC_SUBST(DUNE_LDFLAGS, $DUNE_LDFLAGS)
     AC_SUBST(DUNE_LIBS, $LIBS)
     AC_DEFINE(HAVE_DUNE, 1, [Define to 1 if dune was found])
+
+    if test x"$enable_dunedevel" = xyes ; then
+      AC_DEFINE(DUNE_DEVEL_MODE, 1, [Activates developer output])
+    fi
 
     # add to global list
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $DUNE_CPPFLAGS"
