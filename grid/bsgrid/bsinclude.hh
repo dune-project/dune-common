@@ -9,98 +9,49 @@
 
 //#define _BSGRID_PARALLEL_
 
-// includes for bsgrid_src
-#include "systemincludes.hh"
-
 // all methods and classes of the BSgrid are defined in the namespace
 // BernhardSchuppGrid
 #define BSSPACE BernhardSchuppGrid ::
-//#define BSSPACE
 
 // if this is defined in bsgrid some methods are added which we only need
 // for the Dune interface
 #define _DUNE_USES_BSGRID_
 
-#include <dune/grid/common/indexstack.hh>
 #include <dune/common/fvector.hh>
+
+// if MPI was found include all headers
+#ifdef _BSGRID_PARALLEL_
+#include <alu3dgrid_parallel.h>
+#else
+// if not, include only headers for serial version
+#include <alu3dgrid_serial.h>
+#endif
 
 namespace BernhardSchuppGrid {
 
   // definition of AutoPointer class
 #include "myautoptr.hh"
 
-  // definition of indexstack
-  enum { lengthOfFiniteStack = 10000 };
-  typedef Dune::IndexStack<int,lengthOfFiniteStack> IndexManagerType;
-
-  // type for outer normal of intersection iterator
-  typedef Dune::FieldVector <double,3> BSGridVecType;
-
-  typedef enum { hexa , tetra } grid_t;
-
-  // bsgrid original sources
-
 #ifdef _BSGRID_PARALLEL_
 
   struct GatherScatter;
   typedef GatherScatter GatherScatterType;
 
-#include "bsgrid_src/serialize.h"
-#include "bsgrid_src/gitter_dune_pll_impl.h"
-
-  typedef GitterPll::helement_STI HElemType;   // Interface Element
-  typedef GitterPll::hbndseg HGhostType;
-
-  struct GatherScatter
-  {
-    virtual void inlineData ( ObjectStream & str , HElemType & elem ) = 0;
-    virtual void xtractData ( ObjectStream & str , HElemType & elem ) = 0;
-
-    virtual void sendData ( ObjectStream & str , const HElemType  & elem ) = 0;
-    virtual void recvData ( ObjectStream & str , HGhostType & elem ) = 0;
-  };
-  typedef GatherScatter GatherScatterType;
-
-  // all header files of the BSGrid
-#include "allheaders.h"
-
-  //#include "bsgrid_src/gitter_pll_impl.cc"
-
   typedef GitterDunePll GitterType;
   typedef GitterDunePll BSGitterType;
   typedef GitterDunePll BSGitterImplType;
-
-  //typedef BndsegPllBaseXClosure < BSGitterType :: hbndseg3_GEO >   PLLFaceType;       // ParallelInterface Face
 
   typedef Hbnd3PllInternal < GitterType :: Objects :: Hbnd3Default,
       BndsegPllBaseXClosure < GitterType :: hbndseg3_GEO > ,
       BndsegPllBaseXMacroClosure < GitterType :: hbndseg3_GEO > > :: micro_t MicroType;
 
-  //typedef MicroType PLLBndFaceType;
   enum { ProcessorBoundary_t = BSGitterType:: hbndseg_STI :: closure };
 
 #else
   struct GatherScatter;
   typedef GatherScatter GatherScatterType;
 
-#include "bsgrid_src/serialize.h"
-#include "bsgrid_src/gitter_dune_impl.h"
-
-  typedef Gitter::helement_STI HElemType;   // Interface Element
-  typedef HElemType HGhostType;
-
-  struct GatherScatter
-  {
-    virtual void inlineData ( ObjectStream & str , HElemType & elem ) = 0;
-    virtual void xtractData ( ObjectStream & str , HElemType & elem ) = 0;
-
-    virtual void sendData ( ObjectStream & str , const HElemType & elem ) = 0;
-    virtual void recvData ( ObjectStream & str , HElemType & elem ) = 0;
-  };
-  typedef GatherScatter GatherScatterType;
-
   // the header
-#include "allheaders.h"
   typedef Gitter GitterType;
   typedef GitterDuneImpl BSGitterType;
   typedef GitterDuneImpl BSGitterImplType;
@@ -376,7 +327,6 @@ namespace BernhardSchuppGrid {
     val_t & item () { return it_->item(); }
 
   };
-
 
   //*************************************************************
   typedef LeafIterator < GitterType::helement_STI > BSLeafIteratorMaxLevel;
