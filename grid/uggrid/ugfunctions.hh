@@ -156,7 +156,7 @@ namespace Dune {
     }
 
 #ifdef _3
-    static void* CreateBoundaryValueProblem(char* BVPname,
+    static void* CreateBoundaryValueProblem(const char* BVPname,
                                             int numOfCoeffFunc,
                                             UG3d::CoeffProcPtr coeffs[],
                                             int numOfUserFct,
