@@ -16,6 +16,8 @@ namespace Dune {
           - Albert Grid (AlbertGrid) : Provides the simplicial meshes of the finite element tool box ALBERT
           written by Kunibert Siebert and Alfred Schmidt.
 
+          - Quoc Mesh Grid  : Provides the meshes of the QuocMesh.
+
           - UG Grid (UGGrid) : Provides the meshes of the finite element toolbox UG.
 
           - Structured Parallel Grid (SPGrid) : Provides a distributed structured mesh.
@@ -28,7 +30,6 @@ namespace Dune {
           of the interface. As with STL containers, all implementations must implement the
           same classes with exactly the same members to be used in generic algorithms.
 
-          Class Diagramm: Image inclusion see doxygen doc at page 92.
 
           @{
    */
@@ -367,29 +368,6 @@ namespace Dune {
     //! geometry of this entity
     ElementImp<dim-codim,dimworld>& geometry ();
 
-
-    //! inlcude element in scope since it is used as a return type
-    template<int d, int dd>
-    class Element : public ElementImp<d,dd> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      Element () : ElementImp<d,dd>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      Element (const ElementImp<d,dd>& y) : ElementImp<d,dd>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      Element<d,dd>& operator= (const ElementImp<d,dd>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      ElementImp<d,dd>& asBase() {
-        return static_cast<ElementImp<d,dd>&>(*this);
-      }
-    };
-
     /*! Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
@@ -486,92 +464,6 @@ namespace Dune {
     //! Returns iterator to one past the last son
     HierarchicIteratorImp<dim,dimworld> hend (int maxlevel);
 
-    //! inlcude element in scope since it is used as a return type
-    template<int d, int dd>
-    class Element : public ElementImp<d,dd> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      Element () : ElementImp<d,dd>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      Element (const ElementImp<d,dd>& y) : ElementImp<d,dd>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      Element<d,dd>& operator= (const ElementImp<d,dd>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      ElementImp<d,dd>& asBase() {
-        return static_cast<ElementImp<d,dd>&>(*this);
-      }
-    };
-
-    //! include LevelIterator in scope since it is used as return type in this class
-    template<int cc>
-    class LevelIterator : public LevelIteratorImp<cc,dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      LevelIterator () : LevelIteratorImp<cc,dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      LevelIterator (const LevelIteratorImp<cc,dim,dimworld>& y) : LevelIteratorImp<cc,dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      LevelIterator<cc>& operator= (const LevelIteratorImp<cc,dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      LevelIteratorImp<cc,dim,dimworld>& asBase() {
-        return static_cast<LevelIteratorImp<cc,dim,dimworld>&>(*this);
-      }
-    };
-
-    //! include NeighborIterator in scope since it is used as return type in this class
-    class NeighborIterator : public NeighborIteratorImp<dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      NeighborIterator () : NeighborIteratorImp<dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      NeighborIterator (const NeighborIteratorImp<dim,dimworld>& y) : NeighborIteratorImp<dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      NeighborIterator& operator= (const NeighborIteratorImp<dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      NeighborIteratorImp<dim,dimworld>& asBase() {
-        return static_cast<NeighborIteratorImp<dim,dimworld>&>(*this);
-      }
-    };
-
-    //! include HierarchicIterator in scope since it is used as return type in this class
-    class HierarchicIterator : public HierarchicIteratorImp<dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      HierarchicIterator () : HierarchicIteratorImp<dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      HierarchicIterator (const HierarchicIteratorImp<dim,dimworld>& y) : HierarchicIteratorImp<dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      HierarchicIterator& operator= (const HierarchicIteratorImp<dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      HierarchicIteratorImp<dim,dimworld>& asBase() {
-        return static_cast<HierarchicIteratorImp<dim,dimworld>&>(*this);
-      }
-    };
-
     /*! Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
@@ -628,50 +520,6 @@ namespace Dune {
     //! local coordinates within father
     Vec<dim,ct>& local ();
 
-    //! inlcude element in scope since it is used as a return type
-    template<int d, int dd>
-    class Element : public ElementImp<d,dd> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      Element () : ElementImp<d,dd>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      Element (const ElementImp<d,dd>& y) : ElementImp<d,dd>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      Element<d,dd>& operator= (const ElementImp<d,dd>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      ElementImp<d,dd>& asBase() {
-        return static_cast<ElementImp<d,dd>&>(*this);
-      }
-    };
-
-    //! include LevelIterator in scope since it is used as return type in this class
-    template<int cc>
-    class LevelIterator : public LevelIteratorImp<cc,dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      LevelIterator () : LevelIteratorImp<cc,dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      LevelIterator (const LevelIteratorImp<cc,dim,dimworld>& y) : LevelIteratorImp<cc,dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      LevelIterator<cc>& operator= (const LevelIteratorImp<cc,dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      LevelIteratorImp<cc,dim,dimworld>& asBase() {
-        return static_cast<LevelIteratorImp<cc,dim,dimworld>&>(*this);
-      }
-    };
-
     /*! Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
@@ -687,6 +535,8 @@ namespace Dune {
   // L E V E L I T E R A T O R
   //************************************************************************
 
+  /*! Enables iteration over all entities of a given codimension and level of a grid.
+   */
   template<int codim, int dim, int dimworld, class ct,
       template<int,int,int> class LevelIteratorImp,
       template<int,int,int> class EntityImp
@@ -694,6 +544,9 @@ namespace Dune {
   class LevelIterator
   {
   public:
+    //! know your own codimension
+    enum { codimension=dim };
+
     //! know your own dimension
     enum { dimension=dim };
 
@@ -781,51 +634,6 @@ namespace Dune {
     //! one past the end on this level
     template<int codim>
     LevelIteratorImp<codim,dim,dimworld> lend (int level);
-
-    //! inlcude level iterator in scope
-    template<int codim>
-    class LevelIterator : public LevelIteratorImp<codim,dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      LevelIterator () : LevelIteratorImp<codim,dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      LevelIterator (const LevelIteratorImp<codim,dim,dimworld>& y) :
-        LevelIteratorImp<codim,dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      LevelIterator<codim>& operator= (const LevelIteratorImp<codim,dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      LevelIteratorImp<codim,dim,dimworld>& asBase() {
-        return static_cast<LevelIteratorImp<codim,dim,dimworld>&>(*this);
-      }
-    };
-
-    //! include entity in scope
-    template<int codim>
-    class Entity : public EntityImp<codim,dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      Entity () : EntityImp<codim,dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      Entity (const EntityImp<codim,dim,dimworld>& y) : EntityImp<codim,dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      Entity<codim>& operator= (const EntityImp<codim,dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      EntityImp<codim,dim,dimworld>& asBase() {
-        return static_cast<EntityImp<codim,dim,dimworld>&>(*this);
-      }
-    };
 
     /*! Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
