@@ -114,10 +114,57 @@ namespace Dune {
       apply(level_,Arg,Dest);
     }
 
+    template <class ArgParamType , class DestParamType>
+    void apply ( ArgParamType &arg, DestParamType &dest ) const
+    {
+      if(!prepared_)
+      {
+        prepare( arg, dest);
+      }
+
+      // useful typedefs
+      typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
+      typedef typename FunctionSpaceType::GridType GridType;
+      // the corresponding grid
+      FunctionSpaceType & functionSpace_= Dest.getFunctionSpace();
+      GridType &grid = functionSpace_.getGrid();
+
+      if(leaf_)
+      {
+        //std::cout << "using  Leaf! \n";
+        typedef typename GridType::LeafIterator LeafIterator;
+
+        // make run through grid
+        LeafIterator it     = grid.leafbegin ( level_ );
+        LeafIterator endit  = grid.leafend   ( level_ );
+        applyOnGrid( it, endit , arg, dest );
+      }
+      else
+      {
+        typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
+
+
+        // make run through grid
+        LevelIterator it    = grid.template lbegin<0>( level_ );
+        LevelIterator endit = grid.template lend<0>  ( level_ );
+        applyOnGrid( it, endit , arg, dest );
+      }
+
+      finalize( arg, dest );
+    }
+
     //! apply the operator, see apply
     void operator()( const DomainType &Arg, RangeType &Dest ) const
     {
       apply(level_,Arg,Dest);
+    }
+
+
+    //! apply the operator, see apply
+    template <class ArgParamType , class DestParamType>
+    void operator () ( ArgParamType &arg, DestParamType &dest ) const
+    {
+      apply(arg,dest);
     }
 
     //********************************************************************
@@ -126,10 +173,18 @@ namespace Dune {
 
   private:
     //! remember time step size
+    template <class ArgParamType , class DestParamType>
+    void prepare ( ArgParamType &arg, DestParamType &dest )
+    {
+      localOp_.prepareGlobal(arg,dest);
+      prepared_ = true;
+    }
+
+    //! remember time step size
     void prepare ( const DomainType &Arg, RangeType &Dest ) const
     {
-      localOp_.setArguments(Arg,Dest);
-      localOp_.prepareGlobal();
+      //localOp_.setArguments(Arg,Dest);
+      localOp_.prepareGlobal(Arg,Dest);
       prepared_ = true;
     }
 
@@ -153,7 +208,7 @@ namespace Dune {
 
       if(leaf_)
       {
-        std::cout << "using  Leaf! \n";
+        //std::cout << "using  Leaf! \n";
         typedef typename GridType::LeafIterator LeafIterator;
 
         // make run through grid
@@ -168,7 +223,7 @@ namespace Dune {
         // make run through grid
         LevelIterator it    = grid.template lbegin<0>( level_ );
         LevelIterator endit = grid.template lend<0>  ( level_ );
-        applyOnGrid( it, endit , Arg, Dest );
+        applyOnGrid( it, endit, Arg, Dest );
       }
 
       finalize( Arg, Dest );
@@ -179,7 +234,6 @@ namespace Dune {
     {
       prepared_ = false;
       localOp_.finalizeGlobal();
-      localOp_.removeArguments();
     }
 
     template <class GridIteratorType>
@@ -189,6 +243,18 @@ namespace Dune {
       // erase destination function
       Dest.clearLevel ( level_ );
 
+      // run through grid and apply the local operator
+      for( it ; it != endit; ++it )
+      {
+        localOp_.prepareLocal (*it);
+        localOp_.applyLocal   (*it);
+        localOp_.finalizeLocal(*it);
+      }
+    }
+
+    template <class GridIteratorType>
+    void applyOnGrid ( GridIteratorType &it, GridIteratorType &endit ) const
+    {
       // run through grid and apply the local operator
       for( it ; it != endit; ++it )
       {
