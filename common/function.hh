@@ -22,18 +22,26 @@ namespace Dune {
 
   typedef int deriType;
 
-
+  /** \brief ???
+   * \todo Please doc me!
+   */
   template< class FunctionSpaceType, class FunctionImp>
   class Function : public Mapping < typename FunctionSpaceType::DomainField,
                        typename FunctionSpaceType::RangeField , typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range > {
 
   public:
+    //! ???
     typedef typename FunctionSpaceType::Domain Domain ;
+    //! ???
     typedef typename FunctionSpaceType::Range Range ;
+    //! ???
     typedef typename FunctionSpaceType::JacobianRange JacobianRange;
+    //! ???
     typedef typename FunctionSpaceType::HessianRange HessianRange;
+    //! ???
     typedef FunctionSpaceType FunctionSpace;
 
+    //! ???
     Function ( FunctionSpaceType & f ) : functionSpace_ (f) {} ;
 
     //! evaluate Function
@@ -41,13 +49,17 @@ namespace Dune {
 
     //! evaluate function and derivatives
     template <int derivation>
+
+    //! ???
     void evaluate  ( const Vec<derivation,deriType> &diffVariable,
                      const Domain & , Range &) const {};
 
+    //! ???
     FunctionSpaceType &getFunctionSpace() const { return functionSpace_; }
 
   protected:
 
+    //! ???
     FunctionSpaceType & functionSpace_;
 
   };
