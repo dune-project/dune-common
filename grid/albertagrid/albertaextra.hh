@@ -234,7 +234,7 @@ inline void enlargeTraverseStack(TRAVERSE_STACK *stack)
   stack->stack_size = new_stack_size;
 }
 
-void printTraverseStack(TRAVERSE_STACK *stack)
+inline void printTraverseStack(TRAVERSE_STACK *stack)
 {
   FUNCNAME("printTraverseStack");
   MSG("****************************************************\n");
@@ -251,7 +251,7 @@ void printTraverseStack(TRAVERSE_STACK *stack)
   MSG("****************************************************\n");
 }
 
-void printElInfo(const EL_INFO *elf)
+inline void printElInfo(const EL_INFO *elf)
 {
   FUNCNAME("printElInfo");
 
@@ -741,7 +741,7 @@ namespace AlbertHelp
   }
 
   // initialize boundary for mesh
-  const BOUNDARY *initBoundary(MESH * Spmesh, int bound)
+  inline const BOUNDARY *initBoundary(MESH * Spmesh, int bound)
   {
     BOUNDARY *b = (BOUNDARY *) malloc(sizeof(BOUNDARY));
     assert(b != NULL);
@@ -1032,7 +1032,7 @@ namespace AlbertHelp
     if(dofHier) std::free(dofHier);dofHier = NULL;
   }
 
-  void printMacroData(MACRO_DATA * mdata)
+  inline void printMacroData(MACRO_DATA * mdata)
   {
     FUNCNAME("printMacroData");
     MSG("noe %d , nvx %d \n",mdata->n_macro_elements,mdata->n_total_vertices);

@@ -12,7 +12,7 @@ namespace AlbertHelp {
   // IndexManagerType defined in albertgrid.hh
   static IndexManagerType * tmpIndexStack[numOfElNumVec];
 
-  static void initIndexManager_elmem_cc(IndexManagerType (&newIm)[numOfElNumVec])
+  inline static void initIndexManager_elmem_cc(IndexManagerType (&newIm)[numOfElNumVec])
   {
     for(int i=0; i<numOfElNumVec; i++)
     {
@@ -21,19 +21,19 @@ namespace AlbertHelp {
     }
   }
 
-  static void removeIndexManager_elmem_cc()
+  inline static void removeIndexManager_elmem_cc()
   {
     for(int i=0; i<numOfElNumVec; i++) tmpIndexStack[i] = 0;
   }
 
   template <int codim>
-  static int getElementIndex()
+  inline static int getElementIndex()
   {
     assert(tmpIndexStack[codim] != 0);
     return (*tmpIndexStack[codim]).getIndex();
   }
 
-  static int getElementIndexForCodim(int codim)
+  inline static int getElementIndexForCodim(int codim)
   {
     assert((codim >= 0) && (codim < DIM+1));
     switch(codim)
@@ -47,7 +47,7 @@ namespace AlbertHelp {
   }
 
   template <int codim>
-  static void freeElementIndex(int idx)
+  inline static void freeElementIndex(int idx)
   {
     assert(tmpIndexStack[codim] != 0);
     (*tmpIndexStack[codim]).freeIndex(idx);
