@@ -671,3 +671,38 @@ void UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, Communic
                   &Foo<T,P>::scatter);
 #endif
 }
+
+
+template < int dim, int dimworld >
+void UGGrid < dim, dimworld >::createbegin()
+{}
+
+
+template < int dim, int dimworld >
+void UGGrid < dim, dimworld >::createend()
+{
+  // set the subdomainIDs
+  typename TargetType<0,dim>::T* theElement;
+  for (theElement=multigrid_->grids[0]->elements[0]; theElement!=NULL; theElement=theElement->ge.succ)
+    UG_NS<dim>::SetSubdomain(theElement, 1);
+
+#ifdef _3
+  UG3d::SetEdgeAndNodeSubdomainFromElements(multigrid_->grids[0]);
+#else
+  UG2d::SetEdgeAndNodeSubdomainFromElements(multigrid_->grids[0]);
+#endif
+
+  // Complete the UG-internal grid data structure
+#ifdef _3
+  if (CreateAlgebra(multigrid_) != UG3d::GM_OK)
+#else
+  if (CreateAlgebra(multigrid_) != UG2d::GM_OK)
+#endif
+    DUNE_THROW(IOError, "Call of 'UG::CreateAlgebra' failed!");
+
+  /* here all temp memory since CreateMultiGrid is released */
+#define ReleaseTmpMem(p,k) Release(p, UG::FROM_TOP,k)
+  ReleaseTmpMem(multigrid_->theHeap, multigrid_->MarkKey);
+#undef ReleaseTmpMem
+  multigrid_->MarkKey = 0;
+}
