@@ -175,7 +175,7 @@ namespace Dune {
     template <class EntityType>
     void hierarchicRestrict ( EntityType &en) const
     {
-      if(en.hasChildren())
+      if(!en.isLeaf())
       {
         typedef typename EntityType::HierarchicIterator HierarchicIterator;
         HierarchicIterator it    = en.hbegin( en.level() + 1 );
@@ -183,8 +183,8 @@ namespace Dune {
         // if the children have children then we have to go deeper
         HierarchicIterator endit = en.hend  ( en.level() + 1 );
 
-        // ok because we checked en.hasChildren
-        if(it->hasChildren()) return;
+        // ok because we checked en.isLeaf
+        if(!it->isLeaf()) return;
 
         // true for first child, otherwise false
         bool initialize = true;
@@ -208,19 +208,17 @@ namespace Dune {
     void hierarchicProlong ( EntityType &en) const
     {
       typedef typename EntityType::HierarchicIterator HierarchicIterator;
+      //typedef typename GridType::template codim<EntityType::codimension>::EntityPointer;
       HierarchicIterator it    = en.hbegin( grid_.maxlevel() );
       HierarchicIterator endit = en.hend  ( grid_.maxlevel() );
 
       bool initialize = true;
 
-      EntityType father = en.newEntity();
-
       for( ; it != endit; ++it)
       {
         if((*it).state() == REFINED)
         {
-          (*it).father( father );
-          rpOp_.prolongLocal( father, *it , initialize );
+          rpOp_.prolongLocal( *(it->father()), *it , initialize );
           initialize = false;
         }
       }
@@ -301,15 +299,15 @@ namespace Dune {
     {
       // volume of son / volume of father
       const_cast<RangeFieldType &> (weight_) =
-        son.geometry().integration_element(quad_.point(0))/
-        father.geometry().integration_element(quad_.point(0));
+        son.geometry().integrationElement(quad_.point(0))/
+        father.geometry().integrationElement(quad_.point(0));
     }
 
     //! restrict data to father
     template <class EntityType>
     void restrictLocal ( EntityType &father, EntityType &son, bool initialize ) const
     {
-      if(father.hasChildren())
+      if(!father.isLeaf())
       {
         if(son.state() == COARSEN)
         {
