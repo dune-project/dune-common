@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_AMIRAMESHWRITER_HH__
-#define __DUNE_AMIRAMESHWRITER_HH__
+#ifndef DUNE_AMIRAMESH_WRITER_HH
+#define DUNE_AMIRAMESH_WRITER_HH
 
 #include <string>
 #include <dune/istl/bvector.hh>
@@ -21,7 +21,7 @@ namespace Dune {
    * \todo As DiscFuncType is supposed to know its GridType we can
    * delete the first template parameter.
    */
-  template<class GRID, class DiscFuncType>
+  template<class GridType>
   class AmiraMeshWriter {
 
   public:
@@ -31,7 +31,7 @@ namespace Dune {
      * @param grid The grid objects that is to be written
      * @param filename The filename
      */
-    static void writeGrid(const GRID& grid,
+    static void writeGrid(const GridType& grid,
                           const std::string& filename);
 
     /** \brief Writes a discrete function in AmiraMesh format
@@ -39,6 +39,7 @@ namespace Dune {
      * @param f Function that should be written
      * @param filename The filename
      */
+    template <class DiscFuncType>
     static void writeFunction(const DiscFuncType& f,
                               const std::string& filename);
 

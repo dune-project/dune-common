@@ -8,9 +8,9 @@
 
 #if _3
 /** \todo Make sure that the grid is three-dimensional */
-template<class GridType, class DiscFuncType>
-void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeGrid(const GridType& grid,
-                                                              const std::string& filename)
+template<class GridType>
+void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
+                                                const std::string& filename)
 {
   // Temporary:  we write this level
   int level = grid.maxlevel();
@@ -157,9 +157,9 @@ void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeGrid(const GridType& gr
 
 
 #ifdef _2
-template<class GridType, class DiscFuncType>
-void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeGrid(const GridType& grid,
-                                                              const std::string& filename)
+template<class GridType>
+void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
+                                                const std::string& filename)
 {
 
   // Temporary:  we write this level
@@ -299,9 +299,10 @@ void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeGrid(const GridType& gr
 }
 #endif // #ifdef _2
 
-template<class GridType, class DiscFuncType>
-void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeFunction(const DiscFuncType& f,
-                                                                  const std::string& filename)
+template<class GridType>
+template<class DiscFuncType>
+void Dune::AmiraMeshWriter<GridType>::writeFunction(const DiscFuncType& f,
+                                                    const std::string& filename)
 {
   // Get grid type associated with DiscFuncType
   typedef typename DiscFuncType::FunctionSpaceType FunctionSpaceType;
@@ -354,9 +355,9 @@ void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeFunction(const DiscFunc
 
 
 
-template<class GridType, class DiscFuncType>
-void Dune::AmiraMeshWriter<GridType, DiscFuncType>::writeBlockVector(const Dune::BlockVector<Dune::FieldVector<double, 3> >& f,
-                                                                     const std::string& filename)
+template<class GridType>
+void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const Dune::BlockVector<Dune::FieldVector<double, 3> >& f,
+                                                       const std::string& filename)
 {
   typedef Dune::BlockVector<Dune::FieldVector<double, 3> > VectorType;
 
