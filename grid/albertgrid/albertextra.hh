@@ -21,7 +21,6 @@ namespace Albert {
 
 #define getDofVec( vec, drv ) \
   (assert(drv != NULL); (vec = (drv)->vec); assert(vec != NULL));
-//vec = (drv)->vec;
 
 inline void fillMacroInfo(TRAVERSE_STACK *stack,
                           const MACRO_EL *mel, EL_INFO *elinfo)
@@ -34,6 +33,7 @@ inline void fillMacroInfo(TRAVERSE_STACK *stack,
   fill_macro_info(mel,elinfo);
 #endif
 }
+
 
 // provides the element number generation and management
 #include "agelementindex.cc"
@@ -49,7 +49,7 @@ static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack);
 void printTraverseStack(TRAVERSE_STACK *stack);
 
 //! organize the TRAVERSE_STACK Management, so we can use the nice Albert
-//! fucntions get_traverse_stack and free_traverse_stack
+//! functions get_traverse_stack and free_traverse_stack
 //! this count the copy made of this class and call free_traverse_stack
 //! only if no more copies left
 class ManageTravStack
