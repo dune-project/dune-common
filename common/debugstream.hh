@@ -163,7 +163,7 @@ namespace Dune {
     StreamWrap *next;
   };
 
-  //! \internal intermediate class to implement tie-operation of DebugStream
+  //! Intermediate class to implement tie-operation of DebugStream
   class DebugStreamState {
     // !!! should be protected somehow but that won't be easy
   public:
