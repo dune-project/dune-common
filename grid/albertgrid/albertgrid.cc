@@ -394,6 +394,13 @@ namespace Dune
   }
 
   template<>
+  inline AlbertGridElement<1,1>& AlbertGridElement<1,3>::
+  refelem()
+  {
+    return refelem_1.refelem;
+  }
+
+  template<>
   inline AlbertGridElement<1,1>& AlbertGridElement<1,2>::
   refelem()
   {
@@ -508,8 +515,8 @@ namespace Dune
   inline FieldVector<albertCtype, dim> AlbertGridElement<dim,dimworld>::
   local(const FieldVector<albertCtype, dimworld>& global)
   {
-    std::cerr << "global for dim != dimworld not implemented! \n";
-    abort();
+    std::cerr << " local for dim != dimworld not implemented! \n";
+    localCoord_ = 0.0;
     return localCoord_;
   }
 
@@ -1008,12 +1015,12 @@ namespace Dune
     albertCtype fak = 2.0;
     if(dim == 3) fak = 1.0;
 
-    double minFace = it.outer_normal().norm2();
+    double minFace = it.outer_normal().two_norm();
     ++it;
 
     for( ; it != endit; ++it )
     {
-      double face = it.outer_normal().norm2();
+      double face = it.outer_normal().two_norm();
       if(face < minFace) minFace = face;
     }
 
@@ -1817,7 +1824,7 @@ namespace Dune
     // calculates the outer_normal
     FieldVector<albertCtype, dimworld>& tmp = outer_normal(local);
 
-    double norm_1 = (1.0/tmp.norm2());
+    double norm_1 = (1.0/tmp.two_norm());
     assert(norm_1 > 0.0);
     outNormal_ *= norm_1;
 
@@ -1831,7 +1838,7 @@ namespace Dune
     // calculates the outer_normal
     FieldVector<albertCtype, dimworld>& tmp = outer_normal();
 
-    double norm_1 = (1.0/tmp.norm2());
+    double norm_1 = (1.0/tmp.two_norm());
     assert(norm_1 > 0.0);
     outNormal_ *= norm_1;
 
@@ -3164,7 +3171,7 @@ namespace Dune
     ALBERT free_mesh(mesh_);
   };
 
-  template < int dim, int dimworld > template<int codim, PartitionType pitype>
+  template < int dim, int dimworld > template<int codim, PartitionIteratorType pitype>
   inline AlbertGridLevelIterator<codim,dim,dimworld,pitype>
   AlbertGrid < dim, dimworld >::lbegin (int level, IteratorType IType, int proc)
   {
@@ -3172,7 +3179,7 @@ namespace Dune
     return it;
   }
 
-  template < int dim, int dimworld > template<int codim, PartitionType pitype>
+  template < int dim, int dimworld > template<int codim, PartitionIteratorType pitype>
   inline AlbertGridLevelIterator<codim,dim,dimworld,pitype>
   AlbertGrid < dim, dimworld >::lend (int level, IteratorType IType, int proc )
   {
