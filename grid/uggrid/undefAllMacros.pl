@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # TODO: Detect location of UG from the DUNE build system
-$UGROOT = "../../../UG/ug";
+$UGROOT = "../../../uginst";
 
 # Counts the total number of #undefs emitted
 $counter = 0;
