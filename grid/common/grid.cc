@@ -1112,26 +1112,29 @@ namespace Dune {
   // G R I D Default
   //************************************************************************
 
-  // return LeafIterator pointing to first leaf entity of maxlevel
-  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
-  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafbegin (int maxLevel )
-  {
-    // return LeafIterator pointing to first leaf entity of maxlevel
-    LeafIterator tmp (asImp(),maxLevel,false);
-    return tmp;
-  };
+  /*
+     // return LeafIterator pointing to first leaf entity of maxlevel
+     template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+     template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+     inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
+     GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafbegin (int maxLevel )
+     {
+     // return LeafIterator pointing to first leaf entity of maxlevel
+     LeafIterator tmp (asImp(),maxLevel,false);
+     return tmp;
+     };
 
-  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
-      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
-  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafend (int maxLevel )
-  {
-    // return LeafIterator pointing behind the last leaf entity of maxlevel
-    LeafIterator tmp (asImp(),maxLevel,true);
-    return tmp;
-  };
+     template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+     template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+     inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
+     GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafend (int maxLevel )
+     {
+     // return LeafIterator pointing behind the last leaf entity of maxlevel
+     LeafIterator tmp (asImp(),maxLevel,true);
+     return tmp;
+     };
+   */
+
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
