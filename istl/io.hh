@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_ISTLIO_HH__
-#define __DUNE_ISTLIO_HH__
+#ifndef DUNE_ISTLIO_HH
+#define DUNE_ISTLIO_HH
 
 #include <math.h>
 #include <complex>
@@ -10,8 +10,8 @@
 #include <string>
 
 #include "istlexception.hh"
-#include "dune/common/fvector.hh"
-#include "fmatrix.hh"
+#include <dune/common/fvector.hh>
+#include <dune/common/fmatrix.hh>
 
 /** \file
 
