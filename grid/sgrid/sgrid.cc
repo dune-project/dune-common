@@ -600,7 +600,9 @@ namespace Dune {
       int sonid = grid.n(level+1,grid.expand(level+1,zz,partition));
 
       // push son on stack
-      stack.push_front(StackElem(level+1,sonid));
+      StackElem son(level+1,sonid);
+      //stack.push_front(StackElem(level+1,sonid));
+      stack.push_front(son);
     }
   }
 
@@ -617,7 +619,8 @@ namespace Dune {
     orig_id = e.id;
 
     // push original element on stack
-    stack.push_front(StackElem(orig_l,orig_id));
+    StackElem originalElement(orig_l, orig_id);
+    stack.push_front(originalElement);
 
     // compute maxlevel
     maxlevel = MIN(_maxlevel,grid.maxlevel());
