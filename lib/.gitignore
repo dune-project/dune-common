@@ -4,3 +4,4 @@ Makefile
 Makefile.in
 *.lo
 libdune.la
+semantic.cache
