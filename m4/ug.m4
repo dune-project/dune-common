@@ -146,20 +146,20 @@ EOF`
 #	      [-ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS])
 #      fi
 
-      AC_LANG_PUSH(CPLUSPLUS)
+      AC_LANG_PUSH(C++)
       if test x$HAVE_UG = x1 ; then
           LIBS=-lug$UG_DIM
           LDFLAGS=-ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS
           AC_TRY_LINK(
-              [include <initug.h>],
-              [int i = UG${UG_DIM}d::InitUg(argc, argv);],
+              [#include <initug.h>],
+              [int i = UG${UG_DIM}d::InitUg(0, NULL);],
               [ac_have_libUG=yes
                    UG_LDFLAGS="$UG_LDFLAGS"
                    UG_LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"
               ],
               [ac_have_libUG=no
                    HAVE_UG="0"
-                   AC_MSG_ERROR([*** You need libUG$UG_DIM])]
+                   AC_MSG_ERROR([*** You need libug$UG_DIM])]
           )
       fi
       AC_LANG_POP
