@@ -13,6 +13,8 @@ namespace Dune
   //  implements a special DiscretOperator
   //
   //***************************************************************************
+  //
+#if 0
   inline FV1stOrd::FV1stOrd()
   {
     helpVec_ = NULL;
@@ -81,7 +83,7 @@ namespace Dune
     helpVec_->Free();
     built = false;
   }
-
+#endif
 
   //***************************************************************************
   //
@@ -203,7 +205,7 @@ namespace Dune
 
   // resize od built the helpVec for the updates
   template <class DiscFunc>
-  inline void LinFEM::assemble(DiscFunc &func, double dt)
+  inline void LinFEM::assemble(DiscFunc &func, double dt, double time)
   {
     // check that base type of function space is LagrangeOne at compile time
     //CompileTimeChecker<DiscFunc::mySpace::type == LagrangeOne> check;
@@ -307,7 +309,7 @@ namespace Dune
   assemble(DiscFunc &f, double startTime, double endTime)
   {
     // calc timestep size
-    double dt = 0.1; // hier fkt aufruf einbauen
+    double dt = fv_->Getdt(); // hier fkt aufruf einbauen
 
     int steps = static_cast<int> ((endTime - startTime)/dt+1);
 
@@ -333,7 +335,7 @@ namespace Dune
     {
       std::cout << "TimeStep " << it->index() << "\n";
       double timestep = (it->geometry().integration_element(tmp));
-      fv_->assemble(f,timestep);
+      fv_->assemble(f,timestep,it->geometry()[0](0));
       fake(f);
       fv_->finalize(f);
       char na[20];

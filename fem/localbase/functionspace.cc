@@ -2,6 +2,27 @@
 // vi: set et ts=4 sw=2 sts=2:
 namespace Dune
 {
+
+  //**********************************************************************
+  //
+  //  --Mapper
+  //  maps from element number and local dof number to global dof number
+  //
+  //**********************************************************************
+  template <> template <class Entity>
+  inline int Mapper<int , Const >::mapIndex(Entity &en, int dof)
+  {
+    return mapVec_[en.index()];
+  }
+
+  template <> template <class Entity>
+  inline int Mapper<int , LagrangeOne >::mapIndex(Entity &en, int dof)
+  {
+    enum { thisdim = Entity::dimension };
+    return (en.entity<thisdim>(dof))->index();
+  }
+
+
   //****************************************************************
   //
   // --FunctionSpace, FunctionSpace for a given grid and DOF
@@ -46,7 +67,9 @@ namespace Dune
     mapElNumber_ = new int [numDofGrid];
 
     for(int i=0; i<numDofGrid; i++)
-      mapElNumber_[i] = 0;
+      mapElNumber_[i] = -1;
+
+    std::cout << level_ << " Level \n";
 
     LevelIterator endit = grid_->lend<0>(level_);
 
@@ -58,38 +81,10 @@ namespace Dune
       i++;
     }
 
-    //for(int i=0; i< numDofGrid; i++)
-    //  std::cout << "mapNum " << mapElNumber_[i] << endl;
+    //  for(int i=0; i< numDofGrid; i++)
+    //    std::cout << "mapNum " << mapElNumber_[i] << "\n";
   }
 
-  template<class Grid,BaseType basetype>
-  inline void FunctionSpace<Grid,basetype>::makeMapVecLag()
-  {
-    // der mapNumberAbschnitt
-    int numDofGrid = numDof * grid_->hiersize(level_,0);
-
-    mapElNumber_ = new int [numDofGrid];
-    for(int i=0; i< numDofGrid; i++)
-      mapElNumber_[i] = 0;
-
-    LevelIterator endit = grid_->lend<0>(level_);
-
-    for(LevelIterator it = grid_->lbegin<0>(level_); it != endit; ++it)
-      doMapping(*it);
-
-  }
-
-  template<class Grid,BaseType basetype> template <class Entity>
-  inline void FunctionSpace<Grid,basetype>::doMapping(Entity &e)
-  {
-    enum { mydim = Entity::dimension };
-    int numVx = e.count<mydim>();
-
-    for(int i=0; i<numVx; i++)
-    {
-      mapElNumber_[mapDefault(e.index(),i)] = (e.entity<mydim>(i))->index();
-    }
-  }
 
   template<class Grid,BaseType basetype>
   inline void FunctionSpace<Grid,basetype>::makeBase()
@@ -111,6 +106,7 @@ namespace Dune
           baseType_->getDrv2nd(i)
           );
       makeMapVec();
+      mapper_.setMapVec(mapElNumber_,gridSize_);
       break;
     }
     case LagrangeOne :
@@ -124,7 +120,8 @@ namespace Dune
           baseType_->getDrv1st(i),
           baseType_->getDrv2nd(i)
           );
-      //makeMapVecLag();
+
+      mapper_.setMapVec(mapElNumber_,gridSize_);
       break;
     }
     case DGOne :
@@ -139,6 +136,7 @@ namespace Dune
           baseType_->getDrv2nd(i)
           );
       makeMapVec();
+      mapper_.setMapVec(mapElNumber_,gridSize_);
       break;
 
     }
@@ -169,34 +167,10 @@ namespace Dune
     return tmp;
   }
 
-#if 0
-  template<class Grid, BaseType basetype> template <class Entity, BaseType bt>
-  inline int FunctionSpace<Grid,basetype>::mapper(Entity &e,int index,int dof)
-  {
-    return (gridSize_ * dof + mapElNumber_[index]);
-  }
-#endif
-
   template<class Grid, BaseType basetype> template <class Entity>
-  inline int FunctionSpace<Grid,basetype>::mapIndex(Entity &e,int dof)
+  inline int FunctionSpace<Grid,basetype>::mapIndex(Entity &en,int dof)
   {
-    switch (basetype)
-    {
-    case LagrangeOne :
-    {
-      // return global Vertex number
-      enum { mydim = Entity::dimension };
-      return (e.entity<mydim>(dof))->index();
-    }
-    default :
-    {
-      // map global element number to element number on level
-      int index = mapElNumber_[e.index()];
-      return (gridSize_ * dof + index);
-    }
-    }
-
-
+    return mapper_.mapIndex(en,dof);
   }
 
   template<class Grid, BaseType basetype>

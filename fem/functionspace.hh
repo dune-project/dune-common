@@ -11,6 +11,36 @@
 namespace Dune
 {
 
+  //**********************************************************************
+  //
+  //  --Mapper
+  //  maps from element number and local dof number to global dof number
+  //
+  //**********************************************************************
+  template <class MapVec, BaseType basetype>
+  class Mapper
+  {
+    MapVec *mapVec_;
+    int gridSize_;
+  public:
+    Mapper() { mapVec_ = NULL; };
+    Mapper(MapVec *v) : mapVec_(v) {};
+
+    void setMapVec(MapVec *v, int gridSize)
+    {
+      mapVec_ = v;
+      gridSize_ = gridSize;
+    };
+
+    template <class Entity>
+    int mapIndex(Entity &en, int dof)
+    {
+      return (gridSize_ * dof + mapVec_[en.index()]);
+    };
+  };
+
+
+
   //************************************************************************
   //
   // --FunctionSpace, FunctionSpace for a given grid and BaseType ( i.e.
@@ -39,11 +69,15 @@ namespace Dune
     typedef LocalBaseFunction<typename GRID::ReferenceElement,
         basetype,dimrange,dimdef> BASEFUNC;
 
+    typedef Mapper<int,basetype> MAPPER;
+
 
     //! MemoryManager, later given outside, dont know yet
     DefaultDSMM *dsmm_;
     DefaultGHMM *ghmm_;
     ScalarSparseBLASManager *ssbm_;
+
+    MAPPER mapper_;
 
     //! Grid, to which the FunctionSpace belongs
     GRID * grid_;
@@ -68,7 +102,6 @@ namespace Dune
     int level_;
 
   public:
-
     //! Constructor, make a FunctionSpace for given grid and BaseType
     FunctionSpace(Grid *grid, int level);
 
@@ -98,25 +131,10 @@ namespace Dune
     int dim() { return dimOfFunctionSpace_;  };
 
   private:
-
     //! get Base with id = BaseType::id
     //! makes dofs on elements
     void makeBase();
-
     void makeMapVec();
-    void makeMapVecLag();
-
-#if 0
-    template <class Entity>
-    int mapperLagrangeOne(Entity &e,int index, int dof)
-    {
-      return (mapElNumber_[mapDefault(index,dof)]);
-    }
-#endif
-    //! map indices to dofs
-    int mapDefault(int index, int dof);
-
-
   };
 
 
