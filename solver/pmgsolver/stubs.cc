@@ -55,12 +55,14 @@ namespace Dune {
         } // end Border
         } // end sitch
 
-        x[i]=b[i];
+        FLOAT omega = 0.9;
+        FLOAT x_new=b[i];
         for (int n=0; n<cl.size; n++) {
           int j = cl.j[n];
-          x[i] -= cl.aij[n] * x[j];
+          x_new -= cl.aij[n] * x[j];
         }
-        x[i] /= cl.aii;
+        x_new /= cl.aii;
+        x[i] = (1 - omega) * x[i] + omega * x_new;
         assert(finite(x[i]));
         sum += x[i];
         nr ++;
