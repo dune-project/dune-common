@@ -81,7 +81,6 @@ namespace Dune {
   private:
     friend class iterator;
     friend class index;
-    int has_coord_shift(level, int d) const;
     //! get id from coord
     int coord_to_id(level, const array<DIM>&, const array<DIM>&) const;
     int coord_to_id(level, const array<DIM>&) const;
@@ -205,8 +204,8 @@ namespace Dune {
               (periodic_[d]==true));
     };
     const array<DIM> & process() { return process_; }
-  private:
     int father_id(level l, const array<DIM> & coord) const;
+    int has_coord_shift(level, int d) const;
   }; /* end spgrid */
 
   ////////////////////////////////////////////////////////////////////////////
@@ -357,7 +356,7 @@ namespace Dune {
     level lvl() const ;
     const array<DIM> &coord() const;
     int coord(int) const;
-    int id() const {return id_;};
+    int id() const { return id_; };
 #endif // QUICKHACKNOELEMENTS
   }; /* end iterator */
      //////////////////////////////////////////////////////////////////////////
