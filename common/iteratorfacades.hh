@@ -224,9 +224,9 @@ namespace Dune
              const ForwardIteratorFacade<T2,V2,R2,D>& rhs)
   {
     if(Conversion<T2,T1>::exists)
-      return static_cast<T1>(lhs).equals(static_cast<T2>(rhs));
+      return static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
     else
-      return static_cast<T2>(rhs).equals(static_cast<T1>(lhs));
+      return static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
   }
 
   /**
@@ -372,9 +372,9 @@ namespace Dune
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
     if(Conversion<T2,T1>::exists)
-      return static_cast<T1>(lhs).equals(static_cast<T2>(rhs));
+      return static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
     else
-      return static_cast<T2>(rhs).equals(static_cast<T1>(lhs));
+      return static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
   }
 
   /**
