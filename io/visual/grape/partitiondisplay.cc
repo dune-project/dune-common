@@ -92,16 +92,17 @@ inline GENMESHnD* genmesh3d_switch_part_displaybar_on_off ()
 
 static int * globalNumberOfElements = 0 ;
 static double globalTime = 0.0;
-static double minmax[15][2] = {{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
-                               {0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1}};
-static double ymin=-1.0;
-static double ymax=1.0;
-static int norm_data = 1;
-static int show_sc1_item = 0;
-static int show_sc2_item = 0;
-static int linear_item = 0;
-static int which_part_sc1_trans = -1;
-static int which_part_sc2_trans = -1;
+
+//static double minmax[15][2] = {{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
+//                        {0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1}};
+//static double ymin=-1.0;
+//static double ymax=1.0;
+//static int norm_data = 1;
+//static int show_sc1_item = 0;
+//static int show_sc2_item = 0;
+//static int linear_item = 0;
+//static int which_part_sc1_trans = -1;
+//static int which_part_sc2_trans = -1;
 
 static double maxnoElements = 8000000;
 static double maxTime = 200;
