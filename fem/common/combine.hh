@@ -7,17 +7,24 @@
 #error "PARAM_CLASSNAME must be defined! \n"
 #endif
 
-#include "objpointer.hh"
-
 #ifdef PARAM_CLASSNAME
 
 template <class A, class B >
 class PARAM_CLASSNAME
+#ifdef PARAM_INHERIT
+  : public PARAM_INHERIT < PARAM_CLASSNAME < A , B > , typename A::Traits::ParamType >
+#undef PARAM_INHERIT
+#else
+  : public ObjPointerStorage
+#endif
 {
 public:
 
   //! Constructor for combinations with factors
-  PARAM_CLASSNAME ( const A & a, const B & b ) : _a ( a ) , _b ( b ) {}
+  PARAM_CLASSNAME ( const A & a, const B & b ) : _a ( a ) , _b ( b )
+  {
+    //std::cout << "Constructor \n";
+  }
 
 #ifdef PARAM_FUNC_1
 #define LocalOperatorFunctionToCall PARAM_FUNC_1
