@@ -386,8 +386,6 @@ namespace Dune {
     int cycle=0;
     if (rank==0) std::cout << "MGC-Cycle " << cycle
                            << " " << mydefect << " " << 0 << std::endl;
-    cycle ++;
-
     double lastdefect=mydefect;
 
     TIME_SMOOTHER = 0;
@@ -396,9 +394,15 @@ namespace Dune {
     TIME_DEFECT = 0;
 
 #ifdef SOLVER_DUMPDX
-    dumpdx(g,g.smoothest(),d,"defect","pressure in the end");
-    dumpdx(g,g.smoothest(),x,"calpres","pressure in the end");
+    char dname[156];
+    char cname[256];
+    sprintf(dname,"defect-t%04i",cycle);
+    sprintf(cname,"calpres-t%04i",cycle);
+    dumpdx(g,g.smoothest(),d,dname,"pressure in the end");
+    dumpdx(g,g.smoothest(),x,cname,"pressure in the end");
 #endif
+
+    cycle ++;
 
     while (mydefect > maxdefect)
     {
@@ -430,12 +434,17 @@ namespace Dune {
                              << " " << mydefect/lastdefect
                              << std::endl;
       lastdefect = mydefect;
-      cycle ++;
 
 #ifdef SOLVER_DUMPDX
-      dumpdx(g,g.smoothest(),d,"defect","pressure in the end");
-      dumpdx(g,g.smoothest(),x,"calpres","pressure in the end");
+      char dname[156];
+      char cname[256];
+      sprintf(dname,"defect-t%04i",cycle);
+      sprintf(cname,"calpres-t%04i",cycle);
+      dumpdx(g,g.smoothest(),d,dname,"pressure in the end");
+      dumpdx(g,g.smoothest(),x,cname,"pressure in the end");
 #endif
+
+      cycle ++;
 
     };
     if (rank==0)
