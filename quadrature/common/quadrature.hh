@@ -5,10 +5,13 @@
 
 #include <vector>
 
-#include <dune/common/dynamictype.hh>
+#include "../../common/dynamictype.hh"
 
 // For ElementType
 #include <dune/grid/common/grid.hh>
+
+// For Quadrature::Iterator
+#include "../../common/genericiterator.hh"
 
 namespace Dune {
 
@@ -50,41 +53,6 @@ namespace Dune {
   };
 
   template <class Domain, class RangeField, ElementType ElType, int polOrd>
-  int QuadraturePoints<Domain,RangeField, ElType,polOrd>::
-  numberOfQuadPoints()
-  {
-    return -1;
-  }
-  template <class Domain, class RangeField, ElementType ElType, int polOrd>
-  int QuadraturePoints<Domain,RangeField, ElType,polOrd>::order()
-  {
-    return -1;
-  }
-  //! default implementation of getPoint throws error because no
-  //! default implementation can be done in this matter
-  template <class Domain, class RangeField, ElementType ElType, int polOrd>
-  Domain QuadraturePoints<Domain,RangeField, ElType,polOrd>::getPoint ( int i )
-  {
-    Domain tmp;
-    std::cerr << "No default implementation of getPoint (i) available for this set of template parameters!\n";
-    abort();
-    return tmp;
-  }
-
-
-  //! default implementation of getWeight throws error because no
-  //! default implementation can be done in this matter
-  template <class Domain, class RangeField, ElementType ElType, int polOrd>
-  RangeField QuadraturePoints<Domain,RangeField, ElType,polOrd>::
-  getWeight ( int i )
-  {
-    RangeField tmp;
-    std::cerr << "No default implementation of getWeight (i) available for this set of template parameters!\n";
-    abort();
-    return tmp;
-  }
-
-  template <class Domain, class RangeField, ElementType ElType, int polOrd>
   struct DualQuadraturePoints
   {
     enum { identifier = 0 };
@@ -92,30 +60,6 @@ namespace Dune {
     static Domain getPoint (int i);
     static RangeField getWeight (int i);
   };
-
-  //! default implementation of getPoint throws error because no
-  //! default implementation can be done in this matter
-  template <class Domain, class RangeField, ElementType ElType, int polOrd>
-  Domain DualQuadraturePoints<Domain,RangeField, ElType,polOrd>::getPoint ( int i )
-  {
-    Domain tmp;
-    std::cerr << "No default implementation of getPoint (i) available for this set of template parameters!\n";
-    abort();
-    return tmp;
-  }
-
-
-  //! default implementation of getWeight throws error because no
-  //! default implementation can be done in this matter
-  template <class Domain, class RangeField, ElementType ElType, int polOrd>
-  RangeField DualQuadraturePoints<Domain,RangeField, ElType,polOrd>::
-  getWeight ( int i )
-  {
-    RangeField tmp;
-    std::cerr << "No default implementation of getWeight (i) available for this set of template parameters!\n";
-    abort();
-    return tmp;
-  }
 
   //**************************************************************************
   //
@@ -132,14 +76,8 @@ namespace Dune {
   class QuadratureInterface : public DynamicType
   {
   public:
-    //! Contructor passing ident to DynamicType for comparison with other
-    //! Quadratures
-    //QuadratureInterface ( int ident ) : DynamicType (ident) {};
-    //QuadratureInterface () {};
-
     //! return number of quadrature points
     int nop() const { return asImp().nop(); }
-
 
     //! return order of quadrature
     int order () const { return asImp().order(); }
@@ -171,9 +109,64 @@ namespace Dune {
     : public QuadratureInterface  < RangeFieldType , DomainType , QuadratureImp >
   {
   public:
-    //QuadratureDefault ( int ident ) :
-    //  QuadratureInterface < RangeFieldType , DomainType, QuadratureImp > (ident) {};
+    typedef QuadratureDefault< RangeFieldType , DomainType , QuadratureImp >
+    QuadratureClass;
 
+    //! A single quadrature point
+    class QuadraturePoint
+    {
+      DomainType p;
+      RangeFieldType w;
+      QuadraturePoint() {};
+    public:
+      friend class QuadratureDefault< RangeFieldType , DomainType , QuadratureImp >;
+      //! return the evalution point
+      const DomainType & point () const { return p; }
+      //! return the weight
+      const RangeFieldType & weight () const { return w; }
+    };
+
+    //! get quadrature point i
+    QuadraturePoint & operator[] (int i) const
+    {
+      static QuadraturePoint qp;
+      qp.p = this->point(i);
+      qp.w = this->weight(i);
+      return qp;
+    };
+
+    //! Iterator for quadrature points
+    typedef GenericIterator<QuadratureClass, QuadraturePoint>
+    Iterator;
+    //! const Iterator for quadrature points
+    typedef GenericIterator<const QuadratureClass, const QuadraturePoint>
+    constIterator;
+
+    /** Returns an Iterator pointing to the beginning of the
+        quadrature point list. */
+    Iterator begin(){
+      return Iterator(*this, 0);
+    }
+
+    /** Returns an constIterator pointing to the beginning of the
+        quadrature point list. */
+    constIterator begin() const {
+      return constIterator(*this, 0);
+    }
+
+    /** Returns an Iterator pointing to the end of the
+        quadrature point list. */
+    Iterator end(){
+      return Iterator(*this, asImp().nop());
+    }
+
+    /** Returns an constIterator pointing to the end of the
+        quadrature point list. */
+    constIterator end() const {
+      return constIterator(*this, asImp().nop());
+    }
+
+    //! pretty print this Quadrature to ostream s
     void print (std::ostream& s, int indent) const
     {
       double sum = 0.0;
@@ -203,7 +196,6 @@ namespace Dune {
     quad.print(s,0);
     return s;
   }
-
 
   /** @} end documentation group */
 
