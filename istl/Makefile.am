@@ -2,7 +2,7 @@
 
 SUBDIRS = . doc tutorial test
 
-SOURCES = allocator.hh basearray.hh bcrsmatrix.hh bvector.hh fmatrix.hh gsetc.hh io.hh istlexception.hh istl.hh precision.hh vbcrsmatrix.hh vbvector.hh ilu.hh operators.hh preconditioners.hh solvers.hh indexset.hh communicator.hh remoteindices.hh mpitraits.hh
+SOURCES = allocator.hh basearray.hh bcrsmatrix.hh bvector.hh fmatrix.hh gsetc.hh io.hh istlexception.hh istl.hh precision.hh vbcrsmatrix.hh vbvector.hh ilu.hh operators.hh preconditioners.hh solvers.hh indexset.hh communicator.hh remoteindices.hh mpitraits.hh interface.hh
 
 istldir = $(includedir)/dune/istl
 istl_HEADERS = $(SOURCES)
