@@ -327,17 +327,17 @@ namespace Dune {
 
   //! compute inverse
   template<class K, int n>
-  void fm_inverse (const FieldMatrix<K,n,n>& Ain, FieldMatrix<K,n,n>& Ainv)
+  void fm_invert (FieldMatrix<K,n,n>& B)
   {
-    FieldMatrix<K,n,n> A(Ain);
+    FieldMatrix<K,n,n> A(B);
     FieldMatrix<K,n,n>& L=A;
     FieldMatrix<K,n,n>& U=A;
 
-    double norm=A.one_norm_real();     // for relative thresholds
+    double norm=A.infinity_norm_real();     // for relative thresholds
     double pivthres = std::max(ISTLPrecision::absolute_limit(),norm*ISTLPrecision::pivoting_limit());
     double singthres = std::max(ISTLPrecision::absolute_limit(),norm*ISTLPrecision::singular_limit());
 
-    // LU decomposition of A
+    // LU decomposition of A in A
     for (int i=0; i<n; i++)      // loop over all rows
     {
       double pivmax=fvmeta_absreal(A[i][i]);
@@ -345,7 +345,7 @@ namespace Dune {
       // pivoting ?
       if (pivmax<pivthres)
       {
-        // compute maximum of row
+        // compute maximum of column
         int imax=i; double abs;
         for (int k=i+1; k<n; k++)
           if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
@@ -365,61 +365,60 @@ namespace Dune {
       // eliminate
       for (int k=i+1; k<n; k++)
       {
-        K factor = -A[k][i]/A[i][i];
+        K factor = A[k][i]/A[i][i];
         L[k][i] = factor;
         for (int j=i+1; j<n; j++)
-          A[k][j] += factor*A[i][j];
+          A[k][j] -= factor*A[i][j];
       }
     }
 
     // initialize inverse
-    Ainv = 0;
-    for (int i=0; i<n; i++) Ainv[i][i] = 1;
+    B = 0;
+    for (int i=0; i<n; i++) B[i][i] = 1;
 
-    // L Y = I
+    // L Y = I; multiple right hand sides
     for (int i=0; i<n; i++)
-      for (int k=0; k<n; k++)
-      {
-        for (int j=0; j<n; j++)
-          Ainv[i][k] -= L[i][j]*Ainv[j][k];
-      }
+      for (int j=0; j<i; j++)
+        for (int k=0; k<n; k++)
+          B[i][k] -= L[i][j]*B[j][k];
 
     // U A^{-1} = Y
     for (int i=n-1; i>=0; i--)
       for (int k=0; k<n; k++)
       {
         for (int j=i+1; j<n; j++)
-          Ainv[i][k] -= U[i][j]*Ainv[j][k];
-        Ainv[i][k] = Ainv[i][k]/U[i][i];
+          B[i][k] -= U[i][j]*B[j][k];
+        B[i][k] /= U[i][i];
       }
   }
 
   //! compute inverse n=1
   template<class K>
-  void fm_inverse (const FieldMatrix<K,1,1>& Ain, FieldMatrix<K,1,1>& Ainv)
+  void fm_invert (FieldMatrix<K,1,1>& A)
   {
 #ifdef DUNE_ISTL_WITH_CHECKING
-    if (fvmeta_absreal(Ain[0][0])<ISTLPrecision::absolute_limit())
+    if (fvmeta_absreal(A[0][0])<ISTLPrecision::absolute_limit())
       DUNE_THROW(ISTLError,"matrix is singular");
 #endif
-    Ainv[0][0] = 1/Ain[0][0];
+    A[0][0] = 1/A[0][0];
   }
 
   //! compute inverse n=2
   template<class K>
-  void fm_inverse (const FieldMatrix<K,2,2>& Ain, FieldMatrix<K,2,2>& Ainv)
+  void fm_invert (FieldMatrix<K,2,2>& A)
   {
-    K detinv = Ain[0][0]*Ain[1][1]-Ain[0][1]*Ain[1][0];
+    K detinv = A[0][0]*A[1][1]-A[0][1]*A[1][0];
 #ifdef DUNE_ISTL_WITH_CHECKING
     if (fvmeta_absreal(detinv)<ISTLPrecision::absolute_limit())
       DUNE_THROW(ISTLError,"matrix is singular");
 #endif
     detinv = 1/detinv;
 
-    Ainv[0][0] =  Ain[1][1]*detinv;
-    Ainv[0][1] = -Ain[0][1]*detinv;
-    Ainv[1][0] = -Ain[1][0]*detinv;
-    Ainv[1][1] =  Ain[0][0]*detinv;
+    K temp=A[0][0];
+    A[0][0] =  A[1][1]*detinv;
+    A[0][1] = -A[0][1]*detinv;
+    A[1][0] = -A[1][0]*detinv;
+    A[1][1] =  temp*detinv;
   }
 
   //! left multiplication with matrix
@@ -455,6 +454,41 @@ namespace Dune {
     A[1][0] = M[1][0]*C[0][0] + M[1][1]*C[1][0];
     A[1][1] = M[1][0]*C[0][1] + M[1][1]*C[1][1];
   }
+
+  //! right multiplication with matrix
+  template<class K, int n, int m>
+  void fm_rightmultiply (const FieldMatrix<K,m,m>& M, FieldMatrix<K,n,m>& A)
+  {
+    FieldMatrix<K,n,m> C(A);
+
+    for (int i=0; i<n; i++)
+      for (int j=0; j<m; j++)
+      {
+        A[i][j] = 0;
+        for (int k=0; k<m; k++)
+          A[i][j] += C[i][k]*M[k][j];
+      }
+  }
+
+  //! right multiplication with matrix, n=1
+  template<class K>
+  void fm_rightmultiply (const FieldMatrix<K,1,1>& M, FieldMatrix<K,1,1>& A)
+  {
+    A[0][0] *= M[0][0];
+  }
+
+  //! right multiplication with matrix, n=2
+  template<class K>
+  void fm_rightmultiply (const FieldMatrix<K,2,2>& M, FieldMatrix<K,2,2>& A)
+  {
+    FieldMatrix<K,2,2> C(A);
+
+    A[0][0] = C[0][0]*M[0][0] + C[0][1]*M[1][0];
+    A[0][1] = C[0][0]*M[0][1] + C[0][1]*M[1][1];
+    A[1][0] = C[1][0]*M[0][0] + C[1][1]*M[1][0];
+    A[1][1] = C[1][0]*M[0][1] + C[1][1]*M[1][1];
+  }
+
 
   /**! Matrices represent linear maps from a vector space V to a vector space W.
        This class represents such a linear map by storing a two-dimensional
@@ -923,15 +957,22 @@ namespace Dune {
     }
 
     //! compute inverse
-    void inverse (FieldMatrix& Ainv) const
+    void invert ()
     {
-      fm_inverse(*this,Ainv);
+      fm_invert(*this);
     }
 
     //! left multiplication
     FieldMatrix& leftmultiply (const FieldMatrix<K,n,n>& M)
     {
       fm_leftmultiply(M,*this);
+      return *this;
+    }
+
+    //! left multiplication
+    FieldMatrix& rightmultiply (const FieldMatrix<K,n,n>& M)
+    {
+      fm_rightmultiply(M,*this);
       return *this;
     }
 
@@ -1178,13 +1219,20 @@ namespace Dune {
     }
 
     //! compute inverse
-    void inverse (K11Matrix& Ainv) const
+    void invert ()
     {
-      Ainv.a = 1/a;
+      a = 1/a;
     }
 
     //! left multiplication
     K11Matrix& leftmultiply (const K11Matrix<K>& M)
+    {
+      a *= M.a;
+      return *this;
+    }
+
+    //! left multiplication
+    K11Matrix& rightmultiply (const K11Matrix<K>& M)
     {
       a *= M.a;
       return *this;

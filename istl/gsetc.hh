@@ -10,8 +10,6 @@
 #include <string>
 
 #include "istlexception.hh"
-#include "fvector.hh"
-#include "fmatrix.hh"
 
 /*! \file __FILE__
 
@@ -89,12 +87,10 @@ namespace Dune {
       for (rowiterator i=A.rbegin(); i!=rendi; --i)
       {
         bblock rhs(d[i.index()]);
-        coliterator ii=(*i).find(i.index());
-        coliterator endj=(*i).end();
-        coliterator j=ii; ++j;
-        for (; j!=endj; ++j)
+        coliterator j;
+        for (j=(*i).rbegin(); j.index()>i.index(); --j)
           (*j).mmv(v[j.index()],rhs);
-        algmeta_btsolve<I-1,diag,relax>::butsolve(*ii,v[i.index()],rhs,w);
+        algmeta_btsolve<I-1,diag,relax>::butsolve(*j,v[i.index()],rhs,w);
       }
     }
   };
