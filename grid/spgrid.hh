@@ -137,6 +137,16 @@ namespace Dune {
       overlap_[levels]=o; overlap_[levels+1]=0;
       init();
     };
+    ~spgrid() {
+      /*
+            std::cerr << "exchange_data_from not cleaned up!!!\n";
+            std::cerr << "exchange_data_to not cleaned up!!!\n";
+       */
+      /*
+         free(exchange_data_from);
+         free(exchange_data_to);
+       */
+    }
     //! our dimension
     // const static int griddim = DIM;
     enum { griddim = DIM };
@@ -231,7 +241,7 @@ namespace Dune {
     int father_id(level l, const array<DIM> & coord) const;
     int has_coord_shift(level, int d) const;
     //! return the step size on level l in direction d
-    double h(level l, int d) const { return h_[d] / (2<<(l-1)); };
+    double h(level l, int d) const { return h_[d] / (1<<(l)); };
     //! inform about periodic boundry conditions
     bool periodic(int dir) const { return periodic_[dir]; }
     //! inform about global arrangement of the processors

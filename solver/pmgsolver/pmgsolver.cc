@@ -290,30 +290,28 @@ namespace Dune {
   /** solve the problem for a certain perm an store the result in x */
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
-  init() {
+  init(level lvl) {
 
-    /* build rhs and x-values at the border on smoothest level */
-    level lvl = g.smoothest();
+    /* build rhs and x-values at the border */
     b = 0;
     d = 0;
 
     PMGStubs::InitIterator<GRID> stub(b,x,discrete,g);
     g.loop_border(lvl, stub);
 
-    std::cout << rank << " Exchanging x and b\n" << std::flush;
+    //    std::cout << rank << " Exchanging x and b\n" << std::flush;
 
-    g.exchange(g.smoothest(),x);
-    g.exchange(g.smoothest(),b);
+    g.exchange(lvl,x);
+    g.exchange(lvl,b);
 
     MPI_Barrier(g.comm());
   }
 
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
-  solve(int maxCycles) {
-    level lvl = g.smoothest();
-
-    init();
+  solve(int maxCycles, level lvl=-9999) {
+    if (lvl == -9999) lvl = g.smoothest();
+    init(lvl);
 
     // multigrid cycle
     double mydefect=defect(lvl);
@@ -324,9 +322,7 @@ namespace Dune {
     cycle ++;
 
     double lastdefect=mydefect;
-    array<2> coord;
-    coord[0]=7;
-    coord[1]=0;
+
     TIME_SMOOTHER = 0;
     TIME_PROL = 0;
     TIME_REST = 0;
@@ -340,11 +336,6 @@ namespace Dune {
     while (mydefect > maxdefect)
     {
       if (cycle > maxCycles) break;
-      // #ifndef NODUMP
-      //       dump(g,lvl,x,"jakobi","X");
-      //       dump(g,lvl,b,"jakobi","B");
-      //       dump(g,lvl,d,"jakobi","D");
-      // #endif
       mgc(lvl);
       //smoother(lvl);
       //smootherJacobi(lvl);
@@ -368,5 +359,78 @@ namespace Dune {
                 << "Time in exchange:" << TIME_EX << std::endl
                 << "Time in defect:" << TIME_DEFECT << std::endl;
   };
+
+  template <class GRID, int SMOOTHER>
+  void pmgsolver<GRID,SMOOTHER>::
+  solveNested() {
+    level lvl=g.roughest();
+    init(lvl);
+
+    TIME_SMOOTHER = 0;
+    TIME_PROL = 0;
+    TIME_REST = 0;
+    TIME_EX = 0;
+    TIME_DEFECT = 0;
+
+    // solve roughest level excactly
+    double mydefect=defect(lvl);
+    double maxdefect=mydefect*reduction;
+    int cycle=0;
+    while (mydefect > maxdefect) {
+      smoother(lvl);
+      mydefect=defect(lvl);
+      cycle++;
+      if (mydefect < 1e-16)
+        break;
+      if (cycle > 5000) {
+        if (rank==0)
+          std::cout << "too many iterations on level 0" << std::endl;
+        break;
+      }
+    }
+    if (rank==0)
+      std::cout << "excact solution on level 0 took " << cycle
+                << " iterations -> defect=" << mydefect << std::endl;
+
+    // prolongate the solution on the next level an run mgc
+    // until we have a reduction of 0.1
+    for (lvl++; lvl<=g.smoothest(); lvl++) {
+      init(lvl);
+      // Prologation X_{l-1} -> X_l
+      typename GRID::iterator gEnd=g.end(lvl);
+      for (typename GRID::iterator i=g.begin(lvl); i != gEnd; ++i) {
+        x[i.id()]=0;
+      }
+      prolongate(lvl);
+      if (rank==0) std::cout << "Iteration on level " << lvl
+                             << std::endl;
+      // multigrid cycle
+      mydefect=defect(lvl);
+      maxdefect=mydefect*0.1;
+      cycle=0;
+      if (rank==0) std::cout << "\tMGC-Cycle " << cycle
+                             << " " << mydefect << " " << 0 << std::endl;
+      cycle ++;
+      double lastdefect=mydefect;
+      while (mydefect > maxdefect)
+      {
+        if (cycle > 3) break;
+        mgc(lvl);
+        mydefect=defect(lvl);
+        if (rank==0) std::cout << "\tMGC-Cycle " << cycle << " " << mydefect
+                               << " " << mydefect/lastdefect
+                               << std::endl;
+        lastdefect = mydefect;
+        cycle ++;
+
+      }
+    }
+    if (rank==0)
+      std::cout << "Time in smoother:" << TIME_SMOOTHER << std::endl
+                << "Time in prolongate:" << TIME_PROL << std::endl
+                << "Time in restrict:" << TIME_REST << std::endl
+                << "Time in exchange:" << TIME_EX << std::endl
+                << "Time in defect:" << TIME_DEFECT << std::endl;
+  }
 
 } // namespace Dune

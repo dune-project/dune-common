@@ -455,7 +455,6 @@ namespace Dune {
   template <int DIM>
   void spgrid<DIM>::exchange(level l, Vector< spgrid<DIM> > & ex) {
     TIME_EX -= MPI_Wtime();
-
     for (int d=0; d<DIM; d++) {
       for (int s=-1; s<=2; s+=2) {
         /* remote rank */
