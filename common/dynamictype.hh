@@ -3,6 +3,8 @@
 #ifndef __DUNE_DYNAMICTYPE_HH__
 #define __DUNE_DYNAMICTYPE_HH__
 
+#include <assert.h>
+
 namespace Dune {
 
   typedef int IdentifierType;
