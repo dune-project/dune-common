@@ -23,6 +23,8 @@ namespace Dune {
 
   typedef std::basic_string <char> StringType;
 
+  /** \brief ???
+   * \todo Please doc me! */
   template <typename T>
   StringType typeIdentifier ()
   {
@@ -204,9 +206,13 @@ namespace Dune {
     RangeFieldType scalarProductDofs( const DiscreteFunctionDefault &g,
                                       int level) const;
 
-    //! Assignment
+    //! Assignment on maxlevel
     Vector<RangeFieldType> &
     assign(const Vector<RangeFieldType> &g);
+
+    //! Assignment on a given level
+    Vector<RangeFieldType> &
+    assign(const Vector<RangeFieldType> &g, int level);
 
     //! Assignment operator
     Vector<RangeFieldType> & operator = (const Vector<RangeFieldType> &g);
