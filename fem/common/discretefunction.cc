@@ -266,8 +266,8 @@ namespace Dune
 
       file << d << " " << r << " ";
       file << n << " " << m << "\n";
-      file << myId_ << " " << ftype << "\n";
-      //file << functionSpace_.continuous() << " " << functionSpace_.polynomOrder() << "\n";
+      file << functionSpace_.type() << " " << ftype << "\n";
+      file << functionSpace_.polynomOrder() << "\n";
       file.close();
     }
 
@@ -324,7 +324,6 @@ namespace Dune
 
     return false;
   };
-
 
 } // end namespace Dune
 
