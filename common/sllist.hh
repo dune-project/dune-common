@@ -122,6 +122,12 @@ namespace Dune
      */
     inline bool empty() const;
 
+    /**
+     * @brief Get the number of elements the list
+     * contains.
+     */
+    inline int size() const;
+
   private:
     struct Element
     {
@@ -147,7 +153,8 @@ namespace Dune
     /** @brief The allocator we use. */
     Allocator allocator_;
 
-
+    /** brief The number of elements the list holds. */
+    int size_;
   };
 
   /**
@@ -291,6 +298,7 @@ namespace Dune
       tail_->next_=0;
       tail_->item_=item;
     }
+    ++size_;
   }
 
   template<typename T, class A>
@@ -306,6 +314,7 @@ namespace Dune
       added->next_=head_;
       head_=added;
     }
+    ++size_;
   }
 
   template<typename T, class A>
@@ -316,6 +325,7 @@ namespace Dune
     head_=head_->next_;
     allocator_.destroy(tmp);
     allocator_.deallocate(tmp, 1);
+    --size_;
   }
 
   template<typename T, class A>
@@ -328,12 +338,19 @@ namespace Dune
       allocator_.deallocate(current, 1);
     }
     tail_ = head_;
+    size_=0;
   }
 
   template<typename T, class A>
   inline bool SLList<T,A>::empty() const
   {
     return head_==0;
+  }
+
+  template<typename T, class A>
+  inline int SLList<T,A>::size() const
+  {
+    return size_;
   }
 
   template<typename T, class A>
