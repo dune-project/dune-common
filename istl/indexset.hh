@@ -413,12 +413,6 @@ namespace Dune
     inline int seqNo() const;
 
     /**
-     * @brief Get the number of indices which are public.
-     * @return The number of indices which are public.
-     */
-    inline int noPublic() const;
-
-    /**
      * @brief Get the total number (public and nonpublic) indices.
      * @return The total number (public and nonpublic) indices.
      */
@@ -433,8 +427,6 @@ namespace Dune
     IndexSetState state_;
     /** @brief Number to keep track of the number of resizes. */
     int seqNo_;
-    /** @brief Number of public indices. */
-    int noPublic_;
     /**
      * @brief Merges the _localIndices and newIndices arrays and creates a new
      * localIndices array.
@@ -540,7 +532,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   IndexSet<TG,TL,N>::IndexSet()
-    : state_(GROUND), seqNo_(0), noPublic_(0)
+    : state_(GROUND), seqNo_(0)
   {}
 
   template<class TG, class TL, int N>
@@ -618,19 +610,11 @@ namespace Dune
     state_ = GROUND;
   }
 
+
   template<class TG, class TL, int N>
   inline void IndexSet<TG,TL,N>::merge(){
     if(localIndices_.size()==0)
     {
-      iterator added=newIndices_.begin();
-      const const_iterator endadded=newIndices_.end();
-
-      while(added!= endadded) {
-        if(added->local().isPublic())
-          noPublic_++;
-        ++added;
-      }
-
       localIndices_=newIndices_;
       newIndices_.clear();
     }
@@ -642,8 +626,6 @@ namespace Dune
       const const_iterator endold=localIndices_.end();
       const const_iterator endadded=newIndices_.end();
 
-      noPublic_=0;
-
       while(old != endold && added!= endadded)
       {
         if(old->local().state()==DELETED) {
@@ -652,15 +634,11 @@ namespace Dune
         else if(old->global() < added->global())
         {
           tempPairs.push_back(*old);
-          if(old->local().isPublic())
-            noPublic_++;
           old.eraseToHere();
         }
         else
         {
           tempPairs.push_back(*added);
-          if(added->local().isPublic())
-            noPublic_++;
           added.eraseToHere();
         }
       }
@@ -668,8 +646,6 @@ namespace Dune
       while(old != endold)
       {
         if(old->local().state()!=DELETED) {
-          if(old->local().isPublic())
-            noPublic_++;
           tempPairs.push_back(*old);
         }
         old.eraseToHere();
@@ -678,8 +654,6 @@ namespace Dune
       while(added!= endadded)
       {
         tempPairs.push_back(*added);
-        if(added->local().isPublic())
-          noPublic_++;
         added.eraseToHere();
       }
       localIndices_ = tempPairs;
@@ -791,12 +765,6 @@ namespace Dune
   inline int IndexSet<TG,TL,N>::seqNo() const
   {
     return seqNo_;
-  }
-
-  template<class TG, class TL, int N>
-  inline int IndexSet<TG,TL,N>::noPublic() const
-  {
-    return noPublic_;
   }
 
   template<class TG, class TL, int N>

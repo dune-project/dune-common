@@ -441,6 +441,13 @@ namespace Dune {
     inline void buildRemote();
 
     /**
+     * @brief Count the number of public indices in an index set.
+     * @param indexSet The index set whose indices we count.
+     * @return the number of indices marked as public.
+     */
+    inline int noPublic(const IndexSetType& indexSet);
+
+    /**
      * @brief Pack the indices to send if source_ and dest_ are the same.
      *
      * If the template parameter ignorePublic is true all indices will be treated
@@ -808,6 +815,23 @@ namespace Dune {
   }
 
   template<class TG, class TA>
+  inline int RemoteIndices<TG,TA>::noPublic(const IndexSetType& indexSet)
+  {
+    typedef typename IndexSetType::const_iterator const_iterator;
+
+    int noPublic=0;
+
+    const const_iterator end=indexSet.end();
+    for(const_iterator index=indexSet.begin(); index!=end; ++index)
+      if(index->local().isPublic())
+        noPublic++;
+
+    return noPublic;
+
+  }
+
+
+  template<class TG, class TA>
   template<bool ignorePublic>
   inline void RemoteIndices<TG,TA>::buildRemote()
   {
@@ -824,10 +848,10 @@ namespace Dune {
     // Do we need to send two index sets?
     char sendTwo = (&source_ != &dest_);
 
-    sourcePublish = (ignorePublic) ? source_.size() : source_.noPublic();
+    sourcePublish = (ignorePublic) ? source_.size() : noPublic(source_);
 
     if(sendTwo)
-      destPublish = (ignorePublic) ? dest_.size() : dest_.noPublic();
+      destPublish = (ignorePublic) ? dest_.size() : noPublic(dest_);
     else
       // we only need to send one set of indices
       destPublish = 0;
