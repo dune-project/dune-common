@@ -96,7 +96,7 @@ namespace Dune {
       typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
-      GridType &grid = functionSpace_.getGrid();
+      const GridType &grid = functionSpace_.getGrid();
 
       {
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
@@ -204,7 +204,7 @@ namespace Dune {
       typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
-      GridType &grid = functionSpace_.getGrid();
+      const GridType &grid = functionSpace_.getGrid();
 
       typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
       typedef typename FunctionSpaceType::Range RangeVecType;
