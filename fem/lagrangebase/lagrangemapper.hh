@@ -15,98 +15,27 @@ namespace Dune {
   //! given grid entity from local dof number to global dof number
   //
   //************************************************************************
-  template <class IndexSetType, int polOrd, int dimrange>
+  template <class IndexSetImp, int polOrd, int dimrange>
   class LagrangeMapper
-    : public DofMapperDefault < LagrangeMapper <IndexSetType,polOrd,dimrange> >
+    : public DofMapperDefault < LagrangeMapper <IndexSetImp,polOrd,dimrange> >
   {
-    enum { numCodims = IndexSetType::ncodim };
-    int numLocalDofs_;
-    int level_;
-    IndexSetType & indexSet_;
-  public:
-    //! Constructor
-    LagrangeMapper ( IndexSetType & is, int numLocalDofs , int level )
-      : numLocalDofs_ (numLocalDofs) , level_(level) , indexSet_ (is) {}
-
-    //! Destructor
-    virtual ~LagrangeMapper () {}
-
-    //! \todo Please doc me!
-    int size () const
-    {
-      return this->codimsize(numCodims-1);
-    }
-
-    //! default is Lagrange with polOrd = 1
-    int codimsize (int codim ) const
-    {
-      // return number of vertices * dimrange
-      return (dimrange* indexSet_.size( level_ , codim ));
-    }
-
-    //! map Entity an local Dof number to global Dof number
-    //! for Lagrange with polOrd = 1
-    template <class EntityType>
-    int mapToGlobal (EntityType &en, int localNum ) const
-    {
-      enum { codim = EntityType::dimension };
-      // Gaussklammer
-      int locNum = (int) localNum / dimrange;
-      int locDim = localNum % dimrange;
-
-      // get global vertex number
-      return (dimrange* indexSet_.template index<codim> (en,locNum) ) + locDim;
-    }
-
-    //! \todo Please doc me!
-    virtual void calcInsertPoints () {};
-
-    //! \todo Please doc me!
-    virtual int numberOfDofs () const
-    {
-      return numLocalDofs_;
-    }
-
-    //! \todo Please doc me!
-    virtual int newSize() const
-    {
-
-      /*
-         int s=0;
-         for(int i=0; i<numCodims; i++)
-         s+= (dofCodim_[i] * indexSet_.size(20,i));
-       */
-      return this->size();
-    }
-
-  };
-
-  template <class IndexSetType, int dimrange>
-  class LagrangeMapper<IndexSetType,0,dimrange>
-    : public DofMapperDefault < LagrangeMapper <IndexSetType,0,dimrange> >
-  {
-    enum { numCodims = IndexSetType::ncodim };
-
+    enum { numCodims = IndexSetImp::ncodim };
     int numberOfDofs_;
-    IndexSetType & indexSet_;
+    int level_;
+    IndexSetImp & indexSet_;
 
-    // insertion point is the point from which
-    // the dof for codim .. begin
-    // insertion point only changes if grid changes
-    // and memory has to be rearranged
     int insertionPoint_ [numCodims];
-    mutable int index_ [numCodims];
     Array<int> codimOfDof_;
     Array<int> numInCodim_;
 
     int dofCodim_[numCodims];
 
-    // level of function space
-    int level_;
-
   public:
-    LagrangeMapper ( IndexSetType  & is , int numDofs , int level)
-      : numberOfDofs_ (numDofs) , indexSet_ (is) , level_(level)
+    typedef IndexSetImp IndexSetType;
+
+    //! Constructor
+    LagrangeMapper ( IndexSetType & is, int numLocalDofs , int level )
+      : numberOfDofs_ (numLocalDofs) , level_(level) , indexSet_ (is)
     {
       codimOfDof_.resize(numberOfDofs_);
       numInCodim_.resize(numberOfDofs_);
@@ -116,7 +45,7 @@ namespace Dune {
         codimOfDof_[i] = 0;
 
       // is set for dofs
-      for(int i=0; i<codimOfDof_.size(); i++)
+      for(int i=0; i<numInCodim_.size(); i++)
         numInCodim_[i] = 0;
 
       for(int i=0; i<numCodims; i++)
@@ -127,19 +56,192 @@ namespace Dune {
       dofCodim_[0] = dimrange;
     }
 
-    // we have virtual function ==> virtual destructor
-    virtual ~LagrangeMapper () {}
+    ~LagrangeMapper () {}
 
+    //! return size, i.e. size of functions space
+    //! the default is Lagrange polord == 1
     int size () const
     {
-      return this->codimsize(0);
+      int s = 0;
+      for(int i=0; i<numCodims; i++)
+      {
+        (indexSet_.size( level_ , numCodims - 1 ));
+      }
+      return s;
     }
 
-    //! default is Lagrange with polOrd = 0
-    int codimsize (int codim ) const
+    //! map Entity an local Dof number to global Dof number
+    //! for Lagrange with polOrd = 1
+    template <class EntityType>
+    int mapToGlobal (EntityType &en, int localNum ) const
     {
-      // return number of vertices
-      return dimrange * indexSet_.size(level_,codim);
+      enum { codim = EntityType::dimension };
+      // get global vertex number
+      return indexSet_.template index<codim> (en,localNum);
+    }
+
+    //! for dof manager, to check whether it has to copy dof or not
+    bool indexNew (int num)
+    {
+      //int check = (int) (num / dimrange);
+      //return indexSet_.indexNew(num,2);
+      return false;
+    }
+
+    //! return old index, for dof manager only
+    int oldIndex (int elNum) const
+    {
+      int check = (int) (elNum / dimrange);
+      int rest  = elNum % dimrange;
+      return (indexSet_.oldIndex(elNum,2) * dimrange) + rest;
+    }
+
+    //! return new index, for dof manager only
+    int newIndex (int elNum) const
+    {
+      int check = (int) (elNum / dimrange);
+      int rest  = elNum % dimrange;
+      return (indexSet_.newIndex(elNum,2) * dimrange) + rest;
+    }
+
+    //! return size of grid entities per level and codim
+    //! for dof mapper
+    int oldSize () const
+    {
+      // this index set works only for codim = 0 at the moment
+      return indexSet_.oldSize(level_,2);
+    }
+
+    // is called once and calcs the insertion points too
+    int tmpSize() const
+    {
+      return indexSet_.tmpSize();
+    }
+
+    void calcInsertPoints () {};
+
+    int numberOfDofs () const
+    {
+      return numberOfDofs_;
+    }
+
+    int newSize() const
+    {
+      return this->size();
+    }
+
+  };
+
+
+
+  //! LagrangeMapper for linear Lagrange elements
+  template <class IndexSetImp, int dimrange>
+  class LagrangeMapper<IndexSetImp,1,dimrange>
+    : public DofMapperDefault < LagrangeMapper <IndexSetImp,1,dimrange> >
+  {
+    enum { numCodims = IndexSetImp::ncodim };
+    int numLocalDofs_;
+    int level_;
+
+    IndexSetImp & indexSet_;
+
+  public:
+    typedef IndexSetImp IndexSetType;
+
+    //! Constructor
+    LagrangeMapper ( IndexSetType & is, int numLocalDofs , int level )
+      : numLocalDofs_ (numLocalDofs) , level_(level) , indexSet_ (is) {}
+
+    ~LagrangeMapper () {}
+
+    //! return size, i.e. size of functions space == number of vertices
+    int size () const
+    {
+      return (indexSet_.size( level_ , numCodims - 1 ));
+    }
+
+    //! map Entity an local Dof number to global Dof number
+    //! for Lagrange with polOrd = 1
+    template <class EntityType>
+    int mapToGlobal (EntityType &en, int localNum ) const
+    {
+      enum { codim = EntityType::dimension };
+      // get global vertex number
+      return indexSet_.template index<codim> (en,localNum);
+    }
+
+    //! for dof manager, to check whether it has to copy dof or not
+    bool indexNew (int num)
+    {
+      //int check = (int) (num / dimrange);
+      //return indexSet_.indexNew(num,2);
+      return false;
+    }
+
+    //! return old index, for dof manager only
+    int oldIndex (int elNum) const
+    {
+      return indexSet_.oldIndex(elNum, numCodims - 1 );
+    }
+
+    //! return new index, for dof manager only
+    int newIndex (int elNum) const
+    {
+      return indexSet_.newIndex(elNum, numCodims - 1 );
+    }
+
+    //! return size of grid entities per level and codim
+    //! for dof mapper
+    int oldSize () const
+    {
+      // this index set works only for codim = 0 at the moment
+      return indexSet_.oldSize(level_, numCodims - 1);
+    }
+
+    // is called once and calcs the insertion points too
+    int tmpSize() const
+    {
+      return indexSet_.tmpSize();
+    }
+
+    void calcInsertPoints () {};
+
+    int numberOfDofs () const
+    {
+      return numLocalDofs_;
+    }
+
+    int newSize() const
+    {
+      return this->size();
+    }
+  };
+
+  template <class IndexSetImp, int dimrange>
+  class LagrangeMapper<IndexSetImp,0,dimrange>
+    : public DofMapperDefault < LagrangeMapper <IndexSetImp,0,dimrange> >
+  {
+    enum { numCodims = IndexSetImp::ncodim };
+
+    int numberOfDofs_;
+    IndexSetImp & indexSet_;
+
+    // level of function space
+    int level_;
+
+  public:
+    typedef IndexSetImp IndexSetType;
+
+    LagrangeMapper ( IndexSetType  & is , int numDofs , int level)
+      : numberOfDofs_ (numDofs) , indexSet_ (is) , level_(level) {}
+
+    // we have virtual function ==> virtual destructor
+    ~LagrangeMapper () {}
+
+    //! return size of function space, here number of elements
+    int size () const
+    {
+      return dimrange * indexSet_.size(level_,0);
     }
 
     //! map Entity an local Dof number to global Dof number
@@ -147,35 +249,60 @@ namespace Dune {
     template <class EntityType>
     int mapToGlobal (EntityType &en, int localNum ) const
     {
-      getIndex ( en , 0 );
-      // return insertionPoint + index(codim)
-      //return (insertionPoint_[codimOfDof_[localNum]] + index_[codimOfDof_[localNum]]);
-      return index_[0];
+      return (dimrange * indexSet_.template index<0> (en,localNum)) + localNum;
+    }
+
+    //! for dof manager, to check whether it has to copy dof or not
+    bool indexNew (int num)
+    {
+      int newn = (num / dimrange) + num % dimrange;
+      if(dimrange == 1) assert(newn == num);
+      return indexSet_.template indexNew(newn,0);
+    }
+
+    //! return old index, for dof manager only
+    int oldIndex (int num) const
+    {
+      int newn = (num / dimrange) + num % dimrange;
+      return dimrange * indexSet_.oldIndex(newn,0);
+    }
+
+    //! return new index, for dof manager only
+    int newIndex (int num) const
+    {
+      int newn = (num / dimrange) + num % dimrange;
+      return dimrange * indexSet_.newIndex(newn,0);
+    }
+
+    //! return size of grid entities per level and codim
+    //! for dof mapper
+    int oldSize () const
+    {
+      // this index set works only for codim = 0 at the moment
+      return dimrange * indexSet_.oldSize(level_,0);
     }
 
     // is called once and calcs the insertion points too
-    virtual int newSize() const
+    int newSize() const
     {
       return this->size();
     }
 
-    virtual int numberOfDofs () const
+    // is called once and calcs the insertion points too
+    int tmpSize() const
+    {
+      return dimrange * indexSet_.tmpSize();
+    }
+
+    int numberOfDofs () const
     {
       return numberOfDofs_;
     }
 
     //! calc the new insertion points
-    virtual void calcInsertPoints ()
+    void calcInsertPoints ()
     {
       // insertion point is 0
-    }
-
-  private:
-    // calc the indices
-    template <class EntityType>
-    void getIndex (EntityType &en, int num) const
-    {
-      index_[0] = dimrange * indexSet_.template index<0> (en,num);
     }
   };
 

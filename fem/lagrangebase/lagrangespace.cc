@@ -8,11 +8,14 @@
 namespace Dune {
 
   // Constructor
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
-  LagrangeDiscreteFunctionSpace ( GridType & g, DofManagerType & dm , int level) :
-    DiscreteFunctionSpaceType (g,id, level) , dm_ ( dm )
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
+  LagrangeDiscreteFunctionSpace ( GridType & g, IndexSetType & iset, DofManagerType & dm , int level) :
+    DiscreteFunctionSpaceType (g,id, level) , dm_ ( dm ) , indexSet_ (iset)
   {
+    // add index set to list of indexset of dofmanager
+    dm_.addIndexSet( g, indexSet_ );
+
     mapper_ = 0;
     maxNumBase_ = 0;
 
@@ -42,8 +45,8 @@ namespace Dune {
     if(!mapper_) makeBaseSet<line,0> ();
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   ~LagrangeDiscreteFunctionSpace ()
   {
     for(int i=0; i<numOfDiffBase_; i++)
@@ -51,28 +54,28 @@ namespace Dune {
         delete baseFuncSet_[i];
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline DFSpaceIdentifier LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline DFSpaceIdentifier LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   type () const
   {
     return LagrangeSpace_id;
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template <class EntityType>
   inline const
-  typename LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  typename LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   FastBaseFunctionSetType &
-  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   getBaseFunctionSet (EntityType &en) const
   {
     GeometryType type =  en.geometry().type();
     return *baseFuncSet_[type];
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template< class EntityType>
-  inline bool LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  inline bool LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   evaluateLocal ( int baseFunc, EntityType &en, Domain &local, Range & ret) const
   {
     const FastBaseFunctionSetType & baseSet = getBaseFunctionSet(en);
@@ -80,9 +83,9 @@ namespace Dune {
     return (polOrd != 0);
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template< class EntityType, class QuadratureType>
-  inline bool LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  inline bool LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   evaluateLocal (  int baseFunc, EntityType &en, QuadratureType &quad,
                    int quadPoint, Range & ret) const
   {
@@ -91,95 +94,92 @@ namespace Dune {
     return (polOrd != 0);
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline bool LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline bool LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   continuous ( ) const
   {
     bool ret = (polOrd == 0) ? false : true;
     return ret;
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   maxNumberBase () const
   {
     return maxNumBase_;
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   polynomOrder ( ) const
   {
     return polOrd;
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template< class EntityType>
-  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   localPolynomOrder ( EntityType &en ) const
   {
     return polOrd;
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   dimensionOfValue () const
   {
     return dimVal;
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   size () const
   {
     return mapper_->size ();
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  inline BoundaryType LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline BoundaryType LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   boundaryType (int id) const
   {
     // here we need a boundary id map class
     return (id > 0) ? Dirichlet : Neumann;
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template< class EntityType>
-  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  inline int LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   mapToGlobal ( EntityType &en, int localNum ) const
   {
     return mapper_->mapToGlobal ( en , localNum );
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
-  template< class DiscFuncType>
-  inline typename
-  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
-  MemObjectType &
-  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  template< class DiscFuncType >
+  inline typename DiscFuncType :: MemObjectType &
+  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   signIn (DiscFuncType & df) const
   {
     // only for gcc to pass type DofType
     assert(mapper_ != 0);
-    DofType *fake=0;
-    return dm_.addDofSet( fake, this->grid_ , *mapper_, df.name() );
+    return dm_.addDofSet( df.getStorage() , this->grid_ , indexSet_ , *mapper_, df.name() );
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template< class DiscFuncType>
   inline bool
-  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   signOut (DiscFuncType & df) const
   {
     return dm_.removeDofSet( df.memObj() );
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template< class EntityType>
   inline typename
-  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   FastBaseFunctionSetType *
-  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   setBaseFuncSetPointer ( EntityType &en )
   {
     switch (en.geometry().type())
@@ -199,12 +199,12 @@ namespace Dune {
     }
   }
 
-  template< class FunctionSpaceT, class GridType,int polOrd, class DofManagerType >
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template <GeometryType ElType, int pO >
   inline typename
-  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   FastBaseFunctionSetType *
-  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,polOrd,DofManagerType>::
+  LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
   makeBaseSet ()
   {
     typedef LagrangeFastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType,
@@ -212,7 +212,7 @@ namespace Dune {
 
     BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
 
-    mapper_ = new LagrangeMapperType (dm_.indexSet(), baseFuncSet->getNumberOfBaseFunctions() , this->level_ );
+    mapper_ = new LagrangeMapperType (indexSet_, baseFuncSet->getNumberOfBaseFunctions() , this->level_ );
 
     return baseFuncSet;
   }

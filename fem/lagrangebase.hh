@@ -21,18 +21,18 @@ namespace Dune {
       type in one grid and size of functionspace
       and map from local to global dof number
    */
-  template< class FunctionSpaceT, class GridType,int polOrd, class
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class
       DofManagerType = DofManager<GridType> >
   class LagrangeDiscreteFunctionSpace
     : public DiscreteFunctionSpaceDefault <  FunctionSpaceT , GridType,
-          LagrangeDiscreteFunctionSpace < FunctionSpaceT , GridType, polOrd, DofManagerType >,
+          LagrangeDiscreteFunctionSpace < FunctionSpaceT , GridType, IndexSetType, polOrd, DofManagerType >,
           FastBaseFunctionSet < LagrangeDiscreteFunctionSpace
-              < FunctionSpaceT , GridType, polOrd, DofManagerType > > >
+              < FunctionSpaceT , GridType,IndexSetType, polOrd, DofManagerType > > >
   {
   public:
     /** \todo Please doc me! */
     typedef LagrangeDiscreteFunctionSpace
-    < FunctionSpaceT , GridType , polOrd , DofManagerType > LagrangeDiscreteFunctionSpaceType;
+    < FunctionSpaceT , GridType , IndexSetType,  polOrd , DofManagerType > LagrangeDiscreteFunctionSpaceType;
 
     /** \todo Please doc me! */
     typedef DiscreteFunctionSpaceDefault <
@@ -55,10 +55,18 @@ namespace Dune {
 
   public:
     /** \todo Please doc me! */
-    typedef LagrangeMapper<typename DofManagerType::IndexSetType,polOrd,DimRange> LagrangeMapperType;
+    typedef LagrangeMapper<IndexSetType,polOrd,DimRange> LagrangeMapperType;
 
     /** \todo Please doc me! */
-    typedef typename DofManagerType::MemObjectType MemObjectType;
+    //typedef typename DofManagerType::MemObjectType MemObjectType;
+    template <class DofStorageType>
+    struct DofTraits
+    {
+      typedef typename DofManagerType:: template Traits< LagrangeMapperType ,
+          DofStorageType > ::  MemObjectType MemObjectType;
+    };
+
+
 
     /** \todo Please doc me! */
     typedef typename FunctionSpaceT::Domain Domain;
@@ -78,7 +86,7 @@ namespace Dune {
 
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
-    LagrangeDiscreteFunctionSpace ( GridType & g, DofManagerType & dm , int level );
+    LagrangeDiscreteFunctionSpace ( GridType & g, IndexSetType & iset , DofManagerType & dm , int level );
 
     //! return max number of baseset that holds this space
     int maxNumberBase () const;
@@ -128,7 +136,8 @@ namespace Dune {
 
     //! sign in to dofmanager, return is the memory
     template <class DiscFuncType>
-    MemObjectType & signIn (DiscFuncType & df) const;
+    typename DiscFuncType :: MemObjectType &
+    signIn (DiscFuncType & df) const;
 
     //! sign out to dofmanager, dofmanager frees the memory
     template <class DiscFuncType>
@@ -154,6 +163,8 @@ namespace Dune {
     //! DofManager manages the memory
     mutable DofManagerType & dm_;
 
+    //! the index set, used by the mapper for mapping between grid and space
+    mutable IndexSetType & indexSet_;
   private:
     //! the corresponding LagrangeMapper
     LagrangeMapperType *mapper_;
@@ -166,15 +177,15 @@ namespace Dune {
   //! DGSpace using Lagrange basis functions, used for visualisation
   //
   //*******************************************************************
-  template< class FunctionSpaceType, class GridType,int polOrd, class
+  template< class FunctionSpaceType, class GridType,class IndexSetType, int polOrd, class
       DofManagerType = DofManager<GridType> >
   class LagrangeDGSpace
-    : public LagrangeDiscreteFunctionSpace<  FunctionSpaceType , GridType,
+    : public LagrangeDiscreteFunctionSpace<  FunctionSpaceType , GridType, IndexSetType ,
           polOrd , DofManagerType >
   {
   public:
     typedef LagrangeDiscreteFunctionSpace
-    < FunctionSpaceType , GridType , polOrd , DofManagerType > ThisType;
+    < FunctionSpaceType , GridType , IndexSetType , polOrd  , DofManagerType > ThisType;
     typedef ThisType LagrangeDiscreteFunctionSpaceType;
 
     typedef DiscreteFunctionSpaceInterface <
@@ -192,9 +203,14 @@ namespace Dune {
     enum { DimRange = FunctionSpaceType::DimRange };
 
   public:
-    typedef DGMapper<typename DofManagerType::IndexSetType,polOrd,DimRange> DGMapperType;
+    typedef DGMapper<IndexSetType,polOrd,DimRange> DGMapperType;
 
-    typedef typename DofManagerType::MemObjectType MemObjectType;
+    template <class DofStorageType>
+    struct DofTraits
+    {
+      typedef typename DofManagerType:: template Traits< DGMapperType ,
+          DofStorageType > ::  MemObjectType MemObjectType;
+    };
 
     typedef typename FunctionSpaceType::Domain Domain;
     typedef typename FunctionSpaceType::Range Range;
@@ -209,15 +225,15 @@ namespace Dune {
 
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
-    LagrangeDGSpace ( GridType & g, DofManagerType & dm , int level ) :
-      LagrangeDiscreteFunctionSpaceType (g,dm,level) , mapper_(0)
+    LagrangeDGSpace ( GridType & g, IndexSetType & iset, DofManagerType & dm , int level ) :
+      LagrangeDiscreteFunctionSpaceType (g, iset , dm ,level) , mapper_(0)
     {
       typedef typename GridType::template codim<0> :: LevelIterator LevIt;
       LevIt it = g.template lbegin<0>(0);
       if(it != g.template lend<0>(0))
       {
         int basenum = this->getBaseFunctionSet(*it).getNumberOfBaseFunctions();
-        mapper_ = new DGMapperType ( this->dm_.indexSet() , basenum , level );
+        mapper_ = new DGMapperType ( this->indexSet_ , basenum , level );
       }
     };
 
@@ -226,14 +242,13 @@ namespace Dune {
       if (mapper_) delete mapper_;
     }
 
-    /** \todo Please doc me! */
+    /*! function where you dont need to know waht is done */
     template <class DiscFuncType>
-    MemObjectType & signIn (DiscFuncType & df)
+    typename DiscFuncType :: MemObjectType & signIn (DiscFuncType & df)
     {
       // only for gcc to pass type DofType
       assert(mapper_ != 0);
-      DofType *fake=0;
-      return this->dm_.addDofSet( fake, this->grid_ , *mapper_, df.name() );
+      return this->dm_.addDofSet( df.getStorage() , this->grid_ , *mapper_, df.name() );
       // do notin' at the moment
     }
 
