@@ -165,7 +165,7 @@ namespace Dune
      * @brief get the local index.
      * @return The local index.
      */
-    inline uint32_t local() const;
+    inline const uint32_t& local() const;
 
     /**
      * @brief Convert to the local index represented by an int.
@@ -512,7 +512,7 @@ namespace Dune
     local_=local;
   }
 
-  inline uint32_t LocalIndex::local() const {
+  inline const uint32_t& LocalIndex::local() const {
     return localIndex_;
   }
 
