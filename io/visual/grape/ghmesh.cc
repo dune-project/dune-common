@@ -1105,9 +1105,9 @@ static void grape_add_remove_methods(void)
 {
   if(!calledAddMethods)
   {
-    printf("Add Method 'next-f-data-send' on HMesh3d!\n");
+    printf("Add Method 'next-f-data-send' on HMesh%dd!\n",GRAPE_DIM);
     GRAPE(HMesh,"add-method") ("next-f-data-send",&next_f_data_send);
-    printf("Add Method 'prev-f-data-send' on HMesh3d!\n");
+    printf("Add Method 'prev-f-data-send' on HMesh%dd!\n",GRAPE_DIM);
     GRAPE(HMesh,"add-method") ("prev-f-data-send",&prev_f_data_send);
     GRAPE(GrapeMesh,"add-method") ("interpol", &grape_mesh_interpol);
 
