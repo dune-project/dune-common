@@ -8,16 +8,12 @@
 #   vorher getestet werden
 # - debug-Ziffer
 
-# EL_INDEX=1: the element indices should be precomputed instead of
-# generated on the fly => default value
-
 AC_DEFUN([DUNE_PATH_ALBERT],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([DUNE_DIMENSION])
 
   AC_ARG_WITH(albert,
     AC_HELP_STRING([--with-albert=PATH],[directory with Albert inside]))
-# do not ask for elindex, because it has to be 1
 # do not use albert debug lib 
 with_albert_debug=0
 
@@ -48,17 +44,29 @@ ALBERT_INCLUDE_PATH="$ALBERTROOT/include"
 
 # Albert needs special defined symbols
 
-ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim -DEL_INDEX=0"
+ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim"
+ALBERTDEF_TMP="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim -DEL_INDEX=0"
 
 # set variables so that tests can use them
+REM_LDFLAGS=$LDFLAGS
+REM_CPPFLAGS=$CPPFLAGS
+
 LDFLAGS="$LDFLAGS -L$ALBERT_LIB_PATH"
-CPPFLAGS="$CPPFLAGS $ALBERTDEF -I$ALBERT_INCLUDE_PATH"
+CPPFLAGS="$CPPFLAGS $ALBERTDEF_TMP -I$ALBERT_INCLUDE_PATH"
+
+ALBERTDEF_TMP=
 
 # check for header
 AC_CHECK_HEADER([albert.h], 
    [ALBERT_CPPFLAGS="$ALBERTDEF -I$ALBERT_INCLUDE_PATH"
 	HAVE_ALBERT="1"],
   AC_MSG_WARN([albert.h not found in $ALBERT_INCLUDE_PATH]))
+
+LDFLAGS="$REM_LDFLAGS -L$ALBERT_LIB_PATH"
+CPPFLAGS="$REM_CPPFLAGS $ALBERTDEF -I$ALBERT_INCLUDE_PATH"
+
+REMLDFLAGS=
+REM_CPPFLAGS=
 
 # if header is found...
 if test x$HAVE_ALBERT = x1 ; then
