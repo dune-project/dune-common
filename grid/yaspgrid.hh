@@ -1280,6 +1280,19 @@ namespace Dune {
       throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
     }
 
+    //! return size (= distance in graph) of overlap region
+    int overlap_size (int level, int codim)
+    {
+      YGLI g = _mg.begin(level);
+      return g.overlap();
+    }
+
+    //! return size (= distance in graph) of ghost region
+    int ghost_size (int level, int codim)
+    {
+      return 0;
+    }
+
     //! number of grid entities per level and codim
     int size (int level, int codim)
     {

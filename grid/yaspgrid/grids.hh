@@ -1717,6 +1717,12 @@ namespace Dune {
         return l;
       }
 
+      //! return size of overlap on this level
+      int overlap () const
+      {
+        return i->overlap;
+      }
+
       //! return pointer to multigrid object that contains this level
       MultiYGrid<d,ct>* mg ()
       {
