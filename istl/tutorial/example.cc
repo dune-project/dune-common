@@ -452,7 +452,7 @@ void test_Interface ()
     E[i][i] = -1;
 
   // make a block compressed row matrix with five point stencil
-  const int BW2=512, BW1=1, N=BW2*BW2;
+  const int BW2=64, BW1=1, N=BW2*BW2;
   Matrix A(N,N,5*N,Dune::BCRSMatrix<MB>::row_wise);
   for (Matrix::CreateIterator i=A.createbegin(); i!=A.createend(); ++i)
   {
@@ -479,11 +479,12 @@ void test_Interface ()
   Dune::MatrixAdapter<Matrix,Vector,Vector> op(A);        // make linear operator from A
   Dune::SeqSSOR<Matrix,Vector,Vector> ssor(A,1,1.78);     // SSOR preconditioner
   Dune::SeqILU0<Matrix,Vector,Vector> ilu0(A);            // preconditioner object
-  Dune::CGSolver<Vector,Vector> solver(op,ssor,1E-8,8000,2); // an inverse operator
+  Dune::CGSolver<Vector> cg(op,ilu0,1E-8,8000,2);         // an inverse operator
+  Dune::BiCGSTABSolver<Vector> bcgs(op,ilu0,1E-8,8000,2); // an inverse operator
 
   // call the solver
   Dune::InverseOperatorResult r;
-  solver.apply(x,b,r);
+  cg.apply(x,b,r);
 }
 
 
