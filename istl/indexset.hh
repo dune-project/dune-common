@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <dune/common/arraylist.hh>
 #include <dune/common/exceptions.hh>
+#include <iostream>
 
 namespace Dune
 {
@@ -20,6 +21,9 @@ namespace Dune
 
   template<class TG, class TL>
   class IndexPair;
+
+  template<class TG, class TL>
+  std::ostream& operator<<(std::ostream& os, const IndexPair<TG,TL>&);
 
   template<class TG, class TL>
   bool operator==(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
@@ -48,6 +52,7 @@ namespace Dune
   template<class TG, class TL>
   class IndexPair
   {
+    friend std::ostream& operator<<<>(std::ostream&, const IndexPair<TG,TL>&);
     friend bool operator==<>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
     friend bool operator!=<>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
     friend bool operator< <>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
@@ -429,6 +434,12 @@ namespace Dune
     inline void merge();
   };
 
+  template<class TG, class TL>
+  inline std::ostream& operator<<(std::ostream& os, const IndexPair<TG,TL>& pair)
+  {
+    os<<"{global="<<pair.global_<<", local="<<pair.local_<<"}";
+    return os;
+  }
 
   template<class TG, class TL>
   inline bool operator==(const IndexPair<TG,TL>& a, const IndexPair<TG,TL>& b)
@@ -603,8 +614,10 @@ namespace Dune
   inline void IndexSet<TG,TL,N>::merge(){
     if(localIndices_.size()==0)
     {
-      iterator added=newIndices_.begin(), endadded=newIndices_.end();
-      while(added!= newIndices_.end()) {
+      iterator added=newIndices_.begin();
+      const const_iterator endadded=newIndices_.end();
+
+      while(added!= endadded) {
         if(added->local().isPublic())
           noPublic_++;
         ++added;
@@ -616,11 +629,14 @@ namespace Dune
     else if(newIndices_.size()>0)
     {
       ArrayList<IndexPair<TG,TL>,N> tempPairs;
-      iterator old=localIndices_.begin(), endold=localIndices_.end();
-      iterator added=newIndices_.begin(), endadded=newIndices_.end();
+      iterator old=localIndices_.begin();
+      iterator added=newIndices_.begin();
+      const const_iterator endold=localIndices_.end();
+      const const_iterator endadded=newIndices_.end();
+
       noPublic_=0;
 
-      while(old != localIndices_.end() && added!= newIndices_.end())
+      while(old != endold && added!= endadded)
       {
         if(old->local().state()==DELETED) {
           old.eraseToHere();
@@ -641,7 +657,7 @@ namespace Dune
         }
       }
 
-      while(old != localIndices_.end())
+      while(old != endold)
       {
         if(old->local().state()!=DELETED) {
           if(old->local().isPublic())
@@ -651,7 +667,7 @@ namespace Dune
         old.eraseToHere();
       }
 
-      while(added!= newIndices_.end())
+      while(added!= endadded)
       {
         tempPairs.push_back(*added);
         if(added->local().isPublic())
@@ -756,7 +772,7 @@ namespace Dune
 #endif
 
     typedef typename ArrayList<IndexPair<TG,TL>,N>::iterator iterator;
-    iterator end_ = end();
+    const const_iterator end_ = end();
     uint32_t index=0;
 
     for(iterator pair=begin(); pair!=end_; index++, ++pair)
