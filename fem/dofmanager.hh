@@ -165,6 +165,12 @@ namespace Dune {
       vec_ = AllocatorType :: malloc (size_);
     }
 
+    //! Destructor
+    ~DofArray()
+    {
+      if( vec_ ) AllocatorType :: free ( vec_ );
+    }
+
     //! return number of enties of array
     int size () const { return size_; }
 
