@@ -828,6 +828,7 @@ namespace Dune {
   private:
     //!  Barton-Nackman trick
     EntityImp<codim,dim,dimworld>& asImp () {return static_cast<EntityImp<codim,dim,dimworld>&>(*this);}
+    const EntityImp<codim,dim,dimworld>& asImp () const {return static_cast<const EntityImp<codim,dim,dimworld>&>(*this);}
 
   }; // end EntityDefault
 
@@ -1028,6 +1029,7 @@ namespace Dune {
   private:
     //!  Barton-Nackman trick
     EntityImp<0,dim,dimworld>& asImp () {return static_cast<EntityImp<0,dim,dimworld>&>(*this);}
+    const EntityImp<0,dim,dimworld>& asImp () const {return static_cast<const EntityImp<0,dim,dimworld>&>(*this);}
   };
   // end EntityDefault
   //******************************************************************************
