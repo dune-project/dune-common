@@ -234,12 +234,12 @@ namespace Dune {
     }
 
     //! matrix/vector multiplication with transpose of matrix
-    Vec<n,T> mult_t (const Vec<m,T>& x)
+    Vec<m,T> mult_t (const Vec<n,T>& x)
     {
-      Vec<n,T> z(0.0);
+      Vec<m,T> z(0.0);
       const Mat<n,m,T> &matrix = (*this);
-      for (int j=0; j<m; j++)
-        for (int i=0; i<n; i++) z(i) += matrix(j,i) * x.read(j);
+      for (int j=0; j<n; j++)
+        for (int i=0; i<m; i++) z(i) += matrix(j,i) * x.read(j);
       return z;
     }
 
