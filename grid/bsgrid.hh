@@ -66,7 +66,9 @@ namespace Dune
      dimworld: Each corner is a point with dimworld coordinates.
    */
 
+#ifdef _BSGRID_PARALLEL_
   static int __MyRank__ = -1;
+#endif
 
   template<int dim, int dimworld>
   class BSGridElement :
@@ -84,29 +86,29 @@ namespace Dune
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
-    ElementType type ();
+    ElementType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
+    int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    FieldVector<bs_ctype, dimworld>& operator[] (int i);
+    FieldVector<bs_ctype, dimworld>& operator[] (int i) const;
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
      */
-    static BSGridElement<dim,dim>& refelem ();
+    BSGridElement<dim,dim>& refelem () const;
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
-    FieldVector<bs_ctype, dimworld> global (const FieldVector<bs_ctype, dim>& local);
+    FieldVector<bs_ctype, dimworld> global (const FieldVector<bs_ctype, dim>& local) const;
 
     //! maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    FieldVector<bs_ctype, dim> local (const FieldVector<bs_ctype, dimworld>& global);
+    FieldVector<bs_ctype, dim> local (const FieldVector<bs_ctype, dimworld>& global) const;
 
     //! returns true if the point in local coordinates is inside reference element
-    bool checkInside(const FieldVector<bs_ctype, dim>& local);
+    bool checkInside(const FieldVector<bs_ctype, dim>& local) const;
 
     /*!
        Copy from grid.hh:
@@ -132,10 +134,10 @@ namespace Dune
      */
 
     //! A(l)
-    bs_ctype integration_element (const FieldVector<bs_ctype, dim>& local);
+    bs_ctype integration_element (const FieldVector<bs_ctype, dim>& local) const;
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim>& Jacobian_inverse (const FieldVector<bs_ctype, dim>& local);
+    Mat<dim,dim>& Jacobian_inverse (const FieldVector<bs_ctype, dim>& local) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
@@ -149,31 +151,31 @@ namespace Dune
 
     //! print internal data
     //! no interface method
-    void print (std::ostream& ss, int indent);
+    void print (std::ostream& ss, int indent) const;
 
   private:
     // generate Jacobian Inverse and calculate integration_element
-    void buildJacobianInverse();
+    void buildJacobianInverse() const;
 
     // calculates the element matrix for calculation of the jacobian inverse
-    void calcElMatrix ();
+    void calcElMatrix () const;
 
     // element type of element
-    ElementType eltype_;
+    const ElementType eltype_;
 
     //! the vertex coordinates
-    Mat<dimworld,dim+1,bs_ctype> coord_;
+    mutable Mat<dimworld,dim+1,bs_ctype> coord_;
 
     //! is true if Jinv_, A and detDF_ is calced
-    bool builtinverse_;
-    bool builtA_;
-    bool builtDetDF_;
+    mutable bool builtinverse_;
+    mutable bool builtA_;
+    mutable bool builtDetDF_;
 
-    Mat<dim,dim,bs_ctype> Jinv_; //!< storage for inverse of jacobian
-    bs_ctype detDF_;             //!< storage of integration_element
-    Mat<dimworld,dim,bs_ctype> A_; //!< for map2world NORMALE Nr.(ZEILE/SPALTE)
+    mutable Mat<dim,dim,bs_ctype> Jinv_; //!< storage for inverse of jacobian
+    mutable bs_ctype detDF_;             //!< storage of integration_element
+    mutable Mat<dimworld,dim,bs_ctype> A_; //!< for map2world NORMALE Nr.(ZEILE/SPALTE)
 
-    FieldVector<bs_ctype, dimworld> tmpVec_;
+    mutable FieldVector<bs_ctype, dimworld> tmpVec_;
   };
 
 
@@ -201,38 +203,39 @@ namespace Dune
   public:
 
     //! level of this element
-    int level ();
+    int level () const;
 
     //! index is unique and consecutive per level and codim
     //! used for access to degrees of freedom
-    int index ();
+    int index () const;
 
     //! index is unique within the grid hierachie and per codim
-    int global_index ();
+    int global_index () const;
 
     //! Constructor
     BSGridEntity(BSGrid<dim,dimworld> &grid, int level);
 
     //! geometry of this entity
-    BSGridElement<dim-codim,dimworld>& geometry ();
+    BSGridElement<dim-codim,dimworld>& geometry () const;
 
     /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    BSGridLevelIterator<0,dim,dimworld,All_Partition> father ();
+    BSGridLevelIterator<0,dim,dimworld,All_Partition> father () const;
 
     //! local coordinates within father
-    FieldVector<bs_ctype, dim>& local ();
+    FieldVector<bs_ctype, dim>& local () const;
   private:
-
     BSGrid<dim,dimworld> &grid_;
 
-    Mat<dimworld,dim+1,bs_ctype> coord_; //
+    BSSPACE HElementType * item_;
+
+    mutable Mat<dimworld,dim+1,bs_ctype> coord_; //
 
     //! the cuurent geometry
-    BSGridElement<dim-codim,dimworld> geo_;
-    bool builtgeometry_;       //!< true if geometry has been constructed
+    mutable BSGridElement<dim-codim,dimworld> geo_;
+    mutable bool builtgeometry_;       //!< true if geometry has been constructed
 
   };
 
@@ -265,6 +268,10 @@ namespace Dune
     friend class BSGridIntersectionIterator < dim, dimworld>;
     friend class BSGridHierarchicIterator < dim, dimworld>;
     friend class BSGridLevelIterator <0,dim,dimworld,All_Partition>;
+    friend class BSGridLevelIterator <1,dim,dimworld,All_Partition>;
+    friend class BSGridLevelIterator <2,dim,dimworld,All_Partition>;
+    friend class BSGridLevelIterator <3,dim,dimworld,All_Partition>;
+    friend class BSGrid < dim , dimworld > :: LeafIterator ;
 
     // partial specialisation of subIndex
     template <int codim>
@@ -305,23 +312,17 @@ namespace Dune
     //! Default-Constructor
     BSGridEntity(BSGrid<dim,dimworld> &grid) : grid_(grid) { }
 
-    //! set original element pointer to fake entity
-    void setElement(BSSPACE HElementType &element);
-
-    //! set original element pointer to fake entity
-    void setGhost(BSSPACE PLLBndFaceType  &ghost);
-
     //! level of this element
-    int level ();
+    int level () const ;
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedo
-    int index ();
+    int index () const;
 
     //! index is unique within the grid hierachie and per codim
-    int global_index ();
+    int global_index () const;
 
     //! geometry of this entity
-    BSGridElement<dim,dimworld>& geometry ();
+    BSGridElement<dim,dimworld>& geometry () const;
 
     //! return partition type of this entity ( see grid.hh )
     PartitionType partitionType() const;
@@ -329,15 +330,15 @@ namespace Dune
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
         with codimension cc.
      */
-    template<int cc> int count () { return cc+1; }
+    template<int cc> int count () const { return cc+1; }
 
     //! return index of sub entity with codim = cc and local number i
     //! i.e. return global number of vertex i
-    template<int cc> int subIndex (int i);
+    template<int cc> int subIndex (int i) const;
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
-    template<int cc> BSGridLevelIterator<cc,dim,dimworld,All_Partition> entity (int i);
+    template<int cc> BSGridLevelIterator<cc,dim,dimworld,All_Partition> entity (int i) const;
 
     /*! Intra-level access to intersection with neighboring elements.
        A neighbor is an entity of codimension 0
@@ -353,10 +354,10 @@ namespace Dune
     void iend   (BSGridIntersectionIterator<dim,dimworld> & it);
 
     //! returns true if Entity has children
-    bool hasChildren ();
+    bool hasChildren () const ;
 
-    //! return number of layers far from refined elements of this level
-    int refDistance ();
+    //! returns true if Entity is leaf (i.e. has no children)
+    bool isLeaf () const;
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
@@ -398,6 +399,20 @@ namespace Dune
     //! (REFINED) or nothing happend (NONE)
     AdaptationState state () const;
 
+    /*! private methods, but public because of datahandle and template
+        arguments of these methods
+     */
+    void setElement(BSSPACE HElementType &element);
+
+    /*! private methods, but public because of datahandle and template
+        arguments of these methods
+        set original element pointer to fake entity
+     */
+    void setGhost(BSSPACE HElementType &element);
+
+    //! set original element pointer to fake entity
+    void setGhost(BSSPACE PLLBndFaceType  &ghost);
+
   private:
     // corresponding grid
     BSGrid<dim,dimworld> &grid_;
@@ -407,14 +422,16 @@ namespace Dune
 
     // the current ghost, if element is ghost
     BSSPACE PLLBndFaceType * ghost_;
+    mutable bool isGhost_; //! true if entity is ghost entity
 
     //! the cuurent geometry
-    BSGridElement<dim,dimworld> geo_;
+    mutable BSGridElement<dim,dimworld> geo_;
+    mutable bool builtgeometry_; //!< true if geometry has been constructed
+
+
+    int index_; //! level index of entity
 
     int walkLevel_; //! tells the actual level of walk put to LevelIterator..
-
-    bool builtgeometry_; //!< true if geometry has been constructed
-    int index_;
 
     int glIndex_; //!< global index of element
     int level_;  //!< level of element
@@ -474,7 +491,7 @@ namespace Dune
   };
 
 
-  /** \todo Please doc me! */
+  /** BoundaryEntity of the BSGrid module */
   template<int dim, int dimworld>
   class BSGridBoundaryEntity
     : public BoundaryEntityDefault <dim,dimworld,bs_ctype,
@@ -482,30 +499,24 @@ namespace Dune
   {
     friend class BSGridIntersectionIterator<dim,dimworld>;
   public:
-    BSGridBoundaryEntity () : _geom (false) , _id(-1) {};
+    //! Constructor
+    BSGridBoundaryEntity ();
 
-    //! return identifier of boundary segment which is an
-    //! abitrary integer not zero
-    int id () { return _id; }
+    /*! \brief return identifier of boundary segment which is an
+        abitrary integer not zero */
+    int id () const ;
 
     //! return true if geometry of ghost cells was filled
-    bool hasGeometry () { return false; }
+    bool hasGeometry () const ;
 
     //! return geometry of the ghost cell
-    BSGridElement<dim,dimworld> geometry ()
-    {
-      return _geom;
-    }
+    BSGridElement<dim,dimworld>& geometry () const ;
 
   private:
-    void setId ( int id )
-    {
-      _id = id;
-    }
+    void setId ( int id ) ;
 
-    int _id;
-    // BSGrid<dim,dimworld> & _grid;
     BSGridElement<dim,dimworld> _geom;
+    int _id;
   };
 
   //**********************************************************************
@@ -552,58 +563,61 @@ namespace Dune
 
     //! return true if intersection is with boundary. \todo connection with
     //! boundary information, processor/outer boundary
-    bool boundary ();
+    bool boundary () const;
 
     //! return true if across the edge an neighbor on this level exists
-    bool neighbor ();
+    bool neighbor () const;
 
     //! return information about the Boundary
-    BSGridBoundaryEntity<dim,dimworld> & boundaryEntity ();
+    BSGridBoundaryEntity<dim,dimworld> & boundaryEntity () const;
 
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<bs_ctype, dimworld>& unit_outer_normal (FieldVector<bs_ctype, dim-1>& local);
+    FieldVector<bs_ctype, dimworld>& unit_outer_normal (FieldVector<bs_ctype, dim-1>& local) const ;
 
     //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<bs_ctype, dimworld>& unit_outer_normal ();
+    FieldVector<bs_ctype, dimworld>& unit_outer_normal () const;
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    BSGridElement<dim-1,dim>& intersection_self_local ();
+    BSGridElement<dim-1,dim>& intersection_self_local () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    BSGridElement<dim-1,dimworld>& intersection_self_global ();
+    BSGridElement<dim-1,dimworld>& intersection_self_global () const;
 
     //! local number of codim 1 entity in self where intersection is contained in
-    int number_in_self ();
+    int number_in_self () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    BSGridElement<dim-1,dim>& intersection_neighbor_local ();
+    BSGridElement<dim-1,dim>& intersection_neighbor_local () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    BSGridElement<dim-1,dimworld>& intersection_neighbor_global ();
+    BSGridElement<dim-1,dimworld>& intersection_neighbor_global () const;
 
     //! local number of codim 1 entity in neighbor where intersection is contained
-    int number_in_neighbor ();
+    int number_in_neighbor () const;
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<bs_ctype, dimworld>& outer_normal (FieldVector<bs_ctype, dim-1>& local);
+    FieldVector<bs_ctype, dimworld>& outer_normal (FieldVector<bs_ctype, dim-1>& local) const;
 
     //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<bs_ctype, dimworld>& outer_normal ();
+    FieldVector<bs_ctype, dimworld>& outer_normal () const;
 
   private:
     // if neighbour exists , do setup of new neighbour
-    void setNeighbor ();
+    void setNeighbor () const ;
 
     // check wether we at ghost boundary, only parallel grid
-    void checkGhost ();
+    void checkGhost () const ;
+
+    // reset bool flags
+    void resetBools () const ;
 
     // reset IntersectionIterator to first neighbour
     void first(BSSPACE HElementType & elem, int wLevel);
@@ -611,39 +625,40 @@ namespace Dune
     // set behind last neighbour
     void done ();
 
-    BSGridEntity<0,dim,dimworld> entity_; //! neighbour entity
+    mutable BSGridEntity<0,dim,dimworld> entity_; //! neighbour entity
 
     // current element from which we started the intersection iterator
-    BSSPACE GEOElementType *item_;
+    mutable BSSPACE GEOElementType *item_;
 
     //! current neighbour
-    BSSPACE GEOElementType *neigh_;
+    mutable BSSPACE GEOElementType *neigh_;
 
     //! current ghost if we have one
-    BSSPACE PLLBndFaceType *ghost_;
+    mutable BSSPACE PLLBndFaceType *ghost_;
 
-    int index_;       //! internal index of intersection
-    int numberInNeigh_; //! index of intersection in neighbor
+    mutable int index_;       //! internal index of intersection
+    mutable int numberInNeigh_; //! index of intersection in neighbor
 
-    bool theSituation_;   //! true if the "situation" occurs :-)
-    bool daOtherSituation_; //! true if the "da other situation" occurs :-)
-                            //! see bsgrid.cc for descritption
+    mutable bool theSituation_;   //! true if the "situation" occurs :-)
+    mutable bool daOtherSituation_; //! true if the "da other situation" occurs :-)
+    //! see bsgrid.cc for descritption
 
-    bool isBoundary_; //! true if intersection is with boundary
-    bool isGhost_; //! true if intersection is with internal boundary (only parallel grid)
+    mutable bool isBoundary_; //! true if intersection is with boundary
+    mutable bool isGhost_; //! true if intersection is with internal boundary (only parallel grid)
 
-    FieldVector<bs_ctype, dimworld> outNormal_; //! outerNormal of current intersection
-    FieldVector<bs_ctype, dimworld> unitOuterNormal_; //! unitOuterNormal of current intersection
+    mutable FieldVector<bs_ctype, dimworld> outNormal_; //! outerNormal of current intersection
+    mutable FieldVector<bs_ctype, dimworld> unitOuterNormal_; //! unitOuterNormal of current intersection
 
-    bool needSetup_; //! true if setup is needed
-    bool needNormal_; //! true if normal has to be calculated
+    mutable bool needSetup_; //! true if setup is needed
+    mutable bool needNormal_; //! true if normal has to be calculated
 
     // pair holding pointer to face and twist
-    BSSPACE NeighbourFaceType neighpair_;
+    mutable BSSPACE NeighbourFaceType neighpair_;
 
-    BSGridElement<dim-1,dimworld> interSelfGlobal_; //! intersection_self_global
+    mutable bool initInterGl_; //! true if interSelfGlobal_ was initialized
+    mutable BSGridElement<dim-1,dimworld> interSelfGlobal_; //! intersection_self_global
 
-    BSGridBoundaryEntity<dim,dimworld> bndEntity_; //! boundaryEntity
+    mutable BSGridBoundaryEntity<dim,dimworld> bndEntity_; //! boundaryEntity
   };
 
 
@@ -691,7 +706,7 @@ namespace Dune
     BSGridEntity<codim,dim,dimworld>* operator->();
 
     //! ask for level of entities
-    int level ();
+    int level () const ;
 
   private:
     // reference to grid
@@ -768,7 +783,7 @@ namespace Dune
     ~BSGrid();
 
     //! for type identification
-    GridIdentifier type ();
+    GridIdentifier type  () const;
 
     //! Return maximum level defined in this grid. Levels are numbered
     //! 0 ... maxlevel with 0 the coarsest level.
@@ -799,15 +814,10 @@ namespace Dune
                           PartitionIteratorType pitype=InteriorBorder_Partition );
 
     //! number of grid entities per level and codim
-    int size (int level, int codim);
     int size (int level, int codim) const;
 
     //! number of grid entities on all levels for given codim
     int global_size (int codim) const ;
-
-    //! refine all positive marked leaf entities
-    //! return true if the grid was changed
-    bool adapt ( );
 
     //! calculate load of each proc and repartition if neccessary
     bool loadBalance ();
@@ -820,13 +830,16 @@ namespace Dune
     template <class DofManagerType>
     bool communicate (DofManagerType & dm);
 
-    //! coarsen all negative marked leaf entities
-    //! return true if the grid was changed
+    //! returns if a least one entity was marked for coarsening
     bool preAdapt ( );
+
+    //! clear all entity new markers
     void postAdapt ( );
 
-    /** \brief Please doc me! */
-    //GridIdentifier type () { return BSGrid_Id; };
+    /**! refine all positive marked leaf entities,
+       return true if a least one entity was refined */
+    bool adapt ( );
+
 
     //**********************************************************
     // End of Interface Methods
@@ -848,9 +861,6 @@ namespace Dune
     //! not an interface method yet
     bs_ctype getTime () const { return time_; };
 
-    //! calculate max edge length
-    double calcGridWidth () { return 1; }
-
     //! return pointer to org BSGrid
     BSSPACE BSGitterType *mygrid();
 
@@ -861,8 +871,13 @@ namespace Dune
     double communicateSum  (double val) const ;
     int communicateInt (int val) const ;
 
+    //! no interface method, but has to be public
     void updateStatus ();
+
   private:
+    // calculate new level size
+    int calcNewSize (int level, int codim);
+
     // reset size and global size
     void calcExtras();
 
@@ -893,6 +908,8 @@ namespace Dune
     bool coarsenMark_;
 
     const int myRank_;
+
+    double time_; // time of grid
   public:
     //template<int codim, int dim, int dimworld,PartitionIteratorType pitype>
     class BSGridLeafIterator
@@ -918,13 +935,13 @@ namespace Dune
       bool operator!= (const BSGridLeafIteratorType& i) const;
 
       //! dereferencing
-      BSGridEntity<codim,dim,dimworld>& operator*();
+      BSGridEntity<0,dim,dimworld>& operator*();
 
       //! arrow
-      BSGridEntity<codim,dim,dimworld>* operator->();
+      BSGridEntity<0,dim,dimworld>* operator->();
     private:
       //! ask for level of entities
-      int level ();
+      int level () const;
 
       // element index, -1 for end
       int index_;
