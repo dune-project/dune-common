@@ -182,6 +182,10 @@ namespace Dune
     //! Constructor for combinations storing the two operators
     CombinedLocalOperator ( A & a, B & b ) : _a ( a ) , _b ( b ) {}
 
+    //! method to scale the belonging operators
+    template <class ScalarType>
+    void scaleIt( const ScalarType scalar);
+
     //*******************************************************
     /*! the parameters of prepareGlobal and finalizeGlobal are set outside
         via a setParameter method or something
@@ -246,6 +250,14 @@ namespace Dune
   //  Implementation
   //
   //********************************************************************
+  template <class A, class B >
+  template <class ScalarType>
+  inline void CombinedLocalOperator<A,B>::
+  scaleIt(const ScalarType scalar)
+  {
+    _a.scaleIt(scalar);
+    _b.scaleIt(scalar);
+  }
   template <class A, class B >
   template <class FirstParamType, class SecondParamType>
   inline void CombinedLocalOperator<A,B>::
