@@ -4,7 +4,10 @@
 #define __DUNE_DEFAULTINDEXSETS_HH__
 
 #include <dune/common/misc.hh>
+#include <dune/common/array.hh>
 #include <dune/grid/common/grid.hh>
+
+#include <rpc/rpc.h>
 
 namespace Dune {
 
