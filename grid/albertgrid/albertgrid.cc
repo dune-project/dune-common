@@ -57,7 +57,7 @@ namespace Dune
   // specialication for tetrhedrons
   // the local numbering in Albert is diffrent to Dune
   // see Albert Doc page 12
-  static const int mapVerts_3d[4] = {0,3,2,1};
+  //static const int mapVerts_3d[4] = {0,3,2,1};
   template <>
   inline int AlbertGridElement<3,3>::mapVertices (int i) const
   {
@@ -460,6 +460,8 @@ namespace Dune
   template <>
   inline void AlbertGridElement<3,3>::calcElMatrix ()
   {
+    //printf("orientation %d \n",elInfo_->orientation);
+
     enum { dimworld = 3 };
     if( !builtElMat_)
     {
@@ -471,7 +473,9 @@ namespace Dune
         elMat_(i,2) = coord_(i,3) - coord0(i);
       }
       builtElMat_ = true;
+      elMat_.print(std::cout,1);
     }
+
   }
 
   // uses the element matrix, because faster
@@ -510,7 +514,7 @@ namespace Dune
   local(const Vec<2>& global)
   {
     if(!builtinverse_)
-      buildJacobianInverse(global);
+      buildJacobianInverse();
 
     localCoord_ = Jinv_ * ( global - coord_(0));
     return localCoord_;
@@ -521,7 +525,7 @@ namespace Dune
   local(const Vec<3>& global)
   {
     if(!builtinverse_)
-      buildJacobianInverse(global);
+      buildJacobianInverse();
 
     localCoord_ = Jinv_ * ( global - coord_(0));
     return localCoord_;
@@ -532,7 +536,7 @@ namespace Dune
   // this method is for (dim==dimworld) = 2 and 3
   template <int dim, int dimworld>
   inline void AlbertGridElement<dim,dimworld>::
-  buildJacobianInverse(const Vec<dim,albertCtype>& local)
+  buildJacobianInverse()
   {
     //******************************************************
     //
@@ -563,7 +567,7 @@ namespace Dune
   // calc volume of face of tetrahedron
   template <>
   inline void AlbertGridElement<2,3>::
-  buildJacobianInverse(const Vec<2,albertCtype>& local)
+  buildJacobianInverse()
   {
     enum { dim = 2 };
     enum { dimworld = 3 };
@@ -576,7 +580,7 @@ namespace Dune
 
   template <>
   inline void AlbertGridElement<1,2>::
-  buildJacobianInverse(const Vec<1,albertCtype>& local)
+  buildJacobianInverse()
   {
     // volume is length of edge
     Vec<2,albertCtype> vec = coord_(0) - coord_(1);
@@ -664,7 +668,7 @@ namespace Dune
     tmp2 = Jinv_ * tmp2;
 
     for(int j=0; j<dim; j++)
-      if(tmp2(j) != refcoord(j))
+      if(ABS(tmp2(j) - refcoord(j)) > 1e-15)
       {
         std::cout << "AlbertGridElement<2,2>::checkInverseMapping: Mapping of coord " << loc << " incorrect! \n";
         return false;
@@ -676,7 +680,7 @@ namespace Dune
   inline bool AlbertGridElement<3,3>::checkInverseMapping (int loc)
   {
     // checks if F^-1 (x_i) == xref_i
-    enum { dim =3 };
+    enum { dim = 3 };
 
     Vec<dim> & coord    = coord_(loc);
     Vec<dim> & refcoord = refelem()[loc];
@@ -686,7 +690,7 @@ namespace Dune
     tmp2 = Jinv_ * tmp2;
 
     for(int j=0; j<dim; j++)
-      if(tmp2(j) != refcoord(j))
+      if(ABS(tmp2(j) - refcoord(j)) > 1e-15)
       {
         std::cout << "AlbertGridElement<3,3>::checkInverseMapping: Mapping of coord " << loc << " incorrect! \n";
         return false;
@@ -746,8 +750,9 @@ namespace Dune
 
     for(int j=0; j<dim; j++)
     {
-      if(tmp2(j) != coord(j))
+      if(ABS(tmp2(j) - coord(j)) > 1e-15)
       {
+        std::cout << "Checking of " << loc << " not ok!\n";
         std::cout << coord; std::cout << refcoord;
         std::cout << tmp2; std::cout << "\n";
         std::cout << "AlbertGridElement<3,3>::checkMapping: Mapping of coord " << loc << " incorrect! \n";
@@ -762,16 +767,25 @@ namespace Dune
   inline bool AlbertGridElement <dim ,dimworld >::
   checkInside(const Vec<dim,albertCtype> &local)
   {
-    // only 2d
     albertCtype sum = 0.0;
 
     for(int i=0; i<dim; i++)
     {
       sum += local(i);
-      if(local(i) < 0.0) return false;
+      if(local(i) < 0.0)
+      {
+        if(ABS(local(i)) > 1e-15)
+        {
+          return false;
+        }
+      }
     }
 
-    if( sum > 1.0 ) return false;
+    if( sum > 1.0 )
+    {
+      if(sum > (1.0 + 1e-15))
+        return false;
+    }
 
     return true;
   }
@@ -2005,56 +2019,26 @@ namespace Dune
   template< int dim, int dimworld>
   inline void AlbertGridIntersectionIterator<dim,dimworld>::setupVirtEn()
   {
-
     // set the neighbor element as element
     neighElInfo_->el = elInfo_->neigh[neighborCount_];
+    neighElInfo_->orientation = elInfo_->orientation;
 
     int vx = elInfo_->opp_vertex[neighborCount_];
-    //printf("setup Neighbor %d \n",neighborCount_);
 
-#if 0
-    for(int k=0; k<dim+1; k++)
-    {
-      printf("coord %f %f \n",elInfo_->coord[k][0],elInfo_->coord[k][1]);
-    }
-
-    printf("oppvx %d %d %d \n",elInfo_->opp_vertex[0],elInfo_->opp_vertex[1],elInfo_->opp_vertex[2]);
-
-    for(int k=0; k<dim+1; k++)
-    {
-      printf("oppcoord %f %f \n",elInfo_->opp_coord[k][0],elInfo_->opp_coord[k][1]);
-    }
-#endif
-
-    /* now it's ok */
-#if 0
-    memcpy(&(neighElInfo_->coord[vx]), &(elInfo_->opp_coord[neighborCount_]),
-           dimworld*sizeof(ALBERT REAL));
-
-    for(int i=1; i<dim+1; i++)
-    {
-      int nb = (((neighborCount_-i)%(dim+1)) +dim+1)%(dim+1);
-      memcpy(&neighElInfo_->coord[(vx+i)%(dim+1)], &elInfo_->coord[nb],
-             dimworld*sizeof(ALBERT REAL));
-    }
-    /* works, tested many times */
-#endif
     for(int i=0; i<dimworld; i++)
       neighElInfo_->coord[vx][i] = elInfo_->opp_coord[neighborCount_][i];
 
-    //printf(" nb %d \n",neighborCount_);
-
     for(int i=1; i<dim+1; i++)
     {
-      int nb = (((neighborCount_-i)%(dim+1)) +dim+1)%(dim+1);
-      //int nb = AlbertHelp::tetraFace[neighborCount_][i];
+      int nb = (((neighborCount_ - i)%(dim+1)) +dim+1)%(dim+1);
       for(int j=0; j<dimworld; j++)
-        neighElInfo_->coord[(vx+i)%(dim+1)][j] = elInfo_->coord[nb][j];
+        neighElInfo_->coord[(vx + i)%(dim+1)][j] = elInfo_->coord[nb][j];
     }
     /* works, tested many times */
 
     virtualEntity_->setElInfo(neighElInfo_);
     builtNeigh_ = true;
+
   }
 
   // end IntersectionIterator
