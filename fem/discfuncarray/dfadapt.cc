@@ -8,22 +8,10 @@
 namespace Dune
 {
 
-  // Constructor makeing empty discrete function
-  template<class DiscreteFunctionSpaceType >
-  inline DFAdapt< DiscreteFunctionSpaceType >::
-  DFAdapt(const char * name, DiscreteFunctionSpaceType & f) :
-    DiscreteFunctionDefaultType ( f )
-    , name_ (name)
-    , memObj_ ( f.signIn( *this ) )
-    , dofVec_ ( memObj_.getArray() )
-    , localFunc_ ( f, dofVec_ )
-  {}
-
   // Constructor makeing discrete function
   template<class DiscreteFunctionSpaceType >
   inline DFAdapt< DiscreteFunctionSpaceType >::
-  DFAdapt(const char * name, DiscreteFunctionSpaceType & f,
-          int level , int codim , bool allLevel )
+  DFAdapt(const char * name, DiscreteFunctionSpaceType & f)
     : DiscreteFunctionDefaultType ( f )
       , name_ (name)
       , memObj_ (f.signIn( const_cast <DFAdapt< DiscreteFunctionSpaceType > &> (*this) ))
@@ -60,15 +48,6 @@ namespace Dune
 
 
   template<class DiscreteFunctionSpaceType >
-  inline void DFAdapt< DiscreteFunctionSpaceType >::setLevel ( RangeFieldType x, int level )
-  {
-    int size = dofVec_.size ();
-    DofArrayType &vec = dofVec_;
-    for(int i=0; i<size; i++)
-      vec[i] = x;
-  }
-
-  template<class DiscreteFunctionSpaceType >
   inline void DFAdapt< DiscreteFunctionSpaceType >::set ( RangeFieldType x )
   {
     int size = dofVec_.size();
@@ -78,24 +57,17 @@ namespace Dune
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline void DFAdapt< DiscreteFunctionSpaceType >::clearLevel (int level )
-  {
-    setLevel(0.0,level);
-  }
-
-  template<class DiscreteFunctionSpaceType >
   inline void DFAdapt< DiscreteFunctionSpaceType >::clear ()
   {
     set ( 0.0 );
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline void DFAdapt< DiscreteFunctionSpaceType >::print(std::ostream &s, int level )
+  inline void DFAdapt< DiscreteFunctionSpaceType >::print(std::ostream &s )
   {
     RangeFieldType sum = 0.;
-    DofIteratorType enddof = dend ( level );
-    //std::cout << functionSpace_.size(level) << " fs | real " << (dofVec_).size() << "\n";
-    for(DofIteratorType itdof = dbegin ( level ); itdof != enddof; ++itdof)
+    DofIteratorType enddof = dend ( );
+    for(DofIteratorType itdof = dbegin ( ); itdof != enddof; ++itdof)
     {
       s << (*itdof) << " DofValue \n";
       sum += std::abs(*itdof);
@@ -124,7 +96,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
-  DFAdapt< DiscreteFunctionSpaceType >::dbegin ( int level )
+  DFAdapt< DiscreteFunctionSpaceType >::dbegin ( )
   {
     DofIteratorType tmp ( dofVec_ , 0 );
     return tmp;
@@ -132,7 +104,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
-  DFAdapt< DiscreteFunctionSpaceType >::dend ( int level )
+  DFAdapt< DiscreteFunctionSpaceType >::dend ()
   {
     DofIteratorType tmp ( dofVec_ , dofVec_.size() );
     return tmp;
@@ -140,7 +112,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline const typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
-  DFAdapt< DiscreteFunctionSpaceType >::dbegin ( int level ) const
+  DFAdapt< DiscreteFunctionSpaceType >::dbegin ( ) const
   {
     DofIteratorType tmp ( dofVec_ , 0 );
     return tmp;
@@ -148,7 +120,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline const typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
-  DFAdapt< DiscreteFunctionSpaceType >::dend ( int level ) const
+  DFAdapt< DiscreteFunctionSpaceType >::dend () const
   {
     DofIteratorType tmp ( dofVec_ , dofVec_.size() );
     return tmp;
@@ -217,11 +189,10 @@ namespace Dune
     const char * fn = genFilename(path,filename,timestep);
     std::fstream outfile( fn , std::ios::out );
     {
-      int lev    = this->functionSpace_.getGrid().maxlevel();
-      int length = this->functionSpace_.size( lev );
+      int length = this->functionSpace_.size();
       outfile << length << "\n";
-      DofIteratorType enddof = dend ( lev );
-      for(DofIteratorType itdof = dbegin ( lev ); itdof != enddof; ++itdof)
+      DofIteratorType enddof = dend ( );
+      for(DofIteratorType itdof = dbegin ( ); itdof != enddof; ++itdof)
       {
         outfile << (*itdof) << " ";
       }
@@ -243,13 +214,12 @@ namespace Dune
     infile = fopen( fn, "r" );
     assert(infile != 0);
     {
-      int lev    = this->functionSpace_.getGrid().maxlevel();
       int length;
       fscanf(infile,"%d \n",&length);
-      assert(length == this->functionSpace_.size( lev ));
+      assert(length == this->functionSpace_.size( ));
 
-      DofIteratorType enddof = dend ( lev );
-      for(DofIteratorType itdof = dbegin ( lev ); itdof != enddof; ++itdof)
+      DofIteratorType enddof = dend ( );
+      for(DofIteratorType itdof = dbegin ( ); itdof != enddof; ++itdof)
       {
         fscanf(infile,"%le \n",& (*itdof));
       }
@@ -271,8 +241,8 @@ namespace Dune
     int danz = 129;
 
     out << "P2\n " << danz << " " << danz <<"\n255\n";
-    DofIteratorType enddof = dend ( -1 );
-    for(DofIteratorType itdof = dbegin ( -1 ); itdof != enddof; ++itdof) {
+    DofIteratorType enddof = dend ();
+    for(DofIteratorType itdof = dbegin (); itdof != enddof; ++itdof) {
       out << (int)((*itdof)*255.) << "\n";
     }
     out.close();
@@ -297,39 +267,6 @@ namespace Dune
     }
     fclose( in );
     return true;
-  }
-
-  template<class DiscreteFunctionSpaceType >
-  inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  write_USPM( const char *filename , int timestep )
-  {
-    // USPM
-    std::fstream out( filename , std::ios::out );
-    //ElementType eltype = triangle;
-    //out << eltype << " 1 1\n";
-    int level = this->functionSpace_.getGrid().maxlevel();
-    int length = this->functionSpace_.size( level );
-    out << length << " 1 1\n";
-
-    DofIteratorType enddof = dend ( level );
-    for(DofIteratorType itdof = dbegin ( level );
-        itdof != enddof; ++itdof)
-    {
-      out << (*itdof)  << "\n";
-    }
-
-    out.close();
-    std::cout << "Written Dof to file `" << filename << "' !\n";
-    return true;
-  }
-
-  template<class DiscreteFunctionSpaceType >
-  inline void DFAdapt< DiscreteFunctionSpaceType >::
-  addScaled( int level,
-             const DFAdapt<DiscreteFunctionSpaceType> &g,
-             const RangeFieldType &scalar )
-  {
-    this->addScaled(g,scalar);
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -552,7 +489,7 @@ namespace Dune
     }
 
     for(int i=0; i<numOfDof_; i++)
-      values_ [i] = &(this->dofVec_[fSpace_.mapToGlobal ( en , i)]);
+      values_ [i] = &(this->dofVec_[ fSpace_.mapToGlobal ( en , i) ]);
     return true;
   }
 

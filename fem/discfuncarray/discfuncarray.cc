@@ -6,54 +6,27 @@
 namespace Dune
 {
 
-  // Constructor makeing empty discrete function
-  template<class DiscreteFunctionSpaceType >
-  inline DiscFuncArray< DiscreteFunctionSpaceType >::
-  DiscFuncArray(const char * name, DiscreteFunctionSpaceType & f) :
-    DiscreteFunctionDefaultType ( f )
-    , name_ ( name )
-    , built_ ( false )
-    , levOcu_ (0)
-    , level_ (-1)
-    , allLevels_ (false)
-    , freeLocalFunc_ (NULL)
-    , localFunc_ ( f, dofVec_ ) {}
-
   // Constructor making discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
-  DiscFuncArray(DiscreteFunctionSpaceType & f,
-                int level , int codim , bool allLevel )
+  DiscFuncArray(DiscreteFunctionSpaceType & f)
     : DiscreteFunctionDefaultType ( f )
       , name_ ( "no name" )
-      , level_ ( level ) ,
-      allLevels_ ( allLevel ) , freeLocalFunc_ (NULL)
+      , freeLocalFunc_ (0)
       , localFunc_ ( f , dofVec_ )
   {
-    if(allLevels_)
-      levOcu_ = level_+1;
-    else
-      levOcu_ = 1;
-
     getMemory();
   }
 
   // Constructor making discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
-  DiscFuncArray(const char * name, DiscreteFunctionSpaceType & f,
-                int level , int codim , bool allLevel )
+  DiscFuncArray(const char * name, DiscreteFunctionSpaceType & f )
     : DiscreteFunctionDefaultType ( f )
       , name_ ( name )
-      , level_ ( level ) ,
-      allLevels_ ( allLevel ) , freeLocalFunc_ (NULL)
+      , freeLocalFunc_ (0)
       , localFunc_ ( f , dofVec_ )
   {
-    if(allLevels_)
-      levOcu_ = level_+1;
-    else
-      levOcu_ = 1;
-
     getMemory();
   }
 
@@ -64,14 +37,20 @@ namespace Dune
   {
     name_ = df.name_;
     built_ = df.built_;
-    levOcu_ = df.levOcu_;
-    level_ = df.level_;
-    allLevels_ = df.allLevels_;
 
-    freeLocalFunc_ = NULL;
+    freeLocalFunc_ = 0;
     dofVec_ = df.dofVec_;
   }
 
+  template<class DiscreteFunctionSpaceType >
+  inline void DiscFuncArray< DiscreteFunctionSpaceType >::getMemory()
+  {
+    // the last level is done always
+    int length = this->functionSpace_.size();
+    dofVec_.resize( length );
+    for( int j=0; j<length; j++) dofVec_[j] = 0.0;
+    built_ = true;
+  }
 
   // Desctructor
   template<class DiscreteFunctionSpaceType >
@@ -83,43 +62,10 @@ namespace Dune
 
 
   template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::setLevel ( RangeFieldType x, int level )
-  {
-    if(!allLevels_ && level != level_)
-    {
-      std::cout << "Level not set! \n";
-      return;
-    }
-    int size = dofVec_[level].size();
-    Array < RangeFieldType > &vec = dofVec_[level];
-    for(int i=0; i<size; i++)
-      vec[i] = x;
-  }
-
-  template<class DiscreteFunctionSpaceType >
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::set ( RangeFieldType x )
   {
-    if(allLevels_)
-    {
-      for(int l=0; l<level_; l++)
-      {
-        int size = dofVec_[l].size();
-        Array < RangeFieldType > &vec = dofVec_[l];
-        for(int i=0; i<size; i++)
-          vec[i] = x;
-      }
-    }
-
-    int size = dofVec_[level_].size();
-    Array < RangeFieldType > &vec = dofVec_[level_];
-    for(int i=0; i<size; i++)
-      vec[i] = x;
-  }
-
-  template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::clearLevel (int level )
-  {
-    setLevel(0.0,level);
+    for(int i=0; i<dofVec_.size(); i++)
+      dofVec_[i] = x;
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -129,11 +75,11 @@ namespace Dune
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::print(std::ostream &s, int level ) const
+  inline void DiscFuncArray< DiscreteFunctionSpaceType >::print(std::ostream &s ) const
   {
-    s << "DiscFuncArray '" << name_ << "', level " << level << "\n";
-    DofIteratorType enddof = this->dend ( level );
-    for(DofIteratorType itdof = this->dbegin ( level ); itdof != enddof; ++itdof)
+    s << "DiscFuncArray '" << name_ << "'\n";
+    DofIteratorType enddof = this->dend ();
+    for(DofIteratorType itdof = this->dbegin (); itdof != enddof; ++itdof)
     {
       s << (*itdof) << " \n";
     }
@@ -187,34 +133,34 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
-  DiscFuncArray< DiscreteFunctionSpaceType >::dbegin ( int level )
+  DiscFuncArray< DiscreteFunctionSpaceType >::dbegin ()
   {
-    DofIteratorType tmp ( dofVec_ [level] , 0 );
+    DofIteratorType tmp ( dofVec_ , 0 );
     return tmp;
   }
 
 
   template<class DiscreteFunctionSpaceType >
   inline typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
-  DiscFuncArray< DiscreteFunctionSpaceType >::dend ( int level )
+  DiscFuncArray< DiscreteFunctionSpaceType >::dend ( )
   {
-    DofIteratorType tmp ( dofVec_ [ level ] , dofVec_[ level ].size() );
+    DofIteratorType tmp ( dofVec_  , dofVec_.size() );
     return tmp;
   }
 
   template<class DiscreteFunctionSpaceType >
   inline const typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
-  DiscFuncArray< DiscreteFunctionSpaceType >::dbegin ( int level ) const
+  DiscFuncArray< DiscreteFunctionSpaceType >::dbegin ( ) const
   {
-    DofIteratorType tmp ( dofVec_ [level] , 0 );
+    DofIteratorType tmp ( dofVec_ , 0 );
     return tmp;
   }
 
   template<class DiscreteFunctionSpaceType >
   inline const typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
-  DiscFuncArray< DiscreteFunctionSpaceType >::dend ( int level ) const
+  DiscFuncArray< DiscreteFunctionSpaceType >::dend ( ) const
   {
-    DofIteratorType tmp ( dofVec_ [ level ] , dofVec_[ level ].size() );
+    DofIteratorType tmp ( dofVec_ , dofVec_.size() );
     return tmp;
   }
   //**************************************************************************
@@ -239,19 +185,7 @@ namespace Dune
 
     xdrstdio_create(&xdrs, file, XDR_ENCODE);
 
-    int allHelp = (allLevels_ == true) ? 1 : 0;
-    // write allLevels to file , xdr_bool didnt work
-    xdr_int (&xdrs, &allHelp);
-    xdr_int (&xdrs, &level_);
-
-    if(allLevels_)
-    {
-      for(int lev=0; lev<level_; lev++)
-        dofVec_[lev].processXdr(&xdrs);
-    }
-
-    int lev = level_;
-    dofVec_[lev].processXdr(&xdrs);
+    dofVec_.processXdr(&xdrs);
 
     xdr_destroy(&xdrs);
     fclose(file);
@@ -280,32 +214,9 @@ namespace Dune
     // read xdr
     xdrstdio_create(&xdrs, file, XDR_DECODE);
 
-    int allHelp;
-    // write allLevels to file
-    xdr_int (&xdrs, &allHelp);
-    allLevels_ = (allHelp == 0) ? false : true;
+    getMemory();
 
-    // read max level on which function lives
-    xdr_int (&xdrs, &level_);
-
-    if(allLevels_)
-    {
-      levOcu_ = level_+1;
-      getMemory();
-
-      for(int lev=0; lev<=level_; lev++)
-      {
-        dofVec_[lev].processXdr(&xdrs);
-      }
-    }
-    else
-    {
-      levOcu_ = 1;
-      getMemory();
-
-      int lev = level_;
-      dofVec_[lev].processXdr(&xdrs);
-    }
+    dofVec_.processXdr(&xdrs);
 
     xdr_destroy(&xdrs);
     fclose(file);
@@ -319,28 +230,11 @@ namespace Dune
     const char * path=NULL;
     const char * fn = genFilename(path,filename,timestep);
     std::fstream outfile( fn , std::ios::out );
-    outfile << allLevels_ <<  "\n";
-    if(allLevels_)
     {
-      outfile << level_ << "\n";
-      for(int lev=0; lev<level_; lev++)
-      {
-        int length = this->functionSpace_.size( lev );
-        outfile << length << "\n";
-        DofIteratorType enddof = this->dend ( lev );
-        for(DofIteratorType itdof = this->dbegin ( lev ); itdof != enddof; ++itdof)
-        {
-          outfile << (*itdof) << " ";
-        }
-        outfile << "\n";
-      }
-    }
-    {
-      int lev = level_;
-      int length = this->functionSpace_.size( lev );
+      int length = this->functionSpace_.size();
       outfile << length << "\n";
-      DofIteratorType enddof = this->dend ( lev );
-      for(DofIteratorType itdof = this->dbegin ( lev ); itdof != enddof; ++itdof)
+      DofIteratorType enddof = this->dend ();
+      for(DofIteratorType itdof = this->dbegin (); itdof != enddof; ++itdof)
       {
         outfile << (*itdof) << " ";
       }
@@ -365,46 +259,17 @@ namespace Dune
       std::cerr << "Couldnt open file! "<< fn << "\n";
       abort();
     }
-    fscanf(infile,"%d \n",&allLevels_);
-    std::cout << "Got allLevels = " << allLevels_ << "\n";
-    if(allLevels_)
     {
-      fscanf(infile,"%d \n",&level_);
-      levOcu_ = level_+1;
       getMemory();
-      std::cout << "Got Levels = " << level_ << "\n";
-      for(int lev=0; lev<=level_; lev++)
-      {
-        int length;
-        fscanf(infile,"%d \n",&length);
-        std::cout << "Got Size of Level = "<< length << " " << lev << "\n";
-        std::cout << this->functionSpace_.size( lev ) << "\n";
-        if(length != this->functionSpace_.size( lev ))
-        {
-          std::cerr << "ERROR: wrong number of dofs stored in file!\n";
-          abort();
-        }
-        DofIteratorType enddof = this->dend ( lev );
-        for(DofIteratorType itdof = this->dbegin ( lev ); itdof != enddof; ++itdof)
-        {
-          fscanf(infile,"%le \n",& (*itdof));
-        }
-      }
-    }
-    else
-    {
-      levOcu_ = 1;
-      getMemory();
-      int lev = level_;
       int length;
       fscanf(infile,"%d \n",&length);
-      if(length != this->functionSpace_.size( lev ))
+      if(length != this->functionSpace_.size())
       {
         std::cerr << "ERROR: wrong number of dofs stored in file!\n";
         abort();
       }
-      DofIteratorType enddof = this->dend ( lev );
-      for(DofIteratorType itdof = this->dbegin ( lev ); itdof != enddof; ++itdof)
+      DofIteratorType enddof = this->dend ();
+      for(DofIteratorType itdof = this->dbegin (); itdof != enddof; ++itdof)
       {
         fscanf(infile,"%le \n",& (*itdof));
       }
@@ -431,8 +296,8 @@ namespace Dune
      */
 
     out << "P2\n " << danz << " " << danz <<"\n255\n";
-    DofIteratorType enddof = this->dend ( level_ );
-    for(DofIteratorType itdof = this->dbegin ( level_ ); itdof != enddof; ++itdof) {
+    DofIteratorType enddof = this->dend ( );
+    for(DofIteratorType itdof = this->dbegin ( ); itdof != enddof; ++itdof) {
       out << (int)((*itdof)*255.) << "\n";
     }
     out.close();
@@ -446,18 +311,13 @@ namespace Dune
     FILE *in;
     int v;
 
-    // get the hole memory
-    level_ = this->functionSpace_.getGrid().maxlevel();
-    allLevels_ = true;
-    levOcu_ = level_+1;
-
     getMemory();
     const char * path=NULL;
     const char * fn = genFilename(path,filename,timestep);
     in = fopen( fn, "r" );
     fscanf( in, "P2\n%d %d\n%d\n", &v, &v, &v );
-    DofIteratorType enddof = this->dend ( level_ );
-    for(DofIteratorType itdof = this->dbegin ( level_ ); itdof != enddof; ++itdof) {
+    DofIteratorType enddof = this->dend ( );
+    for(DofIteratorType itdof = this->dbegin ( ); itdof != enddof; ++itdof) {
       fscanf( in, "%d", &v );
       (*itdof) = ((double)v)/255.;
     }
@@ -465,43 +325,18 @@ namespace Dune
     return true;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
-  write_USPM( const char *filename , int timestep )
-  {
-    // USPM
-    std::fstream out( filename , std::ios::out );
-    //ElementType eltype = triangle;
-    //out << eltype << " 1 1\n";
-    int level = this->functionSpace_.getGrid().maxlevel();
-    int length = this->functionSpace_.size( level );
-    out << length << " 1 1\n";
-
-    DofIteratorType enddof = this->dend ( level );
-    for(DofIteratorType itdof = this->dbegin ( level );
-        itdof != enddof; ++itdof)
-    {
-      out << (*itdof)  << "\n";
-    }
-
-    out.close();
-    std::cout << "Written Dof to file `" << filename << "' !\n";
-    return true;
-  }
 
   template<class DiscreteFunctionSpaceType >
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::
-  addScaled( int level,
-             const DiscFuncArray<DiscreteFunctionSpaceType> &g,
+  addScaled( const DiscFuncArray<DiscreteFunctionSpaceType> &g,
              const RangeFieldType &scalar )
   {
-    int length = dofVec_[level].size();
-
-    Array<RangeFieldType> &v = dofVec_[level];
-    const Array<RangeFieldType> &gvec = g.dofVec_[level];
+    int length = dofVec_.size();
+    const Array<RangeFieldType> &gvec = g.dofVec_;
+    assert(length == gvec.size());
 
     for(int i=0; i<length; i++)
-      v[i] += scalar*gvec[i];
+      dofVec_[i] += scalar*gvec[i];
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -584,9 +419,9 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline LocalFunctionArray < DiscreteFunctionSpaceType >::
   LocalFunctionArray( const DiscreteFunctionSpaceType &f ,
-                      std::vector < Array < RangeFieldType > > & dofVec )
-    : fSpace_ ( f ), dofVec_ ( dofVec )  , next_ (NULL)
-      , baseFuncSet_ (NULL)
+                      Array < RangeFieldType > & dofVec )
+    : fSpace_ ( f ), dofVec_ ( dofVec )  , next_ (0)
+      , baseFuncSet_ (0)
       , uniform_(true) {}
 
   template<class DiscreteFunctionSpaceType >
@@ -697,7 +532,7 @@ namespace Dune
     }
 
     for(int i=0; i<numOfDof_; i++)
-      values_ [i] = &((dofVec_[ en.level() ])[fSpace_.mapToGlobal ( en , i)]);
+      values_ [i] = &(dofVec_[fSpace_.mapToGlobal ( en , i)]);
     return true;
   }
 

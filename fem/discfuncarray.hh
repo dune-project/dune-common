@@ -61,18 +61,13 @@ namespace Dune {
     //! ???
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
 
-    //! Constructor make empty DiscFuncArray
-    DiscFuncArray ( const char * name , DiscreteFunctionSpaceType & f );
+    //! Constructor makes Discrete Function
+    DiscFuncArray ( DiscreteFunctionSpaceType & f ) ;
 
-    //! Constructor make Discrete Function for all or leaf level
-    DiscFuncArray ( DiscreteFunctionSpaceType & f,
-                    int level , int codim , bool leaf ) ;
+    //! Constructor makes Discrete Function with name
+    DiscFuncArray ( const char * name, DiscreteFunctionSpaceType & f ) ;
 
-    //! Constructor make Discrete Function for all or leaf level
-    DiscFuncArray ( const char * name, DiscreteFunctionSpaceType & f,
-                    int level , int codim , bool leaf ) ;
-
-    //! Constructor make Discrete Function for all or leaf level
+    //! Constructor makes Discrete Function from copy
     DiscFuncArray (const DiscFuncArray <DiscreteFunctionSpaceType> & df);
 
     //! delete stack of free local functions belonging to this discrete
@@ -101,26 +96,20 @@ namespace Dune {
                          LocalFunctionArray<DiscreteFunctionSpaceType> & lf);
 
     // we use the default implementation
-    DofIteratorType dbegin ( int level );
+    DofIteratorType dbegin ();
 
     //! points behind the last dof of type cc
-    DofIteratorType dend   ( int level );
+    DofIteratorType dend   ();
 
     // the const versions
     // we use the default implementation
-    const DofIteratorType dbegin ( int level ) const;
+    const DofIteratorType dbegin () const;
 
     //! points behind the last dof of type cc
-    const DofIteratorType dend   ( int level ) const;
-
-    //! return if allLevels are used
-    bool allLevels () { return allLevels_; }
+    const DofIteratorType dend   () const;
 
     //! Return the name of the discrete function
     const std::string& name() const {return name_;}
-
-    //! set all dofs to zero
-    void clearLevel( int level );
 
     //! set all dofs to zero
     void clear( );
@@ -128,12 +117,9 @@ namespace Dune {
     //! set all dof to value x
     void set( RangeFieldType x );
 
-    //! set all dof to value x
-    void setLevel( RangeFieldType x, int level );
-
-    /** \todo Please to me! */
-    void addScaled (int level, const DiscFuncArray <DiscreteFunctionSpaceType> & g,
-                    const RangeFieldType &scalar);
+    //! add g * scalar to discrete function
+    void addScaled ( const DiscFuncArray <DiscreteFunctionSpaceType> & g,
+                     const RangeFieldType &scalar);
 
     /** \todo Please to me! */
     template <class GridIteratorType>
@@ -156,10 +142,7 @@ namespace Dune {
     void setLocal (GridIteratorType &it, const RangeFieldType &scalar);
 
     //! print all dofs
-    void print(std::ostream& s, int level) const;
-
-    //! write leaf data to file in USPM format for Grape
-    bool write_USPM(const char *filename , int timestep);
+    void print(std::ostream& s) const;
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
@@ -182,43 +165,14 @@ namespace Dune {
     bool read_pgm(const char *filename, int timestep);
 
   private:
-
     // get memory for discrete function
-    void getMemory()
-    {
-      // for all grid levels we have at least a vector with length 0
-      int numLevel = this->functionSpace_.getGrid().maxlevel() +1;
-      dofVec_.resize(numLevel);
-
-      // this is done only if levOcu_ > 1
-      for(int i=0; i<levOcu_-1; i++)
-      {
-        int length = this->functionSpace_.size( i );
-        (dofVec_[i]).resize( length );
-        for( int j=0; j<length; j++)
-          (dofVec_[i])[j] = 0.0;
-      }
-
-      // the last level is done always
-      int length = this->functionSpace_.size( level_ );
-      (dofVec_[level_]).resize( length );
-      for( int j=0; j<length; j++) (dofVec_[level_])[j] = 0.0;
-    }
+    void getMemory();
 
     //! the name of the function
     std::string name_;
 
     //! true if memory was allocated
     bool built_;
-
-    //! occupied levels
-    int levOcu_;
-
-    //! maxlevel which is occupied
-    int level_;
-
-    //! false if only leaf level is allocated
-    bool allLevels_;
 
     //! pointer to next free local function object
     //! if this pointer is NULL, new object is created at the class of
@@ -228,8 +182,8 @@ namespace Dune {
     //! hold one object for addLocal and setLocal and so on
     LocalFunctionType localFunc_;
 
-    //! for all level an Array < RangeField > , the data
-    std::vector < Array < RangeFieldType > > dofVec_;
+    //! the dofs stored in an array
+    Array < RangeFieldType > dofVec_;
   }; // end class DiscFuncArray
 
 
@@ -258,8 +212,7 @@ namespace Dune {
     friend class DiscFuncArray <DiscreteFunctionSpaceType>;
   public:
     //! Constructor
-    LocalFunctionArray ( const DiscreteFunctionSpaceType &f ,
-                         std::vector < Array < RangeFieldType > > & dofVec );
+    LocalFunctionArray ( const DiscreteFunctionSpaceType &f , Array < RangeFieldType >  & dofVec );
 
     //! Destructor
     ~LocalFunctionArray ();
@@ -295,7 +248,7 @@ namespace Dune {
     const DiscreteFunctionSpaceType &fSpace_;
 
     //! dofVec from all levels of the discrete function
-    typename std::vector < Array < RangeFieldType > > & dofVec_;
+    Array < RangeFieldType > & dofVec_;
 
     //! Array holding pointers to the local dofs
     mutable Array < RangeFieldType * > values_;

@@ -62,14 +62,10 @@ namespace Dune {
 
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
 
-    //! Constructor make empty DFAdapt
-    DFAdapt (const char * name, DiscreteFunctionSpaceType & f );
+    //! Constructor make Discrete Function
+    DFAdapt (const char * name, DiscreteFunctionSpaceType & f ) ;
 
-    //! Constructor make Discrete Function for all or leaf level
-    DFAdapt (const char * name, DiscreteFunctionSpaceType & f,
-             int level , int codim , bool leaf ) ;
-
-    //! Constructor make Discrete Function for all or leaf level
+    //! Constructor make Discrete Function
     DFAdapt (const DFAdapt <DiscreteFunctionSpaceType> & df);
 
     //! delete stack of free local functions belonging to this discrete
@@ -89,32 +85,23 @@ namespace Dune {
     void localFunction ( EntityType &en,
                          LocalFunctionAdapt<DiscreteFunctionSpaceType> & lf);
 
-    // we use the default implementation
-    DofIteratorType dbegin ( int level );
+    //! points to the first dof of type cc
+    DofIteratorType dbegin ( );
 
     //! points behind the last dof of type cc
-    DofIteratorType dend   ( int level );
+    DofIteratorType dend   ( );
 
-    // the const versions
-    // we use the default implementation
-    const DofIteratorType dbegin ( int level ) const;
+    //! const version of dof iterator
+    const DofIteratorType dbegin ( ) const;
 
-    //! points behind the last dof of type cc
-    const DofIteratorType dend   ( int level ) const;
-
-    //! return if allLevels are used
-    bool allLevels () { return true; }
+    //! const version of dof iterator
+    const DofIteratorType dend   ( ) const;
 
     //! set all dofs to zero
-    void clearLevel( int level );
     void clear( );
 
     //! set all dof to value x
     void set( RangeFieldType x );
-    void setLevel( RangeFieldType x, int level );
-
-    void addScaled (int level, const DFAdapt <DiscreteFunctionSpaceType> & g,
-                    const RangeFieldType &scalar);
 
     void addScaled (const DFAdapt <DiscreteFunctionSpaceType> & g,
                     const RangeFieldType &scalar);
@@ -138,7 +125,7 @@ namespace Dune {
     void setLocal (EntityType &it, const RangeFieldType &scalar);
 
     //! print all dofs
-    void print(std::ostream& s, int level);
+    void print(std::ostream& s);
 
     //! write leaf data to file in USPM format for Grape
     bool write_USPM(const char *filename , int timestep);
