@@ -23,15 +23,15 @@ namespace Dune
                          DofIteratorImp ,LocalFunctionIteratorImp, DiscreteFunctionImp > &g ) const
   {
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+    typedef ConstDofIteratorDefault<DofIteratorImp> ConstDofIter;
 
     RangeFieldType skp = 0.;
 
-    DofIteratorImp endit = this->dend ();
-    DofIteratorImp git =  g.dbegin ();
-    DofIteratorImp it = this->dbegin();
+    ConstDofIter endit = this->dend ();
+    ConstDofIter git =  g.dbegin ();
 
     // multiply
-    for(; it != endit; ++it,++git)
+    for(ConstDofIter it = this->dbegin(); it != endit; ++it,++git)
     {
       skp += (*it) * (*git);
     }
@@ -56,7 +56,7 @@ namespace Dune
 
     DofIteratorImp it = this->dbegin();
     DofIteratorImp endit = this->dend ();
-    DofIteratorImp git = gc.dbegin ();
+    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
 
     for(; it != endit; ++it, ++git)
       *it = *git;
@@ -80,7 +80,7 @@ namespace Dune
       static_cast<const DiscreteFunctionDefaultType &> ( g );
 
     DofIteratorImp endit = this->dend ();
-    DofIteratorImp git = gc.dbegin ();
+    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
 
     for(DofIteratorImp it = this->dbegin(); it != endit; ++it,++git )
     {
@@ -107,7 +107,7 @@ namespace Dune
       static_cast<const DiscreteFunctionDefaultType &> ( g );
 
     DofIteratorImp endit = this->dend ();
-    DofIteratorImp git = gc.dbegin ();
+    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
     for(DofIteratorImp it = this->dbegin(); it != endit; ++it, ++git)
     {
       *it += *git;
@@ -132,7 +132,7 @@ namespace Dune
       static_cast<const DiscreteFunctionDefaultType &> ( g );
 
     DofIteratorImp endit = this->dend ();
-    DofIteratorImp git = gc.dbegin ();
+    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
     for(DofIteratorImp it = this->dbegin(); it != endit; ++it, ++git)
     {
       *it -= *git;
@@ -185,7 +185,7 @@ namespace Dune
     // we would need const_iterators.....
 
     DofIteratorImp endit = this->dend ();
-    DofIteratorImp git = gc.dbegin ();
+    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
     for(DofIteratorImp it = this->dbegin(); it != endit; ++it, ++git)
     {
       *it += (*git) * scalar;

@@ -36,34 +36,40 @@ namespace Dune {
     DofImp& operator *()
     {
       return asImp().operator *();
-    };
+    }
+
+    //! return reference to dof
+    const DofImp& operator *() const
+    {
+      return asImp().operator *();
+    }
 
     //! return global dof number of dof
-    int index ()  {  return asImp().index();   };
+    int index () const {  return asImp().index(); }
 
     //! go to next dof
     DofIteratorType& operator++ ()
     {
       return asImp().operator ++ ();
-    };
+    }
 
     //! compare with other GlobalDofIterators
-    bool operator == (const DofIteratorType& I)
+    bool operator == (const DofIteratorType& I) const
     {
       return asImp().operator == (I);
-    };
+    }
 
     //! compare with other GlobalDofIterators
-    bool operator != (const DofIteratorType& I)
+    bool operator != (const DofIteratorType& I) const
     {
       return asImp().operator != (I);
-    };
+    }
 
     //! set the iterator to begin status
     void reset ()
     {
       asImp().reset();
-    };
+    }
 
   private:
     //! Barton-Nackman trick
@@ -98,8 +104,14 @@ namespace Dune {
     DofImp& operator [] (int n)
     {
       asImp().reset();
-      for (int i=0; i<n; i++)
-        ++asImp();
+      for (int i=0; i<n; i++) ++asImp();
+      return asImp().operator *();
+    };
+
+    const DofImp& operator [] (int n) const
+    {
+      asImp().reset();
+      for (int i=0; i<n; i++) ++asImp();
       return asImp().operator *();
     };
 
@@ -113,6 +125,70 @@ namespace Dune {
     {
       return static_cast<const DofIteratorType&>(*this);
     };
+  }; // end class DofIteratorDefault
+
+
+  //****************************************************************
+  //
+  /*! \brief
+     ConstDofIteratorDefault make a const interator out of a
+     dof iterator. This version works for all dof iterators.
+   */
+  //****************************************************************
+  template <class DofIteratorImp>
+  class ConstDofIteratorDefault
+    : public DofIteratorDefault< typename DofIteratorImp::DofType, DofIteratorImp>
+  {
+    typedef ConstDofIteratorDefault<DofIteratorImp> MyType;
+  public:
+    typedef DofIteratorImp DofIteratorType;
+    typedef typename DofIteratorType::DofType DofType;
+
+    //! Constructor
+    ConstDofIteratorDefault( DofIteratorImp & it ) : it_(it) {}
+
+    //! random access operator, for efficient implementation overload in the
+    //! implementation class DofIteratorImp
+    const DofType& operator [] (int n) const
+    {
+      return it_[n];
+    }
+
+    const DofType& operator *() const
+    {
+      return (*it_);
+    }
+
+    //! return global dof number of dof
+    int index () const {  return it_.index();   }
+
+    //! go to next dof
+    MyType & operator++ ()
+    {
+      ++it_;
+      return (*this);
+    }
+
+    //! compare with other GlobalDofIterators
+    bool operator == (const MyType& I) const
+    {
+      return it_  == I.it_;
+    }
+
+    //! compare with other GlobalDofIterators
+    bool operator != (const MyType& I) const
+    {
+      return it_ != I.it_;
+    }
+
+    //! set the iterator to begin status
+    void reset ()
+    {
+      it_.reset();
+    }
+
+  private:
+    DofIteratorImp it_;
   }; // end class DofIteratorDefault
 
 

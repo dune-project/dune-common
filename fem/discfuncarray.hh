@@ -51,12 +51,16 @@ namespace Dune {
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
 
-    //! ???
+    //! the MyType
     typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscreteFunctionType;
-    //! ???
+
+
+    //! the local function type
     typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
-    //! ???
+
+    //! the dof iterator type of this function
     typedef DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > DofIteratorType;
+    typedef ConstDofIteratorDefault<DofIteratorType> ConstDofIteratorType;
 
     //! ???
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
@@ -103,10 +107,10 @@ namespace Dune {
 
     // the const versions
     // we use the default implementation
-    const DofIteratorType dbegin () const;
+    ConstDofIteratorType dbegin () const;
 
     //! points behind the last dof of type cc
-    const DofIteratorType dend   () const;
+    ConstDofIteratorType dend   () const;
 
     //! Return the name of the discrete function
     const std::string& name() const {return name_;}
@@ -287,11 +291,13 @@ namespace Dune {
   //
   //***********************************************************************
   /** \brief ??? */
-  template < class DofType >
+  template < class DofImp >
   class DofIteratorArray : public
-                           DofIteratorDefault < DofType , DofIteratorArray < DofType > >
+                           DofIteratorDefault < DofImp , DofIteratorArray < DofImp > >
   {
   public:
+    typedef DofImp DofType;
+
     DofIteratorArray ( Array < DofType > & dofArray , int count )
       :  dofArray_ ( dofArray ) , constArray_ (dofArray) , count_ ( count ) {};
 

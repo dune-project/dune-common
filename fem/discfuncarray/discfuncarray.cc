@@ -149,19 +149,21 @@ namespace Dune
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline const typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
+  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::ConstDofIteratorType
   DiscFuncArray< DiscreteFunctionSpaceType >::dbegin ( ) const
   {
     DofIteratorType tmp ( dofVec_ , 0 );
-    return tmp;
+    ConstDofIteratorType tmp2(tmp);
+    return tmp2;
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline const typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
+  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::ConstDofIteratorType
   DiscFuncArray< DiscreteFunctionSpaceType >::dend ( ) const
   {
     DofIteratorType tmp ( dofVec_ , dofVec_.size() );
-    return tmp;
+    ConstDofIteratorType tmp2(tmp);
+    return tmp2;
   }
   //**************************************************************************
   //  Read and Write Methods
