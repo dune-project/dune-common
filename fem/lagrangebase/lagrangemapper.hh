@@ -21,23 +21,24 @@ namespace Dune {
   {
     enum { numCodims = IndexSetType::ncodim };
     int numLocalDofs_;
+    int level_;
     IndexSetType & indexSet_;
   public:
-    LagrangeMapper ( IndexSetType & is, int numLocalDofs )
-      : numLocalDofs_ (numLocalDofs) , indexSet_ (is) {}
+    LagrangeMapper ( IndexSetType & is, int numLocalDofs , int level )
+      : numLocalDofs_ (numLocalDofs) , level_(level) , indexSet_ (is) {}
 
     virtual ~LagrangeMapper () {}
 
-    int size (int level) const
+    int size () const
     {
-      return this->size(level,numCodims-1);
+      return this->codimsize(numCodims-1);
     }
 
     //! default is Lagrange with polOrd = 1
-    int size (int level, int codim ) const
+    int codimsize (int codim ) const
     {
       // return number of vertices * dimrange
-      return (dimrange* indexSet_.size( level , codim ));
+      return (dimrange* indexSet_.size( level_ , codim ));
     }
 
     //! map Entity an local Dof number to global Dof number
@@ -56,7 +57,12 @@ namespace Dune {
 
     virtual void calcInsertPoints () {};
 
-    virtual int newSize(int level) const
+    virtual int numberOfDofs () const
+    {
+      return numLocalDofs_;
+    }
+
+    virtual int newSize() const
     {
 
       /*
@@ -64,9 +70,7 @@ namespace Dune {
          for(int i=0; i<numCodims; i++)
          s+= (dofCodim_[i] * indexSet_.size(20,i));
        */
-
-      return this->size(level);
-
+      return this->size();
     }
 
   };
@@ -91,9 +95,12 @@ namespace Dune {
 
     int dofCodim_[numCodims];
 
+    // level of function space
+    int level_;
+
   public:
-    LagrangeMapper ( IndexSetType  & is , int numDofs )
-      : numberOfDofs_ (numDofs) , indexSet_ (is)
+    LagrangeMapper ( IndexSetType  & is , int numDofs , int level)
+      : numberOfDofs_ (numDofs) , indexSet_ (is) , level_(level)
     {
       codimOfDof_.resize(numberOfDofs_);
       numInCodim_.resize(numberOfDofs_);
@@ -117,16 +124,17 @@ namespace Dune {
     // we have virtual function ==> virtual destructor
     virtual ~LagrangeMapper () {}
 
-    int size (int level) const
+    int size () const
     {
-      return this->size(level,0);
+      return this->codimsize(0);
     }
 
     //! default is Lagrange with polOrd = 0
-    int size (int level , int codim ) const
+    int codimsize (int codim ) const
     {
       // return number of vertices
-      return dimrange * indexSet_.size(level,codim);
+      //std::cout << level_ << " " << codim << " size l|c \n";
+      return dimrange * indexSet_.size(level_,codim);
     }
 
     //! map Entity an local Dof number to global Dof number
@@ -141,9 +149,14 @@ namespace Dune {
     }
 
     // is called once and calcs the insertion points too
-    virtual int newSize(int level) const
+    virtual int newSize() const
     {
-      return dimrange * indexSet_.size(20,0);
+      return this->size();
+    }
+
+    virtual int numberOfDofs () const
+    {
+      return numberOfDofs_;
     }
 
     //! calc the new insertion points
