@@ -32,7 +32,7 @@ namespace Dune {
     Vec() {}
 
     //! Constructor making vector from built-in array
-    Vec (T* y) {for(int i=0; i<n; i++) x[i]=y[i];}
+    Vec (T* y) {for(int i=0; i<n; i++) a[i]=y[i];}
 
     //! Constructor making vector with one coordinate set, others zeroed
     Vec (int k, T t)
