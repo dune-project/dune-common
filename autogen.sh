@@ -91,8 +91,8 @@ echo "--> aclocal..."
 aclocal$AMVERS -I m4
 
 # applications should provide a config.h for now
-#echo "--> autoheader..."
-#autoheader
+echo "--> autoheader..."
+autoheader
 
 echo "--> automake..."
 automake$AMVERS --add-missing
