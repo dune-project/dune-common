@@ -717,6 +717,9 @@ namespace Dune {
           0 ... maxlevel with 0 the coarsest level.   */
     int maxlevel() const;
 
+    //! LeafIterator is the same as LevelIterator with codim = 0
+    typedef SLevelIterator<0,dim,dimworld,All_Partition> LeafIterator;
+
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
     SLevelIterator<cd,dim,dimworld,pitype> lbegin (int level);
@@ -732,6 +735,14 @@ namespace Dune {
     //! one past the end on this level
     template<int cd>
     SLevelIterator<cd,dim,dimworld,All_Partition> lend (int level);
+
+    //! Iterator to first entity of given codim on level
+    //! LeafIterator and LevelIterator are the same for this grid
+    LeafIterator leafbegin (int level);
+
+    //! one past the end on this level
+    //! LeafIterator and LevelIterator are the same for this grid
+    LeafIterator leafend (int level);
 
     /*! The communication interface
           @param T: array class holding data associated with the entities
