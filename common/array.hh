@@ -206,7 +206,7 @@ namespace Dune
       int i = (n/k)*k;
       if (i<n)
       {
-        sprintf(buf,"%4d",k*i);
+        sprintf(buf,"%4d",i);
         std::cout << buf << " " << row << " ";
         for (int j=i; j<n; j++)
         {
