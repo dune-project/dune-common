@@ -24,7 +24,6 @@ AC_DEFUN([DUNE_PATH_GRAPE],[
 
 # store old values
 ac_save_LDFLAGS="$LDFLAGS"
-ac_save_CXXFLAGS="$CXXFLAGS"
 ac_save_CPPFLAGS="$CPPFLAGS"
 ac_save_LIBS="$LIBS"
 
@@ -62,14 +61,14 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
     # if GL was found, add it implicitly...
     #   This is not the best choice, but testing without GL first and
     #   then trying again fails due to caching...
-    CXXFLAGS="$CXXFLAGS $GL_CFLAGS"
-    # !!! -lXext is somehow needed for libGL ?!
+    CPPFLAGS="$GRAPE_CPPFLAGS $GL_CFLAGS"
     LIBS="$LIBS $GL_LIBS -lXext"
+    LDFLAGS="$LDFLAGS $GL_LDFLAGS"
 
     AC_CHECK_LIB(gr, grape, 
-      [GRAPE_LDFLAGS="-L$GRAPEROOT"
-       GRAPE_CXXFLAGS="$GL_CFLAGS"
-       GRAPE_LIBS="-lgr $GL_LIBS"], 
+      [GRAPE_LDFLAGS="-L$GRAPEROOT $GL_LDFLAGS"
+       GRAPE_CPPFLAGS="$CPPFLAGS"
+       GRAPE_LIBS="-lgr $GL_LIBS -lXext"], 
       [HAVE_GRAPE="0"])
   fi
 
@@ -78,14 +77,12 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
     AC_SUBST(GRAPE_LIBS, $GRAPE_LIBS)
     AC_SUBST(GRAPE_LDFLAGS, $GRAPE_LDFLAGS)
     AC_SUBST(GRAPE_CPPFLAGS, $GRAPE_CPPFLAGS)
-    AC_SUBST(GRAPE_CXXFLAGS, $GRAPE_CXXFLAGS)
     AC_DEFINE(HAVE_GRAPE, 1, [Define to 1 if grape-library is found])
 
     # add to global list
     DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $GRAPE_LDFLAGS"
     DUNE_PKG_LIBS="$DUNE_PKG_LIBS $GRAPE_LIBS"
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $GRAPE_CPPFLAGS"
-    DUNE_PKG_CXXFLAGS="$DUNE_PKG_CXXFLAGS $GRAPE_CXXFLAGS"
   fi
 fi
 
@@ -101,7 +98,6 @@ AM_CONDITIONAL(GRAPE, test x$HAVE_GRAPE = x1)
 
 # reset old values
 LIBS="$ac_save_LIBS"
-CXXFLAGS="$ac_save_CXXFLAGS"
 CPPFLAGS="$ac_save_CPPFLAGS"
 LDFLAGS="$ac_save_LDFLAGS"
   

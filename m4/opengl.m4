@@ -5,11 +5,15 @@ AC_DEFUN([DUNE_PATH_OPENGL],[
 dnl use test from autoconf-archive
   AC_REQUIRE([AX_CHECK_GL])
 
-  # now GL_LIBS and GL_CFLAGS is set, just as we want it :)	
+  # GL_LIBS and GL_CFLAGS already set correctly, they implicitly
+  # contain pthread support!
 
-  # set variable for summary
+  # variable for summary
   with_opengl="no"
   if test "$no_gl" != "yes" ; then 
     with_opengl="yes"
+
+    # need pthreads-stuff in linker commandline as well
+    AC_SUBST(GL_LDFLAGS, $PTHREAD_CFLAGS)
   fi
 ])
