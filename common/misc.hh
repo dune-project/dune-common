@@ -33,6 +33,25 @@ namespace Dune {
     return t2;
   }
 
+  template <class T>
+  T* realloc(T* & pointer, int size) {
+    if (size==0) {
+      std::cerr << "Warning request for realloc with size=0\n";
+      size = 1;
+    }
+    pointer =
+      static_cast<T*>(::realloc(static_cast<void*>(pointer),
+                                size*sizeof(T)));
+    if (pointer == 0)
+      throw std::string("Bad realloc");
+    return pointer;
+  }
+
+  template <class T>
+  T* malloc(int size) {
+    return static_cast<T*>(::malloc(size*sizeof(T)));
+  }
+
   /** @} */
 
 }
