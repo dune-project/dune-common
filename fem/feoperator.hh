@@ -209,6 +209,14 @@ namespace Dune {
     }
 
   public:
+    template <class GridIteratorType>
+    void prepareLocal(GridIteratorType &it , const DiscFunctionType &Arg,
+                      DiscFunctionType & Dest )  { }
+
+    template <class GridIteratorType>
+    void finalizeLocal(GridIteratorType &it , const DiscFunctionType &Arg,
+                       DiscFunctionType & Dest ) { }
+
 
     // makes local multiply on the fly
     template <class GridIteratorType>

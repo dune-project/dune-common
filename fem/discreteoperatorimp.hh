@@ -16,17 +16,19 @@ namespace Dune {
       < DiscreteFunctionType , LocalOperatorImp,
           DiscreteOperator <DiscreteFunctionType,LocalOperatorImp > >
   {
+    typedef typename DiscreteFunctionType::FunctionSpaceType::RangeField RangeFieldType;
+
   public:
     //! get LocalOperator
     DiscreteOperator (LocalOperatorImp &op, bool leaf=false )
       : localOp_ ( op ) , leaf_ (leaf), level_ (-1) , prepared_ (false) {};
 
     //! remember time step size
-    void prepare ( int level , Domain &Arg, Range &Dest,
-                   Range *tmp , double a, double b)
+    void prepare ( int level , const Domain &Arg, Range &Dest,
+                   Range *tmp , RangeFieldType & a, RangeFieldType & b)
     {
       level_ = level;
-      localOp_.prepareGlobal(Arg,Dest,tmp,a,b);
+      localOp_.prepareGlobal(level,Arg,Dest,tmp,a,b);
       prepared_ = true;
     }
 
@@ -37,7 +39,7 @@ namespace Dune {
     {
       if(!prepared_)
       {
-        std::cerr << "DiscreteOperator::apply: I were not prepared! \n";
+        std::cerr << "DiscreteOperator::apply: I was not prepared! \n";
         abort();
       }
 
@@ -50,6 +52,7 @@ namespace Dune {
 
       if(leaf_)
       {
+        std::cout << "using  Leaf! \n";
         typedef typename GridType::LeafIterator LeafIterator;
 
         // make run through grid
@@ -70,10 +73,11 @@ namespace Dune {
     }
 
     //! finalize the operation
-    void finalize (  Domain &Arg, Range &Dest )
+    void finalize ( int level , const Domain &Arg, Range &Dest,
+                    Range *tmp , RangeFieldType & a, RangeFieldType & b)
     {
-      localOp_.finalizeGlobal(Arg,Dest);
       prepared_ = false;
+      localOp_.finalizeGlobal(level,Arg,Dest,tmp,a,b);
     }
 
     //! apply the operator
@@ -95,7 +99,7 @@ namespace Dune {
       {
         localOp_.prepareLocal (it , Arg, Dest);
         localOp_.applyLocal   (it , Arg, Dest);
-        localOp_.finalizeLocal(it, Arg, Dest);
+        localOp_.finalizeLocal(it , Arg, Dest);
       }
     }
 
