@@ -44,7 +44,7 @@ ALBERT_INCLUDE_PATH="$ALBERTROOT/include"
 
 # Albert needs special defined symbols
 
-ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim"
+ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim -DUSE_OLD_ALBERT"
 
 # set variables so that tests can use them
 REM_CPPFLAGS=$CPPFLAGS
