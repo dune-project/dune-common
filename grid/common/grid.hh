@@ -440,9 +440,14 @@ namespace Dune {
     //! volume of the intersection_self_global ()
     Vec<dimworld,ct>& outer_normal ();
 
+    //! return unit outer normal, this should be dependent on
+    //! local coordinates for higher order boundary
+    //! the normal is scaled with the integration element
+    Vec<dimworld,ct>& outer_normal (Vec<dim-1,ct>& local);
+
   protected:
     //! the outer normal
-    Vec<dimworld,ct> outerNormal_;
+    Vec<dimworld,ct> * outerNormal_;
 
     //! tmp Vec for integration_element
     Vec<dim-1,ct> tmp_;
