@@ -3164,6 +3164,22 @@ namespace Dune
     ALBERT free_mesh(mesh_);
   };
 
+  template < int dim, int dimworld > template<int codim, PartitionType pitype>
+  inline AlbertGridLevelIterator<codim,dim,dimworld,pitype>
+  AlbertGrid < dim, dimworld >::lbegin (int level, IteratorType IType, int proc)
+  {
+    AlbertGridLevelIterator<codim,dim,dimworld,pitype> it(*this,vertexMarker_,level,IType,proc);
+    return it;
+  }
+
+  template < int dim, int dimworld > template<int codim, PartitionType pitype>
+  inline AlbertGridLevelIterator<codim,dim,dimworld,pitype>
+  AlbertGrid < dim, dimworld >::lend (int level, IteratorType IType, int proc )
+  {
+    AlbertGridLevelIterator<codim,dim,dimworld,pitype> it((*this),level,IType,proc);
+    return it;
+  }
+
   template < int dim, int dimworld > template<int codim>
   inline AlbertGridLevelIterator<codim,dim,dimworld,All_Partition>
   AlbertGrid < dim, dimworld >::lbegin (int level, IteratorType IType, int proc)
@@ -3488,7 +3504,6 @@ namespace Dune
       return -1;
   };
 
-
   template < int dim, int dimworld >
   inline void AlbertGrid < dim, dimworld >::calcExtras ()
   {
@@ -3525,18 +3540,8 @@ namespace Dune
   template < int dim, int dimworld >  template <FileFormatType ftype>
   inline bool AlbertGrid < dim, dimworld >::writeGrid (const char * filename, albertCtype time )
   {
-    switch (ftype)
-    {
-    case xdr :
-    { return writeGridXdr (filename , time ); }
-    case USPM : {
-      //std::cout << "Write USPM \n";
-      return writeGridUSPM ( filename , time , maxlevel_ );
-    };
-    }
-
-    assert((ftype == xdr) || (ftype == USPM));
-    return false;
+    assert(ftype == xdr);
+    return writeGridXdr (filename , time );
   }
 
   template < int dim, int dimworld >  template <FileFormatType ftype>
@@ -3631,195 +3636,6 @@ namespace Dune
     }
 
     return maxwidth;
-  }
-
-  template < int dim, int dimworld >
-  inline bool AlbertGrid < dim, dimworld >::
-  writeGridUSPM ( const char * filename, double time , int level)
-  {
-    bool fake = true;
-    printf("Not implemented for dim=%d , dimworld=%d \n",dim,dimworld);
-    assert(fake != true);
-    return false;
-  }
-
-  template <>
-  inline bool AlbertGrid <2,2>::
-  writeGridUSPM ( const char * filename, double time , int level)
-  {
-    std::cout << "\nStarting USPM Grid write! \n";
-    // USPM 2d
-
-    enum {dim = 2}; enum {dimworld = 2};
-    typedef LeafIterator LEVit;
-
-    LEVit endit = leafend (level);
-
-    int nvx = size(level,dim);
-    int noe = size(level,0);
-
-    double **coord = new double *[nvx];
-    for (int i = 0; i < nvx; i++)
-      coord[i] = new double[dimworld];
-
-    int **nb = new int *[noe];
-    for (int i = 0; i < noe; i++)
-      nb[i] = new int[dim + 1];
-
-    int **vertex = new int *[noe];
-    for (int i = 0; i < noe; i++)
-      vertex[i] = new int[dim + 1];
-
-    // setup the USPM Mesh
-    for (LEVit it = leafbegin (level); it != endit; ++it)
-    {
-      int elNum = it->index();
-
-      typedef AlbertGridIntersectionIterator<dim,dimworld> Neighit;
-      Neighit nit = it->ibegin();
-
-      for (int i = 0; i < dim+1; i++)
-      {
-        int k = it->subIndex<dim>(i);
-        //      std::cout << k << " K " << nvx << " Nop\n";
-        vertex[elNum][i] = k;
-
-        nb[elNum][i] = nit->index();
-        //std::cout << nb[elNum][i] << " Neigh \n";
-
-        FieldVector<albertCtype, dimworld>& vec = (it->geometry())[i];
-        for (int j = 0; j < dimworld; j++)
-          coord[k][j] = vec[j];
-
-        ++nit;
-      }
-      //std::cout << "------------------------------------\n";
-    }
-
-    // write the USPM Mesh
-    FILE *file = fopen(filename, "w");
-    if(!file)
-    {
-      std::cout << "Couldnt open grid.uspm \n";
-      abort();
-    }
-    fprintf(file, "USPM 2\n");
-    fprintf(file, "%d %d \n", dim+1, (dim+1) * noe);
-    fprintf(file, "%d %d 0\n", noe , nvx);
-
-    for (int i = 0; i < nvx; i++)
-    {
-      fprintf(file, "%d ", i);
-      for (int j = 0; j < dimworld; j++)
-        fprintf(file, "%le ", coord[i][j]);
-      fprintf(file, "\n");
-    }
-
-    for (int i = 0; i < noe; i++)
-    {
-      fprintf(file, "%d ", i);
-      for (int j = 0; j < dim + 1; j++)
-        fprintf(file, "%d ", vertex[i][j]);
-      for (int j = 0; j < dim + 1; j++)
-        fprintf(file, "%d ", nb[i][j]);
-      fprintf(file, "\n");
-    }
-
-    fclose(file);
-    std::cout << "\nUSPM grid `" << filename << "' written !\n\n";
-
-    for (int i = 0; i < nvx; i++)
-      delete [] coord[i];
-    delete [] coord;
-
-    for (int i = 0; i < noe; i++)
-      delete [] nb[i];
-    delete [] nb;
-
-    for (int i = 0; i < noe; i++)
-      delete [] vertex[i];
-    delete [] vertex;
-
-    return true;
-  }
-
-  template <>
-  inline bool AlbertGrid<3,3>::
-  writeGridUSPM ( const char * filename, double time , int level)
-  {
-    std::cout << "\nStarting 3d Grid write\n";
-
-    enum {dim = 3}; enum {dimworld = 3};
-    typedef AlbertGridLevelIterator<0,dim,dimworld,All_Partition> LEVit;
-
-    double **coord = new double *[mesh_->n_vertices];
-    for (int i = 0; i < mesh_->n_vertices; i++)
-      coord[i] = new double[dimworld];
-
-    LEVit endit = lend<0>(level);
-
-    int **vertex = new int *[mesh_->n_elements];
-    for (int i = 0; i < mesh_->n_elements; i++)
-      vertex[i] = new int[dim + 1];
-
-    // / setup the Wesenber 3d Grid
-    for (LEVit it = lbegin<0>(level); it != endit; ++it)
-    {
-      int elNum = (*it).index();
-
-      for (int i = 0; i < dim + 1; i++)
-      {
-        ALBERT EL_INFO * elInfo = it->getElInfo();
-        int k = elInfo->el->dof[i][0];
-
-        vertex[elNum][i] = k;
-
-        FieldVector<albertCtype, dimworld> vec = (it->geometry())[i];
-        for (int j = 0; j < dimworld; j++)
-          coord[k][j] = vec[j];
-      }
-    }
-
-    // / write the Wesenber 3d grid Mesh
-    FILE *file = fopen(filename, "w");
-    if(!file)
-    {
-      std::cout << "Couldnt open `" << filename <<"' \n";
-      abort();
-    }
-    // die Zeit
-    fprintf(file, "0.0 \n");
-    fprintf(file, "%d \n", mesh_->n_vertices);
-
-    for (int i = 0; i < mesh_->n_vertices; i++)
-    {
-      for (int j = 0; j < dimworld; j++)
-        fprintf(file, "%le ", coord[i][j]);
-      fprintf(file, "\n");
-    }
-
-    fprintf(file, "%d \n", mesh_->n_elements);
-
-    for (int i = 0; i < mesh_->n_elements; i++)
-    {
-      for (int j = 0; j < dim + 1; j++)
-        fprintf(file, "%d ", vertex[i][j]);
-      double a = (double) i;
-      fprintf(file, "%f \n", a);
-    }
-
-    fclose(file);
-    for (int i = 0; i < mesh_->n_vertices; i++)
-      delete [] coord[i];
-    delete [] coord;
-
-    for (int i = 0; i < mesh_->n_elements; i++)
-      delete [] vertex[i];
-    delete [] vertex;
-
-    //system("gzip -fq grid3d.0");
-    std::cout << "3d Grid written! \n";
-    return true;
   }
 
   //! Index Mapping
@@ -3921,6 +3737,7 @@ namespace Dune
     };
     //std::cout << "End markNew \n";
   }
+
 
   // if defined some debugging test were made that reduce the performance
   // so they were switch off normaly
