@@ -824,6 +824,8 @@ namespace Albert
       //! EL_INFO th store the information of the neighbor if needed
       ALBERT EL_INFO * neighElInfo_;
 
+      Vec<dimworld,albertCtype> outNormal_;
+
       //! count on which neighbor we are lookin' at
       int neighborCount_;
     };

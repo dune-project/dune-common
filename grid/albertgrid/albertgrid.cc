@@ -542,19 +542,20 @@ namespace Dune
     return lambda;
   }
 
-
+  // default implementation calls ALBERT routine
   template< int dim, int dimworld>
   inline albertCtype AlbertGridElement<dim,dimworld>::elVolume () const
   {
     return ALBERT el_volume(elInfo_);
   }
 
+  // volume of one Element, here triangle
   template <>
   inline albertCtype AlbertGridElement<2,2>::elVolume () const
   {
     enum { dim = 2 };
     enum { dimworld = 2 };
-    const double volFac = 0.5;
+    const albertCtype volFac = 0.5;
     REAL e1[dimworld], e2[dimworld], det;
     const REAL  *v0;
 
@@ -571,13 +572,13 @@ namespace Dune
     return volFac*det;
   }
 
-
+  // volume of one Element, here therahedron
   template <>
   inline albertCtype AlbertGridElement<3,3>::elVolume () const
   {
     enum { dim = 3 };
     enum { dimworld = 3 };
-    const double volFac = 1.0/6.0;
+    const albertCtype volFac = 1.0/6.0;
 
     REAL e1[dimworld], e2[dimworld], e3[dimworld], det;
     const REAL  *v0;
@@ -666,6 +667,53 @@ namespace Dune
     builtinverse_ = true;
   }
 
+  inline void AlbertGridElement<2,2>::
+  builtJacobianInverse(const Vec<2,albertCtype>& local)
+  {
+    // volFactor should be 1/6, see ALBERT Doc
+    const albertCtype volFactor = 0.5;
+    enum { dimworld = 2 };
+    enum { dim = 2 };
+
+    REAL e1[dimworld], e2[dimworld], det, adet;
+    const REAL  *v0;
+    REAL a11, a12, a21, a22;
+
+    v0 = elInfo_->coord[0];
+    for (int i = 0; i < dimworld; i++)
+    {
+      e1[i] = elInfo_->coord[1][i] - v0[i];
+      e2[i] = elInfo_->coord[2][i] - v0[i];
+    }
+
+    det = e1[0] * e2[1] - e1[1] * e2[0];
+    adet = ABS(det);
+    if (adet < 1.0E-25)
+    {
+      std::cout << "abs(det) = " << adet << "\n";
+      Jinv_ = 0.0;
+    }
+    else
+    {
+      det = 1.0 / det;
+      a11 =  e2[1] * det;     /* (a_ij) = A^{-T} */
+      a21 = -e2[0] * det;
+      a12 = -e1[1] * det;
+      a22 =  e1[0] * det;
+
+      Jinv_(1,0) = a11;
+      Jinv_(1,1) = a21;
+      Jinv_(2,0) = a12;
+      Jinv_(2,1) = a22;
+      Jinv_(0,0) = - Jinv_(1,0) - Jinv_(2,0);
+      Jinv_(0,1) = - Jinv_(1,1) - Jinv_(2,1);
+    }
+
+    volume_ = volFactor * adet;
+    builtinverse_ = true;
+    return;
+  }
+
   inline void AlbertGridElement<3,3>::
   builtJacobianInverse(const Vec<3,albertCtype>& local)
   {
@@ -675,14 +723,14 @@ namespace Dune
     enum { dimworld = 3 };
     enum { dim = 3 };
 
-    int i, j;
     REAL e1[dimworld], e2[dimworld], e3[dimworld];
     const REAL  *v0;
     REAL det, adet;
     REAL a11, a12, a13, a21, a22, a23, a31, a32, a33;
 
     v0 = elInfo_->coord[0];
-    for (i = 0; i < dimworld; i++) {
+    for (int i = 0; i < dimworld; i++)
+    {
       e1[i] = elInfo_->coord[1][i] - v0[i];
       e2[i] = elInfo_->coord[2][i] - v0[i];
       e3[i] = elInfo_->coord[3][i] - v0[i];
@@ -1505,40 +1553,37 @@ namespace Dune
   inline Vec<dimworld,albertCtype>& AlbertGridNeighborIterator<dim,dimworld>::
   unit_outer_normal(Vec<dim-1,albertCtype>& local)
   {
-    Vec<dimworld,albertCtype> tmp = outer_normal(local);
+    // calculates the outer_normal
+    Vec<dimworld,albertCtype>& tmp = outer_normal(local);
 
-    double norm = tmp.norm2();
-    if(!(norm > 0.0)) norm = 1.0;
+    double norm_1 = (1.0/tmp.norm2());
+    assert(norm_1 > 0.0);
+    outNormal_ *= norm_1;
 
-    for(int i=0; i<dimworld; i++)
-      outerNormal_(i) = tmp(i)/norm;
-
-    return outerNormal_;
+    return outNormal_;
   }
 
   template< int dim, int dimworld>
   inline Vec<dimworld,albertCtype>& AlbertGridNeighborIterator<dim,dimworld>::
   unit_outer_normal()
   {
-    Vec<dimworld,albertCtype> tmp = outer_normal();
+    // calculates the outer_normal
+    Vec<dimworld,albertCtype>& tmp = outer_normal();
 
-    double norm = tmp.norm2();
+    double norm_1 = (1.0/tmp.norm2());
+    assert(norm_1 > 0.0);
+    outNormal_ *= norm_1;
 
-    for(int i=0; i<dimworld; i++)
-      outerNormal_(i) = tmp(i)/norm;
-
-    return outerNormal_;
+    return outNormal_;
   }
 
   template< int dim, int dimworld>
   inline Vec<dimworld,albertCtype>& AlbertGridNeighborIterator<dim,dimworld>::
   outer_normal(Vec<dim-1,albertCtype>& local)
   {
-    std::cout << "outer_normal() not correctly implemented yet! \n";
-    for(int i=0; i<dimworld; i++)
-      outerNormal_(i) = 0.0;
-
-    return outerNormal_;
+    // we dont have curved boundary
+    // therefore return outer_normal
+    return outer_normal();
   }
 
   template< int dim, int dimworld>
@@ -1547,9 +1592,9 @@ namespace Dune
   {
     std::cout << "outer_normal() not correctly implemented yet! \n";
     for(int i=0; i<dimworld; i++)
-      outerNormal_(i) = 0.0;
+      outNormal_(i) = 0.0;
 
-    return outerNormal_;
+    return outNormal_;
   }
 
   template <>
@@ -1559,32 +1604,12 @@ namespace Dune
     // seems to work
     ALBERT REAL_D *coord = elInfo_->coord;
 
-    outerNormal_(0) = -(coord[(neighborCount_+1)%3][1] - coord[(neighborCount_+2)%3][1]);
-    outerNormal_(1) =   coord[(neighborCount_+1)%3][0] - coord[(neighborCount_+2)%3][0];
+    outNormal_(0) = -(coord[(neighborCount_+1)%3][1] - coord[(neighborCount_+2)%3][1]);
+    outNormal_(1) =   coord[(neighborCount_+1)%3][0] - coord[(neighborCount_+2)%3][0];
 
-    return outerNormal_;
+    return outNormal_;
   }
 
-  template <>
-  inline Vec<3,albertCtype>& AlbertGridNeighborIterator<3,3>::
-  outer_normal(Vec<2,albertCtype> &local)
-  {
-    // rechne Kreuzprodukt der Vectoren aus
-    ALBERT REAL_D *coord = elInfo_->coord;
-    Vec<3,albertCtype> v;
-    Vec<3,albertCtype> u;
-
-    for(int i=0; i<3; i++)
-    {
-      v(i) = coord[(neighborCount_+2)%4][i] - coord[(neighborCount_+1)%4][i];
-      u(i) = coord[(neighborCount_+3)%4][i] - coord[(neighborCount_+2)%4][i];
-    }
-
-    for(int i=0; i<3; i++)
-      outerNormal_(i) = u((i+1)%3)*v((i+2)%3) - u((i+2)%3)*v((i+1)%3);
-
-    return outerNormal_;
-  }
   template <>
   inline Vec<3,albertCtype>& AlbertGridNeighborIterator<3,3>::
   outer_normal()
@@ -1601,9 +1626,9 @@ namespace Dune
     }
 
     for(int i=0; i<3; i++)
-      outerNormal_(i) = u((i+1)%3)*v((i+2)%3) - u((i+2)%3)*v((i+1)%3);
+      outNormal_(i) = u((i+1)%3)*v((i+2)%3) - u((i+2)%3)*v((i+1)%3);
 
-    return outerNormal_;
+    return outNormal_;
   }
 
   template< int dim, int dimworld>
@@ -2333,6 +2358,9 @@ namespace Dune
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename)
   {
+    assert(dimworld == DIM_OF_WORLD);
+    assert(dim      == DIM);
+
     bool makeNew = true;
     {
       std::fstream file (MacroTriangFilename,std::ios::in);
