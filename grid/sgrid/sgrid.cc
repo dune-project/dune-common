@@ -3,9 +3,11 @@
 #ifndef __SGRID_CC__
 #define __SGRID_CC__
 
+#include <iostream>
+#include <assert.h>
+
 namespace Dune {
 
-#include <assert.h>
 
   //************************************************************************
   // SElement
@@ -140,25 +142,25 @@ namespace Dune {
   template<int dim, int dimworld>
   inline void SElement<dim,dimworld>::print (std::ostream& ss, int indent)
   {
-    for (int k=0; k<indent; k++) ss << " ";ss << "SElement<" << dim << "," << dimworld << ">" << endl;
-    for (int k=0; k<indent; k++) ss << " ";ss << "{" << endl;
-    for (int k=0; k<indent+2; k++) ss << " ";ss << "Position: " << s << endl;
+    for (int k=0; k<indent; k++) ss << " ";ss << "SElement<" << dim << "," << dimworld << ">" << std::endl;
+    for (int k=0; k<indent; k++) ss << " ";ss << "{" << std::endl;
+    for (int k=0; k<indent+2; k++) ss << " ";ss << "Position: " << s << std::endl;
     for (int j=0; j<dim; j++)
     {
       for (int k=0; k<indent+2; k++) ss << " ";
-      ss << "direction " << j << "  " << A(j) << endl;
+      ss << "direction " << j << "  " << A(j) << std::endl;
     }
     for (int j=0; j<1<<dim; j++)
     {
       for (int k=0; k<indent+2; k++) ss << " ";
-      ss << "corner " << j << "  " << c[j] << endl;
+      ss << "corner " << j << "  " << c[j] << std::endl;
     }
     if (builtinverse)
     {
       for (int k=0; k<indent+2; k++) ss << " ";ss << "Jinv ";
       Jinv.print(ss,indent+2);
     }
-    for (int k=0; k<indent+2; k++) ss << " ";ss << "builtinverse " << builtinverse << endl;
+    for (int k=0; k<indent+2; k++) ss << " ";ss << "builtinverse " << builtinverse << std::endl;
     for (int k=0; k<indent; k++) ss << " ";ss << "}";
   }
 
@@ -878,9 +880,9 @@ namespace Dune {
       for (int i=0; i<dim; i++) h[l](i) = H[i]/((sgrid_ctype)N[l][i]);
     }
 
-    cout << "Making SGrid with " << L << " level(s)." << endl;
-    for (int l=0; l<L; l++)
-      mapper[l].print(cout,0);
+    //	std::cout << "Making SGrid with " << L << " level(s)." << std::endl;
+    //	for (int l=0; l<L; l++)
+    //		mapper[l].print(std::cout,0);
   }
 
   template<int dim, int dimworld>

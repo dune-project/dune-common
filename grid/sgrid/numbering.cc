@@ -3,6 +3,8 @@
 #ifndef __NUMBERING_CC__
 #define __NUMBERING_CC__
 
+#include <iostream>
+
 namespace Dune {
 
   template<int dim>
@@ -167,13 +169,13 @@ namespace Dune {
     for (int k=0; k<indent; k++) ss << " ";
     ss << "CubeMapper [" ;
     for (int i=0; i<dim; i++)
-      cout << N[i] << " ";
-    ss << "]" << endl;
+      std::cout << N[i] << " ";
+    ss << "]" << std::endl;
     for (int i=0; i<=dim; i++)
     {
       for (int k=0; k<indent; k++) ss << " ";
       ss << "  " << ne[i] << " elements of codim " << i
-         << " in dimension " << dim << endl;
+         << " in dimension " << dim << std::endl;
     }
   }
 
