@@ -154,7 +154,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline Mat<dim,dim>& Element<dim,dimworld,ct,ElementImp>::Jacobian_inverse (const FieldVector<ct, dim>& local)
+  inline Mat<dim,dim,ct>& Element<dim,dimworld,ct,ElementImp>::Jacobian_inverse (const FieldVector<ct, dim>& local)
   {
     return asImp().Jacobian_inverse(local);
   }

@@ -333,7 +333,7 @@ namespace Dune {
     ct integration_element (const FieldVector<ct, dim>& local);
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim>& Jacobian_inverse (const FieldVector<ct, dim>& local);
+    Mat<dim,dim,ct>& Jacobian_inverse (const FieldVector<ct, dim>& local);
 
     /*! \internal
        Checking presence and format of all interface functions. With
