@@ -178,6 +178,27 @@ namespace Dune {
      diffrent processors.
    */
 
+
+  template <class T>
+  class GathScatt
+  {
+    T fuck;
+  public:
+
+    template <class VecType>
+    void gather (VecType & t, int index )
+    {
+      fuck = t[index];
+    }
+
+    template <class VecType>
+    void scatter(VecType & t , int index)
+    {
+      t[index] = fuck;
+    }
+
+  };
+
 #ifdef HAVE_MPI
   template <class GridType, class IndexSetType>
   class AlbertGridCommunicator
@@ -197,15 +218,30 @@ namespace Dune {
     template <class DiscFuncType>
     void sendRecive( DiscFuncType & vec)
     {
+
+#ifndef YGRID
       loadSendBuffer(vec);
-      communicate();
+      communicate(vec);
       unloadRecvBuffer(vec);
+#else
+      vec.print(std::cout,1);
+
+      typedef typename DiscFuncType::DofIteratorType DofIteratorType;
+      DofIteratorType it = vec.dbegin(-1);
+
+      GathScatt<double> fake;
+      grid_.communicate(it,fake,InteriorBorder_All_Interface,BackwardCommunication,grid_.maxlevel());
+      grid_.communicate(it,fake,Overlap_All_Interface,BackwardCommunication,grid_.maxlevel());
+#endif
     }
 
     //! send and recive DiscreteFunction
     template <class DiscFuncType>
     void loadSendBuffer( DiscFuncType & vec, int pos=0)
     {
+
+#ifndef YGRID
+
       {
         typedef typename DiscFuncType::DofIteratorType DofIteratorType;
         typedef typename ProcessorListType::Iterator ListIterator;
@@ -220,12 +256,16 @@ namespace Dune {
           (*procit).loadSendBuffer(it,pos);
         }
       }
+#endif
+
     }
 
     //! send and recive DiscreteFunction
     template <class DiscFuncType>
     void unloadRecvBuffer( DiscFuncType & vec, int pos=0)
     {
+
+#ifndef YGRID
       {
         typedef typename DiscFuncType::DofIteratorType DofIteratorType;
         typedef typename ProcessorListType::Iterator ListIterator;
@@ -239,6 +279,7 @@ namespace Dune {
           (*procit).unloadRecvBuffer(it);
         }
       }
+#endif
     }
 
     //! send and recive DiscreteFunction
@@ -291,15 +332,15 @@ namespace Dune {
     // minimize timestepsize over all processors
     void waitForAll()
     {
-      double timestep = 1.0;
-      double ret=-1.0;
-      MPI_Allreduce(&timestep, &ret, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Barrier ( MPI_COMM_WORLD );
     }
 
     // send and recive a vector
     template <class DofArrayType>
     void sendReciveVec( DofArrayType & vec)
     {
+#ifndef YGRID
+
       {
         typedef typename ProcessorListType::Iterator ListIterator;
 
@@ -325,6 +366,9 @@ namespace Dune {
         }
       }
 
+#endif
+
+
     }
 
   private:
@@ -332,6 +376,8 @@ namespace Dune {
     // send and recive data to all neighbouring processors
     void communicate()
     {
+
+#ifndef YGRID
       // send data
       {
         typedef typename ProcessorListType::Iterator ListIterator;
@@ -400,13 +446,16 @@ namespace Dune {
           }
         }
       }
+
+#endif
+
     }
 
     // build address book
     void initialize ()
     {
+#ifndef YGRID
       typedef typename GridType::template Traits<0>::LevelIterator LevelIteratorType;
-
       LevelIteratorType it    = grid_.template lbegin<0> (0,Ghosts);
       LevelIteratorType endit = grid_.template lend  <0> (0,Ghosts);
 
@@ -466,6 +515,8 @@ namespace Dune {
           //(*procit).print(std::cout);
         }
       }
+#endif
+
     }
 
     // reference to corresponding grid

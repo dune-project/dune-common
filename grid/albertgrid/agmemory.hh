@@ -15,17 +15,17 @@ namespace Dune
 
     struct ObjectEntity
     {
-      ObjectEntity () : next (NULL), item (NULL) {};
+      ObjectEntity () : next (0), item (0) {};
 
       ObjectEntity *next;
       Object       *item;
     };
 
     // freeEntity_ = NULL
-    MemoryProvider() : freeEntity_ (NULL) {};
+    MemoryProvider() : freeEntity_ (0) {};
 
     // do not copy pointers
-    MemoryProvider(const MemoryProvider<Object> & org) : freeEntity_ (NULL) {};
+    MemoryProvider(const MemoryProvider<Object> & org) : freeEntity_ (0) {}
 
     // call deleteEntity
     ~MemoryProvider ();
@@ -142,7 +142,7 @@ namespace Dune
   {
     obj->next = freeEntity_;
     freeEntity_ = obj;
-    return NULL;
+    return 0;
   }
 
   template <class Object>
@@ -167,7 +167,6 @@ namespace Dune
 
   typedef MemoryProvider < ALBERT EL_INFO > ElInfoProvider;
   static ElInfoProvider elinfoProvider;
-
 
 } // end namespace Dune
 

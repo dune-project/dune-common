@@ -396,6 +396,7 @@ static void init_macro_data(MACRO_DATA *data)
   return;
 }
 
+#ifndef _ALBERTA_
 static void free_macro_data(MACRO_DATA *data)
 {
   int ne = data->n_macro_elements, nv = data->n_total_vertices;
@@ -422,6 +423,7 @@ static void free_macro_data(MACRO_DATA *data)
 
   return;
 }
+#endif
 
 /****************************************************************************/
 /* read data->neigh into mel[].neigh[]                                      */
