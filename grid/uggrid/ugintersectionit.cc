@@ -14,7 +14,7 @@ namespace Dune {
     if (!isValid())
       return NULL;
 
-    return UG<dimworld>::NbElem(center_, neighborCount_);
+    return UG_NS<dimworld>::NbElem(center_, neighborCount_);
   }
 
   template< int dim, int dimworld>
@@ -34,7 +34,7 @@ namespace Dune {
   {
     return center_
            && neighborCount_ >=0
-           && neighborCount_ < UG<dimworld>::Sides_Of_Elem(center_);
+           && neighborCount_ < UG_NS<dimworld>::Sides_Of_Elem(center_);
   }
 
   template< int dim, int dimworld>
@@ -98,7 +98,7 @@ namespace Dune {
   inline bool
   UGGridIntersectionIterator < 3,3 >::boundary()
   {
-    return UG<3>::NbElem(center_, neighborCount_) == NULL;
+    return UG_NS<3>::NbElem(center_, neighborCount_) == NULL;
   }
 #endif
 
@@ -107,7 +107,7 @@ namespace Dune {
   inline bool
   UGGridIntersectionIterator < 2,2 >::boundary()
   {
-    return UG<2>::NbElem(center_, neighborCount_) == NULL;
+    return UG_NS<2>::NbElem(center_, neighborCount_) == NULL;
   }
 #endif
 
@@ -180,7 +180,7 @@ namespace Dune {
   number_in_self ()
   {
     /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
-    const int nSides = UG<dimworld>::Sides_Of_Elem(center_);
+    const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);
 
     return (neighborCount_ + nSides -1)%nSides;
   }
@@ -192,7 +192,7 @@ namespace Dune {
     const typename TargetType<0,dimworld>::T* other = target();
 
     /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
-    const int nSides = UG<dimworld>::Sides_Of_Elem(other);
+    const int nSides = UG_NS<dimworld>::Sides_Of_Elem(other);
 
     int i;
     for (i=0; i<Sides_Of_Elem(other); i++)

@@ -40,7 +40,7 @@ namespace Dune
       char** argv = &arg;
 
 
-      UG<dimworld>::InitUg(&argc, &argv);
+      UG_NS<dimworld>::InitUg(&argc, &argv);
 
       // Create a dummy problem
 #ifdef _3
@@ -54,8 +54,8 @@ namespace Dune
       upp[0] = NULL;
       coeffs[0] = NULL;
 
-      if (UG<dimworld>::CreateBoundaryValueProblem("DuneDummyProblem",
-                                                   1,coeffs,1,upp) == NULL)
+      if (UG_NS<dimworld>::CreateBoundaryValueProblem("DuneDummyProblem",
+                                                      1,coeffs,1,upp) == NULL)
         assert(false);
 
 
@@ -287,7 +287,7 @@ namespace Dune
     //         free(newArgs[i]);
 
     // Get a direct pointer to the newly created multigrid
-    multigrid_ = UG<dim>::GetMultigrid("DuneMG");
+    multigrid_ = UG_NS<dim>::GetMultigrid("DuneMG");
     assert(multigrid_);
   }
 

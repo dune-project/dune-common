@@ -160,11 +160,11 @@ inline int UGGridEntity<codim,dim,dimworld>::count ()
       return 1;
     case 1 :
 
-      return UG<3>::Sides_Of_Elem(target_);
+      return UG_NS<3>::Sides_Of_Elem(target_);
     case 2 :
-      return UG<3>::Edges_Of_Elem(target_);
+      return UG_NS<3>::Edges_Of_Elem(target_);
     case 3 :
-      return UG<3>::Corners_Of_Elem(target_);
+      return UG_NS<3>::Corners_Of_Elem(target_);
     }
 
   } else {
@@ -173,9 +173,9 @@ inline int UGGridEntity<codim,dim,dimworld>::count ()
     case 0 :
       return 1;
     case 1 :
-      return UG<2>::Edges_Of_Elem(target_);
+      return UG_NS<2>::Edges_Of_Elem(target_);
     case 2 :
-      return UG<2>::Corners_Of_Elem(target_);
+      return UG_NS<2>::Corners_Of_Elem(target_);
     }
 
   }
@@ -242,9 +242,9 @@ template <int cc>
 inline int UGGridEntity<0, dim, dimworld>::subIndex(int i)
 {
 #ifdef _3
-  UG3d::node* node = (UG3d::node*)UG<dimworld>::Corner(target_,i);
+  UG3d::node* node = (UG3d::node*)UG_NS<dimworld>::Corner(target_,i);
 #else
-  UG2d::node* node = (UG2d::node*)UG<dimworld>::Corner(target_,i);
+  UG2d::node* node = (UG2d::node*)UG_NS<dimworld>::Corner(target_,i);
 #endif
   return node->myvertex->iv.id;
 }

@@ -8,7 +8,7 @@
 namespace Dune {
 
   template<int dim>
-  class UG {
+  class UG_NS {
   public:
 
     /** \brief Returns pointers to the coordinate arrays of an UG element */

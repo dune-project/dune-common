@@ -70,7 +70,7 @@ inline ElementType UGGridElement<dim,dimworld>::type()
   case 1 : return line;
   case 2 :
 #ifdef _2
-    switch (UG<dimworld>::Tag(target_)) {
+    switch (UG_NS<dimworld>::Tag(target_)) {
     case UG2d::TRIANGLE :
       return triangle;
     case UG2d::QUADRILATERAL :
@@ -81,7 +81,7 @@ inline ElementType UGGridElement<dim,dimworld>::type()
 #endif
 
   case 3 :
-    switch (UG<dimworld>::Tag(target_)) {
+    switch (UG_NS<dimworld>::Tag(target_)) {
 #ifdef _3
     case UG3d::TETRAHEDRON :
       return tetrahedron;
@@ -110,7 +110,7 @@ inline int UGGridElement<dim,dimworld>::corners()
   //     return CORNERS_OF_ELEM(target_);
   // #undef CORNERS_OF_ELEM
   // #undef TAG
-  return UG<dimworld>::Corners_Of_Elem(target_);
+  return UG_NS<dimworld>::Corners_Of_Elem(target_);
 }
 
 
@@ -182,7 +182,7 @@ operator [](int i)
   //     UG3d::VERTEX* vertex = CORNER(target_,i)->myvertex;
   // #undef CORNER
   // #undef TAG
-  UG2d::VERTEX* vertex = UG<2>::Corner(target_,i)->myvertex;
+  UG2d::VERTEX* vertex = UG_NS<2>::Corner(target_,i)->myvertex;
 
   for (int j=0; j<2; j++)
     coord_(j,i) = vertex->iv.x[j];
@@ -260,10 +260,10 @@ global(const Vec<dim>& local)
 
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];
-  UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
+  UG_NS<dimworld>::Corner_Coordinates(target_, cornerCoords);
 
   // Actually do the computation
-  UG<dimworld>::Local_To_Global(corners(), cornerCoords, local, globalCoord);
+  UG_NS<dimworld>::Local_To_Global(corners(), cornerCoords, local, globalCoord);
 
   return globalCoord;
 }
@@ -275,11 +275,11 @@ integration_element (const Vec<dim,UGCtype>& local)
 {
   //     // dimworld*dimworld is an upper bound for the number of vertices
   //     UGCtype* cornerCoords[dimworld*dimworld];
-  //     UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
+  //     UG_NS<dimworld>::Corner_Coordinates(target_, cornerCoords);
 
   //     // compute the transformation onto the reference element (or vice versa?)
   //     Mat<dimworld,dimworld> mat;
-  //     UG<dimworld>::Transformation(corners(), cornerCoords, local, mat);
+  //     UG_NS<dimworld>::Transformation(corners(), cornerCoords, local, mat);
 
   return ABS(Jacobian_inverse(local).determinant());
 }
@@ -290,11 +290,11 @@ Jacobian_inverse (const Vec<dim,UGCtype>& local)
 {
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];
-  UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
+  UG_NS<dimworld>::Corner_Coordinates(target_, cornerCoords);
 
 
   // compute the transformation onto the reference element (or vice versa?)
-  UG<dimworld>::Transformation(corners(), cornerCoords, local, jac_inverse_);
+  UG_NS<dimworld>::Transformation(corners(), cornerCoords, local, jac_inverse_);
 
   return jac_inverse_;
 }
