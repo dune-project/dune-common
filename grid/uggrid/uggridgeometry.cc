@@ -185,8 +185,30 @@ template <class GridImp>
 inline FieldVector<UGCtype, 3> UGGridGeometry<2,3,GridImp>::
 global(const FieldVector<UGCtype, 2>& local) const
 {
-  DUNE_THROW(GridError, "UGGridGeometry<2,3>::global not implemented yet!");
-  //return FieldVector<UGCtype, 3> dummy;
+
+  FieldVector<UGCtype, 3> result;
+
+  if (elementType_ == triangle) {
+
+    for (int i=0; i<3; i++)
+      result[i] = (1.0-local[0]-local[1])*coord_[0][i]
+                  + local[0]*coord_[1][i]
+                  + local[1]*coord_[2][i];
+
+  } else {
+
+    // quadrilateral
+
+    for (int i=0; i<3; i++)
+      result[i] = (1.0-local[0])*(1.0-local[1])*coord_[0][i]
+                  + local[0]*(1.0-local[1])*coord_[1][i]
+                  + local[0]*local[1]*coord_[2][i]
+                  + (1.0-local[0])*local[1]*coord_[3][i];
+
+  }
+
+  return result;
+
 }
 
 
