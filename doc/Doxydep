@@ -20,7 +20,8 @@ if (! $target) { $target = $defaulttarget };
 sub addDep ($) {
 	my $dep = shift;
 	if (defined($dep) && ! $dep eq "") {
-		print DEPFILE "$target: $dep\n";
+		print DEPFILE "$target: $dep\n\n";
+		print DEPFILE "$dep:\n\n";
 	}
 }
 
