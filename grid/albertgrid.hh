@@ -224,42 +224,7 @@ namespace Albert
 
       // template method for map the vertices of EL_INFO to the actual
       // coords with face_,edge_ and vertex_ , needes for operator []
-      template <int cc> int mapVertices (int i) const
-      {
-        return i;
-      }
-
-      // codim == 1, Faces
-      template <> int mapVertices<1> (int i) const
-      {
-        // N_VERTICES (from ALBERT) = dim +1
-        // std::cout << "Its me! \n";
-        //return ((face_ + 1 + i) % (dimension+1));
-        return ((face_ + 1 + i) % (dimworld+1));
-
-      }
-
-#if DIM == 3
-      // codim == 2, dim > 2, Edges
-      template <> int mapVertices<2 << dimworld> (int i) const
-      {
-        // N_VERTICES (from ALBERT) = dim +1
-        return ((face_+1)+ (edge_+1) +i)% (dimension+1);
-      };
-#else
-      template <> int mapVertices<2> (int i) const
-      {
-        // N_VERTICES (from ALBERT) = dim +1
-        return ((face_+1)+ (vertex_+1) +i)% (dimension+1);
-      }
-#endif
-
-      template <> int mapVertices<3> (int i) const
-      {
-        // N_VERTICES (from ALBERT) = dim +1 = 4
-        return ((face_+1)+ (edge_+1) +(vertex_+1) +i) %( 4 );
-      }
-
+      template <int cc> int mapVertices (int i) const;
 
       //! the vertex coordinates
       Mat<dimworld,dim+1,albertCtype> coord_;
@@ -342,23 +307,6 @@ namespace Albert
       //! geometry of this entity
       AlbertGridElement<dim-codim,dimworld>& geometry ();
 
-      /*! Intra-element access to entities of codimension cc > codim. Return number of entities
-         with codimension cc.
-       */
-
-#if 0
-      //!< Default codim 1 Faces and codim == dim Vertices
-      template <int cc> int count () { return ((dim-codim)+1); };
-
-      //! Provide access to mesh entity i of given codimension. Entities
-      //!  are numbered 0 ... count<cc>()-1
-      template <int cc> AlbertGridLevelIterator<cc,dim,dimworld>& entity (int i)
-      {
-        AlbertGridLevelIterator<cc,dim,dimworld> vxEntity_(grid_,NULL,0,0,0,0);
-        vxEntity_.virtualEntity_.setElInfo(elInfo_,elInfo_->el->dof[((face_ + 1) + i)%(dimension+1)][0],0,0,((face_ + 1) + i)%(dimension+1));
-        return vxEntity_;
-      };
-#endif
       /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
          This can speed up on-the-fly interpolation for linear conforming elements
          Possibly this is sufficient for all applications we want on-the-fly.
@@ -390,9 +338,6 @@ namespace Albert
       //! the cuurent geometry
       AlbertGridElement<dim-codim,dimworld> geo_;
       bool builtgeometry_;     //!< true if geometry has been constructed
-
-      //! for vertex access, to be revised, filled on demand
-      //AlbertGridLevelIterator<dim,dim,dimworld> vxEntity_;
 
       Vec<dim,albertCtype> localFatherCoords_;
 
@@ -476,42 +421,15 @@ namespace Albert
          with codimension cc.
        */
       //!< Default codim 1 Faces and codim == dim Vertices
-      template<int cc> int count () { return (dim+1); };
-
-      //! specialization only for codim == 2 , edges,
-      //! a tetrahedron has always 6 edges
-      template<> int count<2 << dim> () { return 6; };
+      template<int cc> int count ();
 
       //! return index of sub entity with codim = cc and local number i
       //! i.e. return global number of vertex i
-      template <int cc> int subIndex (int i)
-      {
-        return (*entity<cc>(i)).index();
-      }
-
-      template <> int subIndex<dim> (int i)
-      {
-        return grid_.indexOnLevel<dim>(elInfo_->el->dof[i][0],level_);
-      }
+      template<int cc> int subIndex (int i);
 
       //! Provide access to mesh entity i of given codimension. Entities
       //!  are numbered 0 ... count<cc>()-1
-      template<int cc> AlbertGridLevelIterator<cc,dim,dimworld> entity (int i)
-      {
-        return faceEntity(i);
-      };
-
-      template<> AlbertGridLevelIterator<2<<dim,dim,dimworld>
-      entity< 2<<dim > (int i)
-      {
-        return edgeEntity(i);
-      };
-
-      template<> AlbertGridLevelIterator<dim,dim,dimworld> entity<dim> (int i)
-      {
-        vxEntity_.virtualEntity_.setElInfo(elInfo_,elInfo_->el->dof[i][0],0,0,i);
-        return vxEntity_;
-      };
+      template<int cc> AlbertGridLevelIterator<cc,dim,dimworld> entity (int i);
 
       /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
          which has an entity of codimension 1 in commen with this entity. Access to neighbors
@@ -523,17 +441,10 @@ namespace Albert
       AlbertGridNeighborIterator<dim,dimworld> nend ();
 
       //! returns true if Entity has children
-      bool hasChildren ()
-      {
-        //return (elInfo_->el->child[0] != NULL);
-        return ( level_ != grid_.maxlevel() );
-      };
+      bool hasChildren ();
 
       //! return number of layers far from refined elements of this level
-      int refDistance ()
-      {
-        return 0;
-      }
+      int refDistance ();
 
       //! Inter-level access to father element on coarser grid.
       //! Assumes that meshes are nested.
@@ -582,6 +493,7 @@ namespace Albert
                       unsigned char face = 0,
                       unsigned char edge = 0,
                       unsigned char vertex = 0 );
+
       // needed for LevelIterator to compare
       ALBERT EL_INFO *getElInfo () const;
 
@@ -591,23 +503,11 @@ namespace Albert
       //! make a new AlbertGridEntity
       void makeDescription();
 
-      //! specialization of entity
-      AlbertGridLevelIterator<1,dim,dimworld>& faceEntity (int i);
-      AlbertGridLevelIterator<2,dim,dimworld>& edgeEntity (int i);
-
       //! the corresponding grid
       AlbertGrid<dim,dimworld> &grid_;
 
       //! for vertex access, to be revised, filled on demand
       AlbertGridLevelIterator<dim,dim,dimworld> vxEntity_;
-
-      //! Because face and edge access is not often needed as vertex access,
-      //! these objects are created on demand
-      //! for the face access, __created__ on demand
-      AlbertGridLevelIterator<1,dim,dimworld> * faceEntity_;
-
-      //! only needed if dim == 3, __created__ on demand
-      AlbertGridLevelIterator<dim-1,dim,dimworld> * edgeEntity_;
 
       //! the cuurent geometry
       AlbertGridElement<dim,dimworld> geo_;
@@ -882,10 +782,7 @@ namespace Albert
       //  private methods
       //**********************************************************
 
-      // makes empty neighElInfo
-      //void initElInfo(ALBERT EL_INFO * elInfo);
-      // calc the Neighbor neigh out of elInfo information
-      //void setNeighInfo(ALBERT EL_INFO * elInfo, ALBERT EL_INFO * neighInfo, int neigh);
+      //! setup the virtual neighbor
       void setupVirtEn ();
 
       //! know the grid were im comming from
@@ -901,12 +798,12 @@ namespace Albert
       AlbertGridEntity<0,dim,dimworld> *virtualEntity_;
 
       // for memory management
-      AlbertGrid<dim,dimworld>::EntityProvider::ObjectEntity *manageObj_;
-      AlbertGrid<dim,dimworld>::IntersectionSelfProvider::ObjectEntity  *manageInterEl_;
-      AlbertGrid<dim,dimworld>::IntersectionNeighProvider::ObjectEntity *manageNeighEl_;
+      typename AlbertGrid<dim,dimworld>::EntityProvider::ObjectEntity *manageObj_;
+      typename AlbertGrid<dim,dimworld>::IntersectionSelfProvider::ObjectEntity  *manageInterEl_;
+      typename AlbertGrid<dim,dimworld>::IntersectionNeighProvider::ObjectEntity *manageNeighEl_;
 
       //! defined in agmemory.hh
-      ElInfoProvider::ObjectEntity *manageNeighInfo_;
+      typename ElInfoProvider::ObjectEntity *manageNeighInfo_;
 
       //! vector storing the outer normal
       //Vec<dimworld,albertCtype> outerNormal_;
@@ -998,7 +895,6 @@ namespace Albert
       // private Methods
       void makeIterator();
 
-
       ALBERT EL_INFO * goFirstElement(ALBERT TRAVERSE_STACK *stack,
                                       ALBERT MESH *mesh,
                                       int level, ALBERT FLAGS fill_flag);
@@ -1006,28 +902,7 @@ namespace Albert
 
       // the default is, go to next elInfo
       template <int cc>  ALBERT EL_INFO *
-      goNextEntity(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
-      {
-        return goNextElInfo(stack,elinfo_old);
-      };
-
-      template <>  ALBERT EL_INFO *
-      goNextEntity<1 << dim>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
-      {
-        return goNextFace(stack,elinfo_old);
-      };
-
-      template <>  ALBERT EL_INFO *
-      goNextEntity<2 << dim>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
-      {
-        return goNextEdge(stack,elinfo_old);
-      };
-
-      template <>  ALBERT EL_INFO *
-      goNextEntity<dim>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
-      {
-        return goNextVertex(stack,elinfo_old);
-      };
+      goNextEntity(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old);
 
       // the real go next methods
       ALBERT EL_INFO * goNextElInfo(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old);
@@ -1095,9 +970,6 @@ namespace Albert
       //! AlbertGrid is only implemented for 2 and 3 dimension
       //! for 1d use SGrid or SimpleGrid
       CompileTimeChecker<dimworld != 1>   Do_not_use_AlbertGrid_for_1d_Grids;
-
-      //! At this time AlbertGrid only supports the dim == dimworld case
-      CompileTimeChecker<dimworld == dim> Only_dim_equal_dimworld_is_implemented;
 
       //**********************************************************
       // The Interface Methods
@@ -1221,12 +1093,9 @@ namespace Albert
       template <int codim>
       int indexOnLevel(int globalIndex, int level ) ;
 
-      //! map the global index from the Albert Mesh to the local index on Level
-      template <>
-      int indexOnLevel<dim>(int globalIndex, int level )
-      {
-        return levelIndex_[dim][level*mesh_->n_vertices + globalIndex];
-      };
+      // pointer to the real number of elements or vertices
+      // i.e. points to mesh->n_hier_elements or mesh->n_vertices
+      typename std::vector<int *> numberOfEntitys_;
 
       //! actual time of Grid
       albertCtype time_;
@@ -1256,8 +1125,9 @@ namespace Albert
 
       bool notOnThisElement(ALBERT EL * el, int level , int vertex);
 
-      template <class Grid>
-      void markNewVertices(Grid &grid);
+      template <class GridType>
+      void markNewVertices(GridType &grid);
+
       void print();
 
     private:

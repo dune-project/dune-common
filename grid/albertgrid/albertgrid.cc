@@ -7,6 +7,8 @@
 //  namespace Dune
 //
 //************************************************************************
+//#include <fstream>
+
 namespace Dune
 {
 
@@ -62,28 +64,27 @@ namespace Dune
   //
   //****************************************************************
   // default, do nothing
-#if 0
   template< int dim, int dimworld> template <int cc>
-  inline int AlbertGridElement<dim,dimworld>::mapVertices (int i)
+  inline int AlbertGridElement<dim,dimworld>::mapVertices (int i) const
   {
     return i;
   };
 
   // specialication for codim == 1
   template <>
-  inline int AlbertGridElement<2,2>::mapVertices<1> (int i)
+  inline int AlbertGridElement<2,2>::mapVertices<1> (int i) const
   {
     // N_VERTICES (from ALBERT) = dim +1
     return ((face_ + 1 + i) % (dimension+1));
   };
   template <>
-  inline int AlbertGridElement<2,3>::mapVertices<1> (int i)
+  inline int AlbertGridElement<2,3>::mapVertices<1> (int i) const
   {
     // N_VERTICES (from ALBERT) = dim +1
     return ((face_ + 1 + i) % (dimension+1));
   };
   template <>
-  inline int AlbertGridElement<3,3>::mapVertices<1> (int i)
+  inline int AlbertGridElement<3,3>::mapVertices<1> (int i) const
   {
     // N_VERTICES (from ALBERT) = dim +1
     return ((face_ + 1 + i) % (dimension+1));
@@ -91,35 +92,35 @@ namespace Dune
 
   // specialization for codim == 2, edges
   template <>
-  inline int AlbertGridElement<3,3>::mapVertices<2> (int i)
+  inline int AlbertGridElement<3,3>::mapVertices<2> (int i) const
   {
     // N_VERTICES (from ALBERT) = dim +1 = 4
     return ((face_+1)+ (edge_+1) +i)% (dimension+1);
   }
 
+
   // specialization for codim == dim , Vertices
+  // for dim == 2 there are no edges
   template <>
-  inline int AlbertGridElement<2,2>::mapVertices<2> (int i)
+  inline int AlbertGridElement<2,2>::mapVertices<2> (int i) const
   {
     // N_VERTICES (from ALBERT) = dim +1 = 3
-    return ((face_+1)+ (edge_+1) +(vertex_+1) +i)% (dimension+1);
+    return ((face_+1)+ (vertex_+1) +i)% (dimension+1);
   }
   template <>
-  inline int AlbertGridElement<2,3>::mapVertices<2> (int i)
+  inline int AlbertGridElement<2,3>::mapVertices<2> (int i) const
   {
     // N_VERTICES (from ALBERT) = dim +1 = 3
-    return ((face_+1)+ (edge_+1) +(vertex_+1) +i)% (dimension+1);
+    return ((face_+1)+ (vertex_+1) +i)% (dimension+1);
   }
+  // dim == 3
   template <>
-  inline int AlbertGridElement<3,3>::mapVertices<3> (int i)
+  inline int AlbertGridElement<3,3>::mapVertices<3> (int i) const
   {
     // N_VERTICES (from ALBERT) = dim +1 = 4
     return ((face_+1)+ (edge_+1) +(vertex_+1) +i)% (dimension+1);
   }
-
   // end specializations for mapVertices
-#endif
-
 
   template< int dim, int dimworld>
   inline AlbertGridElement<dim,dimworld>::
@@ -776,6 +777,20 @@ namespace Dune
     std::cout << "Element not marked!\n";
     return false;
   }
+
+  template< int dim, int dimworld>
+  inline bool AlbertGridEntity < 0, dim ,dimworld >::hasChildren()
+  {
+    //return (elInfo_->el->child[0] != NULL);
+    return ( level_ != grid_.maxlevel() );
+  }
+
+  template< int dim, int dimworld>
+  inline int AlbertGridEntity < 0, dim ,dimworld >::refDistance()
+  {
+    return 0;
+  }
+
   //***************************
 
   template< int dim, int dimworld>
@@ -796,75 +811,118 @@ namespace Dune
     travStack_ = travStack;
   }
 
-  // specialization of destructor, default is empty
-  inline AlbertGridEntity < 0, 2, 2 >::
-  ~AlbertGridEntity()
-  {
-    // we only delete faceEntity_ because edgeEntity_ can only be
-    // created in entity<2,3,3> which is not the same class
-    if(faceEntity_) delete faceEntity_;
-  }
-
-  //template <int dim, int dimworld>
-  //inline AlbertGridEntity < 0, dim, dimworld >::
-  inline AlbertGridEntity < 0, 3, 3 >::
-  ~AlbertGridEntity()
-  {
-    if(faceEntity_) delete faceEntity_;
-    if(edgeEntity_) delete edgeEntity_;
-  }
-
   template< int dim, int dimworld>
   inline AlbertGridEntity < 0, dim ,dimworld >::
   AlbertGridEntity(AlbertGrid<dim,dimworld> &grid, int level) : grid_(grid)
                                                                 , level_ (level)
                                                                 , vxEntity_ ( grid_ , NULL, 0, 0, 0, 0)
                                                                 , geo_(false) , travStack_ (NULL) , elInfo_ (NULL)
-                                                                , builtgeometry_ (false) , faceEntity_ (NULL) , edgeEntity_( NULL)
+                                                                , builtgeometry_ (false)
   {}
 
-  template <int dim, int dimworld>
-  inline AlbertGridLevelIterator<1,dim,dimworld> &
-  AlbertGridEntity <0,dim,dimworld>::faceEntity ( int i)
+  //*****************************************************************8
+  // count
+  template <int dim, int dimworld> template <int cc>
+  inline int AlbertGridEntity<0,dim,dimworld>::count ()
   {
-    if(!faceEntity_)
-    {
-      faceEntity_ = new AlbertGridLevelIterator<1,dim,dimworld>
-                      ( grid_ , elInfo_,index(),i,0,0 );
-      return (*faceEntity_);
-    }
-
-    faceEntity_->virtualEntity_.setElInfo(elInfo_,index(),i,0,0);
-    return (*faceEntity_);
+    return (dim+1);
+  }
+  //! specialization only for codim == 2 , edges,
+  //! a tetrahedron has always 6 edges
+  template <>
+  inline int AlbertGridEntity<0,3,3>::count<2> ()
+  {
+    return 6;
   }
 
-  template <int dim, int dimworld>
-  inline AlbertGridLevelIterator<2,dim,dimworld> &
-  AlbertGridEntity <0,dim,dimworld>::edgeEntity ( int i)
+  // subIndex
+  template <int dim, int dimworld> template <int cc>
+  inline int AlbertGridEntity<0,dim,dimworld>::subIndex ( int i )
   {
-    // check whether dim == 3 or not, because this method is only for
-    // dim == 3 and codim == 2
-    CompileTimeChecker<dim == 3> edgeEntity_only_for_dim_equal_3;
+    return (*(this->template entity<cc>(i))).index();
+  }
 
-    printf("Entity::entity<codim = %d>: Warning elNum may be not correct! \n",2);
-    if(!edgeEntity_)
-    {
-      edgeEntity_ = new AlbertGridLevelIterator<2,dim,dimworld>
-                      ( grid_ , NULL , 0,0,0,0);
-    }
+  // specialization for vertices
+  template <>
+  inline int AlbertGridEntity<0,2,2>::subIndex<2> ( int i )
+  {
+    enum { dim = 2 };
+    int num = grid_.template indexOnLevel<dim>(elInfo_->el->dof[i][0],level_);
+    return num;
+  }
 
+  template <>
+  inline int AlbertGridEntity<0,3,3>::subIndex<3> ( int i )
+  {
+    enum { dim = 3 };
+    int num = grid_.template indexOnLevel<dim>(elInfo_->el->dof[i][0],level_);
+    return num;
+  }
+
+  // default is faces
+  template <int dim, int dimworld> template <int cc>
+  inline AlbertGridLevelIterator<cc,dim,dimworld>
+  AlbertGridEntity<0,dim,dimworld>::entity ( int i )
+  {
+    AlbertGridLevelIterator<cc,dim,dimworld> tmp (grid_,elInfo_,
+                                                  grid_. template indexOnLevel<cc>( globalIndex() ,level_),i,0,0);
+    return tmp;
+  }
+
+  template <>
+  inline AlbertGridLevelIterator<2,3,3>
+  AlbertGridEntity<0,3,3>::entity<2> ( int i )
+  {
+    enum { cc = 2 };
+    int num = grid_. template indexOnLevel<cc>(globalIndex() ,level_);
     if(i < 3)
     { // 0,1,2
-      edgeEntity_->virtualEntity_.setElInfo(elInfo_,index(),0,i,0);
+      AlbertGridLevelIterator<cc,3,3> tmp (grid_,elInfo_,num, 0,i,0);
+      return tmp;
     }
     else
     { // 3,4,5
-      edgeEntity_->virtualEntity_.setElInfo(elInfo_,index(),i-2,1,0);
+      AlbertGridLevelIterator<cc,3,3> tmp (grid_,elInfo_,num, i-2,1,0);
+      return tmp;
     }
-    return (*edgeEntity_);
   }
 
-
+  // specialization for vertices
+  template <>
+  inline AlbertGridLevelIterator<2,2,2>
+  AlbertGridEntity<0,2,2>::entity<2> ( int i )
+  {
+    // we are looking at vertices
+    enum { cc = dimension };
+    AlbertGridLevelIterator<cc,dimension,dimensionworld>
+    tmp (grid_,elInfo_, grid_.indexOnLevel<cc>( elInfo_->el->dof[i][0],level_),
+         0,0,i);
+    return tmp;
+  }
+  // specialization for vertices
+  template <>
+  inline AlbertGridLevelIterator<2,2,3>
+  AlbertGridEntity<0,2,3>::entity<2> ( int i )
+  {
+    // we are looking at vertices
+    enum { cc = dimension };
+    AlbertGridLevelIterator<cc,dimension,dimensionworld>
+    tmp (grid_,elInfo_, grid_.indexOnLevel<cc>( elInfo_->el->dof[i][0],level_),
+         0,0,i);
+    return tmp;
+  }
+  // specialization for vertices
+  template <>
+  inline AlbertGridLevelIterator<3,3,3>
+  AlbertGridEntity<0,3,3>::entity<3> ( int i )
+  {
+    // we are looking at vertices
+    enum { cc = dimension };
+    AlbertGridLevelIterator<cc,dimension,dimensionworld>
+    tmp (grid_,elInfo_, grid_.indexOnLevel<cc>( elInfo_->el->dof[i][0],level_),
+         0,0,i);
+    return tmp;
+  }
   //***************************
 
   template<int dim, int dimworld>
@@ -873,7 +931,6 @@ namespace Dune
   {
     return elInfo_;
   }
-
 
   template<int dim, int dimworld>
   inline int AlbertGridEntity < 0, dim ,dimworld >::
@@ -887,7 +944,7 @@ namespace Dune
   inline int AlbertGridEntity < 0, dim ,dimworld >::
   index()
   {
-    return grid_.indexOnLevel<0>( globalIndex() , level_ );
+    return grid_.template indexOnLevel<0>( globalIndex() , level_ );
   }
 
   template< int dim, int dimworld>
@@ -936,7 +993,7 @@ namespace Dune
 
     // new LevelIterator with EL_INFO one level above
     AlbertGridLevelIterator <0,dim,dimworld>
-    it(grid_,fatherInfo,grid_.indexOnLevel<0>(fatherInfo->el->index,fatherLevel),0,0,0);
+    it(grid_,fatherInfo,grid_.template indexOnLevel<0>(fatherInfo->el->index,fatherLevel),0,0,0);
     return it;
   }
 
@@ -1543,12 +1600,9 @@ namespace Dune
   //*******************************************************
 
   //***********************************************************
-  //
   //  some template specialization of goNextEntity
-  //
   //***********************************************************
   // default implementation, go next elInfo
-#if 0
   template<int codim, int dim, int dimworld> template <int cc>
   inline ALBERT EL_INFO * AlbertGridLevelIterator<codim,dim,dimworld >::
   goNextEntity(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
@@ -1562,19 +1616,19 @@ namespace Dune
   goNextEntity<1>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
   {
     return goNextFace(stack,elinfo_old);
-  };
+  }
   template <>
   inline ALBERT EL_INFO * AlbertGridLevelIterator<1,2,3>::
   goNextEntity<1>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
   {
     return goNextFace(stack,elinfo_old);
-  };
+  }
   template <>
   inline ALBERT EL_INFO * AlbertGridLevelIterator<1,3,3>::
   goNextEntity<1>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
   {
     return goNextFace(stack,elinfo_old);
-  };
+  }
 
   // specialization for codim 2, if dim > 2, go next edge,
   // only if dim == dimworld == 3
@@ -1583,7 +1637,7 @@ namespace Dune
   goNextEntity<2>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
   {
     return goNextEdge(stack,elinfo_old);
-  };
+  }
 
   // specialization for codim == dim , go next vertex
   template <>
@@ -1591,26 +1645,27 @@ namespace Dune
   goNextEntity<2>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
   {
     return goNextVertex(stack,elinfo_old);
-  };
+  }
   template <>
   inline ALBERT EL_INFO * AlbertGridLevelIterator<2,2,3>::
   goNextEntity<2>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
   {
     return goNextVertex(stack,elinfo_old);
-  };
+  }
   template <>
   inline ALBERT EL_INFO * AlbertGridLevelIterator<3,3,3>::
   goNextEntity<3>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
   {
     return goNextVertex(stack,elinfo_old);
-  };
+  }
   // end specialization of goNextEntity
+  //***************************************
 
-#endif
   template<int codim, int dim, int dimworld>
   inline void AlbertGridLevelIterator<codim,dim,dimworld >::
   makeIterator()
   {
+    level_ = 0;
     vertex_ = 0;
     face_ = 0;
     edge_ = 0;
@@ -2062,6 +2117,9 @@ namespace Dune
   template <class GridType>
   inline void AlbertMarkerVector::markNewVertices(GridType &grid)
   {
+    enum { dim      = GridType::dimension };
+    enum { dimworld = GridType::dimensionworld };
+
     ALBERT MESH *mesh_ = grid.getMesh();
 
     int nvx = mesh_->n_vertices;
@@ -2076,15 +2134,13 @@ namespace Dune
 
     for(int level=0; level <= maxlevel; level++)
     {
-      //std::cout << level << " Level \n";
-      typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
-      LevelIterator endit = grid.lend<0> (level);
-      for(LevelIterator it = grid.lbegin<0> (level); it != endit; ++it)
+      typedef typename GridType::Traits<0>::LevelIterator LevelIteratorType;
+      LevelIteratorType endit = grid.template lend<0> (level);
+      for(LevelIteratorType it = grid.template lbegin<0> (level); it != endit; ++it)
       {
         for(int local=0; local<GridType::dimension+1; local++)
         {
           int num = it->getElInfo()->el->dof[local][0];
-          //std::cout << num << " Vx Num \n";
           if( vec_[level * nvx + num] == -1 )
             vec_[level * nvx + num] = it->globalIndex();
         }
@@ -2112,11 +2168,11 @@ namespace Dune
   {
     vertexMarker_ = new AlbertMarkerVector ();
   }
+
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename)
   {
     bool makeNew = true;
-
     {
       std::fstream file (MacroTriangFilename,std::ios::in);
       std::basic_string <char> str,str1;
@@ -2137,7 +2193,7 @@ namespace Dune
 
       neighOnLevel_.resize( mesh_->n_hier_elements);
 
-      vertexMarker_->markNewVertices(*this);
+      vertexMarker_->markNewVertices( *this );
 
       markNew();
       wasChanged_ = true;
@@ -2146,6 +2202,14 @@ namespace Dune
     {
       read (MacroTriangFilename,time_,0);
     }
+
+    numberOfEntitys_.resize(dim+1);
+
+    for(int i=0; i<dim+1; i++) numberOfEntitys_[i] = NULL;
+
+    numberOfEntitys_[0] = &(mesh_->n_hier_elements);
+    numberOfEntitys_[dim] = &(mesh_->n_vertices);
+
   }
 
 
@@ -2207,14 +2271,14 @@ namespace Dune
       calcExtras();
     }
 
-#if 0
-    for(int i=0 ; i<=maxlevel_; i++)
-    {
-      printf("********************************\n");
-      printf("Level %d \n",i);
-      ALBERT mesh_traverse(mesh_,i,CALL_LEAF_EL_LEVEL | FILL_ANY, ALBERT printNeighbour );
-    }
-#endif
+    /*
+       for(int i=0 ;i<=maxlevel_; i++)
+       {
+       printf("********************************\n");
+       printf("Level %d \n",i);
+       ALBERT mesh_traverse(mesh_,i,CALL_LEAF_EL_LEVEL | FILL_ANY, ALBERT printNeighbour );
+       }
+     */
 
     return wasChanged_;
   }
@@ -2378,7 +2442,7 @@ namespace Dune
     // USPM 2d
 
     enum {dim = 2}; enum {dimworld = 2};
-    typedef AlbertGrid<dim,dimworld>::LeafIterator LEVit;
+    typedef LeafIterator LEVit;
 
     LEVit endit = leafend (level);
 
@@ -2401,7 +2465,6 @@ namespace Dune
     for (LEVit it = leafbegin (level); it != endit; ++it)
     {
       int elNum = it->index();
-      //  std::cout << elNum << " ElNum \n";
 
       typedef AlbertGridNeighborIterator<dim,dimworld> Neighit;
       Neighit nit = it->nbegin();
@@ -2566,15 +2629,38 @@ namespace Dune
     // level = 0 is not interesting for this implementation
     // +1, because if Entity is Boundary then globalIndex == -1
     // an therefore we add 1 and get Entry 0, which schould be -1
-#ifndef REALINDEX
     if (globalIndex < 0)
       return globalIndex;
     else
-      return levelIndex_[codim][(level * mesh_->n_hier_elements) + globalIndex];
-#else
-    return globalIndex;
-#endif
+      //return levelIndex_[codim][(level * mesh_->n_hier_elements) + globalIndex];
+      return levelIndex_[codim][(level * (*(numberOfEntitys_[codim]))) + globalIndex];
   }
+
+
+#if 0
+  // specialization for vertices
+  template <>
+  inline int AlbertGrid<2,2>::indexOnLevel<2>(int globalIndex, int level)
+  {
+    return levelIndex_[dimension][level*mesh_->n_vertices + globalIndex];
+  }
+
+
+  template <>
+  inline int AlbertGrid<2,3>::indexOnLevel<2>(int globalIndex, int level)
+  {
+    enum { dim = 2 };
+    return levelIndex_[dim][level*mesh_->n_vertices + globalIndex];
+  }
+  template <>
+  inline int AlbertGrid<3,3>::indexOnLevel<3>(int globalIndex, int level)
+  {
+    enum { dim = 3 };
+    return levelIndex_[dim][level*mesh_->n_vertices + globalIndex];
+  }
+  // end of specialization for vertices
+  //
+#endif
 
   // create lookup table for indices of the elements
   template < int dim, int dimworld >
