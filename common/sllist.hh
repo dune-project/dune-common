@@ -170,6 +170,10 @@ namespace Dune
       : current_(item)
     {}
 
+    inline SLListIterator()
+      : current_(0)
+    {}
+
     /**
      * @brief Dereferencing function for the iterator facade.
      * @return A reference to the element at the current position.
@@ -222,6 +226,10 @@ namespace Dune
     friend class SLListIterator<T,A>;
 
   public:
+    inline SLListConstIterator()
+      : current_(0)
+    {}
+
     inline SLListConstIterator(typename SLList<T,A>::Element* item)
       : current_(item)
     {}
