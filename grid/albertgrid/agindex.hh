@@ -9,7 +9,7 @@ namespace Dune {
 
   enum INDEXSTATE { NEW, OLD , USED, UNUSED };
 
-  //template <class T>
+  template <class GridType>
   class SerialIndexSet
   {
     typedef int T;
@@ -21,11 +21,38 @@ namespace Dune {
     int maxIndex_;
     int nextFreeIndex_;
     int nextIndex_;
+
+    GridType & grid_;
   public:
-    SerialIndexSet ()
+    SerialIndexSet (GridType & grid) : grid_ (grid)
     {
       maxIndex_ = 0;
     };
+
+    // calculate new highest index
+    //template <class GridType>
+    void insertNew (GridType & grid)
+    {
+      this->resize ( grid );
+      for(int l=0; l<=grid.maxlevel(); l++)
+      {
+        typedef typename GridType::template Traits<0>::LevelIterator LevelIteratorType;
+        LevelIteratorType endit = grid.template lend<0>(l);
+        LevelIteratorType it = grid.template lbegin<0>(l);
+
+        for( ; it != endit ; ++it)
+        {
+          this->insert( *it );
+        }
+      }
+      this->finish();
+    }
+
+    //template <class GridType>
+    void resize (GridType & grid)
+    {
+      this->resize ( grid.global_size (0));
+    }
 
     // calculate new highest index
     void resize (int newMaxInd )
@@ -77,7 +104,7 @@ namespace Dune {
           state_[i] = UNUSED;
         }
       }
-      //std::cout << maxIndex() << " max Index of Set \n";
+      std::cout << maxIndex() << " max Index of Set \n";
     }
 
     int maxIndex () const
@@ -107,6 +134,13 @@ namespace Dune {
       //std::cout << state_[nextIndex_] << " " << globalIndex_[nextIndex_] << "\n";
       nextIndex_++;
       return globalIndex_[nextIndex_-1];
+    }
+
+    // memorise index
+    template <class EntityType>
+    void insert (EntityType & en)
+    {
+      this->insert ( en.global_index() );
     }
 
     // memorise index
@@ -142,6 +176,53 @@ namespace Dune {
       }
     }
 
+    bool write_xdr(const char * filename, int timestep)
+    {
+      FILE  *file;
+      XDR xdrs;
+      const char *path = NULL;
+
+      const char * fn  = genFilename(path,filename, timestep);
+      file = fopen(fn, "wb");
+      if (!file)
+      {
+        printf( "\aERROR in AGIndexSet::write_xdr(..): couldnot open <%s>!\n", filename);
+        fflush(stderr);
+        return false;
+      }
+
+      xdrstdio_create(&xdrs, file, XDR_ENCODE);
+      this->processXdr(&xdrs);
+
+      xdr_destroy(&xdrs);
+      fclose(file);
+    }
+
+    bool read_xdr(const char * filename , int timestep)
+    {
+      FILE   *file;
+      XDR xdrs;
+      const char *path = NULL;
+
+      const char * fn  = genFilename(path,filename, timestep);
+      std::cout << "Reading <" << fn << "> \n";
+      file = fopen(fn, "rb");
+      if(!file)
+      {
+        printf( "\aERROR in AGIndexSet::read_xdr(..): couldnot open <%s>!\n", filename);
+        fflush(stderr);
+        return(false);
+      }
+
+      // read xdr
+      xdrstdio_create(&xdrs, file, XDR_DECODE);
+      this->processXdr(&xdrs);
+
+      xdr_destroy(&xdrs);
+      fclose(file);
+      return true;
+    }
+
     bool processXdr(XDR *xdrs)
     {
       xdr_int ( xdrs, &maxIndex_ );
@@ -155,6 +236,7 @@ namespace Dune {
     int size () const
     {
       return nextFreeIndex_;
+      //return grid_.global_size(0);
     }
 
     bool isNew (int index) const
