@@ -304,13 +304,7 @@ template<class DiscFuncType>
 void Dune::AmiraMeshWriter<GridType>::writeFunction(const DiscFuncType& f,
                                                     const std::string& filename)
 {
-  // Get grid type associated with DiscFuncType
-  typedef typename DiscFuncType::FunctionSpaceType FunctionSpaceType;
-
-  const GridType& grid = f.getFunctionSpace().getGrid();
-
-  const int level = grid.maxlevel();
-  const int noOfNodes = grid.size(level, GridType::dimension);
+  const int noOfNodes = f.getFunctionSpace().size();
 
   // temporary hack
   const int ncomp = 1;
@@ -335,8 +329,8 @@ void Dune::AmiraMeshWriter<GridType>::writeFunction(const DiscFuncType& f,
 
   // write the data into the AmiraMesh object
   typedef typename DiscFuncType::DofIteratorType DofIterator;
-  DofIterator dit = f.dbegin(level);
-  DofIterator ditend = f.dend(level);
+  DofIterator dit = f.dbegin();
+  DofIterator ditend = f.dend();
 
   int i=0;
   for (; dit!=ditend; ++dit, i++) {
@@ -356,10 +350,30 @@ void Dune::AmiraMeshWriter<GridType>::writeFunction(const DiscFuncType& f,
 
 
 template<class GridType>
-void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const Dune::BlockVector<Dune::FieldVector<double, 3> >& f,
+void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const GridType& grid,
+                                                       const Dune::BlockVector<Dune::FieldVector<double, 3> >& f,
                                                        const std::string& filename)
 {
   typedef Dune::BlockVector<Dune::FieldVector<double, 3> > VectorType;
+
+  int level = grid.maxlevel();
+
+  // Find out whether the grid contains only tetrahedra.  If yes, then
+  // it is written in TetraGrid format.  If not, it is written in
+  // hexagrid format.
+  bool containsOnlyTetrahedra = true;
+
+  typename GridType::template Traits<0>::LevelIterator element = grid.template lbegin<0>(level);
+  typename GridType::template Traits<0>::LevelIterator end     = grid.template lend<0>(level);
+
+  for (; element!=end; ++element) {
+    if (element->geometry().type() != tetrahedron) {
+      containsOnlyTetrahedra = false;
+      break;
+    }
+  }
+
+
 
   // Get number of components
   /** \todo Must depend on the BlockVector and not on the grid! */
@@ -372,14 +386,31 @@ void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const Dune::BlockVector<D
   if (GridType::dimension==2)
     am.parameters.set("ContentType", "HxTriangularData");
 
+  if (!containsOnlyTetrahedra) {
+
+    int numElements = grid.size(level, 0);
+    AmiraMesh::Location* hexa_loc = new AmiraMesh::Location("Hexahedra", numElements);
+    am.insert(hexa_loc);
+
+  }
+
   AmiraMesh::Location* sol_nodes = new AmiraMesh::Location("Nodes", f.size());
   am.insert(sol_nodes);
 
   AmiraMesh::Data* nodeData = new AmiraMesh::Data("Data", sol_nodes, McPrimType::mc_double, ncomp);
   am.insert(nodeData);
 
-  AmiraMesh::Field* nodeField = new AmiraMesh::Field("sol", ncomp, McPrimType::mc_double,
-                                                     AmiraMesh::t_linear, nodeData);
+  AmiraMesh::Field* nodeField;
+
+  if (containsOnlyTetrahedra) {
+    nodeField = new AmiraMesh::Field("sol", ncomp, McPrimType::mc_double,
+                                     AmiraMesh::t_linear, nodeData);
+  } else {
+
+    nodeField = new AmiraMesh::Field("sol", ncomp, McPrimType::mc_double,
+                                     AmiraMesh::t_trilinear, nodeData);
+  }
+
   am.insert(nodeField);
 
 
