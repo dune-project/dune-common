@@ -30,7 +30,7 @@ endif
 #
 
 # tests where program to build and program to run are equal
-NORMALTESTS = test-sgrid test_oned $(APROG) $(UPROG)
+NORMALTESTS = test-sgrid test-oned $(APROG) $(UPROG)
 
 # list of tests to run (yaspgrid is special case)
 TESTS = $(NORMALTESTS) $(YRUN)
@@ -51,7 +51,7 @@ LDFLAGS = $(top_builddir)/common/libcommon.la
 
 test_sgrid_SOURCES = test-sgrid.cc
 
-test_oned_SOURCES = test_oned.cc
+test_oned_SOURCES = test-oned.cc
 
 test_yaspgrid_SOURCES = test-yaspgrid.cc
 test_yaspgrid_CXXFLAGS = $(AM_CPPFLAGS) $(MPI_CPPFLAGS)
