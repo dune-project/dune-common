@@ -416,15 +416,23 @@ namespace Albert
       //!  are numbered 0 ... count<cc>()-1
       template<int cc> AlbertGridLevelIterator<cc,dim,dimworld> entity (int i);
 
+      //! Provide access to mesh entity i of given codimension. Entities
+      //!  are numbered 0 ... count<cc>()-1
+      //template<int cc> void entity (AlbertGridLevelIterator<cc,dim,dimworld>& it, int i);
+
       /*! Intra-level access to intersection with neighboring elements.
          A neighbor is an entity of codimension 0
          which has an entity of codimension 1 in commen with this entity. Access to neighbors
          is provided using iterators. This allows meshes to be nonmatching. Returns iterator
          referencing the first neighbor. */
       AlbertGridIntersectionIterator<dim,dimworld> ibegin ();
+      //! same method for fast access
+      void ibegin (AlbertGridIntersectionIterator<dim,dimworld> &it);
 
       //! Reference to one past the last intersection with neighbor
       AlbertGridIntersectionIterator<dim,dimworld> iend ();
+      //! same method for fast access
+      void iend (AlbertGridIntersectionIterator<dim,dimworld> &it);
 
       //! returns true if Entity has children
       bool hasChildren ();
@@ -666,12 +674,16 @@ namespace Albert
           AlbertGridIntersectionIterator,AlbertGridEntity,
           AlbertGridElement, AlbertGridBoundaryEntity>
     {
+      friend class AlbertGridEntity<0,dim,dimworld>;
     public:
       //! prefix increment
       AlbertGridIntersectionIterator& operator ++();
 
       //! postfix increment
       AlbertGridIntersectionIterator& operator ++(int i);
+
+      //! The default Constructor makes empty Iterator
+      AlbertGridIntersectionIterator();
 
       //! The default Constructor
       AlbertGridIntersectionIterator(AlbertGrid<dim,dimworld> &grid,int level);
@@ -747,12 +759,20 @@ namespace Albert
       //**********************************************************
       //  private methods
       //**********************************************************
+      //! make Iterator set to begin of actual entitys intersection Iterator
+      void makeBegin (AlbertGrid<dim,dimworld> &grid,int level, ALBERT EL_INFO * elInfo );
+
+      //! set Iterator to end of actual entitys intersection Iterator
+      void makeEnd (AlbertGrid<dim,dimworld> &grid,int level );
+
+      // put objects on stack
+      void freeObjects ();
 
       //! setup the virtual neighbor
       void setupVirtEn ();
 
       //! know the grid were im comming from
-      AlbertGrid<dim,dimworld> &grid_;
+      AlbertGrid<dim,dimworld> *grid_;
 
       //! the actual level
       int level_;
