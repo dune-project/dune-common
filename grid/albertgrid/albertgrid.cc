@@ -129,62 +129,69 @@ namespace Dune
   {
     //! make ReferenzElement as default
     elInfo_ = makeEmptyElInfo();
+    //*****************************************************************
+    //
+    //! reference element 3d
+    //!
+    //!
+    //!             1 (1,1,1)
+    //!            /|\        coordinate and local node numbers
+    //!           / | \       ok, this is ascii drawing
+    //!          /  |  \
+    // //!(1,1,0) 2/...|...\3 (1,0,0)          z
+    //!         \   |   /              y\   |   /x  coordinate
+    //!          \  |  /                 \  |  /    system
+    //!           \ | /                   \ | /
+    //!            \|/                     \|/
+    //!             0 (0,0,0)
+    //
+    //*****************************************************************
 
-    int i = 0;
-    // point 0
-    elInfo_->coord[i][0] = 0.0;
-    elInfo_->coord[i][1] = 0.0;
-#if DIMOFWORLD > 2
-    elInfo_->coord[i][2] = 0.0;
-#endif
+    // set coordinates
+    coord_ = 0.0;
 
-    i = 1;
-    // point 1
-    elInfo_->coord[i][0] = 1.0;
-    elInfo_->coord[i][1] = 1.0;
-#if DIMOFWORLD > 2
-    elInfo_->coord[i][2] = 1.0;
-#endif
+    // vertex 1
+    coord_(1) = 1.0;
 
-    i = 2;
-    // point 2
-    elInfo_->coord[i][0] = 1.0;
-    elInfo_->coord[i][1] = 1.0;
-#if DIMOFWORLD > 2
-    elInfo_->coord[i][2] = 0.0;
-#endif
+    // vertex 2
+    coord_(0,2) = 1.0;
+    coord_(1,2) = 1.0;
 
-#if DIM > 2
-    i = 3;
-    // point 3
-    elInfo_->coord[i][0] = 1.0;
-    elInfo_->coord[i][1] = 0.0;
-    elInfo_->coord[i][2] = 0.0;
-#endif
+    // vertex 3
+    coord_(0,3) = 1.0;
   }
 
   template <>
   inline void AlbertGridElement<2,2>::
   makeRefElemCoords()
   {
-    //! make ReferenzElement as default
+    // make empty elInfo
     elInfo_ = makeEmptyElInfo();
 
-    int i = 0;
-    // point 0
-    elInfo_->coord[i][0] = 1.0;
-    elInfo_->coord[i][1] = 0.0;
+    //*****************************************************************
+    //!
+    //!   reference element 2d
+    //!
+    //!    (0,1)
+    //!     1|\    coordinates and local node numbers
+    //!      | \
+    // //!      |  \
+    //!      |   \
+    // //!      |    \
+    // //!      |     \
+    // //!     2|______\0
+    //!    (0,0)    (1,0)
+    //
+    //*****************************************************************
 
-    i = 1;
-    // point 1
-    elInfo_->coord[i][0] = 0.0;
-    elInfo_->coord[i][1] = 1.0;
+    // set reference coordinates
+    coord_ = 0.0;
 
-    i = 2;
-    // point 2
-    elInfo_->coord[i][0] = 0.0;
-    elInfo_->coord[i][1] = 0.0;
+    // vertex 0
+    coord_(0,0) = 1.0;
 
+    // vertex 1
+    coord_(1,1) = 1.0;
   }
 
   template <>
@@ -194,14 +201,11 @@ namespace Dune
     //! make  Referenz Element as default
     elInfo_ = makeEmptyElInfo();
 
-    int i = 0;
-    // point 0
-    elInfo_->coord[i][0] = 0.0;
+    // set reference coordinates
+    coord_ = 0.0;
 
-    i = 1;
-    // point 1
-    elInfo_->coord[i][0] = 1.0;
-
+    // vertex 1
+    coord_(1) = 1.0;
   }
 
   template <int dim, int dimworld>
@@ -379,10 +383,6 @@ namespace Dune
     // for the last barycentric coord
     for(int j=0; j<dimworld; j++)
       globalCoord_(j) += localFake * coord_(j,dim);
-
-    std::cout << "*********************************\n";
-    globalCoord_.print(std::cout , 2); std::cout << "\n";
-    std::cout << "*********************************\n";
 
     return globalCoord_;
   }
@@ -637,8 +637,8 @@ namespace Dune
   inline void AlbertGridElement<dim,dimworld>::
   builtJacobianInverse(const Vec<dim,albertCtype>& local)
   {
-    //std::cout << dim << " " << dimworld<< " Dim|Dimworld \n";
-    enum { div = (dim < 3) ? 1 : 2 };
+    enum { div  = (dim < 3) ? 1 : 2 };
+    enum { div2 = (dim < 3) ? 0 : 1 };
     // volFactor should be 0.5 for dim==2 and (1.0/6.0) for dim==3
     const albertCtype volFactor = static_cast<albertCtype> (0.5/div);
 
@@ -646,32 +646,45 @@ namespace Dune
 
     // is faster than the lower method
     volume_ = volFactor * ALBERT el_grd_lambda(elInfo_,lambda);
+
+    // Achtung bei Jinv muessen die i,j vertauscht sein,
+    // so ist es richtig
     for(int i=0; i<dim; i++)
     {
       for(int j=0; j<dimworld; j++)
-        Jinv_(i,j) = lambda[i][j];
+        Jinv_(j,i) = lambda[i+div2][j];
     }
+
     builtinverse_ = true;
   }
 
-#if 0
+  // tested
   inline void AlbertGridElement<2,2>::
   builtJacobianInverse(const Vec<2,albertCtype>& local)
   {
-    // volFactor should be 1/6, see ALBERT Doc
-    const albertCtype volFactor = 0.5;
+    //******************************************************
+    //
+    //  the mapping is:
+    //
+    //  F(T) = D where T is the reference element
+    //  and D the actual element
+    //
+    //  F(x) = A * x + P_2    with   A := ( P_0 , P_1 )
+    //
+    //  A consist of the column vectors P_0 and P_1
+    //
+    //******************************************************
+
     enum { dimworld = 2 };
     enum { dim = 2 };
 
     REAL e1[dimworld], e2[dimworld], det, adet;
-    const REAL  *v0;
-    REAL a11, a12, a21, a22;
+    Vec<dimworld,albertCtype> & coord0 = coord_(2);
 
-    v0 = elInfo_->coord[0];
-    for (int i = 0; i < dimworld; i++)
+    for (int i=0; i<dimworld; i++)
     {
-      e1[i] = elInfo_->coord[1][i] - v0[i];
-      e2[i] = elInfo_->coord[2][i] - v0[i];
+      e1[i] = coord_(i,0) - coord0(i);
+      e2[i] = coord_(i,1) - coord0(i);
     }
 
     det = e1[0] * e2[1] - e1[1] * e2[0];
@@ -684,44 +697,78 @@ namespace Dune
     else
     {
       det = 1.0 / det;
-      a11 =  e2[1] * det;     /* (a_ij) = A^{-T} */
-      a21 = -e2[0] * det;
-      a12 = -e1[1] * det;
-      a22 =  e1[0] * det;
-
-      Jinv_(1,0) = a11;
-      Jinv_(1,1) = a21;
-      Jinv_(2,0) = a12;
-      Jinv_(2,1) = a22;
-      Jinv_(0,0) = - Jinv_(1,0) - Jinv_(2,0);
-      Jinv_(0,1) = - Jinv_(1,1) - Jinv_(2,1);
+      Jinv_(0,0) =  e2[1] * det;     /* (a_ij) = A^{-T} */
+      Jinv_(1,0) = -e2[0] * det;
+      Jinv_(0,1) = -e1[1] * det;
+      Jinv_(1,1) =  e1[0] * det;
     }
 
-    volume_ = volFactor * adet;
+    // the test suite
+#if 0
+    for(int i=0; i<dim; i++)
+    {
+      Jinv_(i).print(std::cout, 1);
+      std::cout << "\n";
+    }
+
+    ALBERT REAL lambda[dim+1][dimworld];
+
+    // is faster than the lower method
+    ALBERT el_grd_lambda(elInfo_,lambda);
+
+    for(int i=0; i<dim; i++)
+    {
+      printf("lambda %d %f %f \n",i,lambda[i][0],lambda[i][1]);
+    }
+
+    for(int i=0; i<dim; i++)
+    {
+      for(int j=0; j<dimworld; j++)
+        Jinv_(j,i) = lambda[i][j];
+    }
+    for(int i=0; i<dim; i++)
+    {
+      Jinv_(i).print(std::cout, 1);
+      std::cout << "\n";
+    }
+
+    std::cout << "***********************\n";
+#endif
+
+    // multiply det with 0.5 to get volume of element
+    volume_ = 0.5 * adet;
     builtinverse_ = true;
     return;
   }
 
+  //tested
   inline void AlbertGridElement<3,3>::
   builtJacobianInverse(const Vec<3,albertCtype>& local)
   {
-    // volFactor should be 1/6, see ALBERT Doc
-    static const albertCtype volFactor = 1.0/6.0;
-
     enum { dimworld = 3 };
     enum { dim = 3 };
 
-    REAL e1[dimworld], e2[dimworld], e3[dimworld];
-    const REAL  *v0;
-    REAL det, adet;
-    REAL a11, a12, a13, a21, a22, a23, a31, a32, a33;
+    //***********************************************************
+    //
+    //  mapping from reference element to actual element
+    //
+    //  F(T) = D where T is the reference element and D the actual element
+    //
+    //  F(x) = A * x + P_0   with   A:= ( P_1 , P_2 , P_3 )
+    //
+    //  as column vectors
+    //
+    //***********************************************************
 
-    v0 = elInfo_->coord[0];
-    for (int i = 0; i < dimworld; i++)
+    REAL e1[dimworld], e2[dimworld], e3[dimworld];
+    Vec<dimworld,albertCtype> & coord0 = coord_(0);
+    REAL det, adet;
+
+    for (int i=0; i<dimworld; i++)
     {
-      e1[i] = elInfo_->coord[1][i] - v0[i];
-      e2[i] = elInfo_->coord[2][i] - v0[i];
-      e3[i] = elInfo_->coord[3][i] - v0[i];
+      e1[i] = coord_(i,1) - coord0(i);
+      e2[i] = coord_(i,2) - coord0(i);
+      e3[i] = coord_(i,3) - coord0(i);
     }
 
     det =   e1[0] * (e2[1]*e3[2] - e2[2]*e3[1])
@@ -737,35 +784,54 @@ namespace Dune
     else
     {
       det = 1.0 / det;
-      a11 = (e2[1]*e3[2] - e2[2]*e3[1]) * det;  /* (a_ij) = A^{-T} */
-      a12 = (e2[2]*e3[0] - e2[0]*e3[2]) * det;
-      a13 = (e2[0]*e3[1] - e2[1]*e3[0]) * det;
-      a21 = (e1[2]*e3[1] - e1[1]*e3[2]) * det;
-      a22 = (e1[0]*e3[2] - e1[2]*e3[0]) * det;
-      a23 = (e1[1]*e3[0] - e1[0]*e3[1]) * det;
-      a31 = (e1[1]*e2[2] - e1[2]*e2[1]) * det;
-      a32 = (e1[2]*e2[0] - e1[0]*e2[2]) * det;
-      a33 = (e1[0]*e2[1] - e1[1]*e2[0]) * det;
-
-      Jinv_(1,0) = a11;
-      Jinv_(1,1) = a12;
-      Jinv_(1,2) = a13;
-      Jinv_(2,0) = a21;
-      Jinv_(2,1) = a22;
-      Jinv_(2,2) = a23;
-      Jinv_(3,0) = a31;
-      Jinv_(3,1) = a32;
-      Jinv_(3,2) = a33;
-      Jinv_(0,0) = -Jinv_(1,0) -Jinv_(2,0) -Jinv_(3,0);
-      Jinv_(0,1) = -Jinv_(1,1) -Jinv_(2,1) -Jinv_(3,1);
-      Jinv_(0,2) = -Jinv_(1,2) -Jinv_(2,2) -Jinv_(3,2);
+      Jinv_(0,0) = (e2[1]*e3[2] - e2[2]*e3[1]) * det;  /* (a_ij) = A^{-T} */
+      Jinv_(1,0) = (e2[2]*e3[0] - e2[0]*e3[2]) * det;
+      Jinv_(2,0) = (e2[0]*e3[1] - e2[1]*e3[0]) * det;
+      Jinv_(0,1) = (e1[2]*e3[1] - e1[1]*e3[2]) * det;
+      Jinv_(1,1) = (e1[0]*e3[2] - e1[2]*e3[0]) * det;
+      Jinv_(2,1) = (e1[1]*e3[0] - e1[0]*e3[1]) * det;
+      Jinv_(0,2) = (e1[1]*e2[2] - e1[2]*e2[1]) * det;
+      Jinv_(1,2) = (e1[2]*e2[0] - e1[0]*e2[2]) * det;
+      Jinv_(2,2) = (e1[0]*e2[1] - e1[1]*e2[0]) * det;
     }
 
-    volume_ = volFactor * adet;
+    // the test suite
+#if 0
+    for(int i=0; i<dim; i++)
+    {
+      Jinv_(i).print(std::cout, 1);
+      std::cout << "\n";
+    }
+
+    ALBERT REAL lambda[dim+1][dimworld];
+
+    // is faster than the lower method
+    ALBERT el_grd_lambda(elInfo_,lambda);
+
+    for(int i=1; i<dim+1; i++)
+    {
+      printf("lambda %d %f %f %f \n",i,lambda[i][0],lambda[i][1],lambda[i][2]);
+    }
+
+    for(int i=0; i<dim; i++)
+    {
+      for(int j=0; j<dimworld; j++)
+        Jinv_(j,i) = lambda[i+1][j];
+    }
+    for(int i=0; i<dim; i++)
+    {
+      Jinv_(i).print(std::cout, 1);
+      std::cout << "\n";
+    }
+
+    std::cout << "***********************\n";
+#endif
+
+    // volFactor should be 1/6, see ALBERT Doc
+    volume_ = adet / 6.0;
     builtinverse_ = true;
     return;
   }
-#endif
 
   template <>
   inline void AlbertGridElement<1,2>::
