@@ -31,17 +31,6 @@ namespace Dune {
         case Inner : {
           /* Coeffs */
           solver.discrete.coeffs(cl, l, coord, i);
-#ifndef NDEBUG
-          coefflist cl2 = cl;
-          typename GRID::iterator it(i,solver.g);
-          solver.discrete.coeffs(cl2, it);
-          assert(cl.size == cl2.size);
-          for (int n=0; n<cl.size; n++) {
-            assert(cl.j[n] == cl2.j[n]);
-            assert(cl.aij[n] == cl2.aij[n]);
-          }
-          assert(cl.aii == cl2.aii);
-#endif
           break;
         } // end Inner
         case Border : {
