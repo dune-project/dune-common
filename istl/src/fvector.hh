@@ -53,6 +53,12 @@ namespace Dune {
       fvmeta_plusequal<I-1>::plusequal(x,y);
       x[I] += y[I];
     }
+    template<class K, int n>
+    static void plusequal (FieldVector<K,n>& x, const K& y)
+    {
+      fvmeta_plusequal<I-1>::plusequal(x,y);
+      x[I] += y;
+    }
   };
   template<>
   struct fvmeta_plusequal<0> {
@@ -60,6 +66,11 @@ namespace Dune {
     static void plusequal (FieldVector<K,n>& x, const FieldVector<K,n>& y)
     {
       x[0] += y[0];
+    }
+    template<class K, int n>
+    static void plusequal (FieldVector<K,n>& x, const K& y)
+    {
+      x[0] += y;
     }
   };
 
@@ -72,6 +83,12 @@ namespace Dune {
       fvmeta_minusequal<I-1>::minusequal(x,y);
       x[I] -= y[I];
     }
+    template<class K, int n>
+    static void minusequal (FieldVector<K,n>& x, const K& y)
+    {
+      fvmeta_minusequal<I-1>::minusequal(x,y);
+      x[I] -= y;
+    }
   };
   template<>
   struct fvmeta_minusequal<0> {
@@ -79,6 +96,11 @@ namespace Dune {
     static void minusequal (FieldVector<K,n>& x, const FieldVector<K,n>& y)
     {
       x[0] -= y[0];
+    }
+    template<class K, int n>
+    static void minusequal (FieldVector<K,n>& x, const K& y)
+    {
+      x[0] -= y;
     }
   };
 
@@ -159,37 +181,37 @@ namespace Dune {
 
   // some abs functions needed for the norms
   template<class K>
-  double fvmeta_abs (const K& k)
+  inline double fvmeta_abs (const K& k)
   {
     return (k >= 0) ? k : -k;
   }
 
   template<class K>
-  double fvmeta_abs (const std::complex<K>& c)
+  inline double fvmeta_abs (const std::complex<K>& c)
   {
     return sqrt(c.real()*c.real() + c.imag()*c.imag());
   }
 
   template<class K>
-  double fvmeta_absreal (const K& k)
+  inline double fvmeta_absreal (const K& k)
   {
     return fvmeta_abs(k);
   }
 
   template<class K>
-  double fvmeta_absreal (const std::complex<K>& c)
+  inline double fvmeta_absreal (const std::complex<K>& c)
   {
     return fvmeta_abs(c.real()) + fvmeta_abs(c.imag());
   }
 
   template<class K>
-  double fvmeta_abs2 (const K& k)
+  inline double fvmeta_abs2 (const K& k)
   {
     return k*k;
   }
 
   template<class K>
-  double fvmeta_abs2 (const std::complex<K>& c)
+  inline double fvmeta_abs2 (const std::complex<K>& c)
   {
     return c.real()*c.real() + c.imag()*c.imag();
   }
@@ -356,6 +378,10 @@ namespace Dune {
         p = _p;
         i = _i;
       }
+
+      //! empty constructor, use with care
+      Iterator ()
+      {       }
 
       //! prefix increment
       Iterator& operator++()
@@ -527,6 +553,20 @@ namespace Dune {
     }
 
     //! vector space multiplication with scalar
+    FieldVector& operator+= (const K& k)
+    {
+      fvmeta_plusequal<n-1>::plusequal(*this,k);
+      return *this;
+    }
+
+    //! vector space division by scalar
+    FieldVector& operator-= (const K& k)
+    {
+      fvmeta_minusequal<n-1>::minusequal(*this,k);
+      return *this;
+    }
+
+    //! vector space multiplication with scalar
     FieldVector& operator*= (const K& k)
     {
       fvmeta_multequal<n-1>::multequal(*this,k);
@@ -609,6 +649,10 @@ namespace Dune {
     {
       return n;
     }
+
+    //===== conversion operator
+
+    operator K () {return *p;}
 
   private:
     // the data, very simply a built in array

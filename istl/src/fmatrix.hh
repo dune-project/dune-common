@@ -23,6 +23,7 @@ namespace Dune {
               @{
    */
 
+  template<class K, int n, int m> class FieldMatrix;
 
   // template meta program for assignment from scalar
   template<int I>
@@ -160,6 +161,43 @@ namespace Dune {
     }
   };
 
+  // template meta program for mmv(x,y)
+  template<int I>
+  struct fmmeta_mmv {
+    template<class Mat, class X, class Y, int c>
+    static void mmv (const Mat& A, const X& x, Y& y)
+    {
+      typedef typename Mat::row_type R;
+      typedef typename Mat::field_type K;
+      y[I] -= fmmeta_dot<c>::template dot<R,X,K>(A[I],x);
+      fmmeta_mmv<I-1>::template mmv<Mat,X,Y,c>(A,x,y);
+    }
+  };
+  template<>
+  struct fmmeta_mmv<0> {
+    template<class Mat, class X, class Y, int c>
+    static void mmv (const Mat& A, const X& x, Y& y)
+    {
+      typedef typename Mat::row_type R;
+      typedef typename Mat::field_type K;
+      y[0] -= fmmeta_dot<c>::template dot<R,X,K>(A[0],x);
+    }
+  };
+
+  template<class K, int n, int m, class X, class Y>
+  inline void fm_mmv (const FieldMatrix<K,n,m>& A,  const X& x, Y& y)
+  {
+    for (int i=0; i<n; i++)
+      for (int j=0; j<m; j++)
+        y[i] -= A[i][j]*x[j];
+  }
+
+  template<class K>
+  inline void fm_mmv (const FieldMatrix<K,1,1>& A, const FieldVector<K,1>& x, FieldVector<K,1>& y)
+  {
+    y[0] -= A[0][0]*x[0];
+  }
+
   // template meta program for usmv(x,y)
   template<int I>
   struct fmmeta_usmv {
@@ -183,16 +221,43 @@ namespace Dune {
 
   // conjugate komplex does nothing for non-complex types
   template<class K>
-  K fmmeta_ck (const K& k)
+  inline K fm_ck (const K& k)
   {
     return k;
   }
 
   // conjugate komplex
   template<class K>
-  std::complex<K> fmmeta_ck (const std::complex<K>& c)
+  inline std::complex<K> fm_ck (const std::complex<K>& c)
   {
     return std::complex<K>(c.real(),-c.imag());
+  }
+
+
+  //! solve small system
+  template<class K, int n, class X, class Y>
+  inline void fm_solve (const FieldMatrix<K,n,n>& A,  X& x, Y& b)
+  {
+    // LU decomposition with maximum column pivot
+    DUNE_THROW(ISTLError,"not implemented yet");
+  }
+
+  //! special case for 1x1 matrix, x and b may be identical
+  template<class K, class X, class Y>
+  inline void fm_solve (const FieldMatrix<K,1,1>& A,  X& x, Y& b)
+  {
+    x[0] = b[0]/A[0][0];
+  }
+
+  //! special case for 2x2 matrix, x and b may be identical
+  template<class K, class X, class Y>
+  inline void fm_solve (const FieldMatrix<K,2,2>& A,  X& x, Y& b)
+  {
+    K detinv = 1.0/(A[0][0]*A[1][1]-A[0][1]*A[1][0]);
+
+    K temp = b[0];
+    x[0] = detinv*(A[1][1]*b[0]-A[0][1]*b[1]);
+    x[1] = detinv*(A[0][0]*b[1]-A[1][0]*temp);
   }
 
 
@@ -259,6 +324,10 @@ namespace Dune {
         p = _p;
         i = _i;
       }
+
+      //! empty constructor, use with care!
+      Iterator ()
+      {       }
 
       //! prefix increment
       Iterator& operator++()
@@ -358,7 +427,7 @@ namespace Dune {
 
     //===== linear maps
 
-    //! y += alpha*A*x
+    //! y += A x
     template<class X, class Y>
     void umv (X& x, Y& y)
     {
@@ -369,9 +438,9 @@ namespace Dune {
       fmmeta_umv<n-1>::template umv<FieldMatrix,X,Y,m-1>(*this,x,y);
     }
 
-    //! y += alpha*A^T*x
+    //! y += A^T x
     template<class X, class Y>
-    void umvt (X& x, Y& y)
+    void umtv (X& x, Y& y)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -383,9 +452,9 @@ namespace Dune {
           y[j] += p[i][j]*x[i];
     }
 
-    //! y += alpha*A^H*x
+    //! y += A^H x
     template<class X, class Y>
-    void umvh (X& x, Y& y)
+    void umhv (X& x, Y& y)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -394,10 +463,50 @@ namespace Dune {
 
       for (int i=0; i<n; i++)
         for (int j=0; j<m; j++)
-          y[j] += fmmeta_ck(p[i][j])*x[i];
+          y[j] += fm_ck(p[i][j])*x[i];
     }
 
-    //! y += alpha*A*x
+    //! y -= A x
+    template<class X, class Y>
+    void mmv (X& x, Y& y)
+    {
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+      if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
+#endif
+      fmmeta_mmv<n-1>::template mmv<FieldMatrix,X,Y,m-1>(*this,x,y);
+      //fm_mmv(*this,x,y);
+    }
+
+    //! y -= A^T x
+    template<class X, class Y>
+    void mmtv (X& x, Y& y)
+    {
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
+      if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+#endif
+
+      for (int i=0; i<n; i++)
+        for (int j=0; j<m; j++)
+          y[j] -= p[i][j]*x[i];
+    }
+
+    //! y -= A^H x
+    template<class X, class Y>
+    void mmhv (X& x, Y& y)
+    {
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
+      if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+#endif
+
+      for (int i=0; i<n; i++)
+        for (int j=0; j<m; j++)
+          y[j] -= fm_ck(p[i][j])*x[i];
+    }
+
+    //! y += alpha A x
     template<class X, class Y>
     void usmv (const K& alpha, X& x, Y& y)
     {
@@ -408,9 +517,9 @@ namespace Dune {
       fmmeta_usmv<n-1>::template usmv<FieldMatrix,K,X,Y,m-1>(*this,alpha,x,y);
     }
 
-    //! y += alpha*A^T*x
+    //! y += alpha A^T x
     template<class X, class Y>
-    void usmvt (const K& alpha, X& x, Y& y)
+    void usmtv (const K& alpha, X& x, Y& y)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -422,9 +531,9 @@ namespace Dune {
           y[j] += alpha*p[i][j]*x[i];
     }
 
-    //! y += alpha*A^H*x
+    //! y += alpha A^H x
     template<class X, class Y>
-    void usmvh (const K& alpha, X& x, Y& y)
+    void usmhv (const K& alpha, X& x, Y& y)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -433,7 +542,7 @@ namespace Dune {
 
       for (int i=0; i<n; i++)
         for (int j=0; j<m; j++)
-          y[j] += alpha*fmmeta_ck(p[i][j])*x[i];
+          y[j] += alpha*fm_ck(p[i][j])*x[i];
     }
 
     //===== norms
@@ -468,6 +577,15 @@ namespace Dune {
       double max=0;
       for (int i=0; i<n; ++i) max = std::max(max,p[i].one_norm_real());
       return max;
+    }
+
+    //===== solve
+
+    //! Solve system A x = b
+    template<class X, class Y>
+    void solve (X& x, Y& b) const
+    {
+      fm_solve(*this,x,b);
     }
 
     //===== sizes
@@ -519,6 +637,11 @@ namespace Dune {
 #endif
       return true;
     }
+
+    //===== conversion operator
+
+    operator K () {return p[0][0];}
+
 
   private:
     // the data, very simply a built in array with rowwise ordering
