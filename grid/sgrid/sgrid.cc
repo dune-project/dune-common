@@ -364,7 +364,7 @@ namespace Dune {
     for (int i=0; i<dim; i++) zentity[i] = this->z[i] + zref[i] - 1;
 
     // make Iterator
-    return SLevelIterator<cc,dim,dimworld,All_Partition>(*(this->grid),this->l,(this->grid)->n(this->l,zentity));
+    return SLevelIterator<cc,dim,dimworld,All_Partition>(this->grid,this->l,(this->grid)->n(this->l,zentity));
   }
 
   // default implementation uses entity method
@@ -588,21 +588,21 @@ namespace Dune {
     if (level+1>maxlevel) return;     // nothing to do
 
     // compute reduced coordinates of element
-    FixedArray<int,dim> z = grid.z(level,fatherid,0);      // expanded coordinates from id
-    FixedArray<int,dim> zred = grid.compress(level,z);     // reduced coordinates from expaned coordinates
+    FixedArray<int,dim> z = grid->z(level,fatherid,0);      // expanded coordinates from id
+    FixedArray<int,dim> zred = grid->compress(level,z);     // reduced coordinates from expaned coordinates
 
     // refine to first son
     for (int i=0; i<dim; i++) zred[i] = 2*zred[i];
 
     // generate all \f$2^{dim}\f$ sons
-    int partition = grid.partition(level,z);
+    int partition = grid->partition(level,z);
     for (int b=0; b<(1<<dim); b++)
     {
       FixedArray<int,dim> zz = zred;
       for (int i=0; i<dim; i++)
         if (b&(1<<i)) zz[i] += 1;
       // zz is reduced coordinate of a son on level level+1
-      int sonid = grid.n(level+1,grid.expand(level+1,zz,partition));
+      int sonid = grid->n(level+1,grid->expand(level+1,zz,partition));
 
       // push son on stack
       StackElem son(level+1,sonid);
@@ -628,7 +628,7 @@ namespace Dune {
     stack.push(originalElement);
 
     // compute maxlevel
-    maxlevel = MIN(_maxlevel,grid.maxlevel());
+    maxlevel = MIN(_maxlevel,grid->maxlevel());
 
     // ok, push all the sons as well
     push_sons(e.l,e.id);
