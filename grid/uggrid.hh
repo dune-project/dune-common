@@ -3,6 +3,9 @@
 #ifndef DUNE_UGGRID_HH
 #define DUNE_UGGRID_HH
 
+/** \file
+ * \brief The UGGrid class
+ */
 
 #include "../common/matvec.hh"
 #include "../common/capabilities.hh"
