@@ -196,9 +196,8 @@ registerQuadrature(const QuadratureType &quad, const EntityType& en) const {
     for (IntersectionIterator it = en.ibegin(); it != endit; ++it) {
       for (int i = 0; i < nBaseFct; ++i) {
         for (int j = 0; j < nQuadPts; ++j) {
-          // * Is this correct? (intersectionSelfLocal().global(quad.point(j)))
           this->eval(i,
-                     it.intersectionSelfLocal().global(quad.point(j)),
+                     en.geometry().local(it.intersectionSelfLocal().global(quad.point(j))),
                      rp.first->second[it.numberInSelf()][i][j]);
         }
       }
