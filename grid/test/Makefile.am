@@ -42,8 +42,11 @@ check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 ## common flags
 #
 
-# grids may use functions from common (e.g. standard streams)
-LDFLAGS = $(top_builddir)/common/libcommon.la
+# note that $(top_builddir)/lib/libdune.la cannot be used because the
+# lib/-directory will be compiled last. Thus we need to add the
+# library-parts explicitly
+LDFLAGS = $(top_builddir)/common/libcommon.la \
+          $(top_builddir)/grid/onedgrid/libonedgrid.la
 
 #
 ## define the programs
