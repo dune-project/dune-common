@@ -29,25 +29,24 @@ namespace Dune {
   /** \brief Base class for discrete finite element operators
    * Base class for local operators in a finite elment discretization
    */
-  template <class DiscreteFunctionType, class LocalOperatorImp >
+
+  template <class LocalOperatorImp, class DFDomainType, class DFRangeType = DFDomainType >
   class DiscreteFEOp
-    : public DiscreteOperatorDefault <DiscreteFunctionType, DiscreteFunctionType >
+    : public DiscreteOperatorDefault < LocalOperatorImp , DFDomainType, DFRangeType , DiscreteFEOp >
   {
-    typedef typename DiscreteFunctionType::FunctionSpaceType::
-    RangeField RangeFieldType;
-    typedef DiscreteFEOp<DiscreteFunctionType,LocalOperatorImp> MyType;
+
 
     typedef ScaledLocalOperator < LocalOperatorImp,
-        typename  DiscreteFunctionType::RangeFieldType > ScalOperatorType;
-    typedef DiscreteFEOp<DiscreteFunctionType,ScalOperatorType> ScalDiscrType;
+        typename  DFDomainType::RangeFieldType > ScalOperatorType;
+    typedef DiscreteFEOp<ScalOperatorType, DFDomainType> ScalDiscrType;
 
-    typedef DiscreteOperatorDefault <DiscreteFunctionType, DiscreteFunctionType >
-    DiscOpDefType;
 
-    typedef typename DiscOpDefType::DomainType DomainType;
-    typedef typename DiscOpDefType::RangeType RangeType;
-    typedef typename DiscOpDefType::DomainFieldType DFieldType;
-    typedef typename DiscOpDefType::RangeFieldType RFieldType;
+    typedef typename DFDomainType::FunctionSpaceType::RangeField RangeFieldType;
+
+    typedef typename DFDomainType::DomainType DomainType;
+    typedef typename DFDomainType::RangeType RangeType;
+    typedef typename DFDomainType::DomainFieldType DFieldType;
+    typedef typename DFDomainType::RangeFieldType RFieldType;
 
     //! remember what type this class has
     typedef Mapping<DFieldType,RFieldType,DomainType,RangeType> MappingType;
@@ -68,16 +67,16 @@ namespace Dune {
        called are deleted too.
      */
     template <class LocalOperatorType>
-    DiscreteFEOp<DiscreteFunctionType,
+    DiscreteFEOp<DFDomainType,
         CombinedLocalOperator<LocalOperatorImp,LocalOperatorType> > &
-    operator + (const DiscreteFEOp<DiscreteFunctionType,LocalOperatorType> &op)
+    operator + (const DiscreteFEOp<DFDomainType,LocalOperatorType> &op)
     {
-      typedef DiscreteFEOp<DiscreteFunctionType,LocalOperatorType> CopyType;
+      typedef DiscreteFEOp<DFDomainType,LocalOperatorType> CopyType;
       typedef CombinedLocalOperator <LocalOperatorImp,LocalOperatorType> COType;
 
       COType *locOp =
         new COType ( localOp_ , const_cast<CopyType &> (op).getLocalOp ());
-      typedef DiscreteFEOp< DiscreteFunctionType , COType > OPType;
+      typedef DiscreteFEOp< DFDomainType , COType > OPType;
 
       OPType *discrOp = new OPType ( *locOp, leaf_, printMsg_ );
 
@@ -131,7 +130,7 @@ namespace Dune {
       }
 
       // useful typedefs
-      typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
+      typedef typename DFDomainType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
       // the corresponding grid
       FunctionSpaceType & functionSpace_= dest.getFunctionSpace();

@@ -3,6 +3,8 @@
 #ifndef __DUNE_FEOPERATOR_HH__
 #define __DUNE_FEOPERATOR_HH__
 
+#include <dune/common/operator.hh>
+#include <dune/common/fmatrix.hh>
 #include <dune/fem/common/localoperator.hh>
 #include <dune/fem/feop/spmatrix.hh>
 
@@ -46,7 +48,8 @@ namespace Dune {
                public LocalOperatorDefault <DiscFunctionType,DiscFunctionType, typename
                    DiscFunctionType::RangeFieldType , FEOpImp  >
   {
-    typedef typename SparseRowMatrix<double> MatrixType;
+
+    typedef SparseRowMatrix<double> MatrixType;
 
   public:
     enum OpMode { ON_THE_FLY, ASSEMBLED };
@@ -103,7 +106,7 @@ namespace Dune {
       arg_  = &Arg.argument();
       dest_ = &Dest.destination();
       assert(arg_ != NULL); assert(dest_ != NULL);
-      dest.clear();
+      dest_.clear();
     };
 
     //! set argument and dest to NULL
@@ -143,7 +146,7 @@ namespace Dune {
       int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
       enum {maxnumOfBaseFct = 10};
 
-      Mat<maxnumOfBaseFct,maxnumOfBaseFct , double> mat;
+      FieldMatrix<double, maxnumOfBaseFct, maxnumOfBaseFct> mat;
 
       getLocalMatrix( en, numOfBaseFct, mat);
 
@@ -158,7 +161,7 @@ namespace Dune {
 
             // scalar comes from LocalOperatorDefault, if operator is scaled,
             // i.e. with timestepsize
-            dest_it[ row ] += arg_it[ col ] * mat(i,j);
+            dest_it[ row ] += arg_it[ col ] * mat[i][j];
           }
         }
       }
@@ -173,7 +176,7 @@ namespace Dune {
 
             // scalar comes from LocalOperatorDefault, if operator is scaled,
             // i.e. with timestepsize
-            double val = (this->scalar_) * mat(i, j );
+            double val = (this->scalar_) * mat[i][j];
 
             dest_it[ row ] += arg_it[ col ] * val;
           }
@@ -211,11 +214,11 @@ namespace Dune {
 
         if(nit.boundary())
         {
-          BoundaryEntityType & bEl = nit.boundaryEntity();
+          const BoundaryEntityType & bEl = nit.boundaryEntity();
 
           if( functionSpace_.boundaryType( bEl.id() ) == Dirichlet )
           {
-            int neigh = nit.number_in_self();
+            int neigh = nit.numberInSelf();
 
             if(en.geometry().type() == triangle)
             {
@@ -287,9 +290,9 @@ namespace Dune {
     {
       typedef typename DiscFunctionType::FunctionSpaceType::GridType GridType;
       enum { dim = GridType::dimension };
-      return new MatrixType( this->functionSpace_.size ( this->functionSpace_.getGrid().maxlevel() ) ,
-                             this->functionSpace_.size ( this->functionSpace_.getGrid().maxlevel() ) ,
-                             15 * (dim-1) , 0.0 );
+      return new MatrixType( this->functionSpace_.size ( ) ,
+                             this->functionSpace_.size ( ) ,
+                             15 * (dim-1));
     };
 
     //! \todo Please doc me!
@@ -309,7 +312,7 @@ namespace Dune {
       {
         enum {maxnumOfBaseFct = 10};
 
-        Mat<maxnumOfBaseFct,maxnumOfBaseFct , double> mat;
+        FieldMatrix<double, maxnumOfBaseFct, maxnumOfBaseFct> mat;
 
         if (leaf_) {
           LeafIterator it = grid.leafbegin( grid.maxlevel() );
@@ -361,7 +364,7 @@ namespace Dune {
           for (int j=0; j<numOfBaseFct; j++ )
           {
             int col = functionSpace_.mapToGlobal( *it , j );
-            matrix_->add( row , col , mat(i,j));
+            matrix_->add( row , col , mat[i][j]);
           }
         }
       }
@@ -388,11 +391,11 @@ namespace Dune {
 
           if(nit.boundary())
           {
-            BoundaryEntityType & bEl = nit.boundaryEntity();
+            const BoundaryEntityType & bEl = nit.boundaryEntity();
 
             if( functionSpace_.boundaryType (bEl.id()) == Dirichlet )
             {
-              int neigh = nit.number_in_self();
+              int neigh = nit.numberInSelf();
 
               if((*it).geometry().type() == triangle)
               {

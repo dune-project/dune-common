@@ -3,6 +3,8 @@
 #ifndef __DUNE_LOCALOPERATORS_HH__
 #define __DUNE_LOCALOPERATORS_HH__
 
+#include "objpointer.hh"
+
 namespace Dune
 {
 
