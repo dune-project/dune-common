@@ -94,7 +94,7 @@ namespace Dune {
 
 
   //! print a row of zeros for a non-existing block
-  void fill_row (std::ostream& s, int m, int width, int precision)
+  inline void fill_row (std::ostream& s, int m, int width, int precision)
   {
     for (int j=0; j<m; j++)
     {
