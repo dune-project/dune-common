@@ -38,7 +38,13 @@ namespace Dune {
     calcExtras();
   }
 
-
+#ifdef _BSGRID_PARALLEL_
+  template <int dim, int dimworld>
+  inline BSGrid<dim,dimworld>::BSGrid(MPI_Comm mpiComm)
+    : mygrid_ (0) , maxlevel_(0)
+      , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
+  {}
+#else
   template <int dim, int dimworld>
   inline BSGrid<dim,dimworld>::BSGrid(int myrank) : mygrid_ (0) , maxlevel_(0) , myRank_(myrank)
   {
@@ -47,6 +53,7 @@ namespace Dune {
 
     for(int i=0; i<dim+1; i++) globalSize_[i] = -1;
   }
+#endif
 
   template <int dim, int dimworld>
   inline BSGrid<dim,dimworld>::~BSGrid()
@@ -171,7 +178,6 @@ namespace Dune {
   template <int dim, int dimworld>
   inline int BSGrid<dim,dimworld>::global_size(int codim) const
   {
-    assert(codim == 0);
     assert(globalSize_[codim] >= 0);
     return globalSize_[codim];
   }
@@ -388,7 +394,6 @@ namespace Dune {
 #endif
   }
 
-  // writeGrid and readGrid
   template <int dim, int dimworld>
   template <FileFormatType ftype>
   inline bool BSGrid<dim,dimworld>::
@@ -401,7 +406,7 @@ namespace Dune {
       char *extraName = new char[strlen(filename)+20];
       if(!extraName)
       {
-        std::cerr << "BSGrid::readGrid: couldn't allocate extraName! \n";
+        std::cerr << "BSGrid::writeGrid: couldn't allocate extraName! \n";
         abort();
       }
       sprintf(extraName,"%s.extra",filename);
@@ -415,14 +420,13 @@ namespace Dune {
       }
       else
       {
-        std::cerr << "BSGrid::readGrid: couldn't open <" << extraName << ">! \n";
+        std::cerr << "BSGrid::writeGrid: couldn't open <" << extraName << ">! \n";
       }
       delete [] extraName;
     }
     return true;
   }
 
-  // writeGrid and readGrid
   template <int dim, int dimworld>
   template <FileFormatType ftype>
   inline bool BSGrid<dim,dimworld>::
@@ -437,7 +441,11 @@ namespace Dune {
       }
       sprintf(macroName,"%s.macro",filename);
 
-      mygrid_ = new BSSPACE BSGitterImplType (macroName);
+      mygrid_ = new BSSPACE BSGitterImplType (macroName
+#ifdef _BSGRID_PARALLEL_
+                                              , mpAccess_
+#endif
+                                              );
 
       delete [] macroName;
     }
@@ -468,12 +476,16 @@ namespace Dune {
       delete [] extraName;
     }
 
-    calcExtras();
-    recalcGlobalSize();
+    calcMaxlevel(); // calculate new maxlevel
+    calcExtras();  // calculate indices
+
+    //std::cout << global_size(0) << " gl size \n";
+    //recalcGlobalSize();
 
     // set max index of grid
-    for(int i=0; i<dim+1; i++)
-      mygrid_->indexManager(i).setMaxIndex( globalSize_[i] );
+    //for(int i=0; i<dim+1;i++)
+    //  mygrid_->indexManager(i).setMaxIndex( globalSize_[i] );
+    //std::cout << global_size(0) << " gl size new \n";
 
     return true;
   }

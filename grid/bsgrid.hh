@@ -17,7 +17,7 @@
 namespace Dune
 {
 
-  /** @defgroup BSGrid BSGrid Module
+  /** @defgroup BSGrid BSGrid
      @ingroup GridCommon
      Adaptive parallel grid supporting dynamic load balancing, written by
      Bernard Schupp. This grid supports hexahedrons and tetrahedrons.
@@ -262,7 +262,6 @@ namespace Dune
         BSGridHierarchicIterator>
   {
     friend class BSGrid < dim , dimworld >;
-    friend class BaumMarkerVector;
     friend class BSGridIntersectionIterator < dim, dimworld>;
     friend class BSGridHierarchicIterator < dim, dimworld>;
     friend class BSGridLevelIterator <0,dim,dimworld,All_Partition>;
@@ -328,9 +327,8 @@ namespace Dune
     PartitionType partitionType() const;
 
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
-       with codimension cc.
+        with codimension cc.
      */
-    //!< Default codim 1 Faces and codim == dim Vertices
     template<int cc> int count () { return cc+1; }
 
     //! return index of sub entity with codim = cc and local number i
@@ -721,7 +719,7 @@ namespace Dune
   //
   //**********************************************************************
 
-  /** \brief The Baum %Grid class
+  /** \brief The BS %Grid class
    *
    * \todo Please doc me!
    */
@@ -735,19 +733,6 @@ namespace Dune
 
     friend class BSGridEntity <0,dim,dimworld>;
     friend class BSGridIntersectionIterator<dim,dimworld>;
-
-#if 0
-    //friend class BSGridEntity <1,dim,dimworld>;
-    //friend class BSGridEntity <1 << dim-1 ,dim,dimworld>;
-    friend class BSGridEntity <dim,dim,dimworld>;
-
-    // friends because of fillElInfo
-    friend class BSGridLevelIterator<0,dim,dimworld>;
-    friend class BSGridLevelIterator<1,dim,dimworld>;
-    friend class BSGridLevelIterator<2,dim,dimworld>;
-    friend class BSGridLevelIterator<3,dim,dimworld>;
-    friend class BSGridHierarchicIterator<dim,dimworld>;
-#endif
 
     //**********************************************************
     // The Interface Methods
@@ -764,20 +749,17 @@ namespace Dune
     DataCollectorParamType;
 
     /** \todo Please doc me! */
-    enum { numCodim = dim+1 };
 
+    //! maximal number of levels
     enum { MAXL = 64 };
 
-    //! Constructor which reads an Baum Macro Triang file
+    //! Constructor which reads an BSGrid Macro Triang file
     //! or given GridFile
 #ifdef _BSGRID_PARALLEL_
     BSGrid(const char* macroTriangFilename , MPI_Comm mpiComm);
     BSGrid(MPI_Comm mpiComm);
 #else
     BSGrid(const char* macroTriangFilename );
-#endif
-
-#ifndef _BSGRID_PARALLEL_
     //! empty Constructor
     BSGrid(int myrank = -1);
 #endif
