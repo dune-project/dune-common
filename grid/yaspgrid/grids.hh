@@ -172,7 +172,7 @@ namespace SG {
     }
 
     //! Return mesh size in direction i
-    ct meshsize (int i)
+    ct meshsize (int i) const
     {
       return _h[i];
     }
@@ -209,7 +209,7 @@ namespace SG {
     }
 
     //! given a tupel compute its index in the lexicographic numbering
-    int index (iTupel& coord)
+    int index (const iTupel& coord) const
     {
       int index = (coord[d-1]-_origin[d-1]);
 
@@ -220,7 +220,7 @@ namespace SG {
     }
 
     //! given a tupel compute its index in the lexicographic numbering
-    bool inside (iTupel& coord)
+    bool inside (const iTupel& coord) const
     {
       for (int i=0; i<d; i++)
       {
