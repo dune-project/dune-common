@@ -450,7 +450,17 @@ namespace Dune {
     : public NeighborIterator <dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>
   {
   public:
-    // no default functionality at this moment
+    //! return outer normal, which is the unit_outer_normal() scaled with the
+    //! volume of the intersection_self_global ()
+    Vec<dimworld,ct>& outer_normal ();
+
+  protected:
+    //! the outer normal
+    Vec<dimworld,ct> outerNormal_;
+
+    //! tmp Vec for integration_element
+    Vec<dim-1,ct> tmp_;
+
   private:
     //! Barton-Nackman trick
     NeighborIteratorImp<dim,dimworld>& asImp ()

@@ -294,6 +294,19 @@ namespace Dune {
   //************************************************************************
   // N E I G H B O R I T E R A T O R Default
   //************************************************************************
+  template<int dim, int dimworld, class ct,
+      template<int,int> class NeighborIteratorImp,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp
+      , template<int,int> class BoundaryEntityImp
+      >
+  inline Vec<dimworld,ct>& NeighborIteratorDefault<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::outer_normal ()
+  {
+    outerNormal_ = asImp().unit_outer_normal();
+    ct vol = asImp().intersection_self_global().integration_element(tmp_);
+    outerNormal_ *= vol;
+    return outerNormal_;
+  }
 
 
 
@@ -1114,7 +1127,6 @@ namespace Dune {
     }
 
     return en_;
-
   }
 
 
