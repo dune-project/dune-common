@@ -12,8 +12,6 @@
 
 namespace Dune {
 
-  enum { DGFSpaceId = 123456789 };
-
   //**********************************************************************
   //
   //!  DiscreteFunctionSpace for discontinous functions
@@ -28,6 +26,8 @@ namespace Dune {
               polOrd, DofManagerType >,
           MonomialBaseFunctionSet < FunctionSpaceType > >
   {
+    enum { DGFSpaceId = 123456789 };
+
     // to be revised, see LagrangeDiscreteFunctionSpace
     DofManagerType dm_;
 
