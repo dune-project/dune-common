@@ -86,6 +86,7 @@ namespace Albert
     template<int codim, int dim, int dimworld> class AlbertGridLevelIterator;
 
     template<int dim, int dimworld>            class AlbertGridElement;
+    template<int dim, int dimworld>            class AlbertGridBoundaryEntity;
     template<int dim, int dimworld>            class AlbertGridHierarchicIterator;
     template<int dim, int dimworld>            class AlbertGridNeighborIterator;
     template<int dim, int dimworld>            class AlbertGrid;
@@ -113,7 +114,7 @@ namespace Albert
     class AlbertGridElement :
       public ElementDefault <dim,dimworld,albertCtype,AlbertGridElement>
     {
-
+      friend class AlbertGridBoundaryEntity<dim,dimworld>;
     public:
       //! know dimension
       enum { dimension=dim };
@@ -192,9 +193,9 @@ namespace Albert
       // init geometry with zeros
       void initGeom();
 
-    private:
       //! print internal data
       void print (std::ostream& ss, int indent);
+    private:
 
       // calc the local barycentric coordinates
       template <int dimbary>
@@ -228,7 +229,10 @@ namespace Albert
       template <> int mapVertices<1> (int i) const
       {
         // N_VERTICES (from ALBERT) = dim +1
-        return ((face_ + 1 + i) % (dimension+1));
+        // std::cout << "Its me! \n";
+        //return ((face_ + 1 + i) % (dimension+1));
+        return ((face_ + 1 + i) % (dimworld+1));
+
       }
 
 #if DIM == 3
@@ -703,7 +707,72 @@ namespace Albert
     };
 
 
+#define NEIGH_DEBUG
+    template<int dim, int dimworld>
+    class AlbertGridBoundaryEntity
+      : public BoundaryEntityDefault <dim,dimworld,albertCtype,
+            AlbertGridElement,AlbertGridBoundaryEntity>
+    {
+      friend class AlbertGridNeighborIterator<dim,dimworld>;
+    public:
+      AlbertGridBoundaryEntity () : _geom (false) , _elInfo ( NULL ),
+                                    _neigh (-1) {};
 
+      //! return type of boundary , i.e. Neumann, Dirichlet ...
+      BoundaryType type ()
+      {
+#ifdef NEIGH_DEBUG
+        if(_elInfo->boundary[_neigh] == NULL)
+        {
+          std::cerr << "No Boundary, fella! \n";
+          abort();
+        }
+#endif
+        return (( _elInfo->boundary[_neigh]->bound < 0 ) ? Neumann : Dirichlet );
+      }
+
+      //! return identifier of boundary segment, number
+      int id ()
+      {
+#ifdef NEIGH_DEBUG
+        if(_elInfo->boundary[_neigh] == NULL)
+        {
+          std::cerr << "No Boundary, fella! \n";
+          abort();
+        }
+#endif
+        return _elInfo->boundary[_neigh]->bound;
+      }
+
+      //! return true if geometry of ghost cells was filled
+      bool hasGeometry () { return _geom.builtGeom(_elInfo,0,0,0); }
+
+      //! return geometry of the ghost cell
+      AlbertGridElement<dim,dimworld> geometry ()
+      {
+        return _geom;
+      }
+
+    private:
+      // set elInfo
+      void setElInfo(ALBERT EL_INFO * elInfo, int nb)
+      {
+        _neigh = nb;
+        if(elInfo)
+          _elInfo = elInfo;
+        else
+          _elInfo = NULL;
+      };
+
+      int _neigh;
+
+      // AlbertGrid<dim,dimworld> & _grid;
+      AlbertGridElement<dim,dimworld> _geom;
+
+      // cooresponding el_info
+      ALBERT EL_INFO * _elInfo;
+
+    };
     //**********************************************************************
     //
     // --AlbertGridNeighborIterator
@@ -719,7 +788,7 @@ namespace Albert
     class AlbertGridNeighborIterator :
       public NeighborIteratorDefault <dim,dimworld,albertCtype,
           AlbertGridNeighborIterator,AlbertGridEntity,
-          AlbertGridElement>
+          AlbertGridElement, AlbertGridBoundaryEntity>
     {
     public:
       //! know your own dimension
@@ -760,8 +829,11 @@ namespace Albert
       //! boundary information, processor/outer boundary
       bool boundary ();
 
-      bool hasBoundary ();
-      bool hasNeighbor ();
+      //! return true if across the edge an neighbor on this level exists
+      bool neighbor ();
+
+      //! return information about the Boundary
+      AlbertGridBoundaryEntity<dim,dimworld> & boundaryEntity ();
 
       //! return unit outer normal, this should be dependent on local
       //! coordinates for higher order boundary
@@ -803,7 +875,7 @@ namespace Albert
       Vec<dimworld,albertCtype>& outer_normal ();
 
       //! setup the virtual entity
-      void setupVirtualEntity(int neighbor);
+      ALBERT EL_INFO * setupVirtualEntity(int neighbor);
 
       void makeIterator();
       // makes empty neighElInfo
@@ -833,8 +905,13 @@ namespace Albert
       //! information. This element is created on demand.
       AlbertGridElement<dim-1,dimworld> *neighGlob_;
 
+      //! BoundaryEntity
+      AlbertGridBoundaryEntity<dim,dimworld> _boundaryEntity;
+
       //! pointer to the EL_INFO struct storing the real element information
       ALBERT EL_INFO * elInfo_;
+
+
 
       //! EL_INFO th store the information of the neighbor if needed
       ALBERT EL_INFO neighElInfo_;
@@ -1080,8 +1157,9 @@ namespace Albert
       void calcExtras();
 
       // read and write mesh_ via ALBERT routines
-      bool writeGridXdr( const char * filename, albertCtype time );
-      bool readGridXdr ( const char * filename, albertCtype & time );
+      bool writeGridXdr  ( const char * filename, albertCtype time );
+      bool writeGridUSPM ( const char * filename, albertCtype time, int level );
+      bool readGridXdr   ( const char * filename, albertCtype & time );
 
       //! access to mesh pointer, needed by some methods
       ALBERT MESH* getMesh () const { return mesh_; };
