@@ -37,6 +37,8 @@ namespace Dune {
 #ifdef _3
       using UG3d::nb_offset;
       using UG3d::element_descriptors;
+#else
+      using UG2d::element_descriptors;
 #endif
       return SIDES_OF_ELEM(theElement);
     }
@@ -48,6 +50,7 @@ namespace Dune {
       using UG3d::nb_offset;
 #else
       using UG2d::ELEMENT;
+      using UG2d::nb_offset;
 #endif
       return NBELEM(theElement, nb);
     }
