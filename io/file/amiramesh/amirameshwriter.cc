@@ -328,7 +328,7 @@ void Dune::AmiraMeshWriter<GridType>::writeFunction(const DiscFuncType& f,
 
 
   // write the data into the AmiraMesh object
-  typedef typename DiscFuncType::DofIteratorType DofIterator;
+  typedef typename DiscFuncType::ConstDofIteratorType DofIterator;
   DofIterator dit = f.dbegin();
   DofIterator ditend = f.dend();
 
