@@ -46,9 +46,9 @@ namespace Dune {
   template<int dim, int dimworld>            class YaspElement;
   template<int codim, int dim, int dimworld> class YaspEntity;
   template<int dim, int dimworld>            class YaspGrid;
+  template<int codim, int dim, int dimworld> class YaspLevelIterator;
+  template<int dim, int dimworld>            class YaspIntersectionIterator;
   //template <int dim, int dimworld>           class YaspBoundaryEntity;
-  //template<int codim, int dim, int dimworld> class YaspLevelIterator;
-  //template<int dim, int dimworld>            class YaspIntersectionIterator;
   //template<int dim, int dimworld>            class YaspHierarchicIterator;
 
 
@@ -191,7 +191,7 @@ namespace Dune {
     }
 
     //! constructor from (storage for) midpoint and extension and missing direction number
-    YaspElement (Vec<dimworld,yaspgrid_ctype>& p, Vec<dimworld,yaspgrid_ctype>& h, int m)
+    YaspElement (Vec<dimworld,yaspgrid_ctype>& p, Vec<dimworld,yaspgrid_ctype>& h, int& m)
       : midpoint(p), extension(h), missing(m)
     {
       if (dimworld!=dim+1)
@@ -219,7 +219,7 @@ namespace Dune {
     // Note dimworld==dim+1
     Vec<dimworld,yaspgrid_ctype>& midpoint; // the midpoint
     Vec<dimworld,yaspgrid_ctype>& extension; // the extension
-    int missing;                         // the missing, i.e. constant direction
+    int& missing;                           // the missing, i.e. constant direction
 
     // In addition we need memory in order to return references.
     // Possibly we should change this in the interface ...
@@ -490,11 +490,305 @@ namespace Dune {
       if (cc==1) return 2*dim;
     }
 
+    TI& transformingiterator ()
+    {
+      return _it;
+    }
+
+    YGLI& gridlevel ()
+    {
+      return _g;
+    }
+
+    //! returns intersection iterator for first intersection
+    YaspIntersectionIterator<dim,dimworld> ibegin ()
+    {
+      return YaspIntersectionIterator<dim,dimworld>(*this,false);
+    }
+
+    //! Reference to one past the last neighbor
+    YaspIntersectionIterator<dim,dimworld> iend ()
+    {
+      return YaspIntersectionIterator<dim,dimworld>(*this,true);
+    }
+
+
   private:
     TI& _it;                          // position in the grid level
     YGLI& _g;                         // access to grid level
     YaspElement<dim,dimworld> _element; // the element geometry
   };
+
+
+  // specialization for codim=dim
+  template<int dim, int dimworld>
+  class YaspEntity<dim,dim,dimworld> //:  public EntityDefault <dim,dim,dimworld,yaspgrid_ctype,YaspEntity,YaspElement,
+  //	   YaspLevelIterator,YaspIntersectionIterator,YaspHierarchicIterator>
+  {
+  public:
+    typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
+    typedef typename YGrid<dim,yaspgrid_ctype>::TransformingIterator TI;
+
+    //! define type used for coordinates in grid module
+    typedef yaspgrid_ctype ctype;
+
+    // constructor
+    YaspEntity (YGLI& g, TI& it)
+      : _it(it), _g(g), _element(it.position())
+    {  }
+
+    //! level of this element
+    int level () {return _g.level();}
+
+    //! index is unique and consecutive per level
+    int index () {return _it.index();}
+
+    //! geometry of this entity
+    YaspElement<0,dimworld>& geometry () {return _element;}
+
+  private:
+    TI& _it;                          // position in the grid level
+    YGLI& _g;                         // access to grid level
+    YaspElement<0,dimworld> _element; // the element geometry
+  };
+
+
+  //========================================================================
+  /*!
+     YaspIntersectionIterator enables iteration over intersection with
+     neighboring codim 0 entities.
+   */
+  //========================================================================
+
+  template<int dim, int dimworld>
+  class YaspIntersectionIterator //: public IntersectionIteratorDefault<dim,dimworld,simplegrid_ctype,
+                                 //	YaspIntersectionIterator,YaspEntity,YaspElement,YaspBoundaryEntity>
+  {
+  public:
+    //! define type used for coordinates in grid module
+    typedef yaspgrid_ctype ctype;
+
+    // types used from grids
+    typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
+    typedef typename YGrid<dim,yaspgrid_ctype>::TransformingIterator TI;
+
+    //! prefix increment
+    YaspIntersectionIterator<dim,dimworld>& operator++()
+    {
+      // update count, check end
+      _count++;
+      if (_count==2*dim) return *this;   // end iterator reached, we are done
+
+      // update intersection iterator from current position
+      if (_face==0)   // direction remains valid
+      {
+        _face = 1;         // 0->1, _dir remains
+
+        // move transforming iterator
+        _itnb.move(_dir,2);         // move two cells in positive direction
+
+        // make up faces
+        _pos_self_local[_dir] = 1.0;
+        _pos_nb_local[_dir] = 0.0;
+        _pos_world[_dir] += _myself.transformingiterator().meshsize(_dir);
+
+        // make up unit outer normal direction
+        _normal[_dir] = 1.0;
+      }
+      else   // change direction
+      {
+        // move transforming iterator
+        _itnb.move(_dir,-1);         // move one cell back
+
+        // make up faces
+        _pos_self_local[_dir] = 0.5;
+        _pos_nb_local[_dir] = 0.5;
+        _pos_world[_dir] = _myself.transformingiterator().position(_dir);
+
+        // make up unit outer normal direction
+        _normal[_dir] = 0.0;
+
+        _face = 0;
+        _dir += 1;
+
+        // move transforming iterator
+        _itnb.move(_dir,-1);         // move one cell in negative direction
+
+        // make up faces
+        _pos_self_local[_dir] = 0.0;
+        _pos_nb_local[_dir] = 1.0;
+        _pos_world[_dir] -= 0.5*_myself.transformingiterator().meshsize(_dir);
+
+        // make up unit outer normal direction
+        _normal[_dir] = -1.0;
+      }
+
+      return *this;
+    }
+
+    //! equality
+    bool operator== (const YaspIntersectionIterator<dim,dimworld>& i) const
+    {
+      return (_count==i._count);
+    }
+
+    //! inequality
+    bool operator!= (const YaspIntersectionIterator<dim,dimworld>& i) const
+    {
+      return (_count!=i._count);
+    }
+
+    /*! return true if neighbor ist outside the domain. Still the neighbor might
+        exist in case of periodic boundary conditions, i.e. true is returned
+        if the neighbor is outside the periodic unit cell
+     */
+    bool boundary ()
+    {
+      // The transforming iterator can be safely moved beyond the boundary.
+      // So we only have to compare against the cell_global grid
+      if (   _itnb.coord(_dir)<_myself.gridlevel().cell_global().min(_dir)
+             || _itnb.coord(_dir)>_myself.gridlevel().cell_global().max(_dir))
+        return true;
+      else
+        return false;
+    }
+
+    //! return true if neighbor across intersection exists in this processor
+    bool neighbor ()
+    {
+      // The transforming iterator can be safely moved beyond the boundary.
+      // So we only have to compare against the cell_global grid
+      if (_itnb.coord(_dir)>=_myself.gridlevel().cell_overlap().min(_dir)
+          && _itnb.coord(_dir)<=_myself.gridlevel().cell_overlap().max(_dir))
+        return true;
+      else
+        return false;
+    }
+
+    //! access neighbor, dereferencing
+    YaspEntity<0,dim,dimworld>& operator*()
+    {
+      return _nb;
+    }
+
+    //! access neighbor, arrow
+    YaspEntity<0,dim,dimworld>* operator->()
+    {
+      return &_nb;
+    }
+
+    //! return unit outer normal, this should be dependent on local coordinates for higher order boundary
+    Vec<dimworld,yaspgrid_ctype>& unit_outer_normal (Vec<dim-1,yaspgrid_ctype>& local)
+    {
+      return _normal;
+    }
+
+    //! return unit outer normal, if you know it is constant use this function instead
+    Vec<dimworld,yaspgrid_ctype>& unit_outer_normal ()
+    {
+      return _normal;
+    }
+
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+          Here returned element is in LOCAL coordinates of the element where iteration started.
+     */
+    YaspElement<dim-1,dim>& intersection_self_local ()
+    {
+      return _is_self_local;
+    }
+
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+          Here returned element is in GLOBAL coordinates of the element where iteration started.
+     */
+    YaspElement<dim-1,dimworld>& intersection_self_global ()
+    {
+      return _is_global;
+    }
+
+    //! local number of codim 1 entity in self where intersection is contained in
+    int number_in_self ()
+    {
+      return _count;
+    }
+
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+          Here returned element is in LOCAL coordinates of neighbor
+     */
+    YaspElement<dim-1,dim>& intersection_neighbor_local ()
+    {
+      return _is_nb_local;
+    }
+
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+          Here returned element is in LOCAL coordinates of neighbor
+     */
+    YaspElement<dim-1,dimworld>& intersection_neighbor_global ()
+    {
+      return _is_global;
+    }
+
+    //! local number of codim 1 entity in neighbor where intersection is contained in
+    int number_in_neighbor ()
+    {
+      return _count + 1-2*_face;
+    }
+
+    //! make intersection iterator from entity
+    YaspIntersectionIterator (YaspEntity<0,dim,dimworld>& myself, bool toend)
+      : _itnb(myself.transformingiterator()),
+        _myself(myself),
+        _nb(myself.gridlevel(),_itnb),
+        _pos_self_local(0.5),
+        _pos_nb_local(0.5),
+        _pos_world(myself.transformingiterator().position()),
+        _ext_local(1.0),
+        _is_self_local(_pos_self_local,_ext_local,_dir),
+        _is_nb_local(_pos_nb_local,_ext_local,_dir),
+        _is_global(_pos_world,myself.transformingiterator().meshsize(),_dir),
+        _normal(0.0)
+    {
+      // making an end iterator?
+      if (toend)
+      {
+        // initialize end iterator
+        _count = 2*dim;
+        return;
+      }
+
+      // initialize to first neighbor
+      _count = 0;
+      _dir = 0;
+      _face = 0;
+
+      // move transforming iterator
+      _itnb.move(_dir,-1);
+
+      // make up faces
+      _pos_self_local[0] = 0.0;
+      _pos_nb_local[0] = 1.0;
+      _pos_world[0] -= 0.5*_myself.transformingiterator().meshsize(0);
+
+      // make up unit outer normal direction
+      _normal[0] = -1.0;
+    }
+
+  private:
+    int _count;                           //!< valid neighbor count in 0 .. 2*dim-1
+    int _dir;                             //!< count/2
+    int _face;                            //!< count%2
+    TI _itnb;                             //!< position of nb in the grid level
+    YaspEntity<0,dim,dimworld>& _myself;  //!< reference to myself
+    YaspEntity<0,dim,dimworld> _nb;       //!< virtual neighbor entity, built on the fly
+    Vec<dim,yaspgrid_ctype> _pos_self_local; //!< center of face in own local coordinates
+    Vec<dim,yaspgrid_ctype> _pos_nb_local; //!< center of face in neighbors local coordinates
+    Vec<dim,yaspgrid_ctype> _pos_world;   //!< center of face in world coordinates
+    Vec<dim,yaspgrid_ctype> _ext_local;   //!< extension of face in local coordinates
+    YaspElement<dim-1,dim> _is_self_local; //!< intersection in own local coordinates
+    YaspElement<dim-1,dim> _is_nb_local;  //!< intersection in neighbors local coordinates
+    YaspElement<dim-1,dimworld> _is_global; //!< intersection in global coordinates
+    Vec<dimworld,yaspgrid_ctype> _normal; //!< for returning outer normal
+  };
+
 
 
   //========================================================================
@@ -570,6 +864,59 @@ namespace Dune {
   };
 
 
+  // specialization for codim==dim -- the vertices
+  template<int dim, int dimworld>
+  class YaspLevelIterator<dim,dim,dimworld> //: public LevelIteratorDefault<dim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
+  {
+  public:
+    typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
+    typedef typename YGrid<dim,yaspgrid_ctype>::TransformingIterator TI;
+
+    //! constructor
+    YaspLevelIterator (YGLI g, TI it) : _g(g), _it(it), _entity(_g,_it)
+    {  }
+
+    //! prefix increment
+    YaspLevelIterator<dim,dim,dimworld>& operator++()
+    {
+      ++_it;
+      return *this;
+    }
+
+    //! equality
+    bool operator== (const YaspLevelIterator<dim,dim,dimworld>& i) const
+    {
+      return _it==i._it;
+    }
+
+    //! inequality
+    bool operator!= (const YaspLevelIterator<dim,dim,dimworld>& i) const
+    {
+      return (_it!=i._it);
+    }
+
+    //! dereferencing
+    YaspEntity<dim,dim,dimworld>& operator*()
+    {
+      return _entity;
+    }
+
+    //! arrow
+    YaspEntity<dim,dim,dimworld>* operator->()
+    {
+      return &_entity;
+    }
+
+    //! ask for level of entity
+    int level () {return _g.level();}
+
+  private:
+    YGLI _g;                          // access to grid level
+    TI _it;                           // position in the grid level
+    YaspEntity<dim,dim,dimworld> _entity; //!< virtual entity
+  };
+
+
   //************************************************************************
   /*!
      A Grid is a container of grid entities. Given a dimension dim these entities have a
@@ -633,6 +980,10 @@ namespace Dune {
       {
         return YaspLevelIterator<cd,dim,dimworld>(g,g.cell_overlap().tbegin());
       }
+      if (cd==dim)   // the vertices
+      {
+        return YaspLevelIterator<cd,dim,dimworld>(g,g.vertex_overlapfront().tbegin());
+      }
       throw GridError("YaspLevelIterator with this codim not implemented",__FILE__,__LINE__);
     }
 
@@ -644,6 +995,10 @@ namespace Dune {
       if (cd==0)   // the elements
       {
         return YaspLevelIterator<cd,dim,dimworld>(g,g.cell_overlap().tend());
+      }
+      if (cd==dim)   // the vertices
+      {
+        return YaspLevelIterator<cd,dim,dimworld>(g,g.vertex_overlapfront().tend());
       }
       throw GridError("YaspLevelIterator with this codim not implemented",__FILE__,__LINE__);
     }
