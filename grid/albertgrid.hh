@@ -31,20 +31,20 @@ namespace Albert
 #include "albertgrid/albertextra.hh"
 
 #ifndef __ALBERTNAME__
-}
+} // end extern "C"
 #endif
 
   typedef struct albert_leaf_data
   {
-    /// Wegen Fehler in memory.cc, der noch behoben werden muss
+    /// Achtung, Fehler in Albert memory.c,
+    /// kleinste Groesse der Leaf Daten 4 Byte,
+    /// also ist hier ok,
     S_CHAR reachedFace[4];
-    S_CHAR reachedVertex[4];
-    //S_CHAR reached[N_VERTICES]; // N_NEIGH ? Element durchlaufen ?
+
   } AlbertLeafData;
 
   void initialReached(const EL_INFO *elInfo);
   void setReached(const EL_INFO *elInfo);
-  void markNewVertices(const EL_INFO *elInfo);
   void AlbertLeafRefine(EL *parent, EL *child[2]);
   void AlbertLeafCoarsen(EL *parent, EL *child[2]);
   void initLeafData(LEAF_DATA_INFO *linfo);
@@ -60,7 +60,7 @@ namespace Albert
   {
 
 
-    typedef ALBERT REAL agTYPE;
+    typedef ALBERT REAL albertCtype;
 
     // Class to mark the Vertices on the leaf level
     // to visit every vertex only once
@@ -86,6 +86,8 @@ namespace Albert
     template<int dim, int dimworld> class AlbertGridElement;
     template<int codim, int dim, int dimworld> class AlbertGridEntity;
     template<int codim, int dim, int dimworld> class AlbertGridLevelIterator;
+    template<int dim, int dimworld> class AlbertGridHierarchicIterator;
+    template<int dim, int dimworld> class AlbertGridNeighborIterator;
     template<int dim, int dimworld> class AlbertGrid;
 
 
@@ -105,11 +107,10 @@ namespace Albert
      */
 
     template<int dim, int dimworld>
-    class AlbertGridElement
+    class AlbertGridElement :
+      public Element<dim,dimworld,albertCtype,AlbertGridElement>
     {
     public:
-      typedef agTYPE agType;
-
       //! know dimension
       enum { dimension=dim };
 
@@ -131,7 +132,7 @@ namespace Albert
       int corners ();
 
       //! access to coordinates of corners. Index is the number of the corner
-      Vec<dimworld,agType>& operator[] (int i);
+      Vec<dimworld,albertCtype>& operator[] (int i);
 
       /*! return reference element corresponding to this element. If this is
          a reference element then self is returned.
@@ -139,21 +140,27 @@ namespace Albert
       AlbertGridElement<dim,dim> refelem ();
 
       //! maps a local coordinate within reference element to global coordinate in element
-      Vec<dimworld,agType> global (Vec<dim,agType> local);
+      Vec<dimworld,albertCtype>& global (Vec<dim,albertCtype> local);
 
       //! maps a local coordinate within reference element to global coordinate in element
-      Vec<dimworld,agType> globalBary (Vec<dim+1,agType> local);
+      Vec<dimworld,albertCtype> globalBary (Vec<dim+1,albertCtype> local);
 
       //! maps a global coordinate within the element to a local coordinate in its reference eleme
-      Vec<dim,agType> local (Vec<dimworld,agType> global);
+      Vec<dim,albertCtype>& local (Vec<dimworld,albertCtype> global);
 
-      Vec<dim+1,agType> localBary (Vec<dimworld,agType> global);
+      Vec<dim+1,albertCtype> localBary (Vec<dimworld,albertCtype> global);
 
       //! print internal data
       void print (std::ostream& ss, int indent);
 
+      //! Methods for Albert
+      void builtGeom(ALBERT EL_INFO *elInfo, unsigned char face,
+                     unsigned char edge, unsigned char vertex);
+
+      void initGeom();
+
     private:
-      Mat<dimworld,dim+1,agType> coord_;
+      Mat<dimworld,dim+1,albertCtype> coord_;
 
       template <int cc>
       int mapVertices (int i) { return i; };
@@ -188,7 +195,10 @@ namespace Albert
        Here: the general template
      */
     template<int codim, int dim, int dimworld>
-    class AlbertGridEntity
+    class AlbertGridEntity :
+      public Entity<codim,dim,dimworld,albertCtype,
+          AlbertGridEntity,AlbertGridElement,AlbertGridLevelIterator,
+          AlbertGridNeighborIterator,AlbertGridHierarchicIterator>
     {
     public:
       //! know your own codimension
@@ -211,30 +221,7 @@ namespace Albert
       AlbertGridEntity();
 
       //! geometry of this entity
-      AlbertGridElement<dim-codim,dimworld> geometry ();
-
-
-      //! inlcude element in scope since it is used as a return type
-      template<int d, int dd>
-      class Element : public AlbertGridElement<d,dd> {
-      public:
-        //! constructor without argument needed because copy constructor is explicitely defined
-        Element () : AlbertGridElement<d,dd>() {};
-
-        //! copy constructor for initializing derived class object with base class object
-        Element (const AlbertGridElement<d,dd>& y) : AlbertGridElement<d,dd>(y) {}
-
-        //! assignement operator for assigning derived class object to base class object
-        Element<d,dd>& operator= (const AlbertGridElement<d,dd>& y)
-        {
-          asBase().operator=(y);
-          return *this;
-        }
-      private:
-        AlbertGridElement<d,dd>& asBase() {
-          return static_cast<AlbertGridElement<d,dd>&>(*this);
-        }
-      };
+      AlbertGridElement<dim-codim,dimworld>& geometry ();
 
       //************************************************************
       //  Methoden zum Anbinden von Albert
@@ -258,6 +245,10 @@ namespace Albert
       // private Members
       ALBERT EL_INFO *elInfo_;
       ALBERT TRAVERSE_STACK * travStack_;
+
+      //! the cuurent geometry
+      AlbertGridElement<dim-codim,dimworld> geo_;
+      bool builtgeometry_;           //!< true if geometry has been constructed
 
       //! Which Face of the Element
       unsigned char face_;
@@ -283,17 +274,12 @@ namespace Albert
        of an element!
      */
     template<int dim, int dimworld>
-    class AlbertGridEntity<0,dim,dimworld>
+    class AlbertGridEntity<0,dim,dimworld> :
+      public Entity<0,dim,dimworld,albertCtype,AlbertGridEntity,AlbertGridElement,
+          AlbertGridLevelIterator,AlbertGridNeighborIterator,
+          AlbertGridHierarchicIterator>
     {
     public:
-      typedef agTYPE agType;
-
-      //! forward declaration of nested class
-      class HierarchicIterator;
-
-      //! forward declaration of nested class
-      class NeighborIterator;
-
       //! know your own codimension
       enum { codimension=0 };
 
@@ -313,10 +299,10 @@ namespace Albert
       //! index is unique and consecutive per level and codim used for access to degrees of freedo
       int index ();
 
-      bool pointInEntity (const Vec<dimworld,agType> &point);
+      bool pointInEntity (const Vec<dimworld,albertCtype> &point);
 
       //! geometry of this entity
-      AlbertGridElement<dim,dimworld> geometry ();
+      AlbertGridElement<dim,dimworld>& geometry ();
 
 
       /*! Intra-element access to entities of codimension cc > codim. Return number of entities
@@ -334,10 +320,10 @@ namespace Albert
          is provided using iterators. This allows meshes to be nonmatching. Returns iterator
          referencing the first neighbor.
        */
-      NeighborIterator nbegin ();
+      AlbertGridNeighborIterator<dim,dimworld> nbegin ();
 
       //! Reference to one past the last neighbor
-      NeighborIterator nend ();
+      AlbertGridNeighborIterator<dim,dimworld> nend ();
 
       //! Inter-level access to father element on coarser grid.
       //! Assumes that meshes are nested.
@@ -358,55 +344,10 @@ namespace Albert
          This is provided for sparsely stored nested unstructured meshes.
          Returns iterator to first son.
        */
-      HierarchicIterator hbegin (int maxlevel);
+      AlbertGridHierarchicIterator < dim,dimworld > hbegin (int maxlevel);
 
       //! Returns iterator to one past the last son
-      HierarchicIterator hend (int maxlevel);
-
-      //! inlcude LevelIterator in scope since it is used as a return type
-      template<int cc>
-      class LevelIterator : public AlbertGridLevelIterator<cc,dim,dimworld> {
-      public:
-        //! constructor without argument needed because copy constructor is explicitely defined
-        LevelIterator () : AlbertGridLevelIterator<cc,dim,dimworld>() {}
-
-        //! copy constructor for initializing derived class object with base class object
-        LevelIterator (const AlbertGridLevelIterator<cc,dim,dimworld>& y) : AlbertGridLevelIterator<cc,dim,dimworld>
-
-                                                                            //! assignement operator for assigning derived class object to base class object
-                                                                            LevelIterator<cc>& operator= (const AlbertGridLevelIterator<cc,dim,dimworld>& y)
-        {
-          asBase().operator=(y);
-          return *this;
-        }
-      private:
-        AlbertGridLevelIterator<cc,dim,dimworld>& asBase() {
-          return static_cast<AlbertGridLevelIterator<cc,dim,dimworld>&>(*this);
-        }
-      };
-
-      //! inlcude Element in scope since it is used as a return type
-      template<int d, int dd>
-      class Element : public AlbertGridElement<d,dd> {
-      public:
-        //! constructor without argument needed because copy constructor is explicitely defined
-        Element () : AlbertGridElement<d,dd>() {}
-
-        //! copy constructor for initializing derived class object with base class object
-        Element (const AlbertGridElement<d,dd>& y) : AlbertGridElement<d,dd>(y) {}
-
-        //! assignement operator for assigning derived class object to base class object
-        Element<d,dd>& operator= (const AlbertGridElement<d,dd>& y)
-        {
-          asBase().operator=(y);
-          return *this;
-        }
-      private:
-        AlbertGridElement<d,dd>& asBase() {
-          return static_cast<AlbertGridElement<d,dd>&>(*this);
-        }
-      };
-
+      AlbertGridHierarchicIterator < dim,dimworld > hend (int maxlevel);
 
       //************************************************************
       //  Methoden zum Anbinden von Albert
@@ -423,6 +364,10 @@ namespace Albert
     private:
       //! make a new AlbertGridEntity
       void makeDescription();
+
+      //! the cuurent geometry
+      AlbertGridElement<dim,dimworld> geo_;
+      bool builtgeometry_;           //!< true if geometry has been constructed
 
       //! pointer to the real Albert element data
       ALBERT EL_INFO *elInfo_;
@@ -444,7 +389,9 @@ namespace Albert
      */
 
     template<int dim, int dimworld>
-    class AlbertGridEntity<0,dim,dimworld>::HierarchicIterator
+    class AlbertGridHierarchicIterator :
+      public HierarchicIterator<dim,dimworld,albertCtype,
+          AlbertGridHierarchicIterator,AlbertGridEntity>
     {
     public:
       //! know your own dimension
@@ -456,25 +403,25 @@ namespace Albert
       enum { numberOfVertices_= 4 };
 
       // the normal Constructor
-      HierarchicIterator(ALBERT TRAVERSE_STACK travStack, int travLevel);
+      AlbertGridHierarchicIterator(ALBERT TRAVERSE_STACK travStack, int travLevel);
 
       // the default Constructor
-      HierarchicIterator();
+      AlbertGridHierarchicIterator();
 
       // the Copy Constructor
-      HierarchicIterator(const HierarchicIterator & I);
+      AlbertGridHierarchicIterator(const AlbertGridHierarchicIterator& I);
 
       //! prefix increment
-      HierarchicIterator operator ++();
+      AlbertGridHierarchicIterator& operator ++();
 
       //! postfix increment
-      HierarchicIterator operator ++(int i);
+      AlbertGridHierarchicIterator& operator ++(int i);
 
       //! equality
-      bool operator== (const HierarchicIterator& i) const;
+      bool operator== (const AlbertGridHierarchicIterator& i) const;
 
       //! inequality
-      bool operator!= (const HierarchicIterator& i) const;
+      bool operator!= (const AlbertGridHierarchicIterator& i) const;
 
       //! dereferencing
       AlbertGridEntity<0,dim,dimworld>& operator*();
@@ -492,7 +439,7 @@ namespace Albert
       ALBERT EL_INFO * recursiveTraverse(ALBERT TRAVERSE_STACK * stack);
       void makeIterator();
 
-      //! we need this for Albert traversal
+      //! we need this for Albert traversal, and we need Copy of TRAVERSE_STACK
       ALBERT TRAVERSE_STACK travStack_;
 
     };
@@ -506,7 +453,10 @@ namespace Albert
        of an element!
      */
     template<int dim, int dimworld>
-    class AlbertGridEntity<0,dim,dimworld>::NeighborIterator
+    class AlbertGridNeighborIterator :
+      public NeighborIterator<dim,dimworld,albertCtype,
+          AlbertGridNeighborIterator,AlbertGridEntity,
+          AlbertGridElement>
     {
     public:
       //! know your own dimension
@@ -516,26 +466,27 @@ namespace Albert
       enum { dimensionworld=dimworld };
 
       //! prefix increment
-      NeighborIterator operator ++();
+      AlbertGridNeighborIterator& operator ++();
 
       //! postfix increment
-      NeighborIterator operator ++(int i);
+      AlbertGridNeighborIterator& operator ++(int i);
 
       //! The default Constructor
-      NeighborIterator();
+      AlbertGridNeighborIterator();
 
       //! The Constructor
-      NeighborIterator(ALBERT TRAVERSE_STACK * travStack, ALBERT EL_INFO *elInfo);
+      AlbertGridNeighborIterator(ALBERT TRAVERSE_STACK * travStack,
+                                 ALBERT EL_INFO *elInfo);
 
       //! Copy Constructor
-      NeighborIterator(const NeighborIterator & I);
+      AlbertGridNeighborIterator(const AlbertGridNeighborIterator& I);
 
 
       //! equality
-      bool operator== (const NeighborIterator& i) const;
+      bool operator== (const AlbertGridNeighborIterator& i) const;
 
       //! inequality
-      bool operator!= (const NeighborIterator& i) const;
+      bool operator!= (const AlbertGridNeighborIterator& i) const;
 
       //! access neighbor, dereferencing
       AlbertGridEntity<0,dim,dimworld>& operator*();
@@ -546,12 +497,12 @@ namespace Albert
       /*! intersection of codimension 1 of this neighbor with element where iteratio
          Here returned element is in LOCAL coordinates of the element where iteration
        */
-      AlbertGridElement<dim-1,dim> intersection_self_local ();
+      AlbertGridElement<dim-1,dim>& intersection_self_local ();
 
       /*! intersection of codimension 1 of this neighbor with element where iteratio
          Here returned element is in GLOBAL coordinates of the element where iteratio
        */
-      AlbertGridElement<dim-1,dimworld> intersection_self_global ();
+      AlbertGridElement<dim-1,dimworld>& intersection_self_global ();
 
       //! local number of codim 1 entity in self where intersection is contained in
       int number_in_self ();
@@ -559,12 +510,12 @@ namespace Albert
       /*! intersection of codimension 1 of this neighbor with element where iteratio
          Here returned element is in LOCAL coordinates of neighbor
        */
-      AlbertGridElement<dim-1,dim> intersection_neighbor_local ();
+      AlbertGridElement<dim-1,dim>& intersection_neighbor_local ();
 
       /*! intersection of codimension 1 of this neighbor with element where iteratio
          Here returned element is in LOCAL coordinates of neighbor
        */
-      AlbertGridElement<dim-1,dimworld> intersection_neighbor_global ();
+      AlbertGridElement<dim-1,dimworld>& intersection_neighbor_global ();
 
       //! local number of codim 1 entity in neighbor where intersection is contained
       int number_in_neighbor ();
@@ -587,7 +538,9 @@ namespace Albert
     /*! Enables iteration over all entities of a given codimension and level of a grid.
      */
     template<int codim, int dim, int dimworld>
-    class AlbertGridLevelIterator
+    class AlbertGridLevelIterator :
+      public LevelIterator<codim,dim,dimworld,albertCtype,
+          AlbertGridLevelIterator,AlbertGridEntity>
     {
     public:
       //! know your own codimension
@@ -600,8 +553,7 @@ namespace Albert
       enum { dimensionworld=dimworld };
 
       //! Constructor
-      AlbertGridLevelIterator(ALBERT TRAVERSE_STACK *travStack,
-                              ALBERT EL_INFO * elInfo);
+      AlbertGridLevelIterator(ALBERT EL_INFO *elInfo);
 
       //! Constructor
       AlbertGridLevelIterator(ALBERT MESH * mesh, AlbertMarkerVector * vec,
@@ -691,7 +643,9 @@ namespace Albert
     //
     //**********************************************************************
     template <int dim, int dimworld>
-    class AlbertGrid
+    class AlbertGrid : public Grid < dim, dimworld,
+                           albertCtype,AlbertGrid,
+                           AlbertGridLevelIterator,AlbertGridEntity>
     {
       //**********************************************************
       // The Interface Methods
@@ -738,6 +692,7 @@ namespace Albert
       //! number of grid entities per level and codim
       int hiersize (int level, int codim);
 
+#if 0
       //! inlcude level iterator in scope
       template<int codim>
       class LevelIterator : public AlbertGridLevelIterator<codim,dim,dimworld>
@@ -783,6 +738,8 @@ namespace Albert
           return static_cast<AlbertGridEntity<codim,dim,dimworld>&>(*this);
         }
       };
+
+#endif
 
       //**********************************************************
       // End of Interface Methods

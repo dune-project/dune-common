@@ -12,7 +12,9 @@ void initialReached(const EL_INFO * elInfo)
 {
   AlbertLeafData *ldata = (AlbertLeafData *) elInfo->el->child[1];
   for (int i = 0; i < N_VERTICES; i++)
-    ldata->reachedVertex[i] = -1;
+  {
+    ldata->reachedFace[i] = -1;
+  }
 }
 // mark Faces
 void setReached(const EL_INFO * elInfo)
@@ -39,21 +41,6 @@ void setReached(const EL_INFO * elInfo)
     }
     else
       ldata->reachedFace[i] = 1;
-
-    // mark Vertices
-    if(ldata->reachedVertex[i] != -1)
-      ldata->reachedVertex[i] = 1;
-
-    if(elInfo->neigh[i])
-    {
-      if(elInfo->el->index < elInfo->neigh[i]->index)
-      {
-        ldataNeigh = (AlbertLeafData *) elInfo->neigh[i]->child[1];
-        for(int j =0; j<N_VERTICES-1; j++)
-          ldataNeigh->reachedVertex[(elInfo->opp_vertex[i]+1+j)%N_VERTICES] = -1;
-      }
-    }
-
   }
 }
 
@@ -77,13 +64,6 @@ void AlbertLeafRefine(EL * parent, EL * child[2])
   ldataChi->reachedFace[1] = 1;
 #endif
 
-  // mark Vertices
-  for(int i=0; i<N_VERTICES; i++)
-    ldataChi->reachedVertex[i] = ldata->reachedVertex[i];
-
-  ldataChi->reachedVertex[N_VERTICES-1] = 1;
-
-
   // child 1
   ldataChi = (AlbertLeafData *) child[1]->child[1];
   for(int i=0; i<N_VERTICES; i++)
@@ -91,12 +71,6 @@ void AlbertLeafRefine(EL * parent, EL * child[2])
   // die neue Kante auf Child 1, siehe Albert Doc S. 11
 
   ldataChi->reachedFace[0] = -1;
-
-  // mark Vertices
-  for(int i=0; i<N_VERTICES; i++)
-    ldataChi->reachedVertex[i] = ldata->reachedVertex[i];
-
-  ldataChi->reachedVertex[N_VERTICES-1] = -1;
 
 }
 
@@ -176,6 +150,8 @@ const BOUNDARY *initBoundary(MESH * Spmesh, int bound)
 namespace Dune
 {
 
+  static ALBERT EL_INFO statElInfo;
+
   //****************************************************************
   //
   // AlbertGridElement
@@ -193,7 +169,8 @@ namespace Dune
   makeEmptyElInfo()
   {
     // heikel, da man elInfo im Destructor wieder freigeben muss
-    ALBERT EL_INFO * elInfo = new ALBERT EL_INFO ();
+    ALBERT EL_INFO * elInfo = &statElInfo; //new ALBERT EL_INFO ();
+
     elInfo->mesh = NULL;
     elInfo->el = NULL;
     elInfo->parent = NULL;
@@ -314,6 +291,33 @@ namespace Dune
           coord_(i) (j) = elInfo_->coord[i][j];
     }
   }
+  template< int dim, int dimworld>
+  inline void AlbertGridElement<dim,dimworld>::
+  initGeom()
+  {
+    elInfo_ = NULL;
+    face_ = 0;
+    edge_ = 0;
+    vertex_ = 0;
+  }
+
+  template< int dim, int dimworld>
+  inline void AlbertGridElement<dim,dimworld>::
+  builtGeom(ALBERT EL_INFO *elInfo, unsigned char face,
+            unsigned char edge, unsigned char vertex)
+  {
+    elInfo_ = elInfo;
+    face_ = face;
+    edge_ = edge;
+    vertex_ = vertex;
+
+    if(elInfo_)
+    {
+      for(int i=0; i<dim+1; i++)
+        for(int j=0; j<dimworld; j++)
+          coord_(i) (j) = elInfo_->coord[i][j];
+    }
+  }
 
 
   // print the ElementInformation
@@ -345,46 +349,46 @@ namespace Dune
 
   ///////////////////////////////////////////////////////////////////////
   template< int dim, int dimworld>
-  inline Vec<dimworld>& AlbertGridElement<dim,dimworld>::
+  inline Vec<dimworld,albertCtype>& AlbertGridElement<dim,dimworld>::
   operator [](int i)
   {
     return coord_(mapVertices<dimworld-dim>(i) % corners());
   }
 
-  inline Vec<3>& AlbertGridElement<3,3>::
+  inline Vec<3,albertCtype>& AlbertGridElement<3,3>::
   operator [](int i)
   {
     return coord_(i);
   }
 
-  inline Vec<2>& AlbertGridElement<2,2>::
+  inline Vec<2,albertCtype>& AlbertGridElement<2,2>::
   operator [](int i)
   {
     return coord_(i);
   }
 
-  inline Vec<1>& AlbertGridElement<1,1>::
+  inline Vec<1,albertCtype>& AlbertGridElement<1,1>::
   operator [](int i)
   {
     return coord_(i);
   }
 
   /// specialization for codim = dim
-  inline Vec<3>& AlbertGridElement<0,3>::
+  inline Vec<3,albertCtype>& AlbertGridElement<0,3>::
   operator [](int i)
   {
     return coord_(vertex_);
   }
 
   /// specialization for codim = dim
-  inline Vec<2>& AlbertGridElement<0,2>::
+  inline Vec<2,albertCtype>& AlbertGridElement<0,2>::
   operator [](int i)
   {
     return coord_(vertex_);
   }
 
   /// specialization for codim = dim
-  inline Vec<1>& AlbertGridElement<0,1>::
+  inline Vec<1,albertCtype>& AlbertGridElement<0,1>::
   operator [](int i)
   {
     return coord_(vertex_);
@@ -400,9 +404,13 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld> AlbertGridElement<dim,dimworld>::
+  inline Vec<dimworld,albertCtype>& AlbertGridElement<dim,dimworld>::
   global(Vec<dim> local)
-  {}
+  {
+    std::cout << "global not implemented yet! \n";
+    Vec<dimworld,albertCtype> tmp(0.0);
+    return tmp;
+  }
 
   template< int dim, int dimworld>
   inline Vec<dimworld> AlbertGridElement<dim,dimworld>::
@@ -430,9 +438,13 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline Vec<dim> AlbertGridElement<dim,dimworld>::
+  inline Vec<dim>& AlbertGridElement<dim,dimworld>::
   local(Vec<dimworld> global)
-  {}
+  {
+    std::cout << "local not implemented yet! \n";
+    Vec<dim,albertCtype> tmp (0.0);
+    return tmp;
+  }
 
   template< int dim, int dimworld>
   inline Vec<dim+1> AlbertGridElement<dim,dimworld>::
@@ -731,7 +743,7 @@ namespace Dune
     {
       int elNum = lookup[it->index()];
 
-      typedef AlbertGridEntity<0,dim,dimworld>::NeighborIterator Neighit;
+      typedef AlbertGridNeighborIterator<dim,dimworld> Neighit;
       Neighit nit = (*it).nbegin();
 
       for (int i = 0; i < dim+1; i++)
@@ -923,11 +935,9 @@ namespace Dune
   // Make LevelIterator with point to element from previous iterations
   template<int codim, int dim, int dimworld>
   inline AlbertGridLevelIterator<codim,dim,dimworld >::
-  AlbertGridLevelIterator(ALBERT TRAVERSE_STACK * travStack,
-                          ALBERT EL_INFO * elInfo)
+  AlbertGridLevelIterator(ALBERT EL_INFO *elInfo)
   {
-
-    if(travStack && elInfo)
+    if(elInfo)
     {
       vertex_ = 0;
       face_ = 0;
@@ -935,18 +945,18 @@ namespace Dune
 
       vertexMarker_ = NULL;
 
-      // set traverse_stack
-      travStack_ = travStack;
+      manageStack_.init();
 
-      virtualEntity_.setTraverseStack(&travStack_);
+      virtualEntity_.setTraverseStack(NULL);
 
       // diese Methode muss neu geschrieben werden, da man
       // die ParentElement explizit speichern moechte.
+
       virtualEntity_.setElInfo(elInfo,face_,edge_,vertex_);
     }
     else
     {
-      std::cout << "AlbertGridLevelIterator::.. no travStack or elInfo in AlbertGridLevelIterator Constructor!\n";
+      std::cout << "AlbertGridLevelIterator: No Father given \n" << std::endl;
       abort();
     }
   }
@@ -1288,6 +1298,7 @@ namespace Dune
   makeDescription()
   {
     elInfo_ = NULL;
+    geo_.initGeom();
   }
 
   /// The Element is prescribed by the EL_INFO struct of ALBERT MESH
@@ -1298,6 +1309,7 @@ namespace Dune
   makeDescription()
   {
     elInfo_ = NULL;
+    geo_.initGeom();
   }
 
   template<int dim, int dimworld>
@@ -1373,6 +1385,7 @@ namespace Dune
     edge_ = edge;
     vertex_ = vertex;
     elInfo_ = elInfo;
+    geo_.builtGeom(elInfo_,face,edge,vertex);
   }
 
   template<int codim, int dim, int dimworld>
@@ -1429,22 +1442,21 @@ namespace Dune
     // in this case the face, edge and vertex information is not used,
     // because we are in the element case
     elInfo_ = elInfo;
+    geo_.builtGeom(elInfo_,face,edge,vertex);
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridElement<dim,dimworld>
+  inline AlbertGridElement<dim,dimworld>&
   AlbertGridEntity < 0, dim ,dimworld >::geometry()
   {
-    AlbertGridElement <dim , dimworld> geom (elInfo_);
-    return geom;
+    return geo_;
   }
 
   template< int codim, int dim, int dimworld>
-  inline AlbertGridElement<dim-codim,dimworld>
+  inline AlbertGridElement<dim-codim,dimworld>&
   AlbertGridEntity < codim, dim ,dimworld >::geometry()
   {
-    AlbertGridElement <dim-codim , dimworld> geom (elInfo_,face_,edge_,vertex_);
-    return geom;
+    return geo_;
   }
 
   template< int dim, int dimworld>
@@ -1454,13 +1466,12 @@ namespace Dune
     ALBERT TRAVERSE_STACK travStack;
     initTraverseStack(&travStack);
 
-    //ALBERT TRAVERSE_STACK * travStack = ALBERT get_traverse_stack();
-    //(*travStack) = (*travStack_);
+    travStack = (*travStack_);
 
-    travStack->stack_used--;
+    travStack.stack_used--;
 
     AlbertGridLevelIterator <0,dim,dimworld>
-    it(travStack,travStack->elinfo_stack+travStack->stack_used);
+    it(travStack.elinfo_stack+travStack.stack_used);
     return it;
   }
 
@@ -1471,13 +1482,29 @@ namespace Dune
     AlbertGridElement<dim,dim> el(elInfo_);
     return el;
   }
+
+  template< int dim, int dimworld> template<int cc>
+  inline int AlbertGridEntity < 0, dim ,dimworld >::count()
+  {
+    std::cout << "count not implemented yet! \n";
+    return -1;
+  }
+
+  template<int dim, int dimworld> template<int cc>
+  inline AlbertGridLevelIterator<cc,dim,dimworld>
+  AlbertGridEntity<0,dim,dimworld>::entity (int i)
+  {
+    std::cout << "entity not implemented yet! \n";
+    AlbertGridLevelIterator<cc,dim,dimworld> tmp;
+    return tmp;
+  }
   //***************************************************************
   //
   //  AlbertGridEntity Hierarchic Iterator
   //
   //***************************************************************
   template< int dim, int dimworld>
-  inline void AlbertGridEntity <0, dim ,dimworld >::HierarchicIterator::
+  inline void AlbertGridHierarchicIterator<dim,dimworld>::
   makeIterator()
   {
     initTraverseStack(&travStack_);
@@ -1487,16 +1514,16 @@ namespace Dune
 
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
-  HierarchicIterator()
+  inline AlbertGridHierarchicIterator<dim,dimworld>::
+  AlbertGridHierarchicIterator()
   {
     makeIterator();
   }
 
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
-  HierarchicIterator(ALBERT TRAVERSE_STACK travStack,int travLevel)
+  inline AlbertGridHierarchicIterator<dim,dimworld>::
+  AlbertGridHierarchicIterator(ALBERT TRAVERSE_STACK travStack,int travLevel)
   {
     travStack_ = travStack;
     // default Einstellungen fuer den TraverseStack, siehe
@@ -1511,8 +1538,8 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::
-  HierarchicIterator::HierarchicIterator(const HierarchicIterator& I)
+  inline AlbertGridHierarchicIterator<dim,dimworld>::
+  AlbertGridHierarchicIterator(const AlbertGridHierarchicIterator& I)
   {
     travStack_ = I.travStack_;
     virtualEntity_ = I.virtualEntity_;
@@ -1520,9 +1547,8 @@ namespace Dune
 
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator
-  AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
-  operator ++()
+  inline AlbertGridHierarchicIterator<dim,dimworld>&
+  AlbertGridHierarchicIterator< dim,dimworld >::operator ++()
   {
     // die 0 ist wichtig, weil Face 0, heist hier jetzt Element
     virtualEntity_.setElInfo(recursiveTraverse(&travStack_));
@@ -1530,8 +1556,8 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator
-  AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
+  inline AlbertGridHierarchicIterator<dim,dimworld>&
+  AlbertGridHierarchicIterator<dim,dimworld>::
   operator ++(int steps)
   {
     for(int i=0; i<steps; i++)
@@ -1540,22 +1566,22 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline bool AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
-  operator ==(const HierarchicIterator& I) const
+  inline bool AlbertGridHierarchicIterator<dim,dimworld>::
+  operator ==(const AlbertGridHierarchicIterator& I) const
   {
     return (virtualEntity_.getElInfo() == I.virtualEntity_.getElInfo());
   }
 
   template< int dim, int dimworld>
-  inline bool AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
-  operator !=(const HierarchicIterator& I) const
+  inline bool AlbertGridHierarchicIterator<dim,dimworld>::
+  operator !=(const AlbertGridHierarchicIterator& I) const
   {
     return !((*this) == I);
   }
 
   template< int dim, int dimworld>
   inline AlbertGridEntity < 0, dim ,dimworld >&
-  AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
+  AlbertGridHierarchicIterator<dim,dimworld>::
   operator *()
   {
     return virtualEntity_;
@@ -1563,7 +1589,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridEntity < 0, dim ,dimworld >*
-  AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
+  AlbertGridHierarchicIterator<dim,dimworld>::
   operator ->()
   {
     return &virtualEntity_;
@@ -1571,7 +1597,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline ALBERT EL_INFO *
-  AlbertGridEntity < 0, dim ,dimworld >::HierarchicIterator::
+  AlbertGridHierarchicIterator<dim,dimworld>::
   recursiveTraverse(ALBERT TRAVERSE_STACK * stack)
   {
     // siehe die Funktion
@@ -1643,11 +1669,11 @@ namespace Dune
 
   //***************************************************************
   //
-  //  AlbertGridEntity Neighbor Iterator
+  //  --AlbertGridNeighborIterator
   //
   //***************************************************************
   template< int dim, int dimworld>
-  inline void AlbertGridEntity <0, dim ,dimworld >::NeighborIterator::
+  inline void AlbertGridNeighborIterator<dim,dimworld>::
   makeIterator()
   {
     neighborCount_ = dim+1; // mehr als dim+1 Nachbarn gibt es nicht
@@ -1662,7 +1688,7 @@ namespace Dune
     virtualEntity_.setElInfo(NULL,0,0,0);
   }
   template< int dim, int dimworld>
-  inline void AlbertGridEntity <0, dim ,dimworld >::NeighborIterator::
+  inline void AlbertGridNeighborIterator<dim,dimworld>::
   initElInfo(ALBERT EL_INFO * elInfo)
   {
     // initialisiert elinfo mit default Werten
@@ -1689,8 +1715,7 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::
-  NeighborIterator::NeighborIterator()
+  inline AlbertGridNeighborIterator<dim,dimworld>::AlbertGridNeighborIterator()
   {
     makeIterator();
   }
@@ -1698,8 +1723,8 @@ namespace Dune
 
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator::
-  NeighborIterator(ALBERT TRAVERSE_STACK * travStack, ALBERT EL_INFO *elInfo)
+  inline AlbertGridNeighborIterator<dim,dimworld>::AlbertGridNeighborIterator
+    (ALBERT TRAVERSE_STACK * travStack, ALBERT EL_INFO *elInfo)
   {
     if(!(elInfo->el->child[0]))
     {
@@ -1735,8 +1760,8 @@ namespace Dune
 
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::
-  NeighborIterator::NeighborIterator(const NeighborIterator& I)
+  inline AlbertGridNeighborIterator<dim,dimworld>::
+  AlbertGridNeighborIterator(const AlbertGridNeighborIterator& I)
   {
     neighborCount_ = I.neighborCount_;
     elInfo_ = I.elInfo_;
@@ -1745,8 +1770,8 @@ namespace Dune
 
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator
-  AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator::
+  inline AlbertGridNeighborIterator<dim,dimworld>&
+  AlbertGridNeighborIterator<dim,dimworld>::
   operator ++()
   {
     // Gehe zum naechsten existierenden Nachbarn
@@ -1781,9 +1806,8 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator
-  AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator::
-  operator ++(int steps)
+  inline AlbertGridNeighborIterator<dim,dimworld>&
+  AlbertGridNeighborIterator<dim,dimworld>::operator ++(int steps)
   {
     for(int i=0; i<steps; i++)
       ++(*this);
@@ -1791,22 +1815,22 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline bool AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator::
-  operator ==(const NeighborIterator& I) const
+  inline bool AlbertGridNeighborIterator<dim,dimworld>::operator ==
+    (const AlbertGridNeighborIterator& I) const
   {
     return (neighborCount_ == I.neighborCount_);
   }
 
   template< int dim, int dimworld>
-  inline bool AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator::
-  operator !=(const NeighborIterator& I) const
+  inline bool AlbertGridNeighborIterator<dim,dimworld>::
+  operator !=(const AlbertGridNeighborIterator& I) const
   {
     return !((*this) == I);
   }
 
   template< int dim, int dimworld>
   inline AlbertGridEntity < 0, dim ,dimworld >&
-  AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator::
+  AlbertGridNeighborIterator<dim,dimworld>::
   operator *()
   {
     return virtualEntity_;
@@ -1814,22 +1838,67 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridEntity < 0, dim ,dimworld >*
-  AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator::
+  AlbertGridNeighborIterator<dim,dimworld>::
   operator ->()
   {
     return &virtualEntity_;
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridElement< dim-1, dim >
-  AlbertGridEntity < 0, dim ,dimworld >::NeighborIterator::
+  inline AlbertGridElement< dim-1, dim >&
+  AlbertGridNeighborIterator<dim,dimworld>::
   intersection_self_local()
   {
+    std::cout << "intersection_self_local not implemented yet! \n";
     AlbertGridElement<dim-1, dim > tmp;
     return tmp;
   }
 
+  template< int dim, int dimworld>
+  inline AlbertGridElement< dim-1, dimworld >&
+  AlbertGridNeighborIterator<dim,dimworld>::
+  intersection_self_global()
+  {
+    std::cout << "intersection_self_global not implemented yet! \n";
+    AlbertGridElement<dim-1, dim > tmp;
+    return tmp;
+  }
 
+  template< int dim, int dimworld>
+  inline AlbertGridElement< dim-1, dim >&
+  AlbertGridNeighborIterator<dim,dimworld>::
+  intersection_neighbor_local()
+  {
+    std::cout << "intersection_neighbor_local not implemented yet! \n";
+    AlbertGridElement<dim-1, dim > tmp;
+    return tmp;
+  }
+
+  template< int dim, int dimworld>
+  inline AlbertGridElement< dim-1, dimworld >&
+  AlbertGridNeighborIterator<dim,dimworld>::
+  intersection_neighbor_global()
+  {
+    std::cout << "intersection_neighbor_global not implemented yet! \n";
+    AlbertGridElement<dim-1, dim > tmp;
+    return tmp;
+  }
+
+  template< int dim, int dimworld>
+  inline int AlbertGridNeighborIterator<dim,dimworld>::
+  number_in_self ()
+  {
+    std::cout << "number_in_self not implemented yet! \n";
+    return -1;
+  }
+
+  template< int dim, int dimworld>
+  inline int AlbertGridNeighborIterator<dim,dimworld>::
+  number_in_neighbor ()
+  {
+    std::cout << "number_in_self not implemented yet! \n";
+    return -1;
+  }
 
   //////////////////////////////////////////////////////////////////////////
 
@@ -1837,44 +1906,40 @@ namespace Dune
 
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::
-  HierarchicIterator AlbertGridEntity < 0, dim ,dimworld >::
-  hbegin(int maxlevel)
+  inline AlbertGridHierarchicIterator<dim,dimworld>
+  AlbertGridEntity < 0, dim ,dimworld >::hbegin(int maxlevel)
   {
     // Kopiere alle Eintraege des stack, da man im Stack weiterlaeuft und
     // sich deshalb die Werte anedern koennen, der elinfo_stack bleibt jedoch
     // der gleiche, deshalb kann man auch nur nach unten, d.h. zu den Kindern
     // laufen
-    HierarchicIterator it((*travStack_),maxlevel);
+    AlbertGridHierarchicIterator<dim,dimworld> it((*travStack_),maxlevel);
     return it;
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::
-  HierarchicIterator AlbertGridEntity < 0, dim ,dimworld >::
-  hend(int maxlevel)
+  inline AlbertGridHierarchicIterator<dim,dimworld>
+  AlbertGridEntity < 0, dim ,dimworld >::hend(int maxlevel)
   {
-    HierarchicIterator it;
+    AlbertGridHierarchicIterator<dim,dimworld> it;
     return it;
   }
 
 
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::
-  NeighborIterator AlbertGridEntity < 0, dim ,dimworld >::
-  nbegin()
+  inline AlbertGridNeighborIterator<dim,dimworld>
+  AlbertGridEntity < 0, dim ,dimworld >::nbegin()
   {
-    NeighborIterator it(travStack_,this->getElInfo());
+    AlbertGridNeighborIterator<dim,dimworld> it(travStack_,this->getElInfo());
     return it;
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridEntity < 0, dim ,dimworld >::
-  NeighborIterator AlbertGridEntity < 0, dim ,dimworld >::
-  nend()
+  inline AlbertGridNeighborIterator<dim,dimworld>
+  AlbertGridEntity < 0, dim ,dimworld >::nend()
   {
-    NeighborIterator it;
+    AlbertGridNeighborIterator<dim,dimworld> it;
     return it;
   }
 
