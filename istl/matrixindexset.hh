@@ -36,6 +36,15 @@ namespace Dune {
 
     }
 
+    /** \brief Adds a dummy entry to each empty row
+     * \todo Remove this once BCRSMatrix allows empty rows
+     */
+    void pad() {
+      for (int i=0; i<rows_; i++)
+        if (indices[i].size()==0)
+          add(i,0);
+    }
+
     /** \brief Return the number of entries */
     int size() const {
       int entries = 0;
