@@ -177,10 +177,22 @@ namespace Dune
   //! Note: first B is evaluated, then A
   template <class A, class B >
   class CombinedLocalOperator
+    : public ObjPointerStorage
   {
   public:
     //! Constructor for combinations storing the two operators
-    CombinedLocalOperator ( A & a, B & b ) : _a ( a ) , _b ( b ) {}
+    CombinedLocalOperator ( A & a, B & b , bool printMsg = false )
+      : _a ( a ) , _b ( b ) , printMSG_ ( printMsg )
+    {
+      if(printMSG_)
+        std::cout << "Create CombinedLocalOperator " << this << "\n";
+    }
+
+    ~CombinedLocalOperator ()
+    {
+      if(printMSG_)
+        std::cout << "Delete CombinedLocalOperator " << this << "\n";
+    }
 
     //! method to scale the belonging operators
     template <class ScalarType>
@@ -239,6 +251,8 @@ namespace Dune
         and to the underlying operators
      */
   private:
+    bool printMSG_;
+
     //! operator A and B
     A & _a;
     B & _b;
@@ -338,12 +352,24 @@ namespace Dune
   //********************************************************************
   template <class A,class ScalarType>
   class ScaledLocalOperator
+    : public ObjPointerStorage
   {
   public:
     //! Constructor for combinations with factors
-    ScaledLocalOperator ( A & a , const ScalarType scalar)
-      : _a ( a ) , scalar_ (scalar), tmpScalar_ (scalar) {}
+    ScaledLocalOperator ( A & a , const ScalarType scalar,
+                          bool printMsg = false)
+      : _a ( a ) , scalar_ (scalar), tmpScalar_ (scalar) ,
+        printMSG_ ( printMsg )
+    {
+      if(printMSG_)
+        std::cout << "Create ScaledLocalOperator " << this << "\n";
+    }
 
+    ~ScaledLocalOperator ()
+    {
+      if(printMSG_)
+        std::cout << "Delete ScaledLocalOperator " << this << "\n";
+    }
     // scale this operator from outside
     void scaleIt ( const ScalarType & scalar);
 
@@ -393,6 +419,8 @@ namespace Dune
     template<class EntityType>
     void applyLocal(EntityType & en1, EntityType &en2);
   protected:
+    bool printMSG_;
+
     //! reference to local operator A
     A & _a;
 
