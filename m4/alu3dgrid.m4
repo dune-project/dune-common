@@ -28,49 +28,48 @@ if test x$with_alu3dgrid != x && test x$with_alu3dgrid != xno ; then
     AC_MSG_ERROR([Path $with_alu3dgrid supplied for --with-alu3dgrid does not exist!])
   fi
 
-ALU3DGRID_LIB_PATH="$ALU3DGRIDROOT/lib"
-ALU3DGRID_INCLUDE_PATH="$ALU3DGRIDROOT/include"
+  ALU3DGRID_LIB_PATH="$ALU3DGRIDROOT/lib"
+  ALU3DGRID_INCLUDE_PATH="$ALU3DGRIDROOT/include"
 
-# set variables so that tests can use them
-REM_CPPFLAGS=$CPPFLAGS
+  # set variables so that tests can use them
+  REM_CPPFLAGS=$CPPFLAGS
 
-LDFLAGS="$LDFLAGS -static -L$ALU3DGRID_LIB_PATH"
-ALU3D_INC_FLAG="-I$ALU3DGRID_INCLUDE_PATH -I$ALU3DGRID_INCLUDE_PATH/serial -I$ALU3DGRID_INCLUDE_PATH/duneinterface"
-CPPFLAGS="$CPPFLAGS $ALU3D_INC_FLAG"
+  LDFLAGS="$LDFLAGS -static -L$ALU3DGRID_LIB_PATH"
+  ALU3D_INC_FLAG="-I$ALU3DGRID_INCLUDE_PATH -I$ALU3DGRID_INCLUDE_PATH/serial -I$ALU3DGRID_INCLUDE_PATH/duneinterface"
+  CPPFLAGS="$CPPFLAGS $ALU3D_INC_FLAG"
 
-# check for header
-AC_LANG_PUSH([C++])
-AC_CHECK_HEADERS([alu3dgrid_serial.h], 
-   [ALU3DGRID_CPPFLAGS="$ALU3D_INC_FLAG"
-	HAVE_ALU3DGRID="1"],
-  AC_MSG_WARN([alu3dgrid_serial.h not found in $ALU3DGRID_INCLUDE_PATH]))
- 
-ALU3D_INC_FLAG_PARA="-I$ALU3DGRID_INCLUDE_PATH/parallel $MPI_CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $ALU3D_INC_FLAG_PARA"
-# check for parallel header 
-AC_CHECK_HEADERS([alu3dgrid_parallel.h], 
-   [ALU3DGRID_CPPFLAGS="$ALU3D_INC_FLAG $ALU3D_INC_FLAG_PARA"
-	HAVE_ALU3DGRID="1"],
-  AC_MSG_WARN([alu3dgrid_parallel.h not found in $ALU3DGRID_INCLUDE_PATH]))
-
-CPPFLAGS="$REM_CPPFLAGS"
-REM_CPPFLAGS=
-
-REM_LDFLAGS=$LDFLAGS
-
-# if header is found...
-if test x$HAVE_ALU3DGRID = x1 ; then
+  # check for header
   AC_LANG_PUSH([C++])
-  LD=g++
-  AC_CHECK_LIB(alu3dgrid,[fakelibtest],
-	[ALU3DGRID_LIBS="-lalu3dgrid"
-         ALU3DGRID_LDFLAGS="-L$ALU3DGRID_LIB_PATH"
-         LIBS="$LIBS $ALU3DGRID_LIBS"],
-	[HAVE_ALU3DGRID="$HAVE_ALU3DGRID"
-	AC_MSG_WARN(libalu3dgrid not found!)])
-fi
+  AC_CHECK_HEADERS([alu3dgrid_serial.h], 
+     [ALU3DGRID_CPPFLAGS="$ALU3D_INC_FLAG"
+    HAVE_ALU3DGRID="1"],
+    AC_MSG_WARN([alu3dgrid_serial.h not found in $ALU3DGRID_INCLUDE_PATH]))
+   
+  ALU3D_INC_FLAG_PARA="-I$ALU3DGRID_INCLUDE_PATH/parallel $MPI_CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $ALU3D_INC_FLAG_PARA"
+  # check for parallel header 
+  AC_CHECK_HEADERS([alu3dgrid_parallel.h], 
+     [ALU3DGRID_CPPFLAGS="$ALU3D_INC_FLAG $ALU3D_INC_FLAG_PARA"
+    HAVE_ALU3DGRID="1"],
+    AC_MSG_WARN([alu3dgrid_parallel.h not found in $ALU3DGRID_INCLUDE_PATH]))
 
-LDFLAGS=$REM_LDFLAGS
+  CPPFLAGS="$REM_CPPFLAGS"
+  REM_CPPFLAGS=
+
+  REM_LDFLAGS=$LDFLAGS
+
+  # if header is found...
+  if test x$HAVE_ALU3DGRID = x1 ; then
+    AC_CHECK_LIB(alu3dgrid,[main],
+    [ALU3DGRID_LIBS="-lalu3dgrid"
+           ALU3DGRID_LDFLAGS="-L$ALU3DGRID_LIB_PATH"
+           LIBS="$LIBS $ALU3DGRID_LIBS"],
+	  [HAVE_ALU3DGRID="0"
+	  AC_MSG_WARN(libalu3dgrid not found!)])
+  fi
+
+  LDFLAGS=$REM_LDFLAGS
+  AC_LANG_POP
 
 ## end of alu3dgrid check (--without wasn't set)
 fi
