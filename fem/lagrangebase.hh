@@ -158,6 +158,9 @@ namespace Dune {
   //  -- Discontinous Galerkin Space
   //
   //***************************************************************************
+
+
+#if 0
   /** \todo Please doc me! */
   template <class IndexSetType, int polOrd>
   class DGMapper
@@ -179,8 +182,7 @@ namespace Dune {
     int size (int level ) const
     {
       // return number of dofs * number of elements
-      //return (numberOfDofs_ * grid.size( level , 0 ));
-      return 0;
+      return (numberOfDofs_ * grid.size( level , 0 ));
     };
 
     //! map Entity an local Dof number to global Dof number
@@ -290,6 +292,7 @@ namespace Dune {
     DGMapper<GridType, polOrd> *mapper_;
 
   };
+#endif
 
   //*************************************************************************
   //*************************************************************************
