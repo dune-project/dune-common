@@ -23,11 +23,14 @@ namespace Dune {
 #endif
                                       )
     : mygrid_ (0) , maxlevel_(0)
+      , coarsenMark_(false)
 #ifdef _BSGRID_PARALLEL_
       , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
 #else
       ,  myRank_(-1)
 #endif
+      , hIndexSet_ (*this,globalSize_)
+      , levelIndexSet_(0)
   {
     mygrid_ = new BSSPACE BSGitterImplType (macroTriangFilename
 #ifdef _BSGRID_PARALLEL_
@@ -51,79 +54,51 @@ namespace Dune {
   template <int dim, int dimworld>
   inline BSGrid<dim,dimworld>::BSGrid(MPI_Comm mpiComm)
     : mygrid_ (0) , maxlevel_(0)
+      , coarsenMark_(false)
       , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
+      , hIndexSet_ (*this,globalSize_)
+      , levelIndexSet_(0)
   {}
 #else
   template <int dim, int dimworld>
-  inline BSGrid<dim,dimworld>::BSGrid(int myrank) : mygrid_ (0) , maxlevel_(0) , myRank_(myrank)
+  inline BSGrid<dim,dimworld>::BSGrid(int myrank)
+    : mygrid_ (0) , maxlevel_(0)
+      , coarsenMark_(false)
+      , myRank_(myrank)
+      , hIndexSet_ (*this,globalSize_)
+      , levelIndexSet_(0)
   {
-    for(int l=0; l<MAXL; l++)
-      for(int i=0; i<dim+1; i++) size_[l][i] = -1;
-
     for(int i=0; i<dim+1; i++) globalSize_[i] = 0;
   }
 #endif
 
   template <int dim, int dimworld>
+  inline BSGrid<dim,dimworld>::BSGrid(const BSGrid<dim,dimworld> & g)
+    : mygrid_ (0) , maxlevel_(0)
+      , coarsenMark_(false) , myRank_(-1)
+      , hIndexSet_(*this,globalSize_) , levelIndexSet_(0)
+  {
+    DUNE_THROW(BSGridError,"Do not use copy constructor of BSGrid! \n");
+  }
+
+  template <int dim, int dimworld>
+  inline BSGrid<dim,dimworld> & BSGrid<dim,dimworld>::operator = (const BSGrid<dim,dimworld> & g)
+  {
+    DUNE_THROW(BSGridError,"Do not use assignment operator of BSGrid! \n");
+    return (*this);
+  }
+
+  template <int dim, int dimworld>
   inline BSGrid<dim,dimworld>::~BSGrid()
   {
+    if(levelIndexSet_) delete levelIndexSet_;
     if(mygrid_) delete mygrid_;
   }
 
   template <int dim, int dimworld>
   inline int BSGrid<dim,dimworld>::size(int level, int codim) const
   {
-    return const_cast<BSGrid<dim,dimworld> &> (*this).calcNewSize(level,codim);
-  }
-
-  template <int dim, int dimworld>
-  inline int BSGrid<dim,dimworld>::calcNewSize (int level, int codim)
-  {
-    assert(dim == 3);
-
-    // todo level einbauen
-    if(size_[level][codim] == -1)
-    {
-      switch (codim)
-      {
-      case 0 :
-      {
-        BSSPACE BSLevelIterator<0>::IteratorType
-        w (mygrid_->container(),level);
-        size_[level][0] = w.size();
-        break;
-      }
-      case 1 :
-      {
-        BSSPACE BSLevelIterator<1>::IteratorType
-        w (mygrid_->container(),level);
-        size_[level][1] = w.size();
-        break;
-      }
-      case 2 :
-      {
-        BSSPACE BSLevelIterator<2>::IteratorType
-        w (mygrid_->container(),level);
-        size_[level][2] = w.size();
-        break;
-      }
-      case 3 :
-      {
-        BSSPACE BSLevelIterator<3>::IteratorType
-        w (*mygrid_) ;
-        size_[level][3] = w->size();
-        break;
-      }
-      default :
-      {
-        std::cerr << "BSGrid::size: Wrong codim choosen! \n";
-        assert(false);
-        abort();
-      }
-
-      }
-    }
-    return size_[level][codim];
+    return levelIndexSet().size(level,codim);
   }
 
   template <int dim, int dimworld>
@@ -148,14 +123,15 @@ namespace Dune {
   template <int dim, int dimworld>
   inline void BSGrid<dim,dimworld>::calcExtras()
   {
-    for(int l=0; l<MAXL; l++)
-      for(int i=0; i<dim+1; i++) size_[l][i] = -1;
-
     // set max index of grid
     for(int i=0; i<dim+1; i++)
-      globalSize_[i] = mygrid_->indexManager(i).getMaxIndex();
+    {
+      globalSize_[i] = (*mygrid_).indexManager(i).getMaxIndex();
+      std::cout << " global Size " << globalSize_[i] << "\n";
+    }
 
     //std::cout << "proc " << mpAccess_.myrank() << " num el = " << globalSize_[0] << "\n";
+    if(levelIndexSet_) (*levelIndexSet_).calcNewIndex();
   }
 
   template <int dim, int dimworld>
@@ -186,6 +162,7 @@ namespace Dune {
   inline int BSGrid<dim,dimworld>::global_size(int codim) const
   {
     assert(globalSize_[codim] >= 0);
+    std::cout << globalSize_[codim] << " Size of cd " << codim << "\n";
     return globalSize_[codim];
   }
 
@@ -197,12 +174,6 @@ namespace Dune {
 
   template <int dim, int dimworld>
   inline BSSPACE BSGitterType & BSGrid<dim,dimworld>::myGrid()
-  {
-    return *mygrid_;
-  }
-
-  template <int dim, int dimworld>
-  inline const BSSPACE BSGitterType & BSGrid<dim,dimworld>::myGrid() const
   {
     return *mygrid_;
   }
@@ -267,21 +238,20 @@ namespace Dune {
 
   // global refine
   template <int dim, int dimworld>
-  inline bool BSGrid<dim,dimworld>::globalRefine(int anzahl) const
+  inline bool BSGrid<dim,dimworld>::globalRefine(int anzahl)
   {
     bool ref = false;
-    MyType & grid = const_cast<MyType &> (*this);
     for (; anzahl>0; anzahl--)
     {
       LeafIteratorType endit  = leafend   ( maxlevel() );
       for(LeafIteratorType it = leafbegin ( maxlevel() ); it != endit; ++it)
       {
-        this->mark(1, it.dereference() );
+        this->mark(1, (*it) );
       }
-      ref = grid.adapt();
-      if(ref) grid.postAdapt();
+      ref = this->adapt();
+      if(ref) this->postAdapt();
     }
-    if(ref) grid.loadBalance();
+    if(ref) this->loadBalance();
     return ref;
   }
 
@@ -543,17 +513,19 @@ namespace Dune {
     : grid_(grid)
       , index_(-1)
       , level_(level)
-      , iter_(grid_.myGrid().container(), level )
   {
     if(!end)
     {
-      iter_.first();
-      if(!iter_.done())
+      IteratorType * it = new IteratorType ( grid_ , level_ );
+      iter_.store( it );
+
+      (*iter_).first();
+      if(!(*iter_).done())
       {
-        assert(iter_.size() > 0);
+        assert((*iter_).size() > 0);
         index_=0;
         EntityImp * obj = new EntityImp (grid_,level_);
-        (*obj).setElement(iter_.item());
+        (*obj).setElement( (*iter_).item());
         objEntity_.store ( obj );
       }
     }
@@ -561,17 +533,19 @@ namespace Dune {
 
   template<int codim, PartitionIteratorType pitype, class GridImp >
   inline BSGridLevelIterator<codim,pitype,GridImp> ::
-  BSGridLevelIterator(const GridImp & grid, BSSPACE HElementType &item)
+  BSGridLevelIterator(const GridImp & grid, const BSSPACE HElementType &item)
     : grid_(grid)
       , index_(-1)
       , level_(item.level())
-      , iter_(grid_.myGrid().container(), level_ )
   {
     index_=0;
     EntityImp * obj = new EntityImp (grid_,level_);
-    (*obj).setElement(item);
+    (*obj).setElement(const_cast<BSSPACE HElementType &> (item));
     // objEntity deletes entity if no refCount is left
     objEntity_.store ( obj );
+
+    IteratorType * it = new IteratorType ( grid_ , level_ );
+    iter_.store( it );
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp >
@@ -579,15 +553,16 @@ namespace Dune {
   {
     assert(index_ >= 0);
 
-    iter_.next();
+    (*iter_).next();
     index_++;
-    if (iter_.done())
+    if ((*iter_).done())
     {
       index_ = -1;
       return ;
     }
 
-    (*objEntity_).setElement(iter_.item());
+    (*objEntity_).setElement( (*iter_).item() );
+
     return ;
   }
 
@@ -602,7 +577,6 @@ namespace Dune {
   inline typename BSGridLevelIterator<codim,pitype,GridImp>::Entity &
   BSGridLevelIterator<codim,pitype,GridImp>::dereference () const
   {
-    assert(iter_.size() > 0);
     return (*objEntity_);
   }
 
@@ -625,20 +599,20 @@ namespace Dune {
     : grid_ ( grid )
       , index_(-1)
       , level_(level)
-      , iter_(0) // grid.myGrid().container(), level )
       , pitype_ (pitype)
   {
     if(!end)
     {
-      assert(iter_);
-      //iter_ = new IteratorType ( grid.myGrid().container(), level );
-      iter_->first();
-      if(!iter_->done()) // else iterator empty
+      IteratorType * it = new IteratorType ( grid_ , level_ );
+      iter_.store( it );
+
+      (*iter_).first();
+      if(!(*iter_).done()) // else iterator empty
       {
-        assert(iter_->size() > 0);
+        assert((*iter_).size() > 0);
         index_=0;
         EntityImp * obj = new EntityImp (grid,level_);
-        (*obj).setElement(iter_->item());
+        (*obj).setElement( (*iter_).item());
         objEntity_.store ( obj );
       }
     }
@@ -649,16 +623,16 @@ namespace Dune {
   {
     assert(index_  >= 0);
 
-    iter_->next();
+    (*iter_).next();
     index_++;
 
-    if(iter_->done())
+    if((*iter_).done())
     {
       index_ = -1;
       return ;
     }
 
-    (*objEntity_).setElement(iter_->item());
+    (*objEntity_).setElement( (*iter_).item() );
     return ;
   }
 
@@ -698,11 +672,11 @@ namespace Dune {
   inline BSGridHierarchicIterator<GridImp> ::
   BSGridHierarchicIterator(const GridImp & grid ,
                            const BSSPACE HElementType & elem, int maxlevel ,bool end)
-    : grid_(grid), elem_(elem) , item_(0), maxlevel_(maxlevel)
+    : grid_(grid), elem_(elem) , item_(0) , maxlevel_(maxlevel)
   {
     if (!end)
     {
-      item_ = elem_.down();
+      item_ = const_cast<BSSPACE HElementType *> (elem_.down());
       if(item_)
       {
         // we have children and they lie in the disired level range
@@ -893,6 +867,7 @@ namespace Dune {
 
     // if needed more than once we spare the virtual funtion call
     isBoundary_ = item_->myneighbour(index_).first->isboundary();
+    std::cout << isBoundary_ << " isBound\n";
     checkGhost();
 
     theSituation_ = ( (elem.level() < wLevel ) && elem.leaf() );
@@ -936,6 +911,9 @@ namespace Dune {
       item_ = 0;
       return ;
     }
+
+    // if faces are wrong oriented the assertion is thrown
+    assert( item_->myneighbour(index_).first );
 
     // if needed more than once we spare the virtual funtion call
     isBoundary_ = item_->myneighbour(index_).first->isboundary();
@@ -1187,6 +1165,7 @@ namespace Dune {
       , walkLevel_ (wLevel)
       //, glIndex_ (element.getIndex()) , level_ (element.level())
       , glIndex_(-1), level_(-1)
+      , geoInFather_ (false)
   {}
 
   template<int dim, class GridImp>
@@ -1213,7 +1192,6 @@ namespace Dune {
     index_   = -1;
     level_   = (*item_).level();
     glIndex_ = (*item_).getIndex();
-    //std::cout << "set Ghost " << glIndex_ << "\n";
   }
 
   template<int dim, class GridImp>
@@ -1259,9 +1237,23 @@ namespace Dune {
   }
 
   template<int dim, class GridImp>
+  inline const typename BSGridEntity<0,dim,GridImp>::Geometry &
+  BSGridEntity<0,dim,GridImp> :: geometryInFather () const
+  {
+    const Geometry & vati   = (*this->father()).geometry();
+    const Geometry & myself = this->geometry();
+
+    for(int i=0; i<vati.corners(); i++)
+      geoInFather_.getCoordVec(i) = vati.local( myself[i] );
+
+    return geoInFather_;
+  }
+
+  template<int dim, class GridImp>
   inline int BSGridEntity<0,dim,GridImp> :: index() const
   {
-    return index_;
+    const Entity en (*this);
+    return grid_.levelIndexSet().index(en);
   }
 
   template<int dim, class GridImp>
@@ -1271,12 +1263,43 @@ namespace Dune {
   }
 
   template<int dim, class GridImp>
+  inline int BSGridEntity<0,dim,GridImp> :: getIndex() const
+  {
+    return glIndex_;
+  }
+
+
+
+  template<int dim, class GridImp>
   template<int cc>
   inline int BSGridEntity<0,dim,GridImp> :: subIndex (int i) const
   {
     assert(cc == dim);
     assert(item_ != 0);
     return IndexWrapper<cc>::subIndex ( *item_ ,i);
+  }
+
+  template <class GridImp, int dim, int cc> struct BSGridCount {
+    static int count () { return dim+1; }
+  };
+  template <class GridImp> struct BSGridCount<GridImp,3,2> {
+    static int count () { return 6; }
+  };
+
+  template<int dim, class GridImp>
+  template<int cc>
+  inline int BSGridEntity<0,dim,GridImp> :: count () const
+  {
+    return BSGridCount<GridImp,dim,cc>::count();
+  }
+
+  template<int dim, class GridImp>
+  template<int cc>
+  inline typename BSGridEntity<0,dim,GridImp> :: template codim<cc>:: EntityPointer
+  BSGridEntity<0,dim,GridImp> :: entity (int i) const
+  {
+    BSGridLevelIterator<cc,All_Partition,GridImp> ep (grid_,level());
+    return ep;
   }
 
   template<int dim, class GridImp>
@@ -1397,19 +1420,52 @@ namespace Dune {
   ######  #    #     #       #       #       #
   ************************************************************************************/
   // --Entity
+  template <int cd, int dim, class GridImp>
+  inline BSGridEntity<cd,dim,GridImp> ::
+  BSGridEntity(const GridImp  &grid, int level)
+    : grid_(grid), gIndex_(-1)
+      , item_(0) , father_(0)
+      , geo_(false) , builtgeometry_(false)
+      , localFCoordCalced_ (false)
+  {}
+
+  template<int cd, int dim, class GridImp>
+  inline void BSGridEntity<cd,dim,GridImp> :: setElement(const BSElementType & item)
+  {
+    item_   = static_cast<const BSIMPLElementType *> (&item);
+    gIndex_ = (*item_).getIndex();
+    builtgeometry_=false;
+    localFCoordCalced_ = false;
+  }
+
+  template<>
+  inline void BSGridEntity<3,3,const BSGrid<3,3> > ::
+  setElement(const BSSPACE HElementType &el, const BSSPACE VertexType &vx)
+  {
+    item_   = static_cast<const BSIMPLElementType *> (&vx);
+    gIndex_ = (*item_).getIndex();
+    father_ = static_cast<const BSSPACE HElementType *> (&el);
+    builtgeometry_=false;
+    localFCoordCalced_ = false;
+  }
 
   template<int cd, int dim, class GridImp>
   inline int BSGridEntity<cd,dim,GridImp> :: index () const
   {
-    assert(false);
-    return -1;
+    const Entity en (*this);
+    return grid_.levelIndexSet().index(en);
   }
 
   template<int cd, int dim, class GridImp>
   inline int BSGridEntity<cd,dim,GridImp> :: globalIndex () const
   {
-    assert(item_);
-    return item_->getIndex();
+    return gIndex_;
+  }
+
+  template<int cd, int dim, class GridImp>
+  inline int BSGridEntity<cd,dim,GridImp> :: getIndex () const
+  {
+    return gIndex_;
   }
 
   template<int cd, int dim, class GridImp>
@@ -1423,8 +1479,33 @@ namespace Dune {
   inline const typename BSGridEntity<cd,dim,GridImp>::Geometry &
   BSGridEntity<cd,dim,GridImp>:: geometry() const
   {
-    assert(builtgeometry_);
+    if(!builtgeometry_) builtgeometry_ = geo_.buildGeom(item_);
     return geo_;
+  }
+
+  template<int cd, int dim, class GridImp>
+  inline typename BSGridEntity<cd,dim,GridImp>::EntityPointer
+  BSGridEntity<cd,dim,GridImp>:: ownersFather() const
+  {
+    assert(cd == dim);
+    assert(father_);
+
+    BSGridLevelIterator<cd,All_Partition,const GridImp> vati(grid_,(*father_));
+    return vati;
+  }
+
+  template<int cd, int dim, class GridImp>
+  inline FieldVector<bs_ctype, dim> &
+  BSGridEntity<cd,dim,GridImp>:: positionInOwnersFather() const
+  {
+    assert( cd == dim );
+    if(!localFCoordCalced_)
+    {
+      EntityPointer vati = this->ownersFather();
+      localFatherCoords_ = (*vati).geometry().local( this->geometry()[0] );
+      localFCoordCalced_ = true;
+    }
+    return localFatherCoords_;
   }
 
   /***********************************************************************
@@ -1435,7 +1516,7 @@ namespace Dune {
   #       #       #       #    #  #       #   ##     #
   ######  ######  ######  #    #  ######  #    #     #
   ***********************************************************************/
-  // --Element
+  // --Geometry
   template<int mydim, int cdim, class GridImp>
   inline BSGridGeometry<mydim,cdim,GridImp> :: BSGridGeometry(bool makeRefElement)
     : builtinverse_ (false) , builtA_ (false) , builtDetDF_ (false)
@@ -1454,16 +1535,41 @@ namespace Dune {
   template<int mydim, int cdim, class GridImp>
   inline void BSGridGeometry<mydim,cdim,GridImp> :: calcElMatrix () const
   {
-    // creat Matrix A (=Df)               INDIZES: col/row
-    // Mapping: R^dim -> R^3,  F(x) = A x + p_0
-    // columns:    p_1 - p_0  |  p_2 - p_0  |  p_3 - p_0
-
-    for (int i=0; i<mydim; i++)
+    if(!builtA_)
     {
-      for(int j=0; j<mydim; j++)
-        A_[i][j] = coord_[i+1][j] - coord_[0][j];
+      // creat Matrix A (=Df)               INDIZES: col/row
+      // Mapping: R^dim -> R^3,  F(x) = A x + p_0
+      // columns:    p_1 - p_0  |  p_2 - p_0  |  p_3 - p_0
+
+      for (int i=0; i<mydim; i++)
+      {
+        //FieldVector<bs_ctype,cdim> & row = const_cast<FieldMatrix<bs_ctype,matdim,matdim> &> (A_)[i];
+        //row = coord_[i+1] - coord_[0];
+      }
+      builtA_ = true;
     }
-    builtA_ = true;
+  }
+
+  // matrix for mapping from reference element to current element
+  template<>
+  inline void BSGridGeometry<3,3, const BSGrid<3,3> > :: calcElMatrix () const
+  {
+    if(!builtA_)
+    {
+      enum { mydim = 3 };
+      // creat Matrix A (=Df)               INDIZES: col/row
+      // Mapping: R^dim -> R^3,  F(x) = A x + p_0
+      // columns:    p_1 - p_0  |  p_2 - p_0  |  p_3 - p_0
+
+      const FieldVector<bs_ctype,mydim> & coord0 = coord_[0];
+      for (int i=0; i<mydim; i++)
+      {
+        A_[i][0] = coord_[1][i] - coord0[i];
+        A_[i][1] = coord_[2][i] - coord0[i];
+        A_[i][2] = coord_[3][i] - coord0[i];
+      }
+      builtA_ = true;
+    }
   }
 
   //dim = dimworld = 3
@@ -1472,7 +1578,7 @@ namespace Dune {
   {
     if(!builtinverse_)
     {
-      if(!builtA_) calcElMatrix();
+      calcElMatrix();
 
       // DetDf = integrationElement
       detDF_ = std::abs( FMatrixHelp::invertMatrix(A_,Jinv_) );
@@ -1485,30 +1591,53 @@ namespace Dune {
   {
     if(!builtinverse_)
     {
-      if(!builtA_) calcElMatrix();
+      enum { dim = 3 };
 
-      std::cerr << "WARNING: BSGridGeometry::buildJacobianInverse not tested yet! " << __LINE__ <<"\n";
+      //std::cerr << "WARNING: BSGridGeometry::buildJacobianInverse not tested yet! " << __LINE__ <<"\n";
+      // create vectors of face
+      tmpV_ = coord_[1] - coord_[0];
+      tmpU_ = coord_[2] - coord_[1];
 
-      globalCoord_[0] = -0.5 * ( ( coord_[1][1] - (coord_[1][0]) ) *
-                                 ( coord_[2][2] - (coord_[2][1]) ) -
-                                 ( coord_[1][2] - (coord_[1][1]) ) *
-                                 ( coord_[2][1] - (coord_[2][0]) )  );
-      globalCoord_[1] = -0.5 * ( ( coord_[2][1] - (coord_[2][0]) ) *
-                                 ( coord_[0][2] - (coord_[0][1]) ) -
-                                 ( coord_[2][2] - (coord_[2][1]) ) *
-                                 ( coord_[0][1] - (coord_[0][0]) )  );
+      // calculate scaled outer normal
+      for(int i=0; i<dim; i++)
+      {
+        globalCoord_[i] = (  tmpU_[(i+1)%dim] * tmpV_[(i+2)%dim]
+                             - tmpU_[(i+2)%dim] * tmpV_[(i+1)%dim] );
+      }
 
-      globalCoord_[2] = -0.5 * ( ( coord_[0][1] - (coord_[0][0]) ) *
-                                 ( coord_[1][2] - (coord_[1][1]) ) -
-                                 ( coord_[0][2] - (coord_[0][1]) ) *
-                                 ( coord_[1][1] - (coord_[1][0]) ) ) ;
-      detDF_ = globalCoord_.two_norm();
+      detDF_ = std::abs ( globalCoord_.two_norm() );
+      builtinverse_ = builtDetDF_ = true;
+    }
+  }
+
+  template<> //dim = 1 , dimworld = 3
+  inline void BSGridGeometry<1,3, const BSGrid<3,3> > :: buildJacobianInverse() const
+  {
+    if(!builtinverse_)
+    {
+      enum { dim = 3 };
+      //std::cerr << "WARNING: BSGridGeometry::buildJacobianInverse not tested yet! " << __LINE__ <<"\n";
+      // create vectors of face
+      globalCoord_ = coord_[1] - coord_[0];
+      detDF_ = std::abs ( globalCoord_.two_norm() );
+      builtinverse_ = builtDetDF_ = true;
+    }
+  }
+
+  template<> //dim = 1 , dimworld = 3
+  inline void BSGridGeometry<0,3, const BSGrid<3,3> > :: buildJacobianInverse() const
+  {
+    if(!builtinverse_)
+    {
+      enum { dim = 3 };
+      detDF_ = 1.0;
       builtinverse_ = builtDetDF_ = true;
     }
   }
 
   template <>
-  inline bool BSGridGeometry<3,3, const BSGrid<3,3> > :: buildGeom(const BSSPACE IMPLElementType & item)
+  inline bool BSGridGeometry<3,3, const BSGrid<3,3> > ::
+  buildGeom(const BSSPACE IMPLElementType & item)
   {
     enum { dim = 3 };
     enum { dimworld = 3};
@@ -1577,9 +1706,47 @@ namespace Dune {
         coord_[i][j] = p[j];
       }
     }
+
     buildJacobianInverse();
     return true;
   }
+
+  template <> // for edges
+  inline bool BSGridGeometry<1,3, const BSGrid<3,3> > :: buildGeom(const BSSPACE HEdgeType & item)
+  {
+    enum { dim = 1 };
+    enum { dimworld = 3};
+
+    builtinverse_ = builtA_ = builtDetDF_ = false;
+
+    for (int i=0; i<(dim+1); i++)
+    {
+      const double (&p)[3] = static_cast<const BSSPACE GEOEdgeType &> (item).myvertex(i)->Point();
+      for (int j=0; j<dimworld; j++)
+      {
+        coord_[i][j] = p[j];
+      }
+    }
+
+    buildJacobianInverse();
+    return true;
+  }
+
+  template <> // for Vertices ,i.e. Points
+  inline bool BSGridGeometry<0,3, const BSGrid<3,3> > :: buildGeom(const BSSPACE VertexType & item)
+  {
+    enum { dim = 0 };
+    enum { dimworld = 3};
+
+    builtinverse_ = builtA_ = builtDetDF_ = false;
+
+    const double (&p)[3] = static_cast<const BSSPACE GEOVertexType &> (item).Point();
+    for (int j=0; j<dimworld; j++) coord_[0][j] = p[j];
+
+    buildJacobianInverse();
+    return true;
+  }
+
 
   template <GeometryType eltype , int dim> struct BSGridElType {
     static GeometryType type () { return unknown; }
@@ -1617,6 +1784,14 @@ namespace Dune {
     return coord_[i];
   }
 
+  template<int mydim, int cdim, class GridImp>
+  inline FieldVector<bs_ctype, cdim>&
+  BSGridGeometry<mydim,cdim,GridImp> :: getCoordVec (int i)
+  {
+    assert((i>=0) && (i < mydim+1));
+    return coord_[i];
+  }
+
 
   //   G L O B A L   - - -
 
@@ -1625,7 +1800,19 @@ namespace Dune {
   inline FieldVector<bs_ctype, cdim> BSGridGeometry<mydim,cdim,GridImp>::
   global(const FieldVector<bs_ctype, mydim>& local) const
   {
-    if(!builtA_) calcElMatrix();
+    calcElMatrix();
+
+    globalCoord_ = coord_[0];
+    A_.umv(local,globalCoord_);
+    return globalCoord_;
+  }
+
+  template<>
+  inline FieldVector<bs_ctype, 3> BSGridGeometry<3,3, const BSGrid<3,3> >::
+  global(const FieldVector<bs_ctype, 3> & local) const
+  {
+    calcElMatrix();
+
     globalCoord_ = coord_[0];
     A_.umv(local,globalCoord_);
     return globalCoord_;
@@ -1679,7 +1866,8 @@ namespace Dune {
     if(builtDetDF_)
       return detDF_;
 
-    if(!builtA_) calcElMatrix();
+    calcElMatrix();
+
     detDF_ = A_.determinant();
 
     assert(detDF_ > 0.0);
