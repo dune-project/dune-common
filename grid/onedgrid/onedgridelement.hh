@@ -153,7 +153,7 @@ namespace Dune {
     /** ???
      */
     OneDCType integration_element (const FieldVector<OneDCType, dim>& local) const {
-      return vertex[1]->geometry().pos_ - vertex[0]->geometry().pos_;
+      return vertex[1]->geometry().pos_[0] - vertex[0]->geometry().pos_[0];
     }
 
     //! The Jacobian matrix of the mapping from the reference element to this element
