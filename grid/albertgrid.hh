@@ -84,10 +84,9 @@ namespace Dune
      @ingroup GridCommon
 
      This is one implementation of the grid interface providing 2d triangle
-     and 3d tetrahedra grids by using the FE Box ALBERT ( ALBERT
+     and 3d tetrahedra grids by using the FE Box ALBERTA ( ALBERT
      was written by Kunibert Siebert
-     and Alfred Schmidt)
-     (http://mathematik.uni-freiburg.de/IAM/Research/projectsdz/albert/).
+     and Alfred Schmidt) (http://www.alberta-fem.de/).
 
      Get a copy of the lib and albert.h.
      Now you must take care to have the two directories
