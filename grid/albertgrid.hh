@@ -58,10 +58,13 @@ namespace Albert
 } //end namespace Albert
 #endif
 
+
 #include "../common/misc.hh"
 #include "../common/matvec.hh"
 #include "../common/array.hh"
 #include "common/grid.hh"
+
+#include "albertgrid/agmemory.hh"
 
   namespace Dune
   {
@@ -1227,42 +1230,6 @@ namespace Albert
       //***********************************************************************
       //  MemoryManagement for Entitys and Elements
       //**********************************************************************
-
-      // organize the memory management for entitys used by the NeighborIterator
-      template <class Object>
-      class MemoryProvider
-      {
-      public:
-        typedef Object ObjectType;
-
-        struct ObjectEntity
-        {
-          ObjectEntity *next;
-          Object       *item;
-        };
-
-        // freeEntity_ = NULL
-        MemoryProvider() : freeEntity_ (NULL) {}
-
-        // call deleteEntity
-        ~MemoryProvider ();
-
-        // delete recursive all free ObjectEntitys
-        void deleteEntity(ObjectEntity *obj);
-
-        // i.e. return pointer to Entity
-        ObjectEntity *getNewObjectEntity(AlbertGrid<dim,dimworld> &grid, int level);
-
-        // i.e. get pointer to element
-        ObjectEntity *getNewObjectElement();
-
-        // free, move element to stack
-        void freeObjectEntity (ObjectEntity *obj);
-
-      private:
-        ObjectEntity  *freeEntity_;
-      };
-
       typedef MemoryProvider< AlbertGridEntity<0,dim,dimworld > > EntityProvider;
       typedef MemoryProvider< AlbertGridElement<dim-1,dimworld> > IntersectionSelfProvider;
       typedef MemoryProvider< AlbertGridElement<dim-1,dim> >      IntersectionNeighProvider;
@@ -1272,8 +1239,6 @@ namespace Albert
       IntersectionNeighProvider interNeighProvider_;
 
     }; // end Class AlbertGridGrid
-
-
 
     // Class to mark the Vertices on the leaf level
     // to visit every vertex only once

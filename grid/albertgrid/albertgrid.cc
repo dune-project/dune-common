@@ -818,15 +818,9 @@ namespace Dune
   AlbertGridEntity(AlbertGrid<dim,dimworld> &grid, int level) : grid_(grid)
                                                                 , level_ (level)
                                                                 , vxEntity_ ( grid_ , NULL, 0, 0, 0, 0)
-                                                                , geo_(false)
-  {
-    travStack_ = NULL;
-    elInfo_ = NULL;
-    builtgeometry_ = false;
-
-    faceEntity_ = NULL;
-    edgeEntity_ = NULL;
-  }
+                                                                , geo_(false) , travStack_ (NULL) , elInfo_ (NULL)
+                                                                , builtgeometry_ (false) , faceEntity_ (NULL) , edgeEntity_( NULL)
+  {}
 
   template <int dim, int dimworld>
   inline AlbertGridLevelIterator<1,dim,dimworld> &
@@ -1197,7 +1191,8 @@ namespace Dune
     grid_(grid), level_ (level) , virtualEntity_ (NULL)
     , fakeNeigh_ (NULL)
     , neighGlob_ (NULL) , elInfo_ (NULL) , neighborCount_ (dim+1)
-    , manageObj_ (NULL) , manageInterEl_ (NULL)
+    , manageObj_ (NULL)
+    , manageInterEl_ (NULL)
     , manageNeighEl_ (NULL) {}
 
   template< int dim, int dimworld>
@@ -1208,12 +1203,8 @@ namespace Dune
     , virtualEntity_ (NULL)
     , builtNeigh_ (false)
     , manageObj_ (NULL)
-  {
-    manageInterEl_ = grid_.interSelfProvider_.getNewObjectElement();
-    manageNeighEl_ = grid_.interNeighProvider_.getNewObjectElement();
-    fakeNeigh_ = manageInterEl_->item;
-    neighGlob_ = manageNeighEl_->item;
-  }
+    , manageInterEl_ (NULL)
+    , manageNeighEl_ (NULL) {}
 
   template< int dim, int dimworld>
   inline AlbertGridNeighborIterator<dim,dimworld>&
@@ -1402,6 +1393,11 @@ namespace Dune
   intersection_self_local()
   {
     std::cout << "intersection_self_local not check until now! \n";
+    if(!manageInterEl_)
+    {
+      manageInterEl_ = grid_.interSelfProvider_.getNewObjectEntity();
+      fakeNeigh_ = manageInterEl_->item;
+    }
 
     fakeNeigh_->builtGeom(elInfo_,neighborCount_,0,0);
     return (*fakeNeigh_);
@@ -1412,6 +1408,11 @@ namespace Dune
   AlbertGridNeighborIterator<dim,dimworld>::
   intersection_self_global()
   {
+    if(!manageNeighEl_)
+    {
+      manageNeighEl_ = grid_.interNeighProvider_.getNewObjectEntity();
+      neighGlob_ = manageNeighEl_->item;
+    }
     // built neighGlob_ first
     neighGlob_->builtGeom(elInfo_,neighborCount_,0,0);
     return (*neighGlob_);
@@ -1423,6 +1424,11 @@ namespace Dune
   intersection_neighbor_local()
   {
     std::cout << "intersection_neighbor_local not check until now! \n";
+    if(!manageInterEl_)
+    {
+      manageInterEl_ = grid_.interSelfProvider_.getNewObjectEntity();
+      fakeNeigh_ = manageInterEl_->item;
+    }
 
     if(!builtNeigh_)
     {
@@ -1441,6 +1447,11 @@ namespace Dune
   intersection_neighbor_global()
   {
     std::cout << "intersection_neighbor_global not check until now! \n";
+    if(!manageNeighEl_)
+    {
+      manageNeighEl_ = grid_.interNeighProvider_.getNewObjectEntity();
+      neighGlob_ = manageNeighEl_->item;
+    }
 
     // built neighGlob_ first
     if(!builtNeigh_)
@@ -2628,80 +2639,6 @@ namespace Dune
     };
   }
 
-  //************************************************************************
-  //
-  //  MemoryProvider
-  //
-  //************************************************************************
-  template <int dim, int dimworld> template <class Object>
-  inline typename AlbertGrid<dim,dimworld>::MemoryProvider<Object>::ObjectEntity *
-  AlbertGrid<dim,dimworld>::MemoryProvider<Object>::
-  getNewObjectEntity(AlbertGrid<dim,dimworld> &grid, int level )
-  {
-    if(!freeEntity_)
-    {
-      ObjectEntity *oe = new ObjectEntity ();
-      oe->next = NULL;
-      oe->item = new typename Object (grid,level);
-      return oe;
-    }
-    else
-    {
-      ObjectEntity *oe = freeEntity_;
-      freeEntity_ = oe->next;
-      oe->next = NULL;
-      return oe;
-    }
-  }
-
-  template <int dim, int dimworld> template <class Object>
-  inline typename AlbertGrid<dim,dimworld>::MemoryProvider<Object>::ObjectEntity *
-  AlbertGrid<dim,dimworld>::MemoryProvider<Object>::getNewObjectElement()
-  {
-    if(!freeEntity_)
-    {
-      ObjectEntity *oe = new ObjectEntity ();
-      oe->next = NULL;
-      oe->item = new typename Object (false);
-      return oe;
-    }
-    else
-    {
-      ObjectEntity *oe = freeEntity_;
-      freeEntity_ = oe->next;
-      oe->next = NULL;
-      return oe;
-    }
-  }
-
-  template <int dim, int dimworld> template <class Object>
-  inline AlbertGrid<dim,dimworld>::MemoryProvider<Object>::~MemoryProvider()
-  {
-    if(freeEntity_) deleteEntity(freeEntity_);
-  }
-
-  template <int dim, int dimworld> template <class Object>
-  inline void AlbertGrid<dim,dimworld>::MemoryProvider<Object>::
-  freeObjectEntity(ObjectEntity *obj)
-  {
-    obj->next = freeEntity_;
-    freeEntity_ = obj;
-  }
-
-  template <int dim, int dimworld> template <class Object>
-  inline void AlbertGrid<dim,dimworld>::MemoryProvider<Object>::
-  deleteEntity(ObjectEntity *obj)
-  {
-    std::cout << "To be revised, dosent work at this time! \n";
-    if(obj)
-    {
-      //if(obj->next)
-      //  deleteEntity(obj->next);
-
-      if(obj->item) delete obj->item;
-      delete obj;
-    }
-  }
   // if defined some debugging test were made that reduce the performance
   // so they were switch off normaly
 
