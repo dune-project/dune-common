@@ -8,6 +8,7 @@
 #ifndef DUNE_UGINCLUDES_HH
 #define DUNE_UGINCLUDES_HH
 
+#include <std_internal.h>
 #include <gm.h>
 #include <std_domain.h>
 #include <initug.h>
