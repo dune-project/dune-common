@@ -75,6 +75,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "-----------------------------"
   echo  
   echo "Alberta..........: $with_alberta"
+  echo "ALU3d-Grid.......: $with_alu3dgrid"
   echo "AmiraMesh........: $with_amiramesh"
   echo "BLAS-lib.........: $with_blas"
   echo "Grape............: $with_grape"
