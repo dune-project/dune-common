@@ -6,6 +6,7 @@
 namespace AlbertHelp {
 
   // for vertices not needed now
+  // dim = 2 means, we have a vector for element and edge numbering
   enum { numOfElNumVec = DIM };
 
   // IndexManagerType defined in albertgrid.hh

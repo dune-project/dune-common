@@ -1239,10 +1239,6 @@ namespace Dune
     }
 
   private:
-    //! number of grid entities per level and codim, size is cached
-    template <int codim> int calcLevelSize (int level);
-    int calcLevelCodimSize (int level, int codim);
-
     // initialize of some members
     void initGrid(int proc, bool swapEls = true );
 
@@ -1452,7 +1448,8 @@ namespace Dune
     int nv_[numVecs];
     int dof_[numVecs];
 
-    void initializePointers(ALBERTA AlbertHelp::DOFVEC_STACK & dofvecs)
+    // update vec pointer of the DOF_INT_VECs, which can change during resize
+    void updatePointers(ALBERTA AlbertHelp::DOFVEC_STACK & dofvecs)
     {
       for(int i=0; i<numVecs; i++)
       {
@@ -1471,6 +1468,7 @@ namespace Dune
     {
       const ALBERTA DOF_ADMIN * elAdmin_ = dofvecs.elNumbers[cd]->fe_space->admin;
       // see Albert Doc. , should stay the same
+
       nv_ [cd] = elAdmin_->n0_dof    [ALBERTA AlbertHelp::AlbertaDofType<cd>::type];
       dof_[cd] = elAdmin_->mesh->node[ALBERTA AlbertHelp::AlbertaDofType<cd>::type];
     }
@@ -1489,7 +1487,7 @@ namespace Dune
     {
       enum { cd = 1 };
       assert(el);
-      int idx = elNumVec_[cd][ el->dof[dof_[cd]][nv_[cd]] ];
+      //int idx = elNumVec_[cd][ el->dof[dof_[cd]][nv_[cd]] ];
       //return idx;
       return 0;
     }
