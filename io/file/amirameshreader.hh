@@ -5,6 +5,7 @@
 
 #include <string>
 #include "../../common/array.hh"
+#include <amiramesh/AmiraMesh.h>
 
 namespace Dune {
 
