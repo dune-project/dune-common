@@ -121,11 +121,11 @@ namespace Dune {
   public:
     MPI_Status mpi_status;
     //! exchange data on level l
-    void   exchange(level l, Vector< spgrid<DIM> > & ex);
+    void   exchange(level l, Vector< spgrid<DIM> > & ex) const;
     void   Send(int dir, Dune::side s,
-                level l, Vector< spgrid<DIM> > & ex);
+                level l, Vector< spgrid<DIM> > & ex) const;
     void   Recv(int dir, Dune::side s,
-                level l, Vector< spgrid<DIM> > & ex);
+                level l, Vector< spgrid<DIM> > & ex) const;
   private:
     //! initialize the grid
     void init();
