@@ -83,12 +83,8 @@ namespace Dune {
   template <class T, int length>
   inline IndexStack<T,length>::~IndexStack ()
   {
-    if(stack_)
-    {
-      delete stack_;
-      stack_ = new StackType();
-      assert(stack_);
-    }
+    if(stack_) delete stack_;
+    stack_ = 0;
 
     while( !fullStackList_.empty() )
     {
