@@ -125,6 +125,33 @@ namespace Dune {
     }
   }
 
+  inline std::string GeometryName(GeometryType type){
+    switch(type) {
+    case vertex :
+      return "vertex";
+    case line :
+      return "line";
+    case triangle :
+      return "triangle";
+    case quadrilateral :
+      return "quadrilateral";
+    case tetrahedron :
+      return "tetrahedron";
+    case pyramid :
+      return "pyramid";
+    case prism :
+      return "prism";
+    case hexahedron :
+      return "hexahedron";
+    case iso_triangle :
+      return "iso_triangle";
+    case iso_quadrilateral :
+      return "iso_quadrilateral";
+    case unknown :
+      return "unknown";
+    }
+  }
+
   /*! GridIndexType specifies which Index of the Entities of the grid
         should be used, i.e. globalIndex() or index()
    */
@@ -558,5 +585,23 @@ namespace Dune {
 #include "leafiterator.hh"
 
 #include "grid.cc"
+
+inline std::ostream& operator<< (std::ostream& s, Dune::GeometryType t)
+{
+  s << Dune::GeometryName(t);
+  return s;
+}
+
+inline std::ostream& operator<< (std::ostream& s, Dune::PartitionType t)
+{
+  s << Dune::PartitionName(t);
+  return s;
+}
+
+inline std::ostream& operator<< (std::ostream& s, Dune::GridIdentifier t)
+{
+  s << Dune::transformToGridName(t);
+  return s;
+}
 
 #endif
