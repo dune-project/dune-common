@@ -311,6 +311,14 @@ local (const FieldVector<UGCtype, dimworld>& global)
   return result;
 }
 
+template<int dim, int dimworld>
+inline bool UGGridElement<dim,dimworld>::
+checkInside(const FieldVector<UGCtype, dimworld> &global)
+{
+  DUNE_THROW(GridError, "UGGridElement::checkInside() not implemented yet!");
+  return true;
+}
+
 
 template< int dim, int dimworld>
 inline UGCtype UGGridElement<dim,dimworld>::

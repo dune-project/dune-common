@@ -242,7 +242,9 @@ namespace Dune {
     int level_;
 
     typename TargetType<0,dim>::T* target_;
-    //UGGridElement <dim,dim> fatherReLocal_;
+
+    UGGridElement <dim,dim> fatherReLocal_;
+
   }; // end of UGGridEntity codim = 0
 
   // Include class method definitions
