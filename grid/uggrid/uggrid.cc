@@ -80,12 +80,30 @@ namespace Dune
     }
 
     numOfUGGrids++;
+
+    extra_boundary_data_ = 0;
+
+    // Create unique name
+    static unsigned int nameCounter = 0;
+    char buffer[20];
+    sprintf(buffer, "%d", nameCounter);
+    //     std::ostrstream numberAsAscii;
+    //     numberAsAscii << nameCounter;
+    name = "DuneUGGrid_";
+    //    name += numberAsAscii.str();
+    name += buffer;
+
+    std::cout << "UGGrid<" << dim << "," << dimworld <<"> with name " << name << " created!\n";
+
+    nameCounter++;
   }
 
   /** \bug Actually delete the grid from UG! */
   template < int dim, int dimworld >
   inline UGGrid < dim, dimworld >::~UGGrid()
   {
+    free(extra_boundary_data_);
+
     numOfUGGrids--;
 
     // Shut down UG if this was the last existing UGGrid object
