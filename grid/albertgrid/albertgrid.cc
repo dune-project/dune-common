@@ -398,7 +398,7 @@ namespace Dune
     // Umrechnen von baryzentrischen localen Koordinaten nach
     // localen Koordinaten,
     for(int i=0; i<dim; i++)
-      localCoord_(i) = tmpVec_.read(i);
+      localCoord_(i) = tmpVec_(i);
 
     return localCoord_;
   }
