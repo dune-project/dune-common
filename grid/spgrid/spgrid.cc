@@ -292,7 +292,7 @@ namespace Dune {
   ////////////////////////////////////////////////////////////////////////////
 
   template <int DIM>
-  void spgrid<DIM>::exchange(level l, Vector< spgrid<DIM> > & ex) {
+  void spgrid<DIM>::exchange(level l, Vector< spgrid<DIM> > & ex) const {
     //    TIME_EX -= MPI_Wtime();
     for (int d=0; d<DIM; d++) {
       /* every Process who's d'th coord is even */
@@ -318,7 +318,7 @@ namespace Dune {
    */
   template <int DIM>
   void spgrid<DIM>::Send(int dir, Dune::side s,
-                         level l, Vector< spgrid<DIM> > & ex) {
+                         level l, Vector< spgrid<DIM> > & ex) const {
     /* Calc the slab which we need to send */
     int sz = 1;
     array<DIM> begin;
@@ -369,7 +369,8 @@ namespace Dune {
    */
   template <int DIM>
   void spgrid<DIM>::Recv(int dir, Dune::side s,
-                         level l, Vector< spgrid<DIM> > & ex) {
+                         level l, Vector< spgrid<DIM> > & ex) const {
+    MPI_Status mpi_status;
     /* Calc the slab which we need to send */
     int sz = 1;
     array<DIM> begin;
