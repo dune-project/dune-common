@@ -3122,7 +3122,7 @@ namespace Dune
       ALBERT free_mesh(fakeMesh);
 
       // delete fake macro file
-      //std::remove ( fakename );
+      std::remove ( fakename );
 
       // setup AlbertGrid Interface to Albert Mesh
       initGrid(proc);
