@@ -649,8 +649,6 @@ namespace Dune
   };
 
 
-#define NEIGH_DEBUG
-
   /** \todo Please doc me! */
   template<int dim, int dimworld>
   class AlbertGridBoundaryEntity
@@ -665,26 +663,16 @@ namespace Dune
     //! return type of boundary , i.e. Neumann, Dirichlet ...
     BoundaryType type ()
     {
-#ifdef NEIGH_DEBUG
-      if(_elInfo->boundary[_neigh] == NULL)
-      {
-        std::cerr << "No Boundary, fella! \n";
-        abort();
-      }
-#endif
+      assert(_elInfo->boundary[_neigh] != NULL);
+      // if bound == 0 then interior edge ==> error
+      assert(_elInfo->boundary[_neigh]->bound != 0);
       return (( _elInfo->boundary[_neigh]->bound < 0 ) ? Neumann : Dirichlet );
     }
 
     //! return identifier of boundary segment, number
     int id ()
     {
-#ifdef NEIGH_DEBUG
-      if(_elInfo->boundary[_neigh] == NULL)
-      {
-        std::cerr << "No Boundary, fella! \n";
-        abort();
-      }
-#endif
+      assert(_elInfo->boundary[_neigh] != NULL);
       return _elInfo->boundary[_neigh]->bound;
     }
 
@@ -692,7 +680,7 @@ namespace Dune
     bool hasGeometry () { return _geom.builtGeom(_elInfo,0,0,0); }
 
     //! return geometry of the ghost cell
-    AlbertGridElement<dim,dimworld> geometry ()
+    AlbertGridElement<dim,dimworld>& geometry ()
     {
       return _geom;
     }
@@ -708,7 +696,7 @@ namespace Dune
         _elInfo = NULL;
     };
 
-    // AlbertGrid<dim,dimworld> & _grid;
+    // ghost cell
     AlbertGridElement<dim,dimworld> _geom;
 
     // cooresponding el_info
