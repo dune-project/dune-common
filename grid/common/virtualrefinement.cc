@@ -352,15 +352,6 @@ namespace Dune {
   // we use the general template for vertices and specialize only for elements.
   // This works because the classes with codimension other than dimension or 0 are undefined anyway.
 
-  // construct to abort compilation unless dimension == codimension
-  template<bool condition>
-  struct VRISEIBSAssert
-  {};
-  template<>
-  struct VRISEIBSAssert<true>
-  { typedef int Valid; };
-  // End construct
-
   template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dimension>
   class VirtualRefinementImpSubEntityIteratorBackSpecial
     : public VirtualRefinement<dimension, CoordType>::template SubEntityIteratorBack<dimension>
@@ -370,10 +361,11 @@ namespace Dune {
     typedef VirtualRefinement<dimension, CoordType> RefinementBase;
     typedef typename RefinementBase::CoordVector CoordVector;
 
-    CoordVector coords() const;
-  private:
     // construct to abort compilation unless dimension == codimension
-    typedef typename VRISEIBSAssert<dimension == Refinement<geometryType, CoordType, coerceTo>::dimension>::Valid Valid;
+    VirtualRefinementImpSubEntityIteratorBackSpecial()
+    { IsTrue<dimension == Refinement<geometryType, CoordType, coerceTo>::dimension>::yes(); }
+
+    CoordVector coords() const;
   };
 
   template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dimension>
@@ -453,7 +445,8 @@ namespace Dune {
   template<int codimension>
   VirtualRefinementImp<geometryType, CoordType, coerceTo>::SubEntityIteratorBack<codimension>::
   SubEntityIteratorBack(const This &other)
-    : backend(other.backend)
+    : VirtualRefinementImpSubEntityIteratorBackSpecial<geometryType, CoordType, coerceTo, codimension>(other),
+      backend(other.backend)
   {}
 
   template<GeometryType geometryType, class CoordType, GeometryType coerceTo>
@@ -575,10 +568,11 @@ namespace Dune {
         }
         break;
       default :
-        DUNE_THROW(NotImplemented,
-                   "No Refinement<" << geometryType << ", CoordType, "
-                                    << coerceTo << " >.");
+        break;
       }
+      DUNE_THROW(NotImplemented,
+                 "No Refinement<" << geometryType << ", CoordType, "
+                                  << coerceTo << " >.");
     }
   };
 

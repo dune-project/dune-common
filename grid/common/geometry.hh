@@ -185,7 +185,10 @@ namespace Dune
     /** hide copy constructor */
     Geometry(const Geometry& rhs) : realGeometry(rhs.realGeometry) {};
     /** hide assignment operator */
-    Geometry & operator = (const Geometry& rhs) { realGeometry = rhs.realGeometry; };
+    Geometry & operator = (const Geometry& rhs) {
+      realGeometry = rhs.realGeometry;
+      return *this;
+    };
   };
 
   //! Specialization of Geometry for mydim=0 (vertices)
