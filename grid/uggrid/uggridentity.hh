@@ -70,6 +70,7 @@ namespace Dune {
     //! used for access to degrees of freedom
     int index () const;
 
+    int globalIndex() const { return index(); }
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
      */
@@ -187,7 +188,7 @@ namespace Dune {
     /** \brief Return the global unique index in mesh
      * \todo So far returns the same as index()
      */
-    int globalIndex() { return index(); }
+    int globalIndex() const { return index(); }
 
     //! Geometry of this entity
     //const UGGridGeometry<dim,dim,GridImp>& geometry () const;
