@@ -22,6 +22,7 @@ namespace Dune
   //*****************************************************************************
 
   /** \brief Encapsulates the geometric aspects of grid elements and subelements
+      \ingroup GridCommon
 
      \tparam mydim Dimension of this geometry
      \tparam cdim  Dimension of the surrounding space
