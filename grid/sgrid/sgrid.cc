@@ -441,6 +441,12 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
+  inline bool SEntity<0,dim,dimworld>::hasChildren ()
+  {
+    return ( grid->maxlevel() > level() );
+  }
+
+  template<int dim, int dimworld>
   inline SElement<dim,dim>& SEntity<0,dim,dimworld>::father_relative_local ()
   {
     if (!built_father) make_father();

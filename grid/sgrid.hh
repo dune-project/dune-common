@@ -233,7 +233,7 @@ namespace Dune {
   {
   public:
     //! return type of boundary segment
-    BoundaryType type ();
+    BoundaryType type () {};
 
     //! return true if ghost cell was calced
     bool hasGeometry ();
@@ -280,6 +280,8 @@ namespace Dune {
 
     //! return true if neighbor on this level exists
     bool neighbor ();
+
+    SBoundaryEntity<dim,dimworld> & boundaryEntity () {};
 
     //! access neighbor, dereferencing
     SEntity<0,dim,dimworld>& operator*();
@@ -555,6 +557,9 @@ namespace Dune {
 
     //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
     SLevelIterator<0,dim,dimworld> father ();
+
+    //! return true if the entity has children
+    bool hasChildren ();
 
     /*! Location of this element relative to the reference element element of the father.
        This is sufficient to interpolate all dofs in conforming case.
