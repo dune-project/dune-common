@@ -340,7 +340,7 @@ namespace Dune {
     DofType & operator *();
 
     //! return dof read only
-    const DofType & read () const;
+    const DofType & operator * () const;
 
     //! go next dof
     DofIteratorArray<DofType> & operator++ ();
@@ -348,17 +348,11 @@ namespace Dune {
     //! go next dof
     const DofIteratorArray<DofType> & operator++ () const;
 
-    //! go next i steps
-    DofIteratorArray<DofType> & operator++ (int i);
-
-    //! go next i steps
-    const DofIteratorArray<DofType> & operator++ (int i) const;
-
     //! random access
     DofType& operator[] (int i);
 
     //! random access read only
-    const DofType& read (int i) const;
+    const DofType& operator [] (int i) const;
 
     //! compare
     bool operator == (const DofIteratorArray<DofType> & I ) const;
@@ -383,80 +377,6 @@ namespace Dune {
     mutable int count_;
 
   }; // end DofIteratorArray
-
-  //**************************************************************************
-  //
-  //  --LocalFunctionArrayIterator
-  //
-  //! Iterator to navigate through the local functions
-  //! The Storage of the dofs is implemented via an array
-  //
-  //**************************************************************************
-  /* not needed anymore but keep for having it
-     template < class DiscFunctionType , class GridIteratorType >
-     class LocalFunctionArrayIterator
-     : public LocalFunctionIteratorDefault <
-     LocalFunctionArray < typename DiscFunctionType::FunctionSpace > ,
-     LocalFunctionArrayIterator < DiscFunctionType, GridIteratorType >
-     >
-
-     {
-     typedef LocalFunctionArray < typename DiscFunctionType::FunctionSpace >
-            LocalFunctionType;
-
-     // just for readability
-     typedef LocalFunctionArrayIterator < DiscFunctionType , GridIteratorType >
-            LocalFunctionArrayIteratorType;
-
-     typedef typename GridIteratorType::Traits::Entity EntityType;
-
-     public:
-     //! Constructor
-     LocalFunctionArrayIterator ( DiscFunctionType &df , GridIteratorType & it );
-
-     //! Copy Constructor
-     LocalFunctionArrayIterator ( const LocalFunctionArrayIteratorType & copy);
-
-     //! Desctructor
-     ~LocalFunctionArrayIterator ();
-
-     //! we use localFunc_ as Interface
-     LocalFunctionType & operator *();
-
-     //! we use localFunc_ as Interface
-     LocalFunctionType * operator ->();
-
-     //! go next local function, means go netx grid entity an map to dofs
-     LocalFunctionArrayIteratorType& operator++ ();
-
-     //! go next i steps
-     LocalFunctionArrayIteratorType& operator++ (int i);
-
-     //! compare LocalFucntionIterator
-     bool operator == (const LocalFunctionArrayIteratorType & I ) const;
-
-     //! compare LocalFucntionIterator
-     bool operator != (const LocalFunctionArrayIteratorType & I ) const;
-
-     int index () const;
-
-     void update ( GridIteratorType & it );
-
-     private:
-     //! true if local function init was called already
-     bool built_;
-
-     //! GridIteratorType can be LevelIterator, HierarchicIterator or
-     //! ItersectionIterator or LeafIterator
-     GridIteratorType & it_;
-
-     //! needed for access of local functions
-     DiscFunctionType &df_;
-
-     //! pointer to the local function
-     LocalFunctionType *lf_;
-     }; // end LocalFunctionArrayIterator
-   */
 
 
 } // end namespace Dune
