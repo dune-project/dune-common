@@ -12,18 +12,20 @@
 #include "bvector.hh"
 
 /*! \file
- * \brief ???
+ * \brief Implementation of the BCRSMatrix class
  */
 
 namespace Dune {
 
-  /** @defgroup ISTL Iterative Solvers Template Library
+  /**
               @addtogroup ISTL
               @{
    */
 
 
-  /**! implements a block compressed row storage scheme. The block
+  /** \brief A sparse block matrix with compressed row storage
+
+     Implements a block compressed row storage scheme. The block
        type B can be any type implementing the matrix interface.
 
            Different ways to build up a compressed row
@@ -104,7 +106,7 @@ namespace Dune {
     // forward declaration
     class ConstIterator;
 
-    //! Iterator access to rows
+    //! Iterator access to matrix rows
     class Iterator
     {
     public:
@@ -178,36 +180,38 @@ namespace Dune {
       int i;
     };
 
-    //! begin iterator
+    //! Get iterator to first row
     Iterator begin ()
     {
       return Iterator(r,0);
     }
 
-    //! end iterator
+    //! Get iterator to one beyond last row
     Iterator end ()
     {
       return Iterator(r,n);
     }
 
-    //! begin iterator
+    //! Get Iterator to last row
     Iterator rbegin ()
     {
       return Iterator(r,n-1);
     }
 
-    //! end iterator
+    //! Get Iterator to one before first row
     Iterator rend ()
     {
       return Iterator(r,-1);
     }
 
-    //! rename the iterators for easier access (no const iterators?)
+    //! rename the iterators for easier access
     typedef Iterator RowIterator;
+
+    /** \brief Iterator for the entries of each row */
     typedef typename row_type::Iterator ColIterator;
 
 
-    //! Iterator access to rows
+    //! Const iterator access to rows
     class ConstIterator
     {
     public:
@@ -285,32 +289,34 @@ namespace Dune {
       int i;
     };
 
-    //! begin iterator
+    //! Get const iterator to first row
     ConstIterator begin () const
     {
       return ConstIterator(r,0);
     }
 
-    //! end iterator
+    //! Get const iterator to one beyond last row
     ConstIterator end () const
     {
       return ConstIterator(r,n);
     }
 
-    //! begin iterator
+    //! Get const iterator to last row
     ConstIterator rbegin () const
     {
       return ConstIterator(r,n-1);
     }
 
-    //! end iterator
+    //! Get const iterator to one before first row
     ConstIterator rend () const
     {
       return ConstIterator(r,-1);
     }
 
-    //! rename the iterators for easier access
+    //! rename the const row iterator for easier access
     typedef ConstIterator ConstRowIterator;
+
+    //! Const iterator to the entries of a row
     typedef typename row_type::ConstIterator ConstColIterator;
 
     //===== constructors & resizers
@@ -578,6 +584,7 @@ namespace Dune {
       return *this;
     }
 
+    //! Assignment from a scalar
     BCRSMatrix& operator= (const field_type& k)
     {
       for (int i=0; i<n; i++) r[i] = k;
@@ -897,7 +904,7 @@ namespace Dune {
       return *this;
     }
 
-    //! vector space multiplication with scalar
+    //! vector space division by scalar
     BCRSMatrix& operator/= (const field_type& k)
     {
       if (nnz>0)
@@ -1202,7 +1209,7 @@ namespace Dune {
 
     //===== query
 
-    // return true when (i,j) is in pattern
+    //! return true if (i,j) is in pattern
     bool exists (int i, int j) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
