@@ -10,7 +10,7 @@
 #include "../common/stack.hh" // the stack class
 
 /*! \file yaspgrid.hh
-   Yaspgrid stands for yet another structured parallel grid.
+   Yasppergrid stands for yet another structured parallel grid.
    It will implement the dune grid interface for structured grids with codim 0
    and dim, with arbitrary overlap, parallel features with two overlap
    models, periodic boundaries and fast a implementation allowing on-the-fly computations.
@@ -140,21 +140,21 @@ namespace Dune {
     }
 
     //! access to coordinates of corners. Index is the number of the corner
-    FieldVector<yaspgrid_ctype, dim>& operator[] (int i)
+    FieldVector<yaspgrid_ctype, dimworld>& operator[] (int i)
     {
       int bit=0;
       for (int k=0; k<dimworld; k++)   // run over all directions in world
       {
         if (k==missing)
         {
-          c(k) = midpoint(k);
+          c[k] = midpoint[k];
           continue;
         }
         //k is not the missing direction
         if (i&(1<<bit))          // check whether bit is set or not
-          c(k) = midpoint(k)+0.5*extension(k);         // bit is 1 in i
+          c[k] = midpoint[k]+0.5*extension[k];         // bit is 1 in i
         else
-          c(k) = midpoint(k)-0.5*extension(k);         // bit is 0 in i
+          c[k] = midpoint[k]-0.5*extension[k];         // bit is 0 in i
         bit++;         // we have processed a direction
       }
 
@@ -195,7 +195,7 @@ namespace Dune {
       for (int k=0; k<dimworld; k++)
         if (k!=missing)
         {
-          l(bit) = (global(k)-midpoint(k))/extension(k) + 0.5;
+          l[bit] = (global[k]-midpoint[k])/extension[k] + 0.5;
           bit++;
         }
       return l;
@@ -215,7 +215,7 @@ namespace Dune {
     bool checkInside (const FieldVector<yaspgrid_ctype,dim>& local)
     {
       for (int i=0; i<dim; i++)
-        if (local(i)<-yasptolerance || local(i)>1+yasptolerance) return false;
+        if (local[i]<-yasptolerance || local[i]>1+yasptolerance) return false;
       return true;
     }
 
@@ -252,7 +252,7 @@ namespace Dune {
 
     // In addition we need memory in order to return references.
     // Possibly we should change this in the interface ...
-    FieldVector<yaspgrid_ctype, dim> c;             // a point
+    FieldVector<yaspgrid_ctype, dimworld> c;             // a point
   };
 
 
@@ -288,9 +288,9 @@ namespace Dune {
     {
       for (int k=0; k<dim; k++)
         if (i&(1<<k))
-          c(k) = midpoint(k)+0.5*extension(k);       // kth bit is 1 in i
+          c[k] = midpoint[k]+0.5*extension[k];       // kth bit is 1 in i
         else
-          c(k) = midpoint(k)-0.5*extension(k);       // kth bit is 0 in i
+          c[k] = midpoint[k]-0.5*extension[k];       // kth bit is 0 in i
       return c;
     }
 
@@ -318,7 +318,7 @@ namespace Dune {
     {
       FieldVector<yaspgrid_ctype, dim> l; // result
       for (int k=0; k<dim; k++)
-        l(k) = (global(k)-midpoint(k))/extension(k) + 0.5;
+        l[k] = (global[k]-midpoint[k])/extension[k] + 0.5;
       return l;
     }
 
@@ -332,12 +332,12 @@ namespace Dune {
     }
 
     //! can only be called for dim=dim!
-    Mat<dim,dim>& Jacobian_inverse (const FieldVector<yaspgrid_ctype, dim>& local)
+    Mat<dim,dim,yaspgrid_ctype>& Jacobian_inverse (const FieldVector<yaspgrid_ctype, dim>& local)
     {
       for (int i=0; i<dim; ++i)
       {
         Jinv(i) = 0.0;                        // set column to zero
-        Jinv(i,i) = 1.0/extension(i);         // set diagonal element
+        Jinv(i,i) = 1.0/extension[i];         // set diagonal element
       }
       return Jinv;
     }
@@ -1135,6 +1135,15 @@ namespace Dune {
 
     //! constructor
     YaspLevelIterator (YGLI g, TSI it) : _g(g), _it(it), _entity(_g,_it)
+    {
+      if (codim>0 && codim<dim)
+      {
+        DUNE_THROW(GridError, "YaspLevelIterator: codim not implemented");
+      }
+    }
+
+    //! copy constructor
+    YaspLevelIterator (const YaspLevelIterator& i) : _g(i._g), _it(i._it), _entity(_g,_it)
     {
       if (codim>0 && codim<dim)
       {
