@@ -113,7 +113,7 @@ namespace Dune
   }
 
   //template <class Object>
-  inline typename MemoryProvider<ALBERT EL_INFO>::ObjectEntity *
+  inline MemoryProvider<ALBERT EL_INFO>::ObjectEntity *
   MemoryProvider<ALBERT EL_INFO>::getNewObjectEntity()
   {
     if(!freeEntity_)

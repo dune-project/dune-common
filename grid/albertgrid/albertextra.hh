@@ -321,7 +321,6 @@ inline static U_CHAR AlbertCoarsen ( MESH * mesh )
 namespace AlbertHelp
 {
 
-
   void AlbertLeafRefine(EL *parent, EL *child[2]){};
   void AlbertLeafCoarsen(EL *parent, EL *child[2]){};
 
