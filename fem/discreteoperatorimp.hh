@@ -33,25 +33,32 @@ namespace Dune {
      @{
    */
 
-  template <class DiscreteFunctionType, class LocalOperatorImp >
+  /*!
+     DiscreteOperator manages the grid walk through of and numerical scheme.
+     Here the scheme is defined by the LocalOperatorImp which defines the
+     action of the algorithm one on grid entity. DiscreteOperators which differ
+     only by there LocalOperatorImp can be combinded via operator + and sclaed
+     via operator *. This means you can combine your schemes all working on the
+     same types of DiscreteFunctions but all doing different things on one
+     entity. An example how to use this operator class can be found in
+     duneapps/tester/operator.
+   */
+  template <class LocalOperatorImp, class DFDomainType, class DFRangeType = DFDomainType >
   class DiscreteOperator
-    : public DiscreteOperatorDefault <DiscreteFunctionType, DiscreteFunctionType >
+    : public DiscreteOperatorDefault < LocalOperatorImp , DFDomainType, DFRangeType , DiscreteOperator >
   {
+    typedef DFDomainType DiscreteFunctionType;
+
     typedef typename DiscreteFunctionType::FunctionSpaceType::
     RangeField RangeFieldType;
-    typedef DiscreteOperator<DiscreteFunctionType,LocalOperatorImp> MyType;
-
     typedef ScaledLocalOperator < LocalOperatorImp,
         typename  DiscreteFunctionType::RangeFieldType > ScalOperatorType;
-    typedef DiscreteOperator<DiscreteFunctionType,ScalOperatorType> ScalDiscrType;
+    typedef DiscreteOperator<ScalOperatorType,DFDomainType,DFRangeType> ScalDiscrType;
 
-    typedef DiscreteOperatorDefault <DiscreteFunctionType, DiscreteFunctionType >
-    DiscOpDefType;
-
-    typedef typename DiscOpDefType::DomainType DomainType;
-    typedef typename DiscOpDefType::RangeType RangeType;
-    typedef typename DiscOpDefType::DomainFieldType DFieldType;
-    typedef typename DiscOpDefType::RangeFieldType RFieldType;
+    typedef typename DiscreteOperatorDefaultType::DomainType DomainType;
+    typedef typename DiscreteOperatorDefaultType::RangeType RangeType;
+    typedef typename DiscreteOperatorDefaultType::DomainFieldType DFieldType;
+    typedef typename DiscreteOperatorDefaultType::RangeFieldType RFieldType;
 
     //! remember what type this class has
     typedef Mapping<DFieldType,RFieldType,DomainType,RangeType> MappingType;
@@ -59,7 +66,19 @@ namespace Dune {
   public:
     //! create DiscreteOperator with a LocalOperator
     DiscreteOperator (LocalOperatorImp &op, bool leaf=false , bool printMsg = false )
-      : localOp_ ( op ) , leaf_ (leaf), prepared_ (false) , printMsg_ (printMsg)
+      : DiscreteOperatorDefaultType ( op )
+        , leaf_ (leaf), prepared_ (false) , printMsg_ (printMsg)
+    {
+      if(printMsg_)
+        std::cout << "Make new Operator " << this << "\n";
+    }
+
+    //! this Constructor is called from the operator + method of DiscreteOperatorDefault
+    template <class LocalOperatorType>
+    DiscreteOperator (const DiscreteOperator<LocalOperatorType,DFDomainType,DFRangeType> &copy,
+                      LocalOperatorImp &op)
+      : DiscreteOperatorDefaultType ( op )
+        , leaf_ (copy.leaf_), prepared_ (copy.prepared_) , printMsg_ (copy.printMsg_)
     {
       if(printMsg_)
         std::cout << "Make new Operator " << this << "\n";
@@ -69,54 +88,6 @@ namespace Dune {
     {
       if(printMsg_)
         std::cout << "Delete operator " << this << "\n";
-    }
-
-    /*! add another discrete operator by combining the two local operators
-       and creating a new discrete operator whereby a pointer to the new
-       object is kept in the object where the operator was called.
-       If this object is deleted then all objects created during operator +
-       called are deleted too.
-     */
-    template <class LocalOperatorType>
-    DiscreteOperator<DiscreteFunctionType,
-        CombinedLocalOperator<LocalOperatorImp,LocalOperatorType> > &
-    operator + (const DiscreteOperator<DiscreteFunctionType,LocalOperatorType> &op)
-    {
-      typedef DiscreteOperator<DiscreteFunctionType,LocalOperatorType> CopyType;
-      typedef CombinedLocalOperator <LocalOperatorImp,LocalOperatorType> COType;
-
-      COType *locOp =
-        new COType ( localOp_ , const_cast<CopyType &> (op).getLocalOp ());
-      typedef DiscreteOperator < DiscreteFunctionType , COType > OPType;
-
-      OPType *discrOp = new OPType ( *locOp, leaf_, printMsg_ );
-
-      // memorize this new generated object because is represents this
-      // operator and is deleted if this operator is deleted
-      this->saveObjPointer( discrOp );
-
-      return *discrOp;
-    }
-
-    //! This method work just the same way like the operator +
-    ScalDiscrType & operator * (const RangeFieldType& scalar)
-    {
-      ScalOperatorType * sop = new ScalOperatorType ( localOp_ , scalar);
-      ScalDiscrType *discrOp = new ScalDiscrType ( *sop, leaf_, printMsg_ );
-
-      // memorize this new generated object because is represents this
-      // operator and is deleted if this operator is deleted
-      saveObjPointer ( discrOp );
-
-      return (*discrOp);
-    }
-
-    //! no public method, but has to be public, because all discrete operator
-    //! must be able to call this method an the template parameters are
-    //! allways diffrent
-    LocalOperatorImp & getLocalOp ()
-    {
-      return localOp_;
     }
 
     //********************************************************************
@@ -236,8 +207,10 @@ namespace Dune {
       }
     }
 
-    //! Operator which is called on each entity
-    LocalOperatorImp & localOp_;
+
+  public:
+    // return printMsg variable for DiscreteOperatorDefault
+    bool printInfo () { return printMsg_; }
 
     //! if true use LeafIterator else LevelIterator
     mutable bool leaf_;
@@ -246,16 +219,6 @@ namespace Dune {
     mutable bool prepared_;
 
     bool printMsg_;
-
-    //*******************************************************
-    // derived from mappiung, don't need this here
-    //*******************************************************
-    virtual MappingType operator * (const RFieldType &) const
-    {
-      std::cout << "MappingType DiscreteOperator::operator * ( const Field &) const: do not use this method\n";
-      abort();
-      return (*this);
-    }
   };
 
   /** @} end documentation group */
