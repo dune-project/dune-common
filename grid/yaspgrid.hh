@@ -18,7 +18,7 @@
 
 namespace Dune {
 
-  /** @defgroup Yaspgrid Yet Another Structured Parallel Grid
+  /** @defgroup YaspGrid Yet Another Structured Parallel Grid (YaspGrid)
       \ingroup GridCommon
 
      Yaspgrid stands for yet another structured parallel grid.

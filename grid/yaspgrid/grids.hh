@@ -24,7 +24,7 @@
 
 namespace Dune {
 
-  /** @addtogroup Yaspgrid Yet Another Structured Parallel Grid
+  /** @addtogroup YaspGrid
       \ingroup GridCommon
 
         This is the basis of a parallel implementation of the dune grid interface
