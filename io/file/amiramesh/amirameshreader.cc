@@ -10,7 +10,7 @@ void Dune::AmiraMeshReader<GridType>::readFunction(DiscFuncType& f, const std::s
   AmiraMesh* am = AmiraMesh::read(filename.c_str());
 
   if(!am)
-    DUNE_THROW(IOError, "Could not open AmiraMesh file");
+    DUNE_THROW(IOError, "Could not open AmiraMesh file: " << filename);
 
   float* am_values_float = NULL;
   int i, j;
@@ -20,29 +20,41 @@ void Dune::AmiraMeshReader<GridType>::readFunction(DiscFuncType& f, const std::s
   if (!am->findData("Nodes", HxFLOAT, 3, "Data") &&
       !am->findData("Nodes", HxDOUBLE, 3, "Data")) {
 
-    DUNE_THROW(IOError, "Only the reading of functions defined on volumetric"
-               << "grids is currently supported!");
-
-#if 0
     // get the data field
     AmiraMesh::Data* am_ValueData =  am->findData("Nodes", HxFLOAT, 3, "values");
     if (am_ValueData) {
+
+      if (f.size()<am->nElements("Nodes"))
+        DUNE_THROW(IOError, "When reading data from a surface field your the "
+                   << "array you provide has to have at least the size of the surface!");
+
       am_values_float = (float*) am_ValueData->dataPtr();
 
-
-      BoundaryData = (DOUBLE*)malloc(am->nElements("Nodes")*3*sizeof(DOUBLE));
-      for (i=0; i<3*am->nElements("Nodes"); i++) {
-        BoundaryData[i] = am_values_float[i];
+      for (i=0; i<am->nElements("Nodes"); i++) {
+        for (j=0; j<3; j++) {
+          f[i][j] = am_values_float[i*3+j];
+          //std::cout << "size " << f.size() << " i " << i << "  j " << j << std::endl;
+        }
       }
+
     } else {
       am_ValueData =  am->findData("Nodes", HxDOUBLE, 3, "values");
-      if (am_ValueData)
-        BoundaryData = (DOUBLE*) am_ValueData->takeDataPtr();
-      else
-        throw("No data found in the file!");
+      if (am_ValueData) {
+
+        if (f.size()<am->nElements("Nodes"))
+          DUNE_THROW(IOError, "When reading data from a surface field your the "
+                     << "array you provide has to have at least the size of the surface!");
+
+        for (i=0; i<3*am->nElements("Nodes"); i++) {
+          for (j=0; j<3; j++)
+            f[i][j] = am_values_float[i*3+j];
+        }
+
+      } else
+        DUNE_THROW(IOError, "No data found in the file!");
 
     }
-#endif
+
   } else {
 
     std::cout << "Loading boundary conditions from a tetragrid field!" << std::endl;
@@ -66,7 +78,6 @@ void Dune::AmiraMeshReader<GridType>::readFunction(DiscFuncType& f, const std::s
           for (j=0; j<3; j++)
             f[i][j] = ((double*)am_ValueData->dataPtr())[i*3+j];
 
-        //BoundaryData = (DOUBLE*) am_ValueData->takeDataPtr();
       } else
         DUNE_THROW(IOError, "No data found in the file!");
 
@@ -74,6 +85,6 @@ void Dune::AmiraMeshReader<GridType>::readFunction(DiscFuncType& f, const std::s
 
   }
 
-  std::cout << "BoundaryData loaded successfully!" << std::endl;
+  std::cout << "Data field " << filename << " loaded successfully!" << std::endl;
 
 }
