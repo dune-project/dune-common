@@ -3,9 +3,13 @@
 #ifndef __DUNE_STACK_HH__
 #define __DUNE_STACK_HH__
 
-#include "dlist.hh"
+#include <dune/common/dlist.hh>
+#include <dune/common/exceptions.hh>
 
 namespace Dune {
+
+  //! Exception thrown by the stack
+  class StackException : public Exception {};
 
   /** \brief A dynamic stack
    */
@@ -60,10 +64,9 @@ namespace Dune {
   template<class T>
   inline T Stack<T>::pop_front ()
   {
-    if (isempty()) {
-      std::cerr << "Stack::pop_front(): The stack is empty!\n";
-      assert(false);
-    }
+    if (isempty())
+      DUNE_THROW(StackException,  "Stack::pop_front(): The stack is empty!");
+
     typename DoubleLinkedList<T>::Iterator i=this->rbegin();
     T t = *i;
     erase(i);
@@ -73,10 +76,9 @@ namespace Dune {
   template<class T>
   inline T Stack<T>::front () const
   {
-    if (isempty()) {
-      std::cerr << "Stack::front(): The stack is empty!\n";
-      assert(false);
-    }
+    if (isempty())
+      DUNE_THROW(StackException,  "Stack::front(): The stack is empty!");
+
     typename DoubleLinkedList<T>::Iterator i=this->rbegin();
     T t = *i;
     return t;
