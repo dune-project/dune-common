@@ -5,7 +5,7 @@ AC_DEFUN([DUNE_PATH_OPENGL],[
   AC_REQUIRE([AC_PROG_CC])
 	
   AC_CHECK_HEADERS(GL/gl.h)
-  AC_CHECK_LIB(GL, glNewList, [GL_LIBS="-lGL"], [have_gl=no])
+  AC_CHECK_LIB(GL, glNewList, [GL_LIBS="-lGL"], [have_gl=no])
  
   # set variable for summary
   with_opengl="no"
