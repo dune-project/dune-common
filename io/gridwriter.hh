@@ -6,8 +6,12 @@
 /** @defgroup IO Dune I/O-Module
  */
 
+#ifdef HAVE_AMIRAMESH
 #include "../lib/io/amirameshwriter.hh"
-#include "../lib/io/rawdatawriter.hh"
+#endif
 
+#ifndef __GNUC__
+#include "../lib/io/rawdatawriter.hh"
+#endif
 
 #endif
