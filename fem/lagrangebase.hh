@@ -21,22 +21,22 @@ namespace Dune {
       type in one grid and size of functionspace
       and map from local to global dof number
    */
-  template< class FunctionSpaceType, class GridType,int polOrd, class
+  template< class FunctionSpaceT, class GridType,int polOrd, class
       DofManagerType = DofManager<GridType> >
   class LagrangeDiscreteFunctionSpace
-    : public DiscreteFunctionSpaceDefault <  FunctionSpaceType , GridType,
-          LagrangeDiscreteFunctionSpace < FunctionSpaceType , GridType, polOrd, DofManagerType >,
+    : public DiscreteFunctionSpaceDefault <  FunctionSpaceT , GridType,
+          LagrangeDiscreteFunctionSpace < FunctionSpaceT , GridType, polOrd, DofManagerType >,
           FastBaseFunctionSet < LagrangeDiscreteFunctionSpace
-              < FunctionSpaceType , GridType, polOrd, DofManagerType > > >
+              < FunctionSpaceT , GridType, polOrd, DofManagerType > > >
   {
   public:
     /** \todo Please doc me! */
     typedef LagrangeDiscreteFunctionSpace
-    < FunctionSpaceType , GridType , polOrd , DofManagerType > LagrangeDiscreteFunctionSpaceType;
+    < FunctionSpaceT , GridType , polOrd , DofManagerType > LagrangeDiscreteFunctionSpaceType;
 
     /** \todo Please doc me! */
     typedef DiscreteFunctionSpaceDefault <
-        FunctionSpaceType , GridType, LagrangeDiscreteFunctionSpaceType,
+        FunctionSpaceT , GridType, LagrangeDiscreteFunctionSpaceType,
         FastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType > >  DiscreteFunctionSpaceType;
 
     /** \todo Please doc me! */
@@ -51,7 +51,7 @@ namespace Dune {
     /** \todo Please doc me! */
     enum { numOfDiffBase_ = 20 };
     /** \todo Please doc me! */
-    enum { DimRange = FunctionSpaceType::DimRange };
+    enum { DimRange = FunctionSpaceT::DimRange };
 
   public:
     /** \todo Please doc me! */
@@ -61,12 +61,14 @@ namespace Dune {
     typedef typename DofManagerType::MemObjectType MemObjectType;
 
     /** \todo Please doc me! */
-    typedef typename FunctionSpaceType::Domain Domain;
+    typedef typename FunctionSpaceT::Domain Domain;
     /** \todo Please doc me! */
-    typedef typename FunctionSpaceType::Range Range;
+    typedef typename FunctionSpaceT::Range Range;
     /** \todo Please doc me! */
-    typedef typename FunctionSpaceType::RangeField DofType;
-    typedef typename FunctionSpaceType::DomainField DomainField;
+    typedef typename FunctionSpaceT::RangeField DofType;
+    typedef typename FunctionSpaceT::RangeField RangeField;
+    typedef typename FunctionSpaceT::DomainField DomainField;
+    typedef typename FunctionSpaceT FunctionSpaceType;
 
     //! dimension of value
     enum { dimVal = 1 };
@@ -89,7 +91,7 @@ namespace Dune {
 
     //! provide the access to the base function set for a given entity
     template <class EntityType>
-    const FastBaseFunctionSetType& getBaseFunctionSet ( EntityType &en ) const;
+    FastBaseFunctionSetType& getBaseFunctionSet ( EntityType &en ) const;
 
     //! default for polOrd 0
     template <class EntityType>
@@ -172,8 +174,8 @@ namespace Dune {
   {
   public:
     typedef LagrangeDiscreteFunctionSpace
-    < FunctionSpaceType , GridType , polOrd , DofManagerType > ChefType;
-    typedef ChefType LagrangeDiscreteFunctionSpaceType;
+    < FunctionSpaceType , GridType , polOrd , DofManagerType > ThisType;
+    typedef ThisType LagrangeDiscreteFunctionSpaceType;
 
     typedef DiscreteFunctionSpaceInterface <
         FunctionSpaceType , GridType, LagrangeDiscreteFunctionSpaceType,
