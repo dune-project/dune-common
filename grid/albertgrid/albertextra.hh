@@ -218,7 +218,6 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 
 static inline void initTraverseStack(TRAVERSE_STACK *stack)
 {
-  std::cout << "initTraverseStack !\n";
   stack->traverse_mesh = NULL;
   stack->stack_size = 0;
   stack->stack_used = 0;
