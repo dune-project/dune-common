@@ -288,25 +288,14 @@ namespace Dune {
       s << " missing is " << missing;
     }
   private:
-    const YaspGeometry<mydim,cdim,GridImp>&
-    operator = (const YaspGeometry<mydim,cdim,GridImp>& g)
-    {
-      midpoint = g.midpoint;
-      extension = g.extension;
-      missing = g.missing;
-      c = g.c;
-      return *this;
-    }
-
-  private:
     // the element is fully defined by its midpoint the extension
     // in each direction and the missing direction.
     // References are used because this information
     // is known outside the element in many cases.
     // Note cdim==cdim+1
 
-    // IMPORTANT midpoint and extension can't be references,
-    // because they must stay the same when the iterator changes
+    // IMPORTANT midpoint and extension are references,
+    // YaspGeometry can't be copied
     const FieldVector<ctype, cdim> & midpoint;  // the midpoint
     const FieldVector<ctype, cdim> & extension; // the extension
     int& missing;                       // the missing, i.e. constant direction
@@ -314,6 +303,10 @@ namespace Dune {
     // In addition we need memory in order to return references.
     // Possibly we should change this in the interface ...
     mutable FieldVector<ctype, cdim> c; // a point
+
+    const YaspGeometry<mydim,cdim,GridImp>&
+    operator = (const YaspGeometry<mydim,cdim,GridImp>& g);
+
   };
 
 
@@ -431,29 +424,14 @@ namespace Dune {
         s << " " << extension[i];
     }
 
-    const YaspGeometry<mydim,mydim,GridImp>&
-    operator = (const YaspGeometry<mydim,mydim,GridImp>& g)
-    {
-      // check that the const data is the same
-      for (int d=0; d<mydim; d++)
-      {
-        assert(midpoint[d] == g.midpoint[d]);
-        assert(extension[d] == g.extension[d]);
-      }
-      // update the mutable data
-      Jinv = g.Jinv;
-      c = g.c;
-      return *this;
-    }
-
   private:
     // the element is fully defined by midpoint and the extension
     // in each direction. References are used because this information
     // is known outside the element in many cases.
     // Note mydim==cdim
 
-    // IMPORTANT midpoint and extension can't be references,
-    // because they must stay the same when the iterator changes
+    // IMPORTANT midpoint and extension are references,
+    // YaspGeometry can't be copied
     const FieldVector<ctype, mydim> & midpoint; // the midpoint
     const FieldVector<ctype, mydim> & extension; // the extension
 
@@ -461,6 +439,10 @@ namespace Dune {
     // Possibly we should change this in the interface ...
     mutable FieldMatrix<ctype,mydim,mydim> Jinv; // the jacobian inverse
     mutable FieldVector<ctype, mydim> c; // a point
+
+    // disable copy
+    const YaspGeometry<mydim,mydim,GridImp>&
+    operator = (const YaspGeometry<mydim,mydim,GridImp>& g);
   };
 
 
@@ -501,18 +483,14 @@ namespace Dune {
       s << "YaspGeometry<"<<0<<","<<cdim<< "> ";
       s << "position " << position;
     }
-  private:
-    const YaspGeometry<0,cdim,GridImp>&
-    operator = (const YaspGeometry<0,cdim,GridImp>& g)
-    {
-      position = g.position;
-      return *this;
-    }
 
   private:
-    // IMPORTANT position can't be references,
-    // because they must stay the same when the iterator changes
+    // IMPORTANT position is a reference,
+    // YaspGeometry can't be copied
     const FieldVector<ctype, cdim> & position; //!< where the vertex is
+
+    const YaspGeometry<0,cdim,GridImp>&
+    operator = (const YaspGeometry<0,cdim,GridImp>& g);
   };
 
   // operator<< for all YaspGeometrys
@@ -720,6 +698,7 @@ namespace Dune {
           son += (1<<k);
 
       // access to one of the 2**dim predefined elements
+      DUNE_THROW(NotImplemented,"");
 #if 0
       return YaspFatherRelativeLocalElement<dim>::getson(son);
 #endif
