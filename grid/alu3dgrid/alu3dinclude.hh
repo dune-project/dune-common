@@ -30,6 +30,7 @@ namespace ALU3dGridSpace {
 
   // definition of AutoPointer class
 #include "myautoptr.hh"
+#include "alumemory.hh"
 
 #ifdef _ALU3DGRID_PARALLEL_
 
