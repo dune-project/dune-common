@@ -40,7 +40,7 @@ AC_DEFUN([DUNE_PATH_HDF5],[
 
  # test for lib
  if test x$HAVE_HDF5 = x1 ; then
-   AC_CHECK_LIB(hdf5, H5open,[HAVE_HDF5=1],[HAVE_HDF5=0], -lz -lsz)
+   AC_CHECK_LIB(hdf5, H5open,[HDF5_LIBS=-lhdf5],[HAVE_HDF5=0]) #,-lz, -lsz)
  fi
 
  # pre-set variable for summary
@@ -50,6 +50,7 @@ AC_DEFUN([DUNE_PATH_HDF5],[
  if test x$HAVE_HDF5 = x1 ; then
    AC_SUBST(HDF5_CPPFLAGS, $HDF5_CPPFLAGS)
    AC_SUBST(HDF5_LDFLAGS, $HDF5_LDFLAGS)
+   AC_SUBST(HDF5_LIBS, $HDF5_LIBS)
    AC_DEFINE(HAVE_HDF5, 1, [Define to 1 if hdf5 was found])
 
    # proudly show in summary
