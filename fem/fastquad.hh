@@ -18,6 +18,9 @@ namespace Dune {
   //
   //**************************************************************************
 
+  /** \brief ???
+   * \todo Please doc me!
+   */
   template< class RangeFieldType , class DomainType ,int poly_order >
   class FastQuad
     : public QuadratureDefault  < RangeFieldType , DomainType ,
@@ -124,14 +127,14 @@ namespace Dune {
   }; // end class FastQuadrature
 
 
-  //*********************************************************************
-  //
-  //
-  //  Quadrature for bary center of the faces of one element
-  //  supported element types
-  //  triangles, quadrilaterals, tetrahedrons, hexahedrons
-  //
-  //*********************************************************************
+  /*********************************************************************/
+  /** \brief  Quadrature for barycenter of the faces of one element
+   *
+   *  Supported element types
+   * triangles, quadrilaterals, tetrahedrons, hexahedrons
+   */
+  /*********************************************************************/
+
   template< class RangeFieldType , class DomainType, int codim >
   class BaryCenterQuad
     : public QuadratureDefault  < RangeFieldType , DomainType ,
@@ -237,13 +240,15 @@ namespace Dune {
   //********************************************************************
   //
   //  --QuadratureImp
-  //
-  //! Quadrature class implementation
-  //! Quadrature is diffrent for diffrent Domain and RangeField types and of
-  //! course for diffrent element types but for dynamical polynomial order.
-  //! The element type comes from a given entity or the grid
-  //! and polOrd is given at runtime. For fast quadratures use the above
-  //! FastQuadrature class
+  /**
+   * \brief Quadrature class implementation
+
+   * Quadrature is different for different Domain and RangeField types and of
+   * course for different element types but for dynamical polynomial order.
+   * The element type comes from a given entity or the grid
+   * and polOrd is given at runtime. For fast quadratures use the
+   * FastQuad class.
+   */
   //
   //********************************************************************
   template< class RangeFieldType , class DomainType >
