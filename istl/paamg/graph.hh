@@ -36,7 +36,7 @@ namespace Dune
      */
 
     /**
-     * @brief The (undirected) graph of matrix.
+     * @brief The (undirected) graph of a matrix.
      *
      * The graph of a sparse matrix essentially describes the sparsity
      * pattern (nonzero entries) of a matrix.
@@ -61,9 +61,27 @@ namespace Dune
        */
       typedef typename M::block_type Weight;
 
+      /**
+       * @brief The vertex descriptor.
+       *
+       * Each descriptor describes exactly one vertex.
+       */
       typedef int VertexDescriptor;
 
+      /**
+       * @brief The edge descriptor.
+       *
+       * Each edge is identifies by exactly one descriptor.
+       */
       typedef std::ptrdiff_t EdgeDescriptor;
+
+      enum {
+        /*
+         * @brief Whether Matrix is mutable.
+         */
+        mutableMatrix = SameType<M, typename RemoveConst<M>::Type>::value
+      };
+
 
       /**
        * @brief Iterator over all edges starting from a vertex.
@@ -86,16 +104,21 @@ namespace Dune
         friend class EdgeIteratorT<ConstContainer>;
 
         enum {
-          /** @ brief whether C is mutable. */
+          /** @brief whether C is mutable. */
           isMutable = SameType<C, MutableContainer>::value
         };
 
-
-        typedef typename SelectType<isMutable,typename Matrix::row_type::Iterator,
+        /**
+         * @brief The column iterator of the matrix we use.
+         */
+        typedef typename SelectType<isMutable && C::mutableMatrix,typename Matrix::row_type::Iterator,
             typename Matrix::row_type::ConstIterator>::Type
         ColIterator;
 
-        typedef typename SelectType<isMutable,typename M::block_type,
+        /**
+         * @brief The matrix block type we use as weights.
+         */
+        typedef typename SelectType<isMutable && C::mutableMatrix,typename M::block_type,
             const typename M::block_type>::Type
         Weight;
 
@@ -119,7 +142,7 @@ namespace Dune
         /**
          * @brief Access the edge weight
          */
-        typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+        typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value && C::mutableMatrix,
             typename M::block_type, const typename M::block_type>::Type&
         weight() const;
 
@@ -184,7 +207,7 @@ namespace Dune
         friend class VertexIteratorT<ConstContainer>;
 
         enum {
-          /** @ brief whether C is mutable. */
+          /** @brief whether C is mutable. */
           isMutable = SameType<C, MutableContainer>::value
         };
 
@@ -216,7 +239,7 @@ namespace Dune
         bool operator==(const VertexIteratorT<MutableContainer>& other) const;
 
         /** @brief Access the weight of the vertex. */
-        typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+        typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value  && C::mutableMatrix,
             typename M::block_type, const typename M::block_type>::Type&
         weight() const;
 
@@ -231,20 +254,14 @@ namespace Dune
          * current vertex.
          * @return Iterator position on the first edge to another vertex.
          */
-        EdgeIteratorT<typename SelectType<Dune::SameType<C,typename Dune::RemoveConst<C>::Type>::value,
-                typename RemoveConst<C>::Type,
-                const typename RemoveConst<C>::Type>::Type>
-        begin() const;
+        EdgeIteratorT<C> begin() const;
 
         /**
          * @brief Get an iterator over all edges starting at the
          * current vertex.
          * @return Iterator position on the first edge to another vertex.
          */
-        EdgeIteratorT<typename SelectType<Dune::SameType<C,typename Dune::RemoveConst<C>::Type>::value,
-                typename RemoveConst<C>::Type,
-                const typename RemoveConst<C>::Type>::Type>
-        end() const;
+        EdgeIteratorT<C> end() const;
 
       private:
         C* graph_;
@@ -257,7 +274,7 @@ namespace Dune
       typedef EdgeIteratorT<const MatrixGraph<Matrix> > ConstEdgeIterator;
 
       /**
-       * @brief The constant edge iterator type.
+       * @brief The mutable edge iterator type.
        */
       typedef EdgeIteratorT<MatrixGraph<Matrix> > EdgeIterator;
 
@@ -267,7 +284,7 @@ namespace Dune
       typedef VertexIteratorT<const MatrixGraph<Matrix> > ConstVertexIterator;
 
       /**
-       * @brief The constant vertex iterator type.
+       * @brief The mutable vertex iterator type.
        */
       typedef VertexIteratorT<MatrixGraph<Matrix> > VertexIterator;
 
@@ -748,18 +765,14 @@ namespace Dune
          * @return An iterator over the edges starting from the current vertex
          * positioned at the first edge.
          */
-        typename SelectType<SameType<C,typename RemoveConst<C>::Type>::value,
-            EdgeIterator, ConstEdgeIterator>::Type
-        begin() const;
+        EdgeIteratorT<C> begin() const;
 
         /**
          * @brief Get an iterator over the edges starting from the current vertex.
          * @return An iterator over the edges starting from the current vertex
          * positioned after the last edge.
          */
-        typename SelectType<SameType<C,typename RemoveConst<C>::Type>::value,
-            EdgeIterator, ConstEdgeIterator>::Type
-        end() const;
+        EdgeIteratorT<C> end() const;
 
       private:
         /**
@@ -987,7 +1000,7 @@ namespace Dune
 
     template<class M>
     template<class C>
-    inline typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+    inline typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value && C::mutableMatrix,
         typename M::block_type, const typename M::block_type>::Type&
     MatrixGraph<M>::EdgeIteratorT<C>::weight() const
     {
@@ -1117,7 +1130,7 @@ namespace Dune
 
     template<class M>
     template<class C>
-    typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+    typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value && C::mutableMatrix,
         typename M::block_type, const typename M::block_type>::Type&
     MatrixGraph<M>::VertexIteratorT<C>::weight() const
     {
@@ -1134,9 +1147,7 @@ namespace Dune
 
     template<class M>
     template<class C>
-    MatrixGraph<M>::EdgeIteratorT<typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
-            typename RemoveConst<C>::Type,
-            const typename RemoveConst<C>::Type>::Type>
+    MatrixGraph<M>::EdgeIteratorT<C>
     MatrixGraph<M>::VertexIteratorT<C>::begin() const
     {
       return graph_->beginEdges(current_);
@@ -1144,9 +1155,7 @@ namespace Dune
 
     template<class M>
     template<class C>
-    MatrixGraph<M>::EdgeIteratorT<typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
-            typename RemoveConst<C>::Type,
-            const typename RemoveConst<C>::Type>::Type>
+    MatrixGraph<M>::EdgeIteratorT<C>
     MatrixGraph<M>::VertexIteratorT<C>::end() const
     {
       return graph_->endEdges(current_);
@@ -1507,9 +1516,7 @@ namespace Dune
 
     template<class G,class V, class E>
     template<class C>
-    typename SelectType<SameType<C,typename RemoveConst<C>::Type>::value,
-        typename PropertiesGraph<G,V,E>::EdgeIterator,
-        typename PropertiesGraph<G,V,E>::ConstEdgeIterator>::Type
+    PropertiesGraph<G,V,E>::EdgeIteratorT<C>
     PropertiesGraph<G,V,E>::VertexIteratorT<C>::begin() const
     {
       return graph_->beginEdges(Graph::ConstVertexIterator::operator*());
@@ -1517,9 +1524,7 @@ namespace Dune
 
     template<class G,class V, class E>
     template<class C>
-    typename SelectType<SameType<C,typename RemoveConst<C>::Type>::value,
-        typename PropertiesGraph<G,V,E>::EdgeIterator,
-        typename PropertiesGraph<G,V,E>::ConstEdgeIterator>::Type
+    PropertiesGraph<G,V,E>::EdgeIteratorT<C>
     PropertiesGraph<G,V,E>::VertexIteratorT<C>::end() const
     {
       return graph_->endEdges(Graph::ConstVertexIterator::operator*());
