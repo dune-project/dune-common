@@ -341,7 +341,7 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     ElementImp<dim,dimworld>& asImp () {return static_cast<ElementImp<dim,dimworld>&>(*this);}
   };
 
@@ -359,7 +359,7 @@ namespace Dune {
   protected:
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     ElementImp<dim,dimworld>& asImp () {return static_cast<ElementImp<dim,dimworld>&>(*this);}
   }; // end ElementDefault
      //************************************************************
@@ -399,7 +399,7 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     ElementImp<0,dimworld>& asImp () {return static_cast<ElementImp<0,dimworld>&>(*this);}
   };
 
@@ -433,7 +433,7 @@ namespace Dune {
     //! define type used for coordinates in grid module
     typedef ct ctype;
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     ElementImp<0,dimworld>& asImp () {return static_cast<ElementImp<0,dimworld>&>(*this);}
   }; // end ElementDefault, dim = 0
      //****************************************************************************
@@ -478,7 +478,7 @@ namespace Dune {
     Vec<dimworld,ct>& outerPoint ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     BoundaryEntityImp<dim,dimworld> & asImp ()
     {return static_cast<BoundaryEntityImp<dim,dimworld>&>(*this);}
   };
@@ -499,7 +499,7 @@ namespace Dune {
   public:
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     BoundaryEntityImp<dim,dimworld> & asImp ()
     {return static_cast<BoundaryEntityImp<dim,dimworld>&>(*this);}
   };
@@ -605,7 +605,7 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     IntersectionIteratorImp<dim,dimworld>& asImp ()
     {return static_cast<IntersectionIteratorImp<dim,dimworld>&>(*this);}
     const IntersectionIteratorImp<dim,dimworld>& asImp () const
@@ -646,7 +646,7 @@ namespace Dune {
     Vec<dim-1,ct> tmp_;
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     IntersectionIteratorImp<dim,dimworld>& asImp ()
     {return static_cast<IntersectionIteratorImp<dim,dimworld>&>(*this);}
     const IntersectionIteratorImp<dim,dimworld>& asImp () const
@@ -709,7 +709,7 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     HierarchicIteratorImp<dim,dimworld>& asImp ()
     {return static_cast<HierarchicIteratorImp<dim,dimworld>&>(*this);}
     const HierarchicIteratorImp<dim,dimworld>& asImp () const
@@ -752,7 +752,7 @@ namespace Dune {
     typedef ct ctype;
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     HierarchicIteratorImp<dim,dimworld>& asImp ()
     {return static_cast<HierarchicIteratorImp<dim,dimworld>&>(*this);}
     const HierarchicIteratorImp<dim,dimworld>& asImp () const
@@ -822,7 +822,7 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     EntityImp<codim,dim,dimworld>& asImp () {return static_cast<EntityImp<codim,dim,dimworld>&>(*this);}
   };
 
@@ -848,7 +848,7 @@ namespace Dune {
   public:
     // at this moment no default implementation
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     EntityImp<codim,dim,dimworld>& asImp () {return static_cast<EntityImp<codim,dim,dimworld>&>(*this);}
 
   }; // end EntityDefault
@@ -964,7 +964,7 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     EntityImp<0,dim,dimworld>& asImp () {return static_cast<EntityImp<0,dim,dimworld>&>(*this);}
   };
 
@@ -1040,7 +1040,7 @@ namespace Dune {
     }
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     EntityImp<0,dim,dimworld>& asImp () {return static_cast<EntityImp<0,dim,dimworld>&>(*this);}
   };
   // end EntityDefault
@@ -1112,7 +1112,7 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     EntityImp<dim,dim,dimworld>& asImp () {return static_cast<EntityImp<dim,dim,dimworld>&>(*this);}
   };
 
@@ -1129,7 +1129,7 @@ namespace Dune {
   public:
     // no default implementation at the moment
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     EntityImp<dim,dim,dimworld>& asImp () {return static_cast<EntityImp<dim,dim,dimworld>&>(*this);}
   };
 
@@ -1212,7 +1212,7 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     LevelIteratorImp<codim,dim,dimworld,pitype>& asImp ()
     {return static_cast<LevelIteratorImp<codim,dim,dimworld,pitype>&>(*this);}
     const LevelIteratorImp<codim,dim,dimworld,pitype>& asImp () const
@@ -1236,7 +1236,7 @@ namespace Dune {
   public:
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     LevelIteratorImp<codim,dim,dimworld,pitype>& asImp () {
       return static_cast<LevelIteratorImp<codim,dim,dimworld,pitype>&>(*this);
     }
@@ -1365,9 +1365,9 @@ namespace Dune {
     void checkIF ();
 
   private:
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
-    //! \internal Barton-Nackman trick
+    //!  Barton-Nackman trick
     const GridImp<dim,dimworld>& asImp () const {return static_cast<const GridImp<dim,dimworld>&>(*this);}
   };
 
@@ -1462,7 +1462,7 @@ namespace Dune {
                 bool adaptive= false, int processor=0 );
 
   protected:
-    //! \internal Barton-Nackman trick
+    //! Barton-Nackman trick
     GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
   };
 
