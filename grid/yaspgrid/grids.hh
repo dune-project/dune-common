@@ -845,7 +845,12 @@ namespace Dune {
       }
 
       //! Make transforming iterator from iterator (used for automatic conversion of end)
-      TransformingSubIterator (SubIterator& i) : SubIterator(i)
+      TransformingSubIterator (SubIterator& i) :
+        SubIterator(i)
+      {}
+
+      TransformingSubIterator (const TransformingSubIterator & t) :
+        SubIterator(t), _h(t._h), _begin(t._begin), _position(t._position)
       {       }
 
       //! Make iterator pointing to given cell in a grid.
