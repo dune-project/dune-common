@@ -1,0 +1,5 @@
+Makefile
+Makefile.in
+config.hh.in
+config.hh
+stamp-h*
