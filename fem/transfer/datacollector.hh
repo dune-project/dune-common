@@ -4,7 +4,6 @@
 #define __DUNE_DATACOLLECTOR_HH__
 
 #include <vector>
-
 #include <dune/fem/common/objpointer.hh>
 
 namespace Dune {
@@ -341,8 +340,13 @@ namespace Dune {
     }
   };
 
-  /** \brief ???
-   * \todo Please doc me!
+  /** \brief The DataCollector is an example for a grid walk done while load
+   * balancing moves entities from one processor to another.
+   * The Communicator or grid should call the inlineData (write Data to
+   * ObjectStream) and the xtractData (read Data from Stream) and provide the
+   * macro level Entity<codim =0> and the ObjectStream. This Operator then
+   * does the hierarhic walk and calls its local pack operators which know
+   * the discrete functions to pack to the stream.
    */
   template <class GridType, class LocalDataCollectImp, class DofManagerType >
   class DataCollector
@@ -364,8 +368,10 @@ namespace Dune {
     DataCollector (GridType & grid, DofManagerType & dm, LocalDataCollectImp & ldc, bool read ) :
       grid_(grid) , dm_ ( dm ), ldc_ (ldc) , read_(read) {}
 
+    //! Desctructor
     virtual ~DataCollector () {}
 
+    //! operator + (combine this operator) and return new Object
     template <class LocalDataCollectType>
     DataCollector<GridType,
         CombinedLocalDataCollect <LocalDataCollectImp,LocalDataCollectType>, DofManagerType> &
@@ -386,6 +392,7 @@ namespace Dune {
       return *dcOp;
     }
 
+    //! oeprator += combine and return this Object
     template <class LocalDataCollectType>
     DataCollector<GridType,LocalInterface<ParamType>, DofManagerType> &
     operator += (const DataCollector<GridType,LocalDataCollectType,DofManagerType> &op)
@@ -405,6 +412,7 @@ namespace Dune {
       return *dcOp;
     }
 
+    //! operator += combine and return InterfaceType
     DataCollectorInterfaceType &
     operator += (const DataCollectorInterfaceType &op)
     {
@@ -424,11 +432,13 @@ namespace Dune {
       return *dcOp;
     }
 
+    //! return reference to loacl Operator
     const LocalDataCollectImp & getLocalOp () const
     {
       return ldc_;
     }
 
+    //! return reference to loacl Operator
     LocalDataCollectImp & getLocalOp ()
     {
       return ldc_;
@@ -446,6 +456,8 @@ namespace Dune {
       return ldc_;
     }
 
+    //! apply, if this operator is in write status the inlineData is called
+    //! else xtractData is called
     void apply (ObjectStreamType & str, EntityType & en) const
     {
       //std::cout << "apply on imp class \n";
@@ -455,6 +467,7 @@ namespace Dune {
         xtractData(str,en);
     }
 
+    //! write all data of all entities blowe this Entity to the stream
     void inlineData (ObjectStreamType & str, EntityType & en) const
     {
       //std::cout << "DataCollector Inline data\n";
@@ -462,6 +475,7 @@ namespace Dune {
       goDown(str,en,grid_.maxlevel());
     }
 
+    //! read all data of all entities blowe this Entity from the stream
     void xtractData (ObjectStreamType & str, EntityType & en) const
     {
       //std::cout << "DataCollector xtract data\n";
@@ -505,8 +519,11 @@ namespace Dune {
         for(HierItType it = en.hbegin(mxlvl);
             it != endit; ++it )
         {
-          p.second = it.operator -> ();
-          ldc_.apply( p );
+          if((*it).isLeaf())
+          {
+            p.second = it.operator -> ();
+            ldc_.apply( p );
+          }
         }
       }
     }
@@ -534,6 +551,7 @@ namespace Dune {
     //! Restriction and Prolongation Operator
     mutable LocalDataCollectImp & ldc_;
 
+    //! if true inline else xtract
     bool read_;
   };
 
@@ -575,7 +593,8 @@ namespace Dune {
     void apply ( ParamType & p ) const
     {
       assert( p.first && p.second );
-      df_.localFunction( *(p.second) ,  lf_ );
+      EntityType & en = const_cast<EntityType &> (*(p.second));
+      df_.localFunction( en ,  lf_ );
       for(int l=0; l<lf_.numberOfDofs(); l++)
       {
         (*p.first).writeObject( lf_[l] );
@@ -586,6 +605,23 @@ namespace Dune {
     mutable DiscreteFunctionType & df_;
     mutable LocalFunctionType lf_;
   };
+
+
+  /*
+     template <class ObjectStreamType , class LocalFunctionType>
+     struct GatherScatterCopy
+     {
+     static void gather ( ObjectStreamType & os, LocalFunctionType & lf )
+     {
+      std::cout << "Gather data \n";
+      for(int l=0; l<lf.numberOfDofs(); l++)
+      {
+        os.readObject( lf[l] );
+      }
+     }
+     };
+
+   */
 
   template <class DiscreteFunctionType>
   class DataXtractor :
@@ -610,6 +646,9 @@ namespace Dune {
     typedef typename DiscreteFunctionType::RangeFieldType RangeFieldType;
     typedef typename DiscreteFunctionType::DomainType DomainType;
 
+    //typedef void GatherFunctionType( ObjectStreamType & , LocalFunctionType & );
+    //typedef void ScatterFunctionType( ObjectStreamType & , LocalFunctionType & );
+
   public:
     DataXtractor ( DiscreteFunctionType & df )
       : df_ (df) , lf_ (df.newLocalFunction() ) {}
@@ -619,16 +658,30 @@ namespace Dune {
     void apply ( ParamType & p ) const
     {
       assert( p.first && p.second );
-      df_.localFunction( *(p.second), lf_ );
+      EntityType & en = const_cast<EntityType &> (*(p.second));
+      df_.localFunction( en , lf_ );
+      //assert( gatherFunc_ );
+      //gatherFunc_( (*(p.first)) , lf_ ) ;
       for(int l=0; l<lf_.numberOfDofs(); l++)
       {
         (*(p.first)).readObject( lf_[l] );
       }
     }
 
+    /*
+       template <template <class,class> class GatherScatterType>
+       void setGatherScatter ()
+       {
+       gatherFunc_ = GatherScatterType<ObjectStreamType,LocalFunctionType>::gather;
+       std::cout << "Set gather Function " << gatherFunc_ << "\n";
+       }
+     */
+
   private:
     mutable DiscreteFunctionType & df_;
     mutable LocalFunctionType lf_;
+
+    //GatherFunctionType * gatherFunc_;
   };
 
 
