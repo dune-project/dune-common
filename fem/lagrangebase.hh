@@ -295,6 +295,7 @@ namespace Dune {
                             const Domain & x, Range & phi) const
     {
       int num = diffVariable(0);
+      assert( (num >= 0) && ( num <= 1));
       phi = 1.0;
       for(int i=0; i<dim; i++)
       {

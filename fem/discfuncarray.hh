@@ -158,8 +158,6 @@ namespace Dune {
       // for all grid levels we have at least a vector with length 0
       int numLevel = functionSpace_.getGrid().maxlevel() +1;
       dofVec_.resize(numLevel);
-      for(int i=0; i<numLevel; i++)
-        dofVec_[i] = NULL;
 
       // this is done only if levOcu_ > 1
       for(int i=0; i<levOcu_-1; i++)
