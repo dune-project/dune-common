@@ -12,7 +12,26 @@ namespace Dune {
   public:
 
     /** \brief Returns pointers to the coordinate arrays of an UG element */
-    static void Corner_Coordinates(typename TargetType<0,dim>::T* theElement, double* x[]);
+    static void Corner_Coordinates(typename TargetType<0,dim>::T* theElement, double* x[]) {
+
+#ifdef _3
+      using UG3d::TETRAHEDRON;
+      using UG3d::NODE;
+      using UG3d::PYRAMID;
+      using UG3d::PRISM;
+      using UG3d::HEXAHEDRON;
+      using UG3d::n_offset;
+      int n;    // Dummy variable just to please the macro
+      CORNER_COORDINATES(theElement, n, x);
+#else
+      using UG2d::NODE;
+      using UG2d::TRIANGLE;
+      using UG2d::QUADRILATERAL;
+      using UG2d::n_offset;
+      int n;    // Dummy variable just to please the macro
+      CORNER_COORDINATES(theElement, n, x);
+#endif
+    }
 
     static int Sides_Of_Elem(typename TargetType<0,dim>::T* theElement) {
 #ifdef _3
@@ -103,35 +122,15 @@ namespace Dune {
     }
 #endif
 
+    static typename UGTypes<dim>::MultiGridType* GetMultigrid(const char* name) {
+#ifdef _3
+      return UG3d::GetMultigrid(name);
+#else
+      return UG2d::GetMultigrid(name);
+#endif
+    }
   };
 
-
-
-#ifdef _3
-  /** \brief Returns pointers to the coordinate arrays of an UG element */
-  void Corner_Coordinates(UG3d::ELEMENT* theElement, double* x[])
-  {
-    using UG3d::TETRAHEDRON;
-    using UG3d::NODE;
-    using UG3d::PYRAMID;
-    using UG3d::PRISM;
-    using UG3d::HEXAHEDRON;
-    using UG3d::n_offset;
-    int n;  // Dummy variable just to please the macro
-    CORNER_COORDINATES(theElement, n, x);
-  }
-#else
-  /** \brief Returns pointers to the coordinate arrays of an UG element */
-  void Corner_Coordinates(TargetType<0,2>::T* theElement, double* x[])
-  {
-    using UG2d::NODE;
-    using UG2d::TRIANGLE;
-    using UG2d::QUADRILATERAL;
-    using UG2d::n_offset;
-    int n;  // Dummy variable just to please the macro
-    CORNER_COORDINATES(theElement, n, x);
-  }
-#endif
 
 } // namespace Dune
 
