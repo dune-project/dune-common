@@ -180,16 +180,14 @@ namespace Dune {
   template <int cd, PartitionIteratorType pitype>
   inline typename ALU3dGrid<dim,dimworld>::Traits::template codim<cd>::template partition<pitype>::LevelIterator
   ALU3dGrid<dim,dimworld>::lbegin(int level) const {
-    ALU3dGridLevelIterator<cd,pitype,const MyType>  it (*this,level);
-    return it;
+    return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,level);
   }
 
   template <int dim, int dimworld>
   template <int cd, PartitionIteratorType pitype>
   inline typename ALU3dGrid<dim,dimworld>::Traits::template codim<cd>::template partition<pitype>::LevelIterator
   ALU3dGrid<dim,dimworld>::lend(int level) const {
-    ALU3dGridLevelIterator<cd,pitype,const MyType> it (*this,level,true);
-    return it;
+    return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,level,true);
   }
 
   // lbegin methods
@@ -197,16 +195,14 @@ namespace Dune {
   template <int cd>
   inline typename ALU3dGrid<dim,dimworld>::Traits::template codim<cd>::template partition<All_Partition>::LevelIterator
   ALU3dGrid<dim,dimworld>::lbegin(int level) const {
-    ALU3dGridLevelIterator<cd,All_Partition,const MyType> it (*this,level);
-    return it;
+    return ALU3dGridLevelIterator<cd,All_Partition,const MyType> (*this,level);
   }
 
   template <int dim, int dimworld>
   template <int cd>
   inline typename ALU3dGrid<dim,dimworld>::Traits::template codim<cd>::template partition<All_Partition>::LevelIterator
   ALU3dGrid<dim,dimworld>::lend(int level) const {
-    ALU3dGridLevelIterator<cd,All_Partition,const MyType> it (*this,level,true);
-    return it;
+    return ALU3dGridLevelIterator<cd,All_Partition,const MyType> (*this,level,true);
   }
 
   // leaf methods
@@ -214,15 +210,13 @@ namespace Dune {
   inline typename ALU3dGrid<dim,dimworld>::LeafIteratorType
   ALU3dGrid<dim,dimworld>::leafbegin(int level, PartitionIteratorType pitype) const
   {
-    ALU3dGridLeafIterator<const MyType> it ((*this),level,false,pitype);
-    return it;
+    return ALU3dGridLeafIterator<const MyType> ((*this),level,false,pitype);
   }
   template <int dim, int dimworld>
   inline typename ALU3dGrid<dim,dimworld>::LeafIteratorType
   ALU3dGrid<dim,dimworld>::leafend(int level, PartitionIteratorType pitype) const
   {
-    ALU3dGridLeafIterator<const MyType> it ((*this),level,true,pitype);
-    return it;
+    return ALU3dGridLeafIterator<const MyType> ((*this),level,true,pitype);
   }
 
   // global refine
@@ -1509,12 +1503,9 @@ namespace Dune {
     if(! item_->up() )
     {
       std::cerr << "ALU3dGridEntity<0," << dim << "," << dimworld << "> :: father() : no father of entity globalid = " << globalIndex() << "\n";
-      ALU3dGridEntityPointer<0,All_Partition,GridImp> vati (grid_, static_cast<ALU3DSPACE HElementType &> (*item_));
-      return vati;
+      return ALU3dGridEntityPointer<0,All_Partition,GridImp> (grid_, static_cast<ALU3DSPACE HElementType &> (*item_));
     }
-
-    ALU3dGridEntityPointer<0,All_Partition,GridImp> vati (grid_, static_cast<ALU3DSPACE HElementType &> (*(item_->up())));
-    return vati;
+    return ALU3dGridEntityPointer<0,All_Partition,GridImp> (grid_, static_cast<ALU3DSPACE HElementType &> (*(item_->up())));
   }
 
   // Adaptation methods
