@@ -258,7 +258,7 @@ UGGridEntity < 0, dim ,GridImp >::ibegin() const
   UGGridIntersectionIterator<GridImp> it;
 
   // Set intersection iterator to zeroth neighbor of target_
-  it.setToTarget(target_, 0);
+  it.setToTarget(target_, 0, level());
 
   return it;
 }

@@ -26,6 +26,15 @@ setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb)
 }
 
 template< class GridImp>
+inline void UGGridIntersectionIterator<GridImp>::
+setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb, int level)
+{
+  center_ = center;
+  neighborCount_ = nb;
+  virtualEntity_.setToTarget(target(), level);
+}
+
+template< class GridImp>
 inline bool
 UGGridIntersectionIterator<GridImp>::
 isValid() const
@@ -47,38 +56,6 @@ equals (const UGGridIntersectionIterator& I) const
              (center_ == I.center_ && neighborCount_ == I.neighborCount_));
 }
 
-#if 0
-template< class GridImp>
-inline bool UGGridIntersectionIterator<GridImp>::
-operator !=(const UGGridIntersectionIterator& I) const
-{
-  return !((*this)==I);
-}
-
-
-template<class GridImp>
-inline UGGridEntity< 0,GridImp::dimension,GridImp>*
-UGGridIntersectionIterator< GridImp >::operator ->()
-{
-  return &virtualEntity_;
-}
-
-
-template<class GridImp>
-inline UGGridEntity< 0,GridImp::dimension,GridImp>&
-UGGridIntersectionIterator< GridImp >::operator *()
-{
-  return virtualEntity_;
-}
-
-template<class GridImp>
-inline UGGridIntersectionIterator<GridImp>&
-UGGridIntersectionIterator< GridImp >::operator++()
-{
-  setToTarget(center_, neighborCount_+1);
-  return (*this);
-}
-#endif
 
 template<class GridImp>
 inline bool UGGridIntersectionIterator< GridImp >::neighbor() const
@@ -213,10 +190,11 @@ template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
 numberInSelf ()  const
 {
-  /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
-  const int nSides = UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(center_);
-
-  return (neighborCount_ + nSides -1)%nSides;
+  const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);
+  if (nSides==6)    // Hexahedron
+    return (neighborCount_ + nSides -1)%nSides;
+  else
+    return neighborCount_;
 }
 
 template< class GridImp>
