@@ -108,10 +108,10 @@ namespace Dune {
     const FieldVector<UGCtype, coorddim>& operator[] (int i) const;
 
     /** \brief Return reference element corresponding to this element.
-     *
-     **If this is a reference element then self is returned.
      */
-    //UGGridElement<dim,dim>& refelem ();
+    static const Dune::Geometry<mydim,mydim,GridImp,Dune::UGGridGeometry>& refelem () {
+      std::cout << "Calling unimplemented method UGGridGeometry::refelem()" << std::endl;
+    }
 
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
@@ -158,9 +158,6 @@ namespace Dune {
 
     /** \brief Init the element with a given UG element */
     void setToTarget(typename TargetType<coorddim-mydim,coorddim>::T* target) {target_ = target;}
-
-    //! built the reference element
-    //void makeRefElemCoords();
 
     //! the vertex coordinates
     mutable FixedArray<FieldVector<UGCtype, coorddim>, (mydim==2) ? 4 : 8> coord_;
@@ -214,10 +211,11 @@ namespace Dune {
       return coord_[i];
     }
 
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned.
+    /*! return reference element corresponding to this element.
      */
-    UGGridGeometry<2,2,GridImp>& refelem ();
+    static const Dune::Geometry<2,2,GridImp,Dune::UGGridGeometry>& refelem () {
+      DUNE_THROW(NotImplemented, "UGGridGeometry<2,2>::refelem()");
+    }
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
@@ -249,9 +247,6 @@ namespace Dune {
 
     //! The element type, either triangle or quadrilateral
     GeometryType elementType_;
-
-    //! built the reference element
-    void makeRefElemCoords();
 
     //! the vertex coordinates
     mutable FixedArray<FieldVector<UGCtype, 3>, 4> coord_;
@@ -306,7 +301,9 @@ namespace Dune {
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
      */
-    UGGridGeometry<1,1,GridImp>& refelem ();
+    static const Geometry<1,1,GridImp,Dune::UGGridGeometry>& refelem () {
+      DUNE_THROW(NotImplemented, "UGGridGeometry<1,1>::refelem()");
+    }
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
