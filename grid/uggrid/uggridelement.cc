@@ -116,7 +116,7 @@ inline int UGGridElement<dim,dimworld>::corners()
 
 ///////////////////////////////////////////////////////////////////////
 template<>
-inline Vec<3,UGCtype>& UGGridElement<0,3>::
+inline const Vec<3,UGCtype>& UGGridElement<0,3>::
 operator [](int i)
 {
   UG3d::VERTEX* vertex = target_->myvertex;
@@ -129,7 +129,7 @@ operator [](int i)
 }
 
 template<>
-inline Vec<3,UGCtype>& UGGridElement<3,3>::
+inline const Vec<3,UGCtype>& UGGridElement<3,3>::
 operator [](int i)
 {
   assert(0<=i && i<corners());

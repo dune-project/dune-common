@@ -45,7 +45,7 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld, UGCtype>& operator[] (int i);
+    const Vec<dimworld, UGCtype>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
