@@ -3,7 +3,7 @@
 #ifndef DUNE_GRID_GEOMETRY_HH
 #define DUNE_GRID_GEOMETRY_HH
 
-#include <dune/common/matvec.hh>
+#include <dune/common/fmatrix.hh>
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/exceptions.hh>
 
@@ -103,7 +103,7 @@ namespace Dune
     }
 
     //! can only be called for mydim=cdim!
-    const Mat<mydim,mydim,ct>& jacobianInverse (const FieldVector<ct, mydim>& local) const
+    const FieldMatrix<ct,mydim,mydim>& jacobianInverse (const FieldVector<ct, mydim>& local) const
     {
       IsTrue< ( mydim == cdim ) >::yes();
       return realGeometry.jacobianInverse(local);
@@ -267,7 +267,7 @@ namespace Dune
     }
 
     //! can only be called for dim=dimworld!
-    const Mat<cdim,cdim,ct>& jacobianInverse (const FieldVector<ct, mydim>& local) const
+    const FieldMatrix<ct,cdim,cdim>& jacobianInverse (const FieldVector<ct, mydim>& local) const
     {
       return asImp().jacobianInverse(local);
     }
