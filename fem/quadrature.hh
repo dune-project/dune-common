@@ -138,7 +138,7 @@ namespace Dune {
     FastQuadrature ( ) :
       QuadratureInterface < FunctionSpaceType, FastQuadratureType > (id)
     {
-      std::cout <<"Making FastQuadrature! \n";
+      //std::cout <<"Making FastQuadrature! \n";
       for(int i=0; i<numQuadPoints_; i++)
       {
         points_(i) = QuadInitializer::getPoint(i);
@@ -152,13 +152,14 @@ namespace Dune {
     //! return weight for point i
     const RangeFieldType& getQuadratureWeight ( int i) const
     {
-      return (weights_.read(i));
+      return (weights_.get(i));
     };
 
     //! return point i
     const DomainType& getQuadraturePoint (int i) const
     {
-      return (points_.read(i));
+      //(points_.read(i)).print(std::cout , 1); std::cout << "QuadRead \n";
+      return (points_.get(i));
     };
 
   private:

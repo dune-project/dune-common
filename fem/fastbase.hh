@@ -70,7 +70,7 @@ namespace Dune {
     typedef BaseFunctionInterface < FunctionSpaceType > BaseFunctionInterfaceType;
 
     //! Constructor
-    FastBaseFunctionSet ( FunctionSpaceType & fuspace , int numOfBaseFct);
+    FastBaseFunctionSet (FunctionSpaceType & fuspace , int numOfBaseFct);
 
     //! return the number of base fucntions for this BaseFunctionSet
     int getNumberOfBaseFunctions () const
@@ -81,7 +81,7 @@ namespace Dune {
     //! evaluate base function baseFunct with the given diffVariable and a
     //! point x and range phi
     template <int diffOrd>
-    void evaluate ( int baseFunct, const Vec<diffOrd,char> &diffVariable,
+    void evaluate ( int baseFunct, const Vec<diffOrd,int> &diffVariable,
                     const Domain & x,  Range & phi ) const;
 
     //! evaluate base fucntion baseFunct at a given quadrature point
@@ -89,7 +89,7 @@ namespace Dune {
     //! qaudrature has changed an the values at the quadrature have to be
     //! calulated again
     template <int diffOrd, class QuadratureType>
-    void evaluate ( int baseFunct, const Vec<diffOrd,char> &diffVariable,
+    void evaluate ( int baseFunct, const Vec<diffOrd,int> &diffVariable,
                     QuadratureType & quad, int quadPoint, Range & phi ) const;
 
     //! get a reference of the base function baseFunct
@@ -98,7 +98,7 @@ namespace Dune {
     const BaseFunctionInterface<FunctionSpaceType>
     &getBaseFunction( int baseFunct ) const
     {
-      std::cout << "getBaseFunction \n";
+      //std::cout << "getBaseFunction \n";
       return (*baseFunctionList_[baseFunct]);
     }
 
@@ -119,13 +119,12 @@ namespace Dune {
     //! method to navigate through the vector vecEvaluate, which holds
     //! precalculated values
     template <int diffOrd>
-    int index( int baseFunct, const Vec<diffOrd,char> &diffVariable,
+    int index( int baseFunct, const Vec<diffOrd,int> &diffVariable,
                int quadPt, int numQuadPoints ) const
     {
       int n = 0;
-      for ( int i = 0; i < diffOrd; i++ ) {
-        n = diffVariable.read(i) + n * DimDomain;
-      }
+      for ( int i = 0; i < diffOrd; i++ )
+        n = diffVariable.read(i) + i * DimDomain;
 
       return numQuadPoints*(getNumberOfBaseFunctions()*n + baseFunct) + quadPt;
     };
@@ -138,8 +137,7 @@ namespace Dune {
 
     //! init the vecEvaluate vector
     template <int diffOrd, class QuadratureType >
-    void evaluateInit ( const Vec<diffOrd,char> & diffVariable,
-                        const QuadratureType & quad ) ;
+    void evaluateInit ( const QuadratureType & quad ) ;
   }; // end class FastBaseFunctionSet
 
 #include "fastbase.cc"

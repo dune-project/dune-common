@@ -41,7 +41,7 @@ namespace Albert
     /// Achtung, Fehler in Albert memory.c,
     /// kleinste Groesse der Leaf Daten 4 Byte,
     /// also ist hier ok,
-    //S_CHAR reachedFace[4];
+    S_CHAR reachedFace[4];
   } AlbertLeafData;
 
 
@@ -75,42 +75,7 @@ namespace Albert
 
 
     // singleton holding reference elements
-    template<int dim>
-    struct AlbertGridReferenceElement
-    {
-      enum { dofs = dim+1 };
-      enum { dimension = dim };
-      enum { type = unknown };
-
-      static AlbertGridElement<dim,dim> refelem;
-      static ALBERT EL_INFO elInfo_;
-    };
-
-    // singleton holding reference elements
-    template<>
-    struct AlbertGridReferenceElement<2>
-    {
-      enum { dimension = 2 };
-      enum { dofs = dimension+1 };
-      enum { type = triangle };
-
-      static AlbertGridElement<dimension,dimension> refelem;
-      static ALBERT EL_INFO elInfo_;
-    };
-
-    // singleton holding reference elements
-    template<>
-    struct AlbertGridReferenceElement<3>
-    {
-      enum { dimension = 3 };
-      enum { dofs = dimension+1 };
-      enum { type = tetrahedron };
-
-      static AlbertGridElement<dimension,dimension> refelem;
-      static ALBERT EL_INFO elInfo_;
-    };
-
-
+    template<int dim> struct AlbertGridReferenceElement;
 
     //**********************************************************************
     //
@@ -141,12 +106,9 @@ namespace Albert
       //! know dimension of world
       enum { dimbary=dim+1};
 
-      AlbertGridElement();
-
-      AlbertGridElement(ALBERT EL_INFO *elInfo,
-                        unsigned char face=0,
-                        unsigned char edge=0,
-                        unsigned char vertex=0);
+      //! for makeRefElement == true a Element with the coordinates of the
+      //! reference element is made
+      AlbertGridElement(bool makeRefElement=false);
 
       //! return the element type identifier
       //! line , triangle or tetrahedron, depends on dim
@@ -227,6 +189,12 @@ namespace Albert
       void initGeom();
 
     private:
+      //! built the reference element
+      void makeRefElemCoords();
+
+      //! built the jacobian inverse and store the volume
+      void builtJacobianInverse (const Vec<dim,albertCtype>& local);
+
       //! maps a barycentric coordinate within element to global coordinate in element
       Vec<dimworld,albertCtype> globalBary (Vec<dim+1,albertCtype> local);
 
@@ -268,6 +236,7 @@ namespace Albert
       unsigned char vertex_;
 
       Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
+      albertCtype volume_;
       bool builtinverse;
 
       Vec<dimworld,albertCtype> outerNormal_;
@@ -401,6 +370,11 @@ namespace Albert
       //! know your own dimension of world
       enum { dimensionworld=dimworld };
 
+      //! Destructor, needed perhaps needed for deleteing faceEntity_ and
+      //! edgeEntity_ , see below
+      //! there are only implementations for dim==dimworld 2,3
+      ~AlbertGridEntity() {};
+
       //! Default Constructor, needed, but empty
       AlbertGridEntity(AlbertGrid<dim,dimworld> &grid);
 
@@ -424,37 +398,10 @@ namespace Albert
       template<> int count<2<<dim> () { return (dim*2); }; //!< Edges Codim = 2, only 3d
       template<> int count<dim>    () { return dim+1; }; //!< Vertices codim = dim
 
-
       /*! Provide access to mesh entity i of given codimension. Entities
          are numbered 0 ... count<cc>()-1
        */
-      template<int cc> AlbertGridLevelIterator<cc,dim,dimworld> entity (int i) // 0 <= i < count()
-      { // Default == Codim 1 Faces
-        AlbertGridLevelIterator<cc,dim,dimworld> tmp(grid_,elInfo_,index(),i,0,0);
-        return tmp;
-      };
-
-      template <> AlbertGridLevelIterator<2 << dim,dim,dimworld> entity<2 << dim> (int i)
-      {
-        printf("Entity::entity<codim = %d>: Warning elNum may be not correct! \n",codim);
-        if(i < 3)
-        { // 0,1,2
-          AlbertGridLevelIterator<2,3,3> tmp(grid_,elInfo_,elNum_,0,i,0);
-          return tmp;
-        }
-        else
-        { // 3,4,5
-          AlbertGridLevelIterator<2,3,3> tmp(grid_,elInfo_,elNum_,i-2,1,0);
-          return tmp;
-        }
-      };
-      // spezialization for codim = dim in albertgrid.cc
-      template<> AlbertGridLevelIterator<dim,dim,dimworld> entity<dim> (int i)
-      {
-        AlbertGridLevelIterator<dim,dim,dimworld>
-        tmp(grid_,elInfo_,elInfo_->el->dof[i][0],0,0,i);
-        return tmp;
-      };
+      template<int cc> AlbertGridLevelIterator<cc,dim,dimworld>& entity (int i); // 0 <= i < count()
 
       /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
          which has an entity of codimension 1 in commen with this entity. Access to neighbors
@@ -508,7 +455,19 @@ namespace Albert
       //! make a new AlbertGridEntity
       void makeDescription();
 
+      //! the corresponding grid
       AlbertGrid<dim,dimworld> &grid_;
+
+      //! for vertex access, to be revised, filled on demand
+      AlbertGridLevelIterator<dim,dim,dimworld> vxEntity_;
+
+      //! Because face and edge access is not often needed as vertex access,
+      //! these objects are created on demand
+      //! for the face access, __created__ on demand
+      AlbertGridLevelIterator<1,dim,dimworld> * faceEntity_;
+
+      //! only needed if dim == 3, __created__ on demand
+      AlbertGridLevelIterator<dim-1,dim,dimworld> * edgeEntity_;
 
       //! the cuurent geometry
       AlbertGridElement<dim,dimworld> geo_;
@@ -523,9 +482,6 @@ namespace Albert
       AlbertGridElement <dim,dim> fatherReLocal_;
 
     }; // end of AlbertGridEntity codim = 0
-
-
-
 
     //**********************************************************************
     //
@@ -634,6 +590,9 @@ namespace Albert
       AlbertGridNeighborIterator(AlbertGrid<dim,dimworld> &grid,
                                  ALBERT EL_INFO *elInfo);
 
+      //! The Destructor
+      ~AlbertGridNeighborIterator();
+
       //! Copy Constructor
       //AlbertGridNeighborIterator(const AlbertGridNeighborIterator& I);
 
@@ -693,6 +652,9 @@ namespace Albert
       int number_in_neighbor ();
 
     private:
+      //! create the vritual entity
+      void makeVirtualEntity(int neighbor);
+
       void makeIterator();
       // makes empty neighElInfo
       void initElInfo(ALBERT EL_INFO * elInfo);
@@ -703,21 +665,29 @@ namespace Albert
       AlbertGrid<dim,dimworld> &grid_;
 
       //! implement with virtual element
-      AlbertGridEntity<0,dim,dimworld> virtualEntity_;
+      //! Most of the information can be generated from the ALBERT EL_INFO
+      //! therefore this element is only created on demand.
+      AlbertGridEntity<0,dim,dimworld> *virtualEntity_;
 
+      //! vector storing the outer normal
       Vec<dimworld,albertCtype> outerNormal_;
 
-      AlbertGridElement<dim-1,dim> fakeNeigh_;
-      bool fakeNeighBuilt_;
+      //! pointer to element holding the self_local and self_global information.
+      //! This element is created on demand.
+      AlbertGridElement<dim-1,dim> *fakeNeigh_;
 
-      AlbertGridElement<dim-1,dimworld> neighGlob_;
-      bool neighGlobBuilt_;
+      //! pointer to element holding the neighbor_global and neighbor_local
+      //! information. This element is created on demand.
+      AlbertGridElement<dim-1,dimworld> *neighGlob_;
 
+      //! pointer to the EL_INFO struct storing the real element information
       ALBERT EL_INFO * elInfo_;
 
+      //! EL_INFO th store the information of the neighbor if needed
       ALBERT EL_INFO neighElInfo_;
       ALBERT EL boundEl_;
 
+      //! count on which neighbor we are lookin' at
       int neighborCount_;
     };
 
@@ -736,6 +706,8 @@ namespace Albert
           AlbertGridLevelIterator,AlbertGridEntity>
     {
       friend class AlbertGrid<dim,dimworld>;
+      friend class AlbertGridEntity<codim,dim,dimworld>;
+      friend class AlbertGridEntity<0,dim,dimworld>;
     public:
 
       //friend class AlbertGrid<dim,dimworld>;
@@ -889,6 +861,11 @@ namespace Albert
       //! 0 ... maxlevel with 0 the coarsest level.
       int maxlevel();
 
+      int maxlevel() const
+      {
+        return const_cast<AlbertGrid<dim,dimworld> *> (this)->maxlevel();
+      };
+
       //! Iterator to first entity of given codim on level
       template<int codim>
       AlbertGridLevelIterator<codim,dim,dimworld> lbegin (int level);
@@ -898,7 +875,12 @@ namespace Albert
       AlbertGridLevelIterator<codim,dim,dimworld> lend (int level);
 
       //! number of grid entities per level and codim
-      int size (int level, int codim);
+      int size (int level, int codim) ;
+
+      int size (int level, int codim) const
+      {
+        return const_cast<AlbertGrid<dim,dimworld> *> (this)->size(level,codim);
+      }
 
       //**********************************************************
       // End of Interface Methods

@@ -63,15 +63,18 @@ namespace Dune {
     switch (i)
     {
     case 0 : {
-      Domain tmp;  tmp(0) = 0.5; tmp(1) = 0.0;
+      Domain tmp(0.0);  tmp(0) = 0.5;
+      //tmp.print(std::cout,1); std::cout << " QuadPoint \n";
       return tmp;
     }
     case 1 : {
-      Domain tmp;  tmp(0) = 0.5; tmp(1) = 0.5;
+      Domain tmp(0.0);  tmp(0) = 0.5; tmp(1) = 0.5;
+      //tmp.print(std::cout,1); std::cout << " QuadPoint \n";
       return tmp;
     }
     case 2 : {
-      Domain tmp;  tmp(0) = 0.0; tmp(1) = 0.5;
+      Domain tmp(0.0);  tmp(1) = 0.5;
+      //tmp.print(std::cout,1); std::cout << " QuadPoint \n";
       return tmp;
     }
     default : {

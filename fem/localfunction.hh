@@ -4,73 +4,150 @@
 #define __DUNE_LOCALFUNCTION_HH__
 
 namespace Dune {
-
-  //************************************************************************
-  //!
-  //! LocalFunction is the Interface for a local DofEntity which is on the
-  //! dof point of view the equivalent to an grid entity. The
-  //! LocalFunction provides the interface methods for a DofEntity. The dof
-  //! Entities can be stored hierarchic like the grid or stored in a dof
-  //! vector. This decicion is left to the programer and user.
-  //!
+  //****************************************************************************
   //
-  //************************************************************************
-  //template < class DiscreteFunctionType, class EntityType,
-  //           class LocalFunctionImp >
-  template < typename RangeField, class LocalFunctionImp>
-  class LocalFunction : public DynamicType {
-
-    //typedef BaseFunctionSet < DiscreteFunctionType::FunctionSpace > BaseFunctionSetType;
-    //typedef DiscreteFunctionType::FunctionSpace::Range Range;
-    //typedef DiscreteFunctionType::FunctionSpace::RangeField RangeField;
-
-    //! Lenght of the tupel , i.e. level and element number
-    enum { indexMax = 2 };
-
+  //  --LocalFunctionInterface
+  //
+  //! The LocalFunctionInterface is the Interface to local function which
+  //! form the discrete Function
+  //
+  //****************************************************************************
+  template < class DiscreteFunctionSpaceType, class LocalFunctionImp >
+  class LocalFunctionInterface
+  {
   public:
-    typedef Vec<indexMax,int> MapTupel;
 
-    //! Constructor
-    LocalFunction ( int ident ) : //, DiscreteFunctionType & dfunct) :
-                                 DynamicType (ident) {} ; // , discreteFunction_(dfunct) ;
+    //! this are the types for the derived classes
+    typedef DiscreteFunctionSpaceType::RangeField RangeField;
+    typedef DiscreteFunctionSpaceType::Domain Domain;
+    typedef DiscreteFunctionSpaceType::Range Range;
 
-    //! return number of local dofs
-    int numberOfDofs() const ;
+    //! access to dof number num, all dofs of the local function
+    RangeField& operator [] (int num)
+    {
+      return asImp().operator [] ( num );
+    }
 
-    //! return reference to local dof 'number'
-    RangeField & operator [] ( int number ) ;
+    //! return the number of local dof of this local function
+    int numberOfDofs ()
+    {
+      return asImp().numberOfDofs ();
+    };
 
-    //! returns level and element number for this localfunction
-    MapTupel mapToGlobal(int localDofNum ) const;
-
-    //! init localfunction with a given entity
-    template <class EntityType >
-    void init ( EntityType & ) ;
-
-  protected:
-    //  DiscreteFunctionType & discreteFunction_ ;
-
-  };
-
-#if 0
-  template < class FunctionSpaceType , class GridType, class MapperImp, class
-      LocalFunctionType>
-  class Mapper {
-
-    Mapper ( FunctionSpaceType & fuspace ) : functionSpace_ (fuspace) { } ;
-
+    //! evaluate the local function on x and return ret
     template <class EntityType>
-    const LocalFunctionType &
-    getLocalFunction ( EntityType &en ) const ;
-
+    void evaluate (EntityType &en, const Domain & x, Range & ret)
+    {
+      asImp().evaluate(en,x,ret);
+    }
 
   private:
-    FunctionSpaceType & functionSpace_ ;
+    //! Barton-Nackman trick
+    LocalFunctionImp & asImp()
+    {
+      return static_cast<LocalFunctionImp&>(*this);
+    }
+    const LocalFunctionImp &asImp() const
+    {
+      return static_cast<const LocalFunctionImp&>(*this);
+    }
+  }; // end LocalFunctionInterface
+
+  //************************************************************************
+  //
+  //  --LocalFunctionDefault
+  //
+  //! The Interface to the dune programmer, use this class to derive
+  //! the own implementation. But only the methods declared in the interface
+  //! class must be implemented
+  //
+  //************************************************************************
+  template < class DiscreteFunctionSpaceType, class LocalFunctionImp >
+  class LocalFunctionDefault : public LocalFunctionInterface <
+                                   DiscreteFunctionSpaceType , LocalFunctionImp >
+  {
+  public:
+    // notin'
+  }; // end LocalFunctionDefault
+
+  //-------------------------------------------------------------------------
+
+  //**************************************************************************
+  //
+  //  --LocalFunctionIteratorInterface
+  //
+  //! Interface for iterators to iterate over local functions
+  //
+  //**************************************************************************
+  template < class DiscFunctionSpaceType , class
+      LocalFunctionIteratorImp , class LocalFunctionImp >
+  class LocalFunctionIteratorInterface
+  {
+  public:
+    //! know the object typ for iteration
+    typedef LocalFunctionImp LocalFunctionType;
+
+    //! return reference to local function
+    LocalFunctionType & operator *()
+    {
+      return localFunc_;
+    };
+
+    //! go next local function
+    LocalFunctionIteratorImp& operator++ ()
+    {
+      return asImp(). operator ++ ();
+    };
+
+    //! go next i steps
+    LocalFunctionIteratorImp& operator++ (int i)
+    {
+      return asImp().operator ++ ( i );
+    };
+
+    //! compare with other iterators
+    bool operator == (const LocalFunctionIteratorImp & I )
+    {
+      return asImp().operator == (I);
+    }
+
+    //! compare with other iterators
+    bool operator != (const LocalFunctionIteratorImp & I )
+    {
+      return asImp().operator != (I);
+    }
+
+  private:
+    //! Barton-Nackman trick
+    LocalFunctionIteratorImp & asImp()
+    {
+      return static_cast<LocalFunctionIteratorImp&>(*this);
+    }
+    const LocalFunctionIteratorImp &asImp() const
+    {
+      return static_cast<const LocalFunctionIteratorImp&>(*this);
+    }
+  }; // end class LocalFunctionIteratorInterface
 
 
-  };
-#endif
+  //*************************************************************************
+  //
+  //  --LocalFunctionIteratorDefault
+  //
+  //! Defaultimplementation
+  //
+  //*************************************************************************
+  template < class DiscFunctionSpaceType , class
+      LocalFunctionIteratorImp , class LocalFunctionImp >
+  class LocalFunctionIteratorDefault
+    : public LocalFunctionIteratorInterface < DiscFunctionSpaceType ,
+          LocalFunctionIteratorImp , LocalFunctionImp >
+  {
+  public:
+    // notin'
+  }; // end class LocalFunctionIteratorDefault
 
 
-}
+} // end namespace Dune
+
 #endif

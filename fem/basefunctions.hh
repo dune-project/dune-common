@@ -7,6 +7,14 @@
 #include "quadrature.hh"
 
 namespace Dune {
+
+
+  template <int dim>
+  struct DiffVariable
+  {
+    typedef Vec<dim,int> Type;
+  };
+
   //*************************************************************************
   //
   //! BaseFunctionInterface is the interface to a base function.
@@ -33,13 +41,13 @@ namespace Dune {
     //! methods with template parameter "length of Vec".
     //! Though the evaluate Methods can be spezialized for each
     //! differentiation order
-    virtual void evaluate ( const Vec<0,char> &diffVariable,
+    virtual void evaluate ( const Vec<0,int> &diffVariable,
                             const Domain & , Range &) const {}; // = 0 ?
 
-    virtual void evaluate ( const Vec<1,char> &diffVariable,
+    virtual void evaluate ( const Vec<1,int> &diffVariable,
                             const Domain & , Range &) const {}; // = 0 ?
 
-    virtual void evaluate ( const Vec<2,char> &diffVariable,
+    virtual void evaluate ( const Vec<2,int> &diffVariable,
                             const Domain & , Range &) const {}; // = 0 ?
 
   private:
@@ -99,14 +107,14 @@ namespace Dune {
     };
 
     template <int diffOrd>
-    void evaluate ( int baseFunct, const Vec<diffOrd,char> &diffVariable, const
+    void evaluate ( int baseFunct, const Vec<diffOrd,int> &diffVariable, const
                     Domain & x, Range & phi ) const {
       std::cout << "BaseFunctionSetInterface::evaluate \n";
       asImp().evaluate( baseFunct, diffVariable, x, phi );
     }
 
     template <int diffOrd, class QuadratureType >
-    void evaluate ( int baseFunct, const Vec<diffOrd,char> &diffVariable, QuadratureType & quad, int quadPoint, Range & phi ) const {
+    void evaluate ( int baseFunct, const Vec<diffOrd,int> &diffVariable, QuadratureType & quad, int quadPoint, Range & phi ) const {
       asImp().evaluate( baseFunct, diffVariable, quad, quadPoint, phi );
     }
   protected:
