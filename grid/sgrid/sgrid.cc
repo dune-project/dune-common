@@ -1027,14 +1027,17 @@ namespace Dune {
   template<int dim, int dimworld>
   inline SGrid<dim,dimworld>::SGrid ()
   {
-#if 0
-    int n[dim];
-    sgrid_ctype h[dim];
+    int N_[dim];
+    sgrid_ctype L_[dim];
+    sgrid_ctype H_[dim];
 
-    for(int i=0; i<dim; i++) n[i] = 1;
-    for(int i=0; i<dim; i++) h[i] = 1.0;
-    makeSGrid((int *) &n, (sgrid_ctype *) &h);
-#endif
+    for(int i = 0; i < dim; ++i) {
+      N_[i] = 1;
+      L_[i] = 0.0;
+      H_[i] = 1.0;
+    }
+
+    makeSGrid(N_, L_, H_);
   }
 
   template<int dim, int dimworld>
