@@ -514,7 +514,7 @@ namespace Dune
       const VertexProperties& operator()(VertexDescriptor index) const;
       /**
        * @brief Get iterator over the vertices.
-       * @retune An iterator over the vertices positioned at the
+       * @return An iterator over the vertices positioned at the
        * first vertex.
        */
       ConstVertexIterator begin() const;
