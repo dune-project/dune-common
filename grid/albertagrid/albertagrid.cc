@@ -1964,10 +1964,13 @@ namespace Dune
   goNextEntity(ALBERTA TRAVERSE_STACK *stack,ALBERTA EL_INFO *elinfo_old)
   {
     // to be revised , use specialisation for speedup
-    if(codim==0) return goNextElInfo(stack,elinfo_old);
-    if(codim==1) return goNextFace(stack,elinfo_old);
-    if((codim==2) && (GridImp::dimension ==3)) return goNextEdge(stack,elinfo_old);
-    return goNextVertex(stack,elinfo_old);
+    if(codim == 0) return goNextElInfo(stack,elinfo_old);
+    if(codim == 1) return goNextFace(stack,elinfo_old);
+    if((codim == 2) && (GridImp::dimension ==3)) return goNextEdge(stack,elinfo_old);
+    if(codim == GridImp::dimension) return goNextVertex(stack,elinfo_old);
+
+    DUNE_THROW(AlbertaError,"worng codimension and dimension in goNExtEntity of AlbertaGridLevelIterator \n");
+    return 0;
   }
   //***************************************
 
@@ -2078,9 +2081,8 @@ namespace Dune
   template<int codim, PartitionIteratorType pitype, class GridImp>
   inline void AlbertaGridLevelIterator<codim,pitype,GridImp>::increment()
   {
-    virtualEntity_.setElInfo(
-      goNextEntity(manageStack_.getStack(),virtualEntity_.getElInfo()),
-      face_,edge_,vertex_);
+    ALBERTA EL_INFO * nextinfo = goNextEntity(manageStack_.getStack(),virtualEntity_.getElInfo());
+    virtualEntity_.setElInfo( nextinfo , face_, edge_, vertex_);
     virtualEntity_.setLevel( enLevel_ );
     return ;
   }
@@ -2155,7 +2157,9 @@ namespace Dune
     if(vertexMarker_->notOnThisElement(elInfo->el,
                                        grid_.getElementNumber(elInfo->el),level_,
                                        grid_.getVertexNumber(elInfo->el,vertex_)))
+    {
       elInfo = goNextVertex(stack,elInfo);
+    }
 
     return elInfo;
   }
