@@ -470,19 +470,20 @@ namespace Dune
   jacobian (EntityType &en, QuadratureType &quad, int quadPoint, JacobianRangeType & ret) const
   {
     enum { dim = EntityType::dimension };
-    Mat<dim,dim,RangeFieldType> & inv = en.geometry().Jacobian_inverse(quad.point(quadPoint));
+    const FieldMatrix<RangeFieldType,dim,dim> & inv = en.geometry().jacobianInverse(quad.point(quadPoint));
 
     if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
     {
       ret = 0.0;
+      FieldVector<RangeFieldType,dim> tmp(0.0);
       for(int i=0; i<numOfDifferentDofs_; i++)
       {
-        fspace_.getBaseFunctionSet(en).jacobian(i,quad,quadPoint,tmpGrad_);
-        tmpGrad_(0) = inv.mult_t(tmpGrad_(0));
+        this->fspace_.getBaseFunctionSet(en).jacobian(i,quad,quadPoint,tmp);
+        inv.umv(tmp,tmpGrad_[0]);
 
-        tmpGrad_(0) *= (* (values_[i]));
+        tmpGrad_[0] *= (* (values_[i]));
 
-        ret[0] += tmpGrad_(0);
+        ret[0] += tmpGrad_[0];
       }
     }
     else
