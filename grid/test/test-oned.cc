@@ -11,7 +11,7 @@
 int main () {
   try {
 
-    SimpleVector<double> coords(6);
+    Dune::SimpleVector<double> coords(6);
     coords[0] = -1;
     coords[1] = -0.4;
     coords[2] = 0.1;
