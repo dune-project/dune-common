@@ -709,12 +709,14 @@ namespace Dune
   template <class DofType>
   inline DofType& DofIteratorArray<DofType>::operator *()
   {
+    assert((count_ >=0) && (count_ < dofArray_.size()));
     return dofArray_ [ count_ ];
   }
 
   template <class DofType>
-  inline const DofType& DofIteratorArray<DofType>::read () const
+  inline const DofType& DofIteratorArray<DofType>::operator * () const
   {
+    assert((count_ >=0) && (count_ < constArray_.size()));
     return constArray_ [ count_ ];
   }
 
@@ -728,33 +730,21 @@ namespace Dune
   template <class DofType>
   inline const DofIteratorArray<DofType>& DofIteratorArray<DofType>::operator ++() const
   {
-    const_cast<DofIteratorArray<DofType>&> (*this).operator ++ ();
-    return (*this);
-  }
-
-  template <class DofType>
-  inline DofIteratorArray<DofType>& DofIteratorArray<DofType>::operator ++(int i)
-  {
-    count_ += i;
-    return (*this);
-  }
-
-  template <class DofType>
-  inline const DofIteratorArray<DofType>& DofIteratorArray<DofType>::operator ++(int i) const
-  {
-    count_ += i;
+    count_++;
     return (*this);
   }
 
   template <class DofType>
   inline DofType& DofIteratorArray<DofType>::operator [](int i)
   {
+    assert((i >=0) && (i < dofArray_.size()));
     return dofArray_[i];
   }
 
   template <class DofType>
-  inline const DofType& DofIteratorArray<DofType>::read(int i) const
+  inline const DofType& DofIteratorArray<DofType>::operator [](int i) const
   {
+    assert((i >=0) && (i < constArray_.size()));
     return constArray_[i];
   }
 
@@ -783,95 +773,6 @@ namespace Dune
   {
     count_ = 0;
   }
-  //**********************************************************************
-  //
-  //  LocalFunctionArrayIterator
-  //
-  //**********************************************************************
-  /*
-     template <class DiscFuncType , class GridIteratorType >
-     inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
-     LocalFunctionArrayIterator (DiscFuncType &df , GridIteratorType & it ) :
-     it_ ( it ) , df_ ( df ) , built_ ( false ) , lf_ ( df_.getLocalFunction() ) {}
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
-     LocalFunctionArrayIterator (const LocalFunctionArrayIteratorType & copy)
-     : it_ ( copy.it_ ) , df_ ( copy.df_ ) , built_ (false)
-     , lf_ ( df_.getLocalFunction() ) {}
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
-     ~LocalFunctionArrayIterator ()
-     {
-     df_.freeLocalFunction( lf_ );
-     }
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline typename LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
-     LocalFunctionType & LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
-     operator *()
-     {
-     if(!built_) lf_->init ( *it_ );
-     return (*lf_);
-     }
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline typename LocalFunctionArrayIterator<DiscFuncType, GridIteratorType>::
-     LocalFunctionType * LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
-     operator ->()
-     {
-     if(!built_) lf_->init ( *it_ );
-     return lf_;
-     }
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType> &
-     LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::operator ++()
-     {
-     ++it_;
-     built_ = false;
-     return (*this);
-     }
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline LocalFunctionArrayIterator<DiscFuncType, GridIteratorType> &
-     LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::operator ++(int i)
-     {
-     it_.operator ++(i);
-     built_ = false;
-     return (*this);
-     }
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline bool LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
-     operator ==(const LocalFunctionArrayIteratorType & I) const
-     {
-     return it_ == I.it_;
-     }
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline bool LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
-     operator !=(const LocalFunctionArrayIteratorType & I) const
-     {
-     return it_ != I.it_;
-     }
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline int LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
-     index() const
-     {
-     return it_->index();
-     }
-
-     template <class DiscFuncType , class GridIteratorType >
-     inline void LocalFunctionArrayIterator<DiscFuncType,GridIteratorType>::
-     update( GridIteratorType & it )
-     {
-     built_ = true;
-     lf_->init( *it );
-     }
-   */
 
 
 } // end namespace
