@@ -435,7 +435,7 @@ void test_Iter ()
 void test_Interface ()
 {
   // define Types
-  const int BlockSize = 6;
+  const int BlockSize = 1;
   typedef Dune::FieldVector<double,BlockSize> VB;
   typedef Dune::FieldMatrix<double,BlockSize,BlockSize> MB;
   typedef Dune::BlockVector<VB> Vector;
@@ -452,15 +452,17 @@ void test_Interface ()
     E[i][i] = -1;
 
   // make a block compressed row matrix with five point stencil
-  const int BW2=100, BW1=1, N=BW2*BW2;
+  const int BW2=64, N=BW2*BW2;
   Matrix A(N,N,5*N,Dune::BCRSMatrix<MB>::row_wise);
   for (Matrix::CreateIterator i=A.createbegin(); i!=A.createend(); ++i)
   {
+    int row=i.index()/BW2;
+    int col=i.index()%BW2;
     i.insert(i.index());
-    if (i.index()-BW1>=0) i.insert(i.index()-BW1);
-    if (i.index()+BW1< N) i.insert(i.index()+BW1);
-    if (i.index()-BW2>=0) i.insert(i.index()-BW2);
-    if (i.index()+BW2< N) i.insert(i.index()+BW2);
+    if (col-1>=0) i.insert(i.index()-1);
+    if (col+1<BW2) i.insert(i.index()+1);
+    if (row-1>=0) i.insert(i.index()-BW2);
+    if (row+1<BW2) i.insert(i.index()+BW2);
   }
   for (Matrix::RowIterator i=A.begin(); i!=A.end(); ++i)
     for (Matrix::ColIterator j=(*i).begin(); j!=(*i).end(); ++j)
@@ -475,20 +477,25 @@ void test_Interface ()
   Vector x(N),b(N);
   x=0; x[0]=1; x[N-1]=2; // prescribe known solution
   b=0; A.umv(x,b);       // set right hand side accordingly
-  x=0;                   // initial guess
+  x=1;                   // initial guess
+  for (int i=0; i<N; i++)
+    x[i] = i*0.1;
 
   // set up the high-level solver objects
   Dune::MatrixAdapter<Matrix,Vector,Vector> op(A);        // make linear operator from A
-  Dune::SeqSSOR<Matrix,Vector,Vector> ssor(A,1,1);     // SSOR preconditioner
+  Dune::SeqJac<Matrix,Vector,Vector> jac(A,1,1);          // Jacobi preconditioner
+  Dune::SeqGS<Matrix,Vector,Vector> gs(A,1,1);            // GS preconditioner
+  Dune::SeqSOR<Matrix,Vector,Vector> sor(A,1,1.9520932);        // SSOR preconditioner
+  Dune::SeqSSOR<Matrix,Vector,Vector> ssor(A,1,1.9064547);        // SSOR preconditioner
   Dune::SeqILU0<Matrix,Vector,Vector> ilu0(A);            // preconditioner object
-  Dune::SeqILUn<Matrix,Vector,Vector> ilun(A,1);          // preconditioner object
-  Dune::LoopSolver<Vector> loop(op,ilun,1E-8,8000,2);     // an inverse operator
-  Dune::CGSolver<Vector> cg(op,ilun,1E-8,8000,2);         // an inverse operator
+  Dune::SeqILUn<Matrix,Vector,Vector> ilun(A,0);          // preconditioner object
+  Dune::LoopSolver<Vector> loop(op,ilu0,1E-32,8000,2);     // an inverse operator
+  Dune::CGSolver<Vector> cg(op,ilu0,1E-8,8000,2);          // an inverse operator
   Dune::BiCGSTABSolver<Vector> bcgs(op,ilun,1E-8,8000,2); // an inverse operator
 
   // call the solver
   Dune::InverseOperatorResult r;
-  cg.apply(x,b,r);
+  loop.apply(x,b,r);
 }
 
 
