@@ -84,6 +84,38 @@ namespace Dune {
     }
   }
 
+  //******************************************************************
+  //
+  //!  Memorization of the number of quadrature points
+  //
+  //******************************************************************
+
+  //! specialization tetrahedrons and polOrd = 1
+  template <class Domain, class RangeField>
+  struct QuadraturePoints<Domain,RangeField,tetrahedron, 1>
+  {
+    enum { identifier = 9 };
+    enum { numberOfQuadPoints = 1 };
+    static Domain getPoint (int i);
+    static RangeField getWeight (int i);
+  };
+
+  template <class Domain, class RangeField >
+  RangeField QuadraturePoints<Domain,RangeField,tetrahedron,1>::getWeight(int i)
+  {
+    return 1.0;
+  }
+
+  template <class Domain, class RangeField >
+  Domain QuadraturePoints<Domain,RangeField,tetrahedron,1>::getPoint(int i)
+  {
+    // check whether dimension is 2 or not
+    CompileTimeChecker < Domain::dimension == 3 > check;
+    Domain tmp;  tmp(0) = 0.75; tmp(1) = 0.5; tmp(2) = 0.25;
+    return tmp;
+  }
+
+
 } // end namespace Dune
 
 #endif

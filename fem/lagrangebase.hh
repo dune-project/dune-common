@@ -19,6 +19,56 @@ namespace Dune {
 
   //*****************************************************************
   //
+  //! (0) 0-----1 (1)
+  //
+  //*****************************************************************
+  template<class FunctionSpaceType>
+  class LagrangeBaseFunction < FunctionSpaceType , line , 1 >
+    : public BaseFunctionInterface<FunctionSpaceType>
+  {
+    typedef typename FunctionSpaceType::RangeField RangeField;
+    RangeField factor[2];
+
+  public:
+    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
+      : BaseFunctionInterface<FunctionSpaceType> (f)
+    {
+      if(baseNum == 0)
+      { // x
+        factor[0] = 1.0;
+        factor[1] = 0.0;
+      }
+      else
+      { // 1 - x
+        factor[0] = -1.0;
+        factor[1] =  1.0;
+      }
+    }
+
+    virtual void evaluate ( const Vec<0, deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      phi = factor[1];
+      phi += factor[0] * x.get(0);
+    }
+
+    virtual void evaluate ( const Vec<1, deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      int num = diffVariable.get(0);
+      phi = factor[num];
+    }
+
+    virtual void evaluate ( const DiffVariable<2>::Type &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      // function is linear, therfore
+      phi = 0.0 ;
+    }
+
+  };
+  //*****************************************************************
+  //
   //!    (0,1)
   //!     1|\    coordinates and local node numbers
   //!      | \
@@ -34,68 +84,117 @@ namespace Dune {
   class LagrangeBaseFunction < FunctionSpaceType , triangle , 1 >
     : public BaseFunctionInterface<FunctionSpaceType>
   {
-    // alpha = 1, falls baseNum = 1 ...
     typedef typename FunctionSpaceType::RangeField RangeField;
-    RangeField alpha,beta,gamma;
-    //  enum { alpha = 1 - baseNum };
-    //  enum { beta  = (alpha == -1) ? alpha : baseNum };
-    //  enum { gamma = ( baseNum == 2) ? 1 : 0 };
+    RangeField factor[3];
 
   public:
-
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
       : BaseFunctionInterface<FunctionSpaceType> (f)
     {
-      alpha = static_cast<RangeField> ((1 - baseNum));
-      beta  = static_cast<RangeField> (((alpha == -1) ? alpha : baseNum));
-      gamma = static_cast<RangeField> (((baseNum == 2) ? 1.0 : 0.0 ));
-
-      //printf("BaseFunc %d , alpha = %f , beta = %f , gamma = %f
-      //    \n",baseNum,alpha,beta,gamma);
+      if(baseNum == 2)
+      { // 1 - x - y
+        factor[0] = -1.0;
+        factor[1] = -1.0;
+        factor[2] =  1.0;
+      }
+      else
+      {
+        factor[2] = 0.0;
+        for(int i=0; i<2; i++) // x , y
+          if(baseNum == i)
+            factor[i] = 1.0;
+          else
+            factor[i] = 0.0;
+      }
     }
 
     virtual void evaluate ( const Vec<0, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      phi = alpha * x.get(0) + beta * x.get(1) + gamma ;
-      //x.print ( std::cout, 1); phi.print ( std::cout, 1); std::cout << " Phi \n";
+      phi = factor[2];
+      for(int i=0; i<2; i++)
+        phi += factor[i] * x.get(i);
     }
 
     virtual void evaluate ( const Vec<1, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      // derivate phi_0
-      if((diffVariable.get(0) == 0) && (alpha > 0.0))
-      {
-        phi = 1.0;
-        return;
-      }
-
-      // derivate phi_1
-      if((diffVariable.get(0) == 1) && (beta > 0.0))
-      {
-        phi = 1.0;
-        return;
-      }
-
-      // derivate phi_2
-      if(gamma > 0.0)
-      {
-        if(diffVariable.get(0) == 0)
-        {
-          phi = static_cast<RangeField> (alpha);
-          return;
-        }
-        if(diffVariable.get(0) == 1)
-        {
-          phi = static_cast<RangeField> (beta);
-          return;
-        }
-      }
-      // else 0.0
-      phi = 0.0;
+      int num = diffVariable.get(0);
+      phi = factor[num];
     }
 
+    virtual void evaluate ( const DiffVariable<2>::Type &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      // function is linear, therfore
+      phi = 0.0 ;
+    }
+
+  };
+
+  //*****************************************************************
+  //
+  //! LagrangeBaseFunction for tetrahedrons and polynom order = 1
+  //!
+  //!
+  //!             1 (1,1,1)
+  //!            /|\        coordinate and local node numbers
+  //!           / | \       ok, this is ascii drawing
+  //!          /  |  \
+  // //!(1,1,0) 2/...|...\3 (1,0,0)          z
+  //!         \   |   /              y\   |   /x  coordinate
+  //!          \  |  /                 \  |  /    system
+  //!           \ | /                   \ | /
+  //!            \|/                     \|/
+  //!             0 (0,0,0)
+  //
+  //*****************************************************************
+  template<class FunctionSpaceType>
+  class LagrangeBaseFunction < FunctionSpaceType , tetrahedron , 1 >
+    : public BaseFunctionInterface<FunctionSpaceType>
+  {
+    typedef typename FunctionSpaceType::RangeField RangeField;
+    RangeField factor[4];
+  public:
+
+    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
+      : BaseFunctionInterface<FunctionSpaceType> (f)
+    {
+      for(int i=1 i<4; i++) // x,y,z
+        if(baseNum == i)
+          factor[i] = 1.0;
+        else
+          factor[i] = 0.0;
+
+      if(baseNum == 0) // 1 - x - y - z
+      {
+        for(int i=1 i<4; i++)
+          factor[i] = -1.0;
+        factor[0] = 1.0;
+      }
+      else
+        factor[0] = 0.0;
+    }
+
+    //! evaluate function
+    virtual void evaluate ( const Vec<0, deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      phi = factor[0];
+      for(int i=1; i<4; i++)
+        phi += factor[i]*x.get(i-1);
+    }
+
+    //! first Derivative
+    virtual void evaluate ( const Vec<1, deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      std::cout << "derivative not implemented yet! \n";
+      int num = diffVariable.get(0);
+      phi = factor[num+1];
+    }
+
+    //! second Derivative
     virtual void evaluate ( const DiffVariable<2>::Type &diffVariable,
                             const Domain & x, Range & phi) const
     {
@@ -116,15 +215,8 @@ namespace Dune {
     : public BaseFunctionInterface<FunctionSpaceType>
   {
     //! phi(x,y) = (alpha + beta * x) * ( gamma + delta * y)
-    //
     typedef typename FunctionSpaceType::RangeField RangeField;
     RangeField alpha,beta,gamma,delta;
-#if 0
-    enum { alpha = ( baseNum%2 == 0 ) ?  1 : 0 };
-    enum { beta  = ( baseNum%2 == 0 ) ? -1 : 1 };
-    enum { gamma = ( baseNum < 2    ) ?  1 : 0 };
-    enum { delta = ( baseNum < 2    ) ? -1 : 1 };
-#endif
   public:
 
     //! Constructor making base function number baseNum
@@ -195,6 +287,12 @@ namespace Dune {
   template <ElementType ElType, int polOrd > struct LagrangeDefinition;
 
   template <int polOrd >
+  struct LagrangeDefinition< line , polOrd>
+  {
+    enum { numOfBaseFct = 2 * polOrd };
+  };
+
+  template <int polOrd >
   struct LagrangeDefinition< triangle , polOrd>
   {
     enum { numOfBaseFct = 3 * polOrd };
@@ -202,6 +300,12 @@ namespace Dune {
 
   template <int polOrd >
   struct LagrangeDefinition< quadrilateral , polOrd>
+  {
+    enum { numOfBaseFct = 4 * polOrd };
+  };
+
+  template <int polOrd >
+  struct LagrangeDefinition< tetrahedron , polOrd>
   {
     enum { numOfBaseFct = 4 * polOrd };
   };
