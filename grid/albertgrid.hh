@@ -120,11 +120,13 @@ namespace Albert
     {
       friend class AlbertGridBoundaryEntity<dim,dimworld>;
     public:
+#if 0
       //! know dimension
       enum { dimension=dim };
 
       //! know dimension of world
       enum { dimensionworld=dimworld };
+#endif
 
       //! know dimension of world
       enum { dimbary=dim+1};
@@ -214,6 +216,7 @@ namespace Albert
       //! built the jacobian inverse and store the volume
       void builtJacobianInverse (const Vec<dim,albertCtype>& local);
 
+      Vec<dim+1,albertCtype> tmpVec_;
       //! maps a global coordinate within the elements local barycentric
       //! koordinates
       Vec<dim+1,albertCtype> localBary (const Vec<dimworld,albertCtype>& global);
