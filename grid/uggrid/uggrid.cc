@@ -244,9 +244,24 @@ inline UGGrid < dim, dimworld >::~UGGrid()
     free(extra_boundary_data_);
 
   if (multigrid_) {
+    // Set UG's currBVP variable to the BVP corresponding to this
+    // grid.  This is necessary if we have more than one UGGrid in use.
+    // DisposeMultiGrid will crash if we don't do this
+    std::string BVPName = name() + "_Problem";
 #ifdef _3
+    void* thisBVP = UG3d::BVP_GetByName(BVPName.c_str());
+#else
+    void* thisBVP = UG2d::BVP_GetByName(BVPName.c_str());
+#endif
+
+    if (thisBVP == NULL)
+      DUNE_THROW(GridError, "Couldn't find grid's own boundary value problem!");
+
+#ifdef _3
+    UG3d::Set_Current_BVP((void**)thisBVP);
     UG3d::DisposeMultiGrid(multigrid_);
 #else
+    UG3d::Set_Current_BVP((void**)thisBVP);
     UG2d::DisposeMultiGrid(multigrid_);
 #endif
   }
@@ -261,9 +276,6 @@ inline UGGrid < dim, dimworld >::~UGGrid()
 #else
     UG2d::ExitUg();
 #endif
-
-    //         for (int i=0; i<4; i++)
-    //             free(newformatArgs[i]);
 
     // remove defaults file, if we wrote one on startup
     if (!useExistingDefaultsFile)
