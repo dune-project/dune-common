@@ -42,15 +42,20 @@ namespace BernhardSchuppGrid {
 
   struct GatherScatter;
   typedef GatherScatter GatherScatterType;
+
 #include "bsgrid_src/serialize.h"
 #include "bsgrid_src/gitter_dune_pll_impl.h"
 
   typedef GitterPll::helement_STI HElemType;   // Interface Element
+  typedef GitterPll::hbndseg HGhostType;
 
   struct GatherScatter
   {
     virtual void inlineData ( ObjectStream & str , HElemType & elem ) = 0;
     virtual void xtractData ( ObjectStream & str , HElemType & elem ) = 0;
+
+    virtual void sendData ( ObjectStream & str , const HElemType  & elem ) = 0;
+    virtual void recvData ( ObjectStream & str , HGhostType & elem ) = 0;
   };
   typedef GatherScatter GatherScatterType;
 
@@ -70,10 +75,11 @@ namespace BernhardSchuppGrid {
   typedef GitterDunePll BSGitterImplType;
 
   //typedef BndsegPllBaseXClosure < BSGitterType :: hbndseg3_GEO >   PLLFaceType;       // ParallelInterface Face
+
   typedef Hbnd3PllInternal < GitterType :: Objects :: Hbnd3Default,
       BndsegPllBaseXClosure < GitterType :: hbndseg3_GEO > ,
-      BndsegPllBaseXMacroClosure < GitterType::hbndseg3_GEO > > :: macro_t PLLFaceType;
-  typedef BndsegPllBaseXMacroClosure < GitterType::hbndseg3_GEO > PLLBndFaceType;
+      BndsegPllBaseXMacroClosure < GitterType :: hbndseg3_GEO > > :: micro_t MicroType;
+
   enum { ProcessorBoundary_t = BSGitterType:: hbndseg_STI :: closure };
 #else
   struct GatherScatter;
@@ -88,6 +94,9 @@ namespace BernhardSchuppGrid {
   {
     virtual void inlineData ( ObjectStream & str , HElemType & elem ) = 0;
     virtual void xtractData ( ObjectStream & str , HElemType & elem ) = 0;
+
+    virtual void sendData ( ObjectStream & str , HElemType & elem ) = 0;
+    virtual void recvData ( ObjectStream & str , HElemType & elem ) = 0;
   };
   typedef GatherScatter GatherScatterType;
 
@@ -119,12 +128,13 @@ namespace BernhardSchuppGrid {
   typedef GitterType::helement_STI HElementType;             // Interface Element
   typedef GitterType::hface_STI HFaceType;                   // Interface Face
   typedef GitterType::Geometric::hface3_GEO GEOFaceType;     // real Face
-  typedef GitterType::Objects::tetra_IMPL IMPLElementType;   // impl Element
+  typedef BSGitterType::Objects::tetra_IMPL IMPLElementType;   // impl Element
   typedef GitterType::Geometric::tetra_GEO GEOElementType;   // real Element
   typedef GitterType::Geometric::hasFace3 HasFace3Type;      // has Face with 3 polygons
 
-  typedef GitterType::Geometric::hbndseg3_GEO BNDFaceType;   // boundary segment
-  typedef GitterType::Objects::hbndseg3_IMPL ImplBndFaceType;  // boundary segment
+  typedef GitterType::Objects::Hbnd3Default BNDFaceType;   // boundary segment
+  typedef BSGitterType::Objects::hbndseg3_IMPL ImplBndFaceType;  // boundary segment
+  typedef BNDFaceType PLLBndFaceType;
 
   // refinement and coarsening enum for tetrahedons
   enum { refine_element_t = GitterType::Geometric::TetraRule::iso8 };
