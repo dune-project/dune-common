@@ -52,7 +52,8 @@ namespace Dune {
   /*! \internal
         Used for grid I/O
    */
-  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, UGGrid_Id, YaspGrid_Id , BSGrid_Id };
+  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, UGGrid_Id,
+                        YaspGrid_Id , BSGrid_Id, OneDGrid_Id};
 
   /*!
      Specify the format to store grid and vector data
@@ -1024,11 +1025,10 @@ namespace Dune {
     //***************************************************************
     //  Interface for Adaptation
     //***************************************************************
-    //! marks an element for refCount refines. if refCount is negative the
-    //! element is coarsened -refCount times
-    //! mark returns true if element was marked, otherwise false
-    //! **Note**: default implementation is: return false; for grids with no
-    //! adaptation
+    /** \brief Marks an element for refCount refines.
+     * If refCount is negative the element is coarsened -refCount times.
+     * \return  True if element was marked, otherwise false
+     */
     bool mark( int refCount ) { return false; }
 
     //! return whether entity could be coarsened (COARSEN) or was refined
@@ -1442,11 +1442,13 @@ namespace Dune {
        LeafIterator leafend(int maxLevel);
      */
 
-    //! refine all positive marked leaf entities
-    //! coarsen all negative marked entities if possible
-    //! return true if a least one element was refined
-    //! **Note**: this default implemenation returns always false
-    //! so grid with no adaptation doesn't need to implement these methods
+    /** \brief Refine all positive marked leaf entities
+        coarsen all negative marked entities if possible
+        \return true if a least one element was refined
+
+       **Note**: this default implementation always returns false
+        so grid with no adaptation doesn't need to implement these methods
+     */
     bool adapt ()    { return false; }
 
     //! returns true, if a least one element is marked for coarsening
