@@ -17,6 +17,7 @@
 #include "fmatrix.hh"
 #include "bcrsmatrix.hh"
 #include "io.hh"
+#include "gsetc.hh"
 
 // a simple stop watch
 class Timer
@@ -40,6 +41,12 @@ public:
     cend = times(&buf);
     return ((double)(cend-cstart))/100.0;
   }
+
+  double gettime ()
+  {
+    return ((double)(cend-cstart))/100.0;
+  }
+
 private:
   clock_t cstart,cend;
 };
@@ -214,11 +221,11 @@ void test_FieldMatrix ()
   A /= 3.14;
 
   A.umv(z,b);
-  A.umvt(b,z);
-  A.umvh(b,z);
+  A.umtv(b,z);
+  A.umhv(b,z);
   A.usmv(-1.0,z,b);
-  A.usmvt(-1.0,b,z);
-  A.usmvh(-1.0,b,z);
+  A.usmtv(-1.0,b,z);
+  A.usmhv(-1.0,b,z);
 
   std::cout << A.frobenius_norm() << " " << A.frobenius_norm2() << std::endl;
   std::cout << A.infinity_norm() << " " << A.infinity_norm_real() << std::endl;
@@ -312,6 +319,78 @@ void test_IO ()
   printmatrix(std::cout,B,"a block compressed sparse matrix","row",9,1);
 }
 
+void test_Iter ()
+{
+  // block types
+  Timer t;
+  const int BlockSize=1;
+  typedef Dune::FieldVector<double,BlockSize> VB;
+  typedef Dune::FieldMatrix<double,BlockSize,BlockSize> MB;
+
+  // a fake discretization
+  t.start();
+  const int N=1000000, K1=1, K2=1000;
+  Dune::BCRSMatrix<MB> A(N,N,5*N,Dune::BCRSMatrix<MB>::row_wise);
+  for (Dune::BCRSMatrix<MB>::CreateIterator i=A.createbegin(); i!=A.createend(); ++i)
+  {
+    i.insert(i.index());
+    if (i.index()-K1>=0) i.insert(i.index()-K1);
+    if (i.index()-K2>=0) i.insert(i.index()-K2);
+    if (i.index()+K2< N) i.insert(i.index()+K2);
+    if (i.index()+K1< N) i.insert(i.index()+K1);
+  }
+  for (Dune::BCRSMatrix<MB>::RowIterator i=A.begin(); i!=A.end(); ++i)
+    for (Dune::BCRSMatrix<MB>::ColIterator j=(*i).begin(); j!=(*i).end(); ++j)
+      if (i.index()==j.index())
+        (*j) = 4;
+      else
+        (*j) = -1;
+  t.stop();
+  std::cout << "time for build=" << t.gettime() << " seconds." << std::endl;
+  // printmatrix(std::cout,A,"system matrix","row",10,2);
+
+  // set up system
+  Dune::BlockVector<VB> x(N),b(N),d(N);
+  b=0; b[0] = 1; b[N-1] = 1;
+  // printvector(std::cout,b,"rhs","entry",1,10,2);
+
+  // same in defect formulation
+  x = 0;           // initial guess
+  std::cout.setf(std::ios_base::scientific, std::ios_base::floatfield);
+  std::cout.precision(8);
+  t.start();
+  d=b; A.mmv(x,d); // compute defect
+  std::cout << 0 << " " << d.two_norm() << std::endl;
+  Dune::BlockVector<VB> v(x); // memory for update
+  v = 1.23E-4;
+  double w=1.0;               // damping factor
+  for (int k=1; k<=50; k++)
+  {
+    bgs_update(A,v,d);        // compute update
+    x.axpy(w,v);               // update solution
+    A.usmv(-w,v,d);            // update defect
+    std::cout << k << " " << d.two_norm() << std::endl;
+  }
+  t.stop();
+  std::cout << "time for solve=" << t.gettime() << " seconds." << std::endl;
+  return;
+
+  // printvector(std::cout,x,"solution","entry",1,10,2);
+
+  // a simple iteration
+  x = 0;           // initial guess
+  d=b; A.mmv(x,d);
+  std::cout.setf(std::ios_base::scientific, std::ios_base::floatfield);
+  std::cout.precision(8);
+  std::cout << 0 << " " << d.two_norm() << std::endl;
+  for (int k=1; k<=50; k++)
+  {
+    bsor(A,x,b,1.0);
+    d=b; A.mmv(x,d);
+    std::cout << k << " " << d.two_norm() << std::endl;
+  }
+  // printvector(std::cout,x,"solution","entry",1,10,2);
+}
 
 int main (int argc , char ** argv)
 {
@@ -321,7 +400,12 @@ int main (int argc , char ** argv)
     //  test_VariableBlockVector();
     //  test_FieldMatrix();
     //  test_BCRSMatrix();
-    test_IO();
+    //	test_IO();
+    test_Iter();
+  }
+  catch (Dune::ISTLError& error)
+  {
+    std::cout << error << std::endl;
   }
   catch (Dune::Exception& error)
   {
