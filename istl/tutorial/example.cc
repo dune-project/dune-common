@@ -341,40 +341,57 @@ void test_IO ()
 
 void test_Iter ()
 {
-  // block types
   Timer t;
-  typedef Dune::K1Vector<double> VB;
-  typedef Dune::K11Matrix<double> MB;
+
+  // block types
+  const int BlockSize = 6;
+  typedef Dune::FieldVector<double,BlockSize> VB;
+  typedef Dune::FieldMatrix<double,BlockSize,BlockSize> MB;
 
   // a fake discretization
   t.start();
-  const int N=1000000, K1=1, K2=1000;
+
+  // build little blocks
+  MB D=0;
+  for (int i=0; i<BlockSize; i++)
+    for (int j=0; j<BlockSize; j++)
+      if (i==j) D[i][j] = 4+(BlockSize-1);else D[i][j] = -1;
+  //   printmatrix(std::cout,D,"diagonal block","row",10,2);
+
+  MB E=0;
+  for (int i=0; i<BlockSize; i++)
+    E[i][i] = -1;
+  //   printmatrix(std::cout,E,"offdiagonal block","row",10,2);
+
+  // make a block compressed row matrix with five point stencil
+  const int N=10000, BW1=1, BW2=100;
   Dune::BCRSMatrix<MB> A(N,N,5*N,Dune::BCRSMatrix<MB>::row_wise);
   for (Dune::BCRSMatrix<MB>::CreateIterator i=A.createbegin(); i!=A.createend(); ++i)
   {
     i.insert(i.index());
-    if (i.index()-K1>=0) i.insert(i.index()-K1);
-    if (i.index()-K2>=0) i.insert(i.index()-K2);
-    if (i.index()+K2< N) i.insert(i.index()+K2);
-    if (i.index()+K1< N) i.insert(i.index()+K1);
+    if (i.index()-BW1>=0) i.insert(i.index()-BW1);
+    if (i.index()+BW1< N) i.insert(i.index()+BW1);
+    if (i.index()-BW2>=0) i.insert(i.index()-BW2);
+    if (i.index()+BW2< N) i.insert(i.index()+BW2);
   }
   for (Dune::BCRSMatrix<MB>::RowIterator i=A.begin(); i!=A.end(); ++i)
     for (Dune::BCRSMatrix<MB>::ColIterator j=(*i).begin(); j!=(*i).end(); ++j)
       if (i.index()==j.index())
-        (*j) = 4;
+        (*j) = D;
       else
-        (*j) = -1;
+        (*j) = E;
   t.stop();
   std::cout << "time for build=" << t.gettime() << " seconds." << std::endl;
-  // printmatrix(std::cout,A,"system matrix","row",10,2);
+  //   printmatrix(std::cout,A,"system matrix","row",8,1);
 
   // set up system
   Dune::BlockVector<VB> x(N),b(N),d(N);
-  b=0; b[0] = 1; b[N-1] = 1;
-  // printvector(std::cout,b,"rhs","entry",1,10,2);
+  x=0; x[0]=1; x[N-1]=2;
+  //   printvector(std::cout,x,"exact solution","entry",10,10,2);
+  b=0; A.umv(x,b); // set right hand side
+  x=0;             // initial guess
 
-  // same in defect formulation
-  x = 0;           // initial guess
+  // solve in defect formulation
   std::cout.setf(std::ios_base::scientific, std::ios_base::floatfield);
   std::cout.precision(8);
   t.start();
@@ -383,15 +400,23 @@ void test_Iter ()
   Dune::BlockVector<VB> v(x); // memory for update
   v = 1.23E-4;
   double w=1.0;               // damping factor
-  for (int k=1; k<=10; k++)
+  for (int k=1; k<=20; k++)
   {
-    bgs_update_lowlevel(A,v,d);        // compute update
-    x.axpy(w,v);               // update solution
-    A.usmv(-w,v,d);            // update defect
+    v = 0;
+    bgs(A,v,d);            // compute update
+    x += v;                    // update solution
+    A.mmv(v,d);                // update defect
+    //    bltsolve(A,v,d,w);   // compute update
+    //    x += v;              // update solution
+    //    A.mmv(v,d);          // update defect
+    //    butsolve(A,v,d,w);   // compute update
+    //    x += v;              // update solution
+    //    A.mmv(v,d);          // update defect
     std::cout << k << " " << d.two_norm() << std::endl;
   }
   t.stop();
   std::cout << "time for solve=" << t.gettime() << " seconds." << std::endl;
+  //   printvector(std::cout,x,"computed solution","entry",10,10,2);
   return;
 
   // printvector(std::cout,x,"solution","entry",1,10,2);
