@@ -915,6 +915,8 @@ namespace Dune
   {
     assert(elNum_ >= 0);
     return elNum_;
+    //Entity en(*this);
+    //return grid_.levelIndexSet().index(en);
   }
 
   // default
@@ -1231,6 +1233,8 @@ namespace Dune
   inline int AlbertaGridEntity <0,dim,GridImp>::
   index() const
   {
+    //Entity en(*this);
+    //return grid_.levelIndexSet().index(en);
     return grid_.template indexOnLevel<0>( globalIndex() , level_ );
   }
 
@@ -1665,9 +1669,9 @@ namespace Dune
   {
     if(!boundaryEntity_)
     {
-      boundaryEntity_ = new AlbertaGridBoundaryEntity<GridImp> ();
+      boundaryEntity_ = new  MakeableBndEntityType ();
     }
-    boundaryEntity_->setElInfo(elInfo_,neighborCount_);
+    (*boundaryEntity_).setElInfo(elInfo_,neighborCount_);
     return (*boundaryEntity_);
   }
 
@@ -2254,7 +2258,7 @@ namespace Dune
       stack->stack_used = 1;
 
       ALBERTA fillMacroInfo(stack, stack->traverse_mel,
-                            stack->elinfo_stack+stack->stack_used);
+                            stack->elinfo_stack+stack->stack_used, level_);
 
       stack->info_stack[stack->stack_used] = 0;
 
@@ -2286,7 +2290,7 @@ namespace Dune
         stack->stack_used = 1;
 
         ALBERTA fillMacroInfo(stack, stack->traverse_mel,
-                              stack->elinfo_stack+stack->stack_used);
+                              stack->elinfo_stack+stack->stack_used, level_ );
 
         stack->info_stack[stack->stack_used] = 0;
 
@@ -2356,7 +2360,7 @@ namespace Dune
       stack->stack_used = 1;
 
       ALBERTA fillMacroInfo(stack, stack->traverse_mel,
-                            stack->elinfo_stack+stack->stack_used);
+                            stack->elinfo_stack+stack->stack_used, level_ );
 
       stack->info_stack[stack->stack_used] = 0;
 
@@ -2397,7 +2401,7 @@ namespace Dune
         stack->stack_used = 1;
 
         ALBERTA fillMacroInfo(stack, stack->traverse_mel,
-                              stack->elinfo_stack+stack->stack_used);
+                              stack->elinfo_stack+stack->stack_used, level_ );
 
         stack->info_stack[stack->stack_used] = 0;
 
@@ -2479,7 +2483,7 @@ namespace Dune
       stack->stack_used = 1;
 
       ALBERTA fillMacroInfo(stack, stack->traverse_mel,
-                            stack->elinfo_stack+stack->stack_used);
+                            stack->elinfo_stack+stack->stack_used, level_ );
 
       stack->info_stack[stack->stack_used] = 0;
 
@@ -2513,7 +2517,7 @@ namespace Dune
         stack->stack_used = 1;
 
         ALBERTA fillMacroInfo(stack, stack->traverse_mel,
-                              stack->elinfo_stack+stack->stack_used);
+                              stack->elinfo_stack+stack->stack_used, level_ );
 
         stack->info_stack[stack->stack_used] = 0;
 
@@ -2684,9 +2688,12 @@ namespace Dune
     , isMarked_ (false)
     , time_ (0.0) , hasLevelIndex_ (true)
     , nv_ (dim+1) , dof_ (0) , myProc_ (0)
+    , hIndexSet_(*this,maxHierIndex_)
+    , levelIndexSet_(0)
   {
     vertexMarker_ = new AlbertaMarkerVector ();
-    dofvecs_.elNumbers  = 0;
+
+    for(int i=0; i<AlbertHelp::numOfElNumVec; i++) dofvecs_.elNumbers[i] = 0;
     dofvecs_.elNewCheck = 0;
     dofvecs_.owner      = 0;
   }
@@ -2696,6 +2703,8 @@ namespace Dune
   {
     ALBERTA AlbertHelp::getDofVecs(&dofvecs_);
     ALBERTA AlbertHelp::setDofVec ( dofvecs_.owner, -1 );
+
+    hIndexSet_.initializePointers(dofvecs_);
 
     // dont delete dofs on higher levels
     mesh_->preserve_coarse_dofs = 1;
@@ -2732,8 +2741,8 @@ namespace Dune
       mel = mel->next;
       if( !mel )
       {
-        ALBERTA AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
-        ALBERTA AlbertHelp::swapElNum ( dofvecs_.elNumbers, first_el );
+        ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
+        ALBERTA AlbertHelp::swapElNum ( dofvecs_.elNumbers[0], first_el );
         ALBERTA AlbertHelp::removeIndexManager_elmem_cc();
       }
       else
@@ -2741,7 +2750,7 @@ namespace Dune
         ALBERTA EL * sec_el   = mel->el;
         assert(sec_el != 0);
 
-        ALBERTA AlbertHelp::swapElNum ( dofvecs_.elNumbers, first_el , sec_el );
+        ALBERTA AlbertHelp::swapElNum ( dofvecs_.elNumbers[0], first_el , sec_el );
       }
       std::cerr << "AlbertaGrid: LevelIndex is used!\n";
     }
@@ -2758,6 +2767,8 @@ namespace Dune
     , isMarked_ (false)
     , time_ (0.0) , hasLevelIndex_ (levInd)
     , nv_ (dim+1) , dof_ (0) , myProc_ (-1)
+    , hIndexSet_(*this,maxHierIndex_)
+    , levelIndexSet_(0)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
@@ -2773,7 +2784,7 @@ namespace Dune
     }
 
     vertexMarker_ = new AlbertaMarkerVector ();
-    ALBERTA AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
+    ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
 
     if(makeNew)
     {
@@ -2796,6 +2807,8 @@ namespace Dune
     , isMarked_ (false)
     , time_ (0.0) , hasLevelIndex_ (levInd)
     , nv_ (dim+1) , dof_ (0), myProc_ (proc)
+    , hIndexSet_(*this,maxHierIndex_)
+    , levelIndexSet_(0)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
@@ -2805,105 +2818,20 @@ namespace Dune
     ALBERTA MESH * oldMesh = oldGrid.getMesh();
 
     vertexMarker_ = new AlbertaMarkerVector ();
-    ALBERTA AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
+    ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
 
     DUNE_THROW(AlbertaError,"To be revised!");
-#if 0
-    {
-      ALBERTA MESH * fakeMesh = ALBERTA get_mesh("PartialGrid",
-                                                 ALBERTA AlbertHelp::emptyDofAdmin, ALBERTA AlbertHelp::initLeafData);
-
-      char fakename [1024];
-      sprintf(fakename,"_tmp_fakemesh_%d_.macro",proc);
-
-      int length = oldMesh->n_elements;
-      int * ownvec = (int *) std::malloc(length * sizeof(int));
-
-      {
-        ALBERTA MACRO_DATA mdata;
-
-        {
-          int no = 0;
-          typedef LeafIterator LeafIteratorType;
-
-          LeafIteratorType it    = oldGrid.leafbegin( oldGrid.maxlevel () );
-          LeafIteratorType endit = oldGrid.leafend  ( oldGrid.maxlevel () );
-
-          for(; it != endit; ++it )
-          {
-            ownvec[no] = it->owner();
-            no++;
-          }
-          assert(no == length);
-        }
-
-#ifdef _ALBERTA_H_
-        ALBERTA write_macro(oldMesh,fakename);
-        ALBERTA read_macro(fakeMesh,fakename,ALBERTA AlbertHelp::initBoundary);
-#else
-        ALBERTA AlbertHelp::mesh2macro_data( oldMesh , &mdata );
-
-        if(!mdata.neigh) ALBERTA AlbertHelp::compute_neigh_fast(&mdata);
-
-        // to be revised
-        if(!mdata.boundary) ALBERTA AlbertHelp::dirichlet_boundary(&mdata);
-
-        ALBERTA AlbertHelp::macro_data2mesh( fakeMesh , &mdata,
-                                             ALBERTA AlbertHelp::initBoundary );
-        ALBERTA AlbertHelp::free_macro_data ( &mdata );
-#endif
-      }
-
-      ALBERTA AlbertHelp::storeMacroElements(fakeMesh);
-      // make the partition, remove elements that not belong to processor proc
-      ALBERTA AlbertHelp::removeMacroEls(fakeMesh, proc, ownvec);
-
-      mesh_ = ALBERTA get_mesh("PartialGrid", ALBERTA AlbertHelp::initDofAdmin,
-                               ALBERTA AlbertHelp::initLeafData);
-
-      {
-
-#ifdef _ALBERTAA_H_
-        ALBERTA write_macro ( fakeMesh, fakename );
-        ALBERTA read_macro  ( mesh_ , fakename, ALBERT AlbertHelp::initBoundary);
-#else
-        ALBERTA MACRO_DATA mdata;
-        ALBERTA AlbertHelp::mesh2macro_data( fakeMesh , &mdata );
-
-        if(!mdata.neigh) ALBERTA AlbertHelp::compute_neigh_fast(&mdata);
-
-        // to be revised
-        if(!mdata.boundary) ALBERTA AlbertHelp::dirichlet_boundary(&mdata);
-
-        ALBERTA AlbertHelp::macro_data2mesh( mesh_ , &mdata,
-                                             ALBERTA AlbertHelp::initBoundary );
-        ALBERTA AlbertHelp::free_macro_data ( &mdata );
-#endif
-      }
-
-      // restore the old mesh and free it
-      ALBERTA AlbertHelp::resetMacroElements(fakeMesh);
-      ALBERTA free_mesh(fakeMesh);
-
-      // delete fake macro file
-      //std::remove ( fakename );
-
-      // setup AlbertaGrid Interface to Albert Mesh
-      initGrid(proc);
-
-      // make the original owners
-      ALBERTA AlbertHelp::copyOwner(dofvecs_.owner,ownvec);
-      std::free(ownvec); ownvec = 0;
-
-    }
-#endif
   }
 
   template < int dim, int dimworld >
   inline void AlbertaGrid < dim, dimworld >::removeMesh()
   {
+    if(levelIndexSet_) delete levelIndexSet_;
     if(vertexMarker_) delete vertexMarker_;
-    if(dofvecs_.elNumbers) ALBERTA free_dof_int_vec(dofvecs_.elNumbers);
+
+    for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
+      if(dofvecs_.elNumbers[i]) ALBERTA free_dof_int_vec(dofvecs_.elNumbers[i]);
+
     if(dofvecs_.elNewCheck) ALBERTA free_dof_int_vec(dofvecs_.elNewCheck);
     if(dofvecs_.owner ) ALBERTA free_dof_int_vec(dofvecs_.owner);
 
@@ -3082,7 +3010,7 @@ namespace Dune
     wasChanged_ = false;
 
     // set global pointer to index manager in elmem.cc
-    ALBERTA AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
+    ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
     ALBERTA AlbertHelp::clearDofVec ( dofvecs_.elNewCheck );
 
     flag = ALBERTA AlbertRefine ( mesh_ );
@@ -3231,10 +3159,11 @@ namespace Dune
   template < int dim, int dimworld >
   inline void AlbertaGrid < dim, dimworld >::arrangeDofVec()
   {
-    elNumVec_ = (dofvecs_.elNumbers)->vec;   assert(elNumVec_);
+    //hIndexSet_.updateVecPointers(dofvecs_);
+
     elNewVec_ = (dofvecs_.elNewCheck)->vec;  assert(elNewVec_);
     ownerVec_ = (dofvecs_.owner)->vec;       assert(ownerVec_);
-    elAdmin_ = dofvecs_.elNumbers->fe_space->admin;
+    elAdmin_ = dofvecs_.elNumbers[0]->fe_space->admin;
 
     // see Albert Doc. , should stay the same
     const_cast<int &> (nv_)  = elAdmin_->n0_dof[CENTER];
@@ -3245,12 +3174,7 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::getElementNumber ( ALBERTA EL * el ) const
   {
-    if(el)
-      return elNumVec_[el->dof[dof_][nv_]];
-    else
-    {
-      return -1;
-    }
+    return hIndexSet_.getIndex(el,0,Int2Type<dim>());
   };
 
   template < int dim, int dimworld >
@@ -3273,7 +3197,7 @@ namespace Dune
 
     // determine new maxlevel and mark neighbours
     maxlevel_ = ALBERTA AlbertHelp::calcMaxLevelAndMarkNeighbours
-                  ( mesh_, dofvecs_.elNumbers , maxHierIndex_[0] );
+                  ( mesh_, dofvecs_.elNumbers[0] , maxHierIndex_[0] );
 
     // mark vertices on elements
     vertexMarker_->markNewVertices(*this);
@@ -3315,15 +3239,18 @@ namespace Dune
     char * ownerfile = 0;
     if(filename)
     {
-      elnumfile = new char [strlen(filename) + 6];
+      elnumfile = new char [strlen(filename) + 8];
       sprintf(elnumfile,"%s_num",filename);
       ownerfile = new char [strlen(filename) + 6];
       sprintf(ownerfile,"%s_own",filename);
     }
 
     // strore element numbering to file
-    sprintf(elnumfile,"%s_num",filename);
-    ALBERTA write_dof_int_vec_xdr(dofvecs_.elNumbers,elnumfile);
+    for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
+    {
+      sprintf(elnumfile,"%s_num%d",filename,i);
+      ALBERTA write_dof_int_vec_xdr(dofvecs_.elNumbers[i],elnumfile);
+    }
     if(elnumfile) delete [] elnumfile;
 
     if(myProcessor() >= 0)
@@ -3358,13 +3285,16 @@ namespace Dune
     char * ownerfile = 0;
     if(filename)
     {
-      elnumfile = new char [strlen(filename) + 6];
-      sprintf(elnumfile,"%s_num",filename);
+      elnumfile = new char [strlen(filename) + 8];
       ownerfile = new char [strlen(filename) + 6];
       sprintf(ownerfile,"%s_own",filename);
     }
 
-    dofvecs_.elNumbers  = ALBERTA read_dof_int_vec_xdr(elnumfile, mesh_ , 0 );
+    for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
+    {
+      sprintf(elnumfile,"%s_num%d",filename,i);
+      dofvecs_.elNumbers[i] = ALBERTA read_dof_int_vec_xdr(elnumfile, mesh_ , 0 );
+    }
     if(elnumfile) delete [] elnumfile;
 
     // if owner file exists, read it
@@ -3413,7 +3343,7 @@ namespace Dune
       time = 0.0;
 
     vertexMarker_ = new AlbertaMarkerVector (); assert(vertexMarker_);
-    ALBERTA AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
+    ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
 
     initGrid(0,false);
     return true;
@@ -3464,6 +3394,8 @@ namespace Dune
 
     // if hasLevelIndex_ == false then the LevelIndex should not be generated
     if(!hasLevelIndex_) return;
+
+
 
     // the easiest way, in Albert all elements have unique global element
     // numbers, therefore we make one big array from which we get with the
