@@ -111,24 +111,70 @@ namespace Dune {
   }
 #endif
 
-#ifdef _3
-  /** \brief Why can't I leave dimworld unspezialized? */
   template<>
   inline Vec<3,UGCtype>&
   UGGridIntersectionIterator < 3,3 >::unit_outer_normal ()
   {
-    std::cerr << "unit_outer_normal<3,3> not yet implemented!\n";
-    return outNormal_;
+#ifdef _3
+    // Get the first three vertices of this side.  Since quadrilateral faces
+    // are plane in UG, the normal doesn't depend on the fourth vertex
+#define CORNER_OF_SIDE(p, s, c)   (UG3d::element_descriptors[UG_NS<3>::Tag(p)]->corner_of_side[(s)][(c)])
+    UG3d::VERTEX* a = UG_NS<3>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 0))->myvertex;
+    UG3d::VERTEX* b = UG_NS<3>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 1))->myvertex;
+    UG3d::VERTEX* c = UG_NS<3>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 2))->myvertex;
+#undef CORNER_OF_SIDE
+
+    Vec<3,UGCtype> aPos, bPos, cPos;
+
+#define CVECT(p)   ((p)->iv.x)
+#define V3_COPY(A,C)    {(C)[0] = (A)[0];   (C)[1] = (A)[1];   (C)[2] = (A)[2];\
+}
+    V3_COPY(CVECT(a), aPos);
+    V3_COPY(CVECT(b), bPos);
+    V3_COPY(CVECT(c), cPos);
+#undef CVECT
+#undef V3_COPY
+
+    Vec<3> ba = bPos - aPos;
+    Vec<3> ca = cPos - aPos;
+
+    //     std::cout << "aPos: " << aPos << std::endl;
+    //     std::cout << "bPos: " << bPos << std::endl;
+    //     std::cout << "cPos: " << cPos << std::endl;
+
+#define V3_VECTOR_PRODUCT(A,B,C) {(C)[0] = (A)[1]*(B)[2] - (A)[2]*(B)[1];\
+                                  (C)[1] = (A)[2]*(B)[0] - (A)[0]*(B)[2];\
+                                  (C)[2] = (A)[0]*(B)[1] - (A)[1]*(B)[0];}
+
+    V3_VECTOR_PRODUCT(ba, ca, outerNormal_);
+#undef V3_VECTOR_PRODUCT
+
+    // normalize
+    outerNormal_ *= (1/outerNormal_.norm2());
+#endif
+    return outerNormal_;
 
   }
-#endif
 
   template<>
   inline Vec<2,UGCtype>&
   UGGridIntersectionIterator < 2,2 >::unit_outer_normal ()
   {
-    std::cerr << "unit_outer_normal<2,2> not yet implemented!\n";
-    return outNormal_;
+#ifdef _2
+    // Get the vertices of this side.
+#define CORNER_OF_SIDE(p, s, c)   (UG2d::element_descriptors[UG_NS<2>::Tag(p)]->corner_of_side[(s)][(c)])
+    UGCtype* aPos = UG_NS<2>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 0))->myvertex->iv.x;
+    UGCtype* bPos = UG_NS<2>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 1))->myvertex->iv.x;
+#undef CORNER_OF_SIDE
+
+    // compute normal
+    outerNormal_[0] = bPos[1] - aPos[1];
+    outerNormal_[1] = aPos[0] - bPos[0];
+
+    // normalize
+    outerNormal_ *= (1/outerNormal_.norm2());
+#endif
+    return outerNormal_;
   }
 
   template<int dim, int dimworld>

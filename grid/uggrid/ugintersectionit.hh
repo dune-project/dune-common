@@ -30,9 +30,6 @@ namespace Dune {
     //! The default Constructor makes empty Iterator
     UGGridIntersectionIterator();
 
-    //! The default Constructor
-    //UGGridIntersectionIterator();
-
     //! The Destructor
     ~UGGridIntersectionIterator() {};
 
@@ -117,7 +114,7 @@ namespace Dune {
     UGGridEntity<0,dim,dimworld> virtualEntity_;
 
     //! vector storing the outer normal
-    //Vec<dimworld,UGCtype> outerNormal_;
+    Vec<dimworld,UGCtype> outerNormal_;
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
@@ -129,9 +126,6 @@ namespace Dune {
 
     //! BoundaryEntity
     UGGridBoundaryEntity<dim,dimworld> boundaryEntity_;
-
-    //! !
-    Vec<dimworld,UGCtype> outNormal_;
 
     //! The element whose neighbors we are looking at
     typename TargetType<0,dimworld>::T* center_;
