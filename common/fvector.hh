@@ -551,7 +551,7 @@ namespace Dune {
         return p+i;
       }
 
-      // return index corresponding to pointer
+      //! return index corresponding to pointer
       int index () const
       {
         return i;
@@ -725,10 +725,7 @@ namespace Dune {
       return n;
     }
 
-    //===== conversion operator
-
-    operator K () {return *p;}
-
+    //! Send vector to output stream
     void print (std::ostream& s) const
     {
       for (int i=0; i<n; i++)
@@ -738,19 +735,18 @@ namespace Dune {
           s << p[i];
     }
 
+    //! Send vector to output stream
+    friend std::ostream& operator<< (std::ostream& s, const FieldVector<K,n>& v)
+    {
+      v.print(s);
+      return s;
+    }
+
   private:
     // the data, very simply a built in array
     K p[n];
   };
 
-
-  // Ausgabe
-  template<class K, int n>
-  std::ostream& operator<< (std::ostream& s, const FieldVector<K,n>& v)
-  {
-    v.print(s);
-    return s;
-  }
 
 
   // forward declarations
@@ -781,15 +777,17 @@ namespace Dune {
 
     //===== construction
 
+    /** \brief Default constructor */
     K1Vector ()
     {       }
 
+    /** \brief Constructor with a given scalar */
     K1Vector (const K& k)
     {
       p = k;
     }
 
-    //===== assignment from basetype
+    /** \brief Assignment from the base type */
     K1Vector& operator= (const K& k)
     {
       p = k;
@@ -799,13 +797,13 @@ namespace Dune {
     //===== access to data
 
     //! random access
-    K& operator() (void)
+    K& operator() () DUNE_DEPRECATED
     {
       return p;
     }
 
     //! same for read only access
-    const K& operator() (void) const
+    const K& operator() () const DUNE_DEPRECATED
     {
       return p;
     }
@@ -891,7 +889,7 @@ namespace Dune {
       return sqrt(fvmeta_abs2(p));
     }
 
-    //! sqare of two norm (sum over squared values of entries), need for block recursion
+    //! square of two norm (sum over squared values of entries), need for block recursion
     double two_norm2 () const
     {
       return fvmeta_abs2(p);
@@ -918,7 +916,7 @@ namespace Dune {
       return 1;
     }
 
-    //! dimension of the vector space
+    //! dimension of the vector space (==1)
     int dim () const
     {
       return 1;
@@ -926,7 +924,11 @@ namespace Dune {
 
     //===== conversion operator
 
+    /** \brief Conversion operator */
     operator K () {return p;}
+
+    /** \brief Const conversion operator */
+    operator K () const {return p;}
 
   private:
     // the data
