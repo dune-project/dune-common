@@ -34,18 +34,19 @@ namespace Dune {
     typedef typename FunctionSpaceType::Domain DomainVecType;
 
 
-    //! ???
+    //! return entry i,j of the local matrix
     template<class EntityType>
     double getLocalMatrixEntry( EntityType &entity, const int i, const int j ) const {
       return asImp().getLocalMatrixEntry( entity, i, j );
     }
 
-    //! ???
+    //! assemble local matrix
     template <class EntityType,class MatrixImp>
-    void getLocalMatrix( EntityType &entity, const int matSize, MatrixImp& mat) const {
-      return asImp().getLocalMatrix( entity, matSize, mat);
+    void getLocalMatrix( EntityType &entity, const int matSize, MatrixImp& mat) const
+    {
+      asImp().getLocalMatrix( entity, matSize, mat);
+      return ;
     }
-
 
     //! ???
     MatrixType *newEmptyMatrix( ) const {
@@ -96,9 +97,6 @@ namespace Dune {
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
       GridType &grid = functionSpace_.getGrid();
-
-
-      std::cout << "Assemble Matrix!" << std::endl ;
 
       {
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
@@ -217,8 +215,8 @@ namespace Dune {
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
       int level = arg.getFunctionSpace().getGrid().maxlevel();
 
-      DofIteratorType dest_it = dest.dbegin( level );
-      DofIteratorType arg_it = arg.dbegin( level );
+      DofIteratorType dest_it = dest.dbegin();
+      const DofIteratorType arg_it = arg.dbegin();
 
       dest.clear();
 
@@ -330,7 +328,7 @@ namespace Dune {
     template <class EntityType>
     void applyLocal ( EntityType &en ) const
     {
-      DiscFunctionType & arg  = const_cast<DiscFunctionType &> (*arg_);
+      const DiscFunctionType & arg  = (*arg_);
       DiscFunctionType & dest = (*dest_);
 
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
@@ -350,8 +348,8 @@ namespace Dune {
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
       int level = grid.maxlevel();
 
-      DofIteratorType dest_it = dest.dbegin( level );
-      DofIteratorType arg_it = arg.dbegin( level );
+      DofIteratorType dest_it = dest.dbegin();
+      const DofIteratorType arg_it = arg.dbegin();
 
       const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
       int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
@@ -408,14 +406,14 @@ namespace Dune {
 
       GridType &grid = functionSpace_.getGrid();
 
-      DiscFunctionType & arg  = const_cast<DiscFunctionType &> (*arg_);
+      const DiscFunctionType & arg  = (*arg_);
       DiscFunctionType & dest = (*dest_);
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
       int level = grid.maxlevel();
 
-      DofIteratorType dest_it = dest.dbegin( level );
-      DofIteratorType arg_it = arg.dbegin( level );
+      DofIteratorType dest_it = dest.dbegin( );
+      const DofIteratorType arg_it = arg.dbegin( );
 
       NeighIt nit = en.ibegin();
       NeighIt endnit = en.iend();

@@ -177,7 +177,7 @@ namespace Dune {
                        const DFDomainType &Arg, DFRangeType &Dest ) const
     {
       // erase destination function
-      Dest.clearLevel ( this->level_ );
+      Dest.clear ();
 
       // run through grid and apply the local operator
       for( ; it != endit; ++it )
