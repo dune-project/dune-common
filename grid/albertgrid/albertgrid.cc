@@ -2463,6 +2463,7 @@ namespace Dune
     // default iterator type no supported
     default :
     {
+      std::cerr << "AlbertGridLevelIterator::goNextEntity: Unsupported IteratorType! \n";
       assert(elinfo != NULL);
       return NULL;
     }
@@ -2570,7 +2571,7 @@ namespace Dune
   inline ALBERT EL_INFO * AlbertGridLevelIterator<codim,dim,dimworld,pitype>::
   traverseElLevelInteriorBorder(ALBERT TRAVERSE_STACK *stack)
   {
-    FUNCNAME("traverseElLevel");
+    FUNCNAME("traverseElLevelInteriorBorder");
     ALBERT EL *el;
     int i;
     okReturn_ = false;
@@ -3060,9 +3061,10 @@ namespace Dune
 
         {
           int no = 0;
-          typedef AlbertGridLevelIterator<0,dim,dimworld,All_Partition> LeafIteratorType;
-          LeafIteratorType it    = oldGrid.leafbegin (oldGrid.maxlevel ());
-          LeafIteratorType endit = oldGrid.leafend   (oldGrid.maxlevel ());
+          typedef LeafIterator LeafIteratorType;
+
+          LeafIteratorType it    = oldGrid.leafbegin( oldGrid.maxlevel (),All);
+          LeafIteratorType endit = oldGrid.leafend  ( oldGrid.maxlevel (),All);
 
           for(; it != endit; ++it )
           {
@@ -3127,9 +3129,39 @@ namespace Dune
 
       // make the original owners
       ALBERT AlbertHelp::copyOwner(dofvecs_.owner,ownvec);
-      std::free(ownvec); ownvec = NULL;
+      std::free(ownvec); ownvec = 0;
+
     }
   }
+
+  /*
+     template < int dim, int dimworld >
+     inline void AlbertGrid < dim, dimworld >::checkBoundary()
+     {
+      {
+        typedef LeafIterator LeafIteratorType;
+        LeafIteratorType it    = this->leafbegin( this->maxlevel (),All);
+        LeafIteratorType endit = this->leafend  ( this->maxlevel (),All);
+
+        for(; it != endit; ++it )
+        {
+          std::cout << "Boundary on element " << it->global_index() << "\n";
+          typedef AlbertGridIntersectionIterator<dim,dimworld> InterIt;
+
+          InterIt nit    = it->ibegin();
+          InterIt endnit = it->iend();
+
+          for(; nit != endnit; ++nit)
+          {
+            if(nit.boundary())
+            {
+              std::cout << nit.boundaryEntity().id() << "\n";
+            }
+          }
+        }
+      }
+     }
+   */
 
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::~AlbertGrid()
@@ -3532,6 +3564,19 @@ namespace Dune
     sprintf(elnumfile,"%s_num",filename);
     ALBERT write_dof_int_vec_xdr(dofvecs_.elNumbers,elnumfile);
 
+    if(myProcessor() >= 0)
+    {
+      int val = -1;
+      int entry = ALBERT AlbertHelp::saveMyProcNum(dofvecs_.owner,myProcessor(),val);
+
+      char ownerfile[2048];
+      sprintf(ownerfile,"%s_own",filename);
+      ALBERT write_dof_int_vec_xdr(dofvecs_.owner,ownerfile);
+
+      // set old value of owner vec
+      dofvecs_.owner->vec[entry] = val;
+    }
+
     // use write_mesh_xdr, but works not correctly
     return static_cast<bool> (ALBERT write_mesh (mesh_ , filename, time) );
   }
@@ -3548,6 +3593,23 @@ namespace Dune
     char elnumfile[2048];
     sprintf(elnumfile,"%s_num",filename);
     dofvecs_.elNumbers  = ALBERT read_dof_int_vec_xdr(elnumfile, mesh_ , NULL );
+
+    // if owner file exists, read it
+    {
+      dofvecs_.owner = 0;
+      FILE * file=0;
+      char ownerfile[2048];
+      sprintf(ownerfile,"%s_own",filename);
+      file = fopen(ownerfile,"r");
+      if(file)
+      {
+        fclose(file);
+        dofvecs_.owner = ALBERT read_dof_int_vec_xdr(ownerfile, mesh_ , NULL );
+        const_cast<int &> (myProc_) = ALBERT AlbertHelp::restoreMyProcNum(dofvecs_.owner);
+      }
+    }
+
+    // make the rest of the dofvecs
     ALBERT AlbertHelp::makeTheRest(&dofvecs_);
 
     arrangeDofVec();
