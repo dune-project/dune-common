@@ -39,6 +39,7 @@ namespace Dune
     values_.resize(dim_[0]*nz_);
     col_.resize(dim_[0]*nz_);
 
+    values_.set(0.0);
     col_.set(-1);
   }
 
