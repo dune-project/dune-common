@@ -23,21 +23,19 @@ ac_save_CPPFLAGS="$CPPFLAGS"
 ac_save_LIBS="$LIBS"
 # LIBS=""
 
-## do nothing if --without-albert is used
-if test x$with_albert != xno ; then
+## do nothing if no --with-albert was supplied
+if test x$with_albert != x && test x$with_albert != xno ; then
 
-# is --with-albert=bla used?
-if test x$with_albert != x ; then
-    if test -d $with_albert; then
-      # expand tilde / other stuff
-      ALBERTROOT=`cd $with_albert && pwd`
-    else
-      AC_MSG_ERROR([directory $with_albert does not exist])
-    fi      
-else
-  # use some default value...
-  ALBERTROOT="/usr/local/albert"
-fi
+  if test x$with_albert == xyes ; then
+    AC_MSG_ERROR([You have to provide a directory --with-albert=PATH])
+  fi
+
+  if test -d $with_albert; then
+    # expand tilde / other stuff
+    ALBERTROOT=`cd $with_albert && pwd`
+  else
+    AC_MSG_ERROR([Path $with_albert supplied for --with-albert does not exist!])
+  fi
 
 ALBERT_LIB_PATH="$ALBERTROOT/lib"
 ALBERT_INCLUDE_PATH="$ALBERTROOT/include"
