@@ -15,7 +15,7 @@
 #include <string.h>
 
 // local inclides
-#include "common/array.hh"
+#include "dune/common/array.hh"
 
 
 namespace SG {
