@@ -311,7 +311,10 @@ namespace Dune {
     typedef K block_type;
 
     //! We are at the leaf of the block recursion
-    enum {blocklevel = 0};
+    enum {blocklevel = 1};
+
+    //! export size
+    enum {size = n};
 
 
     //===== assignment from scalar
@@ -342,79 +345,69 @@ namespace Dune {
       return p[i];
     }
 
-    //! random access via round brackets supplied to be consistent with matrix
-    K& operator() (int i)
-    {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
-#endif
-      return p[i];
-    }
-
-    //! same for read only access
-    const K& operator() (int i) const
-    {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
-#endif
-      return p[i];
-    }
-
     //! Iterator class for sequential access
     class Iterator
     {
     public:
       //! constructor
-      Iterator (K* _p)
+      Iterator (K* _p, int _i)
       {
         p = _p;
+        i = _i;
       }
 
       //! prefix increment
       Iterator& operator++()
       {
-        ++p;
+        ++i;
         return *this;
       }
 
       //! equality
-      bool operator== (const Iterator& i) const
+      bool operator== (const Iterator& it) const
       {
-        return p==i.p;
+        return (p+i)==(it.p+it.i);
       }
 
       //! inequality
-      bool operator!= (const Iterator& i) const
+      bool operator!= (const Iterator& it) const
       {
-        return p!=i.p;
+        return (p+i)!=(it.p+it.i);
       }
 
       //! dereferencing
       K& operator* ()
       {
-        return *p;
+        return p[i];
       }
 
       //! arrow
       K* operator-> ()
       {
-        return p;
+        return p+i;
+      }
+
+      //! return index
+      int index ()
+      {
+        return i;
       }
 
     private:
-      K* _p;
+      K* p;
+      int i;
     };
 
     //! begin iterator
-    Iterator begin () const
+    Iterator begin ()
     {
-      return Iterator(p);
+      return Iterator(p,0);
     }
 
     //! end iterator
-    Iterator end () const
+    Iterator end ()
     {
-      return Iterator(p+n);
+      return Iterator(p,n);
     }
 
 
