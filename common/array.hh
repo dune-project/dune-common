@@ -158,6 +158,7 @@ namespace Dune
   inline Array<double >& Array<double >::operator= (const double t)
   {
     for (int i=0; i<n; i++) p[i] = t;
+    return (*this);
   }
 
   template <class T>
