@@ -59,11 +59,17 @@ namespace Dune {
       using Simplex::getPermutation;
       using Simplex::referenceToKuhn;
       using Simplex::kuhnToReference;
+      using Simplex::SimplexTraits;
 
       // ////////////////////////////////////
       //
       //  Refine a hypercube with simplices
       //
+
+      template<int mydimension, int coorddimension, class GridImp>
+      class Geometry;
+      template<int mydimension, class GridImp>
+      class MakeableGeometry;
 
       // forward declaration of the iterator base
       template<int dimension, class CoordType, int codimension>
@@ -72,8 +78,13 @@ namespace Dune {
       template<int dimension_, class CoordType>
       class RefinementImp
       {
+        friend class Geometry<dimension_, dimension_, RefinementImp>;
+        friend class MakeableGeometry<dimension_, RefinementImp>;
       public:
         enum { dimension = dimension_ };
+        // to make Dune::Geometry work:
+        typedef CoordType ctype;
+        enum { dimensionworld = dimension };
 
         template<int codimension>
         struct codim;
@@ -101,6 +112,7 @@ namespace Dune {
       struct RefinementImp<dimension, CoordType>::codim
       {
         class SubEntityIterator;
+        typedef Dune::Geometry<dimension-codimension, dimension, RefinementImp<dimension, CoordType>, Geometry> Geometry;
       };
 
       template<int dimension, class CoordType>
@@ -230,6 +242,7 @@ namespace Dune {
       public:
         typedef RefinementImp<dimension, CoordType> RefinementImp;
         typedef typename RefinementImp::IndexVector IndexVector;
+        typedef typename RefinementImp::template codim<0>::Geometry Geometry;
 
         RefinementIteratorSpecial(int level, bool end = false);
 
@@ -237,6 +250,7 @@ namespace Dune {
 
         IndexVector vertexIndices() const;
         int index() const;
+        const Geometry &geometry() const;
       protected:
         typedef typename RefinementImp::BackendRefinement BackendRefinement;
         typedef typename BackendRefinement::template codim<0>::SubEntityIterator BackendIterator;
@@ -247,6 +261,9 @@ namespace Dune {
         int kuhnIndex;
         BackendIterator backend;
         const BackendIterator backendEnd;
+      private:
+        mutable bool builtGeometry;
+        mutable MakeableGeometry<dimension, RefinementImp> geometry_;
       };
 
       template<int dimension, class CoordType>
@@ -254,7 +271,8 @@ namespace Dune {
       RefinementIteratorSpecial(int level_, bool end)
         : level(level_), kuhnIndex(0),
           backend(BackendRefinement::eBegin(level)),
-          backendEnd(BackendRefinement::eEnd(level))
+          backendEnd(BackendRefinement::eEnd(level)),
+          builtGeometry(false), geometry_(backend)
       {
         if(end)
           kuhnIndex = nKuhnSimplices;
@@ -266,6 +284,7 @@ namespace Dune {
       increment()
       {
         ++backend;
+        builtGeometry = false;
         if(backend == backendEnd) {
           backend = BackendRefinement::eBegin(level);
           ++kuhnIndex;
@@ -291,6 +310,19 @@ namespace Dune {
       index() const
       {
         return kuhnIndex*BackendRefinement::nElements(level) + backend.index();
+      }
+
+      template<int dimension, class CoordType>
+      const typename RefinementIteratorSpecial<dimension, CoordType, 0>::Geometry &
+      RefinementIteratorSpecial<dimension, CoordType, 0>::
+      geometry() const
+      {
+        if(!builtGeometry) {
+          geometry_.make(kuhnIndex);
+          builtGeometry = true;
+        }
+
+        return geometry_;
       }
 
       // common
@@ -326,6 +358,108 @@ namespace Dune {
       RefinementImp<dimension, CoordType>::codim<codimension>::SubEntityIterator::
       equals(const This &other) const
       { return kuhnIndex == other.kuhnIndex && backend == other.backend; }
+
+      // ///////////
+      //
+      //  Geometry
+      //
+
+      template<int mydimension, int coorddimension, class GridImp>
+      class Geometry : public GeometryDefault<mydimension, coorddimension, GridImp, Geometry>
+      {
+        typedef typename GridImp::ctype ct;
+        enum { dimension = GridImp::dimension };
+
+        typedef typename GridImp::BackendRefinement BackendRefinement;
+        typedef typename BackendRefinement::template codim<dimension-mydimension>::SubEntityIterator BackendIterator;
+      public:
+        GeometryType type() const
+        { return SimplexTraits<mydimension>::geometryType; }
+
+        int corners() const
+        { return mydimension + 1; }
+
+        const FieldVector<ct, coorddimension>& operator[] (int i) const
+        {
+          if(!builtCoords) {
+            for(int i = 0; i < corners(); ++i)
+              coords[i] = referenceToKuhn(backend->geometry()[i], getPermutation<dimension>(kuhnIndex));
+            builtCoords = true;
+          }
+          return coords[i];
+        }
+
+        FieldVector<ct, coorddimension> global(const FieldVector<ct, mydimension>& local) const
+        { return referenceToKuhn(backend->geometry().global(local), getPermutation<dimension>(kuhnIndex)); }
+
+        FieldVector<ct, mydimension> local(const FieldVector<ct, coorddimension>& global) const
+        { return backend->geometry().local(kuhnToReference(global, getPermutation<dimension>(kuhnIndex))); }
+
+        bool checkInside (const FieldVector<ct, mydimension>& local) const
+        { return backend->geometry().checkInside(local); }
+
+        ct integrationElement(const FieldVector<ct, mydimension>& local) const
+        { return backend->geometry().integrationElement(local) / Factorial<dimension>::value; }
+
+        const FieldMatrix<ct, mydimension, mydimension>& jacobianInverse(const FieldVector<ct, mydimension>& local) const
+        {
+          if(!builtJinv) {
+            // create unit vectors
+            FieldMatrix<int, mydimension, mydimension> M = 0;
+            for(int i = 0; i < mydimension; ++i)
+              M[i][i] = 1;
+            // transform them into local coordinates
+            for(int i = 0; i < mydimension; ++i)
+              M[i] = kuhnToReference(M[i], getPermutation<mydimension>(kuhnIndex));
+            // transpose the matrix
+            for(int i = 0; i < mydimension; ++i)
+              for(int j = 0; j < mydimension; ++j)
+                Jinv[i][j] = M[j][i];
+            // take the backends inverse Jacobian into account
+            Jinv.leftmultiply(backend->geometry().jacobianInverse(local));
+
+            builtJinv = true;
+          }
+
+          return Jinv;
+        }
+
+        Geometry(const BackendIterator &backend_)
+          : coords(), builtCoords(false), Jinv(), builtJinv(false),
+            backend(backend_), kuhnIndex(0)
+        {
+          IsTrue<mydimension == coorddimension>::yes();
+        }
+
+        void make(int kuhnIndex_)
+        {
+          kuhnIndex = kuhnIndex_;
+          builtCoords = false;
+          builtJinv = false;
+        }
+      private:
+        mutable FieldVector<FieldVector<ct, coorddimension>, mydimension+1> coords;
+        mutable bool builtCoords;
+        mutable FieldMatrix<ct, mydimension, mydimension> Jinv;
+        mutable bool builtJinv;
+        const BackendIterator &backend;
+        int kuhnIndex;
+      };
+
+      template<int mydimension, class GridImp>
+      class MakeableGeometry : public Dune::Geometry<mydimension, mydimension, GridImp, Geometry>
+      {
+        typedef typename GridImp::BackendRefinement::template codim<GridImp::dimension-mydimension>::SubEntityIterator BackendIterator;
+      public:
+        MakeableGeometry(const BackendIterator &backend)
+          : Dune::Geometry<mydimension, mydimension, GridImp, Geometry>(Geometry<mydimension, mydimension, GridImp>(backend))
+        {}
+
+        void make(int kuhnIndex)
+        { realGeometry.make(kuhnIndex); }
+      private:
+        using Dune::Geometry<mydimension, mydimension, GridImp, Geometry>::realGeometry;
+      };
 
     } // namespace HCubeTriangulation
 
