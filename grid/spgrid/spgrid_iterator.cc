@@ -58,37 +58,8 @@ namespace Dune {
   template<int DIM> inline
   typename spgrid<DIM>::iterator spgrid<DIM>::iterator::
   father() const {
-    assert (l_ > 0);
-    /*
-       A: refined via KeepNumber
-
-       |0,1,2,3,4,5|6, , , , , |
-     | 0 ' 1 ' 2 | 3 '   '   |
-
-     | , , , , ,0|1,2,3,4,5,6|
-     |   '   ' 0 | 1 ' 2 ' 3 |
-
-       coord-trafo: f(x_i) = (x_i + 1)/2
-
-       B: refined via KeepSize
-
-     ||0,1,2,3,4,5|6,7, , , , |
-     | 0 ' 1 ' 2 | 3 '   '   |
-
-     | , , , ,0,1|2,3,4,5,6,7|
-     |   '   ' 0 | 1 ' 2 ' 3 |
-
-       coord-trafo: f(x_i) = x_i/2
-     */
-    array<DIM> father_coord  = g.id_to_coord(l_, id_);
-    for (int d=0; d<DIM; d++) {
-      if ( g.front_overlap(l_,d) &&
-           (g.front_overlap(l_,d) == g.front_overlap(l_-1,d)) )
-        father_coord[d] = (father_coord[d] + 1) / 2;
-      else
-        father_coord[d] = father_coord[d]/ 2;
-    }
-    iterator father(l_-1, father_coord, g);
+    array<DIM> coord  = g.id_to_coord(l_, id_);
+    iterator father(g.father_id(l_,coord), g);
     return father;
   }; /* end father */
 
