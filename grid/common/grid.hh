@@ -3,7 +3,6 @@
 #ifndef __DUNE_GRID_HH__
 #define __DUNE_GRID_HH__
 
-#include <config.h>
 #include <string>
 #include <dune/common/matvec.hh>
 #include <dune/common/exceptions.hh>
