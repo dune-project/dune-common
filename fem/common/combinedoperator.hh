@@ -200,7 +200,7 @@ namespace Dune
     template <class GridIteratorType>
     void applyLocal ( GridIteratorType &it , const Domain & arg , Range & dest )  const
     {
-      std::cout << "Warning: CombinedOperator<ADD>::applyLocal not correct! \n";
+      //std::cout << "Warning: CombinedOperator<ADD>::applyLocal not correct! \n";
       _b.applyLocal ( it , arg , dest );
       _a.applyLocal ( it , arg , dest );
 

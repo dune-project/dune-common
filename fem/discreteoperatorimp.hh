@@ -12,9 +12,11 @@ namespace Dune {
   // Note: Range has to have Vector structure as well.
   template <class DiscreteFunctionType, class LocalOperatorImp >
   class DiscreteOperator
-    : public DiscreteOperatorDefault
-      < DiscreteFunctionType , LocalOperatorImp,
-          DiscreteOperator <DiscreteFunctionType,LocalOperatorImp > >
+  //: public DiscreteOperatorDefault
+  //    < DiscreteFunctionType , LocalOperatorImp,
+  //      DiscreteOperator <DiscreteFunctionType,LocalOperatorImp > >
+    : public Operator <typename DiscreteFunctionType::RangeFieldType,
+          DiscreteFunctionType , DiscreteFunctionType>
   {
     typedef typename DiscreteFunctionType::FunctionSpaceType::RangeField RangeFieldType;
 
@@ -26,6 +28,15 @@ namespace Dune {
     //! remember time step size
     void prepare ( int level , const Domain &Arg, Range &Dest,
                    Range *tmp , RangeFieldType & a, RangeFieldType & b)
+    {
+      level_ = level;
+      localOp_.prepareGlobal(level,Arg,Dest,tmp,a,b);
+      prepared_ = true;
+    }
+
+    //! remember time step size
+    virtual void prepareG ( int level , const Domain &Arg, Range &Dest,
+                            Range *tmp , RangeFieldType & a, RangeFieldType & b) const
     {
       level_ = level;
       localOp_.prepareGlobal(level,Arg,Dest,tmp,a,b);
@@ -80,6 +91,14 @@ namespace Dune {
       localOp_.finalizeGlobal(level,Arg,Dest,tmp,a,b);
     }
 
+    //! finalize the operation
+    virtual void finalizeG ( int level , const Domain &Arg, Range &Dest,
+                             Range *tmp , RangeFieldType & a, RangeFieldType & b) const
+    {
+      prepared_ = false;
+      localOp_.finalizeGlobal(level,Arg,Dest,tmp,a,b);
+    }
+
     //! apply the operator
     void operator()( const Domain &Arg, Range &Dest ) const
     {
@@ -92,7 +111,7 @@ namespace Dune {
                        const Domain &Arg, Range &Dest ) const
     {
       // erase destination function
-      Dest.clear();
+      Dest.clearLevel ( level_ );
 
       // run through grid and apply the local operator
       for( it ; it != endit; ++it )
