@@ -9,7 +9,7 @@ namespace Dune {
      */
     template <class GRID, int SMOOTHER, int TYP>
     class GaussSeidel {
-      typedef int level;
+      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       const pmgsolver<GRID,SMOOTHER> & solver;
       Dune::Vector<GRID> & x;
@@ -66,7 +66,7 @@ namespace Dune {
      */
     template <class GRID, int SMOOTHER, int TYP>
     class Defect {
-      typedef int level;
+      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       const pmgsolver<GRID,SMOOTHER> & solver;
       Dune::Vector<GRID> & x;
@@ -125,7 +125,7 @@ namespace Dune {
 
     template <class GRID, int SMOOTHER, int TYP>
     class Restrict {
-      typedef int level;
+      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       pmgsolver<GRID,SMOOTHER> & solver;
       GRID & g;
@@ -137,24 +137,8 @@ namespace Dune {
       {
         for(int d=0; d<DIM; d++)
           coord_shift[d] = solver.g.has_coord_shift(l,d);
-        //          std::cout << "coord_shift=" << coord_shift << std::endl;
       }
       void evaluate(level l, const array<DIM> & coord, int i) {
-        typename GRID::iterator it(i,g);
-
-#ifdef TEST
-        for(int dim = 0; dim < DIM; dim++)
-          if (coord[dim]%2 != 0) return;
-        typename GRID::iterator f = it.father();
-        solver.b[f.id()] += f.right(0).id();
-        return;
-#endif
-
-        //        std::cout << "adddefect: " << it.id()
-        //                  << " (" << solver.d[i] << ")\n";
-        adddefect(solver.d[i], DIM, it);
-        return;
-
         switch (TYP) {
         case Inner : {
           adddefect(solver.d[i], DIM, l, coord);
@@ -204,12 +188,8 @@ namespace Dune {
         if (dir<0) {
           typename GRID::iterator f = it.father();
           solver.b[f.id()] += d;
-          //          std::cout << "\tfather: " << f.id()
-          //                    << " (" << d << ")\n";
           return;
         }
-        //        std::cout << "\t" << it.id()
-        //                  << " (" << d << ")\n";
         if (it.coord(dir)%2==coord_shift[dir]) {
           adddefect(d,dir,it);
         }
@@ -226,7 +206,7 @@ namespace Dune {
 
     template <class GRID, int SMOOTHER, int TYP>
     class Prolongate {
-      typedef int level;
+      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       pmgsolver<GRID,SMOOTHER> & solver;
       GRID & g;
@@ -240,12 +220,6 @@ namespace Dune {
           coord_shift[d] = solver.g.has_coord_shift(l,d);
       }
       void evaluate(level l, const array<DIM> & coord, int i) {
-        typename GRID::iterator it(i,g);
-        if (!it->owner()) return;
-        //        std::cout << "correct " << it.id() << it.coord() << std::endl;
-        x[i] += correction(DIM, it);
-        return;
-
         switch (TYP) {
         case Inner : {
           x[i] += correction(DIM, l, coord);
@@ -261,7 +235,6 @@ namespace Dune {
       }
       double correction(int dir, typename GRID::level l,
                         array<DIM> coord) {
-        return 0;
         dir--;
 
         if (dir<0) {
@@ -285,7 +258,6 @@ namespace Dune {
 
         if (dir<0) {
           typename GRID::iterator f=it.father();
-          //          std::cout << "\t" << f.id() << f.coord() << std::endl;
           return x[f.id()];
         }
 
@@ -302,7 +274,7 @@ namespace Dune {
 
     template <class GRID, int SMOOTHER>
     class InitExchange {
-      typedef int level;
+      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       pmgsolver<GRID,SMOOTHER> & solver;
     public:
