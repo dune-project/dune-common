@@ -7,98 +7,213 @@
 
 #include <dune/common/dlist.hh>
 #include <dune/common/stdstreams.hh>
+#include <dune/common/exceptions.hh>
 
 #include <dune/fem/common/dofmapperinterface.hh>
 
 // here are the default grid index set defined
 #include <dune/grid/common/defaultindexsets.hh>
+#include <dune/fem/transfer/datacollector.hh>
 
 namespace Dune {
 
   // forward declaration
   template <class GridType,
-      class IndexSetImp>
+      class DataCollectorType = DataCollectorInterface<GridType> >
   class DofManager;
 
   // forward declaration
-  class MemObject;
 
   // type of pointer to memory, for easy replacements
   typedef char MemPointerType;
 
-  //********************************************************
-
-  /*!
-     DofArrayMemory holds the memory for one discrete function.
-     It consits of a pointer to memory and size. For each DofArrayMemory the
-     DofManager hold a MemObject. If the grid to which the DofManager belongs
-     is adapted, then the DofManager reaaranges the memory if necessary.
-     The DofManager also organizes to copy old mem to new mem.
-   */
-  class DofArrayMemory
-  {
-  private:
-    //! pointer to memory
-    MemPointerType * vec_;
-
-    //! size of array
-    int size_;
-
-    //! sizeof one array entry
-    size_t objSize_;
-
-    //! name of this array
-    const char * name_;
-
-    //! only this class is allowed to generate instances of this class
-    friend class MemObject;
-
-    //! Constructor can only be called from MemObject
-    DofArrayMemory(const char * name, size_t objSize) : vec_ (0), size_(0)
-                                                        , objSize_(objSize) , name_(name) {}
-
+  //! oriented to the STL Allocator funtionality
+  template <class T>
+  class DefaultDofAllocator {
   public:
-    //! size of vec
-    int size () const { return size_; }
-
-    //! size of one entry
-    size_t objSize() const { return objSize_; }
-
-    //! copy array
-    void assign ( const DofArrayMemory &copy )
+    //! allocate array of nmemb objects of type T
+    static T* malloc (size_t nmemb)
     {
-      assert(size_    == copy.size_);
-      assert(objSize_ == copy.objSize_);
-
-      std::memcpy(vec_,copy.vec_, size_ * objSize_);
+      T* p = new T[nmemb];
+      return p;
     }
 
-    //! cast this vector to right type and return entry i
-    template <class T>
-    T& get ( int i ) { return static_cast<T *> ((void *)vec_)[i]; }
+    //! release memory previously allocated with malloc member
+    static void free (T* p)
+    {
+      delete [] p;
+    }
 
-    //! cast this vector to right type and return entry i
-    template <class T>
-    const T& get ( int i ) const { return static_cast<T *> ((void *)vec_)[i]; }
+    //! allocate array of nmemb objects of type T
+    static T* realloc (T* oldMem, size_t oldSize , size_t nmemb)
+    {
+      T* p = new T[nmemb];
+      std::memcpy(p,oldMem,oldSize * sizeof(T));
+      DefaultDofAllocator :: free (oldMem);
+      return p;
+    }
+  };
 
-    //! return vector for cg scheme
-    template <class T>
-    T* vector () { return static_cast<T *> ((void *)vec_); }
+  //! allocator for simple structures like int, double and float
+  //! using the C malloc,free, and realloc
+  struct SimpleDofAllocator
+  {
+    //! allocate array of nmemb objects of type T
+    template <typename T>
+    static T* malloc (size_t nmemb)
+    {
+      T* p = (T *) std::malloc(nmemb * sizeof(T));
+      assert(p);
+      return p;
+    }
 
-    //! return vector for cg scheme, const version
-    template <class T>
-    const T* vector () const { return static_cast<T *> ((void *)vec_); }
+    //! release memory previously allocated with malloc member
+    template <typename T>
+    static void free (T* p)
+    {
+      assert(p);
+      std::free(p);
+    }
 
-    //! write data to xdr stream
-    template <class T>
+    //! allocate array of nmemb objects of type T
+    template <typename T>
+    static T* realloc (T* oldMem, size_t oldSize , size_t nmemb)
+    {
+      assert(oldMem);
+      T * p = (T *) std::realloc(oldMem,nmemb*sizeof(T));
+      assert(p);
+      return p;
+    }
+  };
+
+  template <>
+  class DefaultDofAllocator<double>
+  {
+    typedef double T;
+  public:
+    //! allocate array of nmemb objects of type T
+    static T* malloc (size_t nmemb)
+    {
+      return SimpleDofAllocator::malloc<T> (nmemb);
+    }
+
+    //! release memory previously allocated with malloc member
+    static void free (T* p)
+    {
+      SimpleDofAllocator::free<T> (p);
+      return ;
+    }
+
+    //! allocate array of nmemb objects of type T
+    static T* realloc (T* oldMem, size_t oldSize , size_t nmemb)
+    {
+      return SimpleDofAllocator::realloc<T> (oldMem,oldSize,nmemb);
+    }
+  };
+
+  template <>
+  class DefaultDofAllocator<int>
+  {
+    typedef int T;
+  public:
+    //! allocate array of nmemb objects of type T
+    static T* malloc (size_t nmemb)
+    {
+      return SimpleDofAllocator::malloc<T> (nmemb);
+    }
+
+    //! release memory previously allocated with malloc member
+    static void free (T* p)
+    {
+      SimpleDofAllocator::free<T> (p);
+      return ;
+    }
+
+    //! allocate array of nmemb objects of type T
+    static T* realloc (T* oldMem, size_t oldSize , size_t nmemb)
+    {
+      return SimpleDofAllocator::realloc<T> (oldMem,oldSize,nmemb);
+    }
+  };
+
+
+  /*!
+     DofArray is the array that a discrete functions sees. If a discrete
+     function is created, then it is signed in by the function space and the
+     return value is a MemObject. This MemObject contains a DofArrayMemory
+     which is then as reference given to the DofArray of the DiscreteFunction.
+     The DofArray is only a wrapper class for DofArrayMemory where we dont know
+     the type of the dofs only the size of one dof.
+     Therefore we have this wrapper class for cast to the right type.
+   */
+  template <class T, class AllocatorType = DefaultDofAllocator<T> >
+  class DofArray
+  {
+    // size of array
+    int size_;
+
+    int memSize_;
+
+    // pointer to mem
+    T * vec_;
+
+  public:
+    //! create array of length size
+    DofArray(int size)
+      : size_(size) , memSize_(size) , vec_(0)
+    {
+      vec_ = AllocatorType :: malloc (size_);
+    }
+
+    //! return number of enties of array
+    int size () const { return size_; }
+
+    //! return reference to entry i
+    T&       operator [] ( int i )
+    {
+      assert(i>=0);
+#ifndef NDEBUG
+      if(i>=size_) std::cout << " i= "<<i<<" size = " << size_ <<"\n";
+#endif
+      assert(i<size_);
+      return vec_[i];
+    }
+
+    //! return reference to const entry i
+    const T& operator [] ( int i ) const
+    {
+      assert(i>=0);
+      assert(i<size_);
+      return vec_[i];
+    }
+
+    //! assign arrays
+    DofArray<T>& operator= (const DofArray<T> &copy)
+    {
+      assert(copy.size_ >= size_);
+      std::memcpy(vec_,copy.vec_, size_ * sizeof(T));
+      return *this;
+    }
+
+    //! operator = assign all entrys with value t
+    DofArray<T>& operator= (const T t)
+    {
+      for(int i=0; i<size(); i ++) this->operator [] (i) = t;
+      return *this;
+    }
+
+    T* vector() { return vec_; }
+    const T* vector() const { return vec_; }
+
+    //! read and write xdr
     bool processXdr(XDR *xdrs)
     {
-      std::cerr << "WARNING: DofArrayMemory::processXdr: No appropriate xdr type!\n";
       if(xdrs != 0)
       {
         int len = size_;
         xdr_int( xdrs, &len );
         assert(size_ <= len);
+
         xdr_vector(xdrs,(char *) vec_,size_, sizeof(T) ,(xdrproc_t)xdr_double);
         return true;
       }
@@ -106,19 +221,27 @@ namespace Dune {
         return false;
     }
 
-  private:
-    // set new memory, to be called only from MemObject
-    void resize (MemPointerType * mem, int newSize )
+    void realloc ( int nsize )
     {
-      size_ = newSize;
-      vec_ = mem;
+      assert(nsize >= 0);
+      if(nsize <= memSize_)
+      {
+        size_ = nsize;
+        return ;
+      }
+
+      int nMemSize = (int) (nsize * 0.02);
+      nMemSize += nsize;
+      vec_ = AllocatorType :: realloc (vec_,size_,nMemSize);
+
+      size_ = nsize;
+      memSize_ = nMemSize;
     }
   };
 
   //! specialisation for int
   template <>
-  inline
-  bool DofArrayMemory::processXdr<int>(XDR *xdrs)
+  inline bool DofArray<int>::processXdr(XDR *xdrs)
   {
     typedef int T;
     if(xdrs != 0)
@@ -135,8 +258,7 @@ namespace Dune {
 
   //! specialisation for double
   template <>
-  inline
-  bool DofArrayMemory::processXdr<double>(XDR *xdrs)
+  inline bool DofArray<double>::processXdr(XDR *xdrs)
   {
     typedef double T;
 
@@ -152,81 +274,102 @@ namespace Dune {
     else
       return false;
   }
-
-  /*!
-     DofArray is the array that a discrete functions sees. If a discrete
-     function is created, then it is signed in by the function space and the
-     return value is a MemObject. This MemObject contains a DofArrayMemory
-     which is then as reference given to the DofArray of the DiscreteFunction.
-     The DofArray is only a wrapper class for DofArrayMemory where we dont know
-     the type of the dofs only the size of one dof.
-     Therefore we have this wrapper class for cast to the right type.
+  //******************************************************************
+  //
+  //  IndexSetObject
+  /*! The idea of the IndexSetObject is that, every MemObject has an
+   *  IndexSetObject, but if two different MemObjects belong to the same
+   *  funtion space, then they have the same IndexSetObject.
+   *  Furthermore the IndexSetObject is more or less a wrapper for the
+   *  IndexSetInterface, but here we can store aditional infomation, for
+   *  example if set has been compressed.
    */
-  template <class T>
-  class DofArray
-  {
-    // the real memory , we only do the casts here
-    DofArrayMemory & array_;
-  public:
-    //! store reference to real array
-    DofArray(DofArrayMemory & array) : array_ (array)
-    {
-      assert(sizeof(T) == array_.objSize());
-    }
+  //******************************************************************
 
-    //! return number of enties of array
-    int size () const { return array_.size(); }
-
-    //! return reference to entry i
-    T&       operator [] ( int i )       { return array_.template get<T>(i); }
-
-    //! return reference to const entry i
-    const T& operator [] ( int i ) const { return array_.template get<T>(i); }
-
-    //! assign arrays
-    DofArray<T>& operator= (const DofArray<T> &copy)
-    {
-      array_.assign(copy.array_);
-      return *this;
-    }
-
-    //! operator = assign all entrys with value t
-    DofArray<T>& operator= (const T t)
-    {
-      for(int i=0; i<size(); i ++) this->operator [] (i) = t;
-      return *this;
-    }
-
-    //! \todo Please doc me!
-    T* vector() { return array_.vector<T> (); }
-
-    //! \todo Please doc me!
-    const T* vector() const { return array_.vector<T> (); }
-
-    //! read and write xdr
-    bool processXdr(XDR *xdrs)
-    {
-      return array_.template processXdr<T> (xdrs);
-    }
-  };
-
-  //! \todo Please doc me!
-  class DefaultGHMM
+  class IndexSetObjectInterface
   {
   public:
-    MemPointerType *Malloc (size_t n)
-    {
-      MemPointerType *p;
-      p = new MemPointerType[n];
-      return p;
-    }
+    virtual ~IndexSetObjectInterface () {}
+    virtual void resize () = 0;
+    virtual bool compress () = 0;
+    virtual void unsetCompressed() = 0;
+    virtual bool operator == (const IndexSetInterface & iset) = 0;
 
-    void  Free (MemPointerType *p)
-    {
-      delete[] p;
-    }
+    virtual void read_xdr(const char * filename, int timestep) = 0;
+    virtual void write_xdr(const char * filename, int timestep) const = 0;
   };
 
+  template <class IndexSetType, class EntityType>
+  class IndexSetObject : public IndexSetObjectInterface ,
+                         public LocalInlinePlus < IndexSetObject<IndexSetType,EntityType> , EntityType >
+  {
+  private:
+    // the dof set stores number of dofs on entity for each codim
+    IndexSetType & indexSet_;
+
+    //! true if compress has been called
+    bool compressed_;
+
+  public:
+    // Constructor of MemObject, only to call from DofManager
+    IndexSetObject ( IndexSetType & iset ) : indexSet_ (iset) , compressed_(false) {}
+
+    void resize ()
+    {
+      indexSet_.resize();
+      compressed_ = false;
+    }
+
+    bool compress ()
+    {
+      if(!compressed_)
+      {
+        indexSet_.compress();
+        compressed_ = true;
+      }
+      return compressed_;
+    }
+
+    void unsetCompressed() { compressed_ = false; }
+
+    bool operator == ( const IndexSetInterface & iset )
+    {
+      return &indexSet_ == &iset;
+    }
+
+    void apply ( EntityType & en )
+    {
+      //std::cout << "Create Index for father " << en.globalIndex() << "\n";
+      indexSet_.createFatherIndex ( en );
+    }
+
+    virtual void read_xdr(const char * filename, int timestep)
+    {
+      indexSet_.read_xdr(filename,timestep);
+    }
+    virtual void write_xdr(const char * filename, int timestep) const
+    {
+      indexSet_.write_xdr(filename,timestep);
+    }
+
+  };
+
+  //****************************************************************
+  //
+  // MemObject
+  //
+  //****************************************************************
+  class MemObjectInterface
+  {
+  public:
+    virtual ~MemObjectInterface() {};
+    virtual void realloc (int newSize) = 0;
+    virtual int size () const = 0;
+    virtual int tmpSize () const = 0;
+    virtual int newSize () const = 0;
+    virtual const char * name () const  = 0;
+    virtual void dofCompress () = 0;
+  };
 
 
   /*!
@@ -239,90 +382,72 @@ namespace Dune {
      have to be virtual. This isnt a problem because this methods should only
      be called during memory reorganizing which is only once per timestep.
    */
-  class MemObject
+  template <class MapperType , class DofArrayType>
+  class MemObject : public MemObjectInterface
   {
   private:
-    // size of mem entities
-    int memSize_;
+    // the dof set stores number of dofs on entity for each codim
+    MapperType & mapper_;
 
-    // actual size of vector
-    int vecSize_;
+    // index set object, holding the index set
+    IndexSetObjectInterface & indexObject_;
 
-    // name of discrete function we belong to
+    // Array which belongs to discrete function
+    DofArrayType & array_;
+
+    // name of mem object, i.e. name of discrete function
     const char * name_;
 
-    // Memory Manager
-    DefaultGHMM & ghmm_;
-
-    // sizeof datatype
-    size_t sizeOfObj_;
-
-    // pointer to memory
-    MemPointerType * myMem_;
-
-    // the dof set stores number of dofs on entity for each codim
-    DofMapperInterface * dofmap_;
-
-    DofArrayMemory array_;
-
   public:
-    //! Constructor of MemObject, only to call from DofManager
-    template <class GridType, class MapperType>
-    MemObject ( GridType & grid, MapperType & mapper,
-                const char * name , DefaultGHMM & ghmm , size_t objSize )
-      : memSize_(0), vecSize_(0), name_ (name) , ghmm_( ghmm ) , sizeOfObj_ (objSize)
-        , myMem_(0) , dofmap_ (0)
-        , array_( name_, sizeOfObj_ )
-    {
-      vecSize_ = mapper.size();
-      memSize_ = vecSize_;
-      dofmap_ = &mapper;
-
-      myMem_   = ghmm_.Malloc( memSize_ * sizeOfObj_ );
-    }
-
-    ~MemObject ()
-    {
-      if(myMem_) ghmm_.Free(myMem_);
-    }
-
-    //! defines the corresponding array type
-    typedef DofArrayMemory DefaultArrayType;
+    // Constructor of MemObject, only to call from DofManager
+    MemObject ( MapperType & mapper, IndexSetObjectInterface & iobj,
+                DofArrayType & array, const char * name )
+      : mapper_ (mapper) , indexObject_(iobj) , array_( array ), name_ (name) {}
 
     //! returns name of this vector
     const char * name () const { return name_; }
 
     //! if grid changed, then calulate new size of dofset
-    int newSize () const { return dofmap_->newSize(); }
+    int newSize () const { return mapper_.newSize(); }
+
+    int size () const { return array_.size(); }
 
     //! return number of entities
-    int size () const { return vecSize_; }
+    int tmpSize () const { return mapper_.tmpSize(); }
 
-    //! return size of allocated memory
-    int memSize () const { return memSize_; }
-
-    //! return size on one entity
-    size_t objSize () const { return sizeOfObj_; }
-
-    //! return pointer to memory
-    MemPointerType * myMem() const { return myMem_; }
-
-    //! return reference for Constructor of DofArray
-    DefaultArrayType & getArray()
+    //! reallocate the memory with the new size
+    void realloc ( int nSize )
     {
-      array_.resize( myMem_ , vecSize_ );
-      return array_;
+      array_.realloc( nSize );
     }
 
-    //! get new mem from dof manager
-    void resize ( MemPointerType * mem, int newMemSize, int newVecSize )
+    //! copy the dof from the rear section of the vector to the holes
+    void dofCompress ()
     {
-      memSize_  = newMemSize;
-      vecSize_  = newVecSize;
-      myMem_ = mem;
-      array_.resize ( mem , vecSize_ );
+      indexObject_.compress();
+
+      for(int i=0; i<mapper_.oldSize(); i++)
+      {
+        if(mapper_.indexNew(i))
+        {
+          // copy value
+          array_[ mapper_.newIndex(i) ] = array_[ mapper_.oldIndex(i) ];
+        }
+      }
+
+      // store new size, which is should be smaller then actual size
+      array_.realloc ( newSize() );
+    }
+
+    //! return IndexSetObject for comparison with newly added functions
+    IndexSetObjectInterface & getIndexSetObject()
+    {
+      return indexObject_;
     }
   };
+
+  class DofManError : public Exception {};
+
 
   /*!
      The DofManager is responsable for managing memory allocation and freeing
@@ -339,79 +464,154 @@ namespace Dune {
      created. The default value for the IndexSet is the DefaultIndexSet class
      which is mostly a wrapper for the grid indices.
    */
-  template <class GridType, class IndexSetImp = DefaultGridIndexSet<GridType> >
+  template <class GridType , class DataCollectorType >
   class DofManager
   {
   public:
     // all things for one discrete function are put together in a MemObject
-    typedef MemObject MemObjectType;
-    typedef IndexSetImp IndexSetType;
+    typedef MemPointerType MemoryPointerType;
 
   private:
-    typedef DoubleLinkedList < MemObjectType * > ListType;
+    typedef DoubleLinkedList < MemObjectInterface * > ListType;
     typedef typename ListType::Iterator ListIteratorType;
+
+    typedef DoubleLinkedList < IndexSetObjectInterface * > IndexListType;
+    typedef typename IndexListType::Iterator IndexListIteratorType;
 
     // list with MemObjects, for each DiscreteFunction we have one MemObject
     ListType memList_;
 
-    // the memory managers
-    DefaultGHMM ghmm_;
+    // list of all different indexsets
+    IndexListType indexList_;
 
     // the dofmanager belong to one grid only
-    GridType & grid_;
+    const GridType & grid_;
 
     // index set for mapping
-    mutable IndexSetType indexSet_;
+    mutable DataCollectorType dataInliner_;
+    mutable DataCollectorType dataXtractor_;
+
+    typedef typename DataCollectorType::LocalInterfaceType LocalDataCollectorType;
+    mutable LocalDataCollectorType dataWriter_;
+    mutable LocalDataCollectorType dataReader_;
+
+    typedef LocalInterface<typename GridType::template codim<0>::Entity> LocalIndexSetObjectsType;
+    mutable LocalIndexSetObjectsType indexSets_;
 
   public:
-    //! Constructor, creates and index set
-    DofManager (GridType & grid)
-      : grid_(grid),  indexSet_ ( grid )
-    {}
+    template <class MapperType , class DofStorageType >
+    struct Traits
+    {
+      typedef MemObject< MapperType, DofStorageType > MemObjectType;
+    };
 
-    //! Constructor, creates and index set
-    DofManager (GridType & grid, bool verbose)
-      : grid_(grid), indexSet_ ( grid )
-    {}
+    //! Constructor
+    DofManager (const GridType & grid) : grid_(grid) {}
 
-    //! Desctructor, removes all MemObjects
+    //! Desctructor, removes all MemObjects and IndexSetObjects
     ~DofManager ()
     {
-      ListIteratorType it    = memList_.begin();
-      ListIteratorType endit = memList_.end();
-
-      int count = 0;
-      for( ; it != endit ; ++it)
+      if(memList_.size() > 0)
       {
-        assert(count < memList_.size());
-        count++;
-        // alloc new mem an copy old mem
-        //MemPointerType * mem = (*it)->myMem();
-        //ghmm_.Free(mem);
-        MemObjectType * mobj = (*it);
-        dverb << "Removing " << count << " '" << mobj->name() << "' from DofManager!\n";
-        memList_.erase( it );
-        if(mobj) delete mobj;
+        while( indexList_.rbegin() != indexList_.rend())
+        {
+          MemObjectInterface * mobj = (* memList_.rbegin() );
+          indexList_.erase( indexList_.rbegin() );
+
+          // alloc new mem an copy old mem
+          dverb << "Removing '" << mobj->name() << "' from DofManager!\n";
+          if(mobj) delete mobj;
+        }
       }
+
+      if(indexList_.size() > 0)
+      {
+        while ( indexList_.rbegin() != indexList_.rend())
+        {
+          IndexSetObjectInterface * iobj = (* indexList_.rbegin() );
+          indexList_.erase( indexList_.rbegin() );
+          if(iobj) delete iobj;
+        }
+      }
+    }
+
+    template <class IndexSetType>
+    void addIndexSet (const GridType &grid, IndexSetType &iset)
+    {
+      if(&grid_ != &grid)
+        DUNE_THROW(DofManError,"DofManager can only be used for one grid! \n");
+
+      IndexSetInterface & set = iset;
+      typedef IndexSetObject< IndexSetType,
+          typename GridType::template codim<0>::Entity > IndexSetObjectType;
+
+      IndexSetObjectType * indexSet = 0;
+
+      IndexListIteratorType endit = indexList_.end();
+      for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+      {
+        if( (* (*it)) == set )
+        {
+          indexSet = static_cast<IndexSetObjectType *> ((*it));
+          break;
+        }
+      }
+
+      if(!indexSet)
+      {
+        indexSet = new IndexSetObjectType ( iset );
+        IndexSetObjectInterface * iobj = indexSet;
+        indexList_.insert_after ( indexList_.rbegin() , iobj );
+        indexSets_ += *indexSet;
+      }
+      return ;
     }
 
     //! add dofset to dof manager
     //! this method should be called at signIn of DiscreteFucntion, and there
-    //! we know our DofType T
-    template <class T, class MapperType>
-    MemObjectType & addDofSet(T * t, GridType &grid, MapperType & mapper, const char * name )
+    //! we know our DofStorage which is the actual DofArray
+    template <class DofStorageType, class IndexSetType, class MapperType >
+    MemObject<MapperType,DofStorageType> &
+    addDofSet(DofStorageType & ds, const GridType &grid, IndexSetType &iset,
+              MapperType & mapper, const char * name )
     {
-      assert(&grid_ == &grid);
+      if(&grid_ != &grid)
+        DUNE_THROW(DofManError,"DofManager can only be used for one grid! \n");
       dverb << "Adding '" << name << "' to DofManager! \n";
-      MemObjectType * obj =
-        new MemObjectType( grid , mapper, name, ghmm_ , sizeof(T) );
 
-      memList_.insert_after ( memList_.rbegin() , obj );
+      IndexSetInterface & set = iset;
+      typedef IndexSetObject< IndexSetType,
+          typename GridType::template codim<0>::Entity > IndexSetObjectType;
+
+      IndexSetObjectType * indexSet = 0;
+
+      IndexListIteratorType endit = indexList_.end();
+      for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+      {
+        if( (* (*it)) == set )
+        {
+          indexSet = static_cast<IndexSetObjectType *> ((*it));
+          break;
+        }
+      }
+
+      // index was added when functions space is created, should be here
+      assert( indexSet );
+      if( !indexSet )
+        DUNE_THROW(DofManError,"No IndexSet for DofSet! \n");
+
+      MemObject<MapperType,DofStorageType> * obj =
+        new MemObject<MapperType,DofStorageType> ( mapper, *indexSet , ds , name );
+
+      MemObjectInterface * saveObj = obj;
+      memList_.insert_after ( memList_.rbegin() , saveObj );
+
       return *obj;
     }
 
-    //! remove MemObject, is called from DiscreteFucntion
-    bool removeDofSet (MemObjectType & obj)
+    //! remove MemObject, is called from DiscreteFucntionSpace at sign out of
+    //! DiscreteFunction
+    bool removeDofSet (MemObjectInterface & obj)
     {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
@@ -422,9 +622,7 @@ namespace Dune {
         if((*it) == &obj)
         {
           // alloc new mem an copy old mem
-          //MemPointerType * mem  = (*it)->myMem();
-          //ghmm_.Free(mem);
-          MemObjectType * mobj = (*it);
+          MemObjectInterface * mobj = (*it);
           memList_.erase( it );
           dverb << "Removing '" << obj.name() << "' from DofManager!\n";
           if(mobj) delete mobj;
@@ -436,123 +634,138 @@ namespace Dune {
     }
 
     //! generate index for father
-    template <class EntityType>
-    void createFatherIndex (EntityType &en)
+    void createFatherIndex (typename GridType::template codim<0>::Entity & en )
     {
-      indexSet_.createFatherIndex(en);
+      // calls createFatherIndex for all IndexSets
+      indexSets_.apply( en );
     }
 
-    //! \todo Please doc me!
-    void resizeTmp ()
+    void resizeForRestrict ()
     {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
 
       for( ; it != endit ; ++it)
       {
-        int memSize  = (*it)->memSize();
-
-        // create new memory, which smaller than the mem we have
-        int newSize  = indexSet_.tmpSize();
-
-        // if we have enough, do notin'
-        if(newSize <= memSize) continue;
-
-        // alloc new mem an copy old mem
-        MemPointerType * mem    = (*it)->myMem();
-        MemPointerType * newMem = (MemPointerType *) ghmm_.Malloc((*it)->objSize()*newSize);
-        std::memcpy(newMem,mem, memSize * (*it)->objSize());
-        (*it)->resize(newMem,newSize,newSize);
-
-        // free old mem
-        //std::cout << mem << " free Mem\n";
-        ghmm_.Free(mem);
+        (*it)->realloc ( (*it)->size() + (*it)->tmpSize() );
       }
     }
 
-    //! \todo Please doc me!
+    void resizeMem (int nsize)
+    {
+      ListIteratorType it    = memList_.begin();
+      ListIteratorType endit = memList_.end();
+
+      for( ; it != endit ; ++it)
+      {
+        (*it)->realloc ( (*it)->size() + nsize );
+      }
+    }
+
     void resize()
     {
-      indexSet_.resize();
-      resizeMem();
+      IndexListIteratorType endit = indexList_.end();
+      for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+      {
+        (*it)->resize();
+      }
+
+      resizeDofMem();
     }
 
+  private:
     //! resize the MemObject if necessary
-    void resizeMem()
+    void resizeDofMem()
     {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
 
       for( ; it != endit ; ++it)
       {
-
-        int newSize = (*it)->newSize();
-        int memSize  = (*it)->memSize();
-        MemPointerType * mem  = (*it)->myMem();
-
-        if(newSize <= memSize)
-        {
-          (*it)->resize(mem,memSize,newSize);
-          continue;
-        }
-
-        // alloc new mem an copy old mem
-        assert(mem != 0);
-        MemPointerType * newMem = (MemPointerType *) ghmm_.Malloc((*it)->objSize()*newSize);
-        std::memcpy(newMem,mem, memSize * (*it)->objSize());
-        (*it)->resize(newMem,newSize,newSize);
-
-        // free old mem
-        ghmm_.Free(mem);
+        int nSize = (*it)->newSize();
+        (*it)->realloc ( nSize );
       }
     }
 
-    //! \todo Please doc me!
+    void unsetIndexSets ()
+    {
+      IndexListIteratorType endit = indexList_.end();
+      for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+      {
+        // reset compressed so the next time compress of index set is called
+        (*it)->unsetCompressed();
+      }
+    }
+
+  public:
     void dofCompress()
     {
-      // keeps the old indices for a while
-      bool haveToCompress = indexSet_.compress();
+      unsetIndexSets ();
 
-      if( haveToCompress )
+      ListIteratorType it    = memList_.begin();
+      ListIteratorType endit = memList_.end();
+
+      for( ; it != endit ; ++it)
       {
-        ListIteratorType it    = memList_.begin();
-        ListIteratorType endit = memList_.end();
-
-
-        for( ; it != endit ; ++it)
-        {
-          // gem mem pointer and object size
-          MemPointerType * mem = (*it)->myMem();
-          size_t objSize = (*it)->objSize();
-
-          for(int i=0; i<indexSet_.oldSize(0,0); i++)
-          {
-            if(indexSet_.indexNew(i))
-            {
-              int oldInd = indexSet_.oldIndex(i);
-              int newInd = indexSet_.newIndex(i);
-
-              // copy value form old to new place
-              MemPointerType * t1 = (mem + (newInd*objSize));
-              MemPointerType * t2 = (mem + (oldInd*objSize));
-              std::memcpy(t1,t2, objSize);
-            }
-          }
-
-          // stroe new size, which is smaller then size
-          int newSize = (*it)->newSize();
-          int memSize = (*it)->memSize();
-          (*it)->resize(mem,memSize,newSize);
-        }
+        // if correponding index was not compressed yet, yhis is called in
+        // the MemObject dofCompress, if index has not changes, nothing happens
+        (*it)->dofCompress () ;
       }
-
-      //std::cout << "Dof Compress Done! \n";
     }
 
-    //! return indexSet for dofmappers
-    IndexSetType & indexSet () const
+    template <class DataCollType>
+    void addDataInliner ( DataCollType & d)
     {
-      return indexSet_;
+      dataInliner_ += d;
+    }
+
+    template <class DataCollType>
+    void addDataXtractor ( DataCollType & d)
+    {
+      dataXtractor_ += d;
+    }
+
+    template <class DataCollType>
+    void addDataWriter ( DataCollType & d)
+    {
+      dataWriter_ += d;
+    }
+
+    template <class DataCollType>
+    void addDataReader ( DataCollType & d)
+    {
+      dataReader_ += d;
+    }
+
+    template <class ObjectStreamType, class EntityType>
+    void inlineData ( ObjectStreamType & str, EntityType & en )
+    {
+      dataInliner_.apply(str,en);
+    }
+
+    template <class ObjectStreamType, class EntityType>
+    void scatter ( ObjectStreamType & str, EntityType & en )
+    {
+      //resize();
+      //std::cout << "Scatter of el = " << en.global_index () << "\n";
+      std::pair < ObjectStreamType * , EntityType * > p (&str,&en);
+      dataWriter_.apply( p );
+    }
+
+    template <class ObjectStreamType, class EntityType>
+    void gather ( ObjectStreamType & str, EntityType & en )
+    {
+      //std::cout << "Gather of el = " << en.global_index () << "\n";
+      resize();
+      std::pair < ObjectStreamType * , EntityType * > p (&str,&en);
+      dataReader_.apply( p );
+    }
+
+    template <class ObjectStreamType, class EntityType>
+    void xtractData ( ObjectStreamType & str, EntityType & en )
+    {
+      resize();
+      dataXtractor_.apply(str,en);
     }
 
     //********************************************************
@@ -564,37 +777,59 @@ namespace Dune {
     bool read_xdr( const char * filename, int timestep);
   };
 
-  //! \todo Please doc me!
-  template <class GridType,class IndexSetType>
-  inline bool DofManager<GridType,IndexSetType>::
+  template <class GridType, class DataCollectorType>
+  inline bool DofManager<GridType,DataCollectorType>::
   write(const FileFormatType ftype, const char *filename, int timestep)
   {
     assert(ftype == xdr);
     return write_xdr(filename,timestep);
   }
-  //! \todo Please doc me!
-  template <class GridType,class IndexSetType>
-  inline bool DofManager<GridType,IndexSetType>::
+  template <class GridType, class DataCollectorType>
+  inline bool DofManager<GridType,DataCollectorType>::
   read(const char * filename , int timestep)
   {
     return read_xdr(filename,timestep);
   }
 
-  //! \todo Please doc me!
-  template <class GridType,class IndexSetType>
-  inline bool DofManager<GridType,IndexSetType>::
+  template <class GridType, class DataCollectorType>
+  inline bool DofManager<GridType,DataCollectorType>::
   write_xdr(const char * filename , int timestep)
   {
     //std::cout << indexSet_.size(grid_.maxlevel(),0) << " Size\n";
-    return indexSet_.write_xdr(filename,timestep);
+    assert( filename );
+
+    int count = 0;
+    IndexListIteratorType endit = indexList_.end();
+    for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+    {
+      char * newFilename = new char [strlen(filename) + 5];
+      sprintf(newFilename,"%s_%d_",filename,count);
+      (*it)->write_xdr(newFilename,timestep);
+      count ++;
+      delete newFilename;
+    }
+    return true;
   }
 
-  //! \todo Please doc me!
-  template <class GridType,class IndexSetType>
-  inline bool DofManager<GridType,IndexSetType>::
+  template <class GridType, class DataCollectorType>
+  inline bool DofManager<GridType,DataCollectorType>::
   read_xdr(const char * filename , int timestep)
   {
-    return indexSet_.read_xdr(filename,timestep);
+    std::cout << "Read DofManager IndexSets \n";
+    assert( filename );
+
+    int count = 0;
+    IndexListIteratorType endit = indexList_.end();
+    for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+    {
+      std::cout << "Raad " << count << " IndexSet\n";
+      char * newFilename = new char [strlen(filename) + 5];
+      sprintf(newFilename,"%s_%d_",filename,count);
+      (*it)->read_xdr(newFilename,timestep);
+      count ++;
+      delete newFilename;
+    }
+    return true;
   }
 
 } // end namespace Dune
