@@ -5,7 +5,7 @@
 
 #include <dune/grid/common/grid.hh>
 
-#include <dune/common/discretefunctionspace.hh>
+#include <dune/fem/common/discretefunctionspace.hh>
 #include <dune/fem/dgspace/monomialbase.hh>
 #include <dune/fem/dofmanager.hh>
 
