@@ -64,55 +64,81 @@ UGGridElement(bool makeRefElement)
 template< int dim, int dimworld>
 inline ElementType UGGridElement<dim,dimworld>::type()
 {
-  std::cerr << "UGGridElement::type() Not yet implemented\n";
+
+
+
+#define TAG(p) ReadCW(p, UG3d::TAG_CE)
+
   switch (dim)
   {
   case 1 : return line;
-  case 2 : return triangle;
-  case 3 : return tetrahedron;
+  case 2 :
+    switch (TAG(target_)) {
+    case UG3d::TRIANGLE :
+      return triangle;
+    case UG3d::QUADRILATERAL :
+      return quadrilateral;
+    default :
+      std::cerr << "UGGridElement::type():  ERROR:  Unknown type found!\n";
+    }
 
-  default : return unknown;
+  case 3 :
+    switch (TAG(target_)) {
+    case UG3d::TETRAHEDRON :
+      return tetrahedron;
+    case UG3d::PYRAMID :
+      return pyramid;
+    case UG3d::PRISM :
+      return prism;
+    case UG3d::HEXAHEDRON :
+      return hexahedron;
+    default :
+      std::cerr << "UGGridElement::type():  ERROR:  Unknown type found!\n";
+    }
   }
+#undef TAG
 }
 
 template< int dim, int dimworld>
 inline int UGGridElement<dim,dimworld>::corners()
 {
-
-  //#define CW_READ_STATIC(p,s,t)                   ReadCW(p,s ## CE)
-  //#define TAG(p) CW_READ_STATIC(p,UG3d::TAG_,GENERAL_)
 #define TAG(p) ReadCW(p, UG3d::TAG_CE)
 #define CORNERS_OF_ELEM(p)(UG3d::element_descriptors[TAG(p)]->corners_of_elem)
   return CORNERS_OF_ELEM(target_);
 #undef CORNERS_OF_ELEM
 #undef TAG
-  //#undef CW_READ_STATIC
 }
 
 
 ///////////////////////////////////////////////////////////////////////
-template< int dim, int dimworld>
-inline Vec<dimworld,UGCtype>& UGGridElement<dim,dimworld>::
+template<>
+inline Vec<3,UGCtype>& UGGridElement<0,3>::
 operator [](int i)
 {
-  switch (dim) {
+  UG3d::VERTEX* vertex = target_->myvertex;
 
-  case 0 : {
-    UG3d::NODE* node_target = (UG3d::NODE*) target_;
-    //printf("in operator[]: target %d\n", node_target);
-    UG3d::VERTEX* vertex = node_target->myvertex;
+  coord_(0,0) = vertex->iv.x[0];
+  coord_(1,0) = vertex->iv.x[1];
+  coord_(2,0) = vertex->iv.x[2];
 
+  return coord_(i);
+}
 
-#define OBJT(p) ReadCW(p, UG3d::OBJ_CE)
-    bool vType = OBJT(vertex)== UG3d::IVOBJ;
-#undef OBJT
-    coord_(0,i) = vertex->iv.x[0];
-    coord_(1,i) = vertex->iv.x[1];
-    coord_(2,i) = vertex->iv.x[2];
-    break;
-  }
+template<>
+inline Vec<3,UGCtype>& UGGridElement<3,3>::
+operator [](int i)
+{
+  assert(0<=i && i<corners());
 
-  }
+#define TAG(p) ReadCW(p, UG3d::TAG_CE)
+#define CORNER(p,i) ((UG3d::NODE *) ((p)->ge.refs[UG3d::n_offset[TAG(p)]+(i)]))
+  UG3d::VERTEX* vertex = CORNER(target_,i)->myvertex;
+#undef CORNER
+#undef TAG
+
+  for (int j=0; j<3; j++)
+    coord_(j,i) = vertex->iv.x[j];
+
   return coord_(i);
 }
 
@@ -124,10 +150,15 @@ template<>
 inline UGGridElement<3,3>& UGGridElement<3,3>::
 refelem()
 {
-  /** \todo Speed this up! */
   switch (type()) {
   case tetrahedron :
     return reftetrahedron.refelem;
+  case pyramid :
+    return refpyramid.refelem;
+  case prism :
+    return refprism.refelem;
+  case hexahedron :
+    return refhexahedron.refelem;
   default :
     std::cerr << "Unknown element type in refelem()\n";
   }
@@ -170,265 +201,62 @@ refelem()
 }
 
 
-#if 0
+/** \todo It should be possible to avoid all this copying! */
 template< int dim, int dimworld>
-inline Vec<dimworld,albertCtype> AlbertGridElement<dim,dimworld>::
+inline Vec<dimworld,UGCtype> UGGridElement<dim,dimworld>::
 global(const Vec<dim>& local)
 {
-  // checked, works
+  Vec<dimworld, UGCtype> globalCoord;
 
-  // we calculate interal in barycentric coordinates
-  // fake the third local coordinate via localFake
-  albertCtype localFake=1.0;
-  albertCtype c;
+  // I have to do this copying because I currently cannot pipe Vecs into
+  // UG macros because of the different index operators
+  UGCtype local_c[dimworld], global_c[dimworld];
+  for (int i=0; i<dimworld; i++)
+    local_c[i] = local(i);
 
-  c = local.read(0);
-  localFake -= c;
+  // dimworld*dimworld is an upper bound for the number of vertices
+  UGCtype* cornerCoords[dimworld*dimworld];
+  Corner_Coordinates(target_, cornerCoords);
 
-  // the initialize
-  // note that we have to swap the j and i
-  // in coord(j,i) means coord_(i)(j)
-  for(int j=0; j<dimworld; j++)
-    globalCoord_(j) = c * coord_(j,0);
+  // Actually do the computation
+  Local_To_Global(corners(), cornerCoords, local_c, global_c);
 
-  // for all local coords
-  for (int i = 1; i < dim; i++)
-  {
-    c = local.read(i);
-    localFake -= c;
-    for(int j=0; j<dimworld; j++)
-      globalCoord_(j) += c * coord_(j,i);
-  }
+  for (int i=0; i<dimworld; i++)
+    globalCoord(i) = global_c[i];
 
-  // for the last barycentric coord
-  for(int j=0; j<dimworld; j++)
-    globalCoord_(j) += localFake * coord_(j,dim);
-
-  std::cout << "*********************************\n";
-  globalCoord_.print(std::cout , 2); std::cout << "\n";
-  std::cout << "*********************************\n";
-
-  return globalCoord_;
+  return globalCoord;
 }
+
 
 template< int dim, int dimworld>
-inline Vec<dim>& AlbertGridElement<dim,dimworld>::
-local(const Vec<dimworld>& global)
+inline UGCtype UGGridElement<dim,dimworld>::
+integration_element (const Vec<dim,UGCtype>& local)
 {
-  ALBERT REAL lambda[dim+1];
+  UGCtype area;
 
-  tmpVec_ = localBary(global);
+  printf("myCoords = (%g %g %g)  (%g %g %g)  (%g %g %g)  (%g %g %g)\n",
+         (*this)[0](0), (*this)[0](1), (*this)[0](2),
+         (*this)[1](0), (*this)[1](1), (*this)[1](2),
+         (*this)[2](0), (*this)[2](1), (*this)[2](2),
+         (*this)[3](0), (*this)[3](1), (*this)[3](2));
 
-  // Umrechnen von baryzentrischen localen Koordinaten nach
-  // localen Koordinaten,
-  for(int i=0; i<dim; i++)
-    localCoord_(i) = tmpVec_.read(i);
+  Vec<3,double> testVec = (*this)[2];
 
-  return localCoord_;
+  // dimworld*dimworld is an upper bound for the number of vertices
+  UGCtype* cornerCoords[dimworld*dimworld];
+  Corner_Coordinates(target_, cornerCoords);
+  printf("y = (%g %g %g)  (%g %g %g)  (%g %g %g)  (%g %g %g)\n",
+         cornerCoords[0][0], cornerCoords[0][1], cornerCoords[0][2],
+         cornerCoords[1][0], cornerCoords[1][1], cornerCoords[1][2],
+         cornerCoords[2][0], cornerCoords[2][1], cornerCoords[2][2],
+         cornerCoords[3][0], cornerCoords[3][1], cornerCoords[3][2]);
+  // compute the volume of the element
+  Area_Of_Element(corners(), cornerCoords, area);
+
+  return area;
 }
 
-template <int dim, int dimworld>
-inline Vec<dim+1> AlbertGridElement<dim,dimworld>::
-localBary(const Vec<dimworld>& global)
-{
-  std::cout << "localBary for dim != dimworld not implemented yet!";
-  Vec<dim+1> tmp (0.0);
-  return tmp;
-}
-
-template <>
-inline Vec<3> AlbertGridElement<2,2>::
-localBary(const Vec<2>& global)
-{
-  enum { dim = 2};
-  enum { dimworld = 2};
-
-  ALBERT REAL edge[dim][dimworld], x[dimworld];
-  ALBERT REAL x0, det, det0, det1, lmin;
-  int j, k;
-  Vec<dim+1,albertCtype> lambda;
-  ALBERT REAL *v = NULL;
-
-  /*
-   * we got to solve the problem :
-   */
-  /*
-   * ( q1x q2x ) (lambda1) = (qx)
-   */
-  /*
-   * ( q1y q2y ) (lambda2) = (qy)
-   */
-  /*
-   * with qi=pi-p3, q=global-p3
-   */
-
-  v = static_cast<ALBERT REAL *> (elInfo_->coord[0]);
-  for (int j = 0; j < dimworld; j++)
-  {
-    x0 = elInfo_->coord[dim][j];
-    x[j] = global.read(j) - x0;
-    for (int i = 0; i < dim; i++)
-      edge[i][j] = elInfo_->coord[i][j] - x0;
-  }
-
-  det = edge[0][0] * edge[1][1] - edge[0][1] * edge[1][0];
-
-  det0 = x[0] * edge[1][1] - x[1] * edge[1][0];
-  det1 = edge[0][0] * x[1] - edge[0][1] * x[0];
-
-  if(ABS(det) < 1.E-20)
-  {
-    printf("det = %e; abort\n", det);
-    abort();
-  }
-
-  // lambda is initialized here
-  lambda(0) = det0 / det;
-  lambda(1) = det1 / det;
-  lambda(2) = 1.0 - lambda(0) - lambda(1);
-
-  return lambda;
-}
-
-template <>
-inline Vec<4> AlbertGridElement<3,3>::
-localBary(const Vec<3>& global)
-{
-  enum { dim = 3};
-  enum { dimworld = 3};
-
-  ALBERT REAL edge[dim][dimworld], x[dimworld];
-  ALBERT REAL x0, det, det0, det1, det2, lmin;
-  Vec<dim+1,albertCtype> lambda;
-  int j, k;
-
-  //! we got to solve the problem :
-  //! ( q1x q2x q3x) (lambda1) (qx)
-  //! ( q1y q2y q3y) (lambda2) = (qy)
-  //! ( q1z q2z q3z) (lambda3) (qz)
-  //! with qi=pi-p3, q=xy-p3
-
-  for (int j = 0; j < dimworld; j++)
-  {
-    x0 = elInfo_->coord[dim][j];
-    x[j] = global.read(j) - x0;
-    for (int i = 0; i < dim; i++)
-      edge[i][j] = elInfo_->coord[i][j] - x0;
-  }
-
-  det = edge[0][0] * edge[1][1] * edge[2][2]
-        + edge[0][1] * edge[1][2] * edge[2][0]
-        + edge[0][2] * edge[1][0] * edge[2][1]
-        - edge[0][2] * edge[1][1] * edge[2][0]
-        - edge[0][0] * edge[1][2] * edge[2][1]
-        - edge[0][1] * edge[1][0] * edge[2][2];
-  det0 = x[0] * edge[1][1] * edge[2][2]
-         + x[1] * edge[1][2] * edge[2][0]
-         + x[2] * edge[1][0] * edge[2][1]
-         - x[2] * edge[1][1] * edge[2][0]
-         - x[0] * edge[1][2] * edge[2][1] - x[1] * edge[1][0] * edge[2][2];
-  det1 = edge[0][0] * x[1] * edge[2][2]
-         + edge[0][1] * x[2] * edge[2][0]
-         + edge[0][2] * x[0] * edge[2][1]
-         - edge[0][2] * x[1] * edge[2][0]
-         - edge[0][0] * x[2] * edge[2][1] - edge[0][1] * x[0] * edge[2][2];
-  det2 = edge[0][0] * edge[1][1] * x[2]
-         + edge[0][1] * edge[1][2] * x[0]
-         + edge[0][2] * edge[1][0] * x[1]
-         - edge[0][2] * edge[1][1] * x[0]
-         - edge[0][0] * edge[1][2] * x[1] - edge[0][1] * edge[1][0] * x[2];
-  if(ABS(det) < 1.E-20)
-  {
-    printf("det = %e; abort\n", det);
-    abort();
-    return (-2);
-  }
-
-  // lambda is initialized here
-  lambda(0) = det0 / det;
-  lambda(1) = det1 / det;
-  lambda(2) = det2 / det;
-  lambda(3) = 1.0 - lambda(0) - lambda(1) - lambda(2);
-
-  return lambda;
-}
-
-// default implementation calls ALBERT routine
-template< int dim, int dimworld>
-inline albertCtype AlbertGridElement<dim,dimworld>::elVolume () const
-{
-  return ALBERT el_volume(elInfo_);
-}
-
-// volume of one Element, here triangle
-template <>
-inline albertCtype AlbertGridElement<2,2>::elVolume () const
-{
-  enum { dim = 2 };
-  enum { dimworld = 2 };
-  const albertCtype volFac = 0.5;
-  REAL e1[dimworld], e2[dimworld], det;
-  const REAL  *v0;
-
-  v0 = elInfo_->coord[0];
-  for (int i = 0; i < DIM_OF_WORLD; i++)
-  {
-    e1[i] = elInfo_->coord[1][i] - v0[i];
-    e2[i] = elInfo_->coord[2][i] - v0[i];
-  }
-
-  det = e1[0]*e2[1] - e1[1]*e2[0];
-  det = ABS(det);
-
-  return volFac*det;
-}
-
-// volume of one Element, here therahedron
-template <>
-inline albertCtype AlbertGridElement<3,3>::elVolume () const
-{
-  enum { dim = 3 };
-  enum { dimworld = 3 };
-  const albertCtype volFac = 1.0/6.0;
-
-  REAL e1[dimworld], e2[dimworld], e3[dimworld], det;
-  const REAL  *v0;
-
-  v0 = elInfo_->coord[0];
-  for (int i = 0; i < dimworld; i++)
-  {
-    e1[i] = elInfo_->coord[1][i] - v0[i];
-    e2[i] = elInfo_->coord[2][i] - v0[i];
-    e3[i] = elInfo_->coord[3][i] - v0[i];
-  }
-
-  det =   e1[0] * (e2[1]*e3[2] - e2[2]*e3[1])
-        - e1[1] * (e2[0]*e3[2] - e2[2]*e3[0])
-        + e1[2] * (e2[0]*e3[1] - e2[1]*e3[0]);
-  det = ABS(det);
-
-  return volFac*det;
-}
-
-template< int dim, int dimworld>
-inline albertCtype AlbertGridElement<dim,dimworld>::
-integration_element (const Vec<dim,albertCtype>& local)
-{
-  // if inverse was built, volume was calced already
-  if(builtinverse_)
-    return volume_;
-
-  volume_ = elVolume();
-  return volume_;
-}
-
-template <>
-inline Mat<1,1>& AlbertGridElement<1,2>::
-Jacobian_inverse (const Vec<1,albertCtype>& local)
-{
-  std::cout << "Jaconbian_inverse for dim=1,dimworld=2 not implemented yet! \n";
-  return Jinv_;
-}
+#if 0
 
 template< int dim, int dimworld>
 inline Mat<dim,dim>& AlbertGridElement<dim,dimworld>::

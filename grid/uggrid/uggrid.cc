@@ -10,7 +10,6 @@
 
 namespace Dune
 {
-
 #if 0
   static ALBERT EL_INFO statElInfo[DIM+1];
 
@@ -33,82 +32,13 @@ namespace Dune
 #endif
 
 
+
 #include "uggridelement.cc"
 #include "uggridentity.cc"
 #include "uggridhieriterator.cc"
 #include "uggridleveliterator.cc"
 
-  //*********************************************************************
-  //
-  //  AlbertMarkerVertex
-  //
-  //*********************************************************************
-#if 0
-  inline void AlbertMarkerVector::makeNewSize(int newNumberOfEntries)
-  {
-    vec_.resize(newNumberOfEntries);
-    for(Array<int>::Iterator it = vec_.begin(); it != vec_.end(); ++it)
-      (*it) = -1;
-  }
 
-  inline void AlbertMarkerVector::makeSmaller(int newNumberOfEntries)
-  {}
-
-  void AlbertMarkerVector::checkMark(ALBERT EL_INFO * elInfo, int localNum)
-  {
-    if(vec_[elInfo->el->dof[localNum][0]] == -1)
-      vec_[elInfo->el->dof[localNum][0]] = elInfo->el->index;
-  }
-
-
-  inline bool AlbertMarkerVector::
-  notOnThisElement(ALBERT EL * el, int level, int localNum)
-  {
-    return (vec_[ numVertex_ * level + el->dof[localNum][0]] != el->index);
-  }
-
-  template <class GridType>
-  inline void AlbertMarkerVector::markNewVertices(GridType &grid)
-  {
-    enum { dim      = GridType::dimension };
-    enum { dimworld = GridType::dimensionworld };
-
-    ALBERT MESH *mesh_ = grid.getMesh();
-
-    int nvx = mesh_->n_vertices;
-    // remember the number of vertices of the mesh
-    numVertex_ = nvx;
-
-    int maxlevel = grid.maxlevel();
-
-    int number = (maxlevel+1) * nvx;
-    if(vec_.size() < number) vec_.resize( 2 * number );
-    for(int i=0; i<vec_.size(); i++) vec_[i] = -1;
-
-    for(int level=0; level <= maxlevel; level++)
-    {
-      typedef typename GridType::Traits<0>::LevelIterator LevelIteratorType;
-      LevelIteratorType endit = grid.template lend<0> (level);
-      for(LevelIteratorType it = grid.template lbegin<0> (level); it != endit; ++it)
-      {
-        for(int local=0; local<dim+1; local++)
-        {
-          int num = it->getElInfo()->el->dof[local][0];
-          if( vec_[level * nvx + num] == -1 )
-            vec_[level * nvx + num] = it->globalIndex();
-        }
-      }
-      // remember the number of entity on level and codim = 0
-    }
-  }
-
-  inline void AlbertMarkerVector::print()
-  {
-    printf("\nEntries %d \n",vec_.size());
-    for(int i=0; i<vec_.size(); i++)
-      printf("Konten %d visited on Element %d \n",i,vec_[i]);
-  }
-#endif
   //***********************************************************************
   //
   // --UGGrid
@@ -156,6 +86,7 @@ namespace Dune
     numOfUGGrids++;
   }
 
+  /** \bug Actually delete the grid from UG! */
   template < int dim, int dimworld >
   inline UGGrid < dim, dimworld >::~UGGrid()
   {
@@ -169,6 +100,12 @@ namespace Dune
     }
 
   };
+
+  template < int dim, int dimworld >
+  inline int UGGrid < dim, dimworld >::maxlevel() const
+  {
+    return mesh_.topLevel;
+  }
 
   //template < int dim, int dimworld > template<int codim>
   template <>
@@ -287,40 +224,6 @@ namespace Dune
 
 #if 0
 
-
-  template < int dim, int dimworld >
-  inline void AlbertGrid < dim, dimworld >::calcExtras ()
-  {
-    if(numberOfEntitys_.size() != dim+1)
-      numberOfEntitys_.resize(dim+1);
-
-    for(int i=0; i<dim+1; i++) numberOfEntitys_[i] = NULL;
-
-    numberOfEntitys_[0] = &(mesh_->n_hier_elements);
-    numberOfEntitys_[dim] = &(mesh_->n_vertices);
-    // determine new maxlevel and mark neighbours
-    maxlevel_ = ALBERT AlbertHelp::calcMaxLevelAndMarkNeighbours( mesh_, neighOnLevel_ );
-
-    // mark vertices on elements
-    vertexMarker_->markNewVertices(*this);
-
-    // map the indices
-    markNew();
-
-    // we have a new grid
-    wasChanged_ = true;
-  }
-
-
-  //! Index Mapping
-  template < int dim, int dimworld >
-  inline void AlbertGrid < dim, dimworld >::
-  makeNewSize(Array<int> &a, int newNumberOfEntries)
-  {
-    a.resize(newNumberOfEntries);
-    for(Array<int>::Iterator it = a.begin(); it != a.end(); ++it)
-      (*it) = -1;
-  }
 
   template < int dim, int dimworld > template <int codim>
   inline int AlbertGrid < dim, dimworld >::
