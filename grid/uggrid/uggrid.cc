@@ -401,10 +401,13 @@ void Dune::UGGrid < dim, dimworld >::makeNewUGMultigrid()
 }
 
 template < int dim, int dimworld >
+// bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
+//                                          typename Traits::template codim<0>::EntityPointer & e )
 bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
-                                          typename Traits::template codim<0>::EntityPointer & e )
+                                          typename Traits::template codim<0>::Entity& e )
 {
-  typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
+  //typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
+  typename TargetType<0,dim>::T* target = getRealEntity<0>(e).target_;
 
 #ifdef _3
   if (!UG3d::EstimateHere(target))

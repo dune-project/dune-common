@@ -230,7 +230,12 @@ namespace Dune {
      * <li> false, if nothing changed </li>
      * </ul>
      */
-    bool mark(int refCount, typename Traits::template codim<0>::EntityPointer & e );
+    bool mark(int refCount, typename Traits::template codim<0>::EntityPointer & e ) {
+      return mark(refCount, *e);
+    }
+
+    /** \brief Tempory for Robert */
+    bool mark(int refCount, typename Traits::template codim<0>::Entity& e );
 
     /** \brief Mark method accepting a UG refinement rule
      */
