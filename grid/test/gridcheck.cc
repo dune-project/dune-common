@@ -392,77 +392,6 @@ struct GridInterface
   void (*c)(Grid&);
 };
 
-template <class Grid>
-void iterate(Grid &g)
-{
-  typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
-  typedef typename Grid::template codim<0>::Geometry Geometry;
-  LevelIterator it = g.template lbegin<0>(0);
-  const LevelIterator endit = g.template lend<0>(0);
-
-  Dune::FieldVector<typename Grid::ctype, Grid::dimension> origin(1);
-  Dune::FieldVector<typename Grid::ctype, Grid::dimension> result;
-
-  Geometry e = it->geometry();
-  for (; it != endit; ++it)
-  {
-    e = it->geometry();
-    result = e.local(e.global(origin));
-    typename Grid::ctype error = (result-origin).two_norm();
-    if(error >= std::numeric_limits<typename Grid::ctype>::epsilon())
-    {
-      DUNE_THROW(CheckError, "|| e.local(e.global(" << origin
-                                                    << ")) - origin || != 0 ( || " << result << " - origin || ) = " << error);
-    };
-    e.integrationElement(origin);
-    if((int)Geometry::coorddimension == (int)Geometry::mydimension)
-      e.jacobianInverse(origin);
-
-    e.type();
-    e.corners();
-    e[0];
-    e.refelem();
-
-    const Geometry ce = e;
-    ce.type();
-    ce.corners();
-    ce[0];
-    ce.refelem();
-
-  }
-
-  typedef typename Grid::template codim<0>::LeafIterator LeafIterator;
-  LeafIterator lit = g.leafbegin(g.maxlevel());
-  const LeafIterator lend = g.leafend(g.maxlevel());
-  for (; lit != lend; ++lit)
-  {
-    e = lit->geometry();
-    result = e.local(e.global(origin));
-    typename Grid::ctype error = (result-origin).two_norm();
-    if(error >= std::numeric_limits<typename Grid::ctype>::epsilon())
-    {
-      DUNE_THROW(CheckError, "|| e.local(e.global(" << origin
-                                                    << ")) - origin || != 0 ( || " << result << " - origin || ) = " << error);
-    };
-    e.integrationElement(origin);
-    if((int)Geometry::coorddimension == (int)Geometry::mydimension)
-      e.jacobianInverse(origin);
-
-    e.type();
-    e.corners();
-    e[0];
-    e.refelem();
-
-    const Geometry ce = e;
-    ce.type();
-    ce.corners();
-    ce[0];
-    ce.refelem();
-
-  }
-
-};
-
 // check Entity::geometry()[c] == Entity::entity<dim>.geometry()[0] for codim=cd
 template <int cd, class Grid, class Entity, bool doCheck>
 struct subIndexCheck
@@ -542,26 +471,12 @@ void zeroEntityConsistency (Grid &g)
   }
 }
 
+/*
+ * search the LevelIterator for each IntersectionIterator
+ */
 template <class Grid>
-void gridcheck (Grid &g)
+void assertNeighbor (Grid &g)
 {
-  /*
-   * first do the compile-test: this will not produce any code but
-   * fails if an interface-component is missing
-   */
-  GridInterface<Grid>();
-
-  /*
-   * now the runtime-tests
-   */
-  const Grid & cg = g;
-  iterate(g);
-  zeroEntityConsistency(g);
-  zeroEntityConsistency(cg);
-
-  /*
-   * search the LevelIterator for each IntersectionIterator
-   */
   typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
   typedef typename Grid::template codim<0>::IntersectionIterator IntersectionIterator;
   LevelIterator e = g.template lbegin<0>(0);
@@ -582,4 +497,84 @@ void gridcheck (Grid &g)
       }
     }
   }
+}
+
+/*
+ * Iterate over the grid und do some runtime checks
+ */
+
+template <class Grid>
+void iterate(Grid &g)
+{
+  typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
+  typedef typename Grid::template codim<0>::Geometry Geometry;
+  LevelIterator it = g.template lbegin<0>(0);
+  const LevelIterator endit = g.template lend<0>(0);
+
+  Dune::FieldVector<typename Grid::ctype, Grid::dimension> origin(1);
+  Dune::FieldVector<typename Grid::ctype, Grid::dimension> result;
+
+  for (; it != endit; ++it)
+  {
+    result = it->geometry().local(it->geometry().global(origin));
+    typename Grid::ctype error = (result-origin).two_norm();
+    if(error >= std::numeric_limits<typename Grid::ctype>::epsilon())
+    {
+      DUNE_THROW(CheckError, "|| geom.local(geom.global(" << origin
+                                                          << ")) - origin || != 0 ( || " << result << " - origin || ) = " << error);
+    };
+    it->geometry().integrationElement(origin);
+    if((int)Geometry::coorddimension == (int)Geometry::mydimension)
+      it->geometry().jacobianInverse(origin);
+
+    it->geometry().type();
+    it->geometry().corners();
+    it->geometry()[0];
+    it->geometry().refelem();
+  }
+
+  typedef typename Grid::template codim<0>::LeafIterator LeafIterator;
+  LeafIterator lit = g.leafbegin(g.maxlevel());
+  const LeafIterator lend = g.leafend(g.maxlevel());
+  for (; lit != lend; ++lit)
+  {
+    result = lit->geometry().local(lit->geometry().global(origin));
+    typename Grid::ctype error = (result-origin).two_norm();
+    if(error >= std::numeric_limits<typename Grid::ctype>::epsilon())
+    {
+      DUNE_THROW(CheckError, "|| geom.local(geom.global(" << origin
+                                                          << ")) - origin || != 0 ( || " << result << " - origin || ) = " << error);
+    };
+    lit->geometry().integrationElement(origin);
+    if((int)Geometry::coorddimension == (int)Geometry::mydimension)
+      lit->geometry().jacobianInverse(origin);
+
+    lit->geometry().type();
+    lit->geometry().corners();
+    lit->geometry()[0];
+    lit->geometry().refelem();
+  }
+
+};
+
+template <class Grid>
+void gridcheck (Grid &g)
+{
+  /*
+   * first do the compile-test: this will not produce any code but
+   * fails if an interface-component is missing
+   */
+  GridInterface<Grid>();
+
+  /*
+   * now the runtime-tests
+   */
+  const Grid & cg = g;
+  iterate(g);
+  iterate(cg);
+  zeroEntityConsistency(g);
+  zeroEntityConsistency(cg);
+  assertNeighbor(g);
+  assertNeighbor(cg);
+
 };
