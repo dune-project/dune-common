@@ -71,10 +71,13 @@ namespace Dune {
     ~DiscFuncArray ();
 
     // ***********  Interface  *************************
-    //! return access to local function for entity given by GridIterator
-    template <class GridIteratorType>
-    LocalFunctionArrayIterator<DiscreteFunctionType,GridIteratorType>
-    localFunction ( GridIteratorType &it );
+    //! return object of type LocalFunctionType
+    LocalFunctionArray<DiscreteFunctionSpaceType> newLocalFunction ( );
+
+    //! update LocalFunction to given Entity en
+    template <class EntityType>
+    void localFunction ( EntityType &en,
+                         LocalFunctionArray<DiscreteFunctionSpaceType> & lf);
 
     // we use the default implementation
     DofIteratorType dbegin ( int level );
@@ -100,7 +103,7 @@ namespace Dune {
     void set( RangeFieldType x );
     void setLevel( RangeFieldType x, int level );
 
-    void addScaled (const DiscFuncArray <DiscreteFunctionSpaceType> & g,
+    void addScaled (int level, const DiscFuncArray <DiscreteFunctionSpaceType> & g,
                     const RangeFieldType &scalar);
 
     template <class GridIteratorType>
@@ -238,11 +241,11 @@ namespace Dune {
 
     //! sum over all local base functions
     template <class EntityType>
-    void evaluate (EntityType &en, const DomainType & x, RangeType & ret);
+    void evaluate (EntityType &en, const DomainType & x, RangeType & ret) const ;
 
     //! sum over all local base functions evaluated on given quadrature point
     template <class EntityType, class QuadratureType>
-    void evaluate (EntityType &en, QuadratureType &quad, int quadPoint , RangeType & ret);
+    void evaluate (EntityType &en, QuadratureType &quad, int quadPoint , RangeType & ret) const;
 
     //********* Method that no belong to the interface *************
     //! methods that do not belong to the interface but have to be public
@@ -257,7 +260,7 @@ namespace Dune {
     void setNext (MyType * n);
 
     //! needed once
-    RangeType tmp;
+    mutable RangeType tmp;
 
     //! needed once
     JacobianRangeType tmpGrad_;
@@ -380,8 +383,9 @@ namespace Dune {
     typedef LocalFunctionArrayIterator < DiscFunctionType , GridIteratorType >
     LocalFunctionArrayIteratorType;
 
-  public:
+    typedef typename GridIteratorType::Traits::Entity EntityType;
 
+  public:
     //! Constructor
     LocalFunctionArrayIterator ( DiscFunctionType &df , GridIteratorType & it );
 
@@ -411,13 +415,15 @@ namespace Dune {
 
     int index () const;
 
+    void update ( GridIteratorType & it );
+
   private:
     //! true if local function init was called already
     bool built_;
 
     //! GridIteratorType can be LevelIterator, HierarchicIterator or
     //! ItersectionIterator or LeafIterator
-    GridIteratorType &it_;
+    GridIteratorType & it_;
 
     //! needed for access of local functions
     DiscFunctionType &df_;
