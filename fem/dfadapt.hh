@@ -288,6 +288,8 @@ namespace Dune {
   {
     typedef DofIteratorAdapt<DofType,DofArrayType> MyType;
   public:
+    typedef DofType T;
+
     DofIteratorAdapt ( DofArrayType & dofArray , int count )
       :  dofArray_ ( dofArray ) , constArray_ (dofArray) , count_ ( count ) {};
 
