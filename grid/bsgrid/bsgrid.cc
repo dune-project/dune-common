@@ -189,9 +189,17 @@ namespace Dune {
   {
     return maxlevel_;
   }
+
   template <int dim, int dimworld>
-  inline BSSPACE BSGitterType *BSGrid<dim,dimworld>::mygrid() {
-    return mygrid_;
+  inline BSSPACE BSGitterType & BSGrid<dim,dimworld>::myGrid()
+  {
+    return *mygrid_;
+  }
+
+  template <int dim, int dimworld>
+  inline const BSSPACE BSGitterType & BSGrid<dim,dimworld>::myGrid() const
+  {
+    return *mygrid_;
   }
 
   // lbegin methods
@@ -257,9 +265,9 @@ namespace Dune {
   inline bool BSGrid<dim,dimworld>::adapt()
   {
 #ifdef _BSGRID_PARALLEL_
-    bool ref = mygrid_->duneAdapt(); // adapt grid
+    bool ref = myGrid().duneAdapt(); // adapt grid
 #else
-    bool ref = mygrid_->adapt(); // adapt grid
+    bool ref = myGrid().adapt(); // adapt grid
 #endif
     if(ref)
     {
@@ -278,7 +286,7 @@ namespace Dune {
     for(int l=0; l<= maxlevel(); l++)
     {
       {
-        BSSPACE BSLevelIterator<0>::IteratorType w ( mygrid_->container() , l ) ;
+        BSSPACE BSLevelIterator<0>::IteratorType w ( myGrid().container() , l ) ;
         for (w.first () ; ! w.done () ; w.next ())
         {
           w.item ().resetRefinedTag();
@@ -287,7 +295,7 @@ namespace Dune {
     }
 #else
     {
-      BSSPACE BSLeafIteratorMaxLevel w (*mygrid_) ;
+      BSSPACE BSLeafIteratorMaxLevel w ( myGrid() ) ;
       for (w->first () ; ! w->done () ; w->next ())
       {
         w->item ().resetRefinedTag();
@@ -340,7 +348,7 @@ namespace Dune {
   inline bool BSGrid<dim,dimworld>::loadBalance()
   {
 #ifdef _BSGRID_PARALLEL_
-    bool changed = mygrid_->duneLoadBalance();
+    bool changed = myGrid().duneLoadBalance();
     if(changed)
     {
       calcMaxlevel();             // calculate new maxlevel
@@ -363,7 +371,7 @@ namespace Dune {
     BSSPACE GatherScatterImpl< BSGrid<dim,dimworld> , EntityType ,
         DataCollectorType > gs(*this,en,dc);
 
-    bool changed = mygrid_->duneLoadBalance(gs);
+    bool changed = myGrid().duneLoadBalance(gs);
 
     if(changed)
     {
@@ -386,7 +394,7 @@ namespace Dune {
     BSSPACE GatherScatterImpl< BSGrid<dim,dimworld> , EntityType ,
         DataCollectorType > gs(*this,en,dc);
 
-    mygrid_->duneExchangeData(gs);
+    myGrid().duneExchangeData(gs);
     return true;
 #else
     return false;
@@ -396,10 +404,9 @@ namespace Dune {
   template <int dim, int dimworld>
   template <FileFormatType ftype>
   inline bool BSGrid<dim,dimworld>::
-  writeGrid( const char * filename, bs_ctype time )
+  writeGrid( const char * filename, bs_ctype time ) const
   {
-    (*mygrid_).duneBackup(filename);
-
+    const_cast<BSSPACE BSGitterType &> (myGrid()).duneBackup(filename);
     // write time and maxlevel
     {
       char *extraName = new char[strlen(filename)+20];
@@ -447,7 +454,7 @@ namespace Dune {
     }
 
     assert(mygrid_ != 0);
-    (*mygrid_).duneRestore(filename);
+    myGrid().duneRestore(filename);
 
     {
       char *extraName = new char[strlen(filename)+20];
@@ -497,13 +504,15 @@ namespace Dune {
     : grid_(grid)
       , index_(-1)
       , level_(level)
-      , iter_(grid_.mygrid()->container(), level )
+      , iter_(grid_.myGrid().container(), level )
   {
     if(!end)
     {
       iter_.first();
-      if(iter_.size() > 0)
+      //if(iter_.size() > 0)
+      if(!iter_.done())
       {
+        assert(iter_.size() > 0);
         index_=0;
         BSGridEntity<0,dim,dimworld> * obj =
           new BSGridEntity<codim,dim,dimworld> (grid_,iter_.item(),index_,level_);
@@ -518,7 +527,7 @@ namespace Dune {
     : grid_(grid)
       , index_(-1)
       , level_(item.level())
-      , iter_(grid_.mygrid()->container(), level_ )
+      , iter_(grid_.myGrid().container(), level_ )
   {
     index_=0;
     BSGridEntity<codim,dim,dimworld> * obj =
@@ -541,7 +550,7 @@ namespace Dune {
       return *this;
     }
 
-    objEntity_->setElement(iter_.item());
+    (*objEntity_).setElement(iter_.item());
     return *this;
   }
 
@@ -593,14 +602,16 @@ namespace Dune {
                      end, PartitionIteratorType pitype)
     : index_(-1)
       , level_(level)
-      , iter_(grid.mygrid()->container(), level )
+      , iter_(grid.myGrid().container(), level )
       , pitype_ (pitype)
   {
     if(!end)
     {
       iter_.first();
-      if(iter_.size() > 0)
+      //if(iter_.size() > 0)
+      if(!iter_.done()) // else iterator empty
       {
+        assert(iter_.size() > 0);
         index_=0;
         BSGridEntity<0,dim,dimworld> * obj =
           new BSGridEntity<codim,dim,dimworld> (grid,iter_.item(),index_,level_);
@@ -624,8 +635,7 @@ namespace Dune {
       return *this;
     }
 
-    objEntity_->setElement(iter_.item());
-
+    (*objEntity_).setElement(iter_.item());
     return *this;
   }
 
@@ -647,7 +657,7 @@ namespace Dune {
   inline BSGridEntity<0,dim,dimworld>&
   BSGrid<dim,dimworld>::BSGridLeafIterator :: operator*()
   {
-    assert(iter_.size() > 0);
+    assert(objEntity_.operator -> ());
     return (*objEntity_);
   }
 
@@ -655,7 +665,7 @@ namespace Dune {
   inline BSGridEntity<0,dim,dimworld>*
   BSGrid<dim,dimworld>::BSGridLeafIterator :: operator->()
   {
-    assert(iter_.size() > 0);
+    assert(objEntity_.operator -> ());
     return objEntity_.operator -> ();
   }
 
@@ -751,7 +761,7 @@ namespace Dune {
       return *this;
     }
 
-    objEntity_->setElement(*item_);
+    (*objEntity_).setElement(*item_);
     return *this;
   }
 
@@ -1198,7 +1208,7 @@ namespace Dune {
   template<int dim, int dimworld>
   inline BSGridEntity<0,dim,dimworld> :: BSGridEntity(BSGrid<dim,dimworld> &grid,
                                                       BSSPACE HElementType & element,int index, int wLevel)
-    : grid_(grid), item_(static_cast<BSSPACE GEOElementType *> (&element))
+    : grid_(grid), item_(static_cast<BSSPACE IMPLElementType *> (&element))
       , ghost_(0), isGhost_(false), geo_(false) , builtgeometry_(false)
       , index_(index) , walkLevel_ (wLevel) , glIndex_ (element.getIndex())
       , level_ (element.level())
@@ -1208,13 +1218,13 @@ namespace Dune {
   inline void
   BSGridEntity<0,dim,dimworld> :: setElement(BSSPACE HElementType & element)
   {
-    item_= static_cast<BSSPACE GEOElementType *> (&element);
+    item_= static_cast<BSSPACE IMPLElementType *> (&element);
     isGhost_ = false;
     ghost_ = 0;
     builtgeometry_=false;
     index_   = -1;
-    level_   = item_->level();
-    glIndex_ = item_->getIndex();
+    level_   = (*item_).level();
+    glIndex_ = (*item_).getIndex();
   }
 
   template<int dim, int dimworld>
@@ -1226,8 +1236,8 @@ namespace Dune {
     ghost_ = 0;
     builtgeometry_=false;
     index_   = -1;
-    level_   = item_->level();
-    glIndex_ = item_->getIndex();
+    level_   = (*item_).level();
+    glIndex_ = (*item_).getIndex();
     //std::cout << "set Ghost " << glIndex_ << "\n";
   }
 
@@ -1584,7 +1594,7 @@ namespace Dune {
   }
 
   template <>
-  inline bool BSGridElement<3,3> :: builtGeom(const BSSPACE GEOElementType & item)
+  inline bool BSGridElement<3,3> :: builtGeom(const BSSPACE IMPLElementType & item)
   {
     enum { dim = 3 };
     enum { dimworld = 3};
@@ -1593,9 +1603,10 @@ namespace Dune {
 
     for (int i=0; i<(dim+1); i++)
     {
+      const double (&p)[3] = item.myvertex(i)->Point();
       for (int j=0; j<dimworld; j++)
       {
-        coord_(j,i) = (item).myvertex(i)->Point()[j];
+        coord_(j,i) = p[j];
       }
     }
     return true;
@@ -1646,9 +1657,10 @@ namespace Dune {
 
     for (int i=0; i<(dim+1); i++)
     {
+      const double (&p)[3] = static_cast<const BSSPACE IMPLFaceType &> (item).myvertex(i)->Point();
       for (int j=0; j<dimworld; j++)
       {
-        coord_(j,i) = static_cast<const BSSPACE GEOFaceType &> (item).myvertex(i)->Point()[j];
+        coord_(j,i) = p[j];
       }
     }
     buildJacobianInverse();
@@ -1667,7 +1679,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline FieldVector<bs_ctype, dimworld>& BSGridElement<dim,dimworld> :: operator[] (int i) const
+  inline const FieldVector<bs_ctype, dimworld>& BSGridElement<dim,dimworld> :: operator[] (int i) const
   {
     assert((i>=0) && (i < dim+1));
     return coord_(i);
