@@ -262,8 +262,8 @@ namespace Albert
 
       template <> int mapVertices<3> (int i) const
       {
-        // N_VERTICES (from ALBERT) = dim +1
-        return ((face_+1)+ (edge_+1) +(vertex_+1) +i)% (dimension+1);
+        // N_VERTICES (from ALBERT) = dim +1 = 4
+        return ((face_+1)+ (edge_+1) +(vertex_+1) +i) %( 4 );
       }
 
 

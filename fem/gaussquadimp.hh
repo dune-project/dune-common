@@ -68,7 +68,7 @@ namespace Dune {
     int nip ();
 
     // return local coordinates of integration point i
-    Domain& ip (int i);
+    Domain ip (int i);
 
     // return weight associated with integration point i
     RangeField w (int i);

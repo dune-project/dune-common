@@ -190,7 +190,7 @@ namespace Dune {
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
       : BaseFunctionInterface<FunctionSpaceType> (f)
     {
-      for(int i=1 i<4; i++) // x,y,z
+      for(int i=1; i<4; i++) // x,y,z
         if(baseNum == i)
           factor[i] = 1.0;
         else
@@ -198,7 +198,7 @@ namespace Dune {
 
       if(baseNum == 0) // 1 - x - y - z
       {
-        for(int i=1 i<4; i++)
+        for(int i=1; i<4; i++)
           factor[i] = -1.0;
         factor[0] = 1.0;
       }
@@ -244,32 +244,55 @@ namespace Dune {
   class LagrangeBaseFunction<FunctionSpaceType,quadrilateral,1>
     : public BaseFunctionInterface<FunctionSpaceType>
   {
-    //! phi(x,y) = (alpha + beta * x) * ( gamma + delta * y)
+    enum { dim = 2 };
+    //! phi(x,y) = (factor[0][0] + factor[0][1] * x) * ( factor[1][0] + factor[1][1] * y)
     typedef typename FunctionSpaceType::RangeField RangeField;
-    RangeField alpha,beta,gamma,delta;
+    RangeField factor[dim][2];
   public:
 
     //! Constructor making base function number baseNum
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
       : BaseFunctionInterface<FunctionSpaceType>(f)
     {
-      if((baseNum < 0) || (baseNum > 3))
+      // looks complicated but works
+      int fak[dim] = {0,0};
+      switch(baseNum)
       {
-        std::cout << "Wrong baseNum given to LagrangeBase \n";
+      case 0 : {
+        break;
+      }
+      case 1 : {
+        fak[0] = 1; break;
+      }
+      case 2 : {
+        fak[1] = 1; break;
+      }
+      case 3 : {
+        fak[0] = 1; fak[1] = 1; break;
+      }
+      default :
+      {
+        std::cout << "Wrong baseNum given to LagrangeBase for quadrilaterals! \n";
         abort();
       }
-      alpha = ( baseNum%2 == 0 ) ?  1.0 : 0.0 ;
-      beta  = ( baseNum%2 == 0 ) ? -1.0 : 1.0 ;
-      gamma = ( baseNum < 2    ) ?  1.0 : 0.0 ;
-      delta = ( baseNum < 2    ) ? -1.0 : 1.0 ;
+      }
+
+      // tensor product
+      for(int i=0; i<dim; i++)
+      {
+        factor[i][0] = ( fak[i] == 0 ) ?  1.0 : 0.0 ;
+        factor[i][1] = ( fak[i] == 0 ) ? -1.0 : 1.0 ;
+      }
     };
 
     //! evaluate the basefunction on point x
     virtual void evaluate ( const Vec<0,deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      // supposse that phi is element R
-      phi = (alpha + beta * x.get(0)) * ( gamma + delta * x.get(1));
+      // dim == 2, tested
+      phi = 1.0;
+      for(int i=0; i<dim; i++)
+        phi *= (factor[i][0] + (factor[i][1] * x.get(i)));
     }
 
     //! derivative with respect to x or y
@@ -279,17 +302,16 @@ namespace Dune {
     virtual void evaluate ( const Vec<1,deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      if(diffVariable.get(0)) // differtiate to x component
+      int num = diffVariable.get(0);
+      phi = 1.0;
+      for(int i=0; i<dim; i++)
       {
-        phi = beta * ( gamma + delta * x.get(1));
-        return;
+        if(num == i)
+          phi *= factor[num][1];
+        else
+          phi *= (factor[i][0] + factor[i][1] * x.get(i));
       }
-      else // differtiate to y component
-      {
-        phi = (alpha + beta * x.get(0)) * delta;
-        return;
-      }
-      phi = 0.0;
+      return;
     }
 
     virtual void evaluate ( const Vec<2,deriType> &diffVariable,
@@ -304,9 +326,134 @@ namespace Dune {
       // which means derivative xy or yx
       else
       {
-        phi = beta * delta;
+        phi = factor[0][1] * factor[1][1];
         return;
       }
+      phi = 0.0;
+    }
+
+  };
+
+
+
+  //*********************************************************************
+  //
+  //
+  //! Trilinear BaseFunctions for hexahedrons
+  //! v(x,y,z) = (alpha + beta * x) * ( gamma + delta * y) * (omega + eps * z)
+  //
+  //
+  // local node numbers and face numbers for DUNE hexahedrons
+  //
+  //             6---------7
+  //            /.        /|
+  //           / .  5    / |
+  //          /  .      /  |
+  //         4---------5   | <-- 3 (back side)
+  //   0 --> |   .     | 1 |
+  //         |   2.....|...3
+  //         |  .      |  /
+  //         | .   2   | / <-- 4 (front side)
+  //         |.        |/
+  //         0---------1
+  //
+  //  this is the DUNE local coordinate system for hexahedrons
+  //
+  //*********************************************************************
+  template<class FunctionSpaceType>
+  class LagrangeBaseFunction<FunctionSpaceType,hexahedron,1>
+    : public BaseFunctionInterface<FunctionSpaceType>
+  {
+    enum { dim = 3 };
+    //! phi(x,y,z) = (factor[0][0] + factor[0][1] * x)
+    //!            = (factor[1][0] + factor[1][1] * y)
+    //!            = (factor[2][0] + factor[2][1] * z)
+    typedef typename FunctionSpaceType::RangeField RangeField;
+    RangeField factor[dim][2];
+  public:
+
+    //! Constructor making base function number baseNum
+    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
+      : BaseFunctionInterface<FunctionSpaceType>(f)
+    {
+      // looks complicated but works
+      int fak[dim] = {0,0,0};
+      switch(baseNum)
+      {
+      case 0 : {
+        break;
+      }
+      case 1 : {
+        fak[0] = 1; break;
+      }
+      case 2 : {
+        fak[1] = 1; break;
+      }
+      case 3 : {
+        fak[0] = 1; fak[1] = 1; break;
+      }
+      case 4 : {
+        fak[2] = 1; break;
+      }
+      case 5 : {
+        fak[0] = 1; fak[2] = 1; break;
+      }
+      case 6 : {
+        fak[1] = 1; fak[2] = 1; break;
+      }
+      case 7 : {
+        fak[0] = 1; fak[1] = 1; fak[2] = 1; break;
+      }
+      default :
+      {
+        std::cout << "Wrong baseNum given to LagrangeBase for hexahedrons \n";
+        abort();
+      }
+
+      }
+
+      // tensor product
+      for(int i=0; i<dim; i++)
+      {
+        factor[i][0] = ( fak[i] == 0 ) ?  1.0 : 0.0 ;
+        factor[i][1] = ( fak[i] == 0 ) ? -1.0 : 1.0 ;
+      }
+
+    };
+
+    //! evaluate the basefunction on point x
+    virtual void evaluate ( const Vec<0,deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      // dim == 3, tested
+      phi = 1.0;
+      for(int i=0; i<dim; i++)
+        phi *= (factor[i][0] + (factor[i][1] * x.get(i)));
+    }
+
+    //! derivative with respect to x or y or z
+    //! diffVariable(0) == 0   ==> x
+    //! diffVariable(0) == 1   ==> y
+    //! diffVariable(0) == 2   ==> z,  and so on
+    virtual void evaluate ( const Vec<1,deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      int num = diffVariable.get(0);
+      phi = 1.0;
+      for(int i=0; i<dim; i++)
+      {
+        if(num == i)
+          phi *= factor[num][1];
+        else
+          phi *= (factor[i][0] + factor[i][1] * x.get(i));
+      }
+      return;
+    }
+
+    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      std::cout << "BaseFunction for hexahedron, evaluate 2nd derivative not implemented! \n";
       phi = 0.0;
     }
 
@@ -344,6 +491,12 @@ namespace Dune {
     enum { numOfBaseFct = (polOrd == 0) ? 1 : (4 * polOrd) };
   };
 
+  //! Lagrange Definition for hexahedrons
+  template <int polOrd >
+  struct LagrangeDefinition< hexahedron , polOrd>
+  {
+    enum { numOfBaseFct = (polOrd == 0) ? 1 : (8 * polOrd) };
+  };
 
   //*********************************************************************
   //
@@ -493,13 +646,6 @@ namespace Dune {
     const FastBaseFunctionSetType& getBaseFunctionSet ( EntityType &en ) const
     {
       ElementType type =  en.geometry().type();
-#if 0
-      if( baseFuncSet_.get ( type ) == NULL )
-      {
-        std::cerr << "BaseFunctionSetPointer points to NULL! \n";
-        abort();
-      }
-#endif
       return (*baseFuncSet_.get( type ));
     };
 
@@ -525,8 +671,11 @@ namespace Dune {
     {
       switch (en.geometry().type())
       {
-      case triangle :      return makeBaseSet<triangle,polOrd> ();
+      case line         : return makeBaseSet<line,polOrd> ();
+      case triangle     : return makeBaseSet<triangle,polOrd> ();
       case quadrilateral : return makeBaseSet<quadrilateral,polOrd> ();
+      case tetrahedron  : return makeBaseSet<tetrahedron,polOrd> ();
+      case hexahedron   : return makeBaseSet<hexahedron,polOrd> ();
       default : {
         std::cerr << en.geometry().type() << " This element type is not provided yet! \n";
         abort();

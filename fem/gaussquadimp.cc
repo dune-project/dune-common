@@ -197,7 +197,7 @@ namespace Dune {
   }
 
   template<class Domain, class RangeField, int dim, int order>
-  inline Domain& GaussQuadrature<Domain,RangeField,dim,order>::ip (int i)
+  inline Domain GaussQuadrature<Domain,RangeField,dim,order>::ip (int i)
   {
     return local[i];
   }
