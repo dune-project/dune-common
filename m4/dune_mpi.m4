@@ -53,10 +53,13 @@ AC_DEFUN([DUNE_MPI],[
 
 # somehow variables like $1, $2 seem to disappear after m4... Quote them...
 dune_mpi_getflags () {
-    # call mpiCC, remove compiler name
+    # -- call mpiCC, remove compiler name
+    # compiler-name is first word in line _if_ it doesn't start with a dash!
+    # needed because mpiCC sometimes does not include compiler (newer LAM)
+
     # the additional brackets keep m4 from interpreting the brackets
     # in the sed-command...
-    retval=[`$MPICOMP ${1} ${2} 2>/dev/null | sed -e 's/^[^ ]\+ //'`]
+    retval=[`$MPICOMP ${1} ${2} 2>/dev/null | sed -e 's/^[^-][^ ]\+ //'`]
     # remove dummy-parameter (if existing)
     if test ${#} = 2 ; then
       retval=`echo $retval | sed -e "s/${2}//"`
@@ -77,38 +80,50 @@ dune_mpi_getflags () {
     with_mpi="no"
 
     AC_MSG_CHECKING([MPI-package])
-    # the MPICH mpiCC knows a -show parameter
-    dune_mpi_getflags "-show"
+    # the LAM mpiCC knows a -showme parameter
+    dune_mpi_getflags "-showme"
     if test x"$retval" != x ; then
-      with_mpi="MPICH"
+      with_mpi="LAM"
 
-      # use special commands to extract options      
-
-      dune_mpi_getflags "-compile_info"
-      MPI_CPPFLAGS="$retval"
-      # hack in option to disable MPICH-C++-bindings...
-      AC_LANG_CASE([C++], [MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPICH_SKIP_MPICXX"])
-
-      dune_mpi_getflags "-link_info"
-      MPI_LDFLAGS="$retval"
-
-      AC_MSG_RESULT([MPICH])
-    else
-      # the LAM mpiCC knows a -showme parameter
-      dune_mpi_getflags "-showme"
+      # try new -showme:xxx function
+      dune_mpi_getflags "-showme:compile"
       if test x"$retval" != x ; then
-        AC_MSG_RESULT([LAM])
-        with_mpi="LAM"
+        # seems like LAM >= 7.1 which supports extraction of parameters without
+        # dummy files
+        AC_MSG_RESULT([LAM >= 7.1])
+        MPI_CPPFLAGS="$retval"
 
+        dune_mpi_getflags "-showme:link"
+        MPI_LDFLAGS="$retval"
+      else
+        AC_MSG_RESULT([LAM <= 7.0])
         # use -showme and dummy parameters to extract flags        
-	AC_LANG_CASE([C], [MPISOURCE="dummy.c"],
-	[C++], [MPISOURCE="dummy.cc"])
+        AC_LANG_CASE([C], [MPISOURCE="dummy.c"],
+	  [C++], [MPISOURCE="dummy.cc"])
 
         dune_mpi_getflags "-showme" "-c $MPISOURCE"
         MPI_CPPFLAGS="$retval"
 
         dune_mpi_getflags "-showme" "dummy.o -o dummy"
         MPI_LDFLAGS="$retval"
+      fi
+    else
+      # the MPICH mpiCC knows a -show parameter
+      dune_mpi_getflags "-show"
+      if test x"$retval" != x ; then
+        with_mpi="MPICH"
+
+        # use special commands to extract options      
+
+        dune_mpi_getflags "-compile_info"
+        MPI_CPPFLAGS="$retval"
+        # hack in option to disable MPICH-C++-bindings...
+        AC_LANG_CASE([C++], [MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPICH_SKIP_MPICXX"])
+
+        dune_mpi_getflags "-link_info"
+        MPI_LDFLAGS="$retval"
+
+        AC_MSG_RESULT([MPICH])
       else
         # neither MPICH nor LAM....
         AC_MSG_RESULT([unknown])
