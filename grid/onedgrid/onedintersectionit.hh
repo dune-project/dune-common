@@ -72,10 +72,28 @@ namespace Dune {
     }
 
     //! access neighbor, dereferencing
-    OneDGridEntity<0,dim,dimworld>& operator*();
+    OneDGridEntity<0,dim,dimworld>& operator*(){
+      if (neighbor_==0)
+        if (center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0])
+          return *center_->pred_;
+        else
+        if (center_->succ_ && center_->succ_->geo_.vertex[0] == center_->geo_.vertex[1])
+          return *center_->succ_;
+
+      DUNE_THROW(GridError, "Trying to dereferentiate a NULL-pointer!");
+    }
 
     //! access neighbor, arrow
-    OneDGridEntity<0,dim,dimworld>* operator->();
+    OneDGridEntity<0,dim,dimworld>* operator->() {
+      if (neighbor_==0)
+        if (center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0])
+          return center_->pred_;
+        else
+        if (center_->succ_ && center_->succ_->geo_.vertex[0] == center_->geo_.vertex[1])
+          return center_->succ_;
+
+      return 0;
+    }
 
     //! return true if intersection is with boundary.
     bool boundary () {
@@ -131,9 +149,9 @@ namespace Dune {
     //! return true if across the edge an neighbor on this level exists
     bool neighbor () const {
       if (neighbor_==0)
-        return center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo.vertex[0];
+        return center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0];
       else
-        return center_->succ_ && center_->succ_->geo_.vertex[0] == center_->geo.vertex[1];
+        return center_->succ_ && center_->succ_->geo_.vertex[0] == center_->geo_.vertex[1];
     }
 
     //! return information about the Boundary
