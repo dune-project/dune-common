@@ -23,8 +23,8 @@ namespace Dune {
     {
       // search the macro grid for diffrent element types
       typedef typename GridType::template Traits<0>::LevelIterator LevelIteratorType;
-      LevelIteratorType endit  = g.template lend<0>(0);
-      for(LevelIteratorType it = g.template lbegin<0>(0); it != endit; ++it)
+      LevelIteratorType endit  = g.template lend<0>(level);
+      for(LevelIteratorType it = g.template lbegin<0>(level); it != endit; ++it)
       {
         ElementType type = (*it).geometry().type(); // Hack
         if(baseFuncSet_[type] == 0 )
