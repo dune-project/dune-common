@@ -132,6 +132,14 @@ namespace Dune {
       return s;
     }
 
+    //! Eucledian distance of two vectors
+    T distance (const Vec<n,T>& b) const
+    {
+      T s=0.0;
+      for (int i=0; i<n; i++) s += (x[i]-b.x[i])*(x[i]-b.x[i]);
+      return sqrt(s);
+    }
+
     void print (std::ostream& s, int indent) const
     {
       for (int k=0; k<indent; k++) s << " ";
