@@ -65,10 +65,6 @@ template< int dim, int dimworld>
 inline ElementType UGGridElement<dim,dimworld>::type()
 {
 
-
-
-  //#define TAG(p) ReadCW(p, UG3d::TAG_CE)
-
   switch (dim)
   {
   case 1 : return line;
@@ -100,7 +96,6 @@ inline ElementType UGGridElement<dim,dimworld>::type()
       std::cerr << "UGGridElement::type():  ERROR:  Unknown type found!\n";
     }
   }
-  //#undef TAG
   // Mustn't happen
   assert(false);
   // Just to calm the compiler
@@ -257,7 +252,6 @@ refelem()
 }
 
 
-/** \todo It should be possible to avoid all this copying! */
 template< int dim, int dimworld>
 inline Vec<dimworld,UGCtype> UGGridElement<dim,dimworld>::
 global(const Vec<dim>& local)
@@ -283,11 +277,25 @@ integration_element (const Vec<dim,UGCtype>& local)
   UGCtype* cornerCoords[dimworld*dimworld];
   UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
 
-  //
+  // compute the transformation onto the reference element (or vice versa?)
   Mat<dimworld,dimworld> mat;
-
-  // compute the volume of the element
   UG<dimworld>::Transformation(corners(), cornerCoords, local, mat);
 
   return mat.determinant();
+}
+
+template< int dim, int dimworld>
+inline Mat<dim,dim>& UGGridElement<dim,dimworld>::
+Jacobian_inverse (const Vec<dim,UGCtype>& local)
+{
+  // dimworld*dimworld is an upper bound for the number of vertices
+  UGCtype* cornerCoords[dimworld*dimworld];
+  UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
+
+
+  // compute the transformation onto the reference element (or vice versa?)
+  Mat<dimworld,dimworld> mat;
+  UG<dimworld>::Transformation(corners(), cornerCoords, local, mat);
+
+  return mat;
 }
