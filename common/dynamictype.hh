@@ -9,20 +9,33 @@ namespace Dune {
 
   class DynamicType {
   public:
+    static const IdentifierType undefined = 0;
 
+    //! set identifier of this class
     DynamicType (int ident) : identifier_ (ident) {};
+    DynamicType () : identifier_ (undefined) {};
 
     virtual bool operator == ( const DynamicType &) {return true;};
     virtual bool operator != ( const DynamicType &) {return true;};
     virtual bool operator <= ( const DynamicType &) {return true;};
     virtual bool operator >= ( const DynamicType &) { return true; };
 
-    IdentifierType getIdentifier() const { return identifier_; }
+    //! return identifier
+    IdentifierType getIdentifier() const
+    {
+      assert(identifier_ != undefined);
+      return identifier_;
+    }
 
-    static const IdentifierType undefined = 0;
 
   protected:
+    // method to set identifier later, which we need for quadratures
+    void setIdentifier (IdentifierType ident)
+    {
+      identifier_ = ident;
+    }
 
+    // the identifier, up to now an unique int
     IdentifierType identifier_;
   };
 
