@@ -170,19 +170,10 @@ namespace Dune {
     // name of this func
     const char * name_;
 
-    //! maxlevel which is occupied
-    int level_;
-
     // MemObject that manages the memory for the dofs of this function
     MemObjectType & memObj_;
 
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
-
-    //! true if memory was allocated
-    bool built_;
-
-    //! occupied levels
-    int levOcu_;
 
     //! array containing the dof of this function, see dofmanager.hh
     DofArrayType dofVec_;

@@ -12,8 +12,6 @@ namespace Dune
   DFAdapt(const char * name, DiscreteFunctionSpaceType & f) :
     DiscreteFunctionDefaultType ( f )
     , name_ (name)
-    , built_ ( false )
-    , level_ (-1), levOcu_ (0)
     , memObj_ ( f.signIn( *this ) )
     , dofVec_ ( memObj_.getArray() )
     , localFunc_ ( f, dofVec_ )
@@ -26,7 +24,6 @@ namespace Dune
           int level , int codim , bool allLevel )
     : DiscreteFunctionDefaultType ( f )
       , name_ (name)
-      , level_ ( level )
       , memObj_ (f.signIn( const_cast <DFAdapt< DiscreteFunctionSpaceType > &> (*this) ))
       , dofVec_ ( memObj_.getArray() )
       , localFunc_ ( f , dofVec_ )
@@ -42,10 +39,6 @@ namespace Dune
   {
     // copy values of array
     dofVec_ = df.dofVec_;
-
-    built_ = df.built_;
-    levOcu_ = df.levOcu_;
-    level_ = df.level_;
   }
 
 
@@ -207,7 +200,6 @@ namespace Dune
 
     // read xdr
     xdrstdio_create(&xdrs, file, XDR_DECODE);
-    levOcu_ = 1;
     dofVec_.processXdr(&xdrs);
 
     xdr_destroy(&xdrs);
@@ -223,7 +215,7 @@ namespace Dune
     const char * fn = genFilename(path,filename,timestep);
     std::fstream outfile( fn , std::ios::out );
     {
-      int lev = level_;
+      int lev    = this->functionSpace_.getGrid().maxlevel();
       int length = this->functionSpace_.size( lev );
       outfile << length << "\n";
       DofIteratorType enddof = dend ( lev );
@@ -249,8 +241,7 @@ namespace Dune
     infile = fopen( fn, "r" );
     assert(infile != 0);
     {
-      levOcu_ = 1;
-      int lev = level_;
+      int lev    = this->functionSpace_.getGrid().maxlevel();
       int length;
       fscanf(infile,"%d \n",&length);
       assert(length == this->functionSpace_.size( lev ));
@@ -276,15 +267,10 @@ namespace Dune
     enum { dim = GridType::dimension };
 
     int danz = 129;
-    /*
-       int danz = functionSpace_.getGrid().size(level_, dim );
-       danz = (int) pow (( double ) danz, (double) (1.0/dim) );
-       std::cout << danz << " Danz!\n";
-     */
 
     out << "P2\n " << danz << " " << danz <<"\n255\n";
-    DofIteratorType enddof = dend ( level_ );
-    for(DofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
+    DofIteratorType enddof = dend ( -1 );
+    for(DofIteratorType itdof = dbegin ( -1 ); itdof != enddof; ++itdof) {
       out << (int)((*itdof)*255.) << "\n";
     }
     out.close();
@@ -298,17 +284,12 @@ namespace Dune
     FILE *in;
     int v;
 
-    // get the hole memory
-    level_ = this->functionSpace_.getGrid().maxlevel();
-    levOcu_ = level_+1;
-
-    //getMemory();
     const char * path=0;
     const char * fn = genFilename(path,filename,timestep);
     in = fopen( fn, "r" );
     fscanf( in, "P2\n%d %d\n%d\n", &v, &v, &v );
-    DofIteratorType enddof = dend ( level_ );
-    for(DofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
+    DofIteratorType enddof = dend ( -1 );
+    for(DofIteratorType itdof = dbegin ( -1 ); itdof != enddof; ++itdof) {
       fscanf( in, "%d", &v );
       (*itdof) = ((double)v)/255.;
     }
