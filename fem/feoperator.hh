@@ -125,6 +125,19 @@ namespace Dune {
                     matrix_->kroneckerKill(col,col);
                   }
                 }
+                if((*it).geometry().type() == tetrahedron)
+                {
+                  int numDof = 4;
+                  for(int i=1; i<numDof; i++)
+                  {
+                    // funktioniert nur fuer Dreiecke
+                    // hier muss noch gearbeitet werden. Wie kommt man von den
+                    // Intersections zu den localen Dof Nummern?
+                    int col = functionSpace_.mapToGlobal(*it,(neigh+i)%numDof);
+                    // unitRow unitCol for boundary
+                    matrix_->kroneckerKill(col,col);
+                  }
+                }
                 if((*it).geometry().type() == quadrilateral)
                 {
                   for(int i=0; i<2; i++)
