@@ -520,7 +520,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   IndexSet<TG,TL,N>::IndexSet()
-    : state_(GROUND)
+    : state_(GROUND), noPublic_(0), seqNo_(0)
   {}
 
   template<class TG, class TL, int N>
@@ -594,6 +594,7 @@ namespace Dune
 
     std::sort(newIndices_.begin(), newIndices_.end());
     merge();
+    seqNo_++;
     state_ = GROUND;
   }
 
@@ -601,6 +602,13 @@ namespace Dune
   inline void IndexSet<TG,TL,N>::merge(){
     if(localIndices_.size()==0)
     {
+      iterator added=newIndices_.begin(), endadded=newIndices_.end();
+      while(added!= newIndices_.end()) {
+        if(added->local().isPublic())
+          noPublic_++;
+        ++added;
+      }
+
       localIndices_=newIndices_;
       newIndices_.clear();
     }
@@ -609,33 +617,44 @@ namespace Dune
       ArrayList<IndexPair<TG,TL>,N> tempPairs;
       iterator old=localIndices_.begin(), endold=localIndices_.end();
       iterator added=newIndices_.begin(), endadded=newIndices_.end();
+      noPublic_=0;
 
       while(old != localIndices_.end() && added!= newIndices_.end())
       {
-        if(old->local().state()==DELETED)
+        if(old->local().state()==DELETED) {
           old.eraseToHere();
+        }
         else if(old->global() < added->global())
         {
           tempPairs.push_back(*old);
+          if(old->local().isPublic())
+            noPublic_++;
           old.eraseToHere();
         }
         else
         {
           tempPairs.push_back(*added);
+          if(added->local().isPublic())
+            noPublic_++;
           added.eraseToHere();
         }
       }
 
       while(old != localIndices_.end())
       {
-        if(old->local().state()!=DELETED)
+        if(old->local().state()!=DELETED) {
+          if(old->local().isPublic())
+            noPublic_++;
           tempPairs.push_back(*old);
+        }
         old.eraseToHere();
       }
 
       while(added!= newIndices_.end())
       {
         tempPairs.push_back(*added);
+        if(added->local().isPublic())
+          noPublic_++;
         added.eraseToHere();
       }
       localIndices_ = tempPairs;

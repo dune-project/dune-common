@@ -425,14 +425,14 @@ namespace Dune {
     if(type==MPI_DATATYPE_NULL) {
       int length[3];
       MPI_Aint disp[3];
-      MPI_Datatype types[4] = {MPI_LB, MPITraits<char>::getType(), MPI_UB};
+      MPI_Datatype types[3] = {MPI_LB, MPITraits<char>::getType(), MPI_UB};
       ParallelLocalIndex<T> rep[2];
       length[0]=length[1]=length[2]=1;
       MPI_Address(rep, disp); // lower bound of the datatype
       MPI_Address(&(rep[0].attribute_), disp+1);
       MPI_Address(rep+1, disp+2); // upper bound od the datatype
-      for(int i=1; i < 3; i++)
-        disp[1] -= disp[0];
+      for(int i=2; i >= 0; --i)
+        disp[i] -= disp[0];
       MPI_Type_struct(3, length, disp, types, &type);
       MPI_Type_commit(&type);
     }
@@ -456,8 +456,8 @@ namespace Dune {
       MPI_Address(&(rep[0].global_), disp+1);
       MPI_Address(&(rep[0].local_), disp+2);
       MPI_Address(rep+1, disp+3); // upper bound of the datatype
-      for(int i=1; i < 4; i++)
-        disp[1] -= disp[0];
+      for(int i=3; i >= 0; --i)
+        disp[i] -= disp[0];
       MPI_Type_struct(4, length, disp, types, &type);
       MPI_Type_commit(&type);
     }
@@ -481,8 +481,8 @@ namespace Dune {
       MPI_Address(&(rep[0].globalIndex_), disp+1);
       MPI_Address(&(rep[0].attribute_), disp+2);
       MPI_Address(rep+1, disp+3); // upper bound od the datatype
-      for(int i=1; i < 4; i++)
-        disp[1] -= disp[0];
+      for(int i=0; i < 4; i++)
+        disp[i] -= disp[0];
       MPI_Type_struct(4, length, disp, types, &type);
       MPI_Type_commit(&type);
     }
@@ -576,10 +576,13 @@ namespace Dune {
     char** buffer = new char*[2];
     int bufferSize;
     int position=0;
+    int intSize;
 
     MPI_Pack_size(maxPublish, MPITraits<PairType>::getType(), comm_,
                   &bufferSize);
-
+    MPI_Pack_size(1, MPI_INT, comm_,
+                  &intSize);
+    bufferSize += intSize;
     buffer[0] = new char[bufferSize];
     buffer[1] = new char[bufferSize];
 
@@ -596,11 +599,12 @@ namespace Dune {
 
         //Now pack the indices
         const PairType* pair = myPairs[0];
-
+        MPI_Datatype type = MPITraits<PairType>::getType();
         for(const_iterator index=source_.begin(); index != end; ++index)
           if(b || index->local().isPublic()) {
+
             MPI_Pack(const_cast<PairType*>(&(*index)), 1,
-                     MPITraits<PairType>::getType(),
+                     type,
                      buffer[0], bufferSize, &position, comm_);
             pair = &(*index);
             ++pair;
@@ -609,24 +613,25 @@ namespace Dune {
 
       char* p_out = buffer[1-(proc%2)];
       char* p_in = buffer[proc%2];
+      int receiveCount=bufferSize;
       MPI_Status status;
 
       if(rank%2==0) {
-        MPI_Ssend(&p_out, position, MPI_PACKED, (rank+1)%procs,
+        MPI_Ssend(p_out, position, MPI_PACKED, (rank+1)%procs,
                   commTag_, comm_);
-        MPI_Recv(&p_in, maxPublish, MPI_PACKED, (rank+procs-1)%procs,
+        MPI_Recv(p_in, receiveCount, MPI_PACKED, (rank+procs-1)%procs,
                  commTag_, comm_, &status);
       }else{
-        MPI_Recv(&p_in, maxPublish, MPI_PACKED, (rank+procs-1)%procs,
+        MPI_Recv(p_in, receiveCount, MPI_PACKED, (rank+procs-1)%procs,
                  commTag_, comm_, &status);
-        MPI_Send(&p_out, position, MPI_PACKED, (rank+1)%procs,
-                 commTag_, comm_);
+        MPI_Ssend(p_out, position, MPI_PACKED, (rank+1)%procs,
+                  commTag_, comm_);
       }
 
-      // unpack the number of indices we got
+      // unpack the number of indices we received
       int noReceived;
       position=0;
-      MPI_Unpack(&p_in, maxPublish, &position, &noReceived, 1, MPI_INT, comm_);
+      MPI_Unpack(p_in, receiveCount, &position, &noReceived, 1, MPI_INT, comm_);
       // The process these indices are from
       int remoteProc = (rank+procs-proc)%procs;
       SLList<RemoteIndex<GlobalIndexType,AttributeType> >& remoteIndices = remoteIndices_[remoteProc];
@@ -635,7 +640,7 @@ namespace Dune {
 
       for(int i=0; i < noReceived; i++) {
         RemoteIndexInformation<TG,TA> index;
-        MPI_Unpack(&p_in, maxPublish, &position, &index, 1,
+        MPI_Unpack(p_in, receiveCount, &position, &index, 1,
                    MPITraits<RemoteIndexInformation<TG,TA> >::getType(), comm_);
         //Check if we know the global index
         while(pairIndex<publish) {
@@ -657,7 +662,8 @@ namespace Dune {
   template<class TG, class TA>
   inline void RemoteIndices<TG,TA>::rebuild()
   {
-    buildLocal();
+    if(&source_ != &dest_)
+      buildLocal();
     buildRemote();
   }
 

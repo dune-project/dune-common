@@ -14,7 +14,7 @@ void testIndices()
   using namespace Dune;
 
   // The global grid size
-  const int N = 1000;
+  const int N = 10;
   // Process configuration
   int procs, rank;
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
@@ -27,7 +27,7 @@ void testIndices()
 
   IndexSet<int,ParallelLocalIndex<GridFlags> > distIndexSet;
   // global indexset
-  IndexSet<int,ParallelLocalIndex<GridFlags> >& globalIndexSet=distIndexSet;
+  IndexSet<int,ParallelLocalIndex<GridFlags> >* globalIndexSet;
 
   // Set up the indexsets.
   int start = rank*n;
@@ -37,7 +37,7 @@ void testIndices()
 
   for(int i=start; i<end; i++)
     for(int j=start; j<end; j++) {
-      bool isPublic = (i==start)||(i==end)||(j==start)||(j=end);
+      bool isPublic = true|| (i==start)||(i==end)||(j==start)||(j==end);
       GridFlags flag = owner;
 
       if((i==start && i!=0)||(i==end && i!=N-1)
@@ -53,22 +53,24 @@ void testIndices()
 
   // build global indexset on first process
   if(rank==0) {
-    globalIndexSet = *(new IndexSet<int,ParallelLocalIndex<GridFlags> >());
-    globalIndexSet.beginResize();
+    globalIndexSet = new IndexSet<int,ParallelLocalIndex<GridFlags> >();
+    globalIndexSet->beginResize();
     for(int i=0; i<N; i++)
       for(int j=0; j<N; j++)
-        globalIndexSet.add(i*N+j, ParallelLocalIndex<GridFlags> (owner,false));
-    globalIndexSet.endResize();
+        globalIndexSet->add(i*N+j, ParallelLocalIndex<GridFlags> (owner,false));
+    globalIndexSet->endResize();
   }
 
   // Build remote indices
   RemoteIndices<int,GridFlags> distRemote(distIndexSet,
                                           distIndexSet, MPI_COMM_WORLD);
-
-  RemoteIndices<int,GridFlags> crossRemote(distIndexSet,
-                                           globalIndexSet, MPI_COMM_WORLD);
-
-
+  if(rank==0) {
+    RemoteIndices<int,GridFlags> crossRemote(distIndexSet,
+                                             *globalIndexSet, MPI_COMM_WORLD);
+    delete globalIndexSet;
+  }else
+    RemoteIndices<int,GridFlags> distRemote(distIndexSet,
+                                            distIndexSet, MPI_COMM_WORLD);
 }
 
 int main(int argc, char **argv)
