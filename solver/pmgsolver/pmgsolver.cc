@@ -136,6 +136,7 @@ namespace Dune {
 #endif
       while (my_d > max_d) {
         smoother(l);
+        double last = my_d;
         my_d = defect(l);
         c++;
 #ifndef NODUMP
@@ -150,6 +151,10 @@ namespace Dune {
           dump(g,l,d,"smoothest",(char*)extention.str().c_str());
         }
 #endif
+        /*
+                std::cout << "level 0 defect = " << my_d
+                          << " reduction = " << my_d/last << std::endl;
+         */
         if (my_d < 1e-14)
           return;
         if (c > 500) {
@@ -160,7 +165,16 @@ namespace Dune {
     }
     else {
       // Vorglaetter
-      for (int n=0; n<n1; n++) smoother(l);
+      //      double last = defect(l);
+      for (int n=0; n<n1; n++) {
+        smoother(l);
+        /*
+                double my_d = defect(l);
+                std::cout << "Vorglätter level " << l
+                          << " reduction = " << my_d / last << std::endl;
+                last = my_d;
+         */
+      }
       // x_{l-1} = 0 b_{l-1}=0
       typename GRID::iterator gEnd=g.end(l-1);
       for (typename GRID::iterator i=g.begin(l-1); i != gEnd; ++i) {
