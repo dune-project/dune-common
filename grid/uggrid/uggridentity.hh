@@ -12,6 +12,30 @@
 
 namespace Dune {
 
+  template<int codim, int dim, class GridImp>
+  class UGMakeableEntity :
+    public GridImp::template codim<codim>::Entity
+  {
+  public:
+
+    UGMakeableEntity(int level) :
+      GridImp::template codim<codim>::Entity (UGGridEntity<codim, dim, GridImp>(level))
+    {}
+    //   SMakeableEntity(const SEntity<codim, dim, GridImp>& e) :
+    //     GridImp::template codim<codim>::Entity (e)
+    //     {};
+    //   void make (int _l, int _id) { this->realEntity.make(_l, _id); }
+
+    void setToTarget(typename TargetType<codim,dim>::T* target) {
+      this->realEntity.setToTarget(target);
+    }
+
+    void setToTarget(typename TargetType<codim,dim>::T* target, int level) {
+      this->realEntity.setToTarget(target, level);
+    }
+
+  };
+
   //**********************************************************************
   //
   // --UGGridEntity
@@ -32,7 +56,11 @@ namespace Dune {
     template <int codim_, PartitionIteratorType PiType_, class GridImp_>
     friend class UGGridLevelIterator;
 
+    friend class UGMakeableEntity<codim,dim,GridImp>;
+
   public:
+
+    typedef typename GridImp::template codim<codim>::Geometry Geometry;
 
     //! Constructor for an entity in a given grid level
     UGGridEntity(int level);
@@ -61,7 +89,8 @@ namespace Dune {
     UGGridLevelIterator<cc,All_Partition,GridImp> entity (int i);
 
     //! geometry of this entity
-    const UGGridGeometry<dim-codim,dim,GridImp>& geometry () const;
+    //const UGGridGeometry<dim-codim,dim,GridImp>& geometry () const;
+    const Geometry& geometry () const;
 
     UGGridLevelIterator<0,All_Partition,GridImp> ownersFather() const;
 
@@ -85,7 +114,8 @@ namespace Dune {
     void makeDescription();
 
     //! the current geometry
-    UGGridGeometry<dim-codim,dim,GridImp> geo_;
+    //UGGridGeometry<dim-codim,dim,GridImp> geo_;
+    UGMakeableGeometry<dim-codim,dim,GridImp> geo_;
 
     bool builtgeometry_;       //!< true if geometry has been constructed
 
@@ -127,10 +157,14 @@ namespace Dune {
     template <int codim_, PartitionIteratorType PiType_, class GridImp_>
     friend class UGGridLevelIterator;
 
+    friend class UGMakeableEntity<0,dim,GridImp>;
+
     // Either UG3d::ELEMENT or UG2d:ELEMENT
     typedef typename TargetType<0,dim>::T UGElementType;
 
   public:
+
+    typedef typename GridImp::template codim<0>::Geometry Geometry;
 
     //! The Iterator over neighbors
     typedef UGGridIntersectionIterator<GridImp> IntersectionIterator;
@@ -156,7 +190,8 @@ namespace Dune {
     int globalIndex() { return index(); }
 
     //! Geometry of this entity
-    const UGGridGeometry<dim,dim,GridImp>& geometry () const;
+    //const UGGridGeometry<dim,dim,GridImp>& geometry () const;
+    const Geometry& geometry () const;
 
     /** \brief Return the number of subentities of codimension cc.
      */
@@ -237,7 +272,9 @@ namespace Dune {
     void setToTarget(typename TargetType<0,dim>::T* target);
 
     //! the current geometry
-    UGGridGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
+    //UGGridGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
+    UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
+
     bool builtgeometry_; //!< true if geometry has been constructed
 
     //! element number

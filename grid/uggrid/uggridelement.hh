@@ -12,6 +12,21 @@
 
 namespace Dune {
 
+  template<int mydim, int coorddim, class GridImp>
+  class UGMakeableGeometry : public Geometry<mydim, coorddim, GridImp, UGGridGeometry>
+  {
+  public:
+    UGMakeableGeometry() :
+      Geometry<mydim, coorddim, GridImp, UGGridGeometry>(UGGridGeometry<mydim, coorddim, GridImp>())
+    {};
+    //void make (Mat<cdim,mydim+1,sgrid_ctype>& __As) { this->realGeometry.make(__As); }
+
+    void setToTarget(typename TargetType<coorddim-mydim,coorddim>::T* target) {
+      this->realGeometry.setToTarget(target);
+    }
+
+  };
+
   //**********************************************************************
   //
   // --UGGridElement
@@ -35,6 +50,8 @@ namespace Dune {
   {
     template <int codim_, int dim_, class GridImp_>
     friend class UGGridEntity;
+
+    friend class UGMakeableGeometry<mydim,coorddim,GridImp>;
 
   public:
 
@@ -101,7 +118,7 @@ namespace Dune {
 
   private:
 
-    /** \brief Init the element with a given UG elemend */
+    /** \brief Init the element with a given UG element */
     void setToTarget(typename TargetType<coorddim-mydim,coorddim>::T* target) {target_ = target;}
 
     //! built the reference element
@@ -223,6 +240,8 @@ namespace Dune {
     template <class GridImp_>
     friend class UGGridIntersectionIterator;
 
+    friend class UGMakeableGeometry<1,2,GridImp>;
+
   public:
 
     /** \brief Default constructor */
@@ -263,12 +282,12 @@ namespace Dune {
     const Mat<1,1>& jacobianInverse (const FieldVector<UGCtype, 1>& local) const;
 
   private:
-#if 1
+
     // This method needs to be here to compile, but it should never be called
     void setToTarget(TargetType<1,2>::T* target) {
       DUNE_THROW(GridError, "UGGridElement<1,2>::setToTarget called!");
     }
-#endif
+
     // Do nothing: faces in a 2d grid always have 2 corners
     void setNumberOfCorners(int n) {}
 

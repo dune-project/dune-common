@@ -90,7 +90,7 @@ index()
 #endif
 
 template< int codim, int dim, class GridImp>
-inline const UGGridGeometry<dim-codim,dim,GridImp>&
+inline const typename UGGridEntity<codim,dim,GridImp>::Geometry&
 UGGridEntity < codim, dim ,GridImp>::
 geometry() const
 {
@@ -259,7 +259,7 @@ UGGridEntity<0,dim,GridImp>::entity ( int i ) const
 template<int dim, class GridImp>
 inline UGGridEntity < 0, dim ,GridImp >::
 UGGridEntity(int level) :
-  geo_(),
+  //geo_(),
   level_ (level)
 {}
 
@@ -367,7 +367,7 @@ level() const
 }
 
 template< int dim, class GridImp>
-inline const UGGridGeometry<dim,dim,GridImp>&
+inline const typename UGGridEntity<0,dim,GridImp>::Geometry&
 UGGridEntity < 0, dim ,GridImp >::
 geometry() const
 {
