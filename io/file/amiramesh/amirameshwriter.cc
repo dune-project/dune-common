@@ -83,10 +83,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   }
 
   am_geometry.parameters.insert(materials);
-
-  ncomp = 0;
-  for(i=0; i<NVECTYPES; i++)
-    ncomp = std::max(ncomp,VD_NCMPS_IN_TYPE(sol, i));
 #endif
 
   /* write element section to file */
@@ -123,6 +119,18 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
       dPtr[i*maxVerticesPerElement+6] = element2->template subIndex<3>(7)+1;
       dPtr[i*maxVerticesPerElement+7] = element2->template subIndex<3>(6)+1;
       break;
+
+    case prism :
+      dPtr[i*maxVerticesPerElement+0] = element2->template subIndex<3>(0)+1;
+      dPtr[i*maxVerticesPerElement+1] = element2->template subIndex<3>(1)+1;
+      dPtr[i*maxVerticesPerElement+2] = element2->template subIndex<3>(1)+1;
+      dPtr[i*maxVerticesPerElement+3] = element2->template subIndex<3>(2)+1;
+      dPtr[i*maxVerticesPerElement+4] = element2->template subIndex<3>(3)+1;
+      dPtr[i*maxVerticesPerElement+5] = element2->template subIndex<3>(4)+1;
+      dPtr[i*maxVerticesPerElement+6] = element2->template subIndex<3>(4)+1;
+      dPtr[i*maxVerticesPerElement+7] = element2->template subIndex<3>(5)+1;
+      break;
+
     default :
 
       for (int j=0; j<element2->geometry().corners(); j++)
