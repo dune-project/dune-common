@@ -1633,7 +1633,7 @@ namespace Dune {
       // coarse cell interior  grid obtained through partitioning of global grid
       iTupel o_interior;
       iTupel s_interior;
-      iTupel o = 0;
+      iTupel o = iTupel(0);
       double imbal = _torus.partition(_torus.rank(),o,s,o_interior,s_interior);
       imbal = _torus.global_max(imbal);
 
@@ -2012,7 +2012,7 @@ namespace Dune {
       g.mg = this;
 
       // the global cell grid
-      iTupel o = 0;     // logical origin is always 0, that is not a restriction
+      iTupel o = iTupel(0);     // logical origin is always 0, that is not a restriction
       fTupel h;
       fTupel r;
       for (int i=0; i<d; i++) h[i] = L[i]/s[i];     // the mesh size in each direction
@@ -2130,7 +2130,7 @@ namespace Dune {
         iTupel delta = i.delta();                // delta to neighbor
         iTupel nb = coord;                       // the neighbor
         for (int k=0; k<d; k++) nb[k] += delta[k];
-        iTupel v = 0;                            // grid movement
+        iTupel v = iTupel(0);                            // grid movement
 
         for (int k=0; k<d; k++)
         {
