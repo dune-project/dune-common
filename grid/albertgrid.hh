@@ -270,6 +270,9 @@ namespace Albert
       //! is true if Jinv_ and volume_ is calced
       bool builtinverse_;
       Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
+
+      //! is true if elMat_ was calced
+      bool builtElMat_;
       Mat<dim,dim,albertCtype> elMat_; //!< storage for mapping matrix
       albertCtype elDet_; //!< storage of element determinant
 
