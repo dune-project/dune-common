@@ -12,7 +12,7 @@ namespace Dune {
   class LexOrder {
   public:
     //! preprocess ordering
-    void init (FixedArray<int, dim>& _N);
+    void init (FixedArray<int, dim>& _NN);
 
     //! get total number of tupels
     int tupels ();
@@ -33,7 +33,7 @@ namespace Dune {
   class JoinOrder {
   public:
     //! preprocess ordering
-    void init (FixedArray<int,dim>& _N);
+    void init (FixedArray<int,dim>& _NN);
 
     //! get total number of elements in all sets
     int size ();
@@ -79,13 +79,13 @@ namespace Dune {
   class CubeMapper {
   public:
     //! construct with number of elements (of codim 0) in each direction
-    CubeMapper (FixedArray<int,dim> _N);
+    CubeMapper (FixedArray<int,dim> _NN);
 
     //! make cube of single element
     CubeMapper ();
 
     //! (re)initialize with number of elements (of codim 0) in each direction
-    void make (FixedArray<int,dim>& _N);
+    void make (FixedArray<int,dim>& _NN);
 
     //! get number of elements in each codimension
     int elements (int codim) const;

@@ -8,10 +8,10 @@
 namespace Dune {
 
   template<int dim>
-  inline void LexOrder<dim>::init (FixedArray<int,dim>& _N)
+  inline void LexOrder<dim>::init (FixedArray<int,dim>& _NN)
   {
     // store argument
-    N=_N;
+    N=_NN;
 
     // build P array
     P[0] = 1;
@@ -47,10 +47,10 @@ namespace Dune {
   //************************************************************************
 
   template<int dim>
-  inline void JoinOrder<dim>::init (FixedArray<int,dim>& _N)
+  inline void JoinOrder<dim>::init (FixedArray<int,dim>& _NN)
   {
     // store argument
-    N=_N;
+    N=_NN;
 
     // build P array
     offset[0] = 0;
@@ -96,9 +96,9 @@ namespace Dune {
   //************************************************************************
 
   template<int dim>
-  CubeMapper<dim>::CubeMapper (FixedArray<int,dim> _N)
+  CubeMapper<dim>::CubeMapper (FixedArray<int,dim> _NN)
   {
-    make(_N);
+    make(_NN);
   }
 
   template<int dim>
@@ -113,10 +113,10 @@ namespace Dune {
   }
 
   template<int dim>
-  void CubeMapper<dim>::make (FixedArray<int,dim>& _N)
+  void CubeMapper<dim>::make (FixedArray<int,dim>& _NN)
   {
     // store argument
-    N=_N;
+    N=_NN;
 
     // preprocess binary partitions
     for (int i=0; i<=dim; i++) ne[i] = 0;
