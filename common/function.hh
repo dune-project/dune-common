@@ -44,20 +44,34 @@ namespace Dune {
     //! Constructor
     Function (const FunctionSpaceType & f) : functionSpace_ (f) {} ;
 
+    //! application operator
+    virtual void operator()(const Domain & arg, Range & dest) const {
+      eval(arg,dest);
+    }
+
     //! evaluate Function
-    void eval (const Domain & , Range &) const ;
+    void eval(const Domain & arg, Range & dest) const {
+      asImp().eval(arg, dest);
+    }
 
     //! evaluate function and derivatives
     template <int derivation>
-
-    //! ???
     void evaluate  ( const FieldVector<deriType, derivation> &diffVariable,
-                     const Domain & , Range &) const {};
+                     const Domain& arg, Range & dest) const {
+      asImp().evaluate(diffVariable, arg, dest);
+    }
 
     //! Get access to the related function space
     const FunctionSpaceType& getFunctionSpace() const { return functionSpace_; }
 
   protected:
+    //! Barton-Nackman trick
+    FunctionImp& asImp() {
+      return static_cast<FunctionImp&>(*this);
+    }
+    const FunctionImp& asImp() const {
+      return static_cast<const FunctionImp&>(*this);
+    }
 
     //! The related function space
     const FunctionSpaceType & functionSpace_;
