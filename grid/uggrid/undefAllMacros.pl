@@ -16,6 +16,9 @@ unless (open OUTFILE, ">$outfilename") {
 # recursively parse them for macro definitions.
 foreach $file (@ARGV) {
 
+  # Parse the file itself
+  emitUndefs($file);
+
   # Makedepend recursively searches for more included headers.
   # Warnings appear because the system headers will not be found.
   # Those warnings get piped to /dev/null.
