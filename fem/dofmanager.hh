@@ -15,7 +15,7 @@ namespace Dune {
 
   // forward declaration
   template <class GridType,
-      class IndexSetImp = DefaultGridIndexSet<GridType> >
+      class IndexSetImp>
   class DofManager;
 
   // forward declaration
@@ -337,7 +337,7 @@ namespace Dune {
      created. The default value for the IndexSet is the DefaultIndexSet class
      which is mostly a wrapper for the grid indices.
    */
-  template <class GridType, class IndexSetImp >
+  template <class GridType, class IndexSetImp = DefaultGridIndexSet<GridType> >
   class DofManager
   {
   public:

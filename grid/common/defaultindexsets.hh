@@ -135,68 +135,8 @@ namespace Dune {
   };
 
   //! Default is the Identity
-  template <class GridType, GridIndexType GridIndex = GlobalIndex>
+  template <class GridType, GridIndexType GridIndex = LevelIndex>
   class DefaultGridIndexSet : public DefaultGridIndexSetBase <GridType>
-  {
-    // my type, to be revised
-    enum { myType = 0 };
-
-    template <class EntityType,int enCodim, int codim>
-    struct IndexWrapper
-    {
-      static inline int index (EntityType & en , int num )
-      {
-        return en.global_index();
-      }
-    };
-
-    template <class EntityType, int codim>
-    struct IndexWrapper<EntityType,codim,codim>
-    {
-      static inline int index (EntityType & en , int num )
-      {
-        return en.global_index();
-      }
-    };
-
-    //! if codim > codim of entity use subIndex
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,2>
-    {
-      static inline int index (EntityType & en , int num )
-      {
-        return en.template subIndex<2> (num);
-      }
-    };
-
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,3>
-    {
-      static inline int index (EntityType & en , int num )
-      {
-        return en.template subIndex<3> (num);
-      }
-    };
-
-  public:
-    enum { ncodim = GridType::dimension + 1 };
-    DefaultGridIndexSet ( GridType & grid ) : DefaultGridIndexSetBase <GridType> (grid) {}
-
-    int size ( int level , int codim ) const
-    {
-      return this->grid_.global_size(codim);
-    }
-
-    template <int codim, class EntityType>
-    int index (EntityType & en, int num) const
-    {
-      return IndexWrapper<EntityType,EntityType::codimension,codim>::index(en,num);
-    }
-  };
-
-  template <class GridType>
-  class DefaultGridIndexSet<GridType,LevelIndex>
-    : public DefaultGridIndexSetBase <GridType>
   {
     // my type, to be revised
     enum { myType = 1 };
@@ -274,6 +214,66 @@ namespace Dune {
     //! return index of entity with codim codim belonging to entity en which
     //! could have a bigger codim (for example return num of vertex num of an
     //! element en
+    template <int codim, class EntityType>
+    int index (EntityType & en, int num) const
+    {
+      return IndexWrapper<EntityType,EntityType::codimension,codim>::index(en,num);
+    }
+  };
+
+  template <class GridType>
+  class DefaultGridIndexSet<GridType,GlobalIndex>
+    : public DefaultGridIndexSetBase <GridType>
+  {
+    // my type, to be revised
+    enum { myType = 0 };
+
+    template <class EntityType,int enCodim, int codim>
+    struct IndexWrapper
+    {
+      static inline int index (EntityType & en , int num )
+      {
+        return en.global_index();
+      }
+    };
+
+    template <class EntityType, int codim>
+    struct IndexWrapper<EntityType,codim,codim>
+    {
+      static inline int index (EntityType & en , int num )
+      {
+        return en.global_index();
+      }
+    };
+
+    //! if codim > codim of entity use subIndex
+    template <class EntityType>
+    struct IndexWrapper<EntityType,0,2>
+    {
+      static inline int index (EntityType & en , int num )
+      {
+        return en.template subIndex<2> (num);
+      }
+    };
+
+    template <class EntityType>
+    struct IndexWrapper<EntityType,0,3>
+    {
+      static inline int index (EntityType & en , int num )
+      {
+        return en.template subIndex<3> (num);
+      }
+    };
+
+  public:
+    enum { ncodim = GridType::dimension + 1 };
+    DefaultGridIndexSet ( GridType & grid ) : DefaultGridIndexSetBase <GridType> (grid) {}
+
+    int size ( int level , int codim ) const
+    {
+      return this->grid_.global_size(codim);
+    }
+
     template <int codim, class EntityType>
     int index (EntityType & en, int num) const
     {
