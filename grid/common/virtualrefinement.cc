@@ -22,6 +22,7 @@
 #include "../../common/iteratorfacades.hh"
 #include "../../common/fvector.hh"
 #include "refinement.hh"
+#include <dune/common/exceptions.hh>
 
 namespace Dune {
 
@@ -531,6 +532,8 @@ namespace Dune {
           return VirtualRefinementImp<triangle, CoordType, triangle>::instance();
         case iso_triangle :
           return VirtualRefinementImp<triangle, CoordType, iso_triangle>::instance();
+        default :
+          break;
         }
         break;
       case quadrilateral :
@@ -543,6 +546,8 @@ namespace Dune {
           return VirtualRefinementImp<quadrilateral, CoordType, iso_triangle>::instance();
         case iso_quadrilateral :
           return VirtualRefinementImp<quadrilateral, CoordType, iso_quadrilateral>::instance();
+        default :
+          break;
         }
         break;
       case iso_triangle :
@@ -551,6 +556,8 @@ namespace Dune {
           return VirtualRefinementImp<iso_triangle, CoordType, triangle>::instance();
         case iso_triangle :
           return VirtualRefinementImp<iso_triangle, CoordType, iso_triangle>::instance();
+        default :
+          break;
         }
         break;
       case iso_quadrilateral :
@@ -563,12 +570,15 @@ namespace Dune {
           return VirtualRefinementImp<iso_quadrilateral, CoordType, iso_triangle>::instance();
         case iso_quadrilateral :
           return VirtualRefinementImp<iso_quadrilateral, CoordType, iso_quadrilateral>::instance();
+        default :
+          break;
         }
         break;
+      default :
+        DUNE_THROW(NotImplemented,
+                   "No Refinement<" << geometryType << ", CoordType, "
+                                    << coerceTo << " >.");
       }
-      DUNE_THROW(NotImplemented,
-                 "No Refinement<" << geometryType << ", CoordType, "
-                                  << coerceTo << " >.");
     }
   };
 
