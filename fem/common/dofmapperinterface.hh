@@ -25,11 +25,15 @@ namespace Dune {
   public:
     //! if grid has changed determine new size
     //! (to be called once per timestep, therefore virtual )
-    virtual int newSize(int level) const = 0;
+    virtual int newSize() const = 0;
 
     //! calc new insertion points for dof of different codim
     //! (to be called once per timestep, therefore virtual )
     virtual void calcInsertPoints () = 0;
+
+    //! return max number of local dofs per entity
+    virtual int numberOfDofs () const =0;
+
   };
 
   //***********************************************************************
@@ -43,9 +47,9 @@ namespace Dune {
   public:
     //! return number of dofs for special function space and grid on
     //! specified level
-    int size (int level ) const
+    int size () const
     {
-      return asImp().size(level);
+      return asImp().size();
     };
 
     //! map a local dof num of a given entity to a global dof num
@@ -56,7 +60,7 @@ namespace Dune {
     };
 
     //! default implementation if not overlaoded
-    virtual int newSize(int level) const
+    virtual int newSize() const
     {
       // overload this method in derived class
       assert(false);
@@ -68,6 +72,14 @@ namespace Dune {
     {
       // overload this method in derived class
       assert(false);
+    }
+
+    //! default implementation if not overlaoded
+    virtual int numberOfDofs () const
+    {
+      // overload this method in derived class
+      assert(false);
+      return -1;
     }
 
   private:

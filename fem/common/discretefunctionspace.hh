@@ -9,6 +9,15 @@
 namespace Dune {
 
 
+  /*!
+     To specify the boundary type of an face at the boundary.
+     This specifier should be located in a geometry class.
+   */
+  enum BoundaryType { Neumann ,  //!< Neumann type boundary
+                      Dirichlet, //!< Dirichlet type boundary
+                      Periodic   //!< Periodic boundary
+  };
+
   /** @defgroup DiscreteFunctionSpace DiscreteFunctionSpace
      @ingroup DiscreteFunction
      This provides the interfaces for discrete function spaces.
@@ -23,17 +32,20 @@ namespace Dune {
   //
   //  --DiscreteFunctionSpaceInterface
   //
-  //! This is the interface for discrete function spaces. All methods
-  //! declared here have to be implemented by the implementation class.
-  //! The discrete function space always depends on a given grid.
-  //! For all diffrent element types of the grid the function space provides
-  //! a set of base functions for the different elements.
-  //! Because of the knowledge of on the one hand the grid an on the oterh
-  //! the base functions sets, the discrete function space provides the size
-  //! of the function space and a mapping from entity and local dof number
-  //! to global dof number of the level of the entity.
-  //!
-  //**************************************************************************
+  /*! This is the interface for discrete function spaces. All methods
+      declared here have to be implemented by the implementation class.
+      The discrete function space always depends on a given grid.
+      For all diffrent element types of the grid the function space provides
+      a set of base functions for the different elements.
+      Because of the knowledge of on the one hand the grid an on the other
+      hand the base functions sets, the discrete function space provides the size
+      of the function space and a mapping from entity and local dof number
+      to global dof number of the level of the entity.
+      NOTE: A FunctionSpace is defined on a certain level of the grid and can
+      also be defined for a certain leaf level, which means on each grid
+      level we can have different function spaces each with a different
+      number of unknowns.
+   */
   template< class FunctionSpaceType , class GridTemp,
       class DiscreteFunctionSpaceImp, class BaseFunctionSetInter >
   class DiscreteFunctionSpaceInterface
@@ -80,12 +92,9 @@ namespace Dune {
     GridType & getGrid () const { return grid_; }
 
     //! return number of degrees of freedom for spezified grid and level
-    //! depends also on the base function set
-    int size ( int level ) const { return asImp().size(level); };
-
-    //! return number of degrees of freedom for spezified grid and leaf
-    //! level, depends also on the base function set
-    int leafsize ( int level ) const { return asImp().leafsize(level); };
+    //! which can also be the leaflevel and furthermore
+    //! this depends also on the base function set
+    int size () const { return asImp().size(); };
 
     //! For given entity map local dof number to global dof number
     //! at the level of the given entity.
@@ -137,7 +146,6 @@ namespace Dune {
     {
       return static_cast<const DiscreteFunctionSpaceImp&>(*this);
     }
-
   };
 
   /** @} end documentation group */

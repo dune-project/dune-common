@@ -117,18 +117,30 @@ namespace Dune {
       return asImp().localFunction( it );
     }
 
-    //! the implementation of an iterator to iterate efficient over all dof
-    //! on one level.
-    DofIteratorType dbegin ( int level )
+    //! the implementation of an iterator to iterate efficient
+    //! over all dofs of a discrete function
+    DofIteratorType dbegin ()
     {
-      return asImp().dbegin ( level );
+      return asImp().dbegin ();
     };
 
-    //! the implementation of an iterator to iterate efficient over all dof
-    //! on one level
-    DofIteratorType dend ( int level )
+    //! the implementation of an iterator to iterate efficient
+    //! over all dofs of a discrete function
+    DofIteratorType dend ()
     {
-      return asImp().dend ( level );
+      return asImp().dend ();
+    };
+
+    //! const version of dbegin
+    const DofIteratorType dbegin () const
+    {
+      return asImp().dbegin ();
+    };
+
+    //! const version of dend
+    const DofIteratorType dend () const
+    {
+      return asImp().dend ();
     };
 
   private:
@@ -138,7 +150,7 @@ namespace Dune {
       return static_cast<DiscreteFunctionImp&>(*this);
     }
 
-    //! ???
+    //! const version of asImp
     const DiscreteFunctionImp &asImp() const
     {
       return static_cast<const DiscreteFunctionImp&>(*this);
@@ -188,70 +200,35 @@ namespace Dune {
     DiscreteFunctionDefault ( DiscreteFunctionSpaceType & f ) :
       DiscreteFunctionInterfaceType ( f ) {};
 
-    //! derived from Function
-    //! search for element which contains point x an evaluate
-    //! dof entity with en
-    void evaluate ( const DomainType & , RangeType &) const
-    {
-      // search element
-    };
-
-
     //! Evaluate a scalar product of the dofs of two DiscreteFunctions
     //! on the top level of the underlying grid
     RangeFieldType scalarProductDofs( const DiscreteFunctionDefault &g ) const;
 
-    //! Evaluate a scalar product of the dofs of two DiscreteFunctions
-    //! on an explicitly given level
-    RangeFieldType scalarProductDofs( const DiscreteFunctionDefault &g,
-                                      int level) const;
-
-    //! Assignment on maxlevel
+    //! Assignment on same as operator =
     Vector<RangeFieldType> &
     assign(const Vector<RangeFieldType> &g);
 
-    //! Assignment on a given level
-    Vector<RangeFieldType> &
-    assign(const Vector<RangeFieldType> &g, int level);
-
-    //! Assignment operator
+    //! Assignment operator, this = g
     Vector<RangeFieldType> & operator = (const Vector<RangeFieldType> &g);
 
-    //! Addition
+    //! Addition of g to discrete function
     Vector<RangeFieldType> & operator += (const Vector<RangeFieldType> &g);
 
-    //! Add scalar*g to this on the maxlevel
-    void addScaled (const Vector<RangeFieldType> &g,
-                    const RangeFieldType &scalar);
-
-    //! Add scalar*g to this on a given level
-    void addScaled (const Vector<RangeFieldType> &g,
-                    const RangeFieldType &scalar,
-                    int level);
-
-    //! substract
+    //! substract g from discrete function
     Vector<RangeFieldType> &
     operator -= (const Vector<RangeFieldType> &g);
 
-    //! multiply on maxlevel
+    //! multiply with scalar
     Vector<RangeFieldType> &
     operator *= (const RangeFieldType &scalar);
-
-    //! multiply
-    Vector<RangeFieldType> &
-    mult (const RangeFieldType &scalar, int level);
 
     //! Division by a scalar
     Vector<RangeFieldType> &
     operator /= (const RangeFieldType &scalar);
 
-    //! add
-    /** \todo Ist das nicht das gleiche wie addScaled? */
+    //! add scalar * g to discrete function
     Vector<RangeFieldType> &
     add(const Vector<RangeFieldType> &g , RangeFieldType scalar );
-
-    //! clear all dofs of a given level of the discrete function
-    void clearLevel(int level );
 
     //! write disc func information file and write dofs to file+timestep
     //! this method use the write method of the implementation of the
