@@ -4420,6 +4420,9 @@ namespace Dune
   inline void AlbertGrid < dim, dimworld >::setNewCoords
     (const Vec<dimworld,albertCtype> & trans, const albertCtype scalar)
   {
+    static Vec<dimworld,albertCtype> trans_(0.0);
+    static albertCtype scalar_ (1.0);
+
     for(int i=0; i<macroVertices_.size(); i++)
       macroVertices_[i] = 0;
 
@@ -4433,12 +4436,23 @@ namespace Dune
           macroVertices_[dof] = 1;
           for(int j=0; j<dimworld; j++)
           {
+            mel->coord[i][j] -= trans_(j);
+            mel->coord[i][j] /= scalar_;
+
             mel->coord[i][j] *= scalar;
             mel->coord[i][j] += trans(j);
           }
         }
       }
     }
+
+    for (int i=0; i<dimworld; i++)
+      trans_(i) = trans(i);
+
+    scalar_ = scalar;
+
+
+
   }
 
 
