@@ -6,7 +6,6 @@
 #include <dune/common/genericiterator.hh>
 #include <dune/common/typetraits.hh>
 
-/** \todo Please doc me! */
 template<class T>
 class TestContainer {
 public:
