@@ -156,7 +156,7 @@ namespace Dune {
     sgrid_ctype integration_element (const FieldVector<sgrid_ctype, dim>& local);
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim>& Jacobian_inverse (const FieldVector<sgrid_ctype, dim>& local);
+    Mat<dim,dim,sgrid_ctype>& Jacobian_inverse (const FieldVector<sgrid_ctype, dim>& local);
 
     //! print internal data
     void print (std::ostream& ss, int indent);
@@ -165,7 +165,7 @@ namespace Dune {
         Column dim is the position vector. This format allows a consistent
             treatement of all dimensions, including 0 (the vertex).
      */
-    void make (Mat<dimworld,dim+1,sgrid_ctype>& As);
+    void make (Mat<dimworld,dim+1,sgrid_ctype>& __As);
 
     //! constructor with bool argument makes reference element if true, uninitialized else
     SElement (bool b);
@@ -199,7 +199,7 @@ namespace Dune {
     void print (std::ostream& ss, int indent);
 
     //! constructor, makes element from position and direction vectors
-    void make (Mat<dimworld,1>& As);
+    void make (Mat<dimworld,1,sgrid_ctype>& __As);
 
     //! constructor with bool argument makes reference element if true, uninitialized else
     SElement (bool b);
@@ -310,15 +310,16 @@ namespace Dune {
     int number_in_neighbor ();
 
     //! constructor
-    SIntersectionIterator (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count);
+    SIntersectionIterator (SGrid<dim,dimworld>* _grid, SEntity<0,dim,dimworld>& _self, int _count);
     SIntersectionIterator ();
 
-    void make (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count);
+    void make (SGrid<dim,dimworld>* _grid, SEntity<0,dim,dimworld>& _self, int _count);
 
   private:
     void make (int _count);                     //!< reinitialze iterator with given neighbor
     void makeintersections ();                  //!< compute intersections
     SGrid<dim,dimworld>* grid;                  //!< my grid
+  private:
     SEntity<0,dim,dimworld>* self;              //!< myself, SEntity is a friend class
     int partition;                              //!< partition number of self, needed for coordinate expansion
     FixedArray<int,dim> zred;                        //!< reduced coordinates of myself, allows easy computation of neighbors
@@ -371,10 +372,10 @@ namespace Dune {
             the iteration will stop when both iterators have the same id AND the
             stack is empty
      */
-    SHierarchicIterator (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _e, int _maxlevel, bool makeend);
+    SHierarchicIterator (SGrid<dim,dimworld>* _grid, SEntity<0,dim,dimworld>& _e, int _maxlevel, bool makeend);
 
   private:
-    SGrid<dim,dimworld>& grid;       //!< my grid
+    SGrid<dim,dimworld>* grid;       //!< my grid
     SEntity<0,dim,dimworld> e;       //!< virtual son entity
     int maxlevel;                    //!< maximum level of elements to be processed
     int orig_l, orig_id;             //!< element where begin was called (the root of the tree to be processed)
@@ -419,9 +420,9 @@ namespace Dune {
     SElement<dim-codim,dimworld>& geometry ();
 
     //! constructor
-    SEntityBase (SGrid<dim,dimworld>& _grid, int _l, int _id);
+    SEntityBase (SGrid<dim,dimworld>* _grid, int _l, int _id);
     SEntityBase ();
-    void make (SGrid<dim,dimworld>& _grid, int _l, int _id);
+    void make (SGrid<dim,dimworld>* _grid, int _l, int _id);
 
     //! Reinitialization
     void make (int _l, int _id);
@@ -464,7 +465,7 @@ namespace Dune {
 
     // specific to SEntity
     //! constructor
-    SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) : SEntityBase<codim,dim,dimworld>::SEntityBase(_grid,_l,_id) {};
+    SEntity (SGrid<dim,dimworld>* _grid, int _l, int _id) : SEntityBase<codim,dim,dimworld>::SEntityBase(_grid,_l,_id) {};
   };
 
 
@@ -568,7 +569,7 @@ namespace Dune {
 
     // members specific to SEntity
     //! constructor
-    SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) :
+    SEntity (SGrid<dim,dimworld>* _grid, int _l, int _id) :
       SEntityBase<0,dim,dimworld>::SEntityBase(_grid,_l,_id) , in_father_local(false)
     {
       built_father = false;
@@ -579,7 +580,7 @@ namespace Dune {
       built_father = false;
     }
 
-    void make (SGrid<dim,dimworld>& _grid, int _l, int _id)
+    void make (SGrid<dim,dimworld>* _grid, int _l, int _id)
     {
       SEntityBase<0,dim,dimworld>::make(_grid,_l,_id);
       built_father = false;
@@ -635,7 +636,7 @@ namespace Dune {
 
     // members specific to SEntity
     //! constructor
-    SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) : SEntityBase<dim,dim,dimworld>::SEntityBase(_grid,_l,_id)
+    SEntity (SGrid<dim,dimworld>* _grid, int _l, int _id) : SEntityBase<dim,dim,dimworld>::SEntityBase(_grid,_l,_id)
     {
       built_father = false;
     }
@@ -681,10 +682,10 @@ namespace Dune {
     int level ();
 
     //! constructor
-    SLevelIterator (SGrid<dim,dimworld>& _grid, int _l, int _id);
+    SLevelIterator (SGrid<dim,dimworld>* _grid, int _l, int _id);
 
   private:
-    SGrid<dim,dimworld>& grid;         //!< my grid
+    SGrid<dim,dimworld>* grid;         //!< my grid
     int l;                             //!< level where element is on
     int id;                            //!< my consecutive id
     SEntity<codim,dim,dimworld> e;     //!< virtual entity
