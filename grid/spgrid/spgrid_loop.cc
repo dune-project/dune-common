@@ -23,7 +23,7 @@ namespace Dune {
 
       for (int d=0; d<DIM; d++) {
         begin[d] = 0;
-        end[d] = size(l,d) + front_overlap(l,d) + do_end_share(d);
+        end[d] = size(l,d) + front_overlap(l,d) + end_overlap(l,d);
       }
       return loop3D(l,begin,end,end,end,stub);
     }
@@ -71,24 +71,6 @@ namespace Dune {
     }
     }
   }
-
-  ////////////////////////////////////////////////////////////////////////////
-
-  /**
-     loop over all not overlap vertices without border vertices
-     @param stub a class derived from loopstub implementing the operation
-   */
-  template<int DIM> template <class stubEngine> inline
-  void spgrid<DIM>::
-  loop_not_overlap(level l, stubEngine & stub) const {
-    iterator gEnd=end(l);
-    for (iterator it=begin(l); it != gEnd; ++it) {
-      if ( (*it).overlap() ) continue;
-      if ( (*it).border() ) continue;
-      /* do something */
-      stub.evaluate(l, it.coord(), it.id());
-    }
-  };
 
   ////////////////////////////////////////////////////////////////////////////
 
