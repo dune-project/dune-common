@@ -499,6 +499,10 @@ namespace Dune {
      non-matching meshes. The number of neigbors may be different from the number of faces/edges
      of an element!
    */
+
+  static Tupel <int,2> zrefGlob;
+  static Tupel <int,2> zentityGlob;
+
   template<int dim, int dimworld>
   class SEntity<0,dim,dimworld> : public SEntityBase<0,dim,dimworld>,
                                   public EntityDefault <0,dim,dimworld,sgrid_ctype,SEntity,SElement,
@@ -542,6 +546,23 @@ namespace Dune {
        are numbered 0 ... count<cc>()-1
      */
     template<int cc> SLevelIterator<cc,dim,dimworld> entity (int i);     // 0 <= i < count()
+
+    //! return global index of entity<cc> number i
+    template <int cc> int subIndex ( int i );
+
+    //! specialization for vertices
+    template <> int subIndex<dim> ( int i )
+    {
+      // find expanded coordinates of entity in reference cube
+      // has components in {0,1,2}
+      // the grid hold the memory because its faster
+      Tupel<int,dim> &zref = grid->zrefStatic;
+      Tupel<int,dim> &zentity = grid->zentityStatic;
+
+      zref = SUnitCubeMapper<dim>::mapper.z(i,dim);
+      for (int i=0; i<dim; i++) zentity[i] = z[i] + zref[i] - 1;
+      return grid->n(l,zentity);
+    };
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
@@ -829,6 +850,11 @@ namespace Dune {
     Tupel<int,dim> N[MAXL];             // number of elements per direction
     Vec<dim,sgrid_ctype> h[MAXL];       // mesh size per direction
     CubeMapper<dim> mapper[MAXL];       // a mapper for each level
+
+    // faster implemantation od subIndex
+    friend class SEntity<0,dim,dimworld>;
+    Tupel <int,dim> zrefStatic;   // for subIndex of SEntity
+    Tupel <int,dim> zentityStatic; // for subIndex of SEntity
   };
 
   /** @} end documentation group */

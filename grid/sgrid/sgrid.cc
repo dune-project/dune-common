@@ -355,6 +355,13 @@ namespace Dune {
     return SLevelIterator<cc,dim,dimworld>(*grid,l,grid->n(l,zentity));
   }
 
+  // default implementation uses entity method
+  template<int dim, int dimworld> template<int cc>
+  inline int SEntity<0,dim,dimworld>::subIndex (int i)
+  {
+    return entity<cc>(i)->index();
+  }
+
   template<int dim, int dimworld>
   inline SNeighborIterator<dim,dimworld> SEntity<0,dim,dimworld>::nbegin ()
   {
