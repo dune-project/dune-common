@@ -4,16 +4,20 @@
 #define __DUNE_ALUMEMORY_HH__
 
 #include <stack>
+#include "myautoptr.hh"
 
 //! organize the memory management for entitys used by the NeighborIterator
 template <class Object>
 class MemoryProvider
 {
   std::stack < Object * > objStack_;
+
+  typedef MemoryProvider < Object > MyType;
 public:
   typedef Object ObjectType;
+  //typedef MemoryPointer< ObjectType, MyType > MemoryPointerType;
 
-  //! freeEntity_ = NULL
+  //! delete all objects stored in stack
   MemoryProvider() {};
 
   //! call deleteEntity
@@ -44,8 +48,7 @@ MemoryProvider<Object>::getNewObjectEntity
 {
   if( objStack_.empty() )
   {
-    ObjectType * obj = new Object (grid,level);
-    return obj;
+    return ( new Object (grid,level) );
   }
   else
   {
@@ -58,14 +61,12 @@ MemoryProvider<Object>::getNewObjectEntity
 template <class Object>
 inline MemoryProvider<Object>::~MemoryProvider()
 {
-  /*
-     while ( !objStack_.empty() )
-     {
-     ObjectType * obj = objStack_.top();
-     objStack_.pop();
-     if( obj ) delete obj;
-     }
-   */
+  while ( !objStack_.empty() )
+  {
+    ObjectType * obj = objStack_.top();
+    objStack_.pop();
+    if( obj ) delete obj;
+  }
 }
 
 template <class Object>
