@@ -1462,8 +1462,8 @@ namespace Dune {
   {
     // some typedefs
     typedef GridImp<dim,dimworld> GridType;
-    typedef typename Traits<0>::LevelIterator LevelIterator;
-    typedef typename Traits<0>::Entity EntityType;
+    typedef typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::template Traits<0>::LevelIterator LevelIterator;
+    typedef typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::template Traits<0>::Entity EntityType;
     typedef typename EntityType::Traits::HierarchicIterator HierIterator;
 
   public:
