@@ -15,45 +15,8 @@
 //#undef _3
 
 // Wrap a few large UG macros by functions before they get undef'ed away
+#include "uggrid/ugfunctions.hh"
 
-namespace Dune {
-
-  void Local_To_Global(int n, DOUBLE** y,
-                       const Dune::Vec<3, double>& local,
-                       Dune::Vec<3, double>& global)
-  {
-    LOCAL_TO_GLOBAL(n,y,local,global);
-  }
-
-  /**
-   * \param n Number of corners of the element
-   * \param x Coordinates of the corners of the element
-   * \param local Local evaluation point
-   *
-   * \todo It should be possible to have M be Mat<3,3>, but I can't get it to compile
-   */
-  void Transformation(int n, double** x,
-                      const Vec<3, double>& local, Mat<3,3,double>& mat)
-  {
-    //double mat_c[dimworld][dimworld] = {{0,0,0},{0,0,0},{0,0,0}};
-
-    TRANSFORMATION(n, x, local, mat);
-  }
-
-  /** \brief Returns pointers to the coordinate arrays of an UG element */
-  void Corner_Coordinates(UG3d::ELEMENT* theElement, double* x[])
-  {
-    using UG3d::TETRAHEDRON;
-    using UG3d::NODE;
-    using UG3d::PYRAMID;
-    using UG3d::PRISM;
-    using UG3d::HEXAHEDRON;
-    using UG3d::n_offset;
-    int n;  // Dummy variable just to please the macro
-    CORNER_COORDINATES(theElement, n, x);
-  }
-
-} // namespace Dune
 
 // undef stuff defined by UG
 #include "uggrid/ug_undefs.hh"
@@ -109,7 +72,7 @@ namespace Dune
 
 #include "uggrid/uggridelement.hh"
 #include "uggrid/uggridentity.hh"
-#include "uggrid/uggridboundent.hh"
+//#include "uggrid/uggridboundent.hh"
 #include "uggrid/ugintersectionit.hh"
 #include "uggrid/uggridleveliterator.hh"
 
@@ -210,10 +173,10 @@ namespace Dune {
   public:
 
     // UG multigrid, which contains the data
-    UG3d::multigrid mesh_;
+    typename UGTypes<dimworld>::MultiGridType* mesh_;
 
     /// Pointer to a UG domain
-    UG3d::domain* domain_;
+    typename UGTypes<dimworld>::DomainType* domain_;
 
     // number of maxlevel of the mesh
     int maxlevel_;

@@ -28,21 +28,13 @@ inline UGGridLevelIterator<codim,dim,dimworld >::UGGridLevelIterator(UGGrid<dim,
   virtualEntity_.setToTarget(NULL);
 }
 
-
+#ifdef _3
 template<>
 inline UGGridLevelIterator < 3,3,3 >&
 UGGridLevelIterator < 3,3,3 >::operator++()
 {
 
-  //     UG3d::vertex* myvertex = NULL;
-  //     do {
   target_ = target_->succ;
-  //         if (!target_)
-  //             break;
-  //         myvertex = target_->myvertex;
-  // #define OBJT(p) ReadCW(p, UG3d::OBJ_CE)
-  //     } while (OBJT(myvertex)!= UG3d::IVOBJ);
-  // #undef OBJT
 
   setToTarget(target_);
   virtualEntity_.elNum_++;
@@ -58,6 +50,7 @@ UGGridLevelIterator < 0,3,3 >::operator++()
   virtualEntity_.elNum_++;
   return (*this);
 }
+#endif
 
 // gehe zum i Schritte weiter , wie auch immer
 template<int codim, int dim, int dimworld>

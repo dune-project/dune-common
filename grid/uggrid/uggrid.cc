@@ -39,17 +39,23 @@ namespace Dune
       char* arg = {"dune.exe"};
       char** argv = &arg;
 
-      UG3d::InitUg(&argc, &argv);
+
+      UG<dimworld>::InitUg(&argc, &argv);
 
       // Create a dummy problem
+#ifdef _3
       UG3d::CoeffProcPtr coeffs[1];
       UG3d::UserProcPtr upp[1];
+#else
+      UG2d::CoeffProcPtr coeffs[1];
+      UG2d::UserProcPtr upp[1];
+#endif
 
       upp[0] = NULL;
       coeffs[0] = NULL;
 
-      if (UG3d::CreateBoundaryValueProblem("DuneDummyProblem", NULL,
-                                           1,coeffs,1,upp) == NULL)
+      if (UG<dimworld>::CreateBoundaryValueProblem("DuneDummyProblem",
+                                                   1,coeffs,1,upp) == NULL)
         assert(false);
 
 
@@ -66,8 +72,11 @@ namespace Dune
       sprintf(newformatArgs[2], "M implicit(nt): mt 2");
       sprintf(newformatArgs[3], "I n1");
 
+#ifdef _3
       UG3d::CreateFormatCmd(4, newformatArgs);
-
+#else
+      UG2d::CreateFormatCmd(4, newformatArgs);
+#endif
     }
 
     numOfUGGrids++;
@@ -82,7 +91,11 @@ namespace Dune
     // Shut down UG if this was the last existing UGGrid object
     if (numOfUGGrids == 0) {
 
+#ifdef _3
       UG3d::ExitUg();
+#else
+      UG2d::ExitUg();
+#endif
 
       for (int i=0; i<4; i++)
         free(newformatArgs[i]);
@@ -95,10 +108,15 @@ namespace Dune
   inline int UGGrid < dim, dimworld >::maxlevel() const
   {
     /** \todo Use a member variable instead of search by name */
-    UG3d::multigrid* theMG = UG3d::GetMultigrid("DuneMG");
+#ifdef _3
+    typename UGTypes<dimworld>::MultiGridType* theMG = UG3d::GetMultigrid("DuneMG");
+#else
+    typename UGTypes<dimworld>::MultiGridType* theMG = UG2d::GetMultigrid("DuneMG");
+#endif
     return theMG->topLevel;
   }
 
+#ifdef _3
   template <>
   inline UGGridLevelIterator<3,3,3>
   UGGrid < 3, 3 >::lbegin<3> (int level) const
@@ -129,6 +147,7 @@ namespace Dune
     it.setToTarget(theGrid->elements[0]);
     return it;
   }
+#endif
 
   template<int dim, int dimworld> template<int codim>
   inline UGGridLevelIterator<codim, dim, dimworld>
@@ -203,7 +222,11 @@ namespace Dune
     printf("A\n");
     //configure @PROBLEM $d @DOMAIN;
     char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
+#ifdef _3
     UG3d::ConfigureCommand(2, configureArgs);
+#else
+    UG2d::ConfigureCommand(2, configureArgs);
+#endif
     printf("B\n");
 
     //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
@@ -216,7 +239,11 @@ namespace Dune
     sprintf(newArgs[2], "f DuneFormat");
     sprintf(newArgs[3], "h 1G");
 
+#ifdef _3
     if (UG3d::NewCommand(4, newArgs))
+#else
+    if (UG2d::NewCommand(4, newArgs))
+#endif
       assert(false);
 
     /** \bug The newArgs array needs to be deleted here or when shutting down UG */
@@ -232,9 +259,14 @@ namespace Dune
     int mode;
 
     /** \todo Use a member variable instead of search by name */
-    UG3d::multigrid* theMG = UG3d::GetMultigrid("DuneMG");
+#ifdef _3
+    typename UGTypes<dimworld>::MultiGridType* theMG = UG3d::GetMultigrid("DuneMG");
+#else
+    typename UGTypes<dimworld>::MultiGridType* theMG = UG2d::GetMultigrid("DuneMG");
+#endif
     assert(theMG);
 
+#if 0
     mode = UG3d::GM_REFINE_TRULY_LOCAL;
     mode = mode | UG3d::GM_COPY_ALL;
 
@@ -245,7 +277,7 @@ namespace Dune
     int mgtest = UG3d::GM_REFINE_HEAPTEST;
 
     rv = AdaptMultiGrid(theMG,mode,seq,mgtest);
-
+#endif
     cout << "adapt():  error code " << rv << "\n";
 
     /** \bug Should return true only if at least one element has actually

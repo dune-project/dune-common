@@ -67,23 +67,24 @@ inline ElementType UGGridElement<dim,dimworld>::type()
 
 
 
-#define TAG(p) ReadCW(p, UG3d::TAG_CE)
+  //#define TAG(p) ReadCW(p, UG3d::TAG_CE)
 
   switch (dim)
   {
   case 1 : return line;
   case 2 :
-    switch (TAG(target_)) {
-    case UG3d::TRIANGLE :
+    switch (UG<dimworld>::Tag(target_)) {
+    case UG2d::TRIANGLE :
       return triangle;
-    case UG3d::QUADRILATERAL :
+    case UG2d::QUADRILATERAL :
       return quadrilateral;
     default :
       std::cerr << "UGGridElement::type():  ERROR:  Unknown type found!\n";
     }
 
   case 3 :
-    switch (TAG(target_)) {
+    switch (UG<dimworld>::Tag(target_)) {
+#ifdef _3
     case UG3d::TETRAHEDRON :
       return tetrahedron;
     case UG3d::PYRAMID :
@@ -92,11 +93,12 @@ inline ElementType UGGridElement<dim,dimworld>::type()
       return prism;
     case UG3d::HEXAHEDRON :
       return hexahedron;
+#endif
     default :
       std::cerr << "UGGridElement::type():  ERROR:  Unknown type found!\n";
     }
   }
-#undef TAG
+  //#undef TAG
   // Mustn't happen
   assert(false);
   // Just to calm the compiler
@@ -106,15 +108,17 @@ inline ElementType UGGridElement<dim,dimworld>::type()
 template< int dim, int dimworld>
 inline int UGGridElement<dim,dimworld>::corners()
 {
-#define TAG(p) ReadCW(p, UG3d::TAG_CE)
-#define CORNERS_OF_ELEM(p)(UG3d::element_descriptors[TAG(p)]->corners_of_elem)
-  return CORNERS_OF_ELEM(target_);
-#undef CORNERS_OF_ELEM
-#undef TAG
+  // #define TAG(p) ReadCW(p, UG3d::TAG_CE)
+  // #define CORNERS_OF_ELEM(p)(UG3d::element_descriptors[TAG(p)]->corners_of_elem)
+  //     return CORNERS_OF_ELEM(target_);
+  // #undef CORNERS_OF_ELEM
+  // #undef TAG
+  return UG<dimworld>::Corners_Of_Elem(target_);
 }
 
 
 ///////////////////////////////////////////////////////////////////////
+#ifdef _3
 template<>
 inline const Vec<3,UGCtype>& UGGridElement<0,3>::
 operator [](int i)
@@ -145,7 +149,7 @@ operator [](int i)
 
   return coord_(i);
 }
-
+#endif
 
 /** \todo It should be able to write this more concisely
     using partial spezialization.
@@ -217,7 +221,7 @@ global(const Vec<dim>& local)
   Corner_Coordinates(target_, cornerCoords);
 
   // Actually do the computation
-  Local_To_Global(corners(), cornerCoords, local, globalCoord);
+  UG<dimworld>::Local_To_Global(corners(), cornerCoords, local, globalCoord);
 
   return globalCoord;
 }
@@ -235,206 +239,7 @@ integration_element (const Vec<dim,UGCtype>& local)
   Mat<dimworld,dimworld> mat;
 
   // compute the volume of the element
-  Transformation(corners(), cornerCoords, local, mat);
-
-  /** \todo Avoid the unnecessary copying */
-  //     for (int i=0; i<dimworld; i++)
-  //         for (int j=0; j<dimworld; j++)
-  //             mat[i][j] = mat_c[i][j];
-
+  UG<dimworld>::Transformation(corners(), cornerCoords, local, mat);
 
   return mat.determinant();
 }
-
-#if 0
-
-template< int dim, int dimworld>
-inline Mat<dim,dim>& AlbertGridElement<dim,dimworld>::
-Jacobian_inverse (const Vec<dim,albertCtype>& local)
-{
-  if(builtinverse_)
-    return Jinv_;
-
-  // builds the jacobian inverse and calculates the volume
-  builtJacobianInverse(local);
-  return Jinv_;
-}
-
-// calc volume of face of tetrahedron
-template <>
-inline void AlbertGridElement<2,3>::
-builtJacobianInverse(const Vec<2,albertCtype>& local)
-{
-  //std::cout << "To be implemented! \n";
-  //abort();
-  enum { dim = 2 };
-  enum { dimworld = 3 };
-
-  // is faster than the lower method
-  volume_ = 0.1;
-  builtinverse_ = true;
-}
-
-template< int dim, int dimworld>
-inline void AlbertGridElement<dim,dimworld>::
-builtJacobianInverse(const Vec<dim,albertCtype>& local)
-{
-  //std::cout << dim << " " << dimworld<< " Dim|Dimworld \n";
-  enum { div = (dim < 3) ? 1 : 2 };
-  // volFactor should be 0.5 for dim==2 and (1.0/6.0) for dim==3
-  const albertCtype volFactor = static_cast<albertCtype> (0.5/div);
-
-  ALBERT REAL lambda[dim+1][dimworld];
-
-  // is faster than the lower method
-  volume_ = volFactor * ALBERT el_grd_lambda(elInfo_,lambda);
-  for(int i=0; i<dim; i++)
-  {
-    for(int j=0; j<dimworld; j++)
-      Jinv_(i,j) = lambda[i][j];
-  }
-  builtinverse_ = true;
-}
-
-inline void AlbertGridElement<2,2>::
-builtJacobianInverse(const Vec<2,albertCtype>& local)
-{
-  // volFactor should be 1/6, see ALBERT Doc
-  const albertCtype volFactor = 0.5;
-  enum { dimworld = 2 };
-  enum { dim = 2 };
-
-  REAL e1[dimworld], e2[dimworld], det, adet;
-  const REAL  *v0;
-  REAL a11, a12, a21, a22;
-
-  v0 = elInfo_->coord[0];
-  for (int i = 0; i < dimworld; i++)
-  {
-    e1[i] = elInfo_->coord[1][i] - v0[i];
-    e2[i] = elInfo_->coord[2][i] - v0[i];
-  }
-
-  det = e1[0] * e2[1] - e1[1] * e2[0];
-  adet = ABS(det);
-  if (adet < 1.0E-25)
-  {
-    std::cout << "abs(det) = " << adet << "\n";
-    Jinv_ = 0.0;
-  }
-  else
-  {
-    det = 1.0 / det;
-    a11 =  e2[1] * det;       /* (a_ij) = A^{-T} */
-    a21 = -e2[0] * det;
-    a12 = -e1[1] * det;
-    a22 =  e1[0] * det;
-
-    Jinv_(1,0) = a11;
-    Jinv_(1,1) = a21;
-    Jinv_(2,0) = a12;
-    Jinv_(2,1) = a22;
-    Jinv_(0,0) = - Jinv_(1,0) - Jinv_(2,0);
-    Jinv_(0,1) = - Jinv_(1,1) - Jinv_(2,1);
-  }
-
-  volume_ = volFactor * adet;
-  builtinverse_ = true;
-  return;
-}
-
-inline void AlbertGridElement<3,3>::
-builtJacobianInverse(const Vec<3,albertCtype>& local)
-{
-  // volFactor should be 1/6, see ALBERT Doc
-  static const albertCtype volFactor = 1.0/6.0;
-
-  enum { dimworld = 3 };
-  enum { dim = 3 };
-
-  REAL e1[dimworld], e2[dimworld], e3[dimworld];
-  const REAL  *v0;
-  REAL det, adet;
-  REAL a11, a12, a13, a21, a22, a23, a31, a32, a33;
-
-  v0 = elInfo_->coord[0];
-  for (int i = 0; i < dimworld; i++)
-  {
-    e1[i] = elInfo_->coord[1][i] - v0[i];
-    e2[i] = elInfo_->coord[2][i] - v0[i];
-    e3[i] = elInfo_->coord[3][i] - v0[i];
-  }
-
-  det =   e1[0] * (e2[1]*e3[2] - e2[2]*e3[1])
-        - e1[1] * (e2[0]*e3[2] - e2[2]*e3[0])
-        + e1[2] * (e2[0]*e3[1] - e2[1]*e3[0]);
-
-  adet = ABS(det);
-  if (adet < 1.0E-25)
-  {
-    std::cout << "abs(det) = " << adet << "\n";
-    Jinv_ = 0.0;
-  }
-  else
-  {
-    det = 1.0 / det;
-    a11 = (e2[1]*e3[2] - e2[2]*e3[1]) * det;    /* (a_ij) = A^{-T} */
-    a12 = (e2[2]*e3[0] - e2[0]*e3[2]) * det;
-    a13 = (e2[0]*e3[1] - e2[1]*e3[0]) * det;
-    a21 = (e1[2]*e3[1] - e1[1]*e3[2]) * det;
-    a22 = (e1[0]*e3[2] - e1[2]*e3[0]) * det;
-    a23 = (e1[1]*e3[0] - e1[0]*e3[1]) * det;
-    a31 = (e1[1]*e2[2] - e1[2]*e2[1]) * det;
-    a32 = (e1[2]*e2[0] - e1[0]*e2[2]) * det;
-    a33 = (e1[0]*e2[1] - e1[1]*e2[0]) * det;
-
-    Jinv_(1,0) = a11;
-    Jinv_(1,1) = a12;
-    Jinv_(1,2) = a13;
-    Jinv_(2,0) = a21;
-    Jinv_(2,1) = a22;
-    Jinv_(2,2) = a23;
-    Jinv_(3,0) = a31;
-    Jinv_(3,1) = a32;
-    Jinv_(3,2) = a33;
-    Jinv_(0,0) = -Jinv_(1,0) -Jinv_(2,0) -Jinv_(3,0);
-    Jinv_(0,1) = -Jinv_(1,1) -Jinv_(2,1) -Jinv_(3,1);
-    Jinv_(0,2) = -Jinv_(1,2) -Jinv_(2,2) -Jinv_(3,2);
-  }
-
-  volume_ = volFactor * adet;
-  builtinverse_ = true;
-  return;
-}
-
-
-template <>
-inline void AlbertGridElement<1,2>::
-builtJacobianInverse(const Vec<1,albertCtype>& local)
-{
-  // volume is length of edge
-  Vec<2,albertCtype> vec = coord_(0) - coord_(1);
-  volume_ = vec.norm2();
-
-  builtinverse_ = true;
-}
-
-template<int dim, int dimworld>
-inline bool AlbertGridElement <dim ,dimworld >::
-checkInside(const Vec<dimworld> &global)
-{
-  Vec<dim+1> localCoords = localBary(global);
-
-  // return true if point is inside element
-  bool ret=true;
-
-  // if one of the barycentric coordinates is negativ
-  // then the point must be outside of the element
-  for(int i=0; i<dim+1; i++)
-    if(localCoords(i) < 0.0) ret = false;
-
-  return ret;
-}
-
-
-#endif
