@@ -218,7 +218,7 @@ namespace Dune {
      *  return 1 on failure.
      */
     static int Transformation(int n, double** x,
-                              const FieldVector<double, dim>& local, Mat<dim,dim,double>& mat) {
+                              const FieldVector<double, dim>& local, FieldMatrix<double,dim,dim>& mat) {
       typedef DOUBLE DOUBLE_VECTOR[dim];
       double det;
       INVERSE_TRANSFORMATION(n, x, local, mat, det);

@@ -7,9 +7,9 @@
  * \brief The UGGrid class
  */
 
-#include "../common/matvec.hh"
 #include "../common/capabilities.hh"
-#include "common/grid.hh"
+#include <dune/grid/common/grid.hh>
+#include <dune/common/misc.hh>
 
 // All UG includes have to be includes via the file ugincludes.hh
 // for easier parsing by undefAllMacros.pl

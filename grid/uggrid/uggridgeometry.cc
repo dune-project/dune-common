@@ -259,7 +259,7 @@ integrationElement (const FieldVector<UGCtype, 2>& local) const
 }
 
 template< int mydim, int coorddim, class GridImp>
-inline const Mat<mydim,mydim>& UGGridGeometry<mydim,coorddim, GridImp>::
+inline const FieldMatrix<UGCtype, mydim,mydim>& UGGridGeometry<mydim,coorddim, GridImp>::
 jacobianInverse (const FieldVector<UGCtype, mydim>& local) const
 {
   // coorddim*coorddim is an upper bound for the number of vertices

@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE__LAGRANGEBASE_HH__
-#define __DUNE__LAGRANGEBASE_HH__
+#ifndef DUNE_LAGRANGEBASE_HH
+#define DUNE_LAGRANGEBASE_HH
 
 #include <dune/grid/common/grid.hh>
 
@@ -60,7 +60,6 @@ namespace Dune {
     /** \todo Please doc me! */
     typedef typename DofManagerType::MemObjectType MemObjectType;
 
-    // for gcc ( gcc sucks )
     /** \todo Please doc me! */
     typedef typename FunctionSpaceType::Domain Domain;
     /** \todo Please doc me! */
@@ -195,7 +194,6 @@ namespace Dune {
 
     typedef typename DofManagerType::MemObjectType MemObjectType;
 
-    // for gcc ( gcc sucks )
     typedef typename FunctionSpaceType::Domain Domain;
     typedef typename FunctionSpaceType::Range Range;
     typedef typename FunctionSpaceType::RangeField DofType;
@@ -720,7 +718,7 @@ namespace Dune {
       enum { dim = EntityType::dimension };
       const FastBaseFunctionSetType & baseSet = getBaseFunctionSet(en);
 
-      Mat<dim,dim> & inv =
+      FieldMatrix<double,dim,dim> & inv =
         en.geometry().Jacobian_inverse(local);
       baseSet.eval( baseFunc , local , ret);
       ret = inv * ret;
@@ -735,7 +733,7 @@ namespace Dune {
       enum { dim = EntityType::dimension };
       const FastBaseFunctionSetType & baseSet = getBaseFunctionSet(en);
 
-      Mat<dim,dim> & inv =
+      FieldMatrix<double,dim,dim> & inv =
         en.geometry().Jacobian_inverse(quad.point(quadPoint));
       baseSet.eval( baseFunc , quad, quadPoint , ret);
       ret = inv * ret;
@@ -938,7 +936,7 @@ namespace Dune {
       enum { dim = EntityType::dimension };
       const FastBaseFunctionSetType & baseSet = getBaseFunctionSet(en);
 
-      Mat<dim,dim> & inv =
+      FieldMatrix<double,dim,dim> & inv =
         en.geometry().Jacobian_inverse(local);
       baseSet.eval( baseFunc , local , ret);
       ret = inv * ret;
@@ -953,7 +951,7 @@ namespace Dune {
       enum { dim = EntityType::dimension };
       const FastBaseFunctionSetType & baseSet = getBaseFunctionSet(en);
 
-      Mat<dim,dim> & inv =
+      FieldMatrix<double,dim,dim> & inv =
         en.geometry().Jacobian_inverse(quad.point(quadPoint));
       baseSet.eval( baseFunc , quad, quadPoint , ret);
       ret = inv * ret;
