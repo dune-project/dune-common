@@ -350,14 +350,14 @@ namespace Dune
 
   template<class T>
   inline bool Array<T>::Iterator::operator!=
-    (const Array<T>::Iterator& x)
+    (const typename Array<T>::Iterator& x)
   {
     return p != x.p;
   }
 
   template<class T>
   inline bool Array<T>::Iterator::operator==
-    (const Array<T>::Iterator& x)
+    (const typename Array<T>::Iterator& x)
   {
     return p == x.p;
   }
