@@ -12,12 +12,12 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
   int fL = fineFSpace.level();
 
   if (fL != cL+1)
-    DUNE_THROW(Dune::Exception, "The two function spaces don't belong to consecutive levels!");
+    DUNE_THROW(Exception, "The two function spaces don't belong to consecutive levels!");
 
   typedef typename FunctionSpaceType::GridType GridType;
   GridType& grid = coarseFSpace.getGrid();
   if (&grid != &(fineFSpace.getGrid()))
-    DUNE_THROW(Dune::Exception, "The two function spaces don't belong to the same grid!");
+    DUNE_THROW(Exception, "The two function spaces don't belong to the same grid!");
 
 
   int rows = fineFSpace.size();
@@ -29,8 +29,6 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
     identity[i][i] = 1;
 
   //
-  //matrix_.resize(rows, cols, GridType::dimension*10);
-  /** \todo Why can't I just resize matrix_ ? */
   OperatorType mat(rows, cols, OperatorType::random);
 
   mat = 0;
@@ -61,6 +59,9 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
 
     for (; fIt != fEndIt; ++fIt) {
 
+      if (fIt->level()==cIt->level())
+        continue;
+
       const BaseFunctionSetType& fineBaseSet = fineFSpace.getBaseFunctionSet( *fIt );
       const int numFineBaseFct = fineBaseSet.getNumberOfBaseFunctions();
 
@@ -72,11 +73,11 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
 
           int globalFine = fineFSpace.mapToGlobal(*fIt, j);
 
-          Dune::FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
+          FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
 
           // Evaluate coarse grid base function
           typename FunctionSpaceType::Range value;
-          Dune::FieldVector<int, 0> diffVariable;
+          FieldVector<int, 0> diffVariable;
           coarseBaseSet.evaluate(i, diffVariable, local, value);
 
           //std::cout << "value: " << value << "\n";
@@ -113,7 +114,8 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
 
     for (; fIt != fEndIt; ++fIt) {
 
-      //std::cout << "Coarse: " << cIt->index() << "   fine: " << fIt->index() << "\n";
+      if (fIt->level()==cIt->level())
+        continue;
 
       const BaseFunctionSetType& fineBaseSet = fineFSpace.getBaseFunctionSet( *fIt );
       const int numFineBaseFct = fineBaseSet.getNumberOfBaseFunctions();
@@ -129,18 +131,18 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
           // Evaluate coarse grid base function at the location of the fine grid dof
 
           // first determine local fine grid dof position
-          Dune::FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
+          FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
 
           // Evaluate coarse grid base function
           typename FunctionSpaceType::Range value;
-          Dune::FieldVector<int, 0> diffVariable;
+          FieldVector<int, 0> diffVariable;
           coarseBaseSet.evaluate(i, diffVariable, local, value);
 
           // The following conditional is a hack:  evaluation the coarse
           // grid base function will often return 0.  However, we don't
           // want explicit zero entries in our prolongation matrix.  Since
           // the whole code works for P1-elements only anyways, we know
-          // that value can only be 0, 0.5, or 1.  Thus testing for 0
+          // that value can only be 0, 0.5, or 1.  Thus testing for nonzero
           // by testing > 0.001 is safe.
           if (value[0] > 0.001) {
             MatrixBlock matValue = identity;
@@ -169,7 +171,7 @@ template<class DiscFuncType>
 void Dune::MultiGridTransfer<DiscFuncType>::prolong(const DiscFuncType& f, DiscFuncType& t) const
 {
   if (f.size() != matrix_.M())
-    DUNE_THROW(Dune::Exception, "Number of entries in the coarse grid vector is not equal "
+    DUNE_THROW(Exception, "Number of entries in the coarse grid vector is not equal "
                << "to the number of columns of the interpolation matrix!");
 
   t.resize(matrix_.N());
@@ -207,8 +209,8 @@ template<class DiscFuncType>
 void Dune::MultiGridTransfer<DiscFuncType>::restrict (const DiscFuncType & f, DiscFuncType& t) const
 {
   if (f.size() != matrix_.N())
-    DUNE_THROW(Dune::Exception, "Fine grid vector has " << f.size() << " entries "
-                                                        << "but the interpolation matrix has " << matrix_.N() << " rows!");
+    DUNE_THROW(Exception, "Fine grid vector has " << f.size() << " entries "
+                                                  << "but the interpolation matrix has " << matrix_.N() << " rows!");
 
   t.resize(matrix_.M());
   t = 0;
@@ -234,6 +236,38 @@ void Dune::MultiGridTransfer<DiscFuncType>::restrict (const DiscFuncType & f, Di
       cIt->umtv(f[rowIdx], t[cIt.index()]);
 
     }
+
+  }
+
+}
+
+
+// Multiply the vector f from the right to the transpose of the prolongation matrix
+template<class DiscFuncType>
+void Dune::MultiGridTransfer<DiscFuncType>::restrict (const Dune::BitField& f, Dune::BitField& t) const
+{
+  if (f.size() != matrix_.N())
+    DUNE_THROW(Exception, "Fine grid bitfield has " << f.size() << " entries "
+                                                    << "but the interpolation matrix has " << matrix_.N() << " rows!");
+
+  t.resize(matrix_.M());
+  t.unsetAll();
+
+  typedef typename OperatorType::row_type RowType;
+  typedef typename RowType::ConstIterator ColumnIterator;
+
+  for (int rowIdx=0; rowIdx<matrix_.N(); rowIdx++) {
+
+    if (!f[rowIdx])
+      continue;
+
+    const RowType& row = matrix_[rowIdx];
+
+    ColumnIterator cIt    = row.begin();
+    ColumnIterator cEndIt = row.end();
+
+    for(; cIt!=cEndIt; ++cIt)
+      t[cIt.index()] = true;
 
   }
 

@@ -47,6 +47,10 @@ namespace Dune {
      */
     void restrict (const DiscFuncType & f, DiscFuncType &t) const;
 
+    /** \brief Restrict a bitfield from the fine onto the coarse grid
+     */
+    void restrict (const BitField & f, BitField& t) const;
+
     /** \brief Prolong a function from the coarse onto the fine grid
      */
     void prolong(const DiscFuncType& f, DiscFuncType &t) const;
@@ -54,6 +58,10 @@ namespace Dune {
     /** \brief Galerkin assemble a coarse stiffness matrix
      */
     void galerkinRestrict(const OperatorType& fineMat, OperatorType& coarseMat) const;
+
+    /** \brief Galerkin assemble a coarse stiffness matrix
+     */
+    void galerkinRestrictOccupation(const OperatorType& fineMat, OperatorType& coarseMat) const;
 
     /** \brief Direct access to the operator matrix, if you absolutely want it! */
     const OperatorType& getMatrix() const {return matrix_;}
