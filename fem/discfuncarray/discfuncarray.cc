@@ -91,7 +91,7 @@ namespace Dune
   template<class DiscreteFunctionSpaceType > template <class EntityType>
   inline void
   DiscFuncArray< DiscreteFunctionSpaceType >::
-  localFunction ( EntityType &en , LocalFunctionArray < DiscreteFunctionSpaceType > &lf )
+  localFunction ( const EntityType &en , LocalFunctionArray < DiscreteFunctionSpaceType > &lf )
   {
     lf.init ( en );
   }
@@ -518,7 +518,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType > template <class EntityType>
   inline bool LocalFunctionArray < DiscreteFunctionSpaceType >::
-  init (EntityType &en ) const
+  init (const EntityType &en ) const
   {
     if(!uniform_ || !init_)
     {

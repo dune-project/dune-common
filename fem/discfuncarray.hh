@@ -93,7 +93,7 @@ namespace Dune {
 
     //! update LocalFunction to given Entity en
     template <class EntityType>
-    void localFunction ( EntityType &en,
+    void localFunction ( const EntityType &en,
                          LocalFunctionArray<DiscreteFunctionSpaceType> & lf);
 
     //! we use the default implementation
@@ -237,7 +237,7 @@ namespace Dune {
 
   protected:
     //! update local function for given Entity
-    template <class EntityType > bool init ( EntityType &en ) const;
+    template <class EntityType > bool init ( const EntityType &en ) const;
 
     //! get pointer to next LocalFunction
     MyType * getNext() const;
