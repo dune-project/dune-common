@@ -7,12 +7,6 @@
 
 #include <vector>
 #include <dune/common/fixedarray.hh>
-/**
- * @file This file implements the class ArrayList which behaves like
- * dynamically growing array together with
- * the class ArrayListIterator which is random access iterator as needed
- * by the stl for sorting and other algorithms.
- */
 namespace Dune {
   // forward declaration
   template<class T, int N>
@@ -35,6 +29,14 @@ namespace std {
 
 namespace Dune {
 
+  /**
+   * @file
+   * This file implements the class ArrayList which behaves like
+   * dynamically growing array together with
+   * the class ArrayListIterator which is random access iterator as needed
+   * by the stl for sorting and other algorithms.
+   * @author Markus Blatt
+   */
   /** @addtogroup Common
    *
    * @{
@@ -113,6 +115,7 @@ namespace Dune {
      * @param entry The new entry.
      */
     void push_back(const T& entry);
+
     /**
      * @brief Constructs an Array list with one chunk.
      */
@@ -136,10 +139,10 @@ namespace Dune {
   template<class T, int N>
   int operator-(const ArrayListIterator<T,N>& a, const ArrayListIterator<T,N>& b);
 
-  /*
-      template<class T, int N>
-      int operator+(const ArrayListIterator<T,N>& a, const ArrayListIterator<T,N>& b);
-   */
+
+  template<class T, int N>
+  int operator+(const ArrayListIterator<T,N>& a, const ArrayListIterator<T,N>& b);
+
   template<class T, int N>
   ArrayListIterator<T,N> operator+(int i, const ArrayListIterator<T,N>& a);
 
@@ -301,8 +304,6 @@ namespace Dune {
       delete chunks_[chunk];
   }
 
-
-
   template<class T, int N>
   void ArrayList<T,N>::push_back(const T& entry){
     int chunk = (start_+size_)/chunkSize_;
@@ -310,7 +311,7 @@ namespace Dune {
       chunks_[chunk] = new FixedArray<memberType,chunkSize_>();
       capacity_ += chunkSize_;
     }
-    chunks_[chunk]->operator[]((start_+size_++)%chunkSize_)=entry;
+    chunks_[chunk]->operator[]((start_+(size_++))%chunkSize_)=entry;
   }
 
   template<class T, int N>
@@ -336,6 +337,11 @@ namespace Dune {
   template<class T, int N>
   int operator-(const ArrayListIterator<T,N>& a, const ArrayListIterator<T,N>& b){
     return a.position_ - b.position_;
+  }
+
+  template<class T, int N>
+  int operator+(const ArrayListIterator<T,N>& a, const ArrayListIterator<T,N>& b){
+    return a.position_ + b.position_;
   }
 
   template<class T, int N>
@@ -441,9 +447,9 @@ namespace Dune {
 
   template<class T, int N>
   T& ArrayListIterator<T,N>::operator[](int i) const {
+    i+=position_;
     return list_.chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
-
 
   template<class T, int N>
   T& ArrayListIterator<T,N>::operator*() const {
