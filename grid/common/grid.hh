@@ -926,7 +926,7 @@ namespace Dune {
   // L E V E L I T E R A T O R
   //************************************************************************
 
-  /*! Enables iteration over all entities of a given codimension and level of a grid.
+  /** \brief Enables iteration over all entities of a given codimension and level of a grid.
    */
   template<int codim, int dim, int dimworld, class ct,
       template<int,int,int> class LevelIteratorImp,
@@ -935,12 +935,18 @@ namespace Dune {
   class LevelIterator
   {
   public:
-    //! remeber the template types
+    /** \brief Remember the template types */
     struct Traits
     {
+      /** \todo Please doc me! */
       typedef ct CoordType;
+
+      /** \todo Please doc me! */
       typedef EntityImp<codim,dim,dimworld>        Entity;
+
+      /** \todo Please doc me! */
       typedef LevelIteratorImp<codim,dim,dimworld> LevelIterator;
+
     };
 
     //! know your own codimension
@@ -1001,31 +1007,17 @@ namespace Dune {
     : public LevelIterator <codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>
   {
   public:
-    //! remeber the template types
-    struct Traits
-    {
-      typedef ct CoordType;
-      typedef EntityImp<codim,dim,dimworld>        Entity;
-      typedef LevelIteratorImp<codim,dim,dimworld> LevelIterator;
-    };
 
-    //! know your own codimension
-    enum { codimension=dim };
-
-    //! know your own dimension
-    enum { dimension=dim };
-
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
-
-    //! define type used for coordinates in grid module
-    typedef ct ctype;
   private:
     //! Barton-Nackman trick
-    LevelIteratorImp<codim,dim,dimworld>& asImp ()
-    {return static_cast<LevelIteratorImp<codim,dim,dimworld>&>(*this);}
-    const LevelIteratorImp<codim,dim,dimworld>& asImp () const
-    {return static_cast<const LevelIteratorImp<codim,dim,dimworld>&>(*this);}
+    LevelIteratorImp<codim,dim,dimworld>& asImp () {
+      return static_cast<LevelIteratorImp<codim,dim,dimworld>&>(*this);
+    }
+
+    const LevelIteratorImp<codim,dim,dimworld>& asImp () const {
+      return static_cast<const LevelIteratorImp<codim,dim,dimworld>&>(*this);
+    }
+
   }; // end LevelIteratorDefault
      //**************************************************************************
 
@@ -1057,10 +1049,18 @@ namespace Dune {
     template <int codim>
     struct Traits
     {
+      /** \todo Please doc me! */
       typedef ct CoordType;
+
+      /** \todo Please doc me! */
       typedef GridImp<dim,dimworld>                 ImpGrid;
+
+      /** \todo Please doc me! */
       typedef LevelIteratorImp<codim,dim,dimworld>  LevelIterator;
+
+      /** \todo Please doc me! */
       typedef EntityImp<codim,dim,dimworld>         Entity;
+
     };
 
     //! A grid exports its dimension
@@ -1164,7 +1164,7 @@ namespace Dune {
   };
 
 
-  // GridDefault::LeafIterator
+  /** \brief Iterates over the leaves of a hierarchical grid. */
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
   class GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
