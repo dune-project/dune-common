@@ -23,7 +23,7 @@ namespace Dune
   /**
    * @brief A const iterator over an uncached selection.
    */
-  template<typename TS, typename TG, typename TL>
+  template<typename TS, typename TG, typename TL, int N>
   class SelectionIterator
   {
   public:
@@ -40,11 +40,11 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef IndexSet<TG,TL> IndexSet;
+    typedef IndexSet<TG,TL,N> IndexSet;
 
     //typedef typename IndexSet::const_iterator IndexSetIterator;
 
-    typedef ConstArrayListIterator<IndexPair<TG,TL>,100, std::allocator<Dune::IndexPair<TG,TL> > > IndexSetIterator;
+    typedef ConstArrayListIterator<IndexPair<TG,TL>, N, std::allocator<Dune::IndexPair<TG,TL> > > IndexSetIterator;
     /**
      * @brief Constructor.
      * @param iter The iterator over the index set.
@@ -72,12 +72,12 @@ namespace Dune
       return iter_->local().local();
     }
 
-    bool operator==(const SelectionIterator<TS,TG,TL>& other) const
+    bool operator==(const SelectionIterator<TS,TG,TL,N>& other) const
     {
       return iter_ == other.iter_;
     }
 
-    bool operator!=(const SelectionIterator<TS,TG,TL>& other) const
+    bool operator!=(const SelectionIterator<TS,TG,TL,N>& other) const
     {
       return iter_ != other.iter_;
     }
@@ -91,7 +91,7 @@ namespace Dune
   /**
    * @brief An uncached selection of indices.
    */
-  template<typename TS, typename TG, typename TL>
+  template<typename TS, typename TG, typename TL, int N>
   class UncachedSelection
   {
   public:
@@ -121,12 +121,12 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef IndexSet<GlobalIndex,LocalIndex> IndexSet;
+    typedef IndexSet<GlobalIndex,LocalIndex,N> IndexSet;
 
     /**
      * @brief The type of the iterator of the selected indices.
      */
-    typedef SelectionIterator<TS,TG,TL> iterator;
+    typedef SelectionIterator<TS,TG,TL,N> iterator;
 
     /**
      * @brief The type of the iterator of the selected indices.
@@ -174,7 +174,7 @@ namespace Dune
   /**
    * @brief An cached selection of indices.
    */
-  template<typename TS, typename TG, typename TL>
+  template<typename TS, typename TG, typename TL, int N>
   class Selection
   {
   public:
@@ -204,7 +204,7 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef IndexSet<GlobalIndex,LocalIndex> IndexSet;
+    typedef IndexSet<GlobalIndex,LocalIndex,N> IndexSet;
 
     /**
      * @brief The type of the iterator of the selected indices.
@@ -264,8 +264,8 @@ namespace Dune
 
   };
 
-  template<typename TS, typename TG, typename TL>
-  inline void Selection<TS,TG,TL>::setIndexSet(const IndexSet& indexset)
+  template<typename TS, typename TG, typename TL, int N>
+  inline void Selection<TS,TG,TL,N>::setIndexSet(const IndexSet& indexset)
   {
     if(built_)
       free();
@@ -291,48 +291,48 @@ namespace Dune
     built_=true;
   }
 
-  template<typename TS, typename TG, typename TL>
-  uint32_t* Selection<TS,TG,TL>::begin() const
+  template<typename TS, typename TG, typename TL, int N>
+  uint32_t* Selection<TS,TG,TL,N>::begin() const
   {
     return selected_;
   }
 
-  template<typename TS, typename TG, typename TL>
-  uint32_t* Selection<TS,TG,TL>::end() const
+  template<typename TS, typename TG, typename TL, int N>
+  uint32_t* Selection<TS,TG,TL,N>::end() const
   {
     return selected_+size_;
   }
 
-  template<typename TS, typename TG, typename TL>
-  inline void Selection<TS,TG,TL>::free()
+  template<typename TS, typename TG, typename TL, int N>
+  inline void Selection<TS,TG,TL,N>::free()
   {
     delete[] selected_;
     size_=0;
     built_=false;
   }
 
-  template<typename TS, typename TG, typename TL>
-  inline Selection<TS,TG,TL>::~Selection()
+  template<typename TS, typename TG, typename TL, int N>
+  inline Selection<TS,TG,TL,N>::~Selection()
   {
     if(built_)
       free();
   }
 
-  template<typename TS, typename TG, typename TL>
-  SelectionIterator<TS,TG,TL> UncachedSelection<TS,TG,TL>::begin() const
+  template<typename TS, typename TG, typename TL, int N>
+  SelectionIterator<TS,TG,TL,N> UncachedSelection<TS,TG,TL,N>::begin() const
   {
-    return SelectionIterator<TS,TG,TL>(indexSet_->begin(),
-                                       indexSet_->end());
+    return SelectionIterator<TS,TG,TL,N>(indexSet_->begin(),
+                                         indexSet_->end());
   }
 
-  template<typename TS, typename TG, typename TL>
-  SelectionIterator<TS,TG,TL> UncachedSelection<TS,TG,TL>::end() const
+  template<typename TS, typename TG, typename TL, int N>
+  SelectionIterator<TS,TG,TL,N> UncachedSelection<TS,TG,TL,N>::end() const
   {
-    return SelectionIterator<TS,TG,TL>(indexSet_->end(),
-                                       indexSet_->end());
+    return SelectionIterator<TS,TG,TL,N>(indexSet_->end(),
+                                         indexSet_->end());
   }
-  template<typename TS, typename TG, typename TL>
-  void UncachedSelection<TS,TG,TL>::setIndexSet(const IndexSet& indexset)
+  template<typename TS, typename TG, typename TL, int N>
+  void UncachedSelection<TS,TG,TL,N>::setIndexSet(const IndexSet& indexset)
   {
     indexSet_ = &indexset;
   }

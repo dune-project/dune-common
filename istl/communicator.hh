@@ -101,8 +101,8 @@ namespace Dune
   /**
    * @brief An utility class for communicating distributed data structures.
    */
-  template<typename TG, typename TA>
-  class DatatypeCommunicator : public InterfaceBuilder<TG,TA>
+  template<typename TG, typename TA, int N=100>
+  class DatatypeCommunicator : public InterfaceBuilder<TG,TA,N>
   {
   public:
     /**
@@ -123,12 +123,12 @@ namespace Dune
     /**
      * @brief Type of the index set we use.
      */
-    typedef IndexSet<GlobalIndexType,LocalIndexType > IndexSetType;
+    typedef IndexSet<GlobalIndexType,LocalIndexType,N> IndexSetType;
 
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef RemoteIndices<GlobalIndexType, AttributeType> RemoteIndices;
+    typedef RemoteIndices<GlobalIndexType, AttributeType,N> RemoteIndices;
 
 
     /**
@@ -301,7 +301,7 @@ namespace Dune
   };
 
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N=100>
   class BufferedCommunicator
   {
   public:
@@ -309,10 +309,10 @@ namespace Dune
 
     template<class Data>
     EnableIf<SameType<SizeOne,typename CommPolicy<Data>::IndexedTypeFlag>::value, void>
-    build(const Interface<TG,TA>& interface);
+    build(const Interface<TG,TA,N>& interface);
 
     template<class Data>
-    void build(const Data& source, const Data& dest, const Interface<TG,TA>& interface);
+    void build(const Data& source, const Data& dest, const Interface<TG,TA,N>& interface);
 
     template<class GatherScatter, class Data>
     void forward(Data& source, Data& dest);
@@ -364,7 +364,7 @@ namespace Dune
     {
       typedef typename CommPolicy<Data>::IndexedType Type;
 
-      inline void operator()(const Interface<TG,TA>& interface, const Data& data, Type* buffer) const;
+      inline void operator()(const Interface<TG,TA,N>& interface, const Data& data, Type* buffer) const;
     };
 
     template<class Data, class GatherScatter, bool send>
@@ -372,7 +372,7 @@ namespace Dune
     {
       typedef typename CommPolicy<Data>::IndexedType Type;
 
-      inline void operator()(const Interface<TG,TA>& interface, const Data& data, Type* buffer) const;
+      inline void operator()(const Interface<TG,TA,N>& interface, const Data& data, Type* buffer) const;
     };
 
     /**
@@ -387,7 +387,7 @@ namespace Dune
     {
       typedef typename CommPolicy<Data>::IndexedType Type;
 
-      inline void operator()(const Interface<TG,TA>& interface, Data& data, Type* buffer, const int& proc) const;
+      inline void operator()(const Interface<TG,TA,N>& interface, Data& data, Type* buffer, const int& proc) const;
     };
 
     template<class Data, class GatherScatter, bool send>
@@ -395,7 +395,7 @@ namespace Dune
     {
       typedef typename CommPolicy<Data>::IndexedType Type;
 
-      inline void operator()(const Interface<TG,TA>& interface, Data& data, Type* buffer, const int& proc) const;
+      inline void operator()(const Interface<TG,TA,N>& interface, Data& data, Type* buffer, const int& proc) const;
     };
     struct MessageInformation
     {
@@ -443,7 +443,7 @@ namespace Dune
     /**
      * @brief The interface we currently work with.
      */
-    const Interface<TG,TA>* interface_;
+    const Interface<TG,TA,N>* interface_;
 
     /**
      * @brief Send and receive Data.
@@ -466,8 +466,8 @@ namespace Dune
   }
 
 
-  template<typename TG, typename TA>
-  DatatypeCommunicator<TG,TA>::DatatypeCommunicator()
+  template<typename TG, typename TA, int N>
+  DatatypeCommunicator<TG,TA,N>::DatatypeCommunicator()
     : remoteIndices_(0), created_(false)
   {
     requests_[0]=0;
@@ -476,17 +476,17 @@ namespace Dune
 
 
 
-  template<typename TG, typename TA>
-  DatatypeCommunicator<TG,TA>::~DatatypeCommunicator()
+  template<typename TG, typename TA, int N>
+  DatatypeCommunicator<TG,TA,N>::~DatatypeCommunicator()
   {
     free();
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class T1, class T2, class V>
-  inline void DatatypeCommunicator<TG,TA>::build(const RemoteIndices& remoteIndices,
-                                                 const T1& source, V& sendData,
-                                                 const T2& destination, V& receiveData)
+  inline void DatatypeCommunicator<TG,TA,N>::build(const RemoteIndices& remoteIndices,
+                                                   const T1& source, V& sendData,
+                                                   const T2& destination, V& receiveData)
   {
     remoteIndices_ = &remoteIndices;
     free();
@@ -498,8 +498,8 @@ namespace Dune
     created_=true;
   }
 
-  template<typename TG, typename TA>
-  void DatatypeCommunicator<TG,TA>::free()
+  template<typename TG, typename TA, int N>
+  void DatatypeCommunicator<TG,TA,N>::free()
   {
     if(created_) {
       delete[] requests_[0];
@@ -521,9 +521,9 @@ namespace Dune
 
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class T1, class T2, class V, bool send>
-  void DatatypeCommunicator<TG,TA>::createDataTypes(const T1& sourceFlags, const T2& destFlags, V& data)
+  void DatatypeCommunicator<TG,TA,N>::createDataTypes(const T1& sourceFlags, const T2& destFlags, V& data)
   {
 
     MPIDatatypeInformation<V>  dataInfo(data);
@@ -554,9 +554,9 @@ namespace Dune
     }
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class V, bool createForward>
-  void DatatypeCommunicator<TG,TA>::createRequests(V& sendData, V& receiveData)
+  void DatatypeCommunicator<TG,TA,N>::createRequests(V& sendData, V& receiveData)
   {
     typedef std::map<int,std::pair<MPI_Datatype,MPI_Datatype> >::const_iterator MapIterator;
     int rank;
@@ -586,20 +586,20 @@ namespace Dune
     }
   }
 
-  template<typename TG, typename TA>
-  void DatatypeCommunicator<TG,TA>::forward()
+  template<typename TG, typename TA, int N>
+  void DatatypeCommunicator<TG,TA,N>::forward()
   {
     sendRecv(requests_[1]);
   }
 
-  template<typename TG, typename TA>
-  void DatatypeCommunicator<TG,TA>::backward()
+  template<typename TG, typename TA, int N>
+  void DatatypeCommunicator<TG,TA,N>::backward()
   {
     sendRecv(requests_[0]);
   }
 
-  template<typename TG, typename TA>
-  void DatatypeCommunicator<TG,TA>::sendRecv(MPI_Request* requests)
+  template<typename TG, typename TA, int N>
+  void DatatypeCommunicator<TG,TA,N>::sendRecv(MPI_Request* requests)
   {
     int noMessages = messageTypes.size();
     // Start the receive calls first
@@ -663,8 +663,8 @@ namespace Dune
 
 
 
-  template<typename TG, typename TA>
-  BufferedCommunicator<TG,TA>::BufferedCommunicator()
+  template<typename TG, typename TA, int N>
+  BufferedCommunicator<TG,TA,N>::BufferedCommunicator()
     : interface_(0)
   {
     buffers_[0]=0;
@@ -672,12 +672,12 @@ namespace Dune
   }
 
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data>
   EnableIf<SameType<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void>
-  BufferedCommunicator<TG,TA>::build(const Interface<TG,TA>& interface)
+  BufferedCommunicator<TG,TA,N>::build(const Interface<TG,TA,N>& interface)
   {
-    typedef typename Interface<TG,TA>::InformationMap::const_iterator const_iterator;
+    typedef typename Interface<TG,TA,N>::InformationMap::const_iterator const_iterator;
     typedef typename CommPolicy<Data>::IndexedTypeFlag Flag;
     const const_iterator end = interface.interfaces().end();
     int sendStart=0, recvStart=0;
@@ -703,11 +703,11 @@ namespace Dune
 
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data>
-  void BufferedCommunicator<TG,TA>::build(const Data& source, const Data& dest, const Interface<TG,TA>& interface)
+  void BufferedCommunicator<TG,TA,N>::build(const Data& source, const Data& dest, const Interface<TG,TA,N>& interface)
   {
-    typedef typename Interface<TG,TA>::InformationMap::const_iterator const_iterator;
+    typedef typename Interface<TG,TA,N>::InformationMap::const_iterator const_iterator;
     typedef typename CommPolicy<Data>::IndexedTypeFlag Flag;
     const const_iterator end = interface.interfaces().end();
     int sendStart=0, recvStart=0;
@@ -731,8 +731,8 @@ namespace Dune
     interface_ = &interface;
   }
 
-  template<typename TG, typename TA>
-  void BufferedCommunicator<TG,TA>::free()
+  template<typename TG, typename TA, int N>
+  void BufferedCommunicator<TG,TA,N>::free()
   {
     if(interface_!=0) {
       messageInformation_.clear();
@@ -742,31 +742,31 @@ namespace Dune
     }
   }
 
-  template<typename TG, typename TA>
-  BufferedCommunicator<TG,TA>::~BufferedCommunicator()
+  template<typename TG, typename TA, int N>
+  BufferedCommunicator<TG,TA,N>::~BufferedCommunicator()
   {
     free();
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data>
-  inline int BufferedCommunicator<TG,TA>::MessageSizeCalculator<Data,SizeOne>::operator()
+  inline int BufferedCommunicator<TG,TA,N>::MessageSizeCalculator<Data,SizeOne>::operator()
     (const InterfaceInformation& info) const
   {
     return info.size()*sizeof(typename CommPolicy<Data>::IndexedType);
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data>
-  inline int BufferedCommunicator<TG,TA>::MessageSizeCalculator<Data,SizeOne>::operator()
+  inline int BufferedCommunicator<TG,TA,N>::MessageSizeCalculator<Data,SizeOne>::operator()
     (const Data& data, const InterfaceInformation& info) const
   {
     return operator()(info);
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data>
-  inline int BufferedCommunicator<TG,TA>::MessageSizeCalculator<Data, VariableSize>::operator()
+  inline int BufferedCommunicator<TG,TA,N>::MessageSizeCalculator<Data, VariableSize>::operator()
     (const Data& data, const InterfaceInformation& info) const
   {
     int entries=0;
@@ -777,11 +777,11 @@ namespace Dune
     return entries * sizeof(typename CommPolicy<Data>::IndexedType);
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator<TG,TA>::MessageGatherer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const Interface<TG,TA>& interface,const Data& data, Type* buffer) const
+  inline void BufferedCommunicator<TG,TA,N>::MessageGatherer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const Interface<TG,TA,N>& interface,const Data& data, Type* buffer) const
   {
-    typedef typename Interface<TG,TA>::InformationMap::const_iterator
+    typedef typename Interface<TG,TA,N>::InformationMap::const_iterator
     const_iterator;
     const const_iterator end = interface.interfaces().end();
     int offset=0;
@@ -801,11 +801,11 @@ namespace Dune
 
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator<TG,TA>::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const Interface<TG,TA>& interface, const Data& data, Type* buffer) const
+  inline void BufferedCommunicator<TG,TA,N>::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const Interface<TG,TA,N>& interface, const Data& data, Type* buffer) const
   {
-    typedef typename Interface<TG,TA>::InformationMap::const_iterator
+    typedef typename Interface<TG,TA,N>::InformationMap::const_iterator
     const_iterator;
     const const_iterator end = interface.interfaces().end();
     size_t index = 0;
@@ -823,12 +823,12 @@ namespace Dune
 
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator<TG,TA>::MessageScatterer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const Interface<TG,TA>& interface, Data& data, Type* buffer, const int& proc) const
+  inline void BufferedCommunicator<TG,TA,N>::MessageScatterer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const Interface<TG,TA,N>& interface, Data& data, Type* buffer, const int& proc) const
   {
-    typedef typename Interface<TG,TA>::Information Information;
-    const typename Interface<TG,TA>::InformationMap::const_iterator infoPair = interface.interfaces().find(proc);
+    typedef typename Interface<TG,TA,N>::Information Information;
+    const typename Interface<TG,TA,N>::InformationMap::const_iterator infoPair = interface.interfaces().find(proc);
 
     assert(infoPair!=interface.interfaces().end());
 
@@ -841,12 +841,12 @@ namespace Dune
     }
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator<TG,TA>::MessageScatterer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const Interface<TG,TA>& interface, Data& data, Type* buffer, const int& proc) const
+  inline void BufferedCommunicator<TG,TA,N>::MessageScatterer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const Interface<TG,TA,N>& interface, Data& data, Type* buffer, const int& proc) const
   {
-    typedef typename Interface<TG,TA>::Information Information;
-    const typename Interface<TG,TA>::InformationMap::const_iterator infoPair = interface.interfaces().find(proc);
+    typedef typename Interface<TG,TA,N>::Information Information;
+    const typename Interface<TG,TA,N>::InformationMap::const_iterator infoPair = interface.interfaces().find(proc);
 
     assert(infoPair!=interface.interfaces().end());
 
@@ -858,37 +858,37 @@ namespace Dune
     }
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class GatherScatter,class Data>
-  void BufferedCommunicator<TG,TA>::forward(Data& data)
+  void BufferedCommunicator<TG,TA,N>::forward(Data& data)
   {
     this->template sendRecv<GatherScatter,true>(data, data);
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class GatherScatter, class Data>
-  void BufferedCommunicator<TG,TA>::backward(Data& data)
+  void BufferedCommunicator<TG,TA,N>::backward(Data& data)
   {
     this->template sendRecv<GatherScatter,false>(data, data);
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class GatherScatter, class Data>
-  void BufferedCommunicator<TG,TA>::forward(Data& source, Data& dest)
+  void BufferedCommunicator<TG,TA,N>::forward(Data& source, Data& dest)
   {
     this->template sendRecv<GatherScatter,true>(source, dest);
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class GatherScatter, class Data>
-  void BufferedCommunicator<TG,TA>::backward(Data& source, Data& dest)
+  void BufferedCommunicator<TG,TA,N>::backward(Data& source, Data& dest)
   {
     this->template sendRecv<GatherScatter,false>(dest, source);
   }
 
-  template<typename TG, typename TA>
+  template<typename TG, typename TA, int N>
   template<class GatherScatter, bool FORWARD, class Data>
-  void BufferedCommunicator<TG,TA>::sendRecv(Data& source, Data& dest)
+  void BufferedCommunicator<TG,TA,N>::sendRecv(Data& source, Data& dest)
   {
     typedef typename CommPolicy<Data>::IndexedType Type;
 
