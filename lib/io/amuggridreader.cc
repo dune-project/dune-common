@@ -1491,7 +1491,6 @@ int Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
 
   int noOfBNodes = 0;
   for (i=0; i<noOfNodes; i++) {
-    printf("%d \n", boundary_nodes[i]);
     if (boundary_nodes[i] != -1)
       noOfBNodes++;
   }
