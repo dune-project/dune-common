@@ -44,6 +44,7 @@
 //typedef U_CHAR UCHAR_NNEIGH[N_NEIGH];
 //
 
+#include <algorithm>
 
 static int cycles(MACRO_DATA *data)
 {
@@ -498,8 +499,8 @@ static void calculate_size(MESH *mesh, MACRO_DATA *data)
   {
     for (j = 0; j < DIM_OF_WORLD; j++)
     {
-      x_min[j] = MIN(x_min[j], data->coords[i][j]);
-      x_max[j] = MAX(x_max[j], data->coords[i][j]);
+      x_min[j] = std::min(x_min[j], data->coords[i][j]);
+      x_max[j] = std::max(x_max[j], data->coords[i][j]);
     }
   }
 
@@ -926,7 +927,7 @@ static void read_macro_data_bin(MACRO_DATA *macro_data, const char *name)
 
   TEST_EXIT(file = fopen(name, "rb")) ("cannot open file %s\n", name);
 
-  length = MAX(strlen(ALBERT_VERSION)+1, 21);
+  length = std::max(strlen(ALBERT_VERSION)+1, 21);
   s = MEM_ALLOC(length, char);
 
   fread(s, sizeof(char), length, file);
@@ -1129,7 +1130,7 @@ static void read_macro_data_xdr(MACRO_DATA *macro_data, const char *name)
   if (!(xdrp = xdr_open_file(name, XDR_DECODE)))
     ERROR_EXIT("cannot open file %s\n",name);
 
-  length = MAX(strlen(ALBERT_VERSION)+1,21);     /* length with terminating \0 */
+  length = std::max(strlen(ALBERT_VERSION)+1,21);     /* length with terminating \0 */
   s = MEM_ALLOC(length, char);
 
   TEST_EXIT(xdr_string(xdrp, &s, length)) ("file %s: could not read file id\n", name);
@@ -1368,7 +1369,7 @@ extern int write_macro_data_xdr(MACRO_DATA *data, const char *filename)
     return(0);
   }
 
-  length = MAX(strlen(ALBERT_VERSION) + 1, 5);  /* length with terminating \0 */
+  length = std::max(strlen(ALBERT_VERSION) + 1, 5);  /* length with terminating \0 */
   s=MEM_ALLOC(length, char);
   strcpy(s, ALBERT_VERSION);
   xdr_string(xdrp, &s, length);

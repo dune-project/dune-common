@@ -1,7 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE__LAGRANGESPACE_CC__
-#define __DUNE__LAGRANGESPACE_CC__
+#ifndef DUNE_LAGRANGESPACE_CC
+#define DUNE_LAGRANGESPACE_CC
+
+#include <algorithm>
 
 namespace Dune {
 
@@ -33,7 +35,7 @@ namespace Dune {
     for(int i=0; i<numOfDiffBase_; i++)
     {
       if(baseFuncSet_[i])
-        maxNumBase_ = MAX(baseFuncSet_[i]->getNumberOfBaseFunctions(),maxNumBase_);
+        maxNumBase_ = std::max(baseFuncSet_[i]->getNumberOfBaseFunctions(),maxNumBase_);
     }
   }
 

@@ -3,6 +3,7 @@
 #ifndef __SGRID_CC__
 #define __SGRID_CC__
 
+#include <algorithm>
 #include <iostream>
 #include <assert.h>
 
@@ -628,7 +629,7 @@ namespace Dune {
     stack.push(originalElement);
 
     // compute maxlevel
-    maxlevel = MIN(_maxlevel,grid->maxlevel());
+    maxlevel = std::min(_maxlevel,grid->maxlevel());
 
     // ok, push all the sons as well
     push_sons(e.l,e.id);

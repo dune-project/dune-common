@@ -6,6 +6,8 @@
 #ifndef _ALBERTEXTRA_H_
 #define _ALBERTEXTRA_H_
 
+#include <algorithm>
+
 #ifdef __ALBERTpp__
 namespace Albert {
 #endif
@@ -375,7 +377,7 @@ namespace AlbertHelp
 
     assert(index >= 0);
 
-    if(Albert_neighArray_help->size() <= ABS(index))
+    if(Albert_neighArray_help->size() <= std::abs(index))
     {
       doItAgain = true;
     }

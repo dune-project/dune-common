@@ -1,7 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_DFADAPT_CC__
-#define __DUNE_DFADAPT_CC__
+#ifndef DUNE_DFADAPT_CC
+#define DUNE_DFADAPT_CC
+
+#include <algorithm>
 
 namespace Dune
 {
@@ -96,7 +98,7 @@ namespace Dune
     for(DofIteratorType itdof = dbegin ( level ); itdof != enddof; ++itdof)
     {
       s << (*itdof) << " DofValue \n";
-      sum += ABS(*itdof);
+      sum += std::abs(*itdof);
     }
     s << "sum = " << sum << "\n";
   }

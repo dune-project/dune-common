@@ -1,9 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_GRID_CC__
-#define __DUNE_GRID_CC__
+#ifndef DUNE_GRID_CC
+#define DUNE_GRID_CC
 
-#include "../../common/misc.hh"
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 
@@ -191,7 +191,7 @@ namespace Dune {
       g = global ( l );
       for(int j=0; j<dimworld; j++)
       {
-        if( ABS(g[j] - coord[j]) > 1e-15 )
+        if( std::abs(g[j] - coord[j]) > 1e-15 )
         {
           std::cerr << "\nglobal--local of coord " << i << " failed! \n";
           std::cerr << "started with "; std::cerr << coord;

@@ -36,6 +36,7 @@
 #include <ctype.h>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
+#include <algorithm>
 
 #if LINKEN
 #include <albert.h>
@@ -181,8 +182,8 @@ static void fill_bound_info(MESH *mesh, MACRO_DATA *data,
           int j1 = data->mel_vertices[i][(j+1)%3];
           int j2 = data->mel_vertices[i][(j+2)%3];
 
-          bound[j1] = MAX(bound[j1], mel[i].boundary[j]->bound);
-          bound[j2] = MAX(bound[j2], mel[i].boundary[j]->bound);
+          bound[j1] = std::max(bound[j1], mel[i].boundary[j]->bound);
+          bound[j2] = std::max(bound[j2], mel[i].boundary[j]->bound);
         }
         else if (mel[i].boundary[j]->bound <= NEUMANN)
         {
@@ -190,12 +191,12 @@ static void fill_bound_info(MESH *mesh, MACRO_DATA *data,
           int j2 = data->mel_vertices[i][(j+2)%3];
 
           if (bound[j1] != INTERIOR)
-            bound[j1] = MAX(bound[j1], mel[i].boundary[j]->bound);
+            bound[j1] = std::max(bound[j1], mel[i].boundary[j]->bound);
           else
             bound[j1] = mel[i].boundary[j]->bound;
 
           if (bound[j2] != INTERIOR)
-            bound[j2] = MAX(bound[j2], mel[i].boundary[j]->bound);
+            bound[j2] = std::max(bound[j2], mel[i].boundary[j]->bound);
           else
             bound[j2] = mel[i].boundary[j]->bound;
         }

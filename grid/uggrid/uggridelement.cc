@@ -7,6 +7,8 @@
 //
 //****************************************************************
 
+#include <algorithm>
+
 // singleton holding reference elements
 template<int dim>
 struct UGGridReferenceElement
@@ -306,8 +308,8 @@ template< int dim, int dimworld>
 inline UGCtype UGGridElement<dim,dimworld>::
 integration_element (const FieldVector<UGCtype, dim>& local)
 {
-  //std::cout << "integration element: " << ABS(Jacobian_inverse(local).determinant()) << std::endl;
-  return ABS(1/Jacobian_inverse(local).determinant());
+  //std::cout << "integration element: " << std::abs(Jacobian_inverse(local).determinant()) << std::endl;
+  return std::abs(1/Jacobian_inverse(local).determinant());
 }
 
 template< int dim, int dimworld>

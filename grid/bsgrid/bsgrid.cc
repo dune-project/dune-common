@@ -1,7 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_BSGRID_CC__
-#define __DUNE_BSGRID_CC__
+#ifndef DUNE_BSGRID_CC
+#define DUNE_BSGRID_CC
+
+#include <algorithm>
 
 namespace Dune {
 
@@ -1301,7 +1303,7 @@ namespace Dune {
       if(!builtA_) calcElMatrix();
 
       // DetDf = integration_element
-      detDF_ = ABS( A_.invert(Jinv_) );
+      detDF_ = std::abs( A_.invert(Jinv_) );
       builtinverse_ = builtDetDF_ = true;
     }
   }
@@ -1460,7 +1462,7 @@ namespace Dune {
       sum += local[i];
       if(local[i] < 0.0)
       {
-        if(ABS(local[i]) > 1e-15)
+        if(std::abs(local[i]) > 1e-15)
         {
           return false;
         }

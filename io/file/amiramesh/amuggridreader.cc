@@ -10,6 +10,7 @@
 #include <amiramesh/AmiraMesh.h>
 
 #include <vector>
+#include <algorithm>
 
 //#define __USE_PARAMETRIZATION_LIBRARY__
 
@@ -605,7 +606,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
       // for the time being.
 //       if(OBJT(theNode->myvertex) == UG3d::IVOBJ)
 //           UserWriteF("Warning: Node %d is inner node\n", ID(theNode));
-      maxBndNodeID = MAX(theNode->id, maxBndNodeID);
+      maxBndNodeID = std::max(theNode->id, maxBndNodeID);
   }
 
   std::cout << "Already " << maxBndNodeID+1 << " nodes existing\n";
@@ -1342,7 +1343,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
       // for the time being.
 //       if(OBJT(theNode->myvertex) == UG3d::IVOBJ)
 //           UserWriteF("Warning: Node %d is inner node\n", ID(theNode));
-      maxBndNodeID = MAX(theNode->id, maxBndNodeID);
+      maxBndNodeID = std::max(theNode->id, maxBndNodeID);
   }
 
   std::cout << "Already " << maxBndNodeID+1 << " nodes existing" << std::endl;

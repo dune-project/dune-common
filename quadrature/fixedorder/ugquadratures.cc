@@ -6,6 +6,8 @@
 /*                                                                          */
 /****************************************************************************/
 
+#include <algorithm>
+
 //#include <stdlib.h>
 
 //#include "evm.h"
@@ -3603,7 +3605,7 @@ INT GaussPoints(INT dim, INT n, INT order, DOUBLE_VECTOR *x, GAUSS_POINT *gp)
     V_DIM_COPY(Q_LOCAL(quadrature,ip),G_LOCAL(gp));
     LOCAL_TO_GLOBAL (n,x,G_LOCAL(gp),G_GLOBAL(gp));
     INVERSE_TRANSFORMATION(n,x,G_LOCAL(gp),G_JINV(gp),Jdet);
-    G_WEIGHT(gp) = Q_WEIGHT(quadrature,ip) * area * ABS(Jdet);
+    G_WEIGHT(gp) = Q_WEIGHT(quadrature,ip) * area * std::abs(Jdet);
   }
 
   return(nip);
