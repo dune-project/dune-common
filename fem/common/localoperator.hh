@@ -25,56 +25,83 @@ namespace Dune
      operator this methods are not needed, the definition of them is left free.
    */
   //***********************************************************************
-  template <class DF_DomainType, class DF_RangeType,
-      class RFType, class LocalOperatorImp>
+  template <class FstPType, class SecPType, class SType ,
+      class LocalOperatorImp>
   class LocalOperatorInterface
   {
   public:
-    typedef DF_DomainType DomainType;
-    typedef DF_RangeType RangeType;
-    typedef RFType RangeFieldType;
+    // remember the parameter types
+    typedef FstPType FirstParamType;
+    typedef SecPType SecondParamType;
+    typedef SType ScalarType;
 
-    //! prepare apply global, called once global
-    void prepareGlobal (int level, const DomainType & arg , RangeType & dest,
-                        const RangeFieldType scalar)
+    //**************************************************************
+    /*! default implementation of the prepare and finalize methods
+        default is make nothing
+     */
+    //! prepareGlobal is called before the grid walktrough
+    void prepareGlobal(const FirstParamType &pa, SecondParamType &pb)
     {
-      asImp().prepareGlobal ( level , arg, dest , scalar );
+      asImp().prepareGlobal(pa,pb);
     }
 
-    //! do a local cleanup or what , called on each entity
-    template <class GridIteratorType>
-    void prepareLocal ( GridIteratorType &it , const DomainType & arg , RangeType & dest )
+    // prepare for grid walktrough
+    void prepareGlobal ()
     {
-      asImp().prepareLocal ( it, arg, dest );
+      asImp().prepareGlobal();
     }
 
-    //! do some local stuff, overload for functionality, called on each entity
-    template <class GridIteratorType>
-    void finalizeLocal ( GridIteratorType &it , const DomainType & arg , RangeType & dest )
+    // finalize the walktrough
+    void finalizeGlobal()
     {
-      asImp().finalizeLocal(it,arg,dest);
+      asImp().finalizeGlobal();
     }
 
-    //! finalize the operator, called once after apply global
-    void finalizeGlobal (int level, const DomainType & arg , RangeType & dest)
+    // one entity
+    template<class EntityType>
+    void prepareLocal (EntityType & en)
     {
-      asImp().finalizeGlobal(level,arg,dest);
+      asImp().prepareLocal(en);
     }
 
-    //! call applyLocal of CombinedLocalOperatorImp , on each entity
-    template <class GridIteratorType>
-    void applyLocal ( GridIteratorType &it , const DomainType & arg , RangeType & dest )
+    template<class EntityType>
+    void finalizeLocal(EntityType & en)
     {
-      asImp().applyLocal(it,arg,dest);
+      asImp().finalizeLocal(en);
     }
 
+    // two entities
+    template<class EntityType>
+    void prepareLocal (EntityType & en1, EntityType &en2)
+    {
+      asImp().prepareLocal(en1,en2);
+    }
+
+    template<class EntityType>
+    void finalizeLocal(EntityType & en1, EntityType &en2)
+    {
+      asImp().finalizeLocal(en1,en2);
+    }
+
+    // things to do on one entity
+    template<class EntityType>
+    void applyLocal(EntityType & en)
+    {
+      asImp().applyLocal(en);
+    }
+
+    // things to do on two entity
+    template<class EntityType>
+    void applyLocal(EntityType & en1, EntityType &en2)
+    {
+      asImp().applyLocal(en1,en2);
+    }
   private:
     // Barton Nackman
     LocalOperatorImp & asImp()
     {
       return static_cast<LocalOperatorImp &> (*this);
     }
-
   };
 
   //**************************************************************************
@@ -82,44 +109,36 @@ namespace Dune
   //  Default implemenations for LocalOperators
   //
   //**************************************************************************
-  template <class DF_DomainType, class DF_RangeType, class RFType ,
+  template <class FstPType, class SecPType, class SType ,
       class LocalOperatorImp>
   class LocalOperatorDefault
-    : public LocalOperatorInterface <DF_DomainType,DF_RangeType,RFType,LocalOperatorImp>
+    : public LocalOperatorInterface <FstPType,SecPType,
+          SType,LocalOperatorImp>
   {
   public:
-    // no default implementation at the moement
+    // remember the parameter types
+    typedef FstPType FirstParamType;
+    typedef SecPType SecondParamType;
+    typedef SType ScalarType;
 
     // no default implementation at the moement
-    LocalOperatorDefault () : arg_ (NULL) , dest_(NULL) , scalar_ (1.0) {}
+    LocalOperatorDefault () : scalar_ (1.0) {}
 
-    //! store pointers to actual discrete functions
-    void setArguments(const DF_DomainType & arg, DF_RangeType & dest)
-    {
-      arg_  = &arg;
-      dest_ = &dest;
-    }
-
-    //! store pointers to actual discrete functions
-    void removeArguments()
-    {
-      arg_  = NULL;
-      dest_ = NULL;
-    }
-
-    //! scale operator
-    void scaleIt ( const RangeFieldType scalar )
+    //! scale operator , for inheritance
+    void scaleIt ( const ScalarType scalar )
     {
       scalar_ = scalar;
     }
 
     //**************************************************************
     /*! default implementation of the prepare and finalize methods
+        default is make nothing
      */
-    void prepareGlobal()  {}
+    // prepare for grid walktrough
+    void prepareGlobal () {}
+
+    // finalize the walktrough
     void finalizeGlobal() {}
-    void prepareLocal()  {}
-    void finalizeLocal() {}
 
     // one entity
     template<class EntityType>
@@ -137,12 +156,8 @@ namespace Dune
     //**************************************************************
 
   protected:
-    //! Argument to store, i.e. DiscreteFunction pointers on which the
-    //! operators will be applied
-    const DF_DomainType * arg_;
-    DF_RangeType *dest_;
-
-    RangeFieldType scalar_;
+    // scalar for operator
+    ScalarType scalar_;
   };
 
   //*******************************************************************
@@ -167,27 +182,13 @@ namespace Dune
     //! Constructor for combinations storing the two operators
     CombinedLocalOperator ( A & a, B & b ) : _a ( a ) , _b ( b ) {}
 
-    //! set argument of operator
-    template <class ArgType, class DestType>
-    void setArguments(const ArgType & arg, DestType &dest)
-    {
-      _a.setArguments(arg,dest);
-      _b.setArguments(arg,dest);
-    }
-
-    //! remove arguments  set by setArguments method
-    void removeArguments()
-    {
-      _a.removeArguments();
-      _b.removeArguments();
-    }
-
     //*******************************************************
     /*! the parameters of prepareGlobal and finalizeGlobal are set outside
         via a setParameter method or something
      */
     //! prepareGlobal is called before the grid walktrough
-    void prepareGlobal();
+    template <class FirstParamType, class SecondParamType>
+    void prepareGlobal(const FirstParamType &pa, SecondParamType &pb);
 
     //! finalizeGlobal is called after the grid walktrough
     void finalizeGlobal();
@@ -198,12 +199,6 @@ namespace Dune
         entities. For example one might give no parameters to prepareLocal or
         father and son element, depends on grid walktrough outside
      */
-    // no entity
-    void prepareLocal ();
-
-    //! finalizeLocal is called after applyLocal is called
-    //! see prepareLocal
-    void finalizeLocal();
 
     // one entity
     template<class EntityType>
@@ -226,8 +221,6 @@ namespace Dune
         which means that also operators which dont need a grid walktrough can
         be combined.
      */
-    // things to do
-    void applyLocal ();
 
     // things to do on one entity
     template<class EntityType>
@@ -254,10 +247,14 @@ namespace Dune
   //
   //********************************************************************
   template <class A, class B >
-  inline void CombinedLocalOperator<A,B>::prepareGlobal()
+  template <class FirstParamType, class SecondParamType>
+  inline void CombinedLocalOperator<A,B>::
+  prepareGlobal(const FirstParamType &pa, SecondParamType &pb)
   {
-    _b.prepareGlobal();
-    _a.prepareGlobal();
+    _a.scaleIt(1.0);
+    _b.scaleIt(1.0);
+    _b.prepareGlobal(pa,pb);
+    _a.prepareGlobal(pa,pb);
   }
 
   template <class A, class B >
@@ -267,19 +264,6 @@ namespace Dune
     _a.finalizeGlobal();
   }
 
-  template <class A, class B >
-  inline void CombinedLocalOperator<A,B>::prepareLocal()
-  {
-    _b.prepareLocal();
-    _a.prepareLocal();
-  }
-
-  template <class A, class B >
-  inline void CombinedLocalOperator<A,B>::finalizeLocal()
-  {
-    _b.finalizeLocal();
-    _a.finalizeLocal();
-  }
 
   template <class A, class B >
   template <class EntityType>
@@ -295,13 +279,6 @@ namespace Dune
   {
     _b.finalizeLocal(en);
     _a.finalizeLocal(en);
-  }
-
-  template <class A, class B >
-  inline void CombinedLocalOperator<A,B>::applyLocal()
-  {
-    _b.applyLocal();
-    _a.applyLocal();
   }
 
   template <class A, class B >
@@ -347,39 +324,24 @@ namespace Dune
   //! which is a LocalOperator multipied by a scalar
   //
   //********************************************************************
-  template <class A,class RangeFieldType>
+  template <class A,class ScalarType>
   class ScaledLocalOperator
   {
   public:
     //! Constructor for combinations with factors
-    ScaledLocalOperator ( A & a , const RangeFieldType scalar) : _a ( a ) , scalar_ (scalar) {}
+    ScaledLocalOperator ( A & a , const ScalarType scalar)
+      : _a ( a ) , scalar_ (scalar), tmpScalar_ (scalar) {}
 
-    void scaleIt ( const RangeFieldType & scalar)
-    {
-      _a.scaleIt( scalar * scalar_ );
-    }
-
-    //! set argument of operator
-    template <class ArgType, class DestType>
-    void setArguments(const ArgType & arg, DestType &dest)
-    {
-      _a.scaleIt(scalar_);
-      _a.setArguments(arg,dest);
-    }
-
-    //! remove arguments  set by setArguments method
-    void removeArguments()
-    {
-      _a.removeArguments();
-      _a.scaleIt(1.0);
-    }
+    // scale this operator from outside
+    void scaleIt ( const ScalarType & scalar);
 
     //*******************************************************
     /*! the parameters of prepareGlobal and finalizeGlobal are set outside
         via a setParameter method or something
      */
     //! prepareGlobal is called before the grid walktrough
-    void prepareGlobal();
+    template <class FirstParamType, class SecondParamType>
+    void prepareGlobal(const FirstParamType &pa, SecondParamType &pb);
 
     //! finalizeGlobal is called after the grid walktrough
     void finalizeGlobal();
@@ -390,13 +352,6 @@ namespace Dune
         entities. For example one might give no parameters to prepareLocal or
         father and son element, depends on grid walktrough outside
      */
-    // no entity
-    void prepareLocal ();
-
-    //! finalizeLocal is called after applyLocal is called
-    //! see prepareLocal
-    void finalizeLocal();
-
     // one entity
     template<class EntityType>
     void prepareLocal (EntityType & en);
@@ -418,9 +373,6 @@ namespace Dune
         which means that also operators which dont need a grid walktrough can
         be combined.
      */
-    // things to do
-    void applyLocal ();
-
     // things to do on one entity
     template<class EntityType>
     void applyLocal(EntityType & en);
@@ -433,84 +385,80 @@ namespace Dune
     A & _a;
 
     //! scale factor for operator _a
-    const RangeFieldType scalar_;
+    const ScalarType scalar_;
+    ScalarType tmpScalar_;
 
   }; // end class ScaledLocalOperator
 
   //****************************************************
   //  Implementation
   //****************************************************
-  template <class A, class B >
-  inline void ScaledLocalOperator<A,B>::prepareGlobal()
+  template <class A, class ScalarType>
+  inline void ScaledLocalOperator<A,ScalarType>::
+  scaleIt ( const ScalarType & scalar )
   {
-    _a.prepareGlobal();
+    //scalar_ *= scalar;
+    //_a.scaleIt( scalar * scalar_ );
+    std::cout << "scaleIt with tmpS = " << tmpScalar_ << "\n";
+    tmpScalar_ = scalar_ * scalar;
   }
 
-  template <class A, class B >
-  inline void ScaledLocalOperator<A,B>::finalizeGlobal()
+  template <class A, class ScalarType>
+  template <class FirstParamType, class SecondParamType>
+  inline void ScaledLocalOperator<A,ScalarType>::
+  prepareGlobal(const FirstParamType &pa, SecondParamType &pb)
+  {
+    std::cout << "prepareGlobal with tmpS = " << tmpScalar_ << "\n";
+    _a.scaleIt(tmpScalar_);
+    _a.prepareGlobal(pa,pb);
+  }
+
+  template <class A, class ScalarType>
+  inline void ScaledLocalOperator<A,ScalarType>::finalizeGlobal()
   {
     _a.finalizeGlobal();
   }
 
-  template <class A, class B >
-  inline void ScaledLocalOperator<A,B>::prepareLocal()
-  {
-    _a.prepareLocal();
-  }
-
-  template <class A, class B >
-  inline void ScaledLocalOperator<A,B>::finalizeLocal()
-  {
-    _a.finalizeLocal();
-  }
-
-  template <class A, class B >
+  template <class A, class ScalarType>
   template <class EntityType>
-  inline void ScaledLocalOperator<A,B>::prepareLocal(EntityType &en)
+  inline void ScaledLocalOperator<A,ScalarType>::prepareLocal(EntityType &en)
   {
     _a.prepareLocal(en);
   }
 
-  template <class A, class B >
+  template <class A, class ScalarType>
   template <class EntityType>
-  inline void ScaledLocalOperator<A,B>::finalizeLocal(EntityType &en)
-  {
-    _a.finalizeLocal(en);
-  }
-
-  template <class A, class B >
-  inline void ScaledLocalOperator<A,B>::applyLocal()
-  {
-    _a.applyLocal();
-  }
-
-  template <class A, class B >
-  template <class EntityType>
-  inline void ScaledLocalOperator<A,B>::applyLocal(EntityType &en)
-  {
-    _a.applyLocal(en);
-  }
-
-
-  template <class A, class B >
-  template <class EntityType>
-  inline void ScaledLocalOperator<A,B>::prepareLocal(EntityType &en1, EntityType & en2)
+  inline void ScaledLocalOperator<A,ScalarType>::prepareLocal(EntityType &en1, EntityType & en2)
   {
     _a.prepareLocal(en1,en2);
   }
 
-  template <class A, class B >
+  template <class A, class ScalarType>
   template <class EntityType>
-  inline void ScaledLocalOperator<A,B>::applyLocal(EntityType &en1, EntityType &en2 )
+  inline void ScaledLocalOperator<A,ScalarType>::finalizeLocal(EntityType &en)
   {
-    _a.applyLocal(en1,en2);
+    _a.finalizeLocal(en);
   }
 
-  template <class A, class B >
+  template <class A, class ScalarType>
   template <class EntityType>
-  inline void ScaledLocalOperator<A,B>::finalizeLocal(EntityType &en1, EntityType & en2)
+  inline void ScaledLocalOperator<A,ScalarType>::finalizeLocal(EntityType &en1, EntityType & en2)
   {
     _a.finalizeLocal(en1,en2);
+  }
+
+  template <class A, class ScalarType>
+  template <class EntityType>
+  inline void ScaledLocalOperator<A,ScalarType>::applyLocal(EntityType &en)
+  {
+    _a.applyLocal(en);
+  }
+
+  template <class A, class ScalarType>
+  template <class EntityType>
+  inline void ScaledLocalOperator<A,ScalarType>::applyLocal(EntityType &en1, EntityType &en2 )
+  {
+    _a.applyLocal(en1,en2);
   }
 
 
