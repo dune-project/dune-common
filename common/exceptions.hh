@@ -167,6 +167,15 @@ namespace Dune {
    */
   class RangeError : public Exception {};
 
+  /*! default exception for dummy implementations
+
+     This exception can be used for functions/methods
+
+     - that have to be implemented but should never be called
+     - that are missing
+   */
+  class NotImplemented : public Exception {};
+
   /*! default exception class for OS errors
 
      This class is thrown when a system-call is used and returns an
