@@ -34,43 +34,53 @@ namespace Dune
       \ingroup GridCommon
 
      This is the implementation of the grid interface
-     using the UG grid management system.
+     using the UG grid management system.  UG provides conforming grids
+     in two and three space dimensions.  The grids can be mixed, i.e.
+     2d grids can contain triangles and quadrilaterals and 3d grid can
+     contain tetrahedra and hexahedra and also pyramids and prisms.
+     The grid refinement rules are very flexible.  Local adaptive red/green
+     refinement is the default, but a special method in the UGGrid class
+     allows you to directly access a number of anisotropic refinements rules.
+     Last but not least, the UG grid manager is completely parallelized.
 
-     To use this module you need UG (the tool from second floor -
-     http://cox.iwr.uni-heidelberg.de/~ug).
+     To use this module you need UG.  You can obtain it here:
+     http://cox.iwr.uni-heidelberg.de/~ug
 
-     For the compilation of UG keep the following in mind!
-     In your shell you need set the following variables:
-
+     UG is built using the standard GNU autotools.  After unpacking
+     the tarball, please type
      \verbatim
-      export UGROOT=some_path/UG/ug
-      export PATH=$PATH:$UGROOT/bin
+      ./configure --prefix=my_ug_install_dir CC=g++-3.4
      \endverbatim
+     Note that you need to force the build system to compile UG
+     as C++, which is a non-default behaviour.  Also, make sure
+     that you're compiling it with a compiler that's binary compatible
+     to the one you use for DUNE.
 
-     In the dir $UGROOT (the path above) you find a file named 'ug.conf'.
-     There you have to choose for dimension 2 or 3 and furthermore set the
-     variable 'IF' to 'S' (default is 'X').
-
-     Then in the file $UGROOT/arch/PC/mk.arch add '-xc++' to the ARCH_CFLAGS
-     variable.
-
-     Now your ready to compile UG. Type
-
+     After that it's simply
      \verbatim
-     cd $UGROOT
-     ugmake links
-     make
+      make
+      make install
      \endverbatim
+     and you're done.
 
-     After compiling UG you must tell %Dune where to find UG, which
-     dimension to use and which dimension your world should have:
+     After compiling UG you must tell %Dune where to find UG, and which
+     grid dimension to use:
      \verbatim
      ./autogen.sh [OPTIONS] --with-ug=PATH_TO_UG --with-problem-dim=DIM --with-world-dim=DIMWORLD
      \endverbatim
 
-     Now you must use the UGGrid with DIM and DIMWORLD, otherwise
-     unpredictable results may occur.
+     As UG only supports 2d-grids in a 2d-world and 3d-grids in a 3d-world,
+     whatever you choose for DIM and DIMWORLD in the line above must be equal
+     and either 2 or 3.  If you're wondering why there are two arguments
+     even though they have to be the same, you have to ask Thimo about that.
 
+     In your DUNE application, you can only instantiate UGGrid<2,2> or
+     UGGrid<3,3>, depending on what you chose above.
+
+     Please send any questions, suggestions, or bug reports to
+     \verbatim
+      sander at math dot fu-berlin dot de
+     \endverbatim
 
      @{
    */
