@@ -105,20 +105,6 @@ namespace Dune {
   }
 
   //! print one row of a matrix
-  template<class K, int n, int m>
-  void print_row (std::ostream& s, FieldMatrix<K,n,m>& A, int I, int J, int therow, int width, int precision)
-  {
-    for (int i=0; i<n; i++)
-      if (I+i==therow)
-        for (int j=0; j<m; j++)
-        {
-          s << " ";                         // space in front of each entry
-          s.width(width);                   // set width for each entry anew
-          s << A[i][j];                     // yeah, the number !
-        }
-  }
-
-  //! print one row of a matrix
   template<class M>
   void print_row (std::ostream& s, M& A, int I, int J, int therow, int width, int precision)
   {
@@ -146,6 +132,32 @@ namespace Dune {
       }
       // advance rows
       i0 += A.rowdim(i);
+    }
+  }
+
+  //! print one row of a matrix, specialization for FieldMatrix
+  template<class K, int n, int m>
+  void print_row (std::ostream& s, FieldMatrix<K,n,m>& A, int I, int J, int therow, int width, int precision)
+  {
+    for (int i=0; i<n; i++)
+      if (I+i==therow)
+        for (int j=0; j<m; j++)
+        {
+          s << " ";                         // space in front of each entry
+          s.width(width);                   // set width for each entry anew
+          s << A[i][j];                     // yeah, the number !
+        }
+  }
+
+  //! print one row of a matrix, specialization for K11Matrix
+  template<class K>
+  void print_row (std::ostream& s, K11Matrix<K>& A, int I, int J, int therow, int width, int precision)
+  {
+    if (I==therow)
+    {
+      s << " ";                   // space in front of each entry
+      s.width(width);             // set width for each entry anew
+      s << A();                   // yeah, the number !
     }
   }
 
