@@ -72,7 +72,13 @@ namespace Dune {
   };
 
 
-
+  //***********************************************************************
+  //!
+  //! Note: The sum over all weigths for the quadrature is the volume of the
+  //! reference element, for example the sum over three quadrature point for
+  //! a triangle is 0.5 which is the volume on reference triangle
+  //!
+  //***********************************************************************
   template <class Domain, class RangeField, ElementType ElType, int polOrd>
   struct QuadraturePoints
   {
