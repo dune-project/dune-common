@@ -1,6 +1,39 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 template <int dim, int dimworld>
+OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, double rightBoundary)
+{
+  // Init grid hierarchy
+  vertices.resize(1);
+  elements.resize(1);
+
+  // Init vertex set
+  for (int i=0; i<numElements+1; i++) {
+    double newCoord = leftBoundary + i*(rightBoundary-leftBoundary) / numElements;
+
+    OneDGridEntity<1,1,1>* newVertex = new OneDGridEntity<1,1,1>(0, newCoord);
+    newVertex->index_ = i;
+
+    vertices[0].insert_after(vertices[0].rbegin, newVertex);
+  }
+
+  // Init element set
+  OneDGridEntity<1,1,1>* it = vertices[0].begin;
+  for (int i=0; i<numElements; i++) {
+
+    OneDGridEntity<0,1,1>* newElement = new OneDGridEntity<0,1,1>(0);
+    newElement->geo_.vertex[0] = it;
+    it = it->succ_;
+    newElement->geo_.vertex[1] = it;
+    newElement->index_ = i;
+
+    elements[0].insert_after(elements[0].rbegin, newElement);
+
+  }
+
+}
+
+template <int dim, int dimworld>
 OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
 {
   // Init grid hierarchy

@@ -198,8 +198,11 @@ namespace Dune {
      * \todo Replace this by a true leaf iterator */
     typedef OneDGridLevelIterator<0,dim,dimworld, All_Partition> LeafIterator;
 
-
+    /** \brief Constructor with an explicit set of coordinates */
     OneDGrid(const SimpleVector<OneDCType>& coords);
+
+    /** \brief Constructor for a uniform grid */
+    OneDGrid(int numElements, double leftBoundary, double rightBoundary);
 
     OneDGrid();
 
