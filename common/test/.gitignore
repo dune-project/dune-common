@@ -9,6 +9,7 @@ arraylisttest
 smartpointertest
 iteratorfacadetest
 sllisttest
+tuplestest
 settest
 *.gcda
 *.gcno
