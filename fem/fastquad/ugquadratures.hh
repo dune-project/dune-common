@@ -48,9 +48,10 @@ namespace Dune {
     /*                                                                          */
     /****************************************************************************/
 
-    QUADRATURE *GetQuadrature(INT dim, INT n, INT order);
-    QUADRATURE *GetQuadratureRule(INT dim, INT n, INT order);
-    QUADRATURE *GetSymmetricQuadratureRule(INT dim, INT n, INT order);
+    inline QUADRATURE *GetQuadrature(INT dim, INT n, INT order);
+    inline QUADRATURE *GetQuadratureRule(INT dim, INT n, INT order);
+    inline QUADRATURE *GetSymmetricQuadratureRule(INT dim, INT n, INT order);
+    inline
     INT GaussPoints(INT dim, INT n, INT order, DOUBLE_VECTOR *x, GAUSS_POINT *gp);
 
 #include "ugquadratures.cc"
