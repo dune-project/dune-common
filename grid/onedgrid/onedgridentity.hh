@@ -5,7 +5,7 @@
 
 #include <dune/common/fixedarray.hh>
 
-#include "onedgridelement.hh"
+#include "onedgridgeometry.hh"
 
 /** \file
  * \brief The OneDGridEntity class and its specializations
