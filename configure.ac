@@ -38,6 +38,11 @@ AC_CONFIG_FILES([Makefile
 		 istl/tutorial/Makefile
                  lib/Makefile
                  operator/Makefile
+	         quadrature/Makefile
+	         quadrature/common/Makefile
+	         quadrature/barycenter/Makefile
+	         quadrature/gaussquadrature/Makefile
+	         quadrature/fixedorder/Makefile
                  solver/Makefile
                  solver/common/Makefile
                  solver/pmgsolver/Makefile

@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = common barycenter dunequad gaussquadrature
+SUBDIRS = common barycenter fixedorder gaussquadrature
 
 quadratureincludedir = $(includedir)/dune/quadrature
-quadratureinclude_HEADERS = dunequad.hh gaussquadrature.hh barycenter.hh
+quadratureinclude_HEADERS = barycenter.hh fixedorder.hh gaussquadrature.hh

@@ -4,7 +4,7 @@
 #define __DUNE_L2NORM_HH__
 
 #include <dune/fem/norms/norm.hh>
-#include <dune/quadrature/dunequad.hh>
+#include <dune/quadrature/fixedorder.hh>
 
 namespace Dune {
 

@@ -8,8 +8,8 @@
 #include "common/quadrature.hh"
 
 // the specialisations
-#include "dunequad/quadlqh.hh"
-#include "dunequad/quadtetratri.hh"
+#include "fixedorder/quadlqh.hh"
+#include "fixedorder/quadtetratri.hh"
 
 namespace Dune {
 

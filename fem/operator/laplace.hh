@@ -6,7 +6,7 @@
 #include <dune/fem/feoperator.hh>
 #include <dune/fem/feop/spmatrix.hh>
 
-#include <dune/quadrature/dunequad.hh>
+#include <dune/quadrature/fixedorder.hh>
 
 namespace Dune
 {
