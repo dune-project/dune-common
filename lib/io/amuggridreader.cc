@@ -421,16 +421,15 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::read(Dune::UGGrid<3,3>& g
     /* get subdomain of element */
     int id = material_ids[i];
 
-    /** \todo These macros need to go, of course */
 #define ControlWord(p,ce) (((unsigned int *)(p))[UG3d::control_entries[ce].offset_in_object])
-
-#define         CW_WRITE(p, ce, n)   ControlWord(p,ce) = (ControlWord(p,ce)&UG3d::control_entries[ce].xor_mask)|(((n)<<UG3d::control_entries[ce].offset_in_word)&UG3d::control_entries[ce].mask)
-
+#define CW_WRITE(p, ce, n)   ControlWord(p,ce) = (ControlWord(p,ce)&UG3d::control_entries[ce].xor_mask)|(((n)<<UG3d::control_entries[ce].offset_in_word)&UG3d::control_entries[ce].mask)
 #define SETSUBDOMAIN(p,n) CW_WRITE(p,UG3d::SUBDOMAIN_CE,n)
 
     SETSUBDOMAIN(theElement, id+1);
 
-    //printf("element: %d,  id: %d\n", i, id+1);
+#undef ControlWord
+#undef CW_WRITE
+#undef SETSUBDOMAIN
 
     i++;
   }
@@ -451,13 +450,10 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::read(Dune::UGGrid<3,3>& g
   /** \todo Check whether this release is necessary */
   /* here all temp memory since CreateMultiGrid is released */
   //UG3d::ReleaseTmpMem(MGHEAP(theMG),MG_MARK_KEY(theMG));
-  //#define FROM_TOP   1
 #define ReleaseTmpMem(p,k) Release(p, UG3d::FROM_TOP,k)
   ReleaseTmpMem(theMG->theHeap, theMG->MarkKey);
 #undef ReleaseTmpMem
   theMG->MarkKey = 0;
-
-  UG3d::UserWriteF("Coarse grid fixed. Do not call fixcoarsegrid.\n");
 
 
   return;
