@@ -189,6 +189,14 @@ h4 {
   text-align: left;
 }
 
+a.anchor,
+a.anchor:hover,
+a.anchor:active
+{ 
+  background-color: white;
+  color: black;
+}
+
 hr { 
   border: 0px;
   background-color: #5974b5;
