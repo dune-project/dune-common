@@ -120,20 +120,20 @@ namespace Dune
         baseSet.jacobian(i,quad,pt,grad);
 
         // multiply with transpose of jacobian inverse
-        grad(0) = inv.mult_t (grad(0));
+        grad[0] = inv.mult_t (grad[0]);
 
         if( i != j )
         {
           baseSet.jacobian(j,quad,pt,othGrad);
 
           // multiply with transpose of jacobian inverse
-          othGrad(0) = inv.mult_t(othGrad(0));
+          othGrad[0] = inv.mult_t(othGrad[0]);
 
-          val += ( grad(0) * othGrad(0) ) * quad.weight( pt );
+          val += ( grad[0] * othGrad[0] ) * quad.weight( pt );
         }
         else
         {
-          val += ( grad(0) * grad(0) ) * quad.weight( pt );
+          val += ( grad[0] * grad[0] ) * quad.weight( pt );
         }
       }
       val *= vol;
@@ -166,7 +166,7 @@ namespace Dune
           baseSet.jacobian(i,quad,pt,mygrad[i]);
 
           // multiply with transpose of jacobian inverse
-          mygrad[i](0) = inv.mult_t (mygrad[i](0));
+          mygrad[i][0] = inv.mult_t (mygrad[i][0]);
         }
 
         typename FunctionSpaceType::Range ret;
