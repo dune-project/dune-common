@@ -17,7 +17,11 @@ namespace Dune {
      @{
    */
 
-  // Note: Range has to have Vector structure as well.
+  /** ???
+      \todo Please doc me!
+
+      Note: Range has to have Vector structure as well.
+   */
   template<typename DFieldType,typename RFieldType, class DType, class RType>
   class Mapping : public Vector < RFieldType >
   {
