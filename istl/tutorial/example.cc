@@ -92,8 +92,28 @@ void test_basearray ()
   c.move(2,5);
 }
 
+template<class V>
+void f (V& v)
+{
+  typedef typename V::Iterator iterator;
+  for (iterator i=v.begin(); i!=v.end(); ++i)
+    *i = i.index();
+
+  typedef typename V::ConstIterator const_iterator;
+  for (const_iterator i=v.begin(); i!=v.end(); ++i)
+    std::cout << (*i).two_norm() << std::endl;
+}
+
 void test_BlockVector ()
 {
+  Dune::BlockVector<Dune::FieldVector<std::complex<double>,2> > v(20);
+
+  v[1] = 3.14;
+  v[3][0] = 2.56;
+  v[3][1] = std::complex<double>(1,-1);
+
+  f(v);
+
   typedef Dune::FieldVector<double,1> R1;
 
   const int n=480;
@@ -323,9 +343,8 @@ void test_Iter ()
 {
   // block types
   Timer t;
-  const int BlockSize=1;
-  typedef Dune::FieldVector<double,BlockSize> VB;
-  typedef Dune::FieldMatrix<double,BlockSize,BlockSize> MB;
+  typedef Dune::K1Vector<double> VB;
+  typedef Dune::K11Matrix<double> MB;
 
   // a fake discretization
   t.start();
@@ -364,9 +383,9 @@ void test_Iter ()
   Dune::BlockVector<VB> v(x); // memory for update
   v = 1.23E-4;
   double w=1.0;               // damping factor
-  for (int k=1; k<=50; k++)
+  for (int k=1; k<=10; k++)
   {
-    bgs_update(A,v,d);        // compute update
+    bgs_update_lowlevel(A,v,d);        // compute update
     x.axpy(w,v);               // update solution
     A.usmv(-w,v,d);            // update defect
     std::cout << k << " " << d.two_norm() << std::endl;
@@ -375,20 +394,6 @@ void test_Iter ()
   std::cout << "time for solve=" << t.gettime() << " seconds." << std::endl;
   return;
 
-  // printvector(std::cout,x,"solution","entry",1,10,2);
-
-  // a simple iteration
-  x = 0;           // initial guess
-  d=b; A.mmv(x,d);
-  std::cout.setf(std::ios_base::scientific, std::ios_base::floatfield);
-  std::cout.precision(8);
-  std::cout << 0 << " " << d.two_norm() << std::endl;
-  for (int k=1; k<=50; k++)
-  {
-    bsor(A,x,b,1.0);
-    d=b; A.mmv(x,d);
-    std::cout << k << " " << d.two_norm() << std::endl;
-  }
   // printvector(std::cout,x,"solution","entry",1,10,2);
 }
 
@@ -400,7 +405,7 @@ int main (int argc , char ** argv)
     //  test_VariableBlockVector();
     //  test_FieldMatrix();
     //  test_BCRSMatrix();
-    //	test_IO();
+    //  test_IO();
     test_Iter();
   }
   catch (Dune::ISTLError& error)
