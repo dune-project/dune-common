@@ -29,7 +29,7 @@ namespace Dune {
       return asImp().getLocalMatrixEntry( entity, i, j );
     }
 
-    template <class EntityType, class MatrixType>
+    template <class EntityType>
     void getLocalMatrix( EntityType &entity, const int matSize, MatrixType& mat) const {
       return asImp().getLocalMatrix( entity, matSize, mat);
     }
