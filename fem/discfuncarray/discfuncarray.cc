@@ -418,7 +418,7 @@ namespace Dune
   LocalFunctionArray( const DiscreteFunctionSpaceType &f ,
                       Array < RangeFieldType > & dofVec )
     : fSpace_ ( f ), dofVec_ ( dofVec )  , next_ (0)
-      , uniform_(true) {}
+      , uniform_(true), init_(false) {}
 
   template<class DiscreteFunctionSpaceType >
   inline LocalFunctionArray < DiscreteFunctionSpaceType >::~LocalFunctionArray()
@@ -520,7 +520,7 @@ namespace Dune
   inline bool LocalFunctionArray < DiscreteFunctionSpaceType >::
   init (EntityType &en ) const
   {
-    if(!uniform_)
+    if(!uniform_ || !init_)
     {
       numOfDof_ =
         fSpace_.getBaseFunctionSet(en).getNumberOfBaseFunctions();
@@ -529,6 +529,8 @@ namespace Dune
 
       if(numOfDof_ > values_.size())
         values_.resize( numOfDof_ );
+
+      init_ = true;
     }
 
     for(int i=0; i<numOfDof_; i++)

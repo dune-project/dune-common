@@ -266,6 +266,9 @@ namespace Dune {
 
     //! do we have the same base function set for all elements
     bool uniform_;
+
+    //! is it initialised?
+    mutable bool init_;
   }; // end LocalFunctionAdapt
 
 
