@@ -5,7 +5,6 @@
 #define DUNE_COMMON_POOLALLOCATOR_HH
 
 #include <dune/common/alignment.hh>
-#include <iostream>
 
 namespace Dune
 {
@@ -88,7 +87,7 @@ namespace Dune
        * @brief Adress the first properly aligned
        * position in the chunk.
        */
-      unsigned long memory_;
+      char* memory_;
 
       /** @brief The next element */
       Chunk *next_;
@@ -98,10 +97,11 @@ namespace Dune
        */
       Chunk()
       {
-        memory_ = reinterpret_cast<unsigned long>(chunk_);
-        if(memory_ % AlignmentOf<MemberType>::value != 0)
-          memory_ = (memory_ / AlignmentOf<MemberType>::value + 1)
-                    /AlignmentOf<MemberType>::value;
+        unsigned long lmemory = reinterpret_cast<unsigned long>(chunk_);
+        if(lmemory % AlignmentOf<MemberType>::value != 0)
+          lmemory = (lmemory / AlignmentOf<MemberType>::value + 1)
+                    * AlignmentOf<MemberType>::value;
+        memory_ = reinterpret_cast<char *>(lmemory);
       }
     };
 
@@ -258,8 +258,6 @@ namespace Dune
   {
     head_ = 0;
     chunks_ = 0;
-    std::cout<<"sizeof="<<sizeof(T)<<" alignment="<<AlignmentOf<T>::value
-             <<" chunkSize="<<chunkSize<<" elements="<<elements<<std::endl;
   }
 
   template<class T, int S>
@@ -283,11 +281,11 @@ namespace Dune
     chunks_ = newChunk;
 
     char* start = reinterpret_cast<char *>(chunks_->memory_);
-    char* last  = &start[elements-1];
+    char* last  = &start[elements*alignedSize];
 
-    for(char* element=start; element<last; element+=AlignmentOf<T>::value)
+    for(char* element=start; element<last; element+=alignedSize)
       reinterpret_cast<Reference*>(element)->next_
-        = reinterpret_cast<Reference*>(element+AlignmentOf<T>::value);
+        = reinterpret_cast<Reference*>(element+alignedSize);
 
     reinterpret_cast<Reference*>(last)->next_=0;
 
@@ -323,7 +321,6 @@ namespace Dune
   template<class T, int s>
   inline T* PoolAllocator<T,s>::allocate(std::size_t n, const T* hint=0)
   {
-    std::cout<<n<<" "<<Pool<T,s>::elements<<std::endl;
     assert(n<=(Pool<T,s>::elements));
     return static_cast<T*>(memoryPool_.allocate());
   }
