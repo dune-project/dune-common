@@ -31,9 +31,6 @@ namespace Albert
 #error "EL_INDEX must be defined by compiler flag '-DEL_INDEX=1' \n"
 #endif
 
-  //#define DIM MYDIM
-  //#define DIM_OF_WORLD MYDOW
-
 #ifndef __ALBERTNAME__
   extern "C"
   {
@@ -139,14 +136,14 @@ namespace Albert
 
       //! maps a local coordinate within reference element to
       //! global coordinate in element
-      Vec<dimworld,albertCtype>& global (Vec<dim,albertCtype> local);
+      Vec<dimworld,albertCtype>& global (const Vec<dim,albertCtype>& local);
 
       //! maps a global coordinate within the element to a
       //! local coordinate in its reference element
-      Vec<dim,albertCtype>& local (Vec<dimworld,albertCtype> global);
+      Vec<dim,albertCtype>& local (const Vec<dimworld,albertCtype>& global);
 
       template <int dimbary>
-      Vec<dimbary,albertCtype>& localB (Vec<dimworld,albertCtype> global)
+      Vec<dimbary,albertCtype>& localB (const Vec<dimworld,albertCtype>& global)
       {
         localBary_ = localBary(global);
         return localBary_;
@@ -208,11 +205,11 @@ namespace Albert
       void builtJacobianInverse (const Vec<dim,albertCtype>& local);
 
       //! maps a barycentric coordinate within element to global coordinate in element
-      Vec<dimworld,albertCtype> globalBary (Vec<dim+1,albertCtype> local);
+      Vec<dimworld,albertCtype> globalBary (const Vec<dim+1,albertCtype>& local);
 
       //! maps a global coordinate within the elements local barycentric
       //! koordinates
-      Vec<dim+1,albertCtype> localBary (Vec<dimworld,albertCtype> global);
+      Vec<dim+1,albertCtype> localBary (const Vec<dimworld,albertCtype>& global);
 
       // template method for map the vertices of EL_INFO to the actual
       // coords with face_,edge_ and vertex_ , needes for operator []
