@@ -59,7 +59,7 @@ DefaultDSMM::DefaultDSMM (unsigned long n_par, int align_par)
 
   if (p==NULL)
   {
-    cout << "Could not allocate " << n << "bytes\n";
+    std::cout << "Could not allocate " << n << "bytes\n";
     status = 1;             // error !
     return;
   }
@@ -81,7 +81,7 @@ DefaultDSMM::DefaultDSMM (unsigned long n_par, int align_par)
   mark_stack_hi[mark_ptr_hi] = n;
 
 #ifdef _Debug_
-  cout << "DefaultDSMM: created size: " << n << "\n";
+  std::cout << "DefaultDSMM: created size: " << n << "\n";
 #endif
 
   return;
@@ -111,7 +111,7 @@ void *DefaultDSMM::MallocLo (unsigned long n)
     adr = base+mark_stack_lo[mark_ptr_lo];
     mark_stack_lo[mark_ptr_lo] += n;
 #ifdef _Debug_
-    cout << "MallocLo: allocated: " << n << " free: " <<
+    std::cout << "MallocLo: allocated: " << n << " free: " <<
     mark_stack_hi[mark_ptr_hi]-mark_stack_lo[mark_ptr_lo] << " pos " << mark_ptr_lo << "\n";
 #endif
     return (void *) adr;
@@ -119,7 +119,7 @@ void *DefaultDSMM::MallocLo (unsigned long n)
   else
   {
     status = 1;
-    cout << "MallocLo: could not allocate " << n << " bytes\n";
+    std::cout << "MallocLo: could not allocate " << n << " bytes\n";
     return NULL;
   }
 }
@@ -137,14 +137,14 @@ void *DefaultDSMM::MallocHi (unsigned long n)
     mark_stack_hi[mark_ptr_hi] -= n;
     adr = base+mark_stack_hi[mark_ptr_hi];
 #ifdef _Debug_
-    cout << "MallocHi: allocated: " << n << " free: " << (mark_stack_hi[mark_ptr_hi]-mark_stack_lo[mark_ptr_lo]) << " pos " << mark_ptr_hi << "\n";
+    std::cout << "MallocHi: allocated: " << n << " free: " << (mark_stack_hi[mark_ptr_hi]-mark_stack_lo[mark_ptr_lo]) << " pos " << mark_ptr_hi << "\n";
 #endif
     return (void *) adr;
   }
   else
   {
     status = 1;
-    cout << "MallocHi: could not allocate " << n << " bytes\n";
+    std::cout << "MallocHi: could not allocate " << n << " bytes\n";
     abort();
     return NULL;
   }
@@ -157,7 +157,7 @@ int DefaultDSMM::MarkLo (int *key)
     mark_ptr_lo++;
     mark_stack_lo[mark_ptr_lo] = mark_stack_lo[mark_ptr_lo-1];
 #ifdef _Debug_
-    cout << "MarkLo: free: " <<
+    std::cout << "MarkLo: free: " <<
     mark_stack_hi[mark_ptr_hi]-mark_stack_lo[mark_ptr_lo] << " pos: " << mark_ptr_lo << "\n";
 #endif
     *key = mark_ptr_lo;
@@ -177,7 +177,7 @@ int DefaultDSMM::MarkHi (int *key)
     mark_ptr_hi++;
     mark_stack_hi[mark_ptr_hi] = mark_stack_hi[mark_ptr_hi-1];
 #ifdef _Debug_
-    cout << "MarkHi: free: " <<
+    std::cout << "MarkHi: free: " <<
     mark_stack_hi[mark_ptr_hi]-mark_stack_lo[mark_ptr_lo] << " pos: " << mark_ptr_hi << "\n";
 #endif
     *key = mark_ptr_hi;
@@ -195,7 +195,7 @@ int DefaultDSMM::ReleaseLo (int key)
   /* check key: key and stack ptr must coincide */
   if (mark_ptr_lo != key)
   {
-    cout << "ReleaseLo: key mismatch\n";
+    std::cout << "ReleaseLo: key mismatch\n";
     status = 1;
   }
 
@@ -203,7 +203,7 @@ int DefaultDSMM::ReleaseLo (int key)
   {
     mark_ptr_lo--;
 #ifdef _Debug_
-    cout << "ReleaseLo: free: " <<
+    std::cout << "ReleaseLo: free: " <<
     mark_stack_hi[mark_ptr_hi]-mark_stack_lo[mark_ptr_lo] << " pos: " << mark_ptr_lo << "\n";
 #endif
   }
@@ -216,7 +216,7 @@ int DefaultDSMM::ReleaseHi (int key)
   /* check key: key and stack ptr must coincide */
   if (mark_ptr_hi != key)
   {
-    cout << "ReleaseHi: key mismatch\n";
+    std::cout << "ReleaseHi: key mismatch\n";
     status = 1;
   }
 
@@ -224,7 +224,7 @@ int DefaultDSMM::ReleaseHi (int key)
   {
     mark_ptr_hi--;
 #ifdef _Debug_
-    cout << "ReleaseHi: free: "<<
+    std::cout << "ReleaseHi: free: "<<
     mark_stack_hi[mark_ptr_hi]-mark_stack_lo[mark_ptr_lo] << " pos: " << mark_ptr_hi << "\n";
 #endif
   }
@@ -246,7 +246,7 @@ void *DefaultGHMM::Malloc (unsigned long n)
 {
   void *p;
   p =  malloc((size_t) n);
-  if (p==NULL) cout << "Malloc: could not allocate " << n << " bytes\n";
+  if (p==NULL) std::cout << "Malloc: could not allocate " << n << " bytes\n";
   return p;
 }
 

@@ -62,7 +62,6 @@ namespace Albert
   namespace Dune
   {
 
-
     typedef ALBERT REAL albertCtype;
 
     // Class to mark the Vertices on the leaf level
@@ -100,11 +99,36 @@ namespace Albert
     {
       enum { dofs = dim+1 };
       enum { dimension = dim };
-      enum { type = dim+1 };
+      enum { type = unknown };
 
       static AlbertGridElement<dim,dim> refelem;
       static ALBERT EL_INFO elInfo_;
     };
+
+    // singleton holding reference elements
+    template<>
+    struct AlbertGridReferenceElement<2>
+    {
+      enum { dimension = 2 };
+      enum { dofs = dimension+1 };
+      enum { type = triangle };
+
+      static AlbertGridElement<dimension,dimension> refelem;
+      static ALBERT EL_INFO elInfo_;
+    };
+
+    // singleton holding reference elements
+    template<>
+    struct AlbertGridReferenceElement<3>
+    {
+      enum { dimension = 3 };
+      enum { dofs = dimension+1 };
+      enum { type = tetrahedron };
+
+      static AlbertGridElement<dimension,dimension> refelem;
+      static ALBERT EL_INFO elInfo_;
+    };
+
 
 
     //**********************************************************************
@@ -177,7 +201,7 @@ namespace Albert
       bool pointIsInside(const Vec<dimworld,albertCtype> &point);
 
       /*!
-         Copy from Peter Bastian:
+         Copy from sgrid.hh:
 
          Integration over a general element is done by integrating over the reference element
          and using the transformation from the reference element to the global element as follows:
@@ -198,6 +222,8 @@ namespace Albert
          will directly translate in substantial savings in the computation of finite element
          stiffness matrices.
        */
+
+      // A(l)
       albertCtype integration_element (const Vec<dim,albertCtype>& local);
 
       //! can only be called for dim=dimworld!
@@ -403,7 +429,6 @@ namespace Albert
       //! index is unique and consecutive per level and codim used for access to degrees of freedo
       int index ();
 
-
       //! geometry of this entity
       AlbertGridElement<dim,dimworld>& geometry ();
 
@@ -412,8 +437,10 @@ namespace Albert
          with codimension cc.
        */
       template<int cc> int count   () { return dim+1; }; //!< Default codim 1 Faces
+
       template<> int count<2<<dim> () { return (dim*2); }; //!< Edges Codim = 2, only 3d
       template<> int count<dim>    () { return dim+1; }; //!< Vertices codim = dim
+
 
       /*! Provide access to mesh entity i of given codimension. Entities
          are numbered 0 ... count<cc>()-1
@@ -437,8 +464,7 @@ namespace Albert
           return tmp;
         }
       };
-
-      // spezialization for dim = dimworld = 3 ind albertgrid.cc
+      // spezialization for codim = dim in albertgrid.cc
       template<> AlbertGridLevelIterator<dim,dim,dimworld> entity<dim> (int i)
       {
         AlbertGridLevelIterator<dim,dim,dimworld> tmp(elInfo_,0,0,i);
@@ -515,6 +541,7 @@ namespace Albert
     //**********************************************************************
     //
     // --AlbertGridHierarchicIterator
+    // --HierarchicIterator
     /*!
        Mesh entities of codimension 0 ("elements") allow to visit all entities of
        codimension 0 obtained through nested, hierarchic refinement of the entity.
@@ -541,6 +568,9 @@ namespace Albert
 
       // the default Constructor
       AlbertGridHierarchicIterator();
+
+      // the default Constructor
+      ~AlbertGridHierarchicIterator();
 
       // the Copy Constructor
       AlbertGridHierarchicIterator(const AlbertGridHierarchicIterator& I);
@@ -583,6 +613,7 @@ namespace Albert
     //**********************************************************************
     //
     // --AlbertGridNeighborIterator
+    // --NeighborIterator
     /*!
        Mesh entities of codimension 0 ("elements") allow to visit all neighbors, wh
        a neighbor is an entity of codimension 0 which has a common entity of codimens
@@ -790,7 +821,6 @@ namespace Albert
         return goNextVertex(stack,elinfo_old);
       };
 
-
       // the real go next methods
       ALBERT EL_INFO * goNextElInfo(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old);
       ALBERT EL_INFO * goNextFace(ALBERT TRAVERSE_STACK *stack,
@@ -830,7 +860,13 @@ namespace Albert
       // The Interface Methods
       //**********************************************************
     public:
-      typedef AlbertGridLevelIterator<0,dim,dimworld> LevelIterator;
+      template <int codim>
+      struct Traits
+      {
+        typedef AlbertGridLevelIterator<codim,dim,dimworld> LevelIterator;
+      };
+
+      typedef Traits<0> LevelIterator;
 
       typedef AlbertGridReferenceElement<dim> ReferenceElement;
 

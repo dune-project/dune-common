@@ -23,9 +23,11 @@ namespace Dune
   public:
     // nur so, damit man nicht immer alles umschreiben muss
     typedef Grid GRID;
-    typedef typename GRID::LevelIterator LevelIterator;
+    typedef typename GRID::Traits<0>::LevelIterator LevelIterator;
     enum { elType = GRID::ReferenceElement::type };
     enum { dimdef = GRID::ReferenceElement::dimension };
+
+    enum { type = basetype };
 
     // type of the local base
     typedef LocalBase<dimdef,ElementType(elType),basetype> LOCALBASE;
@@ -33,9 +35,9 @@ namespace Dune
     enum { numDof = LOCALBASE::numDof };
     enum { dimrange = LOCALBASE::dimrange };
 
-    typedef typename ScalarVector VALTYPE;
-    typedef LocalBaseFunction<GRID::ReferenceElement,
-        BaseType,dimrange,dimdef> BASEFUNC;
+    typedef ScalarVector VALTYPE;
+    typedef LocalBaseFunction<typename GRID::ReferenceElement,
+        basetype,dimrange,dimdef> BASEFUNC;
 
 
     //! MemoryManager, later given outside, dont know yet
@@ -61,10 +63,14 @@ namespace Dune
     //! storage class of the local base functions
     LOCALBASE *baseType_;
 
+    //! a discrete function can live on diffrent levels, i.e -1 the leaf
+    //! level
+    int level_;
+
   public:
 
     //! Constructor, make a FunctionSpace for given grid and BaseType
-    FunctionSpace(Grid *grid);
+    FunctionSpace(Grid *grid, int level);
 
     ~FunctionSpace();
 
@@ -78,18 +84,21 @@ namespace Dune
     template <class Entity>
     void  doMapping(Entity & e);
 
-    template <BaseType bt>
-    int mapper(int index, int dof);
-
     const char* name () { return name_; };
 
-    //! map indices to dofs
-    int mapIndex(int index, int dof);
+    //! map indices to dofs global Numbers
+    template <class Entity>
+    int mapper(Entity& e, int dof);
+
+    template <class Entity>
+    int mapIndex(Entity& e, int dof);
 
     //! access to dimension of function space
     int dimOfFunctionSpace();
+    int dim() { return dimOfFunctionSpace_;  };
 
   private:
+
     //! get Base with id = BaseType::id
     //! makes dofs on elements
     void makeBase();
@@ -97,17 +106,19 @@ namespace Dune
     void makeMapVec();
     void makeMapVecLag();
 
-    template <>
-    int mapper<LagrangeOne>(int index, int dof)
+#if 0
+    template <class Entity>
+    int mapperLagrangeOne(Entity &e,int index, int dof)
     {
       return (mapElNumber_[mapDefault(index,dof)]);
     }
-
+#endif
     //! map indices to dofs
     int mapDefault(int index, int dof);
 
 
   };
+
 
 } // end namespace Dune
 

@@ -9,60 +9,82 @@ namespace Dune
   //****************************************************************
   template <class FuncSpace>
   inline DiscreteFunction<FuncSpace>::
-  DiscreteFunction(char *name, FuncSpace *feSpace) : name_(name), feSpace_(feSpace)
+  DiscreteFunction(const char *name, FuncSpace *feSpace) :
+    name_(name), feSpace_(feSpace)
   {
     grid_ = feSpace_->grid_;
+    ssbm_ = feSpace_->ssbm_;
     dimOfFunctionSpace_ = feSpace_->dimOfFunctionSpace();
 
-    vec_ = new ScalarVector(feSpace_->ssbm_);
+    vec_ = new ScalarVector(ssbm_);
     vec_->Build(dimOfFunctionSpace_,dimOfFunctionSpace_);
 
-    double val = 0.0;
-    for(int i=0; i<dimOfFunctionSpace_; i++)
-    {
-      val = static_cast<double> (i);
-      vec_->Put(i,&val);
-    }
+    // set all components of vec_ to 0.0
+    ssbm_->vset(vec_,0.0);
+  }
 
+  template <class FuncSpace>
+  inline DiscreteFunction<FuncSpace>::
+  DiscreteFunction(const DiscreteFunction &org)
+  {
+    feSpace_ = org.feSpace_;
+    grid_ = org.grid_;
+    ssbm_ = feSpace_->ssbm_;
+    dimOfFunctionSpace_ = org.dimOfFunctionSpace_;
+    char *na = new char [256];
+    sprintf(na,"copy of %s",org.name_);
+    name_ = na;
+
+    vec_ = new ScalarVector(feSpace_->ssbm_);
+    vec_->Clone(org.vec_);
+
+    ssbm_->vcopy(vec_,org);
+    vec_->print(name_,1);
   }
 
   template <class FuncSpace>
   inline DiscreteFunction<FuncSpace>::
   ~DiscreteFunction()
   {
-    std::cout << "Cleaning Discrete Function \n";
-    vec_->Free();
-    delete vec_;
+    std::cout << "Cleaning Discrete Function ... ";
+    if(vec_)
+    {
+      vec_->Free();
+      delete vec_;
+    }
+    std::cout << "done!\n";
   }
 
-  template <class FuncSpace>
+  template <class FuncSpace> template <class Func>
   inline void DiscreteFunction<FuncSpace>::
-  setFunction (INITFUNC *initFunc, int polOrd)
+  setFunction (Func &initFunc, int polOrd)
   {
     double val = 0.0;
-#if 0
-    for(int i=0; i<dimOfFunctionSpace_; i++)
-    {
-      vec_->Put(i,&val);
-    }
-#endif
+
     int level = -1;
     LevelIterator endit = grid_->lend<0>(level);
 
     for(LevelIterator it = grid_->lbegin<0>(level); it != endit; ++it)
     {
       Vec<dimdef> vec(1.0);
+      double vol = it->geometry().integration_element(vec);
 
-      for(int i=0; i<numDof; i++)
+      vec = 0.0;
+
+      for(int i=0; i<it->geometry().corners(); i++)
       {
-        int k = feSpace_->mapIndex(it->index(),i);
+        vec += it->geometry()[i];
+      }
 
-        val = (initFunc(it->geometry()[i]))(0);
-        vec_->Put(k,&val);
+      vec *= (1.0/3.0);
+      val = vol*initFunc.eval(vec) (0)/3.0;
+
+      for(int i=0; i<it->geometry().corners(); i++)
+      {
+        int k = feSpace_->mapIndex((*it),i);
+        vec_->Add(k,&val);
       }
     }
-
-    vec_->print("vec",1);
   }
 
 
@@ -130,7 +152,7 @@ namespace Dune
       BASEFUNC *tmp = feSpace_->getLocalBaseFunc(i);
       Vec<dimrange> newVal = feSpace_->map(el,vec_,i);
       Vec<dimrange> newTmp = tmp->eval(bary);
-      Mat<numDof,dimrange> newTmp1 = tmp->evalFirstDrv(bary);
+      Vec<dimdef> newTmp1 = tmp->evalFirstDrv(bary) (0);
 
       for(int j=0; j<dimrange; j++)
         newVal(j) *= newTmp(j);
@@ -141,11 +163,105 @@ namespace Dune
     return value;
   }
 
+  template <class FuncSpace> template <class Func>
+  inline double DiscreteFunction<FuncSpace>::lNorm (Func &f, int power)
+  {
+    // Gitterdurchlauf und auf jedem Element (\int_T f(x)^p dx)^(\frac{1}{p})
+  }
+
+
+  template <class FuncSpace> template <class Entity>
+  inline Vec<DiscreteFunction<FuncSpace>::dimrange>
+  DiscreteFunction<FuncSpace>::evalDof (Entity& el, int localDof)
+  {
+    Vec<dimrange> newVal = feSpace_->map(el,vec_,localDof);
+    return newVal;
+  }
+
+
   template <class FuncSpace>
   inline DiscreteFunction<FuncSpace>::VALTYPE&
   DiscreteFunction<FuncSpace>::getDofVec()
   {
     return (*vec_);
+  }
+
+  template <class FuncSpace>
+  inline void DiscreteFunction<FuncSpace>::print( std::ostream& s) const
+  {
+    std::cout << name_ << std::endl;
+    std::cout << dimOfFunctionSpace_ << " " << dimrange << " " << order << std::endl;
+    vec_->print(const_cast<char *> (name_),1);
+  }
+
+  template <class FuncSpace> template <VizFormat format>
+  inline void DiscreteFunction<FuncSpace>::print2File(char * outfile) const
+  {
+    double *values = new double [dimrange];
+    for(int i=0; i< dimrange; i++) values[i] = 0.0;
+
+    std::ofstream s;
+    s.open(outfile, std::ios_base::out | std::ios_base::trunc);
+
+    std::cout << "Writing (default) `" << name_ << "' to `" << outfile << "' \n";
+
+    s << name_ << endl;
+    s << dimOfFunctionSpace_ << " " << dimrange << " " << order << endl;
+    for(int i=0; i<dimOfFunctionSpace_; i++)
+    {
+      vec_->Get(i,values);
+      for(int j=0; j<dimrange; j++)
+        s << values[j] << " ";
+      s << endl;
+    }
+  }
+
+  template <class FuncSpace>
+  inline void DiscreteFunction<FuncSpace>::writeDisp(char * outfile) const
+  {
+    double *values = new double [dimrange];
+    for(int i=0; i< dimrange; i++) values[i] = 0.0;
+
+    std::ofstream s;
+
+    s.open(outfile, std::ios_base::out | std::ios_base::trunc);
+
+    std::cout << "Writing (disp) `" << name_ << "' to `" << outfile << "'. \n";
+
+    s << dimOfFunctionSpace_ << " " << dimrange << " " << FuncSpace::order << std::endl;
+
+    for(int i=0; i<dimOfFunctionSpace_; i++)
+    {
+      vec_->Get(i,values);
+      for(int j=0; j<dimrange; j++)
+        s << values[j] << " ";
+      s << std::endl;
+    }
+
+    s.close();
+  }
+
+  template <class FuncSpace>
+  inline void DiscreteFunction<FuncSpace>::writeUspm(char * outfile) const
+  {
+    double *values = new double [dimrange];
+    for(int i=0; i< dimrange; i++) values[i] = 0.0;
+
+    std::ofstream s;
+
+    s.open(outfile, std::ios_base::out | std::ios_base::trunc);
+
+    std::cout << "Writing (USPM) `" << name_ << "' to `" << outfile << "'. \n";
+
+    for(int i=0; i<dimOfFunctionSpace_; i++)
+    {
+      vec_->Get(i,values);
+      for(int j=0; j<dimrange; j++)
+        s << values[j] << " ";
+      s << endl;
+    }
+
+    s.close();
   }
 
 } // end namespace Dune

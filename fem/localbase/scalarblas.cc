@@ -556,6 +556,11 @@ int ScalarMatrix::Build (int nnr, int nnc, int nnz)
   if (s==NULL) return 1;
   for (int i=0; i<nr; i++) s[i] = 0;
 
+  // allocate space for size array
+  columns = (int *) _dsmm->MallocLo(nz*sizeof(int));
+  if (columns==NULL) return 1;
+  for (int i=0; i<nz; i++) columns[i] = -1;
+
   // allocate space for nonzeros
   a = (double *) _dsmm->MallocLo(nz*sizeof(double));
   if (a==NULL) return 1;

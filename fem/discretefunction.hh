@@ -9,17 +9,21 @@
 namespace Dune
 {
 
+  enum VizFormat { USPM , disp };
+
   //*********************************************************************
   //
   //  --Function
   //
   //*********************************************************************
-  template <int def, int dimrange>
+  template <int def, int drange>
   class Function
   {
   public:
+    enum { dimdef = def };
+    enum { dimrange = drange};
 
-    Vec<dimrange> eval (Vec<def> &vec);
+    Vec<dimrange> eval (Vec<dimdef> &vec);
     void print();
 
   }; // end Function
@@ -36,10 +40,22 @@ namespace Dune
   template <class FuncSpace>
   class DiscreteFunction
   {
-    //! type of grid the clearly the same
-    typedef typename FuncSpace::GRID GRID;
-    typedef typename GRID::LevelIterator LevelIterator;
+  public:
+    template <class Grid>
+    struct Traits
+    {
+      typedef typename Grid::Traits<0>::LevelIterator LevelIterator;
+    };
 
+    //! type of grid the clearly the same
+    typedef FuncSpace mySpace;
+
+    typedef typename FuncSpace::GRID GRID;
+
+    //! example for nested classes
+    //! Know the corresponding LevelIterator
+    //typedef typename GRID::Traits<0>::LevelIterator LevelIterator;
+    typedef typename Traits<GRID>::LevelIterator LevelIterator;
 
     //! dimrange: dimension of the image of the DiscretFunction
     enum { dimrange = FuncSpace::dimrange };
@@ -55,36 +71,44 @@ namespace Dune
 
     enum { dimBary = GRID::dimension +1};
 
-    typedef Vec<dimrange> INITFUNC (Vec<dimdef> &x);
-
+    typedef typename FuncSpace::BASEFUNC BASEFUNC;
+    typedef typename FuncSpace::VALTYPE VALTYPE;
   private:
-    int dimOfFunctionSpace_;
+    //! corresponding function space
     FuncSpace *feSpace_;
 
-    char *name_;
+    ScalarSparseBLASManager *ssbm_;
 
+    //! dim of function space, known from function space, just for
+    //! speed
+    int dimOfFunctionSpace_;
 
+    //! my name
+    const char *name_;
+
+    //! corresponding grid
     GRID *grid_;
 
-    typedef FuncSpace::BASEFUNC BASEFUNC;
-    typedef typename FuncSpace::VALTYPE VALTYPE;
-
+    //! ScalarVector, holding the degrees of freedom (dof)
     VALTYPE *vec_;
 
   public:
 
     //! Constructor make a DiscreteFunction with a given
     //! FunctionSpace
-    DiscreteFunction(char* name, FuncSpace *feSpace);
+    DiscreteFunction(const char* name, FuncSpace *feSpace);
+
+    //! Constructor make a DiscreteFunction with a given
+    //! FunctionSpace
+    DiscreteFunction(const DiscreteFunction &org);
 
     ~DiscreteFunction();
 
     //! dummy method for setting some dofs
-    void setFunction (INITFUNC *initFunc, int polOrd);
+    template <class Func>
+    void setFunction (Func &initFunc, int polOrd);
 
-    //! go down grid until deepest level and then evaluate the function
-    template <class Entity>
-    Vec<dimrange> goDeeper(Entity &it,Vec<dimdef> &vec);
+    void clone (DiscreteFunction &org);
 
     //! evaluate the function on point vec
     //! which leads to an hierarchical search for the Entity,
@@ -95,10 +119,47 @@ namespace Dune
     template <class Entity>
     Vec<dimrange> evalElement (Entity& el, Vec<dimdef> &vec);
 
+    //! evaluate the function on a given DofNodeNumber
+    template <class Entity>
+    Vec<dimrange> evalDof (Entity& el, int localDof);
+
+    //! say my name
     const char* name () { return name_; };
+
+    //! LNorm
+    template <class Func> double lNorm(Func &f,int power);
+
 
     //! access to the ScalarVector, which holds the dofs
     VALTYPE& getDofVec();
+    FuncSpace*  getFuncSpace() { return feSpace_; };
+    GRID*  getGrid() { return grid_; };
+
+    void print (std::ostream& s) const;
+
+    template <VizFormat format>
+    void print2File (char * outfile) const;
+
+    template <>
+    void print2File<USPM> (char * outfile) const
+    {
+      writeUspm(outfile);
+    };
+
+    template <>
+    void print2File<disp> (char * outfile) const
+    {
+      writeDisp(outfile);
+    };
+
+  private:
+    void writeUspm(char *outfile) const;
+    void writeDisp(char *outfile) const;
+
+    //! go down grid until deepest level and then evaluate the function
+    template <class Entity>
+    Vec<dimrange> goDeeper(Entity &it,Vec<dimdef> &vec);
+
 
   }; // end class DiscreteFunction
 

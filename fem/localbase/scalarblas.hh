@@ -126,6 +126,9 @@ public:
   int Resize (int n, int m);
   int Free ();
 
+  double* getVec() { return v; };
+  double& operator [] (int i) { return v[i]; };
+
   // define structure/fill values
   int Assemble (int index, int size);
   int Reassemble (int index, int size);
@@ -341,6 +344,7 @@ public:
   // define access interface here ...
   int Put (int row, int nnz, double *vals, int *cols, int *i, int *j);
   int Add (int row, int nnz, double *vals, int *cols, int *i, int *j);
+  int MyAdd (int row, int nnz, double val);
   int Get (int row, int *nnz, double *vals, int *cols, int *i, int *j);
   int Size (int row);
 
@@ -361,6 +365,8 @@ private:
   int *r;            // start of row
   double *a;         // matrix entries
   int *j;        // column indices
+  int *columns;
+
   bool built;        // true if space has been allocated
   int key;           // key from memory manager
   DoubleStackMemoryManager *_dsmm;       // my memory manager
@@ -447,11 +453,12 @@ inline int ScalarMatrix::Assemble (int row, int nnz, int *cols, int *ii, int *jj
   // check
   if (row>=nr) return 1;
   if (r[row]!=-1) return 1;       // must be first definition!
-  if (ctr+nnz>=nz) return 1;
+  //std::cout << "assembling, row=" << row << " nnz=" << nnz << std::endl;
+  //if (ctr+nnz>=nz) return 1;
   for (int k=0; k<nnz; k++)
     if (cols[k]>=nc || ii[k]!=0 || jj[k]!=0) return 1;
 
-  //	cout << "assembling, row=" << row << " nnz=" << nnz << endl;
+  //std::cout << "assembling, row=" << row << " nnz=" << nnz << std::endl;
 
   // move diagonal element to front (if it exists)
   for (int k=1; k<nnz; k++)
@@ -466,7 +473,7 @@ inline int ScalarMatrix::Assemble (int row, int nnz, int *cols, int *ii, int *jj
   for (int k=0; k<nnz; k++)
   {
     j[ctr++] = cols[k];
-    //		cout << "j["<<ctr-1<<"]="<<cols[k]<<endl;
+    //std::cout << "j["<<ctr-1<<"]="<<cols[k]<<std::endl;
   }
 
   return 0;
@@ -536,6 +543,53 @@ inline int ScalarMatrix::Add (int row, int nnz, double *vals, int *cols, int *ii
     }
   }
 
+  return 0;
+}
+
+inline int ScalarMatrix::MyAdd (int row, int col,double val)
+{
+  int i,k;
+
+  // nny steht fuer col
+
+  //  printf("Add ( %d , %d )  val = %f\n",row,col,val);
+
+  // check
+  if ((row<0) || (row>=nr)) return 1;
+#if 0
+  if (r[row]==-1) return 1; // must be defined
+  if (col>s[row]) return 1;
+  for (int k=0; k<s[row]; k++)
+    if (columns[k]>=nc) return 1;
+#endif
+  int maxcol_ = s[row];
+
+  // search
+  bool colUsed = false;
+  for (int i=0; i<maxcol_; i++)
+  {
+    if(columns[row*maxcol_ +i] == col)
+    {
+      a[row*maxcol_+i] += val;
+      colUsed = true;
+      return 0;
+    }
+  }
+
+  if(!colUsed)
+  {
+    // search
+    for (int i=0; i<maxcol_; i++)
+      if (columns[row*maxcol_+i] == -1)
+      {
+        a[row*maxcol_+i] += val;
+        columns[row*maxcol_+i] = col;
+        return 0;
+      }
+  }
+
+  //std::cout << "Column to small to save value \n";
+  //abort();
   return 0;
 }
 

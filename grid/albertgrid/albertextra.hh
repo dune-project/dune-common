@@ -103,6 +103,75 @@ public:
 
 };
 
+TRAVERSE_STACK & hardCopyStack(TRAVERSE_STACK& copy, TRAVERSE_STACK& org)
+{
+  FUNCNAME("hardCopyStack");
+
+  copy.traverse_mesh = org.traverse_mesh;
+  copy.traverse_level = org.traverse_level;
+  copy.traverse_fill_flag = org.traverse_fill_flag;
+  copy.traverse_mel = org.traverse_mel;
+
+  copy.stack_size = org.stack_size;
+  copy.stack_used = org.stack_used;
+
+  copy.elinfo_stack = NULL;
+  copy.elinfo_stack = MEM_ALLOC(org.stack_size, EL_INFO);
+
+  memcpy(copy.elinfo_stack,org.elinfo_stack,
+         copy.stack_size * sizeof(EL_INFO));
+
+  //if (copy.stack_size > 0)
+  //  for (int i=0; i<copy.stack_size; i++)
+  //    copy.elinfo_stack[i].fill_flag = org.elinfo_stack[i].fill_flag;
+
+  copy.info_stack = NULL;
+  copy.info_stack = MEM_ALLOC(copy.stack_size, U_CHAR);
+  memcpy(copy.info_stack,org.info_stack,
+         copy.stack_size * sizeof(U_CHAR));
+
+  copy.save_elinfo_stack = NULL;
+  copy.save_elinfo_stack = MEM_ALLOC(copy.stack_size, EL_INFO);
+  memcpy(copy.save_elinfo_stack,org.save_elinfo_stack,
+         copy.stack_size * sizeof(EL_INFO));
+
+  copy.save_info_stack = NULL;
+  copy.save_info_stack = MEM_ALLOC(copy.stack_size,U_CHAR);
+  memcpy(copy.save_info_stack,org.save_info_stack,
+         copy.stack_size * sizeof(U_CHAR));
+  copy.save_stack_used = org.save_stack_used;
+  copy.el_count = org.el_count;
+  copy.next = org.next;
+  org.next = &copy;
+
+  return copy;
+}
+
+TRAVERSE_STACK & removeStack(TRAVERSE_STACK& copy)
+{
+  FUNCNAME("removeStack");
+
+  if(copy.elinfo_stack)
+    MEM_FREE(copy.elinfo_stack, copy.stack_size, EL_INFO);
+  copy.elinfo_stack = NULL;
+
+  if(copy.info_stack)
+    MEM_FREE(copy.info_stack,copy.stack_size, U_CHAR);
+  copy.info_stack = NULL;
+
+  if(copy.save_elinfo_stack)
+    MEM_FREE(copy.save_elinfo_stack,
+             copy.stack_size, EL_INFO);
+  copy.save_elinfo_stack = NULL;
+
+  if(copy.save_info_stack)
+    MEM_FREE(copy.save_info_stack,copy.stack_size,U_CHAR);
+  copy.save_info_stack = NULL;
+
+  return copy;
+}
+
+
 void initTraverseStack(TRAVERSE_STACK *stack)
 {
   FUNCNAME("initTraverseStack");

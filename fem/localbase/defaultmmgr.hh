@@ -25,7 +25,7 @@
 #define __DEFAULTMMGR__
 
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 
 #include "mmgr.hh"
 
