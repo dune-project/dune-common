@@ -36,41 +36,40 @@ namespace Dune {
 
 
   /*!
-     BSGridCommunicator organizes the communication of BSGrid on
+     ALU3dGridCommunicator organizes the communication of ALU3dGrid on
      diffrent processors.
    */
 
   template <class GridType>
-  class BSGridCommunicator
+  class ALU3dGridCommunicator
   {
   public:
     //! Constructor
-    BSGridCommunicator(GridType &grid) : grid_(grid) {}
+    ALU3dGridCommunicator(GridType &grid) : grid_(grid) {}
 
     template <class DataType>
     bool communicate(DataType & data) const
     {
-      //grid_.communicate(data);
+      grid_.communicate(data);
       return false;
     }
 
     template <class DataType>
     bool loadBalance(DataType & data) const
     {
-      return false;
-      // return grid_.loadBalance(data);
+      return grid_.loadBalance(data);
     }
 
     bool loadBalance() const
     {
-      return false; //return grid_.loadBalance();
+      return grid_.loadBalance();
     }
 
     //! minimize val over all processors
     template <class T>
     T globalMin (T val) const
     {
-      T ret = val; // grid_.globalMin(val);
+      T ret = grid_.globalMin(val);
       return ret;
     }
 
@@ -78,7 +77,7 @@ namespace Dune {
     template <class T>
     T globalMax (T val) const
     {
-      T ret = val; //grid_.globalMax(val);
+      T ret = grid_.globalMax(val);
       return ret;
     }
 
@@ -86,14 +85,13 @@ namespace Dune {
     template <class T>
     T globalSum (T val) const
     {
-      return val; //grid_.globalSum(val);
+      return grid_.globalSum(val);
     }
 
     template <class T>
     void globalSum (T *send, int s , T *recv) const
     {
-      std::memcpy(recv,send,s * sizeof(T));
-      // grid_.globalSum(send,s,recv);
+      grid_.globalSum(send,s,recv);
       return ;
     }
 

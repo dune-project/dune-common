@@ -15,10 +15,10 @@
 // if this is defined in bsgrid some methods are added which we only need
 // for the Dune interface
 #define _DUNE_USES_ALU3DGRID_
-#include <dune/common/fvector.hh>
 
 // if MPI was found include all headers
 #ifdef _ALU3DGRID_PARALLEL_
+#include <mpi.h>
 #include <alu3dgrid_parallel.h>
 #else
 // if not, include only headers for serial version

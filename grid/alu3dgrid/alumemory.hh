@@ -4,13 +4,12 @@
 #define __DUNE_ALUMEMORY_HH__
 
 #include <stack>
-#include "myautoptr.hh"
 
 //! organize the memory management for entitys used by the NeighborIterator
 template <class Object>
 class MemoryProvider
 {
-  std::stack < Object * > objStack_;
+  stack < Object * > objStack_;
 
   typedef MemoryProvider < Object > MyType;
 public:
