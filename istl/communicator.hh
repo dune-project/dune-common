@@ -251,6 +251,7 @@ namespace Dune
       {
         length = new int[i];
         displ  = new MPI_Aint[i];
+        size = i;
       }
 
       void free()
@@ -261,6 +262,7 @@ namespace Dune
       int* length;
       MPI_Aint* displ;
       int elements;
+      int size;
     };
   };
 
@@ -354,6 +356,7 @@ namespace Dune
   {
     // Allocate the memory for the data type construction.
     typedef typename RemoteIndices::RemoteIndexMap::const_iterator const_iterator;
+    typedef typename RemoteIndices::IndexSetType::const_iterator LocalIterator;
 
     const const_iterator end=remoteIndices_.end();
 
@@ -364,14 +367,38 @@ namespace Dune
 
     // Allocate memory for the type construction.
     for(const_iterator process=remoteIndices_.begin(); process != end; ++process) {
+      // Messure the number of indices send to the remote process first
+      int size=0;
+      LocalIterator localIndex = send ? remoteIndices_.source_.begin() : remoteIndices_.dest_.begin();
+      const LocalIterator localEnd = send ?  remoteIndices_.source_.end() : remoteIndices_.dest_.end();
+      typedef typename RemoteIndices::RemoteIndexList::const_iterator RemoteIterator;
+      const RemoteIterator remoteEnd = send ? process->second.first->end() :
+                                       process->second.second->end();
+      RemoteIterator remote = send ? process->second.first->begin() : process->second.second->begin();
+
+      while(localIndex!=localEnd && remote!=remoteEnd) {
+        if( send ?  destFlags.contains(remote->attribute()) :
+            sourceFlags.contains(remote->attribute())) {
+          // search for the matching local index
+          while(localIndex->global()<remote->localIndexPair().global()) {
+            localIndex++;
+            assert(localIndex != localEnd);   // Should never happen
+          }
+          assert(localIndex->global()==remote->localIndexPair().global());
+
+          // do we send the index?
+          if( send ? sourceFlags.contains(localIndex->local().attribute()) :
+              destFlags.contains(localIndex->local().attribute()))
+            ++size;
+        }
+        ++remote;
+      }
       IndexedTypeInformation& info =information[process->first];
-      int _size = send ? (process->second.first->size()) : process->second.second->size();
-      info.build(_size);
+      info.build(size);
       info.elements=0;
     }
 
     // compare the local and remote indices and set up the types
-    typedef typename RemoteIndices::IndexSetType::const_iterator LocalIterator;
 
     CollectiveIterator<TG,TA> remote = remoteIndices_.template iterator<send>();
     LocalIterator localIndex = send ? remoteIndices_.source_.begin() : remoteIndices_.dest_.begin();
@@ -393,6 +420,7 @@ namespace Dune
               sourceFlags.contains(validEntry->attribute())) {
             // We will receive data for this index
             IndexedTypeInformation& info=information[validEntry.process()];
+            assert(info.elements<info.size);
             MPI_Address(CommPolicy<V>::getAddress(data, localIndex->local()),
                         info.displ+info.elements);
             info.length[info.elements]=CommPolicy<V>::getSize(data, localIndex->local());
