@@ -1,0 +1,7 @@
+Makefile
+Makefile.in
+.deps
+.libs
+semantic.cache
+parsetest
+test-stack

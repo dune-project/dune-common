@@ -1,5 +1,7 @@
 # $Id$
 
+SUBDIRS = . test
+
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
 
