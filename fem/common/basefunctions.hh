@@ -6,7 +6,7 @@
 #include <dune/common/matvec.hh>
 #include <dune/common/mapping.hh>
 
-#include "quadrature.hh"
+#include <dune/quadrature/common/quadrature.hh>
 
 namespace Dune {
 
