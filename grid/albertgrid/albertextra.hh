@@ -744,50 +744,16 @@ namespace AlbertHelp
   // initialize boundary for mesh
   const BOUNDARY *initBoundary(MESH * Spmesh, int bound)
   {
-    FUNCNAME("initBoundary");
-    static const BOUNDARY Diet1 = { NULL, 1 };
-    static const BOUNDARY PaulN1 = { NULL, -1 };
+    BOUNDARY *b = (BOUNDARY *) malloc(sizeof(BOUNDARY));
+    assert(b != NULL);
 
-    static const BOUNDARY Diet2 = { NULL, 2 };
-    static const BOUNDARY PaulN2 = { NULL, -2 };
+    // bound is of type signed char which goes from -127 to 128
+    assert((bound > -128) && (bound < 129));
 
-    static const BOUNDARY Diet3 = { NULL, 3 };
-    static const BOUNDARY PaulN3 = { NULL, -3 };
+    b->param_bound = NULL;
+    b->bound = bound;
 
-    static const BOUNDARY Diet4 = { NULL, 4 };
-    static const BOUNDARY PaulN4 = { NULL, -4 };
-
-    static const BOUNDARY Diet5 = { NULL, 5 };
-    static const BOUNDARY PaulN5 = { NULL, -5 };
-
-
-    switch (bound)
-    {
-    case 1 :
-      return (&Diet1);
-    case 2 :
-      return (&Diet2);
-    case 3 :
-      return (&Diet3);
-    case 4 :
-      return (&Diet4);
-    case 5 :
-      return (&Diet5);
-
-    case -1 :
-      return (&PaulN1);
-    case -2 :
-      return (&PaulN2);
-    case -3 :
-      return (&PaulN3);
-    case -4 :
-      return (&PaulN4);
-    case -5 :
-      return (&PaulN5);
-    default :
-      ALBERT_ERROR_EXIT("no Boundary for %d. Och! \n", bound);
-    }
-    return &Diet1;
+    return b;
   }
 
   //*******************************************************************
