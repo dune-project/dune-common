@@ -12,55 +12,58 @@ namespace Dune {
               @{
    */
 
-  class ISTLPrecision { // uses standard malloc and free
+  template <class ctype = double>
+  class ISTLPrecision {
   public:
     //! return threshold to do pivoting
-    static double pivoting_limit ()
+    static ctype pivoting_limit ()
     {
       return _pivoting;
     }
 
     //! set pivoting threshold
-    static void set_pivoting_limit (double pivthres)
+    static void set_pivoting_limit (ctype pivthres)
     {
       _pivoting = pivthres;
     }
 
     //! return threshold to declare matrix singular
-    static double singular_limit ()
+    static ctype singular_limit ()
     {
       return _singular;
     }
 
     //! set singular threshold
-    static void set_singular_limit (double singthres)
+    static void set_singular_limit (ctype singthres)
     {
       _singular = singthres;
     }
 
     //! return threshold to declare matrix singular
-    static double absolute_limit ()
+    static ctype absolute_limit ()
     {
       return _absolute;
     }
 
     //! set singular threshold
-    static void set_absolute_limit (double absthres)
+    static void set_absolute_limit (ctype absthres)
     {
       _absolute = absthres;
     }
 
   private:
     // just to demonstrate some state information
-    static double _pivoting;
-    static double _singular;
-    static double _absolute;
+    static ctype _pivoting;
+    static ctype _singular;
+    static ctype _absolute;
   };
 
-  double ISTLPrecision::_pivoting = 1E-8;
-  double ISTLPrecision::_singular = 1E-14;
-  double ISTLPrecision::_absolute = 1E-80;
-
+  template <class ctype>
+  ctype ISTLPrecision<ctype>::_pivoting = 1E-8;
+  template <class ctype>
+  ctype ISTLPrecision<ctype>::_singular = 1E-14;
+  template <class ctype>
+  ctype ISTLPrecision<ctype>::_absolute = 1E-80;
 
   /** @} end documentation */
 

@@ -245,8 +245,8 @@ namespace Dune {
 
     // Gaussian elimination with maximum column pivot
     double norm=A.infinity_norm_real();     // for relative thresholds
-    double pivthres = std::max(ISTLPrecision::absolute_limit(),norm*ISTLPrecision::pivoting_limit());
-    double singthres = std::max(ISTLPrecision::absolute_limit(),norm*ISTLPrecision::singular_limit());
+    double pivthres = std::max(ISTLPrecision<>::absolute_limit(),norm*ISTLPrecision<>::pivoting_limit());
+    double singthres = std::max(ISTLPrecision<>::absolute_limit(),norm*ISTLPrecision<>::singular_limit());
     V& rhs = x;          // use x to store rhs
     rhs = b;             // copy data
 
@@ -299,7 +299,7 @@ namespace Dune {
   inline void fm_solve (const FieldMatrix<K,1,1>& A,  V& x, const V& b)
   {
 #ifdef DUNE_ISTL_WITH_CHECKING
-    if (fvmeta_absreal(A[0][0])<ISTLPrecision::absolute_limit())
+    if (fvmeta_absreal(A[0][0])<ISTLPrecision<>::absolute_limit())
       DUNE_THROW(ISTLError,"matrix is singular");
 #endif
     x[0] = b[0]/A[0][0];
@@ -311,7 +311,7 @@ namespace Dune {
   {
 #ifdef DUNE_ISTL_WITH_CHECKING
     K detinv = A[0][0]*A[1][1]-A[0][1]*A[1][0];
-    if (fvmeta_absreal(detinv)<ISTLPrecision::absolute_limit())
+    if (fvmeta_absreal(detinv)<ISTLPrecision<>::absolute_limit())
       DUNE_THROW(ISTLError,"matrix is singular");
     detinv = 1/detinv;
 #else
@@ -334,8 +334,8 @@ namespace Dune {
     FieldMatrix<K,n,n>& U=A;
 
     double norm=A.infinity_norm_real();     // for relative thresholds
-    double pivthres = std::max(ISTLPrecision::absolute_limit(),norm*ISTLPrecision::pivoting_limit());
-    double singthres = std::max(ISTLPrecision::absolute_limit(),norm*ISTLPrecision::singular_limit());
+    double pivthres = std::max(ISTLPrecision<>::absolute_limit(),norm*ISTLPrecision<>::pivoting_limit());
+    double singthres = std::max(ISTLPrecision<>::absolute_limit(),norm*ISTLPrecision<>::singular_limit());
 
     // LU decomposition of A in A
     for (int i=0; i<n; i++)      // loop over all rows
@@ -397,7 +397,7 @@ namespace Dune {
   void fm_invert (FieldMatrix<K,1,1>& A)
   {
 #ifdef DUNE_ISTL_WITH_CHECKING
-    if (fvmeta_absreal(A[0][0])<ISTLPrecision::absolute_limit())
+    if (fvmeta_absreal(A[0][0])<ISTLPrecision<>::absolute_limit())
       DUNE_THROW(ISTLError,"matrix is singular");
 #endif
     A[0][0] = 1/A[0][0];
@@ -409,7 +409,7 @@ namespace Dune {
   {
     K detinv = A[0][0]*A[1][1]-A[0][1]*A[1][0];
 #ifdef DUNE_ISTL_WITH_CHECKING
-    if (fvmeta_absreal(detinv)<ISTLPrecision::absolute_limit())
+    if (fvmeta_absreal(detinv)<ISTLPrecision<>::absolute_limit())
       DUNE_THROW(ISTLError,"matrix is singular");
 #endif
     detinv = 1/detinv;
