@@ -60,14 +60,15 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
 
   typename GRID::template Traits<3>::LevelIterator vertex    = grid.template lbegin<3>(level);
   typename GRID::template Traits<3>::LevelIterator endvertex = grid.template lend<3>(level);
-  i=0;
+
   for (; vertex!=endvertex; ++vertex)
   {
+    int index = vertex->index();
     Vec<3, double> coords = vertex->geometry()[0];
 
-    ((float*)geo_node_data->dataPtr())[i++] = coords(0);
-    ((float*)geo_node_data->dataPtr())[i++] = coords(1);
-    ((float*)geo_node_data->dataPtr())[i++] = coords(2);
+    ((float*)geo_node_data->dataPtr())[3*index+0] = coords(0);
+    ((float*)geo_node_data->dataPtr())[3*index+1] = coords(1);
+    ((float*)geo_node_data->dataPtr())[3*index+2] = coords(2);
 
   }
 
@@ -113,7 +114,8 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
                                                       McPrimType::mc_int32, maxVerticesPerElement);
   am_geometry.insert(element_data);
 
-  int (*dPtr)[maxVerticesPerElement] = (int(*)[maxVerticesPerElement])element_data->dataPtr();
+  //int *(dPtr[maxVerticesPerElement]) = (int*)element_data->dataPtr();
+  int *dPtr = (int*)element_data->dataPtr();
 
   typename GRID::template Traits<0>::LevelIterator element2    = grid.template lbegin<0>(level);
   typename GRID::template Traits<0>::LevelIterator endelement = grid.template lend<0>(level);
@@ -123,24 +125,24 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
 
     case hexahedron :
 
-      dPtr[i][0] = element2->template subIndex<3>(0)+1;
-      dPtr[i][1] = element2->template subIndex<3>(1)+1;
-      dPtr[i][2] = element2->template subIndex<3>(3)+1;
-      dPtr[i][3] = element2->template subIndex<3>(2)+1;
-      dPtr[i][4] = element2->template subIndex<3>(4)+1;
-      dPtr[i][5] = element2->template subIndex<3>(5)+1;
-      dPtr[i][6] = element2->template subIndex<3>(7)+1;
-      dPtr[i][7] = element2->template subIndex<3>(6)+1;
+      dPtr[i*maxVerticesPerElement+0] = element2->template subIndex<3>(0)+1;
+      dPtr[i*maxVerticesPerElement+1] = element2->template subIndex<3>(1)+1;
+      dPtr[i*maxVerticesPerElement+2] = element2->template subIndex<3>(3)+1;
+      dPtr[i*maxVerticesPerElement+3] = element2->template subIndex<3>(2)+1;
+      dPtr[i*maxVerticesPerElement+4] = element2->template subIndex<3>(4)+1;
+      dPtr[i*maxVerticesPerElement+5] = element2->template subIndex<3>(5)+1;
+      dPtr[i*maxVerticesPerElement+6] = element2->template subIndex<3>(7)+1;
+      dPtr[i*maxVerticesPerElement+7] = element2->template subIndex<3>(6)+1;
       break;
     default :
 
       for (int j=0; j<element2->geometry().corners(); j++)
-        dPtr[i][j] = element2->template subIndex<3>(j)+1;
+        dPtr[i*maxVerticesPerElement+j] = element2->template subIndex<3>(j)+1;
 
       // If the element has less than 8 vertices use the last value
       // to fill up the remaining slots
       for (int j=element2->geometry().corners(); j<maxVerticesPerElement; j++)
-        dPtr[i][j] = dPtr[i][element2->geometry().corners()-1];
+        dPtr[i*maxVerticesPerElement+j] = dPtr[i*maxVerticesPerElement+element2->geometry().corners()-1];
     }
 
   }
