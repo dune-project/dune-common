@@ -66,7 +66,6 @@ namespace Dune {
         }
       }
       //std::cout << nextFreeIndex_ << " freeInd \n";
-      print();
     }
 
     void finish ()
