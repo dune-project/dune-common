@@ -3,6 +3,7 @@
 
 # TODO:
 #
+# - Quickhack mit lib-dependencies durch alberta.pc ersetzen
 # - alberta kann wahlweise GRAPE oder gltools
 #   (http://www.wias-berlin.de/software/gltools/) verwenden, die sollten
 #   vorher getestet werden
@@ -10,6 +11,8 @@
 
 AC_DEFUN([DUNE_PATH_ALBERTA],[
   AC_REQUIRE([AC_PROG_CC])
+  AC_REQUIRE([AC_PATH_XTRA])
+  AC_REQUIRE([DUNE_PATH_OPENGL])
   AC_REQUIRE([DUNE_DIMENSION])
 
   AC_ARG_WITH(alberta,
@@ -59,6 +62,10 @@ AC_CHECK_HEADER([alberta.h],
 
 CPPFLAGS="$REM_CPPFLAGS $ALBERTADEF -I$ALBERTA_INCLUDE_PATH"
 REM_CPPFLAGS=
+
+# !!! quickfix
+  ALBERTA_LIBS="-lPLOTansi $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS $GL_LDFLAGS $GL_LIBS -lXext -lcsolver -lblas"
+  LIBS="$ALBERTA_LIBS"
 
 # if header is found...
 if test x$HAVE_ALBERTA = x1 ; then
