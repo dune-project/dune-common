@@ -74,6 +74,10 @@ namespace Dune {
     inline operator T*() {
       return data_;
     };
+    // access to enternal data
+    inline T* data() {
+      return data_;
+    };
   };
 
   // print your array
