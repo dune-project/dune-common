@@ -19,11 +19,12 @@ struct UGGridGeometryPositionAccess<0,3>
   void get(TargetType<3,3>::T* target,
            int i,
            FieldVector<UGCtype, 3>& coord) {
-    const UG3d::VERTEX* vertex = target->myvertex;
 
-    coord[0] = vertex->iv.x[0];
-    coord[1] = vertex->iv.x[1];
-    coord[2] = vertex->iv.x[2];
+#ifdef _3
+    coord[0] = target->myvertex->iv.x[0];
+    coord[1] = target->myvertex->iv.x[1];
+    coord[2] = target->myvertex->iv.x[2];
+#endif
   }
 
 };
@@ -36,6 +37,7 @@ struct UGGridGeometryPositionAccess<3,3>
   void get(TargetType<0,3>::T* target,
            int i,
            FieldVector<UGCtype, 3>& coord) {
+#ifdef _3
     if (UG_NS<3>::Tag(target) == UG3d::HEXAHEDRON) {
       // Dune numbers the vertices of a hexahedron differently than UG.
       // The following two lines do the transformation
@@ -47,6 +49,39 @@ struct UGGridGeometryPositionAccess<3,3>
 
     for (int j=0; j<3; j++)
       coord[j] = vertex->iv.x[j];
+#endif
+  }
+
+};
+
+template <>
+struct UGGridGeometryPositionAccess<0,2>
+{
+  static inline
+  void get(TargetType<2,2>::T* target,
+           int i,
+           FieldVector<UGCtype, 2>& coord) {
+#ifdef _2
+    coord[0] = target->myvertex->iv.x[0];
+    coord[1] = target->myvertex->iv.x[1];
+#endif
+  }
+
+};
+
+template <>
+struct UGGridGeometryPositionAccess<2,2>
+{
+  static inline
+  void get(TargetType<0,2>::T* target,
+           int i,
+           FieldVector<UGCtype, 2>& coord) {
+#ifdef _2
+    UG2d::VERTEX* vertex = UG_NS<2>::Corner(target,i)->myvertex;
+
+    for (int j=0; j<2; j++)
+      coord[j] = vertex->iv.x[j];
+#endif
   }
 
 };
@@ -112,59 +147,6 @@ operator [](int i) const
   return coord_[i];
 }
 
-#if 0
-#ifdef _3
-template<class GridImp>
-inline const FieldVector<UGCtype, 3>& UGGridGeometry<0,3, GridImp>::
-operator [](int i) const
-{
-  const UG3d::VERTEX* vertex = target_->myvertex;
-
-  coord_[0][0] = vertex->iv.x[0];
-  coord_[0][1] = vertex->iv.x[1];
-  coord_[0][2] = vertex->iv.x[2];
-
-  return coord_[0];
-}
-
-template<class GridImp>
-inline const FieldVector<UGCtype, 3>& UGGridGeometry<3,3,GridImp>::
-operator [](int i) const
-{}
-#endif
-
-#ifdef _2
-#if 0
-template <class GridImp>
-inline const FieldVector<UGCtype, 2>& UGGridGeometry<0,2, GridImp>::
-operator [](int i) const
-{
-  const UG2d::VERTEX* vertex = target_->myvertex;
-
-  coord_[0][0] = vertex->iv.x[0];
-  coord_[0][1] = vertex->iv.x[1];
-
-  return coord_[i];
-}
-
-template<class GridImp>
-inline const FieldVector<UGCtype, 2>& UGGridGeometry<2,2,GridImp>::
-operator [](int i) const
-{
-  assert(0<=i && i<corners());
-
-  UG2d::VERTEX* vertex = UG_NS<2>::Corner(target_,i)->myvertex;
-
-  for (int j=0; j<2; j++)
-    coord_[i][j] = vertex->iv.x[j];
-
-  return coord_[i];
-}
-#endif
-
-#endif
-
-#endif
 
 template< int mydim, int coorddim, class GridImp>
 inline FieldVector<UGCtype, coorddim> UGGridGeometry<mydim,coorddim,GridImp>::
