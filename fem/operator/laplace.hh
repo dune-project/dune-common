@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_LAPLACE_HH__
-#define __DUNE_LAPLACE_HH__
+#ifndef DUNE_LAPLACE_HH
+#define DUNE_LAPLACE_HH
 
 #include <dune/fem/feoperator.hh>
 #include <dune/fem/feop/spmatrix.hh>
@@ -116,9 +116,8 @@ namespace Dune
         const double vol = entity.geometry().integrationElement(quad.point(pt));
 
         // multiply with transpose of jacobian inverse
-        //grad[0] = inv.mult_t (grad[pt]);
         JacobianRange tmp(0);
-        inv.umtv(grad[0], tmp[0]);
+        inv.umv(grad[0], tmp[0]);
         grad[0] = tmp[0];
 
         if( i != j )
@@ -126,9 +125,8 @@ namespace Dune
           baseSet.jacobian(j,quad,pt,othGrad);
 
           // multiply with transpose of jacobian inverse
-          //othGrad[0] = inv.mult_t(othGrad[0]);
           JacobianRange tmp(0);
-          inv.umtv(othGrad[0], tmp[0]);
+          inv.umv(othGrad[0], tmp[0]);
           othGrad[0] = tmp[0];
 
           val += ( grad[0] * othGrad[0] ) * quad.weight( pt ) * vol;
@@ -168,9 +166,8 @@ namespace Dune
           baseSet.jacobian(i,quad,pt,mygrad[i]);
 
           // multiply with transpose of jacobian inverse
-          //mygrad[i][0] = inv.mult_t (mygrad[i][0]);
           JacobianRange tmp(0);
-          inv.umtv(mygrad[i][0], tmp[0]);
+          inv.umv(mygrad[i][0], tmp[0]);
           mygrad[i][0] = tmp[0];
         }
 
