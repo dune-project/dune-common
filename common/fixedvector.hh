@@ -148,6 +148,17 @@ namespace Dune {
     Vec<dim,T> z; for (int i=0; i<dim; i++) z(i) = -b(i);return z;
   }
 
+  // Ausgabe
+  template <int dim, class T>
+  std::ostream& operator<< (std::ostream& s, const Vec<dim,T>& a)
+  {
+    s << "Vec<" << dim << "> = [";
+    for (int i=0; i<dim; i++)
+      s << " " << a(i);
+    s << " ]";
+    return s;
+  }
+
   /** @} */
 
 } // end namespace Dune
