@@ -1158,7 +1158,6 @@ namespace Dune {
     int coldim (int c) const
     {
       // find an entry in column j
-      B* entry=0;
       if (nnz>0)
       {
         for (int k=0; k<nnz; k++)
@@ -1168,6 +1167,7 @@ namespace Dune {
       }
       else
       {
+        B* entry=0;
         for (int i=0; i<n; i++)
         {
           int* j = r[i].getindexptr();
