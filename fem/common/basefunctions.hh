@@ -232,6 +232,8 @@ namespace Dune {
     void jacobian ( int baseFunct, QuadratureType & quad,
                     int quadPoint, JacobianRange & phi ) const
     {
+      //std::cout << dimCol << " Col | Row " << dimRow << "\n";
+      // Achtung , dimRow und dimCol vertauscht
       for(int i=0; i<dimCol; i++)
       {
         asImp().evaluate( baseFunct, jacobianDiffVar_[i] , quad, quadPoint, tmp_ );
