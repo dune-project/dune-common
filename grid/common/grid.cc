@@ -181,7 +181,7 @@ namespace Dune {
 
       for(int j=0; j<dim; j++)
       {
-        if( l(j) != refelem()[i](j) )
+        if( l[j] != refelem()[i][j] )
         {
           std::cerr << l; std::cerr << refelem()[i];
           std::cerr << "\nMapping to local coord went wrong! \n";
@@ -191,7 +191,7 @@ namespace Dune {
       g = global ( l );
       for(int j=0; j<dimworld; j++)
       {
-        if( g(j) != coord(j) )
+        if( ABS(g[j] - coord[j]) > 1e-15 )
         {
           std::cerr << "\nglobal--local of coord " << i << " failed! \n";
           std::cerr << "started with "; std::cerr << coord;
