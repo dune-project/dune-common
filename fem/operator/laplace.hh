@@ -66,7 +66,7 @@ namespace Dune
     {
       return new SparseRowMatrix<double>( this->functionSpace_.size ( this->functionSpace_.getGrid().maxlevel() ) ,
                                           this->functionSpace_.size ( this->functionSpace_.getGrid().maxlevel() ) ,
-                                          15 * (dim-1) , 0.0 );
+                                          15 * dim , 0.0 );
     }
 
     void prepareGlobal ( const DiscFunctionType &arg, DiscFunctionType &dest )
