@@ -366,6 +366,7 @@ INPUT                  = mainpage \
                          ../fem \
                          ../common \
                          ../solver \
+                         ../istl \
                          ../io \
                          ../lib/io
 
