@@ -33,7 +33,9 @@ namespace Dune {
     // corresponding IndexSet, here LevelIndexSet
     typedef typename DofManagerType::IndexSetType IndexSetType;
 
-    typedef DGMapper < IndexSetType, polOrd > DGMapperType;
+    enum { DimRange = FunctionSpaceType::DimRange };
+
+    typedef DGMapper < IndexSetType, polOrd, DimRange  > DGMapperType;
   public:
     // MemObjects of the DofManager, DofManager is not used for this space at
     // the moment
