@@ -41,6 +41,8 @@ namespace Dune {
     stub_border(*this, l);
     g.loop3D(l,beginI,endI,endI,endI,stub_inner); // inner
     g.loop3D(l,beginB,beginI,endI,endB,stub_border); // border
+    relocate_array[0] = stub_inner.Sum() + stub_border.Sum();
+    relocate_array[1] = stub_inner.Nr() + stub_border.Nr();
 
     TIME_SMOOTHER += MPI_Wtime();
     g.exchange(l,x);
@@ -95,6 +97,8 @@ namespace Dune {
       x[i] /= cl.aii;
       double omega=0.5;
       x[i] = (1-omega) * x[i] + omega * x_old[i-xoff];
+      relocate_array[0] += x[i];
+      relocate_array[1] ++;
     };
     g.exchange(l,x);
     delete[] x_old;
@@ -110,7 +114,7 @@ namespace Dune {
   mgc (level l) {
     if (l==0) { //g.roughest()) {
       double my_d = defect(l);
-      double max_d = my_d*reduction;
+      double max_d = 1e-15; //my_d*reduction;
       // alles auf einen Knoten schieben und loesen :-)
       int c=0;
 #ifndef NODUMP
@@ -229,7 +233,7 @@ namespace Dune {
     stub_inner.defect_array[0] += stub_border.defect_array[0];
     stub_inner.defect_array[1] += stub_border.defect_array[1];
 
-    assert(finite(stub_inner.defect_array[0]));
+    //    assert(finite(stub_inner.defect_array[0]));
 
     // get max defect of all processes
     double defect_array_recv[2];
@@ -326,10 +330,36 @@ namespace Dune {
     g.exchange(l,x);
   };
 
+  /** relocate the problem around 0 (only if we haven't any fixed point) */
+  template <class GRID, int SMOOTHER>
+  void pmgsolver<GRID,SMOOTHER>::
+  relocate(level lvl) {
+    if (! need_relocate) return;
+
+    // get max defect of all processes
+    double relocate_array_recv[2];
+    MPI_Allreduce(relocate_array, relocate_array_recv, 2,
+                  MPI_DOUBLE, MPI_SUM, g.comm());
+    relocate_array[0] = relocate_array_recv[0] / relocate_array_recv[1];
+
+    PMGStubs::RelocateIterator<GRID> stub(x,relocate_array[0]);
+    g.loop_all(lvl, stub);
+  }
+
   /** solve the problem for a certain perm an store the result in x */
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
   init(level lvl) {
+
+    need_relocate = true;
+    {
+      for (int d=0; d<DIM; d++) {
+        if (discrete.bc.bd(d,Dune::left) == dirichlet)
+          need_relocate = false;
+        if (discrete.bc.bd(d,Dune::right) == dirichlet)
+          need_relocate = false;
+      }
+    }
 
     /* build rhs and x-values at the border */
     b = 0;
@@ -430,7 +460,7 @@ namespace Dune {
 
     // solve roughest level excactly
     double mydefect=defect(lvl);
-    double maxdefect=mydefect*reduction;
+    double maxdefect=1e-15; //mydefect*reduction;
     int cycle=0;
 
 #ifdef SOLVER_DUMPDX
@@ -481,7 +511,7 @@ namespace Dune {
                              << std::endl;
       // multigrid cycle
       mydefect=defect(lvl);
-      maxdefect=1e-15; //mydefect*0.1;
+      maxdefect=mydefect*reduction;
       cycle=0;
       if (rank==0) std::cout << "\tMGC-Cycle " << cycle
                              << " " << mydefect << " " << 0 << std::endl;

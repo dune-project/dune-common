@@ -14,10 +14,15 @@ namespace Dune {
       Dune::Vector<GRID> & x;
       Dune::Vector<GRID> & b;
       array<DIM> add;
+      double sum;
+      double nr;
     public:
-      GaussSeidel(const pmgsolver<GRID,SMOOTHER> & solver_, level l) :
+      double Sum() { return sum; }
+      double Nr() { return nr; }
+      GaussSeidel(const pmgsolver<GRID,SMOOTHER> & solver_,
+                  level l) :
         solver(solver_), x(solver.x), b(solver.b),
-        add(solver.g.init_add(l))
+        add(solver.g.init_add(l)), sum(0), nr(0)
       {}
       void evaluate(int l, const array<DIM> & coord, int i) {
         // something to store the coeffs
@@ -57,6 +62,8 @@ namespace Dune {
         }
         x[i] /= cl.aii;
         assert(finite(x[i]));
+        sum += x[i];
+        nr ++;
       } // end evaluate
     };
 
@@ -268,6 +275,19 @@ namespace Dune {
           return 0.5*correction(dir,left) +
                  0.5*correction(dir,right);
         }
+      }
+    };
+
+    template <class GRID>
+    class RelocateIterator {
+      enum { DIM = GRID::griddim };
+      Dune::Vector<GRID> & x;
+      double relocate;
+    public:
+      RelocateIterator(Dune::Vector<GRID> & X, double relocate_) :
+        x(X), relocate(relocate_) {};
+      void evaluate(level l, const array<DIM> & coord, int i) {
+        x[i] -= relocate;
       }
     };
 

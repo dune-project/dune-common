@@ -191,8 +191,9 @@ namespace Dune {
       for (int i=0; i<_size; i++) { _data[i] = d; }
       return *this;
     }
-    T & operator [] (int i) { return _data[i]; }
-    const T & operator [] (int i) const { return _data[i]; }
+    T & operator [] (int i) { assert(i>=0 && i<_size); return _data[i]; }
+    const T & operator [] (int i) const
+    { assert(i>=0 && i<_size); return _data[i]; }
     T* data() { return _data; };
     // dummy implementations
     void preProcess() {};
