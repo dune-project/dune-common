@@ -109,7 +109,7 @@ namespace Dune
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
      */
-    template<int cc> int count () const { return realEntity.count<cc>(); };
+    template<int cc> int count () const { return realEntity.count<cc>(); }
     /*! Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
      */
@@ -362,7 +362,7 @@ namespace Dune
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
      */
-    template<int cc> int count () const { return asImp().count<cc>(); };
+    template<int cc> int count () const { return asImp().count<cc>(); }
 
     /*! Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
