@@ -303,7 +303,7 @@ namespace Dune {
     {
       const double EPSILON=1e-20;
 
-      int it, me;
+      int it;
       field_type rho, rho_new, alpha, beta, h, omega;
       field_type norm, norm_old, norm_0;
 
