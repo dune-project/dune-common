@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_UGGRIDENTITY_HH__
-#define __DUNE_UGGRIDENTITY_HH__
+#ifndef DUNE_UGGRIDENTITY_HH
+#define DUNE_UGGRIDENTITY_HH
 
 /** \file
  * \brief The UGGridEntity class and its specializations
@@ -123,7 +123,9 @@ namespace Dune {
     friend class UGGrid < dim , dimworld >;
     friend class UGGridIntersectionIterator < dim, dimworld>;
     friend class UGGridHierarchicIterator < dim, dimworld>;
-    friend class UGGridLevelIterator <0,dim,dimworld,All_Partition>;
+
+    template <int codim_, int dim_, int dimworld_, PartitionIteratorType PiType_>
+    friend class UGGridLevelIterator;
 
     // Either UG3d::ELEMENT or UG2d:ELEMENT
     typedef typename TargetType<0,dim>::T UGElementType;
