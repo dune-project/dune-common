@@ -234,22 +234,10 @@ integration_element (const Vec<dim,UGCtype>& local)
 {
   UGCtype area;
 
-  printf("myCoords = (%g %g %g)  (%g %g %g)  (%g %g %g)  (%g %g %g)\n",
-         (*this)[0](0), (*this)[0](1), (*this)[0](2),
-         (*this)[1](0), (*this)[1](1), (*this)[1](2),
-         (*this)[2](0), (*this)[2](1), (*this)[2](2),
-         (*this)[3](0), (*this)[3](1), (*this)[3](2));
-
-  Vec<3,double> testVec = (*this)[2];
-
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];
   Corner_Coordinates(target_, cornerCoords);
-  printf("y = (%g %g %g)  (%g %g %g)  (%g %g %g)  (%g %g %g)\n",
-         cornerCoords[0][0], cornerCoords[0][1], cornerCoords[0][2],
-         cornerCoords[1][0], cornerCoords[1][1], cornerCoords[1][2],
-         cornerCoords[2][0], cornerCoords[2][1], cornerCoords[2][2],
-         cornerCoords[3][0], cornerCoords[3][1], cornerCoords[3][2]);
+
   // compute the volume of the element
   Area_Of_Element(corners(), cornerCoords, area);
 
@@ -305,8 +293,7 @@ builtJacobianInverse(const Vec<dim,albertCtype>& local)
   }
   builtinverse_ = true;
 }
-#endif
-#if 0
+
 inline void AlbertGridElement<2,2>::
 builtJacobianInverse(const Vec<2,albertCtype>& local)
 {
@@ -417,9 +404,8 @@ builtJacobianInverse(const Vec<3,albertCtype>& local)
   builtinverse_ = true;
   return;
 }
-#endif
 
-#if 0
+
 template <>
 inline void AlbertGridElement<1,2>::
 builtJacobianInverse(const Vec<1,albertCtype>& local)

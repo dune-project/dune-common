@@ -12,11 +12,11 @@ namespace Dune {
   // --UGGridEntity
   // --Entity
   //
-  /*!
+  /** \brief The implementation of entities in a UGGrid
+
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
      An entity of codimension c in dimension d is a d-c dimensional object.
 
-     Here: the general template
    */
   template<int codim, int dim, int dimworld>
   class UGGridEntity :
@@ -54,7 +54,8 @@ namespace Dune {
 
     //! return index of sub entity with codim = cc and local number i
     //! i.e. return global number of vertex i
-    /* template<int cc> */ int subIndex (int i);
+    /** \todo So far only implemented for cc==dim */
+    template<int cc> int subIndex (int i);
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
