@@ -3,10 +3,6 @@
 #ifndef __DUNE_DISCFUNCARRAY_CC__
 #define __DUNE_DISCFUNCARRAY_CC__
 
-#define DANZ 128
-#define DANZR 128.0
-
-
 namespace Dune
 {
 
@@ -14,7 +10,9 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(DiscreteFunctionSpaceType & f) :
-    DiscreteFunctionDefaultType ( f ) , built_ ( false ) , freeLocalFunc_ (NULL) {}
+    DiscreteFunctionDefaultType ( f )
+    , built_ ( false ) , freeLocalFunc_ (NULL)
+    , allLevels_ (false) , level_ (-1), levOcu_ (0) {}
 
   // Constructor makeing discrete function
   template<class DiscreteFunctionSpaceType >
@@ -132,7 +130,6 @@ namespace Dune
   inline typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType *
   DiscFuncArray< DiscreteFunctionSpaceType >::getLocalFunction ()
   {
-    //std::cout << "Free Local Function!\n";
     if(!freeLocalFunc_)
     {
       LocalFunctionType *lf = new LocalFunctionType (functionSpace_,dofVec_);
@@ -150,7 +147,6 @@ namespace Dune
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::
   freeLocalFunction ( typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType *lf)
   {
-    //std::cout << "Free Local Function!\n";
     lf->setNext(freeLocalFunc_);
     freeLocalFunc_ = lf;
   }
@@ -193,14 +189,15 @@ namespace Dune
       return false;
     }
 
-    xdrstdio_create(&xdrs, file, XDR_ENCODE);      /*  Hybrid-Mesh XDR schreiben  */
+    xdrstdio_create(&xdrs, file, XDR_ENCODE);
 
-    // write allLevels to file
-    xdr_bool(&xdrs, &allLevels_);
+    int allHelp = (allLevels_ == true) ? 1 : 0;
+    // write allLevels to file , xdr_bool didnt work
+    xdr_int (&xdrs, &allHelp);
+    xdr_int (&xdrs, &level_);
 
     if(allLevels_)
     {
-      xdr_int(&xdrs, &level_);
       for(int lev=0; lev<level_; lev++)
         dofVec_[lev].processXdr(&xdrs);
 
@@ -236,22 +233,29 @@ namespace Dune
     // read xdr
     xdrstdio_create(&xdrs, file, XDR_DECODE);
 
+    int allHelp;
     // write allLevels to file
-    xdr_bool(&xdrs, &allLevels_);
+    xdr_int (&xdrs, &allHelp);
+    allLevels_ = (allHelp == 0) ? false : true;
+
+    // read max level on which function lives
+    xdr_int (&xdrs, &level_);
+
+    std::cout << allLevels_ << " allLevels!\n";
 
     if(allLevels_)
     {
-      xdr_int(&xdrs, &level_);
       levOcu_ = level_+1;
       getMemory();
 
       for(int lev=0; lev<=level_; lev++)
       {
         int length = functionSpace_.size( lev );
+        std::cerr << length << " Length!\n";
         dofVec_[lev].processXdr(&xdrs);
         if(length != dofVec_[lev].size())
         {
-          std::cerr << "DiscFuncArray::write_xdr: ERROR wrong length! \n";
+          std::cerr << "DiscFuncArray::read_xdr: ERROR wrong length! \n";
           abort();
         }
       }
@@ -266,7 +270,7 @@ namespace Dune
       dofVec_[lev].processXdr(&xdrs);
       if(length != dofVec_[lev].size())
       {
-        std::cerr << "DiscFuncArray::write_xdr: ERROR wrong length! \n";
+        std::cerr << "DiscFuncArray::read_xdr: ERROR wrong length! \n";
         abort();
       }
     }
@@ -384,7 +388,17 @@ namespace Dune
     const char * path=NULL;
     const char * fn = genFilename(path,filename,timestep);
     std::ofstream out( fn );
-    out << "P2\n " << DANZ+1 << " " <<DANZ+1 <<"\n255\n";
+
+    enum { dim = GridType::dimension };
+
+    int danz = 129;
+    /*
+       int danz = functionSpace_.getGrid().size(level_, dim );
+       danz = (int) pow (( double ) danz, (double) (1.0/dim) );
+       std::cout << danz << " Danz!\n";
+     */
+
+    out << "P2\n " << danz << " " << danz <<"\n255\n";
     DofIteratorType enddof = dend ( level_ );
     for(DofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
       out << (int)((*itdof)*255.) << "\n";
@@ -398,6 +412,13 @@ namespace Dune
   {
     FILE *in;
     int v;
+
+    // get the hole memory
+    level_ = functionSpace_.getGrid().maxlevel();
+    allLevels_ = true;
+    levOcu_ = level_+1;
+
+    getMemory();
     const char * path=NULL;
     const char * fn = genFilename(path,filename,timestep);
     in = fopen( fn, "r" );
