@@ -3,11 +3,12 @@
 #ifndef __DUNE_DISFUNCARRAY_HH__
 #define __DUNE_DISFUNCARRAY_HH__
 
-#include "../common/array.hh"
-#include "discretefunction.hh"
-#include "localfunction.hh"
-#include "dofiterator.hh"
+#include <dune/common/array.hh>
 
+#include "common/discretefunction.hh"
+#include "common/fastbase.hh"
+#include "common/localfunction.hh"
+#include "common/dofiterator.hh"
 
 #include <fstream>
 #include <rpc/xdr.h>
@@ -58,11 +59,11 @@ namespace Dune {
     //typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
 
     //! Constructor make empty DiscFuncArray
-    DiscFuncArray ( const DiscreteFunctionSpaceType & f );
+    DiscFuncArray ( DiscreteFunctionSpaceType & f );
 
     //! Constructor make Discrete Function for all or leaf level
-    DiscFuncArray ( const DiscreteFunctionSpaceType & f,
-                    int level , int codim , bool flag ) ;
+    DiscFuncArray ( DiscreteFunctionSpaceType & f,
+                    int level , int codim , bool leaf ) ;
 
     //! Constructor make Discrete Function for all or leaf level
     DiscFuncArray (const DiscFuncArray <DiscreteFunctionSpaceType> & df);
@@ -72,14 +73,10 @@ namespace Dune {
     ~DiscFuncArray ();
 
     // ***********  Interface  *************************
+    //! return access to local function for entity given by GridIterator
     template <class GridIteratorType>
     LocalFunctionArrayIterator<DiscreteFunctionType,GridIteratorType>
-    localFunction ( GridIteratorType &it )
-    {
-      LocalFunctionArrayIterator<DiscreteFunctionType,GridIteratorType>
-      tmp ( *this , it );
-      return tmp;
-    }
+    localFunction ( GridIteratorType &it );
 
     // we use the default implementation
     // Warning!!! returns reference to local object!
@@ -99,6 +96,24 @@ namespace Dune {
 
     void addScaled (const DiscFuncArray <DiscreteFunctionSpaceType> & g,
                     const RangeFieldType &scalar);
+
+    template <class GridIteratorType>
+    void addScaledLocal (GridIteratorType &it,
+                         const DiscFuncArray <DiscreteFunctionSpaceType> & g,
+                         const RangeFieldType &scalar);
+
+    //! add g to this on local entity
+    template <class GridIteratorType>
+    void addLocal (GridIteratorType &it,
+                   const DiscFuncArray <DiscreteFunctionSpaceType> & g);
+
+    //! add g to this on local entity
+    template <class GridIteratorType>
+    void substractLocal (GridIteratorType &it,
+                         const DiscFuncArray <DiscreteFunctionSpaceType> & g);
+
+    template <class GridIteratorType>
+    void setLocal (GridIteratorType &it, const RangeFieldType &scalar);
 
     //! print all dofs
     void print(std::ostream& s, int level);
@@ -329,7 +344,7 @@ namespace Dune {
   public:
 
     //! Constructor
-    LocalFunctionArrayIterator ( DiscFunctionType &df , GridIteratorType & it);
+    LocalFunctionArrayIterator ( DiscFunctionType &df , GridIteratorType & it );
 
     //! Copy Constructor
     LocalFunctionArrayIterator ( const LocalFunctionArrayIteratorType & copy);
@@ -362,7 +377,7 @@ namespace Dune {
     bool built_;
 
     //! GridIteratorType can be LevelIterator, HierarchicIterator or
-    //! NeighborIterator
+    //! NeighborIterator or LeafIterator
     GridIteratorType &it_;
 
     //! needed for access of local functions
@@ -374,6 +389,6 @@ namespace Dune {
 
 } // end namespace Dune
 
-#include "discfuncarray.cc"
+#include "discfuncarray/discfuncarray.cc"
 
 #endif
