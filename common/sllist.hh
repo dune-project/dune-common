@@ -4,6 +4,7 @@
 #define DUNE__SLLIST_HH
 
 #include <memory>
+#include <assert.h>
 #include "iteratorfacades.hh"
 
 namespace Dune
