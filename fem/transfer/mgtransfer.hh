@@ -38,6 +38,7 @@ namespace Dune {
      */
     SparseRowMatrix<double> galerkinRestrict(const SparseRowMatrix<double>& fineMat) const;
 
+    const SparseRowMatrix<double>& getMatrix() const {return matrix_;}
 
   protected:
     int coarseLevel;
