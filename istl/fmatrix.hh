@@ -1115,7 +1115,7 @@ namespace Dune {
   }
 
 
-  /**! Matrices of size 1x1 are treated in a special way
+  /** \brief Special type for 1x1 matrices
    */
   template<class K>
   class K11Matrix
@@ -1140,13 +1140,13 @@ namespace Dune {
     //===== random access interface to rows of the matrix
 
     //! random access to data
-    K& operator() ()
+    K& operator() () DUNE_DEPRECATED
     {
       return a;
     }
 
     //! same for read only access
-    const K& operator() () const
+    const K& operator() () const DUNE_DEPRECATED
     {
       return a;
     }
@@ -1162,16 +1162,16 @@ namespace Dune {
     //===== vector space arithmetic
 
     //! vector space addition
-    K11Matrix& operator+= (const K11Matrix& y)
+    K11Matrix& operator+= (const K& y)
     {
-      a += y.a;
+      a += y;
       return *this;
     }
 
     //! vector space subtraction
-    K11Matrix& operator-= (const K11Matrix& y)
+    K11Matrix& operator-= (const K& y)
     {
-      a -= y.a;
+      a -= y;
       return *this;
     }
 
@@ -1340,10 +1340,10 @@ namespace Dune {
 
     //===== query
 
-    // return true when (i,j) is in pattern
+    //! return true when (i,j) is in pattern
     bool exists (int i, int j) const
     {
-      return true;
+      return i==0 && j==0;
     }
 
     //===== conversion operator
@@ -1351,7 +1351,7 @@ namespace Dune {
     operator K () const {return a;}
 
   private:
-    // the data, very simply a built in array with rowwise ordering
+    // the data, just a single scalar
     K a;
   };
 
