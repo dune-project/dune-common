@@ -276,6 +276,15 @@ namespace Dune {
   }
 
   template<int codim, int dim, int dimworld>
+  inline int SEntityBase<codim,dim,dimworld>::global_index ()
+  {
+    int ind = 0;
+    for(int i=0; i<this->l; i++)
+      ind += this->grid->size(i,codim);
+    return ind+this->index();
+  }
+
+  template<int codim, int dim, int dimworld>
   inline SElement<dim-codim,dimworld>& SEntityBase<codim,dim,dimworld>::geometry ()
   {
     if (builtgeometry) return geo;
@@ -458,6 +467,17 @@ namespace Dune {
       return SLevelIterator<0,dim,dimworld>(*(this->grid),(this->l)-1,father_id);
     else
       return SLevelIterator<0,dim,dimworld>(*(this->grid),this->l,this->id);
+  }
+
+  template<int dim, int dimworld>
+  inline void SEntity<0,dim,dimworld>::father (SEntity<0,dim,dimworld> &pa)
+  {
+    if (!built_father) make_father();
+
+    if (this->l>0)
+      pa.make(*(this->grid),(this->l)-1,father_id);
+    else
+      pa.make(*(this->grid),(this->l),this->id);
   }
 
   template<int dim, int dimworld>
@@ -1032,6 +1052,15 @@ namespace Dune {
   inline int SGrid<dim,dimworld>::size (int level, int codim) const
   {
     return mapper[level].elements(codim);
+  }
+
+  template<int dim, int dimworld>
+  inline int SGrid<dim,dimworld>::global_size (int codim) const
+  {
+    int gSize = 0;
+    for(int i=0; i <= this->maxlevel(); i++)
+      gSize += this->size(i,codim);
+    return gSize;
   }
 
   template<int dim, int dimworld>
