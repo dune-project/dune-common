@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_YGRIDS_HH__
-#define __DUNE_YGRIDS_HH__
+#ifndef DUNE_YGRIDS_HH
+#define DUNE_YGRIDS_HH
 
 // C++ includes
 #include <iostream>
@@ -15,8 +15,8 @@
 #include <string.h>
 
 // local includes
-#include "dune/common/array.hh"
-#include "dune/common/fvector.hh"
+#include <dune/common/fvector.hh>
+#include <dune/common/stdstreams.hh>
 
 /*! \file grids.hh
    This is the basis for the yaspgrid implementation of the Dune grid interface.
@@ -1022,7 +1022,7 @@ namespace Dune {
       iTupel dims;
       double opt=1E100;
       optimize_dims(d-1,size,_procs,dims,opt);
-      if (_rank==0) std::cout << "Torus<" << d
+      if (_rank==0) dinfo << "Torus<" << d
         << ">: mapping " << _procs << " processes onto "
         << _dims << " torus." << std::endl;
 
@@ -1642,7 +1642,7 @@ namespace Dune {
       _levels[_maxlevel] = makelevel(L,s,periodic,o_interior,s_interior,overlap);
 
       // output
-      if (_torus.rank()==0) std::cout << "MultiYGrid<" << d
+      if (_torus.rank()==0) dinfo << "MultiYGrid<" << d
         << ">: coarse grid with size " << s
         << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
       //      print(std::cout);
@@ -1663,7 +1663,7 @@ namespace Dune {
       if (keep_overlap) overlap = 2*cg.overlap;else overlap = cg.overlap;
 
       // output
-      if (_torus.rank()==0) std::cout << "MultiYGrid<"
+      if (_torus.rank()==0) dinfo << "MultiYGrid<"
         << d << ">: refined to size "
         << s << std::endl;
 
