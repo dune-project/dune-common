@@ -33,8 +33,13 @@ namespace Dune
   template<class TG, class TL>
   class IndexPair;
 
+  /**
+   * @brief Print an index pair.
+   * @param os The outputstream to print to.
+   * @param pair The index pair to print.
+   */
   template<class TG, class TL>
-  std::ostream& operator<<(std::ostream& os, const IndexPair<TG,TL>&);
+  std::ostream& operator<<(std::ostream& os, const IndexPair<TG,TL>& pair);
 
   template<class TG, class TL>
   bool operator==(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
@@ -161,6 +166,13 @@ namespace Dune
     LocalIndex() :
       localIndex_(0), state_(VALID){}
 
+
+    /**
+     * @brief Constructor.
+     * @param index The value of the index.
+     */
+    LocalIndex(uint32_t index) :
+      localIndex_(index), state_(VALID){}
     /**
      * @brief get the local index.
      * @return The local index.
@@ -287,10 +299,10 @@ namespace Dune
     {
       typedef typename ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N>::iterator
       Father;
-
+      friend class IndexSet<GlobalIndexType,LocalIndexType,N>;
     public:
       iterator(IndexSet<TG,TL,N>& indexSet, const Father& father)
-        : Father(father), indexSet_(indexSet)
+        : Father(father), indexSet_(&indexSet)
       {}
 
       iterator(const iterator& other)
@@ -303,23 +315,24 @@ namespace Dune
         indexSet_ = other.indexSet_;
       }
 
+    private:
       /**
        * @brief Mark the index as deleted.
        *
-       * It will be removed in the endResize method of the
+       * The deleted flag will be set in the local index.
+       * The index will be removed in the endResize method of the
        * index set.
        */
-      inline void markAsDeleted() throw(InvalidIndexSetState)
+      inline void markAsDeleted() const throw(InvalidIndexSetState)
       {
 #ifndef NDEBUG
-        if(state_ != RESIZE)
+        if(indexSet_->state_ != RESIZE)
           DUNE_THROW(InvalidIndexSetState, "Indices can only be removed "
                      <<"while in RESIZE state!");
 #endif
         Father::operator*().local().setState(DELETED);
       }
 
-    private:
       /** @brief The index set we are an iterator of. */
       IndexSet<TG,TL,N>* indexSet_;
 
@@ -372,13 +385,13 @@ namespace Dune
     throw(InvalidIndexSetState);
 
     /**
-     * @brief Delete an index.
+     * @brief Mark an index as deleted.
      *
-     * If there is no pair with that global index, nothing is done.
-     * @param global The globally unique id.
+     * The index will be deleted during endResize().
+     * @param position An iterator at the position we want to delete.
      * @exception InvalidState If index set is not in IndexSetState::RESIZE mode.
      */
-    inline void remove(const GlobalIndexType& global)
+    inline void markAsDeleted(const iterator& position)
     throw(InvalidIndexSetState);
 
     /**
@@ -477,12 +490,23 @@ namespace Dune
     IndexSetState state_;
     /** @brief Number to keep track of the number of resizes. */
     int seqNo_;
+    /** @brief Whether entries were deleted in resize mode. */
+    bool deletedEntries_;
     /**
      * @brief Merges the _localIndices and newIndices arrays and creates a new
      * localIndices array.
      */
     inline void merge();
   };
+
+
+  /**
+   * @brief Print an index set.
+   * @param os The outputstream to print to.
+   * @param pair The index set to print.
+   */
+  template<class TG, class TL, int N>
+  std::ostream& operator<<(std::ostream& os, const IndexSet<TG,TL,N>& indexSet);
 
   /**
    * @brief Decorates an index set with the possibility to find a global index
@@ -586,6 +610,19 @@ namespace Dune
   {
     os<<"{global="<<pair.global_<<", local="<<pair.local_<<"}";
     return os;
+  }
+
+  template<class TG, class TL, int N>
+  inline std::ostream& operator<<(std::ostream& os, const IndexSet<TG,TL,N>& indexSet)
+  {
+    typedef typename IndexSet<TG,TL,N>::const_iterator Iterator;
+    Iterator end = indexSet.end();
+    os<<"{";
+    for(Iterator index = indexSet.begin(); index != end; ++index)
+      os<<*index<<" ";
+    os<<"}";
+    return os;
+
   }
 
   template<class TG, class TL>
@@ -695,13 +732,7 @@ namespace Dune
 #endif
 
     state_ = RESIZE;
-    /*
-       for(iterator iter=localIndices_.begin(), end=localIndices_.end();
-        iter != end; ++iter)
-       {
-        iter->local().setState(OLD);
-       }
-     */
+    deletedEntries_ = false;
   }
 
   template<class TG, class TL, int N>
@@ -731,7 +762,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline void IndexSet<TG,TL,N>::remove(const TG& global)
+  inline void IndexSet<TG,TL,N>::markAsDeleted(const iterator& global)
   throw(InvalidIndexSetState){
     // Checks in unproductive code
 #ifndef NDEBUG
@@ -739,7 +770,9 @@ namespace Dune
       DUNE_THROW(InvalidIndexSetState, "Indices can only be removed "
                  <<"while in RESIZE state!");
 #endif
-    operator[](global).setState(DELETED);
+    deletedEntries_ = true;
+
+    global.markAsDeleted();
   }
 
   template<class TG, class TL, int N>
@@ -765,7 +798,7 @@ namespace Dune
       localIndices_=newIndices_;
       newIndices_.clear();
     }
-    else if(newIndices_.size()>0)
+    else if(newIndices_.size()>0 || deletedEntries_)
     {
       ArrayList<IndexPair<TG,TL>,N> tempPairs;
       typedef typename ArrayList<IndexPair<TG,TL>,N>::iterator iterator;
@@ -787,8 +820,8 @@ namespace Dune
           old.eraseToHere();
         }
         else if(old->global() == added->global()) {
-          // Indices have to b unique
-          assert(old->local().attribute()==added->local().attribute());
+          // Indices have to be the same
+          assert(old->local()==added->local());
           old.eraseToHere();
         }
         else
@@ -874,7 +907,7 @@ namespace Dune
   inline typename IndexSet<TG,TL,N>::iterator
   IndexSet<TG,TL,N>::begin()
   {
-    return localIndices_.begin();
+    return iterator(*this, localIndices_.begin());
   }
 
 
@@ -882,7 +915,7 @@ namespace Dune
   inline typename IndexSet<TG,TL,N>::iterator
   IndexSet<TG,TL,N>::end()
   {
-    return localIndices_.end();
+    return iterator(*this,localIndices_.end());
   }
 
   template<class TG, class TL, int N>
