@@ -249,37 +249,37 @@ namespace Dune {
 
      Template class Grid defines a "base class" for all grids.
    */
-  template< int dim, int dimworld, class ct, template<int,int> class GridImp>
+  template< int dim, int dimworld, class ct, class GridImp>
   class Grid {
   public:
     template <int cd>
     struct codim
     {
       // IMPORTANT: codim<codim>::Geometry == Geometry<dim-codim,dimworld>
-      typedef typename GridImp<dim,dimworld>::Traits::template codim<cd>::Geometry Geometry;
-      typedef typename GridImp<dim,dimworld>::Traits::template codim<cd>::LocalGeometry LocalGeometry;
+      typedef typename GridImp::Traits::template codim<cd>::Geometry Geometry;
+      typedef typename GridImp::Traits::template codim<cd>::LocalGeometry LocalGeometry;
       // do we need this?
-      typedef typename GridImp<dim,dimworld>::Traits::template codim<cd>::ReferenceGeometry ReferenceGeometry;
+      typedef typename GridImp::Traits::template codim<cd>::ReferenceGeometry ReferenceGeometry;
 
-      typedef typename GridImp<dim,dimworld>::Traits::template codim<cd>::Entity Entity;
+      typedef typename GridImp::Traits::template codim<cd>::Entity Entity;
 
-      typedef typename GridImp<dim,dimworld>::Traits::template codim<cd>::LevelIterator LevelIterator;
+      typedef typename GridImp::Traits::template codim<cd>::LevelIterator LevelIterator;
 
-      typedef typename GridImp<dim,dimworld>::Traits::template codim<cd>::EntityPointer EntityPointer;
+      typedef typename GridImp::Traits::template codim<cd>::EntityPointer EntityPointer;
 
       template <PartitionIteratorType pitype>
       struct partition
       {
-        typedef typename GridImp<dim,dimworld>::Traits::template codim<cd>::template partition<pitype>::LevelIterator LevelIterator;
+        typedef typename GridImp::Traits::template codim<cd>::template partition<pitype>::LevelIterator LevelIterator;
       };
 
-      typedef typename GridImp<dim,dimworld>::Traits::HierarchicIterator HierarchicIterator;
+      typedef typename GridImp::Traits::HierarchicIterator HierarchicIterator;
 
-      typedef typename GridImp<dim,dimworld>::Traits::IntersectionIterator IntersectionIterator;
+      typedef typename GridImp::Traits::IntersectionIterator IntersectionIterator;
 
-      typedef typename GridImp<dim,dimworld>::Traits::LeafIterator LeafIterator;
+      typedef typename GridImp::Traits::LeafIterator LeafIterator;
 
-      typedef typename GridImp<dim,dimworld>::Traits::BoundaryEntity BoundaryEntity;
+      typedef typename GridImp::Traits::BoundaryEntity BoundaryEntity;
     };
 
     //! A grid exports its dimension
@@ -354,9 +354,9 @@ namespace Dune {
 
   private:
     //!  Barton-Nackman trick
-    GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
+    GridImp& asImp () {return static_cast<GridImp &> (*this);}
     //!  Barton-Nackman trick
-    const GridImp<dim,dimworld>& asImp () const {return static_cast<const GridImp<dim,dimworld>&>(*this);}
+    const GridImp& asImp () const {return static_cast<const GridImp &>(*this);}
   };
 
 
@@ -374,22 +374,36 @@ namespace Dune {
   template<int dim,
       int dimworld,
       class ct,
-      template<int,int> class GridImp>
+      class GridImp>
   class GridDefault : public Grid <dim,dimworld,ct,GridImp>
   {
   public:
-    typedef typename Dune::LeafIterator<const GridImp<dim,dimworld>, Dune::GenericLeafIterator> LeafIterator;
+    typedef typename Dune::LeafIterator<const GridImp, Dune::GenericLeafIterator> LeafIterator;
 
     //! return LeafIterator which points to the first entity in maxLevel
     LeafIterator leafbegin(int maxLevel) const
     {
-      return GenericLeafIterator< const GridImp<dim,dimworld> >(asImp(),maxLevel,false);
+      return GenericLeafIterator< const GridImp >(asImp(),maxLevel,false);
     };
 
     //! return LeafIterator which points behind the last entity in maxLevel
     LeafIterator leafend(int maxLevel) const
     {
-      return GenericLeafIterator< const GridImp<dim,dimworld> >(asImp(),maxLevel,true);
+      return GenericLeafIterator< const GridImp >(asImp(),maxLevel,true);
+    }
+
+    //! return LeafIterator which points to the first entity in maxLevel
+    template<PartitionIteratorType pitype>
+    LeafIterator leafbegin(int maxLevel) const
+    {
+      return GenericLeafIterator< const GridImp >(asImp(),maxLevel,false);
+    };
+
+    //! return LeafIterator which points behind the last entity in maxLevel
+    template<PartitionIteratorType pitype>
+    LeafIterator leafend(int maxLevel) const
+    {
+      return GenericLeafIterator< const GridImp >(asImp(),maxLevel,true);
     }
 
     //***************************************************************
@@ -438,13 +452,13 @@ namespace Dune {
 
   protected:
     //! Barton-Nackman trick
-    GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
-    const GridImp<dim,dimworld>& asImp () const {return static_cast<const GridImp<dim,dimworld>&>(*this);}
+    GridImp& asImp () {return static_cast<GridImp &>(*this);}
+    const GridImp& asImp () const {return static_cast<const GridImp &>(*this);}
   };
 
   /** @} */
 
-  template <int dim, int dimw, template<int,int> class GridImp,
+  template <int dim, int dimw, class GridImp,
       template<int,int,class> class GeometryImp,
       template<int,int,class> class EntityImp,
       template<class> class BoundaryEntityImp,
@@ -454,49 +468,49 @@ namespace Dune {
       template<class> class LeafIteratorImp = Dune::GenericLeafIterator>
   struct GridTraits
   {
-    typedef Dune::IntersectionIterator<const GridImp<dim,dimw>, IntersectionIteratorImp> IntersectionIterator;
+    typedef Dune::IntersectionIterator<const GridImp, IntersectionIteratorImp> IntersectionIterator;
 
-    typedef Dune::HierarchicIterator<const GridImp<dim,dimw>, HierarchicIteratorImp> HierarchicIterator;
+    typedef Dune::HierarchicIterator<const GridImp, HierarchicIteratorImp> HierarchicIterator;
 
-    typedef Dune::LeafIterator<const GridImp<dim,dimw>, LeafIteratorImp> LeafIterator;
+    typedef Dune::LeafIterator<const GridImp, LeafIteratorImp> LeafIterator;
 
-    typedef Dune::BoundaryEntity<const GridImp<dim,dimw>, BoundaryEntityImp> BoundaryEntity;
+    typedef Dune::BoundaryEntity<const GridImp, BoundaryEntityImp> BoundaryEntity;
 
     template <int cd>
     struct codim
     {
       // IMPORTANT: codim<codim>::Geometry == Geometry<dim-codim,dimw>
-      typedef Dune::Geometry<dim-cd, dimw, const GridImp<dim,dimw>, GeometryImp> Geometry;
-      typedef Dune::Geometry<dim-cd, dim, const GridImp<dim,dimw>, GeometryImp> LocalGeometry;
+      typedef Dune::Geometry<dim-cd, dimw, const GridImp, GeometryImp> Geometry;
+      typedef Dune::Geometry<dim-cd, dim, const GridImp, GeometryImp> LocalGeometry;
       // do we need this?
-      typedef Dune::Geometry<dim-cd, dim-cd, const GridImp<dim,dimw>, GeometryImp> ReferenceGeometry;
+      typedef Dune::Geometry<dim-cd, dim-cd, const GridImp, GeometryImp> ReferenceGeometry;
       // we could - if needed - introduce an other struct for dimglobal of Geometry
-      typedef Dune::Entity<cd, dim, const GridImp<dim,dimw>, EntityImp> Entity;
+      typedef Dune::Entity<cd, dim, const GridImp, EntityImp> Entity;
 
-      typedef Dune::LevelIterator<cd,All_Partition,const GridImp<dim,dimw>,LevelIteratorImp> LevelIterator;
+      typedef Dune::LevelIterator<cd,All_Partition,const GridImp,LevelIteratorImp> LevelIterator;
 
       // The wrapper class should be adjusted in future
-      typedef const Dune::LevelIterator<cd,All_Partition,const GridImp<dim,dimw>,LevelIteratorImp> EntityPointer;
+      typedef const Dune::LevelIterator<cd,All_Partition,const GridImp,LevelIteratorImp> EntityPointer;
 
       //! Please doc me!
-      typedef Dune::LevelIterator<cd,Interior_Partition,const GridImp<dim,dimw>,LevelIteratorImp>        InteriorLevelIterator;
+      typedef Dune::LevelIterator<cd,Interior_Partition,const GridImp,LevelIteratorImp>        InteriorLevelIterator;
 
       //! Please doc me!
-      typedef Dune::LevelIterator<cd,InteriorBorder_Partition,const GridImp<dim,dimw>,LevelIteratorImp>  InteriorBorderLevelIterator;
+      typedef Dune::LevelIterator<cd,InteriorBorder_Partition,const GridImp,LevelIteratorImp>  InteriorBorderLevelIterator;
 
       //! Please doc me!
-      typedef Dune::LevelIterator<cd,Overlap_Partition,const GridImp<dim,dimw>,LevelIteratorImp>         OverlapLevelIterator;
+      typedef Dune::LevelIterator<cd,Overlap_Partition,const GridImp,LevelIteratorImp>         OverlapLevelIterator;
 
       //! Please doc me!
-      typedef Dune::LevelIterator<cd,OverlapFront_Partition,const GridImp<dim,dimw>,LevelIteratorImp>    OverlapFrontLevelIterator;
+      typedef Dune::LevelIterator<cd,OverlapFront_Partition,const GridImp,LevelIteratorImp>    OverlapFrontLevelIterator;
 
       //! Please doc me!
-      typedef Dune::LevelIterator<cd,Ghost_Partition,const GridImp<dim,dimw>,LevelIteratorImp>           GhostLevelIterator;
+      typedef Dune::LevelIterator<cd,Ghost_Partition,const GridImp,LevelIteratorImp>           GhostLevelIterator;
 
       template <PartitionIteratorType pitype>
       struct partition
       {
-        typedef Dune::LevelIterator<cd,pitype,const GridImp<dim,dimw>,LevelIteratorImp> LevelIterator;
+        typedef Dune::LevelIterator<cd,pitype,const GridImp,LevelIteratorImp> LevelIterator;
       };
 
     };
