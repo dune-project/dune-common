@@ -430,7 +430,7 @@ namespace Albert
        */
       template<int cc> AlbertGridLevelIterator<cc,dim,dimworld> entity (int i) // 0 <= i < count()
       { // Default == Codim 1 Faces
-        AlbertGridLevelIterator<cc,dim,dimworld> tmp(elInfo_,index(),i,0,0);
+        AlbertGridLevelIterator<cc,dim,dimworld> tmp(grid_,elInfo_,index(),i,0,0);
         return tmp;
       };
 
@@ -439,12 +439,12 @@ namespace Albert
         printf("Entity::entity<codim = %d>: Warning elNum may be not correct! \n",codim);
         if(i < 3)
         { // 0,1,2
-          AlbertGridLevelIterator<2,3,3> tmp(elInfo_,elNum_,0,i,0);
+          AlbertGridLevelIterator<2,3,3> tmp(grid_,elInfo_,elNum_,0,i,0);
           return tmp;
         }
         else
         { // 3,4,5
-          AlbertGridLevelIterator<2,3,3> tmp(elInfo_,elNum_,i-2,1,0);
+          AlbertGridLevelIterator<2,3,3> tmp(grid_,elInfo_,elNum_,i-2,1,0);
           return tmp;
         }
       };
