@@ -33,6 +33,8 @@ namespace Dune {
     friend class UGGridEntity<0,dim,dimworld>;
     friend class UGGridEntity<2,dim,dimworld>;
     friend class UGGridEntity<2,2,dimworld>;
+    friend class UGGridEntity<3,dim,dimworld>;
+    friend class UGGridEntity<3,3,dimworld>;
 
   public:
 

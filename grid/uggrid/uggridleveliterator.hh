@@ -25,10 +25,11 @@ namespace Dune {
     //   friend class UGGridEntity<2,dim,dimworld>;
     //   friend class UGGridEntity<1,dim,dimworld>;
     //   friend class UGGridEntity<0,dim,dimworld>;
-    //   friend class UGGrid < dim , dimworld >;
 
     friend class UGGridLevelIteratorFactory<2,2,2,All_Partition>;
     friend class UGGridLevelIteratorFactory<0,2,2,All_Partition>;
+    friend class UGGridLevelIteratorFactory<3,3,3,All_Partition>;
+    friend class UGGridLevelIteratorFactory<0,3,3,All_Partition>;
 
   public:
 
