@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_REMOTEINDICES_HH__
-#define __DUNE_REMOTEINDICES_HH__
+#ifndef DUNE_REMOTEINDICES_HH
+#define DUNE_REMOTEINDICES_HH
 
 #include <dune/istl/indexset.hh>
 #include <dune/common/poolallocator.hh>
@@ -327,11 +327,20 @@ namespace Dune {
      */
     int destSeqNo_;
 
+    /** @brief The index pair type. */
+    typedef IndexPair<GlobalIndexType, ParallelLocalIndex<AttributeType> >
+    PairType;
+    /** @brief The type of the remote index list. */
+    typedef SLList<RemoteIndex<GlobalIndexType,AttributeType> >
+    RemoteIndexList;
+
     /**
      * @brief The remote indices.
+     *
+     * The key is the process id and the values are the pair of remote
+     * index lists, the first for receiving, the second for sending.
      */
-    std::map<int,SLList<RemoteIndex<GlobalIndexType,AttributeType> > >
-    remoteIndices_;
+    std::map<int, std::pair<RemoteIndexList*,RemoteIndexList*> > remoteIndices_;
 
     /* @brief The index pairs for local copying if from and to differ. */
     SLList<std::pair<int,int> > copyLocal_;
@@ -366,24 +375,26 @@ namespace Dune {
      * @param position The position to start packing.
      */
     template<bool ignorePublic>
-    inline void packEntries(IndexPair<GlobalIndexType, ParallelLocalIndex<AttributeType> >** myPairs,
-                            char* p_out, MPI_Datatype type, int bufferSize, int* position);
+    inline void packEntries(PairType** myPairs, const IndexSetType& indexSet,
+                            char* p_out, MPI_Datatype type, int bufferSize,
+                            int* position);
 
     /**
-     * @brief Pack the indices to send if source_ and dest_ are the same.
+     * @brief unpacks the received indices and builds the remote index list.
      *
-     * If the template parameter ignorePublic is true all indices will be treated
-     * as public.
-     * @param myPairs Array to store references to the public indices in.
-     * @param p_out The output buffer to pack the entries to.
-     * @param type The mpi datatype for the pairs.
-     * @param bufferSize The size of the output buffer p_out.
-     * @param position The position to start packing.
+     * @param remote The list to add the indices to.
+     * @param remoteEntries The number of remote entries to unpack.
+     * @param local The local indices to check wether we know the remote
+     *              indices.
+     * @param localEntries The number of local indices.
+     * @param type The mpi data type for unpacking.
+     * @param p_in The input buffer to unpack from.
+     * @param postion The position in the buffer to start unpacking from.
+     * @param bufferSize The size of the input buffer.
      */
-    template<bool ignorePublic>
-    inline void packEntriesDiffer(IndexPair<GlobalIndexType, ParallelLocalIndex<AttributeType> >** myPairs,
-                                  char* p_out, MPI_Datatype type, int bufferSize, int* position);
-
+    inline void unpackIndices(RemoteIndexList& remote, int remoteEntries,
+                              PairType** local, int localEntries, char* p_in,
+                              MPI_Datatype type, int* positon, int bufferSize);
 
   };
 
@@ -548,71 +559,29 @@ namespace Dune {
 
   template<class TG, class TA>
   template<bool ignorePublic>
-  inline void RemoteIndices<TG,TA>::packEntries(IndexPair<GlobalIndexType,LocalIndexType>** myPairs,
-                                                char* p_out, MPI_Datatype type, int bufferSize,
+  inline void RemoteIndices<TG,TA>::packEntries(IndexPair<GlobalIndexType,LocalIndexType>** pairs,
+                                                const IndexSetType& indexSet,
+                                                char* p_out, MPI_Datatype type,
+                                                int bufferSize,
                                                 int *position)
   {
     // fill with own indices
     typedef typename IndexSetType::const_iterator const_iterator;
     typedef IndexPair<GlobalIndexType,LocalIndexType> PairType;
-    const_iterator end = dest_.end();
+    const const_iterator end = indexSet.end();
 
-    //Now pack the indices
+    //Now pack the source indices
     int i=0;
-    if(&dest_==&source_) {
-      for(const_iterator index = dest_.begin(); index != end; ++index)
-        if(ignorePublic || index->local().isPublic()) {
-
-          MPI_Pack(const_cast<PairType*>(&(*index)), 1,
-                   type,
-                   p_out, bufferSize, position, comm_);
-          myPairs[i++] = const_cast<PairType*>(&(*index));
-
-        }
-    }else{
-      for(const_iterator index = dest_.begin(); index != end; ++index)
-        if(ignorePublic || index->local().isPublic())
-          MPI_Pack(const_cast<PairType*>(&(*index)), 1,
-                   type,
-                   p_out, bufferSize, position, comm_);
-
-      end = source_.end();
-      int i=0;
-
-      for(const_iterator index=source_.begin(); index != end; ++index)
-        if(ignorePublic || index->local().isPublic())
-          myPairs[i++] = const_cast<PairType*>(&(*index));
-    }
-  }
-  /*
-     template<class TG, class TA>
-     template<bool ignorePublic>
-     inline void RemoteIndices<TG,TA>::packEntriesDiffer(IndexPair<GlobalIndexType,LocalIndexType>** myPairs,
-                                                      char* p_out, MPI_Datatype type , int bufferSize,
-                                                      int *position)
-     {
-     // fill with own indices
-     typedef typename IndexSetType::const_iterator const_iterator;
-     typedef IndexPair<GlobalIndexType,LocalIndexType> PairType;
-     const_iterator end = dest_.end();
-
-     //Now pack the indices
-     for(const_iterator index = dest_.begin(); index != end; ++index)
-      if(ignorePublic || index->local().isPublic()){
+    for(const_iterator index = indexSet.begin(); index != end; ++index)
+      if(ignorePublic || index->local().isPublic()) {
 
         MPI_Pack(const_cast<PairType*>(&(*index)), 1,
                  type,
                  p_out, bufferSize, position, comm_);
+        pairs[i++] = const_cast<PairType*>(&(*index));
+
       }
-
-     end = dest_.end();
-     int i=0;
-
-     for(const_iterator index=dest_.begin(); index != end; ++index)
-      if(ignorePublic || index->local().isPublic())
-        myPairs[i++] = const_cast<PairType*>(&(*index));
-     }
-   */
+  }
 
   template<class TG, class TA>
   template<bool ignorePublic>
@@ -642,7 +611,6 @@ namespace Dune {
       else
         ++sourceIndex;
     }
-    std::cout << i<<" indices marked for copying!"<<std::endl;
   }
 
   template<class TG, class TA>
@@ -651,38 +619,63 @@ namespace Dune {
   {
     remoteIndices_.clear();
 
-    // number of local indices to publish
-    // The indices of the destination will be send.
-    int publish = (ignorePublic) ? dest_.size() : dest_.noPublic();
-    int maxPublish;
-
     // Processor configuration
     int rank, procs;
     MPI_Comm_rank(comm_, &rank);
     MPI_Comm_size(comm_, &procs);
-
-    if(procs == 1)
+    if(procs==1)
+      // nothing to do in sequential mode
       return;
 
+    // number of local indices to publish
+    // The indices of the destination will be send.
+    int sourcePublish, destPublish;
+
+    // Do we need to send two index sets?
+    bool sendTwo = (&source_ != &dest_);
+
+    sourcePublish = (ignorePublic) ? source_.size() : source_.noPublic();
+
+    if(sendTwo)
+      destPublish = (ignorePublic) ? dest_.size() : dest_.noPublic();
+    else
+      // we only need to send one set of indices
+      destPublish = 0;
+
+    int maxPublish, publish=sourcePublish+destPublish;
+
+    // Calucate maximum number of indices send
     MPI_Allreduce(&publish, &maxPublish, 1, MPI_INT, MPI_MAX, comm_);
 
     // allocate buffers
     typedef IndexPair<GlobalIndexType,LocalIndexType> PairType;
 
-    int noPairs = (ignorePublic) ? source_.size() : source_.noPublic();
-    PairType** myPairs = new PairType*[noPairs];
+    PairType** destPairs;
+    PairType** sourcePairs = new PairType*[sourcePublish];
+
+    if(sendTwo)
+      destPairs = new PairType*[destPublish];
+    else
+      destPairs=sourcePairs;
 
     char** buffer = new char*[2];
     int bufferSize;
     int position=0;
     int intSize;
+
+    // calculate buffer size
     MPI_Datatype type = MPITraits<PairType>::getType();
 
     MPI_Pack_size(maxPublish, type, comm_,
                   &bufferSize);
     MPI_Pack_size(1, MPI_INT, comm_,
                   &intSize);
-    bufferSize += intSize;
+    // Our message will contain the following:
+    // a bool wether two index sets where sent
+    // the size of the source and the dest indexset,
+    // then the source and destination indices
+    bufferSize += 3 * intSize;
+
     buffer[0] = new char[bufferSize];
     buffer[1] = new char[bufferSize];
 
@@ -694,15 +687,25 @@ namespace Dune {
 
       if(proc==1) {
 
-        // First pack the number of indices we send
-        MPI_Pack(&publish, 1, MPI_INT, p_out, bufferSize, &position,
+        MPI_Pack(&sendTwo, 1, MPI_INT, p_out, bufferSize, &position,
                  comm_);
-        // Now pack the actual entries
-        //if(&source_==&dest_)
-        packEntries<ignorePublic>(myPairs, p_out, type, bufferSize, &position);
-        //else
-        //packEntriesDiffer<ignorePublic>(myPairs, p_out, type, bufferSize, &position);
-        std::cout<<rank<<": Publishing "<<publish<<" indices!"<<std::endl<<std::flush;
+
+        // The number of indices we send for each index set
+        MPI_Pack(&sourcePublish, 1, MPI_INT, p_out, bufferSize, &position,
+                 comm_);
+        MPI_Pack(&destPublish, 1, MPI_INT, p_out, bufferSize, &position,
+                 comm_);
+
+        // Now pack the source indices and setup the destination pairs
+        packEntries<ignorePublic>(sourcePairs, source_, p_out, type,
+                                  bufferSize, &position);
+        // If necessary send the dest indices and setup the source pairs
+        if(sendTwo)
+          packEntries<ignorePublic>(destPairs, dest_, p_out, type,
+                                    bufferSize, &position);
+
+        //std::cout<<rank<<": Publishing "<<sourcePublish<<" source and "
+        // <<destPublish<<" destination indices!"<<std::endl<<std::flush;
 
       }
 
@@ -721,63 +724,112 @@ namespace Dune {
       }
 
       // unpack the number of indices we received
-      int noReceived;
+      int noReceive, noSend, twoIndexSets;
       position=0;
-      MPI_Unpack(p_in, bufferSize, &position, &noReceived, 1, MPI_INT, comm_);
+      // Did we receive two index sets?
+      MPI_Unpack(p_in, bufferSize, &position, &twoIndexSets, 1, MPI_INT, comm_);
+      // The number of source indices received
+      MPI_Unpack(p_in, bufferSize, &position, &noReceive, 1, MPI_INT, comm_);
+      // The number of destination indices received
+      MPI_Unpack(p_in, bufferSize, &position, &noSend, 1, MPI_INT, comm_);
 
       // The process these indices are from
       int remoteProc = (rank+procs-proc)%procs;
-      SLList<RemoteIndex<GlobalIndexType,AttributeType> >& remoteIndices = remoteIndices_[remoteProc];
 
-      if(noReceived>0) {
-        PairType index;
-        MPI_Unpack(p_in, bufferSize, &position, &index, 1,
-                   type, comm_);
+      //typedef SLList<RemoteIndex<GlobalIndexType,AttributeType> >
+      //	RemoteIndexList;
 
-        int n_in=0, pairIndex=0;
 
-        //Check if we know the global index
-        while(pairIndex<noPairs) {
-          if(myPairs[pairIndex]->global()==index.global()) {
+      RemoteIndexList* receive= new RemoteIndexList();
+      RemoteIndexList* send;
 
-            remoteIndices.push_back(RemoteIndex<TG,TA>(index.local().attribute(), myPairs[pairIndex]));
-            ++pairIndex;
-            // unpack next remote index
-            if((++n_in)<noReceived) {
-              MPI_Unpack(p_in, bufferSize, &position, &index, 1,
-                         type, comm_);
-            }else{
-              // No more received indices
-              break;
-            }
-          }else if (myPairs[pairIndex]->global()<index.global()) {
-            ++pairIndex;
-          }else{
-            // We do not know the index, unpack next
-            if((++n_in)<noReceived) {
-              MPI_Unpack(p_in, bufferSize, &position, &index, 1,
-                         type, comm_);
-            }else
-              // No more received indices
-              break;
-          }
+      unpackIndices(*receive, noReceive, destPairs, destPublish,
+                    p_in, type, &position, bufferSize);
+
+
+      if(twoIndexSets || sendTwo) {
+        // Indices may differ in each direction
+        send = new RemoteIndexList();
+        unpackIndices(*send, noSend, sourcePairs, sourcePublish,
+                      p_in, type, &position, bufferSize);
+      }else
+        send = receive;
+
+      if(send->empty() && receive->empty()) {
+        if(send==receive) {
+          delete send;
+        }else{
+          delete send;
+          delete receive;
         }
+      }else{
+        remoteIndices_.insert(std::make_pair(remoteProc,
+                                             std::make_pair(send,receive)));
       }
-      if(remoteIndices.empty())
-        remoteIndices_.erase(remoteProc);
     }
     // delete allocated memory
-    delete[] myPairs;
+    if(destPairs!=sourcePairs)
+      delete[] destPairs;
+
+    delete[] sourcePairs;
     delete[] buffer[0];
     delete[] buffer[1];
   }
 
   template<class TG, class TA>
+  inline void RemoteIndices<TG,TA>::unpackIndices(RemoteIndexList& remote,
+                                                  int remoteEntries,
+                                                  PairType** local,
+                                                  int localEntries,
+                                                  char* p_in,
+                                                  MPI_Datatype type,
+                                                  int* position,
+                                                  int bufferSize)
+  {
+    if(remoteEntries==0)
+      return;
+
+    PairType index;
+    MPI_Unpack(p_in, bufferSize, position, &index, 1,
+               type, comm_);
+
+    int n_in=0, localIndex=0;
+
+    //Check if we know the global index
+    while(localIndex<localEntries) {
+      if(local[localIndex]->global()==index.global()) {
+        remote.push_back(RemoteIndex<TG,TA>(index.local().attribute(),
+                                            local[localIndex]));
+        localIndex++;
+        // unpack next remote index
+        if((++n_in) < remoteEntries) {
+          MPI_Unpack(p_in, bufferSize, position, &index, 1,
+                     type, comm_);
+        }else{
+          // No more received indices
+          break;
+        }
+      }else if (local[localIndex]->global()<index.global()) {
+        ++localIndex;
+      }else{
+        // We do not know the index, unpack next
+        if((++n_in) < remoteEntries) {
+          MPI_Unpack(p_in, bufferSize, position, &index, 1,
+                     type, comm_);
+        }else
+          // No more received indices
+          break;
+      }
+    }
+  }
+
+
+  template<class TG, class TA>
   template<bool ignorePublic>
   inline void RemoteIndices<TG,TA>::rebuild()
   {
-    if(&source_ != &dest_)
-      buildLocal<ignorePublic>();
+    //if(&source_ != &dest_)
+    //buildLocal<ignorePublic>();
     buildRemote<ignorePublic>();
   }
 
@@ -817,16 +869,32 @@ namespace Dune {
 
     }
     typedef SLList<RemoteIndex<TG,TA> > RList;
-    typedef typename std::map<int,RList>::const_iterator const_iterator;
+    typedef typename std::map<int,std::pair<RList*,RList*> >::const_iterator const_iterator;
 
     const const_iterator rend = indices.remoteIndices_.end();
 
     for(const_iterator rindex = indices.remoteIndices_.begin(); rindex!=rend; ++rindex) {
-      os<<rank<<": Prozess "<<rindex->first<<": ";
-      const typename RList::const_iterator end= rindex->second.end();
+      os<<rank<<": Prozess "<<rindex->first<<":";
 
-      for(typename RList::const_iterator index = rindex->second.begin(); index != end; ++index)
-        os<<*index<<" ";
+      if(!rindex->second.first->empty()) {
+        os<<" send:";
+
+        const typename RList::const_iterator send= rindex->second.first->end();
+
+        for(typename RList::const_iterator index = rindex->second.first->begin();
+            index != send; ++index)
+          os<<*index<<" ";
+        os<<std::endl;
+      }
+      if(!rindex->second.second->empty()) {
+        os<<rank<<": Prozess "<<rindex->first<<": "<<"receive: ";
+
+        const typename RList::const_iterator rend= rindex->second.second->end();
+
+        for(typename RList::const_iterator index = rindex->second.second->begin();
+            index != rend; ++index)
+          os<<*index<<" ";
+      }
       os<<std::endl<<std::flush;
     }
     return os;
