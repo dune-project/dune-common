@@ -138,13 +138,31 @@ EOF`
 #	      [$X_LIBS])      
 #      fi
 
+#      if test x$HAVE_UG = x1 ; then
+#	  AC_CHECK_LIB([ug$UG_DIM],[InitUg],
+#	      [UG_LDFLAGS="$UG_LDFLAGS"
+#	       UG_LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"],
+#	      [HAVE_UG="0"],
+#	      [-ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS])
+#      fi
+
+      AC_LANG_PUSH(CPLUSPLUS)
       if test x$HAVE_UG = x1 ; then
-	  AC_CHECK_LIB([ug$UG_DIM],[InitUg],
-	      [UG_LDFLAGS="$UG_LDFLAGS"
-	       UG_LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"],
-	      [HAVE_UG="0"],
-	      [-ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS])
+          LIBS=-lug$UG_DIM
+          LDFLAGS=-ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS
+          AC_TRY_LINK(
+              [include <initug.h>],
+              [int i = UG${UG_DIM}d::InitUg(argc, argv);],
+              [ac_have_libUG=yes
+                   UG_LDFLAGS="$UG_LDFLAGS"
+                   UG_LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"
+              ],
+              [ac_have_libUG=no
+                   HAVE_UG="0"
+                   AC_MSG_ERROR([*** You need libUG$UG_DIM])]
+          )
       fi
+      AC_LANG_POP
 
       # pre-set variable for summary
       with_ug="no"
