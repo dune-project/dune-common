@@ -259,6 +259,7 @@ namespace Dune
         throw;
       }
     }
+    return;
   }
 
   /* \brief Copy-constructor
