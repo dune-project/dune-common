@@ -45,31 +45,13 @@ namespace Dune {
     typedef typename GridImp::template codim<0>::Entity Entity;
 
     //! the default Constructor
-    UGGridHierarchicIterator(int actLevel,int maxLevel);
+    UGGridHierarchicIterator(int maxLevel);
 
     void increment();
 
     bool equals (const UGGridHierarchicIterator& i) const;
 
-    //UGGridEntity<0,GridImp::dimension,GridImp>& dereference() const;
     Entity& dereference() const;
-
-#if 0
-    //! prefix increment
-    UGGridHierarchicIterator& operator ++();
-
-    //! equality
-    bool operator== (const UGGridHierarchicIterator& i) const;
-
-    //! inequality
-    bool operator!= (const UGGridHierarchicIterator& i) const;
-
-    //! dereferencing
-    UGGridEntity<0,GridImp::dimension,GridImp>& operator*();
-
-    //! arrow
-    UGGridEntity<0,GridImp::dimension,GridImp>* operator->();
-#endif
 
   private:
 

@@ -17,15 +17,6 @@ UGGridHierarchicIterator<GridImp>::UGGridHierarchicIterator(int maxLevel)
 }
 
 template<class GridImp>
-inline
-UGGridHierarchicIterator<GridImp>::
-UGGridHierarchicIterator(const UGGridHierarchicIterator& other)
-  : virtualEntity_(other.virtualEntity_),
-    maxlevel_(other.maxlevel_),
-    elemStack(other.elemStack)
-{}
-
-template<class GridImp>
 void UGGridHierarchicIterator<GridImp>::increment()
 {
   if (elemStack.empty())
