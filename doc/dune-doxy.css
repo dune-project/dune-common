@@ -24,7 +24,6 @@ div.header {
   font-weight: bold;
   font-size: 36px;
   text-align: left;
-  letter-spacing: .5ex;
   color: #e88e3f;
 }
 div.header a,
@@ -52,7 +51,6 @@ div.subheader {
   font-weight: bold;
   font-size: 16px;
   text-align: left;
-  letter-spacing: .5ex;
   color: #e88e3f; 
 }
 
@@ -88,7 +86,6 @@ div.navigation {
   padding: 4px;
   font-size: small;
   font-family: sans-serif;
-  letter-spacing: .5ex;
 /*  font-weight: bold; */
 }
 
@@ -171,7 +168,6 @@ h1 {
   font-family: sans-serif;
   font-weight: bold;
   text-align: left;
-  letter-spacing: .5ex;
   color: black;
 }
 
@@ -179,21 +175,18 @@ h2 {
   font-family: sans-serif;
   font-weight: bold;
   text-align: left;
-  letter-spacing: .5ex;
 }
 
 h3 { 
   font-family: sans-serif;
   font-weight: bold;
   text-align: left;
-  letter-spacing: .5ex;
 }
 
 h4 { 
   font-family: sans-serif;
   font-weight: bold;
   text-align: left;
-  letter-spacing: .5ex;
 }
 
 hr { 
