@@ -83,24 +83,41 @@ namespace Dune
     {
       while(true)
       {
-        ++hit;
+        if (hit != hend) ++hit;
         if (hit == hend)
         {
-          ++lit;
+          if (lit != lend) ++lit;
           if (lit == lend)
           {
-            break;
+            // end iterator is lend<0>(0)
+            static_cast<EntityPointerImp&>(*this) = lit.realIterator;
+            return;
           }
           else
           {
             hit = lit->hbegin(maxlevel);
             hend = lit->hend(maxlevel);
+            if (hit == hend)
+            {
+              // level 0 is leaf
+              static_cast<EntityPointerImp&>(*this) = lit.realIterator;
+              return;
+            }
           }
         }
-        if(hit->level() == maxlevel) break;
-        if(hit->isLeaf()) break;
+        if(hit->level() == maxlevel)
+        {
+          // assign hit to this
+          static_cast<EntityPointerImp&>(*this) = hit.realIterator;
+          return;
+        }
+        if(hit->isLeaf())
+        {
+          // assign hit to this
+          static_cast<EntityPointerImp&>(*this) = hit.realIterator;
+          return;
+        }
       }
-      static_cast<EntityPointerImp&>(*this) = hit.realIterator;
     }
 
     GenericLeafIterator(GridImp & g, int maxl, bool end) :
@@ -113,9 +130,23 @@ namespace Dune
     {
       if (end)
       {
+        // end iterator is lend<0>(0)
         lit = grid.template lend<0>(0);
+        static_cast<EntityPointerImp&>(*this) = lit.realIterator;
+        return;
       }
-      static_cast<EntityPointerImp&>(*this) = hit.realIterator;
+      if (hit != hend)
+      {
+        // find first leaf
+        increment();
+        // assign
+        static_cast<EntityPointerImp&>(*this) = hit.realIterator;
+      }
+      else
+      {
+        // level 0 is leaf
+        static_cast<EntityPointerImp&>(*this) = lit.realIterator;
+      }
     }
 
     GenericLeafIterator(const GenericLeafIterator & rhs) :
