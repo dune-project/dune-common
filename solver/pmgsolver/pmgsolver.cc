@@ -474,7 +474,8 @@ namespace Dune {
                                << std::endl;
         lastdefect = mydefect;
         cycle ++;
-
+        if (mydefect < 1e-16)
+          break;
       }
     }
 #ifdef SOLVER_DUMPDX
