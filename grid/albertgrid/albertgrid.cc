@@ -2,7 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 //************************************************************************
 //
-//  Implementation von AlbertGrid
+//  implementation of AlbertGrid
 //
 //  namespace Dune
 //
@@ -425,8 +425,6 @@ namespace Dune
   inline Vec<dim>& AlbertGridElement<dim,dimworld>::
   local(const Vec<dimworld>& global)
   {
-    ALBERT REAL lambda[dim+1];
-
     tmpVec_ = localBary(global);
 
     // Umrechnen von baryzentrischen localen Koordinaten nach
@@ -441,7 +439,7 @@ namespace Dune
   inline Vec<dim+1> AlbertGridElement<dim,dimworld>::
   localBary(const Vec<dimworld>& global)
   {
-    std::cout << "localBary for dim != dimworld not implemented yet!";
+    std::cout << "\nlocalBary for dim != dimworld not implemented yet!\n";
     Vec<dim+1> tmp (0.0);
     return tmp;
   }
@@ -454,8 +452,7 @@ namespace Dune
     enum { dimworld = 2};
 
     ALBERT REAL edge[dim][dimworld], x[dimworld];
-    ALBERT REAL x0, det, det0, det1, lmin;
-    int j, k;
+    ALBERT REAL x0, det, det0, det1;
     Vec<dim+1,albertCtype> lambda;
     ALBERT REAL *v = NULL;
 
@@ -508,9 +505,8 @@ namespace Dune
     enum { dimworld = 3};
 
     ALBERT REAL edge[dim][dimworld], x[dimworld];
-    ALBERT REAL x0, det, det0, det1, det2, lmin;
+    ALBERT REAL x0, det, det0, det1, det2;
     Vec<dim+1,albertCtype> lambda;
-    int j, k;
 
     //! we got to solve the problem :
     //! ( q1x q2x q3x) (lambda1) (qx)
@@ -949,7 +945,7 @@ namespace Dune
   inline AlbertGridLevelIterator<0,dim,dimworld>
   AlbertGridEntity < codim, dim ,dimworld >::father()
   {
-    std::cout << "father not correctly implemented! \n";
+    std::cout << "\nAlbertGridEntity<" << codim << "," << dim << "," << dimworld <<">::father not correctly implemented! \n";
     ALBERT TRAVERSE_STACK travStack;
     initTraverseStack(&travStack);
 
@@ -1754,7 +1750,7 @@ namespace Dune
   AlbertGridIntersectionIterator<dim,dimworld>::
   intersection_self_local()
   {
-    std::cout << "intersection_self_local not check until now! \n";
+    std::cout << "\nintersection_self_local not checked until now! \n";
     if(!manageInterEl_)
     {
       manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();

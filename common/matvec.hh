@@ -48,13 +48,6 @@ namespace Dune {
       x[k] = t;
     }
 
-    //! Constructor making unit vector in direction k
-    //Vec (int k)
-    //{
-    //	for (int i=0; i<n; i++) x[i] = 0;
-    //	x[k] = 1;
-    //}
-
     //! Constructor making vector with identical coordinates
     Vec (T t)
     {
