@@ -4,6 +4,7 @@
 #define __DUNE_AMIRAMESHWRITER_HH__
 
 #include <string>
+#include "../../common/array.hh"
 
 namespace Dune {
 

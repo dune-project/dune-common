@@ -1,8 +1,11 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 // ///////////////////////////////////////////////
-// Specialization for SimpleGrid<3,3>
+// Specialization of the AmiraMesh writer for SimpleGrid<3,3>
 // ///////////////////////////////////////////////
+
+#include "../../grid/simplegrid.hh"
+
 namespace Dune {
 
   template<>
