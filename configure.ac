@@ -18,7 +18,10 @@ AC_PROG_LIBTOOL
 AC_CONFIG_FILES([Makefile
 	         common/Makefile
                  fem/Makefile
-                 fem/localbase/Makefile
+                 fem/common/Makefile
+                 fem/discfuncarray/Makefile
+                 fem/fastquad/Makefile
+                 fem/gaussquadrature/Makefile
                  fem/operator/Makefile
                  grid/Makefile
                  grid/albertgrid/Makefile
@@ -27,6 +30,7 @@ AC_CONFIG_FILES([Makefile
                  grid/spgrid/Makefile
                  lib/Makefile
                  lib/io/Makefile
+                 operator/Makefile
                  solver/Makefile
                  solver/common/Makefile
                  solver/pmgsolver/Makefile

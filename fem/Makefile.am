@@ -1,13 +1,7 @@
 # $Id$
 
-SUBDIRS = common discfuncarray gaussquadrature quadlqh
+SUBDIRS = common discfuncarray fastquad gaussquadrature operator
 
 femincludedir = $(includedir)/dune/fem
-feminclude_HEADERS = \
-              discfuncarray.hh \
-              discreteoperatorimp.hh \
-              feoperator.hh \
-              gaussquadrature.hh \
-              inverseoperators.hh \
-              quadlqh.hh \
-              quadtetratri.hh
+feminclude_HEADERS = discfuncarray.hh discreteoperatorimp.hh fastquad.hh \
+  feoperator.hh gaussquadrature.hh inverseoperators.hh lagrangebase.hh
