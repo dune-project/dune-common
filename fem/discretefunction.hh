@@ -366,8 +366,10 @@ namespace Dune {
       else
         levOcu_ = 1;
 
+      // for all grid levels we have at least a vector with length 0
       int numLevel = const_cast<GridType &> (functionSpace_.getGrid()).maxlevel() +1;
       dofVec_.resize(numLevel);
+
       // this is done only if levOcu_ > 1
       for(int i=0; i< levOcu_-1; i++)
       {
@@ -376,15 +378,22 @@ namespace Dune {
         for( int j=0; j<length; j++)
           (dofVec_[i])[j] = 0.0;
       }
+
+      // the last level is done always
       int length = functionSpace_.size( level_ );
       (dofVec_[level_]).realloc( length );
       for( int j=0; j<length; j++) (dofVec_[level_])[j] = 0.0;
 
-      // I want a special operator for  (dofVec_[levOcu_-1]) = 0.0;
     };
 
     void set ( DofType x, int level )
     {
+      std::cout << "Set Level " << level << " with value " << x << std::endl;
+      if(!allLevels_ && level != level_)
+      {
+        std::cout << "Level not set! \n";
+        return;
+      }
       GlobalDofIteratorType endit = dend ( level );
       for(GlobalDofIteratorType it = dbegin ( level ); it != endit; ++it)
       {

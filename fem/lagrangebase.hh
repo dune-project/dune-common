@@ -97,6 +97,10 @@ namespace Dune {
     }
 
   };
+#if 0
+
+  // not in use
+
   //*****************************************************************
   //
   //!    (0,1)
@@ -110,6 +114,20 @@ namespace Dune {
   //!    (0,0)    (1,0)
   //
   //*****************************************************************
+#endif
+  //*****************************************************************
+  //
+  //!    (0,1)
+  //!     2|\    coordinates and local node numbers
+  //!      | \
+  // //!      |  \
+  //!      |   \
+  // //!      |    \
+  // //!      |     \
+  // //!     0|______\1
+  //!    (0,0)    (1,0)
+  //
+  //*****************************************************************
   template<class FunctionSpaceType>
   class LagrangeBaseFunction < FunctionSpaceType , triangle , 1 >
     : public BaseFunctionInterface<FunctionSpaceType>
@@ -118,6 +136,7 @@ namespace Dune {
     RangeField factor[3];
 
   public:
+#if 0
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
       : BaseFunctionInterface<FunctionSpaceType> (f)
     {
@@ -137,19 +156,42 @@ namespace Dune {
             factor[i] = 0.0;
       }
     }
+#endif
+
+    // this is the version with with phi(x,y) = x as base function 1
+    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
+      : BaseFunctionInterface<FunctionSpaceType> (f)
+    {
+      if(baseNum == 0)
+      { // 1 - x - y
+        factor[0] =  1.0;
+        factor[1] = -1.0;
+        factor[2] = -1.0;
+      }
+      else
+      {
+        factor[2] = 0.0;
+        for(int i=1; i<3; i++) // x , y
+          if(baseNum == i)
+            factor[i] = 1.0;
+          else
+            factor[i] = 0.0;
+      }
+    }
 
     virtual void evaluate ( const Vec<0, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      phi = factor[2];
-      for(int i=0; i<2; i++)
-        phi += factor[i] * x.get(i);
+      phi = factor[0];
+      for(int i=1; i<3; i++)
+        phi += factor[i] * x.get(i-1);
     }
 
     virtual void evaluate ( const Vec<1, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      int num = diffVariable.get(0);
+      // x or y ==> 1 or 2
+      int num = diffVariable.get(0)+1;
       phi = factor[num];
     }
 
@@ -254,8 +296,18 @@ namespace Dune {
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
       : BaseFunctionInterface<FunctionSpaceType>(f)
     {
+      if((baseNum < 0) || (baseNum > 3))
+      {
+        std::cout << "Wrong baseNum given to LagrangeBase for hexahedrons \n";
+        abort();
+      }
       // looks complicated but works
       int fak[dim] = {0,0};
+
+      fak[0] = baseNum%2; // 0,2 ==> 0, 1,3 ==> 1
+      fak[1] = (baseNum%4 > 1) ? 1 : 0; // 2,3,6,7 ==> 1 | 0,1,4,5 ==> 0
+
+#if 0
       switch(baseNum)
       {
       case 0 : {
@@ -276,6 +328,7 @@ namespace Dune {
         abort();
       }
       }
+#endif
 
       // tensor product
       for(int i=0; i<dim; i++)
@@ -351,12 +404,12 @@ namespace Dune {
   //          /  .      /  |
   //         4---------5   | <-- 3 (back side)
   //   0 --> |   .     | 1 |
-  //         |   2.....|...3
+  //         |   2.....|...3 (1,1,0)
   //         |  .      |  /
   //         | .   2   | / <-- 4 (front side)
   //         |.        |/
   //         0---------1
-  //
+  //      (0,0,0)    (1,0,0)
   //  this is the DUNE local coordinate system for hexahedrons
   //
   //*********************************************************************
@@ -376,8 +429,18 @@ namespace Dune {
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
       : BaseFunctionInterface<FunctionSpaceType>(f)
     {
+      if((baseNum < 0) || (baseNum > 7))
+      {
+        std::cout << "Wrong baseNum given to LagrangeBase for hexahedrons \n";
+        abort();
+      }
       // looks complicated but works
       int fak[dim] = {0,0,0};
+      fak[0] =  baseNum%2; // 0,2 ==> 0, 1,3 ==> 1
+      fak[1] = (baseNum%4 > 1) ? 1 : 0; // 2,3,6,7 ==> 1 | 0,1,4,5 ==> 0
+      fak[2] = (baseNum > 3) ? 1 : 0;
+
+#if 0
       switch(baseNum)
       {
       case 0 : {
@@ -411,7 +474,7 @@ namespace Dune {
       }
 
       }
-
+#endif
       // tensor product
       for(int i=0; i<dim; i++)
       {
@@ -576,6 +639,8 @@ namespace Dune {
       enum { codim = EntityType::dimension };
       // return vertex number , very slow
       return (*en.entity<codim>( localNum )).index();
+      //int num = (*en.entity<codim>( localNum )).index();
+      //return num;
     };
 
   };
