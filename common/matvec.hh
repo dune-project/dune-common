@@ -91,7 +91,7 @@ namespace Dune {
     }
 
     //! Print matrix content to an output stream
-    void print (std::ostream& s, int indent)
+    void print (std::ostream& s, int indent) const
     {
       for (int k=0; k<indent; k++) s << " ";
       s << "Mat [n=" << n << ",m=" << m << "]" << std::endl;
