@@ -7,3 +7,4 @@ parsetest
 test-stack
 arraylisttest
 smartpointertest
+iteratorfacadetest

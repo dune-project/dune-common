@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 #include <dune/common/arraylist.hh>
+#include <dune/common/test/iteratortest.hh>
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
@@ -50,6 +51,7 @@ int testSorting(){
       return 1;
     }
   }
+
   return 0;
 }
 
@@ -123,9 +125,8 @@ int testComparison(){
   initConsecutive(alist);
 
   ArrayList<double,10>::iterator iter=alist.begin(), iter1=alist.begin();
-  iter1=5+iter;
+  iter1=iter+5;
   iter1=iter-5;
-  iter1=5-iter;
   iter1=iter+5;
 
 
@@ -165,8 +166,10 @@ int testComparison(){
 int main(){
   using namespace Dune;
   using namespace std;
+  ArrayList<double,100> alist;
 
-  int ret=0;
+  randomizeList(alist);
+  int ret=testIterator(alist);
 
   if(0!=testComparison()) {
     ret++;
