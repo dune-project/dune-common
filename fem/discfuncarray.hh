@@ -23,30 +23,20 @@ namespace Dune {
   class DiscFuncArray
     : public DiscreteFunctionDefault < DiscreteFunctionSpaceType,
           DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
+          LocalFunctionArray <DiscreteFunctionSpaceType > ,
           DiscFuncArray <DiscreteFunctionSpaceType> >
   {
     typedef DiscreteFunctionDefault < DiscreteFunctionSpaceType,
         DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
+        LocalFunctionArray <DiscreteFunctionSpaceType > ,
         DiscFuncArray <DiscreteFunctionSpaceType > >
     DiscreteFunctionDefaultType;
 
-    typedef typename DiscreteFunctionSpaceType::RangeField DofType;
-    typedef typename DiscreteFunctionSpaceType::DomainField DomainField;
-    typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
-
-    typedef typename DiscreteFunctionSpaceType::GridType GridType;
-
-    typedef MemoryProvider < LocalFunctionArray <DiscreteFunctionSpaceType> >
-    MemoryProviderType;
-
-    typedef typename MemoryProviderType::ObjectEntity ObjectEntityType;
-
     enum { myId_ = 0};
-
   public:
 
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
-    typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
+    //typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
 
     //! Constructor make empty DiscFuncArray
     DiscFuncArray ( const DiscreteFunctionSpaceType & f );
@@ -85,8 +75,8 @@ namespace Dune {
     void clear( );
 
     //! set all dof to value x
-    void set( DofType x );
-    void setLevel( DofType x, int level );
+    void set( RangeField x );
+    void setLevel( RangeField x, int level );
 
     //! print all dofs
     void print(std::ostream& s, int level);
@@ -159,8 +149,8 @@ namespace Dune {
     //MemoryProviderType localFuncProvider_;
     LocalFunctionType * freeLocalFunc_;
 
-    //! for all level an Array < DofType > , the data
-    std::vector < Array < DofType > > dofVec_;
+    //! for all level an Array < RangeField > , the data
+    std::vector < Array < RangeField > > dofVec_;
   };
 
 } // end namespace Dune
