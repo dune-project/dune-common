@@ -100,16 +100,15 @@ template<> int UGGrid < 2, 2 >::numOfUGGrids = 0;
 template<> int UGGrid < 3, 3 >::numOfUGGrids = 0;
 
 template < int dim, int dimworld >
-inline UGGrid < dim, dimworld >::UGGrid()
+inline UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL), refinementType_(LOCAL)
 {
-  multigrid_ = NULL;
   init(500, 10);
 }
 
 template < int dim, int dimworld >
 inline UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned envHeapSize)
+  : multigrid_(NULL), refinementType_(LOCAL)
 {
-  multigrid_ = NULL;
   init(heapSize, envHeapSize);
 }
 
@@ -145,21 +144,32 @@ inline void UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHe
 
     UG_NS<dimworld>::InitUg(&argc, &argv);
 
-    // Create a dummy problem
+  }
+
+  // Create a dummy problem
 #ifdef _3
-    UG3d::CoeffProcPtr coeffs[1];
-    UG3d::UserProcPtr upp[1];
+  UG3d::CoeffProcPtr coeffs[1];
+  UG3d::UserProcPtr upp[1];
 #else
-    UG2d::CoeffProcPtr coeffs[1];
-    UG2d::UserProcPtr upp[1];
+  UG2d::CoeffProcPtr coeffs[1];
+  UG2d::UserProcPtr upp[1];
 #endif
 
-    upp[0] = NULL;
-    coeffs[0] = NULL;
+  upp[0] = NULL;
+  coeffs[0] = NULL;
 
-    if (UG_NS<dimworld>::CreateBoundaryValueProblem("DuneDummyProblem",
-                                                    1,coeffs,1,upp) == NULL)
-      assert(false);
+  // Create unique problem name
+  static unsigned int nameCounter = 0;
+  std::stringstream numberAsAscii;
+  numberAsAscii << nameCounter;
+  name_ = "DuneUGGrid_" + numberAsAscii.str();
+
+  std::string problemName = name_ + "_Problem";
+
+  if (UG_NS<dimworld>::CreateBoundaryValueProblem(problemName.c_str(), 1,coeffs,1,upp) == NULL)
+    DUNE_THROW(GridError, "UG?d::CreateBoundaryValueProblem() returned and error code!");
+
+  if (numOfUGGrids==0) {
 
     // A Dummy new format
     // We need to pass the parameters in this complicated way, because
@@ -185,12 +195,6 @@ inline void UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHe
   numOfUGGrids++;
 
   extra_boundary_data_ = 0;
-
-  // Create unique name
-  static unsigned int nameCounter = 0;
-  std::stringstream numberAsAscii;
-  numberAsAscii << nameCounter;
-  name_ = "DuneUGGrid_" + numberAsAscii.str();
 
   std::cout << "UGGrid<" << dim << "," << dimworld <<"> with name "
             << name_ << " created!" << std::endl;
@@ -241,77 +245,7 @@ inline int UGGrid < dim, dimworld >::maxlevel() const
   return multigrid_->topLevel;
 }
 
-#if 0
-template <>
-inline UGGridLevelIterator<3,3,3,All_Partition>
-UGGrid < 3, 3 >::lbegin<3> (int level) const
-{
-  assert(multigrid_);
-  UG3d::grid* theGrid = multigrid_->grids[level];
 
-  if (!theGrid)
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  UGGridLevelIterator<3,3,3,All_Partition> it((*const_cast<UGGrid< 3, 3 >* >(this)),level);
-
-  UG3d::node* mytarget = theGrid->firstNode[0];
-
-  it.setToTarget(mytarget, level);
-  return it;
-}
-
-template <>
-inline UGGridLevelIterator<0,3,3, All_Partition>
-UGGrid < 3, 3 >::lbegin<0> (int level) const
-{
-  assert(multigrid_);
-  UG3d::grid* theGrid = multigrid_->grids[level];
-
-  if (!theGrid)
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  UGGridLevelIterator<0,3,3, All_Partition> it((*const_cast<UGGrid< 3, 3 >* >(this)),level);
-  it.setToTarget(theGrid->elements[0], level);
-  return it;
-}
-#endif
-
-#if 0  // _2
-template <>
-inline UGGridLevelIterator<2,2,2,All_Partition>
-UGGrid < 2, 2 >::lbegin<2> (int level) const
-{
-  assert(multigrid_);
-  UG2d::grid* theGrid = multigrid_->grids[level];
-
-  if (!theGrid)
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  UGGridLevelIterator<2,2,2,All_Partition> it(level);
-
-  UG2d::node* mytarget = theGrid->firstNode[0];
-
-  it.setToTarget(mytarget, level);
-  return it;
-}
-
-template <>
-inline UGGridLevelIterator<0,2,2,All_Partition>
-UGGrid < 2, 2 >::lbegin<0> (int level) const
-{
-  assert(multigrid_);
-  UG2d::grid* theGrid = multigrid_->grids[level];
-
-  if (!theGrid)
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  UGGridLevelIterator<0,2,2,All_Partition> it(level);
-  it.setToTarget(theGrid->elements[0], level);
-  return it;
-}
-
-
-#endif
 
 template<int dim, int dimworld>
 template<int codim>
@@ -392,7 +326,7 @@ template < int dim, int dimworld >
 void UGGrid < dim, dimworld >::makeNewUGMultigrid()
 {
   //configure @PROBLEM $d @DOMAIN;
-  std::string configureArgs[2] = {"configure DuneDummyProblem", "d " + name() + "_Domain"};
+  std::string configureArgs[2] = {"configure " + name() + "_Problem", "d " + name() + "_Domain"};
   const char* configureArgs_c[2]     = {configureArgs[0].c_str(), configureArgs[1].c_str()};
   /** \todo Kann man ConfigureCommand so ‰ndern daﬂ man auch ohne den const_cast auskommt? */
 #ifdef _3
@@ -407,7 +341,8 @@ void UGGrid < dim, dimworld >::makeNewUGMultigrid()
     newArgs[i] = (char*)::malloc(50*sizeof(char));
 
   sprintf(newArgs[0], "new %s", name().c_str());
-  sprintf(newArgs[1], "b DuneDummyProblem");
+
+  sprintf(newArgs[1], "b %s_Problem", name().c_str());
   sprintf(newArgs[2], "f DuneFormat");
   sprintf(newArgs[3], "h %dM", heapsize);
 
@@ -434,6 +369,24 @@ inline bool UGGrid < dim, dimworld >::adapt()
   int mode;
 
   assert(multigrid_);
+
+  // Set UG's currBVP variable to the BVP corresponding to this
+  // grid.  This is necessary if we have more than one UGGrid in use.
+  std::string BVPName = name() + "_Problem";
+#ifdef _3
+  void* thisBVP = UG3d::BVP_GetByName(BVPName.c_str());
+#else
+  void* thisBVP = UG2d::BVP_GetByName(BVPName.c_str());
+#endif
+
+  if (thisBVP == NULL)
+    DUNE_THROW(GridError, "Couldn't find grid's own boundary value problem!");
+
+#ifdef _3
+  UG3d::Set_Current_BVP((void**)thisBVP);
+#else
+  UG2d::Set_Current_BVP((void**)thisBVP);
+#endif
 
 #ifdef _3
   mode = UG3d::GM_REFINE_TRULY_LOCAL;
