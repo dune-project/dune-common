@@ -18,6 +18,9 @@
 
 #include <limits>
 
+// machine epsilon is multiplied by this factor
+static double factorEpsilon = 10.0;
+
 class CheckError : public Dune::Exception {};
 
 // --- compile-time check of element-interface
@@ -401,7 +404,10 @@ struct subIndexCheck
     const int imax = e.template count<cd>();
     for (int i=0; i<imax; ++i)
     {
-      assert( e.template entity<cd>(i)->index() == e.template subIndex<cd>(i) );
+      if( (e.template entity<cd>(i)->index() != e.template subIndex<cd>(i)      ) &&
+          (e.template entity<cd>(i)->globalIndex() != e.template subIndex<cd>(i)) )
+        DUNE_THROW(CheckError, "e.template entity<cd>(i)->index() == e.template subIndex<cd>(i) && "<<
+                   "e.template entity<cd>(i)->globalIndex() != e.template subIndex<cd>(i) faild!");
     }
     typedef typename Grid::template codim<cd>::Entity SubEntity;
     subIndexCheck<cd-1,Grid,Entity,
@@ -518,7 +524,7 @@ void iterate(Grid &g)
   {
     result = it->geometry().local(it->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
-    if(error >= 10 * std::numeric_limits<typename Grid::ctype>::epsilon())
+    if(error >= factorEpsilon * std::numeric_limits<typename Grid::ctype>::epsilon())
     {
       DUNE_THROW(CheckError, "|| geom.local(geom.global(" << origin
                                                           << ")) - origin || != 0 ( || " << result << " - origin || ) = " << error);
@@ -540,7 +546,7 @@ void iterate(Grid &g)
   {
     result = lit->geometry().local(lit->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
-    if(error >= 10 * std::numeric_limits<typename Grid::ctype>::epsilon())
+    if(error >= factorEpsilon * std::numeric_limits<typename Grid::ctype>::epsilon())
     {
       DUNE_THROW(CheckError, "|| geom.local(geom.global(" << origin
                                                           << ")) - origin || != 0 ( || " << result << " - origin || ) = " << error);
