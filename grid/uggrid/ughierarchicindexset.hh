@@ -34,7 +34,7 @@ public:
       occurring index plus one
       \todo Precompute this value
    */
-  int size ( /*int level,*/ int codim ) const {
+  int size ( int level, int codim ) const {
     int maxIdx = -1;
 
     switch (codim) {
