@@ -82,8 +82,9 @@ namespace Dune {
     row_type& operator[] (int i)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (!ready) DUNE_THROW(ISTLError,"row not initialized yet");
+      if (r==0) DUNE_THROW(ISTLError,"row not initialized yet");
       if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+      if (r[i].getptr()==0) DUNE_THROW(ISTLError,"row not initialized yet");
 #endif
       return r[i];
     }
