@@ -62,7 +62,7 @@ fi
 
 # survived all tests?
 if test x$HAVE_BLAS = x1 ; then
-  echo "********  BLAS Library found in $BLAS_LIB_PATH"
+  echo "******** BLAS Library found in $BLAS_LIB_PATH"
   AC_SUBST(BLAS_LIBS, $BLAS_LIBS)
   AC_SUBST(BLAS_LDFLAGS, $BLAS_LDFLAGS)
   AC_SUBST(BLAS_CPPFLAGS, $BLAS_CPPFLAGS)
@@ -72,7 +72,7 @@ if test x$HAVE_BLAS = x1 ; then
   DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $BLAS_LDFLAGS"
   DUNE_PKG_LIBS="$DUNE_PKG_LIBS $BLAS_LIBS"
 else
-  echo "********  no BLAS Library is uesd. Enable with the --enable-blas option." 
+  echo "******** no BLAS Library is uesd. Enable with the --enable-blas option." 
   AC_SUBST(BLAS_LIBS, "")
   AC_SUBST(BLAS_LDFLAGS, "")
 fi
