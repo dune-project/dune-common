@@ -2326,7 +2326,7 @@ namespace Dune
 
   void AlbertMarkerVector::makeNewSize(int newNumberOfEntries)
   {
-    vec_.realloc(newNumberOfEntries);
+    vec_.resize(newNumberOfEntries);
     for(Array<int>::Iterator it = vec_.begin(); it != vec_.end(); ++it)
       (*it) = -1;
   }
@@ -2713,7 +2713,7 @@ namespace Dune
   inline void AlbertGrid < dim, dimworld >::
   makeNewSize(Array<int> &a, int newNumberOfEntries)
   {
-    a.realloc(newNumberOfEntries);
+    a.resize(newNumberOfEntries);
     for(Array<int>::Iterator it = a.begin(); it != a.end(); ++it)
       (*it) = -1;
   }
