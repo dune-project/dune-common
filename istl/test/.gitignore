@@ -1,0 +1,6 @@
+Makefile
+Makefile.in
+.deps
+.libs
+semantic.cache
+indicestest
