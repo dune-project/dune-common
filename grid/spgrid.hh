@@ -24,7 +24,9 @@
 
 typedef int ID_t;
 
+#ifndef QUICKHACKNOELEMENTS
 #define QUICKHACKNOELEMENTS
+#endif // QUICKHACKNOELEMENTS
 
 namespace Dune {
 
@@ -104,15 +106,15 @@ namespace Dune {
     const array<DIM> &id_to_coord(level l, int id) const;
     const array<DIM> &id_to_coord(level l, int id, const array<DIM> &) const;
     const array<DIM> &id_to_coord_impl(level l, int id) const;
-    /* datatyp for exchange */
+    //! datatyp for exchange
     typedef struct {
       int size;
       int* id;
     } exchange_data;
     MPI_Status mpi_status;
-    /**< prepare dataexchange */
+    //! prepare dataexchange
     void   initExchange();
-    /**< exchange data on level l */
+    //! exchange data on level l
     void   exchange(level l, Vector< spgrid<DIM> > & ex);
   private:
     exchange_data** exchange_data_from;
@@ -239,7 +241,7 @@ namespace Dune {
     };
     const array<DIM> & process() const { return process_; }
     int father_id(level l, const array<DIM> & coord) const;
-    int has_coord_shift(level, int d) const;
+    int coord_shift(level, int d) const;
     //! return the step size on level l in direction d
     double h(level l, int d) const { return h_[d] / (1<<(l)); };
     //! inform about periodic boundry conditions
