@@ -50,10 +50,10 @@ for OPT in $* ; do
     esac
 done
 
-# use the nonfree compiler as default :-(
+# use the free compiler as default
 if [ "$COMPSET" != "1" ] ; then
-    echo "No compiler set, using Intel compiler as default"
-    . ./icc.opts
+    echo "No compiler set, using GNU compiler as default"
+    . ./gcc.opts
 fi
 
 # create flags
