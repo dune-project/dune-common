@@ -8,6 +8,7 @@
 #include "common/fastbase.hh"
 #include "common/localfunction.hh"
 #include "common/dofiterator.hh"
+#include "dofmanager.hh"
 
 #include <fstream>
 #include <rpc/xdr.h>
@@ -18,7 +19,6 @@ namespace Dune {
   template <class DofType, class DofArrayType >  class DofIteratorAdapt;
 
   //! defined in dofmanager.hh
-  template <class T>                             class DofArray;
 
   //**********************************************************************
   //
@@ -50,12 +50,14 @@ namespace Dune {
     enum { myId_ = 0};
 
   public:
+    typedef typename DiscreteFunctionSpaceType::RangeField DofType;
     typedef DofIteratorAdapt<typename DiscreteFunctionSpaceType::RangeField,
         DofArrayType > DofIteratorType;
     typedef ConstDofIteratorDefault<DofIteratorType> ConstDofIteratorType;
 
-
-    typedef typename DiscreteFunctionSpaceType::MemObjectType MemObjectType;
+    typedef DofArray<DofType> DofStorageType;
+    typedef typename DiscreteFunctionSpaceType:: template DofTraits
+    < DofArray<DofType> >::MemObjectType MemObjectType;
 
     typedef DFAdapt <DiscreteFunctionSpaceType> DiscreteFunctionType;
     typedef LocalFunctionAdapt < DiscreteFunctionSpaceType > LocalFunctionType;
@@ -84,7 +86,7 @@ namespace Dune {
 
     //! update LocalFunction to given Entity en
     template <class EntityType>
-    void localFunction ( EntityType &en,
+    void localFunction ( const EntityType &en,
                          LocalFunctionAdapt<DiscreteFunctionSpaceType> & lf);
 
     //! points to the first dof of type cc
@@ -157,6 +159,8 @@ namespace Dune {
 
     //! return to MemObject which holds the memory of this discrete fucntion
     MemObjectType & memObj() { return memObj_; }
+
+    DofArrayType & getStorage () { return dofVec_; }
 
   private:
     // name of this func
@@ -231,7 +235,7 @@ namespace Dune {
 
   protected:
     //! update local function for given Entity
-    template <class EntityType > bool init ( EntityType &en ) const;
+    template <class EntityType > bool init ( const EntityType &en ) const;
 
     //! Forbidden! Would wreck havoc
     MyType& operator= (const MyType& other);
@@ -337,8 +341,8 @@ namespace Dune {
     //! set dof iterator back to begin , for const and not const Iterators
     void reset () ;
 
-    DofType * vector() { return dofArray_.vector(); }
-    const DofType * vector() const { return dofArray_.vector(); }
+    DofType * vector() { return (*dofArray_).vector(); }
+    const DofType * vector() const { return (*dofArray_).vector(); }
 
   private:
     //! the array holding the dofs
