@@ -1,7 +1,7 @@
 # $Id $
 
 if MPI
-  TESTPROGS = indicestest
+  TESTPROGS = indicestest  selectiontest
 endif
 
 # which tests to run
@@ -17,3 +17,7 @@ indicestest_SOURCES = indicestest.cc
 indicestest_CXXFLAGS = $(MPI_CPPFLAGS)
 indicestest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
+selectiontest_SOURCES = selectiontest.cc
+
+selectiontest_CXXFLAGS = $(MPI_CPPFLAGS)
+selectiontest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)

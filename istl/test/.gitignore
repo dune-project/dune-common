@@ -4,3 +4,4 @@ Makefile.in
 .libs
 semantic.cache
 indicestest
+selectiontest
