@@ -97,22 +97,22 @@ namespace Dune {
           1 : print initial and final defect and statistics
           2 : print line for each iteration
    */
-  template<class X, class Y>
-  class LoopSolver : public InverseOperator<X,Y> {
+  template<class X>
+  class LoopSolver : public InverseOperator<X,X> {
   public:
     //! export types, usually they come from the derived class
     typedef X domain_type;
-    typedef Y range_type;
+    typedef X range_type;
     typedef typename X::field_type field_type;
 
     //! set up Loop solver
-    LoopSolver (LinearOperator<X,Y>& op, Preconditioner<X,Y>& prec,
+    LoopSolver (LinearOperator<X,X>& op, Preconditioner<X,X>& prec,
                 double reduction, int maxit, int verbose) :
       _op(op), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {}
 
     //! apply inverse operator
-    virtual void apply (X& x, Y& b, InverseOperatorResult& r)
+    virtual void apply (X& x, X& b, InverseOperatorResult& r)
     {
       // clear solver statistics
       r.clear();
@@ -178,15 +178,15 @@ namespace Dune {
     }
 
     //! apply inverse operator, with given reduction factor
-    virtual void apply (X& x, Y& b, double reduction, InverseOperatorResult& r)
+    virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& r)
     {
       _reduction = reduction;
       (*this).apply(x,b,r);
     }
 
   private:
-    LinearOperator<X,Y>& _op;
-    Preconditioner<X,Y>& _prec;
+    LinearOperator<X,X>& _op;
+    Preconditioner<X,X>& _prec;
     double _reduction;
     int _maxit;
     int _verbose;
