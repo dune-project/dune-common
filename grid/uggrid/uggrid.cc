@@ -406,24 +406,49 @@ template < int dim, int dimworld >
 bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
                                           typename Traits::template codim<0>::Entity& e )
 {
+  // No refinement requested
+  if (refCount==0)
+    return false;
+
   //typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
   typename TargetType<0,dim>::T* target = getRealEntity<0>(e).target_;
 
+  // Check whether element can be marked for refinement
+  if (!EstimateHere(target))
+    return false;
+
+  if (refCount==1) {
+    if (
 #ifdef _3
-  if (!UG3d::EstimateHere(target))
-    return false;
-
-  return UG3d::MarkForRefinement(target,
-                                 UG3d::RED,    // red refinement rule
-                                 0);    // no user data
+      UG3d::MarkForRefinement(target,
+                              UG3d::RED,        // red refinement rule
+                              0)        // no user data
 #else
-  if (!UG2d::EstimateHere(target))
-    return false;
-
-  return UG2d::MarkForRefinement(target,
-                                 UG2d::RED,   // red refinement rule
-                                 0);    // no user data
+      UG2d::MarkForRefinement(target,
+                              UG2d::RED,       // red refinement rule
+                              0)        // no user data
 #endif
+      ) DUNE_THROW(GridError, "UG" << dim << "d::MarkForRefinement returned error code!");
+
+    return true;
+  } else if (refCount==-1) {
+
+    if (
+#ifdef _3
+      UG3d::MarkForRefinement(target,
+                              UG3d::COARSE,        // coarsen the element
+                              0)        // no user data
+#else
+      UG2d::MarkForRefinement(target,
+                              UG2d::COARSE,       // coarsen the element
+                              0)        // no user data
+#endif
+      ) DUNE_THROW(GridError, "UG" << dim << "d::MarkForRefinement returned error code!");
+
+    return true;
+  } else
+    DUNE_THROW(GridError, "UGGrid only supports refCount values -1, 0, and for mark()!");
+
 }
 
 template < int dim, int dimworld >
