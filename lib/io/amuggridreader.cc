@@ -723,6 +723,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
 #define CW_WRITE(p, ce, n)   ControlWord(p,ce) = (ControlWord(p,ce)&UG3d::control_entries[ce].xor_mask)|(((n)<<UG3d::control_entries[ce].offset_in_word)&UG3d::control_entries[ce].mask)
 #define SETSUBDOMAIN(p,n) CW_WRITE(p,UG3d::SUBDOMAIN_CE,n)
 
+    assert(id != -1);
     SETSUBDOMAIN(theElement, id+1);
 
 #undef ControlWord
@@ -1094,7 +1095,7 @@ for (theElement=theMG->grids[0]->elements[0]; theElement!=NULL; theElement=theEl
 #define SETSUBDOMAIN(p,n) CW_WRITE(p,UG3d::SUBDOMAIN_CE,n)
 
   //SETSUBDOMAIN(theElement, id+1);
-  SETSUBDOMAIN(theElement, 0);
+  SETSUBDOMAIN(theElement, 1);
 
 #undef ControlWord
 #undef CW_WRITE
@@ -1561,7 +1562,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
     /* get subdomain of element */
     //       int id = material_ids[i];
     //       SETSUBDOMAIN(theElement, id+1);
-    SETSUBDOMAIN(theElement, 0);
+    SETSUBDOMAIN(theElement, 1);
 
 #undef ControlWord
 #undef CW_WRITE
