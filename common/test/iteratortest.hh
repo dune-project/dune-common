@@ -14,7 +14,8 @@
  * @param opt Functor for doing whatever one wants.
  */
 template<class Iter, class Opt>
-int testForwardIterator(Iter begin, Iter end, Opt& opt){
+int testForwardIterator(Iter begin, Iter end, Opt& opt)
+{
   //std::cout<< "forward: ";
   for(; begin!=end; ++begin)
     opt(*begin);
@@ -33,7 +34,8 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt){
  * @param opt Functor for doing whatever one wants.
  */
 template<class Iter, class Opt>
-int testBidirectionalIterator(Iter begin, Iter end, Opt opt){
+int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
+{
   testForwardIterator(begin, end, opt);
   Iter tbegin=--begin;
   Iter tend=--end;
@@ -45,7 +47,8 @@ int testBidirectionalIterator(Iter begin, Iter end, Opt opt){
 
   int no= (size>10) ? 10 : size;
 
-  for(int i=0; i < no; i++) {
+  for(int i=0; i < no; i++)
+  {
     int index = static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
     int backwards=size-index;
     tbegin=begin;
@@ -53,7 +56,8 @@ int testBidirectionalIterator(Iter begin, Iter end, Opt opt){
     for(int j=0; j < index; j++) ++tbegin;
     for(int j=0; j < backwards; j++) --tend;
 
-    if(tbegin != tend) {
+    if(tbegin != tend)
+    {
       std::cerr<<"Did not reach same index by starting forward from "
                <<"begin and backwards from end."<<std::endl;
       return 1;
@@ -72,30 +76,46 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
 
   int no= (size>10) ? 10 : size;
 
-  for(int i=0; i < no; i++) {
+  for(int i=0; i < no; i++)
+  {
     int index = static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
     opt(begin[index]);
   }
 
   // Test the less than operator
-  if(begin != end &&!( begin<end)) {
+  if(begin != end &&!( begin<end))
+  {
     std::cerr<<"! (begin()<end())"<<std::endl;
     ret++;
   }
 
-  for(int i=0; i < no; i++) {
+  if(begin != end) {
+    if(begin-end >= 0) {
+      std::cerr<<"begin!=end, but begin-end >= 0!"<<std::endl;
+      ret++;
+    }
+    if(end-begin <= 0) {
+      std::cerr<<"begin!=end, but end-begin <= 0!"<<std::endl;
+      ret++;
+    }
+  }
+
+  for(int i=0; i < no; i++)
+  {
     int index = static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
     Iter rand(begin), test(begin), res;
     rand+=index;
 
-    if((res=begin+index) != rand) {
+    if((res=begin+index) != rand)
+    {
       std::cerr << " i+n should have the result i+=n, where i is the "
                 <<"iterator and n is the difference type!" <<std::endl;
       ret++;
     }
     for(int i=0; i< index; i++) ++test;
 
-    if(test != rand) {
+    if(test != rand)
+    {
       std::cerr << "i+=n should have the same result as applying the"
                 << "increment ooperator n times!"<< std::cerr;
       ret++;
@@ -105,21 +125,24 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
     rand-=index;
 
 
-    if((end-index) != rand) {
+    if((end-index) != rand)
+    {
       std::cerr << " i-n should have the result i-=n, where i is the "
                 <<"iterator and n is the difference type!" <<std::endl;
       ret++;
     }
     for(int i=0; i< index; i++) --test;
 
-    if(test != rand) {
+    if(test != rand)
+    {
       std::cerr << "i+=n should have the same result as applying the"
                 << "increment ooperator n times!"<< std::cerr;
       ret++;
     }
   }
 
-  for(int i=0; i < no; i++) {
+  for(int i=0; i < no; i++)
+  {
     Iter iter1 = begin+static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
     Iter iter2 = begin+static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
     typename Iter::difference_type diff = iter2 -iter1;
@@ -136,17 +159,20 @@ template<class Iter, class Opt, typename iterator_category>
 int testIterator(Iter& begin, Iter& end, Opt& opt, iterator_category cat);
 
 template<class Iter, class Opt>
-int testIterator(Iter& begin, Iter& end, Opt& opt, std::forward_iterator_tag){
+int testIterator(Iter& begin, Iter& end, Opt& opt, std::forward_iterator_tag)
+{
   return testForwardIterator(begin, end, opt);
 }
 
 template<class Iter, class Opt>
-int testIterator(Iter& begin, Iter& end, Opt& opt, std::bidirectional_iterator_tag){
+int testIterator(Iter& begin, Iter& end, Opt& opt, std::bidirectional_iterator_tag)
+{
   return testBidirectionalIterator(begin, end, opt);
 }
 
 template<class Iter, class Opt>
-int testIterator(Iter& begin, Iter& end, Opt& opt, std::random_access_iterator_tag){
+int testIterator(Iter& begin, Iter& end, Opt& opt, std::random_access_iterator_tag)
+{
   //  std::cout << "Testing iterator ";
   int ret = testRandomAccessIterator(begin, end, opt);
   //std::cout<<std::endl;
@@ -154,22 +180,38 @@ int testIterator(Iter& begin, Iter& end, Opt& opt, std::random_access_iterator_t
 }
 
 template<class Iter, class Opt>
-int testConstIterator(Iter& begin, Iter& end, Opt& opt){
+int testConstIterator(Iter& begin, Iter& end, Opt& opt)
+{
   //std::cout << "Testing constant iterator: ";
   int ret=testIterator(begin, end, opt, typename std::iterator_traits<Iter>::iterator_category());
   //std::cout<<std::endl;
   return ret;
 }
 
+template<class Container, typename IteratorTag>
+void testSorting(Container& C, IteratorTag tag)
+{ }
+
+template<class Container>
+void testSorting(Container& c, std::random_access_iterator_tag)
+{
+  std::sort(c.begin(), c.end());
+}
+
 template<class Container, class Opt>
-int testIterator(Container& c, Opt& opt){
+int testIterator(Container& c, Opt& opt)
+{
   typename Container::iterator begin=c.begin(), end=c.end();
   typename Container::const_iterator cbegin(begin);
   typename Container::const_iterator cbegin1=begin;
   typename Container::const_iterator cend=c.end();
-  int ret=0;
+  int ret = 0;
 
-  if(end!=cend || cend!=end) {
+  testSorting(c, typename std::iterator_traits<typename Container::iterator>::iterator_category());
+
+  if(end!=cend ||
+     cend!=end)
+  {
     std::cerr<<"constant and mutable iterators should be equal!"<<std::endl;
     ret=1;
   }
@@ -177,14 +219,9 @@ int testIterator(Container& c, Opt& opt){
          testIterator(begin,end,opt);
 }
 
-template<class Container, class Opt>
-int testIterator(const Container& c, Opt& opt){
-  typename Container::const_iterator begin=c.begin(), end=c.end();
-  return testConstIterator(begin,end, opt);
-}
-
 template<class Iter, class Opt>
-void testAssignment(Iter begin, Iter end, Opt& opt){
+void testAssignment(Iter begin, Iter end, Opt& opt)
+{
   //std::cout << "Assignment: ";
   for(; begin!=end; begin++)
     *begin=typename std::iterator_traits<Iter>::value_type();
@@ -192,9 +229,37 @@ void testAssignment(Iter begin, Iter end, Opt& opt){
 }
 
 template<class Iter, class Opt>
-int testIterator(Iter& begin, Iter& end, Opt& opt){
+int testIterator(Iter& begin, Iter& end, Opt& opt)
+{
   testAssignment(begin, end, opt);
   return testConstIterator(begin, end, opt);
+}
+
+
+template<class T>
+class Printer {
+  typename Dune::RemoveConst<T>::Type res;
+public:
+  Printer() : res(0){}
+  void operator()(const T& t){
+    res+=t;
+    //    std::cout << t <<" ";
+  }
+};
+
+template<class Container, class Opt>
+int testIterator(const Container& c, Opt& opt)
+{
+  typename Container::const_iterator begin=c.begin(), end=c.end();
+  return testConstIterator(begin,end, opt);
+}
+
+
+template<class Container>
+int testIterator(Container& c)
+{
+  Printer<typename std::iterator_traits<typename Container::iterator>::value_type> print;
+  return testIterator(c,print);
 }
 
 #endif
