@@ -38,14 +38,14 @@ namespace Dune {
   // Konstruktor
   template<class T>
   inline DoubleLinkedList<T>::DoubleLinkedList ()
-  { // ruft vorher Default_konstruktor fuer head, tail
+  {   // ruft vorher Default_konstruktor fuer head, tail
     numelements=0;
   }
 
   // Copy-Konstruktor
   template<class T>
   inline DoubleLinkedList<T>::DoubleLinkedList (const DoubleLinkedList<T>& l)
-  { // ruft vorher Default_konstruktor fuer head, tail
+  {   // ruft vorher Default_konstruktor fuer head, tail
     numelements=0;
     // kopiere alle Elemente der Argumentliste
     for (typename DoubleLinkedList<T>::Iterator i=l.begin(); i!=l.end(); i++)
@@ -83,7 +83,7 @@ namespace Dune {
 
 
   template<class T>
-  inline typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::insert_after (Iterator i, T t)
+  inline typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::insert_after (Iterator i, T& t)
   {
     // Teste Eingabe
     if (i.p==0 && head.p!=0) {std::cerr << "wo einfuegen?" << std::endl; return end();}
@@ -117,7 +117,7 @@ namespace Dune {
   }
 
   template<class T>
-  inline typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::insert_before (Iterator i, T t)
+  inline typename DoubleLinkedList<T>::Iterator DoubleLinkedList<T>::insert_before (Iterator i, T& t)
   {
     // Teste Eingabe
     if (i.p==0 && head.p!=0) {std::cerr << "wo einfuegen?" << std::endl; return end();}
