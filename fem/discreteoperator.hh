@@ -12,12 +12,12 @@ namespace Dune {
   // Note: Range has to have Vector structure as well.
   template <class DiscreteFunctionType, class LocalOperatorImp >
   class DiscreteOperator
-    : public Operator <typename DiscreteFunctionType::Traits<0>::RangeField,
+    : public Operator <typename DiscreteFunctionType::RangeFieldType,
           DiscreteFunctionType , DiscreteFunctionType>
   {
   public:
     typedef DiscreteOperator <DiscreteFunctionType, LocalOperatorImp > MyType;
-    typedef typename DiscreteFunctionType::Traits<0>::RangeField Field;
+    typedef typename DiscreteFunctionType::RangeFieldType Field;
     typedef typename DiscreteFunctionType::FunctionSpace::
     GridType::Traits<0>::Entity EntityType;
 
@@ -32,7 +32,7 @@ namespace Dune {
     //! go over all Entitys and call the LocalOperator.applyLocal Method
     //! Note that the LocalOperator can be an combined Operator
     //! Domain and Range are defined through class Operator
-    void apply ( const Domain &Arg, Range &Dest ) const
+    void apply ( Domain &Arg, Range &Dest )
     {
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
@@ -47,15 +47,16 @@ namespace Dune {
 
       Dest.clear();
 
-      _localOp.prepare(tmp_);
+      _localOp.prepare(Arg);
       for( levit ; levit != endit; ++levit )
       {
         //std::cout << "Call applyLocal on element " << levit->index() << "\n";
-        _localOp.applyLocal(*levit , Arg, Dest);
+        //_localOp.applyLocal(*levit , Arg, Dest);
+        _localOp.applyLocal(levit , Arg, Dest);
       }
     }
 
-    void operator()( const Domain &Arg, Range &Dest )
+    void operator()( Domain &Arg, Range &Dest )
     {
       apply(Arg,Dest);
     }

@@ -63,49 +63,48 @@ namespace Dune {
   //!
   //************************************************************************
   template<class DiscreteFunctionSpaceType,
-      class DofIteratorImp, class LocalFunctionImp ,
+      class DofIteratorImp,
+      template <class , class> class LocalFunctionIteratorImp ,
       class DiscreteFunctionImp >
   class DiscreteFunctionInterface
     : public Function < DiscreteFunctionSpaceType,
           DiscreteFunctionInterface <DiscreteFunctionSpaceType,
-              DofIteratorImp , LocalFunctionImp , DiscreteFunctionImp > >
+              DofIteratorImp , LocalFunctionIteratorImp , DiscreteFunctionImp > >
   {
   public:
-    // just for readability
+    //! types that we sometimes need outside
     typedef Function < DiscreteFunctionSpaceType,
         DiscreteFunctionInterface <DiscreteFunctionSpaceType,
-            DofIteratorImp , LocalFunctionImp,  DiscreteFunctionImp > > FunctionType;
+            DofIteratorImp , LocalFunctionIteratorImp,  DiscreteFunctionImp > > FunctionType;
+
+    typedef typename DiscreteFunctionSpaceType::Domain DomainType;
+    typedef typename DiscreteFunctionSpaceType::Range RangeType;
+
+    typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
+    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+
     //! remember the template types
-    template <int cc>
+    template <class GridIteratorType>
     struct Traits
     {
-      typedef typename DiscreteFunctionSpaceType::GridType GridType;
-      typedef typename DiscreteFunctionSpaceType::Domain Domain;
-      typedef typename DiscreteFunctionSpaceType::Range Range;
-      typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
+      typedef typename
+      LocalFunctionIteratorImp<DiscreteFunctionImp,GridIteratorType>
+      LocalFunctionIteratorType;
     };
 
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
     typedef DofIteratorImp DofIteratorType;
-    typedef LocalFunctionImp LocalFunctionType;
+
+    //* end of type declarations
 
     DiscreteFunctionInterface ( const DiscreteFunctionSpaceType &f )
       : FunctionType ( f ) {} ;
 
-
-    //! access to the local function. Local functions can only be accessed
-    //! for an existing entity.
-    template <class EntityType>
-    LocalFunctionType & access (EntityType & en )
+    template <class GridIteratorType>
+    LocalFunctionIteratorImp<DiscreteFunctionImp,GridIteratorType>
+    localFunction ( GridIteratorType & it)
     {
-      return asImp().access(en);
-    }
-
-    //! access to the local function. Local functions can only be accessed
-    //! for an existing entity.
-    void done (LocalFunctionType & lf )
-    {
-      return asImp().done(lf);
+      return asImp().localFunction( it );
     }
 
     //! the implementation of an iterator to iterate efficient over all dof
@@ -148,31 +147,27 @@ namespace Dune {
   //!
   //*************************************************************************
   template<class DiscreteFunctionSpaceType,
-      class DofIteratorImp, class LocalFunctionImp, class DiscreteFunctionImp >
+      // class DofIteratorImp, class LocalFunctionImp, class DiscreteFunctionImp >
+      class DofIteratorImp,
+      template <class , class> class LocalFunctionIteratorImp,
+      class DiscreteFunctionImp >
   class DiscreteFunctionDefault
     : public DiscreteFunctionInterface
       <DiscreteFunctionSpaceType, DofIteratorImp,
-          LocalFunctionImp, DiscreteFunctionImp >
+          LocalFunctionIteratorImp, DiscreteFunctionImp >
   {
 
     typedef DiscreteFunctionInterface <DiscreteFunctionSpaceType,
-        DofIteratorImp, LocalFunctionImp, DiscreteFunctionImp >  DiscreteFunctionInterfaceType;
+        DofIteratorImp, LocalFunctionIteratorImp, DiscreteFunctionImp >  DiscreteFunctionInterfaceType;
 
     enum { myId_ = 0 };
   public:
-    //! remember the used types
-    template <int cc>
-    struct Traits
-    {
-      typedef typename DiscreteFunctionSpaceType::Domain Domain;
-      typedef typename DiscreteFunctionSpaceType::Range Range;
-      typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
-      typedef typename DiscreteFunctionSpaceType::DomainField DomainField;
-    };
-
-    typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
-    typedef typename DiscreteFunctionSpaceType::DomainField DomainField;
+#if 0
+    //! type declaration that we could need outside
+    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
     typedef DofIteratorImp DofIteratorType;
+#endif
 
     //! pass the function space to the interface class
     DiscreteFunctionDefault ( const DiscreteFunctionSpaceType & f ) :
@@ -181,8 +176,7 @@ namespace Dune {
     //! derived from Function
     //! search for element which contains point x an evaluate
     //! dof entity with en
-    void evaluate ( const typename Traits<0>::Domain & ,
-                    typename Traits<0>::Range &) const
+    void evaluate ( const DomainType & , RangeType &) const
     {
       // search element
     };
@@ -222,20 +216,6 @@ namespace Dune {
     Vector<DiscreteFunctionSpaceType::RangeField> &
     add(const Vector<DiscreteFunctionSpaceType::RangeField> &g ,
         DiscreteFunctionSpaceType::RangeField scalar );
-
-    template <class EntityType>
-    void assignLocal(EntityType &en, const DiscreteFunctionImp &g,
-                     const DiscreteFunctionSpaceType::RangeField &scalar)
-    {
-      std::cout << "AssignLocal \n";
-    }
-
-    template <class EntityType>
-    void addLocal(EntityType &en, const DiscreteFunctionImp &g,
-                  const DiscreteFunctionSpaceType::RangeField &scalar)
-    {
-      std::cout << "AddLocal \n";
-    }
 
     //! clear all dofs of a given level of the discrete function
     void clearLevel(int level );
