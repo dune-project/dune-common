@@ -151,7 +151,7 @@ namespace Dune {
     void make (Tupel<int,dim>& _N);
 
     //! get number of elements in each codimension
-    int elements (int codim);
+    int elements (int codim) const;
 
     //! compute codim from coordinate
     int codim (Tupel<int,dim>& z);

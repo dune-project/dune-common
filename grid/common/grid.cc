@@ -701,14 +701,14 @@ namespace Dune {
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  inline int Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::maxlevel ()
+  inline int Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::maxlevel () const
   {
     return asImp().maxlevel();
   }
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  inline int Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::size (int level, int codim)
+  inline int Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::size (int level, int codim) const
   {
     return asImp().size(level,codim);
   }

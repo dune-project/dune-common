@@ -6,6 +6,13 @@
 #include <iostream>
 #include <math.h>
 
+template <bool flag>
+class CompileTimeChecker { };
+
+template <> class CompileTimeChecker<true> { };
+
+
+
 namespace Dune {
   /** @addtogroup Common
 

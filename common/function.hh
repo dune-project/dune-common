@@ -10,7 +10,7 @@ namespace Dune {
 
 
   template< class FunctionSpaceType, class FunctionImp>
-  class Function : Mapping <typename FunctionSpaceType::RangeField , typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range > {
+  class Function : public Mapping <typename FunctionSpaceType::RangeField , typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range > {
 
   public:
     typedef typename FunctionSpaceType::Domain Domain ;
@@ -22,6 +22,8 @@ namespace Dune {
     Function ( const FunctionSpaceType & f ) : functionSpace_ (f) {} ;
 
     void evaluate ( const Domain & , Range &) const ;
+
+    const FunctionSpaceType &getFunctionSpace() const { return functionSpace_; }
 
   protected:
 

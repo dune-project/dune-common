@@ -131,9 +131,9 @@ namespace Dune {
     for (int i=0; i<dim; ++i)
       for (int j=0; j<dim; ++j)
         Jinv(i,j) = A(i,j);
+    for (int i=0; i<dim; i++) Jinv(i,i) = 1.0/Jinv(i,i);
     if (!builtinverse)
     {
-      for (int i=0; i<dim; i++) Jinv(i,i) = 1.0/Jinv(i,i);
       builtinverse = true;
     }
     return Jinv;
@@ -947,7 +947,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::maxlevel ()
+  inline int SGrid<dim,dimworld>::maxlevel () const
   {
     return L-1;
   }
@@ -965,7 +965,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::size (int level, int codim)
+  inline int SGrid<dim,dimworld>::size (int level, int codim) const
   {
     return mapper[level].elements(codim);
   }

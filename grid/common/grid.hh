@@ -709,10 +709,10 @@ namespace Dune {
     /*! Return maximum level defined in this grid. Levels are numbered
        0 ... maxlevel with 0 the coarsest level.
      */
-    int maxlevel();
+    int maxlevel() const;
 
     //! Return number of grid entities of a given codim on a given level
-    int size (int level, int codim);
+    int size (int level, int codim) const;
 
     //! Iterator to first entity of given codim on level
     template<int codim>

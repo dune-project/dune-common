@@ -9,9 +9,9 @@
 #include "localfunctionarray.hh"
 #include "dofiterator.hh"
 
+#include <fstream>
+
 namespace Dune {
-
-
 
   //************************************************************************
   //! the minimal interface
@@ -35,6 +35,7 @@ namespace Dune {
       typedef typename DiscreteFunctionSpaceType::GridType GridType;
       typedef typename DiscreteFunctionSpaceType::Domain Domain;
       typedef typename DiscreteFunctionSpaceType::Range Range;
+      typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
       typedef LocalFunctionIteratorImp<cc, DiscreteFunctionSpaceType> LocalFunctionIteratorType;
     };
 
@@ -44,7 +45,7 @@ namespace Dune {
     DiscreteFunctionInterface ( const DiscreteFunctionSpaceType &f )
       : FunctionType ( f ) {} ;
 
-    //! iterator for iteratation over all dof of one level
+    //! iterator for iteration over all dof of one level
     //! for cc = 0 it iterates over dof entities
     //! for cc = max over all dofs
     template <int codim>
@@ -82,6 +83,11 @@ namespace Dune {
       return asImp().dend ( level );
     };
 
+    //! clear all dofs of the discrete function
+    void clear( ) {
+      asImp.clear( );
+    }
+
   private:
     //! Barton-Nackman trick
     DiscreteFunctionImp &asImp()
@@ -115,6 +121,7 @@ namespace Dune {
     {
       typedef typename DiscreteFunctionSpaceType::Domain Domain;
       typedef typename DiscreteFunctionSpaceType::Range Range;
+      typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
       typedef LocalFunctionIteratorImp<cc, DiscreteFunctionSpaceType> LocalFunctionIteratorType;
       typedef typename LocalFunctionIteratorType::LocalFunctionType LocalFunctionType;
     };
@@ -135,6 +142,124 @@ namespace Dune {
       // search element
     };
 
+
+    Traits<0>::RangeField scalarProductDofs( const DiscreteFunctionDefault &g ) {
+      Traits<0>::RangeField skp = 0.;
+
+      typedef typename GlobalDofIteratorImp DofIteratorType;
+      int level = getFunctionSpace().getGrid().maxlevel();
+
+      DofIteratorType endit = dend ( level );
+      DofIteratorType git = const_cast<DiscreteFunctionDefault &>( g ).dbegin ( level );
+      for(DofIteratorType it = dbegin( level ); it != endit; ++it)
+      {
+        skp += (*it) * (*git);
+        ++git;
+      }
+      return skp;
+    }
+
+    Vector<Traits<0>::RangeField> &assign(const Vector<Traits<0>::RangeField> &g) {
+
+      DiscreteFunctionDefault &gc = const_cast<DiscreteFunctionDefault &>( dynamic_cast<const DiscreteFunctionDefault &> ( g ));
+      // we would need const_iterators.....
+
+      typedef typename GlobalDofIteratorImp DofIteratorType;
+      int level = getFunctionSpace().getGrid().maxlevel();
+
+      DofIteratorType endit = dend ( level );
+      DofIteratorType git = gc.dbegin ( level );
+      for(DofIteratorType it = dbegin( level ); it != endit; ++it) {
+        *it = *git;
+        ++git;
+      }
+      return *this;
+    }
+
+    Vector<Traits<0>::RangeField> &operator=(const Vector<Traits<0>::RangeField> &g) {
+
+      DiscreteFunctionDefault &gc = const_cast<DiscreteFunctionDefault &>( dynamic_cast<const DiscreteFunctionDefault &> ( g ));
+      // we would need const_iterators.....
+
+      typedef typename GlobalDofIteratorImp DofIteratorType;
+      int level = getFunctionSpace().getGrid().maxlevel();
+
+      DofIteratorType endit = dend ( level );
+      DofIteratorType git = gc.dbegin ( level );
+      for(DofIteratorType it = dbegin( level ); it != endit; ++it) {
+        *it = *git;
+        ++git;
+      }
+      return *this;
+    }
+
+    Vector<Traits<0>::RangeField> &operator+=(const Vector<Traits<0>::RangeField> &g) {
+
+      DiscreteFunctionDefault &gc = const_cast<DiscreteFunctionDefault &>( dynamic_cast<const DiscreteFunctionDefault &> ( g ));
+      // we would need const_iterators.....
+
+      typedef typename GlobalDofIteratorImp DofIteratorType;
+      int level = getFunctionSpace().getGrid().maxlevel();
+
+      DofIteratorType endit = dend ( level );
+      DofIteratorType git = gc.dbegin ( level );
+      for(DofIteratorType it = dbegin( level ); it != endit; ++it) {
+        *it += *git;
+        ++git;
+      }
+      return *this;
+    }
+
+    Vector<Traits<0>::RangeField> &operator-=(const Vector<Traits<0>::RangeField> &g) {
+
+      DiscreteFunctionDefault &gc = const_cast<DiscreteFunctionDefault &>( dynamic_cast<const DiscreteFunctionDefault &> ( g ));
+      // we would need const_iterators.....
+
+      typedef typename GlobalDofIteratorImp DofIteratorType;
+      int level = getFunctionSpace().getGrid().maxlevel();
+
+      DofIteratorType endit = dend ( level );
+      DofIteratorType git = gc.dbegin ( level );
+      for(DofIteratorType it = dbegin( level ); it != endit; ++it) {
+        *it -= *git;
+        ++git;
+      }
+      return *this;
+    }
+
+    Vector<Traits<0>::RangeField> &operator*=(const Traits<0>::RangeField &scalar) {
+
+      typedef typename GlobalDofIteratorImp DofIteratorType;
+      int level = getFunctionSpace().getGrid().maxlevel();
+
+      DofIteratorType endit = dend ( level );
+      for(DofIteratorType it = dbegin( level ); it != endit; ++it) {
+        *it *= scalar;
+      }
+      return *this;
+    }
+
+    Vector<Traits<0>::RangeField> &operator/=(const Traits<0>::RangeField &scalar) {
+      *this *= 1./scalar;
+    }
+
+    Vector<Traits<0>::RangeField> &add(const Vector<Traits<0>::RangeField> &g, Traits<0>::RangeField scalar) {
+
+      DiscreteFunctionDefault &gc = const_cast<DiscreteFunctionDefault &>( dynamic_cast<const DiscreteFunctionDefault &> ( g ));
+      // we would need const_iterators.....
+
+      typedef typename GlobalDofIteratorImp DofIteratorType;
+      int level = getFunctionSpace().getGrid().maxlevel();
+
+      DofIteratorType endit = dend ( level );
+      DofIteratorType git = gc.dbegin ( level );
+      for(DofIteratorType it = dbegin( level ); it != endit; ++it) {
+        *it += *git * scalar;
+        ++git;
+      }
+      return *this;
+    }
+
   };
 
 
@@ -151,8 +276,7 @@ namespace Dune {
   {
     //typedef GlobalDofIteratorArray < typename Traits::RangeField > GlobalDofIteratorType;
     typedef DiscreteFunctionDefault < DiscreteFunctionSpaceType,
-        LocalFunctionArrayIterator , DofIteratorArray < typename
-            DiscreteFunctionSpaceType::RangeField > ,
+        LocalFunctionArrayIterator , DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
         DiscFuncTest <DiscreteFunctionSpaceType > >
     DiscreteFunctionDefaultType;
 
@@ -162,7 +286,6 @@ namespace Dune {
 
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
   public:
-
 
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
     typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
@@ -214,7 +337,7 @@ namespace Dune {
       return localFunc_;
     };
 
-    //! iterator for iteratation over all dof of one level
+    //! iterator for iteration over all dof of one level
     //! for cc = 0 the local function contains all dof on the entity<0>
     //! and so on
     template <int codim>
@@ -242,28 +365,69 @@ namespace Dune {
 
 
     // we use the default implementation
-    GlobalDofIteratorType & dbegin ( int level )
+    // Warning!!! returns reference to local object!
+    GlobalDofIteratorType dbegin ( int level )
     {
       GlobalDofIteratorType tmp ( dofVec_ [level] , 0 );
       return tmp;
     };
 
     //! points behind the last dof of type cc
-    GlobalDofIteratorType & dend   ( int level )
+    // Warning!!! returns reference to local object!
+    GlobalDofIteratorType dend   ( int level )
     {
       GlobalDofIteratorType tmp ( dofVec_ [ level ] , dofVec_[ level ].size() );
       return tmp;
     };
 
-    //! print all dofs
-    void print()
-    {
+    void clear( ) {
       GlobalDofIteratorType enddof = dend ( level_ );
       for(GlobalDofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof)
       {
-        std::cout << (*itdof) << " Dof \n";
+        *itdof = 0.;
       }
     }
+
+    void setAll( DofType x ) {
+      set( x, level_ );
+    }
+
+    //! print all dofs
+    void print()
+    {
+      DofType sum = 0.;
+      GlobalDofIteratorType enddof = dend ( level_ );
+      for(GlobalDofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
+        std::cout << (*itdof) << " Dof \n";
+        sum += *itdof;
+      }
+      std::cerr << "sum = " << sum << "\n";
+    }
+
+    void save(const char *filename) {
+      std::ofstream out( filename );
+      out << "P2\n129 129\n255\n";
+      GlobalDofIteratorType enddof = dend ( level_ );
+      for(GlobalDofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
+        out << (int)((*itdof)*255.) << "\n";
+      }
+      out.close();
+    }
+
+    void load(const char *filename) {
+      FILE *in;
+      int v;
+      in = fopen( filename, "r" );
+      fscanf( in, "P2\n%d %d\n%d\n", &v, &v, &v );
+      GlobalDofIteratorType enddof = dend ( level_ );
+      for(GlobalDofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
+        fscanf( in, "%d", &v );
+        std::cerr << v << "  ";
+        (*itdof) = ((double)v)/255.;
+      }
+      fclose( in );
+    }
+
   private:
     bool allLevels_;
 

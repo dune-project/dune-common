@@ -6,6 +6,8 @@
 #include "../grid/common/grid.hh"
 #include "quadrature.hh"
 #include "gaussquadimp.hh"
+#include <dune/common/misc.hh>
+
 
 namespace Dune {
 

@@ -180,7 +180,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int CubeMapper<dim>::elements (int codim)
+  inline int CubeMapper<dim>::elements (int codim) const
   {
     return ne[codim];
   }
