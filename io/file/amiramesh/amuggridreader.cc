@@ -506,7 +506,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
     AmiraMesh* am = AmiraMesh::read(filename.c_str());
       
     if(!am)
-        throw("Could not open AmiraMesh file");
+        DUNE_THROW(IOError, "Could not open AmiraMesh file" << filename);
 
     if (am->findData("Hexahedra", HxINT32, 8, "Nodes")) {
         readHexaGrid(grid, am);
@@ -533,7 +533,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
     AmiraMesh* am = AmiraMesh::read(filename.c_str());
       
     if(!am)
-        DUNE_THROW(IOError, "read: Could not open AmiraMesh file");
+        DUNE_THROW(IOError, "read: Could not open AmiraMesh file" << filename);
 
     if (am->findData("Hexahedra", HxINT32, 8, "Nodes")) {
         readHexaGrid(grid, am);
