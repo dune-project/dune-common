@@ -15,7 +15,7 @@ AC_LANG_CASE([C], [
 [C++], [
 	AC_REQUIRE([AC_PROG_CXX])
 	AC_ARG_VAR(MPICXX,[MPI C++ compiler command])
-	AC_CHECK_PROGS(MPICXX, mpiCC mpCC, $CXX)
+	AC_CHECK_PROGS(MPICXX, mpicxx mpiCC mpCC, $CXX)
 	acx_mpi_save_CXX="$CXX"
 	CXX="$MPICXX"
 	AC_SUBST(MPICXX)
