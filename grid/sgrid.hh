@@ -745,6 +745,13 @@ namespace Dune {
      */
     SGrid (const int* N_, const sgrid_ctype* H_);
 
+    /*! Constructor using a bounding box
+       \param L_: array of size dim: lower left corner of grid
+       \param H_: array of size dim: upper right corner of grid
+       \param N_: array of size dim: coarse grid size, #elements in one direction
+     */
+    SGrid (const int* N_, const sgrid_ctype* L_, const sgrid_ctype* H_);
+
     //! empty constructor making grid of unit square
     SGrid ();
 
@@ -782,13 +789,14 @@ namespace Dune {
 
   private:
     // generate SGrid
-    void makeSGrid (const int* N_, const sgrid_ctype* H_);
+    void makeSGrid (const int* N_,  const sgrid_ctype* L_, const sgrid_ctype* H_);
 
-    int L;                              // number of levels in hierarchic mesh 0<=level<L
-    Tupel<sgrid_ctype,dim> H;           // length of cube per direction
-    Tupel<int,dim> N[MAXL];             // number of elements per direction
-    Vec<dim,sgrid_ctype> h[MAXL];       // mesh size per direction
-    CubeMapper<dim> mapper[MAXL];       // a mapper for each level
+    int L;                          // number of levels in hierarchic mesh 0<=level<L
+    Tupel<sgrid_ctype,dim> low;     // lower left corner of the grid
+    Tupel<sgrid_ctype,dim> H;       // length of cube per direction
+    Tupel<int,dim> N[MAXL];         // number of elements per direction
+    Vec<dim,sgrid_ctype> h[MAXL];   // mesh size per direction
+    CubeMapper<dim> mapper[MAXL];   // a mapper for each level
 
     // faster implemantation od subIndex
     friend class SEntity<0,dim,dimworld>;

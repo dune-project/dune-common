@@ -979,16 +979,18 @@ namespace Dune {
   //************************************************************************
   // inline methods for SGrid
   template<int dim, int dimworld>
-  inline void SGrid<dim,dimworld>::makeSGrid (const int* N_, const sgrid_ctype* H_)
+  inline void SGrid<dim,dimworld>::makeSGrid (const int* N_,
+                                              const sgrid_ctype* L_, const sgrid_ctype* H_)
   {
     L = 1;
+    for (int i=0; i<dim; i++) low[i] = L_[i];
     for (int i=0; i<dim; i++) H[i] = H_[i];
     for (int i=0; i<dim; i++) N[0][i] = N_[i];
 
     // define coarse mesh
     mapper[0].make(N[0]);
     for (int i=0; i<dim; i++)
-      h[0](i) = H[i]/((sgrid_ctype)N[0][i]);
+      h[0](i) = (H[i]-low[i])/((sgrid_ctype)N[0][i]);
 
     std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
     for (int i=1; i<dim; i++) std::cout << "," <<  N[L-1][i];
@@ -998,7 +1000,17 @@ namespace Dune {
   template<int dim, int dimworld>
   inline SGrid<dim,dimworld>::SGrid (const int* N_, const sgrid_ctype* H_)
   {
-    makeSGrid(N_,H_);
+    sgrid_ctype L_[dim];
+    for (int i=0; i<dim; i++)
+      L_[i] = 0;
+
+    makeSGrid(N_,L_, H_);
+  }
+
+  template<int dim, int dimworld>
+  inline SGrid<dim,dimworld>::SGrid (const int* N_, const sgrid_ctype* L_, const sgrid_ctype* H_)
+  {
+    makeSGrid(N_, L_, H_);
   }
 
   template<int dim, int dimworld>
@@ -1122,7 +1134,8 @@ namespace Dune {
   inline Vec<dim,sgrid_ctype> SGrid<dim,dimworld>::pos (int level, Tupel<int,dim>& z)
   {
     Vec<dim,sgrid_ctype> x;
-    for (int k=0; k<dim; k++) x(k) = (z[k]*h[level](k))*0.5;
+    for (int k=0; k<dim; k++)
+      x(k) = (z[k]*h[level](k))*0.5 + low[k];
     return x;
   }
 
