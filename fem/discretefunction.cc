@@ -223,6 +223,74 @@ namespace Dune
     }
   }
 
+  template<class DiscreteFunctionSpaceType,
+      class DofIteratorImp, class DiscreteFunctionImp >
+  template <FileFormatType ftype>
+  inline bool DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
+      DofIteratorImp , DiscreteFunctionImp >::
+  write(const char *filename, int timestep)
+  {
+    {
+      enum { n = DiscreteFunctionSpaceType::DimDomain };
+      enum { m = DiscreteFunctionSpaceType::DimRange };
+      std::fstream file( filename , std::ios::out );
+      StringType d = typeIdentifier<DomainField>();
+      StringType r = typeIdentifier<RangeField>();
+
+      file << d << " " << r << " ";
+      file << n << " " << m << "\n";
+      file << myId_ << " " << ftype << "\n";
+    }
+
+    file.close();
+    if(ftype == xdr)
+      return asImp().write_xdr(filename,timestep);
+    if(ftype == ascii)
+      return asImp().write_ascii(filename,timestep);
+  }
+
+  template<class DiscreteFunctionSpaceType,
+      class DofIteratorImp, class DiscreteFunctionImp >
+  template <FileFormatType ftype>
+  inline bool DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
+      DofIteratorImp , DiscreteFunctionImp >::
+  read(const char *filename, int timestep)
+  {
+    {
+      enum { tn = DiscreteFunctionSpaceType::DimDomain };
+      enum { tm = DiscreteFunctionSpaceType::DimRange };
+      std::fstream file( filename , std::ios::in );
+      int n,m;
+      std::basic_string <char> r,d;
+      std::basic_string <char> tr (typeIdentifier<RangeField>());
+      std::basic_string <char> td (typeIdentifier<DomainField>());
+
+      file >> d;
+      file >> r;
+      file >> n >> m;
+      int id,type;
+      file >> id >> type;
+      FileFormatType ft = static_cast<FileFormatType> (type);
+      if((d != td) || (r != tr) || (n != tn) || (m != tm) || (ft != ftype) )
+      {
+        std::cerr << d << " | " << td << " DomainField in read!\n";
+        std::cerr << r << " | " << tr << " RangeField  in read!\n";
+        std::cerr << n << " | " << tn << " in read!\n";
+        std::cerr << m << " | " << tm << " in read!\n";
+        std::cerr << ftype << " Wrong FileFormat! \n";
+        std::cerr << "Can not initialize DiscreteFunction with wrong FunctionSpace! \n";
+        abort();
+      }
+      file.close();
+    }
+
+    if(ftype == xdr)
+      return asImp().read_xdr(filename,timestep);
+    if(ftype == ascii)
+      return asImp().read_ascii(filename,timestep);
+  };
+
+
 } // end namespace Dune
 
 #endif

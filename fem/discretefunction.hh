@@ -232,63 +232,15 @@ namespace Dune {
     //! clear all dofs of a given level of the discrete function
     void clearLevel(int level );
 
+    //! write disc func information file and write dofs to file+timestep
+    //! this method use the write method of the implementation of the
+    //! discrete function
     template <FileFormatType ftype>
-    bool write(const char *filename, int timestep)
-    {
-      {
-        enum { n = DiscreteFunctionSpaceType::DimDomain };
-        enum { m = DiscreteFunctionSpaceType::DimRange };
-        std::fstream file( filename , std::ios::out );
-        StringType d = typeIdentifier<DomainField>();
-        StringType r = typeIdentifier<RangeField>();
+    bool write(const char *filename, int timestep);
 
-        file << d << " " << r << " ";
-        file << n << " " << m << "\n";
-        file << myId_ << " " << ftype << "\n";
-      }
-
-      if(ftype == xdr)
-        return asImp().write_xdr(filename,timestep);
-      if(ftype == ascii)
-        return asImp().write_ascii(filename,timestep);
-    }
-
+    //! same as write only read
     template <FileFormatType ftype>
-    bool read(const char *filename, int timestep)
-    {
-      {
-        enum { tn = DiscreteFunctionSpaceType::DimDomain };
-        enum { tm = DiscreteFunctionSpaceType::DimRange };
-        std::fstream file( filename , std::ios::in );
-        int n,m;
-        std::basic_string <char> r,d;
-        std::basic_string <char> tr (typeIdentifier<RangeField>());
-        std::basic_string <char> td (typeIdentifier<DomainField>());
-
-        file >> d;
-        file >> r;
-        file >> n >> m;
-        int id,type;
-        file >> id >> type;
-        FileFormatType ft = static_cast<FileFormatType> (type);
-        if((d != td) || (r != tr) || (n != tn) || (m != tm) || (ft != ftype) )
-        {
-          std::cerr << d << " | " << td << " DomainField in read!\n";
-          std::cerr << r << " | " << tr << " RangeField  in read!\n";
-          std::cerr << n << " | " << tn << " in read!\n";
-          std::cerr << m << " | " << tm << " in read!\n";
-          std::cerr << ftype << " Wrong FileFormat! \n";
-          std::cerr << "Can not initialize DiscreteFunction with wrong FunctionSpace!\n";
-          abort();
-        }
-      }
-
-      if(ftype == xdr)
-        return asImp().read_xdr(filename,timestep);
-      if(ftype == ascii)
-        return asImp().read_ascii(filename,timestep);
-    };
-
+    bool read(const char *filename, int timestep);
 
   private:
     // Barton-Nackman trick
