@@ -1,7 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#include <dump.hh>
-
 #include <sstream>
 #include <malloc.h>
 
@@ -13,15 +11,30 @@ namespace Dune {
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
   smootherGaussSeidel(level l) {
-    /* Alle Elemente ohne Rand */
     TIME_SMOOTHER -= MPI_Wtime();
-    coefflist cl = discrete.newcoefflist();
-    PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Inner> stub(*this, l);
-    g.loop_owner( l, stub );
-    PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this, l);
-    g.loop_border( l, stub_B );
-    TIME_SMOOTHER += MPI_Wtime();
 
+    coefflist cl = discrete.newcoefflist();
+
+    // loop inner owner / border & overlap
+    array<DIM> beginI;
+    array<DIM> beginB;
+    array<DIM> endI;
+    array<DIM> endB;
+    for (int d=0; d<DIM; d++) {
+      beginB[d] = g.front_overlap(l,d);
+      beginI[d] = beginB[d]+1;
+      endB[d] = g.size(l,d) + g.front_overlap(l,d);
+      endI[d] = endB[d] - 1;
+    }
+
+    PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Inner>
+    stub_inner(*this, l);
+    PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Border>
+    stub_border(*this, l);
+    g.loop3D(l,beginI,endI,endI,endI,stub_inner); // inner
+    g.loop3D(l,beginB,beginI,endI,endB,stub_border); // border
+
+    TIME_SMOOTHER += MPI_Wtime();
     exchange(l,x);
   }
 
@@ -44,7 +57,7 @@ namespace Dune {
       x_old[i-xoff]=x[i];
     }
 
-    array<DIM> add = g.init_add(l);
+    //    array<DIM> add = g.init_add(l);
 
     // run through lines
     coefflist cl = discrete.newcoefflist();
@@ -101,22 +114,24 @@ namespace Dune {
         {
           std::stringstream extention;
           extention << "X Iteration " << c;
-#ifndef NODUMP
-          dump(g,l,x,"smoothest",(char*)extention.str().c_str());
-#endif
+          //#ifndef NODUMP
+          //          dump(g,l,x,"smoothest",(char*)extention.str().c_str());
+          //#endif
         }
         {
           std::stringstream extention;
           extention << "D Iteration " << c;
-#ifndef NODUMP
-          dump(g,l,d,"smoothest",(char*)extention.str().c_str());
-#endif
+          //#ifndef NODUMP
+          //          dump(g,l,d,"smoothest",(char*)extention.str().c_str());
+          //#endif
         }
+        if (my_d < 1e-16)
+          return;
         if (c > 500) {
           std::cout << "too many iterations on level 0" << std::endl;
           return;
         }
-      };
+      }
     }
     else {
       // Vorglaetter
@@ -127,22 +142,18 @@ namespace Dune {
         x[i.id()]=0;
         b[i.id()]=0;
       }
-      if (l==g.smoothest())
-        dumpdx(g,l-1,b,"restrict","B before restrict");
       defect(l);
-#ifndef NODUMP
-      char *dumpfile="dumpfile";
-      dump(g,l,x,dumpfile,"X before restrict");
-      dump(g,l,d,dumpfile,"D before restrict");
-      dump(g,l-1,b,dumpfile,"B before restrict");
-#endif
+      //#ifndef NODUMP
+      //      char *dumpfile="dumpfile";
+      //      dump(g,l,x,dumpfile,"X before restrict");
+      //      dump(g,l,d,dumpfile,"D before restrict");
+      //      dump(g,l-1,b,dumpfile,"B before restrict");
+      //#endif
       // Restriktion d_l -> b_{l-1}
       restrict (l);
-      if (l==g.smoothest())
-        dumpdx(g,l-1,b,"restrict","B before restrict");
-#ifndef NODUMP
-      dump(g,l-1,b,dumpfile,"B after restrict");
-#endif
+      // #ifndef NODUMP
+      //       dump(g,l-1,b,dumpfile,"B after restrict");
+      // #endif
 #ifndef NDEBUG
       for (typename GRID::iterator i=g.begin(l-1); i != gEnd; ++i) {
         assert(x[i.id()]==0);
@@ -151,14 +162,14 @@ namespace Dune {
       // ein level rauf
       mgc(l-1);
       // Prologation X_{l-1} -> X_l
-#ifndef NODUMP
-      dump(g,l-1,x,dumpfile,"X before prolongate");
-      dump(g,l,x,dumpfile,"X before prolongate");
-#endif
+      // #ifndef NODUMP
+      //       dump(g,l-1,x,dumpfile,"X before prolongate");
+      //       dump(g,l,x,dumpfile,"X before prolongate");
+      // #endif
       prolongate(l);
-#ifndef NODUMP
-      dump(g,l,x,dumpfile,"X after prolongate");
-#endif
+      // #ifndef NODUMP
+      //       dump(g,l,x,dumpfile,"X after prolongate");
+      // #endif
       /* Nachglaetter */
       for (int n=0; n<n2; n++) smoother(l);
     }
@@ -170,27 +181,38 @@ namespace Dune {
     TIME_DEFECT -= MPI_Wtime();
 
     // run through lines
-    PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Inner> stub(*this, l);
-    PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this, l);
-    /*
-       g.loop_owner(l,stub);
-       g.loop_border(l,stub_B);
-     */
-    g.loop_all(l,stub_B);
-    stub.defect_array[0] += stub_B.defect_array[0];
-    stub.defect_array[1] += stub_B.defect_array[1];
+    PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Inner> stub_inner(*this, l);
+    PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Border> stub_border(*this, l);
 
-    assert(finite(stub.defect_array[0]));
+    // loop inner owner / border & overlap
+    array<DIM> beginI;
+    array<DIM> beginB;
+    array<DIM> endI;
+    array<DIM> endB;
+    for (int d=0; d<DIM; d++) {
+      beginB[d] = g.front_overlap(l,d);
+      beginI[d] = beginB[d]+1;
+      endB[d] = g.size(l,d) + g.front_overlap(l,d);
+      endI[d] = endB[d] - 1;
+    }
+
+    g.loop3D(l,beginI,endI,endI,endI,stub_inner); // inner
+    g.loop3D(l,beginB,beginI,endI,endB,stub_border); // border
+
+    stub_inner.defect_array[0] += stub_border.defect_array[0];
+    stub_inner.defect_array[1] += stub_border.defect_array[1];
+
+    assert(finite(stub_inner.defect_array[0]));
 
     // get max defect of all processes
     double defect_array_recv[2];
-    MPI_Allreduce(stub.defect_array, defect_array_recv, 2,
+    MPI_Allreduce(stub_inner.defect_array, defect_array_recv, 2,
                   MPI_DOUBLE, MPI_SUM, g.comm());
-    stub.defect_array[0]=defect_array_recv[0];
-    stub.defect_array[1]=defect_array_recv[1];
+    stub_inner.defect_array[0]=defect_array_recv[0];
+    stub_inner.defect_array[1]=defect_array_recv[1];
 
     TIME_DEFECT += MPI_Wtime();
-    return sqrt(stub.defect_array[0]); // /defect_array[1];
+    return sqrt(stub_inner.defect_array[0]); // /defect_array[1];
   };
 
   /**
@@ -201,22 +223,30 @@ namespace Dune {
   restrict (level l) {
     assert(l>0);
 
-    //    defect(l);
+    // defect(l);
     // We also need the defect of out neighbours
     exchange(l,d);
 
     TIME_REST -= MPI_Wtime();
-#warning restrict missing on border ?
-    PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Inner> stub(*this,l);
-    PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this,l);
-#define OLD
-#ifdef OLD
-    g.loop_all( l, stub );
-#else
-    g.loop_owner( l, stub );
-    g.loop_overlap( l, stub );
-    g.loop_border( l, stub_B );
-#endif
+
+    // loop inner owner / border & overlap
+    array<DIM> beginI;
+    array<DIM> beginB;
+    array<DIM> endI;
+    array<DIM> endB;
+    for (int d=0; d<DIM; d++) {
+      beginB[d] = g.front_overlap(l,d);
+      beginI[d] = beginB[d]+1;
+      endB[d] = g.size(l,d) + g.front_overlap(l,d);
+      endI[d] = endB[d] - 1;
+    }
+
+    PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Inner> stub_inner(*this,l);
+    PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Border> stub_border(*this,l);
+
+    g.loop3D(l,beginI,endI,endI,endI,stub_inner); // inner
+    g.loop3D(l,beginB,beginI,endI,endB,stub_border); // border
+
     TIME_REST += MPI_Wtime();
 
     // ABGLEICH vector b Level l-1
@@ -232,15 +262,25 @@ namespace Dune {
     assert(l>0);
 
     TIME_PROL -= MPI_Wtime();
-#warning prolongate missing on border ?
-    PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Inner> stub(*this,l);
-    PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this,l);
-#ifdef OLD
-    g.loop_all( l, stub );
-#else
-    g.loop_owner( l, stub );
-    g.loop_border( l, stub_B );
-#endif
+
+    // loop inner owner / border & overlap
+    array<DIM> beginI;
+    array<DIM> beginB;
+    array<DIM> endI;
+    array<DIM> endB;
+    for (int d=0; d<DIM; d++) {
+      beginB[d] = g.front_overlap(l,d);
+      beginI[d] = beginB[d]+1;
+      endB[d] = g.size(l,d) + g.front_overlap(l,d);
+      endI[d] = endB[d] - 1;
+    }
+
+    PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Inner> stub_inner(*this,l);
+    PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Border> stub_border(*this,l);
+
+    g.loop3D(l,beginI,endI,endI,endI,stub_inner); // inner
+    g.loop3D(l,beginB,beginI,endI,endB,stub_border); // border
+
     TIME_PROL += MPI_Wtime();
 
     // ABGLEICH Level l
@@ -453,17 +493,19 @@ namespace Dune {
     TIME_REST = 0;
     TIME_DEFECT = 0;
 
+#ifdef SOLVER_DUMPDX
     dumpdx(g,g.smoothest(),d,"defect","pressure in the end");
     dumpdx(g,g.smoothest(),x,"calpres","pressure in the end");
+#endif
 
     while (mydefect > maxdefect)
     {
       if (cycle > maxCycles) break;
-#ifndef NODUMP
-      dump(g,lvl,x,"jakobi","X");
-      dump(g,lvl,b,"jakobi","B");
-      dump(g,lvl,d,"jakobi","D");
-#endif
+      // #ifndef NODUMP
+      //       dump(g,lvl,x,"jakobi","X");
+      //       dump(g,lvl,b,"jakobi","B");
+      //       dump(g,lvl,d,"jakobi","D");
+      // #endif
       mgc(lvl);
       //smoother(lvl);
       //smootherJacobi(lvl);
@@ -474,8 +516,10 @@ namespace Dune {
       lastdefect = mydefect;
       cycle ++;
 
+#ifdef SOLVER_DUMPDX
       dumpdx(g,g.smoothest(),d,"defect","pressure in the end");
       dumpdx(g,g.smoothest(),x,"calpres","pressure in the end");
+#endif
 
     };
     if (rank==0)
