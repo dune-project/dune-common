@@ -1,25 +1,26 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_AMIRAMESHWRITER_HH__
-#define __DUNE_AMIRAMESHWRITER_HH__
+#ifndef __DUNE_RAWDATAWRITER_HH__
+#define __DUNE_RAWDATAWRITER_HH__
 
 #include <string>
 
 namespace Dune {
 
   /** @ingroup IO
-   * \brief Provides file writing facilities in the AmiraMesh format.
+   * \brief Provides file writing facilities in the raw data format.
    *
    * Use it by calling the static method write().  Its default implementation
    * only yields a warning message.  Actual functionality is provided by
    * specializations of the methods.  So far, the following ones are
    * available:
    * <ul>
-   * <li> SimpleGrid<3,3>, with <code>double</code> data </li>
+   * <li> SimpleGrid<3,3> </li>
    * </ul>
    */
+  */
   template<class GRID, class T>
-  class AmiraMeshWriter {
+  class RawDataWriter {
 
   public:
 
@@ -34,7 +35,7 @@ namespace Dune {
                       const std::string& filename);
 
 
-    AmiraMeshWriter() {}
+    RawDataWriter() {}
 
   };
 
@@ -42,13 +43,13 @@ namespace Dune {
 
 // Default implementation
 template<class GRID, class T>
-void Dune::AmiraMeshWriter<GRID, T>::write(const GRID& grid,
-                                           const Array<T>& sol,
-                                           const std::string& filename)
+void Dune::RawDataWriter<GRID, T>::write(const GRID& grid,
+                                         const Array<T>& sol,
+                                         const std::string& filename)
 {
-  printf("No AmiraMesh writing has been implemented for this grid type!\n");
+  printf("No rawdata writing has been implemented for this grid type!\n");
 }
 
-#include "amsimplegridwriter.cc"
+#include "rdsimplegridwriter.cc"
 
 #endif
