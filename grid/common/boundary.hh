@@ -21,7 +21,7 @@ namespace Dune {
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   protected:
-    const BoundaryEntityImp<GridImp> realBoundaryEntity;
+    BoundaryEntityImp<GridImp> realBoundaryEntity;
   public:
     typedef typename GridImp::template codim<0>::Geometry Geometry;
 
