@@ -732,25 +732,27 @@ namespace Dune {
   // tester code
   template<int cc>
   struct meta_grid_checkIF {
-    template<class G>
-    static void f (G& g)
+
+    template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+        template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+    static void f (Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>& g)
     {
       // iterate over codimension cc
       std::cout << "checking LevelIterator with codim=" << cc
-                << ", dim=" << G::dimension << ", dimworld=" << G::dimensionworld;
-      G::LevelIterator<cc> i = g.lbegin<cc>(0);
+                << ", dim=" << dim << ", dimworld=" << dimworld;
+      LevelIteratorImp<cc,dim,dimworld> i = g.lbegin<cc>(0);
       i.checkIF();
       std::cout << " OK."  << std::endl;
 
       // check entities
       std::cout << "checking Entity with codim=" << cc
-                << ", dim=" << G::dimension << ", dimworld=" << G::dimensionworld;
+                << ", dim=" << dim << ", dimworld=" << dimworld;
       i->checkIF();
       std::cout << " OK."  << std::endl;
 
       // check elements
-      std::cout << "checking Element with dim=" << G::dimension-cc
-                << ", dimworld=" << G::dimensionworld;
+      std::cout << "checking Element with dim=" << dim-cc
+                << ", dimworld=" << dimworld;
       i->geometry().checkIF();
       std::cout << " OK."  << std::endl;
 
@@ -764,37 +766,38 @@ namespace Dune {
   struct meta_grid_checkIF<0> {
     enum { cc=0 };
 
-    template<class G>
-    static void f (G& g)
+    template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+        template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+    static void f (Grid<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>& g)
     {
       // iterate over codimension cc
       std::cout << "checking LevelIterator with codim=" << cc
-                << ", dim=" << G::dimension << ", dimworld=" << G::dimensionworld;
-      G::LevelIterator<cc> i = g.lbegin<cc>(0);
+                << ", dim=" << dim << ", dimworld=" << dimworld;
+      LevelIteratorImp<cc,dim,dimworld> i = g.lbegin<cc>(0);
       i.checkIF();
       std::cout << " OK."  << std::endl;
 
       // check entities
       std::cout << "checking Entity with codim=" << cc
-                << ", dim=" << G::dimension << ", dimworld=" << G::dimensionworld;
+                << ", dim=" << dim << ", dimworld=" << dimworld;
       i->checkIF();
       std::cout << " OK."  << std::endl;
 
       // check elements
-      std::cout << "checking Element with dim=" << G::dimension-cc
-                << ", dimworld=" << G::dimensionworld;
+      std::cout << "checking Element with dim=" << dim-cc
+                << ", dimworld=" << dimworld;
       i->geometry().checkIF();
       std::cout << " OK."  << std::endl;
 
       // neighbor iterator
-      std::cout << "checking NeighborIterator with dim=" << G::dimension
-                << ", dimworld=" << G::dimensionworld;
+      std::cout << "checking NeighborIterator with dim=" << dim
+                << ", dimworld=" << dimworld;
       i->nbegin().checkIF();
       std::cout << " OK."  << std::endl;
 
       // hierarchic iterator
-      std::cout << "checking HierarchicIterator with dim=" << G::dimension
-                << ", dimworld=" << G::dimensionworld;
+      std::cout << "checking HierarchicIterator with dim=" << dim
+                << ", dimworld=" << dimworld;
       i->hbegin(0).checkIF();
       std::cout << " OK."  << std::endl;
     }
