@@ -1162,10 +1162,6 @@ namespace AlbertHelp
     elOwner = NULL;
   }
 
-#ifndef _ALBERTA_H_
-  //#include "part.cc"
-#endif
-
 } // end namespace AlbertHelp
 
 #ifdef __ALBERTApp__
