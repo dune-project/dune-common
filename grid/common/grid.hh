@@ -3,6 +3,8 @@
 #ifndef __GRID_HH__
 #define __GRID_HH__
 
+#include <dune/common/matvec.hh>
+
 namespace Dune {
 
   /** @defgroup GridCommon Dune Grid Module
