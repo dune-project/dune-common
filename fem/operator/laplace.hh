@@ -173,15 +173,15 @@ namespace Dune
 
         if(stiffTensor_) {
           stiffTensor_->evaluate(entity.geometry().global(quad.point(pt)),ret);
-          ret(0) *= quad.weight( pt );
+          ret[0] *= quad.weight( pt );
           for(i=0; i<matSize; i++)
             for (j=0; j<=i; j++ )
-              mat(i,j) += ( mygrad[i](0) * mygrad[j](0) ) * ret(0);
+              mat(i,j) += ( mygrad[i][0] * mygrad[j][0] ) * ret[0];
         }
         else{
           for(i=0; i<matSize; i++)
             for (j=0; j<=i; j++ )
-              mat(i,j) += ( mygrad[i](0) * mygrad[j](0) ) * quad.weight( pt );
+              mat(i,j) += ( mygrad[i][0] * mygrad[j][0] ) * quad.weight( pt );
         }
 
 

@@ -21,14 +21,14 @@ FastBaseFunctionSet( FunctionSpaceType & fuspace, int numOfBaseFct )
 
 template <class FunctionSpaceType> template <int diffOrd>
 void FastBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const Vec<diffOrd, deriType> &diffVariable, const Domain & x,  Range & phi ) const
+evaluate( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, const Domain & x,  Range & phi ) const
 {
   getBaseFunction( baseFunct ).evaluate( diffVariable, x, phi );
 }
 
 template <class FunctionSpaceType> template <int diffOrd, class QuadratureType>
 void FastBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const Vec<diffOrd, deriType> &diffVariable, QuadratureType & quad,
+evaluate( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, QuadratureType & quad,
           int quadPoint, Range & phi ) const
 {
   // check if cache is for the used quadrature
@@ -68,13 +68,14 @@ evaluateInit( const QuadratureType &quad )
     // go through all possible combinations of 0,1,2
     if(diffOrd == 2)
     {
-      diffVariable(0) = i % DimDomain;
-      diffVariable(1) = diffCount;
+      diffVariable[0] = i % DimDomain;
+      diffVariable[1] = diffCount;
       diffCount++;
       if (diffCount >= DimDomain) diffCount = 0;
     }
     else
-      for(int j=0; j<diffOrd; j++) diffVariable(j) = i % DimDomain;
+      for(int j=0; j<diffOrd; j++)
+        diffVariable[j] = i % DimDomain;
 
     for ( int baseFunc = 0; baseFunc < this->getNumberOfBaseFunctions(); baseFunc++ )
     {

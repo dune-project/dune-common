@@ -33,7 +33,11 @@ namespace Dune {
 
     // copy arguments
     s = 0.0;
-    for (int j=0; j<dim; j++) A(j) = Vec<dimworld,sgrid_ctype>(j,1.0);     // make unit vectors
+    for (int j=0; j<dim; j++) {
+      // make unit vectors
+      A(j)   = FieldVector<sgrid_ctype, dimworld>(0.0);
+      A(j,j) = 1.0;
+    }
 
     // make corners
     for (int i=0; i<(1<<dim); i++)     // there are 2^d corners
@@ -94,29 +98,29 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype>& SElement<dim,dimworld>::operator[] (int i)
+  inline FieldVector<sgrid_ctype, dimworld>& SElement<dim,dimworld>::operator[] (int i)
   {
     return c[i];
   }
 
   template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype> SElement<dim,dimworld>::global (const Vec<dim,sgrid_ctype>& local)
+  inline FieldVector<sgrid_ctype, dimworld> SElement<dim,dimworld>::global (const FieldVector<sgrid_ctype, dim>& local)
   {
     return s+(A*local);
   }
 
   template<int dim, int dimworld>
-  inline Vec<dim,sgrid_ctype> SElement<dim,dimworld>::local (const Vec<dimworld,sgrid_ctype>& global)
+  inline FieldVector<sgrid_ctype, dim> SElement<dim,dimworld>::local (const FieldVector<sgrid_ctype, dimworld>& global)
   {
-    Vec<dim,sgrid_ctype> l;     // result
-    Vec<dimworld,sgrid_ctype> rhs = global-s;
+    FieldVector<sgrid_ctype, dim> l;     // result
+    FieldVector<sgrid_ctype, dimworld> rhs = global-s;
     for (int k=0; k<dim; k++)
-      l(k) = (rhs*A(k)) / (A(k)*A(k));
+      l[k] = (rhs*A(k)) / (A(k)*A(k));
     return l;
   }
 
   template<int dim, int dimworld>
-  inline bool SElement<dim,dimworld>::checkInside (const Vec<dim,sgrid_ctype>& local)
+  inline bool SElement<dim,dimworld>::checkInside (const FieldVector<sgrid_ctype, dim>& local)
   {
     // check wether they are in the reference element
     for(int i=0; i<dim; i++)
@@ -128,16 +132,16 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline sgrid_ctype SElement<dim,dimworld>::integration_element (const Vec<dim,sgrid_ctype>& local)
+  inline sgrid_ctype SElement<dim,dimworld>::integration_element (const FieldVector<sgrid_ctype, dim>& local)
   {
     sgrid_ctype s = 1.0;
-    for (int j=0; j<dim; j++) s *= A(j).norm1();
+    for (int j=0; j<dim; j++) s *= A(j).one_norm();
 
     return s;
   }
 
   template<int dim, int dimworld>
-  inline Mat<dim,dim>& SElement<dim,dimworld>::Jacobian_inverse (const Vec<dim,sgrid_ctype>& local)
+  inline Mat<dim,dim>& SElement<dim,dimworld>::Jacobian_inverse (const FieldVector<sgrid_ctype, dim>& local)
   {
     assert(dim==dimworld);
 
@@ -204,7 +208,7 @@ namespace Dune {
   }
 
   template<int dimworld>
-  inline Vec<dimworld,sgrid_ctype>& SElement<0,dimworld>::operator[] (int i)
+  inline FieldVector<sgrid_ctype, dimworld>& SElement<0,dimworld>::operator[] (int i)
   {
     return s;
   }
@@ -295,7 +299,7 @@ namespace Dune {
 
     // count number of direction vectors found
     int dir=0;
-    Vec<dim,sgrid_ctype> p1,p2;
+    FieldVector<sgrid_ctype, dim> p1,p2;
     FixedArray<int,dim> t=z;
 
     // check all directions
@@ -425,7 +429,7 @@ namespace Dune {
     FixedArray<int,dim> zz = this->grid->compress(this->l,this->z);
 
     // look for odd coordinates
-    Vec<dim,sgrid_ctype> delta;
+    FieldVector<sgrid_ctype, dim> delta;
     for (int i=0; i<dim; i++)
       if (zz[i]%2)
       {
@@ -447,7 +451,7 @@ namespace Dune {
 
     // now make a subcube of size 1/2 in each direction
     Mat<dim,dim+1,sgrid_ctype> As;
-    Vec<dim,sgrid_ctype> v;
+    FieldVector<sgrid_ctype, dim> v;
     for (int i=0; i<dim; i++)
     {
       v = 0.0; v(i) = 0.5;
@@ -525,7 +529,7 @@ namespace Dune {
     FixedArray<int,dim> zz = this->grid->compress(this->l,this->z);
 
     // to find father, make all coordinates odd
-    Vec<dim,sgrid_ctype> delta;
+    FieldVector<sgrid_ctype, dim> delta;
     for (int i=0; i<dim; i++)
       if (zz[i]%2)
       {
@@ -568,7 +572,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline Vec<dim,sgrid_ctype>& SEntity<dim,dim,dimworld>::local ()
+  inline FieldVector<sgrid_ctype, dim>& SEntity<dim,dim,dimworld>::local ()
   {
     if (!built_father) make_father();
     return in_father_local;
@@ -702,9 +706,9 @@ namespace Dune {
     // while we are at it, compute normal direction
     normal = 0.0;
     if (count%2)
-      normal(count/2) =  1.0;           // odd
+      normal[count/2] =  1.0;           // odd
     else
-      normal(count/2) = -1.0;           // even
+      normal[count/2] = -1.0;           // even
 
     // now check if neighbor exists
     is_on_boundary = !grid->exists(self->level(),zrednb);
@@ -819,7 +823,7 @@ namespace Dune {
 
     // z1 is even in direction dir, all others must be odd because it is codim 1
     Mat<dim,dim,sgrid_ctype> As;
-    Vec<dim,sgrid_ctype> p1,p2;
+    FieldVector<sgrid_ctype, dim> p1,p2;
     int t;
 
     // local coordinates in self
@@ -918,14 +922,14 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype>&
-  SIntersectionIterator<dim,dimworld>::unit_outer_normal (Vec<dim-1,sgrid_ctype>& local)
+  inline FieldVector<sgrid_ctype, dimworld>&
+  SIntersectionIterator<dim,dimworld>::unit_outer_normal (FieldVector<sgrid_ctype, dim-1>& local)
   {
     return normal;
   }
 
   template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype>&
+  inline FieldVector<sgrid_ctype, dimworld>&
   SIntersectionIterator<dim,dimworld>::unit_outer_normal ()
   {
     return normal;
@@ -994,7 +998,7 @@ namespace Dune {
     // define coarse mesh
     mapper[0].make(N[0]);
     for (int i=0; i<dim; i++)
-      h[0](i) = (H[i]-low[i])/((sgrid_ctype)N[0][i]);
+      h[0][i] = (H[i]-low[i])/((sgrid_ctype)N[0][i]);
 
     std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
     for (int i=1; i<dim; i++) std::cout << "," <<  N[L-1][i];
@@ -1038,7 +1042,8 @@ namespace Dune {
     mapper[L].make(N[L]);
 
     // compute mesh size
-    for (int i=0; i<dim; i++) h[L](i) = (H[i]-low[i])/((sgrid_ctype)N[L][i]);
+    for (int i=0; i<dim; i++)
+      h[L][i] = (H[i]-low[i])/((sgrid_ctype)N[L][i]);
     L++;
 
     std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
@@ -1166,11 +1171,11 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline Vec<dim,sgrid_ctype> SGrid<dim,dimworld>::pos (int level, FixedArray<int,dim>& z)
+  inline FieldVector<sgrid_ctype, dim> SGrid<dim,dimworld>::pos (int level, FixedArray<int,dim>& z)
   {
-    Vec<dim,sgrid_ctype> x;
+    FieldVector<sgrid_ctype, dim> x;
     for (int k=0; k<dim; k++)
-      x(k) = (z[k]*h[level](k))*0.5 + low[k];
+      x[k] = (z[k]*h[level][k])*0.5 + low[k];
     return x;
   }
 

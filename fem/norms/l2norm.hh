@@ -48,7 +48,7 @@ namespace Dune {
         for(int qP = 0; qP < quad.nop(); qP++) {
 
           lf.evaluate((*it),quad,qP,phi);
-          sum += det * quad.weight(qP) * SQR(phi(0));
+          sum += det * quad.weight(qP) * SQR(phi[0]);
         }
 
       }

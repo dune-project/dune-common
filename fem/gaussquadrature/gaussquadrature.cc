@@ -180,7 +180,7 @@ namespace Dune {
 
     // allocate memory for the quadrature points and weights
     try {
-      local = new Vec<dim,ct>[n];
+      local = new FieldVector<ct, dim>[n];
     }
     catch (std::bad_alloc) {
       std::cout << "failed to allocate memory for quadrature points" << std::endl;
@@ -196,7 +196,7 @@ namespace Dune {
     for (int i=0; i<n; ++i)
     {
       // compute integer coordinates of Gauss point from number
-      Vec<dim,short> x = 0;
+      FieldVector<short, dim> x = 0;
       int z = i;
       for (int k=0; k<dim; ++k)
       {
@@ -209,7 +209,7 @@ namespace Dune {
         local[i](k) = G[x(k)];
         weight[i] *= W[x(k)];
       }
-      //		std::cout << i << " " << x << " " << local[i] << " " << w[i] << std::endl;
+      //              std::cout << i << " " << x << " " << local[i] << " " << w[i] << std::endl;
     }
   }
 
@@ -221,7 +221,7 @@ namespace Dune {
 
     // allocate memory for the quadrature points and weights
     try {
-      local = new Vec<dim,ct>[n];
+      local = new FieldVector<ct, dim>[n];
     }
     catch (std::bad_alloc) {
       std::cout << "failed to allocate memory for quadrature points" << std::endl;
@@ -266,7 +266,7 @@ namespace Dune {
 
       // allocate memory for the quadrature points and weights
       try {
-        local = new Vec<dim,ct>[n];
+        local = new FieldVector<ct, dim>[n];
       }
       catch (std::bad_alloc) {
         std::cout << "failed to allocate memory for quadrature points" << std::endl;
@@ -297,7 +297,7 @@ namespace Dune {
   }
 
   template<int dim, class ct>
-  inline Vec<dim,ct>& GaussQuadrature<dim,ct>::ip (int i)
+  inline FieldVector<ct, dim>& GaussQuadrature<dim,ct>::ip (int i)
   {
     return local[i];
   }

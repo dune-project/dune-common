@@ -657,14 +657,14 @@ namespace Dune
         if(eval)
         {
           for(int l=0; l<dimrange; l++)
-            ret(l) += (* (values_[i])) * tmp_(l);
+            ret[l] += (* (values_[i])) * tmp_[l];
         }
       }
     }
     else
     {
       for(int l=0; l<dimrange; l++)
-        ret(l) = (* (values_[ l ]));
+        ret[l] = (* (values_[ l ]));
     }
   }
 

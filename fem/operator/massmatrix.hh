@@ -61,7 +61,7 @@ namespace Dune {
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
       double val = 0.;
 
-      Vec<GridType::dimension> tmp(1.0);
+      FieldVector<double, GridType::dimension> tmp(1.0);
 
       const BaseFunctionSetType & baseSet
         = this->functionSpace_.getBaseFunctionSet( entity );
@@ -90,7 +90,8 @@ namespace Dune {
       const BaseFunctionSetType & baseSet
         = this->functionSpace_.getBaseFunctionSet( entity );
 
-      static Vec<GridType::dimension> tmp(1.0);
+      /** \todo What's the correct type here? */
+      static FieldVector<double, GridType::dimension> tmp(1.0);
       const double vol = entity.geometry().integration_element(tmp);
 
       static RangeType v[4];

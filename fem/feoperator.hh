@@ -127,6 +127,7 @@ namespace Dune {
         }
       }
 
+#if 0
       {
         // eliminate the Dirichlet rows and columns
         typedef typename GridType::template Traits<0>::Entity EntityType;
@@ -194,6 +195,7 @@ namespace Dune {
           }
         }
       }
+#endif
       matrix_assembled_ = true;
     }
 

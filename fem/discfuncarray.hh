@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_DISFUNCARRAY_HH__
-#define __DUNE_DISFUNCARRAY_HH__
+#ifndef __DUNE_DISCFUNCARRAY_HH__
+#define __DUNE_DISCFUNCARRAY_HH__
 
 #include <dune/common/array.hh>
 
@@ -44,14 +44,21 @@ namespace Dune {
 
     enum { myId_ = 0};
   public:
+
+    //! ???
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+    //! ???
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
 
+    //! ???
     typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscreteFunctionType;
+    //! ???
     typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
+    //! ???
     typedef DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > DofIteratorType;
 
+    //! ???
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
 
     //! Constructor make empty DiscFuncArray
@@ -108,6 +115,9 @@ namespace Dune {
 
     //! return if allLevels are used
     bool allLevels () { return allLevels_; }
+
+    //! Return the name of the discrete function
+    const std::string& name() const {return name_;}
 
     //! set all dofs to zero
     void clearLevel( int level );
@@ -323,6 +333,7 @@ namespace Dune {
   //  --DofIteratorArray
   //
   //***********************************************************************
+  /** \brief ??? */
   template < class DofType >
   class DofIteratorArray : public
                            DofIteratorDefault < DofType , DofIteratorArray < DofType > >

@@ -45,14 +45,14 @@ namespace Dune {
     int nip ();
 
     //! return local coordinates of integration point i
-    Vec<dim,ct>& ip (int i);
+    FieldVector<ct, dim>& ip (int i);
 
     //! return weight associated with integration point i
     double w (int i);
 
   private:
     int n;
-    Vec<dim,ct> *local;
+    FieldVector<ct, dim> *local;
     double *weight;
 
     int power (int y, int d);

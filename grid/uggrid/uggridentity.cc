@@ -96,15 +96,11 @@ geometry()
 }
 
 #ifdef _3
-//template<int codim, int dim, int dimworld>
 template<>
-inline UGGridLevelIterator<0,3,3>
+inline UGGridLevelIterator<0,3,3, All_Partition>
 UGGridEntity < 0, 3 ,3>::father()
 {
-  // This currently only works for elements
-  //assert(codim==0);
-
-  UGGridLevelIterator<0,3,3> it(level()-1);
+  UGGridLevelIterator<0,3,3, All_Partition> it(level()-1);
 #define TAG(p) ReadCW(p, UG3d::TAG_CE)
 #define EFATHER(p) ((UG3d::ELEMENT *) (p)->ge.refs[UG3d::father_offset[TAG(p)]])
   UG3d::ELEMENT* fatherTarget = EFATHER(target_);
@@ -153,15 +149,9 @@ geometry()
 
 //*****************************************************************8
 // count
-/** \todo So far only works in 3d */
 template <int codim, int dim, int dimworld> template <int cc>
 inline int UGGridEntity<codim,dim,dimworld>::count ()
 {
-  // #define TAG(p) ReadCW(p, UG3d::TAG_CE)
-  // #define SIDES_OF_ELEM(p) (UG3d::element_descriptors[TAG(p)]->sides_of_elem)
-  // #define EDGES_OF_ELEM(p) (UG3d::element_descriptors[TAG(p)]->edges_of_elem)
-  // #define CORNERS_OF_ELEM(p)(UG3d::element_descriptors[TAG(p)]->corners_of_elem)
-
   if (dim==3) {
 
     switch (cc) {
@@ -189,34 +179,14 @@ inline int UGGridEntity<codim,dim,dimworld>::count ()
 
   }
   return -1;
-  // #undef SIDES_OF_ELEM
-  // #undef EDGES_OF_ELEM
-  // #undef CORNERS_OF_ELEM
-  // #undef TAG
 }
 
 template <int codim, int dim, int dimworld>
 template <int cc>
 inline int UGGridEntity<codim, dim, dimworld>::subIndex(int i)
 {
-#if 0
-
-#define TAG(p) ReadCW(p, UG3d::TAG_CE)
-#define CORNER(p,i) ((UG3d::node *) (p)->ge.refs[UG3d::n_offset[TAG(p)]+(i)])
-  UG3d::node* node = CORNER(target_,i);
-#undef CORNER
-#undef TAG
-  UG3d::vertex* vertex = node->myvertex;
-  return vertex->iv.id;
-
-#else
-
   typename TargetType<dim,dim>::T* node = CORNER(target_,i);
-  //UG3d::vertex* vertex = node->myvertex;
   return node->myvertex->iv.id;
-
-#endif
-
 }
 
 
@@ -249,11 +219,19 @@ template <int dim, int dimworld>
 template <int cc>
 inline int UGGridEntity<0, dim, dimworld>::subIndex(int i)
 {
-#ifdef _3
-  UG3d::node* node = (UG3d::node*)UG_NS<dimworld>::Corner(target_,i);
-#else
-  UG2d::node* node = (UG2d::node*)UG_NS<dimworld>::Corner(target_,i);
-#endif
+  //assert(i>=0 && i<count());
+
+  if (cc!=dim)
+    DUNE_THROW(GridError, "UGGrid::subIndex isn't implemented for cc != dim");
+
+  if (geometry().type()==hexahedron) {
+    // Dune numbers the vertices of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    i = renumbering[i];
+  }
+
+  typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(target_,i);
   return node->myvertex->iv.id;
 }
 
@@ -315,9 +293,17 @@ UGGridEntity < 0, dim ,dimworld >::hbegin(int maxlevel)
 
     // The 30 is the macro MAX_SONS from ug/gm/gm.h
     UGElementType* sonList[30];
+#ifdef _2
     UG2d::GetSons(target_,sonList);
+#else
+    UG3d::GetSons(target_,sonList);
+#endif
 
+#ifdef _2
 #define NSONS(p) UG2d::ReadCW(p, UG2d::NSONS_CE)
+#else
+#define NSONS(p) UG3d::ReadCW(p, UG3d::NSONS_CE)
+#endif
     // Load sons of entity into the iterator
     for (unsigned int i=0; i<NSONS(target_); i++) {
       typename UGGridHierarchicIterator<dim,dimworld>::StackEntry se;

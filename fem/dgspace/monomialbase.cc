@@ -38,7 +38,7 @@ MonomialBaseFunctionSet( FunctionSpaceType & fuspace, int polOrder )
 
 template <class FunctionSpaceType>
 void MonomialBaseFunctionSet<FunctionSpaceType >::
-real_evaluate( int baseFunct, const Vec<0, deriType> &diffVariable,
+real_evaluate( int baseFunct, const FieldVector<deriType, 0> &diffVariable,
                const Domain & x,  Range & phi ) const
 {
   phi = power(x[0], Phi_[baseFunct][0]) * power(x[1], Phi_[baseFunct][1]);
@@ -46,7 +46,7 @@ real_evaluate( int baseFunct, const Vec<0, deriType> &diffVariable,
 
 template <class FunctionSpaceType>
 void MonomialBaseFunctionSet<FunctionSpaceType >::
-real_evaluate( int baseFunct, const Vec<1, deriType> &diffVariable,
+real_evaluate( int baseFunct, const FieldVector<deriType, 1> &diffVariable,
                const Domain & x,  Range & phi ) const
 {
   if (diffVariable(0) == 0) {
@@ -61,7 +61,7 @@ real_evaluate( int baseFunct, const Vec<1, deriType> &diffVariable,
 
 template <class FunctionSpaceType>
 void MonomialBaseFunctionSet<FunctionSpaceType >::
-real_evaluate( int baseFunct, const Vec<2, deriType> &diffVariable,
+real_evaluate( int baseFunct, const FieldVector<deriType, 2> &diffVariable,
                const Domain & x,  Range & phi ) const
 {
   if (diffVariable(0) == 0) {
@@ -94,7 +94,7 @@ real_evaluate( int baseFunct, const Vec<2, deriType> &diffVariable,
 
 template <class FunctionSpaceType> template <int diffOrd>
 void MonomialBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
+evaluate( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable,
           const Domain & x,  Range & phi ) const
 {
   assert(baseFunct < numOfBaseFct_);
@@ -103,7 +103,7 @@ evaluate( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
 
 template <class FunctionSpaceType> template <int diffOrd, class QuadratureType>
 void MonomialBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
+evaluate( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable,
           QuadratureType & quad, int quadPoint, Range & phi ) const
 {
   Domain x = quad.point(quadPoint);
@@ -112,7 +112,7 @@ evaluate( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
 
 template <class FunctionSpaceType>
 void MonomialBaseFunctionSet<FunctionSpaceType >::
-print (std::ostream& s, const Dune::Vec<2,int> & pol) const
+print (std::ostream& s, const Dune::FieldVector<int, 2> & pol) const
 {
   if (pol[0] > 0 && pol[1] > 0) {
     s << "x^" << pol[0]

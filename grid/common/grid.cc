@@ -21,13 +21,13 @@ namespace Dune {
   }
 
   template<int dim, class ct>
-  inline Vec<dim,ct>& ReferenceTopology<dim,ct>::center_codim0_local (int elemtype)
+  inline FieldVector<ct, dim>& ReferenceTopology<dim,ct>::center_codim0_local (int elemtype)
   {
     DUNE_THROW(GridError, "dimension too large");
   }
 
   template<int dim, class ct>
-  inline Vec<dim-1,ct>& ReferenceTopology<dim,ct>::center_codim1_local (int elemtype, int i)
+  inline FieldVector<ct, dim-1>& ReferenceTopology<dim,ct>::center_codim1_local (int elemtype, int i)
   {
     DUNE_THROW(GridError, "dimension too large");
   }
@@ -36,17 +36,17 @@ namespace Dune {
   template<class ct>
   inline ReferenceTopology<1,ct>::ReferenceTopology ()
   {
-    center0_local[0] = Vec<1,ct>(0.5);
+    center0_local[0] = FieldVector<ct, 1>(0.5);
   }
 
   template<class ct>
-  inline Vec<1,ct>& ReferenceTopology<1,ct>::center_codim0_local (int elemtype)
+  inline FieldVector<ct, 1>& ReferenceTopology<1,ct>::center_codim0_local (int elemtype)
   {
     return center0_local[0];
   }
 
   template<class ct>
-  inline Vec<0,ct>& ReferenceTopology<1,ct>::center_codim1_local (int elemtype, int i)
+  inline FieldVector<ct, 0>& ReferenceTopology<1,ct>::center_codim1_local (int elemtype, int i)
   {
     return center1_local[0];
   }
@@ -55,19 +55,19 @@ namespace Dune {
   template<class ct>
   inline ReferenceTopology<2,ct>::ReferenceTopology ()
   {
-    center0_local[0] = Vec<2,ct>(1.0/3.0);
-    center0_local[1] = Vec<2,ct>(0.5);
-    center1_local[0] = Vec<1,ct>(0.5);
+    center0_local[0] = FieldVector<ct, 2>(1.0/3.0);
+    center0_local[1] = FieldVector<ct, 2>(0.5);
+    center1_local[0] = FieldVector<ct, 1>(0.5);
   }
 
   template<class ct>
-  inline Vec<2,ct>& ReferenceTopology<2,ct>::center_codim0_local (int elemtype)
+  inline FieldVector<ct, 2>& ReferenceTopology<2,ct>::center_codim0_local (int elemtype)
   {
     return center0_local[elemtype-2];
   }
 
   template<class ct>
-  inline Vec<1,ct>& ReferenceTopology<2,ct>::center_codim1_local (int elemtype, int i)
+  inline FieldVector<ct, 1>& ReferenceTopology<2,ct>::center_codim1_local (int elemtype, int i)
   {
     return center1_local[0];
   }
@@ -76,24 +76,24 @@ namespace Dune {
   template<class ct>
   inline ReferenceTopology<3,ct>::ReferenceTopology ()
   {
-    center0_local[0] = Vec<3,ct>(0.25);
-    center0_local[1] = Vec<3,ct>(0.0); // pyramid is missing !
-    center0_local[2] = Vec<3,ct>(0.0); // prism is missing
-    center0_local[3] = Vec<3,ct>(0.5);
-    for (int i=0; i<6; i++) center1_local[0][i] = Vec<2,ct>(1.0/3.0);
-    for (int i=0; i<6; i++) center1_local[1][i] = Vec<2,ct>(0.0);
-    for (int i=0; i<6; i++) center1_local[2][i] = Vec<2,ct>(0.0);
-    for (int i=0; i<6; i++) center1_local[3][i] = Vec<2,ct>(0.5);
+    center0_local[0] = FieldVector<ct, 3>(0.25);
+    center0_local[1] = FieldVector<ct, 3>(0.0); // pyramid is missing !
+    center0_local[2] = FieldVector<ct, 3>(0.0); // prism is missing
+    center0_local[3] = FieldVector<ct, 3>(0.5);
+    for (int i=0; i<6; i++) center1_local[0][i] = FieldVector<ct, 2>(1.0/3.0);
+    for (int i=0; i<6; i++) center1_local[1][i] = FieldVector<ct, 2>(0.0);
+    for (int i=0; i<6; i++) center1_local[2][i] = FieldVector<ct, 2>(0.0);
+    for (int i=0; i<6; i++) center1_local[3][i] = FieldVector<ct, 2>(0.5);
   }
 
   template<class ct>
-  inline Vec<3,ct>& ReferenceTopology<3,ct>::center_codim0_local (int elemtype)
+  inline FieldVector<ct, 3>& ReferenceTopology<3,ct>::center_codim0_local (int elemtype)
   {
     return center0_local[elemtype-4];
   }
 
   template<class ct>
-  inline Vec<2,ct>& ReferenceTopology<3,ct>::center_codim1_local (int elemtype, int i)
+  inline FieldVector<ct, 2>& ReferenceTopology<3,ct>::center_codim1_local (int elemtype, int i)
   {
     return center1_local[elemtype-4][i];
   }
@@ -118,7 +118,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline Vec<dimworld,ct>& Element<dim,dimworld,ct,ElementImp>::operator[] (int i)
+  inline FieldVector<ct, dimworld>& Element<dim,dimworld,ct,ElementImp>::operator[] (int i)
   {
     return asImp().operator[](i);
   }
@@ -130,31 +130,31 @@ namespace Dune {
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline Vec<dimworld,ct> Element<dim,dimworld,ct,ElementImp>::global (const Vec<dim,ct>& local)
+  inline FieldVector<ct, dimworld> Element<dim,dimworld,ct,ElementImp>::global (const FieldVector<ct, dim>& local)
   {
     return asImp().global(local);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline Vec<dim,ct> Element<dim,dimworld,ct,ElementImp>::local (const Vec<dimworld,ct>& global)
+  inline FieldVector<ct, dim> Element<dim,dimworld,ct,ElementImp>::local (const FieldVector<ct, dimworld>& global)
   {
     return asImp().local(global);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline bool Element<dim,dimworld,ct,ElementImp>::checkInside (const Vec<dim,ct>& local)
+  inline bool Element<dim,dimworld,ct,ElementImp>::checkInside (const FieldVector<ct, dim>& local)
   {
     return asImp().checkInside(local);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline ct Element<dim,dimworld,ct,ElementImp>::integration_element (const Vec<dim,ct>& local)
+  inline ct Element<dim,dimworld,ct,ElementImp>::integration_element (const FieldVector<ct, dim>& local)
   {
     return asImp().integration_element(local);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline Mat<dim,dim>& Element<dim,dimworld,ct,ElementImp>::Jacobian_inverse (const Vec<dim,ct>& local)
+  inline Mat<dim,dim>& Element<dim,dimworld,ct,ElementImp>::Jacobian_inverse (const FieldVector<ct, dim>& local)
   {
     return asImp().Jacobian_inverse(local);
   }
@@ -165,13 +165,13 @@ namespace Dune {
     // simply call all members, this forces compiler to compile them ...
     type();
 
-    Vec<dim,ct> l;
-    Vec<dimworld,ct> g;
+    FieldVector<ct, dim> l;
+    FieldVector<ct, dimworld> g;
 
     // check the methods local,global, refelem and checkInside
     for(int i=0; i<corners(); i++)
     {
-      Vec<dimworld,ct> & coord = operator[] (i);
+      FieldVector<ct, dimworld> & coord = operator[] (i);
       l = local  ( coord );
       if( !checkInside (l) )
       {
@@ -219,7 +219,7 @@ namespace Dune {
   }
 
   template<int dimworld, class ct,template<int,int> class ElementImp>
-  inline Vec<dimworld,ct>& Element<0,dimworld,ct,ElementImp>::operator[] (int i)
+  inline FieldVector<ct, dimworld>& Element<0,dimworld,ct,ElementImp>::operator[] (int i)
   {
     return asImp().operator[](i);
   }
@@ -314,7 +314,7 @@ namespace Dune {
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline Vec<dimworld,ct>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::unit_outer_normal (Vec<dim-1,ct>& local)
+  inline FieldVector<ct, dimworld>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::unit_outer_normal (FieldVector<ct, dim-1>& local)
   {
     return asImp().unit_outer_normal(local);
   }
@@ -325,7 +325,7 @@ namespace Dune {
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline Vec<dimworld,ct>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::unit_outer_normal ()
+  inline FieldVector<ct, dimworld>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::unit_outer_normal ()
   {
     return asImp().unit_outer_normal();
   }
@@ -410,7 +410,7 @@ namespace Dune {
     operator*();
     operator->();
     boundary();
-    Vec<dim-1,ct> l;
+    FieldVector<ct, dim-1> l;
     unit_outer_normal(l);
     unit_outer_normal();
     intersection_self_local();
@@ -430,7 +430,7 @@ namespace Dune {
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline Vec<dimworld,ct>& IntersectionIteratorDefault<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::outer_normal ()
+  inline FieldVector<ct, dimworld>& IntersectionIteratorDefault<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::outer_normal ()
   {
     // make a copy, is nessasary
     outerNormal_ = asImp().unit_outer_normal();
@@ -444,8 +444,8 @@ namespace Dune {
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline Vec<dimworld,ct>& IntersectionIteratorDefault<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::
-  outer_normal (Vec<dim-1,ct>& local)
+  inline FieldVector<ct, dimworld>& IntersectionIteratorDefault<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::
+  outer_normal (FieldVector<ct, dim-1>& local)
   {
     // make a copy, is nessasary
     outerNormal_ = asImp().unit_outer_normal(local);
@@ -828,7 +828,7 @@ namespace Dune {
       template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline Vec<dim,ct>& Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::local ()
+  inline FieldVector<ct, dim>& Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::local ()
   {
     return asImp().local();
   }

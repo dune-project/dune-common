@@ -31,8 +31,8 @@ UGGridLevelIterator(UGGrid<dim,dimworld> &grid, int travLevel) :
 
 #ifdef _3
 template<>
-inline UGGridLevelIterator < 3,3,3 >&
-UGGridLevelIterator < 3,3,3 >::operator++()
+inline UGGridLevelIterator < 3,3,3, All_Partition >&
+UGGridLevelIterator < 3,3,3,All_Partition >::operator++()
 {
 
   target_ = target_->succ;
@@ -44,8 +44,8 @@ UGGridLevelIterator < 3,3,3 >::operator++()
 }
 
 template<>
-inline UGGridLevelIterator < 0,3,3 >&
-UGGridLevelIterator < 0,3,3 >::operator++()
+inline UGGridLevelIterator < 0,3,3, All_Partition >&
+UGGridLevelIterator < 0,3,3, All_Partition >::operator++()
 {
   setToTarget(target_->ge.succ);
   virtualEntity_.elNum_++;

@@ -28,12 +28,12 @@ namespace Dune {
     /** \todo Please doc me! */
     typedef Mat < n, m, RangeField> JacobianRange;
     /** \todo Please doc me! */
-    typedef Vec < m,  Mat< n, n, RangeField> > HessianRange ;
+    typedef FieldVector<Mat< n, n, RangeField>, m> HessianRange ;
 
     /** \todo Please doc me! */
-    typedef Vec<n, DomainField> Domain;
+    typedef FieldVector<DomainField, n> Domain;
     /** \todo Please doc me! */
-    typedef Vec<m, RangeField> Range;
+    typedef FieldVector<RangeField, m> Range;
 
     /** \todo Please doc me! */
     enum { DimDomain = n, DimRange = m};

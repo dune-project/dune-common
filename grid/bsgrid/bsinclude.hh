@@ -14,7 +14,7 @@
 #define _BSGRID_USE_INDEX_
 
 // define parameter type for normal method
-#define BSGridVecType Dune::Vec<3,double>
+#define BSGridVecType Dune::FieldVector<double, 3>
 
 #include <dune/grid/common/indexstack.hh>
 

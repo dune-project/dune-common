@@ -34,20 +34,20 @@ namespace Dune {
       assert((baseNum_ >= 0) || (baseNum_ < DimRange));
     };
 
-    virtual void evaluate ( const Vec<0, deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       phi = 0.0;
       phi(baseNum_) = 1.0;
     }
 
-    virtual void evaluate ( const Vec<1, deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       phi = 0.0;
     }
 
-    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       phi = 0.0 ;
@@ -88,23 +88,23 @@ namespace Dune {
     }
 
     //! evaluate the function
-    virtual void evaluate ( const Vec<0, deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       phi = factor[1];
-      phi += factor[0] * x(0);
+      phi += factor[0] * x[0];
     }
 
     //! evaluate first derivative
-    virtual void evaluate ( const Vec<1, deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      int num = diffVariable(0);
+      int num = diffVariable[0];
       phi = factor[num];
     }
 
     //! evaluate second derivative
-    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // function is linear, therefore
@@ -163,19 +163,19 @@ namespace Dune {
       }
     }
     //! evaluate the function
-    virtual void evaluate ( const Vec<0, deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       phi = factor[0];
       for(int i=1; i<3; i++)
-        phi += factor[i] * x(i-1);
+        phi += factor[i] * x[i-1];
     }
 
-    virtual void evaluate ( const Vec<1, deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // x or y ==> 1 or 2
-      int num = diffVariable(0);
+      int num = diffVariable[0];
       assert( (num >= 0) && ( num <= 1));
       phi = factor[num+1];
     }
@@ -225,20 +225,20 @@ namespace Dune {
     }
 
     //! evaluate function
-    virtual void evaluate ( const Vec<0, deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       phi = factor[0];
       for(int i=1; i<4; i++)
-        phi += factor[i]*x(i-1);
+        phi += factor[i]*x[i-1];
     }
 
     //! first Derivative
-    virtual void evaluate ( const Vec<1, deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // num = 0 ==> derivative respect to x
-      int num = diffVariable(0);
+      int num = diffVariable[0];
       phi = factor[num+1];
     }
 
@@ -290,23 +290,23 @@ namespace Dune {
     };
 
     //! evaluate the basefunction on point x
-    virtual void evaluate ( const Vec<0,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // dim == 2, tested
       phi = 1.0;
       for(int i=0; i<dim; i++)
-        phi *= (factor[i][0] + (factor[i][1] * x(i)));
+        phi *= (factor[i][0] + (factor[i][1] * x[i]));
     }
 
     //! derivative with respect to x or y
     //! diffVariable(0) == 0   ==> x
     //! diffVariable(0) == 1   ==> y
     //! diffVariable(0) == 2   ==> z,  and so on
-    virtual void evaluate ( const Vec<1,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      int num = diffVariable(0);
+      int num = diffVariable[0];
       assert( (num >= 0) && ( num <= 1));
       phi = 1.0;
       for(int i=0; i<dim; i++)
@@ -314,17 +314,17 @@ namespace Dune {
         if(num == i)
           phi *= factor[num][1];
         else
-          phi *= (factor[i][0] + factor[i][1] * x(i));
+          phi *= (factor[i][0] + factor[i][1] * x[i]);
       }
       return;
     }
 
     //! evaluate second derivative
-    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // which means derivative xx or yy
-      if(diffVariable(0) == diffVariable(1))
+      if(diffVariable[0] == diffVariable[1])
       {
         phi = 0.0;
         return;
@@ -400,36 +400,36 @@ namespace Dune {
     };
 
     //! evaluate the basefunction on point x
-    virtual void evaluate ( const Vec<0,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // dim == 3, tested
       phi = 1.0;
       for(int i=0; i<dim; i++)
-        phi *= (factor[i][0] + (factor[i][1] * x(i)));
+        phi *= (factor[i][0] + (factor[i][1] * x[i]));
     }
 
     //! derivative with respect to x or y or z
     //! diffVariable(0) == 0   ==> x
     //! diffVariable(0) == 1   ==> y
     //! diffVariable(0) == 2   ==> z,  and so on
-    virtual void evaluate ( const Vec<1,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      int num = diffVariable(0);
+      int num = diffVariable[0];
       phi = 1.0;
       for(int i=0; i<dim; i++)
       {
         if(num == i)
           phi *= factor[num][1];
         else
-          phi *= (factor[i][0] + factor[i][1] * x(i));
+          phi *= (factor[i][0] + factor[i][1] * x[i]);
       }
       return;
     }
 
     //! evaluate second derivative
-    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       std::cout << "BaseFunction for hexahedron, evaluate 2nd derivative not implemented! \n";
@@ -517,8 +517,8 @@ namespace Dune {
       {
         for(int k=0; k<dimrange; k++)
         {
-          baseFuncList_(i*dimrange + k) = new LagrangeBaseFunctionType ( fuSpace, i ) ;
-          this->setBaseFunctionPointer ( i*dimrange + k , baseFuncList_ (i*dimrange + k) );
+          baseFuncList_[i*dimrange + k] = new LagrangeBaseFunctionType ( fuSpace, i ) ;
+          this->setBaseFunctionPointer ( i*dimrange + k , baseFuncList_[i*dimrange + k] );
         }
       }
       this->setNumOfDiffFct ( numOfDifferentFuncs );
@@ -542,7 +542,7 @@ namespace Dune {
     }
   private:
     //! Vector with all base functions corresponding to the base function set
-    Vec < numOfBaseFct , LagrangeBaseFunctionType *> baseFuncList_;
+    FieldVector <LagrangeBaseFunctionType*, numOfBaseFct> baseFuncList_;
   };
 
 } // end namespace Dune

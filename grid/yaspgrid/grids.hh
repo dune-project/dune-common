@@ -16,7 +16,7 @@
 
 // local includes
 #include "dune/common/array.hh"
-#include "dune/common/fixedvector.hh"
+#include "dune/common/fvector.hh"
 
 /*! \file grids.hh
    This is the basis for the yaspgrid implementation of the Dune grid interface.
@@ -71,9 +71,9 @@ namespace Dune {
   class YGrid {
   public:
     //! define types used for arguments
-    typedef Dune::Vec<d,int>  iTupel;
-    typedef Dune::Vec<d,ct> fTupel;
-    typedef Dune::Vec<d,bool> bTupel;
+    typedef FieldVector<int, d>  iTupel;
+    typedef FieldVector<ct, d> fTupel;
+    typedef FieldVector<bool, d> bTupel;
 
     //! Make an empty YGrid with origin 0
     YGrid ()
@@ -985,8 +985,8 @@ namespace Dune {
   class Torus {
   public:
     //! type used to pass tupels in and out
-    typedef Dune::Vec<d,int> iTupel;
-    typedef Dune::Vec<d,bool> bTupel;
+    typedef FieldVector<int, d> iTupel;
+    typedef FieldVector<bool, d> bTupel;
 
 
   private:
@@ -1335,7 +1335,7 @@ namespace Dune {
         std::cout << "[" << rank() << "]: ERROR: local sends/receives do not match in exchange!" << std::endl;
         return;
       }
-      for (int i=0; i<_localsendrequests.size(); i++)
+      for (unsigned int i=0; i<_localsendrequests.size(); i++)
       {
         if (_localsendrequests[i].size!=_localrecvrequests[i].size)
         {
@@ -1352,7 +1352,7 @@ namespace Dune {
       int recvs=0;
 
       // issue sends to foreign processes
-      for (int i=0; i<_sendrequests.size(); i++)
+      for (unsigned int i=0; i<_sendrequests.size(); i++)
         if (_sendrequests[i].rank!=rank())
         {
           MPI_Isend(_sendrequests[i].buffer, _sendrequests[i].size, MPI_BYTE,
@@ -1362,7 +1362,7 @@ namespace Dune {
         }
 
       // issue receives from foreign processes
-      for (int i=0; i<_recvrequests.size(); i++)
+      for (unsigned int i=0; i<_recvrequests.size(); i++)
         if (_recvrequests[i].rank!=rank())
         {
           MPI_Irecv(_recvrequests[i].buffer, _recvrequests[i].size, MPI_BYTE,
@@ -1374,7 +1374,7 @@ namespace Dune {
       // poll sends
       while (sends>0)
       {
-        for (int i=0; i<_sendrequests.size(); i++)
+        for (unsigned int i=0; i<_sendrequests.size(); i++)
           if (!_sendrequests[i].flag)
           {
             MPI_Status status;
@@ -1387,7 +1387,7 @@ namespace Dune {
       // poll receives
       while (recvs>0)
       {
-        for (int i=0; i<_recvrequests.size(); i++)
+        for (unsigned int i=0; i<_recvrequests.size(); i++)
           if (!_recvrequests[i].flag)
           {
             MPI_Status status;
@@ -1613,9 +1613,9 @@ namespace Dune {
     };
 
     //! define types used for arguments
-    typedef Dune::Vec<d,int> iTupel;
-    typedef Dune::Vec<d,ct> fTupel;
-    typedef Dune::Vec<d,bool> bTupel;
+    typedef FieldVector<int, d> iTupel;
+    typedef FieldVector<ct, d> fTupel;
+    typedef FieldVector<bool, d> bTupel;
 
     // communication tag used by multigrid
     enum { tag = 17 };
@@ -1645,7 +1645,7 @@ namespace Dune {
       if (_torus.rank()==0) std::cout << "MultiYGrid<" << d
         << ">: coarse grid with size " << s
         << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
-      //	  print(std::cout);
+      //      print(std::cout);
     }
 
     //! do a global mesh refinement; true: keep overlap in absolute size; false: keep overlap in mesh cells

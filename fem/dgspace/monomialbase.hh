@@ -47,7 +47,7 @@ namespace Dune {
     //! point x and range phi
     template <int diffOrd>
     inline
-    void evaluate ( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
+    void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable,
                     const Domain & x,  Range & phi ) const;
 
     //! evaluate base fucntion baseFunct at a given quadrature point
@@ -56,7 +56,7 @@ namespace Dune {
     //! calulated again
     template <int diffOrd, class QuadratureType>
     inline
-    void evaluate ( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
+    void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable,
                     QuadratureType & quad, int quadPoint, Range & phi ) const;
 
     void print (std::ostream& s, int baseFunct) const {
@@ -79,7 +79,7 @@ namespace Dune {
     int numOfBaseFct_;
 
     //! vector which holds the base function pointers
-    Dune::SimpleVector<Dune::Vec<DimDomain,int> > Phi_ ;
+    SimpleVector<FieldVector<int, DimDomain> > Phi_ ;
 
     double power(double x, int p) const {
       if (p <= 0)
@@ -88,16 +88,16 @@ namespace Dune {
     }
 
     inline
-    void real_evaluate ( int baseFunct, const Vec<0, deriType> &diffVariable,
+    void real_evaluate ( int baseFunct, const FieldVector<deriType, 0> &diffVariable,
                          const Domain & x,  Range & phi ) const;
     inline
-    void real_evaluate ( int baseFunct, const Vec<1, deriType> &diffVariable,
+    void real_evaluate ( int baseFunct, const FieldVector<deriType, 1> &diffVariable,
                          const Domain & x,  Range & phi ) const;
     inline
-    void real_evaluate ( int baseFunct, const Vec<2, deriType> &diffVariable,
+    void real_evaluate ( int baseFunct, const FieldVector<deriType, 2> &diffVariable,
                          const Domain & x,  Range & phi ) const;
 
-    void print (std::ostream& s, const Dune::Vec<2,int> & pol) const;
+    void print (std::ostream& s, const FieldVector<int, 2> & pol) const;
 
   }; // end class MonomialBaseFunctionSet
 

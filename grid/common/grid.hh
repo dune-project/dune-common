@@ -168,10 +168,10 @@ namespace Dune {
     ReferenceTopology ();
 
     //! return local coordinates of center in reference element
-    Vec<dim,ct>& center_codim0_local (int elemtype);
+    FieldVector<ct, dim>& center_codim0_local (int elemtype);
 
     //! return local coordinates of center of ith codim 1 subentity
-    Vec<dim-1,ct>& center_codim1_local (int elemtype, int i);
+    FieldVector<ct, dim-1>& center_codim1_local (int elemtype, int i);
   };
 
   // Specialization dim=1
@@ -182,14 +182,14 @@ namespace Dune {
     ReferenceTopology ();
 
     //! return local coordinates of center in reference element
-    Vec<1,ct>& center_codim0_local (int elemtype);
+    FieldVector<ct, 1>& center_codim0_local (int elemtype);
 
     //! return local coordinates of center of ith codim 1 subentity
-    Vec<0,ct>& center_codim1_local (int elemtype, int i);
+    FieldVector<ct, 0>& center_codim1_local (int elemtype, int i);
 
   private:
-    Vec<1,ct> center0_local[1];  // ElementType
-    Vec<0,ct> center1_local[1];  // ElementType x faces
+    FieldVector<ct, 1> center0_local[1];    // ElementType
+    FieldVector<ct, 0> center1_local[1];    // ElementType x faces
   };
 
   // Specialization dim=2
@@ -200,14 +200,14 @@ namespace Dune {
     ReferenceTopology ();
 
     //! return local coordinates of center in reference element
-    Vec<2,ct>& center_codim0_local (int elemtype);
+    FieldVector<ct, 2>& center_codim0_local (int elemtype);
 
     //! return local coordinates of center of ith codim 1 subentity
-    Vec<1,ct>& center_codim1_local (int elemtype, int i);
+    FieldVector<ct, 1>& center_codim1_local (int elemtype, int i);
 
   private:
-    Vec<2,ct> center0_local[2];  // ElementType
-    Vec<1,ct> center1_local[2];  // ElementType x faces
+    FieldVector<ct, 2> center0_local[2];    // ElementType
+    FieldVector<ct, 1> center1_local[2];    // ElementType x faces
   };
 
 
@@ -219,14 +219,14 @@ namespace Dune {
     ReferenceTopology ();
 
     //! return local coordinates of center in reference element
-    Vec<3,ct>& center_codim0_local (int elemtype);
+    FieldVector<ct, 3>& center_codim0_local (int elemtype);
 
     //! return local coordinates of center of ith codim 1 subentity
-    Vec<2,ct>& center_codim1_local (int elemtype, int i);
+    FieldVector<ct, 2>& center_codim1_local (int elemtype, int i);
 
   private:
-    Vec<3,ct> center0_local[4];    // ElementType
-    Vec<2,ct> center1_local[4][6]; // ElementType x faces
+    FieldVector<ct, 3> center0_local[4];      // ElementType
+    FieldVector<ct, 2> center1_local[4][6];   // ElementType x faces
   };
 
 
@@ -292,7 +292,7 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,ct>& operator[] (int i);
+    FieldVector<ct, dimworld>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned. A reference to a reference
@@ -302,13 +302,13 @@ namespace Dune {
     ElementImp<dim,dim>& refelem ();
 
     //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld,ct> global (const Vec<dim,ct>& local);
+    FieldVector<ct, dimworld> global (const FieldVector<ct, dim>& local);
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<dim,ct> local (const Vec<dimworld,ct>& global);
+    FieldVector<ct, dim> local (const FieldVector<ct, dimworld>& global);
 
     //! return true if the point in local coordinates lies inside the reference element
-    bool checkInside (const Vec<dim,ct>& local);
+    bool checkInside (const FieldVector<ct, dim>& local);
 
     /*! Integration over a general element is done by integrating over the reference element
        and using the transformation from the reference element to the global element as follows:
@@ -329,10 +329,10 @@ namespace Dune {
        will directly translate in substantial savings in the computation of finite element
        stiffness matrices.
      */
-    ct integration_element (const Vec<dim,ct>& local);
+    ct integration_element (const FieldVector<ct, dim>& local);
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim>& Jacobian_inverse (const Vec<dim,ct>& local);
+    Mat<dim,dim>& Jacobian_inverse (const FieldVector<ct, dim>& local);
 
     /*! \internal
        Checking presence and format of all interface functions. With
@@ -391,7 +391,7 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,ct>& operator[] (int i);
+    FieldVector<ct, dimworld>& operator[] (int i);
 
     /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
@@ -475,7 +475,7 @@ namespace Dune {
     ElementImp<dim,dimworld> & geometry ();
 
     //! return barycenter of ghostcell
-    Vec<dimworld,ct>& outerPoint ();
+    FieldVector<ct, dimworld>& outerPoint ();
 
   private:
     //!  Barton-Nackman trick
@@ -568,10 +568,10 @@ namespace Dune {
     BoundaryEntityImp<dim,dimworld> & boundaryEntity ();
 
     //! return unit outer normal, this should be dependent on local coordinates for higher order boundary
-    Vec<dimworld,ct>& unit_outer_normal (Vec<dim-1,ct>& local);
+    FieldVector<ct, dimworld>& unit_outer_normal (FieldVector<ct, dim-1>& local);
 
     //! return unit outer normal, if you know it is constant use this function instead
-    Vec<dimworld,ct>& unit_outer_normal ();
+    FieldVector<ct, dimworld>& unit_outer_normal ();
 
     /*! intersection of codimension 1 of this neighbor with element where iteration started.
        Here returned element is in LOCAL coordinates of the element where iteration started.
@@ -631,19 +631,19 @@ namespace Dune {
   public:
     //! return outer normal, which is the unit_outer_normal() scaled with the
     //! volume of the intersection_self_global ()
-    Vec<dimworld,ct>& outer_normal ();
+    FieldVector<ct, dimworld>& outer_normal ();
 
     //! return unit outer normal, this should be dependent on
     //! local coordinates for higher order boundary
     //! the normal is scaled with the integration element
-    Vec<dimworld,ct>& outer_normal (Vec<dim-1,ct>& local);
+    FieldVector<ct, dimworld>& outer_normal (FieldVector<ct, dim-1>& local);
 
   protected:
     //! the outer normal
-    Vec<dimworld,ct> outerNormal_;
+    FieldVector<ct, dimworld> outerNormal_;
 
     //! tmp Vec for integration_element
-    Vec<dim-1,ct> tmp_;
+    FieldVector<ct, dim-1> tmp_;
 
   private:
     //!  Barton-Nackman trick
@@ -1104,7 +1104,7 @@ namespace Dune {
     LevelIteratorImp<0,dim,dimworld,All_Partition> father ();
 
     //! local coordinates within father
-    Vec<dim,ct>& local ();
+    FieldVector<ct, dim>& local ();
 
     /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.

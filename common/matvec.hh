@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "misc.hh"
-#include "fixedvector.hh"
+#include "fvector.hh"
 #include <dune/common/exceptions.hh>
 
 namespace Dune {
@@ -43,23 +43,24 @@ namespace Dune {
     }
 
     //! operator () for read/write access to element in matrix
-    T& operator() (int i, int j) {return a[j](i);}
+    T& operator() (int i, int j) {return a[j][i];}
 
     //! operator () for read/write access to element in matrix
-    const T& operator() (int i, int j) const {return a[j](i);}
+    const T& operator() (int i, int j) const {return a[j][i];}
 
     //! operator () for read/write access to column vector
-    Vec<n,T>& operator() (int j) {return a[j];}
+    FieldVector<T,n>& operator() (int j) {return a[j];}
 
     //! operator [] for read/write access to column vector
-    Vec<n,T>& operator[] (int j) {return a[j];}
+    FieldVector<T,n>& operator[] (int j) {return a[j];}
 
     //! matrix/vector multiplication
-    Vec<n,T> operator* (const Vec<m,T>& x)
+    FieldVector<T,n> operator* (const FieldVector<T,m>& x)
     {
-      Vec<n,T> z(0.0);
+      FieldVector<T,n> z(0.0);
       for (int j=0; j<m; j++)
-        for (int i=0; i<n; i++) z(i) += a[j](i) * x[j];
+        for (int i=0; i<n; i++)
+          z[i] += a[j][i] * x[j];
       return z;
     }
 
@@ -73,12 +74,12 @@ namespace Dune {
     }
 
     //! matrix/vector multiplication with transpose of matrix
-    Vec<m,T> mult_t (const Vec<n,T>& x) const
+    FieldVector<T,m> mult_t (const FieldVector<T,n>& x) const
     {
-      Vec<m,T> z(0.0);
+      FieldVector<T,m> z(0.0);
       const Mat<n,m,T> &matrix = (*this);
       for (int j=0; j<n; j++)
-        for (int i=0; i<m; i++) z(i) += matrix(j,i) * x[j];
+        for (int i=0; i<m; i++) z[i] += matrix(j,i) * x[j];
       return z;
     }
 
@@ -126,7 +127,7 @@ namespace Dune {
     }
 
     //! scalar product of two vectors; one of them stored in matrixform
-    T operator* (const Vec<n,T>& b) const
+    T operator* (const FieldVector<T,n>& b) const
     {
       if (m != 1)
         DUNE_THROW(MathError,
@@ -138,7 +139,7 @@ namespace Dune {
 
   private:
     //! built-in array to hold the data
-    Vec<n,T> a[m];
+    FieldVector<T,n> a[m];
   };
 
   namespace HelpMat {

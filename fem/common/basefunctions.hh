@@ -31,7 +31,7 @@ namespace Dune {
   template <int dim>
   struct DiffVariable
   {
-    typedef Vec<dim, deriType> Type;
+    typedef FieldVector<deriType, dim> Type;
   };
 
   //*************************************************************************
@@ -64,16 +64,16 @@ namespace Dune {
     //! methods with template parameter "length of Vec".
     //! Though the evaluate Methods can be spezialized for each
     //! differentiation order
-    virtual void evaluate ( const Vec<0,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
                             const Domain & , Range &) const {}; // = 0 ?
 
     //! diffVariable contain the component of the gradient which is delivered.
     //! for example gradient of the basefunction x component ==>
     //! diffVariable(0) == 0, y component ==> diffVariable(0) == 1 ...
-    virtual void evaluate ( const Vec<1,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
                             const Domain & , Range &) const {}; // = 0 ?
 
-    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
+    virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const Domain & , Range &) const {}; // = 0 ?
 
   private:
@@ -146,14 +146,14 @@ namespace Dune {
     };
 
     template <int diffOrd>
-    void evaluate ( int baseFunct, const Vec<diffOrd,deriType> &diffVariable, const
+    void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, const
                     Domain & x, Range & phi ) const {
       std::cout << "BaseFunctionSetInterface::evaluate \n";
       asImp().evaluate( baseFunct, diffVariable, x, phi );
     }
 
     template <int diffOrd, class QuadratureType >
-    void evaluate ( int baseFunct, const Vec<diffOrd,deriType> &diffVariable, QuadratureType & quad, int quadPoint, Range & phi ) const {
+    void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, QuadratureType & quad, int quadPoint, Range & phi ) const {
       asImp().evaluate( baseFunct, diffVariable, quad, quadPoint, phi );
     }
   protected:
@@ -241,19 +241,19 @@ namespace Dune {
       {
         asImp().evaluate( baseFunct, jacobianDiffVar_[i] , quad, quadPoint, tmp_ );
         for(int j=0; j<dimRow; j++)
-          phi(i,j) = tmp_(j);
+          phi(i,j) = tmp_[j];
       }
       return;
     }
 
   private:
     //! just diffVariable for evaluation of the functions
-    const Vec<0,deriType> diffVariable_;
+    const FieldVector<deriType, 0> diffVariable_;
 
     //! temporary Range vec
     mutable Range tmp_;
 
-    Vec<1,deriType> jacobianDiffVar_[dimCol];
+    FieldVector<deriType, 1> jacobianDiffVar_[dimCol];
 
     //! Barton-Nackman trick
     BaseFunctionSetImp &asImp() { return static_cast<BaseFunctionSetImp&>(*this); }

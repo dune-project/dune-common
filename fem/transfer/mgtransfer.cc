@@ -67,7 +67,7 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& fS, int cL, 
           // Evaluate coarse grid base function at the location of the fine grid dof
 
           // first determine local fine grid dof position
-          Vec<GridType::dimension, double> local = cIt->geometry().local(fIt->geometry()[j]);
+          FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
 
           //std::cout << "finePos" << fIt->geometry()[j] << "\n";
           //std::cout << "locally" << local << "\n";
@@ -75,7 +75,7 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& fS, int cL, 
           // Evaluate coarse grid base function
 
           typename FunctionSpaceType::Range value;
-          Vec<0, int> diffVariable;
+          FieldVector<int, 0> diffVariable;
           coarseBaseSet.evaluate(i, diffVariable, local, value);
 
           //std::cout << "value: " << value << "\n";
@@ -154,5 +154,67 @@ template<class DiscFuncType>
 Dune::SparseRowMatrix<double> Dune::MGTransfer<DiscFuncType>::
 galerkinRestrict(const Dune::SparseRowMatrix<double>& fineMat) const
 {
-  return matrix_.applyFromLeftAndRightTo(fineMat);
+  typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
+  //return matrix_.applyFromLeftAndRightTo(fineMat);
+
+  // Hack: We need the transposed matrix
+
+  SparseRowMatrix<double> transpose(matrix_.cols(), matrix_.rows(), matrix_.numNonZeros());
+
+  for (int row=0; row<matrix_.rows(); row++) {
+
+    /** \todo Remove casts */
+    ColumnIterator cIt    = const_cast<SparseRowMatrix<double>&>(matrix_).template rbegin(row);
+    ColumnIterator cEndIt = const_cast<SparseRowMatrix<double>&>(matrix_).template rend(row);
+
+    for(; cIt!=cEndIt; ++cIt)
+      transpose.set(cIt.col(), row, *cIt);
+
+  }
+
+  SparseRowMatrix<double> result(matrix_.rows() ,matrix_.rows() , fineMat.numNonZeros());
+
+  //for (v=FIRSTVECTOR(FineGrid); v!=NULL; v=SUCCVC(v))
+  for (int row=0; row<fineMat.rows(); row++) {
+
+    //         for (m=VSTART(v); m!=NULL; m=MNEXT(m)) {
+    //             w = MDEST(m);
+    ColumnIterator cIt    = const_cast<SparseRowMatrix<double>&>(fineMat).template rbegin(row);
+    ColumnIterator cEndIt = const_cast<SparseRowMatrix<double>&>(fineMat).template rend(row);
+
+    for(; cIt!=cEndIt; ++cIt) {
+
+      //mvalue = MVALUE(m,mc);
+      double mvalue = *cIt;
+
+      ColumnIterator tciIt    = transpose.template rbegin(row);
+      ColumnIterator tciEndIt = transpose.template rend(row);
+
+      //for (im=VISTART(v); im!= NULL; im = NEXT(im)) {
+      for (; tciIt!=tciEndIt; ++tciIt) {
+
+        //fac = mvalue*MVALUE(im,0);
+        double fac = mvalue* (*tciIt);
+
+        ColumnIterator tcjIt    = transpose.template rbegin(cIt.col());
+        ColumnIterator tcjEndIt = transpose.template rend(cIt.col());
+
+        //for (jm=VISTART(v); jm!= NULL; jm = NEXT(jm)) {
+        for (; tcjIt!=tcjEndIt; ++tcjIt) {
+
+          //                             jv = MDEST(jm);
+          //                             cm = GetMatrix(iv,jv);
+          //                             MVALUE(cm,mc) +=
+          //                                 fac * MVALUE(jm,0);
+          result.add( tciIt.col(), tcjIt.col(), fac* (*tcjIt));
+        }
+
+      }
+
+    }
+
+
+  }
+
+  return result;
 }

@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUNE_ALBERTGRID_HH
-#define DUNE_ALBERTGRID_HH
+#ifndef __DUNE_ALBERTGRID_HH__
+#define __DUNE_ALBERTGRID_HH__
 
 #include <iostream>
 #include <fstream>
@@ -190,7 +190,7 @@ namespace Dune
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,albertCtype>& operator[] (int i);
+    FieldVector<albertCtype, dimworld>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
@@ -199,14 +199,14 @@ namespace Dune
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
-    Vec<dimworld,albertCtype> global (const Vec<dim,albertCtype>& local);
+    FieldVector<albertCtype, dimworld> global (const FieldVector<albertCtype, dim>& local);
 
     //! maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    Vec<dim,albertCtype> local (const Vec<dimworld,albertCtype>& global);
+    FieldVector<albertCtype, dim> local (const FieldVector<albertCtype, dimworld>& global);
 
     //! returns true if the point in local coordinates is inside reference element
-    bool checkInside(const Vec<dim,albertCtype>& local);
+    bool checkInside(const FieldVector<albertCtype, dim>& local);
 
     /*!
        Copy from sgrid.hh:
@@ -232,13 +232,13 @@ namespace Dune
      */
 
     // A(l)
-    albertCtype integration_element (const Vec<dim,albertCtype>& local);
+    albertCtype integration_element (const FieldVector<albertCtype, dim>& local);
 
     //! can only be called for dim=dimworld!
     //! Note that if both methods are called on the same element, then
     //! call Jacobian_inverse first because integration element is calculated
     //! during calculation of the Jacobian_inverse
-    Mat<dim,dim>& Jacobian_inverse (const Vec<dim,albertCtype>& local);
+    Mat<dim,dim>& Jacobian_inverse (const FieldVector<albertCtype, dim>& local);
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
@@ -271,7 +271,7 @@ namespace Dune
     //! built the jacobian inverse and store the volume
     void buildJacobianInverse ();
 
-    Vec<dim+1,albertCtype> tmpVec_;
+    FieldVector<albertCtype, dim+1> tmpVec_;
     //! maps a global coordinate within the elements local barycentric
     //! koordinates
     //Vec<dim+1,albertCtype> localBary (const Vec<dimworld,albertCtype>& global);
@@ -287,10 +287,10 @@ namespace Dune
     Mat<dimworld,dim+1,albertCtype> coord_;
 
     //! storage for global coords
-    Vec<dimworld,albertCtype> globalCoord_;
+    FieldVector<albertCtype, dimworld> globalCoord_;
 
     //! storage for local coords
-    Vec<dim,albertCtype> localCoord_;
+    FieldVector<albertCtype, dim> localCoord_;
 
     // make empty EL_INFO
     ALBERT EL_INFO * makeEmptyElInfo();
@@ -369,7 +369,7 @@ namespace Dune
     AlbertGridLevelIterator<0,dim,dimworld,All_Partition> father ();
 
     //! local coordinates within father
-    Vec<dim,albertCtype>& local ();
+    FieldVector<albertCtype, dim>& local ();
 
     //! no interface method
     //! returns the global vertex number as default
@@ -399,7 +399,7 @@ namespace Dune
     AlbertGridElement<dim-codim,dimworld> geo_;
     bool builtgeometry_;       //!< true if geometry has been constructed
 
-    Vec<dim,albertCtype> localFatherCoords_;
+    FieldVector<albertCtype, dim> localFatherCoords_;
 
     //! element number
     int elNum_;
@@ -798,10 +798,10 @@ namespace Dune
 
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    Vec<dimworld,albertCtype>& unit_outer_normal (Vec<dim-1,albertCtype>& local);
+    FieldVector<albertCtype, dimworld>& unit_outer_normal (FieldVector<albertCtype, dim-1>& local);
 
     //! return unit outer normal, if you know it is constant use this function instead
-    Vec<dimworld,albertCtype>& unit_outer_normal ();
+    FieldVector<albertCtype, dimworld>& unit_outer_normal ();
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
@@ -829,10 +829,10 @@ namespace Dune
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    Vec<dimworld,albertCtype>& outer_normal (Vec<dim-1,albertCtype>& local);
+    FieldVector<albertCtype, dimworld>& outer_normal (FieldVector<albertCtype, dim-1>& local);
 
     //! return unit outer normal, if you know it is constant use this function instead
-    Vec<dimworld,albertCtype>& outer_normal ();
+    FieldVector<albertCtype, dimworld>& outer_normal ();
 
   private:
     //**********************************************************
@@ -894,11 +894,11 @@ namespace Dune
     //! EL_INFO th store the information of the neighbor if needed
     ALBERT EL_INFO * neighElInfo_;
 
-    Vec<dimworld,albertCtype> outNormal_;
+    FieldVector<albertCtype, dimworld> outNormal_;
 
     // tmp memory for normal calculation
-    Vec<dimworld,albertCtype> tmpU_;
-    Vec<dimworld,albertCtype> tmpV_;
+    FieldVector<albertCtype, dimworld> tmpU_;
+    FieldVector<albertCtype, dimworld> tmpV_;
   };
 
 
@@ -1171,7 +1171,7 @@ namespace Dune
     int myProcessor () const { return myProc_; };
 
     //! transform grid N = scalar * x + trans
-    void setNewCoords(const Vec<dimworld,albertCtype> & trans, const albertCtype scalar);
+    void setNewCoords(const FieldVector<albertCtype, dimworld> & trans, const albertCtype scalar);
 
     //! calculate max edge length
     double calcGridWidth ();

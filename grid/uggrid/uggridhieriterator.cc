@@ -32,9 +32,17 @@ UGGridHierarchicIterator< dim,dimworld >::operator ++()
 
     // The 30 is the macro MAX_SONS from ug/gm/gm.h
     UGElementType* sonList[30];
+#ifdef _2
     UG2d::GetSons(old_target.element,sonList);
+#else
+    UG3d::GetSons(old_target.element,sonList);
+#endif
 
+#ifdef _2
 #define NSONS(p) UG2d::ReadCW(p, UG2d::NSONS_CE)
+#else
+#define NSONS(p) UG3d::ReadCW(p, UG3d::NSONS_CE)
+#endif
     // Load sons of old target onto the iterator stack
     for (unsigned int i=0; i<NSONS(old_target.element); i++) {
       StackEntry se;

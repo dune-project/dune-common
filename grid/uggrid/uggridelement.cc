@@ -117,7 +117,7 @@ inline int UGGridElement<dim,dimworld>::corners()
 ///////////////////////////////////////////////////////////////////////
 
 template<int dim, int dimworld>
-inline const Vec<dimworld,UGCtype>& UGGridElement<dim,dimworld>::
+inline const FieldVector<UGCtype, dimworld>& UGGridElement<dim,dimworld>::
 operator [](int i)
 {
   std::cerr << "UGGridElement<" << dim << "," << dimworld << ">::operator[]:\n"
@@ -127,7 +127,7 @@ operator [](int i)
 
 #ifdef _3
 template<>
-inline const Vec<3,UGCtype>& UGGridElement<0,3>::
+inline const FieldVector<UGCtype, 3>& UGGridElement<0,3>::
 operator [](int i)
 {
   const UG3d::VERTEX* vertex = target_->myvertex;
@@ -140,7 +140,7 @@ operator [](int i)
 }
 
 template<>
-inline const Vec<3,UGCtype>& UGGridElement<3,3>::
+inline const FieldVector<UGCtype, 3>& UGGridElement<3,3>::
 operator [](int i)
 {
   assert(0<=i && i<corners());
@@ -160,7 +160,7 @@ operator [](int i)
 
 #ifdef _2
 template<>
-inline const Vec<2,UGCtype>& UGGridElement<0,2>::
+inline const FieldVector<UGCtype, 2>& UGGridElement<0,2>::
 operator [](int i)
 {
   const UG2d::VERTEX* vertex = target_->myvertex;
@@ -172,7 +172,7 @@ operator [](int i)
 }
 
 template<>
-inline const Vec<2,UGCtype>& UGGridElement<2,2>::
+inline const FieldVector<UGCtype, 2>& UGGridElement<2,2>::
 operator [](int i)
 {
   assert(0<=i && i<corners());
@@ -253,10 +253,10 @@ refelem()
 
 
 template< int dim, int dimworld>
-inline Vec<dimworld,UGCtype> UGGridElement<dim,dimworld>::
-global(const Vec<dim>& local)
+inline FieldVector<UGCtype, dimworld> UGGridElement<dim,dimworld>::
+global(const FieldVector<UGCtype, dim>& local)
 {
-  Vec<dimworld, UGCtype> globalCoord;
+  FieldVector<UGCtype, dimworld> globalCoord;
 
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];
@@ -271,10 +271,10 @@ global(const Vec<dim>& local)
 // Maps a global coordinate within the element to a
 // local coordinate in its reference element
 template< int dim, int dimworld>
-inline Vec<dim, UGCtype> UGGridElement<dim,dimworld>::
-local (const Vec<dimworld, UGCtype>& global)
+inline FieldVector<UGCtype, dim> UGGridElement<dim,dimworld>::
+local (const FieldVector<UGCtype, dimworld>& global)
 {
-  Vec<dim, UGCtype> result;
+  FieldVector<UGCtype, dim> result;
   UGCtype localCoords[dim];
 
   // Copy input ADT into C-style array
@@ -304,7 +304,7 @@ local (const Vec<dimworld, UGCtype>& global)
 
 template< int dim, int dimworld>
 inline UGCtype UGGridElement<dim,dimworld>::
-integration_element (const Vec<dim,UGCtype>& local)
+integration_element (const FieldVector<UGCtype, dim>& local)
 {
   //std::cout << "integration element: " << ABS(Jacobian_inverse(local).determinant()) << std::endl;
   return ABS(1/Jacobian_inverse(local).determinant());
@@ -312,7 +312,7 @@ integration_element (const Vec<dim,UGCtype>& local)
 
 template< int dim, int dimworld>
 inline const Mat<dim,dim>& UGGridElement<dim,dimworld>::
-Jacobian_inverse (const Vec<dim,UGCtype>& local)
+Jacobian_inverse (const FieldVector<UGCtype, dim>& local)
 {
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];

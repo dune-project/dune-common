@@ -1,7 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __NUMBERING_HH__
-#define __NUMBERING_HH__
+#ifndef __DUNE_NUMBERING_HH__
+#define __DUNE_NUMBERING_HH__
+
+#include <dune/common/fixedarray.hh>
 
 namespace Dune {
 

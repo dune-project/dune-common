@@ -174,18 +174,18 @@ namespace Dune {
     for (int i=0; i<n; ++i)
     {
       // compute integer coordinates of Gauss point from number
-      Vec<dim,int> x (0);
+      FieldVector<int, dim> x (0);
       int z = i;
       for (int k=0; k<dim; ++k)
       {
-        x(k) = z%m;
+        x[k] = z%m;
         z = z/m;
       }
 
       weight[i] = 1.0;
       for (int k=0; k<dim; k++) {
-        local[i](k) = G[x(k)];
-        weight[i] *= W[x(k)];
+        local[i][k] = G[x[k]];
+        weight[i]  *= W[x[k]];
       }
     }
   }

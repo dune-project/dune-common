@@ -774,15 +774,15 @@ namespace Dune {
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,bs_ctype>&
+  inline FieldVector<bs_ctype, dimworld>&
   BSGridIntersectionIterator<dim,dimworld>::
-  outer_normal(Vec<dim-1,bs_ctype>& local)
+  outer_normal(FieldVector<bs_ctype, dim-1>& local)
   {
     return this->outer_normal();
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,bs_ctype>&
+  inline FieldVector<bs_ctype, dimworld>&
   BSGridIntersectionIterator<dim,dimworld>::outer_normal()
   {
     assert(item_ != 0);
@@ -795,15 +795,15 @@ namespace Dune {
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,bs_ctype>&
+  inline FieldVector<bs_ctype, dimworld>&
   BSGridIntersectionIterator<dim,dimworld>::
-  unit_outer_normal(Vec<dim-1,bs_ctype>& local)
+  unit_outer_normal(FieldVector<bs_ctype, dim-1>& local)
   {
     return this->unit_outer_normal();
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,bs_ctype>&
+  inline FieldVector<bs_ctype, dimworld>&
   BSGridIntersectionIterator<dim,dimworld>::unit_outer_normal()
   {
     unitOuterNormal_  = this->outer_normal();
@@ -1140,7 +1140,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline Vec<dimworld,bs_ctype>& BSGridElement<dim,dimworld> :: operator[] (int i)
+  inline FieldVector<bs_ctype, dimworld>& BSGridElement<dim,dimworld> :: operator[] (int i)
   {
     assert((i>=0) && (i < dim+1));
     return coord_(i);
@@ -1150,23 +1150,23 @@ namespace Dune {
   //   G L O B A L   - - -
 
   template<int dim, int dimworld> // dim = 1,2,3 dimworld = 3
-  inline Vec<dimworld,bs_ctype> BSGridElement<dim,dimworld>::
-  global(const Vec<dim,bs_ctype>& local)
+  inline FieldVector<bs_ctype, dimworld> BSGridElement<dim,dimworld>::
+  global(const FieldVector<bs_ctype, dim>& local)
   {
     if(!builtA_) calcElMatrix();
     return (A_ * local) + coord_(0);
   }
 
   template<> // dim = dimworld = 3
-  inline Vec<3,bs_ctype> BSGridElement<3,3>::
-  local(const Vec<3,bs_ctype>& global)
+  inline FieldVector<bs_ctype, 3> BSGridElement<3,3>::
+  local(const FieldVector<bs_ctype, 3>& global)
   {
     if (!builtinverse_) buildJacobianInverse();
     return Jinv_ * ( global - coord_(0));
   }
 
   template<int dim, int dimworld>
-  inline bool BSGridElement<dim,dimworld> :: checkInside(const Vec<dim,bs_ctype>& local)
+  inline bool BSGridElement<dim,dimworld> :: checkInside(const FieldVector<bs_ctype, dim>& local)
   {
     bs_ctype sum = 0.0;
 
@@ -1192,7 +1192,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline bs_ctype BSGridElement<dim,dimworld> :: integration_element (const Vec<dim,bs_ctype>& local)
+  inline bs_ctype BSGridElement<dim,dimworld> :: integration_element (const FieldVector<bs_ctype, dim>& local)
   {
     if(builtDetDF_)
       return detDF_;
@@ -1207,7 +1207,7 @@ namespace Dune {
   //  J A C O B I A N _ I N V E R S E  - - -
 
   template<> // dim = dimworld = 3
-  inline Mat<3,3>& BSGridElement<3,3> :: Jacobian_inverse (const Vec<3,bs_ctype>& local)
+  inline Mat<3,3>& BSGridElement<3,3> :: Jacobian_inverse (const FieldVector<bs_ctype, 3>& local)
   {
     if (!builtinverse_) buildJacobianInverse();
     return Jinv_;

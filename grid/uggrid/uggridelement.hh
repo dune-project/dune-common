@@ -29,9 +29,6 @@ namespace Dune {
     //friend class UGGridBoundaryEntity<dim,dimworld>;
   public:
 
-    //! know dimension of world
-    enum { dimbary=dim+1};
-
     //! for makeRefElement == true a Element with the coordinates of the
     //! reference element is made
     UGGridElement(bool makeRefElement=false);
@@ -44,7 +41,7 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    const Vec<dimworld, UGCtype>& operator[] (int i);
+    const FieldVector<UGCtype, dimworld>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
@@ -53,14 +50,14 @@ namespace Dune {
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
-    Vec<dimworld,UGCtype> global (const Vec<dim, UGCtype>& local);
+    FieldVector<UGCtype, dimworld> global (const FieldVector<UGCtype, dim>& local);
 
     //! Maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    Vec<dim, UGCtype> local (const Vec<dimworld, UGCtype>& global);
+    FieldVector<UGCtype, dim> local (const FieldVector<UGCtype, dimworld>& global);
 
     //! Returns true if the point is in the current element
-    bool checkInside(const Vec<dimworld, UGCtype> &global);
+    bool checkInside(const FieldVector<UGCtype, dimworld> &global);
 
     /*!
        Copy from sgrid.hh:
@@ -86,10 +83,10 @@ namespace Dune {
      */
 
     // A(l)
-    UGCtype integration_element (const Vec<dim, UGCtype>& local);
+    UGCtype integration_element (const FieldVector<UGCtype, dim>& local);
 
     //! can only be called for dim=dimworld!
-    const Mat<dim,dim>& Jacobian_inverse (const Vec<dim, UGCtype>& local);
+    const Mat<dim,dim>& Jacobian_inverse (const FieldVector<UGCtype, dim>& local);
 
     //***********************************************************************
     //  Methods that not belong to the Interface, but have to be public
@@ -103,14 +100,6 @@ namespace Dune {
     //! built the reference element
     void makeRefElemCoords();
 
-    //! maps a global coordinate within the elements local barycentric
-    //! koordinates
-    Vec<dim+1, UGCtype> localBary (const Vec<dimworld, UGCtype>& global);
-
-    // template method for map the vertices of EL_INFO to the actual
-    // coords with face_,edge_ and vertex_ , needes for operator []
-    int mapVertices (int i) const;
-
     //! the vertex coordinates
     Mat<dimworld,dim+1, UGCtype> coord_;
 
@@ -118,17 +107,178 @@ namespace Dune {
     Mat<dimworld,dimworld> jac_inverse_;
 
     //! storage for global coords
-    Vec<dimworld, UGCtype> globalCoord_;
+    FieldVector<UGCtype, dimworld> globalCoord_;
 
     //! storage for local coords
-    Vec<dim, UGCtype> localCoord_;
-
-    //! storage for barycentric coords
-    Vec<dimbary, UGCtype> localBary_;
+    FieldVector<UGCtype, dim> localCoord_;
 
     typename TargetType<dimworld-dim,dimworld>::T* target_;
 
   };
+
+
+  /****************************************************************/
+  /*       Specialization for faces in 3d                         */
+  /****************************************************************/
+
+
+  template<>
+  class UGGridElement<2, 3> :
+    public ElementDefault <2, 3, UGCtype,UGGridElement>
+  {
+    //friend class UGGridBoundaryEntity<dim,dimworld>;
+  public:
+
+    //! for makeRefElement == true a Element with the coordinates of the
+    //! reference element is made
+    UGGridElement(bool makeRefElement=false){
+      std::cout << "UGGridElement<2,3> created!" << std::endl;
+    }
+
+    //! return the element type identifier (triangle or quadrilateral)
+    ElementType type ();
+
+    //! return the number of corners of this element. Corners are numbered 0...n-1
+    int corners ();
+
+    //! access to coordinates of corners. Index is the number of the corner
+    const FieldVector<UGCtype, 3>& operator[] (int i);
+
+    /*! return reference element corresponding to this element. If this is
+       a reference element then self is returned.
+     */
+    UGGridElement<2,2>& refelem ();
+
+    //! maps a local coordinate within reference element to
+    //! global coordinate in element
+    FieldVector<UGCtype, 3> global (const FieldVector<UGCtype, 2>& local);
+
+    //! Maps a global coordinate within the element to a
+    //! local coordinate in its reference element
+    FieldVector<UGCtype, 2> local (const FieldVector<UGCtype, 3>& global);
+
+    //! Returns true if the point is in the current element
+    bool checkInside(const FieldVector<UGCtype, 3> &global);
+
+    // A(l)
+    UGCtype integration_element (const FieldVector<UGCtype, 2>& local);
+
+    //! can only be called for dim=dimworld!
+    const Mat<2,2>& Jacobian_inverse (const FieldVector<UGCtype, 2>& local);
+
+    //***********************************************************************
+    //  Methods that not belong to the Interface, but have to be public
+    //***********************************************************************
+
+    //void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}
+    void setToTarget(TargetType<2,3>::T* target) {
+      DUNE_THROW(GridError, "UGGridElement<2,3>::setToTarget called!");
+    }
+
+  private:
+
+
+    //! built the reference element
+    void makeRefElemCoords();
+
+    //! the vertex coordinates
+    Mat<3,3, UGCtype> coord_;
+
+    //! The jacobian inverse
+    Mat<3,3> jac_inverse_;
+
+    //! storage for global coords
+    FieldVector<UGCtype, 3> globalCoord_;
+
+    //! storage for local coords
+    FieldVector<UGCtype, 2> localCoord_;
+
+    //typename TargetType<dimworld-dim,dimworld>::T* target_;
+
+  };
+
+
+  /****************************************************************/
+  /*       Specialization for faces in 2d                         */
+  /****************************************************************/
+
+
+  template<>
+  class UGGridElement <1, 2> :
+    public ElementDefault <1, 2, UGCtype,UGGridElement>
+  {
+    //friend class UGGridBoundaryEntity<dim,dimworld>;
+  public:
+
+    //! for makeRefElement == true a Element with the coordinates of the
+    //! reference element is made
+    UGGridElement(bool makeRefElement=false) {
+      std::cout << "UGGridElement<1,2> created!" << std::endl;
+    }
+
+    //! return the element type identifier
+    //! line , triangle or tetrahedron, depends on dim
+    ElementType type () const {return line;}
+
+    //! return the number of corners of this element. Corners are numbered 0...n-1
+    int corners () const {return 2;}
+
+    //! access to coordinates of corners. Index is the number of the corner
+    const FieldVector<UGCtype, 2>& operator[] (int i) const;
+
+    /*! return reference element corresponding to this element. If this is
+       a reference element then self is returned.
+     */
+    UGGridElement<1,1>& refelem ();
+
+    //! maps a local coordinate within reference element to
+    //! global coordinate in element
+    FieldVector<UGCtype, 2> global (const FieldVector<UGCtype, 1>& local);
+
+    //! Maps a global coordinate within the element to a
+    //! local coordinate in its reference element
+    FieldVector<UGCtype, 1> local (const FieldVector<UGCtype, 2>& global);
+
+    //! Returns true if the point is in the current element
+    bool checkInside(const FieldVector<UGCtype, 2> &global);
+
+    // A(l)
+    UGCtype integration_element (const FieldVector<UGCtype, 1>& local);
+
+    //! can only be called for dim=dimworld!
+    const Mat<1,1>& Jacobian_inverse (const FieldVector<UGCtype, 1>& local);
+
+    //***********************************************************************
+    //  Methods that not belong to the Interface, but have to be public
+    //***********************************************************************
+
+    //void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}
+    void setToTarget(TargetType<1,2>::T* target) {
+      DUNE_THROW(GridError, "UGGridElement<1,2>::setToTarget called!");
+    }
+
+  private:
+
+
+    //! built the reference element
+    void makeRefElemCoords();
+
+    //! the vertex coordinates
+    Mat<2,2, UGCtype> coord_;
+
+    //! The jacobian inverse
+    Mat<2,2> jac_inverse_;
+
+    //! storage for global coords
+    FieldVector<UGCtype, 2> globalCoord_;
+
+    //! storage for local coords
+    FieldVector<UGCtype, 1> localCoord_;
+
+    //typename TargetType<dimworld-dim,dimworld>::T* target_;
+
+  };
+
 
 }  // namespace Dune
 

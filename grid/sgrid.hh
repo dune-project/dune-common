@@ -116,7 +116,7 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,sgrid_ctype>& operator[] (int i);
+    FieldVector<sgrid_ctype, dimworld>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned. A reference to a reference
@@ -126,13 +126,13 @@ namespace Dune {
     static SElement<dim,dim>& refelem ();
 
     //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld,sgrid_ctype> global (const Vec<dim,sgrid_ctype>& local);
+    FieldVector<sgrid_ctype, dimworld> global (const FieldVector<sgrid_ctype, dim>& local);
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<dim,sgrid_ctype> local (const Vec<dimworld,sgrid_ctype>& global);
+    FieldVector<sgrid_ctype, dim> local (const FieldVector<sgrid_ctype, dimworld>& global);
 
     //! returns true if the point in local coordinates is located within the refelem
-    bool checkInside (const Vec<dim,sgrid_ctype>& local);
+    bool checkInside (const FieldVector<sgrid_ctype, dim>& local);
 
     /*! Integration over a general element is done by integrating over the reference element
        and using the transformation from the reference element to the global element as follows:
@@ -153,10 +153,10 @@ namespace Dune {
        will directly translate in substantial savings in the computation of finite element
        stiffness matrices.
      */
-    sgrid_ctype integration_element (const Vec<dim,sgrid_ctype>& local);
+    sgrid_ctype integration_element (const FieldVector<sgrid_ctype, dim>& local);
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim>& Jacobian_inverse (const Vec<dim,sgrid_ctype>& local);
+    Mat<dim,dim>& Jacobian_inverse (const FieldVector<sgrid_ctype, dim>& local);
 
     //! print internal data
     void print (std::ostream& ss, int indent);
@@ -171,9 +171,9 @@ namespace Dune {
     SElement (bool b);
 
   private:
-    Vec<dimworld,sgrid_ctype> s;             //!< position of element
+    FieldVector<sgrid_ctype, dimworld> s;             //!< position of element
     Mat<dimworld,dim,sgrid_ctype> A;         //!< direction vectors as matrix
-    Vec<dimworld,sgrid_ctype> c[1<<dim];     //!< coordinate vectors of corners
+    FieldVector<sgrid_ctype, dimworld> c[1<<dim];     //!< coordinate vectors of corners
     Mat<dim,dim,sgrid_ctype> Jinv;           //!< storage for inverse of jacobian
     bool builtinverse;
   };
@@ -193,7 +193,7 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,sgrid_ctype>& operator[] (int i);
+    FieldVector<sgrid_ctype, dimworld>& operator[] (int i);
 
     //! print internal data
     void print (std::ostream& ss, int indent);
@@ -205,7 +205,7 @@ namespace Dune {
     SElement (bool b);
 
   protected:
-    Vec<dimworld,sgrid_ctype> s;             //!< position of element
+    FieldVector<sgrid_ctype, dimworld> s;             //!< position of element
   };
 
   template <int dim, int dimworld>
@@ -233,9 +233,9 @@ namespace Dune {
     SElement<dim,dimworld> & geometry() { return elem_; };
 
     //! return outer barycenter of ghost cell
-    Vec<dimworld,sgrid_ctype> & outerPoint () { return outerPoint_; };
+    FieldVector<sgrid_ctype, dimworld> & outerPoint () { return outerPoint_; };
   private:
-    Vec<dimworld> outerPoint_;
+    FieldVector<sgrid_ctype, dimworld> outerPoint_;
     SElement<dim,dimworld> elem_;
   };
 
@@ -278,10 +278,10 @@ namespace Dune {
     SEntity<0,dim,dimworld>* operator->();
 
     //! return unit outer normal, this should be dependent on local coordinates for higher order boundary
-    Vec<dimworld,sgrid_ctype>& unit_outer_normal (Vec<dim-1,sgrid_ctype>& local);
+    FieldVector<sgrid_ctype, dimworld>& unit_outer_normal (FieldVector<sgrid_ctype, dim-1>& local);
 
     //! return unit outer normal, if you know it is constant use this function instead
-    Vec<dimworld,sgrid_ctype>& unit_outer_normal ();
+    FieldVector<sgrid_ctype, dimworld>& unit_outer_normal ();
 
     /*! intersection of codimension 1 of this neighbor with element where iteration started.
        Here returned element is in LOCAL coordinates of the element where iteration started.
@@ -326,7 +326,7 @@ namespace Dune {
     bool valid_count;                           //!< true if count is in range
     bool is_on_boundary;                        //!< true if neighbor is otside the domain
     SEntity<0,dim,dimworld> e;                  //!< virtual neighbor entity
-    Vec<dimworld,sgrid_ctype> normal;           //!< outer unit normal direction
+    FieldVector<sgrid_ctype, dimworld> normal;           //!< outer unit normal direction
     bool built_intersections;                   //!< true if all intersections have been built
     SElement<dim-1,dim> is_self_local;          //!< intersection in own local coordinates
     SElement<dim-1,dimworld> is_global;         //!< intersection in global coordinates, map consistent with is_self_local
@@ -631,7 +631,7 @@ namespace Dune {
     SLevelIterator<0,dim,dimworld,All_Partition> father ();
 
     //! local coordinates within father
-    Vec<dim,sgrid_ctype>& local ();
+    FieldVector<sgrid_ctype, dim>& local ();
 
     // members specific to SEntity
     //! constructor
@@ -650,7 +650,7 @@ namespace Dune {
   private:
     bool built_father;
     int father_id;
-    Vec<dim,sgrid_ctype> in_father_local;
+    FieldVector<sgrid_ctype, dim> in_father_local;
     void make_father();
   };
 
@@ -815,8 +815,23 @@ namespace Dune {
      */
     void globalRefine (int refCount);
 
+    /** \brief Get number of elements in each coordinate direction */
+    const FixedArray<int, dim>& dims(int level) const {
+      return N[level];
+    }
+
+    /** \brief Get lower left corner */
+    const FieldVector<sgrid_ctype, dimworld>& lowerLeft() const {
+      return low;
+    }
+
+    /** \brief Get upper right corner */
+    FieldVector<sgrid_ctype, dimworld> upperRight() const {
+      return low+H;
+    }
+
     //! map expanded coordinates to position
-    Vec<dim,sgrid_ctype> pos (int level, FixedArray<int,dim>& z);
+    FieldVector<sgrid_ctype, dim> pos (int level, FixedArray<int,dim>& z);
 
     //! compute codim from coordinate
     int codim (int level, FixedArray<int,dim>& z);
@@ -846,10 +861,10 @@ namespace Dune {
     void makeSGrid (const int* N_,  const sgrid_ctype* L_, const sgrid_ctype* H_);
 
     int L;                        // number of levels in hierarchic mesh 0<=level<L
-    FixedArray<sgrid_ctype,dim> low;   // lower left corner of the grid
-    FixedArray<sgrid_ctype,dim> H;     // length of cube per direction
+    FieldVector<sgrid_ctype, dim> low;     // lower left corner of the grid
+    FieldVector<sgrid_ctype, dim> H;       // length of cube per direction
     FixedArray<int,dim> N[MAXL];       // number of elements per direction
-    Vec<dim,sgrid_ctype> h[MAXL]; // mesh size per direction
+    FieldVector<sgrid_ctype, dim> h[MAXL]; // mesh size per direction
     CubeMapper<dim> mapper[MAXL]; // a mapper for each level
 
     // faster implemantation od subIndex

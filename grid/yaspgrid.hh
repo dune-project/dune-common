@@ -60,8 +60,8 @@ namespace Dune {
   /** Singleton holding reference elements */
   template<int dim>
   struct YaspReferenceElement {
-    static Vec<dim,yaspgrid_ctype> midpoint; // data neded for the refelem below
-    static Vec<dim,yaspgrid_ctype> extension; // data needed for the refelem below
+    static FieldVector<yaspgrid_ctype, dim> midpoint;  // data neded for the refelem below
+    static FieldVector<yaspgrid_ctype, dim> extension; // data needed for the refelem below
     static YaspElement<dim,dim> refelem;
   };
 
@@ -70,16 +70,16 @@ namespace Dune {
   YaspElement<dim,dim> YaspReferenceElement<dim>::refelem(YaspReferenceElement<dim>::midpoint,
                                                           YaspReferenceElement<dim>::extension);
   template<int dim>
-  Vec<dim,yaspgrid_ctype> YaspReferenceElement<dim>::midpoint(0.5);
+  FieldVector<yaspgrid_ctype, dim> YaspReferenceElement<dim>::midpoint(0.5);
 
   template<int dim>
-  Vec<dim,yaspgrid_ctype> YaspReferenceElement<dim>::extension(1.0);
+  FieldVector<yaspgrid_ctype, dim> YaspReferenceElement<dim>::extension(1.0);
 
   template<int dim>
   class YaspFatherRelativeLocalElement {
   public:
-    static Vec<dim,yaspgrid_ctype> midpoint; // data neded for the refelem below
-    static Vec<dim,yaspgrid_ctype> extension; // data needed for the refelem below
+    static FieldVector<yaspgrid_ctype, dim> midpoint;  // data neded for the refelem below
+    static FieldVector<yaspgrid_ctype, dim> extension; // data needed for the refelem below
     static YaspElement<dim,dim> element;
     static YaspElement<dim,dim>& getson (int i)
     {
@@ -97,10 +97,10 @@ namespace Dune {
   YaspElement<dim,dim> YaspFatherRelativeLocalElement<dim>::element(YaspFatherRelativeLocalElement<dim>::midpoint,
                                                                     YaspFatherRelativeLocalElement<dim>::extension);
   template<int dim>
-  Vec<dim,yaspgrid_ctype> YaspFatherRelativeLocalElement<dim>::midpoint(0.25);
+  FieldVector<yaspgrid_ctype, dim> YaspFatherRelativeLocalElement<dim>::midpoint(0.25);
 
   template<int dim>
-  Vec<dim,yaspgrid_ctype> YaspFatherRelativeLocalElement<dim>::extension(0.5);
+  FieldVector<yaspgrid_ctype, dim> YaspFatherRelativeLocalElement<dim>::extension(0.5);
 
 
   //========================================================================
@@ -140,7 +140,7 @@ namespace Dune {
     }
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dim,yaspgrid_ctype>& operator[] (int i)
+    FieldVector<yaspgrid_ctype, dim>& operator[] (int i)
     {
       int bit=0;
       for (int k=0; k<dimworld; k++)   // run over all directions in world
@@ -172,9 +172,9 @@ namespace Dune {
     }
 
     //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld,yaspgrid_ctype> global (const Vec<dim,yaspgrid_ctype>& local)
+    FieldVector<yaspgrid_ctype,dimworld> global (const FieldVector<yaspgrid_ctype, dim>& local)
     {
-      Vec<dimworld,yaspgrid_ctype> g;
+      FieldVector<yaspgrid_ctype,dimworld> g;
       int bit=0;
       for (int k=0; k<dimworld; k++)
         if (k==missing)
@@ -188,9 +188,9 @@ namespace Dune {
     }
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<dim,yaspgrid_ctype> local (const Vec<dimworld,yaspgrid_ctype>& global)
+    FieldVector<yaspgrid_ctype,dim> local (const FieldVector<yaspgrid_ctype,dimworld>& global)
     {
-      Vec<dim,yaspgrid_ctype> l;   // result
+      FieldVector<yaspgrid_ctype,dim> l; // result
       int bit=0;
       for (int k=0; k<dimworld; k++)
         if (k!=missing)
@@ -203,7 +203,7 @@ namespace Dune {
 
     /*! determinant of the jacobian of the mapping
      */
-    yaspgrid_ctype integration_element (const Vec<dim,yaspgrid_ctype>& local)
+    yaspgrid_ctype integration_element (const FieldVector<yaspgrid_ctype,dim>& local)
     {
       yaspgrid_ctype volume=1.0;
       for (int k=0; k<dimworld; k++)
@@ -212,7 +212,7 @@ namespace Dune {
     }
 
     //! check whether local is inside reference element
-    bool checkInside (const Vec<dim,yaspgrid_ctype>& local)
+    bool checkInside (const FieldVector<yaspgrid_ctype,dim>& local)
     {
       for (int i=0; i<dim; i++)
         if (local(i)<-yasptolerance || local(i)>1+yasptolerance) return false;
@@ -220,7 +220,7 @@ namespace Dune {
     }
 
     //! constructor from (storage for) midpoint and extension and missing direction number
-    YaspElement (Vec<dimworld,yaspgrid_ctype>& p, Vec<dimworld,yaspgrid_ctype>& h, int& m)
+    YaspElement (FieldVector<yaspgrid_ctype, dimworld>& p, FieldVector<yaspgrid_ctype, dimworld>& h, int& m)
       : midpoint(p), extension(h), missing(m)
     {
       if (dimworld!=dim+1)
@@ -246,13 +246,13 @@ namespace Dune {
     // References are used because this information
     // is known outside the element in many cases.
     // Note dimworld==dim+1
-    Vec<dimworld,yaspgrid_ctype>& midpoint; // the midpoint
-    Vec<dimworld,yaspgrid_ctype>& extension; // the extension
+    FieldVector<yaspgrid_ctype, dimworld>& midpoint;   // the midpoint
+    FieldVector<yaspgrid_ctype, dimworld>& extension;  // the extension
     int& missing;                           // the missing, i.e. constant direction
 
     // In addition we need memory in order to return references.
     // Possibly we should change this in the interface ...
-    Vec<dim,yaspgrid_ctype> c;           // a point
+    FieldVector<yaspgrid_ctype, dim> c;             // a point
   };
 
 
@@ -284,7 +284,7 @@ namespace Dune {
     }
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dim,yaspgrid_ctype>& operator[] (int i)
+    FieldVector<yaspgrid_ctype, dim>& operator[] (int i)
     {
       for (int k=0; k<dim; k++)
         if (i&(1<<k))
@@ -305,18 +305,18 @@ namespace Dune {
     }
 
     //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dim,yaspgrid_ctype> global (const Vec<dim,yaspgrid_ctype>& local)
+    FieldVector<yaspgrid_ctype, dim> global (const FieldVector<yaspgrid_ctype, dim>& local)
     {
-      Vec<dim,yaspgrid_ctype> g;
+      FieldVector<yaspgrid_ctype,dim> g;
       for (int k=0; k<dim; k++)
         g(k) = midpoint(k) + (local(k)-0.5)*extension(k);
       return g;
     }
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<dim,yaspgrid_ctype> local (const Vec<dim,yaspgrid_ctype>& global)
+    FieldVector<yaspgrid_ctype, dim> local (const FieldVector<yaspgrid_ctype,dim>& global)
     {
-      Vec<dim,yaspgrid_ctype> l;   // result
+      FieldVector<yaspgrid_ctype, dim> l; // result
       for (int k=0; k<dim; k++)
         l(k) = (global(k)-midpoint(k))/extension(k) + 0.5;
       return l;
@@ -324,7 +324,7 @@ namespace Dune {
 
     /*! determinant of the jacobian of the mapping
      */
-    yaspgrid_ctype integration_element (const Vec<dim,yaspgrid_ctype>& local)
+    yaspgrid_ctype integration_element (const FieldVector<yaspgrid_ctype, dim>& local)
     {
       yaspgrid_ctype volume=1.0;
       for (int k=0; k<dim; k++) volume *= extension(k);
@@ -332,7 +332,7 @@ namespace Dune {
     }
 
     //! can only be called for dim=dim!
-    Mat<dim,dim>& Jacobian_inverse (const Vec<dim,yaspgrid_ctype>& local)
+    Mat<dim,dim>& Jacobian_inverse (const FieldVector<yaspgrid_ctype, dim>& local)
     {
       for (int i=0; i<dim; ++i)
       {
@@ -343,7 +343,7 @@ namespace Dune {
     }
 
     //! check whether local is inside reference element
-    bool checkInside (const Vec<dim,yaspgrid_ctype>& local)
+    bool checkInside (const FieldVector<yaspgrid_ctype, dim>& local)
     {
       for (int i=0; i<dim; i++)
         if (local(i)<-yasptolerance || local(i)>1+yasptolerance) return false;
@@ -351,7 +351,7 @@ namespace Dune {
     }
 
     //! constructor from (storage for) midpoint and extension
-    YaspElement (Vec<dim,yaspgrid_ctype>& p, Vec<dim,yaspgrid_ctype>& h)
+    YaspElement (FieldVector<yaspgrid_ctype, dim>& p, FieldVector<yaspgrid_ctype, dim>& h)
       : midpoint(p), extension(h)
     {}
 
@@ -372,13 +372,13 @@ namespace Dune {
     // in each direction. References are used because this information
     // is known outside the element in many cases.
     // Note dim==dimworld
-    Vec<dim,yaspgrid_ctype>& midpoint; // the midpoint
-    Vec<dim,yaspgrid_ctype>& extension; // the extension
+    FieldVector<yaspgrid_ctype, dim>& midpoint;   // the midpoint
+    FieldVector<yaspgrid_ctype, dim>& extension;  // the extension
 
     // In addition we need memory in order to return references.
     // Possibly we should change this in the interface ...
     Mat<dim,dim,yaspgrid_ctype> Jinv;     // the jacobian inverse
-    Vec<dim,yaspgrid_ctype> c;         // a point
+    FieldVector<yaspgrid_ctype, dim> c;           // a point
   };
 
 
@@ -405,13 +405,13 @@ namespace Dune {
     }
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,yaspgrid_ctype>& operator[] (int i)
+    FieldVector<yaspgrid_ctype, dimworld>& operator[] (int i)
     {
       return position;
     }
 
     //! constructor
-    YaspElement (Vec<dimworld,yaspgrid_ctype>& p) : position(p)
+    YaspElement (FieldVector<yaspgrid_ctype, dimworld>& p) : position(p)
     {}
 
     //! print function
@@ -422,7 +422,7 @@ namespace Dune {
     }
 
   private:
-    Vec<dimworld,yaspgrid_ctype>& position; //!< where the vertex is
+    FieldVector<yaspgrid_ctype, dimworld>& position; //!< where the vertex is
   };
 
   // operator<< for all YaspElements
@@ -693,7 +693,7 @@ namespace Dune {
     }
 
     //! local coordinates within father
-    Vec<dim,ctype>& local ()
+    FieldVector<ctype, dim>& local ()
     {
       // check if coarse level exists
       if (_g.level<=0)
@@ -728,7 +728,7 @@ namespace Dune {
     TSI& _it;                         // position in the grid level
     YGLI& _g;                         // access to grid level
     YaspElement<0,dimworld> _element; // the element geometry
-    Vec<dim,ctype> loc;               // always computed before being returned
+    FieldVector<ctype, dim> loc;                 // always computed before being returned
   };
 
 
@@ -872,13 +872,13 @@ namespace Dune {
     }
 
     //! return unit outer normal, this should be dependent on local coordinates for higher order boundary
-    Vec<dimworld,yaspgrid_ctype>& unit_outer_normal (Vec<dim-1,yaspgrid_ctype>& local)
+    FieldVector<yaspgrid_ctype, dimworld>& unit_outer_normal (FieldVector<yaspgrid_ctype, dim-1>& local)
     {
       return _normal;
     }
 
     //! return unit outer normal, if you know it is constant use this function instead
-    Vec<dimworld,yaspgrid_ctype>& unit_outer_normal ()
+    FieldVector<yaspgrid_ctype, dimworld>& unit_outer_normal ()
     {
       return _normal;
     }
@@ -973,14 +973,14 @@ namespace Dune {
     TSI _itnb;                             //!< position of nb in the grid level
     YaspEntity<0,dim,dimworld>& _myself;  //!< reference to myself
     YaspEntity<0,dim,dimworld> _nb;       //!< virtual neighbor entity, built on the fly
-    Vec<dim,yaspgrid_ctype> _pos_self_local; //!< center of face in own local coordinates
-    Vec<dim,yaspgrid_ctype> _pos_nb_local; //!< center of face in neighbors local coordinates
-    Vec<dim,yaspgrid_ctype> _pos_world;   //!< center of face in world coordinates
-    Vec<dim,yaspgrid_ctype> _ext_local;   //!< extension of face in local coordinates
+    FieldVector<yaspgrid_ctype, dim> _pos_self_local; //!< center of face in own local coordinates
+    FieldVector<yaspgrid_ctype, dim> _pos_nb_local; //!< center of face in neighbors local coordinates
+    FieldVector<yaspgrid_ctype, dim> _pos_world;     //!< center of face in world coordinates
+    FieldVector<yaspgrid_ctype, dim> _ext_local;     //!< extension of face in local coordinates
     YaspElement<dim-1,dim> _is_self_local; //!< intersection in own local coordinates
     YaspElement<dim-1,dim> _is_nb_local;  //!< intersection in neighbors local coordinates
     YaspElement<dim-1,dimworld> _is_global; //!< intersection in global coordinates
-    Vec<dimworld,yaspgrid_ctype> _normal; //!< for returning outer normal
+    FieldVector<yaspgrid_ctype, dimworld> _normal;   //!< for returning outer normal
   };
 
 
@@ -1223,7 +1223,9 @@ namespace Dune {
        @param periodic tells if direction is periodic or not
        @param size of overlap on coarsest grid (same in all directions)
      */
-    YaspGrid (MPI_Comm comm, Dune::Vec<dim,ctype> L, Dune::Vec<dim,int> s, Dune::Vec<dim,bool> periodic, int overlap)
+    YaspGrid (MPI_Comm comm, Dune::FieldVector<ctype, dim> L,
+              Dune::FieldVector<int, dim> s,
+              Dune::FieldVector<bool, dim> periodic, int overlap)
       : _mg(comm,L,s,periodic,overlap)
     {  }
 
