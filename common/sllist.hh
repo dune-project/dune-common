@@ -297,12 +297,12 @@ namespace Dune
   inline void SLList<T,A>::push_back(const T& item)
   {
     if(tail_!=0) {
-      tail_->next_ = allocator_.allocate(1);
+      tail_->next_ = allocator_.allocate(1, 0);
       tail_ = tail_->next_;
       tail_->item_=item;
       tail_->next_=0;
     }else{
-      tail_=head_=allocator_.allocate(1);
+      tail_=head_=allocator_.allocate(1, 0);
       tail_->next_=0;
       tail_->item_=item;
     }
@@ -313,11 +313,11 @@ namespace Dune
   inline void SLList<T,A>::push_front(const T& item)
   {
     if(head_==0) {
-      head_ = tail_ = allocator_.allocate(1);
+      head_ = tail_ = allocator_.allocate(1, 0);
       head_->item_=item;
       head_->next_=0;
     }else{
-      Element* added = allocator_.allocate(1);
+      Element* added = allocator_.allocate(1, 0);
       added->item_=item;
       added->next_=head_;
       head_=added;

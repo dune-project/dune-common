@@ -335,7 +335,7 @@ namespace Dune
   { }
 
   template<class T, int s>
-  inline T* PoolAllocator<T,s>::allocate(std::size_t n, const T* hint=0)
+  inline T* PoolAllocator<T,s>::allocate(std::size_t n, const T* hint)
   {
     assert(n<=(Pool<T,s>::elements));
     return static_cast<T*>(memoryPool_.allocate());
