@@ -11,10 +11,10 @@
 namespace Dune {
   /** @defgroup Common Dune Common Module
 
-          This module contains classes for general usage in dune, such as e.g.
-          (small) dense matrices and vectors or containers.
+     This module contains classes for general usage in dune, such as e.g.
+     (small) dense matrices and vectors or containers.
 
-          @{
+     @{
    */
 
 
@@ -186,7 +186,7 @@ namespace Dune {
   }
 
   template <int n, class T>
-  inline std::ostream& operator<< (std::ostream& s, Vec<n,T>& v)
+  inline std::ostream& operator<< (std::ostream& s, const Vec<n,T>& v)
   {
     v.print(s,0);
     return s;
@@ -233,6 +233,16 @@ namespace Dune {
       return z;
     }
 
+    //! matrix/vector multiplication with transpose of matrix
+    Vec<n,T> mult_t (const Vec<m,T>& x)
+    {
+      Vec<n,T> z(0.0);
+      const Mat<n,m,T> &matrix = (*this);
+      for (int j=0; j<m; j++)
+        for (int i=0; i<n; i++) z(i) += matrix(j,i) * x.read(j);
+      return z;
+    }
+
     //! multiplication assignment with scalar
     Mat<n,m,T>& operator*= (T t)
     {
@@ -259,6 +269,10 @@ namespace Dune {
     //! calculates the inverse of this matrix and stores it in
     //! the parameter inverse, return is the determinant
     T invert (Mat<n,m,T>& inverse) const;
+
+    //! calculates the transpose of this matrix and stores it in
+    //! the parameter transpose, return is the determinant
+    void transpose (Mat<m,n,T>& transpose) const;
 
   private:
     //! built-in array to hold the data
@@ -384,6 +398,16 @@ namespace Dune {
   inline T Mat<n,m,T>::invert (Mat<n,m,T>& inverse) const
   {
     return HelpMat::invertMatrix( *this , inverse);
+  }
+
+  // implementation of transpose
+  template <int n, int m, class T>
+  inline void Mat<n,m,T>::transpose (Mat<m,n,T>& transpose) const
+  {
+    const Mat<n,m,T> & matrix = (*this);
+    for(int i=0; i<n; i++)
+      for(int k=0; k<m; k++)
+        transpose(i,k) = matrix(k,i);
   }
 
 
