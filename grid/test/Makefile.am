@@ -45,8 +45,7 @@ check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 # note that $(top_builddir)/lib/libdune.la cannot be used because the
 # lib/-directory will be compiled last. Thus we need to add the
 # library-parts explicitly
-LDFLAGS = $(top_builddir)/common/libcommon.la \
-          $(top_builddir)/grid/onedgrid/libonedgrid.la
+LDFLAGS = $(top_builddir)/common/libcommon.la
 
 # output coverage
 AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
@@ -58,6 +57,7 @@ AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
 test_sgrid_SOURCES = test-sgrid.cc
 
 test_oned_SOURCES = test-oned.cc
+test_oned_LDADD = $(top_builddir)/grid/onedgrid/libonedgrid.la
 
 test_yaspgrid_SOURCES = test-yaspgrid.cc
 test_yaspgrid_CXXFLAGS = $(AM_CPPFLAGS) $(MPI_CPPFLAGS)
