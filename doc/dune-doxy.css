@@ -1,0 +1,202 @@
+/* $Id$ */
+
+body {
+  padding: 0px;
+  margin: 0px;
+}
+
+div.header { 
+  margin: 0px;  
+  width: 100%;
+  height: 40px;
+
+  padding: 0pt;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-indent: 20px;
+
+  background: url("../pics/dune-header.png") no-repeat;
+  background-color: #c8d5ff;
+  border-bottom: 1px solid #5974b5;
+
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 36px;
+  text-align: left;
+  letter-spacing: .5ex;
+  color: #e88e3f;
+}
+div.header a,
+div.header a:visited,
+div.header a:active,
+div.header a:hover,
+div.header a:link {
+  color: #e88e3f;
+  text-decoration: none;  
+  background: none;
+}
+
+div.subheader:before{
+  content: "Distributed and Unified Numerics Environment";
+}
+div.subheader {
+  padding: 0px;
+  margin: 5px;
+  margin-left: 20px;
+  width: auto;
+
+  background: none;
+
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  text-align: left;
+  letter-spacing: .5ex;
+  color: #e88e3f; 
+}
+
+a:link { 
+  color: #5974b5;
+}
+
+a:visited { 
+  color: #5974b5;
+}
+
+a:hover { 
+  color: #5974b5;
+  background-color: #c8d5ff;
+}
+
+a:active { 
+  color: #5974b5;
+  background-color: #c8d5ff;
+}
+
+div.navigation { 
+  z-index: 5;
+  float: left;
+  margin: 0px;
+  margin-left: 10px;
+  margin-bottom: 5px;
+  width: 20%;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  padding: 4px;
+  font-size: small;
+  font-family: sans-serif;
+  letter-spacing: .5ex;
+/*  font-weight: bold; */
+}
+
+div.navigation a { 
+  padding: 5px;
+  display: block;
+  text-decoration: none;  
+}
+
+div.navigation a:link,
+div.navigation a:visited
+{ 
+  margin: 0pt;    
+  text-decoration: none;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+}
+div.navigation a:hover,
+div.navigation a:active
+{ 
+  margin: 0pt;   
+  background-color: #c8d5ff;
+  color: #5974b5;
+  text-decoration: none;
+  border-top: 1px solid #5974b5;
+  border-left: 1px solid #5974b5;
+  border-right: 1px solid #5974b5;
+  border-bottom: 1px solid #5974b5;
+}
+
+div.main { 
+  position: static;
+  margin: 0pt;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  width: auto;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  padding: 5px;
+}
+
+div.foot {
+  display: block;
+  width: 100%;
+  margin: 0px;
+  padding: 0px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  bottom: 0px;  
+  font-size: xx-small;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+div.foot p {
+  margin: 0px;
+  padding: 0px;
+}
+
+div.foot img { 
+  border: 0;
+  margin-top: 5px;
+}
+
+h1 { 
+  padding: 5px;
+  margin: 0pt;    
+  display: block;
+  background-color: #c8d5ff;
+  text-decoration: none;
+  border-top: 1px solid #5974b5;
+  border-left: 1px solid #5974b5;
+  border-right: 1px solid #5974b5;
+  border-bottom: 1px solid #5974b5;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  letter-spacing: .5ex;
+  color: black;
+}
+
+h2 { 
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  letter-spacing: .5ex;
+}
+
+h3 { 
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  letter-spacing: .5ex;
+}
+
+h4 { 
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  letter-spacing: .5ex;
+}
+
+hr { 
+  border: 0px;
+  background-color: #5974b5;
+  height: 1px;  
+}
