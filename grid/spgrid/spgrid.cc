@@ -169,21 +169,23 @@ namespace Dune {
   int spgrid<DIM>::
   size(level l, int d, const array<DIM> &process) const {
     int addon = size_add_[d]*(process[d]==dim_[d]-1);
-    return (size_[d]+addon)*(1<<l)+(process[d]==dim_[d]-1);
+    return (size_[d]+addon)*(1<<l)+
+           (process[d]==dim_[d]-1)*(periodic_[d]==false);
   };
 
   template<int DIM> inline
   int spgrid<DIM>::
   size(level l, int d) const {
     int addon = size_add_[d]*(process_[d]==dim_[d]-1);
-    return (size_[d]+addon)*(1<<l)+(process_[d]==dim_[d]-1);
+    return (size_[d]+addon)*(1<<l)+
+           (process_[d]==dim_[d]-1)*(periodic_[d]==false);
   };
 
   /** calc globalsize of level l in direction d */
   template<int DIM> inline
   int spgrid<DIM>::
   globalsize(level l, int d) const {
-    return (globalsize_[d])*(1<<l)+1;
+    return (globalsize_[d])*(1<<l)+(periodic_[d]==false);
   };
 
   ////////////////////////////////////////////////////////////////////////////
