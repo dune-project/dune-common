@@ -13,6 +13,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <rpc/xdr.h>
 
 namespace Dune
 {
@@ -184,6 +185,17 @@ namespace Dune
         std::cout << std::endl;
       }
       std::cout << "}" << std::endl;
+    }
+
+    bool processXdr(XDR *xdrs)
+    {
+      if(xdrs != NULL)
+      {
+        xdr_vector(xdrs,(char *) p,n,sizeof(T),(xdrproc_t)xdr_double);
+        return true;
+      }
+      else
+        return false;
     }
 
   protected:
