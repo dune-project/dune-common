@@ -16,9 +16,39 @@ namespace Dune {
   template<class FunctionSpaceType, ElementType ElType, int polOrd>
   class LagrangeBaseFunction;
 
+  //! picewise const base functions
+  template<class FunctionSpaceType, ElementType ElType>
+  class LagrangeBaseFunction < FunctionSpaceType , ElType , 0 >
+    : public BaseFunctionInterface<FunctionSpaceType>
+  {
+  public:
+    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
+      : BaseFunctionInterface<FunctionSpaceType> (f)  {};
+
+    virtual void evaluate ( const Vec<0, deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      phi = 1.0;
+    }
+
+    virtual void evaluate ( const Vec<1, deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      phi = 0.0;
+    }
+
+    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      phi = 0.0 ;
+    }
+
+  };
+
 
   //*****************************************************************
   //
+  //! Lagrange base for lines and polynom order = 1
   //! (0) 0-----1 (1)
   //
   //*****************************************************************
@@ -59,7 +89,7 @@ namespace Dune {
       phi = factor[num];
     }
 
-    virtual void evaluate ( const DiffVariable<2>::Type &diffVariable,
+    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // function is linear, therfore
@@ -286,28 +316,32 @@ namespace Dune {
   //! specialization
   template <ElementType ElType, int polOrd > struct LagrangeDefinition;
 
+  //! Lagrange Definition for lines
   template <int polOrd >
   struct LagrangeDefinition< line , polOrd>
   {
-    enum { numOfBaseFct = 2 * polOrd };
+    enum { numOfBaseFct = (polOrd == 0) ? 1 : (2 * polOrd) };
   };
 
+  //! Lagrange Definition for triangles
   template <int polOrd >
   struct LagrangeDefinition< triangle , polOrd>
   {
-    enum { numOfBaseFct = 3 * polOrd };
+    enum { numOfBaseFct = (polOrd == 0) ? 1 : (3 * polOrd) };
   };
 
+  //! Lagrange Definition for quadrilaterals
   template <int polOrd >
   struct LagrangeDefinition< quadrilateral , polOrd>
   {
-    enum { numOfBaseFct = 4 * polOrd };
+    enum { numOfBaseFct = (polOrd == 0) ? 1 : (4 * polOrd) };
   };
 
+  //! Lagrange Definition for tetrahedrons
   template <int polOrd >
   struct LagrangeDefinition< tetrahedron , polOrd>
   {
-    enum { numOfBaseFct = 4 * polOrd };
+    enum { numOfBaseFct = (polOrd == 0) ? 1 : (4 * polOrd) };
   };
 
 

@@ -8,6 +8,30 @@
 
 namespace Dune {
 
+
+  /** @defgroup DiscreteFunctionSpace The DiscreteFunctionSpace Interface
+
+     This provides the interfaces for discrete function spaces.
+
+     @{
+   */
+
+
+  //**************************************************************************
+  //
+  //  --DiscreteFunctionSpaceInterface
+  //
+  //! This is the interface for discrete function spaces. All methods
+  //! declared here have to be implemented by the implementation class.
+  //! The discrete function space always depends on a given grid.
+  //! For all diffrent element types of the grid the function space provides
+  //! a set of base functions for the different elements.
+  //! Because of the knowledge of on the one hand the grid an on the oterh
+  //! the base functions sets, the discrete function space provides the size
+  //! of the function space and a mapping from entity and local dof number
+  //! to global dof number of the level of the entity.
+  //!
+  //**************************************************************************
   template< class FunctionSpaceType , class GridTemp,
       class DiscreteFunctionSpaceImp, class BaseFunctionSetInter >
   class DiscreteFunctionSpaceInterface
@@ -24,7 +48,8 @@ namespace Dune {
       FunctionSpaceType (ident),
       grid_ (g) {};
 
-    //! get base function set from derived implementation
+    //! Get base function set for given entity.
+    //! For a type of element the base function set is unique.
     template <class EntityType>
     const BaseFunctionSetType &
     getBaseFunctionSet ( EntityType &en ) const
@@ -39,7 +64,8 @@ namespace Dune {
     //! depends also on the base function set
     int size ( int level ) const { return asImp().size(level); };
 
-    //! for given entity map local dof number to global dof number
+    //! For given entity map local dof number to global dof number
+    //! at the level of the given entity.
     template <class EntityType>
     int mapToGlobal ( EntityType &en, int localNum ) const
     {
@@ -60,6 +86,26 @@ namespace Dune {
     //! the corresponding Grid
     const GridType & grid_ ;
   };
+
+  //**************************************************************************
+  //
+  // --DiscreteFunctionSpaceDefault
+  //
+  //! This is the class with default implementations for discrete function
+  //! space.
+  //!
+  //**************************************************************************
+  template< class FunctionSpaceType , class GridTemp,
+      class DiscreteFunctionSpaceImp, class BaseFunctionSetInter >
+  class DiscreteFunctionSpaceDefault
+    : public DiscreteFunctionSpaceInterface < FunctionSpaceType , GridTemp,
+          DiscreteFunctionSpaceImp, BaseFunctionSetInter>
+  {
+  public:
+    // at the moment nothing
+  };
+
+  /** @} end documentation group */
 
 } // end namespace Dune
 

@@ -13,8 +13,28 @@
 
 namespace Dune {
 
+
+  /** @defgroup DiscreteFunction The Interface for DiscreteFunctions
+
+      The DiscreteFunction is resposible for the dof storage. This can be
+      done in various ways an is left to the user. The user has to derive his
+      own implemenation from the DiscreteFunctionDefault class. If some of
+      the implementations in the default class are for his dof storage
+      unefficient, then one can overload this functions.
+
+     @{
+   */
+
+
   //************************************************************************
-  //! the minimal interface
+  //
+  //  --DiscreteFunctionInterface
+  //
+  //! This is the minimal interface of a discrete function which has to be
+  //! implemented. It contains an local function and a dof iterator which can
+  //! iterator over all dofs of one level. Via the method access the local
+  //! dofs and basfunction can be accessed for a given entity.
+  //!
   //************************************************************************
   template<class DiscreteFunctionSpaceType,
       template <int , class > class LocalFunctionIteratorImp ,
@@ -29,6 +49,7 @@ namespace Dune {
         DiscreteFunctionInterface <DiscreteFunctionSpaceType,
             LocalFunctionIteratorImp , DofIteratorImp , DiscreteFunctionImp > > FunctionType;
   public:
+    //! remember the template types
     template <int cc>
     struct Traits
     {
@@ -63,14 +84,17 @@ namespace Dune {
       return asImp().lfend<codim>( level );
     };
 
+    //! access to the local function. Local functions can only be accessed
+    //! for an existing entity.
     template <class EntityType>
     typename Traits<EntityType::codimension>::LocalFunctionIteratorType
     access (EntityType & en )
     {
       return asImp().access(en);
     }
+
     //! the implementation of an iterator to iterate efficient over all dof
-    //! on one level
+    //! on one level.
     DofIteratorType dbegin ( int level )
     {
       return asImp().dbegin ( level );
@@ -84,12 +108,13 @@ namespace Dune {
     };
 
     //! clear all dofs of the discrete function
-    void clear( ) {
+    void clear( )
+    {
       asImp.clear( );
     }
 
   private:
-    //! Barton-Nackman trick
+    // Barton-Nackman trick
     DiscreteFunctionImp &asImp()
     {
       return static_cast<DiscreteFunctionImp&>(*this);
@@ -100,7 +125,19 @@ namespace Dune {
     }
   };
 
-  //! default implementation
+  //*************************************************************************
+  //
+  //  --DiscreteFunctionDefault
+  //
+  //! Default implementation of the discrete function. This class provides
+  //! is responsible for the dof storage. Different implementations of the
+  //! discrete function use different dof storage.
+  //! The default implementation provides +=, -= ans so on operators and
+  //! a DofIterator access, which can run over all dofs in an efficient way.
+  //! Furthermore with an entity you can access an local function to evaluate
+  //! the discrete function by multiplying the dofs and the basefunctions.
+  //!
+  //*************************************************************************
   template<class DiscreteFunctionSpaceType,
       template <int, class > class LocalFunctionIteratorImp ,
       class GlobalDofIteratorImp, class DiscreteFunctionImp >
@@ -109,13 +146,13 @@ namespace Dune {
       <DiscreteFunctionSpaceType, LocalFunctionIteratorImp ,
           GlobalDofIteratorImp, DiscreteFunctionImp >
   {
+
     typedef DiscreteFunctionInterface
     <DiscreteFunctionSpaceType, LocalFunctionIteratorImp ,
         GlobalDofIteratorImp, DiscreteFunctionImp >
     DiscreteFunctionInterfaceType;
-
-
   public:
+    //! remember the used types
     template <int cc>
     struct Traits
     {
@@ -126,16 +163,17 @@ namespace Dune {
       typedef typename LocalFunctionIteratorType::LocalFunctionType LocalFunctionType;
     };
 
+    //! should be named DofIteratorType
     typedef GlobalDofIteratorImp GlobalDofIteratorType;
 
 
+    //! pass the function space to the interface class
     DiscreteFunctionDefault ( const DiscreteFunctionSpaceType & f ) :
       DiscreteFunctionInterfaceType ( f ) {};
 
     //! derived from Function
     //! search for element which contains point x an evaluate
     //! dof entity with en
-
     void evaluate ( const typename Traits<0>::Domain & ,
                     typename Traits<0>::Range &) const
     {
@@ -143,11 +181,9 @@ namespace Dune {
     };
 
 
-    //! compute the linear algebra version of the scalarproduct of the dofs
-    Traits<0>::RangeField scalarProductDofs( const DiscreteFunctionImp &g ) {
+    //! evaluate an scalar product of the dofs of two DiscreteFunctions
+    Traits<0>::RangeField scalarProductDofs( const DiscreteFunctionDefault &g ) {
       Traits<0>::RangeField skp = 0.;
-
-      std::cerr << "warning: calling default version of scalarProductDofs.\n";
 
       typedef typename GlobalDofIteratorImp DofIteratorType;
       int level = getFunctionSpace().getGrid().maxlevel();
@@ -162,7 +198,6 @@ namespace Dune {
       return skp;
     }
 
-    //! copy the dofs from another DiscreteFunction
     Vector<Traits<0>::RangeField> &assign(const Vector<Traits<0>::RangeField> &g) {
 
       DiscreteFunctionDefault &gc = const_cast<DiscreteFunctionDefault &>( dynamic_cast<const DiscreteFunctionDefault &> ( g ));
@@ -197,7 +232,6 @@ namespace Dune {
       return *this;
     }
 
-    //! add another discrete function to this function
     Vector<Traits<0>::RangeField> &operator+=(const Vector<Traits<0>::RangeField> &g) {
 
       DiscreteFunctionDefault &gc = const_cast<DiscreteFunctionDefault &>( dynamic_cast<const DiscreteFunctionDefault &> ( g ));
@@ -265,13 +299,40 @@ namespace Dune {
       return *this;
     }
 
+    //! clear all dofs of the discrete function
+    void clear( )
+    {
+      GlobalDofIteratorType enddof = asImp().dend ( level_ );
+      for(GlobalDofIteratorType itdof = asImp().dbegin ( level_ );
+          itdof != enddof; ++itdof)
+      {
+        *itdof = 0.;
+      }
+    }
+
+  private:
+    // Barton-Nackman trick
+    DiscreteFunctionImp &asImp()
+    {
+      return static_cast<DiscreteFunctionImp&>(*this);
+    }
+    const DiscreteFunctionImp &asImp() const
+    {
+      return static_cast<const DiscreteFunctionImp&>(*this);
+    }
+
   };
+
+  /** @} end documentation group */
 
 
   //**********************************************************************
   //
+  //  --DiscFuncTest
   //
-  //
+  //! this is one special implementation of a discrete function using an
+  //! array for storing the dofs.
+  //!
   //**********************************************************************
   template<class DiscreteFunctionSpaceType >
   class DiscFuncTest
@@ -386,85 +447,15 @@ namespace Dune {
     };
 
     void clear( ) {
-      setAll( 0. );
+      GlobalDofIteratorType enddof = dend ( level_ );
+      for(GlobalDofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof)
+      {
+        *itdof = 0.;
+      }
     }
 
     void setAll( DofType x ) {
       set( x, level_ );
-    }
-
-    //! compute the linear algebra version of the scalarproduct of the dofs
-    DofType scalarProductDofs( const DiscFuncTest &g ) {
-      DofType skp = 0.;
-
-      int level = getFunctionSpace().getGrid().maxlevel();
-
-      Array<DofType>::Iterator it = dofVec_[ level ].begin();
-      Array<DofType>::Iterator g_it = g.dofVec_[ level ].begin();
-
-      for ( ; it != dofVec_[ level ].end(); ++it, ++g_it ) {
-        skp += *it * *g_it;
-      }
-
-      return skp;
-    }
-
-    //! copy the dofs from another DiscreteFunction
-    Vector<DofType> &assign(const Vector<DofType> &g) {
-
-      DiscFuncTest &gc = const_cast<DiscFuncTest &>( dynamic_cast<const DiscFuncTest &> ( g ));
-      // we would need const_iterators.....
-
-      int level = getFunctionSpace().getGrid().maxlevel();
-
-      dofVec_[ level ] = gc.dofVec_[ level ];
-
-      return *this;
-    }
-
-    Vector<DofType> &operator+=(const Vector<DofType> &g) {
-      int level = getFunctionSpace().getGrid().maxlevel();
-
-      DiscFuncTest &gc = const_cast<DiscFuncTest &>( dynamic_cast<const DiscFuncTest &> ( g ));
-      // we would need const_iterators.....
-
-      Array<DofType>::Iterator it = dofVec_[ level ].begin();
-      Array<DofType>::Iterator g_it = gc.dofVec_[ level ].begin();
-
-      // Arrays don't have += ( they want to store non-vector type elements? )
-      for ( ; it != dofVec_[ level ].end(); ++it, ++g_it ) {
-        *it += *g_it;
-      }
-
-      return *this;
-    }
-
-    Vector<DofType> &operator-=(const Vector<DofType> &g) {
-      int level = getFunctionSpace().getGrid().maxlevel();
-
-      DiscFuncTest &gc = const_cast<DiscFuncTest &>( dynamic_cast<const DiscFuncTest &> ( g ));
-      // we would need const_iterators.....
-
-      Array<DofType>::Iterator it = dofVec_[ level ].begin();
-      Array<DofType>::Iterator g_it = gc.dofVec_[ level ].begin();
-
-      // Arrays don't have += ( they want to store non-vector type elements? )
-      for ( ; it != dofVec_[ level ].end(); ++it, ++g_it ) {
-        *it -= *g_it;
-      }
-      return *this;
-    }
-
-    Vector<DofType> &operator*=(const DofType &scalar) {
-      int level = getFunctionSpace().getGrid().maxlevel();
-
-      Array<DofType>::Iterator it = dofVec_[ level ].begin();
-
-      // Arrays don't have += ( they want to store non-vector type elements? )
-      for ( ; it != dofVec_[ level ].end(); ++it ) {
-        *it *= scalar;
-      }
-      return *this;
     }
 
     //! print all dofs

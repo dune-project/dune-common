@@ -4,6 +4,19 @@
 #define __DUNE_LOCALFUNCTION_HH__
 
 namespace Dune {
+
+
+  /** @defgroup LocalFunction The LocalFunction Interface for Dof access
+
+     On every element from a discrete function the local funtion can be accessed.
+     With the local function one has access to the dof and on the other hand to
+     the base function set of this actual element. Therefore this is called a
+     local function.
+
+     @{
+   */
+
+
   //****************************************************************************
   //
   //  --LocalFunctionInterface
@@ -41,6 +54,13 @@ namespace Dune {
       asImp().evaluate(en,x,ret);
     }
 
+    //! initialize local function for given entity en
+    template <class EntityType>
+    void init (EntityType &en)
+    {
+      asImp().init(en);
+    }
+
   private:
     //! Barton-Nackman trick
     LocalFunctionImp & asImp()
@@ -59,8 +79,8 @@ namespace Dune {
   //
   //! The Interface to the dune programmer, use this class to derive
   //! the own implementation. But only the methods declared in the interface
-  //! class must be implemented
-  //
+  //! class must be implemented.
+  //!
   //************************************************************************
   template < class DiscreteFunctionSpaceType, class LocalFunctionImp >
   class LocalFunctionDefault : public LocalFunctionInterface <
@@ -70,14 +90,13 @@ namespace Dune {
     // notin'
   }; // end LocalFunctionDefault
 
-  //-------------------------------------------------------------------------
-
   //**************************************************************************
   //
   //  --LocalFunctionIteratorInterface
   //
-  //! Interface for iterators to iterate over local functions
-  //
+  //! Interface for iterators to iterate over all local functions of one
+  //! discrete function.
+  //!
   //**************************************************************************
   template < class DiscFunctionSpaceType , class
       LocalFunctionIteratorImp , class LocalFunctionImp >
@@ -134,7 +153,8 @@ namespace Dune {
   //
   //  --LocalFunctionIteratorDefault
   //
-  //! Defaultimplementation
+  //! Defaultimplementation. At the moment there is no default
+  //! implementation.
   //
   //*************************************************************************
   template < class DiscFunctionSpaceType , class
@@ -146,6 +166,8 @@ namespace Dune {
   public:
     // notin'
   }; // end class LocalFunctionIteratorDefault
+
+  /** @} end documentation group */
 
 
 } // end namespace Dune

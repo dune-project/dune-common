@@ -9,15 +9,28 @@
 
 namespace Dune {
 
-  //! just to make it easy to change
+  /** @defgroup BaseFunctionSets Base Function Sets for various Elements
+
+     The base functions are essential to describe a numerical solutions.
+     Here the interface of base functions and the corresponding base
+     function set is presented. The user always works with the base function
+     set, where all diffrent base functions for on element type are known.
+
+     @{
+   */
+
+
+
+
+  // just to make it easy to change
   typedef int deriType;
 
+  // just for make changes easy
   template <int dim>
   struct DiffVariable
   {
     typedef Vec<dim, deriType> Type;
   };
-
 
   //*************************************************************************
   //
@@ -64,8 +77,9 @@ namespace Dune {
 
 
   //****************************************************************************
-  //!
-  //!
+  //
+  //  --BaseFunctionSetInterface
+  //
   //! Why has the BaseFunctionInterface class virtual methods?
   //!
   //! Because the we want to have different base functions in
@@ -78,7 +92,7 @@ namespace Dune {
   //! evaluations are stored again.
   //! This method brings us flexebility and effeciency.
   //!
-
+  //****************************************************************************
   template<class FunctionSpaceType, class BaseFunctionSetImp>
   class BaseFunctionSetInterface
   {
@@ -143,11 +157,12 @@ namespace Dune {
 
   //*************************************************************************
   //
+  //  --BaseFunctionSetDefault
   //
-  //
-  //
-  //
-  //
+  //! The BaseFunctionSetDefault class is the internal interface. Here some
+  //! default behavoir is implemented which always can be overloaded by the
+  //! implementation class, but not has to.
+  //!
   //*************************************************************************
   template<class FunctionSpaceType, class BaseFunctionSetImp>
   class BaseFunctionSetDefault
@@ -220,7 +235,7 @@ namespace Dune {
     { return static_cast<const BaseFunctionSetImp&>(*this); }
 
   };
-
+  /** @} end documentation group */
 
 }
 

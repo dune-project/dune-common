@@ -7,6 +7,19 @@
 
 namespace Dune {
 
+  /** @defgroup FastBaseFunctionSet The FastBaseFunctionSet
+
+     The FastBaseFunctionSet is an special implementation of the interface
+     BaseFunctionSetInterface. The idea here is to cache all evaluations of
+     the base functions for a given quadrature. That means if we use an
+     quadrature the only on the first call of evaluate of the base function
+     set the virtual methods of the base functions have to be called. On all
+     later calls the return values are memorized and the evaluation is much
+     faster.
+
+     @{
+   */
+
 
   //************************************************************************
   //
@@ -54,12 +67,22 @@ namespace Dune {
 
 
   //*************************************************************************
-  //!
+  //
+  //  --FastBaseFunctionSet
+  //
   //! FastBaseFunctionSet is the Implementation of a BaseFunctionSet.
   //! It stores the values at the quadrature points to speed up the evaluation
-  //! of the base functions
-  //! deriType is defined in basefunctions.hh
-  //!
+  //! of the base functions. Furthermore the discrete function space is
+  //! holding pointers to this class, because for different types of
+  //! base function set (i.e. for triangles and quadrilaterals ) the type of
+  //! the class has to be the same. There for the list with pointerd to hte
+  //! base functions is filled by the derived class.
+  //! All this pointer to base function and virtual method calling is not
+  //! efficient. Therefor the values of the base function on given quadrature
+  //! points is cache an on the next call of evaluate this is much faster.
+  //
+  // deriType is defined in basefunctions.hh
+  //
   //*************************************************************************
   template<class FunctionSpaceType>
   class FastBaseFunctionSet
@@ -99,7 +122,6 @@ namespace Dune {
     const BaseFunctionInterface<FunctionSpaceType>
     &getBaseFunction( int baseFunct ) const
     {
-      //std::cout << "getBaseFunction \n";
       return (*baseFunctionList_[baseFunct]);
     }
 
@@ -141,6 +163,9 @@ namespace Dune {
     void evaluateInit ( const QuadratureType & quad ) ;
 
   }; // end class FastBaseFunctionSet
+
+  /** @} end documentation group */
+
 
 #include "fastbase.cc"
 

@@ -5,38 +5,15 @@
 
 namespace Dune {
 
-  /** @defgroup Quadrature Quadrature Rules for FE integration
-
-          Integration over polyhedral regions is a fundamental operation in
-      the numerical solution of partial differential equations.
-          This module provides a number of classes for numerical
-          integration on the reference element.
-
-          @{
-   */
-
-  /*! This class provides Gauss Quadrature in d space dimensions
-      of various orders from 2 to about 20. All rules are tensor
-      products of one-dimensional rules.
-
-          Note that Gauss quadrature is restricted to cube elements (i.e.
-          line segments, quadrilaterals, hexahedra)
-
-          The dimension is a template parameter (yes, this class template can
-          to 5-dimensional integration) as well as the type used for the components
-          of the local coordinates used for the Gauss points.
-   */
-
-
-  //! calculates the number of points on on segment, i.e. a line
+  // calculates the number of points on on segment, i.e. a line
   template <int order>
   struct PointsOnLine
   {
-    //! from Peters GaussQuadrature, see Constructor
+    // from Peters GaussQuadrature, see Constructor
     enum { points = ( order > 17 ) ? 10 : 1 };
   };
 
-  //! specialization for the given order
+  // specialization for the given order
   template <> struct PointsOnLine <3>  { enum { points = 2 }; };
   template <> struct PointsOnLine <4>  { enum { points = 3 }; };
   template <> struct PointsOnLine <5>  { enum { points = 3 }; };
@@ -54,19 +31,19 @@ namespace Dune {
   template <> struct PointsOnLine <17> { enum { points = 9 }; };
   // other specialization possible
 
-  //! calculates m^p
+  // calculates m^p
   template <int m, int p>
   struct power_M_P
   {
-    //! power stores m^p
+    // power stores m^p
     enum { power = (m * power_M_P<m,p-1>::power ) };
   };
 
-  //! end of recursion via specialization
+  // end of recursion via specialization
   template <int m>
   struct power_M_P< m , 0>
   {
-    //! m^0 = 1
+    // m^0 = 1
     enum { power = 1 };
   };
 
@@ -78,31 +55,29 @@ namespace Dune {
     typedef RangeField ct;
 
   public:
-    //! number of quadrature points on segment line
+    // number of quadrature points on segment line
     enum { m = PointsOnLine<order>::points };
 
-    //! the number of quadrature points is m^dim
+    // the number of quadrature points is m^dim
     enum { n = power_M_P < m , dim >::power };
 
-    //! set up quadrature of given order in d dimensions
+    // set up quadrature of given order in d dimensions
     GaussQuadrature ();
 
-    //! return number of integration points
+    // return number of integration points
     int nip ();
 
-    //! return local coordinates of integration point i
+    // return local coordinates of integration point i
     Domain& ip (int i);
 
-    //! return weight associated with integration point i
+    // return weight associated with integration point i
     RangeField w (int i);
 
   private:
-    //! Vectors storing the quadrature points and weights
+    // Vectors storing the quadrature points and weights
     Vec<dim,ct> local[n];
     RangeField weight[n];
   };
-
-  /** @} end documentation group */
 
 } // end namespace
 
