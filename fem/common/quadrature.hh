@@ -8,6 +8,9 @@
 #include <dune/common/dynamictype.hh>
 #include "basefunctions.hh"
 
+// For ElementType
+#include <dune/grid/common/grid.hh>
+
 namespace Dune {
 
 
