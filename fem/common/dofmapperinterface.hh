@@ -34,6 +34,18 @@ namespace Dune {
     //! return max number of local dofs per entity
     virtual int numberOfDofs () const =0;
 
+    //! returns true if index is new ( for dof compress )
+    virtual bool indexNew (int num) const = 0;
+
+    //! return old index in dof array of given index ( for dof compress )
+    virtual int oldIndex (int num) const = 0;
+
+    //! return new index in dof array
+    virtual int newIndex (int num) const = 0;
+
+    /*! return estimate for size that is addtional needed
+        for restriction of data */
+    virtual int additionalSizeEstimate() const = 0;
   };
 
   //***********************************************************************
@@ -62,9 +74,7 @@ namespace Dune {
     //! default implementation if not overlaoded
     virtual int newSize() const
     {
-      // overload this method in derived class
-      assert(false);
-      return -1;
+      return asImp().size();
     }
 
     //! default implementation if not overlaoded
@@ -78,6 +88,34 @@ namespace Dune {
     virtual int numberOfDofs () const
     {
       // overload this method in derived class
+      assert(false);
+      return -1;
+    }
+
+    //! returns true if index is new ( for dof compress )
+    virtual bool indexNew (int num) const
+    {
+      assert(false);
+      return false;
+    }
+
+    //! return old index in dof array of given index ( for dof compress )
+    virtual int oldIndex (int num) const
+    {
+      assert(false);
+      return -1;
+    }
+
+    // return new index in dof array
+    virtual int newIndex (int num) const
+    {
+      assert(false);
+      return -1;
+    }
+
+    // return estimate for size additional need for restriction of data
+    virtual int additionalSizeEstimate() const
+    {
       assert(false);
       return -1;
     }
