@@ -8,4 +8,5 @@ grid_HEADERS = albertgrid.hh \
                sgrid.hh \
                simplegrid.hh \
                uggrid.hh \
-	       yaspgrid.hh
+	       yaspgrid.hh \
+               onedgrid.hh
