@@ -208,7 +208,7 @@ namespace Dune
     /**
      * @brief Indicates that the index set is currently being resized.
      */
-    RESIZE,
+    RESIZE
     /**
      * @brief Indicates that all previously deleted indices are now deleted.
      *
