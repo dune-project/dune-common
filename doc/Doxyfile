@@ -365,6 +365,7 @@ INPUT                  = mainpage \
                          ../grid \
                          ../fem \
                          ../common \
+                         ../quadrature \
                          ../solver \
                          ../istl \
                          ../io
