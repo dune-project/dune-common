@@ -106,34 +106,39 @@ namespace Dune
 
       const BaseFunctionSetType & baseSet = this->functionSpace_.getBaseFunctionSet( entity );
 
-      // calc Jacobian inverse before volume is evaluated
-      const Mat<dim,dim,double>& inv = entity.geometry().jacobianInverse(quad.point(0));
-
-      const double vol = entity.geometry().integrationElement(quad.point(0));
-
       double val = 0.;
       for ( int pt=0; pt < quad.nop(); pt++ )
       {
         baseSet.jacobian(i,quad,pt,grad);
 
+        // calc Jacobian inverse before volume is evaluated
+        const FieldMatrix<double,dim,dim>& inv = entity.geometry().jacobianInverse(quad.point(pt));
+        const double vol = entity.geometry().integrationElement(quad.point(pt));
+
         // multiply with transpose of jacobian inverse
-        grad[0] = inv.mult_t (grad[0]);
+        //grad[0] = inv.mult_t (grad[pt]);
+        JacobianRange tmp(0);
+        inv.umtv(grad[0], tmp[0]);
+        grad[0] = tmp[0];
 
         if( i != j )
         {
           baseSet.jacobian(j,quad,pt,othGrad);
 
           // multiply with transpose of jacobian inverse
-          othGrad[0] = inv.mult_t(othGrad[0]);
+          //othGrad[0] = inv.mult_t(othGrad[0]);
+          JacobianRange tmp(0);
+          inv.umtv(othGrad[0], tmp[0]);
+          othGrad[0] = tmp[0];
 
-          val += ( grad[0] * othGrad[0] ) * quad.weight( pt );
+          val += ( grad[0] * othGrad[0] ) * quad.weight( pt ) * vol;
         }
         else
         {
-          val += ( grad[0] * grad[0] ) * quad.weight( pt );
+          val += ( grad[0] * grad[0] ) * quad.weight( pt ) * vol;
         }
       }
-      val *= vol;
+
       return val;
     }
 
@@ -146,24 +151,27 @@ namespace Dune
 
       const BaseFunctionSetType & baseSet = this->functionSpace_.getBaseFunctionSet( entity );
 
-      // calc Jacobian inverse before volume is evaluated
-      const Mat<dim,dim,double>& inv = entity.geometry().jacobianInverse(quad.point(0));
-
-      const double vol = entity.geometry().integrationElement(quad.point(0));
       int i,j;
 
       for(i=0; i<matSize; i++)
         for (j=0; j<=i; j++ )
           mat[j][i]=0.0;
 
-      for ( int pt=0; pt < quad.nop(); pt++ )
-      {
-        for(i=0; i<matSize; i++)
-        {
+      for ( int pt=0; pt < quad.nop(); pt++ ) {
+
+        // calc Jacobian inverse before volume is evaluated
+        const FieldMatrix<double,dim,dim>& inv = entity.geometry().jacobianInverse(quad.point(pt));
+        const double vol = entity.geometry().integrationElement(quad.point(pt));
+
+        for(i=0; i<matSize; i++) {
+
           baseSet.jacobian(i,quad,pt,mygrad[i]);
 
           // multiply with transpose of jacobian inverse
-          mygrad[i][0] = inv.mult_t (mygrad[i][0]);
+          //mygrad[i][0] = inv.mult_t (mygrad[i][0]);
+          JacobianRange tmp(0);
+          inv.umtv(mygrad[i][0], tmp[0]);
+          mygrad[i][0] = tmp[0];
         }
 
         typename FunctionSpaceType::Range ret;
@@ -173,12 +181,12 @@ namespace Dune
           ret[0] *= quad.weight( pt );
           for(i=0; i<matSize; i++)
             for (j=0; j<=i; j++ )
-              mat[j][i] += ( mygrad[i][0] * mygrad[j][0] ) * ret[0];
+              mat[j][i] += ( mygrad[i][0] * mygrad[j][0] ) * ret[0] * vol;
         }
         else{
           for(i=0; i<matSize; i++)
             for (j=0; j<=i; j++ )
-              mat[j][i] += ( mygrad[i][0] * mygrad[j][0] ) * quad.weight( pt );
+              mat[j][i] += ( mygrad[i][0] * mygrad[j][0] ) * quad.weight( pt ) * vol;
         }
 
 
@@ -186,14 +194,9 @@ namespace Dune
       }
 
       for(i=0; i<matSize; i++)
-        for (j=0; j<=i; j++ )
-          mat[j][i] *= vol;
-
-      for(i=0; i<matSize; i++)
         for (j=matSize; j>i; j--)
           mat[j][i] = mat[i][j];
 
-      return;
     }
 
   };   // end class
