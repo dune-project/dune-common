@@ -107,7 +107,7 @@ namespace Dune {
     //* end of type declarations
 
     //! ???
-    DiscreteFunctionInterface ( DiscreteFunctionSpaceType &f )
+    DiscreteFunctionInterface (const DiscreteFunctionSpaceType &f )
       : FunctionType ( f ) {} ;
 
     //! ???
@@ -198,8 +198,8 @@ namespace Dune {
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
 
     //! pass the function space to the interface class
-    DiscreteFunctionDefault ( DiscreteFunctionSpaceType & f ) :
-      DiscreteFunctionInterfaceType ( f ) {};
+    DiscreteFunctionDefault (const DiscreteFunctionSpaceType & f ) :
+      DiscreteFunctionInterfaceType ( f ) {}
 
     //! Evaluate a scalar product of the dofs of two DiscreteFunctions
     //! on the top level of the underlying grid

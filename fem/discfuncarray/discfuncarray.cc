@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_DISCFUNCARRAY_CC__
-#define __DUNE_DISCFUNCARRAY_CC__
+#ifndef DUNE_DISCFUNCARRAY_CC
+#define DUNE_DISCFUNCARRAY_CC
 
 namespace Dune
 {
@@ -9,7 +9,7 @@ namespace Dune
   // Constructor making discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
-  DiscFuncArray(DiscreteFunctionSpaceType & f)
+  DiscFuncArray(const DiscreteFunctionSpaceType & f)
     : DiscreteFunctionDefaultType ( f )
       , name_ ( "no name" )
       , freeLocalFunc_ (0)
@@ -21,7 +21,7 @@ namespace Dune
   // Constructor making discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
-  DiscFuncArray(const char * name, DiscreteFunctionSpaceType & f )
+  DiscFuncArray(const char * name, const DiscreteFunctionSpaceType & f )
     : DiscreteFunctionDefaultType ( f )
       , name_ ( name )
       , freeLocalFunc_ (0)

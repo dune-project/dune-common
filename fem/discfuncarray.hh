@@ -66,10 +66,10 @@ namespace Dune {
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
 
     //! Constructor makes Discrete Function
-    DiscFuncArray ( DiscreteFunctionSpaceType & f ) ;
+    DiscFuncArray ( const DiscreteFunctionSpaceType & f ) ;
 
     //! Constructor makes Discrete Function with name
-    DiscFuncArray ( const char * name, DiscreteFunctionSpaceType & f ) ;
+    DiscFuncArray ( const char * name, const DiscreteFunctionSpaceType & f ) ;
 
     //! Constructor makes Discrete Function from copy
     DiscFuncArray (const DiscFuncArray <DiscreteFunctionSpaceType> & df);
