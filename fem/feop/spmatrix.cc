@@ -5,6 +5,9 @@ namespace Dune
 
 #define EPS 1.0E-15
 
+  template <class T>
+  T SparseRowMatrix<T>::staticZero = T(0);
+
   /*****************************/
   /*  Constructor(s)           */
   /*****************************/
@@ -46,41 +49,86 @@ namespace Dune
     }
   }
 
-  /***************************/
-  /* Assignment operator...  */
-  /***************************/
-#if 0
-  SparseRowMatrix& SparseRowMatrix::operator=(const SparseRowMatrix &R)
+  /***************************
+  * Copy constructor
+  ***************************/
+  template <class T>
+  SparseRowMatrix<T>::SparseRowMatrix(const SparseRowMatrix<T>& other)
   {
-    dim_[0] = R.dim_[0];
-    dim_[1] = R.dim_[1];
-    base_   = R.base_;
-    nz_     = R.nz_;
-    val_    = R.val_;
-    rowptr_ = R.rowptr_;
-    colind_ = R.colind_;
-    return *this;
+    (*this) = other;
   }
+
   /***************************/
-  /* newsize()               */
+  /* Assignment operator...  (deep copy) */
   /***************************/
 
   template <class T>
-  SparseRowMatrix& SparseRowMatrix<T>::SparseRowMatrix::newsize(int M, int N, int nz)
+  SparseRowMatrix<T>& SparseRowMatrix<T>::operator=(const SparseRowMatrix<T>& other)
   {
+    // copy field sizes
+    dim_[0] = other.dim_[0];
+    dim_[1] = other.dim_[1];
+    nz_     = other.nz_;
+
+    // resize data fields
+    free(values_);
+    free(col_);
+    values_ = new T [dim_[0]*nz_];
+    col_ = new int [dim_[0]*nz_];
+
+    // copy data
+    for(int i=0; i<dim_[0]*nz_; i++) {
+      values_[i] = other.values_[i];
+      col_[i]    = other.col_[i];
+    }
+
+    return *this;
+  }
+
+
+  /***************************/
+  /* resize()                */
+  /***************************/
+
+  template <class T>
+  void SparseRowMatrix<T>::resize(int M, int N, int nz)
+  {
+    // set field sizes
     dim_[0] = M;
     dim_[1] = N;
     nz_     = nz;
-    val_.newsize(nz);
-    rowptr_.newsize(M+1);
-    colind_.newsize(nz);
-    return *this;
+
+    // resize data fields
+    free(values_);
+    free(col_);
+    values_ = new T [dim_[0]*nz_];
+    col_ = new int [dim_[0]*nz_];
+  }
+
+  template <class T>
+  void SparseRowMatrix<T>::resize(int M, int N)
+  {
+    // set field sizes
+    dim_[0] = M;
+    dim_[1] = N;
+
+    // resize data fields
+    free(values_);
+    free(col_);
+    values_ = new T [dim_[0]*nz_];
+    col_ = new int [dim_[0]*nz_];
+  }
+
+  template <class T>
+  void SparseRowMatrix<T>::clear()
+  {
+    for (int i=0; i<size(0)*numNonZeros(); i++)
+      col_[i] = -1;
   }
 
   /*********************/
   /*   Array access    */
   /*********************/
-#endif
 
   template <class T>
   const T& SparseRowMatrix<T>::operator()(int row, int col) const
@@ -92,25 +140,27 @@ namespace Dune
         return values_[row*nz_ +i];
       }
     }
-    return 0.0;
+    return staticZero;
   }
 
   template <class T>
   int SparseRowMatrix<T>::colIndex(int row, int col)
   {
+    assert(nz_ > 0);
     int whichCol = -1;
-    int thisCol = 0;
     for(int i=0; i<nz_; i++)
     {
-      thisCol = col_[row*nz_ +i];
-      if(thisCol == -1) whichCol = i;
-      if(col == thisCol) return i;
+      int thisCol = col_[row*nz_ +i];
+      if(thisCol == -1)
+        whichCol = i;
+      if(col == thisCol)
+        return i;
     }
     return whichCol;
   }
 
   template <class T>
-  void SparseRowMatrix<T>::set(int row, int col, T val)
+  void SparseRowMatrix<T>::set(int row, int col, const T& val)
   {
     if(ABS(val) < EPS)
       return;
@@ -118,7 +168,8 @@ namespace Dune
     int whichCol = colIndex(row,col);
     if(whichCol < 0)
     {
-      std::cout << " error \n";
+      std::cerr << "Error in SparseRowMatrix::set: Entry could neither be found "
+                << "nor newly allocated!\n";
     }
     else
     {
@@ -128,12 +179,13 @@ namespace Dune
   }
 
   template <class T>
-  void SparseRowMatrix<T>::add(int row, int col, T val)
+  void SparseRowMatrix<T>::add(int row, int col, const T& val)
   {
     int whichCol = colIndex(row,col);
     if(whichCol < 0)
     {
-      std::cout << " error \n";
+      std::cerr << "Error in SparseRowMatrix::add: Entry could neither be found "
+                << "nor newly allocated!\n";
     }
     else
     {
@@ -143,12 +195,13 @@ namespace Dune
   }
 
   template <class T>
-  void SparseRowMatrix<T>::multScalar(int row, int col, T val)
+  void SparseRowMatrix<T>::multScalar(int row, int col, const T& val)
   {
     int whichCol = colIndex(row,col);
     if(whichCol < 0)
     {
-      std::cout << " error \n";
+      std::cerr << "Error in SparseRowMatrix::multScalar: Entry could neither be found "
+                << "nor newly allocated!\n";
     }
     else
     {
@@ -156,14 +209,25 @@ namespace Dune
       col_[row*nz_ + whichCol] = col;
     }
   }
+
+  template<class T>
+  const SparseRowMatrix<T>& SparseRowMatrix<T>::operator*=(const T& val)
+  {
+    for(int i=0; i<dim_[0]*nz_; i++) {
+      values_[i] *= val;
+    }
+    return (*this);
+  }
   /***************************************/
   /*  Matrix-MV_Vector multiplication    */
   /***************************************/
   template <class T> template <class VECtype>
-  void SparseRowMatrix<T>::mult(VECtype &ret, VECtype &x) const
+  void SparseRowMatrix<T>::mult(VECtype &ret, const VECtype &x) const
   {
-    for(int row=0; row<dim_[0]; row++)
-    {
+    ret.resize(rows());
+
+    for(int row=0; row<dim_[0]; row++) {
+
       T& sum = ret[row];
       sum = 0.0;
       for(int col=0; col<nz_; col++)
@@ -174,8 +238,61 @@ namespace Dune
         sum += values_[thisCol] * x[ realCol ];
       }
     }
+  }
 
-    return;
+  template <class T>
+  SimpleVector<T> SparseRowMatrix<T>::operator*(const SimpleVector<T>& v) const
+  {
+    SimpleVector<T> result;
+    mult(result, v);
+    return result;
+  }
+
+  // template <class T>
+  // SparseRowMatrix<T> SparseRowMatrix<T>::operator*(const SparseRowMatrix<T>& other) const
+  // {
+  //     assert(cols() == other.rows());
+
+  //     SparseRowMatrix<T> result(rows(), other.cols(), other.numNonZeros(), 0);
+
+  //     for (int i=0; i<rows(); i++)
+  //         for (int j=0; j<rows(); j++) {
+
+  //             T sum = T(0);
+  //             for (int k=0; k<cols(); k++)
+  //                 sum += (*this)(i,k) * other(k,j);
+
+  //             result.set(i, j, sum);
+
+  //         }
+
+  //     return result;
+  // }
+
+  template <class T>
+  SparseRowMatrix<T> SparseRowMatrix<T>::applyFromLeftAndRightTo(const SparseRowMatrix<T>& A) const
+  {
+    assert(A.rows() == A.cols());
+
+    //SparseRowMatrix<T> temp = (*this) * A;
+
+    SparseRowMatrix<T> result(rows(), rows(), A.numNonZeros(), 0);
+
+    for (int i=0; i<rows(); i++)
+      for (int j=0; j<rows(); j++) {
+
+        T sum = T(0);
+        for (int k=0; k<cols(); k++)
+          for (int l=0; l<cols(); l++)
+            sum += (*this)(i,k) * A(k, l) * (*this)(j,l);
+
+        result.set(i, j, sum);
+
+      }
+
+
+
+    return result;
   }
 
   /***************************************/
@@ -247,7 +364,7 @@ namespace Dune
   }
 
 
-  // apply to tranpose matrix
+  // apply transposed matrix
   template <class T> template <class DiscFuncType>
   void SparseRowMatrix<T>::apply_t(const DiscFuncType &f, DiscFuncType &ret) const
   {
@@ -263,7 +380,7 @@ namespace Dune
     {
       (*ret_it) = 0.0;
 
-      //! DofIteratorType schould be the same
+      //! DofIteratorType should be the same
       for(int col=0; col<nz_; col++)
       {
         int thisCol = col * nz_ + row;
@@ -276,7 +393,26 @@ namespace Dune
       ++ret_it;
     }
 
-    return;
+  }
+
+  // apply to transposed matrix to a SimpleVector
+  template <class T>
+  void SparseRowMatrix<T>::apply_t(const SimpleVector<T> &f, SimpleVector<T> &ret) const
+  {
+    assert(f.size() == rows());
+
+    ret.resize(cols());
+
+    for (int i=0; i<cols(); i++) {
+
+      ret[i] = 0;
+
+      for (int j=0; j<rows(); j++)
+
+        ret[i] += f[j] * (*this)(j,i);
+
+    }
+
   }
 
 
@@ -291,7 +427,6 @@ namespace Dune
       }
       s << "\n";
     }
-    return;
   }
 
   template <class T>
@@ -301,11 +436,10 @@ namespace Dune
     {
       for(int col=0; col<nz_; col++)
       {
-        s << values_[row*nz_ + col] << " ";
+        s << "(" << values_[row*nz_ + col] << ", " << col_[row*nz_+col] << ") ";
       }
       s << "\n";
     }
-    return;
   }
 
   template <class T>
