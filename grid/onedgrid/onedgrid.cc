@@ -9,40 +9,42 @@
 template class Dune::OneDGrid<1,1>;
 
 // Explicitly instantiate the necessary member templates contained in OneDGrid<1,1>
-template Dune::OneDGridLevelIterator<0,Dune::All_Partition, Dune::OneDGrid<1,1> > Dune::OneDGrid<1,1>::lbegin<0>(int level) const;
-template Dune::OneDGridLevelIterator<1,Dune::All_Partition, Dune::OneDGrid<1,1> > Dune::OneDGrid<1,1>::lbegin<1>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::codim<0>::LevelIterator Dune::OneDGrid<1,1>::lbegin<0>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::codim<1>::LevelIterator Dune::OneDGrid<1,1>::lbegin<1>(int level) const;
 
-template Dune::OneDGridLevelIterator<0,Dune::All_Partition, Dune::OneDGrid<1,1> > Dune::OneDGrid<1,1>::lend<0>(int level) const;
-template Dune::OneDGridLevelIterator<1,Dune::All_Partition, Dune::OneDGrid<1,1> > Dune::OneDGrid<1,1>::lend<1>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::codim<0>::LevelIterator Dune::OneDGrid<1,1>::lend<0>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::codim<1>::LevelIterator Dune::OneDGrid<1,1>::lend<1>(int level) const;
 
 
 // ///////////////////////////////////////////////////////////////
 //
-//    OneDGridHelper, a class used to simulate
+//    OneDGridLevelIteratorFactory, a class used to simulate
 //    specialization of member templates
 //
 // ///////////////////////////////////////////////////////////////
 namespace Dune {
 
   template <int codim>
-  struct OneDGridHelper {};
+  struct OneDGridLevelIteratorFactory {};
 
   template <>
-  struct OneDGridHelper<1>
+  struct OneDGridLevelIteratorFactory<1>
   {
-    static Dune::OneDGridLevelIterator<1,Dune::All_Partition, Dune::OneDGrid<1,1> > lbegin(const Dune::OneDGrid<1,1> * g, int level);
+    static Dune::OneDGridLevelIterator<1,Dune::All_Partition, Dune::OneDGrid<1,1> >
+    lbegin(const Dune::OneDGrid<1,1> * g, int level);
   };
 
   template <>
-  struct OneDGridHelper<0>
+  struct OneDGridLevelIteratorFactory<0>
   {
-    static Dune::OneDGridLevelIterator<0,Dune::All_Partition, Dune::OneDGrid<1,1> > lbegin(const Dune::OneDGrid<1,1> * g, int level);
+    static Dune::OneDGridLevelIterator<0,Dune::All_Partition, Dune::OneDGrid<1,1> >
+    lbegin(const Dune::OneDGrid<1,1> * g, int level);
   };
 
 }
 
 inline Dune::OneDGridLevelIterator<1,Dune::All_Partition, Dune::OneDGrid<1,1> >
-Dune::OneDGridHelper<1>::lbegin (const OneDGrid<1,1> * g, int level)
+Dune::OneDGridLevelIteratorFactory<1>::lbegin (const OneDGrid<1,1> * g, int level)
 {
   if (level<0 || level>g->maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
@@ -52,7 +54,7 @@ Dune::OneDGridHelper<1>::lbegin (const OneDGrid<1,1> * g, int level)
 }
 
 inline Dune::OneDGridLevelIterator<0,Dune::All_Partition, Dune::OneDGrid<1,1> >
-Dune::OneDGridHelper<0>::lbegin (const OneDGrid<1,1> * g, int level)
+Dune::OneDGridLevelIteratorFactory<0>::lbegin (const OneDGrid<1,1> * g, int level)
 {
   if (level<0 || level>g->maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
@@ -86,9 +88,9 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, dou
   for (int i=0; i<numElements; i++) {
 
     OneDGridEntity<0,1,GridImp>* newElement = new OneDGridEntity<0,1,GridImp>(0);
-    newElement->geo_.vertex[0] = it;
+    newElement->geo_.realGeometry.vertex_[0] = it;
     it = it->succ_;
-    newElement->geo_.vertex[1] = it;
+    newElement->geo_.realGeometry.vertex_[1] = it;
     newElement->index_ = i;
 
     elements[0].insert_after(elements[0].rbegin, newElement);
@@ -119,9 +121,9 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
   for (int i=0; i<coords.size()-1; i++) {
 
     OneDGridEntity<0,1,GridImp>* newElement = new OneDGridEntity<0,1,GridImp>(0);
-    newElement->geo_.vertex[0] = it;
+    newElement->geo_.realGeometry.vertex_[0] = it;
     it = it->succ_;
-    newElement->geo_.vertex[1] = it;
+    newElement->geo_.realGeometry.vertex_[1] = it;
     newElement->index_ = i;
 
     elements[0].insert_after(elements[0].rbegin, newElement);
@@ -172,15 +174,15 @@ Dune::OneDGrid<dim,dimworld>::~OneDGrid()
 
 template <int dim, int dimworld>
 template <int codim>
-Dune::OneDGridLevelIterator<codim,Dune::All_Partition, Dune::OneDGrid<dim,dimworld> >
+typename Dune::OneDGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
 Dune::OneDGrid<dim,dimworld>::lbegin(int level) const
 {
-  return OneDGridHelper<codim>::lbegin(this, level);
+  return OneDGridLevelIteratorFactory<codim>::lbegin(this, level);
 }
 
 template <int dim, int dimworld>
 template <int codim>
-Dune::OneDGridLevelIterator<codim,Dune::All_Partition, Dune::OneDGrid<dim,dimworld> >
+typename Dune::OneDGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
 Dune::OneDGrid<dim,dimworld>::lend(int level) const
 {
   if (level<0 || level>maxlevel())
@@ -200,15 +202,15 @@ Dune::OneDGrid<dim,dimworld>::getLeftUpperVertex(const OneDGridEntity<0,1,Dune::
     return 0;
 
   // return NULL if there is no geometrical left neighbor
-  if (l->geo_.vertex[1]!=eIt->geo_.vertex[0])
+  if (l->geo_.realGeometry.vertex_[1]!=eIt->geo_.realGeometry.vertex_[0])
     return 0;
 
   // return NULL if that neighbor doesn't have sons
-  if (!l->hasChildren())
+  if (l->isLeaf())
     return 0;
 
   // return the right vertex of the right son
-  return l->sons_[1]->geo_.vertex[1];
+  return l->sons_[1]->geo_.realGeometry.vertex_[1];
 
 }
 
@@ -222,15 +224,15 @@ Dune::OneDGrid<dim,dimworld>::getRightUpperVertex(const OneDGridEntity<0,1,Dune:
     return 0;
 
   // return NULL if there is no geometrical right neighbor
-  if (r->geo_.vertex[0]!=eIt->geo_.vertex[1])
+  if (r->geo_.realGeometry.vertex_[0]!=eIt->geo_.realGeometry.vertex_[1])
     return 0;
 
   // return NULL if that neighbor doesn't have sons
-  if (!r->hasChildren())
+  if (r->isLeaf())
     return 0;
 
   // return the left vertex of the left son
-  return r->sons_[0]->geo_.vertex[0];
+  return r->sons_[0]->geo_.realGeometry.vertex_[0];
 
 }
 
@@ -243,7 +245,7 @@ Dune::OneDGrid<dim,dimworld>::getLeftNeighborWithSon(OneDGridEntity<0,1,Dune::On
   do {
     l = l->pred_;
     // we may not be on level 0, but it doesn't matter because all rend are the same
-  } while (l && !l->hasChildren());
+  } while (l && l->isLeaf());
 
   return l;
 }
@@ -273,12 +275,12 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         OneDGridEntity<0,1,GridImp>* rightElement = eIt->succ_;
 
         // Is the left vertex obsolete?
-        if (leftElement->geo_.vertex[1] != eIt->geo_.vertex[0])
-          vertices[i].erase(eIt->geo_.vertex[0]);
+        if (leftElement->geo_.realGeometry.vertex_[1] != eIt->geo_.realGeometry.vertex_[0])
+          vertices[i].erase(eIt->geo_.realGeometry.vertex_[0]);
 
         // Is the right vertex obsolete?
-        if (rightElement->geo_.vertex[0] != eIt->geo_.vertex[1])
-          vertices[i].erase(eIt->geo_.vertex[1]);
+        if (rightElement->geo_.realGeometry.vertex_[0] != eIt->geo_.realGeometry.vertex_[1])
+          vertices[i].erase(eIt->geo_.realGeometry.vertex_[1]);
 
         // Remove reference from the father element
         if (eIt->father()->sons_[0] == eIt)
@@ -331,7 +333,7 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
       //std::cout << "element loop " << std::endl;
 
       if (eIt->adaptationState == REFINED
-          && !eIt->hasChildren()) {
+          && eIt->isLeaf()) {
 
         //std::cout << "Refining element " << eIt->index() << " on level " << i << std::endl;
 
@@ -370,8 +372,8 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         if (leftNeighbor!=NULL) {
 
           // leftNeighbor exists
-          if ( leftNeighbor->sons_[1]->geo_.vertex[1] != leftUpperVertex)
-            vertices[i+1].insert_after(leftNeighbor->sons_[1]->geo_.vertex[1], leftUpperVertex);
+          if ( leftNeighbor->sons_[1]->geo_.realGeometry.vertex_[1] != leftUpperVertex)
+            vertices[i+1].insert_after(leftNeighbor->sons_[1]->geo_.realGeometry.vertex_[1], leftUpperVertex);
 
         } else {
           // leftNeighbor does not exist
@@ -391,13 +393,13 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         // Create new elements
         // ///////////////////////
         OneDGridEntity<0,1,GridImp>* newElement0 = new OneDGridEntity<0,1,GridImp>(i+1);
-        newElement0->geo_.vertex[0] = leftUpperVertex;
-        newElement0->geo_.vertex[1] = centerVertex;
+        newElement0->geo_.realGeometry.vertex_[0] = leftUpperVertex;
+        newElement0->geo_.realGeometry.vertex_[1] = centerVertex;
         newElement0->father_ = eIt;
 
         OneDGridEntity<0,1,GridImp>* newElement1 = new OneDGridEntity<0,1,GridImp>(i+1);
-        newElement1->geo_.vertex[0] = centerVertex;
-        newElement1->geo_.vertex[1] = rightUpperVertex;
+        newElement1->geo_.realGeometry.vertex_[0] = centerVertex;
+        newElement1->geo_.realGeometry.vertex_[1] = rightUpperVertex;
         newElement1->father_ = eIt;
 
         // Insert new elements into element list
@@ -441,7 +443,7 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
       for (eIt = elements[i].begin; eIt!=NULL; eIt = eIt->succ_) {
 
         //printf("level %d, element %d \n", i, eIt->index());
-        if (!eIt->hasChildren()) {
+        if (eIt->isLeaf()) {
 
           //printf("level %d, element %d is without children\n", i, eIt->index());
 
@@ -468,8 +470,8 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
           if (leftNeighbor!=NULL) {
 
             // leftNeighbor exists
-            if ( leftNeighbor->sons_[1]->geo_.vertex[1] != leftUpperVertex)
-              vertices[i+1].insert_after(leftNeighbor->sons_[1]->geo_.vertex[1], leftUpperVertex);
+            if ( leftNeighbor->sons_[1]->geo_.realGeometry.vertex_[1] != leftUpperVertex)
+              vertices[i+1].insert_after(leftNeighbor->sons_[1]->geo_.realGeometry.vertex_[1], leftUpperVertex);
 
           } else {
             // leftNeighbor does not exist
@@ -487,8 +489,8 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
           //   Create new element
           // /////////////////////////
           OneDGridEntity<0,1,GridImp>* newElement = new OneDGridEntity<0,1,GridImp>(i+1);
-          newElement->geo_.vertex[0] = leftUpperVertex;
-          newElement->geo_.vertex[1] = rightUpperVertex;
+          newElement->geo_.realGeometry.vertex_[0] = leftUpperVertex;
+          newElement->geo_.realGeometry.vertex_[1] = rightUpperVertex;
           newElement->father_ = eIt;
 
           // Insert new elements into element list
@@ -535,11 +537,11 @@ template <int dim, int dimworld>
 void Dune::OneDGrid<dim,dimworld>::globalRefine(int refCount)
 {
   // mark all entities for grid refinement
-  OneDGridLevelIterator<0, All_Partition, OneDGrid<dim,dimworld> > iIt    = lbegin<0>(maxlevel());
-  OneDGridLevelIterator<0, All_Partition, OneDGrid<dim,dimworld> > iEndIt = lend<0>(maxlevel());
+  typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
+  typename Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
 
   for (; iIt!=iEndIt; ++iIt)
-    iIt->mark(1);
+    mark(1, iIt);
 
   this->preAdapt();
   adapt();

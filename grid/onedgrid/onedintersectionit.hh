@@ -40,11 +40,15 @@ namespace Dune {
 
   public:
 
+    typedef typename GridImp::template codim<1>::Geometry Geometry;
+    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
+    typedef typename GridImp::template codim<0>::Entity Entity;
+
     //! The Destructor
     ~OneDGridIntersectionIterator() {};
 
     //! prefix increment
-    OneDGridIntersectionIterator& operator ++() {
+    void increment() {
       if (center_ && neighbor_==0) {
         neighbor_ = 1;
       } else if (center_ && neighbor_==1) {
@@ -55,7 +59,7 @@ namespace Dune {
     }
 
     //! equality
-    bool operator== (const OneDGridIntersectionIterator& i) const {
+    bool equals (const OneDGridIntersectionIterator& i) const {
       bool isValid = center_ && (neighbor_==0 || neighbor_==1);
       bool iisValid = i.center_ && (i.neighbor_==0 || i.neighbor_==1);
 
@@ -68,13 +72,8 @@ namespace Dune {
 
     }
 
-    //! inequality
-    bool operator!= (const OneDGridIntersectionIterator& i) const {
-      return !((*this)==i);
-    }
-
     //! access neighbor, dereferencing
-    OneDGridEntity<0,dim,GridImp>& operator*(){
+    Entity& dereference() const {
       if (neighbor_==0)
         if (center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0])
           return *center_->pred_;
@@ -85,20 +84,8 @@ namespace Dune {
       DUNE_THROW(GridError, "Trying to dereferentiate a NULL-pointer!");
     }
 
-    //! access neighbor, arrow
-    OneDGridEntity<0,dim,GridImp>* operator->() {
-      if (neighbor_==0)
-        if (center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0])
-          return center_->pred_;
-        else
-        if (center_->succ_ && center_->succ_->geo_.vertex[0] == center_->geo_.vertex[1])
-          return center_->succ_;
-
-      return 0;
-    }
-
     //! return true if intersection is with boundary.
-    bool boundary () {
+    bool boundary () const {
       assert(neighbor_==0 || neighbor_==1);
 
       // Check whether we're on the left boundary
@@ -151,9 +138,9 @@ namespace Dune {
     //! return true if across the edge an neighbor on this level exists
     bool neighbor () const {
       if (neighbor_==0)
-        return center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0];
+        return center_->pred_ && center_->pred_->geo_.vertex(1) == center_->geo_.vertex(0);
       else
-        return center_->succ_ && center_->succ_->geo_.vertex[0] == center_->geo_.vertex[1];
+        return center_->succ_ && center_->succ_->geo_.vertex(0) == center_->geo_.vertex(1);
     }
 
     //! return information about the Boundary
@@ -163,41 +150,41 @@ namespace Dune {
 
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<OneDCType, dimworld>& unit_outer_normal (const FieldVector<OneDCType, dim-1>& local);
+    FieldVector<OneDCType, dimworld>& unitOuterNormal (const FieldVector<OneDCType, dim-1>& local);
 
     //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<OneDCType, dimworld>& unit_outer_normal ();
+    FieldVector<OneDCType, dimworld>& unitOuterNormal ();
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    OneDGridGeometry<dim-1,dim,GridImp>& intersectionSelfLocal ();
+    LocalGeometry& intersectionSelfLocal ();
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    OneDGridGeometry<dim-1,dimworld, GridImp>& intersectionGlobal ();
+    Geometry& intersectionGlobal ();
 
     //! local number of codim 1 entity in self where intersection is contained in
-    int number_in_self () const {return neighbor_;}
+    int numberInSelf () const {return neighbor_;}
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    OneDGridGeometry<dim-1,dim, GridImp>& intersectionNeighborLocal ();
+    LocalGeometry& intersectionNeighborLocal ();
 
     //! local number of codim 1 entity in neighbor where intersection is contained
-    int number_in_neighbor () const {
+    int numberInNeighbor () const {
       DUNE_THROW(NotImplemented, "number_in_neighbor");
     }
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    const FieldVector<OneDCType, dimworld>& outer_normal (const FieldVector<OneDCType, dim-1>& local) const {
-      return outer_normal();
+    const FieldVector<OneDCType, dimworld>& outerNormal (const FieldVector<OneDCType, dim-1>& local) const {
+      return outerNormal();
     }
 
     //! return unit outer normal, if you know it is constant use this function instead
-    const FieldVector<OneDCType, dimworld>& outer_normal () const {
+    const FieldVector<OneDCType, dimworld>& outerNormal () const {
       outerNormal_[0] = (neighbor_==0) ? -1 : 1;
       return outerNormal_;
     }
@@ -230,8 +217,6 @@ namespace Dune {
 
 
   };
-
-  //#include "ugintersectionit.cc"
 
 }  // namespace Dune
 

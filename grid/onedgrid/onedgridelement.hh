@@ -8,9 +8,40 @@
  */
 
 #include <dune/common/fixedarray.hh>
-//#include <dune/common/dlist.hh>
 
 namespace Dune {
+
+  template<int mydim, int coorddim, class GridImp>
+  class OneDMakeableGeometry : public Geometry<mydim, coorddim, GridImp, OneDGridGeometry>
+  {};
+
+  template<int coorddim, class GridImp>
+  class OneDMakeableGeometry<1,coorddim,GridImp> : public Geometry<1, coorddim, GridImp, OneDGridGeometry>
+  {
+  public:
+    OneDMakeableGeometry() :
+      Geometry<1, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<1, coorddim, GridImp>())
+    {};
+
+    //         OneDGridEntity<1,1,GridImp>* vertex(int n) {
+    //             return this->realGeometry.vertex[n];
+    //         }
+
+  };
+
+  template<int coorddim, class GridImp>
+  class OneDMakeableGeometry<0,coorddim,GridImp> : public Geometry<0, coorddim, GridImp, OneDGridGeometry>
+  {
+  public:
+    OneDMakeableGeometry(const double& x) :
+      Geometry<0, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<0, coorddim, GridImp>(x))
+    {};
+
+    FieldVector<double, coorddim>& pos() {
+      return this->realGeometry.pos_;
+    }
+
+  };
 
   template <int codim, int dim, class GridImp>
   class OneDGridEntity;
@@ -113,19 +144,19 @@ namespace Dune {
     GeometryType type () const {return line;}
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners () {return 2;}
+    int corners () const {return 2;}
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<OneDCType, coorddim>& operator[](int i) const {
       assert(i==0 || i==1);
-      return vertex[i]->geometry().pos_;
+      return vertex_[i]->geometry().realGeometry.pos_;
     }
 
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
     FieldVector<OneDCType, coorddim> global (const FieldVector<OneDCType, mydim>& local) const {
       FieldVector<OneDCType, coorddim> g;
-      g[0] = vertex[0]->geometry().pos_[0] * (1-local[0]) + vertex[1]->geometry().pos_[0] * local[0];
+      g[0] = vertex_[0]->geometry().pos_[0] * (1-local[0]) + vertex_[1]->geometry().pos_[0] * local[0];
       return g;
     }
 
@@ -133,33 +164,33 @@ namespace Dune {
      * local coordinate in its reference element */
     FieldVector<OneDCType, mydim> local (const FieldVector<OneDCType, coorddim>& global) const {
       FieldVector<OneDCType, mydim> l;
-      const double& v0 = vertex[0]->geometry().pos_[0];
-      const double& v1 = vertex[1]->geometry().pos_[0];
+      const double& v0 = vertex_[0]->geometry().pos_[0];
+      const double& v1 = vertex_[1]->geometry().pos_[0];
       l[0] = (global[0] - v0) / (v1 - v0);
       return l;
     }
 
     //! Returns true if the point is in the current element
     bool checkInside(const FieldVector<OneDCType, coorddim> &global) {
-      return vertex[0]->geometry().pos_[0] <= global[0] && global[0] <= vertex[1]->geometry().pos_[0];
+      return vertex_[0]->geometry().pos_[0] <= global[0] && global[0] <= vertex_[1]->geometry().pos_[0];
     }
 
     /** ???
      */
     OneDCType integrationElement (const FieldVector<OneDCType, mydim>& local) const {
-      return vertex[1]->geometry().pos_[0] - vertex[0]->geometry().pos_[0];
+      return vertex_[1]->geometry().pos_[0] - vertex_[0]->geometry().pos_[0];
     }
 
     //! The Jacobian matrix of the mapping from the reference element to this element
     const Mat<mydim,mydim>& jacobianInverse (const FieldVector<OneDCType, mydim>& local) const {
-      jacInverse_[0][0] = 1 / (vertex[1]->geometry().pos_[0] - vertex[0]->geometry().pos_[0]);
+      jacInverse_[0][0] = 1 / (vertex_[1]->geometry().pos_[0] - vertex_[0]->geometry().pos_[0]);
       return jacInverse_;
     }
 
 
   private:
 
-    FixedArray<OneDGridEntity<1,1,GridImp>*, 2> vertex;
+    FixedArray<OneDGridEntity<1,1,GridImp>*, 2> vertex_;
 
     //! The jacobian inverse
     mutable Mat<coorddim,coorddim> jacInverse_;

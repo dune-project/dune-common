@@ -33,7 +33,7 @@ namespace Dune
   template<class GridImp>            class OneDGridIntersectionIterator;
   template<int dim, int dimworld>            class OneDGrid;
 
-  template<int codim>                        class OneDGridHelper;
+  template<int codim>                        class OneDGridLevelIteratorFactory;
 
   // singleton holding reference elements
   //template<int dim> struct UGGridReferenceElement;
@@ -178,8 +178,8 @@ namespace Dune {
   class OneDGrid : public GridDefault  < dim, dimworld,OneDCType, OneDGrid>
   {
 
-    friend class OneDGridHelper <0>;
-    friend class OneDGridHelper <1>;
+    friend class OneDGridLevelIteratorFactory <0>;
+    friend class OneDGridLevelIteratorFactory <1>;
     friend class OneDGridEntity <0,dim,OneDGrid>;
     friend class OneDGridEntity <dim,dim,OneDGrid>;
     friend class OneDGridHierarchicIterator<OneDGrid>;
@@ -215,11 +215,11 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    OneDGridLevelIterator<codim,All_Partition, OneDGrid> lbegin (int level) const;
+    typename Traits::template codim<codim>::LevelIterator lbegin (int level) const;
 
     //! one past the end on this level
     template<int codim>
-    OneDGridLevelIterator<codim,All_Partition,OneDGrid> lend (int level) const;
+    typename Traits::template codim<codim>::LevelIterator lend (int level) const;
 
 #if 0
     //! Iterator to first entity of given codim on level
