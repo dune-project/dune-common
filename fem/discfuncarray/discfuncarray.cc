@@ -456,14 +456,16 @@ namespace Dune
     if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
     {
       ret = 0.0;
-      xtmp_ = en.geometry().local(x);
+      DomainType xtmp_ = en.geometry().local(x);
       for(int i=0; i<numOfDifferentDofs_; i++)
       {
+        RangeType tmp_;
         bool eval = fSpace_.evaluateLocal(i,en,xtmp_,tmp_);
         if(eval)
         {
           for(int l=0; l<dimrange; l++)
             ret[l] += (* (values_[i])) * tmp_[l];
+
         }
       }
     }
@@ -485,6 +487,7 @@ namespace Dune
       ret = 0.0;
       for(int i=0; i<numOfDifferentDofs_; i++)
       {
+        RangeType tmp_;
         bool eval = fSpace_.evaluateLocal(i,en,quad,quadPoint,tmp_);
         if(eval)
         {
