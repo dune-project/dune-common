@@ -9,7 +9,7 @@
 
 namespace Dune {
 
-  /** @defgroup BaseFunctionSet The MonomialBaseFunctionSet
+  /** @defgroup MonomialBaseFunctionSet The MonomialBaseFunctionSet
      @ingroup BaseFunctionSet
      The MonomialBaseFunctionSet is an special implementation of the interface
      BaseFunctionSetInterface. This class offers monomial functions as a base.
