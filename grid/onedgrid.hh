@@ -292,6 +292,19 @@ namespace Dune {
     // End of Interface Methods
     // **********************************************************
 
+    /** \brief The different forms of grid refinement supported by OneDGrid */
+    enum RefinementType {
+      /** \brief New level consists only of the refined elements */
+      LOCAL,
+      /** \brief New level consists of the refined elements and the unrefined ones, too */
+      COPY
+    };
+
+    /** \brief Sets the type of grid refinement */
+    void setRefinementType(RefinementType type) {
+      refinementType_ = type;
+    }
+
     /** \brief Does one uniform refinement step
      *
      * \param refCount I don't know what this is good for.  It doesn't
@@ -302,9 +315,8 @@ namespace Dune {
 
   private:
 
-    //     typedef DoubleLinkedList<OneDGridEntity<1,1,1> > VertexContainer;
-
-    //     typedef DoubleLinkedList<OneDGridEntity<0,1,1> > ElementContainer;
+    //! The type of grid refinement currently in use
+    RefinementType refinementType_;
 
     OneDGridEntity<1,1,1>* getLeftUpperVertex(const OneDGridEntity<0,1,1>* eIt);
 
@@ -323,8 +335,6 @@ namespace Dune {
 
 
   }; // end Class OneDGrid
-
-#include "onedgrid/onedgrid.cc"
 
 #if 0  // to be implemented
   namespace Capabilities

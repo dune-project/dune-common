@@ -66,10 +66,14 @@ namespace Dune {
           se0.level   = old_target.level + 1;
           elemStack.push(se0);
 
-          StackEntry se1;
-          se1.element = old_target.element->sons_[1];
-          se1.level   = old_target.level + 1;
-          elemStack.push(se1);
+          // Add the second son only if it is different from the first one
+          // i.e. the son is not just a copy of the father
+          if (old_target.element->sons_[0] != old_target.element->sons_[1]) {
+            StackEntry se1;
+            se1.element = old_target.element->sons_[1];
+            se1.level   = old_target.level + 1;
+            elemStack.push(se1);
+          }
         }
 
       }
