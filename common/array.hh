@@ -47,6 +47,23 @@ namespace Dune
       return a[i];
     }
 
+    FixedArray<T,n-1> shrink (int comp)
+    {
+      FixedArray<T,n-1> x;
+      for (int i=0; i<comp; i++) x[i] = a[i];
+      for (int i=comp+1; i<n; i++) x[i-1] = a[i];
+      return x;
+    }
+
+    FixedArray<T,n+1> expand (int comp, T value)
+    {
+      FixedArray<T,n+1> x;
+      for (int i=0; i<comp; i++) x[i] = a[i];
+      x[comp] = value;
+      for (int i=comp+1; i<n+1; i++) x[i] = a[i-1];
+      return x;
+    }
+
   private:
     T a[n];
   };
