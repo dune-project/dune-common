@@ -462,6 +462,7 @@ namespace Dune {
       template<int,int,class> class GeometryImp,
       template<int,int,class> class EntityImp,
       template<class> class BoundaryEntityImp,
+      template<int, PartitionIteratorType, class> class EntityPointerImp,
       template<int,PartitionIteratorType,class> class LevelIteratorImp,
       template<class> class IntersectionIteratorImp,
       template<class> class HierarchicIteratorImp,
@@ -490,7 +491,8 @@ namespace Dune {
       typedef Dune::LevelIterator<cd,All_Partition,const GridImp,LevelIteratorImp> LevelIterator;
 
       // The wrapper class should be adjusted in future
-      typedef const Dune::LevelIterator<cd,All_Partition,const GridImp,LevelIteratorImp> EntityPointer;
+      // the EntityPointer class should replace LevelIterator here
+      typedef Dune::LevelIterator<cd,All_Partition,const GridImp, EntityPointerImp> EntityPointer;
 
       //! Please doc me!
       typedef Dune::LevelIterator<cd,Interior_Partition,const GridImp,LevelIteratorImp>        InteriorLevelIterator;
@@ -531,7 +533,7 @@ namespace Dune {
     case AlbertaGrid_Id :
       return "AlbertaGrid";
     case ALU3dGrid_Id :
-      return "BSGrid";
+      return "ALU3dGrid";
     case SimpleGrid_Id :
       return "SimpleGrid";
     case UGGrid_Id :
