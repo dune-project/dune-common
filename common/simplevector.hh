@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_SIMPLEVECTOR_HH
-#define __DUNE_SIMPLEVECTOR_HH
+#ifndef __DUNE_SIMPLEVECTOR_HH__
+#define __DUNE_SIMPLEVECTOR_HH__
 
 
 //***********************************************************************
@@ -41,11 +41,19 @@ namespace Dune
       return *this;
     }
 
-    //!
+    //! Addition
     SimpleVector<T>& operator+= (const SimpleVector<T>& vec)
     {
       for (int i=0; i<this->n; ++i)
         this->p[i] += vec[i];
+      return *this;
+    }
+
+    //! Subtraction
+    SimpleVector<T>& operator-= (const SimpleVector<T>& vec)
+    {
+      for (int i=0; i<this->n; ++i)
+        this->p[i] -= vec[i];
       return *this;
     }
 
