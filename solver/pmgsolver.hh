@@ -137,6 +137,27 @@ namespace Dune {
           }
         }
     }
+    #warning debugcode
+    void restricttest() {
+      init();
+      level l=g.smoothest();
+      for(typename GRID::iterator it=g.begin(l);
+          it != g.end(l); ++it)
+        x[it.id()] = 0;
+      for(typename GRID::iterator it=g.begin(l-1);
+          it != g.end(l-1); ++it) {
+        //        if ( discrete.bc.isdirichlet(it) ) continue;
+        x[it.id()] = it.coord(0)+it.coord(1)+it.coord(2);
+        std::cout << it.coord()
+                  << it.coord(0)+it.coord(1)+it.coord(2)
+                  << std::endl;
+      }
+      dump(g,l,x,"restrict","D before restrict");
+      dump(g,l-1,x,"restrict","B before restrict");
+      prolongate(l);
+      dump(g,l,x,"restrict","D after restrict");
+      dump(g,l-1,x,"restrict","B after restrict");
+    }
   }; // class pmgsolver
 
 } // namespace Dune

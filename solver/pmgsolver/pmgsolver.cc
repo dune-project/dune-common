@@ -56,7 +56,7 @@ namespace Dune {
       int i=it.id();
 
       //    discrete... get the coeffs
-      discrete.coeffs(cl, g, l, add, it.coord(), it.id());
+      discrete.coeffs(cl, it);
 
       // recalc x[i]
       // x[i] = 1/aii { b[i] - sum(j!=i){ aij*x[j] } }
@@ -127,6 +127,8 @@ namespace Dune {
         x[i.id()]=0;
         b[i.id()]=0;
       }
+      if (l==g.smoothest())
+        dumpdx(g,l-1,b,"restrict","B before restrict");
       defect(l);
 #ifndef NODUMP
       char *dumpfile="dumpfile";
@@ -136,6 +138,8 @@ namespace Dune {
 #endif
       // Restriktion d_l -> b_{l-1}
       restrict (l);
+      if (l==g.smoothest())
+        dumpdx(g,l-1,b,"restrict","B before restrict");
 #ifndef NODUMP
       dump(g,l-1,b,dumpfile,"B after restrict");
 #endif
@@ -168,8 +172,11 @@ namespace Dune {
     // run through lines
     PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Inner> stub(*this, l);
     PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this, l);
-    g.loop_owner(l,stub);
-    g.loop_border(l,stub_B);
+    /*
+       g.loop_owner(l,stub);
+       g.loop_border(l,stub_B);
+     */
+    g.loop_all(l,stub_B);
     stub.defect_array[0] += stub_B.defect_array[0];
     stub.defect_array[1] += stub_B.defect_array[1];
 
@@ -194,13 +201,22 @@ namespace Dune {
   restrict (level l) {
     assert(l>0);
 
-    defect(l);
+    //    defect(l);
+    // We also need the defect of out neighbours
     exchange(l,d);
 
     TIME_REST -= MPI_Wtime();
 #warning restrict missing on border ?
     PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Inner> stub(*this,l);
+    PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this,l);
+#define OLD
+#ifdef OLD
     g.loop_all( l, stub );
+#else
+    g.loop_owner( l, stub );
+    g.loop_overlap( l, stub );
+    g.loop_border( l, stub_B );
+#endif
     TIME_REST += MPI_Wtime();
 
     // ABGLEICH vector b Level l-1
@@ -218,7 +234,13 @@ namespace Dune {
     TIME_PROL -= MPI_Wtime();
 #warning prolongate missing on border ?
     PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Inner> stub(*this,l);
+    PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this,l);
+#ifdef OLD
     g.loop_all( l, stub );
+#else
+    g.loop_owner( l, stub );
+    g.loop_border( l, stub_B );
+#endif
     TIME_PROL += MPI_Wtime();
 
     // ABGLEICH Level l

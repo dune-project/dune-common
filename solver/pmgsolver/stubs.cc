@@ -137,13 +137,38 @@ namespace Dune {
       {
         for(int d=0; d<DIM; d++)
           coord_shift[d] = solver.g.has_coord_shift(l,d);
+        //          std::cout << "coord_shift=" << coord_shift << std::endl;
       }
       void evaluate(level l, const array<DIM> & coord, int i) {
-        adddefect(solver.d[i], DIM, l, coord, coord_shift);
+        typename GRID::iterator it(i,g);
+
+#ifdef TEST
+        for(int dim = 0; dim < DIM; dim++)
+          if (coord[dim]%2 != 0) return;
+        typename GRID::iterator f = it.father();
+        solver.b[f.id()] += f.right(0).id();
+        return;
+#endif
+
+        //        std::cout << "adddefect: " << it.id()
+        //                  << " (" << solver.d[i] << ")\n";
+        adddefect(solver.d[i], DIM, it);
+        return;
+
+        switch (TYP) {
+        case Inner : {
+          adddefect(solver.d[i], DIM, l, coord);
+          break;
+        }
+        case Border : {
+          typename GRID::iterator it(i,g);
+          adddefect(solver.d[i], DIM, it);
+          break;
+        }
+        }
       }
       void adddefect(double d, int dir,
-                     typename GRID::level l, array<DIM> coord,
-                     array<DIM> coord_shift){
+                     typename GRID::level l, array<DIM> coord){
         dir--;
 
         if (dir<0) {
@@ -153,7 +178,7 @@ namespace Dune {
         }
 
         if (coord[dir]%2==coord_shift[dir]) {
-          adddefect(d,dir,l,coord,coord_shift);
+          adddefect(d,dir,l,coord);
         }
         else {
           array<DIM> shiftl=coord;
@@ -164,12 +189,37 @@ namespace Dune {
                  coord[dir] ==
                  g.size(l,dir)
                  +g.end_overlap(l,dir) +g.front_overlap(l,dir)-1)) {
-            adddefect(d/2.0,dir,l,shiftr,coord_shift);
+            adddefect(d/2.0,dir,l,shiftr);
           }
           if (! (!g.do_front_share(dir) &&
                  coord[dir]==0)) {
-            adddefect(d/2.0,dir,l,shiftl,coord_shift);
+            adddefect(d/2.0,dir,l,shiftl);
           }
+        }
+      }
+      void adddefect(double d, int dir,
+                     typename GRID::iterator it){
+        dir--;
+
+        if (dir<0) {
+          typename GRID::iterator f = it.father();
+          solver.b[f.id()] += d;
+          //          std::cout << "\tfather: " << f.id()
+          //                    << " (" << d << ")\n";
+          return;
+        }
+        //        std::cout << "\t" << it.id()
+        //                  << " (" << d << ")\n";
+        if (it.coord(dir)%2==coord_shift[dir]) {
+          adddefect(d,dir,it);
+        }
+        else {
+          typename GRID::iterator left = it.left(dir);
+          typename GRID::iterator right = it.right(dir);
+          if (it!=left)
+            adddefect(d/2.0,dir,left);
+          if (it!=right)
+            adddefect(d/2.0,dir,right);
         }
       }
     };
@@ -190,6 +240,12 @@ namespace Dune {
           coord_shift[d] = solver.g.has_coord_shift(l,d);
       }
       void evaluate(level l, const array<DIM> & coord, int i) {
+        typename GRID::iterator it(i,g);
+        if (!it->owner()) return;
+        //        std::cout << "correct " << it.id() << it.coord() << std::endl;
+        x[i] += correction(DIM, it);
+        return;
+
         switch (TYP) {
         case Inner : {
           x[i] += correction(DIM, l, coord);
@@ -197,6 +253,7 @@ namespace Dune {
         }
         case Border : {
           typename GRID::iterator it(i,g);
+          if (!it->owner()) return;
           x[i] += correction(DIM, it);
           break;
         }
@@ -204,6 +261,7 @@ namespace Dune {
       }
       double correction(int dir, typename GRID::level l,
                         array<DIM> coord) {
+        return 0;
         dir--;
 
         if (dir<0) {
@@ -223,26 +281,22 @@ namespace Dune {
         }
       }
       double correction(int dir, typename GRID::iterator it) {
-        return 0;
-        /*
-           dir--;
+        dir--;
 
-           if (dir<0) {
-           int f=g.father_id(l, coord);
-           return x[f];
-           }
+        if (dir<0) {
+          typename GRID::iterator f=it.father();
+          //          std::cout << "\t" << f.id() << f.coord() << std::endl;
+          return x[f.id()];
+        }
 
-           if (coord[dir]%2==coord_shift[dir])
-           return correction(dir,l,coord);
-           else {
-           array<DIM> shiftl=coord;
-           array<DIM> shiftr=coord;
-           shiftl[dir]-=1;
-           shiftr[dir]+=1;
-           return 0.5*correction(dir,l,shiftl) +
-           0.5*correction(dir,l,shiftr);
-           }
-         */
+        if (it.coord(dir)%2==coord_shift[dir])
+          return correction(dir,it);
+        else {
+          typename GRID::iterator left = it.left(dir);
+          typename GRID::iterator right = it.right(dir);
+          return 0.5*correction(dir,left) +
+                 0.5*correction(dir,right);
+        }
       }
     };
 
