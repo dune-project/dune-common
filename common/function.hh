@@ -42,7 +42,7 @@ namespace Dune {
     typedef FunctionSpaceType FunctionSpace;
 
     //! ???
-    Function ( FunctionSpaceType & f ) : functionSpace_ (f) {} ;
+    Function (const FunctionSpaceType & f ) : functionSpace_ (f) {} ;
 
     //! evaluate Function
     void eval ( const Domain & , Range &) const ;
@@ -55,12 +55,12 @@ namespace Dune {
                      const Domain & , Range &) const {};
 
     //! ???
-    FunctionSpaceType &getFunctionSpace() const { return functionSpace_; }
+    const FunctionSpaceType &getFunctionSpace() const { return functionSpace_; }
 
   protected:
 
     //! ???
-    FunctionSpaceType & functionSpace_;
+    const FunctionSpaceType & functionSpace_;
 
   };
 
