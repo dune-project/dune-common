@@ -210,6 +210,20 @@ namespace Dune {
     /** \brief Please doc me! */
     GridIdentifier type () { return UGGrid_Id; };
 
+    /*! The communication interface
+       @param T: array class holding data associated with the entities
+       @param P: type used to gather/scatter data in and out of the message buffer
+       @param codim: communicate entites of given codim
+       @param if: one of the predifined interface types, throws error if it is not implemented
+       @param level: communicate for entities on the given level
+
+       Implements a generic communication function sending an object of type P for each entity
+       in the intersection of two processors. P has two methods gather and scatter that implement
+       the protocol. Therefore P is called the "protocol class".
+     */
+    template<class T, template<class> class P, int codim>
+    void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level);
+
     // **********************************************************
     // End of Interface Methods
     // **********************************************************

@@ -56,6 +56,38 @@ public:
   }
 
 };
+
+
+template <>
+template <PartitionIteratorType PiType>
+class UGGridLevelIteratorFactory<2,2,2,PiType>
+{
+public:
+  static inline
+  UGGridLevelIterator<2,2,2,PiType> getIterator(UGTypes<2>::GridType* theGrid, int level) {
+    std::cout << "Simulating a parallel LevelIterator using a sequential one!" << std::endl;
+    UGGridLevelIterator<2,2,2,PiType> it(level);
+    it.setToTarget(theGrid->firstNode[0], level);
+    return it;
+  }
+
+};
+
+template <>
+template <PartitionIteratorType PiType>
+class UGGridLevelIteratorFactory<0,2,2,PiType>
+{
+public:
+  static inline
+  UGGridLevelIterator<0,2,2,PiType> getIterator(UGTypes<2>::GridType* theGrid, int level) {
+
+    std::cout << "Simulating a parallel LevelIterator using a sequential one!" << std::endl;
+    UGGridLevelIterator<0,2,2,PiType> it(level);
+    it.setToTarget(theGrid->elements[0], level);
+    return it;
+  }
+
+};
 #endif
 
 #ifdef _3
@@ -454,4 +486,12 @@ void UGGrid < dim, dimworld >::globalRefine(int refCount)
   adapt();
   this->postAdapt();
 
+}
+
+
+template < int dim, int dimworld >
+template<class T, template<class> class P, int codim>
+void UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
+{
+  std::cout << "UGGrid communicator not implemented yet!\n";
 }
