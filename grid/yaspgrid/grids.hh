@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_GRIDS_HH__
-#define __DUNE_GRIDS_HH__
+#ifndef __DUNE_YGRIDS_HH__
+#define __DUNE_YGRIDS_HH__
 
 // C++ includes
 #include <iostream>
@@ -14,38 +14,43 @@
 #include <mpi.h>
 #include <string.h>
 
-// local inclides
+// local includes
 #include "dune/common/array.hh"
+#include "dune/common/fixedvector.hh"
 
+/*! \file grids.hh
+   This is the basis for the yaspgrid implementation of the Dune grid interface.
+ */
 
 namespace Dune {
 
-  /** @defgroup yaspgrid Yet Another Structured Parallel Grid
+  /** @defgroup Yaspgrid Yet Another Structured Parallel Grid
       \ingroup GridCommon
 
      This is the basis of a parallel implementation of the dune grid interface
      supporting codim 0 and dim.
 
-     You can also use the structured interface and write fast code.
+     You can also use the structured interface and write really fast code.
 
+     @addtogroup YaspGrid
      @{
    */
 
 
   // forward declarations
-  template<int d, typename ct> class Grid;
-  template<int d, typename ct> class SubGrid;
+  template<int d, typename ct> class YGrid;
+  template<int d, typename ct> class SubYGrid;
 
-  const double tolerance=1E-13;
+  static const double Ytolerance=1E-13;
 
-  /*! The Grid considered here describes a finite set \f$d\f$-tupels of the form
+  /*! The YGrid considered here describes a finite set \f$d\f$-tupels of the form
       \f[ G = \{ (k_0,\ldots,k_{d-1}) | o_o \leq k_i < o_i+s_i \}  \f]
 
           togehter with an affine mapping
 
           \f[ t : G \to R^d, \ \ \ t(k)_i = k_i h_i + r_i \f].
 
-          Therefore a Grid is characterized by the following four quantities:
+          Therefore a YGrid is characterized by the following four quantities:
 
           - The origin \f$ o=(o_0,\ldots,o_{d-1}) \in Z^d\f$,
           - the size \f$ s=(s_0,\ldots,s_{d-1}) \in Z^d\f$,
@@ -53,42 +58,45 @@ namespace Dune {
           - The shift \f$ r=(r_0,\ldots,r_{d-1}) \in R^d\f$. The shift can be used to interpret the
         points of a grid as midpoints of cells, faces, edges, etc.
 
-                The Grid can be parametrized by the dimension d and the type to be used for the coordinates.
+                The YGrid can be parametrized by the dimension d and the type to be used for the coordinates.
 
      Here is a graphical illustration of a grid:
 
-        \image html  grid.png "A Grid."
-        \image latex grid.eps "A Grid." width=\textwidth
+        \image html  grid.png "A YGrid."
+        \image latex grid.eps "A YGrid." width=\textwidth
 
         A grid can be manipulated either in the origin/size representation or in the
      min index / max index representation.
 
-        A Grid allows to iterate over all its cells with an Iterator class.
+        A YGrid allows to iterate over all its cells with an Iterator class.
    */
   template<int d, typename ct>
-  class Grid {
+  class YGrid {
   public:
     //! define types used for arguments
-    typedef Dune::FixedArray<int,d>  iTupel;
-    typedef Dune::FixedArray<ct,d> fTupel;
-    typedef Dune::FixedArray<bool,d> bTupel;
+    typedef Dune::Vec<d,int>  iTupel;
+    typedef Dune::Vec<d,ct> fTupel;
+    typedef Dune::Vec<d,bool> bTupel;
 
-    //! Make an empty Grid with origin 0
-    Grid ()
+    //! Make an empty YGrid with origin 0
+    YGrid ()
     {
       _origin = 0;
       _size = 0;
-      _h = 0;
-      _r = 0;
+      _h = 0.0;
+      _r = 0.0;
     }
 
-    //! Make Grid from origin and size arrays
-    Grid (iTupel o, iTupel s, fTupel h, fTupel r)
+    //! Make YGrid from origin and size arrays
+    YGrid (iTupel o, iTupel s, fTupel h, fTupel r)
     {
       for (int i=0; i<d; ++i)
       {
         _origin[i] = o[i];
         _size[i] = s[i];
+        if (_size[i]<0) {
+          _size[i] = 0;
+        }
         _h[i] = h[i];
         _r[i] = r[i];
       }
@@ -121,7 +129,7 @@ namespace Dune {
     //! Set size in direction i
     void size (int i, int si)
     {
-      _size[i] = oi;
+      _size[i] = si;
       if (_size[i]<0) _size[i] = 0;
     }
 
@@ -202,7 +210,7 @@ namespace Dune {
       _r[i] = ri;
     }
 
-    //! Return true if Grid is empty, i.e. has size 0 in all directions.
+    //! Return true if YGrid is empty, i.e. has size 0 in all directions.
     bool empty ()
     {
       for (int i=0; i<d; ++i) if (_size[i]<=0) return true;
@@ -220,7 +228,7 @@ namespace Dune {
       return index;
     }
 
-    //! given a tupel compute its index in the lexicographic numbering
+    //! given a coordinate, return true if it is in the grid
     bool inside (const iTupel& coord) const
     {
       for (int i=0; i<d; i++)
@@ -230,14 +238,14 @@ namespace Dune {
       return true;
     }
 
-    //! Return new SubGrid of self which is the intersection of self and another Grid
-    SubGrid<d,ct> intersection ( Grid<d,ct>& r)
+    //! Return new SubYGrid of self which is the intersection of self and another YGrid
+    virtual SubYGrid<d,ct> intersection ( YGrid<d,ct>& r)
     {
       // check if the two grids can be intersected, must have same mesh size and shift
       for (int i=0; i<d; i++)
-        if (fabs(meshsize(i)-r.meshsize(i))>tolerance) return SubGrid<d,ct>();
+        if (fabs(meshsize(i)-r.meshsize(i))>Ytolerance) return SubYGrid<d,ct>();
       for (int i=0; i<d; i++)
-        if (fabs(shift(i)-r.shift(i))>tolerance) return SubGrid<d,ct>();
+        if (fabs(shift(i)-r.shift(i))>Ytolerance) return SubYGrid<d,ct>();
 
       iTupel neworigin;
       iTupel newsize;
@@ -256,14 +264,14 @@ namespace Dune {
         // offset to own origin
         offset[i] = neworigin[i]-_origin[i];
       }
-      return SubGrid<d,ct>(neworigin,newsize,offset,_size,_h,_r);
+      return SubYGrid<d,ct>(neworigin,newsize,offset,_size,_h,_r);
     }
 
     //! return grid moved by the vector v
-    Grid<d,ct> move (iTupel v)
+    YGrid<d,ct> move (iTupel v)
     {
       for (int i=0; i<d; i++) v[i] += _origin[i];
-      return Grid<d,ct>(v,_size,_h,_r);
+      return YGrid<d,ct>(v,_size,_h,_r);
     }
 
     /*! Iterator class allows one to run over all cells of a grid.
@@ -275,7 +283,7 @@ namespace Dune {
     class Iterator {
     public:
       //! Make iterator pointing to first cell in a grid.
-      Iterator (Grid<d,ct>& r)
+      Iterator (YGrid<d,ct>& r)
       {
         // copy data coming from grid to iterate over
         for (int i=0; i<d; ++i) _origin[i] = r.origin(i);
@@ -294,32 +302,45 @@ namespace Dune {
         }
       }
 
-      //! Make iterator pointing to one past the last cell of a grid
-      Iterator (int last)
+      Iterator (YGrid<d,ct>& r, iTupel& coord)
       {
-        _index = last;
+        // copy data coming from grid to iterate over
+        for (int i=0; i<d; ++i) _origin[i] = r.origin(i);
+        for (int i=0; i<d; ++i) _end[i] = r.origin(i)+r.size(i)-1;
+
+        // compute increments;
+        int inc = 1;
+        for (int i=0; i<d; ++i)
+        {
+          _increment[i] = inc;
+          inc *= r.size(i);
+        }
+
+        // initialize to given position in index set
+        for (int i=0; i<d; ++i) _coord[i] = coord[i];
+        _index = r.index(coord);
       }
 
       //! Return true when two iterators over the same grid are equal (!).
-      bool operator== (const Iterator& i)
+      bool operator== (const Iterator& i) const
       {
         return _index == i._index;
       }
 
       //! Return true when two iterators over the same grid are not equal (!).
-      bool operator!= (const Iterator& i)
+      bool operator!= (const Iterator& i) const
       {
         return _index != i._index;
       }
 
       //! Return index of the current cell in the consecutive numbering.
-      int index ()
+      int index () const
       {
         return _index;
       }
 
       //! Return coordinate of the cell in direction i.
-      int coord (int i)
+      int coord (int i) const
       {
         return _coord[i];
       }
@@ -379,7 +400,12 @@ namespace Dune {
     Iterator begin () {return Iterator(*this);}
 
     //! return iterator to one past the last element of index set
-    Iterator end () {return Iterator(totalsize());}
+    Iterator end () {
+      iTupel last;
+      for (int i=0; i<d; i++) last = max(i);
+      last[0] += 1;
+      return Iterator(*this,last);
+    }
 
     /*! TransformingIterator is an Iterator providing in addition a linear transformation
        of the coordinates of the grid in the form \f$ y_i = x_i h_i + s_i \f$.
@@ -388,26 +414,34 @@ namespace Dune {
     class TransformingIterator : public Iterator {
     public:
       //! Make iterator pointing to first cell in a grid.
-      TransformingIterator (Grid<d,ct>& r) : Iterator(r)
+      TransformingIterator (YGrid<d,ct>& r) : Iterator(r)
       {
         for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
         for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
         for (int i=0; i<d; ++i) _position[i] = _begin[i];
       }
 
+      //! Make iterator pointing to given cell in a grid.
+      TransformingIterator (YGrid<d,ct>& r, iTupel& coord) : Iterator(r,coord)
+      {
+        for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
+        for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
+        for (int i=0; i<d; ++i) _position[i] = coord[i]*r.meshsize(i)+r.shift(i);
+      }
+
       //! Increment iterator to next cell with position.
       TransformingIterator& operator++ ()
       {
-        ++_index;
+        ++(this->_index);
         for (int i=0; i<d; i++)
-          if (++(_coord[i])<=_end[i])
+          if (++(this->_coord[i])<=this->_end[i])
           {
             _position[i] += _h[i];
             return *this;
           }
           else
           {
-            _coord[i]=_origin[i];
+            this->_coord[i]=this->_origin[i];
             _position[i] = _begin[i];
           }
         return *this;
@@ -420,9 +454,15 @@ namespace Dune {
       }
 
       //! Return position of current cell as reference.
-      fTupel position ()
+      fTupel& position ()
       {
         return _position;
+      }
+
+      //! Return position of current cell as reference.
+      fTupel& meshsize ()
+      {
+        return _h;
       }
 
       //! Move cell position by dist cells in direction i.
@@ -450,6 +490,15 @@ namespace Dune {
       return TransformingIterator(*this);
     }
 
+    //! return iterator to one past the last element of the grid
+    TransformingIterator tend ()
+    {
+      iTupel last;
+      for (int i=0; i<d; i++) last = max(i);
+      last[0] += 1;
+      return TransformingIterator(*this,last);
+    }
+
   protected:
     //! internal representation uses origin/size
     iTupel _origin;
@@ -460,7 +509,7 @@ namespace Dune {
 
   //! Output operator for grids
   template <int d, typename ct>
-  inline std::ostream& operator<< (std::ostream& s, Grid<d,ct> e)
+  inline std::ostream& operator<< (std::ostream& s, YGrid<d,ct> e)
   {
     s << "{";
     for (int i=0; i<d-1; i++)
@@ -482,28 +531,29 @@ namespace Dune {
   }
 
 
-  /*! A SubGrid is a grid that is embedded in a larger grid
+  /*! A SubYGrid is a grid that is embedded in a larger grid
      It is characterized by an offset and an enclosing grid as
      shown in the following picture:
 
-        \image html  subgrid.png "The SubGrid is shown in red, blue is the enclosing grid."
-        \image latex subgrid.eps "The SubGrid is shown in red, blue is the enclosing grid." width=\textwidth
+        \image html  subgrid.png "The SubYGrid is shown in red, blue is the enclosing grid."
+        \image latex subgrid.eps "The SubYGrid is shown in red, blue is the enclosing grid." width=\textwidth
 
-     SubGrid has additional iterators that provide a mapping to
+     SubYGrid has additional iterators that provide a mapping to
      the consecutive index in the enclosing grid.
    */
   template<int d, typename ct>
-  class SubGrid : public Grid<d,ct> {
+  class SubYGrid : public YGrid<d,ct> {
   public:
-    typedef typename Grid<d,ct>::iTupel iTupel;
-    typedef typename Grid<d,ct>::fTupel fTupel;
-    typedef typename Grid<d,ct>::bTupel bTupel;
+    typedef typename YGrid<d,ct>::iTupel iTupel;
+    typedef typename YGrid<d,ct>::fTupel fTupel;
+    typedef typename YGrid<d,ct>::bTupel bTupel;
 
     //! make uninitialized subgrid
-    SubGrid () {}
+    SubYGrid () {}
 
-    //! Make SubGrid from origin, size, offset and supersize
-    SubGrid (iTupel origin, iTupel size, iTupel offset, iTupel supersize, fTupel h, fTupel r) : Grid<d,ct>::Grid(origin,size,h,r)
+    //! Make SubYGrid from origin, size, offset and supersize
+    SubYGrid (iTupel origin, iTupel size, iTupel offset, iTupel supersize, fTupel h, fTupel r)
+      : YGrid<d,ct>::YGrid(origin,size,h,r)
     {
       for (int i=0; i<d; ++i)
       {
@@ -511,11 +561,11 @@ namespace Dune {
         _supersize[i] = supersize[i];
         if (offset[i]<0)
           std::cout << "warning: offset["
-          << i <<"] negative in SubGrid"
+          << i <<"] negative in SubYGrid"
           << std::endl;
         if (-offset[i]+supersize[i]<size[i])
           std::cout << "warning: subgrid larger than enclosing grid in direction "
-          << i <<" in SubGrid"
+          << i <<" in SubYGrid"
           << std::endl;
       }
     }
@@ -544,14 +594,14 @@ namespace Dune {
       return _supersize;
     }
 
-    //! Return SubGrid of supergrid of self which is the intersection of self and another Grid
-    SubGrid<d,ct> intersection ( Grid<d,ct>& r)
+    //! Return SubYGrid of supergrid of self which is the intersection of self and another YGrid
+    virtual SubYGrid<d,ct> intersection ( YGrid<d,ct>& r)
     {
       // check if the two grids can be intersected, must have same mesh size and shift
       for (int i=0; i<d; i++)
-        if (fabs(meshsize(i)-r.meshsize(i))>tolerance) return SubGrid<d,ct>();
+        if (fabs(this->meshsize(i)-r.meshsize(i))>Ytolerance) return SubYGrid<d,ct>();
       for (int i=0; i<d; i++)
-        if (fabs(shift(i)-r.shift(i))>tolerance) return SubGrid<d,ct>();
+        if (fabs(this->shift(i)-r.shift(i))>Ytolerance) return SubYGrid<d,ct>();
 
       iTupel neworigin;
       iTupel newsize;
@@ -560,26 +610,26 @@ namespace Dune {
       for (int i=0; i<d; ++i)
       {
         // intersect
-        neworigin[i] = std::max(min(i),r.min(i));
-        newsize[i] = std::min(max(i),r.max(i))-neworigin[i]+1;
+        neworigin[i] = std::max(this->min(i),r.min(i));
+        newsize[i] = std::min(this->max(i),r.max(i))-neworigin[i]+1;
         if (newsize[i]<0) {
           newsize[i] = 0;
-          neworigin[i] = min(i);
+          neworigin[i] = this->min(i);
         }
 
         // offset to my supergrid
-        offset[i] = _offset[i]+neworigin[i]-origin(i);
+        offset[i] = _offset[i]+neworigin[i]-this->origin(i);
       }
-      return SubGrid<d,ct>(neworigin,newsize,offset,_supersize,meshsize(),shift());
+      return SubYGrid<d,ct>(neworigin,newsize,offset,_supersize,this->meshsize(),this->shift());
     }
 
     /*! SubIterator is an Iterator that provides in addition the consecutive
        index in the enclosing grid.
      */
-    class SubIterator : public Grid<d,ct>::Iterator {
+    class SubIterator : public YGrid<d,ct>::Iterator {
     public:
       //! Make iterator pointing to first cell in subgrid.
-      SubIterator (SubGrid<d,ct>& r) : Grid<d,ct>::Iterator::Iterator (r)
+      SubIterator (SubYGrid<d,ct>& r) : YGrid<d,ct>::Iterator::Iterator (r)
       {
         //! store some grid information
         for (int i=0; i<d; ++i) _size[i] = r.size(i);
@@ -596,6 +646,26 @@ namespace Dune {
         _superindex = 0;
         for (int i=0; i<d; ++i)
           _superindex += r.offset(i)*_superincrement[i];
+      }
+
+      //! Make iterator pointing to given cell in subgrid.
+      SubIterator (SubYGrid<d,ct>& r, iTupel& coord) : YGrid<d,ct>::Iterator::Iterator (r,coord)
+      {
+        //! store some grid information
+        for (int i=0; i<d; ++i) _size[i] = r.size(i);
+
+        // compute superincrements
+        int inc = 1;
+        for (int i=0; i<d; ++i)
+        {
+          _superincrement[i] = inc;
+          inc *= r.supersize(i);
+        }
+
+        // move superindex to first cell in subgrid
+        _superindex = 0;
+        for (int i=0; i<d; ++i)
+          _superindex += (r.offset(i)+coord[i]-r.origin(i))*_superincrement[i];
       }
 
       //! Return consecutive index in enclosing grid
@@ -625,15 +695,15 @@ namespace Dune {
       //! Increment iterator to next cell in subgrid
       SubIterator& operator++ ()
       {
-        ++_index;                               // update consecutive index in grid
+        ++(this->_index);                               // update consecutive index in grid
         for (int i=0; i<d; i++)                 // check for wrap around
         {
           _superindex += _superincrement[i];               // move on cell in direction i
-          if (++(_coord[i])<=_end[i])
+          if (++(this->_coord[i])<=this->_end[i])
             return *this;
           else
           {
-            _coord[i]=_origin[i];                         // move back to origin in direction i
+            this->_coord[i]=this->_origin[i];                         // move back to origin in direction i
             _superindex -= _size[i]*_superincrement[i];
           }
         }
@@ -643,7 +713,7 @@ namespace Dune {
       //! Print position of iterator
       void print (std::ostream& s)
       {
-        Grid<d,ct>::Iterator::print(s);
+        YGrid<d,ct>::Iterator::print(s);
         s << " super=" << superindex();
       }
 
@@ -663,29 +733,37 @@ namespace Dune {
     class TransformingSubIterator : public SubIterator {
     public:
       //! Make iterator pointing to first cell in a grid.
-      TransformingSubIterator (SubGrid<d,ct>& r) : SubIterator(r)
+      TransformingSubIterator (SubYGrid<d,ct>& r) : SubIterator(r)
       {
         for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
         for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
         for (int i=0; i<d; ++i) _position[i] = _begin[i];
       }
 
+      //! Make iterator pointing to given cell in a grid.
+      TransformingSubIterator (SubYGrid<d,ct>& r, iTupel& coord) : SubIterator(r,coord)
+      {
+        for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
+        for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
+        for (int i=0; i<d; ++i) _position[i] = coord[i]*r.meshsize(i)+r.shift(i);
+      }
+
       //! Increment iterator to next cell with position.
       TransformingSubIterator& operator++ ()
       {
-        ++_index;                               // update consecutive index in subgrid
+        ++(this->_index);                               // update consecutive index in subgrid
         for (int i=0; i<d; i++)                 // check for wrap around
         {
-          _superindex += _superincrement[i];               // move on cell in direction i
-          if (++(_coord[i])<=_end[i])
+          this->_superindex += this->_superincrement[i];               // move on cell in direction i
+          if (++(this->_coord[i])<=this->_end[i])
           {
             _position[i] += _h[i];
             return *this;
           }
           else
           {
-            _coord[i]=_origin[i];                         // move back to origin in direction i
-            _superindex -= _size[i]*_superincrement[i];
+            this->_coord[i]=this->_origin[i];                         // move back to origin in direction i
+            this->_superindex -= this->size[i]*this->_superincrement[i];
             _position[i] = _begin[i];
           }
         }
@@ -739,9 +817,9 @@ namespace Dune {
 
   //! Output operator for subgrids
   template <int d, typename ct>
-  inline std::ostream& operator<< (std::ostream& s, SubGrid<d,ct> e)
+  inline std::ostream& operator<< (std::ostream& s, SubYGrid<d,ct> e)
   {
-    Grid<d,ct> x = e;
+    YGrid<d,ct> x = e;
     s << x << " ofs=" << e.offset() << " ss=" << e.supersize();
     return s;
   }
@@ -764,8 +842,8 @@ namespace Dune {
   class Torus {
   public:
     //! type used to pass tupels in and out
-    typedef Dune::FixedArray<int,d> iTupel;
-    typedef Dune::FixedArray<bool,d> bTupel;
+    typedef Dune::Vec<d,int> iTupel;
+    typedef Dune::Vec<d,bool> bTupel;
 
 
   private:
@@ -1343,54 +1421,62 @@ namespace Dune {
   }
 
 
-  /*! MultiGrid manages a d-dimensional grid mapped to a set of processes.
+  /*! MultiYGrid manages a d-dimensional grid mapped to a set of processes.
    */
   template<int d, typename ct>
-  class MultiGrid {
-  private:
+  class MultiYGrid {
+  public:
     // some data types
     struct Intersection {
-      SubGrid<d,ct> grid;     // the intersection as a subgrid of local grid
-      int rank;               // rank of process where other grid is stored
-      int distance;           // manhattan distance to other grid
+      SubYGrid<d,ct> grid;     // the intersection as a subgrid of local grid
+      int rank;                // rank of process where other grid is stored
+      int distance;            // manhattan distance to other grid
     };
 
-    struct GridLevel {
-      Grid<d,ct> cell_global;           // the whole grid on that level
-      Grid<d,ct> cell_local;            // our part on that level;
-      SubGrid<d,ct> cell_master;        // points associated uniquely to this process; subgrid of local
-      std::deque<Intersection> send_cell_local_local;      // each intersection is a subgrid of local
-      std::deque<Intersection> recv_cell_local_local;      // each intersection is a subgrid of local
-      std::deque<Intersection> send_cell_master_local;      // each intersection is a subgrid of local
-      std::deque<Intersection> recv_cell_local_master;      // each intersection is a subgrid of local
+    struct YGridLevel {            // This stores all the information on one grid level
+      // cell (codim 0) data
+      YGrid<d,ct> cell_global;             // the whole cell grid on that level
+      YGrid<d,ct> cell_overlap;            // we have no ghost cells, so our part is overlap completely
+      SubYGrid<d,ct> cell_interior;        // interior cells are a subgrid of all cells
 
-      Grid<d,ct> vertex_global;           // the whole grid on that level
-      Grid<d,ct> vertex_local;            // our part on that level;
-      SubGrid<d,ct> vertex_master;        // points associated uniquely to this process; subgrid of local
-      std::deque<Intersection> send_vertex_local_local;      // each intersection is a subgrid of local
-      std::deque<Intersection> recv_vertex_local_local;      // each intersection is a subgrid of local
-      std::deque<Intersection> send_vertex_master_local;      // each intersection is a subgrid of local
-      std::deque<Intersection> recv_vertex_local_master;      // each intersection is a subgrid of local
+      std::deque<Intersection> send_cell_overlap_overlap;      // each intersection is a subgrid of overlap
+      std::deque<Intersection> recv_cell_overlap_overlap;      // each intersection is a subgrid of overlap
 
-      MultiGrid<d,ct>* mg;     // each grid level knows its multigrid
-      int overlap;            // on this level
+      std::deque<Intersection> send_cell_interior_overlap; // each intersection is a subgrid of overlap
+      std::deque<Intersection> recv_cell_overlap_interior; // each intersection is a subgrid of overlap
+
+      // vertex (codim dim) data
+      YGrid<d,ct> vertex_global;           // the whole vertex grid on that level
+      YGrid<d,ct> vertex_overlapfront;     // all our vertices are overlap and front
+      SubYGrid<d,ct> vertex_overlap;       // subgrid containing only overlap
+      SubYGrid<d,ct> vertex_interiorborder; // subgrid containing only interior and border
+      SubYGrid<d,ct> vertex_interior;      // subgrid containing only interior
+
+      std::deque<Intersection> send_vertex_overlapfront_overlapfront; // each intersection is a subgrid of overlapfront
+      std::deque<Intersection> recv_vertex_overlapfront_overlapfront; // each intersection is a subgrid of overlapfront
+
+      std::deque<Intersection> send_vertex_overlap_overlapfront; // each intersection is a subgrid of overlapfront
+      std::deque<Intersection> recv_vertex_overlapfront_overlap; // each intersection is a subgrid of overlapfront
+
+      std::deque<Intersection> send_vertex_interiorborder_interiorborder;     // each intersection is a subgrid of overlapfront
+      std::deque<Intersection> recv_vertex_interiorborder_interiorborder;     // each intersection is a subgrid of overlapfront
+
+      // general
+      MultiYGrid<d,ct>* mg;  // each grid level knows its multigrid
+      int overlap;           // in mesh cells on this level
     };
 
-  public:
     //! define types used for arguments
-    typedef Dune::FixedArray<int,d> iTupel;
-    typedef Dune::FixedArray<ct,d> fTupel;
-    typedef Dune::FixedArray<bool,d> bTupel;
+    typedef Dune::Vec<d,int> iTupel;
+    typedef Dune::Vec<d,ct> fTupel;
+    typedef Dune::Vec<d,bool> bTupel;
 
     // communication tag used by multigrid
     enum { tag = 17 };
 
-    MultiGrid (MPI_Comm comm, fTupel L)
-    {}
-
     //! constructor making a grid
-    MultiGrid (MPI_Comm comm, fTupel L, iTupel s, bTupel periodic, int overlap)
-      : _torus(comm,tag,s)
+    MultiYGrid (MPI_Comm comm, fTupel L, iTupel s, bTupel periodic, int overlap)
+      : _torus(comm,tag,s)     // torus gets s to compute procs/direction
     {
       // store parameters
       _L = L;
@@ -1398,63 +1484,57 @@ namespace Dune {
       _periodic = periodic;
       _overlap = overlap;
 
-      // make the first mesh level
-      GridLevel g;
-      g.overlap = overlap;
-      g.mg = this;
-
-      // the global cell grid
+      // coarse cell interior  grid obtained through partitioning of global grid
+      iTupel o_interior;
+      iTupel s_interior;
       iTupel o = 0;
-      fTupel h;
-      fTupel r;
-      for (int i=0; i<d; i++) h[i] = L[i]/s[i];
-      for (int i=0; i<d; i++) r[i] = 0.5*h[i];
-      g.cell_global = Grid<d,ct>(o,s,h,r);
-
-      // the local cell master grid obtained through partitioning of global grid
-      iTupel o_master;
-      iTupel s_master;
-      double imbal = _torus.partition(_torus.rank(),o,s,o_master,s_master);
+      double imbal = _torus.partition(_torus.rank(),o,s,o_interior,s_interior);
       imbal = _torus.global_max(imbal);
-
-      // extend the cell master grid by overlap considering periodicity
-      iTupel o_local;
-      iTupel s_local;
-      for (int i=0; i<d; i++)
-      {
-        if (periodic[i])
-        {
-          // easy case, extend by 2 overlaps
-          o_local[i] = o_master[i]-overlap;
-          s_local[i] = s_master[i]+2*overlap;
-        }
-        else
-        {
-          // nonperiodic case, lower boundary
-          int min = std::max(0,o_master[i]-overlap);
-          int max = std::min(s[i],o_master[i]+s_master[i]+overlap);
-          o_local[i] = min;
-          s_local[i] = max-min;
-        }
-      }
-      g.cell_local = Grid<d,ct>(o_local,s_local,h,r);
-
-      // now make the master grid a subgrid of the local grid
-      iTupel offset;
-      for (int i=0; i<d; i++) offset[i] = o_master[i]-o_local[i];
-      g.cell_master = SubGrid<d,ct>(o_master,s_master,offset,s_local,h,r);
-
-      // compute intersections
-      cell_intersections(g);
 
       // add level
       _maxlevel = 0;
-      _levels[_maxlevel] = g;
+      _levels[_maxlevel] = makelevel(L,s,periodic,o_interior,s_interior,overlap);
 
       // output
-      if (_torus.rank()==0) std::cout << "MultiGrid<" << d
+      if (_torus.rank()==0) std::cout << "MultiYGrid<" << d
         << ">: coarse grid with size " << s
         << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
+    }
+
+    //! do a global mesh refinement; true: keep overlap in absolute size; false: keep overlap in mesh cells
+    void refine (bool keep_overlap)
+    {
+      // access to coarser grid level
+      YGridLevel& cg = _levels[maxlevel()];
+
+      // compute size of new global grid
+      iTupel s;
+      for (int i=0; i<d; i++) s[i] = 2*cg.cell_global.size(i);
+
+      // compute overlap
+      int overlap;
+      if (keep_overlap) overlap = 2*cg.overlap;else overlap = cg.overlap;
+
+      // output
+      if (_torus.rank()==0) std::cout << "MultiYGrid<"
+        << d << ">: refined to size "
+        << s << std::endl;
+
+      // the cell interior grid obtained from coarse cell interior grid
+      iTupel o_interior;
+      iTupel s_interior;
+      for (int i=0; i<d; i++) o_interior[i] = 2*cg.cell_interior.origin(i);
+      for (int i=0; i<d; i++) s_interior[i] = 2*cg.cell_interior.size(i);
+
+      // add level
+      _maxlevel++;
+      _levels[_maxlevel] = makelevel(_L,s,_periodic,o_interior,s_interior,overlap);
+    }
+
+    //! return reference to torus
+    Torus<d>& torus ()
+    {
+      return _torus;
     }
 
     //! return the maximum level index (number of levels is maxlevel()+1)
@@ -1469,142 +1549,14 @@ namespace Dune {
       return _periodic[i];
     }
 
-    //! do a global mesh refinement; true: keep overlap in absolute size; false: keep overlap in mesh cells
-    void refine (bool keep_overlap)
-    {
-      // access to coarser grid level
-      GridLevel& cg = _levels[maxlevel()];
-
-      // make new mesh level
-      GridLevel g;
-      if (keep_overlap) g.overlap = 2*cg.overlap;else g.overlap = cg.overlap;
-      g.mg = this;
-
-      // the global cell grid
-      iTupel o = 0;
-      iTupel s;
-      fTupel h;
-      fTupel r;
-      for (int i=0; i<d; i++) s[i] = 2*cg.cell_global.size(i);
-      for (int i=0; i<d; i++) h[i] = 0.5*cg.cell_global.meshsize(i);
-      for (int i=0; i<d; i++) r[i] = 0.5*h[i];
-      g.cell_global = Grid<d,ct>(o,s,h,r);
-
-      // output
-      if (_torus.rank()==0) std::cout << "MultiGrid<" << d << ">: refined to size " << s << std::endl;
-
-      // the local cell master grid obtained from coarse grid cell master
-      iTupel o_master;
-      iTupel s_master;
-      for (int i=0; i<d; i++) o_master[i] = 2*cg.cell_master.origin(i);
-      for (int i=0; i<d; i++) s_master[i] = 2*cg.cell_master.size(i);
-
-      // extend the cell master grid by overlap considering periodicity
-      iTupel o_local;
-      iTupel s_local;
-      for (int i=0; i<d; i++)
-      {
-        if (_periodic[i])
-        {
-          // easy case, extend by 2 overlaps
-          o_local[i] = o_master[i]-g.overlap;
-          s_local[i] = s_master[i]+2*g.overlap;
-        }
-        else
-        {
-          // nonperiodic case, lower boundary
-          int min = std::max(0,o_master[i]-g.overlap);
-          int max = std::min(s[i],o_master[i]+s_master[i]+g.overlap);
-          o_local[i] = min;
-          s_local[i] = max-min;
-        }
-      }
-      g.cell_local = Grid<d,ct>(o_local,s_local,h,r);
-
-      // now make the master grid a subgrid of the local grid
-      iTupel offset;
-      for (int i=0; i<d; i++) offset[i] = o_master[i]-o_local[i];
-      g.cell_master = SubGrid<d,ct>(o_master,s_master,offset,s_local,h,r);
-
-      // compute intersections
-      cell_intersections(g);
-
-      // add level
-      _maxlevel++;
-      _levels[_maxlevel] = g;
-    }
-
-    //! return reference to torus
-    Torus<d>& torus ()
-    {
-      return _torus;
-    }
-
-    //! provides access to intersections of grids
-    class IntersectionIterator {
-    public:
-      //! make IntersectionIterator from stl iterator
-      IntersectionIterator (typename std::deque<Intersection >::iterator iter)
-      {
-        i = iter;
-      }
-
-      //! get rank of neighboring process where other partner of intersection is stored
-      int rank ()
-      {
-        return i->rank;
-      }
-
-      //! get distance to neighboring process
-      int distance ()
-      {
-        return i->distance;
-      }
-
-      //! reference to subgrid in local grid
-      SubGrid<d,ct>& operator*()
-      {
-        return i->grid;
-      }
-
-      //! pointer to subgrid in local grid
-      SubGrid<d,ct>* operator->()
-      {
-        return &(i->grid);
-      }
-
-      //! Return true when two iterators point to same member
-      bool operator== (const IntersectionIterator& iter) const
-      {
-        return i == iter.i;
-      }
-
-      //! Return true when two iterators do not point to same member
-      bool operator!= (const IntersectionIterator& iter) const
-      {
-        return i != iter.i;
-      }
-
-      //! Increment iterator to next cell.
-      IntersectionIterator& operator++ ()
-      {
-        ++i;
-        return *this;
-      }
-
-    private:
-      typename std::deque<Intersection>::iterator i;
-    };
-
     //! provides access to a given grid level
-    class GridLevelIterator {
+    class YGridLevelIterator {
+    private:
+      int l;
+      YGridLevel* i;
     public:
-      //! make iterator pointing to level 0 (coarsest grid)
-      GridLevelIterator ()
-      {       }
-
       //! make iterator pointing to level k (no check made)
-      GridLevelIterator (GridLevel* start, int level)
+      YGridLevelIterator (YGridLevel* start, int level)
       {
         i=start; l=level;
       }
@@ -1616,236 +1568,377 @@ namespace Dune {
       }
 
       //! return pointer to multigrid object that contains this level
-      MultiGrid<d,ct>* mg ()
+      MultiYGrid<d,ct>* mg ()
       {
         return i->mg;
       }
 
-      //! reference to global cell grid
-      Grid<d,ct>& cell_global ()
-      {
-        return i->cell_global;
-      }
-
-      //! reference to local cell grid which is a subgrid of the global cell grid
-      Grid<d,ct>& cell_local ()
-      {
-        return i->cell_local;
-      }
-
-      //! reference to cell master grid which is a subgrid of the local cell grid
-      SubGrid<d,ct>& cell_master ()
-      {
-        return i->cell_master;
-      }
-
-      //! iterator access to intersection list
-      IntersectionIterator send_cell_local_local_begin ()
-      {
-        return IntersectionIterator(i->send_cell_local_local.begin());
-      }
-
-      //! iterator access to intersection list
-      IntersectionIterator send_cell_local_local_end ()
-      {
-        return IntersectionIterator(i->send_cell_local_local.end());
-      }
-
-      //! iterator access to intersection list
-      IntersectionIterator recv_cell_local_local_begin ()
-      {
-        return IntersectionIterator(i->recv_cell_local_local.begin());
-      }
-
-      //! iterator access to intersection list
-      IntersectionIterator recv_cell_local_local_end ()
-      {
-        return IntersectionIterator(i->recv_cell_local_local.end());
-      }
-
-
-      //! iterator access to intersection list
-      IntersectionIterator send_cell_master_local_begin ()
-      {
-        return IntersectionIterator(i->send_cell_master_local.begin());
-      }
-
-
-      //! iterator access to intersection list
-      IntersectionIterator send_cell_master_local_end ()
-      {
-        return IntersectionIterator(i->send_cell_master_local.end());
-      }
-
-
-      //! iterator access to intersection list
-      IntersectionIterator recv_cell_local_master_begin ()
-      {
-        return IntersectionIterator(i->recv_cell_local_master.begin());
-      }
-
-
-      //! iterator access to intersection list
-      IntersectionIterator recv_cell_local_master_end ()
-      {
-        return IntersectionIterator(i->recv_cell_local_master.end());
-      }
-
-      //! reference to global vertex grid
-      Grid<d,ct>& vertex_global ()
-      {
-        return i->vertex_global;
-      }
-
-      //! reference to local vertex grid; is subgrid of global vertex grid
-      Grid<d,ct>& vertex_local ()
-      {
-        return i->vertex_local;
-      }
-
-      //! reference to vertex master grid; is subgrid of local vertex grid
-      SubGrid<d,ct>& vertex_master ()
-      {
-        return i->vertex_master;
-      }
-
-      //! iterator access to intersection list
-      IntersectionIterator send_vertex_local_local_begin ()
-      {
-        return IntersectionIterator(i->send_vertex_local_local.begin());
-      }
-
-      //! iterator access to intersection list
-      IntersectionIterator send_vertex_local_local_end ()
-      {
-        return IntersectionIterator(i->send_vertex_local_local.end());
-      }
-
-      //! iterator access to intersection list
-      IntersectionIterator recv_vertex_local_local_begin ()
-      {
-        return IntersectionIterator(i->recv_vertex_local_local.begin());
-      }
-
-      //! iterator access to intersection list
-      IntersectionIterator recv_vertex_local_local_end ()
-      {
-        return IntersectionIterator(i->recv_vertex_local_local.end());
-      }
-
-
-      //! iterator access to intersection list
-      IntersectionIterator send_vertex_master_local_begin ()
-      {
-        return IntersectionIterator(i->send_vertex_master_local.begin());
-      }
-
-
-      //! iterator access to intersection list
-      IntersectionIterator send_vertex_master_local_end ()
-      {
-        return IntersectionIterator(i->send_vertex_master_local.end());
-      }
-
-
-      //! iterator access to intersection list
-      IntersectionIterator recv_vertex_local_master_begin ()
-      {
-        return IntersectionIterator(i->recv_vertex_local_master.begin());
-      }
-
-
-      //! iterator access to intersection list
-      IntersectionIterator recv_vertex_local_master_end ()
-      {
-        return IntersectionIterator(i->recv_vertex_local_master.end());
-      }
-
       //! Return true when two iterators point to same member
-      bool operator== (const GridLevelIterator& iter) const
+      bool operator== (const YGridLevelIterator& iter) const
       {
         return i == iter.i;
       }
 
       //! Return true when two iterators do not point to same member
-      bool operator!= (const GridLevelIterator& iter) const
+      bool operator!= (const YGridLevelIterator& iter) const
       {
         return i != iter.i;
       }
 
       //! Increment iterator to next finer grid level
-      GridLevelIterator& operator++ ()
+      YGridLevelIterator& operator++ ()
       {
-        ++i;
+        ++i;         // assumes built-in array
         ++l;
         return *this;
       }
 
       //! Increment iterator to coarser grid level
-      GridLevelIterator& operator-- ()
+      YGridLevelIterator& operator-- ()
       {
         --i;
         --l;
         return *this;
       }
 
-    private:
-      int l;
-      GridLevel* i;
+      //! reference to global cell grid
+      YGrid<d,ct>& cell_global ()
+      {
+        return i->cell_global;
+      }
+
+      //! reference to local cell grid which is a subgrid of the global cell grid
+      YGrid<d,ct>& cell_overlap ()
+      {
+        return i->cell_overlap;
+      }
+
+      //! reference to cell master grid which is a subgrid of the local cell grid
+      SubYGrid<d,ct>& cell_interior ()
+      {
+        return i->cell_interior;
+      }
+
+
+      //! access to intersection lists
+      std::deque<Intersection>& send_cell_overlap_overlap ()
+      {
+        return i->send_cell_overlap_overlap;
+      }
+      std::deque<Intersection>& recv_cell_overlap_overlap ()
+      {
+        return i->recv_cell_overlap_overlap;
+      }
+      std::deque<Intersection>& send_cell_interior_overlap ()
+      {
+        return i->send_cell_interior_overlap;
+      }
+      std::deque<Intersection>& recv_cell_overlap_interior ()
+      {
+        return i->recv_cell_overlap_interior;
+      }
+
+
+      //! reference to global vertex grid
+      YGrid<d,ct>& vertex_global ()
+      {
+        return i->vertex_global;
+      }
+      //! reference to vertex grid, up to front; there are no ghosts in this implementation
+      YGrid<d,ct>& vertex_overlapfront ()
+      {
+        return i->vertex_overlapfront;
+      }
+      //! reference to overlap vertex grid; is subgrid of overlapfront vertex grid
+      SubYGrid<d,ct>& vertex_overlap ()
+      {
+        return i->vertex_overlap;
+      }
+      //! reference to interiorborder vertex grid; is subgrid of overlapfront vertex grid
+      SubYGrid<d,ct>& vertex_interiorborder ()
+      {
+        return i->vertex_interiorborder;
+      }
+      //! reference to interior vertex grid; is subgrid of overlapfront vertex grid
+      SubYGrid<d,ct>& vertex_interior ()
+      {
+        return i->vertex_interior;
+      }
+
+      //! access to intersection lists
+      std::deque<Intersection>& send_vertex_overlapfront_overlapfront ()
+      {
+        return i->send_vertex_overlapfront_overlapfront;
+      }
+      std::deque<Intersection>& recv_vertex_overlapfront_overlapfront ()
+      {
+        return i->recv_vertex_overlapfront_overlapfront;
+      }
+      std::deque<Intersection>& send_vertex_overlap_overlapfront ()
+      {
+        return i->send_vertex_overlap_overlapfront;
+      }
+      std::deque<Intersection>& recv_vertex_overlapfront_overlap ()
+      {
+        return i->recv_vertex_overlapfront_overlap;
+      }
+      std::deque<Intersection>& send_vertex_interiorborder_interiorborder ()
+      {
+        return i->send_vertex_interiorborder_interiorborder;
+      }
+      std::deque<Intersection>& recv_vertex_interiorborder_interiorborder ()
+      {
+        return i->recv_vertex_interiorborder_interiorborder;
+      }
     };
 
     //! return iterator pointing to coarsest level
-    GridLevelIterator begin ()
+    YGridLevelIterator begin ()
     {
-      return GridLevelIterator(_levels,0);
+      return YGridLevelIterator(_levels,0);
     }
 
     //! return iterator pointing to coarsest level
-    GridLevelIterator begin (int i)
+    YGridLevelIterator begin (int i)
     {
-      return GridLevelIterator(_levels+i,i);
+      if (i<0 << i>maxlevel())
+        throw GridError("level not existing",__FILE__,__LINE__);
+      return YGridLevelIterator(_levels+i,i);
     }
 
     //! return iterator pointing to one past the finest level
-    GridLevelIterator end ()
+    YGridLevelIterator end ()
     {
-      return GridLevelIterator(_levels+(_maxlevel+1),_maxlevel+1);
+      return YGridLevelIterator(_levels+(_maxlevel+1),_maxlevel+1);
     }
 
     //! return iterator pointing to the finest level
-    GridLevelIterator rbegin ()
+    YGridLevelIterator rbegin ()
     {
-      return GridLevelIterator(_levels+_maxlevel,_maxlevel);
+      return YGridLevelIterator(_levels+_maxlevel,_maxlevel);
     }
 
     //! return iterator pointing to one before the coarsest level
-    GridLevelIterator rend ()
+    YGridLevelIterator rend ()
     {
-      return GridLevelIterator(_levels-1,-1);
+      return YGridLevelIterator(_levels-1,-1);
+    }
+
+    //! print function for multigrids
+    inline void print (std::ostream& s)
+    {
+      int rank = torus().rank();
+
+      s << "[" << rank << "]:" << " MultiYGrid maxlevel=" << maxlevel() << std::endl;
+
+      for (YGridLevelIterator g=begin(); g!=end(); ++g)
+      {
+        s << "[" << rank << "]:   " << std::endl;
+        s << "[" << rank << "]:   " << "==========================================" << std::endl;
+        s << "[" << rank << "]:   " << "level=" << g.level() << std::endl;
+        s << "[" << rank << "]:   " << "cell_global=" << g.cell_global() << std::endl;
+        s << "[" << rank << "]:   " << "cell_overlap=" << g.cell_overlap() << std::endl;
+        s << "[" << rank << "]:   " << "cell_interior=" << g.cell_interior() << std::endl;
+        for (typename std::deque<Intersection>::iterator i=g.send_cell_overlap_overlap().begin();
+             i!=g.send_cell_overlap_overlap().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " s_c_o_o "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.recv_cell_overlap_overlap().begin();
+             i!=g.recv_cell_overlap_overlap().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " r_c_o_o "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.send_cell_interior_overlap().begin();
+             i!=g.send_cell_interior_overlap().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " s_c_i_o "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.recv_cell_overlap_interior().begin();
+             i!=g.recv_cell_overlap_interior().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " r_c_o_i "
+          << i->rank << " " << i->grid << std::endl;
+        }
+
+        s << "[" << rank << "]:   " << "-----------------------------------------------"  << std::endl;
+        s << "[" << rank << "]:   " << "vertex_global="         << g.vertex_global() << std::endl;
+        s << "[" << rank << "]:   " << "vertex_overlapfront="   << g.vertex_overlapfront() << std::endl;
+        s << "[" << rank << "]:   " << "vertex_overlap="        << g.vertex_overlap() << std::endl;
+        s << "[" << rank << "]:   " << "vertex_interiorborder=" << g.vertex_interiorborder() << std::endl;
+        s << "[" << rank << "]:   " << "vertex_interior="       << g.vertex_interior() << std::endl;
+        for (typename std::deque<Intersection>::iterator i=g.send_vertex_overlapfront_overlapfront().begin();
+             i!=g.send_vertex_overlapfront_overlapfront().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " s_v_of_of "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.recv_vertex_overlapfront_overlapfront().begin();
+             i!=g.recv_vertex_overlapfront_overlapfront().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " r_v_of_of "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.send_vertex_overlap_overlapfront().begin();
+             i!=g.send_vertex_overlap_overlapfront().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " s_v_o_of "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.recv_vertex_overlapfront_overlap().begin();
+             i!=g.recv_vertex_overlapfront_overlap().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " r_v_of_o "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.send_vertex_interiorborder_interiorborder().begin();
+             i!=g.send_vertex_interiorborder_interiorborder().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " s_v_ib_ib "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.recv_vertex_interiorborder_interiorborder().begin();
+             i!=g.recv_vertex_interiorborder_interiorborder().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " r_v_ib_ib "
+          << i->rank << " " << i->grid << std::endl;
+        }
+      }
+
+      s << std::endl;
     }
 
   private:
-
-    void cell_intersections (GridLevel& g)
+    // make a new YGridLevel structure. For that we need
+    // L           size of the whole domain in each direction
+    // s           number of cells in each direction
+    // periodic    boolen indication periodicity in each direction
+    // o_interior  origin of interior (non-overlapping) cell decomposition
+    // s_interior  size of interior cell decomposition
+    // overlap     to be used on this grid level
+    YGridLevel makelevel (fTupel L, iTupel s, bTupel periodic, iTupel o_interior, iTupel s_interior, int overlap)
     {
-      // clear all cell intersections
-      g.send_cell_local_local.clear();
-      g.recv_cell_local_local.clear();
-      g.send_cell_master_local.clear();
-      g.recv_cell_local_master.clear();
+      // first, lets allocate a new structure
+      YGridLevel g;
+      g.overlap = overlap;
+      g.mg = this;
 
+      // the global cell grid
+      iTupel o = 0;     // logical origin is always 0, that is not a restriction
+      fTupel h;
+      fTupel r;
+      for (int i=0; i<d; i++) h[i] = L[i]/s[i];     // the mesh size in each direction
+      for (int i=0; i<d; i++) r[i] = 0.5*h[i];      // the shift for cell centers
+      g.cell_global = YGrid<d,ct>(o,s,h,r);         // this is the global cell grid
+
+      // extend the cell interior grid by overlap considering periodicity
+      iTupel o_overlap;
+      iTupel s_overlap;
+      for (int i=0; i<d; i++)
+      {
+        if (periodic[i])
+        {
+          // easy case, extend by 2 overlaps in total
+          o_overlap[i] = o_interior[i]-overlap;                  // Note: origin might be negative now
+          s_overlap[i] = s_interior[i]+2*overlap;                // Note: might be larger than global size
+        }
+        else
+        {
+          // nonperiodic case, intersect with global size
+          int min = std::max(0,o_interior[i]-overlap);
+          int max = std::min(s[i]-1,o_interior[i]+s_interior[i]-1+overlap);
+          o_overlap[i] = min;
+          s_overlap[i] = max-min+1;
+        }
+      }
+      g.cell_overlap = YGrid<d,ct>(o_overlap,s_overlap,h,r);
+
+      // now make the interior grid a subgrid of the overlapping grid
+      iTupel offset;
+      for (int i=0; i<d; i++) offset[i] = o_interior[i]-o_overlap[i];
+      g.cell_interior = SubYGrid<d,ct>(o_interior,s_interior,offset,s_overlap,h,r);
+
+      // compute cell intersections
+      intersections(g.cell_overlap,g.cell_overlap,g.cell_global.size(),g.send_cell_overlap_overlap,g.recv_cell_overlap_overlap);
+      intersections(g.cell_interior,g.cell_overlap,g.cell_global.size(),g.send_cell_interior_overlap,g.recv_cell_overlap_interior);
+
+      // now we can do the vertex grids. They are derived completely from the cell grids
+      iTupel o_vertex_global, s_vertex_global;
+      for (int i=0; i<d; i++) r[i] = 0.0;      // the shift for vertices is zero, and the mesh size is same as for cells
+
+      // first let's make the global grid
+      for (int i=0; i<d; i++) o_vertex_global[i] = g.cell_global.origin(i);
+      for (int i=0; i<d; i++) s_vertex_global[i] = g.cell_global.size(i)+1;     // one more vertices than cells ...
+      g.vertex_global = YGrid<d,ct>(o_vertex_global,s_vertex_global,h,r);
+
+      // now the local grid stored in this processor. All other grids are subgrids of this
+      iTupel o_vertex_overlapfront;
+      iTupel s_vertex_overlapfront;
+      for (int i=0; i<d; i++) o_vertex_overlapfront[i] = g.cell_overlap.origin(i);
+      for (int i=0; i<d; i++) s_vertex_overlapfront[i] = g.cell_overlap.size(i)+1;     // one more vertices than cells ...
+      g.vertex_overlapfront = YGrid<d,ct>(o_vertex_overlapfront,s_vertex_overlapfront,h,r);
+
+      // now overlap only (i.e. without front), is subgrid of overlapfront
+      iTupel o_vertex_overlap;
+      iTupel s_vertex_overlap;
+      for (int i=0; i<d; i++) o_vertex_overlap[i] = g.cell_overlap.origin(i)+1;
+      for (int i=0; i<d; i++) s_vertex_overlap[i] = g.cell_overlap.size(i)-1;
+      for (int i=0; i<d; i++) offset[i] = o_vertex_overlap[i]-o_vertex_overlapfront[i];
+      g.vertex_overlap = SubYGrid<d,ct>(o_vertex_overlap,s_vertex_overlap,offset,s_vertex_overlapfront,h,r);
+
+      // now interior with border
+      iTupel o_vertex_interiorborder;
+      iTupel s_vertex_interiorborder;
+      for (int i=0; i<d; i++) o_vertex_interiorborder[i] = g.cell_interior.origin(i);
+      for (int i=0; i<d; i++) s_vertex_interiorborder[i] = g.cell_interior.size(i)+1;
+      for (int i=0; i<d; i++) offset[i] = o_vertex_interiorborder[i]-o_vertex_overlapfront[i];
+      g.vertex_interiorborder = SubYGrid<d,ct>(o_vertex_interiorborder,s_vertex_interiorborder,offset,s_vertex_overlapfront,h,r);
+
+      // now only interior
+      iTupel o_vertex_interior;
+      iTupel s_vertex_interior;
+      for (int i=0; i<d; i++) o_vertex_interior[i] = g.cell_interior.origin(i)+1;
+      for (int i=0; i<d; i++) s_vertex_interior[i] = g.cell_interior.size(i)-1;
+      for (int i=0; i<d; i++) offset[i] = o_vertex_interior[i]-o_vertex_overlapfront[i];
+      g.vertex_interior = SubYGrid<d,ct>(o_vertex_interior,s_vertex_interior,offset,s_vertex_overlapfront,h,r);
+
+      // compute vertex intersections
+      intersections(g.vertex_overlapfront,g.vertex_overlapfront,g.cell_global.size(),
+                    g.send_vertex_overlapfront_overlapfront,g.recv_vertex_overlapfront_overlapfront);
+      intersections(g.vertex_overlap,g.vertex_overlapfront,g.cell_global.size(),
+                    g.send_vertex_overlap_overlapfront,g.recv_vertex_overlapfront_overlap);
+      intersections(g.vertex_interiorborder,g.vertex_interiorborder,g.cell_global.size(),
+                    g.send_vertex_interiorborder_interiorborder,g.recv_vertex_interiorborder_interiorborder);
+
+      // return the whole thing
+      return g;
+    }
+
+
+    // construct list of intersections with neighboring processors:
+    //   recvgrid: the grid stored in this processor
+    //   sendgrid:  the subgrid to be sent to neighboring processors
+    //   size: needed to shift local grid in periodic case
+    //   returns two lists: Intersections to be sent and Intersections to be received
+    // Note: sendgrid/recvgrid may be SubYGrids. Since intersection method is virtual it should work properly
+    void intersections (YGrid<d,ct>& sendgrid, YGrid<d,ct>& recvgrid, iTupel& size,
+                        std::deque<Intersection>& sendlist, std::deque<Intersection>& recvlist)
+    {
       // the exchange buffers
-      std::vector<Grid<d,ct> > send_cell_local(_torus.neighbors());
-      std::vector<Grid<d,ct> > recv_cell_local(_torus.neighbors());
-
-      std::vector<Grid<d,ct> > send_cell_master(_torus.neighbors());
-      std::vector<Grid<d,ct> > recv_cell_master(_torus.neighbors());
+      std::vector<YGrid<d,ct> > send_recvgrid(_torus.neighbors());
+      std::vector<YGrid<d,ct> > recv_recvgrid(_torus.neighbors());
+      std::vector<YGrid<d,ct> > send_sendgrid(_torus.neighbors());
+      std::vector<YGrid<d,ct> > recv_sendgrid(_torus.neighbors());
 
       // fill send buffers; iterate over all neighboring processes
       // non-periodic case is handled automatically because intersection will be zero
       for (typename Torus<d>::ProcListIterator i=_torus.sendbegin(); i!=_torus.sendend(); ++i)
       {
-        // determine (moved) grid to be sent to neighbor
+        // determine if we communicate with this neighbor (and what)
+        bool skip = false;
         iTupel coord = _torus.coord();           // my coordinates
         iTupel delta = i.delta();                // delta to neighbor
         iTupel nb = coord;                       // the neighbor
@@ -1854,119 +1947,103 @@ namespace Dune {
 
         for (int k=0; k<d; k++)
         {
-          if (nb[k]<0) v[k] += g.cell_global.size(k);
-          if (nb[k]>=_torus.dims(k)) v[k] -= g.cell_global.size(k);
+          if (nb[k]<0)
+          {
+            if (_periodic[k])
+              v[k] += size[k];
+            else
+              skip = true;
+          }
+          if (nb[k]>=_torus.dims(k))
+          {
+            if (_periodic[k])
+              v[k] -= size[k];
+            else
+              skip = true;
+          }
+          // neither might be true, then v=0
         }
 
         // store moved grids in send buffers
-        send_cell_local[i.index()] = g.cell_local.move(v);             // local grid
-        send_cell_master[i.index()] = g.cell_master.move(v);           // master grid
+        if (!skip)
+        {
+          send_sendgrid[i.index()] = sendgrid.move(v);
+          send_recvgrid[i.index()] = recvgrid.move(v);
+        }
+        else
+        {
+          send_sendgrid[i.index()] = YGrid<d,ct>(iTupel(0),iTupel(0),fTupel(0.0),fTupel(0.0));
+          send_recvgrid[i.index()] = YGrid<d,ct>(iTupel(0),iTupel(0),fTupel(0.0),fTupel(0.0));
+        }
       }
 
-      // issue send requests for cell_local
+      // issue send requests for sendgrid being sent to all neighbors
       for (typename Torus<d>::ProcListIterator i=_torus.sendbegin(); i!=_torus.sendend(); ++i)
-        _torus.send(i.rank(), &send_cell_local[i.index()], sizeof(Grid<d,ct>));
+        _torus.send(i.rank(), &send_sendgrid[i.index()], sizeof(YGrid<d,ct>));
 
-      // issue recv requests for cell_local
+      // issue recv requests for sendgrids of neighbors
       for (typename Torus<d>::ProcListIterator i=_torus.recvbegin(); i!=_torus.recvend(); ++i)
-        _torus.recv(i.rank(), &recv_cell_local[i.index()], sizeof(Grid<d,ct>));
+        _torus.recv(i.rank(), &recv_sendgrid[i.index()], sizeof(YGrid<d,ct>));
 
-      // exchange cell_local
+      // exchange the sendgrids
       _torus.exchange();
 
-
-      // issue send requests for cell_master
+      // issue send requests for recvgrid being sent to all neighbors
       for (typename Torus<d>::ProcListIterator i=_torus.sendbegin(); i!=_torus.sendend(); ++i)
-        _torus.send(i.rank(), &send_cell_master[i.index()], sizeof(Grid<d,ct>));
+        _torus.send(i.rank(), &send_recvgrid[i.index()], sizeof(YGrid<d,ct>));
 
-      // issue recv requests for cell_master
+      // issue recv requests for recvgrid of neighbors
       for (typename Torus<d>::ProcListIterator i=_torus.recvbegin(); i!=_torus.recvend(); ++i)
-        _torus.recv(i.rank(), &recv_cell_master[i.index()], sizeof(Grid<d,ct>));
+        _torus.recv(i.rank(), &recv_recvgrid[i.index()], sizeof(YGrid<d,ct>));
 
-      // exchange cell_local
+      // exchange the recvgrid
       _torus.exchange();
 
-      // process receive buffers; compute intersections
+      // process receive buffers and compute intersections
       for (typename Torus<d>::ProcListIterator i=_torus.recvbegin(); i!=_torus.recvend(); ++i)
       {
-        // local<->local intersection
-        Intersection intersection;
-        intersection.grid = g.cell_local.intersection(recv_cell_local[i.index()]);
-        intersection.rank = i.rank();
-        intersection.distance = i.distance();
-        if (!intersection.grid.empty()) g.recv_cell_local_local.push_back(intersection);
-        if (!intersection.grid.empty()) g.send_cell_local_local.push_front(intersection);
+        // what must be sent to this neighbor
+        Intersection send_intersection;
+        send_intersection.grid = sendgrid.intersection(recv_recvgrid[i.index()]);
+        //std::cout << "[" << _torus.rank() << "]:   " << "sendgrid=" << sendgrid << std::endl;
+        //std::cout << "[" << _torus.rank() << "]:   " << "recved recvgrid=" << recv_recvgrid[i.index()] << std::endl;
+        //std::cout << "[" << _torus.rank() << "]:   " << "intersection=" << send_intersection.grid << std::endl;
+        send_intersection.rank = i.rank();
+        send_intersection.distance = i.distance();
+        if (!send_intersection.grid.empty()) sendlist.push_front(send_intersection);
 
-        // master<->local intersections
-        Intersection master_local;
-        master_local.grid = g.cell_master.intersection(recv_cell_local[i.index()]);
-        master_local.rank = i.rank();
-        master_local.distance = i.distance();
-        if (!master_local.grid.empty()) g.send_cell_master_local.push_front(master_local);
-
-        Intersection local_master;
-        local_master.grid = g.cell_local.intersection(recv_cell_master[i.index()]);
-        local_master.rank = i.rank();
-        local_master.distance = i.distance();
-        if(!local_master.grid.empty()) g.recv_cell_local_master.push_back(local_master);
+        Intersection recv_intersection;
+        recv_intersection.grid = recvgrid.intersection(recv_sendgrid[i.index()]);
+        //std::cout << "[" << _torus.rank() << "]:   " << "recvgrid=" << recvgrid << std::endl;
+        //std::cout << "[" << _torus.rank() << "]:   " << "recved sendgrid=" << recv_sendgrid[i.index()] << std::endl;
+        //std::cout << "[" << _torus.rank() << "]:   " << "intersection=" << recv_intersection.grid << std::endl;
+        recv_intersection.rank = i.rank();
+        recv_intersection.distance = i.distance();
+        if(!recv_intersection.grid.empty()) recvlist.push_back(recv_intersection);
       }
     }
 
+    // private data of multigrid
     fTupel _L;
     iTupel _s;
     bTupel _periodic;
     int _maxlevel;
-    GridLevel _levels[32];
+    YGridLevel _levels[32];
     int _overlap;
     Torus<d> _torus;
   };
 
   //! Output operator for multigrids
   template <int d, class ct>
-  inline std::ostream& operator<< (std::ostream& s, MultiGrid<d,ct>& mg)
+  inline std::ostream& operator<< (std::ostream& s, MultiYGrid<d,ct>& mg)
   {
-    int rank = mg.torus().rank();
-
-    s << "[" << rank << "]:" << " MultiGrid maxlevel=" << mg.maxlevel() << std::endl;
-
-    for (typename MultiGrid<d,ct>::GridLevelIterator g=mg.begin(); g!=mg.end(); ++g)
-    {
-      s << "[" << rank << "]: " << "level=" << g.level() << std::endl;
-      s << "[" << rank << "]:   " << "cell_global=" << g.cell_global() << std::endl;
-      s << "[" << rank << "]:   " << "cell_local=" << g.cell_local() << std::endl;
-      s << "[" << rank << "]:   " << "cell_master=" << g.cell_master() << std::endl;
-      for (typename MultiGrid<d,ct>::IntersectionIterator i=g.send_cell_local_local_begin();
-           i!=g.send_cell_local_local_end(); ++i)
-      {
-        s << "[" << rank << "]:    " << " s_c_l_l "
-        << i.rank() << " " << *i << std::endl;
-      }
-      for (typename MultiGrid<d,ct>::IntersectionIterator i=g.recv_cell_local_local_begin();
-           i!=g.recv_cell_local_local_end(); ++i)
-      {
-        s << "[" << rank << "]:    " << " r_c_l_l "
-        << i.rank() << " " << *i << std::endl;
-      }
-      for (typename MultiGrid<d,ct>::IntersectionIterator i=g.send_cell_master_local_begin();
-           i!=g.send_cell_master_local_end(); ++i)
-      {
-        s << "[" << rank << "]:    " << " s_c_m_l "
-        << i.rank() << " " << *i << std::endl;
-      }
-      for (typename MultiGrid<d,ct>::IntersectionIterator i=g.recv_cell_local_master_begin();
-           i!=g.recv_cell_local_master_end(); ++i)
-      {
-        s << "[" << rank << "]:    " << " r_c_l_m "
-        << i.rank() << " " << *i << std::endl;
-      }
-    }
-
+    mg.print(s);
     s << std::endl;
     return s;
   }
 
-  /** @} end documentation group */
+} // namespace Dune
 
-}
+/** @} end documentation group */
 
 #endif
