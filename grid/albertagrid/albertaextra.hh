@@ -137,15 +137,6 @@ private:
   {
     // do not use this method
     assert(false);
-#if 0
-    if(copy.stack_)
-    {
-      std::cout << "Copy Stack! \n";
-      (*copy.refCount_)++;
-      stack_ = copy.stack_;
-      refCount_ = copy.refCount_;
-    }
-#endif
     return (*this);
   }
 };
@@ -314,6 +305,28 @@ inline static U_CHAR AlbertCoarsen ( MESH * mesh )
 //*********************************************************************
 namespace AlbertHelp
 {
+
+  static EL_INFO * getFatherInfo(TRAVERSE_STACK * stack, EL_INFO * elInfo, int level)
+  {
+    EL_INFO * fatherInfo = 0;
+
+    // if this level > 0 return father = elInfoStack -1,
+    // else return father = this
+    assert(stack != 0);
+
+    if(level > 0)
+    {
+      fatherInfo = & (stack->elinfo_stack)[stack->stack_used-1];
+    }
+    else
+    {
+      printf("No Father for macro element, return macro element\n");
+      return elInfo;
+    }
+
+    return fatherInfo;
+  }
+
 
   //****************************************************************
   //
