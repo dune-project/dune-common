@@ -67,6 +67,9 @@ namespace Dune {
     virtual void evaluate ( const Vec<0,deriType> &diffVariable,
                             const Domain & , Range &) const {}; // = 0 ?
 
+    //! diffVariable contain the component of the gradient which is delivered.
+    //! for example gradient of the basefunction x component ==>
+    //! diffVariable(0) == 0, y component ==> diffVariable(0) == 1 ...
     virtual void evaluate ( const Vec<1,deriType> &diffVariable,
                             const Domain & , Range &) const {}; // = 0 ?
 
