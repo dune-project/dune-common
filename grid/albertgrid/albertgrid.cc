@@ -388,6 +388,27 @@ namespace Dune
     return globalCoord_;
   }
 
+  //template< int dim, int dimworld>
+  template <>
+  inline Vec<3,albertCtype>& AlbertGridElement<2,3>::
+  global(const Vec<2>& local)
+  {
+    // only the dim first components are needed, because we don't use
+    // barycentric coordinates
+    Vec<dimension+1,albertCtype> tmp;
+    for(int i=0; i<dimension; i++)
+      tmp(i) = local.read(i);
+
+    tmp(dimension) = 1.0;
+    for(int i=0; i<dimension; i++)
+      tmp(dimension) -= local.read(i);
+
+    // globale Koordinaten ausrechnen
+    globalCoord_ = globalBary(tmp);
+
+    return globalCoord_;
+  }
+
   template< int dim, int dimworld>
   inline Vec<dimworld> AlbertGridElement<dim,dimworld>::
   globalBary(const Vec<dim+1>& local)
@@ -586,13 +607,29 @@ namespace Dune
     return Jinv_;
   }
 
+  // calc volume of face of tetrahedron
+  template <>
+  inline void AlbertGridElement<2,3>::
+  builtJacobianInverse(const Vec<2,albertCtype>& local)
+  {
+    //std::cout << "To be implemented! \n";
+    //abort();
+    enum { dim = 2 };
+    enum { dimworld = 3 };
+
+    // is faster than the lower method
+    volume_ = 0.1;
+    builtinverse_ = true;
+  }
+
   template< int dim, int dimworld>
   inline void AlbertGridElement<dim,dimworld>::
   builtJacobianInverse(const Vec<dim,albertCtype>& local)
   {
+    //std::cout << dim << " " << dimworld<< " Dim|Dimworld \n";
     enum { div = (dim < 3) ? 1 : 2 };
     // volFactor should be 0.5 for dim==2 and (1.0/6.0) for dim==3
-    static const albertCtype volFactor = static_cast<albertCtype> (0.5/div);
+    const albertCtype volFactor = static_cast<albertCtype> (0.5/div);
 
     ALBERT REAL lambda[dim+1][dimworld];
 
@@ -613,7 +650,7 @@ namespace Dune
   {
     // volume is length of edge
     Vec<2,albertCtype> vec = coord_(0) - coord_(1);
-    volume_ = sqrt( vec*vec );
+    volume_ = vec.norm2();
 
     builtinverse_ = true;
   }
@@ -1444,6 +1481,26 @@ namespace Dune
 
   template <>
   inline Vec<3,albertCtype>& AlbertGridNeighborIterator<3,3>::
+  outer_normal(Vec<2,albertCtype> &local)
+  {
+    // rechne Kreuzprodukt der Vectoren aus
+    ALBERT REAL_D *coord = elInfo_->coord;
+    Vec<3,albertCtype> v(0.0);
+    Vec<3,albertCtype> u(0.0);
+
+    for(int i=0; i<3; i++)
+    {
+      v(i) = coord[(neighborCount_+2)%4][i] - coord[(neighborCount_+1)%4][i];
+      u(i) = coord[(neighborCount_+3)%4][i] - coord[(neighborCount_+2)%4][i];
+    }
+
+    for(int i=0; i<3; i++)
+      outerNormal_(i) = u((i+1)%3)*v((i+2)%3) - u((i+2)%3)*v((i+1)%3);
+
+    return outerNormal_;
+  }
+  template <>
+  inline Vec<3,albertCtype>& AlbertGridNeighborIterator<3,3>::
   outer_normal()
   {
     // rechne Kreuzprodukt der Vectoren aus
@@ -1489,8 +1546,16 @@ namespace Dune
       manageNeighEl_ = grid_.interNeighProvider_.getNewObjectEntity();
       neighGlob_ = manageNeighEl_->item;
     }
+
+    //Vec<dim-1> tmp;
+
+    //std::cout << elInfo_ << " NeighborIt Elinfo \n";
+    //std::cout << neighGlob_ << " \n";
     // built neighGlob_ first
-    neighGlob_->builtGeom(elInfo_,neighborCount_,0,0);
+    if(neighGlob_->builtGeom(elInfo_,neighborCount_,0,0))
+      return (*neighGlob_);
+    else
+      abort();
     return (*neighGlob_);
   }
 
@@ -1566,30 +1631,40 @@ namespace Dune
 
     int vx = elInfo_->opp_vertex[neighborCount_];
 
-    memcpy(&neighElInfo_->coord[vx], &elInfo_->opp_coord[neighborCount_],
+    memcpy(&(neighElInfo_->coord[vx]), &(elInfo_->opp_coord[neighborCount_]),
            dimworld*sizeof(ALBERT REAL));
 
+#if 1
     for(int i=1; i<dim+1; i++)
     {
       int nb = (((neighborCount_-i)%(dim+1)) +dim+1)%(dim+1);
       memcpy(&neighElInfo_->coord[(vx+i)%(dim+1)], &elInfo_->coord[nb],
              dimworld*sizeof(ALBERT REAL));
     }
+#else
 
-    /*
-       ALBERT REAL_D *elcoord = (REAL_D *) &elInfo_->coord;
-       ALBERT REAL_D *nbcoord = (REAL_D *) &neighElInfo_->coord;
+    ALBERT REAL_D *elcoord = (REAL_D *) &elInfo_->coord;
+    ALBERT REAL_D *nbcoord = (REAL_D *) &neighElInfo_->coord;
 
-       for(int j=0; j<dimworld; j++)
-        nbcoord[vx][j] = elcoord[neighborCount_][j];
+    for(int j=0; j<dimworld; j++)
+      nbcoord[vx][j] = elcoord[neighborCount_][j];
 
-       for(int i=1; i<dim+1; i++)
-       {
-        int nb = (neighborCount_-i+dim+1)%(dim+1);
-        for(int j=0; j<dimworld; j++)
-          nbcoord[(vx+i)%(dim+1)][j] = elcoord[nb][j];
-       }
-     */
+    for(int i=1; i<dim+1; i++)
+    {
+      int nb = (neighborCount_-i+dim+1)%(dim+1);
+      for(int j=0; j<dimworld; j++)
+        nbcoord[(vx+i)%(dim+1)][j] = elcoord[nb][j];
+    }
+#endif
+
+#if 0
+    std::cout << "El \n";
+    ALBERT printElInfo(elInfo_);
+    std::cout << "Neigh \n";
+    ALBERT printElInfo(neighElInfo_);
+    std::cout << "--------------------------------\n";
+#endif
+
     virtualEntity_->setElInfo(neighElInfo_);
     builtNeigh_ = true;
   }
@@ -3177,13 +3252,316 @@ namespace Dune
   //***********************************************************************
   // fillElInfo 3D
   //***********************************************************************
+#if DIM == 3
+  template <>
   inline void AlbertGrid<3,3>::
   fillElInfo(int ichild, int actLevel , const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, bool hierarchical) const
   {
+
+#if 0
     enum { dim = 3 };
     enum { dimworld = 3 };
 
     ALBERT fill_elinfo(ichild,elinfo_old,elinfo);
-  } // end Grid::fillElInfo 3D
+#else
+    static S_CHAR child_orientation[3][2] = {{1,1}, {1,-1}, {1,-1}};
 
-} // end namespace dune
+    int i,j,k;
+    int el_type=0;                                   /* el_type in {0,1,2} */
+    int ochild=0;                       /* index of other child = 1-ichild */
+    int     *cv=nil;                   /* cv = child_vertex[el_type][ichild] */
+    int     (*cvg)[4]=nil;                    /* cvg = child_vertex[el_type] */
+    int     *ce;                     /* ce = child_edge[el_type][ichild] */
+    int iedge;
+    EL      *nb, *nbk, **neigh_old;
+    EL      *el_old = elinfo_old->el;
+    FLAGS fill_flag = elinfo_old->fill_flag;
+    DOF    *dof;
+    //#if !NEIGH_IN_EL
+    int ov;
+    EL      **neigh;
+    FLAGS fill_opp_coords;
+    U_CHAR  *opp_vertex;
+    //#endif
+
+    TEST_EXIT(el_old->child[0]) ("missing child?\n"); /* Kuni 22.08.96 */
+
+    elinfo->el        = el_old->child[ichild];
+    elinfo->macro_el  = elinfo_old->macro_el;
+    elinfo->fill_flag = fill_flag;
+    elinfo->mesh      = elinfo_old->mesh;
+    elinfo->parent    = el_old;
+    elinfo->level     = elinfo_old->level + 1;
+#if !NEIGH_IN_EL
+    elinfo->el_type   = (elinfo_old->el_type + 1) % 3;
+#endif
+
+    TEST_EXIT(elinfo->el) ("missing child %d?\n", ichild);
+
+    if (fill_flag) {
+      el_type = EL_TYPE(elinfo_old->el, elinfo_old);
+      cvg = child_vertex[el_type];
+      cv = cvg[ichild];
+      ochild = 1-ichild;
+    }
+
+    if (fill_flag & FILL_COORDS)
+    {
+      for (i=0; i<3; i++) {
+        for (j = 0; j < DIM_OF_WORLD; j++) {
+          elinfo->coord[i][j] = elinfo_old->coord[cv[i]][j];
+        }
+      }
+      if (el_old->new_coord)
+        for (j = 0; j < DIM_OF_WORLD; j++)
+          elinfo->coord[3][j] = el_old->new_coord[j];
+      else
+        for (j = 0; j < DIM_OF_WORLD; j++)
+          elinfo->coord[3][j] =
+            (elinfo_old->coord[0][j] + elinfo_old->coord[1][j]) / 2;
+    }
+
+
+#if NEIGH_IN_EL
+    if (fill_flag & FILL_OPP_COORDS)
+    {
+      neigh_old = el_old->neigh;
+
+      /*----- nb[0] is other child -------------------------------------------*/
+
+      /*    if (nb = el_old->child[ochild]) {        old version    */
+      if (el_old->child[0]  &&  (nb = el_old->child[ochild])) /* Kuni 22.08.96*/
+      {
+        if (nb->child[0]) {   /* go down one level for direct neighbour */
+          k = cvg[ochild][1];
+          if (nb->new_coord)
+            for (j = 0; j < DIM_OF_WORLD; j++)
+              elinfo->opp_coord[0][j] = nb->new_coord[j];
+          else
+            for (j = 0; j < DIM_OF_WORLD; j++)
+              elinfo->opp_coord[0][j] =
+                (elinfo_old->coord[ochild][j] + elinfo_old->coord[k][j]) / 2;
+        }
+        else {
+          for (j = 0; j < DIM_OF_WORLD; j++) {
+            elinfo->opp_coord[0][j] = elinfo_old->coord[ochild][j];
+          }
+        }
+      }
+      else {
+        ERROR_EXIT("no other child");
+      }
+
+
+      /*----- nb[1],nb[2] are childs of old neighbours nb_old[cv[i]] ----------*/
+
+      for (i=1; i<3; i++)
+      {
+        if (nb = neigh_old[cv[i]])
+        {
+          TEST_EXIT(nb->child[0]) ("nonconforming triangulation\n");
+
+          for (k=0; k<2; k++) {   /* look at both children of old neighbour */
+
+            nbk = nb->child[k];
+            if (nbk->dof[0] == el_old->dof[ichild]) {
+              dof = nb->dof[el_old->opp_vertex[cv[i]]];    /* opp. vertex */
+              if (dof == nbk->dof[1]) {
+                if (nbk->child[0]) {
+                  if (nbk->new_coord)
+                    for (j = 0; j < DIM_OF_WORLD; j++)
+                      elinfo->opp_coord[i][j] = nbk->new_coord[j];
+                  else
+                    for (j = 0; j < DIM_OF_WORLD; j++)
+                      elinfo->opp_coord[i][j] = (elinfo_old->opp_coord[cv[i]][j]
+                                                 + elinfo_old->coord[ichild][j]) / 2;
+                  break;
+                }
+              }
+              else {
+                TEST_EXIT(dof == nbk->dof[2]) ("opp_vertex not found\n");
+              }
+
+              for (j = 0; j < DIM_OF_WORLD; j++) {
+                elinfo->opp_coord[i][j] = elinfo_old->opp_coord[cv[i]][j];
+              }
+              break;
+            }
+
+          } /* end for k */
+          TEST_EXIT(k<2) ("child not found with vertex\n");
+
+        }
+      } /* end for i */
+
+
+      /*----- nb[3] is old neighbour neigh_old[ochild] ------------------------*/
+
+      if (neigh_old[ochild]) {
+        for (j = 0; j < DIM_OF_WORLD; j++) {
+          elinfo->opp_coord[3][j] = elinfo_old->opp_coord[ochild][j];
+        }
+      }
+
+    }
+
+#else  /* ! NEIGH_IN_EL */
+
+    if (fill_flag & (FILL_NEIGH | FILL_OPP_COORDS))
+    {
+      neigh      = elinfo->neigh;
+      neigh_old  = (EL **) elinfo_old->neigh;
+      opp_vertex = (U_CHAR *) &(elinfo->opp_vertex);
+      fill_opp_coords = (fill_flag & FILL_OPP_COORDS);
+
+      /*----- nb[0] is other child --------------------------------------------*/
+
+      /*    if (nb = el_old->child[ochild])   old version  */
+      if (el_old->child[0]  &&  (nb = el_old->child[ochild])) /*Kuni 22.08.96*/
+      {
+        if (nb->child[0])
+        {   /* go down one level for direct neighbour */
+          if (fill_opp_coords)
+          {
+            if (nb->new_coord)
+            {
+              for (j = 0; j < DIM_OF_WORLD; j++)
+                elinfo->opp_coord[0][j] = nb->new_coord[j];
+            }
+            else
+            {
+              k = cvg[ochild][1];
+              for (j = 0; j < DIM_OF_WORLD; j++)
+                elinfo->opp_coord[0][j] =
+                  (elinfo_old->coord[ochild][j] + elinfo_old->coord[k][j]) / 2;
+            }
+          }
+          neigh[0]      = nb->child[1];
+          opp_vertex[0] = 3;
+        }
+        else {
+          if (fill_opp_coords) {
+            for (j = 0; j < DIM_OF_WORLD; j++) {
+              elinfo->opp_coord[0][j] = elinfo_old->coord[ochild][j];
+            }
+          }
+          neigh[0]      = nb;
+          opp_vertex[0] = 0;
+        }
+      }
+      else {
+        ERROR_EXIT("no other child");
+        neigh[0] = nil;
+      }
+
+
+      /*----- nb[1],nb[2] are childs of old neighbours nb_old[cv[i]] ----------*/
+
+      for (i=1; i<3; i++)
+      {
+        if ((nb = neigh_old[cv[i]]))
+        {
+          TEST_EXIT(nb->child[0]) ("nonconforming triangulation\n");
+
+          for (k=0; k<2; k++) /* look at both childs of old neighbour */
+          {
+            nbk = nb->child[k];
+            if (nbk->dof[0] == el_old->dof[ichild]) {
+              dof = nb->dof[elinfo_old->opp_vertex[cv[i]]]; /* opp. vertex */
+              if (dof == nbk->dof[1])
+              {
+                ov = 1;
+                if (nbk->child[0])
+                {
+                  if (fill_opp_coords)
+                  {
+                    if (nbk->new_coord)
+                      for (j = 0; j < DIM_OF_WORLD; j++)
+                        elinfo->opp_coord[i][j] = nbk->new_coord[j];
+                    else
+                      for (j = 0; j < DIM_OF_WORLD; j++)
+                        elinfo->opp_coord[i][j] =
+                          (elinfo_old->opp_coord[cv[i]][j]
+                           + elinfo_old->coord[ichild][j]) / 2;
+                  }
+                  neigh[i]      = nbk->child[0];
+                  opp_vertex[i] = 3;
+                  break;
+                }
+              }
+              else
+              {
+                TEST_EXIT(dof == nbk->dof[2]) ("opp_vertex not found\n");
+                ov = 2;
+              }
+
+              if (fill_opp_coords)
+              {
+                for (j = 0; j < DIM_OF_WORLD; j++)
+                {
+                  elinfo->opp_coord[i][j] = elinfo_old->opp_coord[cv[i]][j];
+                }
+              }
+              neigh[i]      = nbk;
+              opp_vertex[i] = ov;
+              break;
+            }
+
+          } /* end for k */
+          TEST_EXIT(k<2) ("child not found with vertex\n");
+        }
+        else
+        {
+          neigh[i] = nil;
+        }
+      } /* end for i */
+
+
+      /*----- nb[3] is old neighbour neigh_old[ochild] ------------------------*/
+
+      if ((neigh[3] = neigh_old[ochild]))
+      {
+        opp_vertex[3] = elinfo_old->opp_vertex[ochild];
+        if (fill_opp_coords) {
+          for (j = 0; j < DIM_OF_WORLD; j++) {
+            elinfo->opp_coord[3][j] = elinfo_old->opp_coord[ochild][j];
+          }
+        }
+      }
+    }
+#endif
+
+    if (fill_flag & FILL_BOUND)
+    {
+      for (i = 0; i < 3; i++)
+      {
+        elinfo->bound[i] = elinfo_old->bound[cv[i]];
+      }
+      elinfo->bound[3] = GET_BOUND(elinfo_old->boundary[N_FACES+0]);
+
+      elinfo->boundary[0] = nil;
+      elinfo->boundary[1] = elinfo_old->boundary[cv[1]];
+      elinfo->boundary[2] = elinfo_old->boundary[cv[2]];
+      elinfo->boundary[3] = elinfo_old->boundary[ochild];
+
+      ce = child_edge[el_type][ichild];
+      for (iedge=0; iedge<4; iedge++) {
+        elinfo->boundary[N_FACES+iedge] =
+          elinfo_old->boundary[N_FACES+ce[iedge]];
+      }
+      for (iedge=4; iedge<6; iedge++) {
+        i = 5 - cv[iedge-3];              /* old vertex opposite new edge */
+        elinfo->boundary[N_FACES+iedge] = elinfo_old->boundary[i];
+      }
+    }
+
+
+    if (elinfo->fill_flag & FILL_ORIENTATION) {
+      elinfo->orientation =
+        elinfo_old->orientation * child_orientation[el_type][ichild];
+    }
+#endif
+  }
+#endif
+
+} // namespace Albert
