@@ -217,8 +217,6 @@ namespace Dune
     {
       int lev    = this->functionSpace_.getGrid().maxlevel();
       int length = this->functionSpace_.size( lev );
-
-      assert(length <= dofVec_.size());
       outfile << length << "\n";
       DofIteratorType enddof = dend ( lev );
       for(DofIteratorType itdof = dbegin ( lev ); itdof != enddof; ++itdof)
@@ -327,6 +325,14 @@ namespace Dune
   inline void DFAdapt< DiscreteFunctionSpaceType >::
   addScaled( int level,
              const DFAdapt<DiscreteFunctionSpaceType> &g,
+             const RangeFieldType &scalar )
+  {
+    this->addScaled(g,scalar);
+  }
+
+  template<class DiscreteFunctionSpaceType >
+  inline void DFAdapt< DiscreteFunctionSpaceType >::
+  addScaled( const DFAdapt<DiscreteFunctionSpaceType> &g,
              const RangeFieldType &scalar )
   {
     int length = dofVec_.size();
