@@ -663,7 +663,7 @@ namespace Dune {
       return unitOuterNormal(local);
     }
     //! return unit outer normal
-    FieldVector<ctype, GridImp::dimensionworld> unitOuterNormal (FieldVector<ctype, GridImp::dimension-1>& local) const;
+    FieldVector<ctype, GridImp::dimensionworld> unitOuterNormal (const FieldVector<ctype, GridImp::dimension-1>& local) const;
 
     /*! intersection of codimension 1 of this neighbor with element where iteration started.
        Here returned element is in LOCAL coordinates of the element where iteration started.

@@ -836,10 +836,10 @@ namespace Dune {
 
   template<class GridImp>
   inline FieldVector<typename GridImp::ctype, GridImp::dimensionworld>
-  SIntersectionIterator<GridImp>::unitOuterNormal (FieldVector<typename GridImp::ctype, GridImp::dimension-1>& local) const
+  SIntersectionIterator<GridImp>::unitOuterNormal (const FieldVector<typename GridImp::ctype, GridImp::dimension-1>& local) const
   {
     // while we are at it, compute normal direction
-    FieldVector<sgrid_ctype, dimworld> normal = 0.0;
+    FieldVector<sgrid_ctype, dimworld> normal(0.0);
     if (count%2)
       normal[count/2] =  1.0; // odd
     else
