@@ -104,7 +104,7 @@ namespace Dune
      @ingroup GridCommon
 
      This is one implementation of the grid interface providing 2d triangle
-     and 3d tetrahedra grids by using the FE Box ALBERTA ( ALBERT
+     and 3d tetrahedra grids by using the FE Box ALBERTA ( ALBERTA
      was written by Kunibert Siebert
      and Alfred Schmidt) (http://www.alberta-fem.de/).
 
@@ -116,7 +116,9 @@ namespace Dune
      Then you must tell %Dune where to find ALBERT, which
      dimension to use and which dimension your world should have:
 
-     <tt> ./autogen.sh [OPTIONS] --with-albert=PATH_TO_ALBERT --with-problem-dim=DIM --with-world-dim=DIMWORLD
+     <tt> ./autogen.sh [OPTIONS]
+        --with-albert=PATH_TO_ALBERT or --with-alberta=PATH_TO_ALBERTA and
+        --with-problem-dim=DIM --with-world-dim=DIMWORLD
      </tt>
 
      Now you must use the AlbertGrid with DIM and DIMWORLD, otherwise
