@@ -7,6 +7,8 @@
 #include <iostream>
 #include <vector>
 #include <dune/common/typetraits.hh>
+#include <dune/common/iteratorfacades.hh>
+
 namespace Dune
 {
   namespace amg
@@ -137,6 +139,8 @@ namespace Dune
         /** @brief The index of the source vertex of the current edge. */
         VertexDescriptor source() const;
 
+        /** @brief Get the offste to the first edge starting at the same vertex. */
+        int offset() const;
 
       private:
         /** @brief Start vertex of the edges. */
@@ -379,7 +383,7 @@ namespace Dune
       /**
        * @brief The edge iterator of the graph.
        */
-      class EdgeIterator
+      class EdgeIterator : public RandomAccessIteratorFacade<EdgeIterator,const VertexDescriptor>
       {
       public:
         /**
@@ -387,28 +391,51 @@ namespace Dune
          * @param source The source vertex of the edge.
          * @param target The edge the iterator is positioned on.
          */
-        EdgeIterator(const VertexDescriptor& source, EdgeDescriptor target);
-
-        /** @brief Inequality operator. */
-        bool operator!=(const EdgeIterator& other) const;
+        EdgeIterator(const VertexDescriptor& source, std::ptrdiff_t offset, EdgeDescriptor first);
 
         /** @brief Equality operator. */
-        bool operator==(const EdgeIterator& other) const;
+        bool equals(const EdgeIterator& other) const;
+
+        /** @brief Equality operator. */
+        //bool operator==(const EdgeIterator& other) const;
 
         /** @brief Preincrement operator. */
-        EdgeIterator& operator++();
+        EdgeIterator& increment();
+
+        /** @brief Preincrement operator. */
+        EdgeIterator& decrement();
+
+        EdgeIterator& advance(std::ptrdiff_t n);
 
         /** @brief The index of the target vertex of the current edge. */
-        VertexDescriptor target() const;
+        const VertexDescriptor& dereference() const;
+
+        /** @brief The index of the target vertex of the current edge. */
+        const VertexDescriptor& target() const;
 
         /** @brief The index of the source vertex of the current edge. */
-        VertexDescriptor source() const;
+        const VertexDescriptor& source() const;
 
+        std::ptrdiff_t distanceTo(const EdgeIterator& other) const;
+
+        /**
+         * @brief Get the offset of the edge to the first edge of the graph.
+         * @return The sum of all the edges starting from a vertex that
+         * is smaller than the source vertex plus the distance to the first
+         * edge starting at the source vertex.
+         */
+        std::ptrdiff_t offset() const;
       private:
         /** @brief The source vertex of the edge. */
         VertexDescriptor source_;
-        /** @brief The target vertex of the edge. */
-        EdgeDescriptor target_;
+        /**
+         * @brief The offset of the current edge to the first
+         * one starting at the vertex source_.
+         */
+        std::ptrdiff_t offset_;
+        /** @brief The first edge of the graph starting at source_. */
+        const EdgeDescriptor first_;
+
       };
 
       /**
@@ -1202,6 +1229,13 @@ namespace Dune
 
     template<class M>
     template<class C>
+    inline int MatrixGraph<M>::EdgeIteratorT<C>::offset() const
+    {
+      return block_.offset();
+    }
+
+    template<class M>
+    template<class C>
     MatrixGraph<M>::VertexIteratorT<C>::VertexIteratorT(C* graph,
                                                         const VertexDescriptor& current)
       : graph_(graph), current_(current)
@@ -1352,39 +1386,71 @@ namespace Dune
 
     template<class G>
     SubGraph<G>::EdgeIterator::EdgeIterator(const VertexDescriptor& source,
-                                            EdgeDescriptor target)
-      : source_(source), target_(target)
+                                            std::ptrdiff_t offset, const EdgeDescriptor first)
+      : source_(source), offset_(offset), first_(first)
     {}
 
     template<class G>
-    bool SubGraph<G>::EdgeIterator::operator==(const EdgeIterator& other) const
+    bool SubGraph<G>::EdgeIterator::equals(const EdgeIterator & other) const
     {
-      return other.target_==target_;
+      return other.offset_==offset_;
     }
-
+    /*
+       template<class G>
+       bool SubGraph<G>::EdgeIterator::operator!=(const EdgeIterator& other) const
+       {
+       return other.target_!=target_;
+       }
+     */
     template<class G>
-    bool SubGraph<G>::EdgeIterator::operator!=(const EdgeIterator& other) const
+    typename SubGraph<G>::EdgeIterator& SubGraph<G>::EdgeIterator::increment()
     {
-      return other.target_!=target_;
-    }
-
-    template<class G>
-    typename SubGraph<G>::EdgeIterator& SubGraph<G>::EdgeIterator::operator++()
-    {
-      ++target_;
+      ++offset_;
       return *this;
     }
 
     template<class G>
-    typename G::VertexDescriptor SubGraph<G>::EdgeIterator::source() const
+    typename SubGraph<G>::EdgeIterator& SubGraph<G>::EdgeIterator::decrement()
+    {
+      --offset_;
+      return *this;
+    }
+
+    template<class G>
+    typename SubGraph<G>::EdgeIterator& SubGraph<G>::EdgeIterator::advance(std::ptrdiff_t n)
+    {
+      offset_+=n;
+      return *this;
+    }
+    template<class G>
+    const typename G::VertexDescriptor& SubGraph<G>::EdgeIterator::source() const
     {
       return source_;
     }
 
     template<class G>
-    typename G::VertexDescriptor SubGraph<G>::EdgeIterator::target() const
+    const typename G::VertexDescriptor& SubGraph<G>::EdgeIterator::target() const
     {
-      return *target_;
+      return first_[offset_];
+    }
+
+
+    template<class G>
+    const typename G::VertexDescriptor& SubGraph<G>::EdgeIterator::dereference() const
+    {
+      return *first_[offset_];
+    }
+
+    template<class G>
+    std::ptrdiff_t SubGraph<G>::EdgeIterator::distanceTo(const EdgeIterator & other) const
+    {
+      return other.offset_-offset_;
+    }
+
+    template<class G>
+    std::ptrdiff_t SubGraph<G>::EdgeIterator::offset() const
+    {
+      return offset_;
     }
 
     template<class G>
@@ -1462,13 +1528,13 @@ namespace Dune
     template<class G>
     typename SubGraph<G>::EdgeIterator SubGraph<G>::beginEdges(const VertexDescriptor& source) const
     {
-      return EdgeIterator(source, edges_+start_[source]);
+      return EdgeIterator(source, 0, edges_+start_[source]);
     }
 
     template<class G>
     typename SubGraph<G>::EdgeIterator SubGraph<G>::endEdges(const VertexDescriptor& source) const
     {
-      return EdgeIterator(source, edges_+end_[source]);
+      return EdgeIterator(source, end_[source], edges_+start_[source]);
     }
 
     template<class G>
@@ -1511,7 +1577,7 @@ namespace Dune
           ++noVertices_;
           endVertex_ = std::max(vertex.index(), endVertex_);
 
-          start_[vertex.index()]=end_[vertex.index()]=edge-edges_;
+          start_[vertex.index()] = edge-edges_;
 
           typedef typename Graph::ConstEdgeIterator Iterator;
           Iterator endEdge = vertex.end();
@@ -1520,11 +1586,12 @@ namespace Dune
             if(!excluded[iter.target()]) {
               *edge = iter.target();
               ++edge;
-              ++end_[vertex.index()];
             }
 
+          end_[vertex.index()] = edge - (edges_+start_[vertex.index()]);
+
           // Sort the edges
-          //std::sort(edges_+start_[vertex.index()], edges_+end[vertex.index()]);
+          std::sort(edges_+start_[vertex.index()], edge);
         }
       noEdges_ = edge-edges_;
       ++endVertex_;
