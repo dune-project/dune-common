@@ -1,6 +1,6 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $ Id: $
+// $Id$
 #ifndef DUNE_COMMUNICATOR
 #define DUNE_COMMUNICATOR
 
@@ -699,6 +699,8 @@ namespace Dune
     buffers_[0] = new char[sendStart];
     buffers_[1] = new char[recvStart];
     interface_ = &interface;
+    return EnableIf<SameType<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void>();
+
   }
 
   template<typename TG, typename TA>
