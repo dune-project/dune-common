@@ -30,36 +30,36 @@ namespace Dune {
   template <>
   struct OneDGridLevelIteratorFactory<1>
   {
-    static Dune::OneDGridLevelIterator<1,Dune::All_Partition, Dune::OneDGrid<1,1> >
+    static Dune::OneDGridLevelIterator<1,Dune::All_Partition, const Dune::OneDGrid<1,1> >
     lbegin(const Dune::OneDGrid<1,1> * g, int level);
   };
 
   template <>
   struct OneDGridLevelIteratorFactory<0>
   {
-    static Dune::OneDGridLevelIterator<0,Dune::All_Partition, Dune::OneDGrid<1,1> >
+    static Dune::OneDGridLevelIterator<0,Dune::All_Partition, const Dune::OneDGrid<1,1> >
     lbegin(const Dune::OneDGrid<1,1> * g, int level);
   };
 
 }
 
-inline Dune::OneDGridLevelIterator<1,Dune::All_Partition, Dune::OneDGrid<1,1> >
+inline Dune::OneDGridLevelIterator<1,Dune::All_Partition, const Dune::OneDGrid<1,1> >
 Dune::OneDGridLevelIteratorFactory<1>::lbegin (const OneDGrid<1,1> * g, int level)
 {
   if (level<0 || level>g->maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<1,All_Partition, Dune::OneDGrid<1,1> > it(g->vertices[level].begin);
+  OneDGridLevelIterator<1,All_Partition, const Dune::OneDGrid<1,1> > it(g->vertices[level].begin);
   return it;
 }
 
-inline Dune::OneDGridLevelIterator<0,Dune::All_Partition, Dune::OneDGrid<1,1> >
+inline Dune::OneDGridLevelIterator<0,Dune::All_Partition, const Dune::OneDGrid<1,1> >
 Dune::OneDGridLevelIteratorFactory<0>::lbegin (const OneDGrid<1,1> * g, int level)
 {
   if (level<0 || level>g->maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<0,All_Partition, Dune::OneDGrid<1,1> > it(g->elements[level].begin);
+  OneDGridLevelIterator<0,All_Partition, const Dune::OneDGrid<1,1> > it(g->elements[level].begin);
   return it;
 }
 
@@ -67,7 +67,7 @@ Dune::OneDGridLevelIteratorFactory<0>::lbegin (const OneDGrid<1,1> * g, int leve
 template <int dim, int dimworld>
 Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, double rightBoundary)
 {
-  typedef OneDGrid<dim,dimworld> GridImp;
+  typedef const OneDGrid<dim,dimworld> GridImp;
 
   // Init grid hierarchy
   vertices.resize(1);
@@ -102,7 +102,7 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, dou
 template <int dim, int dimworld>
 Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
 {
-  typedef OneDGrid<dim,dimworld> GridImp;
+  typedef const OneDGrid<dim,dimworld> GridImp;
 
   // Init grid hierarchy
   vertices.resize(1);
@@ -136,7 +136,7 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
 template <int dim, int dimworld>
 Dune::OneDGrid<dim,dimworld>::~OneDGrid()
 {
-  typedef OneDGrid<dim,dimworld> GridImp;
+  typedef const OneDGrid<dim,dimworld> GridImp;
 
   // Delete all vertices
   for (unsigned int i=0; i<vertices.size(); i++) {
@@ -188,15 +188,15 @@ Dune::OneDGrid<dim,dimworld>::lend(int level) const
   if (level<0 || level>maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<codim,All_Partition, Dune::OneDGrid<dim,dimworld> > it(0);
+  OneDGridLevelIterator<codim,All_Partition, const Dune::OneDGrid<dim,dimworld> > it(0);
   return it;
 }
 
 template <int dim, int dimworld>
-Dune::OneDGridEntity<1,1,Dune::OneDGrid<dim,dimworld> >*
-Dune::OneDGrid<dim,dimworld>::getLeftUpperVertex(const OneDGridEntity<0,1,Dune::OneDGrid<dim,dimworld> >* eIt)
+Dune::OneDGridEntity<1,1,const Dune::OneDGrid<dim,dimworld> >*
+Dune::OneDGrid<dim,dimworld>::getLeftUpperVertex(const OneDGridEntity<0,1,const Dune::OneDGrid<dim,dimworld> >* eIt)
 {
-  OneDGridEntity<0,1,Dune::OneDGrid<dim,dimworld> >* l = eIt->pred_;
+  OneDGridEntity<0,1,const Dune::OneDGrid<dim,dimworld> >* l = eIt->pred_;
 
   if (!l)
     return 0;
@@ -215,10 +215,10 @@ Dune::OneDGrid<dim,dimworld>::getLeftUpperVertex(const OneDGridEntity<0,1,Dune::
 }
 
 template <int dim, int dimworld>
-Dune::OneDGridEntity<1,1,Dune::OneDGrid<dim,dimworld> >*
-Dune::OneDGrid<dim,dimworld>::getRightUpperVertex(const OneDGridEntity<0,1,Dune::OneDGrid<dim,dimworld> >* eIt)
+Dune::OneDGridEntity<1,1,const Dune::OneDGrid<dim,dimworld> >*
+Dune::OneDGrid<dim,dimworld>::getRightUpperVertex(const OneDGridEntity<0,1,const Dune::OneDGrid<dim,dimworld> >* eIt)
 {
-  OneDGridEntity<0,1,Dune::OneDGrid<dim,dimworld> >* r = eIt->succ_;
+  OneDGridEntity<0,1,const Dune::OneDGrid<dim,dimworld> >* r = eIt->succ_;
 
   if (!r)
     return 0;
@@ -237,10 +237,10 @@ Dune::OneDGrid<dim,dimworld>::getRightUpperVertex(const OneDGridEntity<0,1,Dune:
 }
 
 template <int dim, int dimworld>
-Dune::OneDGridEntity<0,1,Dune::OneDGrid<dim,dimworld> >*
-Dune::OneDGrid<dim,dimworld>::getLeftNeighborWithSon(OneDGridEntity<0,1,Dune::OneDGrid<dim,dimworld> >* eIt)
+Dune::OneDGridEntity<0,1,const Dune::OneDGrid<dim,dimworld> >*
+Dune::OneDGrid<dim,dimworld>::getLeftNeighborWithSon(OneDGridEntity<0,1,const Dune::OneDGrid<dim,dimworld> >* eIt)
 {
-  OneDGridEntity<0,1,Dune::OneDGrid<dim,dimworld> >* l = eIt;
+  OneDGridEntity<0,1,const Dune::OneDGrid<dim,dimworld> >* l = eIt;
 
   do {
     l = l->pred_;
@@ -254,7 +254,7 @@ Dune::OneDGrid<dim,dimworld>::getLeftNeighborWithSon(OneDGridEntity<0,1,Dune::On
 template <int dim, int dimworld>
 bool Dune::OneDGrid<dim,dimworld>::adapt()
 {
-  typedef OneDGrid<dim,dimworld> GridImp;
+  typedef const OneDGrid<dim,dimworld> GridImp;
 
   OneDGridEntity<0,1,GridImp>* eIt;
 
