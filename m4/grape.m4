@@ -22,12 +22,15 @@ AC_DEFUN([DUNE_PATH_GRAPE],[
   AC_ARG_WITH(grape,
     AC_HELP_STRING([--with-grape=PATH],[directory with Grape inside]))
 
+# store old values
+ac_save_LDFLAGS="$LDFLAGS"
+ac_save_CXXFLAGS="$CXXFLAGS"
+ac_save_CPPFLAGS="$CPPFLAGS"
+ac_save_LIBS="$LIBS"
+
+# don't even start testing if X wasn't found
 if test "x$X_LIBS" != x && test x$with_grape != xno ; then
-  # store old values
-  ac_save_LDFLAGS="$LDFLAGS"
-  ac_save_CFLAGS="$CFLAGS"
-  ac_save_CPPFLAGS="$CPPFLAGS"
-  ac_save_LIBS="$LIBS"
+
   LIBS="$X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
 
   # is --with-grape=bla used?
@@ -46,11 +49,6 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
   CPPFLAGS="$CPPFLAGS -I$GRAPEROOT"
   LDFLAGS="$LDFLAGS -L$GRAPEROOT"
 
-  # append OpenGL-options if needed
-  if test x$have_gl != xno ; then
-    LIBS="$LIBS $GL_LIBS"
-  fi
-
   # check for header
   # we have to use CC for checking the header!!
   AC_LANG_PUSH([C])
@@ -61,38 +59,49 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
 
   # check for lib if header was found
   if test x$HAVE_GRAPE = x1 ; then
-  AC_CHECK_LIB(gr, grape, 
-    [GRAPE_LDFLAGS="-L$GRAPEROOT"
-     GRAPE_LIBS="-lgr"], 
-    [HAVE_GRAPE="0"])
-  fi
+    # if GL was found, add it implicitly...
+    #   This is not the best choice, but testing without GL first and
+    #   then trying again fails due to caching...
+    CXXFLAGS="$CXXFLAGS $GL_CFLAGS"
+    # !!! -lXext is somehow needed for libGL ?!
+    LIBS="$LIBS $GL_LIBS -lXext"
 
-  # pre-set variable for summary
-  with_grape="no"
+    AC_CHECK_LIB(gr, grape, 
+      [GRAPE_LDFLAGS="-L$GRAPEROOT"
+       GRAPE_CXXFLAGS="$GL_CFLAGS"
+       GRAPE_LIBS="-lgr $GL_LIBS -lXext"], 
+      [HAVE_GRAPE="0"])
+  fi
 
   # did it work?
   if test x$HAVE_GRAPE = x1 ; then
-    AC_SUBST(GRAPE_LIBS, "$LIBS $GRAPE_LIBS")
+    AC_SUBST(GRAPE_LIBS, $GRAPE_LIBS)
     AC_SUBST(GRAPE_LDFLAGS, $GRAPE_LDFLAGS)
     AC_SUBST(GRAPE_CPPFLAGS, $GRAPE_CPPFLAGS)
+    AC_SUBST(GRAPE_CXXFLAGS, $GRAPE_CXXFLAGS)
     AC_DEFINE(HAVE_GRAPE, 1, [Define to 1 if grape-library is found])
 
     # add to global list
     DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $GRAPE_LDFLAGS"
     DUNE_PKG_LIBS="$DUNE_PKG_LIBS $GRAPE_LIBS"
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $GRAPE_CPPFLAGS"
-
-    # re-set variable correctly
-    with_grape="yes"
+    DUNE_PKG_CXXFLAGS="$DUNE_PKG_CXXFLAGS $GRAPE_CXXFLAGS"
   fi
 fi
 
+# report to summary
+if test x$HAVE_GRAPE = x1 ; then
+  with_grape="yes"
+else
+  with_grape="no"
+fi
+
 # also tell automake	
-AM_CONDITIONAL(GRAPE, test x$HAVE_GRAPE != x)
+AM_CONDITIONAL(GRAPE, test x$HAVE_GRAPE = x1)
 
 # reset old values
 LIBS="$ac_save_LIBS"
-CFLAGS="$ac_save_CFLAGS"
+CXXFLAGS="$ac_save_CXXFLAGS"
 CPPFLAGS="$ac_save_CPPFLAGS"
 LDFLAGS="$ac_save_LDFLAGS"
   
