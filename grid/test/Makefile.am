@@ -59,11 +59,11 @@ test_yaspgrid_LDADD = $(MPI_LDFLAGS) $(MPI_LIBS)
 
 # this implicitly checks the autoconf-test as well...
 test_alberta_SOURCES = test-alberta.cc
-test_alberta_CPPFLAGS = $(ALBERTA_CPPFLAGS) $(AM_CPPFLAGS)
+test_alberta_CXXFLAGS = $(ALBERTA_CPPFLAGS) $(AM_CPPFLAGS)
 test_alberta_LDADD = $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS)
 
 test_ug_SOURCES = test-ug.cc
-test_ug_CPPFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
+test_ug_CXXFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
 test_ug_LDADD = $(UG_LDFLAGS) $(UG_LIBS) $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
 
 ## distribution tarball
