@@ -691,6 +691,12 @@ namespace Dune {
           ++vertex[perm[i]];
           indices[i+1] = pointIndex(vertex);
         }
+        if (kuhnIndex%2 == 1)
+          for(int i = 0; i < (dimension+1)/2; ++i) {
+            int t = indices[i];
+            indices[i] = indices[dimension-i];
+            indices[dimension-i] = t;
+          }
         return indices;
       }
 
