@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
-#ifndef __DUNE_POOLALLOCATOR_HH__
-#define __DUNE_POOLALLOCATOR_HH__
+#ifndef DUNE_COMMON_POOLALLOCATOR_HH
+#define DUNE_COMMON_POOLALLOCATOR_HH
 
 #include <dune/common/alignment.hh>
 #include <iostream>
@@ -130,7 +130,7 @@ namespace Dune
     Pool(const Pool<MemberType,s>&);
     void operator=(const Pool<MemberType,s>& pool) const;
     /** @brief Grow our pool.*/
-    inline inline void grow();
+    inline void grow();
     /** @brief The first free element. */
     Reference *head_;
     /** @brief Our memory chunks. */
