@@ -988,7 +988,7 @@ namespace Dune {
     // define coarse mesh
     mapper[0].make(N[0]);
     for (int i=0; i<dim; i++)
-      h[0](i) = H[0]/((sgrid_ctype)N[0][i]);
+      h[0](i) = H[i]/((sgrid_ctype)N[0][i]);
 
     std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
     for (int i=1; i<dim; i++) std::cout << "," <<  N[L-1][i];
