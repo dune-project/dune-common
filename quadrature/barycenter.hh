@@ -1,9 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_BARYCENTER_HH__
-#define __DUNE_BARYCENTER_HH__
-
-#include <dune/common/matvec.hh>
+#ifndef DUNE_BARYCENTER_HH
+#define DUNE_BARYCENTER_HH
 
 #include "common/quadrature.hh"
 
