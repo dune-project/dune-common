@@ -157,6 +157,22 @@ namespace Dune {
       return theNode->succ;
     }
 
+    //! Gets the index of a UG element
+    static int index(const typename TargetType<0,dim>::T* theElement) {
+      return theElement->ge.id;
+    }
+
+    //! Gets the index of a UG node
+    static int index(const typename TargetType<dim,dim>::T* theNode) {
+      return theNode->myvertex->iv.id;
+    }
+
+    //! Calm the compiler
+    static int index(const void* theWhatever) {
+      DUNE_THROW(NotImplemented, "No index available for this kind of object");
+      return 0;
+    }
+
     //! \todo Please doc me!
     static void Local_To_Global(int n, DOUBLE** y,
                                 const FieldVector<double, dim>& local,

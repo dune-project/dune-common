@@ -50,26 +50,8 @@ template<int codim, int dim, class GridImp>
 inline int UGGridEntity < codim, dim ,GridImp>::
 index() const
 {
-  std::cerr << "UGGridEntity <" << codim << ", " << dim
-            << ">::index() not implemented!\n";
-  return -1;
+  return UG_NS<dim>::index(target_);
 }
-
-#ifdef _3
-template<class GridImp>
-inline int UGGridEntity < 3, 3 ,GridImp>::
-index()
-{
-  return target_->myvertex->iv.id;
-}
-
-template<>
-inline int UGGridEntity < 0, 3 ,3 >::
-index()
-{
-  return target_->ge.id;
-}
-#endif
 
 #ifdef _2
 #if 0
@@ -97,34 +79,6 @@ geometry() const
   return geo_;
 }
 
-
-
-//************************************
-//
-//  --UGGridEntity codim = 0
-//  --Entity codim = 0
-//
-//************************************
-template< int dim, class GridImp>
-inline bool UGGridEntity < 0, dim ,GridImp>::
-mark( int refCount )
-{
-#ifdef _3
-  if (!UG3d::EstimateHere(target_))
-    return false;
-
-  return UG3d::MarkForRefinement(target_,
-                                 UG3d::RED,
-                                 0);    // no user data
-#else
-  if (!UG2d::EstimateHere(target_))
-    return false;
-
-  return UG2d::MarkForRefinement(target_,
-                                 UG2d::RED,   // red refinement rule
-                                 0);    // no user data
-#endif
-}
 
 
 
@@ -175,6 +129,37 @@ inline AdaptationState UGGridEntity < 0, dim ,GridImp >::state() const
   std::cerr << "UGGridEntity::state() not yet implemented!\n";
   return NONE;
 }
+
+template<int dim, class GridImp>
+inline int UGGridEntity < 0, dim ,GridImp>::
+index() const
+{
+  return UG_NS<dim>::index(target_);
+}
+
+
+template< int dim, class GridImp>
+inline bool UGGridEntity < 0, dim ,GridImp>::
+mark( int refCount )
+{
+#ifdef _3
+  if (!UG3d::EstimateHere(target_))
+    return false;
+
+  return UG3d::MarkForRefinement(target_,
+                                 UG3d::RED,
+                                 0);    // no user data
+#else
+  if (!UG2d::EstimateHere(target_))
+    return false;
+
+  return UG2d::MarkForRefinement(target_,
+                                 UG2d::RED,   // red refinement rule
+                                 0);    // no user data
+#endif
+}
+
+
 //*****************************************************************8
 // count
 template <int dim, class GridImp>

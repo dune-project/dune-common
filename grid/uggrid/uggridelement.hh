@@ -278,7 +278,9 @@ namespace Dune {
 
     //! Maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    FieldVector<UGCtype, 1> local (const FieldVector<UGCtype, 2>& global) const;
+    FieldVector<UGCtype, 1> local (const FieldVector<UGCtype, 2>& global) const {
+      DUNE_THROW(NotImplemented, "local not implemented yet!");
+    }
 
     //! Returns true if the point is in the current element
     /** \todo Not implemented yet! */
