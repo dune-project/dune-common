@@ -92,7 +92,7 @@ namespace Dune {
         // check if we have index for given entity
         assert(leafIndex[en.globalIndex()] >= 0);
 
-        return leafIndex[en.globalIndex()];
+        return leafIndex[ en.globalIndex() ];
       }
     };
 
@@ -120,6 +120,8 @@ namespace Dune {
     enum { myType = 2 };
 
     enum INDEXSTATE { NEW, USED, UNUSED };
+
+    enum { dim = GridType :: dimension };
 
     // the mapping of the global to leaf index
     IndexArray<int> leafIndex_;
@@ -157,9 +159,7 @@ namespace Dune {
       resize();
     }
 
-    //! create index for father entity, needed for restriction
-    template <class EntityType>
-    void createFatherIndex (EntityType &en )
+    void createFatherIndex (const typename GridType::template codim<0>::Entity & en )
     {
       this->insert( en );
       marked_ = false;
@@ -192,10 +192,11 @@ namespace Dune {
       markAllBelowOld ();
     }
 
-
     //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num)
+    bool indexNew (int num, int codim)
     {
+      if(codim > 0) return false;
+
       assert((num >= 0) && (num < state_.size()));
       return state_[num] == NEW;
     }
@@ -275,8 +276,16 @@ namespace Dune {
     int size ( int level , int codim ) const
     {
       // this index set works only for codim = 0 at the moment
-      assert(codim == 0);
-      return nextFreeIndex_;
+      if(codim == 0)
+      {
+        //std::cout << "size of leafindex = " << nextFreeIndex_ << "\n";
+        return nextFreeIndex_;
+      }
+      if(codim == dim)
+        return this->grid_.global_size(codim);
+
+      assert(false);
+      return 0;
     }
 
     //! return global index
@@ -291,20 +300,22 @@ namespace Dune {
     //! for dof mapper
     int oldSize ( int level , int codim ) const
     {
+      if(codim > 0) return this->grid_.global_size(codim);
       // this index set works only for codim = 0 at the moment
-      assert(codim == 0);
       return state_.size();
     }
 
     //! return old index, for dof manager only
-    int oldIndex (int elNum) const
+    int oldIndex (int elNum, int codim ) const
     {
+      if(codim>0) return elNum;
       return oldLeafIndex_[elNum];
     }
 
-    //! return new index, for dof manager only
-    int newIndex (int elNum) const
+    //! return new index, for dof manager only returns index
+    int newIndex (int elNum , int codim ) const
     {
+      if(codim>0) return elNum;
       return leafIndex_[elNum];
     }
 
@@ -312,10 +323,10 @@ namespace Dune {
     // insert index if entities lies below used entity, return
     // false if not , otherwise return true
     template <class EntityType>
-    bool insertNewIndex (EntityType & en, bool isLeaf , bool canInsert )
+    bool insertNewIndex (const EntityType & en, bool isLeaf , bool canInsert )
     {
-      // if entity has no children, we can insert, because we are at
-      // leaflevel
+      //std::cout << en.globalIndex() << " idx|isLeaf " << isLeaf << "\n";
+      // if entity isLeaf then we insert index
       if(isLeaf)
       {
         // count leaf entities
@@ -367,16 +378,14 @@ namespace Dune {
 
       for(int i=0; i<state_.size(); i++) state_[i] = UNUSED;
 
-      LeafIterator it    = this->grid_.leafbegin ( this->grid_.maxlevel());
-      LeafIterator endit = this->grid_.leafend   ( this->grid_.maxlevel());
-
       // remember size
       oldSize_ = nextFreeIndex_;
 
       actSize_ = 0;
 
       // walk over leaf level on locate all needed entities
-      for( ; it != endit ; ++it )
+      LeafIterator endit  = this->grid_.leafend   ( this->grid_.maxlevel() );
+      for(LeafIterator it = this->grid_.leafbegin ( this->grid_.maxlevel() ); it != endit ; ++it )
       {
         this->insert( *it );
         actSize_++;
@@ -389,9 +398,6 @@ namespace Dune {
     {
       typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
 
-      LevelIterator macroit  = this->grid_.template lbegin<0> (0);
-      LevelIterator macroend = this->grid_.template lend  <0> (0);
-
       int maxlevel = this->grid_.maxlevel();
 
       for(int i=0; i<state_.size(); i++) state_[i] = UNUSED;
@@ -402,28 +408,31 @@ namespace Dune {
       // actSize is increased be insertNewIndex
       actSize_ = 0;
 
-      for( ; macroit != macroend; ++macroit )
+      for(int level = 0; level<=maxlevel; level++)
       {
-        typedef typename GridType::template codim<0>::
-        Entity::HierarchicIterator HierarchicIterator;
-
-        // if we have index all entities below need new numbers
-        bool areNew = false;
-
-        // check whether we can insert or not
-        areNew = insertNewIndex  ( *macroit , macroit->isLeaf() , areNew );
-
-        HierarchicIterator it    = macroit->hbegin ( maxlevel );
-        HierarchicIterator endit = macroit->hend   ( maxlevel );
-
-        for( ; it != endit ; ++it )
+        LevelIterator levelend    = this->grid_.template lend  <0> (level);
+        for(LevelIterator levelit = this->grid_.template lbegin<0> (level);
+            levelit != levelend; ++levelit )
         {
-          // areNew == true, then index is inserted
-          areNew = insertNewIndex  ( *it , it->isLeaf(), areNew );
-        }
-      } // end grid walk trough
+          typedef typename GridType::template codim<0>::
+          Entity::HierarchicIterator HierarchicIterator;
 
-      //std::cout << actSize_ << " actual size \n";
+          // if we have index all entities below need new numbers
+          bool areNew = false;
+
+          // check whether we can insert or not
+          areNew = insertNewIndex ( *levelit , levelit->isLeaf() , areNew );
+
+          HierarchicIterator endit  = levelit->hend   ( level + 1 );
+          for(HierarchicIterator it = levelit->hbegin ( level + 1 ); it != endit ; ++it )
+          {
+            // areNew == true, then index is inserted
+            areNew = insertNewIndex  ( *it , it->isLeaf() , areNew );
+          }
+
+        } // end grid walk trough
+      } // end for all levels
+
       marked_ = true;
     }
 
