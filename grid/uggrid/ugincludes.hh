@@ -8,14 +8,14 @@
 #ifndef DUNE_UGINCLUDES_HH
 #define DUNE_UGINCLUDES_HH
 
-#include "../../../UG/ug/gm/gm.h"
-#include "../../../UG/ug/dom/std/std_domain.h"
-#include "../../../UG/ug/initug.h"
-#include "../../../UG/ug/ui/commands.h"
-#include "../../../UG/ug/np/udm/formats.h"
+#include <gm.h>
+#include <std_domain.h>
+#include <initug.h>
+#include <commands.h>
+#include <formats.h>
 
 
 // for debugging
-#include "../../../UG/ug/dev/ugdevices.h"
+#include <ugdevices.h>
 
 #endif
