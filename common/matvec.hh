@@ -35,7 +35,7 @@ namespace Dune {
     //! know length
     enum { dimension = dim };
 
-    //! Constructor making uninizialized vector
+    //! Constructor making uninitialized vector
     Vec() {}
 
     //! Constructor making vector from built-in array
@@ -78,6 +78,12 @@ namespace Dune {
 
     //! operator () for read access to element of the vector
     const T& operator() (int i) const {return x[i];}
+
+    //! Index operator[] for compatibility with C
+    T& operator[] (int i) {return x[i];}
+
+    //! const index operator[] for compatibility with C
+    const T& operator[] (int i) const {return x[i];}
 
     //! read only operation needed
     T read (int i) const { return x[i];}
@@ -150,7 +156,7 @@ namespace Dune {
       return s;
     }
 
-    //! Eucledian distance of two vectors
+    //! Euclidean distance of two vectors
     T distance (const Vec<n,T>& b) const
     {
       T s=0.0;
@@ -158,6 +164,7 @@ namespace Dune {
       return sqrt(s);
     }
 
+    //! Print content of vector to a stream
     void print (std::ostream& s, int indent) const
     {
       for (int k=0; k<indent; k++) s << " ";
@@ -185,6 +192,7 @@ namespace Dune {
     Vec<n,T> z; for (int i=0; i<n; i++) z(i) = -b(i);return z;
   }
 
+  //! \todo Please doc me!
   template <int n, class T>
   inline std::ostream& operator<< (std::ostream& s, const Vec<n,T>& v)
   {
@@ -193,8 +201,7 @@ namespace Dune {
   }
 
   //************************************************************************
-  /*!
-     Generic vector class for short vectors in d dimensions. Used e.g. for global or local coordinates.
+  /*! Generic class for static rectangular matrices
    */
   template<int n, int dim, class T = double>
   class Mat {
@@ -224,6 +231,9 @@ namespace Dune {
     //! operator () for read/write access to column vector
     Vec<n,T>& operator() (int j) {return a[j];}
 
+    //! operator [] for read/write access to column vector
+    Vec<n,T>& operator[] (int j) {return a[j];}
+
     //! matrix/vector multiplication
     Vec<n,T> operator* (const Vec<m,T>& x)
     {
@@ -250,6 +260,7 @@ namespace Dune {
       return *this;
     }
 
+    //! Print matrix content to an output stream
     void print (std::ostream& s, int indent)
     {
       for (int k=0; k<indent; k++) s << " ";
