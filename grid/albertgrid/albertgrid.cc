@@ -333,7 +333,7 @@ namespace Dune
     for(int i=0; i<corners(); i++)
     {
       ss << " corner " << i;
-      ((*this)[i]).print(ss,1); ss << "\n";
+      ss << ((*this)[i]); ss << "\n";
     }
     ss << "} \n";
   }
@@ -721,7 +721,7 @@ namespace Dune
     for(int j=0; j<dim; j++)
       if(tmp2(j) != coord(j))
       {
-        coord.print(std::cout,1); tmp2.print(std::cout,1); std::cout << "\n";
+        std::cout << coord; std::cout << tmp2; std::cout << "\n";
         std::cout << "AlbertGridElement<2,2>::checkMapping: Mapping of coord " << loc << " incorrect! \n";
         return false;
       }
@@ -748,8 +748,8 @@ namespace Dune
     {
       if(tmp2(j) != coord(j))
       {
-        coord.print(std::cout,1); refcoord.print(std::cout,1);
-        tmp2.print(std::cout,1); std::cout << "\n";
+        std::cout << coord; std::cout << refcoord;
+        std::cout << tmp2; std::cout << "\n";
         std::cout << "AlbertGridElement<3,3>::checkMapping: Mapping of coord " << loc << " incorrect! \n";
         return false;
       }
