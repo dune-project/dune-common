@@ -199,6 +199,32 @@ namespace Dune
   {
     enum { value=true};
   };
+
+  /**
+   * @brief Select a type based on a condition.
+   *
+   * If template parameter first is true T1 is selected
+   * otherwise T2 will be selected.
+   * The selected type id accessible through the typedef
+   * Type.
+   */
+  template<bool first, class T1, class T2>
+  struct SelectType
+  {
+    /**
+     * @brief The selected type.
+     *
+     * if first is true this will be type T1 and
+     * otherwise T2
+     */
+    typedef T1 Type;
+  };
+
+  template<class T1, class T2>
+  struct SelectType<false,T1,T2>
+  {
+    typedef T2 Type;
+  };
   /** @} */
 }
 #endif
