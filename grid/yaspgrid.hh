@@ -454,13 +454,13 @@ namespace Dune {
     typedef yaspgrid_ctype ctype;
 
     //! level of this element
-    int level ()
+    int level () const
     {
       DUNE_THROW(GridError, "YaspEntity not implemented");
     }
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
-    int index ()
+    int index () const
     {
       DUNE_THROW(GridError, "YaspEntity not implemented");
     }
@@ -498,10 +498,10 @@ namespace Dune {
     {}
 
     //! level of this element
-    int level () {return _g.level();}
+    int level () const {return _g.level();}
 
     //! index is unique and consecutive per level
-    int index () {return _it.superindex();} // superindex works also for iteration over subgrids
+    int index () const {return _it.superindex();} // superindex works also for iteration over subgrids
 
     //! geometry of this entity
     YaspElement<dim,dimworld>& geometry () {return _element;}
@@ -517,7 +517,7 @@ namespace Dune {
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
           with codimension cc.
      */
-    template<int cc> int count ()
+    template<int cc> int count () const
     {
       if (cc==1) return 2*dim;
       if (cc==dim) return 1<<dim;
@@ -528,7 +528,7 @@ namespace Dune {
           with codimension cc.
      */
     template<int cc>
-    YaspLevelIterator<cc,dim,dimworld,All_Partition> entity (int i)
+    YaspLevelIterator<cc,dim,dimworld,All_Partition> entity (int i) const
     {
       IsTrue< ( cc == dim || cc == 0 ) >::yes();
       // coordinates of the cell == coordinates of lower left corner
