@@ -22,15 +22,13 @@ namespace Dune {
           - throws std::bad_alloc just as new does
 
    */
-  class ISTLAllocator { // uses standard malloc and free
+  class ISTLAllocator { // uses new and delete
   public:
     //! allocate array of nmemb objects of type T
     template<class T>
     static T* malloc (size_t nmemb)
     {
-      T* p = static_cast<T*>(std::malloc(nmemb*sizeof(T)));
-      if (p==NULL) throw std::bad_alloc();
-      count++;
+      T* p = new T[nmemb];
       return p;
     }
 
@@ -38,22 +36,9 @@ namespace Dune {
     template<class T>
     static void free (T* p)
     {
-      std::free(p);
-      count--;
+      delete [] p;
     }
-
-    //! return number of allocated objects
-    unsigned int nobjects ()
-    {
-      return count;
-    }
-
-  private:
-    // just to demonstrate some state information
-    static unsigned int count;
   };
-
-  unsigned int ISTLAllocator::count=0;
 
   /** @} end documentation */
 
