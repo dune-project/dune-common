@@ -158,8 +158,6 @@ namespace Dune {
     void getIndex (EntityType &en, int num) const
     {
       index_[0] = dimrange * indexSet_.template index<0> (en,num);
-      //index_[1] = dm_.template index<1> (en,num);
-      //index_[2] = dm_.template index<2> (en,num);
     }
   };
 
