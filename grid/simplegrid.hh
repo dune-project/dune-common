@@ -807,7 +807,6 @@ namespace Dune {
 
     SimpleHierarchicIterator(SimpleElement<dim,dimworld> & geo) : enty(geo)
     {
-      //throw GridError ("SimpleHierarchicIterator not implemented!");
       assert(false);
       //abort();
     }
@@ -815,7 +814,6 @@ namespace Dune {
     //! prefix increment
     SimpleHierarchicIteratorType& operator++()
     {
-      //throw GridError ("SimpleHierarchicIterator not implemented!");
       assert(false);
       //abort();
       return *this;
@@ -850,7 +848,6 @@ namespace Dune {
     //! arrow
     SimpleEntity<0,dim,dimworld>* operator->()
     {
-      throw GridError ("SimpleHierarchicIterator not implemented!");
       assert(false);
       abort();
       return &enty;
