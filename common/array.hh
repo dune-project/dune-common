@@ -146,6 +146,9 @@ namespace Dune
     //! reallocate array with size m
     void resize (int m);
 
+    /** \todo This the same as resize! */
+    void realloc (int m) {resize(m);}
+
     //! return number of components in array
     int size () const;
 
