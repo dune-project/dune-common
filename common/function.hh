@@ -8,6 +8,8 @@
 
 namespace Dune {
 
+  typedef int deriType;
+
 
   template< class FunctionSpaceType, class FunctionImp>
   class Function : public Mapping <typename FunctionSpaceType::RangeField , typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range > {
@@ -21,7 +23,13 @@ namespace Dune {
 
     Function ( FunctionSpaceType & f ) : functionSpace_ (f) {} ;
 
-    void evaluate ( const Domain & , Range &) const ;
+    //! evaluate Function
+    void eval ( const Domain & , Range &) const ;
+
+    //! evaluate function and derivatives
+    template <int derivation>
+    void evaluate  ( const Vec<derivation,deriType> &diffVariable,
+                     const Domain & , Range &) const {};
 
     FunctionSpaceType &getFunctionSpace() const { return functionSpace_; }
 
