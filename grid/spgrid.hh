@@ -239,9 +239,10 @@ namespace Dune {
   /// The Index in the structured parallel Grid
 
   template<int DIM>
-  class spgrid<DIM>::remotelist {
-  private:
+  class spgrid<DIM>::remotelist
+  {
     friend class index;
+  private:
     remotelist(int s) : size(s) { list = new remoteindex[size]; };
   public:
     remoteindex *list;
@@ -260,17 +261,18 @@ namespace Dune {
   template<int DIM>
   class spgrid<DIM>::index
   {
+    friend class iterator;
+  public:
+    const spgrid<DIM> &g;
   private:
     int id_;
-    const spgrid<DIM> &g;
     level l_;
     index(const spgrid<DIM> &grid) : g(grid) {};
     index& operator = (const iterator &i) {
       id_=i.id_; l_=i.l_; return (*this);
     };
-    friend class spgrid<DIM>::iterator;
   public:
-    index (const iterator &i) : id_(i.id_), g(i.g), l_(i.l_) {};
+    index (const iterator &i) : g(i.g), id_(i.id_), l_(i.l_) {};
     int id() const { return id_; };
     array<DIM>& coord() const { return g.id_to_coord(l_,id_); };
     int globalid() const;
@@ -286,11 +288,13 @@ namespace Dune {
   template<int DIM>
   class spgrid<DIM>::iterator
   {
-    int id_;
+    friend class index;
+  public:
     const spgrid<DIM> &g;
+  private:
+    int id_;
     level l_;
     index referenz;
-  private:
     // calc overlap in direction d in this level
     // this levels overlap for a special dimension and process
     const MPI_Comm & comm() const { return g.comm_; };
@@ -303,15 +307,15 @@ namespace Dune {
      * Constructors
      */
     iterator (const iterator &i) :
-      id_(i.id_), g(i.g), l_(i.l_), referenz(i.referenz), changed(i.changed)
+      g(i.g), id_(i.id_), l_(i.l_), referenz(i.referenz), changed(i.changed)
     { };
     iterator (int i, const spgrid<DIM> &grid) :
-      id_(i), g(grid), l_(0), referenz(grid), changed(true)
+      g(grid), id_(i), l_(0), referenz(grid), changed(true)
     {
       recalc_level();
     };
-    iterator (level l,const array<DIM> &coord, const spgrid<DIM> &grid)
-      : g(grid), l_(l), referenz(grid), changed(true)
+    iterator (level l,const array<DIM> &coord, const spgrid<DIM> &grid) :
+      g(grid), l_(l), referenz(grid), changed(true)
     {
       assert (l_ < g.levels);
       id_=g.coord_to_id(l_,coord);
