@@ -490,7 +490,7 @@ namespace Dune {
   }
 
 
-  /**! Matrices represent linear maps from a vector space V to a vector space W.
+  /** Matrices represent linear maps from a vector space V to a vector space W.
        This class represents such a linear map by storing a two-dimensional
        array of numbers of a given field type K. The number of rows and
        columns is given at compile time.
@@ -953,14 +953,20 @@ namespace Dune {
 
     //===== solve
 
-    //! Solve system A x = b
+    /** \brief Solve system A x = b
+     *
+     * \exception ISTLError if the matrix is singular
+     */
     template<class V>
     void solve (V& x, const V& b) const
     {
       fm_solve(*this,x,b);
     }
 
-    //! compute inverse
+    /** \brief Compute inverse
+     *
+     * \exception ISTLError if the matrix is singular
+     */
     void invert ()
     {
       fm_invert(*this);
@@ -1037,7 +1043,7 @@ namespace Dune {
     //===== conversion operator
 
     /** \brief Returns the entry [0][0] */
-    operator K () const {return p[0][0];}
+    operator K () const DUNE_DEPRECATED {return p[0][0];}
 
     /** \brief Sends the matrix to an output stream */
     void print (std::ostream& s) const
