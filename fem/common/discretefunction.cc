@@ -21,13 +21,27 @@ namespace Dune
   scalarProductDofs( const DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
                          DofIteratorImp ,LocalFunctionIteratorImp, DiscreteFunctionImp > &g ) const
   {
+    int level = this->getFunctionSpace().getGrid().maxlevel();
+
+    return scalarProductDofs(g, level);
+  }
+
+  // scalarProductDofs
+  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
+      template <class,class> class LocalFunctionIteratorImp,
+      class DiscreteFunctionImp >
+  inline typename DiscreteFunctionSpaceType::RangeField
+  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
+      DofIteratorImp , LocalFunctionIteratorImp,DiscreteFunctionImp >::
+  scalarProductDofs( const DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
+                         DofIteratorImp ,LocalFunctionIteratorImp, DiscreteFunctionImp > &g,
+                     int level) const
+  {
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
     typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
         DofIteratorImp , LocalFunctionIteratorImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
 
     RangeFieldType skp = 0.;
-
-    int level = this->getFunctionSpace().getGrid().maxlevel();
 
     // get DofIterator from this
 
@@ -45,6 +59,7 @@ namespace Dune
     }
     return skp;
   }
+
 
   // assign
   template<class DiscreteFunctionSpaceType, class DofIteratorImp,
@@ -103,6 +118,9 @@ namespace Dune
   }
 
   // operator +=
+  /** \todo This operator can add a discretefunction defined on all levels to another
+   * one defined only on one level.  We should somehow issue a warning in this case.
+   */
   template<class DiscreteFunctionSpaceType, class DofIteratorImp,
       template <class,class> class LocalFunctionIteratorImp, class DiscreteFunctionImp >
   inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
@@ -113,9 +131,9 @@ namespace Dune
     typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
         DofIteratorImp , LocalFunctionIteratorImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
 
+    /** \todo Remove const_cast as soon as we have const iterators */
     DiscreteFunctionDefaultType &gc =
       const_cast<DiscreteFunctionDefaultType &>( static_cast<const DiscreteFunctionDefaultType &> ( g ));
-    // we would need const_iterators.....
 
     int level = this->getFunctionSpace().getGrid().maxlevel();
 
@@ -137,14 +155,24 @@ namespace Dune
   addScaled( const Vector< typename DiscreteFunctionSpaceType::RangeField > & g ,
              const typename DiscreteFunctionSpaceType::RangeField &scalar)
   {
+    int level = this->getFunctionSpace().getGrid().maxlevel();
+    addScaled(g, scalar, level);
+  }
+
+  // operator +=
+  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
+      template <class,class> class LocalFunctionIteratorImp, class DiscreteFunctionImp >
+  inline void DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
+      DofIteratorImp , LocalFunctionIteratorImp,DiscreteFunctionImp >::
+  addScaled( const Vector< typename DiscreteFunctionSpaceType::RangeField > & g ,
+             const typename DiscreteFunctionSpaceType::RangeField &scalar, int level)
+  {
     typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
         DofIteratorImp , LocalFunctionIteratorImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
 
+    /** \todo Remove the const cast as soon as we have const iterators */
     DiscreteFunctionDefaultType &gc =
       const_cast<DiscreteFunctionDefaultType &>( static_cast<const DiscreteFunctionDefaultType &> ( g ));
-    // we would need const_iterators.....
-
-    int level = this->getFunctionSpace().getGrid().maxlevel();
 
     DofIteratorImp endit = this->dend ( level );
     DofIteratorImp git = gc.dbegin ( level );
@@ -154,6 +182,7 @@ namespace Dune
       ++git;
     }
   }
+
 
   // operator -=
   template<class DiscreteFunctionSpaceType, class DofIteratorImp,
@@ -192,6 +221,21 @@ namespace Dune
   {
     int level = this->getFunctionSpace().getGrid().maxlevel();
 
+    DofIteratorImp endit = this->dend ( level );
+    for(DofIteratorImp it = this->dbegin( level ); it != endit; ++it)
+      *it *= scalar;
+
+    return *this;
+  }
+
+  // operator *=
+  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
+      template <class,class> class LocalFunctionIteratorImp, class DiscreteFunctionImp >
+  inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
+  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
+      DofIteratorImp , LocalFunctionIteratorImp,DiscreteFunctionImp >::
+  mult ( const typename DiscreteFunctionSpaceType::RangeField & scalar, int level )
+  {
     DofIteratorImp endit = this->dend ( level );
     for(DofIteratorImp it = this->dbegin( level ); it != endit; ++it)
       *it *= scalar;

@@ -196,40 +196,53 @@ namespace Dune {
 
 
     //! Evaluate a scalar product of the dofs of two DiscreteFunctions
-    typename DiscreteFunctionSpaceType::RangeField scalarProductDofs( const DiscreteFunctionDefault &g ) const;
+    //! on the top level of the underlying grid
+    RangeFieldType scalarProductDofs( const DiscreteFunctionDefault &g ) const;
+
+    //! Evaluate a scalar product of the dofs of two DiscreteFunctions
+    //! on an explicitly given level
+    RangeFieldType scalarProductDofs( const DiscreteFunctionDefault &g,
+                                      int level) const;
 
     //! Assignment
-    Vector<typename DiscreteFunctionSpaceType::RangeField> &
-    assign(const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
+    Vector<RangeFieldType> &
+    assign(const Vector<RangeFieldType> &g);
 
     //! Assignment operator
-    Vector<typename DiscreteFunctionSpaceType::RangeField> &
-    operator = (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
+    Vector<RangeFieldType> & operator = (const Vector<RangeFieldType> &g);
 
     //! Addition
-    Vector<typename DiscreteFunctionSpaceType::RangeField> &
-    operator += (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
+    Vector<RangeFieldType> & operator += (const Vector<RangeFieldType> &g);
 
-    //! !
-    void addScaled (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g,
-                    const typename DiscreteFunctionSpaceType::RangeField &scalar);
+    //! Add scalar*g to this on the maxlevel
+    void addScaled (const Vector<RangeFieldType> &g,
+                    const RangeFieldType &scalar);
+
+    //! Add scalar*g to this on a given level
+    void addScaled (const Vector<RangeFieldType> &g,
+                    const RangeFieldType &scalar,
+                    int level);
 
     //! substract
-    Vector<typename DiscreteFunctionSpaceType::RangeField> &
-    operator -= (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
+    Vector<RangeFieldType> &
+    operator -= (const Vector<RangeFieldType> &g);
+
+    //! multiply on maxlevel
+    Vector<RangeFieldType> &
+    operator *= (const RangeFieldType &scalar);
 
     //! multiply
-    Vector<typename DiscreteFunctionSpaceType::RangeField> &
-    operator *= (const typename DiscreteFunctionSpaceType::RangeField &scalar);
+    Vector<RangeFieldType> &
+    mult (const RangeFieldType &scalar, int level);
 
     //! Division by a scalar
-    Vector<typename DiscreteFunctionSpaceType::RangeField> &
-    operator /= (const typename DiscreteFunctionSpaceType::RangeField &scalar);
+    Vector<RangeFieldType> &
+    operator /= (const RangeFieldType &scalar);
 
     //! add
-    Vector<typename DiscreteFunctionSpaceType::RangeField> &
-    add(const Vector<typename DiscreteFunctionSpaceType::RangeField> &g ,
-        typename DiscreteFunctionSpaceType::RangeField scalar );
+    /** \todo Ist das nicht das gleiche wie addScaled? */
+    Vector<RangeFieldType> &
+    add(const Vector<RangeFieldType> &g , RangeFieldType scalar );
 
     //! clear all dofs of a given level of the discrete function
     void clearLevel(int level );
