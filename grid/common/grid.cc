@@ -84,7 +84,7 @@ namespace Dune {
       l = local  ( coord );
       if( !checkInside (l) )
       {
-        coord.print(std::cerr,1);
+        std::cerr << coord;
         std::cerr << " mapping with local() went wrong! \n";
       }
 
@@ -92,7 +92,7 @@ namespace Dune {
       {
         if( l(j) != refelem()[i](j) )
         {
-          l.print(std::cerr,1); refelem()[i].print(std::cerr,1);
+          std::cerr << l; std::cerr << refelem()[i];
           std::cerr << "\nMapping to local coord went wrong! \n";
         }
       }
@@ -103,8 +103,8 @@ namespace Dune {
         if( g(j) != coord(j) )
         {
           std::cerr << "\nglobal--local of coord " << i << " failed! \n";
-          std::cerr << "started with "; coord.print(std::cerr,1);
-          std::cerr << "and got: ";     g.print(std::cerr,1);
+          std::cerr << "started with "; std::cerr << coord;
+          std::cerr << "and got: ";     std::cerr << g;
           std::cerr << "\n";
         }
       }
