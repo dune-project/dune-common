@@ -92,9 +92,13 @@ namespace Dune {
      */
     static void Transformation(int n, double** x,
                                const Vec<dim, double>& local, Mat<dim,dim,double>& mat) {
-      TRANSFORMATION(n, x, local, mat);
+      //TRANSFORMATION(n, x, local, mat);
+      typedef DOUBLE DOUBLE_VECTOR[dim];
+      double det;
+      INVERSE_TRANSFORMATION(n, x, local, mat, det);
     }
 
+    //! Returns the i-th corner of a UG element
     static typename TargetType<dim,dim>::T* Corner(typename TargetType<0,dim>::T* theElement, int i) {
 #ifdef _2
       using UG2d::NODE;
