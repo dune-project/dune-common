@@ -231,7 +231,6 @@ namespace Dune
 
   // end specializations for mapVertices
 
-
   template< int dim, int dimworld>
   inline AlbertGridElement<dim,dimworld>::
   AlbertGridElement(bool makeRefElement)

@@ -10,7 +10,6 @@
 
 
 #ifdef __ALBERTNAME__
-
 #define ALBERT Albert::
 namespace Albert
 {
@@ -362,6 +361,7 @@ namespace Albert
       friend class AlbertGrid < dim , dimworld >;
       friend class AlbertMarkerVector;
       friend class AlbertGridNeighborIterator < dim, dimworld>;
+      friend class AlbertGridHierarchicIterator < dim, dimworld>;
       friend class AlbertGridLevelIterator <0,dim,dimworld>;
     public:
       typedef AlbertGridNeighborIterator<dim,dimworld> NeighborIterator;
