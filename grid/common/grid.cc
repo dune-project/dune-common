@@ -121,166 +121,166 @@ namespace Dune {
   //************************************************************************
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline NeighborIteratorImp<dim,dimworld>& NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator++ ()
+  inline IntersectionIteratorImp<dim,dimworld>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator++ ()
   {
     return asImp().operator++();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline bool NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator== (const NeighborIteratorImp<dim,dimworld>& i) const
+  inline bool IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator== (const IntersectionIteratorImp<dim,dimworld>& i) const
   {
     return asImp().operator==(i);
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline bool NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator!= (const NeighborIteratorImp<dim,dimworld>& i) const
+  inline bool IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator!= (const IntersectionIteratorImp<dim,dimworld>& i) const
   {
     return asImp().operator!=(i);
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline bool NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::boundary ()
+  inline bool IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::boundary ()
   {
     return asImp().boundary();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline EntityImp<0,dim,dimworld>& NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator* ()
+  inline EntityImp<0,dim,dimworld>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator* ()
   {
     return asImp().operator*();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline EntityImp<0,dim,dimworld>* NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator-> ()
+  inline EntityImp<0,dim,dimworld>* IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::operator-> ()
   {
     return asImp().operator->();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline Vec<dimworld,ct>& NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::unit_outer_normal (Vec<dim-1,ct>& local)
+  inline Vec<dimworld,ct>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::unit_outer_normal (Vec<dim-1,ct>& local)
   {
     return asImp().unit_outer_normal(local);
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline Vec<dimworld,ct>& NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::unit_outer_normal ()
+  inline Vec<dimworld,ct>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::unit_outer_normal ()
   {
     return asImp().unit_outer_normal();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline ElementImp<dim-1,dim>& NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::intersection_self_local ()
+  inline ElementImp<dim-1,dim>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::intersection_self_local ()
   {
     return asImp().intersection_self_local();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline ElementImp<dim-1,dimworld>& NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::intersection_self_global ()
+  inline ElementImp<dim-1,dimworld>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::intersection_self_global ()
   {
     return asImp().intersection_self_global();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline int NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::number_in_self ()
+  inline int IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::number_in_self ()
   {
     return asImp().number_in_self();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline ElementImp<dim-1,dim>& NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::intersection_neighbor_local ()
+  inline ElementImp<dim-1,dim>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::intersection_neighbor_local ()
   {
     return asImp().intersection_neighbor_local();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline ElementImp<dim-1,dimworld>& NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::intersection_neighbor_global ()
+  inline ElementImp<dim-1,dimworld>& IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::intersection_neighbor_global ()
   {
     return asImp().intersection_neighbor_global();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline int NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::number_in_neighbor ()
+  inline int IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::number_in_neighbor ()
   {
     return asImp().number_in_neighbor();
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline void NeighborIterator<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::checkIF ()
+  inline void IntersectionIterator<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::checkIF ()
   {
     operator++();
     operator==(asImp());
@@ -303,12 +303,12 @@ namespace Dune {
   // N E I G H B O R I T E R A T O R Default
   //************************************************************************
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline Vec<dimworld,ct>& NeighborIteratorDefault<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::outer_normal ()
+  inline Vec<dimworld,ct>& IntersectionIteratorDefault<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::outer_normal ()
   {
     // make a copy, is nessasary
     outerNormal_ = &asImp().unit_outer_normal();
@@ -317,12 +317,12 @@ namespace Dune {
   }
 
   template<int dim, int dimworld, class ct,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp
       , template<int,int> class BoundaryEntityImp
       >
-  inline Vec<dimworld,ct>& NeighborIteratorDefault<dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::
+  inline Vec<dimworld,ct>& IntersectionIteratorDefault<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::
   outer_normal (Vec<dim-1,ct>& local)
   {
     // make a copy, is nessasary
@@ -407,10 +407,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline int Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::level ()
+  inline int Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::level ()
   {
     return asImp().level();
   }
@@ -419,10 +419,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline int Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::index ()
+  inline int Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::index ()
   {
     return asImp().index();
   }
@@ -431,10 +431,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline ElementImp<dim-codim,dimworld>& Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::geometry ()
+  inline ElementImp<dim-codim,dimworld>& Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::geometry ()
   {
     return asImp().geometry();
   }
@@ -443,10 +443,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline void Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::checkIF ()
+  inline void Entity<codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::checkIF ()
   {
     level();
     index();
@@ -458,10 +458,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline int Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::level ()
+  inline int Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::level ()
   {
     return asImp().level();
   }
@@ -470,10 +470,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline int Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::index ()
+  inline int Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::index ()
   {
     return asImp().index();
   }
@@ -482,10 +482,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline ElementImp<dim,dimworld>& Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::geometry ()
+  inline ElementImp<dim,dimworld>& Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::geometry ()
   {
     return asImp().geometry();
   }
@@ -494,11 +494,11 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
   template<int cc>
-  inline int Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::count ()
+  inline int Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::count ()
   {
     return asImp().count<cc>();
   }
@@ -507,11 +507,11 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
   template<int cc>
-  inline LevelIteratorImp<cc,dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::entity (int i)
+  inline LevelIteratorImp<cc,dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::entity (int i)
   {
     return asImp().entity<cc>(i);
   }
@@ -520,34 +520,36 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline NeighborIteratorImp<dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::nbegin ()
+  inline IntersectionIteratorImp<dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::ibegin ()
   {
     return asImp().nbegin();
   }
 
-  template<int dim, int dimworld, class ct,
-      template<int,int,int> class EntityImp,
-      template<int,int> class ElementImp,
-      template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
-      template<int,int> class HierarchicIteratorImp
-      >
-  inline NeighborIteratorImp<dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::nend ()
-  {
-    return asImp().nend();
-  }
 
   template<int dim, int dimworld, class ct,
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline LevelIteratorImp<0,dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::father ()
+  inline IntersectionIteratorImp<dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::iend ()
+  {
+    return asImp().nend();
+  }
+
+
+  template<int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int> class LevelIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      >
+  inline LevelIteratorImp<0,dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::father ()
   {
     return asImp().father();
   }
@@ -556,10 +558,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline ElementImp<dim,dim>& Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::father_relative_local ()
+  inline ElementImp<dim,dim>& Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::father_relative_local ()
   {
     return asImp().father_relative_local();
   }
@@ -568,10 +570,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline HierarchicIteratorImp<dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::hbegin (int maxlevel)
+  inline HierarchicIteratorImp<dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::hbegin (int maxlevel)
   {
     return asImp().hbegin(maxlevel);
   }
@@ -580,10 +582,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline HierarchicIteratorImp<dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::hend (int maxlevel)
+  inline HierarchicIteratorImp<dim,dimworld> Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::hend (int maxlevel)
   {
     return asImp().hend(maxlevel);
   }
@@ -592,10 +594,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline void Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::checkIF ()
+  inline void Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::checkIF ()
   {
     level();
     index();
@@ -617,10 +619,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline int Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::level ()
+  inline int Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::level ()
   {
     return asImp().level();
   }
@@ -629,10 +631,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline int Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::index ()
+  inline int Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::index ()
   {
     return asImp().index();
   }
@@ -641,10 +643,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline ElementImp<0,dimworld>& Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::geometry ()
+  inline ElementImp<0,dimworld>& Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::geometry ()
   {
     return asImp().geometry();
   }
@@ -653,10 +655,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline LevelIteratorImp<0,dim,dimworld> Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::father ()
+  inline LevelIteratorImp<0,dim,dimworld> Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::father ()
   {
     return asImp().father();
   }
@@ -665,10 +667,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline Vec<dim,ct>& Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::local ()
+  inline Vec<dim,ct>& Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::local ()
   {
     return asImp().local();
   }
@@ -677,10 +679,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       >
-  inline void Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::checkIF ()
+  inline void Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::checkIF ()
   {
     level();
     index();
@@ -696,10 +698,10 @@ namespace Dune {
       template<int,int,int> class EntityImp,
       template<int,int> class ElementImp,
       template<int,int,int> class LevelIteratorImp,
-      template<int,int> class NeighborIteratorImp,
+      template<int,int> class IntersectionIteratorImp,
       template<int,int> class HierarchicIteratorImp
       > template <int cc>
-  inline int EntityDefault <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::subIndex (int i)
+  inline int EntityDefault <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::subIndex (int i)
   {
     // return index of sub Entity number i
     return (asImp().entity<cc>(i))->index();
@@ -876,7 +878,7 @@ namespace Dune {
       std::cout << " OK."  << std::endl;
 
       // neighbor iterator
-      std::cout << "checking NeighborIterator with dim=" << dim
+      std::cout << "checking IntersectionIterator with dim=" << dim
                 << ", dimworld=" << dimworld;
       i->nbegin().checkIF();
       std::cout << " OK."  << std::endl;
