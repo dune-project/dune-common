@@ -3,8 +3,8 @@
 
 # TODO
 #
-# use pkg-config later? Maybe not really worth it, because only ojne -I is
-# needed...
+# use pkg-config later? Maybe not really worth it, because only one -I is
+# needed right now...
 
 #   #export PKG_CONFIG_LIBDIR=$with_dune/dune
 #  #PKG_CHECK_MODULES(DUNE, dune)  
@@ -21,27 +21,29 @@ AC_DEFUN(DUNE_PATH_DUNE,
   AC_ARG_WITH(dune,
     AC_HELP_STRING([--with-dune=PATH],[directory with Dune inside]))
 
-# is a directory set?
-  if test "x$with_dune" != x ; then        
-    if test -d $with_dune; then
+  # backup of flags
+  ac_save_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS=""
+
+  # is a directory set?
+  if test "x$with_dune" != x ; then
+    # expand tilde
+    eval with_dune="$with_dune"
+    if test -d $with_dune ; then
       # expand tilde / other stuff
       DUNEROOT=`cd $with_dune && pwd`
+    
+      # expand search path (otherwise empty CPPFLAGS)
+      CPPFLAGS="-I$DUNEROOT"
     else
-      AC_MSG_ERROR([directory $with_dune does not exist])
-    fi      
-  else
-    # set default path
-    DUNEROOT=/usr/local/include/
+      AC_MSG_ERROR([dune-directory $with_dune does not exist])
+    fi
   fi
-
-  ac_save_CPPFLAGS="$CPPFLAGS"
-
-  CPPFLAGS="$CPPFLAGS -I$DUNEROOT"
 
   # test for an arbitrary header
   AC_CHECK_HEADER([dune/common/misc.hh],
-    [DUNE_CPPFLAGS="-I$DUNEROOT"
-     HAVE_DUNE=1],
+    [HAVE_DUNE=1
+     DUNE_CPPFLAGS="$CPPFLAGS"],
     [HAVE_DUNE=0]
   )
 
