@@ -7,12 +7,12 @@
 #define _ANSI_HEADER
 #endif
 
-#define _BSGRID_PARALLEL_
+//#define _BSGRID_PARALLEL_
 
 // includes for bsgrid_src
 #include "systemincludes.hh"
 
-// all methods and classes of the sbgrid are defined in the namespace
+// all methods and classes of the BSgrid are defined in the namespace
 // BernhardSchuppGrid
 #define BSSPACE BernhardSchuppGrid ::
 //#define BSSPACE
@@ -34,7 +34,7 @@ namespace BernhardSchuppGrid {
   typedef Dune::FieldVector <double,3> BSGridVecType;
 
 
-  typedef enum {hexa,tetra} grid_t;
+  typedef enum { hexa , tetra } grid_t;
 
   // bsgrid original sources
 
@@ -80,7 +80,9 @@ namespace BernhardSchuppGrid {
       BndsegPllBaseXClosure < GitterType :: hbndseg3_GEO > ,
       BndsegPllBaseXMacroClosure < GitterType :: hbndseg3_GEO > > :: micro_t MicroType;
 
+  //typedef MicroType PLLBndFaceType;
   enum { ProcessorBoundary_t = BSGitterType:: hbndseg_STI :: closure };
+
 #else
   struct GatherScatter;
   typedef GatherScatter GatherScatterType;
@@ -109,6 +111,7 @@ namespace BernhardSchuppGrid {
   typedef GitterType::hface_STI PLLFaceType;                   // Interface Face
 
 #endif
+  //#include "bsgrid_src/gitter_mgb.cc"
 
   /*
      // the serial sources
@@ -129,7 +132,7 @@ namespace BernhardSchuppGrid {
   typedef GitterType::helement_STI HElementType;             // Interface Element
   typedef GitterType::hface_STI HFaceType;                   // Interface Face
   typedef GitterType::Geometric::hface3_GEO GEOFaceType;     // real Face
-  typedef BSGitterType::Objects::tetra_IMPL IMPLElementType;   // impl Element
+  typedef BSGitterType::Objects::tetra_IMPL IMPLElementType; // impl Element
   typedef GitterType::Geometric::tetra_GEO GEOElementType;   // real Element
   typedef GitterType::Geometric::hasFace3 HasFace3Type;      // has Face with 3 polygons
 
