@@ -114,7 +114,7 @@ namespace Dune {
   mgc (level l) {
     if (l==0) { //g.roughest()) {
       double my_d = defect(l);
-      double max_d = 1e-15; //my_d*reduction;
+      double max_d = my_d*1e-3;
       // alles auf einen Knoten schieben und loesen :-)
       int c=0;
 #ifndef NODUMP
@@ -150,7 +150,7 @@ namespace Dune {
           dump(g,l,d,"smoothest",(char*)extention.str().c_str());
         }
 #endif
-        if (my_d < 1e-16)
+        if (my_d < 1e-14)
           return;
         if (c > 500) {
           std::cout << "too many iterations on level 0" << std::endl;
