@@ -280,7 +280,7 @@ namespace Dune {
         IndexVector indices = backend.vertexIndices();
 
         int base = kuhnIndex * BackendRefinement::nElements(level);
-        for(int i; i <= dimension; ++i)
+        for(int i=0; i <= dimension; ++i)
           indices += base;
 
         return indices;
