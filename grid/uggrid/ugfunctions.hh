@@ -131,6 +131,18 @@ namespace Dune {
       return CORNER(theElement, i);
     }
 
+    static typename TargetType<0,dim>::T* EFather(typename TargetType<0,dim>::T* theElement) {
+#ifdef _3
+      using UG3d::ELEMENT;
+      using UG3d::father_offset;
+#else
+      using UG2d::ELEMENT;
+      using UG2d::father_offset;
+#endif
+      return EFATHER(theElement);
+    }
+
+
     static void InitUg(int* argcp, char*** argvp) {
 #ifdef _3
       UG3d::InitUg(argcp, argvp);
