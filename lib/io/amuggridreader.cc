@@ -7,7 +7,12 @@
 #include "../../grid/uggrid.hh"
 
 #include <amiramesh/AmiraMesh.h>
+
+//#define __USE_PARAMETRIZATION_LIBRARY__
+
+#ifdef __USE_PARAMETRIZATION_LIBRARY__
 #include "../../../AmiraLibs/include/AmiraParamAccess.h"
+#endif
 
 namespace Dune {
 
@@ -36,6 +41,8 @@ namespace Dune {
     static int CreateDomain(UGGrid<3,3>& grid,
                             const std::string& domainName,
                             AmiraMesh* am);
+
+    static void buildGrid(UGGrid<3,3>& grid, AmiraMesh* am);
 
     static void readHexaGrid(UGGrid<3,3>& grid, AmiraMesh* am);
 
@@ -506,7 +513,8 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
 #ifdef __USE_PARAMETRIZATION_LIBRARY__
 /** \todo Clear grid before reading! */
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
-                                                     const std::string& filename)  try
+                                                     const std::string& filename,
+                                                     const std::string& domainFilename)  try
 {
   printf("This is the AmiraMesh reader for UGGrid<3,3>!\n");
 
@@ -523,183 +531,10 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   }
 
   //loaddomain $file @PARA_FILE $name @DOMAIN
-  CreateDomain(grid, "olisDomain", "cube.par.am");
+  CreateDomain(grid, "olisDomain", domainFilename);
 
-  // call configureCommand and newCommand
-  grid.makeNewUGMultigrid();
-
-  // ////////////////////////////////////////////
-  // loadmesh $file @GRID_FILE $name @DOMAIN;
-
-  const int DIM = 3;
-
-  int i;
-  double nodePos[DIM];
-  UG3d::NODE* theNode;
-
-  std::cout << "Loading Amira mesh " <<  filename << "\n";
-
-
-
-  float* am_node_coordinates_float = NULL;
-  double* am_node_coordinates_double = NULL;
-
-  // get the different data fields
-  AmiraMesh::Data* am_coordinateData =  am->findData("Nodes", HxFLOAT, 3, "Coordinates");
-  if (am_coordinateData)
-    am_node_coordinates_float = (float*) am_coordinateData->dataPtr();
-  else {
-    am_coordinateData =  am->findData("Nodes", HxDOUBLE, 3, "Coordinates");
-    if (am_coordinateData)
-      am_node_coordinates_double = (double*) am_coordinateData->dataPtr();
-    else
-      throw("No vertex coordinates found in the file!");
-
-  }
-
-
-  AmiraMesh::Data* tetrahedronData = am->findData("Tetrahedra", HxINT32, 4, "Nodes");
-  int*  elemData         = (int*)tetrahedronData->dataPtr();
-
-  /*
-     All Boundary nodes are  assumed to be inserted already.
-     We just have to insert the inner nodes and the elements
-   */
-  assert(grid.multigrid_);
-
-  int maxBndNodeID = -1;
-  for (theNode=grid.multigrid_->grids[0]->firstNode[0]; theNode!=NULL; theNode=theNode->succ)
-  {
-    // The following two lines ought to be in here, but the
-    // OBJT macros is somewhat complicated, so I leave it out
-    // for the time being.
-    //       if(OBJT(theNode->myvertex) == UG3d::IVOBJ)
-    //           UserWriteF("Warning: Node %d is inner node\n", ID(theNode));
-    maxBndNodeID = MAX(theNode->id, maxBndNodeID);
-  }
-
-  std::cout << "Already " << maxBndNodeID+1 << " nodes existing\n";
-
-
-  int noOfBndNodes = maxBndNodeID;
-
-
-  int noOfNodes = am->nElements("Nodes");
-
-  //  noOfInnerNodes = noOfNodes - noOfBndNodes;
-  printf("AmiraMesh has %d total nodes\n", noOfNodes);
-
-
-
-
-
-  for(i = noOfBndNodes+1; i < noOfNodes; i++) {
-
-    assert(am_node_coordinates_float || am_node_coordinates_double);
-    if (am_node_coordinates_float) {
-      nodePos[0] = am_node_coordinates_float[3*i];
-      nodePos[1] = am_node_coordinates_float[3*i+1];
-      nodePos[2] = am_node_coordinates_float[3*i+2];
-    } else {
-      nodePos[0] = am_node_coordinates_double[3*i];
-      nodePos[1] = am_node_coordinates_double[3*i+1];
-      nodePos[2] = am_node_coordinates_double[3*i+2];
-    }
-
-    /// \todo Warum ist nicht UG3d::InsertInnerNode Pflicht???
-    if (InsertInnerNode(grid.multigrid_->grids[0], nodePos) == NULL)
-      throw("inserting an inner node failed");
-
-  }
-
-
-
-  /* all inner nodes are inserted , now we insert the elements */
-  int noOfElem = am->nElements("Tetrahedra");
-
-  int noOfCreatedElem = 0;
-  for(i=0; i < noOfElem; i++)
-  {
-    int cornerIDs[4];
-
-    //AmiraGetCornerIDsOfElem(i, cornerIDs);
-
-    /* only tetrahedrons */
-    /* printf("MeshAccess: elem id : %d, node ids : %d %d %d %d\n", i,
-       elemData[4*i+0], elemData[4*i+1], elemData[4*i+2], elemData[4*i+3]);*/
-    cornerIDs[0] = elemData[4*i]-1;
-    cornerIDs[1] = elemData[4*i+1]-1;
-    cornerIDs[2] = elemData[4*i+2]-1;
-    cornerIDs[3] = elemData[4*i+3]-1;
-
-
-    /*       printf("elem id : %d, node ids : %d %d %d %d\n", i, cornerIDs[0], cornerIDs[1], cornerIDs[2], cornerIDs[3]); */
-
-    if (InsertElementFromIDs(grid.multigrid_->grids[0], 4,cornerIDs, NULL) == NULL)
-      throw("inserting an element failed");
-
-    noOfCreatedElem++;
-
-  }
-
-
-  if(noOfElem != noOfCreatedElem)
-    throw("inserting an element failed");
-
-  UG3d::UserWriteF("amiraloadmesh: %d elements created\n", noOfCreatedElem);
-
-  // set the subdomainIDs
-  AmiraMesh::Data* am_material_ids = am->findData("Tetrahedra", HxBYTE, 1, "Materials");
-  if (!am_material_ids)
-    throw("Field 'Materials' not found.");
-
-  char* material_ids         = (char*)am_material_ids->dataPtr();
-
-  i = 0;
-  UG3d::ELEMENT* theElement;
-  for (theElement=grid.multigrid_->grids[0]->elements[0]; theElement!=NULL; theElement=theElement->ge.succ)
-  {
-
-    /* get subdomain of element */
-    int id = material_ids[i];
-
-#define ControlWord(p,ce) (((unsigned int *)(p))[UG3d::control_entries[ce].offset_in_object])
-#define CW_WRITE(p, ce, n)   ControlWord(p,ce) = (ControlWord(p,ce)&UG3d::control_entries[ce].xor_mask)|(((n)<<UG3d::control_entries[ce].offset_in_word)&UG3d::control_entries[ce].mask)
-#define SETSUBDOMAIN(p,n) CW_WRITE(p,UG3d::SUBDOMAIN_CE,n)
-
-    SETSUBDOMAIN(theElement, id+1);
-
-#undef ControlWord
-#undef CW_WRITE
-#undef SETSUBDOMAIN
-
-    i++;
-  }
-
-  delete am;
-
-  UG3d::SetEdgeAndNodeSubdomainFromElements(grid.multigrid_->grids[0]);
-
-
-  /** \todo Do we really need to call CreateAlgebra for Dune?
-   *
-   * So far we do, because the UG grid refinement expects a valid
-   * algebra.  Unfortunately, this wastes a lot of resources, because
-   * nobody is ever going to use the algebra.  Maybe we can patch UG? */
-  if (UG3d::CreateAlgebra(grid.multigrid_) != UG3d::GM_OK)
-    throw("Error in UG3d::CreateAlgebra!");
-
-  /* here the temp memory allocated in CreateMultiGrid is released */
-  //UG3d::ReleaseTmpMem(MGHEAP(theMG),MG_MARK_KEY(theMG));
-#define ReleaseTmpMem(p,k) Release(p, UG3d::FROM_TOP,k)
-  ReleaseTmpMem(grid.multigrid_->theHeap, grid.multigrid_->MarkKey);
-#undef ReleaseTmpMem
-  grid.multigrid_->MarkKey = 0;
-
-
-  return;
-
-
+  // read and build the grid
+  buildGrid(grid, am);
 }
 catch (const char* msg) {
 
@@ -730,6 +565,17 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   //loaddomain $file @PARA_FILE $name @DOMAIN
   CreateDomain(grid, "olisDomain", am);
 
+  buildGrid(grid, am);
+
+}
+catch (const char* msg) {
+
+  printf("%s\n", msg);
+  return;
+}
+
+void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, AmiraMesh* am) try
+{
   printf("before makeNew\n");
   // call configureCommand and newCommand
   grid.makeNewUGMultigrid();
@@ -744,7 +590,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   double nodePos[DIM];
   UG3d::NODE* theNode;
 
-  std::cout << "Loading Amira mesh " <<  filename << "\n";
+  //std::cout << "Loading Amira mesh " <<  filename << "\n";
 
 
 
@@ -991,7 +837,7 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gri
 
   int nBndSegments = face_list.size();
 
-  std::out << face_list.size() << " boundary segments found!\n";
+  std::cout << face_list.size() << " boundary segments found!\n";
 
   int noOfNodes = am->nElements("Nodes");
 
