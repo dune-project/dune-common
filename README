@@ -1,0 +1,25 @@
+DUNE-library
+============
+
+[descriptional text missing]
+
+
+Getting started
+---------------
+
+The easiest way to use Dune is to rename this directory "dune" if it
+has a different name and tell the application about it. That's
+it. Really. :)
+
+If you want to install the Dune-headers globally on your system run
+the following as "root":
+
+  ./configure && make install
+
+
+License
+-------
+
+The Dune-library and headers are licensed under the GNU Lesser GPL
+version 2.1. The full license text can be found in the file COPYING
+and via http://www.gnu.org/licenses/lgpl.html

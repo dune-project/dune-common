@@ -1,0 +1,21 @@
+Preparing the CVS-sources
+=========================
+
+Additional to the software mentioned in README you'll need the
+following programs installed on your system:
+
+  automake >= 1.5
+
+  autoconf >= 2.50
+
+
+Run the script
+
+  ./autogen.sh
+
+to get a ./configure-script.
+
+
+$Id$
+
+
