@@ -244,8 +244,6 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
                       << "StartEditing failed!" << std::endl;
             return 1;
         }
-    printf("Hallo Welt!\n");
-
 
     /* Alle weiteren Anfragen an die Bibliothek beziehen sich jetzt auf das eben
        geladen Gebiet. Maessig elegant, sollte aber gehen */
@@ -1399,13 +1397,11 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
       
           int cornerIDs[4];
           
-          /* only triangles */
+          /* only quadrilaterals */
           cornerIDs[0] = isBoundaryNode[elemData[4*i]-1];
           cornerIDs[1] = isBoundaryNode[elemData[4*i+1]-1];
           cornerIDs[2] = isBoundaryNode[elemData[4*i+2]-1];
           cornerIDs[3] = isBoundaryNode[elemData[4*i+3]-1];
-          printf("elem id : %d, node ids : %d %d %d %d\n", i, 
-                 cornerIDs[0], cornerIDs[1], cornerIDs[2], cornerIDs[3]); 
           
           /** \todo Why is InsertElementFromIDs outside of the UG namespaces?? */
           if (InsertElementFromIDs(theMG->grids[0], 4,cornerIDs, NULL) == NULL)
