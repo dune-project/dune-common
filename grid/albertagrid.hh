@@ -2,7 +2,6 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef __DUNE_ALBERTAGRID_HH__
 #define __DUNE_ALBERTAGRID_HH__
-
 #include <iostream>
 #include <fstream>
 
@@ -11,14 +10,6 @@
 
 #include <config.h>
 
-// if we have ALBERTA C++ lib define namespace for ALBERTA
-#ifdef __ALBERTApp__
-#define ALBERTA Alberta::
-#else
-#define ALBERTA
-#endif
-// the keyword ALBERTA stands for ALBERTA routines
-
 // Dune includes
 #include "../common/misc.hh"
 #include "../common/matvec.hh"
@@ -26,38 +17,11 @@
 #include "../common/capabilities.hh"
 #include "common/grid.hh"
 
-#ifndef __ALBERTApp__
-extern "C"
-{
-#endif
+// some cpp defines and include of alberta.h
+#include "albertagrid/albertaheader.hh"
 
-// we dont use the el->index, its for debugging
-#ifndef EL_INDEX
-#define EL_INDEX 0
-#else
-#if EL_INDEX != 0
-#warning "EL_INDEX != 0, but not used in interface implementation!\n"
-#endif
-#endif
-
-
-#ifndef NEIGH_IN_EL
-// neighbours were calculated on walkthrough
-#define NEIGH_IN_EL 0
-#else
-#if NEIGH_IN_EL != 0
-#error "NEIGH_IN_EL != 0 is not support by this implementation!\n"
-#endif
-#endif
-
-#include <alberta.h>
-
-#ifndef __ALBERTApp__
-} // end extern "C"
-#endif
-
+// stack for index management
 #include <dune/grid/common/indexstack.hh>
-
 
 // IndexManager defined in indexstack.hh
 typedef Dune::IndexStack<int,10000> IndexManagerType;
@@ -65,19 +29,6 @@ typedef Dune::IndexStack<int,10000> IndexManagerType;
 // some extra functions for handling the Albert Mesh
 #include "albertagrid/albertaextra.hh"
 
-#if 1
-#ifdef ABS
-#undef ABS
-#endif
-
-#ifdef MIN
-#undef MIN
-#endif
-
-#ifdef MAX
-#undef MAX
-#endif
-#endif
 
 #include <dune/common/exceptions.hh>
 
@@ -1098,15 +1049,9 @@ namespace Dune
      */
     int size (int level, int codim) const;
 
-    //! number of leaf grid entities
-    //int leafSize (int level, int codim);
-
-    //int leafSize (int level, int codim) const;
-
-
-    //! refine all positive marked leaf entities
-    //! coarsen all negative marked entities if possible
-    //! return true if a least one element was refined
+    /*! \brief refine all positive marked leaf entities,
+    *  coarsen all negative marked entities if possible,
+    *  return true if a least one element was refined */
     bool adapt ( );
 
     //! returns true, if a least one element is marked for coarsening
