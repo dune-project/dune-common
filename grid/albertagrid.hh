@@ -11,10 +11,11 @@
 #include <config.h>
 
 // Dune includes
-#include "../common/misc.hh"
-#include "../common/matvec.hh"
-#include "../common/array.hh"
-#include "../common/capabilities.hh"
+#include <dune/common/misc.hh>
+#include <dune/common/fvector.hh>
+#include <dune/common/fmatrix.hh>
+#include <dune/common/array.hh>
+#include <dune/common/capabilities.hh>
 #include "common/grid.hh"
 
 // some cpp defines and include of alberta.h
@@ -98,23 +99,20 @@ namespace Dune
   // forward declarations
   class AlbertaMarkerVector;
 
-  template<int codim, int dim, int dimworld> class AlbertaGridEntity;
-
-  template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
-  class AlbertaGridLevelIterator;
-
-  template<int dim, int dimworld>            class AlbertaGridElement;
-  template<int dim, int dimworld>            class AlbertaGridBoundaryEntity;
-  template<int dim, int dimworld>            class AlbertaGridHierarchicIterator;
-  template<int dim, int dimworld>            class AlbertaGridIntersectionIterator;
-  template<int dim, int dimworld>            class AlbertaGrid;
+  template<int codim, int dim, class GridImp> class AlbertaGridEntity;
+  template<int codim, PartitionIteratorType pitype, class GridImp> class AlbertaGridLevelIterator;
+  template <int mydim, int cdim, class GridImp> class AlbertaGridGeometry;
+  template<class GridImp>         class AlbertaGridBoundaryEntity;
+  template<class GridImp>         class AlbertaGridHierarchicIterator;
+  template<class GridImp>         class AlbertaGridIntersectionIterator;
+  template<int dim, int dimworld> class AlbertaGrid;
 
   // singleton holding reference elements
-  template<int dim> struct AlbertaGridReferenceElement;
+  template<int dim, class GridImp> struct AlbertaGridReferenceGeometry;
 
   //**********************************************************************
   //
-  // --AlbertaGridElement
+  // --AlbertaGridGeometry
   /*!
      Defines the geometry part of a mesh entity. Works for all dimensions, element types and dime
      of world. Provides reference element and mapping between local and global coordinates.
@@ -127,19 +125,40 @@ namespace Dune
      dimworld: Each corner is a point with dimworld coordinates.
    */
 
-  template<int dim, int dimworld>
-  class AlbertaGridElement :
-    public ElementDefault <dim,dimworld,albertCtype,AlbertaGridElement>
+  template<int mydim, int coorddim, class GridImp>
+  class AlbertaGridMakeableGeometry : public Geometry<mydim, coorddim, GridImp, AlbertaGridGeometry>
   {
-    friend class AlbertaGridBoundaryEntity<dim,dimworld>;
+    typedef Geometry<mydim, coorddim, GridImp, AlbertaGridGeometry> GeometryType;
+  public:
+    AlbertaGridMakeableGeometry(bool makeRefelem=false) :
+      GeometryType (AlbertaGridGeometry<mydim, coorddim, GridImp>(makeRefelem)) {};
+
+    // just a wrapper call
+    bool builtGeom(ALBERTA EL_INFO *elInfo, int face, int edge, int vertex)
+    {
+      return this->realGeometry.builtGeom(elInfo,face,edge,vertex);
+    }
+  };
+
+
+
+  //******************************************************
+  //
+  //  --Geometry
+  //
+  //******************************************************
+  template <int mydim, int cdim, class GridImp>
+  class AlbertaGridGeometry :
+    public GeometryDefault<mydim,cdim,GridImp,AlbertaGridGeometry>
+  {
+    friend class AlbertaGridBoundaryEntity<GridImp>;
 
     //! know dimension of barycentric coordinates
-    enum { dimbary=dim+1};
+    enum { dimbary=mydim+1};
   public:
-
-    //! for makeRefElement == true a Element with the coordinates of the
+    //! for makeRefGeometry == true a Geometry with the coordinates of the
     //! reference element is made
-    AlbertaGridElement(bool makeRefElement=false);
+    AlbertaGridGeometry(bool makeRefGeometry=false);
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
@@ -149,23 +168,23 @@ namespace Dune
     int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    FieldVector<albertCtype, dimworld>& operator[] (int i) const;
+    FieldVector<albertCtype, cdim>& operator[] (int i) const;
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
      */
-    AlbertaGridElement<dim,dim>& refelem () const;
+    static const Dune::Geometry<mydim,mydim,GridImp,Dune::AlbertaGridGeometry> & refelem ();
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
-    FieldVector<albertCtype, dimworld> global (const FieldVector<albertCtype, dim>& local) const;
+    FieldVector<albertCtype, cdim> global (const FieldVector<albertCtype, mydim>& local) const;
 
     //! maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    FieldVector<albertCtype, dim> local (const FieldVector<albertCtype, dimworld>& global) const;
+    FieldVector<albertCtype, mydim> local (const FieldVector<albertCtype, cdim>& global) const;
 
     //! returns true if the point in local coordinates is inside reference element
-    bool checkInside(const FieldVector<albertCtype, dim>& local) const;
+    bool checkInside(const FieldVector<albertCtype, mydim>& local) const;
 
     /*!
        Copy from sgrid.hh:
@@ -191,13 +210,13 @@ namespace Dune
      */
 
     // A(l)
-    albertCtype integration_element (const FieldVector<albertCtype, dim>& local) const;
+    albertCtype integrationElement (const FieldVector<albertCtype, mydim>& local) const;
 
     //! can only be called for dim=dimworld!
     //! Note that if both methods are called on the same element, then
-    //! call Jacobian_inverse first because integration element is calculated
-    //! during calculation of the Jacobian_inverse
-    Mat<dim,dim>& Jacobian_inverse (const FieldVector<albertCtype, dim>& local) const;
+    //! call jacobianInverse first because integration element is calculated
+    //! during calculation of the jacobianInverse
+    const FieldMatrix<albertCtype,mydim,mydim>& jacobianInverse (const FieldVector<albertCtype, cdim>& global) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
@@ -229,7 +248,7 @@ namespace Dune
     //! built the jacobian inverse and store the volume
     void buildJacobianInverse () const;
 
-    mutable FieldVector<albertCtype, dim+1> tmpVec_;
+    mutable FieldVector<albertCtype, mydim+1> tmpVec_;
     //! maps a global coordinate within the elements local barycentric
     //! koordinates
     //Vec<dim+1,albertCtype> localBary (const Vec<dimworld,albertCtype>& global);
@@ -242,39 +261,83 @@ namespace Dune
     albertCtype elDeterminant () const;
 
     //! the vertex coordinates
-    mutable Mat<dimworld,dim+1,albertCtype> coord_;
+    mutable FieldMatrix<albertCtype,mydim+1,cdim> coord_;
 
     //! storage for global coords
-    mutable FieldVector<albertCtype, dimworld> globalCoord_;
+    mutable FieldVector<albertCtype, cdim> globalCoord_;
 
     //! storage for local coords
-    mutable FieldVector<albertCtype, dim> localCoord_;
+    mutable FieldVector<albertCtype, mydim> localCoord_;
 
     // make empty EL_INFO
     ALBERTA EL_INFO * makeEmptyElInfo();
 
     ALBERTA EL_INFO * elInfo_;
 
-    //! Which Face of the Element 0...dim+1
+    //! Which Face of the Geometry 0...dim+1
     int face_;
 
-    //! Which Edge of the Face of the Element 0...dim
+    //! Which Edge of the Face of the Geometry 0...dim
     int edge_;
 
-    //! Which Edge of the Face of the Element 0...dim-1
+    //! Which Edge of the Face of the Geometry 0...dim-1
     int vertex_;
 
     //! is true if Jinv_ and volume_ is calced
     mutable bool builtinverse_;
-    mutable Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
+    enum { matdim = (mydim > 0) ? mydim : 1 };
+    mutable FieldMatrix<albertCtype,matdim,matdim> Jinv_; //!< storage for inverse of jacobian
 
     //! is true if elMat_ was calced
     mutable bool builtElMat_;
-    mutable Mat<dim,dim,albertCtype> elMat_; //!< storage for mapping matrix
+    mutable FieldMatrix<albertCtype,matdim,matdim> elMat_; //!< storage for mapping matrix
     mutable albertCtype elDet_; //!< storage of element determinant
 
   };
 
+  //******************************************************************
+  // --MEntity
+  template<int codim, int dim, class GridImp>
+  class AlbertaGridMakeableEntity :
+    public GridImp::template codim<codim>::Entity
+  {
+    typedef typename GridImp::template codim<codim>::Entity EntityType;
+    friend class AlbertaGridEntity<codim, dim, GridImp>;
+  public:
+
+    //AlbertaGridMakeableEntity(const GridImp & grid, int level,
+    //                 ALBERTA TRAVERSE_STACK * travStack) :
+    //  EntityType (AlbertaGridEntity<codim, dim, GridImp>(grid,level,travStack)) {}
+
+    AlbertaGridMakeableEntity(const GridImp & grid, int level) :
+      GridImp::template codim<codim>::Entity (AlbertaGridEntity<codim, dim, GridImp>(grid,level)) {}
+
+    // passing through mehtods
+    void setTraverseStack (ALBERTA TRAVERSE_STACK *travStack)
+    {
+      this->realEntity.setTraverseStack(travStack);
+    }
+
+    void setElInfo (ALBERTA EL_INFO *elInfo, int elNum, int face, int edge, int vertex )
+    {
+      this->realEntity.setElInfo(elInfo,elNum,face,edge,vertex);
+    }
+
+    void setElInfo (ALBERTA EL_INFO *elInfo)
+    {
+      this->realEntity.setElInfo(elInfo);
+    }
+    // needed for the LevelIterator
+    ALBERTA EL_INFO * getElInfo () const
+    {
+      return this->realEntity.getElInfo();
+    }
+
+    void setLevel ( int level )
+    {
+      this->realEntity.setLevel(level);
+    }
+  };
 
   //**********************************************************************
   //
@@ -287,17 +350,20 @@ namespace Dune
 
      Here: the general template
    */
-  template<int codim, int dim, int dimworld>
+  template<int codim, int dim, class GridImp>
   class AlbertaGridEntity :
-    public EntityDefault <codim,dim,dimworld,albertCtype,
-        AlbertaGridEntity,AlbertaGridElement,AlbertaGridLevelIterator,
-        AlbertaGridIntersectionIterator,AlbertaGridHierarchicIterator>
+    public EntityDefault <codim,dim,GridImp,AlbertaGridEntity>
   {
+    enum { dimworld = GridImp::dimensionworld };
     friend class AlbertaGrid < dim , dimworld >;
-    friend class AlbertaGridEntity < 0, dim, dimworld>;
-    friend class AlbertaGridLevelIterator < codim, dim, dimworld,All_Partition>;
+    friend class AlbertaGridEntity < 0, dim, GridImp>;
+    friend class AlbertaGridLevelIterator < codim, All_Partition,GridImp>;
     //friend class AlbertaGridLevelIterator < dim, dim, dimworld>;
+    friend class AlbertaGridMakeableEntity<codim,dim,GridImp>;
   public:
+    typedef typename GridImp::template codim<codim>::Geometry Geometry;
+    typedef AlbertaGridMakeableGeometry<codim,dimworld,GridImp> GeometryImp;
+    typedef typename GridImp::template codim<codim>::LevelIterator LevelIterator;
 
     //! level of this element
     int level () const;
@@ -310,21 +376,15 @@ namespace Dune
     int boundaryId () const ;
 
     //! return the global unique index in grid
-    int global_index() const ;
+    int globalIndex() const ;
 
-    AlbertaGridEntity(const AlbertaGrid<dim,dimworld> &grid, int level,
+    AlbertaGridEntity(const GridImp &grid, int level,
                       ALBERTA TRAVERSE_STACK * travStack);
 
-    AlbertaGridEntity(const AlbertaGrid<dim,dimworld> &grid, int level);
+    AlbertaGridEntity(const GridImp &grid, int level);
 
     //! geometry of this entity
-    AlbertaGridElement<dim-codim,dimworld>& geometry () const;
-
-    /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
-       This can speed up on-the-fly interpolation for linear conforming elements
-       Possibly this is sufficient for all applications we want on-the-fly.
-     */
-    AlbertaGridLevelIterator<0,dim,dimworld,All_Partition> father () const;
+    const Geometry & geometry () const;
 
     //! local coordinates within father
     FieldVector<albertCtype, dim>& local () const ;
@@ -344,7 +404,7 @@ namespace Dune
     // private Methods
     void makeDescription();
 
-    const AlbertaGrid<dim,dimworld> &grid_;
+    const GridImp &grid_;
 
     // private Members
     ALBERTA EL_INFO *elInfo_;
@@ -353,8 +413,8 @@ namespace Dune
     //! level
     int level_;
 
-    //! the cuurent geometry
-    mutable AlbertaGridElement<dim-codim,dimworld> geo_;
+    //! the current geometry
+    mutable GeometryImp geo_;
     mutable bool builtgeometry_;       //!< true if geometry has been constructed
 
     mutable FieldVector<albertCtype, dim> localFatherCoords_;
@@ -362,13 +422,13 @@ namespace Dune
     //! element number
     int elNum_;
 
-    //! Which Face of the Element
+    //! Which Face of the Geometry
     int face_;
 
-    //! Which Edge of the Face of the Element
+    //! Which Edge of the Face of the Geometry
     int edge_;
 
-    //! Which Vertex of the Edge of the Face of the Element
+    //! Which Vertex of the Edge of the Face of the Geometry
     int vertex_;
   };
 
@@ -391,21 +451,31 @@ namespace Dune
   //  --0Entity
   //
   //***********************
-  template<int dim, int dimworld>
-  class AlbertaGridEntity<0,dim,dimworld> :
-    public EntityDefault<0,dim,dimworld,albertCtype,AlbertaGridEntity,AlbertaGridElement,
-        AlbertaGridLevelIterator,AlbertaGridIntersectionIterator,
-        AlbertaGridHierarchicIterator>
+  template<int dim, class GridImp>
+  class AlbertaGridEntity<0,dim,GridImp> :
+    public EntityDefault <0,dim,GridImp,AlbertaGridEntity>
   {
-    friend class AlbertaGrid < dim , dimworld >;
+    enum { dimworld = GridImp::dimensionworld };
+    friend class AlbertaGrid < dim , GridImp::dimensionworld >;
     friend class AlbertaMarkerVector;
-    friend class AlbertaGridIntersectionIterator < dim, dimworld>;
-    friend class AlbertaGridHierarchicIterator < dim, dimworld>;
-    friend class AlbertaGridLevelIterator <0,dim,dimworld,All_Partition>;
-
+    friend class AlbertaGridIntersectionIterator <GridImp>;
+    friend class AlbertaGridHierarchicIterator <GridImp>;
+    friend class AlbertaGridLevelIterator <0,All_Partition,GridImp>;
+    friend class AlbertaGridMakeableEntity<0,dim,GridImp>;
   public:
-    typedef AlbertaGridIntersectionIterator<dim,dimworld> IntersectionIterator;
-    typedef AlbertaGridHierarchicIterator<dim,dimworld> HierarchicIterator;
+    template <int cd>
+    struct codim
+    {
+      typedef typename GridImp::template codim<cd>::EntityPointer EntityPointer;
+    };
+
+    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef AlbertaGridMakeableGeometry<dim,dimworld,GridImp> GeometryImp;
+
+    typedef typename GridImp::template codim<0>::LevelIterator LevelIterator;
+    typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
+    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
 
     enum { dimension = dim };
 
@@ -415,7 +485,7 @@ namespace Dune
     ~AlbertaGridEntity() {};
 
     //! Constructor, real information is set via setElInfo method
-    AlbertaGridEntity(const AlbertaGrid<dim,dimworld> &grid, int level);
+    AlbertaGridEntity(const GridImp &grid, int level);
 
     //! level of this element
     int level () const;
@@ -427,7 +497,7 @@ namespace Dune
     int boundaryId () const;
 
     //! geometry of this entity
-    AlbertaGridElement<dim,dimworld>& geometry () const;
+    const Geometry & geometry () const;
 
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
@@ -441,7 +511,7 @@ namespace Dune
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
-    template<int cc> AlbertaGridLevelIterator<cc,dim,dimworld,All_Partition> entity (int i) const;
+    template<int cc> typename codim<cc>::EntityPointer entity (int i) const;
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
@@ -452,14 +522,10 @@ namespace Dune
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
-    AlbertaGridIntersectionIterator<dim,dimworld> ibegin () const;
-    //! same method for fast access
-    void ibegin (AlbertaGridIntersectionIterator<dim,dimworld> &it) const;
+    AlbertaGridIntersectionIterator<GridImp> ibegin () const;
 
     //! Reference to one past the last intersection with neighbor
-    AlbertaGridIntersectionIterator<dim,dimworld> iend () const;
-    //! same method for fast access
-    void iend (AlbertaGridIntersectionIterator<dim,dimworld> &it) const;
+    AlbertaGridIntersectionIterator<GridImp> iend () const;
 
     //! returns true if Entity has children
     bool hasChildren () const ;
@@ -469,9 +535,7 @@ namespace Dune
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
-    AlbertaGridLevelIterator<0,dim,dimworld,All_Partition> father () const;
-    void father (AlbertaGridEntity<0,dim,dimworld> & vati) const ;
-    AlbertaGridEntity<0,dim,dimworld> newEntity();
+    EntityPointer father () const;
 
     /*! Location of this element relative to the reference element
        of the father. This is sufficient to interpolate all
@@ -482,24 +546,16 @@ namespace Dune
        We assume that on-the-fly implementation of numerical algorithms
        is only done for simple discretizations. Assumes that meshes are nested.
      */
-    AlbertaGridElement<dim,dim>& father_relative_local () const;
+    const Geometry& geometryInFather () const;
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
      */
-    AlbertaGridHierarchicIterator<dim,dimworld> hbegin (int maxlevel) const;
+    AlbertaGridHierarchicIterator<GridImp> hbegin (int maxlevel) const;
 
     //! Returns iterator to one past the last son
-    AlbertaGridHierarchicIterator<dim,dimworld> hend (int maxlevel) const;
-
-    //***************************************************************
-    //  Interface for Adaptation
-    //***************************************************************
-    //! marks an element for refCount refines. if refCount is negative the
-    //! element is coarsend -refCount times
-    //! mark returns true if element was marked, otherwise false
-    bool mark( int refCount ) const;
+    AlbertaGridHierarchicIterator<GridImp> hend (int maxlevel) const;
 
     //! return whether entity could be cosrsend (COARSEND) or was refined
     //! (REFIEND) or nothing happend (NONE)
@@ -526,7 +582,7 @@ namespace Dune
     int el_index() const;
 
     //! return the global unique index in grid , same as el_index
-    int global_index() const ;
+    int globalIndex() const ;
 
   private:
     // called from HierarchicIterator, because only this
@@ -550,13 +606,13 @@ namespace Dune
     void makeDescription();
 
     //! the corresponding grid
-    const AlbertaGrid<dim,dimworld> & grid_;
+    const GridImp & grid_;
 
     //! the level of the entity
     int level_;
 
     //! for vertex access, to be revised, filled on demand
-    mutable AlbertaGridLevelIterator<dim,dim,dimworld,All_Partition> vxEntity_;
+    //mutable typename codim<dim>::EntityPointer vxEntity_;
 
     //! pointer to the Albert TRAVERSE_STACK data
     ALBERTA TRAVERSE_STACK * travStack_;
@@ -565,10 +621,10 @@ namespace Dune
     ALBERTA EL_INFO *elInfo_;
 
     // local coordinates within father
-    mutable AlbertaGridElement <dim,dim> fatherReLocal_;
+    mutable GeometryImp fatherReLocal_;
 
     //! the cuurent geometry
-    mutable AlbertaGridElement<dim,dimworld> geo_;
+    mutable GeometryImp geo_;
     mutable bool builtgeometry_; //!< true if geometry has been constructed
 
   }; // end of AlbertaGridEntity codim = 0
@@ -586,38 +642,35 @@ namespace Dune
      hierarchically refined meshes.
    */
 
-  template<int dim, int dimworld>
+  template<class GridImp>
   class AlbertaGridHierarchicIterator :
-    public HierarchicIteratorDefault <dim,dimworld,albertCtype,
-        AlbertaGridHierarchicIterator,AlbertaGridEntity>
+    public HierarchicIteratorDefault <GridImp,AlbertaGridHierarchicIterator>
   {
   public:
+    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::ctype ctype;
+    typedef AlbertaGridMakeableEntity<0,GridImp::dimension,GridImp> EntityImp;
+
     //! the normal Constructor
-    AlbertaGridHierarchicIterator(const AlbertaGrid<dim,dimworld> &grid,
+    AlbertaGridHierarchicIterator(const GridImp &grid,
                                   ALBERTA TRAVERSE_STACK *travStack, int actLevel, int maxLevel);
 
     //! the default Constructor
-    AlbertaGridHierarchicIterator(const AlbertaGrid<dim,dimworld> &grid,
+    AlbertaGridHierarchicIterator(const GridImp &grid,
                                   int actLevel,int maxLevel);
 
-    //! prefix increment
-    AlbertaGridHierarchicIterator& operator ++();
+    //! increment
+    void increment();
 
     //! equality
-    bool operator== (const AlbertaGridHierarchicIterator& i) const;
-
-    //! inequality
-    bool operator!= (const AlbertaGridHierarchicIterator& i) const;
+    bool equals (const AlbertaGridHierarchicIterator<GridImp>& i) const;
 
     //! dereferencing
-    AlbertaGridEntity<0,dim,dimworld>& operator*();
-
-    //! arrow
-    AlbertaGridEntity<0,dim,dimworld>* operator->();
+    Entity& dereference() const;
 
   private:
     //! know the grid were im comming from
-    const AlbertaGrid<dim,dimworld> &grid_;
+    const GridImp &grid_;
 
     //! the actual Level of this Hierarichic Iterator
     int level_;
@@ -626,7 +679,7 @@ namespace Dune
     int maxlevel_;
 
     //! implement with virtual element
-    mutable AlbertaGridEntity<0,dim,dimworld> virtualEntity_;
+    mutable EntityImp virtualEntity_;
 
     //! we need this for Albert traversal, and we need ManageTravStack, which
     //! does count References when copied
@@ -641,13 +694,14 @@ namespace Dune
 
 
   /** \todo Please doc me! */
-  template<int dim, int dimworld>
-  class AlbertaGridBoundaryEntity
-    : public BoundaryEntityDefault <dim,dimworld,albertCtype,
-          AlbertaGridElement,AlbertaGridBoundaryEntity>
+  template<class GridImp>
+  class AlbertaGridBoundaryEntity :
+    public BoundaryEntityDefault <GridImp,AlbertaGridBoundaryEntity>
   {
-    friend class AlbertaGridIntersectionIterator<dim,dimworld>;
+    friend class AlbertaGridIntersectionIterator<GridImp>;
   public:
+    typedef typename GridImp::template codim<0>::Geometry Geometry;
+
     //! Constructor
     AlbertaGridBoundaryEntity ();
 
@@ -658,14 +712,14 @@ namespace Dune
     bool hasGeometry () const ;
 
     //! return geometry of the ghost cell
-    AlbertaGridElement<dim,dimworld>& geometry () const;
+    const Geometry & geometry () const;
 
   private:
     // set elInfo
     void setElInfo(ALBERTA EL_INFO * elInfo, int nb);
 
     // ghost cell
-    mutable AlbertaGridElement<dim,dimworld> _geom;
+    mutable Geometry _geom;
 
     // cooresponding el_info
     ALBERTA EL_INFO * _elInfo;
@@ -685,43 +739,47 @@ namespace Dune
      non-matching meshes. The number of neigbors may be different from the number o
      of an element!
    */
-  template<int dim, int dimworld>
+  template<class GridImp>
   class AlbertaGridIntersectionIterator :
-    public IntersectionIteratorDefault <dim,dimworld,albertCtype,
-        AlbertaGridIntersectionIterator,AlbertaGridEntity,
-        AlbertaGridElement, AlbertaGridBoundaryEntity>
+    public IntersectionIteratorDefault <GridImp,AlbertaGridIntersectionIterator>
   {
-    friend class AlbertaGridEntity<0,dim,dimworld>;
-  public:
-    //! prefix increment
-    AlbertaGridIntersectionIterator& operator ++();
+    enum { dim      = GridImp::dimension };
+    enum { dimworld = GridImp::dimensionworld };
 
-    //! The default Constructor makes empty Iterator
-    AlbertaGridIntersectionIterator();
+    friend class AlbertaGridEntity<0,dim,GridImp>;
+  public:
+    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template codim<0>::BoundaryEntity BoundaryEntity;
+    typedef typename GridImp::template codim<1>::Geometry Geometry;
+    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
+    typedef AlbertaGridMakeableEntity<0,dim,GridImp> EntityImp;
+    typedef AlbertaGridMakeableGeometry<dim-1,dimworld,GridImp> LocalGeometryImp;
+
+    //! know your own dimension
+    enum { dimension=dim };
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+    //! define type used for coordinates in grid module
+    typedef typename GridImp::ctype ctype;
+
+    //! increment
+    void increment();
+    //! equality
+    bool equals (const AlbertaGridIntersectionIterator<GridImp>& i) const;
+    //! access neighbor, dereferencing
+    Entity & dereference() const;
 
     //! The default Constructor
-    AlbertaGridIntersectionIterator(const AlbertaGrid<dim,dimworld> &grid,
+    AlbertaGridIntersectionIterator(const GridImp & grid,
                                     int level);
 
     //! The Constructor
-    AlbertaGridIntersectionIterator(const AlbertaGrid<dim,dimworld> &grid,
+    AlbertaGridIntersectionIterator(const GridImp & grid,
                                     int level,
                                     ALBERTA EL_INFO *elInfo);
 
     //! The Destructor
     ~AlbertaGridIntersectionIterator();
-
-    //! equality
-    bool operator== (const AlbertaGridIntersectionIterator& i) const;
-
-    //! inequality
-    bool operator!= (const AlbertaGridIntersectionIterator& i) const;
-
-    //! access neighbor, dereferencing
-    AlbertaGridEntity<0,dim,dimworld>& operator*();
-
-    //! access neighbor, arrow
-    AlbertaGridEntity<0,dim,dimworld>* operator->();
 
     //! return true if intersection is with boundary. \todo connection with
     //! boundary information, processor/outer boundary
@@ -731,57 +789,49 @@ namespace Dune
     bool neighbor () const;
 
     //! return information about the Boundary
-    AlbertaGridBoundaryEntity<dim,dimworld> & boundaryEntity () const;
-
-    //! return unit outer normal, this should be dependent on local
-    //! coordinates for higher order boundary
-    FieldVector<albertCtype, dimworld>& unit_outer_normal (FieldVector<albertCtype, dim-1>& local) const;
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<albertCtype, dimworld>& unit_outer_normal () const;
+    BoundaryEntity & boundaryEntity () const;
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    AlbertaGridElement<dim-1,dim>& intersection_self_local () const;
-
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    AlbertaGridElement<dim-1,dimworld>& intersection_self_global () const;
+    LocalGeometry& intersectionSelfLocal () const;
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+       Here returned element is in LOCAL coordinates of neighbor
+     */
+    LocalGeometry& intersectionNeighborLocal () const;
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+       Here returned element is in GLOBAL coordinates of the element where iteration started.
+     */
+    Geometry& intersectionGlobal () const;
 
     //! local number of codim 1 entity in self where intersection is contained in
-    int number_in_self () const;
+    int numberInSelf () const;
+    //! local number of codim 1 entity in neighbor where intersection is contained in
+    int numberInNeighbor () const;
 
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in LOCAL coordinates of neighbor
-    AlbertaGridElement<dim-1,dim>& intersection_neighbor_local () const;
+    //! return unit outer normal, this should be dependent on local
+    //! coordinates for higher order boundary
+    typedef FieldVector<albertCtype, GridImp::dimensionworld> NormalVecType;
+    typedef FieldVector<albertCtype, GridImp::dimension-1> LocalCoordType;
 
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in LOCAL coordinates of neighbor
-    AlbertaGridElement<dim-1,dimworld>& intersection_neighbor_global () const;
-
-    //! local number of codim 1 entity in neighbor where intersection is contained
-    int number_in_neighbor () const;
+    const NormalVecType & unitOuterNormal (const LocalCoordType & local) const;
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<albertCtype, dimworld>& outer_normal (FieldVector<albertCtype, dim-1>& local) const;
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<albertCtype, dimworld>& outer_normal () const;
+    const NormalVecType & outerNormal (const LocalCoordType & local) const;
 
   private:
     //**********************************************************
     //  private methods
     //**********************************************************
     //! make Iterator set to begin of actual entitys intersection Iterator
-    void makeBegin (const AlbertaGrid<dim,dimworld> &grid,
+    void makeBegin (const GridImp & grid,
                     int level,
                     ALBERTA EL_INFO * elInfo ) const;
 
     //! set Iterator to end of actual entitys intersection Iterator
-    void makeEnd (const AlbertaGrid<dim,dimworld> &grid,int level ) const;
+    void makeEnd (const GridImp & grid,int level ) const;
 
     // put objects on stack
     void freeObjects () const;
@@ -789,9 +839,11 @@ namespace Dune
     //! setup the virtual neighbor
     void setupVirtEn () const;
 
+    //! calculate normal to current face
+    void calcOuterNormal () const;
+
     //! know the grid were im comming from
-    // * quick hack to make it compile
-    mutable AlbertaGrid<dim,dimworld> *grid_;
+    const GridImp *grid_;
 
     //! the actual level
     mutable int level_;
@@ -803,26 +855,26 @@ namespace Dune
     //! Most of the information can be generated from the ALBERTA EL_INFO
     //! therefore this element is only created on demand.
     mutable bool builtNeigh_;
-    mutable AlbertaGridEntity<0,dim,dimworld> *virtualEntity_;
+    mutable EntityImp *virtualEntity_;
 
     //! pointer to the EL_INFO struct storing the real element information
     mutable ALBERTA EL_INFO * elInfo_;
 
     // for memory management
-    mutable typename AlbertaGrid<dim,dimworld>::EntityProvider::ObjectEntity *manageObj_;
-    mutable typename AlbertaGrid<dim,dimworld>::IntersectionSelfProvider::ObjectEntity  *manageInterEl_;
-    mutable typename AlbertaGrid<dim,dimworld>::IntersectionNeighProvider::ObjectEntity *manageNeighEl_;
+    mutable typename GridImp::EntityProvider::ObjectEntity *manageObj_;
+    mutable typename GridImp::IntersectionSelfProvider::ObjectEntity  *manageInterEl_;
+    mutable typename GridImp::IntersectionNeighProvider::ObjectEntity *manageNeighEl_;
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
-    mutable AlbertaGridElement<dim-1,dim> *fakeNeigh_;
+    mutable LocalGeometryImp *fakeNeigh_;
 
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
-    mutable AlbertaGridElement<dim-1,dimworld> *neighGlob_;
+    mutable LocalGeometryImp *neighGlob_;
 
     //! BoundaryEntity
-    mutable AlbertaGridBoundaryEntity<dim,dimworld> *boundaryEntity_;
+    mutable AlbertaGridBoundaryEntity<GridImp> *boundaryEntity_;
 
     //! defined in agmemory.hh
     mutable typename ElInfoProvider::ObjectEntity *manageNeighInfo_;
@@ -830,7 +882,8 @@ namespace Dune
     //! EL_INFO th store the information of the neighbor if needed
     mutable ALBERTA EL_INFO * neighElInfo_;
 
-    mutable FieldVector<albertCtype, dimworld> outNormal_;
+    mutable NormalVecType outNormal_;
+    mutable NormalVecType unitNormal_;
 
     // tmp memory for normal calculation
     mutable FieldVector<albertCtype, dimworld> tmpU_;
@@ -846,27 +899,28 @@ namespace Dune
   /*!
      Enables iteration over all entities of a given codimension and level of a grid.
    */
-  template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
+  template<int codim, PartitionIteratorType pitype, class GridImp>
   class AlbertaGridLevelIterator :
-    public LevelIteratorDefault <codim,dim,dimworld,pitype,albertCtype,
-        AlbertaGridLevelIterator,AlbertaGridEntity>
+    public LevelIteratorDefault <codim,pitype,GridImp,AlbertaGridLevelIterator>
   {
-    friend class AlbertaGridEntity<2,dim,dimworld>;
-    friend class AlbertaGridEntity<1,dim,dimworld>;
-    friend class AlbertaGridEntity<0,dim,dimworld>;
-    friend class AlbertaGrid < dim , dimworld >;
+    enum { dim = GridImp::dimension };
+    friend class AlbertaGridEntity<2,dim,GridImp>;
+    friend class AlbertaGridEntity<1,dim,GridImp>;
+    friend class AlbertaGridEntity<0,dim,GridImp>;
+    friend class AlbertaGrid < dim , GridImp::dimensionworld >;
 
-    typedef AlbertaGridLevelIterator<codim,dim,dimworld,pitype>  AlbertaGridLevelIteratorType;
+    typedef AlbertaGridLevelIterator<codim,pitype,GridImp>  AlbertaGridLevelIteratorType;
   public:
 
-    enum { dimension = dim };
+    typedef typename GridImp::template codim<codim>::Entity Entity;
+    typedef AlbertaGridMakeableEntity<codim,dim,GridImp> EntityImp;
 
     //! Constructor
-    AlbertaGridLevelIterator(const AlbertaGrid<dim,dimworld> &grid, int
+    AlbertaGridLevelIterator(const GridImp & grid, int
                              travLevel, int proc, bool leafIt=false );
 
     //! Constructor
-    AlbertaGridLevelIterator(const AlbertaGrid<dim,dimworld> &grid,
+    AlbertaGridLevelIterator(const GridImp & grid,
                              int travLevel,
                              ALBERTA EL_INFO *elInfo,int elNum = 0,
                              int face=0,
@@ -874,32 +928,18 @@ namespace Dune
                              int vertex=0);
 
     //! Constructor
-    AlbertaGridLevelIterator(const AlbertaGrid<dim,dimworld> &grid,
+    AlbertaGridLevelIterator(const GridImp & grid,
                              AlbertaMarkerVector * vec,
                              int travLevel,
                              int proc,
                              bool leafIt=false);
 
-    //! prefix increment
-    AlbertaGridLevelIteratorType& operator ++();
-
+    //! increment
+    void increment();
     //! equality
-    bool operator== (const AlbertaGridLevelIteratorType & i) const;
-
-    //! inequality
-    bool operator!= (const AlbertaGridLevelIteratorType & i) const;
-
+    bool equals(const AlbertaGridLevelIterator<codim,pitype,GridImp>& i) const;
     //! dereferencing
-    AlbertaGridEntity<codim,dim,dimworld>& operator *() ;
-
-    //! arrow
-    AlbertaGridEntity<codim,dim,dimworld>* operator->() ;
-
-    //! dereferencing
-    const AlbertaGridEntity<codim,dim,dimworld>& operator *() const ;
-
-    //! arrow
-    const AlbertaGridEntity<codim,dim,dimworld>* operator->() const ;
+    Entity& dereference() const;
 
     //! ask for level of entity
     int level () const;
@@ -932,13 +972,12 @@ namespace Dune
     ALBERTA MACRO_EL * nextGhostMacro(ALBERTA MACRO_EL *mel);
 
     //! the grid were it all comes from
-    const AlbertaGrid<dim,dimworld>& grid_;
+    const GridImp & grid_;
 
     //! level :)
     int level_;
 
-    // private Members
-    mutable AlbertaGridEntity<codim,dim,dimworld> virtualEntity_;
+    mutable EntityImp virtualEntity_;
 
     // contains ALBERTA traversal stack
     ALBERTA ManageTravStack manageStack_;
@@ -979,103 +1018,47 @@ namespace Dune
    * This is the implementation of the grid interface class.
    */
   template <int dim, int dimworld>
-  class AlbertaGrid : public GridDefault  < dim, dimworld,
-                          albertCtype,AlbertaGrid,
-                          AlbertaGridLevelIterator,AlbertaGridEntity>
+  class AlbertaGrid
+    : public GridDefault <dim,dimworld,albertCtype,AlbertaGrid>
   {
-    friend class AlbertaGridEntity <0,dim,dimworld>;
+    friend class AlbertaGridEntity <0,dim,AlbertaGrid<dim,dimworld> >;
     //friend class AlbertaGridEntity <1,dim,dimworld>;
     //friend class AlbertaGridEntity <1 << dim-1 ,dim,dimworld>;
-    friend class AlbertaGridEntity <dim,dim,dimworld>;
+    friend class AlbertaGridEntity <dim,dim,AlbertaGrid<dim,dimworld> >;
 
     friend class AlbertaMarkerVector;
 
     // friends because of fillElInfo
-    friend class AlbertaGridLevelIterator<0,dim,dimworld,All_Partition>;
-    friend class AlbertaGridLevelIterator<1,dim,dimworld,All_Partition>;
-    friend class AlbertaGridLevelIterator<2,dim,dimworld,All_Partition>;
-    friend class AlbertaGridLevelIterator<3,dim,dimworld,All_Partition>;
-    friend class AlbertaGridHierarchicIterator<dim,dimworld>;
+    friend class AlbertaGridLevelIterator<0,All_Partition,AlbertaGrid<dim,dimworld> >;
+    friend class AlbertaGridLevelIterator<1,All_Partition,AlbertaGrid<dim,dimworld> >;
+    friend class AlbertaGridLevelIterator<2,All_Partition,AlbertaGrid<dim,dimworld> >;
+    friend class AlbertaGridLevelIterator<3,All_Partition,AlbertaGrid<dim,dimworld> >;
+    friend class AlbertaGridHierarchicIterator<AlbertaGrid<dim,dimworld> >;
 
-    friend class AlbertaGridIntersectionIterator<dim,dimworld>;
+    friend class AlbertaGridIntersectionIterator<AlbertaGrid<dim,dimworld> >;
 
     //! AlbertaGrid is only implemented for 2 and 3 dimension
     //! for 1d use SGrid or SimpleGrid
-    CompileTimeChecker<dimworld != 1>   Do_not_use_AlbertaGrid_for_1d_Grids;
+    //CompileTimeChecker<dimworld != 1>   Do_not_use_AlbertaGrid_for_1d_Grids;
 
+    typedef AlbertaGrid<dim,dimworld> MyType;
     //**********************************************************
     // The Interface Methods
     //**********************************************************
   public:
-    //! remember the types of template parameters
-    template <int codim>
-    struct Traits
-    {
-      //! Please doc me!
-      typedef albertCtype CoordType;
+    typedef GridTraits<dim,dimworld,Dune::AlbertaGrid,AlbertaGridGeometry,AlbertaGridEntity,
+        AlbertaGridBoundaryEntity,AlbertaGridLevelIterator,AlbertaGridIntersectionIterator,
+        AlbertaGridHierarchicIterator>  Traits;
 
-      //! Please doc me!
-      typedef AlbertaGrid<dim,dimworld>           ImpGrid;
+    typedef typename Traits::template codim<0>::template partition<All_Partition>::LevelIterator LeafIterator;
 
-      //! Please doc me!
-      typedef AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>  LevelIterator;
 
-      //! Please doc me!
-      typedef AlbertaGridLevelIterator<codim,dim,dimworld,Interior_Partition>        InteriorLevelIterator;
-
-      //! Please doc me!
-      typedef AlbertaGridLevelIterator<codim,dim,dimworld,InteriorBorder_Partition>  InteriorBorderLevelIterator;
-
-      //! Please doc me!
-      typedef AlbertaGridLevelIterator<codim,dim,dimworld,Overlap_Partition>         OverlapLevelIterator;
-
-      //! Please doc me!
-      typedef AlbertaGridLevelIterator<codim,dim,dimworld,OverlapFront_Partition>    OverlapFrontLevelIterator;
-
-      //! Please doc me!
-      typedef AlbertaGridLevelIterator<codim,dim,dimworld,Ghost_Partition>           GhostLevelIterator;
-
-      /*
-         //! Please doc me!
-         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition> >  ConstLevelIterator;
-
-         //! Please doc me!
-         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Interior_Partition> > ConstInteriorLevelIterator;
-
-         //! Please doc me!
-         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,InteriorBorder_Partition> > ConstInteriorBorderLevelIterator;
-
-         //! Please doc me!
-         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Overlap_Partition> > ConstOverlapLevelIterator;
-
-         //! Please doc me!
-         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,OverlapFront_Partition> > ConstOverlapFrontLevelIterator;
-
-         //! Please doc me!
-         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Ghost_Partition> > ConstGhostLevelIterator;
-       */
-      //! Please doc me!
-      typedef AlbertaGridEntity<codim,dim,dimworld>         Entity;
-    };
-
-    typedef AlbertaGridLevelIterator<0,dim,dimworld,All_Partition> LeafIterator;
-    typedef AlbertaGridReferenceElement<dim> ReferenceElement;
+    typedef AlbertaGridReferenceGeometry<dim,AlbertaGrid<dim,dimworld> > ReferenceGeometry;
 
     typedef ObjectStream ObjectStreamType;
-    typedef std::pair < ObjectStreamType * ,
-        AlbertaGridEntity<0,dim,dimworld>  * > DataCollectorParamType;
+    //typedef std::pair < ObjectStreamType * ,
+    //  Traits::template codim<0>::Entity  * > DataCollectorParamType;
 
-    /* may be deleted
-       template<int codim, PartitionIteratorType pitype>
-       struct ConstAlbertaGridLevelIterator
-       {
-       typedef ConstLevelIteratorWrapper<
-        AlbertaGridLevelIterator<codim,dim,dimworld,pitype> > IteratorType;
-       };
-
-       typedef typename ConstAlbertaGridLevelIterator<0,All_Partition> :: IteratorType Const0LevelIteratorType;
-       typedef typename ConstAlbertaGridLevelIterator<dim,All_Partition> :: IteratorType ConstDimLevelIteratorType;
-     */
 
     //! we always have dim+1 codimensions since we use only simplices
     enum { numCodim = dim+1 };
@@ -1107,29 +1090,39 @@ namespace Dune
     int maxlevel() const;
 
     //! Iterator to first entity of given codim on level
-    template<int codim, PartitionIteratorType pitype>
-    AlbertaGridLevelIterator<codim,dim,dimworld,pitype>
-    lbegin (int level, int proc = -1 ) const;
+    template<int cd, PartitionIteratorType pitype>
+    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator
+    lbegin (int level, int proc=-1) const;
 
     //! one past the end on this level
-    template<int codim, PartitionIteratorType pitype>
-    AlbertaGridLevelIterator<codim,dim,dimworld,pitype>
-    lend (int level, int proc = -1 ) const;
-
+    template<int cd, PartitionIteratorType pitype>
+    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator
+    lend (int level, int proc=-1) const;
 
     //! Iterator to first entity of given codim on level
-    template<int codim> AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>
-    lbegin (int level, int proc = -1 ) const;
+    template<int cd>  typename Traits::template codim<cd>::
+    template partition<All_Partition>::LevelIterator
+    lbegin (int level, int proc=-1) const;
 
     //! one past the end on this level
-    template<int codim> AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>
-    lend (int level, int proc = -1 ) const;
+    template<int cd>  typename Traits::template codim<cd>::
+    template partition<All_Partition>::LevelIterator
+    lend (int level, int proc=-1) const;
 
     /** \brief Number of grid entities per level and codim
      * because lbegin and lend are none const, and we need this methods
      * counting the entities on each level, you know.
      */
     int size (int level, int codim) const;
+
+    //***************************************************************
+    //  Interface for Adaptation
+    //***************************************************************
+    /*! \brief marks an element for refCount refines. if refCount is negative the
+     *  element is coarsend -refCount times
+     * mark returns true if element was marked, otherwise false */
+    bool mark( int refCount , typename Traits::template codim<0>::EntityPointer & en );
+    bool mark( int refCount , typename Traits::template codim<0>::Entity & en );
 
     /*! \brief refine all positive marked leaf entities,
     *  coarsen all negative marked entities if possible,
@@ -1181,9 +1174,21 @@ namespace Dune
 
     //! transform grid N = scalar * x + trans
     void setNewCoords(const FieldVector<albertCtype, dimworld> & trans, const albertCtype scalar);
-  private:
+
+    //private:
+    //! access to mesh pointer, needed by some methods
+    ALBERTA MESH* getMesh () const { return mesh_; };
+
+    template<int codim>
+    AlbertaGridEntity<codim,dim,const AlbertaGrid<dim,dimworld> >&
+    getRealEntity(typename Traits::template codim<codim>::Entity& e )
+    {
+      return e.realEntity;
+    }
+
     //! number of grid entities per level and codim, size is cached
-    int calcLevelSize (int level, int codim);
+    template <int codim> int calcLevelSize (int level);
+    int calcLevelCodimSize (int level, int codim);
 
     // initialize of some members
     void initGrid(int proc, bool swapEls = true );
@@ -1203,9 +1208,6 @@ namespace Dune
 
     //! reads ALBERTA macro file
     bool readGridAscii ( const char * filename, albertCtype & time );
-
-    //! access to mesh pointer, needed by some methods
-    ALBERTA MESH* getMesh () const { return mesh_; };
 
     // delete mesh and all vectors
     void removeMesh();
@@ -1279,11 +1281,14 @@ namespace Dune
     bool hasLevelIndex_;
 
     //***********************************************************************
-    //  MemoryManagement for Entitys and Elements
+    //  MemoryManagement for Entitys and Geometrys
     //**********************************************************************
-    typedef MemoryProvider< AlbertaGridEntity<0,dim,dimworld > > EntityProvider;
-    typedef MemoryProvider< AlbertaGridElement<dim-1,dimworld> > IntersectionSelfProvider;
-    typedef MemoryProvider< AlbertaGridElement<dim-1,dim> >      IntersectionNeighProvider;
+    typedef AlbertaGridMakeableEntity<0,dim,const MyType>            EntityImp;
+    typedef AlbertaGridMakeableGeometry<dim-1,dimworld,const MyType> GeometryImp;
+
+    typedef MemoryProvider< EntityImp > EntityProvider;
+    typedef MemoryProvider< GeometryImp > IntersectionSelfProvider;
+    typedef MemoryProvider< GeometryImp > IntersectionNeighProvider;
 
     mutable EntityProvider entityProvider_;
     mutable IntersectionSelfProvider interSelfProvider_;
@@ -1376,7 +1381,7 @@ namespace Dune
     };
 
     template<int dim, int dimw, int cdim>
-    struct hasEntity< AlbertaGrid<dim,dimw>, AlbertaGridEntity<cdim,dim,dimw> >
+    struct hasEntity< AlbertaGrid<dim,dimw>, AlbertaGridEntity<cdim,dim,AlbertaGrid<dim,dimw> > >
     {
       static const bool v = true;
     };
