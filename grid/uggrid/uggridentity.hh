@@ -235,7 +235,12 @@ namespace Dune {
 
     //! returns true if Entity has children
     bool isLeaf() const {
-      DUNE_THROW(NotImplemented, "isLeaf");
+#ifdef _2
+      int nSons = UG2d::ReadCW(target_, UG2d::NSONS_CE);
+#else
+      int nSons = UG3d::ReadCW(target_, UG3d::NSONS_CE);
+#endif
+      return nSons==0;
     }
 
     //! Inter-level access to father element on coarser grid.
