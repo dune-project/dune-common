@@ -1,13 +1,12 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_LAPLACE_CC__
-#define __DUNE_LAPLACE_CC__
+#ifndef __DUNE_LAPLACE_HH__
+#define __DUNE_LAPLACE_HH__
 
 #include <dune/fem/feoperator.hh>
 #include <dune/fem/feop/spmatrix.hh>
 
-#include <dune/fem/fastquad.hh>
-
+#include <dune/quadrature/dunequad.hh>
 
 namespace Dune
 {
@@ -51,7 +50,7 @@ namespace Dune
   public:
 
     //! ???
-    FastQuad < typename FunctionSpaceType::RangeField, typename
+    DuneQuad < typename FunctionSpaceType::RangeField, typename
         FunctionSpaceType::Domain , polOrd > quad;
 
     //! ???
