@@ -692,19 +692,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
 
     if (material_ids)
       id = material_ids[i];
-#if 0
-#define ControlWord(p,ce) (((unsigned int *)(p))[UG3d::control_entries[ce].offset_in_object])
-#define CW_WRITE(p, ce, n)   ControlWord(p,ce) = (ControlWord(p,ce)&UG3d::control_entries[ce].xor_mask)|(((n)<<UG3d::control_entries[ce].offset_in_word)&UG3d::control_entries[ce].mask)
-#define SETSUBDOMAIN(p,n) CW_WRITE(p,UG3d::SUBDOMAIN_CE,n)
 
-    //       assert(id != -1);
-    //       SETSUBDOMAIN(theElement, id+1);
-    SETSUBDOMAIN(theElement, 1);
-
-#undef ControlWord
-#undef CW_WRITE
-#undef SETSUBDOMAIN
-#endif
     UG_NS<3>::SetSubdomain(theElement, 1);
 
     i++;
@@ -720,7 +708,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
   if (UG3d::CreateAlgebra(grid.multigrid_) != UG3d::GM_OK)
     throw("Error in UG3d::CreateAlgebra!");
 
-  /** \todo Check whether this release is necessary */
   /* here all temp memory since CreateMultiGrid is released */
   //UG3d::ReleaseTmpMem(MGHEAP(theMG),MG_MARK_KEY(theMG));
 #define ReleaseTmpMem(p,k) Release(p, UG::FROM_TOP,k)
@@ -1429,20 +1416,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   for (theElement=theMG->grids[0]->elements[0]; theElement!=NULL; theElement=theElement->ge.succ)
   {
 
-#if 0
-#define ControlWord(p,ce) (((unsigned int *)(p))[UG2d::control_entries[ce].offset_in_object])
-#define CW_WRITE(p, ce, n)   ControlWord(p,ce) = (ControlWord(p,ce)&UG2d::control_entries[ce].xor_mask)|(((n)<<UG2d::control_entries[ce].offset_in_word)&UG2d::control_entries[ce].mask)
-#define SETSUBDOMAIN(p,n) CW_WRITE(p,UG2d::SUBDOMAIN_CE,n)
-    /* get subdomain of element */
-    //       int id = material_ids[i];
-    //       SETSUBDOMAIN(theElement, id+1);
-    /** \todo Proper subdomain handling */
-    SETSUBDOMAIN(theElement, 1);
-
-#undef ControlWord
-#undef CW_WRITE
-#undef SETSUBDOMAIN
-#endif
     UG_NS<2>::SetSubdomain(theElement, 1);
 
     i++;
