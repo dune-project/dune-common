@@ -26,13 +26,6 @@ namespace Dune
       abort();
     }
 
-    //! apply operator, used by mapping
-    void operator () ( const DomainType & arg, RangeType & dest ) const
-    {
-      std::cerr << "Operator::operator () is called! \n";
-      abort();
-    }
-
   private:
 
   }; // end class Operator
