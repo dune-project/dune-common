@@ -3,6 +3,8 @@
 #include "dune/common/misc.hh"
 #include "../spgrid.hh"
 
+#include "dims_create.cc"
+
 namespace Dune {
 
   namespace SPGridStubs {
@@ -220,7 +222,8 @@ namespace Dune {
     int P;
     MPI_Comm_size(MPI_COMM_WORLD, &P); // Number of Processors
     dim_=0;
-    MPI_Dims_create(P, DIM, dim_);
+    //    MPI_Dims_create(P, DIM, dim_);
+    dim_ = Dune::Dims_create(P, globalsize_);
     bool reorder = false;
     array<DIM> periodic_dummy;
     for (int d=0; d<DIM; d++) {
