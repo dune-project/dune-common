@@ -11,8 +11,8 @@ namespace Dune {
 
   // Note: Range has to have Vector structure as well.
   template<typename DFieldType,typename RFieldType, class DType, class RType>
-  class Mapping : public Vector < RFieldType > {
-
+  class Mapping : public Vector < RFieldType >
+  {
   public:
     //! remember template parameters for derived classes
     typedef DType DomainType;
