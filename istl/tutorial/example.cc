@@ -403,7 +403,10 @@ void test_Iter ()
   for (int k=1; k<=20; k++)
   {
     v = 0;
-    bgs(A,v,d);            // compute update
+    dbgs(A,v,d,w);             // compute update
+    dbjac(A,v,d,w);             // compute update
+    bsorf(A,v,d,w);             // compute update
+    bsorb(A,v,d,w);             // compute update
     x += v;                    // update solution
     A.mmv(v,d);                // update defect
     //    bltsolve(A,v,d,w);   // compute update

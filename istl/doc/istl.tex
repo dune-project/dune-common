@@ -472,10 +472,15 @@ structure can be generated simply with the copy constructor.
 \hline
 \hline
 \texttt{dbjac(A,x,b,$\omega$)}  & $x=x+\omega D^{-1}(b-Ax)$ \\
-\texttt{bgs(A,x,b)}  & $x = x + (L+D)^{-1}(b-Ax)$\\
-\texttt{bsor(A,x,b,$\omega$)}  & $x = x + \omega(L+D)^{-1}(b-Ax)$\\
-\texttt{bssor(A,x,b,$\omega$)}  & $x' = x + \omega(L+D)^{-1}(b-Ax)$; $x
-= x' + \omega(U+D)^{-1}(b-Ax')$ \\
+\texttt{dbgs(A,x,b,$\omega$)}   & $x = x + \omega (L+D)^{-1}(b-Ax)$\\
+\texttt{bsorf(A,x,b,$\omega$)}  & $x^{k+1}_i = x^k_i + \omega
+A_{ii}^{-1}\left [
+  b_i - \sum\limits_{j<i} A_{ij}x^{k+1}_j - \sum\limits_{j\geq i}
+  A_{ij}x^{k}_j\right ]$\\
+\texttt{bsorb(A,x,b,$\omega$)}  & $x^{k+1}_i = x^k_i + \omega
+A_{ii}^{-1}\left [
+  b_i - \sum\limits_{j\leq i} A_{ij}x^{k}_j - \sum\limits_{j>i}
+  A_{ij}x^{k+1}_j\right ]$\\
 \hline
 \end{tabular}
 \end{center}

@@ -369,15 +369,16 @@ namespace Dune {
   // template meta program for iterative solver steps
   template<int I>
   struct algmeta_itsteps {
-    template<class M, class X, class Y>
-    static void bgs (const M& A, X& x, const Y& b)
+    template<class M, class X, class Y, class K>
+    static void dbgs (const M& A, X& x, const Y& b, const K& w)
     {
       typedef typename M::ConstRowIterator rowiterator;
       typedef typename M::ConstColIterator coliterator;
       typedef typename Y::block_type bblock;
       typedef typename X::block_type xblock;
       bblock rhs;
-      xblock v;
+
+      X xold(x);     // remember old x
 
       rowiterator endi=A.end();
       for (rowiterator i=A.begin(); i!=endi; ++i)
@@ -390,12 +391,13 @@ namespace Dune {
         coliterator diag=j;
         for (; j!=endj; ++j)
           (*j).mmv(x[j.index()],rhs);
-        algmeta_itsteps<I-1>::bsor(*diag,v,rhs);
-        x[i.index()] += v;
+        algmeta_itsteps<I-1>::dbgs(*diag,x[i.index()],rhs,w);
       }
+      x *= w;
+      x.axpy(1-w,xold);
     }
     template<class M, class X, class Y, class K>
-    static void bsor (const M& A, X& x, const Y& b, const K& w)
+    static void bsorf (const M& A, X& x, const Y& b, const K& w)
     {
       typedef typename M::ConstRowIterator rowiterator;
       typedef typename M::ConstColIterator coliterator;
@@ -415,12 +417,12 @@ namespace Dune {
         coliterator diag=j;
         for (; j!=endj; ++j)
           (*j).mmv(x[j.index()],rhs);
-        algmeta_itsteps<I-1>::bsor(*diag,v,rhs,w);
+        algmeta_itsteps<I-1>::bsorf(*diag,v,rhs,w);
         x[i.index()].axpy(w,v);
       }
     }
     template<class M, class X, class Y, class K>
-    static void bssor (const M& A, X& x, const Y& b, const K& w)
+    static void bsorb (const M& A, X& x, const Y& b, const K& w)
     {
       typedef typename M::ConstRowIterator rowiterator;
       typedef typename M::ConstColIterator coliterator;
@@ -429,21 +431,7 @@ namespace Dune {
       bblock rhs;
       xblock v;
 
-      rowiterator endi=A.end();
-      for (rowiterator i=A.begin(); i!=endi; ++i)
-      {
-        rhs = b[i.index()];
-        coliterator endj=(*i).end();
-        coliterator j=(*i).begin();
-        for (; j.index()<i.index(); ++j)
-          (*j).mmv(x[j.index()],rhs);
-        coliterator diag=j;
-        for (; j!=endj; ++j)
-          (*j).mmv(x[j.index()],rhs);
-        algmeta_itsteps<I-1>::bsor(*diag,v,rhs,w);
-        x[i.index()].axpy(w,v);
-      }
-      endi=A.rend();
+      rowiterator endi=A.rend();
       for (rowiterator i=A.rbegin(); i!=endi; --i)
       {
         rhs = b[i.index()];
@@ -454,7 +442,7 @@ namespace Dune {
         coliterator diag=j;
         for (; j!=endj; ++j)
           (*j).mmv(x[j.index()],rhs);
-        algmeta_itsteps<I-1>::bsor(*diag,v,rhs,w);
+        algmeta_itsteps<I-1>::bsorb(*diag,v,rhs,w);
         x[i.index()].axpy(w,v);
       }
     }
@@ -488,18 +476,18 @@ namespace Dune {
   // end of recursion
   template<>
   struct algmeta_itsteps<0> {
-    template<class M, class X, class Y>
-    static void bgs (const M& A, X& x, const Y& b)
+    template<class M, class X, class Y, class K>
+    static void dbgs (const M& A, X& x, const Y& b, const K& w)
     {
       A.solve(x,b);
     }
     template<class M, class X, class Y, class K>
-    static void bsor (const M& A, X& x, const Y& b, const K& w)
+    static void bsorf (const M& A, X& x, const Y& b, const K& w)
     {
       A.solve(x,b);
     }
     template<class M, class X, class Y, class K>
-    static void bssor (const M& A, X& x, const Y& b, const K& w)
+    static void bsorb (const M& A, X& x, const Y& b, const K& w)
     {
       A.solve(x,b);
     }
@@ -514,40 +502,40 @@ namespace Dune {
   // user calls
 
   //! GS step
-  template<class M, class X, class Y>
-  void bgs (const M& A, X& x, const Y& b)
+  template<class M, class X, class Y, class K>
+  void dbgs (const M& A, X& x, const Y& b, const K& w)
   {
-    algmeta_itsteps<1>::bgs(A,x,b);
+    algmeta_itsteps<1>::dbgs(A,x,b,w);
   }
   //! GS step
-  template<class M, class X, class Y, int l>
-  void bgs (const M& A, X& x, const Y& b, BL<l> bl)
+  template<class M, class X, class Y, class K, int l>
+  void dbgs (const M& A, X& x, const Y& b, const K& w, BL<l> bl)
   {
-    algmeta_itsteps<l>::bgs(A,x,b);
+    algmeta_itsteps<l>::dbgs(A,x,b,w);
   }
   //! SOR step
   template<class M, class X, class Y, class K>
-  void bsor (const M& A, X& x, const Y& b, const K& w)
+  void bsorf (const M& A, X& x, const Y& b, const K& w)
   {
-    algmeta_itsteps<1>::bsor(A,x,b,w);
+    algmeta_itsteps<1>::bsorf(A,x,b,w);
   }
   //! SOR step
   template<class M, class X, class Y, class K, int l>
-  void bsor (const M& A, X& x, const Y& b, const K& w, BL<l> bl)
+  void bsorf (const M& A, X& x, const Y& b, const K& w, BL<l> bl)
   {
-    algmeta_itsteps<l>::bsor(A,x,b,w);
+    algmeta_itsteps<l>::bsorf(A,x,b,w);
   }
   //! SSOR step
   template<class M, class X, class Y, class K>
-  void bssor (const M& A, X& x, const Y& b, const K& w)
+  void bsorb (const M& A, X& x, const Y& b, const K& w)
   {
-    algmeta_itsteps<1>::bssor(A,x,b,w);
+    algmeta_itsteps<1>::bsorb(A,x,b,w);
   }
   //! SSOR step
   template<class M, class X, class Y, class K, int l>
-  void bssor (const M& A, X& x, const Y& b, const K& w, BL<l> bl)
+  void bsorb (const M& A, X& x, const Y& b, const K& w, BL<l> bl)
   {
-    algmeta_itsteps<l>::bssor(A,x,b,w);
+    algmeta_itsteps<l>::bsorb(A,x,b,w);
   }
   //! Jacobi step
   template<class M, class X, class Y, class K>
