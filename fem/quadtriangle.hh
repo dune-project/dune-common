@@ -110,7 +110,7 @@ namespace Dune {
   Domain QuadraturePoints<Domain,RangeField,tetrahedron,1>::getPoint(int i)
   {
     // check whether dimension is 2 or not
-    CompileTimeChecker < Domain::dimension == 3 > check;
+    //CompileTimeChecker < Domain::dimension == 3 > check;
     Domain tmp;  tmp(0) = 0.75; tmp(1) = 0.5; tmp(2) = 0.25;
     return tmp;
   }

@@ -5,8 +5,8 @@
 
 #include "../grid/common/grid.hh"
 #include "quadrature.hh"
-#include "gaussquadimp.hh"
 #include <dune/common/misc.hh>
+#include "gaussquadimp.hh"
 
 
 namespace Dune {
@@ -41,7 +41,7 @@ namespace Dune {
   Domain QuadraturePoints<Domain,RangeField,line,polOrd>::getPoint(int i)
   {
     // check whether dimension is 1 or not
-    CompileTimeChecker < Domain::dimension == 1 > check;
+    //CompileTimeChecker < Domain::dimension == 1 > check;
     GaussQuadrature<Domain,RangeField,1,polOrd> gaussquad;
     return gaussquad.ip(i);
   }
@@ -71,7 +71,7 @@ namespace Dune {
   Domain QuadraturePoints<Domain,RangeField,quadrilateral,polOrd>::getPoint(int i)
   {
     // check whether dimension is 2 or not
-    CompileTimeChecker < Domain::dimension == 2 > check;
+    //CompileTimeChecker < Domain::dimension == 2 > check;
     GaussQuadrature<Domain,RangeField,2,polOrd> gaussquad;
     return gaussquad.ip(i);
   }
@@ -101,7 +101,7 @@ namespace Dune {
   Domain QuadraturePoints<Domain,RangeField,hexahedron,polOrd>::getPoint(int i)
   {
     // check whether dimension is 3 or not
-    CompileTimeChecker < Domain::dimension == 3 > check;
+    //CompileTimeChecker < Domain::dimension == 3 > dim_is_not_equal_3;
     GaussQuadrature<Domain,RangeField,3,polOrd> gaussquad;
     return gaussquad.ip(i);
   }
