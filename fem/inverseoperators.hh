@@ -101,18 +101,19 @@ namespace Dune {
                                                                                                      _redEps ( redEps ), epsilon_ ( absLimit ) ,
                                                                                                      maxIter_ (maxIter ) , _verbose ( verbose ) {}
 
-    void prepare (int level, DiscreteFunctionType& Arg, DiscreteFunctionType& Dest,
+    void prepare (int level, const DiscreteFunctionType& Arg, DiscreteFunctionType& Dest,
                   DiscreteFunctionType* tmp, double a, double b)
     {
       op_.prepare(level, Arg,Dest,tmp,a,b);
     }
 
-    void finalize (DiscreteFunctionType& Arg, DiscreteFunctionType& Dest)
+    void finalize (int level, const DiscreteFunctionType& Arg, DiscreteFunctionType& Dest,
+                   DiscreteFunctionType* tmp, double a, double b)
     {
-      op_.finalize(Arg,Dest);
+      op_.finalize(level, Arg,Dest,tmp,a,b);
     }
 
-    void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) //const
+    void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
     {
 
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
@@ -169,13 +170,13 @@ namespace Dune {
         std::cerr << "\n";
     }
 
-    void operator ()( const DiscreteFunctionType& arg, DiscreteFunctionType& dest )
+    void operator ()( DiscreteFunctionType& arg, DiscreteFunctionType& dest )
     {
       apply(arg,dest);
     }
 
   private:
-    //const OperatorType &op_;
+    // no const reference, we make const later
     OperatorType &op_;
     int _verbose ;
   };
