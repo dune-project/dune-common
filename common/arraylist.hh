@@ -5,6 +5,7 @@
 #ifndef DUNE_ARRAYLIST_HH
 #define DUNE_ARRAYLIST_HH
 
+#include <cassert>
 #include <vector>
 #include "smartpointer.hh"
 #include "fixedarray.hh"
