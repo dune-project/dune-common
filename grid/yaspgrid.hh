@@ -1706,6 +1706,10 @@ namespace Dune {
     YaspEntity<codim,dim,const YaspGrid<dim,dimworld> >&
     getRealEntity(typename Traits::template codim<codim>::Entity& e );
 
+    template<int codim>
+    const YaspEntity<codim,dim,const YaspGrid<dim,dimworld> >&
+    getRealEntity(const typename Traits::template codim<codim>::Entity& e ) const ;
+
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
 
