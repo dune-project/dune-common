@@ -22,75 +22,6 @@ namespace Dune
      @{
    */
 
-  /** \brief simple fixed size array class
-   *
-   * \todo Template parameter n should be uppercase according
-   * to the coding style rules.
-   */
-  template<class T, int n>
-  class FixedArray {
-  public:
-    //! create empty array
-    FixedArray () {}
-
-    //! initialize all components with same size
-    FixedArray (T t)
-    {
-      for (int i=0; i<n; i++) a[i]=t;
-    }
-
-    //! assign value to all entries
-    FixedArray<T,n>& operator= (const T& t)
-    {
-      for (int i=0; i<n; i++) a[i]=t;
-      return (*this);
-    }
-
-    //! component access
-    T& operator[] (int i)
-    {
-      return a[i];
-    }
-
-    //! const component access
-    const T& operator[] (int i) const
-    {
-      return a[i];
-    }
-
-    //! \todo Please doc me!
-    FixedArray<T,n-1> shrink (int comp)
-    {
-      FixedArray<T,n-1> x;
-      for (int i=0; i<comp; i++) x[i] = a[i];
-      for (int i=comp+1; i<n; i++) x[i-1] = a[i];
-      return x;
-    }
-
-    //! \todo Please doc me!
-    FixedArray<T,n+1> expand (int comp, T value)
-    {
-      FixedArray<T,n+1> x;
-      for (int i=0; i<comp; i++) x[i] = a[i];
-      x[comp] = value;
-      for (int i=comp+1; i<n+1; i++) x[i] = a[i-1];
-      return x;
-    }
-
-  private:
-    T a[n];
-  };
-
-  //! Output operator for FixedArray
-  template <class T, int n>
-  inline std::ostream& operator<< (std::ostream& s, FixedArray<T,n> e)
-  {
-    s << "[";
-    for (int i=0; i<n-1; i++) s << e[i] << ",";
-    s << e[n-1] << "]";
-    return s;
-  }
-
   //! a simple dynamic array class with copy semantics
   template <class T>
   class Array {
@@ -447,38 +378,6 @@ namespace Dune
   {
     return p;
   }
-
-  //! a simple vector class derived from array
-  template <class T>
-  class SimpleVector : public Array<T> {
-  public:
-    //! make empty vector
-    SimpleVector() {};
-
-    //! make array with m components
-    SimpleVector(int m) : Array<T>::Array(m) {}
-
-    //! assignment from scalar
-    SimpleVector<T>& operator= (const T t)
-    {
-      for (int i=0; i<this->n; ++i) this->p[i] = t;
-      return *this;
-    }
-
-    //! scalar product of two vectors, no check for size !
-    T ddot (const SimpleVector<T>& x)
-    {
-      T sum = 0;
-      for (int i=0; i<this->n; ++i) sum += this->p[i]*x.p[i];
-      return sum;
-    }
-
-    //! add scalar times other vector
-    void daxpy (T a, const SimpleVector<T>& x)
-    {
-      for (int i=0; i<this->n; ++i) this->p[i] += a*x.p[i];
-    }
-  };
 
   /** @} */
 
