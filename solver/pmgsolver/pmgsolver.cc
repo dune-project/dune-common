@@ -7,15 +7,6 @@
 
 namespace Dune {
 
-#undef NODUMP
-#define NODUMP
-
-#ifdef NODUMP
-#define dump2D(a,b,c,d,e) void()
-#else
-#define dump2D dump3D
-#endif
-
   /**
       one Gauss-Seidel step
    */
@@ -24,9 +15,11 @@ namespace Dune {
   smootherGaussSeidel(level l) {
     /* Alle Elemente ohne Rand */
     TIME_SMOOTHER -= MPI_Wtime();
-    coefflist cl = mydiscrete.newcoefflist();
-    PMGStubs::GaussSeidel<GRID> stub(x,b,g,l,cl,mydiscrete);
+    coefflist cl = discrete.newcoefflist();
+    PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Inner> stub(*this, l);
     g.loop_owner( l, stub );
+    PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this, l);
+    g.loop_border( l, stub_B );
     TIME_SMOOTHER += MPI_Wtime();
 
     exchange(l,x);
@@ -54,16 +47,16 @@ namespace Dune {
     array<DIM> add = g.init_add(l);
 
     // run through lines
-    coefflist cl = mydiscrete.newcoefflist();
+    coefflist cl = discrete.newcoefflist();
 
     for (typename GRID::iterator it=g.begin(l); it != gEnd; ++it) {
       if (! (*it).owner() ) continue;
-      if ( mydiscrete.isdirichlet(it) ) continue;
+      if ( discrete.bc.isdirichlet(it) ) continue;
 
       int i=it.id();
 
       //    discrete... get the coeffs
-      mydiscrete.coeffs(cl, g, l, add, it.coord(), it.id());
+      discrete.coeffs(cl, g, l, add, it.coord(), it.id());
 
       // recalc x[i]
       // x[i] = 1/aii { b[i] - sum(j!=i){ aij*x[j] } }
@@ -88,7 +81,7 @@ namespace Dune {
     delete[] x_old;
 
     TIME_SMOOTHER += MPI_Wtime();
-  };   /* end jakobi() */
+  }; /* end jakobi() */
 
   /**
      Multi-Grid-Cycle
@@ -96,7 +89,7 @@ namespace Dune {
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
   mgc (level l) {
-    if (l==0) {    //g.roughest()) {
+    if (l==0) { //g.roughest()) {
       double my_d = defect(l);
       double max_d = my_d*reduction;
       // alles auf einen Knoten schieben und loesen :-)
@@ -108,12 +101,16 @@ namespace Dune {
         {
           std::stringstream extention;
           extention << "X Iteration " << c;
-          dump2D(g,l,x,"smoothest",(char*)extention.str().c_str());
+#ifndef NODUMP
+          dump(g,l,x,"smoothest",(char*)extention.str().c_str());
+#endif
         }
         {
           std::stringstream extention;
           extention << "D Iteration " << c;
-          dump2D(g,l,d,"smoothest",(char*)extention.str().c_str());
+#ifndef NODUMP
+          dump(g,l,d,"smoothest",(char*)extention.str().c_str());
+#endif
         }
         if (c > 500) {
           std::cout << "too many iterations on level 0" << std::endl;
@@ -130,16 +127,18 @@ namespace Dune {
         x[i.id()]=0;
         b[i.id()]=0;
       }
+      defect(l);
 #ifndef NODUMP
       char *dumpfile="dumpfile";
+      dump(g,l,x,dumpfile,"X before restrict");
+      dump(g,l,d,dumpfile,"D before restrict");
+      dump(g,l-1,b,dumpfile,"B before restrict");
 #endif
-      defect(l);
-      dump2D(g,l,x,dumpfile,"X before restrict");
-      dump2D(g,l,d,dumpfile,"D before restrict");
-      dump2D(g,l-1,b,dumpfile,"B before restrict");
       // Restriktion d_l -> b_{l-1}
       restrict (l);
-      dump2D(g,l-1,b,dumpfile,"B after restrict");
+#ifndef NODUMP
+      dump(g,l-1,b,dumpfile,"B after restrict");
+#endif
 #ifndef NDEBUG
       for (typename GRID::iterator i=g.begin(l-1); i != gEnd; ++i) {
         assert(x[i.id()]==0);
@@ -148,14 +147,18 @@ namespace Dune {
       // ein level rauf
       mgc(l-1);
       // Prologation X_{l-1} -> X_l
-      dump2D(g,l-1,x,dumpfile,"X before prolongate");
-      dump2D(g,l,x,dumpfile,"X before prolongate");
+#ifndef NODUMP
+      dump(g,l-1,x,dumpfile,"X before prolongate");
+      dump(g,l,x,dumpfile,"X before prolongate");
+#endif
       prolongate(l);
-      dump2D(g,l,x,dumpfile,"X after prolongate");
+#ifndef NODUMP
+      dump(g,l,x,dumpfile,"X after prolongate");
+#endif
       /* Nachglaetter */
       for (int n=0; n<n2; n++) smoother(l);
     }
-  };   /* end mgc() */
+  }; /* end mgc() */
 
   template <class GRID, int SMOOTHER>
   double pmgsolver<GRID,SMOOTHER>::
@@ -163,8 +166,12 @@ namespace Dune {
     TIME_DEFECT -= MPI_Wtime();
 
     // run through lines
-    PMGStubs::Defect<GRID,SMOOTHER> stub(*this, x, b, l);
+    PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Inner> stub(*this, l);
+    PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Border> stub_B(*this, l);
     g.loop_owner(l,stub);
+    g.loop_border(l,stub_B);
+    stub.defect_array[0] += stub_B.defect_array[0];
+    stub.defect_array[1] += stub_B.defect_array[1];
 
     assert(finite(stub.defect_array[0]));
 
@@ -176,7 +183,7 @@ namespace Dune {
     stub.defect_array[1]=defect_array_recv[1];
 
     TIME_DEFECT += MPI_Wtime();
-    return sqrt(stub.defect_array[0]);    // /defect_array[1];
+    return sqrt(stub.defect_array[0]); // /defect_array[1];
   };
 
   /**
@@ -191,13 +198,14 @@ namespace Dune {
     exchange(l,d);
 
     TIME_REST -= MPI_Wtime();
-    PMGStubs::Restrict<GRID,SMOOTHER> stub(*this,l);
+#warning restrict missing on border ?
+    PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Inner> stub(*this,l);
     g.loop_all( l, stub );
     TIME_REST += MPI_Wtime();
 
     // ABGLEICH vector b Level l-1
     exchange(l-1,b);
-  };   /* end restrict() */
+  }; /* end restrict() */
 
   /**
       Prolongation x_{l-1} -> x_l
@@ -208,8 +216,9 @@ namespace Dune {
     assert(l>0);
 
     TIME_PROL -= MPI_Wtime();
-    PMGStubs::Prolongate<GRID,SMOOTHER> stub(*this,l);
-    g.loop_owner( l, stub );
+#warning prolongate missing on border ?
+    PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Inner> stub(*this,l);
+    g.loop_all( l, stub );
     TIME_PROL += MPI_Wtime();
 
     // ABGLEICH Level l
@@ -252,7 +261,7 @@ namespace Dune {
     //#define TALKALOT
 #ifdef TALKALOT
     int P;
-    MPI_Comm_size(g.comm(), &P);     // Number of Processors
+    MPI_Comm_size(g.comm(), &P); // Number of Processors
     for (int p=0; p<P; p++) {
       if (rank==p) {
         cout << "Rank " << rank << " " << g.process_
@@ -368,32 +377,7 @@ namespace Dune {
       }
     }
     TIME_EX += MPI_Wtime();
-  };   /* end exchange() */
-
-  template <class GRID>
-  class loopstubInitIterator {
-    enum { DIM = GRID::griddim };
-    Dune::Vector<GRID> & b;
-    Dune::Vector<GRID> & x;
-    discrete<GRID> & mydiscrete;
-    GRID & g;
-  public:
-    loopstubInitIterator(Dune::Vector<GRID> & B, Dune::Vector<GRID> & X,
-                         discrete<GRID> & D, GRID & G) :
-      b(B), x(X), mydiscrete(D), g(G) {};
-    void evaluate(int l, const array<DIM> & coord, int i) {
-      typename GRID::iterator it(i,g);
-      b[i] = mydiscrete.rhs(it);
-      x[i] = 0;
-      if (mydiscrete.isdirichlet(it))
-        for (int d=0; d<DIM; d++) {
-          for (int s = Dune::left; s != Dune::end; s++) {
-            Boundry bd = mydiscrete.boundry(it,d,(Dune::side)s);
-            if (bd.typ == dirichlet) x[i]=bd.value;
-          }
-        }
-    }
-  };
+  }; /* end exchange() */
 
   /** solve the problem for a certain perm an store the result in x */
   template <class GRID, int SMOOTHER>
@@ -412,7 +396,7 @@ namespace Dune {
     b = 0;
     d = 0;
 
-    loopstubInitIterator<GRID> stub(b,x,mydiscrete,g);
+    PMGStubs::InitIterator<GRID> stub(b,x,discrete,g);
     g.loop_border(lvl, stub);
 
     std::cout << rank << " Exchanging x and b\n" << std::flush;
@@ -425,7 +409,7 @@ namespace Dune {
 
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
-  solve() {
+  solve(int maxCycles) {
     typename GRID::level lvl = g.smoothest();
 
     init();
@@ -446,12 +430,17 @@ namespace Dune {
     TIME_PROL = 0;
     TIME_REST = 0;
     TIME_DEFECT = 0;
+
+    dumpdx(g,g.smoothest(),d,"defect","pressure in the end");
+    dumpdx(g,g.smoothest(),x,"calpres","pressure in the end");
+
     while (mydefect > maxdefect)
     {
+      if (cycle > maxCycles) break;
 #ifndef NODUMP
-      dump2D(g,lvl,x,"jakobi","X");
-      //    dump2D(g,lvl,b,"jakobi","B");
-      dump2D(g,lvl,d,"jakobi","D");
+      dump(g,lvl,x,"jakobi","X");
+      dump(g,lvl,b,"jakobi","B");
+      dump(g,lvl,d,"jakobi","D");
 #endif
       mgc(lvl);
       //smoother(lvl);
@@ -461,8 +450,11 @@ namespace Dune {
                              << " " << mydefect/lastdefect
                              << std::endl;
       lastdefect = mydefect;
-      //if (cycle==10) return;
       cycle ++;
+
+      dumpdx(g,g.smoothest(),d,"defect","pressure in the end");
+      dumpdx(g,g.smoothest(),x,"calpres","pressure in the end");
+
     };
     if (rank==0)
       std::cout << "Time in smoother:" << TIME_SMOOTHER << std::endl

@@ -158,7 +158,7 @@ namespace Dune {
       _data = new T[_size];
       for (int i=0; i<_size; i++) _data[i]=d;
     }
-    ~Vector() { delete[] _data; }
+    ~Vector() { /* delete[] _data; */ }
 #if 0
     template <class OP>
     Vector(OP o) {

@@ -9,6 +9,7 @@
 #include <math.h>
 #include <dune/grid/spgrid/array.hh>
 #include "common/operator.hh"
+#include "pmgsolver/stubs.hh"
 
 namespace Dune {
 
@@ -42,18 +43,6 @@ namespace Dune {
   double TIME_EX;
   double TIME_DEFECT;
 
-  /* Forward declaration of the loopstubs */
-  namespace PMGStubs {
-    template <class GRID> class GaussSeidel;
-    template <class GRID> class GaussSeidelBorder;
-    template <class GRID, int SMOOTHER> class Defect;
-    template <class GRID, int SMOOTHER> class Restrict;
-    template <class GRID, int SMOOTHER> class Prolongate;
-    template <class GRID, int SMOOTHER> class InitExchange;
-  }
-  template <class GRID>
-  class loopstubInitIterator;
-
   /**
      Mehrgitterlöser einer Finite-Volumen-Diskretisierung
    */
@@ -61,13 +50,16 @@ namespace Dune {
   class pmgsolver {
   private:
     /** Friendclasses implementing out loopstubs */
-    friend class PMGStubs::GaussSeidel<GRID>;
-    friend class PMGStubs::GaussSeidelBorder<GRID>;
-    friend class PMGStubs::Defect<GRID,SMOOTHER>;
-    friend class PMGStubs::Restrict<GRID,SMOOTHER>;
-    friend class PMGStubs::Prolongate<GRID,SMOOTHER>;
+    friend class PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Inner>;
+    friend class PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Border>;
+    friend class PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Inner>;
+    friend class PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Border>;
+    friend class PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Inner>;
+    friend class PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Border>;
+    friend class PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Inner>;
+    friend class PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Border>;
     friend class PMGStubs::InitExchange<GRID,SMOOTHER>;
-    friend class loopstubInitIterator<GRID>;
+    friend class PMGStubs::InitIterator<GRID>;
 
     enum { DIM = GRID::griddim };
     typedef double data;
@@ -81,7 +73,7 @@ namespace Dune {
     int Processes; // Anzahl der Prozesse
     int rank;
     bool need_recalc; // true if no dirichlet-condition is specified
-    discrete<GRID> &mydiscrete;
+    Discrete<GRID> & discrete;
     Vector<GRID> & x; /**< solution vector */
     Vector<GRID> & b; /**< rhs vector */
     Vector<GRID> & d; /**< defect vector */
@@ -114,10 +106,10 @@ namespace Dune {
     /**< Multi-Grid-Cycle */
     void   mgc (level l);
   public:
-    pmgsolver(GRID &_g, double _reduction, discrete<GRID> &dis,
+    pmgsolver(GRID &_g, double _reduction, Discrete<GRID> &dis,
               int _n1, int _n2,
               Vector<GRID> & X, Vector<GRID> & B, Vector<GRID> & D) :
-      g(_g), n1(_n1), n2(_n2), reduction(_reduction), mydiscrete(dis),
+      g(_g), n1(_n1), n2(_n2), reduction(_reduction), discrete(dis),
       x(X), b(B), d(D)
     {
       MPI_Comm_size(g.comm(), &Processes);
@@ -131,16 +123,16 @@ namespace Dune {
          free(exchange_data_to);
        */
     }
-    void solve();
+    void solve(int);
     void init();
     inline void initIterator(typename GRID::iterator it) {
       int i=it.id();
-      b[i] = mydiscrete.rhs(it);
+      b[i] = discrete.rhs(it);
       x[i] = 0;
-      if (mydiscrete.isdirichlet(it))
+      if (discrete.isdirichlet(it))
         for (int d=0; d<DIM; d++) {
           for (int s = Dune::left; s != Dune::end; s++) {
-            Boundry bd = mydiscrete.boundry(it,d,(Dune::side)s);
+            Boundry bd = discrete.bc.boundry(it,d,(Dune::side)s);
             if (bd.typ == dirichlet) x[i]=bd.value;
           }
         }
