@@ -29,7 +29,6 @@ AC_CONFIG_FILES([Makefile
                  grid/sgrid/Makefile
                  grid/yaspgrid/Makefile
                  lib/Makefile
-                 lib/io/Makefile
                  operator/Makefile
                  solver/Makefile
                  solver/common/Makefile
