@@ -54,17 +54,7 @@ namespace Dune
     return i;
   }
 
-  // specialication for triangles
-  // the local numbering in Albert is diffrent to Dune
-  // see Albert Doc page 12
-  static const int mapVerts_2d[3] = {2,0,1};
-  template <>
-  inline int AlbertGridElement<2,2>::mapVertices (int i) const
-  {
-    return mapVerts_2d[i];
-  }
-
-  // specialication for triangles
+  // specialication for tetrhedrons
   // the local numbering in Albert is diffrent to Dune
   // see Albert Doc page 12
   static const int mapVerts_3d[4] = {0,3,2,1};
@@ -338,8 +328,13 @@ namespace Dune
   template<int dim, int dimworld>
   inline void AlbertGridElement<dim,dimworld>::print (std::ostream& ss, int indent)
   {
+    std::cout << "AlbertGridElement<" << dim << "," << dimworld << " = {\n";
     for(int i=0; i<corners(); i++)
-      ((*this)[i]).print(ss,dimworld);
+    {
+      std::cout << " corner " << i;
+      ((*this)[i]).print(ss,1); std::cout << "\n";
+    }
+    std::cout << "} \n";
   }
 
   template< int dim, int dimworld>
@@ -448,14 +443,13 @@ namespace Dune
   template <>
   inline void AlbertGridElement<2,2>::calcElMatrix ()
   {
-    if( !builtElMat_)
+    if( !builtElMat_ )
     {
       // A = ( P1 - P0 , P2 - P0 )
-      Vec<2,albertCtype> & coord0 = coord_(0);
       for (int i=0; i<2; i++)
       {
-        elMat_(i,0) = coord_(i,1) - coord0(i);
-        elMat_(i,1) = coord_(i,2) - coord0(i);
+        elMat_(i,0) = coord_(i,1) - coord_(i,0);
+        elMat_(i,1) = coord_(i,2) - coord_(i,0);
       }
       builtElMat_ = true;
     }
@@ -2581,7 +2575,6 @@ namespace Dune
     }
 
     postAdapt();
-
     return wasChanged_;
   }
 
