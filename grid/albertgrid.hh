@@ -11,10 +11,10 @@
 
 #ifdef __ALBERT++ __
 #define ALBERT Albert::
-
 #else
 #define ALBERT
 #endif
+// the keyword ALBERT stands for ALBERT routines
 
 // Dune includes
 #include "../common/misc.hh"
@@ -25,6 +25,25 @@
 #ifndef __ALBERT++ __
 extern "C"
 {
+#endif
+
+// we dont use the el->index, its for debugging
+#ifndef EL_INDEX
+#define EL_INDEX 0
+#else
+#if EL_INDEX != 0
+#warning "EL_INDEX != 0, but not used in interface implementation!\n"
+#endif
+#endif
+
+
+#ifndef NEIGH_IN_EL
+// neighbours were calculated on walkthrough
+#define NEIGH_IN_EL 0
+#else
+#if NEIGH_IN_EL != 0
+#error "NEIGH_IN_EL != 0 is not support by this implementation!\n"
+#endif
 #endif
 
 // the original ALBERT header
