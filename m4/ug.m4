@@ -141,9 +141,9 @@ EOF`
       if test x$HAVE_UG = x1 ; then
 	  AC_CHECK_LIB([ug$UG_DIM],[InitUg],
 	      [UG_LDFLAGS="$UG_LDFLAGS"
-	       UG_LIBS="-lgrape$UGGRAPE$UG_DIM -ldevS -ldom$UGDCHAR$UG_DIM -lgg$UG_DIM -lug$UG_DIM"],
+	       UG_LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"],
 	      [HAVE_UG="0"],
-	      [-lgrape$UGGRAPE$UG_DIM -ldevS -ldom$UGDCHAR$UG_DIM -lgg$UG_DIM])
+	      [-ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS])
       fi
 
       # pre-set variable for summary
