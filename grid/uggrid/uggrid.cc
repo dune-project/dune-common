@@ -307,7 +307,7 @@ UGGrid<dim, dimworld>::lbegin (int level) const
 
 template<int dim, int dimworld>
 template<int codim, PartitionIteratorType PiType>
-inline UGGridLevelIterator<codim,PiType,UGGrid<dim,dimworld> >
+inline typename UGGrid<dim,dimworld>::Traits::template codim<codim>::template partition<PiType>::LevelIterator
 UGGrid<dim, dimworld>::lbegin (int level) const
 {
   assert(multigrid_);
@@ -316,7 +316,7 @@ UGGrid<dim, dimworld>::lbegin (int level) const
   if (!theGrid)
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  return UGGridLevelIteratorFactory<codim,PiType,UGGrid<dim,dimworld> >::getIterator(theGrid, level);
+  return UGGridLevelIteratorFactory<codim,PiType, const UGGrid<dim,dimworld> >::getIterator(theGrid, level);
 }
 
 template < int dim, int dimworld >
@@ -324,17 +324,15 @@ template<int codim>
 typename UGGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
 UGGrid < dim, dimworld >::lend (int level) const
 {
-  UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> > it(level);
-  return it;
+  return UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> >(level);
 }
 
 template < int dim, int dimworld >
 template<int codim, PartitionIteratorType PiType>
-inline UGGridLevelIterator<codim,PiType,UGGrid<dim,dimworld> >
+inline typename UGGrid<dim,dimworld>::Traits::template codim<codim>::template partition<PiType>::LevelIterator
 UGGrid < dim, dimworld >::lend (int level) const
 {
-  UGGridLevelIterator<codim,PiType,UGGrid<dim,dimworld> > it(level);
-  return it;
+  return UGGridLevelIterator<codim,PiType, const UGGrid<dim,dimworld> >(level);
 }
 
 template < int dim, int dimworld >
@@ -543,18 +541,22 @@ void UGGrid <dim, dimworld>::adaptWithoutClosure()
 }
 
 template < int dim, int dimworld >
-void UGGrid < dim, dimworld >::globalRefine()
+void UGGrid < dim, dimworld >::globalRefine(int n)
 {
-  // mark all entities for grid refinement
-  typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
-  typename Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
+  for (int i=0; i<n; i++) {
 
-  for (; iIt!=iEndIt; ++iIt)
-    mark(1, iIt);
+    // mark all entities for grid refinement
+    typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
+    typename Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
 
-  this->preAdapt();
-  adapt();
-  this->postAdapt();
+    for (; iIt!=iEndIt; ++iIt)
+      mark(1, iIt);
+
+    this->preAdapt();
+    adapt();
+    this->postAdapt();
+
+  }
 
 }
 
