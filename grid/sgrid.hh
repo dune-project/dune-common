@@ -480,6 +480,7 @@ namespace Dune {
   static Tupel <int,2> zrefGlob;
   static Tupel <int,2> zentityGlob;
 
+  /** \todo Please doc me! */
   template<int dim, int dimworld>
   class SEntity<0,dim,dimworld> : public SEntityBase<0,dim,dimworld>,
                                   public EntityDefault <0,dim,dimworld,sgrid_ctype,SEntity,SElement,
@@ -739,16 +740,16 @@ namespace Dune {
     // these are all members specific to sgrid
 
     /*! constructor, subject to change!
-       H_: size of domain
-       N_: coarse grid size, #elements in one direction
-       L_: number of levels 0,...,L_-1, maxlevel = L_-1
+
+       \param H_: size of domain
+       \param N_: coarse grid size, #elements in one direction
      */
     SGrid (int* N_, sgrid_ctype* H_);
 
     //! empty constructor making grid of unit square
     SGrid ();
 
-    // refine mesh globally by one level
+    //! refine mesh globally by one level
     void globalRefine (int refCount);
 
     //! map expanded coordinates to position
