@@ -4,6 +4,7 @@
 #define __DUNE_DOFMANAGER_HH__
 
 #include <dune/common/dlist.hh>
+#include <dune/fem/common/dofmapperinterface.hh>
 
 namespace Dune {
 
@@ -300,10 +301,10 @@ namespace Dune {
     int size () const { return array_.size(); }
 
     //! return reference to entry i
-    T&       operator [] ( int i )       { return array_.get<T>(i); }
+    T&       operator [] ( int i )       { return array_.template get<T>(i); }
 
     //! return reference to const entry i
-    const T& operator [] ( int i ) const { return array_.get<T>(i); }
+    const T& operator [] ( int i ) const { return array_.template get<T>(i); }
 
     //! assign arrays
     DofArray<T>& operator= (const DofArray<T> &copy)
@@ -322,7 +323,7 @@ namespace Dune {
     //! read and write xdr
     bool processXdr(XDR *xdrs)
     {
-      return array_.processXdr<T> (xdrs);
+      return array_.template processXdr<T> (xdrs);
     }
   };
 
