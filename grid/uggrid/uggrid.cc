@@ -129,14 +129,14 @@ template<> int UGGrid < 2, 2 >::numOfUGGrids = 0;
 template<> int UGGrid < 3, 3 >::numOfUGGrids = 0;
 
 template < int dim, int dimworld >
-inline UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL), refinementType_(LOCAL)
+inline UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL), refinementType_(COPY)
 {
   init(500, 10);
 }
 
 template < int dim, int dimworld >
 inline UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned envHeapSize)
-  : multigrid_(NULL), refinementType_(LOCAL)
+  : multigrid_(NULL), refinementType_(COPY)
 {
   init(heapSize, envHeapSize);
 }
@@ -503,6 +503,27 @@ bool UGGrid < dim, dimworld >::adapt()
       DUNE_THROW(GridError, "UG2d::Collapse returned error code!");
 #endif
 
+#if 1
+  // Renumber everything
+  for (int i=0; i<=maxlevel(); i++) {
+
+    typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(i);
+    typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(i);
+
+    int id = 0;
+    for (; eIt!=eEndIt; ++eIt)
+      eIt->realEntity.target_->ge.id = id++;
+
+    typename Traits::template codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
+    typename Traits::template codim<dim>::LevelIterator vEndIt = lend<dim>(i);
+
+    id = 0;
+    for (; vIt!=vEndIt; ++vIt)
+      vIt->realEntity.target_->id = id++;
+
+  }
+#endif
+
   /** \bug Should return true only if at least one element has actually
       been refined */
   return true;
@@ -577,7 +598,7 @@ public:
       index = ((UG2d::element*)obj)->ge.id;
       break;
     case dim :
-      index = ((UG2d::node*)obj)->myvertex->iv.id;
+      index = ((UG2d::node*)obj)->id;
       break;
     default :
       DUNE_THROW(GridError, "UGGrid::communicate only implemented for this codim");
@@ -601,7 +622,7 @@ public:
       index = ((UG2d::element*)obj)->ge.id;
       break;
     case dim :
-      index = ((UG2d::node*)obj)->myvertex->iv.id;
+      index = ((UG2d::node*)obj)->id;
       break;
     default :
       DUNE_THROW(GridError, "UGGrid::communicate only implemented for codim 0 and dim");

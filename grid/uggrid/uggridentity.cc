@@ -53,24 +53,6 @@ index() const
   return UG_NS<dim>::index(target_);
 }
 
-#ifdef _2
-#if 0
-template<class GridImp>
-inline int UGGridEntity < 2, 2 ,GridImp>::
-index()
-{
-  return target_->myvertex->iv.id;
-}
-
-template<>
-inline int UGGridEntity < 0, 2 ,2 >::
-index()
-{
-  return target_->ge.id;
-}
-#endif
-#endif
-
 template< int codim, int dim, class GridImp>
 inline const typename UGGridEntity<codim,dim,GridImp>::Geometry&
 UGGridEntity < codim, dim ,GridImp>::
@@ -216,8 +198,9 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
     i = renumbering[i];
   }
 
-  typename TargetType<dim,dim>::T* node = UG_NS<dim>::Corner(target_,i);
-  return node->myvertex->iv.id;
+  //     typename TargetType<dim,dim>::T* node = UG_NS<dim>::Corner(target_,i);
+  //     return node->id;
+  return UG_NS<dim>::Corner(target_,i)->id;
 }
 
 
@@ -341,7 +324,7 @@ UGGridEntity < 0, dim ,GridImp >::hend(int maxlevel) const
 {
   UGGridHierarchicIterator<GridImp> it(level(), maxlevel);
 
-  it.target_ = 0;
+  //it.target_ = 0;
 
   return it;
 }
