@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE__LAGRANGEBASEFUNCTIONS_HH__
-#define __DUNE__LAGRANGEBASEFUNCTIONS_HH__
+#ifndef DUNE_LAGRANGEBASEFUNCTIONS_HH
+#define DUNE_LAGRANGEBASEFUNCTIONS_HH
 
 #include <dune/common/matvec.hh>
 #include <dune/common/array.hh>
@@ -343,6 +343,237 @@ namespace Dune {
     }
   };
 
+  // *********************************************************************
+  //
+  //   First-order Lagrange shape functions for the pyramid
+  //
+  // *********************************************************************
+  template<class FunctionSpaceType>
+  class LagrangeBaseFunction<FunctionSpaceType,pyramid,1>
+    : public BaseFunctionInterface<FunctionSpaceType>
+  {
+    typedef typename FunctionSpaceType::RangeField RangeField;
+    typedef typename FunctionSpaceType::Domain Domain;
+    typedef typename FunctionSpaceType::Range Range;
+    enum { dim = 3 };
+    /* phi(x,y,z) = (factor[0] + factor[1]*x)
+     *            * (factor[2] + factor[3]*y)
+     *            + factor[4] * z * (factor[5] + factor[6]* min(x,y))
+     */
+    RangeField factor[7];
+  public:
+
+    //! Constructor making base function number baseNum
+    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
+      : BaseFunctionInterface<FunctionSpaceType>(f)
+    {
+      assert((baseNum >= 0) || (baseNum < 5));
+
+      switch (baseNum) {
+      case 0 :
+        factor[0] = 1;
+        factor[1] = -1;
+        factor[2] = 1;
+        factor[3] = -1;
+        factor[4] = -1;
+        factor[5] = 1;
+        factor[6] = -1;
+        break;
+      case 1 :
+        factor[0] = 0;
+        factor[1] = 1;
+        factor[2] = 1;
+        factor[3] = -1;
+        factor[4] = -1;
+        factor[5] = 0;
+        factor[6] = 1;
+        break;
+      case 2 :
+        factor[0] = 0;
+        factor[1] = 1;
+        factor[2] = 0;
+        factor[3] = 1;
+        factor[4] = 1;
+        factor[5] = 0;
+        factor[6] = 1;
+        break;
+      case 3 :
+        factor[0] = 1;
+        factor[1] = -1;
+        factor[2] = 0;
+        factor[3] = 1;
+        factor[4] = -1;
+        factor[5] = 0;
+        factor[6] = 1;
+        break;
+      case 4 :
+        factor[0] = 0;
+        factor[1] = 0;
+        factor[2] = 0;
+        factor[3] = 0;
+        factor[4] = 1;
+        factor[5] = 1;
+        factor[6] = 0;
+        break;
+      }
+
+    }
+
+
+    //! evaluate the basefunction on point x
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      phi = (factor[0] + factor[1]*x[0])
+            * (factor[2] + factor[3]*x[1])
+            + factor[4] * x[2]
+            * (factor[5] + factor[6]* std::min(x[0],x[1]));
+    }
+
+    //! derivative with respect to x or y or z
+    //! diffVariable(0) == 0   ==> x
+    //! diffVariable(0) == 1   ==> y
+    //! diffVariable(0) == 2   ==> z,  and so on
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      switch (diffVariable[0]) {
+      case 0 :
+        phi =  factor[1]*(factor[2] + factor[3]*x[1]) + ((x[0] <= x[1]) ? factor[4]*factor[6]*x[2] : 0);
+        return;
+      case 1 :
+        phi = (factor[0] + factor[1]*x[0])*factor[3] + ((x[0] <= x[1]) ? 0 : factor[4]*factor[6]*x[2]);
+        return;
+      case 2 :
+        phi = factor[4] * (factor[5] + factor[6]*std::min(x[0],x[1]));
+        return;
+
+      }
+    }
+
+    //! evaluate second derivative
+    virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      std::cout << "BaseFunction for pyramid, evaluate 2nd derivative not implemented! \n";
+      phi = 0.0;
+    }
+
+  };
+
+
+
+  // *********************************************************************
+  //
+  //   First-order Lagrange shape functions for the prism
+  //
+  // *********************************************************************
+  template<class FunctionSpaceType>
+  class LagrangeBaseFunction<FunctionSpaceType,prism,1>
+    : public BaseFunctionInterface<FunctionSpaceType>
+  {
+    typedef typename FunctionSpaceType::RangeField RangeField;
+    typedef typename FunctionSpaceType::Domain Domain;
+    typedef typename FunctionSpaceType::Range Range;
+    enum { dim = 3 };
+    /* phi(x,y,z) = (factor[0] + factor[1]*x + factor[2]*y)
+     *            * (factor[3] + factor[4]*z)
+     */
+    RangeField factor[5];
+  public:
+
+    //! Constructor making base function number baseNum
+    LagrangeBaseFunction ( const FunctionSpaceType & f , int baseNum )
+      : BaseFunctionInterface<FunctionSpaceType>(f)
+    {
+      assert((baseNum >= 0) || (baseNum < 6));
+
+      switch (baseNum) {
+      case 0 :
+        factor[0] = 1;
+        factor[1] = -1;
+        factor[2] = -1;
+        factor[3] = 1;
+        factor[4] = -1;
+        break;
+      case 1 :
+        factor[0] = 0;
+        factor[1] = 1;
+        factor[2] = 0;
+        factor[3] = 1;
+        factor[4] = -1;
+        break;
+      case 2 :
+        factor[0] = 0;
+        factor[1] = 0;
+        factor[2] = 1;
+        factor[3] = 1;
+        factor[4] = -1;
+        break;
+      case 3 :
+        factor[0] = 1;
+        factor[1] = -1;
+        factor[2] = -1;
+        factor[3] = 0;
+        factor[4] = 1;
+        break;
+      case 4 :
+        factor[0] = 0;
+        factor[1] = 1;
+        factor[2] = 0;
+        factor[3] = 0;
+        factor[4] = 1;
+        break;
+      case 5 :
+        factor[0] = 0;
+        factor[1] = 0;
+        factor[2] = 1;
+        factor[3] = 0;
+        factor[4] = 1;
+        break;
+      }
+
+    }
+
+
+    //! evaluate the basefunction on point x
+    virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      phi = (factor[0] + factor[1]*x[0] + factor[2]*x[1])
+            * (factor[3] + factor[4]*x[2]);
+    }
+
+    //! derivative with respect to x or y or z
+    //! diffVariable(0) == 0   ==> x
+    //! diffVariable(0) == 1   ==> y
+    //! diffVariable(0) == 2   ==> z,  and so on
+    virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      switch (diffVariable[0]) {
+      case 0 :
+        phi = factor[1] * (factor[3] + factor[4]*x[2]);
+        return;
+      case 1 :
+        phi = factor[2] * (factor[3] + factor[4]*x[2]);
+        return;
+      case 2 :
+        phi = (factor[0] + factor[1]*x[0] + factor[2]*x[1]) * factor[4];
+        return;
+
+      }
+    }
+
+    //! evaluate second derivative
+    virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
+                            const Domain & x, Range & phi) const
+    {
+      std::cout << "BaseFunction for pyramid, evaluate 2nd derivative not implemented! \n";
+      phi = 0.0;
+    }
+
+  };
 
 
   //*********************************************************************
@@ -429,7 +660,6 @@ namespace Dune {
         else
           phi *= (factor[i][0] + factor[i][1] * x[i]);
       }
-      return;
     }
 
     //! evaluate second derivative
@@ -450,35 +680,52 @@ namespace Dune {
   template <int polOrd , int dimrange >
   struct LagrangeDefinition< line , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 2 * polOrd) };
+    enum { numOfBaseFct = (dimrange * (polOrd+1)) };
   };
 
   //! Lagrange Definition for triangles
   template <int polOrd , int dimrange >
   struct LagrangeDefinition< triangle , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 3 * polOrd) };
+    enum { numOfBaseFct = (dimrange * (polOrd+1) * (polOrd+2) / 2) };
   };
 
   //! Lagrange Definition for quadrilaterals
   template <int polOrd , int dimrange >
   struct LagrangeDefinition< quadrilateral , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 4 * polOrd) };
+    enum { numOfBaseFct = dimrange * (polOrd+1) * (polOrd+1) };
   };
 
   //! Lagrange Definition for tetrahedrons
   template <int polOrd , int dimrange >
   struct LagrangeDefinition< tetrahedron , polOrd, dimrange >
   {
+    /** \bug This formula is wrong! */
     enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 4 * polOrd) };
+  };
+
+  //! Lagrange Definition for pyramids
+  /** \todo Generalize this to higher orders */
+  template <int polOrd, int dimrange >
+  struct LagrangeDefinition< pyramid , polOrd, dimrange >
+  {
+    enum { numOfBaseFct = dimrange * 5};
+  };
+
+  //! Lagrange Definition for prisms
+  /** \todo Generalize this to higher orders */
+  template <int polOrd, int dimrange >
+  struct LagrangeDefinition< prism , polOrd, dimrange >
+  {
+    enum { numOfBaseFct = dimrange * 6};
   };
 
   //! Lagrange Definition for hexahedrons
   template <int polOrd , int dimrange >
   struct LagrangeDefinition< hexahedron , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 8 * polOrd) };
+    enum { numOfBaseFct = dimrange * (polOrd+1) * (polOrd+1) * (polOrd+1) };
   };
 
   //*********************************************************************
@@ -540,7 +787,7 @@ namespace Dune {
 
     //! return number of different basefunction, i.e. we can have more than
     //! one dof a vertices for example
-    int getNumberOfDiffrentBaseFunctions () const
+    int getNumberOfDifferentBaseFunctions () const
     {
       return (int) (numOfBaseFct / dimrange);
     }
@@ -550,4 +797,7 @@ namespace Dune {
   };
 
 } // end namespace Dune
+
+#include "p2lagrangebasefunctions.hh"
+
 #endif
