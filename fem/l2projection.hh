@@ -34,7 +34,7 @@ namespace Dune
       discFunc.clear();
 
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
+      typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
       typedef typename DiscreteFunctionType::LocalFunctionType LocalFuncType;
 
 

@@ -2908,7 +2908,7 @@ namespace Dune
 
       for(int i=0; i<vec.size(); i++) vec[i] = -1;
 
-      typedef typename GridType::template Traits<0>::LevelIterator LevelIteratorType;
+      typedef typename GridType::template codim<0>::LevelIterator LevelIteratorType;
       LevelIteratorType endit = grid.template lend<0> (level);
       for(LevelIteratorType it = grid.template lbegin<0> (level); it != endit; ++it)
       {

@@ -25,7 +25,7 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& cS, const Fu
   matrix_.resize(rows, cols, GridType::dimension*10);
   matrix_.clear();
 
-  typedef typename GridType::template Traits<0>::LevelIterator ElementIterator;
+  typedef typename GridType::template codim<0>::LevelIterator ElementIterator;
   typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
   ElementIterator cIt    = grid.template lbegin<0>(coarseLevel);
@@ -38,8 +38,8 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& cS, const Fu
     const int numCoarseBaseFct = coarseBaseSet.getNumberOfBaseFunctions();
 
 
-    typedef typename GridType::template Traits<0>::Entity EntityType;
-    typedef typename EntityType::Traits::HierarchicIterator HierarchicIterator;
+    typedef typename GridType::template codim<0>::Entity EntityType;
+    typedef typename EntityType::HierarchicIterator HierarchicIterator;
 
     HierarchicIterator fIt    = cIt->hbegin(fineLevel);
     HierarchicIterator fEndIt = cIt->hend(fineLevel);

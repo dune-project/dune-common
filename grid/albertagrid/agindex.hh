@@ -37,7 +37,7 @@ namespace Dune {
       this->resize ( grid );
       for(int l=0; l<=grid.maxlevel(); l++)
       {
-        typedef typename GridType::template Traits<0>::LevelIterator LevelIteratorType;
+        typedef typename GridType::template codim<0>::LevelIterator LevelIteratorType;
         LevelIteratorType endit = grid.template lend<0>(l);
         LevelIteratorType it = grid.template lbegin<0>(l);
 

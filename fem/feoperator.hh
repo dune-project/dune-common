@@ -92,7 +92,7 @@ namespace Dune {
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
+      typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
       GridType &grid = functionSpace_.getGrid();
@@ -127,9 +127,9 @@ namespace Dune {
 #if 0
       {
         // eliminate the Dirichlet rows and columns
-        typedef typename GridType::template Traits<0>::Entity EntityType;
-        typedef typename EntityType::Traits::IntersectionIterator NeighIt;
-        typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+        typedef typename GridType::template codim<0>::Entity EntityType;
+        typedef typename GridType::template codim<0>::IntersectionIterator NeighIt;
+        typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
 
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
         LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
@@ -200,7 +200,7 @@ namespace Dune {
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
+      typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
       GridType &grid = functionSpace_.getGrid();
@@ -332,8 +332,8 @@ namespace Dune {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
 
-      typedef typename EntityType::Traits::IntersectionIterator NeighIt;
-      typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+      typedef typename EntityType::IntersectionIterator NeighIt;
+      typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
 
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
@@ -397,8 +397,8 @@ namespace Dune {
       // eliminate the Dirichlet rows and columns
       typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename EntityType::Traits::IntersectionIterator NeighIt;
-      typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+      typedef typename EntityType::IntersectionIterator NeighIt;
+      typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
 
       const DiscFunctionType & arg  = (*arg_);
       DiscFunctionType & dest = (*dest_);

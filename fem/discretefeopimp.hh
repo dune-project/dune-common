@@ -151,7 +151,7 @@ namespace Dune {
       }
       else
       {
-        typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
+        typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
 
 
         // make run through grid

@@ -122,8 +122,8 @@ namespace Dune {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
 
-      typedef typename EntityType::Traits::IntersectionIterator NeighIt;
-      typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+      typedef typename EntityType::IntersectionIterator NeighIt;
+      typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
 
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
@@ -189,8 +189,8 @@ namespace Dune {
       // eliminate the Dirichlet rows and columns
       typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename EntityType::Traits::IntersectionIterator NeighIt;
-      typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+      typedef typename EntityType::IntersectionIterator NeighIt;
+      typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
 
       GridType &grid = functionSpace_.getGrid();
 
@@ -297,7 +297,7 @@ namespace Dune {
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
+      typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
       typedef typename GridType::LeafIterator LeafIterator;
 
 
@@ -375,9 +375,9 @@ namespace Dune {
       // eliminate the Dirichlet rows and columns
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Traits<0>::Entity EntityType;
-      typedef typename EntityType::Traits::IntersectionIterator NeighIt;
-      typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+      typedef typename GridType::template codim<0>::Entity EntityType;
+      typedef typename EntityType::IntersectionIterator NeighIt;
+      typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
 
       for( ; it != endit; ++it )
       {

@@ -35,7 +35,7 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
 
   mat = 0;
 
-  typedef typename GridType::template Traits<0>::LevelIterator ElementIterator;
+  typedef typename GridType::template codim<0>::LevelIterator ElementIterator;
   typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
   ElementIterator cIt    = grid.template lbegin<0>(cL);
@@ -53,8 +53,8 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
     const BaseFunctionSetType& coarseBaseSet = coarseFSpace.getBaseFunctionSet( *cIt );
     const int numCoarseBaseFct = coarseBaseSet.getNumberOfBaseFunctions();
 
-    typedef typename GridType::template Traits<0>::Entity EntityType;
-    typedef typename EntityType::Traits::HierarchicIterator HierarchicIterator;
+    typedef typename GridType::template codim<0>::Entity EntityType;
+    typedef typename EntityType::HierarchicIterator HierarchicIterator;
 
     HierarchicIterator fIt    = cIt->hbegin(fL);
     HierarchicIterator fEndIt = cIt->hend(fL);
@@ -105,8 +105,8 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
     const int numCoarseBaseFct = coarseBaseSet.getNumberOfBaseFunctions();
 
 
-    typedef typename GridType::template Traits<0>::Entity EntityType;
-    typedef typename EntityType::Traits::HierarchicIterator HierarchicIterator;
+    typedef typename GridType::template codim<0>::Entity EntityType;
+    typedef typename EntityType::HierarchicIterator HierarchicIterator;
 
     HierarchicIterator fIt    = cIt->hbegin(fL);
     HierarchicIterator fEndIt = cIt->hend(fL);
