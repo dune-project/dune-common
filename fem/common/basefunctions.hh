@@ -61,17 +61,18 @@ namespace Dune {
     //! methods with template parameter "length of Vec".
     //! Though the evaluate Methods can be spezialized for each
     //! differentiation order
+    //! \param x The local coordinate in the reference element
     virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
-                            const Domain & , Range &) const {}; // = 0 ?
+                            const Domain & , Range &) const {};
 
     //! diffVariable contain the component of the gradient which is delivered.
     //! for example gradient of the basefunction x component ==>
     //! diffVariable(0) == 0, y component ==> diffVariable(0) == 1 ...
     virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
-                            const Domain & , Range &) const {}; // = 0 ?
+                            const Domain & , Range &) const {};
 
     virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
-                            const Domain & , Range &) const {}; // = 0 ?
+                            const Domain & , Range &) const {};
 
   private:
     const FunctionSpaceType & functionSpace_;
