@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
-#ifndef __DUNE_ALIGNMENT_HH__
-#define __DUNE_ALIGNMENT_HH__
+#ifndef DUNE_ALIGNMENT_HH
+#define DUNE_ALIGNMENT_HH
 #include <cstddef>
 
 namespace Dune

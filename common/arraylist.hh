@@ -2,14 +2,13 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_ARRAYLIST_HH__
-#define __DUNE_ARRAYLIST_HH__
+#ifndef DUNE_ARRAYLIST_HH
+#define DUNE_ARRAYLIST_HH
 
 #include <vector>
-#include <dune/common/smartpointer.hh>
-#include <dune/common/fixedarray.hh>
-#include <dune/common/iteratorfacades.hh>
-#include <dune/common/poolallocator.hh>
+#include "smartpointer.hh"
+#include "fixedarray.hh"
+#include "iteratorfacades.hh"
 
 namespace Dune
 {

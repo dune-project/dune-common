@@ -4,7 +4,7 @@
 #ifndef DUNE_COMMON_POOLALLOCATOR_HH
 #define DUNE_COMMON_POOLALLOCATOR_HH
 
-#include <dune/common/alignment.hh>
+#include "alignment.hh"
 
 namespace Dune
 {

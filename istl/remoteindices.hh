@@ -3,13 +3,13 @@
 #ifndef DUNE_REMOTEINDICES_HH
 #define DUNE_REMOTEINDICES_HH
 
-#include <dune/istl/indexset.hh>
+#include "indexset.hh"
 #include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
 #include <map>
 #include <utility>
 #include <iostream>
-#include <dune/istl/mpitraits.hh>
+#include "mpitraits.hh"
 #include "mpi.h"
 
 namespace Dune {

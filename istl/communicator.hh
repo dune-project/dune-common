@@ -3,7 +3,7 @@
 #ifndef DUNE_COMMUNICATOR
 #define DUNE_COMMUNICATOR
 
-#include <dune/istl/remoteindices.hh>
+#include "remoteindices.hh"
 #include <dune/common/exceptions.hh>
 namespace Dune
 {

@@ -77,12 +77,6 @@ namespace Dune
     static bool contains(const TA& item);
   };
 
-  template<class TI, typename TA>
-  inline bool PODSet<TI,TA>::contains(const Type& attribute)
-  {
-    return static_cast<Implementation*>(this)->contains();
-  }
-
   template<typename TA>
   inline bool EmptySet<TA>::contains(const TA& attribute)
   {
