@@ -20,10 +20,11 @@ namespace Dune {
     {
       this->n = 0; this->p = 0;
     }
+
     //! reallocate array with size m
     void resizeAndCopy (int m, int factor)
     {
-      if(m <= n) return;
+      if(m <= this->n) return;
       int newSize = m*factor;
       T * newMem = 0;
 
@@ -37,12 +38,12 @@ namespace Dune {
         throw;
       }
 
-      if(n > 0)
-        std::memcpy(newMem , p , n*sizeof(T));
+      if(this->n > 0)
+        std::memcpy(newMem , this->p , this->n*sizeof(T));
 
-      n = newSize;
-      if(p) delete [] p;
-      p = newMem;
+      this->n = newSize;
+      if(this->p) delete [] this->p;
+      this->p = newMem;
     }
 
     //! write Array to xdr stream
@@ -53,7 +54,7 @@ namespace Dune {
         int len = this->n;
         xdr_int( xdrs, &len );
         if(len != this->n) this->resize(len);
-        xdr_vector(xdrs,(char *) p,n,sizeof(T),(xdrproc_t)xdr_double);
+        xdr_vector(xdrs,(char *) this->p,this->n,sizeof(T),(xdrproc_t)xdr_double);
         return true;
       }
       else
