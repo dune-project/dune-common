@@ -1436,18 +1436,18 @@ namespace Dune {
      * to actually write the grid, within this method the real file name is
      * generated out of filename and timestep
      */
-    bool write (const FileFormatType ftype, const char * fnprefix , ct time=0.0, int timestep=0);
+    bool write (const FileFormatType ftype, const char * fnprefix , double time=0.0, int timestep=0);
 
     //! get Grid from file with time and timestep , return true if ok
-    bool read ( const char * fnprefix , ct & time , int timestep);
+    bool read ( const char * fnprefix , double & time , int timestep);
 
     //! write Grid to file filename and store time
     template <FileFormatType ftype>
-    bool writeGrid ( const char * filename , ct time );
+    bool writeGrid ( const char * filename , double time );
 
     //! read Grid from file filename and also read time of grid
     template <FileFormatType ftype>
-    bool readGrid ( const char * filename , ct &time );
+    bool readGrid ( const char * filename , double &time );
 
   protected:
     //! Barton-Nackman trick

@@ -1193,7 +1193,7 @@ namespace Dune {
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  write ( const FileFormatType ftype, const char * filename , ct time, int timestep)
+  write ( const FileFormatType ftype, const char * filename , double time, int timestep)
   {
     const char *fn;
     const char *path = 0;
@@ -1208,7 +1208,8 @@ namespace Dune {
     case ascii :   return asImp().template writeGrid<ascii>(fn,time);
     default :
     {
-      std::cerr << ftype << " FileFormatType not supported at the moment! \n";
+      std::cerr << ftype << " FileFormatType not supported at the moment! " << __FILE__ << __LINE__ << "\n";
+      assert(false);
       abort();
       return false;
     }
@@ -1219,7 +1220,7 @@ namespace Dune {
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  read ( const char * filename , ct & time, int timestep)
+  read ( const char * filename , double & time, int timestep)
   {
     const char * fn;
     std::fstream file (filename,std::ios::in);
@@ -1250,6 +1251,7 @@ namespace Dune {
     default :
     {
       std::cerr << ftype << " FileFormatType not supported at the moment! \n";
+      assert(false);
       abort();
       return false;
     }
@@ -1261,7 +1263,7 @@ namespace Dune {
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   template <FileFormatType ftype>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  writeGrid ( const char * filename , ct time )
+  writeGrid ( const char * filename , double time )
   {
     std::cerr << "WARNING: writeGrid not implemented! \n";
     return false;
@@ -1271,13 +1273,11 @@ namespace Dune {
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   template <FileFormatType ftype>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  readGrid ( const char * filename , ct & time )
+  readGrid ( const char * filename , double & time )
   {
     std::cerr << "WARNING: readGrid not implemented! \n";
     return false;
   }
-
-
 
   //************************************************************************
   //  G R I D Default :: LeafIterator
