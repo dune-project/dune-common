@@ -80,8 +80,12 @@ public:
       (*refCount_)--;
       if((*refCount_) <= 0)
       {
-        free_traverse_stack(stack_);
-        stack_ = NULL;
+        // in free_traverse_stack stack != NULL is checked
+        if(stack_)
+        {
+          free_traverse_stack(stack_);
+          stack_ = NULL;
+        }
         if(refCount_) delete refCount_ ;
       }
     }
@@ -270,6 +274,23 @@ void printTraverseStack(TRAVERSE_STACK *stack)
   MSG("stack_used        = %d\n",stack->stack_used);
   MSG("save_stack_used   = %d\n",stack->save_stack_used);
   MSG("****************************************************\n");
+}
+
+void printElInfo(const EL_INFO *elf)
+{
+  FUNCNAME("printElInfo");
+
+  MSG("level %d\n",elf->level);
+  printf("Neighs: ");
+  for(int i=0; i<2; i++)
+  {
+    ALBERT EL* el = elf->neigh[i];
+    if(el)
+      printf(" %d |",el->index);
+  }
+  printf("\n");
+
+
 }
 
 

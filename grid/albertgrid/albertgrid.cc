@@ -8,90 +8,19 @@ namespace Albert
 {
 #endif
 
-void initialReached(const EL_INFO * elInfo)
-{
-  AlbertLeafData *ldata = (AlbertLeafData *) elInfo->el->child[1];
-  for (int i = 0; i < N_VERTICES; i++)
-  {
-    ldata->reachedFace[i] = -1;
-  }
-}
-
-void setReached(const EL_INFO * elInfo)
-{
-  AlbertLeafData *ldata = (AlbertLeafData *) elInfo->el->child[1];
-  AlbertLeafData *ldataNeigh = NULL;
-  for (int i = 0; i < N_VERTICES; i++)
-  {
-
-    // mark Faces
-    if(elInfo->neigh[i])
-    {
-      if(ldata->reachedFace[i] != -1)
-      {
-        ldata->reachedFace[i] = 1;
-        ldataNeigh = (AlbertLeafData *) elInfo->neigh[i]->child[1];
-        ldataNeigh->reachedFace[elInfo->opp_vertex[i]] = -1;
-      }
-      else
-      {
-        ldataNeigh = (AlbertLeafData *) elInfo->neigh[i]->child[1];
-        ldataNeigh->reachedFace[elInfo->opp_vertex[i]] = 1;
-      }
-    }
-    else
-      ldata->reachedFace[i] = 1;
-  }
-}
-
-void AlbertLeafRefine(EL * parent, EL * child[2])
-{
-  AlbertLeafData *ldata;
-  AlbertLeafData *ldataChi;
-
-  ldata = (AlbertLeafData *) parent->child[1];
-
-  // child 0
-  ldataChi = (AlbertLeafData *) child[0]->child[1];
-  // die neue Kante auf Child 0, siehe Albert Doc S. 11
-  for(int i=0; i<N_VERTICES; i++)
-    ldataChi->reachedFace[i] = ldata->reachedFace[i];
-
-
-#if DIM == 3
-  ldataChi->reachedFace[0] = 1;
-#else
-  ldataChi->reachedFace[1] = 1;
-#endif
-
-  // child 1
-  ldataChi = (AlbertLeafData *) child[1]->child[1];
-  for(int i=0; i<N_VERTICES; i++)
-    ldataChi->reachedFace[i] = ldata->reachedFace[i];
-  // die neue Kante auf Child 1, siehe Albert Doc S. 11
-
-  ldataChi->reachedFace[0] = -1;
-
-}
-
-void AlbertLeafCoarsen(EL * parent, EL * child[2])
-{
-  // do notin'
-  ALBERT_ERROR_EXIT("not implemented until now\n");
-}
+void AlbertLeafRefine(EL *parent, EL *child[2]){};
+void AlbertLeafCoarsen(EL *parent, EL *child[2]){};
 
 void initLeafData(LEAF_DATA_INFO * linfo)
 {
   linfo->leaf_data_size = sizeof(AlbertLeafData);
   linfo->refine_leaf_data = &AlbertLeafRefine;
-  linfo->coarsen_leaf_data = &AlbertLeafCoarsen;
+  linfo->coarsen_leaf_data =&AlbertLeafCoarsen;
 
   return;
 }
-
 void initDofAdmin(MESH *mesh)
 {
-
   FUNCNAME("initDofAdmin");
   int degree = 1;
   const BAS_FCTS  *lagrange;
@@ -763,7 +692,8 @@ namespace Dune
 
   template<int codim, int dim, int dimworld>
   inline AlbertGridEntity < codim, dim ,dimworld >::
-  AlbertGridEntity(ALBERT TRAVERSE_STACK * travStack)
+  AlbertGridEntity(AlbertGrid<dim,dimworld> &grid,
+                   ALBERT TRAVERSE_STACK * travStack) : grid_(grid)
   {
     travStack_ = travStack;
     makeDescription();
@@ -779,7 +709,7 @@ namespace Dune
 
   template<int codim, int dim, int dimworld>
   inline AlbertGridEntity < codim, dim ,dimworld >::
-  AlbertGridEntity()
+  AlbertGridEntity(AlbertGrid<dim,dimworld> &grid) : grid_(grid)
   {
     travStack_ = NULL;
     makeDescription();
@@ -794,9 +724,10 @@ namespace Dune
 
   template<int codim, int dim, int dimworld>
   inline void AlbertGridEntity < codim, dim ,dimworld >::
-  setElInfo(ALBERT EL_INFO * elInfo, unsigned char face,
+  setElInfo(ALBERT EL_INFO * elInfo, int elNum, unsigned char face,
             unsigned char edge, unsigned char vertex )
   {
+    elNum_ = elNum;
     face_ = face;
     edge_ = edge;
     vertex_ = vertex;
@@ -815,7 +746,20 @@ namespace Dune
   inline int AlbertGridEntity < codim, dim ,dimworld >::
   index()
   {
-    return indexMap<codim>();
+    return elNum_;
+  }
+
+  //! Specialization for Vertices
+  inline int AlbertGridEntity < 2, 2 ,2 >::
+  index()
+  {
+    return grid_.indexOnLevel<2>(globalIndex(),level());
+  }
+
+  inline int AlbertGridEntity < 3, 3,3 >::
+  index()
+  {
+    return grid_.indexOnLevel<3>(globalIndex(),level());
   }
 
   template< int codim, int dim, int dimworld>
@@ -853,6 +797,7 @@ namespace Dune
   //************************************
   //
   //  --AlbertGridEntity codim = 0
+  //  --0Entity codim = 0
   //
   //************************************
   template< int dim, int dimworld>
@@ -883,7 +828,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridEntity < 0, dim ,dimworld >::
-  AlbertGridEntity()
+  AlbertGridEntity(AlbertGrid<dim,dimworld> &grid) : grid_(grid)
   {
     travStack_ = NULL;
     elInfo_ = NULL;
@@ -911,12 +856,21 @@ namespace Dune
   inline int AlbertGridEntity < 0, dim ,dimworld >::
   index()
   {
-    return elInfo_->el->index;
+#if 0
+    int num = globalIndex();
+    if(num < 0)
+      return num;
+    else
+      // last 0 stands for level an is not used in this context,
+      // because the global index of elinfo is unique for all levels
+      return grid_.indexOnLevel<0>(num,0);
+#endif
+    return grid_.indexOnLevel<0>(globalIndex(),0);
   }
 
   template< int dim, int dimworld>
   inline void AlbertGridEntity < 0, dim ,dimworld >::
-  setElInfo(ALBERT EL_INFO * elInfo,  unsigned char face,
+  setElInfo(ALBERT EL_INFO * elInfo, int elNum,  unsigned char face,
             unsigned char edge, unsigned char vertex )
   {
     // in this case the face, edge and vertex information is not used,
@@ -974,20 +928,22 @@ namespace Dune
   {
     manageStack_.init();
     virtualEntity_.setTraverseStack(NULL);
-    virtualEntity_.setElInfo(NULL,0,0,0);
+    virtualEntity_.setElInfo(NULL,0,0,0,0);
   }
-
 
   template< int dim, int dimworld>
   inline AlbertGridHierarchicIterator<dim,dimworld>::
-  AlbertGridHierarchicIterator()
+  AlbertGridHierarchicIterator(AlbertGrid<dim,dimworld> &grid) :
+    grid_(grid), virtualEntity_(grid)
   {
     makeIterator();
   }
 
   template< int dim, int dimworld>
   inline AlbertGridHierarchicIterator<dim,dimworld>::
-  AlbertGridHierarchicIterator(ALBERT TRAVERSE_STACK *travStack,int travLevel)
+  AlbertGridHierarchicIterator(AlbertGrid<dim,dimworld> &grid,
+                               ALBERT TRAVERSE_STACK *travStack,int travLevel) :
+    grid_(grid), virtualEntity_(grid)
   {
     if(travStack)
     {
@@ -1137,16 +1093,14 @@ namespace Dune
   inline void AlbertGridNeighborIterator<dim,dimworld>::
   makeIterator()
   {
-    // not more than dim+1 naighbours, not in ALBERT
+    // not more than dim+1 neighbours, not in ALBERT
     neighborCount_ = dim+1;
-
-    travStack_ = NULL;
 
     initElInfo(&neighElInfo_);
 
     elInfo_ = NULL;
     virtualEntity_.setTraverseStack(NULL);
-    virtualEntity_.setElInfo(NULL,0,0,0);
+    virtualEntity_.setElInfo(NULL,0,0,0,0);
   }
 
 
@@ -1191,55 +1145,62 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline void AlbertGridNeighborIterator<dim,dimworld>::
-  setNeighInfo(ALBERT EL_INFO * elInfo, int neigh)
+  setNeighInfo(ALBERT EL_INFO * elInfo, ALBERT EL_INFO * neighElInfo, int neigh)
   {
     // initialisiert elinfo mit default Werten
-    neighElInfo_.mesh = elInfo->mesh;
-    neighElInfo_.el = elInfo->neigh[neigh];
-    // no parent Infomation for Neighbors
-    neighElInfo_.parent = NULL;
-    // no macro Information for Neighbors
-    neighElInfo_.macro_el = NULL;
+    neighElInfo->mesh = elInfo->mesh;
 
-    neighElInfo_.level = elInfo->level;
+    neighElInfo->el = elInfo->neigh[neigh];
+    neighElInfo->el->index = elInfo->neigh[neigh]->index;
+    // no parent Infomation for Neighbors
+    neighElInfo->parent = NULL;
+    // no macro Information for Neighbors
+    neighElInfo->macro_el = NULL;
+
+    neighElInfo->level = elInfo->level;
+
     // hatte keine Lust fuer jede Dim eine neue Methode zu schreiben
 #if DIM > 2
-    neighElInfo_.orientation = elInfo->orientation;
-    neighElInfo_.el_type = elInfo->el_type;
+    neighElInfo->orientation = elInfo->orientation;
+    neighElInfo->el_type = elInfo->el_type;
 #endif
 
     for(int i =0; i<dim+1; i++)
     {
       for(int j =0; j< dimworld; j++)
       {
-        neighElInfo_.coord[i][j] = elInfo->coord[i][j];
-        neighElInfo_.opp_coord[i][j] = 0.0;
+        neighElInfo->coord[i][j] = elInfo->coord[i][j];
+        neighElInfo->opp_coord[i][j] = 0.0;
 
       }
-      neighElInfo_.neigh[i] = NULL;
-      neighElInfo_.bound[i] = 0;
+      neighElInfo->neigh[i] = NULL;
+      neighElInfo->bound[i] = 0;
     }
 
     for(int j =0; j< dimworld; j++)
     {
-      neighElInfo_.coord[neigh][j] = elInfo->opp_coord[neigh][j];
+      neighElInfo->coord[neigh][j] = elInfo->opp_coord[neigh][j];
     }
   }
 
 
   template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>::AlbertGridNeighborIterator()
+  inline AlbertGridNeighborIterator<dim,dimworld>::
+  AlbertGridNeighborIterator(AlbertGrid<dim,dimworld> &grid) :
+    grid_(grid), virtualEntity_(grid)
   {
     makeIterator();
   }
 
   template< int dim, int dimworld>
   inline AlbertGridNeighborIterator<dim,dimworld>::AlbertGridNeighborIterator
-    (ALBERT TRAVERSE_STACK * travStack,ALBERT EL_INFO *elInfo)
+    (AlbertGrid<dim,dimworld> &grid, ALBERT EL_INFO *elInfo) :
+    grid_(grid), virtualEntity_(grid_)
   {
     if(elInfo)
     {
       elInfo_ = elInfo;
+
       neighborCount_ = 0;
       initElInfo(&neighElInfo_);
 
@@ -1247,22 +1208,9 @@ namespace Dune
 
       if(elInfo_->neigh[neighborCount_] != NULL)
       {
-
-        setNeighInfo(elInfo_,neighborCount_);
-
-#if 0
-        // via traverse_neighbour to the neighbour, slow
-        int oldEdge = elInfo_->opp_vertex[neighborCount_];
-        elInfo_ = traverse_neighbour(travStack_,elInfo_,neighborCount_);
-
-        neighElInfo_ = (*elInfo_); // Macht eine Kopie von elInfo
-
-        // traversiere zurueck, damit der Stack wieder am Ausgangselement
-        // steht, wird sich wolh noch aendern, zu Zeitaufwendig
-        elInfo_ = traverse_neighbour(travStack_,elInfo_,oldEdge);
-#endif
+        setNeighInfo(elInfo_,&neighElInfo_,neighborCount_);
       }
-
+      // set elInfo to Entity
       virtualEntity_.setElInfo(&neighElInfo_);
     }
     else
@@ -1271,55 +1219,6 @@ namespace Dune
       makeIterator();
     }
   }
-
-  template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>::
-  AlbertGridNeighborIterator(const AlbertGridNeighborIterator& I)
-  {
-    neighborCount_ = I.neighborCount_;
-    elInfo_ = I.elInfo_;
-    virtualEntity_ = I.virtualEntity_;
-  }
-
-
-  // via traverse_neighbour to the neighbour, to slow
-#if 0
-  template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>&
-  AlbertGridNeighborIterator<dim,dimworld>::
-  operator ++()
-  {
-    // Gehe zum naechsten existierenden Nachbarn
-    neighborCount_++;
-    // koennte noch geschickter sein, nicht dim+1, sondern corners oder so
-    if(neighborCount_ < dim+1)
-    {
-      if(elInfo_->neigh[neighborCount_] == NULL)
-      {
-        // Falls kein Nachbar existiert, dann wird die aktuelle Entity
-        // zurueckgegeben
-        virtualEntity_.setElInfo(elInfo_);
-        return (*this);
-      }
-
-      // Merke, ueber welche Kante man zurueck kommt
-      int helpEdge = elInfo_->opp_vertex[neighborCount_];
-
-      // laufe zum Nachbarn
-      elInfo_ = traverse_neighbour(travStack_,elInfo_,neighborCount_);
-
-      // kopiere Nachbar
-      neighElInfo_ = (*elInfo_);
-      virtualEntity_.setElInfo(&neighElInfo_);
-
-      // Laufe zurueck zum Element ueber gemerkte Kante
-      elInfo_ = traverse_neighbour(travStack_,elInfo_,helpEdge);
-    }
-    else
-      virtualEntity_.setElInfo(NULL);
-    return (*this);
-  }
-#endif
 
   template< int dim, int dimworld>
   inline AlbertGridNeighborIterator<dim,dimworld>&
@@ -1342,7 +1241,7 @@ namespace Dune
       }
       else
       {
-        setNeighInfo(elInfo_,neighborCount_);
+        setNeighInfo(elInfo_,&neighElInfo_,neighborCount_);
         virtualEntity_.setElInfo(&neighElInfo_);
       }
     }
@@ -1553,12 +1452,14 @@ namespace Dune
     manageStack_.init();
 
     virtualEntity_.setTraverseStack(NULL);
-    virtualEntity_.setElInfo(NULL,0,0,0);
+    virtualEntity_.setElInfo(NULL,0,0,0,0);
   }
 
+  // Make LevelIterator with point to element from previous iterations
   template<int codim, int dim, int dimworld>
   inline AlbertGridLevelIterator<codim,dim,dimworld >::
-  AlbertGridLevelIterator()
+  AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid) :
+    grid_(grid), virtualEntity_(grid)
   {
     makeIterator();
   }
@@ -1566,10 +1467,13 @@ namespace Dune
   // Make LevelIterator with point to element from previous iterations
   template<int codim, int dim, int dimworld>
   inline AlbertGridLevelIterator<codim,dim,dimworld >::
-  AlbertGridLevelIterator(ALBERT EL_INFO *elInfo,int face,int edge,int vertex)
+  AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid,
+                          ALBERT EL_INFO *elInfo,int elNum,int face,int edge,int vertex) :
+    grid_(grid), virtualEntity_(grid)
   {
     if(elInfo)
     {
+      elNum_ = elNum;
       face_ = face;
       edge_ = edge;
       vertex_ = vertex;
@@ -1582,7 +1486,7 @@ namespace Dune
 
       // diese Methode muss neu geschrieben werden, da man
       // die ParentElement explizit speichern moechte.
-      virtualEntity_.setElInfo(elInfo,face_,edge_,vertex_);
+      virtualEntity_.setElInfo(elInfo,elNum_,face_,edge_,vertex_);
     }
     else
     {
@@ -1593,22 +1497,32 @@ namespace Dune
 
   template<int codim, int dim, int dimworld>
   inline AlbertGridLevelIterator<codim,dim,dimworld >::
-  AlbertGridLevelIterator(ALBERT MESH * mesh, AlbertMarkerVector * vertexMark,
-                          int travLevel)
+  AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid,
+                          AlbertMarkerVector * vertexMark,
+                          int travLevel) : grid_(grid) , virtualEntity_(grid)
   {
+    ALBERT MESH * mesh = grid_.getMesh();
+
     if(mesh)
     {
+      elNum_ = 0;
       vertex_ = 0;
       face_ = 0;
       edge_ = 0;
 
       vertexMarker_ = vertexMark;
 
-      ALBERT FLAGS travFlags = FILL_COORDS | FILL_NEIGH;
-      if(travLevel >= 0)
-        travFlags = travFlags | CALL_LEAF_EL_LEVEL;
-      else
-        travFlags = travFlags | CALL_LEAF_EL;
+      ALBERT FLAGS travFlags = FILL_ANY; //FILL_COORDS | FILL_NEIGH;
+
+      if((travLevel < 0) || (travLevel >= grid_.maxlevel()))
+      {
+        printf("AlbertGridLevelIterator<%d,%d,%d>: Wrong Level (%d) in Contructor, grid,maxlevel() = %d ! \n",
+               codim,dim,dimworld,travLevel, grid_.maxlevel());
+        abort();
+      }
+
+      // CALL_LEAF_EL is not used anymore
+      travFlags = travFlags | CALL_LEAF_EL_LEVEL;
 
       // get traverse_stack
       manageStack_.makeItNew(true);
@@ -1620,7 +1534,7 @@ namespace Dune
       ALBERT EL_INFO* elInfo =
         goFirstElement(manageStack_.getStack(), mesh, travLevel,travFlags);
 
-      virtualEntity_.setElInfo(elInfo,face_,edge_,vertex_);
+      virtualEntity_.setElInfo(elInfo,elNum_,face_,edge_,vertex_);
     }
     else
       makeIterator();
@@ -1647,10 +1561,10 @@ namespace Dune
   inline AlbertGridLevelIterator < codim,dim,dimworld >&
   AlbertGridLevelIterator < codim,dim,dimworld >::operator ++()
   {
-
+    elNum_++;
     virtualEntity_.setElInfo(
-      goNextEntity<codim>(manageStack_.getStack(), virtualEntity_.getElInfo()),
-      face_,edge_,vertex_);
+      goNextEntity<codim>(manageStack_.getStack(),virtualEntity_.getElInfo()),
+      elNum_,face_,edge_,vertex_);
 
     return (*this);
   }
@@ -1659,8 +1573,6 @@ namespace Dune
   inline ALBERT EL_INFO * AlbertGridLevelIterator<codim,dim,dimworld >::
   goNextFace(ALBERT TRAVERSE_STACK *stack, ALBERT EL_INFO *elInfo)
   {
-    ALBERT AlbertLeafData * ldata = NULL;
-
     // go next Element, if face_ > numberOfVertices, then go to next elInfo
     face_++;
     if(face_ >= (dim+1)) // dim+1 Faces
@@ -1672,14 +1584,11 @@ namespace Dune
     if(!elInfo)
       return elInfo; // if no more Faces, return
 
-    // on leaf level, child[1] hides the leaf data pointer
-    if(elInfo->el->child[1])
+    if( (elInfo->neigh[face_]) &&
+        (elInfo->el->index > elInfo->neigh[face_]->index))
     {
-      ldata = (ALBERT AlbertLeafData *) elInfo->el->child[1];
-
       // if reachedFace before, go next
-      if(ldata->reachedFace[face_] != 1)
-        elInfo = goNextFace(stack,elInfo);
+      elInfo = goNextFace(stack,elInfo);
     }
 
     return elInfo;
@@ -1697,7 +1606,6 @@ namespace Dune
   inline ALBERT EL_INFO * AlbertGridLevelIterator<codim,dim,dimworld >::
   goNextVertex(ALBERT TRAVERSE_STACK *stack, ALBERT EL_INFO *elInfo)
   {
-    ALBERT AlbertLeafData * ldata = NULL;
     // go next Element, Vertex 0
     // treat Vertices like Faces
     vertex_++;
@@ -1792,7 +1700,7 @@ namespace Dune
   goNextElInfo(ALBERT TRAVERSE_STACK *stack, ALBERT EL_INFO *elinfo_old)
   {
     FUNCNAME("goNextElInfo");
-    ALBERT EL_INFO       *elinfo=nil;
+    ALBERT EL_INFO       *elinfo=NULL;
 
     if (stack->stack_used)
     {
@@ -1904,6 +1812,7 @@ namespace Dune
       stack->info_stack[stack->stack_used] = 0;
     }
 
+    //printElInfo(stack->elinfo_stack+stack->stack_used);
     return(stack->elinfo_stack+stack->stack_used);
   }
 
@@ -1927,7 +1836,7 @@ namespace Dune
     // der gleiche, deshalb kann man auch nur nach unten, d.h. zu den Kindern
     // laufen
 
-    AlbertGridHierarchicIterator<dim,dimworld> it(travStack_,maxlevel);
+    AlbertGridHierarchicIterator<dim,dimworld> it(grid_,travStack_,maxlevel);
     return it;
   }
 
@@ -1935,7 +1844,7 @@ namespace Dune
   inline AlbertGridHierarchicIterator<dim,dimworld>
   AlbertGridEntity < 0, dim ,dimworld >::hend(int maxlevel)
   {
-    AlbertGridHierarchicIterator<dim,dimworld> it;
+    AlbertGridHierarchicIterator<dim,dimworld> it(grid_);
     return it;
   }
 
@@ -1945,7 +1854,7 @@ namespace Dune
   inline AlbertGridNeighborIterator<dim,dimworld>
   AlbertGridEntity < 0, dim ,dimworld >::nbegin()
   {
-    AlbertGridNeighborIterator<dim,dimworld> it(travStack_,this->getElInfo());
+    AlbertGridNeighborIterator<dim,dimworld> it(grid_,elInfo_);
     return it;
   }
 
@@ -1953,7 +1862,7 @@ namespace Dune
   inline AlbertGridNeighborIterator<dim,dimworld>
   AlbertGridEntity < 0, dim ,dimworld >::nend()
   {
-    AlbertGridNeighborIterator<dim,dimworld> it;
+    AlbertGridNeighborIterator<dim,dimworld> it(grid_);
     return it;
   }
 
@@ -1963,26 +1872,13 @@ namespace Dune
   //
   //*********************************************************************
   AlbertMarkerVector::AlbertMarkerVector ()
-  {
-    vec_ = NULL;
-    numberOfEntries_ = 0;
-  }
-
-  AlbertMarkerVector::~AlbertMarkerVector ()
-  {
-    delete[] vec_;
-  }
+  {}
 
   void AlbertMarkerVector::makeNewSize(int newNumberOfEntries)
   {
-    delete[] vec_;
-
-    vec_ = new int [newNumberOfEntries];
-
-    for(int i=0; i<newNumberOfEntries; i++)
-      vec_[i] = -1;
-
-    numberOfEntries_ = newNumberOfEntries;
+    vec_.realloc(newNumberOfEntries);
+    for(Array<int>::Iterator it = vec_.begin(); it != vec_.end(); ++it)
+      (*it) = -1;
   }
 
   void AlbertMarkerVector::makeSmaller(int newNumberOfEntries)
@@ -1996,13 +1892,37 @@ namespace Dune
 
   bool AlbertMarkerVector::notOnThisElement(ALBERT EL_INFO * elInfo, int localNum)
   {
-    return (vec_[elInfo->el->dof[localNum][0]] != elInfo->el->index);
+    return (vec_[numVertex_*elInfo->level +
+                 elInfo->el->dof[localNum][0]] != elInfo->el->index);
   }
 
-  void AlbertMarkerVector::markNewVertices(ALBERT MESH * mesh)
+  template <class Grid>
+  void AlbertMarkerVector::markNewVertices(Grid &grid)
   {
-    makeNewSize(mesh->n_vertices);
+    ALBERT MESH *mesh_ = grid.getMesh();
+    int nvx = mesh_->n_vertices;
+    numVertex_ = nvx;
+    int maxlevel = grid.maxlevel();
 
+    if(vec_.size() < maxlevel* nvx)
+      makeNewSize(2*maxlevel* nvx);
+
+    for(int level=0; level<maxlevel; level++)
+    {
+      typedef typename Grid::Traits<0>::LevelIterator LevelIterator;
+      LevelIterator endit = grid.lend<0>(level);
+      for(LevelIterator it = grid.lbegin<0> (level); it != endit; ++it)
+      {
+        for(int local=0; local<Grid::dimension+1; local++)
+        {
+          int num = it->getElInfo()->el->dof[local][0];
+          if( vec_[it->level()* nvx + num] == -1 )
+            vec_[it->level()* nvx + num] = it->globalIndex();
+        }
+      }
+      // remember the number of entity on level and codim = 0
+    }
+#if 0
     ALBERT FLAGS travFlags = FILL_NOTHING | CALL_LEAF_EL;
 
     // get traverse_stack
@@ -2021,13 +1941,13 @@ namespace Dune
         checkMark(elInfo,i);
       elInfo = ALBERT traverse_next(&travStack,elInfo);
     }
-
+#endif
   }
 
   void AlbertMarkerVector::print()
   {
-    printf("\nEntries %d \n",numberOfEntries_);
-    for(int i=0; i<numberOfEntries_; i++)
+    printf("\nEntries %d \n",vec_.size());
+    for(int i=0; i<vec_.size(); i++)
       printf("Konten %d visited on Element %d \n",i,vec_[i]);
   }
 
@@ -2042,16 +1962,14 @@ namespace Dune
     mesh_ = ALBERT get_mesh("AlbertGrid", ALBERT initDofAdmin, ALBERT initLeafData);
     ALBERT read_macro(mesh_, MacroTriangFilename, ALBERT initBoundary);
 
-    ALBERT mesh_traverse(mesh_, -1, CALL_LEAF_EL | FILL_NOTHING,
-                         ALBERT initialReached);
-
-    ALBERT mesh_traverse(mesh_, -1, CALL_LEAF_EL | FILL_NEIGH,
-                         ALBERT setReached);
-
-    maxlevel_ = 0;
+    // we have at least one level, level 0
+    maxlevel_ = 1;
 
     vertexMarker_ = new AlbertMarkerVector ();
-    vertexMarker_->markNewVertices(mesh_);
+    vertexMarker_->markNewVertices(*this);
+
+    markNew();
+
   }
 
 
@@ -2066,7 +1984,7 @@ namespace Dune
   inline AlbertGridLevelIterator<codim,dim,dimworld>
   AlbertGrid < dim, dimworld >::lbegin (int level)
   {
-    AlbertGridLevelIterator<codim,dim,dimworld> it(mesh_,vertexMarker_,level);
+    AlbertGridLevelIterator<codim,dim,dimworld> it(*this,vertexMarker_,level);
     return it;
   }
 
@@ -2074,7 +1992,7 @@ namespace Dune
   inline AlbertGridLevelIterator<codim,dim,dimworld>
   AlbertGrid < dim, dimworld >::lend (int level)
   {
-    AlbertGridLevelIterator<codim,dim,dimworld> it;
+    AlbertGridLevelIterator<codim,dim,dimworld> it((*this));
     return it;
   }
 
@@ -2088,9 +2006,8 @@ namespace Dune
     flag = ALBERT global_refine(mesh_, refCount);
 
     // verfeinere
-    refineLocal();
+    refineLocal(refCount);
 
-    maxlevel_ += refCount;
     printf("AlbertGrid<%d,%d>::globalRefine: Grid refined, maxlevel = %d \n",
            dim,dimworld,maxlevel_);
   }
@@ -2098,12 +2015,16 @@ namespace Dune
 
   template < int dim, int dimworld >
   inline void AlbertGrid < dim, dimworld >::
-  refineLocal()
+  refineLocal(int refCount)
   {
     unsigned char flag;
     flag = ALBERT refine(mesh_);
+    maxlevel_ += refCount;
 
-    vertexMarker_->markNewVertices(mesh_);
+    vertexMarker_->markNewVertices(*this);
+
+    // map the indices
+    markNew();
 
   }
 
@@ -2122,17 +2043,12 @@ namespace Dune
     return maxlevel_;
   }
 
-
-  template < int dim, int dimworld >
-  inline int AlbertGrid < dim, dimworld >::numberVertices ()
-  {
-    return mesh_->n_vertices;
-  }
-
   template < int dim, int dimworld >
   inline int AlbertGrid < dim, dimworld >::size (int level, int codim)
   {
-    if(((level != -1) && (level != maxlevel_ )) || (codim != 0))
+    enum { numCodim = dim+1 };
+
+    if(size_[level * maxlevel_ + codim] == -1)
     {
       int numberOfElements = 0;
 
@@ -2166,33 +2082,24 @@ namespace Dune
           numberOfElements++;
       }
 #endif
+
+      size_[level * numCodim + codim] = numberOfElements;
       return numberOfElements;
     }
     else
     {
-      return mesh_->n_elements;
+      return size_[level * numCodim + codim];
     }
   }
 
   template < int dim, int dimworld >
-  inline int AlbertGrid < dim, dimworld >::hiersize (int level, int codim)
-  {
-    if((level != -1) || (codim != 0))
-    {
-      std::cout << "AlbertGrid::size \n";
-      std::cout << "Richtige Implementierung fehlt noch\n";
-    }
-    return mesh_->n_hier_elements;
-  }
-
-  template < int dim, int dimworld >
-  inline void AlbertGrid < dim, dimworld >::writeGrid ()
+  inline void AlbertGrid < dim, dimworld >::writeGrid (int level)
   {
     printf("Not implemented for dim=%d , dimworld=%d \n",dim,dimworld);
     abort();
   }
 
-  inline void AlbertGrid <2,2>::writeGrid ()
+  inline void AlbertGrid <2,2>::writeGrid (int level)
   {
     std::cout << "\nStarting USPM Grid write! \n";
     // USPM 2d
@@ -2200,50 +2107,38 @@ namespace Dune
     enum {dim = 2}; enum {dimworld = 2};
     typedef AlbertGridLevelIterator<0,dim,dimworld> LEVit;
 
-    double **coord = new double *[mesh_->n_vertices];
-    for (int i = 0; i < mesh_->n_vertices; i++)
+    if(level == -1) level = maxlevel_-1;
+    LEVit endit = lend<0>(level);
+
+    int nvx = size(level,dim);
+    int noe = size(level,0);
+
+    double **coord = new double *[nvx];
+    for (int i = 0; i < nvx; i++)
       coord[i] = new double[dimworld];
 
-    LEVit endit = lend<0>(-1);
-
-    // die eigentlichen ElementNummer auf die Zahlen 0 bis  n_elements-1
-    // abbilden
-    int *lookup = new int[mesh_->n_hier_elements];
-    int count = 0;
-    for (LEVit it = lbegin<0>(-1); it != endit; ++it)
-    {
-      lookup[(*it).index()] = count;
-      count++;
-    }
-
-    int **nb = new int *[mesh_->n_elements];
-    for (int i = 0; i < mesh_->n_elements; i++)
+    int **nb = new int *[noe];
+    for (int i = 0; i < noe; i++)
       nb[i] = new int[dim + 1];
 
-    int **vertex = new int *[mesh_->n_elements];
-    for (int i = 0; i < mesh_->n_elements; i++)
+    int **vertex = new int *[noe];
+    for (int i = 0; i < noe; i++)
       vertex[i] = new int[dim + 1];
 
     // setup the USPM Mesh
-    for (LEVit it = lbegin<0>(-1); it != endit; ++it)
+    for (LEVit it = lbegin<0>(level); it != endit; ++it)
     {
-      int elNum = lookup[it->index()];
+      int elNum = it->index();
 
       typedef AlbertGridNeighborIterator<dim,dimworld> Neighit;
-      Neighit nit = (*it).nbegin();
+      Neighit nit = it->nbegin();
 
       for (int i = 0; i < dim+1; i++)
       {
-        ALBERT EL_INFO * elInfo = it->getElInfo();
-
         int k = it->entity<dim>(i)->index();
         vertex[elNum][i] = k;
 
-        int neighNum = nit->index();
-        if(neighNum >= 0)
-          nb[elNum][i] = lookup[neighNum];
-        else
-          nb[elNum][i] = -1;
+        nb[elNum][i] = nit->index();
 
         Vec<dimworld> vec = (it->geometry())[i];
         for (int j = 0; j < dimworld; j++)
@@ -2261,10 +2156,10 @@ namespace Dune
       abort();
     }
     fprintf(file, "USPM 2\n");
-    fprintf(file, "%d %d \n", N_VERTICES, N_VERTICES * mesh_->n_elements);
-    fprintf(file, "%d %d 0\n", mesh_->n_elements, mesh_->n_vertices);
+    fprintf(file, "%d %d \n", dim+1, (dim+1) * noe);
+    fprintf(file, "%d %d 0\n", noe , nvx);
 
-    for (int i = 0; i < mesh_->n_vertices; i++)
+    for (int i = 0; i < nvx; i++)
     {
       fprintf(file, "%d ", i);
       for (int j = 0; j < dimworld; j++)
@@ -2272,7 +2167,7 @@ namespace Dune
       fprintf(file, "\n");
     }
 
-    for (int i = 0; i < mesh_->n_elements; i++)
+    for (int i = 0; i < noe; i++)
     {
       fprintf(file, "%d ", i);
       for (int j = 0; j < dim + 1; j++)
@@ -2285,24 +2180,22 @@ namespace Dune
     fclose(file);
     std::cout << "\nUSPM grid 'out.uspm' writen !\n\n";
 
-    for (int i = 0; i < mesh_->n_vertices; i++)
+    for (int i = 0; i < nvx; i++)
       delete [] coord[i];
     delete [] coord;
 
-    delete [] lookup;
-
-    for (int i = 0; i < mesh_->n_elements; i++)
+    for (int i = 0; i < noe; i++)
       delete [] nb[i];
     delete [] nb;
 
-    for (int i = 0; i < mesh_->n_elements; i++)
+    for (int i = 0; i < noe; i++)
       delete [] vertex[i];
     delete [] vertex;
 
 
   }
 
-  inline void AlbertGrid<3,3>::writeGrid()
+  inline void AlbertGrid<3,3>::writeGrid(int level)
   {
     std::cout << "\nStarting 3d Grid write\n";
 
@@ -2313,26 +2206,16 @@ namespace Dune
     for (int i = 0; i < mesh_->n_vertices; i++)
       coord[i] = new double[dimworld];
 
-    LEVit endit = lend<0>(-1);
-    // / die eigentlichen ElementNummer auf die Zahlen 0 bis
-    // n_elements-1
-    // / abbilden
-    int *lookup = new int[mesh_->n_hier_elements];
-    int count = 0;
-    for (LEVit it  = lbegin<0>(-1); it != endit; ++it)
-    {
-      lookup[(*it).index()] = count;
-      count++;
-    }
+    LEVit endit = lend<0>(level);
 
     int **vertex = new int *[mesh_->n_elements];
     for (int i = 0; i < mesh_->n_elements; i++)
       vertex[i] = new int[dim + 1];
 
     // / setup the Wesenber 3d Grid
-    for (LEVit it = lbegin<0>(-1); it != endit; ++it)
+    for (LEVit it = lbegin<0>(level); it != endit; ++it)
     {
-      int elNum = lookup[(*it).index()];
+      int elNum = (*it).index();
 
       for (int i = 0; i < dim + 1; i++)
       {
@@ -2380,8 +2263,6 @@ namespace Dune
       delete [] coord[i];
     delete [] coord;
 
-    delete [] lookup;
-
     for (int i = 0; i < mesh_->n_elements; i++)
       delete [] vertex[i];
     delete [] vertex;
@@ -2389,6 +2270,79 @@ namespace Dune
     system("gzip -fq test3dOUT.0");
     std::cout << "3d Grid written! \n";
   }
+
+
+  //! Index Mapping
+  template < int dim, int dimworld >
+  inline void AlbertGrid < dim, dimworld >::
+  makeNewSize(Array<int> &a, int newNumberOfEntries)
+  {
+    a.realloc(newNumberOfEntries);
+    for(Array<int>::Iterator it = a.begin(); it != a.end(); ++it)
+      (*it) = -1;
+  }
+
+  template < int dim, int dimworld > template <int codim>
+  inline int AlbertGrid < dim, dimworld >::
+  indexOnLevel(int globalIndex, int level)
+  {
+    // level = 0 is not interesting for this implementation
+    // +1, because if Entity is Boundary then globalIndex == -1
+    // an therefore we add 1 and get Entry 0, which schould be -1
+    if (globalIndex < 0)
+      return globalIndex;
+    else
+      return levelIndex_[codim][globalIndex];
+  }
+
+  template < int dim, int dimworld >
+  inline void AlbertGrid < dim, dimworld >::markNew()
+  {
+
+    if(mesh_->n_hier_elements > levelIndex_[0].size())
+      makeNewSize(levelIndex_[0], 2*mesh_->n_hier_elements);
+
+    if((maxlevel_+1)*(numCodim) > size_.size())
+      makeNewSize(size_, 2*(maxlevel_*numCodim));
+
+    AlbertGrid<dim,dimworld> &grid = (*this);
+
+    for(int level=0; level<grid.maxlevel(); level++)
+    {
+      typedef typename Grid::Traits<0>::LevelIterator LevelIterator;
+      int num = 0;
+      LevelIterator endit = grid.lend<0>(level);
+      for(LevelIterator it = grid.lbegin<0> (level); it != endit; ++it)
+      {
+        int no = it->globalIndex();
+        //      printf("Global %d , local %d , level %d \n",no,num,level);
+        levelIndex_[0][no] = num;
+        num++;
+      }
+      // remember the number of entity on level and codim = 0
+      size_[level*numCodim + 0] = num;
+      //std::cout << size_[level*maxlevel_ + 0] << " size \n";
+    };
+
+    if(maxlevel_ * mesh_->n_vertices > levelIndex_[dim].size())
+      makeNewSize(levelIndex_[dim], ((maxlevel_+1)* mesh_->n_vertices));
+
+    for(int level=0; level<grid.maxlevel(); level++)
+    {
+      typedef typename Grid::Traits<dim>::LevelIterator LevelIterator;
+      int num = 0;
+      LevelIterator endit = grid.lend<dim>(level);
+      for(LevelIterator it = grid.lbegin<dim> (level); it != endit; ++it)
+      {
+        int no = it->globalIndex();
+        levelIndex_[dim][level*mesh_->n_vertices + no] = num;
+        num++;
+      }
+      // remember the number of entity on level and codim = 0
+      size_[level*numCodim + dim] = num;
+    };
+  } // end class AlbertGrid
+
 
 
 } // end namespace dune
