@@ -94,6 +94,19 @@ namespace Albert
     template<int dim, int dimworld> class AlbertGrid;
 
 
+    // singleton holding reference elements
+    template<int dim>
+    struct AlbertGridReferenceElement
+    {
+      enum { dofs = dim+1 };
+      enum { dimension = dim };
+      enum { type = dim+1 };
+
+      static AlbertGridElement<dim,dim> refelem;
+      static ALBERT EL_INFO elInfo_;
+    };
+
+
     //**********************************************************************
     //
     // --AlbertGridElement
@@ -119,6 +132,9 @@ namespace Albert
 
       //! know dimension of world
       enum { dimensionworld=dimworld };
+
+      //! know dimension of world
+      enum { dimbary=dim+1};
 
       AlbertGridElement();
 
@@ -149,6 +165,13 @@ namespace Albert
       //! maps a global coordinate within the element to a
       //! local coordinate in its reference element
       Vec<dim,albertCtype>& local (Vec<dimworld,albertCtype> global);
+
+      template <int dimbary>
+      Vec<dimbary,albertCtype>& localB (Vec<dimworld,albertCtype> global)
+      {
+        localBary_ = localBary(global);
+        return localBary_;
+      }
 
       //! returns true if the point is in the current element
       bool pointIsInside(const Vec<dimworld,albertCtype> &point);
@@ -221,6 +244,8 @@ namespace Albert
 
       Vec<dimworld,albertCtype> globalCoord_;
       Vec<dim,albertCtype> localCoord_;
+      Vec<dimbary,albertCtype> localBary_;
+
 
       ALBERT EL_INFO * makeEmptyElInfo();
 
@@ -357,7 +382,7 @@ namespace Albert
     {
     public:
       typedef AlbertGridNeighborIterator<dim,dimworld> NeighborIterator;
-
+      typedef AlbertGridHierarchicIterator<dim,dimworld> HierarchicIterator;
 
       //! know your own codimension
       enum { codimension=0 };
@@ -805,6 +830,10 @@ namespace Albert
       // The Interface Methods
       //**********************************************************
     public:
+      typedef AlbertGridLevelIterator<0,dim,dimworld> LevelIterator;
+
+      typedef AlbertGridReferenceElement<dim> ReferenceElement;
+
       //! know your own dimension
       enum { dimension=dim };
 
@@ -848,6 +877,7 @@ namespace Albert
       //! pointer to an Albert Mesh, which contains the data
       ALBERT MESH *mesh_;
       int maxlevel_;
+
       AlbertMarkerVector *vertexMarker_;
 
     }; // end Class AlbertGridGrid

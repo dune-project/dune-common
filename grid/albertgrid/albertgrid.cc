@@ -165,12 +165,15 @@ namespace Dune
 
   static ALBERT EL_INFO statElInfo[DIM+1];
 
+#if 0
   // singleton holding reference elements
   template<int dim>
-  struct AlbertGridReferenceElement {
+  struct AlbertGridReferenceElement
+  {
     static AlbertGridElement<dim,dim> refelem;
     static ALBERT EL_INFO elInfo_;
   };
+#endif
 
   //****************************************************************
   //
@@ -466,7 +469,7 @@ namespace Dune
      * wir haben das gleichungssystem zu loesen:
      */
     /*
-     * ( q1x q2x ) (lambda1) (qx)
+     * ( q1x q2x ) (lambda1) = (qx)
      */
     /*
      * ( q1y q2y ) (lambda2) = (qy)
@@ -667,12 +670,14 @@ namespace Dune
   inline Vec<2,albertCtype>& AlbertGridElement<1,2>::
   outer_normal()
   {
+    // checked, ok
+    enum { dimworld = 2};
     // Faces in 2d
-    Vec<2,albertCtype>& v = coord_(1);
-    Vec<2,albertCtype>& u = coord_(0);
+    Vec<dimworld,albertCtype>& v = coord_(1);
+    Vec<dimworld,albertCtype>& u = coord_(0);
 
-    outerNormal_(0) =   v(0) - u(0);
-    outerNormal_(1) = -(v(1) - u(1));
+    outerNormal_(0) =   v(1) - u(1);
+    outerNormal_(1) = -(v(0) - u(0));
 
     return outerNormal_;
   }
@@ -685,7 +690,7 @@ namespace Dune
     Vec<dimworld,albertCtype> v = coord_(0) - coord_(2);
     Vec<dimworld,albertCtype> u = coord_(1) - coord_(2);
 
-    // rechne Kreuzprodukt der Vectoren aus
+    // calc vector product
     for(int i=0; i<dimworld; i++)
       outerNormal_(i) = u((i+1)%dimworld)*v((i+2)%dimworld)
                         - u((i+2)%dimworld)*v((i+1)%dimworld);
@@ -1406,8 +1411,8 @@ namespace Dune
     // scheint zu funktionieren
     ALBERT REAL_D *coord = elInfo_->coord;
 
-    outerNormal_(0) =   coord[(neighborCount_+2)%3][0] - coord[(neighborCount_+1)%3][0];
-    outerNormal_(1) = -(coord[(neighborCount_+2)%3][1] - coord[(neighborCount_+1)%3][1]);
+    outerNormal_(0) = -(coord[(neighborCount_+1)%3][1] - coord[(neighborCount_+2)%3][1]);
+    outerNormal_(1) =   coord[(neighborCount_+1)%3][0] - coord[(neighborCount_+2)%3][0];
 
     return outerNormal_;
   }
