@@ -15,7 +15,7 @@ namespace Dune {
     double G[20];
     double W[20];
 
-    if (order<=2)
+    if (order<=1)
     {
       //m = 1;
       G[0] = 0.5;
