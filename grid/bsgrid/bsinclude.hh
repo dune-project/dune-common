@@ -47,6 +47,12 @@ namespace BernhardSchuppGrid {
   typedef GitterBasis::Objects::tetra_IMPL IMPLElementType; // real Element
   typedef Gitter::Geometric::tetra_GEO GEOElementType; // real Element
 
+  // refinement and coarsening enum for tetrahedons
+  enum { refine_element_t = Gitter::Geometric::TetraRule::iso8 };
+  enum { coarse_element_t = Gitter::Geometric::TetraRule::crs  };
+
+  typedef pair < GEOFaceType * , int > NeighbourPairType;
+
   //*************************************************************
   //  definition of original LeafIterators of BSGrid
   //
@@ -83,16 +89,16 @@ namespace BernhardSchuppGrid {
             any_has_level <Gitter::hedge_STI > > > IteratorType;
   };
 
-  /*
-     template <>
-     struct BSLevelIterator<3>
-     {
-     typedef Insert <AccessIterator <Gitter::vertex_STI>::Handle,
-      TreeIterator <Gitter::vertex_STI ,
-      any_has_level <Gitter::vertex_STI > > > IteratorType;
-     };
-   */
-
+  template <>
+  struct BSLevelIterator<3>
+  {
+    /*
+       typedef Insert <AccessIterator <Gitter::vertex_STI>::Handle,
+       TreeIterator <Gitter::vertex_STI ,
+       any_has_level <Gitter::vertex_STI > > > IteratorType;
+     */
+    typedef LeafIterator < Gitter :: vertex_STI > IteratorType;
+  };
 
   template <int codim>
   struct BSLeafIterator
