@@ -300,7 +300,7 @@ namespace Dune {
     DofType & operator *();
 
     //! return dof read only
-    const DofType & read () const;
+    const DofType & operator * () const;
 
     //! go next dof
     MyType & operator++ ();
@@ -308,17 +308,11 @@ namespace Dune {
     //! go next dof
     const MyType & operator++ () const;
 
-    //! go next i steps
-    MyType & operator++ (int i);
-
-    //! go next i steps
-    const MyType & operator++ (int i) const;
-
     //! random access
     DofType& operator[] (int i);
 
     //! random access read only
-    const DofType& read (int i) const;
+    const DofType& operator [] (int i) const;
 
     //! compare
     bool operator == (const MyType & I ) const;
