@@ -1,10 +1,10 @@
 # $Id$
 
-SUBDIRS = albertagrid bsgrid common onedgrid sgrid uggrid yaspgrid . test
+SUBDIRS = albertagrid alu3dgrid common onedgrid sgrid uggrid yaspgrid . test
 
 griddir = $(includedir)/dune/grid
 grid_HEADERS = albertagrid.hh \
-               bsgrid.hh \
+               alu3dgrid.hh \
                sgrid.hh \
                simplegrid.hh \
                uggrid.hh \
