@@ -19,10 +19,17 @@ namespace Dune {
   class OneDMakeableGeometry<1,coorddim,GridImp> : public Geometry<1, coorddim, GridImp, OneDGridGeometry>
   {
   public:
+
     OneDMakeableGeometry() :
       Geometry<1, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<1, coorddim, GridImp>())
     {};
 
+    void setToTarget(OneDEntityImp<1>* target) {
+      this->realGeometry.target_ = target;
+    }
+
+
+#if 0
     OneDGridEntity<1,1,GridImp>*& vertex(int n) {
       return this->realGeometry.vertex_[n];
     }
@@ -30,21 +37,31 @@ namespace Dune {
     OneDGridEntity<1,1,GridImp>* const & vertex(int n) const {
       return this->realGeometry.vertex_[n];
     }
-
+#endif
   };
 
   template<int coorddim, class GridImp>
   class OneDMakeableGeometry<0,coorddim,GridImp> : public Geometry<0, coorddim, GridImp, OneDGridGeometry>
   {
   public:
+#if 0
     OneDMakeableGeometry(const double& x) :
       Geometry<0, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<0, coorddim, GridImp>(x))
     {};
+#endif
+    OneDMakeableGeometry() :
+      Geometry<0, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<0, coorddim, GridImp>())
+    {};
 
+    void setToTarget(OneDEntityImp<0>* target) {
+      this->realGeometry.target_ = target;
+    }
+
+#if 0
     FieldVector<double, coorddim>& pos() {
       return this->realGeometry.pos_;
     }
-
+#endif
   };
 
   template <int codim, int dim, class GridImp>
@@ -70,9 +87,17 @@ namespace Dune {
 
   public:
 
+#if 0
     /** \todo Constructor with a given coordinate */
     OneDGridGeometry(const double& x) {
       pos_[0] = x;
+    }
+#endif
+
+    /** \brief Return reference element corresponding to this element.
+     */
+    static const Dune::Geometry<0,1,GridImp,Dune::OneDGridGeometry>& refelem () {
+      std::cout << "Calling unimplemented method OneDGridGeometry::refelem()" << std::endl;
     }
 
     //! return the element type identifier (vertex)
@@ -83,7 +108,7 @@ namespace Dune {
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<OneDCType, 1>& operator[] (int i) const {
-      return pos_;
+      return target_->pos_;
     }
 
 #if 0
@@ -102,7 +127,7 @@ namespace Dune {
     FieldVector<OneDCType, 1> local (const FieldVector<OneDCType, 2>& global);
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<OneDCType, 2> &global);
+    bool checkInside(const FieldVector<OneDCType, 2> &global) const;
 
     // A(l)
     OneDCType integration_element (const FieldVector<OneDCType, 1>& local);
@@ -111,9 +136,7 @@ namespace Dune {
     const Mat<1,1>& Jacobian_inverse (const FieldVector<OneDCType, 1>& local);
 #endif
     //private:
-
-    //! the vertex coordinates
-    FieldVector<OneDCType, 1> pos_;
+    OneDEntityImp<0>* target_;
 
   };
 
@@ -140,6 +163,12 @@ namespace Dune {
   public:
 
 
+    /** \brief Return reference element corresponding to this element.
+     */
+    static const Dune::Geometry<mydim,mydim,GridImp,Dune::OneDGridGeometry>& refelem () {
+      std::cout << "Calling unimplemented method OneDGridGeometry::refelem()" << std::endl;
+    }
+
     /** \brief Return the element type identifier
      *
      * OneDGrid obviously supports only lines
@@ -152,15 +181,14 @@ namespace Dune {
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<OneDCType, coorddim>& operator[](int i) const {
       assert(i==0 || i==1);
-      return vertex_[i]->geo_.pos();
+      return target_->vertex_[i]->pos_;
     }
 
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
     FieldVector<OneDCType, coorddim> global (const FieldVector<OneDCType, mydim>& local) const {
       FieldVector<OneDCType, coorddim> g;
-      //g[0] = vertex_[0]->geometry().realGeometry.pos_[0] * (1-local[0]) + vertex_[1]->geometry().realGeometry.pos_[0] * local[0];
-      g[0] = vertex_[0]->geo_.pos()[0] * (1-local[0]) + vertex_[1]->geo_.pos()[0] * local[0];
+      g[0] = target_->vertex_[0]->pos_[0] * (1-local[0]) + target_->vertex_[1]->pos_[0] * local[0];
       return g;
     }
 
@@ -168,35 +196,32 @@ namespace Dune {
      * local coordinate in its reference element */
     FieldVector<OneDCType, mydim> local (const FieldVector<OneDCType, coorddim>& global) const {
       FieldVector<OneDCType, mydim> l;
-      const double& v0 = vertex_[0]->geo_.pos()[0];
-      const double& v1 = vertex_[1]->geo_.pos()[0];
+      const double& v0 = target_->vertex_[0]->pos_[0];
+      const double& v1 = target_->vertex_[1]->pos_[0];
       l[0] = (global[0] - v0) / (v1 - v0);
       return l;
     }
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<OneDCType, coorddim> &global) {
-      return vertex_[0]->geo_.pos()[0] <= global[0] && global[0] <= vertex_[1]->geo_.pos()[0];
+    bool checkInside(const FieldVector<OneDCType, coorddim> &global) const {
+      return target_->vertex_[0]->pos_[0] <= global[0] && global[0] <= target_->vertex_[1]->pos_[0];
     }
 
     /** ???
      */
     OneDCType integrationElement (const FieldVector<OneDCType, mydim>& local) const {
-      //return vertex_[1]->geometry().realGeometry.pos_[0] - vertex_[0]->geometry().realGeometry.pos_[0];
-      return vertex_[1]->geo_.pos()[0] - vertex_[0]->geo_.pos()[0];
+      return target_->vertex_[1]->pos_[0] - target_->vertex_[0]->pos_[0];
     }
 
     //! The Jacobian matrix of the mapping from the reference element to this element
     const FieldMatrix<OneDCType,mydim,mydim>& jacobianInverse (const FieldVector<OneDCType, mydim>& local) const {
-      //jacInverse_[0][0] = 1 / (vertex_[1]->geo_.pos_[0] - vertex_[0]->geo_.pos_[0]);
-      jacInverse_[0][0] = 1 / (vertex_[1]->geo_.pos()[0] - vertex_[0]->geo_.pos()[0]);
+      jacInverse_[0][0] = 1 / (target_->vertex_[1]->pos_[0] - target_->vertex_[0]->pos_[0]);
       return jacInverse_;
     }
 
 
     //private:
-
-    FixedArray<OneDGridEntity<1,1,GridImp>*, 2> vertex_;
+    OneDEntityImp<1>* target_;
 
     //! The jacobian inverse
     mutable FieldMatrix<OneDCType,coorddim,coorddim> jacInverse_;

@@ -33,24 +33,26 @@ namespace Dune {
 
     // Stack entry
     struct StackEntry {
-      OneDGridEntity<0,1,GridImp>* element;
+      OneDEntityImp<1>* element;
       /** \todo Do we need the level ? */
       int level;
     };
+
+    typedef typename GridImp::template codim<0>::Entity Entity;
 
   public:
 
     //! the default Constructor
     OneDGridHierarchicIterator(int maxlevel) : elemStack() {
       maxlevel_ = maxlevel;
-      target_   = NULL;
+      //target_   = NULL;
     }
 
     //! prefix increment
-    OneDGridHierarchicIterator& operator ++() {
+    void increment() {
 
       if (elemStack.empty())
-        return (*this);
+        return;
 
       StackEntry old_target = elemStack.pop();
 
@@ -58,7 +60,7 @@ namespace Dune {
       if (old_target.level < maxlevel_) {
 
         // Load sons of old target onto the iterator stack
-        if (old_target.element->hasChildren()) {
+        if (!old_target.element->isLeaf()) {
           StackEntry se0;
           se0.element = old_target.element->sons_[0];
           se0.level   = old_target.level + 1;
@@ -76,31 +78,19 @@ namespace Dune {
 
       }
 
-      target_ = (elemStack.empty()) ? NULL : elemStack.top().element;
-
-      return (*this);
+      virtualEntity_.setToTarget((elemStack.empty()) ? NULL : elemStack.top().element);
     }
 
     //! equality
-    bool operator== (const OneDGridHierarchicIterator& other) const {
+    bool equals (const OneDGridHierarchicIterator& other) const {
       return ( (elemStack.size()==0 && other.elemStack.size()==0) ||
                ((elemStack.size() == other.elemStack.size()) &&
                 (elemStack.top().element == other.elemStack.top().element)));
     }
 
-    //! inequality
-    bool operator!= (const OneDGridHierarchicIterator& other) const {
-      return !((*this) == other);
-    }
-
     //! dereferencing
-    OneDGridEntity<0,dim,GridImp>& operator*() {
-      return *target_;
-    }
-
-    //! arrow
-    OneDGridEntity<0,dim,GridImp>* operator->() {
-      return target_;
+    Entity& dereference() const {
+      return virtualEntity_;
     }
 
   private:
@@ -110,12 +100,10 @@ namespace Dune {
 
     Stack<StackEntry> elemStack;
 
-    OneDGridEntity<0,1,GridImp>* target_;
+    //! implement with virtual element
+    mutable OneDEntityWrapper<0,GridImp::dimension,GridImp> virtualEntity_;
 
   };
-
-  // Include class method definitions
-  //#include "uggridhieriterator.cc"
 
 }  // end namespace Dune
 

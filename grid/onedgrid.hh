@@ -37,10 +37,6 @@ namespace Dune
 
   template<int codim>                        class OneDGridLevelIteratorFactory;
 
-  // singleton holding reference elements
-  //template<int dim> struct UGGridReferenceElement;
-
-
 }  // namespace Dune
 
 #include "onedgrid/onedgridentity.hh"
@@ -302,20 +298,20 @@ namespace Dune {
     //! The type of grid refinement currently in use
     RefinementType refinementType_;
 
-    OneDGridEntity<1,1,const OneDGrid<dim,dimworld> >* getLeftUpperVertex(const OneDGridEntity<0,1,const OneDGrid<dim,dimworld> >* eIt);
+    OneDEntityImp<0>* getLeftUpperVertex(const OneDEntityImp<1>* eIt);
 
-    OneDGridEntity<1,1,const OneDGrid<dim,dimworld> >* getRightUpperVertex(const OneDGridEntity<0,1,const OneDGrid<dim,dimworld> >* eIt);
+    OneDEntityImp<0>* getRightUpperVertex(const OneDEntityImp<1>* eIt);
 
     /** \brief Returns an iterator the the first element on the left of
         the input element which has sons.
      */
-    OneDGridEntity<0,1,const OneDGrid<dim,dimworld> >* getLeftNeighborWithSon(OneDGridEntity<0,1,const OneDGrid<dim,dimworld> >* eIt);
+    OneDEntityImp<1>* getLeftNeighborWithSon(OneDEntityImp<1>* eIt);
 
     // The vertices of the grid hierarchy
-    std::vector<List<OneDGridEntity<1,1,const OneDGrid<dim,dimworld> > > > vertices;
+    std::vector<List<OneDEntityImp<0> > > vertices;
 
     // The elements of the grid hierarchy
-    std::vector<List<OneDGridEntity<0,1,const OneDGrid<dim,dimworld> > > > elements;
+    std::vector<List<OneDEntityImp<1> > > elements;
 
 
   }; // end Class OneDGrid
