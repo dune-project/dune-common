@@ -284,8 +284,36 @@ namespace Dune {
         local[d] = global[d] - global_offset(lvl,d) + front_overlap(lvl,d);
       }
     }
+    bool global_to_local(level lvl,
+                         const array<DIM> & global,
+                         array<DIM> & local,
+                         array<DIM> & process) const {
+      for (int d=0; d<DIM; d++) {
+        local[d] = global[d] - global_offset(lvl,d,process)
+                   + front_overlap(lvl,d,process);
+        if (local[d] < 0)
+          return false;
+        if (local[d] >=
+            front_overlap(lvl,d,process) + size(lvl,d,process)
+            + end_overlap(lvl,d,process))
+          return false;
+      }
+      return true;
+    }
+    void global_to_local_NOCHECK(level lvl,
+                                 const array<DIM> & global,
+                                 array<DIM> & local,
+                                 array<DIM> & process) const {
+      for (int d=0; d<DIM; d++) {
+        local[d] = global[d] - global_offset(lvl,d,process)
+                   + front_overlap(lvl,d,process);
+      }
+    }
     int global_offset(level lvl, int d) const {
       return (size_[d]*process_[d])*(1<<lvl);
+    }
+    int global_offset(level lvl, int d, const array<DIM> & process) const {
+      return (size_[d]*process[d])*(1<<lvl);
     }
   }; /* end spgrid */
 
