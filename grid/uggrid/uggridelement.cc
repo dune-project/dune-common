@@ -123,11 +123,11 @@ operator [](int i)
 {
   const UG3d::VERTEX* vertex = target_->myvertex;
 
-  coord_(0,0) = vertex->iv.x[0];
-  coord_(1,0) = vertex->iv.x[1];
-  coord_(2,0) = vertex->iv.x[2];
+  coord_[0][0] = vertex->iv.x[0];
+  coord_[0][1] = vertex->iv.x[1];
+  coord_[0][2] = vertex->iv.x[2];
 
-  return coord_(0);
+  return coord_[0];
 }
 
 template<>
@@ -143,9 +143,9 @@ operator [](int i)
 #undef TAG
 
   for (int j=0; j<3; j++)
-    coord_(j,i) = vertex->iv.x[j];
+    coord_[i][j] = vertex->iv.x[j];
 
-  return coord_(i);
+  return coord_[i];
 }
 #endif
 
@@ -156,10 +156,10 @@ operator [](int i)
 {
   const UG2d::VERTEX* vertex = target_->myvertex;
 
-  coord_(0,0) = vertex->iv.x[0];
-  coord_(1,0) = vertex->iv.x[1];
+  coord_[0][0] = vertex->iv.x[0];
+  coord_[0][1] = vertex->iv.x[1];
 
-  return coord_(i);
+  return coord_[i];
 }
 
 template<>
@@ -171,9 +171,9 @@ operator [](int i)
   UG2d::VERTEX* vertex = UG_NS<2>::Corner(target_,i)->myvertex;
 
   for (int j=0; j<2; j++)
-    coord_(j,i) = vertex->iv.x[j];
+    coord_[i][j] = vertex->iv.x[j];
 
-  return coord_(i);
+  return coord_[i];
 }
 #endif
 
