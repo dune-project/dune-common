@@ -1229,7 +1229,7 @@ namespace Dune {
     //! coarsen all negative marked entities if possible
     //! return true if a least one element was refined
     //! **Note**: this default implemenation returns always false
-    //! so grid with no adaptation doesnt need to implement these methods
+    //! so grid with no adaptation doesn't need to implement these methods
     bool adapt ()    { return false; }
 
     //! returns true, if a least one element is marked for coarsening
