@@ -11,7 +11,7 @@
 #include <dune/common/exceptions.hh>
 
 namespace Dune {
-  /** @defgroup Common Dune Common Module
+  /** @addtogroup Common
 
      This module contains classes for general usage in dune, such as e.g.
      (small) dense matrices and vectors or containers.

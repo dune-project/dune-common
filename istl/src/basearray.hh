@@ -9,14 +9,14 @@
 #include "istlexception.hh"
 #include "allocator.hh"
 
-/*! \file __FILE__
+/*! \file
 
    This file implements several basic array containers.
  */
 
 namespace Dune {
 
-  /** @defgroup ISTL Iterative Solvers Template Library
+  /**
               @addtogroup ISTL
               @{
    */

@@ -5,7 +5,7 @@
 
 namespace Dune {
 
-  /** @defgroup Quadrature Quadrature Rules for FE integration
+  /** @addtogroup Quadrature
 
           Integration over polyhedral regions is a fundamental operation in
       the numerical solution of partial differential equations.

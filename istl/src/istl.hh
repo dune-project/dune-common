@@ -22,17 +22,4 @@
 #include "vbvector.hh"
 #include "fmatrix.hh"
 
-
-namespace Dune {
-
-  /** @defgroup ISTL Iterative Solvers Template Library
-              @addtogroup ISTL
-              @{
-   */
-
-
-  /** @} end documentation */
-
-} // end namespace
-
 #endif

@@ -11,7 +11,7 @@
 #include "allocator.hh"
 #include "bvector.hh"
 
-/*! \file __FILE__
+/*! \file
 
    This file implements a vector space as a tensor product of
    a given vector space. The number of components can be given at
@@ -20,7 +20,7 @@
 
 namespace Dune {
 
-  /** @defgroup ISTL Iterative Solvers Template Library
+  /**
               @addtogroup ISTL
               @{
    */

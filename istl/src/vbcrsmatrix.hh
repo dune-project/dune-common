@@ -9,7 +9,7 @@
 #include "istlexection.hh"
 #include "allocator.hh"
 
-/*! \file __FILE__
+/*! \file
 
    This file implements a vector constructed from a given type
    representing a field and a compile-time given size.
@@ -17,7 +17,7 @@
 
 namespace Dune {
 
-  /** @defgroup ISTL Iterative Solvers Template Library
+  /**
               @addtogroup ISTL
               @{
    */

@@ -13,7 +13,7 @@
 #include "fvector.hh"
 #include "fmatrix.hh"
 
-/*! \file __FILE__
+/*! \file
 
     Simple iterative methods like Jacobi, Gauss-Seidel, SOR, SSOR, etc.
     in a generic way
@@ -21,7 +21,7 @@
 
 namespace Dune {
 
-  /** @defgroup ISTL Iterative Solvers Template Library
+  /**
               @addtogroup ISTL
               @{
    */

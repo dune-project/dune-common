@@ -10,7 +10,7 @@
 #include "allocator.hh"
 #include "fvector.hh"
 
-/*! \file __FILE__
+/*! \file
 
    This file implements a matrix constructed from a given type
    representing a field and compile-time given number of rows and columns.
@@ -18,7 +18,7 @@
 
 namespace Dune {
 
-  /** @defgroup ISTL Iterative Solvers Template Library
+  /**
               @addtogroup ISTL
               @{
    */
