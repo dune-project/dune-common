@@ -4,6 +4,7 @@
 #define __DUNE_FUNCTIONSPACE_HH__
 
 #include "matvec.hh"
+#include "dynamictype.hh"
 
 namespace Dune {
 
