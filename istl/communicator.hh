@@ -772,7 +772,7 @@ namespace Dune
     for(int i=0; i <  info.size(); i++)
       entries += CommPolicy<Data>::getSize(data,info[i]);
 
-    return entries * sizeof(CommPolicy<Data>::IndexedType);
+    return entries * sizeof(typename CommPolicy<Data>::IndexedType);
   }
 
   template<typename TG, typename TA>
