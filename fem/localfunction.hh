@@ -29,14 +29,13 @@ namespace Dune {
   class LocalFunctionInterface
   {
   public:
-
     //! this are the types for the derived classes
-    typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
-    typedef typename DiscreteFunctionSpaceType::Domain Domain;
-    typedef typename DiscreteFunctionSpaceType::Range Range;
+    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::Domain DomainType;
+    typedef typename DiscreteFunctionSpaceType::Range RangeType;
 
     //! access to dof number num, all dofs of the local function
-    RangeField& operator [] (int num)
+    RangeFieldType& operator [] (int num)
     {
       return asImp().operator [] ( num );
     }
@@ -49,7 +48,7 @@ namespace Dune {
 
     //! evaluate the local function on x and return ret
     template <class EntityType>
-    void evaluate (EntityType &en, const Domain & x, Range & ret)
+    void evaluate (EntityType &en, const DomainType & x, RangeType & ret)
     {
       asImp().evaluate(en,x,ret);
     }
@@ -82,6 +81,93 @@ namespace Dune {
   public:
     // notin'
   }; // end LocalFunctionDefault
+
+  //------------------------------------------------------------------------
+
+  //**************************************************************************
+  //
+  //  --LocalFunctionIteratorInterface
+  //
+  //! Interface for iterators to iterate over all local functions of one
+  //! discrete function.
+  //!
+  //**************************************************************************
+  template < class LocalFunctionImp , class LocalFunctionIteratorImp>
+  class LocalFunctionIteratorInterface
+  {
+  public:
+    //! know the object typ for iteration
+    typedef LocalFunctionImp LocalFunctionType;
+
+    //! return reference to local function
+    LocalFunctionType & operator *()
+    {
+      return asImp().operator *();
+    };
+
+    //! return pointer to local function
+    LocalFunctionType * operator ->()
+    {
+      return asImp().operator ->();
+    };
+
+    //! go next local function
+    LocalFunctionIteratorImp& operator++ ()
+    {
+      return asImp(). operator ++ ();
+    };
+
+    //! go next i steps
+    LocalFunctionIteratorImp& operator++ (int i)
+    {
+      return asImp().operator ++ ( i );
+    };
+
+    //! compare with other iterators
+    bool operator == (const LocalFunctionIteratorImp & I ) const
+    {
+      return asImp().operator == (I);
+    }
+
+    //! compare with other iterators
+    bool operator != (const LocalFunctionIteratorImp & I ) const
+    {
+      return asImp().operator != (I);
+    }
+
+    int index () const
+    {
+      return asImp().index();
+    }
+
+  private:
+    //! Barton-Nackman trick
+    LocalFunctionIteratorImp & asImp()
+    {
+      return static_cast<LocalFunctionIteratorImp&>(*this);
+    }
+    const LocalFunctionIteratorImp &asImp() const
+    {
+      return static_cast<const LocalFunctionIteratorImp&>(*this);
+    }
+  }; // end class LocalFunctionIteratorInterface
+
+
+  //*************************************************************************
+  //
+  //  --LocalFunctionIteratorDefault
+  //
+  //! Defaultimplementation. At the moment there is no default
+  //! implementation.
+  //
+  //*************************************************************************
+  template < class LocalFunctionImp, class LocalFunctionIteratorImp >
+  class LocalFunctionIteratorDefault
+    : public LocalFunctionIteratorInterface < LocalFunctionImp , LocalFunctionIteratorImp >
+  {
+  public:
+    // notin'
+  }; // end class LocalFunctionIteratorDefault
 
 } // end namespace Dune
 
