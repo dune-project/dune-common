@@ -25,7 +25,7 @@ namespace Dune {
         switch(TYP) {
         case Inner : {
           /* Coeffs */
-          solver.discrete.coeffs(cl, solver.g, l, add, coord, i);
+          solver.discrete.coeffs(cl, l, coord, i);
 #ifndef NDEBUG
           coefflist cl2 = cl;
           typename GRID::iterator it(i,solver.g);
@@ -90,7 +90,7 @@ namespace Dune {
         switch(TYP) {
         case Inner : {
           /* Coeffs */
-          solver.discrete.coeffs(cl, solver.g, l, add, coord, i);
+          solver.discrete.coeffs(cl, l, coord, i);
           break;
         }
         case Border : {
@@ -132,7 +132,7 @@ namespace Dune {
         solver(solver_), g(solver.g), L(l)
       {
         for(int d=0; d<DIM; d++)
-          coord_shift[d] = solver.g.has_coord_shift(l,d);
+          coord_shift[d] = solver.g.coord_shift(l,d);
       }
       void evaluate(level l, const array<DIM> & coord, int i) {
         switch (TYP) {
@@ -157,7 +157,7 @@ namespace Dune {
           return;
         }
 
-        if (coord[dir]%2==coord_shift[dir]) {
+        if ( (coord[dir] + coord_shift[dir]) %2 == 0) {
           adddefect(d,dir,l,coord);
         }
         else {
@@ -187,7 +187,8 @@ namespace Dune {
           assert(finite(solver.b[f.id()]));
           return;
         }
-        if (it.coord(dir)%2==coord_shift[dir]) {
+
+        if ( (it.coord(dir) + coord_shift[dir]) %2 == 0) {
           adddefect(d,dir,it);
         }
         else {
@@ -213,7 +214,7 @@ namespace Dune {
         solver(solver_), g(solver.g), x(solver.x)
       {
         for(int d=0; d<DIM; d++)
-          coord_shift[d] = solver.g.has_coord_shift(l,d);
+          coord_shift[d] = solver.g.coord_shift(l,d);
       }
       void evaluate(level l, const array<DIM> & coord, int i) {
         switch (TYP) {
@@ -238,8 +239,9 @@ namespace Dune {
           return x[f];
         }
 
-        if (coord[dir]%2==coord_shift[dir])
+        if ( (coord[dir] + coord_shift[dir]) %2 == 0) {
           return correction(dir,l,coord);
+        }
         else {
           array<DIM> shiftl=coord;
           array<DIM> shiftr=coord;
@@ -257,8 +259,9 @@ namespace Dune {
           return x[f.id()];
         }
 
-        if (it.coord(dir)%2==coord_shift[dir])
+        if ( (it.coord(dir) + coord_shift[dir]) %2 == 0) {
           return correction(dir,it);
+        }
         else {
           typename GRID::iterator left = it.left(dir);
           typename GRID::iterator right = it.right(dir);
