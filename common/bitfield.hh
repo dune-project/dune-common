@@ -22,26 +22,26 @@ namespace Dune {
 
     //! Constructor which initializes the field
     BitField(int n, bool v) : std::vector<bool>(n) {
-      for (int i=0; i<size(); i++)
+      for (size_t i=0; i<size(); i++)
         (*this)[i] = v;
     }
 
     //! Sets all entries to <tt> true </tt>
     void setAll() {
-      for (int i=0; i<size(); i++)
+      for (size_t i=0; i<size(); i++)
         (*this)[i] = true;
     }
 
     //! Sets all entries to <tt> false </tt>
     void unsetAll() {
-      for (int i=0; i<size(); i++)
+      for (size_t i=0; i<size(); i++)
         (*this)[i] = false;
     }
 
     //! Returns the number of set bits
     int nSetBits() const {
       int n = 0;
-      for (int i=0; i<size(); i++)
+      for (size_t i=0; i<size(); i++)
         n += ((*this)[i]) ? 1 : 0;
 
       return n;
@@ -50,7 +50,7 @@ namespace Dune {
     //! Send bitfield to an output stream
     friend std::ostream& operator<< (std::ostream& s, const BitField& v)
     {
-      for (int i=0; i<v.size(); i++)
+      for (size_t i=0; i<v.size(); i++)
         s << v[i] << "  ";
 
       s << std::endl;
