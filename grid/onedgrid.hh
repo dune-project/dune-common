@@ -135,8 +135,10 @@ namespace Dune {
         return;
 
       // Ausfaedeln
-      if (i.p->next!=0) i.p->next->prev = i.p->prev;
-      if (i.p->prev!=0) i.p->prev->next = i.p->next;
+      if (i->succ_!=0)
+        i->succ_->pred_ = i->pred_;
+      if (i->pred_!=0)
+        i->pred_->succ_ = i->succ_;
 
       // head & tail
       if (begin==i)
@@ -207,7 +209,7 @@ namespace Dune {
     OneDGrid();
 
     //! Desctructor
-    ~OneDGrid() {}
+    ~OneDGrid();
 
     //! Return maximum level defined in this grid. Levels are numbered
     //! 0 ... maxlevel with 0 the coarsest level.

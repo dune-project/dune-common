@@ -65,6 +65,44 @@ OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
 }
 
 
+template <int dim, int dimworld>
+OneDGrid<dim,dimworld>::~OneDGrid()
+{
+  // Delete all vertices
+  for (int i=0; i<vertices.size(); i++) {
+
+    OneDGridEntity<1,1,1>* v = vertices[i].begin;
+
+    while (v) {
+
+      OneDGridEntity<1,1,1>* vSucc = v->succ_;
+      vertices[i].remove(v);
+      delete(v);
+      v = vSucc;
+
+    }
+
+  }
+
+  // Delete all elements
+  for (int i=0; i<elements.size(); i++) {
+
+    OneDGridEntity<0,1,1>* e = elements[i].begin;
+
+    while (e) {
+
+      OneDGridEntity<0,1,1>* eSucc = e->succ_;
+      elements[i].remove(e);
+      delete(e);
+      e = eSucc;
+
+    }
+
+  }
+
+}
+
+
 template <>
 inline OneDGridLevelIterator<1,1,1,All_Partition>
 OneDGrid<1,1>::lbegin<1> (int level) const
