@@ -28,8 +28,7 @@ echo Checking for libraries the self-test could use:
 echo
 
 # -- check for other grid-libs so that they may be included into tests
-# Albert-check
-DUNE_PATH_ALBERT
+# Alberta-check
 DUNE_PATH_ALBERTA
 # UG-check
 DUNE_PATH_UG
