@@ -24,16 +24,13 @@
 
 namespace Dune {
 
-  /** @defgroup Yaspgrid Yet Another Structured Parallel Grid
+  /** @addtogroup Yaspgrid Yet Another Structured Parallel Grid
       \ingroup GridCommon
 
-          This is the basis of a parallel implementation of the dune grid interface
+        This is the basis of a parallel implementation of the dune grid interface
           supporting codim 0 and dim.
 
           You can also use the structured interface and write really fast code.
-
-          @addtogroup YaspGrid
-          @{
    */
 
 
@@ -2233,7 +2230,5 @@ namespace Dune {
   }
 
 } // namespace Dune
-
-/** @} end documentation group */
 
 #endif
