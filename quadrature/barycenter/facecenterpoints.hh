@@ -11,7 +11,7 @@ namespace Dune {
   //
   //******************************************************************
 
-  template <class Domain, class RangeField, ElementType ElType, int codim >
+  template <class Domain, class RangeField, GeometryType ElType, int codim >
   struct BaryCenterPoints
   {
     enum { identifier = 0 };
@@ -21,12 +21,12 @@ namespace Dune {
     static RangeField getWeight (int i);
   };
 
-  template <class Domain, class RangeField, ElementType ElType, int codim>
+  template <class Domain, class RangeField, GeometryType ElType, int codim>
   RangeField BaryCenterPoints<Domain,RangeField,ElType,codim>::getWeight(int i)
   {
     return 0.0;
   }
-  template <class Domain, class RangeField, ElementType ElType, int codim>
+  template <class Domain, class RangeField, GeometryType ElType, int codim>
   Domain BaryCenterPoints<Domain,RangeField,ElType,codim>::getPoint(int i)
   {
     Domain tmp(0.0);

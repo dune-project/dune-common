@@ -26,7 +26,7 @@ namespace Dune {
    * Quadrature points. Needs a RangeType (type of the quadrature
    * weight), a DomainType (type of local coordinates) and a polynomial
    * order as template parameter. The constructor expects an
-   * Codim-0-Entity (Element) as parameter or an ElementType such as triangle
+   * Codim-0-Entity (Element) as parameter or an GeometryType such as triangle
    * or hexahedron.
 
    * With this class the quadratures are created as templates, whereas
@@ -63,12 +63,12 @@ namespace Dune {
       case hexahedron :    { makeQuadrature<hexahedron> (); break; }
       case triangle :      { makeQuadrature<triangle> (); break; }
       case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown ElementType in FixedOrderQuad::makeQuadrature()\n"; abort();  break; }
+      default :       { std::cerr << "Unkown GeometryType in FixedOrderQuad::makeQuadrature()\n"; abort();  break; }
       }
     };
 
     //! Constructor build the vec with the points and weights
-    FixedOrderQuad ( ElementType eltype )
+    FixedOrderQuad ( GeometryType eltype )
     {
       switch(eltype)
       {
@@ -77,7 +77,7 @@ namespace Dune {
       case hexahedron :    { makeQuadrature<hexahedron> (); break; }
       case triangle :      { makeQuadrature<triangle> (); break; }
       case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown ElementType in FixedOrderQuad::makeQuadrature()\n"; abort();  break; }
+      default :       { std::cerr << "Unkown GeometryType in FixedOrderQuad::makeQuadrature()\n"; abort();  break; }
       }
     };
 
@@ -102,7 +102,7 @@ namespace Dune {
     }
 
   private:
-    template <ElementType ElType>
+    template <GeometryType ElType>
     void makeQuadrature ()
     {
       // is called by the constructor
@@ -163,7 +163,7 @@ namespace Dune {
 
   public:
     //! Constructor building the quadrature
-    Quadrature ( int id , ElementType eltype, int polOrd ) :
+    Quadrature ( int id , GeometryType eltype, int polOrd ) :
       order_ ( polOrd )  , eltype_ ( eltype )
     {
       switch ( eltype_ )
@@ -204,7 +204,7 @@ namespace Dune {
 
   private:
     //! get the quadrature points for storage in the vectors
-    template <int polynomialOrder, ElementType ElType >
+    template <int polynomialOrder, GeometryType ElType >
     void makeQuadrature(int id)
     {
       // is called by the constructor
@@ -235,7 +235,7 @@ namespace Dune {
     int order_;
 
     // remember which element type the quadrature was made for
-    const ElementType eltype_;
+    const GeometryType eltype_;
 
     //! number of quadrature points
     int numQuadPoints_;
@@ -246,7 +246,7 @@ namespace Dune {
 
     //! anoying but what can we do
     //! can be expanded up to inf
-    template <ElementType ElType>
+    template <GeometryType ElType>
     void buildQuadrature ( int id , int polOrd )
     {
       switch (polOrd)

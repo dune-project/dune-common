@@ -123,7 +123,7 @@ namespace Dune {
     typedef yaspgrid_ctype ctype;
 
     //! return the element type identifier
-    ElementType type ()
+    GeometryType type ()
     {
       switch (dim)
       {
@@ -267,7 +267,7 @@ namespace Dune {
     typedef yaspgrid_ctype ctype;
 
     //! return the element type identifier
-    ElementType type ()
+    GeometryType type ()
     {
       switch (dim)
       {
@@ -394,7 +394,7 @@ namespace Dune {
     typedef yaspgrid_ctype ctype;
 
     //! return the element type identifier
-    ElementType type ()
+    GeometryType type ()
     {
       return vertex;
     }

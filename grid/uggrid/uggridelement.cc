@@ -57,7 +57,7 @@ UGGridElement(bool makeRefElement)
 
 
 template< int dim, int dimworld>
-inline ElementType UGGridElement<dim,dimworld>::type() const
+inline GeometryType UGGridElement<dim,dimworld>::type() const
 {
 
   switch (dim)

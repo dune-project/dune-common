@@ -177,8 +177,8 @@ namespace Dune {
     FieldVector<ct, 0>& center_codim1_local (int elemtype, int i);
 
   private:
-    FieldVector<ct, 1> center0_local[1];    // ElementType
-    FieldVector<ct, 0> center1_local[1];    // ElementType x faces
+    FieldVector<ct, 1> center0_local[1];    // GeometryType
+    FieldVector<ct, 0> center1_local[1];    // GeometryType x faces
   };
 
   // Specialization dim=2
@@ -195,8 +195,8 @@ namespace Dune {
     FieldVector<ct, 1>& center_codim1_local (int elemtype, int i);
 
   private:
-    FieldVector<ct, 2> center0_local[2];    // ElementType
-    FieldVector<ct, 1> center1_local[2];    // ElementType x faces
+    FieldVector<ct, 2> center0_local[2];    // GeometryType
+    FieldVector<ct, 1> center1_local[2];    // GeometryType x faces
   };
 
 
@@ -214,8 +214,8 @@ namespace Dune {
     FieldVector<ct, 2>& center_codim1_local (int elemtype, int i);
 
   private:
-    FieldVector<ct, 3> center0_local[4];      // ElementType
-    FieldVector<ct, 2> center1_local[4][6];   // ElementType x faces
+    FieldVector<ct, 3> center0_local[4];      // GeometryType
+    FieldVector<ct, 2> center1_local[4][6];   // GeometryType x faces
   };
 
   // Forward Declarations

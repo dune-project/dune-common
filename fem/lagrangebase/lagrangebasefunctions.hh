@@ -12,11 +12,11 @@
 namespace Dune {
 
   //! definition of LagrangeBaseFunction, implementation via specialization
-  template<class FunctionSpaceType, ElementType ElType, int polOrd>
+  template<class FunctionSpaceType, GeometryType ElType, int polOrd>
   class LagrangeBaseFunction;
 
   //! Piecewise const base functions
-  template<class FunctionSpaceType, ElementType ElType>
+  template<class FunctionSpaceType, GeometryType ElType>
   class LagrangeBaseFunction < FunctionSpaceType , ElType , 0 >
     : public BaseFunctionInterface<FunctionSpaceType>
   {
@@ -444,7 +444,7 @@ namespace Dune {
 
   //! default definition stays empty because implementation via
   //! specialization
-  template <ElementType ElType, int polOrd ,int dimrange > struct LagrangeDefinition;
+  template <GeometryType ElType, int polOrd ,int dimrange > struct LagrangeDefinition;
 
   //! Lagrange Definition for lines
   template <int polOrd , int dimrange >
@@ -497,7 +497,7 @@ namespace Dune {
    */
   //
   //*********************************************************************
-  template<class FunctionSpaceType, ElementType ElType, int polOrd >
+  template<class FunctionSpaceType, GeometryType ElType, int polOrd >
   class LagrangeFastBaseFunctionSet
     : public FastBaseFunctionSet<FunctionSpaceType >
   {

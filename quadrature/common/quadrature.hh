@@ -7,7 +7,7 @@
 
 #include "../../common/dynamictype.hh"
 
-// For ElementType
+// For GeometryType
 #include <dune/grid/common/grid.hh>
 
 #include <dune/common/exceptions.hh>
@@ -43,7 +43,7 @@ namespace Dune {
   //! a triangle is 0.5 which is the volume on reference triangle
   //!
   //***********************************************************************
-  template <class Domain, class RangeField, ElementType ElType, int polOrd>
+  template <class Domain, class RangeField, GeometryType ElType, int polOrd>
   struct QuadraturePoints
   {
     enum { identifier = 0 };
@@ -65,7 +65,7 @@ namespace Dune {
     };
   };
 
-  template <class Domain, class RangeField, ElementType ElType, int polOrd>
+  template <class Domain, class RangeField, GeometryType ElType, int polOrd>
   struct DualQuadraturePoints
   {
     enum { identifier = 0 };

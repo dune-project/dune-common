@@ -50,7 +50,7 @@ namespace Dune {
      * UGGrid supports triangles and quadrilaterals in 2D, and
      * tetrahedra, pyramids, prisms, and hexahedra in 3D.
      */
-    ElementType type () const;
+    GeometryType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners () const;
@@ -150,7 +150,7 @@ namespace Dune {
     UGGridElement(){}
 
     //! return the element type identifier (triangle or quadrilateral)
-    ElementType type () const {return elementType_;}
+    GeometryType type () const {return elementType_;}
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners () const {return (elementType_==triangle) ? 3 : 4;}
@@ -190,7 +190,7 @@ namespace Dune {
     }
 
     //! The element type, either triangle or quadrilateral
-    ElementType elementType_;
+    GeometryType elementType_;
 
     //! built the reference element
     void makeRefElemCoords();
@@ -235,7 +235,7 @@ namespace Dune {
     }
 
     /** Return the element type identifier.  This class always returns 'line' */
-    ElementType type () const {return line;}
+    GeometryType type () const {return line;}
 
     //! return the number of corners of this element. This class always returns 2
     int corners () const {return 2;}

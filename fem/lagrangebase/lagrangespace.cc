@@ -26,7 +26,7 @@ namespace Dune {
       LevelIteratorType endit  = g.template lend<0>(level);
       for(LevelIteratorType it = g.template lbegin<0>(level); it != endit; ++it)
       {
-        ElementType type = (*it).geometry().type(); // Hack
+        GeometryType type = (*it).geometry().type(); // Hack
         if(baseFuncSet_[type] == 0 )
           baseFuncSet_[type] = setBaseFuncSetPointer(*it);
       }
@@ -66,7 +66,7 @@ namespace Dune {
   LagrangeDiscreteFunctionSpace<FunctionSpaceType,GridType,polOrd,DofManagerType>::
   getBaseFunctionSet (EntityType &en) const
   {
-    ElementType type =  en.geometry().type();
+    GeometryType type =  en.geometry().type();
     return *baseFuncSet_[type];
   }
 
@@ -198,7 +198,7 @@ namespace Dune {
   }
 
   template< class FunctionSpaceType, class GridType,int polOrd, class DofManagerType >
-  template <ElementType ElType, int pO >
+  template <GeometryType ElType, int pO >
   inline typename
   LagrangeDiscreteFunctionSpace<FunctionSpaceType,GridType,polOrd,DofManagerType>::
   FastBaseFunctionSetType *

@@ -10,6 +10,7 @@ my %replace;
 
 # default values
 my $filespec = '(\.cc|\.hh)$';
+my $force = 0;
 
 # forward declaration so that parameter check works...
 sub allfiles ($);
@@ -55,13 +56,13 @@ sub change ($) {
 
     # name of backup-file used later
     my $bakname = $file.'.orig';
-    if (-e $bakname) {
+    if (-e $bakname && ! $force) {
 	die "$bakname already exists! Aborting!\n";
     };
     open ORIG, $file || die "Cannot open $file!\n";
 
     my $newfile = $file.'.new';
-    if (-e $newfile) {
+    if (-e $newfile && ! $force) {
 	die "$newfile already exists! Aborting!\n";
     };
     open NEW, ">$newfile" || die "Cannot create $newfile!\n";
@@ -112,15 +113,17 @@ sub change ($) {
 #### --- main ---
 
 # parse dash-options
-Getopt::Mixed::init("h help>h f=s files>f");
+Getopt::Mixed::init("h help>h f=s files>f F force>F");
 while (my ($option, $value, $pretty) = nextOption()) {
     if ($option eq "f") {
 	$filespec = $value;
     };
 
+	$force = 1 if ($option eq "F");
+
     if ($option eq "h") {
         print << 'EOT';
-Usage: idrename listfile basedir [--file=<regexp>] [--help]
+Usage: idrename listfile basedir [--force] [--file=<regexp>] [--help]
 starting from basedir recursively rename C/C++ identifiers listed in listfile
 
 ***
@@ -139,6 +142,7 @@ The listfile should contain lines
 Comments and empty lines are allowed
 
 -f, --files=<regexp> treat all files matching regexp (default '(\.cc|\.hh)$')
+-F, --force          overwrite existing .orig files
 -h, --help           this help
 EOT
         exit 0;

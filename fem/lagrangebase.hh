@@ -138,8 +138,8 @@ namespace Dune {
     template <class EntityType>
     FastBaseFunctionSetType* setBaseFuncSetPointer ( EntityType &en );
 
-    //! make base function set depending on ElementType and polynomial order
-    template <ElementType ElType, int pO >
+    //! make base function set depending on GeometryType and polynomial order
+    template <GeometryType ElType, int pO >
     FastBaseFunctionSetType* makeBaseSet ();
 
     // max number of basesets
@@ -296,11 +296,11 @@ namespace Dune {
   //! default definition stays empty because implementation via
   //! specialization
   //! definition of LagrangeBaseFunction, implementation via specialization
-  //template<class FunctionSpaceType, ElementType ElType, int polOrd>
+  //template<class FunctionSpaceType, GeometryType ElType, int polOrd>
   //  class RaviartThomasBaseFunction;
 
   //! Raviart Thomas Elements for triangles
-  template<class FunctionSpaceType, ElementType ElType, int polOrd >
+  template<class FunctionSpaceType, GeometryType ElType, int polOrd >
   class RaviartThomasBaseFunction
     : public BaseFunctionInterface<FunctionSpaceType>
   {
@@ -378,7 +378,7 @@ namespace Dune {
   };
 
   //! elements which are 1 at the faces
-  template<class FunctionSpaceType, ElementType ElType, int polOrd>
+  template<class FunctionSpaceType, GeometryType ElType, int polOrd>
   class EdgeBaseFunction
     : public BaseFunctionInterface<FunctionSpaceType>
   {
@@ -441,7 +441,7 @@ namespace Dune {
   //*******************************************************
   //! default Raviart Thomas Definition
   //*******************************************************
-  template <ElementType ElType,int polOrd , int dimrange >
+  template <GeometryType ElType,int polOrd , int dimrange >
   struct RaviartThomasDefinition
   {
     enum { numOfBaseFct = 0 };
@@ -457,7 +457,7 @@ namespace Dune {
   //*******************************************************
   //! default Raviart Thomas Definition
   //*******************************************************
-  template <ElementType ElType,int polOrd , int dimrange >
+  template <GeometryType ElType,int polOrd , int dimrange >
   struct EdgeDefinition
   {
     enum { numOfBaseFct = 0 };
@@ -471,7 +471,7 @@ namespace Dune {
   };
 
   /** \todo Please doc me! */
-  template<class FunctionSpaceType, ElementType ElType, int polOrd >
+  template<class FunctionSpaceType, GeometryType ElType, int polOrd >
   class RaviartThomasFastBaseFunctionSet
     : public FastBaseFunctionSet<FunctionSpaceType >
   {
@@ -526,7 +526,7 @@ namespace Dune {
   //!  EdgeBaseFunctionSet
   //
   //*******************************************************************
-  template<class FunctionSpaceType, ElementType ElType, int polOrd >
+  template<class FunctionSpaceType, GeometryType ElType, int polOrd >
   class EdgeFastBaseFunctionSet
     : public FastBaseFunctionSet<FunctionSpaceType >
   {
@@ -649,7 +649,7 @@ namespace Dune {
       LevelIterator endit = g.template lend<0>(0);
       for(LevelIterator it = g.template lbegin<0>(0); it != endit; ++it)
       {
-        ElementType type = (*it).geometry().type(); // Hack
+        GeometryType type = (*it).geometry().type(); // Hack
         if(baseFuncSet_( type ) == 0 )
           baseFuncSet_ ( type ) = setBaseFuncSetPointer(*it);
       }
@@ -669,7 +669,7 @@ namespace Dune {
     template <class EntityType>
     const FastBaseFunctionSetType& getBaseFunctionSet ( EntityType &en ) const
     {
-      ElementType type =  en.geometry().type();
+      GeometryType type =  en.geometry().type();
       return (*baseFuncSet_( type ));
     }
 
@@ -768,8 +768,8 @@ namespace Dune {
     //! lenght is diffrent element types
     FieldVector< FastBaseFunctionSetType*, numOfDiffBase_ > baseFuncSet_;
 
-    //! make base function set depending on ElementType and polynomial order
-    template <ElementType ElType, int pO >
+    //! make base function set depending on GeometryType and polynomial order
+    template <GeometryType ElType, int pO >
     FastBaseFunctionSetType* makeBaseSet ()
     {
 
@@ -842,7 +842,7 @@ namespace Dune {
       int edge = 0;
       for( ; it != endit; ++it)
       {
-        ElementType type = (*it).geometry().type(); // Hack
+        GeometryType type = (*it).geometry().type(); // Hack
         if(baseFuncSet_( type ) == 0 )
           baseFuncSet_ ( type ) = setBaseFuncSetPointer(*it);
 
@@ -887,7 +887,7 @@ namespace Dune {
     template <class EntityType>
     const FastBaseFunctionSetType& getBaseFunctionSet ( EntityType &en ) const
     {
-      ElementType type =  en.geometry().type();
+      GeometryType type =  en.geometry().type();
       return (*baseFuncSet_( type ));
     }
 
@@ -990,8 +990,8 @@ namespace Dune {
     //! lenght is diffrent element types
     FieldVector<FastBaseFunctionSetType*, numOfDiffBase_ > baseFuncSet_;
 
-    //! make base function set depending on ElementType and polynomial order
-    template <ElementType ElType, int pO >
+    //! make base function set depending on GeometryType and polynomial order
+    template <GeometryType ElType, int pO >
     FastBaseFunctionSetType* makeBaseSet ()
     {
 

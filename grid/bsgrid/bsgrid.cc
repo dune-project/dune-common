@@ -1499,31 +1499,31 @@ namespace Dune {
   template <int dim>
   struct BSGridElType
   {
-    static ElementType type () { return unknown; }
+    static GeometryType type () { return unknown; }
   };
 
   template <>
   struct BSGridElType<3>
   {
-    static ElementType type () { return tetrahedron; }
+    static GeometryType type () { return tetrahedron; }
   };
 
   template <>
   struct BSGridElType<2>
   {
-    static ElementType type () { return triangle; }
+    static GeometryType type () { return triangle; }
   };
 
   template <>
   struct BSGridElType<1>
   {
-    static ElementType type () { return line; }
+    static GeometryType type () { return line; }
   };
 
   template <>
   struct BSGridElType<0>
   {
-    static ElementType type () { return vertex; }
+    static GeometryType type () { return vertex; }
   };
 
   // --Element
@@ -1668,7 +1668,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline ElementType BSGridElement<dim,dimworld> ::type () const
+  inline GeometryType BSGridElement<dim,dimworld> ::type () const
   {
     return eltype_;
   }

@@ -345,7 +345,7 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline ElementType AlbertaGridElement<dim,dimworld>::type() const
+  inline GeometryType AlbertaGridElement<dim,dimworld>::type() const
   {
     switch (dim)
     {
@@ -358,13 +358,13 @@ namespace Dune
   }
 
   template <>
-  inline ElementType AlbertaGridElement<2,2>::type() const
+  inline GeometryType AlbertaGridElement<2,2>::type() const
   {
     return triangle;
   }
 
   template <>
-  inline ElementType AlbertaGridElement<3,3>::type() const
+  inline GeometryType AlbertaGridElement<3,3>::type() const
   {
     return tetrahedron;
   }
