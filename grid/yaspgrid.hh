@@ -7,6 +7,7 @@
 
 #include "common/grid.hh"     // the grid base classes
 #include "yaspgrid/grids.hh"  // the yaspgrid base classes
+#include "../common/Stack.hh" // the stack class
 
 /*! \file yaspgrid.hh
    Yaspgrid stands for yet another structured parallel grid.
@@ -28,7 +29,8 @@ namespace Dune {
 
      History:
      - started on July 31, 2004 by PB based on abstractions developed in summer 2003
-          @{
+
+     @{
    */
 
 
@@ -46,10 +48,10 @@ namespace Dune {
   template<int dim, int dimworld>            class YaspElement;
   template<int codim, int dim, int dimworld> class YaspEntity;
   template<int dim, int dimworld>            class YaspGrid;
-  template<int codim, int dim, int dimworld> class YaspLevelIterator;
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype> class YaspLevelIterator;
   template<int dim, int dimworld>            class YaspIntersectionIterator;
-  //template <int dim, int dimworld>           class YaspBoundaryEntity;
-  //template<int dim, int dimworld>            class YaspHierarchicIterator;
+  template<int dim, int dimworld>            class YaspHierarchicIterator;
+  template<int dim, int dimworld>            class YaspBoundaryEntity;
 
 
   //========================================================================
@@ -66,13 +68,40 @@ namespace Dune {
   // initialize static variable with bool constructor (which makes reference elements)
   template<int dim>
   YaspElement<dim,dim> YaspReferenceElement<dim>::refelem(YaspReferenceElement<dim>::midpoint,
-                                                          YaspReferenceElement<dim>::extension,
-                                                          true);
+                                                          YaspReferenceElement<dim>::extension);
   template<int dim>
-  Vec<dim,yaspgrid_ctype> YaspReferenceElement<dim>::midpoint;
+  Vec<dim,yaspgrid_ctype> YaspReferenceElement<dim>::midpoint(0.5);
 
   template<int dim>
-  Vec<dim,yaspgrid_ctype> YaspReferenceElement<dim>::extension;
+  Vec<dim,yaspgrid_ctype> YaspReferenceElement<dim>::extension(1.0);
+
+  template<int dim>
+  class YaspFatherRelativeLocalElement {
+  public:
+    static Vec<dim,yaspgrid_ctype> midpoint; // data neded for the refelem below
+    static Vec<dim,yaspgrid_ctype> extension; // data needed for the refelem below
+    static YaspElement<dim,dim> element;
+    static YaspElement<dim,dim>& getson (int i)
+    {
+      for (int k=0; k<dim; k++)
+        if (i&(1<<k))
+          midpoint[k] = 0.75;
+        else
+          midpoint[k] = 0.25;
+      return element;
+    }
+  };
+
+  // initialize static variable with bool constructor (which makes reference elements)
+  template<int dim>
+  YaspElement<dim,dim> YaspFatherRelativeLocalElement<dim>::element(YaspFatherRelativeLocalElement<dim>::midpoint,
+                                                                    YaspFatherRelativeLocalElement<dim>::extension);
+  template<int dim>
+  Vec<dim,yaspgrid_ctype> YaspFatherRelativeLocalElement<dim>::midpoint(0.25);
+
+  template<int dim>
+  Vec<dim,yaspgrid_ctype> YaspFatherRelativeLocalElement<dim>::extension(0.5);
+
 
   //========================================================================
   /*!
@@ -86,7 +115,7 @@ namespace Dune {
 
   //! The general version implements dimworld==dimworld. If this is not the case an error is thrown
   template<int dim,int dimworld>
-  class YaspElement //: public ElementDefault<dim,dimworld,yaspgrid_ctype,YaspElement>
+  class YaspElement : public ElementDefault<dim,dimworld,yaspgrid_ctype,YaspElement>
   {
   public:
     //! define type used for coordinates in grid module
@@ -177,7 +206,7 @@ namespace Dune {
     yaspgrid_ctype integration_element (const Vec<dim,yaspgrid_ctype>& local)
     {
       yaspgrid_ctype volume=1.0;
-      for (int k=0; k<dim; k++)
+      for (int k=0; k<dimworld; k++)
         if (k!=missing) volume *= extension(k);
       return volume;
     }
@@ -230,7 +259,7 @@ namespace Dune {
 
   //! specialize for dim=dimworld, i.e. a volume element
   template<int dim>
-  class YaspElement<dim,dim> //: public ElementDefault<dim,dim,yaspgrid_ctype,YaspElement>
+  class YaspElement<dim,dim> : public ElementDefault<dim,dim,yaspgrid_ctype,YaspElement>
   {
   public:
     //! define type used for coordinates in grid module
@@ -326,17 +355,6 @@ namespace Dune {
       : midpoint(p), extension(h)
     {}
 
-    //! constructor from (storage for) midpoint and extension initializing reference element
-    YaspElement (Vec<dim,yaspgrid_ctype>& p, Vec<dim,yaspgrid_ctype>& h, bool b)
-      : midpoint(p), extension(h)
-    {
-      for (int i=0; i<dim; i++)
-      {
-        midpoint[i] = 0.5;
-        extension[i] = 1.0;
-      }
-    }
-
     //! print function
     void print (std::ostream& s)
     {
@@ -368,7 +386,7 @@ namespace Dune {
 
   //! specialization for dim=0, this is a vertex
   template<int dimworld>
-  class YaspElement<0,dimworld> //: public ElementDefault<0,dimworld,yaspgrid_ctype,YaspElement>
+  class YaspElement<0,dimworld> : public ElementDefault<0,dimworld,yaspgrid_ctype,YaspElement>
   {
   public:
     //! define type used for coordinates in grid module
@@ -427,8 +445,8 @@ namespace Dune {
 
 
   template<int codim, int dim, int dimworld>
-  class YaspEntity //:  public EntityDefault <codim,dim,dimworld,yaspgrid_ctype,YaspEntity,YaspElement,
-                   //				   YaspLevelIterator,YaspIntersectionIterator,YaspHierarchicIterator>
+  class YaspEntity :  public EntityDefault <codim,dim,dimworld,yaspgrid_ctype,YaspEntity,YaspElement,
+                          YaspLevelIterator,YaspIntersectionIterator,YaspHierarchicIterator>
   {
   public:
     //! define type used for coordinates in grid module
@@ -451,13 +469,19 @@ namespace Dune {
     {
       throw GridError("YaspEntity not implemented",__FILE__,__LINE__);
     }
+
+    //! return partition type attribute
+    PartitionType partition_type ()
+    {
+      throw GridError("YaspEntity not implemented",__FILE__,__LINE__);
+    }
   };
 
 
   // specialization for codim=0
   template<int dim, int dimworld>
-  class YaspEntity<0,dim,dimworld> //:  public EntityDefault <0,dim,dimworld,yaspgrid_ctype,YaspEntity,YaspElement,
-  //	   YaspLevelIterator,YaspIntersectionIterator,YaspHierarchicIterator>
+  class YaspEntity<0,dim,dimworld> :  public EntityDefault <0,dim,dimworld,yaspgrid_ctype,YaspEntity,YaspElement,
+                                          YaspLevelIterator,YaspIntersectionIterator,YaspHierarchicIterator>
   {
   public:
     typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
@@ -465,6 +489,7 @@ namespace Dune {
 
     //! define type used for coordinates in grid module
     typedef yaspgrid_ctype ctype;
+    typedef typename YGrid<dim,ctype>::iTupel iTupel;
 
     // constructor
     YaspEntity (YGLI& g, TSI& it)
@@ -480,15 +505,84 @@ namespace Dune {
     //! geometry of this entity
     YaspElement<dim,dimworld>& geometry () {return _element;}
 
+    //! return partition type attribute
+    PartitionType partition_type ()
+    {
+      if (_g.cell_interior().inside(_it.coord())) return InteriorEntity;
+      if (_g.cell_overlap().inside(_it.coord())) return OverlapEntity;
+      return GhostEntity;
+    }
+
+    /*! Intra-element access to entities of codimension cc > codim. Return number of entities
+          with codimension cc.
+     */
+    template<int cc> int count ()
+    {
+      if (cc==1) return 2*dim;
+      if (cc==dim) return 1<<dim;
+      throw GridError("codim not (yet) implemented",__FILE__,__LINE__);
+    }
+
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
           with codimension cc.
      */
     template<int cc>
-    int count ()
+    YaspLevelIterator<cc,dim,dimworld,All_Partition> entity (int i)
     {
-      if (cc==dim) return 1<<dim;
-      if (cc==1) return 2*dim;
+      // coordinates of the cell == coordinates of lower left corner
+      if (cc==dim)
+      {
+        iTupel coord = _it.coord();
+
+        // get corner from there
+        for (int k=0; k<dim; k++)
+          if (i&(1<<k)) (coord[k])++;
+
+        return YaspLevelIterator<dim,dim,dimworld,All_Partition>(_g,_g.vertex_overlapfront().tsubbegin(coord));
+      }
+      throw GridError("codim not (yet) implemented",__FILE__,__LINE__);
     }
+
+    //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
+    YaspLevelIterator<0,dim,dimworld,All_Partition> father ()
+    {
+      // check if coarse level exists
+      if (_g.level<=0)
+        throw GridError("tried to call father on level 0",__FILE__,__LINE__);
+
+      // yes, get iterator to it
+      YGLI cg = _g.coarser();
+
+      // coordinates of the cell
+      iTupel coord = _it.coord();
+
+      // get coordinates on next coarser level
+      for (int k=0; k<dim; k++) coord[k] = coord[k]/2;
+
+      return YaspLevelIterator<0,dim,dimworld,All_Partition>(cg,cg.cell_overlap().tsubbegin(coord));
+    }
+
+    /*! Location of this element relative to the reference element element of the father.
+          This is sufficient to interpolate all dofs in conforming case.
+          Nonconforming case may require access to neighbors of father and
+          computations with local coordinates.
+          On the fly case is somewhat inefficient since dofs  are visited several times.
+          If we store interpolation matrices, this is tolerable. We assume that on-the-fly
+          implementation of numerical algorithms is only done for simple discretizations.
+          Assumes that meshes are nested.
+     */
+    YaspElement<dim,dim>& father_relative_local ()
+    {
+      // determine which son we are
+      int son = 0;
+      for (int k=0; k<dim; k++)
+        if (_it.coord(k)%2)
+          son += (1<<k);
+
+      // access to one of the 2**dim predefined elements
+      return YaspFatherRelativeLocalElement<dim>::getson(son);
+    }
+
 
     TSI& transformingsubiterator ()
     {
@@ -512,12 +606,19 @@ namespace Dune {
       return YaspIntersectionIterator<dim,dimworld>(*this,true);
     }
 
-    //! return partition type attribute
-    PartitionType partition_type ()
+    /*! Inter-level access to son elements on higher levels<=maxlevel.
+          This is provided for sparsely stored nested unstructured meshes.
+          Returns iterator to first son.
+     */
+    YaspHierarchicIterator<dim,dimworld> hbegin (int maxlevel)
     {
-      if (_g.cell_interior().inside(_it.coord())) return InteriorEntity;
-      if (_g.cell_overlap().inside(_it.coord())) return OverlapEntity;
-      return GhostEntity;
+      return YaspHierarchicIterator<dim,dimworld>(_g,_it,maxlevel);
+    }
+
+    //! Returns iterator to one past the last son
+    YaspHierarchicIterator<dim,dimworld> hend (int maxlevel)
+    {
+      return YaspHierarchicIterator<dim,dimworld>(_g,_it,_g.level());
     }
 
   private:
@@ -529,8 +630,8 @@ namespace Dune {
 
   // specialization for codim=dim
   template<int dim, int dimworld>
-  class YaspEntity<dim,dim,dimworld> //:  public EntityDefault <dim,dim,dimworld,yaspgrid_ctype,YaspEntity,YaspElement,
-  //	   YaspLevelIterator,YaspIntersectionIterator,YaspHierarchicIterator>
+  class YaspEntity<dim,dim,dimworld> :  public EntityDefault <dim,dim,dimworld,yaspgrid_ctype,YaspEntity,YaspElement,
+                                            YaspLevelIterator,YaspIntersectionIterator,YaspHierarchicIterator>
   {
   public:
     typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
@@ -538,6 +639,7 @@ namespace Dune {
 
     //! define type used for coordinates in grid module
     typedef yaspgrid_ctype ctype;
+    typedef typename YGrid<dim,ctype>::iTupel iTupel;
 
     // constructor
     YaspEntity (YGLI& g, TSI& it)
@@ -563,10 +665,85 @@ namespace Dune {
       return GhostEntity;
     }
 
+    /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
+          This can speed up on-the-fly interpolation for linear conforming elements
+          Possibly this is sufficient for all applications we want on-the-fly.
+     */
+    YaspLevelIterator<0,dim,dimworld,All_Partition> father ()
+    {
+      // check if coarse level exists
+      if (_g.level<=0)
+        throw GridError("tried to call father on level 0",__FILE__,__LINE__);
+
+      // yes, get iterator to it
+      YGLI cg = _g.coarser();
+
+      // coordinates of the vertex == coordinates of upper right element
+      iTupel coord = _it.coord();
+
+      // get coordinates of cell on coarser level
+      for (int k=0; k<dim; k++) coord[k] = coord[k]/2;
+
+      // check against boundary
+      for (int k=0; k<dim; k++)
+        coord[k] = std::min(coord[k],cg.cell_overlap().max(k));
+
+      // return level iterator
+      return YaspLevelIterator<0,dim,dimworld,All_Partition>(cg,cg.cell_overlap().tsubbegin(coord));
+    }
+
+    //! local coordinates within father
+    Vec<dim,ctype>& local ()
+    {
+      // check if coarse level exists
+      if (_g.level<=0)
+        throw GridError("tried to call local on level 0",__FILE__,__LINE__);
+
+      // yes, get iterator to it
+      YGLI cg = _g.coarser();
+
+      // coordinates of the vertex == coordinates of upper right element
+      iTupel coord = _it.coord();
+
+      // get coordinates of cell on coarser level
+      for (int k=0; k<dim; k++) coord[k] = coord[k]/2;
+
+      // check against boundary
+      for (int k=0; k<dim; k++)
+        coord[k] = std::min(coord[k],cg.cell_overlap().max(k));
+
+      // interpolate again, i.e. coord == lower left in 2**dim cells
+      for (int k=0; k<dim; k++)
+        coord[k] = 2*coord[k];
+
+      // now it is simple ...
+      for (int k=0; k<dim; k++)
+        loc[k] = 0.5*(_it.coord(k)-coord[k]);   // expr in brackets is in 0..2
+
+      // return result
+      return loc;
+    }
+
   private:
     TSI& _it;                         // position in the grid level
     YGLI& _g;                         // access to grid level
     YaspElement<0,dimworld> _element; // the element geometry
+    Vec<dim,ctype> loc;               // always computed before being returned
+  };
+
+
+  //========================================================================
+  /*!
+     YaspBoundaryEntity is not yet implemented
+   */
+  //========================================================================
+
+  template <int dim, int dimworld>
+  class YaspBoundaryEntity
+    : public BoundaryEntityDefault <dim,dimworld,yaspgrid_ctype,YaspElement,YaspBoundaryEntity>
+  {
+  public:
+  private:
   };
 
 
@@ -578,8 +755,8 @@ namespace Dune {
   //========================================================================
 
   template<int dim, int dimworld>
-  class YaspIntersectionIterator //: public IntersectionIteratorDefault<dim,dimworld,simplegrid_ctype,
-                                 //	YaspIntersectionIterator,YaspEntity,YaspElement,YaspBoundaryEntity>
+  class YaspIntersectionIterator : public IntersectionIteratorDefault<dim,dimworld,yaspgrid_ctype,
+                                       YaspIntersectionIterator,YaspEntity,YaspElement,YaspBoundaryEntity>
   {
   public:
     //! define type used for coordinates in grid module
@@ -807,58 +984,75 @@ namespace Dune {
   };
 
 
-
   //========================================================================
   /*!
-     YaspLevelIterator enables iteration over entities of one grid level
-
-     We have specializations for codim==0 (elements) and
-     codim=dim (vertices).
-     The general version throws a GridError.
+     YaspHierarchicIterator enables iteration over son entities of codim 0
    */
   //========================================================================
 
-  // the general version
-  template<int codim, int dim, int dimworld>
-  class YaspLevelIterator //: public LevelIteratorDefault<codim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
-  {
-  public:
-    YaspLevelIterator ()
-    {
-      throw GridError("YaspLevelIterator not implemented",__FILE__,__LINE__);
-    }
-  };
-
-  // specialization for codim==0 -- the elements
   template<int dim, int dimworld>
-  class YaspLevelIterator<0,dim,dimworld> //: public LevelIteratorDefault<0,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
+  class YaspHierarchicIterator : public HierarchicIteratorDefault <dim,dimworld,yaspgrid_ctype,
+                                     YaspHierarchicIterator,YaspEntity>
   {
   public:
     typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
     typedef typename SubYGrid<dim,yaspgrid_ctype>::TransformingSubIterator TSI;
 
+    //! define type used for coordinates in grid module
+    typedef yaspgrid_ctype ctype;
+    typedef typename YGrid<dim,ctype>::iTupel iTupel;
+
     //! constructor
-    YaspLevelIterator (YGLI g, TSI it) : _g(g), _it(it), _entity(_g,_it)
-    {  }
+    YaspHierarchicIterator (YGLI& g, TSI& it, int maxlevel) : _g(g), _it(it), _entity(_g,_it)
+    {
+      // now iterator points to current cell
+
+      // determine maximum level
+      _maxlevel = std::min(maxlevel,_g.mg()->maxlevel());
+
+      // if maxlevel not reached then push yourself and sons
+      if (_g.level()<_maxlevel)
+      {
+        StackElem se(_g);
+        se.coord = _it.coord();
+        stack.push_front(se);
+        push_sons();
+      }
+
+      // and make iterator point to first son if stack is not empty
+      if (!stack.isempty())
+        pop_tos();
+    }
 
     //! prefix increment
-    YaspLevelIterator<0,dim,dimworld>& operator++()
+    YaspHierarchicIterator<dim,dimworld>& operator++()
     {
-      ++_it;
-      //	std::cout << "TSI= ";_it.print(std::cout); std::cout << std::endl;
+      // sanity check: do nothing when stack is empty
+      if (stack.isempty()) return *this;
+
+      // if maxlevel not reached then push sons
+      if (_g.level()<_maxlevel)
+        push_sons();
+
+      // in any case pop one element
+      pop_tos();
+
       return *this;
     }
 
-    //! equality
-    bool operator== (const YaspLevelIterator<0,dim,dimworld>& i) const
+    //! equality is very simple: compare grid level and superindex
+    bool operator== (const YaspHierarchicIterator<dim,dimworld>& i) const
     {
-      return _it==i._it;
+      if (_g.level()==i._g.level() && _it.superindex()==i._it.superindex())
+        return true;
+      else
+        return false;
     }
 
     //! inequality
-    bool operator!= (const YaspLevelIterator<0,dim,dimworld>& i) const
+    bool operator!= (const YaspHierarchicIterator<dim,dimworld>& i) const
     {
-      return (_it!=i._it);
+      return !(operator==(i));
     }
 
     //! dereferencing
@@ -873,19 +1067,67 @@ namespace Dune {
       return &_entity;
     }
 
-    //! ask for level of entity
-    int level () {return _g.level();}
+    void print (std::ostream& s)
+    {
+      s << "HIER: " << "level=" << _g.level()
+        << " position=" << _it.coord()
+        << " superindex=" << _it.superindex()
+        << " maxlevel=" << _maxlevel
+        << " stacksize=" << stack.size()
+        << std::endl;
+    }
 
   private:
     YGLI _g;                          // access to grid level
-    TSI _it;                           // position in the grid level
+    TSI _it;                          // position in the grid level
     YaspEntity<0,dim,dimworld> _entity; //!< virtual entity
+
+    int _maxlevel;                    //!< maximum level of elements to be processed
+
+    struct StackElem {
+      YGLI g;         // grid level of the element
+      iTupel coord;   // and the coordinates
+      StackElem(YGLI gg) : g(gg) {}
+    };
+    Stack<StackElem> stack;    //!< stack holding elements to be processed
+
+    // push sons of current element on the stack
+    void push_sons ()
+    {
+      // yes, process all 1<<dim sons
+      StackElem se(_g.finer());
+      for (int i=0; i<(1<<dim); i++)
+      {
+        for (int k=0; k<dim; k++)
+          if (i&(1<<k))
+            se.coord[k] = _it.coord(k)*2+1;
+          else
+            se.coord[k] = _it.coord(k)*2;
+        stack.push_front(se);
+      }
+    }
+
+    // make TOS the current element
+    void pop_tos ()
+    {
+      StackElem se = stack.pop_front();
+      _g = se.g;
+      _it.reinit(_g.cell_overlap(),se.coord);
+    }
   };
 
+  //========================================================================
+  /*!
+     YaspLevelIterator enables iteration over entities of one grid level
 
-  // specialization for codim==dim -- the vertices
-  template<int dim, int dimworld>
-  class YaspLevelIterator<dim,dim,dimworld> //: public LevelIteratorDefault<dim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
+     We have specializations for codim==0 (elements) and
+     codim=dim (vertices).
+     The general version throws a GridError.
+   */
+  //========================================================================
+
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
+  class YaspLevelIterator : public LevelIteratorDefault<codim,dim,dimworld,pitype,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
   {
   public:
     typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
@@ -893,35 +1135,41 @@ namespace Dune {
 
     //! constructor
     YaspLevelIterator (YGLI g, TSI it) : _g(g), _it(it), _entity(_g,_it)
-    {  }
+    {
+      if (codim>0 && codim<dim)
+      {
+        throw GridError("YaspLevelIterator: codim not implemented",__FILE__,__LINE__);
+      }
+    }
 
     //! prefix increment
-    YaspLevelIterator<dim,dim,dimworld>& operator++()
+    YaspLevelIterator<codim,dim,dimworld,pitype>& operator++()
     {
       ++_it;
+      //	std::cout << "TSI= ";_it.print(std::cout); std::cout << std::endl;
       return *this;
     }
 
     //! equality
-    bool operator== (const YaspLevelIterator<dim,dim,dimworld>& i) const
+    bool operator== (const YaspLevelIterator<codim,dim,dimworld,pitype>& i) const
     {
       return _it==i._it;
     }
 
     //! inequality
-    bool operator!= (const YaspLevelIterator<dim,dim,dimworld>& i) const
+    bool operator!= (const YaspLevelIterator<codim,dim,dimworld,pitype>& i) const
     {
       return (_it!=i._it);
     }
 
     //! dereferencing
-    YaspEntity<dim,dim,dimworld>& operator*()
+    YaspEntity<codim,dim,dimworld>& operator*()
     {
       return _entity;
     }
 
     //! arrow
-    YaspEntity<dim,dim,dimworld>* operator->()
+    YaspEntity<codim,dim,dimworld>* operator->()
     {
       return &_entity;
     }
@@ -932,108 +1180,9 @@ namespace Dune {
   private:
     YGLI _g;                          // access to grid level
     TSI _it;                           // position in the grid level
-    YaspEntity<dim,dim,dimworld> _entity; //!< virtual entity
+    YaspEntity<codim,dim,dimworld> _entity; //!< virtual entity
   };
 
-
-  //========================================================================
-  /*!
-     YaspInteriorBorderLevelIterator enables iteration over entities up to border of one grid level
-
-     We have specializations for codim==0 (elements) and
-     codim=dim (vertices).
-     The general version throws a GridError.
-   */
-  //========================================================================
-
-
-  // the general version
-  template<int codim, int dim, int dimworld>
-  class YaspInteriorBorderLevelIterator
-  //: public LevelIteratorDefault<codim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
-  {
-  public:
-    YaspInteriorBorderLevelIterator ()
-    {
-      throw GridError("YaspLevelIterator not implemented",__FILE__,__LINE__);
-    }
-  };
-
-  //! codim=0 specialization
-  template<int dim, int dimworld>
-  class YaspInteriorBorderLevelIterator<0,dim,dimworld> : public YaspLevelIterator<0,dim,dimworld>
-                                                          //: public LevelIteratorDefault<codim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
-  {
-  public:
-    typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
-    typedef typename SubYGrid<dim,yaspgrid_ctype>::TransformingSubIterator TSI;
-
-    YaspInteriorBorderLevelIterator (YGLI g, TSI it) : YaspLevelIterator<0,dim,dimworld>::YaspLevelIterator(g,it)
-    {  }
-  };
-
-  //! codim=dim specialization
-  template<int dim, int dimworld>
-  class YaspInteriorBorderLevelIterator<dim,dim,dimworld> : public YaspLevelIterator<dim,dim,dimworld>
-                                                            //: public LevelIteratorDefault<codim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
-  {
-  public:
-    typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
-    typedef typename SubYGrid<dim,yaspgrid_ctype>::TransformingSubIterator TSI;
-
-    YaspInteriorBorderLevelIterator (YGLI g, TSI it) : YaspLevelIterator<dim,dim,dimworld>::YaspLevelIterator(g,it)
-    {  }
-  };
-
-
-  //========================================================================
-  /*!
-     YaspOverlapLevelIterator enables iteration over entities up to overlap of one grid level
-
-     We have specializations for codim==0 (elements) and
-     codim=dim (vertices).
-     The general version throws a GridError.
-   */
-  //========================================================================
-
-
-  // the general version
-  template<int codim, int dim, int dimworld>
-  class YaspOverlapLevelIterator
-  //: public LevelIteratorDefault<codim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
-  {
-  public:
-    YaspOverlapLevelIterator ()
-    {
-      throw GridError("YaspLevelIterator not implemented",__FILE__,__LINE__);
-    }
-  };
-
-  //! codim=0 specialization
-  template<int dim, int dimworld>
-  class YaspOverlapLevelIterator<0,dim,dimworld> : public YaspLevelIterator<0,dim,dimworld>
-                                                   //: public LevelIteratorDefault<codim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
-  {
-  public:
-    typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
-    typedef typename SubYGrid<dim,yaspgrid_ctype>::TransformingSubIterator TSI;
-
-    YaspOverlapLevelIterator (YGLI g, TSI it) : YaspLevelIterator<0,dim,dimworld>::YaspLevelIterator(g,it)
-    {  }
-  };
-
-  //! codim=dim specialization
-  template<int dim, int dimworld>
-  class YaspOverlapLevelIterator<dim,dim,dimworld> : public YaspLevelIterator<dim,dim,dimworld>
-                                                     //: public LevelIteratorDefault<codim,dim,dimworld,yaspgrid_ctype,YaspLevelIterator,YaspEntity>
-  {
-  public:
-    typedef typename MultiYGrid<dim,yaspgrid_ctype>::YGridLevelIterator YGLI;
-    typedef typename SubYGrid<dim,yaspgrid_ctype>::TransformingSubIterator TSI;
-
-    YaspOverlapLevelIterator (YGLI g, TSI it) : YaspLevelIterator<dim,dim,dimworld>::YaspLevelIterator(g,it)
-    {  }
-  };
 
 
   //************************************************************************
@@ -1050,7 +1199,7 @@ namespace Dune {
      data structures (which are not part of this module).
    */
   template<int dim, int dimworld>
-  class YaspGrid //: public GridDefault<dim,dimworld,yaspgrid_ctype,YaspGrid,YaspLevelIterator,YaspEntity>
+  class YaspGrid : public GridDefault<dim,dimworld,yaspgrid_ctype,YaspGrid,YaspLevelIterator,YaspEntity>
   {
   public:
     //! maximum number of levels allowed
@@ -1091,100 +1240,44 @@ namespace Dune {
       _mg.refine(b);
     }
 
-    //! Iterator to first entity of given codim on level
-    template<int cd>
-    YaspLevelIterator<cd,dim,dimworld> lbegin (int level)
+    //! Iterator to first entity of given codim on level for partition type
+    template<int cd, PartitionIteratorType pitype>
+    YaspLevelIterator<cd,dim,dimworld,pitype> lbegin (int level)
     {
       YGLI g = _mg.begin(level);
       if (cd==0)   // the elements
       {
-        return YaspLevelIterator<cd,dim,dimworld>(g,g.cell_overlap().tsubbegin());
+        if (pitype<=InteriorBorder_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_interior().tsubbegin());
+        if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_overlap().tsubbegin());
       }
       if (cd==dim)   // the vertices
       {
-        return YaspLevelIterator<cd,dim,dimworld>(g,g.vertex_overlapfront().tsubbegin());
+        if (pitype==Interior_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interior().tsubbegin());
+        if (pitype==InteriorBorder_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interiorborder().tsubbegin());
+        if (pitype==Overlap_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlap().tsubbegin());
+        if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlapfront().tsubbegin());
       }
-      throw GridError("YaspLevelIterator with this codim not implemented",__FILE__,__LINE__);
+      throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
     }
 
-    //! one past the end on this level
-    template<int cd>
-    YaspLevelIterator<cd,dim,dimworld> lend (int level)
+    //! Iterator to one past the last entity of given codim on level for partition type
+    template<int cd, PartitionIteratorType pitype>
+    YaspLevelIterator<cd,dim,dimworld,pitype> lend (int level)
     {
       YGLI g = _mg.begin(level);
       if (cd==0)   // the elements
       {
-        return YaspLevelIterator<cd,dim,dimworld>(g,g.cell_overlap().tsubend());
+        if (pitype<=InteriorBorder_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_interior().tsubend());
+        if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_overlap().tsubend());
       }
       if (cd==dim)   // the vertices
       {
-        return YaspLevelIterator<cd,dim,dimworld>(g,g.vertex_overlapfront().tsubend());
+        if (pitype==Interior_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interior().tsubend());
+        if (pitype==InteriorBorder_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interiorborder().tsubend());
+        if (pitype==Overlap_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlap().tsubend());
+        if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlapfront().tsubend());
       }
-      throw GridError("YaspLevelIterator with this codim not implemented",__FILE__,__LINE__);
-    }
-
-    //! Iterator to first entity of given codim on level
-    template<int cd>
-    YaspInteriorBorderLevelIterator<cd,dim,dimworld> interiorborder_lbegin (int level)
-    {
-      YGLI g = _mg.begin(level);
-      if (cd==0)   // the elements
-      {
-        return YaspInteriorBorderLevelIterator<cd,dim,dimworld>(g,g.cell_interior().tsubbegin());
-      }
-      if (cd==dim)   // the vertices
-      {
-        return YaspInteriorBorderLevelIterator<cd,dim,dimworld>(g,g.vertex_interiorborder().tsubbegin());
-      }
-      throw GridError("YaspInteriorBorderLevelIterator with this codim not implemented",__FILE__,__LINE__);
-    }
-
-    //! Iterator to one past the last entity of given codim on level
-    template<int cd>
-    YaspInteriorBorderLevelIterator<cd,dim,dimworld> interiorborder_lend (int level)
-    {
-      YGLI g = _mg.begin(level);
-      if (cd==0)   // the elements
-      {
-        return YaspInteriorBorderLevelIterator<cd,dim,dimworld>(g,g.cell_interior().tsubend());
-      }
-      if (cd==dim)   // the vertices
-      {
-        return YaspInteriorBorderLevelIterator<cd,dim,dimworld>(g,g.vertex_interiorborder().tsubend());
-      }
-      throw GridError("YaspInteriorBorderLevelIterator with this codim not implemented",__FILE__,__LINE__);
-    }
-
-    //! Iterator to first entity of given codim on level
-    template<int cd>
-    YaspOverlapLevelIterator<cd,dim,dimworld> overlap_lbegin (int level)
-    {
-      YGLI g = _mg.begin(level);
-      if (cd==0)   // the elements
-      {
-        return YaspOverlapLevelIterator<cd,dim,dimworld>(g,g.cell_overlap().tsubbegin());
-      }
-      if (cd==dim)   // the vertices
-      {
-        return YaspOverlapLevelIterator<cd,dim,dimworld>(g,g.vertex_overlap().tsubbegin());
-      }
-      throw GridError("YaspOverlapLevelIterator with this codim not implemented",__FILE__,__LINE__);
-    }
-
-    //! Iterator to one past the last entity of given codim on level
-    template<int cd>
-    YaspOverlapLevelIterator<cd,dim,dimworld> overlap_lend (int level)
-    {
-      YGLI g = _mg.begin(level);
-      if (cd==0)   // the elements
-      {
-        return YaspOverlapLevelIterator<cd,dim,dimworld>(g,g.cell_overlap().tsubend());
-      }
-      if (cd==dim)   // the vertices
-      {
-        return YaspOverlapLevelIterator<cd,dim,dimworld>(g,g.vertex_overlap().tsubend());
-      }
-      throw GridError("YaspOverlapLevelIterator with this codim not implemented",__FILE__,__LINE__);
+      throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
     }
 
     //! number of grid entities per level and codim
@@ -1328,6 +1421,8 @@ namespace Dune {
         delete[] buf;
       }
     }
+
+    // implement leaf communication. Problem: supply vector of vectors
 
   private:
     YMG _mg;
