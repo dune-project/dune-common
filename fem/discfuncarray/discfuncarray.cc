@@ -604,7 +604,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline const typename LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
-  LocalFunctionArray < DiscreteFunctionSpaceType >::read (int num) const
+  LocalFunctionArray < DiscreteFunctionSpaceType >::operator [] (int num) const
   {
     return (* (values_[num]));
   }
