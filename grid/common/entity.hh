@@ -47,12 +47,15 @@ namespace Dune
 
     typedef typename RemoveConst<GridImp>::Type mutableGridImp;
 
+#ifdef __ICC
     // for icc
-    // friend EntityImp<codim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<codim>::Entity& e );
-
+    friend EntityImp<codim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<codim>::Entity& e );
+#else
     // for g++
     template <int cd>
     friend EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template codim<cd>::Entity& e );
+#endif
+
   };
 
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
@@ -63,12 +66,14 @@ namespace Dune
 
     typedef typename RemoveConst<GridImp>::Type mutableGridImp;
 
+#ifdef __ICC
     // for icc
-    // friend EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<0>::Entity& e );
-
+    friend EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<0>::Entity& e );
+#else
     // for g++
     template <int cd>
-    friend EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template codim<cd>::Entity& e );
+    friend EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(typename mutableGridImp::Traits::template codim<cd>::Entity& e );
+#endif
 
   protected:
     EntityImp<0,dim,GridImp> realEntity;
@@ -204,12 +209,14 @@ namespace Dune
 
     typedef typename RemoveConst<GridImp>::Type mutableGridImp;
 
+#ifdef __ICC
     // for icc
-    // friend EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<dim>::Entity& e );
-
+    friend EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<dim>::Entity& e );
+#else
     // for g++
     template <int cd>
     friend EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template codim<cd>::Entity& e );
+#endif
 
   protected:
     EntityImp<dim,dim,GridImp> realEntity;
