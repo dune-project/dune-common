@@ -140,7 +140,7 @@ namespace Dune {
   boundaryType (int id) const
   {
     // here we need a boundary id map class
-    return (id < 0) ? Dirichlet : Neumann;
+    return (id > 0) ? Dirichlet : Neumann;
   }
 
   template< class FunctionSpaceType, class GridType,int polOrd, class DofManagerType >
