@@ -706,7 +706,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
         for (int j=0; j<numberOfCorners; j++)
           cornerIDs[j] = elemData[numberOfCorners*i+j]-1;
 
-        /// \todo Warum ist nicht UG3d::InsertElementFromIDs Pflicht???
         if (InsertElementFromIDs(grid.multigrid_->grids[0], numberOfCorners, cornerIDs, NULL) == NULL)
           DUNE_THROW(IOError, "Inserting element failed");
 
@@ -722,50 +721,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
     DUNE_THROW(IOError, "Inserting element failed");
 
   std::cout << "AmiraMesh reader: " << noOfCreatedElem << " elements created.\n";
-
-  // set the subdomainIDs
-  char* material_ids = 0;
-
-  AmiraMesh::Data* am_material_ids = (isTetraGrid)
-                                     ? am->findData("Tetrahedra", HxBYTE, 1, "Materials")
-                                     : am->findData("Hexahedra", HxBYTE, 1, "Materials");
-
-  if (am_material_ids)
-    material_ids = (char*)am_material_ids->dataPtr();
-
-  i = 0;
-  UG3d::ELEMENT* theElement;
-
-  for (theElement=grid.multigrid_->grids[0]->elements[0]; theElement!=NULL; theElement=theElement->ge.succ)
-  {
-
-    /* get subdomain of element */
-    int id = -1;
-
-    if (material_ids)
-      id = material_ids[i];
-
-    UG_NS<3>::SetSubdomain(theElement, 1);
-
-    i++;
-  }
-
   delete am;
 
-  UG3d::SetEdgeAndNodeSubdomainFromElements(grid.multigrid_->grids[0]);
-
-
-  /* This call completes the creation of the internal UG
-     grid data structure */
-  if (UG3d::CreateAlgebra(grid.multigrid_) != UG3d::GM_OK)
-    DUNE_THROW(IOError, "Error in UG3d::CreateAlgebra!");
-
-  /* here all temp memory since CreateMultiGrid is released */
-  //UG3d::ReleaseTmpMem(MGHEAP(theMG),MG_MARK_KEY(theMG));
-#define ReleaseTmpMem(p,k) Release(p, UG::FROM_TOP,k)
-  ReleaseTmpMem(grid.multigrid_->theHeap, grid.multigrid_->MarkKey);
-#undef ReleaseTmpMem
-  grid.multigrid_->MarkKey = 0;
+  grid.createend();
 
 }
 
@@ -1490,35 +1448,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
   std::cout << "amiraloadmesh: " << noOfCreatedElem << " elements created" << std::endl;
 
-  // set the subdomainIDs
-  AmiraMesh::Data* am_material_ids = am->findData("Triangles", HxBYTE, 1, "Materials");
-  if (!am_material_ids)
-    DUNE_THROW(IOError, "Field 'Materials' not found.");
-
-  i = 0;
-  UG2d::ELEMENT* theElement;
-  for (theElement=theMG->grids[0]->elements[0]; theElement!=NULL; theElement=theElement->ge.succ)
-  {
-
-    UG_NS<2>::SetSubdomain(theElement, 1);
-
-    i++;
-  }
-
   delete am;
 
-  UG2d::SetEdgeAndNodeSubdomainFromElements(theMG->grids[0]);
-
-  // Complete the UG-internal grid data structure
-  /** \todo Why is CreateAlgebra not in the proper namespace? */
-  if (CreateAlgebra(theMG) != UG2d::GM_OK)
-    DUNE_THROW(IOError, "Call of 'UG::CreateAlgebra' failed!");
-
-  /* here all temp memory since CreateMultiGrid is released */
-#define ReleaseTmpMem(p,k) Release(p, UG::FROM_TOP,k)
-  ReleaseTmpMem(theMG->theHeap, theMG->MarkKey);
-#undef ReleaseTmpMem
-  theMG->MarkKey = 0;
+  grid.createend();
 
 }
 
