@@ -15,6 +15,7 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
 
   switch (mydim)
   {
+  case 0 : return vertex;
   case 1 : return line;
   case 2 :
 #ifdef _2

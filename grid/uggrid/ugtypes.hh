@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_UGTYPES_HH__
-#define __DUNE_UGTYPES_HH__
+#ifndef DUNE_UGTYPES_HH
+#define DUNE_UGTYPES_HH
 
 /** \file
  * \brief Encapsulates a few types from UG
