@@ -1,3 +1,4 @@
+#! /bin/bash
 # $Id$
 # Process this file with autoconf to produce a configure script.
 AC_INIT(dune, 0.0, dune@hal.iwr.uni-heidelberg.de)
@@ -49,23 +50,33 @@ AC_PROG_LN_S
 if test x"$LN_S" == x"ln -s" ; then
   # Symlinks possible!
 
+  # Note: we are currently in the build directory which may be != the
+  # source directory
+
   # does a file already exist?
   if test -e dune ; then
     # exists: is a symlink?
     if test -L dune ; then
-      if test -e dune/grid/common/grid.hh ; then
+      if test -r dune/grid/common/grid.hh ; then
         # suppose that the link is ok and use it
-        AM_CPPFLAGS='-I$(top_srcdir)';
+        AM_CPPFLAGS='-I$(top_builddir)';
       else
         AC_MSG_ERROR([Symlink 'dune' exists but appears to be wrong! Please remove it manually])
       fi
     fi
   else
     echo Creating dune-symlink...
-    # set symlink
-    ln -s . dune ;
+    # set symlink in build directory to sources
+    ln -s $srcdir dune
+
+    # sanity check
+    if test -r dune/grid/common/grid.hh ; then
+      AM_CPPFLAGS='-I$(top_builddir)';
+    else
+      AC_MSG_ERROR([Sanity check for symlink failed! Please send a bugreport to dune@hal.iwr.uni-heidelberg.de])
+    fi
     # set proper include-path
-    AM_CPPFLAGS='-I$(top_srcdir)';
+    AM_CPPFLAGS='-I$(top_builddir)';
   fi
 else
   # no symlinks possible... check name of directory

@@ -1,8 +1,11 @@
 # $Id$
 
 commondir = $(includedir)/dune/grid/common
-common_HEADERS = grid.cc defaultindexsets.hh grid.hh indexstack.hh \
-  leafindexset.hh refinement.hh virtualrefinement.hh virtualrefinement.cc
+common_HEADERS = grid.cc virtualrefinement.cc boundary.hh \
+  defaultindexsets.hh entity.hh entitypointer.hh geometry.hh grid.hh \
+  hierarchiciterator.hh indexstack.hh intersectioniterator.hh \
+  leafindexset.hh leafiterator.hh leveliterator.hh refinement.hh \
+  virtualrefinement.hh
 
 SUBDIRS = refinement
 

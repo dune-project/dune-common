@@ -9,3 +9,6 @@ SUBDIRS = common fem grid operator quadrature solver lib istl doc bin m4 am
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = dune.pc
 
+# use configured compiler for "make distcheck"
+# doxygen is difficult to convince to build in a special directory...
+DISTCHECK_CONFIGURE_FLAGS = CXX="$(CXX)" CC="$(CC)" DOXYGEN="true"
