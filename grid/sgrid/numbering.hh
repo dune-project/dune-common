@@ -12,16 +12,16 @@ namespace Dune {
   class LexOrder {
   public:
     //! preprocess ordering
-    void init (FixedArray<int, dim>& _NN);
+    void init (const FixedArray<int, dim>& _NN);
 
     //! get total number of tupels
-    int tupels ();
+    int tupels () const;
 
     //! compute number from a given tupel
-    int n (FixedArray<int,dim>& z);
+    int n (const FixedArray<int,dim>& z) const;
 
     //! compute tupel from number 0 <= n < tupels()
-    FixedArray<int,dim> z (int n);
+    FixedArray<int,dim> z (int n) const;
 
   private:
     FixedArray<int,dim> N; // number of elements per direction
@@ -33,19 +33,19 @@ namespace Dune {
   class JoinOrder {
   public:
     //! preprocess ordering
-    void init (FixedArray<int,dim>& _NN);
+    void init (const FixedArray<int,dim>& _NN);
 
     //! get total number of elements in all sets
-    int size ();
+    int size () const;
 
     //! compute number from subset and index
-    int n (int subset, int index);
+    int n (int subset, int index) const;
 
     //! compute subset from number
-    int subset (int n);
+    int subset (int n) const;
 
     //! compute index in subset from number
-    int index (int n);
+    int index (int n) const;
 
   private:
     FixedArray<int,dim> N;       // number of elements per direction
@@ -79,39 +79,39 @@ namespace Dune {
   class CubeMapper {
   public:
     //! construct with number of elements (of codim 0) in each direction
-    CubeMapper (FixedArray<int,dim> _NN);
+    CubeMapper (const FixedArray<int,dim>& _NN);
 
     //! make cube of single element
     CubeMapper ();
 
     //! (re)initialize with number of elements (of codim 0) in each direction
-    void make (FixedArray<int,dim>& _NN);
+    void make (const FixedArray<int,dim>& _NN);
 
     //! get number of elements in each codimension
     int elements (int codim) const;
 
     //! compute codim from coordinate
-    int codim (FixedArray<int,dim>& z);
+    int codim (const FixedArray<int,dim>& z) const;
 
     /*! compute number from coordinate 0 <= n < elements(codim(z))
          general implementation is O(2^dim)
      */
-    int n (FixedArray<int,dim>& z);
+    int n (const FixedArray<int,dim>& z) const;
 
     //! compute coordinates from number and codimension
-    FixedArray<int,dim> z (int i, int codim);
+    FixedArray<int,dim> z (int i, int codim) const;
 
     //! compress from expanded coordinates to grid for a single partition number
-    FixedArray<int,dim> compress (FixedArray<int,dim>& z);
+    FixedArray<int,dim> compress (const FixedArray<int,dim>& z) const;
 
     //! expand with respect to partition number
-    FixedArray<int,dim> expand (FixedArray<int,dim>& r, int b);
+    FixedArray<int,dim> expand (const FixedArray<int,dim>& r, int b) const;
 
     //! There are \f$2^d\f$ possibilities of having even/odd coordinates. The binary representation is called partition number
-    int partition (FixedArray<int,dim>& z);
+    int partition (const FixedArray<int,dim>& z) const;
 
     //! print internal data
-    void print (std::ostream& ss, int indent);
+    void print (std::ostream& ss, int indent) const;
 
   private:
     FixedArray<int,dim> N;     // number of elements per direction
@@ -121,8 +121,8 @@ namespace Dune {
     LexOrder<dim> lex[1<<dim];         // lex ordering within binary partition
     JoinOrder<1<<dim> join[dim+1];     // join subsets of codimension
 
-    int power2 (int i) {return 1<<i;}
-    int ones (int b);     // count number of bits set in binary rep of b
+    int power2 (int i) const {return 1<<i;}
+    int ones (int b) const;     // count number of bits set in binary rep of b
   };
 
 } // end namespace

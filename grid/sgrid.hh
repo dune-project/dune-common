@@ -9,6 +9,8 @@
 #include "common/grid.hh"
 #include "sgrid/numbering.hh"
 
+#include <limits>
+
 /*! \file sgrid.hh
    This file documents the DUNE grid interface. We use the special implementation for
    simple structured grid to illustrate the different classes and their members.
@@ -30,7 +32,7 @@ namespace Dune {
 
           Short description of the classes:
 
-          - SElement is a class template providing the geometric part of a grid entity, i.e. a general polyhedron
+          - SGeometry is a class template providing the geometric part of a grid entity, i.e. a general polyhedron
           with a mapping from a reference polyhedron to the actual polyhedron.
 
           - SLevelIterator is a class template which allows to iterate over all grid entities of a given
@@ -39,8 +41,8 @@ namespace Dune {
           - SEntity is a class template realizing the grid entities. Grid entities are the constituents
           of a grid. Grid entities of codimension 0 and codimension dim are defines through specialization.
           Entities can be used as template parameters to generic algorithms. Each entity must therefore
-          provide the nested classes Element, LevelIterator, HierarchicIterator and IntersectionIterator.
-          Element and LevelIterator are derived from the classes SELement and SLevelIterator.
+          provide the nested classes Geometry, LevelIterator, HierarchicIterator and IntersectionIterator.
+          Geometry and LevelIterator are derived from the classes SELement and SLevelIterator.
           Note that entities of codimension 0 and dim have an extended interface.
 
           - SEntity::IntersectionIterator provides access to all entities of codimension 0 sharing an object of codimension 1
@@ -65,16 +67,16 @@ namespace Dune {
   //************************************************************************
   // forward declaration of templates
 
-  template<int dim, int dimworld> class SElement;
-  template<int codim, int dim, int dimworld> class SEntity;
-  template<int codim, int dim, int dimworld, PartitionIteratorType> class SLevelIterator;
+  template<int dim, int dimworld, class GridImp> class SGeometry;
+  template<int codim, int dim, class GridImp> class SEntity;
+  template<int codim, PartitionIteratorType, class GridImp> class SLevelIterator;
   template<int dim, int dimworld> class SGrid;
-  template<int dim, int dimworld> class SIntersectionIterator;
-  template<int dim, int dimworld> class SHierarchicIterator;
+  template<class GridImp> class SIntersectionIterator;
+  template<class GridImp> class SHierarchicIterator;
 
   //************************************************************************
   /*!
-     SElement realizes the concept of the geometric part of a mesh entity.
+     SGeometry realizes the concept of the geometric part of a mesh entity.
 
      The geometric part of a mesh entity is a \f$d\f$-dimensional object in \f$\mathbf{R}^w\f$
      where \f$d\f$ corresponds the template parameter dim and \f$w\f$ corresponds to the
@@ -103,37 +105,37 @@ namespace Dune {
 
      The resulting system is diagonal since the direction vectors are required to be orthogonal.
    */
-  template<int dim, int dimworld>
-  class SElement : public ElementDefault<dim,dimworld,sgrid_ctype,SElement>
+  template<int mydim, int cdim, class GridImp>
+  class SGeometry : public GeometryDefault<mydim,cdim,GridImp,SGeometry>
   {
   public:
     //! define type used for coordinates in grid module
     typedef sgrid_ctype ctype;
 
     //! return the element type identifier
-    ElementType type ();
+    GeometryType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
+    int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    FieldVector<sgrid_ctype, dimworld>& operator[] (int i);
+    const FieldVector<sgrid_ctype, cdim>& operator[] (int i) const;
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned. A reference to a reference
        element is returned. Usually, the implementation will store the finite
        set of reference elements as global variables.
      */
-    static SElement<dim,dim>& refelem ();
+    static const Dune::Geometry<mydim,mydim,GridImp,Dune::SGeometry>& refelem ();
 
     //! maps a local coordinate within reference element to global coordinate in element
-    FieldVector<sgrid_ctype, dimworld> global (const FieldVector<sgrid_ctype, dim>& local);
+    FieldVector<sgrid_ctype, cdim> global (const FieldVector<sgrid_ctype, mydim>& local) const;
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    FieldVector<sgrid_ctype, dim> local (const FieldVector<sgrid_ctype, dimworld>& global);
+    FieldVector<sgrid_ctype, mydim> local (const FieldVector<sgrid_ctype, cdim>& global) const;
 
     //! returns true if the point in local coordinates is located within the refelem
-    bool checkInside (const FieldVector<sgrid_ctype, dim>& local);
+    bool checkInside (const FieldVector<sgrid_ctype, mydim>& local) const;
 
     /*! Integration over a general element is done by integrating over the reference element
        and using the transformation from the reference element to the global element as follows:
@@ -154,254 +156,117 @@ namespace Dune {
        will directly translate in substantial savings in the computation of finite element
        stiffness matrices.
      */
-    sgrid_ctype integration_element (const FieldVector<sgrid_ctype, dim>& local);
+    sgrid_ctype integrationElement (const FieldVector<sgrid_ctype, mydim>& local) const;
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim,sgrid_ctype>& Jacobian_inverse (const FieldVector<sgrid_ctype, dim>& local);
+    const Mat<mydim,mydim,sgrid_ctype>& jacobianInverse (const FieldVector<sgrid_ctype, mydim>& local) const;
 
     //! print internal data
-    void print (std::ostream& ss, int indent);
+    void print (std::ostream& ss, int indent) const;
 
     /*! The first dim columns of As contain the dim direction vectors.
-        Column dim is the position vector. This format allows a consistent
-            treatement of all dimensions, including 0 (the vertex).
+       Column dim is the position vector. This format allows a consistent
+       treatement of all dimensions, including 0 (the vertex).
      */
-    void make (Mat<dimworld,dim+1,sgrid_ctype>& __As);
+    void make (Mat<cdim,mydim+1,sgrid_ctype>& __As);
 
     //! constructor with bool argument makes reference element if true, uninitialized else
-    SElement (bool b);
+    SGeometry (bool b);
 
   private:
-    FieldVector<sgrid_ctype, dimworld> s;             //!< position of element
-    Mat<dimworld,dim,sgrid_ctype> A;         //!< direction vectors as matrix
-    FieldVector<sgrid_ctype, dimworld> c[1<<dim];     //!< coordinate vectors of corners
-    Mat<dim,dim,sgrid_ctype> Jinv;           //!< storage for inverse of jacobian
-    bool builtinverse;
+    FieldVector<sgrid_ctype, cdim> s;             //!< position of element
+    Mat<cdim,mydim,sgrid_ctype> A;         //!< direction vectors as matrix
+    FixedArray<FieldVector<sgrid_ctype, cdim>, 1<<mydim> c;     //!< coordinate vectors of corners
+    mutable Mat<mydim,mydim,sgrid_ctype> Jinv;           //!< storage for inverse of jacobian
+    mutable bool builtinverse;
   };
 
   //! specialization for dim=0, this is a vertex
-  template<int dimworld>
-  class SElement<0,dimworld> : public ElementDefault <0,dimworld,sgrid_ctype,SElement>
+  template<int cdim, class GridImp>
+  class SGeometry<0,cdim,GridImp> : public GeometryDefault<0,cdim,GridImp,SGeometry>
   {
   public:
     //! define type used for coordinates in grid module
     typedef sgrid_ctype ctype;
 
     //! return the element type identifier
-    ElementType type ();
+    GeometryType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
+    int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    FieldVector<sgrid_ctype, dimworld>& operator[] (int i);
+    const FieldVector<sgrid_ctype, cdim>& operator[] (int i) const;
 
     //! print internal data
-    void print (std::ostream& ss, int indent);
+    void print (std::ostream& ss, int indent) const;
 
     //! constructor, makes element from position and direction vectors
-    void make (Mat<dimworld,1,sgrid_ctype>& __As);
+    void make (Mat<cdim,1,sgrid_ctype>& __As);
 
     //! constructor with bool argument makes reference element if true, uninitialized else
-    SElement (bool b);
+    SGeometry (bool b);
 
   protected:
-    FieldVector<sgrid_ctype, dimworld> s;             //!< position of element
+    FieldVector<sgrid_ctype, cdim> s;             //!< position of element
   };
 
-  template <int dim, int dimworld>
-  inline std::ostream& operator<< (std::ostream& s, SElement<dim,dimworld>& e)
+  template <int mydim, int cdim, class GridImp>
+  inline std::ostream& operator<< (std::ostream& s, SGeometry<mydim,cdim,GridImp>& e)
   {
     e.print(s,0);
     return s;
   }
 
-
-  template <int dim, int dimworld>
-  class SBoundaryEntity
-    : public BoundaryEntityDefault <dim,dimworld,sgrid_ctype,SElement,SBoundaryEntity>
+  template<int mydim, int cdim, class GridImp>
+  class SMakeableGeometry : public Geometry<mydim, cdim, GridImp, SGeometry>
   {
   public:
-    SBoundaryEntity() : elem_(true) {}
+    SMakeableGeometry() :
+      Geometry<mydim, cdim, GridImp, SGeometry>(SGeometry<mydim, cdim, GridImp>(false))
+    {};
+    void make (Mat<cdim,mydim+1,sgrid_ctype>& __As) { this->realGeometry.make(__As); }
+  };
+
+  template <class GridImp>
+  class SBoundaryEntity
+    : public BoundaryEntityDefault <GridImp,SBoundaryEntity>
+  {
+    enum { dim = GridImp::dimension };
+    enum { dimworld = GridImp::dimensionworld };
+  public:
+    typedef typename GridImp::template codim<0>::Geometry Geometry;
+
+    SBoundaryEntity() : elem_(SGeometry<dim,dimworld,const GridImp>(true)) {}
 
     //! return id of boundary segment
     int id () const { return -1; }
 
     //! return true if ghost cell was calced
-    bool hasGeometry () { return false; };
+    bool hasGeometry () const { return false; };
 
     //! return outer ghost cell
-    SElement<dim,dimworld> & geometry() { return elem_; };
+    Geometry & geometry() const { return elem_; };
 
     //! return outer barycenter of ghost cell
     FieldVector<sgrid_ctype, dimworld> & outerPoint () { return outerPoint_; };
   private:
     FieldVector<sgrid_ctype, dimworld> outerPoint_;
-    SElement<dim,dimworld> elem_;
+    Geometry elem_;
   };
-
-
-  //************************************************************************
-  /*! Mesh entities of codimension 0 ("elements") allow to visit all neighbors, where
-     a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the entity.
-     These neighbors are accessed via a IntersectionIterator. This allows the implementation of
-     non-matching meshes. The number of neigbors may be different from the number of faces/edges
-     of an element!
-   */
-  template<int dim, int dimworld>
-  class SIntersectionIterator : public IntersectionIteratorDefault <dim,dimworld,sgrid_ctype,SIntersectionIterator,SEntity,SElement,SBoundaryEntity>
-  {
-  public:
-    //! define type used for coordinates in grid module
-    typedef sgrid_ctype ctype;
-
-    //! prefix increment
-    SIntersectionIterator<dim,dimworld>& operator++();
-
-    //! equality
-    bool operator== (const SIntersectionIterator<dim,dimworld>& i) const;
-
-    //! inequality
-    bool operator!= (const SIntersectionIterator<dim,dimworld>& i) const;
-
-    //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
-    bool boundary ();
-
-    //! return true if neighbor on this level exists
-    bool neighbor ();
-
-    SBoundaryEntity<dim,dimworld> & boundaryEntity () { return boundaryElem_; };
-
-    //! access neighbor, dereferencing
-    SEntity<0,dim,dimworld>& operator*();
-
-    //! access neighbor, arrow
-    SEntity<0,dim,dimworld>* operator->();
-
-    //! return unit outer normal, this should be dependent on local coordinates for higher order boundary
-    FieldVector<sgrid_ctype, dimworld>& unit_outer_normal (FieldVector<sgrid_ctype, dim-1>& local);
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<sgrid_ctype, dimworld>& unit_outer_normal ();
-
-    /*! intersection of codimension 1 of this neighbor with element where iteration started.
-       Here returned element is in LOCAL coordinates of the element where iteration started.
-     */
-    SElement<dim-1,dim>& intersection_self_local ();
-
-    /*! intersection of codimension 1 of this neighbor with element where iteration started.
-       Here returned element is in GLOBAL coordinates of the element where iteration started.
-     */
-    SElement<dim-1,dimworld>& intersection_self_global ();
-
-    //! local number of codim 1 entity in self where intersection is contained in
-    int number_in_self ();
-
-    /*! intersection of codimension 1 of this neighbor with element where iteration started.
-       Here returned element is in LOCAL coordinates of neighbor
-     */
-    SElement<dim-1,dim>& intersection_neighbor_local ();
-
-    /*! intersection of codimension 1 of this neighbor with element where iteration started.
-       Here returned element is in LOCAL coordinates of neighbor
-     */
-    SElement<dim-1,dimworld>& intersection_neighbor_global ();
-
-    //! local number of codim 1 entity in neighbor where intersection is contained in
-    int number_in_neighbor ();
-
-    //! constructor
-    SIntersectionIterator (SGrid<dim,dimworld>* _grid, SEntity<0,dim,dimworld>& _self, int _count);
-    SIntersectionIterator ();
-
-    void make (SGrid<dim,dimworld>* _grid, SEntity<0,dim,dimworld>& _self, int _count);
-
-  private:
-    void make (int _count);                     //!< reinitialze iterator with given neighbor
-    void makeintersections ();                  //!< compute intersections
-    SGrid<dim,dimworld>* grid;                  //!< my grid
-  private:
-    SEntity<0,dim,dimworld>* self;              //!< myself, SEntity is a friend class
-    int partition;                              //!< partition number of self, needed for coordinate expansion
-    FixedArray<int,dim> zred;                        //!< reduced coordinates of myself, allows easy computation of neighbors
-    int count;                                  //!< number of neighbor
-    bool valid_count;                           //!< true if count is in range
-    bool is_on_boundary;                        //!< true if neighbor is otside the domain
-    SEntity<0,dim,dimworld> e;                  //!< virtual neighbor entity
-    FieldVector<sgrid_ctype, dimworld> normal;           //!< outer unit normal direction
-    bool built_intersections;                   //!< true if all intersections have been built
-    SElement<dim-1,dim> is_self_local;          //!< intersection in own local coordinates
-    SElement<dim-1,dimworld> is_global;         //!< intersection in global coordinates, map consistent with is_self_local
-    SElement<dim-1,dim> is_nb_local;            //!< intersection in neighbors local coordinates
-    SBoundaryEntity<dim,dimworld> boundaryElem_;     //!< BoundaryElement , to be revised
-  };
-
-
-  //************************************************************************
-  /*! Mesh entities of codimension 0 ("elements") allow to visit all entities of
-     codimension 0 obtained through nested, hierarchic refinement of the entity.
-     Iteration over this set of entities is provided by the HIerarchicIterator,
-     starting from a given entity.
-     This is redundant but important for memory efficient implementations of unstructured
-     hierarchically refined meshes.
-   */
-  template<int dim, int dimworld>
-  class SHierarchicIterator : public HierarchicIteratorDefault <dim,dimworld,sgrid_ctype,SHierarchicIterator,SEntity>
-  {
-  public:
-    //! define type used for coordinates in grid module
-    typedef sgrid_ctype ctype;
-
-    //! prefix increment
-    SHierarchicIterator<dim,dimworld>& operator++();
-
-    //! equality
-    bool operator== (const SHierarchicIterator<dim,dimworld>& i) const;
-
-    //! inequality
-    bool operator!= (const SHierarchicIterator<dim,dimworld>& i) const;
-
-    //! dereferencing
-    SEntity<0,dim,dimworld>& operator*();
-
-    //! arrow
-    SEntity<0,dim,dimworld>* operator->();
-
-    /*! constructor. Here is how it works: If with_sons is true, push start
-       element and all its sons on the stack, so the initial element is popped
-            last. For an end iterator, push the starting element and no sons. Then
-            the iteration will stop when both iterators have the same id AND the
-            stack is empty
-     */
-    SHierarchicIterator (SGrid<dim,dimworld>* _grid, SEntity<0,dim,dimworld>& _e, int _maxlevel, bool makeend);
-
-  private:
-    SGrid<dim,dimworld>* grid;       //!< my grid
-    SEntity<0,dim,dimworld> e;       //!< virtual son entity
-    int maxlevel;                    //!< maximum level of elements to be processed
-    int orig_l, orig_id;             //!< element where begin was called (the root of the tree to be processed)
-
-    struct StackElem {
-      int l;
-      int id;
-      StackElem (int _l, int _id) {l=_l; id=_id;}
-      bool operator== (const StackElem& s) const {return operator!=(s);}
-      bool operator!= (const StackElem& s) const {return l!=s.l || id!=s.id;}
-    };
-    Stack<StackElem> stack;          //!< stack holding elements to be processed
-
-    void push_sons (int level, int fatherid);     //!< push all sons of this element on the stack
-  };
-
-
 
   //************************************************************************
   /*! SEntityBase contains the part of SEntity that can be defined
      without specialization. This is the base for all SEntity classes with dim>0.
    */
-  template<int codim, int dim, int dimworld>
+
+  template<int codim, int dim, class GridImp>
   class SEntityBase {
+    friend class SIntersectionIterator<GridImp>;
+    enum { dimworld = GridImp::dimensionworld };
   public:
+    typedef typename GridImp::template codim<codim>::Geometry Geometry;
+    typedef SMakeableGeometry<dim-codim, dimworld, const GridImp> MakeableGeometry;
     //! level of this element
     int level () const;
 
@@ -409,27 +274,27 @@ namespace Dune {
     int index () const;
 
     //! global index is calculated from the index and grid size
-    int global_index() const;
+    int globalIndex() const;
 
     //! geometry of this entity
-    SElement<dim-codim,dimworld>& geometry ();
+    const Geometry& geometry () const;
 
     //! constructor
-    SEntityBase (SGrid<dim,dimworld>* _grid, int _l, int _id);
+    SEntityBase (GridImp* _grid, int _l, int _id);
     SEntityBase ();
-    void make (SGrid<dim,dimworld>* _grid, int _l, int _id);
+    void make (GridImp* _grid, int _l, int _id);
 
     //! Reinitialization
     void make (int _l, int _id);
 
   protected:
     // this is how we implement our elements
-    SGrid<dim,dimworld>* grid;            //!< grid containes mapper, geometry, etc.
-    int l;                                //!< level where element is on
-    int id;                               //!< my consecutive id
-    FixedArray<int,dim> z;                     //!< my coordinate, number of even components = codim
-    SElement<dim-codim,dimworld> geo;     //!< geometry, is only built on demand
-    bool builtgeometry;                   //!< true if geometry has been constructed
+    GridImp* grid;      //!< grid containes mapper, geometry, etc.
+    int l;                          //!< level where element is on
+    int id;                         //!< my consecutive id
+    FixedArray<int,dim> z;               //!< my coordinate, number of even components = codim
+    mutable MakeableGeometry geo; //!< geometry, is only built on demand
+    mutable bool builtgeometry;             //!< true if geometry has been constructed
   };
 
 
@@ -439,31 +304,30 @@ namespace Dune {
 
      Here: the general template
    */
-  template<int codim, int dim, int dimworld>
-  class SEntity : public SEntityBase<codim,dim,dimworld>,
-                  public EntityDefault <codim,dim,dimworld,sgrid_ctype,SEntity,SElement,
-                      SLevelIterator,SIntersectionIterator,SHierarchicIterator>
+  template<int codim, int dim, class GridImp>
+  class SEntity : public SEntityBase<codim,dim,GridImp>,
+                  public EntityDefault<codim,dim,GridImp,SEntity>
   {
+    enum { dimworld = GridImp::dimensionworld };
   public:
-    //! define type used for coordinates in grid module
-    typedef sgrid_ctype ctype;
+    typedef typename GridImp::template codim<codim>::Geometry Geometry;
+    typedef typename GridImp::template codim<codim>::LevelIterator LevelIterator;
+    typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
 
     // disambiguate member functions with the same name in both bases
     //! level of this element
-    int level () const {return SEntityBase<codim,dim,dimworld>::level();}
+    int level () const {return SEntityBase<codim,dim,GridImp>::level();}
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
-    int index () const {return SEntityBase<codim,dim,dimworld>::index();}
-
+    int index () const {return SEntityBase<codim,dim,GridImp>::index();}
     //! geometry of this entity
-    SElement<dim-codim,dimworld>& geometry () {return SEntityBase<codim,dim,dimworld>::geometry();}
+    const Geometry& geometry () const { return SEntityBase<codim,dim,GridImp>::geometry(); }
 
     // specific to SEntity
     //! constructor
-    SEntity (SGrid<dim,dimworld>* _grid, int _l, int _id) : SEntityBase<codim,dim,dimworld>::SEntityBase(_grid,_l,_id) {};
+    SEntity (GridImp* _grid, int _l, int _id) : SEntityBase<codim,dim,GridImp>::SEntityBase(_grid,_l,_id) {};
   };
-
-
 
   /*!
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
@@ -483,67 +347,70 @@ namespace Dune {
   static FixedArray <int,2> zentityGlob;
 
   /** \todo Please doc me! */
-  template<int dim, int dimworld>
-  class SEntity<0,dim,dimworld> : public SEntityBase<0,dim,dimworld>,
-                                  public EntityDefault <0,dim,dimworld,sgrid_ctype,SEntity,SElement,
-                                      SLevelIterator,SIntersectionIterator,SHierarchicIterator>
+  template<int dim, class GridImp>
+  class SEntity<0,dim,GridImp> : public SEntityBase<0,dim,GridImp>,
+                                 public EntityDefault<0,dim,GridImp,SEntity>
   {
+    enum { dimworld = GridImp::dimensionworld };
   public:
+    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef SMakeableGeometry<dim, dimworld, const GridImp> MakeableGeometry;
+    template <int cd>
+    struct codim
+    {
+      typedef typename GridImp::template codim<cd>::LevelIterator LevelIterator;
+    };
+    typedef typename GridImp::template codim<0>::LevelIterator LevelIterator;
+    typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
+
     //! make HierarchicIterator a friend
-    friend class SIntersectionIterator<dim,dimworld>;
-
-    //! make IntersectionIterator a friend
-    friend class SHierarchicIterator<dim,dimworld>;
-
-    //! define type used for coordinates in grid module
-    typedef sgrid_ctype ctype;
+    friend class SHierarchicIterator<GridImp>;
 
     // disambiguate member functions with the same name in both bases
     //! level of this element
-    int level () const {return SEntityBase<0,dim,dimworld>::level();}
+    int level () const {return SEntityBase<0,dim,GridImp>::level();}
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
-    int index () const {return SEntityBase<0,dim,dimworld>::index();}
+    int index () const {return SEntityBase<0,dim,GridImp>::index();}
 
     //! only interior entities
-    PartitionType partition_type () { return InteriorEntity; }
+    PartitionType partitionType () const { return InteriorEntity; }
 
     //! geometry of this entity
-    SElement<dim,dimworld>& geometry () {return SEntityBase<0,dim,dimworld>::geometry();}
+    const Geometry& geometry () const {return SEntityBase<0,dim,GridImp>::geometry();}
 
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
      */
-    template<int cc> int count ();
+    template<int cc> int count () const;
 
     /*! Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
      */
-    template<int cc> SLevelIterator<cc,dim,dimworld,All_Partition> entity (int i);     // 0 <= i < count()
+    template<int cc> const typename codim<cc>::LevelIterator entity (int i) const;
 
     //! return global index of entity<cc> number i
-    template <int cc> int subIndex ( int i );
+    template <int cc> int subIndex ( int i ) const;
 
-    /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
+    /*! Intra-level access to intersections with neighboring elements.
+       A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor.
      */
-    SIntersectionIterator<dim,dimworld> ibegin ();
-    void ibegin (SIntersectionIterator<dim,dimworld>&);
-
-    //! Reference to one past the last neighbor
-    SIntersectionIterator<dim,dimworld> iend ();
-    void iend (SIntersectionIterator<dim,dimworld>&);
+    IntersectionIterator ibegin () const;
+    //! Reference to one past the last intersection
+    IntersectionIterator iend () const;
 
     //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
-    SLevelIterator<0,dim,dimworld,All_Partition> father ();
-    //! Inter-level access to father element on coarser grid.
-    //! Assumes that meshes are nested.
-    void father (SEntity<0,dim,dimworld> & pa);
+    const LevelIterator father () const;
 
-    //! return true if the entity has children
-    bool hasChildren ();
+    //! return true if the entity is leaf
+    bool isLeaf ()
+    {
+      return ( this->grid->maxlevel() == level() );
+    }
 
     /*! Location of this element relative to the reference element element of the father.
        This is sufficient to interpolate all dofs in conforming case.
@@ -554,51 +421,49 @@ namespace Dune {
        implementation of numerical algorithms is only done for simple discretizations.
        Assumes that meshes are nested.
      */
-    SElement<dim,dim>& father_relative_local ();
+    const Geometry& geometryInFather () const;
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
      */
-    SHierarchicIterator<dim,dimworld> hbegin (int maxlevel);
+    HierarchicIterator hbegin (int maxlevel) const;
 
     //! Returns iterator to one past the last son
-    SHierarchicIterator<dim,dimworld> hend (int maxlevel);
+    HierarchicIterator hend (int maxlevel) const;
 
     // members specific to SEntity
     //! constructor
-    SEntity (SGrid<dim,dimworld>* _grid, int _l, int _id) :
-      SEntityBase<0,dim,dimworld>::SEntityBase(_grid,_l,_id) , in_father_local(false)
+    SEntity (GridImp* _grid, int _l, int _id) :
+      SEntityBase<0,dim,GridImp>::SEntityBase(_grid,_l,_id)
     {
       built_father = false;
     }
 
-    SEntity () : in_father_local(false)
+    SEntity ()
     {
       built_father = false;
     }
 
-    void make (SGrid<dim,dimworld>* _grid, int _l, int _id)
+    void make (GridImp* _grid, int _l, int _id)
     {
-      SEntityBase<0,dim,dimworld>::make(_grid,_l,_id);
+      SEntityBase<0,dim,GridImp>::make(_grid,_l,_id);
       built_father = false;
     }
 
     //! Reinitialization
     void make (int _l, int _id)
     {
-      SEntityBase<0,dim,dimworld>::make(_l,_id);
+      SEntityBase<0,dim,GridImp>::make(_l,_id);
       built_father = false;
     }
 
   private:
-    bool built_father;
-    int father_id;
-    SElement<dim,dim> in_father_local;
-    void make_father();
+    mutable bool built_father;
+    mutable int father_id;
+    mutable MakeableGeometry in_father_local;
+    void make_father() const;
   };
-
-
 
   /*!
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
@@ -607,37 +472,40 @@ namespace Dune {
      Entities of codimension=dimension ("vertices") are defined through template specialization. Note
      that this specialization has an extended interface compared to the general case
    */
-  template<int dim, int dimworld>
-  class SEntity<dim,dim,dimworld> : public SEntityBase<dim,dim,dimworld>,
-                                    public EntityDefault <dim,dim,dimworld,sgrid_ctype,SEntity,SElement,
-                                        SLevelIterator,SIntersectionIterator,SHierarchicIterator>
+  template<int dim, class GridImp>
+  class SEntity<dim,dim,GridImp> : public SEntityBase<dim,dim,GridImp>,
+                                   public EntityDefault <dim,dim,GridImp,SEntity>
   {
+    enum { dimworld = GridImp::dimensionworld };
   public:
+    typedef typename GridImp::template codim<dim>::Geometry Geometry;
+    typedef typename GridImp::template codim<0>::LevelIterator LevelIterator;
+
     // disambiguate member functions with the same name in both bases
     //! level of this element
-    int level () const {return SEntityBase<dim,dim,dimworld>::level();}
+    int level () const {return SEntityBase<dim,dim,GridImp>::level();}
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
-    int index () const {return SEntityBase<dim,dim,dimworld>::index();}
+    int index () const {return SEntityBase<dim,dim,GridImp>::index();}
 
     //! only interior entities
-    PartitionType partition_type () { return InteriorEntity; }
+    PartitionType partitionType () const { return InteriorEntity; }
 
     //! geometry of this entity
-    SElement<0,dimworld>& geometry () {return SEntityBase<dim,dim,dimworld>::geometry();}
+    const Geometry& geometry () const {return SEntityBase<dim,dim,GridImp>::geometry();}
 
     /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    SLevelIterator<0,dim,dimworld,All_Partition> father ();
+    const LevelIterator ownersFather () const;
 
     //! local coordinates within father
-    FieldVector<sgrid_ctype, dim>& local ();
+    FieldVector<sgrid_ctype, dim>& positionInOwnersFather () const;
 
     // members specific to SEntity
     //! constructor
-    SEntity (SGrid<dim,dimworld>* _grid, int _l, int _id) : SEntityBase<dim,dim,dimworld>::SEntityBase(_grid,_l,_id)
+    SEntity (GridImp* _grid, int _l, int _id) : SEntityBase<dim,dim,GridImp>::SEntityBase(_grid,_l,_id)
     {
       built_father = false;
     }
@@ -645,51 +513,214 @@ namespace Dune {
     //! Reinitialization
     void make (int _l, int _id)
     {
-      SEntityBase<dim,dim,dimworld>::make(_l,_id);
+      SEntityBase<dim,dim,GridImp>::make(_l,_id);
       built_father = false;
     }
 
   private:
-    bool built_father;
-    int father_id;
-    FieldVector<sgrid_ctype, dim> in_father_local;
-    void make_father();
+    mutable bool built_father;
+    mutable int father_id;
+    mutable FieldVector<sgrid_ctype, dim> in_father_local;
+    void make_father() const;
+  };
+
+  template<int codim, int dim, class GridImp>
+  class SMakeableEntity :
+    public GridImp::template codim<codim>::Entity
+  {
+  public:
+    SMakeableEntity(GridImp* _grid, int _l, int _id) :
+      GridImp::template codim<codim>::Entity (SEntity<codim, dim, GridImp>(_grid,_l,_id))
+    {};
+    SMakeableEntity(const SEntity<codim, dim, GridImp>& e) :
+      GridImp::template codim<codim>::Entity (e)
+    {};
+    void make (int _l, int _id) { this->realEntity.make(_l, _id); }
+  };
+
+  //************************************************************************
+  /*! Mesh entities of codimension 0 ("elements") allow to visit all entities of
+     codimension 0 obtained through nested, hierarchic refinement of the entity.
+     Iteration over this set of entities is provided by the HIerarchicIterator,
+     starting from a given entity.
+     This is redundant but important for memory efficient implementations of unstructured
+     hierarchically refined meshes.
+   */
+  struct SHierarchicStackElem {
+    int l;
+    int id;
+    SHierarchicStackElem () : l(-1), id(-1) {}
+    SHierarchicStackElem (int _l, int _id) {l=_l; id=_id;}
+    bool operator== (const SHierarchicStackElem& s) const {return !operator!=(s);}
+    bool operator!= (const SHierarchicStackElem& s) const {return l!=s.l || id!=s.id;}
+  };
+
+  template<class GridImp>
+  class SHierarchicIterator :
+    public HierarchicIteratorDefault <GridImp,SHierarchicIterator>
+  {
+    friend class SHierarchicIterator<const GridImp>;
+    enum { dim = GridImp::dimension };
+    enum { dimworld = GridImp::dimensionworld };
+  public:
+    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::ctype ctype;
+
+    //! increment
+    void increment();
+
+    //! equality
+    bool equals (const SHierarchicIterator<GridImp>& i) const;
+
+    //! dereferencing
+    Entity& dereference() const;
+
+    /*! constructor. Here is how it works: If with_sons is true, push start
+       element and all its sons on the stack, so the initial element is popped
+       last. For an end iterator, push the starting element and no sons. Then
+       the iteration will stop when both iterators have the same id AND the
+       stack is empty
+     */
+    SHierarchicIterator (GridImp* _grid, const SEntity<0,GridImp::dimension,GridImp>& _e, int _maxlevel, bool makeend);
+
+    const SHierarchicIterator<GridImp>&
+    operator = (const SHierarchicIterator<GridImp>& i)
+    {
+      if (grid != i.grid)
+        DUNE_THROW(GridError, "Iterator can't change grid");
+      e = i.e;
+      maxlevel = i.maxlevel;
+      orig_l = i.orig_l;
+      orig_id = i.orig_id;
+      stack = i.stack;
+      return *this;
+    }
+
+  private:
+    GridImp* const grid; //!< my grid
+    mutable SMakeableEntity<0,dim,GridImp> e;            //!< virtual son entity
+    int maxlevel;              //!< maximum level of elements to be processed
+    int orig_l, orig_id;       //!< element where begin was called (the root of the tree to be processed)
+
+    FiniteStack<SHierarchicStackElem,GridImp::MAXL> stack;    //!< stack holding elements to be processed
+
+    void push_sons (int level, int fatherid); //!< push all sons of this element on the stack
+  };
+
+  //************************************************************************
+  /*! Mesh entities of codimension 0 ("elements") allow to visit all neighbors, where
+     a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the entity.
+     These neighbors are accessed via a IntersectionIterator. This allows the implementation of
+     non-matching meshes. The number of neigbors may be different from the number of faces/edges
+     of an element!
+   */
+  template<class GridImp>
+  class SIntersectionIterator : public IntersectionIteratorDefault <GridImp,SIntersectionIterator>
+  {
+    enum { dim=GridImp::dimension };
+    enum { dimworld=GridImp::dimensionworld };
+  public:
+    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template codim<0>::BoundaryEntity BoundaryEntity;
+    typedef typename GridImp::template codim<1>::Geometry Geometry;
+    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
+    //! know your own dimension
+    enum { dimension=dim };
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+    //! define type used for coordinates in grid module
+    typedef typename GridImp::ctype ctype;
+
+    //! increment
+    void increment();
+    //! equality
+    bool equals (const SIntersectionIterator<GridImp>& i) const;
+    //! access neighbor, dereferencing
+    Entity& dereference() const;
+
+    //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
+    bool boundary () const;
+    const BoundaryEntity & boundaryEntity () const { return boundaryEntity_; };
+    //! return true if neighbor on this level exists
+    bool neighbor () const;
+
+    //! return outer normal
+    FieldVector<ctype, GridImp::dimensionworld> outerNormal (FieldVector<ctype, GridImp::dimension-1>& local) const
+    {
+      return unitOuterNormal(local);
+    }
+    //! return unit outer normal
+    FieldVector<ctype, GridImp::dimensionworld> unitOuterNormal (FieldVector<ctype, GridImp::dimension-1>& local) const;
+
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+       Here returned element is in LOCAL coordinates of the element where iteration started.
+     */
+    LocalGeometry& intersectionSelfLocal () const;
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+       Here returned element is in LOCAL coordinates of neighbor
+     */
+    LocalGeometry& intersectionNeighborLocal () const;
+    /*! intersection of codimension 1 of this neighbor with element where iteration started.
+       Here returned element is in GLOBAL coordinates of the element where iteration started.
+     */
+    Geometry& intersectionGlobal () const;
+    //! local number of codim 1 entity in self where intersection is contained in
+    int numberInSelf () const;
+    //! local number of codim 1 entity in neighbor where intersection is contained in
+    int numberInNeighbor () const;
+
+    //! constructor
+    SIntersectionIterator (GridImp* _grid, const SEntity<0,dim,GridImp >* _self, int _count);
+    SIntersectionIterator () {};
+
+  private:
+    void make (int _count) const;               //!< reinitialze iterator with given neighbor
+    void makeintersections () const;            //!< compute intersections
+    GridImp* grid;                              //!< my grid
+    const SEntity<0,dim,GridImp >* self;        //!< myself, SEntity is a friend class
+    const int partition;                        //!< partition number of self, needed for coordinate expansion
+    const FixedArray<int,dim> zred;               //!< reduced coordinates of myself, allows easy computation of neighbors
+    mutable int count;                            //!< number of neighbor
+    mutable bool valid_count;                     //!< true if count is in range
+    mutable bool is_on_boundary;                  //!< true if neighbor is otside the domain
+    mutable SMakeableEntity<0,dim,GridImp> e;           //!< virtual neighbor entity
+    mutable bool built_intersections;             //!< true if all intersections have been built
+    mutable SMakeableGeometry<dim-1,dim,const GridImp> is_self_local;    //!< intersection in own local coordinates
+    mutable SMakeableGeometry<dim-1,dimworld,const GridImp> is_global;   //!< intersection in global coordinates, map consistent with is_self_local
+    mutable SMakeableGeometry<dim-1,dim,const GridImp> is_nb_local;      //!< intersection in neighbors local coordinates
+    const SBoundaryEntity<GridImp> boundaryEntity_; //!< BoundaryEntity , to be annihilated
   };
 
   //************************************************************************
 
   /*! Enables iteration over all entities of a given codimension and level of a grid.
    */
-  template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
-  class SLevelIterator : public LevelIteratorDefault <codim,dim,dimworld,pitype,sgrid_ctype,SLevelIterator,SEntity>
+  template<int codim, PartitionIteratorType pitype, class GridImp>
+  class SLevelIterator : public LevelIteratorDefault <codim,pitype,GridImp,SLevelIterator>
   {
+    friend class SLevelIterator<codim, pitype,const GridImp>;
+    enum { dim = GridImp::dimension };
   public:
-    //! prefix increment
-    SLevelIterator<codim,dim,dimworld,pitype>& operator++();
+    typedef typename GridImp::template codim<codim>::Entity Entity;
 
+    //! increment
+    void increment();
     //! equality
-    bool operator== (const SLevelIterator<codim,dim,dimworld,pitype>& i) const;
-
-    //! inequality
-    bool operator!= (const SLevelIterator<codim,dim,dimworld,pitype>& i) const;
-
+    bool equals(const SLevelIterator<codim,pitype,GridImp>& i) const;
     //! dereferencing
-    SEntity<codim,dim,dimworld>& operator*() ;
-
-    //! arrow
-    SEntity<codim,dim,dimworld>* operator->() ;
-
+    Entity& dereference() const;
     //! ask for level of entity
-    int level ();
+    int level () const;
 
     //! constructor
-    SLevelIterator (SGrid<dim,dimworld>* _grid, int _l, int _id);
+    SLevelIterator (GridImp * _grid, int _l, int _id) :
+      grid(_grid), l(_l), id(_id), e(_grid,_l,_id) {}
 
   private:
-    SGrid<dim,dimworld>* grid;         //!< my grid
-    int l;                             //!< level where element is on
-    int id;                            //!< my consecutive id
-    SEntity<codim,dim,dimworld> e;     //!< virtual entity
+    GridImp* grid;               //!< my grid
+    int l;                       //!< level where element is on
+    mutable int id;                      //!< my consecutive id
+    mutable SMakeableEntity<codim,dim,GridImp> e; //!< virtual entity
   };
 
   //************************************************************************
@@ -706,9 +737,12 @@ namespace Dune {
      data structures (which are not part of this module).
    */
   template<int dim, int dimworld>
-  class SGrid : public GridDefault <dim,dimworld,sgrid_ctype,SGrid,SLevelIterator,SEntity>
+  class SGrid : public GridDefault <dim,dimworld,sgrid_ctype,SGrid>
   {
   public:
+    typedef GridTraits<dim,dimworld,Dune::SGrid,SGeometry,SEntity,
+        SBoundaryEntity,SLevelIterator,SIntersectionIterator,SHierarchicIterator> Traits;
+
     //! maximum number of levels allowed
     enum { MAXL=32 };
 
@@ -719,32 +753,27 @@ namespace Dune {
           0 ... maxlevel with 0 the coarsest level.   */
     int maxlevel() const;
 
-    //! LeafIterator is the same as LevelIterator with codim = 0
-    typedef SLevelIterator<0,dim,dimworld,All_Partition> LeafIterator;
-
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
-    SLevelIterator<cd,dim,dimworld,pitype> lbegin (int level);
+    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator lbegin (int level) const;
 
     //! one past the end on this level
     template<int cd, PartitionIteratorType pitype>
-    SLevelIterator<cd,dim,dimworld,pitype> lend (int level);
+    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator lend (int level) const;
 
     //! Iterator to first entity of given codim on level
     template<int cd>
-    SLevelIterator<cd,dim,dimworld,All_Partition> lbegin (int level);
+    typename Traits::template codim<cd>::template partition<All_Partition>::LevelIterator lbegin (int level) const
+    {
+      return lbegin<cd,All_Partition>(level);
+    }
 
     //! one past the end on this level
     template<int cd>
-    SLevelIterator<cd,dim,dimworld,All_Partition> lend (int level);
-
-    //! Iterator to first entity of given codim on level
-    //! LeafIterator and LevelIterator are the same for this grid
-    LeafIterator leafbegin (int level);
-
-    //! one past the end on this level
-    //! LeafIterator and LevelIterator are the same for this grid
-    LeafIterator leafend (int level);
+    typename Traits::template codim<cd>::template partition<All_Partition>::LevelIterator lend (int level) const
+    {
+      return lend<cd,All_Partition>(level);
+    }
 
     /*! The communication interface
           @param T: array class holding data associated with the entities
@@ -771,27 +800,16 @@ namespace Dune {
     int global_size (int codim) const;
 
     //! return size (= distance in graph) of overlap region
-    int overlap_size (int level, int codim)
+    int overlapSize (int level, int codim)
     {
       return 0;
     }
 
     //! return size (= distance in graph) of ghost region
-    int ghost_size (int level, int codim)
+    int ghostSize (int level, int codim)
     {
       return 0;
     }
-
-    //! return GridIdentifierType of Grid, i.e. SGrid_Id or AlbertGrid_Id ...
-    GridIdentifier type() const;
-
-    //! write Grid to file filename and store time
-    template <FileFormatType ftype>
-    bool writeGrid ( const char * filename , sgrid_ctype time);
-
-    //! read Grid from file filename and store time of grid in time
-    template <FileFormatType ftype>
-    bool readGrid ( const char * filename , sgrid_ctype &time );
 
     // these are all members specific to sgrid
 
@@ -830,32 +848,35 @@ namespace Dune {
     }
 
     //! map expanded coordinates to position
-    FieldVector<sgrid_ctype, dim> pos (int level, FixedArray<int,dim>& z);
+    FieldVector<sgrid_ctype, dim> pos (int level, FixedArray<int,dim>& z) const;
 
     //! compute codim from coordinate
-    int codim (int level, FixedArray<int,dim>& z);
+    int calc_codim (int level, const FixedArray<int,dim>& z) const;
 
     //! compute number from expanded coordinate
-    int n (int level, FixedArray<int,dim> z);
+    int n (int level, const FixedArray<int,dim> z) const;
 
     //! compute coordinates from number and codimension
-    FixedArray<int,dim> z (int level, int i, int codim);
+    FixedArray<int,dim> z (int level, int i, int codim) const;
 
     //! compress from expanded coordinates to grid for a single partition number
-    FixedArray<int,dim> compress (int level, FixedArray<int,dim>& z);
+    FixedArray<int,dim> compress (int level, const FixedArray<int,dim>& z) const;
 
     //! expand with respect to partition number
-    FixedArray<int,dim> expand (int level, FixedArray<int,dim>& r, int b);
+    FixedArray<int,dim> expand (int level, const FixedArray<int,dim>& r, int b) const;
 
     /*! There are \f$2^d\f$ possibilities of having even/odd coordinates.
           The binary representation is called partition number.
      */
-    int partition (int level, FixedArray<int,dim>& z);
+    int partition (int level, const FixedArray<int,dim>& z) const;
 
     //! given reduced coordinates of an element, determine if element is in the grid
-    bool exists (int level, FixedArray<int,dim>& zred);
+    bool exists (int level, const FixedArray<int,dim>& zred) const;
 
   private:
+    // diasable copy and assign
+    SGrid(const SGrid &) {};
+    SGrid & operator = (const SGrid &) { return *this; };
     // generate SGrid
     void makeSGrid (const int* N_,  const sgrid_ctype* L_, const sgrid_ctype* H_);
 
@@ -864,12 +885,13 @@ namespace Dune {
     FieldVector<sgrid_ctype, dim> H;       // length of cube per direction
     FixedArray<int,dim> N[MAXL];       // number of elements per direction
     FieldVector<sgrid_ctype, dim> h[MAXL]; // mesh size per direction
-    CubeMapper<dim> mapper[MAXL]; // a mapper for each level
+    mutable CubeMapper<dim> mapper[MAXL]; // a mapper for each level
 
     // faster implemantation od subIndex
-    friend class SEntity<0,dim,dimworld>;
-    FixedArray <int,dim> zrefStatic;   // for subIndex of SEntity
-    FixedArray <int,dim> zentityStatic; // for subIndex of SEntity
+    friend class SEntity<0,dim,SGrid<dim,dimworld> >;
+    friend class SEntity<0,dim,const SGrid<dim,dimworld> >;
+    mutable FixedArray <int,dim> zrefStatic;   // for subIndex of SEntity
+    mutable FixedArray <int,dim> zentityStatic; // for subIndex of SEntity
   };
 
   /** @} end documentation group */
@@ -884,14 +906,26 @@ namespace Dune {
     };
 
     template<int dim, int dimw, int cdim>
-    struct hasEntity< SGrid<dim,dimw>, SEntity<cdim,dim,dimw> >
+    struct hasEntity< SGrid<dim,dimw>, SEntity<cdim,dim,SGrid<dim,dimw> > >
     {
       static const bool v = true;
     };
 
-  }
+    template<int dim,int dimw>
+    struct hasLeafIterator< const SGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
 
-} // end namespace
+    template<int dim, int dimw, int cdim>
+    struct hasEntity< const SGrid<dim,dimw>, SEntity<cdim,dim,SGrid<dim,dimw> > >
+    {
+      static const bool v = true;
+    };
+
+  } // end namespace Capabilities
+
+} // end namespace Dune
 
 #include "sgrid/sgrid.cc"
 

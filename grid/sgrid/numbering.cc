@@ -8,7 +8,7 @@
 namespace Dune {
 
   template<int dim>
-  inline void LexOrder<dim>::init (FixedArray<int,dim>& _NN)
+  inline void LexOrder<dim>::init (const FixedArray<int,dim>& _NN)
   {
     // store argument
     N=_NN;
@@ -19,13 +19,13 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int LexOrder<dim>::tupels ()
+  inline int LexOrder<dim>::tupels () const
   {
     return P[dim];
   }
 
   template<int dim>
-  inline int LexOrder<dim>::n (FixedArray<int,dim>& z)
+  inline int LexOrder<dim>::n (const FixedArray<int,dim>& z) const
   {
     int r=0;
     for (int i=0; i<dim; i++) r += z[i]*P[i];
@@ -33,7 +33,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline FixedArray<int,dim> LexOrder<dim>::z (int n)
+  inline FixedArray<int,dim> LexOrder<dim>::z (int n) const
   {
     FixedArray<int,dim> z;
     for (int i=0; i<dim; i++)
@@ -47,7 +47,7 @@ namespace Dune {
   //************************************************************************
 
   template<int dim>
-  inline void JoinOrder<dim>::init (FixedArray<int,dim>& _NN)
+  inline void JoinOrder<dim>::init (const FixedArray<int,dim>& _NN)
   {
     // store argument
     N=_NN;
@@ -58,19 +58,19 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int JoinOrder<dim>::size ()
+  inline int JoinOrder<dim>::size () const
   {
     return offset[dim];
   }
 
   template<int dim>
-  inline int JoinOrder<dim>::n (int subset, int index)
+  inline int JoinOrder<dim>::n (int subset, int index) const
   {
     return index+offset[subset];
   }
 
   template<int dim>
-  inline int JoinOrder<dim>::index (int n)
+  inline int JoinOrder<dim>::index (int n) const
   {
     for (int i=0; i<dim; i++)
       if (N[i]!=0)
@@ -82,7 +82,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int JoinOrder<dim>::subset (int n)
+  inline int JoinOrder<dim>::subset (int n) const
   {
     for (int i=0; i<dim; i++)
       if (N[i]!=0)
@@ -96,7 +96,7 @@ namespace Dune {
   //************************************************************************
 
   template<int dim>
-  CubeMapper<dim>::CubeMapper (FixedArray<int,dim> _NN)
+  CubeMapper<dim>::CubeMapper (const FixedArray<int,dim>& _NN)
   {
     make(_NN);
   }
@@ -113,7 +113,7 @@ namespace Dune {
   }
 
   template<int dim>
-  void CubeMapper<dim>::make (FixedArray<int,dim>& _NN)
+  void CubeMapper<dim>::make (const FixedArray<int,dim>& _NN)
   {
     // store argument
     N=_NN;
@@ -164,7 +164,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline void CubeMapper<dim>::print (std::ostream& ss, int indent)
+  inline void CubeMapper<dim>::print (std::ostream& ss, int indent) const
   {
     for (int k=0; k<indent; k++) ss << " ";
     ss << "CubeMapper [" ;
@@ -186,7 +186,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int CubeMapper<dim>::codim (FixedArray<int,dim>& z)
+  inline int CubeMapper<dim>::codim (const FixedArray<int,dim>& z) const
   {
     int r=0;
     for (int i=0; i<dim; i++)
@@ -195,7 +195,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int CubeMapper<dim>::n (FixedArray<int,dim>& z)
+  inline int CubeMapper<dim>::n (const FixedArray<int,dim>& z) const
   {
     int p = partition(z);            // get partition
     FixedArray<int,dim> r=compress(z);     // get compressd coordinate
@@ -212,7 +212,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline FixedArray<int,dim> CubeMapper<dim>::z (int i, int codim)
+  inline FixedArray<int,dim> CubeMapper<dim>::z (int i, int codim) const
   {
     FixedArray<int,dim> r;
 
@@ -236,7 +236,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int CubeMapper<dim>::ones (int b)
+  inline int CubeMapper<dim>::ones (int b) const
   {
     int r = 0;
     int mask = 1;
@@ -249,7 +249,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int CubeMapper<dim>::partition (FixedArray<int,dim>& z)
+  inline int CubeMapper<dim>::partition (const FixedArray<int,dim>& z) const
   {
     int r = 0;
     int mask = 1;
@@ -262,7 +262,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline FixedArray<int,dim> CubeMapper<dim>::compress (FixedArray<int,dim>& z)
+  inline FixedArray<int,dim> CubeMapper<dim>::compress (const FixedArray<int,dim>& z) const
   {
     FixedArray<int,dim> r;
     for (int i=0; i<dim; i++)
@@ -274,7 +274,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline FixedArray<int,dim> CubeMapper<dim>::expand (FixedArray<int,dim>& r, int b)
+  inline FixedArray<int,dim> CubeMapper<dim>::expand (const FixedArray<int,dim>& r, int b) const
   {
     FixedArray<int,dim> z;
     for (int i=0; i<dim; i++)
