@@ -12,8 +12,19 @@ namespace Dune {
 
   public:
 
+    /** \brief Default constructor */
+    MatrixIndexSet() : rows_(0), cols_(0)
+    {}
+
     /** \brief Constructor setting the matrix size */
     MatrixIndexSet(int rows, int cols) : rows_(rows), cols_(cols) {
+      indices.resize(rows_);
+    }
+
+    /** \brief Reset the size of an index set */
+    void resize(int rows, int cols) {
+      rows_ = rows;
+      cols_ = cols;
       indices.resize(rows_);
     }
 
@@ -45,7 +56,7 @@ namespace Dune {
      * \tparam MatrixType Needs to be BCRSMatrix<...>
      */
     template <class MatrixType>
-    int import(const MatrixType& m, int rowOffset=0, int colOffset=0) {
+    void import(const MatrixType& m, int rowOffset=0, int colOffset=0) {
 
       typedef typename MatrixType::row_type RowType;
       typedef typename RowType::ConstIterator ColumnIterator;
@@ -96,7 +107,7 @@ namespace Dune {
     /** \todo Doesn't use the fact that the array is sorted! */
     bool containsSorted(const std::vector<int>& nb, int idx) {
 
-      for (int i=0; i<nb.size(); i++)
+      for (unsigned int i=0; i<nb.size(); i++)
         if (nb[i]==idx)
           return true;
 
@@ -105,7 +116,7 @@ namespace Dune {
 
     void insertSorted(std::vector<int>& nb, int idx) {
 
-      int i;
+      unsigned int i;
       // Find correct slot for insertion
       for (i=0; i<nb.size(); i++)
         if (nb[i] >= idx)
