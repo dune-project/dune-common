@@ -2,7 +2,7 @@ Makefile
 Makefile.in
 .deps
 .libs
-test-albert
+test-alberta
 test-sgrid
 test-oned
 test-ug
