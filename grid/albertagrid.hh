@@ -1139,7 +1139,9 @@ namespace Dune
   public:
     typedef GridTraits<dim,dimworld,Dune::AlbertaGrid<dim,dimworld> ,
         AlbertaGridGeometry,AlbertaGridEntity,
-        AlbertaGridBoundaryEntity,AlbertaGridLevelIterator,
+        AlbertaGridBoundaryEntity,
+        AlbertaGridLevelIterator,
+        AlbertaGridLevelIterator,
         AlbertaGridIntersectionIterator,AlbertaGridHierarchicIterator,
         AlbertaGridLeafIterator>  Traits;
 
