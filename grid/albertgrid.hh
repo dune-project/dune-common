@@ -1248,7 +1248,7 @@ namespace Dune
     // organisation of the global index
     //*********************************************************************
     // the index Manager, to be replaced by Stack
-    ALBERT INDEX_MANAGER *indexManager_;
+    ALBERT AlbertHelp::INDEX_MANAGER *indexManager_;
 
     // the DOF_INT_VECs we need
     ALBERT AlbertHelp::DOFVEC_STACK dofvecs_;
