@@ -13,6 +13,8 @@
 //#include "ugdevices.h"
 //#include "general.h"
 
+//#define __USEALLQUADS__
+
 /****************************************************************************/
 /*                                                                          */
 /* defines in the following order                                           */
@@ -320,7 +322,7 @@ static const DOUBLE Quadrature2D36_w[] = {      0.116786275726379,
                                                 0.082851075618374,
                                                 0.082851075618374,
                                                 0.082851075618374};
-static QUADRATURE Quadrature2D36 = {7, 5, Quadrature2D36_l, Quadrature2D36_w};
+//static QUADRATURE Quadrature2D36 = {7, 5, Quadrature2D36_l, Quadrature2D36_w};
 
 /******** For new GaussQuadratureRule function *****************************/
 /*
@@ -366,6 +368,7 @@ static const DOUBLE Quadrature2D_Triangle_P2_N3a_W[] =
  0.33333333333333333333333333333333333,
  0.33333333333333333333333333333333333};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P2_N3a = {
   /* Number of Gauss Points */
   3,
@@ -376,6 +379,7 @@ static QUADRATURE Quadrature2D_Triangle_P2_N3a = {
   /* Weight */
   Quadrature2D_Triangle_P2_N3a_W
 };
+#endif
 
 static const DOUBLE_VECTOR_3D Quadrature2D_Triangle_P2_N3b_GP[] =
 {{0.16666666666666666666666666666667, 0.16666666666666666666666666666667},
@@ -445,6 +449,7 @@ static const DOUBLE Quadrature2D_Triangle_P3_N6a_W[] =
  0.36318813079129866672156705994773,
  0.36318813079129866672156705994773};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P3_N6a = {
   /* Number of Gauss Points */
   6,
@@ -455,6 +460,7 @@ static QUADRATURE Quadrature2D_Triangle_P3_N6a = {
   /* Weight */
   Quadrature2D_Triangle_P3_N6a_W
 };
+#endif
 
 
 /* 6 inner Gauss points, positive weights */
@@ -474,6 +480,7 @@ static const DOUBLE Quadrature2D_Triangle_P3_N6b_W[] =
  0.16666666666666666666666666666667,
  0.16666666666666666666666666666667};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P3_N6b = {
   /* Number of Gauss Points */
   6,
@@ -484,6 +491,7 @@ static QUADRATURE Quadrature2D_Triangle_P3_N6b = {
   /* Weight */
   Quadrature2D_Triangle_P3_N6b_W
 };
+#endif
 
 /* 3 inner Gauss points, 3 boundary Gauss points, positive weights */
 static const DOUBLE_VECTOR_3D Quadrature2D_Triangle_P3_N6c_GP[] =
@@ -502,6 +510,7 @@ static const DOUBLE Quadrature2D_Triangle_P3_N6c_W[] =
  0.3,
  0.3};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P3_N6c = {
   /* Number of Gauss Points */
   6,
@@ -512,6 +521,7 @@ static QUADRATURE Quadrature2D_Triangle_P3_N6c = {
   /* Weight */
   Quadrature2D_Triangle_P3_N6c_W
 };
+#endif
 
 
 /* 7 Gauss Points, 6 on boundary, positive weights */
@@ -533,6 +543,7 @@ static const DOUBLE Quadrature2D_Triangle_P3_N7_W[] =
  0.13333333333333333333333333333333,
  0.45};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P3_N7 = {
   /* Number of Gauss Points */
   7,
@@ -543,6 +554,7 @@ static QUADRATURE Quadrature2D_Triangle_P3_N7 = {
   /* Weight */
   Quadrature2D_Triangle_P3_N7_W
 };
+#endif
 
 
 /* ---- Polynomial degree 4 --------------------------------------------*/
@@ -594,6 +606,7 @@ static const DOUBLE Quadrature2D_Triangle_P4_N7_W[] =
  0.10416666666666666666666666666667,
  0.10416666666666666666666666666667};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P4_N7 = {
   /* Number of Gauss Points */
   7,
@@ -604,6 +617,7 @@ static QUADRATURE Quadrature2D_Triangle_P4_N7 = {
   /* Weight */
   Quadrature2D_Triangle_P4_N7_W
 };
+#endif
 
 /* 9 Gauss points, 3 on boundary, positive weights */
 static const DOUBLE_VECTOR_3D Quadrature2D_Triangle_P4_N9_GP[] =
@@ -628,6 +642,7 @@ static const DOUBLE Quadrature2D_Triangle_P4_N9_W[] =
  0.25081769911913282773062989318611,
  0.25081769911913282773062989318611};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P4_N9 = {
   /* Number of Gauss Points */
   9,
@@ -638,6 +653,7 @@ static QUADRATURE Quadrature2D_Triangle_P4_N9 = {
   /* Weight */
   Quadrature2D_Triangle_P4_N9_W
 };
+#endif
 
 /* ---- Polynomial degree 5 --------------------------------------------*/
 
@@ -693,6 +709,7 @@ static const DOUBLE Quadrature2D_Triangle_P7_N9_W[] =
  0.063691414286223365160744241602518,
  0.063691414286223365160744241602518};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P7_N9 = {
   /* Number of Gauss Points */
   9,
@@ -703,6 +720,7 @@ static QUADRATURE Quadrature2D_Triangle_P7_N9 = {
   /* Weight */
   Quadrature2D_Triangle_P7_N9_W
 };
+#endif
 
 /* ---- Polynomial degree 6 --------------------------------------------*/
 
@@ -775,6 +793,7 @@ static const DOUBLE Quadrature2D_Triangle_P6_N12b_W[] =
  0.040634559793660662451761522156903,
  0.040634559793660662451761522156903};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P6_N12b = {
   /* Number of Gauss Points */
   12,
@@ -785,6 +804,7 @@ static QUADRATURE Quadrature2D_Triangle_P6_N12b = {
   /* Weight */
   Quadrature2D_Triangle_P6_N12b_W
 };
+#endif
 
 /* 13 Gauss points, positive weights */
 static const DOUBLE_VECTOR_3D Quadrature2D_Triangle_P6_N13_GP[] =
@@ -817,6 +837,7 @@ static const DOUBLE Quadrature2D_Triangle_P6_N13_W[] =
  0.12956842928062581312174842655625,
  0.12956842928062581312174842655625};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P6_N13 = {
   /* Number of Gauss Points */
   13,
@@ -827,6 +848,7 @@ static QUADRATURE Quadrature2D_Triangle_P6_N13 = {
   /* Weight */
   Quadrature2D_Triangle_P6_N13_W
 };
+#endif
 
 
 /* ---- Polynomial degree 7 --------------------------------------------*/
@@ -902,6 +924,7 @@ static const DOUBLE Quadrature2D_Triangle_P7_N13_W[] =
  0.077113760890257140259865192551152,
  0.077113760890257140259865192551152};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P7_N13 = {
   /* Number of Gauss Points */
   13,
@@ -912,6 +935,7 @@ static QUADRATURE Quadrature2D_Triangle_P7_N13 = {
   /* Weight */
   Quadrature2D_Triangle_P7_N13_W
 };
+#endif
 
 static const DOUBLE_VECTOR_3D Quadrature2D_Triangle_P7_N15_GP[] =
 {{0.064930513159164863078379776030397, 0.064930513159164863078379776030397},
@@ -947,6 +971,7 @@ static const DOUBLE Quadrature2D_Triangle_P7_N15_W[] =
  0.069274682079416893512276595920415,
  0.069274682079416893512276595920415};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P7_N15 = {
   /* Number of Gauss Points */
   15,
@@ -957,6 +982,7 @@ static QUADRATURE Quadrature2D_Triangle_P7_N15 = {
   /* Weights */
   Quadrature2D_Triangle_P7_N15_W
 };
+#endif
 
 
 /* ---- Polynomial degree 8 --------------------------------------------*/
@@ -1188,6 +1214,7 @@ static const DOUBLE Quadrature2D_Triangle_P10_N25b_W[] =
  0.025297757707288384389042790682833,
  0.025297757707288384389042790682833};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Triangle_P10_N25b = {
   /* Number of Gauss Points */
   25,
@@ -1198,6 +1225,7 @@ static QUADRATURE Quadrature2D_Triangle_P10_N25b = {
   /* Weight */
   Quadrature2D_Triangle_P10_N25b_W
 };
+#endif
 
 /* ---- Polynomial degree 11 --------------------------------------------*/
 
@@ -1485,6 +1513,7 @@ static const DOUBLE Quadrature2D_Quad_P3_N4_Wb[] =
  0.25,
  0.25};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Quad_P3_N4b = {
   /* Number of Gauss Points */
   4,
@@ -1495,7 +1524,7 @@ static QUADRATURE Quadrature2D_Quad_P3_N4b = {
   /* Weight */
   Quadrature2D_Quad_P3_N4_Wb
 };
-
+#endif
 
 /* ---- Polynomial degree 4 --------------------------------------------*/
 
@@ -1582,6 +1611,7 @@ static const DOUBLE Quadrature2D_Quad_P5_N8_W[] =
  0.045918367346938775510204081632653,
  0.045918367346938775510204081632653};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Quad_P5_N8 = {
   /* Number of Gauss Points */
   8,
@@ -1592,6 +1622,7 @@ static QUADRATURE Quadrature2D_Quad_P5_N8 = {
   /* Weight */
   Quadrature2D_Quad_P5_N8_W
 };
+#endif
 
 
 /* ---- Polynomial degree 6 --------------------------------------------*/
@@ -1658,6 +1689,7 @@ static const DOUBLE Quadrature2D_Quad_P6_N10_Wb[] =
  0.067391896521515251778299584424342,
  0.067391896521515251778299584424342};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Quad_P6_N10b = {
   /* Number of Gauss Points */
   10,
@@ -1668,6 +1700,7 @@ static QUADRATURE Quadrature2D_Quad_P6_N10b = {
   /* Weight */
   Quadrature2D_Quad_P6_N10_Wb
 };
+#endif
 
 
 /* ---- Polynomial degree 7 --------------------------------------------*/
@@ -1858,6 +1891,7 @@ static const DOUBLE Quadrature2D_Quad_P9_N18_Wa[] =
  0.042016334557498967816099586898138,
  0.042016334557498967816099586898138};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Quad_P9_N18 = {
   /* Number of Gauss Points */
   18,
@@ -1868,6 +1902,7 @@ static QUADRATURE Quadrature2D_Quad_P9_N18 = {
   /* Weight */
   Quadrature2D_Quad_P9_N18_Wa
 };
+#endif
 
 
 /* Gauss Points: 18  */
@@ -1911,6 +1946,7 @@ static const DOUBLE Quadrature2D_Quad_P9_N18_Wb[] =
  0.048494360092509927180116968817253,
  0.048494360092509927180116968817253};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Quad_P9_N18b = {
   /* Number of Gauss Points */
   18,
@@ -1921,6 +1957,7 @@ static QUADRATURE Quadrature2D_Quad_P9_N18b = {
   /* Weight */
   Quadrature2D_Quad_P9_N18_Wb
 };
+#endif
 
 
 /* Gauss Points: 20  */
@@ -1968,6 +2005,7 @@ static const DOUBLE Quadrature2D_Quad_P9_N20_Wa[] =
  0.053938950908983219739243168565974,
  0.053938950908983219739243168565974};
 
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature2D_Quad_P9_N20a = {
   /* Number of Gauss Points */
   20,
@@ -1978,6 +2016,7 @@ static QUADRATURE Quadrature2D_Quad_P9_N20a = {
   /* Weight */
   Quadrature2D_Quad_P9_N20_Wa
 };
+#endif
 
 
 /* Gauss Points: 20  */
@@ -2319,7 +2358,9 @@ static const DOUBLE_VECTOR_3D Quadrature3D63_l[] = {{0.333333333333333, 0.333333
                                                     {0.2, 0.2, 0.788675134594813}};
 static const DOUBLE Quadrature3D63_w[] = {-0.28125, 0.2604166666666666, 0.2604166666666666, 0.2604166666666666,
                                           -0.28125, 0.2604166666666666, 0.2604166666666666, 0.2604166666666666};
+#ifdef __USEALLQUADS__
 static QUADRATURE Quadrature3D63 = {8, 3, Quadrature3D63_l, Quadrature3D63_w};
+#endif
 
 static const DOUBLE_VECTOR_3D Quadrature3D80_l[] = {{0.0, 0.0, 0.0},
                                                     {0.0, 0.0, 1.0},
