@@ -61,4 +61,49 @@ namespace Dune {
 
 }
 
+template<class T, int n>
+class FiniteStack {
+public:
+  bool isempty () const
+  {
+    return f==0;
+  }
+
+  bool isfull () const
+  {
+    return f>=n;
+  }
+
+  void push_front (T t)
+  {
+    s[f++] = t;
+  }
+
+  T pop_front ()
+  {
+    return s[--f];
+  }
+
+  T front () const
+  {
+    return s[f-1];
+  }
+
+  int size ()
+  {
+    return f;
+  }
+
+  FiniteStack ()
+  {
+    f = 0;
+  }
+
+private:
+  T s[n];
+  int f;
+} ;
+
+
+
 #endif

@@ -295,12 +295,15 @@ namespace Dune {
 
     //! constructor
     SNeighborIterator (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count);
+    SNeighborIterator ();
+
+    void make (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count);
 
   private:
     void make (int _count);                     //!< reinitialze iterator with given neighbor
     void makeintersections ();                  //!< compute intersections
-    SGrid<dim,dimworld>& grid;                  //!< my grid
-    SEntity<0,dim,dimworld>& self;              //!< myself, SEntity is a friend class
+    SGrid<dim,dimworld>* grid;                  //!< my grid
+    SEntity<0,dim,dimworld>* self;              //!< myself, SEntity is a friend class
     int partition;                              //!< partition number of self, needed for coordinate expansion
     Tupel<int,dim> zred;                        //!< reduced coordinates of myself, allows easy computation of neighbors
     int count;                                  //!< number of neighbor
@@ -397,13 +400,15 @@ namespace Dune {
 
     //! constructor
     SEntityBase (SGrid<dim,dimworld>& _grid, int _l, int _id);
+    SEntityBase ();
+    void make (SGrid<dim,dimworld>& _grid, int _l, int _id);
 
     //! Reinitialization
     void make (int _l, int _id);
 
   protected:
     // this is how we implement our elements
-    SGrid<dim,dimworld>& grid;            //!< grid containes mapper, geometry, etc.
+    SGrid<dim,dimworld>* grid;            //!< grid containes mapper, geometry, etc.
     int l;                                //!< level where element is on
     int id;                               //!< my consecutive id
     Tupel<int,dim> z;                     //!< my coordinate, number of even components = codim
@@ -516,9 +521,11 @@ namespace Dune {
        referencing the first neighbor.
      */
     SNeighborIterator<dim,dimworld> nbegin ();
+    void nbegin (SNeighborIterator<dim,dimworld>&);
 
     //! Reference to one past the last neighbor
     SNeighborIterator<dim,dimworld> nend ();
+    void nend (SNeighborIterator<dim,dimworld>&);
 
     //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
     SLevelIterator<0,dim,dimworld> father ();
@@ -548,6 +555,17 @@ namespace Dune {
     SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) :
       SEntityBase<0,dim,dimworld>::SEntityBase(_grid,_l,_id) , in_father_local(false)
     {
+      built_father = false;
+    }
+
+    SEntity () : in_father_local(false)
+    {
+      built_father = false;
+    }
+
+    void make (SGrid<dim,dimworld>& _grid, int _l, int _id)
+    {
+      SEntityBase<0,dim,dimworld>::make(_grid,_l,_id);
       built_father = false;
     }
 
@@ -709,12 +727,12 @@ namespace Dune {
     int maxlevel();
 
     //! Iterator to first entity of given codim on level
-    template<int codim>
-    SLevelIterator<codim,dim,dimworld> lbegin (int level);
+    template<int cd>
+    SLevelIterator<cd,dim,dimworld> lbegin (int level);
 
     //! one past the end on this level
-    template<int codim>
-    SLevelIterator<codim,dim,dimworld> lend (int level);
+    template<int cd>
+    SLevelIterator<cd,dim,dimworld> lend (int level);
 
     //! number of grid entities per level and codim
     int size (int level, int codim);
@@ -727,7 +745,10 @@ namespace Dune {
        N_: coarse grid size, #elements in one direction
        L_: number of levels 0,...,L_-1, maxlevel = L_-1
      */
-    SGrid (Tupel<int,dim> N_, Tupel<sgrid_ctype,dim> H_, int L_);
+    SGrid (int* N_, sgrid_ctype* H_);
+
+    // refine mesh globally by one level
+    void globalRefine (int refCount);
 
     //! map expanded coordinates to position
     Vec<dim,sgrid_ctype> pos (int level, Tupel<int,dim>& z);
