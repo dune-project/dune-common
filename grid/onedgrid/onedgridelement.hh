@@ -27,7 +27,7 @@ namespace Dune {
       return this->realGeometry.vertex_[n];
     }
 
-    const OneDGridEntity<1,1,GridImp>* const & vertex(int n) const {
+    OneDGridEntity<1,1,GridImp>* const & vertex(int n) const {
       return this->realGeometry.vertex_[n];
     }
 
