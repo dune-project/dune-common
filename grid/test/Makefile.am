@@ -9,8 +9,8 @@ if MPI
   YRUN = run-yaspgrid
 endif
 
-if ALBERT
-  APROG = test-albert
+if ALBERTA
+  APROG = test-alberta
 endif
 
 # UGGrid needs AmiraMeshReader for now...
@@ -58,9 +58,9 @@ test_yaspgrid_CXXFLAGS = $(AM_CPPFLAGS) $(MPI_CPPFLAGS)
 test_yaspgrid_LDADD = $(MPI_LDFLAGS) $(MPI_LIBS)
 
 # this implicitly checks the autoconf-test as well...
-test_albert_SOURCES = test-albert.cc
-test_albert_CPPFLAGS = $(AM_CPPFLAGS) $(ALBERT_CPPFLAGS)
-test_albert_LDADD = $(ALBERT_LDFLAGS) $(ALBERT_LIBS)
+test_alberta_SOURCES = test-alberta.cc
+test_alberta_CPPFLAGS = $(ALBERTA_CPPFLAGS) $(AM_CPPFLAGS)
+test_alberta_LDADD = $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS)
 
 test_ug_SOURCES = test-ug.cc
 test_ug_CPPFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
@@ -68,7 +68,7 @@ test_ug_LDADD = $(UG_LDFLAGS) $(UG_LIBS) $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
 
 ## distribution tarball
 
-GRIDFILES = albert-testgrid-2-2.al albert-testgrid-3-3.al \
+GRIDFILES = alberta-testgrid-2-2.al alberta-testgrid-3-3.al \
   ug-testgrid-2.am ug-testgrid-3.am
 # gridcheck not used explicitly, we should still ship it :)
 EXTRA_DIST = gridcheck.cc $(GRIDFILES)
