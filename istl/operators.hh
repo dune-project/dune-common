@@ -115,29 +115,29 @@ namespace Dune {
     typedef typename X::field_type field_type;
 
     //! constructor: just store a reference to a matrix
-    MatrixAdapter (const M& A) : _A(A) {}
+    MatrixAdapter (const M& A) : _A_(A) {}
 
     //! apply operator to x:  \f$ y = A(x) \f$
     virtual void apply (const X& x, Y& y) const
     {
       y = 0;
-      _A.umv(x,y);
+      _A_.umv(x,y);
     }
 
     //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
     virtual void applyscaleadd (field_type alpha, const X& x, Y& y) const
     {
-      _A.usmv(alpha,x,y);
+      _A_.usmv(alpha,x,y);
     }
 
     //! get matrix via *
     virtual const M& getmat () const
     {
-      return _A;
+      return _A_;
     }
 
   private:
-    const M& _A;
+    const M& _A_;
   };
 
   /** @} end documentation */

@@ -119,7 +119,7 @@ namespace Dune {
 
     //! constructor gets all parameters to operate the prec.
     SeqSSOR (const M& A, int n, field_type w)
-      : _A(A), _n(n), _w(w)
+      : _A_(A), _n(n), _w(w)
     {       }
 
     //! prepare: nothing to do here
@@ -130,8 +130,8 @@ namespace Dune {
     {
       for (int i=0; i<_n; i++)
       {
-        bsorf(_A,v,d,_w);
-        bsorb(_A,v,d,_w);
+        bsorf(_A_,v,d,_w);
+        bsorb(_A_,v,d,_w);
       }
     }
 
@@ -152,7 +152,7 @@ namespace Dune {
     virtual void post (X& x) {}
 
   private:
-    const M& _A;       // my matrix to operate on
+    const M& _A_;       // my matrix to operate on
     int _n;            // number of iterations
     field_type _w;     // relaxation factor
   };
@@ -172,7 +172,7 @@ namespace Dune {
 
     //! constructor gets all parameters to operate the prec.
     SeqSOR (const M& A, int n, field_type w)
-      : _A(A), _n(n), _w(w)
+      : _A_(A), _n(n), _w(w)
     {       }
 
     //! prepare: nothing to do here
@@ -183,7 +183,7 @@ namespace Dune {
     {
       for (int i=0; i<_n; i++)
       {
-        bsorf(_A,v,d,_w);
+        bsorf(_A_,v,d,_w);
       }
     }
 
@@ -204,7 +204,7 @@ namespace Dune {
     virtual void post (X& x) {}
 
   private:
-    const M& _A;       // my matrix to operate on
+    const M& _A_;       // my matrix to operate on
     int _n;            // number of iterations
     field_type _w;     // relaxation factor
   };
@@ -224,7 +224,7 @@ namespace Dune {
 
     //! constructor gets all parameters to operate the prec.
     SeqGS (const M& A, int n, field_type w)
-      : _A(A), _n(n), _w(w)
+      : _A_(A), _n(n), _w(w)
     {       }
 
     //! prepare: nothing to do here
@@ -235,7 +235,7 @@ namespace Dune {
     {
       for (int i=0; i<_n; i++)
       {
-        dbgs(_A,v,d,_w);
+        dbgs(_A_,v,d,_w);
       }
     }
 
@@ -256,7 +256,7 @@ namespace Dune {
     virtual void post (X& x) {}
 
   private:
-    const M& _A;       // my matrix to operate on
+    const M& _A_;       // my matrix to operate on
     int _n;            // number of iterations
     field_type _w;     // relaxation factor
   };
@@ -276,7 +276,7 @@ namespace Dune {
 
     //! constructor gets all parameters to operate the prec.
     SeqJac (const M& A, int n, field_type w)
-      : _A(A), _n(n), _w(w)
+      : _A_(A), _n(n), _w(w)
     {       }
 
     //! prepare: nothing to do here
@@ -287,7 +287,7 @@ namespace Dune {
     {
       for (int i=0; i<_n; i++)
       {
-        dbjac(_A,v,d,_w);
+        dbjac(_A_,v,d,_w);
       }
     }
 
@@ -308,7 +308,7 @@ namespace Dune {
     virtual void post (X& x) {}
 
   private:
-    const M& _A;       // my matrix to operate on
+    const M& _A_;       // my matrix to operate on
     int _n;            // number of iterations
     field_type _w;     // relaxation factor
   };
