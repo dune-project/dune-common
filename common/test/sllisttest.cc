@@ -12,6 +12,10 @@ public:
     : d(b)
   {}
 
+  DoubleWrapper()
+    : d()
+  {}
+
   operator double()
   {
     return d;
@@ -45,6 +49,68 @@ void randomizeListFront(Dune::SLList<T,A>& alist){
   for(int i=0; i < 10; i++)
     alist.push_back((range*(rand()/(RAND_MAX+1.0))));
 }
+
+int testInsertAfter()
+{
+  typedef Dune::SLList<int,Dune::PoolAllocator<int,8*1024-16> > List;
+  List alist;
+
+  alist.push_back(3);
+  List::iterator iter=alist.begin();
+  iter.insertAfter(5);
+  int ret=0;
+
+  if(*iter!=3) {
+    std::cerr<<"Value at current position changed due to insertAfter"<<std::endl;
+    ret++;
+  }
+  ++iter;
+  if(iter==alist.end() || *iter!=5) {
+    std::cerr<<"Insertion failed!"<<std::endl;
+    ++ret;
+  }
+
+  iter=alist.oneBeforeBegin();
+  iter.insertAfter(5);
+  ++iter;
+  if(iter==alist.end() || *iter!=5) {
+    std::cerr<<"Insertion failed!"<<std::endl;
+    ++ret;
+  }
+
+  alist.clear();
+  iter=alist.oneBeforeBegin();
+  iter.insertAfter(5);
+  ++iter;
+  if(iter==alist.end() || *iter!=5) {
+    std::cerr<<"Insertion failed!"<<std::endl;
+    ++ret;
+  }
+  return ret;
+}
+
+template<typename T>
+int testOneBeforeBegin(T& alist)
+{
+  typename T::iterator iterBefore = alist.oneBeforeBegin(),
+  iter = alist.begin();
+  typename T::const_iterator citerBefore = alist.oneBeforeBegin();
+
+  int ret=0;
+  ++iterBefore;
+  ++citerBefore;
+
+  if(iterBefore!=iter || &(*iterBefore) != &(*iter)) {
+    std::cerr<<"one before iterator incremented once should point to begin()"<<std::endl;
+    ret++;
+  }
+  if(citerBefore!=iter || &(*citerBefore) != &(*iter)) {
+    std::cerr<<"one before iterator incremented once should point to begin()"<<std::endl;
+    ret++;
+  }
+  return ret;
+}
+
 
 int testPushPop(){
   using namespace Dune;
@@ -99,6 +165,9 @@ int main()
   ret+=testIterator(list);
   ret+=testIterator(list1);
   ret+=testPushPop();
+  ret+=testOneBeforeBegin(list1);
+  ret+=testInsertAfter();
+
 
   list.clear();
   list1.clear();
