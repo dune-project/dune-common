@@ -136,7 +136,7 @@ namespace Dune {
    */
   class IOError : public Exception {};
 
-  /*! default exception class for I/O errors
+  /*! default exception class for Mathematical errors
 
      This is the superclass for all errors which are caused by
      mathematical problems like
@@ -145,6 +145,8 @@ namespace Dune {
      - not convergent
    */
   class MathError : public Exception {};
+
+  class ISTLError : public Exception {};
 
 } // end namespace
 
