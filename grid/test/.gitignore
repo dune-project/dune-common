@@ -4,6 +4,7 @@ Makefile.in
 .libs
 test-albert
 test-sgrid
+test-oned
 test-ug
 test-yaspgrid
 semantic.cache
