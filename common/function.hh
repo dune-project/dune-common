@@ -3,8 +3,8 @@
 #ifndef __DUNE_FUNCTION_HH__
 #define __DUNE_FUNCTION_HH__
 
-#include "mapping.hh"
-
+#include <dune/common/mapping.hh>
+#include <dune/common/fvector.hh>
 
 namespace Dune {
   /** @defgroup FunctionCommon Functions
