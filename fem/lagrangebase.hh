@@ -616,7 +616,7 @@ namespace Dune {
       int locDim = localNum % dimrange;
 
       // get global vertex number
-      return (dimrange*en.subIndex<codim>(locNum)) + locDim;
+      return (dimrange*en.template subIndex<codim>(locNum)) + locDim;
     };
 
   };
@@ -698,8 +698,8 @@ namespace Dune {
 
       // search the macro grid for diffrent element types
       typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
-      LevelIterator endit = g.lend<0>(0);
-      for(LevelIterator it = g.lbegin<0>(0); it != endit; ++it)
+      LevelIterator endit = g.template lend<0>(0);
+      for(LevelIterator it = g.template lbegin<0>(0); it != endit; ++it)
       {
         ElementType type = (*it).geometry().type(); // Hack
         if(baseFuncSet_( type ) == NULL )

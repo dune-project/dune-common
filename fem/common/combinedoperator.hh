@@ -319,7 +319,7 @@ namespace Dune
 
     void applyLocal ( const Domain & arg , Range & dest ) const
     {
-      B::Range tmp;
+      typename B::Range tmp;
       _b.applyLocal ( arg , tmp );
       _a.applyLocal (tmp , dest );
     }

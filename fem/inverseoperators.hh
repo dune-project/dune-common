@@ -9,7 +9,7 @@
 namespace Dune {
 
   template <class DiscreteFunctionType>
-  class CGInverseOperator : public Operator<DiscreteFunctionType::RangeFieldType,
+  class CGInverseOperator : public Operator<typename DiscreteFunctionType::RangeFieldType,
                                 DiscreteFunctionType,DiscreteFunctionType> {
 
     typename DiscreteFunctionType::RangeFieldType epsilon_;
@@ -19,8 +19,8 @@ namespace Dune {
 
   public:
 
-    CGInverseOperator( const typename Mapping<DiscreteFunctionType::RangeFieldType,
-                           DiscreteFunctionType,DiscreteFunctionType>& op ,
+    CGInverseOperator( const Mapping<typename DiscreteFunctionType::RangeFieldType,
+                           DiscreteFunctionType, DiscreteFunctionType> & op ,
                        double redEps , double absLimit , int maxIter , int verbose ) : op_(op),
                                                                                        _redEps ( redEps ), epsilon_ ( absLimit*absLimit ) ,
                                                                                        maxIter_ (maxIter ) , _verbose ( verbose ) {}
@@ -28,7 +28,7 @@ namespace Dune {
     void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const {
 
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
-      typedef FunctionSpaceType::RangeField Field;
+      typedef typename FunctionSpaceType::RangeField Field;
 
       int count = 0;
       Field spa=0, spn, q, quad;
@@ -81,16 +81,16 @@ namespace Dune {
     }
 
   private:
-    const typename Mapping<DiscreteFunctionType::RangeFieldType,DiscreteFunctionType,DiscreteFunctionType> &op_;
+    const Mapping<typename DiscreteFunctionType::RangeFieldType,DiscreteFunctionType,DiscreteFunctionType> &op_;
     int _verbose ;
   };
 
 
   template <class DiscreteFunctionType, class OperatorType>
-  class CGInverseOp : public Operator<DiscreteFunctionType::RangeFieldType,
+  class CGInverseOp : public Operator<typename DiscreteFunctionType::RangeFieldType,
                           DiscreteFunctionType,DiscreteFunctionType> {
 
-    DiscreteFunctionType::RangeFieldType epsilon_;
+    typename DiscreteFunctionType::RangeFieldType epsilon_;
     int maxIter_;
 
     double _redEps;
@@ -116,7 +116,7 @@ namespace Dune {
     {
 
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
-      typedef FunctionSpaceType::RangeField Field;
+      typedef typename FunctionSpaceType::RangeField Field;
 
       int count = 0;
       Field spa=0, spn, q, quad;

@@ -87,9 +87,7 @@ namespace Dune {
     template <class GridIteratorType>
     struct Traits
     {
-      typedef typename
-      LocalFunctionIteratorImp<DiscreteFunctionImp,GridIteratorType>
-      LocalFunctionIteratorType;
+      typedef LocalFunctionIteratorImp<DiscreteFunctionImp,GridIteratorType> LocalFunctionIteratorType;
     };
 
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
@@ -163,6 +161,12 @@ namespace Dune {
     enum { myId_ = 0 };
 
   public:
+    typedef typename DiscreteFunctionSpaceType::Domain DomainType;
+    typedef typename DiscreteFunctionSpaceType::Range RangeType;
+
+    typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
+    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+
     //! pass the function space to the interface class
     DiscreteFunctionDefault ( DiscreteFunctionSpaceType & f ) :
       DiscreteFunctionInterfaceType ( f ) {};
@@ -177,39 +181,39 @@ namespace Dune {
 
 
     //! evaluate an scalar product of the dofs of two DiscreteFunctions
-    DiscreteFunctionSpaceType::RangeField scalarProductDofs( const DiscreteFunctionDefault &g );
+    typename DiscreteFunctionSpaceType::RangeField scalarProductDofs( const DiscreteFunctionDefault &g );
 
     // assign
-    Vector<DiscreteFunctionSpaceType::RangeField> &
-    assign(const Vector<DiscreteFunctionSpaceType::RangeField> &g);
+    Vector<typename DiscreteFunctionSpaceType::RangeField> &
+    assign(const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
 
     // assign
-    Vector<DiscreteFunctionSpaceType::RangeField> &
-    operator = (const Vector<DiscreteFunctionSpaceType::RangeField> &g);
+    Vector<typename DiscreteFunctionSpaceType::RangeField> &
+    operator = (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
 
     // add
-    Vector<DiscreteFunctionSpaceType::RangeField> &
-    operator += (const Vector<DiscreteFunctionSpaceType::RangeField> &g);
+    Vector<typename DiscreteFunctionSpaceType::RangeField> &
+    operator += (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
 
     // add
-    void addScaled (const Vector<DiscreteFunctionSpaceType::RangeField> &g,
-                    const DiscreteFunctionSpaceType::RangeField &scalar);
+    void addScaled (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g,
+                    const typename DiscreteFunctionSpaceType::RangeField &scalar);
 
     // substract
-    Vector<DiscreteFunctionSpaceType::RangeField> &
-    operator -= (const Vector<DiscreteFunctionSpaceType::RangeField> &g);
+    Vector<typename DiscreteFunctionSpaceType::RangeField> &
+    operator -= (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
 
     // multiply
-    Vector<DiscreteFunctionSpaceType::RangeField> &
-    operator *= (const DiscreteFunctionSpaceType::RangeField &scalar);
+    Vector<typename DiscreteFunctionSpaceType::RangeField> &
+    operator *= (const typename DiscreteFunctionSpaceType::RangeField &scalar);
 
-    Vector<DiscreteFunctionSpaceType::RangeField> &
-    operator /= (const DiscreteFunctionSpaceType::RangeField &scalar);
+    Vector<typename DiscreteFunctionSpaceType::RangeField> &
+    operator /= (const typename DiscreteFunctionSpaceType::RangeField &scalar);
 
     // add
-    Vector<DiscreteFunctionSpaceType::RangeField> &
-    add(const Vector<DiscreteFunctionSpaceType::RangeField> &g ,
-        DiscreteFunctionSpaceType::RangeField scalar );
+    Vector<typename DiscreteFunctionSpaceType::RangeField> &
+    add(const Vector<typename DiscreteFunctionSpaceType::RangeField> &g ,
+        typename DiscreteFunctionSpaceType::RangeField scalar );
 
     //! clear all dofs of a given level of the discrete function
     void clearLevel(int level );

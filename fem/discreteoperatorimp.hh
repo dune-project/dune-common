@@ -63,8 +63,8 @@ namespace Dune {
         typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
 
         // make run through grid
-        LevelIterator it = grid.lbegin<0>( level_ );
-        LevelIterator endit = grid.lend<0>  ( level_ );
+        LevelIterator it = grid.template lbegin<0>( level_ );
+        LevelIterator endit = grid.template lend<0>  ( level_ );
         applyOnGrid( it, endit , Arg, Dest );
       }
     }

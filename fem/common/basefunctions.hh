@@ -173,6 +173,10 @@ namespace Dune {
     enum { dimCol = JacobianRange::dimCol };
 
   public:
+    typedef typename FunctionSpaceType::Domain Domain ;
+    typedef typename FunctionSpaceType::Range Range ;
+    typedef typename FunctionSpaceType::JacobianRange JacobianRange;
+    typedef typename FunctionSpaceType::HessianRange HessianRange;
     //! set the default diffVar Types
     BaseFunctionSetDefault ( FunctionSpaceType & f ) :
       BaseFunctionSetInterface < FunctionSpaceType , BaseFunctionSetImp> (f)
