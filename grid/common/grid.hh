@@ -1143,7 +1143,7 @@ namespace Dune {
     typedef ct ctype;
 
     //! return LeafIterator which points to the first entity in maxLevel
-    LeafIterator leafbegin (int maxLevel);
+    LeafIterator leafbegin(int maxLevel);
 
     //! return LeafIterator which points behind the last entity in maxLevel
     LeafIterator leafend(int maxLevel);
@@ -1158,7 +1158,7 @@ namespace Dune {
     bool read ( const char * filename , ct & time , int timestep,
                 bool adaptive= false, int processor=0 );
 
-  private:
+  protected:
     //! Barton-Nackman trick
     GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
   };
