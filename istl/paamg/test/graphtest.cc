@@ -5,10 +5,284 @@
 #include <iostream>               // for input/output to shell
 
 #include <dune/istl/paamg/graph.hh>
+#include <dune/istl/paamg/dependency.hh>
 #include <dune/istl/istlexception.hh>
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/istl/fmatrix.hh>
 #include <dune/istl/io.hh>
+
+int testEdgeDepends(const Dune::amg::EdgeProperties& flags)
+{
+  int ret=0;
+
+  if(!flags.depends()) {
+    std::cerr << "Depends does not return true after setDepends! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(flags.influences()) {
+    std::cerr << "Influences should not return true after setDepends! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(!flags.isStrong()) {
+    std::cerr <<"Should be strong after setDepends! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(!flags.isOneWay()) {
+    std::cerr <<"Should be oneWay after setDepends! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(flags.isTwoWay()) {
+    std::cerr <<"Should not be twoWay after setDepends! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+  return ret;
+}
+
+int testEdgeInfluences(const Dune::amg::EdgeProperties& flags)
+{
+  int ret=0;
+
+  if(!flags.influences()) {
+    std::cerr << "Influences does not return true after setInfluences! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(!flags.isStrong()) {
+    std::cerr <<"Should be strong after setDepends and setInfluences! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(flags.isOneWay()) {
+    std::cerr <<"Should not be oneWay after setDepends and setInfluences! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(flags.isTwoWay()) {
+    std::cerr <<"Should not be twoWay after setInfluences! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+  return ret;
+
+}
+
+int testEdgeTwoWay(const Dune::amg::EdgeProperties& flags)
+{
+  int ret=0;
+
+  if(!flags.depends()) {
+    std::cerr << "Depends does not return true after setDepends! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(!flags.influences()) {
+    std::cerr << "Influences does not return true after setDepends! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(!flags.isStrong()) {
+    std::cerr <<"Should be strong after setDepends and setInfluences! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(flags.isOneWay()) {
+    std::cerr <<"Should not be oneWay after setDepends and setInfluences! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+
+  if(!flags.isTwoWay()) {
+    std::cerr <<"Should be twoWay after setDepends and setInfluences! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+  return ret;
+
+}
+
+int testEdgeReset(const Dune::amg::EdgeProperties& flags)
+{
+  int ret=0;
+  if(flags.depends()) {
+    std::cerr << "Depend bit should be cleared after initialization or reset! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(flags.influences()) {
+    std::cerr << "Influence bit should be cleared after initialization or reset! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+
+  if(flags.isTwoWay()) {
+    std::cerr << "Should not be twoWay after initialization or reset! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(flags.isOneWay()) {
+    std::cerr << "Should not be oneWay after initialization or reset! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(flags.isStrong()) {
+    std::cerr << "Should not be strong after initialization reset! "<<__FILE__
+              <<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  if(ret>0)
+    std::cerr<<"Flags: "<<flags;
+
+  return ret;
+
+}
+
+int testVertexReset(Dune::amg::VertexProperties& flags)
+{
+  int ret=0;
+
+  if(flags.front()) {
+    std::cerr<<"Front flag should not be set if reset!"<<__FILE__ ":"<<__LINE__
+             <<std::endl;
+    ret++;
+  }
+
+  if(flags.visited()) {
+    std::cerr<<"Visited flag should not be set if reset!"<<__FILE__ ":"<<__LINE__
+             <<std::endl;
+    ret++;
+  }
+
+  if(flags.isolated()) {
+    std::cerr<<"Isolated flag should not be set if reset!"<<__FILE__ ":"<<__LINE__
+             <<std::endl;
+    ret++;
+  }
+
+  return ret;
+
+}
+
+int testVertex()
+{
+  int ret=0;
+
+  Dune::amg::VertexProperties flags;
+
+  ret+=testVertexReset(flags);
+
+  flags.setIsolated();
+
+  if(!flags.isolated()) {
+    std::cerr<<"Isolated flag should be set after setIsolated!"<<__FILE__ ":"<<__LINE__
+             <<std::endl;
+    ret++;
+  }
+
+  flags.resetIsolated();
+  ret+=testVertexReset(flags);
+
+  flags.setFront();
+
+  if(!flags.front()) {
+    std::cerr<<"Front flag should be set after setFront!"<<__FILE__ ":"<<__LINE__
+             <<std::endl;
+    ret++;
+  }
+
+  flags.resetFront();
+  ret+=testVertexReset(flags);
+
+  flags.setVisited();
+
+  if(!flags.visited()) {
+    std::cerr<<"Visited flag should be set after setVisited!"<<__FILE__ ":"<<__LINE__
+             <<std::endl;
+    ret++;
+  }
+
+  flags.resetVisited();
+
+  ret+=testVertexReset(flags);
+
+  flags.setExcluded();
+
+  if(!flags.excluded()) {
+    std::cerr<<"Excluded flag should be set after setExcluded!"<<__FILE__ ":"<<__LINE__
+             <<std::endl;
+    ret++;
+  }
+
+  flags.resetExcluded();
+  ret+=testVertexReset(flags);
+
+  return ret;
+
+}
+
+int testEdge()
+{
+  int ret=0;
+
+  Dune::amg::EdgeProperties flags;
+
+  ret += testEdgeReset(flags);
+
+  flags.setDepends();
+
+  ret += testEdgeDepends(flags);
+
+  flags.resetDepends();
+
+  flags.setInfluences();
+
+  ret += testEdgeInfluences(flags);
+
+  flags.resetInfluences();
+
+  ret += testEdgeReset(flags);
+
+  flags.setInfluences();
+  flags.setDepends();
+
+  testEdgeTwoWay(flags);
+
+  flags.resetDepends();
+  flags.resetInfluences();
+
+  flags.setDepends();
+  flags.setInfluences();
+
+
+  flags.resetDepends();
+  flags.resetInfluences();
+
+  ret += testEdgeReset(flags);
+
+  return ret;
+
+}
+
 
 void testGraph ()
 {
@@ -51,7 +325,7 @@ void testGraph ()
 
   Dune::printmatrix(std::cout,laplacian2d,"2d Laplacian","row",9,1);
 
-  typedef Dune::amg::Graph<BCRSMat> BCRSGraph;
+  typedef Dune::amg::Graph<BCRSMat,int,int> BCRSGraph;
 
   BCRSGraph graph;
 
@@ -64,7 +338,7 @@ int main (int argc , char ** argv)
 {
   try {
     testGraph();
-
+    exit(testEdge());
   }
   catch (Dune::ISTLError& error)
   {
