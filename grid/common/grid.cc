@@ -1230,7 +1230,7 @@ namespace Dune {
     type = ( GridIdentifier ) helpType;
     if(type != asImp().type())
     {
-      derr << "\nERROR: " << GridName(asImp().type()) << " tries to read " << GridName(type) << " file. \n\n";
+      std::cerr << "\nERROR: " << GridName(asImp().type()) << " tries to read " << GridName(type) << " file. \n\n";
       assert(type == asImp().type());
       abort();
     }
@@ -1261,7 +1261,7 @@ namespace Dune {
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   template <FileFormatType ftype>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  writeGrid ( const char * filename , ctype time )
+  writeGrid ( const char * filename , ct time )
   {
     std::cerr << "WARNING: writeGrid not implemented! \n";
     return false;
@@ -1271,7 +1271,7 @@ namespace Dune {
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   template <FileFormatType ftype>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  readGrid ( const char * filename , ctype & time )
+  readGrid ( const char * filename , ct & time )
   {
     std::cerr << "WARNING: readGrid not implemented! \n";
     return false;
