@@ -46,26 +46,34 @@
 # - add --disable-mpi
 
 AC_DEFUN([DUNE_MPI],[
+  AC_PREREQ(2.50) dnl for AC_LANG_CASE
 
-  AC_LANG_PUSH([C++])
   # implicitly sets the HAVE_MPI-define and the MPICXX-substitution
   ACX_MPI()
-  AC_LANG_POP([C++])
 
 # somehow variables like $1, $2 seem to disappear after m4... Quote them...
 dune_mpi_getflags () {
     # call mpiCC, remove compiler name
     # the additional brackets keep m4 from interpreting the brackets
     # in the sed-command...
-    retval=[`$MPICXX ${1} ${2} 2>/dev/null | sed -e 's/^[^ ]\+ //'`]
+    retval=[`$MPICOMP ${1} ${2} 2>/dev/null | sed -e 's/^[^ ]\+ //'`]
     # remove dummy-parameter (if existing)
     if test ${#} = 2 ; then
       retval=`echo $retval | sed -e "s/${2}//"`
     fi
 }
 
+  # get compilation script
+  AC_LANG_CASE([C],[
+	MPICOMP="$MPICC"
+],
+[C++],[
+	MPICOMP="$MPICXX"
+]
+)
+
   # taken from acx_mpi: test succeeded if MPILIBS is not empty
-  if test x != x"$MPILIBS" -a x != x"$MPICXX" ; then
+  if test x != x"$MPILIBS" -a x != x"$MPICOMP" ; then
     with_mpi="no"
 
     AC_MSG_CHECKING([MPI-package])
@@ -77,8 +85,9 @@ dune_mpi_getflags () {
       # use special commands to extract options      
 
       dune_mpi_getflags "-compile_info"
+      MPI_CPPFLAGS="$retval"
       # hack in option to disable MPICH-C++-bindings...
-      MPI_CXXFLAGS="$retval -DMPICH_SKIP_MPICXX"
+      AC_LANG_CASE([C++], [MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPICH_SKIP_MPICXX"])
 
       dune_mpi_getflags "-link_info"
       MPI_LDFLAGS="$retval"
@@ -92,9 +101,11 @@ dune_mpi_getflags () {
         with_mpi="LAM"
 
         # use -showme and dummy parameters to extract flags        
+	AC_LANG_CASE([C], [MPISOURCE="dummy.c"],
+	[C++], [MPISOURCE="dummy.cc"])
 
-        dune_mpi_getflags "-showme" "-c dummy.cc"
-        MPI_CXXFLAGS="$retval"
+        dune_mpi_getflags "-showme" "-c $MPISOURCE"
+        MPI_CPPFLAGS="$retval"
 
         dune_mpi_getflags "-showme" "dummy.o -o dummy"
         MPI_LDFLAGS="$retval"
@@ -115,10 +126,10 @@ dune_mpi_getflags () {
 
   # set flags
   if test x$with_mpi != xno ; then
-    AC_SUBST(MPI_CXXFLAGS, $MPI_CXXFLAGS)
+    AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
   else
-    AC_SUBST(MPI_CXXFLAGS, "")
+    AC_SUBST(MPI_CPPFLAGS, "")
     AC_SUBST(MPI_LDFLAGS, "")
   fi
 
