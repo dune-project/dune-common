@@ -3131,47 +3131,7 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
-    return const_cast<AlbertaGrid<dim,dimworld> &> (*this).calcLevelCodimSize(level,codim);
-  }
-
-  template < int dim, int dimworld > template <int codim>
-  inline int AlbertaGrid < dim, dimworld >::calcLevelSize (int level)
-  {
-    int numberOfElements = 0;
-    typedef typename Traits::template codim<codim>::template partition<All_Partition>::LevelIterator LevelIteratorType;
-    LevelIteratorType endit = lend<codim> (level);
-    for(LevelIteratorType it = lbegin<codim>(level); it != endit; ++it)
-    {
-      numberOfElements++;
-    }
-    return numberOfElements;
-  }
-
-  template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::calcLevelCodimSize (int level, int codim)
-  {
-    enum { numCodim = dim+1 };
-    int ind = (level * numCodim) + codim;
-
-    if(size_[ind] == -1)
-    {
-      int numberOfElements = 0;
-
-      switch (codim)
-      {
-      case 0 : this->template calcLevelSize<0>(level); break;
-      case 1 : this->template calcLevelSize<1>(level); break;
-      case 2 : this->template calcLevelSize<2>(level); break;
-      case 3 : this->template calcLevelSize<3>(level); break;
-      default : DUNE_THROW(AlbertaError,"Wrong codimension");
-      }
-      size_[ind] = numberOfElements;
-      return numberOfElements;
-    }
-    else
-    {
-      return size_[ind];
-    }
+    return this->levelIndexSet().size(level,codim);
   }
 
   template < int dim, int dimworld >
