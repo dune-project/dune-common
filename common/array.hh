@@ -44,10 +44,10 @@ namespace Dune
       Iterator operator++ (int);    // postfix
 
       //! Dereferencing
-      T& operator* () const;
+      const T& operator* () const;
 
       //! selector
-      T* operator-> () const;     // Stroustrup p. 289
+      const T* operator-> () const;     // Stroustrup p. 289
 
       friend class Array<T>;
     } ;
