@@ -134,7 +134,7 @@ namespace Dune
       /** @brief True if the conversion exists. */
       exists =  sizeof(test(makeFrom())) == sizeof(Small),
       /** @brief Wether the conversion exists in both ways. */
-      existsTowWay = exists && Conversion<To,From>::exists,
+      isTowWay = exists && Conversion<To,From>::exists,
       /** @brief True if To and From are the same type. */
       sameType = false
     };
