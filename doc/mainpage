@@ -1,0 +1,11 @@
+/** \mainpage DUNE Automatic Documentation
+
+\section intro Introduction
+
+Welcome to %Dune
+
+\section mods Modules
+
+For overview of existing modules have a look at \ref modules
+
+*/
