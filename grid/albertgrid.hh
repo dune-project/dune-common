@@ -9,6 +9,7 @@
 #include <vector>
 #include <assert.h>
 
+
 #ifdef __ALBERTNAME__
 #define ALBERT Albert::
 namespace Albert
@@ -17,16 +18,19 @@ namespace Albert
 #else
 #define ALBERT
 #endif
-
-#include "albertgrid/agindex.hh"
+#include "../common/misc.hh"
+#include "../common/matvec.hh"
+#include "../common/array.hh"
+#include "common/grid.hh"
 
 #ifndef __ALBERTNAME__
   extern "C"
   {
 #endif
 
-  // we need EL_INDEX to be defined 1, cause we need the elements to be
-  // numberd, see Albert Doc
+  // we need EL_INDEX to be defined 1,
+  // we need use this element index for determination wether an element is
+  // new or not
 #ifndef EL_INDEX
 #define EL_INDEX 1
 #endif
@@ -34,22 +38,6 @@ namespace Albert
 
   // the original ALBERT header
 #include <albert.h>
-
-  // read and write mesh
-#include "albertgrid/read_mesh_xdr.cc"
-#include "albertgrid/write_mesh_xdr.cc"
-
-#ifdef ABS
-#undef ABS
-#endif
-
-#ifdef MIN
-#undef MIN
-#endif
-
-#ifdef MAX
-#undef MAX
-#endif
 
 #ifndef __ALBERTNAME__
 } // end extern "C"
@@ -62,10 +50,19 @@ namespace Albert
 } //end namespace Albert
 #endif
 
-#include "../common/misc.hh"
-#include "../common/matvec.hh"
-#include "../common/array.hh"
-#include "common/grid.hh"
+#if 1
+#ifdef ABS
+#undef ABS
+#endif
+
+#ifdef MIN
+#undef MIN
+#endif
+
+#ifdef MAX
+#undef MAX
+#endif
+#endif
 
 #include "albertgrid/agmemory.hh"
 
@@ -313,6 +310,9 @@ namespace Albert
       //! used for access to degrees of freedom
       int index ();
 
+      //! return the global unique index in grid
+      int global_index();
+
       AlbertGridEntity(AlbertGrid<dim,dimworld> &grid, int level,
                        ALBERT TRAVERSE_STACK * travStack);
 
@@ -330,8 +330,9 @@ namespace Albert
       //! local coordinates within father
       Vec<dim,albertCtype>& local ();
 
-      // returns the global vertex number as default
-      int el_index() { return elInfo_->el->dof[vertex_][0]; }
+      //! no interface method
+      //! returns the global vertex number as default
+      int el_index();
 
     private:
       // methods for setting the infos from the albert mesh
@@ -498,9 +499,9 @@ namespace Albert
       AdaptationState state ();
 
       //! return the global unique index in grid
-      int el_index() { return elInfo_->el->index; }
+      int el_index();
 
-      //! return the global unique index in grid
+      //! return the global unique index in grid , same as el_index
       int global_index();
 
     private:
@@ -1069,14 +1070,26 @@ namespace Albert
       //! return LeafIterator which points behind last leaf entity
       LeafIterator leafend   ( int maxlevel );
 
-      int hierSize () const;
+      //! returns size of mesh includi all levels
+      //! max Index of grid entities with given codim
+      //! for outside the min index is 0, the shif has to done inside
+      //! the grid which is of minor cost
+      int global_size (int codim) const;
 
     private:
+      //! returns min Index of grid entities with given codim
+      int minIndex (int codim) const { return minHierIndex_[codim];}
+
       // max global index in Grid
-      int maxHierIndex_;
+      int maxHierIndex_[dim+1];
+      int realMaxIndex_;
+      int newRealMaxIndex_;
+
+      // max global index in Grid
+      int minHierIndex_[dim+1];
 
       // return true if entity with global number num is new
-      bool checkElNew ( int num ) const;
+      bool checkElNew ( ALBERT EL * el ) const;
 
       // make the calculation of indexOnLevel and so on.
       // extra method because of Reihenfolge
@@ -1134,9 +1147,6 @@ namespace Albert
       void makeNewSize(Array<int> &a, int newNumberOfEntries);
       void markNew();
       //**********************************************************
-      template <int codim>
-      int globalIndexConsecutive(int globalIndex) ;
-
       //! map the global index from the Albert Mesh to the local index on Level
       // returns -1 if no index exists, i.e. element is new
       template <int codim>
@@ -1150,8 +1160,6 @@ namespace Albert
       // i.e. points to mesh->n_hier_elements or mesh->n_vertices
       int numberOfEntitys_[dim+1];
       int oldNumberOfEntities_[dim+1];
-
-      SerialIndexSet gIndex_;
 
       //! actual time of Grid
       albertCtype time_;
@@ -1167,6 +1175,29 @@ namespace Albert
       IntersectionSelfProvider interSelfProvider_;
       IntersectionNeighProvider interNeighProvider_;
 
+      //*********************************************
+      // organisation of the global index
+      INDEX_MANAGER *indexManager_;
+
+
+      // storage of unique element numbers
+      DOF_INT_VEC * elNumbers_;
+      const DOF_ADMIN * elAdmin_;
+      // pointer to vec of elNumbers_
+      const int * elNumVec_;
+
+      const int nv_;
+      const int dof_;
+      //*********************************************
+
+      // make some shortcuts
+      void arrangeDofVec();
+
+      // read global element number form elNumbers_
+      int getElementNumber ( ALBERT EL * el ) const;
+
+      //****************************************//
+
     }; // end Class AlbertGridGrid
 
     // Class to mark the Vertices on the leaf level
@@ -1179,7 +1210,7 @@ namespace Albert
     public:
       AlbertMarkerVector () {} ;
 
-      bool notOnThisElement(ALBERT EL * el, int level , int vertex);
+      bool notOnThisElement(ALBERT EL * el, int elIndex, int level , int vertex);
 
       template <class GridType>
       void markNewVertices(GridType &grid);
