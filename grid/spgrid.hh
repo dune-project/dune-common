@@ -143,7 +143,7 @@ namespace Dune {
 #endif
   public:
     // Constructors
-    spgrid(array<DIM> & gsize, array<DIM,FLOAT> & _h,
+    spgrid(array<DIM> & gsize, array<DIM,FLOAT> & physsize,
            array<DIM,bool> & periodic, int o) :
       globalsize_(gsize), periodic_(periodic), levels(0)
     {
@@ -155,7 +155,7 @@ namespace Dune {
         if (gsize[d] == 0)
           h_[d] = 0;
         else
-          h_[d] = _h[d] / gsize[d];
+          h_[d] = physsize[d] / gsize[d];
       }
       overlap_[0]=0;
       levels++;
