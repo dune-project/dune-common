@@ -43,7 +43,7 @@ check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 #
 
 # grids may use functions from common (e.g. standard streams)
-AM_LDFLAGS = $(top_builddir)/common/libcommon.la
+LDFLAGS = $(top_builddir)/common/libcommon.la
 
 #
 ## define the programs
