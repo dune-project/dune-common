@@ -168,15 +168,15 @@ namespace Dune {
      * local coordinate in its reference element */
     FieldVector<OneDCType, mydim> local (const FieldVector<OneDCType, coorddim>& global) const {
       FieldVector<OneDCType, mydim> l;
-      const double& v0 = vertex_[0]->geometry().pos_[0];
-      const double& v1 = vertex_[1]->geometry().pos_[0];
+      const double& v0 = vertex_[0]->geo_.pos()[0];
+      const double& v1 = vertex_[1]->geo_.pos()[0];
       l[0] = (global[0] - v0) / (v1 - v0);
       return l;
     }
 
     //! Returns true if the point is in the current element
     bool checkInside(const FieldVector<OneDCType, coorddim> &global) {
-      return vertex_[0]->geometry().pos_[0] <= global[0] && global[0] <= vertex_[1]->geometry().pos_[0];
+      return vertex_[0]->geo_.pos()[0] <= global[0] && global[0] <= vertex_[1]->geo_.pos()[0];
     }
 
     /** ???

@@ -74,10 +74,10 @@ namespace Dune {
     //! access neighbor, dereferencing
     Entity& dereference() const {
       if (neighbor_==0)
-        if (center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0])
+        if (center_->pred_ && center_->pred_->geo_.vertex(1) == center_->geo_.vertex(0))
           return *center_->pred_;
         else
-        if (center_->succ_ && center_->succ_->geo_.vertex[0] == center_->geo_.vertex[1])
+        if (center_->succ_ && center_->succ_->geo_.vertex(0) == center_->geo_.vertex(1))
           return *center_->succ_;
 
       DUNE_THROW(GridError, "Trying to dereferentiate a NULL-pointer!");
