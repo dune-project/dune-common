@@ -78,6 +78,10 @@ namespace Dune {
     int globalIndex() const { return index(); }
 #endif
 
+    /** \brief The partition type for parallel computing
+     * \todo So far it always returns InteriorEntity */
+    PartitionType partitionType () const { return InteriorEntity; }
+
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
      */
@@ -196,8 +200,11 @@ namespace Dune {
     int globalIndex() const { return index(); }
 #endif
 
+    /** \brief The partition type for parallel computing
+     * \todo So far it always returns InteriorEntity */
+    PartitionType partitionType () const { return InteriorEntity; }
+
     //! Geometry of this entity
-    //const UGGridGeometry<dim,dim,GridImp>& geometry () const;
     const Geometry& geometry () const;
 
     /** \brief Return the number of subentities of codimension cc.
