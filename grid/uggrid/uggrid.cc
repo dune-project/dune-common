@@ -30,9 +30,40 @@ namespace Dune
   template<> int UGGrid < 3, 3 >::numOfUGGrids = 0;
 
   template < int dim, int dimworld >
-  inline UGGrid < dim, dimworld >::UGGrid(unsigned int heap) : heapsize(heap)
+  inline UGGrid < dim, dimworld >::UGGrid()
   {
+    init(500, 10);
+  }
+
+  template < int dim, int dimworld >
+  inline UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned envHeapSize)
+  {
+    init(heapSize, envHeapSize);
+  }
+
+  template < int dim, int dimworld >
+  inline void UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHeapSize)
+  {
+    heapsize = heapSize;
+
     if (numOfUGGrids==0) {
+
+      useExistingDefaultsFile = false;
+
+      if (access("defaults", F_OK) == 0) {
+
+        std::cout << "Using existing UG defaults file" << std::endl;
+        useExistingDefaultsFile = true;
+
+      } else {
+
+        // Pass the explicitly given environment heap size
+        // This is only possible by passing a pseudo 'defaults'-file
+        FILE* fp = fopen("defaults", "w");
+        fprintf(fp, "envmemory  %d000000\n", envHeapSize);
+        fclose(fp);
+
+      }
 
       // Init the UG system
       int argc = 1;
@@ -57,7 +88,6 @@ namespace Dune
       if (UG_NS<dimworld>::CreateBoundaryValueProblem("DuneDummyProblem",
                                                       1,coeffs,1,upp) == NULL)
         assert(false);
-
 
       // A Dummy new format
       // We need to pass the parameters in this complicated way, because
@@ -115,6 +145,10 @@ namespace Dune
 
       for (int i=0; i<4; i++)
         free(newformatArgs[i]);
+
+      // remove defaults file, if we wrote one on startup
+      if (!useExistingDefaultsFile)
+        system("rm defaults");
 
     }
 
