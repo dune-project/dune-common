@@ -648,7 +648,11 @@ namespace Dune {
     count = _count;
 
     // check if count is valid
-    if (count<0 || count>=self->template count<1>()) return;     // done, this is end iterator
+    if (count<0 || count>=self->template count<1>())
+    {
+      this->id = self->index();
+      return;     // done, this is end iterator
+    }
     valid_count = true;
 
     // and compute compressed coordinates of neighbor
@@ -660,16 +664,17 @@ namespace Dune {
 
     // now check if neighbor exists
     is_on_boundary = !this->grid->exists(self->level(),zrednb);
-    if (is_on_boundary) return;     // ok, done it
+    if (is_on_boundary)
+    {
+      this->id = -1;
+      return;     // ok, done it
+    }
 
     // now neighbor is in the grid and must be initialized.
     // First compute its id
-    int nbid =
+    this->id =
       this->grid->n(self->level(),
                     this->grid->expand(self->level(),zrednb,partition));
-
-    // and make it
-    this->e.make(self->level(),nbid);
   }
 
   template<class GridImp>

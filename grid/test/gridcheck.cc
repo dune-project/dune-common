@@ -487,20 +487,24 @@ void assertNeighbor (Grid &g)
   typedef typename Grid::template codim<0>::IntersectionIterator IntersectionIterator;
   LevelIterator e = g.template lbegin<0>(0);
   const LevelIterator eend = g.template lend<0>(0);
-  for (; e != eend; ++e)
+  LevelIterator next = e; ++next;
+  if (next != eend)
   {
-    IntersectionIterator endit = e->iend();
-    IntersectionIterator it = e->ibegin();
-    assert(e->index() >= 0);
-    for(; it != endit; ++it)
+    for (; e != eend; ++e)
     {
-      if (it.neighbor())
+      IntersectionIterator endit = e->iend();
+      IntersectionIterator it = e->ibegin();
+      assert(e->index() >= 0);
+      assert(it != endit);
+      for(; it != endit; ++it)
       {
-        assert(it->index() >= 0);
-        LevelIterator n = g.template lbegin<0>(it->level());
-        LevelIterator nend = g.template lend<0>(it->level());
-        //        while (n->index() != it->index()&& n != nend) ++n;
-        while (n != it && n != nend) ++n;
+        if (it.neighbor())
+        {
+          assert(it->index() >= 0);
+          LevelIterator n = g.template lbegin<0>(it->level());
+          LevelIterator nend = g.template lend<0>(it->level());
+          while (n != it && n != nend) ++n;
+        }
       }
     }
   }
