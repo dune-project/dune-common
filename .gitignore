@@ -11,3 +11,4 @@ mkinstalldirs
 libtool
 dune.pc
 semantic.cache
+configure.lineno
