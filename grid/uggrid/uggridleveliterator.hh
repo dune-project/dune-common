@@ -46,23 +46,6 @@ namespace Dune {
     //! dereferencing
     Entity& dereference() const;
 
-#if 0
-    //! prefix increment
-    UGGridLevelIterator<codim,pitype,GridImp>& operator ++();
-
-    //! equality
-    bool operator== (const UGGridLevelIterator<codim,pitype,GridImp>& i) const;
-
-    //! inequality
-    bool operator!= (const UGGridLevelIterator<codim,pitype,GridImp>& i) const;
-
-    //! dereferencing
-    UGGridEntity<codim,GridImp::dimension,GridImp>& operator*() ;
-
-    //! arrow
-    UGGridEntity<codim,GridImp::dimension,GridImp>* operator->() ;
-#endif
-
     //! ask for level of entity
     int level ();
 
