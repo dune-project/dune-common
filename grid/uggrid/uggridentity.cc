@@ -45,13 +45,14 @@ level() const
   return level_;
 }
 
-
+#ifndef UGGRID_WITH_INDEX_SETS
 template<int codim, int dim, class GridImp>
 inline int UGGridEntity < codim, dim ,GridImp>::
 index() const
 {
   return UG_NS<dim>::index(target_);
 }
+#endif
 
 template< int codim, int dim, class GridImp>
 inline const typename UGGridEntity<codim,dim,GridImp>::Geometry&
@@ -75,6 +76,7 @@ inline int UGGridEntity<codim,dim,GridImp>::count () const
   return -1;
 }
 
+#ifndef UGGRID_WITH_INDEX_SETS
 template <int codim, int dim, class GridImp>
 template <int cc>
 inline int UGGridEntity<codim, dim, GridImp>::subIndex(int i) const
@@ -83,20 +85,8 @@ inline int UGGridEntity<codim, dim, GridImp>::subIndex(int i) const
                                         << ">::subIndex(int i) not implemented yet!");
   return 0;
 }
-
-
-#if 0  // only for codim 0 ?!?
-template <int codim, int dim, class GridImp>
-template <int cc>
-inline UGGridLevelIterator<cc,All_Partition,GridImp>
-UGGridEntity<codim,dim,GridImp>::entity ( int i )
-{
-  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim
-                                        << ">::entity(int i) not implemented yet!");
-  UGGridLevelIterator<cc,All_Partition,GridImp> tmp (level_);
-  return tmp;
-}
 #endif
+
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -112,12 +102,14 @@ inline AdaptationState UGGridEntity < 0, dim ,GridImp >::state() const
   return NONE;
 }
 
+#ifndef UGGRID_WITH_INDEX_SETS
 template<int dim, class GridImp>
 inline int UGGridEntity < 0, dim ,GridImp>::
 index() const
 {
   return UG_NS<dim>::index(target_);
 }
+#endif
 
 //*****************************************************************8
 // count
@@ -174,7 +166,7 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
     i = renumbering[i];
   }
 
-  return UG_NS<dim>::Corner(target_,i)->id;
+  return UG_NS<dim>::index(UG_NS<dim>::Corner(target_,i));
 }
 
 

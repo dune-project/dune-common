@@ -66,11 +66,18 @@ namespace Dune {
     //! level of this element
     int level () const;
 
+#ifdef UGGRID_WITH_INDEX_SETS
+    int getIndex() const {
+      return UG_NS<dim>::index(target_);
+    }
+#else
     //! index is unique and consecutive per level and codim
     //! used for access to degrees of freedom
     int index () const;
 
     int globalIndex() const { return index(); }
+#endif
+
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
      */
@@ -81,13 +88,6 @@ namespace Dune {
     //! i.e. return global number of vertex i
     /** \todo So far only implemented for cc==dim */
     template<int cc> int subIndex (int i) const;
-
-#if 0
-    //! Provide access to mesh entity i of given codimension. Entities
-    //!  are numbered 0 ... count<cc>()-1
-    template<int cc>
-    UGGridLevelIterator<cc,All_Partition,GridImp> entity (int i);
-#endif
 
     //! geometry of this entity
     //const UGGridGeometry<dim-codim,dim,GridImp>& geometry () const;
@@ -182,6 +182,11 @@ namespace Dune {
     //! Level of this element
     int level () const;
 
+#ifdef UGGRID_WITH_INDEX_SETS
+    int getIndex() const {
+      return UG_NS<dim>::index(target_);
+    }
+#else
     //! Index is unique and consecutive per level and codim
     int index () const;
 
@@ -189,6 +194,7 @@ namespace Dune {
      * \todo So far returns the same as index()
      */
     int globalIndex() const { return index(); }
+#endif
 
     //! Geometry of this entity
     //const UGGridGeometry<dim,dim,GridImp>& geometry () const;

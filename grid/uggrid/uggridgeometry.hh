@@ -59,6 +59,12 @@ namespace Dune {
     // Empty.  Boundary elements in a 2d grid have always two corners
     void setNumberOfCorners(int n) {}
 
+    // UG doesn't actually have Subfaces.  Therefore, this method should never be
+    // called.  It is only here to calm the compiler
+    void setToTarget(void* target) {
+      DUNE_THROW(NotImplemented, "You have called UGMakeableGeometry<1,2>::setToTarget");
+    }
+
   };
 
   //**********************************************************************
