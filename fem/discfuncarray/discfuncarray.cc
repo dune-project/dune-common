@@ -273,11 +273,11 @@ namespace Dune
       {
         int length = this->functionSpace_.size( lev );
         dofVec_[lev].processXdr(&xdrs);
-        if(length != dofVec_[lev].size())
-        {
-          std::cerr << "DiscFuncArray::read_xdr: ERROR wrong length! \n";
-          abort();
-        }
+        //if(length != dofVec_[lev].size())
+        //{
+        //  std::cerr << "DiscFuncArray::read_xdr: ERROR wrong length! \n";
+        //  abort();
+        //}
       }
     }
     else
@@ -288,11 +288,11 @@ namespace Dune
       int lev = level_;
       int length = this->functionSpace_.size( lev );
       dofVec_[lev].processXdr(&xdrs);
-      if(length != dofVec_[lev].size())
-      {
-        std::cerr << "DiscFuncArray::read_xdr: ERROR wrong length! \n";
-        abort();
-      }
+      //if(length != dofVec_[lev].size())
+      //{
+      //  std::cerr << "DiscFuncArray::read_xdr: ERROR wrong length! \n";
+      //  abort();
+      //}
     }
 
     xdr_destroy(&xdrs);
