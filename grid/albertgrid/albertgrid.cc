@@ -2474,6 +2474,7 @@ namespace Dune
   inline AlbertGrid < dim, dimworld >::AlbertGrid() :
     mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
     , isMarked_ (false) , indexManager_ (NULL)
+    , nv_ (dim+1) , dof_ (0)
   {
     vertexMarker_ = new AlbertMarkerVector ();
     indexManager_ = get_index_manager();
@@ -2483,6 +2484,7 @@ namespace Dune
   inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename) :
     mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
     , isMarked_ (false) , indexManager_ (NULL)
+    , nv_ (dim+1) , dof_ (0)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
