@@ -897,9 +897,10 @@ namespace Dune
     mutable ALBERTA EL_INFO * elInfo_;
 
     // for memory management
-    mutable typename GridImp::EntityProvider::ObjectEntity *manageObj_;
-    mutable typename GridImp::IntersectionSelfProvider::ObjectEntity  *manageInterEl_;
-    mutable typename GridImp::IntersectionNeighProvider::ObjectEntity *manageNeighEl_;
+    mutable typename GridImp::EntityProvider::ObjectEntity                *manageObj_;
+    mutable typename GridImp::IntersectionSelfProvider::ObjectEntity      *manageInterEl_;
+    mutable typename GridImp::IntersectionNeighProvider::ObjectEntity     *manageNeighEl_;
+    mutable typename GridImp::IntersectionBoundaryProvider::ObjectEntity  *manageBndEntity_;
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
@@ -1403,15 +1404,18 @@ namespace Dune
     //**********************************************************************
     typedef AlbertaGridMakeableEntity<0,dim,const MyType>            EntityImp;
     typedef AlbertaGridMakeableGeometry<dim-1,dimworld,const MyType> GeometryImp;
+    typedef AlbertaGridMakeableBoundaryEntity<const MyType> BoundaryImp;
 
   public:
     typedef MemoryProvider< EntityImp > EntityProvider;
     typedef MemoryProvider< GeometryImp > IntersectionSelfProvider;
     typedef MemoryProvider< GeometryImp > IntersectionNeighProvider;
+    typedef MemoryProvider< BoundaryImp > IntersectionBoundaryProvider;
 
     mutable EntityProvider entityProvider_;
     mutable IntersectionSelfProvider interSelfProvider_;
     mutable IntersectionNeighProvider interNeighProvider_;
+    mutable IntersectionBoundaryProvider interBndProvider_;
 
   private:
     //*********************************************************************
