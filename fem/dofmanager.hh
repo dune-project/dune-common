@@ -129,6 +129,15 @@ namespace Dune {
       }
     };
 
+    template <class EntityType>
+    struct IndexWrapper<EntityType,0,1>
+    {
+      static int index (EntityType & en , int num )
+      {
+        return en.template subIndex<1> (num);
+      }
+    };
+
   public:
     enum { ncodim = GridType::dimension + 1 };
     DefaultGridIndexSet ( GridType & grid ) : DefaultGridIndexSetBase <GridType> (grid) {}
