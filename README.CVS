@@ -8,6 +8,7 @@ following programs installed on your system:
 
   autoconf >= 2.50
 
+  libtool
 
 Run the script
 
