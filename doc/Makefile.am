@@ -5,13 +5,8 @@ all: doxygen-tag
 doxygen_DEPS = $(shell: cat $(DEPDIR)/doxygen.Po)
 doxygen_FILES = Doxyfile doxy-header.html doxy-footer.html dune-doxy.css
 
-$(DEPDIR)/doxygen.Po:
-	if [ ! -d $(DEPDIR) ]; then mkdir $(DEPDIR); fi
-	echo > $@
-	for d in $$(grep '^INPUT ' Doxyfile | cut -d '=' -f 2); do \
-	  for p in $$(grep '^FILE_PATTERNS ' Doxyfile | cut -d '=' -f 2); \
-	    do find "$$d" -name "$$p" -exec echo doxygen-tag: \{\} \; >> $@ ; \
-	done; done
+$(DEPDIR)/doxygen.Po: Doxyfile
+	./Doxydep $< $@
 
 doxygen-tag: $(doxygen_FILES) $(doxygen_DEPS)
 	doxygen

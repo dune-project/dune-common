@@ -1,0 +1,46 @@
+#!/usr/bin/perl -w
+
+use strict;
+use English;
+use IO::Handle;
+
+my $defaulttarget = "doxygen-tag";
+my $USAGE = "Doxydep <DOXYFILE> <DEPFILE> [TARGET]".
+    "\tDOXYFILE: Configuration file for Doxygen\n".
+    "\tDEPFILE: Outfile for the dependencies\n".
+    "\tTARGT: Target for the Makefile (default=$defaulttarget)";
+
+# DOXYFILE
+my $doxyfile = shift || die $USAGE;
+open DOXYFILE, $doxyfile || die "Could not open $doxyfile\n";
+# DEPFILE
+my $depfile = shift || die $USAGE;
+open DEPFILE, ">$depfile" || die "Could not open $depfile\n";
+# TARGET
+my $target;
+$target = shift;
+if (! $target) { $target = $defaulttarget };
+
+my $line="";
+print "\n";
+while (<DOXYFILE>) {
+    chomp;
+    my $input =$_;
+    if ($input=~/^\s*INPUT\s*=/) {	
+	while ($input=~/\\\s*$/) {
+	    $input =~ s/\\\s*$//;
+	    $line = $line.$input;
+	    $input = DOXYFILE->getline();
+	};
+	$line = $line.$input;
+    }
+}
+close DOXYFILE;
+
+$line =~ s/^\s*INPUT\s*=//;
+$line =~ s/\s+/ /g;
+my @depends = split(/ /, $line);
+foreach (@depends) {
+    print DEPFILE "$target: $_\n";
+}
+close DEPFILE;
