@@ -157,7 +157,7 @@ namespace Dune {
   LagrangeDiscreteFunctionSpace<FunctionSpaceType,GridType,polOrd,DofManagerType>::
   MemObjectType &
   LagrangeDiscreteFunctionSpace<FunctionSpaceType,GridType,polOrd,DofManagerType>::
-  signIn (DiscFuncType & df)
+  signIn (DiscFuncType & df) const
   {
     // only for gcc to pass type DofType
     assert(mapper_ != 0);
@@ -169,7 +169,7 @@ namespace Dune {
   template< class DiscFuncType>
   inline bool
   LagrangeDiscreteFunctionSpace<FunctionSpaceType,GridType,polOrd,DofManagerType>::
-  signOut (DiscFuncType & df)
+  signOut (DiscFuncType & df) const
   {
     return dm_.removeDofSet( df.memObj() );
   }
