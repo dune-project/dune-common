@@ -12,7 +12,7 @@ namespace Dune
 {
 
   //#ifdef _GNUGCC
-#define TEMPPARAM2
+  //#define TEMPPARAM2
   //#endif
 
   static ALBERT EL_INFO statElInfo[DIM+1];
@@ -77,7 +77,7 @@ namespace Dune
   template <>
   inline int AlbertGridElement<2,3>::mapVertices (int i) const
   {
-    return AlbertHelp::localTetraFaceNumber[face_][i];
+    return ALBERT AlbertHelp::localTetraFaceNumber[face_][i];
   }
 
   // specialization for codim == 2, edges
@@ -328,7 +328,7 @@ namespace Dune
   template<int dim, int dimworld>
   inline void AlbertGridElement<dim,dimworld>::print (std::ostream& ss, int indent)
   {
-    std::cout << "AlbertGridElement<" << dim << "," << dimworld << " = {\n";
+    std::cout << "AlbertGridElement<" << dim << "," << dimworld << "> = {\n";
     for(int i=0; i<corners(); i++)
     {
       std::cout << " corner " << i;
@@ -403,7 +403,7 @@ namespace Dune
   inline Vec<dimworld,albertCtype> AlbertGridElement<dim,dimworld>::
   global(const Vec<dim>& local)
   {
-    // checked, works
+    // 1hecked, works
 
     // we calculate interal in barycentric coordinates
     // fake the third local coordinate via localFake
@@ -896,9 +896,9 @@ namespace Dune
   inline AlbertGridLevelIterator<0,dim,dimworld>
   AlbertGridEntity < codim, dim ,dimworld >::father()
   {
-    std::cout << "\nAlbertGridEntity<" << codim << "," << dim << "," << dimworld <<">::father not correctly implemented! \n";
+    //std::cout << "\nAlbertGridEntity<" << codim << "," << dim << "," << dimworld <<">::father not correctly implemented! \n";
     ALBERT TRAVERSE_STACK travStack;
-    initTraverseStack(&travStack);
+    ALBERT initTraverseStack(&travStack);
 
     travStack = (*travStack_);
 
@@ -940,6 +940,12 @@ namespace Dune
         return true;
       }
     }
+    // only for debugging
+    //else
+    //{
+    //  fprintf(stderr,"ERROR in AlbertGridEntity<0,%d,%d>::mark(%d) : called on non LeafEntity! \n",dim,dimworld,refCount);
+    //  abort();
+    //}
     elInfo_->el->mark = 0;
     return false;
   }
@@ -962,6 +968,35 @@ namespace Dune
     }
 
     return NONE;
+  }
+
+  template< int dim, int dimworld>
+  inline bool AlbertGridEntity < 0, dim ,dimworld >::
+  partition( int proc )
+  {
+    return grid_.setOwner( elInfo_->el , proc );
+  }
+
+  template< int dim, int dimworld>
+  inline PartitionType AlbertGridEntity < 0, dim ,dimworld >::
+  partitionType () const
+  {
+    return grid_.partitionType( elInfo_ );
+  }
+
+  template< int dim, int dimworld>
+  inline bool AlbertGridEntity < 0, dim ,dimworld >::
+  master() const
+  {
+    return (owner() == grid_.myProcessor());
+  }
+
+
+  template< int dim, int dimworld>
+  inline int AlbertGridEntity < 0, dim ,dimworld >::
+  owner() const
+  {
+    return grid_.getOwner( elInfo_->el );
   }
 
   template< int dim, int dimworld>
@@ -1760,7 +1795,7 @@ namespace Dune
     const albertCtype val = 0.5;
 
     // neighborCount_ is the local face number
-    const int * localFaces = AlbertHelp::localTetraFaceNumber[neighborCount_];
+    const int * localFaces = ALBERT AlbertHelp::localTetraFaceNumber[neighborCount_];
     for(int i=0; i<dim; i++)
     {
       v(i) =   coord[localFaces[1]][i] - coord[localFaces[0]][i];
@@ -1881,7 +1916,22 @@ namespace Dune
 
     int vx = elInfo_->opp_vertex[neighborCount_];
 
+#if 0
+    for(int k=0; k<dim+1; k++)
+    {
+      printf("coord %f %f \n",elInfo_->coord[k][0],elInfo_->coord[k][1]);
+    }
+
+    printf("oppvx %d %d %d \n",elInfo_->opp_vertex[0],elInfo_->opp_vertex[1],elInfo_->opp_vertex[2]);
+
+    for(int k=0; k<dim+1; k++)
+    {
+      printf("oppcoord %f %f \n",elInfo_->opp_coord[k][0],elInfo_->opp_coord[k][1]);
+    }
+#endif
+
     /* now it's ok */
+#if 0
     memcpy(&(neighElInfo_->coord[vx]), &(elInfo_->opp_coord[neighborCount_]),
            dimworld*sizeof(ALBERT REAL));
 
@@ -1890,6 +1940,17 @@ namespace Dune
       int nb = (((neighborCount_-i)%(dim+1)) +dim+1)%(dim+1);
       memcpy(&neighElInfo_->coord[(vx+i)%(dim+1)], &elInfo_->coord[nb],
              dimworld*sizeof(ALBERT REAL));
+    }
+    /* works, tested many times */
+#endif
+    for(int i=0; i<dimworld; i++)
+      neighElInfo_->coord[vx][i] = elInfo_->opp_coord[neighborCount_][i];
+
+    for(int i=1; i<dim+1; i++)
+    {
+      int nb = (((neighborCount_-i)%(dim+1)) +dim+1)%(dim+1);
+      for(int j=0; j<dimworld; j++)
+        neighElInfo_->coord[(vx+i)%(dim+1)][j] = elInfo_->coord[nb][j];
     }
     /* works, tested many times */
 
@@ -1986,8 +2047,10 @@ namespace Dune
   // Make LevelIterator with point to element from previous iterations
   template<int codim, int dim, int dimworld>
   inline AlbertGridLevelIterator<codim,dim,dimworld >::
-  AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid, int travLevel, bool leafIt ) :
-    grid_(grid), level_ (travLevel) ,  virtualEntity_(grid,0) ,leafIt_(leafIt)
+  AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid, int travLevel,
+                          IteratorType IType, int proc, bool leafIt ) :
+    grid_(grid), level_ (travLevel) ,  virtualEntity_(grid,0)
+    ,leafIt_(leafIt) , myType_ (IType) , proc_(proc)
   {
     makeIterator();
   }
@@ -1998,7 +2061,8 @@ namespace Dune
   AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid, int level,
                           ALBERT EL_INFO *elInfo,int elNum,int face,int edge,int vertex) :
     grid_(grid), level_ (level) , virtualEntity_(grid,level) , elNum_ ( elNum ) , face_ ( face ) ,
-    edge_ ( edge ), vertex_ ( vertex ) , leafIt_(false)
+    edge_ ( edge ), vertex_ ( vertex ) , leafIt_(false) ,
+    myType_(InteriorBorder) , proc_(-1)
   {
     vertexMarker_ = NULL;
     virtualEntity_.setTraverseStack(NULL);
@@ -2015,8 +2079,9 @@ namespace Dune
   inline AlbertGridLevelIterator<codim,dim,dimworld >::
   AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid,
                           AlbertMarkerVector * vertexMark,
-                          int travLevel,bool leafIt) : grid_(grid) , level_ (travLevel), leafIt_(leafIt)
-                                                       , virtualEntity_(grid,travLevel)
+                          int travLevel, IteratorType IType , int proc, bool leafIt)
+    : grid_(grid) , level_ (travLevel), leafIt_(leafIt)
+      , virtualEntity_(grid,travLevel) , myType_ (IType), proc_(proc)
   {
     ALBERT MESH * mesh = grid_.getMesh();
 
@@ -2221,19 +2286,43 @@ namespace Dune
     FUNCNAME("goNextElInfo");
     ALBERT EL_INFO       *elinfo=NULL;
 
-    if (stack->traverse_fill_flag & CALL_LEAF_EL_LEVEL)
+    if (stack->stack_used)
     {
-      // this is done in traverse_next
-      if (stack->stack_used)
-      {
-        ALBERT_TEST_EXIT(elinfo_old == stack->elinfo_stack+stack->stack_used)
-          ("invalid old elinfo\n");
-      }
-      else
-      {
-        ALBERT_TEST_EXIT(elinfo_old == nil) ("invalid old elinfo != nil\n");
-      }
+      ALBERT_TEST_EXIT(elinfo_old == stack->elinfo_stack+stack->stack_used)
+        ("invalid old elinfo\n");
+    }
+    else
+    {
+      ALBERT_TEST_EXIT(elinfo_old == nil) ("invalid old elinfo != nil\n");
+    }
 
+    switch (myType_)
+    {
+    // walk only over macro_elements that belong to this processor
+    case InteriorBorder :
+    {
+      // overloaded traverse_leaf_el_level, is not implemened in ALBERT yet
+      elinfo = traverseElLevelInteriorBorder(stack);
+
+      // if leafIt_ == false go to elements only on desired level
+      if((elinfo) && (!leafIt_))
+      {
+        if(elinfo->level == stack->traverse_level)
+          okReturn_ = true;
+
+        while(!okReturn_)
+        {
+          elinfo = traverseElLevelInteriorBorder(stack);
+          if(!elinfo) okReturn_ = true;
+        }
+        stack->el_count++;
+      }
+      return(elinfo);
+    }
+
+    // Walk over all macro_elements on this grid
+    case All :
+    {
       // overloaded traverse_leaf_el_level, is not implemened in ALBERT yet
       elinfo = traverseElLevel(stack);
 
@@ -2250,15 +2339,81 @@ namespace Dune
         }
         stack->el_count++;
       }
+      return(elinfo);
     }
-    else
+
+    // walk over ghost elements, if proc == -1 then over all ghosts
+    case Ghosts :
     {
-      std::cout << "Warning: dont use traverse_next becasue we overloaded fill_elinfo\n";
-      // the original ALBERT traverse_next, goes to next elinfo,
-      // depending on the flags choosen
-      elinfo = ALBERT traverse_next(stack,elinfo_old);
+      // overloaded traverse_leaf_el_level, is not implemened in ALBERT yet
+      elinfo = traverseElLevelGhosts(stack);
+
+      // if leafIt_ == false go to elements only on desired level
+      if((elinfo) && (!leafIt_))
+      {
+        if(elinfo->level == stack->traverse_level)
+          okReturn_ = true;
+
+        while(!okReturn_)
+        {
+          elinfo = traverseElLevelGhosts(stack);
+          if(!elinfo) okReturn_ = true;
+        }
+        stack->el_count++;
+      }
+      return(elinfo);
     }
-    return(elinfo);
+
+    // walk over interior elements which have ghosts as neighbour
+    case Border :
+    {
+      // overloaded traverse_leaf_el_level, is not implemened in ALBERT yet
+      elinfo = traverseElLevelInteriorBorder(stack);
+
+      // if leafIt_ == false go to elements only on desired level
+      if((elinfo) && (!leafIt_))
+      {
+        if(elinfo->level == stack->traverse_level)
+          okReturn_ = true;
+
+        while(!okReturn_)
+        {
+          elinfo = traverseElLevelInteriorBorder(stack);
+          if(!elinfo) okReturn_ = true;
+        }
+        stack->el_count++;
+      }
+
+      if(elinfo)
+      {
+        // here we have the interior element, now check the neighbours
+        for(int i=0; i<dim+1; i++)
+        {
+          //ALBERT EL * neigh = ALBERT NEIGH(elinfo->el,elinfo)[i];
+          ALBERT EL * neigh = NEIGH(elinfo->el,elinfo)[i];
+          if(neigh)
+          {
+            if(((proc_ == -1) && (grid_.getOwner(neigh) != grid_.myProcessor()))||
+               ((proc_ != -1) && (grid_.getOwner(neigh) == proc_) ))
+            {
+              return elinfo;
+            }
+          }
+        }
+        // we found not the one, so go next
+        return goNextElInfo(stack,elinfo);
+      }
+
+      return elinfo;
+    }
+
+    // default iterator type no supported
+    default :
+    {
+      assert(elinfo != NULL);
+      return NULL;
+    }
+    } // end switch
   }
 
 
@@ -2277,8 +2432,10 @@ namespace Dune
       if (stack->traverse_mel == nil) return(nil);
 
       stack->stack_used = 1;
-      fill_macro_info(stack->traverse_mel,
-                      stack->elinfo_stack+stack->stack_used);
+
+      ALBERT fillMacroInfo(stack, stack->traverse_mel,
+                           stack->elinfo_stack+stack->stack_used);
+
       stack->info_stack[stack->stack_used] = 0;
 
       el = stack->elinfo_stack[stack->stack_used].el;
@@ -2307,8 +2464,10 @@ namespace Dune
         if (stack->traverse_mel == nil) return(nil);
 
         stack->stack_used = 1;
-        fill_macro_info(stack->traverse_mel,
-                        stack->elinfo_stack+stack->stack_used);
+
+        ALBERT fillMacroInfo(stack, stack->traverse_mel,
+                             stack->elinfo_stack+stack->stack_used);
+
         stack->info_stack[stack->stack_used] = 0;
 
         el = stack->elinfo_stack[stack->stack_used].el;
@@ -2330,6 +2489,239 @@ namespace Dune
       i = stack->info_stack[stack->stack_used];
       el = el->child[i];
       stack->info_stack[stack->stack_used]++;
+
+      //ALBERT fill_elinfo(i, stack->elinfo_stack+stack->stack_used,
+      //               stack->elinfo_stack+stack->stack_used+1);
+      grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
+                       stack->elinfo_stack+stack->stack_used+1, false);
+
+      stack->stack_used++;
+
+      ALBERT_TEST_EXIT(stack->stack_used < stack->stack_size)
+        ("stack_size=%d too small, level=(%d,%d)\n",
+        stack->stack_size, stack->elinfo_stack[stack->stack_used].level);
+
+      stack->info_stack[stack->stack_used] = 0;
+
+      if(stack->traverse_level == (stack->elinfo_stack+stack->stack_used)->level)
+      {
+        okReturn_ = true;
+      }
+    }
+
+    return(stack->elinfo_stack+stack->stack_used);
+  }
+
+  // iterate over interior elements
+  template<int codim, int dim, int dimworld>
+  inline ALBERT EL_INFO * AlbertGridLevelIterator<codim,dim,dimworld >::
+  traverseElLevelInteriorBorder(ALBERT TRAVERSE_STACK *stack)
+  {
+    FUNCNAME("traverseElLevel");
+    ALBERT EL *el;
+    int i;
+    okReturn_ = false;
+
+    if (stack->stack_used == 0) /* first call */
+    {
+      ALBERT MACRO_EL * mel = stack->traverse_mesh->first_macro_el;
+      while(grid_.getOwner(mel->el) != grid_.myProcessor())
+      {
+        mel = mel->next;
+        if(!mel) break;
+      }
+      stack->traverse_mel = mel;
+      if (stack->traverse_mel == nil) return(nil);
+
+      stack->stack_used = 1;
+
+      ALBERT fillMacroInfo(stack, stack->traverse_mel,
+                           stack->elinfo_stack+stack->stack_used);
+
+      stack->info_stack[stack->stack_used] = 0;
+
+      el = stack->elinfo_stack[stack->stack_used].el;
+      if ((el == nil) || (el->child[0] == nil)) {
+        return(stack->elinfo_stack+stack->stack_used);
+      }
+    }
+    else
+    {
+      el = stack->elinfo_stack[stack->stack_used].el;
+
+      /* go up in tree until we can go down again */
+      while((stack->stack_used > 0) &&
+            ((stack->info_stack[stack->stack_used] >= 2) || (el->child[0]==nil)
+             || ( stack->traverse_level <=
+                  (stack->elinfo_stack+stack->stack_used)->level)) )
+      // Aenderung hier
+      {
+        stack->stack_used--;
+        el = stack->elinfo_stack[stack->stack_used].el;
+      }
+      /* goto next macro element */
+      if (stack->stack_used < 1)
+      {
+        ALBERT MACRO_EL * mel = stack->traverse_mel->next;
+        if(mel)
+        {
+          while(grid_.getOwner(mel->el) != grid_.myProcessor())
+          {
+            mel = mel->next;
+            if(!mel) break;
+          }
+        }
+        stack->traverse_mel = mel;
+        if (stack->traverse_mel == nil) return(nil);
+
+        stack->stack_used = 1;
+
+        ALBERT fillMacroInfo(stack, stack->traverse_mel,
+                             stack->elinfo_stack+stack->stack_used);
+
+        stack->info_stack[stack->stack_used] = 0;
+
+        el = stack->elinfo_stack[stack->stack_used].el;
+        if ((el == nil) || (el->child[0] == nil))
+        {
+          return(stack->elinfo_stack+stack->stack_used);
+        }
+      }
+    }
+
+    /* go down tree until leaf oder level*/
+    while (el->child[0] &&
+           ( stack->traverse_level > (stack->elinfo_stack+stack->stack_used)->level))
+    // Aenderung hier
+    {
+      if(stack->stack_used >= stack->stack_size-1)
+        enlargeTraverseStack(stack);
+
+      i = stack->info_stack[stack->stack_used];
+      el = el->child[i];
+      stack->info_stack[stack->stack_used]++;
+
+      //ALBERT fill_elinfo(i, stack->elinfo_stack+stack->stack_used,
+      //               stack->elinfo_stack+stack->stack_used+1);
+      grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
+                       stack->elinfo_stack+stack->stack_used+1, false, leafIt_);
+
+      stack->stack_used++;
+
+      ALBERT_TEST_EXIT(stack->stack_used < stack->stack_size)
+        ("stack_size=%d too small, level=(%d,%d)\n",
+        stack->stack_size, stack->elinfo_stack[stack->stack_used].level);
+
+      stack->info_stack[stack->stack_used] = 0;
+
+      if(stack->traverse_level == (stack->elinfo_stack+stack->stack_used)->level)
+      {
+        okReturn_ = true;
+      }
+    }
+
+    return(stack->elinfo_stack+stack->stack_used);
+  }
+
+  template<int codim, int dim, int dimworld>
+  inline ALBERT MACRO_EL * AlbertGridLevelIterator<codim,dim,dimworld >::
+  nextGhostMacro(ALBERT MACRO_EL * oldmel)
+  {
+    ALBERT MACRO_EL * mel = oldmel;
+    if(mel)
+    {
+      int owner = grid_.getOwner(mel->el);
+      while(((proc_ != -1) && (owner != proc_)) ||
+            ((proc_ == -1) && (owner == grid_.myProcessor() )))
+      {
+        mel = mel->next;
+        if(!mel) break;
+        owner = grid_.getOwner(mel->el);
+      }
+    }
+    return mel;
+  }
+
+  template<int codim, int dim, int dimworld>
+  inline ALBERT EL_INFO * AlbertGridLevelIterator<codim,dim,dimworld >::
+  traverseElLevelGhosts(ALBERT TRAVERSE_STACK *stack)
+  {
+    FUNCNAME("traverseElLevel");
+    ALBERT EL *el;
+    int i;
+    okReturn_ = false;
+    const int searchProc = (proc_ == -1) ? grid_.myProcessor() : proc_;
+
+    if (stack->stack_used == 0) /* first call */
+    {
+      stack->traverse_mel = nextGhostMacro(stack->traverse_mesh->first_macro_el);
+      if (stack->traverse_mel == nil) return(nil);
+
+      stack->stack_used = 1;
+
+      ALBERT fillMacroInfo(stack, stack->traverse_mel,
+                           stack->elinfo_stack+stack->stack_used);
+
+      stack->info_stack[stack->stack_used] = 0;
+
+      el = stack->elinfo_stack[stack->stack_used].el;
+      if ((el == nil) || (el->child[0] == nil)) {
+        return(stack->elinfo_stack+stack->stack_used);
+      }
+    }
+    else
+    {
+      el = stack->elinfo_stack[stack->stack_used].el;
+
+      /* go up in tree until we can go down again */
+      while((stack->stack_used > 0) &&
+            ((stack->info_stack[stack->stack_used] >= 2) || (el->child[0]==nil)
+             || ( stack->traverse_level <=
+                  (stack->elinfo_stack+stack->stack_used)->level)) )
+      // Aenderung hier
+      {
+        stack->stack_used--;
+        el = stack->elinfo_stack[stack->stack_used].el;
+      }
+      /* goto next macro element */
+      if (stack->stack_used < 1) {
+
+        ALBERT MACRO_EL * mel = nextGhostMacro(stack->traverse_mel->next);
+        if(!mel) return NULL;
+
+        stack->traverse_mel = mel;
+
+        stack->stack_used = 1;
+
+        ALBERT fillMacroInfo(stack, stack->traverse_mel,
+                             stack->elinfo_stack+stack->stack_used);
+
+        stack->info_stack[stack->stack_used] = 0;
+
+        el = stack->elinfo_stack[stack->stack_used].el;
+        if ((el == nil) || (el->child[0] == nil))
+        {
+          return(stack->elinfo_stack+stack->stack_used);
+        }
+      }
+    }
+
+    /* go down tree until leaf oder level*/
+    while (el->child[0] && (grid_.getOwner(el) >= 0) &&
+           ( stack->traverse_level > (stack->elinfo_stack+stack->stack_used)->level))
+    // Aenderung hier
+    {
+      if(stack->stack_used >= stack->stack_size-1)
+        enlargeTraverseStack(stack);
+
+      i = stack->info_stack[stack->stack_used];
+      el = el->child[i];
+
+      stack->info_stack[stack->stack_used]++;
+
+      // go next possible element, if not ghost
+      if( grid_.getOwner(el) < 0)
+        return traverseElLevelGhosts(stack);
 
       //ALBERT fill_elinfo(i, stack->elinfo_stack+stack->stack_used,
       //               stack->elinfo_stack+stack->stack_used+1);
@@ -2442,7 +2834,7 @@ namespace Dune
 
     for(int level=0; level <= maxlevel; level++)
     {
-      typedef typename GridType::Traits<0>::LevelIterator LevelIteratorType;
+      typedef typename GridType::template Traits<0>::LevelIterator LevelIteratorType;
       LevelIteratorType endit = grid.template lend<0> (level);
       for(LevelIteratorType it = grid.template lbegin<0> (level); it != endit; ++it)
       {
@@ -2474,17 +2866,44 @@ namespace Dune
   inline AlbertGrid < dim, dimworld >::AlbertGrid() :
     mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
     , isMarked_ (false) , indexManager_ (NULL)
-    , nv_ (dim+1) , dof_ (0)
+    , nv_ (dim+1) , dof_ (0) , myProc_ (0)
   {
     vertexMarker_ = new AlbertMarkerVector ();
-    indexManager_ = get_index_manager();
+    indexManager_ = ALBERT get_index_manager();
+  }
+
+  template < int dim, int dimworld >
+  inline void AlbertGrid < dim, dimworld >::initGrid(int proc)
+  {
+    ALBERT AlbertHelp::getDofVecs(&dofvecs_);
+    ALBERT AlbertHelp::setDofVec ( dofvecs_.owner, -1 );
+
+    // dont delete dofs on higher levels
+    mesh_->preserve_coarse_dofs = 1;
+
+    numberOfEntitys_[0]     = mesh_->n_hier_elements;
+    numberOfEntitys_[1]     = 0;
+    numberOfEntitys_[dim-1] = 0;
+    numberOfEntitys_[dim]   = mesh_->n_vertices;
+
+    // we have at least one level, level 0
+    maxlevel_ = 0;
+    maxHierIndex_[0] = mesh_->n_hier_elements;
+    neighOnLevel_.resize( maxHierIndex_[0] );
+
+    calcExtras();
+
+    wasChanged_ = true;
+    isMarked_ = false;
+
+    ALBERT AlbertHelp::initProcessor(mesh_,proc);
   }
 
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename) :
     mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
     , isMarked_ (false) , indexManager_ (NULL)
-    , nv_ (dim+1) , dof_ (0)
+    , nv_ (dim+1) , dof_ (0) , myProc_ (-1)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
@@ -2500,40 +2919,120 @@ namespace Dune
     }
 
     vertexMarker_ = new AlbertMarkerVector ();
-    indexManager_ = get_index_manager();
-    initIndexManager_elmem_cc(indexManager_);
+    indexManager_ = ALBERT get_index_manager();
+    ALBERT initIndexManager_elmem_cc(indexManager_);
 
     if(makeNew)
     {
-
       mesh_ = ALBERT get_mesh("AlbertGrid", ALBERT AlbertHelp::initDofAdmin, ALBERT AlbertHelp::initLeafData);
       ALBERT read_macro(mesh_, MacroTriangFilename, ALBERT AlbertHelp::initBoundary);
 
-      elNumbers_ = AlbertHelp::getElNumbers();
-      elNewCheck_ = AlbertHelp::getElNewCheck();
-
-      // dont delete dof on higher levels
-      mesh_->preserve_coarse_dofs = 1;
-
-      numberOfEntitys_[0]     = mesh_->n_hier_elements;
-      numberOfEntitys_[1]     = 0;
-      numberOfEntitys_[dim-1] = 0;
-      numberOfEntitys_[dim]   = mesh_->n_vertices;
-
-      // we have at least one level, level 0
-      maxlevel_ = 0;
-      maxHierIndex_[0] = mesh_->n_hier_elements;
-      neighOnLevel_.resize( maxHierIndex_[0] );
-
-      calcExtras();
-
-      wasChanged_ = true;
-      isMarked_ = false;
-
+      initGrid(0);
     }
     else
     {
-      read (MacroTriangFilename,time_,0);
+      this->read (MacroTriangFilename,time_,0);
+    }
+  }
+
+  template < int dim, int dimworld >
+  inline AlbertGrid < dim, dimworld >::AlbertGrid(AlbertGrid<dim,dimworld> & oldGrid, int proc) :
+    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
+    , isMarked_ (false) , indexManager_ (NULL)
+    , nv_ (dim+1) , dof_ (0), myProc_ (proc)
+  {
+    assert(dimworld == DIM_OF_WORLD);
+    assert(dim      == DIM);
+
+    ALBERT MESH * oldMesh = oldGrid.getMesh();
+
+    vertexMarker_ = new AlbertMarkerVector ();
+    indexManager_ = ALBERT get_index_manager();
+    ALBERT initIndexManager_elmem_cc(indexManager_);
+
+    {
+      ALBERT MESH * fakeMesh = ALBERT get_mesh("PartialGrid",
+                                               ALBERT AlbertHelp::emptyDofAdmin, ALBERT AlbertHelp::initLeafData);
+
+      char fakename [1024];
+      sprintf(fakename,"_tmp_fakemesh_%d_.macro",proc);
+
+      int length = oldMesh->n_elements;
+      int * ownvec = (int *) std::malloc(length * sizeof(int));
+
+      {
+        ALBERT MACRO_DATA mdata;
+
+        {
+          int no = 0;
+          typedef AlbertGridLevelIterator<0,dim,dimworld> LeafIteratorType;
+          LeafIteratorType it    = oldGrid.leafbegin (oldGrid.maxlevel ());
+          LeafIteratorType endit = oldGrid.leafend   (oldGrid.maxlevel ());
+
+          for(; it != endit; ++it )
+          {
+            ownvec[no] = it->owner();
+            no++;
+          }
+          assert(no == length);
+        }
+
+#if 0
+        ALBERT write_macro(oldMesh,fakename);
+        ALBERT read_macro(fakeMesh,fakename,ALBERT AlbertHelp::initBoundary);
+#else
+        ALBERT AlbertHelp::mesh2macro_data( oldMesh , &mdata );
+
+        if(!mdata.neigh) ALBERT AlbertHelp::compute_neigh_fast(&mdata);
+
+        // to be revised
+        if(!mdata.boundary) ALBERT AlbertHelp::dirichlet_boundary(&mdata);
+
+        ALBERT AlbertHelp::macro_data2mesh( fakeMesh , &mdata,
+                                            ALBERT AlbertHelp::initBoundary );
+        ALBERT AlbertHelp::free_macro_data ( &mdata );
+#endif
+      }
+
+      ALBERT AlbertHelp::storeMacroElements(fakeMesh);
+      // make the partition, remove elements that not belong to processor proc
+      ALBERT AlbertHelp::removeMacroEls(fakeMesh, proc, ownvec);
+
+      mesh_ = ALBERT get_mesh("PartialGrid", ALBERT AlbertHelp::initDofAdmin, ALBERT AlbertHelp::initLeafData);
+
+      {
+
+#if 0
+        ALBERT write_macro ( fakeMesh, fakename );
+        ALBERT read_macro  ( mesh_ , fakename, ALBERT AlbertHelp::initBoundary);
+#else
+        ALBERT MACRO_DATA mdata;
+        ALBERT AlbertHelp::mesh2macro_data( fakeMesh , &mdata );
+
+        if(!mdata.neigh) ALBERT AlbertHelp::compute_neigh_fast(&mdata);
+
+        // to be revised
+        if(!mdata.boundary) ALBERT AlbertHelp::dirichlet_boundary(&mdata);
+
+        ALBERT AlbertHelp::macro_data2mesh( mesh_ , &mdata,
+                                            ALBERT AlbertHelp::initBoundary );
+        ALBERT AlbertHelp::free_macro_data ( &mdata );
+#endif
+      }
+
+      // restore the old mesh and free it
+      ALBERT AlbertHelp::resetMacroElements(fakeMesh);
+      ALBERT free_mesh(fakeMesh);
+
+      // delete fake macro file
+      //std::remove ( fakename );
+
+      // setup AlbertGrid Interface to Albert Mesh
+      initGrid(proc);
+
+      // make the original owners
+      ALBERT AlbertHelp::copyOwner(dofvecs_.owner,ownvec);
+      std::free(ownvec); ownvec = NULL;
     }
   }
 
@@ -2541,41 +3040,46 @@ namespace Dune
   inline AlbertGrid < dim, dimworld >::~AlbertGrid()
   {
     if(vertexMarker_) delete vertexMarker_;
+    if(dofvecs_.elNumbers) ALBERT free_dof_int_vec(dofvecs_.elNumbers);
+    if(dofvecs_.elNewCheck) ALBERT free_dof_int_vec(dofvecs_.elNewCheck);
+    if(dofvecs_.owner ) ALBERT free_dof_int_vec(dofvecs_.owner);
+
     ALBERT free_mesh(mesh_);
   };
 
   template < int dim, int dimworld > template<int codim>
   inline AlbertGridLevelIterator<codim,dim,dimworld>
-  AlbertGrid < dim, dimworld >::lbegin (int level)
+  AlbertGrid < dim, dimworld >::lbegin (int level, IteratorType IType, int proc)
   {
-    AlbertGridLevelIterator<codim,dim,dimworld> it(*this,vertexMarker_,level);
+    AlbertGridLevelIterator<codim,dim,dimworld> it(*this,vertexMarker_,level,IType,proc);
     return it;
   }
 
   template < int dim, int dimworld > template<int codim>
   inline AlbertGridLevelIterator<codim,dim,dimworld>
-  AlbertGrid < dim, dimworld >::lend (int level)
+  AlbertGrid < dim, dimworld >::lend (int level, IteratorType IType, int proc )
   {
-    AlbertGridLevelIterator<codim,dim,dimworld> it((*this),level);
+    AlbertGridLevelIterator<codim,dim,dimworld> it((*this),level,IType,proc);
     return it;
   }
 
   //*****************************************************************
   template < int dim, int dimworld >
   inline AlbertGridLevelIterator<0,dim,dimworld>
-  AlbertGrid < dim, dimworld >::leafbegin (int level)
+  AlbertGrid < dim, dimworld >::leafbegin (int level, IteratorType IType, int proc )
   {
     bool leaf = true;
-    AlbertGridLevelIterator<0,dim,dimworld> it(*this,vertexMarker_,level,leaf);
+    AlbertGridLevelIterator<0,dim,dimworld>
+    it(*this,vertexMarker_,level,IType,proc,leaf);
     return it;
   }
 
   template < int dim, int dimworld >
   inline AlbertGridLevelIterator<0,dim,dimworld>
-  AlbertGrid < dim, dimworld >::leafend (int level)
+  AlbertGrid < dim, dimworld >::leafend (int level, IteratorType IType, int proc )
   {
     bool leaf = true;
-    AlbertGridLevelIterator<0,dim,dimworld> it((*this),level,leaf);
+    AlbertGridLevelIterator<0,dim,dimworld> it((*this),level,IType,proc,leaf);
     return it;
   }
 
@@ -2590,19 +3094,33 @@ namespace Dune
     unsigned char flag;
     typedef LeafIterator LeafIt;
     LeafIt endit = leafend(maxlevel());
-    for(LeafIt it = leafbegin(maxlevel()); it != endit; ++it)
-    {
-      (*it).mark(refCount);
-    }
 
-    flag = ALBERT AlbertRefine ( mesh_ );
-    wasChanged_ = (flag == 0) ? false : true;
-    if(wasChanged_)
+    for(int i=0; i<refCount; i++)
     {
-      calcExtras();
-    }
+      // mark all interior elements
+      for(LeafIt it = leafbegin(maxlevel()); it != endit; ++it)
+      {
+        (*it).mark(refCount);
+      }
 
-    postAdapt();
+      // mark all ghosts
+      for(LeafIt it = leafbegin(maxlevel(),Ghosts); it != endit; ++it)
+      {
+        (*it).mark(refCount);
+      }
+      this->adapt();
+
+#if 0
+      flag = ALBERT AlbertRefine ( mesh_ );
+      wasChanged_ = (flag == 0) ? false : true;
+      if(wasChanged_)
+      {
+        calcExtras();
+      }
+#endif
+
+      postAdapt();
+    }
     return wasChanged_;
   }
 
@@ -2612,9 +3130,13 @@ namespace Dune
     return isMarked_;
   }
 
+  //#include "gridcheck.cc"
+
   template < int dim, int dimworld >
   inline bool AlbertGrid < dim, dimworld >::postAdapt()
   {
+    //leafCheckGrid(*this,this->maxlevel());
+
     isMarked_ = false;
     return wasChanged_;
   }
@@ -2633,6 +3155,58 @@ namespace Dune
   }
 
   template < int dim, int dimworld >
+  inline bool AlbertGrid < dim, dimworld >::setOwner (ALBERT EL *el, int proc)
+  {
+    // if element is new then entry in dofVec is 1
+    int dof = el->dof[dof_][nv_];
+    if(ownerVec_ [dof] < 0)
+    {
+      ownerVec_ [dof] = proc;
+      return true;
+    }
+    return false;
+  }
+
+  template < int dim, int dimworld >
+  inline PartitionType AlbertGrid < dim, dimworld >::
+  partitionType (ALBERT EL_INFO *elinfo) const
+  {
+    int owner = getOwner(elinfo->el);
+
+    // if processor number == myProcessor ==> InteriorEntity or BorderEntity
+    if(owner == myProcessor())
+    {
+      for(int i=0; i<dim+1; i++)
+      {
+        ALBERT EL * neigh = NEIGH(elinfo->el,elinfo)[i];
+        if(neigh)
+        {
+          if(getOwner(neigh) != myProcessor())
+            return BorderEntity;
+        }
+      }
+
+      // if no GhostNeighbor, then we have real InteriorEntity
+      return InteriorEntity;
+    }
+
+    // if processor number != myProcossor ==> GhostEntity
+    if((owner >= 0) && (owner != myProcessor())) return GhostEntity;
+
+    std::cerr << "Unsupported PartitionType\n";
+    assert(false);
+
+    return OverlapEntity;
+  }
+
+  template < int dim, int dimworld >
+  inline int AlbertGrid < dim, dimworld >::getOwner (ALBERT EL *el) const
+  {
+    // if element is new then entry in dofVec is 1
+    return ownerVec_ [el->dof[dof_][nv_]];
+  }
+
+  template < int dim, int dimworld >
   inline bool AlbertGrid < dim, dimworld >::adapt()
   {
     unsigned char flag;
@@ -2641,13 +3215,13 @@ namespace Dune
 
     // set global pointer to index manager in elmem.cc
     initIndexManager_elmem_cc(indexManager_);
-    AlbertHelp::clearDofVec ( elNewCheck_ );
+    ALBERT AlbertHelp::clearDofVec ( dofvecs_.elNewCheck );
 
     flag = ALBERT AlbertRefine ( mesh_ );
     refined = (flag == 0) ? false : true;
 
     if(isMarked_) // true if a least on element is marked for coarseing
-      flag = ALBERT AlbertCoarsen( mesh_ , elNumbers_ );
+      flag = ALBERT AlbertCoarsen( mesh_ );
 
     if(!refined)
     {
@@ -2662,8 +3236,10 @@ namespace Dune
       isMarked_ = false;
     }
 
+    ALBERT AlbertHelp::setElOwnerNew(mesh_, dofvecs_.owner);
+
     // remove global pointer in elmem.cc
-    removeIndexManager_elmem_cc();
+    ALBERT removeIndexManager_elmem_cc();
 
     return refined;
   }
@@ -2740,9 +3316,15 @@ namespace Dune
   inline void AlbertGrid < dim, dimworld >::arrangeDofVec()
   {
     // make it easier for getElementNumber ()
-    ALBERT GET_DOF_VEC(elNumVec_ , elNumbers_ );
-    ALBERT GET_DOF_VEC(elNewVec_ , elNewCheck_ );
-    elAdmin_ = elNumbers_->fe_space->admin;
+    //GET_DOF_VEC(elNumVec_ , dofvecs_.elNumbers  );
+    //GET_DOF_VEC(elNewVec_ , dofvecs_.elNewCheck );
+    //GET_DOF_VEC(ownerVec_ , dofvecs_.owner      );
+
+    elNumVec_ = (dofvecs_.elNumbers)->vec;
+    elNewVec_ = (dofvecs_.elNewCheck)->vec;
+    ownerVec_ = (dofvecs_.owner)->vec;
+    elAdmin_ = dofvecs_.elNumbers->fe_space->admin;
+
 
     // see Albert Doc. , should stay the same
     const_cast<int &> (nv_)  = elAdmin_->n0_dof[CENTER];
@@ -2775,7 +3357,7 @@ namespace Dune
 
     // determine new maxlevel and mark neighbours
     maxlevel_ = ALBERT AlbertHelp::calcMaxLevelAndMarkNeighbours
-                  ( mesh_, elNumbers_, neighOnLevel_ , maxHierIndex_[0] , minHierIndex_[0]);
+                  ( mesh_, dofvecs_.elNumbers , neighOnLevel_ , maxHierIndex_[0] );
 
     // mark vertices on elements
     vertexMarker_->markNewVertices(*this);
@@ -2817,7 +3399,7 @@ namespace Dune
     // strore element numbering to file
     char elnumfile[2048];
     sprintf(elnumfile,"%s_num",filename);
-    write_dof_int_vec_xdr(elNumbers_,elnumfile);
+    ALBERT write_dof_int_vec_xdr(dofvecs_.elNumbers,elnumfile);
 
     // use write_mesh_xdr, but works not correctly
     return static_cast<bool> (ALBERT write_mesh (mesh_ , filename, time) );
@@ -2833,8 +3415,8 @@ namespace Dune
     // read element numbering from file
     char elnumfile[2048];
     sprintf(elnumfile,"%s_num",filename);
-    elNumbers_  = read_dof_int_vec_xdr(elnumfile, mesh_ , NULL );
-    elNewCheck_ = AlbertHelp::getDofNewCheck(elNumbers_->fe_space);
+    dofvecs_.elNumbers  = ALBERT read_dof_int_vec_xdr(elnumfile, mesh_ , NULL );
+    ALBERT AlbertHelp::makeTheRest(&dofvecs_);
 
     // calc maxlevel and indexOnLevel and so on
     calcExtras();
@@ -3160,462 +3742,353 @@ namespace Dune
   //*********************************************************************
   template<int dim, int dimworld>
   inline void AlbertGrid<dim,dimworld >::
-  fillElInfo(int ichild, int actLevel , const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, bool hierarchical) const
+  firstNeigh(const int ichild, const int actLevel ,
+             const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, const bool leafLevel) const
   {
+    // old stuff
+    const ALBERT EL * el_old = elinfo_old->el;
+    const ALBERT S_CHAR * old_opp_vertex = elinfo_old->opp_vertex;
+    const ALBERT REAL_D * old_opp_coord  = elinfo_old->opp_coord;
+    const ALBERT REAL_D * old_coord      = elinfo_old->coord;
+    assert(el_old != NULL);
+    assert(el_old->child[0] != NULL);
 
-#if 0
-    ALBERT fill_elinfo(ichild,elinfo_old,elinfo);
-#else
+    // new stuff
+    ALBERT EL * el     = elinfo->el;
+    ALBERT S_CHAR * opp_vertex     = elinfo->opp_vertex;
+    ALBERT EL ** neigh = NEIGH(el,elinfo);
+    ALBERT REAL_D * opp_coord = elinfo->opp_coord;
 
-    ALBERT EL      *nb=NULL;
-    ALBERT EL      *el = elinfo_old->el;
-    ALBERT FLAGS fill_flag = elinfo_old->fill_flag;
-    ALBERT FLAGS fill_opp_coords;
+    assert(neigh != NULL);
+    assert(neigh == NEIGH(el,elinfo));
 
-    //ALBERT_TEST_EXIT(el->child[0])("no children?\n");
-    // in this implementation we can go down without children
-    if(el->child[0])
+    const int onechi = 1-ichild;
+
+    // first nb 0 of new elinfo
     {
-#ifdef DEBUG_FILLELINFO
-      printf("Called fillElInfo with El %d \n",getElementNumber(el));
-#endif
-
-      ALBERT_TEST_EXIT((elinfo->el = el->child[ichild])) ("missing child %d?\n", ichild);
-
-      elinfo->macro_el  = elinfo_old->macro_el;
-      elinfo->fill_flag = fill_flag;
-      elinfo->mesh      = elinfo_old->mesh;
-      elinfo->parent    = el;
-      elinfo->level     = elinfo_old->level + 1;
-
-      if (fill_flag & FILL_COORDS)
+      ALBERT EL * nb = NEIGH(el_old,elinfo_old)[2];
+      if(nb)
       {
-        if (el->new_coord)
+        // if NULL nonconforme refinement
+        assert(nb->child[0] != NULL);
+        ALBERT EL * nextNb = nb->child[onechi];
+        opp_vertex[ichild] = onechi;
+#ifdef CALC_COORD
+        for(int i=0; i<dimworld; i++)
+          opp_coord[ichild][i]  = old_opp_coord[2][i];
+#endif
+        // if we have children, we could go down
+        if(nextNb->child[0])
         {
-          for (int j = 0; j < dimworld; j++)
-            elinfo->coord[2][j] = el->new_coord[j];
+          // if level of neighbour to small, do down once more
+          // but only one level down because of conformity
+          if( leafLevel )
+          {
+            const int vx = old_opp_vertex[ichild];
+            if( vx != 2)
+            {
+              nextNb = nextNb->child[1-vx];
+              opp_vertex[ichild] = 2;
+#ifdef CALC_COORD
+              for(int i=0; i<dimworld; i++)
+                opp_coord[ichild][i] += old_coord[ichild][i];
+              for(int i=0; i<dimworld; i++)
+                opp_coord[ichild][i] *= 0.5;
+#endif
+            }
+          }
         }
-        else
-        {
-          for (int j = 0; j < dimworld; j++)
-            elinfo->coord[2][j] =
-              0.5 * (elinfo_old->coord[0][j] + elinfo_old->coord[1][j]);
-        }
+        neigh[ichild] = nextNb;
+      }
+      else
+      {
+        // if no neighbour then children have no neighbour
+        neigh[ichild] = NULL;
+      }
+    }
 
-        if (ichild==0)
+  }
+
+  template<int dim, int dimworld>
+  inline void AlbertGrid<dim,dimworld >::
+  secondNeigh(const int ichild, const int actLevel ,
+              const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, const bool leafLevel) const
+  {
+    // old stuff
+    const ALBERT EL * el_old = elinfo_old->el;
+    const ALBERT S_CHAR * old_opp_vertex = elinfo_old->opp_vertex;
+    const ALBERT REAL_D * old_opp_coord  = elinfo_old->opp_coord;
+    const ALBERT REAL_D * old_coord      = elinfo_old->coord;
+    assert(el_old != NULL);
+    assert(el_old->child[0] != NULL);
+
+    // new stuff
+    ALBERT EL * el     = elinfo->el;
+    ALBERT S_CHAR * opp_vertex     = elinfo->opp_vertex;
+    ALBERT EL ** neigh = NEIGH(el,elinfo);
+    ALBERT REAL_D * opp_coord = elinfo->opp_coord;
+
+    assert(neigh != NULL);
+    assert(neigh == NEIGH(el,elinfo));
+
+    const int onechi = 1-ichild;
+    // nb 1 of new elinfo, always the same
+    {
+      ALBERT EL * nextNb = el_old->child[onechi];
+      opp_vertex[onechi] = ichild;
+#ifdef CALC_COORD
+      for(int i=0; i<dimworld; i++)
+        opp_coord[onechi][i]  = old_coord[onechi][i];
+#endif
+      // check if children exists
+      if(nextNb->child[0] )
+      {
+        if( leafLevel )
         {
-          for (int j = 0; j < dimworld; j++)
-          {
-            elinfo->coord[0][j] = elinfo_old->coord[2][j];
-            elinfo->coord[1][j] = elinfo_old->coord[0][j];
-          }
-        }
-        else
-        {
-          for (int j = 0; j < dimworld; j++)
-          {
-            elinfo->coord[0][j] = elinfo_old->coord[1][j];
-            elinfo->coord[1][j] = elinfo_old->coord[2][j];
-          }
+          nextNb = nextNb->child[onechi];
+          opp_vertex[onechi] = 2;
+#ifdef CALC_COORD
+          for(int i=0; i<dimworld; i++)
+            opp_coord[onechi][i] += old_coord[2][i];
+          for(int i=0; i<dimworld; i++)
+            opp_coord[onechi][i] *= 0.5;
+#endif
         }
       }
+      neigh[onechi] = nextNb;
+    }
+  }
 
-      /* ! NEIGH_IN_EL */
-      // make the neighbour relations
+  template<int dim, int dimworld>
+  inline void AlbertGrid<dim,dimworld >::
+  thirdNeigh(const int ichild, const int actLevel ,
+             const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, const bool leafLevel) const
+  {
+    // old stuff
+    const ALBERT EL * el_old = elinfo_old->el;
+    const ALBERT S_CHAR * old_opp_vertex = elinfo_old->opp_vertex;
+    const ALBERT REAL_D * old_opp_coord  = elinfo_old->opp_coord;
+    const ALBERT REAL_D * old_coord      = elinfo_old->coord;
+    assert(el_old != NULL);
+    assert(el_old->child[0] != NULL);
 
-      if (fill_flag & (FILL_NEIGH | FILL_OPP_COORDS))
+    // new stuff
+    ALBERT EL * el     = elinfo->el;
+    ALBERT S_CHAR * opp_vertex     = elinfo->opp_vertex;
+    ALBERT EL ** neigh = NEIGH(el,elinfo);
+    ALBERT REAL_D * opp_coord = elinfo->opp_coord;
+
+    assert(neigh != NULL);
+    assert(neigh == NEIGH(el,elinfo));
+
+    const int onechi = 1-ichild;
+    // nb 2 of new elinfo
+    {
+      ALBERT EL * nb = NEIGH(el_old,elinfo_old)[onechi];
+      if(nb)
       {
-        fill_opp_coords = (fill_flag & FILL_OPP_COORDS);
-
-        // first child
-        if (ichild==0)
-        {
-          elinfo->opp_vertex[2] = elinfo_old->opp_vertex[1];
-          if ((elinfo->neigh[2] = elinfo_old->neigh[1]))
-          {
-            if (fill_opp_coords)
-            {
-              for (int j=0; j<dimworld; j++)
-                elinfo->opp_coord[2][j] = elinfo_old->opp_coord[1][j];
-            }
-
-            if(hierarchical)
-            {
-              // this is new
-              ALBERT EL * nextNb = elinfo->neigh[2]->child[0];
-              if(nextNb)
-              {
-#ifdef DEBUG_FILLELINFO
-                ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] != 2) ("invalid neighbour\n");
+        const int vx = old_opp_vertex[onechi];
+        opp_vertex[2] = vx;
+#ifdef CALC_COORD
+        for(int i=0; i<dimworld; i++)
+          opp_coord[2][i]  = old_opp_coord[onechi][i];
 #endif
-                int oppV = elinfo->opp_vertex[2];
-                // if oppV == 0 neighbour must be the child 1
-                if( oppV == 0)
-                  nextNb = elinfo->neigh[2]->child[1];
+        if((vx == 2) || (nb->child[0] == NULL))
+        {
+          // means the neighbour has the same refinement edge like our child
+          neigh[2] = nb;
+        }
+        else
+        {
+          neigh[2] = nb->child[1-vx];
+          opp_vertex[2] = 2;
+#ifdef CALC_COORD
+          const int vxind = (vx == 0) ? 0 : 2;
+          for(int i=0; i<dimworld; i++)
+            opp_coord[2][i] += old_coord[vxind][i];
+          for(int i=0; i<dimworld; i++)
+            opp_coord[2][i] *= 0.5;
+#endif
+        }
+      }
+      else
+      {
+        // if no neighbour then children have no neighbour
+        neigh[2] = NULL;
+      }
+    }
 
-                if(neighOnLevel_[ getElementNumber( nextNb )] <= actLevel )
-                  elinfo->neigh[2] = nextNb;
-                // if we go down the opposite vertex now must be 2
-                elinfo->opp_vertex[2] = 2;
+  }
 
-                if (fill_opp_coords)
-                {
-                  if(oppV == 0)
-                  {
-                    for (int k=0; k < dimworld ; k++)
-                      elinfo->opp_coord[2][k] = 0.5 *
-                                                (elinfo_old->opp_coord[oppV][k] +
-                                                 elinfo_old->coord[1][k]);
-                  }
-                  else
-                  {
-                    for (int k=0; k < dimworld ; k++)
-                      elinfo->opp_coord[2][k] = 0.5 *
-                                                (elinfo_old->opp_coord[oppV][k] +
-                                                 elinfo_old->coord[0][k]);
-                  }
-                }
-              }
-            } // end hierarchical
+#define CALC_COORD
+  template<int dim, int dimworld>
+  inline void AlbertGrid<dim,dimworld >::
+  fillElInfo(int ichild, int actLevel , const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, bool hierarchical, bool leaf) const
+  {
+#if 1
+    //************************************************************
+    // calc the normal elinfo
+    ALBERT fill_elinfo(ichild,elinfo_old,elinfo);
 
-          } // end new code
+    //printf("ichild = %d \n",ichild);
 
-          if (el->child[0])
+#if 0
+
+    // old stuff
+    const ALBERT EL * el_old = elinfo_old->el;
+    const ALBERT S_CHAR * old_opp_vertex = elinfo_old->opp_vertex;
+    const ALBERT REAL_D * old_opp_coord  = elinfo_old->opp_coord;
+    const ALBERT REAL_D * old_coord      = elinfo_old->coord;
+    assert(el_old != NULL);
+    assert(el_old->child[0] != NULL);
+
+    // new stuff
+    ALBERT EL * el     = elinfo->el;
+    ALBERT S_CHAR * opp_vertex     = elinfo->opp_vertex;
+    ALBERT EL ** neigh = NEIGH(el,elinfo);
+    ALBERT REAL_D * opp_coord = elinfo->opp_coord;
+
+    assert(neigh != NULL);
+    assert(neigh == NEIGH(el,elinfo));
+
+    // then correct some things
+    if(leaf)
+    {
+      // allow to go down on neighbour more than once
+      // if the following condition is satisfied
+      const bool leafLevel = ((el->child[0] == NULL) && (elinfo->level < actLevel));
+      firstNeigh (ichild,actLevel,elinfo_old,elinfo,leafLevel);
+      secondNeigh(ichild,actLevel,elinfo_old,elinfo,leafLevel);
+      thirdNeigh (ichild,actLevel,elinfo_old,elinfo,leafLevel);
+
+
+#if 0
+      // calc the neighbours and opp_vertex
+      if(ichild == 0)
+      {}
+      //**************************************************
+      // now the next child
+      //**************************************************
+      else // ichild == 1
+      {
+
+#if 0
+        // nb 0 of new elinfo, always the same
+        {
+          ALBERT EL * nextNb = el_old->child[0];
+          assert(nextNb != NULL);
+          opp_vertex[0] = 1;
+#ifdef CALC_COORD
+          for(int i=0; i<dimworld; i++)
+            opp_coord[0][i]  = old_coord[0][i];
+#endif
+          // check if we have to go down
+          if(nextNb->child[0])
           {
-            bool goDownNextChi = false;
-            ALBERT EL *chi1 = el->child[1];
-
-            if(chi1->child[0])
+            if(leafLevel)
             {
-              if(neighOnLevel_[ getElementNumber( chi1->child[1] )] <= actLevel )
-                goDownNextChi = true;
-            }
-
-            if(goDownNextChi)
-            {
-              // set neighbour
-              ALBERT_TEST_EXIT((elinfo->neigh[1] = chi1->child[1]))
-                ("el->child[1]->child[0]!=nil, but el->child[1]->child[1]=nil\n");
-
-              elinfo->opp_vertex[1] = 2;
-              if (fill_opp_coords)
-              {
-                if (chi1->new_coord)
-                {
-                  for (int j=0; j<dimworld; j++)
-                    elinfo->opp_coord[1][j] = chi1->new_coord[j];
-                }
-                else
-                {
-                  for (int j=0; j<dimworld; j++)
-                    elinfo->opp_coord[1][j] =
-                      0.5 * (elinfo_old->coord[1][j] + elinfo_old->coord[2][j]);
-                }
-              }
-            }
-            else
-            {
-              // set neighbour
-              ALBERT_TEST_EXIT((elinfo->neigh[1] = chi1))
-                ("el->child[0] != nil, but el->child[1] = nil\n");
-
-              elinfo->opp_vertex[1] = 0;
-              if (fill_opp_coords)
-              {
-                for (int j=0; j<dimworld; j++)
-                  elinfo->opp_coord[1][j] = elinfo_old->coord[1][j];
-              }
+              nextNb = nextNb->child[0];
+              opp_vertex[0] = 2;
+#ifdef CALC_COORD
+              for(int i=0; i<dimworld; i++)
+                opp_coord[0][i] += old_coord[2][i];
+              for(int i=0; i<dimworld; i++)
+                opp_coord[0][i] *= 0.5;
+#endif
             }
           }
-#ifdef DEBUG_FILLELINFO
+          neigh[0] = nextNb;
+        }
+#endif
+
+#if 0
+        // nb 1 of new elinfo
+        {
+          ALBERT EL * nb = NEIGH(el_old,elinfo_old)[2];
+          if(nb)
+          {
+            // if NULL nonconforme refinement
+            assert(nb->child[0] != NULL);
+            ALBERT EL * nextNb = nb->child[0];
+            opp_vertex[1] = 0;
+#ifdef CALC_COORD
+            for(int i=0; i<dimworld; i++)
+              opp_coord[1][i]  = old_opp_coord[2][i];
+#endif
+
+            // if we have children, we could go down
+            if(nextNb->child[0])
+            {
+              // if level of neighbour to small, do down once more
+              // but only one level down because of conformity
+              if(leafLevel)
+              {
+                const int vx = old_opp_vertex[1];
+                if(vx != 2) // if vx == 2 we have the right neighbour
+                {
+                  nextNb = nextNb->child[1-vx];
+                  opp_vertex[1] = 2;
+#ifdef CALC_COORD
+                  for(int i=0; i<dimworld; i++)
+                    opp_coord[1][i] += old_coord[1][i];
+                  for(int i=0; i<dimworld; i++)
+                    opp_coord[1][i] *= 0.5;
+#endif
+                }
+              }
+            }
+            neigh[1] = nextNb;
+          }
           else
           {
-            ALBERT_TEST_EXIT((el->child[0])) ("No Child\n");
+            // if no neighbour then children have no neighbour
+            neigh[1] = NULL;
           }
-#endif
-
-          if ((nb = elinfo_old->neigh[2]))
-          {
-            // the neighbour across the refinement edge
-#ifdef DEBUG_FILLELINFO
-            printf("fillElInfo: El  %d , Neigh %d \n",getElementNumber (el), getElementNumber (nb));
-            printf("fillElInfo: El  %d , Neigh %d \n",getElementNumber (el->child[0]),getElementNumber (nb));
-            ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] == 2) ("invalid neighbour\n");
-            //ALBERT_TEST_EXIT((nb->child[0]))("missing child[0] of nb2 ?\n");
-#endif
-            if(nb->child[0])
-            {
-              ALBERT_TEST_EXIT((nb = nb->child[1])) ("missing child[1]?\n");
-            }
-#if 0
-            else
-            {
-              // seems ok
-              //printf("fillElInfo: El  %d , Neigh %d \n", getElementNumber (el->child[0]),getElementNumber(nb));
-              //nb = nb->child[0];
-            }
-#endif
-            if (nb->child[0])
-            {
-              bool goDownNextChi = false;
-              if(neighOnLevel_[getElementNumber(nb->child[0])] <= actLevel )
-                goDownNextChi = true;
-
-              if(goDownNextChi)
-              {
-
-                elinfo->opp_vertex[0] = 2;
-                if (fill_opp_coords)
-                {
-                  if (nb->new_coord)
-                  {
-                    for (int j=0; j<dimworld; j++)
-                      elinfo->opp_coord[0][j] = nb->new_coord[j];
-                  }
-                  else
-                  {
-                    for (int j=0; j<dimworld; j++)
-                    {
-                      elinfo->opp_coord[0][j] = 0.5*
-                                                (elinfo_old->opp_coord[2][j] + elinfo_old->coord[0][j]);
-                    }
-                  }
-                }
-                nb = nb->child[0];
-              }
-              else
-              {
-                elinfo->opp_vertex[0] = 1;
-                if (fill_opp_coords)
-                {
-                  for (int j=0; j<dimworld; j++)
-                    elinfo->opp_coord[0][j] = elinfo_old->opp_coord[2][j];
-                }
-              }
-            }
-          }
-          elinfo->neigh[0] = nb;
         }
-        else /* ichild==1 , second child */
-        {
-          elinfo->opp_vertex[2] = elinfo_old->opp_vertex[0];
-          if ((elinfo->neigh[2] = elinfo_old->neigh[0]))
-          {
-            if (fill_opp_coords)
-            {
-              for (int j=0; j<dimworld; j++)
-                elinfo->opp_coord[2][j] = elinfo_old->opp_coord[0][j];
-            }
-
-            if(hierarchical)
-            {
-              ALBERT EL * nextNb = elinfo->neigh[2]->child[0];
-              if(nextNb)
-              {
-#ifdef DEBUG_FILLELINFO
-                ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] != 2) ("invalid neighbour\n");
 #endif
-                int oppV = elinfo->opp_vertex[2];
-                // if oppV == 0 neighbour must be the child 1
-                if( oppV == 0 )
-                  nextNb = elinfo->neigh[2]->child[1];
 
-                if(neighOnLevel_[getElementNumber(nextNb)] <= actLevel )
-                  elinfo->neigh[2] = nextNb;
-                // if we go down the opposite vertex now must be 2
-                elinfo->opp_vertex[2] = 2;
-
-                if (fill_opp_coords)
-                {
-                  // add new coord here
-                  if(oppV == 0)
-                  {
-                    for (int k=0; k < dimworld ; k++)
-                      elinfo->opp_coord[2][k] = 0.5 *
-                                                (elinfo_old->opp_coord[oppV][k] +
-                                                 elinfo_old->coord[1][k]);
-                  }
-                  else
-                  {
-                    for (int k=0; k < dimworld ; k++)
-                      elinfo->opp_coord[2][k] = 0.5 *
-                                                (elinfo_old->opp_coord[oppV][k] +
-                                                 elinfo_old->coord[0][k]);
-                  }
-                }
-              }
-            } // end hierarchical
-          }
-
-          { // begin chi0
-            ALBERT EL *chi0=el->child[0];
-            bool goDownChild = false;
-
-            if (chi0->child[0])
+        // nb 2 of new elinfo
+        {
+          ALBERT EL * nb = NEIGH(el_old,elinfo_old)[0];
+          if(nb)
+          {
+            const int vx = old_opp_vertex[0];
+            opp_vertex[2] = vx;
+#ifdef CALC_COORD
+            for(int i=0; i<dimworld; i++)
+              opp_coord[2][i]  = old_opp_coord[0][i];
+#endif
+            if((vx == 2) || (nb->child[0] == NULL)) // means the neighbour has the same refinement edge like our child
             {
-              if(neighOnLevel_[getElementNumber(chi0->child[0])] <= actLevel )
-                goDownChild = true;
-            }
-
-            if(goDownChild)
-            {
-              elinfo->neigh[0] = chi0->child[0];
-              elinfo->opp_vertex[0] = 2;
-              if (fill_opp_coords)
-              {
-                if (chi0->new_coord)
-                {
-                  for (int j=0; j<dimworld; j++)
-                    elinfo->opp_coord[0][j] = chi0->new_coord[j];
-                }
-                else
-                {
-                  for (int j=0; j<dimworld; j++)
-                    elinfo->opp_coord[0][j] = 0.5 *
-                                              (elinfo_old->coord[0][j] + elinfo_old->coord[2][j]);
-                }
-              }
+              neigh[2] = nb;
             }
             else
             {
-              elinfo->neigh[0] = chi0;
-              elinfo->opp_vertex[0] = 1;
-              if (fill_opp_coords)
-              {
-                for (int j=0; j<dimworld; j++)
-                  elinfo->opp_coord[0][j] = elinfo_old->coord[0][j];
-              }
-            }
-          } // end chi0
-
-          if ((nb = elinfo_old->neigh[2]))
-          {
-            // the neighbour across the refinement edge
-#ifdef DEBUG_FILLELINFO
-            //printf("OppVx %d \n",elinfo_old->opp_vertex[2]);
-            ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] == 2) ("invalid neighbour\n");
+              // go down once if you can
+              neigh[2] = nb->child[1-vx];
+              opp_vertex[2] = 2;
+#ifdef CALC_COORD
+              const int vxind = (vx == 1) ? 1 : 2;
+              for(int i=0; i<dimworld; i++)
+                opp_coord[2][i] += old_coord[vxind][i];
+              for(int i=0; i<dimworld; i++)
+                opp_coord[2][i] *= 0.5;
 #endif
-            if(nb->child[0])
-              ALBERT_TEST_EXIT((nb = nb->child[0])) ("missing child?\n");
-
-            bool goDownChild = false;
-            if (nb->child[0])
-            {
-              if(neighOnLevel_[getElementNumber(nb->child[1])] <= actLevel )
-                goDownChild = true;
-            }
-
-            if(goDownChild)
-            {
-              // we go down, calc new coords
-              elinfo->opp_vertex[1] = 2;
-              if (fill_opp_coords)
-              {
-                if (nb->new_coord)
-                  for (int j=0; j<dimworld; j++)
-                    elinfo->opp_coord[1][j] = nb->new_coord[j];
-                else
-                  for (int j=0; j<dimworld; j++)
-                    elinfo->opp_coord[1][j] = 0.5 *
-                                              (elinfo_old->opp_coord[2][j] + elinfo_old->coord[1][j]);
-              }
-              nb = nb->child[1];
-            }
-            else
-            {
-              // we are nto going down, so copy the coords
-              elinfo->opp_vertex[1] = 0;
-              if (fill_opp_coords)
-              {
-                for (int j=0; j<dimworld; j++)
-                  elinfo->opp_coord[1][j] = elinfo_old->opp_coord[2][j];
-              }
             }
           }
-          elinfo->neigh[1] = nb;
+          else
+          {
+            // if no neighbour then children have no neighbour
+            neigh[2] = NULL;
+          }
         }
-      }
-
-      if (fill_flag & FILL_BOUND)
-      {
-        if (elinfo_old->boundary[2])
-          elinfo->bound[2] = elinfo_old->boundary[2]->bound;
-        else
-          elinfo->bound[2] = INTERIOR;
-
-        if (ichild==0)
-        {
-          elinfo->bound[0] = elinfo_old->bound[2];
-          elinfo->bound[1] = elinfo_old->bound[0];
-          elinfo->boundary[0] = elinfo_old->boundary[2];
-          elinfo->boundary[1] = nil;
-          elinfo->boundary[2] = elinfo_old->boundary[1];
-        }
-        else
-        {
-          elinfo->bound[0] = elinfo_old->bound[1];
-          elinfo->bound[1] = elinfo_old->bound[2];
-          elinfo->boundary[0] = nil;
-          elinfo->boundary[1] = elinfo_old->boundary[2];
-          elinfo->boundary[2] = elinfo_old->boundary[0];
-        }
-      }
-
+      } // end of neighbour calculation
+#endif
     }
-    // no child exists, but go down maxlevel
-    // means neighbour may be changed but element itself not
-    else
-    {
-      memcpy(elinfo,elinfo_old,sizeof(ALBERT EL_INFO));
-      elinfo->level = (unsigned  char) (elinfo_old->level + 1);
-
-      if (fill_flag & (FILL_NEIGH | FILL_OPP_COORDS))
-      {
-        fill_opp_coords = (fill_flag & FILL_OPP_COORDS);
-
-        // we use triangles here
-        enum { numberOfNeighbors = 3 };
-        enum { numOfVx = 3 };
-        for(int i=0; i<numberOfNeighbors; i++)
-        {
-          if(elinfo_old->neigh[i])
-          {
-            // if children of neighbour
-            if(elinfo_old->neigh[i]->child[0])
-            {
-#ifdef DEBUG_FILLELINFO
-              ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] != 2) ("invalid neighbour\n");
-#endif
-              int oppV = elinfo_old->opp_vertex[i];
-              if(oppV == 0)
-              {
-                elinfo->neigh[i] = elinfo_old->neigh[i]->child[1];
-                elinfo->opp_vertex[i] = 2;
-
-                if( fill_opp_coords )
-                  for (int k=0; k < dimworld ; k++)
-                    elinfo->opp_coord[i][k] = 0.5 *
-                                              (elinfo_old->opp_coord[oppV][k] +
-                                               elinfo_old->coord[(i-1)%numOfVx][k]);
-              }
-              else
-              {
-                elinfo->neigh[i] = elinfo_old->neigh[i]->child[0];
-                elinfo->opp_vertex[i] = 2;
-                if( fill_opp_coords )
-                  for (int k=0; k < dimworld ; k++)
-                    elinfo->opp_coord[i][k] = 0.5 *
-                                              (elinfo_old->opp_coord[oppV][k] +
-                                               elinfo_old->coord[(i+1)%numOfVx][k]);
-              }
-            }
-          }
-        }
-      } // end if (fill_flag & (FILL_NEIGH | FILL_OPP_COORDS))
-    } //end else
-
+    //************************************************************
 #endif
 
+#endif
   } // end Grid::fillElInfo 2D
 
 
@@ -3941,4 +4414,4 @@ namespace Dune
   }
 #endif
 
-} // namespace Albert
+} // namespace Dune

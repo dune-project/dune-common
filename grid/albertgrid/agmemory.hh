@@ -112,6 +112,7 @@ namespace Dune
     }
   }
 
+  template <>
   inline MemoryProvider<ALBERT EL_INFO>::ObjectEntity *
   MemoryProvider<ALBERT EL_INFO>::getNewObjectEntity()
   {
@@ -157,6 +158,7 @@ namespace Dune
     }
   }
 
+  template <>
   inline void MemoryProvider<ALBERT EL_INFO>::deleteEntity(ObjectEntity *obj)
   {
     std::free(obj->item);
