@@ -10,9 +10,11 @@
 #include <dune/common/fmatrix.hh>
 
 #include "common/grid.hh"
+#include "common/defaultindexsets.hh"
 
 #include "bsgrid/bsinclude.hh"
-#include "bsgrid/myautoptr.hh"
+
+#include <dune/common/exceptions.hh>
 
 namespace Dune
 {
@@ -34,6 +36,8 @@ namespace Dune
      @{
    */
 
+  class BSGridError : public Exception {};
+
   enum BSGridElementType { tetra = 4, hexa = 7 };
 
   // i.e. double or float
@@ -49,6 +53,8 @@ namespace Dune
   template<class GridImp>            class BSGridLeafIterator;
   template<int dim, int dimworld>            class BSGrid;
 
+  // the hierarhic index set
+  template<int dim, int dimworld> class BSGridHierarchicIndexSet;
 
   // singleton holding reference elements
   template<int dim,class GridImp> struct BSGridReferenceGeometry;
@@ -73,6 +79,7 @@ namespace Dune
   static int __MyRank__ = -1;
 #endif
 
+  //! MakeableGeometry
   template<int mydim, int coorddim, class GridImp>
   class BSGridMakeableGeometry : public Geometry<mydim, coorddim,
                                      GridImp, BSGridGeometry>
@@ -83,27 +90,34 @@ namespace Dune
       GeometryType (BSGridGeometry<mydim, coorddim,GridImp>(makeRefelem)) {}
 
     //! build geometry out of different BSGrid Geometrys
-    bool buildGeom(const BSSPACE IMPLElementType & item)
+    //! ItemType are HElementType, HFaceType, HEdgeType and VertexType
+    template <class ItemType>
+    bool buildGeom(const ItemType & item)
     {
       return this->realGeometry.buildGeom(item);
     }
 
-    bool buildGeom(const BSSPACE HFaceType & item)
-    {
-      return this->realGeometry.buildGeom(item);
-    }
-
+    // call buildGhost of realGeometry
     bool buildGhost(const BSSPACE PLLBndFaceType & ghost)
     {
-      return this->realGeometry.buildGeom(ghost);
+      return this->realGeometry.buildGhost(ghost);
     }
 
+    // print real entity for debugging
     void print (std::ostream& ss) const
     {
       this->realGeometry.print(ss);
     }
+
+    // for changing the coordinates of one element
+    FieldVector<bs_ctype, coorddim> & getCoordVec (int i)
+    {
+      return this->realGeometry.getCoordVec(i);
+    }
+
   };
 
+  //! BSGridGeometry
   template<int mydim, int cdim, class GridImp>
   class BSGridGeometry :
     public GeometryDefault <mydim,cdim,GridImp,BSGridGeometry>
@@ -143,30 +157,7 @@ namespace Dune
     //! returns true if the point in local coordinates is inside reference element
     bool checkInside(const FieldVector<bs_ctype, mydim>& local) const;
 
-    /*!
-       Copy from grid.hh:
-
-       Integration over a general element is done by integrating over the reference element
-       and using the transformation from the reference element to the global element as follows:
-       \f[\int\limits_{\Omega_e} f(x) dx = \int\limits_{\Omega_{ref}} f(g(l)) A(l) dl \f] where
-       \f$g\f$ is the local to global mapping and \f$A(l)\f$ is the integration element.
-
-       For a general map \f$g(l)\f$ involves partial derivatives of the map (surface element of
-       the first kind if \f$d=2,w=3\f$, determinant of the Jacobian of the transformation for
-       \f$d=w\f$, \f$\|dg/dl\|\f$ for \f$d=1\f$).
-
-       For linear elements, the derivatives of the map with respect to local coordinates
-       do not depend on the local coordinates and are the same over the whole element.
-
-       For a structured mesh where all edges are parallel to the coordinate axes, the
-       computation is the length, area or volume of the element is very simple to compute.
-
-       Each grid module implements the integration element with optimal efficieny. This
-       will directly translate in substantial savings in the computation of finite element
-       stiffness matrices.
-     */
-
-    //! A(l)
+    //! A(l) , see grid.hh
     bs_ctype integrationElement (const FieldVector<bs_ctype, mydim>& local) const;
 
     //! can only be called for dim=dimworld!
@@ -175,16 +166,21 @@ namespace Dune
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
-    //! generate the geometry for the ALBERT EL_INFO
-    //! no interface method
+    //! generate the geometry for out of given BSGridElement
     bool buildGeom(const BSSPACE IMPLElementType & item);
     bool buildGeom(const BSSPACE HFaceType & item);
+    bool buildGeom(const BSSPACE HEdgeType & item);
+    bool buildGeom(const BSSPACE VertexType & item);
 
+    //! build ghost out of internal boundary segment
     bool buildGhost(const BSSPACE PLLBndFaceType & ghost);
 
     //! print internal data
     //! no interface method
     void print (std::ostream& ss) const;
+
+    // for changing the coordinates of one element
+    FieldVector<bs_ctype, cdim> & getCoordVec (int i);
 
   private:
     // generate Jacobian Inverse and calculate integration_element
@@ -203,11 +199,14 @@ namespace Dune
 
     enum { matdim = (mydim > 0) ? mydim : 1 };
     mutable FieldMatrix<bs_ctype,matdim,matdim> Jinv_; //!< storage for inverse of jacobian
-    mutable bs_ctype detDF_;             //!< storage of integration_element
-    mutable FieldMatrix<bs_ctype,matdim,matdim> A_; //!< for map2world NORMALE Nr.(ZEILE/SPALTE)
+    mutable bs_ctype detDF_;                         //!< storage of integration_element
+    mutable FieldMatrix<bs_ctype,matdim,matdim> A_;  //!< transformation matrix
 
     mutable FieldVector<bs_ctype, mydim> localCoord_;
     mutable FieldVector<bs_ctype, cdim>  globalCoord_;
+
+    mutable FieldVector<bs_ctype,cdim> tmpV_; //! temporary memory
+    mutable FieldVector<bs_ctype,cdim> tmpU_; //! temporary memory
   };
 
 
@@ -221,18 +220,21 @@ namespace Dune
   class BSGridMakeableEntity :
     public GridImp::template codim<codim>::Entity
   {
-    typedef typename GridImp::template codim<codim>::Entity EntityType;
+    // typedef typename GridImp::template codim<codim>::Entity EntityType;
     friend class BSGridEntity<codim, dim, GridImp>;
   public:
+
     // Constructor creating the realEntity
     BSGridMakeableEntity(const GridImp & grid, int level) :
       GridImp::template codim<codim>::
       Entity (BSGridEntity<codim, dim, GridImp>(grid,level)) {}
 
-    // set element as normal entity
-    void setElement(BSSPACE HElementType &element)
+    //! set element as normal entity
+    //! ItemTypes are HElementType, HFaceType, HEdgeType and VertexType
+    template <class ItemType>
+    void setElement(ItemType & item)
     {
-      this->realEntity.setElement(element);
+      this->realEntity.setElement(item);
     }
 
     // set element as ghost
@@ -246,7 +248,6 @@ namespace Dune
     {
       this->realEntity.setGhost(ghost);
     }
-
   };
 
   /*!
@@ -265,7 +266,13 @@ namespace Dune
     friend class BSGridEntity < 0, dim, GridImp >;
     friend class BSGridLevelIterator < cd, All_Partition, GridImp >;
 
+    friend class BSGridHierarchicIndexSet<dim,dimworld>;
+
   public:
+    typedef typename BSSPACE BSHElementType<cd>::ElementType BSElementType;
+    typedef typename BSSPACE BSIMPLElementType<cd>::ElementType BSIMPLElementType;
+
+    typedef typename GridImp::template codim<cd>::Entity Entity;
     typedef typename GridImp::template codim<cd>::Geometry Geometry;
     typedef BSGridMakeableGeometry<dim-cd,GridImp::dimensionworld,GridImp> GeometryImp;
     typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
@@ -295,16 +302,29 @@ namespace Dune
     //! my position in local coordinates of the owners father
     FieldVector<bs_ctype, dim>& positionInOwnersFather () const;
 
+    // set element as normal entity
+    void setElement(const BSElementType & item);
+    void setElement(const BSSPACE HElementType & el, const BSSPACE VertexType & vx);
+
   private:
+    //! index is unique within the grid hierachie and per codim
+    int getIndex () const;
+
     // the grid this entity belongs to
     const GridImp &grid_;
 
+    int gIndex_; //! hierarchic index
+
     // corresponding BSGridElement
-    const BSSPACE HElementType * item_;
+    const BSIMPLElementType * item_;
+    const BSSPACE HElementType * father_;
 
     //! the cuurent geometry
     mutable GeometryImp geo_;
     mutable bool builtgeometry_;       //!< true if geometry has been constructed
+
+    mutable bool localFCoordCalced_;
+    mutable FieldVector<bs_ctype, dim> localFatherCoords_; //! coords of vertex in father
   };
 
   /*!
@@ -341,14 +361,15 @@ namespace Dune
     friend class BSGridLevelIterator <3,All_Partition,GridImp>;
     friend class BSGridLeafIterator <GridImp>;
 
+    friend class BSGridHierarchicIndexSet<dim,dimworld>;
+
     // partial specialisation of subIndex
     template <int codim>
     struct IndexWrapper
     {
       static inline int subIndex(BSSPACE GEOElementType &elem, int i)
       {
-        return elem.myvertex(i)->vertexIndex();
-        //return elem.getIndex();
+        return elem.myvertex(i)->getIndex();
       }
     };
 
@@ -377,19 +398,8 @@ namespace Dune
       typedef typename GridImp::template codim<cd>::EntityPointer EntityPointer;
     };
 
-    //! Destructor, needed perhaps needed for deleteing faceEntity_ and
-    //! edgeEntity_ , see below
-    //! there are only implementations for dim==dimworld 2,3
-    ~BSGridEntity() {};
-
-    //! Constructor, real information is set via setElInfo method
-    //BSGridEntity(BSGrid<dim,dimworld> &grid,
-    //            BSSPACE HElementType &element,int index, int wLevel);
-
+    //! Constructor creating empty Entity
     BSGridEntity(const GridImp &grid, int level);
-
-    //! Default-Constructor
-    //BSGridEntity(BSGrid<dim,dimworld> &grid) : grid_(grid) { }
 
     //! level of this element
     int level () const ;
@@ -409,7 +419,7 @@ namespace Dune
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
         with codimension cc.
      */
-    template<int cc> int count () const { return cc+1; }
+    template<int cc> int count () const ;
 
     //! return index of sub entity with codim = cc and local number i
     //! i.e. return global number of vertex i
@@ -485,6 +495,9 @@ namespace Dune
     void setGhost(BSSPACE PLLBndFaceType  &ghost);
 
   private:
+    //! index is unique within the grid hierachie and per codim
+    int getIndex () const;
+
     // corresponding grid
     const GridImp  & grid_;
 
@@ -507,7 +520,7 @@ namespace Dune
     int glIndex_; //!< global index of element
     int level_;  //!< level of element
 
-    //BSGridGeometry <dim,dim> fatherReLocal_;
+    mutable GeometryImp geoInFather_;
   }; // end of BSGridEntity codim = 0
 
   //**********************************************************************
@@ -556,7 +569,7 @@ namespace Dune
     int maxlevel_; //!< maxlevel
 
     // holds the entity, copy pointer and delete if no refcount is left
-    AutoPointer< EntityImp > objEntity_;
+    BSSPACE AutoPointer< EntityImp > objEntity_;
   };
 
   //*******************************************************************
@@ -778,6 +791,7 @@ namespace Dune
 
   public:
     typedef typename GridImp::template codim<cd>::Entity Entity;
+
     typedef BSGridMakeableEntity<cd,dim,GridImp> EntityImp;
 
     //! typedef of my type
@@ -787,7 +801,7 @@ namespace Dune
     BSGridLevelIterator(const GridImp & grid, int level , bool end=false);
 
     //! Constructor for father
-    BSGridLevelIterator(const GridImp & grid, BSSPACE HElementType & item);
+    BSGridLevelIterator(const GridImp & grid, const BSSPACE HElementType & item);
 
     //! prefix increment
     void increment ();
@@ -811,11 +825,12 @@ namespace Dune
     // actual level
     int level_;
 
-    // the original iterator of the BSGrid
-    typename BSSPACE BSLevelIterator<cd>::IteratorType iter_;
+    // the wrapper for the original iterator of the BSGrid
+    typedef typename BSSPACE BSGridLevelIteratorWrapper<cd> IteratorType;
+    BSSPACE AutoPointer< IteratorType > iter_;
 
     // holds the entity, copy pointer and delete if no refcount is left
-    AutoPointer< EntityImp > objEntity_;
+    BSSPACE AutoPointer< EntityImp > objEntity_;
   };
 
   //********************************************************************
@@ -856,6 +871,7 @@ namespace Dune
     int level () const;
 
   private:
+    //! the current grid
     const GridImp & grid_;
 
     // element index, -1 for end
@@ -864,13 +880,14 @@ namespace Dune
     // actual level
     int level_;
 
-    // the original iterator of the BSGrid
-    typedef typename BSSPACE BSLeafIterator<codim>::IteratorType IteratorType;
-    mutable typename BSSPACE BSLeafIterator<codim>::IteratorType *iter_;
+    // the wrapper for the original iterator of the BSGrid
+    typedef typename BSSPACE BSGridLeafIteratorWrapper<codim> IteratorType;
+    BSSPACE AutoPointer < IteratorType > iter_;
 
     // holds the entity, copy pointer and delete if no refcount is left
-    AutoPointer< EntityImp > objEntity_;
+    BSSPACE AutoPointer< EntityImp > objEntity_;
 
+    //! my partition tpye
     const PartitionIteratorType pitype_;
   };
 
@@ -921,6 +938,9 @@ namespace Dune
 
     //typedef typename std::pair < ObjectStreamType * , BSGridEntity<0,dim,dimworld> * >
     //              DataCollectorParamType;
+
+    typedef BSGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSetType;
+    typedef DefaultLevelIndexSet<MyType>           LevelIndexSetType;
 
     /** \todo Please doc me! */
 
@@ -984,6 +1004,14 @@ namespace Dune
     //! number of grid entities on all levels for given codim
     int global_size (int cd) const ;
 
+    const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
+    const LevelIndexSetType & levelIndexSet () const
+    {
+      if(!levelIndexSet_) levelIndexSet_ = new LevelIndexSetType (*this);
+      return *levelIndexSet_;
+    }
+
+
     //! calculate load of each proc and repartition if neccessary
     bool loadBalance ();
 
@@ -1010,7 +1038,7 @@ namespace Dune
     // End of Interface Methods
     //**********************************************************
     //! uses the interface, mark on entity and refineLocal
-    bool globalRefine(int refCount) const;
+    bool globalRefine(int refCount);
 
     /** \brief write Grid to file in specified FileFormatType
      */
@@ -1026,7 +1054,6 @@ namespace Dune
     //! private method, but otherwise we have to friend class all possible
     //! types of LevelIterator ==> later
     BSSPACE BSGitterType & myGrid();
-    const BSSPACE BSGitterType & myGrid() const ;
 
     //! return my rank (only parallel)
     int myRank () const { return myRank_; }
@@ -1051,7 +1078,7 @@ namespace Dune
       return entity.realEntity;
     }
 
-  private:
+    //private:
     template <int cd>
     const BSGridEntity<cd,dim,const BSGrid<dim,dimworld> >&
     getRealEntity(const typename Traits::template codim<cd>::Entity& entity) const
@@ -1060,8 +1087,11 @@ namespace Dune
     }
 
   private:
-    // calculate new level size
-    int calcNewSize (int level, int codim);
+    //! Copy constructor should not be used
+    BSGrid( const BSGrid<dim,dimworld> & g);
+
+    //! assignment operator should not be used
+    BSGrid<dim,dimworld> & operator = (const BSGrid<dim,dimworld> & g);
 
     // reset size and global size
     void calcExtras();
@@ -1075,14 +1105,11 @@ namespace Dune
     // set _coarsenMark to true
     void setCoarsenMark() const;
 
+    // the real grid
     BSSPACE BSGitterType * mygrid_;
 #ifdef _BSGRID_PARALLEL_
     BSSPACE MpAccessMPI mpAccess_;
 #endif
-
-    // save size of grid
-    mutable int size_[MAXL][dim+1];
-
     // save global_size of grid
     mutable int globalSize_[dim+1];
 
@@ -1094,8 +1121,58 @@ namespace Dune
 
     const int myRank_;
 
+    // our hierarchic index set
+    HierarchicIndexSetType hIndexSet_;
+
+    // the level index set ( default type )
+    mutable LevelIndexSetType * levelIndexSet_;
+
   }; // end Class BSGridGrid
 
+  //! hierarchic index set of BSGrid
+  template <int dim, int dimworld>
+  class BSGridHierarchicIndexSet
+  {
+    typedef BSGrid<dim,dimworld> GridType;
+    enum { numCodim = 4 };
+
+  public:
+    typedef typename GridType::Traits::template codim<0>::Entity EntityCodim0Type;
+
+    BSGridHierarchicIndexSet(const GridType & grid, const int (& s)[numCodim]) : grid_(grid) , size_(s) {}
+
+    //! return hierarchic index of given entity
+    template <class EntityType>
+    int index (const EntityType & ep) const
+    {
+      enum { cd = EntityType :: codimension };
+      return (grid_.template getRealEntity<cd>(ep)).getIndex();
+    }
+
+    //! return subIndex of given entity
+    template <int cd>
+    int subIndex (const EntityCodim0Type & ep, int i) const
+    {
+      assert(cd == dim);
+      const BSGridEntity<0,dim,const GridType> & en = (grid_.template getRealEntity<0>(ep));
+      int idx = en.template getSubIndex<cd>(i);
+      std::cout << idx << " index \n";
+      return idx;
+    }
+
+    //! return size of indexset, i.e. maxindex+1
+    int size ( int level, int codim ) const
+    {
+      assert(size_[codim] >= 0);
+      return size_[codim];
+    }
+
+  private:
+    // our Grid
+    const GridType & grid_;
+    // size of indexset, managed by grid
+    const int (& size_)[numCodim];
+  };
 
   /** @} end documentation group */
 
