@@ -6,6 +6,12 @@
 #include <iostream>
 #include <math.h>
 
+
+// If only I knew where those two get defined...
+// They screw up the function definitions below
+#undef MAX
+#undef MIN
+
 //! Check condition at compilation time
 template <bool flag> class CompileTimeChecker;
 
