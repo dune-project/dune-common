@@ -88,7 +88,7 @@ namespace Dune {
     }
 
     //! multiplication of vector with scalar
-    T operator* (T k) const
+    Vec<n,T> operator* (T k) const
     {
       Vec<n,T> z; for (int i=0; i<n; i++) z.a[i] =  k*a[i];return z;
     }
