@@ -157,12 +157,11 @@ namespace Dune {
   };
 
 
-
-  /*! Wraps the naked ISTL generic ILU0 preconditioner into the
+  /*! Wraps the naked ISTL generic SOR preconditioner into the
       solver framework.
    */
   template<class M, class X, class Y>
-  class SeqILU0 : public Preconditioner<X,Y> {
+  class SeqSOR : public Preconditioner<X,Y> {
   public:
     //! export types, they come from the derived class
     typedef M matrix_type;
@@ -171,11 +170,9 @@ namespace Dune {
     typedef typename X::field_type field_type;
 
     //! constructor gets all parameters to operate the prec.
-    SeqILU0 (const M& A)
-      : ILU(A)     // copy A
-    {
-      bilu0_decomposition(ILU);
-    }
+    SeqSOR (const M& A, int n, field_type w)
+      : _A(A), _n(n), _w(w)
+    {       }
 
     //! prepare: nothing to do here
     virtual void pre (X& x, Y& b) {}
@@ -183,7 +180,10 @@ namespace Dune {
     //! just calls the istl functions
     virtual void apply (X& v, const Y& d)
     {
-      bilu_backsolve(ILU,v,d);
+      for (int i=0; i<_n; i++)
+      {
+        bsorf(_A,v,d,_w);
+      }
     }
 
     //! sequential case: just call vector function
@@ -203,6 +203,165 @@ namespace Dune {
     virtual void post (X& x) {}
 
   private:
+    const M& _A;       // my matrix to operate on
+    int _n;            // number of iterations
+    field_type _w;     // relaxation factor
+  };
+
+
+  /*! Wraps the naked ISTL generic block Gauss-Seidel preconditioner into the
+      solver framework.
+   */
+  template<class M, class X, class Y>
+  class SeqGS : public Preconditioner<X,Y> {
+  public:
+    //! export types, they come from the derived class
+    typedef M matrix_type;
+    typedef X domain_type;
+    typedef Y range_type;
+    typedef typename X::field_type field_type;
+
+    //! constructor gets all parameters to operate the prec.
+    SeqGS (const M& A, int n, field_type w)
+      : _A(A), _n(n), _w(w)
+    {       }
+
+    //! prepare: nothing to do here
+    virtual void pre (X& x, Y& b) {}
+
+    //! just calls the istl functions
+    virtual void apply (X& v, const Y& d)
+    {
+      for (int i=0; i<_n; i++)
+      {
+        dbgs(_A,v,d,_w);
+      }
+    }
+
+    //! sequential case: just call vector function
+    virtual field_type dot (const Y& y, const Y& z)
+    {
+      return y*z;
+    }
+
+    //! sequential case: just call vector function
+    virtual double norm (const Y& y)
+    {
+      return y.two_norm();     // my favourite norm
+    }
+
+
+    // nothing to do here
+    virtual void post (X& x) {}
+
+  private:
+    const M& _A;       // my matrix to operate on
+    int _n;            // number of iterations
+    field_type _w;     // relaxation factor
+  };
+
+
+  /*! Wraps the naked ISTL generic block Jacobi preconditioner into the
+      solver framework.
+   */
+  template<class M, class X, class Y>
+  class SeqJac : public Preconditioner<X,Y> {
+  public:
+    //! export types, they come from the derived class
+    typedef M matrix_type;
+    typedef X domain_type;
+    typedef Y range_type;
+    typedef typename X::field_type field_type;
+
+    //! constructor gets all parameters to operate the prec.
+    SeqJac (const M& A, int n, field_type w)
+      : _A(A), _n(n), _w(w)
+    {       }
+
+    //! prepare: nothing to do here
+    virtual void pre (X& x, Y& b) {}
+
+    //! just calls the istl functions
+    virtual void apply (X& v, const Y& d)
+    {
+      for (int i=0; i<_n; i++)
+      {
+        dbjac(_A,v,d,_w);
+      }
+    }
+
+    //! sequential case: just call vector function
+    virtual field_type dot (const Y& y, const Y& z)
+    {
+      return y*z;
+    }
+
+    //! sequential case: just call vector function
+    virtual double norm (const Y& y)
+    {
+      return y.two_norm();     // my favourite norm
+    }
+
+
+    // nothing to do here
+    virtual void post (X& x) {}
+
+  private:
+    const M& _A;       // my matrix to operate on
+    int _n;            // number of iterations
+    field_type _w;     // relaxation factor
+  };
+
+
+
+  /*! Wraps the naked ISTL generic ILU0 preconditioner into the
+      solver framework.
+   */
+  template<class M, class X, class Y>
+  class SeqILU0 : public Preconditioner<X,Y> {
+  public:
+    //! export types, they come from the derived class
+    typedef M matrix_type;
+    typedef X domain_type;
+    typedef Y range_type;
+    typedef typename X::field_type field_type;
+
+    //! constructor gets all parameters to operate the prec.
+    SeqILU0 (const M& A, field_type w)
+      : ILU(A)     // copy A
+    {
+      _w =w;
+      bilu0_decomposition(ILU);
+    }
+
+    //! prepare: nothing to do here
+    virtual void pre (X& x, Y& b) {}
+
+    //! just calls the istl functions
+    virtual void apply (X& v, const Y& d)
+    {
+      bilu_backsolve(ILU,v,d);
+      v *= _w;
+    }
+
+    //! sequential case: just call vector function
+    virtual field_type dot (const Y& y, const Y& z)
+    {
+      return y*z;
+    }
+
+    //! sequential case: just call vector function
+    virtual double norm (const Y& y)
+    {
+      return y.two_norm();     // my favourite norm
+    }
+
+
+    // nothing to do here
+    virtual void post (X& x) {}
+
+  private:
+    field_type _w;
     M ILU;
   };
 
@@ -220,10 +379,11 @@ namespace Dune {
     typedef typename X::field_type field_type;
 
     //! constructor gets all parameters to operate the prec.
-    SeqILUn (const M& A, int n)
+    SeqILUn (const M& A, int n, field_type w)
       : ILU(A.N(),A.M(),M::row_wise)
     {
       _n = n;
+      _w = w;
       bilu_decomposition(A,n,ILU);
     }
 
@@ -234,6 +394,7 @@ namespace Dune {
     virtual void apply (X& v, const Y& d)
     {
       bilu_backsolve(ILU,v,d);
+      v *= _w;
     }
 
     //! sequential case: just call vector function
@@ -255,6 +416,7 @@ namespace Dune {
   private:
     M ILU;
     int _n;
+    field_type _w;
   };
 
 
