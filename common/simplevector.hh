@@ -27,7 +27,13 @@ namespace Dune
     SimpleVector() {};
 
     //! make array with m components
-    SimpleVector(int m) : Array<T>::Array(m) {}
+    explicit SimpleVector(int m) : Array<T>::Array(m) {}
+
+    SimpleVector<T>& operator= (const T t)
+    {
+      for (int i=0; i<this->n; ++i) this->p[i] = t;
+      return *this;
+    }
 
     //! Addition
     SimpleVector<T>& operator+= (const SimpleVector<T>& vec)

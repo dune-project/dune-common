@@ -62,7 +62,7 @@ namespace Dune
     Array();
 
     //! make array with m components
-    Array(int m);
+    explicit Array(int m);
 
     //! copy constructor making shallow copy
     Array (const Array<T>&);
@@ -74,7 +74,7 @@ namespace Dune
     Array<T>& operator= (const Array<T>&);
 
     //! assign value to all components
-    Array<T>& operator= (const T t);
+    Array<T>& operator= (const T& a);
 
     //! reallocate array with size m
     void resize (int m);
@@ -295,7 +295,7 @@ namespace Dune
 
   // Zuweisung mit member type
   template <class T>
-  inline Array<T>& Array<T>::operator= (T a)
+  inline Array<T>& Array<T>::operator= (const T& a)
   {
     for (int i=0; i<n; i++) p[i]=a;
     return *this;     // Gebe Referenz zurueck damit a=b=c; klappt
