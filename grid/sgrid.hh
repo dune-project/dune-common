@@ -168,14 +168,14 @@ namespace Dune {
        Column dim is the position vector. This format allows a consistent
        treatement of all dimensions, including 0 (the vertex).
      */
-    void make (FieldMatrix<sgrid_ctype,cdim,mydim+1>& __As);
+    void make (FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As);
 
     //! constructor with bool argument makes reference element if true, uninitialized else
     SGeometry (bool b);
 
   private:
     FieldVector<sgrid_ctype, cdim> s;             //!< position of element
-    FieldMatrix<sgrid_ctype,cdim,mydim> A;         //!< direction vectors as matrix
+    FieldMatrix<sgrid_ctype,mydim,cdim> A;         //!< direction vectors as matrix
     FixedArray<FieldVector<sgrid_ctype, cdim>, 1<<mydim> c;     //!< coordinate vectors of corners
     mutable FieldMatrix<sgrid_ctype,mydim,mydim> Jinv;           //!< storage for inverse of jacobian
     mutable bool builtinverse;
@@ -202,7 +202,7 @@ namespace Dune {
     void print (std::ostream& ss, int indent) const;
 
     //! constructor, makes element from position and direction vectors
-    void make (FieldMatrix<sgrid_ctype,cdim,1>& __As);
+    void make (FieldMatrix<sgrid_ctype,1,cdim>& __As);
 
     //! constructor with bool argument makes reference element if true, uninitialized else
     SGeometry (bool b);
@@ -235,7 +235,7 @@ namespace Dune {
       Geometry<mydim, cdim, GridImp, SGeometry>(SGeometry<mydim, cdim, GridImp>(false))
     {};
 
-    void make (FieldMatrix<sgrid_ctype,cdim,mydim+1>& __As) { this->realGeometry.make(__As); }
+    void make (FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As) { this->realGeometry.make(__As); }
   };
 
   template <class GridImp>

@@ -58,7 +58,7 @@ namespace Dune {
   }
 
   template<int mydim, int cdim, class GridImp>
-  inline void SGeometry<mydim,cdim,GridImp>::make(FieldMatrix<sgrid_ctype,cdim,mydim+1>& __As)
+  inline void SGeometry<mydim,cdim,GridImp>::make(FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As)
   {
     // clear jacobian
     builtinverse = false;
@@ -114,7 +114,10 @@ namespace Dune {
   template<int mydim, int cdim, class GridImp>
   inline FieldVector<sgrid_ctype, cdim> SGeometry<mydim,cdim,GridImp>::global (const FieldVector<sgrid_ctype, mydim>& local) const
   {
-    return s+(A*local);
+    FieldVector<sgrid_ctype, cdim> global = s;
+    // global += A * local
+    A.umv(local,global);
+    return global; // s+(A*local);
   }
 
   template<int mydim, int cdim, class GridImp>
@@ -196,7 +199,7 @@ namespace Dune {
   }
 
   template<int cdim, class GridImp>
-  inline void SGeometry<0,cdim,GridImp>::make (FieldMatrix<sgrid_ctype,cdim,1>& __As)
+  inline void SGeometry<0,cdim,GridImp>::make (FieldMatrix<sgrid_ctype,1,cdim>& __As)
   {
     s = __As[0];
   }
@@ -301,7 +304,7 @@ namespace Dune {
     if (builtgeometry) return geo;
 
     // find dim-codim direction vectors and reference point
-    FieldMatrix<sgrid_ctype,dimworld,dim-codim+1> __As;
+    FieldMatrix<sgrid_ctype,dim-codim+1,dimworld> __As;
 
     // count number of direction vectors found
     int dir=0;
@@ -442,7 +445,7 @@ namespace Dune {
     father_id = this->grid->n((this->l)-1,this->grid->expand((this->l)-1,zz,partition));
 
     // now make a subcube of size 1/2 in each direction
-    FieldMatrix<sgrid_ctype,dimworld,dim+1> __As;
+    FieldMatrix<sgrid_ctype,dim+1,dimworld> __As;
     FieldVector<sgrid_ctype, dim> v;
     for (int i=0; i<dim; i++)
     {

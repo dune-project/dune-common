@@ -417,7 +417,7 @@ namespace Dune {
     template <class T>
     bool mark( int refCount, T & e )
     {
-      IsTrue<Conversion<T, typename Grid<dim,dimworld,ct,GridImp>::template codim<0>::Entity>::sameType >::yes();
+      IsTrue<Conversion<T, typename Grid<dim,dimworld,ct,GridImp>::template codim<0>::EntityPointer>::sameType >::yes();
       return false;
     }
 
