@@ -502,17 +502,31 @@ void UGGrid < dim, dimworld >::globalRefine(int refCount)
 template < int dim, int dimworld >
 void UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth, int maxlevel, int minelement)
 {
-  char* argv[4];
+  /** \todo Test for valid arguments */
+  std::string argStrings[4];
+  std::stringstream numberAsAscii[4];
 
-  argv[0] = "lb 0";
-  argv[1] = "c 1";
-  argv[2] = "d 2";
-  argv[3] = "e 1";
+  numberAsAscii[0] << strategy;
+  argStrings[0] = "lb " + numberAsAscii[0].str();
+
+  numberAsAscii[1] << minlevel;
+  argStrings[1] = "c " + numberAsAscii[1].str();
+
+  numberAsAscii[2] << depth;
+  argStrings[2] = "d " + numberAsAscii[2].str();
+
+  numberAsAscii[3] << minelement;
+  argStrings[3] = "e " + numberAsAscii[3].str();
+
+  const char* argv[4] = {argStrings[0].c_str(),
+                         argStrings[1].c_str(),
+                         argStrings[2].c_str(),
+                         argStrings[3].c_str()};
 
 #ifdef _2
-  int errCode = UG2d::LBCommand(4, argv);
+  int errCode = UG2d::LBCommand(4, (char**)argv);
 #else
-  int errCode = UG3d::LBCommand(4, argv);
+  int errCode = UG3d::LBCommand(4, (char**)argv);
 #endif
 
   if (errCode)

@@ -210,7 +210,10 @@ namespace Dune {
     /** \brief Please doc me! */
     GridIdentifier type () { return UGGrid_Id; };
 
-    /** \brief Distributes this grid over the available nodes in a distributed machine */
+    /** \brief Distributes this grid over the available nodes in a distributed machine
+     *
+       \param maxlevel does currently get ignored
+     */
     void loadBalance(int strategy, int minlevel, int depth, int maxlevel, int minelement);
 
     /*! The communication interface
