@@ -137,6 +137,7 @@ namespace Dune {
       return asImp().operator != (I);
     }
 
+    //! \todo Please doc me!
     int index () const
     {
       return asImp().index();

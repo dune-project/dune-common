@@ -22,7 +22,7 @@ namespace Dune {
 
   typedef int deriType;
 
-  /** \brief ???
+  /** \brief Class representing a function
    * \todo Please doc me!
    */
   template< class FunctionSpaceType, class FunctionImp>

@@ -19,13 +19,13 @@ namespace Dune {
 
   static const int COMMUNICATOR_COMM_TAG = 457;
 
+
+#if defined(HAVE_MPI) && defined(ALBERT_USES_MPI)
   /*!
      ProcListElement describes the link between two processors.
      It contains all needed information for cummunication between
      these two procs.
    */
-
-#if defined(HAVE_MPI) && defined(ALBERT_USES_MPI)
   template <class BufferType>
   class ProcListElement
   {
@@ -171,24 +171,21 @@ namespace Dune {
 
 #endif
 
-  /*!
-     AlbertGridCommunicator organizes the communication of AlbertGrid on
-     diffrent processors.
-   */
-
-
+  //! \todo Please doc me!
   template <class T>
   class GathScatt
   {
     T fake;
   public:
 
+    //! \todo Please doc me!
     template <class VecType>
     void gather (VecType & t, int index )
     {
       fake = t[index];
     }
 
+    //! \todo Please doc me!
     template <class VecType>
     void scatter(VecType & t , int index)
     {
@@ -198,6 +195,10 @@ namespace Dune {
   };
 
 #if defined(HAVE_MPI) && defined(ALBERT_USES_MPI)
+  /*!
+     AlbertGridCommunicator organizes the communication of AlbertGrid on
+     diffrent processors.
+   */
   template <class GridType, class IndexSetType>
   class AlbertGridCommunicator
   {

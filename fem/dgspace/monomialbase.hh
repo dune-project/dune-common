@@ -23,6 +23,8 @@ namespace Dune {
   //  --MonomialBaseFunctionSet
   //
   //*************************************************************************
+
+  //! \todo Please doc me!
   template<class FunctionSpaceType>
   class MonomialBaseFunctionSet
     : public BaseFunctionSetDefault
@@ -60,10 +62,12 @@ namespace Dune {
     void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable,
                     QuadratureType & quad, int quadPoint, Range & phi ) const;
 
+    //! \todo Please doc me!
     void print (std::ostream& s, int baseFunct) const {
       assert(baseFunct < numOfBaseFct_);
       print(s, Phi_[baseFunct]);
     };
+    //! \todo Please doc me!
     void print (std::ostream& s) const {
       s << "[";
       for (int i = 0; i < numOfBaseFct_ - 1; i++) {
@@ -88,21 +92,29 @@ namespace Dune {
       return x*power(x, p-1);
     }
 
-    inline
-    void real_evaluate ( int baseFunct, const FieldVector<deriType, 0> &diffVariable,
-                         const Domain & x,  Range & phi ) const;
-    inline
-    void real_evaluate ( int baseFunct, const FieldVector<deriType, 1> &diffVariable,
-                         const Domain & x,  Range & phi ) const;
-    inline
-    void real_evaluate ( int baseFunct, const FieldVector<deriType, 2> &diffVariable,
-                         const Domain & x,  Range & phi ) const;
+    //! \todo Please doc me!
+    inline void real_evaluate ( int baseFunct,
+                                const FieldVector<deriType, 0> &diffVariable,
+                                const Domain & x,
+                                Range & phi ) const;
 
+    //! \todo Please doc me!
+    inline void real_evaluate ( int baseFunct,
+                                const FieldVector<deriType, 1> &diffVariable,
+                                const Domain & x,
+                                Range & phi ) const;
+    //! \todo Please doc me!
+    inline void real_evaluate ( int baseFunct,
+                                const FieldVector<deriType, 2> &diffVariable,
+                                const Domain & x,
+                                Range & phi ) const;
+
+    //! \todo Please doc me!
     void print (std::ostream& s, const FieldVector<int, 2> & pol) const;
 
   }; // end class MonomialBaseFunctionSet
 
-  // overloading the out stream for printing of monomial bases
+  //! overloading the out stream for printing of monomial bases
   template< class T >
   inline std::ostream&
   operator<< (std::ostream& s, MonomialBaseFunctionSet<T> & m)

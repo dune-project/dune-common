@@ -16,6 +16,7 @@ namespace BernhardSchuppGrid {
     typedef ObjectStream ObjectStreamType;
 
   public:
+    //! Constructor
     GatherScatterImpl(GridType & grid, EntityType & en, DataCollectorType & dc)
       : grid_(grid), en_(en), dc_(dc) {}
 
@@ -40,14 +41,14 @@ namespace BernhardSchuppGrid {
       dc_.xtractData(str,en_);
     }
 
-    // write Data of one lement to stream
+    //! write Data of one lement to stream
     virtual void sendData ( ObjectStreamType & str , const HElementType & elem )
     {
       en_.setElement( const_cast<HElementType &> (elem) );
       dc_.scatter(str, en_);
     }
 
-    // read Data of one element from stream
+    //! read Data of one element from stream
     virtual void recvData ( ObjectStreamType & str , HGhostType & ghost )
     {
       // set ghost as entity

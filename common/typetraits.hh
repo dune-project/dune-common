@@ -165,6 +165,7 @@ namespace Dune
     };
   };
 
+  /** \todo Please doc me! */
   template<bool b, typename T=void>
   struct EnableIf
   {
@@ -175,6 +176,7 @@ namespace Dune
   struct EnableIf<false,T>
   {};
 
+  /** \todo Please doc me! */
   template<class T1, class T2, class Type>
   struct EnableIfInterOperable
     : public EnableIf<IsInteroperable<T1,T2>::value, Type>

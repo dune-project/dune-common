@@ -99,6 +99,7 @@ namespace Dune {
       baseFunctionList_[baseFunc] = func;
     };
 
+    //! \todo Please doc me!
     void setNumOfDiffFct ( int num )
     {
       numOfDiffFct_ = num;

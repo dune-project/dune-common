@@ -24,11 +24,14 @@ namespace Dune {
     int level_;
     IndexSetType & indexSet_;
   public:
+    //! Constructor
     LagrangeMapper ( IndexSetType & is, int numLocalDofs , int level )
       : numLocalDofs_ (numLocalDofs) , level_(level) , indexSet_ (is) {}
 
+    //! Destructor
     virtual ~LagrangeMapper () {}
 
+    //! \todo Please doc me!
     int size () const
     {
       return this->codimsize(numCodims-1);
@@ -55,13 +58,16 @@ namespace Dune {
       return (dimrange* indexSet_.template index<codim> (en,locNum) ) + locDim;
     }
 
+    //! \todo Please doc me!
     virtual void calcInsertPoints () {};
 
+    //! \todo Please doc me!
     virtual int numberOfDofs () const
     {
       return numLocalDofs_;
     }
 
+    //! \todo Please doc me!
     virtual int newSize() const
     {
 

@@ -6,6 +6,7 @@
 
 namespace Dune {
 
+  //! \todo Please doc me!
   class NumProc
   {
   public:

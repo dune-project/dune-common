@@ -24,7 +24,6 @@ namespace Dune {
      This is redundant but important for memory efficient implementations of unstru
      hierarchically refined meshes.
    */
-
   template<int dim, int dimworld>
   class OneDGridHierarchicIterator :
     public HierarchicIteratorDefault <dim,dimworld, OneDCType,

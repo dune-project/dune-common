@@ -10,8 +10,7 @@ namespace Dune {
 
   static const int edge[4][2] = { {0,2}, {1,3} , {0,1} , {2,3}};
 
-  /** \brief ???
-   * \todo Please doc me!
+  /** \brief Base class for local Finite Element operators
    */
   template <class DiscFunctionType, class MatrixType, class FEOpImp>
   class FiniteElementOperatorInterface
@@ -60,7 +59,7 @@ namespace Dune {
     const FEOpImp &asImp( ) const { return static_cast<const FEOpImp&>( *this ); }
   };
 
-  /** \brief ???
+  /** \brief Base class for local Finite Element operators
    * \todo Please doc me!
    */
   template <class DiscFunctionType, class MatrixType, class FEOpImp>
@@ -196,7 +195,7 @@ namespace Dune {
       matrix_assembled_ = true;
     }
 
-    //!
+    //! \todo Please doc me!
     void multiplyOnTheFly( const DiscFunctionType &arg, DiscFunctionType &dest ) const
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;

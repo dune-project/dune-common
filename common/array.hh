@@ -175,7 +175,7 @@ namespace Dune
   } ;
 
 
-  // Iterator interface
+  //! Iterator interface
   template<class T>
   inline typename Array<T>::Iterator Array<T>::begin () const
   {
@@ -184,6 +184,7 @@ namespace Dune
     return tmp;
   }
 
+  //! Iterator interface
   template<class T>
   inline typename Array<T>::Iterator Array<T>::end () const
   {
@@ -192,20 +193,27 @@ namespace Dune
     return tmp;          // das funktioniert: Stroustrup p. 92.
   }
 
-  // Destruktor
+  /*! \brief Destructor
+     Deletes contents of array.
+   */
   template <class T>
   inline Array<T>::~Array ()
   {
     if (n>0) delete[] p;
   }
 
-  // Konstruktoren
+  /*! \brief Default constructor
+     Creates an array of size 0.
+   */
   template <class T>
   inline Array<T>::Array ()
   {
     n = 0;
   }
 
+  /*! \brief Constructor with size indicator
+     Creates an empty array of size m.
+   */
   template <class T>
   inline Array<T>::Array (int m)
   {
@@ -224,6 +232,9 @@ namespace Dune
     }
   }
 
+  /*! \brief Resizing of an array
+     Resizing causes the old array to be deleted. All data is lost!
+   */
   template <class T>
   inline void Array<T>::resize (int m)
   {
@@ -250,7 +261,9 @@ namespace Dune
     }
   }
 
-  // Copy-Konstruktor
+  /* \brief Copy-constructor
+     Implements deep copy.
+   */
   template <class T>
   inline Array<T>::Array (const Array<T>& a)
   {
@@ -271,7 +284,8 @@ namespace Dune
     for (int i=0; i<n; i=i+1) p[i]=a.p[i];
   }
 
-  // Zuweisung
+  /* \brief Assignment operator
+   */
   template <class T>
   inline Array<T>& Array<T>::operator= (const Array<T>& a)
   {
@@ -298,7 +312,9 @@ namespace Dune
     return *this;     // Gebe Referenz zurueck damit a=b=c; klappt
   }
 
-  // Zuweisung mit member type
+  /* \brief Assignment operator
+     All elements of the Array get the value a
+   */
   template <class T>
   inline Array<T>& Array<T>::operator= (const T& a)
   {
@@ -306,7 +322,9 @@ namespace Dune
     return *this;     // Gebe Referenz zurueck damit a=b=c; klappt
   }
 
-  // Indizierung
+  /* \brief Access operator
+     Accessing of elements in Array. With bounds check.
+   */
   template <class T>
   inline T& Array<T>::operator[] (int i)
   {
@@ -315,7 +333,9 @@ namespace Dune
     return p[i];
   }
 
-
+  /* \brief Access operator
+     Accessing of elements in Array. With bounds check. Const version
+   */
   template <class T>
   inline const T& Array<T>::operator[] (int i) const
   {
@@ -324,14 +344,16 @@ namespace Dune
     return p[i];
   }
 
-  // Groesse
+  /* \brief Size of Array
+   */
   template <class T>
   inline int Array<T>::size () const
   {
     return n;
   }
 
-  // Ausgabe
+  /* \brief Output operator
+   */
   template <class T>
   std::ostream& operator<< (std::ostream& s, Array<T>& a)
   {
@@ -342,12 +364,14 @@ namespace Dune
     return s;
   }
 
+  //! Constructor
   template<class T>
   inline Array<T>::Iterator::Iterator ()
   {
     p=0;     // nicht initialisierter Iterator
   }
 
+  //! Comparison operator
   template<class T>
   inline bool Array<T>::Iterator::operator!=
     (const typename Array<T>::Iterator& x)
@@ -355,6 +379,7 @@ namespace Dune
     return p != x.p;
   }
 
+  //! Comparison operator
   template<class T>
   inline bool Array<T>::Iterator::operator==
     (const typename Array<T>::Iterator& x)
@@ -362,6 +387,7 @@ namespace Dune
     return p == x.p;
   }
 
+  //! Prefix-increment operator
   template<class T>
   inline typename Array<T>::Iterator Array<T>::Iterator::operator++ () // prefix
   {
@@ -369,6 +395,7 @@ namespace Dune
     return *this;
   }
 
+  //! Postfix-increment operator
   template<class T>
   inline typename Array<T>::Iterator Array<T>::Iterator::operator++ (int) // postfix
   {
@@ -377,12 +404,14 @@ namespace Dune
     return tmp;
   }
 
+  //! Dereferencing
   template<class T>
   inline const T& Array<T>::Iterator::operator* () const
   {
     return *p;
   }
 
+  //! Dereferencing
   template<class T>
   inline const T* Array<T>::Iterator::operator-> () const
   {

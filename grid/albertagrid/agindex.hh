@@ -9,6 +9,7 @@ namespace Dune {
 
   enum INDEXSTATE { NEW, OLD , USED, UNUSED };
 
+  //! \todo Please doc me!
   template <class GridType>
   class SerialIndexSet
   {
@@ -49,12 +50,13 @@ namespace Dune {
     }
 
     //template <class GridType>
+    //! \todo Please doc me!
     void resize (GridType & grid)
     {
       this->resize ( grid.global_size (0));
     }
 
-    // calculate new highest index
+    //! calculate new highest index
     void resize (int newMaxInd )
     {
       if( globalIndex_.size() < newMaxInd )
@@ -95,6 +97,7 @@ namespace Dune {
       //std::cout << nextFreeIndex_ << " freeInd \n";
     }
 
+    //! \todo Please doc me!
     void finish ()
     {
       for(int i=0; i<state_.size(); i++)
@@ -107,6 +110,7 @@ namespace Dune {
       std::cout << maxIndex() << " max Index of Set \n";
     }
 
+    //! \todo Please doc me!
     int maxIndex () const
     {
       int max = 0;
@@ -117,8 +121,7 @@ namespace Dune {
       return max;
     }
 
-
-
+    //! \todo Please doc me!
     int searchNext ()
     {
       if(nextIndex_ >= maxIndex_)
@@ -136,14 +139,14 @@ namespace Dune {
       return globalIndex_[nextIndex_-1];
     }
 
-    // memorise index
+    //! memorise index
     template <class EntityType>
     void insert (EntityType & en)
     {
       this->insert ( en.global_index() );
     }
 
-    // memorise index
+    //! memorise index
     void insert (int num )
     {
       assert(num < globalIndex_.size() );
@@ -166,6 +169,7 @@ namespace Dune {
       state_[num] = USED;
     }
 
+    //! \todo Please doc me!
     void print ( ) const
     {
       std::cout << "Size " << globalIndex_.size() << "\n";
@@ -176,6 +180,7 @@ namespace Dune {
       }
     }
 
+    //! \todo Please doc me!
     bool write_xdr(const char * filename, int timestep)
     {
       FILE  *file;
@@ -198,6 +203,7 @@ namespace Dune {
       fclose(file);
     }
 
+    //! \todo Please doc me!
     bool read_xdr(const char * filename , int timestep)
     {
       FILE   *file;
@@ -223,6 +229,7 @@ namespace Dune {
       return true;
     }
 
+    //! \todo Please doc me!
     bool processXdr(XDR *xdrs)
     {
       xdr_int ( xdrs, &maxIndex_ );
@@ -233,12 +240,14 @@ namespace Dune {
       return true;
     }
 
+    //! \todo Please doc me!
     int size () const
     {
       return nextFreeIndex_;
       //return grid_.global_size(0);
     }
 
+    //! \todo Please doc me!
     bool isNew (int index) const
     {
       if(state_[index] == NEW)
@@ -247,6 +256,7 @@ namespace Dune {
       return false;
     }
 
+    //! \todo Please doc me!
     int operator [] (int i) const
     {
       //printf(" gIndex_[%d] = %d \n",i,globalIndex_[i]);

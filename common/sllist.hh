@@ -130,6 +130,7 @@ namespace Dune
     inline int size() const;
 
   private:
+    /** \todo Please doc me! */
     struct Element
     {
       /**

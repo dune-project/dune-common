@@ -8,6 +8,8 @@
 
 namespace Dune {
 
+  /** \brief Inversion operator using CG algorithm
+   */
   template <class DiscreteFunctionType>
   class CGInverseOperator : public Operator<
                                 typename DiscreteFunctionType::DomainFieldType,
@@ -20,12 +22,16 @@ namespace Dune {
         DiscreteFunctionType,DiscreteFunctionType> MappingType;
 
   public:
-
-    CGInverseOperator( const MappingType & op ,
-                       double redEps , double absLimit , int maxIter , int verbose )
+    /** \todo Please doc me! */
+    CGInverseOperator( const MappingType & op,
+                       double redEps,
+                       double absLimit,
+                       int maxIter,
+                       int verbose )
       : op_(op), _redEps ( redEps ), epsilon_ ( absLimit*absLimit ) ,
         maxIter_ (maxIter ) , _verbose ( verbose ) {}
 
+    /** \todo Please doc me! */
     void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
     {
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
@@ -98,7 +104,7 @@ namespace Dune {
     int _verbose ;
   };
 
-
+  /** \todo Please doc me! */
   template <class DiscreteFunctionType, class OperatorType>
   class CGInverseOp : public Operator<
                           typename DiscreteFunctionType::DomainFieldType,
@@ -106,13 +112,18 @@ namespace Dune {
                           DiscreteFunctionType,DiscreteFunctionType>
   {
   public:
+    /** \todo Please doc me! */
+    CGInverseOp( OperatorType & op , double redEps , double absLimit , int maxIter , int verbose ) :
+      op_(op),
+      _redEps ( redEps ),
+      epsilon_ ( absLimit*absLimit ) ,
+      maxIter_ (maxIter ) ,
+      _verbose ( verbose ) ,
+      r_(0),
+      p_(0),
+      h_(0) {}
 
-    CGInverseOp( OperatorType & op , double redEps , double absLimit , int maxIter , int verbose ) : op_(op),
-                                                                                                     _redEps ( redEps ), epsilon_ ( absLimit*absLimit ) ,
-                                                                                                     maxIter_ (maxIter ) , _verbose ( verbose ) ,
-                                                                                                     r_(0), p_(0), h_(0)
-    {}
-
+    /** \todo Please doc me! */
     ~CGInverseOp()
     {
       if(p_) delete p_;
@@ -120,6 +131,7 @@ namespace Dune {
       if(h_) delete h_;
     }
 
+    /** \todo Please doc me! */
     void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
     {
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
@@ -182,6 +194,7 @@ namespace Dune {
       op_.finalizeGlobal();
     }
 
+    /** \todo Please doc me! */
     void operator () ( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
     {
       this->apply(arg,dest);

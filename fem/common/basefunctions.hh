@@ -35,13 +35,11 @@ namespace Dune {
   };
 
   //*************************************************************************
-  //
   //! BaseFunctionInterface is the interface to a base function.
   //! A base function can be evaluated on a point from the Domain and the
   //! outcome is a point from Range. The Types of Domain and Range are stored
   //! by typedefs in FunctionSpaceType which is the template parameter of
   //! BaseFunctionInterface.
-  //
   //*************************************************************************
   template<class FunctionSpaceType>
   class BaseFunctionInterface
@@ -139,12 +137,15 @@ namespace Dune {
 
     /*** Begin Interface ***/
 
+    //! \todo Please doc me!
     BaseFunctionSetInterface ( FunctionSpaceType & f ) : funcSpace_ ( f ) {};
 
+    //! \todo Please doc me!
     int getNumberOfBaseFunctions () const {
       return asImp().getNumberOfBaseFunctions();
     };
 
+    //! \todo Please doc me!
     template <int diffOrd>
     void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, const
                     Domain & x, Range & phi ) const {
@@ -152,12 +153,14 @@ namespace Dune {
       asImp().evaluate( baseFunct, diffVariable, x, phi );
     }
 
+    //! \todo Please doc me!
     template <int diffOrd, class QuadratureType >
     void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, QuadratureType & quad, int quadPoint, Range & phi ) const {
       asImp().evaluate( baseFunct, diffVariable, quad, quadPoint, phi );
     }
   protected:
 
+    //! \todo Please doc me!
     const BaseFunctionInterface<FunctionSpaceType> &getBaseFunction( int baseFunct ) const {
       std::cout << "Interface getBaseFunction \n";
       return asImp().getBaseFunction( baseFunct );

@@ -16,7 +16,7 @@ namespace Dune {
 
   //**********************************************************************
   //
-  //  DiscreteFunctionSpace for discontinous functions
+  //!  DiscreteFunctionSpace for discontinous functions
   //
   //**********************************************************************
   template< class FunctionSpaceType, class GridType, int polOrd , class

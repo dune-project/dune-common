@@ -30,7 +30,7 @@ namespace Dune
   class LocalOperatorInterface
   {
   public:
-    // remember the parameter types
+    //! remember the parameter types
     typedef FstPType FirstParamType;
     typedef SecPType SecondParamType;
     typedef SType ScalarType;
@@ -45,59 +45,61 @@ namespace Dune
       asImp().prepareGlobal(pa,pb);
     }
 
-    // prepare for grid walktrough
+    //! prepare for grid walktrough
     void prepareGlobal ()
     {
       asImp().prepareGlobal();
     }
 
-    // finalize the walktrough
+    //! finalize the walktrough
     void finalizeGlobal()
     {
       asImp().finalizeGlobal();
     }
 
-    // one entity
+    //! one entity
     template<class EntityType>
     void prepareLocal (EntityType & en)
     {
       asImp().prepareLocal(en);
     }
 
+    //! \todo Please doc me!
     template<class EntityType>
     void finalizeLocal(EntityType & en)
     {
       asImp().finalizeLocal(en);
     }
 
-    // two entities
+    //! two entities
     template<class EntityType>
     void prepareLocal (EntityType & en1, EntityType &en2)
     {
       asImp().prepareLocal(en1,en2);
     }
 
+    //! \todo Please doc me!
     template<class EntityType>
     void finalizeLocal(EntityType & en1, EntityType &en2)
     {
       asImp().finalizeLocal(en1,en2);
     }
 
-    // things to do on one entity
+    //! things to do on one entity
     template<class EntityType>
     void applyLocal(EntityType & en)
     {
       asImp().applyLocal(en);
     }
 
-    // things to do on two entity
+    //! things to do on two entity
     template<class EntityType>
     void applyLocal(EntityType & en1, EntityType &en2)
     {
       asImp().applyLocal(en1,en2);
     }
   private:
-    // Barton Nackman
+    //! Barton Nackman
     LocalOperatorImp & asImp()
     {
       return static_cast<LocalOperatorImp &> (*this);
@@ -105,10 +107,13 @@ namespace Dune
   };
 
   //**************************************************************************
-  //
   //  Default implemenations for LocalOperators
-  //
   //**************************************************************************
+  /** \brief Default implementation of a local operator
+   *  A local operator works on entities only and is used by a DiscreteOperator
+   *  during a mesh traversal. This class implements the standard behaviour for
+   *  prepareLocal(), finalizeLocal() and possibly other methods.
+   */
   template <class FstPType, class SecPType, class SType ,
       class LocalOperatorImp>
   class LocalOperatorDefault
@@ -116,12 +121,12 @@ namespace Dune
           SType,LocalOperatorImp>
   {
   public:
-    // remember the parameter types
+    //! remember the parameter types
     typedef FstPType FirstParamType;
     typedef SecPType SecondParamType;
     typedef SType ScalarType;
 
-    // no default implementation at the moement
+    //! no default implementation at the moement
     LocalOperatorDefault () : scalar_ (1.0) {}
 
     //! scale operator , for inheritance
@@ -144,6 +149,7 @@ namespace Dune
     template<class EntityType>
     void prepareLocal (EntityType & en) {};
 
+    //! \todo Please doc me!
     template<class EntityType>
     void finalizeLocal(EntityType & en) {};
 
@@ -151,6 +157,7 @@ namespace Dune
     template<class EntityType>
     void prepareLocal (EntityType & en1, EntityType &en2){};
 
+    //! \todo Please doc me!
     template<class EntityType>
     void finalizeLocal(EntityType & en1, EntityType &en2){};
     //**************************************************************
@@ -188,6 +195,7 @@ namespace Dune
         std::cout << "Create CombinedLocalOperator " << this << "\n";
     }
 
+    //! Destructor
     ~CombinedLocalOperator ()
     {
       if(printMSG_)
@@ -220,6 +228,7 @@ namespace Dune
     template<class EntityType>
     void prepareLocal (EntityType & en);
 
+    //! \todo Please doc me!
     template<class EntityType>
     void finalizeLocal(EntityType & en);
 
@@ -227,6 +236,7 @@ namespace Dune
     template<class EntityType>
     void prepareLocal (EntityType & en1, EntityType &en2);
 
+    //! \todo Please doc me!
     template<class EntityType>
     void finalizeLocal(EntityType & en1, EntityType &en2);
 
@@ -395,6 +405,7 @@ namespace Dune
     template<class EntityType>
     void prepareLocal (EntityType & en);
 
+    //! \todo Please doc me!
     template<class EntityType>
     void finalizeLocal(EntityType & en);
 
@@ -402,6 +413,7 @@ namespace Dune
     template<class EntityType>
     void prepareLocal (EntityType & en1, EntityType &en2);
 
+    //! \todo Please doc me!
     template<class EntityType>
     void finalizeLocal(EntityType & en1, EntityType &en2);
 

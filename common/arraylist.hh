@@ -16,7 +16,6 @@ namespace Dune
   template<class T, int N, class A>
   class ArrayListIterator;
 
-
   template<class T, int N, class A>
   class ConstArrayListIterator;
 
@@ -37,8 +36,9 @@ namespace Dune
   /**
    * @brief A dynamically growing  random access list.
    *
-   * Internally the data is organized in a list of arrays of fixed size. Whenever the capacity
-   * of the array list is not sufficient a new Dune::FixedArray is allocated. In contrast to
+   * Internally the data is organized in a list of arrays of fixed size.
+   * Whenever the capacity of the array list is not sufficient a new
+   * Dune::FixedArray is allocated. In contrast to
    * std::vector this approach prevents data copying. On the outside
    * we provide the same interface as the stl random access containers.
    */
@@ -269,14 +269,19 @@ namespace Dune
      */
     inline void eraseToHere();
 
+    /** \todo Please doc me! */
     inline int position(){return position_;}
 
+    /** \todo Please doc me! */
     inline void advance(int n);
 
+    /** \todo Please doc me! */
     inline int distanceTo(const ArrayListIterator<MemberType,N,A>& other) const;
 
+    /** \todo Please doc me! */
     inline ArrayListIterator<MemberType,N,A>& operator=(const ArrayListIterator<MemberType,N,A>& other);
 
+    //! Standard constructor
     inline ArrayListIterator() : position_(0)
     {}
 
@@ -343,8 +348,10 @@ namespace Dune
      */
     inline void decrement();
 
+    /** \todo Please doc me! */
     inline void advance(int n);
 
+    /** \todo Please doc me! */
     inline int distanceTo(const ConstArrayListIterator<MemberType,N,A>& other) const;
 
     /**

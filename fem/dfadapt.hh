@@ -105,9 +105,11 @@ namespace Dune {
     //! set all dof to value x
     void set( RangeFieldType x );
 
+    //! \todo Please do me!
     void addScaled (const DFAdapt <DiscreteFunctionSpaceType> & g,
                     const RangeFieldType &scalar);
 
+    //! \todo Please do me!
     template <class EntityType>
     void addScaledLocal (EntityType &en,
                          const DFAdapt <DiscreteFunctionSpaceType> & g,
@@ -123,6 +125,7 @@ namespace Dune {
     void substractLocal (EntityType &it,
                          const DFAdapt <DiscreteFunctionSpaceType> & g);
 
+    //! \todo Please do me!
     template <class EntityType>
     void setLocal (EntityType &it, const RangeFieldType &scalar);
 
@@ -266,6 +269,8 @@ namespace Dune {
   //***********************************************************************
   //
   //  --DofIteratorAdapt
+  //! \todo Please doc me!
+  //! I guess this is an iterator over an adaptive space.
   //
   //***********************************************************************
   template < class DofImp, class DofArrayType >
@@ -276,9 +281,11 @@ namespace Dune {
   public:
     typedef DofImp DofType;
 
+    //! Constructor
     DofIteratorAdapt ( DofArrayType & dofArray , int count )
       :  dofArray_ ( dofArray ) , constArray_ (dofArray) , count_ ( count ) {};
 
+    //! Constructor
     DofIteratorAdapt ( const DofArrayType & dofArray , int count )
       :  dofArray_ ( const_cast <DofArrayType &> (dofArray) ) ,
         constArray_ ( dofArray ) ,

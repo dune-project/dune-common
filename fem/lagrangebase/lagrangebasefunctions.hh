@@ -142,6 +142,7 @@ namespace Dune {
     int baseNum_;
 
   public:
+    //! \todo Please doc me!
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
       : BaseFunctionInterface<FunctionSpaceType> (f)
     {
@@ -171,6 +172,7 @@ namespace Dune {
         phi += factor[i] * x[i-1];
     }
 
+    //! \todo Please doc me!
     virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
                             const Domain & x, Range & phi) const
     {
@@ -180,6 +182,7 @@ namespace Dune {
       phi = factor[num+1];
     }
 
+    //! \todo Please doc me!
     virtual void evaluate ( const DiffVariable<2>::Type &diffVariable,
                             const Domain & x, Range & phi) const
     {
@@ -192,8 +195,8 @@ namespace Dune {
   //
   //! LagrangeBaseFunction for tetrahedrons and polynom order = 1
   //!
-  //  see reference element Dune tetrahedra
-  //
+  //!  see reference element Dune tetrahedra
+  //!
   //*****************************************************************
   template<class FunctionSpaceType>
   class LagrangeBaseFunction < FunctionSpaceType , tetrahedron , 1 >
@@ -205,6 +208,7 @@ namespace Dune {
     RangeField factor[4];
   public:
 
+    //! \todo Please doc me!
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
       : BaseFunctionInterface<FunctionSpaceType> (f)
     {
@@ -346,24 +350,24 @@ namespace Dune {
   //
   //! Trilinear BaseFunctions for hexahedrons
   //! v(x,y,z) = (alpha + beta * x) * ( gamma + delta * y) * (omega + eps * z)
-  //
-  //
-  // local node numbers and face numbers for DUNE hexahedrons
-  //
-  //             6---------7
-  //            /.        /|
-  //           / .  5    / |
-  //          /  .      /  |
-  //         4---------5   | <-- 3 (back side)
-  //   0 --> |   .     | 1 |
-  //         |   2.....|...3 (1,1,0)
-  //         |  .      |  /
-  //         | .   2   | / <-- 4 (front side)
-  //         |.        |/
-  //         0---------1
-  //      (0,0,0)    (1,0,0)
-  //  this is the DUNE local coordinate system for hexahedrons
-  //
+  //!
+  //!
+  //! local node numbers and face numbers for DUNE hexahedrons
+  //!
+  //!             6---------7
+  //!            /.        /|
+  //!           / .  5    / |
+  //!          /  .      /  |
+  //!         4---------5   | <-- 3 (back side)
+  //!   0 --> |   .     | 1 |
+  //!         |   2.....|...3 (1,1,0)
+  //!         |  .      |  /
+  //!         | .   2   | / <-- 4 (front side)
+  //!         |.        |/
+  //!         0---------1
+  //!      (0,0,0)    (1,0,0)
+  //!  this is the DUNE local coordinate system for hexahedrons
+  //!
   //*********************************************************************
   template<class FunctionSpaceType>
   class LagrangeBaseFunction<FunctionSpaceType,hexahedron,1>

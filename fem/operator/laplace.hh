@@ -91,7 +91,7 @@ namespace Dune
                                           15 * dim);
     }
 
-    //! ???
+    //! Prepares the local operator before calling apply()
     void prepareGlobal ( const DiscFunctionType &arg, DiscFunctionType &dest )
     {
       this->arg_  = &arg.argument();

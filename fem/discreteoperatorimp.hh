@@ -95,6 +95,7 @@ namespace Dune {
       applyNow(Arg,Dest);
     }
 
+    //! \todo Please doc me!
     template <class ArgParamType , class DestParamType>
     void applyNow ( const ArgParamType &arg, DestParamType &dest ) const
     {
@@ -172,6 +173,7 @@ namespace Dune {
       localOp_.finalizeGlobal();
     }
 
+    //! \todo Please doc me!
     template <class GridIteratorType>
     void applyOnGrid ( GridIteratorType &it, GridIteratorType &endit,
                        const DFDomainType &Arg, DFRangeType &Dest ) const
@@ -188,6 +190,7 @@ namespace Dune {
       }
     }
 
+    //! \todo Please doc me!
     template <class GridIteratorType>
     void applyOnGrid ( GridIteratorType &it, GridIteratorType &endit ) const
     {

@@ -45,9 +45,9 @@ namespace Dune {
     enum { myId_ = 0};
   public:
 
-    //! ???
+    //! Type of the range field
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
-    //! ???
+    //! Type of the grid
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
 
@@ -62,7 +62,7 @@ namespace Dune {
     typedef DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > DofIteratorType;
     typedef ConstDofIteratorDefault<DofIteratorType> ConstDofIteratorType;
 
-    //! ???
+    //! The associated discrete function space
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
 
     //! Constructor makes Discrete Function
@@ -99,14 +99,14 @@ namespace Dune {
     void localFunction ( EntityType &en,
                          LocalFunctionArray<DiscreteFunctionSpaceType> & lf);
 
-    // we use the default implementation
+    //! we use the default implementation
     DofIteratorType dbegin ();
 
     //! points behind the last dof of type cc
     DofIteratorType dend   ();
 
-    // the const versions
-    // we use the default implementation
+    //! the const versions
+    //! we use the default implementation
     ConstDofIteratorType dbegin () const;
 
     //! points behind the last dof of type cc
@@ -290,7 +290,9 @@ namespace Dune {
   //  --DofIteratorArray
   //
   //***********************************************************************
-  /** \brief ??? */
+  /** \brief Iterator over an array of dofs
+      \todo Please doc me!
+   */
   template < class DofImp >
   class DofIteratorArray : public
                            DofIteratorDefault < DofImp , DofIteratorArray < DofImp > >

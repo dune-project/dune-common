@@ -18,8 +18,8 @@ namespace Dune {
      @{
    */
 
-  /** \brief ???
-   * \todo Please doc me!
+  /** \brief Vector class
+   * This is the base class for all methods and operators.
    */
   template <typename Field>
   class Vector
@@ -30,17 +30,18 @@ namespace Dune {
     //virtual Vector<Field> operator * (const Field &) const = 0;
     //virtual Vector<Field> operator / (const Field &) const = 0;
 
-    //! \todo Oli changed all method to, I changed it back, because
-    //! otherwise the code will not compile and I fixed this hack later.
+    /** \brief Assignment operator
+        \note Only returns itself...
+     */
     virtual Vector<Field>& operator  = (const Vector<Field> &) { return *this;};
 
-    //! !
+    //! Addition
     virtual Vector<Field>& operator += (const Vector<Field> &) = 0;
-    //! !
+    //! Subtraction
     virtual Vector<Field>& operator -= (const Vector<Field> &) = 0;
-    //! !
+    //! Multiplication
     virtual Vector<Field>& operator *= (const Field &) = 0;
-    //! !
+    //! Division
     virtual Vector<Field>& operator /= (const Field &) = 0;
   };
 

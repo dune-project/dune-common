@@ -6,13 +6,14 @@
 namespace Dune
 {
 
-  // organize the memory management for entitys used by the NeighborIterator
+  //! organize the memory management for entitys used by the NeighborIterator
   template <class Object>
   class MemoryProvider
   {
   public:
     typedef Object ObjectType;
 
+    //! \todo Please doc me!
     struct ObjectEntity
     {
       ObjectEntity () : next (0), item (0) {};
@@ -21,30 +22,30 @@ namespace Dune
       Object       *item;
     };
 
-    // freeEntity_ = NULL
+    //! freeEntity_ = NULL
     MemoryProvider() : freeEntity_ (0) {};
 
-    // do not copy pointers
+    //! do not copy pointers
     MemoryProvider(const MemoryProvider<Object> & org) : freeEntity_ (0) {}
 
-    // call deleteEntity
+    //! call deleteEntity
     ~MemoryProvider ();
 
-    // delete recursive all free ObjectEntitys
+    //! delete recursive all free ObjectEntitys
     void deleteEntity(ObjectEntity *obj);
 
-    // i.e. return pointer to Entity
+    //! i.e. return pointer to Entity
     template <class GridType>
     ObjectEntity *getNewObjectEntity(GridType &grid, int level);
 
-    // i.e. return pointer to Entity
+    //! i.e. return pointer to Entity
     template <class FuncSpaceType, class DofVecType>
     ObjectEntity *getNewObjectEntity(const FuncSpaceType &f, DofVecType &d);
 
-    // i.e. get pointer to element
+    //! i.e. get pointer to element
     ObjectEntity * getNewObjectEntity();
 
-    // free, move element to stack, returns NULL
+    //! free, move element to stack, returns NULL
     ObjectEntity * freeObjectEntity (ObjectEntity *obj);
 
   private:
@@ -54,7 +55,7 @@ namespace Dune
 
   //************************************************************************
   //
-  //  MemoryProvider
+  //  MemoryProvider implementation
   //
   //************************************************************************
   template <class Object> template <class GridType>

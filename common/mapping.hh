@@ -17,7 +17,7 @@ namespace Dune {
      @{
    */
 
-  /** ???
+  /** \brief A mapping
       \todo Please doc me!
 
       Note: Range has to have Vector structure as well.

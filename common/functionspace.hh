@@ -15,7 +15,9 @@ namespace Dune {
      @{
    */
 
-  /** \todo Please doc me! */
+  /** \brief An arbitrary function space
+      Base class for specific function spaces.
+   */
   template< typename DomainFieldType, typename RangeFieldType, int n, int m >
   class FunctionSpace : public DynamicType {
   public:

@@ -7,6 +7,7 @@
 
 namespace Dune {
 
+  //! \todo Please doc me!
   template<class OperatorType, class DiscFuncType>
   class GaussSeidelStep : public IterationStep<OperatorType, DiscFuncType>
   {
@@ -23,8 +24,10 @@ namespace Dune {
     //! Perform one iteration
     virtual void iterate();
 
+    //! \todo Please doc me!
     virtual DiscFuncType getSol();
 
+    //! \todo Please doc me!
     double residual(int index) const;
 
   };

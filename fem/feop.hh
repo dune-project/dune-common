@@ -13,9 +13,10 @@ namespace Dune {
   /** @defgroup FEOpInterface FEOpInterface
       @ingroup DiscreteOperator
 
-      FEopInterface is the interface for the definition of a finite element operator.
+
      @{
    */
+  //! \brief FEopInterface is the interface for the definition of a finite element operator.
   template <class DiscFunctionType, class FEOpImp>
   class FEOpInterface
     : public Operator<typename DiscFunctionType::DomainFieldType,
@@ -39,7 +40,7 @@ namespace Dune {
 
   /** @} end documentation group */
 
-
+  //! \todo Please doc me!
   template <class DiscFunctionType, class FEOpImp>
   class FEOp : public FEOpInterface<DiscFunctionType,FEOpImp> ,
                public LocalOperatorDefault <DiscFunctionType,DiscFunctionType, typename
@@ -50,18 +51,19 @@ namespace Dune {
   public:
     enum OpMode { ON_THE_FLY, ASSEMBLED };
 
+    //! \todo Please doc me!
     FEOp( const typename DiscFunctionType::FunctionSpaceType &fuspace,
           OpMode opMode = ASSEMBLED, bool leaf = true ) :
       functionSpace_( fuspace ),  matrix_ (0), matrix_assembled_( false ),
       arg_ ( NULL ), dest_ (NULL) , opMode_(opMode), leaf_(leaf)  {};
 
+    //! \todo Please doc me!
     ~FEOp( ) {
       if ( matrix_ ) delete matrix_;
     };
 
   public:
     //! methods for global application of the operator
-
     void initialize(){
       //std::cout << "Matrix reinitialized!" << std::endl ;
 
@@ -70,9 +72,11 @@ namespace Dune {
       matrix_ = 0;
     };
 
+    //! \todo Please doc me!
     virtual void initLevel ( int level ) const
     {};
 
+    //! \todo Please doc me!
     void apply( const DiscFunctionType &arg, DiscFunctionType &dest) const
     {
       assert( opMode_ == ASSEMBLED );
@@ -88,14 +92,12 @@ namespace Dune {
 
 
   public:
-    //! methods for local application of the operator
-
     //! isLeaf returns true if Leafiterator should be used, else false is returned
     bool isLeaf (){
       return (leaf_);
     };
 
-    // store argument and destination
+    //! store argument and destination
     void prepareGlobal(const DiscFunctionType &Arg, DiscFunctionType & Dest )
     {
       arg_  = &Arg.argument();
@@ -104,13 +106,13 @@ namespace Dune {
       dest.clear();
     };
 
-    // set argument and dest to NULL
+    //! set argument and dest to NULL
     void finalizeGlobal()
     {
       arg_  = NULL; dest_ = NULL;
     };
 
-    // makes local multiply on the fly
+    //! makes local multiply on the fly
     template <class EntityType>
     void applyLocal ( EntityType &en ) const
     {
@@ -180,7 +182,7 @@ namespace Dune {
     }; // end applyLocal
 
 
-    // corrects the mapping in order to take into account dirichlet boundary conditions
+    //! corrects the mapping in order to take into account dirichlet boundary conditions
     template <class EntityType>
     void finalizeLocal ( EntityType &en ) const
     {
@@ -267,19 +269,20 @@ namespace Dune {
     }; // end finalizeLocal
 
   protected:
-    // the corresponding function_space
+    //! the corresponding function_space
     const typename DiscFunctionType::FunctionSpaceType & functionSpace_;
 
-    // the representing matrix
+    //! the representing matrix
     mutable MatrixType *matrix_ ;
 
-    // is matrix assembled
+    //! is matrix assembled
     mutable bool matrix_assembled_;
 
-    // storage of argument and destination
+    //! storage of argument and destination
     const DiscFunctionType * arg_;
     DiscFunctionType * dest_;
 
+    //! \todo Please doc me!
     MatrixType* newEmptyMatrix( ) const
     {
       typedef typename DiscFunctionType::FunctionSpaceType::GridType GridType;
@@ -289,6 +292,7 @@ namespace Dune {
                              15 * (dim-1) , 0.0 );
     };
 
+    //! \todo Please doc me!
     void assemble ( ) const
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
@@ -336,7 +340,7 @@ namespace Dune {
       matrix_assembled_ = true;
     };
 
-
+    //! \todo Please doc me!
     template <class GridIteratorType, class MatrixImp>
     void assembleOnGrid ( GridIteratorType &it, GridIteratorType &endit, MatrixImp &mat) const
     {
@@ -363,7 +367,7 @@ namespace Dune {
       }
     }
 
-
+    //! \todo Please doc me!
     template <class GridIteratorType>
     void bndCorrectOnGrid ( GridIteratorType &it, GridIteratorType &endit) const
     {
