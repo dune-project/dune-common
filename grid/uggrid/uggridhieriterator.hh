@@ -3,89 +3,74 @@
 #ifndef __DUNE_UGHIERITERATOR_HH__
 #define __DUNE_UGHIERITERATOR_HH__
 
-//**********************************************************************
-//
-// --UGGridHierarchicIterator
-// --HierarchicIterator
-/*!
-   Mesh entities of codimension 0 ("elements") allow to visit all entities of
-   codimension 0 obtained through nested, hierarchic refinement of the entity.
-   Iteration over this set of entities is provided by the HIerarchicIterator,
-   starting from a given entity.
-   This is redundant but important for memory efficient implementations of unstru
-   hierarchically refined meshes.
- */
+#include <dune/common/stack.hh>
 
-template<int dim, int dimworld>
-class UGGridHierarchicIterator :
-  public HierarchicIteratorDefault <dim,dimworld, UGCtype,
-      UGGridHierarchicIterator,UGGridEntity>
-{
-public:
+namespace Dune {
 
-#if 1
+  //**********************************************************************
+  //
+  // --UGGridHierarchicIterator
+  // --HierarchicIterator
+  /*!
+     Mesh entities of codimension 0 ("elements") allow to visit all entities of
+     codimension 0 obtained through nested, hierarchic refinement of the entity.
+     Iteration over this set of entities is provided by the HIerarchicIterator,
+     starting from a given entity.
+     This is redundant but important for memory efficient implementations of unstru
+     hierarchically refined meshes.
+   */
 
-#if 0
-  //! the normal Constructor
-  UGGridHierarchicIterator(UGGrid<dim,dimworld> &grid,
-                           ALBERT TRAVERSE_STACK *travStack, int actLevel, int maxLevel);
-#endif
+  template<int dim, int dimworld>
+  class UGGridHierarchicIterator :
+    public HierarchicIteratorDefault <dim,dimworld, UGCtype,
+        UGGridHierarchicIterator,UGGridEntity>
+  {
 
-  //! the default Constructor
-  UGGridHierarchicIterator(UGGrid<dim,dimworld> &grid,
-                           int actLevel,int maxLevel);
-#else
-  //! the normal Constructor
-  UGGridHierarchicIterator(UGGrid<dim,dimworld> &grid,
-                           ALBERT TRAVERSE_STACK *travStack, int travLevel);
+    // Either UG3d::ELEMENT or UG2d:ELEMENT
+    typedef typename TargetType<0,dim>::T UGElementType;
+  public:
+    // Stack entry
+    struct StackEntry {
+      UGElementType* element;
+      int level;
+    };
 
-  //! the default Constructor
-  UGGridHierarchicIterator(UGGrid<dim,dimworld> &grid);
-#endif
+  public:
 
-  //! prefix increment
-  UGGridHierarchicIterator& operator ++();
+    //! the default Constructor
+    UGGridHierarchicIterator(int actLevel,int maxLevel);
 
-  //! postfix increment
-  UGGridHierarchicIterator& operator ++(int i);
+    //! prefix increment
+    UGGridHierarchicIterator& operator ++();
 
-  //! equality
-  bool operator== (const UGGridHierarchicIterator& i) const;
+    //! equality
+    bool operator== (const UGGridHierarchicIterator& i) const;
 
-  //! inequality
-  bool operator!= (const UGGridHierarchicIterator& i) const;
+    //! inequality
+    bool operator!= (const UGGridHierarchicIterator& i) const;
 
-  //! dereferencing
-  UGGridEntity<0,dim,dimworld>& operator*();
+    //! dereferencing
+    UGGridEntity<0,dim,dimworld>& operator*();
 
-  //! arrow
-  UGGridEntity<0,dim,dimworld>* operator->();
+    //! arrow
+    UGGridEntity<0,dim,dimworld>* operator->();
 
-private:
-  //! implement with virtual element
-  UGGridEntity<0,dim,dimworld> virtualEntity_;
+    //! implement with virtual element
+    UGGridEntity<0,dim,dimworld> virtualEntity_;
 
-  //! know the grid were im comming from
-  UGGrid<dim,dimworld> &grid_;
+  private:
+    //! know the grid were im comming from
+    //UGGrid<dim,dimworld> &grid_;
 
-  //! the actual Level of this Hierarichic Iterator
-  int level_;
+    //! max level to go down
+    int maxlevel_;
 
-  //! max level to go down
-  //int maxlevel_;
+  public:
+    Stack<StackEntry> elemStack;
 
-#if 0
-  //! we need this for Albert traversal, and we need ManageTravStack, which
-  //! does count References when copied
-  ALBERT ManageTravStack manageStack_;
+    UGElementType* target_;
+  };
 
-  //! The nessesary things for Albert
-  ALBERT EL_INFO * recursiveTraverse(ALBERT TRAVERSE_STACK * stack);
-#endif
-
-  //! make empty HierarchicIterator
-  void makeIterator();
-};
-
+}  // end namespace Dune
 
 #endif
