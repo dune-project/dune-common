@@ -50,49 +50,49 @@ AC_DEFUN([DUNE_PATH_DUNE],[
     [HAVE_DUNE=0]
   )
 
-  # did we find the headers?
-  if test x$HAVE_DUNE = x1 ; then
-    # check for library
-    #
-    # for the devel-mode, we're searching for a .la-file in the
-    # with-dune-directory, otherwise we'll really test for a lib
-    # (installed in a proper directory!)      
+#   # did we find the headers?
+#   if test x$HAVE_DUNE = x1 ; then
+#     # check for library
+#     #
+#     # for the devel-mode, we're searching for a .la-file in the
+#     # with-dune-directory, otherwise we'll really test for a lib
+#     # (installed in a proper directory!)      
 
-    if test x"$enable_localdune" != xyes ; then
-      ## normal test
+#     if test x"$enable_localdune" != xyes ; then
+#       ## normal test
 
-      # !!! should be pkg-config later (which would save the special
-      # header-check above)
-      # !!! insert symbol defined in the libdune
-      AC_CHECK_LIB(dune, ,[HAVE_DUNE=1],[HAVE_DUNE=0])
+#       # !!! should be pkg-config later (which would save the special
+#       # header-check above)
+#       # !!! insert symbol defined in the libdune
+#       AC_CHECK_LIB(dune, ,[HAVE_DUNE=1],[HAVE_DUNE=0])
 
-    else
-      ## special test for a local installation
-      ac_save_LDFLAGS="$LDFLAGS"
+#     else
+#       ## special test for a local installation
+#       ac_save_LDFLAGS="$LDFLAGS"
       	
-      if test x$DUNEROOT != x ; then
-        # have a look into the dune-dir
-	LDFLAGS="$LDFLAGS -L$DUNEROOT/dune/lib"
+#       if test x$DUNEROOT != x ; then
+#         # have a look into the dune-dir
+# 	LDFLAGS="$LDFLAGS -L$DUNEROOT/dune/lib"
 
-	# only check for a .la-file
-	if test -s $DUNEROOT/dune/lib/libdune.la ; then
-	    DUNE_LDFLAGS="-L$DUNEROOT/dune/lib"
-	    echo found libdune.la, setting LDFLAGS to $DUNE_LDFLAGS
+# 	# only check for a .la-file
+# 	if test -s $DUNEROOT/dune/lib/libdune.la ; then
+# 	    DUNE_LDFLAGS="-L$DUNEROOT/dune/lib"
+# 	    echo found libdune.la, setting LDFLAGS to $DUNE_LDFLAGS
 
-	    # provide arguments like normal lib-check
-	    LIBS="-ldune"
-	    HAVE_DUNE=1
-	else
-	    AC_MSG_ERROR([localdune is enabled but libdune.la was not found. Please compile the library or set a correct --with-dune])
-	fi
-      else
-	  AC_MSG_ERROR([--enable-localdune needs a --with-dune-parameter!])
-      fi
+# 	    # provide arguments like normal lib-check
+# 	    LIBS="-ldune"
+# 	    HAVE_DUNE=1
+# 	else
+# 	    AC_MSG_ERROR([localdune is enabled but libdune.la was not found. Please compile the library or set a correct --with-dune])
+# 	fi
+#       else
+# 	  AC_MSG_ERROR([--enable-localdune needs a --with-dune-parameter!])
+#       fi
 
-      # reset variable
-      LDFLAGS="$ac_save_LDFLAGS"
-    fi
-  fi
+#       # reset variable
+#       LDFLAGS="$ac_save_LDFLAGS"
+#     fi
+#   fi
 
   # did we succeed?
   if test x$HAVE_DUNE = x1 ; then
