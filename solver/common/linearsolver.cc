@@ -14,6 +14,8 @@ void Dune::LinearSolver<OP_TYPE, VEC_TYPE>::solve()
 
   double error = std::numeric_limits<double>::max();
 
+  double normOfOldCorrection = 0;
+
   // Loop until desired tolerance or maximum number of iterations is reached
   for (i=0; i<numIt && error>tolerance_; i++) {
 
@@ -24,12 +26,22 @@ void Dune::LinearSolver<OP_TYPE, VEC_TYPE>::solve()
     iterationStep->iterate();
 
     // Compute error
-    //VEC_TYPE diff = oldSolution - iterationStep->getSol();
-    //error = errorNorm_->compute(oldSolution - iterationStep->getSol());
+    double oldNorm = errorNorm_->compute(oldSolution);
+    oldSolution -= iterationStep->getSol();
+
+    double normOfCorrection = errorNorm_->compute(oldSolution);
+
+    error = normOfCorrection / oldNorm;
+
+    double convRate = normOfCorrection / normOfOldCorrection;
+
+    normOfOldCorrection = normOfCorrection;
 
     // Output
-    if (verbosity_ != QUIET)
-      std::cout << "||u^{n+1} - u^n||_L2: " << error << "\n";
+    if (verbosity_ != QUIET) {
+      std::cout << "||u^{n+1} - u^n||_L2: " << error << ",      "
+                << "convrate " << convRate << "\n";
+    }
 
   }
 
