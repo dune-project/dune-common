@@ -282,7 +282,7 @@ namespace Dune {
       };
 
       return *this;
-    };
+    }
 
     //! pass on manipulators to underlying output stream
     DebugStream& operator<<(std::ostream& (*f)(std::ostream&)) {
@@ -383,7 +383,7 @@ namespace Dune {
     std::stack<bool> _actstack;
   };
 
-};
+}
 
 
 #endif
