@@ -114,13 +114,10 @@ namespace Dune
 
     //! Know your own codimension
     enum { codimension=0 };
-    //! Know your own dimension
+    //! Know the grid's dimension
     enum { dimension=dim };
-    /** \brief Know dimension of the entity
-     *
-     * \bug Shouldn't this be dim instead of 0?
-     */
-    enum { mydimension=0 };
+    /** \brief Know dimension of the entity */
+    enum { mydimension=dim };
     //! Know the world dimension
     enum { dimensionworld=dimworld };
     //! Type used for coordinates in grid module
@@ -277,12 +274,11 @@ namespace Dune
     typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
     //! Know your own codimension
     enum { codimension=dim };
-    //! Know your own dimension
+    //! Know the grid's dimension
     enum { dimension=dim };
-    /** \brief Know dimension of the entity
-     * \bug Shouldn't this be 0 instead of dim?*/
-    enum { mydimension=dim };
-    //! Know your own dimension of world
+    /** \brief Know dimension of the entity */
+    enum { mydimension=0 };
+    //! Know the world dimension
     enum { dimensionworld=dimworld };
     //! Type used for coordinates in grid module
     typedef ct ctype;
