@@ -5,7 +5,12 @@
 
 #include <vector>
 #include <dune/common/fixedarray.hh>
-
+/**
+ * @file This file implements the class ArrayList which behaves like
+ * dynamically growing array together with
+ * the class ArrayListIterator which is random access iterator as needed
+ * by the stl for sorting and other algorithms.
+ */
 namespace Dune {
   // forward declaration
   template<class T, int N>
@@ -29,31 +34,42 @@ namespace std {
 
 namespace Dune {
 
+  /** @addtogroup Common
+   *
+   * @{
+   */
+
   /**
-   * @brief A random access data structure.
+   * @brief A dynamically growing  random access list.
+   *
    * Internally the data is organized in a list of arrays of fixed size. Whenever the capacity
-   * of the array list is not sufficient a new Array is allocated. In contrast to
+   * of the array list is not sufficient a new Dune::FixedArray is allocated. In contrast to
    * std::vector this approach prevents data copying. On the outside
    * we provide the same interface as the stl random access containers.
    */
   template<class T, int N=100>
   class ArrayList {
-  public:
-    /**
-     * @brief The member type.
-     */
-    typedef T memberType;
-
-    /**
-     * @brief The number of elements in one chunk of the list.
-     * This has to be at least one. The default is 100.
-     */
-    enum { chunkSize_ = (N > 0) ? N : 1};
 
     /**
      * @brief The iterator needs access to the private variables.
      */
-    friend class ArrayListIterator<memberType,N>;
+    friend class ArrayListIterator<T,N>;
+
+  public:
+    /**
+     * @brief The member type that is stored.
+     *
+     * Has to be assignable and has to have an empty constructor.
+     */
+    typedef T memberType;
+
+    enum {
+      /**
+       * @brief The number of elements in one chunk of the list.
+       * This has to be at least one. The default is 100.
+       */
+      chunkSize_ = (N > 0) ? N : 1
+    };
 
     /**
      * @brief A random access iterator.
@@ -97,8 +113,7 @@ namespace Dune {
      */
     void push_back(const T& entry);
     /**
-     * @brief Constructor.
-     * Constructs an Array list with one chunk.
+     * @brief Constructs an Array list with one chunk.
      */
     ArrayList();
 
@@ -146,6 +161,9 @@ namespace Dune {
   template<class T, int N>
   bool operator>=(const ArrayListIterator<T,N>& a, const ArrayListIterator<T,N>& b);
 
+  /**
+   * @brief A random access iterator for the Dune::ArrayList class.
+   */
   template<class T, int N>
   class ArrayListIterator {
 
@@ -166,11 +184,15 @@ namespace Dune {
      */
     typedef T memberType;
 
-    /**
-     * @brief The number of elements in one chunk of the list.
-     * This has to be at least one. The default is 100.
-     */
-    enum { chunkSize_ = (N > 0) ? N : 1};
+
+    enum {
+      /**
+       * @brief The number of elements in one chunk of the list.
+       *
+       * This has to be at least one. The default is 100.
+       */
+      chunkSize_ = (N > 0) ? N : 1
+    };
 
     /**
      * @brief Comares to iterators.
@@ -214,8 +236,8 @@ namespace Dune {
     const ArrayListIterator<memberType,N>& operator+=(int count);
 
     /**
-     * @brief Decremnets the iterator by an arbitrary value of positions.
-     * @param count The number of positions to advance.
+     * @brief Decrements the iterator by an arbitrary value of positions.
+     * @param count The number of positions to decrement.
      * @return The iterator at that position.
      */
     const ArrayListIterator<memberType,N>& operator-=(int count);
@@ -231,6 +253,12 @@ namespace Dune {
      * @return The element at the current position.
      */
     memberType& operator*() const;
+
+    /**
+     * @brief Returns a pointer to the current entry.
+     * @return A pointer to the current entry.
+     */
+    memberType* operator->() const;
 
     const ArrayListIterator<memberType,N>& operator=(const ArrayListIterator<memberType,N>& other);
 
@@ -415,6 +443,11 @@ namespace Dune {
   }
 
   template<class T, int N>
+  T *ArrayListIterator<T,N>::operator->() const {
+    return &(list_.chunks_[position_/chunkSize_]->operator[](position_%chunkSize_));
+  }
+
+  template<class T, int N>
   const ArrayListIterator<T,N>& ArrayListIterator<T,N>::operator=(const ArrayListIterator<T,N>& other){
     position_=other.position_;
     list_=other.list_;
@@ -428,5 +461,7 @@ namespace Dune {
   template<class T, int N>
   ArrayListIterator<T,N>::ArrayListIterator(const ArrayListIterator<T,N>& other)
     : position_(other.position_), list_(other.list_){}
+
+  /** @} */
 }
 #endif
