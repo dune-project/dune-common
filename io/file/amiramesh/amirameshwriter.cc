@@ -1,8 +1,6 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#define NEWSTYLE_IOSTREAM
 #include <amiramesh/AmiraMesh.h>
-#undef NEWSTYLE_IOSTREAM
 
 #include <algorithm>
 
@@ -56,10 +54,10 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   VertexIterator vertex    = grid.template lbegin<DIM>(level);
   VertexIterator endvertex = grid.template lend<DIM>(level);
 
-  for (; vertex!=endvertex; ++vertex)
-  {
+  for (; vertex!=endvertex; ++vertex) {
+
     int index = vertex->index();
-    FieldVector<double, 3> coords = vertex->geometry()[0];
+    const FieldVector<double, 3>& coords = vertex->geometry()[0];
 
     ((float*)geo_node_data->dataPtr())[3*index+0] = coords[0];
     ((float*)geo_node_data->dataPtr())[3*index+1] = coords[1];
@@ -216,7 +214,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   for (; vertex!=endvertex; ++vertex)
   {
     int index = vertex->index();
-    FieldVector<double, DIM> coords = vertex->geometry()[0];
+    const FieldVector<double, DIM>& coords = vertex->geometry()[0];
 
     ((float*)geo_node_data->dataPtr())[2*index+0] = coords[0];
     ((float*)geo_node_data->dataPtr())[2*index+1] = coords[1];
@@ -285,9 +283,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   // write material section to geo-file
   AmiraMesh::Data* element_materials = new AmiraMesh::Data("Materials", element_loc, McPrimType::mc_uint8, 1);
   am_geometry.insert(element_materials);
-
-  //    for(i=0; i<noOfElem; i++)
-  //        ((unsigned char*)element_materials->dataPtr())[i] = SUBDOMAIN(elemList[i]);
 
   for(i=0; i<noOfElem; i++)
     ((unsigned char*)element_materials->dataPtr())[i] = 0;
