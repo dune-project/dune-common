@@ -16,11 +16,10 @@ namespace Dune {
   //
   //  --LagrangeDiscreteFunctionSpace
   //
-  //! Provides access to base function set for different element
-  //! type in one grid and size of functionspace
-  //! and map from local to global dof number
-  //
-  //****************************************************************
+  /*! Provides access to base function set for different element
+      type in one grid and size of functionspace
+      and map from local to global dof number
+   */
   template< class FunctionSpaceType, class GridType,int polOrd, class
       DofManagerType = DofManager<GridType> >
   class LagrangeDiscreteFunctionSpace
@@ -66,6 +65,7 @@ namespace Dune {
     typedef typename FunctionSpaceType::Range Range;
     /** \todo Please doc me! */
     typedef typename FunctionSpaceType::RangeField DofType;
+    typedef typename FunctionSpaceType::DomainField DomainField;
 
     //! dimension of value
     enum { dimVal = 1 };
@@ -75,7 +75,7 @@ namespace Dune {
 
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
-    LagrangeDiscreteFunctionSpace ( GridType & g, DofManagerType & dm );
+    LagrangeDiscreteFunctionSpace ( GridType & g, DofManagerType & dm , int level );
 
     //! return max number of baseset that holds this space
     int maxNumberBase () const;
@@ -113,7 +113,7 @@ namespace Dune {
     int localPolynomOrder ( EntityType &en ) const;
 
     //! number of unknows for this function space
-    int size ( int level ) const;
+    int size () const;
 
     //! for given entity map local dof number to global dof number
     template <class EntityType>
@@ -150,6 +150,10 @@ namespace Dune {
   private:
     //! the corresponding LagrangeMapper
     LagrangeMapperType *mapper_;
+
+    // the level of the function space
+    int level_;
+
   }; // end class LagrangeDiscreteFunctionSpace
 
 
@@ -472,14 +476,14 @@ namespace Dune {
     : public DofMapperDefault < RTMapper <GridType,polOrd> >
   {
     int numberOfDofs_;
+    int level_;
   public:
-    RTMapper ( int numDof ) : numberOfDofs_ (numDof) {};
+    RTMapper ( int numDof , int level ) : numberOfDofs_ (numDof), level_(level) {};
 
-    //template <class GridType>
-    int size (const GridType &grid , int level ) const
+    int size (const GridType &grid ) const
     {
       // return number of entities  * number of local faces
-      return (numberOfDofs_ * grid.size( level , 0 ));
+      return (numberOfDofs_ * grid.size( level_ , 0 ));
     }
 
     //! map Entity an local Dof number to global Dof number
@@ -585,9 +589,9 @@ namespace Dune {
 
     //! length of the dof vector
     //! size knows the correct way to calculate the size of the functionspace
-    int size ( int level ) const
+    int size () const
     {
-      return (*mapper_).size ( this->grid_ ,level );
+      return (*mapper_).size ( this->grid_ );
     };
 
     //! for given entity map local dof number to global dof number
@@ -705,9 +709,10 @@ namespace Dune {
 
     Array < int > edgeMap_;
 
+    int level_;
   public:
-    EdgeSpace ( GridType & g ) :
-      DiscreteFunctionSpaceType (g,id)
+    EdgeSpace ( GridType & g , int level ) :
+      DiscreteFunctionSpaceType (g,id) , level_ (level)
     {
       for(int i=0; i<numOfDiffBase_; i++)
         baseFuncSet_(i) = 0;
@@ -802,9 +807,9 @@ namespace Dune {
 
     //! length of the dof vector
     //! size knows the correct way to calculate the size of the functionspace
-    int size ( int level ) const
+    int size () const
     {
-      return this->grid_.size( level , 1);
+      return this->grid_.size( level_ , 1);
     };
 
     //! for given entity map local dof number to global dof number

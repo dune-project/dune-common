@@ -26,25 +26,20 @@ namespace Dune {
 
     // number of dofs on element
     int numberOfDofs_;
+    int level_;
   public:
     //! Constructor
-    DGMapper ( IndexSetType &iset , int numDof ) :
-      indexSet_ (iset), numberOfDofs_ (numDof) {};
-
-    //! return size of function space
-    int size (int level , int codim ) const
-    {
-      // return number of dofs * number of elements
-      return (numberOfDofs_ * indexSet_.size( level , codim ));
-    }
+    DGMapper ( IndexSetType &iset , int numDof , int level) :
+      indexSet_ (iset), numberOfDofs_ (numDof), level_(level)  {};
 
     //! return size of function space
     //! see dofmanager.hh for definition of IndexSet, which
     //! is a wrapper for en.index
-    int size (int level ) const
+    int size () const
     {
-      return this->size(level,0);
-    };
+      // return number of dofs * number of elements
+      return (numberOfDofs_ * indexSet_.size( level_ , 0 ));
+    }
 
     //! map Entity an local Dof number to global Dof number
     //! see dofmanager.hh for definition of IndexSet, which
@@ -63,9 +58,9 @@ namespace Dune {
     virtual void calcInsertPoints () {};
 
     //! only called once, if grid was adapted
-    virtual int newSize(int level) const
+    virtual int newSize() const
     {
-      return this->size(level);
+      return this->size();
     }
   };
 
@@ -108,10 +103,10 @@ namespace Dune {
     DiscreteFunctionSpaceType;
 
     /** \todo Please doc me! */
-    DGDiscreteFunctionSpace ( GridType & g ) :
+    DGDiscreteFunctionSpace ( GridType & g , int level ) :
       DiscreteFunctionSpaceType (g, 123456789),
       dm_ ( g ), base_(*this, polOrd),
-      mapper_(dm_.indexSet(), base_.getNumberOfBaseFunctions())
+      mapper_(dm_.indexSet(), base_.getNumberOfBaseFunctions(), level)
     {}
 
     /** \todo Please doc me! */
@@ -167,9 +162,9 @@ namespace Dune {
 
     //! length of the dof vector
     //! size knows the correct way to calculate the size of the functionspace
-    int size ( int level ) const
+    int size () const
     {
-      return mapper_.size ( level );
+      return mapper_.size ();
     };
 
     //! for given entity map local dof number to global dof number
