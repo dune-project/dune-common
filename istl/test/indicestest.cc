@@ -56,6 +56,8 @@ void testIndices()
   // Build remote indices
   /*  RemoteIndices<int,GridFlags> distRemote(distIndexSet,
                                           distIndexSet, MPI_COMM_WORLD);
+     distRemote.rebuild<false>();
+
      std::cout<<rank<<": "<<distRemote<<std::endl;
      std::cout<< rank<<": Finished!"<<std::endl;
    */
@@ -68,17 +70,21 @@ void testIndices()
         globalIndexSet->add(i+j*Nx, ParallelLocalIndex<GridFlags> (i+j*Nx,owner,false));
     globalIndexSet->endResize();
     std::cout<<std::flush;
-    std::cout<< rank<<": distributed and global index set!"<<std::endl;
+    std::cout<< rank<<": distributed and global index set!"<<std::endl<<std::flush;
     RemoteIndices<int,GridFlags> crossRemote(distIndexSet,
                                              *globalIndexSet, MPI_COMM_WORLD);
-    std::cout << crossRemote;
-
+    crossRemote.rebuild<true>();
+    std::cout << crossRemote<<std::endl<<std::flush;
     delete globalIndexSet;
+
   }else{
-    std::cout<< rank<<": distributed and global index set!"<<std::endl;
+    std::cout<< rank<<": distributed and global index set!"<<std::endl<<std::flush;
     RemoteIndices<int,GridFlags> distRemote(distIndexSet,
                                             distIndexSet, MPI_COMM_WORLD);
+    distRemote.rebuild<true>();
+    std::cout << distRemote<<std::endl<<std::flush;
   }
+
 }
 
 
