@@ -19,9 +19,7 @@ AC_DEFUN([DUNE_PATH_ALBERT],[
     AC_HELP_STRING([--with-albert=PATH],[directory with Albert inside]))
 
 # also ask for elindex
-  AC_ARG_WITH(albert_elindex,
-            AC_HELP_STRING([--with-albert-elindex=INDEX],
-	      [Albert element index (default is 1)]),,with_albert_elindex=1)
+  AC_ARG_WITH(albert_elindex,AC_HELP_STRING([--with-albert-elindex=INDEX],[Albert element index (default is 1)]),,with_albert_elindex=1)
   AC_SUBST(ALBERT_ELINDEX, $with_albert_elindex)
 
 # store old values
