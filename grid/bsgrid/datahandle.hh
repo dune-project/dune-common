@@ -6,16 +6,18 @@
 namespace BernhardSchuppGrid {
 
   //! the corresponding interface class is defined in bsinclude.hh
-  template <class EntityType, class DataCollectorType >
+  template <class GridType, class EntityType, class DataCollectorType >
   class GatherScatterImpl : public GatherScatter
   {
-    DataCollectorType & dc_;
+    GridType & grid_;
     EntityType & en_;
+    DataCollectorType & dc_;
 
     typedef ObjectStream ObjectStreamType;
 
   public:
-    GatherScatterImpl(EntityType & en, DataCollectorType & dc) : en_(en), dc_(dc) {}
+    GatherScatterImpl(GridType & grid, EntityType & en, DataCollectorType & dc)
+      : grid_(grid), en_(en), dc_(dc) {}
 
     //! this method is called from the dunePackAll method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
@@ -23,7 +25,7 @@ namespace BernhardSchuppGrid {
     virtual void inlineData ( ObjectStreamType & str , HElemType & elem )
     {
       // set element and then start
-      en_.setelement(elem,-1);
+      en_.setElement(elem);
       dc_.inlineData(str,en_);
     }
 
@@ -33,23 +35,23 @@ namespace BernhardSchuppGrid {
     virtual void xtractData ( ObjectStreamType & str , HElemType & elem )
     {
       // set element and then start
-      en_.setelement(elem,-1);
+      grid_.updateStatus();
+      en_.setElement(elem);
       dc_.xtractData(str,en_);
     }
 
     // write Data of one lement to stream
     virtual void sendData ( ObjectStreamType & str , const HElementType & elem )
     {
-      en_.setelement( const_cast<HElementType &> (elem) , -1 );
+      en_.setElement( const_cast<HElementType &> (elem) );
       dc_.scatter(str, en_);
     }
 
     // read Data of one element from stream
     virtual void recvData ( ObjectStreamType & str , HGhostType & ghost )
     {
-      BNDFaceType & bnd = static_cast <BNDFaceType &> (ghost);
-
-      en_.setGhost( bnd ,-1);
+      // set ghost as entity
+      en_.setGhost( static_cast <PLLBndFaceType &> (ghost) );
       dc_.gather(str, en_);
     }
 

@@ -89,13 +89,14 @@ namespace BernhardSchuppGrid {
   //#include "bsgrid_src/gitter_impl.h"
 
   typedef Gitter::helement_STI HElemType;   // Interface Element
+  typedef HElemType HGhostType;
 
   struct GatherScatter
   {
     virtual void inlineData ( ObjectStream & str , HElemType & elem ) = 0;
     virtual void xtractData ( ObjectStream & str , HElemType & elem ) = 0;
 
-    virtual void sendData ( ObjectStream & str , HElemType & elem ) = 0;
+    virtual void sendData ( ObjectStream & str , const HElemType & elem ) = 0;
     virtual void recvData ( ObjectStream & str , HElemType & elem ) = 0;
   };
   typedef GatherScatter GatherScatterType;
@@ -132,7 +133,7 @@ namespace BernhardSchuppGrid {
   typedef GitterType::Geometric::tetra_GEO GEOElementType;   // real Element
   typedef GitterType::Geometric::hasFace3 HasFace3Type;      // has Face with 3 polygons
 
-  typedef GitterType::Objects::Hbnd3Default BNDFaceType;   // boundary segment
+  typedef BSGitterType::Objects::Hbnd3Default BNDFaceType;   // boundary segment
   typedef BSGitterType::Objects::hbndseg3_IMPL ImplBndFaceType;  // boundary segment
   typedef BNDFaceType PLLBndFaceType;
 
@@ -140,8 +141,9 @@ namespace BernhardSchuppGrid {
   enum { refine_element_t = GitterType::Geometric::TetraRule::iso8 };
   enum { coarse_element_t = GitterType::Geometric::TetraRule::crs  };
 
-  typedef pair < GEOFaceType * , int > NeighbourFaceType;
-  typedef pair < HasFace3Type* , int > NeighbourPairType;
+  typedef pair < GEOFaceType *    , int > NeighbourFaceType;
+  typedef pair < HasFace3Type*    , int > NeighbourPairType;
+  typedef pair < PLLBndFaceType * , int > GhostPairType;
 
   //*************************************************************
   //  definition of original LeafIterators of BSGrid
@@ -160,8 +162,8 @@ namespace BernhardSchuppGrid {
   struct BSLevelIterator
   {
     typedef Insert < AccessIterator < GitterType::helement_STI>::Handle,
-        TreeIterator <GitterType::helement_STI,
-            any_has_level <GitterType::helement_STI> > > IteratorType;
+        TreeIterator  <  GitterType::helement_STI,
+            any_has_level < GitterType::helement_STI  > > > IteratorType;
   };
   template <>
   struct BSLevelIterator<1>
@@ -219,7 +221,6 @@ namespace BernhardSchuppGrid {
    */
   //*************************************************************
   typedef LeafIterator < GitterType::helement_STI > BSLeafIteratorMaxLevel;
-
 
 } //end namespace BernhardSchuppGrid
 

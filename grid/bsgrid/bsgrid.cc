@@ -5,8 +5,9 @@
 
 namespace Dune {
 
+
   //! singelton holding reference element
-  static BSGridElement<3,3> refelem_3d(true);
+  static BSGridElement<3,3> refelem3d(true);
 
   template <int dim, int dimworld>
   inline BSGrid<dim,dimworld>::BSGrid(const char* macroTriangFilename
@@ -16,7 +17,7 @@ namespace Dune {
                                       )
     : mygrid_ (0) , maxlevel_(0)
 #ifdef _BSGRID_PARALLEL_
-      , mpAccess_(mpiComm)
+      , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
 #endif
   {
     mygrid_ = new BSSPACE BSGitterImplType (macroTriangFilename
@@ -25,14 +26,21 @@ namespace Dune {
 #endif
                                             );
     assert(mygrid_ != 0);
+
+#ifdef _BSGRID_PARALLEL_
+    loadBalance();
+    __MyRank__ = mpAccess_.myrank();
+#endif
+
     mygrid_->printsize();
 
     postAdapt();
     calcExtras();
   }
 
+
   template <int dim, int dimworld>
-  inline BSGrid<dim,dimworld>::BSGrid() : mygrid_ (0) , maxlevel_(0)
+  inline BSGrid<dim,dimworld>::BSGrid(int myrank) : mygrid_ (0) , maxlevel_(0) , myRank_(myrank)
   {
     for(int l=0; l<MAXL; l++)
       for(int i=0; i<dim+1; i++) size_[l][i] = -1;
@@ -103,6 +111,13 @@ namespace Dune {
   }
 
   template <int dim, int dimworld>
+  inline void BSGrid<dim,dimworld>::updateStatus()
+  {
+    calcMaxlevel();
+    calcExtras();
+  }
+
+  template <int dim, int dimworld>
   inline void BSGrid<dim,dimworld>::calcMaxlevel()
   {
     maxlevel_ = 0;
@@ -120,37 +135,41 @@ namespace Dune {
     for(int l=0; l<MAXL; l++)
       for(int i=0; i<dim+1; i++) size_[l][i] = -1;
 
-    //for(int i=0; i<dim+1; i++) globalSize_[i] = -1;
-
     // set max index of grid
     for(int i=0; i<dim+1; i++)
-      globalSize_[i] =  mygrid_->indexManager(i).getMaxIndex();
+      globalSize_[i] = mygrid_->indexManager(i).getMaxIndex();
 
-    /*
-       BSGridLeafIterator it    = leafbegin (0);
-       BSGridLeafIterator endit = leafend   (0);
-
-       // hier den macIndex vom IndexSet erfragen
-       for(; it != endit; ++it)
-       {
-       if((*it).global_index() > globalSize_[0])
-          globalSize_[0] = (*it).global_index();
-
-       BSGridHierarchicIterator<dim,dimworld> hierend = it->hend   (maxlevel());
-
-       for(BSGridHierarchicIterator<dim,dimworld> hierit  = (*it).hbegin (maxlevel()) ;
-            hierit != hierend; ++hierit )
-       {
-        if((*hierit).global_index() > globalSize_[0])
-          globalSize_[0] = (*hierit).global_index();
-       }
-       }
-       globalSize_[0]++;
-     */
+    //std::cout << "proc " << mpAccess_.myrank() << " num el = " << globalSize_[0] << "\n";
   }
 
   template <int dim, int dimworld>
-  inline int BSGrid<dim,dimworld>::global_size(int codim)
+  inline void BSGrid<dim,dimworld>::recalcGlobalSize()
+  {
+    for(int i=0; i<dim+1; i++) globalSize_[i] = -1;
+
+    BSGridLeafIterator it    = leafbegin (0);
+    BSGridLeafIterator endit = leafend   (0);
+
+    // hier den macIndex vom IndexSet erfragen
+    for(; it != endit; ++it)
+    {
+      if((*it).global_index() > globalSize_[0])
+        globalSize_[0] = (*it).global_index();
+
+      BSGridHierarchicIterator<dim,dimworld> hierend = it->hend   (maxlevel());
+
+      for(BSGridHierarchicIterator<dim,dimworld> hierit  = (*it).hbegin (maxlevel()) ;
+          hierit != hierend; ++hierit )
+      {
+        if((*hierit).global_index() > globalSize_[0])
+          globalSize_[0] = (*hierit).global_index();
+      }
+    }
+    globalSize_[0]++;
+  }
+
+  template <int dim, int dimworld>
+  inline int BSGrid<dim,dimworld>::global_size(int codim) const
   {
     assert(codim == 0);
     assert(globalSize_[codim] >= 0);
@@ -204,7 +223,7 @@ namespace Dune {
       {
         (*it).mark(1);
       }
-      ref = adapt();
+      ref = this->adapt();
       if(ref) postAdapt();
     }
     if(ref) loadBalance();
@@ -242,10 +261,23 @@ namespace Dune {
     return ref;
   }
 
+
   // post process grid
   template <int dim, int dimworld>
   inline void BSGrid<dim,dimworld>::postAdapt()
   {
+#ifdef _BSGRID_PARALLEL_
+    for(int l=0; l<= maxlevel(); l++)
+    {
+      {
+        typename BSSPACE BSLevelIterator<0>::IteratorType w ( mygrid_->container() , l ) ;
+        for (w.first () ; ! w.done () ; w.next ())
+        {
+          w.item ().resetRefinedTag();
+        }
+      }
+    }
+#else
     {
       typename BSSPACE BSLeafIteratorMaxLevel w (*mygrid_) ;
       for (w->first () ; ! w->done () ; w->next ())
@@ -253,7 +285,47 @@ namespace Dune {
         w->item ().resetRefinedTag();
       }
     }
+#endif
     coarsenMark_ = false;
+  }
+
+  template <int dim, int dimworld>
+  inline double BSGrid<dim,dimworld>::communicateValue(double val) const
+  {
+#ifdef _BSGRID_PARALLEL_
+    //std::cout << "communicateValue " << val << " on proc " << mpAccess_.myrank() << " \n";
+    double ret = mpAccess_.gmin(val);
+    //std::cout << "got " << ret << " on proc " << mpAccess_.myrank() << " \n";
+    return ret;
+#else
+    return val;
+#endif
+  }
+
+  template <int dim, int dimworld>
+  inline double BSGrid<dim,dimworld>::communicateSum(double val) const
+  {
+#ifdef _BSGRID_PARALLEL_
+    //std::cout << "communicateValue " << val << " on proc " << mpAccess_.myrank() << " \n";
+    double ret = mpAccess_.gsum(val);
+    //std::cout << "got " << ret << " on proc " << mpAccess_.myrank() << " \n";
+    return ret;
+#else
+    return val;
+#endif
+  }
+
+  template <int dim, int dimworld>
+  inline int BSGrid<dim,dimworld>::communicateInt(int val) const
+  {
+#ifdef _BSGRID_PARALLEL_
+    //std::cout << "communicateInt " << val << " on proc " << mpAccess_.myrank() << " \n";
+    int ret = mpAccess_.gmin(val);
+    //std::cout << "got " << ret << " on proc " << mpAccess_.myrank() << " \n";
+    return ret;
+#else
+    return val;
+#endif
   }
 
   template <int dim, int dimworld>
@@ -263,10 +335,10 @@ namespace Dune {
     bool changed = mygrid_->duneLoadBalance();
     if(changed)
     {
-      mygrid_->duneExchangeDynamicState();
       calcMaxlevel();             // calculate new maxlevel
       calcExtras();               // reset size and things
     }
+    return changed;
 #else
     return false;
 #endif
@@ -283,16 +355,17 @@ namespace Dune {
     typedef BSGridEntity<0,dim,dimworld> EntityType;
     EntityType en (*this);
 
-    BSSPACE GatherScatterImpl< EntityType , DataCollectorType > gs(en,dc);
+    BSSPACE GatherScatterImpl< BSGrid<dim,dimworld> , EntityType ,
+        DataCollectorType > gs(*this,en,dc);
 
     bool changed = mygrid_->duneLoadBalance(gs);
 
     if(changed)
     {
-      mygrid_->duneExchangeDynamicState(gs);
       calcMaxlevel();             // calculate new maxlevel
       calcExtras();               // reset size and things
     }
+    return changed;
 #else
     return false;
 #endif
@@ -305,8 +378,10 @@ namespace Dune {
 #ifdef _BSGRID_PARALLEL_
     typedef BSGridEntity<0,dim,dimworld> EntityType;
     EntityType en (*this);
-    BSSPACE GatherScatterImpl< EntityType , DataCollectorType > gs(en,dc);
-    mygrid_->duneExchangeDynamicState(gs);
+    BSSPACE GatherScatterImpl< BSGrid<dim,dimworld> , EntityType ,
+        DataCollectorType > gs(*this,en,dc);
+
+    mygrid_->duneExchangeData(gs);
     return true;
 #else
     return false;
@@ -394,6 +469,7 @@ namespace Dune {
     }
 
     calcExtras();
+    recalcGlobalSize();
 
     // set max index of grid
     for(int i=0; i<dim+1; i++)
@@ -468,7 +544,7 @@ namespace Dune {
       return *this;
     }
 
-    objEntity_->setelement(iter_.item(),index_);
+    objEntity_->setElement(iter_.item());
     return *this;
   }
 
@@ -551,7 +627,7 @@ namespace Dune {
       return *this;
     }
 
-    objEntity_->setelement(iter_.item(),index_);
+    objEntity_->setElement(iter_.item());
 
     return *this;
   }
@@ -574,6 +650,7 @@ namespace Dune {
   inline BSGridEntity<0,dim,dimworld>&
   BSGrid<dim,dimworld>::BSGridLeafIterator :: operator*()
   {
+    assert(iter_.size() > 0);
     return (*objEntity_);
   }
 
@@ -581,6 +658,7 @@ namespace Dune {
   inline BSGridEntity<0,dim,dimworld>*
   BSGrid<dim,dimworld>::BSGridLeafIterator :: operator->()
   {
+    assert(iter_.size() > 0);
     return objEntity_.operator -> ();
   }
 
@@ -676,7 +754,7 @@ namespace Dune {
       return *this;
     }
 
-    objEntity_->setelement(*item_,0);
+    objEntity_->setElement(*item_);
     return *this;
   }
 
@@ -727,7 +805,7 @@ namespace Dune {
     , interSelfGlobal_ (false)
     , theSituation_ (false) , daOtherSituation_ (false)
     , isBoundary_ (true) // isBoundary_ == true means no neighbour
-    , ghost_(false)
+    , isGhost_(false), ghost_(0)
   {
     if( !end )
     {
@@ -743,14 +821,16 @@ namespace Dune {
   inline void BSGridIntersectionIterator<dim,dimworld> :: checkGhost ()
   {
 #ifdef _BSGRID_PARALLEL_
-    ghost_ = false;
+    isGhost_ = false;
+    ghost_   = 0;
     if(isBoundary_)
     {
-      typename BSSPACE PLLBndFaceType * bnd = item_->myneighbour(index_).first;
+      typename BSSPACE PLLBndFaceType * bnd =
+        dynamic_cast<BSSPACE PLLBndFaceType *> (item_->myneighbour(index_).first);
       if(bnd->bndtype() == BSSPACE ProcessorBoundary_t)
       {
         isBoundary_ = false;
-        ghost_ = true;
+        isGhost_ = true;
       }
     }
 #endif
@@ -763,6 +843,8 @@ namespace Dune {
     item_  = static_cast<BSSPACE GEOElementType *> (&elem);
     index_ = 0;
     neigh_ = 0;
+    ghost_ = 0;
+
     neighpair_.first  = 0;
     neighpair_.second = 0;
 
@@ -859,7 +941,7 @@ namespace Dune {
       // go next otherwise we are not allowe to go next which is described as
       // "da other situation"
 
-      if( theSituation_ && neighpair_.first->down() )
+      if( theSituation_ && neighpair_.first->down())
       {
         neighpair_.first = neighpair_.first->down();
         daOtherSituation_ = true;
@@ -871,49 +953,64 @@ namespace Dune {
     }
 
 #ifdef _BSGRID_PARALLEL_
-    if(ghost_)
+    if(isGhost_)
     {
       assert( item_->myneighbour(index_).first->isboundary() );
 
       BSSPACE NeighbourPairType np = (neighpair_.second < 0) ?
                                      (neighpair_.first->nb.front()) : (neighpair_.first->nb.rear());
 
-      BSSPACE PLLBndFaceType * bnd = np.first;
+
+      ghost_ = dynamic_cast<BSSPACE PLLBndFaceType *> (np.first);
       numberInNeigh_ = np.second;
 
       // if our level is smaller then the level of the real ghost then go one
       // level up and set the element
-      if(bnd->ghostLevel() != bnd->level())
+      if(ghost_->ghostLevel() != ghost_->level())
       {
-        assert(bnd->ghostLevel() < bnd->level());
-        assert(bnd->up());
+        assert(ghost_->ghostLevel() < ghost_->level());
+        assert(ghost_->up());
 
-        bnd = bnd->up();
-        assert(bnd->level() == bnd->ghostLevel());
+        if(daOtherSituation_)
+        {
+          neighpair_ = (*item_).myintersection(index_);
+          daOtherSituation_ = false;
+        }
+
+        ghost_ = ghost_->up();
+        assert(ghost_->level() == ghost_->ghostLevel());
       }
 
-      //std::cout << "Ghostnumber is " << bnd->getIdx() << "\n";
-      //int ghidx = bnd->getIndex();
-      //BSSPACE logFile  << "GhostNumber  = " << ghidx << "\n";
+      //BSSPACE logFile  << "ghost is " << bnd->getIndex() << "\n";
+      // the ghost entity
+      //ghostpair_.first = bnd;
 
-      entity_.setGhost( *bnd , index_);
+      // the twist of the face
+      //ghostpair_.second = neighpair_.second;
+      //std::cout << ghostpair_.second << " it| ght " << bnd->twist(0) << "\n";
+
+      entity_.setGhost( *ghost_ , index_);
+
       needSetup_ = false;
+      neigh_ = 0;
       return;
     }
 #endif
+    assert(!isGhost_);
 
     // same as in method myneighbour of Tetra and Hexa in gitter_sti.hh
     // neighpair_.second is the twist of the face
     BSSPACE NeighbourPairType np = (neighpair_.second < 0) ?
                                    (neighpair_.first->nb.front()) : (neighpair_.first->nb.rear());
 
-    neigh_ = np.first;
+    neigh_ = static_cast<BSSPACE GEOElementType *> (np.first);
     numberInNeigh_ = np.second;
 
     assert(neigh_ != item_);
     assert(neigh_ != 0);
 
-    entity_.setelement(*neigh_, index_);
+    entity_.setElement(*neigh_);
+    ghost_ = 0;
     needSetup_ = false;
   }
 
@@ -983,7 +1080,21 @@ namespace Dune {
       else
       {
         if(needSetup_) setNeighbor();
-        neigh_->neighOuterNormal(numberInNeigh_,outNormal_);
+
+        if(neigh_)
+        {
+          neigh_->neighOuterNormal(numberInNeigh_,outNormal_);
+        }
+        else
+        {
+          assert(ghost_);
+          assert(ghost_->level() != item_->level());
+
+          // ghostpair_.second stores the twist of the face
+          //ghost_->faceNormal( outNormal_ );
+          item_->outerNormal(index_,outNormal_);
+          outNormal_ *= 0.25;
+        }
       }
       needNormal_ = false;
     }
@@ -1011,8 +1122,15 @@ namespace Dune {
   inline BSGridElement<dim-1,dimworld>&
   BSGridIntersectionIterator<dim,dimworld>::intersection_self_global ()
   {
-    const BSSPACE Gitter::Geometric::hface3_GEO & face = *(item_->myhface3(index_));
-    bool init = interSelfGlobal_.builtGeom(face);
+    if( boundary )
+    {
+      const BSSPACE GEOFaceType & face = *(item_->myhface3(index_));
+      bool init = interSelfGlobal_.builtGeom(face);
+      return interSelfGlobal_;
+    }
+    // in case of neighbor
+    assert(neighpair_.first);
+    bool init = interSelfGlobal_.builtGeom( *(neighpair_.first) );
 
     return interSelfGlobal_;
   }
@@ -1021,8 +1139,11 @@ namespace Dune {
   inline BSGridBoundaryEntity<dim,dimworld>&
   BSGridIntersectionIterator<dim,dimworld>::boundaryEntity ()
   {
-    typename BSSPACE BNDFaceType * bnd = item_->myneighbour(index_).first;
+    assert(boundary());
+    BSSPACE BNDFaceType * bnd = dynamic_cast<BSSPACE BNDFaceType *> (item_->myneighbour(index_).first);
     int id = bnd->bndtype(); // id's are positive
+    //if(id == 2)
+    //  std::cout << __MyRank__ << "=p: bndid = " << -id << "\n";
     bndEntity_.setId( -id );
     return bndEntity_;
   }
@@ -1048,25 +1169,26 @@ namespace Dune {
 
   template<int dim, int dimworld>
   inline void
-  BSGridEntity<0,dim,dimworld> :: setelement(BSSPACE HElementType & element,int index)
+  BSGridEntity<0,dim,dimworld> :: setElement(BSSPACE HElementType & element)
   {
     item_= static_cast<BSSPACE GEOElementType *> (&element);
+    ghost_ = 0;
     builtgeometry_=false;
-    index_=index;
-    level_ = item_->level();
+    index_   = -1;
+    level_   = item_->level();
     glIndex_ = item_->getIndex();
   }
 
   template<int dim, int dimworld>
   inline void
-  BSGridEntity<0,dim,dimworld> :: setGhost(BSSPACE PLLBndFaceType & ghost,int index)
+  BSGridEntity<0,dim,dimworld> :: setGhost(BSSPACE PLLBndFaceType & ghost)
   {
-    item_ = 0;
-    ghost_ = &ghost;
-    index_=index;
+    item_    = 0;
+    ghost_   = &ghost;
+    index_   = -1;
     glIndex_ = ghost.getIndex();
-    level_ = ghost.level();
-    builtgeometry_ = false; //geo_.builtGhost(ghost);
+    level_   = ghost.level();
+    builtgeometry_ = false;
   }
 
   template<int dim, int dimworld>
@@ -1080,11 +1202,17 @@ namespace Dune {
   inline BSGridElement<dim,dimworld>&
   BSGridEntity<0,dim,dimworld> :: geometry ()
   {
+    assert((ghost_ != 0) || (item_ != 0));
 #ifdef _BSGRID_PARALLEL_
     if(!builtgeometry_)
     {
-      if(item_) builtgeometry_ = geo_.builtGeom(*item_);
-      else builtgeometry_ = geo_.builtGhost(*ghost_);
+      if(item_)
+        builtgeometry_ = geo_.builtGeom(*item_);
+      else
+      {
+        assert(ghost_);
+        builtgeometry_ = geo_.builtGhost(*ghost_);
+      }
     }
 #else
     if(!builtgeometry_) builtgeometry_ = geo_.builtGeom(*item_);
@@ -1199,15 +1327,18 @@ namespace Dune {
   BSGridEntity<0,dim,dimworld> :: father( BSGridEntity<0,dim,dimworld> & vati )
   {
     assert(item_ != 0);
-    vati.setelement( *(item_->up()) , 0 );
+    vati.setElement( *(item_->up()) );
   }
 
   // Adaptation methods
   template<int dim, int dimworld>
   inline bool BSGridEntity<0,dim,dimworld> :: mark (int ref)
   {
-    assert(item_ != 0);
     // refine_element_t and coarse_element_t are defined in bsinclude.hh
+    if(ghost_) return false;
+
+    assert(item_ != 0);
+    // mark for coarsening
     if(ref < 0)
     {
       if(level() <= 0) return false;
@@ -1221,11 +1352,13 @@ namespace Dune {
       return true;
     }
 
+    // mark for refinement
     if(ref > 0)
     {
       (*item_).request( BSSPACE refine_element_t );
       return true;
     }
+
     return false;
   }
 
@@ -1393,16 +1526,22 @@ namespace Dune {
 
     builtinverse_ = builtA_ = builtDetDF_ = false;
 
+    BSSPACE GEOFaceType & face = dynamic_cast<BSSPACE GEOFaceType &> (*(ghost.myhface3(0)));
+
+    // here apply the negative twist, because the twist is from the
+    // neighbouring elements point of view which is outside of the ghost
+    // element
+    const int map[3] = { (ghost.twist(0) < 0) ? 2 : 0 , 1 , (ghost.twist(0) < 0) ? 0 : 2 };
+
     for (int i=0; i<dim; i++) // col is the point vector
     {
-      const double (&p)[3] = (ghost.myhface3(0))->myvertex(i)->Point();
+      const double (&p)[3] = face.myvertex(map[i])->Point();
       for (int j=0; j<dimworld; j++) // row is the coordinate of the point
       {
         coord_(j,i) = p[j];
       }
     }
 
-    //std::cout << "get opp vx\n";
     {
       const double (&p)[3] = ghost.oppositeVertex(0);
       for (int j=0; j<dimworld; j++)
@@ -1410,7 +1549,16 @@ namespace Dune {
         coord_(j,3) = p[j];
       }
     }
-    //std::cout << coord_ << "\n";
+
+    /*
+       FieldVector < double , 3 > tmp;
+       double det = integration_element ( tmp );
+       //if(det < 0.0)
+       {
+       std::cout <<det <<  " \n";
+       std::cout << coord_ << "\n";
+       }
+     */
 
     return true;
   }
@@ -1505,8 +1653,10 @@ namespace Dune {
 
     if(!builtA_) calcElMatrix();
     detDF_ = A_.determinant();
-    builtDetDF_ = true;
 
+    assert(detDF_ > 0.0);
+
+    builtDetDF_ = true;
     return detDF_;
   }
 
@@ -1535,7 +1685,7 @@ namespace Dune {
 
   template<int dim, int dimworld>
   inline BSGridElement<dim,dim>& BSGridElement<dim, dimworld> :: refelem () {
-    return refelem_3d;
+    return refelem3d;
   }
 
 }
