@@ -3,6 +3,10 @@
 #ifndef DUNE_GRID_GEOMETRY_HH
 #define DUNE_GRID_GEOMETRY_HH
 
+/** \file
+    \brief Wrapper and interface classes for element geometries
+ */
+
 #include <dune/common/fmatrix.hh>
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/exceptions.hh>
@@ -17,6 +21,13 @@ namespace Dune
   //
   //*****************************************************************************
 
+  /** \brief Encapsulates the geometric aspects of grid elements and subelements
+
+     \tparam mydim Dimension of this geometry
+     \tparam cdim  Dimension of the surrounding space
+     \tparam GridImp The grid class whose elements we are encapsulating
+     \tparam GeometryImp The class that implements the actual geometry
+   */
   template<int mydim, int cdim, class GridImp, template<int,int,class> class GeometryImp>
   class Geometry {
     // save typing
@@ -44,14 +55,17 @@ namespace Dune
     //! return the number of corners of this geometry. Corners are numbered 0...n-1
     int corners () const { return realGeometry.corners(); };
 
-    //! access to coordinates of corners. Index is the number of the corner
+    /** \brief Access to coordinates of corners.
+     * \param i The number of the corner
+     */
     const FieldVector<ct, cdim>& operator[] (int i) const
     {
       return realGeometry[i];
     }
 
-    /*! return reference geometry corresponding to this geometry. If this is
-       a reference geometry then self is returned. A reference to a reference
+    /** \brief Return reference geometry corresponding to this geometry.
+
+       If this is a reference geometry then self is returned. A reference to a reference
        geometry is returned. Usually, the implementation will store the finite
        set of reference geometries as global variables.
      */
@@ -66,19 +80,21 @@ namespace Dune
       return realGeometry.global(local);
     }
 
-    //! maps a global coordinate within the geometry to a local coordinate in its reference geometry
+    //! Maps a global coordinate within the geometry to a local coordinate in its reference geometry
     FieldVector<ct, mydim> local (const FieldVector<ct, cdim>& global) const
     {
       return realGeometry.local(global);
     }
 
-    //! return true if the point in local coordinates lies inside the reference geometry
+    //! Return true if the point in local coordinates lies inside the reference geometry
     bool checkInside (const FieldVector<ct, mydim>& local) const
     {
       return realGeometry.checkInside(local);
     }
 
-    /*! Integration over a general geometry is done by integrating over the reference geometry
+    /** \brief Return the factor appearing in the integral transformation formula
+
+       Integration over a general geometry is done by integrating over the reference geometry
        and using the transformation from the reference geometry to the global geometry as follows:
        \f[\int\limits_{\Omega_e} f(x) dx = \int\limits_{\Omega_{ref}} f(g(l)) A(l) dl \f] where
        \f$g\f$ is the local to global mapping and \f$A(l)\f$ is the integration geometry.
@@ -115,7 +131,7 @@ namespace Dune
     //protected:
     /** hide copy constructor */
     Geometry(const Geometry& rhs) : realGeometry(rhs.realGeometry) {};
-    /** hide assignement operator */
+    /** hide assignment operator */
     Geometry & operator = (const Geometry& rhs) { realGeometry = rhs.realGeometry; };
   };
 
@@ -141,10 +157,14 @@ namespace Dune
     //! return the geometry type identifier
     GeometryType type () const { return realGeometry.type(); };
 
-    //! return the number of corners of this geometry. Corners are numbered 0...n-1
+    //! Return the number of corners of this geometry.
     int corners () const { return realGeometry.corners(); };
 
-    //! access to coordinates of corners. Index is the number of the corner
+    /** \brief Access to the vertex coordinates.
+
+       The argument doesn't have any meaning and is only there to provide the same
+       interface across all specializations of Geometry
+     */
     const FieldVector<ct, cdim>& operator[] (int i) const
     {
       return realGeometry[i];
@@ -156,7 +176,7 @@ namespace Dune
   protected:
     /** hide copy constructor */
     Geometry(const Geometry& rhs) : realGeometry(rhs.realGeometry) {};
-    /** hide assignement operator */
+    /** hide assignment operator */
     Geometry & operator = (const Geometry& rhs) { realGeometry = rhs.realGeometry; };
   };
 
