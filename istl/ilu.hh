@@ -8,6 +8,8 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <set>
+#include <map>
 
 #include "istlexception.hh"
 #include "io.hh"
@@ -109,6 +111,122 @@ namespace Dune {
       v[i.index()] = 0;
       (*j).umv(rhs,v[i.index()]);           // diagonal stores inverse!
     }
+  }
+
+
+
+  // recursive function template to access first entry of a matrix
+  template<class M>
+  typename M::field_type& firstmatrixelement (M& A)
+  {
+    return firstmatrixelement(*(A.begin()->begin()));
+  }
+
+  template<class K, int n, int m>
+  K& firstmatrixelement (FieldMatrix<K,n,m>& A)
+  {
+    return A[0][0];
+  }
+
+  template<class K>
+  K& firstmatrixelement (K11Matrix<K>& A)
+  {
+    return A();
+  }
+
+
+  /*! ILU decomposition of order n
+          Computes ILU decomposition of order n. The matrix ILU should
+      be an empty matrix in row_wise creation mode. This allows the user
+      to either specify the number of nonzero elements or to
+          determine it automatically at run-time.
+   */
+  template<class M>
+  void bilu_decomposition (const M& A, int n, M& ILU)
+  {
+    // iterator types
+    typedef typename M::RowIterator rowiterator;
+    typedef typename M::ColIterator coliterator;
+    typedef typename M::ConstRowIterator crowiterator;
+    typedef typename M::ConstColIterator ccoliterator;
+    typedef typename M::CreateIterator createiterator;
+    typedef typename M::block_type block;
+    typedef typename M::field_type K;
+    typedef typename std::map<int,int> map;
+    typedef typename std::map<int,int>::iterator mapiterator;
+
+    // symbolic factorization phase, store generation number in first matrix element
+    crowiterator endi=A.end();
+    createiterator ci=ILU.createbegin();
+    for (crowiterator i=A.begin(); i!=endi; ++i)
+    {
+      std::cout << "symbolic factorization, row " << i.index() << std::endl;
+      map rowpattern;           // maps column index to generation
+
+      // initialize pattern with row of A
+      for (ccoliterator j=(*i).begin(); j!=(*i).end(); ++j)
+        rowpattern[j.index()] = 0;
+
+      // eliminate entries in row which are to the left of the diagonal
+      for (mapiterator ik=rowpattern.begin(); (*ik).first<i.index(); ++ik)
+      {
+        std::cout << "eliminating " << i.index() << "," << (*ik).first
+                  << std::endl;
+        coliterator endk = ILU[(*ik).first].end();                 // end of row k
+        coliterator kj = ILU[(*ik).first].find((*ik).first);                 // diagonal in k
+        for (++kj; kj!=endk; ++kj)                 // row k eliminates in row i
+        {
+          int generation = static_cast<int>(firstmatrixelement(*kj));
+          mapiterator ij = rowpattern.find(kj.index());
+          if (ij==rowpattern.end())
+          {                         // new entry
+            if (generation<n)
+              rowpattern[kj.index()] = generation+1;
+          }
+          else
+          {                         // entry exists already
+            (*ij).second = std::min((*ij).second,generation+1);
+          }
+        }
+      }
+
+      // create row
+      for (mapiterator ik=rowpattern.begin(); ik!=rowpattern.end(); ++ik)
+        ci.insert((*ik).first);
+      ++ci;           // now row i exist
+
+      // set generation index on new row
+      coliterator endik=ILU[i.index()].end();
+      for (coliterator ik=ILU[i.index()].begin(); ik!=endik; ++ik)
+        firstmatrixelement(*ik) = static_cast<K>(rowpattern[ik.index()]);
+    }
+
+    // initialize new matrix with A
+    for (crowiterator i=A.begin(); i!=endi; ++i)
+    {
+      coliterator ILUij = ILU[i.index()].begin();
+      coliterator endILUij;
+      for (ILUij=ILU[i.index()].begin(); ILUij!=endILUij; ++ILUij)
+        (*ILUij) = 0;           // clear row
+      ccoliterator Aij = (*i).begin();
+      ccoliterator endAij = (*i).end();
+      ILUij = ILU[i.index()].begin();
+      while (Aij!=endAij && ILUij!=endILUij)
+      {
+        if (Aij.index()==ILUij.index())
+          *ILUij = *Aij;
+        else
+        {
+          if (Aij.index()<ILUij.index())
+            ++Aij;
+          else
+            ++ILUij;
+        }
+      }
+    }
+
+    // call decomposition on pattern
+    bilu0_decomposition(ILU);
   }
 
 
