@@ -38,7 +38,7 @@ namespace Dune {
       LevelIterator endit = grid.template lend<0> ( level );
       LevelIterator it = grid.template lbegin<0> ( level );
 
-      DuneQuad < typename FunctionSpaceType::RangeField,
+      FixedOrderQuad < typename FunctionSpaceType::RangeField,
           typename FunctionSpaceType::Domain , polOrd > quad ( *it );
 
       for(; it != endit ; ++it) {
