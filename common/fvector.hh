@@ -6,7 +6,7 @@
 #include <math.h>
 #include <complex>
 
-#include "exception.hh"
+#include "exceptions.hh"
 
 /*! \file __FILE__
 
