@@ -102,6 +102,7 @@ AC_DEFUN([DUNE_PATH_DUNE],[
     AC_SUBST(DUNE_LDFLAGS, $DUNE_LDFLAGS)
     AC_SUBST(DUNE_LIBS, $DUNE_LIBS)
     AC_DEFINE(HAVE_DUNE, 1, [Define to 1 if dune was found])
+    AC_SUBST(DUNEROOT, $DUNEROOT)
 
     if test x"$enable_dunedevel" = xyes ; then
       AC_DEFINE(DUNE_DEVEL_MODE, 1, [Activates developer output])
