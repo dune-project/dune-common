@@ -265,9 +265,9 @@ namespace Dune {
   {
     return l;
   }
-  //              std::cout << i->index() << " " ;
-  //              for (int z=0; z<N; ++z) std::cout << "["<<j[z]<<","<<A[z]<<"] ";
-  //              std::cout << std::endl;
+  //                std::cout << i->index() << " " ;
+  //                for (int z=0; z<N; ++z) std::cout << "["<<j[z]<<","<<A[z]<<"] ";
+  //                std::cout << std::endl;
 
   template<int codim, int dim, int dimworld>
   inline int SEntityBase<codim,dim,dimworld>::index ()
@@ -979,7 +979,7 @@ namespace Dune {
   //************************************************************************
   // inline methods for SGrid
   template<int dim, int dimworld>
-  inline void SGrid<dim,dimworld>::makeSGrid (int* N_, sgrid_ctype* H_)
+  inline void SGrid<dim,dimworld>::makeSGrid (const int* N_, const sgrid_ctype* H_)
   {
     L = 1;
     for (int i=0; i<dim; i++) H[i] = H_[i];
@@ -996,7 +996,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline SGrid<dim,dimworld>::SGrid (int* N_, sgrid_ctype* H_)
+  inline SGrid<dim,dimworld>::SGrid (const int* N_, const sgrid_ctype* H_)
   {
     makeSGrid(N_,H_);
   }

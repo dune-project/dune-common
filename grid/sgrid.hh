@@ -743,7 +743,7 @@ namespace Dune {
        \param H_: array of size dim: length in each dimension
        \param N_: array of size dim: coarse grid size, #elements in one direction
      */
-    SGrid (int* N_, sgrid_ctype* H_);
+    SGrid (const int* N_, const sgrid_ctype* H_);
 
     //! empty constructor making grid of unit square
     SGrid ();
@@ -782,7 +782,7 @@ namespace Dune {
 
   private:
     // generate SGrid
-    void makeSGrid (int* N_, sgrid_ctype* H_);
+    void makeSGrid (const int* N_, const sgrid_ctype* H_);
 
     int L;                              // number of levels in hierarchic mesh 0<=level<L
     Tupel<sgrid_ctype,dim> H;           // length of cube per direction
