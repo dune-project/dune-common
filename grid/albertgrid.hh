@@ -89,7 +89,7 @@ namespace Dune {
                                //!< border , all codims possible
                       Ghosts , //!< iterate over all ghost cells
                       InteriorBorder, //!< iterate over Interior and Border
-                      All ,   //!< iterate over all cells on this processor
+                      All      //!< iterate over all cells on this processor
   };
 }
 
@@ -98,9 +98,6 @@ namespace Dune {
 
 // contains the communication for parallel computing for this grid
 
-#ifndef MPI_ACTIVE
-#undef HAVE_MPI
-#endif
 #include "albertgrid/agcommunicator.hh"
 
 namespace Dune
@@ -1096,12 +1093,12 @@ namespace Dune
     int maxlevel() const;
 
     //! Iterator to first entity of given codim on level
-    template<int codim, PartitionType pitype>
+    template<int codim, PartitionIteratorType pitype>
     AlbertGridLevelIterator<codim,dim,dimworld,pitype>
     lbegin (int level,IteratorType IType = InteriorBorder, int proc = -1 );
 
     //! one past the end on this level
-    template<int codim, PartitionType pitype>
+    template<int codim, PartitionIteratorType pitype>
     AlbertGridLevelIterator<codim,dim,dimworld,pitype>
     lend (int level, IteratorType IType = InteriorBorder, int proc = -1 );
 
