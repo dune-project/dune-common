@@ -36,15 +36,30 @@ namespace Dune {
 
     typedef typename GridImp::template codim<1>::Geometry Geometry;
     typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
-
-    //! prefix increment
-    UGGridIntersectionIterator& operator ++();
+    typedef typename GridImp::template codim<0>::Entity Entity;
 
     //! The default Constructor makes empty Iterator
     UGGridIntersectionIterator();
 
     //! The Destructor
     ~UGGridIntersectionIterator() {};
+
+    //! prefix increment
+    void increment() {
+      setToTarget(center_, neighborCount_+1);
+    }
+
+    //! equality
+    bool equals(const UGGridIntersectionIterator& i) const;
+
+    //! dereferencing
+    Entity& dereference() const {
+      return virtualEntity_;
+    }
+
+#if 0
+    //! prefix increment
+    UGGridIntersectionIterator& operator ++();
 
     //! equality
     bool operator== (const UGGridIntersectionIterator& i) const;
@@ -57,6 +72,7 @@ namespace Dune {
 
     //! access neighbor, arrow
     UGGridEntity<0,GridImp::dimension,GridImp>* operator->();
+#endif
 
     //! return true if intersection is with boundary. \todo connection with
     //! boundary information, processor/outer boundary

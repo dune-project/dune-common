@@ -37,7 +37,7 @@ isValid() const
 
 template< class GridImp>
 inline bool UGGridIntersectionIterator<GridImp>::
-operator ==(const UGGridIntersectionIterator& I) const
+equals (const UGGridIntersectionIterator& I) const
 {
   // Two intersection iterators are equal iff they have the same
   // validity.  Furthermore, if they are both valid, they have
@@ -47,12 +47,14 @@ operator ==(const UGGridIntersectionIterator& I) const
              (center_ == I.center_ && neighborCount_ == I.neighborCount_));
 }
 
+#if 0
 template< class GridImp>
 inline bool UGGridIntersectionIterator<GridImp>::
 operator !=(const UGGridIntersectionIterator& I) const
 {
   return !((*this)==I);
 }
+
 
 template<class GridImp>
 inline UGGridEntity< 0,GridImp::dimension,GridImp>*
@@ -61,13 +63,13 @@ UGGridIntersectionIterator< GridImp >::operator ->()
   return &virtualEntity_;
 }
 
+
 template<class GridImp>
 inline UGGridEntity< 0,GridImp::dimension,GridImp>&
 UGGridIntersectionIterator< GridImp >::operator *()
 {
   return virtualEntity_;
 }
-
 
 template<class GridImp>
 inline UGGridIntersectionIterator<GridImp>&
@@ -76,6 +78,7 @@ UGGridIntersectionIterator< GridImp >::operator++()
   setToTarget(center_, neighborCount_+1);
   return (*this);
 }
+#endif
 
 template<class GridImp>
 inline bool UGGridIntersectionIterator< GridImp >::neighbor() const
