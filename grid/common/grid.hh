@@ -991,11 +991,14 @@ namespace Dune {
           IntersectionIteratorImp,HierarchicIteratorImp>
   {
   public:
-    //! remeber the template types
+    //! Remember the template types
     struct Traits
     {
+      //! The coordinate type
       typedef ct CoordType;
+      //! The element type
       typedef ElementImp<dim,dimworld>             Element;
+      //! The entity type
       typedef EntityImp<0,dim,dimworld>            Entity;
       typedef LevelIteratorImp<0,dim,dimworld,All_Partition>     LevelIterator;
       typedef IntersectionIteratorImp<dim,dimworld>    IntersectionIterator;
@@ -1014,26 +1017,30 @@ namespace Dune {
     //! define type used for coordinates in grid module
     typedef ct ctype;
 
-    // default implementation for access to subIndex via interface method entity
-    // default is to return the index of the sub entity, is very slow, but works
+    /** \brief Default implementation for access to subIndex
+     *
+     * Default implementation for access to subIndex via interface method entity
+     * default is to return the index of the sub entity, is very slow, but works
+     */
     template <int cc> int subIndex ( int i );
 
     //***************************************************************
     //  Interface for Adaptation
     //***************************************************************
     //! marks an element for refCount refines. if refCount is negative the
-    //! element is coarsend -refCount times
+    //! element is coarsened -refCount times
     //! mark returns true if element was marked, otherwise false
-    //! **Note**: default implemenntation is: return false; for grids with no
+    //! **Note**: default implementation is: return false; for grids with no
     //! adaptation
     bool mark( int refCount ) { return false; }
 
-    //! return whether entity could be cosrsend (COARSEN) or was refined
-    //! (REFIEND) or nothing happend (NONE)
-    //! **Note**: default implementation is: return NONE for grid with no
+    //! return whether entity could be coarsened (COARSEN) or was refined
+    //! (REFINED) or nothing happend (NONE)
+    //! @return The default implementation returns NONE for grid with no
     //! adaptation
     AdaptationState state () { return NONE; }
 
+    //! ???
     EntityImp<0,dim,dimworld> newEntity ()
     {
       EntityImp<0,dim,dimworld> tmp (asImp());
