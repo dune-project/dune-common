@@ -1555,16 +1555,18 @@ namespace Dune
   inline void AlbertGridNeighborIterator<dim,dimworld>::setupVirtEn()
   {
 
+#if 0
 #if DIM > 2
     std::cout << "dim Formel not checked in setupVirtEn !\n ";
     abort();
+#endif
 #endif
     // set the neighbor element as element
     neighElInfo_->el = elInfo_->neigh[neighborCount_];
 
     int vx = elInfo_->opp_vertex[neighborCount_];
 
-    memcpy(&neighElInfo_->coord[vx], &elInfo_->coord[neighborCount_],
+    memcpy(&neighElInfo_->coord[vx], &elInfo_->opp_coord[neighborCount_],
            dimworld*sizeof(ALBERT REAL));
 
     for(int i=1; i<dim+1; i++)
