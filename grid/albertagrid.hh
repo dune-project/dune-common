@@ -138,6 +138,20 @@ namespace Dune
     {
       return this->realGeometry.builtGeom(elInfo,face,edge,vertex);
     }
+
+    // just a wrapper call
+    void initGeom()
+    {
+      this->realGeometry.initGeom();
+      return ;
+    }
+
+    // for changing the coordinates of one element
+    FieldVector<albertCtype, coorddim>& getCoordVec (int i)
+    {
+      return this->realGeometry.getCoordVec(i);
+    }
+
   };
 
 
@@ -227,6 +241,7 @@ namespace Dune
     // init geometry with zeros
     //! no interface method
     void initGeom();
+    FieldVector<albertCtype, cdim>& getCoordVec (int i);
 
     //! print internal data
     //! no interface method
@@ -539,7 +554,7 @@ namespace Dune
        We assume that on-the-fly implementation of numerical algorithms
        is only done for simple discretizations. Assumes that meshes are nested.
      */
-    const Geometry& geometryInFather () const;
+    const Geometry & geometryInFather () const;
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.

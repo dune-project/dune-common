@@ -390,6 +390,14 @@ namespace Dune
     return coord_[i];
   }
 
+  ///////////////////////////////////////////////////////////////////////
+  template <int mydim, int cdim, class GridImp>
+  inline FieldVector<albertCtype, cdim>& AlbertaGridGeometry<mydim,cdim,GridImp>::
+  getCoordVec (int i)
+  {
+    return coord_[i];
+  }
+
   template <class GridImp, int dim> struct AlbertaGridRefElem;
   template <class GridImp> struct AlbertaGridRefElem<GridImp,1> {
     static const Dune::Geometry<1,1,GridImp,Dune::AlbertaGridGeometry> & refelem () { return refelem_1.refelem; }
@@ -1292,13 +1300,12 @@ namespace Dune
   AlbertaGridEntity <0,dim,GridImp>::geometryInFather() const
   {
     //AlbertaGridLevelIterator<0,dim,dimworld> daddy = father();
-    AlbertaGridGeometry<dim,GridImp::dimensionworld,GridImp> daddy
-      = (*father()).geometry();
+    const Geometry & daddy = (*father()).geometry();
 
     fatherReLocal_.initGeom();
     // compute the local coordinates in father refelem
     for(int i=0; i<fatherReLocal_.corners(); i++)
-      fatherReLocal_[i] = daddy.local(geometry()[i]);
+      fatherReLocal_.getCoordVec(i) = daddy.local(this->geometry()[i]);
 
     return fatherReLocal_;
   }
