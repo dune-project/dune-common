@@ -24,23 +24,27 @@ namespace Dune
   template<typename T>
   struct ConstantVolatileTraits
   {
-    /** @brief True if T has a volatile specifier. */
-    static const bool isVolatile=false;
-    /** @brief True if T has a const qualifier. */
-    static const bool isConst=false;
+    enum {
+      /** @brief True if T has a volatile specifier. */
+      isVolatile=false,
+      /** @brief True if T has a const qualifier. */
+      isConst=false
+    };
+
     /** @brief The unqualified type. */
     typedef T UnqualifiedType;
     /** @brief The const type. */
     typedef const T ConstType;
-    /** @brief The const volatile Type. */
+    /** @brief The const volatile type. */
     typedef const volatile T ConstVolatileType;
   };
 
   template<typename T>
   struct ConstantVolatileTraits<const T>
   {
-    static const bool isVolatile=false;
-    static const bool isConst=true;
+    enum {
+      isVolatile=false, isConst=true
+    };
     typedef T UnqualifiedType;
     typedef const UnqualifiedType ConstType;
     typedef const volatile UnqualifiedType ConstVolatileType;
@@ -50,8 +54,9 @@ namespace Dune
   template<typename T>
   struct ConstantVolatileTraits<volatile T>
   {
-    static const bool isVolatile=true;
-    static const bool isConst=false;
+    enum {
+      isVolatile=true, isConst=false
+    };
     typedef T UnqualifiedType;
     typedef const UnqualifiedType ConstType;
     typedef const volatile UnqualifiedType ConstVolatileType;
@@ -60,8 +65,9 @@ namespace Dune
   template<typename T>
   struct ConstantVolatileTraits<const volatile T>
   {
-    static const bool isVolatile=true;
-    static const bool isConst=true;
+    enum {
+      isVolatile=true, isConst=true
+    };
     typedef T UnqualifiedType;
     typedef const UnqualifiedType ConstType;
     typedef const volatile UnqualifiedType ConstVolatileType;
@@ -71,16 +77,20 @@ namespace Dune
   template<typename T>
   struct IsVolatile
   {
-    /** @brief True if The type is volatile. */
-    const static bool value=ConstantVolatileTraits<T>::isVolatile;
+    enum {
+      /** @brief True if The type is volatile. */
+      value=ConstantVolatileTraits<T>::isVolatile
+    };
   };
 
   /** @brief Tests wether a type is constant. */
   template<typename T>
   struct IsConst
   {
-    /** @brief True if The type is constant. */
-    const static bool value=ConstantVolatileTraits<T>::isConst;
+    enum {
+      /** @brief True if The type is constant. */
+      value=ConstantVolatileTraits<T>::isConst
+    };
   };
 
   template<typename T, bool isVolatile>
@@ -120,19 +130,20 @@ namespace Dune
     static Big test(...);
     static From makeFrom();
   public:
-    /** @brief True if the conversion exists. */
-    const static bool exists =  sizeof(test(makeFrom())) ==
-                               sizeof(Small);
-    /** @brief Wether the conversion exists in both ways. */
-    const static bool esistsTowWay = exists && Conversion<To,From>::exists;
-    /** @brief True if To and From are the same type. */
-    const static bool sameType = false;
+    enum {
+      /** @brief True if the conversion exists. */
+      exists =  sizeof(test(makeFrom())) == sizeof(Small),
+      /** @brief Wether the conversion exists in both ways. */
+      existsTowWay = exists && Conversion<To,From>::exists,
+      /** @brief True if To and From are the same type. */
+      sameType = false
+    };
   };
 
   template<class T>
   class Conversion<T,T>{
   public:
-    static const bool exists=true, isTwoWay=true, sameType=true;
+    enum { exists=true, isTwoWay=true, sameType=true};
   };
 
   /**
@@ -144,12 +155,14 @@ namespace Dune
   template<class T1, class T2>
   struct IsInteroperable
   {
-    /**
-     * @brief True if either a conversion from T1 to T2 or vice versa
-     * exists.
-     */
-    const static bool value=Or<Conversion<T1,T2>::exists,
-        Conversion<T2,T1>::exists>::value;
+    enum {
+      /**
+       * @brief True if either a conversion from T1 to T2 or vice versa
+       * exists.
+       */
+      value=Or<Conversion<T1,T2>::exists,
+          Conversion<T2,T1>::exists>::value
+    };
   };
 
   template<bool b, typename T=void>
@@ -168,6 +181,22 @@ namespace Dune
   {};
 
 
+  /**
+   * @brief Compile time test for testing whether
+   * two types are the same.
+   */
+  template<typename T1, typename T2>
+  struct SameType
+  {
+    enum { value=false};
+  };
+
+
+  template<typename T>
+  struct SameType<T,T>
+  {
+    enum { value=true};
+  };
   /** @} */
 }
 #endif
