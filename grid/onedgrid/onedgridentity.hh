@@ -36,10 +36,11 @@ namespace Dune {
 
     friend class OneDGrid<dim,dimworld>;
 
-  public:
 
     //! Constructor with a given grid level
-    OneDGridEntity(int level, double coord) : geo_(coord), level_(level) {}
+    OneDGridEntity(int level, double coord) : geo_(coord), level_(level), pred_(NULL), succ_(NULL) {}
+
+  public:
 
     //! level of this element
     int level () const {return level_;}
@@ -62,9 +63,6 @@ namespace Dune {
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
     template<int cc> OneDGridLevelIterator<cc,dim,dimworld,All_Partition> entity (int i);
-
-    //! Constructor for an entity in a given grid level
-    OneDGridEntity(int level);
 
     //! geometry of this entity
     const OneDGridElement<dim-codim,dimworld>& geometry () const {return geo_;}
@@ -144,7 +142,11 @@ namespace Dune {
     typedef OneDGridHierarchicIterator<dim,dimworld> HierarchicIterator;
 
     //! Constructo
-    OneDGridEntity(int level) : adaptationState(NONE), level_(level) {}
+    OneDGridEntity(int level) : adaptationState(NONE), level_(level), pred_(NULL), succ_(NULL) {
+      sons_[0] = NULL;
+      sons_[1] = NULL;
+      father_ = NULL;
+    }
 
     //! Destructor
     ~OneDGridEntity() {};
@@ -288,7 +290,6 @@ namespace Dune {
     OneDGridElement<dim,dimworld> geo_;
 
     FixedArray<OneDGridEntity<0,dim,dimworld>*, 2> sons_;
-    //FixedArray<DoubleLinkedList
 
     OneDGridEntity<0,dim,dimworld>* father_;
 
