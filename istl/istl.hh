@@ -18,10 +18,10 @@
  */
 
 // ISTL includes
-#include "dune/common/fvector.hh"
+#include <dune/common/fvector.hh>
+#include <dune/common/fmatrix.hh>
 #include "bvector.hh"
 #include "vbvector.hh"
-#include "fmatrix.hh"
 
 
 namespace Dune {
