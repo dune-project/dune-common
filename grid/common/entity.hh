@@ -136,6 +136,9 @@ namespace Dune
     int globalIndex () const { return realEntity.globalIndex(); }
     //! Partition type attribute
     PartitionType partitionType () const { return realEntity.partitionType(); }
+    /** \brief Id of the boundary which is associated with
+          the entity, returns 0 for inner entities, arbitrary int otherwise */
+    int boundaryId () const { return realEntity.boundaryId(); }
     //! geometry of this entity
     const Geometry& geometry () const { return realEntity.geometry(); }
 
@@ -302,6 +305,9 @@ namespace Dune
     int globalIndex () const { return realEntity.globalIndex(); }
     //! Partition type attribute
     PartitionType partitionType () const { return realEntity.partitionType(); }
+    /** \brief Id of the boundary which is associated with
+          the entity, returns 0 for inner entities, arbitrary int otherwise */
+    int boundaryId () const { return realEntity.boundaryId(); }
     //! Geometry of this entity
     const Geometry& geometry () const { return realEntity.geometry(); }
 
