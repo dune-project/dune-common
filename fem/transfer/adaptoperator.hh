@@ -163,8 +163,8 @@ namespace Dune {
       if(restr || ref)
         dm_.dofCompress();
 
-      grid_.loadBalance( dm_ );
-      grid_.communicate( dm_ );
+      //grid_.loadBalance( dm_ );
+      //grid_.communicate( dm_ );
 
       // do cleanup
       grid_.postAdapt();
@@ -290,14 +290,11 @@ namespace Dune {
     typedef typename DiscreteFunctionType::RangeFieldType RangeFieldType;
     typedef typename DiscreteFunctionType::DomainType DomainType;
     typedef BaryCenterQuad < RangeFieldType , DomainType , 0 > BaryQuadType;
-    int myRank_;
   public:
     //! ???
     RestProlOperatorFV ( DiscreteFunctionType & df , ElementType eltype = tetrahedron  ) : df_ (df) ,
                                                                                            vati_ ( df_.newLocalFunction() ) , sohn_ ( df_.newLocalFunction() ) , quad_(eltype) , weight_(-1.0)
-    {
-      myRank_ = df.getFunctionSpace().getGrid().myRank();
-    }
+    {}
 
     template <class EntityType>
     void calcFatherChildWeight (EntityType &father, EntityType &son) const
@@ -306,8 +303,6 @@ namespace Dune {
       const_cast<RangeFieldType &> (weight_) =
         son.geometry().integration_element(quad_.point(0))/
         father.geometry().integration_element(quad_.point(0));
-
-      std::cout << "on proc " << myRank_ << " : weight = " << weight_ << "\n";
     }
 
     //! restrict data to father
@@ -323,9 +318,6 @@ namespace Dune {
 
           df_.localFunction( father, vati_ );
           df_.localFunction( son   , sohn_ );
-
-          //std::cout << father.global_index() << " Father Element\n";
-          //std::cout << son.global_index() << " Sohn Element\n";
 
           if(initialize)
           {
