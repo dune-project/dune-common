@@ -53,15 +53,15 @@ LDFLAGS="$LDFLAGS -L$BLAS_LIB_PATH"
 
 # no header check for blas, because no headers found
 
+AC_LANG_PUSH([Fortran 77])
 if test x$HAVE_BLAS = x1 ; then
-  AC_LANG_PUSH(Fortran 77)
   AC_CHECK_LIB(blas, [dnrm2],
                [BLAS_LIBS="-lblas"
                 BLAS_LDFLAGS="-L$BLAS_LIB_PATH"
                 AC_DEFINE(HAVE_LIBBLAS, 1, [Define to 1 if you have libblas])],
                [AC_MSG_ERROR([Required BLAS library was not found])])
-  AC_LANG_POP(Fortran 77)
 fi
+AC_LANG_POP([Fortran 77])
 
 # end of checks (can be skipped with --without-blas)
 fi
