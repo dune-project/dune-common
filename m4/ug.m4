@@ -2,23 +2,11 @@
 # $Id$
 # searches for UG headers and libs
 
-# TODO:
-#
-
-# - nicht nur X suchen, sondern auch Xaw (und Xt?)
-# - $UGROOT auswerten, wenn es schon gesetzt ist
-# - gefundenes $MAKE verwenden, nicht einfach "make"
-# - ug.conf auswerten
-
-          # IF = X|S
-          # DOM_MODULE -> -D...
-          # GRAPE
-          # DIM? 
-
 AC_DEFUN([DUNE_PATH_UG],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
   AC_REQUIRE([DUNE_DIMENSION])
+  AC_REQUIRE([DUNE_MPI])
 
   AC_ARG_WITH(ug,
     AC_HELP_STRING([--with-ug=PATH],[directory with UG inside]))
@@ -27,12 +15,6 @@ AC_DEFUN([DUNE_PATH_UG],[
   ac_save_LDFLAGS="$LDFLAGS"
   ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_LIBS="$LIBS"
-  
-  if test "x$X_LIBS" != x ; then
-      LIBS="$X_PRE_LIBS -lX11 $X_LIBS $X_EXTRA_LIBS -lXt -lXaw"
-  else
-      LIBS=""
-  fi
   
   ## do nothing if --without-ug is used
   if test x$with_ug != xno ; then
@@ -123,24 +105,43 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
-	  
-	  AC_MSG_CHECKING(libug$UG_DIM)
-	  
-	  # prepare test
-	  CPPFLAGS="$UG_CPPFLAGS"
-	  LIBS="-lug$UG_DIM -ldomS$UG_DIM -lgg$UG_DIM -ldevS"
 
+	  CPPFLAGS="$UG_CPPFLAGS"
+	  UG_LIBS="-lug$UG_DIM -ldomS$UG_DIM -lgg$UG_DIM -ldevS"
+	  
+	  AC_MSG_CHECKING([libug$UG_DIM (without MPI)])
+	  LIBS="$UG_LIBS"
           AC_TRY_LINK(
               [#define INT int
                #include "initug.h"],
 	      [int i = UG${UG_DIM}d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
-               UG_LIBS="$LIBS"
+	       HAVE_UG="1"
 	       AC_MSG_RESULT(yes)
               ],
               [AC_MSG_RESULT(no)
 	       HAVE_UG="0"]
 	      )
+
+	  # sequential lib not found/does not work?
+	  if test x$HAVE_UG != x1 && test x"$MPI_LDFLAGS" != x"" ; then
+	    # try again with added MPI-libs
+	    UG_LIBS="$UG_LIBS $MPI_LDFLAGS"
+	    AC_MSG_CHECKING([libug$UG_DIM (with MPI)])
+	    LIBS="$UG_LIBS"
+            AC_TRY_LINK(
+              [#define INT int
+               #include "initug.h"],
+	      [int i = UG${UG_DIM}d::InitUg(0,0)],
+              [UG_LDFLAGS="$LDFLAGS"
+	       HAVE_UG="1"
+	       AC_MSG_RESULT(yes)
+              ],
+              [AC_MSG_RESULT(no)
+	       HAVE_UG="0"]
+	      )
+	  fi
+
       fi
       AC_LANG_POP([C++])
       
