@@ -560,6 +560,9 @@ namespace Dune
     ALU3dGridHierarchicIterator(const GridImp &grid,
                                 const ALU3DSPACE HElementType & elem, int maxlevel, bool end=false);
 
+    //! the normal Constructor
+    ALU3dGridHierarchicIterator(const ALU3dGridHierarchicIterator<GridImp> &org);
+
     //! the Destructor
     ~ALU3dGridHierarchicIterator();
 
@@ -581,10 +584,8 @@ namespace Dune
     ALU3DSPACE HElementType * item_; //!< the actual element of this iterator
     int maxlevel_; //!< maxlevel
 
-    //EntityImp * entity_;
-
     // holds the entity, copy pointer and delete if no refcount is left
-    ALU3DSPACE AutoPointer< EntityImp > objEntity_;
+    EntityImp * entity_;
   };
 
   //*******************************************************************
@@ -676,6 +677,9 @@ namespace Dune
     ALU3dGridIntersectionIterator(const GridImp & grid, ALU3DSPACE HElementType *el,
                                   int wLevel,bool end=false);
 
+    //! The copy constructor
+    ALU3dGridIntersectionIterator(const ALU3dGridIntersectionIterator<GridImp> & org);
+
     //! The Destructor
     ~ALU3dGridIntersectionIterator();
 
@@ -750,7 +754,9 @@ namespace Dune
 
     //! the grid
     const GridImp & grid_;
+    int walkLevel_;
 
+    //ALU3DSPACE MemoryPointer < EntityImp , ALU3DSPACE MemoryProvider<EntityImp> > entity_;
     EntityImp * entity_; //! neighbour entity
     //EntityImp fEntity_; //! neighbour entity
 
@@ -941,12 +947,15 @@ namespace Dune
 
     //! Constructor for father
     ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HElementType & item);
-    ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HFaceType & item);
-    ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HEdgeType & item);
-    ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE VertexType & item);
+    //ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HFaceType & item);
+    //ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HEdgeType & item);
+    //ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE VertexType & item);
 
     //! make empty entity pointer (to be revised)
-    ALU3dGridEntityPointer(const GridImp & grid);
+    //ALU3dGridEntityPointer(const GridImp & grid);
+
+    //! make empty entity pointer (to be revised)
+    ALU3dGridEntityPointer(const ALU3dGridEntityPointerType & org);
 
     //! Destructor
     ~ALU3dGridEntityPointer();
@@ -966,6 +975,9 @@ namespace Dune
   private:
     // reference to grid
     const GridImp & grid_;
+
+    //! item that Pointer points to
+    ALU3DSPACE HElementType & item_;
 
     // entity the this EntityPointer points to
     EntityImp * entity_;
@@ -1223,11 +1235,11 @@ namespace Dune
     typedef ALU3dGridMakeableEntity<0,dim,const MyType> EntityImp;
     typedef ALU3DSPACE MemoryProvider< EntityImp > EntityProvider;
 
-    typedef ALU3dGridMakeableEntity<3,dim,const MyType> VertexImp;
-    typedef ALU3DSPACE MemoryProvider< VertexImp > VertexProvider;
+    //typedef ALU3dGridMakeableEntity<3,dim,const MyType> VertexImp;
+    //typedef ALU3DSPACE MemoryProvider< VertexImp > VertexProvider;
 
     mutable EntityProvider entityProvider_;
-    mutable VertexProvider vertexProvider_;
+    //mutable VertexProvider vertexProvider_;
 
   }; // end Class ALU3dGridGrid
 
