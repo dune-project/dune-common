@@ -9,9 +9,9 @@
 template<class T>
 class TestContainer {
 public:
-  typedef GenericIterator<TestContainer<T>,T> iterator;
+  typedef Dune::GenericIterator<TestContainer<T>,T> iterator;
 
-  typedef GenericIterator<const TestContainer<T>,const T> const_iterator;
+  typedef Dune::GenericIterator<const TestContainer<T>,const T> const_iterator;
 
   TestContainer(){
     for(int i=0; i < 100; i++)
