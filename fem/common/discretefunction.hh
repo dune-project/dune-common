@@ -22,38 +22,6 @@ namespace Dune {
      @{
    */
 
-  typedef std::basic_string <char> StringType;
-
-  /** \brief ???
-   * \todo Please doc me! */
-  template <typename T>
-  StringType typeIdentifier ()
-  {
-    StringType tmp = "unknown";
-    return tmp;
-  };
-
-  template <>
-  StringType typeIdentifier<float> ()
-  {
-    StringType tmp = "float";
-    return tmp;
-  };
-
-  template <>
-  StringType typeIdentifier<int> ()
-  {
-    StringType tmp = "int";
-    return tmp;
-  };
-
-  template <>
-  StringType typeIdentifier<double> ()
-  {
-    StringType tmp = "double";
-    return tmp;
-  };
-
 
   //************************************************************************
   //
@@ -230,14 +198,6 @@ namespace Dune {
     //! add scalar * g to discrete function
     Vector<RangeFieldType> &
     add(const Vector<RangeFieldType> &g , RangeFieldType scalar );
-
-    //! write disc func information file and write dofs to file+timestep
-    //! this method use the write method of the implementation of the
-    //! discrete function
-    bool write(const FileFormatType ftype, const char *filename, int timestep, int precision = 6);
-
-    //! same as write only read
-    bool read(const char *filename, int timestep);
 
   private:
     // Barton-Nackman trick
