@@ -1087,58 +1087,50 @@ namespace Dune
 
   //*****************************************************************
 
+  template <class GridImp, int dim, int dimworld, int cc>
+  struct AlbertaGridSubIndex
+  {
+    static int subIndex(GridImp & grid, const AlbertaGridEntity<0,dim,GridImp> &en, int i)
+    {
+      return en.template entity<cc>(i)->index();
+    }
+  };
+
+  template <class GridImp, int dim>
+  struct AlbertaGridSubIndex<GridImp,dim,dim,dim>
+  {
+    static int subIndex(GridImp & grid, const AlbertaGridEntity<0,dim,GridImp> &en, int i)
+    {
+      return en.getElInfo()->el->dof[i][0];
+    }
+  };
+
+  template <class GridImp, int dim, int dimworld>
+  struct AlbertaGridSubIndex<GridImp,dim,dimworld,dim>
+  {
+    static int subIndex(GridImp & grid, const AlbertaGridEntity<0,dim,GridImp> &en, int i)
+    {
+      return grid.indexOnLevel<dim>(en.getElInfo()->el->dof[i][0],en.level());
+    }
+  };
+
   // subIndex
   template<int dim, class GridImp> template <int cc>
   inline int AlbertaGridEntity <0,dim,GridImp>::subIndex ( int i ) const
   {
-    return entity<cc>(i)->index();
+    return AlbertaGridSubIndex<GridImp,dim,GridImp::dimensionworld,cc>::subIndex(grid_,*this,i);
   }
-
-#if 0
-  // subIndex
-  template <>
-#ifdef TEMPPARAM2
-  template <>
-#endif
-  inline int AlbertaGridEntity<0,2,2>::subIndex<2> ( int i ) const
-  {
-    //return grid_.indexOnLevel<2>(elInfo_->el->dof[i][0],level_);
-    return (elInfo_->el->dof[i][0]);
-  }
-
-  // subIndex
-  template <>
-#ifdef TEMPPARAM2
-  template <>
-#endif
-  inline int AlbertaGridEntity<0,2,3>::subIndex<2> ( int i ) const
-  {
-    return grid_.indexOnLevel<2>(elInfo_->el->dof[i][0],level_);
-  }
-
-  // subIndex
-  template <>
-#ifdef TEMPPARAM2
-  template <>
-#endif
-  inline int AlbertaGridEntity<0,3,3>::subIndex<3> ( int i ) const
-  {
-    //return grid_.indexOnLevel<3>(elInfo_->el->dof[i][0],level_);
-    return (elInfo_->el->dof[i][0]);
-  }
-
 
   // default is faces
   template<int dim, class GridImp>
   template <int cc>
-  inline AlbertaGridLevelIterator<cc,dim,dimworld,All_Partition>
+  inline typename AlbertaGridEntity <0,dim,GridImp>::template codim<cc>::EntityPointer
   AlbertaGridEntity <0,dim,GridImp>::entity ( int i ) const
   {
-    AlbertaGridLevelIterator<cc,dim,dimworld,All_Partition> tmp (grid_, level() ,elInfo_,
-                                                                 grid_. template indexOnLevel<cc>( el_index() ,level()),i,0,0);
+    AlbertaGridLevelIterator<cc,All_Partition,GridImp> tmp (grid_, level() ,elInfo_,
+                                                            grid_. template indexOnLevel<cc>( el_index() ,level()),i,0,0);
     return tmp;
   }
-#endif
 
 #if 0
   template <>
