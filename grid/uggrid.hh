@@ -138,6 +138,12 @@ namespace Dune {
     //! UGGrid is only implemented for 2 and 3 dimension
     //! for 1d use SGrid or SimpleGrid
     CompileTimeChecker< (dimworld==dim) && ((dim==2) || (dim==3)) >   Use_UGGrid_only_for_2d_and_3d;
+    // #ifdef _2
+    //   CompileTimeChecker< (dimworld==dim) && (dim==2) >   Use_UGGrid_only_for_2d_when_built_for_2d;
+    // #endif
+    // #ifdef _3
+    //   CompileTimeChecker< (dimworld==dim) && (dim==3) >   Use_UGGrid_only_for_3d_when_built_for_3d;
+    // #endif
 
     //**********************************************************
     // The Interface Methods
@@ -192,6 +198,13 @@ namespace Dune {
 
 
     void makeNewUGMultigrid();
+
+    /** \brief Does one uniform refinement step
+     *
+     * \param refCount I don't know what this is good for.  It doesn't
+     *        actually do anything.
+     */
+    void globalRefine(int refCount);
 
     // UG multigrid, which contains the data
     typename UGTypes<dimworld>::MultiGridType* multigrid_;
