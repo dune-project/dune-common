@@ -1,7 +1,7 @@
 # $Id $
 
 if MPI
-TESTPROGS = indicestest
+  TESTPROGS = indicestest
 endif
 
 # which tests to run
@@ -14,8 +14,6 @@ check_PROGRAMS = $(TESTPROGS)
 
 indicestest_SOURCES = indicestest.cc
 
-indicestest_CXXFLAGS = @MPI_CPPFLAGS@
+indicestest_CXXFLAGS = $(MPI_CPPFLAGS)
+indicestest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
-indicestest_LDFLAGS = @MPI_LDFLAGS@
-
-#indicestest_LDFLAGS = $(MPI_LIBS)
