@@ -136,11 +136,14 @@ operator [](int i) const
 {
   assert(0<=i && i<corners());
 
-#define TAG(p) ReadCW(p, UG3d::TAG_CE)
-#define CORNER(p,i) ((UG3d::NODE *) ((p)->ge.refs[UG3d::n_offset[TAG(p)]+(i)]))
-  UG3d::VERTEX* vertex = CORNER(target_,i)->myvertex;
-#undef CORNER
-#undef TAG
+  if (type()==hexahedron) {
+    // Dune numbers the vertices of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    i = renumbering[i];
+  }
+
+  UG3d::VERTEX* vertex = UG_NS<3>::Corner(target_,i)->myvertex;
 
   for (int j=0; j<3; j++)
     coord_[i][j] = vertex->iv.x[j];
@@ -339,7 +342,18 @@ integration_element (const FieldVector<UGCtype, 1>& local) const
 inline UGCtype UGGridElement<2,3>::
 integration_element (const FieldVector<UGCtype, 2>& local) const
 {
-  DUNE_THROW(GridError, "integration_element for UGGridElement<2,3> not implemented yet!");
+  FieldVector<UGCtype, 3> normal;
+  FieldVector<UGCtype, 3> ba = coord_[1] - coord_[0];
+  FieldVector<UGCtype, 3> ca = coord_[2] - coord_[0];
+
+#define V3_VECTOR_PRODUCT(A,B,C) {(C)[0] = (A)[1]*(B)[2] - (A)[2]*(B)[1];\
+                                  (C)[1] = (A)[2]*(B)[0] - (A)[0]*(B)[2];\
+                                  (C)[2] = (A)[0]*(B)[1] - (A)[1]*(B)[0];}
+
+  V3_VECTOR_PRODUCT(ba, ca, normal);
+#undef V3_VECTOR_PRODUCT
+
+  return normal.two_norm();
 }
 
 template< int dim, int dimworld>

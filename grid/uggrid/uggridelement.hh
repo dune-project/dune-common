@@ -147,9 +147,7 @@ namespace Dune {
 
     //! for makeRefElement == true a Element with the coordinates of the
     //! reference element is made
-    UGGridElement(bool makeRefElement=false){
-      //std::cout << "UGGridElement<2,3> created!" << std::endl;
-    }
+    UGGridElement(){}
 
     //! return the element type identifier (triangle or quadrilateral)
     ElementType type () const {return elementType_;}
@@ -184,9 +182,9 @@ namespace Dune {
 
   private:
     //void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}
-    void setToTarget(TargetType<2,3>::T* target) {
-      DUNE_THROW(GridError, "UGGridElement<2,3>::setToTarget called!");
-    }
+    //   void setToTarget(TargetType<2,3>::T* target) {
+    //       DUNE_THROW(GridError, "UGGridElement<2,3>::setToTarget called!");
+    //   }
 
     void setNumberOfCorners(int n) {
       assert(n==3 || n==4);
@@ -200,7 +198,6 @@ namespace Dune {
     void makeRefElemCoords();
 
     //! the vertex coordinates
-    //Mat<3,3, UGCtype> coord_;
     mutable FixedArray<FieldVector<UGCtype, 3>, 4> coord_;
 
     //! The jacobian inverse
