@@ -26,8 +26,9 @@ istl-dist:
 	(cd doc && $(MAKE))
 	if test -e istl ; then echo Please remove `pwd`/istl!; exit 1; fi
 	$(mkdir_p) istl
+	$(mkdir_p) istl/dune
 	cp --parents $(SOURCES) $(DISTDOCS) $(DISTTUT) istl
-	(cd $(top_srcdir) && cp --parents $(DUNESTUFF) istl/istl )
+	(cd $(top_srcdir) && cp --parents $(DUNESTUFF) istl/istl/dune )
 	for NAME in $(RENAMESTUFF) ; do \
 	  cp $$NAME istl/`dirname $$NAME`/`basename $$NAME .istl-dist`; \
 	done

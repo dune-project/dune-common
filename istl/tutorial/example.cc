@@ -10,8 +10,9 @@
 #include <stdio.h>                // There is nothing better than sprintf
 #include <sys/times.h>            // for timing measurements
 
+#include "istlexception.hh"
 #include "basearray.hh"
-#include "fvector.hh"
+#include "dune/common/fvector.hh"
 #include "bvector.hh"
 #include "vbvector.hh"
 #include "fmatrix.hh"

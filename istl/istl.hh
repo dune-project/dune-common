@@ -17,7 +17,7 @@
  */
 
 // ISTL includes
-#include "fvector.hh"
+#include "dune/common/fvector.hh"
 #include "bvector.hh"
 #include "vbvector.hh"
 #include "fmatrix.hh"
