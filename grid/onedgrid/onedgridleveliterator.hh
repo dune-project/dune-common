@@ -27,6 +27,7 @@ namespace Dune {
     public LevelIteratorDefault <codim,dim,dimworld, pitype, OneDCType,
         OneDGridLevelIterator,OneDGridEntity>
   {
+    friend class OneDGridHelper<codim>;
     friend class OneDGrid<dim,dimworld>;
     friend class OneDGridEntity<codim,dim,dimworld>;
     friend class OneDGridEntity<0,dim,dimworld>;

@@ -102,48 +102,23 @@ OneDGrid<dim,dimworld>::~OneDGrid()
 
 }
 
-
-template <>
 inline OneDGridLevelIterator<1,1,1,All_Partition>
-OneDGrid<1,1>::lbegin<1> (int level) const
+OneDGridHelper<1>::lbegin (const OneDGrid<1,1> * g, int level)
 {
-  if (level<0 || level>maxlevel())
+  if (level<0 || level>g->maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<1,1,1,All_Partition> it(vertices[level].begin);
+  OneDGridLevelIterator<1,1,1,All_Partition> it(g->vertices[level].begin);
   return it;
 }
 
-template <>
 inline OneDGridLevelIterator<0,1,1,All_Partition>
-OneDGrid<1,1>::lbegin<0> (int level) const
+OneDGridHelper<0>::lbegin (const OneDGrid<1,1> * g, int level)
 {
-  if (level<0 || level>maxlevel())
+  if (level<0 || level>g->maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<0,1,1,All_Partition> it(elements[level].begin);
-  return it;
-}
-
-template <>
-inline OneDGridLevelIterator<1,1,1,All_Partition>
-OneDGrid<1,1>::lend<1> (int level) const
-{
-  if (level<0 || level>maxlevel())
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  OneDGridLevelIterator<1,1,1,All_Partition> it(0);
-  return it;
-}
-
-template <>
-inline OneDGridLevelIterator<0,1,1,All_Partition>
-OneDGrid<1,1>::lend<0> (int level) const
-{
-  if (level<0 || level>maxlevel())
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  OneDGridLevelIterator<0,1,1,All_Partition> it(0);
+  OneDGridLevelIterator<0,1,1,All_Partition> it(g->elements[level].begin);
   return it;
 }
 

@@ -34,6 +34,8 @@ namespace Dune
   template<int dim, int dimworld>            class OneDGridIntersectionIterator;
   template<int dim, int dimworld>            class OneDGrid;
 
+  template<int codim>                        class OneDGridHelper;
+
   // singleton holding reference elements
   //template<int dim> struct UGGridReferenceElement;
 
@@ -164,6 +166,21 @@ namespace Dune {
   //
   //**********************************************************************
 
+  template <int codim>
+  struct OneDGridHelper {};
+
+  template <>
+  struct OneDGridHelper<1>
+  {
+    static OneDGridLevelIterator<1,1,1, All_Partition> lbegin(const OneDGrid<1,1> * g, int level);
+  };
+
+  template <>
+  struct OneDGridHelper<0>
+  {
+    static OneDGridLevelIterator<0,1,1, All_Partition> lbegin(const OneDGrid<1,1> * g, int level);
+  };
+
   /** \brief The 1D-Grid class
    * \ingroup OneDGrid
    *
@@ -179,6 +196,8 @@ namespace Dune {
                        OneDGridLevelIterator,OneDGridEntity>
   {
 
+    friend class OneDGridHelper <0>;
+    friend class OneDGridHelper <1>;
     friend class OneDGridEntity <0,dim,dimworld>;
     friend class OneDGridEntity <dim,dim,dimworld>;
     friend class OneDGridHierarchicIterator<dim,dimworld>;
@@ -217,11 +236,21 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lbegin (int level) const;
+    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lbegin (int level) const
+    {
+      return OneDGridHelper<codim>::lbegin(this, level);
+    }
 
     //! one past the end on this level
     template<int codim>
-    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lend (int level) const;
+    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lend (int level) const
+    {
+      if (level<0 || level>maxlevel())
+        DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
+
+      OneDGridLevelIterator<codim,dim,dimworld,All_Partition> it(0);
+      return it;
+    }
 
 #if 0
     //! Iterator to first entity of given codim on level
