@@ -16,12 +16,10 @@ OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
   }
 
   // Init element set
-  //elements[0].resize(coords.size()-1);
-
   OneDGridEntity<1,1,1>* it = vertices[0].begin;
   for (int i=0; i<coords.size()-1; i++) {
 
-    OneDGridEntity<0,1,1>* newElement = new OneDGridEntity<0,1,1>;
+    OneDGridEntity<0,1,1>* newElement = new OneDGridEntity<0,1,1>(0);
     newElement->geo_.vertex[0] = it;
     it = it->succ_;
     newElement->geo_.vertex[1] = it;
@@ -279,12 +277,12 @@ bool OneDGrid<dim,dimworld>::adapt()
         // ///////////////////////
         // Create new elements
         // ///////////////////////
-        OneDGridEntity<0,1,1>* newElement0 = new OneDGridEntity<0,1,1>;
+        OneDGridEntity<0,1,1>* newElement0 = new OneDGridEntity<0,1,1>(i+1);
         newElement0->geo_.vertex[0] = leftUpperVertex;
         newElement0->geo_.vertex[1] = centerVertex;
         newElement0->father_ = eIt;
 
-        OneDGridEntity<0,1,1>* newElement1 = new OneDGridEntity<0,1,1>;
+        OneDGridEntity<0,1,1>* newElement1 = new OneDGridEntity<0,1,1>(i+1);
         newElement1->geo_.vertex[0] = centerVertex;
         newElement1->geo_.vertex[1] = rightUpperVertex;
         newElement1->father_ = eIt;
