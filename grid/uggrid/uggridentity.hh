@@ -263,13 +263,7 @@ namespace Dune {
     void setToTarget(typename TargetType<0,dim>::T* target);
 
     //! the current geometry
-    //UGGridGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
     UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
-
-    bool builtgeometry_; //!< true if geometry has been constructed
-
-    //! element number
-    //t elNum_;
 
     //! the level of the entity
     int level_;

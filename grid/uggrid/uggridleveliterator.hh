@@ -60,8 +60,6 @@ namespace Dune {
 
   private:
 
-    void makeIterator();
-
     void setToTarget(typename TargetType<codim,GridImp::dimension>::T* target) {
       target_ = target;
       virtualEntity_.setToTarget(target);
@@ -75,9 +73,6 @@ namespace Dune {
 
     // private Members
     mutable UGMakeableEntity<codim,GridImp::dimension,GridImp> virtualEntity_;
-
-    //! element number
-    int elNum_;
 
     //! level
     int level_;
