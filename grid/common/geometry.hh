@@ -112,11 +112,11 @@ namespace Dune
     //! copy constructor from GeometryImp
     explicit Geometry(const GeometryImp<mydim,cdim,GridImp> & e) : realGeometry(e) {};
 
-  private:
+  protected:
     /** hide copy constructor */
-    Geometry(const Geometry& rhs);
+    Geometry(const Geometry& rhs) : realGeometry(rhs.realGeometry) {};
     /** hide assignement operator */
-    Geometry & operator = (const Geometry& rhs);
+    Geometry & operator = (const Geometry& rhs) { realGeometry = rhs.realGeometry; };
   };
 
   //! Specialization of Geometry for mydim=0 (vertices)
@@ -153,11 +153,11 @@ namespace Dune
     //! copy constructor from GeometryImp
     Geometry(const GeometryImp<0,cdim,GridImp> & e) : realGeometry(e) {};
 
-  private:
+  protected:
     /** hide copy constructor */
-    Geometry(const Geometry& rhs);
+    Geometry(const Geometry& rhs) : realGeometry(rhs.realGeometry) {};
     /** hide assignement operator */
-    Geometry & operator = (const Geometry& rhs);
+    Geometry & operator = (const Geometry& rhs) { realGeometry = rhs.realGeometry; };
   };
 
   //************************************************************************
