@@ -11,8 +11,11 @@ namespace Dune
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(DiscreteFunctionSpaceType & f) :
     DiscreteFunctionDefaultType ( f )
-    , built_ ( false ) , level_ (-1), freeLocalFunc_ (NULL)
-    , allLevels_ (false) , levOcu_ (0)
+    , built_ ( false )
+    , levOcu_ (0)
+    , level_ (-1)
+    , allLevels_ (false)
+    , freeLocalFunc_ (NULL)
     , localFunc_ ( f, dofVec_ ) {}
 
   // Constructor makeing discrete function
@@ -38,12 +41,12 @@ namespace Dune
     DiscreteFunctionDefaultType ( df.functionSpace_ ) , localFunc_ ( df.localFunc_ )
   {
     built_ = df.built_;
-    allLevels_ = df.allLevels_;
     levOcu_ = df.levOcu_;
     level_ = df.level_;
+    allLevels_ = df.allLevels_;
 
-    dofVec_ = df.dofVec_;
     freeLocalFunc_ = NULL;
+    dofVec_ = df.dofVec_;
   }
 
 
