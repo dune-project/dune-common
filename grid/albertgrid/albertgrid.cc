@@ -1143,7 +1143,8 @@ namespace Dune
 #endif
   inline int AlbertGridEntity<0,3,3>::subIndex<3> ( int i )
   {
-    return grid_.indexOnLevel<3>(elInfo_->el->dof[i][0],level_);
+    //return grid_.indexOnLevel<3>(elInfo_->el->dof[i][0],level_);
+    return (elInfo_->el->dof[i][0]);
   }
 
   // default is faces
@@ -2876,7 +2877,7 @@ namespace Dune
   inline AlbertGrid < dim, dimworld >::AlbertGrid() :
     mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0)
+    , time_ (0.0) , hasLevelIndex_ (false)
     , indexManager_ (NULL)
     , nv_ (dim+1) , dof_ (0) , myProc_ (0)
   {
@@ -2911,13 +2912,43 @@ namespace Dune
     macroVertices_.resize( mesh_->n_vertices );
 
     ALBERT AlbertHelp::initProcessor(mesh_,proc);
+
+    // if hasLevelIndex == true then first macro element hast the number 1
+    // and not 0
+    // this could be seen as a hack but is the only way i know to store
+    // whether we have level index or not in the grid files , :(
+    if(mesh_ && hasLevelIndex_)
+    {
+      ALBERT MACRO_EL *mel = mesh_->first_macro_el;
+      assert(mel != 0);
+      ALBERT EL * first_el = mel->el;
+
+      mel = mel->next;
+      if( !mel )
+      {
+        ALBERT AlbertHelp::initIndexManager_elmem_cc(indexManager_);
+        ALBERT AlbertHelp::swapElNum ( dofvecs_.elNumbers, first_el );
+        ALBERT AlbertHelp::removeIndexManager_elmem_cc();
+      }
+      else
+      {
+        ALBERT EL * sec_el   = mel->el;
+        assert(sec_el != 0);
+        //std::cout << getElementNumber ( first_el ) << " 1. El Num \n";
+
+        ALBERT AlbertHelp::swapElNum ( dofvecs_.elNumbers, first_el , sec_el );
+        //std::cout << getElementNumber ( first_el ) << " 1. El Num \n";
+        //std::cout << getElementNumber ( sec_el ) << " 2. El Num \n";
+      }
+      std::cerr << "AlbertGrid: LevelIndex is used!\n";
+    }
   }
 
   template < int dim, int dimworld >
-  inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename) :
+  inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename, bool levInd) :
     mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0)
+    , time_ (0.0) , hasLevelIndex_ (levInd)
     , indexManager_ (NULL)
     , nv_ (dim+1) , dof_ (0) , myProc_ (-1)
   {
@@ -2952,11 +2983,12 @@ namespace Dune
   }
 
   template < int dim, int dimworld >
-  inline AlbertGrid < dim, dimworld >::AlbertGrid(AlbertGrid<dim,dimworld> & oldGrid, int proc) :
-    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false)
+  inline AlbertGrid < dim, dimworld >::
+  AlbertGrid(AlbertGrid<dim,dimworld> & oldGrid, int proc , bool levInd) :
+    mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0)
-    , indexManager_ (NULL)
+    , time_ (0.0) , hasLevelIndex_ (levInd)
+    , indexManager_ (0)
     , nv_ (dim+1) , dof_ (0), myProc_ (proc)
   {
     assert(dimworld == DIM_OF_WORLD);
@@ -3138,13 +3170,9 @@ namespace Dune
     return isMarked_;
   }
 
-  //#include "gridcheck.cc"
-
   template < int dim, int dimworld >
   inline bool AlbertGrid < dim, dimworld >::postAdapt()
   {
-    //leafCheckGrid(*this,this->maxlevel());
-
     isMarked_ = false;
     return wasChanged_;
   }
@@ -3476,6 +3504,12 @@ namespace Dune
     dofvecs_.elNumbers  = ALBERT read_dof_int_vec_xdr(elnumfile, mesh_ , NULL );
     ALBERT AlbertHelp::makeTheRest(&dofvecs_);
 
+    arrangeDofVec();
+
+    // if hasLevelIndex_ then number of first element is 1 and not 0
+    // see initGrid ()
+    hasLevelIndex_ = (getElementNumber( mesh_->first_macro_el->el ) == 1) ? true : false;
+
     // calc maxlevel and indexOnLevel and so on
     calcExtras();
     // set el_index of index manager to max element index
@@ -3691,6 +3725,7 @@ namespace Dune
   inline int AlbertGrid < dim, dimworld >::
   indexOnLevel(int globalIndex, int level)
   {
+    assert(hasLevelIndex_ == true);
     // level = 0 is not interesting for this implementation
     // +1, because if Entity is Boundary then globalIndex == -1
     // an therefore we add 1 and get Entry 0, which schould be -1
@@ -3700,44 +3735,14 @@ namespace Dune
       return levelIndex_[codim][level][globalIndex];
   }
 
-  template < int dim, int dimworld > template <int codim>
-  inline int AlbertGrid < dim, dimworld >::
-  oldIndexOnLevel(int globalIndex, int level)
-  {
-    assert(codim == 0);
-    if (globalIndex < 0)
-      return globalIndex;
-    else
-    {
-      if(globalIndex >= oldLevelIndex_[codim][level].size())
-        return -1;
-
-      int ind = oldLevelIndex_[codim][level][globalIndex];
-      return ind;
-    }
-  }
-
   // create lookup table for indices of the elements
   template < int dim, int dimworld >
   inline void AlbertGrid < dim, dimworld >::markNew()
   {
     //std::cout << "Start markNew \n";
-    // only for gcc, means notin'
-    //typedef AlbertGrid < dim ,dimworld > GridType;
-    for(int i=0; i<dim+1; i++)
-    {
-      for(int l=0; l<=maxlevel_; l++)
-        levelIndex_[i][l].swap ( oldLevelIndex_[i][l] );
-    }
 
     int nElements = maxHierIndex_[0];
     int nVertices = mesh_->n_vertices;
-
-    for(int l=0; l<=maxlevel_; l++)
-    {
-      if(nElements > levelIndex_[0][l].size())
-        makeNewSize(levelIndex_[0][l], nElements);
-    }
 
     // make new size and set all levels to -1 ==> new calc
     if((maxlevel_+1)*(numCodim) > size_.size())
@@ -3745,6 +3750,15 @@ namespace Dune
 
     if((maxlevel_+1)*(numCodim) > leafSize_.size())
       makeNewSize(leafSize_, 2*((maxlevel_+1)*numCodim));
+
+    for(int l=0; l<=maxlevel_; l++)
+    {
+      if(nElements > levelIndex_[0][l].size())
+        makeNewSize(levelIndex_[0][l], nElements);
+    }
+
+    // if hasLevelIndex_ == false then the LevelIndex should not be generated
+    if(!hasLevelIndex_) return;
 
     // the easiest way, in Albert all elements have unique global element
     // numbers, therefore we make one big array from which we get with the

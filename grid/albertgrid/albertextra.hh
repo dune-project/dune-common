@@ -503,9 +503,42 @@ namespace AlbertHelp
     DOF_INT_VEC * owner;
   };
 
-  static DOF_INT_VEC * elNumbers  = NULL;
-  static DOF_INT_VEC * elNewCheck = NULL;
-  static DOF_INT_VEC * elOwner    = NULL;
+  static DOF_INT_VEC * elNumbers  = 0;
+  static DOF_INT_VEC * elNewCheck = 0;
+  static DOF_INT_VEC * elOwner    = 0;
+
+  // give element numer 1 to first_el
+  static void swapElNum (DOF_INT_VEC * elnums, EL * first_el)
+  {
+    const DOF_ADMIN * admin = elnums->fe_space->admin;
+    const int nv = admin->n0_dof[CENTER];
+    const int k  = admin->mesh->node[CENTER];
+    int *vec = 0;
+
+    GET_DOF_VEC(vec,elnums);
+    assert(vec[first_el->dof[k][nv]] == 0);
+    assert(admin->mesh->n_macro_el == 1);
+
+    vec[first_el->dof[k][nv]] = get_elIndex();
+    assert(vec[first_el->dof[k][nv]] == 1);
+    free_elIndex( 0 );
+  }
+
+  // swap element numbers of first_el and sec_el
+  static void swapElNum (DOF_INT_VEC * elnums, EL * first_el, EL * sec_el )
+  {
+    const DOF_ADMIN * admin = elnums->fe_space->admin;
+    const int nv = admin->n0_dof[CENTER];
+    const int k  = admin->mesh->node[CENTER];
+    int *vec = 0;
+    int swap = -1;
+
+    GET_DOF_VEC(vec,elnums);
+
+    swap = vec[first_el->dof[k][nv]];
+    vec[first_el->dof[k][nv]] = vec[sec_el->dof[k][nv]];
+    vec[sec_el->dof[k][nv]] = swap;
+  }
 
   // return pointer to created elNumbers Vector to mesh
   inline DOF_INT_VEC * getElNumbers()
