@@ -126,17 +126,8 @@ namespace Dune {
   {
 
     friend class UGGridEntity <0,dim,dimworld>;
-    //friend class UGGridEntity <1,dim,dimworld>;
-    //friend class UGGridEntity <1 << dim-1 ,dim,dimworld>;
     friend class UGGridEntity <dim,dim,dimworld>;
-
-    // friends because of fillElInfo
-    //   friend class UGGridLevelIterator<0,dim,dimworld>;
-    //   friend class UGGridLevelIterator<1,dim,dimworld>;
-    //   friend class UGGridLevelIterator<2,dim,dimworld>;
-    //   friend class UGGridLevelIterator<3,dim,dimworld>;
     friend class UGGridHierarchicIterator<dim,dimworld>;
-
     friend class UGGridIntersectionIterator<dim,dimworld>;
 
 
@@ -161,9 +152,6 @@ namespace Dune {
     /** \brief The leaf iterator type  (currently only a level iterator)
      * \todo Replace this by a true leaf iterator */
     typedef UGGridLevelIterator<0,dim,dimworld, All_Partition> LeafIterator;
-
-    /** \todo Please doc me! */
-    //   enum { numCodim = dim+1 };
 
     /** \brief Constructor with control over UG's memory requirements
      *
@@ -227,7 +215,7 @@ namespace Dune {
     // **********************************************************
 
     /** \brief The different forms of grid refinement that UG supports */
-    enum AdaptationType {
+    enum RefinementType {
       /** \brief New level consists only of the refined elements */
       LOCAL,
       /** \brief New level consists of the refined elements and the unrefined ones, too */
@@ -237,7 +225,9 @@ namespace Dune {
     };
 
     /** \brief Sets the type of grid refinement */
-    void setAdaptationType(AdaptationType type);
+    void setRefinementType(RefinementType type) {
+      refinementType_ = type;
+    }
 
     /** \brief Read access to the UG-internal grid name */
     const std::string& name() const {return name_;}
@@ -281,6 +271,9 @@ namespace Dune {
     //! an existing defaults file or whether the values from
     //! the UGGrid constructor are taken
     bool useExistingDefaultsFile;
+
+    //! The type of grid refinement currently in use
+    RefinementType refinementType_;
 
   protected:
     /** \brief Number of UGGrids currently in use.
