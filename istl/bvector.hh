@@ -36,7 +36,7 @@ namespace Dune {
            Setting the compile time switch DUNE_ISTL_WITH_CHECKING
            enables error checking.
    */
-  template<class B, class A=SPMV_Allocator>
+  template<class B, class A=ISTL_Allocator>
   class BlockVector
   {
   public:
