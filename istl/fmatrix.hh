@@ -1137,20 +1137,6 @@ namespace Dune {
     //! export size
     enum {rows = 1, cols = 1};
 
-    //===== random access interface to rows of the matrix
-
-    //! random access to data
-    K& operator() () DUNE_DEPRECATED
-    {
-      return a;
-    }
-
-    //! same for read only access
-    const K& operator() () const DUNE_DEPRECATED
-    {
-      return a;
-    }
-
     //===== assignment from scalar
 
     K11Matrix& operator= (const K& k)
