@@ -110,7 +110,8 @@ namespace Dune {
     void makeRefElemCoords();
 
     //! the vertex coordinates
-    Mat<dimworld,dim+1, UGCtype> coord_;
+    //Mat<dimworld,dim+1, UGCtype> coord_;
+    FixedArray<FieldVector<UGCtype, dimworld>, (dim==2) ? 4 : 8> coord_;
 
     //! The jacobian inverse
     Mat<dimworld,dimworld> jac_inverse_;
@@ -184,13 +185,14 @@ namespace Dune {
     void makeRefElemCoords();
 
     //! the vertex coordinates
-    Mat<3,3, UGCtype> coord_;
+    //Mat<3,3, UGCtype> coord_;
+    FixedArray<FieldVector<UGCtype, 3>, 4> coord_;
 
     //! The jacobian inverse
     Mat<3,3> jac_inverse_;
 
     //! storage for global coords
-    FieldVector<UGCtype, 3> globalCoord_;
+    FieldVector<UGCtype, 4> globalCoord_;
 
     //! storage for local coords
     FieldVector<UGCtype, 2> localCoord_;
@@ -207,6 +209,9 @@ namespace Dune {
   class UGGridElement <1, 2> :
     public ElementDefault <1, 2, UGCtype,UGGridElement>
   {
+
+    template <int codim_, int dim_, int dimworld_>
+    friend class UGGridEntity;
 
   public:
 
