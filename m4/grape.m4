@@ -22,7 +22,7 @@ AC_DEFUN([DUNE_PATH_GRAPE],[
   AC_ARG_WITH(grape,
     AC_HELP_STRING([--with-grape=PATH],[directory with Grape inside]))
 
-if test "x$X_LIBS" != x ; then
+if test "x$X_LIBS" != x && test x$with_grape != xno ; then
   # store old values
   ac_save_LDFLAGS="$LDFLAGS"
   ac_save_CFLAGS="$CFLAGS"
@@ -85,17 +85,15 @@ if test "x$X_LIBS" != x ; then
     # re-set variable correctly
     with_grape="yes"
   fi
-
-  # also tell automake
-  AM_CONDITIONAL(GRAPE, test x$HAVE_GRAPE != x)
-
-  # reset old values
-  LIBS="$ac_save_LIBS"
-  CFLAGS="$ac_save_CFLAGS"
-  CPPFLAGS="$ac_save_CPPFLAGS"
-  LDFLAGS="$ac_save_LDFLAGS"
-else
-  AC_MSG_WARN("no X-libs/headers found, won't check for GRAPE...")
 fi
+
+# also tell automake	
+AM_CONDITIONAL(GRAPE, test x$HAVE_GRAPE != x)
+
+# reset old values
+LIBS="$ac_save_LIBS"
+CFLAGS="$ac_save_CFLAGS"
+CPPFLAGS="$ac_save_CPPFLAGS"
+LDFLAGS="$ac_save_LDFLAGS"
   
 ])

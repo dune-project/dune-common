@@ -28,6 +28,9 @@ ac_save_CPPFLAGS="$CPPFLAGS"
 ac_save_LIBS="$LIBS"
 # LIBS=""
 
+## do nothing if --without-albert is used
+if test x$with_albert != xno ; then
+
 # is --with-albert=bla used?
 if test x$with_albert != x ; then
     if test -d $with_albert; then
@@ -80,6 +83,8 @@ if test x$HAVE_ALBERT = x1 ; then
 	AC_MSG_WARN(lib$albertlibname not found!)])
 fi
 
+## end of albert check (--without wasn't set)
+fi
 
 # survived all tests?
 if test x$HAVE_ALBERT = x1 ; then
@@ -96,7 +101,6 @@ if test x$HAVE_ALBERT = x1 ; then
   # set variable for summary
   with_albert="yes"
 else
-  echo no albert found...
   AC_SUBST(ALBERT_LIBS, "")
   AC_SUBST(ALBERT_LDFLAGS, "")
   AC_SUBST(ALBERT_CPPFLAGS, "")

@@ -30,6 +30,9 @@ ac_save_LDFLAGS="$LDFLAGS"
 ac_save_LIBS="$LIBS"
 LIBS=""
 
+# skip tests if --without-blas is used
+if test x$with_blas != xno ; then
+
 # is --with-blas=bla used?
 if test x$with_blas_lib != x ; then
     if test -d $with_blas; then
@@ -58,6 +61,9 @@ if test x$HAVE_BLAS = x1 ; then
                 AC_DEFINE(HAVE_LIBBLAS, 1, [Define to 1 if you have libblas])],
                [AC_MSG_ERROR([Required BLAS library was not found])])
   AC_LANG_POP(Fortran 77)
+fi
+
+# end of checks (can be skipped with --without-blas)
 fi
 
 # survived all tests?
