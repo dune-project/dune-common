@@ -213,7 +213,6 @@ namespace Dune {
       typedef typename FunctionSpaceType::Domain DomainVecType;
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
-      int level = arg.getFunctionSpace().getGrid().maxlevel();
 
       DofIteratorType dest_it = dest.dbegin();
       const DofIteratorType arg_it = arg.dbegin();
@@ -339,14 +338,11 @@ namespace Dune {
 
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
-      GridType &grid = functionSpace_.getGrid();
-
       typedef typename FunctionSpaceType::Range RangeVecType;
       typedef typename FunctionSpaceType::JacobianRange JacobianRange;
       typedef typename FunctionSpaceType::Domain DomainVecType;
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
-      int level = grid.maxlevel();
 
       DofIteratorType dest_it = dest.dbegin();
       const DofIteratorType arg_it = arg.dbegin();
@@ -404,13 +400,10 @@ namespace Dune {
       typedef typename EntityType::Traits::IntersectionIterator NeighIt;
       typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
 
-      GridType &grid = functionSpace_.getGrid();
-
       const DiscFunctionType & arg  = (*arg_);
       DiscFunctionType & dest = (*dest_);
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
-      int level = grid.maxlevel();
 
       DofIteratorType dest_it = dest.dbegin( );
       const DofIteratorType arg_it = arg.dbegin( );
