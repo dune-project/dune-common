@@ -12,6 +12,7 @@
 #include "istlexception.hh"
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/istl/bcrsmatrix.hh>
 
 /** \file
 
@@ -195,6 +196,56 @@ namespace Dune {
     s.setf(std::ios_base::fixed, std::ios_base::floatfield);
   }
 
+  /** \brief Writes sparse matrix in a Matlab-readable format
+   *
+   * This routine writes the argument BCRSMatrix to a file with the name given by
+   * the filename argument.  The file format is ASCII, with no header, and three
+   * data columns.  Each row describes a scalar matrix entry and consists of the
+   * matrix row and column numbers (both counted starting from 1), and the matrix
+   * entry.  Such a file can be read from Matlab using the command
+   * \verbatim
+       new_mat = spconvert(load('filename'));
+     \endverbatim
+   */
+  template <class BlockType>
+  void writeMatrixToMatlab(const BCRSMatrix<BlockType>& matrix, const std::string& filename)
+  {
+    FILE* fp = fopen(filename.c_str(), "w");
+    int blocksize = 3;
+
+    typedef typename BCRSMatrix<BlockType>::row_type RowType;
+
+    // Loop over all matrix rows
+    for (int rowIdx=0; rowIdx<matrix.N(); rowIdx++) {
+
+      const RowType& row = matrix[rowIdx];
+
+      typedef typename RowType::ConstIterator ColumnIterator;
+
+      ColumnIterator cIt   = row.begin();
+      ColumnIterator cEndIt = row.end();
+
+      // Loop over all columns in this row
+      for (; cIt!=cEndIt; ++cIt) {
+
+        for (int i=0; i<blocksize; i++) {
+
+          for (int j=0; j<blocksize; j++) {
+
+            //+1 for Matlab numbering
+            fprintf(fp, "%d %d %g\n", rowIdx*blocksize + i + 1,
+                    cIt.index()*blocksize + j + 1, (*cIt)[i][j]);
+
+          }
+
+        }
+      }
+
+    }
+
+    fclose(fp);
+
+  }
 
   /** @} end documentation */
 
