@@ -58,6 +58,11 @@ extern "C"
 } // end extern "C"
 #endif
 
+#include <dune/grid/common/indexstack.hh>
+
+// IndexManager defined in indexstack.hh
+typedef Dune::IndexStack<int,10000> IndexManagerType;
+
 // some extra functions for handling the Albert Mesh
 #include "albertgrid/albertextra.hh"
 
@@ -1281,8 +1286,8 @@ namespace Dune
     //*********************************************************************
     // organisation of the global index
     //*********************************************************************
-    // the index Manager, to be replaced by Stack
-    ALBERT AlbertHelp::INDEX_MANAGER *indexManager_;
+    // provides the indices for the elements
+    IndexManagerType indexStack_[dim+1];
 
     // the DOF_INT_VECs we need
     ALBERT AlbertHelp::DOFVEC_STACK dofvecs_;
