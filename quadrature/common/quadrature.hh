@@ -46,10 +46,10 @@ namespace Dune {
   struct QuadraturePoints
   {
     enum { identifier = 0 };
-    static int numberOfQuadPoints ();
-    static int order ();
-    static Domain getPoint (int i);
-    static RangeField getWeight (int i);
+    static int numberOfQuadPoints () {};
+    static int order () {};
+    static Domain getPoint (int i) {};
+    static RangeField getWeight (int i) {};
   };
 
   template <class Domain, class RangeField, ElementType ElType, int polOrd>
@@ -57,8 +57,8 @@ namespace Dune {
   {
     enum { identifier = 0 };
     enum { numberOfQuadPoints = 0 };
-    static Domain getPoint (int i);
-    static RangeField getWeight (int i);
+    static Domain getPoint (int i) {};
+    static RangeField getWeight (int i) {};
   };
 
   //**************************************************************************
