@@ -208,6 +208,14 @@ namespace Dune {
      */
     bool mark(int refCount, typename Traits::template codim<0>::EntityPointer & e );
 
+    /** \brief Mark method accepting a UG refinement rule
+     */
+#ifdef _3
+    bool mark(typename Traits::template codim<0>::EntityPointer & e, UG3d::RefinementRule rule);
+#else
+    bool mark(typename Traits::template codim<0>::EntityPointer & e, UG2d::RefinementRule rule);
+#endif
+
     //! Triggers the grid refinement process
     bool adapt();
 

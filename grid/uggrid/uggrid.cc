@@ -419,7 +419,7 @@ bool UGGrid < dim, dimworld >::mark(int refCount,
     return false;
 
   return UG3d::MarkForRefinement(target,
-                                 UG3d::RED,
+                                 UG3d::RED,    // red refinement rule
                                  0);    // no user data
 #else
   if (!UG2d::EstimateHere(target))
@@ -427,6 +427,34 @@ bool UGGrid < dim, dimworld >::mark(int refCount,
 
   return UG2d::MarkForRefinement(target,
                                  UG2d::RED,   // red refinement rule
+                                 0);    // no user data
+#endif
+}
+
+template < int dim, int dimworld >
+bool UGGrid < dim, dimworld >::mark(typename Traits::template codim<0>::EntityPointer & e,
+#ifdef _3
+                                    UG3d::RefinementRule rule
+#else
+                                    UG2d::RefinementRule rule
+#endif
+                                    )
+{
+  typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
+
+#ifdef _3
+  if (!UG3d::EstimateHere(target))
+    return false;
+
+  return UG3d::MarkForRefinement(target,
+                                 rule,
+                                 0);    // no user data
+#else
+  if (!UG2d::EstimateHere(target))
+    return false;
+
+  return UG2d::MarkForRefinement(target,
+                                 rule,
                                  0);    // no user data
 #endif
 }
