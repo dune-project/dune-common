@@ -4,6 +4,7 @@
 #define __DUNE_ITERATIONSTEP_HH__
 
 #include <dune/solver/common/numproc.hh>
+#include <vector>
 
 namespace Dune {
 
@@ -47,6 +48,8 @@ namespace Dune {
     DiscFuncType* rhs_;
 
     OperatorType* mat_;
+
+    const std::vector<bool>* dirichletNodes_;
 
     //! The level of a multigrid hierarchy that is iterator is supposed to work on
     int level_;
