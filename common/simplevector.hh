@@ -51,9 +51,10 @@ namespace Dune
       return *this;
     }
 
-    //! scalar product of two vectors, no check for size !
-    T ddot (const SimpleVector<T>& x)
+    //! Scalar product of two vectors
+    T ddot (const SimpleVector<T>& x) const
     {
+      assert(this->size()==x.size());
       T sum = 0;
       for (int i=0; i<this->n; ++i) sum += this->p[i]*x.p[i];
       return sum;
