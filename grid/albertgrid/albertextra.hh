@@ -259,12 +259,12 @@ void printElInfo(const EL_INFO *elf)
 {
   FUNCNAME("printElInfo");
 
-  MSG("Element %d | level %d  | ",elf->el->index,elf->level);
+  MSG("Element %d | level %d  | ",INDEX(elf->el),elf->level);
   printf("Neighs: ");
   for(int i=0; i<N_VERTICES; i++)
   {
     ALBERT EL* el = elf->neigh[i];
-    if(el) printf(" %d |",el->index);
+    if(el) printf(" %d |",INDEX(el));
   }
   printf("\n");
 
@@ -335,7 +335,6 @@ namespace AlbertHelp
 
   static DOF_INT_VEC * Albert_elnums_help=NULL;
 
-  static int actMInd = -1;
   static bool doItAgain = false;
   static std::vector<int> *Albert_neighArray_help;
 
@@ -360,9 +359,6 @@ namespace AlbertHelp
     // calculate global min index
     if(index < Albert_GlobalMin_help) Albert_GlobalMin_help = index;
 
-    // calculate global max el->index for checkElNew method of grid
-    if(elIndex > actMInd) actMInd = elIndex;
-
     if(Albert_neighArray_help->size() <= index)
     {
       doItAgain = true;
@@ -376,7 +372,7 @@ namespace AlbertHelp
 
   // remember on which level an element realy lives
   inline int calcMaxLevelAndMarkNeighbours ( MESH * mesh, DOF_INT_VEC * elnums,
-                                             std::vector< int > &nb, int & GlobalIndex, int & GlobalMinIndex , int & realMaxInd  )
+                                             std::vector< int > &nb, int & GlobalIndex, int & GlobalMinIndex )
   {
     // determine new maxlevel
     nb.resize( mesh->n_hier_elements );
@@ -385,7 +381,6 @@ namespace AlbertHelp
     Albert_elnums_help = elnums;
     Albert_MaxLevel_help = -1;
     Albert_GlobalIndex_help = -1;
-    actMInd = -1;
     Albert_GlobalMin_help = 0;
 
     doItAgain = false;
@@ -408,8 +403,6 @@ namespace AlbertHelp
     GlobalIndex    = Albert_GlobalIndex_help+1;
     GlobalMinIndex = Albert_GlobalMin_help;
 
-    realMaxInd = actMInd;
-
     return Albert_MaxLevel_help;
   }
 
@@ -419,10 +412,10 @@ namespace AlbertHelp
   inline static void printNeighbour (const EL_INFO * elf)
   {
     int i;
-    printf("%d EL \n",elf->el->index);
+    printf("%d EL \n",INDEX(elf->el));
     for(i=0; i<3; i++)
       if(elf->neigh[i])
-        printf("%d Neigh \n",elf->neigh[i]->index);
+        printf("%d Neigh \n",INDEX(elf->neigh[i]));
       else printf("%d Neigh \n",-1);
     printf("----------------------------------\n");
   }
@@ -448,8 +441,10 @@ namespace AlbertHelp
     return;
   }
 
-  static DOF_INT_VEC * elNumbers = NULL;
+  static DOF_INT_VEC * elNumbers  = NULL;
+  static DOF_INT_VEC * elNewCheck = NULL;
 
+  // return pointer to created elNumbers Vector to mesh
   inline DOF_INT_VEC * getElNumbers()
   {
     int * vec=NULL;
@@ -458,11 +453,21 @@ namespace AlbertHelp
     return elNumbers;
   }
 
+  // return pointer to created elNewCheck Vector to mesh
+  inline DOF_INT_VEC * getElNewCheck()
+  {
+    int * vec=NULL;
+    GET_DOF_VEC(vec,elNewCheck);
+    FOR_ALL_DOFS(elNewCheck->fe_space->admin, vec[dof] = 0 );
+    return elNewCheck;
+  }
+
+  // get element index form stack or new number
   inline static void refineElNumbers ( DOF_INT_VEC * drv , RC_LIST_EL *list, int ref)
   {
     const DOF_ADMIN * admin = drv->fe_space->admin;
-    int nv = admin->n0_dof[CENTER];
-    int k  = admin->mesh->node[CENTER];
+    const int nv = admin->n0_dof[CENTER];
+    const int k  = admin->mesh->node[CENTER];
     int dof;
     int *vec = NULL;
 
@@ -478,17 +483,17 @@ namespace AlbertHelp
         dof = el->child[ch]->dof[k][nv];
 
         // get element index from stack or new, see. elmem.cc
-        int index = get_elIndex();
-        vec[dof] = index;
+        vec[dof] = get_elIndex();
       }
     }
   }
 
+  // put element index to stack, if element is coarsend
   inline static void coarseElNumbers ( DOF_INT_VEC * drv , RC_LIST_EL *list, int ref)
   {
     const DOF_ADMIN * admin = drv->fe_space->admin;
-    int nv = admin->n0_dof[CENTER];
-    int k  = admin->mesh->node[CENTER];
+    const int nv = admin->n0_dof[CENTER];
+    const int k  = admin->mesh->node[CENTER];
     int dof;
     int *vec = NULL;
 
@@ -502,11 +507,54 @@ namespace AlbertHelp
       for(int ch=0; ch<2; ch++)
       {
         dof = el->child[ch]->dof[k][nv];
-        int index = vec[dof];
+
         // put element index to stack, see elmem.cc
-        free_elIndex(index);
+        free_elIndex( vec[dof] );
       }
     }
+  }
+
+  // set entry for new elements to 1
+  inline static void refineElNewCheck ( DOF_INT_VEC * drv , RC_LIST_EL *list, int ref)
+  {
+    const DOF_ADMIN * admin = drv->fe_space->admin;
+    const int nv = admin->n0_dof[CENTER];
+    const int k  = admin->mesh->node[CENTER];
+    int dof;
+    int *vec = NULL;
+
+    GET_DOF_VEC(vec,drv);
+
+    assert(ref > 0);
+
+    for(int i=0; i<ref; i++)
+    {
+      EL * el = list[i].el;
+      for(int ch=0; ch<2; ch++)
+      {
+        // set new entry to 1, 0 means old element
+        vec[el->child[ch]->dof[k][nv]] = 1;
+      }
+    }
+  }
+
+  // clear Dof Vec
+  inline static void clearDofVec ( DOF_INT_VEC * drv )
+  {
+    int * vec=NULL;
+    GET_DOF_VEC(vec,drv);
+    FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = 0 );
+  }
+
+  inline DOF_INT_VEC * getDofNewCheck(const FE_SPACE * espace)
+  {
+    DOF_INT_VEC * drv = get_dof_int_vec("el_new_check",espace);
+    int * vec=NULL;
+    drv->refine_interpol = &refineElNewCheck;
+    drv->coarse_restrict = NULL;
+    GET_DOF_VEC(vec,drv);
+    FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = 0 );
+    return drv;
   }
 
   // initialize dofAdmin for vertex numbering
@@ -524,14 +572,18 @@ namespace AlbertHelp
     vdof[0] = 1;
     edof[DIM] = 1;
 
-    get_fe_space(mesh, "vertex dofs", vdof, NULL);
+    get_fe_space(mesh, "vertex_dofs", vdof, NULL);
 
     // space for center dofs , i.e. element numbers
-    const FE_SPACE * eSpace = get_fe_space(mesh, "center dofs", edof, NULL);
+    const FE_SPACE * eSpace = get_fe_space(mesh, "center_dofs", edof, NULL);
 
-    elNumbers = get_dof_int_vec("element numbers",eSpace);
+    elNumbers = get_dof_int_vec("element_numbers",eSpace);
     elNumbers->refine_interpol = &refineElNumbers;
     elNumbers->coarse_restrict = &coarseElNumbers;
+
+    elNewCheck = get_dof_int_vec("el_new_check",eSpace);
+    elNewCheck->refine_interpol = &refineElNewCheck;
+    elNewCheck->coarse_restrict = NULL;
 
     return;
   }
