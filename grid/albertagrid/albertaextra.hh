@@ -364,47 +364,25 @@ namespace AlbertHelp
   //**************************************************************************
 
   static int Albert_MaxLevel_help=-1;
-  static int Albert_GlobalIndex_help=-1;
-
-  static DOF_INT_VEC * Albert_elnums_help=NULL;
+  //static int Albert_GlobalIndex_help=-1;
 
   // function for mesh_traverse, is called on every element
-  inline static void calcMaxLevel (const EL_INFO * elf)
+  inline static void calcmxl (const EL_INFO * elf)
   {
     int level = elf->level;
-
-    const DOF_ADMIN * admin = Albert_elnums_help->fe_space->admin;
-    int nv = admin->n0_dof[CENTER];
-    int k  = admin->mesh->node[CENTER];
-    int dof = elf->el->dof[k][nv];
-    int *vec = NULL;
-
-    GET_DOF_VEC(vec, Albert_elnums_help);
-    int index = vec[dof];
-
-    // calculate global max index
-    if(index > Albert_GlobalIndex_help) Albert_GlobalIndex_help = index;
     if(Albert_MaxLevel_help < level) Albert_MaxLevel_help = level;
   }
 
   // remember on which level an element realy lives
-  inline int calcMaxLevelAndMarkNeighbours ( MESH * mesh, DOF_INT_VEC * elnums,
-                                             int & GlobalIndex) //, int & GlobalMinIndex )
+  inline int calcMaxLevel ( MESH * mesh )
   {
-    //Albert_neighArray_help = &nb;
-    Albert_elnums_help = elnums;
     Albert_MaxLevel_help = -1;
-    Albert_GlobalIndex_help = -1;
 
     // see ALBERTA Doc page 72, traverse over all hierarchical elements
-    mesh_traverse(mesh,-1, CALL_EVERY_EL_PREORDER|FILL_NOTHING,calcMaxLevel);
+    mesh_traverse(mesh,-1, CALL_LEAF_EL|FILL_NOTHING, calcmxl);
 
     // check if ok
     assert(Albert_MaxLevel_help != -1);
-
-    // for length determination
-    GlobalIndex    = Albert_GlobalIndex_help+1;
-
     return Albert_MaxLevel_help;
   }
 
@@ -501,6 +479,17 @@ namespace AlbertHelp
     GET_DOF_VEC(vec,elNumbers[i]);
     FOR_ALL_DOFS(elNumbers[i]->fe_space->admin, vec[dof] = getElementIndexForCodim(i) );
     return elNumbers[i];
+  }
+
+  // return pointer to created elNumbers Vector to mesh
+  inline static int calcMaxIndex(DOF_INT_VEC * drv)
+  {
+    int maxindex = 0;
+    int * vec=NULL;
+    GET_DOF_VEC(vec,drv);
+    FOR_ALL_DOFS(drv->fe_space->admin, if(vec[dof] > maxindex) { maxindex = vec[dof] } );
+    // we return +1 because this means a size
+    return maxindex+1;
   }
 
   // return pointer to created elNewCheck Vector to mesh

@@ -2722,15 +2722,6 @@ namespace Dune
     // dont delete dofs on higher levels
     mesh_->preserve_coarse_dofs = 1;
 
-    numberOfEntitys_[0]     = mesh_->n_hier_elements;
-    numberOfEntitys_[1]     = 0;
-    numberOfEntitys_[dim-1] = 0;
-    numberOfEntitys_[dim]   = mesh_->n_vertices;
-
-    // we have at least one level, level 0
-    maxlevel_ = 0;
-    maxHierIndex_[0] = mesh_->n_hier_elements;
-
     calcExtras();
 
     wasChanged_ = true;
@@ -3159,22 +3150,14 @@ namespace Dune
   {
     arrangeDofVec ();
 
-    // save number of old entities
-    for(int i=0; i<dim+1; i++)
-      oldNumberOfEntities_[i] = numberOfEntitys_[i];
-
-    // calc new number of entities
-    numberOfEntitys_[0]     = mesh_->n_hier_elements; // elements
-    numberOfEntitys_[1]     = 1;                    // faces
-    numberOfEntitys_[dim-1] = mesh_->n_edges;                    // edges
-    numberOfEntitys_[dim]   = mesh_->n_vertices;    // vertices
-
-    maxHierIndex_[1]   = mesh_->n_edges;
-    maxHierIndex_[dim] = mesh_->n_vertices;
-
     // determine new maxlevel and mark neighbours
-    maxlevel_ = ALBERTA AlbertHelp::calcMaxLevelAndMarkNeighbours
-                  ( mesh_, dofvecs_.elNumbers[0] , maxHierIndex_[0] );
+    maxlevel_ = ALBERTA AlbertHelp::calcMaxLevel(mesh_);
+
+    // calculate the new maximal index used, this value+1 is then used as size
+    for(int i=0; i<ALBERTA AlbertHelp::numOfElNumVec; i++)
+      maxHierIndex_[i] = ALBERTA AlbertHelp::calcMaxIndex(dofvecs_.elNumbers[i]);
+
+    maxHierIndex_[dim] = mesh_->n_vertices;
 
     // mark vertices on elements
     vertexMarker_->markNewVertices(*this);
