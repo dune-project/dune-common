@@ -64,7 +64,7 @@ CPPFLAGS="$REM_CPPFLAGS $ALBERTADEF -I$ALBERTA_INCLUDE_PATH"
 REM_CPPFLAGS=
 
 # !!! quickfix
-  ALBERTA_LIBS="-lPLOTansi $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS $GL_LDFLAGS $GL_LIBS -lXext -lcsolver -lblas"
+  ALBERTA_LIBS="-lPLOTansi $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS $GL_LDFLAGS $GL_LIBS -lXext -lcsolver -lblas -ldl"
   LIBS="$ALBERTA_LIBS"
 
 # if header is found...
