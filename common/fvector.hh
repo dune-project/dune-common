@@ -142,6 +142,24 @@ namespace Dune {
     }
   };
 
+  // template meta program for operator==
+  template<int I>
+  struct fvmeta_equality {
+    template<class K, int n>
+    static bool equality (const FieldVector<K,n>& x, const FieldVector<K,n>& y)
+    {
+      return x[I] == y[I] && fvmeta_equality<I-1>::equality(x,y);
+    }
+  };
+  template<>
+  struct fvmeta_equality<0> {
+    template<class K, int n>
+    static bool equality (const FieldVector<K,n>& x, const FieldVector<K,n>& y)
+    {
+      return x[0] == y[0];
+    }
+  };
+
   // template meta program for axpy
   template<int I>
   struct fvmeta_axpy {
@@ -655,6 +673,12 @@ namespace Dune {
     {
       fvmeta_divequal<n-1>::divequal(*this,k);
       return *this;
+    }
+
+    //! Binary vector comparison
+    bool operator== (const FieldVector& y) const
+    {
+      return fvmeta_equality<n-1>::equality(*this,y);
     }
 
     //! vector space axpy operation

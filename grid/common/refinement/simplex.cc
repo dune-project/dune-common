@@ -412,16 +412,6 @@ namespace Dune {
         return point;
       }
 
-      // Check equality of two FieldVectors
-      template<class V, int n>
-      bool operator==(const FieldVector<V, n> &v1, const FieldVector<V, n> &v2)
-      {
-        for(int i = 0; i < n; ++i)
-          if(v1[i] != v2[i])
-            return false;
-        return true;
-      }
-
       //@} <!-- Group utilities -->
 
       // /////////////////////////////////////////
