@@ -72,6 +72,15 @@ namespace Dune {
       return cols_;
     }
 
+    /** \brief Multiplication with a scalar */
+    Matrix<T> operator*=(const T& scalar) {
+      for (int row=0; row<rows_; row++)
+        for (int col=0; col<cols_; col++)
+          (*this)(row, col) *= scalar;
+
+      return (*this);
+    }
+
     /** \brief Return the transpose of the matrix */
     Matrix transpose() const {
       Matrix out(cols(), rows());
