@@ -67,53 +67,12 @@ namespace Dune {
   template<int codim, int dim, int dimworld> class SLevelIterator;
   template<int dim, int dimworld> class SGrid;
 
-
-  //************************************************************************
-  /*!
-     SElement realizes the concept of the geometric part of a mesh entity.
-
-     The geometric part of a mesh entity is a \f$d\f$-dimensional object in \f$\mathbf{R}^w\f$
-     where \f$d\f$ corresponds the template parameter dim and \f$w\f$ corresponds to the
-     template parameter dimworld.
-
-     The \f$d\f$-dimensional object is a polyhedron given by a certain number of corners, which
-     are vectors in \f$\mathbf{R}^w\f$.
-
-     The member function global provides a map from a topologically equivalent polyhedron ("reference element")
-     in \f$\mathbf{R}^d\f$ to the given polyhedron. This map can be inverted by the member function local, where
-     an appropriate projection is applied first, when \f$d\neq w\f$.
-
-     In the case of a structured mesh discretizing a generalized cube this map is linear
-     and can be described as \f[ g(l) = s + \sum\limits_{i=0}^{d-1} l_ir^i\f] where \f$s\in\mathbf{R}^w\f$
-     is a given position vector, the \f$r^i\in\mathbf{R}^w\f$ are given direction vectors and \f$l\in\mathbf{R}^d\f$
-     is a local coordinate within the reference polyhedron. The direction vectors are assumed to be orthogonal
-     with respect to the standard Eucliden inner product.
-
-     The \f$d\f$-dimensional reference polyhedron is given
-     by the points \f$\{ (x_0,\ldots,x_{d-1}) \ | \ x_i\in\{0,1\}\ \}\f$.
-
-     In order to invert the map for a point \f$p\f$, we have to find a local coordinate \f$l\f$ such
-     that \f$g(l)=p\f$. Of course this is only possible if \f$d=w\f$. In the general case \f$d\leq w\f$
-     we determine \f$l\f$ such that
-     \f[(s,r^k) + \sum\limits_{i=0}^{d-1} l_i (r^i,r^k) = (p,r^k) \ \ \ \forall k=0,\ldots,d-1. \f]
-
-     The resulting system is diagonal since the direction vectors are required to be orthogonal.
-   */
+  //! base class implementing parametrizable part of an SElement
   template<int dim, int dimworld>
-  class SElement
-  {
+  class SElementBase {
   public:
-    //! know dimension
-    enum { dimension=dim };
-
-    //! know dimension of world
-    enum { dimensionworld=dimworld };
-
-    //! define type used for coordinates in grid module
-    typedef sgrid_ctype ctype;
-
-    //! return the element type identifier
-    ElementType type ();
+    // constructor
+    SElementBase ();
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners ();
@@ -158,13 +117,10 @@ namespace Dune {
     //! can only be called for dim=dimworld!
     Mat<dim,dim>& Jacobian_inverse (const Vec<dim,sgrid_ctype>& local);
 
-    //! constructor, makes element from position and direction vectors
-    SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[dim]);
+    //! print internal data
+    void print (std::ostream& ss, int indent);
 
-    //! constructor without arguments makes reference element
-    SElement ();
-
-  private:
+  protected:
     Vec<dimworld,sgrid_ctype> s;             //!< position of element
     Mat<dimworld,dim,sgrid_ctype> A;         //!< direction vectors as matrix
     Vec<dimworld,sgrid_ctype> c[1<<dim];     //!< coordinate vectors of corners
@@ -172,9 +128,71 @@ namespace Dune {
     bool builtinverse;
   };
 
+  template <int dim, int dimworld>
+  inline std::ostream& operator<< (std::ostream& s, SElementBase<dim,dimworld>& e)
+  {
+    e.print(s,0);
+    return s;
+  }
+
+
+  //************************************************************************
+  /*!
+     SElement realizes the concept of the geometric part of a mesh entity.
+
+     The geometric part of a mesh entity is a \f$d\f$-dimensional object in \f$\mathbf{R}^w\f$
+     where \f$d\f$ corresponds the template parameter dim and \f$w\f$ corresponds to the
+     template parameter dimworld.
+
+     The \f$d\f$-dimensional object is a polyhedron given by a certain number of corners, which
+     are vectors in \f$\mathbf{R}^w\f$.
+
+     The member function global provides a map from a topologically equivalent polyhedron ("reference element")
+     in \f$\mathbf{R}^d\f$ to the given polyhedron. This map can be inverted by the member function local, where
+     an appropriate projection is applied first, when \f$d\neq w\f$.
+
+     In the case of a structured mesh discretizing a generalized cube this map is linear
+     and can be described as \f[ g(l) = s + \sum\limits_{i=0}^{d-1} l_ir^i\f] where \f$s\in\mathbf{R}^w\f$
+     is a given position vector, the \f$r^i\in\mathbf{R}^w\f$ are given direction vectors and \f$l\in\mathbf{R}^d\f$
+     is a local coordinate within the reference polyhedron. The direction vectors are assumed to be orthogonal
+     with respect to the standard Eucliden inner product.
+
+     The \f$d\f$-dimensional reference polyhedron is given
+     by the points \f$\{ (x_0,\ldots,x_{d-1}) \ | \ x_i\in\{0,1\}\ \}\f$.
+
+     In order to invert the map for a point \f$p\f$, we have to find a local coordinate \f$l\f$ such
+     that \f$g(l)=p\f$. Of course this is only possible if \f$d=w\f$. In the general case \f$d\leq w\f$
+     we determine \f$l\f$ such that
+     \f[(s,r^k) + \sum\limits_{i=0}^{d-1} l_i (r^i,r^k) = (p,r^k) \ \ \ \forall k=0,\ldots,d-1. \f]
+
+     The resulting system is diagonal since the direction vectors are required to be orthogonal.
+   */
+  template<int dim, int dimworld>
+  class SElement : public SElementBase<dim,dimworld>
+  {
+  public:
+    //! know dimension
+    enum { dimension=dim };
+
+    //! know dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
+    //! return the element type identifier
+    ElementType type ();
+
+    //! constructor, makes element from position and direction vectors
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[dim]);
+
+    //! constructor without arguments makes reference element
+    SElement ();
+  };
+
   // specialization for dim=1
   template<int dimworld>
-  class SElement<1,dimworld>
+  class SElement<1,dimworld> : public SElementBase<1,dimworld>
   {
   public:
     //! know dimension
@@ -189,31 +207,6 @@ namespace Dune {
     //! return the element type identifier
     ElementType type ();
 
-    //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
-
-    //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,sgrid_ctype>& operator[] (int i);
-
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned. A reference to a reference
-       element is returned. Usually, the implementation will store the finite
-       set of reference elements as global variables.
-     */
-    static SElement<1,1>& refelem ();
-
-    //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld,sgrid_ctype> global (Vec<1,sgrid_ctype> local);
-
-    //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<1,sgrid_ctype> local (Vec<dimworld,sgrid_ctype> global);
-
-    //! return integration element
-    sgrid_ctype integration_element (const Vec<1,sgrid_ctype>& local);
-
-    //! can only be called for dim=dimworld!
-    Mat<1,1>& Jacobian_inverse (const Vec<1,sgrid_ctype>& local);
-
     //! constructor, makes element from position and direction vectors
     SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[1]);
 
@@ -222,18 +215,11 @@ namespace Dune {
 
     //! constructor without arguments makes reference element
     SElement ();
-
-  private:
-    Vec<dimworld,sgrid_ctype> s;           //!< position of element
-    Mat<dimworld,1,sgrid_ctype> A;         //!< direction vectors as matrix
-    Vec<dimworld,sgrid_ctype> c[1<<1];     //!< coordinate vectors of corners
-    Mat<1,1,sgrid_ctype> Jinv;             //!< storage for inverse of jacobian
-    bool builtinverse;
   };
 
   // specialization for dim=2
   template<int dimworld>
-  class SElement<2,dimworld>
+  class SElement<2,dimworld> : public SElementBase<2,dimworld>
   {
   public:
     //! know dimension
@@ -245,31 +231,6 @@ namespace Dune {
     //! return the element type identifier
     ElementType type ();
 
-    //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
-
-    //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,sgrid_ctype>& operator[] (int i);
-
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned. A reference to a reference
-       element is returned. Usually, the implementation will store the finite
-       set of reference elements as global variables.
-     */
-    static SElement<2,2>& refelem ();
-
-    //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld,sgrid_ctype> global (Vec<2,sgrid_ctype> local);
-
-    //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<2,sgrid_ctype> local (Vec<dimworld,sgrid_ctype> global);
-
-    //! return integration element
-    sgrid_ctype integration_element (const Vec<2,sgrid_ctype>& local);
-
-    //! can only be called for dim=dimworld!
-    Mat<2,2>& Jacobian_inverse (const Vec<2,sgrid_ctype>& local);
-
     //! constructor, makes element from position and direction vectors
     SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[2]);
 
@@ -278,18 +239,11 @@ namespace Dune {
 
     //! constructor without arguments makes reference element
     SElement ();
-
-  private:
-    Vec<dimworld,sgrid_ctype> s;           //!< position of element
-    Mat<dimworld,2,sgrid_ctype> A;         //!< direction vectors as matrix
-    Vec<dimworld,sgrid_ctype> c[1<<2];     //!< coordinate vectors of corners
-    Mat<2,2,sgrid_ctype> Jinv;             //!< storage for inverse of jacobian
-    bool builtinverse;
   };
 
   // specialization for dim=3
   template<int dimworld>
-  class SElement<3,dimworld>
+  class SElement<3,dimworld> : public SElementBase<3,dimworld>
   {
   public:
     //! know dimension
@@ -304,46 +258,15 @@ namespace Dune {
     //! return the element type identifier
     ElementType type ();
 
-    //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
-
-    //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld,sgrid_ctype>& operator[] (int i);
-
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned. A reference to a reference
-       element is returned. Usually, the implementation will store the finite
-       set of reference elements as global variables.
-     */
-    static SElement<3,3>& refelem ();
-
-    //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld,sgrid_ctype> global (Vec<3,sgrid_ctype> local);
-
-    //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<3,sgrid_ctype> local (Vec<dimworld,sgrid_ctype> global);
-
-    //! return integration element
-    sgrid_ctype integration_element (const Vec<3,sgrid_ctype>& local);
-
-    //! can only be called for dim=dimworld!
-    Mat<3,3>& Jacobian_inverse (const Vec<3,sgrid_ctype>& local);
-
     //! constructor, makes element from position and direction vectors
     SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[3]);
 
     //! constructor, makes element from position and three direction vectors, asserts dim=3
-    SElement (const Vec<dimworld,sgrid_ctype>& s_, const Vec<dimworld,sgrid_ctype>& r0, const Vec<dimworld,sgrid_ctype>& r1, const Vec<dimworld,sgrid_ctype>& r2);
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, const Vec<dimworld,sgrid_ctype>& r0,
+              const Vec<dimworld,sgrid_ctype>& r1, const Vec<dimworld,sgrid_ctype>& r2);
 
     //! constructor without arguments makes reference element
     SElement ();
-
-  private:
-    Vec<dimworld,sgrid_ctype> s;           //!< position of element
-    Mat<dimworld,3,sgrid_ctype> A;         //!< direction vectors as matrix
-    Vec<dimworld,sgrid_ctype> c[1<<3];     //!< coordinate vectors of corners
-    Mat<3,3,sgrid_ctype> Jinv;             //!< storage for inverse of jacobian
-    bool builtinverse;
   };
 
   //************************************************************************

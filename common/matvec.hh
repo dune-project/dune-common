@@ -6,6 +6,8 @@
 #include <iostream>
 #include <math.h>
 
+#include "misc.hh"
+
 namespace Dune {
   /** @defgroup Common Dune Common Module
 
@@ -32,13 +34,15 @@ namespace Dune {
     //! Constructor making vector with one coordinate set, others zeroed
     Vec (int k, T t)
     {
-      for (int i=0; i<n; i++) x[i] = 0, x[k] = t;
+      for (int i=0; i<n; i++) x[i] = 0;
+      x[k] = t;
     }
 
     //! Constructor making unit vector in direction k
     Vec (int k)
     {
-      for (int i=0; i<n; i++) x[i] = 0, x[k] = 1;
+      for (int i=0; i<n; i++) x[i] = 0;
+      x[k] = 1;
     }
 
     //! Constructor making vector with identical coordinates
@@ -57,16 +61,23 @@ namespace Dune {
     //! operator () for read/write access to element of the vector
     T& operator() (int i) {return x[i];}
 
+    //! read only operation needed
+    T read (int i) const {return x[i];}
+
     //! operator+ adds two vectors
     Vec<n,T> operator+ (const Vec<n,T>& b)
     {
-      Vec<n,T> z; for (int i=0; i<n; i++) z.x[i] = x[i]+b.x[i];return z;
+      Vec<n,T> z;
+      for (int i=0; i<n; i++) z.x[i] = x[i]+b.x[i];
+      return z;
     }
 
     //! operator- binary minus
     Vec<n,T> operator- (const Vec<n,T>& b)
     {
-      Vec<n,T> z; for (int i=0; i<n; i++) z.x[i] = x[i]-b.x[i];return z;
+      Vec<n,T> z;
+      for (int i=0; i<n; i++) z.x[i] = x[i]-b.x[i];
+      return z;
     }
 
     //! scalar product of two vectors with operator*
@@ -110,8 +121,8 @@ namespace Dune {
     {
       for (int k=0; k<indent; k++) s << " ";
       s << "Vec [ ";
-      for (int i=0; i<n; i++) s << v(i) << " ";
-      s << "]" << endl;
+      for (int i=0; i<n; i++) s << x[i] << " ";
+      s << "]";
     }
 
   private:
@@ -136,9 +147,7 @@ namespace Dune {
   template <int n, class T>
   inline std::ostream& operator<< (std::ostream& s, Vec<n,T>& v)
   {
-    s << "Vec [ ";
-    for (int i=0; i<n; i++) s << v(i) << " ";
-    s << "]" << endl;
+    v.print(s,0);
     return s;
   }
 
@@ -162,20 +171,20 @@ namespace Dune {
     Vec<n,T> operator* (const Vec<m,T>& x)
     {
       Vec<n,T> z(0.0);
-      for (j=0; j<m; j++)
-        for (i=0; i<n; i++) z(i) += a[j](i)*x(j);
+      for (int j=0; j<m; j++)
+        for (int i=0; i<n; i++) z(i) += a[j](i) * x.read(j);
       return z;
     }
 
     void print (std::ostream& s, int indent)
     {
-      for (int k=0; k<indent; k++) " ";
+      for (int k=0; k<indent; k++) s << " ";
       s << "Mat [n=" << n << ",m=" << m << "]" << endl;
       for (int i=0; i<n; i++)
       {
         for (int k=0; k<indent+2; k++) s << " ";
-        s << "row i=" << i << " [ ";
-        for (int j=0; j<n; j++) s << A(i,j) << " ";
+        s << "row " << i << " [ ";
+        for (int j=0; j<n; j ++) s << this->operator()(i,j) << " ";
         s << "]" << endl;
       }
     }
@@ -188,12 +197,7 @@ namespace Dune {
   template <int n, int m, class T>
   inline std::ostream& operator<< (std::ostream& s, Mat<n,m,T>& A)
   {
-    for (int i=0; i<n; i++)
-    {
-      s << "Mat i=" << i << " [ ";
-      for (int j=0; j<n; j++) s << A(i,j) << " ";
-      s << "]" << endl;
-    }
+    A.print(s,0);
     return s;
   }
 

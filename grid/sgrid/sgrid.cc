@@ -24,6 +24,81 @@ namespace Dune {
   SElement<dim,dim> SReferenceElement<dim>::refelem;
 
 
+  // members for SElementBase
+  template<int dim, int dimworld>
+  inline SElementBase<dim,dimworld>::SElementBase ()
+  {
+    builtinverse = false;
+  }
+
+  template<int dim, int dimworld>
+  inline SElement<dim,dim>& SElementBase<dim,dimworld>::refelem ()
+  {
+    return SReferenceElement<dim,dim>::refelem
+  }
+
+  template<int dim, int dimworld>
+  inline Vec<dimworld,sgrid_ctype> SElementBase<dim,dimworld>::global (const Vec<dim,sgrid_ctype>& local)
+  {
+    return s+(A*local);
+  }
+
+  template<int dim, int dimworld>
+  inline Vec<dim,sgrid_ctype> SElementBase<dim,dimworld>::local (const Vec<dimworld,sgrid_ctype>& global)
+  {
+    Vec<dim,sgrid_ctype> l;     // result
+    Vec<dimworld,sgrid_ctype> rhs = global-s;
+    for (int k=0; k<dim; k++)
+      l(k) = (rhs*A(k)) / (A(k)*A(k));
+    return l;
+  }
+
+  template<int dim, int dimworld>
+  inline sgrid_ctype SElementBase<dim,dimworld>::integration_element (const Vec<dim,sgrid_ctype>& local)
+  {
+    sgrid_ctype s = 1.0;
+    for (int j=0; j<dim; j++) s *= A(j).norm1();
+    return s;
+  }
+
+  template<int dim, int dimworld>
+  inline Mat<dim,dim>& SElementBase<dim,dimworld>::Jacobian_inverse (const Vec<dim,sgrid_ctype>& local)
+  {
+    assert(dim==dimworld);
+
+    Jinv = A;
+    if (!builtinverse)
+    {
+      for (int i=0; i<dim; i++) Jinv(i,i) = 1.0/Jinv(i,i);
+      builtinverse = true;
+    }
+    return Jinv;
+  }
+
+  template<int dim, int dimworld>
+  inline void SElementBase<dim,dimworld>::print (std::ostream& ss, int indent)
+  {
+    for (int k=0; k<indent; k++) ss << " ";ss << "SElementBase<" << dim << "," << dimworld << ">" << endl;
+    for (int k=0; k<indent; k++) ss << " ";ss << "{" << endl;
+    for (int k=0; k<indent+2; k++) ss << " ";ss << "Position: " << s << endl;
+    for (int j=0; j<dim; j++)
+    {
+      for (int k=0; k<indent+2; k++) ss << " ";
+      ss << "direction " << j << "  " << A(j) << endl;
+    }
+    for (int j=0; j<1<<dim; j++)
+    {
+      for (int k=0; k<indent+2; k++) ss << " ";
+      ss << "corner " << j << "  " << c[j] << endl;
+    }
+    for (int k=0; k<indent+2; k++) ss << " ";ss << "Jinv ";
+    Jinv.print(ss,indent+2);
+    for (int k=0; k<indent+2; k++) ss << " ";ss << "builtinverse " << builtinverse << endl;
+    for (int k=0; k<indent; k++) ss << " ";ss << "}";
+  }
+
+  // members for SElement, must use specialization
+
   // reference element constructor, dim>3
   template<int dim, int dimworld>
   inline SElement<dim,dimworld>::SElement ()
@@ -37,15 +112,13 @@ namespace Dune {
     {
       // use binary representation of corner number to assign corner coordinates
       int mask=1;
-      c[i] = 0.0;
-      for (k=0; k<dim; k++)
+      c[i] = s;
+      for (int k=0; k<dim; k++)
       {
         if (i&mask) c[i] = c[i]+A(k);
         mask = mask<<1;
       }
     }
-
-    builtinverse = false;
   }
 
   template<int dimworld>
@@ -58,8 +131,6 @@ namespace Dune {
     // make corners
     c[0] = s;
     c[1] = s+A(0);
-
-    builtinverse = false;
   }
 
   template<int dimworld>
@@ -75,8 +146,6 @@ namespace Dune {
     c[1] = s+A(0);
     c[2] = s+A(0)+A(1);
     c[3] = s+A(1);
-
-    builtinverse = false;
   }
 
   template<int dimworld>
@@ -97,8 +166,6 @@ namespace Dune {
     c[5] = s+A(0)+A(2);
     c[6] = s+A(0)+A(1)+A(2);
     c[7] = s+A(1)+A(2);
-
-    builtinverse = false;
   }
 
 
@@ -112,12 +179,11 @@ namespace Dune {
     // make corners
     c[0] = s;
     c[1] = s+A(0);
-
-    builtinverse = false;
   }
 
   template<int dimworld>
-  inline SElement<2,dimworld>::SElement (const Vec<dimworld,sgrid_ctype>& s_, const Vec<dimworld,sgrid_ctype>& r0, const Vec<dimworld,sgrid_ctype>& r1)
+  inline SElement<2,dimworld>::SElement (const Vec<dimworld,sgrid_ctype>& s_, const Vec<dimworld,sgrid_ctype>& r0,
+                                         const Vec<dimworld,sgrid_ctype>& r1)
   {
     // copy arguments
     s = s_;
@@ -129,8 +195,6 @@ namespace Dune {
     c[1] = s+A(0);
     c[2] = s+A(0)+A(1);
     c[3] = s+A(1);
-
-    builtinverse = false;
   }
 
   template<int dimworld>
@@ -152,8 +216,6 @@ namespace Dune {
     c[5] = s+A(0)+A(2);
     c[6] = s+A(0)+A(1)+A(2);
     c[7] = s+A(1)+A(2);
-
-    builtinverse = false;
   }
 
   template<int dim, int dimworld>
@@ -175,8 +237,6 @@ namespace Dune {
         mask = mask<<1;
       }
     }
-
-    builtinverse = false;
   }
 
   template<int dimworld>
@@ -189,8 +249,6 @@ namespace Dune {
     // make corners
     c[0] = s;
     c[1] = s+A(0);
-
-    builtinverse = false;
   }
 
   template<int dimworld>
@@ -206,8 +264,6 @@ namespace Dune {
     c[1] = s+A(0);
     c[2] = s+A(0)+A(1);
     c[3] = s+A(1);
-
-    builtinverse = false;
   }
 
   template<int dimworld>
@@ -228,81 +284,39 @@ namespace Dune {
     c[5] = s+A(0)+A(2);
     c[6] = s+A(0)+A(1)+A(2);
     c[7] = s+A(1)+A(2);
-
-    builtinverse = false;
   }
 
+  // type
   template<int dim, int dimworld>
   inline ElementType SElement<dim,dimworld>::type ()
   {
-    switch (dim)
-    {
-    case 1 : return line;
-    case 2 : return quadrilateral;
-    case 3 : return hexahedron;
-    default : return unknown;
-    }
+    return unknown;
   }
 
-  template<int dim, int dimworld>
-  inline int SElement<dim,dimworld>::corners ()
+  template<int dimworld>
+  inline ElementType SElement<1,dimworld>::type ()
   {
-    return 1<<dim;
+    return line;
   }
 
-  template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype>& SElement<dim,dimworld>::operator[] (int i)
+  template<int dimworld>
+  inline ElementType SElement<2,dimworld>::type ()
   {
-    return c[i];
+    return quadrilateral;
   }
 
-  template<int dim, int dimworld>
-  inline SElement<dim,dim>& SElement<dim,dimworld>::refelem ()
+  template<int dimworld>
+  inline ElementType SElement<3,dimworld>::type ()
   {
-    return SReferenceElement<dim,dim>::refelem
+    return hexahedron;
   }
-
-  template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype> SElement<dim,dimworld>::global (const Vec<dim,sgrid_ctype>& local)
-  {
-    return s+A*local;
-  }
-
-  template<int dim, int dimworld>
-  inline Vec<dim,sgrid_ctype> SElement<dim,dimworld>::local (const Vec<dimworld,sgrid_ctype>& global)
-  {
-    Vec<dim,sgrid_ctype> l;     // result
-    Vec<dimworld,sgrid_ctype> rhs = global-s;
-    for (int k=0; k<dim; k++)
-      l(k) = (rhs*A(k)) / (A(k)*A(k));
-    return l;
-  }
-
-  template<int dim, int dimworld>
-  inline sgrid_ctype SElement<dim,dimworld>::integration_element (const Vec<dim,sgrid_ctype>& local)
-  {
-    sgrid_type s = 0.0;
-    for (int j=0; j<dim; j++) s *= A(j).norm1();
-    return s;
-  }
-
-  template<int dim, int dimworld>
-  inline Mat<dim,dim>& Jacobian_inverse (const Vec<dim,sgrid_ctype>& local)
-  {
-    assert(dim==dimworld);
-
-    Jinv = A;
-    if (!builtinverse)
-      for (int i=0; i<dim; i++) Jinv(i,i) = 1.0/Jinv(i,i);
-    return Jinv;
-  }
-
-
 
   //************************************************************************
   // inline methods for SEntity
 
   // general
+  // unfortunately, you have to define all three versions seperately, at least with the Intel compiler
+  // in debug mode ...
   template<int codim, int dim, int dimworld>
   inline int SEntity<codim,dim,dimworld>::level ()
   {
