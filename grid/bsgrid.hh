@@ -262,7 +262,7 @@ namespace Dune
 
     //! Constructor, real information is set via setElInfo method
     BSGridEntity(BSGrid<dim,dimworld> &grid,
-                 BSSPACE HElementType &element,int index);
+                 BSSPACE HElementType &element,int index, int wLevel);
 
     //! Default-Constructor
     BSGridEntity(BSGrid<dim,dimworld> &grid) : grid_(grid) { }
@@ -319,6 +319,9 @@ namespace Dune
     //! Assumes that meshes are nested.
     BSGridLevelIterator<0,dim,dimworld,All_Partition> father ();
 
+    BSGridEntity<0,dim,dimworld> newEntity();
+    void father ( BSGridEntity<0,dim,dimworld> &vati);
+
     /*! Location of this element relative to the reference element
        of the father. This is sufficient to interpolate all
        dofs in conforming case. Nonconforming may require access to
@@ -349,8 +352,8 @@ namespace Dune
     bool mark( int refCount );
 
     //! return whether entity could be cosrsend (COARSEND) or was refined
-    //! (REFIEND) or nothing happend (NONE)
-    AdaptationState state ();
+    //! (REFINED) or nothing happend (NONE)
+    AdaptationState state () const;
 
   private:
     BSGrid<dim,dimworld> &grid_;
@@ -358,6 +361,8 @@ namespace Dune
 
     //! the cuurent geometry
     BSGridElement<dim,dimworld> geo_;
+
+    int walkLevel_; //! tells the actual level of walk put to LevelIterator..
 
     bool builtgeometry_; //!< true if geometry has been constructed
     int index_;
@@ -475,9 +480,10 @@ namespace Dune
     //! prefix increment
     BSGridIntersectionIterator& operator ++();
 
-    //! The default Constructor
+    //! The default Constructor , level tells on which level we want
+    //! neighbours
     BSGridIntersectionIterator(BSGrid<dim,dimworld> &grid,BSSPACE HElementType *el,
-                               int level,bool end=false);
+                               int wLevel,bool end=false);
 
     //! The Destructor
     ~BSGridIntersectionIterator();
@@ -543,24 +549,34 @@ namespace Dune
     Vec<dimworld,bs_ctype>& outer_normal ();
 
   private:
-    // if neighbor exists , do setup of new neighbor
+    // if neighbour exists , do setup of new neighbour
     void setNeighbor ();
 
     // reset IntersectionIterator to first neighbour
-    void first(BSSPACE HElementType & elem);
+    void first(BSSPACE HElementType & elem, int wLevel);
 
     // set behind last neighbour
     void done ();
 
-    BSGridEntity<0,dim,dimworld> entity_;
-    BSSPACE HElementType *item_;
-    int index_;
+    BSGridEntity<0,dim,dimworld> entity_; //! neighbour entity
 
-    Vec<dimworld,bs_ctype> outerNormal_;
+    // current element from which we started the intersection iterator
+    BSSPACE HElementType *item_;
+
+    int index_; //! internal count of faces
+
+    int count_; //! index of intersection
+
+    bool theSituation_; //! true if the "situation" occurs :-)
+
+    Vec<dimworld,bs_ctype> outerNormal_; //! outerNormal ro current intersection
     Vec<dimworld,bs_ctype> unitOuterNormal_;
 
-    bool needSetup_;
+    bool needSetup_; //! true if setup is needed
     bool needNormal_;
+
+    // pair holding pointer to face and twist
+    BSSPACE NeighbourPairType neighpair_;
 
     BSGridElement<dim-1,dimworld> interSelfGlobal_; //! intersection_self_global
   };
@@ -649,8 +665,9 @@ namespace Dune
   {
     CompileTimeChecker<dim      == 3>   BSGrid_only_implemented_for_3dp;
     CompileTimeChecker<dimworld == 3>   BSGrid_only_implemented_for_3dw;
-#if 0
+
     friend class BSGridEntity <0,dim,dimworld>;
+#if 0
     //friend class BSGridEntity <1,dim,dimworld>;
     //friend class BSGridEntity <1 << dim-1 ,dim,dimworld>;
     friend class BSGridEntity <dim,dim,dimworld>;
@@ -775,6 +792,9 @@ namespace Dune
 
     void calcMaxlevel();
 
+    // set _coarsenMark to true
+    void setCoarsenMark();
+
     BSSPACE GitterBasisImpl *mygrid_;
 
     // save size of grid
@@ -785,6 +805,9 @@ namespace Dune
 
     // max level of grid
     int maxlevel_;
+
+    // true if at least one element is marked for coarsening
+    bool coarsenMark_;
   public:
     //template<int codim, int dim, int dimworld,PartitionIteratorType pitype>
     class BSGridLeafIterator

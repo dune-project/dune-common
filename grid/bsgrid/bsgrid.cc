@@ -74,8 +74,8 @@ namespace Dune {
       case 3 :
       {
         typename BSSPACE BSLevelIterator<3>::IteratorType
-        w (mygrid_->container(),level) ;
-        size_[level][3] = w.size();
+        w (*mygrid_) ;
+        size_[level][3] = w->size();
         break;
       }
       default :
@@ -117,6 +117,9 @@ namespace Dune {
 
     for(; it != endit; ++it)
     {
+      if((*it).global_index() > globalSize_[0])
+        globalSize_[0] = (*it).global_index();
+
       BSGridHierarchicIterator<dim,dimworld> hierend = it->hend   (maxlevel());
 
       for(BSGridHierarchicIterator<dim,dimworld> hierit  = (*it).hbegin (maxlevel()) ;
@@ -179,34 +182,48 @@ namespace Dune {
       {
         typename BSSPACE BSLeafIteratorMaxLevel w (*mygrid_) ;
         for (w->first () ; ! w->done () ; w->next ())
+        {
           w->item ().tagForGlobalRefinement ();
+        }
       }
+
       mygrid_->adapt ();
       maxlevel_++;
     }
     calcExtras();
-
     return true;
   }
 
   // adapt grid
   template <int dim, int dimworld>
+  inline void BSGrid<dim,dimworld>:: setCoarsenMark ()
+  {
+    coarsenMark_ = true;
+  }
+
+  // preprocess grid
+  template <int dim, int dimworld>
   inline bool BSGrid<dim,dimworld>::preAdapt()
   {
-    return false;
+    return coarsenMark_;
   }
 
   // adapt grid
   template <int dim, int dimworld>
   inline bool BSGrid<dim,dimworld>::adapt()
   {
-    return false;
+    bool ref = mygrid_->adapt (); // adapt grid
+    calcMaxlevel();             // calculate new maxlevel
+    calcExtras();               // reset size and things
+    return ref;
   }
 
-  // adapt grid
+  // post process grid
   template <int dim, int dimworld>
   inline void BSGrid<dim,dimworld>::postAdapt()
-  {}
+  {
+    coarsenMark_ = false;
+  }
 
   // writeGrid and readGrid
   template <int dim, int dimworld>
@@ -326,7 +343,7 @@ namespace Dune {
       iter_.first();
       index_=0;
       BSGridEntity<0,dim,dimworld> * obj =
-        new BSGridEntity<codim,dim,dimworld> (grid_,iter_.item(),index_);
+        new BSGridEntity<codim,dim,dimworld> (grid_,iter_.item(),index_,level_);
       objEntity_.store ( obj );
     }
   }
@@ -340,7 +357,8 @@ namespace Dune {
       , iter_(grid_.mygrid()->container(), level_ )
   {
     index_=0;
-    BSGridEntity<codim,dim,dimworld> * obj = new BSGridEntity<codim,dim,dimworld> (grid_,item,index_);
+    BSGridEntity<codim,dim,dimworld> * obj =
+      new BSGridEntity<codim,dim,dimworld> (grid_,item,index_,level_);
     // objEntity deletes entity if no refCount is left
     objEntity_.store ( obj );
   }
@@ -414,7 +432,7 @@ namespace Dune {
       iter_.first();
       index_=0;
       BSGridEntity<0,dim,dimworld> * obj =
-        new BSGridEntity<codim,dim,dimworld> (grid,iter_.item(),index_);
+        new BSGridEntity<codim,dim,dimworld> (grid,iter_.item(),index_,level_);
       objEntity_.store ( obj );
     }
   }
@@ -496,7 +514,8 @@ namespace Dune {
       {
         if(item_->level() <= maxlevel_)
         {
-          BSGridEntity<0,dim,dimworld> * obj = new BSGridEntity<0,dim,dimworld>(grid_,*item_ ,0);
+          BSGridEntity<0,dim,dimworld> * obj =
+            new BSGridEntity<0,dim,dimworld>(grid_,*item_ ,0,maxlevel_);
           // objEntity deletes entity pointer when no refCount is left
           objEntity_.store ( obj );
         }
@@ -596,19 +615,31 @@ namespace Dune {
   template<int dim, int dimworld>
   inline BSGridIntersectionIterator<dim,dimworld> ::
   BSGridIntersectionIterator(BSGrid<dim,dimworld> &grid,
-                             BSSPACE HElementType *el, int level,bool end) :
-    entity_( grid ), item_(el), index_(0) , needSetup_ (true), needNormal_(true)
-    , interSelfGlobal_ (false)
+                             BSSPACE HElementType *el, int wLevel,bool end) :
+    entity_( grid ), item_(el), index_(0) , count_ (0)
+    , needSetup_ (true), needNormal_(true)
+    , interSelfGlobal_ (false) , theSituation_ (false)
   {
-    if (end) index_ = 4;
+    neighpair_.first  = 0;
+    neighpair_.second = 0;
+
+    if( !end )
+      theSituation_ = ( (item_->level() < wLevel ) && item_->leaf() );
+    else
+      index_ = 4;
   }
   template<int dim, int dimworld>
-  inline void BSGridIntersectionIterator<dim,dimworld> :: first (BSSPACE HElementType & elem)
+  inline void BSGridIntersectionIterator<dim,dimworld> ::
+  first (BSSPACE HElementType & elem, int wLevel)
   {
     item_  = &elem;
-    index_ = 0;
+    index_ = count_ = 0;
+    neighpair_.first  = 0;
+    neighpair_.second = 0;
+
     needSetup_ = true;
     needNormal_= true;
+    theSituation_ = ( (elem.level() < wLevel ) && elem.leaf() );
   }
 
   template<int dim, int dimworld>
@@ -625,7 +656,30 @@ namespace Dune {
   inline BSGridIntersectionIterator<dim,dimworld> &
   BSGridIntersectionIterator<dim,dimworld> :: operator ++()
   {
-    index_++;
+    assert(item_ != 0);
+
+    count_++;
+    if( neighpair_.first && theSituation_ )
+    {
+      neighpair_.first = neighpair_.first->next();
+    }
+    else
+    {
+      neighpair_.first = 0;
+    }
+
+    if( !neighpair_.first )
+    {
+      index_++;
+      neighpair_.first = 0;
+    }
+
+    if(index_ > dim)
+    {
+      item_ = 0;
+      return *this;
+    }
+
     needSetup_  = true;
     needNormal_ = true;
     return *this;
@@ -635,14 +689,14 @@ namespace Dune {
   inline bool BSGridIntersectionIterator<dim,dimworld> ::
   operator== (const BSGridIntersectionIterator<dim,dimworld>& i) const
   {
-    return index_==i.index_;
+    return (item_ == i.item_);
   }
 
   template<int dim, int dimworld>
   inline bool BSGridIntersectionIterator<dim,dimworld> ::
   operator!= (const BSGridIntersectionIterator<dim,dimworld>& i) const
   {
-    return index_!=i.index_;
+    return (item_ != i.item_);
   }
 
   // set new neighbor
@@ -652,8 +706,25 @@ namespace Dune {
   {
     assert(this->neighbor());
 
-    typename BSSPACE GEOElementType *neigh =
-      (static_cast<BSSPACE GEOElementType *> (item_))->myneighbour(index_).first;
+    if(! neighpair_.first )
+    {
+      neighpair_ = (static_cast<BSSPACE GEOElementType &> (*item_)).myintersection(index_);
+
+      assert(neighpair_.first);
+
+      if( theSituation_ && neighpair_.first->down() )
+      {
+        neighpair_.first = neighpair_.first->down();
+      }
+    }
+
+    // same as in method myneighbour of Tetra and Hexa in gitter_sti.hh
+    // neighpair_.second is the twist of the face
+    typename BSSPACE GEOElementType * neigh = (neighpair_.second < 0) ?
+                                              ((neighpair_.first->nb.front()).first) : ((neighpair_.first->nb.rear()).first);
+
+    assert(neigh != item_);
+    assert(neigh != 0);
 
     entity_.setelement(*neigh, index_);
     needSetup_ = false;
@@ -693,7 +764,7 @@ namespace Dune {
   template<int dim, int dimworld>
   inline int BSGridIntersectionIterator<dim,dimworld>::number_in_self ()
   {
-    return index_;
+    return count_;
   }
 
   template<int dim, int dimworld>
@@ -714,6 +785,7 @@ namespace Dune {
   inline Vec<dimworld,bs_ctype>&
   BSGridIntersectionIterator<dim,dimworld>::outer_normal()
   {
+    assert(item_ != 0);
     if(needNormal_)
     {
       item_->outerNormal(index_,outerNormal_);
@@ -760,8 +832,10 @@ namespace Dune {
   // --0Entity
   template<int dim, int dimworld>
   inline BSGridEntity<0,dim,dimworld> :: BSGridEntity(BSGrid<dim,dimworld> &grid,
-                                                      BSSPACE HElementType & element,int index) :
-    grid_(grid), item_(&element), builtgeometry_(false), geo_(false), index_(index)
+                                                      BSSPACE HElementType & element,int index, int wLevel) :
+    grid_(grid), item_(&element)
+    , builtgeometry_(false), geo_(false)
+    , index_(index) , walkLevel_ (wLevel)
   {}
 
   template<int dim, int dimworld>
@@ -823,19 +897,19 @@ namespace Dune {
   template<int dim, int dimworld>
   inline BSGridIntersectionIterator<dim,dimworld> BSGridEntity<0,dim,dimworld> :: ibegin ()
   {
-    return BSGridIntersectionIterator<dim,dimworld> (grid_,item_,level());
+    return BSGridIntersectionIterator<dim,dimworld> (grid_,item_,walkLevel_);
   }
 
   template<int dim, int dimworld>
   inline BSGridIntersectionIterator<dim,dimworld> BSGridEntity<0,dim,dimworld> :: iend ()
   {
-    return BSGridIntersectionIterator<dim,dimworld> (grid_, 0 ,level(),true);
+    return BSGridIntersectionIterator<dim,dimworld> (grid_, 0 ,walkLevel_,true);
   }
 
   template<int dim, int dimworld>
   inline void BSGridEntity<0,dim,dimworld> :: ibegin ( BSGridIntersectionIterator<dim,dimworld> &it)
   {
-    it.first(*item_);
+    it.first(*item_,walkLevel_);
   }
 
   template<int dim, int dimworld>
@@ -844,23 +918,75 @@ namespace Dune {
     it.done();
   }
 
+  /*
+     template<int dim, int dimworld>
+     inline BSGridLevelIterator<0,dim,dimworld,All_Partition>
+     BSGridEntity<0,dim,dimworld> :: father()
+     {
+     if(! item_->up() )
+     {
+      std::cerr << "BSGridEntity<0," << dim << "," << dimworld << "> :: father() : no father of entity globalid = " << global_index() << "\n";
+      return BSGridLevelIterator<0,dim,dimworld,All_Partition> (grid_,*item_);
+     }
+
+     return BSGridLevelIterator<0,dim,dimworld,All_Partition> (grid_,*(item_->up()));
+     }
+   */
+
   template<int dim, int dimworld>
-  inline BSGridLevelIterator<0,dim,dimworld,All_Partition> BSGridEntity<0,dim,dimworld> :: father()
+  inline BSGridEntity<0,dim,dimworld>
+  BSGridEntity<0,dim,dimworld> :: newEntity ()
   {
-    return BSGridLevelIterator<0,dim,dimworld,All_Partition> (grid_,*(item_->up()));
+    BSGridEntity<0,dim,dimworld> tmp ( *this );
+    return tmp;
+  }
+
+  template<int dim, int dimworld>
+  inline void
+  BSGridEntity<0,dim,dimworld> :: father( BSGridEntity<0,dim,dimworld> & vati )
+  {
+    vati.setelement( *(item_->up()) , 0 );
   }
 
   // Adaptation methods
   template<int dim, int dimworld>
   inline bool BSGridEntity<0,dim,dimworld> :: mark (int ref)
   {
-    return true;
+    // refine_element_t and coarse_element_t are defined in bsinclude.hh
+    if(ref < 0)
+    {
+      if(level() <= 0) return false;
+      if(static_cast<BSSPACE GEOElementType &>
+         (*item_).requestrule() == BSSPACE refine_element_t)
+      {
+        return false;
+      }
+
+      static_cast<BSSPACE GEOElementType &>
+      (*item_).request( BSSPACE coarse_element_t );
+      grid_.setCoarsenMark();
+      return true;
+    }
+
+    if(ref > 0)
+    {
+      static_cast<BSSPACE GEOElementType &>
+      (*item_).request( BSSPACE refine_element_t );
+      return true;
+    }
+    return false;
   }
 
   // Adaptation methods
   template<int dim, int dimworld>
-  inline AdaptationState BSGridEntity<0,dim,dimworld> :: state ()
+  inline AdaptationState BSGridEntity<0,dim,dimworld> :: state () const
   {
+    if(static_cast<BSSPACE GEOElementType &>
+       (*item_).requestrule() == BSSPACE coarse_element_t) return COARSEN;
+
+    if(item_->hasBeenRefined())
+      return REFINED;
+
     return NONE;
   }
 
