@@ -80,7 +80,7 @@ namespace Dune {
     static T* realloc (T* oldMem, size_t oldSize , size_t nmemb)
     {
       assert(oldMem);
-      T * p = (T *) std::realloc(oldMem,nmemb*sizeof(T));
+      T * p = (T *) std::realloc(oldMem , nmemb*sizeof(T));
       assert(p);
       return p;
     }
@@ -752,7 +752,7 @@ namespace Dune {
     {
       //resize();
       //std::cout << "Scatter of el = " << en.global_index () << "\n";
-      std::pair < ObjectStreamType * , EntityType * > p (&str,&en);
+      std::pair < ObjectStreamType * , const EntityType * > p (&str,&en);
       dataWriter_.apply( p );
     }
 
@@ -761,7 +761,7 @@ namespace Dune {
     {
       //std::cout << "Gather of el = " << en.global_index () << "\n";
       resize();
-      std::pair < ObjectStreamType * , EntityType * > p (&str,&en);
+      std::pair < ObjectStreamType * , const EntityType * > p (&str,&en);
       dataReader_.apply( p );
     }
 
