@@ -1,7 +1,7 @@
 # $Id$
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
-	iteratorfacadetest
+	sllisttest iteratorfacadetest
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -12,6 +12,8 @@ check_PROGRAMS = $(TESTPROGS)
 # define the programs
 
 parsetest_SOURCES = parsetest.cc
+
+sllisttest_SOURCES = sllisttest.cc
 
 test_stack_SOURCES = test-stack.cc
 
