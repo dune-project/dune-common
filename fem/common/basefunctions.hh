@@ -44,7 +44,8 @@ namespace Dune {
   //*************************************************************************
   template<class FunctionSpaceType>
   class BaseFunctionInterface
-    : public Mapping< typename FunctionSpaceType::RangeField,
+    : public Mapping< typename FunctionSpaceType::DomainField,
+          typename FunctionSpaceType::RangeField,
           typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range >
   {
 

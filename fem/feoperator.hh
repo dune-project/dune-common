@@ -9,7 +9,8 @@ namespace Dune {
 
   template <class DiscFunctionType, class MatrixType, class FEOpImp>
   class FiniteElementOperatorInterface
-    : public Operator<typename DiscFunctionType::RangeFieldType,DiscFunctionType,DiscFunctionType>
+    : public Operator<typename DiscFunctionType::DomainFieldType,
+          typename DiscFunctionType::RangeFieldType,DiscFunctionType,DiscFunctionType>
   {
   public:
     typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
