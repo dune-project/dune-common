@@ -279,9 +279,9 @@ template<int dim, class GridImp>
 inline UGGridHierarchicIterator<GridImp>
 UGGridEntity < 0, dim ,GridImp >::hbegin(int maxlevel) const
 {
-  UGGridHierarchicIterator<GridImp> it(level(), maxlevel);
+  UGGridHierarchicIterator<GridImp> it(maxlevel);
 
-  if (level()<maxlevel) {
+  if (level()<=maxlevel) {
 
     // The 30 is the macro MAX_SONS from ug/gm/gm.h
     UGElementType* sonList[30];
@@ -305,6 +305,12 @@ UGGridEntity < 0, dim ,GridImp >::hbegin(int maxlevel) const
     }
 #undef NSONS
 
+    // Put myself on the stack
+    typename UGGridHierarchicIterator<GridImp>::StackEntry se;
+    se.element = target_;
+    se.level   = level();
+    it.elemStack.push(se);
+
   }
 
   if (it.elemStack.empty()) {
@@ -322,11 +328,7 @@ template< int dim, class GridImp>
 inline UGGridHierarchicIterator<GridImp>
 UGGridEntity < 0, dim ,GridImp >::hend(int maxlevel) const
 {
-  UGGridHierarchicIterator<GridImp> it(level(), maxlevel);
-
-  //it.target_ = 0;
-
-  return it;
+  return UGGridHierarchicIterator<GridImp>(maxlevel);
 }
 
 
