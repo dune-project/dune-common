@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_QUADLQH_HH__
-#define __DUNE_QUADLQH_HH__
+#ifndef DUNE_QUADLQH_HH
+#define DUNE_QUADLQH_HH
 
 #include <dune/common/misc.hh>
 #include "gaussquadimp.hh"

@@ -1,11 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_QUADRATURE_HH__
-#define __DUNE_QUADRATURE_HH__
+#ifndef DUNE_QUADRATURE_HH
+#define DUNE_QUADRATURE_HH
 
-#include <vector>
-
-#include "../../common/dynamictype.hh"
+#include <dune/common/dynamictype.hh>
 
 // For GeometryType
 #include <dune/grid/common/grid.hh>
@@ -13,7 +11,7 @@
 #include <dune/common/exceptions.hh>
 
 // For Quadrature::Iterator
-#include "../../common/genericiterator.hh"
+#include <dune/common/genericiterator.hh>
 
 namespace Dune {
 
@@ -22,8 +20,8 @@ namespace Dune {
   //
   //  --QuadraturePoints
   //
-  // Every specialization of this class implements a diffrent quadrature
-  // for diffrent elements and polynomial order. This implementation in left
+  // Every specialization of this class implements a different quadrature
+  // for different elements and polynomial order. This implementation is left
   // to the user.
   //
   //************************************************************************
@@ -38,9 +36,9 @@ namespace Dune {
 
   //***********************************************************************
   //!
-  //! Note: The sum over all weigths for the quadrature is the volume of the
+  //! Note: The sum over all weights for the quadrature is the volume of the
   //! reference element, for example the sum over three quadrature point for
-  //! a triangle is 0.5 which is the volume on reference triangle
+  //! a triangle is 0.5 which is the volume of the reference triangle
   //!
   //***********************************************************************
   template <class Domain, class RangeField, GeometryType ElType, int polOrd>
