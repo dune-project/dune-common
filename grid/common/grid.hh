@@ -127,8 +127,8 @@ namespace Dune {
     //! maps a global coordinate within the element to a local coordinate in its reference element
     Vec<dim,ct> local (const Vec<dimworld,ct>& global);
 
-    //! return true if the point global lies inside the element
-    bool checkInside (const Vec<dimworld,ct>& global);
+    //! return true if the point in local coordinates lies inside the reference element
+    bool checkInside (const Vec<dim,ct>& local);
 
     /*! Integration over a general element is done by integrating over the reference element
        and using the transformation from the reference element to the global element as follows:

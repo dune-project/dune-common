@@ -49,6 +49,12 @@ namespace Dune {
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
+  inline bool Element<dim,dimworld,ct,ElementImp>::checkInside (const Vec<dim,ct>& local)
+  {
+    return asImp().checkInside(local);
+  }
+
+  template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
   inline ct Element<dim,dimworld,ct,ElementImp>::integration_element (const Vec<dim,ct>& local)
   {
     return asImp().integration_element(local);
@@ -72,6 +78,7 @@ namespace Dune {
     Vec<dimworld,ct> g;
     global(l);
     local(g);
+    checkInside(l);
     integration_element(l);
     if (dim==dimworld) Jacobian_inverse(l);
   }
