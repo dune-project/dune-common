@@ -895,96 +895,42 @@ namespace Dune {
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
   template <FileFormatType ftype>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  grid2File ( const char * filename , int processor ,ct time,
-              bool adaptive, int timestep)
+  grid2File ( const char * filename , ct time, int timestep,
+              bool adaptive, int processor)
   {
-    if(adaptive)
-    {
-      {
-        std::fstream file (filename,std::ios::in);
-        GridIdentifier type;
-        int helpType;
+    const char *fn;
+    const char *path = NULL;
+    std::fstream file (filename,std::ios::out);
+    file << asImp().type() << "   #GridType \n";
 
-        file >> helpType;
-        type = ( GridIdentifier ) helpType;
-        if(type != asImp().type())
-        {
-          std::cerr << "Cannot write diffrent GridIdentifier!\n";
-          abort();
-        }
-      }
-      {
-        std::fstream file (filename,std::ios::app);
-
-        char fileTemp[1024];
-        sprintf(fileTemp,"%s.grid_%d",filename,timestep);
-
-        file << time << " " << fileTemp << "\n";
-
-        return asImp().writeGrid<ftype>(fileTemp,time);
-      }
-    }
-    else
-    {
-      std::fstream file (filename,std::ios::out);
-
-      file << asImp().type() << "\n";
-      file << adaptive << "\n";
-
-      char fileTemp[1024];
-      sprintf(fileTemp,"%s.grid_%d",filename,timestep);
-
-      file << time << " " << fileTemp << "\n";
-
-      return asImp().writeGrid<ftype>(fileTemp,time);
-    }
+    fn = genFilename(path,filename,timestep);
+    return asImp().writeGrid<ftype>(fn,time);
   } // end grid2File
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
   template <FileFormatType ftype>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  file2Grid ( const char * filename , ct & time, int processor ,
-              bool adaptive, int timestep)
+  file2Grid ( const char * filename , ct & time, int timestep ,
+              bool adaptive, int processor )
   {
+    const char * fn;
+    std::fstream file (filename,std::ios::in);
+    GridIdentifier type;
+    int helpType;
+
+    file >> helpType;
+    type = ( GridIdentifier ) helpType;
+    if(type != asImp().type())
     {
-      std::fstream file (filename,std::ios::in);
-      GridIdentifier type;
-      int helpType;
-
-      file >> helpType;
-      type = ( GridIdentifier ) helpType;
-      if(type != asImp().type())
-      {
-        std::cerr << "Cannot read diffrent GridIdentifier!\n";
-        abort();
-      }
-
-      int adaptTemp;
-      file >> adaptTemp;
-
-      if(adaptive)
-      {
-        if(adaptTemp == 1)
-        {}
-        else
-        {}
-        std::cout << "adaptive Not implemented yet! \n";
-        abort();
-      }
-      else
-      {
-        char fileTemp[1024];
-        double timeTemp;
-
-        file >> timeTemp >> fileTemp;
-
-        time = timeTemp;
-        printf("Read file: time = `%le' , filename = `%s' \n",time,fileTemp);
-
-        return asImp().readGrid<ftype>(fileTemp,time);
-      }
+      std::cerr << "Cannot read diffrent GridIdentifier!\n";
+      abort();
     }
+
+    const char *path = NULL;
+    fn = genFilename(path,filename,timestep);
+    printf("Read file: filename = `%s' \n",fn);
+    return asImp().readGrid<ftype>(fn,time);
   } // end file2Grid
 
 
