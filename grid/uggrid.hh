@@ -260,6 +260,8 @@ namespace Dune {
     // End of Interface Methods
     // **********************************************************
 
+    void adaptWithoutClosure();
+
     /** \brief The different forms of grid refinement that UG supports */
     enum RefinementType {
       /** \brief New level consists only of the refined elements */
@@ -326,7 +328,9 @@ namespace Dune {
     //! The type of grid refinement currently in use
     RefinementType refinementType_;
 
-  protected:
+    //!
+    bool omitGreenClosure_;
+
     /** \brief Number of UGGrids currently in use.
      *
      * This counts the number of UGGrids currently instantiated.  All

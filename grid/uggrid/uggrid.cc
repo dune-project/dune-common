@@ -129,14 +129,14 @@ template<> int UGGrid < 2, 2 >::numOfUGGrids = 0;
 template<> int UGGrid < 3, 3 >::numOfUGGrids = 0;
 
 template < int dim, int dimworld >
-inline UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL), refinementType_(COPY)
+inline UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL), refinementType_(COPY), omitGreenClosure_(false)
 {
   init(500, 10);
 }
 
 template < int dim, int dimworld >
 inline UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned envHeapSize)
-  : multigrid_(NULL), refinementType_(COPY)
+  : multigrid_(NULL), refinementType_(COPY), omitGreenClosure_(false)
 {
   init(heapSize, envHeapSize);
 }
@@ -485,50 +485,30 @@ bool UGGrid < dim, dimworld >::adapt()
   UG2d::Set_Current_BVP((void**)thisBVP);
 #endif
 
-#ifdef _3
-  mode = UG3d::GM_REFINE_TRULY_LOCAL;
+  mode = UG_NS<dim>::GM_REFINE_TRULY_LOCAL;
 
   if (refinementType_==COPY)
-    mode = mode | UG3d::GM_COPY_ALL;
+    mode = mode | UG_NS<dim>::GM_COPY_ALL;
+
+  if (omitGreenClosure_)
+    mode = mode | UG_NS<dim>::GM_REFINE_NOT_CLOSED;
 
   // I don't really know what this means
-  int seq = UG3d::GM_REFINE_PARALLEL;
+  int seq = UG_NS<dim>::GM_REFINE_PARALLEL;
 
   // I don't really know what this means either
-  int mgtest = UG3d::GM_REFINE_NOHEAPTEST;
+  int mgtest = UG_NS<dim>::GM_REFINE_NOHEAPTEST;
 
-  rv = UG3d::AdaptMultiGrid(multigrid_,mode,seq,mgtest);
-#else
-  mode = UG2d::GM_REFINE_TRULY_LOCAL;
-
-  if (refinementType_==COPY)
-    mode = mode | UG2d::GM_COPY_ALL;
-
-  // I don't really know what this means
-  int seq = UG2d::GM_REFINE_PARALLEL;
-
-  // I don't really know what this means either
-  int mgtest = UG2d::GM_REFINE_NOHEAPTEST;
-
-  /** \todo Why don't I have to mention the namespace?? */
   rv = AdaptMultiGrid(multigrid_,mode,seq,mgtest);
-#endif
 
   if (rv!=0)
     DUNE_THROW(GridError, "UG::adapt() returned with error code " << rv);
 
   // Collapse the complete grid hierarchy into a single level if requested
-#ifdef _3
   if (refinementType_==COLLAPSE)
-    if (UG3d::Collapse(multigrid_))
-      DUNE_THROW(GridError, "UG3d::Collapse returned error code!");
-#else
-  if (refinementType_==COLLAPSE)
-    if (UG2d::Collapse(multigrid_))
-      DUNE_THROW(GridError, "UG2d::Collapse returned error code!");
-#endif
+    if (Collapse(multigrid_))
+      DUNE_THROW(GridError, "UG?d::Collapse returned error code!");
 
-#if 1
   // Renumber everything
   for (int i=0; i<=maxlevel(); i++) {
 
@@ -547,13 +527,20 @@ bool UGGrid < dim, dimworld >::adapt()
       getRealEntity<dim>(*vIt).target_->id = id++;
 
   }
-#endif
 
   /** \bug Should return true only if at least one element has actually
       been refined */
   return true;
 }
 
+template <int dim, int dimworld>
+void UGGrid <dim, dimworld>::adaptWithoutClosure()
+{
+  bool omitClosureBackup = omitGreenClosure_;
+  omitGreenClosure_ = true;
+  adapt();
+  omitGreenClosure_ = omitClosureBackup;
+}
 
 template < int dim, int dimworld >
 void UGGrid < dim, dimworld >::globalRefine(int refCount)

@@ -24,6 +24,47 @@ namespace Dune {
   class UG_NS {
   public:
 
+    enum {GM_REFINE_NOT_CLOSED =
+#ifdef _2
+            UG2d::GM_REFINE_NOT_CLOSED
+#else
+            UG3d::GM_REFINE_NOT_CLOSED
+#endif
+    };
+
+    enum {GM_COPY_ALL =
+#ifdef _2
+            UG2d::GM_COPY_ALL
+#else
+            UG3d::GM_COPY_ALL
+#endif
+    };
+
+    enum {GM_REFINE_TRULY_LOCAL =
+#ifdef _2
+            UG2d::GM_REFINE_TRULY_LOCAL
+#else
+            UG3d::GM_REFINE_TRULY_LOCAL
+#endif
+    };
+
+    enum {GM_REFINE_PARALLEL =
+#ifdef _2
+            UG2d::GM_REFINE_PARALLEL
+#else
+            UG3d::GM_REFINE_PARALLEL
+#endif
+    };
+
+    enum {GM_REFINE_NOHEAPTEST =
+#ifdef _2
+            UG2d::GM_REFINE_NOHEAPTEST
+#else
+            UG3d::GM_REFINE_NOHEAPTEST
+#endif
+    };
+
+
     /** \brief The PFIRSTNODE macro which returns the first node in a
      * grid even in a parallel setting.
      */
