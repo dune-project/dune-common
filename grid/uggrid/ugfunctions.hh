@@ -73,10 +73,29 @@ namespace Dune {
       return CORNERS_OF_ELEM(theElement);
     }
 
+    static int Corners_Of_Side(const typename TargetType<0,dim>::T* theElement, int side) {
+#ifdef _2
+      using UG2d::element_descriptors;
+#else
+      using UG3d::element_descriptors;
+#endif
+      CORNERS_OF_SIDE(theElement, side);
+    }
+
+    static int Corner_Of_Side(const typename TargetType<0,dim>::T* theElement, int side, int corner) {
+#ifdef _2
+      using UG2d::element_descriptors;
+#else
+      using UG3d::element_descriptors;
+#endif
+      CORNER_OF_SIDE(theElement, side, corner);
+    }
+
     //! Encapsulates the TAG macro
     static unsigned int Tag(const typename TargetType<0,dim>::T* theElement) {
       return TAG(theElement);
     }
+
 
     static void Local_To_Global(int n, DOUBLE** y,
                                 const FieldVector<double, dim>& local,
@@ -89,12 +108,15 @@ namespace Dune {
      * \param x Coordinates of the corners of the element
      * \param local Local evaluation point
      *
+     * \return The return type is int because the macro INVERSE_TRANSFORMATION
+     *  return 1 on failure.
      */
-    static void Transformation(int n, double** x,
-                               const FieldVector<double, dim>& local, Mat<dim,dim,double>& mat) {
+    static int Transformation(int n, double** x,
+                              const FieldVector<double, dim>& local, Mat<dim,dim,double>& mat) {
       typedef DOUBLE DOUBLE_VECTOR[dim];
       double det;
-      INVERSE_TRANSFORMATION(n, x, local, mat, det);
+      INVERSE_TRANSFORMATION(n, x, local, mat, det)
+
     }
 
     //! Returns the i-th corner of a UG element
