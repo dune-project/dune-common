@@ -25,22 +25,28 @@ AC_DEFUN(DUNE_PATH_GRAPE,
 dnl expand tilde / other stuff
     eval with_grape=$with_grape)
 dnl extract absolute path
-dnl eval with_albert=`cd $with_albert ; pwd`
+dnl eval with_grape=`cd $with_grape ; pwd`
 
 if test "x$X_LIBS" != x ; then
   # store old values
   ac_save_LDFLAGS="$LDFLAGS"
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_LIBS="$LIBS"
   LIBS="$X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
 
   # is --with-grape=bla used?
   if test x$with_grape != x ; then
     GRAPEROOT="$with_grape"
-    LDFLAGS="$LDFLAGS -L$with_grape"
   else
     # set some kind of default grape-path...
     GRAPEROOT="/usr/local/grape/"
   fi
+
+  CFLAGS="$CFLAGS -I$GRAPEROOT"
+  CPPFLAGS="$CPPFLAGS -I$GRAPEROOT"
+  LDFLAGS="$LDFLAGS -L$GRAPEROOT"
+
 
   # append OpenGL-options if needed
   if test x$have_gl != xno ; then
@@ -48,23 +54,24 @@ if test "x$X_LIBS" != x ; then
   fi
 
   # check for header
-  # !! auf AC_CHECK_HEADER umstellen
-  AC_CHECK_FILE($GRAPEROOT/grape.h,
-    [GRAPE_INCLUDE="-I$GRAPEROOT"
+  # we have to use CC for checking the header!!
+  AC_CHECK_HEADER([grape.h],
+    [GRAPE_CFLAGS="-I$GRAPEROOT"
      HAVE_GRAPE="1"],
-    AC_MSG_WARN([grape.h not found in $GRAPEROOT!])
-  )
+    AC_MSG_WARN([grape.h not found in $GRAPEROOT!]))
 
-  # check for lib
+  # check for lib if header was found
+  if test x$HAVE_GRAPE = x1 ; then
   AC_CHECK_LIB(gr, grape, 
-    [LIBS="$LIBS -L$GRAPEROOT -lgr"
-     HAVE_GRAPE="1"], 
-     AC_MSG_WARN([libgr not found in $GRAPEROOT!]))
+    [LIBS="$LIBS -L$GRAPEROOT -lgr"], 
+    [HAVE_GRAPE="0"
+     AC_MSG_WARN([libgr not found in $GRAPEROOT!])])
+  fi
 
   # did it work?
-  if test x$HAVE_GRAPE != x ; then
+  if test x$HAVE_GRAPE = x1 ; then
     AC_SUBST(GRAPE_LIBS, $LIBS)
-    AC_SUBST(GRAPE_INCLUDE, $GRAPE_INCLUDE)
+    AC_SUBST(GRAPE_CFLAGS, $GRAPE_CFLAGS)
     AC_DEFINE(HAVE_GRAPE, 1, [Define to 1 if grape-library is found])
   fi
 
@@ -73,6 +80,8 @@ if test "x$X_LIBS" != x ; then
 
   # reset old values
   LIBS="$ac_save_LIBS"
+  CFLAGS="$ac_save_CFLAGS"
+  CPPFLAGS="$ac_save_CPPFLAGS"
   LDFLAGS="$ac_save_LDFLAGS"
 else
   AC_MSG_WARN("no X-libs/headers found, won't check for GRAPE...")

@@ -1,0 +1,4 @@
+- distinguish between CFLAGS, CXXFLAGS and CPPFLAGS
+- find out about the grape.h-errors when parsed by g++
+- check Albert-test
+- do we perhaps need -ldl for Grape? libltdl instead? What about -Wl,-rpath?
