@@ -35,70 +35,60 @@ namespace Dune {
   //************************************************************************
   template<class DiscreteFunctionSpaceType,
       class DofIteratorImp,
-      template <class , class> class LocalFunctionIteratorImp ,
+      class LocalFunctionImp ,
       class DiscreteFunctionImp >
   class DiscreteFunctionInterface
     : public Function < DiscreteFunctionSpaceType,
           DiscreteFunctionInterface <DiscreteFunctionSpaceType,
-              DofIteratorImp , LocalFunctionIteratorImp , DiscreteFunctionImp > >
+              DofIteratorImp , LocalFunctionImp , DiscreteFunctionImp > >
   {
   public:
     //! types that we sometimes need outside
     typedef Function < DiscreteFunctionSpaceType,
         DiscreteFunctionInterface <DiscreteFunctionSpaceType,
-            DofIteratorImp , LocalFunctionIteratorImp,  DiscreteFunctionImp > > FunctionType;
+            DofIteratorImp,
+            LocalFunctionImp,
+            DiscreteFunctionImp > > FunctionType;
 
-    //! ???
+    //! Domain vector
     typedef typename DiscreteFunctionSpaceType::Domain DomainType;
-    //! ???
+    //! Range vector
     typedef typename DiscreteFunctionSpaceType::Range RangeType;
 
-    //! ???
+    //! Domain field type (usually a float type)
     typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
-    //! ???
+    //! Range field type (usually a float type)
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
-
-    //! remember the template types
-    template <class GridIteratorType>
-    struct Traits
-    {
-      //! ???
-      typedef LocalFunctionIteratorImp<DiscreteFunctionImp,GridIteratorType> LocalFunctionIteratorType;
-    };
 
     //! Type of the underlying grid
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
+
+    //! Type of the local function
+    typedef LocalFunctionImp LocalFunctionType;
 
     //! Type of the Dof iterator
     typedef DofIteratorImp DofIteratorType;
 
     //* end of type declarations
 
-    //! ???
-    DiscreteFunctionInterface (const DiscreteFunctionSpaceType &f )
-      : FunctionType ( f ) {} ;
-
-    //! ???
-    template <class GridIteratorType>
-    LocalFunctionIteratorImp<DiscreteFunctionImp,GridIteratorType>
-    localFunction ( GridIteratorType & it)
-    {
-      return asImp().localFunction( it );
-    }
+    //! Constructor
+    //! Needs to be called in derived classes
+    DiscreteFunctionInterface (const DiscreteFunctionSpaceType& f)
+      : FunctionType ( f ) {}
 
     //! the implementation of an iterator to iterate efficient
     //! over all dofs of a discrete function
     DofIteratorType dbegin ()
     {
       return asImp().dbegin ();
-    };
+    }
 
     //! the implementation of an iterator to iterate efficient
     //! over all dofs of a discrete function
     DofIteratorType dend ()
     {
       return asImp().dend ();
-    };
+    }
 
     //! const version of dbegin
     ConstDofIteratorDefault<DofIteratorType> dbegin () const
@@ -141,28 +131,28 @@ namespace Dune {
   //*************************************************************************
   template<class DiscreteFunctionSpaceType,
       class DofIteratorImp,
-      template <class , class> class LocalFunctionIteratorImp,
+      class LocalFunctionImp,
       class DiscreteFunctionImp >
   class DiscreteFunctionDefault
     : public DiscreteFunctionInterface
       <DiscreteFunctionSpaceType, DofIteratorImp,
-          LocalFunctionIteratorImp, DiscreteFunctionImp >
+          LocalFunctionImp, DiscreteFunctionImp >
   {
 
     typedef DiscreteFunctionInterface <DiscreteFunctionSpaceType,
-        DofIteratorImp, LocalFunctionIteratorImp, DiscreteFunctionImp >  DiscreteFunctionInterfaceType;
+        DofIteratorImp, LocalFunctionImp, DiscreteFunctionImp >  DiscreteFunctionInterfaceType;
 
     enum { myId_ = 0 };
 
   public:
-    //! ???
+    //! Type of domain vector
     typedef typename DiscreteFunctionSpaceType::Domain DomainType;
-    //! ???
+    //! Type of range vector
     typedef typename DiscreteFunctionSpaceType::Range RangeType;
 
-    //! ???
+    //! Type of domain field (usually a float type)
     typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
-    //! ???
+    //! Type of range field (usually a float type)
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
 
     //! pass the function space to the interface class

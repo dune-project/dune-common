@@ -8,24 +8,35 @@
 namespace Dune
 {
 
+  template<class DiscreteFunctionSpaceType >
+  inline DFAdapt< DiscreteFunctionSpaceType >::
+  DFAdapt(DiscreteFunctionSpaceType& f) :
+    DiscreteFunctionDefaultType ( f )
+    , name_ ("no name")
+    , memObj_ (f.signIn(*this))
+    , dofVec_ ( memObj_.getArray() )
+    , localFunc_ ( f , dofVec_ )
+  {}
+
   // Constructor makeing discrete function
   template<class DiscreteFunctionSpaceType >
   inline DFAdapt< DiscreteFunctionSpaceType >::
   DFAdapt(const char * name, DiscreteFunctionSpaceType & f)
     : DiscreteFunctionDefaultType ( f )
       , name_ (name)
-      , memObj_ (f.signIn( const_cast <DFAdapt< DiscreteFunctionSpaceType > &> (*this) ))
+      , memObj_ (f.signIn(*this))
       , dofVec_ ( memObj_.getArray() )
       , localFunc_ ( f , dofVec_ )
   {}
 
   template<class DiscreteFunctionSpaceType >
   inline DFAdapt< DiscreteFunctionSpaceType >::
-  DFAdapt(const DFAdapt <DiscreteFunctionSpaceType> & df ) :
-    DiscreteFunctionDefaultType ( df.functionSpace_ ) , name_ ("copy")
-    , memObj_ ( df.functionSpace_.signIn( const_cast <DFAdapt< DiscreteFunctionSpaceType > &> (*this) ))
-    , dofVec_ ( memObj_.getArray() )
-    , localFunc_ ( df.localFunc_ )
+  DFAdapt(const DFAdapt <DiscreteFunctionSpaceType>& df ) :
+    DiscreteFunctionDefaultType ( df.functionSpace_ ),
+    name_ ("copy"),
+    memObj_ ( df.functionSpace_.signIn(*this) ),
+    dofVec_ ( memObj_.getArray() ),
+    localFunc_ ( df.localFunc_ )
   {
     // copy values of array
     dofVec_ = df.dofVec_;
@@ -38,7 +49,9 @@ namespace Dune
   ~DFAdapt()
   {
     //std::cout << "Deleting DF " << this->name() << "\n";
-    bool removed = this->functionSpace_.signOut(const_cast<DFAdapt< DiscreteFunctionSpaceType > &> (*this)  );
+    // * Temporary hack (burriad)
+    FunctionSpaceType& spc = const_cast<FunctionSpaceType&>(this->functionSpace_);
+    bool removed = spc.signOut(*this);
     if(!removed)
     {
       std::cerr << "ERROR: removal of DF '" << name_ << "' failed!\n";
@@ -388,6 +401,7 @@ namespace Dune
   inline const typename LocalFunctionAdapt < DiscreteFunctionSpaceType >::RangeFieldType &
   LocalFunctionAdapt < DiscreteFunctionSpaceType >::operator [] (int num) const
   {
+    std::cout << "LFAdadpt::operator[]: " << num << " of " << numberOfDofs() << std::endl;
     return (* (values_[num]));
   }
 
@@ -502,39 +516,51 @@ namespace Dune
   //  DofIteratorAdapt
   //
   //**********************************************************************
+  template <class DofType, class DofArrayType>
+  DofIteratorAdapt<DofType, DofArrayType>&
+  DofIteratorAdapt<DofType, DofArrayType>::
+  operator= (const DofIteratorAdapt<DofType,
+                 DofArrayType>& other) {
+    if (*this != other) {
+      dofArray_ = other.dofArray_;
+      count_ = other.count_;
+    }
+    return *this;
+  }
+
   template <class DofType,class DofArrayType>
   inline DofType& DofIteratorAdapt<DofType,DofArrayType>::operator *()
   {
-    assert((count_ >=0) && (count_ < dofArray_.size()));
-    return dofArray_ [ count_ ];
+    assert((count_ >=0) && (count_ < dofArray_->size()));
+    return (*dofArray_)[ count_ ];
   }
 
   template <class DofType,class DofArrayType>
   inline const DofType& DofIteratorAdapt<DofType,DofArrayType>::operator* () const
   {
-    assert((count_ >=0) && (count_ < constArray_.size()));
-    return constArray_ [ count_ ];
+    assert((count_ >=0) && (count_ < dofArray_->size()));
+    return (*dofArray_) [ count_ ];
   }
 
   template <class DofType,class DofArrayType>
   inline DofIteratorAdapt<DofType,DofArrayType>& DofIteratorAdapt<DofType,DofArrayType>::operator ++()
   {
-    count_++;
+    ++count_;
     return (*this);
   }
 
   template <class DofType,class DofArrayType>
   inline DofType& DofIteratorAdapt<DofType,DofArrayType>::operator [](int i)
   {
-    assert((i >=0) && (i < dofArray_.size()));
-    return dofArray_[i];
+    assert((i >=0) && (i < dofArray_->size()));
+    return (*dofArray_)[i];
   }
 
   template <class DofType,class DofArrayType>
   inline const DofType& DofIteratorAdapt<DofType,DofArrayType>::operator [](int i) const
   {
-    assert((i >=0) && (i < constArray_.size()));
-    return constArray_[i];
+    assert((i >=0) && (i < dofArray_->size()));
+    return (*dofArray_)[i];
   }
 
   template <class DofType,class DofArrayType>

@@ -16,8 +16,6 @@
 namespace Dune {
 
   template <class DiscreteFunctionSpaceType > class LocalFunctionArray;
-  template < class DiscreteFunctionType, class GridIteratorType >
-  class LocalFunctionArrayIterator;
   template < class DofType >                  class DofIteratorArray;
 
   //**********************************************************************
@@ -31,13 +29,13 @@ namespace Dune {
   template<class DiscreteFunctionSpaceType >
   class DiscFuncArray
     : public DiscreteFunctionDefault < DiscreteFunctionSpaceType,
-          DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
-          LocalFunctionArrayIterator ,
+          DofIteratorArray <typename DiscreteFunctionSpaceType::RangeField>,
+          LocalFunctionArray <DiscreteFunctionSpaceType>,
           DiscFuncArray <DiscreteFunctionSpaceType> >
   {
     typedef DiscreteFunctionDefault < DiscreteFunctionSpaceType,
-        DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
-        LocalFunctionArrayIterator ,
+        DofIteratorArray <typename DiscreteFunctionSpaceType::RangeField>,
+        LocalFunctionArray <DiscreteFunctionSpaceType>,
         DiscFuncArray <DiscreteFunctionSpaceType > >
     DiscreteFunctionDefaultType;
 
@@ -56,10 +54,10 @@ namespace Dune {
 
 
     //! the local function type
-    typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
+    typedef LocalFunctionArray<DiscreteFunctionSpaceType> LocalFunctionType;
 
     //! the dof iterator type of this function
-    typedef DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > DofIteratorType;
+    typedef DofIteratorArray <typename DiscreteFunctionSpaceType::RangeField> DofIteratorType;
     typedef ConstDofIteratorDefault<DofIteratorType> ConstDofIteratorType;
 
     //! The associated discrete function space
@@ -293,13 +291,26 @@ namespace Dune {
   public:
     typedef DofImp DofType;
 
-    DofIteratorArray ( Array < DofType > & dofArray , int count )
-      :  dofArray_ ( dofArray ) , constArray_ (dofArray) , count_ ( count ) {};
+    //! Default constructor
+    DofIteratorArray() :
+      dofArray(0),
+      count_() {}
 
+    //! Constructor (const)
     DofIteratorArray ( const Array < DofType > & dofArray , int count )
-      :  dofArray_ ( const_cast <Array < DofType > &> (dofArray) ) ,
-        constArray_ ( dofArray ) ,
-        count_ ( count ) {};
+      :  dofArray_ (const_cast<DofArrayType*>(&dofArray)) ,
+        count_ (count) {}
+
+    //! Constructor
+    DofIteratorArray(Array<DofType>& dofArray, int count)
+      : dofArray_(&dofArray),
+        count_(count) {}
+
+    //! Copy Constructor
+    DofIteratorArray (const DofIteratorArray<DofImp>& other);
+
+    //! Assignment operator
+    DofIteratorArray<DofImp>& operator=(const DofIteratorArray<DofImp>& other);
 
     //! return dof
     DofType & operator *();
@@ -314,7 +325,7 @@ namespace Dune {
     DofType& operator[] (int i);
 
     //! random access read only
-    const DofType& operator [] (int i) const;
+    const DofType& operator[] (int i) const;
 
     //! compare
     bool operator == (const DofIteratorArray<DofType> & I ) const;
@@ -329,11 +340,9 @@ namespace Dune {
     void reset () ;
 
   private:
+    typedef Array<DofType> DofArrayType;
     //! the array holding the dofs
-    Array < DofType > &dofArray_;
-
-    //! the array holding the dofs , only const reference
-    const Array < DofType > &constArray_;
+    Array < DofType >* dofArray_;
 
     //! index
     mutable int count_;

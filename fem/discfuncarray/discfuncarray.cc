@@ -542,38 +542,53 @@ namespace Dune
   //
   //**********************************************************************
   template <class DofType>
+  DofIteratorArray<DofType>::DofIteratorArray(const DofIteratorArray<DofType>& other) :
+    dofArray_(other.dofArray_),
+    count_(other.count_) {}
+
+  template <class DofType>
+  DofIteratorArray<DofType>&
+  DofIteratorArray<DofType>::operator= (const DofIteratorArray<DofType>& other) {
+    if (&other != this) {
+      dofArray_ = other.dofArray_;
+      count_ = other.count_;
+    }
+    return *this;
+  }
+
+  template <class DofType>
   inline DofType& DofIteratorArray<DofType>::operator *()
   {
-    assert((count_ >=0) && (count_ < dofArray_.size()));
-    return dofArray_ [ count_ ];
+    assert((count_ >=0) && (count_ < dofArray_->size()));
+    return (*dofArray_) [ count_ ];
   }
 
   template <class DofType>
   inline const DofType& DofIteratorArray<DofType>::operator * () const
   {
-    assert((count_ >=0) && (count_ < constArray_.size()));
-    return constArray_ [ count_ ];
+    assert((count_ >=0) && (count_ < dofArray_->size()));
+    return (*dofArray_) [ count_ ];
   }
 
   template <class DofType>
   inline DofIteratorArray<DofType>& DofIteratorArray<DofType>::operator ++()
   {
-    count_++;
+    ++count_;
     return (*this);
   }
 
   template <class DofType>
   inline DofType& DofIteratorArray<DofType>::operator [](int i)
   {
-    assert((i >=0) && (i < dofArray_.size()));
-    return dofArray_[i];
+    assert((i >=0) && (i < dofArray_->size()));
+    return (*dofArray_)[i];
   }
 
   template <class DofType>
   inline const DofType& DofIteratorArray<DofType>::operator [](int i) const
   {
-    assert((i >=0) && (i < constArray_.size()));
-    return constArray_[i];
+    assert((i >=0) && (i < dofArray_->size()));
+    return (*dofArray_)[i];
   }
 
   template <class DofType>

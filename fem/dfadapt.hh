@@ -15,8 +15,6 @@
 namespace Dune {
 
   template <class DiscreteFunctionSpaceType >    class LocalFunctionAdapt;
-  template <class DiscreteFunctionType, class GridIteratorType >
-  class LocalFunctionAdaptIterator;
   template <class DofType, class DofArrayType >  class DofIteratorAdapt;
 
   //! defined in dofmanager.hh
@@ -35,7 +33,7 @@ namespace Dune {
     : public DiscreteFunctionDefault < DiscreteFunctionSpaceType,
           DofIteratorAdapt < typename DiscreteFunctionSpaceType::RangeField ,
               DofArray< typename DiscreteFunctionSpaceType::RangeField > > ,
-          LocalFunctionAdaptIterator ,
+          LocalFunctionAdapt< DiscreteFunctionSpaceType > ,
           DFAdapt <DiscreteFunctionSpaceType> >
   {
   public:
@@ -45,7 +43,7 @@ namespace Dune {
   private:
     typedef DiscreteFunctionDefault < DiscreteFunctionSpaceType,
         DofIteratorAdapt < typename DiscreteFunctionSpaceType::RangeField,DofArrayType  > ,
-        LocalFunctionAdaptIterator ,
+        LocalFunctionAdapt<DiscreteFunctionSpaceType> ,
         DFAdapt <DiscreteFunctionSpaceType > >
     DiscreteFunctionDefaultType;
 
@@ -65,6 +63,8 @@ namespace Dune {
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
 
     //! Constructor make Discrete Function
+    DFAdapt(DiscreteFunctionSpaceType& f);
+
     DFAdapt (const char * name, DiscreteFunctionSpaceType & f ) ;
 
     //! Constructor make Discrete Function
@@ -233,6 +233,9 @@ namespace Dune {
     //! update local function for given Entity
     template <class EntityType > bool init ( EntityType &en ) const;
 
+    //! Forbidden! Would wreck havoc
+    MyType& operator= (const MyType& other);
+
     //! needed once
     mutable RangeType tmp_;
     mutable DomainType xtmp_;
@@ -259,7 +262,7 @@ namespace Dune {
     DofArrayType & dofVec_;
 
     //! the corresponding base function set
-    mutable const BaseFunctionSetType *baseFuncSet_;
+    mutable BaseFunctionSetType *baseFuncSet_;
 
     //! do we have the same base function set for all elements
     bool uniform_;
@@ -280,16 +283,29 @@ namespace Dune {
     typedef DofIteratorAdapt<DofImp,DofArrayType> MyType;
   public:
     typedef DofImp DofType;
+    //! Default constructor
+    DofIteratorAdapt () :
+      dofArray_(0),
+      count_() {}
 
-    //! Constructor
-    DofIteratorAdapt ( DofArrayType & dofArray , int count )
-      :  dofArray_ ( dofArray ) , constArray_ (dofArray) , count_ ( count ) {};
-
-    //! Constructor
+    //! Constructor (with const)
     DofIteratorAdapt ( const DofArrayType & dofArray , int count )
-      :  dofArray_ ( const_cast <DofArrayType &> (dofArray) ) ,
-        constArray_ ( dofArray ) ,
-        count_ ( count ) {};
+      :  dofArray_ ( const_cast<DofArrayType*>(&dofArray) ) ,
+        count_ ( count ) {}
+
+    //! Constructor (without const)
+    DofIteratorAdapt(DofArrayType& dofArray, int count)
+      : dofArray_(&dofArray),
+        count_(count) {}
+
+    //! Copy constructor
+    DofIteratorAdapt(const DofIteratorAdapt<DofImp, DofArrayType>& other) :
+      dofArray_ (other.dofArray_),
+      count_ (other.count_) {}
+
+    //! Assignment operator
+    DofIteratorAdapt<DofImp, DofArrayType>&
+    operator= (const DofIteratorAdapt<DofImp, DofArrayType>& other);
 
     //! return dof
     DofType & operator *();
@@ -323,10 +339,7 @@ namespace Dune {
 
   private:
     //! the array holding the dofs
-    DofArrayType &dofArray_;
-
-    //! the array holding the dofs , only const reference
-    const DofArrayType &constArray_;
+    DofArrayType* dofArray_;
 
     //! index
     mutable int count_;
