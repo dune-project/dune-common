@@ -21,14 +21,24 @@ namespace Dune {
   class LagrangeBaseFunction < FunctionSpaceType , ElType , 0 >
     : public BaseFunctionInterface<FunctionSpaceType>
   {
+    enum { DimRange = FunctionSpaceType::DimRange };
+    int baseNum_;
   public:
     LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
-      : BaseFunctionInterface<FunctionSpaceType> (f)  {};
+      : BaseFunctionInterface<FunctionSpaceType> (f) , baseNum_ ( baseNum )
+    {
+      if((baseNum_ < 0) || (baseNum_ >= DimRange))
+      {
+        std::cout << "Wrong base number in LagrangeBaseFunction<polOrd = 0>!\n";
+        abort();
+      }
+    };
 
     virtual void evaluate ( const Vec<0, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      phi = 1.0;
+      phi = 0.0;
+      phi(baseNum_) = 1.0;
     }
 
     virtual void evaluate ( const Vec<1, deriType> &diffVariable,
@@ -258,7 +268,7 @@ namespace Dune {
     {
       if((baseNum < 0) || (baseNum > 3))
       {
-        std::cout << "Wrong baseNum given to LagrangeBase for hexahedrons \n";
+        std::cout << "Wrong baseNum given to LagrangeBase for quadrilaterals \n";
         abort();
       }
       // looks complicated but works
@@ -484,41 +494,41 @@ namespace Dune {
 
   //! default definition stays empty because implementation via
   //! specialization
-  template <ElementType ElType, int polOrd > struct LagrangeDefinition;
+  template <ElementType ElType, int polOrd ,int dimrange > struct LagrangeDefinition;
 
   //! Lagrange Definition for lines
-  template <int polOrd >
-  struct LagrangeDefinition< line , polOrd>
+  template <int polOrd , int dimrange >
+  struct LagrangeDefinition< line , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? 1 : (2 * polOrd) };
+    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 2 * polOrd) };
   };
 
   //! Lagrange Definition for triangles
-  template <int polOrd >
-  struct LagrangeDefinition< triangle , polOrd>
+  template <int polOrd , int dimrange >
+  struct LagrangeDefinition< triangle , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? 1 : (3 * polOrd) };
+    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 3 * polOrd) };
   };
 
   //! Lagrange Definition for quadrilaterals
-  template <int polOrd >
-  struct LagrangeDefinition< quadrilateral , polOrd>
+  template <int polOrd , int dimrange >
+  struct LagrangeDefinition< quadrilateral , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? 1 : (4 * polOrd) };
+    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 4 * polOrd) };
   };
 
   //! Lagrange Definition for tetrahedrons
-  template <int polOrd >
-  struct LagrangeDefinition< tetrahedron , polOrd>
+  template <int polOrd , int dimrange >
+  struct LagrangeDefinition< tetrahedron , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? 1 : (4 * polOrd) };
+    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 4 * polOrd) };
   };
 
   //! Lagrange Definition for hexahedrons
-  template <int polOrd >
-  struct LagrangeDefinition< hexahedron , polOrd>
+  template <int polOrd , int dimrange >
+  struct LagrangeDefinition< hexahedron , polOrd, dimrange >
   {
-    enum { numOfBaseFct = (polOrd == 0) ? 1 : (8 * polOrd) };
+    enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 8 * polOrd) };
   };
 
   //*********************************************************************
@@ -533,8 +543,9 @@ namespace Dune {
   class LagrangeFastBaseFunctionSet
     : public FastBaseFunctionSet<FunctionSpaceType >
   {
+    enum { dimrange = FunctionSpaceType::DimRange };
     //! know the number of base functions
-    enum { numOfBaseFct = LagrangeDefinition < ElType, polOrd >::numOfBaseFct };
+    enum { numOfBaseFct = LagrangeDefinition < ElType, polOrd, dimrange >::numOfBaseFct };
 
     //! type of LagrangeBaseFunctions
     typedef LagrangeBaseFunction < FunctionSpaceType , ElType , polOrd >
@@ -576,18 +587,20 @@ namespace Dune {
   //! given grid entity from local dof number to global dof number
   //
   //************************************************************************
-  template <int polOrd>
+  template <int polOrd, int dimrange>
   class LagrangeMapper
-    : public MapperDefault < LagrangeMapper <polOrd> >
+    : public MapperDefault < LagrangeMapper <polOrd,dimrange> >
   {
+    int numLocalDofs_;
   public:
+    LagrangeMapper ( int numLocalDofs ) : numLocalDofs_ (numLocalDofs) {}
 
     //! default is Lagrange with polOrd = 1
     template <class GridType>
     int size (const GridType &grid , int level ) const
     {
       // return number of vertices
-      return grid.size( level , GridType::dimension );
+      return (dimrange*grid.size( level , GridType::dimension ));
     };
 
     //! map Entity an local Dof number to global Dof number
@@ -596,23 +609,29 @@ namespace Dune {
     int mapToGlobal (EntityType &en, int localNum ) const
     {
       enum { codim = EntityType::dimension };
+      // Gaussklammer
+      int locNum = (int) localNum / dimrange;
+      int locDim = localNum % dimrange;
+
       // get global vertex number
-      return en.subIndex<codim>(localNum);
+      return (dimrange*en.subIndex<codim>(locNum)) + locDim;
     };
 
   };
 
-  class LagrangeMapper<0>
-    : public MapperDefault < LagrangeMapper <0> >
+  template <int dimrange>
+  class LagrangeMapper<0,dimrange>
+    : public MapperDefault < LagrangeMapper <0,dimrange> >
   {
   public:
+    LagrangeMapper ( int numDofs ) {}
 
     //! default is Lagrange with polOrd = 1
     template <class GridType>
     int size (const GridType &grid , int level ) const
     {
       // return number of vertices
-      return grid.size( level , 0 );
+      return dimrange*grid.size( level , 0 );
     };
 
     //! map Entity an local Dof number to global Dof number
@@ -620,8 +639,8 @@ namespace Dune {
     template <class EntityType>
     int mapToGlobal (EntityType &en, int localNum ) const
     {
-      // return entity index
-      return en.index();
+      // get global vertex number
+      return (dimrange*en.index()) + localNum;
     };
 
   };
@@ -659,6 +678,8 @@ namespace Dune {
     enum { numOfDiffBase_ = 20 };
 
   public:
+    typedef LagrangeDiscreteFunctionSpace < FunctionSpaceType, GridType, polOrd+1 > Next;
+
     //! remember polynomial order
     enum { polynomialOrder =  polOrd };
 
@@ -668,6 +689,7 @@ namespace Dune {
       DiscreteFunctionSpaceType (g,id) // ,baseFuncSet_(*this)  { };
     {
       //    g.globalRefine ( maxLevel );
+      mapper_ = NULL;
 
       //std::cout << "Constructor of LagrangeDiscreteFunctionSpace! \n";
       for(int i=0; i<numOfDiffBase_; i++)
@@ -723,14 +745,14 @@ namespace Dune {
     //! size knows the correct way to calculate the size of the functionspace
     int size ( int level ) const
     {
-      return mapper_.size ( grid_ ,level );
+      return mapper_->size ( grid_ ,level );
     };
 
     //! for given entity map local dof number to global dof number
     template <class EntityType>
     int mapToGlobal ( EntityType &en, int localNum ) const
     {
-      return mapper_.mapToGlobal ( en , localNum );
+      return mapper_->mapToGlobal ( en , localNum );
     };
 
   protected:
@@ -758,21 +780,107 @@ namespace Dune {
     template <ElementType ElType, int pO >
     FastBaseFunctionSetType* makeBaseSet ()
     {
+
       typedef LagrangeFastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType,
           ElType, pO > BaseFuncSetType;
 
       BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
+
+      mapper_ = new LagrangeMapper< pO, DimRange >
+                  (baseFuncSet->getNumberOfBaseFunctions());
+
       return baseFuncSet;
     }
 
     //! the corresponding vector of base function sets
     //! lenght is diffrent element types
     Vec< numOfDiffBase_ , FastBaseFunctionSetType * > baseFuncSet_;
-
+  private:
     //! the corresponding LagrangeMapper
-    LagrangeMapper<polOrd> mapper_;
+    LagrangeMapper<polOrd,DimRange> *mapper_;
 
   }; // end class LagrangeDiscreteFunctionSpace
+
+
+  //***************************************************************************
+  //
+  //  -- Discontinous Galerkin Space
+  //
+  //***************************************************************************
+  template <int polOrd>
+  class DGMapper
+    : public MapperDefault < DGMapper <polOrd> >
+  {
+    int numberOfDofs_;
+  public:
+    DGMapper ( int numDof ) : numberOfDofs_ (numDof) {};
+
+    template <class GridType>
+    int size (const GridType &grid , int level ) const
+    {
+      // return number of dofs * number of elements
+      return (numberOfDofs_ * grid.size( level , 0 ));
+    };
+
+    //! map Entity an local Dof number to global Dof number
+    template <class EntityType>
+    int mapToGlobal (EntityType &en, int localNum ) const
+    {
+      return ((en.index() * numberOfDofs_) + localNum);
+    };
+
+  };
+
+  template< class FunctionSpaceType, class GridType, int polOrd  >
+  class DGDiscreteFunctionSpace
+    : public LagrangeDiscreteFunctionSpace < FunctionSpaceType , GridType, polOrd >
+  {
+    typedef LagrangeDiscreteFunctionSpace < FunctionSpaceType , GridType,polOrd >
+    LagrangeSpaceType;
+
+  public:
+    DGDiscreteFunctionSpace ( GridType & g ) : LagrangeSpaceType (g)
+    {
+      mapper_ = NULL;
+      typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
+      LevelIterator endit = g.lend<0>(0);
+      for(LevelIterator it = g.lbegin<0>(0); it != endit; ++it)
+      {
+        if(!mapper_)
+        {
+          ElementType type = (*it).geometry().type(); // Hack
+          int numDofs = (*baseFuncSet_ ( type )).getNumberOfBaseFunctions();
+
+          mapper_ = new DGMapper < polOrd > (numDofs);
+          break;
+        }
+      }
+    };
+
+    ~DGDiscreteFunctionSpace ()
+    {
+      if(mapper_) delete mapper_;
+    }
+
+    //! length of the dof vector
+    //! size knows the correct way to calculate the size of the functionspace
+    int size ( int level ) const
+    {
+      return mapper_->size ( grid_ ,level );
+    };
+
+    //! for given entity map local dof number to global dof number
+    template <class EntityType>
+    int mapToGlobal ( EntityType &en, int localNum ) const
+    {
+      return mapper_->mapToGlobal ( en , localNum );
+    };
+
+  private:
+    DGMapper<polOrd> *mapper_;
+
+  };
+
 
 
 } // end namespace Dune

@@ -12,7 +12,7 @@ namespace Dune {
 
   template <class DiscFunctionType, class MatrixType, class FEOpImp>
   class FiniteElementOperatorInterface
-    : public Operator<DiscFunctionType::Traits<0>::RangeField,DiscFunctionType,DiscFunctionType>
+    : public Operator<DiscFunctionType::RangeFieldType,DiscFunctionType,DiscFunctionType>
       //: public DiscreteOperator<DiscFunctionType , FiniteElementOperatorInterface
       //<DiscFunctionType , MatrixType ,FEOpImp > >
   {
