@@ -50,6 +50,12 @@ namespace Dune {
       maxIndex_ = index;
     }
 
+    //! set index as maxIndex
+    int getMaxIndex() const
+    {
+      return maxIndex_;
+    }
+
     //! restore index from stack or create new index
     T getIndex ()
     {
@@ -106,6 +112,43 @@ namespace Dune {
 
       for(int i=0; i<2*length; i++)
         printf(" index [%d] = %d \n",i,vec[i]);
+    }
+
+    // backup set to out stream
+    void backupIndexSet ( std::ostream & os )
+    {
+      // holes are not stored at the moment
+      os.write( ((const char *) &maxIndex_ ), sizeof(int) ) ;
+      return ;
+    }
+
+    // restore from in stream
+    void restoreIndexSet ( std::istream & is )
+    {
+      is.read ( ((char *) &maxIndex_), sizeof(int) );
+      clearStack ();
+
+      return ;
+    }
+
+  private:
+    // clear all stored indices
+    void clearStack ()
+    {
+      if(stack_)
+      {
+        delete stack_;
+        stack_ = new StackType();
+        assert(stack_);
+      }
+
+      DListIteratorType endit = fullStackList_.end();
+      for(DListIteratorType it = fullStackList_.begin(); it != endit; ++it)
+      {
+        fullStackList_.erase( it );
+      }
+
+      return;
     }
   }; // end class IndexStack
 
