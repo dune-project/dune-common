@@ -810,6 +810,10 @@ namespace Dune
     //! coordinates for higher order boundary
     const NormalVecType & outerNormal (const LocalCoordType & local) const;
 
+    //! return outer normal, this should be dependent on local
+    //! coordinates for higher order boundary
+    const NormalVecType & integrationOuterNormal (const LocalCoordType & local) const;
+
   private:
     //**********************************************************
     //  private methods

@@ -1688,6 +1688,13 @@ namespace Dune
     return unitNormal_;
   }
 
+  template<class GridImp>
+  inline const typename AlbertaGridIntersectionIterator<GridImp>::NormalVecType &
+  AlbertaGridIntersectionIterator<GridImp>::integrationOuterNormal (const LocalCoordType & local) const
+  {
+    return this->outerNormal(local);
+  }
+
 
   template< class GridImp >
   inline const typename AlbertaGridIntersectionIterator<GridImp>::NormalVecType &
