@@ -99,8 +99,11 @@ namespace Dune {
       globalsize_(gsize), periodic_(periodic), levels(0)
     {
       for (int d=0; d<DIM; d++) {
-        if (gsize[d]<=0) throw std::string("Size Error");
-        h_[d] = _h[d] / gsize[d];
+        if (gsize[d] < 0) throw std::string("Size Error");
+        if (gsize[d] == 0)
+          h_[d] = 0;
+        else
+          h_[d] = _h[d] / gsize[d];
       }
       overlap_[0]=0;
       levels++;
@@ -197,11 +200,15 @@ namespace Dune {
       return (dim_[d] > 1) &&
              !((periodic_[d]==false)&&(process[d]==dim_[d]-1));
     };
-    const array<DIM> & process() { return process_; }
+    const array<DIM> & process() const { return process_; }
     int father_id(level l, const array<DIM> & coord) const;
     int has_coord_shift(level, int d) const;
     //! return the step size on level l in direction d
     double h(level l, int d) const { return h_[d] / (2<<l); };
+    //! inform about periodic boundry conditions
+    bool periodic(int dir) const { return periodic_[dir]; }
+    //! inform about global arrangement of the processors
+    int dim(int dir) const { return dim_[dir]; }
   }; /* end spgrid */
 
   ////////////////////////////////////////////////////////////////////////////
@@ -321,6 +328,7 @@ namespace Dune {
         std::cout << g.rank_ << ": Constructor for element " << coord
                   << " on level " << oldlevel
                   << ", but lemt would be on level " << l_ << std::endl;
+        assert(false);
       }
     };
   public:
