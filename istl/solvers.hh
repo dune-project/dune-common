@@ -346,6 +346,17 @@ namespace Dune {
         if (_verbose>1) printf("%5d %12.4E\n",0,norm_0);
       }
 
+      if ( norm < (_reduction * norm_0) )
+      {
+        res.converged = 1;
+        _prec.post(x);                            // postprocess preconditioner
+        res.iterations = 0;                       // fill statistics
+        res.reduction = 0;
+        res.conv_rate  = 0;
+        res.elapsed = watch.elapsed();
+        return;
+      }
+
       //
       // iteration
       //
@@ -362,8 +373,15 @@ namespace Dune {
         rho_new = _prec.dot(rt,r);
 
         // look if breakdown occured
-        if ((std::abs(rho) < EPSILON) || (std::abs(omega) < EPSILON))
-          DUNE_THROW(ISTLError,"breakdown in BiCGSTAB");
+        if (std::abs(rho) <= EPSILON)
+          DUNE_THROW(ISTLError,"breakdown in BiCGSTAB - rho "
+                     << rho << " <= EPSILON " << EPSILON
+                     << " after " << res.iterations << " iterations");
+        if (std::abs(omega) <= EPSILON)
+          DUNE_THROW(ISTLError,"breakdown in BiCGSTAB - omega "
+                     << omega << " <= EPSILON " << EPSILON
+                     << " after " << res.iterations << " iterations");
+
 
         if (it==0)
           p = r;
