@@ -64,8 +64,8 @@ CPPFLAGS="$REM_CPPFLAGS $ALBERTADEF -I$ALBERTA_INCLUDE_PATH"
 REM_CPPFLAGS=
 
 # !!! quickfix
-  ALBERTA_LIBS="-lPLOTansi $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS $GL_LDFLAGS $GL_LIBS -lXext -lcsolver -lblas -ldl"
-  LIBS="$ALBERTA_LIBS"
+  ALBERTA_EXTRA="-lPLOTansi $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS $GL_LDFLAGS $GL_LIBS -lXext -lcsolver -lblas -ldl"
+  LIBS="$ALBERTA_EXTRA"
 
 # if header is found...
 if test x$HAVE_ALBERTA = x1 ; then
@@ -83,8 +83,7 @@ if test x$HAVE_ALBERTA = x1 ; then
   # the zero is the sign of the no-debug-lib
   albertalibname="ALBERTA${with_problem_dim}${with_world_dim}_${with_alberta_debug}"
   AC_CHECK_LIB($albertalibname,[mesh_traverse],
-	[ALBERTA_LIBS="-l$albertalibname $ALBERTA_LIBS"
-   LIBS="$LIBS $ALBERTA_LIBS"],
+	[ALBERTA_LIBS="-l$albertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
 	[HAVE_ALBERTA="0"
 	AC_MSG_WARN(lib$albertalibname not found!)])
 fi
