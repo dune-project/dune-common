@@ -210,6 +210,9 @@ namespace Dune {
     /** \brief Please doc me! */
     GridIdentifier type () { return UGGrid_Id; };
 
+    /** \brief Distributes this grid over the available nodes in a distributed machine */
+    void loadBalance(int strategy, int minlevel, int depth, int maxlevel, int minelement);
+
     /*! The communication interface
        @param T: array class holding data associated with the entities
        @param P: type used to gather/scatter data in and out of the message buffer

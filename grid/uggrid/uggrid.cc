@@ -245,7 +245,7 @@ inline UGGrid < dim, dimworld >::~UGGrid()
 
   if (multigrid_) {
 #ifdef _3
-    //UG3d::DisposeMultiGrid(multigrid_);
+    UG3d::DisposeMultiGrid(multigrid_);
 #else
     UG2d::DisposeMultiGrid(multigrid_);
 #endif
@@ -488,6 +488,25 @@ void UGGrid < dim, dimworld >::globalRefine(int refCount)
 
 }
 
+template < int dim, int dimworld >
+void UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth, int maxlevel, int minelement)
+{
+  char* argv[4];
+
+  argv[0] = "lb 0";
+  argv[1] = "c 1";
+  argv[2] = "d 2";
+  argv[3] = "e 1";
+
+#ifdef _2
+  int errCode = UG2d::LBCommand(4, argv);
+#else
+  int errCode = UG3d::LBCommand(4, argv);
+#endif
+
+  if (errCode)
+    DUNE_THROW(GridError, "UG?d::LBCommand returned error code " << errCode);
+}
 
 template < int dim, int dimworld >
 template<class T, template<class> class P, int codim>
