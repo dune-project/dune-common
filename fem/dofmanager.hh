@@ -345,7 +345,7 @@ namespace Dune {
 
   private:
     typedef DoubleLinkedList < MemObjectType * > ListType;
-    typedef ListType::Iterator ListIteratorType;
+    typedef typename ListType::Iterator ListIteratorType;
 
     // list with MemObjects, for each DiscreteFunction we have one MemObject
     ListType memList_;
