@@ -1,7 +1,8 @@
 # $Id$
 
 aclocaldir = $(datadir)/aclocal
-aclocal_DATA = albert.m4 \
+aclocal_DATA = alberta.m4\
+               albert.m4 \
                blas.m4 \
                dimension.m4 \
                dune.m4 \
