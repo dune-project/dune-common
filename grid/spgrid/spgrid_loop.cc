@@ -25,6 +25,25 @@ namespace Dune {
         begin[d] = 0;
         end[d] = size(l,d) + front_overlap(l,d) + end_overlap(l,d);
       }
+      /* All Selected Vertices () */
+      array<DIM> coord;
+      array<DIM> id=0;
+      array<DIM> add=init_add(l);
+      id[0] = max(l-1) + begin[0]*add[0];
+      for (coord[0]=begin[0]; coord[0]<end[0]; coord[0]++) {
+        id[1] = id[0] + begin[1]*add[1];
+        for (coord[1]=begin[1]; coord[1]<end[1]; coord[1]++) {
+          id[2] = id[1] + begin[2]*add[2];
+          for (coord[2]=begin[2]; coord[2]<end[2]; coord[2]++) {
+            /* do something */
+            stub.evaluate(l, coord, id[2]);
+            id[2] += add[2];
+          }
+          id[1] += add[1];
+        }
+        id[0] += add[0];
+      }
+      return;
       return loop3D(l,begin,end,end,end,stub);
     }
     default :
@@ -85,21 +104,21 @@ namespace Dune {
     switch(DIM) {
     case 3 :
     {
-      array<DIM> begin_f;
-      array<DIM> end_f;
-      array<DIM> begin_e;
-      array<DIM> end_e;
-
+      array<DIM> beginI;
+      array<DIM> beginB;
+      array<DIM> endI;
+      array<DIM> endB;
       for (int d=0; d<DIM; d++) {
-        begin_f[d] = 0 + (do_front_share(d) && skip[d][0]);
-        end_f[d] = 0 + !do_front_share(d);
-        begin_e[d] = size(l,d) + front_overlap(l,d)
-                     + end_overlap(l,d) - !do_end_share(d);
-        end_e[d] = size(l,d) + front_overlap(l,d) + end_overlap(l,d)
-                   - (do_end_share(d) && skip[d][1]);
+        beginB[d] = 0;
+        beginI[d] = beginB[d]+1;
+        endB[d] = size(l,d) + front_overlap(l,d) + end_overlap(l,d);
+        endI[d] = endB[d] - 1;
+        if (beginI[d] > endB[d])
+          beginI[d] = endB[d];
+        if (beginI[d] > endI[d])
+          endI[d] = beginI[d];
       }
-
-      return loop3D(l,begin_f,end_f,begin_e,end_e,stub);
+      return loop3D(l,beginB,beginI,endI,endB,stub);   // border
     }
     default :
     {
@@ -137,6 +156,8 @@ namespace Dune {
         end_f[d] = 2*front_overlap(l,d);
         begin_e[d] = size(l,d) + front_overlap(l,d) - end_overlap(l,d);
         end_e[d] = size(l,d) + front_overlap(l,d)  + end_overlap(l,d);
+        if (end_f[d] > begin_e[d])
+          begin_e[d] = end_f[d];
       }
 
       return loop3D(l,begin_f,end_f,begin_e,end_e,stub);
