@@ -1169,6 +1169,8 @@ namespace Dune
   //
   //***************************************************************
 
+  //static ALBERT EL_INFO neighElInfo_;
+
   // these object should be generated with new by Entity, because
   // for a LevelIterator we only need one virtualNeighbour Entity, which is
   // given to the Neighbour Iterator, we need a list of Neighbor Entitys
@@ -1183,6 +1185,10 @@ namespace Dune
 
     if(manageNeighEl_)
       grid_.interNeighProvider_.freeObjectEntity(manageNeighEl_);
+
+    if(boundaryEntity_) delete boundaryEntity_;
+
+    if(manageNeighInfo_) elinfoProvider.freeObjectEntity(manageNeighInfo_);
   }
 
   template< int dim, int dimworld>
@@ -1193,7 +1199,9 @@ namespace Dune
     , neighGlob_ (NULL) , elInfo_ (NULL) , neighborCount_ (dim+1)
     , manageObj_ (NULL)
     , manageInterEl_ (NULL)
-    , manageNeighEl_ (NULL) {}
+    , manageNeighEl_ (NULL)
+    , boundaryEntity_ (NULL)
+    , manageNeighInfo_ (NULL) , neighElInfo_ (NULL) {}
 
   template< int dim, int dimworld>
   inline AlbertGridNeighborIterator<dim,dimworld>::AlbertGridNeighborIterator
@@ -1204,7 +1212,12 @@ namespace Dune
     , builtNeigh_ (false)
     , manageObj_ (NULL)
     , manageInterEl_ (NULL)
-    , manageNeighEl_ (NULL) {}
+    , manageNeighEl_ (NULL)
+    , boundaryEntity_ (NULL)
+  {
+    manageNeighInfo_ = elinfoProvider.getNewObjectEntity();
+    neighElInfo_ = manageNeighInfo_->item;
+  }
 
   template< int dim, int dimworld>
   inline AlbertGridNeighborIterator<dim,dimworld>&
@@ -1221,8 +1234,10 @@ namespace Dune
   inline AlbertGridNeighborIterator<dim,dimworld>&
   AlbertGridNeighborIterator<dim,dimworld>::operator ++(int steps)
   {
-    for(int i=0; i<steps; i++)
-      ++(*this);
+    neighborCount_ += steps;
+    if(neighborCount_ > dim+1) neighborCount_ = dim+1;
+    builtNeigh_ = false;
+
     return (*this);
   }
 
@@ -1252,12 +1267,10 @@ namespace Dune
         manageObj_ = grid_.entityProvider_.getNewObjectEntity(grid_,level_);
         virtualEntity_ = manageObj_->item;
         virtualEntity_->setLevel(level_);
-        memcpy(&neighElInfo_,elInfo_,sizeof(ALBERT EL_INFO));
+        memcpy(neighElInfo_,elInfo_,sizeof(ALBERT EL_INFO));
       }
 
-      setNeighInfo(elInfo_,&neighElInfo_,neighborCount_);
-      virtualEntity_->setElInfo(&neighElInfo_);
-      builtNeigh_ = true;
+      setupVirtEn();
     }
     return (*virtualEntity_);
   }
@@ -1274,12 +1287,10 @@ namespace Dune
         manageObj_ = grid_.entityProvider_.getNewObjectEntity(grid_,level_);
         virtualEntity_ = manageObj_->item;
         virtualEntity_->setLevel(level_);
-        memcpy(&neighElInfo_,elInfo_,sizeof(ALBERT EL_INFO));
+        memcpy(neighElInfo_,elInfo_,sizeof(ALBERT EL_INFO));
       }
 
-      setNeighInfo(elInfo_,&neighElInfo_,neighborCount_);
-      virtualEntity_->setElInfo(&neighElInfo_);
-      builtNeigh_ = true;
+      setupVirtEn();
     }
     return virtualEntity_;
   }
@@ -1288,8 +1299,12 @@ namespace Dune
   inline AlbertGridBoundaryEntity<dim,dimworld>&
   AlbertGridNeighborIterator<dim,dimworld>::boundaryEntity ()
   {
-    _boundaryEntity.setElInfo(elInfo_,neighborCount_);
-    return _boundaryEntity;
+    if(!boundaryEntity_)
+    {
+      boundaryEntity_ = new AlbertGridBoundaryEntity();
+    }
+    boundaryEntity_->setElInfo(elInfo_,neighborCount_);
+    return (*boundaryEntity_);
   }
 
   template< int dim, int dimworld>
@@ -1432,12 +1447,10 @@ namespace Dune
 
     if(!builtNeigh_)
     {
-      setNeighInfo(elInfo_,&neighElInfo_,neighborCount_);
-      virtualEntity_->setElInfo(&neighElInfo_);
-      builtNeigh_ = true;
+      setupVirtEn();
     }
 
-    fakeNeigh_->builtGeom(&neighElInfo_,neighborCount_,0,0);
+    fakeNeigh_->builtGeom(neighElInfo_,neighborCount_,0,0);
     return (*fakeNeigh_);
   }
 
@@ -1456,9 +1469,7 @@ namespace Dune
     // built neighGlob_ first
     if(!builtNeigh_)
     {
-      setNeighInfo(elInfo_,&neighElInfo_,neighborCount_);
-      virtualEntity_->setElInfo(&neighElInfo_);
-      builtNeigh_ = true;
+      setupVirtEn();
     }
     neighGlob_->builtGeom(elInfo_,neighborCount_,0,0);
     return (*neighGlob_);
@@ -1478,35 +1489,20 @@ namespace Dune
     return elInfo_->opp_vertex[neighborCount_];
   }
 
-
-  template< int dim, int dimworld>
-  inline void AlbertGridNeighborIterator<dim,dimworld>::
-  initElInfo(ALBERT EL_INFO * elf)
-  {
-    // if boundary
-    boundEl_.index = -1;
-    elf->el = &boundEl_;
-    for(int i =0; i<dim+1; i++)
-    {
-      elf->bound[i] = 0;
-      elf->neigh[i] = NULL;
-    }
-  }
-
   // setup neighbor element with the information of elInfo_
   template< int dim, int dimworld>
   inline void AlbertGridNeighborIterator<dim,dimworld>::
-  setNeighInfo(ALBERT EL_INFO * elInfo, ALBERT EL_INFO * neighElInfo, int neigh)
+  setupVirtEn()
   {
-    neighElInfo->el = elInfo->neigh[neigh];
-    // no parent Infomation for Neighbors
-    neighElInfo->parent = NULL;
-    // no macro Information for Neighbors
-    neighElInfo->macro_el = NULL;
+    // set the neighbor element as element
+    neighElInfo_->el = elInfo_->neigh[neighborCount_];
 
-    // only called if bool neighbor returns true
-    for(int j =0; j< dimworld; j++)
-      neighElInfo->coord[neigh][j] = elInfo->opp_coord[neigh][j];
+    // copy coords of opposite vertex
+    memcpy(& (neighElInfo_->coord[neighborCount_]),
+           & (elInfo_->opp_coord[neighborCount_]) , dimworld*sizeof(ALBERT REAL));
+
+    virtualEntity_->setElInfo(neighElInfo_);
+    builtNeigh_ = true;
   }
 
   // end NeighborIterator

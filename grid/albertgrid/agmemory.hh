@@ -82,7 +82,6 @@ namespace Dune
   {
     if(!freeEntity_)
     {
-      //std::cout << "Create new Entity! \n";
       ObjectEntity *oe = new ObjectEntity ();
       oe->item = new Object (f,d);
       return oe;
@@ -103,6 +102,24 @@ namespace Dune
     {
       ObjectEntity *oe = new ObjectEntity ();
       oe->item = new Object ();
+      return oe;
+    }
+    else
+    {
+      ObjectEntity *oe = freeEntity_;
+      freeEntity_ = oe->next;
+      return oe;
+    }
+  }
+
+  //template <class Object>
+  inline typename MemoryProvider<ALBERT EL_INFO>::ObjectEntity *
+  MemoryProvider<ALBERT EL_INFO>::getNewObjectEntity()
+  {
+    if(!freeEntity_)
+    {
+      ObjectEntity *oe = new ObjectEntity ();
+      oe->item = (ALBERT EL_INFO *) std::malloc (sizeof(ALBERT EL_INFO));
       return oe;
     }
     else
@@ -138,6 +155,15 @@ namespace Dune
       delete obj;
     }
   }
+
+  inline void MemoryProvider<ALBERT EL_INFO>::deleteEntity(ObjectEntity *obj)
+  {
+    std::free(obj->item);
+    delete obj;
+  }
+
+  typedef MemoryProvider < ALBERT EL_INFO > ElInfoProvider;
+  static ElInfoProvider elinfoProvider;
 
 
 } // end namespace Dune
