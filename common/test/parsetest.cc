@@ -3,7 +3,7 @@
 // $Id$
 
 /* test if the common headers can be parsed without errors */
-
+#include "config.h"
 #include <dune/common/array.hh>
 #include <dune/common/debugstream.hh>
 #include <dune/common/dlist.hh>
