@@ -4,13 +4,19 @@
 #define DUNE_MULTIGRID_TRANSFER_HH
 
 #include <dune/istl/bcrsmatrix.hh>
-#include <dune/istl/fmatrix.hh>
+#include <dune/common/fmatrix.hh>
 
 namespace Dune {
 
 
   /** \brief Restriction and prolongation operator for standard multigrid
    *
+   * This class implements the standard prolongation and restriction
+   * operators for standard multigrid solvers.  Restriction and prolongation
+   * of block vectors is provided.  Internally, the operator is stored
+   * as a BCRSMatrix.  Therefore, the template parameter DiscFuncType
+   * has to comply with the ISTL requirements.
+
    * \todo Currently only works for first-order Lagrangian elements!
    */
   template<class DiscFuncType>
