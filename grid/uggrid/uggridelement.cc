@@ -25,7 +25,6 @@ struct UGGridReferenceElement
 static UGGridReferenceElement<3> reftetrahedron;
 static UGGridReferenceElement<3> refpyramid;
 static UGGridReferenceElement<3> refprism;
-static UGGridReferenceElement<3> refpinchedhexa;
 static UGGridReferenceElement<3> refhexahedron;
 
 static UGGridReferenceElement<2> reftriangle;
@@ -39,13 +38,7 @@ static UGGridReferenceElement<1> refline;
 //  specialization of mapVertices
 //
 //****************************************************************
-//
-// default, do nothing
-// template< int dim, int dimworld>
-// inline int UGGridElement<dim,dimworld>::mapVertices (int i) const
-// {
-//   return i;
-// }
+
 
 template< int dim, int dimworld>
 inline UGGridElement<dim,dimworld>::
@@ -78,7 +71,8 @@ inline ElementType UGGridElement<dim,dimworld>::type()
     case UG2d::QUADRILATERAL :
       return quadrilateral;
     default :
-      std::cerr << "UGGridElement::type():  ERROR:  Unknown type found!\n";
+      DUNE_THROW(GridError, "UGGridElement::type():  ERROR:  Unknown type "
+                 << UG_NS<dimworld>::Tag(target_) << " found!");
     }
 #endif
 
@@ -93,13 +87,13 @@ inline ElementType UGGridElement<dim,dimworld>::type()
       return prism;
     case UG3d::HEXAHEDRON :
       return hexahedron;
-#endif
     default :
-      std::cerr << "UGGridElement::type():  ERROR:  Unknown type found!\n";
+      DUNE_THROW(GridError, "UGGridElement::type():  ERROR:  Unknown type "
+                 << UG_NS<dimworld>::Tag(target_) << " found!");
+#endif
     }
   }
-  // Mustn't happen
-  assert(false);
+
   // Just to calm the compiler
   return tetrahedron;
 }
@@ -107,11 +101,6 @@ inline ElementType UGGridElement<dim,dimworld>::type()
 template< int dim, int dimworld>
 inline int UGGridElement<dim,dimworld>::corners()
 {
-  // #define TAG(p) ReadCW(p, UG3d::TAG_CE)
-  // #define CORNERS_OF_ELEM(p)(UG3d::element_descriptors[TAG(p)]->corners_of_elem)
-  //     return CORNERS_OF_ELEM(target_);
-  // #undef CORNERS_OF_ELEM
-  // #undef TAG
   return UG_NS<dimworld>::Corners_Of_Elem(target_);
 }
 
@@ -179,11 +168,6 @@ operator [](int i)
 {
   assert(0<=i && i<corners());
 
-  // #define TAG(p) ReadCW(p, UG2d::TAG_CE)
-  // #define CORNER(p,i) ((UG3d::NODE *) ((p)->ge.refs[UG3d::n_offset[TAG(p)]+(i)]))
-  //     UG3d::VERTEX* vertex = CORNER(target_,i)->myvertex;
-  // #undef CORNER
-  // #undef TAG
   UG2d::VERTEX* vertex = UG_NS<2>::Corner(target_,i)->myvertex;
 
   for (int j=0; j<2; j++)
@@ -270,6 +254,30 @@ global(const FieldVector<UGCtype, dim>& local)
   return globalCoord;
 }
 
+// Specialization for dim==1, dimworld==2.  This is necessary
+// because we specialized the whole class
+inline FieldVector<UGCtype, 2> UGGridElement<1,2>::
+global(const FieldVector<UGCtype, 1>& local)
+{
+  FieldVector<UGCtype, 2> globalCoord;
+
+  // I want operator +...  (sigh)
+  globalCoord[0] = local[0]*coord_[1][0] + (1-local[0])*coord_[0][0];
+  globalCoord[1] = local[0]*coord_[1][1] + (1-local[0])*coord_[0][1];
+
+  return globalCoord;
+}
+
+// Specialization for dim==2, dimworld==3.  This is necessary
+// because we specialized the whole class
+inline FieldVector<UGCtype, 3> UGGridElement<2,3>::
+global(const FieldVector<UGCtype, 2>& local)
+{
+  DUNE_THROW(GridError, "UGGridElement<2,3>::global not implemented yet!");
+  //return FieldVector<UGCtype, 3> dummy;
+}
+
+
 // Maps a global coordinate within the element to a
 // local coordinate in its reference element
 template< int dim, int dimworld>
@@ -310,6 +318,20 @@ integration_element (const FieldVector<UGCtype, dim>& local)
 {
   //std::cout << "integration element: " << std::abs(Jacobian_inverse(local).determinant()) << std::endl;
   return std::abs(1/Jacobian_inverse(local).determinant());
+}
+
+inline UGCtype UGGridElement<1,2>::
+integration_element (const FieldVector<UGCtype, 1>& local)
+{
+  FieldVector<UGCtype, 2> diff = coord_[0];
+  diff -= coord_[1];
+  return diff.two_norm();
+}
+
+inline UGCtype UGGridElement<2,3>::
+integration_element (const FieldVector<UGCtype, 2>& local)
+{
+  DUNE_THROW(GridError, "integration_element for UGGridElement<2,3> not implemented yet!");
 }
 
 template< int dim, int dimworld>
