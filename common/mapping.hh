@@ -15,7 +15,8 @@ namespace Dune {
   class Mapping : public Vector < Field > {
 
   public:
-    Mapping( ) {
+    Mapping( )
+    {
       lincomb_.push_back( term( *this, 1.0 ) );
     }
 
@@ -37,8 +38,38 @@ namespace Dune {
       std::cerr << "ERROR: Mapping::apply called. \n";
     }
 
+    virtual void prepareG ( int level, const Domain & Arg, Range& Dest, Range * tmp ,
+                            Field & a, Field & b) const
+    {
+      std::cerr << "ERROR: Mapping::prepareGlobal called. \n";
+    }
+
+    void prepare ( int level, const Domain & Arg, Range& Dest, Range * tmp ,
+                   Field & a, Field & b) const
+    {
+      for ( typename std::vector<term>::const_iterator it = lincomb_.begin(); it != lincomb_.end(); it++ )
+      {
+        it->v_->prepareG( level, Arg, Dest, tmp , a , b );
+      }
+    }
+
+    void finalize ( int level, const Domain & Arg, Range& Dest, Range * tmp ,
+                    Field & a, Field & b) const
+    {
+      for ( typename std::vector<term>::const_iterator it = lincomb_.begin(); it != lincomb_.end(); it++ )
+      {
+        it->v_->finalizeG( level, Arg, Dest, tmp , a , b );
+      }
+    }
+
+    virtual void finalizeG ( int level, const Domain & Arg, Range& Dest, Range * tmp ,
+                             Field & a, Field & b) const
+    {
+      std::cerr << "ERROR: Mapping::finalizeGlobal called. \n";
+    }
+
     void operator()( const Domain &Arg, Range &Dest ) const {
-      Dest.clear();
+      //Dest.clear();
 
       int count = 0;
       for ( typename std::vector<term>::const_iterator it = lincomb_.begin(); it != lincomb_.end(); it++ ) {
