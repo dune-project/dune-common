@@ -49,7 +49,7 @@ ALBERT_INCLUDE_PATH="$ALBERTROOT/include"
 ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim -DEL_INDEX=$with_albert_elindex"
 
 # set variables so that tests can use them
-LDFLAGS="$LDFLAGS -L$ALBERTROOT/lib"
+LDFLAGS="$LDFLAGS -L$ALBERT_LIB_PATH"
 CPPFLAGS="$CPPFLAGS $ALBERTDEF -I$ALBERT_INCLUDE_PATH"
 
 # check for header
