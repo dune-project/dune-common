@@ -192,12 +192,12 @@ namespace Dune {
     }
 
 
-    //! return  quadrature point i in local coordinates
+    //! return  quadrature point i in local coordinates of corresponding
+    //! refence element
     const DomainType& point (int i) const
     {
       return (asImp().point(i));
     }
-
 
   private:
     //! Barton - Nackman trick
@@ -231,137 +231,6 @@ namespace Dune {
   }; // end class QuadraturDefault
 
   /** @} end documentation group */
-
-
-
-  /** @defgroup QuadratureImp QuadratureImp
-     @ingroup Quadrature
-
-     @{
-   */
-
-  //********************************************************************
-  //
-  //  --QuadratureImp
-  //
-  //! Quadrature class implementation
-  //! Quadrature is diffrent for diffrent Domain and RangeField types and of
-  //! course for diffrent element types but for dynamical polynomial order.
-  //! The element type comes from a given entity or the grid
-  //! and polOrd is given at runtime. For fast quadratures use the above
-  //! FastQuadrature class
-  //
-  //********************************************************************
-  template< class FunctionSpaceType, ElementType ElType >
-  class QuadratureImp : public QuadratureDefault  <
-                            typename FunctionSpaceType::RangeField , typename
-                            FunctionSpaceType::Domain, Quadrature < FunctionSpaceType, ElType > >  {
-
-    // just for readability
-    typedef typename FunctionSpaceType::Domain DomainType ;
-    typedef typename FunctionSpaceType::RangeField RangeFieldType ;
-
-    // my Type
-    typedef Quadrature < FunctionSpaceType , ElType > QuadratureType;
-
-  public:
-    //! Constructor building the quadrature
-    Quadrature ( int id , int polOrd ) :
-      QuadratureDefault < FunctionSpaceType, QuadratureType > (id)
-    {
-      buildQuadrature ( id , polOrd );
-    };
-
-    //! return number of quadrature points
-    int getNumberOfQuadPoints () const { return numQuadPoints_; };
-
-    //! return weight corresponding to point i
-    const RangeFieldType&  getQuadratureWeight ( int i) const
-    {
-      return (weights_[i]);
-    };
-
-    //! return point i
-    const DomainType&  getQuadraturePoint (int i) const
-    {
-      return (points_[i]);
-    };
-
-  private:
-    //! get the quadrature points for storage in the vectors
-    template <int polynomialOrder>
-    void makeQuadrature(int id)
-    {
-      // is called by the constructor
-      typedef QuadraturePoints< DomainType,
-          RangeFieldType,ElType,polynomialOrder>  QuadInitializer;
-
-      if(id != QuadInitializer::identifier)
-      {
-        std::cerr << "wrong identifier given to constructor! \n";
-        abort();
-      }
-      std::cout <<"Making Quadrature with dynamic polOrd! \n";
-
-      // same story as above
-      numQuadPoints_ = QuadInitializer::numberOfQuadPoints();
-
-      // get memory
-      weights_.resize( numQuadPoints_);
-      points_.resize( numQuadPoints_);
-
-      for(int i=0; i<numQuadPoints_; i++)
-      {
-        points_[i] = QuadInitializer::getPoint(i);
-        weights_[i] = QuadInitializer::getWeight(i);
-      }
-    };
-
-    //! number of quadrature points
-    int numQuadPoints_;
-
-    //! Vectors holding the weights and points
-    std::vector < RangeFieldType > weights_;
-    std::vector < DomainType >     points_;
-
-    //! anoying but what can we do
-    //! can be expanded up to inf
-    void buildQuadrature ( int id , int polOrd )
-    {
-      switch (polOrd)
-      {
-      case 0 : { makeQuadrature<0> (id); break; };
-      case 1 : { makeQuadrature<1> (id); break; };
-      case 2 : { makeQuadrature<2> (id); break; };
-      case 3 : { makeQuadrature<3> (id); break; };
-      case 4 : { makeQuadrature<4> (id); break; };
-      case 5 : { makeQuadrature<5> (id); break; };
-      case 6 : { makeQuadrature<6> (id); break; };
-      case 7 : { makeQuadrature<7> (id); break; };
-      case 8 : { makeQuadrature<8> (id); break; };
-      case 9 : { makeQuadrature<9> (id); break; };
-      case 10 : { makeQuadrature<10> (id); break; };
-      case 11 : { makeQuadrature<11> (id); break; };
-      case 12 : { makeQuadrature<12> (id); break; };
-      case 13 : { makeQuadrature<13> (id); break; };
-      case 14 : { makeQuadrature<14> (id); break; };
-      case 15 : { makeQuadrature<15> (id); break; };
-      case 16 : { makeQuadrature<16> (id); break; };
-      case 17 : { makeQuadrature<17> (id); break; };
-      case 18 : { makeQuadrature<18> (id); break; };
-      case 19 : { makeQuadrature<19> (id); break; };
-      case 20 : { makeQuadrature<20> (id); break; };
-      default : {
-        std::cerr << "No Rule to make Quadrature with polOrd ";
-        std::cerr << polOrd << " in Quadrature ( id , polOrd ) !\n";
-        abort();
-      };
-      }
-    };
-  }; // end class QuadratureImp
-
-  /** @} end documentation group */
-
 
 } // end namespace Dune
 
