@@ -146,8 +146,6 @@ namespace Dune {
    */
   class MathError : public Exception {};
 
-  class ISTLError : public Exception {};
-
 } // end namespace
 
 #endif
