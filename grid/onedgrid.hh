@@ -173,7 +173,7 @@ namespace Dune {
      and provides local mesh refinement and coarsening.
    */
   template <int dim, int dimworld>
-  class OneDGrid : public GridDefault  < dim, dimworld,OneDCType, OneDGrid>
+  class OneDGrid : public GridDefault  < dim, dimworld,OneDCType,OneDGrid<dim,dimworld> >
   {
 
     friend class OneDGridLevelIteratorFactory <0>;
@@ -196,7 +196,7 @@ namespace Dune {
 
   public:
     typedef GridTraits<dim,dimworld,
-        Dune::OneDGrid,
+        Dune::OneDGrid<dim,dimworld>,
         OneDGridGeometry,
         OneDGridEntity,
         OneDGridBoundaryEntity,
