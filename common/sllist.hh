@@ -428,6 +428,8 @@ namespace Dune
   inline void SLList<T,A>::pop_front()
   {
     assert(head_!=0);
+    if(head_ == tail_)
+      tail_ = 0;
     Element* tmp = head_;
     head_=head_->next_;
     beforeHead_.next_ = head_;
