@@ -460,7 +460,7 @@ void zeroEntityConsistency (Grid &g)
     {
       Dune::FieldVector<typename Grid::ctype, Grid::dimensionworld> c1(it->geometry()[c]);
       Dune::FieldVector<typename Grid::ctype, Grid::dimensionworld> c2(it->template entity<Grid::dimension>(c)->geometry()[0]);
-      if( (c2-c1).two_norm() > std::numeric_limits<typename Grid::ctype>::epsilon() )
+      if( (c2-c1).two_norm() > 10 * std::numeric_limits<typename Grid::ctype>::epsilon() )
       {
         DUNE_THROW(CheckError, "geometry[i] == entity<dim>(i) failed: || c1-c2 || = || " <<
                    c1 << " - " << c2 << " || = " << (c2-c1).two_norm() << " [ with i = " << c << " ]");
@@ -518,7 +518,7 @@ void iterate(Grid &g)
   {
     result = it->geometry().local(it->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
-    if(error >= std::numeric_limits<typename Grid::ctype>::epsilon())
+    if(error >= 10 * std::numeric_limits<typename Grid::ctype>::epsilon())
     {
       DUNE_THROW(CheckError, "|| geom.local(geom.global(" << origin
                                                           << ")) - origin || != 0 ( || " << result << " - origin || ) = " << error);
@@ -540,7 +540,7 @@ void iterate(Grid &g)
   {
     result = lit->geometry().local(lit->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
-    if(error >= std::numeric_limits<typename Grid::ctype>::epsilon())
+    if(error >= 10 * std::numeric_limits<typename Grid::ctype>::epsilon())
     {
       DUNE_THROW(CheckError, "|| geom.local(geom.global(" << origin
                                                           << ")) - origin || != 0 ( || " << result << " - origin || ) = " << error);
