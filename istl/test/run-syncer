@@ -1,0 +1,17 @@
+#!/bin/sh
+# $Id$
+
+# run lamboot if possible
+if which lamboot; then
+  lamboot 2>&1 > /dev/null
+fi
+
+# start test and abort on fail
+set -e
+mpirun -np 1 syncertest
+set +e
+
+# possibly stop LAM again
+if which lamhalt; then
+  lamhalt 2>&1 > /dev/null
+fi

@@ -37,6 +37,7 @@ namespace Dune {
     // friend declaration needed for MPITraits
     friend class MPITraits<ParallelLocalIndex<T> >;
     friend std::ostream& operator<<<>(std::ostream& os, const ParallelLocalIndex<T>& index);
+
   public:
     /**
      * @brief The type of the attributes.
@@ -180,6 +181,9 @@ namespace Dune {
   template<typename T1, typename T2>
   class RemoteIndex;
 
+  template<typename T1, typename T2, int N>
+  class IndicesSyncer;
+
   template<typename T1, typename T2>
   std::ostream& operator<<(std::ostream& os, const RemoteIndex<T1,T2>& index);
 
@@ -189,6 +193,12 @@ namespace Dune {
   template<typename T1, typename T2>
   class RemoteIndex
   {
+    template<typename T3, typename T4, int N>
+    friend class IndicesSyncer;
+
+    template<typename TG, typename TA, typename A, int N>
+    friend void repairLocalIndexPointers(std::map<int,SLList<TG,A> >&, RemoteIndices<TG,TA,N>&,
+                                         const IndexSet<TG,ParallelLocalIndex<TA>,N>&);
   public:
     /**
      * @brief the type of the global index.
@@ -268,6 +278,18 @@ namespace Dune {
 
   template<class TG, class TA, int N>
   class IndicesSyncer;
+}
+
+template<typename TG, typename TA, int N>
+void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& indices,
+                          Dune::RemoteIndices<TG,TA,N>& remoteIndices);
+template<typename TG, typename TA, int N>
+void addFakeRemoteIndices(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
+                          Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
+                          Dune::RemoteIndices<TG,TA,N>&,
+                          Dune::RemoteIndices<TG,TA,N>&);
+namespace Dune
+{
   /**
    * @brief The indices present on remote processes.
    */
@@ -277,7 +299,16 @@ namespace Dune {
     friend class InterfaceBuilder<TG,TA,N>;
     friend class Communicator<TG,TA,N>;
     friend class IndicesSyncer<TG,TA,N>;
-    friend std::ostream& operator<<<>(std::ostream& os, const RemoteIndices<TG,TA,N>& indices);
+    template<typename T1, typename T2, typename A, int M>
+    friend void repairLocalIndexPointers(std::map<int,SLList<T1,A> >&, RemoteIndices<T1,T2,M>&,
+                                         const IndexSet<T1,ParallelLocalIndex<T2>,M>&);
+    friend std::ostream& operator<<<>(std::ostream&, const RemoteIndices<TG,TA,N>&);
+    friend void deleteOverlapEntries<>(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
+                                       Dune::RemoteIndices<TG,TA,N>&);
+    friend void addFakeRemoteIndices<>(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
+                                       Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
+                                       Dune::RemoteIndices<TG,TA,N>&,
+                                       Dune::RemoteIndices<TG,TA,N>&);
 
   public:
     /**
@@ -594,7 +625,7 @@ namespace Dune {
       }
 
       //! \todo Please doc me!
-      const std::pair<int,RemoteIndex>& operator*() const
+      const RemoteIndex& operator*() const
       {
         return *(iter_->second.first);
       }
@@ -1249,6 +1280,12 @@ namespace Dune {
 
     for(iterator iter = map_.begin(); iter != end;) {
       // Step the iterator until we are >= index
+      typename RemoteIndexList::const_iterator current = iter->second.first;
+      typename RemoteIndexList::const_iterator rend = iter->second.second;
+      RemoteIndex remoteIndex;
+      if(current != rend)
+        remoteIndex = *current;
+
       while(iter->second.first!=iter->second.second && iter->second.first->localIndexPair().global()<index)
         ++(iter->second.first);
 
@@ -1295,23 +1332,7 @@ namespace Dune {
     int rank;
     MPI_Comm_rank(indices.comm_, &rank);
 
-    if(!indices.copyLocal_.empty()) {
-      typedef typename SLList<std::pair<int,int> >::const_iterator const_iterator;
-
-      const const_iterator end=indices.copyLocal_.end();
-      const_iterator pair=indices.copyLocal_.begin();
-      if(pair!=end) {
-
-        os<<rank<<": Copying local: ";
-
-        for(; pair !=end; ++pair)
-          os<<pair->first<<"->"<<pair->second<<", ";
-
-        os<<std::endl<<std::flush;
-      }
-
-    }
-    typedef SLList<RemoteIndex<TG,TA> > RList;
+    typedef typename RemoteIndices<TG,TA,N>::RemoteIndexList RList;
     typedef typename std::map<int,std::pair<RList*,RList*> >::const_iterator const_iterator;
 
     const const_iterator rend = indices.remoteIndices_.end();

@@ -115,9 +115,9 @@ void testIndices()
   // distributed indexset
   //  typedef ParallelLocalIndex<GridFlags> LocalIndexType;
 
-  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags> > distIndexSet;
+  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags>,45> distIndexSet;
   // global indexset
-  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags> > globalIndexSet;
+  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags>,45> globalIndexSet;
 
   // Set up the indexsets.
   int start = std::max(rank*nx-1,0);
@@ -163,12 +163,12 @@ void testIndices()
   }else
     globalArray=new Array(0);
 
-  Dune::RemoteIndices<int,GridFlags> accuIndices(distIndexSet, globalIndexSet, MPI_COMM_WORLD);
-  Dune::RemoteIndices<int,GridFlags> overlapIndices(distIndexSet, distIndexSet, MPI_COMM_WORLD);
+  Dune::RemoteIndices<int,GridFlags,45> accuIndices(distIndexSet, globalIndexSet, MPI_COMM_WORLD);
+  Dune::RemoteIndices<int,GridFlags,45> overlapIndices(distIndexSet, distIndexSet, MPI_COMM_WORLD);
   accuIndices.rebuild<true>();
   overlapIndices.rebuild<false>();
 
-  Dune::DatatypeCommunicator<int,GridFlags> accumulator, overlapExchanger;
+  Dune::DatatypeCommunicator<int,GridFlags,45> accumulator, overlapExchanger;
 
   Dune::EnumItem<GridFlags,owner> sourceFlags;
   Dune::Combine<Dune::EnumItem<GridFlags,overlap>,Dune::EnumItem<GridFlags,owner>,GridFlags> destFlags;

@@ -5,3 +5,6 @@ Makefile.in
 semantic.cache
 indicestest
 selectiontest
+indexsettest
+syncertest
+gmon.out

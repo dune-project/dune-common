@@ -1,13 +1,13 @@
-# $Id $
+# $Id$
 
 if MPI
-  INDEXPROG = indicestest
+  INDEXPROG = indicestest syncertest
   SELECTPROG = selectiontest
-  INDEXRUN = run-indices
+  INDEXRUN = run-indices run-syncer
 endif
 
 # which tests where program to build and run are equal
-NORMALTESTS = $(SELECTPROG)
+NORMALTESTS = indexsettest $(SELECTPROG)
 
 # list of tests to run (indicestest is special case)
 TESTS = $(NORMALTESTS) $(INDEXRUN)
@@ -26,3 +26,10 @@ selectiontest_SOURCES = selectiontest.cc
 
 selectiontest_CXXFLAGS = $(MPI_CPPFLAGS)
 selectiontest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+
+indexsettest_SOURCES = indexsettest.cc
+
+syncertest_SOURCES = syncertest.cc
+
+syncertest_CXXFLAGS = $(MPI_CPPFLAGS)
+syncertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
