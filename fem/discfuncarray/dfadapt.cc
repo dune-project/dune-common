@@ -475,11 +475,12 @@ namespace Dune
     if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
     {
       ret = 0.0;
-      FieldVector<RangeFieldType,dim> tmp(0.0);
+      JacobianRangeType tmp(0.0);
       for(int i=0; i<numOfDifferentDofs_; i++)
       {
-        this->fspace_.getBaseFunctionSet(en).jacobian(i,quad,quadPoint,tmp);
-        inv.umv(tmp,tmpGrad_[0]);
+        tmpGrad_[0] = 0.0;
+        this->fSpace_.getBaseFunctionSet(en).jacobian(i,quad,quadPoint,tmp);
+        inv.umv(tmp[0],tmpGrad_[0]);
 
         tmpGrad_[0] *= (* (values_[i]));
 
