@@ -14,8 +14,8 @@ namespace Dune {
   //
   //******************************************************************
 
-  template <class Domain, class RangeField, ElementType ElType>
-  struct FaceCenterPoints
+  template <class Domain, class RangeField, ElementType ElType, int codim >
+  struct BaryCenterPoints
   {
     enum { identifier = 0 };
     enum { numberQuadPoints = 0 };
@@ -24,13 +24,13 @@ namespace Dune {
     static RangeField getWeight (int i);
   };
 
-  template <class Domain, class RangeField, ElementType ElType>
-  RangeField FaceCenterPoints<Domain,RangeField,ElType>::getWeight(int i)
+  template <class Domain, class RangeField, ElementType ElType, int codim>
+  RangeField BaryCenterPoints<Domain,RangeField,ElType,codim>::getWeight(int i)
   {
     return 0.0;
   }
-  template <class Domain, class RangeField, ElementType ElType>
-  Domain FaceCenterPoints<Domain,RangeField,ElType>::getPoint(int i)
+  template <class Domain, class RangeField, ElementType ElType, int codim>
+  Domain BaryCenterPoints<Domain,RangeField,ElType,codim>::getPoint(int i)
   {
     Domain tmp(0.0);
     return tmp;
@@ -44,7 +44,22 @@ namespace Dune {
 
   //! specialization triangles
   template <class Domain, class RangeField>
-  struct FaceCenterPoints<Domain,RangeField,triangle>
+  struct BaryCenterPoints<Domain,RangeField,triangle,0>
+  {
+    enum { identifier = 1 };
+    enum { numberOfQuadPoints = 1 };
+    enum { polynomOrder = 1 };
+    static Domain getPoint (int i)
+    {
+      Domain tmp = (1.0/3.0);
+      return tmp;
+    };
+    static RangeField getWeight (int i) { return 0.5; };
+  };
+
+  //! specialization triangles
+  template <class Domain, class RangeField>
+  struct BaryCenterPoints<Domain,RangeField,triangle,1>
   {
     enum { identifier = 1 };
     enum { numberOfQuadPoints = 3 };
@@ -54,42 +69,59 @@ namespace Dune {
   };
 
   //! the sum over the weigths is the volume of the reference element
-  template <class Domain, class RangeField >
-  RangeField FaceCenterPoints<Domain,RangeField,triangle>::getWeight(int i)
+  template <class Domain, class RangeField>
+  RangeField BaryCenterPoints<Domain,RangeField,triangle,1>::getWeight(int i)
   {
     return (1.0/6.0);
   }
 
-  template <class Domain, class RangeField >
-  Domain FaceCenterPoints<Domain,RangeField,triangle>::getPoint(int i)
+  template <class Domain, class RangeField>
+  Domain BaryCenterPoints<Domain,RangeField,triangle,1>::getPoint(int i)
   {
     // check whether dimension is 2 or not
     //CompileTimeChecker < Domain::dimension == 2 > check;
+    Domain tmp = 0.5;
     switch (i)
     {
     case 0 : {
-      Domain tmp(0.5);
       return tmp;
     }
     case 1 : {
-      Domain tmp(0.0);  tmp(1) = 0.5;
+      tmp(0) = 0.0;
       return tmp;
     }
     case 2 : {
-      Domain tmp(0.0);  tmp(0) = 0.5;
+      tmp(1) = 0.0;
       return tmp;
     }
+    default :
+    {
+      std::cerr << "BaryCenterPoints<triangle>::getPoint: i out of range! \n";
+      abort();
     }
-    Domain tmp;
-    std::cerr << "TriangleQuadPoints::getPoint: i out of range! \n";
-    abort();
+    }
     return tmp;
   }
 
   //*******************************************************************
   //! specialization tetrahedrons
   template <class Domain, class RangeField>
-  struct FaceCenterPoints<Domain,RangeField,tetrahedron>
+  struct BaryCenterPoints<Domain,RangeField,tetrahedron,0>
+  {
+    enum { identifier = 2 };
+    enum { numberOfQuadPoints = 1 };
+    enum { polynomOrder = 1 };
+    static Domain getPoint (int i)
+    {
+      Domain tmp = (1.0/3.0);
+      return tmp;
+    };
+    static RangeField getWeight (int i) { return (1.0/6.0); };
+  };
+
+  //! specialization tetrahedrons
+  template <class Domain, class RangeField, int codim>
+  struct BaryCenterPoints<Domain,RangeField,tetrahedron,codim>
   {
     enum { identifier = 2 };
     enum { numberOfQuadPoints = 4 };
@@ -99,14 +131,14 @@ namespace Dune {
   };
 
   //! the sum over the weigths is the volume of the reference element
-  template <class Domain, class RangeField >
-  RangeField FaceCenterPoints<Domain,RangeField,tetrahedron>::getWeight(int i)
+  template <class Domain, class RangeField, int codim>
+  RangeField BaryCenterPoints<Domain,RangeField,tetrahedron,codim>::getWeight(int i)
   {
     return (1.0/24.0);
   }
 
-  template <class Domain, class RangeField >
-  Domain FaceCenterPoints<Domain,RangeField,tetrahedron>::getPoint(int i)
+  template <class Domain, class RangeField , int codim>
+  Domain BaryCenterPoints<Domain,RangeField,tetrahedron,codim>::getPoint(int i)
   {
     Domain tmp = (1.0/3.0);
     assert( (i>=0) && (i<4) );
@@ -120,7 +152,22 @@ namespace Dune {
   //*******************************************************************
   //! specialization quadrilaterals
   template <class Domain, class RangeField>
-  struct FaceCenterPoints<Domain,RangeField,quadrilateral>
+  struct BaryCenterPoints<Domain,RangeField,quadrilateral,0>
+  {
+    enum { identifier = 3 };
+    enum { numberOfQuadPoints = 1 };
+    enum { polynomOrder = 1 };
+    static Domain getPoint (int i)
+    {
+      Domain tmp = 0.5;
+      return tmp;
+    };
+    static RangeField getWeight (int i) { return 1.0; };
+  };
+
+
+  template <class Domain, class RangeField, int codim>
+  struct BaryCenterPoints<Domain,RangeField,quadrilateral,codim>
   {
     enum { identifier = 3 };
     enum { numberOfQuadPoints = 4 };
@@ -130,14 +177,14 @@ namespace Dune {
   };
 
   //! the sum over the weigths is the volume of the reference element
-  template <class Domain, class RangeField >
-  RangeField FaceCenterPoints<Domain,RangeField,quadrilateral>::getWeight(int i)
+  template <class Domain, class RangeField,int codim >
+  RangeField BaryCenterPoints<Domain,RangeField,quadrilateral,codim>::getWeight(int i)
   {
     return 0.25;
   }
 
-  template <class Domain, class RangeField >
-  Domain FaceCenterPoints<Domain,RangeField,quadrilateral>::getPoint(int i)
+  template <class Domain, class RangeField,int codim >
+  Domain BaryCenterPoints<Domain,RangeField,quadrilateral,codim>::getPoint(int i)
   {
     assert( (i>=0) && (i<4) );
     Domain tmp;
@@ -158,7 +205,21 @@ namespace Dune {
   //*******************************************************************
   //! specialization hexahedrons
   template <class Domain, class RangeField>
-  struct FaceCenterPoints<Domain,RangeField,hexahedron>
+  struct BaryCenterPoints<Domain,RangeField,hexahedron,0>
+  {
+    enum { identifier = 4 };
+    enum { numberOfQuadPoints = 1 };
+    enum { polynomOrder = 1 };
+    static Domain getPoint (int i)
+    {
+      Domain tmp = 0.5;
+      return tmp;
+    };
+    static RangeField getWeight (int i) { return 1.0; };
+  };
+
+  template <class Domain, class RangeField,int codim>
+  struct BaryCenterPoints<Domain,RangeField,hexahedron,codim>
   {
     enum { identifier = 4 };
     enum { numberOfQuadPoints = 6 };
@@ -168,14 +229,14 @@ namespace Dune {
   };
 
   //! the sum over the weigths is the volume of the reference element
-  template <class Domain, class RangeField >
-  RangeField FaceCenterPoints<Domain,RangeField,hexahedron>::getWeight(int i)
+  template <class Domain, class RangeField, int codim >
+  RangeField BaryCenterPoints<Domain,RangeField,hexahedron,codim>::getWeight(int i)
   {
     return (1.0/6.0);
   }
 
-  template <class Domain, class RangeField >
-  Domain FaceCenterPoints<Domain,RangeField,hexahedron>::getPoint(int i)
+  template <class Domain, class RangeField,int codim >
+  Domain BaryCenterPoints<Domain,RangeField,hexahedron,codim>::getPoint(int i)
   {
     assert( (i>=0) && (i<6) );
     Domain tmp;
