@@ -28,10 +28,8 @@ namespace Dune {
     friend class UGGridEntity<codim,dim,dimworld>;
     friend class UGGridEntity<0,dim,dimworld>;
 
-    friend class UGGridLevelIteratorFactory<2,2,2,All_Partition>;
-    friend class UGGridLevelIteratorFactory<0,2,2,All_Partition>;
-    friend class UGGridLevelIteratorFactory<3,3,3,All_Partition>;
-    friend class UGGridLevelIteratorFactory<0,3,3,All_Partition>;
+    template <int codim_, int dim_, int dimworld_, PartitionIteratorType PiType_>
+    friend class UGGridLevelIteratorFactory;
 
   public:
 
