@@ -960,7 +960,8 @@ namespace Dune
   inline void AlbertGridHierarchicIterator<dim,dimworld>::
   makeIterator()
   {
-    initTraverseStack(&travStack_);
+    //initTraverseStack(&travStack_);
+    manageStack_.init();
     virtualEntity_.setTraverseStack(NULL);
     virtualEntity_.setElInfo(NULL,0,0,0);
   }
@@ -975,50 +976,41 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridHierarchicIterator<dim,dimworld>::
-  ~AlbertGridHierarchicIterator()
+  AlbertGridHierarchicIterator(ALBERT TRAVERSE_STACK *travStack,int travLevel)
   {
-    // travStack_ = removeStack(travStack_);
+    if(travStack)
+    {
+      startLevel_ = (travStack->elinfo_stack[travStack->stack_used]).level;
+      manageStack_.makeItNew(true);
+      ALBERT TRAVERSE_STACK *stack = manageStack_.getStack();
+
+      // make explicit memory copy of travStack
+      hardCopyStack(stack, travStack);
+
+      // set new traverse level
+      stack->traverse_level = travLevel;
+
+      virtualEntity_.setTraverseStack(stack);
+
+      // Hier kann ein beliebiges Element uebergeben werden,
+      // da jedes AlbertElement einen Zeiger auf das Macroelement
+      // enthaelt.
+      virtualEntity_.setElInfo(recursiveTraverse(stack));
+    }
+    else
+    {
+      std::cout << "Warning: travStack == NULL in HierarchicIterator(travStack,travLevel) \n";
+      makeIterator();
+    }
   }
-
-  template< int dim, int dimworld>
-  inline AlbertGridHierarchicIterator<dim,dimworld>::
-  AlbertGridHierarchicIterator(ALBERT TRAVERSE_STACK travStack,int travLevel)
-  {
-#if 1
-    travStack_ = travStack;
-    travStack_.traverse_level = travLevel;
-    // default Einstellungen fuer den TraverseStack, siehe
-    // traverse_first, traverse_nr_common.cc
-    //
-    // is done in hardCopyStack (albertextra.hh)
-#else
-    travStack_ = hardCopyStack(travStack_, travStack);
-    travStack_.traverse_level = travLevel;
-#endif
-
-
-    virtualEntity_.setTraverseStack(&travStack_);
-    // Hier kann ein beliebiges Element uebergeben werden,
-    // da jedes AlbertElement einen Zeiger auf das Macroelement
-    // enthaelt.
-    virtualEntity_.setElInfo(recursiveTraverse(&travStack_));
-  }
-
-  template< int dim, int dimworld>
-  inline AlbertGridHierarchicIterator<dim,dimworld>::
-  AlbertGridHierarchicIterator(const AlbertGridHierarchicIterator& I)
-  {
-    travStack_ = I.travStack_;
-    virtualEntity_ = I.virtualEntity_;
-  }
-
 
   template< int dim, int dimworld>
   inline AlbertGridHierarchicIterator<dim,dimworld>&
   AlbertGridHierarchicIterator< dim,dimworld >::operator ++()
   {
     // die 0 ist wichtig, weil Face 0, heist hier jetzt Element
-    virtualEntity_.setElInfo(recursiveTraverse(&travStack_));
+    //virtualEntity_.setElInfo(recursiveTraverse(&travStack_));
+    virtualEntity_.setElInfo(recursiveTraverse(manageStack_.getStack()));
     return (*this);
   }
 
@@ -1097,7 +1089,6 @@ namespace Dune
        * go up in tree until we can go down again
        */
 
-      //std::cout << " stack level = " << stack->traverse_level << std::endl;
       while((stack->stack_used > 0) &&
             ((stack->info_stack[stack->stack_used] >= 2) || (el->child[0]==nil)
              || ( stack->traverse_level <=
@@ -1105,6 +1096,10 @@ namespace Dune
       {
         stack->stack_used--;
         el = stack->elinfo_stack[stack->stack_used].el;
+
+        // dont go higher than the level we started
+        if( (stack->elinfo_stack[stack->stack_used]).level < startLevel_ )
+          return NULL;
       }
 
       /*
@@ -1631,6 +1626,8 @@ namespace Dune
       ALBERT EL_INFO* elInfo =
         goFirstElement(manageStack_.getStack(), mesh, travLevel,travFlags);
 
+      //std::cout << manageStack_.getStack()->stack_size << "LevelStack \n";
+
       virtualEntity_.setElInfo(elInfo,face_,edge_,vertex_);
     }
     else
@@ -1938,10 +1935,7 @@ namespace Dune
     // der gleiche, deshalb kann man auch nur nach unten, d.h. zu den Kindern
     // laufen
 
-    //std::cout << " stack level " << travStack_->traverse_level << std::endl;
-    //std::cout << " stack size " << travStack_->stack_size << std::endl;
-
-    AlbertGridHierarchicIterator<dim,dimworld> it((*travStack_),maxlevel);
+    AlbertGridHierarchicIterator<dim,dimworld> it(travStack_,maxlevel);
     return it;
   }
 

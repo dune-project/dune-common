@@ -184,6 +184,14 @@ namespace Dune {
     //! Constructor making uninizialized matrix
     Mat() {}
 
+    //! Constructor setting all entries to t
+    Mat(T t)
+    {
+      for(int j=0; j<m; j++)
+        for (int i=0; i<n; i++) a[j](i) = t;
+    }
+
+
     //! operator () for read/write access to element in matrix
     T& operator() (int i, int j) {return a[j](i);}
 
@@ -197,6 +205,13 @@ namespace Dune {
       for (int j=0; j<m; j++)
         for (int i=0; i<n; i++) z(i) += a[j](i) * x.read(j);
       return z;
+    }
+
+    //! multiplication assignment with scalar
+    Mat<n,m,T>& operator*= (T t)
+    {
+      for(int j=0; j<m; j++) a[j] *= t;
+      return *this;
     }
 
     void print (std::ostream& s, int indent)

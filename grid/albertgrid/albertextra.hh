@@ -25,30 +25,35 @@ extern void free_dof(DOF *dof, MESH *mesh, int position);
 //! only if no more copies left
 class ManageTravStack
 {
+  //! traverse stack for mesh traverse, see Albert Docu
   TRAVERSE_STACK * stack_;
+
+  //! number of copies that exist from this stack_
   int *refCount_;
 
 public:
+
+  //! if a copy is made, the refcout is increased
   ManageTravStack(const ManageTravStack & copy)
   {
-    //    std::cout << "ManageTravStack CopyConstructor.... ";
     stack_ = copy.stack_;
     if(copy.stack_ != NULL)
     {
       (*const_cast<ManageTravStack &> (copy).refCount_)++;
     }
     refCount_ = copy.refCount_;
-    //    std::cout << "done \n";
   }
 
+  //! initialize the member variables
   ManageTravStack()
   {
     init();
   }
 
+  //! get new TRAVERSE_STACK using the original Albert Routine
+  //! get_traverse_stack, which get an new or free stack
   void makeItNew(bool realyMakeIt)
   {
-    //    std::cout << "Makeing new ManageStack ....";
     if(realyMakeIt)
     {
       stack_ = get_traverse_stack();
@@ -56,46 +61,40 @@ public:
       refCount_ = tmp;
       (*refCount_) = 1;
     }
-    //    std::cout << "done \n";
   }
 
+  //! initialize the member variables
   void init()
   {
-    //    std::cout << "ManageTravStack init .....";
     stack_ = NULL;
     refCount_ = NULL;
-    //    std::cout << "done \n";
   }
 
-  // set Stack free, if no more refences exist
+  //! set Stack free, if no more refences exist
   ~ManageTravStack()
   {
     if(refCount_)
     {
-      //      std::cout << "Destructor called .....";
       (*refCount_)--;
-      //std::cout << "RefCount for " << stack_ << " is " << (*refCount_) << std::endl;
       if((*refCount_) <= 0)
       {
-        //std::cout << "Call free_travserse_stack \n";
         free_traverse_stack(stack_);
         stack_ = NULL;
         if(refCount_) delete refCount_ ;
       }
-      //      std::cout << "done \n";
     }
   }
 
+  //! if copy is made than one more Reference exists
   ManageTravStack & operator = (const ManageTravStack & copy)
   {
-    //std::cout << "operator = .........";
     (*copy.refCount_)++;
     stack_ = copy.stack_;
     refCount_ = copy.refCount_;
-    //std::cout << "done \n";
     return (*this);
   }
 
+  //! return the TRAVERSE_STACK pointer for use
   TRAVERSE_STACK * getStack()
   {
     return stack_;
@@ -103,51 +102,47 @@ public:
 
 };
 
-TRAVERSE_STACK & hardCopyStack(TRAVERSE_STACK& copy, TRAVERSE_STACK& org)
+
+//! copy all memory entries from org to copy via memcpy
+void hardCopyStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 {
-  FUNCNAME("hardCopyStack");
+  copy->traverse_mesh = org->traverse_mesh;
+  copy->traverse_level = org->traverse_level;
+  copy->traverse_fill_flag = org->traverse_fill_flag;
+  copy->traverse_mel = org->traverse_mel;
 
-  copy.traverse_mesh = org.traverse_mesh;
-  copy.traverse_level = org.traverse_level;
-  copy.traverse_fill_flag = org.traverse_fill_flag;
-  copy.traverse_mel = org.traverse_mel;
+  copy->stack_size = org->stack_size;
+  copy->stack_used = org->stack_used;
+  copy->elinfo_stack = NULL;
+  copy->elinfo_stack = MEM_ALLOC(org->stack_size, EL_INFO);
 
-  copy.stack_size = org.stack_size;
-  copy.stack_used = org.stack_used;
+  memcpy(copy->elinfo_stack,org->elinfo_stack,
+         copy->stack_size * sizeof(EL_INFO));
 
-  copy.elinfo_stack = NULL;
-  copy.elinfo_stack = MEM_ALLOC(org.stack_size, EL_INFO);
+  copy->info_stack = NULL;
+  copy->info_stack = MEM_ALLOC(copy->stack_size, U_CHAR);
+  memcpy(copy->info_stack,org->info_stack,
+         copy->stack_size * sizeof(U_CHAR));
 
-  memcpy(copy.elinfo_stack,org.elinfo_stack,
-         copy.stack_size * sizeof(EL_INFO));
+  copy->save_elinfo_stack = NULL;
+  copy->save_elinfo_stack = MEM_ALLOC(copy->stack_size, EL_INFO);
+  memcpy(copy->save_elinfo_stack,org->save_elinfo_stack,
+         copy->stack_size * sizeof(EL_INFO));
 
-  //if (copy.stack_size > 0)
-  //  for (int i=0; i<copy.stack_size; i++)
-  //    copy.elinfo_stack[i].fill_flag = org.elinfo_stack[i].fill_flag;
+  copy->save_info_stack = NULL;
+  copy->save_info_stack = MEM_ALLOC(copy->stack_size,U_CHAR);
+  memcpy(copy->save_info_stack,org->save_info_stack,
+         copy->stack_size * sizeof(U_CHAR));
+  copy->save_stack_used = org->save_stack_used;
+  copy->el_count = org->el_count;
 
-  copy.info_stack = NULL;
-  copy.info_stack = MEM_ALLOC(copy.stack_size, U_CHAR);
-  memcpy(copy.info_stack,org.info_stack,
-         copy.stack_size * sizeof(U_CHAR));
+  copy->next = org->next;
+  org->next = copy;
 
-  copy.save_elinfo_stack = NULL;
-  copy.save_elinfo_stack = MEM_ALLOC(copy.stack_size, EL_INFO);
-  memcpy(copy.save_elinfo_stack,org.save_elinfo_stack,
-         copy.stack_size * sizeof(EL_INFO));
-
-  copy.save_info_stack = NULL;
-  copy.save_info_stack = MEM_ALLOC(copy.stack_size,U_CHAR);
-  memcpy(copy.save_info_stack,org.save_info_stack,
-         copy.stack_size * sizeof(U_CHAR));
-  copy.save_stack_used = org.save_stack_used;
-  copy.el_count = org.el_count;
-  copy.next = org.next;
-  org.next = &copy;
-
-  return copy;
+  return;
 }
 
-TRAVERSE_STACK & removeStack(TRAVERSE_STACK& copy)
+TRAVERSE_STACK & removeTraverseStack(TRAVERSE_STACK& copy)
 {
   FUNCNAME("removeStack");
 
@@ -217,5 +212,18 @@ void enlargeTraverseStack(TRAVERSE_STACK *stack)
 
   stack->stack_size = new_stack_size;
 }
+
+void printTraverseStack(TRAVERSE_STACK *stack)
+{
+  FUNCNAME("printTraverseStack");
+
+  MSG("current stack %8X | size %d \n", stack,stack->stack_size);
+  MSG("traverse_level %d \n",stack->traverse_level);
+  MSG("elinfo_stack      = %8X\n",stack->elinfo_stack);
+  MSG("info_stack        = %8X\n",stack->info_stack);
+  MSG("save_elinfo_stack = %8X\n",stack->save_elinfo_stack);
+  MSG("save_info_stack   = %8X\n",stack->save_info_stack);
+}
+
 
 #endif  /* !_ALBERTEXTRA_H_ */
