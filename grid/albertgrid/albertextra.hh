@@ -13,6 +13,8 @@
 
 #define ALBERT_TEST_EXIT(test) if ((test)) ;else ALBERT_ERROR_EXIT
 
+// provides the element number generation and management
+#include "elmem.cc"
 
 // This three function are used by albertgrid.hh ~.cc
 // but not defined in the regular albert.h
@@ -97,8 +99,10 @@ private:
   //! if copy is made than one more Reference exists
   ManageTravStack & operator = (const ManageTravStack & copy)
   {
-    std::cout << "ManageTravStack::operator = do not use!\n";
-    abort();
+    // do not use this method
+    bool fake = true;
+    assert(fake != true);
+#if 0
     if(copy.stack_)
     {
       std::cout << "Copy Stack! \n";
@@ -106,18 +110,17 @@ private:
       stack_ = copy.stack_;
       refCount_ = copy.refCount_;
     }
-
+#endif
     return (*this);
   }
 };
-
 
 static TRAVERSE_STACK *freeStack = NULL;
 static int stackCount=0;
 
 static inline void initTraverseStack(TRAVERSE_STACK *stack);
 
-static TRAVERSE_STACK *getTraverseStack(void)
+inline static TRAVERSE_STACK *getTraverseStack(void)
 {
 #if 0
   TRAVERSE_STACK *stack;
@@ -139,7 +142,7 @@ static TRAVERSE_STACK *getTraverseStack(void)
 #endif
 }
 
-static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack)
+inline static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack)
 {
 #if 0
   if (!stack) {
@@ -293,7 +296,10 @@ inline static U_CHAR AlbertRefine ( MESH * mesh )
 // wrapper for Albert coarsen routine
 inline static U_CHAR AlbertCoarsen ( MESH * mesh )
 {
-  return coarsen ( mesh );
+  U_CHAR flag = coarsen ( mesh );
+  // is mesh was really coarsend, then make dof_compress
+  if(flag == MESH_COARSENED) dof_compress ( mesh );
+  return flag;
 }
 
 //*********************************************************************
@@ -303,34 +309,6 @@ inline static U_CHAR AlbertCoarsen ( MESH * mesh )
 //*********************************************************************
 namespace AlbertHelp
 {
-
-
-  //****************************************************************
-  //
-  //  Albert reference element local numbering for 2D
-  //
-  //****************************************************************
-#if 0
-  template <int dim>
-  const int * Albert2Dune_localNumbers ();
-
-
-  static const int localNum_2d[3] = {2,0,1};
-  // the 2d case , i.e. triangles
-  template <>
-  const int * Albert2Dune_localNumbers<2> ();
-  {
-    return localNum_2d;
-  }
-
-  static const int localNum_3d[4] = {2,0,1};
-  // the 2d case , i.e. triangles
-  template <>
-  const int * Albert2Dune_localNumbers<3> ();
-  {
-    return localNum_2d;
-  }
-#endif
 
   //****************************************************************
   //
@@ -353,6 +331,11 @@ namespace AlbertHelp
 
   static int Albert_MaxLevel_help=-1;
   static int Albert_GlobalIndex_help=-1;
+  static int Albert_GlobalMin_help = 0;
+
+  static DOF_INT_VEC * Albert_elnums_help=NULL;
+
+  static int actMInd = -1;
   static bool doItAgain = false;
   static std::vector<int> *Albert_neighArray_help;
 
@@ -360,9 +343,26 @@ namespace AlbertHelp
   inline static void calcMaxLevel (const EL_INFO * elf)
   {
     int level = elf->level;
-    int index = elf->el->index;
 
+    const DOF_ADMIN * admin = Albert_elnums_help->fe_space->admin;
+    int nv = admin->n0_dof[CENTER];
+    int k  = admin->mesh->node[CENTER];
+    int dof = elf->el->dof[k][nv];
+    int *vec = NULL;
+
+    GET_DOF_VEC(vec, Albert_elnums_help);
+    int index = vec[dof];
+
+    int elIndex = INDEX(elf->el);
+
+    // calculate global max index
     if(index > Albert_GlobalIndex_help) Albert_GlobalIndex_help = index;
+    // calculate global min index
+    if(index < Albert_GlobalMin_help) Albert_GlobalMin_help = index;
+
+    // calculate global max el->index for checkElNew method of grid
+    if(elIndex > actMInd) actMInd = elIndex;
+
     if(Albert_neighArray_help->size() <= index)
     {
       doItAgain = true;
@@ -374,16 +374,20 @@ namespace AlbertHelp
     }
   }
 
-
   // remember on which level an element realy lives
-  inline int calcMaxLevelAndMarkNeighbours ( MESH * mesh, std::vector< int > &nb, int & GlobalIndex )
+  inline int calcMaxLevelAndMarkNeighbours ( MESH * mesh, DOF_INT_VEC * elnums,
+                                             std::vector< int > &nb, int & GlobalIndex, int & GlobalMinIndex , int & realMaxInd  )
   {
     // determine new maxlevel
-    nb.resize( 2 * mesh->n_hier_elements );
+    nb.resize( mesh->n_hier_elements );
 
     Albert_neighArray_help = &nb;
+    Albert_elnums_help = elnums;
     Albert_MaxLevel_help = -1;
     Albert_GlobalIndex_help = -1;
+    actMInd = -1;
+    Albert_GlobalMin_help = 0;
+
     doItAgain = false;
 
     // see ALBERT Doc page 72, traverse over all hierarchical elements
@@ -397,14 +401,19 @@ namespace AlbertHelp
     Albert_neighArray_help = NULL;
     doItAgain = false;
 
-    if(Albert_MaxLevel_help == -1)
-    {
-      std::cerr << "Error: in calcMaxLevelAndMarkNeighbours!\n";
-      abort();
-    }
-    GlobalIndex = Albert_GlobalIndex_help+1;
+    // check if ok
+    assert(Albert_MaxLevel_help != -1);
+
+    // for length determination
+    GlobalIndex    = Albert_GlobalIndex_help+1;
+    GlobalMinIndex = Albert_GlobalMin_help;
+
+    realMaxInd = actMInd;
+
     return Albert_MaxLevel_help;
   }
+
+
 
   //**************************************************************************
   inline static void printNeighbour (const EL_INFO * elf)
@@ -423,8 +432,12 @@ namespace AlbertHelp
   // Leaf Data for Albert, only the leaf elements have this data set
   typedef struct {} AlbertLeafData;
 
-  inline static void AlbertLeafRefine(EL *parent, EL *child[2]) {}
-  inline static void AlbertLeafCoarsen(EL *parent, EL *child[2]){}
+  // keep element numbers
+  inline static void AlbertLeafRefine(EL *parent, EL *child[2])
+  {}
+
+  inline static void AlbertLeafCoarsen(EL *parent, EL *child[2])
+  {}
 
   // we dont need Leaf Data
   inline static void initLeafData(LEAF_DATA_INFO * linfo)
@@ -435,18 +448,90 @@ namespace AlbertHelp
     return;
   }
 
-  // initialize dofAdmin for vertex numbering
-  void initDofAdmin(MESH *mesh)
-  {
-    FUNCNAME("initDofAdmin");
-    int degree = 1;
-    const BAS_FCTS  *lagrange;
-    const FE_SPACE  *feSpace;
+  static DOF_INT_VEC * elNumbers = NULL;
 
-    // just for vertex numbering
-    lagrange = get_lagrange(degree);
-    TEST_EXIT(lagrange) ("no lagrange BAS_FCTS\n");
-    feSpace = get_fe_space(mesh, "Linear Lagrangian Elements", NULL, lagrange);
+  inline DOF_INT_VEC * getElNumbers()
+  {
+    int * vec=NULL;
+    GET_DOF_VEC(vec,elNumbers);
+    FOR_ALL_DOFS(elNumbers->fe_space->admin, vec[dof] = get_elIndex() );
+    return elNumbers;
+  }
+
+  inline static void refineElNumbers ( DOF_INT_VEC * drv , RC_LIST_EL *list, int ref)
+  {
+    const DOF_ADMIN * admin = drv->fe_space->admin;
+    int nv = admin->n0_dof[CENTER];
+    int k  = admin->mesh->node[CENTER];
+    int dof;
+    int *vec = NULL;
+
+    GET_DOF_VEC(vec,drv);
+
+    assert(ref > 0);
+
+    for(int i=0; i<ref; i++)
+    {
+      EL * el = list[i].el;
+      for(int ch=0; ch<2; ch++)
+      {
+        dof = el->child[ch]->dof[k][nv];
+
+        // get element index from stack or new, see. elmem.cc
+        int index = get_elIndex();
+        vec[dof] = index;
+      }
+    }
+  }
+
+  inline static void coarseElNumbers ( DOF_INT_VEC * drv , RC_LIST_EL *list, int ref)
+  {
+    const DOF_ADMIN * admin = drv->fe_space->admin;
+    int nv = admin->n0_dof[CENTER];
+    int k  = admin->mesh->node[CENTER];
+    int dof;
+    int *vec = NULL;
+
+    GET_DOF_VEC(vec,drv);
+
+    assert(ref > 0);
+
+    for(int i=0; i<ref; i++)
+    {
+      EL * el = list[i].el;
+      for(int ch=0; ch<2; ch++)
+      {
+        dof = el->child[ch]->dof[k][nv];
+        int index = vec[dof];
+        // put element index to stack, see elmem.cc
+        free_elIndex(index);
+      }
+    }
+  }
+
+  // initialize dofAdmin for vertex numbering
+  inline void initDofAdmin(MESH *mesh)
+  {
+    int edof[DIM+1]; // add one dof at element for element numbering
+    int vdof[DIM+1]; // add at each vertex one dof for vertex numbering
+
+    for(int i=0; i<DIM+1; i++)
+    {
+      vdof[i] = 0;
+      edof[i] = 0;
+    }
+
+    vdof[0] = 1;
+    edof[DIM] = 1;
+
+    get_fe_space(mesh, "vertex dofs", vdof, NULL);
+
+    // space for center dofs , i.e. element numbers
+    const FE_SPACE * eSpace = get_fe_space(mesh, "center dofs", edof, NULL);
+
+    elNumbers = get_dof_int_vec("element numbers",eSpace);
+    elNumbers->refine_interpol = &refineElNumbers;
+    elNumbers->coarse_restrict = &coarseElNumbers;
 
     return;
   }
