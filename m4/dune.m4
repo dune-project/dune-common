@@ -1,27 +1,59 @@
 # $Id$
 # checks for dune-headers and everything they need
 
-dnl AM_PATH_DUNE([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+# TODO
+#
+# use pkg-config later? Maybe not really worth it, because only ojne -I is
+# needed...
 
-AC_DEFUN(AM_PATH_DUNE,
+#   #export PKG_CONFIG_LIBDIR=$with_dune/dune
+#  #PKG_CHECK_MODULES(DUNE, dune)  
+
+AC_DEFUN(DUNE_PATH_DUNE,
 [
   AC_REQUIRE([AC_PROG_CXX])
+  AC_REQUIRE([AC_PROG_CXXCPP])
 
-  # ch
+  # switch tests to c++
+  AC_LANG_PUSH([C++])
+
+  # the usual option...
   AC_ARG_WITH(dune,
     AC_HELP_STRING([--with-dune=PATH],[directory with Dune inside]),
-dnl expand tilde / other stuff
+# expand tilde / other stuff
     eval with_dune=$with_dune)
 
-dnl try with pkg-config
+# is a directory set?
   if test "x$with_dune" != x ; then
-dnl retry with dune-dir
-    export PKG_CONFIG_PATH=$with_dune
+    DUNEROOT=$with_dune
+  else
+    # set default path
+    DUNEROOT=/usr/local/include/
   fi
-  PKG_CHECK_MODULES(DUNE, dune,
-	ifelse([$2], , :, [$2]), ifelse([$3], , :, [$3]))
 
-dnl call ACTION-IF-NOT-FOUND
-dnl ifelse([$3], , :, [$3])
-  
+  ac_save_CPPFLAGS="$CPPFLAGS"
+
+  CPPFLAGS="$CPPFLAGS -I$DUNEROOT"
+
+  # test for an arbitrary header
+  AC_CHECK_HEADER([dune/common/misc.hh],
+    [DUNE_CPPFLAGS="-I$DUNEROOT"
+     HAVE_DUNE=1],
+    [HAVE_DUNE=0]
+  )
+
+  # did we succeed?
+  if test x$HAVE_DUNE = x1 ; then
+    AC_SUBST(DUNE_CPPFLAGS, $DUNE_CPPFLAGS)
+    AC_DEFINE(HAVE_DUNE, 1, [Define to 1 if dune-headers were found])
+
+    # add to global list
+    DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $DUNE_CPPFLAGS"
+  fi
+
+  # reset previous flags
+  CPPFLAGS="$ac_save_CPPFLAGS"
+
+  # restore previous language settings (leave C++)
+  AC_LANG_POP([C++])
 ])

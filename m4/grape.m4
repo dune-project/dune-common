@@ -43,10 +43,8 @@ if test "x$X_LIBS" != x ; then
     GRAPEROOT="/usr/local/grape/"
   fi
 
-  CFLAGS="$CFLAGS -I$GRAPEROOT"
   CPPFLAGS="$CPPFLAGS -I$GRAPEROOT"
   LDFLAGS="$LDFLAGS -L$GRAPEROOT"
-
 
   # append OpenGL-options if needed
   if test x$have_gl != xno ; then
@@ -56,23 +54,30 @@ if test "x$X_LIBS" != x ; then
   # check for header
   # we have to use CC for checking the header!!
   AC_CHECK_HEADER([grape.h],
-    [GRAPE_CFLAGS="-I$GRAPEROOT"
+    [GRAPE_CPPFLAGS="-I$GRAPEROOT"
      HAVE_GRAPE="1"],
     AC_MSG_WARN([grape.h not found in $GRAPEROOT!]))
 
   # check for lib if header was found
   if test x$HAVE_GRAPE = x1 ; then
   AC_CHECK_LIB(gr, grape, 
-    [LIBS="$LIBS -L$GRAPEROOT -lgr"], 
+    [GRAPE_LDFLAGS="-L$GRAPEROOT"
+     GRAPE_LIBS="-lgr"], 
     [HAVE_GRAPE="0"
      AC_MSG_WARN([libgr not found in $GRAPEROOT!])])
   fi
 
   # did it work?
   if test x$HAVE_GRAPE = x1 ; then
-    AC_SUBST(GRAPE_LIBS, $LIBS)
-    AC_SUBST(GRAPE_CFLAGS, $GRAPE_CFLAGS)
+    AC_SUBST(GRAPE_LIBS, "$LIBS $GRAPE_LIBS")
+    AC_SUBST(GRAPE_LDFLAGS, $GRAPE_LDFLAGS)
+    AC_SUBST(GRAPE_CPPFLAGS, $GRAPE_CPPFLAGS)
     AC_DEFINE(HAVE_GRAPE, 1, [Define to 1 if grape-library is found])
+
+    # add to global list
+    DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $GRAPE_LDFLAGS"
+    DUNE_PKG_LIBS="$DUNE_PKG_LIBS $GRAPE_LIBS"
+    DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $GRAPE_CPPFLAGS"
   fi
 
   # also tell automake
