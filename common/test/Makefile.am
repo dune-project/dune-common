@@ -21,4 +21,6 @@ arraylisttest_SOURCES = arraylisttest.cc
 
 smartpointertest_SOURCES = smartpointertest.cc
 
-iteratorfacadetest_SOURCES = iteratorfacadetest.cc
+# mention headers so that they are distributed too
+iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
+   iteratortest.hh

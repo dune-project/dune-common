@@ -1,9 +1,13 @@
 # $Id$
 
+# distribute these files:
+EXTRA_DIST = Buildsystem CodingStyles Doxyfile Doxydep \
+  doxy-footer.html doxy-header.html dune-doxy.css mainpage
+
 all: doxygen-tag
 
 doxygen-tag: Doxyfile
-@AMDEP_TRUE@	./Doxydep $< $(DEPDIR)/doxygen.Po $@
+@AMDEP_TRUE@	$(srcdir)/Doxydep $< $(DEPDIR)/doxygen.Po $@
 	$(DOXYGEN) > doxygen.log 2>&1
 	touch doxygen-tag
 

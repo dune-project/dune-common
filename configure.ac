@@ -87,16 +87,23 @@ echo
 
 # write output
 AC_CONFIG_FILES([Makefile
+	 bin/Makefile
 	 common/Makefile
          common/test/Makefile
          fem/Makefile
          fem/common/Makefile
+         fem/dgspace/Makefile
          fem/discfuncarray/Makefile
+         fem/feop/Makefile
+         fem/lagrangebase/Makefile
+         fem/norms/Makefile
          fem/operator/Makefile
+         fem/transfer/Makefile
          grid/Makefile
          grid/albertgrid/Makefile
          grid/bsgrid/Makefile
          grid/common/Makefile
+         grid/onedgrid/Makefile
          grid/sgrid/Makefile
          grid/test/Makefile
          grid/uggrid/Makefile

@@ -65,3 +65,10 @@ test_albert_LDADD = $(ALBERT_LDFLAGS) $(ALBERT_LIBS)
 test_ug_SOURCES = test-ug.cc
 test_ug_CPPFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
 test_ug_LDADD = $(UG_LDFLAGS) $(UG_LIBS) $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
+
+## distribution tarball
+
+GRIDFILES = albert-testgrid-2-2.al albert-testgrid-3-3.al \
+  ug-testgrid-2.am ug-testgrid-3.am
+# gridcheck not used explicitly, we should still ship it :)
+EXTRA_DIST = gridcheck.cc $(GRIDFILES)

@@ -13,3 +13,4 @@ dune.pc
 semantic.cache
 configure.lineno
 stamp-h1
+dune-*.tar.gz

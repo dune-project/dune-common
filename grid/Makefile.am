@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = albertgrid bsgrid common sgrid uggrid yaspgrid . test
+SUBDIRS = albertgrid bsgrid common onedgrid sgrid uggrid yaspgrid . test
 
 griddir = $(includedir)/dune/grid
 grid_HEADERS = albertgrid.hh \

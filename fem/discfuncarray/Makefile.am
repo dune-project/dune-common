@@ -1,5 +1,5 @@
 # $Id$
 
 femdiscfuncdir = $(includedir)/dune/fem/discfuncarray
-femdiscfunc_HEADERS = discfuncarray.cc
+femdiscfunc_HEADERS = dfadapt.cc discfuncarray.cc
 
