@@ -47,6 +47,12 @@ namespace Dune
       return a[i];
     }
 
+    //! const component access
+    const T& operator[] (int i) const
+    {
+      return a[i];
+    }
+
     FixedArray<T,n-1> shrink (int comp)
     {
       FixedArray<T,n-1> x;
