@@ -9,6 +9,9 @@ TESTS = $(TESTPROGS)
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
 
+# output code coverage
+AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
+
 # define the programs
 
 parsetest_SOURCES = parsetest.cc

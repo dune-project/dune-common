@@ -48,6 +48,9 @@ check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 LDFLAGS = $(top_builddir)/common/libcommon.la \
           $(top_builddir)/grid/onedgrid/libonedgrid.la
 
+# output coverage
+AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
+
 #
 ## define the programs
 #
