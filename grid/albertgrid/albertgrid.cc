@@ -11,9 +11,9 @@
 namespace Dune
 {
 
-#ifdef __GCC__
-#define TEMPPARAM2
-#endif
+  //#ifdef _GNUGCC
+  //#define TEMPPARAM2
+  //#endif
 
   static ALBERT EL_INFO statElInfo[DIM+1];
 
@@ -357,10 +357,24 @@ namespace Dune
   }
 
   template<>
+  inline AlbertGridElement<2,2>& AlbertGridElement<2,3>::
+  refelem()
+  {
+    return refelem_2.refelem;
+  }
+
+  template<>
   inline AlbertGridElement<2,2>& AlbertGridElement<2,2>::
   refelem()
   {
     return refelem_2.refelem;
+  }
+
+  template<>
+  inline AlbertGridElement<1,1>& AlbertGridElement<1,2>::
+  refelem()
+  {
+    return refelem_1.refelem;
   }
 
   template<>

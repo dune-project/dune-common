@@ -112,7 +112,6 @@ namespace Dune
     }
   }
 
-  //template <class Object>
   inline MemoryProvider<ALBERT EL_INFO>::ObjectEntity *
   MemoryProvider<ALBERT EL_INFO>::getNewObjectEntity()
   {
@@ -137,7 +136,7 @@ namespace Dune
   }
 
   template <class Object>
-  inline MemoryProvider<Object>::ObjectEntity *
+  inline typename MemoryProvider<Object>::ObjectEntity *
   MemoryProvider<Object>::freeObjectEntity(ObjectEntity *obj)
   {
     obj->next = freeEntity_;

@@ -31,7 +31,7 @@ namespace Dune
     void prepareGlobal (int level, const DomainType & arg , RangeType & dest,
                         const RangeFieldType scalar)
     {
-      asImp().prepareGlobal ( int level , arg, dest , scalar );
+      asImp().prepareGlobal ( level , arg, dest , scalar );
     }
 
     //! do a local cleanup or what , called on each entity
@@ -111,6 +111,10 @@ namespace Dune
         CombinedLocalOperator <A,B> >
   {
   public:
+    typedef typename B::DomainType DomainType;
+    typedef typename A::RangeType RangeType;
+    typedef typename A::RangeType::RangeFieldType RangeFieldType;
+
     //! Constructor for combinations with factors
     CombinedLocalOperator ( A & a, B & b ) : _a ( a ) , _b ( b ) {}
 

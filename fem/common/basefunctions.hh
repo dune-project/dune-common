@@ -204,12 +204,11 @@ namespace Dune {
     //! default evaluate using the evaluate interface
     void jacobian ( int baseFunct, const Domain & x, JacobianRange & phi ) const
     {
-      Range tmp;
       for(int i=0; i<dimCol; i++)
       {
-        asImp().evaluate( baseFunct, jacobianDiffVar_[i] , x , tmp );
+        asImp().evaluate( baseFunct, jacobianDiffVar_[i] , x , tmp_ );
         for(int j=0; j<dimRow; j++)
-          phi(i,j) = tmp(j);
+          phi(i,j) = tmp_(j);
       }
       return;
     }
@@ -219,12 +218,11 @@ namespace Dune {
     void jacobian ( int baseFunct, QuadratureType & quad,
                     int quadPoint, JacobianRange & phi ) const
     {
-      Range tmp;
       for(int i=0; i<dimCol; i++)
       {
-        asImp().evaluate( baseFunct, jacobianDiffVar_[i] , quad, quadPoint, tmp );
+        asImp().evaluate( baseFunct, jacobianDiffVar_[i] , quad, quadPoint, tmp_ );
         for(int j=0; j<dimRow; j++)
-          phi(i,j) = tmp(j);
+          phi(i,j) = tmp_(j);
       }
       return;
     }
@@ -232,6 +230,9 @@ namespace Dune {
   private:
     //! just diffVariable for evaluation of the functions
     const Vec<0,deriType> diffVariable_;
+
+    //! temporary Range vec
+    mutable Range tmp_;
 
     Vec<1,deriType> jacobianDiffVar_[dimCol];
 

@@ -37,7 +37,6 @@ namespace Dune {
   class DiscreteFunctionSpaceInterface
     : public FunctionSpaceType
   {
-
   public:
     //! the interface defines the type of the BaseFunctionSet
     typedef BaseFunctionSetInter BaseFunctionSetType;
@@ -123,8 +122,20 @@ namespace Dune {
     : public DiscreteFunctionSpaceInterface < FunctionSpaceType , GridTemp,
           DiscreteFunctionSpaceImp, BaseFunctionSetInter>
   {
+
   public:
     // at the moment nothing
+  private:
+    //! Barton-Nackman trick
+    DiscreteFunctionSpaceImp &asImp()
+    {
+      return static_cast<DiscreteFunctionSpaceImp&>(*this);
+    }
+    const DiscreteFunctionSpaceImp &asImp() const
+    {
+      return static_cast<const DiscreteFunctionSpaceImp&>(*this);
+    }
+
   };
 
   /** @} end documentation group */

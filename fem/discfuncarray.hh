@@ -213,7 +213,7 @@ namespace Dune {
     : public LocalFunctionDefault <DiscreteFunctionSpaceType ,
           LocalFunctionArray < DiscreteFunctionSpaceType >  >
   {
-    typedef FastBaseFunctionSet < DiscreteFunctionSpaceType > BaseFunctionSetType;
+    typedef typename DiscreteFunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
     typedef LocalFunctionArray < DiscreteFunctionSpaceType > MyType;
     typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscFuncType;
 
