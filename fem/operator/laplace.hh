@@ -28,9 +28,6 @@ namespace Dune
     //! The grid's dimension
     enum { dim = GridType::dimension };
 
-    //! The coordinate type
-    typedef typename GridType::template codim<0>::CoordType CoordType;
-
     //! ???
     typedef typename FunctionSpaceType::JacobianRange JacobianRange;
 
@@ -110,9 +107,9 @@ namespace Dune
       const BaseFunctionSetType & baseSet = this->functionSpace_.getBaseFunctionSet( entity );
 
       // calc Jacobian inverse before volume is evaluated
-      const Mat<dim,dim,double>& inv = entity.geometry().Jacobian_inverse(quad.point(0));
+      const Mat<dim,dim,double>& inv = entity.geometry().jacobianInverse(quad.point(0));
 
-      const double vol = entity.geometry().integration_element(quad.point(0));
+      const double vol = entity.geometry().integrationElement(quad.point(0));
 
       double val = 0.;
       for ( int pt=0; pt < quad.nop(); pt++ )
@@ -150,9 +147,9 @@ namespace Dune
       const BaseFunctionSetType & baseSet = this->functionSpace_.getBaseFunctionSet( entity );
 
       // calc Jacobian inverse before volume is evaluated
-      const Mat<dim,dim,double>& inv = entity.geometry().Jacobian_inverse(quad.point(0));
+      const Mat<dim,dim,double>& inv = entity.geometry().jacobianInverse(quad.point(0));
 
-      const double vol = entity.geometry().integration_element(quad.point(0));
+      const double vol = entity.geometry().integrationElement(quad.point(0));
       int i,j;
 
       for(i=0; i<matSize; i++)

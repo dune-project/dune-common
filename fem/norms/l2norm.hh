@@ -46,7 +46,8 @@ namespace Dune {
 
       for(; it != endit ; ++it) {
 
-        double det = (*it).geometry().integration_element(quad.point(0));
+        double det = (*it).geometry().integrationElement(quad.point(0));
+        /** \todo Do we really need the following const_cast?? */
         (const_cast<DiscreteFunctionType*>(&discFunc))->localFunction(*it,lf);
         for(int qP = 0; qP < quad.nop(); qP++) {
 

@@ -61,7 +61,7 @@ namespace Dune
         {
           for(int qP = 0; qP < quad.nop(); qP++)
           {
-            double det = (*it).geometry().integration_element(quad.point(qP));
+            double det = (*it).geometry().integrationElement(quad.point(qP));
             f.evaluate((*it).geometry().global( quad.point(qP) ), ret);
             set.eval(i,quad,qP,phi);
             lf[i] += det * quad.weight(qP) * (ret * phi);
