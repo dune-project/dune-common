@@ -243,6 +243,7 @@ namespace Dune {
              !((periodic_[d]==false)&&(process[d]==dim_[d]-1));
     };
     const array<DIM> & process() const { return process_; }
+    int process(int dir) const { return process_[dir]; }
     int father_id(level l, const array<DIM> & coord) const;
     int coord_shift(level, int d) const;
     //! return the step size on level l in direction d
@@ -251,6 +252,23 @@ namespace Dune {
     bool periodic(int dir) const { return periodic_[dir]; }
     //! inform about global arrangement of the processors
     int dim(int dir) const { return dim_[dir]; }
+    //! map from global to local coords
+    bool global_to_local(level lvl,
+                         const array<DIM> & global,
+                         array<DIM> & local) const {
+      for (int d=0; d<DIM; d++) {
+        local[d] = global[d] - global_offset(lvl,d) + front_overlap(lvl,d);
+        if (local[d] < 0)
+          return false;
+        if (local[d] >=
+            front_overlap(lvl,d) + size(lvl,d) + end_overlap(lvl,d))
+          return false;
+      }
+      return true;
+    }
+    int global_offset(level lvl, int d) const {
+      return process(d)*(globalsize(lvl,d)/dim(d));
+    }
   }; /* end spgrid */
 
   ////////////////////////////////////////////////////////////////////////////
