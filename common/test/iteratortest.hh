@@ -17,10 +17,17 @@ template<class Iter, class Opt>
 int testForwardIterator(Iter begin, Iter end, Opt& opt)
 {
   //std::cout<< "forward: ";
+  Iter tmp=begin, tmp1(begin);
+  int ret=0;
+  if(tmp!=begin || tmp1!=begin || tmp!=tmp1) {
+    std::cerr<<" Copying iterator failed "<<__FILE__<<":"<<__LINE__<<std::endl;
+    ret=1;
+  }
+
   for(; begin!=end; ++begin)
     opt(*begin);
   //std::cout<< " OK "<<std::endl;
-  return 0;
+  return ret;
 }
 
 /**

@@ -50,6 +50,41 @@ void randomizeListFront(Dune::SLList<T,A>& alist){
     alist.push_back((range*(rand()/(RAND_MAX+1.0))));
 }
 
+int testDeleteNext()
+{
+  typedef Dune::SLList<int,Dune::PoolAllocator<int,8*1024-16> > List;
+  List alist;
+
+  alist.push_back(3);
+  alist.push_back(4);
+  alist.push_back(5);
+
+  List::iterator iter=alist.oneBeforeBegin();
+  iter.deleteNext();
+  List::iterator iter1=iter;
+  ++iter1;
+  if(*(alist.begin())!=4) {
+    std::cerr<<"delete next on position before head failed!"<<std::endl;
+    return 1;
+  }
+  if(*iter1!=4) {
+    std::cerr<<"delete next failed"<<std::endl;
+    return 1;
+  }
+  ++iter;
+  iter.deleteNext();
+  ++iter;
+  if(iter!=alist.end()) {
+    std::cerr<<"delete next faild"<<std::endl;
+    return 1;
+  }
+  if(*(alist.tail())!=4) {
+    std::cerr<<"delete before tail did not change tail!"<<std::endl;
+  }
+
+  return 0;
+}
+
 int testInsertAfter()
 {
   typedef Dune::SLList<int,Dune::PoolAllocator<int,8*1024-16> > List;
@@ -75,6 +110,22 @@ int testInsertAfter()
   ++iter;
   if(iter==alist.end() || *iter!=5) {
     std::cerr<<"Insertion failed!"<<std::endl;
+    ++ret;
+  }
+  if(*(alist.begin())!=5) {
+    std::cerr<<"Insert after at onebeforeBegin did not change head!"<<std::endl;
+    ++ret;
+  }
+  iter = alist.tail();
+  iter.insertAfter(20);
+  ++iter;
+  if(iter == alist.end() || *iter != 20) {
+    std::cerr<<"Insertion failed!"<<std::endl;
+    ++ret;
+  }
+
+  if(*(alist.tail())!=20) {
+    std::cerr<<"tail was not changed!!"<<std::endl;
     ++ret;
   }
 
@@ -167,7 +218,7 @@ int main()
   ret+=testPushPop();
   ret+=testOneBeforeBegin(list1);
   ret+=testInsertAfter();
-
+  ret+=testDeleteNext();
 
   list.clear();
   list1.clear();
