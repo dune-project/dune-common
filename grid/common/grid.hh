@@ -1437,25 +1437,6 @@ namespace Dune {
     //! clean up some markers
     void postAdapt() {}
 
-    /** Write Grid with GridType file filename and time
-     *
-     * This method uses the Grid Interface Method writeGrid
-     * to actually write the grid, within this method the real file name is
-     * generated out of filename and timestep
-     */
-    bool write (const FileFormatType ftype, const char * fnprefix , double time=0.0, int timestep=0, int precision = 6);
-
-    //! get Grid from file with time and timestep , return true if ok
-    bool read ( const char * fnprefix , double & time , int timestep);
-
-    //! write Grid to file filename and store time
-    template <FileFormatType ftype>
-    bool writeGrid ( const char * filename , double time );
-
-    //! read Grid from file filename and also read time of grid
-    template <FileFormatType ftype>
-    bool readGrid ( const char * filename , double &time );
-
   protected:
     //! Barton-Nackman trick
     GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
@@ -1591,6 +1572,5 @@ namespace Dune {
 }
 
 #include "grid.cc"
-#include "constgriditerators.hh"
 
 #endif
