@@ -1290,79 +1290,6 @@ namespace Dune
     return SubEntity<GridImp,dim,cc> :: entity(grid_,travStack_,level(),elInfo_,i);
   }
 
-#if 0
-  template <>
-#ifdef TEMPPARAM2
-  template <>
-#endif
-  inline AlbertaGridLevelIterator<2,3,3,All_Partition>
-  AlbertaGridEntity<0,3,3>::entity<2> ( int i ) const
-  {
-    //enum { cc = 2 };
-    int num = grid_.indexOnLevel<2>(el_index() ,level_);
-    if(i < 3)
-    { // 0,1,2
-      AlbertaGridLevelIterator<2,3,3,All_Partition> tmp (grid_,level_,elInfo_,num, 0,i,0);
-      return tmp;
-    }
-    else
-    { // 3,4,5
-      AlbertaGridLevelIterator<2,3,3,All_Partition> tmp (grid_,level_,elInfo_,num, i-2,1,0);
-      return tmp;
-    }
-  }
-
-  // specialization for vertices
-  template <>
-#ifdef TEMPPARAM2
-  template <>
-#endif
-  inline AlbertaGridLevelIterator<2,2,2,All_Partition>
-  AlbertaGridEntity<0,2,2>::entity<2> ( int i ) const
-  {
-    // we are looking at vertices
-    //enum { cc = dimension };
-    enum { cc = 2 };
-    AlbertaGridLevelIterator<cc,2,2,All_Partition>
-    tmp (grid_,level_,elInfo_, grid_.indexOnLevel<cc>( elInfo_->el->dof[i][0],level_),
-         0,0,i);
-    return tmp;
-  }
-  // specialization for vertices
-  template <>
-#ifdef TEMPPARAM2
-  template <>
-#endif
-  inline AlbertaGridLevelIterator<2,2,3,All_Partition>
-  AlbertaGridEntity<0,2,3>::entity<2> ( int i ) const
-  {
-    // we are looking at vertices
-    //enum { cc = dimension };
-    enum { cc = 2 };
-    AlbertaGridLevelIterator<cc,2,3,All_Partition>
-    tmp (grid_,level_,elInfo_, grid_.indexOnLevel<cc>( elInfo_->el->dof[i][0],level_),
-         0,0,i);
-    return tmp;
-  }
-  // specialization for vertices
-  template <>
-#ifdef TEMPPARAM2
-  template <>
-#endif
-  inline AlbertaGridLevelIterator<3,3,3,All_Partition>
-  AlbertaGridEntity<0,3,3>::entity<3> ( int i ) const
-  {
-    // we are looking at vertices
-    enum { cc = 3 };
-    //enum { cc = dimension };
-    AlbertaGridLevelIterator<cc,3,3,All_Partition>
-    tmp (grid_,level_,elInfo_, grid_.indexOnLevel<cc>( elInfo_->el->dof[i][0],level_),
-         0,0,i);
-    return tmp;
-  }
-  //***************************
-#endif
-
   template<int dim, class GridImp>
   inline ALBERTA EL_INFO* AlbertaGridEntity <0,dim,GridImp>::
   getElInfo() const
@@ -2102,6 +2029,7 @@ namespace Dune
     virtualEntity_.setElInfo(
       goNextEntity(manageStack_.getStack(),virtualEntity_.getElInfo()),
       face_,edge_,vertex_);
+    virtualEntity_.setLevel( level_ );
     return ;
   }
 
@@ -2269,6 +2197,10 @@ namespace Dune
         }
         stack->el_count++;
       }
+
+      // set new level for LEafIterator
+      if((elInfo) && (leafIt_)) level_ = elInfo->level;
+
       return(elinfo);
     }
 
@@ -2291,6 +2223,10 @@ namespace Dune
         }
         stack->el_count++;
       }
+
+      // set new level for LEafIterator
+      if((elInfo) && (leafIt_)) level_ = elInfo->level;
+
       return(elinfo);
     }
 
@@ -2331,6 +2267,9 @@ namespace Dune
         }
         return goNextElInfo(stack,elinfo);
       }
+
+      // set new level for LEafIterator
+      if((elInfo) && (leafIt_)) level_ = elInfo->level;
 
       return(elinfo);
     }
@@ -2373,6 +2312,9 @@ namespace Dune
         // we found not the one, so go next
         return goNextElInfo(stack,elinfo);
       }
+
+      // set new level for LEafIterator
+      if((elInfo) && (leafIt_)) level_ = elInfo->level;
 
       return elinfo;
     }
