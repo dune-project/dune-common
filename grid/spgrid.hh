@@ -119,7 +119,6 @@ namespace Dune {
   private:
     const array<DIM> &id_to_coord_impl(level l, int id) const;
   public:
-    MPI_Status mpi_status;
     //! exchange data on level l
     void   exchange(level l, Vector< spgrid<DIM> > & ex) const;
     void   Send(int dir, Dune::side s,
