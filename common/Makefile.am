@@ -5,6 +5,8 @@ noinst_LTLIBRARIES = libcommon.la
 
 libcommon_la_SOURCES = stdstreams.cc
 
+AM_CPPFLAGS = -I$(top_srcdir)/..
+
 commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = dlist.cc mapping.cc stdstreams.cc array.hh debugstream.hh \
   dlist.hh dynamictype.hh exceptions.hh fixedarray.hh function.hh functionspace.hh \
