@@ -1,0 +1,183 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use English;
+use Getopt::Mixed "nextOption";
+
+# Hash for replacements
+my %replace;
+
+# default values
+my $filespec = '(\.cc|\.hh)$';
+
+# forward declaration so that parameter check works...
+sub allfiles ($);
+
+# alle existierenden Dateien in einem Verzeichnis finden
+sub allfiles ($) {
+    my $dir = shift;
+    
+    # add trailing slash
+    if ($dir !~ /\/$/) {
+	$dir .= '/';
+    };
+
+    my $dirhandle;
+    opendir $dirhandle, $dir;
+
+    my @existing;
+    while (my $file = readdir $dirhandle) {
+	# ignore dotfiles and thus also . and ..
+	next if ($file =~ /^\./);
+	
+        if ( -f $dir.$file ) {
+	    if ($file =~ /$filespec/o) {
+		push @existing, $dir.$file;
+	    }
+        } else {
+	    if ( -d $dir.$file && ! -l $dir.$file) {
+		# recursively go on
+		push @existing, allfiles($dir.$file);
+	    } else {
+		print "Warning: ignoring ".$dir.$file."\n";
+	    }
+        };
+    };
+    
+    closedir $dirhandle;
+
+    return @existing;
+};
+
+sub change ($) {
+    my $file = shift;
+
+    # name of backup-file used later
+    my $bakname = $file.'.orig';
+    if (-e $bakname) {
+	die "$bakname already exists! Aborting!\n";
+    };
+    open ORIG, $file || die "Cannot open $file!\n";
+
+    my $newfile = $file.'.new';
+    if (-e $newfile) {
+	die "$newfile already exists! Aborting!\n";
+    };
+    open NEW, ">$newfile" || die "Cannot create $newfile!\n";
+
+    while (my $line = <ORIG>) {
+	my $new = '';
+	
+        # skip preprocessor stuff
+	if ($line =~ /^\s*\#/) {
+	    print NEW $line;
+	    next;
+	};  
+	
+	my $last = 0;
+	while ($line =~ /(\w[\w\d]*)\W/g) {
+	    my $token = $1;
+	    my $len = length($token);
+	    # position of end of match (which includes \W)
+	    my $where = pos($line) - 1;
+
+	    # print "$token: where $where / len $len\n" if ($debug);
+
+	    if (defined($replace{$token})) {
+		$new .= substr $line, $last, ($where - $last - $len);
+		$new .= $replace{$token};
+	    } else {
+		$new .= substr $line, $last, ($where - $last);
+	    };
+
+	    # mark where this token ended in original
+	    $last = $where;
+	};
+
+	# after last token match
+	$new .= substr $line, $last;
+
+	print NEW $new;
+    };
+
+    close NEW;
+    close ORIG;
+
+    # switch files    
+    rename $file, $bakname || die "Renaming $file failed!\n";
+    rename $newfile, $file || die "Renaming $newfile failed!\n";
+};
+
+#### --- main ---
+
+# parse dash-options
+Getopt::Mixed::init("h help>h f=s files>f");
+while (my ($option, $value, $pretty) = nextOption()) {
+    if ($option eq "f") {
+	$filespec = $value;
+    };
+
+    if ($option eq "h") {
+        print << 'EOT';
+Usage: idrename listfile basedir [--file=<regexp>] [--help]
+starting from basedir recursively rename C/C++ identifiers listed in listfile
+
+***
+*** WARNING!! Backup your files before using this tool!
+***
+
+All files are copied to .orig-versions during processing but DONT
+trust this mechanism to be free of bugs!
+
+The listfile should contain lines
+
+<orig1> <replacement1>
+<orig2> <replacement2>
+...
+
+Comments and empty lines are allowed
+
+-f, --files=<regexp> treat all files matching regexp (default '(\.cc|\.hh)$')
+-h, --help           this help
+EOT
+        exit 0;
+    };
+};
+Getopt::Mixed::cleanup();
+
+if ($#ARGV != 1) {
+    print "Need replacements and directory! See --help for information\n";
+    print "\n";
+    die "WARNING!! Please backup your files before using this tool!\n"
+}
+my ($listfile, $basedir) = @ARGV;
+
+open LIST, $listfile || die "Cannot open $listfile!\n";
+while (my $line = <LIST>) {
+    # skip comments
+    next if ($line =~ /^\s*\#/);
+    
+    # skip empty lines
+    next if ($line =~ /^\s*$/);
+
+    my @list = split(/\s+/, $line);
+
+    if ($#list == 1) {
+        $replace{$list[0]} = $list[1];
+    } else {
+        print 'Error: cannot parse "'.$line.'"'."\n";
+        die "Aborting\n";
+    };
+};
+close LIST;
+
+if (! -d $basedir) {
+    die "$basedir is not a directory!\n";
+};
+
+# travel over all selected files
+foreach my $file ( allfiles($basedir) ) {
+    print "Renaming in $file...\n";
+    change($file);
+};

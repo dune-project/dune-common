@@ -1,7 +1,7 @@
 # $Id$
 
-# put script into dist-tarball
-EXTRA_DIST = duneproject
+# put scripts into dist-tarball
+EXTRA_DIST = duneproject idrename
 
-# ... and install it
+# ... and install some
 bin_SCRIPTS = duneproject
