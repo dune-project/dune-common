@@ -52,10 +52,13 @@ namespace Dune
 #ifdef __ICC
     // for icc
     friend EntityImp<codim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<codim>::Entity& e );
+    friend const EntityImp<codim,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template codim<codim>::Entity& e ) const;
 #else
     // for g++
     template <int cd>
     friend EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template codim<cd>::Entity& e );
+    template <int cd>
+    friend const EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(const typename GridImp::Traits::template codim<cd>::Entity& e ) const;
 #endif
 
   };
@@ -71,10 +74,13 @@ namespace Dune
 #ifdef __ICC
     // for icc
     friend EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<0>::Entity& e );
+    friend const EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template codim<0>::Entity& e ) const;
 #else
     // for g++
     template <int cd>
     friend EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(typename mutableGridImp::Traits::template codim<cd>::Entity& e );
+    template <int cd>
+    friend const EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(const typename mutableGridImp::Traits::template codim<cd>::Entity& e ) const;
 #endif
 
   protected:
@@ -216,10 +222,13 @@ namespace Dune
 #ifdef __ICC
     // for icc
     friend EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<dim>::Entity& e );
+    friend const EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template codim<dim>::Entity& e ) const;
 #else
     // for g++
     template <int cd>
     friend EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template codim<cd>::Entity& e );
+    template <int cd>
+    friend const EntityImp<cd,dim,GridImp>& mutableGridImp::getRealEntity(const typename GridImp::Traits::template codim<cd>::Entity& e ) const;
 #endif
 
   protected:
