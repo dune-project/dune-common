@@ -8,9 +8,6 @@
 //
 //************************************************************************
 
-#include <algorithm>
-#include <dune/io/file/grapedataio.hh>
-
 namespace Dune
 {
 
@@ -1079,7 +1076,7 @@ namespace Dune
   inline bool AlbertaGridEntity <0,dim,GridImp>::
   master() const
   {
-    return (owner() == grid_.myProcessor());
+    return (owner() == grid_.myRank());
   }
 
 
@@ -2257,7 +2254,7 @@ namespace Dune
           ALBERTA EL * neigh = NEIGH(elinfo->el,elinfo)[i];
           if(neigh)
           {
-            if(((proc_ == -1) && (grid_.getOwner(neigh) != grid_.myProcessor()))||
+            if(((proc_ == -1) && (grid_.getOwner(neigh) != grid_.myRank()))||
                ((proc_ != -1) && (grid_.getOwner(neigh) == proc_) ))
             {
               return elinfo;
@@ -2384,7 +2381,7 @@ namespace Dune
     if (stack->stack_used == 0) /* first call */
     {
       ALBERTA MACRO_EL * mel = stack->traverse_mesh->first_macro_el;
-      while(grid_.getOwner(mel->el) != grid_.myProcessor())
+      while(grid_.getOwner(mel->el) != grid_.myRank())
       {
         mel = mel->next;
         if(!mel) break;
@@ -2424,7 +2421,7 @@ namespace Dune
         ALBERTA MACRO_EL * mel = stack->traverse_mel->next;
         if(mel)
         {
-          while(grid_.getOwner(mel->el) != grid_.myProcessor())
+          while(grid_.getOwner(mel->el) != grid_.myRank())
           {
             mel = mel->next;
             if(!mel) break;
@@ -2491,7 +2488,7 @@ namespace Dune
     {
       int owner = grid_.getOwner(mel->el);
       while(((proc_ != -1) && (owner != proc_)) ||
-            ((proc_ == -1) && (owner == grid_.myProcessor() )))
+            ((proc_ == -1) && (owner == grid_.myRank() )))
       {
         mel = mel->next;
         if(!mel) break;
@@ -2731,7 +2728,6 @@ namespace Dune
       }
       // remember the number of entity on level and codim = 0
     }
-
     up2Date_ = true;
   }
 
@@ -2759,8 +2755,7 @@ namespace Dune
   inline AlbertaGrid < dim, dimworld >::AlbertaGrid() :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0)
-    , nv_ (dim+1) , dof_ (0) , myProc_ (0)
+    , nv_ (dim+1) , dof_ (0) , myRank_ (0)
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexSet_(0)
   {
@@ -2772,7 +2767,7 @@ namespace Dune
   }
 
   template < int dim, int dimworld >
-  inline void AlbertaGrid < dim, dimworld >::initGrid(int proc, bool swapEls )
+  inline void AlbertaGrid < dim, dimworld >::initGrid(int proc)
   {
     ALBERTA AlbertHelp::getDofVecs(&dofvecs_);
     ALBERTA AlbertHelp::setDofVec ( dofvecs_.owner, -1 );
@@ -2789,43 +2784,14 @@ namespace Dune
 
     ALBERTA AlbertHelp::initProcessor(mesh_,proc);
 
-    // if hasLevelIndex == true then first macro element hast the number 1
-    // and not 0
-    // this could be seen as a hack but is the only way i know to store
-    // whether we have level index or not in the grid files , :(
-    // default value of swapEls = true
-    if(mesh_ && levelIndexSet_ && swapEls )
-    {
-      ALBERTA MACRO_EL *mel = mesh_->first_macro_el;
-      assert(mel != 0);
-      ALBERTA EL * first_el = mel->el;
-
-      mel = mel->next;
-      if( !mel )
-      {
-        ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
-        ALBERTA AlbertHelp::swapElNum ( dofvecs_.elNumbers[0], first_el );
-        ALBERTA AlbertHelp::removeIndexManager_elmem_cc();
-      }
-      else
-      {
-        ALBERTA EL * sec_el   = mel->el;
-        assert(sec_el != 0);
-
-        ALBERTA AlbertHelp::swapElNum ( dofvecs_.elNumbers[0], first_el , sec_el );
-      }
-      std::cerr << "AlbertaGrid: LevelIndex is used!\n";
-    }
-
     calcExtras();
   }
 
   template < int dim, int dimworld >
-  inline AlbertaGrid < dim, dimworld >::AlbertaGrid(const char *MacroTriangFilename, bool levInd) :
+  inline AlbertaGrid < dim, dimworld >::AlbertaGrid(const char *MacroTriangFilename) :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0)
-    , nv_ (dim+1) , dof_ (0) , myProc_ (-1)
+    , nv_ (dim+1) , dof_ (0) , myRank_ (-1)
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexSet_(0)
   {
@@ -2857,18 +2823,18 @@ namespace Dune
     }
     else
     {
+      double time = 0.0;
       GrapeDataIO < AlbertaGrid <dim,dimworld> > dataIO;
-      dataIO.readGrid ( *this, MacroTriangFilename,time_,0);
+      dataIO.readGrid ( *this, MacroTriangFilename,time,0);
     }
   }
 
   template < int dim, int dimworld >
   inline AlbertaGrid < dim, dimworld >::
-  AlbertaGrid(AlbertaGrid<dim,dimworld> & oldGrid, int proc , bool levInd) :
+  AlbertaGrid(AlbertaGrid<dim,dimworld> & oldGrid, int proc) :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0)
-    , nv_ (dim+1) , dof_ (0), myProc_ (proc)
+    , nv_ (dim+1) , dof_ (0), myRank_ (proc)
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexSet_(0)
   {
@@ -2917,7 +2883,10 @@ namespace Dune
   inline typename AlbertaGrid<dim, dimworld>::Traits::template codim<codim>::template partition<pitype>::LevelIterator
   AlbertaGrid < dim, dimworld >::lbegin (int level, int proc) const
   {
-    //if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
+    if((dim == codim) || ((dim == 3) && (codim == 2)) )
+    {
+      if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
+    }
     typename Traits::template codim<codim>::template partition<pitype>::LevelIterator
     it(*this,vertexMarker_,level,proc);
     return it;
@@ -2935,7 +2904,10 @@ namespace Dune
   inline typename AlbertaGrid<dim, dimworld>::Traits::template codim<codim>::template partition<All_Partition>::LevelIterator
   AlbertaGrid < dim, dimworld >::lbegin (int level, int proc) const
   {
-    //if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
+    if((dim == codim) || ((dim == 3) && (codim == 2)) )
+    {
+      if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
+    }
     AlbertaGridLevelIterator<codim,All_Partition,const MyType>
     it(*this,vertexMarker_,level,proc);
     return it;
@@ -2947,6 +2919,28 @@ namespace Dune
   {
     AlbertaGridLevelIterator<codim,All_Partition,const MyType>
     it((*this),level,proc);
+    return it;
+  }
+
+  template < int dim, int dimworld >
+  template<PartitionIteratorType pitype>
+  inline typename AlbertaGrid<dim,dimworld>::LeafIterator
+  AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
+  {
+    bool leaf = true;
+    AlbertaGridLevelIterator<0,All_Partition,const MyType>
+    it(*this,vertexMarker_,level,proc,leaf);
+    return it;
+  }
+
+  template < int dim, int dimworld >
+  template<PartitionIteratorType pitype>
+  inline typename AlbertaGrid<dim,dimworld>::LeafIterator
+  AlbertaGrid < dim, dimworld >::leafend (int level, int proc ) const
+  {
+    bool leaf = true;
+    AlbertaGridLevelIterator<0,All_Partition,const MyType>
+    it((*this),level,proc,leaf);
     return it;
   }
 
@@ -3137,15 +3131,15 @@ namespace Dune
   {
     int owner = getOwner(elinfo->el);
 
-    // if processor number == myProcessor ==> InteriorEntity or BorderEntity
-    if(owner == myProcessor())
+    // if processor number == myRank ==> InteriorEntity or BorderEntity
+    if(owner == myRank())
     {
       for(int i=0; i<dim+1; i++)
       {
         ALBERTA EL * neigh = NEIGH(elinfo->el,elinfo)[i];
         if(neigh)
         {
-          if(getOwner(neigh) != myProcessor())
+          if(getOwner(neigh) != myRank())
             return BorderEntity;
         }
       }
@@ -3155,7 +3149,7 @@ namespace Dune
     }
 
     // if processor number != myProcossor ==> GhostEntity
-    if((owner >= 0) && (owner != myProcessor())) return GhostEntity;
+    if((owner >= 0) && (owner != myRank())) return GhostEntity;
 
     DUNE_THROW(AlbertaError, "Unsupported PartitionType");
 
@@ -3218,6 +3212,7 @@ namespace Dune
   template < int dim, int dimworld >
   inline void AlbertaGrid < dim, dimworld >::calcExtras ()
   {
+    // store pointer to numbering vectors and so on
     arrangeDofVec ();
 
     // determine new maxlevel and mark neighbours
@@ -3229,9 +3224,8 @@ namespace Dune
 
     maxHierIndex_[dim] = mesh_->n_vertices;
 
-    //vertexMarker_->unsetUp2Date();
-    // mark vertices on elements
-    vertexMarker_->markNewVertices(*this);
+    // unset up2Dat status, if lbegin is called then this status is updated
+    vertexMarker_->unsetUp2Date();
 
     // if levelIndexSet exists, then update now
     if(levelIndexSet_) (*levelIndexSet_).calcNewIndex();
@@ -3244,6 +3238,7 @@ namespace Dune
   inline bool AlbertaGrid < dim, dimworld >::
   writeGrid (const char * filename, albertCtype time ) const
   {
+    // use only with xdr as filetype
     assert(ftype == xdr);
     return writeGridXdr (filename , time );
   }
@@ -3275,6 +3270,8 @@ namespace Dune
       ownerfile = new char [strlen(filename) + 6];
       sprintf(ownerfile,"%s_own",filename);
     }
+    else
+      DUNE_THROW(AlbertaIOError, "no filename given in writeGridXdr ");
 
     // strore element numbering to file
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
@@ -3284,10 +3281,10 @@ namespace Dune
     }
     if(elnumfile) delete [] elnumfile;
 
-    if(myProcessor() >= 0)
+    if(myRank() >= 0)
     {
       int val = -1;
-      int entry = ALBERTA AlbertHelp::saveMyProcNum(dofvecs_.owner,myProcessor(),val);
+      int entry = ALBERTA AlbertHelp::saveMyProcNum(dofvecs_.owner,myRank(),val);
 
       assert(ownerfile);
       sprintf(ownerfile,"%s_own",filename);
@@ -3320,6 +3317,8 @@ namespace Dune
       ownerfile = new char [strlen(filename) + 6];
       sprintf(ownerfile,"%s_own",filename);
     }
+    else
+      return false;
 
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
     {
@@ -3338,7 +3337,7 @@ namespace Dune
       {
         fclose(file);
         dofvecs_.owner = ALBERTA read_dof_int_vec_xdr(ownerfile, mesh_ , 0 );
-        const_cast<int &> (myProc_) = ALBERTA AlbertHelp::restoreMyProcNum(dofvecs_.owner);
+        const_cast<int &> (myRank_) = ALBERTA AlbertHelp::restoreMyProcNum(dofvecs_.owner);
       }
     }
     if(ownerfile) delete [] ownerfile;
@@ -3347,11 +3346,6 @@ namespace Dune
     ALBERTA AlbertHelp::makeTheRest(&dofvecs_);
 
     arrangeDofVec();
-
-    // if hasLevelIndex_ then number of first element is 1 and not 0
-    // see initGrid ()
-    bool hasLevelIndex = (getElementNumber( mesh_->first_macro_el->el ) == 1) ? true : false;
-    if(hasLevelIndex) this->levelIndexSet();
 
     // calc maxlevel and indexOnLevel and so on
     calcExtras();
@@ -3379,20 +3373,8 @@ namespace Dune
     vertexMarker_ = new AlbertaMarkerVector (); assert(vertexMarker_);
     ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
 
-    initGrid(0,false);
+    initGrid(myRank_);
     return true;
-  }
-
-  //! Index Mapping
-  template < int dim, int dimworld >
-  inline void AlbertaGrid < dim, dimworld >::
-  makeNewSize(Array<int> &a, int newNumberOfEntries)
-  {
-    if(newNumberOfEntries > a.size())
-    {
-      a.resize(newNumberOfEntries);
-    }
-    for(int i=0; i<a.size(); i++) a[i] = -1;
   }
 
   // if defined some debugging test were made that reduce the performance
@@ -3571,9 +3553,8 @@ namespace Dune
   fillElInfo(int ichild, int actLevel , const ALBERTA EL_INFO *elinfo_old,
              ALBERTA EL_INFO *elinfo, bool hierarchical, bool leaf) const
   {
-    //************************************************************
-    // calc the normal elinfo
 #if 0
+    // the alberta version of filling an EL_INFO structure
     ALBERTA fill_elinfo(ichild,elinfo_old,elinfo);
 #else
 
@@ -3643,6 +3624,7 @@ namespace Dune
       elinfo->boundary[1-ichild] = nil;
       elinfo->boundary[2] = elinfo_old->boundary[1-ichild];
     }
+
 #endif
   } // end Grid::fillElInfo 2D
 

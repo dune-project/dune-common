@@ -127,40 +127,6 @@ namespace AlbertHelp {
     }
   };
 
-  // give element numer 1 to first_el
-  static void swapElNum (DOF_INT_VEC * elnums, EL * first_el)
-  {
-    const DOF_ADMIN * admin = elnums->fe_space->admin;
-    const int nv = admin->n0_dof    [AlbertaDofType<0>::type];
-    const int k  = admin->mesh->node[AlbertaDofType<0>::type];
-    int *vec = 0;
-
-    GET_DOF_VEC(vec,elnums);
-    assert(vec[first_el->dof[k][nv]] == 0);
-    assert(admin->mesh->n_macro_el == 1);
-
-    vec[first_el->dof[k][nv]] = getElementIndex<0>();
-    assert(vec[first_el->dof[k][nv]] == 1);
-    freeElementIndex<0>( 0 );
-  }
-
-  // swap element numbers of first_el and sec_el
-  static void swapElNum (DOF_INT_VEC * elnums, EL * first_el, EL * sec_el )
-  {
-    const DOF_ADMIN * admin = elnums->fe_space->admin;
-    const int nv = admin->n0_dof    [AlbertaDofType<0>::type];
-    const int k  = admin->mesh->node[AlbertaDofType<0>::type];
-    int *vec = 0;
-    int swap = -1;
-
-    GET_DOF_VEC(vec,elnums);
-
-    swap = vec[first_el->dof[k][nv]];
-    vec[first_el->dof[k][nv]] = vec[sec_el->dof[k][nv]];
-    vec[sec_el->dof[k][nv]] = swap;
-  }
-
-
 } // end namespace AlbertHelp
 
 #endif

@@ -157,38 +157,11 @@ static inline void initTraverseStack(TRAVERSE_STACK *stack);
 
 inline static TRAVERSE_STACK *getTraverseStack(void)
 {
-#if 0
-  TRAVERSE_STACK *stack;
-
-  if (!freeStack)
-  {
-    stack = (TRAVERSE_STACK *) std::malloc(sizeof(TRAVERSE_STACK));
-    initTraverseStack(stack);
-    stackCount++;
-  }
-  else
-  {
-    stack = freeStack;
-    freeStack = freeStack->next;
-  }
-  return(stack);
-#else
   return get_traverse_stack();
-#endif
 }
 
 inline static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack)
 {
-#if 0
-  if (!stack) {
-    std::cout << "stack==NULL ???\n";
-    abort();
-    return NULL;
-  }
-  stack->next = freeStack;
-  freeStack = stack;
-  return NULL;
-#endif
   free_traverse_stack(stack);
   return NULL;
 }
@@ -461,7 +434,6 @@ namespace AlbertHelp
   {
     // storage of unique element numbers
     DOF_INT_VEC * elNumbers[numOfElNumVec];
-    //DOF_INT_VEC * elNumbers;
     // contains information about refine status of element
     DOF_INT_VEC * elNewCheck;
     // stores the processor number of proc where element is master
@@ -599,7 +571,6 @@ namespace AlbertHelp
   }
 
 
-
 #define PROCRESTORE 66666666
 
   // save processor number in owner vec
@@ -716,10 +687,10 @@ namespace AlbertHelp
     //**********************************************************************
 
     {
-      // the face number space
+      // the face number space , i.e. codim == 1
       const FE_SPACE * eSpace = get_fe_space(mesh, "face_dofs", fdof, NULL);
 
-      // the element numbers, ie. codim = 0
+      // the face numbers, i.e. codim = 1
       elNumbers[1] = get_dof_int_vec("face_numbers",eSpace);
       elNumbers[1]->refine_interpol = &RefineNumbering<1>::refineNumbers;
       elNumbers[1]->coarse_restrict = &RefineNumbering<1>::coarseNumbers;
@@ -727,10 +698,10 @@ namespace AlbertHelp
 
 #if DIM == 3
     {
-      // the face number space
+      // the edge number space , i.e. codim == 2
       const FE_SPACE * eSpace = get_fe_space(mesh, "edge_dofs", edgedof, NULL);
 
-      // the element numbers, ie. codim = 0
+      // the edge numbers, i.e. codim = 2
       elNumbers[2] = get_dof_int_vec("edge_numbers",eSpace);
       elNumbers[2]->refine_interpol = &RefineNumbering<2>::refineNumbers;
       elNumbers[2]->coarse_restrict = &RefineNumbering<2>::coarseNumbers;
@@ -1145,10 +1116,6 @@ namespace AlbertHelp
     mesh_traverse(mesh,-1, CALL_EVERY_EL_PREORDER|FILL_NEIGH,setElOwner);
     elOwner = 0;
   }
-
-#ifndef _ALBERTA_H_
-  //#include "part.cc"
-#endif
 
 } // end namespace AlbertHelp
 
