@@ -19,15 +19,15 @@ namespace Dune {
     typedef typename FunctionSpaceType::HessianRange HessianRange;
     typedef FunctionSpaceType FunctionSpace;
 
-    Function ( const FunctionSpaceType & f ) : functionSpace_ (f) {} ;
+    Function ( FunctionSpaceType & f ) : functionSpace_ (f) {} ;
 
     void evaluate ( const Domain & , Range &) const ;
 
-    const FunctionSpaceType &getFunctionSpace() const { return functionSpace_; }
+    FunctionSpaceType &getFunctionSpace() const { return functionSpace_; }
 
   protected:
 
-    const FunctionSpaceType & functionSpace_;
+    FunctionSpaceType & functionSpace_;
 
   };
 
