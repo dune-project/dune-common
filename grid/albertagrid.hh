@@ -1434,10 +1434,12 @@ namespace Dune
                       ,0,Int2Type<dim-cd>());
     }
 
-    template <int codim>
+    template <int cd>
     int subIndex (const EntityCodim0Type & en, int i) const
     {
-      return 0;
+      assert(cd == dim);
+      return getIndex((grid_.template getRealEntity<0>(en)).getElInfo()->el
+                      ,i,Int2Type<dim-cd>());
     }
 
     int size ( int level, int codim ) const
