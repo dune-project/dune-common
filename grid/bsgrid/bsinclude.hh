@@ -49,12 +49,14 @@ namespace BernhardSchuppGrid {
   typedef Gitter::Geometric::hface3_GEO GEOFaceType;   // real Element
   typedef GitterBasis::Objects::tetra_IMPL IMPLElementType; // real Element
   typedef Gitter::Geometric::tetra_GEO GEOElementType; // real Element
+  typedef Gitter::Geometric::hasFace3 HasFace3Type;   // has Face with 3 polygons
 
   // refinement and coarsening enum for tetrahedons
   enum { refine_element_t = Gitter::Geometric::TetraRule::iso8 };
   enum { coarse_element_t = Gitter::Geometric::TetraRule::crs  };
 
-  typedef pair < GEOFaceType * , int > NeighbourPairType;
+  typedef pair < GEOFaceType * , int > NeighbourFaceType;
+  typedef pair < HasFace3Type* , int > NeighbourPairType;
 
   //*************************************************************
   //  definition of original LeafIterators of BSGrid
