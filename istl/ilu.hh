@@ -160,7 +160,7 @@ namespace Dune {
     createiterator ci=ILU.createbegin();
     for (crowiterator i=A.begin(); i!=endi; ++i)
     {
-      std::cout << "symbolic factorization, row " << i.index() << std::endl;
+      //		std::cout << "in row " << i.index() << std::endl;
       map rowpattern;           // maps column index to generation
 
       // initialize pattern with row of A
@@ -170,22 +170,27 @@ namespace Dune {
       // eliminate entries in row which are to the left of the diagonal
       for (mapiterator ik=rowpattern.begin(); (*ik).first<i.index(); ++ik)
       {
-        std::cout << "eliminating " << i.index() << "," << (*ik).first
-                  << std::endl;
-        coliterator endk = ILU[(*ik).first].end();                 // end of row k
-        coliterator kj = ILU[(*ik).first].find((*ik).first);                 // diagonal in k
-        for (++kj; kj!=endk; ++kj)                 // row k eliminates in row i
+        if ((*ik).second<n)
         {
-          int generation = static_cast<int>(firstmatrixelement(*kj));
-          mapiterator ij = rowpattern.find(kj.index());
-          if (ij==rowpattern.end())
-          {                         // new entry
+          //                            std::cout << "  eliminating " << i.index() << "," << (*ik).first
+          //                                              << " level " << (*ik).second << std::endl;
+
+          coliterator endk = ILU[(*ik).first].end();                       // end of row k
+          coliterator kj = ILU[(*ik).first].find((*ik).first);                       // diagonal in k
+          for (++kj; kj!=endk; ++kj)                       // row k eliminates in row i
+          {
+            int generation = (int) firstmatrixelement(*kj);
             if (generation<n)
-              rowpattern[kj.index()] = generation+1;
-          }
-          else
-          {                         // entry exists already
-            (*ij).second = std::min((*ij).second,generation+1);
+            {
+              mapiterator ij = rowpattern.find(kj.index());
+              if (ij==rowpattern.end())
+              {
+                //std::cout << "    new entry " << i.index() << "," << kj.index()
+                //                                                << " level " << (*ik).second+1 << std::endl;
+
+                rowpattern[kj.index()] = generation+1;
+              }
+            }
           }
         }
       }
@@ -195,17 +200,19 @@ namespace Dune {
         ci.insert((*ik).first);
       ++ci;           // now row i exist
 
-      // set generation index on new row
-      coliterator endik=ILU[i.index()].end();
-      for (coliterator ik=ILU[i.index()].begin(); ik!=endik; ++ik)
-        firstmatrixelement(*ik) = static_cast<K>(rowpattern[ik.index()]);
+      // write generation index into entries
+      coliterator endILUij = ILU[i.index()].end();;
+      for (coliterator ILUij=ILU[i.index()].begin(); ILUij!=endILUij; ++ILUij)
+        firstmatrixelement(*ILUij) = (K) rowpattern[ILUij.index()];
     }
 
-    // initialize new matrix with A
+    //	printmatrix(std::cout,ILU,"ilu pattern","row",10,2);
+
+    // copy entries of A
     for (crowiterator i=A.begin(); i!=endi; ++i)
     {
-      coliterator ILUij = ILU[i.index()].begin();
-      coliterator endILUij;
+      coliterator ILUij;
+      coliterator endILUij = ILU[i.index()].end();;
       for (ILUij=ILU[i.index()].begin(); ILUij!=endILUij; ++ILUij)
         (*ILUij) = 0;           // clear row
       ccoliterator Aij = (*i).begin();
@@ -214,7 +221,10 @@ namespace Dune {
       while (Aij!=endAij && ILUij!=endILUij)
       {
         if (Aij.index()==ILUij.index())
+        {
           *ILUij = *Aij;
+          ++Aij; ++ILUij;
+        }
         else
         {
           if (Aij.index()<ILUij.index())
