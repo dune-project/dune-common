@@ -938,9 +938,8 @@ namespace Dune {
 
   //************************************************************************
   // inline methods for SGrid
-
   template<int dim, int dimworld>
-  inline SGrid<dim,dimworld>::SGrid (int* N_, sgrid_ctype* H_)
+  inline void SGrid<dim,dimworld>::makeSGrid (int* N_, sgrid_ctype* H_)
   {
     L = 1;
     for (int i=0; i<dim; i++) H[i] = H_[i];
@@ -954,6 +953,25 @@ namespace Dune {
     std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
     for (int i=1; i<dim; i++) std::cout << "," <<  N[L-1][i];
     std::cout << ")" << std::endl;
+  }
+
+  template<int dim, int dimworld>
+  inline SGrid<dim,dimworld>::SGrid (int* N_, sgrid_ctype* H_)
+  {
+    makeSGrid(N_,H_);
+  }
+
+  template<int dim, int dimworld>
+  inline SGrid<dim,dimworld>::SGrid ()
+  {
+#if 0
+    int n[dim];
+    sgrid_ctype h[dim];
+
+    for(int i=0; i<dim; i++) n[i] = 1;
+    for(int i=0; i<dim; i++) h[i] = 1.0;
+    makeSGrid((int *) &n, (sgrid_ctype *) &h);
+#endif
   }
 
   template<int dim, int dimworld>
@@ -994,6 +1012,61 @@ namespace Dune {
   inline int SGrid<dim,dimworld>::size (int level, int codim) const
   {
     return mapper[level].elements(codim);
+  }
+
+  template<int dim, int dimworld>
+  inline GridIdentifier SGrid<dim,dimworld>::type () const
+  {
+    return SGrid_Id;
+  }
+
+  // write Grid in ascii
+  template<int dim, int dimworld> template <FileFormatType ftype>
+  inline bool SGrid<dim,dimworld>::
+  writeGrid (const char * filename, sgrid_ctype time )
+  {
+    std::fstream file (filename,std::ios::out);
+    file << dim << " " << dimworld << " " << time << "\n";
+    file << L << " ";
+    for(int i=0; i<dim; i++) file << N[0][i] << " ";
+    for(int i=0; i<dim; i++) file << H[i] << " ";
+    file.close();
+    return true;
+  }
+
+  // read Grid in ascii
+  template<int dim, int dimworld> template <FileFormatType ftype>
+  inline bool SGrid<dim,dimworld>::
+  readGrid (const char * filename , sgrid_ctype &time)
+  {
+    int n[dim];
+    sgrid_ctype h[dim];
+    int d,dw;
+    int level;
+
+    std::fstream file (filename,std::ios::in);
+    file >> d;
+    if(d != dim)
+    {
+      std::cerr << "Wrong dimension in grid file! \n";
+      return false;
+    }
+    file >> dw;
+    if(dw != dimworld)
+    {
+      std::cerr << "Wrong dimensionworld in grid file! \n";
+      return false;
+    }
+
+    file >> time;
+    file >> level;
+
+    for(int i=0; i<dim; i++) file >> n[i];
+    for(int i=0; i<dim; i++) file >> h[i];
+    file.close();
+    makeSGrid( (int *)&n,(double *)&h);
+    for(int i=1; i<level; i++) globalRefine(1);
+    return true;
   }
 
   template<int dim, int dimworld>
