@@ -67,13 +67,55 @@ namespace Dune {
   template<int codim, int dim, int dimworld> class SEntity;
   template<int codim, int dim, int dimworld> class SLevelIterator;
   template<int dim, int dimworld> class SGrid;
+  template<int dim, int dimworld> class SNeighborIterator;
+  template<int dim, int dimworld> class SHierarchicIterator;
 
-  //! base class implementing parametrizable part of an SElement
+  //************************************************************************
+  /*!
+     SElement realizes the concept of the geometric part of a mesh entity.
+
+     The geometric part of a mesh entity is a \f$d\f$-dimensional object in \f$\mathbf{R}^w\f$
+     where \f$d\f$ corresponds the template parameter dim and \f$w\f$ corresponds to the
+     template parameter dimworld.
+
+     The \f$d\f$-dimensional object is a polyhedron given by a certain number of corners, which
+     are vectors in \f$\mathbf{R}^w\f$.
+
+     The member function global provides a map from a topologically equivalent polyhedron ("reference element")
+     in \f$\mathbf{R}^d\f$ to the given polyhedron. This map can be inverted by the member function local, where
+     an appropriate projection is applied first, when \f$d\neq w\f$.
+
+     In the case of a structured mesh discretizing a generalized cube this map is linear
+     and can be described as \f[ g(l) = s + \sum\limits_{i=0}^{d-1} l_ir^i\f] where \f$s\in\mathbf{R}^w\f$
+     is a given position vector, the \f$r^i\in\mathbf{R}^w\f$ are given direction vectors and \f$l\in\mathbf{R}^d\f$
+     is a local coordinate within the reference polyhedron. The direction vectors are assumed to be orthogonal
+     with respect to the standard Eucliden inner product.
+
+     The \f$d\f$-dimensional reference polyhedron is given
+     by the points \f$\{ (x_0,\ldots,x_{d-1}) \ | \ x_i\in\{0,1\}\ \}\f$.
+
+     In order to invert the map for a point \f$p\f$, we have to find a local coordinate \f$l\f$ such
+     that \f$g(l)=p\f$. Of course this is only possible if \f$d=w\f$. In the general case \f$d\leq w\f$
+     we determine \f$l\f$ such that
+     \f[(s,r^k) + \sum\limits_{i=0}^{d-1} l_i (r^i,r^k) = (p,r^k) \ \ \ \forall k=0,\ldots,d-1. \f]
+
+     The resulting system is diagonal since the direction vectors are required to be orthogonal.
+   */
   template<int dim, int dimworld>
-  class SElementBase {
+  class SElement : public Element<dim,dimworld,sgrid_ctype,SElement>
+  {
   public:
-    // constructor
-    SElementBase ();
+    //! know dimension
+    enum { dimension=dim };
+
+    //! know dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
+    //! return the element type identifier
+    ElementType type ();
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners ();
@@ -121,69 +163,6 @@ namespace Dune {
     //! print internal data
     void print (std::ostream& ss, int indent);
 
-  protected:
-    Vec<dimworld,sgrid_ctype> s;             //!< position of element
-    Mat<dimworld,dim,sgrid_ctype> A;         //!< direction vectors as matrix
-    Vec<dimworld,sgrid_ctype> c[1<<dim];     //!< coordinate vectors of corners
-    Mat<dim,dim,sgrid_ctype> Jinv;           //!< storage for inverse of jacobian
-    bool builtinverse;
-  };
-
-  template <int dim, int dimworld>
-  inline std::ostream& operator<< (std::ostream& s, SElementBase<dim,dimworld>& e)
-  {
-    e.print(s,0);
-    return s;
-  }
-
-
-  //************************************************************************
-  /*!
-     SElement realizes the concept of the geometric part of a mesh entity.
-
-     The geometric part of a mesh entity is a \f$d\f$-dimensional object in \f$\mathbf{R}^w\f$
-     where \f$d\f$ corresponds the template parameter dim and \f$w\f$ corresponds to the
-     template parameter dimworld.
-
-     The \f$d\f$-dimensional object is a polyhedron given by a certain number of corners, which
-     are vectors in \f$\mathbf{R}^w\f$.
-
-     The member function global provides a map from a topologically equivalent polyhedron ("reference element")
-     in \f$\mathbf{R}^d\f$ to the given polyhedron. This map can be inverted by the member function local, where
-     an appropriate projection is applied first, when \f$d\neq w\f$.
-
-     In the case of a structured mesh discretizing a generalized cube this map is linear
-     and can be described as \f[ g(l) = s + \sum\limits_{i=0}^{d-1} l_ir^i\f] where \f$s\in\mathbf{R}^w\f$
-     is a given position vector, the \f$r^i\in\mathbf{R}^w\f$ are given direction vectors and \f$l\in\mathbf{R}^d\f$
-     is a local coordinate within the reference polyhedron. The direction vectors are assumed to be orthogonal
-     with respect to the standard Eucliden inner product.
-
-     The \f$d\f$-dimensional reference polyhedron is given
-     by the points \f$\{ (x_0,\ldots,x_{d-1}) \ | \ x_i\in\{0,1\}\ \}\f$.
-
-     In order to invert the map for a point \f$p\f$, we have to find a local coordinate \f$l\f$ such
-     that \f$g(l)=p\f$. Of course this is only possible if \f$d=w\f$. In the general case \f$d\leq w\f$
-     we determine \f$l\f$ such that
-     \f[(s,r^k) + \sum\limits_{i=0}^{d-1} l_i (r^i,r^k) = (p,r^k) \ \ \ \forall k=0,\ldots,d-1. \f]
-
-     The resulting system is diagonal since the direction vectors are required to be orthogonal.
-   */
-  template<int dim, int dimworld>
-  class SElement : public SElementBase<dim,dimworld>
-  {
-  public:
-    //! know dimension
-    enum { dimension=dim };
-
-    //! know dimension of world
-    enum { dimensionworld=dimworld };
-
-    //! define type used for coordinates in grid module
-    typedef sgrid_ctype ctype;
-
-    //! return the element type identifier
-    ElementType type ();
-
     /*! The first dim columns of As contain the dim direction vectors.
         Column dim is the position vector. This format allows a consistent
             treatement of all dimensions, including 0 (the vertex).
@@ -192,11 +171,18 @@ namespace Dune {
 
     //! constructor with bool argument makes reference element if true, uninitialized else
     SElement (bool b);
+
+  private:
+    Vec<dimworld,sgrid_ctype> s;             //!< position of element
+    Mat<dimworld,dim,sgrid_ctype> A;         //!< direction vectors as matrix
+    Vec<dimworld,sgrid_ctype> c[1<<dim];     //!< coordinate vectors of corners
+    Mat<dim,dim,sgrid_ctype> Jinv;           //!< storage for inverse of jacobian
+    bool builtinverse;
   };
 
   // specialization for dim=0, this is a vertex
   template<int dimworld>
-  class SElement<0,dimworld>
+  class SElement<0,dimworld> : public Element<0,dimworld,sgrid_ctype,SElement>
   {
   public:
     //! know dimension
@@ -230,245 +216,14 @@ namespace Dune {
     Vec<dimworld,sgrid_ctype> s;             //!< position of element
   };
 
-  template <int dimworld>
-  inline std::ostream& operator<< (std::ostream& s, SElement<0,dimworld>& e)
+  template <int dim, int dimworld>
+  inline std::ostream& operator<< (std::ostream& s, SElement<dim,dimworld>& e)
   {
     e.print(s,0);
     return s;
   }
 
   //************************************************************************
-
-  /*! SEntityBase contains the part of SEntity that can be defined
-     without specialization. This is the base for all SEntity classes with dim>0.
-   */
-  template<int codim, int dim, int dimworld>
-  class SEntityBase {
-  public:
-    //! level of this element
-    int level ();
-
-    //! index is unique and consecutive per level and codim used for access to degrees of freedom
-    int index ();
-
-    //! geometry of this entity
-    SElement<dim-codim,dimworld>& geometry ();
-
-    //! constructor
-    SEntityBase (SGrid<dim,dimworld>& _grid, int _l, int _id);
-
-    //! Reinitialization
-    void make (int _l, int _id);
-
-  protected:
-    // this is how we implement our elements
-    SGrid<dim,dimworld>& grid;            //!< grid containes mapper, geometry, etc.
-    int l;                                //!< level where element is on
-    int id;                               //!< my consecutive id
-    Tupel<int,dim> z;                     //!< my coordinate, number of even components = codim
-    SElement<dim-codim,dimworld> geo;     //!< geometry, is only built on demand
-    bool builtgeometry;                   //!< true if geometry has been constructed
-  };
-
-
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
-
-     Here: the general template
-   */
-  template<int codim, int dim, int dimworld>
-  class SEntity : public SEntityBase<codim,dim,dimworld>
-  {
-  public:
-    //! know your own codimension
-    enum { codimension=codim };
-
-    //! know your own dimension
-    enum { dimension=dim };
-
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
-
-    //! define type used for coordinates in grid module
-    typedef sgrid_ctype ctype;
-
-    //! inlcude element in scope since it is used as a return type
-    template<int d, int dd>
-    class Element : public SElement<d,dd> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      Element () : SElement<d,dd>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      Element (const SElement<d,dd>& y) : SElement<d,dd>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      Element<d,dd>& operator= (const SElement<d,dd>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      SElement<d,dd>& asBase() {
-        return static_cast<SElement<d,dd>&>(*this);
-      }
-    };
-
-    //! constructor
-    SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) : SEntityBase<codim,dim,dimworld>::SEntityBase(_grid,_l,_id) {};
-  };
-
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
-
-     Entities of codimension 0 ("elements") are defined through template specialization. Note
-     that this specialization has an extended interface compared to the general case
-
-     Entities of codimension 0  allow to visit all neighbors, where
-     a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the entity.
-     These neighbors are accessed via an iterator. This allows the implementation of
-     non-matching meshes. The number of neigbors may be different from the number of faces/edges
-     of an element!
-   */
-  template<int dim, int dimworld>
-  class SEntity<0,dim,dimworld> : public SEntityBase<0,dim,dimworld>
-  {
-  public:
-    //! forward declaration of nested class
-    class HierarchicIterator;
-
-    //! make HierarchicIterator a friend
-    friend class NeighborIterator;
-
-    //! forward declaration of nested class
-    class NeighborIterator;
-
-    //! make NeighborIterator a friend
-    friend class NeighborIterator;
-
-    //! define type used for coordinates in grid module
-    typedef sgrid_ctype ctype;
-
-    //! know your own codimension
-    enum { codimension=0 };
-
-    //! know your own dimension
-    enum { dimension=dim };
-
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
-
-    /*! Intra-element access to entities of codimension cc > codim. Return number of entities
-       with codimension cc.
-     */
-    template<int cc> int count ();
-
-    /*! Provide access to mesh entity i of given codimension. Entities
-       are numbered 0 ... count<cc>()-1
-     */
-    template<int cc> SLevelIterator<cc,dim,dimworld> entity (int i);     // 0 <= i < count()
-
-    /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
-       which has an entity of codimension 1 in commen with this entity. Access to neighbors
-       is provided using iterators. This allows meshes to be nonmatching. Returns iterator
-       referencing the first neighbor.
-     */
-    NeighborIterator nbegin ();
-
-    //! Reference to one past the last neighbor
-    NeighborIterator nend ();
-
-    //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
-    SLevelIterator<0,dim,dimworld> father ();
-
-    /*! Location of this element relative to the reference element element of the father.
-       This is sufficient to interpolate all dofs in conforming case.
-       Nonconforming may require access to neighbors of father and
-       computations with local coordinates.
-       On the fly case is somewhat inefficient since dofs  are visited several times.
-       If we store interpolation matrices, this is tolerable. We assume that on-the-fly
-       implementation of numerical algorithms is only done for simple discretizations.
-       Assumes that meshes are nested.
-     */
-    SElement<dim,dim>& father_relative_local ();
-
-    /*! Inter-level access to son elements on higher levels<=maxlevel.
-       This is provided for sparsely stored nested unstructured meshes.
-       Returns iterator to first son.
-     */
-    HierarchicIterator hbegin (int maxlevel);
-
-    //! Returns iterator to one past the last son
-    HierarchicIterator hend (int maxlevel);
-
-    //! inlcude LevelIterator in scope since it is used as a return type
-    template<int cc>
-    class LevelIterator : public SLevelIterator<cc,dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      LevelIterator () : SLevelIterator<cc,dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      LevelIterator (const SLevelIterator<cc,dim,dimworld>& y) : SLevelIterator<cc,dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      LevelIterator<cc>& operator= (const SLevelIterator<cc,dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      SLevelIterator<cc,dim,dimworld>& asBase() {
-        return static_cast<SLevelIterator<cc,dim,dimworld>&>(*this);
-      }
-    };
-
-    //! inlcude Element in scope since it is used as a return type
-    template<int d, int dd>
-    class Element : public SElement<d,dd> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      Element () : SElement<d,dd>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      Element (const SElement<d,dd>& y) : SElement<d,dd>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      Element<d,dd>& operator= (const SElement<d,dd>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      SElement<d,dd>& asBase() {
-        return static_cast<SElement<d,dd>&>(*this);
-      }
-    };
-
-    //! constructor
-    SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) :
-      SEntityBase<0,dim,dimworld>::SEntityBase(_grid,_l,_id) , in_father_local(false)
-    {
-      built_father = false;
-    }
-
-    //! Reinitialization
-    void make (int _l, int _id)
-    {
-      SEntityBase<0,dim,dimworld>::make(_l,_id);
-      built_father = false;
-    }
-
-  private:
-    bool built_father;
-    int father_id;
-    SElement<dim,dim> in_father_local;
-    void make_father();
-  };
-
-
   /*! Mesh entities of codimension 0 ("elements") allow to visit all neighbors, where
      a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the entity.
      These neighbors are accessed via a NeighborIterator. This allows the implementation of
@@ -476,7 +231,7 @@ namespace Dune {
      of an element!
    */
   template<int dim, int dimworld>
-  class SEntity<0,dim,dimworld>::NeighborIterator
+  class SNeighborIterator : public NeighborIterator<dim,dimworld,sgrid_ctype,SNeighborIterator,SEntity,SElement>
   {
   public:
     //! know your own dimension
@@ -485,14 +240,17 @@ namespace Dune {
     //! know your own dimension of world
     enum { dimensionworld=dimworld };
 
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
     //! prefix increment
-    NeighborIterator& operator ++();
+    SNeighborIterator<dim,dimworld>& operator++();
 
     //! equality
-    bool operator== (const NeighborIterator& i) const;
+    bool operator== (const SNeighborIterator<dim,dimworld>& i) const;
 
     //! inequality
-    bool operator!= (const NeighborIterator& i) const;
+    bool operator!= (const SNeighborIterator<dim,dimworld>& i) const;
 
     //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
     bool boundary ();
@@ -536,7 +294,7 @@ namespace Dune {
     int number_in_neighbor ();
 
     //! constructor
-    NeighborIterator (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count);
+    SNeighborIterator (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count);
 
   private:
     void make (int _count);                     //!< reinitialze iterator with given neighbor
@@ -557,6 +315,7 @@ namespace Dune {
   };
 
 
+  //************************************************************************
   /*! Mesh entities of codimension 0 ("elements") allow to visit all entities of
      codimension 0 obtained through nested, hierarchic refinement of the entity.
      Iteration over this set of entities is provided by the HIerarchicIterator,
@@ -565,7 +324,7 @@ namespace Dune {
      hierarchically refined meshes.
    */
   template<int dim, int dimworld>
-  class SEntity<0,dim,dimworld>::HierarchicIterator
+  class SHierarchicIterator : public HierarchicIterator<dim,dimworld,sgrid_ctype,SHierarchicIterator,SEntity>
   {
   public:
     //! know your own dimension
@@ -574,14 +333,17 @@ namespace Dune {
     //! know your own dimension of world
     enum { dimensionworld=dimworld };
 
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
     //! prefix increment
-    HierarchicIterator& operator ++();
+    SHierarchicIterator<dim,dimworld>& operator++();
 
     //! equality
-    bool operator== (const HierarchicIterator& i) const;
+    bool operator== (const SHierarchicIterator<dim,dimworld>& i) const;
 
     //! inequality
-    bool operator!= (const HierarchicIterator& i) const;
+    bool operator!= (const SHierarchicIterator<dim,dimworld>& i) const;
 
     //! dereferencing
     SEntity<0,dim,dimworld>& operator*();
@@ -595,7 +357,7 @@ namespace Dune {
             the iteration will stop when both iterators have the same id AND the
             stack is empty
      */
-    HierarchicIterator (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _e, int _maxlevel, bool makeend);
+    SHierarchicIterator (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _e, int _maxlevel, bool makeend);
 
   private:
     SGrid<dim,dimworld>& grid;       //!< my grid
@@ -617,6 +379,194 @@ namespace Dune {
 
 
 
+  //************************************************************************
+  /*! SEntityBase contains the part of SEntity that can be defined
+     without specialization. This is the base for all SEntity classes with dim>0.
+   */
+  template<int codim, int dim, int dimworld>
+  class SEntityBase {
+  public:
+    //! level of this element
+    int level ();
+
+    //! index is unique and consecutive per level and codim used for access to degrees of freedom
+    int index ();
+
+    //! geometry of this entity
+    SElement<dim-codim,dimworld>& geometry ();
+
+    //! constructor
+    SEntityBase (SGrid<dim,dimworld>& _grid, int _l, int _id);
+
+    //! Reinitialization
+    void make (int _l, int _id);
+
+  protected:
+    // this is how we implement our elements
+    SGrid<dim,dimworld>& grid;            //!< grid containes mapper, geometry, etc.
+    int l;                                //!< level where element is on
+    int id;                               //!< my consecutive id
+    Tupel<int,dim> z;                     //!< my coordinate, number of even components = codim
+    SElement<dim-codim,dimworld> geo;     //!< geometry, is only built on demand
+    bool builtgeometry;                   //!< true if geometry has been constructed
+  };
+
+
+  /*!
+     A Grid is a container of grid entities. An entity is parametrized by the codimension.
+     An entity of codimension c in dimension d is a d-c dimensional object.
+
+     Here: the general template
+   */
+  template<int codim, int dim, int dimworld>
+  class SEntity : public SEntityBase<codim,dim,dimworld>,
+                  public Entity<codim,dim,dimworld,sgrid_ctype,SEntity,SElement,
+                      SLevelIterator,SNeighborIterator,SHierarchicIterator>
+  {
+  public:
+    //! know your own codimension
+    enum { codimension=codim };
+
+    //! know your own dimension
+    enum { dimension=dim };
+
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
+    // disambiguate member functions with the same name in both bases
+    //! level of this element
+    int level () {return SEntityBase<codim,dim,dimworld>::level();}
+
+    //! index is unique and consecutive per level and codim used for access to degrees of freedom
+    int index () {return SEntityBase<codim,dim,dimworld>::index();}
+
+    //! geometry of this entity
+    SElement<dim-codim,dimworld>& geometry () {return SEntityBase<codim,dim,dimworld>::geometry();}
+
+    // specific to SEntity
+    //! constructor
+    SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) : SEntityBase<codim,dim,dimworld>::SEntityBase(_grid,_l,_id) {};
+  };
+
+
+
+  /*!
+     A Grid is a container of grid entities. An entity is parametrized by the codimension.
+     An entity of codimension c in dimension d is a d-c dimensional object.
+
+     Entities of codimension 0 ("elements") are defined through template specialization. Note
+     that this specialization has an extended interface compared to the general case
+
+     Entities of codimension 0  allow to visit all neighbors, where
+     a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the entity.
+     These neighbors are accessed via an iterator. This allows the implementation of
+     non-matching meshes. The number of neigbors may be different from the number of faces/edges
+     of an element!
+   */
+  template<int dim, int dimworld>
+  class SEntity<0,dim,dimworld> : public SEntityBase<0,dim,dimworld>,
+                                  public Entity<0,dim,dimworld,sgrid_ctype,SEntity,SElement,
+                                      SLevelIterator,SNeighborIterator,SHierarchicIterator>
+  {
+  public:
+    //! make HierarchicIterator a friend
+    friend class SNeighborIterator<dim,dimworld>;
+
+    //! make NeighborIterator a friend
+    friend class SHierarchicIterator<dim,dimworld>;
+
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
+    //! know your own codimension
+    enum { codimension=0 };
+
+    //! know your own dimension
+    enum { dimension=dim };
+
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+
+    // disambiguate member functions with the same name in both bases
+    //! level of this element
+    int level () {return SEntityBase<0,dim,dimworld>::level();}
+
+    //! index is unique and consecutive per level and codim used for access to degrees of freedom
+    int index () {return SEntityBase<0,dim,dimworld>::index();}
+
+    //! geometry of this entity
+    SElement<dim,dimworld>& geometry () {return SEntityBase<0,dim,dimworld>::geometry();}
+
+    /*! Intra-element access to entities of codimension cc > codim. Return number of entities
+       with codimension cc.
+     */
+    template<int cc> int count ();
+
+    /*! Provide access to mesh entity i of given codimension. Entities
+       are numbered 0 ... count<cc>()-1
+     */
+    template<int cc> SLevelIterator<cc,dim,dimworld> entity (int i);     // 0 <= i < count()
+
+    /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
+       which has an entity of codimension 1 in commen with this entity. Access to neighbors
+       is provided using iterators. This allows meshes to be nonmatching. Returns iterator
+       referencing the first neighbor.
+     */
+    SNeighborIterator<dim,dimworld> nbegin ();
+
+    //! Reference to one past the last neighbor
+    SNeighborIterator<dim,dimworld> nend ();
+
+    //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
+    SLevelIterator<0,dim,dimworld> father ();
+
+    /*! Location of this element relative to the reference element element of the father.
+       This is sufficient to interpolate all dofs in conforming case.
+       Nonconforming may require access to neighbors of father and
+       computations with local coordinates.
+       On the fly case is somewhat inefficient since dofs  are visited several times.
+       If we store interpolation matrices, this is tolerable. We assume that on-the-fly
+       implementation of numerical algorithms is only done for simple discretizations.
+       Assumes that meshes are nested.
+     */
+    SElement<dim,dim>& father_relative_local ();
+
+    /*! Inter-level access to son elements on higher levels<=maxlevel.
+       This is provided for sparsely stored nested unstructured meshes.
+       Returns iterator to first son.
+     */
+    SHierarchicIterator<dim,dimworld> hbegin (int maxlevel);
+
+    //! Returns iterator to one past the last son
+    SHierarchicIterator<dim,dimworld> hend (int maxlevel);
+
+    // members specific to SEntity
+    //! constructor
+    SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) :
+      SEntityBase<0,dim,dimworld>::SEntityBase(_grid,_l,_id) , in_father_local(false)
+    {
+      built_father = false;
+    }
+
+    //! Reinitialization
+    void make (int _l, int _id)
+    {
+      SEntityBase<0,dim,dimworld>::make(_l,_id);
+      built_father = false;
+    }
+
+  private:
+    bool built_father;
+    int father_id;
+    SElement<dim,dim> in_father_local;
+    void make_father();
+  };
+
+
+
   /*!
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
      An entity of codimension c in dimension d is a d-c dimensional object.
@@ -625,7 +575,9 @@ namespace Dune {
      that this specialization has an extended interface compared to the general case
    */
   template<int dim, int dimworld>
-  class SEntity<dim,dim,dimworld> : public SEntityBase<dim,dim,dimworld>
+  class SEntity<dim,dim,dimworld> : public SEntityBase<dim,dim,dimworld>,
+                                    public Entity<dim,dim,dimworld,sgrid_ctype,SEntity,SElement,
+                                        SLevelIterator,SNeighborIterator,SHierarchicIterator>
   {
   public:
     //! know your own codimension
@@ -637,6 +589,16 @@ namespace Dune {
     //! know your own dimension of world
     enum { dimensionworld=dimworld };
 
+    // disambiguate member functions with the same name in both bases
+    //! level of this element
+    int level () {return SEntityBase<dim,dim,dimworld>::level();}
+
+    //! index is unique and consecutive per level and codim used for access to degrees of freedom
+    int index () {return SEntityBase<dim,dim,dimworld>::index();}
+
+    //! geometry of this entity
+    SElement<0,dimworld>& geometry () {return SEntityBase<dim,dim,dimworld>::geometry();}
+
     /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
@@ -646,50 +608,7 @@ namespace Dune {
     //! local coordinates within father
     Vec<dim,sgrid_ctype>& local ();
 
-    //! inlcude element in scope
-    template<int d, int dd>
-    class Element : public SElement<d,dd> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      Element () : SElement<d,dd>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      Element (const SElement<d,dd>& y) : SElement<d,dd>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      Element<d,dd>& operator= (const SElement<d,dd>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      SElement<d,dd>& asBase() {
-        return static_cast<SElement<d,dd>&>(*this);
-      }
-    };
-
-    //! include LevelIterator in scope since it is used as return type in this class
-    template<int cc>
-    class LevelIterator : public SLevelIterator<cc,dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      LevelIterator () : SLevelIterator<cc,dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      LevelIterator (const SLevelIterator<cc,dim,dimworld>& y) : SLevelIterator<cc,dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      LevelIterator<cc>& operator= (const SLevelIterator<cc,dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      SLevelIterator<cc,dim,dimworld>& asBase() {
-        return static_cast<SLevelIterator<cc,dim,dimworld>&>(*this);
-      }
-    };
-
+    // members specific to SEntity
     //! constructor
     SEntity (SGrid<dim,dimworld>& _grid, int _l, int _id) : SEntityBase<dim,dim,dimworld>::SEntityBase(_grid,_l,_id)
     {
@@ -714,7 +633,7 @@ namespace Dune {
   /*! Enables iteration over all entities of a given codimension and level of a grid.
    */
   template<int codim, int dim, int dimworld>
-  class SLevelIterator
+  class SLevelIterator : public LevelIterator<codim,dim,dimworld,sgrid_ctype,SLevelIterator,SEntity>
   {
   public:
     //! know your own codimension
@@ -727,7 +646,7 @@ namespace Dune {
     enum { dimensionworld=dimworld };
 
     //! prefix increment
-    SLevelIterator<codim,dim,dimworld>& operator ++();
+    SLevelIterator<codim,dim,dimworld>& operator++();
 
     //! equality
     bool operator== (const SLevelIterator<codim,dim,dimworld>& i) const;
@@ -759,7 +678,7 @@ namespace Dune {
      A Grid is a container of grid entities. Given a dimension dim these entities have a
      codimension codim with 0 <= codim <= dim.
 
-     The Grid is assumed to hierachically refined and nested. It enables iteration over
+     The Grid is assumed to be hierachically refined and nested. It enables iteration over
      entities of a given level and codimension.
 
      The grid can consist of several subdomains and it can be non-matching.
@@ -768,7 +687,7 @@ namespace Dune {
      data structures (which are not part of this module).
    */
   template<int dim, int dimworld>
-  class SGrid
+  class SGrid : public Grid<dim,dimworld,sgrid_ctype,SGrid,SLevelIterator,SEntity>
   {
   public:
     //! maximum number of levels allowed
@@ -782,13 +701,6 @@ namespace Dune {
 
     //! define type used for coordinates in grid module
     typedef sgrid_ctype ctype;
-
-    /*! constructor, subject to change!
-       H_: size of domain
-       N_: coarse grid size, #elements in one direction
-       L_: number of levels 0,...,L_-1, maxlevel = L_-1
-     */
-    SGrid (Tupel<int,dim> N_, Tupel<sgrid_ctype,dim> H_, int L_);
 
     /*! Return maximum level defined in this grid. Levels are numbered
        0 ... maxlevel with 0 the coarsest level.
@@ -806,50 +718,15 @@ namespace Dune {
     //! number of grid entities per level and codim
     int size (int level, int codim);
 
-    //! inlcude level iterator in scope
-    template<int codim>
-    class LevelIterator : public SLevelIterator<codim,dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      LevelIterator () : SLevelIterator<codim,dim,dimworld>() {}
 
-      //! copy constructor for initializing derived class object with base class object
-      LevelIterator (const SLevelIterator<codim,dim,dimworld>& y) :
-        SLevelIterator<codim,dim,dimworld>(y) {}
+    // these are all members specific to sgrid
 
-      //! assignement operator for assigning derived class object to base class object
-      LevelIterator<codim>& operator= (const SLevelIterator<codim,dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      SLevelIterator<codim,dim,dimworld>& asBase() {
-        return static_cast<SLevelIterator<codim,dim,dimworld>&>(*this);
-      }
-    };
-
-    // include entity in scope
-    template<int codim>
-    class Entity : public SEntity<codim,dim,dimworld> {
-    public:
-      //! constructor without argument needed because copy constructor is explicitely defined
-      Entity () : SEntity<codim,dim,dimworld>() {}
-
-      //! copy constructor for initializing derived class object with base class object
-      Entity (const SEntity<codim,dim,dimworld>& y) : SEntity<codim,dim,dimworld>(y) {}
-
-      //! assignement operator for assigning derived class object to base class object
-      Entity<codim>& operator= (const SEntity<codim,dim,dimworld>& y)
-      {
-        asBase().operator=(y);
-        return *this;
-      }
-    private:
-      SEntity<codim,dim,dimworld>& asBase() {
-        return static_cast<SEntity<codim,dim,dimworld>&>(*this);
-      }
-    };
+    /*! constructor, subject to change!
+       H_: size of domain
+       N_: coarse grid size, #elements in one direction
+       L_: number of levels 0,...,L_-1, maxlevel = L_-1
+     */
+    SGrid (Tupel<int,dim> N_, Tupel<sgrid_ctype,dim> H_, int L_);
 
     //! map expanded coordinates to position
     Vec<dim,sgrid_ctype> pos (int level, Tupel<int,dim>& z);
