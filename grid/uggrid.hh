@@ -125,7 +125,6 @@ namespace Dune {
     friend class UGGridHierarchicIterator<UGGrid<dim,dimworld> >;
     friend class UGGridIntersectionIterator<UGGrid<dim,dimworld> >;
 
-
     /** \brief UGGrid is only implemented for 2 and 3 dimension
      * for 1d use SGrid or SimpleGrid  */
     CompileTimeChecker< (dimworld==dim) && ((dim==2) || (dim==3)) >   Use_UGGrid_only_for_2d_and_3d;
@@ -196,6 +195,18 @@ namespace Dune {
     /** \brief Number of grid entities per level and codim
      */
     int size (int level, int codim) const;
+
+    /** \brief Mark entity for refinement
+     *
+     * This only works for entities of codim 0.
+     * The parameter is currently ignored
+     *
+     * \return <ul>
+     * <li> true, if element was marked </li>
+     * <li> false, if nothing changed </li>
+     * </ul>
+     */
+    bool mark(int refCount, typename Traits::template codim<0>::EntityPointer & e );
 
     //! Triggers the grid refinement process
     bool adapt();
