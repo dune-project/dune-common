@@ -1,60 +1,55 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_BSINCLUDE_ORIGINAL_HH__
-#define __DUNE_BSINCLUDE_ORIGINAL_HH__
+#ifndef __DUNE_ALU3DINCLUDE_ORIGINAL_HH__
+#define __DUNE_ALU3DINCLUDE_ORIGINAL_HH__
 
 #ifndef _ANSI_HEADER
 #define _ANSI_HEADER
 #endif
 
-//#define _BSGRID_PARALLEL_
+//#define _ALU3DGRID_PARALLEL_
 
-// all methods and classes of the BSgrid are defined in the namespace
-// BernhardSchuppGrid
-#define BSSPACE BernhardSchuppGrid ::
+// all methods and classes of the ALU3d-Grid are defined in the namespace
+#define ALU3DSPACE ALU3dGridSpace ::
 
 // if this is defined in bsgrid some methods are added which we only need
 // for the Dune interface
-#define _DUNE_USES_BSGRID_
-
+#define _DUNE_USES_ALU3DGRID_
 #include <dune/common/fvector.hh>
 
 // if MPI was found include all headers
-#ifdef _BSGRID_PARALLEL_
+#ifdef _ALU3DGRID_PARALLEL_
 #include <alu3dgrid_parallel.h>
 #else
 // if not, include only headers for serial version
 #include <alu3dgrid_serial.h>
 #endif
+#undef _DUNE_USES_ALU3DGRID_
 
-namespace BernhardSchuppGrid {
+namespace ALU3dGridSpace {
 
   // definition of AutoPointer class
 #include "myautoptr.hh"
 
-#ifdef _BSGRID_PARALLEL_
+#ifdef _ALU3DGRID_PARALLEL_
 
-  struct GatherScatter;
   typedef GatherScatter GatherScatterType;
 
   typedef GitterDunePll GitterType;
-  typedef GitterDunePll BSGitterType;
-  typedef GitterDunePll BSGitterImplType;
+  typedef GitterDunePll GitterImplType;
 
   typedef Hbnd3PllInternal < GitterType :: Objects :: Hbnd3Default,
       BndsegPllBaseXClosure < GitterType :: hbndseg3_GEO > ,
       BndsegPllBaseXMacroClosure < GitterType :: hbndseg3_GEO > > :: micro_t MicroType;
 
-  enum { ProcessorBoundary_t = BSGitterType:: hbndseg_STI :: closure };
+  enum { ProcessorBoundary_t = GitterImplType:: hbndseg_STI :: closure };
 
 #else
-  struct GatherScatter;
   typedef GatherScatter GatherScatterType;
 
   // the header
   typedef Gitter GitterType;
-  typedef GitterDuneImpl BSGitterType;
-  typedef GitterDuneImpl BSGitterImplType;
+  typedef GitterDuneImpl GitterImplType;
   typedef GitterType::hface_STI PLLFaceType;                   // Interface Face
 
 #endif
@@ -70,12 +65,12 @@ namespace BernhardSchuppGrid {
   typedef GitterType::Geometric::hface3_GEO GEOFaceType;     // real Face
   typedef GitterType::Geometric::hedge1_GEO GEOEdgeType;     // real Face
   typedef GitterType::Geometric::VertexGeo GEOVertexType;      // real Face
-  typedef BSGitterType::Objects::tetra_IMPL IMPLElementType; // impl Element
+  typedef GitterImplType::Objects::tetra_IMPL IMPLElementType; // impl Element
   typedef GitterType::Geometric::tetra_GEO GEOElementType;   // real Element
   typedef GitterType::Geometric::hasFace3 HasFace3Type;      // has Face with 3 polygons
 
-  typedef BSGitterType::Objects::Hbnd3Default BNDFaceType;   // boundary segment
-  typedef BSGitterType::Objects::hbndseg3_IMPL ImplBndFaceType;  // boundary segment
+  typedef GitterImplType::Objects::Hbnd3Default BNDFaceType;   // boundary segment
+  typedef GitterImplType::Objects::hbndseg3_IMPL ImplBndFaceType;  // boundary segment
   typedef BNDFaceType PLLBndFaceType;
 
   // refinement and coarsening enum for tetrahedons
@@ -99,37 +94,37 @@ namespace BernhardSchuppGrid {
   //******************************************************************
   //  LevelIterators
   //******************************************************************
-  template <int codim> struct BSHElementType
+  template <int codim> struct ALUHElementType
   {
     typedef GitterType :: helement_STI ElementType;
   };
 
-  template <> struct BSHElementType<0> {
+  template <> struct ALUHElementType<0> {
     typedef GitterType :: helement_STI ElementType;
   };
-  template <> struct BSHElementType<1> {
+  template <> struct ALUHElementType<1> {
     typedef GitterType :: hface_STI ElementType;
   };
-  template <> struct BSHElementType<2> {
+  template <> struct ALUHElementType<2> {
     typedef GitterType :: hedge_STI ElementType;
   };
-  template <> struct BSHElementType<3> {
+  template <> struct ALUHElementType<3> {
     typedef GitterType :: vertex_STI ElementType;
   };
 
   template <int codim> struct BSIMPLElementType
   {
-    typedef BSGitterType::Objects::tetra_IMPL ElementType; // impl Element
+    typedef GitterImplType::Objects::tetra_IMPL ElementType; // impl Element
   };
 
   template <> struct BSIMPLElementType<0> {
-    typedef BSGitterType::Objects::tetra_IMPL ElementType; // impl Element
+    typedef GitterImplType::Objects::tetra_IMPL ElementType; // impl Element
   };
   template <> struct BSIMPLElementType<1> {
-    typedef BSGitterType::Objects::hface3_IMPL ElementType; // impl Element
+    typedef GitterImplType::Objects::hface3_IMPL ElementType; // impl Element
   };
   template <> struct BSIMPLElementType<2> {
-    typedef BSGitterType::Objects::hedge1_IMPL ElementType; // impl Element
+    typedef GitterImplType::Objects::hedge1_IMPL ElementType; // impl Element
   };
 
   template <> struct BSIMPLElementType<3> {
@@ -144,7 +139,7 @@ namespace BernhardSchuppGrid {
   template <>
   class ALU3dGridLevelIteratorWrapper<0>
   {
-    typedef BSHElementType<0>::ElementType ElType;
+    typedef ALUHElementType<0>::ElementType ElType;
     typedef Insert < AccessIterator < ElType >::Handle ,
         TreeIterator  < ElType ,  any_has_level < ElType > > > IteratorType;
 
@@ -166,7 +161,7 @@ namespace BernhardSchuppGrid {
   template <>
   class ALU3dGridLevelIteratorWrapper<1>
   {
-    typedef BSHElementType<1>::ElementType ElType;
+    typedef ALUHElementType<1>::ElementType ElType;
     typedef Insert < AccessIterator < ElType >::Handle ,
         TreeIterator  < ElType ,  any_has_level < ElType > > > IteratorType;
 
@@ -188,7 +183,7 @@ namespace BernhardSchuppGrid {
   template <>
   class ALU3dGridLevelIteratorWrapper<2>
   {
-    typedef BSHElementType<2>::ElementType ElType;
+    typedef ALUHElementType<2>::ElementType ElType;
     typedef Insert < AccessIterator < ElType >::Handle ,
         TreeIterator  < ElType ,  any_has_level < ElType > > > IteratorType;
 
@@ -246,7 +241,7 @@ namespace BernhardSchuppGrid {
   template <>
   class ALU3dGridLeafIteratorWrapper<0>
   {
-    typedef BSHElementType<0>::ElementType ElType;
+    typedef ALUHElementType<0>::ElementType ElType;
     typedef Insert < AccessIterator < ElType >::Handle,
         TreeIterator < ElType , leaf_or_has_level < ElType > > > IteratorType;
 
@@ -268,7 +263,7 @@ namespace BernhardSchuppGrid {
   template <>
   class ALU3dGridLeafIteratorWrapper<1>
   {
-    typedef BSHElementType<1>::ElementType ElType;
+    typedef ALUHElementType<1>::ElementType ElType;
     typedef Insert < AccessIterator < ElType >::Handle,
         TreeIterator < ElType , leaf_or_has_level < ElType > > > IteratorType;
 
@@ -290,7 +285,7 @@ namespace BernhardSchuppGrid {
   template <>
   class ALU3dGridLeafIteratorWrapper<2>
   {
-    typedef BSHElementType<2>::ElementType ElType;
+    typedef ALUHElementType<2>::ElementType ElType;
     typedef Insert < AccessIterator < ElType >::Handle,
         TreeIterator < ElType , leaf_or_has_level < ElType > > > IteratorType;
 
