@@ -9,7 +9,7 @@
 #include "yaspgrid/grids.hh"  // the yaspgrid base classes
 #include "../common/stack.hh" // the stack class
 #include "../common/capabilities.hh" // the capabilities
-#include "../../common/helpertemplates.hh"
+#include "../common/helpertemplates.hh"
 
 /*! \file yaspgrid.hh
    Yasppergrid stands for yet another structured parallel grid.
