@@ -409,9 +409,6 @@ namespace Dune
   inline void ScaledLocalOperator<A,ScalarType>::
   scaleIt ( const ScalarType & scalar )
   {
-    //scalar_ *= scalar;
-    //_a.scaleIt( scalar * scalar_ );
-    std::cout << "scaleIt with tmpS = " << tmpScalar_ << "\n";
     tmpScalar_ = scalar_ * scalar;
   }
 
@@ -420,7 +417,6 @@ namespace Dune
   inline void ScaledLocalOperator<A,ScalarType>::
   prepareGlobal(const FirstParamType &pa, SecondParamType &pb)
   {
-    std::cout << "prepareGlobal with tmpS = " << tmpScalar_ << "\n";
     _a.scaleIt(tmpScalar_);
     _a.prepareGlobal(pa,pb);
   }
