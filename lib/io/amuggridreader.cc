@@ -219,17 +219,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   //loaddomain $file @PARA_FILE $name @DOMAIN
   CreateDomain(grid, "olisDomain", "cube.par.am");
 
+  // call configureCommand and newCommand
   grid.makeNewUGMultigrid();
-#if 0
-  //configure @PROBLEM $d @DOMAIN;
-  char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
-  UG3d::ConfigureCommand(2, configureArgs);
-
-  //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
-  char* newArgs[4] = {"new DuneMG", "b DuneDummyProblem", "f DuneFormat", "h 1G"};
-  if (UG3d::NewCommand(4, newArgs))
-    assert(false);
-#endif
 
   // ////////////////////////////////////////////
   // loadmesh $file @GRID_FILE $name @DOMAIN;
@@ -663,22 +654,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::readHexaGrid(Dune::UGGrid<3,3>& 
 
   //loaddomain $file @PARA_FILE $name @DOMAIN
   createHexaDomain(grid, am, "olisDomain");
-  printf("A\n");
 
+  // call configureCommand and newCommand
   grid.makeNewUGMultigrid();
-#if 0
-  //configure @PROBLEM $d @DOMAIN;
-  char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
-  UG3d::ConfigureCommand(2, configureArgs);
-  printf("B\n");
-
-  //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
-  char* newArgs[4] = {"new DuneMG", "b DuneDummyProblem", "f DuneFormat", "h 1G"};
-  if (UG3d::NewCommand(4, newArgs))
-    assert(false);
-#endif
-  printf("C\n");
-
 
   // ////////////////////////////////////////////
   // loadmesh $file @GRID_FILE $name @DOMAIN;
@@ -1043,28 +1021,28 @@ int Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
 
   int i;
 
-  cout << "Loading 2D Amira domain " << filename << "\n";
+  std::cout << "Loading 2D Amira domain " << filename << "\n";
 
   ///////////////////////////////////////////////////////
   // Load the AmiraMesh file
   AmiraMesh* am = AmiraMesh::read(filename.c_str());
 
   if(!am) {
-    cerr << "AmiraMeshReader<UGGrid<2,2> >::CreateDomain: Can't open input file\n";
+    std::cerr << "AmiraMeshReader<UGGrid<2,2> >::CreateDomain: Can't open input file\n";
     return(1);
   }
 
   // get the different data fields
   AmiraMesh::Data* am_coordinateData =  am->findData("Nodes", HxFLOAT, 2, "Coordinates");
   if (!am_coordinateData) {
-    cerr << "2D AmiraMesh loader: field 'Nodes' not found!\n";
+    std::cerr << "2D AmiraMesh loader: field 'Nodes' not found!\n";
     return(1);
   }
   float*   am_node_coordinates = (float*) am_coordinateData->dataPtr();
 
   AmiraMesh::Data* triangleData = am->findData("Triangles", HxINT32, 3, "Nodes");
   if (!triangleData) {
-    cerr << "2D AmiraMesh loader: field 'Triangles' not found!\n";
+    std::cerr << "2D AmiraMesh loader: field 'Triangles' not found!\n";
     return(1);
   }
   int*  elemData         = (int*)triangleData->dataPtr();
@@ -1186,7 +1164,7 @@ int Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
                                     LinearSegmentDescription,
                                     segmentCoordList + 4*i
                                     )==NULL) {
-      cerr << "UG2d::CreateBoundarySegment failed!\n";
+      std::cerr << "UG2d::CreateBoundarySegment failed!\n";
       delete am;
       return(1);
     }
@@ -1215,14 +1193,14 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   UG2d::NODE* theNode;
 
 
-  cout << "Loading 2D Amira mesh " << filename << "\n";
+  std::cout << "Loading 2D Amira mesh " << filename << "\n";
 
   ///////////////////////////////////////////////////////
   // Load the AmiraMesh file
   AmiraMesh* am = AmiraMesh::read(filename.c_str());
 
   if(!am) {
-    cerr << "2d AmiraMesh reader: File could not be read!\n";
+    std::cerr << "2d AmiraMesh reader: File could not be read!\n";
     return;
   }
 
@@ -1230,27 +1208,20 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   //loaddomain $file @PARA_FILE $name @DOMAIN
   CreateDomain(grid, "olisDomain", filename);
 
-  //configure @PROBLEM $d @DOMAIN;
-  char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
-  UG2d::ConfigureCommand(2, configureArgs);
-
-  //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
-  char* newArgs[4] = {"new DuneMG", "b DuneDummyProblem", "f DuneFormat", "h 1G"};
-  if (UG2d::NewCommand(4, newArgs))
-    assert(false);
-
+  // call configureCommand and newCommand
+  grid.makeNewUGMultigrid();
 
   // get the different data fields
   AmiraMesh::Data* am_coordinateData =  am->findData("Nodes", HxFLOAT, 2, "Coordinates");
   if (!am_coordinateData) {
-    cerr << "AmiraMesh loader: field 'Nodes' not found\n";
+    std::cerr << "AmiraMesh loader: field 'Nodes' not found\n";
     return;
   }
   float*   am_node_coordinates       = (float*) am_coordinateData->dataPtr();
 
   AmiraMesh::Data* triangleData = am->findData("Triangles", HxINT32, 3, "Nodes");
   if (!triangleData) {
-    cerr << "AmiraMesh loader: field 'Triangles' not found\n";
+    std::cerr << "AmiraMesh loader: field 'Triangles' not found\n";
     return;
   }
   int*  elemData         = (int*)triangleData->dataPtr();
@@ -1282,7 +1253,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   noOfElem  = am->nElements("Triangles");
 
   //   noOfInnerNodes = noOfNodes - noOfBndNodes;
-  cout << "AmiraMesh has " << noOfNodes << " total nodes\n";
+  std::cout << "AmiraMesh has " << noOfNodes << " total nodes\n";
 
   int* isBoundaryNode = DetectBoundaryNodes(elemData, noOfElem, noOfNodes);
 
@@ -1298,7 +1269,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
     if (InsertInnerNode(theMG->grids[0], nodePos) == NULL)
     {
-      cerr << "2d AmiraMesh reader: Inserting an inner node failed\n";
+      std::cerr << "2d AmiraMesh reader: Inserting an inner node failed\n";
       return;
     }
 
@@ -1319,14 +1290,14 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
     if (InsertElementFromIDs(theMG->grids[0], 3,cornerIDs, NULL) == NULL)
     {
-      cerr << "2d AmiraMesh reader: Inserting an element failed\n";
+      std::cerr << "2d AmiraMesh reader: Inserting an element failed\n";
       return;
     }
     noOfCreatedElem++;
 
   }
 
-  cout << "amiraloadmesh: " << noOfCreatedElem << " elements created\n";
+  std::cout << "amiraloadmesh: " << noOfCreatedElem << " elements created\n";
 
   // set the subdomainIDs
   AmiraMesh::Data* am_material_ids = am->findData("Triangles", HxBYTE, 1, "Materials");
