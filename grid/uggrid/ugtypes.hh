@@ -3,6 +3,23 @@
 #ifndef __DUNE_UGTYPES_HH__
 #define __DUNE_UGTYPES_HH__
 
+namespace UG2d {
+  struct multigrid;
+  struct domain;
+
+  union element;
+  struct node;
+};
+
+namespace UG3d {
+  struct multigrid;
+  struct domain;
+
+  union element;
+  struct node;
+};
+
+
 namespace Dune {
 
   template <int dim>
@@ -14,7 +31,6 @@ namespace Dune {
     typedef void DomainType;
   };
 
-#ifdef _2
   template <>
   class UGTypes<2>
   {
@@ -23,9 +39,7 @@ namespace Dune {
 
     typedef UG2d::domain DomainType;
   };
-#endif
 
-#ifdef _3
   template <>
   class UGTypes<3>
   {
@@ -34,7 +48,6 @@ namespace Dune {
 
     typedef UG3d::domain DomainType;
   };
-#endif
 
 
 
@@ -42,6 +55,8 @@ namespace Dune {
   /*****************************************************************/
   /*****************************************************************/
   /*****************************************************************/
+
+
   template <int codim, int dim>
   class TargetType
   {
@@ -50,35 +65,33 @@ namespace Dune {
 
   };
 
-#ifdef _3
   template <>
   class TargetType<0,3>
   {
   public:
-    typedef UG3d::ELEMENT T;
+    typedef UG3d::element T;
   };
 
   template <>
   class TargetType<3,3>
   {
   public:
-    typedef UG3d::NODE T;
+    typedef UG3d::node T;
   };
-#else
+
   template <>
   class TargetType<0,2>
   {
   public:
-    typedef UG2d::ELEMENT T;
+    typedef UG2d::element T;
   };
 
   template <>
   class TargetType<2,2>
   {
   public:
-    typedef UG2d::NODE T;
+    typedef UG2d::node T;
   };
-#endif
 
 } // end namespace Dune
 
