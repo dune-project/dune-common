@@ -10,7 +10,7 @@ namespace Dune {
   // Constructor
   template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   inline LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
-  LagrangeDiscreteFunctionSpace ( GridType & g, IndexSetType & iset, DofManagerType & dm , int level) :
+  LagrangeDiscreteFunctionSpace (const GridType & g, IndexSetType & iset, DofManagerType & dm , int level) :
     DiscreteFunctionSpaceType (g,id, level) , dm_ ( dm ) , indexSet_ (iset)
   {
     // add index set to list of indexset of dofmanager

@@ -86,7 +86,7 @@ namespace Dune {
 
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
-    LagrangeDiscreteFunctionSpace ( GridType & g, IndexSetType & iset , DofManagerType & dm , int level );
+    LagrangeDiscreteFunctionSpace ( const GridType & g, IndexSetType & iset , DofManagerType & dm , int level );
 
     //! return max number of baseset that holds this space
     int maxNumberBase () const;

@@ -15,7 +15,7 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
     DUNE_THROW(Exception, "The two function spaces don't belong to consecutive levels!");
 
   typedef typename FunctionSpaceType::GridType GridType;
-  GridType& grid = coarseFSpace.getGrid();
+  const GridType& grid = coarseFSpace.getGrid();
   if (&grid != &(fineFSpace.getGrid()))
     DUNE_THROW(Exception, "The two function spaces don't belong to the same grid!");
 
