@@ -589,6 +589,8 @@ namespace Dune
   template< int dim, int dimworld>
   inline albertCtype AlbertGridElement<dim,dimworld>::elDeterminant ()
   {
+    //std::cerr << "AlbertGridElement<dim,dimworld>::elDeterminant: No implementation for dim != dimworld!\n";
+    //assert(false);
     return ALBERT el_det(elInfo_);
   }
 
@@ -659,7 +661,7 @@ namespace Dune
 
     Vec<dim> & coord    = coord_(loc);
     Vec<dim> & refcoord = refelem()[loc];
-    buildJacobianInverse(refcoord);
+    buildJacobianInverse();
 
     Vec<dim> tmp2 = coord - coord_(0);
     tmp2 = Jinv_ * tmp2;
@@ -681,7 +683,7 @@ namespace Dune
 
     Vec<dim> & coord    = coord_(loc);
     Vec<dim> & refcoord = refelem()[loc];
-    buildJacobianInverse(refcoord);
+    buildJacobianInverse();
 
     Vec<dim> tmp2 = coord - coord_(0);
     tmp2 = Jinv_ * tmp2;
@@ -1987,12 +1989,14 @@ namespace Dune
   }
 
   // setup neighbor element with the information of elInfo_
-  inline void AlbertGridIntersectionIterator<2,2>::setupVirtEn()
+  template< int dim, int dimworld>
+  inline void AlbertGridIntersectionIterator<dim,dimworld>::setupVirtEn()
   {
-    enum { dim = 2 };
-    enum { dimworld = 2 };
     // set the neighbor element as element
     neighElInfo_->el = elInfo_->neigh[neighborCount_];
+#if DIM==3
+    neighElInfo_->orientation = elInfo_->orientation;
+#endif
 
     int vx = elInfo_->opp_vertex[neighborCount_];
 
@@ -2010,34 +2014,6 @@ namespace Dune
     virtualEntity_->setElInfo(neighElInfo_);
     builtNeigh_ = true;
   }
-
-
-  // setup neighbor element with the information of elInfo_
-  template< int dim, int dimworld>
-  inline void AlbertGridIntersectionIterator<dim,dimworld>::setupVirtEn()
-  {
-    // set the neighbor element as element
-    neighElInfo_->el = elInfo_->neigh[neighborCount_];
-    neighElInfo_->orientation = elInfo_->orientation;
-
-    int vx = elInfo_->opp_vertex[neighborCount_];
-
-    for(int i=0; i<dimworld; i++)
-      neighElInfo_->coord[vx][i] = elInfo_->opp_coord[neighborCount_][i];
-
-    for(int i=1; i<dim+1; i++)
-    {
-      int nb = (((neighborCount_ - i)%(dim+1)) +dim+1)%(dim+1);
-      for(int j=0; j<dimworld; j++)
-        neighElInfo_->coord[(vx + i)%(dim+1)][j] = elInfo_->coord[nb][j];
-    }
-    /* works, tested many times */
-
-    virtualEntity_->setElInfo(neighElInfo_);
-    builtNeigh_ = true;
-
-  }
-
   // end IntersectionIterator
 
 
@@ -2931,14 +2907,12 @@ namespace Dune
   //***********************************************************************
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::AlbertGrid() :
-    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false)
+    mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
     , time_ (0.0) , hasLevelIndex_ (true)
-    , indexManager_ (NULL)
     , nv_ (dim+1) , dof_ (0) , myProc_ (0)
   {
     vertexMarker_ = new AlbertMarkerVector ();
-    indexManager_ = ALBERT AlbertHelp::get_index_manager();
   }
 
   template < int dim, int dimworld >
@@ -2982,7 +2956,7 @@ namespace Dune
       mel = mel->next;
       if( !mel )
       {
-        ALBERT AlbertHelp::initIndexManager_elmem_cc(indexManager_);
+        ALBERT AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
         ALBERT AlbertHelp::swapElNum ( dofvecs_.elNumbers, first_el );
         ALBERT AlbertHelp::removeIndexManager_elmem_cc();
       }
@@ -3002,10 +2976,9 @@ namespace Dune
 
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename, bool levInd) :
-    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false)
+    mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
     , time_ (0.0) , hasLevelIndex_ (levInd)
-    , indexManager_ (NULL)
     , nv_ (dim+1) , dof_ (0) , myProc_ (-1)
   {
     assert(dimworld == DIM_OF_WORLD);
@@ -3022,8 +2995,7 @@ namespace Dune
     }
 
     vertexMarker_ = new AlbertMarkerVector ();
-    indexManager_ = ALBERT AlbertHelp::get_index_manager();
-    ALBERT AlbertHelp::initIndexManager_elmem_cc(indexManager_);
+    ALBERT AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
 
     if(makeNew)
     {
@@ -3044,7 +3016,6 @@ namespace Dune
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
     , time_ (0.0) , hasLevelIndex_ (levInd)
-    , indexManager_ (0)
     , nv_ (dim+1) , dof_ (0), myProc_ (proc)
   {
     assert(dimworld == DIM_OF_WORLD);
@@ -3055,8 +3026,7 @@ namespace Dune
     ALBERT MESH * oldMesh = oldGrid.getMesh();
 
     vertexMarker_ = new AlbertMarkerVector ();
-    indexManager_ = ALBERT AlbertHelp::get_index_manager();
-    ALBERT AlbertHelp::initIndexManager_elmem_cc(indexManager_);
+    ALBERT AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
 
     {
       ALBERT MESH * fakeMesh = ALBERT get_mesh("PartialGrid",
@@ -3339,7 +3309,7 @@ namespace Dune
     wasChanged_ = false;
 
     // set global pointer to index manager in elmem.cc
-    ALBERT AlbertHelp::initIndexManager_elmem_cc(indexManager_);
+    ALBERT AlbertHelp::initIndexManager_elmem_cc(&(indexStack_[0]));
     ALBERT AlbertHelp::clearDofVec ( dofvecs_.elNewCheck );
 
     flag = ALBERT AlbertRefine ( mesh_ );
@@ -3633,7 +3603,7 @@ namespace Dune
     // calc maxlevel and indexOnLevel and so on
     calcExtras();
     // set el_index of index manager to max element index
-    indexManager_->el_index = maxHierIndex_[0];
+    indexStack_[0].setMaxIndex(maxHierIndex_[0]);
 
     return true;
   }
