@@ -12,7 +12,7 @@ namespace Dune {
    * \brief Provides file reading facilities in the AmiraMesh format.
    *
    */
-  template<class GRID>
+  template<class GridType>
   class AmiraMeshReader {
 
   public:
@@ -22,7 +22,7 @@ namespace Dune {
      * @param grid The grid objects that is to be written
      * @param filename The filename
      */
-    static void read(GRID& grid,
+    static void read(GridType& grid,
                      const std::string& filename);
 
 
@@ -33,11 +33,12 @@ namespace Dune {
 }
 
 // Default implementation
-template<class GRID>
-void Dune::AmiraMeshReader<GRID>::read(GRID& grid,
-                                       const std::string& filename)
+template<class GridType>
+void Dune::AmiraMeshReader<GridType>::read(GridType& grid,
+                                           const std::string& filename)
 {
-  printf("No AmiraMesh reading has been implemented for this grid type!\n");
+  /** \todo We should somehow output the grid type name here */
+  DUNE_THROW(IOError, "No AmiraMesh reading has been implemented for this grid type!");
 }
 
 
