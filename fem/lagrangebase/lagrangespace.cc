@@ -37,6 +37,9 @@ namespace Dune {
       if(baseFuncSet_[i])
         maxNumBase_ = std::max(baseFuncSet_[i]->getNumberOfBaseFunctions(),maxNumBase_);
     }
+
+    // for empty functions space which can happen for BSGrid
+    if(!mapper_) makeBaseSet<line,0> ();
   }
 
   template< class FunctionSpaceType, class GridType,int polOrd, class DofManagerType >
@@ -157,6 +160,7 @@ namespace Dune {
   signIn (DiscFuncType & df)
   {
     // only for gcc to pass type DofType
+    assert(mapper_ != 0);
     DofType *fake=0;
     return dm_.addDofSet( fake, this->grid_ , *mapper_, df.name() );
   }
