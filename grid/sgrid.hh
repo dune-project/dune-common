@@ -180,7 +180,7 @@ namespace Dune {
     bool builtinverse;
   };
 
-  // specialization for dim=0, this is a vertex
+  //! specialization for dim=0, this is a vertex
   template<int dimworld>
   class SElement<0,dimworld> : public Element<0,dimworld,sgrid_ctype,SElement>
   {
