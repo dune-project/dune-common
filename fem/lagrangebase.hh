@@ -232,9 +232,10 @@ namespace Dune {
     virtual void evaluate ( const Vec<1, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      std::cout << "derivative not implemented yet! \n";
+      // num = 0 ==> derivative respect to x
       int num = diffVariable.get(0);
       phi = factor[num+1];
+      //phi.print(std::cout,1); std::cout << "\n*************\n";
     }
 
     //! second Derivative
