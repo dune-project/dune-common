@@ -142,7 +142,7 @@ namespace Dune
         std::cout << buf << " " << row << " ";
         for (int j=i*k; j<(i+1)*k; j++)
         {
-          sprintf(buf,"%8.1E ",p[j]);
+          sprintf(buf,"%10.3E ",p[j]);
           std::cout << buf;
         }
         std::cout << std::endl;
@@ -154,7 +154,7 @@ namespace Dune
         std::cout << buf << " " << row << " ";
         for (int j=i; j<n; j++)
         {
-          sprintf(buf,"%8.1E ",p[j]);
+          sprintf(buf,"%10.3E ",p[j]);
           std::cout << buf;
         }
         std::cout << std::endl;
