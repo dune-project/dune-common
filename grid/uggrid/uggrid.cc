@@ -89,28 +89,28 @@ public:
 #endif
 
 #ifdef _3
-template <>
-class UGGridLevelIteratorFactory<3,3,3,All_Partition>
+template <class GridImp>
+class UGGridLevelIteratorFactory<3,All_Partition,GridImp>
 {
 public:
   static inline
-  UGGridLevelIterator<3,3,3,All_Partition> getIterator(UGTypes<3>::GridType* theGrid, int level) {
+  UGGridLevelIterator<3,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-    UGGridLevelIterator<3,3,3,All_Partition> it(level);
+    UGGridLevelIterator<3,All_Partition,GridImp> it(level);
 
     it.setToTarget(UG_NS<3>::PFirstNode(theGrid), level);
     return it;
   }
 };
 
-template <>
-class UGGridLevelIteratorFactory<0,3,3,All_Partition>
+template <class GridImp>
+class UGGridLevelIteratorFactory<0,All_Partition,GridImp>
 {
 public:
   static inline
-  UGGridLevelIterator<0,3,3,All_Partition> getIterator(UGTypes<3>::GridType* theGrid, int level) {
+  UGGridLevelIterator<0,All_Partition,GridImp> getIterator(UGTypes<3>::GridType* theGrid, int level) {
 
-    UGGridLevelIterator<0,3,3,All_Partition> it(level);
+    UGGridLevelIterator<0,All_Partition,GridImp> it(level);
 
     it.setToTarget(UG_NS<3>::PFirstElement(theGrid), level);
     return it;
@@ -293,7 +293,8 @@ inline int UGGrid < dim, dimworld >::maxlevel() const
 
 template<int dim, int dimworld>
 template<int codim>
-inline UGGridLevelIterator<codim, All_Partition, const UGGrid<dim,dimworld> >
+//inline UGGridLevelIterator<codim, All_Partition, const UGGrid<dim,dimworld> >
+typename UGGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
 UGGrid<dim, dimworld>::lbegin (int level) const
 {
   assert(multigrid_);
@@ -489,11 +490,17 @@ template < int dim, int dimworld >
 void UGGrid < dim, dimworld >::globalRefine(int refCount)
 {
   // mark all entities for grid refinement
-  UGGridLevelIterator<0, All_Partition, UGGrid<dim,dimworld> > iIt    = lbegin<0>(maxlevel());
-  UGGridLevelIterator<0, All_Partition, UGGrid<dim,dimworld> > iEndIt = lend<0>(maxlevel());
+  //UGGridLevelIterator<0, All_Partition, const UGGrid<dim,dimworld> > iIt    = lbegin<0>(maxlevel());
+  //UGGridLevelIterator<0, All_Partition, const UGGrid<dim,dimworld> > iEndIt = lend<0>(maxlevel());
 
+  typename UGGrid<dim,dimworld>::Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
+  typename UGGrid<dim,dimworld>::Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
+
+
+#if 0
   for (; iIt!=iEndIt; ++iIt)
     iIt->mark(1);
+#endif
 
   this->preAdapt();
   adapt();

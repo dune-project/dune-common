@@ -93,7 +93,7 @@ UGGridIntersectionIterator<GridImp>::boundary() const
 
 template<class GridImp>
 inline FieldVector<UGCtype, GridImp::dimensionworld>&
-UGGridIntersectionIterator <GridImp>::unit_outer_normal ()
+UGGridIntersectionIterator <GridImp>::unitOuterNormal () const
 {
   // //////////////////////////////////////////////////////
   //   Implementation for 3D
@@ -120,10 +120,6 @@ UGGridIntersectionIterator <GridImp>::unit_outer_normal ()
 
   FieldVector<UGCtype, 3> ba = bPos - aPos;
   FieldVector<UGCtype, 3> ca = cPos - aPos;
-
-  //     std::cout << "aPos: " << aPos << std::endl;
-  //     std::cout << "bPos: " << bPos << std::endl;
-  //     std::cout << "cPos: " << cPos << std::endl;
 
 #define V3_VECTOR_PRODUCT(A,B,C) {(C)[0] = (A)[1]*(B)[2] - (A)[2]*(B)[1];\
                                   (C)[1] = (A)[2]*(B)[0] - (A)[0]*(B)[2];\
@@ -160,24 +156,24 @@ UGGridIntersectionIterator <GridImp>::unit_outer_normal ()
 template<class GridImp>
 inline FieldVector<UGCtype, GridImp::dimensionworld>&
 UGGridIntersectionIterator < GridImp >::
-unit_outer_normal (const FieldVector<UGCtype, GridImp::dimension-1>& local)
+unitOuterNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const
 {
-  return unit_outer_normal();
+  return unitOuterNormal();
 }
 
 template< class GridImp>
-inline UGGridGeometry< GridImp::dimension-1, GridImp::dimension-1,GridImp >&
+inline typename UGGridIntersectionIterator<GridImp>::LocalGeometry&
 UGGridIntersectionIterator<GridImp>::
-intersectionSelfLocal()
+intersectionSelfLocal() const
 {
   DUNE_THROW(NotImplemented, "intersection_self_local()");
   return fakeNeigh_;
 }
 
 template< class GridImp>
-inline UGGridGeometry< GridImp::dimension-1, GridImp::dimensionworld,GridImp>&
+inline typename UGGridIntersectionIterator<GridImp>::Geometry&
 UGGridIntersectionIterator<GridImp>::
-intersectionGlobal()
+intersectionGlobal() const
 {
   int numCornersOfSide = UG_NS<GridImp::dimensionworld>::Corners_Of_Side(center_, neighborCount_);
 
@@ -188,8 +184,13 @@ intersectionGlobal()
 
     int cornerIdx = UG_NS<GridImp::dimensionworld>::Corner_Of_Side(center_, neighborCount_, i);
     typename TargetType<dim,dim>::T* node = UG_NS<GridImp::dimensionworld>::Corner(center_, cornerIdx);
+    //         for (int j=0; j<GridImp::dimensionworld; j++)
+    //             neighGlob_.coord_[i][j] = node->myvertex->iv.x[j];
+    /** \todo Avoid the temporary */
+    FieldVector<UGCtype, dimworld> tmp;
     for (int j=0; j<GridImp::dimensionworld; j++)
-      neighGlob_.coord_[i][j] = node->myvertex->iv.x[j];
+      tmp[j] = node->myvertex->iv.x[j];
+    neighGlob_.setCoords(i, tmp);
 
   }
 
@@ -197,9 +198,9 @@ intersectionGlobal()
 }
 
 template< class GridImp>
-inline UGGridGeometry<GridImp::dimension-1, GridImp::dimension,GridImp>&
+inline typename UGGridIntersectionIterator<GridImp>::LocalGeometry&
 UGGridIntersectionIterator<GridImp>::
-intersectionNeighborLocal()
+intersectionNeighborLocal() const
 {
   DUNE_THROW(NotImplemented, "intersection_neighbor_local()");
   return fakeNeigh_;
@@ -217,7 +218,7 @@ numberInSelf ()  const
 
 template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
-numberInNeighbor ()
+numberInNeighbor () const
 {
   const typename TargetType<0,GridImp::dimensionworld>::T* other = target();
 

@@ -33,6 +33,10 @@ namespace Dune {
     friend class UGGridEntity<0,dim,GridImp>;
 
   public:
+
+    typedef typename GridImp::template codim<1>::Geometry Geometry;
+    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
+
     //! prefix increment
     UGGridIntersectionIterator& operator ++();
 
@@ -66,37 +70,37 @@ namespace Dune {
 
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<UGCtype, GridImp::dimensionworld>& unit_outer_normal (const FieldVector<UGCtype, GridImp::dimension-1>& local);
+    FieldVector<UGCtype, GridImp::dimensionworld>& unitOuterNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const;
 
     //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<UGCtype, GridImp::dimensionworld>& unit_outer_normal ();
+    FieldVector<UGCtype, GridImp::dimensionworld>& unitOuterNormal () const;
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    UGGridGeometry<GridImp::dimension-1,GridImp::dimension-1,GridImp>& intersectionSelfLocal ();
+    LocalGeometry& intersectionSelfLocal () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    UGGridGeometry<GridImp::dimension-1,GridImp::dimensionworld,GridImp>& intersectionGlobal ();
+    Geometry& intersectionGlobal () const;
 
     //! local number of codim 1 entity in self where intersection is contained in
     int numberInSelf () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    UGGridGeometry<GridImp::dimension-1,GridImp::dimension,GridImp>& intersectionNeighborLocal ();
+    LocalGeometry& intersectionNeighborLocal () const;
 
     //! local number of codim 1 entity in neighbor where intersection is contained
-    int numberInNeighbor ();
+    int numberInNeighbor () const;
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<UGCtype, dimworld>& outer_normal (const FieldVector<UGCtype, dim-1>& local);
+    FieldVector<UGCtype, dimworld>& outerNormal (const FieldVector<UGCtype, dim-1>& local) const;
 
     //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<UGCtype, dimworld>& outer_normal ();
+    FieldVector<UGCtype, dimworld>& outerNormal () const;
 
   private:
     //**********************************************************
@@ -116,7 +120,7 @@ namespace Dune {
     UGGridEntity<0,dim,GridImp> virtualEntity_;
 
     //! vector storing the outer normal
-    FieldVector<UGCtype, dimworld> outerNormal_;
+    mutable FieldVector<UGCtype, dimworld> outerNormal_;
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
@@ -124,7 +128,7 @@ namespace Dune {
 
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
-    UGGridGeometry<dim-1,dimworld,GridImp> neighGlob_;
+    mutable UGMakeableGeometry<dim-1,dimworld,GridImp> neighGlob_;
 
     //! BoundaryEntity
     UGGridBoundaryEntity<GridImp> boundaryEntity_;

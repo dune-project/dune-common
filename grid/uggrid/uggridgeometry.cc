@@ -8,6 +8,49 @@
 
 #include <algorithm>
 
+template <int mydim, int coorddim>
+struct UGGridGeometryPositionAccess
+{};
+
+template <>
+struct UGGridGeometryPositionAccess<0,3>
+{
+  static inline
+  void get(TargetType<3,3>::T* target,
+           int i,
+           FieldVector<UGCtype, 3>& coord) {
+    const UG3d::VERTEX* vertex = target->myvertex;
+
+    coord[0] = vertex->iv.x[0];
+    coord[1] = vertex->iv.x[1];
+    coord[2] = vertex->iv.x[2];
+  }
+
+};
+
+
+template <>
+struct UGGridGeometryPositionAccess<3,3>
+{
+  static inline
+  void get(TargetType<0,3>::T* target,
+           int i,
+           FieldVector<UGCtype, 3>& coord) {
+    if (UG_NS<3>::Tag(target) == UG3d::HEXAHEDRON) {
+      // Dune numbers the vertices of a hexahedron differently than UG.
+      // The following two lines do the transformation
+      const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+      i = renumbering[i];
+    }
+
+    UG3d::VERTEX* vertex = UG_NS<3>::Corner(target,i)->myvertex;
+
+    for (int j=0; j<3; j++)
+      coord[j] = vertex->iv.x[j];
+  }
+
+};
+
 
 template< int mydim, int coorddim, class GridImp>
 inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
@@ -65,11 +108,11 @@ template<int mydim, int coorddim, class GridImp>
 inline const FieldVector<UGCtype, coorddim>& UGGridGeometry<mydim,coorddim,GridImp>::
 operator [](int i) const
 {
-  std::cerr << "UGGridGeometry<" << mydim << "," << coorddim << ">::operator[]:\n"
-  "Default implementation, should not be called!\n";
+  UGGridGeometryPositionAccess<mydim,coorddim>::get(target_, i, coord_[i]);
   return coord_[i];
 }
 
+#if 0
 #ifdef _3
 template<class GridImp>
 inline const FieldVector<UGCtype, 3>& UGGridGeometry<0,3, GridImp>::
@@ -87,23 +130,7 @@ operator [](int i) const
 template<class GridImp>
 inline const FieldVector<UGCtype, 3>& UGGridGeometry<3,3,GridImp>::
 operator [](int i) const
-{
-  assert(0<=i && i<corners());
-
-  if (type()==hexahedron) {
-    // Dune numbers the vertices of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    i = renumbering[i];
-  }
-
-  UG3d::VERTEX* vertex = UG_NS<3>::Corner(target_,i)->myvertex;
-
-  for (int j=0; j<3; j++)
-    coord_[i][j] = vertex->iv.x[j];
-
-  return coord_[i];
-}
+{}
 #endif
 
 #ifdef _2
@@ -133,6 +160,8 @@ operator [](int i) const
 
   return coord_[i];
 }
+#endif
+
 #endif
 
 #endif
