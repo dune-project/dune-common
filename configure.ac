@@ -87,7 +87,7 @@ echo
 
 # write output
 AC_CONFIG_FILES([Makefile
-		 common/Makefile
+	 common/Makefile
          common/test/Makefile
          fem/Makefile
          fem/common/Makefile
@@ -104,6 +104,7 @@ AC_CONFIG_FILES([Makefile
          istl/Makefile
          istl/doc/Makefile
          istl/tutorial/Makefile
+	 istl/test/Makefile
          lib/Makefile
          lib/test/Makefile
          operator/Makefile
@@ -119,8 +120,3 @@ AC_CONFIG_FILES([Makefile
          m4/Makefile
          dune.pc])
 AC_OUTPUT
-
-# if we are in verbose mode print the summary information
-if test x$verbose == xyes; then
-  DUNE_SUMMARY_ALL
-fi
