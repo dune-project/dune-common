@@ -33,7 +33,7 @@ namespace Dune {
 
     // copy arguments
     s = 0.0;
-    for (int j=0; j<dim; j++) A(j) = Vec<dimworld,sgrid_ctype>(j);     // make unit vectors
+    for (int j=0; j<dim; j++) A(j) = Vec<dimworld,sgrid_ctype>(j,1.0);     // make unit vectors
 
     // make corners
     for (int i=0; i<(1<<dim); i++)     // there are 2^d corners
