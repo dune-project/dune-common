@@ -3,12 +3,14 @@
 #ifndef DIMS_CREATE_CC
 #define DIMS_CREATE_CC
 
+#include <limits>
+
 namespace Dune {
 
   array<3> Dims_create(int P, array<3> & w) {
     int DIM = 3;
     array<3> solution;
-    double weight=P*P*P;
+    double weight = std::numeric_limits<double>::max();
     array<3> dims;
     for (dims[0]=1; dims[0]<=P; dims[0]++)
       for (dims[1]=1; dims[1]<=P; dims[1]++)

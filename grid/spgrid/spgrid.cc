@@ -223,6 +223,7 @@ namespace Dune {
     dim_=0;
     //    MPI_Dims_create(P, DIM, dim_);
     dim_ = Dune::Dims_create(P, globalsize_);
+    std::cout << "Dims_create: " << dim_ << std::endl;
     bool reorder = false;
     array<DIM> periodic_dummy;
     for (int d=0; d<DIM; d++) {
