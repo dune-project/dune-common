@@ -73,7 +73,7 @@ UGGridIntersectionIterator<GridImp>::boundary() const
 
 template<class GridImp>
 inline FieldVector<UGCtype, GridImp::dimensionworld>&
-UGGridIntersectionIterator <GridImp>::unitOuterNormal () const
+UGGridIntersectionIterator <GridImp>::outerNormal () const
 {
   // //////////////////////////////////////////////////////
   //   Implementation for 3D
@@ -108,8 +108,6 @@ UGGridIntersectionIterator <GridImp>::unitOuterNormal () const
   V3_VECTOR_PRODUCT(ba, ca, outerNormal_);
 #undef V3_VECTOR_PRODUCT
 
-  // normalize
-  outerNormal_ *= (1/outerNormal_.two_norm());
 #endif
 
   // //////////////////////////////////////////////////////
@@ -127,8 +125,6 @@ UGGridIntersectionIterator <GridImp>::unitOuterNormal () const
   outerNormal_[0] = bPos[1] - aPos[1];
   outerNormal_[1] = aPos[0] - bPos[0];
 
-  // normalize
-  outerNormal_ *= (1/outerNormal_.two_norm());
 #endif
   return outerNormal_;
 }
@@ -136,9 +132,9 @@ UGGridIntersectionIterator <GridImp>::unitOuterNormal () const
 template<class GridImp>
 inline FieldVector<UGCtype, GridImp::dimensionworld>&
 UGGridIntersectionIterator < GridImp >::
-unitOuterNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const
+outerNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const
 {
-  return unitOuterNormal();
+  return outerNormal();
 }
 
 template< class GridImp>

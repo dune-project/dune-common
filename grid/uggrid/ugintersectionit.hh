@@ -67,13 +67,6 @@ namespace Dune {
     //! return information about the Boundary
     UGGridBoundaryEntity<GridImp> & boundaryEntity ();
 
-    //! return unit outer normal, this should be dependent on local
-    //! coordinates for higher order boundary
-    FieldVector<UGCtype, GridImp::dimensionworld>& unitOuterNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const;
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<UGCtype, GridImp::dimensionworld>& unitOuterNormal () const;
-
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
@@ -96,10 +89,10 @@ namespace Dune {
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<UGCtype, dimworld>& outerNormal (const FieldVector<UGCtype, dim-1>& local) const;
+    FieldVector<UGCtype, GridImp::dimensionworld>& outerNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const;
 
     //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<UGCtype, dimworld>& outerNormal () const;
+    FieldVector<UGCtype, GridImp::dimensionworld>& outerNormal () const;
 
   private:
     //**********************************************************
