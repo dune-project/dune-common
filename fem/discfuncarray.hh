@@ -84,6 +84,9 @@ namespace Dune {
     // Warning!!! returns reference to local object!
     DofIteratorType dend   ( int level );
 
+    //! return if allLevels are used
+    bool allLevels () { return allLevels_; }
+
     //! set all dofs to zero
     void clearLevel( int level );
     void clear( );
