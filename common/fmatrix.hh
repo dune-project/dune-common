@@ -1351,8 +1351,8 @@ namespace Dune {
     template <typename K>
     static inline K invertMatrix (const FieldMatrix<K,1,1> &matrix, FieldMatrix<K,1,1> &inverse)
     {
-      inverse[0][0] = 1.0/matrix[0,0];
-      return (matrix[0][0]);
+      inverse[0][0] = 1.0/matrix[0][0];
+      return matrix[0][0];
     }
 
 
