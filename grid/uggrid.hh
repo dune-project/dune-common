@@ -91,7 +91,6 @@ namespace Dune
   typedef double UGCtype;
 
 
-
   // forward declarations
   template<int dim, int dimworld>            class UGGrid;
   template<int codim, int dim, class GridImp> class UGGridEntity;
@@ -160,7 +159,6 @@ namespace Dune {
     // The Interface Methods
     //**********************************************************
   public:
-
     typedef GridTraits<dim,
         dimworld,
         Dune::UGGrid<dim,dimworld> ,
@@ -218,7 +216,11 @@ namespace Dune {
      */
     int size (int level, int codim) const;
 
+#ifdef UGGRID_WITH_INDEX_SETS
+    int global_size (int codim) const DUNE_DEPRECATED { return hierarchicIndexSet().size(maxlevel(),codim); }
+#else
     int global_size (int codim) const DUNE_DEPRECATED { return size(maxlevel(),codim); }
+#endif
 
     /** \brief Mark entity for refinement
      *
@@ -249,7 +251,7 @@ namespace Dune {
     bool adapt();
 
     /** \brief Please doc me! */
-    GridIdentifier type () { return UGGrid_Id; };
+    GridIdentifier type () const { return UGGrid_Id; };
 
     /** \brief Distributes this grid over the available nodes in a distributed machine
      *
