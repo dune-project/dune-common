@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __YASPGRID_HH__
-#define __YASPGRID_HH__
+#ifndef DUNE_YASPGRID_HH
+#define DUNE_YASPGRID_HH
 
 #include <iostream>
 
@@ -396,7 +396,7 @@ namespace Dune {
     }
 
     //! can only be called for mydim=cdim!
-    Mat<mydim,mydim,ctype>& jacobianInverse (const FieldVector<ctype, mydim>& local) const
+    FieldMatrix<ctype,mydim,mydim>& jacobianInverse (const FieldVector<ctype, mydim>& local) const
     {
       for (int i=0; i<mydim; ++i)
       {
@@ -459,7 +459,7 @@ namespace Dune {
 
     // In addition we need memory in order to return references.
     // Possibly we should change this in the interface ...
-    mutable Mat<mydim,mydim,ctype> Jinv; // the jacobian inverse
+    mutable FieldMatrix<ctype,mydim,mydim> Jinv; // the jacobian inverse
     mutable FieldVector<ctype, mydim> c; // a point
   };
 
