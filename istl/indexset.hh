@@ -337,11 +337,12 @@ namespace Dune
 
     /**
      * @brief Indicate that the resizing finishes.
+     *
      * Now every index will get its local id. The local indices will be ordered
      * according to the global indices:
-     * Let $(g_i,l_i)_{i=0}^N$ be the set of all indices then $l_i < l_j$
+     * Let \f$(g_i,l_i)_{i=0}^N \f$ be the set of all indices then \f$l_i < l_j\f$
      * if and
-     * only if $g_i < g_j$ for arbitrary $i \neq j$.
+     * only if \f$g_i < g_j\f$ for arbitrary \f$i \neq j\f$.
      * @exception InvalidState If index set was not in
      * IndexSetState::RESIZE mode.
      */
