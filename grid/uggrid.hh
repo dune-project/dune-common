@@ -72,7 +72,7 @@ namespace Dune
 
 #include "uggrid/uggridelement.hh"
 #include "uggrid/uggridentity.hh"
-//#include "uggrid/uggridboundent.hh"
+#include "uggrid/uggridboundent.hh"
 #include "uggrid/ugintersectionit.hh"
 #include "uggrid/uggridleveliterator.hh"
 
