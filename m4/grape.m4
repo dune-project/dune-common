@@ -56,8 +56,7 @@ if test "x$X_LIBS" != x ; then
   AC_LANG_PUSH([C])
   AC_CHECK_HEADER([grape.h],
     [GRAPE_CPPFLAGS="-I$GRAPEROOT"
-     HAVE_GRAPE="1"],
-    AC_MSG_WARN([grape.h not found in $GRAPEROOT!]))
+     HAVE_GRAPE="1"])
   AC_LANG_POP
 
   # check for lib if header was found
@@ -65,8 +64,7 @@ if test "x$X_LIBS" != x ; then
   AC_CHECK_LIB(gr, grape, 
     [GRAPE_LDFLAGS="-L$GRAPEROOT"
      GRAPE_LIBS="-lgr"], 
-    [HAVE_GRAPE="0"
-     AC_MSG_WARN([libgr not found in $GRAPEROOT!])])
+    [HAVE_GRAPE="0"])
   fi
 
   # pre-set variable for summary

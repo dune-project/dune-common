@@ -62,7 +62,6 @@ fi
 
 # survived all tests?
 if test x$HAVE_BLAS = x1 ; then
-  echo "******** BLAS Library found in $BLAS_LIB_PATH"
   AC_SUBST(BLAS_LIBS, $BLAS_LIBS)
   AC_SUBST(BLAS_LDFLAGS, $BLAS_LDFLAGS)
   AC_SUBST(BLAS_CPPFLAGS, $BLAS_CPPFLAGS)
@@ -75,7 +74,6 @@ if test x$HAVE_BLAS = x1 ; then
   # set variable for summary
   with_blas="yes"
 else
-  echo "******** no BLAS Library is uesd. Enable with the --enable-blas option." 
   AC_SUBST(BLAS_LIBS, "")
   AC_SUBST(BLAS_LDFLAGS, "")
 
