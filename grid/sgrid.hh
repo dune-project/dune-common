@@ -321,7 +321,7 @@ namespace Dune {
     SGrid<dim,dimworld>* grid;                  //!< my grid
     SEntity<0,dim,dimworld>* self;              //!< myself, SEntity is a friend class
     int partition;                              //!< partition number of self, needed for coordinate expansion
-    Tupel<int,dim> zred;                        //!< reduced coordinates of myself, allows easy computation of neighbors
+    FixedArray<int,dim> zred;                        //!< reduced coordinates of myself, allows easy computation of neighbors
     int count;                                  //!< number of neighbor
     bool valid_count;                           //!< true if count is in range
     bool is_on_boundary;                        //!< true if neighbor is otside the domain
@@ -425,7 +425,7 @@ namespace Dune {
     SGrid<dim,dimworld>* grid;            //!< grid containes mapper, geometry, etc.
     int l;                                //!< level where element is on
     int id;                               //!< my consecutive id
-    Tupel<int,dim> z;                     //!< my coordinate, number of even components = codim
+    FixedArray<int,dim> z;                     //!< my coordinate, number of even components = codim
     SElement<dim-codim,dimworld> geo;     //!< geometry, is only built on demand
     bool builtgeometry;                   //!< true if geometry has been constructed
   };
@@ -477,8 +477,8 @@ namespace Dune {
      of an element!
    */
 
-  static Tupel <int,2> zrefGlob;
-  static Tupel <int,2> zentityGlob;
+  static FixedArray <int,2> zrefGlob;
+  static FixedArray <int,2> zentityGlob;
 
   /** \todo Please doc me! */
   template<int dim, int dimworld>
@@ -762,46 +762,46 @@ namespace Dune {
     void globalRefine (int refCount);
 
     //! map expanded coordinates to position
-    Vec<dim,sgrid_ctype> pos (int level, Tupel<int,dim>& z);
+    Vec<dim,sgrid_ctype> pos (int level, FixedArray<int,dim>& z);
 
     //! compute codim from coordinate
-    int codim (int level, Tupel<int,dim>& z);
+    int codim (int level, FixedArray<int,dim>& z);
 
     //! compute number from expanded coordinate
-    int n (int level, Tupel<int,dim> z);
+    int n (int level, FixedArray<int,dim> z);
 
     //! compute coordinates from number and codimension
-    Tupel<int,dim> z (int level, int i, int codim);
+    FixedArray<int,dim> z (int level, int i, int codim);
 
     //! compress from expanded coordinates to grid for a single partition number
-    Tupel<int,dim> compress (int level, Tupel<int,dim>& z);
+    FixedArray<int,dim> compress (int level, FixedArray<int,dim>& z);
 
     //! expand with respect to partition number
-    Tupel<int,dim> expand (int level, Tupel<int,dim>& r, int b);
+    FixedArray<int,dim> expand (int level, FixedArray<int,dim>& r, int b);
 
     /*! There are \f$2^d\f$ possibilities of having even/odd coordinates.
         The binary representation is called partition number.
      */
-    int partition (int level, Tupel<int,dim>& z);
+    int partition (int level, FixedArray<int,dim>& z);
 
     //! given reduced coordinates of an element, determine if element is in the grid
-    bool exists (int level, Tupel<int,dim>& zred);
+    bool exists (int level, FixedArray<int,dim>& zred);
 
   private:
     // generate SGrid
     void makeSGrid (const int* N_,  const sgrid_ctype* L_, const sgrid_ctype* H_);
 
     int L;                          // number of levels in hierarchic mesh 0<=level<L
-    Tupel<sgrid_ctype,dim> low;     // lower left corner of the grid
-    Tupel<sgrid_ctype,dim> H;       // length of cube per direction
-    Tupel<int,dim> N[MAXL];         // number of elements per direction
+    FixedArray<sgrid_ctype,dim> low;     // lower left corner of the grid
+    FixedArray<sgrid_ctype,dim> H;       // length of cube per direction
+    FixedArray<int,dim> N[MAXL];         // number of elements per direction
     Vec<dim,sgrid_ctype> h[MAXL];   // mesh size per direction
     CubeMapper<dim> mapper[MAXL];   // a mapper for each level
 
     // faster implemantation od subIndex
     friend class SEntity<0,dim,dimworld>;
-    Tupel <int,dim> zrefStatic;   // for subIndex of SEntity
-    Tupel <int,dim> zentityStatic; // for subIndex of SEntity
+    FixedArray <int,dim> zrefStatic;   // for subIndex of SEntity
+    FixedArray <int,dim> zentityStatic; // for subIndex of SEntity
   };
 
   /** @} end documentation group */

@@ -219,7 +219,7 @@ namespace Dune {
   // inline methods for SEntityBase
 
   template<int n>
-  static inline Tupel<int,n>& coarsen (Tupel<int,n>& in)
+  static inline FixedArray<int,n>& coarsen (FixedArray<int,n>& in)
   {
     for (int i=0; i<n; i++) in[i] = in[i]/2;
     return in;
@@ -295,7 +295,7 @@ namespace Dune {
     // count number of direction vectors found
     int dir=0;
     Vec<dim,sgrid_ctype> p1,p2;
-    Tupel<int,dim> t=z;
+    FixedArray<int,dim> t=z;
 
     // check all directions
     for (int i=0; i<dim; i++)
@@ -336,7 +336,7 @@ namespace Dune {
 
   // initialize static variable with bool constructor (which makes reference elements)
   template<int dim>
-  CubeMapper<dim> SUnitCubeMapper<dim>::mapper(Tupel<int,dim>(1));
+  CubeMapper<dim> SUnitCubeMapper<dim>::mapper(FixedArray<int,dim>(1));
 
 
   // codim 0
@@ -352,10 +352,10 @@ namespace Dune {
   {
     // find expanded coordinates of entity in reference cube
     // has components in {0,1,2}
-    Tupel<int,dim> zref = SUnitCubeMapper<dim>::mapper.z(i,cc);
+    FixedArray<int,dim> zref = SUnitCubeMapper<dim>::mapper.z(i,cc);
 
     // compute expanded coordinates of entity in global coordinates
-    Tupel<int,dim> zentity;
+    FixedArray<int,dim> zentity;
     for (int i=0; i<dim; i++) zentity[i] = this->z[i] + zref[i] - 1;
 
     // make Iterator
@@ -371,8 +371,8 @@ namespace Dune {
       // find expanded coordinates of entity in reference cube
       // has components in {0,1,2}
       // the grid hold the memory because its faster
-      Tupel<int,dim> &zref = this->grid->zrefStatic;
-      Tupel<int,dim> &zentity = this->grid->zentityStatic;
+      FixedArray<int,dim> &zref = this->grid->zrefStatic;
+      FixedArray<int,dim> &zentity = this->grid->zentityStatic;
 
       zref = SUnitCubeMapper<dim>::mapper.z(i,dim);
       for (int i=0; i<dim; i++) zentity[i] = this->z[i] + zref[i] - 1;
@@ -421,7 +421,7 @@ namespace Dune {
     }
 
     // reduced coordinates from expanded coordinates
-    Tupel<int,dim> zz = this->grid->compress(this->l,this->z);
+    FixedArray<int,dim> zz = this->grid->compress(this->l,this->z);
 
     // look for odd coordinates
     Vec<dim,sgrid_ctype> delta;
@@ -521,7 +521,7 @@ namespace Dune {
     // reduced coordinates from expanded coordinates
     // reduced coordinates of a fine grid vertex can be interpreted as
     // expanded coordinates on the next coarser level !
-    Tupel<int,dim> zz = this->grid->compress(this->l,this->z);
+    FixedArray<int,dim> zz = this->grid->compress(this->l,this->z);
 
     // to find father, make all coordinates odd
     Vec<dim,sgrid_ctype> delta;
@@ -583,8 +583,8 @@ namespace Dune {
     if (level+1>maxlevel) return;     // nothing to do
 
     // compute reduced coordinates of element
-    Tupel<int,dim> z = grid.z(level,fatherid,0);      // expanded coordinates from id
-    Tupel<int,dim> zred = grid.compress(level,z);     // reduced coordinates from expaned coordinates
+    FixedArray<int,dim> z = grid.z(level,fatherid,0);      // expanded coordinates from id
+    FixedArray<int,dim> zred = grid.compress(level,z);     // reduced coordinates from expaned coordinates
 
     // refine to first son
     for (int i=0; i<dim; i++) zred[i] = 2*zred[i];
@@ -593,7 +593,7 @@ namespace Dune {
     int partition = grid.partition(level,z);
     for (int b=0; b<(1<<dim); b++)
     {
-      Tupel<int,dim> zz = zred;
+      FixedArray<int,dim> zz = zred;
       for (int i=0; i<dim; i++)
         if (b&(1<<i)) zz[i] += 1;
       // zz is reduced coordinate of a son on level level+1
@@ -689,7 +689,7 @@ namespace Dune {
     valid_count = true;
 
     // and compute compressed coordinates of neighbor
-    Tupel<int,dim> zrednb = zred;
+    FixedArray<int,dim> zrednb = zred;
     if (count%2)
       zrednb[count/2] += 1;           // odd
     else
@@ -807,7 +807,7 @@ namespace Dune {
     int c = count%2;
 
     // compute expanded coordinates of entity
-    Tupel<int,dim> z1 = self->z;
+    FixedArray<int,dim> z1 = self->z;
     if (c==1)
       z1[dir] += 1;           // odd
     else
@@ -1131,7 +1131,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline Vec<dim,sgrid_ctype> SGrid<dim,dimworld>::pos (int level, Tupel<int,dim>& z)
+  inline Vec<dim,sgrid_ctype> SGrid<dim,dimworld>::pos (int level, FixedArray<int,dim>& z)
   {
     Vec<dim,sgrid_ctype> x;
     for (int k=0; k<dim; k++)
@@ -1140,43 +1140,43 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::codim (int level, Tupel<int,dim>& z)
+  inline int SGrid<dim,dimworld>::codim (int level, FixedArray<int,dim>& z)
   {
     return mapper[level].codim(z);
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::n (int level, Tupel<int,dim> z)
+  inline int SGrid<dim,dimworld>::n (int level, FixedArray<int,dim> z)
   {
     return mapper[level].n(z);
   }
 
   template<int dim, int dimworld>
-  inline Tupel<int,dim> SGrid<dim,dimworld>::z (int level, int i, int codim)
+  inline FixedArray<int,dim> SGrid<dim,dimworld>::z (int level, int i, int codim)
   {
     return mapper[level].z(i,codim);
   }
 
   template<int dim, int dimworld>
-  inline Tupel<int,dim> SGrid<dim,dimworld>::compress (int level, Tupel<int,dim>& z)
+  inline FixedArray<int,dim> SGrid<dim,dimworld>::compress (int level, FixedArray<int,dim>& z)
   {
     return mapper[level].compress(z);
   }
 
   template<int dim, int dimworld>
-  inline Tupel<int,dim> SGrid<dim,dimworld>::expand (int level, Tupel<int,dim>& r, int b)
+  inline FixedArray<int,dim> SGrid<dim,dimworld>::expand (int level, FixedArray<int,dim>& r, int b)
   {
     return mapper[level].expand(r,b);
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::partition (int level, Tupel<int,dim>& z)
+  inline int SGrid<dim,dimworld>::partition (int level, FixedArray<int,dim>& z)
   {
     return mapper[level].partition(z);
   }
 
   template<int dim, int dimworld>
-  inline bool SGrid<dim,dimworld>::exists (int level, Tupel<int,dim>& zred)
+  inline bool SGrid<dim,dimworld>::exists (int level, FixedArray<int,dim>& zred)
   {
     for (int i=0; i<dim; i++)
     {

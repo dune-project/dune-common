@@ -8,7 +8,7 @@
 namespace Dune {
 
   template<int dim>
-  inline void LexOrder<dim>::init (Tupel<int,dim>& _N)
+  inline void LexOrder<dim>::init (FixedArray<int,dim>& _N)
   {
     // store argument
     N=_N;
@@ -25,7 +25,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int LexOrder<dim>::n (Tupel<int,dim>& z)
+  inline int LexOrder<dim>::n (FixedArray<int,dim>& z)
   {
     int r=0;
     for (int i=0; i<dim; i++) r += z[i]*P[i];
@@ -33,9 +33,9 @@ namespace Dune {
   }
 
   template<int dim>
-  inline Tupel<int,dim> LexOrder<dim>::z (int n)
+  inline FixedArray<int,dim> LexOrder<dim>::z (int n)
   {
-    Tupel<int,dim> z;
+    FixedArray<int,dim> z;
     for (int i=0; i<dim; i++)
     {
       z[i] = n%N[i];
@@ -47,7 +47,7 @@ namespace Dune {
   //************************************************************************
 
   template<int dim>
-  inline void JoinOrder<dim>::init (Tupel<int,dim>& _N)
+  inline void JoinOrder<dim>::init (FixedArray<int,dim>& _N)
   {
     // store argument
     N=_N;
@@ -96,7 +96,7 @@ namespace Dune {
   //************************************************************************
 
   template<int dim>
-  CubeMapper<dim>::CubeMapper (Tupel<int,dim> _N)
+  CubeMapper<dim>::CubeMapper (FixedArray<int,dim> _N)
   {
     make(_N);
   }
@@ -104,7 +104,7 @@ namespace Dune {
   template<int dim>
   CubeMapper<dim>::CubeMapper ()
   {
-    Tupel<int,dim> M;
+    FixedArray<int,dim> M;
 
     // make mesh of single cube
     for (int i=0; i<dim; i++) M[i]=1;
@@ -113,7 +113,7 @@ namespace Dune {
   }
 
   template<int dim>
-  void CubeMapper<dim>::make (Tupel<int,dim>& _N)
+  void CubeMapper<dim>::make (FixedArray<int,dim>& _N)
   {
     // store argument
     N=_N;
@@ -123,7 +123,7 @@ namespace Dune {
     for (int b=0; b<power2(dim); b++)     // loop over all binary partitions
     {
       int mask=1;
-      Tupel<int,dim> t;
+      FixedArray<int,dim> t;
       for (int i=0; i<dim; i++)
       {
         if (b&mask)
@@ -147,7 +147,7 @@ namespace Dune {
     // preprocess lex ordering for each codimension
     for (int c=0; c<=dim; c++)
     {
-      Tupel<int,1<<dim> t;
+      FixedArray<int,1<<dim> t;
       for (int b=0; b<power2(dim); b++)           // loop over all binary partitions
         if (ones(b)==c)
         {
@@ -186,7 +186,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int CubeMapper<dim>::codim (Tupel<int,dim>& z)
+  inline int CubeMapper<dim>::codim (FixedArray<int,dim>& z)
   {
     int r=0;
     for (int i=0; i<dim; i++)
@@ -195,10 +195,10 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int CubeMapper<dim>::n (Tupel<int,dim>& z)
+  inline int CubeMapper<dim>::n (FixedArray<int,dim>& z)
   {
     int p = partition(z);            // get partition
-    Tupel<int,dim> r=compress(z);     // get compressd coordinate
+    FixedArray<int,dim> r=compress(z);     // get compressd coordinate
 
     // treat easy cases first
     if (p==0 || p==power2(dim)-1)
@@ -212,9 +212,9 @@ namespace Dune {
   }
 
   template<int dim>
-  inline Tupel<int,dim> CubeMapper<dim>::z (int i, int codim)
+  inline FixedArray<int,dim> CubeMapper<dim>::z (int i, int codim)
   {
-    Tupel<int,dim> r;
+    FixedArray<int,dim> r;
 
     // easy cases first
     if (codim==0)
@@ -249,7 +249,7 @@ namespace Dune {
   }
 
   template<int dim>
-  inline int CubeMapper<dim>::partition (Tupel<int,dim>& z)
+  inline int CubeMapper<dim>::partition (FixedArray<int,dim>& z)
   {
     int r = 0;
     int mask = 1;
@@ -262,9 +262,9 @@ namespace Dune {
   }
 
   template<int dim>
-  inline Tupel<int,dim> CubeMapper<dim>::compress (Tupel<int,dim>& z)
+  inline FixedArray<int,dim> CubeMapper<dim>::compress (FixedArray<int,dim>& z)
   {
-    Tupel<int,dim> r;
+    FixedArray<int,dim> r;
     for (int i=0; i<dim; i++)
       if (z[i]%2==0)
         r[i] = z[i]/2;                     // even component
@@ -274,9 +274,9 @@ namespace Dune {
   }
 
   template<int dim>
-  inline Tupel<int,dim> CubeMapper<dim>::expand (Tupel<int,dim>& r, int b)
+  inline FixedArray<int,dim> CubeMapper<dim>::expand (FixedArray<int,dim>& r, int b)
   {
-    Tupel<int,dim> z;
+    FixedArray<int,dim> z;
     for (int i=0; i<dim; i++)
       if (b&(1<<i))
         z[i] = r[i]*2;                     // even component
