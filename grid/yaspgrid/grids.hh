@@ -302,7 +302,28 @@ namespace Dune {
         }
       }
 
+      //! Make iterator pointing to given cell in a grid.
       Iterator (YGrid<d,ct>& r, iTupel& coord)
+      {
+        // copy data coming from grid to iterate over
+        for (int i=0; i<d; ++i) _origin[i] = r.origin(i);
+        for (int i=0; i<d; ++i) _end[i] = r.origin(i)+r.size(i)-1;
+
+        // compute increments;
+        int inc = 1;
+        for (int i=0; i<d; ++i)
+        {
+          _increment[i] = inc;
+          inc *= r.size(i);
+        }
+
+        // initialize to given position in index set
+        for (int i=0; i<d; ++i) _coord[i] = coord[i];
+        _index = r.index(coord);
+      }
+
+      //! reinitialize iterator to given position
+      void reinit (YGrid<d,ct>& r, iTupel& coord)
       {
         // copy data coming from grid to iterate over
         for (int i=0; i<d; ++i) _origin[i] = r.origin(i);
@@ -708,6 +729,28 @@ namespace Dune {
       SubIterator (typename YGrid<d,ct>::Iterator& i) : YGrid<d,ct>::Iterator::Iterator(i)
       {       }
 
+      //! Make iterator pointing to given cell in subgrid.
+      void reinit (SubYGrid<d,ct>& r, iTupel& coord)
+      {
+        YGrid<d,ct>::Iterator::reinit(r,coord);
+
+        //! store some grid information
+        for (int i=0; i<d; ++i) _size[i] = r.size(i);
+
+        // compute superincrements
+        int inc = 1;
+        for (int i=0; i<d; ++i)
+        {
+          _superincrement[i] = inc;
+          inc *= r.supersize(i);
+        }
+
+        // move superindex to first cell in subgrid
+        _superindex = 0;
+        for (int i=0; i<d; ++i)
+          _superindex += (r.offset(i)+coord[i]-r.origin(i))*_superincrement[i];
+      }
+
       //! Return consecutive index in enclosing grid
       int superindex () const
       {
@@ -808,6 +851,15 @@ namespace Dune {
       TransformingSubIterator (SubIterator& i) : SubIterator(i)
       {       }
 
+      //! Make iterator pointing to given cell in a grid.
+      void reinit (SubYGrid<d,ct>& r, iTupel& coord)
+      {
+        SubIterator::reinit(r,coord);
+        for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
+        for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
+        for (int i=0; i<d; ++i) _position[i] = coord[i]*r.meshsize(i)+r.shift(i);
+      }
+
       //! Increment iterator to next cell with position.
       TransformingSubIterator& operator++ ()
       {
@@ -880,6 +932,12 @@ namespace Dune {
     TransformingSubIterator tsubbegin ()
     {
       return TransformingSubIterator(*this);
+    }
+
+    //! return iterator to given element of index set
+    TransformingSubIterator tsubbegin (iTupel& co)
+    {
+      return TransformingSubIterator(*this,co);
     }
 
     //! return subiterator to last element of index set
@@ -1590,7 +1648,7 @@ namespace Dune {
       if (_torus.rank()==0) std::cout << "MultiYGrid<" << d
         << ">: coarse grid with size " << s
         << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
-      print(std::cout);
+      //	  print(std::cout);
     }
 
     //! do a global mesh refinement; true: keep overlap in absolute size; false: keep overlap in mesh cells
@@ -1654,7 +1712,7 @@ namespace Dune {
       }
 
       //! return number of this grid level
-      int level ()
+      int level () const
       {
         return l;
       }
@@ -1691,6 +1749,18 @@ namespace Dune {
         --i;
         --l;
         return *this;
+      }
+
+      //! get iterator to next finer grid level
+      YGridLevelIterator finer ()
+      {
+        return YGridLevelIterator(i+1,l+1);
+      }
+
+      //! get iterator to next coarser grid level
+      YGridLevelIterator coarser ()
+      {
+        return YGridLevelIterator(i-1,l-1);
       }
 
       //! reference to global cell grid
