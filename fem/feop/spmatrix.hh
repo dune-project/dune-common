@@ -130,7 +130,6 @@ namespace Dune
     void apply_t(const DiscFuncType &f, DiscFuncType &ret) const;
 
     /** \brief Multiply the transpose with a vector
-     * \todo This is not using the fact that the matrix is sparse!
      */
     void apply_t(const SimpleVector<T> &f, SimpleVector<T> &ret) const;
 

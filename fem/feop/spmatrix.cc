@@ -372,15 +372,16 @@ namespace Dune
     assert(f.size() == rows());
 
     ret.resize(cols());
+    ret.set(0);
 
-    for (int i=0; i<cols(); i++) {
+    for (int row=0; row<rows(); row++) {
 
-      ret[i] = 0;
+      for (int col=0; col<nz_; col++) {
 
-      for (int j=0; j<rows(); j++)
+        if (col_[row*nz_+col] >= 0)
+          ret[col_[row*nz_+col]] += f[row]*val(row*nz_+col);
 
-        ret[i] += f[j] * (*this)(j,i);
-
+      }
     }
 
   }
