@@ -1,6 +1,6 @@
 # $Id$
 
-TESTPROGS = parsetest test-stack arraylisttest
+TESTPROGS = parsetest test-stack arraylisttest smartpointertest
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -15,3 +15,5 @@ parsetest_SOURCES = parsetest.cc
 test_stack_SOURCES = test-stack.cc
 
 arraylisttest_SOURCES = arraylisttest.cc
+
+smartpointertest_SOURCES = smartpointertest.cc

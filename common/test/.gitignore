@@ -6,3 +6,4 @@ semantic.cache
 parsetest
 test-stack
 arraylisttest
+smartpointertest
