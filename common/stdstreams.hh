@@ -20,25 +20,20 @@ namespace Dune {
 
    */
 
-  /*! \addtogroup DebugOut
+  /*!
+     \addtogroup DebugOut
+     @{
 
-     \section Standard Streams
-
-     Laber Laber
-
-   */
-
-  /*! standard debug streams with level below MINIMAL_DEBUG_LEVEL will
+     standard debug streams with level below MINIMAL_DEBUG_LEVEL will
      collapse to doing nothing if output is requested.
 
-     For a Dune-Release this should be set to 5 so that only the grave
-     warnings and error messages are active. Otherwise, the
-     Dune-developers will adapt this setting to their debugging needs
-     locally
+     For a Dune-Release this should be set to at least 4 so that only
+     important messages are active. Dune-developers may adapt this
+     setting to their debugging needs locally
 
      Keep in mind that libdune has to be recompiled if this value is changed!
    */
-  static const DebugLevel MINIMAL_DEBUG_LEVEL = 3;
+  static const DebugLevel MINIMAL_DEBUG_LEVEL = 4;
 
   typedef DebugStream<1, MINIMAL_DEBUG_LEVEL> DVVerbType;
   extern DVVerbType dvverb;
@@ -57,4 +52,6 @@ namespace Dune {
 
   typedef DebugStream<1> DErrType;
   extern DErrType derr;
+
+  //! }@
 }

@@ -77,8 +77,8 @@ namespace Dune {
      Dune::DebugStream<APPL_GRAPHICS, APPL_DEBUG_MASK, APPL_ACTIVE_MASK, Dune::common_bits> graphout;
      \endcode
 
-     Applications that wish to redirect the standard streams from
-     stdstreams.hh through their private streams can use the tie()-mechanism:
+     Applications that wish to redirect the \ref StdStreams through their
+     private streams may use the tie()-mechanism:
 
      \code
      // initialize streams like above
@@ -91,6 +91,14 @@ namespace Dune {
      \endcode
 
      Keep in mind to untie() a stream before the tied stream is destructed.
+
+     An alternative is to attach() an output stream defined by the application:
+
+     \code
+     std::ofstream mylog("application.log");
+
+     Dune::dwarn.attach(mylog);
+     \endcode
 
    */
 
