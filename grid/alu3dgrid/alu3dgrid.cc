@@ -1637,7 +1637,7 @@ namespace Dune {
   inline const typename ALU3dGridEntity<cd,dim,GridImp>::Geometry &
   ALU3dGridEntity<cd,dim,GridImp>:: geometry() const
   {
-    if(!builtgeometry_) builtgeometry_ = geo_.buildGeom(item_);
+    if(!builtgeometry_) builtgeometry_ = geo_.buildGeom(*item_);
     return geo_;
   }
 
