@@ -1329,7 +1329,7 @@ namespace Dune
   template< int dim, int dimworld>
   inline bool AlbertGridNeighborIterator<dim,dimworld>::neighbor()
   {
-    return (elInfo_->neigh[neighborCount_] == NULL);
+    return (elInfo_->neigh[neighborCount_] != NULL);
   }
 
   template< int dim, int dimworld>
