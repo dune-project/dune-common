@@ -95,11 +95,11 @@ namespace Dune {
 
   inline void Exception::message(std::string message) {
     _message = message;
-  };
+  }
 
   inline std::ostream& operator<<(std::ostream &stream, Exception &e) {
     return stream << e.what();
-  };
+  }
 
   // the "format" the exception-type gets printed.  __FILE__ and
   // __LINE__ are standard C-defines, the GNU cpp-infofile claims that
