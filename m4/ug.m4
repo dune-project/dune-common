@@ -135,7 +135,7 @@ EOF`
               [#define INT int
                #define $DIMDEFINE
                #include "initug.h"],
-	      [int i = UG${UG_DIM}d::InitUg(0,NULL)],
+	      [int i = UG${UG_DIM}d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
                UG_LIBS="$LIBS"
                echo "yes"
