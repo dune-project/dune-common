@@ -266,7 +266,7 @@ global(const Vec<dim>& local)
 
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];
-  Corner_Coordinates(target_, cornerCoords);
+  UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
 
   // Actually do the computation
   UG<dimworld>::Local_To_Global(corners(), cornerCoords, local, globalCoord);
@@ -281,7 +281,7 @@ integration_element (const Vec<dim,UGCtype>& local)
 {
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];
-  Corner_Coordinates(target_, cornerCoords);
+  UG<dimworld>::Corner_Coordinates(target_, cornerCoords);
 
   //
   Mat<dimworld,dimworld> mat;
