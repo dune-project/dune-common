@@ -923,153 +923,153 @@ namespace Dune {
 
     //! y += A x
     template<class X, class Y>
-    void umv (X& x, Y& y)
+    void umv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).umv(x[j.index()],y[i.index()]);
       }
     }
 
     //! y -= A x
     template<class X, class Y>
-    void mmv (X& x, Y& y)
+    void mmv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).mmv(x[j.index()],y[i.index()]);
       }
     }
 
     //! y += alpha A x
     template<class X, class Y>
-    void usmv (const field_type& alpha, X& x, Y& y)
+    void usmv (const field_type& alpha, const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).usmv(alpha,x[j.index()],y[i.index()]);
       }
     }
 
     //! y += A^T x
     template<class X, class Y>
-    void umtv (X& x, Y& y)
+    void umtv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).umtv(x[i.index()],y[j.index()]);
       }
     }
 
     //! y -= A^T x
     template<class X, class Y>
-    void mmtv (X& x, Y& y)
+    void mmtv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).mmtv(x[i.index()],y[j.index()]);
       }
     }
 
     //! y += alpha A^T x
     template<class X, class Y>
-    void usmtv (const field_type& alpha, X& x, Y& y)
+    void usmtv (const field_type& alpha, const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).usmtv(alpha,x[i.index()],y[j.index()]);
       }
     }
 
     //! y += A^H x
     template<class X, class Y>
-    void umhv (X& x, Y& y)
+    void umhv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).umhv(x[i.index()],y[j.index()]);
       }
     }
 
     //! y -= A^H x
     template<class X, class Y>
-    void mmhv (X& x, Y& y)
+    void mmhv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).mmhv(x[i.index()],y[j.index()]);
       }
     }
 
     //! y += alpha A^H x
     template<class X, class Y>
-    void usmhv (const field_type& alpha, X& x, Y& y)
+    void usmhv (const field_type& alpha, const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
       if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
 #endif
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           (*j).usmhv(alpha,x[i.index()],y[j.index()]);
       }
     }
@@ -1082,11 +1082,11 @@ namespace Dune {
     {
       double sum=0;
 
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           sum += (*j).frobenius_norm2();
       }
 
@@ -1103,12 +1103,12 @@ namespace Dune {
     double infinity_norm () const
     {
       double max=0;
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
         double sum=0;
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           sum += (*j).infinity_norm();
         max = std::max(max,sum);
       }
@@ -1119,12 +1119,12 @@ namespace Dune {
     double infinity_norm_real () const
     {
       double max=0;
-      RowIterator endi=end();
-      for (RowIterator i=begin(); i!=endi; ++i)
+      ConstRowIterator endi=end();
+      for (ConstRowIterator i=begin(); i!=endi; ++i)
       {
         double sum=0;
-        ColIterator endj = (*i).end();
-        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+        ConstColIterator endj = (*i).end();
+        for (ConstColIterator j=(*i).begin(); j!=endj; ++j)
           sum += (*j).infinity_norm_real();
         max = std::max(max,sum);
       }
@@ -1202,7 +1202,7 @@ namespace Dune {
     //===== query
 
     // return true when (i,j) is in pattern
-    bool exists (int i, int j)
+    bool exists (int i, int j) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");

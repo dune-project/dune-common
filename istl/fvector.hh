@@ -573,6 +573,14 @@ namespace Dune {
       return ConstIterator(p,-1);
     }
 
+    //! return iterator to given element or end()
+    ConstIterator find (int i) const
+    {
+      if (i>=0 && i<n)
+        return ConstIterator(p,i);
+      else
+        return ConstIterator(p,n);
+    }
 
     //===== vector space arithmetic
 
@@ -692,10 +700,29 @@ namespace Dune {
 
     operator K () {return *p;}
 
+    void print (std::ostream& s) const
+    {
+      for (int i=0; i<n; i++)
+        if (i>0)
+          s << " " << p[i];
+        else
+          s << p[i];
+    }
+
   private:
     // the data, very simply a built in array
     K p[n];
   };
+
+
+  // Ausgabe
+  template<class K, int n>
+  std::ostream& operator<< (std::ostream& s, const FieldVector<K,n>& v)
+  {
+    v.print(s);
+    return s;
+  }
+
 
   // forward declarations
   template<class K> class K1Vector;

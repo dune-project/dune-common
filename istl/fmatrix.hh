@@ -5,6 +5,7 @@
 
 #include <math.h>
 #include <complex>
+#include <iostream>
 
 #include "istlexception.hh"
 #include "allocator.hh"
@@ -237,10 +238,13 @@ namespace Dune {
 
   //! solve small system
   template<class K, int n, class V>
-  void fm_solve (const FieldMatrix<K,n,n>& A,  V& x, const V& b)
+  void fm_solve (const FieldMatrix<K,n,n>& Ain,  V& x, const V& b)
   {
+    // make a copy of a to store factorization
+    FieldMatrix<K,n,n> A(Ain);
+
     // Gaussian elimination with maximum column pivot
-    double norm=A.one_norm_real();     // for relative thresholds
+    double norm=A.infinity_norm_real();     // for relative thresholds
     double pivthres = std::max(ISTLPrecision::absolute_limit(),norm*ISTLPrecision::pivoting_limit());
     double singthres = std::max(ISTLPrecision::absolute_limit(),norm*ISTLPrecision::singular_limit());
     V& rhs = x;          // use x to store rhs
@@ -481,6 +485,14 @@ namespace Dune {
 
     //! export size
     enum {rows = n, cols = m};
+
+    //===== constructors
+    FieldMatrix () {}
+
+    FieldMatrix (const K& k)
+    {
+      for (int i=0; i<n; i++) p[i] = k;
+    }
 
     //===== random access interface to rows of the matrix
 
@@ -751,7 +763,7 @@ namespace Dune {
 
     //! y += A x
     template<class X, class Y>
-    void umv (X& x, Y& y)
+    void umv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
@@ -762,7 +774,7 @@ namespace Dune {
 
     //! y += A^T x
     template<class X, class Y>
-    void umtv (X& x, Y& y)
+    void umtv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -776,7 +788,7 @@ namespace Dune {
 
     //! y += A^H x
     template<class X, class Y>
-    void umhv (X& x, Y& y)
+    void umhv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -790,7 +802,7 @@ namespace Dune {
 
     //! y -= A x
     template<class X, class Y>
-    void mmv (X& x, Y& y)
+    void mmv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
@@ -802,7 +814,7 @@ namespace Dune {
 
     //! y -= A^T x
     template<class X, class Y>
-    void mmtv (X& x, Y& y)
+    void mmtv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -816,7 +828,7 @@ namespace Dune {
 
     //! y -= A^H x
     template<class X, class Y>
-    void mmhv (X& x, Y& y)
+    void mmhv (const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -830,7 +842,7 @@ namespace Dune {
 
     //! y += alpha A x
     template<class X, class Y>
-    void usmv (const K& alpha, X& x, Y& y)
+    void usmv (const K& alpha, const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
@@ -841,7 +853,7 @@ namespace Dune {
 
     //! y += alpha A^T x
     template<class X, class Y>
-    void usmtv (const K& alpha, X& x, Y& y)
+    void usmtv (const K& alpha, const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -855,7 +867,7 @@ namespace Dune {
 
     //! y += alpha A^H x
     template<class X, class Y>
-    void usmhv (const K& alpha, X& x, Y& y)
+    void usmhv (const K& alpha, const X& x, Y& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
@@ -965,7 +977,7 @@ namespace Dune {
     //===== query
 
     // return true when (i,j) is in pattern
-    bool exists (int i, int j)
+    bool exists (int i, int j) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
@@ -976,13 +988,29 @@ namespace Dune {
 
     //===== conversion operator
 
-    operator K () {return p[0][0];}
+    operator K () const {return p[0][0];}
 
+    void print (std::ostream& s) const
+    {
+      for (int i=0; i<n; i++)
+        if (i>0)
+          s << " " << p[i];
+        else
+          s << p[i];
+    }
 
   private:
     // the data, very simply a built in array with rowwise ordering
     row_type p[n];
   };
+
+  // Ausgabe
+  template<class K, int n, int m>
+  std::ostream& operator<< (std::ostream& s, const FieldMatrix<K,n,m>& a)
+  {
+    a.print(s);
+    return s;
+  }
 
 
   /**! Matrices of size 1x1 are treated in a special way
@@ -1062,55 +1090,55 @@ namespace Dune {
     //===== linear maps
 
     //! y += A x
-    void umv (const K1Vector<K>& x, K1Vector<K>& y)
+    void umv (const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p += a * x.p;
     }
 
     //! y += A^T x
-    void umtv (K1Vector<K>& x, K1Vector<K>& y)
+    void umtv (const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p += a * x.p;
     }
 
     //! y += A^H x
-    void umhv (K1Vector<K>& x, K1Vector<K>& y)
+    void umhv (const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p += fm_ck(a) * x.p;
     }
 
     //! y -= A x
-    void mmv (K1Vector<K>& x, K1Vector<K>& y)
+    void mmv (const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p -= a * x.p;
     }
 
     //! y -= A^T x
-    void mmtv (K1Vector<K>& x, K1Vector<K>& y)
+    void mmtv (const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p -= a * x.p;
     }
 
     //! y -= A^H x
-    void mmhv (K1Vector<K>& x, K1Vector<K>& y)
+    void mmhv (const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p -= fm_ck(a) * x.p;
     }
 
     //! y += alpha A x
-    void usmv (const K& alpha, K1Vector<K>& x, K1Vector<K>& y)
+    void usmv (const K& alpha, const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p += alpha * a * x.p;
     }
 
     //! y += alpha A^T x
-    void usmtv (const K& alpha, K1Vector<K>& x, K1Vector<K>& y)
+    void usmtv (const K& alpha, const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p += alpha * a * x.p;
     }
 
     //! y += alpha A^H x
-    void usmhv (const K& alpha, K1Vector<K>& x, K1Vector<K>& y)
+    void usmhv (const K& alpha, const K1Vector<K>& x, K1Vector<K>& y) const
     {
       y.p += alpha * fm_ck(a) * x.p;
     }
@@ -1204,21 +1232,19 @@ namespace Dune {
     //===== query
 
     // return true when (i,j) is in pattern
-    bool exists (int i, int j)
+    bool exists (int i, int j) const
     {
       return true;
     }
 
     //===== conversion operator
 
-    operator K () {return a;}
-
+    operator K () const {return a;}
 
   private:
     // the data, very simply a built in array with rowwise ordering
     K a;
   };
-
 
   /** @} end documentation */
 
