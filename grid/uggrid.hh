@@ -43,8 +43,12 @@ namespace Dune
      allows you to directly access a number of anisotropic refinements rules.
      Last but not least, the UG grid manager is completely parallelized.
 
-     To use this module you need UG.  You can obtain it here:
-     http://cox.iwr.uni-heidelberg.de/~ug
+     To use this module you need the UG library.  You can obtain it at
+     http://cox.iwr.uni-heidelberg.de/~ug .  Unfortunately, the version
+     of UG available for download (3.8 at the time of writing) is not new
+     enough to be compatible
+     with DUNE.  Please write to one of the contact addresses given on
+     the page mentioned above and ask for a more recent version of UG.
 
      UG is built using the standard GNU autotools.  After unpacking
      the tarball, please type
@@ -71,16 +75,16 @@ namespace Dune
 
      As UG only supports 2d-grids in a 2d-world and 3d-grids in a 3d-world,
      whatever you choose for DIM and DIMWORLD in the line above must be equal
-     and either 2 or 3.  If you're wondering why there are two arguments
-     even though they have to be the same, you have to ask Thimo about that.
+     and either 2 or 3.  The two dimension-related arguments must both be
+     there because they actually refer to all external grid implementations
+     that may require it, and there are some that do no necessarily pose
+     restrictions as strict as UG does.
 
      In your DUNE application, you can only instantiate UGGrid<2,2> or
      UGGrid<3,3>, depending on what you chose above.
 
      Please send any questions, suggestions, or bug reports to
-     \verbatim
-      sander at math dot fu-berlin dot de
-     \endverbatim
+     sander@math.fu-berlin.de
 
      @{
    */
