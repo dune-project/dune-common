@@ -36,7 +36,7 @@ namespace Dune {
 
      Keep in mind that libdune has to be recompiled if this value is changed!
    */
-  static const DebugLevel MINIMAL_DEBUG_LEVEL = 3;
+  static const DebugLevel MINIMAL_DEBUG_LEVEL = 4;
 
   typedef DebugStream<1, MINIMAL_DEBUG_LEVEL> DVVerbType;
   extern DVVerbType dvverb;
