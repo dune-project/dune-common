@@ -1210,7 +1210,8 @@ namespace Dune {
      data structures (which are not part of this module).
    */
   template<int dim, int dimworld>
-  class YaspGrid : public GridDefault<dim,dimworld,yaspgrid_ctype,YaspGrid,YaspLevelIterator,YaspEntity>
+  class YaspGrid : public GridDefault<dim,dimworld,yaspgrid_ctype,YaspGrid,YaspLevelIterator,YaspEntity>,
+                   public MultiYGrid<dim,yaspgrid_ctype>
   {
   public:
     //! maximum number of levels allowed
@@ -1237,20 +1238,20 @@ namespace Dune {
     YaspGrid (MPI_Comm comm, Dune::FieldVector<ctype, dim> L,
               Dune::FieldVector<int, dim> s,
               Dune::FieldVector<bool, dim> periodic, int overlap)
-      : _mg(comm,L,s,periodic,overlap)
+      : MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap)
     {  }
 
     /*! Return maximum level defined in this grid. Levels are numbered
           0 ... maxlevel with 0 the coarsest level.
      */
-    int maxlevel() const {return _mg.maxlevel();} // delegate
+    int maxlevel() const {return MultiYGrid<dim,ctype>::maxlevel();} // delegate
 
     //! refine the grid refCount times. What about overlap?
     void globalRefine (int refCount)
     {
       bool b=false;
       if (refCount>0) b=true;
-      _mg.refine(b);
+      MultiYGrid<dim,ctype>::refine(b);
     }
 
     //! Iterator to first entity of given codim on level for partition type
@@ -1258,18 +1259,24 @@ namespace Dune {
     YaspLevelIterator<cd,dim,dimworld,pitype> lbegin (int level)
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
-      YGLI g = _mg.begin(level);
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
       if (cd==0)   // the elements
       {
-        if (pitype<=InteriorBorder_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_interior().tsubbegin());
-        if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_overlap().tsubbegin());
+        if (pitype<=InteriorBorder_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_interior().tsubbegin());
+        if (pitype<=All_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_overlap().tsubbegin());
       }
       if (cd==dim)   // the vertices
       {
-        if (pitype==Interior_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interior().tsubbegin());
-        if (pitype==InteriorBorder_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interiorborder().tsubbegin());
-        if (pitype==Overlap_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlap().tsubbegin());
-        if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlapfront().tsubbegin());
+        if (pitype==Interior_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interior().tsubbegin());
+        if (pitype==InteriorBorder_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interiorborder().tsubbegin());
+        if (pitype==Overlap_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlap().tsubbegin());
+        if (pitype<=All_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlapfront().tsubbegin());
       }
       DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
     }
@@ -1279,18 +1286,24 @@ namespace Dune {
     YaspLevelIterator<cd,dim,dimworld,pitype> lend (int level)
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
-      YGLI g = _mg.begin(level);
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
       if (cd==0)   // the elements
       {
-        if (pitype<=InteriorBorder_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_interior().tsubend());
-        if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_overlap().tsubend());
+        if (pitype<=InteriorBorder_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_interior().tsubend());
+        if (pitype<=All_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.cell_overlap().tsubend());
       }
       if (cd==dim)   // the vertices
       {
-        if (pitype==Interior_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interior().tsubend());
-        if (pitype==InteriorBorder_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interiorborder().tsubend());
-        if (pitype==Overlap_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlap().tsubend());
-        if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlapfront().tsubend());
+        if (pitype==Interior_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interior().tsubend());
+        if (pitype==InteriorBorder_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_interiorborder().tsubend());
+        if (pitype==Overlap_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlap().tsubend());
+        if (pitype<=All_Partition)
+          return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlapfront().tsubend());
       }
       DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
     }
@@ -1300,7 +1313,7 @@ namespace Dune {
     YaspLevelIterator<cd,dim,dimworld,All_Partition> lbegin (int level)
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
-      YGLI g = _mg.begin(level);
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
       if (cd==0)   // the elements
       {
         return YaspLevelIterator<cd,dim,dimworld,All_Partition>(g,g.cell_overlap().tsubbegin());
@@ -1317,7 +1330,7 @@ namespace Dune {
     YaspLevelIterator<cd,dim,dimworld,All_Partition> lend (int level)
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
-      YGLI g = _mg.begin(level);
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
       if (cd==0)   // the elements
       {
         return YaspLevelIterator<cd,dim,dimworld,All_Partition>(g,g.cell_overlap().tsubend());
@@ -1332,7 +1345,7 @@ namespace Dune {
     //! return size (= distance in graph) of overlap region
     int overlap_size (int level, int codim)
     {
-      YGLI g = _mg.begin(level);
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
       return g.overlap();
     }
 
@@ -1345,7 +1358,8 @@ namespace Dune {
     //! number of grid entities per level and codim
     int size (int level, int codim) const
     {
-      YGLI g = const_cast<YaspGrid<dim, dimworld>*>(this)->_mg.begin(level);
+      YaspGrid<dim, dimworld>* p = const_cast<YaspGrid<dim, dimworld>*>(this);
+      YGLI g = p->begin(level);
       if (codim==0)
       {
         return g.cell_overlap().totalsize();
@@ -1373,7 +1387,7 @@ namespace Dune {
     {
       IsTrue< ( codim == dim || codim == 0 ) >::yes();
       // access to grid level
-      YGLI g = _mg.begin(level);
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
 
       // find send/recv lists or throw error
       typedef typename MultiYGrid<dim,ctype>::Intersection IS;
@@ -1444,7 +1458,7 @@ namespace Dune {
           buf[i.index()].gather(t,i.superindex());
 
         // hand over send request to torus class
-        _mg.torus().send(is->rank,buf,is->grid.totalsize()*sizeof(P<T>));
+        MultiYGrid<dim,ctype>::torus().send(is->rank,buf,is->grid.totalsize()*sizeof(P<T>));
       }
 
       // allocate recv buffers and store receive request
@@ -1458,11 +1472,11 @@ namespace Dune {
         recvs.push_back(buf);
 
         // hand over recv request to torus class
-        _mg.torus().recv(is->rank,buf,is->grid.totalsize()*sizeof(P<T>));
+        MultiYGrid<dim,ctype>::torus().recv(is->rank,buf,is->grid.totalsize()*sizeof(P<T>));
       }
 
       // exchange all buffers now
-      _mg.torus().exchange();
+      MultiYGrid<dim,ctype>::torus().exchange();
 
       // release send buffers
       for (int i=0; i<sends.size(); i++)
@@ -1488,7 +1502,7 @@ namespace Dune {
     // implement leaf communication. Problem: supply vector of vectors
 
   private:
-    YMG _mg;
+    //  YMG _mg;
   };
 
   /** @} end documentation group */
