@@ -55,6 +55,7 @@ namespace Dune {
   public:
     /** \todo Please doc me! */
     typedef LagrangeMapper<typename DofManagerType::IndexSetType,polOrd,DimRange> LagrangeMapperType;
+
     /** \todo Please doc me! */
     typedef typename DofManagerType::MemObjectType MemObjectType;
 
@@ -114,6 +115,10 @@ namespace Dune {
 
     //! number of unknows for this function space
     int size () const;
+
+    //! return boundary type for given boundary id
+    //! uses the parameter class BoundaryIdentifierType
+    BoundaryType boundaryType ( int id ) const;
 
     //! for given entity map local dof number to global dof number
     template <class EntityType>

@@ -133,6 +133,14 @@ namespace Dune {
   }
 
   template< class FunctionSpaceType, class GridType,int polOrd, class DofManagerType >
+  inline BoundaryType LagrangeDiscreteFunctionSpace<FunctionSpaceType,GridType,polOrd,DofManagerType>::
+  boundaryType (int id) const
+  {
+    // here we need a boundary id map class
+    return (id < 0) ? Dirichlet : Neumann;
+  }
+
+  template< class FunctionSpaceType, class GridType,int polOrd, class DofManagerType >
   template< class EntityType>
   inline int LagrangeDiscreteFunctionSpace<FunctionSpaceType,GridType,polOrd,DofManagerType>::
   mapToGlobal ( EntityType &en, int localNum ) const

@@ -41,6 +41,14 @@ namespace Dune {
       return (numberOfDofs_ * indexSet_.size( level_ , 0 ));
     }
 
+    //! return boundary type for given boundary id
+    //! uses the parameter class BoundaryIdentifierType
+    BoundaryType boundaryType ( int id ) const
+    {
+      // to be expanded for user needs
+      return (id < 0) ? Dirichlet : Neumann;
+    }
+
     //! map Entity an local Dof number to global Dof number
     //! see dofmanager.hh for definition of IndexSet, which
     //! is a wrapper for en.index
