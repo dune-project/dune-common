@@ -439,7 +439,7 @@ namespace Dune {
     class TransformingIterator : public Iterator {
     public:
       //! Make iterator pointing to first cell in a grid.
-      TransformingIterator (YGrid<d,ct>& r) : Iterator(r)
+      TransformingIterator (const YGrid<d,ct>& r) : Iterator(r)
       {
         for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
         for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
@@ -447,7 +447,7 @@ namespace Dune {
       }
 
       //! Make iterator pointing to given cell in a grid.
-      TransformingIterator (YGrid<d,ct>& r, iTupel& coord) : Iterator(r,coord)
+      TransformingIterator (const YGrid<d,ct>& r, iTupel& coord) : Iterator(r,coord)
       {
         for (int i=0; i<d; ++i) _h[i] = r.meshsize(i);
         for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
@@ -521,13 +521,13 @@ namespace Dune {
     };
 
     //! return iterator to first element of index set
-    TransformingIterator tbegin ()
+    TransformingIterator tbegin () const
     {
       return TransformingIterator(*this);
     }
 
     //! return iterator to one past the last element of the grid
-    TransformingIterator tend ()
+    TransformingIterator tend () const
     {
       iTupel last;
       for (int i=0; i<d; i++) last = max(i);
@@ -649,7 +649,7 @@ namespace Dune {
     }
 
     //! Return SubYGrid of supergrid of self which is the intersection of self and another YGrid
-    virtual SubYGrid<d,ct> intersection ( YGrid<d,ct>& r) const
+    virtual SubYGrid<d,ct> intersection (const YGrid<d,ct>& r) const
     {
       // check if the two grids can be intersected, must have same mesh size and shift
       for (int i=0; i<d; i++)
@@ -1306,7 +1306,7 @@ namespace Dune {
     }
 
     //! store a send request; buffers are sent in order; handles also local requests with memcpy
-    void send (int rank, void* buffer, int size)
+    void send (int rank, void* buffer, int size) const
     {
       CommTask task;
       task.rank = rank;
@@ -1319,7 +1319,7 @@ namespace Dune {
     }
 
     //! store a receive request; buffers are received in order; handles also local requests with memcpy
-    void recv (int rank, void* buffer, int size)
+    void recv (int rank, void* buffer, int size) const
     {
       CommTask task;
       task.rank = rank;
@@ -1332,7 +1332,7 @@ namespace Dune {
     }
 
     //! exchange messages stored in request buffers; clear request buffers afterwards
-    void exchange ()
+    void exchange () const
     {
       // handle local requests first
       if (_localsendrequests.size()!=_localrecvrequests.size())
@@ -1408,7 +1408,7 @@ namespace Dune {
     }
 
     //! global sum
-    double global_sum (double x)
+    double global_sum (double x) const
     {
       double res;
 
@@ -1418,7 +1418,7 @@ namespace Dune {
     }
 
     //! global max
-    double global_max (double x)
+    double global_max (double x) const
     {
       double res;
 
@@ -1428,7 +1428,7 @@ namespace Dune {
     }
 
     //! global min
-    double global_min (double x)
+    double global_min (double x) const
     {
       double res;
 
@@ -1439,7 +1439,7 @@ namespace Dune {
 
 
     //! print contents of torus object
-    void print (std::ostream& s)
+    void print (std::ostream& s) const
     {
       s << "[" << rank() <<  "]: Torus " << procs() << " processor(s) arranged as " << dims() << std::endl;
       for (ProcListIterator i=sendbegin(); i!=sendend(); ++i)
@@ -1554,15 +1554,15 @@ namespace Dune {
     std::deque<CommPartner> _sendlist;
     std::deque<CommPartner> _recvlist;
 
-    std::vector<CommTask> _sendrequests;
-    std::vector<CommTask> _recvrequests;
-    std::vector<CommTask> _localsendrequests;
-    std::vector<CommTask> _localrecvrequests;
+    mutable std::vector<CommTask> _sendrequests;
+    mutable std::vector<CommTask> _recvrequests;
+    mutable std::vector<CommTask> _localsendrequests;
+    mutable std::vector<CommTask> _localrecvrequests;
   };
 
   //! Output operator for Torus
   template <int d>
-  inline std::ostream& operator<< (std::ostream& s, Torus<d> t)
+  inline std::ostream& operator<< (std::ostream& s, const Torus<d> & t)
   {
     t.print(s);
     return s;
@@ -1800,19 +1800,19 @@ namespace Dune {
 
 
       //! access to intersection lists
-      std::deque<Intersection>& send_cell_overlap_overlap ()
+      const std::deque<Intersection>& send_cell_overlap_overlap () const
       {
         return i->send_cell_overlap_overlap;
       }
-      std::deque<Intersection>& recv_cell_overlap_overlap ()
+      const std::deque<Intersection>& recv_cell_overlap_overlap () const
       {
         return i->recv_cell_overlap_overlap;
       }
-      std::deque<Intersection>& send_cell_interior_overlap ()
+      const std::deque<Intersection>& send_cell_interior_overlap () const
       {
         return i->send_cell_interior_overlap;
       }
-      std::deque<Intersection>& recv_cell_overlap_interior ()
+      const std::deque<Intersection>& recv_cell_overlap_interior () const
       {
         return i->recv_cell_overlap_interior;
       }
@@ -1845,35 +1845,35 @@ namespace Dune {
       }
 
       //! access to intersection lists
-      std::deque<Intersection>& send_vertex_overlapfront_overlapfront ()
+      const std::deque<Intersection>& send_vertex_overlapfront_overlapfront () const
       {
         return i->send_vertex_overlapfront_overlapfront;
       }
-      std::deque<Intersection>& recv_vertex_overlapfront_overlapfront ()
+      const std::deque<Intersection>& recv_vertex_overlapfront_overlapfront () const
       {
         return i->recv_vertex_overlapfront_overlapfront;
       }
-      std::deque<Intersection>& send_vertex_overlap_overlapfront ()
+      const std::deque<Intersection>& send_vertex_overlap_overlapfront () const
       {
         return i->send_vertex_overlap_overlapfront;
       }
-      std::deque<Intersection>& recv_vertex_overlapfront_overlap ()
+      const std::deque<Intersection>& recv_vertex_overlapfront_overlap () const
       {
         return i->recv_vertex_overlapfront_overlap;
       }
-      std::deque<Intersection>& send_vertex_interiorborder_interiorborder ()
+      const std::deque<Intersection>& send_vertex_interiorborder_interiorborder () const
       {
         return i->send_vertex_interiorborder_interiorborder;
       }
-      std::deque<Intersection>& recv_vertex_interiorborder_interiorborder ()
+      const std::deque<Intersection>& recv_vertex_interiorborder_interiorborder () const
       {
         return i->recv_vertex_interiorborder_interiorborder;
       }
-      std::deque<Intersection>& send_vertex_interiorborder_overlapfront ()
+      const std::deque<Intersection>& send_vertex_interiorborder_overlapfront () const
       {
         return i->send_vertex_interiorborder_overlapfront;
       }
-      std::deque<Intersection>& recv_vertex_overlapfront_interiorborder ()
+      const std::deque<Intersection>& recv_vertex_overlapfront_interiorborder () const
       {
         return i->recv_vertex_overlapfront_interiorborder;
       }
