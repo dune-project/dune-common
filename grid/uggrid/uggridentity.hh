@@ -200,9 +200,23 @@ namespace Dune {
     int globalIndex() const { return index(); }
 #endif
 
-    /** \brief The partition type for parallel computing
-     * \todo So far it always returns InteriorEntity */
-    PartitionType partitionType () const { return InteriorEntity; }
+    /** \brief The partition type for parallel computing */
+    PartitionType partitionType () const {
+#ifndef ModelP
+      return InteriorEntity;
+#else
+#define PARHDRE(p) (&((p)->ge.ddd))
+#define EPRIO(e) DDD_InfoPriority(PARHDRE(e))
+      if (EPRIO(target_) == UG::PrioHGhost
+          || EPRIO(target_) == UG::PrioVGhost
+          || EPRIO(target_) == UG::PrioVHGhost)
+        return GhostEntity;
+      else
+        return InteriorEntity;
+#undef EPRIO
+#undef PARHDRE
+#endif
+    }
 
     //! Geometry of this entity
     const Geometry& geometry () const;
@@ -235,12 +249,12 @@ namespace Dune {
 
     //! returns true if Entity has children
     bool isLeaf() const {
+      // return NSONS == 0;
 #ifdef _2
-      int nSons = UG2d::ReadCW(target_, UG2d::NSONS_CE);
+      return UG2d::ReadCW(target_, UG2d::NSONS_CE) == 0;
 #else
-      int nSons = UG3d::ReadCW(target_, UG3d::NSONS_CE);
+      return UG3d::ReadCW(target_, UG3d::NSONS_CE) == 0;
 #endif
-      return nSons==0;
     }
 
     //! Inter-level access to father element on coarser grid.
