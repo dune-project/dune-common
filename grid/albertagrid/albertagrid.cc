@@ -950,6 +950,12 @@ namespace Dune
     builtgeometry_ = geo_.builtGeom(elInfo_,face,edge,vertex);
     localFCoordCalced_ = false;
   }
+  template<int codim, int dim, class GridImp>
+  inline void AlbertaGridEntity<codim,dim,GridImp>::
+  setLevel(int level)
+  {
+    level_ = level;
+  }
 
   template<int codim, int dim, class GridImp>
   inline int AlbertaGridEntity<codim,dim,GridImp>::
@@ -1324,6 +1330,7 @@ namespace Dune
   setLevel(int actLevel)
   {
     level_ = actLevel;
+    assert( level_ >= 0);
   }
 
   template<int dim, class GridImp>
@@ -1650,9 +1657,43 @@ namespace Dune
     , fakeNeigh_ (0) , neighGlob_ (0)
     , manageBndEntity_ (0)
     , boundaryEntity_ (0)
+    , neighElInfo_ (0)
   {
     manageNeighInfo_ = elinfoProvider.getNewObjectEntity();
     neighElInfo_ = manageNeighInfo_->item;
+  }
+
+  // copy constructor
+  template< class GridImp >
+  inline AlbertaGridIntersectionIterator<GridImp>::AlbertaGridIntersectionIterator
+    (const AlbertaGridIntersectionIterator<GridImp> & org)
+    : grid_ (org.grid_) , level_(org.level_)
+      , neighborCount_(org.neighborCount_)
+      , builtNeigh_ (false)
+      , virtualEntity_ (0)
+      , elInfo_ ( org.elInfo_ )
+      , manageObj_ (0)
+      , manageInterEl_ (0)
+      , manageNeighEl_ (0)
+      , fakeNeigh_ (0) , neighGlob_ (0)
+      , manageBndEntity_ (0)
+      , manageNeighInfo_ ( (elInfo_) ? elinfoProvider.getNewObjectEntity() : 0 )
+      , boundaryEntity_ (0)
+      , neighElInfo_ ( (manageNeighInfo_) ? manageNeighInfo_->item : 0 )
+  {}
+
+  // assignment operator
+  template< class GridImp >
+  inline AlbertaGridIntersectionIterator<GridImp> &
+  AlbertaGridIntersectionIterator<GridImp>::operator = (const AlbertaGridIntersectionIterator<GridImp> & org)
+  {
+    // only assign iterators from the same grid
+    assert( &grid_ == &(org.grid_));
+    level_ =  org.level_;
+    neighborCount_ = org.neighborCount_;
+    elInfo_ = org.elInfo_;
+    builtNeigh_ = false;
+    assert( elInfo_ );
   }
 
   template< class GridImp >
@@ -1682,8 +1723,12 @@ namespace Dune
       {
         manageObj_ = grid_->entityProvider_.getNewObjectEntity( *grid_ ,level_);
         virtualEntity_ = manageObj_->item;
-        virtualEntity_->setLevel(level_);
-        memcpy(neighElInfo_,elInfo_,sizeof(ALBERTA EL_INFO));
+        (*virtualEntity_).setLevel(level_);
+
+        assert( elInfo_ );
+        assert( neighElInfo_ );
+        // just copy elInfo and then set some values
+        std::memcpy(neighElInfo_,elInfo_,sizeof(ALBERTA EL_INFO));
       }
 
       setupVirtEn();
@@ -1928,6 +1973,7 @@ namespace Dune
   makeIterator()
   {
     level_ = 0;
+    enLevel_ = 0;
     vertex_ = 0;
     face_ = 0;
     edge_ = 0;
@@ -1942,7 +1988,8 @@ namespace Dune
   inline AlbertaGridLevelIterator<codim,pitype,GridImp>::
   AlbertaGridLevelIterator(const GridImp & grid, int travLevel,int proc, bool leafIt ) :
     grid_(grid)
-    , level_ (travLevel)
+    , level_   (travLevel)
+    , enLevel_ (travLevel)
     , virtualEntity_(grid,travLevel)
     , leafIt_(leafIt) , proc_(proc)
   {
@@ -1955,6 +2002,7 @@ namespace Dune
   AlbertaGridLevelIterator(const GridImp & grid, TRAVERSE_STACK * stack,
                            int level,  ALBERTA EL_INFO *elInfo,int face,int edge,int vertex) :
     grid_(grid), level_ (level)
+    , enLevel_(level)
     , virtualEntity_(grid,level)
     , face_ ( face ) ,  edge_ ( edge ), vertex_ ( vertex )
     , leafIt_(false) ,  proc_(-1)
@@ -1977,7 +2025,7 @@ namespace Dune
   AlbertaGridLevelIterator(const GridImp & grid,
                            AlbertaMarkerVector * vertexMark,
                            int travLevel, int proc, bool leafIt)
-    : grid_(grid) , level_ (travLevel)
+    : grid_(grid) , level_ (travLevel) , enLevel_(travLevel)
       , virtualEntity_(grid,travLevel)
       , leafIt_(leafIt), proc_(proc)
   {
@@ -2007,6 +2055,7 @@ namespace Dune
         goFirstElement(manageStack_.getStack(), mesh, travLevel,travFlags);
 
       virtualEntity_.setElInfo(elInfo,face_,edge_,vertex_);
+      virtualEntity_.setLevel( enLevel_ );
     }
     else
     {
@@ -2029,7 +2078,7 @@ namespace Dune
     virtualEntity_.setElInfo(
       goNextEntity(manageStack_.getStack(),virtualEntity_.getElInfo()),
       face_,edge_,vertex_);
-    virtualEntity_.setLevel( level_ );
+    virtualEntity_.setLevel( enLevel_ );
     return ;
   }
 
@@ -2198,8 +2247,8 @@ namespace Dune
         stack->el_count++;
       }
 
-      // set new level for LEafIterator
-      if((elInfo) && (leafIt_)) level_ = elInfo->level;
+      // set new level for Entity
+      if((elinfo) && (leafIt_)) enLevel_ = elinfo->level;
 
       return(elinfo);
     }
@@ -2224,8 +2273,8 @@ namespace Dune
         stack->el_count++;
       }
 
-      // set new level for LEafIterator
-      if((elInfo) && (leafIt_)) level_ = elInfo->level;
+      // set new level for Entity
+      if((elinfo) && (leafIt_)) enLevel_ = elinfo->level;
 
       return(elinfo);
     }
@@ -2268,8 +2317,8 @@ namespace Dune
         return goNextElInfo(stack,elinfo);
       }
 
-      // set new level for LEafIterator
-      if((elInfo) && (leafIt_)) level_ = elInfo->level;
+      // set new level for Entity
+      if((elinfo) && (leafIt_)) enLevel_ = elinfo->level;
 
       return(elinfo);
     }
@@ -2313,8 +2362,8 @@ namespace Dune
         return goNextElInfo(stack,elinfo);
       }
 
-      // set new level for LEafIterator
-      if((elInfo) && (leafIt_)) level_ = elInfo->level;
+      // set new level for Entity
+      if((elinfo) && (leafIt_)) enLevel_ = elinfo->level;
 
       return elinfo;
     }

@@ -20,7 +20,7 @@ namespace Albert {
 #define ALBERTA_TEST_EXIT(test) if ((test)) ;else ALBERTA_ERROR_EXIT
 
 #define getDofVec( vec, drv ) \
-  (assert(drv != NULL); (vec = (drv)->vec); assert(vec != NULL));
+  (assert(drv != 0); (vec = (drv)->vec); assert(vec != 0));
 
 inline void fillMacroInfo(TRAVERSE_STACK *stack,
                           const MACRO_EL *mel, EL_INFO *elinfo, int level)
@@ -74,22 +74,26 @@ class ManageTravStack
   //! number of copies that exist from this stack_
   mutable int *refCount_;
 
+  mutable bool owner_;
+
 public:
   //! if a copy is made, the refcout is increased
   ManageTravStack(const ManageTravStack & copy)
   {
-    stack_ = NULL;
-    refCount_ = NULL;
-    if(copy.stack_ != NULL)
+    stack_ = 0;
+    refCount_ = 0;
+    if(copy.stack_ != 0)
     {
       stack_ = copy.stack_;
       refCount_ = copy.refCount_;
       (*refCount_)++;
+      copy.owner_ = false;
+      owner_ = true;
     }
   }
 
   //! initialize the member variables
-  ManageTravStack() : stack_ (NULL) , refCount_ (NULL) {}
+  ManageTravStack() : stack_ (0) , refCount_ (0) , owner_(false) {}
 
   //! get new TRAVERSE_STACK using the original Albert Routine
   //! get_traverse_stack, which get an new or free stack
@@ -101,6 +105,7 @@ public:
       int * tmp = new int;
       refCount_ = tmp;
       (*refCount_) = 1;
+      owner_ = true;
     }
   }
 
@@ -112,15 +117,16 @@ public:
       (*refCount_)--;
       if((*refCount_) <= 0)
       {
-        // in free_traverse_stack stack != NULL is checked
+        // in free_traverse_stack stack != 0 is checked
         if(stack_)
         {
           stack_ = freeTraverseStack(stack_);
+          owner_ = false;
         }
         if(refCount_)
         {
           delete refCount_;
-          refCount_ = NULL;
+          refCount_ = 0;
         }
       }
     }
@@ -129,6 +135,10 @@ public:
   //! return the TRAVERSE_STACK pointer for use
   TRAVERSE_STACK * getStack() const
   {
+    // if this assertion is thrown then either the stack = 0
+    // or we want to uese the pointer but are not the owner
+    assert( stack_ );
+    assert( owner_ );
     return stack_;
   }
 private:
@@ -141,7 +151,7 @@ private:
   }
 };
 
-//static TRAVERSE_STACK *freeStack = NULL;
+//static TRAVERSE_STACK *freeStack = 0;
 static int stackCount=0;
 
 static inline void initTraverseStack(TRAVERSE_STACK *stack);
@@ -154,7 +164,7 @@ inline static TRAVERSE_STACK *getTraverseStack(void)
 inline static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack)
 {
   free_traverse_stack(stack);
-  return NULL;
+  return 0;
 }
 
 inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
@@ -197,16 +207,16 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 
 static inline void initTraverseStack(TRAVERSE_STACK *stack)
 {
-  stack->traverse_mesh = NULL;
+  stack->traverse_mesh = 0;
   stack->stack_size = 0;
   stack->stack_used = 0;
-  stack->elinfo_stack = NULL;
-  stack->info_stack = NULL;
-  stack->save_elinfo_stack = NULL;
-  stack->save_info_stack = NULL;
+  stack->elinfo_stack = 0;
+  stack->info_stack = 0;
+  stack->save_elinfo_stack = 0;
+  stack->save_info_stack = 0;
   stack->save_stack_used = 0;
   stack->el_count = 0;
-  stack->next = NULL;
+  stack->next = 0;
   return;
 }
 
@@ -400,7 +410,7 @@ namespace AlbertHelp
     int i, processor=-1;
 
     ldata = (AlbertLeafData *) parent->child[1];
-    assert(ldata != NULL);
+    assert(ldata != 0);
 
     processor = ldata->processor;
 
@@ -408,7 +418,7 @@ namespace AlbertHelp
     for(i=0; i<2; i++)
     {
       AlbertLeafData *ldataChi = (AlbertLeafData *) child[i]->child[1];
-      assert(ldataChi != NULL);
+      assert(ldataChi != 0);
       ldataChi->processor = processor;
     }
   }
@@ -419,14 +429,14 @@ namespace AlbertHelp
     int i;
 
     ldata = (AlbertLeafData *) parent->child[1];
-    assert(ldata != NULL);
+    assert(ldata != 0);
     ldata->processor = -1;
 
     /* bisection ==> 2 children */
     for(i=0; i<2; i++)
     {
       AlbertLeafData *ldataChi = (AlbertLeafData *) child[i]->child[1];
-      assert(ldataChi != NULL);
+      assert(ldataChi != 0);
       if(ldataChi->processor >= 0)
         ldata->processor = ldataChi->processor;
     }
@@ -460,7 +470,7 @@ namespace AlbertHelp
   // return pointer to created elNumbers Vector to mesh
   inline DOF_INT_VEC * getElNumbers(int i)
   {
-    int * vec=NULL;
+    int * vec=0;
     GET_DOF_VEC(vec,elNumbers[i]);
     FOR_ALL_DOFS(elNumbers[i]->fe_space->admin, vec[dof] = getElementIndexForCodim(i) );
     return elNumbers[i];
@@ -470,7 +480,7 @@ namespace AlbertHelp
   inline static int calcMaxIndex(DOF_INT_VEC * drv)
   {
     int maxindex = 0;
-    int * vec=NULL;
+    int * vec=0;
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin, if(vec[dof] > maxindex) { maxindex = vec[dof] } );
     // we return +1 because this means a size
@@ -480,7 +490,7 @@ namespace AlbertHelp
   // return pointer to created elNewCheck Vector to mesh
   inline DOF_INT_VEC * getElNewCheck()
   {
-    int * vec=NULL;
+    int * vec=0;
     GET_DOF_VEC(vec,elNewCheck);
     FOR_ALL_DOFS(elNewCheck->fe_space->admin, vec[dof] = 0 );
     return elNewCheck;
@@ -489,7 +499,7 @@ namespace AlbertHelp
   // return pointer to created elNewCheck Vector to mesh
   inline DOF_INT_VEC * getOwner()
   {
-    int * vec=NULL;
+    int * vec=0;
     GET_DOF_VEC(vec,elOwner);
     FOR_ALL_DOFS(elOwner->fe_space->admin, vec[dof] = 0 );
     return elOwner;
@@ -503,8 +513,8 @@ namespace AlbertHelp
       elNumbers[i]  = 0;
     }
 
-    dofvecs->elNewCheck   = getElNewCheck();  elNewCheck = NULL;
-    dofvecs->owner        = getOwner();       elOwner    = NULL;
+    dofvecs->elNewCheck   = getElNewCheck();  elNewCheck = 0;
+    dofvecs->owner        = getOwner();       elOwner    = 0;
   }
 
   // set entry for new elements to 1
@@ -513,7 +523,7 @@ namespace AlbertHelp
     const DOF_ADMIN * admin = drv->fe_space->admin;
     const int nv = admin->n0_dof[CENTER];
     const int k  = admin->mesh->node[CENTER];
-    int *vec = NULL;
+    int *vec = 0;
 
     GET_DOF_VEC(vec,drv);
 
@@ -536,7 +546,7 @@ namespace AlbertHelp
     const DOF_ADMIN * admin = drv->fe_space->admin;
     const int nv = admin->n0_dof[CENTER];
     const int k  = admin->mesh->node[CENTER];
-    int *vec = NULL;
+    int *vec = 0;
     int val = -1;
 
     GET_DOF_VEC(vec,drv);
@@ -562,7 +572,7 @@ namespace AlbertHelp
   // clear Dof Vec
   inline static void clearDofVec ( DOF_INT_VEC * drv )
   {
-    int * vec=NULL;
+    int * vec=0;
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = 0 );
   }
@@ -570,7 +580,7 @@ namespace AlbertHelp
   // clear Dof Vec
   inline static void setDofVec ( DOF_INT_VEC * drv , int val )
   {
-    int * vec=NULL;
+    int * vec=0;
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = val );
   }
@@ -578,7 +588,7 @@ namespace AlbertHelp
   // clear Dof Vec
   inline static void copyOwner ( DOF_INT_VEC * drv , int * ownvec )
   {
-    int * vec=NULL;
+    int * vec=0;
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = ownvec[dof] );
   }
@@ -593,7 +603,7 @@ namespace AlbertHelp
   inline static int saveMyProcNum ( DOF_INT_VEC * drv , const int myProc,
                                     int & entry)
   {
-    int * vec=NULL;
+    int * vec=0;
     int spot = -1;
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin,
@@ -614,7 +624,7 @@ namespace AlbertHelp
   inline static int restoreMyProcNum ( DOF_INT_VEC * drv)
   {
     int myProc = -1;
-    int * vec=NULL;
+    int * vec=0;
 
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin,
@@ -636,9 +646,9 @@ namespace AlbertHelp
   inline DOF_INT_VEC * getDofNewCheck(const FE_SPACE * espace)
   {
     DOF_INT_VEC * drv = get_dof_int_vec("el_new_check",espace);
-    int * vec=NULL;
+    int * vec=0;
     drv->refine_interpol = &refineElNewCheck;
-    drv->coarse_restrict = NULL;
+    drv->coarse_restrict = 0;
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = 0 );
     return drv;
@@ -674,14 +684,14 @@ namespace AlbertHelp
     fdof[DIM-1] = 1; // means edges in 2d and faces in 3d
     edof[DIM] = 1;
 
-    get_fe_space(mesh, "vertex_dofs", vdof, NULL);
+    get_fe_space(mesh, "vertex_dofs", vdof, 0);
 
     //**********************************************************************
     // all the element vectors
     //**********************************************************************
     {
       // space for center dofs , i.e. element numbers
-      const FE_SPACE * eSpace = get_fe_space(mesh, "center_dofs", edof, NULL);
+      const FE_SPACE * eSpace = get_fe_space(mesh, "center_dofs", edof, 0);
 
       // the element numbers, ie. codim = 0
       elNumbers[0] = get_dof_int_vec("element_numbers",eSpace);
@@ -690,18 +700,18 @@ namespace AlbertHelp
 
       elNewCheck = get_dof_int_vec("el_new_check",eSpace);
       elNewCheck->refine_interpol = &refineElNewCheck;
-      elNewCheck->coarse_restrict = NULL;
+      elNewCheck->coarse_restrict = 0;
 
       elOwner = get_dof_int_vec("el_owner",eSpace);
       elOwner->refine_interpol = &refineElOwner;
-      elOwner->coarse_restrict = NULL;
+      elOwner->coarse_restrict = 0;
     }
 
     //**********************************************************************
 
     {
       // the face number space , i.e. codim == 1
-      const FE_SPACE * eSpace = get_fe_space(mesh, "face_dofs", fdof, NULL);
+      const FE_SPACE * eSpace = get_fe_space(mesh, "face_dofs", fdof, 0);
 
       // the face numbers, i.e. codim = 1
       elNumbers[1] = get_dof_int_vec("face_numbers",eSpace);
@@ -712,7 +722,7 @@ namespace AlbertHelp
 #if DIM == 3
     {
       // the edge number space , i.e. codim == 2
-      const FE_SPACE * eSpace = get_fe_space(mesh, "edge_dofs", edgedof, NULL);
+      const FE_SPACE * eSpace = get_fe_space(mesh, "edge_dofs", edgedof, 0);
 
       // the edge numbers, i.e. codim = 2
       elNumbers[2] = get_dof_int_vec("edge_numbers",eSpace);
@@ -736,7 +746,7 @@ namespace AlbertHelp
 
     vdof[0] = 1;
 
-    get_fe_space(mesh, "vertex_dofs", vdof, NULL);
+    get_fe_space(mesh, "vertex_dofs", vdof, 0);
     return;
   }
 
@@ -744,12 +754,12 @@ namespace AlbertHelp
   inline const BOUNDARY *initBoundary(MESH * Spmesh, int bound)
   {
     BOUNDARY *b = (BOUNDARY *) malloc(sizeof(BOUNDARY));
-    assert(b != NULL);
+    assert(b != 0);
 
     // bound is of type signed char which goes from -127 to 128
     assert((bound > -128) && (bound < 129));
 
-    b->param_bound = NULL;
+    b->param_bound = 0;
     b->bound = bound;
 
     return b;
@@ -778,16 +788,16 @@ namespace AlbertHelp
   typedef struct Albert_Restore_Mesh ALBERTA_RESTORE_MESH;
 
 
-  static ALBERTA_RESTORE_MESH ag_restore = { NULL , NULL ,-1 ,-1 ,-1 ,-1};
+  static ALBERTA_RESTORE_MESH ag_restore = { 0 , 0 ,-1 ,-1 ,-1 ,-1};
 
   // backu the mesh before removing some macro elements
   inline static void storeMacroElements(MESH * mesh)
   {
     // if other mesh was stored before, then restore was forget
-    assert(ag_restore.mesh == NULL);
+    assert(ag_restore.mesh == 0);
     int length = mesh->n_macro_el;
     MACRO_EL ** mel = (MACRO_EL **) std::malloc(length * sizeof(MACRO_EL *));
-    assert(mel != NULL);
+    assert(mel != 0);
 
     int no=0;
     for(MACRO_EL * el = mesh->first_macro_el; el; el = el->next)
@@ -813,10 +823,10 @@ namespace AlbertHelp
     assert(ag_restore.mesh == mesh);
     int length = ag_restore.n_macro_el;
     MACRO_EL **mel = ag_restore.mels;
-    assert(mel != NULL);
+    assert(mel != 0);
 
     mesh->first_macro_el = mel[0];
-    mel[0]->last = NULL;
+    mel[0]->last = 0;
 
     for(int i=1; i<length; i++)
     {
@@ -824,15 +834,15 @@ namespace AlbertHelp
       (mel[i])->last = mel[i-1];
     }
 
-    mel[length-1]->next = NULL;
+    mel[length-1]->next = 0;
 
     mesh->n_macro_el = ag_restore.n_macro_el;
     mesh->n_elements = ag_restore.n_elements;
     mesh->n_hier_elements = ag_restore.n_hier_elements;
     mesh->n_vertices = ag_restore.n_vertices;
 
-    ag_restore.mesh = NULL;
-    std::free(ag_restore.mels); ag_restore.mels = NULL;
+    ag_restore.mesh = 0;
+    std::free(ag_restore.mels); ag_restore.mels = 0;
     ag_restore.n_macro_el = -1;
     ag_restore.n_elements = -1;
     ag_restore.n_hier_elements = -1;
@@ -882,13 +892,13 @@ namespace AlbertHelp
   // remove macro elements that not belong to this processor or that are not ghost
   inline void removeMacroEls ( MESH * mesh , int proc , int * ownvec )
   {
-    MACRO_EL *mel = NULL;
+    MACRO_EL *mel = 0;
 
     int length = mesh->n_macro_el;
     int * dofNum = (int *) std::malloc(mesh->n_vertices * sizeof(int));
     int * dofHier = (int *) std::malloc(mesh->n_vertices*sizeof(int));
-    assert(dofNum  != NULL);
-    assert(dofHier != NULL);
+    assert(dofNum  != 0);
+    assert(dofHier != 0);
 
     dof_compress(mesh);
 
@@ -922,7 +932,7 @@ namespace AlbertHelp
             for(int k=0; k<N_NEIGH; k++)
             {
               if(neigh->neigh[k] == mel)
-                neigh->neigh[k] = NULL;
+                neigh->neigh[k] = 0;
             }
           }
         }
@@ -969,7 +979,7 @@ namespace AlbertHelp
         {
           dofs[k] = myEl->dof[k];
         }
-        assert(myEl != NULL);
+        assert(myEl != 0);
 
         for(int k=0; k<N_VERTICES; k++)
         {
@@ -1027,9 +1037,9 @@ namespace AlbertHelp
     }
 
     // free memory
-    if(fakeMem) std::free(fakeMem);fakeMem = NULL;
-    if(dofNum) std::free(dofNum);dofNum  = NULL;
-    if(dofHier) std::free(dofHier);dofHier = NULL;
+    if(fakeMem) std::free(fakeMem);fakeMem = 0;
+    if(dofNum) std::free(dofNum);dofNum  = 0;
+    if(dofHier) std::free(dofHier);dofHier = 0;
   }
 
   inline void printMacroData(MACRO_DATA * mdata)
@@ -1050,7 +1060,7 @@ namespace AlbertHelp
   inline static void setProcessor(const EL_INFO * elf)
   {
     AlbertLeafData *ldata = (AlbertLeafData *) elf->el->child[1];
-    assert(ldata != NULL);
+    assert(ldata != 0);
 
     ldata->processor = AlbertHelp_processor;
   }
