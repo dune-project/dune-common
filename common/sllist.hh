@@ -30,7 +30,7 @@ namespace Dune
   /**
    * @brief A single linked list.
    *
-   * The list is capabale of insertions at the front and at
+   * The list is capable of insertions at the front and at
    * the end and of removing elements at the front. Those
    * operations require constant time.
    */
