@@ -96,6 +96,11 @@ namespace Dune
       bool isStrong()  const;
 
       /**
+       * @brief Reset all flags.
+       */
+      void reset();
+
+      /**
        * @brief Prints the attributes of the edge for debugging.
        */
       void printFlags() const;
@@ -182,6 +187,12 @@ namespace Dune
        * @brief Marks the vertex as included in the aggregation.
        */
       void resetExcluded();
+
+      /**
+       * @brief Reset all flags.
+       */
+      void reset();
+
     };
 
     inline std::ostream& operator<<(std::ostream& os, const EdgeProperties& props)
@@ -192,6 +203,11 @@ namespace Dune
     EdgeProperties::EdgeProperties()
       : flags_(0)
     {}
+
+    inline void EdgeProperties::reset()
+    {
+      flags_=0;
+    }
 
     inline void EdgeProperties::setInfluences()
     {
@@ -315,6 +331,11 @@ namespace Dune
     inline void VertexProperties::resetExcluded()
     {
       flags_.reset(EXCLUDED);
+    }
+
+    inline void VertexProperties::reset()
+    {
+      flags_=0;
     }
 
     /** @} */

@@ -6,9 +6,10 @@
 
 #include <dune/istl/paamg/graph.hh>
 #include <dune/istl/paamg/dependency.hh>
+#include <dune/istl/paamg/aggregates.hh>
 #include <dune/istl/istlexception.hh>
 #include <dune/istl/bcrsmatrix.hh>
-#include <dune/istl/fmatrix.hh>
+#include <dune/common/fmatrix.hh>
 #include <dune/istl/io.hh>
 
 int testEdgeDepends(const Dune::amg::EdgeProperties& flags)
@@ -283,19 +284,10 @@ int testEdge()
 
 }
 
-
-void testGraph ()
+template<int N, class B>
+void setupSparsityPattern(Dune::BCRSMatrix<B>& A)
 {
-  const int N=4;
-
-  typedef Dune::FieldMatrix<double,1,1> ScalarDouble;
-  typedef Dune::BCRSMatrix<ScalarDouble> BCRSMat;
-
-  double diagonal=4, offdiagonal=-1;
-
-  BCRSMat laplacian2d(N*N,N*N,N*N*5,BCRSMat::row_wise);
-
-  for (BCRSMat::CreateIterator i=laplacian2d.createbegin(); i!=laplacian2d.createend(); ++i) {
+  for (typename Dune::BCRSMatrix<B>::CreateIterator i = A.createbegin(); i != A.createend(); ++i) {
     int x = i.index()%N; // x coordinate in the 2d field
     int y = i.index()/N;  // y coordinate in the 2d field
 
@@ -316,6 +308,56 @@ void testGraph ()
       // insert upper neighbour
       i.insert(i.index()+N);
   }
+}
+
+template<int N, class B>
+void setupAnisotropic(Dune::BCRSMatrix<B>& A, double eps)
+{
+  B diagonal = 0, bone=0, beps=0;
+  for(typename B::RowIterator b = diagonal.begin(); b !=  diagonal.end(); ++b)
+    b->operator[](b.index())=2.0+2.0*eps;
+
+
+  for(typename B::RowIterator b=bone.begin(); b !=  bone.end(); ++b)
+    b->operator[](b.index())=-1.0;
+
+  for(typename B::RowIterator b=beps.begin(); b !=  beps.end(); ++b)
+    b->operator[](b.index())=-eps;
+
+  for (typename Dune::BCRSMatrix<B>::RowIterator i = A.begin(); i != A.end(); ++i) {
+    int x = i.index()%N; // x coordinate in the 2d field
+    int y = i.index()/N;  // y coordinate in the 2d field
+
+    i->operator[](i.index())=diagonal;
+
+    if(y>0)
+      i->operator[](i.index()-N)=beps;
+
+    if(y<N-1)
+      i->operator[](i.index()+N)=beps;
+
+    if(x>0)
+      i->operator[](i.index()-1)=bone;
+
+    if(x < N-1)
+      i->operator[](i.index()+1)=bone;
+  }
+}
+
+
+
+void testGraph ()
+{
+  const int N=20;
+
+  typedef Dune::FieldMatrix<double,1,1> ScalarDouble;
+  typedef Dune::BCRSMatrix<ScalarDouble> BCRSMat;
+
+  double diagonal=4, offdiagonal=-1;
+
+  BCRSMat laplacian2d(N*N,N*N,N*N*5,BCRSMat::row_wise);
+
+  setupSparsityPattern<N>(laplacian2d);
 
   laplacian2d = offdiagonal;
 
@@ -323,21 +365,68 @@ void testGraph ()
   for (BCRSMat::RowIterator i=laplacian2d.begin(); i!=laplacian2d.end(); ++i)
     i->operator[](i.index())=diagonal;
 
-  Dune::printmatrix(std::cout,laplacian2d,"2d Laplacian","row",9,1);
+  //Dune::printmatrix(std::cout,laplacian2d,"2d Laplacian","row",9,1);
 
   typedef Dune::amg::Graph<BCRSMat,int,int> BCRSGraph;
 
   BCRSGraph graph;
 
   graph.build(laplacian2d);
-  graph.print(std::cout);
+  //graph.print(std::cout);
+
+  using Dune::amg::FirstDiagonal;
+  using Dune::amg::SymmetricDependency;
+  using Dune::amg::SymmetricCriterion;
+
+  //SymmetricCriterion<BCRSGraph, FirstDiagonal<typename BCRSMat::block_type> > crit;
+  SymmetricCriterion<BCRSMat, FirstDiagonal> crit;
+
+  Dune::amg::Aggregates<BCRSMat> aggregates;
+
+  aggregates.build(laplacian2d, crit);
+  aggregates.print2d(N, std::cout);
+
 }
 
+
+void testAggregate(double eps)
+{
+
+  typedef Dune::FieldMatrix<double,1,1> ScalarDouble;
+  typedef Dune::BCRSMatrix<ScalarDouble> BCRSMat;
+  const int N=20;
+
+  BCRSMat mat(N*N,N*N,N*N*5,BCRSMat::row_wise);
+
+  setupSparsityPattern<N>(mat);
+  setupAnisotropic<N>(mat, .001);
+
+  typedef Dune::amg::Graph<BCRSMat,int,int> BCRSGraph;
+
+  BCRSGraph graph;
+
+  //Dune::printmatrix(std::cout, mat,"aniso","row",9,1);
+  graph.build(mat);
+  //graph.print(std::cout);
+
+  using Dune::amg::FirstDiagonal;
+  using Dune::amg::SymmetricDependency;
+  using Dune::amg::SymmetricCriterion;
+
+  //SymmetricCriterion<BCRSGraph, FirstDiagonal<typename BCRSMat::block_type> > crit;
+  SymmetricCriterion<BCRSMat, FirstDiagonal> crit;
+
+  Dune::amg::Aggregates<BCRSMat> aggregates;
+
+  aggregates.build(mat, crit);
+  aggregates.print2d(N, std::cout);
+}
 
 int main (int argc , char ** argv)
 {
   try {
     testGraph();
+    testAggregate(.001);
     exit(testEdge());
   }
   catch (Dune::ISTLError& error)
