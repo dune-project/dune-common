@@ -1,18 +1,23 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_NUMPROC_HH__
-#define __DUNE_NUMPROC_HH__
+#ifndef DUNE_NUMPROC_HH
+#define DUNE_NUMPROC_HH
 
 
 namespace Dune {
 
-  //! \todo Please doc me!
+  /** \brief Exception thrown by solvers */
+  class SolverError : public Exception {};
+
+  /** \brief Base class for numerical procedures */
   class NumProc
   {
   public:
 
+    /** \brief Different levels of verbosity */
     enum VerbosityMode {QUIET, REDUCED, FULL};
 
+    /** \brief Controls the amount of screen output of a numproc */
     VerbosityMode verbosity_;
 
   };
