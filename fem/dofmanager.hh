@@ -171,19 +171,14 @@ namespace Dune {
     //! return reference to entry i
     T&       operator [] ( int i )
     {
-      assert(i>=0);
-#ifndef NDEBUG
-      if(i>=size_) std::cout << " i= "<<i<<" size = " << size_ <<"\n";
-#endif
-      assert(i<size_);
+      assert( ((i<0) || (i>=size()) ? (std::cout << std::endl << i << " i|size " << size() << std::endl, 0) : 1));
       return vec_[i];
     }
 
     //! return reference to const entry i
     const T& operator [] ( int i ) const
     {
-      assert(i>=0);
-      assert(i<size_);
+      assert( ((i<0) || (i>=size()) ? (std::cout << std::endl << i << " i|size " << size() << std::endl, 0) : 1));
       return vec_[i];
     }
 
