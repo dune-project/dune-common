@@ -1,54 +1,45 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// ///////////////////////////////////////////////
-// Specialization of the AmiraMesh writer for SimpleGrid<3,3>
-// ///////////////////////////////////////////////
-
-#include "../../grid/uggrid.hh"
-
 #include <amiramesh/AmiraMesh.h>
 
-namespace Dune {
-
-  template<>
-  class AmiraMeshWriter<UGGrid<3,3>, double> {
-
-  public:
-
-    static void write(const UGGrid<3,3>& grid,
-                      const Array<double>& sol,
-                      const std::string& filename);
 
 
-    AmiraMeshWriter() {}
-
-  };
-
-}
-
-//template<>
-void Dune::AmiraMeshWriter<Dune::UGGrid<3,3>, double>::write(const Dune::UGGrid<3,3>& grid,
-                                                             const Array<double>& sol,
-                                                             const std::string& filename)
+template<class GRID, class T>
+void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
+                                           const Array<T>& sol,
+                                           const std::string& filename)
 {
-  printf("This is the AmiraMesh writer for UGGrid<3,3>!\n");
+  // Temporary:  we write this level
+  int level = grid.maxlevel();
+
+  // Find out whether the grid contains only tetrahedra.  If yes, then
+  // it is written in TetraGrid format.  If not, it is written in
+  // hexagrid format.
+  bool containsOnlyTetrahedra = true;
+
+  GRID::Traits<0>::LevelIterator element = grid.template lbegin<0>(level);
+  GRID::Traits<0>::LevelIterator end     = grid.template lend<0>(level);
+
+  for (; element!=end; ++element) {
+    if (element->geometry().type() != tetrahedron) {
+      containsOnlyTetrahedra = false;
+      break;
+    }
+  }
+
+  printf("This is the AmiraMesh writer!\n");
+  int maxVerticesPerElement = (containsOnlyTetrahedra) ? 4 : 8;
 
   const int DIM = 3;
 
-  int noOfNodes = grid.size(0, 3);
-  int noOfElem  = grid.size(0, 0);
+  int noOfNodes = grid.size(level, 3);
+  int noOfElem  = grid.size(level, 0);
 
   printf("noOfNodes %d,  nodeOfElem: %d\n", noOfNodes, noOfElem);
-  int fl, tl, k, i, noOfBndTri, MarkKey, ncomp, maxSubDom;
-  //UG3d::VECDATA_DESC *sol = NULL;
-  UG3d::ELEMENT *t, **elemList;
-  UG3d::VECTOR *vec;
-  UG3d::NODE* theNode;
+  int tl, k, i, noOfBndTri, MarkKey, ncomp, maxSubDom;
+
   std::string solFilename;
 
-
-  fl = 0;
-  //     tl = TOPLEVEL(theMG);
 
   // Construct the name for the geometry file
   std::string geoFilename(filename);
@@ -66,15 +57,12 @@ void Dune::AmiraMeshWriter<Dune::UGGrid<3,3>, double>::write(const Dune::UGGrid<
   am_geometry.insert(geo_node_data);
 
 
-  UGGridLevelIterator<3, 3, 3> vertex = grid.lbegin<3>(0);
+  GRID::Traits<3>::LevelIterator vertex    = grid.template lbegin<3>(level);
+  GRID::Traits<3>::LevelIterator endvertex = grid.template lend<3>(level);
   i=0;
-  for (; vertex!=grid.lend<3>(0); ++vertex)
+  for (; vertex!=endvertex; ++vertex)
   {
-    //printf("Vertex! %d\n", vertex->index());
-    UGGridElement<0,3> vertex_element = vertex->geometry();
-    Vec<3, double> coords = vertex_element[0];
-
-    //printf("coords:!! %g %g %g\n", coords(0), coords(1), coords(2));
+    Vec<3, double> coords = vertex->geometry()[0];
 
     ((float*)geo_node_data->dataPtr())[i++] = coords(0);
     ((float*)geo_node_data->dataPtr())[i++] = coords(1);
@@ -111,29 +99,49 @@ void Dune::AmiraMeshWriter<Dune::UGGrid<3,3>, double>::write(const Dune::UGGrid<
 #endif
 
   /* write element section to geo - file */
-  AmiraMesh::Location* element_loc = new AmiraMesh::Location("Tetrahedra", noOfElem);
+  AmiraMesh::Location* element_loc = NULL;
+
+  if (containsOnlyTetrahedra)
+    element_loc = new AmiraMesh::Location("Tetrahedra", noOfElem);
+  else
+    element_loc = new AmiraMesh::Location("Hexahedra", noOfElem);
+
   am_geometry.insert(element_loc);
 
   AmiraMesh::Data* element_data = new AmiraMesh::Data("Nodes", element_loc,
-                                                      McPrimType::mc_int32, 4);
+                                                      McPrimType::mc_int32, maxVerticesPerElement);
   am_geometry.insert(element_data);
 
-  int (*dPtr)[4] = (int(*)[4])element_data->dataPtr();
+  int (*dPtr)[maxVerticesPerElement] = (int(*)[maxVerticesPerElement])element_data->dataPtr();
 
-  //    for(i=0; i<noOfElem; i++)
-  //        if(WriteAmiraGeometry(dPtr[i], elemList[i], sol))
-  //            return(PARAMERRORCODE);
+  GRID::Traits<0>::LevelIterator element2    = grid.template lbegin<0>(level);
+  GRID::Traits<0>::LevelIterator endelement = grid.template lend<0>(level);
 
-  UGGridLevelIterator<0, 3, 3> element = grid.lbegin<0>(0);
+  for (i=0; element2!=endelement; ++element2, i++) {
+    switch (element2->geometry().type()) {
 
-  for (i=0; element!=grid.lend<0>(0); ++element, i++) {
-    //        printf("Element! %d, %d number of corners\n", element->index(),
-    //               element->geometry().corners());
-    //        printf("corners:  %d %d %d %d\n", element->subIndex(0), element->subIndex(1),
-    //               element->subIndex(2), element->subIndex(3));
+    case hexahedron :
 
-    for (int j=0; j<4; j++)
-      dPtr[i][j] = element->subIndex(j)+1;
+      dPtr[i][0] = element2->subIndex<3>(0)+1;
+      dPtr[i][1] = element2->subIndex<3>(1)+1;
+      dPtr[i][2] = element2->subIndex<3>(3)+1;
+      dPtr[i][3] = element2->subIndex<3>(2)+1;
+      dPtr[i][4] = element2->subIndex<3>(4)+1;
+      dPtr[i][5] = element2->subIndex<3>(5)+1;
+      dPtr[i][6] = element2->subIndex<3>(7)+1;
+      dPtr[i][7] = element2->subIndex<3>(6)+1;
+      break;
+    default :
+
+      for (int j=0; j<element2->geometry().corners(); j++)
+        dPtr[i][j] = element2->subIndex<3>(j)+1;
+
+      // If the element has less than 8 vertices use the last value
+      // to fill up the remaining slots
+      for (int j=element2->geometry().corners(); j<maxVerticesPerElement; j++)
+        dPtr[i][j] = dPtr[i][element2->geometry().corners()-1];
+    }
+
   }
 
   // write material section to geo-file

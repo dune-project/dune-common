@@ -30,10 +30,10 @@ namespace Dune {
      * @param sol  Data that should be written along with the grid
      * @param filename The filename
      */
-    static void write(const GRID& grid,
+    /** \todo The grid argument should be const */
+    static void write(GRID& grid,
                       const Array<T>& sol,
                       const std::string& filename);
-
 
     AmiraMeshWriter() {}
 
@@ -41,24 +41,10 @@ namespace Dune {
 
 }
 
-// Default implementation
-template<class GRID, class T>
-void Dune::AmiraMeshWriter<GRID, T>::write(const GRID& grid,
-                                           const Array<T>& sol,
-                                           const std::string& filename)
-{
-  printf("No AmiraMesh writing has been implemented for this grid type!\n");
-}
-
+// The default implementation
+#include "amirameshwriter.cc"
 
 // the amiramesh writer for SimpleGrid
-#ifndef __GNUC__
 #include "amsimplegridwriter.cc"
-#endif
-
-// the amiramesh writer for UGGrid
-#ifdef HAVE_UG
-#include "amuggridwriter.cc"
-#endif
 
 #endif

@@ -17,10 +17,9 @@ namespace Dune {
 
   public:
 
-    /** \brief The method that does the writing.
+    /** \brief The method that does the reading.
      *
      * @param grid The grid objects that is to be written
-     * @param sol  Data that should be written along with the grid
      * @param filename The filename
      */
     static void read(GRID& grid,
