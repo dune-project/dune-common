@@ -3665,7 +3665,7 @@ namespace Dune
     char * ownerfile = 0;
     if(filename)
     {
-      elnumfile = new char [strlen(filename) + 8];
+      elnumfile = new char [strlen(filename) + 10];
       sprintf(elnumfile,"%s_num",filename);
       ownerfile = new char [strlen(filename) + 6];
       sprintf(ownerfile,"%s_own",filename);
@@ -3696,15 +3696,15 @@ namespace Dune
     if(ownerfile) delete [] ownerfile;
 
     // use write_mesh_xdr, but works not correctly
-    return static_cast<bool> (ALBERTA write_mesh (mesh_ , filename, time) );
+    return static_cast<bool> (ALBERTA write_mesh_xdr (mesh_ , filename, time) );
   }
 
   template < int dim, int dimworld >
   inline bool AlbertaGrid < dim, dimworld >::readGridXdr (const char * filename, albertCtype & time )
   {
     // use read_mesh_xdr, but works not correctly
-    mesh_ = (ALBERTA read_mesh (filename, &time , ALBERTA AlbertHelp::initLeafData ,
-                                ALBERTA AlbertHelp::initBoundary) );
+    mesh_ = (ALBERTA read_mesh_xdr (filename, &time , ALBERTA AlbertHelp::initLeafData ,
+                                    ALBERTA AlbertHelp::initBoundary) );
     if (mesh_ == 0)
       DUNE_THROW(AlbertaIOError, "could not open grid file " << filename);
 
@@ -3713,7 +3713,7 @@ namespace Dune
     char * ownerfile = 0;
     if(filename)
     {
-      elnumfile = new char [strlen(filename) + 8];
+      elnumfile = new char [strlen(filename) + 10];
       ownerfile = new char [strlen(filename) + 6];
       sprintf(ownerfile,"%s_own",filename);
     }
