@@ -59,12 +59,14 @@ public:
   // return object reference
   Pointer & operator * () const
   {
+    assert( ptr_ != 0);
     return *ptr_;
   }
 
   // return object pointer
   Pointer * operator -> () const
   {
+    assert( ptr_ != 0);
     return ptr_;
   }
 
