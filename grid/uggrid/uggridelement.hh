@@ -5,24 +5,23 @@
 
 #include "ugtypes.hh"
 
-//**********************************************************************
-//
-// --UGGridElement
-/*!
-   Defines the geometry part of a mesh entity. Works for all dimensions, element types and
-   world dimensions. Provides a reference element and mapping between local and
-   global coordinates.
-   The element may have different implementations because the mapping can be
-   done more efficiently for structured meshes than for unstructured meshes.
-
-   dim: An element is a polygon in a hyperplane of dimension dim. 0 <= dim <= 3 is typically
-   dim=0 is a point.
-
-   dimworld: Each corner is a point with dimworld coordinates.
- */
-
 namespace Dune {
 
+  //**********************************************************************
+  //
+  // --UGGridElement
+  /*!
+     Defines the geometry part of a mesh entity. Works for all dimensions, element types and
+     world dimensions. Provides a reference element and mapping between local and
+     global coordinates.
+     The element may have different implementations because the mapping can be
+     done more efficiently for structured meshes than for unstructured meshes.
+
+     dim: An element is a polygon in a hyperplane of dimension dim. 0 <= dim <= 3 is typically
+     dim=0 is a point.
+
+     dimworld: Each corner is a point with dimworld coordinates.
+   */
   template<int dim, int dimworld>
   class UGGridElement :
     public ElementDefault <dim,dimworld, UGCtype,UGGridElement>
