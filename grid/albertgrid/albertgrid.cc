@@ -963,6 +963,43 @@ namespace Dune
   //
   //************************************
   template< int dim, int dimworld>
+  inline albertCtype AlbertGridEntity < 0, dim ,dimworld >::
+  diam()
+  {
+    Vec<dim> tmp;
+
+    return sqrt(geometry().integration_element(tmp));
+  }
+  template< int dim, int dimworld>
+  inline albertCtype AlbertGridEntity < 0, dim ,dimworld >::
+  maxEdgeWidth()
+  {
+    typedef typename AlbertGridEntity < 0, dim ,dimworld >::Traits::IntersectionIterator InterIt;
+
+    //std::cout << level() << " Level \n";
+
+    InterIt it    = ibegin();
+    InterIt endit = iend ();
+
+    Vec<dim> tmp;
+    Vec<dim-1> tmp1;
+
+    albertCtype vol = 0.5*geometry().integration_element(tmp);
+    albertCtype fak = 2.0;
+    if(dim == 3) fak = 1.0;
+
+    double minFace = it.outer_normal().norm2();
+    ++it;
+
+    for( ; it != endit; ++it )
+    {
+      double face = it.outer_normal().norm2();
+      if(face < minFace) minFace = face;
+    }
+
+    return fak*vol/minFace;
+  }
+  template< int dim, int dimworld>
   inline bool AlbertGridEntity < 0, dim ,dimworld >::
   mark( int refCount )
   {
@@ -3525,6 +3562,23 @@ namespace Dune
     indexManager_->el_index = maxHierIndex_[0];
 
     return true;
+  }
+
+  template < int dim, int dimworld >
+  inline double AlbertGrid < dim, dimworld >::calcGridWidth ()
+  {
+    LeafIterator it    = this->leafbegin ( this->maxlevel () );
+    LeafIterator endit = this->leafend   ( this->maxlevel () );
+
+    double maxwidth = 0.0;
+
+    for(; it != endit; ++it )
+    {
+      double w = it->maxEdgeWidth();
+      if(w > maxwidth) maxwidth = w;
+    }
+
+    return maxwidth;
   }
 
   template < int dim, int dimworld >
