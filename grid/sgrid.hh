@@ -324,8 +324,8 @@ namespace Dune {
     Vec<dimworld,sgrid_ctype> normal;           //!< outer unit normal direction
     bool built_intersections;                   //!< true if all intersections have been built
     SElement<dim-1,dim> is_self_local;          //!< intersection in own local coordinates
-    SElement<dim-1,dim> is_nb_local;            //!< intersection in neighbors local coordinates
     SElement<dim-1,dimworld> is_global;         //!< intersection in global coordinates, map consistent with is_self_local
+    SElement<dim-1,dim> is_nb_local;            //!< intersection in neighbors local coordinates
   };
 
 
