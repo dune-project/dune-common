@@ -187,6 +187,9 @@ namespace Dune {
     friend class OneDGridHierarchicIterator<OneDGrid>;
     friend class OneDGridIntersectionIterator<OneDGrid>;
 
+    template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
+    friend class Entity;
+
     /** \brief OneDGrid is only implemented for 1d */
     CompileTimeChecker< (dim==1 && dimworld==1) >   Use_OneDGrid_only_for_1d;
 
