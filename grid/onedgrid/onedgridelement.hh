@@ -147,7 +147,7 @@ namespace Dune {
 
     //! Returns true if the point is in the current element
     bool checkInside(const FieldVector<OneDCType, dimworld> &global) {
-      return vertex[0]->geometry().pos_ <= global[0] && global[0] <= vertex[1]->geometry().pos_;
+      return vertex[0]->geometry().pos_[0] <= global[0] && global[0] <= vertex[1]->geometry().pos_[0];
     }
 
     /** ???
