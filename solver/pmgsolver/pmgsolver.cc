@@ -15,7 +15,7 @@ namespace Dune {
 
     coefflist cl = discrete.newcoefflist();
 
-    // loop inner owner / border & overlap
+    // loop inner owner / border
     array<DIM> beginI;
     array<DIM> beginB;
     array<DIM> endI;
@@ -25,6 +25,10 @@ namespace Dune {
       beginI[d] = beginB[d]+1;
       endB[d] = g.size(l,d) + g.front_overlap(l,d);
       endI[d] = endB[d] - 1;
+      if (beginI[d] > endB[d])
+        beginI[d] = endB[d];
+      if (beginI[d] > endI[d])
+        endI[d] = beginI[d];
     }
 
     PMGStubs::GaussSeidel<GRID,SMOOTHER,PMGStubs::Inner>
@@ -56,8 +60,6 @@ namespace Dune {
       int i=it.id();
       x_old[i-xoff]=x[i];
     }
-
-    //    array<DIM> add = g.init_add(l);
 
     // run through lines
     coefflist cl = discrete.newcoefflist();
@@ -107,24 +109,39 @@ namespace Dune {
       double max_d = my_d*reduction;
       // alles auf einen Knoten schieben und loesen :-)
       int c=0;
+#ifndef NODUMP
+      {
+        std::stringstream extention;
+        extention << "B Iteration " << c;
+        dump(g,l,b,"smoothest",(char*)extention.str().c_str());
+      }
+      {
+        std::stringstream extention;
+        extention << "X Iteration " << c;
+        dump(g,l,x,"smoothest",(char*)extention.str().c_str());
+      }
+      {
+        std::stringstream extention;
+        extention << "D Iteration " << c;
+        dump(g,l,d,"smoothest",(char*)extention.str().c_str());
+      }
+#endif
       while (my_d > max_d) {
         smoother(l);
         my_d = defect(l);
         c++;
+#ifndef NODUMP
         {
           std::stringstream extention;
-          extention << "X Iteration " << c;
-          //#ifndef NODUMP
-          //          dump(g,l,x,"smoothest",(char*)extention.str().c_str());
-          //#endif
+          extention << "X - Iteration " << c;
+          dump(g,l,x,"smoothest",(char*)extention.str().c_str());
         }
         {
           std::stringstream extention;
           extention << "D Iteration " << c;
-          //#ifndef NODUMP
-          //          dump(g,l,d,"smoothest",(char*)extention.str().c_str());
-          //#endif
+          dump(g,l,d,"smoothest",(char*)extention.str().c_str());
         }
+#endif
         if (my_d < 1e-16)
           return;
         if (c > 500) {
@@ -143,17 +160,17 @@ namespace Dune {
         b[i.id()]=0;
       }
       defect(l);
-      //#ifndef NODUMP
-      //      char *dumpfile="dumpfile";
-      //      dump(g,l,x,dumpfile,"X before restrict");
-      //      dump(g,l,d,dumpfile,"D before restrict");
-      //      dump(g,l-1,b,dumpfile,"B before restrict");
-      //#endif
+#ifndef NODUMP
+      char *dumpfile="dumpfile";
+      dump(g,l,x,dumpfile,"X before restrict");
+      dump(g,l,d,dumpfile,"D before restrict");
+      dump(g,l-1,b,dumpfile,"B before restrict");
+#endif
       // Restriktion d_l -> b_{l-1}
       restrict (l);
-      // #ifndef NODUMP
-      //       dump(g,l-1,b,dumpfile,"B after restrict");
-      // #endif
+#ifndef NODUMP
+      dump(g,l-1,b,dumpfile,"B after restrict");
+#endif
 #ifndef NDEBUG
       for (typename GRID::iterator i=g.begin(l-1); i != gEnd; ++i) {
         assert(x[i.id()]==0);
@@ -162,14 +179,14 @@ namespace Dune {
       // ein level rauf
       mgc(l-1);
       // Prologation X_{l-1} -> X_l
-      // #ifndef NODUMP
-      //       dump(g,l-1,x,dumpfile,"X before prolongate");
-      //       dump(g,l,x,dumpfile,"X before prolongate");
-      // #endif
+#ifndef NODUMP
+      dump(g,l-1,x,dumpfile,"X before prolongate");
+      dump(g,l,x,dumpfile,"X before prolongate");
+#endif
       prolongate(l);
-      // #ifndef NODUMP
-      //       dump(g,l,x,dumpfile,"X after prolongate");
-      // #endif
+#ifndef NODUMP
+      dump(g,l,x,dumpfile,"X after prolongate");
+#endif
       /* Nachglaetter */
       for (int n=0; n<n2; n++) smoother(l);
     }
@@ -184,16 +201,22 @@ namespace Dune {
     PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Inner> stub_inner(*this, l);
     PMGStubs::Defect<GRID,SMOOTHER,PMGStubs::Border> stub_border(*this, l);
 
-    // loop inner owner / border & overlap
+    // loop inner owner / border
     array<DIM> beginI;
     array<DIM> beginB;
     array<DIM> endI;
     array<DIM> endB;
-    for (int d=0; d<DIM; d++) {
-      beginB[d] = g.front_overlap(l,d);
-      beginI[d] = beginB[d]+1;
-      endB[d] = g.size(l,d) + g.front_overlap(l,d);
-      endI[d] = endB[d] - 1;
+    {
+      for (int d=0; d<DIM; d++) {
+        beginB[d] = g.front_overlap(l,d);
+        beginI[d] = beginB[d]+1;
+        endB[d] = g.size(l,d) + g.front_overlap(l,d);
+        endI[d] = endB[d] - 1;
+        if (beginI[d] > endB[d])
+          beginI[d] = endB[d];
+        if (beginI[d] > endI[d])
+          endI[d] = beginI[d];
+      }
     }
 
     g.loop3D(l,beginI,endI,endI,endI,stub_inner); // inner
@@ -212,6 +235,7 @@ namespace Dune {
     stub_inner.defect_array[1]=defect_array_recv[1];
 
     TIME_DEFECT += MPI_Wtime();
+
     return sqrt(stub_inner.defect_array[0]); // /defect_array[1];
   };
 
@@ -229,7 +253,7 @@ namespace Dune {
 
     TIME_REST -= MPI_Wtime();
 
-    // loop inner owner / border & overlap
+    // loop inner owner / border
     array<DIM> beginI;
     array<DIM> beginB;
     array<DIM> endI;
@@ -239,8 +263,15 @@ namespace Dune {
       beginI[d] = beginB[d]+1;
       endB[d] = g.size(l,d) + g.front_overlap(l,d);
       endI[d] = endB[d] - 1;
+      beginB[d] = 0;
+      beginI[d] = beginB[d]+1;
+      endB[d] = g.size(l,d) + g.front_overlap(l,d) + g.end_overlap(l,d);
+      endI[d] = endB[d] - 1;
+      if (beginI[d] > endB[d])
+        beginI[d] = endB[d];
+      if (beginI[d] > endI[d])
+        endI[d] = beginI[d];
     }
-
     PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Inner> stub_inner(*this,l);
     PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Border> stub_border(*this,l);
 
@@ -263,16 +294,20 @@ namespace Dune {
 
     TIME_PROL -= MPI_Wtime();
 
-    // loop inner owner / border & overlap
+    // loop inner owner / border
     array<DIM> beginI;
     array<DIM> beginB;
     array<DIM> endI;
     array<DIM> endB;
     for (int d=0; d<DIM; d++) {
-      beginB[d] = g.front_overlap(l,d);
+      beginB[d] = 0;
       beginI[d] = beginB[d]+1;
-      endB[d] = g.size(l,d) + g.front_overlap(l,d);
+      endB[d] = g.size(l,d) + g.front_overlap(l,d) + g.end_overlap(l,d);
       endI[d] = endB[d] - 1;
+      if (beginI[d] > endB[d])
+        beginI[d] = endB[d];
+      if (beginI[d] > endI[d])
+        endI[d] = beginI[d];
     }
 
     PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Inner> stub_inner(*this,l);
@@ -298,8 +333,6 @@ namespace Dune {
 
     PMGStubs::InitIterator<GRID> stub(b,x,discrete,g);
     g.loop_border(lvl, stub);
-
-    //    std::cout << rank << " Exchanging x and b\n" << std::flush;
 
     g.exchange(lvl,x);
     g.exchange(lvl,b);
@@ -336,6 +369,25 @@ namespace Dune {
     while (mydefect > maxdefect)
     {
       if (cycle > maxCycles) break;
+#ifndef NODUMP
+      dump(g,lvl,x,"jakobi","X");
+      dump(g,lvl,b,"jakobi","B");
+      dump(g,lvl,d,"jakobi","D");
+
+      int comm_size;
+      MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+      char fname[256];
+      sprintf(fname,"jakobi-p%d",comm_size);
+      std::ofstream xfile;
+
+      xfile.open(fname, std::ios_base::out |
+                 std::ios_base::app | std::ios_base::ate);
+      if (rank == 0)
+        xfile << "----------------------"
+              << "Iteration " << cycle << " "
+              << "----------------------\n";
+      xfile.close();
+#endif
       mgc(lvl);
       //smoother(lvl);
       //smootherJacobi(lvl);
@@ -425,6 +477,10 @@ namespace Dune {
 
       }
     }
+#ifdef SOLVER_DUMPDX
+    dumpdx(g,g.smoothest(),d,"defect","pressure in the end");
+    dumpdx(g,g.smoothest(),x,"calpres","pressure in the end");
+#endif
     if (rank==0)
       std::cout << "Time in smoother:" << TIME_SMOOTHER << std::endl
                 << "Time in prolongate:" << TIME_PROL << std::endl
