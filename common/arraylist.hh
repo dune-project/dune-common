@@ -1,5 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+// $Id$
+
 #ifndef __DUNE_ARRAYLIST_HH__
 #define __DUNE_ARRAYLIST_HH__
 
@@ -21,7 +23,6 @@ namespace std {
   /**
    * @brief Iterator traits for the Dune::ArrayListIterator.
    */
-  template<>
   template<class T, int N>
   struct iterator_traits<Dune::ArrayListIterator<T,N> >{
     typedef T value_type;
@@ -128,6 +129,8 @@ namespace Dune {
     int capacity_;
     /** @brief The current number of elements in our data structure. */
     int size_;
+    /** @brief The index of the first entry. */
+    int start_;
   };
 
   template<class T, int N>
@@ -260,6 +263,11 @@ namespace Dune {
      */
     memberType* operator->() const;
 
+    /**
+     * @brief Removes all indices before the current position.
+     */
+    void removeUpToHere();
+
     const ArrayListIterator<memberType,N>& operator=(const ArrayListIterator<memberType,N>& other);
 
     ArrayListIterator(const ArrayListIterator<memberType,N>& other);
@@ -283,7 +291,7 @@ namespace Dune {
 
 
   template<class T, int N>
-  ArrayList<T,N>::ArrayList() : capacity_(0), size_(0){
+  ArrayList<T,N>::ArrayList() : capacity_(0), size_(0), start_(0){
     chunks_.reserve(100);
   }
 
@@ -297,32 +305,32 @@ namespace Dune {
 
   template<class T, int N>
   void ArrayList<T,N>::push_back(const T& entry){
-    int chunk = size_/chunkSize_;
-    if(size_==capacity_) {
+    int chunk = (start_+size_)/chunkSize_;
+    if((start_+size_)==capacity_) {
       chunks_[chunk] = new FixedArray<memberType,chunkSize_>();
       capacity_ += chunkSize_;
     }
-    chunks_[chunk]->operator[]((size_++)%chunkSize_)=entry;
+    chunks_[chunk]->operator[]((start_+size_++)%chunkSize_)=entry;
   }
 
   template<class T, int N>
   ArrayListIterator<T,N> ArrayList<T,N>::begin(){
-    return ArrayListIterator<T,N>(*this, 0);
+    return ArrayListIterator<T,N>(*this, start_);
   }
 
   template<class T, int N>
   const ArrayListIterator<T,N> ArrayList<T,N>::begin() const {
-    return ArrayListIterator<T,N>(*this, 0);
+    return ArrayListIterator<T,N>(*this, start_);
   }
 
   template<class T, int N>
   ArrayListIterator<T,N> ArrayList<T,N>::end(){
-    return ArrayListIterator<T,N>(*this, size_);
+    return ArrayListIterator<T,N>(*this, start_+size_);
   }
 
   template<class T, int N>
   const ArrayListIterator<T,N> ArrayList<T,N>::end() const {
-    return ArrayListIterator<T,N>(*this, size_);
+    return ArrayListIterator<T,N>(*this, start_+size_);
   }
 
   template<class T, int N>
@@ -454,6 +462,21 @@ namespace Dune {
     return *this;
   }
 
+  template<class T, int N>
+  void ArrayListIterator<T,N>::removeUpToHere(){
+    int chunks = position_/chunkSize_;
+    typedef typename std::vector<FixedArray<memberType,chunkSize_>* >::iterator iterator;
+    iterator chunk=list_.chunks_.begin();
+
+    for(int i=0; i < chunks; i++) {
+      delete (*chunk);
+      chunk = list_.chunks_.erase(chunk);
+    }
+
+    list_.start_ = position_ % chunkSize_;
+    position_ = list_.start_;
+
+  }
 
   template<class T, int N>
   ArrayListIterator<T,N>::ArrayListIterator(ArrayList<T,N>& arrayList, int position) : position_(position), list_(arrayList){}
