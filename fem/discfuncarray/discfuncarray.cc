@@ -11,8 +11,8 @@ namespace Dune
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(DiscreteFunctionSpaceType & f) :
     DiscreteFunctionDefaultType ( f )
-    , built_ ( false ) , freeLocalFunc_ (NULL)
-    , allLevels_ (false) , level_ (-1), levOcu_ (0)
+    , built_ ( false ) , level_ (-1), freeLocalFunc_ (NULL)
+    , allLevels_ (false) , levOcu_ (0)
     , localFunc_ ( f, dofVec_ ) {}
 
   // Constructor makeing discrete function
@@ -271,13 +271,7 @@ namespace Dune
 
       for(int lev=0; lev<=level_; lev++)
       {
-        int length = this->functionSpace_.size( lev );
         dofVec_[lev].processXdr(&xdrs);
-        //if(length != dofVec_[lev].size())
-        //{
-        //  std::cerr << "DiscFuncArray::read_xdr: ERROR wrong length! \n";
-        //  abort();
-        //}
       }
     }
     else
@@ -286,13 +280,7 @@ namespace Dune
       getMemory();
 
       int lev = level_;
-      int length = this->functionSpace_.size( lev );
       dofVec_[lev].processXdr(&xdrs);
-      //if(length != dofVec_[lev].size())
-      //{
-      //  std::cerr << "DiscFuncArray::read_xdr: ERROR wrong length! \n";
-      //  abort();
-      //}
     }
 
     xdr_destroy(&xdrs);
@@ -424,6 +412,7 @@ namespace Dune
       out << (int)((*itdof)*255.) << "\n";
     }
     out.close();
+    return true;
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -449,6 +438,7 @@ namespace Dune
       (*itdof) = ((double)v)/255.;
     }
     fclose( in );
+    return true;
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -472,6 +462,7 @@ namespace Dune
 
     out.close();
     std::cout << "Written Dof to file `" << filename << "' !\n";
+    return true;
   }
 
   template<class DiscreteFunctionSpaceType >

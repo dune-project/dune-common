@@ -48,8 +48,13 @@ namespace Dune {
     typedef FiniteElementOperator <DiscFunctionType,MatrixType,FEOpImp> MyType;
 
   protected:
-    mutable MatrixType *matrix_;
+    // the corresponding function space
     const typename DiscFunctionType::FunctionSpaceType & functionSpace_;
+
+    // the representing matrix
+    mutable MatrixType *matrix_;
+
+    // is matrix assembled
     mutable bool matrix_assembled_;
 
     // storage of argument and destination
@@ -69,7 +74,7 @@ namespace Dune {
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
         LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
 
-        for( it ; it != endit; ++it )
+        for( ; it != endit; ++it )
         {
           const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( *it );
           int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
@@ -97,11 +102,11 @@ namespace Dune {
 
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
         LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
-        for( it ; it != endit; ++it )
+        for( ; it != endit; ++it )
         {
           NeighIt nit = it->ibegin();
           NeighIt endnit = it->iend();
-          for(nit; nit != endnit ; ++nit)
+          for( ; nit != endnit ; ++nit)
           {
 
             if(nit.boundary())
@@ -215,6 +220,7 @@ namespace Dune {
       functionSpace_( fuspace ),
       matrix_ (NULL),
       matrix_assembled_( false ),
+      arg_ ( NULL ), dest_ (NULL) ,
       opMode_(opMode) {}
 
     ~FiniteElementOperator( ) {

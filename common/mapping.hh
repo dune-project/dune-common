@@ -50,7 +50,6 @@ namespace Dune {
     //! initialize all operators with this level
     virtual void initialize ( int level ) const
     {
-      int count = 0;
       for ( typename std::vector<term>::const_iterator it = lincomb_.begin(); it != lincomb_.end(); it++ )
         it->v_->initLevel( level );
     }

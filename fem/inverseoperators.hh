@@ -12,12 +12,8 @@ namespace Dune {
   class CGInverseOperator : public Operator<
                                 typename DiscreteFunctionType::DomainFieldType,
                                 typename DiscreteFunctionType::RangeFieldType,
-                                DiscreteFunctionType,DiscreteFunctionType> {
-
-    typename DiscreteFunctionType::RangeFieldType epsilon_;
-    int maxIter_;
-
-    double _redEps;
+                                DiscreteFunctionType,DiscreteFunctionType>
+  {
 
     typedef Mapping<typename DiscreteFunctionType::DomainFieldType ,
         typename DiscreteFunctionType::RangeFieldType ,
@@ -26,9 +22,9 @@ namespace Dune {
   public:
 
     CGInverseOperator( const MappingType & op ,
-                       double redEps , double absLimit , int maxIter , int verbose ) : op_(op),
-                                                                                       _redEps ( redEps ), epsilon_ ( absLimit*absLimit ) ,
-                                                                                       maxIter_ (maxIter ) , _verbose ( verbose ) {}
+                       double redEps , double absLimit , int maxIter , int verbose )
+      : op_(op), _redEps ( redEps ), epsilon_ ( absLimit*absLimit ) ,
+        maxIter_ (maxIter ) , _verbose ( verbose ) {}
 
     void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const {
 
@@ -86,7 +82,19 @@ namespace Dune {
     }
 
   private:
+    // reference to operator which should be inverted
     const MappingType &op_;
+
+    // reduce error each step by
+    double _redEps;
+
+    // minial error to reach
+    typename DiscreteFunctionType::RangeFieldType epsilon_;
+
+    // number of maximal iterations
+    int maxIter_;
+
+    // level of output
     int _verbose ;
   };
 

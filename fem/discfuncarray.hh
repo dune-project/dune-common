@@ -191,14 +191,14 @@ namespace Dune {
     //! true if memory was allocated
     bool built_;
 
-    //! false if only leaf level is allocated
-    bool allLevels_;
-
     //! occupied levels
     int levOcu_;
 
     //! maxlevel which is occupied
     int level_;
+
+    //! false if only leaf level is allocated
+    bool allLevels_;
 
     //! pointer to next free local function object
     //! if this pointer is NULL, new object is created at the class of
@@ -271,6 +271,15 @@ namespace Dune {
     //! set pointer to next LocalFunction
     void setNext (MyType * n);
 
+    //! the corresponding function space which provides the base function set
+    const DiscreteFunctionSpaceType &fSpace_;
+
+    //! dofVec from all levels of the discrete function
+    typename std::vector < Array < RangeFieldType > > & dofVec_;
+
+    //! Array holding pointers to the local dofs
+    mutable Array < RangeFieldType * > values_;
+
     //! remember pointer to next LocalFunction
     MyType * next_;
 
@@ -290,20 +299,12 @@ namespace Dune {
     //! for example number of corners for linear elements
     mutable int numOfDifferentDofs_;
 
-    //! the corresponding function space which provides the base function set
-    const DiscreteFunctionSpaceType &fSpace_;
-
-    //! Array holding pointers to the local dofs
-    mutable Array < RangeFieldType * > values_;
-
-    //! dofVec from all levels of the discrete function
-    typename std::vector < Array < RangeFieldType > > & dofVec_;
+    //! the corresponding base function set
+    mutable const BaseFunctionSetType *baseFuncSet_;
 
     //! do we have the same base function set for all elements
     bool uniform_;
 
-    //! the corresponding base function set
-    mutable const BaseFunctionSetType *baseFuncSet_;
   }; // end LocalFunctionArray
 
 
@@ -321,8 +322,8 @@ namespace Dune {
       :  dofArray_ ( dofArray ) , constArray_ (dofArray) , count_ ( count ) {};
 
     DofIteratorArray ( const Array < DofType > & dofArray , int count )
-      :  constArray_ ( dofArray ) ,
-        dofArray_ ( const_cast <Array < DofType > &> (dofArray) ) ,
+      :  dofArray_ ( const_cast <Array < DofType > &> (dofArray) ) ,
+        constArray_ ( dofArray ) ,
         count_ ( count ) {};
 
     //! return dof
@@ -362,14 +363,14 @@ namespace Dune {
     void reset () const;
 
   private:
-    //! index
-    mutable int count_;
-
     //! the array holding the dofs
     Array < DofType > &dofArray_;
 
     //! the array holding the dofs , only const reference
     const Array < DofType > &constArray_;
+
+    //! index
+    mutable int count_;
 
   }; // end DofIteratorArray
 
