@@ -39,8 +39,7 @@ namespace Dune {
   public:
     //! Constructor build the vec with the points and weights
     template <class EntityType>
-    FastQuad ( EntityType &en ) :
-      QuadratureDefault < RangeFieldType, DomainType , FastQuadType > (6)
+    FastQuad ( EntityType &en )
     {
       switch(en.geometry().type())
       {
@@ -54,8 +53,7 @@ namespace Dune {
     };
 
     //! Constructor build the vec with the points and weights
-    FastQuad ( ElementType eltype ) :
-      QuadratureDefault < RangeFieldType, DomainType , FastQuadType > (6)
+    FastQuad ( ElementType eltype )
     {
       switch(eltype)
       {
@@ -103,6 +101,12 @@ namespace Dune {
         points_(i)  = QuadInitializer::getPoint(i);
         weights_(i) = QuadInitializer::getWeight(i);
       }
+
+      int myType = (int) ElType;
+      myType *= 100;
+      setIdentifier( myType + order_);
+
+      //std::cout << (*this) << "\n";
     }
 
     //! number of quadrature points
@@ -126,16 +130,16 @@ namespace Dune {
   //  triangles, quadrilaterals, tetrahedrons, hexahedrons
   //
   //*********************************************************************
-  template< class RangeFieldType , class DomainType>
-  class FaceCenterQuad
+  template< class RangeFieldType , class DomainType, int codim >
+  class BaryCenterQuad
     : public QuadratureDefault  < RangeFieldType , DomainType ,
-          FaceCenterQuad < RangeFieldType, DomainType > >
+          BaryCenterQuad < RangeFieldType, DomainType, codim > >
   {
   private:
     enum { dim = DomainType::dimension };
 
     //! my Type
-    typedef FaceCenterQuad <  RangeFieldType , DomainType > FaceCenterQuadType;
+    typedef BaryCenterQuad <  RangeFieldType , DomainType, codim > BaryCenterQuadType;
 
     // number of quadrature points on segment line
     // upper bound
@@ -147,8 +151,7 @@ namespace Dune {
   public:
     //! Constructor build the vec with the points and weights
     template <class EntityType>
-    FaceCenterQuad ( EntityType &en ) :
-      QuadratureDefault < RangeFieldType, DomainType , FaceCenterQuadType > (6)
+    BaryCenterQuad ( EntityType &en )
     {
       switch(en.geometry().type())
       {
@@ -161,8 +164,7 @@ namespace Dune {
     };
 
     //! Constructor build the vec with the points and weights
-    FaceCenterQuad ( ElementType eltype ) :
-      QuadratureDefault < RangeFieldType, DomainType , FaceCenterQuadType > (6)
+    BaryCenterQuad ( ElementType eltype )
     {
       switch(eltype)
       {
@@ -197,18 +199,23 @@ namespace Dune {
     void makeQuadrature ()
     {
       // is called by the constructor
-      typedef FaceCenterPoints< DomainType,
-          RangeFieldType,ElType>  QuadInitializer;
+      typedef BaryCenterPoints< DomainType,
+          RangeFieldType,ElType,codim>  QuadInitializerType;
 
       // same story as above
-      numberOfQuadPoints_ = QuadInitializer::numberOfQuadPoints;
-      order_              = QuadInitializer::polynomOrder;
+      numberOfQuadPoints_ = QuadInitializerType::numberOfQuadPoints;
+      order_              = QuadInitializerType::polynomOrder;
 
       for(int i=0; i<numberOfQuadPoints_; i++)
       {
-        points_(i) = QuadInitializer::getPoint(i);
-        weights_(i) = QuadInitializer::getWeight(i);
+        points_(i)  = QuadInitializerType::getPoint(i);
+        weights_(i) = QuadInitializerType::getWeight(i);
       }
+      int myType = (int) ElType;
+      myType *= 10 * codim;
+      setIdentifier( myType + order_);
+
+      //std::cout << (*this) << "\n";
     }
 
     //! number of quadrature points
@@ -244,9 +251,8 @@ namespace Dune {
 
   public:
     //! Constructor building the quadrature
-    QuadratureImp ( int id , ElementType eltype, int polOrd ) : order_ ( polOrd )
-                                                                , eltype_ ( eltype ),
-                                                                QuadratureDefault < RangeFieldType , DomainType , QuadratureType > (id)
+    QuadratureImp ( int id , ElementType eltype, int polOrd ) :
+      order_ ( polOrd )  , eltype_ ( eltype )
     {
       switch ( eltype_ )
       {
@@ -304,6 +310,11 @@ namespace Dune {
         points_[i] = QuadInitializer::getPoint(i);
         weights_[i] = QuadInitializer::getWeight(i);
       }
+
+      int myType = (int) ElType;
+      myType *= 100;
+      setIdentifier( myType + polynomialOrder );
+
     };
 
     // remember which element type the quadrature was made for
@@ -326,29 +337,27 @@ namespace Dune {
     {
       switch (polOrd)
       {
-      case 0 : { makeQuadrature<0,ElType> (id); break; };
-      case 1 : { makeQuadrature<1,ElType> (id); break; };
-      case 2 : { makeQuadrature<2,ElType> (id); break; };
-      case 3 : { makeQuadrature<3,ElType> (id); break; };
-      case 4 : { makeQuadrature<4,ElType> (id); break; };
-#if 0
-      case 5 : { makeQuadrature<5> (id); break; };
-      case 6 : { makeQuadrature<6> (id); break; };
-      case 7 : { makeQuadrature<7> (id); break; };
-      case 8 : { makeQuadrature<8> (id); break; };
-      case 9 : { makeQuadrature<9> (id); break; };
-      case 10 : { makeQuadrature<10> (id); break; };
-      case 11 : { makeQuadrature<11> (id); break; };
-      case 12 : { makeQuadrature<12> (id); break; };
-      case 13 : { makeQuadrature<13> (id); break; };
-      case 14 : { makeQuadrature<14> (id); break; };
-      case 15 : { makeQuadrature<15> (id); break; };
-      case 16 : { makeQuadrature<16> (id); break; };
-      case 17 : { makeQuadrature<17> (id); break; };
-      case 18 : { makeQuadrature<18> (id); break; };
-      case 19 : { makeQuadrature<19> (id); break; };
-      case 20 : { makeQuadrature<20> (id); break; };
-#endif
+      case 0 :  { makeQuadrature<0,ElType> (id); break; };
+      case 1 :  { makeQuadrature<1,ElType> (id); break; };
+      case 2 :  { makeQuadrature<2,ElType> (id); break; };
+      case 3 :  { makeQuadrature<3,ElType> (id); break; };
+      case 4 :  { makeQuadrature<4,ElType> (id); break; };
+      case 5 :  { makeQuadrature<5,ElType> (id); break; };
+      case 6 :  { makeQuadrature<6,ElType> (id); break; };
+      case 7 :  { makeQuadrature<7,ElType> (id); break; };
+      case 8 :  { makeQuadrature<8,ElType> (id); break; };
+      case 9 :  { makeQuadrature<9,ElType> (id); break; };
+      case 10 : { makeQuadrature<10,ElType> (id); break; };
+      case 11 : { makeQuadrature<11,ElType> (id); break; };
+      case 12 : { makeQuadrature<12,ElType> (id); break; };
+      case 13 : { makeQuadrature<13,ElType> (id); break; };
+      case 14 : { makeQuadrature<14,ElType> (id); break; };
+      case 15 : { makeQuadrature<15,ElType> (id); break; };
+      case 16 : { makeQuadrature<16,ElType> (id); break; };
+      case 17 : { makeQuadrature<17,ElType> (id); break; };
+      case 18 : { makeQuadrature<18,ElType> (id); break; };
+      case 19 : { makeQuadrature<19,ElType> (id); break; };
+      case 20 : { makeQuadrature<20,ElType> (id); break; };
       default : {
         std::cerr << "No Rule to make Quadrature with polOrd ";
         std::cerr << polOrd << " in Quadrature ( id , polOrd ) !\n";
