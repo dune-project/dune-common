@@ -326,8 +326,10 @@ namespace Dune {
     enum { n = (SIZE > 0) ? SIZE : 1 };
 
   public:
-    // standard constructor and everything is sufficient ...
+    // remember size of vector
+    enum { dimension = SIZE };
 
+    // standard constructor and everything is sufficient ...
 
     //===== type definitions and constants
 
