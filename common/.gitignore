@@ -1,5 +1,7 @@
 Makefile
 Makefile.in
-config.hh.in
-config.hh
-stamp-h*
+.deps
+.libs
+*.lo
+libcommon.la
+semantic.cache
