@@ -191,6 +191,14 @@ namespace Dune {
     template<int codim>
     UGGridLevelIterator<codim,dim,dimworld, All_Partition> lend (int level) const;
 
+    //! Iterator to first entity of given codim on level
+    template<int codim, PartitionIteratorType PiType>
+    UGGridLevelIterator<codim,dim,dimworld, PiType> lbegin (int level) const;
+
+    //! one past the end on this level
+    template<int codim, PartitionIteratorType PiType>
+    UGGridLevelIterator<codim,dim,dimworld, PiType> lend (int level) const;
+
     /** \brief Create leaf iterator  (currently only a level iterator)
      * \todo Replace this by a true leaf iterator */
     LeafIterator leafbegin (int level) const {return lbegin<0>(level);}
