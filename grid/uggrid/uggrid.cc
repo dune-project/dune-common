@@ -821,11 +821,18 @@ void Dune::UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, Co
 
   UGDataCollector<T,P,dim>::dataArray = &t;
 
-  DDD_IFAExchange(UG::ElementIF,
-                  UG_NS<dim>::Grid_Attr(multigrid_->grids[level]),
-                  sizeof(P<T>),
-                  &UGDataCollector<T,P,dim>::gather,
-                  &UGDataCollector<T,P,dim>::scatter);
+  //     DDD_IFAExchange(UG::ElementIF,
+  //                     UG_NS<dim>::Grid_Attr(multigrid_->grids[level]),
+  //                     sizeof(P<T>),
+  //                     &UGDataCollector<T,P,dim>::gather,
+  //                     &UGDataCollector<T,P,dim>::scatter);
+
+  DDD_IFOneway(UG::ElementVHIF,
+               IF_FORWARD,
+               sizeof(P<T>),
+               &UGDataCollector<T,P,dim>::gather,
+               &UGDataCollector<T,P,dim>::scatter);
+
 #endif
 }
 
