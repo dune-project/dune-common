@@ -69,7 +69,7 @@ namespace Dune
        optimization.  Usually you will use the normal in several
        calculations, so that you store it before you use it.
      */
-    FieldVector<ct, dimworld> outerNormal (FieldVector<ct, dim-1>& local) const
+    FieldVector<ct, dimworld> outerNormal (const FieldVector<ct, dim-1>& local) const
     {
       realIterator.fill_outer_normal(local);
     }
@@ -112,12 +112,12 @@ namespace Dune
     //! return unit outer normal, this should be dependent on
     //! local coordinates for higher order boundary
     //! the normal is scaled with the integration element
-    FieldVector<ct, dimworld> integrationOuterNormal (FieldVector<ct, dim-1>& local) const
+    FieldVector<ct, dimworld> integrationOuterNormal (const FieldVector<ct, dim-1>& local) const
     {
       return realIterator.integrationOuterNormal(local);
     }
     //! return unit outer normal
-    FieldVector<ct, dimworld> unitOuterNormal (FieldVector<ct, dim-1>& local) const
+    FieldVector<ct, dimworld> unitOuterNormal (const FieldVector<ct, dim-1>& local) const
     {
       return realIterator.unitOuterNormal(local);
     }
@@ -193,7 +193,7 @@ namespace Dune
        optimization.  Usually you will use the normal in several
        calculations, so that you store it before you use it.
      */
-    FieldVector<ct, dimworld> outerNormal (FieldVector<ct, dim-1>& local) const
+    FieldVector<ct, dimworld> outerNormal (const FieldVector<ct, dim-1>& local) const
     {
       asImp().fill_outer_normal(local);
     }
@@ -259,12 +259,12 @@ namespace Dune
     //! return unit outer normal, this should be dependent on
     //! local coordinates for higher order boundary
     //! the normal is scaled with the integration element
-    FieldVector<ct, dimworld> integrationOuterNormal (FieldVector<ct, dim-1>& local) const
+    FieldVector<ct, dimworld> integrationOuterNormal (const FieldVector<ct, dim-1>& local) const
     {
       return unitOuterNormal(local) * asImp().intersectionGlobal().integrationElement(local);
     }
     //! return unit outer normal
-    FieldVector<ct, dimworld> unitOuterNormal (FieldVector<ct, dim-1>& local) const
+    FieldVector<ct, dimworld> unitOuterNormal (const FieldVector<ct, dim-1>& local) const
     {
       FieldVector<ct, dimworld> n = asImp().outerNormal(local);
       n /= n.two_norm();
