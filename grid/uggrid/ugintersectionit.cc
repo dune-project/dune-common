@@ -229,9 +229,9 @@ numberInNeighbor () const
 
 template<class GridImp>
 inline
-UGGridBoundaryEntity<GridImp>&
+const UGGridBoundaryEntity<GridImp>&
 UGGridIntersectionIterator<GridImp>::
-boundaryEntity ()
+boundaryEntity () const
 {
   return boundaryEntity_;
 }
