@@ -8,6 +8,8 @@
 //
 //************************************************************************
 
+#include <stdlib.h>
+
 namespace Dune
 {
 
@@ -52,14 +54,19 @@ namespace Dune
 
 
       // A Dummy new format
+      // We need to pass the parameters in this complicated way, because
+      // UG writes into one of the strings, and code compiled by some
+      // compilers (gcc, for example) crashes on this.
       //newformat P1_conform $V n1: nt 9 $M implicit(nt): mt 2 $I n1;
-      char* newformatArgs[4] = {"newformat DuneFormat",
-                                "V n1: nt 9",
-                                "M implicit(nt): mt 2",
-                                "I n1"};
-      printf("Before format\n");
+      for (int i=0; i<4; i++)
+        newformatArgs[i] = (char*)::malloc(50*sizeof(char));
+
+      sprintf(newformatArgs[0], "newformat DuneFormat");
+      sprintf(newformatArgs[1], "V n1: nt 9");
+      sprintf(newformatArgs[2], "M implicit(nt): mt 2");
+      sprintf(newformatArgs[3], "I n1");
+
       UG3d::CreateFormatCmd(4, newformatArgs);
-      printf("after format\n");
 
     }
 
@@ -76,6 +83,9 @@ namespace Dune
     if (numOfUGGrids == 0) {
 
       UG3d::ExitUg();
+
+      for (int i=0; i<4; i++)
+        free(newformatArgs[i]);
 
     }
 

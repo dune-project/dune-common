@@ -254,27 +254,12 @@ namespace Dune {
     }
 
   private:
-#if 0
-    // set elInfo
-    void setElInfo(ALBERT EL_INFO * elInfo, int nb)
-    {
-      _neigh = nb;
-      if(elInfo)
-        _elInfo = elInfo;
-      else
-        _elInfo = NULL;
-    };
-#endif
 
     int _neigh;
 
     // UGGrid<dim,dimworld> & _grid;
     UGGridElement<dim,dimworld> _geom;
 
-#if 0
-    // cooresponding el_info
-    ALBERT EL_INFO * _elInfo;
-#endif
   };
 
 }  // namespace Dune
@@ -471,6 +456,14 @@ namespace Dune {
      * to safely shut down UG after deleting the last UGGrid object.
      */
     static int numOfUGGrids;
+
+    /** \brief The arguments to UG's newformat command
+     *
+     * They need to be allocated dynamically, because UG writes into
+     * some of them.  That causes the code to crash if it has been
+     * compiled with gcc.
+     */
+    char* newformatArgs[4];
 
   }; // end Class UGGrid
 
