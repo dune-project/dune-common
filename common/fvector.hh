@@ -1,16 +1,15 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_FVECTOR_HH__
-#define __DUNE_FVECTOR_HH__
+#ifndef DUNE_FVECTOR_HH
+#define DUNE_FVECTOR_HH
 
 #include <math.h>
 #include <complex>
 
 #include "exceptions.hh"
 
-/*! \file __FILE__
-
-   This file implements a vector constructed from a given type
+/*! \file
+ * \brief This file implements a vector constructed from a given type
    representing a field and a compile-time given size.
  */
 
@@ -306,7 +305,8 @@ namespace Dune {
     }
   };
 
-  /**! Construct a vector space out of a tensor product of fields.
+  /** \brief Construct a vector space out of a tensor product of fields.
+
          K is the field type (use float, double, complex, etc) and n
          is the number of components.
 
