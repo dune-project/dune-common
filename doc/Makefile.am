@@ -14,7 +14,7 @@ DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.css -o -name \*.html
 
 # check dependency ourself to be robust
 doxygen-tag: FORCE
-	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -cnewer doxygen-tag`" != x ; then \
+	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
 	  echo Running doxygen. This may take a while... ; \
 	  $(DOXYGEN) > doxygen.log 2>&1 ; \
 	  touch doxygen-tag ; \
