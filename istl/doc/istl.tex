@@ -10,10 +10,10 @@
 \usepackage{hyperref}
 \usepackage[dvips]{epsfig}
 \usepackage[dvips]{graphicx}
-\usepackage[a4paper,body={154mm,240mm,nohead}]{geometry}
+\usepackage[a4paper,body={148mm,240mm,nohead}]{geometry}
 \usepackage[ansinew]{inputenc}
 \usepackage{listings}
-\lstset{language=C++, indent=20pt, basicstyle=\small\ttfamily,
+\lstset{language=C++, indent=20pt, basicstyle=\ttfamily,
   stringstyle=\ttfamily, commentstyle=\it, extendedchars=true}
 
 \newif\ifpdf
@@ -77,7 +77,7 @@ block preconditioners for $hp$-finite elements.
 
 \section{Introduction}
 
-The numerical solution of partial differential equations frequently requires the
+The numerical solution of partial differential equations (PDEs) frequently requires the
 solution of large and sparse linear systems. Naturally,
 there are many libraries available on the internet for doing sparse matrix/vector
 computations. A comprehensive overview is given in \cite{LALinks}. 
@@ -103,39 +103,274 @@ template programming techniques such as traits, template metaprograms,
 expression templates or the Barton-Nackman trick are used in the
 implementations, see \cite{BN,Veldhui99} for an introduction.
 Application of these ideas to matrix/vector operations is available
-with the Matrix Template Library (MTL), \cite{MTL}. The Iterative
+with the Matrix Template Library (MTL), \cite{MTL,MTL_SciTools98}. The Iterative
 Template Library (ITL), \cite{ITL}, implements iterative solvers for
 linear systems (mostly Krylov subspace methods) in a generic way based
 on MTL. The Distributed and Unified Numerics Environment (DUNE),
 \cite{Dune,DuneWeb}, applies the STL ideas to finite element
 computations. 
 
+Why bother with yet another OO-implementation of (sparse) linear
+algebra when libraries, most notably the MTL, are available? The most
+important reason is that the functionality in existing libraries has
+not been designed specifically with advanced finite element methods in
+mind. Sparse matrices in finite element computations have a lot of
+structure. Here are some examples:
+\begin{itemize}
+\item Certain discretizations for systems of PDEs or higher order
+  methods result in matrices where individual entries are replaced by
+  small blocks, say of size $2\time 2$ or $4\times 4$. Straightforward
+  iterative methods solve these small blocks exactly, see
+  e.~g.~\cite{BH99}.
+\item Equation-wise ordering for systems results in matrices having an
+  $n\times n$ block structure where $n$ corresponds to the number of
+  variables in the PDE and the blocks themselves are large. As an
+  example we mention the Stokes system. Iterative solvers such as the
+  SIMPLE or Uzawa algorithm use this structure.
+\item Other structures that can be exploited are the level structure
+  arising from hierarchic meshes, a p-hierarchic
+  structure (e.~g.~decomposition in linear and quadratic part),
+  geometric structure from decomposition in subdomains or topological
+  structure where unknowns are associated with nodes, edges, faces or
+  elements of a mesh.
+\end{itemize}
+It is very important to note that this structure is typically known at
+compile-time and this knowledge should be exploited to produce
+efficient code. Moreover, block structuredness is recursive,
+i.~e.~blocks are build from blocks which are themselves build from
+blocks. 
 
+The Matrix Template Library also offers the possibility to partition a
+matrix into blocks. However, their concept is top-down, i.~e.~an
+already existing matrix is enriched by additional information to
+implement the block structure. This is done at run-time and might thus
+be less efficient and requires additional memory. In contrast the
+bottom-up composition of block matrices from blocks can save memory.
+We would like to stress that the library to be presented in this paper
+is not nearly as broad in scope as the MTL.
 
 \section{Vectors}
 
-You can define a variable block size vector via
+\subsection{Vector spaces}
+
+In mathemetics vectors are elements of a vector space. A vector space
+$V(\K)$, defined over a field $\K$, is a set of elements with two
+operations: (i) vector space addition $+ : V\times V \to V$ and (ii) scalar
+multiplication $* : \K\times V \to V$. These operations obey certain formal
+rules, see your favourite textbook on linear algebra. In addition a
+vector space may be normed, i.~e.~there is a function (obeying certain
+rules) $\|.\| : V \to \R$ which measures distance in the vector
+space. Even more specialized vector spaces have a scalar product which
+is a function $\cdot : V\times V \to \K$. 
+
+How do you construct a vector space? The easiest way is to take a
+field, such as $\K=\R$ or $\K=\C$ and take a tensor product:
+\begin{equation*}
+V = \K^n = \underbrace{\K\times\K\times\ldots\times\K}_{\text{$n$ times}}.
+\end{equation*} 
+$n\in\N$ is called the dimension of the vector space. There are also
+infinite-dimensional vector spaceswhich are, however, not of interest
+in the context here. The idea of tensor products can be generalized.
+If we have vector spaces $V_1(\K),\ldots,V_n(\K)$ we can construct a
+new vector space by setting
+\begin{equation*}
+V(\K) = V_1\times V_2 \times \ldots \times V_n.
+\end{equation*} 
+The $V_i$ can be \textit{any} vector space over the field $\K$. The
+dimension of $V$ is the sum of the dimensions of the $V_i$. For a
+a mathematician every finite-dimensional vector space is isomorphic to
+the $\R^k$ for an appropriate $k$ but in our applications it is
+important to know the difference between $(\R^2)^7$ and
+$\R^{14}$. Having these remarks about vector spaces in mind we can now
+turn to the class design.
+
+\subsection{Vector classes}
+
+ISTL provides the following classes to make up vector spaces:
+
+\paragraph{FieldVector}
+
+The \lstinline!template<class K, int n> FieldVector<K,n>! class
+template is used to represent a vector space
+$V=\K^n$ where the field is given by the type
+\lstinline!K!.  \lstinline!K! may be \lstinline!double!, \lstinline!float!,
+\lstinline!complex<double>! or any other numeric type.
+The dimension given by the template parameter
+\lstinline!n! is assumed to be small. Members of this class are
+implemented with template metaprograms to avoid tiny loops.
+Example: Use \lstinline!FieldVector<double,2>! to define vectors with
+a fixed dimension 2.
+
+\paragraph{BlockVector}
+
+The \lstinline!template<class B> BlockVector<B>! class template builds
+a vector space $V=B^n$ where the ``block type'' $B$ is given by the
+template parameter \lstinline!B!. \lstinline!B! may be any other class
+implementing the vector interface. The number of blocks $n$ is given
+at run-time. Example: 
 \begin{lstlisting}{}
-const int N=1;
-typedef Dune::FieldVector<double,N> RN;
-
-typedef Dune::VariableBlockVector<RN> Vector;
-
-Vector x(20); // make a vector with 20 blocks
-
-for (Vector::CreateIterator i=x.createbegin(); i!=x.createend(); ++i)
-  i.setblocksize((i.index()%10)+1);
+BlockVector<FieldVector<double,2> >
 \end{lstlisting}
-and then get the result
+can be used to define vectors of variable size where each block in turn
+consists of two \lstinline!double! values.
+
+\paragraph{VariableBlockVector}
+
+The \lstinline!template<class B> VariableBlockVector<B>! class
+can be used to construct a vector space having a two-level
+block structure of the form
+$V=B^{n_1}\times B^{n_2}\times\ldots \times B^{n_m}$, i.e. it consists
+of $m$ blocks $i=1,\ldots,m$ and each block in turn consists of $n_i$ blocks
+given by the type \lstinline!B!. In principle this structure could be
+built also with the previous classes but the implementation here is
+more efficient. It allocates memory in one big array for all
+components and for certain operations it is more efficient to
+interpret the vector space as $V=B^{\sum_{i=1}^{m} n_i}$.
+
+\subsection{Vectors are containers}
+
+Vectors are containers over the base type \lstinline!K! or
+\lstinline!B! in the sense of the Standard Template Library. Random
+access is provided via \lstinline!operator[](int i)! where the indices
+are in the range $0,\ldots,n-1$ with the number of blocks $n$ given by
+the \lstinline!N! method. Here is a code fragment for illustration:
 \begin{lstlisting}{}
-... bla
+Dune::BlockVector<Dune::FieldVector<std::complex<double>,2> > v(20);
+v[1] = 3.14;
+v[3][0] = 2.56;
+v[3][1] = std::complex<double>(1,-1);
 \end{lstlisting}
+Note how one \lstinline!operator[]()! is used for each level of block
+recursion. 
 
-\subsection{Making a vector from a field}
+Sequential access to container elements is provided via
+iterators. Here is a generic function accessing all the elements of a
+vector:
+\begin{lstlisting}{}
+template<class V> void f (V& v)
+{
+  typedef typename V::Iterator iterator;
+  for (iterator i=v.begin(); i!=v.end(); ++i)
+    *i = i.index();
+  
+  typedef typename V::ConstIterator const_iterator;
+  for (const_iterator i=v.begin(); i!=v.end(); ++i)
+    std::cout << (*i).two_norm() << std::endl;
+}
+\end{lstlisting}
+The \lstinline!Iterator! class provides read/write access while the
+\lstinline!ConstIterator! provides read-only access. The type names
+are accessed via the \lstinline!::!-operator from the scope of the
+vector class.
+
+A uniform naming scheme enables writing of generic algorithms. The
+following types are provided in the scope of any vector class:
+
+\subsection{Operations}
+
+A full list of all members of a vector class is given in Figure
+\ref{Fig:VectorMembers}. The norms are the same as defined for the
+sparse BLAS standard \cite{BLASTForum}. The ``real'' variants avoid
+the evaluation of a square root for each component in case of complex
+vectors. The \lstinline!allocator_type! member type is explained below
+in the section on memory management.
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{expression} & \textbf{return type} & \textbf{note}\\
+\hline
+\hline
+\texttt{X::field\_type} & T & T is assignable\\
+\hline
+\texttt{X::block\_type} & T & T is assignable\\
+\hline
+\texttt{X::allocator\_type} & T & see mem.~mgt.\\
+\hline
+\texttt{X::blocklevel} & \texttt{int} & block levels inside\\
+\hline
+\texttt{X::Iterator} & T & read/write access\\
+\hline
+\texttt{X::ConstIterator} & T & read-only access\\
+\hline
+\texttt{X::operator=(field\_type\&)} & \texttt{X\&} & \\
+\hline
+\texttt{X::operator[](int)} & \texttt{field\_type\&} & \\
+\hline
+\texttt{X::operator[](int)} & \texttt{const field\_type\&} & \\
+\hline
+\texttt{X::operator+=(X\&)} & \texttt{X\&} & $x = x+y$\\
+\hline
+\texttt{X::operator-=(X\&)} & \texttt{X\&} & $x = x-y$\\
+\hline
+\texttt{X::operator*=(field\_type\&)} & \texttt{X\&} & $x =
+\alpha x$\\
+\hline
+\texttt{X::operator/=(field\_type\&)} & \texttt{X\&} & $x =
+\alpha^{-1} x$\\
+\hline
+\texttt{X::axpy(field\_type\&,X\&)} & \texttt{X\&} & $x = x+\alpha y$\\
+\hline
+\texttt{X::operator*(X\&)} & \texttt{field\_type} & $x\cdot y$\\
+\hline
+\texttt{X::one\_norm()} & \texttt{double} & $\sum_i\sqrt{Re(x_i)^2+Im(x_i)^2}$\\
+\hline
+\texttt{X::one\_norm\_real()} & \texttt{double} &$\sum_i(|Re(x_i)|+|Im(x_i)|)$\\
+\hline
+\texttt{X::two\_norm()} & \texttt{double} &$\sqrt{\sum_i(Re(x_i)^2+Im(x_i)^2)}$\\
+\hline
+\texttt{X::two\_norm2()} & \texttt{double} &$\sum_i (Re(x_i)^2+Im(x_i)^2)$\\
+\hline
+\texttt{X::infinity\_norm()} & \texttt{double} &$\max_i\sqrt{Re(x_i)^2+Im(x_i)^2}$\\
+\hline
+\texttt{X::infinity\_norm\_real()} & \texttt{double} &$\max_i(|Re(x_i)|+|Im(x_i)|)$\\
+\hline
+\texttt{X::N()} & \texttt{int} & number of blocks\\
+\hline
+\texttt{X::dim()} & \texttt{int} & dimension of space\\
+\hline
+\end{tabular}
+\end{center}
+
+\caption{Members of a vector class.}
+\label{Fig:VectorMembers}
+\end{figure}
+
+\subsection{Object memory model and memory management}
+
+The memory model for all ISTL objects is deep copy as in the Standard
+Template Library and in contrast to the Matrix Template
+Library. Therefore, references must be used to avoid excessive copying
+of objects. On the other hand temporary vectors with appropriate
+structure can be generated simply with the copy constructor.
+
+
+
+\subsection{Vector creation}
+
 
 \section{Matrices}
 
+\subsection{Linear mappings}
+
+\subsection{Matrix classes}
+
+\subsection{Matrices are containers of containers}
+
+\subsection{Operations}
+
+\subsection{Matrix creation}
+
 \section{Algorithms}
+
+\subsection{Input/output}
+
+\subsection{Simple iterative solvers}
+
+\subsection{Sparse LU decomposition}
+
+\section{Performance}
 
 % bibtex bibliography
 \bibliographystyle{plain}
