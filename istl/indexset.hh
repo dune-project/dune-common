@@ -10,7 +10,15 @@
 
 namespace Dune
 {
-
+  /** @addtogroup ISTL_Comm
+   *
+   * @{
+   */
+  /**
+   * @file
+   * @brief Provides a map between global and local indices.
+   * @author Markus Blatt
+   */
   /**
    * @brief The states avaiable for the local indices.
    * @see LocalIndex::state()

@@ -14,24 +14,20 @@ namespace Dune
    * @brief Provides classes for syncing distributed indexed
    * data structures.
    */
+  /** @addtogroup ISTL_Comm
+   *
+   * @{
+   */
   /**
    * @file
    * @brief Provides utility classes for syncing distributed data via
    * MPI communication.
    * @author Markus Blatt
    */
-  /** @addtogroup ISTL_Comm
-   *
-   * @{
-   */
-  template<bool i>
-  struct Bool2Type
-  {};
-
 
   /**
-   * @brief Flag for marking indexed data structures where data at each index is type
-   * of the same size.
+   * @brief Flag for marking indexed data structures where data at
+   * each index is of the same size.
    */
   struct SizeOne
   {};
@@ -145,19 +141,10 @@ namespace Dune
     typedef TA Attribute;
 
     /**
-     * @brief Creates a new communicator.
-     * @param source The index set to use at the source of the communication.
-     * @param destination The index set to use at the destination of the communication.
-     * @param comm The MPI communicator to use.
-     */
-    DatatypeCommunicator(const IndexSetType& source, const IndexSetType& destination,
-                         const MPI_Comm& comm);
-
-    /**
      * @brief Creates a new DatatypeCommunicator.
      * @param remote The remote index set to use.
      */
-    DatatypeCommunicator(const RemoteIndices& remote);
+    DatatypeCommunicator();
 
     /**
      * @brief Destructor.
@@ -168,30 +155,21 @@ namespace Dune
      * @brief Builds the interface between the index sets.
      *
      * Has to be called before the actual communication by forward or backward
-     * can be called.
-     *
-     * If the template paramter ignorePublic is true, even values for nonpublic indices
-     * might be communicated. This is for example necessary for redistributing or accumulating
-     * data.
-     *
-     * @param sourceFlags The set of attributes which mark indices we send to other
-     *               processes.
-     * @param sendData The indexed data structure whose data will be send.
-     * @param destFlags  The set of attributes which mark the indices we might
-     *               receive values from.
-     * @param receiveData The indexed data structure for which we receive data.
-     * @param flag A flag to prevent users from  specifying all template paramters.
-     */
-    template<class T1, class T2, class V, bool ignorePublic>
-    void build(const T1& sourceFlags, V& sendData, const T2& destFlags, V& receiveData,
-               const Bool2Type<ignorePublic>& flag);
-
-    /**
-     * @brief Builds the interface between the index sets.
-     *
-     * Has to be called before the actual communication by forward or backward
      * can be called. Nonpublic indices will be ignored!
      *
+     *
+     * The types T1 and T2 are classes representing a set of
+     * enumeration values of type DatatypeCommunicator::AttributeType.
+     * They have to provide
+     * a (static) method
+     * <pre>
+     * bool contains(AttributeType flag) const;
+     * </pre>
+     * for checking whether the set contains a specfic flag.
+     * This functionality is for example provided the classes
+     * EnumItem, EnumRange and Combine.
+     *
+     * @param remoteIndices The indices present on remote processes.
      * @param sourceFlags The set of attributes which mark indices we send to other
      *               processes.
      * @param sendData The indexed data structure whose data will be send.
@@ -200,7 +178,7 @@ namespace Dune
      * @param receiveData The indexed data structure for which we receive data.
      */
     template<class T1, class T2, class V>
-    void build(const T1& sourceFlags, V& sendData, const T2& destFlags, V& receiveData);
+    void build(const RemoteIndices& remoteIndices, const T1& sourceFlags, V& sendData, const T2& destFlags, V& receiveData);
 
     /**
      * @brief Sends the primitive values from the source to the destination.
@@ -212,6 +190,10 @@ namespace Dune
      */
     void backward();
 
+    /**
+     * @brief Deallocates the MPI requests and data types.
+     */
+    void free();
   private:
     enum {
       /**
@@ -223,7 +205,7 @@ namespace Dune
     /**
      * @brief The indices also known at other processes.
      */
-    RemoteIndices remoteIndices_;
+    const RemoteIndices* remoteIndices_;
 
     typedef std::map<int,std::pair<MPI_Datatype,MPI_Datatype> >
     MessageTypeMap;
@@ -256,11 +238,6 @@ namespace Dune
      */
     template<class T1, class T2, class V, bool send>
     void createDataTypes(const T1& source, const T2& destination, V& data);
-
-    /**
-     * @brief Deallocates the MPI requests and data types.
-     */
-    void clean();
 
     /**
      * @brief initiates the sending and receive.
@@ -365,6 +342,7 @@ namespace Dune
     struct MessageSizeCalculator<Data,SizeOne>
     {
       inline int operator()(const InterfaceInformation& info) const;
+      inline int operator()(const Data& data, const InterfaceInformation& info) const;
     };
 
     template<class Data>
@@ -488,47 +466,30 @@ namespace Dune
 
 
   template<typename TG, typename TA>
-  DatatypeCommunicator<TG,TA>::DatatypeCommunicator(const IndexSetType& source,
-                                                    const IndexSetType& destination,
-                                                    const MPI_Datatype& comm)
-    : remoteIndices_(source, destination, comm), created_(false)
+  DatatypeCommunicator<TG,TA>::DatatypeCommunicator()
+    : remoteIndices_(0), created_(false)
   {
     requests_[0]=0;
     requests_[1]=0;
   }
 
 
-
-  template<typename TG, typename TA>
-  DatatypeCommunicator<TG,TA>::DatatypeCommunicator(const RemoteIndices& remote)
-    : remoteIndices_(remote), created_(false)
-  {
-    requests_[0]=0;
-    requests_[1]=0;
-  }
 
   template<typename TG, typename TA>
   DatatypeCommunicator<TG,TA>::~DatatypeCommunicator()
   {
-    clean();
+    free();
   }
 
   template<typename TG, typename TA>
   template<class T1, class T2, class V>
-  inline void DatatypeCommunicator<TG,TA>::build(const T1& source, V& sendData,
+  inline void DatatypeCommunicator<TG,TA>::build(const RemoteIndices& remoteIndices,
+                                                 const T1& source, V& sendData,
                                                  const T2& destination, V& receiveData)
   {
-    build(source, sendData, destination, receiveData, Bool2Type<false>());
-  }
-
-  template<typename TG, typename TA>
-  template<class T1, class T2, class V, bool ignorePublic>
-  void DatatypeCommunicator<TG,TA>::build(const T1& source, V& sendData,
-                                          const T2& destination, V& receiveData,
-                                          const Bool2Type<ignorePublic>& flag)
-  {
-    clean();
-    this->remoteIndices_.template rebuild<ignorePublic>();
+    remoteIndices_ = &remoteIndices;
+    free();
+    assert(remoteIndices.isBuilt());
     createDataTypes<T1,T2,V,false>(source,destination, receiveData);
     createDataTypes<T1,T2,V,true>(source,destination, sendData);
     createRequests<V,true>(sendData, receiveData);
@@ -537,7 +498,7 @@ namespace Dune
   }
 
   template<typename TG, typename TA>
-  void DatatypeCommunicator<TG,TA>::clean()
+  void DatatypeCommunicator<TG,TA>::free()
   {
     if(created_) {
       delete[] requests_[0];
@@ -565,13 +526,13 @@ namespace Dune
   {
 
     MPIDatatypeInformation<V>  dataInfo(data);
-    this->template buildInterface<T1,T2,MPIDatatypeInformation<V>,send>(remoteIndices_,sourceFlags, destFlags, dataInfo);
+    this->template buildInterface<T1,T2,MPIDatatypeInformation<V>,send>(*remoteIndices_,sourceFlags, destFlags, dataInfo);
 
     typedef typename RemoteIndices::RemoteIndexMap::const_iterator const_iterator;
-    const const_iterator end=this->remoteIndices_.end();
+    const const_iterator end=this->remoteIndices_->end();
 
     // Allocate MPI_Datatypes and deallocate memory for the type construction.
-    for(const_iterator process=this->remoteIndices_.begin(); process != end; ++process) {
+    for(const_iterator process=this->remoteIndices_->begin(); process != end; ++process) {
       IndexedTypeInformation& info=dataInfo.information_[process->first];
       // Shift the displacement
       MPI_Aint base;
@@ -611,7 +572,7 @@ namespace Dune
         ++process, ++request) {
       MPI_Datatype type = createForward ? process->second.second : process->second.first;
       void* address = const_cast<void*>(CommPolicy<V>::getAddress(receiveData,0));
-      MPI_Recv_init(address, 1, type, process->first, commTag_, this->remoteIndices_.communicator(), requests_[index]+request);
+      MPI_Recv_init(address, 1, type, process->first, commTag_, this->remoteIndices_->communicator(), requests_[index]+request);
     }
 
     // And now the send requests
@@ -620,7 +581,7 @@ namespace Dune
         ++process, ++request) {
       MPI_Datatype type = createForward ? process->second.first : process->second.second;
       void* address =  const_cast<void*>(CommPolicy<V>::getAddress(sendData, 0));
-      MPI_Ssend_init(address, 1, type, process->first, commTag_, this->remoteIndices_.communicator(), requests_[index]+request);
+      MPI_Ssend_init(address, 1, type, process->first, commTag_, this->remoteIndices_->communicator(), requests_[index]+request);
     }
   }
 
@@ -657,7 +618,7 @@ namespace Dune
     int success=1, globalSuccess=0;
     if(send==MPI_ERR_IN_STATUS) {
       int rank;
-      MPI_Comm_rank(this->remoteIndices_.communicator(), &rank);
+      MPI_Comm_rank(this->remoteIndices_->communicator(), &rank);
       std::cerr<<rank<<": Error in sending :"<<std::endl;
       // Search for the error
       for(int i=noMessages; i< 2*noMessages; i++)
@@ -675,7 +636,7 @@ namespace Dune
 
     if(receive==MPI_ERR_IN_STATUS) {
       int rank;
-      MPI_Comm_rank(this->remoteIndices_.communicator(), &rank);
+      MPI_Comm_rank(this->remoteIndices_->communicator(), &rank);
       std::cerr<<rank<<": Error in receiving!"<<std::endl;
       // Search for the error
       for(int i=0; i< noMessages; i++)
@@ -691,7 +652,7 @@ namespace Dune
       success=0;
     }
 
-    MPI_Allreduce(&success, &globalSuccess, 1, MPI_INT, MPI_MIN, this->remoteIndices_.communicator());
+    MPI_Allreduce(&success, &globalSuccess, 1, MPI_INT, MPI_MIN, this->remoteIndices_->communicator());
 
     if(!globalSuccess)
       DUNE_THROW(CommunicationError, "A communication error occurred!");
@@ -746,23 +707,24 @@ namespace Dune
     typedef typename Interface<TG,TA>::InformationMap::const_iterator const_iterator;
     typedef typename CommPolicy<Data>::IndexedTypeFlag Flag;
     const const_iterator end = interface.interfaces().end();
-    int sendStart, recvStart;
+    int sendStart=0, recvStart=0;
 
     for(const_iterator interfacePair = interface.interfaces().begin();
         interfacePair != end; ++interfacePair) {
-      int noSend = MessageSizeCalculator<Data,Flag>() (source, dest, interfacePair->second.first);
-      int noRecv = MessageSizeCalculator<Data,Flag>() (source, dest, interfacePair->second.second);
+      int noSend = MessageSizeCalculator<Data,Flag>() (source, interfacePair->second.first);
+      int noRecv = MessageSizeCalculator<Data,Flag>() (dest, interfacePair->second.second);
+
       messageInformation_[interfacePair->first]=(std::make_pair(MessageInformation(sendStart,
                                                                                    noSend),
                                                                 MessageInformation(recvStart,
                                                                                    noRecv)));
       sendStart += noSend;
-      sendRecv  += noRecv;
+      recvStart  += noRecv;
     }
 
     // allocate the buffers
-    buffers_[0] = new char*[sendStart];
-    buffers_[1] = new char*[recvStart];
+    buffers_[0] = new char[sendStart];
+    buffers_[1] = new char[recvStart];
     interface_ = &interface;
   }
 
@@ -789,6 +751,14 @@ namespace Dune
     (const InterfaceInformation& info) const
   {
     return info.size()*sizeof(typename CommPolicy<Data>::IndexedType);
+  }
+
+  template<typename TG, typename TA>
+  template<class Data>
+  inline int BufferedCommunicator<TG,TA>::MessageSizeCalculator<Data,SizeOne>::operator()
+    (const Data& data, const InterfaceInformation& info) const
+  {
+    return operator()(info);
   }
 
   template<typename TG, typename TA>
@@ -859,8 +829,8 @@ namespace Dune
 
     assert(infoPair!=interface.interfaces().end());
 
-    const Information& info = FORWARD ? infoPair->second.first :
-                              infoPair->second.second;
+    const Information& info = FORWARD ? infoPair->second.second :
+                              infoPair->second.first;
 
     for(int i=0, index=0; i < info.size(); i++) {
       for(int j=0; j < CommPolicy<Data>::getSize(data, info[i]); j++)
@@ -877,8 +847,8 @@ namespace Dune
 
     assert(infoPair!=interface.interfaces().end());
 
-    const Information& info = FORWARD ? infoPair->second.first :
-                              infoPair->second.second;
+    const Information& info = FORWARD ? infoPair->second.second :
+                              infoPair->second.first;
 
     for(size_t i=0; i < info.size(); i++) {
       GatherScatter::scatter(data, buffer[i], info[i]);
@@ -972,13 +942,14 @@ namespace Dune
     int finished=-1;
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-    MPI_Status status;
+    MPI_Status status[messageInformation_.size()];
+    MPI_Waitall(messageInformation_.size(), recvRequests, status);
 
     for(i=0; i< messageInformation_.size(); i++) {
-      int ret=MPI_Waitany(messageInformation_.size(), recvRequests, &finished, &status);
-      if(MPI_SUCCESS==ret) {
-        MessageScatterer<Data,GatherScatter,FORWARD,Flag>() (*interface_, dest, recvBuffer, processMap[finished]);
-        recvRequests[finished]=MPI_REQUEST_NULL;
+      //      int ret=MPI_Waitany(messageInformation_.size(), recvRequests, &finished, &status);
+      if(status[i].MPI_ERROR==MPI_SUCCESS) {
+        MessageScatterer<Data,GatherScatter,FORWARD,Flag>() (*interface_, dest, recvBuffer, processMap[i]);
+        recvRequests[i]=MPI_REQUEST_NULL;
       }else{
         std::cerr<<rank<<": MPI_Error occurred while receiving message from "<<processMap[finished]<<std::endl;
         success=0;
@@ -987,7 +958,7 @@ namespace Dune
 
     // Wait for completion of sends
     for(i=0; i< messageInformation_.size(); i++)
-      if(MPI_SUCCESS!=MPI_Wait(sendRequests+i, &status)) {
+      if(MPI_SUCCESS!=MPI_Wait(sendRequests+i, status+i)) {
         std::cerr<<rank<<": MPI_Error occurred while sending message to "<<processMap[finished]<<std::endl;
         success=0;
       }

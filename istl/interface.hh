@@ -7,9 +7,24 @@
 #include <dune/common/enumset.hh>
 namespace Dune
 {
+  /** @addtogroup ISTL_Comm
+   *
+   * @{
+   */
+  /**
+   * @file
+   * @brief Provides classes for building the communication
+   * interface between remote inidices.
+   * @author Markus Blatt
+   */
 
-
-
+  /**
+   * @brief Base class of all classes representing a communication
+   * interface.
+   *
+   * It provides an generic utility method for building the interface
+   * for a set of remote indices.
+   */
   template<typename TG, typename TA>
   class InterfaceBuilder
   {
@@ -32,33 +47,63 @@ namespace Dune
     virtual ~InterfaceBuilder()
     {}
 
+  protected:
+    /**
+     * @brief Not for public use.
+     */
+    InterfaceBuilder()
+    {}
+
     /**
      * @brief Builds the interface between remote processes.
+     *
+     *
+     * The types T1 and T2 are classes representing a set of
+     * enumeration values of type InterfaceBuilder::AttributeType. They have to provide
+     * a (static) method
+     * <pre>
+     * bool contains(AttributeType flag) const;
+     * </pre>
+     * for checking whether the set contains a specfic flag.
+     * This functionality is for example provided the classes
+     * EnumItem, EnumRange and Combine.
+     *
+     * If the template parameter send is true the sending side of
+     * the interface will be built, otherwise the information for
+     * receiving will be built.
+     *
+     *
+     * If the template parameter send is true we create interface for sending
+     * in a forward communication.
      *
      * @param remoteIndices The indices known to remote processes.
      * @param sourceFlags The set of flags marking source indices.
      * @param destFlags The setof flags markig destination indices.
      * @param functor A functor for callbacks. It should provide the
-     * following methods.
+     * following methods:
      * <pre>
      * // Reserve memory for the interface to processor proc. The interface
      * // has to hold size entries
      * void reserve(int proc, int size);
-     *
+     * </pre><pre>
      * // Add an entry to the interface
      * // We will send/receive size entries at index local to process proc
      * void add(int proc, int local);
      * </pre>
-     *
-     * If the template parameter send is true we create interface for sending
-     * in a forward communication.
      */
     template<class T1, class T2, class Op, bool send>
-    void buildInterface (const RemoteIndices& remoteIndices, const T1& sourceFlags, const T2& destFlags,
+    void buildInterface (const RemoteIndices& remoteIndices,
+                         const T1& sourceFlags, const T2& destFlags,
                          Op& functor) const;
   };
 
-
+  /**
+   * @brief Information describing an interface.
+   *
+   * This class is used for temporary gathering information
+   * about the interface needed for actually building it. It
+   * is used be class Interface as functor for InterfaceBuilder::build.
+   */
   class InterfaceInformation
   {
 
@@ -164,6 +209,12 @@ namespace Dune
   };
 
 
+  /**
+   * @brief Communication interface between remote and local indices.
+   *
+   * Describes the communication interface between
+   * indices on the local process and those on remote processes.
+   */
   template<typename TG, typename TA>
   class Interface : public InterfaceBuilder<TG,TA>
   {
@@ -191,8 +242,18 @@ namespace Dune
 
     /**
      * @brief Builds the interface.
+     *
+     * The types T1 and T2 are classes representing a set of
+     * enumeration values of type Interface::AttributeType. They have to provide
+     * a (static) method
+     * <pre>
+     * bool contains(AttributeType flag) const;
+     * </pre>
+     * for checking whether the set contains a specfic flag.
+     * This functionality is for example provided the classes
+     * EnumItem, EnumRange and Combine.
      * @param remoteIndices The indices known to remote processes.
-     * @param sourceFlags The set flags marking indices we send from.
+     * @param sourceFlags The set of flags marking indices we send from.
      * @param destFlags The set of flags marking indices we receive for.
      */
     template<typename T1, typename T2>
@@ -217,13 +278,15 @@ namespace Dune
      * is the information pair (first the send and then the receive
      * information).
      */
-
     const InformationMap& interfaces() const;
 
     Interface()
       : interfaces_()
     {}
 
+    /**
+     * @brief Print the interface to std::out for debugging.
+     */
     void print() const;
 
     /**
@@ -368,22 +431,23 @@ namespace Dune
   {
     typedef typename InformationMap::const_iterator const_iterator;
     const const_iterator end=interfaces_.end();
-    std::cout<<this<<std::endl;
+    int rank;
+    MPI_Comm_rank(communicator(), &rank);
 
     for(const_iterator infoPair=interfaces_.begin(); infoPair!=end; ++infoPair) {
       {
-        std::cout<<"send for process "<<infoPair->first<<" ";
+        std::cout<<rank<<": send for process "<<infoPair->first<<": ";
         const InterfaceInformation& info(infoPair->second.first);
         for(size_t i=0; i < info.size(); i++)
           std::cout<<info[i]<<" ";
-        std::cout<<&info<<std::endl;
+        std::cout<<std::endl;
       } {
 
-        std::cout<<"receive for process "<<infoPair->first<<" ";
+        std::cout<<rank<<": receive for process "<<infoPair->first<<": ";
         const InterfaceInformation& info(infoPair->second.second);
         for(size_t i=0; i < info.size(); i++)
           std::cout<<info[i]<<" ";
-        std::cout<<&info<<std::endl;
+        std::cout<<std::endl;
       }
 
     }
@@ -397,6 +461,7 @@ namespace Dune
     remoteIndices_=&remoteIndices;
 
     assert(interfaces_.empty());
+    assert(remoteIndices.isBuilt());
 
     // Build the send interface
     InformationBuilder<true> sendInformation(interfaces_);
@@ -427,6 +492,7 @@ namespace Dune
   {
     free();
   }
+  /** @} */
 }
 
 #endif

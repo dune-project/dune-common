@@ -164,24 +164,18 @@ void testIndices()
     globalArray=new Array(0);
 
   Dune::RemoteIndices<int,GridFlags> accuIndices(distIndexSet, globalIndexSet, MPI_COMM_WORLD);
-
+  Dune::RemoteIndices<int,GridFlags> overlapIndices(distIndexSet, distIndexSet, MPI_COMM_WORLD);
   accuIndices.rebuild<true>();
-  //    std::cout << accuIndices<<std::endl<<std::flush;
+  overlapIndices.rebuild<false>();
 
-  //    Dune::RemoteIndices<int,GridFlags> remote(distIndexSet, distIndexSet, MPI_COMM_WORLD);
-  //remote.rebuild<false>();
-
-
-  Dune::DatatypeCommunicator<int,GridFlags> accumulator(accuIndices);
-  Dune::DatatypeCommunicator<int,GridFlags>  overlapExchanger(distIndexSet, distIndexSet, MPI_COMM_WORLD);
+  Dune::DatatypeCommunicator<int,GridFlags> accumulator, overlapExchanger;
 
   Dune::EnumItem<GridFlags,owner> sourceFlags;
   Dune::Combine<Dune::EnumItem<GridFlags,overlap>,Dune::EnumItem<GridFlags,owner>,GridFlags> destFlags;
-  Dune::Bool2Type<true> flag;
 
-  accumulator.build(sourceFlags, distArray, destFlags, *globalArray, flag);
+  accumulator.build(accuIndices, sourceFlags, distArray, destFlags, *globalArray);
 
-  overlapExchanger.build(Dune::EnumItem<GridFlags,owner>(), distArray, Dune::EnumItem<GridFlags,overlap>(), distArray);
+  overlapExchanger.build(overlapIndices, Dune::EnumItem<GridFlags,owner>(), distArray, Dune::EnumItem<GridFlags,overlap>(), distArray);
 
   std::cout<< rank<<": before forward distArray="<< distArray<<std::endl;
 
@@ -213,7 +207,8 @@ void testIndices()
 
   //std::cout << rank<<": source and dest are the same:"<<std::endl;
   //std::cout << remote<<std::endl<<std::flush;
-  delete globalArray;
+  if(rank==master)
+    delete globalArray;
 }
 
 
@@ -223,8 +218,8 @@ void testIndicesBuffered()
   //using namespace Dune;
 
   // The global grid size
-  const int Nx = 20;
-  const int Ny = 2;
+  const int Nx = 8;
+  const int Ny = 1;
 
   // Process configuration
   int procs, rank, master=0;
@@ -253,7 +248,7 @@ void testIndicesBuffered()
   int localIndex=0;
   int size = Ny*(end-start);
   Array distArray(size);
-  Array* globalArray;
+  Array *globalArray;
   int index=0;
 
   for(int j=0; j<Ny; j++)
@@ -305,6 +300,8 @@ void testIndicesBuffered()
   accuInterface.build(accuIndices, sourceFlags, destFlags);
   overlapInterface.build(overlapIndices, Dune::EnumItem<GridFlags,owner>(),
                          Dune::EnumItem<GridFlags,overlap>());
+  overlapInterface.print();
+  accuInterface.print();
 
   //accuInterface.print();
 
@@ -344,7 +341,8 @@ void testIndicesBuffered()
 
   //std::cout << rank<<": source and dest are the same:"<<std::endl;
   //std::cout << remote<<std::endl<<std::flush;
-  delete globalArray;
+  if(rank==master)
+    delete globalArray;
 }
 
 
@@ -425,15 +423,20 @@ void testRedistributeIndices()
 
 
   std::cout<< rank<<": distributed and global index set!"<<std::endl<<std::flush;
-  DatatypeCommunicator<int,GridFlags> redistribute(sendIndexSet,
+  RemoteIndices<int,GridFlags> redistributeIndices(sendIndexSet,
                                                    receiveIndexSet, MPI_COMM_WORLD);
-  DatatypeCommunicator<int, GridFlags> overlapComm(receiveIndexSet, receiveIndexSet, MPI_COMM_WORLD);
+  RemoteIndices<int,GridFlags> overlapIndices(receiveIndexSet, receiveIndexSet, MPI_COMM_WORLD);
+
+  redistributeIndices.rebuild<true>();
+  overlapIndices.rebuild<false>();
+
+  DatatypeCommunicator<int,GridFlags> redistribute, overlapComm;
   EnumItem<GridFlags,owner> fowner;
   EnumItem<GridFlags,overlap> foverlap;
 
-  redistribute.build(fowner, array, fowner, redistributedArray, Bool2Type<true>());
+  redistribute.build(redistributeIndices, fowner, array, fowner, redistributedArray);
 
-  overlapComm.build(fowner, redistributedArray, foverlap, redistributedArray);
+  overlapComm.build(overlapIndices, fowner, redistributedArray, foverlap, redistributedArray);
   std::cout<<rank<<": initial array: "<<array<<std::endl;
 
   redistribute.forward();
@@ -443,6 +446,124 @@ void testRedistributeIndices()
   overlapComm.forward();
 
   std::cout<<rank<<": redistributed array with overlap communicated: "<<redistributedArray<<std::endl;
+}
+
+void testRedistributeIndicesBuffered()
+{
+  using namespace Dune;
+
+  // The global grid size
+  const int Nx = 20;
+  const int Ny = 2;
+
+  // Process configuration
+  int procs, rank;
+  MPI_Comm_size(MPI_COMM_WORLD, &procs);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  // The local grid
+  int nx = Nx/procs;
+  // distributed indexset
+
+  IndexSet<int,ParallelLocalIndex<GridFlags> > sendIndexSet;
+  // global indexset
+  IndexSet<int,ParallelLocalIndex<GridFlags> > receiveIndexSet;
+
+  Array array, redistributedArray;
+
+  // Set up the indexsets.
+  {
+
+    int start = std::max(rank*nx-1,0);
+    int end = std::min((rank + 1) * nx+1, Nx);
+
+    sendIndexSet.beginResize();
+
+
+    array.build(Ny*(end-start));
+
+    for(int j=0, localIndex=0; j<Ny; j++)
+      for(int i=start; i<end; i++, localIndex++) {
+        bool isPublic = (i<=start+1)||(i>=end-2);
+        GridFlags flag = owner;
+
+        if((i==start && i!=0)||(i==end-1 && i!=Nx-1))
+          flag = overlap;
+
+        sendIndexSet.add(i+j*Nx, ParallelLocalIndex<GridFlags> (localIndex,flag,isPublic));
+        array[localIndex]=i+j*Nx; //+rank*Nx*Ny;
+        if(flag==overlap)
+          array[localIndex]=-array[localIndex];
+      }
+
+    sendIndexSet.endResize();
+  }
+  {
+    int newrank = (rank + 1) % procs;
+
+    int start = std::max(newrank*nx-1,0);
+    int end = std::min((newrank + 1) * nx+1, Nx);
+
+    std::cout<<rank<<": "<<newrank<<" start="<<start<<" end"<<end<<std::endl;
+
+    redistributedArray.build(Ny*(end-start));
+
+    receiveIndexSet.beginResize();
+
+    for(int j=0, localIndex=0; j<Ny; j++)
+      for(int i=start; i<end; i++, localIndex++) {
+        bool isPublic = (i<=start+1)||(i>=end-2);
+        GridFlags flag = owner;
+
+        if((i==start && i!=0)||(i==end-1 && i!=Nx-1))
+          flag = overlap;
+
+        receiveIndexSet.add(i+j*Nx, ParallelLocalIndex<GridFlags> (localIndex,flag,isPublic));
+        redistributedArray[localIndex]=-1;
+      }
+
+    receiveIndexSet.endResize();
+  }
+
+
+  std::cout<< rank<<": distributed and global index set!"<<std::endl<<std::flush;
+  RemoteIndices<int,GridFlags> redistributeIndices(sendIndexSet,
+                                                   receiveIndexSet, MPI_COMM_WORLD);
+  RemoteIndices<int,GridFlags> overlapIndices(receiveIndexSet, receiveIndexSet, MPI_COMM_WORLD);
+
+  overlapIndices.rebuild<false>();
+  redistributeIndices.rebuild<true>();
+
+  Interface<int,GridFlags> redistributeInterface, overlapInterface;
+  EnumItem<GridFlags,owner> fowner;
+  EnumItem<GridFlags,overlap> foverlap;
+
+  redistributeInterface.build(redistributeIndices, fowner, fowner);
+  overlapInterface.build(overlapIndices, fowner, foverlap);
+
+  BufferedCommunicator<int,GridFlags> redistribute;
+  BufferedCommunicator<int, GridFlags> overlapComm;
+
+  redistribute.build(array, redistributedArray, redistributeInterface);
+  overlapComm.build<Array>(overlapInterface);
+
+  std::cout<<rank<<": initial array: "<<array<<std::endl;
+
+  redistribute.forward<ArrayGatherScatter>(array, redistributedArray);
+
+  std::cout<<rank<<": redistributed array: "<<redistributedArray<<std::endl;
+
+  redistributedArray +=1;
+
+  std::cout<<rank<<": redistributed array (added one): "<<redistributedArray<<std::endl;
+
+  overlapComm.forward<ArrayGatherScatter>(redistributedArray);
+
+  std::cout<<rank<<": redistributed array with overlap communicated: "<<redistributedArray<<std::endl;
+
+  redistribute.backward<ArrayGatherScatter>(array, redistributedArray);
+
+  std::cout<<rank<<": final array: "<<array<<std::endl;
 }
 
 int main(int argc, char **argv)
@@ -457,12 +578,14 @@ int main(int argc, char **argv)
   bool wait=1;
   while(size>1 && rank==0 && wait) ;
 #endif
-  //testIndices();
+  testIndices();
   testIndicesBuffered();
   /*
      if(rank==0)
      std::cout<<std::endl<<"Redistributing!"<<std::endl<<std::endl;
-     testRedistributeIndices();
    */
+  testRedistributeIndices();
+  testRedistributeIndicesBuffered();
+
   MPI_Finalize();
 }

@@ -13,14 +13,14 @@
 #include "mpi.h"
 
 namespace Dune {
+  /** @addtogroup ISTL_Comm
+   *
+   * @{
+   */
   /**
    * @file
    * @brief Classes discribing a distributed indexset.
    * @author Markus Blatt
-   */
-  /** @addtogroup ISTL_Comm
-   *
-   * @{
    */
   template<class T> class ParallelLocalIndex;
 
@@ -319,6 +319,9 @@ namespace Dune {
     inline RemoteIndices(const IndexSetType& source, const IndexSetType& destination,
                          const MPI_Comm& comm);
 
+    /**
+     * @brief Destructor.
+     */
     ~RemoteIndices();
 
     /**
@@ -347,12 +350,34 @@ namespace Dune {
      */
     inline MPI_Comm communicator() const;
 
+    /**
+     * @brief Get an iterator over all remote index lists.
+     * @return The iterator over all remote index lists postioned at the first process.
+     */
     inline typename RemoteIndexMap::const_iterator begin() const;
 
+    /**
+     * @brief Get an iterator over all remote index lists.
+     * @return The iterator over all remote index lists postioned at the end.
+     */
     inline typename RemoteIndexMap::const_iterator end() const;
 
+    /**
+     * @brief Get an iterator for colletively iterating over the remote indices of all remote processes.
+     */
     template<bool send>
     inline CollectiveIterator<TG,TA> iterator() const;
+
+    /**
+     * @brief Test whether the index lists are built.
+     * @return True if the index lists are built.
+     */
+    inline bool isBuilt() const;
+
+    /**
+     * @brief Free the index lists.
+     */
+    inline void free();
 
   private:
     /** @brief Index set used at the source of the communication. */
@@ -389,6 +414,11 @@ namespace Dune {
      */
     bool firstBuild;
 
+    /**
+     * @brief Whether the indices are built.
+     */
+    bool built_;
+
     /** @brief The index pair type. */
     typedef IndexPair<GlobalIndexType, ParallelLocalIndex<AttributeType> >
     PairType;
@@ -400,18 +430,6 @@ namespace Dune {
      * index lists, the first for receiving, the second for sending.
      */
     RemoteIndexMap remoteIndices_;
-
-    /* @brief The index pairs for local copying if from and to differ. */
-    SLList<std::pair<int,int> > copyLocal_;
-
-    /**
-     * @brief Build the local mapping.
-     *
-     * If the template parameter ignorePublic is true all indices will be treated
-     * as public.
-     */
-    template<bool ignorePublic>
-    inline void buildLocal();
 
     /**
      * @brief Build the remote mapping.
@@ -752,14 +770,14 @@ namespace Dune {
                                              const IndexSetType& destination,
                                              const MPI_Comm& comm)
     : source_(source), dest_(destination), comm_(comm),
-      sourceSeqNo_(-1), destSeqNo_(-1), publicIgnored(false), firstBuild(true)
+      sourceSeqNo_(-1), destSeqNo_(-1), publicIgnored(false), firstBuild(true),
+      built_(false)
   {}
 
   template<class TG, class TA>
   RemoteIndices<TG,TA>::~RemoteIndices()
   {
-    remoteIndices_.clear();
-    copyLocal_.clear();
+    free();
   }
 
   template<class TG, class TA>
@@ -791,39 +809,8 @@ namespace Dune {
 
   template<class TG, class TA>
   template<bool ignorePublic>
-  inline void RemoteIndices<TG,TA>::buildLocal()
-  {
-    //typedef typename IndexSetType::iterator const_iterator;
-    typedef Dune::ConstArrayListIterator<Dune::IndexPair<int, Dune::ParallelLocalIndex<TA> >, 100,
-        std::allocator<Dune::IndexPair<int, Dune::ParallelLocalIndex<TA> > > > const_iterator;
-
-    copyLocal_.clear();
-
-    const_iterator sourceIndex = source_.begin(), destIndex = dest_.begin();
-    const_iterator sourceEnd = source_.end(), destEnd = dest_.end();
-    int i=0;
-
-    while(sourceIndex != sourceEnd && destIndex != destEnd) {
-      if(destIndex->global() == sourceIndex->global() &&
-         ( ignorePublic || destIndex->local().isPublic() && sourceIndex->local().isPublic()))
-      {
-        copyLocal_.push_back(std::make_pair(sourceIndex->local(), destIndex->local()));
-        ++sourceIndex;
-        ++destIndex;
-        ++i;
-      }
-      else if(destIndex->global() < sourceIndex->global())
-        ++destIndex;
-      else
-        ++sourceIndex;
-    }
-  }
-
-  template<class TG, class TA>
-  template<bool ignorePublic>
   inline void RemoteIndices<TG,TA>::buildRemote()
   {
-    remoteIndices_.clear();
 
     // Processor configuration
     int rank, procs;
@@ -1116,19 +1103,37 @@ namespace Dune {
   }
 
   template<class TG, class TA>
+  inline bool RemoteIndices<TG,TA>::isBuilt() const
+  {
+    return built_;
+  }
+
+  template<class TG, class TA>
+  inline void RemoteIndices<TG,TA>::free()
+  {
+    remoteIndices_.clear();
+  }
+
+  template<class TG, class TA>
   template<bool ignorePublic>
   inline void RemoteIndices<TG,TA>::rebuild()
   {
     // Test wether a rebuild is Needed.
     if(firstBuild ||
        ignorePublic!=publicIgnored || !
-       isSynced())
+       isSynced()) {
+      free();
+
       buildRemote<ignorePublic>();
 
-    sourceSeqNo_ = source_.seqNo();
-    destSeqNo_ = dest_.seqNo();
-    firstBuild=false;
-    publicIgnored=ignorePublic;
+      sourceSeqNo_ = source_.seqNo();
+      destSeqNo_ = dest_.seqNo();
+      firstBuild=false;
+      publicIgnored=ignorePublic;
+      built_ = true;
+    }
+
+
   }
 
   template<class TG, class TA>
