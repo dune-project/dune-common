@@ -25,22 +25,23 @@ namespace Dune {
    * Quadrature points. Needs a RangeType (type of the quadrature
    * weight), a DomainType (type of local coordinates) and a polynomial
    * order as template parameter. The constructor expects an
-   * Codim-0-Entity (Element) as parameter.
+   * Codim-0-Entity (Element) as parameter or a ElementType such as triangle
+   * or hexahedron.
 
    * With this class the quadratures are created as templates, whereas
-   * with QuadratureImp the constructor decides on the rule. Thus, this
+   * with Quadrature the constructor decides on the rule. Thus, this
    * quadrature is instantiated quicker.
    */
   template< class RangeFieldType , class DomainType , int poly_order >
-  class DuneQuad
+  class FixedOrderQuad
     : public QuadratureDefault  < RangeFieldType , DomainType ,
-          DuneQuad < RangeFieldType, DomainType, poly_order > >
+          FixedOrderQuad < RangeFieldType, DomainType, poly_order > >
   {
   private:
     enum { dim = DomainType::size };
 
     //! my Type
-    typedef DuneQuad <  RangeFieldType , DomainType , poly_order > DuneQuadType;
+    typedef FixedOrderQuad <  RangeFieldType , DomainType , poly_order > FixedOrderQuadType;
 
     // number of quadrature points on segment line
     // upper bound
@@ -52,7 +53,7 @@ namespace Dune {
   public:
     //! Constructor build the vec with the points and weights
     template <class EntityType>
-    DuneQuad ( EntityType &en )
+    FixedOrderQuad ( EntityType &en )
     {
       switch(en.geometry().type())
       {
@@ -61,12 +62,12 @@ namespace Dune {
       case hexahedron :    { makeQuadrature<hexahedron> (); break; }
       case triangle :      { makeQuadrature<triangle> (); break; }
       case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown ElementType in DuneQuad::makeQuadrature()\n"; abort();  break; }
+      default :       { std::cerr << "Unkown ElementType in FixedOrderQuad::makeQuadrature()\n"; abort();  break; }
       }
     };
 
     //! Constructor build the vec with the points and weights
-    DuneQuad ( ElementType eltype )
+    FixedOrderQuad ( ElementType eltype )
     {
       switch(eltype)
       {
@@ -75,11 +76,11 @@ namespace Dune {
       case hexahedron :    { makeQuadrature<hexahedron> (); break; }
       case triangle :      { makeQuadrature<triangle> (); break; }
       case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown ElementType in DuneQuad::makeQuadrature()\n"; abort();  break; }
+      default :       { std::cerr << "Unkown ElementType in FixedOrderQuad::makeQuadrature()\n"; abort();  break; }
       }
     };
 
-    virtual ~DuneQuad() {}
+    virtual ~FixedOrderQuad() {}
 
     //! return number of quadrature points
     int nop() const { return numberOfQuadPoints_; }
@@ -134,33 +135,33 @@ namespace Dune {
     FieldVector<RangeFieldType, maxQuadPoints> weights_;
     FieldVector<DomainType, maxQuadPoints>     points_;
 
-  }; // end class DuneQuadrature
+  }; // end class FixedOrderQuadrature
 
 
   //********************************************************************
   //
-  //  --QuadratureImp
+  //  --Quadrature
   /**
-   * \brief Quadrature class implementation
+   * \brief Quadrature class where the quadrature order can be choosen
+   * dynamicaly.
 
    * Quadrature is different for different Domain and RangeField types and of
    * course for different element types but for dynamical polynomial order.
    * The element type comes from a given entity or the grid
    * and polOrd is given at runtime. For fast quadratures use the
-   * DuneQuad class.
+   * FixedOrderQuad class.
    */
-  //
   //********************************************************************
   template< class RangeFieldType , class DomainType >
-  class QuadratureImp : public QuadratureDefault  < RangeFieldType ,
-                            DomainType , QuadratureImp < RangeFieldType , DomainType > >  {
+  class Quadrature : public QuadratureDefault  < RangeFieldType ,
+                         DomainType , Quadrature < RangeFieldType , DomainType > >  {
 
     // my Type
-    typedef QuadratureImp < RangeFieldType , DomainType > QuadratureType;
+    typedef Quadrature < RangeFieldType , DomainType > QuadratureType;
 
   public:
     //! Constructor building the quadrature
-    QuadratureImp ( int id , ElementType eltype, int polOrd ) :
+    Quadrature ( int id , ElementType eltype, int polOrd ) :
       order_ ( polOrd )  , eltype_ ( eltype )
     {
       switch ( eltype_ )
@@ -175,11 +176,11 @@ namespace Dune {
       case hexahedron   : { buildQuadrature<hexahedron> ( id , polOrd ); break; }
       case iso_triangle : { buildQuadrature<iso_triangle> ( id , polOrd ); break; }
       case iso_quadrilateral : { buildQuadrature<iso_quadrilateral> ( id , polOrd ); break; }
-      default : { std::cerr << "Element type is unkown in Constructor of QuadratureImp! \n"; abort(); }
+      default : { std::cerr << "Element type is unkown in Constructor of Quadrature! \n"; abort(); }
       }
     };
 
-    virtual ~QuadratureImp() {}
+    virtual ~Quadrature() {}
 
     //! return number of quadrature points
     int nop () const { return numQuadPoints_; };
@@ -276,7 +277,7 @@ namespace Dune {
       };
       }
     };
-  }; // end class QuadratureImp
+  }; // end class Quadrature
 
 } // end namespace Dune
 
