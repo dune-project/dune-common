@@ -136,7 +136,7 @@ namespace Dune
     bool builtGeom(const BSSPACE GEOElementType & item);
     bool builtGeom(const BSSPACE HFaceType & item);
 
-    bool builtGhost(const BSSPACE HFaceType & face, const BSSPACE PLLFaceType & ghost);
+    bool builtGhost(const BSSPACE PLLBndFaceType & ghost);
 
     //! print internal data
     //! no interface method
@@ -301,7 +301,7 @@ namespace Dune
     void setelement(BSSPACE HElementType &element,int index);
 
     //! set original element pointer to fake entity
-    void setGhost(BSSPACE HFaceType &face, BSSPACE PLLFaceType &ghost,int index);
+    void setGhost(BSSPACE PLLBndFaceType & ghost,int index);
 
     //! level of this element
     int level ();
@@ -395,7 +395,7 @@ namespace Dune
     BSGrid<dim,dimworld> &grid_;
     BSSPACE GEOElementType *item_;
 
-    BSSPACE PLLFaceType *ghost_;
+    BSSPACE PLLBndFaceType *ghost_;
 
     //! the cuurent geometry
     BSGridElement<dim,dimworld> geo_;
@@ -471,8 +471,7 @@ namespace Dune
   {
     friend class BSGridIntersectionIterator<dim,dimworld>;
   public:
-    BSGridBoundaryEntity () : _geom (false) ,
-                              _neigh (-1), _id(-1) {};
+    BSGridBoundaryEntity () : _geom (false) , _id(-1) {};
 
     int id () { return _id; }
 
@@ -491,7 +490,6 @@ namespace Dune
       _id = id;
     }
 
-    int _neigh;
     int _id;
     // BSGrid<dim,dimworld> & _grid;
     BSGridElement<dim,dimworld> _geom;
@@ -515,7 +513,6 @@ namespace Dune
         BSGridElement, BSGridBoundaryEntity>
   {
     friend class BSGridEntity<0,dim,dimworld>;
-
   public:
     //! prefix increment
     BSGridIntersectionIterator& operator ++();
@@ -592,6 +589,9 @@ namespace Dune
     // if neighbour exists , do setup of new neighbour
     void setNeighbor ();
 
+    // check wether we at ghost boundary, only parallel grid
+    void checkGhost ();
+
     // reset IntersectionIterator to first neighbour
     void first(BSSPACE HElementType & elem, int wLevel);
 
@@ -614,20 +614,20 @@ namespace Dune
                             //! see bsgrid.cc for descritption
 
     bool isBoundary_; //! true if intersection is with boundary
-    bool ghost_;
+    bool ghost_; //! true if intersection is with internal boundary (only parallel grid)
 
-    FieldVector<bs_ctype, dimworld> outNormal_; //! outerNormal ro current intersection
-    FieldVector<bs_ctype, dimworld> unitOuterNormal_;
+    FieldVector<bs_ctype, dimworld> outNormal_; //! outerNormal of current intersection
+    FieldVector<bs_ctype, dimworld> unitOuterNormal_; //! unitOuterNormal of current intersection
 
     bool needSetup_; //! true if setup is needed
-    bool needNormal_;
+    bool needNormal_; //! true if normal has to be calculated
 
     // pair holding pointer to face and twist
     BSSPACE NeighbourFaceType neighpair_;
 
     BSGridElement<dim-1,dimworld> interSelfGlobal_; //! intersection_self_global
 
-    BSGridBoundaryEntity<dim,dimworld> bndEntity_;
+    BSGridBoundaryEntity<dim,dimworld> bndEntity_; //! boundaryEntity
   };
 
 
