@@ -20,8 +20,6 @@ AC_CONFIG_FILES([Makefile
                  fem/Makefile
                  fem/common/Makefile
                  fem/discfuncarray/Makefile
-                 fem/fastquad/Makefile
-                 fem/gaussquadrature/Makefile
                  fem/operator/Makefile
                  grid/Makefile
                  grid/albertgrid/Makefile
