@@ -615,9 +615,6 @@ namespace Dune
     //! prefix increment
     AlbertGridHierarchicIterator& operator ++();
 
-    //! postfix increment
-    AlbertGridHierarchicIterator& operator ++(int i);
-
     //! equality
     bool operator== (const AlbertGridHierarchicIterator& i) const;
 
@@ -731,9 +728,6 @@ namespace Dune
   public:
     //! prefix increment
     AlbertGridIntersectionIterator& operator ++();
-
-    //! postfix increment
-    AlbertGridIntersectionIterator& operator ++(int i);
 
     //! The default Constructor makes empty Iterator
     AlbertGridIntersectionIterator();
@@ -909,9 +903,6 @@ namespace Dune
 
     //! prefix increment
     AlbertGridLevelIterator<codim,dim,dimworld>& operator ++();
-
-    //! postfix increment
-    AlbertGridLevelIterator<codim,dim,dimworld>& operator ++(int i);
 
     //! equality
     bool operator== (const AlbertGridLevelIterator<codim,dim,dimworld>& i) const;
