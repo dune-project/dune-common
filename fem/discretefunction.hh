@@ -422,7 +422,6 @@ namespace Dune {
       GlobalDofIteratorType enddof = dend ( level_ );
       for(GlobalDofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
         fscanf( in, "%d", &v );
-        std::cerr << v << "  ";
         (*itdof) = ((double)v)/255.;
       }
       fclose( in );
