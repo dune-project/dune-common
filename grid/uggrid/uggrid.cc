@@ -341,23 +341,23 @@ UGGrid < dim, dimworld >::lend (int level) const
 template < int dim, int dimworld >
 inline int UGGrid < dim, dimworld >::size (int level, int codim) const
 {
-  DUNE_THROW(NotImplemented, "size currently not available");
-
   int numberOfElements = 0;
-#if 0
 
   if(codim == 0)
   {
-    UGGridLevelIterator<0,All_Partition,const UGGrid<dim,dimworld> > endit = lend<0>(level);
-    for(UGGridLevelIterator<0,All_Partition, const UGGrid<dim,dimworld> > it = lbegin<0>(level);
-        it != endit; ++it)
+    //UGGridLevelIterator<0,All_Partition, const UGGrid<dim,dimworld> > it = lbegin<0>(level);
+    //UGGridLevelIterator<0,All_Partition,const UGGrid<dim,dimworld> > endit = lend<0>(level);
+    typename Traits::template codim<0>::LevelIterator it = lbegin<0>(level);
+    typename Traits::template codim<0>::LevelIterator endit = lend<0>(level);
+    for (; it != endit; ++it)
       numberOfElements++;
+
   } else
   if(codim == dim)
   {
-    UGGridLevelIterator<dim,All_Partition, const UGGrid<dim,dimworld> > endit = lend<dim>(level);
-    for(UGGridLevelIterator<dim,All_Partition, const UGGrid<dim,dimworld> > it = lbegin<dim>(level);
-        it != endit; ++it)
+    typename Traits::template codim<dim>::LevelIterator it    = lbegin<dim>(level);
+    typename Traits::template codim<dim>::LevelIterator endit = lend<dim>(level);
+    for(; it != endit; ++it)
       numberOfElements++;
   }
   else
@@ -366,7 +366,7 @@ inline int UGGrid < dim, dimworld >::size (int level, int codim) const
                                     << ">::size(int level, int codim) is only implemented"
                                     << " for codim==0 and codim==dim!");
   }
-#endif
+
   return numberOfElements;
 }
 
@@ -412,7 +412,33 @@ void UGGrid < dim, dimworld >::makeNewUGMultigrid()
 }
 
 template < int dim, int dimworld >
-inline bool UGGrid < dim, dimworld >::adapt()
+bool UGGrid < dim, dimworld >::mark(int refCount,
+                                    typename Traits::template codim<0>::EntityPointer & e )
+{
+  //DUNE_THROW(NotImplemented, "Mark currently not available");
+#if 1
+  typename TargetType<0,dim>::T* target = e->realEntity.target_;
+
+#ifdef _3
+  if (!UG3d::EstimateHere(target))
+    return false;
+
+  return UG3d::MarkForRefinement(target,
+                                 UG3d::RED,
+                                 0);    // no user data
+#else
+  if (!UG2d::EstimateHere(target))
+    return false;
+
+  return UG2d::MarkForRefinement(target,
+                                 UG2d::RED,   // red refinement rule
+                                 0);    // no user data
+#endif
+#endif
+}
+
+template < int dim, int dimworld >
+bool UGGrid < dim, dimworld >::adapt()
 {
   int rv;
   int mode;
@@ -490,17 +516,11 @@ template < int dim, int dimworld >
 void UGGrid < dim, dimworld >::globalRefine(int refCount)
 {
   // mark all entities for grid refinement
-  //UGGridLevelIterator<0, All_Partition, const UGGrid<dim,dimworld> > iIt    = lbegin<0>(maxlevel());
-  //UGGridLevelIterator<0, All_Partition, const UGGrid<dim,dimworld> > iEndIt = lend<0>(maxlevel());
+  typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
+  typename Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
 
-  typename UGGrid<dim,dimworld>::Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
-  typename UGGrid<dim,dimworld>::Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
-
-
-#if 0
   for (; iIt!=iEndIt; ++iIt)
-    iIt->mark(1);
-#endif
+    mark(1, iIt);
 
   this->preAdapt();
   adapt();

@@ -137,7 +137,7 @@ index() const
   return UG_NS<dim>::index(target_);
 }
 
-
+#if 0
 template< int dim, class GridImp>
 inline bool UGGridEntity < 0, dim ,GridImp>::
 mark( int refCount )
@@ -159,6 +159,7 @@ mark( int refCount )
 #endif
 }
 
+#endif
 
 //*****************************************************************8
 // count
