@@ -134,8 +134,6 @@ galerkinRestrict(const OperatorType& fineMat, OperatorType& coarseMat,
 
       for (; m!=mEnd; ++m) {
 
-        int w = m.index();
-
         if ((*recompute_)[i] || (*recompute_)[m.index()])
           *m = 0;
 
