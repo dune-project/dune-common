@@ -7,7 +7,7 @@
 template <class FunctionSpaceType>
 FastBaseFunctionSet<FunctionSpaceType >::
 FastBaseFunctionSet( FunctionSpaceType & fuspace, int numOfBaseFct )
-  : BaseFunctionSetInterface<FunctionSpaceType,FastBaseFunctionSet <FunctionSpaceType > > ( fuspace ),
+  : BaseFunctionSetDefault <FunctionSpaceType,FastBaseFunctionSet <FunctionSpaceType > > ( fuspace ),
     vecEvaluate_( numDiffOrd ) {
   for(int i=0; i<numDiffOrd; i++)
     evaluateQuad_[i] = DynamicType::undefined;
