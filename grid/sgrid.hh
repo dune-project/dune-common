@@ -24,7 +24,7 @@ namespace Dune {
           The following class diagram shows how the classes are related with
           each other:
 
-          \image html sgridclasses.gif "Class diagram for classes in the grid interface"
+          \image html sgridclasses.png "Class diagram for classes in the grid interface"
           \image latex sgridclasses.eps "Class diagram for classes in the grid interface" width=\textwidth
 
           Short description of the classes:
