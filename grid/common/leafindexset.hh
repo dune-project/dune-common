@@ -269,7 +269,7 @@ namespace Dune {
     }
 
     //! return how much extra memory is needed for restriction
-    int tmpSize () const { return 2 * nextFreeIndex_; }
+    int tmpSize () const { return nextFreeIndex_; }
 
     //! return size of grid entities per level and codim
     int size ( int level , int codim ) const
@@ -285,15 +285,6 @@ namespace Dune {
     int index (EntityType & en, int num) const
     {
       return IndexWrapper<EntityType,EntityType::codimension,codim>::index(en,leafIndex_,num);
-      /*
-         // this index set works only for codim = 0 at the moment
-         assert(codim == 0);
-
-         // check if we have index for given entity
-         assert(leafIndex_[en.global_index()] >= 0);
-
-         return leafIndex_[en.global_index()];
-       */
     }
 
     //! return size of grid entities per level and codim
@@ -360,7 +351,6 @@ namespace Dune {
     void insert (int num )
     {
       assert(num < leafIndex_.size() );
-
       if(leafIndex_[num] < 0)
       {
         leafIndex_[num] = nextFreeIndex_;
