@@ -8,10 +8,13 @@
 namespace Dune
 {
 
-  template <typename Field, typename Domain, typename Range>
-  class Operator : public Mapping <Field,Domain,Range>
+  template <typename FieldType, typename DomainType , typename RangeType>
+  class Operator : public Mapping <FieldType,DomainType,RangeType>
   {
   public:
+    typedef DomainType Domain;
+    typedef RangeType Range;
+    typedef FieldType Field;
 
   private:
 
