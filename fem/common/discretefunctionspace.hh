@@ -18,6 +18,22 @@ namespace Dune {
                       Periodic   //!< Periodic boundary
   };
 
+  /*!
+     BoundaryIdentifierInterface is a map from a given boundary id to a
+     certain boundary type in an application, for example -1 means Dirichlet.
+     This class should be defined by the user and is a parameter
+     of the function space.
+   */
+  class BoundaryIdentifierDefault
+  {
+  public:
+    //! for given boundary id return corresponding boundary type
+    BoundaryType boundaryType ( int id ) const
+    {
+      return (id < 0) ? Dirichlet : Neumann;
+    }
+  };
+
   /** @defgroup DiscreteFunctionSpace DiscreteFunctionSpace
      @ingroup DiscreteFunction
      This provides the interfaces for discrete function spaces.
@@ -95,6 +111,12 @@ namespace Dune {
     //! which can also be the leaflevel and furthermore
     //! this depends also on the base function set
     int size () const { return asImp().size(); };
+
+    //! return boundary type for given boundary id
+    BoundaryType boundaryType ( int id ) const
+    {
+      return asImp().boundaryType(id);
+    }
 
     //! For given entity map local dof number to global dof number
     //! at the level of the given entity.
