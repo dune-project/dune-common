@@ -79,7 +79,7 @@ namespace Dune {
 #else
       using UG3d::element_descriptors;
 #endif
-      CORNERS_OF_SIDE(theElement, side);
+      return CORNERS_OF_SIDE(theElement, side);
     }
 
     static int Corner_Of_Side(const typename TargetType<0,dim>::T* theElement, int side, int corner) {
@@ -88,7 +88,7 @@ namespace Dune {
 #else
       using UG3d::element_descriptors;
 #endif
-      CORNER_OF_SIDE(theElement, side, corner);
+      return CORNER_OF_SIDE(theElement, side, corner);
     }
 
     //! Encapsulates the TAG macro
@@ -115,8 +115,8 @@ namespace Dune {
                               const FieldVector<double, dim>& local, Mat<dim,dim,double>& mat) {
       typedef DOUBLE DOUBLE_VECTOR[dim];
       double det;
-      INVERSE_TRANSFORMATION(n, x, local, mat, det)
-
+      INVERSE_TRANSFORMATION(n, x, local, mat, det);
+      return 0;
     }
 
     //! Returns the i-th corner of a UG element
@@ -180,6 +180,37 @@ namespace Dune {
 
   };
 
+  template <int codim, int dimworld>
+  class UGGridSubEntityFactory {
+    //     public:
+    //         static TargetType<codim,dimworld>::T* get(TargetType<codim,dimworld>::T* c, int i){
+    //             DUNE_THROW(GridError, "UGGridSubEnt");
+    //         }
+  };
+
+  template<>
+  class UGGridSubEntityFactory<0,2> {
+  public:
+    static TargetType<0,2>::T* get(TargetType<0,2>::T* c, int i){
+      return c;
+    }
+  };
+
+  template<>
+  class UGGridSubEntityFactory<2,2> {
+  public:
+    static TargetType<2,2>::T* get(TargetType<0,2>::T* c, int i){
+      return UG_NS<2>::Corner(c, i);
+    }
+  };
+
+  template<>
+  class UGGridSubEntityFactory<1,2> {
+  public:
+    static TargetType<1,2>::T* get(TargetType<0,2>::T* c, int i){
+      DUNE_THROW(GridError, "UGGridSubEntityFactory<1,2>::get() not implemented!");
+    }
+  };
 
 } // namespace Dune
 

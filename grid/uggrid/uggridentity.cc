@@ -95,6 +95,7 @@ geometry()
   return geo_;
 }
 
+#if 0  // commented out because it doesn't compile
 #ifdef _3
 template<>
 inline UGGridLevelIterator<0,3,3, All_Partition>
@@ -110,6 +111,7 @@ UGGridEntity < 0, 3 ,3>::father()
   it.setToTarget(fatherTarget);
   return it;
 }
+#endif
 #endif
 
 //************************************
@@ -243,6 +245,7 @@ inline int UGGridEntity<0, dim, dimworld>::subIndex(int i)
   return node->myvertex->iv.id;
 }
 
+
 template <int dim, int dimworld>
 template <int cc>
 inline UGGridLevelIterator<cc,dim,dimworld,All_Partition>
@@ -260,9 +263,10 @@ UGGridEntity<0,dim,dimworld>::entity ( int i )
     i = renumbering[i];
   }
 
-  typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(target_,i);
+  //typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(target_,i);
+  typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dimworld>::get(target_,i);
   UGGridLevelIterator<cc,dim,dimworld,All_Partition> it (level_);
-  it.setToTarget(node, level_);
+  it.setToTarget(subEntity, level_);
   return it;
 }
 
