@@ -47,6 +47,12 @@ namespace Dune {
     return t2;
   }
 
+  template<class T>
+  T SQR (T t)
+  {
+    return t*t;
+  }
+
   template <class T>
   T* realloc(T* & pointer, int size) {
     if (size==0) {
