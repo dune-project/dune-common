@@ -1,8 +1,7 @@
-- use ax_check_gl from autoconf-archive. maybe fixes:
-
-- the nVidia-libGL seems to need a -pthread... find out more about this
+- how to check for -lXext in Grape-test?
 
 - provide a wrapper for ACX_MPI called DUNE_PATH_MPI (should also fix
   the aclocal-1.4-problem)
 
 - do we perhaps need -ldl for Grape? libltdl instead? What about -Wl,-rpath?
+
