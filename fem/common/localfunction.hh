@@ -6,7 +6,8 @@
 namespace Dune {
 
 
-  /** @defgroup LocalFunction The LocalFunction Interface for Dof access
+  /** @defgroup LocalFunction LocalFunction
+     @ingroup DiscreteFunction
 
      On every element from a discrete function the local funtion can be accessed.
      With the local function one has access to the dof and on the other hand to

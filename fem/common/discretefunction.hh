@@ -10,13 +10,13 @@
 
 namespace Dune {
 
-  /** @defgroup DiscreteFunction The Interface for DiscreteFunctions
-
-      The DiscreteFunction is resposible for the dof storage. This can be
+  /** @defgroup DiscreteFunction DiscreteFunction
+      @ingroup FunctionCommon
+      The DiscreteFunction is responsible for the dof storage. This can be
       done in various ways an is left to the user. The user has to derive his
-      own implemenation from the DiscreteFunctionDefault class. If some of
+      own implementation from the DiscreteFunctionDefault class. If some of
       the implementations in the default class are for his dof storage
-      unefficient, then one can overload this functions.
+      inefficient, then one can overload this functions.
 
      @{
    */

@@ -7,6 +7,12 @@
 
 namespace Dune {
 
+  /** @defgroup DiscreteOperator DiscreteOperator
+      @ingroup OperatorCommon
+
+     @{
+   */
+
   //! strorage class for new generated operators during operator + on
   //! DiscreteOperator
   template <class ObjType>
@@ -102,6 +108,10 @@ namespace Dune {
     // current level of operator
     mutable int level_;
   }; // end class DiscreteOperatorDefault
+
+
+
+  /** @} end documentation group */
 
 } // end namespace Dune
 

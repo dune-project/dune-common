@@ -9,6 +9,14 @@
 
 namespace Dune {
 
+
+  /** @defgroup Mapping Mapping
+     \ingroup AlgebraCommon
+     Mappings in Dune always map from one vector space into another vector space.
+
+     @{
+   */
+
   // Note: Range has to have Vector structure as well.
   template<typename DFieldType,typename RFieldType, class DType, class RType>
   class Mapping : public Vector < RFieldType >
@@ -113,6 +121,9 @@ namespace Dune {
   };
 
 #include "mapping.cc"
+
+  /** @} end documentation group */
+
 
 }
 

@@ -13,15 +13,6 @@
 namespace Albert
 {
 
-  /** @defgroup AlbertGrid AlbertGrid Module
-
-     This is one implementation of the grid interface providing 2d triangle
-     and 3d tetrahedra grids by using the FE Box ALBERT by Kunibert Siebert
-     and Alfred Schmidt.
-
-     @{
-   */
-
 #else
 #define ALBERT
 #endif
@@ -72,8 +63,8 @@ namespace Albert
 
   namespace Dune
   {
-    /** @defgroup AlbertGrid AlbertGrid Module
-
+    /** @defgroup AlbertGrid AlbertGrid
+       @ingroup GridCommon
        This is one implementation of the grid interface providing 2d triangle
        and 3d tetrahedra grids by using the FE Box ALBERT ( ALBERT
        was written by Kunibert Siebert

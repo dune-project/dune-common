@@ -7,7 +7,7 @@
 
 namespace Dune {
 
-  /** @defgroup GridCommon Dune Grid Module
+  /** @defgroup GridCommon Grid
      The Dune Grid module defines a general interface to a hierarchical finite element mesh.
      The interface is independent of dimension and element type. Various implementations
      of this interface exits:
@@ -46,7 +46,9 @@ namespace Dune {
   enum ElementType {unknown,vertex,line, triangle, quadrilateral, tetrahedron, pyramid, prism, hexahedron,
                     iso_triangle, iso_quadrilateral};
 
-  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_id };
+  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, Ug_Grid_Id };
+
+  enum IteratorType { Master, Interior, Border, Ghost, InteriorBorder, All };
 
   enum FileFormatType { ascii , xdr , USPM , pgm };
 

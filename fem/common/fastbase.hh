@@ -8,7 +8,7 @@
 namespace Dune {
 
   /** @defgroup FastBaseFunctionSet The FastBaseFunctionSet
-
+     @ingroup BaseFunctionSet
      The FastBaseFunctionSet is an special implementation of the interface
      BaseFunctionSetInterface. The idea here is to cache all evaluations of
      the base functions for a given quadrature. That means if we use an

@@ -6,6 +6,12 @@
 namespace Dune
 {
 
+  /** @defgroup LocalOperator LocalOperator
+      @ingroup  DiscreteOperator
+
+     @{
+   */
+
   //***********************************************************************
   //
   /*! Interface LocalOperators
@@ -235,6 +241,8 @@ namespace Dune
 
   }; // end class ScaledLocalOperator
 
+
+  /** @} end documentation group */
 
 } // end namespace Dune
 

@@ -8,6 +8,13 @@
 
 namespace Dune {
 
+  /** @defgroup FunctionSpace FunctionSpace
+     @ingroup Function
+     This provides the interfaces for discrete function spaces.
+
+     @{
+   */
+
   template< typename DomainFieldType, typename RangeFieldType, int n, int m >
   class FunctionSpace : public DynamicType {
   public:
@@ -26,6 +33,8 @@ namespace Dune {
     FunctionSpace ( int ident ) : DynamicType (ident){} ;
 
   };
+
+  /** @} end documentation group */
 
 }
 
