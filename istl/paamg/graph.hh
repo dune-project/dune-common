@@ -5,7 +5,7 @@
 #define DUNE_AMG_GRAPH_HH
 
 #include <iostream>
-
+#include <dune/common/typetraits.hh>
 namespace Dune
 {
   namespace amg
@@ -29,6 +29,307 @@ namespace Dune
      * strong or weak, what vertices are isolated, etc., have to build.
      * This information will be contained in the MatrixGraph class.
      */
+
+    /**
+     * @brief The (undirected) graph of matrix.
+     *
+     * The graph of a sparse matrix essentially describes the sparsity
+     * pattern (nonzero entries) of a matrix.
+     * It is assumed that the underlying sparsity pattern is symmetric,
+     * i.e if entry a_ij is present in the storage scheme of the matrix
+     * (i.e. nonzero) so is a_ji.
+     *
+     * The matrix entrie can be accessed as weights of the vertices and
+     * edges.
+     */
+    template<class M>
+    class MatrixGraph
+    {
+    public:
+      /**
+       * @brief The type of the matrix we are a graph for.
+       */
+      typedef M Matrix;
+
+      /**
+       * @brief The type of the weights
+       */
+      typedef typename M::block_type Weight;
+
+      typedef int VertexDescriptor;
+
+      /**
+       * @brief Const iterator over all egdes starting from a vertex.
+       */
+      template<class C>
+      class EdgeIteratorT
+      {
+        /**
+         *  @brief The mutable type of the container type.
+         */
+        typedef typename RemoveConst<C>::Type MutableContainer;
+        /**
+         * @brief The constant type of the container type.
+         */
+        typedef const typename RemoveConst<C>::Type ConstContainer;
+
+        friend class EdgeIteratorT<MutableContainer>;
+        friend class EdgeIteratorT<ConstContainer>;
+
+        enum {
+          /** @ brief whether C is mutable. */
+          isMutable = SameType<C, MutableContainer>::value
+        };
+
+
+        typedef typename SelectType<isMutable,typename Matrix::row_type::Iterator,
+            typename Matrix::row_type::ConstIterator>::Type
+        ColIterator;
+
+        typedef typename SelectType<isMutable,typename M::block_type,
+            const typename M::block_type>::Type
+        Weight;
+
+      public:
+        /**
+         * @brief Constructor.
+         * @param source The source vertex of the edges.
+         * @param block The matrix column block the iterator is initialized to,
+         * @param end The end iterator of the matrix row.
+         */
+        EdgeIteratorT(const VertexDescriptor& source, const ColIterator& block,
+                      const ColIterator& end);
+
+        /**
+         * @brief Copy Constructor.
+         * @param other The iterator to copy.
+         */
+        EdgeIteratorT(const EdgeIteratorT<typename RemoveConst<C>::Type>& other);
+
+        /**
+         * @brief Access the edge weight
+         */
+        typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+            typename M::block_type, const typename M::block_type>::Type&
+        weight() const;
+
+        /** @brief preincrement operator. */
+        EdgeIteratorT<C>& operator++();
+
+        /** @brief Inequality operator. */
+        bool operator!=(const EdgeIteratorT<typename RemoveConst<C>::Type>& other) const;
+
+        /** @brief Inequality operator. */
+        bool operator!=(const EdgeIteratorT<const typename RemoveConst<C>::Type>& other) const;
+
+        /** @brief The index of the target vertex of the current edge. */
+        VertexDescriptor target() const;
+
+        /** @brief The index of the source vertex of the current edge. */
+        VertexDescriptor source() const;
+
+
+      private:
+        /** @brief Start vertex of the edges. */
+        VertexDescriptor source_;
+        /** @brief The column iterator describing the current edge. */
+        ColIterator block_;
+        /***
+         * @brief The column iterator positioned at the end of the row
+         * of vertex source_
+         */
+        ColIterator blockEnd_;
+      };
+
+      /**
+       * @brief The vertex iterator type of the graph.
+       */
+      template<class C>
+      class VertexIteratorT
+      {
+
+        /**
+         *  @brief The mutable type of the container type.
+         */
+        typedef typename RemoveConst<C>::Type MutableContainer;
+        /**
+         * @brief The constant type of the container type.
+         */
+        typedef const typename RemoveConst<C>::Type ConstContainer;
+
+        friend class VertexIteratorT<MutableContainer>;
+        friend class VertexIteratorT<ConstContainer>;
+
+        enum {
+          /** @ brief whether C is mutable. */
+          isMutable = SameType<C, MutableContainer>::value
+        };
+
+      public:
+        /**
+         * @brief Constructor.
+         * @param graph The graph we are a vertex iterator for.
+         * @param current The current vertex to position on.
+         */
+        VertexIteratorT(C* graph, const VertexDescriptor& current);
+
+        VertexIteratorT(const VertexIteratorT<MutableContainer>& other);
+
+        /**
+         * @brief Move to the next vertex.
+         * @return This iterator positioned at the next vertex.
+         */
+        VertexIteratorT<C>& operator++();
+
+        /** @brief Inequality operator. */
+        bool operator!=(const VertexIteratorT<ConstContainer>& other) const;
+
+        /** @brief Equality operator. */
+        bool operator==(const VertexIteratorT<ConstContainer>& other) const;
+
+        /** @brief Inequality operator. */
+        bool operator!=(const VertexIteratorT<MutableContainer>& other) const;
+
+        /** @brief Equality operator. */
+        bool operator==(const VertexIteratorT<MutableContainer>& other) const;
+
+        /** @brief Access the weight of the vertex. */
+        typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+            typename M::block_type, const typename M::block_type>::Type&
+        weight() const;
+
+        /**
+         * @brief Get the descriptor of the current vertex.
+         * @return The index of the currently referenced vertex.
+         */
+        const VertexDescriptor& index() const;
+
+        /**
+         * @brief Get an iterator over all edges starting at the
+         * current vertex.
+         * @return Iterator position on the first edge to another vertex.
+         */
+        EdgeIteratorT<typename SelectType<Dune::SameType<C,typename Dune::RemoveConst<C>::Type>::value,
+                typename RemoveConst<C>::Type,
+                const typename RemoveConst<C>::Type>::Type>
+        begin() const;
+
+        /**
+         * @brief Get an iterator over all edges starting at the
+         * current vertex.
+         * @return Iterator position on the first edge to another vertex.
+         */
+        EdgeIteratorT<typename SelectType<Dune::SameType<C,typename Dune::RemoveConst<C>::Type>::value,
+                typename RemoveConst<C>::Type,
+                const typename RemoveConst<C>::Type>::Type>
+        end() const;
+
+      private:
+        C* graph_;
+        VertexDescriptor current_;
+      };
+
+      /**
+       * @brief The constant edge iterator type.
+       */
+      typedef EdgeIteratorT<const MatrixGraph<Matrix> > ConstEdgeIterator;
+
+      /**
+       * @brief The constant edge iterator type.
+       */
+      typedef EdgeIteratorT<MatrixGraph<Matrix> > EdgeIterator;
+
+      /**
+       * @brief The constant vertex iterator type.
+       */
+      typedef VertexIteratorT<const MatrixGraph<Matrix> > ConstVertexIterator;
+
+      /**
+       * @brief The constant vertex iterator type.
+       */
+      typedef VertexIteratorT<MatrixGraph<Matrix> > VertexIterator;
+
+      /**
+       * @brief Constructor.
+       * @param matrix The matrix we are a graph for.
+       */
+      MatrixGraph(Matrix& matrix);
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned at the first vertex.
+       */
+      VertexIterator begin();
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned behind the last vertex.
+       */
+      VertexIterator end();
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned at the first vertex.
+       */
+      ConstVertexIterator begin() const;
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned behind the last vertex.
+       */
+      ConstVertexIterator end() const;
+
+      /**
+       * @brief Get an iterator over the edges starting at a vertex.
+       * @param source The vertex where the edges should start.
+       * @return An edge iterator positioned at the first edge starting
+       * from vertex source.
+       */
+      EdgeIterator beginEdges(const VertexDescriptor& source);
+
+      /**
+       * @brief Get an iterator over the edges starting at a vertex.
+       * @param source The vertex where the edges should start.
+       * @return An edge iterator positioned behind the last edge starting
+       * from vertex source.
+       */
+      EdgeIterator endEdges(const VertexDescriptor& source);
+
+
+      /**
+       * @brief Get an iterator over the edges starting at a vertex.
+       * @param source The vertex where the edges should start.
+       * @return An edge iterator positioned at the first edge starting
+       * from vertex source.
+       */
+      ConstEdgeIterator beginEdges(const VertexDescriptor& source) const;
+
+      /**
+       * @brief Get an iterator over the edges starting at a vertex.
+       * @param source The vertex where the edges should start.
+       * @return An edge iterator positioned behind the last edge starting
+       * from vertex source.
+       */
+      ConstEdgeIterator endEdges(const VertexDescriptor& source) const;
+
+      /**
+       * @brief Get the underlying matrix.
+       * @return The matrix of the graph.
+       */
+      Matrix& matrix();
+
+      /**
+       * @brief Get the underlying matrix.
+       * @return The matrix of the graph.
+       */
+      const Matrix& matrix() const;
+
+    private:
+      /** @brief The matrix we are the graph for. */
+      Matrix& matrix_;
+      /** @brief The number of vertices in the graph. */
+      int noVertices_;
+    };
 
     /**
      * @brief The weighted matrix graph with properties attached to the vertices
@@ -563,6 +864,249 @@ namespace Dune
       /** @brief True if the graph is built. */
       bool built_;
     };
+
+
+    template<class M>
+    MatrixGraph<M>::MatrixGraph(M& matrix)
+      : matrix_(matrix), noVertices_(0)
+    {
+      typedef typename M::ConstIterator Iterator;
+      for(Iterator row=matrix_.begin(); row != matrix_.end(); ++row)
+        ++noVertices_;
+    }
+
+    template<class M>
+    M& MatrixGraph<M>::matrix()
+    {
+      return matrix_;
+    }
+
+    template<class M>
+    const M& MatrixGraph<M>::matrix() const
+    {
+      return matrix_;
+    }
+
+
+    template<class M>
+    template<class C>
+    MatrixGraph<M>::EdgeIteratorT<C>::EdgeIteratorT(const VertexDescriptor& source, const ColIterator& block,
+                                                    const ColIterator& end)
+      : source_(source), block_(block), blockEnd_(end)
+    {
+      if(block_!=blockEnd_ && block_.index() == source_) {
+        // This is the edge from the diagonal to the diagonal. Skip it.
+        ++block_;
+      }
+    }
+
+
+    template<class M>
+    template<class C>
+    MatrixGraph<M>::EdgeIteratorT<C>::EdgeIteratorT(const EdgeIteratorT<typename RemoveConst<C>::Type>& other)
+      : source_(other.source_), block_(other.block_), blockEnd_(other.blockEnd_)
+    {}
+
+
+    template<class M>
+    template<class C>
+    inline typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+        typename M::block_type, const typename M::block_type>::Type&
+    MatrixGraph<M>::EdgeIteratorT<C>::weight() const
+    {
+      return *block_;
+    }
+
+    template<class M>
+    template<class C>
+    inline MatrixGraph<M>::EdgeIteratorT<C>& MatrixGraph<M>::EdgeIteratorT<C>::operator++()
+    {
+      ++block_;
+
+      if(block_!=blockEnd_ && block_.index() == source_) {
+        // This is the edge from the diagonal to the diagonal. Skip it.
+        ++block_;
+      }
+
+      return *this;
+    }
+
+    template<class M>
+    template<class C>
+    inline bool MatrixGraph<M>::EdgeIteratorT<C>::operator!=(const MatrixGraph<M>::EdgeIteratorT<typename RemoveConst<C>::Type>& other) const
+    {
+      return block_!=other.block_;
+    }
+
+    template<class M>
+    template<class C>
+    inline bool MatrixGraph<M>::EdgeIteratorT<C>::operator!=(const MatrixGraph<M>::EdgeIteratorT<const typename RemoveConst<C>::Type>& other) const
+    {
+      return block_!=other.block_;
+    }
+
+    template<class M>
+    template<class C>
+    inline typename MatrixGraph<M>::VertexDescriptor MatrixGraph<M>::EdgeIteratorT<C>::target() const
+    {
+      return block_.index();
+    }
+
+    template<class M>
+    template<class C>
+    inline typename MatrixGraph<M>::VertexDescriptor MatrixGraph<M>::EdgeIteratorT<C>::source() const
+    {
+      return source_;
+    }
+
+    template<class M>
+    template<class C>
+    MatrixGraph<M>::VertexIteratorT<C>::VertexIteratorT(C* graph,
+                                                        const VertexDescriptor& current)
+      : graph_(graph), current_(current)
+    {}
+
+    template<class M>
+    template<class C>
+    MatrixGraph<M>::VertexIteratorT<C>::VertexIteratorT(const VertexIteratorT<MutableContainer>& other)
+      : graph_(other.graph_), current_(other.current_)
+    {}
+
+    template<class M>
+    template<class C>
+    bool MatrixGraph<M>::VertexIteratorT<C>::operator!=(const VertexIteratorT<MutableContainer>& other) const
+    {
+      return current_ != other.current_;
+    }
+
+    template<class M>
+    template<class C>
+    bool MatrixGraph<M>::VertexIteratorT<C>::operator!=(const VertexIteratorT<ConstContainer>& other) const
+    {
+      return current_ != other.current_;
+    }
+
+
+    template<class M>
+    template<class C>
+    bool MatrixGraph<M>::VertexIteratorT<C>::operator==(const VertexIteratorT<MutableContainer>& other) const
+    {
+      return current_ == other.current_;
+    }
+
+    template<class M>
+    template<class C>
+    bool MatrixGraph<M>::VertexIteratorT<C>::operator==(const VertexIteratorT<ConstContainer>& other) const
+    {
+      return current_ == other.current_;
+    }
+
+    template<class M>
+    template<class C>
+    MatrixGraph<M>::VertexIteratorT<C>& MatrixGraph<M>::VertexIteratorT<C>::operator++()
+    {
+      ++current_;
+      return *this;
+    }
+
+    template<class M>
+    template<class C>
+    typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+        typename M::block_type, const typename M::block_type>::Type&
+    MatrixGraph<M>::VertexIteratorT<C>::weight() const
+    {
+      return graph_->matrix()[current_][current_];
+    }
+
+    template<class M>
+    template<class C>
+    const typename MatrixGraph<M>::VertexDescriptor&
+    MatrixGraph<M>::VertexIteratorT<C>::index() const
+    {
+      return current_;
+    }
+
+    template<class M>
+    template<class C>
+    MatrixGraph<M>::EdgeIteratorT<typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+            typename RemoveConst<C>::Type,
+            const typename RemoveConst<C>::Type>::Type>
+    MatrixGraph<M>::VertexIteratorT<C>::begin() const
+    {
+      return graph_->beginEdges(current_);
+    }
+
+    template<class M>
+    template<class C>
+    MatrixGraph<M>::EdgeIteratorT<typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value,
+            typename RemoveConst<C>::Type,
+            const typename RemoveConst<C>::Type>::Type>
+    MatrixGraph<M>::VertexIteratorT<C>::end() const
+    {
+      return graph_->endEdges(current_);
+    }
+
+    template<class M>
+    MatrixGraph<M>::VertexIteratorT<MatrixGraph<M> >
+    MatrixGraph<M>::begin()
+    {
+      return VertexIterator(this,0);
+    }
+
+    template<class M>
+    MatrixGraph<M>::VertexIteratorT<MatrixGraph<M> >
+    MatrixGraph<M>::end()
+    {
+      return VertexIterator(this, noVertices_);
+    }
+
+
+    template<class M>
+    MatrixGraph<M>::VertexIteratorT<const MatrixGraph<M> >
+    MatrixGraph<M>::begin() const
+    {
+      return ConstVertexIterator(this, 0);
+    }
+
+    template<class M>
+    MatrixGraph<M>::VertexIteratorT<const MatrixGraph<M> >
+    MatrixGraph<M>::end() const
+    {
+      return ConstVertexIterator(this, noVertices_);
+    }
+
+    template<class M>
+    MatrixGraph<M>::EdgeIteratorT<MatrixGraph<M> >
+    MatrixGraph<M>::beginEdges(const VertexDescriptor& source)
+    {
+      return EdgeIterator(source, matrix_.operator[](source).begin(),
+                          matrix_.operator[](source).end());
+    }
+
+    template<class M>
+    MatrixGraph<M>::EdgeIteratorT<MatrixGraph<M> >
+    MatrixGraph<M>::endEdges(const VertexDescriptor& source)
+    {
+      return EdgeIterator(source, matrix_.operator[](source).end(),
+                          matrix_.operator[](source).end());
+    }
+
+
+    template<class M>
+    MatrixGraph<M>::EdgeIteratorT<const MatrixGraph<M> >
+    MatrixGraph<M>::beginEdges(const VertexDescriptor& source) const
+    {
+      return ConstEdgeIterator(source, matrix_.operator[](source).begin(),
+                               matrix_.operator[](source).end());
+    }
+
+    template<class M>
+    MatrixGraph<M>::EdgeIteratorT<const MatrixGraph<M> >
+    MatrixGraph<M>::endEdges(const VertexDescriptor& source) const
+    {
+      return ConstEdgeIterator(source, matrix_.operator[](source).end(),
+                               matrix_.operator[](source).end());
+    }
 
     template<class M, class VP, class EP>
     Graph<M,VP,EP>::Graph()
