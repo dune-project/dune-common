@@ -147,6 +147,58 @@ operator [](int i) const
   return coord_[i];
 }
 
+template<int mydim, int coorddim, class GridImp>
+inline bool UGGridGeometry<mydim,coorddim,GridImp>::
+checkInside(const FieldVector<UGCtype, coorddim> &global) const
+{
+  FieldVector<UGCtype, mydim> loc = local(global);
+
+  switch (mydim) {
+
+  case 0 :  // vertex
+    return false;
+  case 1 :  // line
+    return 0 <= loc[0] && loc[0] <= 1;
+  case 2 :
+#ifdef _2
+    switch (UG_NS<coorddim>::Tag(target_)) {
+    case UG2d::TRIANGLE :
+      return 0 <= loc[0] && 0 <= loc[1] && (loc[0]+loc[1])<=1;
+    case UG2d::QUADRILATERAL :
+      return 0 <= loc[0] && loc[0] <= 1
+             && 0 <= loc[1] && loc[1] <= 1;
+    default :
+      DUNE_THROW(GridError, "UGGridGeometry::checkInside():  ERROR:  Unknown type "
+                 << UG_NS<coorddim>::Tag(target_) << " found!");
+    }
+#endif
+
+  case 3 :
+    switch (UG_NS<coorddim>::Tag(target_)) {
+#ifdef _3
+    case UG3d::TETRAHEDRON :
+      return 0 <= loc[0] && 0 <= loc[1] && 0 <= loc[2]
+             && (loc[0]+loc[1]+loc[2]) <= 1;
+    case UG3d::PYRAMID :
+      return 0 <= loc[0] && 0 <= loc[1] && 0 <= loc[2]
+             && (loc[0]+loc[2]) <= 1
+             && (loc[1]+loc[2]) <= 1;
+    case UG3d::PRISM :
+      return 0 <= loc[0] && 0 <= loc[1]
+             && (loc[0]+loc[1])<=1
+             && 0 <= loc[2] && loc[2] <= 1;
+    case UG3d::HEXAHEDRON :
+      return 0 <= loc[0] && loc[0] <= 1
+             && 0 <= loc[1] && loc[1] <= 1
+             && 0 <= loc[2] && loc[2] <= 1;
+    default :
+      DUNE_THROW(GridError, "UGGridGeometry::checkInside():  ERROR:  Unknown type "
+                 << UG_NS<coorddim>::Tag(target_) << " found!");
+#endif
+    }
+  }
+
+}
 
 template< int mydim, int coorddim, class GridImp>
 inline FieldVector<UGCtype, coorddim> UGGridGeometry<mydim,coorddim,GridImp>::

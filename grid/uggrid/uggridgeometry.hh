@@ -128,11 +128,7 @@ namespace Dune {
     FieldVector<UGCtype, mydim> local (const FieldVector<UGCtype, coorddim>& global) const;
 
     //! Returns true if the point is in the current element
-    /** \todo Not implemented yet! */
-    bool checkInside(const FieldVector<UGCtype, coorddim> &global) const {
-      DUNE_THROW(GridError, "UGGridGeometry::checkInside() not implemented yet!");
-      return true;
-    }
+    bool checkInside(const FieldVector<UGCtype, coorddim> &global) const;
 
     /**
        Integration over a general element is done by integrating over the reference element
@@ -170,12 +166,6 @@ namespace Dune {
 
     //! The jacobian inverse
     mutable FieldMatrix<UGCtype,coorddim,coorddim> jac_inverse_;
-
-    //! storage for global coords
-    FieldVector<UGCtype, coorddim> globalCoord_;
-
-    //! storage for local coords
-    FieldVector<UGCtype, mydim> localCoord_;
 
     typename TargetType<coorddim-mydim,coorddim>::T* target_;
 
@@ -259,12 +249,6 @@ namespace Dune {
 
     //! The jacobian inverse
     mutable FieldMatrix<UGCtype,3,3> jac_inverse_;
-
-    //! storage for global coords
-    FieldVector<UGCtype, 4> globalCoord_;
-
-    //! storage for local coords
-    FieldVector<UGCtype, 2> localCoord_;
 
   };
 
