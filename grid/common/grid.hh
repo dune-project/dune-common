@@ -5,6 +5,7 @@
 
 #include <string>
 #include <dune/common/matvec.hh>
+#include <dune/common/exceptions.hh>
 
 namespace Dune {
 
@@ -119,7 +120,21 @@ namespace Dune {
   };
 
   //! provide names for the partition types
-  std::string PartitionName[5] = {"interior","border","overlap","front","ghost"};
+  inline std::string PartitionName(PartitionType type)
+  {
+    switch(type) {
+    case InteriorEntity :
+      return "interior";
+    case BorderEntity :
+      return "border";
+    case OverlapEntity :
+      return "overlap";
+    case FrontEntity :
+      return "front";
+    case GhostEntity :
+      return "ghost";
+    }
+  };
 
   /*! GridIndexType specifies which Index of the Entities of the grid
         should be used, i.e. global_index() or index()
@@ -133,39 +148,10 @@ namespace Dune {
   //************************************************************************
 
   /*!
-     A simple class for throwing exceptions in Dune grid modules.
+     exceptions in Dune grid modules.
    */
 
-  class GridError {
-  public:
-    //! make object from error message
-    GridError(std::string s) : _message(s) {}
-
-    //! make object from error message, file and line
-    GridError(std::string s, std::string f, int l)
-      : _message(s), _file(f), _line(l) {}
-
-    //! return the error message
-    std::string message () {return _message;}
-
-    //! return the file
-    std::string file () {return _file;}
-
-    //! return the line
-    int line () {return _line;}
-
-  private:
-    std::string _message;
-    std::string _file;
-    int _line;
-  };
-
-  // print error message
-  std::ostream& operator<< (std::ostream& s, GridError& e)
-  {
-    s << e.message() << " in " << e.file() << " line " << e.line();
-    return s;
-  }
+  class GridError : public Exception {};
 
   //************************************************************************
   // R E F E R E N C E T O P O L O G Y

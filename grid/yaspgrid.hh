@@ -224,7 +224,7 @@ namespace Dune {
       : midpoint(p), extension(h), missing(m)
     {
       if (dimworld!=dim+1)
-        throw GridError("general YaspElement assumes dimworld=dim+1",__FILE__,__LINE__);
+        DUNE_THROW(GridError, "general YaspElement assumes dimworld=dim+1");
     }
 
     //! print function
@@ -455,25 +455,25 @@ namespace Dune {
     //! level of this element
     int level ()
     {
-      throw GridError("YaspEntity not implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "YaspEntity not implemented");
     }
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
     int index ()
     {
-      throw GridError("YaspEntity not implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "YaspEntity not implemented");
     }
 
     //! geometry of this entity
     YaspElement<dim-codim,dimworld>& geometry ()
     {
-      throw GridError("YaspEntity not implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "YaspEntity not implemented");
     }
 
     //! return partition type attribute
     PartitionType partition_type ()
     {
-      throw GridError("YaspEntity not implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "YaspEntity not implemented");
     }
   };
 
@@ -520,7 +520,7 @@ namespace Dune {
     {
       if (cc==1) return 2*dim;
       if (cc==dim) return 1<<dim;
-      throw GridError("codim not (yet) implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "codim not (yet) implemented");
     }
 
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
@@ -540,7 +540,7 @@ namespace Dune {
 
         return YaspLevelIterator<dim,dim,dimworld,All_Partition>(_g,_g.vertex_overlapfront().tsubbegin(coord));
       }
-      throw GridError("codim not (yet) implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "codim not (yet) implemented");
     }
 
     //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
@@ -548,7 +548,7 @@ namespace Dune {
     {
       // check if coarse level exists
       if (_g.level<=0)
-        throw GridError("tried to call father on level 0",__FILE__,__LINE__);
+        DUNE_THROW(GridError, "tried to call father on level 0");
 
       // yes, get iterator to it
       YGLI cg = _g.coarser();
@@ -673,7 +673,7 @@ namespace Dune {
     {
       // check if coarse level exists
       if (_g.level<=0)
-        throw GridError("tried to call father on level 0",__FILE__,__LINE__);
+        DUNE_THROW(GridError, "tried to call father on level 0");
 
       // yes, get iterator to it
       YGLI cg = _g.coarser();
@@ -697,7 +697,7 @@ namespace Dune {
     {
       // check if coarse level exists
       if (_g.level<=0)
-        throw GridError("tried to call local on level 0",__FILE__,__LINE__);
+        DUNE_THROW(GridError, "tried to call local on level 0");
 
       // yes, get iterator to it
       YGLI cg = _g.coarser();
@@ -1138,7 +1138,7 @@ namespace Dune {
     {
       if (codim>0 && codim<dim)
       {
-        throw GridError("YaspLevelIterator: codim not implemented",__FILE__,__LINE__);
+        DUNE_THROW(GridError, "YaspLevelIterator: codim not implemented");
       }
     }
 
@@ -1257,7 +1257,7 @@ namespace Dune {
         if (pitype==Overlap_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlap().tsubbegin());
         if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlapfront().tsubbegin());
       }
-      throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
     }
 
     //! Iterator to one past the last entity of given codim on level for partition type
@@ -1277,7 +1277,7 @@ namespace Dune {
         if (pitype==Overlap_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlap().tsubend());
         if (pitype<=All_Partition) return YaspLevelIterator<cd,dim,dimworld,pitype>(g,g.vertex_overlapfront().tsubend());
       }
-      throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
     }
 
     //! version without second template parameter for convenience
@@ -1293,7 +1293,7 @@ namespace Dune {
       {
         return YaspLevelIterator<cd,dim,dimworld,All_Partition>(g,g.vertex_overlapfront().tsubbegin());
       }
-      throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
     }
 
     //! version without second template parameter for convenience
@@ -1309,7 +1309,7 @@ namespace Dune {
       {
         return YaspLevelIterator<cd,dim,dimworld,All_Partition>(g,g.vertex_overlapfront().tsubend());
       }
-      throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
     }
 
     //! return size (= distance in graph) of overlap region
@@ -1337,7 +1337,7 @@ namespace Dune {
       {
         return g.vertex_overlapfront().totalsize();
       }
-      throw GridError("Yasp does not implement this codim (yet)",__FILE__,__LINE__);
+      DUNE_THROW(GridError, "Yasp does not implement this codim (yet)");
     }
 
     /*! The communication interface
@@ -1402,7 +1402,7 @@ namespace Dune {
       }
       if (codim>0 && codim<dim)
       {
-        throw GridError("interface communication not implemented",__FILE__,__LINE__);
+        DUNE_THROW(GridError, "interface communication not implemented");
       }
 
       // change communication direction?

@@ -1875,7 +1875,7 @@ namespace Dune {
     YGridLevelIterator begin (int i)
     {
       if (i<0 << i>maxlevel())
-        throw GridError("level not existing",__FILE__,__LINE__);
+        DUNE_THROW(GridError, "level not existing");
       return YGridLevelIterator(_levels+i,i);
     }
 

@@ -17,19 +17,19 @@ namespace Dune {
   template<int dim, class ct>
   inline ReferenceTopology<dim,ct>::ReferenceTopology ()
   {
-    throw GridError("dimension too large");
+    DUNE_THROW(GridError, "dimension too large");
   }
 
   template<int dim, class ct>
   inline Vec<dim,ct>& ReferenceTopology<dim,ct>::center_codim0_local (int elemtype)
   {
-    throw GridError("dimension too large");
+    DUNE_THROW(GridError, "dimension too large");
   }
 
   template<int dim, class ct>
   inline Vec<dim-1,ct>& ReferenceTopology<dim,ct>::center_codim1_local (int elemtype, int i)
   {
-    throw GridError("dimension too large");
+    DUNE_THROW(GridError, "dimension too large");
   }
 
   // Specialization for dim=1, ElementType=1
