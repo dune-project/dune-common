@@ -260,8 +260,8 @@ namespace Dune
     const char * fn = genFilename(path,filename,timestep);
     in = fopen( fn, "r" );
     fscanf( in, "P2\n%d %d\n%d\n", &v, &v, &v );
-    DofIteratorType enddof = dend ( -1 );
-    for(DofIteratorType itdof = dbegin ( -1 ); itdof != enddof; ++itdof) {
+    DofIteratorType enddof = dend ();
+    for(DofIteratorType itdof = dbegin (); itdof != enddof; ++itdof) {
       fscanf( in, "%d", &v );
       (*itdof) = ((double)v)/255.;
     }
