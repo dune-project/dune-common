@@ -5,7 +5,6 @@
 
 #include <dune/fem/common/discretefunction.hh>
 #include <dune/common/operator.hh>
-#include <dune/solver/oemsolver.hh>
 
 namespace Dune {
 
