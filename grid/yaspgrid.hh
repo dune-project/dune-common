@@ -845,6 +845,7 @@ namespace Dune {
     YaspLevelIterator<0,dim,dimworld>& operator++()
     {
       ++_it;
+      //	std::cout << "TSI= ";_it.print(std::cout); std::cout << std::endl;
       return *this;
     }
 
