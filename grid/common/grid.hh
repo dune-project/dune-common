@@ -1178,6 +1178,17 @@ namespace Dune {
     typedef typename EntityType::Traits::HierarchicIterator HierIterator;
 
   public:
+    //! remember the types of template parameters
+    //! LeafIterator only on Entitys of codim=0 , because we use the
+    //! HierarchicIterator
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef GridImp<dim,dimworld>             ImpGrid;
+      typedef LevelIteratorImp<0,dim,dimworld>  LevelIterator;
+      typedef EntityImp<0,dim,dimworld>         Entity;
+    };
+
     //! Constructor making new LeafIterator
     LeafIterator (GridType &grid, int maxlevel, bool end);
 
