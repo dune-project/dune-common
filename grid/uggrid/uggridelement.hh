@@ -156,7 +156,9 @@ namespace Dune {
     int corners () const {return (elementType_==triangle) ? 3 : 4;}
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<UGCtype, 3>& operator[] (int i);
+    const FieldVector<UGCtype, 3>& operator[] (int i) {
+      return coord_[i];
+    }
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
@@ -181,10 +183,6 @@ namespace Dune {
     const Mat<2,2>& Jacobian_inverse (const FieldVector<UGCtype, 2>& local) const;
 
   private:
-    //void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}
-    //   void setToTarget(TargetType<2,3>::T* target) {
-    //       DUNE_THROW(GridError, "UGGridElement<2,3>::setToTarget called!");
-    //   }
 
     void setNumberOfCorners(int n) {
       assert(n==3 || n==4);
