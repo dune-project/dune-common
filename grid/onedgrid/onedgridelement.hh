@@ -23,9 +23,13 @@ namespace Dune {
       Geometry<1, coorddim, GridImp, OneDGridGeometry>(OneDGridGeometry<1, coorddim, GridImp>())
     {};
 
-    //         OneDGridEntity<1,1,GridImp>* vertex(int n) {
-    //             return this->realGeometry.vertex[n];
-    //         }
+    OneDGridEntity<1,1,GridImp>*& vertex(int n) {
+      return this->realGeometry.vertex_[n];
+    }
+
+    const OneDGridEntity<1,1,GridImp>*& vertex(int n) const {
+      return this->realGeometry.vertex_[n];
+    }
 
   };
 
@@ -50,7 +54,6 @@ namespace Dune {
   /*       Specialization for faces in a 1d grid (i.e. vertices)  */
   /****************************************************************/
 
-#if 1
   template<class GridImp>
   class OneDGridGeometry <0, 1, GridImp> :
     public GeometryDefault <0, 1, GridImp,OneDGridGeometry>
@@ -107,13 +110,13 @@ namespace Dune {
     //! can only be called for dim=dimworld!
     const Mat<1,1>& Jacobian_inverse (const FieldVector<OneDCType, 1>& local);
 #endif
-  private:
+    //private:
 
     //! the vertex coordinates
     FieldVector<OneDCType, 1> pos_;
 
   };
-#endif
+
   //**********************************************************************
   //
   // --OneDGridGeometry
@@ -149,14 +152,15 @@ namespace Dune {
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<OneDCType, coorddim>& operator[](int i) const {
       assert(i==0 || i==1);
-      return vertex_[i]->geometry().realGeometry.pos_;
+      return vertex_[i]->geo_.pos();
     }
 
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
     FieldVector<OneDCType, coorddim> global (const FieldVector<OneDCType, mydim>& local) const {
       FieldVector<OneDCType, coorddim> g;
-      g[0] = vertex_[0]->geometry().pos_[0] * (1-local[0]) + vertex_[1]->geometry().pos_[0] * local[0];
+      //g[0] = vertex_[0]->geometry().realGeometry.pos_[0] * (1-local[0]) + vertex_[1]->geometry().realGeometry.pos_[0] * local[0];
+      g[0] = vertex_[0]->geo_.pos()[0] * (1-local[0]) + vertex_[1]->geo_.pos()[0] * local[0];
       return g;
     }
 
@@ -178,32 +182,26 @@ namespace Dune {
     /** ???
      */
     OneDCType integrationElement (const FieldVector<OneDCType, mydim>& local) const {
-      return vertex_[1]->geometry().pos_[0] - vertex_[0]->geometry().pos_[0];
+      //return vertex_[1]->geometry().realGeometry.pos_[0] - vertex_[0]->geometry().realGeometry.pos_[0];
+      return vertex_[1]->geo_.pos()[0] - vertex_[0]->geo_.pos()[0];
     }
 
     //! The Jacobian matrix of the mapping from the reference element to this element
-    const Mat<mydim,mydim>& jacobianInverse (const FieldVector<OneDCType, mydim>& local) const {
-      jacInverse_[0][0] = 1 / (vertex_[1]->geometry().pos_[0] - vertex_[0]->geometry().pos_[0]);
+    const FieldMatrix<OneDCType,mydim,mydim>& jacobianInverse (const FieldVector<OneDCType, mydim>& local) const {
+      //jacInverse_[0][0] = 1 / (vertex_[1]->geo_.pos_[0] - vertex_[0]->geo_.pos_[0]);
+      jacInverse_[0][0] = 1 / (vertex_[1]->geo_.pos()[0] - vertex_[0]->geo_.pos()[0]);
       return jacInverse_;
     }
 
 
-  private:
+    //private:
 
     FixedArray<OneDGridEntity<1,1,GridImp>*, 2> vertex_;
 
     //! The jacobian inverse
-    mutable Mat<coorddim,coorddim> jacInverse_;
-
-    //! storage for local coords
-    //FieldVector<OneDCType, dim> localCoord_;
+    mutable FieldMatrix<OneDCType,coorddim,coorddim> jacInverse_;
 
   };
-
-
-
-  // Include method definitions
-  //#include "uggridelement.cc"
 
 }  // namespace Dune
 

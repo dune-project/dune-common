@@ -32,7 +32,7 @@ namespace Dune {
     static OneDGridEntity<1,1,GridImp>* get(OneDGridEntity<0,1,GridImp>& me, int i)
     {
       assert(i==0 || i==1);
-      return me.geo_.vertex[i];
+      return me.geo_.vertex(i);
     }
   };
 

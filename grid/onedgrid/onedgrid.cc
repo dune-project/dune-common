@@ -88,9 +88,9 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, dou
   for (int i=0; i<numElements; i++) {
 
     OneDGridEntity<0,1,GridImp>* newElement = new OneDGridEntity<0,1,GridImp>(0);
-    newElement->geo_.realGeometry.vertex_[0] = it;
+    newElement->geo_.vertex(0) = it;
     it = it->succ_;
-    newElement->geo_.realGeometry.vertex_[1] = it;
+    newElement->geo_.vertex(1) = it;
     newElement->index_ = i;
 
     elements[0].insert_after(elements[0].rbegin, newElement);
@@ -121,9 +121,9 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
   for (int i=0; i<coords.size()-1; i++) {
 
     OneDGridEntity<0,1,GridImp>* newElement = new OneDGridEntity<0,1,GridImp>(0);
-    newElement->geo_.realGeometry.vertex_[0] = it;
+    newElement->geo_.vertex(0) = it;
     it = it->succ_;
-    newElement->geo_.realGeometry.vertex_[1] = it;
+    newElement->geo_.vertex(1) = it;
     newElement->index_ = i;
 
     elements[0].insert_after(elements[0].rbegin, newElement);
@@ -202,7 +202,7 @@ Dune::OneDGrid<dim,dimworld>::getLeftUpperVertex(const OneDGridEntity<0,1,Dune::
     return 0;
 
   // return NULL if there is no geometrical left neighbor
-  if (l->geo_.realGeometry.vertex_[1]!=eIt->geo_.realGeometry.vertex_[0])
+  if (l->geo_.vertex(1)!=eIt->geo_.vertex(0))
     return 0;
 
   // return NULL if that neighbor doesn't have sons
@@ -210,7 +210,7 @@ Dune::OneDGrid<dim,dimworld>::getLeftUpperVertex(const OneDGridEntity<0,1,Dune::
     return 0;
 
   // return the right vertex of the right son
-  return l->sons_[1]->geo_.realGeometry.vertex_[1];
+  return l->sons_[1]->geo_.vertex(1);
 
 }
 
@@ -224,7 +224,7 @@ Dune::OneDGrid<dim,dimworld>::getRightUpperVertex(const OneDGridEntity<0,1,Dune:
     return 0;
 
   // return NULL if there is no geometrical right neighbor
-  if (r->geo_.realGeometry.vertex_[0]!=eIt->geo_.realGeometry.vertex_[1])
+  if (r->geo_.vertex(0)!=eIt->geo_.vertex(1))
     return 0;
 
   // return NULL if that neighbor doesn't have sons
@@ -232,7 +232,7 @@ Dune::OneDGrid<dim,dimworld>::getRightUpperVertex(const OneDGridEntity<0,1,Dune:
     return 0;
 
   // return the left vertex of the left son
-  return r->sons_[0]->geo_.realGeometry.vertex_[0];
+  return r->sons_[0]->geo_.vertex(0);
 
 }
 
@@ -275,12 +275,12 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         OneDGridEntity<0,1,GridImp>* rightElement = eIt->succ_;
 
         // Is the left vertex obsolete?
-        if (leftElement->geo_.realGeometry.vertex_[1] != eIt->geo_.realGeometry.vertex_[0])
-          vertices[i].erase(eIt->geo_.realGeometry.vertex_[0]);
+        if (leftElement->geo_.vertex(1) != eIt->geo_.vertex(0))
+          vertices[i].erase(eIt->geo_.vertex(0));
 
         // Is the right vertex obsolete?
-        if (rightElement->geo_.realGeometry.vertex_[0] != eIt->geo_.realGeometry.vertex_[1])
-          vertices[i].erase(eIt->geo_.realGeometry.vertex_[1]);
+        if (rightElement->geo_.vertex(0) != eIt->geo_.vertex(1))
+          vertices[i].erase(eIt->geo_.vertex(1));
 
         // Remove reference from the father element
         if (eIt->father()->sons_[0] == eIt)
@@ -372,8 +372,8 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         if (leftNeighbor!=NULL) {
 
           // leftNeighbor exists
-          if ( leftNeighbor->sons_[1]->geo_.realGeometry.vertex_[1] != leftUpperVertex)
-            vertices[i+1].insert_after(leftNeighbor->sons_[1]->geo_.realGeometry.vertex_[1], leftUpperVertex);
+          if ( leftNeighbor->sons_[1]->geo_.vertex(1) != leftUpperVertex)
+            vertices[i+1].insert_after(leftNeighbor->sons_[1]->geo_.vertex(1), leftUpperVertex);
 
         } else {
           // leftNeighbor does not exist
@@ -393,13 +393,13 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         // Create new elements
         // ///////////////////////
         OneDGridEntity<0,1,GridImp>* newElement0 = new OneDGridEntity<0,1,GridImp>(i+1);
-        newElement0->geo_.realGeometry.vertex_[0] = leftUpperVertex;
-        newElement0->geo_.realGeometry.vertex_[1] = centerVertex;
+        newElement0->geo_.vertex(0) = leftUpperVertex;
+        newElement0->geo_.vertex(1) = centerVertex;
         newElement0->father_ = eIt;
 
         OneDGridEntity<0,1,GridImp>* newElement1 = new OneDGridEntity<0,1,GridImp>(i+1);
-        newElement1->geo_.realGeometry.vertex_[0] = centerVertex;
-        newElement1->geo_.realGeometry.vertex_[1] = rightUpperVertex;
+        newElement1->geo_.vertex(0) = centerVertex;
+        newElement1->geo_.vertex(1) = rightUpperVertex;
         newElement1->father_ = eIt;
 
         // Insert new elements into element list
@@ -470,8 +470,8 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
           if (leftNeighbor!=NULL) {
 
             // leftNeighbor exists
-            if ( leftNeighbor->sons_[1]->geo_.realGeometry.vertex_[1] != leftUpperVertex)
-              vertices[i+1].insert_after(leftNeighbor->sons_[1]->geo_.realGeometry.vertex_[1], leftUpperVertex);
+            if ( leftNeighbor->sons_[1]->geo_.vertex(1) != leftUpperVertex)
+              vertices[i+1].insert_after(leftNeighbor->sons_[1]->geo_.vertex(1), leftUpperVertex);
 
           } else {
             // leftNeighbor does not exist
@@ -489,8 +489,8 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
           //   Create new element
           // /////////////////////////
           OneDGridEntity<0,1,GridImp>* newElement = new OneDGridEntity<0,1,GridImp>(i+1);
-          newElement->geo_.realGeometry.vertex_[0] = leftUpperVertex;
-          newElement->geo_.realGeometry.vertex_[1] = rightUpperVertex;
+          newElement->geo_.vertex(0) = leftUpperVertex;
+          newElement->geo_.vertex(1) = rightUpperVertex;
           newElement->father_ = eIt;
 
           // Insert new elements into element list
@@ -539,6 +539,8 @@ void Dune::OneDGrid<dim,dimworld>::globalRefine(int refCount)
   // mark all entities for grid refinement
   typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
   typename Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
+  //OneDGridLevelIterator<0,All_Partition,OneDGrid<1,1> > iIt    = lbegin<0>(maxlevel());
+  //OneDGridLevelIterator<0,All_Partition,OneDGrid<1,1> > iEndIt = lend<0>(maxlevel());
 
   for (; iIt!=iEndIt; ++iIt)
     mark(1, iIt);

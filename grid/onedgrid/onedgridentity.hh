@@ -35,7 +35,6 @@ namespace Dune {
 
     friend class OneDGrid<dim,GridImp::dimensionworld>;
 
-
     //! Constructor with a given grid level
     OneDGridEntity(int level, double coord) : geo_(coord), level_(level), pred_(NULL), succ_(NULL) {}
 
@@ -80,7 +79,7 @@ namespace Dune {
 
 
 
-  private:
+    //private:
 
     //! the current geometry
     OneDMakeableGeometry<dim-codim,dim,GridImp> geo_;

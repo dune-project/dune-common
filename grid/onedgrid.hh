@@ -5,10 +5,12 @@
 
 #include <vector>
 
-#include <dune/common/matvec.hh>
+#include <dune/common/fmatrix.hh>
+#include <dune/common/misc.hh>
 #include <dune/common/capabilities.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/common/simplevector.hh>
+
 
 /** \file
  * \brief The OneDGrid class
@@ -194,9 +196,14 @@ namespace Dune {
     // **********************************************************
 
   public:
-    typedef GridTraits<dim,dimworld,Dune::OneDGrid,OneDGridGeometry, OneDGridEntity,
-        OneDGridBoundaryEntity,OneDGridLevelIterator,
-        OneDGridIntersectionIterator, OneDGridHierarchicIterator> Traits;
+    typedef GridTraits<dim,dimworld,
+        Dune::OneDGrid,
+        OneDGridGeometry,
+        OneDGridEntity,
+        OneDGridBoundaryEntity,
+        OneDGridLevelIterator,
+        OneDGridIntersectionIterator,
+        OneDGridHierarchicIterator> Traits;
 
     /** \brief Constructor with an explicit set of coordinates */
     OneDGrid(const SimpleVector<OneDCType>& coords);
@@ -243,6 +250,18 @@ namespace Dune {
       return vertices[level].size();
     }
 
+    /** \brief Mark entity for refinement
+     *
+     * This only works for entities of codim 0.
+     * The parameter is currently ignored
+     *
+     * \return <ul>
+     * <li> true, if element was marked </li>
+     * <li> false, if nothing changed </li>
+     * </ul>
+     */
+    bool mark(int refCount, typename Traits::template codim<0>::EntityPointer& e );
+
     //! Triggers the grid refinement process
     bool adapt();
 
@@ -275,6 +294,11 @@ namespace Dune {
 
 
   private:
+
+    template <int cd>
+    OneDGridEntity<cd,dim,const OneDGrid>& getRealEntity(typename Traits::template codim<cd>::Entity& entity) {
+      return entity.realEntity;
+    }
 
     //! The type of grid refinement currently in use
     RefinementType refinementType_;
