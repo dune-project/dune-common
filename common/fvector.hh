@@ -735,19 +735,18 @@ namespace Dune {
           s << p[i];
     }
 
-    //! Send vector to output stream
-    friend std::ostream& operator<< (std::ostream& s, const FieldVector<K,n>& v)
-    {
-      v.print(s);
-      return s;
-    }
-
   private:
     // the data, very simply a built in array
     K p[n];
   };
 
-
+  //! Send vector to output stream
+  template<typename K, int n>
+  std::ostream& operator<< (std::ostream& s, const FieldVector<K,n>& v)
+  {
+    v.print(s);
+    return s;
+  }
 
   // forward declarations
   template<class K> class K1Vector;
