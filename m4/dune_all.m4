@@ -46,7 +46,6 @@ dnl check all components
   AC_REQUIRE([DUNE_PATH_DUNE])
   AC_REQUIRE([DUNE_PATH_XDR])
   AC_REQUIRE([DUNE_PATH_GRAPE])
-  AC_REQUIRE([DUNE_PATH_ALBERT])
   AC_REQUIRE([DUNE_PATH_ALBERTA])
   AC_REQUIRE([DUNE_PATH_BLAS])
   AC_REQUIRE([DUNE_PATH_UG])
@@ -74,7 +73,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo
   echo "-----------------------------"
   echo  
-  echo "Albert/Alberta...: $with_albert/$with_alberta"
+  echo "Alberta..........: $with_alberta"
   echo "AmiraMesh........: $with_amiramesh"
   echo "BLAS-lib.........: $with_blas"
   echo "Grape............: $with_grape"
