@@ -1,3 +1,5 @@
+#!/usr/bin/perl -w
+
 # TODO: Detect location of UG from the DUNE build system
 $UGROOT = "../../../UG/ug";
 
@@ -47,7 +49,7 @@ close(OUTFILE);
 # This subroutine reads the file given as the first argument
 # and issues an #undef for each macro found.
 ##############################################################
-sub emitUndefs() {
+sub emitUndefs {
 
   print "Parsing $_[0]\n";
 
