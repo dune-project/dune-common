@@ -11,9 +11,6 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& cS, const Fu
   coarseLevel = cS.level();
   fineLevel   = fS.level();
 
-  //assert(fL == cL+1);
-  //assert(level<grid_->maxlevel());
-
   typedef typename FunctionSpaceType::GridType GridType;
 
   int rows = fS.size();
@@ -32,7 +29,6 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& cS, const Fu
   ElementIterator cEndIt = grid.template lend<0>(coarseLevel);
 
   for (; cIt != cEndIt; ++cIt) {
-    //std::cout << "Coarse: " << cIt->index() << "\n";
 
     const BaseFunctionSetType& coarseBaseSet = fS.getBaseFunctionSet( *cIt );
     const int numCoarseBaseFct = coarseBaseSet.getNumberOfBaseFunctions();
@@ -46,7 +42,8 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& cS, const Fu
 
     for (; fIt != fEndIt; ++fIt) {
 
-      //std::cout << "Coarse: " << cIt->index() << "   fine: " << fIt->index() << "\n";
+      if (fIt->level()==cIt->level())
+        continue;
 
       const BaseFunctionSetType& fineBaseSet = fS.getBaseFunctionSet( *fIt );
       const int numFineBaseFct = fineBaseSet.getNumberOfBaseFunctions();
@@ -59,25 +56,15 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& cS, const Fu
 
           int globalFine = fS.mapToGlobal(*fIt, j);
 
-
-          //std::cout << "globalCoarse: " << globalCoarse
-          //        << "   globalFine: " << globalFine << "\n";
-
           // Evaluate coarse grid base function at the location of the fine grid dof
 
           // first determine local fine grid dof position
           FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
 
-          //std::cout << "finePos" << fIt->geometry()[j] << "\n";
-          //std::cout << "locally" << local << "\n";
-
           // Evaluate coarse grid base function
-
           typename FunctionSpaceType::Range value;
           FieldVector<int, 0> diffVariable;
           coarseBaseSet.evaluate(i, diffVariable, local, value);
-
-          //std::cout << "value: " << value << "\n";
 
           matrix_.set(globalFine, globalCoarse, value[0]);
         }
