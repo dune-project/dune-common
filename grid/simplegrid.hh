@@ -1348,6 +1348,12 @@ namespace Dune {
      */
     levelinfo<dim>* get_levelinfo (int l) {return &li[l];}
 
+    /** \brief Returns information about a given grid level
+     *
+     * \todo Make sure the level exists!
+     */
+    const levelinfo<dim>* get_levelinfo (int l) const {return &li[l];}
+
     //! write Grid to file filename and store time
     template <FileFormatType ftype>
     bool writeGrid ( const char * filename , sgrid_ctype time)
