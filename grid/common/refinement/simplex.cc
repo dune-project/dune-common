@@ -413,6 +413,30 @@ namespace Dune {
         return point;
       }
 
+#ifdef DOXYGEN
+      /*! @brief Map simplex dimension to Dune::GeometryType
+         @param dimension Dimension of the simplex
+       */
+      template<int dimension>
+      struct SimplexTraits
+      {
+        enum {
+          //! The Dune::GeometryType of the simplex
+          geometryType
+        };
+      };
+#else //!DOXYGEN
+      template<int dimension> struct SimplexTraits;
+#endif //!DOXYGEN
+      template<> struct SimplexTraits<0>
+      { enum { geometryType = vertex }; };
+      template<> struct SimplexTraits<1>
+      { enum { geometryType = line }; };
+      template<> struct SimplexTraits<2>
+      { enum { geometryType = triangle }; };
+      template<> struct SimplexTraits<3>
+      { enum { geometryType = tetrahedron }; };
+
       //@} <!-- Group utilities -->
 
       // /////////////////////////////////////////
@@ -768,18 +792,10 @@ namespace Dune {
       class Geometry : public GeometryDefault<mydimension, coorddimension, GridImp, Geometry>
       {
         typedef typename GridImp::ctype ct;
-        typedef Dune::Geometry<mydimension, mydimension, GridImp, Dune::RefinementImp::Simplex::Geometry> ReferenceGeometry;
+        typedef Dune::Geometry<mydimension, mydimension, GridImp, Simplex::Geometry> ReferenceGeometry;
       public:
         GeometryType type() const
-        {
-          switch(mydimension) {
-          case 0 : return vertex;
-          case 1 : return line;
-          case 2 : return triangle;
-          case 3 : return tetrahedron;
-          default : DUNE_THROW(NotImplemented, "No Dune::GeometryType for simpleces of " << mydimension << " dimensions");
-          }
-        }
+        { return SimplexTraits<mydimension>::geometryType; }
 
         int corners() const
         { return mydimension + 1; }
@@ -838,15 +854,18 @@ namespace Dune {
         const FieldMatrix<ct, mydimension, mydimension>& jacobianInverse(const FieldVector<ct, mydimension>& local) const
         {
           if(!builtJinv) {
+            // create unit vectors
             FieldMatrix<int, mydimension, mydimension> M = 0;
             for(int i = 0; i < mydimension; ++i)
               M[i][i] = 1;
+            // transform them into local coordinates
             for(int i = 0; i < mydimension; ++i)
-              M[i] = kuhnToReference(referenceToKuhn(Jinv[i], getPermutation<mydimension>(kuhnIndex)), getPermutation<mydimension>(0));
-
+              M[i] = kuhnToReference(referenceToKuhn(M[i], getPermutation<mydimension>(0)), getPermutation<mydimension>(kuhnIndex));
+            // scale by the inverse size of the element and transpose the matrix
             for(int i = 0; i < mydimension; ++i)
               for(int j = 0; j < mydimension; ++j)
-                Jinv[i][j] = ct(1<<level) * M[i][j];
+                Jinv[i][j] = ct(1<<level) * M[j][i];
+
             builtJinv = true;
           }
 
