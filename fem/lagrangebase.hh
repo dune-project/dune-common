@@ -3,6 +3,9 @@
 #ifndef __DUNE__LAGRANGEBASE_H__
 #define __DUNE__LAGRANGEBASE_H__
 
+#include <dune/common/matvec.hh>
+#include <dune/common/array.hh>
+
 #include <dune/grid/common/grid.hh>
 
 #include "common/fastbase.hh"

@@ -16,9 +16,9 @@ namespace Dune {
     typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
     typedef typename FunctionSpaceType::GridType GridType;
     typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
-    typedef typename FunctionSpaceType::Range RangeType;
+    typedef typename FunctionSpaceType::Range RangeVecType;
     typedef typename FunctionSpaceType::JacobianRange JacobianRange;
-    typedef typename FunctionSpaceType::Domain DomainType;
+    typedef typename FunctionSpaceType::Domain DomainVecType;
     typedef typename GridType::Traits<0>::Entity EntityType;
 
     void prepare( EntityType &entity ) const {
@@ -144,9 +144,9 @@ namespace Dune {
       GridType &grid = functionSpace_.getGrid();
 
       typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
-      typedef typename FunctionSpaceType::Range RangeType;
+      typedef typename FunctionSpaceType::Range RangeVecType;
       typedef typename FunctionSpaceType::JacobianRange JacobianRange;
-      typedef typename FunctionSpaceType::Domain DomainType;
+      typedef typename FunctionSpaceType::Domain DomainVecType;
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
       int level = arg.getFunctionSpace().getGrid().maxlevel();
@@ -239,9 +239,9 @@ namespace Dune {
 
       GridType &grid = const_cast<GridType &> (functionSpace_.getGrid());
 
-      typedef typename FunctionSpaceType::Range RangeType;
+      typedef typename FunctionSpaceType::Range RangeVecType;
       typedef typename FunctionSpaceType::JacobianRange JacobianRange;
-      typedef typename FunctionSpaceType::Domain DomainType;
+      typedef typename FunctionSpaceType::Domain DomainVecType;
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
       int level = grid.maxlevel();
