@@ -1,14 +1,19 @@
 # $Id $
 
 if MPI
-  TESTPROGS = indicestest  selectiontest
+  INDEXPROG = indicestest
+  SELECTPROG = selectiontest
+  INDEXRUN = run-indices
 endif
 
-# which tests to run
-TESTS = $(TESTPROGS)
+# which tests where program to build and run are equal
+NORMALTESTS = $(SELECTPROG)
+
+# list of tests to run (indicestest is special case)
+TESTS = $(NORMALTESTS) $(INDEXRUN)
 
 # programs just to build when "make check" is used
-check_PROGRAMS = $(TESTPROGS)
+check_PROGRAMS = $(NORMALTESTS) $(INDEXPROG)
 
 # define the programs
 

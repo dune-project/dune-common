@@ -26,7 +26,7 @@ int meassure(const T& selection)
   int count=0;
   Dune::Timer timer;
   timer.reset();
-  for(int i=0; i<100; i++)
+  for(int i=0; i<10; i++)
     for(iterator iter = selection.begin(); iter != end; ++iter)
       count+=*iter;
 

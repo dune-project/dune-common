@@ -29,82 +29,28 @@ namespace Dune
   class MPITraits
   {};
 
-  template<typename T, MPI_Datatype t>
-  struct MPITraitsHelper
-  {
-    /**
-     * brief Get the corresponding MPI Type.
-     */
-    inline static MPI_Datatype getType();
+  // A Macro for defining traits for the primitive data types
+#define ComposeMPITraits(p,m) \
+  template<> \
+  struct MPITraits<p>{ \
+    static inline MPI_Datatype getType(){ \
+      return m; \
+    } \
   };
 
-  template<typename T, MPI_Datatype t>
-  inline MPI_Datatype MPITraitsHelper<T,t>::getType()
-  {
-    return t;
-  }
+  ComposeMPITraits(char, MPI_CHAR);
+  ComposeMPITraits(unsigned char,MPI_UNSIGNED_CHAR);
+  ComposeMPITraits(short,MPI_SHORT);
+  ComposeMPITraits(unsigned short,MPI_UNSIGNED_SHORT);
+  ComposeMPITraits(int,MPI_INT);
+  ComposeMPITraits(unsigned int,MPI_UNSIGNED);
+  ComposeMPITraits(long,MPI_LONG);
+  ComposeMPITraits(unsigned long,MPI_UNSIGNED_LONG);
+  ComposeMPITraits(float,MPI_FLOAT);
+  ComposeMPITraits(double,MPI_DOUBLE);
+  ComposeMPITraits(long double,MPI_LONG_DOUBLE);
 
-  template<>
-  struct MPITraits<char>
-    : MPITraitsHelper<char, MPI_CHAR>
-  {};
-
-  template<>
-  struct MPITraits<unsigned char>
-    : public MPITraitsHelper<unsigned char,MPI_UNSIGNED_CHAR>
-  {};
-
-  template<>
-  struct MPITraits<short>
-    : public MPITraitsHelper<short,MPI_SHORT>
-  {};
-
-  template<>
-  struct MPITraits<unsigned short>
-    : public MPITraitsHelper<unsigned short,MPI_UNSIGNED_SHORT>
-  {};
-
-  template<>
-  struct MPITraits<int>
-    : public MPITraitsHelper<int,MPI_INT>
-  {};
-
-  template<>
-  struct MPITraits<unsigned int> :
-    public MPITraitsHelper<unsigned int,MPI_UNSIGNED>
-  {};
-
-
-  template<>
-  struct MPITraits<long> :
-    public MPITraitsHelper<long,MPI_LONG>
-  {};
-
-
-  template<>
-  struct MPITraits<unsigned long>
-    : public MPITraitsHelper<unsigned long,MPI_UNSIGNED_LONG>
-  {};
-
-
-  template<>
-  struct MPITraits<float>
-    : public MPITraitsHelper<float,MPI_FLOAT>
-  {};
-
-
-
-  template<>
-  struct MPITraits<double>
-    : public MPITraitsHelper<double,MPI_DOUBLE>
-  {};
-
-
-
-  template<>
-  struct MPITraits<long double>
-    : public MPITraitsHelper<long double,MPI_LONG_DOUBLE>
-  {};
+#undef ComposeMPITraits
 
   /** @} */
 }
