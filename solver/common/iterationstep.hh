@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_ITERATIONSTEP_HH__
-#define __DUNE_ITERATIONSTEP_HH__
+#ifndef DUNE_ITERATIONSTEP_HH
+#define DUNE_ITERATIONSTEP_HH
 
 #include <dune/solver/common/numproc.hh>
 #include <vector>
@@ -26,9 +26,9 @@ namespace Dune {
 
     //! Set linear operator, solution and right hand side
     void setProblem(OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
-      mat_ = &mat;
       x_   = &x;
       rhs_ = &rhs;
+      mat_ = &mat;
     }
 
     //! Do the actual iteration
@@ -40,8 +40,19 @@ namespace Dune {
     //! Return linear operator
     virtual OperatorType* getMatrix() {return mat_;}
 
-    //! The grid level the iteration step is working on
-    virtual int level() const {return level_;}
+    /** \brief Checks whether all relevant member variables are set
+     * \exception SolverError if the iteration step is not set up properly
+     */
+    virtual void check() const {
+#if 0
+      if (!x_)
+        DUNE_THROW(SolverError, "Iteration step has no solution vector");
+      if (!rhs_)
+        DUNE_THROW(SolverError, "Iteration step has no right hand side");
+      if (!mat_)
+        DUNE_THROW(SolverError, "Iteration step has no matrix");
+#endif
+    }
 
     //! The solution container
     DiscFuncType* x_;
@@ -55,9 +66,6 @@ namespace Dune {
     /** \brief A flag for each degree of freedom stating whether the
      * dof is dirichlet or not */
     const std::vector<bool>* dirichletNodes_;
-
-    //! The level of a multigrid hierarchy that this iterator is supposed to work on
-    int level_;
 
   };
 
