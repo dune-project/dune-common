@@ -199,12 +199,12 @@ namespace Dune
 
   public:
     inline SLListIterator(typename SLList<T,A>::Element* item,
-                          typename SLList<T,A>::Allocator& alloc)
-      : current_(item), allocator_(&alloc)
+                          SLList<T,A>* sllist)
+      : current_(item), list_(sllist)
     {}
 
     inline SLListIterator()
-      : current_(0), allocator_(0)
+      : current_(0), list_(0)
     {}
 
     /**
@@ -252,19 +252,32 @@ namespace Dune
      */
     inline void insertAfter(const T& v) const
     {
-      assert(current_ != 0 && allocator_ != 0);
-      typename SLList<T,A>::Element* added = allocator_->allocate(1, 0);
+      assert(current_ != 0 && list_ != 0);
+      typename SLList<T,A>::Element* added = list_->allocator_.allocate(1, 0);
       added->item_    = v;
       added->next_    = current_->next_;
       current_->next_ = added;
+      ++(list_->size_);
     }
 
+    /**
+     * @brief Delete the entry after the current position.
+     */
+    inline void deleteNext() const
+    {
+      assert(current_->next_!=0 && list_!=0);
+      typename SLList<T,A>::Element* tmp =current_->next_;
+      current_->next_ = tmp->next_;
+      list_->allocator_.destroy(tmp);
+      list_->allocator_.deallocate(tmp, 1);
+      --(list_->size_);
+    }
 
   private:
     /**  @brief The current element. */
     typename SLList<T,A>::Element* current_;
-    /** @brief The allocator of the list. */
-    typename SLList<T,A>::Allocator* allocator_;
+    /** @brief The list we iterate over. */
+    SLList<T,A>* list_;
   };
 
   /**
@@ -423,7 +436,7 @@ namespace Dune
   template<typename T, class A>
   inline SLListIterator<T,A> SLList<T,A>::begin()
   {
-    return iterator(head_, allocator_);
+    return iterator(head_, this);
   }
 
   template<typename T, class A>
@@ -435,7 +448,7 @@ namespace Dune
   template<typename T, class A>
   inline SLListIterator<T,A> SLList<T,A>::oneBeforeBegin()
   {
-    return iterator(&beforeHead_, allocator_);
+    return iterator(&beforeHead_, this);
   }
 
   template<typename T, class A>
