@@ -284,7 +284,7 @@ namespace Dune {
     //! return number of quadrature points
     int nop () const { return numQuadPoints_; };
 
-    //! return number of quadrature points
+    //! return order of quadrature
     int order () const { return order_; };
 
     //! return weight corresponding to point i

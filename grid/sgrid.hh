@@ -740,8 +740,8 @@ namespace Dune {
     // these are all members specific to sgrid
 
     /*! constructor, subject to change!
-       \param H_: size of domain
-       \param N_: coarse grid size, #elements in one direction
+       \param H_: array of size dim: length in each dimension
+       \param N_: array of size dim: coarse grid size, #elements in one direction
      */
     SGrid (int* N_, sgrid_ctype* H_);
 
