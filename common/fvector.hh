@@ -354,6 +354,7 @@ namespace Dune {
     }
 
     //===== assignment from scalar
+    //! Assignment operator for scalar
     FieldVector& operator= (const K& k)
     {
       fvmeta_assignscalar<n-1>::assignscalar(*this,k);
