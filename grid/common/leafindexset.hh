@@ -66,7 +66,7 @@ namespace Dune {
   //******************************************************************
   //
   // Indexset that provides consecutive indicies for the leaf level
-  // this index set uses the grid global_index
+  // this index set uses the grid globalIndex
   //
   //******************************************************************
   /*!
@@ -90,9 +90,9 @@ namespace Dune {
         assert(codim == 0);
 
         // check if we have index for given entity
-        assert(leafIndex[en.global_index()] >= 0);
+        assert(leafIndex[en.globalIndex()] >= 0);
 
-        return leafIndex[en.global_index()];
+        return leafIndex[en.globalIndex()];
       }
     };
 
@@ -265,7 +265,7 @@ namespace Dune {
     template <class EntityType>
     void insert (EntityType & en)
     {
-      this->insert ( en.global_index() );
+      this->insert ( en.globalIndex() );
     }
 
     //! return how much extra memory is needed for restriction
@@ -312,11 +312,11 @@ namespace Dune {
     // insert index if entities lies below used entity, return
     // false if not , otherwise return true
     template <class EntityType>
-    bool insertNewIndex (EntityType & en, bool hasChildren , bool canInsert )
+    bool insertNewIndex (EntityType & en, bool isLeaf , bool canInsert )
     {
       // if entity has no children, we can insert, because we are at
       // leaflevel
-      if(!hasChildren)
+      if(isLeaf)
       {
         // count leaf entities
         actSize_++;
@@ -329,7 +329,7 @@ namespace Dune {
       if(!canInsert)
       {
         // from now on, indices can be inserted
-        if(leafIndex_[en.global_index()] >= 0)
+        if(leafIndex_[en.globalIndex()] >= 0)
         {
           return true;
         }
@@ -341,7 +341,7 @@ namespace Dune {
       {
         this->insert ( en );
         // set unused here, because index is only needed for prolongation
-        state_[en.global_index()] = UNUSED;
+        state_[en.globalIndex()] = UNUSED;
       }
 
       return true;
@@ -411,7 +411,7 @@ namespace Dune {
         bool areNew = false;
 
         // check whether we can insert or not
-        areNew = insertNewIndex  ( *macroit , macroit->hasChildren() , areNew );
+        areNew = insertNewIndex  ( *macroit , macroit->isLeaf() , areNew );
 
         HierarchicIterator it    = macroit->hbegin ( maxlevel );
         HierarchicIterator endit = macroit->hend   ( maxlevel );
@@ -419,7 +419,7 @@ namespace Dune {
         for( ; it != endit ; ++it )
         {
           // areNew == true, then index is inserted
-          areNew = insertNewIndex  ( *it , it->hasChildren(), areNew );
+          areNew = insertNewIndex  ( *it , it->isLeaf(), areNew );
         }
       } // end grid walk trough
 
