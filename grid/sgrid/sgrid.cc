@@ -1076,6 +1076,18 @@ namespace Dune {
     return SLevelIterator<cd,dim,dimworld,All_Partition> (*this,level,size(level,cd));
   }
 
+  template <int dim, int dimworld>
+  inline typename SGrid<dim,dimworld>::LeafIterator SGrid<dim,dimworld>::leafbegin (int level)
+  {
+    return this->template lbegin<0> (level);
+  }
+
+  template <int dim, int dimworld>
+  inline typename SGrid<dim,dimworld>::LeafIterator SGrid<dim,dimworld>::leafend (int level)
+  {
+    return this->template lend<0> (level);
+  }
+
   template<int dim, int dimworld>
   inline int SGrid<dim,dimworld>::size (int level, int codim) const
   {
