@@ -337,8 +337,8 @@ namespace Dune {
     {
       for (int i=0; i<dim; ++i)
       {
-        Jinv(i) = 0.0;                        // set column to zero
-        Jinv(i,i) = 1.0/extension[i];         // set diagonal element
+        Jinv[i] = 0.0;                        // set column to zero
+        Jinv[i][i] = 1.0/extension[i];         // set diagonal element
       }
       return Jinv;
     }
