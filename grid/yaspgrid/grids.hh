@@ -561,6 +561,10 @@ namespace SG {
         // intersect
         neworigin[i] = std::max(min(i),r.min(i));
         newsize[i] = std::min(max(i),r.max(i))-neworigin[i]+1;
+        if (newsize[i]<0) {
+          newsize[i] = 0;
+          neworigin[i] = min(i);
+        }
 
         // offset to my supergrid
         offset[i] = _offset[i]+neworigin[i]-origin(i);
