@@ -277,8 +277,8 @@ namespace Dune {
 
   //***********************************************************************
 
-  /** \brief ???
-   * \todo Please doc me!
+  /** \brief I suppose it does the restriction/prolongation for FV
+   *
    */
   template <class DiscreteFunctionType>
   class RestProlOperatorFV
@@ -289,9 +289,9 @@ namespace Dune {
     typedef typename DiscreteFunctionType::DomainType DomainType;
     typedef BaryCenterQuad < RangeFieldType , DomainType , 0 > BaryQuadType;
   public:
-    //! ???
-    RestProlOperatorFV ( DiscreteFunctionType & df , GeometryType eltype = tetrahedron  ) : df_ (df) ,
-                                                                                            vati_ ( df_.newLocalFunction() ) , sohn_ ( df_.newLocalFunction() ) , quad_(eltype) , weight_(-1.0)
+    //! Constructor
+    RestProlOperatorFV ( DiscreteFunctionType & df , GeometryType eltype ) : df_ (df) ,
+                                                                             vati_ ( df_.newLocalFunction() ) , sohn_ ( df_.newLocalFunction() ) , quad_(eltype) , weight_(-1.0)
     {}
 
     template <class EntityType>
