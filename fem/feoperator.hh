@@ -125,7 +125,7 @@ namespace Dune {
         }
       }
 
-#if 0
+#if 1
       {
         // eliminate the Dirichlet rows and columns
         typedef typename GridType::template Traits<0>::Entity EntityType;
@@ -136,16 +136,15 @@ namespace Dune {
         LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
         for( ; it != endit; ++it )
         {
-          NeighIt nit = it->ibegin();
           NeighIt endnit = it->iend();
-          for( ; nit != endnit ; ++nit)
+          for(NeighIt nit = it->ibegin() ; nit != endnit ; ++nit)
           {
 
             if(nit.boundary())
             {
               BoundaryEntityType & bEl = nit.boundaryEntity();
 
-              if( bEl.type() == Dirichlet )
+              if( functionSpace_.boundaryType( bEl.id() ) == Dirichlet )
               {
                 int neigh = nit.number_in_self();
 
@@ -213,9 +212,10 @@ namespace Dune {
       typedef typename FunctionSpaceType::Domain DomainVecType;
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
+      typedef typename DiscFunctionType::ConstDofIteratorType ConstDofIteratorType;
 
       DofIteratorType dest_it = dest.dbegin();
-      const DofIteratorType arg_it = arg.dbegin();
+      ConstDofIteratorType arg_it = arg.dbegin();
 
       dest.clear();
 
@@ -343,9 +343,10 @@ namespace Dune {
       typedef typename FunctionSpaceType::Domain DomainVecType;
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
+      typedef typename DiscFunctionType::ConstDofIteratorType ConstDofIteratorType;
 
       DofIteratorType dest_it = dest.dbegin();
-      const DofIteratorType arg_it = arg.dbegin();
+      ConstDofIteratorType arg_it = arg.dbegin();
 
       const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
       int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
@@ -404,9 +405,10 @@ namespace Dune {
       DiscFunctionType & dest = (*dest_);
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
+      typedef typename DiscFunctionType::ConstDofIteratorType ConstDofIteratorType;
 
       DofIteratorType dest_it = dest.dbegin( );
-      const DofIteratorType arg_it = arg.dbegin( );
+      ConstDofIteratorType arg_it = arg.dbegin( );
 
       NeighIt nit = en.ibegin();
       NeighIt endnit = en.iend();
