@@ -6,28 +6,51 @@
 namespace Dune
 {
 
+  // Constructor makeing empty discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(const DiscreteFunctionSpaceType & f) :
-    DiscreteFunctionDefaultType ( f ) ,
-    localFunc_ ( f , dofVec_ ) , built_ ( false )
-  {
-    // empty
-  }
+    DiscreteFunctionDefaultType ( f ) , built_ ( false ) , freeLocalFunc_ (NULL) {}
 
+  // Constructor makeing discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(const DiscreteFunctionSpaceType & f,
                 int level , int codim , bool allLevel )
     : DiscreteFunctionDefaultType ( f ) , level_ ( level ) ,
-      allLevels_ ( allLevel ) , localFunc_ ( f , dofVec_ )
+      allLevels_ ( allLevel ) , freeLocalFunc_ (NULL)
   {
     if(allLevels_)
       levOcu_ = level_+1;
     else
       levOcu_ = 1;
+
     getMemory();
   }
+
+  template<class DiscreteFunctionSpaceType >
+  inline DiscFuncArray< DiscreteFunctionSpaceType >::
+  DiscFuncArray(const DiscFuncArray <DiscreteFunctionSpaceType> & df ) :
+    DiscreteFunctionDefaultType ( df.functionSpace_ )
+  {
+    built_ = df.built_;
+    allLevels_ = df.allLevels_;
+    levOcu_ = df.levOcu_;
+    level_ = df.level_;
+
+    dofVec_ = df.dofVec_;
+    freeLocalFunc_ = NULL;
+  }
+
+
+  // Desctructor
+  template<class DiscreteFunctionSpaceType >
+  inline DiscFuncArray< DiscreteFunctionSpaceType >::
+  ~DiscFuncArray()
+  {
+    if(freeLocalFunc_) delete freeLocalFunc_;
+  }
+
 
   template<class DiscreteFunctionSpaceType >
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::setLevel ( DofType x, int level )
@@ -95,8 +118,27 @@ namespace Dune
   inline typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType&
   DiscFuncArray< DiscreteFunctionSpaceType >::access (EntityType &en)
   {
-    localFunc_.init( en );
-    return localFunc_;
+    if(!freeLocalFunc_)
+    {
+      LocalFunctionType *lf = new LocalFunctionType (functionSpace_,dofVec_);
+      lf->init(en);
+      return (*lf);
+    }
+    else
+    {
+      LocalFunctionType *lf = freeLocalFunc_;
+      freeLocalFunc_ = lf->getNext();
+      lf->init(en);
+      return (*lf);
+    }
+  }
+
+  template<class DiscreteFunctionSpaceType >
+  inline void DiscFuncArray< DiscreteFunctionSpaceType >::
+  done ( typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType &lf)
+  {
+    lf.setNext(freeLocalFunc_);
+    freeLocalFunc_ = &lf;
   }
 
   template<class DiscreteFunctionSpaceType >

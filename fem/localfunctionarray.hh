@@ -26,25 +26,34 @@ namespace Dune {
           LocalFunctionArray < DiscreteFunctionSpaceType >  >
   {
     typedef FastBaseFunctionSet < DiscreteFunctionSpaceType > BaseFunctionSetType;
+    typedef LocalFunctionArray < DiscreteFunctionSpaceType > MyType;
+
+    typedef typename MemoryProvider <MyType>::ObjectEntity ObjectEntityType;
+
   public:
     //! Constructor
     LocalFunctionArray ( const DiscreteFunctionSpaceType &f , std::vector < Array < RangeField > > & dofVec )
-      : fSpace_ ( f ), dofVec_ ( dofVec )
+      : fSpace_ ( f ), dofVec_ ( dofVec )  , next_ (NULL)
     {
       built_ = false;
       baseFuncSet_ = NULL;
     };
 
+    ~LocalFunctionArray ()
+    {
+      if(next_) delete next_;
+    }
+
     //! access to dof number num, all dofs of the dof entity
     RangeField & operator [] (int num)
     {
-      if (!built_) std::cout << "Warning: LocalFunction not built!\n";
+      //if (!built_) std::cout << "Warning: LocalFunction not built!\n";
       return (*dofArray_)[ map_ [ num ] ];
     }
 
     int numberOfDofs ()
     {
-      if (!built_) std::cout << "Warning: LocalFunction not built!\n";
+      //if (!built_) std::cout << "Warning: LocalFunction not built!\n";
       return numOfDof_;
     };
 
@@ -60,26 +69,39 @@ namespace Dune {
       }
     }
 
-    // methods that do not belong to the interface but have to be public
-    // used like setElInfo and so on
+    //! get pointer to next LocalFunction
+    MyType * getNext() const
+    {
+      return next_;
+    }
+
+    //! set pointer to next LocalFunction
+    void setNext (MyType * n)
+    {
+      next_ = n;
+    }
+
+    //! methods that do not belong to the interface but have to be public
+    //! used like setElInfo and so on
     template <class EntityType >
-    void init ( EntityType &en )
+    void init ( EntityType &en)
     {
       built_  = false;
-      //std::cout << en.index() << " Init LocalFunctionArray! \n";
+
       dofArray_ = & dofVec_ [ en.level() ];
       baseFuncSet_ = & ( fSpace_.getBaseFunctionSet(en) );
       numOfDof_ = baseFuncSet_->getNumberOfBaseFunctions();
+
       if(numOfDof_ > map_.size())
         map_.resize( numOfDof_ );
+
       for(int i=0; i<numOfDof_; i++)
-      {
         map_ [i] = fSpace_.mapToGlobal ( en , i);
-      }
 
       built_ = true;
     };
 
+    // print local function
     void print()
     {
       for(int i=0; i<numOfDof_; i ++)
@@ -89,6 +111,9 @@ namespace Dune {
   protected:
     //! needed once
     Range tmp;
+
+    //! remember pointer to next LocalFunction
+    MyType * next_;
 
     //! diffVar for evaluate, is empty
     const DiffVariable<0>::Type diffVar;
@@ -115,87 +140,6 @@ namespace Dune {
     BaseFunctionSetType *baseFuncSet_;
   }; // end LocalFunctionArray
 
-
-  //**************************************************************************
-  //
-  //  --LocalFunctionArrayIterator
-  //
-  //! Iterator to navigate through the local functions
-  //! The Storage of the dofs is implemented via an array
-  //
-  //**************************************************************************
-  template < int codim , class DiscFunctionSpaceType >
-  class LocalFunctionArrayIterator
-    : public LocalFunctionIteratorDefault < DiscFunctionSpaceType ,
-          LocalFunctionArrayIterator < codim , DiscFunctionSpaceType > ,
-          LocalFunctionArray < DiscFunctionSpaceType >
-          >
-
-  {
-    typedef typename DiscFunctionSpaceType::GridType GridType;
-    //! we use the Grid LevelIterator
-    typedef typename GridType::Traits<codim>::LevelIterator LevelIterator;
-    typedef typename DiscFunctionSpaceType::RangeField RangeField;
-
-    // just for readability
-    typedef LocalFunctionArrayIterator < codim , DiscFunctionSpaceType >
-    LocalFunctionArrayIteratorType;
-  public:
-
-    //! Constructor
-    LocalFunctionArrayIterator ( const DiscFunctionSpaceType &f ,
-                                 const LevelIterator & it, std::vector < Array < RangeField > > & dofVec )
-      : localFunc_ ( f , dofVec ) , levIt_ ( it )
-    {
-      localFunc_.init ( *levIt_ );
-    };
-
-    //! we use localFunc_ as Interface
-    LocalFunctionType & operator *()
-    {
-      return localFunc_;
-    };
-
-    //! go next local function, means go netx grid entity an map to dofs
-    LocalFunctionArrayIteratorType& operator++ ()
-    {
-      ++levIt_;
-      localFunc_.init(*levIt_);
-      return (*this);
-    };
-
-    //! go next i steps
-    LocalFunctionArrayIteratorType& operator++ (int i)
-    {
-      ++levIt_.operator ++ (i);
-      localFunc_.init(*levIt_);
-      return (*this);
-    };
-
-    //! compare LocalFucntionIterator
-    bool operator == (const LocalFunctionArrayIteratorType & I )
-    {
-      return levIt_ == I.levIt_;
-    }
-
-    //! compare LocalFucntionIterator
-    bool operator != (const LocalFunctionArrayIteratorType & I )
-    {
-      return levIt_ != I.levIt_;
-    }
-
-    int index ()
-    {
-      return (levIt_->index());
-    }
-
-  private:
-    //! the level iterator for grid iteration
-    LevelIterator levIt_;
-
-    //! the local function
-    LocalFunctionType localFunc_;
-  }; // end LocalFunctionArrayIterator
 
   //***********************************************************************
   //

@@ -36,6 +36,11 @@ namespace Dune {
 
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
+    typedef MemoryProvider < LocalFunctionArray <DiscreteFunctionSpaceType> >
+    MemoryProviderType;
+
+    typedef typename MemoryProviderType::ObjectEntity ObjectEntityType;
+
     enum { myId_ = 0};
 
   public:
@@ -43,37 +48,19 @@ namespace Dune {
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
     typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
 
-    // Constructor make empty DiscFuncArray
+    //! Constructor make empty DiscFuncArray
     DiscFuncArray ( const DiscreteFunctionSpaceType & f );
 
-    // Constructor make Discrete Function for all or leaf level
+    //! Constructor make Discrete Function for all or leaf level
     DiscFuncArray ( const DiscreteFunctionSpaceType & f,
                     int level , int codim , bool flag ) ;
 
-    void getMemory()
-#if 1
-    {
-      // for all grid levels we have at least a vector with length 0
-      int numLevel = const_cast<GridType &> (functionSpace_.getGrid()).maxlevel() +1;
-      dofVec_.resize(numLevel);
-      for(int i=0; i<numLevel; i++)
-        dofVec_[i] = NULL;
+    //! Constructor make Discrete Function for all or leaf level
+    DiscFuncArray (const DiscFuncArray <DiscreteFunctionSpaceType> & df);
 
-      // this is done only if levOcu_ > 1
-      for(int i=0; i< levOcu_-1; i++)
-      {
-        int length = functionSpace_.size( i );
-        (dofVec_[i]).resize( length );
-        for( int j=0; j<length; j++)
-          (dofVec_[i])[j] = 0.0;
-      }
-
-      // the last level is done always
-      int length = functionSpace_.size( level_ );
-      (dofVec_[level_]).resize( length );
-      for( int j=0; j<length; j++) (dofVec_[level_])[j] = 0.0;
-    }
-#endif
+    //! delete stack of free local functions belonging to this discrete
+    //! function
+    ~DiscFuncArray ();
 
     // ***********  Interface  *************************
 
@@ -81,6 +68,9 @@ namespace Dune {
     //! default implementation is via GlobalDofIterator
     template <class EntityType>
     LocalFunctionType & access (EntityType & en );
+
+    //! free access to LocalFunction for next use
+    void done (LocalFunctionType & lf );
 
     // we use the default implementation
     // Warning!!! returns reference to local object!
@@ -125,6 +115,30 @@ namespace Dune {
     bool read_pgm(const char *filename, int timestep);
 
   private:
+    // get memory for discrete function
+    void getMemory()
+    {
+      // for all grid levels we have at least a vector with length 0
+      int numLevel = const_cast<GridType &> (functionSpace_.getGrid()).maxlevel() +1;
+      dofVec_.resize(numLevel);
+      for(int i=0; i<numLevel; i++)
+        dofVec_[i] = NULL;
+
+      // this is done only if levOcu_ > 1
+      for(int i=0; i< levOcu_-1; i++)
+      {
+        int length = functionSpace_.size( i );
+        (dofVec_[i]).resize( length );
+        for( int j=0; j<length; j++)
+          (dofVec_[i])[j] = 0.0;
+      }
+
+      // the last level is done always
+      int length = functionSpace_.size( level_ );
+      (dofVec_[level_]).resize( length );
+      for( int j=0; j<length; j++) (dofVec_[level_])[j] = 0.0;
+    }
+
     //! true if memory was allocated
     bool built_;
 
@@ -139,7 +153,11 @@ namespace Dune {
 
     //! Vector of Array for each level, the array holds
     //! the dofs of each level
-    LocalFunctionArray < DiscreteFunctionSpaceType > localFunc_;
+    //std::vector < LocalFunctionArray < DiscreteFunctionSpaceType > > vecLocalFunc_;
+    //std::vector < LocalFunctionArray < DiscreteFunctionSpaceType > *> vecLocalFunc_;
+    //int numLocalFunc_;
+    //MemoryProviderType localFuncProvider_;
+    LocalFunctionType * freeLocalFunc_;
 
     //! for all level an Array < DofType > , the data
     std::vector < Array < DofType > > dofVec_;
