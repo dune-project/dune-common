@@ -605,25 +605,24 @@ namespace Dune
   inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
   evaluate (EntityType &en, const DomainType & x, RangeType & ret) const
   {
-    ret = 0.0;
     if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
     {
+      ret = 0.0;
+      xtmp_ = en.geometry().local(x);
       for(int i=0; i<numOfDifferentDofs_; i++)
       {
-        baseFuncSet_->eval( i*dimrange , en.geometry().local(x) ,tmp);
-        for(int l=0; l<dimrange; l++)
+        bool eval = fSpace_.evaluateLocal(i,en,xtmp_,tmp_);
+        if(eval)
         {
-          int num = i*dimrange + l;
-          ret(l) += (* (values_[num])) * tmp(l);
+          for(int l=0; l<dimrange; l++)
+            ret(l) += (* (values_[i])) * tmp_(l);
         }
       }
     }
     else
     {
       for(int l=0; l<dimrange; l++)
-      {
         ret(l) = (* (values_[ l ]));
-      }
     }
   }
 
@@ -633,28 +632,23 @@ namespace Dune
   inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
   evaluate (EntityType &en, QuadratureType &quad, int quadPoint, RangeType & ret) const
   {
-    ret = 0.0;
     if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
     {
+      ret = 0.0;
       for(int i=0; i<numOfDifferentDofs_; i++)
       {
-        // evaluate base function
-        baseFuncSet_->eval( i*dimrange , quad , quadPoint ,tmp);
-
-        for(int l=0; l<dimrange; l++)
+        bool eval = fSpace_.evaluateLocal(i,en,quad,quadPoint,tmp_);
+        if(eval)
         {
-          int num = i*dimrange + l;
-          ret(l) += (* (values_[num])) * tmp(l);
+          for(int l=0; l<dimrange; l++)
+            ret(l) += (* (values_[i])) * tmp_(l);
         }
       }
     }
     else
     {
-      // if we have only one base we won't evaluate that
       for(int l=0; l<dimrange; l++)
-      {
         ret(l) = (* (values_[ l ]));
-      }
     }
   }
 
