@@ -32,7 +32,11 @@ int main () {
     {
 
       Dune::AlbertaGrid<DIM,DIM_OF_WORLD> grid(filename.str().c_str());
-      gridcheck(grid);
+      for(int i=0; i<3; i++)
+      {
+        grid.globalRefine(1);
+        gridcheck(grid);
+      }
     };
 
   } catch (Dune::Exception &e) {
