@@ -492,26 +492,29 @@ namespace Dune
   addScaledLocal( GridIteratorType &it ,
                   const DiscFuncArray<DiscreteFunctionSpaceType> &g, const RangeFieldType &scalar )
   {
-    typedef typename Traits<GridIteratorType>::LocalFunctionIteratorType LFIterType;
-    LFIterType dest = localFunction( it );
-    LFIterType arg  = const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
-                      (g).localFunction( it );
+    LocalFunctionType *lf = getLocalFunction();
+    localFunction( *it , *lf );
+    LocalFunctionType & dest = *lf;
+    LocalFunctionType arg  = const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
+                             (g).newLocalFunction();
+    const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
+    (g).localFunction(*it,arg);
 
-    int length = dest->numberOfDofs();
+    int length = dest.numberOfDofs();
     if(scalar == 1.)
     {
       for(int i=0; i<length; i++)
-        (*dest)[i] += (*arg)[i];
+        dest[i] += arg[i];
     }
     else if ( scalar == -1. )
     {
       for(int i=0; i<length; i++)
-        (*dest)[i] -= (*arg)[i];
+        dest[i] -= arg[i];
     }
     else
     {
       for(int i=0; i<length; i++)
-        (*dest)[i] += scalar * (*arg)[i];
+        dest[i] += scalar * arg[i];
     }
   }
 
@@ -521,14 +524,17 @@ namespace Dune
   addLocal( GridIteratorType &it ,
             const DiscFuncArray<DiscreteFunctionSpaceType> &g)
   {
-    typedef typename Traits<GridIteratorType>::LocalFunctionIteratorType LFIterType;
-    LFIterType dest = localFunction( it );
-    LFIterType arg  = const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
-                      (g).localFunction( it );
+    LocalFunctionType *lf = getLocalFunction();
+    localFunction( *it , *lf );
+    LocalFunctionType & dest = *lf;
+    LocalFunctionType arg  = const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
+                             (g).newLocalFunction();
+    const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
+    (g).localFunction(*it,arg);
 
-    int length = dest->numberOfDofs();
+    int length = dest.numberOfDofs();
     for(int i=0; i<length; i++)
-      (*dest)[i] += (*arg)[i];
+      dest[i] += arg[i];
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -537,14 +543,17 @@ namespace Dune
   substractLocal( GridIteratorType &it ,
                   const DiscFuncArray<DiscreteFunctionSpaceType> &g)
   {
-    typedef typename Traits<GridIteratorType>::LocalFunctionIteratorType LFIterType;
-    LFIterType dest = localFunction( it );
-    LFIterType arg  = const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
-                      (g).localFunction( it );
+    LocalFunctionType *lf = getLocalFunction();
+    localFunction( *it , *lf );
+    LocalFunctionType & dest = *lf;
+    LocalFunctionType arg  = const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
+                             (g).newLocalFunction();
+    const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &>
+    (g).localFunction(*it,arg);
 
-    int length = dest->numberOfDofs();
+    int length = dest.numberOfDofs();
     for(int i=0; i<length; i++)
-      (*dest)[i] += (*arg)[i];
+      dest[i] -= arg[i];
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -552,11 +561,11 @@ namespace Dune
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::
   setLocal( GridIteratorType &it , const RangeFieldType & scalar )
   {
-    typedef typename Traits<GridIteratorType>::LocalFunctionIteratorType LFIterType;
-    LFIterType dest = localFunction( it );
-    int length = dest->numberOfDofs();
+    LocalFunctionType *lf = getLocalFunction();
+    localFunction( *it , *lf );
+    int length = lf->numberOfDofs();
     for(int i=0; i<length; i++)
-      (*dest)[i] = scalar;
+      (*lf)[i] = scalar;
   }
   //**********************************************************************
   //  --LocalFunctionArray

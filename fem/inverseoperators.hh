@@ -104,13 +104,13 @@ namespace Dune {
     void prepare (int level, const DiscreteFunctionType& Arg, DiscreteFunctionType& Dest,
                   DiscreteFunctionType* tmp, double& a, double& b)
     {
-      op_.prepareGlobal(level, Arg,Dest,tmp,a,b);
+      op_.prepare(level, Arg,Dest,tmp,a,b);
     }
 
     void finalize (int level, const DiscreteFunctionType& Arg, DiscreteFunctionType& Dest,
                    DiscreteFunctionType* tmp, double a, double b)
     {
-      op_.finalizeGlobal(level, Arg,Dest,tmp,a,b);
+      op_.finalize(level, Arg,Dest,tmp,a,b);
     }
 
     void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
