@@ -10,6 +10,8 @@
 
 #include "gridcheck.cc"
 
+int rank;
+
 template <int dim>
 void check_yasp() {
   typedef Dune::FieldVector<int,dim> iTupel;
@@ -37,8 +39,7 @@ int main (int argc , char **argv) {
     MPI_Init(&argc,&argv);
 
     // get own rank
-    /* int rank;
-       MPI_Comm_rank(MPI_COMM_WORLD,&rank); */
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
     check_yasp<2>();
     check_yasp<3>();
