@@ -130,6 +130,7 @@ namespace Dune
       BASEFUNC *tmp = feSpace_->getLocalBaseFunc(i);
       Vec<dimrange> newVal = feSpace_->map(el,vec_,i);
       Vec<dimrange> newTmp = tmp->eval(bary);
+      Mat<numDof,dimrange> newTmp1 = tmp->evalFirstDrv(bary);
 
       for(int j=0; j<dimrange; j++)
         newVal(j) *= newTmp(j);

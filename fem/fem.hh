@@ -14,7 +14,4 @@
 #include "functionspace.hh"
 #include "discretefunction.hh"
 
-#include "localbase/functionspace.cc"
-#include "localbase/discretefunction.cc"
-
 #endif

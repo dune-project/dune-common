@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_LOCALBASE_HH
-#define DUNE_LOCALBASE_HH
+#ifndef DUNE_FUNCTIONSPACE_HH
+#define DUNE_FUNCTIONSPACE_HH
 
 #include "localbase.hh"
 #include "localbase/defaultmmgr.hh"
@@ -110,5 +110,7 @@ namespace Dune
   };
 
 } // end namespace Dune
+
+#include "localbase/functionspace.cc"
 
 #endif
