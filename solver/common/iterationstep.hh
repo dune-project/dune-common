@@ -7,36 +7,49 @@
 
 namespace Dune {
 
-  template<class OP_TYPE, class VECTOR_TYPE>
+  //! Base class for iteration steps being called by a linear solver
+  template<class OperatorType, class DiscFuncType>
   class IterationStep : public NumProc
   {
   public:
 
+    //! Default constructor
     IterationStep() {}
 
-    IterationStep(OP_TYPE& mat, VECTOR_TYPE& x, VECTOR_TYPE& rhs) {
+    //! Constructor being given linear operator, solution and right hand side
+    IterationStep(OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
       mat_ = &mat;
       x_   = &x;
       rhs_ = &rhs;
     }
 
-    void setProblem(OP_TYPE& mat, VECTOR_TYPE& x, VECTOR_TYPE& rhs) {
+    //! Set linear operator, solution and right hand side
+    void setProblem(OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
       mat_ = &mat;
       x_   = &x;
       rhs_ = &rhs;
     }
 
+    //! Do the actual iteration
     virtual void iterate() = 0;
 
-    virtual VECTOR_TYPE getSol() = 0;
+    //! Return solution object
+    virtual DiscFuncType getSol() = 0;
 
-    virtual OP_TYPE* getMatrix() {return mat_;}
+    //! Return linear operator
+    virtual OperatorType* getMatrix() {return mat_;}
 
-    VECTOR_TYPE* x_;
+    //! The grid level the iteration step is working on
+    virtual int level() const {return level_;}
 
-    VECTOR_TYPE* rhs_;
+    DiscFuncType* x_;
 
-    OP_TYPE* mat_;
+    DiscFuncType* rhs_;
+
+    OperatorType* mat_;
+
+    //! The level of a multigrid hierarchy that is iterator is supposed to work on
+    int level_;
 
   };
 
