@@ -113,58 +113,38 @@ EOF`
           echo $UGGRAPE
           # !!! check for grape-lib if this is set!
 
-#      if test x$HAVE_UG = x1 ; then
-#	  AC_CHECK_LIB([devX], [UserWrite], 
-#	      [UG_LDFLAGS="$UG_LDFLAGS -ldevX"],
-#	      [HAVE_UG="0"]
-#	  )
-#      fi
-
           if test "$with_problem_dim" != "$with_world_dim" ; then
 	      AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
           fi
           UG_DIM="$with_problem_dim"
+
       fi
 
-#      if test x$HAVE_UG = x1 ; then
-#	  AC_CHECK_LIB([domS$UG_DIM], [InitDom],
-#	      [UG_LDFLAGS="$UG_LDFLAGS -ldomS$UG_DIM"],
-#	      [HAVE_UG="0"],
-#	      [$X_LIBS])
-#      fi
-
-#      if test x$HAVE_UG = x1 ; then
-#	  AC_CHECK_LIB([gg$UG_DIM], [InitGG]
-#	      [UG_LDFLAGS="$UG_LDFLAGS -ldomS$UG_DIM"],
-#	      [HAVE_UG="0"],
-#	      [$X_LIBS])      
-#      fi
-
-#      if test x$HAVE_UG = x1 ; then
-#	  AC_CHECK_LIB([ug$UG_DIM],[InitUg],
-#	      [UG_LDFLAGS="$UG_LDFLAGS"
-#	       UG_LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"],
-#	      [HAVE_UG="0"],
-#	      [-ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS])
-#      fi
-
-      AC_LANG_PUSH(C++)
+      AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
-          LIBS=-lug$UG_DIM
-          LDFLAGS=-ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS
+	echo -n "checking for libug$UG_DIM... "
+          LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"
+
+          if test $UG_DIM = 2 ; then
+            DIMDEFINE="__TWODIM__"
+	  else	
+            DIMDEFINE="__THREEDIM__"
+          fi
+
           AC_TRY_LINK(
-              [#include <initug.h>],
-              [int i = UG${UG_DIM}d::InitUg(0, NULL);],
-              [ac_have_libUG=yes
-                   UG_LDFLAGS="$UG_LDFLAGS"
-                   UG_LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"
+              [#define INT int
+               #define $DIMDEFINE
+               #include "initug.h"],
+	      [int i = UG${UG_DIM}d::InitUg(0,NULL)],
+              [UG_LDFLAGS="$LDFLAGS"
+               UG_LIBS="$LIBS"
+               echo "yes"
               ],
-              [ac_have_libUG=no
-                   HAVE_UG="0"
-                   AC_MSG_ERROR([*** You need libug$UG_DIM])]
+              [echo "no"
+	       HAVE_UG="0"]
           )
       fi
-      AC_LANG_POP
+      AC_LANG_POP([C++])
 
       # pre-set variable for summary
       with_ug="no"
@@ -173,7 +153,6 @@ EOF`
       if test x$HAVE_UG = x1 ; then
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
-	  # !!! domain !!!
 	  AC_SUBST(UG_CPPFLAGS, "-D_$UG_DIM -D_${UGDOMAIN}_ $UG_CPPFLAGS")
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
