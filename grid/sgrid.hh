@@ -54,6 +54,12 @@ namespace Dune {
 
 
   //************************************************************************
+  /*! define name for floating point type used for coordinates in sgrid.
+     You can change the type for coordinates by changing this single typedef.
+   */
+  typedef double sgrid_ctype;
+
+  //************************************************************************
   // forward declaration of templates
 
   template<int dim, int dimworld> class SElement;
@@ -103,6 +109,9 @@ namespace Dune {
     //! know dimension of world
     enum { dimensionworld=dimworld };
 
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
     //! return the element type identifier
     ElementType type ();
 
@@ -110,23 +119,57 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld>& operator[] (int i);
+    Vec<dimworld,sgrid_ctype>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned. A reference to a reference
        element is returned. Usually, the implementation will store the finite
        set of reference elements as global variables.
      */
-    SElement<dim,dim>& refelem ();
+    static SElement<dim,dim>& refelem ();
 
     //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld> global (Vec<dim> local);
+    Vec<dimworld,sgrid_ctype> global (const Vec<dim,sgrid_ctype>& local);
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<dim> local (Vec<dimworld> global);
+    Vec<dim,sgrid_ctype> local (const Vec<dimworld,sgrid_ctype>& global);
+
+    /*! Integration over a general element is done by integrating over the reference element
+       and using the transformation from the reference element to the global element as follows:
+       \f[\int\limits_{\Omega_e} f(x) dx = \int\limits_{\Omega_{ref}} f(g(l)) A(l) dl \f] where
+       \f$g\f$ is the local to global mapping and \f$A(l)\f$ is the integration element.
+
+       For a general map \f$g(l)\f$ involves partial derivatives of the map (surface element of
+       the first kind if \f$d=2,w=3\f$, determinant of the Jacobian of the transformation for
+       \f$d=w\f$, \f$\|dg/dl\|\f$ for \f$d=1\f$).
+
+       For linear elements, the derivatives of the map with respect to local coordinates
+       do not depend on the local coordinates and are the same over the whole element.
+
+       For a structured mesh where all edges are parallel to the coordinate axes, the
+       computation is the length, area or volume of the element is very simple to compute.
+
+       Each grid module implements the integration element with optimal efficieny. This
+       will directly translate in substantial savings in the computation of finite element
+       stiffness matrices.
+     */
+    sgrid_ctype integration_element (const Vec<dim,sgrid_ctype>& local);
+
+    //! can only be called for dim=dimworld!
+    Mat<dim,dim>& Jacobian_inverse (const Vec<dim,sgrid_ctype>& local);
+
+    //! constructor, makes element from position and direction vectors
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[dim]);
+
+    //! constructor without arguments makes reference element
+    SElement ();
 
   private:
-    SElement () {assert(dim<=3);}
+    Vec<dimworld,sgrid_ctype> s;             //!< position of element
+    Mat<dimworld,dim,sgrid_ctype> A;         //!< direction vectors as matrix
+    Vec<dimworld,sgrid_ctype> c[1<<dim];     //!< coordinate vectors of corners
+    Mat<dim,dim,sgrid_ctype> Jinv;           //!< storage for inverse of jacobian
+    bool builtinverse;
   };
 
   // specialization for dim=1
@@ -140,6 +183,9 @@ namespace Dune {
     //! know dimension of world
     enum { dimensionworld=dimworld };
 
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
     //! return the element type identifier
     ElementType type ();
 
@@ -147,33 +193,42 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld>& operator[] (int i);
+    Vec<dimworld,sgrid_ctype>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned. A reference to a reference
        element is returned. Usually, the implementation will store the finite
        set of reference elements as global variables.
      */
-    SElement<1,1>& refelem ();
+    static SElement<1,1>& refelem ();
 
     //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld> global (Vec<1> local);
+    Vec<dimworld,sgrid_ctype> global (Vec<1,sgrid_ctype> local);
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<1> local (Vec<dimworld> global);
+    Vec<1,sgrid_ctype> local (Vec<dimworld,sgrid_ctype> global);
+
+    //! return integration element
+    sgrid_ctype integration_element (const Vec<1,sgrid_ctype>& local);
+
+    //! can only be called for dim=dimworld!
+    Mat<1,1>& Jacobian_inverse (const Vec<1,sgrid_ctype>& local);
 
     //! constructor, makes element from position and direction vectors
-    SElement (const Vec<dimworld>& s_, Vec<dimworld> r_[1]);
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[1]);
 
     //! constructor, makes element from position and one direction vector, asserts dim=1
-    SElement (const Vec<dimworld>& s_, const Vec<dimworld>& r0);
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, const Vec<dimworld,sgrid_ctype>& r0);
 
-    //! Constructor without arguments, only for prototyping
-    SElement () {}
+    //! constructor without arguments makes reference element
+    SElement ();
+
   private:
-    Vec<dimworld> s;           //!< position of element
-    Mat<dimworld,1> A;         //!< direction vectors as matrix
-    Vec<dimworld> c[1<<1];     //!< coordinate vectors of corners
+    Vec<dimworld,sgrid_ctype> s;           //!< position of element
+    Mat<dimworld,1,sgrid_ctype> A;         //!< direction vectors as matrix
+    Vec<dimworld,sgrid_ctype> c[1<<1];     //!< coordinate vectors of corners
+    Mat<1,1,sgrid_ctype> Jinv;             //!< storage for inverse of jacobian
+    bool builtinverse;
   };
 
   // specialization for dim=2
@@ -194,33 +249,42 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld>& operator[] (int i);
+    Vec<dimworld,sgrid_ctype>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned. A reference to a reference
        element is returned. Usually, the implementation will store the finite
        set of reference elements as global variables.
      */
-    SElement<2,2>& refelem ();
+    static SElement<2,2>& refelem ();
 
     //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld> global (Vec<2> local);
+    Vec<dimworld,sgrid_ctype> global (Vec<2,sgrid_ctype> local);
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<2> local (Vec<dimworld> global);
+    Vec<2,sgrid_ctype> local (Vec<dimworld,sgrid_ctype> global);
+
+    //! return integration element
+    sgrid_ctype integration_element (const Vec<2,sgrid_ctype>& local);
+
+    //! can only be called for dim=dimworld!
+    Mat<2,2>& Jacobian_inverse (const Vec<2,sgrid_ctype>& local);
 
     //! constructor, makes element from position and direction vectors
-    SElement (const Vec<dimworld>& s_, Vec<dimworld> r_[2]);
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[2]);
 
     //! constructor, makes element from position and two direction vectors, asserts dim=2
-    SElement (const Vec<dimworld>& s_, const Vec<dimworld>& r0, const Vec<dimworld>& r1);
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, const Vec<dimworld,sgrid_ctype>& r0, const Vec<dimworld,sgrid_ctype>& r1);
 
-    //! Constructor without arguments, only for prototyping
-    SElement () {}
+    //! constructor without arguments makes reference element
+    SElement ();
+
   private:
-    Vec<dimworld> s;           //!< position of element
-    Mat<dimworld,2> A;         //!< direction vectors as matrix
-    Vec<dimworld> c[1<<2];     //!< coordinate vectors of corners
+    Vec<dimworld,sgrid_ctype> s;           //!< position of element
+    Mat<dimworld,2,sgrid_ctype> A;         //!< direction vectors as matrix
+    Vec<dimworld,sgrid_ctype> c[1<<2];     //!< coordinate vectors of corners
+    Mat<2,2,sgrid_ctype> Jinv;             //!< storage for inverse of jacobian
+    bool builtinverse;
   };
 
   // specialization for dim=3
@@ -234,6 +298,9 @@ namespace Dune {
     //! know dimension of world
     enum { dimensionworld=dimworld };
 
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
+
     //! return the element type identifier
     ElementType type ();
 
@@ -241,33 +308,42 @@ namespace Dune {
     int corners ();
 
     //! access to coordinates of corners. Index is the number of the corner
-    Vec<dimworld>& operator[] (int i);
+    Vec<dimworld,sgrid_ctype>& operator[] (int i);
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned. A reference to a reference
        element is returned. Usually, the implementation will store the finite
        set of reference elements as global variables.
      */
-    SElement<3,3>& refelem ();
+    static SElement<3,3>& refelem ();
 
     //! maps a local coordinate within reference element to global coordinate in element
-    Vec<dimworld> global (Vec<3> local);
+    Vec<dimworld,sgrid_ctype> global (Vec<3,sgrid_ctype> local);
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    Vec<3> local (Vec<dimworld> global);
+    Vec<3,sgrid_ctype> local (Vec<dimworld,sgrid_ctype> global);
+
+    //! return integration element
+    sgrid_ctype integration_element (const Vec<3,sgrid_ctype>& local);
+
+    //! can only be called for dim=dimworld!
+    Mat<3,3>& Jacobian_inverse (const Vec<3,sgrid_ctype>& local);
 
     //! constructor, makes element from position and direction vectors
-    SElement (const Vec<dimworld>& s_, Vec<dimworld> r_[3]);
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, Vec<dimworld,sgrid_ctype> r_[3]);
 
     //! constructor, makes element from position and three direction vectors, asserts dim=3
-    SElement (const Vec<dimworld>& s_, const Vec<dimworld>& r0, const Vec<dimworld>& r1, const Vec<dimworld>& r2);
+    SElement (const Vec<dimworld,sgrid_ctype>& s_, const Vec<dimworld,sgrid_ctype>& r0, const Vec<dimworld,sgrid_ctype>& r1, const Vec<dimworld,sgrid_ctype>& r2);
 
-    //! Constructor without arguments, only for prototyping
-    SElement () {}
+    //! constructor without arguments makes reference element
+    SElement ();
+
   private:
-    Vec<dimworld> s;           //!< position of element
-    Mat<dimworld,3> A;         //!< direction vectors as matrix
-    Vec<dimworld> c[1<<3];     //!< coordinate vectors of corners
+    Vec<dimworld,sgrid_ctype> s;           //!< position of element
+    Mat<dimworld,3,sgrid_ctype> A;         //!< direction vectors as matrix
+    Vec<dimworld,sgrid_ctype> c[1<<3];     //!< coordinate vectors of corners
+    Mat<3,3,sgrid_ctype> Jinv;             //!< storage for inverse of jacobian
+    bool builtinverse;
   };
 
   //************************************************************************
@@ -291,6 +367,9 @@ namespace Dune {
 
     //! know your own dimension of world
     enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
 
     //! level of this element
     int level ();
@@ -346,6 +425,9 @@ namespace Dune {
 
     //! forward declaration of nested class
     class NeighborIterator;
+
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
 
     //! know your own codimension
     enum { codimension=0 };
@@ -597,7 +679,7 @@ namespace Dune {
     SLevelIterator<0,dim,dimworld> father ();
 
     //! local coordinates within father
-    Vec<dim> local ();
+    Vec<dim,sgrid_ctype> local ();
 
     //! inlcude element in scope
     template<int d, int dd>
@@ -705,6 +787,9 @@ namespace Dune {
 
     //! know your own dimension of world
     enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef sgrid_ctype ctype;
 
     /*! constructor, subject to change!
        H_: size of domain
