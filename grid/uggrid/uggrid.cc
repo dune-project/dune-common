@@ -213,4 +213,31 @@ namespace Dune
   }
 
 
+  template < int dim, int dimworld >
+  inline void UGGrid < dim, dimworld >::makeNewUGMultigrid()
+  {
+    printf("A\n");
+    //configure @PROBLEM $d @DOMAIN;
+    char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
+    UG3d::ConfigureCommand(2, configureArgs);
+    printf("B\n");
+
+    //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
+    char* newArgs[4];
+    for (int i=0; i<4; i++)
+      newArgs[i] = (char*)::malloc(50*sizeof(char));
+
+    sprintf(newArgs[0], "new DuneMG");
+    sprintf(newArgs[1], "b DuneDummyProblem");
+    sprintf(newArgs[2], "f DuneFormat");
+    sprintf(newArgs[3], "h 1G");
+    //char* newArgs[4] = {"new DuneMG", "b DuneDummyProblem", "f DuneFormat", "h 1G"};
+    if (UG3d::NewCommand(4, newArgs))
+      assert(false);
+
+    //     for (int i=0; i<4; i++)
+    //         free(newArgs[i]);
+    printf("C\n");
+  }
+
 } // namespace Dune

@@ -212,21 +212,12 @@ global(const Vec<dim>& local)
 {
   Vec<dimworld, UGCtype> globalCoord;
 
-  // I have to do this copying because I currently cannot pipe Vecs into
-  // UG macros because of the different index operators
-  UGCtype local_c[dimworld], global_c[dimworld];
-  for (int i=0; i<dimworld; i++)
-    local_c[i] = local(i);
-
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];
   Corner_Coordinates(target_, cornerCoords);
 
   // Actually do the computation
-  Local_To_Global(corners(), cornerCoords, local_c, global_c);
-
-  for (int i=0; i<dimworld; i++)
-    globalCoord(i) = global_c[i];
+  Local_To_Global(corners(), cornerCoords, local, globalCoord);
 
   return globalCoord;
 }

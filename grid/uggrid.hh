@@ -9,21 +9,18 @@
 // All UG includes have to be includes via the file ugincludes.hh
 // for easier parsing by undefAllMacros.pl
 #define __PC__  // hack:  choose the architecture
+#define _3      // Choose the dimension
 #include "uggrid/ugincludes.hh"
 #undef __PC__
+#undef _3
 
 // Wrap a few large UG macros by functions before they get undef'ed away
 
-// I can't use the following because the index operator of Vec is () and not []
 namespace Dune {
-#if 0
+
   void Local_To_Global(int n, DOUBLE** y,
-                       const Dune::Vec<3, double>& local,  const Dune::Vec<3, double>& global)
-  {
-    LOCAL_TO_GLOBAL(n,y,local,global);
-  }
-#endif
-  void Local_To_Global(int n, DOUBLE** y, DOUBLE* local, DOUBLE* global)
+                       const Dune::Vec<3, double>& local,
+                       Dune::Vec<3, double>& global)
   {
     LOCAL_TO_GLOBAL(n,y,local,global);
   }
@@ -398,55 +395,7 @@ namespace Dune {
     // number of entitys of each level an codim
     Array<int> size_;
 
-#if 0
-    // remember on which level an ALBERT EL lives, is needed for the new
-    // fillElInfo method that takes the level of an element into account
-    // for calculation of the neighbor realtions
-    std::vector<int> neighOnLevel_;
-
-    // this method is new fill_elinfo from ALBERT but here the neighbor
-    // relations are calced diffrent, on ervery level there are neighbor
-    // realtions ( in ALBERT only on leaf level ), so we needed a new
-    // fill_elinfo.
-    void fillElInfo(int ichild, int actLevel ,const ALBERT EL_INFO *elinfo_old,
-                    ALBERT EL_INFO *elinfo, bool hierachical ) const;
-
-    // needed for VertexIterator, mark on which element a vertex is treated
-    UGMarkerVector * vertexMarker_;
-
-    //*********************************************************
-    // Methods for mapping the global Index to local on Level
-    // contains the index on level for each unique el->index of UG
-    Array<int> levelIndex_[dim+1];
-    void makeNewSize(Array<int> &a, int newNumberOfEntries);
-    void markNew();
-    //**********************************************************
-
-    //! map the global index from the UG Mesh to the local index on Level
-    template <int codim>
-    int indexOnLevel(int globalIndex, int level ) ;
-
-    // pointer to the real number of elements or vertices
-    // i.e. points to mesh->n_hier_elements or mesh->n_vertices
-    typename std::vector<int *> numberOfEntitys_;
-
-    //! actual time of Grid
-    UGCtype time_;
-
-    //***********************************************************************
-    //  MemoryManagement for Entitys and Elements
-    //**********************************************************************
-    typedef MemoryProvider< UGGridEntity<0,dim,dimworld > > EntityProvider;
-    typedef MemoryProvider< UGGridElement<dim-1,dimworld> > IntersectionSelfProvider;
-    typedef MemoryProvider< UGGridElement<dim-1,dim> >      IntersectionNeighProvider;
-
-    EntityProvider entityProvider_;
-    IntersectionSelfProvider interSelfProvider_;
-    IntersectionNeighProvider interNeighProvider_;
-
-
-#endif
-
+    void makeNewUGMultigrid();
   protected:
     /** \brief Number of UGGrids currently in use.
      *

@@ -11,7 +11,7 @@
 //
 //  codim > 0
 //
-//*********************************************************************8
+//*********************************************************************
 
 
 template<int codim, int dim, int dimworld>
@@ -242,9 +242,6 @@ UGGridEntity < codim, dim ,dimworld >::ibegin()
 
   if (codim==0) {
     it.setToTarget(target_, 0);
-    //         printf("element has %d neighbors:\n", SIDES_OF_ELEM(((UG3d::element*)target_)));
-    //         for (i=0; i<4; i++)
-    //             printf("Neighbor %d:  %d\n", i, NBELEM(((UG3d::element*)target_), i));
   } else
     printf("UGGridEntity <%d, %d, %d>::ibegin() not implemented\n", codim, dim, dimworld);
 
@@ -266,19 +263,9 @@ UGGridEntity < codim, dim ,dimworld >::iend()
   return it;
 }
 
-#if 0
-template< int dim, int dimworld>
-inline void UGGridEntity < 0, dim ,dimworld >::
-ibegin(UGGridIntersectionIterator<dim,dimworld> &it)
+template< int codim, int dim, int dimworld>
+inline AdaptationState UGGridEntity < codim, dim ,dimworld >::state() const
 {
-  it.makeBegin( grid_ , level() , elInfo_ );
-}
+  cerr << "UGGridEntity::state() not yet implemented!\n";
 
-template< int dim, int dimworld>
-inline void UGGridEntity < 0, dim ,dimworld >::
-iend(AlbertGridIntersectionIterator<dim,dimworld> &it)
-{
-  it.makeEnd( grid_ , level() );
 }
-#endif
-// end UGGridEntity

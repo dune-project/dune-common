@@ -5,6 +5,7 @@
 
 #include "ugtypes.hh"
 
+
 namespace Dune {
 
   //**********************************************************************
@@ -30,14 +31,6 @@ namespace Dune {
     //friend class UGGridLevelIterator < dim, dim, dimworld>;
     friend class UGGridIntersectionIterator < dim, dimworld>;
   public:
-    //! know your own codimension
-    //enum { codimension=codim };
-
-    //! know your own dimension
-    //enum { dimension=dim };
-
-    //! know your own dimension of world
-    //enum { dimensionworld=dimworld };
 
     //! level of this element
     int level ();
@@ -87,13 +80,26 @@ namespace Dune {
 
     //! local coordinates within father
     Vec<dim, UGCtype>& local ();
+
+    /** \brief Mark entity for refinement
+     *
+     * This only works for entities of codim 0.
+     * The parameter is currently ignored
+     *
+     * \return <ul>
+     * <li> true, if element was marked </li>
+     * <li> false, if nothing changed </li>
+     * </ul>
+     */
+    bool mark(int refCount);
+
+    /** \todo Please doc me! */
+    AdaptationState state() const;
+
   private:
 
 
     void setToTarget(typename TargetType<codim,dim>::T* target);
-
-    // returns the global vertex number as default
-    //int globalIndex() { return elInfo_->el->dof[vertex_][0]; }
 
     // private Methods
     void makeDescription();
@@ -150,17 +156,6 @@ namespace Dune {
     typedef UGGridIntersectionIterator<dim,dimworld> IntersectionIterator;
     typedef UGGridHierarchicIterator<dim,dimworld> HierarchicIterator;
 
-    //! know your own codimension
-    //enum { codimension=0 };
-
-    //! know your own dimension
-    //enum { dimension=dim };
-
-    //! know your own dimension of world
-    //enum { dimensionworld=dimworld };
-
-    //! Destructor, needed perhaps needed for deleteing faceEntity_ and
-    //! edgeEntity_ , see below
     //! there are only implementations for dim==dimworld 2,3
     ~UGGridEntity() {};
 
