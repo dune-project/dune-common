@@ -9,11 +9,11 @@ $(DEPDIR)/doxygen.Po: Doxyfile
 	./Doxydep $< $@
 
 doxygen-tag: $(doxygen_FILES) $(doxygen_DEPS)
-	doxygen
+	doxygen >& doxygen.log
 	touch doxygen-tag
 
 WEBDIR = /var/www/dune/doxygen
-WEBFILES = html/*.html html/*.css html/*.png
+WEBFILES = html/*.html html/*.css html/*.png doxygen.log
 
 web-install: doxygen-tag
 	if [ ! -d $(WEBDIR) ]; then \
