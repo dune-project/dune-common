@@ -153,7 +153,7 @@ EOF`
       if test x$HAVE_UG = x1 ; then
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
-	  AC_SUBST(UG_CPPFLAGS, "-D_${UGDOMAIN}_ $UG_CPPFLAGS")
+	  AC_SUBST(UG_CPPFLAGS, "-D_${UGDOMAIN}_ -D_${UG_DIM} $UG_CPPFLAGS")
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
           # add to global list
