@@ -61,8 +61,14 @@ namespace Dune {
     DiscreteOperator (LocalOperatorImp &op, bool leaf=false , bool printMsg = false )
       : localOp_ ( op ) , leaf_ (leaf), prepared_ (false) , printMsg_ (printMsg)
     {
-      if(printMsg)
-        std::cout << "Make new Operator "<< this << "\n";
+      if(printMsg_)
+        std::cout << "Make new Operator " << this << "\n";
+    }
+
+    virtual ~DiscreteOperator ()
+    {
+      if(printMsg_)
+        std::cout << "Delete operator " << this << "\n";
     }
 
     /*! add another discrete operator by combining the two local operators
@@ -87,7 +93,7 @@ namespace Dune {
 
       // memorize this new generated object because is represents this
       // operator and is deleted if this operator is deleted
-      saveObjPointer( discrOp );
+      this->saveObjPointer( discrOp );
 
       return *discrOp;
     }
