@@ -17,10 +17,14 @@ AC_DEFUN([DUNE_PATH_ALBERT],[
 
   AC_ARG_WITH(albert,
     AC_HELP_STRING([--with-albert=PATH],[directory with Albert inside]))
+# do not ask for elindex, because it has to be 1
+with_albert_elindex=1
+# do not use albert debug lib 
+with_albert_debug=0
 
 # also ask for elindex
-  AC_ARG_WITH(albert_elindex,AC_HELP_STRING([--with-albert-elindex=INDEX],[Albert element index (default is 1)]),,with_albert_elindex=1)
-  AC_SUBST(ALBERT_ELINDEX, $with_albert_elindex)
+#  AC_ARG_WITH(albert_elindex,AC_HELP_STRING([--with-albert-elindex=INDEX],[Albert element index (default is 1)]),,with_albert_elindex=1)
+#  AC_SUBST(ALBERT_ELINDEX, $with_albert_elindex)
 
 # store old values
 ac_save_LDFLAGS="$LDFLAGS"
@@ -49,7 +53,7 @@ ALBERT_INCLUDE_PATH="$ALBERTROOT/include"
 
 # Albert needs special defined symbols
 
-ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim -DEL_INDEX=$with_albert_elindex"
+ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim -DEL_INDEX=${with_albert_elindex}"
 
 # set variables so that tests can use them
 LDFLAGS="$LDFLAGS -L$ALBERT_LIB_PATH"
@@ -75,7 +79,7 @@ fi
 if test x$HAVE_ALBERT = x1 ; then
   # construct libname
   # the zero is the sign of the no-debug-lib
-  albertlibname="ALBERT${with_problem_dim}${with_world_dim}_0${with_albert_elindex}"
+  albertlibname="ALBERT${with_problem_dim}${with_world_dim}_${with_albert_debug}${with_albert_elindex}"
   AC_CHECK_LIB($albertlibname,[mesh_traverse],
 	[ALBERT_LIBS="-l$albertlibname $ALBERT_LIBS"
    LIBS="$LIBS $ALBERT_LIBS"],
