@@ -1,11 +1,11 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-template<typename Field, class Domain, class Range>
-Mapping<Field,Domain,Range> Mapping<Field,Domain,Range>::operator+(const Vector<Field> &mapping) const {
-  const Mapping<Field,Domain,Range> &m = dynamic_cast<const Mapping<Field,Domain,Range>& >( mapping );
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Mapping<DFieldType,RFieldType,DType,RType> Mapping<DFieldType,RFieldType,DType,RType>::operator+(const Vector<RFieldType> &mapping) const {
+  const Mapping<DFieldType,RFieldType,DType,RType> &m = dynamic_cast<const Mapping<DFieldType,RFieldType,DType,RType>& >( mapping );
 
-  Mapping<Field,Domain,Range> newMapping = *this;
+  Mapping<DFieldType,RFieldType,DType,RType> newMapping = *this;
 
   for ( typename std::vector<term>::const_iterator it = m.lincomb_.begin(); it != m.lincomb_.end(); it++ ) {
     newMapping.lincomb_.push_back( *it );
@@ -14,11 +14,11 @@ Mapping<Field,Domain,Range> Mapping<Field,Domain,Range>::operator+(const Vector<
   return newMapping;
 }
 
-template<typename Field, class Domain, class Range>
-Mapping<Field,Domain,Range> Mapping<Field,Domain,Range>::operator-(const Vector<Field> &mapping) const {
-  const Mapping<Field,Domain,Range> &m = dynamic_cast<const Mapping<Field,Domain,Range>& >( mapping );
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Mapping<DFieldType,RFieldType,DType,RType> Mapping<DFieldType,RFieldType,DType,RType>::operator-(const Vector<RFieldType> &mapping) const {
+  const Mapping<DFieldType,RFieldType,DType,RType> &m = dynamic_cast<const Mapping<DFieldType,RFieldType,DType,RType>& >( mapping );
 
-  Mapping<Field,Domain,Range> newMapping = *this;
+  Mapping<DFieldType,RFieldType,DType,RType> newMapping = *this;
 
   for ( typename std::vector<term>::const_iterator it = m.lincomb_.begin(); it != m.lincomb_.end(); it++ ) {
     newMapping.lincomb_.push_back( term( *it->v_, -it->scalar_ ) );
@@ -27,9 +27,9 @@ Mapping<Field,Domain,Range> Mapping<Field,Domain,Range>::operator-(const Vector<
   return newMapping;
 }
 
-template<typename Field, class Domain, class Range>
-Vector<Field>& Mapping<Field,Domain,Range>::operator+=(const Vector<Field> &mapping)  {
-  const Mapping<Field,Domain,Range> &m = dynamic_cast<const Mapping<Field,Domain,Range>& >( mapping );
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Vector<RFieldType>& Mapping<DFieldType,RFieldType,DType,RType>::operator+=(const Vector<RFieldType> &mapping)  {
+  const Mapping<DFieldType,RFieldType,DType,RType> &m = dynamic_cast<const Mapping<DFieldType,RFieldType,DType,RType>& >( mapping );
 
   for ( typename std::vector<term>::const_iterator it = m.lincomb_.begin(); it != m.lincomb_.end(); it++ ) {
     lincomb_.push_back( *it );
@@ -38,9 +38,9 @@ Vector<Field>& Mapping<Field,Domain,Range>::operator+=(const Vector<Field> &mapp
   return *this;
 }
 
-template<typename Field, class Domain, class Range>
-Vector<Field>& Mapping<Field,Domain,Range>::operator-=(const Vector<Field> &mapping)  {
-  const Mapping<Field,Domain,Range> &m = dynamic_cast<const Mapping<Field,Domain,Range>& >( mapping );
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Vector<RFieldType>& Mapping<DFieldType,RFieldType,DType,RType>::operator-=(const Vector<RFieldType> &mapping)  {
+  const Mapping<DFieldType,RFieldType,DType,RType> &m = dynamic_cast<const Mapping<DFieldType,RFieldType,DType,RType>& >( mapping );
 
   for ( typename std::vector<term>::const_iterator it = m.lincomb_.begin(); it != m.lincomb_.end(); it++ ) {
     lincomb_.push_back( term( *it->v_, -it->scalar_ ) );
@@ -49,8 +49,8 @@ Vector<Field>& Mapping<Field,Domain,Range>::operator-=(const Vector<Field> &mapp
   return *this;
 }
 
-template<typename Field, class Domain, class Range>
-Vector<Field>& Mapping<Field,Domain,Range>::operator*=(const Field &factor)  {
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Vector<RFieldType>& Mapping<DFieldType,RFieldType,DType,RType>::operator*=(const Field &factor)  {
   for ( typename std::vector<term>::iterator it = lincomb_.begin(); it != lincomb_.end(); it++ ) {
     it->scalar_ *= factor;
   }
@@ -59,17 +59,17 @@ Vector<Field>& Mapping<Field,Domain,Range>::operator*=(const Field &factor)  {
 
 
 
-template<typename Field, class Domain, class Range>
-Vector<Field>& Mapping<Field,Domain,Range>::operator/=(const Field &divisor)  {
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Vector<RFieldType>& Mapping<DFieldType,RFieldType,DType,RType>::operator/=(const Field &divisor)  {
   for ( typename std::vector<term>::iterator it = lincomb_.begin(); it != lincomb_.end(); it++ ) {
     it->scalar_ /= divisor;
   }
   return *this;
 }
 
-template<typename Field, class Domain, class Range>
-Vector<Field>& Mapping<Field,Domain,Range>::operator=(const Vector<Field> &mapping)  {
-  const Mapping<Field,Domain,Range> &m = dynamic_cast<const Mapping<Field,Domain,Range>& >( mapping );
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Vector<RFieldType>& Mapping<DFieldType,RFieldType,DType,RType>::operator=(const Vector<RFieldType> &mapping)  {
+  const Mapping<DFieldType,RFieldType,DType,RType> &m = dynamic_cast<const Mapping<DFieldType,RFieldType,DType,RType>& >( mapping );
 
   lincomb_.erase( lincomb_.begin(), lincomb_.end() );
 
@@ -80,11 +80,9 @@ Vector<Field>& Mapping<Field,Domain,Range>::operator=(const Vector<Field> &mappi
   return *this;
 }
 
-
-
-template<typename Field, class Domain, class Range>
-Mapping<Field,Domain,Range> Mapping<Field,Domain,Range>::operator*(const Field &factor) const {
-  Mapping<Field,Domain,Range> newMapping = *this;
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Mapping<DFieldType,RFieldType,DType,RType> Mapping<DFieldType,RFieldType,DType,RType>::operator*(const Field &factor) const {
+  Mapping<DFieldType,RFieldType,DType,RType> newMapping = *this;
 
   for ( typename std::vector<term>::iterator it = newMapping.lincomb_.begin(); it != newMapping.lincomb_.end(); it++ ) {
     it->scalar_ *= factor;
@@ -93,9 +91,9 @@ Mapping<Field,Domain,Range> Mapping<Field,Domain,Range>::operator*(const Field &
   return newMapping;
 }
 
-template<typename Field, class Domain, class Range>
-Mapping<Field,Domain,Range> Mapping<Field,Domain,Range>::operator/(const Field &divisor) const {
-  Mapping<Field,Domain,Range> newMapping = *this;
+template<typename DFieldType,typename RFieldType, class DType, class RType>
+Mapping<DFieldType,RFieldType,DType,RType> Mapping<DFieldType,RFieldType,DType,RType>::operator/(const Field &divisor) const {
+  Mapping<DFieldType,RFieldType,DType,RType> newMapping = *this;
   for ( typename std::vector<term>::iterator it = newMapping.lincomb_.begin(); it != newMapping.lincomb_.end(); it++ ) {
     it->scalar_ /= divisor;
   }

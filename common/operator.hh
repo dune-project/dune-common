@@ -8,18 +8,29 @@
 namespace Dune
 {
 
-  template <typename FieldType, typename DomainType , typename RangeType>
-  class Operator : public Mapping <FieldType,DomainType,RangeType>
+  template <typename DFieldType, typename RFieldType,
+      typename DType , typename RType>
+  class Operator : public Mapping <DFieldType,RFieldType,DType,RType>
   {
   public:
-    typedef DomainType Domain;
-    typedef RangeType Range;
-    typedef FieldType Field;
+    //! apply operator, used by mapping
+    void apply ( const DomainType & arg, RangeType & dest ) const
+    {
+      std::cerr << "Operator::apply is called! \n";
+      abort();
+    }
+
+    //! apply operator, used by mapping
+    void operator () ( const DomainType & arg, RangeType & dest ) const
+    {
+      std::cerr << "Operator::operator () is called! \n";
+      abort();
+    }
 
   private:
 
-  };
+  }; // end class Operator
 
-}
+} // end namespace Dune
 
 #endif

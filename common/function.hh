@@ -12,7 +12,8 @@ namespace Dune {
 
 
   template< class FunctionSpaceType, class FunctionImp>
-  class Function : public Mapping <typename FunctionSpaceType::RangeField , typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range > {
+  class Function : public Mapping < typename FunctionSpaceType::DomainField,
+                       typename FunctionSpaceType::RangeField , typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range > {
 
   public:
     typedef typename FunctionSpaceType::Domain Domain ;
