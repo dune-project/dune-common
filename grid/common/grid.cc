@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <dune/io/file/asciiparser.hh>
 
 namespace Dune {
 
@@ -1190,17 +1191,19 @@ namespace Dune {
      };
    */
 
+
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  write ( const FileFormatType ftype, const char * filename , double time, int timestep)
+  write ( const FileFormatType ftype, const char * filename , double time, int timestep, int precision)
   {
-    const char *fn;
     const char *path = 0;
     std::fstream file (filename,std::ios::out);
-    file << asImp().type() << " " << ftype;
+    file << "Grid: "   << transformToGridName(asImp().type()) << std::endl;
+    file << "Format: " << ftype <<  std::endl;
+    file << "Precision: " << precision << std::endl;
 
-    fn = genFilename(path,filename,timestep);
+    const char * fn = genFilename(path,filename,timestep,precision);
     file.close();
     switch (ftype)
     {
@@ -1223,26 +1226,27 @@ namespace Dune {
   read ( const char * filename , double & time, int timestep)
   {
     const char * fn;
-    std::fstream file (filename,std::ios::in);
-    GridIdentifier type;
     int helpType;
 
-    file >> helpType;
-    type = ( GridIdentifier ) helpType;
-    if(type != asImp().type())
+    char gridname [1024];
+    readParameter(filename,"Grid",gridname);
+    std::string gname (gridname);
+
+    if(transformToGridName(asImp().type()) != gname)
     {
-      std::cerr << "\nERROR: " << GridName(asImp().type()) << " tries to read " << GridName(type) << " file. \n\n";
-      assert(type == asImp().type());
+      std::cerr << "\nERROR: " << transformToGridName(asImp().type()) << " tries to read " << gname << " file. \n";
       abort();
     }
 
-    file >> helpType;
+    readParameter(filename,"Format",helpType);
     FileFormatType ftype = (FileFormatType) helpType;
 
+    int precision = 6;
+    readParameter(filename,"Precision",precision);
+
     const char *path = 0;
-    fn = genFilename(path,filename,timestep);
+    fn = genFilename(path,filename,timestep,precision);
     printf("Read file: filename = `%s' \n",fn);
-    file.close();
 
     switch (ftype)
     {
