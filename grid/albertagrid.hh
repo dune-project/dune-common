@@ -1064,7 +1064,7 @@ namespace Dune
    */
   template <int dim, int dimworld>
   class AlbertaGrid
-    : public GridDefault <dim,dimworld,albertCtype,AlbertaGrid>
+    : public GridDefault <dim,dimworld,albertCtype, AlbertaGrid<dim,dimworld> >
   {
     friend class AlbertaGridEntity <0,dim,AlbertaGrid<dim,dimworld> >;
     //friend class AlbertaGridEntity <1,dim,dimworld>;
@@ -1091,7 +1091,7 @@ namespace Dune
     // The Interface Methods
     //**********************************************************
   public:
-    typedef GridTraits<dim,dimworld,Dune::AlbertaGrid,AlbertaGridGeometry,AlbertaGridEntity,
+    typedef GridTraits<dim,dimworld,Dune::AlbertaGrid<dim,dimworld> ,AlbertaGridGeometry,AlbertaGridEntity,
         AlbertaGridBoundaryEntity,AlbertaGridLevelIterator,AlbertaGridIntersectionIterator,
         AlbertaGridHierarchicIterator>  Traits;
 
