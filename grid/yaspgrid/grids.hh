@@ -27,13 +27,13 @@ namespace Dune {
   /** @defgroup Yaspgrid Yet Another Structured Parallel Grid
       \ingroup GridCommon
 
-     This is the basis of a parallel implementation of the dune grid interface
-     supporting codim 0 and dim.
+          This is the basis of a parallel implementation of the dune grid interface
+          supporting codim 0 and dim.
 
-     You can also use the structured interface and write really fast code.
+          You can also use the structured interface and write really fast code.
 
-     @addtogroup YaspGrid
-     @{
+          @addtogroup YaspGrid
+          @{
    */
 
 
@@ -44,21 +44,21 @@ namespace Dune {
   static const double Ytolerance=1E-13;
 
   /*! The YGrid considered here describes a finite set \f$d\f$-tupels of the form
-      \f[ G = \{ (k_0,\ldots,k_{d-1}) | o_o \leq k_i < o_i+s_i \}  \f]
+        \f[ G = \{ (k_0,\ldots,k_{d-1}) | o_o \leq k_i < o_i+s_i \}  \f]
 
-          togehter with an affine mapping
+        togehter with an affine mapping
 
-          \f[ t : G \to R^d, \ \ \ t(k)_i = k_i h_i + r_i \f].
+        \f[ t : G \to R^d, \ \ \ t(k)_i = k_i h_i + r_i \f].
 
-          Therefore a YGrid is characterized by the following four quantities:
+        Therefore a YGrid is characterized by the following four quantities:
 
-          - The origin \f$ o=(o_0,\ldots,o_{d-1}) \in Z^d\f$,
-          - the size \f$ s=(s_0,\ldots,s_{d-1}) \in Z^d\f$,
-          - the mesh width \f$ h=(h_0,\ldots,h_{d-1}) \in R^d\f$,
-          - The shift \f$ r=(r_0,\ldots,r_{d-1}) \in R^d\f$. The shift can be used to interpret the
+        - The origin \f$ o=(o_0,\ldots,o_{d-1}) \in Z^d\f$,
+        - the size \f$ s=(s_0,\ldots,s_{d-1}) \in Z^d\f$,
+        - the mesh width \f$ h=(h_0,\ldots,h_{d-1}) \in R^d\f$,
+        - The shift \f$ r=(r_0,\ldots,r_{d-1}) \in R^d\f$. The shift can be used to interpret the
         points of a grid as midpoints of cells, faces, edges, etc.
 
-                The YGrid can be parametrized by the dimension d and the type to be used for the coordinates.
+        The YGrid can be parametrized by the dimension d and the type to be used for the coordinates.
 
      Here is a graphical illustration of a grid:
 
@@ -388,7 +388,7 @@ namespace Dune {
       }
 
       //! Print position of iterator
-      void print (std::ostream& s)
+      void print (std::ostream& s) const
       {
         s << index() << " : [";
         for (int i=0; i<d-1; i++) s << coord(i) << ",";
@@ -409,7 +409,7 @@ namespace Dune {
     //! return iterator to one past the last element of index set
     Iterator end () {
       iTupel last;
-      for (int i=0; i<d; i++) last = max(i);
+      for (int i=0; i<d; i++) last[i] = max(i);
       last[0] += 1;
       return Iterator(*this,last);
     }
@@ -435,6 +435,10 @@ namespace Dune {
         for (int i=0; i<d; ++i) _begin[i] = r.origin(i)*r.meshsize(i)+r.shift(i);
         for (int i=0; i<d; ++i) _position[i] = coord[i]*r.meshsize(i)+r.shift(i);
       }
+
+      //! Make transforming iterator from iterator (used for automatic conversion of end)
+      TransformingIterator (Iterator i) : Iterator(i)
+      {       }
 
       //! Increment iterator to next cell with position.
       TransformingIterator& operator++ ()
@@ -486,7 +490,7 @@ namespace Dune {
       }
 
       //! Print contents of iterator
-      void print (std::ostream& s)
+      void print (std::ostream& s) const
       {
         Iterator::print(s);
         s << " " << _position;
@@ -544,6 +548,14 @@ namespace Dune {
     return s;
   }
 
+  //! Output operator for Iterators
+  template <int d, typename ct>
+  inline std::ostream& operator<< (std::ostream& s, typename YGrid<d,ct>::Iterator& e)
+  {
+    e.print(s);
+    return s;
+  }
+
 
   /*! A SubYGrid is a grid that is embedded in a larger grid
      It is characterized by an offset and an enclosing grid as
@@ -581,6 +593,16 @@ namespace Dune {
           std::cout << "warning: subgrid larger than enclosing grid in direction "
           << i <<" in SubYGrid"
           << std::endl;
+      }
+    }
+
+    //! Make SubYGrid from YGrid
+    SubYGrid (YGrid<d,ct> base) : YGrid<d,ct>(base)
+    {
+      for (int i=0; i<d; ++i)
+      {
+        _offset[i] = 0;
+        _supersize[i] = this->size(i);
       }
     }
 
@@ -682,8 +704,12 @@ namespace Dune {
           _superindex += (r.offset(i)+coord[i]-r.origin(i))*_superincrement[i];
       }
 
+      //! Make transforming iterator from iterator (used for automatic conversion of end)
+      SubIterator (typename YGrid<d,ct>::Iterator& i) : YGrid<d,ct>::Iterator::Iterator(i)
+      {       }
+
       //! Return consecutive index in enclosing grid
-      int superindex ()
+      int superindex () const
       {
         return _superindex;
       }
@@ -706,10 +732,17 @@ namespace Dune {
         return _superindex+_superincrement[i];
       }
 
+      //! move this iterator dist cells in direction i
+      void move (int i, int dist)
+      {
+        YGrid<d,ct>::Iterator::move(i,dist);            // move base iterator
+        _superindex += dist*_superincrement[i];         // move superindex
+      }
+
       //! Increment iterator to next cell in subgrid
       SubIterator& operator++ ()
       {
-        ++(this->_index);                               // update consecutive index in grid
+        ++(this->_index);                       // update consecutive index in grid
         for (int i=0; i<d; i++)                 // check for wrap around
         {
           _superindex += _superincrement[i];               // move on cell in direction i
@@ -725,7 +758,7 @@ namespace Dune {
       }
 
       //! Print position of iterator
-      void print (std::ostream& s)
+      void print (std::ostream& s) const
       {
         YGrid<d,ct>::Iterator::print(s);
         s << " super=" << superindex();
@@ -739,6 +772,15 @@ namespace Dune {
 
     //! return subiterator to first element of index set
     SubIterator subbegin () {return SubIterator(*this);}
+
+    //! return subiterator to last element of index set
+    SubIterator subend ()
+    {
+      iTupel last;
+      for (int i=0; i<d; i++) last[i] = this->max(i);
+      last[0] += 1;
+      return SubIterator(*this,last);
+    }
 
     /*! TransformingSubIterator is a SubIterator providing in addition a linear transformation
        of the coordinates of the grid in the form \f$ y_i = x_i h_i + s_i \f$.
@@ -762,6 +804,10 @@ namespace Dune {
         for (int i=0; i<d; ++i) _position[i] = coord[i]*r.meshsize(i)+r.shift(i);
       }
 
+      //! Make transforming iterator from iterator (used for automatic conversion of end)
+      TransformingSubIterator (SubIterator& i) : SubIterator(i)
+      {       }
+
       //! Increment iterator to next cell with position.
       TransformingSubIterator& operator++ ()
       {
@@ -777,7 +823,7 @@ namespace Dune {
           else
           {
             this->_coord[i]=this->_origin[i];                         // move back to origin in direction i
-            this->_superindex -= this->size[i]*this->_superincrement[i];
+            this->_superindex -= this->_size[i]*this->_superincrement[i];
             _position[i] = _begin[i];
           }
         }
@@ -785,25 +831,38 @@ namespace Dune {
       }
 
       //! Return position of current cell in direction i.
-      ct position (int i)
+      ct position (int i) const
       {
         return _position[i];
       }
 
-      //! Return position of current cell as an array.
-      fTupel position ()
+      //! Return position of current cell as reference.
+      fTupel& position ()
       {
         return _position;
+      }
+
+      //! Return meshsize in direction i
+      ct meshsize (int i)
+      {
+        return _h[i];
+      }
+
+      //! Return meshsize of current cell as reference.
+      fTupel& meshsize ()
+      {
+        return _h;
       }
 
       //! Move cell position by dist cells in direction i.
       void move (int i, int dist)
       {
+        SubIterator::move(i,dist);
         _position[i] += dist*_h[i];
       }
 
       //! Print contents of iterator
-      void print (std::ostream& s)
+      void print (std::ostream& s) const
       {
         SubIterator::print(s);
         s << " [";
@@ -823,6 +882,13 @@ namespace Dune {
       return TransformingSubIterator(*this);
     }
 
+    //! return subiterator to last element of index set
+    TransformingSubIterator tsubend ()
+    {
+      SubIterator endit = subend();
+      return TransformingSubIterator(endit);
+    }
+
   private:
     iTupel _offset;        //!< offset to origin of the enclosing grid
     iTupel _supersize;     //!< size of the enclosing grid
@@ -835,6 +901,14 @@ namespace Dune {
   {
     YGrid<d,ct> x = e;
     s << x << " ofs=" << e.offset() << " ss=" << e.supersize();
+    return s;
+  }
+
+  //! Output operator for subgrids
+  template <int d, typename ct>
+  inline std::ostream& operator<< (std::ostream& s, typename SubYGrid<d,ct>::TransformingSubIterator& e)
+  {
+    e.print(s);
     return s;
   }
 
@@ -1450,7 +1524,7 @@ namespace Dune {
     struct YGridLevel {            // This stores all the information on one grid level
       // cell (codim 0) data
       YGrid<d,ct> cell_global;             // the whole cell grid on that level
-      YGrid<d,ct> cell_overlap;            // we have no ghost cells, so our part is overlap completely
+      SubYGrid<d,ct> cell_overlap;         // we have no ghost cells, so our part is overlap completely
       SubYGrid<d,ct> cell_interior;        // interior cells are a subgrid of all cells
 
       std::deque<Intersection> send_cell_overlap_overlap;      // each intersection is a subgrid of overlap
@@ -1461,7 +1535,7 @@ namespace Dune {
 
       // vertex (codim dim) data
       YGrid<d,ct> vertex_global;           // the whole vertex grid on that level
-      YGrid<d,ct> vertex_overlapfront;     // all our vertices are overlap and front
+      SubYGrid<d,ct> vertex_overlapfront;  // all our vertices are overlap and front
       SubYGrid<d,ct> vertex_overlap;       // subgrid containing only overlap
       SubYGrid<d,ct> vertex_interiorborder; // subgrid containing only interior and border
       SubYGrid<d,ct> vertex_interior;      // subgrid containing only interior
@@ -1474,6 +1548,9 @@ namespace Dune {
 
       std::deque<Intersection> send_vertex_interiorborder_interiorborder;     // each intersection is a subgrid of overlapfront
       std::deque<Intersection> recv_vertex_interiorborder_interiorborder;     // each intersection is a subgrid of overlapfront
+
+      std::deque<Intersection> send_vertex_interiorborder_overlapfront;     // each intersection is a subgrid of overlapfront
+      std::deque<Intersection> recv_vertex_overlapfront_interiorborder;     // each intersection is a subgrid of overlapfront
 
       // general
       MultiYGrid<d,ct>* mg;  // each grid level knows its multigrid
@@ -1513,6 +1590,7 @@ namespace Dune {
       if (_torus.rank()==0) std::cout << "MultiYGrid<" << d
         << ">: coarse grid with size " << s
         << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
+      print(std::cout);
     }
 
     //! do a global mesh refinement; true: keep overlap in absolute size; false: keep overlap in mesh cells
@@ -1552,13 +1630,13 @@ namespace Dune {
     }
 
     //! return the maximum level index (number of levels is maxlevel()+1)
-    int maxlevel ()
+    int maxlevel () const
     {
       return _maxlevel;
     }
 
     //! return true if grid is periodic in given direction
-    bool periodic (int i)
+    bool periodic (int i) const
     {
       return _periodic[i];
     }
@@ -1622,7 +1700,7 @@ namespace Dune {
       }
 
       //! reference to local cell grid which is a subgrid of the global cell grid
-      YGrid<d,ct>& cell_overlap ()
+      SubYGrid<d,ct>& cell_overlap ()
       {
         return i->cell_overlap;
       }
@@ -1659,7 +1737,7 @@ namespace Dune {
         return i->vertex_global;
       }
       //! reference to vertex grid, up to front; there are no ghosts in this implementation
-      YGrid<d,ct>& vertex_overlapfront ()
+      SubYGrid<d,ct>& vertex_overlapfront ()
       {
         return i->vertex_overlapfront;
       }
@@ -1704,6 +1782,14 @@ namespace Dune {
       {
         return i->recv_vertex_interiorborder_interiorborder;
       }
+      std::deque<Intersection>& send_vertex_interiorborder_overlapfront ()
+      {
+        return i->send_vertex_interiorborder_overlapfront;
+      }
+      std::deque<Intersection>& recv_vertex_overlapfront_interiorborder ()
+      {
+        return i->recv_vertex_overlapfront_interiorborder;
+      }
     };
 
     //! return iterator pointing to coarsest level
@@ -1712,7 +1798,7 @@ namespace Dune {
       return YGridLevelIterator(_levels,0);
     }
 
-    //! return iterator pointing to coarsest level
+    //! return iterator pointing to given level
     YGridLevelIterator begin (int i)
     {
       if (i<0 << i>maxlevel())
@@ -1868,7 +1954,7 @@ namespace Dune {
           s_overlap[i] = max-min+1;
         }
       }
-      g.cell_overlap = YGrid<d,ct>(o_overlap,s_overlap,h,r);
+      g.cell_overlap = SubYGrid<d,ct>(YGrid<d,ct>(o_overlap,s_overlap,h,r));
 
       // now make the interior grid a subgrid of the overlapping grid
       iTupel offset;
@@ -1893,7 +1979,7 @@ namespace Dune {
       iTupel s_vertex_overlapfront;
       for (int i=0; i<d; i++) o_vertex_overlapfront[i] = g.cell_overlap.origin(i);
       for (int i=0; i<d; i++) s_vertex_overlapfront[i] = g.cell_overlap.size(i)+1;     // one more vertices than cells ...
-      g.vertex_overlapfront = YGrid<d,ct>(o_vertex_overlapfront,s_vertex_overlapfront,h,r);
+      g.vertex_overlapfront = SubYGrid<d,ct>(YGrid<d,ct>(o_vertex_overlapfront,s_vertex_overlapfront,h,r));
 
       // now overlap only (i.e. without front), is subgrid of overlapfront
       iTupel o_vertex_overlap;
@@ -1926,6 +2012,8 @@ namespace Dune {
                     g.send_vertex_overlap_overlapfront,g.recv_vertex_overlapfront_overlap);
       intersections(g.vertex_interiorborder,g.vertex_interiorborder,g.cell_global.size(),
                     g.send_vertex_interiorborder_interiorborder,g.recv_vertex_interiorborder_interiorborder);
+      intersections(g.vertex_interiorborder,g.vertex_overlapfront,g.cell_global.size(),
+                    g.send_vertex_interiorborder_overlapfront,g.recv_vertex_overlapfront_interiorborder);
 
       // return the whole thing
       return g;
@@ -1938,7 +2026,7 @@ namespace Dune {
     //   size: needed to shift local grid in periodic case
     //   returns two lists: Intersections to be sent and Intersections to be received
     // Note: sendgrid/recvgrid may be SubYGrids. Since intersection method is virtual it should work properly
-    void intersections (YGrid<d,ct>& sendgrid, YGrid<d,ct>& recvgrid, iTupel& size,
+    void intersections (SubYGrid<d,ct>& sendgrid, SubYGrid<d,ct>& recvgrid, iTupel& size,
                         std::deque<Intersection>& sendlist, std::deque<Intersection>& recvlist)
     {
       // the exchange buffers
