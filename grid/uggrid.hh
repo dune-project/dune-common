@@ -53,7 +53,7 @@ namespace Dune
 
   // forward declarations
   template<int codim, int dim, int dimworld> class UGGridEntity;
-  template<int codim, int dim, int dimworld> class UGGridLevelIterator;
+  template<int codim, int dim, int dimworld, PartitionIteratorType pitype> class UGGridLevelIterator;
 
   template<int dim, int dimworld>            class UGGridElement;
   template<int dim, int dimworld>            class UGGridBoundaryEntity;
@@ -99,10 +99,10 @@ namespace Dune {
     friend class UGGridEntity <dim,dim,dimworld>;
 
     // friends because of fillElInfo
-    friend class UGGridLevelIterator<0,dim,dimworld>;
-    friend class UGGridLevelIterator<1,dim,dimworld>;
-    friend class UGGridLevelIterator<2,dim,dimworld>;
-    friend class UGGridLevelIterator<3,dim,dimworld>;
+    //   friend class UGGridLevelIterator<0,dim,dimworld>;
+    //   friend class UGGridLevelIterator<1,dim,dimworld>;
+    //   friend class UGGridLevelIterator<2,dim,dimworld>;
+    //   friend class UGGridLevelIterator<3,dim,dimworld>;
     friend class UGGridHierarchicIterator<dim,dimworld>;
 
     friend class UGGridIntersectionIterator<dim,dimworld>;
@@ -134,11 +134,11 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    UGGridLevelIterator<codim,dim,dimworld> lbegin (int level) const;
+    UGGridLevelIterator<codim,dim,dimworld, All_Partition> lbegin (int level) const;
 
     //! one past the end on this level
     template<int codim>
-    UGGridLevelIterator<codim,dim,dimworld> lend (int level) const;
+    UGGridLevelIterator<codim,dim,dimworld, All_Partition> lend (int level) const;
 
 
     /** \brief Number of grid entities per level and codim

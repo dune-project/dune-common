@@ -160,13 +160,13 @@ namespace Dune
 
 #ifdef _2
   template <>
-  inline UGGridLevelIterator<2,2,2>
+  inline UGGridLevelIterator<2,2,2,All_Partition>
   UGGrid < 2, 2 >::lbegin<2> (int level) const
   {
     assert(multigrid_);
     UG2d::grid* theGrid = multigrid_->grids[level];
 
-    UGGridLevelIterator<2,2,2> it((*const_cast<UGGrid< 2, 2 >* >(this)),level);
+    UGGridLevelIterator<2,2,2,All_Partition> it((*const_cast<UGGrid< 2, 2 >* >(this)),level);
 
     UG2d::node* mytarget = theGrid->firstNode[0];
 
@@ -175,32 +175,32 @@ namespace Dune
   }
 
   template <>
-  inline UGGridLevelIterator<0,2,2>
+  inline UGGridLevelIterator<0,2,2,All_Partition>
   UGGrid < 2, 2 >::lbegin<0> (int level) const
   {
     assert(multigrid_);
     UG2d::grid* theGrid = multigrid_->grids[level];
 
-    UGGridLevelIterator<0,2,2> it((*const_cast<UGGrid< 2, 2 >* >(this)),level);
+    UGGridLevelIterator<0,2,2,All_Partition> it((*const_cast<UGGrid< 2, 2 >* >(this)),level);
     it.setToTarget(theGrid->elements[0]);
     return it;
   }
 #endif
 
   template<int dim, int dimworld> template<int codim>
-  inline UGGridLevelIterator<codim, dim, dimworld>
+  inline UGGridLevelIterator<codim, dim, dimworld, All_Partition>
   UGGrid<dim, dimworld>::lbegin (int level) const
   {
     printf("UGGrid<%d, %d>::lbegin<%d> not implemented\n", dim, dimworld, codim);
-    UGGridLevelIterator<codim,dim,dimworld> dummy((*const_cast<UGGrid< dim, dimworld >* >(this)),level);
+    UGGridLevelIterator<codim,dim,dimworld, All_Partition> dummy((*const_cast<UGGrid< dim, dimworld >* >(this)),level);
     return dummy;
   }
 
   template < int dim, int dimworld > template<int codim>
-  inline UGGridLevelIterator<codim,dim,dimworld>
+  inline UGGridLevelIterator<codim,dim,dimworld, All_Partition>
   UGGrid < dim, dimworld >::lend (int level) const
   {
-    UGGridLevelIterator<codim,dim,dimworld> it((*const_cast<UGGrid< dim, dimworld >* >(this)),level);
+    UGGridLevelIterator<codim,dim,dimworld,All_Partition> it((*const_cast<UGGrid< dim, dimworld >* >(this)),level);
     return it;
   }
 
@@ -216,30 +216,30 @@ namespace Dune
 
       if(codim == 0)
       {
-        UGGridLevelIterator<0,dim,dimworld> endit = lend<0>(level);
-        for(UGGridLevelIterator<0,dim,dimworld> it = lbegin<0>(level);
+        UGGridLevelIterator<0,dim,dimworld, All_Partition> endit = lend<0>(level);
+        for(UGGridLevelIterator<0,dim,dimworld, All_Partition> it = lbegin<0>(level);
             it != endit; ++it)
           numberOfElements++;
       }
       if(codim == 1)
       {
-        UGGridLevelIterator<1,dim,dimworld> endit = lend<1>(level);
-        for(UGGridLevelIterator<1,dim,dimworld> it = lbegin<1>(level);
+        UGGridLevelIterator<1,dim,dimworld, All_Partition> endit = lend<1>(level);
+        for(UGGridLevelIterator<1,dim,dimworld, All_Partition> it = lbegin<1>(level);
             it != endit; ++it)
           numberOfElements++;
       }
       if(codim == 2)
       {
-        UGGridLevelIterator<2,dim,dimworld> endit = lend<2>(level);
-        for(UGGridLevelIterator<2,dim,dimworld> it = lbegin<2>(level);
+        UGGridLevelIterator<2,dim,dimworld, All_Partition> endit = lend<2>(level);
+        for(UGGridLevelIterator<2,dim,dimworld, All_Partition> it = lbegin<2>(level);
             it != endit; ++it)
           numberOfElements++;
       }
 
       if(codim == 3)
       {
-        UGGridLevelIterator<3,dim,dimworld> endit = lend<3>(level);
-        for(UGGridLevelIterator<3,dim,dimworld> it = lbegin<3>(level);
+        UGGridLevelIterator<3,dim,dimworld, All_Partition> endit = lend<3>(level);
+        for(UGGridLevelIterator<3,dim,dimworld, All_Partition> it = lbegin<3>(level);
             it != endit; ++it)
           numberOfElements++;
       }

@@ -214,11 +214,11 @@ inline int UGGridEntity<codim, dim, dimworld>::subIndex(int i)
 
 // default is faces
 template <int codim, int dim, int dimworld> template <int cc>
-inline UGGridLevelIterator<cc,dim,dimworld>
+inline UGGridLevelIterator<cc,dim,dimworld,All_Partition>
 UGGridEntity<codim,dim,dimworld>::entity ( int i )
 {
   std::cout << "entity not implemented yet!\n";
-  UGGridLevelIterator<cc,dim,dimworld> tmp (level_);
+  UGGridLevelIterator<cc,dim,dimworld,All_Partition> tmp (level_);
   return tmp;
 }
 
