@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __GAUSSQUADRATURE_HH__
-#define __GAUSSQUADRATURE_HH__
+#ifndef __GAUSSQUADRATUREIMP_HH__
+#define __GAUSSQUADRATUREIMP_HH__
 
 namespace Dune {
 
@@ -54,33 +54,35 @@ namespace Dune {
   template <> struct PointsOnLine <17> { enum { points = 9 }; };
   // other specialization possible
 
-  //! calculates m^dim
-  template <int m, int dim>
-  struct mPowerDim
+  //! calculates m^p
+  template <int m, int p>
+  struct power_M_P
   {
-    //! power stores m^dim
-    enum { power = ( dim < 1 ) ? 1 : (m * mPowerDim<m,dim-1>::power ) };
+    //! power stores m^p
+    enum { power = ( p < 1 ) ? 1 : (m * power_M_P<m,p-1>::power ) };
   };
 
   //! end of recursion via specialization
   template <int m>
-  struct mPowerDim<m,0>
+  struct power_M_P< m , 0>
   {
+    //! m^0 = 1
     enum { power = 1 };
   };
 
 
   template<class Domain, class RangeField, int dim, int order>
-  class GaussQuadrature {
-  public:
+  class GaussQuadrature
+  {
     // good old times
     typedef RangeField ct;
 
+  public:
     //! number of quadrature points on segment line
     enum { m = PointsOnLine<order>::points };
 
     //! the number of quadrature points is m^dim
-    enum { n = mPowerDim<m,dim>::power };
+    enum { n = power_M_P < m , dim >::power };
 
     //! set up quadrature of given order in d dimensions
     GaussQuadrature ();
@@ -95,7 +97,7 @@ namespace Dune {
     RangeField w (int i);
 
   private:
-    //! Vector storing the quadrature points
+    //! Vectors storing the quadrature points and weights
     Mat<dim,n,ct> local;
     RangeField weight[n];
   };

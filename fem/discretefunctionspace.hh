@@ -8,11 +8,10 @@
 
 namespace Dune {
 
-  template< typename DomainFieldType, typename RangeFieldType,
-      int n, int m, class GridTemp, class DiscreteFunctionSpaceImp,
-      class BaseFunctionSetInter >
-  class DiscreteFunctionSpace
-    : public FunctionSpace < DomainFieldType, RangeFieldType, n, m >
+  template< class FunctionSpaceType , class GridTemp,
+      class DiscreteFunctionSpaceImp, class BaseFunctionSetInter >
+  class DiscreteFunctionSpaceInterface
+    : public FunctionSpaceType
   {
 
   public:
@@ -20,8 +19,8 @@ namespace Dune {
     typedef GridTemp GridType;
 
     //! Constructor
-    DiscreteFunctionSpace ( GridType & g, int ident ) :
-      FunctionSpace<DomainFieldType, RangeFieldType, n, m> (ident),
+    DiscreteFunctionSpaceInterface ( GridType & g, int ident ) :
+      FunctionSpaceType (ident),
       grid_ (g) {};
 
     //! get base function set from derived implementation

@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __GAUSSQUADRATURE_CC__
-#define __GAUSSQUADRATURE_CC__
+#ifndef __GAUSSQUADRATUREIMP_CC__
+#define __GAUSSQUADRATUREIMP_CC__
 
 #include <new>
 #include <iostream>
