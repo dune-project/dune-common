@@ -9,7 +9,6 @@
 
 namespace Dune {
 
-
   /** @defgroup GridCommon Grid Interface
 
      The Dune Grid module defines a general interface to a hierarchical finite element mesh.
@@ -52,7 +51,7 @@ namespace Dune {
   /*! \internal
         Used for grid I/O
    */
-  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, UGGrid_Id,
+  enum GridIdentifier { SGrid_Id, AlbertaGrid_Id , SimpleGrid_Id, UGGrid_Id,
                         YaspGrid_Id , BSGrid_Id, OneDGrid_Id};
 
   /*!
@@ -132,7 +131,7 @@ namespace Dune {
         should be used, i.e. global_index() or index()
    */
   enum GridIndexType { GlobalIndex , //!< use global_index() of entity
-                       LevelIndex                        //!< use index() of entity
+                       LevelIndex    //!< use index() of entity
   };
 
   //************************************************************************
@@ -335,6 +334,9 @@ namespace Dune {
   private:
     //!  Barton-Nackman trick
     ElementImp<dim,dimworld>& asImp () {return static_cast<ElementImp<dim,dimworld>&>(*this);}
+
+    //!  Barton-Nackman trick
+    const ElementImp<dim,dimworld>& asImp () const {return static_cast<const ElementImp<dim,dimworld>&>(*this);}
   };
 
   //*****************************************************************************
@@ -393,6 +395,9 @@ namespace Dune {
   private:
     //!  Barton-Nackman trick
     ElementImp<0,dimworld>& asImp () {return static_cast<ElementImp<0,dimworld>&>(*this);}
+
+    //!  Barton-Nackman trick
+    const ElementImp<0,dimworld>& asImp () const {return static_cast<const ElementImp<0,dimworld>&>(*this);}
   };
 
 
@@ -1438,7 +1443,7 @@ namespace Dune {
      * to actually write the grid, within this method the real file name is
      * generated out of filename and timestep
      */
-    bool write (const FileFormatType ftype, const char * fnprefix , double time=0.0, int timestep=0);
+    bool write (const FileFormatType ftype, const char * fnprefix , double time=0.0, int timestep=0, int precision = 6);
 
     //! get Grid from file with time and timestep , return true if ok
     bool read ( const char * fnprefix , double & time , int timestep);
@@ -1558,14 +1563,14 @@ namespace Dune {
     int maxLev_;
   };
 
-  //! provide names for the partition types
-  inline std::string GridName(GridIdentifier type)
+  //! provide names for the different grid types
+  inline std::string transformToGridName(GridIdentifier type)
   {
     switch(type) {
     case SGrid_Id :
       return "SGrid";
-    case AlbertGrid_Id :
-      return "AlbertGrid";
+    case AlbertaGrid_Id :
+      return "AlbertaGrid";
     case SimpleGrid_Id :
       return "SimpleGrid";
     case UGGrid_Id :
