@@ -30,7 +30,7 @@ namespace Dune
   /***********************************/
 
   template <class T>
-  SparseRowMatrix<T>::SparseRowMatrix(int rows, int cols, int nz, T val)
+  SparseRowMatrix<T>::SparseRowMatrix(int rows, int cols, int nz, const T& val)
   {
     dim_[0] = rows;
     dim_[1] = cols;

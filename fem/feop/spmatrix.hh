@@ -20,10 +20,10 @@ namespace Dune
     typedef T Ttype; //!< remember the value type
 
   private:
-    T* values_;     //! data values (nz_ elements)
-    int* col_;      //! row_ptr (dim_[0]+1 elements)
-    int dim_[2];    //! dim_[0] x dim_[1] Matrix
-    int nz_;        //! number of nonzeros per row
+    T* values_;     //!< data values (nz_ elements)
+    int* col_;      //!< row_ptr (dim_[0]+1 elements)
+    int dim_[2];    //!< dim_[0] x dim_[1] Matrix
+    int nz_;        //!< number of nonzeros per row
 
   public:
 
@@ -36,7 +36,7 @@ namespace Dune
     //! make matrix with 'rows' rows and 'cols' columns,
     //! maximum 'nz' non zero values in each row
     //! and intialize all values with 'val'
-    SparseRowMatrix(int rows, int cols, int nz, T val);
+    SparseRowMatrix(int rows, int cols, int nz, const T& val);
 
     //! free memory for values_ and col_
     ~SparseRowMatrix();
@@ -56,9 +56,6 @@ namespace Dune
 
     //const int&         row_ptr(int i) const { return rowptr_(i); }
     //const int&         col_ind(int i) const { return colind_(i);}
-
-    //! Returns number of matrix rows (i==0) and columns (i==1)
-    int dim(int i) const {return dim_[i];};
 
     //! Returns number of matrix rows (i==0) and columns (i==1)
     int size(int i) const {return dim_[i];};
@@ -105,13 +102,6 @@ namespace Dune
     //! Multiply the transpose with a vector
     template <class DiscFuncType>
     void apply_t(const DiscFuncType &f, DiscFuncType &ret) const;
-
-    //! Multiply with a vector
-    template <class DiscFuncType>
-    void operator () (const DiscFuncType &f, DiscFuncType &ret) const
-    {
-      apply(f,ret);
-    };
 
     //! ???
     void print (std::ostream& s) const;
