@@ -561,35 +561,23 @@ void UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth
 }
 
 #ifdef ModelP
-template <class T, template <class> class P>
-class Foo {
+template <class T, template <class> class P, int GridDim>
+class UGDataCollector {
 public:
 
   static int gather(DDD_OBJ obj, void* data)
   {
     int codim=0;
-#ifdef _2
-    enum {dim = 2};
-#else
-    enum {dim = 3};
-#endif
+
     P<T>* p = (P<T>*)data;
 
     int index = 0;
     switch (codim) {
     case 0 :
-#ifdef _2
-      index = ((UG2d::element*)obj)->ge.id;
-#else
-      index = ((UG3d::element*)obj)->ge.id;
-#endif
+      index = UG_NS<GridDim>::index((typename TargetType<0,GridDim>::T*)obj);
       break;
-    case dim :
-#ifdef _2
-      index = ((UG2d::node*)obj)->id;
-#else
-      index = ((UG3d::node*)obj)->id;
-#endif
+    case GridDim :
+      index = UG_NS<GridDim>::index((typename TargetType<GridDim,GridDim>::T*)obj);
       break;
     default :
       DUNE_THROW(GridError, "UGGrid::communicate only implemented for this codim");
@@ -603,29 +591,16 @@ public:
   static int scatter(DDD_OBJ obj, void* data)
   {
     int codim=0;
-#ifdef _2
-    enum {dim = 2};
-#else
-    enum {dim = 3};
-#endif
 
     P<T>* p = (P<T>*)data;
 
     int index = 0;
     switch (codim) {
     case 0 :
-#ifdef _2
-      index = ((UG2d::element*)obj)->ge.id;
-#else
-      index = ((UG3d::element*)obj)->ge.id;
-#endif
+      index = UG_NS<GridDim>::index((typename TargetType<0,GridDim>::T*)obj);
       break;
-    case dim :
-#ifdef _2
-      index = ((UG2d::node*)obj)->id;
-#else
-      index = ((UG3d::node*)obj)->id;
-#endif
+    case GridDim :
+      index = UG_NS<GridDim>::index((typename TargetType<GridDim,GridDim>::T*)obj);
       break;
     default :
       DUNE_THROW(GridError, "UGGrid::communicate only implemented for codim 0 and dim");
@@ -640,8 +615,8 @@ public:
 
 };
 
-template <class T, template<class> class P>
-T* Foo<T,P>::dataArray = 0;
+template <class T, template<class> class P, int GridDim>
+T* UGDataCollector<T,P,GridDim>::dataArray = 0;
 #endif
 
 template < int dim, int dimworld >
@@ -649,16 +624,14 @@ template<class T, template<class> class P, int codim>
 void UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
 {
 #ifdef ModelP
-  Foo<T,P> foo;
 
-  Foo<T,P>::dataArray = &t;
+  UGDataCollector<T,P,dim>::dataArray = &t;
 
-  /** \todo Should be in a namespace */
   DDD_IFAExchange(UG::ElementIF,
                   UG_NS<dim>::Grid_Attr(multigrid_->grids[level]),
                   sizeof(P<T>),
-                  &Foo<T,P>::gather,
-                  &Foo<T,P>::scatter);
+                  &UGDataCollector<T,P,dim>::gather,
+                  &UGDataCollector<T,P,dim>::scatter);
 #endif
 }
 
