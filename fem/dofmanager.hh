@@ -6,157 +6,10 @@
 #include <dune/common/dlist.hh>
 #include <dune/fem/common/dofmapperinterface.hh>
 
+// here are the default grid index set defined
+#include <dune/grid/common/defaultindexsets.hh>
+
 namespace Dune {
-
-  /*!
-     The DefaultGridIndexSet is a wrapper for the grid index which can be
-     index of entity or global_index. The DofMapper uses an IndexSet for
-     mapping the dofs, so we can hide the real grid index behijnd the index
-     set. Furthermore if an grid doesn't provide the consecutive index set
-     then this can be calculated in the IndexSet. These two following index
-     sets are just the identiy to the grid indices.
-   */
-  template <class GridType>
-  class DefaultGridIndexSetBase
-  {
-  public:
-    enum { ncodim = GridType::dimension + 1 };
-
-    DefaultGridIndexSetBase ( GridType & grid ) : grid_ (grid) {}
-
-    void insertNew( GridType & grid )
-    {}
-
-    bool write_xdr(const char * filename , int timestep)
-    {
-      return true;
-    }
-
-    bool read_xdr(const char * filename , int timestep)
-    {
-      return true;
-    }
-
-  protected:
-    GridType & grid_;
-  };
-
-  //! Default is the Identity
-  template <class GridType, GridIndexType GridIndex = GlobalIndex>
-  class DefaultGridIndexSet : public DefaultGridIndexSetBase <GridType>
-  {
-    template <class EntityType,int enCodim, int codim>
-    struct IndexWrapper
-    {
-      static int index (EntityType & en , int num )
-      {
-        return en.global_index();
-      }
-    };
-
-    template <class EntityType, int codim>
-    struct IndexWrapper<EntityType,codim,codim>
-    {
-      static int index (EntityType & en , int num )
-      {
-        return en.global_index();
-      }
-    };
-
-    //! if codim > codim of entity use subIndex
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,2>
-    {
-      static int index (EntityType & en , int num )
-      {
-        return en.template subIndex<2> (num);
-      }
-    };
-
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,3>
-    {
-      static int index (EntityType & en , int num )
-      {
-        return en.template subIndex<3> (num);
-      }
-    };
-
-  public:
-    enum { ncodim = GridType::dimension + 1 };
-    DefaultGridIndexSet ( GridType & grid ) : DefaultGridIndexSetBase <GridType> (grid) {}
-
-    int size ( int level , int codim ) const
-    {
-      return this->grid_.global_size(codim);
-    }
-
-    template <int codim, class EntityType>
-    int index (EntityType & en, int num) const
-    {
-      return IndexWrapper<EntityType,EntityType::codimension,codim>::index(en,num);
-    }
-  };
-
-  template <class GridType>
-  class DefaultGridIndexSet<GridType,LevelIndex>
-    : public DefaultGridIndexSetBase <GridType>
-  {
-    template <class EntityType,int enCodim, int codim>
-    struct IndexWrapper
-    {
-      static int index (EntityType & en , int num )
-      {
-        return en.index();
-      }
-    };
-
-    template <class EntityType, int codim>
-    struct IndexWrapper<EntityType,codim,codim>
-    {
-      static int index (EntityType & en , int num )
-      {
-        return en.index();
-      }
-    };
-
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,2>
-    {
-      static int index (EntityType & en , int num )
-      {
-        return en.template subIndex<2> (num);
-      }
-    };
-
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,1>
-    {
-      static int index (EntityType & en , int num )
-      {
-        return en.template subIndex<1> (num);
-      }
-    };
-
-  public:
-    enum { ncodim = GridType::dimension + 1 };
-    DefaultGridIndexSet ( GridType & grid ) : DefaultGridIndexSetBase <GridType> (grid) {}
-
-    //! return size of grid entities per level and codim
-    int size ( int level , int codim ) const
-    {
-      return this->grid_.size(level,codim);
-    }
-
-    //! return index of entity with codim codim belonging to entity en which
-    //! could have a bigger codim (for example return num of vertex num of an
-    //! element en
-    template <int codim, class EntityType>
-    int index (EntityType & en, int num) const
-    {
-      return IndexWrapper<EntityType,EntityType::codimension,codim>::index(en,num);
-    }
-  };
 
   // forward declaration
   template <class GridType,
@@ -167,7 +20,7 @@ namespace Dune {
   class MemObject;
 
   // type of pointer to memory, for easy replacements
-  typedef void MemPointerType;
+  typedef char MemPointerType;
 
   //********************************************************
 
@@ -218,11 +71,11 @@ namespace Dune {
 
     //! cast this vector to right type and return entry i
     template <class T>
-    T& get ( int i ) { return static_cast<T *> (vec_)[i]; }
+    T& get ( int i ) { return static_cast<T *> ((void *)vec_)[i]; }
 
     //! cast this vector to right type and return entry i
     template <class T>
-    const T& get ( int i ) const { return static_cast<T *> (vec_)[i]; }
+    const T& get ( int i ) const { return static_cast<T *> ((void *)vec_)[i]; }
 
     //! write data to xdr stream
     template <class T>
@@ -239,6 +92,16 @@ namespace Dune {
       }
       else
         return false;
+    }
+
+    template <class T>
+    void print() const
+    {
+      for(int i=0; i<size_; i++)
+      {
+        std::cout << this->template get<T>(i) << " Val\n";
+      }
+      std::cout << size_ << " Size\n";
     }
 
   private:
@@ -341,16 +204,16 @@ namespace Dune {
   class DefaultGHMM
   {
   public:
-    void *Malloc (unsigned long n)
+    MemPointerType *Malloc (unsigned long n)
     {
-      void *p;
-      p =  std::malloc((size_t) n);
+      MemPointerType *p;
+      p = (MemPointerType *) std::malloc((size_t) n);
       if (p==0) std::cerr << "Malloc: could not allocate " << n << " bytes\n";
       assert(p != 0);
       return p;
     }
 
-    void  Free (void *p)
+    void  Free (MemPointerType *p)
     {
       assert(p != 0);
       std::free(p);
@@ -373,8 +236,11 @@ namespace Dune {
   class MemObject
   {
   private:
-    // number of entities
-    int size_;
+    // size of mem entities
+    int memSize_;
+
+    // actual size of vector
+    int vecSize_;
 
     // name of discrete function we belong to
     const char * name_;
@@ -398,14 +264,15 @@ namespace Dune {
     template <class GridType, class MapperType>
     MemObject ( GridType & grid, MapperType & mapper,
                 const char * name , DefaultGHMM & ghmm , size_t objSize )
-      : size_(0), name_ (name) , ghmm_( ghmm ) , sizeOfObj_ (objSize)
+      : memSize_(0), vecSize_(0), name_ (name) , ghmm_( ghmm ) , sizeOfObj_ (objSize)
         , myMem_(0) , dofmap_ (0)
         , array_( name_, sizeOfObj_ )
     {
-      size_ = mapper.size( grid.maxlevel() );
+      vecSize_ = mapper.size( grid.maxlevel() );
+      memSize_ = vecSize_;
       dofmap_ = &mapper;
 
-      myMem_   = ghmm_.Malloc( size_ * sizeOfObj_ );
+      myMem_   = ghmm_.Malloc( memSize_ * sizeOfObj_ );
     }
 
     // defines the corresponding array type
@@ -418,7 +285,10 @@ namespace Dune {
     int newSize (int level) const { return dofmap_->newSize(level); }
 
     //! return number of entities
-    int size () const { return size_; }
+    int size () const { return vecSize_; }
+
+    //! return size of allocated memory
+    int memSize () const { return memSize_; }
 
     //! return size on one entity
     size_t objSize () const { return sizeOfObj_; }
@@ -429,16 +299,22 @@ namespace Dune {
     //! return reference for Constructor of DofArray
     DefaultArrayType & getArray()
     {
-      array_.resize( myMem_ , size_ );
+      array_.resize( myMem_ , vecSize_ );
       return array_;
     }
 
-    //! get new mem from dof manager
-    void resize ( MemPointerType * mem, int newSize )
+    void print() const
     {
-      size_  = newSize;
+      array_.template print<double>();
+    }
+
+    //! get new mem from dof manager
+    void resize ( MemPointerType * mem, int newMemSize, int newVecSize )
+    {
+      memSize_  = newMemSize;
+      vecSize_  = newVecSize;
       myMem_ = mem;
-      array_.resize ( mem , size_ );
+      array_.resize ( mem , vecSize_ );
     }
   };
 
@@ -488,9 +364,7 @@ namespace Dune {
     //! Constructor, creates and index set
     DofManager (GridType & grid, bool verbose = false)
       : grid_(grid), verbose_ (verbose) , indexSet_ ( grid )
-    {
-      indexSet_.insertNew( grid );
-    }
+    {}
 
     //! Desctructor, removes all MemObjects
     ~DofManager ()
@@ -551,28 +425,106 @@ namespace Dune {
       return removed;
     }
 
-    //! resize the MemObject if necessary
+    //! generate index for father
+    template <class EntityType>
+    void createFatherIndex (EntityType &en)
+    {
+      indexSet_.createFatherIndex(en);
+    }
+
+    void resizeTmp ()
+    {
+      ListIteratorType it    = memList_.begin();
+      ListIteratorType endit = memList_.end();
+
+      for( ; it != endit ; ++it)
+      {
+        int memSize  = (*it)->memSize();
+        int mySize   = (*it)->size();
+
+        // create new memory, which smaller than the mem we have
+        int newSize  = indexSet_.tmpSize();
+
+        if(newSize <= memSize) continue;
+
+        // alloc new mem an copy old mem
+        MemPointerType * mem    = (*it)->myMem();
+        MemPointerType * newMem = (MemPointerType *) ghmm_.Malloc((*it)->objSize()*newSize);
+        std::memcpy(newMem,mem, memSize * (*it)->objSize());
+        (*it)->resize(newMem,newSize,newSize);
+
+        // free old mem
+        ghmm_.Free(mem);
+      }
+    }
+
     void resize()
     {
-      indexSet_.insertNew( grid_ );
+      indexSet_.resize();
+      resizeMem();
+    }
 
+    //! resize the MemObject if necessary
+    void resizeMem()
+    {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
 
       for( ; it != endit ; ++it)
       {
         int newSize = (*it)->newSize(grid_.maxlevel());
-        int mySize  = (*it)->size();
-        if(newSize <= mySize) continue;
+        int memSize  = (*it)->memSize();
+        if(newSize <= memSize) continue;
 
         // alloc new mem an copy old mem
         MemPointerType * mem    = (*it)->myMem();
         MemPointerType * newMem = (MemPointerType *) ghmm_.Malloc((*it)->objSize()*newSize);
-        std::memcpy(newMem,mem, mySize * (*it)->objSize());
-        (*it)->resize(newMem,newSize);
+        std::memcpy(newMem,mem, memSize * (*it)->objSize());
+        (*it)->resize(newMem,newSize,newSize);
 
         // free old mem
         ghmm_.Free(mem);
+      }
+    }
+
+    void dofCompress()
+    {
+      // keeps the old indices for a while
+      bool haveToCompress = indexSet_.compress();
+
+      if( haveToCompress )
+      {
+        ListIteratorType it    = memList_.begin();
+        ListIteratorType endit = memList_.end();
+
+
+        for( ; it != endit ; ++it)
+        {
+          // gem mem pointer and object size
+          MemPointerType * mem = (*it)->myMem();
+          size_t objSize = (*it)->objSize();
+
+          for(int i=0; i<indexSet_.oldSize(0,0); i++)
+          {
+            if(indexSet_.indexNew(i))
+            {
+              int oldInd = indexSet_.oldIndex(i);
+              int newInd = indexSet_.newIndex(i);
+
+              //std::cout << newInd << " New | Old " << oldInd << "\n";
+
+              // copy value form old to new place
+              MemPointerType * t1 = (mem + (newInd*objSize));
+              MemPointerType * t2 = (mem + (oldInd*objSize));
+              std::memcpy(t1,t2, objSize);
+            }
+          }
+
+          // stroe new size, which is smaller then size
+          int newSize = (*it)->newSize(grid_.maxlevel());
+          int memSize = (*it)->memSize();
+          (*it)->resize(mem,memSize,newSize);
+        }
       }
     }
 
