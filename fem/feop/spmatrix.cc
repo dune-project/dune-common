@@ -51,6 +51,38 @@ namespace Dune
     (*this) = other;
   }
 
+  /******************************/
+  /* Iterator creation          */
+  /******************************/
+
+  // Return iterator refering to first nonzero element in row
+  template <class T>
+  typename SparseRowMatrix<T>::ColumnIterator SparseRowMatrix<T>::rbegin (int row)
+  {
+    ColumnIterator it;
+    it.mat = this;
+    it.base = row*nz_;
+    it.offset = 0;
+
+    // Search for the first actual entry
+    while (it.offset<nz_ && col_[it.base+it.offset]==-1)
+      it.offset++;
+
+    return it;
+  }
+
+  // Return iterator refering to one past the last nonzero element of row
+  template <class T>
+  typename SparseRowMatrix<T>::ColumnIterator SparseRowMatrix<T>::rend (int row)
+  {
+    ColumnIterator it;
+    it.mat = this;
+    it.base = row*nz_;
+    it.offset = nz_;
+
+    return it;
+  }
+
   /***************************/
   /* Assignment operator...  (deep copy) */
   /***************************/
@@ -248,7 +280,7 @@ namespace Dune
 
               int lCol = col_[j*nz_ + l];
               if (lCol >= 0)
-                sum += val(i*nz_ + k) * A(kCol, lCol) * val(j*nz_ + l);
+                sum += values_[i*nz_ + k] * A(kCol, lCol) * values_[j*nz_ + l];
             }
 
           }
@@ -378,7 +410,7 @@ namespace Dune
       for (int col=0; col<nz_; col++) {
 
         if (col_[row*nz_+col] >= 0)
-          ret[col_[row*nz_+col]] += f[row]*val(row*nz_+col);
+          ret[col_[row*nz_+col]] += f[row]*values_[row*nz_+col];
 
       }
     }

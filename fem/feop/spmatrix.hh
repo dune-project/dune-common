@@ -23,13 +23,75 @@ namespace Dune
 
   private:
     Array<T> values_;     //!< data values (nz_ elements)
-  public:
     Array<int> col_;      //!< row_ptr (dim_[0]+1 elements)
-  private:
     int dim_[2];    //!< dim_[0] x dim_[1] Matrix
     int nz_;        //!< number of nonzeros per row
 
   public:
+
+    /** \brief An iterator to access all nonzero entries of a given row of a SparseRowMatrix.
+     */
+    class ColumnIterator {
+    private:
+
+      SparseRowMatrix<T>* mat;
+
+      int base;
+
+      int offset;
+
+    public:
+      //! Default constructor
+      ColumnIterator() {
+        mat = 0;
+        base = offset = -1;
+      }
+
+      //! Equality of two iterators
+      bool operator== (const ColumnIterator& x) const {
+        return mat==x.mat && base==x.base && offset==x.offset;
+      }
+
+      //! Inequality of two iterators
+      bool operator!= (const ColumnIterator& x) const {
+        return !((*this)==x);
+      }
+
+      //! Prefix increment
+      ColumnIterator& operator++ () {
+
+        offset++;
+        // Search for the next actual entry
+        while (offset<mat->nz_ && mat->col_[base+offset]==-1)
+          offset++;
+
+        return *this;
+      }
+
+      //! Gets the true columns of the entry
+      int col() const {
+        assert(mat->col_[base+offset] != -1);
+        return mat->col_[base+offset];
+      }
+
+      //! dereferencing
+      T& operator* () const {
+        return mat->values_[base+offset];
+      }
+
+      //! selector
+      T* operator-> () const {
+        return &(mat->values_[base+offset]);
+      }
+
+      friend class SparseRowMatrix<T>;
+    } ;
+
+    //! Return iterator refering to first nonzero element in row
+    ColumnIterator rbegin (int row);
+
+    //! Return iterator refering to one past the last nonzero element of row
+    ColumnIterator rend (int row);
 
     //! makes Matrix of zero length
     SparseRowMatrix();
@@ -61,11 +123,14 @@ namespace Dune
     /*  Access and info functions  */
     /*******************************/
 
+    // Deprecated
+#if 0
     //! Direct access to the internal data array
     T&      val(int i) { return values_[i]; }
 
     //! Direct const access to the internal data array
     const T&  val(int i) const { return values_[i]; }
+#endif
 
     /** \brief Gets the position of an entry in the internal data structure
      *
