@@ -231,7 +231,7 @@ namespace Dune {
     int father_id(level l, const array<DIM> & coord) const;
     int has_coord_shift(level, int d) const;
     //! return the step size on level l in direction d
-    double h(level l, int d) const { return h_[d] / (2<<l); };
+    double h(level l, int d) const { return h_[d] / (2<<(l-1)); };
     //! inform about periodic boundry conditions
     bool periodic(int dir) const { return periodic_[dir]; }
     //! inform about global arrangement of the processors
