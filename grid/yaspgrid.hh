@@ -1280,6 +1280,38 @@ namespace Dune {
       throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
     }
 
+    //! version without second template parameter for convenience
+    template<int cd>
+    YaspLevelIterator<cd,dim,dimworld,All_Partition> lbegin (int level)
+    {
+      YGLI g = _mg.begin(level);
+      if (cd==0)   // the elements
+      {
+        return YaspLevelIterator<cd,dim,dimworld,All_Partition>(g,g.cell_overlap().tsubbegin());
+      }
+      if (cd==dim)   // the vertices
+      {
+        return YaspLevelIterator<cd,dim,dimworld,All_Partition>(g,g.vertex_overlapfront().tsubbegin());
+      }
+      throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
+    }
+
+    //! version without second template parameter for convenience
+    template<int cd>
+    YaspLevelIterator<cd,dim,dimworld,All_Partition> lend (int level)
+    {
+      YGLI g = _mg.begin(level);
+      if (cd==0)   // the elements
+      {
+        return YaspLevelIterator<cd,dim,dimworld,All_Partition>(g,g.cell_overlap().tsubend());
+      }
+      if (cd==dim)   // the vertices
+      {
+        return YaspLevelIterator<cd,dim,dimworld,All_Partition>(g,g.vertex_overlapfront().tsubend());
+      }
+      throw GridError("YaspLevelIterator with this codim or partition type not implemented",__FILE__,__LINE__);
+    }
+
     //! return size (= distance in graph) of overlap region
     int overlap_size (int level, int codim)
     {
