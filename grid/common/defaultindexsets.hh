@@ -21,6 +21,8 @@ namespace Dune {
   template <class GridType>
   class DefaultGridIndexSetBase
   {
+    // dummy value
+    enum { myType = -1 };
   public:
     enum { ncodim = GridType::dimension + 1 };
 
@@ -66,16 +68,69 @@ namespace Dune {
     //! write index set to xdr file
     bool write_xdr(const char * filename , int timestep)
     {
+      FILE  *file;
+      XDR xdrs;
+      const char *path = NULL;
+
+      const char * fn  = genFilename(path,filename, timestep);
+      file = fopen(fn, "wb");
+      if (!file)
+      {
+        fprintf(stderr,"\aERROR in DefaultGridIndexSet::write_xdr(..): couldnot open <%s>!\n", filename);
+        fflush(stderr);
+        return false;
+      }
+
+      xdrstdio_create(&xdrs, file, XDR_ENCODE);
+      this->processXdr(&xdrs);
+
+      xdr_destroy(&xdrs);
+      fclose(file);
+
       return true;
     }
 
     //! read index set to xdr file
     bool read_xdr(const char * filename , int timestep)
     {
+      FILE   *file;
+      XDR xdrs;
+      const char *path = NULL;
+
+      const char * fn  = genFilename(path,filename, timestep);
+      std::cout << "Reading <" << fn << "> \n";
+      file = fopen(fn, "rb");
+      if(!file)
+      {
+        fprintf(stderr,"\aERROR in DefaultGridIndexSet::read_xdr(..): couldnot open <%s>!\n", filename);
+        fflush(stderr);
+        return(false);
+      }
+
+      // read xdr
+      xdrstdio_create(&xdrs, file, XDR_DECODE);
+      this->processXdr(&xdrs);
+
+      xdr_destroy(&xdrs);
+      fclose(file);
       return true;
     }
 
   protected:
+    // read/write from/to xdr stream
+    bool processXdr(XDR *xdrs)
+    {
+      int type = myType;
+      xdr_int ( xdrs, &type);
+      if(type != myType)
+      {
+        std::cerr << "\nERROR: DefaultGridIndex: wrong type choosen! \n\n";
+        assert(type == myType);
+      }
+      return true;
+    }
+
+    // the corresponding grid
     GridType & grid_;
   };
 
@@ -83,6 +138,9 @@ namespace Dune {
   template <class GridType, GridIndexType GridIndex = GlobalIndex>
   class DefaultGridIndexSet : public DefaultGridIndexSetBase <GridType>
   {
+    // my type, to be revised
+    enum { myType = 0 };
+
     template <class EntityType,int enCodim, int codim>
     struct IndexWrapper
     {
@@ -140,6 +198,8 @@ namespace Dune {
   class DefaultGridIndexSet<GridType,LevelIndex>
     : public DefaultGridIndexSetBase <GridType>
   {
+    // my type, to be revised
+    enum { myType = 1 };
 
     //! return global number of sub entity with local number 'num'
     //! and codim of the sub entity = codim
