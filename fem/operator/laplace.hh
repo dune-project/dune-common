@@ -14,11 +14,11 @@ namespace Dune
 
   /** \brief The Laplace operator
    */
-  template <class DiscFunctionType, class TensorType>
+  template <class DiscFunctionType, class TensorType, int polOrd>
   class LaplaceFEOp :
     public FiniteElementOperator<DiscFunctionType,
         SparseRowMatrix<double>,
-        LaplaceFEOp<DiscFunctionType,TensorType> > {
+        LaplaceFEOp<DiscFunctionType,TensorType, polOrd> > {
 
     //! The corresponding function space type
     typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
@@ -41,7 +41,7 @@ namespace Dune
     //! ???
     typedef typename FiniteElementOperator<DiscFunctionType,
         SparseRowMatrix<double>,
-        LaplaceFEOp<DiscFunctionType, TensorType> >::OpMode OpMode;
+        LaplaceFEOp<DiscFunctionType, TensorType, polOrd> >::OpMode OpMode;
 
 
     mutable JacobianRange grad;
@@ -52,7 +52,7 @@ namespace Dune
 
     //! ???
     FastQuad < typename FunctionSpaceType::RangeField, typename
-        FunctionSpaceType::Domain , 1 > quad;
+        FunctionSpaceType::Domain , polOrd > quad;
 
     //! ???
     DiscFunctionType *stiffFunktion_;
@@ -62,20 +62,20 @@ namespace Dune
 
     //! ???
     LaplaceFEOp( const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :
-      FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType> >( f, opMode ) ,
+      FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType, polOrd> >( f, opMode ) ,
       quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(NULL), stiffTensor_(NULL)
     {}
 
     //! ???
     LaplaceFEOp( const DiscFunctionType &stiff, const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :
-      FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType> >( f, opMode ) ,
+      FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType, polOrd> >( f, opMode ) ,
       quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(&stiff), stiffTensor_(NULL)
     {}
 
     //! ???
-    LaplaceFEOp( TensorType &stiff, const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :    //= ASSEMBLED ) :
-                                                                                                            FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType> >( f, opMode ) ,
-                                                                                                            quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(NULL), stiffTensor_(&stiff)
+    LaplaceFEOp( TensorType &stiff, const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :
+      FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType, polOrd> >( f, opMode ) ,
+      quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(NULL), stiffTensor_(&stiff)
     {}
 
     //! Returns the actual matrix if it is assembled
