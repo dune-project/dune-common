@@ -176,7 +176,7 @@ namespace Dune
     int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    FieldVector<albertCtype, cdim>& operator[] (int i) const;
+    const FieldVector<albertCtype, cdim> & operator[] (int i) const;
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
