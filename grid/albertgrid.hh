@@ -89,7 +89,6 @@ namespace Albert
        @{
      */
 
-
     // i.e. double or float
     typedef ALBERT REAL albertCtype;
 
@@ -160,7 +159,7 @@ namespace Albert
 
       //! maps a global coordinate within the element to a
       //! local coordinate in its reference element
-      Vec<dim,albertCtype>& local (const Vec<dimworld,albertCtype>& global);
+      Vec<dim,albertCtype> local (const Vec<dimworld,albertCtype>& global);
 
       //! returns true if the point in local coordinates is inside reference element
       bool checkInside(const Vec<dim,albertCtype>& local);
@@ -202,8 +201,8 @@ namespace Albert
       //***********************************************************************
       //! generate the geometry for the ALBERT EL_INFO
       //! no interface method
-      bool builtGeom(ALBERT EL_INFO *elInfo, unsigned char face,
-                     unsigned char edge, unsigned char vertex);
+      bool builtGeom(ALBERT EL_INFO *elInfo, int face,
+                     int edge, int vertex);
       // init geometry with zeros
       //! no interface method
       void initGeom();
@@ -222,14 +221,6 @@ namespace Albert
       // calculate Matrix for Mapping from reference element to actual element
       void calcElMatrix ();
 
-      // calc the local barycentric coordinates
-      template <int dimbary>
-      Vec<dimbary,albertCtype>& localB (const Vec<dimworld,albertCtype>& global)
-      {
-        localBary_ = localBary(global);
-        return localBary_;
-      }
-
       //! built the reference element
       void makeRefElemCoords();
 
@@ -239,7 +230,7 @@ namespace Albert
       Vec<dim+1,albertCtype> tmpVec_;
       //! maps a global coordinate within the elements local barycentric
       //! koordinates
-      Vec<dim+1,albertCtype> localBary (const Vec<dimworld,albertCtype>& global);
+      //Vec<dim+1,albertCtype> localBary (const Vec<dimworld,albertCtype>& global);
 
       // template method for map the vertices of EL_INFO to the actual
       // coords with face_,edge_ and vertex_ , needes for operator []
@@ -257,22 +248,19 @@ namespace Albert
       //! storage for local coords
       Vec<dim,albertCtype> localCoord_;
 
-      //! storage for barycentric coords
-      Vec<dimbary,albertCtype> localBary_;
-
       // make empty EL_INFO
       ALBERT EL_INFO * makeEmptyElInfo();
 
       ALBERT EL_INFO * elInfo_;
 
       //! Which Face of the Element 0...dim+1
-      unsigned char face_;
+      int face_;
 
       //! Which Edge of the Face of the Element 0...dim
-      unsigned char edge_;
+      int edge_;
 
       //! Which Edge of the Face of the Element 0...dim-1
-      unsigned char vertex_;
+      int vertex_;
 
       //! is true if Jinv_ and volume_ is calced
       bool builtinverse_;
@@ -335,8 +323,8 @@ namespace Albert
     private:
       // methods for setting the infos from the albert mesh
       void setTraverseStack (ALBERT TRAVERSE_STACK *travStack);
-      void setElInfo (ALBERT EL_INFO *elInfo, int elNum, unsigned char face,
-                      unsigned char edge, unsigned char vertex );
+      void setElInfo (ALBERT EL_INFO *elInfo, int elNum, int face,
+                      int edge, int vertex );
       // needed for the LevelIterator
       ALBERT EL_INFO *getElInfo () const;
 
@@ -365,13 +353,13 @@ namespace Albert
       int level_;
 
       //! Which Face of the Element
-      unsigned char face_;
+      int face_;
 
       //! Which Edge of the Face of the Element
-      unsigned char edge_;
+      int edge_;
 
       //! Which Vertex of the Edge of the Face of the Element
-      unsigned char vertex_;
+      int vertex_;
     };
 
     /*!
@@ -507,9 +495,9 @@ namespace Albert
       void setTraverseStack (ALBERT TRAVERSE_STACK *travStack);
       void setElInfo (ALBERT EL_INFO *elInfo,
                       int elNum = 0,
-                      unsigned char face = 0,
-                      unsigned char edge = 0,
-                      unsigned char vertex = 0 );
+                      int face = 0,
+                      int edge = 0,
+                      int vertex = 0 );
 
       // needed for LevelIterator to compare
       ALBERT EL_INFO *getElInfo () const;
@@ -931,9 +919,9 @@ namespace Albert
       int level_;
 
       //! which face, edge and vertex are we watching of an elInfo
-      unsigned char face_;
-      unsigned char edge_;
-      unsigned char vertex_;
+      int face_;
+      int edge_;
+      int vertex_;
 
       // knows on which element a point is viewed
       AlbertMarkerVector * vertexMarker_;
