@@ -50,6 +50,15 @@ void Dune::AmiraMeshWriter<GRID, T>::write(const GRID& grid,
   printf("No AmiraMesh writing has been implemented for this grid type!\n");
 }
 
+
+// the amiramesh writer for SimpleGrid
+#ifndef __GNUC__
 #include "amsimplegridwriter.cc"
+#endif
+
+// the amiramesh writer for UGGrid
+#ifdef HAVE_UG
+#include "amuggridwriter.cc"
+#endif
 
 #endif
