@@ -35,8 +35,9 @@ namespace Dune {
                               const std::string& filename);
 
     /** \brief Writes an ISTL block vector in AmiraMesh format */
+    template <class VectorType>
     static void writeBlockVector(const GridType& grid,
-                                 const Dune::BlockVector<Dune::FieldVector<double, 3> >& f,
+                                 const VectorType& f,
                                  const std::string& filename);
     AmiraMeshWriter() {}
 
