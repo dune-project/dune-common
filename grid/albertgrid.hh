@@ -1189,19 +1189,16 @@ namespace Dune
                     ALBERT EL_INFO *elinfo, bool hierachical, bool leaf=false ) const;
 
     // calc the neigh[0]
-    void firstNeigh(const int ichild, const int actLevel ,
-                    const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, const
-                    bool leafLevel) const;
+    void firstNeigh(const int ichild,const ALBERT EL_INFO *elinfo_old,
+                    ALBERT EL_INFO *elinfo, const bool leafLevel) const;
 
     // calc the neigh[1]
-    void secondNeigh(const int ichild, const int actLevel ,
-                     const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, const
-                     bool leafLevel) const;
+    void secondNeigh(const int ichild, const ALBERT EL_INFO *elinfo_old,
+                     ALBERT EL_INFO *elinfo, const bool leafLevel) const;
 
     // calc the neigh[2]
-    void thirdNeigh(const int ichild, const int actLevel ,
-                    const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo, const
-                    bool leafLevel) const;
+    void thirdNeigh(const int ichild, const ALBERT EL_INFO *elinfo_old,
+                    ALBERT EL_INFO *elinfo, const bool leafLevel) const;
 
     // needed for VertexIterator, mark on which element a vertex is treated
     AlbertMarkerVector * vertexMarker_;
