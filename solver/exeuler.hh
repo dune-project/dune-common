@@ -47,7 +47,7 @@ int main(int argc, char ** argv) {
 namespace Dune {
   /**
      exEuler calculates the next step
-     $x_{i,j,k}^{n+1} = \delta t \cdot RHS_{i,j,k}^n - $x_{i,j,k}^n$
+     \f$ x_{i,j,k}^{n+1} = \delta t \cdot RHS_{i,j,k}^n - x_{i,j,k}^n \f$
    */
   template <class GRID, class RHS>
   class exEuler : public gridOperator< GRID, exEuler<GRID,RHS> > {
