@@ -29,7 +29,7 @@ namespace Dune {
     static int createHexaDomain(UGGrid<3,3>& grid, AmiraMesh* am,
                                 const std::string& filename);
 
-    static int* detectBoundarySegments(int* elemData,
+    static void detectBoundarySegments(int* elemData,
                                        int noOfElem,
                                        std::vector<Vec<4, int> >& face_list);
 
@@ -86,13 +86,13 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::CreateDomain(UGGrid<3,3>& 
                                                                    const std::string& domainName,
                                                                    const std::string& filename)
 {
-  const int DIM = 3;
-  const int MAX_CORNERS_OF_LINEAR_PATCH = DIM;
+  //const int DIM = 3;
+  //const int MAX_CORNERS_OF_LINEAR_PATCH = DIM;
   const int CORNERS_OF_BND_SEG = 4;
 
 
   int point[CORNERS_OF_BND_SEG] = {-1, -1, -1, -1};
-  double radius, MidPoint[3], alpha[2], beta[2], pos[3];
+  double radius, MidPoint[3], alpha[2], beta[2];
 
   /* Alle Aufrufe an Deine Bibliothek beginnen mit "Amira" */
 
@@ -170,8 +170,7 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::CreateDomain(UGGrid<3,3>& 
 
     //std::string segmentName;
     char segmentName[200];
-    int left, right, j;
-    double coordinates[MAX_CORNERS_OF_LINEAR_PATCH][DIM];
+    int left, right;
 
     AmiraGetNodeNumbersOfSegment(point, i);
 
@@ -199,9 +198,9 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::CreateDomain(UGGrid<3,3>& 
     beta[0]  = beta[1]  = 1;
 
     if (UG3d::CreateBoundarySegment(segmentName,
-                                    left,           /*id of left subdomain */
-                                    right,          /*id of right subdomain*/
-                                    i,              /*id of segment*/
+                                    left,             /*id of left subdomain */
+                                    right,            /*id of right subdomain*/
+                                    i,                /*id of segment*/
                                     UG3d::NON_PERIODIC,
                                     1,              // resolution, whatever that is
                                     point,
@@ -210,10 +209,6 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::CreateDomain(UGGrid<3,3>& 
                                     (void *) (segmentIndexList+i)
                                     )==NULL)
       return(1);
-
-    /*       sprintf(BndCondName, "BndCond of Segment %d", i); */
-    /*       if(CreateBoundaryCondition(BndCondName, i,DummyBndCondition, NULL) == NULL) */
-    /*       return(1); */
 
   }
 
@@ -415,9 +410,13 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::read(Dune::UGGrid<3,3>& g
   UG3d::SetEdgeAndNodeSubdomainFromElements(theMG->grids[0]);
 
 
-  /** \todo Do we really need to call CreateAlgebra for Dune?*/
-  //   if (UG3d::CreateAlgebra(theMG) != GM_OK)
-  //       REP_ERR_RETURN (GM_ERROR);
+  /** \todo Do we really need to call CreateAlgebra for Dune?
+   *
+   * So far we do, because the UG grid refinement expects a valid
+   * algebra.  Unfortunately, this wastes a lot of resources, because
+   * nobody is ever going to use the algebra.  Maybe we can patch UG? */
+  if (UG3d::CreateAlgebra(theMG) != UG3d::GM_OK)
+    throw("Error in UG3d::CreateAlgebra!");
 
   /** \todo Check whether this release is necessary */
   /* here all temp memory since CreateMultiGrid is released */
@@ -445,7 +444,7 @@ catch (const char* msg) {
 /*****************************************************************/
 
 /** \todo This is quadratic --> very slow */
-int* Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::detectBoundarySegments(int* elemData,
+void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::detectBoundarySegments(int* elemData,
                                                                               int numHexas,
                                                                               std::vector<Vec<4, int> >& face_list)
 {
@@ -455,8 +454,8 @@ int* Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::detectBoundarySegments(in
 
   face_list.resize(0);
 
-  int n=0;
-  int nDuplicate=0;
+  //     int n=0;
+  //     int nDuplicate=0;
   for (int i=0; i<numHexas; i++) {
 
     for (int k=0; k<6; k++) {
@@ -507,6 +506,40 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::detectBoundaryNodes(const 
   return count;
 }
 
+#if 0
+/** This method implements a linear function in order to be able to
+ *  work with straight line boundaries.
+ *  We interpret data as a DOUBLE* to the world coordinates of the
+ *  two endpoints.
+ *
+ * \todo This should actually be replaced by using LinearSegments
+ * instead of BoundarySegments.  But LinearSegments are buggy in UG.
+ */
+static int LinearSegmentDescription(void *data, double *param, double *result)
+{
+  Dune::Vec<3> a,b,c;
+  a[0] = ((double*)data)[0];
+  a[1] = ((double*)data)[1];
+  a[2] = ((double*)data)[2];
+  b[0] = ((double*)data)[3];
+  b[1] = ((double*)data)[4];
+  b[2] = ((double*)data)[5];
+  c[0] = ((double*)data)[6];
+  c[1] = ((double*)data)[7];
+  c[2] = ((double*)data)[8];
+
+  // linear interpolation
+  for (int i=0; i<3; i++)
+    result[i] = a[i] + param[0]*(b[i]-a[i]) + param[1]*(c[i]-a[i]);
+
+  printf("param: %g %g\n", param[0], param[1]);
+  printf("corners:  (%d %d %d %d)\n",
+         ((int*)data) [0],  ((int*)data) [1],  ((int*)data) [2],
+         ((int*)data) [3]);
+
+  return 0;
+}
+#endif
 
 int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::createHexaDomain(UGGrid<3,3>& grid,
                                                                        AmiraMesh* am,
@@ -520,7 +553,6 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::createHexaDomain(UGGrid<3,
   int point[CORNERS_OF_BND_SEG] = {-1, -1, -1, -1};
   double midPoint[3] = {0,0,0};
   double radius = 1;
-  double alpha[2], beta[2] /*, pos[3]*/;
 
   AmiraMesh::Data* hexahedronData = am->findData("Hexahedra", HxINT32, 8, "Nodes");
   int*  elemData         = (int*)hexahedronData->dataPtr();
@@ -540,8 +572,9 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::createHexaDomain(UGGrid<3,
 
   printf("%d boundary segments found!\n", face_list.size());
   for (unsigned int i=0; i<face_list.size(); i++) {
-    face_list[i].print(cout, 3);
-    cout << "\n";
+    //face_list[i].print(cout, 3);
+
+    cout << face_list[i] << "\n";
   }
 
   int noOfNodes = am->nElements("Nodes");
@@ -606,11 +639,6 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::createHexaDomain(UGGrid<3,
       return(1);
 
     /* left = innerRegion, right = outerRegion */
-    //AmiraGetLeftAndRightSideOfSegment(&left, &right, i);
-
-    //             printf("id = %d l = %d, r = %d\n", i, left, right);
-    //             printf("id = %d nd0 = %d, nd1 = %d, nd2 = %d\n", i, point[0], point[1], point[2]);
-
     segmentIndexList[i] = i;
 
     /* map Amira Material ID's to UG material ID's */
@@ -618,22 +646,34 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::createHexaDomain(UGGrid<3,
     left++;
     right++;
 
-    alpha[0] = alpha[1] = 0;
-    beta[0]  = beta[1]  = 1;
+#if 0
+    double alpha[2] = {0, 0};
+    double beta[2]  = {1, 1};
 
     if (UG3d::CreateBoundarySegment(segmentName,
-                                    left,           /*id of left subdomain */
-                                    right,          /*id of right subdomain*/
-                                    i,              /*id of segment*/
+                                    left,             /*id of left subdomain */
+                                    right,            /*id of right subdomain*/
+                                    i,                /*id of segment*/
                                     UG3d::NON_PERIODIC,
                                     1,              // resolution, whatever that is
                                     point,
                                     alpha, beta,
-                                    SegmentDescriptionByAmira,
+                                    LinearSegmentDescription,
                                     (void *) (segmentIndexList+i)
                                     )==NULL)
       return(1);
-
+#else
+    double paramCoords[3][2] = {{0,0}, {1,0}, {0,1}};
+    if (UG3d::CreateLinearSegment(segmentName,
+                                  left,             /*id of left subdomain */
+                                  right,            /*id of right subdomain*/
+                                  i,                /*id of segment*/
+                                  4,                // Number of corners
+                                  point,
+                                  paramCoords
+                                  )==NULL)
+      return(1);
+#endif
   }
 
   printf("%d segments created!\n", nBndSegments);
@@ -648,15 +688,21 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::readHexaGrid(Dune::UGGrid
 
   //loaddomain $file @PARA_FILE $name @DOMAIN
   createHexaDomain(grid, am, "olisDomain");
+  printf("A\n");
 
+  grid.makeNewUGMultigrid();
+#if 0
   //configure @PROBLEM $d @DOMAIN;
   char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
   UG3d::ConfigureCommand(2, configureArgs);
+  printf("B\n");
 
   //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
   char* newArgs[4] = {"new DuneMG", "b DuneDummyProblem", "f DuneFormat", "h 1G"};
   if (UG3d::NewCommand(4, newArgs))
     assert(false);
+#endif
+  printf("C\n");
 
 
   // ////////////////////////////////////////////
@@ -712,19 +758,12 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::readHexaGrid(Dune::UGGrid
   UG3d::UserWriteF("Already %d nodes existing\n", maxBndNodeID+1);
 
 
-  //noOfBndNodes = maxBndNodeID;
-
-
   int noOfNodes = am->nElements("Nodes");
 
-  //  noOfInnerNodes = noOfNodes - noOfBndNodes;
   printf("AmiraMesh has %d total nodes\n", noOfNodes);
 
-
-
-
-
-  for(i = 0; i < noOfNodes; i++) {
+  // Now insert inner nodes
+  for(i = maxBndNodeID+1; i < noOfNodes; i++) {
 
     assert(am_node_coordinates_float || am_node_coordinates_double);
     if (am_node_coordinates_float) {
@@ -812,9 +851,13 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::readHexaGrid(Dune::UGGrid
   UG3d::SetEdgeAndNodeSubdomainFromElements(theMG->grids[0]);
 
 
-  /** \todo Do we really need to call CreateAlgebra for Dune?*/
-  //   if (UG3d::CreateAlgebra(theMG) != GM_OK)
-  //       REP_ERR_RETURN (GM_ERROR);
+  /** \todo Do we really need to call CreateAlgebra for Dune?
+   *
+   * So far we do, because the UG grid refinement expects a valid
+   * algebra.  Unfortunately, this wastes a lot of resources, because
+   * nobody is ever going to use the algebra.  Maybe we can patch UG? */
+  if (UG3d::CreateAlgebra(theMG) != UG3d::GM_OK)
+    throw("Error in UG3d::CreateAlgebra!");
 
   /** \todo Check whether this release is necessary */
   /* here all temp memory since CreateMultiGrid is released */
