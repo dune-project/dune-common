@@ -415,7 +415,7 @@ namespace Dune
     ~AlbertaGridEntity() {};
 
     //! Constructor, real information is set via setElInfo method
-    AlbertaGridEntity(AlbertaGrid<dim,dimworld> &grid, int level);
+    AlbertaGridEntity(const AlbertaGrid<dim,dimworld> &grid, int level);
 
     //! level of this element
     int level () const;
@@ -499,7 +499,7 @@ namespace Dune
     //! marks an element for refCount refines. if refCount is negative the
     //! element is coarsend -refCount times
     //! mark returns true if element was marked, otherwise false
-    bool mark( int refCount );
+    bool mark( int refCount ) const;
 
     //! return whether entity could be cosrsend (COARSEND) or was refined
     //! (REFIEND) or nothing happend (NONE)
@@ -550,7 +550,7 @@ namespace Dune
     void makeDescription();
 
     //! the corresponding grid
-    AlbertaGrid<dim,dimworld> & grid_;
+    const AlbertaGrid<dim,dimworld> & grid_;
 
     //! the level of the entity
     int level_;
@@ -593,11 +593,11 @@ namespace Dune
   {
   public:
     //! the normal Constructor
-    AlbertaGridHierarchicIterator(AlbertaGrid<dim,dimworld> &grid,
+    AlbertaGridHierarchicIterator(const AlbertaGrid<dim,dimworld> &grid,
                                   ALBERTA TRAVERSE_STACK *travStack, int actLevel, int maxLevel);
 
     //! the default Constructor
-    AlbertaGridHierarchicIterator(AlbertaGrid<dim,dimworld> &grid,
+    AlbertaGridHierarchicIterator(const AlbertaGrid<dim,dimworld> &grid,
                                   int actLevel,int maxLevel);
 
     //! prefix increment
@@ -617,7 +617,7 @@ namespace Dune
 
   private:
     //! know the grid were im comming from
-    AlbertaGrid<dim,dimworld> &grid_;
+    const AlbertaGrid<dim,dimworld> &grid_;
 
     //! the actual Level of this Hierarichic Iterator
     int level_;
@@ -626,7 +626,7 @@ namespace Dune
     int maxlevel_;
 
     //! implement with virtual element
-    AlbertaGridEntity<0,dim,dimworld> virtualEntity_;
+    mutable AlbertaGridEntity<0,dim,dimworld> virtualEntity_;
 
     //! we need this for Albert traversal, and we need ManageTravStack, which
     //! does count References when copied
@@ -700,10 +700,12 @@ namespace Dune
     AlbertaGridIntersectionIterator();
 
     //! The default Constructor
-    AlbertaGridIntersectionIterator(AlbertaGrid<dim,dimworld> &grid,int level);
+    AlbertaGridIntersectionIterator(const AlbertaGrid<dim,dimworld> &grid,
+                                    int level);
 
     //! The Constructor
-    AlbertaGridIntersectionIterator(AlbertaGrid<dim,dimworld> &grid,int level,
+    AlbertaGridIntersectionIterator(const AlbertaGrid<dim,dimworld> &grid,
+                                    int level,
                                     ALBERTA EL_INFO *elInfo);
 
     //! The Destructor
@@ -774,25 +776,28 @@ namespace Dune
     //  private methods
     //**********************************************************
     //! make Iterator set to begin of actual entitys intersection Iterator
-    void makeBegin (AlbertaGrid<dim,dimworld> &grid,int level, ALBERTA EL_INFO * elInfo );
+    void makeBegin (const AlbertaGrid<dim,dimworld> &grid,
+                    int level,
+                    ALBERTA EL_INFO * elInfo ) const;
 
     //! set Iterator to end of actual entitys intersection Iterator
-    void makeEnd (AlbertaGrid<dim,dimworld> &grid,int level );
+    void makeEnd (const AlbertaGrid<dim,dimworld> &grid,int level ) const;
 
     // put objects on stack
-    void freeObjects ();
+    void freeObjects () const;
 
     //! setup the virtual neighbor
-    void setupVirtEn ();
+    void setupVirtEn () const;
 
     //! know the grid were im comming from
-    AlbertaGrid<dim,dimworld> *grid_;
+    // * quick hack to make it compile
+    mutable AlbertaGrid<dim,dimworld> *grid_;
 
     //! the actual level
-    int level_;
+    mutable int level_;
 
     //! count on which neighbor we are lookin' at
-    int neighborCount_;
+    mutable int neighborCount_;
 
     //! implement with virtual element
     //! Most of the information can be generated from the ALBERTA EL_INFO
@@ -801,7 +806,7 @@ namespace Dune
     mutable AlbertaGridEntity<0,dim,dimworld> *virtualEntity_;
 
     //! pointer to the EL_INFO struct storing the real element information
-    ALBERTA EL_INFO * elInfo_;
+    mutable ALBERTA EL_INFO * elInfo_;
 
     // for memory management
     mutable typename AlbertaGrid<dim,dimworld>::EntityProvider::ObjectEntity *manageObj_;
@@ -857,17 +862,23 @@ namespace Dune
     enum { dimension = dim };
 
     //! Constructor
-    AlbertaGridLevelIterator(AlbertaGrid<dim,dimworld> &grid, int
+    AlbertaGridLevelIterator(const AlbertaGrid<dim,dimworld> &grid, int
                              travLevel, int proc, bool leafIt=false );
 
     //! Constructor
-    AlbertaGridLevelIterator(AlbertaGrid<dim,dimworld> &grid, int travLevel,
-                             ALBERTA EL_INFO *elInfo,int elNum = 0 , int face=0, int edge=0,int vertex=0);
+    AlbertaGridLevelIterator(const AlbertaGrid<dim,dimworld> &grid,
+                             int travLevel,
+                             ALBERTA EL_INFO *elInfo,int elNum = 0,
+                             int face=0,
+                             int edge=0,
+                             int vertex=0);
 
     //! Constructor
-    AlbertaGridLevelIterator(AlbertaGrid<dim,dimworld> &grid,
-                             AlbertaMarkerVector * vec ,int travLevel,
-                             int proc ,bool leafIt=false);
+    AlbertaGridLevelIterator(const AlbertaGrid<dim,dimworld> &grid,
+                             AlbertaMarkerVector * vec,
+                             int travLevel,
+                             int proc,
+                             bool leafIt=false);
 
     //! prefix increment
     AlbertaGridLevelIteratorType& operator ++();
@@ -921,13 +932,13 @@ namespace Dune
     ALBERTA MACRO_EL * nextGhostMacro(ALBERTA MACRO_EL *mel);
 
     //! the grid were it all comes from
-    AlbertaGrid<dim,dimworld> & grid_;
+    const AlbertaGrid<dim,dimworld>& grid_;
 
     //! level :)
     int level_;
 
     // private Members
-    AlbertaGridEntity<codim,dim,dimworld> virtualEntity_;
+    mutable AlbertaGridEntity<codim,dim,dimworld> virtualEntity_;
 
     // contains ALBERTA traversal stack
     ALBERTA ManageTravStack manageStack_;
@@ -1024,24 +1035,25 @@ namespace Dune
       //! Please doc me!
       typedef AlbertaGridLevelIterator<codim,dim,dimworld,Ghost_Partition>           GhostLevelIterator;
 
-      //! Please doc me!
-      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition> >  ConstLevelIterator;
+      /*
+         //! Please doc me!
+         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition> >  ConstLevelIterator;
 
-      //! Please doc me!
-      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Interior_Partition> > ConstInteriorLevelIterator;
+         //! Please doc me!
+         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Interior_Partition> > ConstInteriorLevelIterator;
 
-      //! Please doc me!
-      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,InteriorBorder_Partition> > ConstInteriorBorderLevelIterator;
+         //! Please doc me!
+         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,InteriorBorder_Partition> > ConstInteriorBorderLevelIterator;
 
-      //! Please doc me!
-      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Overlap_Partition> > ConstOverlapLevelIterator;
+         //! Please doc me!
+         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Overlap_Partition> > ConstOverlapLevelIterator;
 
-      //! Please doc me!
-      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,OverlapFront_Partition> > ConstOverlapFrontLevelIterator;
+         //! Please doc me!
+         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,OverlapFront_Partition> > ConstOverlapFrontLevelIterator;
 
-      //! Please doc me!
-      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Ghost_Partition> > ConstGhostLevelIterator;
-
+         //! Please doc me!
+         typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Ghost_Partition> > ConstGhostLevelIterator;
+       */
       //! Please doc me!
       typedef AlbertaGridEntity<codim,dim,dimworld>         Entity;
     };
@@ -1053,15 +1065,17 @@ namespace Dune
     typedef std::pair < ObjectStreamType * ,
         AlbertaGridEntity<0,dim,dimworld>  * > DataCollectorParamType;
 
-    template<int codim, PartitionIteratorType pitype>
-    struct ConstAlbertaGridLevelIterator
-    {
-      typedef ConstLevelIteratorWrapper<
-          AlbertaGridLevelIterator<codim,dim,dimworld,pitype> > IteratorType;
-    };
+    /* may be deleted
+       template<int codim, PartitionIteratorType pitype>
+       struct ConstAlbertaGridLevelIterator
+       {
+       typedef ConstLevelIteratorWrapper<
+        AlbertaGridLevelIterator<codim,dim,dimworld,pitype> > IteratorType;
+       };
 
-    typedef typename ConstAlbertaGridLevelIterator<0,All_Partition> :: IteratorType Const0LevelIteratorType;
-    typedef typename ConstAlbertaGridLevelIterator<dim,All_Partition> :: IteratorType ConstDimLevelIteratorType;
+       typedef typename ConstAlbertaGridLevelIterator<0,All_Partition> :: IteratorType Const0LevelIteratorType;
+       typedef typename ConstAlbertaGridLevelIterator<dim,All_Partition> :: IteratorType ConstDimLevelIteratorType;
+     */
 
     //! we always have dim+1 codimensions since we use only simplices
     enum { numCodim = dim+1 };
@@ -1095,41 +1109,20 @@ namespace Dune
     //! Iterator to first entity of given codim on level
     template<int codim, PartitionIteratorType pitype>
     AlbertaGridLevelIterator<codim,dim,dimworld,pitype>
-    lbegin (int level, int proc = -1 );
+    lbegin (int level, int proc = -1 ) const;
 
     //! one past the end on this level
     template<int codim, PartitionIteratorType pitype>
     AlbertaGridLevelIterator<codim,dim,dimworld,pitype>
-    lend (int level, int proc = -1 );
-
-    //! Iterator to first entity of given codim on level
-    template<int codim> AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>
-    lbegin (int level, int proc = -1 );
-
-    //! one past the end on this level
-    template<int codim> AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>
-    lend (int level, int proc = -1 );
-
-    // the const versions
-
-    //! Iterator to first entity of given codim on level
-    template<int codim, PartitionIteratorType pitype>
-    typename ConstAlbertaGridLevelIterator <codim,pitype> :: IteratorType
-    lbegin (int level, int proc = -1 ) const;
-
-    //! one past the end on this level
-    template<int codim, PartitionIteratorType pitype>
-    typename ConstAlbertaGridLevelIterator <codim,pitype> :: IteratorType
     lend (int level, int proc = -1 ) const;
 
+
     //! Iterator to first entity of given codim on level
-    template<int codim>
-    typename ConstAlbertaGridLevelIterator <codim,All_Partition> :: IteratorType
+    template<int codim> AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>
     lbegin (int level, int proc = -1 ) const;
 
     //! one past the end on this level
-    template<int codim>
-    typename ConstAlbertaGridLevelIterator <codim,All_Partition> :: IteratorType
+    template<int codim> AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>
     lend (int level, int proc = -1 ) const;
 
     /** \brief Number of grid entities per level and codim
@@ -1172,10 +1165,10 @@ namespace Dune
     albertCtype getTime () const { return time_; };
 
     //! return LeafIterator which points to first leaf entity
-    LeafIterator leafbegin ( int maxlevel, int proc = -1 );
+    LeafIterator leafbegin ( int maxlevel, int proc = -1 ) const;
 
     //! return LeafIterator which points behind last leaf entity
-    LeafIterator leafend   ( int maxlevel, int proc = -1 );
+    LeafIterator leafend   ( int maxlevel, int proc = -1 ) const;
 
     //! returns size of mesh include all levels
     //! max Index of grid entities with given codim
@@ -1227,11 +1220,11 @@ namespace Dune
     bool wasChanged_;
 
     // is true, if a least one entity is marked for coarsening
-    bool isMarked_;
+    mutable bool isMarked_;
 
     // set isMarked, isMarked is true if at least one entity is marked for
     // coarsening
-    void setMark ( bool isMarked );
+    void setMark ( bool isMarked ) const;
 
     // number of entitys of each level an codim
     mutable Array<int> size_;
@@ -1292,9 +1285,9 @@ namespace Dune
     typedef MemoryProvider< AlbertaGridElement<dim-1,dimworld> > IntersectionSelfProvider;
     typedef MemoryProvider< AlbertaGridElement<dim-1,dim> >      IntersectionNeighProvider;
 
-    EntityProvider entityProvider_;
-    IntersectionSelfProvider interSelfProvider_;
-    IntersectionNeighProvider interNeighProvider_;
+    mutable EntityProvider entityProvider_;
+    mutable IntersectionSelfProvider interSelfProvider_;
+    mutable IntersectionNeighProvider interNeighProvider_;
 
     //*********************************************************************
     // organisation of the global index
@@ -1303,7 +1296,8 @@ namespace Dune
     IndexManagerType indexStack_[dim+1];
 
     // the DOF_INT_VECs we need
-    ALBERTA AlbertHelp::DOFVEC_STACK dofvecs_;
+    // * change to mutable here
+    mutable ALBERTA AlbertHelp::DOFVEC_STACK dofvecs_;
 
     const ALBERTA DOF_ADMIN * elAdmin_;
     // pointer to vec of elNumbers_
