@@ -106,8 +106,8 @@ namespace Dune
   inline void DiscFuncArray< DiscreteFunctionSpaceType >::print(std::ostream &s, int level )
   {
     RangeFieldType sum = 0.;
-    DofIteratorType enddof = dend ( level );
-    for(DofIteratorType itdof = dbegin ( level ); itdof != enddof; ++itdof)
+    DofIteratorType enddof = this->dend ( level );
+    for(DofIteratorType itdof = this->dbegin ( level ); itdof != enddof; ++itdof)
     {
       //s << (*itdof) << " DofValue \n";
       sum += ABS(*itdof);
@@ -130,7 +130,7 @@ namespace Dune
   DiscFuncArray< DiscreteFunctionSpaceType >::
   newLocalFunction ( )
   {
-    LocalFunctionArray<DiscreteFunctionSpaceType> tmp ( functionSpace_ , dofVec_ );
+    LocalFunctionArray<DiscreteFunctionSpaceType> tmp ( this->functionSpace_ , dofVec_ );
     return tmp;
   }
 
@@ -271,7 +271,7 @@ namespace Dune
 
       for(int lev=0; lev<=level_; lev++)
       {
-        int length = functionSpace_.size( lev );
+        int length = this->functionSpace_.size( lev );
         dofVec_[lev].processXdr(&xdrs);
         if(length != dofVec_[lev].size())
         {
@@ -286,7 +286,7 @@ namespace Dune
       getMemory();
 
       int lev = level_;
-      int length = functionSpace_.size( lev );
+      int length = this->functionSpace_.size( lev );
       dofVec_[lev].processXdr(&xdrs);
       if(length != dofVec_[lev].size())
       {
@@ -313,10 +313,10 @@ namespace Dune
       outfile << level_ << "\n";
       for(int lev=0; lev<level_; lev++)
       {
-        int length = functionSpace_.size( lev );
+        int length = this->functionSpace_.size( lev );
         outfile << length << "\n";
-        DofIteratorType enddof = dend ( lev );
-        for(DofIteratorType itdof = dbegin ( lev ); itdof != enddof; ++itdof)
+        DofIteratorType enddof = this->dend ( lev );
+        for(DofIteratorType itdof = this->dbegin ( lev ); itdof != enddof; ++itdof)
         {
           outfile << (*itdof) << " ";
         }
@@ -325,10 +325,10 @@ namespace Dune
     }
     {
       int lev = level_;
-      int length = functionSpace_.size( lev );
+      int length = this->functionSpace_.size( lev );
       outfile << length << "\n";
-      DofIteratorType enddof = dend ( lev );
-      for(DofIteratorType itdof = dbegin ( lev ); itdof != enddof; ++itdof)
+      DofIteratorType enddof = this->dend ( lev );
+      for(DofIteratorType itdof = this->dbegin ( lev ); itdof != enddof; ++itdof)
       {
         outfile << (*itdof) << " ";
       }
@@ -366,14 +366,14 @@ namespace Dune
         int length;
         fscanf(infile,"%d \n",&length);
         std::cout << "Got Size of Level = "<< length << " " << lev << "\n";
-        std::cout << functionSpace_.size( lev ) << "\n";
-        if(length != functionSpace_.size( lev ))
+        std::cout << this->functionSpace_.size( lev ) << "\n";
+        if(length != this->functionSpace_.size( lev ))
         {
           std::cerr << "ERROR: wrong number of dofs stored in file!\n";
           abort();
         }
-        DofIteratorType enddof = dend ( lev );
-        for(DofIteratorType itdof = dbegin ( lev ); itdof != enddof; ++itdof)
+        DofIteratorType enddof = this->dend ( lev );
+        for(DofIteratorType itdof = this->dbegin ( lev ); itdof != enddof; ++itdof)
         {
           fscanf(infile,"%le \n",& (*itdof));
         }
@@ -386,13 +386,13 @@ namespace Dune
       int lev = level_;
       int length;
       fscanf(infile,"%d \n",&length);
-      if(length != functionSpace_.size( lev ))
+      if(length != this->functionSpace_.size( lev ))
       {
         std::cerr << "ERROR: wrong number of dofs stored in file!\n";
         abort();
       }
-      DofIteratorType enddof = dend ( lev );
-      for(DofIteratorType itdof = dbegin ( lev ); itdof != enddof; ++itdof)
+      DofIteratorType enddof = this->dend ( lev );
+      for(DofIteratorType itdof = this->dbegin ( lev ); itdof != enddof; ++itdof)
       {
         fscanf(infile,"%le \n",& (*itdof));
       }
@@ -413,14 +413,14 @@ namespace Dune
 
     int danz = 129;
     /*
-       int danz = functionSpace_.getGrid().size(level_, dim );
+       int danz = this->functionSpace_.getGrid().size(level_, dim );
        danz = (int) pow (( double ) danz, (double) (1.0/dim) );
        std::cout << danz << " Danz!\n";
      */
 
     out << "P2\n " << danz << " " << danz <<"\n255\n";
-    DofIteratorType enddof = dend ( level_ );
-    for(DofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
+    DofIteratorType enddof = this->dend ( level_ );
+    for(DofIteratorType itdof = this->dbegin ( level_ ); itdof != enddof; ++itdof) {
       out << (int)((*itdof)*255.) << "\n";
     }
     out.close();
@@ -434,7 +434,7 @@ namespace Dune
     int v;
 
     // get the hole memory
-    level_ = functionSpace_.getGrid().maxlevel();
+    level_ = this->functionSpace_.getGrid().maxlevel();
     allLevels_ = true;
     levOcu_ = level_+1;
 
@@ -443,8 +443,8 @@ namespace Dune
     const char * fn = genFilename(path,filename,timestep);
     in = fopen( fn, "r" );
     fscanf( in, "P2\n%d %d\n%d\n", &v, &v, &v );
-    DofIteratorType enddof = dend ( level_ );
-    for(DofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
+    DofIteratorType enddof = this->dend ( level_ );
+    for(DofIteratorType itdof = this->dbegin ( level_ ); itdof != enddof; ++itdof) {
       fscanf( in, "%d", &v );
       (*itdof) = ((double)v)/255.;
     }
@@ -459,11 +459,12 @@ namespace Dune
     std::fstream out( filename , std::ios::out );
     //ElementType eltype = triangle;
     //out << eltype << " 1 1\n";
-    int length = functionSpace_.size( level );
+    int level = this->functionSpace_.getGrid().maxlevel();
+    int length = this->functionSpace_.size( level );
     out << length << " 1 1\n";
 
-    DofIteratorType enddof = dend ( level );
-    for(DofIteratorType itdof = dbegin ( level );
+    DofIteratorType enddof = this->dend ( level );
+    for(DofIteratorType itdof = this->dbegin ( level );
         itdof != enddof; ++itdof)
     {
       out << (*itdof)  << "\n";
@@ -580,14 +581,14 @@ namespace Dune
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
+  inline typename LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
   LocalFunctionArray < DiscreteFunctionSpaceType >::operator [] (int num)
   {
     return (* (values_[num]));
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline const LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
+  inline const typename LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
   LocalFunctionArray < DiscreteFunctionSpaceType >::read (int num) const
   {
     return (* (values_[num]));

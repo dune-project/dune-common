@@ -45,6 +45,17 @@ namespace Dune {
         typename  DiscreteFunctionType::RangeFieldType > ScalOperatorType;
     typedef DiscreteOperator<DiscreteFunctionType,ScalOperatorType> ScalDiscrType;
 
+    typedef DiscreteOperatorDefault <DiscreteFunctionType, DiscreteFunctionType >
+    DiscOpDefType;
+
+    typedef typename DiscOpDefType::DomainType DomainType;
+    typedef typename DiscOpDefType::RangeType RangeType;
+    typedef typename DiscOpDefType::DomainFieldType DFieldType;
+    typedef typename DiscOpDefType::RangeFieldType RFieldType;
+
+    //! remember what type this class has
+    typedef Mapping<DFieldType,RFieldType,DomainType,RangeType> MappingType;
+
   public:
     //! create DiscreteOperator with a LocalOperator
     DiscreteOperator (LocalOperatorImp &op, bool leaf=false , bool printMsg = false )
@@ -111,7 +122,7 @@ namespace Dune {
     {
       if(printMsg_)
         std::cout << "DiscrOP::apply \n";
-      apply(level_,Arg,Dest);
+      apply(this->level_,Arg,Dest);
     }
 
     template <class ArgParamType , class DestParamType>
@@ -126,7 +137,7 @@ namespace Dune {
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
       // the corresponding grid
-      FunctionSpaceType & functionSpace_= Dest.getFunctionSpace();
+      FunctionSpaceType & functionSpace_= dest.getFunctionSpace();
       GridType &grid = functionSpace_.getGrid();
 
       if(leaf_)
@@ -135,18 +146,18 @@ namespace Dune {
         typedef typename GridType::LeafIterator LeafIterator;
 
         // make run through grid
-        LeafIterator it     = grid.leafbegin ( level_ );
-        LeafIterator endit  = grid.leafend   ( level_ );
+        LeafIterator it     = grid.leafbegin ( this->level_ );
+        LeafIterator endit  = grid.leafend   ( this->level_ );
         applyOnGrid( it, endit , arg, dest );
       }
       else
       {
-        typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
+        typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
 
 
         // make run through grid
-        LevelIterator it    = grid.template lbegin<0>( level_ );
-        LevelIterator endit = grid.template lend<0>  ( level_ );
+        LevelIterator it    = grid.template lbegin<0>( this->level_ );
+        LevelIterator endit = grid.template lend<0>  ( this->level_ );
         applyOnGrid( it, endit , arg, dest );
       }
 
@@ -156,7 +167,7 @@ namespace Dune {
     //! apply the operator, see apply
     void operator()( const DomainType &Arg, RangeType &Dest ) const
     {
-      apply(level_,Arg,Dest);
+      apply(this->level_,Arg,Dest);
     }
 
 
@@ -212,17 +223,17 @@ namespace Dune {
         typedef typename GridType::LeafIterator LeafIterator;
 
         // make run through grid
-        LeafIterator it     = grid.leafbegin ( level_ );
-        LeafIterator endit  = grid.leafend   ( level_ );
+        LeafIterator it     = grid.leafbegin ( this->level_ );
+        LeafIterator endit  = grid.leafend   ( this->level_ );
         applyOnGrid( it, endit , Arg, Dest );
       }
       else
       {
-        typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
+        typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
 
         // make run through grid
-        LevelIterator it    = grid.template lbegin<0>( level_ );
-        LevelIterator endit = grid.template lend<0>  ( level_ );
+        LevelIterator it    = grid.template lbegin<0>( this->level_ );
+        LevelIterator endit = grid.template lend<0>  ( this->level_ );
         applyOnGrid( it, endit, Arg, Dest );
       }
 
@@ -241,7 +252,7 @@ namespace Dune {
                        const DomainType &Arg, RangeType &Dest ) const
     {
       // erase destination function
-      Dest.clearLevel ( level_ );
+      Dest.clearLevel ( this->level_ );
 
       // run through grid and apply the local operator
       for( it ; it != endit; ++it )
@@ -278,7 +289,7 @@ namespace Dune {
     //*******************************************************
     // derived from mappiung, don't need this here
     //*******************************************************
-    virtual MappingType operator * (const Field &) const
+    virtual MappingType operator * (const RFieldType &) const
     {
       std::cout << "MappingType DiscreteOperator::operator * ( const Field &) const: do not use this method\n";
       abort();

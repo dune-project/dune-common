@@ -11,9 +11,9 @@
 namespace Dune
 {
 
-  //#ifdef _GNUGCC
-  //#define TEMPPARAM2
-  //#endif
+#ifdef HAVE_ICC
+#define TEMPPARAM2
+#endif
 
   static ALBERT EL_INFO statElInfo[DIM+1];
 
@@ -2049,7 +2049,7 @@ namespace Dune
   inline AlbertGridLevelIterator<codim,dim,dimworld >::
   AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid, int travLevel,
                           IteratorType IType, int proc, bool leafIt ) :
-    grid_(grid), level_ (travLevel) ,  virtualEntity_(grid,0)
+    grid_(grid), level_ (travLevel) ,  virtualEntity_(grid,travLevel)
     ,leafIt_(leafIt) , myType_ (IType) , proc_(proc)
   {
     makeIterator();

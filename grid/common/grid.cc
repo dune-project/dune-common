@@ -4,6 +4,8 @@
 #define __DUNE_GRID_CC__
 
 #include "../../common/misc.hh"
+#include <iostream>
+#include <fstream>
 
 namespace Dune {
 

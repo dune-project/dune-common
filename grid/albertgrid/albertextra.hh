@@ -6,7 +6,7 @@
 #ifndef _ALBERTEXTRA_H_
 #define _ALBERTEXTRA_H_
 
-#ifdef __ALBERT++ __
+#ifdef __ALBERTpp__
 namespace Albert {
 #endif
 
@@ -1148,7 +1148,7 @@ namespace AlbertHelp
 #include "part.cc"
 } // end namespace AlbertHelp
 
-#ifdef __ALBERT++ __
+#ifdef __ALBERTpp__
 } // end namespace Albert
 #endif
 

@@ -465,7 +465,8 @@ static void fill_neigh_info(MACRO_EL *mel, MACRO_DATA *data)
       }
       else
       {
-        mel[i].opp_vertex[j] = -1;
+        // minus 1 is not allowed
+        mel[i].opp_vertex[j] = 128;
 #if NEIGH_IN_EL
         mel[i].el->opp_vertex[j] = -1;
 #endif

@@ -64,10 +64,10 @@ namespace Dune {
     }
 
     //! read/write components
-    int& operator[] (int i) {return x[i];}
+    T& operator[] (int i) {return x[i];}
 
   private:
-    int x[d];
+    T x[d];
   };
 
   //! generate lexicographic ordering in a cube of dimension dim with arbitry size per direction

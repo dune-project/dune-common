@@ -58,7 +58,7 @@ evaluateInit( const QuadratureType &quad )
   vecEvaluate_[ diffOrd ].resize( p * baseFunctionList_.size() * quad.nop () );
 
   // cache the basefunction evaluation
-  DiffVariable<diffOrd>::Type diffVariable (0);
+  typename DiffVariable<diffOrd>::Type diffVariable (0);
   int count = index( 0, diffVariable, 0, quad.nop ());
 
   int diffCount = 0;

@@ -22,7 +22,7 @@ namespace Dune {
     typedef typename FunctionSpaceType::Range RangeVecType;
     typedef typename FunctionSpaceType::JacobianRange JacobianRange;
     typedef typename FunctionSpaceType::Domain DomainVecType;
-    typedef typename GridType::Traits<0>::Entity EntityType;
+    typedef typename GridType::template Traits<0>::Entity EntityType;
 
     double getLocalMatrixEntry( EntityType &entity, const int i, const int j ) const {
       return asImp().getLocalMatrixEntry( entity, i, j );
@@ -60,7 +60,7 @@ namespace Dune {
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
+      typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
       GridType &grid = functionSpace_.getGrid();
@@ -91,7 +91,7 @@ namespace Dune {
 
       {
         // eliminate the Dirichlet rows and columns
-        typedef typename GridType::Traits<0>::Entity EntityType;
+        typedef typename GridType::template Traits<0>::Entity EntityType;
         typedef typename EntityType::Traits::IntersectionIterator NeighIt;
         typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
 
@@ -163,7 +163,7 @@ namespace Dune {
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
+      typedef typename GridType::template Traits<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
       GridType &grid = functionSpace_.getGrid();
@@ -227,7 +227,7 @@ namespace Dune {
       {
         if ( !matrix_assembled_ )
         {
-          matrix_ = newEmptyMatrix( );
+          matrix_ = this->newEmptyMatrix( );
           assemble();
         }
         matrix_->apply( arg, dest );
@@ -282,7 +282,7 @@ namespace Dune {
       const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
       int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
 
-      if(scalar_ == 1.)
+      if(this->scalar_ == 1.)
       {
         for(int i=0; i<numOfBaseFct; i++)
         {

@@ -45,16 +45,12 @@ ALBERT_INCLUDE_PATH="$ALBERTROOT/include"
 # Albert needs special defined symbols
 
 ALBERTDEF="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim"
-ALBERTDEF_TMP="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim -DEL_INDEX=0"
 
 # set variables so that tests can use them
-REM_LDFLAGS=$LDFLAGS
 REM_CPPFLAGS=$CPPFLAGS
 
 LDFLAGS="$LDFLAGS -L$ALBERT_LIB_PATH"
-CPPFLAGS="$CPPFLAGS $ALBERTDEF_TMP -I$ALBERT_INCLUDE_PATH"
-
-ALBERTDEF_TMP=
+CPPFLAGS="$CPPFLAGS $ALBERTDEF -DEL_INDEX=0 -I$ALBERT_INCLUDE_PATH"
 
 # check for header
 AC_CHECK_HEADER([albert.h], 
@@ -62,10 +58,7 @@ AC_CHECK_HEADER([albert.h],
 	HAVE_ALBERT="1"],
   AC_MSG_WARN([albert.h not found in $ALBERT_INCLUDE_PATH]))
 
-LDFLAGS="$REM_LDFLAGS -L$ALBERT_LIB_PATH"
 CPPFLAGS="$REM_CPPFLAGS $ALBERTDEF -I$ALBERT_INCLUDE_PATH"
-
-REMLDFLAGS=
 REM_CPPFLAGS=
 
 # if header is found...
