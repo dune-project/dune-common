@@ -934,13 +934,15 @@ namespace Dune
     typedef typename Traits::LeafIterator LeafIteratorType;
     //typedef BSGridReferenceGeometry<dim> ReferenceGeometry;
 
-    //typedef BSSPACE ObjectStream ObjectStreamType;
+    typedef BSSPACE ObjectStream ObjectStreamType;
 
     //typedef typename std::pair < ObjectStreamType * , BSGridEntity<0,dim,dimworld> * >
     //              DataCollectorParamType;
 
     typedef BSGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSetType;
     typedef DefaultLevelIndexSet<MyType>           LevelIndexSetType;
+
+    typedef typename Traits::LeafIterator LeafIterator;
 
     /** \todo Please doc me! */
 
