@@ -5,8 +5,25 @@
 #include <dune/common/poolallocator.hh>
 #include <iostream>
 
-template<class A>
-void randomizeListBack(Dune::SLList<double,A>& alist){
+class DoubleWrapper
+{
+public:
+  DoubleWrapper(double b)
+    : d(b)
+  {}
+
+  operator double()
+  {
+    return d;
+  }
+
+private:
+  double d;
+};
+
+
+template<typename T,class A>
+void randomizeListBack(Dune::SLList<T,A>& alist){
   using namespace Dune;
 
   srand((unsigned)time(0));
@@ -14,11 +31,11 @@ void randomizeListBack(Dune::SLList<double,A>& alist){
   int lowest=0, highest=1000, range=(highest-lowest)+1;
 
   for(int i=0; i < 10; i++)
-    alist.push_back((range*(rand()/(RAND_MAX+1.0))));
+    alist.push_back(T(range*(rand()/(RAND_MAX+1.0))));
 }
 
-template<class A>
-void randomizeListFront(Dune::SLList<double,A>& alist){
+template<typename T,class A>
+void randomizeListFront(Dune::SLList<T,A>& alist){
   using namespace Dune;
 
   srand((unsigned)time(0));
@@ -73,9 +90,11 @@ int main()
 
   Dune::SLList<double> list;
   Dune::SLList<double,Dune::PoolAllocator<double, 8*1024-20> > list1;
-
+  Dune::SLList<DoubleWrapper, Dune::PoolAllocator<DoubleWrapper, 8*1024-20> > list2;
   randomizeListBack(list1);
   randomizeListFront(list);
+  randomizeListFront(list2);
+
 
   ret+=testIterator(list);
   ret+=testIterator(list1);
@@ -83,6 +102,7 @@ int main()
 
   list.clear();
   list1.clear();
+  list2.clear();
   randomizeListBack(list);
   randomizeListFront(list1);
   exit(ret);
