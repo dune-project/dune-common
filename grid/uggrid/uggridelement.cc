@@ -2,7 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 //****************************************************************
 //
-// --AlbertGridElement
+// --UGGridElement
 // --Element
 //
 //****************************************************************
@@ -309,21 +309,50 @@ inline ElementType AlbertGridElement<dim,dimworld>::type()
   default : return unknown;
   }
 }
+#endif
 
 template< int dim, int dimworld>
-inline int AlbertGridElement<dim,dimworld>::corners()
+inline int UGGridElement<dim,dimworld>::corners()
 {
-  return (dim+1);
+
+  //#define CW_READ_STATIC(p,s,t)                   ReadCW(p,s ## CE)
+  //#define TAG(p) CW_READ_STATIC(p,UG3d::TAG_,GENERAL_)
+#define TAG(p) ReadCW(p, UG3d::TAG_CE)
+#define CORNERS_OF_ELEM(p)(UG3d::element_descriptors[TAG(p)]->corners_of_elem)
+  return CORNERS_OF_ELEM(target_);
+#undef CORNERS_OF_ELEM
+#undef TAG
+  //#undef CW_READ_STATIC
 }
+
 
 ///////////////////////////////////////////////////////////////////////
 template< int dim, int dimworld>
-inline Vec<dimworld,albertCtype>& AlbertGridElement<dim,dimworld>::
+inline Vec<dimworld,UGCtype>& UGGridElement<dim,dimworld>::
 operator [](int i)
 {
+  switch (dim) {
+
+  case 0 : {
+    UG3d::NODE* node_target = (UG3d::NODE*) target_;
+    //printf("in operator[]: target %d\n", node_target);
+    UG3d::VERTEX* vertex = node_target->myvertex;
+
+
+#define OBJT(p) ReadCW(p, UG3d::OBJ_CE)
+    bool vType = OBJT(vertex)== UG3d::IVOBJ;
+#undef OBJT
+    coord_(0,i) = vertex->iv.x[0];
+    coord_(1,i) = vertex->iv.x[1];
+    coord_(2,i) = vertex->iv.x[2];
+    break;
+  }
+
+  }
   return coord_(i);
 }
 
+#if 0
 template< int dim, int dimworld>
 inline AlbertGridElement<dim,dim>& AlbertGridElement<dim,dimworld>::
 refelem()

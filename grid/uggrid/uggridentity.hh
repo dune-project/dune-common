@@ -26,6 +26,7 @@ class UGGridEntity :
   //friend class UGGridEntity < 0, dim, dimworld>;
   friend class UGGridLevelIterator < codim, dim, dimworld>;
   //friend class UGGridLevelIterator < dim, dim, dimworld>;
+  friend class UGGridIntersectionIterator < dim, dimworld>;
 public:
   //! know your own codimension
   //enum { codimension=codim };
@@ -43,8 +44,34 @@ public:
   //! used for access to degrees of freedom
   int index ();
 
+  /*! Intra-element access to entities of codimension cc > codim. Return number of entities
+     with codimension cc.
+   */
+  //!< Default codim 1 Faces and codim == dim Vertices
+  template<int cc> int count ();
 
-  UGGridEntity(UGGrid<dim,dimworld> &grid, int level);
+  //! return index of sub entity with codim = cc and local number i
+  //! i.e. return global number of vertex i
+  /* template<int cc> */ int subIndex (int i);
+
+  //! Provide access to mesh entity i of given codimension. Entities
+  //!  are numbered 0 ... count<cc>()-1
+  template<int cc> UGGridLevelIterator<cc,dim,dimworld> entity (int i);
+
+  UGGridEntity(int level);
+
+  /*! Intra-level access to intersection with neighboring elements.
+     A neighbor is an entity of codimension 0
+     which has an entity of codimension 1 in commen with this entity. Access to neighbors
+     is provided using iterators. This allows meshes to be nonmatching. Returns iterator
+     referencing the first neighbor. */
+  UGGridIntersectionIterator<dim,dimworld> ibegin ();
+
+  //! same method for fast access
+  //void ibegin (AlbertGridIntersectionIterator<dim,dimworld> &it);
+
+  //! Reference to one past the last intersection with neighbor
+  UGGridIntersectionIterator<dim,dimworld> iend ();
 
   //! geometry of this entity
   UGGridElement<dim-codim,dimworld>& geometry ();
@@ -59,14 +86,13 @@ public:
   Vec<dim, UGCtype>& local ();
 private:
 
-#if 0
+
+  void setToTarget(void* target);
+
   // methods for setting the infos from the albert mesh
-  void setTraverseStack (ALBERT TRAVERSE_STACK *travStack);
-  void setElInfo (ALBERT EL_INFO *elInfo, int elNum, unsigned char face,
+  //void setTraverseStack (ALBERT TRAVERSE_STACK *travStack);
+  void setElInfo (int elNum, unsigned char face,
                   unsigned char edge, unsigned char vertex );
-  // needed for the LevelIterator
-  ALBERT EL_INFO *getElInfo () const;
-#endif
 
   // returns the global vertex number as default
   int globalIndex() { return elInfo_->el->dof[vertex_][0]; }
@@ -74,15 +100,9 @@ private:
   // private Methods
   void makeDescription();
 
-  UGGrid<dim,dimworld> &grid_;
+  //UGGrid<dim,dimworld> &grid_;
 
-#if 0
-  // private Members
-  ALBERT EL_INFO *elInfo_;
-  ALBERT TRAVERSE_STACK * travStack_;
-#endif
-
-  //! the cuurent geometry
+  //! the current geometry
   UGGridElement<dim-codim,dimworld> geo_;
   bool builtgeometry_;         //!< true if geometry has been constructed
 
@@ -102,6 +122,8 @@ private:
 
   //! Which Vertex of the Edge of the Face of the Element
   unsigned char vertex_;
+
+  void* target_;
 };
 
 #if 0

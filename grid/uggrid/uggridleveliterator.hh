@@ -42,7 +42,7 @@ public:
   UGGridLevelIterator<codim,dim,dimworld>& operator ++();
 
   //! postfix increment
-  UGGridLevelIterator<codim,dim,dimworld>& operator ++(int i);
+  //UGGridLevelIterator<codim,dim,dimworld>& operator ++(int i);
 
   //! equality
   bool operator== (const UGGridLevelIterator<codim,dim,dimworld>& i) const;
@@ -63,25 +63,10 @@ private:
   // private Methods
   void makeIterator();
 
-#if 0
-  ALBERT EL_INFO * goFirstElement(ALBERT TRAVERSE_STACK *stack,
-                                  ALBERT MESH *mesh,
-                                  int level, ALBERT FLAGS fill_flag);
-  ALBERT EL_INFO * traverseLeafElLevel(ALBERT TRAVERSE_STACK * stack);
-
-  // the default is, go to next elInfo
-  //template <int cc>
-  ALBERT EL_INFO * goNextEntity(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old);
-
-  // the real go next methods
-  ALBERT EL_INFO * goNextElInfo(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old);
-  ALBERT EL_INFO * goNextFace(ALBERT TRAVERSE_STACK *stack,
-                              ALBERT EL_INFO *elInfo);
-  ALBERT EL_INFO * goNextEdge(ALBERT TRAVERSE_STACK *stack,
-                              ALBERT EL_INFO *elInfo);
-  ALBERT EL_INFO * goNextVertex(ALBERT TRAVERSE_STACK *stack,
-                                ALBERT EL_INFO *elInfo);
-#endif
+  void setToTarget(void* target) {
+    target_ = target;
+    virtualEntity_.setToTarget(target);
+  }
 
   //! the grid were it all comes from
   UGGrid<dim,dimworld> &grid_;
@@ -89,27 +74,22 @@ private:
   // private Members
   UGGridEntity<codim,dim,dimworld> virtualEntity_;
 
-#if 0
-  // contains ALBERT traversal stack
-  ALBERT ManageTravStack manageStack_;
-#endif
-
   //! element number
   int elNum_;
 
   //! level
   int level_;
 
-  //! which face, edge and vertex are we watching of an elInfo
-  unsigned char face_;
-  unsigned char edge_;
-  unsigned char vertex_;
+  //   //! which face, edge and vertex are we watching of an elInfo
+  //   unsigned char face_;
+  //   unsigned char edge_;
+  //   unsigned char vertex_;
 
-  // knows on which element a point is viewed
-  UGMarkerVector * vertexMarker_;
+  //   // knows on which element a point is viewed
+  //   UGMarkerVector * vertexMarker_;
 
 
-  void* target;
+  void* target_;
 };
 
 #endif

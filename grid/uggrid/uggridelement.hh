@@ -7,12 +7,13 @@
 //
 // --UGGridElement
 /*!
-   Defines the geometry part of a mesh entity. Works for all dimensions, element types and dime
-   of world. Provides reference element and mapping between local and global coordinates.
+   Defines the geometry part of a mesh entity. Works for all dimensions, element types and
+   world dimensions. Provides a reference element and mapping between local and
+   global coordinates.
    The element may have different implementations because the mapping can be
-   done more efficient for structured meshes than for unstructured meshes.
+   done more efficiently for structured meshes than for unstructured meshes.
 
-   dim: An element is a polygonal in a hyperplane of dimension dim. 0 <= dim <= 3 is typically
+   dim: An element is a polygon in a hyperplane of dimension dim. 0 <= dim <= 3 is typically
    dim=0 is a point.
 
    dimworld: Each corner is a point with dimworld coordinates.
@@ -101,7 +102,11 @@ public:
   void print (std::ostream& ss, int indent);
 #endif
 
+  void setToTarget(void* target) {target_ = target;}
+
 private:
+
+
   // calc the local barycentric coordinates
   template <int dimbary>
   Vec<dimbary, UGCtype>& localB (const Vec<dimworld, UGCtype>& global)
@@ -161,6 +166,7 @@ private:
   Mat<dim,dim, UGCtype> Jinv_;  //!< storage for inverse of jacobian
   UGCtype volume_; //!< storage of element volume
 
+  void* target_;
 };
 
 #endif
