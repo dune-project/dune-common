@@ -69,8 +69,8 @@ namespace Dune {
                       Dirichlet   //!< Dirichlet type boundary
   };
 
-  enum AdaptationState { NONE ,     //!< notin' to do
-                         COARSEND,  //!< entity could be coarsend
+  enum AdaptationState { NONE ,     //!< nothin' to do
+                         COARSENED,  //!< entity could be coarsened
                          REFINED    //!< enity was refined
   };
 
@@ -834,7 +834,7 @@ namespace Dune {
           IntersectionIteratorImp,HierarchicIteratorImp>
   {
   public:
-    //! remeber the template types
+    //! remember the template types
     struct Traits
     {
       typedef ct CoordType;
