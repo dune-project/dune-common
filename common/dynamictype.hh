@@ -9,11 +9,11 @@ namespace Dune {
 
   typedef int IdentifierType;
 
-  //! ???
+  //! Base class used for tagging derived classes with an identifier
   class DynamicType {
   public:
 
-    //! ???
+    //! Definition for undefined value
     static const IdentifierType undefined = 0;
 
     //! set identifier of this class

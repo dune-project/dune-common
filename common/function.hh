@@ -41,11 +41,11 @@ namespace Dune {
     //! ???
     typedef FunctionSpaceType FunctionSpace;
 
-    //! ???
-    Function (const FunctionSpaceType & f ) : functionSpace_ (f) {} ;
+    //! Constructor
+    Function (const FunctionSpaceType & f) : functionSpace_ (f) {} ;
 
     //! evaluate Function
-    void eval ( const Domain & , Range &) const ;
+    void eval (const Domain & , Range &) const ;
 
     //! evaluate function and derivatives
     template <int derivation>
@@ -54,12 +54,12 @@ namespace Dune {
     void evaluate  ( const FieldVector<deriType, derivation> &diffVariable,
                      const Domain & , Range &) const {};
 
-    //! ???
-    const FunctionSpaceType &getFunctionSpace() const { return functionSpace_; }
+    //! Get access to the related function space
+    const FunctionSpaceType& getFunctionSpace() const { return functionSpace_; }
 
   protected:
 
-    //! ???
+    //! The related function space
     const FunctionSpaceType & functionSpace_;
 
   };

@@ -22,9 +22,9 @@ namespace Dune {
   class FunctionSpace : public DynamicType {
   public:
 
-    /** \todo Please doc me! */
+    /** Intrinsic type used for values in the domain field (usually a double) */
     typedef DomainFieldType DomainField;
-    /** \todo Please doc me! */
+    /** Intrinsic type used for values in the range field (usually a double) */
     typedef RangeFieldType RangeField;
 
     /** \todo Please doc me! */
@@ -32,15 +32,15 @@ namespace Dune {
     /** \todo Please doc me! */
     typedef FieldVector<Mat< n, n, RangeField>, m> HessianRange ;
 
-    /** \todo Please doc me! */
+    /** Type of domain vector (using type of domain field) */
     typedef FieldVector<DomainField, n> Domain;
-    /** \todo Please doc me! */
+    /** Type of range vector (using type of range field) */
     typedef FieldVector<RangeField, m> Range;
 
-    /** \todo Please doc me! */
+    /** Remember the dimensions of the domain and range field */
     enum { DimDomain = n, DimRange = m};
 
-    /** \todo Please doc me! */
+    /** Constructor taking an identifier */
     FunctionSpace ( int ident ) : DynamicType (ident){} ;
 
   };
