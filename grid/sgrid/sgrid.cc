@@ -1034,7 +1034,7 @@ namespace Dune {
     mapper[L].make(N[L]);
 
     // compute mesh size
-    for (int i=0; i<dim; i++) h[L](i) = H[i]/((sgrid_ctype)N[L][i]);
+    for (int i=0; i<dim; i++) h[L](i) = (H[i]-low[i])/((sgrid_ctype)N[L][i]);
     L++;
 
     std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
