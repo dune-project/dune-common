@@ -3,6 +3,10 @@
 #include <sstream>
 #include <malloc.h>
 
+#ifndef FORCE_DUMP
+#define NODUMP
+#endif
+
 namespace Dune {
 
   /**
@@ -428,6 +432,18 @@ namespace Dune {
     double mydefect=defect(lvl);
     double maxdefect=mydefect*reduction;
     int cycle=0;
+
+#ifdef SOLVER_DUMPDX
+    char defecttxt[256];
+    char calprestxt[256];
+    int run=0;
+    sprintf(defecttxt,"defect-run%d",run);
+    sprintf(calprestxt,"calpres-run%d",run);
+    dumpdx(g,g.roughest(),d,defecttxt,"pressure in the end");
+    dumpdx(g,g.roughest(),x,calprestxt,"pressure in the end");
+    run++;
+#endif
+
     while (mydefect > maxdefect) {
       smoother(lvl);
       mydefect=defect(lvl);
@@ -444,6 +460,13 @@ namespace Dune {
       std::cout << "excact solution on level 0 took " << cycle
                 << " iterations -> defect=" << mydefect << std::endl;
 
+#ifdef SOLVER_DUMPDX
+    sprintf(defecttxt,"defect-run%d",run);
+    sprintf(calprestxt,"calpres-run%d",run);
+    dumpdx(g,g.roughest(),d,defecttxt,"pressure in the end");
+    dumpdx(g,g.roughest(),x,calprestxt,"pressure in the end");
+    run++;
+#endif
     // prolongate the solution on the next level an run mgc
     // until we have a reduction of 0.1
     for (lvl++; lvl<=g.smoothest(); lvl++) {
@@ -458,16 +481,32 @@ namespace Dune {
                              << std::endl;
       // multigrid cycle
       mydefect=defect(lvl);
-      maxdefect=mydefect*0.1;
+      maxdefect=1e-15; //mydefect*0.1;
       cycle=0;
       if (rank==0) std::cout << "\tMGC-Cycle " << cycle
                              << " " << mydefect << " " << 0 << std::endl;
       cycle ++;
       double lastdefect=mydefect;
+
+#ifdef SOLVER_DUMPDX
+      sprintf(defecttxt,"defect-run%d",run);
+      sprintf(calprestxt,"calpres-run%d",run);
+      dumpdx(g,lvl,d,defecttxt,"pressure in the end");
+      dumpdx(g,lvl,x,calprestxt,"pressure in the end");
+      run++;
+#endif
+
       while (mydefect > maxdefect)
       {
-        if (cycle > 3) break;
+        if (cycle > 50) break;
         mgc(lvl);
+#ifdef SOLVER_DUMPDX
+        sprintf(defecttxt,"defect-run%d",run);
+        sprintf(calprestxt,"calpres-run%d",run);
+        dumpdx(g,lvl,d,defecttxt,"pressure in the end");
+        dumpdx(g,lvl,x,calprestxt,"pressure in the end");
+        run++;
+#endif
         mydefect=defect(lvl);
         if (rank==0) std::cout << "\tMGC-Cycle " << cycle << " " << mydefect
                                << " " << mydefect/lastdefect
@@ -479,8 +518,11 @@ namespace Dune {
       }
     }
 #ifdef SOLVER_DUMPDX
-    dumpdx(g,g.smoothest(),d,"defect","pressure in the end");
-    dumpdx(g,g.smoothest(),x,"calpres","pressure in the end");
+    sprintf(defecttxt,"defect-run%d",run);
+    sprintf(calprestxt,"calpres-run%d",run);
+    dumpdx(g,g.smoothest(),d,defecttxt,"pressure in the end");
+    dumpdx(g,g.smoothest(),x,calprestxt,"pressure in the end");
+    run++;
 #endif
     if (rank==0)
       std::cout << "Time in smoother:" << TIME_SMOOTHER << std::endl
