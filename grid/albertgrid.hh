@@ -71,11 +71,27 @@ extern "C"
 #endif
 #endif
 
+
+namespace Dune {
+
+  enum IteratorType { Master  , //!< iterate over all entities which belong to
+                      Interior, //!< iterate over all interior entities
+                      Border  , //!< iterate over entities which define the pr
+                               //!< border , all codims possible
+                      Ghosts , //!< iterate over all ghost cells
+                      InteriorBorder, //!< iterate over Interior and Border
+                      All ,   //!< iterate over all cells on this processor
+  };
+}
+
 // contains a simple memory management for some componds of this grid
 #include "albertgrid/agmemory.hh"
 
 // contains the communication for parallel computing for this grid
+
+#ifndef MPI_ACTIVE
 #undef HAVE_MPI
+#endif
 #include "albertgrid/agcommunicator.hh"
 
 namespace Dune
@@ -104,14 +120,6 @@ namespace Dune
 
      @{
    */
-  enum IteratorType { Master  ,   //!< iterate over all entities which belong to
-                      Interior,   //!< iterate over all interior entities
-                      Border  ,   //!< iterate over entities which define the pr
-                                  //!< border , all codims possible
-                      Ghosts ,    //!< iterate over all ghost cells
-                      InteriorBorder,    //!< iterate over Interior and Border
-                      All ,      //!< iterate over all cells on this processor
-  };
 
 
   // i.e. double or float
@@ -1157,6 +1165,8 @@ namespace Dune
     //! calculate max edge length
     double calcGridWidth ();
 
+    // void checkBoundray();
+
   private:
     // initialize of some members
     void initGrid(int proc);
@@ -1343,6 +1353,5 @@ namespace Dune
 
 #include "albertgrid/agmemory.hh"
 #include "albertgrid/albertgrid.cc"
-//#include "albertgrid/albertparalleliterator.cc"
 
 #endif
