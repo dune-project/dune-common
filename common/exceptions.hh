@@ -85,11 +85,11 @@ namespace Dune {
     std::string _message;
   };
 
-  void Exception::message(std::string message) {
+  inline void Exception::message(std::string message) {
     _message = message;
   };
 
-  std::ostream& operator<<(std::ostream &stream, Exception &e) {
+  inline std::ostream& operator<<(std::ostream &stream, Exception &e) {
     return stream << e.what();
   };
 
