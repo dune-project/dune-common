@@ -16,16 +16,66 @@
 //
 // *********************************************************************
 
+/** \brief Default implementation, just throws an exception */
 template <int codim, PartitionIteratorType PiType, class GridImp>
 class UGGridLevelIteratorFactory
 {
 public:
   static inline
   UGGridLevelIterator<codim,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
-    std::cout << "LevelIteratorFactory default implementation" << std::endl;
+    DUNE_THROW(GridError, "Unknown LevelIterator requested");
   }
 
 };
+
+// //////////////////////////////////////////////////////////////////////
+//   Specializations for the element iterator-factories
+//   There is no overlap.  Therefore, All_Partition and Ghost_Partition
+//   loop over _all_ elements, and the remaining PartitionTypes only
+//   over the interior ones.
+// //////////////////////////////////////////////////////////////////////
+template <class GridImp>
+class UGGridLevelIteratorFactory<0,All_Partition,GridImp>
+{
+public:
+  static inline
+  UGGridLevelIterator<0,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
+
+    UGGridLevelIterator<0,All_Partition,GridImp> it(level);
+    it.setToTarget(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
+    return it;
+  }
+
+};
+
+template <class GridImp>
+class UGGridLevelIteratorFactory<0,Ghost_Partition,GridImp>
+{
+public:
+  static inline
+  UGGridLevelIterator<0,Ghost_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
+
+    UGGridLevelIterator<0,Ghost_Partition,GridImp> it(level);
+    it.setToTarget(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
+    return it;
+  }
+
+};
+
+template <PartitionIteratorType PiType,class GridImp>
+class UGGridLevelIteratorFactory<0,PiType,GridImp>
+{
+public:
+  static inline
+  UGGridLevelIterator<0,PiType,GridImp> getIterator(UGTypes<2>::GridType* theGrid, int level) {
+
+    UGGridLevelIterator<0,PiType,GridImp> it(level);
+    it.setToTarget(UG_NS<2>::FirstElement(theGrid), level);
+    return it;
+  }
+
+};
+
 
 
 #ifdef _2
@@ -43,49 +93,7 @@ public:
 
 };
 
-template <class GridImp>
-class UGGridLevelIteratorFactory<0,All_Partition,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<0,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-    UGGridLevelIterator<0,All_Partition,GridImp> it(level);
-    it.setToTarget(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
-    return it;
-  }
-
-};
-
-
-template <PartitionIteratorType PiType, class GridImp>
-class UGGridLevelIteratorFactory<2,PiType,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<2,PiType,GridImp> getIterator(UGTypes<2>::GridType* theGrid, int level) {
-    std::cout << "Simulating a parallel LevelIterator using a sequential one!" << std::endl;
-    UGGridLevelIterator<2,PiType,GridImp> it(level);
-    it.setToTarget(UG_NS<2>(theGrid), level);
-    return it;
-  }
-
-};
-
-template <PartitionIteratorType PiType,class GridImp>
-class UGGridLevelIteratorFactory<0,PiType,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<0,PiType,GridImp> getIterator(UGTypes<2>::GridType* theGrid, int level) {
-
-    std::cout << "Simulating a parallel LevelIterator using a sequential one!" << std::endl;
-    UGGridLevelIterator<0,PiType,GridImp> it(level);
-    it.setToTarget(UG_NS<2>::PFirstElement(theGrid), level);
-    return it;
-  }
-
-};
 #endif
 
 #ifdef _3
@@ -99,20 +107,6 @@ public:
     UGGridLevelIterator<3,All_Partition,GridImp> it(level);
 
     it.setToTarget(UG_NS<3>::FirstNode(theGrid), level);
-    return it;
-  }
-};
-
-template <class GridImp>
-class UGGridLevelIteratorFactory<0,All_Partition,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<0,All_Partition,GridImp> getIterator(UGTypes<3>::GridType* theGrid, int level) {
-
-    UGGridLevelIterator<0,All_Partition,GridImp> it(level);
-
-    it.setToTarget(UG_NS<3>::FirstElement(theGrid), level);
     return it;
   }
 };
@@ -196,31 +190,15 @@ inline void UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHe
   std::string problemName = name_ + "_Problem";
 
   if (UG_NS<dimworld>::CreateBoundaryValueProblem(problemName.c_str(), 1,coeffs,1,upp) == NULL)
-    DUNE_THROW(GridError, "UG?d::CreateBoundaryValueProblem() returned and error code!");
+    DUNE_THROW(GridError, "UG" << dim << "d::CreateBoundaryValueProblem() returned and error code!");
 
   if (numOfUGGrids==0) {
-
-    // A Dummy new format
-    // We need to pass the parameters in this complicated way, because
-    // UG writes into one of the strings, and code compiled by some
-    // compilers (gcc, for example) crashes on this.
-    //newformat P1_conform $V n1: nt 9 $M implicit(nt): mt 2 $I n1;
-    /** \todo Use a smaller format in order to save memory */
-    //         for (int i=0; i<4; i++)
-    //             newformatArgs[i] = (char*)::malloc(50*sizeof(char));
-
-    //         sprintf(newformatArgs[0], "newformat DuneFormat");
-    //sprintf(newformatArgs[1], "V n1: nt 0");
-    //sprintf(newformatArgs[2], "M implicit(nt): mt 0");
-    //sprintf(newformatArgs[3], "I n1");
 
     char* nfarg = "newformat DuneFormat";
 #ifdef _3
     UG3d::CreateFormatCmd(1, &nfarg);
-    //UG3d::CreateFormatCmd(1, newformatArgs);
 #else
     UG2d::CreateFormatCmd(1, &nfarg);
-    //UG2d::CreateFormatCmd(1, newformatArgs);
 #endif
   }
 
