@@ -1044,11 +1044,8 @@ namespace Dune
     typedef AlbertGridLevelIterator<0,dim,dimworld> LeafIterator;
     typedef AlbertGridReferenceElement<dim> ReferenceElement;
 
-    /** \todo Please doc me! */
+    //! we always have dim+1 codimensions since we use only simplices
     enum { numCodim = dim+1 };
-
-    // cover gcc bug
-    enum { dimension = dim };
 
     //! Constructor which reads an Albert Macro Triang file
     //! or given GridFile
