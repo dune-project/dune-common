@@ -12,6 +12,8 @@
 /*!
    Enables iteration over all entities of a given codimension and level of a grid.
  */
+
+
 template<int codim, int dim, int dimworld>
 class UGGridLevelIterator :
   public LevelIteratorDefault <codim,dim,dimworld, UGCtype,
@@ -26,13 +28,10 @@ public:
   //friend class UGGrid<dim,dimworld>;
 
   //! Constructor
-  UGGridLevelIterator(UGGrid<dim,dimworld> &grid, int travLevel);
+  UGGridLevelIterator(int travLevel);
 
-#if 0
   //! Constructor
-  UGGridLevelIterator(UGGrid<dim,dimworld> &grid,
-                      ALBERT EL_INFO *elInfo,int elNum = 0 , int face=0, int edge=0,int vertex=0);
-#endif
+  UGGridLevelIterator(UGGrid<dim,dimworld> &grid, int travLevel);
 
   //! Constructor
   UGGridLevelIterator(UGGrid<dim,dimworld> &grid,
@@ -63,13 +62,14 @@ private:
   // private Methods
   void makeIterator();
 
-  void setToTarget(void* target) {
+  void setToTarget(TargetType<codim,dim>::T* target) {
     target_ = target;
     virtualEntity_.setToTarget(target);
   }
 
   //! the grid were it all comes from
-  UGGrid<dim,dimworld> &grid_;
+  /** \todo Do we need this variable? */
+  //UGGrid<dim,dimworld> &grid_;
 
   // private Members
   UGGridEntity<codim,dim,dimworld> virtualEntity_;
@@ -80,16 +80,12 @@ private:
   //! level
   int level_;
 
-  //   //! which face, edge and vertex are we watching of an elInfo
-  //   unsigned char face_;
-  //   unsigned char edge_;
-  //   unsigned char vertex_;
-
   //   // knows on which element a point is viewed
   //   UGMarkerVector * vertexMarker_;
 
 
-  void* target_;
+  TargetType<codim,dim>::T* target_;
+
 };
 
 #endif

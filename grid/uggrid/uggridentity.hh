@@ -87,15 +87,10 @@ public:
 private:
 
 
-  void setToTarget(void* target);
-
-  // methods for setting the infos from the albert mesh
-  //void setTraverseStack (ALBERT TRAVERSE_STACK *travStack);
-  void setElInfo (int elNum, unsigned char face,
-                  unsigned char edge, unsigned char vertex );
+  void setToTarget(TargetType<codim,dim>::T* target);
 
   // returns the global vertex number as default
-  int globalIndex() { return elInfo_->el->dof[vertex_][0]; }
+  //int globalIndex() { return elInfo_->el->dof[vertex_][0]; }
 
   // private Methods
   void makeDescription();
@@ -114,16 +109,7 @@ private:
   //! level
   int level_;
 
-  //! Which Face of the Element
-  unsigned char face_;
-
-  //! Which Edge of the Face of the Element
-  unsigned char edge_;
-
-  //! Which Vertex of the Edge of the Face of the Element
-  unsigned char vertex_;
-
-  void* target_;
+  TargetType<codim,dim>::T* target_;
 };
 
 #if 0
@@ -293,10 +279,6 @@ private:
   //! the level of the entity
   int level_;
 
-#if 0
-  //! pointer to the UG TRAVERSE_STACK data
-  ALBERT TRAVERSE_STACK * travStack_;
-#endif
 
   UGGridElement <dim,dim> fatherReLocal_;
 }; // end of UGGridEntity codim = 0

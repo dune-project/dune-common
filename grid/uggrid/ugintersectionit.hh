@@ -153,6 +153,7 @@ private:
   //! BoundaryEntity
   UGGridBoundaryEntity<dim,dimworld> *boundaryEntity_;
 
+  //! !
   Vec<dimworld,UGCtype> outNormal_;
 
   //! The element whose neighbors we are looking at

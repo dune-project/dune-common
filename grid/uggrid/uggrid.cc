@@ -214,10 +214,8 @@ namespace Dune
     assert(theMG);
     UG3d::grid* theGrid = theMG->grids[level];
 
-    //  AlbertGridLevelIterator<codim,dim,dimworld> it(*this,vertexMarker_,level);
     UGGridLevelIterator<0,3,3> it((*const_cast<UGGrid< 3, 3 >* >(this)),level);
     it.setToTarget(theGrid->elements[0]);
-    printf("lbegin codim 0\n");
     return it;
   }
 

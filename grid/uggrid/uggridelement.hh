@@ -46,7 +46,7 @@ public:
   /*! return reference element corresponding to this element. If this is
      a reference element then self is returned.
    */
-  static UGGridElement<dim,dim>& refelem ();
+  UGGridElement<dim,dim>& refelem ();
 
   //! maps a local coordinate within reference element to
   //! global coordinate in element
@@ -145,21 +145,6 @@ private:
 
   //! storage for barycentric coords
   Vec<dimbary, UGCtype> localBary_;
-
-#if 0
-  ALBERT EL_INFO * makeEmptyElInfo();
-
-  ALBERT EL_INFO * elInfo_;
-#endif
-
-  //! Which Face of the Element 0...dim+1
-  unsigned char face_;
-
-  //! Which Edge of the Face of the Element 0...dim
-  unsigned char edge_;
-
-  //! Which Edge of the Face of the Element 0...dim-1
-  unsigned char vertex_;
 
   //! is true if Jinv_ and volume_ is calced
   bool builtinverse_;

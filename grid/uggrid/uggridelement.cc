@@ -7,6 +7,31 @@
 //
 //****************************************************************
 
+// singleton holding reference elements
+template<int dim>
+struct UGGridReferenceElement
+{
+  enum { dimension = dim };
+  UGGridElement<dim,dim> refelem;
+
+  UGGridReferenceElement () : refelem (true) {};
+};
+
+// initialize static variable with bool constructor
+// (which makes reference element)
+// this sucks but for gcc we do a lot
+static UGGridReferenceElement<3> reftetrahedron;
+static UGGridReferenceElement<3> refpyramid;
+static UGGridReferenceElement<3> refprism;
+static UGGridReferenceElement<3> refpinchedhexa;
+static UGGridReferenceElement<3> refhexahedron;
+
+static UGGridReferenceElement<2> reftriangle;
+static UGGridReferenceElement<2> refquadrangle;
+
+static UGGridReferenceElement<1> refline;
+
+
 //****************************************************************
 //
 //  specialization of mapVertices
@@ -18,51 +43,6 @@ template< int dim, int dimworld>
 inline int UGGridElement<dim,dimworld>::mapVertices (int i) const
 {
   return i;
-}
-
-// specialication for codim == 1, faces
-template <>
-inline int UGGridElement<1,2>::mapVertices (int i) const
-{
-  //std::cout << face_ << " Kante Map my Vertices!\n";
-  // tmp
-  int N_VERTICES = 4;
-  int vert = ((face_ + 1 + i) % (N_VERTICES));
-  //std::cout << vert << " Map my Vertices!\n";
-  return vert;
-}
-
-template <>
-inline int UGGridElement<2,3>::mapVertices (int i) const
-{
-  // tmp
-  int N_VERTICES = 4;
-  return ((face_ + 1 + i) % (N_VERTICES));
-}
-
-// specialization for codim == 2, edges
-template <>
-inline int UGGridElement<1,3>::mapVertices (int i) const
-{
-  // tmp
-  int N_VERTICES = 4;
-  return ((face_+1)+ (edge_+1) +i)% (N_VERTICES);
-}
-
-template <>
-inline int UGGridElement<0,2>::mapVertices (int i) const
-{
-  // tmp
-  int N_VERTICES = 4;
-  return ((face_+1)+ (vertex_+1) +i)% (N_VERTICES);
-}
-
-template <>
-inline int UGGridElement<0,3>::mapVertices (int i) const
-{
-  /** \bug Remove this definition of N_VERTICES */
-  int N_VERTICES = 4;
-  return ((face_+1)+ (edge_+1) +(vertex_+1) +i)% (N_VERTICES);
 }
 
 template< int dim, int dimworld>
@@ -79,227 +59,12 @@ UGGridElement(bool makeRefElement)
 #endif
 }
 
-#if 0
-template< int dim, int dimworld>
-inline ALBERT EL_INFO * AlbertGridElement<dim,dimworld>::
-makeEmptyElInfo()
-{
-  ALBERT EL_INFO * elInfo = &statElInfo[dim];
 
-  elInfo->mesh = NULL;
-  elInfo->el = NULL;
-  elInfo->parent = NULL;
-  elInfo->macro_el = NULL;
-  elInfo->level = 0;
-#if DIM > 2
-  elInfo->orientation = 0;
-  elInfo->el_type = 0;
-#endif
-
-  for(int i =0; i<dim+1; i++)
-  {
-    for(int j =0; j< dimworld; j++)
-    {
-      elInfo->coord[i][j] = 0.0;
-      elInfo->opp_coord[i][j] = 0.0;
-    }
-    elInfo->bound[i] = 0;
-  }
-  return elInfo;
-}
-
-template <>
-inline void AlbertGridElement<3,3>::
-makeRefElemCoords()
-{
-  //! make ReferenzElement as default
-  elInfo_ = makeEmptyElInfo();
-
-  int i = 0;
-  // point 0
-  elInfo_->coord[i][0] = 0.0;
-  elInfo_->coord[i][1] = 0.0;
-#if DIMOFWORLD > 2
-  elInfo_->coord[i][2] = 0.0;
-#endif
-
-  i = 1;
-  // point 1
-  elInfo_->coord[i][0] = 1.0;
-  elInfo_->coord[i][1] = 1.0;
-#if DIMOFWORLD > 2
-  elInfo_->coord[i][2] = 1.0;
-#endif
-
-  i = 2;
-  // point 2
-  elInfo_->coord[i][0] = 1.0;
-  elInfo_->coord[i][1] = 1.0;
-#if DIMOFWORLD > 2
-  elInfo_->coord[i][2] = 0.0;
-#endif
-
-#if DIM > 2
-  i = 3;
-  // point 3
-  elInfo_->coord[i][0] = 1.0;
-  elInfo_->coord[i][1] = 0.0;
-  elInfo_->coord[i][2] = 0.0;
-#endif
-}
-
-template <>
-inline void AlbertGridElement<2,2>::
-makeRefElemCoords()
-{
-  //! make ReferenzElement as default
-  elInfo_ = makeEmptyElInfo();
-
-  int i = 0;
-  // point 0
-  elInfo_->coord[i][0] = 1.0;
-  elInfo_->coord[i][1] = 0.0;
-
-  i = 1;
-  // point 1
-  elInfo_->coord[i][0] = 0.0;
-  elInfo_->coord[i][1] = 1.0;
-
-  i = 2;
-  // point 2
-  elInfo_->coord[i][0] = 0.0;
-  elInfo_->coord[i][1] = 0.0;
-
-}
-
-template <>
-inline void AlbertGridElement<1,1>::
-makeRefElemCoords()
-{
-  //! make  Referenz Element as default
-  elInfo_ = makeEmptyElInfo();
-
-  int i = 0;
-  // point 0
-  elInfo_->coord[i][0] = 0.0;
-
-  i = 1;
-  // point 1
-  elInfo_->coord[i][0] = 1.0;
-
-}
-
-template <int dim, int dimworld>
-inline void AlbertGridElement<dim,dimworld>::
-makeRefElemCoords()
-{
-  std::cout << "No default implementation for this AlbertGridElement! \n";
-  abort();
-}
 
 template< int dim, int dimworld>
-inline void AlbertGridElement<dim,dimworld>::
-initGeom()
+inline ElementType UGGridElement<dim,dimworld>::type()
 {
-  elInfo_ = NULL;
-  face_ = 0;
-  edge_ = 0;
-  vertex_ = 0;
-  builtinverse_ = false;
-}
-
-// built Geometry
-template< int dim, int dimworld>
-inline bool AlbertGridElement<dim,dimworld>::
-builtGeom(ALBERT EL_INFO *elInfo, unsigned char face,
-          unsigned char edge, unsigned char vertex)
-{
-  //std::cout << " Built geom !\n";
-  elInfo_ = elInfo;
-  face_ = face;
-  //std::cout << face_ << " Kante !\n";
-  edge_ = edge;
-  vertex_ = vertex;
-  volume_ = 0.0;
-  builtinverse_ = false;
-
-  if(elInfo_)
-  {
-    for(int i=0; i<dim+1; i++)
-    {
-      (coord_(i)) = static_cast< albertCtype  * >
-                    ( elInfo_->coord[mapVertices(i)] );
-      //  ( elInfo_->coord[mapVertices<dimworld-dim>(i)] );
-    }
-    // geometry built
-    return true;
-  }
-  // geometry not built
-  return false;
-}
-
-
-// specialization yields speed up, because vertex_ .. is not copied
-template <>
-inline bool AlbertGridElement<2,2>::
-builtGeom(ALBERT EL_INFO *elInfo, unsigned char face,
-          unsigned char edge, unsigned char vertex)
-{
-  enum { dim = 2 };
-  enum { dimworld = 2 };
-
-  elInfo_ = elInfo;
-  volume_ = 0.0;
-  builtinverse_ = false;
-  if(elInfo_)
-  {
-    for(int i=0; i<dim+1; i++)
-      (coord_(i)) = static_cast< albertCtype  * >
-                    ( elInfo_->coord[mapVertices(i)] );
-    //( elInfo_->coord[mapVertices<dimworld-dim>(i)] );
-    // geometry built
-    return true;
-  }
-  // geometry not built
-  return false;
-}
-
-template <>
-inline bool AlbertGridElement<3,3>::
-builtGeom(ALBERT EL_INFO *elInfo, unsigned char face,
-          unsigned char edge, unsigned char vertex)
-{
-  enum { dim = 3 };
-  enum { dimworld = 3 };
-
-  elInfo_ = elInfo;
-  volume_ = 0.0;
-  builtinverse_ = false;
-  if(elInfo_)
-  {
-    for(int i=0; i<dim+1; i++)
-      (coord_(i)) = static_cast< albertCtype  * >
-                    ( elInfo_->coord[mapVertices(i)] );
-    //( elInfo_->coord[mapVertices<dimworld-dim>(i)] );
-    // geometry built
-    return true;
-  }
-  // geometry not built
-  return false;
-}
-
-
-// print the ElementInformation
-template<int dim, int dimworld>
-inline void AlbertGridElement<dim,dimworld>::print (std::ostream& ss, int indent)
-{
-  for(int i=0; i<corners(); i++)
-    ((*this)[i]).print(ss,dimworld);
-}
-
-template< int dim, int dimworld>
-inline ElementType AlbertGridElement<dim,dimworld>::type()
-{
+  std::cerr << "UGGridElement::type() Not yet implemented\n";
   switch (dim)
   {
   case 1 : return line;
@@ -309,7 +74,6 @@ inline ElementType AlbertGridElement<dim,dimworld>::type()
   default : return unknown;
   }
 }
-#endif
 
 template< int dim, int dimworld>
 inline int UGGridElement<dim,dimworld>::corners()
@@ -352,15 +116,61 @@ operator [](int i)
   return coord_(i);
 }
 
-#if 0
-template< int dim, int dimworld>
-inline AlbertGridElement<dim,dim>& AlbertGridElement<dim,dimworld>::
+
+/** \todo It should be able to write this more concisely
+    using partial spezialization.
+ */
+template<>
+inline UGGridElement<3,3>& UGGridElement<3,3>::
 refelem()
 {
-  return AlbertGridReferenceElement<dim>::refelem;
+  /** \todo Speed this up! */
+  switch (type()) {
+  case tetrahedron :
+    return reftetrahedron.refelem;
+  default :
+    std::cerr << "Unknown element type in refelem()\n";
+  }
+
+  return reftetrahedron.refelem;
+}
+
+template<>
+inline UGGridElement<2,2>& UGGridElement<2,3>::
+refelem()
+{
+  if (type() == triangle)
+    return reftriangle.refelem;
+  else
+    return refquadrangle.refelem;
+}
+
+template<>
+inline UGGridElement<1,1>& UGGridElement<1,3>::
+refelem()
+{
+  return refline.refelem;
+}
+
+template<>
+inline UGGridElement<2,2>& UGGridElement<2,2>::
+refelem()
+{
+  if (type() == triangle)
+    return reftriangle.refelem;
+  else
+    return refquadrangle.refelem;
+}
+
+template<>
+inline UGGridElement<1,1>& UGGridElement<1,2>::
+refelem()
+{
+  return refline.refelem;
 }
 
 
+#if 0
 template< int dim, int dimworld>
 inline Vec<dimworld,albertCtype> AlbertGridElement<dim,dimworld>::
 global(const Vec<dim>& local)
@@ -667,7 +477,7 @@ builtJacobianInverse(const Vec<dim,albertCtype>& local)
   }
   builtinverse_ = true;
 }
-
+#endif
 #if 0
 inline void AlbertGridElement<2,2>::
 builtJacobianInverse(const Vec<2,albertCtype>& local)
@@ -781,6 +591,7 @@ builtJacobianInverse(const Vec<3,albertCtype>& local)
 }
 #endif
 
+#if 0
 template <>
 inline void AlbertGridElement<1,2>::
 builtJacobianInverse(const Vec<1,albertCtype>& local)

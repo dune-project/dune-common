@@ -72,19 +72,156 @@ UGGridIntersectionIterator < 3,3 >::operator++()
   if (!target())
     return (*this);
 
-  int i;
+
+  setToTarget(center_, neighborCount_+1);
+
+  return (*this);
+}
+
+template<>
+inline bool
+UGGridIntersectionIterator < 3,3 >::boundary()
+{
 #define TAG(p) ReadCW(p, UG3d::TAG_CE)
 #define NBELEM(p,i) ((UG3d::ELEMENT *) (p)->ge.refs[UG3d::nb_offset[TAG(p)]+(i)])
-#define SIDES_OF_ELEM(p) (UG3d::element_descriptors[TAG(p)]->sides_of_elem)
-  for (i=neighborCount_+1; i<SIDES_OF_ELEM(center_); i++) {
-    if (NBELEM(center_, i) != NULL)
-      break;
-  }
+  return NBELEM(center_, neighborCount_) == NULL;
 #undef TAG
 #undef NBELEM
-#undef SIDES_OF_ELEM
-  setToTarget(center_, i);
+}
 
-  //virtualEntity_.setToTarget(target());
-  return (*this);
+/** \brief Why can't I leave dimworld unspezialized? */
+template<>
+inline Vec<3,UGCtype>&
+UGGridIntersectionIterator < 3,3 >::unit_outer_normal ()
+{
+  std::cerr << "unit_outer_normal<3,3> not yet implemented!\n";
+  return outNormal_;
+
+}
+
+template<>
+inline Vec<2,UGCtype>&
+UGGridIntersectionIterator < 2,2 >::unit_outer_normal ()
+{
+  std::cerr << "unit_outer_normal<2,2> not yet implemented!\n";
+  return outNormal_;
+}
+
+template<int dim, int dimworld>
+inline Vec<dimworld,UGCtype>&
+UGGridIntersectionIterator < dim,dimworld >::
+unit_outer_normal (Vec<dim-1,UGCtype>& local)
+{
+  return unit_outer_normal();
+}
+
+template< int dim, int dimworld>
+inline UGGridElement< dim-1, dim >&
+UGGridIntersectionIterator<dim,dimworld>::
+intersection_self_local()
+{
+  std::cout << "\nintersection_self_local not implemented yet!\n";
+#if 0
+  if(!manageInterEl_)
+  {
+    manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();
+    fakeNeigh_ = manageInterEl_->item;
+  }
+
+  fakeNeigh_->builtGeom(elInfo_,neighborCount_,0,0);
+#endif
+  return (*fakeNeigh_);
+}
+
+template< int dim, int dimworld>
+inline UGGridElement< dim-1, dimworld >&
+UGGridIntersectionIterator<dim,dimworld>::
+intersection_self_global()
+{
+  std::cout << "\nintersection_self_global not implemented yet!\n";
+#if 0
+  if(!manageNeighEl_)
+  {
+    manageNeighEl_ = grid_->interNeighProvider_.getNewObjectEntity();
+    neighGlob_ = manageNeighEl_->item;
+  }
+
+  if(neighGlob_->builtGeom(elInfo_,neighborCount_,0,0))
+    return (*neighGlob_);
+  else
+    abort();
+#endif
+  return (*neighGlob_);
+}
+
+template< int dim, int dimworld>
+inline UGGridElement< dim-1, dim >&
+UGGridIntersectionIterator<dim,dimworld>::
+intersection_neighbor_local()
+{
+  std::cout << "\nintersection_neighbor_local not implemented yet!\n";
+#if 0
+  if(!manageInterEl_)
+  {
+    manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();
+    fakeNeigh_ = manageInterEl_->item;
+  }
+
+  if(!builtNeigh_)
+  {
+    setupVirtEn();
+  }
+
+  fakeNeigh_->builtGeom(neighElInfo_,neighborCount_,0,0);
+#endif
+  return (*fakeNeigh_);
+}
+
+template< int dim, int dimworld>
+inline UGGridElement< dim-1, dimworld >&
+UGGridIntersectionIterator<dim,dimworld>::
+intersection_neighbor_global()
+{
+  std::cout << "\nintersection_neighbor_global not implemented yet!\n";
+#if 0
+  if(!manageNeighEl_)
+  {
+    manageNeighEl_ = grid_->interNeighProvider_.getNewObjectEntity();
+    neighGlob_ = manageNeighEl_->item;
+  }
+
+  // built neighGlob_ first
+  if(!builtNeigh_)
+  {
+    setupVirtEn();
+  }
+  neighGlob_->builtGeom(elInfo_,neighborCount_,0,0);
+#endif
+  return (*neighGlob_);
+}
+
+template< int dim, int dimworld>
+inline int UGGridIntersectionIterator<dim,dimworld>::
+number_in_self ()
+{
+  return neighborCount_;
+}
+
+template< int dim, int dimworld>
+inline int UGGridIntersectionIterator<dim,dimworld>::
+number_in_neighbor ()
+{
+#define TAG(p) ReadCW(p, UG3d::TAG_CE)
+#define SIDES_OF_ELEM(p) (UG3d::element_descriptors[TAG(p)]->sides_of_elem)
+#define NBELEM(p,i) ((UG3d::ELEMENT *) (p)->ge.refs[UG3d::nb_offset[TAG(p)]+(i)])
+  const UG3d::element* other = target();
+  int i;
+  for (i=0; i<SIDES_OF_ELEM(other); i++)
+    if (NBELEM(other,i) == center_)
+      break;
+
+  return i;
+#undef SIDES_OF_ELEM
+#undef NBELEM
+#undef TAG
 }
