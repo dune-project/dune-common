@@ -9,6 +9,7 @@
 //************************************************************************
 
 #include <algorithm>
+#include <dune/io/file/grapedataio.hh>
 
 namespace Dune
 {
@@ -3048,7 +3049,8 @@ namespace Dune
     }
     else
     {
-      this->read (MacroTriangFilename,time_,0);
+      GrapeDataIO < AlbertaGrid <dim,dimworld> > dataIO;
+      dataIO.readGrid ( *this, MacroTriangFilename,time_,0);
     }
   }
 
