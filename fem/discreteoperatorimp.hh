@@ -37,8 +37,8 @@ namespace Dune {
 
   public:
     //! create DiscreteOperator with a LocalOperator
-    DiscreteOperator (LocalOperatorImp &op, bool leaf=false )
-      : localOp_ ( op ) , leaf_ (leaf), prepared_ (false)
+    DiscreteOperator (LocalOperatorImp &op, bool leaf=false , bool printMsg = false )
+      : localOp_ ( op ) , leaf_ (leaf), prepared_ (false) , printMsg_ (printMsg)
     {
       std::cout << "Make new Operator "<< this << "\n";
     }
@@ -61,7 +61,7 @@ namespace Dune {
         new COType ( addLocalOperators ( localOp_ , const_cast<CopyType &> (op).getLocalOp ()));
       typedef DiscreteOperator < DiscreteFunctionType , COType > OPType;
 
-      OPType *discrOp = new OPType ( *locOp );
+      OPType *discrOp = new OPType ( *locOp, leaf_, printMsg_ );
 
       // memorize this new generated object because is represents this
       // operator and is deleted if this operator is deleted
@@ -74,7 +74,7 @@ namespace Dune {
     ScalDiscrType & operator * (const RangeFieldType& scalar)
     {
       ScalOperatorType * sop = new ScalOperatorType ( localOp_ , scalar);
-      ScalDiscrType *discrOp = new ScalDiscrType ( *sop );
+      ScalDiscrType *discrOp = new ScalDiscrType ( *sop, leaf_, printMsg_ );
 
       // memorize this new generated object because is represents this
       // operator and is deleted if this operator is deleted
@@ -98,14 +98,14 @@ namespace Dune {
     //! and call the local operator on each entity
     void apply ( const DomainType &Arg, RangeType &Dest ) const
     {
-      std::cout << "DiscrOP::apply \n";
+      if(printMsg_)
+        std::cout << "DiscrOP::apply \n";
       apply(level_,Arg,Dest);
     }
 
     //! apply the operator, see apply
     void operator()( const DomainType &Arg, RangeType &Dest ) const
     {
-      std::cout << "DiscrOP::apply \n";
       apply(level_,Arg,Dest);
     }
 
@@ -191,6 +191,8 @@ namespace Dune {
 
     //! if true use LeafIterator else LevelIterator
     mutable bool leaf_;
+
+    bool printMsg_;
 
     //! Operator which is called on each entity
     LocalOperatorImp & localOp_;
