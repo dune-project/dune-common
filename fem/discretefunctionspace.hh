@@ -57,6 +57,12 @@ namespace Dune {
       return asImp().getBaseFunctionSet( en );
     }
 
+    //! return true if we have global continuous discrete functions.
+    bool continuous () const
+    {
+      return asImp().continuous();
+    }
+
     //! Get maximal polynom order of functionspace.
     int polynomOrder () const
     {
