@@ -27,7 +27,7 @@ AC_CONFIG_FILES([Makefile
                  grid/albertgrid/Makefile
                  grid/common/Makefile
                  grid/sgrid/Makefile
-                 grid/spgrid/Makefile
+                 grid/yaspgrid/Makefile
                  lib/Makefile
                  lib/io/Makefile
                  operator/Makefile
