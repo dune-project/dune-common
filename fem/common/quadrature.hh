@@ -178,7 +178,7 @@ namespace Dune {
 
     void print (std::ostream& s, int indent) const
     {
-      RangeField sum = 0.0;
+      RangeFieldType sum = 0.0;
       s << "quad (id = " << asImp().getIdentifier() <<") { \n" ;
       s << " nop = " << asImp().nop() << " | order = " << asImp().order() << "\n";
       for(int i=0; i<asImp().nop(); i++)
