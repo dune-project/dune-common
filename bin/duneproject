@@ -66,52 +66,166 @@ C_DELIM
 ################## AUTOGEN.SH ##################
 cat > "$PROJECT/autogen.sh" <<A_DELIM
 #!/bin/sh
+# \$Id$
 
+#### barf on errors
 set -e
 
 # may be used to force a certain automake-version e.g. 1.7
 AMVERS=
 
-if test x\$1 = "x" ; then
-  echo "Usage: ./autogen.sh DUNEDIR"
-  exit 0
+# everybody who checks out the CVS wants the maintainer-mode to be enabled
+# (should be off for source distributions, this should happen automatically)
+#
+DEFAULTCONFOPT="--enable-maintainer-mode"
+
+# default values
+DEBUG=1
+OPTIM=0
+
+usage () {
+    echo "Usage: ./autogen.sh [options]"
+    echo "  -i, --intel        use intel compiler"
+    echo "  -g, --gnu          use gnu compiler (default)"
+    echo "  -m, --mpi          use mpicc"
+    echo "  --opts=FILE        use compiler-options from FILE"
+    echo "  -d, --debug        switch debug-opts on"
+    echo "  -n, --nodebug      switch debug-opts off"
+    echo "  -o, --optim        switch optimization on"
+    echo "  --with-dune=PATH   directory with dune/ inside"
+    echo "  -h, --help         you already found this :)"
+    echo
+    echo "Parameters not in the list above are directly passed to configure. See"
+    echo
+    echo "    ./configure --help"
+    echo
+    echo "for a list of additional options"
+}
+
+# no compiler set yet
+COMPSET=0
+for OPT in \$* ; do
+
+    set +e
+    # stolen from configure...
+    # when no option is set, this returns an error code
+    arg=\`expr "x\$OPT" : 'x[^=]*=\(.*\)'\`
+    set -e
+
+    case "\$OPT" in
+	-i|--intel)   . ./icc.opts ; COMPSET=1 ;;
+	-g|--gnu)     . ./gcc.opts ; COMPSET=1 ;;
+	-m|--mpi)     . ./mpi.opts ; COMPSET=1 ;;
+	--opts=*)
+	    if [ -r \$arg ] ; then
+	      echo "reading options from \$arg..."
+	      . ./\$arg ;
+	      COMPSET=1;
+	    else
+	      echo "Cannot open compiler options file \$arg!" ;
+	      exit 1;
+	    fi ;;
+	-d|--debug)   DEBUG=1 ;;
+	-n|--nodebug) DEBUG=0 ;;
+	-o|--optim)   OPTIM=1 ;;
+	-h|--help) usage ; exit 0 ;;
+	# special hack: use the with-dune-dir for aclocal-includes
+	--with-dune=*)
+	    eval DUNEDIR=\$arg
+	    # add the option anyway
+	    CONFOPT="\$CONFOPT \$OPT" ;;
+	# pass unknown opts to ./configure
+	*) CONFOPT="\$CONFOPT \$OPT" ;;
+    esac
+done
+
+# set special m4-path if --with-dune is set
+if [ x\$DUNEDIR != x ] ; then
+    # aclocal from automake 1.8 seems to need an absolute path for inclusion
+    FULLDIR=\`cd \$DUNEDIR && pwd\`
+
+    # automagically use directory above if complete Dune-dir was supplied
+    if test \`basename \$FULLDIR\` = "dune" ; then
+      FULLDIR=\`cd \$FULLDIR/.. && pwd\`
+    fi
+
+    ACLOCALOPT="-I \$FULLDIR/dune/m4/"
 fi
 
-if test ! -d \$1/m4 ; then
-  echo \$1/m4 not found! Wrong directory supplied?
-  exit 1
+# use the free compiler as default :-)
+if [ "\$COMPSET" != "1" ] ; then
+    echo "No compiler set, using GNU compiler as default"
+    . ./gcc.opts
 fi
 
+# create flags
+COMPFLAGS="\$FLAGS"
+
+# maybe add debug flag
+if [ "\$DEBUG" = "1" ] ; then	
+    COMPFLAGS="\$COMPFLAGS \$DEBUGFLAGS"
+fi
+
+# maybe add optimization flag
+if [ "\$OPTIM" = "1" ] ; then	
+    COMPFLAGS="\$COMPFLAGS \$OPTIMFLAGS"
+fi
+
+# check if automake-version was set
 if test "x\$AMVERS" != x ; then
   echo Warning: explicitly using automake version \$AMVERS
   # binaries are called automake-\$AMVERS
   AMVERS="-\$AMVERS"
 fi
 
-# convert to absolute path so that aclocal 1.8 does the right thing
-DUNEM4=\`cd \$1/m4 && pwd\`
+#### create all autotools-files
 
-aclocal\$AMVERS -I \$DUNEM4
-
+echo "--> libtoolize..."
+# force to write new versions of files, otherwise upgrading libtools
+# doesn't do anything...
 libtoolize --force
 
+echo "--> aclocal..."
+aclocal\$AMVERS \$ACLOCALOPT
+
+# sanity check to catch missing --with-dune
+if ! grep DUNE aclocal.m4 > /dev/null ; then
+    echo "aclocal.m4 doesn't contain any DUNE-macros, this would crash autoconf"
+    echo "or automake later. Maybe you should provide a --with-dune=PATH parameter"
+    exit 1
+fi
+
+echo "--> autoheader..."
 autoheader
 
+echo "--> automake..."
 automake\$AMVERS --add-missing
 
+echo "--> autoconf..."
 autoconf
+
+#### start configure with special environment
+
+export CC="\$COMP"
+export CXX="\$CXXCOMP"
+export CPP="\$COMP -E"
+
+export CFLAGS="\$COMPFLAGS"
+export CXXFLAGS="\$COMPFLAGS"
+
+./configure \$DEFAULTCONFOPT \$CONFOPT
+
 A_DELIM
 
 chmod +x "$PROJECT/autogen.sh"
 
 ################## README ##################
 cat > "$PROJECT/README" <<R_DELIM
-Getting started
-===============
+Preparing the Sources
+=========================
 
-You have to create the configure-script on your own!
-
-First, you'll need the followings programs installed:
+Additional to the software mentioned in README you'll need the
+following programs installed on your system:
 
   automake >= 1.5
 
@@ -119,31 +233,73 @@ First, you'll need the followings programs installed:
 
   libtool
 
-Then run
+Getting started
+---------------
 
-  ./autogen.sh DUNEDIR
+If these preliminaries are met, you should run the script
 
-where DUNEDIR is the (absolute or relative) path of the dune/-directory.
+  ./autogen.sh
 
-The directory is needed because autogen.sh needs access to the tests
-stored in DUNEDIR/m4
+which calls the GNU autoconf/automake to create a ./configure-script
+and the Makefiles. Most probably you'll have to provide where to find
+the DUNE-files by
 
-Now call
+   ./autogen.sh --with-dune=PATH
 
-  ./configure --with-dune=DIR
+where PATH is a directory with a dune/-subdirectory inside (this
+convention is needed to keep the #include-syntax consistent even when
+the headers are installed into /usr/include/dune later).
 
-where DIR is the directory _above_ dune/. If you want to include third
-party packages check
 
-  ./configure --help
+Passing options to ./configure
+------------------------------
 
-for options on how to include Albert, Grape, UG, ...
+autogen.sh also calls the newly created configure-script to
+conveniently pass on options about the used compiler. Thus you'll have
+to provide autogen.sh any options you want configure to get, e.g.
 
-If configure checked your system without problems you can use
+  ./autogen.sh --with-dune=... --with-albert=... --without-x
 
-  make
 
-to build all examples.
+Choosing the compiler and the options
+-------------------------------------
+
+The selection of the compiler works as follows: if --gnu or --intel is
+passed to autogen it reads the content of gcc.opts or icc.opts to get
+the default compiler flags. With the option --optim you can switch the
+compiler-specific optimization parameters on.
+
+If you want to change the compiler options to your favourites you can
+either
+
+ - adapt the appropriate .opts-file and rerun autogen.sh. Please don't
+   commit this changed file to CVS if you're not sure if the options
+   work for everybody.
+
+ - copy an existing .opts-file to a new name, change the options and
+   use
+
+      ./autogen.sh --opts=my.opts
+
+
+More info
+---------
+
+See
+
+     ./autogen.sh --help
+   
+and (if it exists)
+ 
+     ./configure --help
+
+for further options.
+
+
+The full build-system is described in the dune/doc/Buildsystem (not in
+duneapps/doc!)
+
+\$Id$
 
 R_DELIM
 
@@ -174,3 +330,47 @@ int main()
   return 0;
 }
 CC_DELIM
+
+################## GCC.OPTS ##################
+cat> "$PROJECT/gcc.opts" << GCC_DELIM
+# \$Id$
+
+# options for gcc/g++
+# remember to run ./autogen.sh after changing these values!
+
+# name of compiler binaries
+COMP="gcc"
+CXXCOMP="g++"
+
+# flags set in any case
+FLAGS="-Wall"
+
+# additional flags for debugging
+DEBUGFLAGS="-g"
+
+# additional flags for optimization
+OPTIMFLAGS="-O3"
+
+GCC_DELIM
+
+################## GCC.OPTS ##################
+cat> "$PROJECT/icc.opts" << ICC_DELIM
+# \$Id$
+
+# options for icc
+# remember to run ./autogen.sh after changing these values!
+
+# name of compiler binaries
+COMP="icc"
+CXXCOMP="icc"
+
+# flags set in any case
+FLAGS="-Wall"
+
+# additional flags for debugging
+DEBUGFLAGS="-O0 -g"
+
+# additional flags for optimization
+OPTIMFLAGS="-O3 -Ob2 -unroll"
+
+ICC_DELIM
