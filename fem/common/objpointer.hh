@@ -3,23 +3,23 @@
 #ifndef __DUNE_OBJPOINTER_HH__
 #define __DUNE_OBJPOINTER_HH__
 
-// strorage class for new generated operators during operator + on
-// DiscreteOperator
+//! storage class for newly generated operators during operator + on
+//! DiscreteOperator
 template <class ObjType>
 struct ObjPointer
 {
   typedef ObjPointer<ObjType> ObjPointerType;
-  // remember object item and next pointer
+  //! remember object item and next pointer
   ObjType * item;
   ObjPointerType *next;
 
-  // new ObjPointer is only created with pointer for item
+  //! new ObjPointer is only created with pointer for item
   ObjPointer () : item (0) , next (0) {}
 
-  // new ObjPointer is only created with pointer for item
+  //! new ObjPointer is only created with pointer for item
   ObjPointer (ObjType  *t) : item (t) , next (0) {}
 
-  // delete the next ObjPointer and the item
+  //! delete the next ObjPointer and the item
   ~ObjPointer ()
   {
     if(next) delete next;next = 0;
@@ -27,6 +27,7 @@ struct ObjPointer
   }
 };
 
+//! ???
 class ObjPointerStorage
 {
   typedef ObjPointerStorage MyType;
@@ -40,7 +41,7 @@ public:
     if(item_) delete item_;item_ = 0;
   }
 
-  // store new generated DiscreteOperator Pointer
+  //! Store new generated DiscreteOperator Pointer
   template <class DiscrOpType>
   void saveObjPointer ( DiscrOpType * discrOp )
   {

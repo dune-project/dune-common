@@ -1,6 +1,6 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// no define of include varialbe because the file can be included more than
+// no define of include variable because the file can be included more than
 // once
 
 #ifndef PARAM_CLASSNAME
