@@ -11,22 +11,28 @@
 namespace Dune
 {
 
+#ifdef __GCC__
+#define TEMPPARAM2
+#endif
+
   static ALBERT EL_INFO statElInfo[DIM+1];
 
   // singleton holding reference elements
-  template<int dim> struct AlbertGridReferenceElement
+  template<int dim>
+  struct AlbertGridReferenceElement
   {
     enum { dimension = dim };
+    AlbertGridElement<dim,dim> refelem;
 
-    static AlbertGridElement<dim,dim> refelem;
-    static ALBERT EL_INFO elInfo_;
-
+    AlbertGridReferenceElement () : refelem (true) {};
   };
 
   // initialize static variable with bool constructor
   // (which makes reference element)
-  template<int dim>
-  AlbertGridElement<dim,dim> AlbertGridReferenceElement<dim>::refelem(true);
+  // this sucks but for gcc we do a lot
+  static AlbertGridReferenceElement<3> refelem_3;
+  static AlbertGridReferenceElement<2> refelem_2;
+  static AlbertGridReferenceElement<1> refelem_1;
 
   //****************************************************************
   //
@@ -123,6 +129,42 @@ namespace Dune
     return elInfo;
   }
 
+
+  template <>
+  inline void AlbertGridElement<2,2>::
+  makeRefElemCoords()
+  {
+    // make empty elInfo
+    elInfo_ = makeEmptyElInfo();
+
+    //*****************************************************************
+    //!
+    //!   reference element 2d
+    //!
+    //!    (0,1)
+    //!     1|\    coordinates and local node numbers
+    //!      | \
+    // //!      |  \
+    //!      |   \
+    // //!      |    \
+    // //!      |     \
+    // //!     2|______\0
+    //!    (0,0)    (1,0)
+    //
+    //*****************************************************************
+
+    // set reference coordinates
+    coord_ = 0.0;
+
+    // vertex 0
+    coord_(0,0) = 1.0;
+
+    // vertex 1
+    coord_(1,1) = 1.0;
+
+    coord_.print(std::cout,1);
+  }
+
   template <>
   inline void AlbertGridElement<3,3>::
   makeRefElemCoords()
@@ -160,40 +202,6 @@ namespace Dune
     // vertex 3
     coord_(0,3) = 1.0;
   }
-
-  template <>
-  inline void AlbertGridElement<2,2>::
-  makeRefElemCoords()
-  {
-    // make empty elInfo
-    elInfo_ = makeEmptyElInfo();
-
-    //*****************************************************************
-    //!
-    //!   reference element 2d
-    //!
-    //!    (0,1)
-    //!     1|\    coordinates and local node numbers
-    //!      | \
-    // //!      |  \
-    //!      |   \
-    // //!      |    \
-    // //!      |     \
-    // //!     2|______\0
-    //!    (0,0)    (1,0)
-    //
-    //*****************************************************************
-
-    // set reference coordinates
-    coord_ = 0.0;
-
-    // vertex 0
-    coord_(0,0) = 1.0;
-
-    // vertex 1
-    coord_(1,1) = 1.0;
-  }
-
   template <>
   inline void AlbertGridElement<1,1>::
   makeRefElemCoords()
@@ -343,11 +351,25 @@ namespace Dune
     return coord_(i);
   }
 
-  template< int dim, int dimworld>
-  inline AlbertGridElement<dim,dim>& AlbertGridElement<dim,dimworld>::
+  template<>
+  inline AlbertGridElement<3,3>& AlbertGridElement<3,3>::
   refelem()
   {
-    return AlbertGridReferenceElement<dim>::refelem;
+    return refelem_3.refelem;
+  }
+
+  template<>
+  inline AlbertGridElement<2,2>& AlbertGridElement<2,2>::
+  refelem()
+  {
+    return refelem_2.refelem;
+  }
+
+  template<>
+  inline AlbertGridElement<1,1>& AlbertGridElement<1,1>::
+  refelem()
+  {
+    return refelem_1.refelem;
   }
 
 
@@ -529,6 +551,94 @@ namespace Dune
     return lambda;
   }
 
+  // calc A for triangles
+  template <>
+  inline void AlbertGridElement<2,2>::calcElMatrix ()
+  {
+    Vec<2,albertCtype> & coord0 = coord_(2);
+    for (int i=0; i<2; i++)
+    {
+      elMat_(i,0) = coord_(i,0) - coord0(i);
+      elMat_(i,1) = coord_(i,1) - coord0(i);
+    }
+  }
+
+  // calc A for tetrahedra
+  template <>
+  inline void AlbertGridElement<3,3>::calcElMatrix ()
+  {
+    enum { dimworld = 3 };
+    for(int i=0 ; i<dimworld; i++)
+    {
+      elMat_(i,0) = coord_(i,3) - coord_(i,0);
+      elMat_(i,1) = coord_(i,2) - coord_(i,3);
+      elMat_(i,2) = coord_(i,1) - coord_(i,2);
+    }
+  }
+
+  template <int dim, int dimworld>
+  inline void AlbertGridElement<dim,dimworld>::calcElMatrix ()
+  {
+    std::cout << "AlbertGridElement::calcElMatrix: No default implementation \n";
+    abort();
+  }
+
+  // this method is for (dim==dimworld) = 2 and 3
+  template <int dim, int dimworld>
+  inline void AlbertGridElement<dim,dimworld>::
+  buildJacobianInverse(const Vec<dim,albertCtype>& local)
+  {
+    //******************************************************
+    //
+    //  the mapping is:
+    //
+    //  F(T) = D where T is the reference element
+    //  and D the actual element
+    //
+    //  F(x) = A * x + b    with   A := ( P_0 , P_1 )
+    //
+    //  A consist of the column vectors P_0 and P_1 and
+    //  is calculated by the method calcElMatrix
+    //
+    //******************************************************
+
+    // calc A and stores it in elMat_
+    calcElMatrix();
+
+    // Jinv = A^-1
+    elDet_ = ABS( elMat_.invert(Jinv_) );
+
+    assert(elDet_ > 1.0E-25);
+    builtinverse_ = true;
+    return;
+  }
+
+  // calc volume of face of tetrahedron
+  template <>
+  inline void AlbertGridElement<2,3>::
+  buildJacobianInverse(const Vec<2,albertCtype>& local)
+  {
+    //std::cout << "To be implemented! \n";
+    //abort();
+    enum { dim = 2 };
+    enum { dimworld = 3 };
+
+    // is faster than the lower method
+    std::cout << "buildJacobianInverse<2,3> not correctly implemented!\n";
+    elDet_ = 0.1;
+    builtinverse_ = true;
+  }
+
+  template <>
+  inline void AlbertGridElement<1,2>::
+  buildJacobianInverse(const Vec<1,albertCtype>& local)
+  {
+    // volume is length of edge
+    Vec<2,albertCtype> vec = coord_(0) - coord_(1);
+    elDet_ = vec.norm2();
+
+    builtinverse_ = true;
+  }
   // default implementation calls ALBERT routine
   template< int dim, int dimworld>
   inline albertCtype AlbertGridElement<dim,dimworld>::elDeterminant ()
@@ -584,61 +694,6 @@ namespace Dune
     return Jinv_;
   }
 
-  // calc volume of face of tetrahedron
-  template <>
-  inline void AlbertGridElement<2,3>::
-  buildJacobianInverse(const Vec<2,albertCtype>& local)
-  {
-    //std::cout << "To be implemented! \n";
-    //abort();
-    enum { dim = 2 };
-    enum { dimworld = 3 };
-
-    // is faster than the lower method
-    std::cout << "buildJacobianInverse<2,3> not correctly implemented!\n";
-    elDet_ = 0.1;
-    builtinverse_ = true;
-  }
-
-  template< int dim, int dimworld>
-  inline void AlbertGridElement<dim,dimworld>::
-  buildJacobianInverse(const Vec<dim,albertCtype>& local)
-  {
-    std::cout << "AlbertGridElement::buildJacobianInverse: no default implementation! \n"
-    abort();
-  }
-
-  template <int dim, int dimworld>
-  inline void AlbertGridElement<dim,dimworld>::calcElMatrix ()
-  {
-    std::cout << "AlbertGridElement::calcElMatrix: No default implementation \n";
-    abort();
-  }
-
-  // calc A for triangles
-  inline void AlbertGridElement<2,2>::calcElMatrix ()
-  {
-    enum { dimworld = 2 };
-    Vec<dimworld,albertCtype> & coord0 = coord_(2);
-    for (int i=0; i<dimworld; i++)
-    {
-      elMat_(i,0) = coord_(i,0) - coord0(i);
-      elMat_(i,1) = coord_(i,1) - coord0(i);
-    }
-  }
-
-  // calc A for tetrahedra
-  inline void AlbertGridElement<3,3>::calcElMatrix ()
-  {
-    enum { dimworld = 3 };
-    for(int i=0 ; i<dimworld; i++)
-    {
-      elMat_(i,0) = coord_(i,3) - coord_(i,0);
-      elMat_(i,1) = coord_(i,2) - coord_(i,3);
-      elMat_(i,2) = coord_(i,1) - coord_(i,2);
-    }
-  }
-
   //************************************************************************
   //  checkMapping and checkInverseMapping are for checks of Jinv_
   //************************************************************************
@@ -650,6 +705,7 @@ namespace Dune
     return false;
   }
 
+  template <>
   inline bool AlbertGridElement<2,2>::checkInverseMapping (int loc)
   {
     // checks if F^-1 (x_i) == xref_i
@@ -671,6 +727,7 @@ namespace Dune
     return true;
   }
 
+  template <>
   inline bool AlbertGridElement<3,3>::checkInverseMapping (int loc)
   {
     // checks if F^-1 (x_i) == xref_i
@@ -701,6 +758,7 @@ namespace Dune
     return false;
   }
 
+  template <>
   inline bool AlbertGridElement<2,2>::checkMapping (int loc)
   {
     // checks the mapping
@@ -718,12 +776,14 @@ namespace Dune
     for(int j=0; j<dim; j++)
       if(tmp2(j) != coord(j))
       {
+        coord.print(std::cout,1); tmp2.print(std::cout,1); std::cout << "\n";
         std::cout << "AlbertGridElement<2,2>::checkMapping: Mapping of coord " << loc << " incorrect! \n";
         return false;
       }
     return true;
   }
 
+  template <>
   inline bool AlbertGridElement<3,3>::checkMapping (int loc)
   {
     // checks the mapping
@@ -752,68 +812,6 @@ namespace Dune
     return true;
   }
 
-  inline void AlbertGridElement<2,2>::
-  buildJacobianInverse(const Vec<2,albertCtype>& local)
-  {
-    //******************************************************
-    //
-    //  the mapping is:
-    //
-    //  F(T) = D where T is the reference element
-    //  and D the actual element
-    //
-    //  F(x) = A * x + P_2    with   A := ( P_0 , P_1 )
-    //
-    //  A consist of the column vectors P_0 and P_1 and
-    //  is calculated by the method calcElMatrix
-    //
-    //******************************************************
-
-    // calc A and stores it in elMat_
-    calcElMatrix();
-    // Jinv = A^-1
-    elDet_ = ABS( elMat_.invert(Jinv_) );
-
-    assert(elDet_ > 1.0E-25);
-    builtinverse_ = true;
-    return;
-  }
-
-  inline void AlbertGridElement<3,3>::
-  buildJacobianInverse(const Vec<3,albertCtype>& local)
-  {
-    enum { dimworld = 3 };
-    enum { dim = 3 };
-
-    //***********************************************************
-    //
-    //  mapping from reference element to actual element
-    //
-    //  F(T) = D where T is the reference element and D the actual element
-    //
-    //  F(x) = A * x + P_0   with   A:= ( P_1 , P_2 , P_3 )
-    //
-    //  as column vectors
-    //
-    //***********************************************************
-
-    calcElMatrix();
-    elDet_ = ABS ( elMat_.invert(Jinv_) );
-    assert(elDet_ > 1.0E-25);
-    builtinverse_ = true;
-    return;
-  }
-
-  template <>
-  inline void AlbertGridElement<1,2>::
-  buildJacobianInverse(const Vec<1,albertCtype>& local)
-  {
-    // volume is length of edge
-    Vec<2,albertCtype> vec = coord_(0) - coord_(1);
-    elDet_ = vec.norm2();
-
-    builtinverse_ = true;
-  }
 
   template<int dim, int dimworld>
   inline bool AlbertGridElement <dim ,dimworld >::
@@ -1024,7 +1022,10 @@ namespace Dune
   }
   //! specialization only for codim == 2 , edges,
   //! a tetrahedron has always 6 edges
-  template <> template <>
+  template <>
+#ifdef TEMPPARAM2
+  template <>
+#endif
   inline int AlbertGridEntity<0,3,3>::count<2> ()
   {
     return 6;
@@ -1038,21 +1039,30 @@ namespace Dune
   }
 
   // subIndex
-  template <> template <>
+  template <>
+#ifdef TEMPPARAM2
+  template <>
+#endif
   inline int AlbertGridEntity<0,2,2>::subIndex<2> ( int i )
   {
     return grid_.indexOnLevel<2>(elInfo_->el->dof[i][0],level_);
   }
 
   // subIndex
-  template <> template <>
+  template <>
+#ifdef TEMPPARAM2
+  template <>
+#endif
   inline int AlbertGridEntity<0,2,3>::subIndex<2> ( int i )
   {
     return grid_.indexOnLevel<2>(elInfo_->el->dof[i][0],level_);
   }
 
   // subIndex
-  template <> template <>
+  template <>
+#ifdef TEMPPARAM2
+  template <>
+#endif
   inline int AlbertGridEntity<0,3,3>::subIndex<3> ( int i )
   {
     return grid_.indexOnLevel<3>(elInfo_->el->dof[i][0],level_);
@@ -1068,7 +1078,10 @@ namespace Dune
     return tmp;
   }
 
-  template <> template <>
+  template <>
+#ifdef TEMPPARAM2
+  template <>
+#endif
   inline AlbertGridLevelIterator<2,3,3>
   AlbertGridEntity<0,3,3>::entity<2> ( int i )
   {
@@ -1087,7 +1100,10 @@ namespace Dune
   }
 
   // specialization for vertices
-  template <> template <>
+  template <>
+#ifdef TEMPPARAM2
+  template <>
+#endif
   inline AlbertGridLevelIterator<2,2,2>
   AlbertGridEntity<0,2,2>::entity<2> ( int i )
   {
@@ -1101,7 +1117,10 @@ namespace Dune
     return tmp;
   }
   // specialization for vertices
-  template <> template <>
+  template <>
+#ifdef TEMPPARAM2
+  template <>
+#endif
   inline AlbertGridLevelIterator<2,2,3>
   AlbertGridEntity<0,2,3>::entity<2> ( int i )
   {
@@ -1114,7 +1133,10 @@ namespace Dune
     return tmp;
   }
   // specialization for vertices
-  template <> template <>
+  template <>
+#ifdef TEMPPARAM2
+  template <>
+#endif
   inline AlbertGridLevelIterator<3,3,3>
   AlbertGridEntity<0,3,3>::entity<3> ( int i )
   {
