@@ -15,6 +15,12 @@ namespace Dune {
                       const char keywd[], T & data, bool verbose = true)
   {
     std::fstream file (filename,std::ios::in);
+    if( !file )
+    {
+      std::cerr << "ERROR: cannot open file '" << filename << "' in " <<  __FILE__<< " line: " << __LINE__ << std::endl;
+      DUNE_THROW(IOError,"cannot open file " << filename << std::endl);
+    }
+
     std::basic_string<char> keyword ( keywd );
     bool readData = false;
     char ch[1024];
