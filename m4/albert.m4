@@ -71,9 +71,10 @@ fi
 if test x$HAVE_ALBERT = x1 ; then
   # construct libname
   # the zero is the sign of the no-debug-lib
-  albertlibname="ALBERT${with_world_dim}${with_problem_dim}_0${with_albert_elindex}"
-  AC_CHECK_LIB($albertlibname,[get_dof_index],
-	[ALBERT_LIBS="$ALBERT_LIBS -l$albertlibname"],
+  albertlibname="ALBERT${with_problem_dim}${with_world_dim}_0${with_albert_elindex}"
+  AC_CHECK_LIB($albertlibname,[mesh_traverse],
+	[ALBERT_LIBS="$ALBERT_LIBS -l$albertlibname"
+   LIBS="$LIBS $ALBERT_LIBS"],
 	[HAVE_ALBERT="0"
 	AC_MSG_WARN(lib$albertlibname not found!)])
 fi
