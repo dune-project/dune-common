@@ -419,6 +419,9 @@ namespace Dune {
       // refinement implementation for simplices
       //
 
+      template<int mydimension, int coorddimension, class GridImp>
+      class Geometry;
+
       template<int dimension_, class CoordType>
       class RefinementImp
       {
@@ -446,6 +449,7 @@ namespace Dune {
       struct RefinementImp<dimension, CoordType>::codim
       {
         class SubEntityIterator;
+        typedef Dune::Geometry<dimension-codimension, dimension, RefinementImp<dimension, CoordType>, Geometry> Geometry;
       };
 
       template<int dimension, class CoordType>
@@ -718,6 +722,113 @@ namespace Dune {
       SubEntityIterator(int level, bool end)
         : RefinementIteratorSpecial<dimension, CoordType, codimension>(level, end)
       {}
+
+      // ///////////////
+      //
+      //  The Geometry
+      //
+
+      template<int mydimension, int coorddimension, class GridImp>
+      class Geometry : public GeometryDefault<mydimension, coorddimension, GridImp, Geometry>
+      {
+        typedef typename GridImp::ctype ct;
+      public:
+        GeometryType type() const
+        {
+          switch(mydimension) {
+          case 0 : return vertex;
+          case 1 : return line;
+          case 2 : return triangle;
+          case 3 : return tetrahedron;
+          default : DUNE_THROW(NotImplemented, "No Dune::GeometryType for simpleces of " << mydimension << " dimensions");
+          }
+        }
+
+        int corners() const
+        { return mydimension + 1; }
+
+        const FieldVector<ct, coorddimension>& operator[] (int i) const
+        {
+          if(!builtCoords) {
+            FieldVector<ct, coorddimension> v = 0;
+            FieldVector<int, mydimension> perm = getPermutation<mydimension>(permIndex);
+            for(int i = 0; i < mydimension; ++i) {
+              coords[i] = global(v);
+              v[perm[i]] += 1;
+            }
+            coords[mydimension] = global(v);
+            builtCoords = true;
+          }
+          return coords[i];
+        }
+
+        FieldVector<ct, coorddimension> global(const FieldVector<ct, mydimension>& local) const
+        {
+          FieldVector<ct, mydimension> v = referenceToKuhn(local, getPermutation<mydimension>(permIndex));
+          v += origin;
+          v /= (1<<level);
+          return kuhnToReference(v, getPermutation<mydimension>(0));
+        }
+
+        FieldVector<ct, mydimension> local(const FieldVector<ct, coorddimension>& global) const
+        {
+          FieldVector<ct, mydimension> v = referenceToKuhn(global, getPermutation<mydimension>(0));
+          v *= (1<<level);
+          v -= origin;
+          return kuhnToReference(v, getPermutation<mydimension>(permIndex));
+        }
+
+        bool checkInside (const FieldVector<ct, mydimension>& local) const
+        {
+          for(int i = 0; i < mydimension; ++i)
+            if(local[i] < 0)
+              return false;
+
+          ct sum = 0;
+          for(int i = 0; i < mydimension; ++i)
+            sum += local[i];
+          return sum <= 1;
+        }
+
+        ct integrationElement(const FieldVector<ct, mydimension>& local) const
+        {
+          return ct(1) / RefinementImp<mydimension, ct>::nElements(level);
+        }
+
+        const FieldMatrix<ct, mydimension, mydimension>& jacobianInverse(const FieldVector<ct, mydimension>& local) const
+        {
+          if(!builtJinv) {
+            FieldMatrix<int, mydimension, mydimension> M = 0;
+            for(int i = 0; i < mydimension; ++i)
+              M[i][i] = 1;
+            for(int i = 0; i < mydimension; ++i)
+              M[i] = kuhnToReference(referenceToKuhn(Jinv[i], getPermutation<mydimension>(permIndex)), getPermutation<mydimension>(0));
+
+            for(int i = 0; i < mydimension; ++i)
+              for(int j = 0; j < mydimension; ++j)
+                Jinv[i][j] = ct(1<<level) * M[i][j];
+            builtJinv = true;
+          }
+
+          return Jinv;
+        }
+
+        void make(const FieldVector<int, coorddimension> &origin_, int permIndex_, int level_)
+        {
+          origin = origin_;
+          permIndex = permIndex_;
+          level = level_;
+          builtCoords = builtJinv = false;
+        }
+      private:
+        mutable FieldVector<FieldVector<ct, coorddimension>, mydimension+1> coords;
+        mutable bool builtCoords;
+        mutable FieldMatrix<ct, mydimension, mydimension> Jinv;
+        mutable bool builtJinv;
+        int level;
+        int permIndex;
+        FieldVector<int, coorddimension> origin;
+      };
 
     } // namespace Simplex
 
