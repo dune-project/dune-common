@@ -8,13 +8,13 @@
 // includes for bsgrid_src
 #include "systemincludes.hh"
 
+// all methods and classes of the sbgrid are defined in the namespace
+// BernhardSchuppGrid
 #define BSSPACE BernhardSchuppGrid ::
-//#define BSSPACE
 
-#define _BSGRID_USE_INDEX_
-
-// define parameter type for normal method
-#define BSGridVecType Dune::FieldVector<double, 3>
+// if this is defined in bsgrid some methods are added which we only need
+// for the Dune interface
+#define _DUNE_USES_BSGRID_
 
 #include <dune/grid/common/indexstack.hh>
 
@@ -23,6 +23,9 @@ namespace BernhardSchuppGrid {
   // definition of indexstack
   enum { lengthOfFiniteStack = 10000 };
   typedef Dune::IndexStack<int,lengthOfFiniteStack> IndexManagerType;
+
+  // type for outer normal of intersection iterator
+  typedef Dune::Vec<double,3> BSGridVecType;
 
   typedef enum {hexa,tetra} grid_t;
 
