@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE__MONOMIALBASE_HH__
-#define __DUNE__MONOMIALBASE_HH__
+#ifndef DUNE__MONOMIALBASE_HH
+#define DUNE__MONOMIALBASE_HH
 
 #include <dune/common/matvec.hh>
 #include <dune/common/simplevector.hh>
@@ -129,4 +129,4 @@ namespace Dune {
 
 } // end namespace Dune
 
-#endif
+#endif // DUNE__MONOMIALBASE_HH
