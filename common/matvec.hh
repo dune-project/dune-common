@@ -116,6 +116,17 @@ namespace Dune {
       return s;
     }
 
+    //! scalar product of two vectors; one of them stored in matrixform
+    T operator* (const Vec<n,T>& b) const
+    {
+      if (m != 1)
+        DUNE_THROW(MathError,
+                   "scalar product only defined for (m x 1) matrizes");
+      T s=0;
+      for (int i=0; i<n; i++) s += this->operator()(i,0) * b[i];
+      return s;
+    }
+
   private:
     //! built-in array to hold the data
     Vec<n,T> a[m];
