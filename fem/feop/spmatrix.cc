@@ -315,60 +315,16 @@ namespace Dune
     return result;
   }
 
-  /***************************************/
-  /*  Matrix-MV_Vector multiplication    */
-  /***************************************/
-#if 0
-  template <class T> template <class DiscFuncType>
-  void SparseRowMatrix<T>::apply(const DiscFuncType &f, DiscFuncType &ret) const
-  {
-    typedef typename DiscFuncType::DofIteratorType DofIteratorType;
-    int level = f.getFunctionSpace().getGrid().maxlevel();
-
-    //! we assume that the dimension of the functionspace of f is the same as
-    //! the size of the matrix
-    DofIteratorType ret_it = ret.dbegin( level );
-    DofIteratorType f_it = f.dbegin( level );
-
-    for(int row=0; row<dim_[0]; row++)
-    {
-      (*ret_it) = 0.0;
-
-      //! DofIteratorType schould be the same
-      for(int col=0; col<nz_; col++)
-      {
-        int thisCol = row*nz_ + col;
-        int realCol = col_[thisCol];
-
-        if( realCol < 0 ) continue;
-        (*ret_it) += values_[thisCol] * (f_it[realCol]);
-      }
-
-      ++ret_it;
-    }
-
-    return;
-  }
-#endif
-
   template <class T> template <class DiscFType , class DiscFuncType>
   void SparseRowMatrix<T>::apply(const DiscFType &f, DiscFuncType &ret) const
   {
-    int level = f.getFunctionSpace().getGrid().maxlevel();
-    apply(f, ret, level);
-  }
-
-  template <class T> template <class DiscFType , class DiscFuncType>
-  void SparseRowMatrix<T>::apply(const DiscFType &f, DiscFuncType &ret, int level) const
-  {
     typedef typename DiscFType::DofIteratorType DofFItType;
     typedef typename DiscFuncType::DofIteratorType DofIteratorType;
-    //int level = f.getFunctionSpace().getGrid().maxlevel();
 
     //! we assume that the dimension of the functionspace of f is the same as
     //! the size of the matrix
-    DofIteratorType ret_it = ret.dbegin( level );
-    DofFItType f_it = f.dbegin( level );
+    DofIteratorType ret_it = ret.dbegin();
+    const DofFItType f_it = f.dbegin();
 
     for(int row=0; row<dim_[0]; row++)
     {
@@ -400,8 +356,8 @@ namespace Dune
 
     //! we assume that the dimension of the functionspace of f is the same as
     //! the size of the matrix
-    DofIteratorType ret_it = ret.dbegin( level );
-    DofIteratorType f_it = const_cast<DiscFuncType &>(f).dbegin( level );
+    DofIteratorType ret_it = ret.dbegin();
+    const DofIteratorType f_it = f.dbegin();
 
     for(int row=0; row<dim_[0]; row++)
     {
