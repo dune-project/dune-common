@@ -35,6 +35,25 @@ namespace Dune
      To use this module you need UG (the tool from second floor -
      http://cox.iwr.uni-heidelberg.de/~ug).
 
+     For the compilation of UG keep the following in mind!
+     In your shell you need the following variables set:
+
+      export UGROOT=some_path/UG/ug
+      export PATH=$PATH:$UGROOT/bin
+
+     In the dir $UGROOT (the path above) you find a file named 'ug.conf'.
+     There you have to choose for dimension 2 or 3 and furthermore set the
+     variable 'IF' to 'S' (default is 'X').
+
+     Then in the file $UGROOT/arch/PC/mk.arch add '-xc++' to the ARCH_CFLAGS
+     variable.
+
+     Now your ready to. Go is
+
+     cd $UGROOT
+     ugmake links
+     make
+
      After compiling UG you must tell %Dune where to find UG, which
      dimension to use and which dimension your world should have:
      <tt> ./autogen.sh [OPTIONS] --with-ug=PATH_TO_UG --with-problem-dim=DIM --with-world-dim=DIMWORLD
