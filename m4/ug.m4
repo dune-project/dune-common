@@ -27,16 +27,16 @@ AC_DEFUN([DUNE_PATH_UG],[
   ac_save_LDFLAGS="$LDFLAGS"
   ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_LIBS="$LIBS"
-
+  
   if test "x$X_LIBS" != x ; then
       LIBS="$X_PRE_LIBS -lX11 $X_LIBS $X_EXTRA_LIBS -lXt -lXaw"
   else
       LIBS=""
   fi
-
+  
   ## do nothing if --without-ug is used
   if test x$with_ug != xno ; then
-
+      
       # is --with-ug=bla used?
       if test "x$with_ug" != x ; then
           # expand tilde / other stuff
@@ -48,7 +48,8 @@ AC_DEFUN([DUNE_PATH_UG],[
           # use some default value...
 	  UGROOT="/usr/local/ug"
       fi
-
+      
+      # intermediate variables
       UG_LIB_PATH="$UGROOT/lib"
       UG_INCLUDE_PATH="$UGROOT/include"
       
@@ -57,15 +58,6 @@ AC_DEFUN([DUNE_PATH_UG],[
       # set variables so that tests can use them
       LDFLAGS="$LDFLAGS -L$UG_LIB_PATH"
       CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH"
-
-# besserer Test, klappt aber nicht, weil compiler.h auf der
-# Kommandozeile ein define mit dem Compilertyp braucht...
-#
-#      AC_CHECK_HEADER([ugm.h],
-#	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
-#	      HAVE_UG="1"],
-#	  [HAVE_UG="0"]
-#      )
 
       # check for central header
       AC_CHECK_FILE([$UG_INCLUDE_PATH/gm.h],
@@ -122,19 +114,21 @@ AC_DEFUN([DUNE_PATH_UG],[
 #           UG_CPPFLAGS="-D_${UGDOMAIN}_ -D_${UG_DIM} $UG_CPPFLAGS"
 #       fi
 
-     if test "$with_problem_dim" != "$with_world_dim" ; then
- 	      AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
-     fi
-     UG_DIM="$with_problem_dim"
-     UG_CPPFLAGS="${UG_CPPFLAGS} -D_${UG_DIM}"
+      # use global dimension
+      if test "$with_problem_dim" != "$with_world_dim" ; then
+	  AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
+      fi
+      UG_DIM="$with_problem_dim"
+      UG_CPPFLAGS="${UG_CPPFLAGS} -D_${UG_DIM}"
 
       AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
-
-	echo -n "checking for libug$UG_DIM... "
-
-	CPPFLAGS="$UG_CPPFLAGS"
-        LIBS="-lug$UG_DIM -ldomS$UG_DIM -lgg$UG_DIM -ldevS"
+	  
+	  AC_MSG_CHECKING(libug$UG_DIM)
+	  
+	  # prepare test
+	  CPPFLAGS="$UG_CPPFLAGS"
+	  LIBS="-lug$UG_DIM -ldomS$UG_DIM -lgg$UG_DIM -ldevS"
 
           AC_TRY_LINK(
               [#define INT int
@@ -142,17 +136,17 @@ AC_DEFUN([DUNE_PATH_UG],[
 	      [int i = UG${UG_DIM}d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
                UG_LIBS="$LIBS"
-               echo "yes"
+	       AC_MSG_RESULT(yes)
               ],
-              [echo "no"
+              [AC_MSG_RESULT(no)
 	       HAVE_UG="0"]
-          )
+	      )
       fi
       AC_LANG_POP([C++])
-
+      
       # pre-set variable for summary
       with_ug="no"
-
+      
       # did it work?
       if test x$HAVE_UG = x1 ; then
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
@@ -164,17 +158,17 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $UG_LDFLAGS"
 	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $UG_LIBS"
 	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $UG_CPPFLAGS"
-    
+	  
     # re-set variable correctly
 	  with_ug="yes"
       fi 
-
+      
   # end of "no --without-ug"
   fi
   
   # tell automake	
   AM_CONDITIONAL(UG, test x$HAVE_UG = x1)
-
+  
   # restore variables
   LDFLAGS="$ac_save_LDFLAGS"
   CPPFLAGS="$ac_save_CPPFLAGS"
@@ -182,3 +176,6 @@ AC_DEFUN([DUNE_PATH_UG],[
   
 ])
 
+dnl Local Variables:
+dnl mode: shell-script
+dnl End:
