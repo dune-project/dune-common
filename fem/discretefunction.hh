@@ -3,13 +3,14 @@
 #ifndef __DUNE_DISCRETEFUNCTION_HH__
 #define __DUNE_DISCRETEFUNCTION_HH__
 
+#include "../grid/common/grid.hh"
 #include "../common/function.hh"
 #include "../common/functionspace.hh"
 #include "discretefunctionspace.hh"
 #include "localfunctionarray.hh"
 #include "dofiterator.hh"
 
-#include <fstream>
+//#include <fstream>
 
 namespace Dune {
 
@@ -24,6 +25,36 @@ namespace Dune {
 
      @{
    */
+
+  typedef std::basic_string <char> StringType;
+
+  template <typename T>
+  StringType typeIdentifier ()
+  {
+    StringType tmp = "unknown";
+    return tmp;
+  };
+
+  template <>
+  StringType typeIdentifier<float> ()
+  {
+    StringType tmp = "float";
+    return tmp;
+  };
+
+  template <>
+  StringType typeIdentifier<int> ()
+  {
+    StringType tmp = "int";
+    return tmp;
+  };
+
+  template <>
+  StringType typeIdentifier<double> ()
+  {
+    StringType tmp = "double";
+    return tmp;
+  };
 
 
   //************************************************************************
@@ -88,12 +119,6 @@ namespace Dune {
       return asImp().dend ( level );
     };
 
-    //! clear all dofs of the discrete function
-    void clear( )
-    {
-      asImp.clear( );
-    }
-
   private:
     // Barton-Nackman trick
     DiscreteFunctionImp &asImp()
@@ -128,6 +153,8 @@ namespace Dune {
 
     typedef DiscreteFunctionInterface <DiscreteFunctionSpaceType,
         DofIteratorImp, DiscreteFunctionImp >  DiscreteFunctionInterfaceType;
+
+    enum { myId_ = 0 };
   public:
     //! remember the used types
     template <int cc>
@@ -136,8 +163,11 @@ namespace Dune {
       typedef typename DiscreteFunctionSpaceType::Domain Domain;
       typedef typename DiscreteFunctionSpaceType::Range Range;
       typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
+      typedef typename DiscreteFunctionSpaceType::DomainField DomainField;
     };
 
+    typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
+    typedef typename DiscreteFunctionSpaceType::DomainField DomainField;
     typedef DofIteratorImp DofIteratorType;
 
     //! pass the function space to the interface class
@@ -199,8 +229,66 @@ namespace Dune {
       std::cout << "AddLocal \n";
     }
 
-    //! clear all dofs of the discrete function
-    void clear( );
+    //! clear all dofs of a given level of the discrete function
+    void clearLevel(int level );
+
+    template <FileFormatType ftype>
+    bool write(const char *filename, int timestep)
+    {
+      {
+        enum { n = DiscreteFunctionSpaceType::DimDomain };
+        enum { m = DiscreteFunctionSpaceType::DimRange };
+        std::fstream file( filename , std::ios::out );
+        StringType d = typeIdentifier<DomainField>();
+        StringType r = typeIdentifier<RangeField>();
+
+        file << d << " " << r << " ";
+        file << n << " " << m << "\n";
+        file << myId_ << " " << ftype << "\n";
+      }
+
+      if(ftype == xdr)
+        return asImp().write_xdr(filename,timestep);
+      if(ftype == ascii)
+        return asImp().write_ascii(filename,timestep);
+    }
+
+    template <FileFormatType ftype>
+    bool read(const char *filename, int timestep)
+    {
+      {
+        enum { tn = DiscreteFunctionSpaceType::DimDomain };
+        enum { tm = DiscreteFunctionSpaceType::DimRange };
+        std::fstream file( filename , std::ios::in );
+        int n,m;
+        std::basic_string <char> r,d;
+        std::basic_string <char> tr (typeIdentifier<RangeField>());
+        std::basic_string <char> td (typeIdentifier<DomainField>());
+
+        file >> d;
+        file >> r;
+        file >> n >> m;
+        int id,type;
+        file >> id >> type;
+        FileFormatType ft = static_cast<FileFormatType> (type);
+        if((d != td) || (r != tr) || (n != tn) || (m != tm) || (ft != ftype) )
+        {
+          std::cerr << d << " | " << td << " DomainField in read!\n";
+          std::cerr << r << " | " << tr << " RangeField  in read!\n";
+          std::cerr << n << " | " << tn << " in read!\n";
+          std::cerr << m << " | " << tm << " in read!\n";
+          std::cerr << ftype << " Wrong FileFormat! \n";
+          std::cerr << "Can not initialize DiscreteFunction with wrong FunctionSpace!\n";
+          abort();
+        }
+      }
+
+      if(ftype == xdr)
+        return asImp().read_xdr(filename,timestep);
+      if(ftype == ascii)
+        return asImp().read_ascii(filename,timestep);
+    };
+
 
   private:
     // Barton-Nackman trick
@@ -213,201 +301,10 @@ namespace Dune {
       return static_cast<const DiscreteFunctionImp&>(*this);
     }
 
-  };
+  }; // end class DiscreteFunctionDefault
 
   /** @} end documentation group */
 
-
-  //**********************************************************************
-  //
-  //  --DiscFuncTest
-  //
-  //! this is one special implementation of a discrete function using an
-  //! array for storing the dofs.
-  //!
-  //**********************************************************************
-  template<class DiscreteFunctionSpaceType >
-  class DiscFuncTest
-    : public DiscreteFunctionDefault < DiscreteFunctionSpaceType,
-          DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
-          DiscFuncTest <DiscreteFunctionSpaceType> >
-  {
-    //typedef GlobalDofIteratorArray < typename Traits::RangeField > DofIteratorType;
-    typedef DiscreteFunctionDefault < DiscreteFunctionSpaceType,
-        DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > ,
-        DiscFuncTest <DiscreteFunctionSpaceType > >
-    DiscreteFunctionDefaultType;
-
-    typedef typename DiscreteFunctionSpaceType::RangeField DofType;
-
-    typedef typename DiscreteFunctionSpaceType::GridType GridType;
-  public:
-
-    typedef DiscreteFunctionSpaceType FunctionSpaceType;
-    typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
-
-    DiscFuncTest ( const DiscreteFunctionSpaceType & f,
-                   int level , int codim , bool flag )
-      : DiscreteFunctionDefaultType ( f ) , level_ ( level ) ,
-        allLevels_ ( flag ) , localFunc_ ( f , dofVec_ )
-    {
-      if(flag)
-        levOcu_ = level_+1;
-      else
-        levOcu_ = 1;
-
-      // for all grid levels we have at least a vector with length 0
-      int numLevel = const_cast<GridType &> (functionSpace_.getGrid()).maxlevel() +1;
-      dofVec_.resize(numLevel);
-      for(int i=0; i<numLevel; i++)
-        dofVec_[i] = NULL;
-
-      // this is done only if levOcu_ > 1
-      for(int i=0; i< levOcu_-1; i++)
-      {
-        int length = functionSpace_.size( i );
-        (dofVec_[i]).resize( length );
-        for( int j=0; j<length; j++)
-          (dofVec_[i])[j] = 0.0;
-      }
-
-      // the last level is done always
-      int length = functionSpace_.size( level_ );
-      (dofVec_[level_]).resize( length );
-      for( int j=0; j<length; j++) (dofVec_[level_])[j] = 0.0;
-
-    };
-
-    void set ( DofType x, int level )
-    {
-      std::cout << "Set Level " << level << " with value " << x << std::endl;
-      if(!allLevels_ && level != level_)
-      {
-        std::cout << "Level not set! \n";
-        return;
-      }
-      DofIteratorType endit = dend ( level );
-      for(DofIteratorType it = dbegin ( level ); it != endit; ++it)
-      {
-        (*it) = x;
-      }
-    }
-
-    // ***********  Interface  *************************
-
-    //! access to dof entity corresponding grid entity en
-    //! default implementation is via GlobalDofIterator
-    template <class EntityType>
-    LocalFunctionType & access (EntityType & en )
-    {
-      localFunc_.init( en );
-      return localFunc_;
-    };
-
-
-
-    // we use the default implementation
-    // Warning!!! returns reference to local object!
-    DofIteratorType dbegin ( int level )
-    {
-      DofIteratorType tmp ( dofVec_ [level] , 0 );
-      return tmp;
-    };
-
-    //! points behind the last dof of type cc
-    // Warning!!! returns reference to local object!
-    DofIteratorType dend   ( int level )
-    {
-      DofIteratorType tmp ( dofVec_ [ level ] , dofVec_[ level ].size() );
-      return tmp;
-    };
-
-    void clear( )
-    {
-      DofIteratorType enddof = dend ( level_ );
-      for(DofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof)
-      {
-        *itdof = 0.;
-      }
-    }
-
-    void setAll( DofType x )
-    {
-      set( x, level_ );
-    }
-
-    //! print all dofs
-    void print()
-    {
-      DofType sum = 0.;
-      int numLevel = const_cast<GridType &> (functionSpace_.getGrid()).maxlevel();
-      DofIteratorType enddof = dend ( numLevel );
-      for(DofIteratorType itdof = dbegin ( numLevel ); itdof != enddof; ++itdof)
-      {
-        std::cout << (*itdof) << " DofValue \n";
-        sum += *itdof;
-      }
-      std::cerr << "sum = " << sum << "\n";
-    }
-
-    bool write(const char *filename, int level )
-    {
-      std::fstream out( filename , std::ios::out );
-      //ElementType eltype = triangle;
-      //out << eltype << " 1 1\n";
-      int length = functionSpace_.size( level );
-      out << length << " 1 1\n";
-
-      DofIteratorType enddof = dend ( level );
-      for(DofIteratorType itdof = dbegin ( level );
-          itdof != enddof; ++itdof)
-      {
-        out << (*itdof)  << "\n";
-      }
-
-      out.close();
-      std::cout << "Written Dof to file `" << filename << "' !\n";
-    }
-
-    void save(const char *filename) {
-      std::ofstream out( filename );
-      out << "P2\n " << DANZ+1 << " " <<DANZ+1 <<"\n255\n";
-      DofIteratorType enddof = dend ( level_ );
-      for(DofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
-        out << (int)((*itdof)*255.) << "\n";
-      }
-      out.close();
-    }
-
-    void load(const char *filename) {
-      FILE *in;
-      int v;
-      in = fopen( filename, "r" );
-      fscanf( in, "P2\n%d %d\n%d\n", &v, &v, &v );
-      DofIteratorType enddof = dend ( level_ );
-      for(DofIteratorType itdof = dbegin ( level_ ); itdof != enddof; ++itdof) {
-        fscanf( in, "%d", &v );
-        (*itdof) = ((double)v)/255.;
-      }
-      fclose( in );
-    }
-
-  private:
-    bool allLevels_;
-
-    //! occupied levels
-    int levOcu_;
-
-    //! maxlevel which is occupied
-    int level_;
-
-    //! Vector of Array for each level, the array holds the dofs of each
-    //! level
-    LocalFunctionArray < DiscreteFunctionSpaceType > localFunc_;
-
-    //! for all level an Array < DofType >
-    std::vector < Array < DofType > > dofVec_;
-  };
 
 } // end namespace Dune
 
