@@ -126,11 +126,16 @@ namespace Dune
     nameCounter++;
   }
 
-  /** \bug Actually delete the grid from UG! */
   template < int dim, int dimworld >
   inline UGGrid < dim, dimworld >::~UGGrid()
   {
     free(extra_boundary_data_);
+
+#ifdef _3
+    UG3d::DisposeMultiGrid(multigrid_);
+#else
+    UG2d::DisposeMultiGrid(multigrid_);
+#endif
 
     numOfUGGrids--;
 
