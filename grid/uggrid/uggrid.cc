@@ -37,7 +37,7 @@ public:
   UGGridLevelIterator<2,2,2,All_Partition> getIterator(UGTypes<2>::GridType* theGrid, int level) {
 
     UGGridLevelIterator<2,2,2,All_Partition> it(level);
-    it.setToTarget(theGrid->firstNode[0], level);
+    it.setToTarget(UG_NS<2>::PFirstNode(theGrid), level);
     return it;
   }
 
@@ -67,7 +67,7 @@ public:
   UGGridLevelIterator<2,2,2,PiType> getIterator(UGTypes<2>::GridType* theGrid, int level) {
     std::cout << "Simulating a parallel LevelIterator using a sequential one!" << std::endl;
     UGGridLevelIterator<2,2,2,PiType> it(level);
-    it.setToTarget(theGrid->firstNode[0], level);
+    it.setToTarget(UG_NS<2>(theGrid), level);
     return it;
   }
 
@@ -100,8 +100,7 @@ public:
 
     UGGridLevelIterator<3,3,3,All_Partition> it(level);
 
-    UG3d::node* mytarget = theGrid->firstNode[0];
-    it.setToTarget(mytarget, level);
+    it.setToTarget(UG_NS<3>::PFirstNode(theGrid), level);
     return it;
   }
 };

@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_UG_FUNCTIONS_HH__
-#define __DUNE_UG_FUNCTIONS_HH__
+#ifndef DUNE_UG_FUNCTIONS_HH
+#define DUNE_UG_FUNCTIONS_HH
 
 /** \file
  * \brief Encapsulates some UG macros and functions
@@ -10,10 +10,32 @@
 #include "ugtypes.hh"
 
 namespace Dune {
-  //! \todo Please doc me!
+
+  /** \brief Encapsulates a few UG methods and macros
+   *
+   * This class provides a wrapper to several methods and macros from
+   * UG.  There are two reasons for doing this.  First, we don't want
+   * to call UG macros directly from DUNE, because they pollute the
+   * namespace and therefore we undefine them all.  Secondly,  UG methods
+   * appear in the namespaces UG2d and UG3d, but we need the dimension
+   * as a template parameter.
+   */
   template<int dim>
   class UG_NS {
   public:
+
+    /** \brief The PFIRSTNODE macros which returns the first node in a
+     * grid even in a parallel setting.
+     */
+    static typename TargetType<dim,dim>::T* PFirstNode(typename UGTypes<dim>::GridType* grid) {
+      using UG::PrioHGhost;
+      using UG::PrioVGhost;
+      using UG::PrioVHGhost;
+      using UG::PrioMaster;
+      using UG::PrioBorder;
+      return PFIRSTNODE(grid);
+    }
+
 
     /** \brief Returns pointers to the coordinate arrays of an UG element */
     static void Corner_Coordinates(typename TargetType<0,dim>::T* theElement, double* x[]) {
@@ -199,12 +221,7 @@ namespace Dune {
   };
   //! \todo Please doc me!
   template <int codim, int dimworld>
-  class UGGridSubEntityFactory {
-    //     public:
-    //         static TargetType<codim,dimworld>::T* get(TargetType<codim,dimworld>::T* c, int i){
-    //             DUNE_THROW(GridError, "UGGridSubEnt");
-    //         }
-  };
+  class UGGridSubEntityFactory {};
 
 #ifdef _2
   template<>
