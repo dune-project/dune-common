@@ -1,9 +1,10 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_ITERATIVE_SOLVER_HH__
-#define __DUNE_ITERATIVE_SOLVER_HH__
+#ifndef DUNE_ITERATIVE_SOLVER_HH
+#define DUNE_ITERATIVE_SOLVER_HH
 
 #include <dune/solver/common/solver.hh>
+#include <dune/solver/common/iterationstep.hh>
 #include <dune/fem/norms/norm.hh>
 
 namespace Dune {
@@ -20,6 +21,11 @@ namespace Dune {
     /** \brief Loop, call the iteration procedure
      * and monitor convergence */
     virtual void solve();
+
+    /** \brief Checks whether all relevant member variables are set
+     * \exception SolverError if the iteration step is not set up properly
+     */
+    virtual void check() const;
 
     //! The maximum number of iterations
     int numIt;

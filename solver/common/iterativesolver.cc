@@ -1,5 +1,16 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+template <class OperatorType, class DiscFuncType>
+void Dune::IterativeSolver<OperatorType, DiscFuncType>::check() const
+{
+  if (!errorNorm_)
+    DUNE_THROW(SolverError, "You need to supply a norm-computing routine to an iterative solver!");
+
+  if (!iterationStep)
+    DUNE_THROW(SolverError, "You need to supply an iteration step to an iterative solver!");
+
+  iterationStep->check();
+}
 
 template <class OperatorType, class DiscFuncType>
 inline
@@ -7,6 +18,9 @@ void Dune::IterativeSolver<OperatorType, DiscFuncType>::solve()
 {
 
   int i;
+
+  // Check whether the solver is set up properly
+  check();
 
   if (verbosity_ != QUIET)
     std::cout << "--- LinearSolver ---\n";
@@ -25,10 +39,10 @@ void Dune::IterativeSolver<OperatorType, DiscFuncType>::solve()
     iterationStep->iterate();
 
     // Compute error
-    double oldNorm = errorNorm_->compute(oldSolution, iterationStep->level());
+    double oldNorm = errorNorm_->compute(oldSolution);
     oldSolution -= iterationStep->getSol();
 
-    double normOfCorrection = errorNorm_->compute(oldSolution, iterationStep->level());
+    double normOfCorrection = errorNorm_->compute(oldSolution);
 
     error = normOfCorrection / oldNorm;
 

@@ -15,14 +15,13 @@ double Dune::GaussSeidelStep<OperatorType, DiscFuncType>::residual(int index) co
 {
   /** \todo Const-casting because we don't have const iterators yet */
   //SparseRowMatrix<double>* mat = const_cast<SparseRowMatrix<double>* >(this->mat_->getMatrix());
-  const int& level = this->level_;
   SparseRowMatrix<double>* mat = this->mat_;
 
   typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
 
   typedef typename DiscFuncType::DofIteratorType DofIterator;
-  DofIterator dit = this->x_->dbegin(level);
-  DofIterator rhsIt = this->rhs_->dbegin(level);
+  DofIterator dit = this->x_->dbegin();
+  DofIterator rhsIt = this->rhs_->dbegin();
 
   /* The following loop computes
    * \f[ sum_i = \sum_{i \ne j} A_{ij}w_j \f]
@@ -49,11 +48,9 @@ void Dune::GaussSeidelStep<OperatorType, DiscFuncType>::iterate()
 
   int i;
 
-  int level = this->level();
-
   typedef typename DiscFuncType::DofIteratorType DofIterator;
-  DofIterator dit = this->x_->dbegin(level);
-  DofIterator rhsIt = this->rhs_->dbegin(level);
+  DofIterator dit = this->x_->dbegin();
+  DofIterator rhsIt = this->rhs_->dbegin();
 
   for (i=0; i<nDof; i++) {
 
