@@ -65,7 +65,7 @@ namespace Dune {
     T read (int i) const {return x[i];}
 
     //! operator+ adds two vectors
-    Vec<n,T> operator+ (const Vec<n,T>& b)
+    Vec<n,T> operator+ (const Vec<n,T>& b) const
     {
       Vec<n,T> z;
       for (int i=0; i<n; i++) z.x[i] = x[i]+b.x[i];
@@ -73,7 +73,7 @@ namespace Dune {
     }
 
     //! operator- binary minus
-    Vec<n,T> operator- (const Vec<n,T>& b)
+    Vec<n,T> operator- (const Vec<n,T>& b) const
     {
       Vec<n,T> z;
       for (int i=0; i<n; i++) z.x[i] = x[i]-b.x[i];
@@ -81,19 +81,19 @@ namespace Dune {
     }
 
     //! scalar product of two vectors with operator*
-    T operator* (const Vec<n,T>& b)
+    T operator* (const Vec<n,T>& b) const
     {
       T s=0; for (int i=0; i<n; i++) s += x[i]*b.x[i];return s;
     }
 
     //! multiplication of vector with scalar
-    T operator* (T k)
+    T operator* (T k) const
     {
-      Vec<n,T> z; for (int i=0; i<n; i++) z.x[i] =  k*x[i];return s;
+      Vec<n,T> z; for (int i=0; i<n; i++) z.x[i] =  k*x[i];return z;
     }
 
     //! 1 norm
-    T norm1 ()
+    T norm1 () const
     {
       T s=0.0;
       for (int i=0; i<n; i++) s += ABS(x[i]);
@@ -101,7 +101,7 @@ namespace Dune {
     }
 
     //! 2 norm
-    T norm2 ()
+    T norm2 () const
     {
       T s=0.0;
       for (int i=0; i<n; i++) s += x[i]*x[i];
@@ -109,7 +109,7 @@ namespace Dune {
     }
 
     //! \infty norm
-    T norminfty ()
+    T norminfty () const
     {
       T s=0.0;
       for (int i=0; i<n; i++)
@@ -117,7 +117,7 @@ namespace Dune {
       return s;
     }
 
-    void print (std::ostream& s, int indent)
+    void print (std::ostream& s, int indent) const
     {
       for (int k=0; k<indent; k++) s << " ";
       s << "Vec [ ";
