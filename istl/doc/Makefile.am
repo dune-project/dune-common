@@ -2,12 +2,6 @@
 
 dist_pkgdata_DATA = istl.pdf istl.ps
 
-# !! let autoconf find the binaries
-TEX = latex
-BIBTEX = bibtex
-DVIPDF = dvipdf
-DVIPS = dvips
-
 SUFFIXES = .dvi .tex .pdf
 
 # rerun TEX if log-file suggests that

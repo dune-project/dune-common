@@ -4,7 +4,7 @@ all: doxygen-tag
 
 doxygen-tag: Doxyfile
 @AMDEP_TRUE@	./Doxydep $< $(DEPDIR)/doxygen.Po $@
-	doxygen > doxygen.log 2>&1
+	$(DOXYGEN) > doxygen.log 2>&1
 	touch doxygen-tag
 
 WEBDIR = /var/www/dune/doxygen

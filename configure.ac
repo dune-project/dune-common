@@ -14,6 +14,13 @@ AC_PROG_CXX
 AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
 
+# check for auxiliary tools so that it's not fatal if they're missing
+AC_CHECK_PROGS([DOXYGEN], [doxygen], [true])
+AC_CHECK_PROGS([TEX], [latex], [true])
+AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
+AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
+AC_CHECK_PROGS([DVIPS], [dvips], [true])
+
 # write output
 AC_CONFIG_FILES([Makefile
 	         common/Makefile
