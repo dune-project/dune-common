@@ -483,7 +483,7 @@ namespace Dune {
   public:
 
     //! Constructor making base function number baseNum
-    LagrangeBaseFunction ( const FunctionSpaceType & f , int baseNum )
+    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
       : BaseFunctionInterface<FunctionSpaceType>(f)
     {
       assert((baseNum >= 0) || (baseNum < 6));
