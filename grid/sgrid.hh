@@ -750,10 +750,10 @@ namespace Dune {
      data structures (which are not part of this module).
    */
   template<int dim, int dimworld>
-  class SGrid : public GridDefault <dim,dimworld,sgrid_ctype,SGrid>
+  class SGrid : public GridDefault <dim,dimworld,sgrid_ctype,SGrid<dim,dimworld> >
   {
   public:
-    typedef GridTraits<dim,dimworld,Dune::SGrid,SGeometry,SEntity,
+    typedef GridTraits<dim,dimworld,Dune::SGrid<dim,dimworld> ,SGeometry,SEntity,
         SBoundaryEntity,SLevelIterator,SIntersectionIterator,SHierarchicIterator> Traits;
 
     //! maximum number of levels allowed
