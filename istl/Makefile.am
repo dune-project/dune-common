@@ -27,4 +27,4 @@ istl-dist:
 
 CLEANFILES = istl.tar.gz
 
-PHONY = istl-dist
+.PHONY: istl-dist
