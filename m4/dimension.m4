@@ -1,8 +1,7 @@
 # $Id$
 # asks for problem-dimension and world-dimension to pass on to Albert/UG
 
-AC_DEFUN(DUNE_DIMENSION,
-[
+AC_DEFUN([DUNE_DIMENSION],[
 
 # default dimension of a problem is 2
 AC_ARG_WITH(problem_dim,

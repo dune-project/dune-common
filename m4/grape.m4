@@ -13,8 +13,7 @@
 #          libgr.so nicht in einem der Standardpfade liegt. In /usr/local/
 #          brauchst Dus also nicht.
 
-AC_DEFUN(DUNE_PATH_GRAPE,
-[
+AC_DEFUN([DUNE_PATH_GRAPE],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
 

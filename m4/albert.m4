@@ -11,8 +11,7 @@
 # EL_INDEX=1: the element indices should be precomputed instead of
 # generated on the fly => default value
 
-AC_DEFUN(DUNE_PATH_ALBERT,
-[
+AC_DEFUN([DUNE_PATH_ALBERT],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([DUNE_DIMENSION])
 

@@ -1,8 +1,7 @@
 # $Id$
 # searches for UG headers and libs
 
-AC_DEFUN(AM_PATH_UG,
-[
+AC_DEFUN([DUNE_PATH_UG],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
 
