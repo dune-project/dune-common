@@ -19,6 +19,8 @@ namespace Dune {
       lincomb_.push_back( term( *this, 1.0 ) );
     }
 
+    virtual ~Mapping( ) {}
+
     typedef Mapping<Field,Domain,Range> MappingType;
 
     virtual MappingType operator + (const Vector<Field> &) const ;
@@ -37,22 +39,30 @@ namespace Dune {
 
     void operator()( const Domain &Arg, Range &Dest ) const {
       Dest.clear();
-      Range tmp( Dest );
 
+      int count = 0;
       for ( typename std::vector<term>::const_iterator it = lincomb_.begin(); it != lincomb_.end(); it++ ) {
-        fprintf( stderr, " %+f*", it->scalar_ );
-        it->v_->apply( Arg, tmp );
-        if ( it->scalar_ == 1. ) {
-          Dest += tmp;
-        } else if ( it->scalar_ == -1. ) {
-          Dest -= tmp;
+        if ( count == 0 ) {
+          it->v_->apply( Arg, Dest );
+          if ( it->scalar_ != 1. ) {
+            Dest *= it->scalar_;
+          }
         } else {
-          tmp *= it->scalar_;
-          Dest += tmp;
+          Range tmp( Dest );
+          it->v_->apply( Arg, tmp );
+          if ( it->scalar_ == 1. ) {
+            Dest += tmp;
+          } else if ( it->scalar_ == -1. ) {
+            Dest -= tmp;
+          } else {
+            tmp *= it->scalar_;
+            Dest += tmp;
+          }
         }
+        count++;
       }
-      std::cerr << std::endl;
     }
+
 
     virtual void applyAdd( const Domain &Arg, Range &Dest ) const {}
 
@@ -73,7 +83,6 @@ namespace Dune {
     };
 
     std::vector<term> lincomb_;
-
   };
 
 #include "mapping.cc"

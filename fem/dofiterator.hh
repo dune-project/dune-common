@@ -41,6 +41,11 @@ namespace Dune {
       return asImp().operator ++ (i);
     };
 
+    //! random access
+    DofIteratorType& operator[] (int i) {
+      return asImp().operator[] (i);
+    }
+
     //! compare with other GlobalDofIterators
     bool operator == (const DofIteratorType& I)
     {

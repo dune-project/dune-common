@@ -68,8 +68,9 @@ namespace Dune {
         // residuum neu berechnen *********************
 
         spn = r.scalarProductDofs( r );
-        std::cerr << count << " cg-Iterationen  " << count << " Residuum:" << spn << "     ";
+        std::cerr << count << " cg-Iterationen  " << count << " Residuum:" << spn << "        \r";
       }
+      std::cerr << "\n";
     }
 
   private:
