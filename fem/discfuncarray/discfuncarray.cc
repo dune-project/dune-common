@@ -569,15 +569,61 @@ namespace Dune
     return numOfDof_;
   }
 
+  // hier noch evaluate mit Quadrature Regel einbauen
   template<class DiscreteFunctionSpaceType > template <class EntityType>
   inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
   evaluate (EntityType &en, const DomainType & x, RangeType & ret)
   {
     ret = 0.0;
-    for(int i=0; i<numOfDof_; i++)
+    if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
     {
-      baseFuncSet_->evaluate(i,diffVar,x,tmp);
-      ret += this->operator [] (i) * tmp;
+      for(int i=0; i<numOfDifferentDofs_; i++)
+      {
+        baseFuncSet_->eval( i*dimrange , en.geometry().local(x) ,tmp);
+        for(int l=0; l<dimrange; l++)
+        {
+          int num = i*dimrange + l;
+          ret(l) += (* (values_[num])) * tmp(l);
+        }
+      }
+    }
+    else
+    {
+      for(int l=0; l<dimrange; l++)
+      {
+        ret(l) = (* (values_[ l ]));
+      }
+    }
+  }
+
+  // hier noch evaluate mit Quadrature Regel einbauen
+  template<class DiscreteFunctionSpaceType >
+  template <class EntityType, class QuadratureType>
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
+  evaluate (EntityType &en, QuadratureType &quad, int quadPoint, RangeType & ret)
+  {
+    ret = 0.0;
+    if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
+    {
+      for(int i=0; i<numOfDifferentDofs_; i++)
+      {
+        // evaluate base function
+        baseFuncSet_->eval( i*dimrange , quad , quadPoint ,tmp);
+
+        for(int l=0; l<dimrange; l++)
+        {
+          int num = i*dimrange + l;
+          ret(l) += (* (values_[num])) * tmp(l);
+        }
+      }
+    }
+    else
+    {
+      // if we have only one base we won't evaluate that
+      for(int l=0; l<dimrange; l++)
+      {
+        ret(l) = (* (values_[ l ]));
+      }
     }
   }
 
@@ -603,6 +649,7 @@ namespace Dune
     {
       baseFuncSet_ = & ( fSpace_.getBaseFunctionSet(en) );
       numOfDof_ = baseFuncSet_->getNumberOfBaseFunctions();
+      numOfDifferentDofs_ = baseFuncSet_->getNumberOfDiffBaseFuncs();
 
       if(numOfDof_ > values_.size())
         values_.resize( numOfDof_ );
