@@ -42,15 +42,15 @@ namespace Dune {
       g_id=g_coord[d]+g.globalsize(l_,d)*(g_id);
 #ifndef NDEBUG
     if (g_id<0) {
-      cout << "ERROR on level " << l_ << " End=" << g.max(l_) << endl
-           << coord << g_coord << endl
-           << id_ << " " << g_id << endl << "F_OVL:";
-      for (int d=0; d<DIM; d++) cout << g.front_overlap(l_,d) << " ";
-      cout << "\n Grid->F_OVL:";
-      for (int d=0; d<DIM; d++) cout << g.front_overlap(l_,d) << " ";
-      cout << "\n Grid->ovl:"
-           << g.overlap_[l_] << " ";
-      cout << endl;
+      std::cout << "ERROR on level " << l_ << " End=" << g.max(l_) << std::endl
+                << coord << g_coord << std::endl
+                << id_ << " " << g_id << std::endl << "F_OVL:";
+      for (int d=0; d<DIM; d++) std::cout << g.front_overlap(l_,d) << " ";
+      std::cout << "\n Grid->F_OVL:";
+      for (int d=0; d<DIM; d++) std::cout << g.front_overlap(l_,d) << " ";
+      std::cout << "\n Grid->ovl:"
+                << g.overlap_[l_] << " ";
+      std::cout << std::endl;
     }
     assert (g_id>=0);
 #endif
