@@ -9,9 +9,9 @@ namespace Dune
   // Constructor makeing empty discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
-  DiscFuncArray(DiscreteFunctionSpaceType & f) :
+  DiscFuncArray(const char * name, DiscreteFunctionSpaceType & f) :
     DiscreteFunctionDefaultType ( f )
-    , name_ ( "no name" )
+    , name_ ( name )
     , built_ ( false )
     , levOcu_ (0)
     , level_ (-1)

@@ -55,7 +55,7 @@ namespace Dune {
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
 
     //! Constructor make empty DiscFuncArray
-    DiscFuncArray ( DiscreteFunctionSpaceType & f );
+    DiscFuncArray ( const char * name , DiscreteFunctionSpaceType & f );
 
     //! Constructor make Discrete Function for all or leaf level
     DiscFuncArray ( DiscreteFunctionSpaceType & f,
