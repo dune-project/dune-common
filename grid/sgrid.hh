@@ -224,6 +224,8 @@ namespace Dune {
   public:
     SBoundaryEntity() : elem_(true) {}
 
+    int id () const { return -1; }
+
     //! return true if ghost cell was calced
     bool hasGeometry () { return false; };
 

@@ -5,6 +5,7 @@
 #define DUNE_GENERICITERATOR_HH
 
 #include <dune/common/iteratorfacades.hh>
+#include <cassert>
 
 namespace Dune
 {
