@@ -225,7 +225,7 @@ namespace Dune {
     MPI_Comm_size(MPI_COMM_WORLD, &P); // Number of Processors
     dim_=0;
     MPI_Dims_create(P, DIM, dim_);
-    bool reorder = true;
+    bool reorder = false;
     array<DIM> periodic_dummy;
     for (int d=0; d<DIM; d++) {
       periodic_dummy[d] = periodic_[d];
