@@ -4,9 +4,8 @@
 
 
 #if _3
-template<class GRID, class T>
-void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
-                                           const Array<T>& sol,
+template<class GRID, class DiscFuncType>
+void Dune::AmiraMeshWriter<GRID, T>::write(const GRID& grid,
                                            const std::string& filename)
 {
   // Temporary:  we write this level
@@ -207,10 +206,9 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
 
 
 #ifdef _2
-template<class GRID, class T>
-void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
-                                           const Array<T>& sol,
-                                           const std::string& filename)
+template<class GRID, class DiscFuncType>
+void Dune::AmiraMeshWriter<GRID, DiscFuncType>::writeGrid(const GRID& grid,
+                                                          const std::string& filename)
 {
 
   // Temporary:  we write this level
@@ -360,41 +358,6 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
     ((unsigned char*)element_materials->dataPtr())[i] = 0;
 
 
-  //////////////////////////////////////////////////////
-
-  // Now save the solution
-#if 0
-  AmiraMesh::Data* nodeData = new AmiraMesh::Data("Data", geo_nodes, McPrimType::mc_float, ncomp);
-  am_geometry.insert(nodeData);
-
-  AmiraMesh::Field* nodeField = new AmiraMesh::Field("f", ncomp, McPrimType::mc_float,
-                                                     AmiraMesh::t_linear, nodeData);
-  am_geometry.insert(nodeField);
-
-  i=0;
-  for (k=fl; k<=tl; k++)
-    for (vec=FIRSTVECTOR(GRID_ON_LEVEL(theMG,k)); vec!= NULL; vec=SUCCVC(vec))
-      if ((VOTYPE(vec) == NODEVEC) && ((k==tl) || (VNCLASS(vec)<1) ))
-      {
-        SHORT vtype   = VTYPE(vec);
-        /** \bug This definition of ncomp shadows another one! */
-        SHORT ncomp   = VD_NCMPS_IN_TYPE(sol, vtype);
-        SHORT *cmpptr = VD_CMPPTR_OF_TYPE(sol, vtype);
-        SHORT j;
-
-        for (j=0; j<ncomp; j++)
-          ((float*)nodeData->dataPtr())[ncomp*i+j] = VVALUE(vec, cmpptr[j]);
-
-        i++;
-      }
-
-  // actually save the solution file
-  //    if (!am_solution.write(solFilename, 1) ) {
-  //        printf("An error has occured writing file %s.\n", solFilename);
-  //        return PARAMERRORCODE;
-  //    }
-
-#endif
   if(!am_geometry.write(geoFilename.c_str(), 1)) {
     printf("writing geometry file failed in amira : \n");
     /** \todo Do a decent error handling */
@@ -404,5 +367,58 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
   printf("Grid written successfully to:\n %s \n", geoFilename.c_str());
 }
 
+template<class GRID, class DiscFuncType>
+void Dune::AmiraMeshWriter<GRID, DiscFuncType>::writeFunction(const DiscFuncType& f,
+                                                              const std::string& filename)
+{
+  // Get grid type associated with DiscFuncType
+  typedef typename DiscFuncType::FunctionSpaceType FunctionSpaceType;
+  typedef typename FunctionSpaceType::GridType GridType;
+
+  const GridType& grid = f.getFunctionSpace().getGrid();
+
+  const int level = grid.maxlevel();
+  const int noOfNodes = grid.size(level, GridType::dimension);
+
+  // temporary hack
+  const int ncomp = 1;
+
+  // Create AmiraMesh object
+  AmiraMesh am;
+
+  // Set the appropriate content type
+  am.parameters.set("ContentType", "HxTriangularData");
+
+  AmiraMesh::Location* sol_nodes = new AmiraMesh::Location("Nodes", noOfNodes);
+  am.insert(sol_nodes);
+
+  AmiraMesh::Data* nodeData = new AmiraMesh::Data("Data", sol_nodes, McPrimType::mc_double, ncomp);
+  am.insert(nodeData);
+
+  AmiraMesh::Field* nodeField = new AmiraMesh::Field("f", ncomp, McPrimType::mc_double,
+                                                     AmiraMesh::t_linear, nodeData);
+  am.insert(nodeField);
+
+
+  // write the data into the AmiraMesh object
+  typedef typename DiscFuncType::DofIteratorType DofIterator;
+  DofIterator dit = f.dbegin(level);
+  DofIterator ditend = f.dend(level);
+
+  int i=0;
+  for (; dit!=ditend; ++dit, i++) {
+
+    ((double*)nodeData->dataPtr())[i] = *dit;
+
+  }
+
+  // actually save the solution file
+  // (the 1 means: ascii)
+  if (!am.write(filename.c_str(), 1) ) {
+    std::cerr << "An error has occured writing file " << filename << "\n";
+    return;
+  }
+
+}
 
 #endif // #ifdef _2

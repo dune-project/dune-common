@@ -4,7 +4,7 @@
 #define __DUNE_AMIRAMESHWRITER_HH__
 
 #include <string>
-#include "../../common/array.hh"
+//#include "../../common/array.hh"
 
 namespace Dune {
 
@@ -19,7 +19,7 @@ namespace Dune {
    * <li> SimpleGrid<3,3>, with <code>double</code> data </li>
    * </ul>
    */
-  template<class GRID, class T>
+  template<class GRID, class DiscFuncType>
   class AmiraMeshWriter {
 
   public:
@@ -30,10 +30,11 @@ namespace Dune {
      * @param sol  Data that should be written along with the grid
      * @param filename The filename
      */
-    /** \todo The grid argument should be const */
-    static void write(GRID& grid,
-                      const Array<T>& sol,
-                      const std::string& filename);
+    static void writeGrid(const GRID& grid,
+                          const std::string& filename);
+
+    static void writeFunction(const DiscFuncType& sol,
+                              const std::string& filename);
 
     AmiraMeshWriter() {}
 
