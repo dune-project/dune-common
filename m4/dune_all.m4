@@ -52,6 +52,7 @@ dnl check all components
   AC_REQUIRE([DUNE_PATH_F5])
   AC_REQUIRE([DUNE_PATH_AMIRAMESH])
   AC_REQUIRE([DUNE_MPI])
+  AC_REQUIRE([DUNE_GETPAGESIZE])
 
   if test x$HAVE_DUNE != x1 ; then
     AC_MSG_ERROR([Can't work without the DUNE-library. Maybe you have to supply your DUNE-directory as --with-dune=dir])
