@@ -616,9 +616,10 @@ namespace Dune {
   inline BSGridIntersectionIterator<dim,dimworld> ::
   BSGridIntersectionIterator(BSGrid<dim,dimworld> &grid,
                              BSSPACE HElementType *el, int wLevel,bool end) :
-    entity_( grid ), item_(el), index_(0) , count_ (0)
+    entity_( grid ), item_(el), index_(0)
     , needSetup_ (true), needNormal_(true)
-    , interSelfGlobal_ (false) , theSituation_ (false)
+    , interSelfGlobal_ (false)
+    , theSituation_ (false) , daOtherSituation_ (false)
   {
     neighpair_.first  = 0;
     neighpair_.second = 0;
@@ -633,13 +634,14 @@ namespace Dune {
   first (BSSPACE HElementType & elem, int wLevel)
   {
     item_  = &elem;
-    index_ = count_ = 0;
+    index_ = 0;
     neighpair_.first  = 0;
     neighpair_.second = 0;
 
     needSetup_ = true;
     needNormal_= true;
     theSituation_ = ( (elem.level() < wLevel ) && elem.leaf() );
+    daOtherSituation_ = false;
   }
 
   template<int dim, int dimworld>
@@ -657,9 +659,9 @@ namespace Dune {
   BSGridIntersectionIterator<dim,dimworld> :: operator ++()
   {
     assert(item_ != 0);
+    //std::cout << item_->level() << " " << item_->leaf() << " " <<  theSituation_ << " \n";
 
-    count_++;
-    if( neighpair_.first && theSituation_ )
+    if( neighpair_.first && theSituation_ && daOtherSituation_ )
     {
       neighpair_.first = neighpair_.first->next();
     }
@@ -708,13 +710,28 @@ namespace Dune {
 
     if(! neighpair_.first )
     {
+      // get the face(index_)  of this element
       neighpair_ = (static_cast<BSSPACE GEOElementType &> (*item_)).myintersection(index_);
 
       assert(neighpair_.first);
 
+      // the "situation" describes the case we are on a leaf element but the
+      // walking level is deeper then or own level. This means the neighbour
+      // can have a deeper level and therefor we have on this face not one
+      // neighbour, we have all children as neighbours. So we go to the face
+      // and then to the chilren of this face which are the all faces of the
+      // children on this face. If we went down then we also are allowed to
+      // go next otherwise we are not allowe to go next which is described as
+      // "da other situation"
+
       if( theSituation_ && neighpair_.first->down() )
       {
         neighpair_.first = neighpair_.first->down();
+        daOtherSituation_ = true;
+      }
+      else
+      {
+        daOtherSituation_ = false;
       }
     }
 
@@ -764,12 +781,13 @@ namespace Dune {
   template<int dim, int dimworld>
   inline int BSGridIntersectionIterator<dim,dimworld>::number_in_self ()
   {
-    return count_;
+    return index_;
   }
 
   template<int dim, int dimworld>
   inline int BSGridIntersectionIterator<dim,dimworld>::number_in_neighbor ()
   {
+    assert(item_ != 0);
     return (static_cast<BSSPACE GEOElementType *> (item_)->myneighbour(index_).second);
   }
 
@@ -788,11 +806,31 @@ namespace Dune {
     assert(item_ != 0);
     if(needNormal_)
     {
-      item_->outerNormal(index_,outerNormal_);
-      needNormal_ = false;
+      if(needSetup_) setNeighbor();
+      // seems to work, but has t obe checked
+      calcNormal(neighpair_.first,neighpair_.second);
     }
     return outerNormal_;
   }
+
+  template< int dim, int dimworld>
+  inline void
+  BSGridIntersectionIterator<dim,dimworld>::
+  calcNormal (BSSPACE GEOFaceType *face, int twist)
+  {
+    int i0 = (twist < 0) ? 2 : 0;
+    int i2 = (twist < 0) ? 0 : 2;
+
+    BSSPACE BSGridLinearSurfaceMapping
+    LSM(face->myvertex(i0)->Point(),
+        face->myvertex( 1)->Point(),
+        face->myvertex(i2)->Point()
+        );
+    LSM.normal(outerNormal_);
+    needNormal_ = false;
+  }
+
+
 
   template< int dim, int dimworld>
   inline FieldVector<bs_ctype, dimworld>&
