@@ -118,7 +118,7 @@ namespace Dune {
             for (int j=0; j<numOfBaseFct; j++ )
             {
               int col = functionSpace_.mapToGlobal( *it , j );
-              matrix_->add( row , col , mat(i,j));
+              matrix_->add( row , col , mat[j][i]);
             }
           }
         }
