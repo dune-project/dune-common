@@ -239,7 +239,7 @@ namespace Dune
     //std::cout << face_ << " Kante !\n";
     edge_ = edge;
     vertex_ = vertex;
-    volume_ = 0.0;
+    elDet_ = 0.0;
     builtinverse_ = false;
 
     if(elInfo_)
@@ -268,7 +268,7 @@ namespace Dune
     enum { dimworld = 2 };
 
     elInfo_ = elInfo;
-    volume_ = 0.0;
+    elDet_ = 0.0;
     builtinverse_ = false;
     if(elInfo_)
     {
@@ -292,7 +292,7 @@ namespace Dune
     enum { dimworld = 3 };
 
     elInfo_ = elInfo;
-    volume_ = 0.0;
+    elDet_ = 0.0;
     builtinverse_ = false;
     if(elInfo_)
     {
@@ -531,61 +531,54 @@ namespace Dune
 
   // default implementation calls ALBERT routine
   template< int dim, int dimworld>
-  inline albertCtype AlbertGridElement<dim,dimworld>::elVolume () const
+  inline albertCtype AlbertGridElement<dim,dimworld>::elDeterminant ()
   {
-    return ALBERT el_volume(elInfo_);
+    return ALBERT el_det(elInfo_);
   }
 
   // volume of one Element, here triangle
   template <>
-  inline albertCtype AlbertGridElement<2,2>::elVolume () const
+  inline albertCtype AlbertGridElement<2,2>::elDeterminant ()
   {
     enum { dim = 2 };
     enum { dimworld = 2 };
-    //const albertCtype volFac = 0.5;
     REAL e1[dimworld], e2[dimworld], det;
-    const REAL  *v0;
+    Vec<dimworld,albertCtype> & coord2 = coord_(2);
 
-    v0 = elInfo_->coord[0];
-    for (int i = 0; i < DIM_OF_WORLD; i++)
+    for (int i=0; i<dimworld; i++)
     {
-      e1[i] = elInfo_->coord[1][i] - v0[i];
-      e2[i] = elInfo_->coord[2][i] - v0[i];
+      e1[i] = coord_(i,0) - coord2(i);
+      e2[i] = coord_(i,1) - coord2(i);
     }
+    det = e1[0] * e2[1] - e1[1] * e2[0];
 
-    det = e1[0]*e2[1] - e1[1]*e2[0];
-    det = ABS(det);
-
-    //return volFac*det;
-    return det;
+    // check wether it has to be ABS or not
+    return ABS(det);
   }
 
   // volume of one Element, here therahedron
   template <>
-  inline albertCtype AlbertGridElement<3,3>::elVolume () const
+  inline albertCtype AlbertGridElement<3,3>::elDeterminant ()
   {
     enum { dim = 3 };
     enum { dimworld = 3 };
-    //const albertCtype volFac = 1.0/6.0;
 
-    REAL e1[dimworld], e2[dimworld], e3[dimworld], det;
-    const REAL  *v0;
+    REAL e1[dimworld], e2[dimworld], e3[dimworld];
+    Vec<dimworld,albertCtype> & coord0 = coord_(0);
+    REAL det;
 
-    v0 = elInfo_->coord[0];
-    for (int i = 0; i < dimworld; i++)
+    for (int i=0; i<dimworld; i++)
     {
-      e1[i] = elInfo_->coord[1][i] - v0[i];
-      e2[i] = elInfo_->coord[2][i] - v0[i];
-      e3[i] = elInfo_->coord[3][i] - v0[i];
+      e1[i] = coord_(i,1) - coord0(i);
+      e2[i] = coord_(i,2) - coord0(i);
+      e3[i] = coord_(i,3) - coord0(i);
     }
 
     det =   e1[0] * (e2[1]*e3[2] - e2[2]*e3[1])
           - e1[1] * (e2[0]*e3[2] - e2[2]*e3[0])
           + e1[2] * (e2[0]*e3[1] - e2[1]*e3[0]);
-    det = ABS(det);
 
-    //return volFac*det;
-    return det;
+    return ABS(det);
   }
 
   template< int dim, int dimworld>
@@ -594,10 +587,10 @@ namespace Dune
   {
     // if inverse was built, volume was calced already
     if(builtinverse_)
-      return volume_;
+      return elDet_;
 
-    volume_ = elVolume();
-    return volume_;
+    elDet_ = elDeterminant();
+    return elDet_;
   }
 
   template <>
@@ -616,14 +609,14 @@ namespace Dune
       return Jinv_;
 
     // builds the jacobian inverse and calculates the volume
-    builtJacobianInverse(local);
+    buildJacobianInverse(local);
     return Jinv_;
   }
 
   // calc volume of face of tetrahedron
   template <>
   inline void AlbertGridElement<2,3>::
-  builtJacobianInverse(const Vec<2,albertCtype>& local)
+  buildJacobianInverse(const Vec<2,albertCtype>& local)
   {
     //std::cout << "To be implemented! \n";
     //abort();
@@ -631,23 +624,19 @@ namespace Dune
     enum { dimworld = 3 };
 
     // is faster than the lower method
-    volume_ = 0.1;
+    std::cout << "buildJacobianInverse<2,3> not correctly implemented!\n";
+    elDet_ = 0.1;
     builtinverse_ = true;
   }
 
   template< int dim, int dimworld>
   inline void AlbertGridElement<dim,dimworld>::
-  builtJacobianInverse(const Vec<dim,albertCtype>& local)
+  buildJacobianInverse(const Vec<dim,albertCtype>& local)
   {
-    enum { div  = (dim < 3) ? 1 : 2 };
-    enum { div2 = (dim < 3) ? 0 : 1 };
-    // volFactor should be 0.5 for dim==2 and (1.0/6.0) for dim==3
-    const albertCtype volFactor = static_cast<albertCtype> (0.5/div);
-
     ALBERT REAL lambda[dim+1][dimworld];
 
     // is faster than the lower method
-    volume_ = volFactor * ALBERT el_grd_lambda(elInfo_,lambda);
+    elDet_ = ALBERT el_grd_lambda(elInfo_,lambda);
 
     // Achtung bei Jinv muessen die i,j vertauscht sein,
     // so ist es richtig
@@ -662,7 +651,7 @@ namespace Dune
 
   // tested
   inline void AlbertGridElement<2,2>::
-  builtJacobianInverse(const Vec<2,albertCtype>& local)
+  buildJacobianInverse(const Vec<2,albertCtype>& local)
   {
     //******************************************************
     //
@@ -737,15 +726,14 @@ namespace Dune
     std::cout << "***********************\n";
 #endif
 
-    // multiply det with 0.5 to get volume of element
-    volume_ = 0.5 * adet;
+    elDet_ = adet;
     builtinverse_ = true;
     return;
   }
 
   //tested
   inline void AlbertGridElement<3,3>::
-  builtJacobianInverse(const Vec<3,albertCtype>& local)
+  buildJacobianInverse(const Vec<3,albertCtype>& local)
   {
     enum { dimworld = 3 };
     enum { dim = 3 };
@@ -829,19 +817,18 @@ namespace Dune
     std::cout << "***********************\n";
 #endif
 
-    // volFactor should be 1/6, see ALBERT Doc
-    volume_ = adet / 6.0;
+    elDet_ = adet;
     builtinverse_ = true;
     return;
   }
 
   template <>
   inline void AlbertGridElement<1,2>::
-  builtJacobianInverse(const Vec<1,albertCtype>& local)
+  buildJacobianInverse(const Vec<1,albertCtype>& local)
   {
     // volume is length of edge
     Vec<2,albertCtype> vec = coord_(0) - coord_(1);
-    volume_ = vec.norm2();
+    elDet_ = vec.norm2();
 
     builtinverse_ = true;
   }

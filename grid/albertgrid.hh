@@ -185,6 +185,9 @@ namespace Albert
       albertCtype integration_element (const Vec<dim,albertCtype>& local);
 
       //! can only be called for dim=dimworld!
+      //! Note that if both methods are called on the same element, then
+      //! call Jacobian_inverse first because integration element is calculated
+      //! during calculation of the Jacobian_inverse
       Mat<dim,dim>& Jacobian_inverse (const Vec<dim,albertCtype>& local);
 
       //***********************************************************************
@@ -215,7 +218,7 @@ namespace Albert
       void makeRefElemCoords();
 
       //! built the jacobian inverse and store the volume
-      void builtJacobianInverse (const Vec<dim,albertCtype>& local);
+      void buildJacobianInverse (const Vec<dim,albertCtype>& local);
 
       Vec<dim+1,albertCtype> tmpVec_;
       //! maps a global coordinate within the elements local barycentric
@@ -227,7 +230,7 @@ namespace Albert
       int mapVertices (int i) const;
 
       // calculates the volume of the element
-      albertCtype elVolume () const;
+      albertCtype elDeterminant ();
 
       //! the vertex coordinates
       Mat<dimworld,dim+1,albertCtype> coord_;
@@ -258,7 +261,7 @@ namespace Albert
       //! is true if Jinv_ and volume_ is calced
       bool builtinverse_;
       Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
-      albertCtype volume_; //!< storage of element volume
+      albertCtype elDet_; //!< storage of element determinant
 
     };
 
