@@ -18,6 +18,10 @@
 #include "bcrsmatrix.hh"
 #include "io.hh"
 #include "gsetc.hh"
+#include "ilu.hh"
+#include "operators.hh"
+#include "solvers.hh"
+#include "preconditioners.hh"
 
 // a simple stop watch
 class Timer
@@ -398,15 +402,19 @@ void test_Iter ()
   d=b; A.mmv(x,d); // compute defect
   std::cout << 0 << " " << d.two_norm() << std::endl;
   Dune::BlockVector<VB> v(x); // memory for update
-  v = 1.23E-4;
   double w=1.0;               // damping factor
+  //  printmatrix(std::cout,A,"system matrix","row",12,4);
+  Dune::BCRSMatrix<MB> ILU(A);
+  bilu0_decomposition(ILU);
+  //  printmatrix(std::cout,ILU,"ilu decomposition","row",12,4);
   for (int k=1; k<=20; k++)
   {
-    v = 0;
-    dbgs(A,v,d,w);             // compute update
-    dbjac(A,v,d,w);             // compute update
-    bsorf(A,v,d,w);             // compute update
-    bsorb(A,v,d,w);             // compute update
+    v=0;
+    bilu_backsolve(ILU,v,d);
+    //    dbgs(A,v,d,w);       // compute update
+    //    dbjac(A,v,d,w);       // compute update
+    //            bsorf(A,v,d,w);    //   compute update
+    //            bsorb(A,v,d,w);    //   compute update
     x += v;                    // update solution
     A.mmv(v,d);                // update defect
     //    bltsolve(A,v,d,w);   // compute update
@@ -416,14 +424,67 @@ void test_Iter ()
     //    x += v;              // update solution
     //    A.mmv(v,d);          // update defect
     std::cout << k << " " << d.two_norm() << std::endl;
+    if (d.two_norm()<1E-4) break;
   }
   t.stop();
   std::cout << "time for solve=" << t.gettime() << " seconds." << std::endl;
-  //   printvector(std::cout,x,"computed solution","entry",10,10,2);
-  return;
-
-  // printvector(std::cout,x,"solution","entry",1,10,2);
 }
+
+
+void test_Interface ()
+{
+  // define Types
+  const int BlockSize = 6;
+  typedef Dune::FieldVector<double,BlockSize> VB;
+  typedef Dune::FieldMatrix<double,BlockSize,BlockSize> MB;
+  typedef Dune::BlockVector<VB> Vector;
+  typedef Dune::BCRSMatrix<MB> Matrix;
+
+  // build little blocks
+  MB D=0;
+  for (int i=0; i<BlockSize; i++)
+    for (int j=0; j<BlockSize; j++)
+      if (i==j) D[i][j] = 4+(BlockSize-1);else D[i][j] = -1;
+
+  MB E=0;
+  for (int i=0; i<BlockSize; i++)
+    E[i][i] = -1;
+
+  // make a block compressed row matrix with five point stencil
+  const int N=10000, BW1=1, BW2=100;
+  Matrix A(N,N,5*N,Dune::BCRSMatrix<MB>::row_wise);
+  for (Matrix::CreateIterator i=A.createbegin(); i!=A.createend(); ++i)
+  {
+    i.insert(i.index());
+    if (i.index()-BW1>=0) i.insert(i.index()-BW1);
+    if (i.index()+BW1< N) i.insert(i.index()+BW1);
+    if (i.index()-BW2>=0) i.insert(i.index()-BW2);
+    if (i.index()+BW2< N) i.insert(i.index()+BW2);
+  }
+  for (Matrix::RowIterator i=A.begin(); i!=A.end(); ++i)
+    for (Matrix::ColIterator j=(*i).begin(); j!=(*i).end(); ++j)
+      if (i.index()==j.index())
+        (*j) = D;
+      else
+        (*j) = E;
+
+  // set up system
+  Vector x(N),b(N);
+  x=0; x[0]=1; x[N-1]=2; // prescribe known solution
+  b=0; A.umv(x,b);       // set right hand side accordingly
+  x=0;                   // initial guess
+
+  // set up the high-level solver objects
+  Dune::MatrixAdapter<Matrix,Vector,Vector> op(A);        // make linear operator from A
+  Dune::SeqSSOR<Matrix,Vector,Vector> ssor(A,2,1.0);      // preconditioner object
+  Dune::LoopSolver<Vector,Vector> solver(op,ssor,1E-4,50,2); // an inverse operator
+
+  // call the solver
+  Dune::InverseOperatorResult r;
+  solver.apply(x,b,r);
+}
+
+
 
 int main (int argc , char ** argv)
 {
@@ -434,7 +495,8 @@ int main (int argc , char ** argv)
     //  test_FieldMatrix();
     //  test_BCRSMatrix();
     //  test_IO();
-    test_Iter();
+    //	test_Iter();
+    test_Interface();
   }
   catch (Dune::ISTLError& error)
   {
