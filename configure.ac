@@ -9,6 +9,7 @@ AC_CONFIG_SRCDIR([grid/common/grid.hh])
 
 # Checks for programs.
 AC_PROG_CXX
+AC_LANG_PUSH([C++])
 
 # don't build shared libs per default, this is way better for debugging...
 AC_DISABLE_SHARED
@@ -20,6 +21,20 @@ AC_CHECK_PROGS([TEX], [latex], [true])
 AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
 AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
 AC_CHECK_PROGS([DVIPS], [dvips], [true])
+
+echo
+echo Checking for libraries the self-test could use:
+echo
+
+# -- check for other grid-libs so that they may be included into tests
+# Albert-check
+DUNE_PATH_ALBERT
+DUNE_PATH_ALBERTA
+# UG-check
+DUNE_PATH_UG
+DUNE_PATH_AMIRAMESH
+# Yaspgrid-check
+DUNE_MPI
 
 # create symlink for consistent paths even when $(top_srcdir) is not
 # called dune/ (if filesystem/OS supports symlinks)
@@ -61,6 +76,12 @@ fi
 # preset variable to path such that #include <dune/...> works
 AC_SUBST(AM_CPPFLAGS)
 
+echo
+echo Note: the libraries checked for above are only used for the self-test of Dune.
+echo The library itself will build and the headers will work even if
+echo Albert, UG, Amiramesh, MPI, etc. cannot be found.
+echo
+
 # write output
 AC_CONFIG_FILES([Makefile
 	         common/Makefile
@@ -71,8 +92,11 @@ AC_CONFIG_FILES([Makefile
                  fem/operator/Makefile
                  grid/Makefile
                  grid/albertgrid/Makefile
+		 grid/bsgrid/Makefile
                  grid/common/Makefile
                  grid/sgrid/Makefile
+		 grid/test/Makefile
+		 grid/uggrid/Makefile
                  grid/yaspgrid/Makefile
 		 istl/Makefile
 		 istl/doc/Makefile

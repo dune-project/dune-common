@@ -10,11 +10,87 @@ following programs installed on your system:
 
   libtool
 
-Run the script
+For the documentation to build you'll need doxygen and latex
+installed.
+
+Dune also features a self-test. As some grid-components (e.g. Albert,
+UG) depend on external libraries their self-tests will only run if
+those libraries are found. The pathes would then need to be passed via
+--with-...= parameters. 
+
+Important!  If you don't want to develop Dune itself you won't need to
+provide external components! The Dune-library and -headers are
+independent of other libraries, instead the applications can choose
+what parts to use.
+
+Getting started
+---------------
+
+If these preliminaries are met, you should run the script
 
   ./autogen.sh
 
-to get a ./configure-script.
+which calls the GNU autoconf/automake to create a ./configure-script
+and the Makefiles. The configure-script is automatically called and
+you're ready to perform a
+
+  make
+
+to build the library and documentation. Dune can be installed into
+your system via
+
+  make install
+
+You can provide a --prefix=PATH parameter to autogen to install the
+components into PATH/lib, PATH/include, ... instead of the default
+/usr/local/lib, /usr/local/include
+
+Passing options to ./configure
+------------------------------
+
+autogen.sh also calls the newly created configure-script to
+conveniently pass on options about the used compiler. Thus you'll have
+to provide autogen.sh any options you want configure to get, e.g.
+
+  ./autogen.sh --with-albert=... --with-ug=...
+
+
+Choosing the compiler and the options
+-------------------------------------
+
+The selection of the compiler works as follows: if --gnu or --intel is
+passed to autogen it reads the content of gcc.opts or icc.opts to get
+the default compiler flags. With the option --optim you can switch the
+compiler-specific optimization parameters on.
+
+If you want to change the compiler options to your favourites you can
+either
+
+ - adapt the appropriate .opts-file and rerun autogen.sh. Please don't
+   commit this changed file to CVS if you're not sure if the options
+   work for everybody.
+
+ - copy an existing .opts-file to a new name, change the options and
+   use
+
+      ./autogen.sh --opts=my.opts
+
+
+More info
+---------
+
+See
+
+     ./autogen.sh --help
+   
+and (if it exists)
+ 
+     ./configure --help
+
+for further options.
+
+
+The full build-system is described in the doc/Buildsystem
 
 
 $Id$

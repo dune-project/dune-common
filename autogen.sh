@@ -88,7 +88,7 @@ libtoolize --force
 
 # prepare everything
 echo "--> aclocal..."
-aclocal$AMVERS
+aclocal$AMVERS -I m4
 
 # applications should provide a config.h for now
 #echo "--> autoheader..."

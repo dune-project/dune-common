@@ -1,21 +1,31 @@
 DUNE-library
 ============
 
-[descriptional text missing]
-
-
 Getting started
 ---------------
 
-The easiest way to use Dune is to rename this directory "dune" if it
-has a different name and tell the application about it. That's
-it. Really. :)
+To compile a small library Dune has to check several components of
+your system. Run
 
-If you want to install the Dune-headers globally on your system run
-the following as "root":
+  ./configure
 
-  ./configure && make install
+to commence those tests. Don't worry about messages telling you that
+libraries are missing: they are only needed for grid-self-checks we
+need for developing.
 
+You can use
+
+  ./configure --prefix=PATH
+
+if you don't want Dune to be installed into /usr/local
+
+After configuration
+
+  make
+  make install
+
+build and install Dune (you may need root-permissions for the install
+part depending on the prefix set)
 
 License
 -------
