@@ -43,15 +43,20 @@ namespace Dune {
     //! The grid level the iteration step is working on
     virtual int level() const {return level_;}
 
+    //! The solution container
     DiscFuncType* x_;
 
+    //! The container for the right hand side
     DiscFuncType* rhs_;
 
+    //! The linear operator
     OperatorType* mat_;
 
+    /** \brief A flag for each degree of freedom stating whether the
+     * dof is dirichlet or not */
     const std::vector<bool>* dirichletNodes_;
 
-    //! The level of a multigrid hierarchy that is iterator is supposed to work on
+    //! The level of a multigrid hierarchy that this iterator is supposed to work on
     int level_;
 
   };

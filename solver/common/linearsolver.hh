@@ -8,20 +8,27 @@
 
 namespace Dune {
 
-  template <class OP_TYPE, class VEC_TYPE>
+  /** \brief A generic linear solver
+   *
+   *  This class basically implements a loop that calls
+   * an iteration procedure (which is to be supplied be
+   * the user).  It also monitors convergence. */
+  template <class OperatorType, class DiscFuncType>
   class LinearSolver : public Solver
   {
   public:
+    /** \brief Loop, call the iteration procedure
+     * and monitor convergence */
     virtual void solve();
 
-
-    //protected:
-
+    //! The maximum number of iterations
     int numIt;
 
-    IterationStep<OP_TYPE,VEC_TYPE>* iterationStep;
+    //! The iteration step used by the algorithm
+    IterationStep<OperatorType,DiscFuncType>* iterationStep;
 
-    Norm<VEC_TYPE>* errorNorm_;
+    //! The norm used to measure convergence
+    Norm<DiscFuncType>* errorNorm_;
 
   };
 
