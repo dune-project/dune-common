@@ -570,6 +570,27 @@ void UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth
 
   if (errCode)
     DUNE_THROW(GridError, "UG" << dim << "d::LBCommand returned error code " << errCode);
+
+  // Renumber everything
+  /** \todo Make this a separate routine? */
+  for (int i=0; i<=0; i++) {
+
+    typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(i);
+    typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(i);
+
+    int id = 0;
+    for (; eIt!=eEndIt; ++eIt)
+      getRealEntity<0>(*eIt).target_->ge.id = id++;
+
+    typename Traits::template codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
+    typename Traits::template codim<dim>::LevelIterator vEndIt = lend<dim>(i);
+
+    id = 0;
+    for (; vIt!=vEndIt; ++vIt)
+      getRealEntity<dim>(*vIt).target_->id = id++;
+
+  }
+
 }
 
 #ifdef ModelP
@@ -660,15 +681,14 @@ template < int dim, int dimworld >
 template<class T, template<class> class P, int codim>
 void UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
 {
-  std::cout << "UGGrid communicator not implemented yet!\n";
 #ifdef ModelP
   Foo<T,P> foo;
 
   Foo<T,P>::dataArray = &t;
 
   /** \todo Should be in a namespace */
-  DDD_IFAExchange(0,
-                  level,   //GRID_ATTR(g),
+  DDD_IFAExchange(UG::ElementIF,
+                  UG_NS<dim>::Grid_Attr(multigrid_->grids[level]),
                   sizeof(P<T>),
                   &Foo<T,P>::gather,
                   &Foo<T,P>::scatter);
