@@ -90,13 +90,13 @@ namespace Dune {
                             const Domain & x, Range & phi) const
     {
       phi = factor[1];
-      phi += factor[0] * x.get(0);
+      phi += factor[0] * x(0);
     }
 
     virtual void evaluate ( const Vec<1, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      int num = diffVariable.get(0);
+      int num = diffVariable(0);
       phi = factor[num];
     }
 
@@ -156,14 +156,14 @@ namespace Dune {
     {
       phi = factor[2];
       for(int i=0; i<2; i++)
-        phi += factor[i] * x.get(i);
+        phi += factor[i] * x(i);
     }
 
     virtual void evaluate ( const Vec<1, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // x or y ==> 1 or 2
-      int num = diffVariable.get(0);
+      int num = diffVariable(0);
       phi = factor[num];
     }
 
@@ -225,7 +225,7 @@ namespace Dune {
     {
       phi = factor[0];
       for(int i=1; i<4; i++)
-        phi += factor[i]*x.get(i-1);
+        phi += factor[i]*x(i-1);
     }
 
     //! first Derivative
@@ -233,7 +233,7 @@ namespace Dune {
                             const Domain & x, Range & phi) const
     {
       // num = 0 ==> derivative respect to x
-      int num = diffVariable.get(0);
+      int num = diffVariable(0);
       phi = factor[num+1];
       //phi.print(std::cout,1); std::cout << "\n*************\n";
     }
@@ -317,7 +317,7 @@ namespace Dune {
       // dim == 2, tested
       phi = 1.0;
       for(int i=0; i<dim; i++)
-        phi *= (factor[i][0] + (factor[i][1] * x.get(i)));
+        phi *= (factor[i][0] + (factor[i][1] * x(i)));
     }
 
     //! derivative with respect to x or y
@@ -327,14 +327,14 @@ namespace Dune {
     virtual void evaluate ( const Vec<1,deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      int num = diffVariable.get(0);
+      int num = diffVariable(0);
       phi = 1.0;
       for(int i=0; i<dim; i++)
       {
         if(num == i)
           phi *= factor[num][1];
         else
-          phi *= (factor[i][0] + factor[i][1] * x.get(i));
+          phi *= (factor[i][0] + factor[i][1] * x(i));
       }
       return;
     }
@@ -343,7 +343,7 @@ namespace Dune {
                             const Domain & x, Range & phi) const
     {
       // which means derivative xx or yy
-      if(diffVariable.get(0) == diffVariable.get(1))
+      if(diffVariable(0) == diffVariable(1))
       {
         phi = 0.0;
         return;
@@ -463,7 +463,7 @@ namespace Dune {
       // dim == 3, tested
       phi = 1.0;
       for(int i=0; i<dim; i++)
-        phi *= (factor[i][0] + (factor[i][1] * x.get(i)));
+        phi *= (factor[i][0] + (factor[i][1] * x(i)));
     }
 
     //! derivative with respect to x or y or z
@@ -473,14 +473,14 @@ namespace Dune {
     virtual void evaluate ( const Vec<1,deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
-      int num = diffVariable.get(0);
+      int num = diffVariable(0);
       phi = 1.0;
       for(int i=0; i<dim; i++)
       {
         if(num == i)
           phi *= factor[num][1];
         else
-          phi *= (factor[i][0] + factor[i][1] * x.get(i));
+          phi *= (factor[i][0] + factor[i][1] * x(i));
       }
       return;
     }
@@ -730,7 +730,7 @@ namespace Dune {
     const FastBaseFunctionSetType& getBaseFunctionSet ( EntityType &en ) const
     {
       ElementType type =  en.geometry().type();
-      return (*baseFuncSet_.get( type ));
+      return (*baseFuncSet_( type ));
     };
 
     //! return true if we have continuous discrete functions

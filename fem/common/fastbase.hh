@@ -161,7 +161,7 @@ namespace Dune {
     {
       int n = 0;
       for ( int i = 0; i < diffOrd; i++ )
-        n = diffVariable.get(i) + i * DimDomain;
+        n = diffVariable(i) + i * DimDomain;
 
       return numQuadPoints*(getNumberOfBaseFunctions()*n + baseFunct) + quadPt;
     };
