@@ -28,6 +28,10 @@ typedef int ID_t;
 #define QUICKHACKNOELEMENTS
 #endif // QUICKHACKNOELEMENTS
 
+#ifdef SPGRID_EQUAL_OPERATOR
+static int __grid__counter=0;
+#endif
+
 namespace Dune {
 
   typedef int level;
@@ -124,12 +128,27 @@ namespace Dune {
     exchange_data** exchange_data_to;
     //! initialize the grid
     void init();
+  private:
+    spgrid(spgrid<DIM> & spg) {
+      throw std::string("Don't use!");
+    };
+#ifdef SPGRID_EQUAL_OPERATOR
+  private:
+    int gridID;
+  public:
+    bool operator == (const spgrid<DIM> & spg) const {
+      return ( spg.gridID == gridID );
+    };
+#endif
   public:
     // Constructors
     spgrid(array<DIM> & gsize, array<DIM,FLOAT> & _h,
            array<DIM,bool> & periodic, int o) :
       globalsize_(gsize), periodic_(periodic), levels(0)
     {
+#ifdef SPGRID_EQUAL_OPERATOR
+      gridID = __grid__counter; __grid__counter++;
+#endif
       for (int d=0; d<DIM; d++) {
         if (gsize[d] < 0) throw std::string("Size Error");
         if (gsize[d] == 0)
