@@ -964,6 +964,50 @@ namespace Dune
     return AlbertaGridBoundaryId<GridImp,codim,dim>::boundaryId(elInfo_,face_,edge_,vertex_);
   }
 
+
+  // vertices in 2d and 3d
+  template <class GridImp, int codim, int cdim>
+  struct AlbertaGridFEVnum
+  {
+    static int getFEVnum (int face, int edge, int vertex)
+    {
+      return face;
+    }
+  };
+
+  template <class GridImp, int cdim>
+  struct AlbertaGridFEVnum<GridImp,1,cdim>
+  {
+    static int getFEVnum (int face, int edge, int vertex)
+    {
+      return face;
+    }
+  };
+
+  template <class GridImp, int cdim>
+  struct AlbertaGridFEVnum<GridImp,cdim,cdim>
+  {
+    static int getFEVnum (int face, int edge, int vertex)
+    {
+      return vertex;
+    }
+  };
+
+  template <class GridImp>
+  struct AlbertaGridFEVnum<GridImp,2,3>
+  {
+    static int getFEVnum (int face, int edge, int vertex)
+    {
+      return edge;
+    }
+  };
+
+  template<int codim, int dim, class GridImp>
+  inline int AlbertaGridEntity<codim,dim,GridImp>::
+  getFEVnum() const
+  {
+    return AlbertaGridFEVnum<GridImp,codim,GridImp::dimensionworld>::getFEVnum(face_,edge_,vertex_);
+  }
   template<int codim, int dim, class GridImp>
   inline int AlbertaGridEntity<codim,dim,GridImp>::
   globalIndex() const
@@ -3163,7 +3207,7 @@ namespace Dune
     // calc new number of entities
     numberOfEntitys_[0]     = mesh_->n_hier_elements; // elements
     numberOfEntitys_[1]     = 1;                    // faces
-    numberOfEntitys_[dim-1] = 1;                    // edges
+    numberOfEntitys_[dim-1] = mesh_->n_edges;                    // edges
     numberOfEntitys_[dim]   = mesh_->n_vertices;    // vertices
 
     maxHierIndex_[1]   = mesh_->n_edges;
