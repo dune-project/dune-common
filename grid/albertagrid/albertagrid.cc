@@ -1804,9 +1804,8 @@ namespace Dune
   AlbertaGridIntersectionIterator<GridImp>::unitOuterNormal (const LocalCoordType & local) const
   {
     // calculates the outer_normal
-    double norm_1 = (1.0/this->outerNormal(local).two_norm());
-    assert(norm_1 > 0.0);
-    unitNormal_ *= norm_1;
+    unitNormal_ = this->outerNormal(local);
+    unitNormal_ /= unitNormal_.two_norm();
 
     return unitNormal_;
   }
