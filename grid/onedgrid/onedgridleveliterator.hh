@@ -11,10 +11,6 @@
 
 namespace Dune {
 
-  // Forward declaration
-  //     template <int codim, int dim, int dimworld, PartitionIteratorType PiType>
-  //     class OneDGridLevelIteratorFactory;
-
   //**********************************************************************
   //
   // --OneDGridLevelIterator
@@ -22,53 +18,54 @@ namespace Dune {
   /** \brief Iterator over all entities of a given codimension and level of a grid.
    * \ingroup OneDGrid
    */
-  template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
+  template<int codim, PartitionIteratorType pitype, class GridImp>
   class OneDGridLevelIterator :
-    public LevelIteratorDefault <codim,dim,dimworld, pitype, OneDCType,
-        OneDGridLevelIterator,OneDGridEntity>
+    public LevelIteratorDefault <codim, pitype, GridImp, OneDGridLevelIterator>
   {
+
+    enum {dim=GridImp::dimension};
     friend class OneDGridHelper<codim>;
-    friend class OneDGrid<dim,dimworld>;
-    friend class OneDGridEntity<codim,dim,dimworld>;
-    friend class OneDGridEntity<0,dim,dimworld>;
+    friend class OneDGrid<dim,GridImp::dimensionworld>;
+    //friend class OneDGridEntity<codim,dim,dimworld>;
+    //     friend class OneDGridEntity<0,dim,dimworld>;
 
   protected:
 
     /** \brief Constructor from a given iterator */
-    OneDGridLevelIterator<codim,dim,dimworld,pitype>(OneDGridEntity<codim,dim,dimworld>* it) {
+    OneDGridLevelIterator<codim,pitype, GridImp>(OneDGridEntity<codim,dim,GridImp>* it) {
       target_ = it;
     }
 
   public:
 
     //! prefix increment
-    OneDGridLevelIterator<codim,dim,dimworld,pitype>& operator ++() {
+    OneDGridLevelIterator<codim,pitype,GridImp>& operator ++() {
       target_ = target_->succ_;
       return (*this);
     }
 
     //! equality
-    bool operator== (const OneDGridLevelIterator<codim,dim,dimworld, pitype>& i) const {
+    bool operator== (const OneDGridLevelIterator<codim, pitype, GridImp>& i) const {
       return i.target_ == target_;
     }
 
     //! inequality
-    bool operator!= (const OneDGridLevelIterator<codim,dim,dimworld, pitype>& i) const {
+    bool operator!= (const OneDGridLevelIterator<codim, pitype, GridImp>& i) const {
       return i.target_ != target_;
     }
 
     //! dereferencing
-    OneDGridEntity<codim,dim,dimworld>& operator*() {return *target_;}
+    OneDGridEntity<codim,dim,GridImp>& operator*() {return *target_;}
 
     //! arrow
-    OneDGridEntity<codim,dim,dimworld>* operator->() {return target_;}
+    OneDGridEntity<codim,dim,GridImp>* operator->() {return target_;}
 
     //! ask for level of entity
     int level () const {return target_->level();}
 
   private:
 
-    OneDGridEntity<codim,dim,dimworld>* target_;
+    OneDGridEntity<codim,dim,GridImp>* target_;
 
   };
 

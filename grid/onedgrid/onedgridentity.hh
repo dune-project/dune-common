@@ -24,23 +24,25 @@ namespace Dune {
      An entity of codimension c in dimension d is a d-c dimensional object.
 
    */
-  template<int codim, int dim, int dimworld>
+  template<int codim, int dim, class GridImp>
   class OneDGridEntity :
-    public EntityDefault <codim,dim,dimworld, OneDCType,
-        OneDGridEntity,OneDGridElement,OneDGridLevelIterator,
-        OneDGridIntersectionIterator,OneDGridHierarchicIterator>
+    public EntityDefault <codim,dim,GridImp,OneDGridEntity>
   {
 
-    template <int codim_, int dim_, int dimworld_, PartitionIteratorType PiType_>
+    template <int codim_, PartitionIteratorType PiType_, class GridImp_>
     friend class OneDGridLevelIterator;
 
-    friend class OneDGrid<dim,dimworld>;
+    friend class OneDGrid<dim,GridImp::dimensionworld>;
 
 
     //! Constructor with a given grid level
     OneDGridEntity(int level, double coord) : geo_(coord), level_(level), pred_(NULL), succ_(NULL) {}
 
   public:
+    typedef typename GridImp::template codim<codim>::Geometry Geometry;
+    typedef typename GridImp::template codim<codim>::LevelIterator LevelIterator;
+    typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
 
     //! level of this element
     int level () const {return level_;}
@@ -62,10 +64,11 @@ namespace Dune {
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
-    template<int cc> OneDGridLevelIterator<cc,dim,dimworld,All_Partition> entity (int i);
+    template<int cc>
+    OneDGridLevelIterator<cc,All_Partition, GridImp> entity (int i);
 
     //! geometry of this entity
-    const OneDGridElement<dim-codim,dimworld>& geometry () const {return geo_;}
+    const OneDGridGeometry<dim-codim,dim,GridImp>& geometry () const {return geo_;}
 
     /** \brief Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
      *
@@ -79,7 +82,8 @@ namespace Dune {
   private:
 
     //! the current geometry
-    OneDGridElement<dim-codim,dimworld> geo_;
+    OneDGridGeometry<0,dim, GridImp> geo_;
+    //Geometry geo_;
 
     FieldVector<OneDCType, dim> localFatherCoords_;
 
@@ -91,9 +95,9 @@ namespace Dune {
 
   public:
     //!
-    OneDGridEntity<codim,dim,dimworld>* pred_;
+    OneDGridEntity<codim,dim,GridImp>* pred_;
 
-    OneDGridEntity<codim,dim,dimworld>* succ_;
+    OneDGridEntity<codim,dim,GridImp>* succ_;
 
 
   };
@@ -116,32 +120,26 @@ namespace Dune {
    *
    * OneDGrid only implements the case dim==dimworld==1
    */
-  template<int dim, int dimworld>
-  class OneDGridEntity<0,dim,dimworld> :
-    public EntityDefault<0,dim,dimworld, OneDCType,OneDGridEntity,OneDGridElement,
-        OneDGridLevelIterator,OneDGridIntersectionIterator,
-        OneDGridHierarchicIterator>
+  template<int dim, class GridImp>
+  class OneDGridEntity<0,dim, GridImp> :
+    public EntityDefault<0,dim,GridImp, OneDGridEntity>
   {
-    friend class OneDGrid <dim, dimworld>;
-    friend class OneDGridIntersectionIterator < dim, dimworld>;
-    friend class OneDGridHierarchicIterator < dim, dimworld>;
-    friend class OneDGridLevelIterator <0,dim,dimworld,All_Partition>;
+    friend class OneDGrid <dim, GridImp::dimensionworld>;
+    //     friend class OneDGridIntersectionIterator < dim, dimworld>;
+    //     friend class OneDGridHierarchicIterator < dim, dimworld>;
+    //     friend class OneDGridLevelIterator <0,dim,dimworld,All_Partition>;
 
-    template <int cc_, int dim_, int dimworld_>
+    template <int cc_, int dim_, class GridImp_>
     friend class OneDGridSubEntityFactory;
 
-    //typedef typename OneDGrid<dim,dimworld>::ElementContainer::Iterator ElementIterator;
-    typedef typename DoubleLinkedList<OneDGridEntity<0,dim,dimworld> >::Iterator ElementIterator;
 
   public:
+    //typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template codim<0>::LevelIterator LevelIterator;
+    typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
 
-    //! The Iterator over neighbors
-    typedef OneDGridIntersectionIterator<dim,dimworld> IntersectionIterator;
-
-    //! Iterator over descendants of the entity
-    typedef OneDGridHierarchicIterator<dim,dimworld> HierarchicIterator;
-
-    //! Constructo
+    //! Constructor
     OneDGridEntity(int level) : level_(level), adaptationState(NONE), pred_(NULL), succ_(NULL) {
       sons_[0] = NULL;
       sons_[1] = NULL;
@@ -163,7 +161,7 @@ namespace Dune {
     int globalIndex() { return index(); }
 
     //! Geometry of this entity
-    const OneDGridElement<dim,dimworld>& geometry () const {return geo_;}
+    const OneDGridGeometry<dim,dim,GridImp>& geometry () const {return geo_;}
 
     /** \brief Return the number of subentities of codimension cc.
      */
@@ -186,19 +184,19 @@ namespace Dune {
      *  are numbered 0 ... count<cc>()-1
      */
     template<int cc>
-    OneDGridLevelIterator<cc,dim,dimworld, All_Partition> entity (int i) const;
+    OneDGridLevelIterator<cc,All_Partition, GridImp> entity (int i) const;
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
-    OneDGridIntersectionIterator<dim,dimworld> ibegin (){
-      return OneDGridIntersectionIterator<dim,dimworld>(this);
+    IntersectionIterator ibegin (){
+      return IntersectionIterator(this);
     }
 
     //! Reference to one past the last neighbor
-    OneDGridIntersectionIterator<dim,dimworld> iend (){
-      return OneDGridIntersectionIterator<dim,dimworld>(NULL);
+    IntersectionIterator iend (){
+      return IntersectionIterator(NULL);
     }
 
     //! returns true if Entity has children
@@ -208,8 +206,8 @@ namespace Dune {
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
-    OneDGridLevelIterator<0,dim,dimworld,All_Partition> father () {
-      return OneDGridLevelIterator<0,dim,dimworld,All_Partition>(father_);
+    OneDGridLevelIterator<0,All_Partition, GridImp> father () {
+      return OneDGridLevelIterator<0,All_Partition,GridImp>(father_);
     }
 
     /*! Location of this element relative to the reference element
@@ -222,7 +220,7 @@ namespace Dune {
        is only done for simple discretizations. Assumes that meshes are nested.
        \todo Implement this!
      */
-    OneDGridElement<dim,dim>& father_relative_local () {
+    OneDGridGeometry<dim, dim, GridImp>& father_relative_local () {
       DUNE_THROW(NotImplemented, "OneDGrid::father_relative_local() not implemented!");
     }
 
@@ -230,20 +228,20 @@ namespace Dune {
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
      */
-    OneDGridHierarchicIterator<dim,dimworld> hbegin (int maxlevel) {
+    HierarchicIterator hbegin (int maxlevel) {
 
-      OneDGridHierarchicIterator<dim,dimworld> it(maxlevel);
+      HierarchicIterator it(maxlevel);
 
       if (level()<maxlevel) {
 
         // Load sons of old target onto the iterator stack
         if (hasChildren()) {
-          typename OneDGridHierarchicIterator<dim,dimworld>::StackEntry se0;
+          typename HierarchicIterator::StackEntry se0;
           se0.element = sons_[0];
           se0.level   = level() + 1;
           it.elemStack.push(se0);
 
-          typename OneDGridHierarchicIterator<dim,dimworld>::StackEntry se1;
+          typename HierarchicIterator::StackEntry se1;
           se1.element = sons_[1];
           se1.level   = level() + 1;
           it.elemStack.push(se1);
@@ -257,8 +255,8 @@ namespace Dune {
     }
 
     //! Returns iterator to one past the last son
-    OneDGridHierarchicIterator<dim,dimworld> hend (int maxlevel) {
-      return OneDGridHierarchicIterator<dim,dimworld>(maxlevel);;
+    HierarchicIterator hend (int maxlevel) {
+      return HierarchicIterator(maxlevel);;
     }
 
     // ***************************************************************
@@ -287,11 +285,11 @@ namespace Dune {
   private:
 
     //! the current geometry
-    OneDGridElement<dim,dimworld> geo_;
+    OneDGridGeometry<dim,dim,GridImp> geo_;
 
-    FixedArray<OneDGridEntity<0,dim,dimworld>*, 2> sons_;
+    FixedArray<OneDGridEntity<0,dim,GridImp>*, 2> sons_;
 
-    OneDGridEntity<0,dim,dimworld>* father_;
+    OneDGridEntity<0,dim,GridImp>* father_;
 
     //! element number
     int index_;
@@ -299,15 +297,15 @@ namespace Dune {
     //! the level of the entity
     int level_;
 
-    OneDGridElement <dim,dim> fatherReLocal_;
+    OneDGridGeometry<dim,dim, GridImp>  fatherReLocal_;
 
     AdaptationState adaptationState;
 
   public:
 
-    OneDGridEntity<0,dim,dimworld>* pred_;
+    OneDGridEntity<0,dim,GridImp>* pred_;
 
-    OneDGridEntity<0,dim,dimworld>* succ_;
+    OneDGridEntity<0,dim,GridImp>* succ_;
 
 
   }; // end of OneDGridEntity codim = 0

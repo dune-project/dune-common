@@ -22,16 +22,18 @@ namespace Dune {
      non-matching meshes. The number of neigbors may be different from the number
      of an element!
    */
-  template<int dim, int dimworld>
+  template<class GridImp>
   class OneDGridIntersectionIterator :
-    public IntersectionIteratorDefault <dim,dimworld,OneDCType,
-        OneDGridIntersectionIterator,OneDGridEntity,
-        OneDGridElement, OneDGridBoundaryEntity>
+    public IntersectionIteratorDefault <GridImp, OneDGridIntersectionIterator>
   {
-    friend class OneDGridEntity<0,dim,dimworld>;
+    enum { dim=GridImp::dimension };
+    enum { dimworld=GridImp::dimensionworld };
+
+    friend class OneDGridEntity<0,dim,GridImp>;
 
     //! Constructor for a given grid entity
-    OneDGridIntersectionIterator(OneDGridEntity<0,1,1>* center) : center_(center), neighbor_(0) {}
+    OneDGridIntersectionIterator(OneDGridEntity<0,1,GridImp>* center) : center_(center), neighbor_(0)
+    {}
 
     //! The default Constructor makes empty Iterator
     OneDGridIntersectionIterator();
@@ -72,7 +74,7 @@ namespace Dune {
     }
 
     //! access neighbor, dereferencing
-    OneDGridEntity<0,dim,dimworld>& operator*(){
+    OneDGridEntity<0,dim,GridImp>& operator*(){
       if (neighbor_==0)
         if (center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0])
           return *center_->pred_;
@@ -84,7 +86,7 @@ namespace Dune {
     }
 
     //! access neighbor, arrow
-    OneDGridEntity<0,dim,dimworld>* operator->() {
+    OneDGridEntity<0,dim,GridImp>* operator->() {
       if (neighbor_==0)
         if (center_->pred_ && center_->pred_->geo_.vertex[1] == center_->geo_.vertex[0])
           return center_->pred_;
@@ -106,7 +108,7 @@ namespace Dune {
         if (center_->pred_)
           return false;
 
-        OneDGridEntity<0,dim,dimworld>* ancestor = center_;
+        OneDGridEntity<0,dim,GridImp>* ancestor = center_;
 
         while (ancestor->level()!=0) {
 
@@ -129,7 +131,7 @@ namespace Dune {
       if (center_->succ_)
         return false;
 
-      OneDGridEntity<0,dim,dimworld>* ancestor = center_;
+      OneDGridEntity<0,dim,GridImp>* ancestor = center_;
 
       while (ancestor->level()!=0) {
 
@@ -155,7 +157,7 @@ namespace Dune {
     }
 
     //! return information about the Boundary
-    OneDGridBoundaryEntity<dim,dimworld> & boundaryEntity () {
+    OneDGridBoundaryEntity<GridImp> & boundaryEntity () {
       return boundaryEntity_;
     }
 
@@ -170,22 +172,18 @@ namespace Dune {
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    OneDGridElement<dim-1,dim>& intersection_self_local ();
+    OneDGridGeometry<dim-1,dim,GridImp>& intersectionSelfLocal ();
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    OneDGridElement<dim-1,dimworld>& intersection_self_global ();
+    OneDGridGeometry<dim-1,dimworld, GridImp>& intersectionGlobal ();
 
     //! local number of codim 1 entity in self where intersection is contained in
     int number_in_self () const {return neighbor_;}
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    OneDGridElement<dim-1,dim>& intersection_neighbor_local ();
-
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in LOCAL coordinates of neighbor
-    OneDGridElement<dim-1,dimworld>& intersection_neighbor_global ();
+    OneDGridGeometry<dim-1,dim, GridImp>& intersectionNeighborLocal ();
 
     //! local number of codim 1 entity in neighbor where intersection is contained
     int number_in_neighbor () const {
@@ -209,7 +207,7 @@ namespace Dune {
     //  private methods
     //**********************************************************
 
-    OneDGridEntity<0,dim,dimworld>* center_;
+    OneDGridEntity<0,dim,GridImp>* center_;
 
     //! vector storing the outer normal
     FieldVector<OneDCType, dimworld> outerNormal_;
@@ -217,15 +215,15 @@ namespace Dune {
 #if 0
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
-    OneDGridElement<dim-1,dim> fakeNeigh_;
+    OneDGridGeometry<dim-1,dim> fakeNeigh_;
 
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
-    OneDGridElement<dim-1,dimworld> neighGlob_;
+    OneDGridGeometry<dim-1,dimworld> neighGlob_;
 #endif
 
     //! BoundaryEntity
-    OneDGridBoundaryEntity<dim,dimworld> boundaryEntity_;
+    OneDGridBoundaryEntity<GridImp> boundaryEntity_;
 
     //! count on which neighbor we are lookin' at
     int neighbor_;

@@ -25,12 +25,12 @@ namespace Dune
   typedef double OneDCType;
 
   // forward declarations
-  template<int codim, int dim, int dimworld> class OneDGridEntity;
-  template<int codim, int dim, int dimworld, PartitionIteratorType pitype> class OneDGridLevelIterator;
+  template<int codim, int dim, class GridImp> class OneDGridEntity;
+  template<int codim, PartitionIteratorType pitype, class GridImp> class OneDGridLevelIterator;
 
-  template<int dim, int dimworld>            class OneDGridElement;
-  template<int dim, int dimworld>            class OneDGridHierarchicIterator;
-  template<int dim, int dimworld>            class OneDGridIntersectionIterator;
+  template<int mydim, int coordworld, class GridImp>            class OneDGridGeometry;
+  template<class GridImp>            class OneDGridHierarchicIterator;
+  template<class GridImp>            class OneDGridIntersectionIterator;
   template<int dim, int dimworld>            class OneDGrid;
 
   template<int codim>                        class OneDGridHelper;
@@ -175,17 +175,15 @@ namespace Dune {
      and provides local mesh refinement and coarsening.
    */
   template <int dim, int dimworld>
-  class OneDGrid : public GridDefault  < dim, dimworld,
-                       OneDCType, OneDGrid,
-                       OneDGridLevelIterator,OneDGridEntity>
+  class OneDGrid : public GridDefault  < dim, dimworld,OneDCType, OneDGrid>
   {
 
     friend class OneDGridHelper <0>;
     friend class OneDGridHelper <1>;
-    friend class OneDGridEntity <0,dim,dimworld>;
-    friend class OneDGridEntity <dim,dim,dimworld>;
-    friend class OneDGridHierarchicIterator<dim,dimworld>;
-    friend class OneDGridIntersectionIterator<dim,dimworld>;
+    friend class OneDGridEntity <0,dim,OneDGrid>;
+    friend class OneDGridEntity <dim,dim,OneDGrid>;
+    friend class OneDGridHierarchicIterator<OneDGrid>;
+    friend class OneDGridIntersectionIterator<OneDGrid>;
 
     /** \brief OneDGrid is only implemented for 1d */
     CompileTimeChecker< (dim==1 && dimworld==1) >   Use_OneDGrid_only_for_1d;
@@ -196,12 +194,9 @@ namespace Dune {
     // **********************************************************
 
   public:
-
-    //typedef OneDGridReferenceElement<dim> ReferenceElement;
-
-    /** \brief The leaf iterator type  (currently only a level iterator)
-     * \todo Replace this by a true leaf iterator */
-    typedef OneDGridLevelIterator<0,dim,dimworld, All_Partition> LeafIterator;
+    typedef GridTraits<dim,dimworld,Dune::OneDGrid,OneDGridGeometry, OneDGridEntity,
+        OneDGridBoundaryEntity,OneDGridLevelIterator,
+        OneDGridIntersectionIterator, OneDGridHierarchicIterator> Traits;
 
     /** \brief Constructor with an explicit set of coordinates */
     OneDGrid(const SimpleVector<OneDCType>& coords);
@@ -220,11 +215,11 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lbegin (int level) const;
+    OneDGridLevelIterator<codim,All_Partition, OneDGrid> lbegin (int level) const;
 
     //! one past the end on this level
     template<int codim>
-    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lend (int level) const;
+    OneDGridLevelIterator<codim,All_Partition,OneDGrid> lend (int level) const;
 
 #if 0
     //! Iterator to first entity of given codim on level
@@ -235,14 +230,6 @@ namespace Dune {
     template<int codim, PartitionIteratorType PiType>
     OneDGridLevelIterator<codim,dim,dimworld, PiType> lend (int level) const;
 #endif
-
-    /** \brief Create leaf iterator  (currently only a level iterator)
-     * \todo Replace this by a true leaf iterator */
-    LeafIterator leafbegin (int level) const {return lbegin<0>(level);}
-
-    /** \brief Create one past last on leaf level  (currently only a level iterator)
-     * \todo Replace this by a true leaf iterator */
-    LeafIterator leafend (int level) const {return lend<0>(level);}
 
     /** \brief Number of grid entities per level and codim
      */
@@ -292,20 +279,20 @@ namespace Dune {
     //! The type of grid refinement currently in use
     RefinementType refinementType_;
 
-    OneDGridEntity<1,1,1>* getLeftUpperVertex(const OneDGridEntity<0,1,1>* eIt);
+    OneDGridEntity<1,1,OneDGrid>* getLeftUpperVertex(const OneDGridEntity<0,1,OneDGrid>* eIt);
 
-    OneDGridEntity<1,1,1>* getRightUpperVertex(const OneDGridEntity<0,1,1>* eIt);
+    OneDGridEntity<1,1,OneDGrid>* getRightUpperVertex(const OneDGridEntity<0,1,OneDGrid>* eIt);
 
     /** \brief Returns an iterator the the first element on the left of
         the input element which has sons.
      */
-    OneDGridEntity<0,1,1>* getLeftNeighborWithSon(OneDGridEntity<0,1,1>* eIt);
+    OneDGridEntity<0,1,OneDGrid>* getLeftNeighborWithSon(OneDGridEntity<0,1,OneDGrid>* eIt);
 
     // The vertices of the grid hierarchy
-    std::vector<List<OneDGridEntity<1,1,1> > > vertices;
+    std::vector<List<OneDGridEntity<1,1,OneDGrid> > > vertices;
 
     // The elements of the grid hierarchy
-    std::vector<List<OneDGridEntity<0,1,1> > > elements;
+    std::vector<List<OneDGridEntity<0,1,OneDGrid> > > elements;
 
 
   }; // end Class OneDGrid

@@ -1,43 +1,43 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUNE_ONE_D_ELEMENT_HH
-#define DUNE_ONE_D_ELEMENT_HH
+#ifndef DUNE_ONE_D_GEOMETRY_HH
+#define DUNE_ONE_D_GEOMETRY_HH
 
 /** \file
  * \brief The OneDGridElement class and its specializations
  */
 
 #include <dune/common/fixedarray.hh>
-#include <dune/common/dlist.hh>
+//#include <dune/common/dlist.hh>
 
 namespace Dune {
 
-  template <int codim, int dim, int dimworld>
+  template <int codim, int dim, class GridImp>
   class OneDGridEntity;
 
   /****************************************************************/
   /*       Specialization for faces in a 1d grid (i.e. vertices)  */
   /****************************************************************/
 
-
-  template<>
-  class OneDGridElement <0, 1> :
-    public ElementDefault <0, 1, OneDCType,OneDGridElement>
+#if 1
+  template<class GridImp>
+  class OneDGridGeometry <0, 1, GridImp> :
+    public GeometryDefault <0, 1, GridImp,OneDGridGeometry>
   {
 
-    template <int codim_, int dim_, int dimworld_>
+    template <int codim_, int dim_, class GridImp_>
     friend class OneDGridEntity;
-    template <int dim_, int dimworld_>
-    friend class OneDGridElement;
+    template <int mydim_, int coorddim_, class GridImp_>
+    friend class OneDGridGeometry;
 
-    template <int cc_, int dim_, int dimworld_>
+    template <int cc_, int dim_, class GridImp_>
     friend class OneDGridSubEntityFactory;
 
 
   public:
 
     /** \todo Constructor with a given coordinate */
-    OneDGridElement(const double& x) {
+    OneDGridGeometry(const double& x) {
       pos_[0] = x;
     }
 
@@ -56,7 +56,7 @@ namespace Dune {
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
      */
-    OneDGridElement<0,0>& refelem ();
+    OneDGridGeometry<0,0>& refelem ();
 
 
     //! maps a local coordinate within reference element to
@@ -82,28 +82,29 @@ namespace Dune {
     FieldVector<OneDCType, 1> pos_;
 
   };
-
+#endif
   //**********************************************************************
   //
-  // --OneDGridElement
+  // --OneDGridGeometry
   /** \brief Defines the geometry part of a mesh entity.
    * \ingroup OneDGrid
    */
-  template<int dim, int dimworld>
-  class OneDGridElement :
-    public ElementDefault <dim,dimworld, OneDCType,OneDGridElement>
+  template<int mydim, int coorddim, class GridImp>
+  class OneDGridGeometry :
+    public GeometryDefault <mydim, coorddim, GridImp, OneDGridGeometry>
   {
-    template <int codim_, int dim_, int dimworld_>
+    template <int codim_, int dim_, class GridImp_>
     friend class OneDGridEntity;
 
-    friend class OneDGrid<dim,dimworld>;
+    friend class OneDGrid<GridImp::dimension, GridImp::dimensionworld>;
 
-    template <int cc_, int dim_, int dimworld_>
+    template <int cc_, int dim_, class GridImp_>
     friend class OneDGridSubEntityFactory;
 
-    friend class OneDGridIntersectionIterator<1,1>;
+    friend class OneDGridIntersectionIterator<GridImp>;
 
   public:
+
 
     /** \brief Return the element type identifier
      *
@@ -115,32 +116,23 @@ namespace Dune {
     int corners () {return 2;}
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<OneDCType, dimworld>& operator[](int i) const {
+    const FieldVector<OneDCType, coorddim>& operator[](int i) const {
       assert(i==0 || i==1);
       return vertex[i]->geometry().pos_;
     }
 
-    /** \brief Return reference element corresponding to this element.
-     *
-     * \todo Implement this!
-     **If this is a reference element then self is returned.
-     */
-    OneDGridElement<dim,dim>& refelem () {
-      DUNE_THROW(NotImplemented, " OneDGridElement<dim,dim>& refelem ()");
-    }
-
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
-    FieldVector<OneDCType, dimworld> global (const FieldVector<OneDCType, dim>& local) const {
-      FieldVector<OneDCType, dimworld> g;
+    FieldVector<OneDCType, coorddim> global (const FieldVector<OneDCType, mydim>& local) const {
+      FieldVector<OneDCType, coorddim> g;
       g[0] = vertex[0]->geometry().pos_[0] * (1-local[0]) + vertex[1]->geometry().pos_[0] * local[0];
       return g;
     }
 
     /** \brief Maps a global coordinate within the element to a
      * local coordinate in its reference element */
-    FieldVector<OneDCType, dim> local (const FieldVector<OneDCType, dimworld>& global) const {
-      FieldVector<OneDCType, dim> l;
+    FieldVector<OneDCType, mydim> local (const FieldVector<OneDCType, coorddim>& global) const {
+      FieldVector<OneDCType, mydim> l;
       const double& v0 = vertex[0]->geometry().pos_[0];
       const double& v1 = vertex[1]->geometry().pos_[0];
       l[0] = (global[0] - v0) / (v1 - v0);
@@ -148,18 +140,18 @@ namespace Dune {
     }
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<OneDCType, dimworld> &global) {
+    bool checkInside(const FieldVector<OneDCType, coorddim> &global) {
       return vertex[0]->geometry().pos_[0] <= global[0] && global[0] <= vertex[1]->geometry().pos_[0];
     }
 
     /** ???
      */
-    OneDCType integration_element (const FieldVector<OneDCType, dim>& local) const {
+    OneDCType integrationElement (const FieldVector<OneDCType, mydim>& local) const {
       return vertex[1]->geometry().pos_[0] - vertex[0]->geometry().pos_[0];
     }
 
     //! The Jacobian matrix of the mapping from the reference element to this element
-    const Mat<dim,dim>& Jacobian_inverse (const FieldVector<OneDCType, dim>& local) const {
+    const Mat<mydim,mydim>& jacobianInverse (const FieldVector<OneDCType, mydim>& local) const {
       jacInverse_[0][0] = 1 / (vertex[1]->geometry().pos_[0] - vertex[0]->geometry().pos_[0]);
       return jacInverse_;
     }
@@ -167,10 +159,10 @@ namespace Dune {
 
   private:
 
-    FixedArray<OneDGridEntity<1,1,1>*, 2> vertex;
+    FixedArray<OneDGridEntity<1,1,GridImp>*, 2> vertex;
 
     //! The jacobian inverse
-    mutable Mat<dimworld,dimworld> jacInverse_;
+    mutable Mat<coorddim,coorddim> jacInverse_;
 
     //! storage for local coords
     //FieldVector<OneDCType, dim> localCoord_;

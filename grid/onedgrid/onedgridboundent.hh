@@ -12,14 +12,15 @@ namespace Dune {
   /** \todo Please doc me!
    * \ingroup OneDGrid
    */
-  template<int dim, int dimworld>
+  template <class GridImp>
   class OneDGridBoundaryEntity
-    : public BoundaryEntityDefault <dim,dimworld, OneDCType,
-          OneDGridElement,OneDGridBoundaryEntity>
+    : public BoundaryEntityDefault <GridImp, OneDGridBoundaryEntity>
   {
-    friend class OneDGridIntersectionIterator<dim,dimworld>;
+    //friend class OneDGridIntersectionIterator<dim,dimworld>;
   public:
-    OneDGridBoundaryEntity () : _neigh(-1), _geom()
+    typedef typename GridImp::template codim<0>::Geometry Geometry;
+
+    OneDGridBoundaryEntity () : _neigh(-1), geom_()
     {}
 
     //! return identifier of boundary segment, number
@@ -38,16 +39,16 @@ namespace Dune {
     }
 
     //! return geometry of the ghost cell
-    OneDGridElement<dim,dimworld> geometry ()
+    Geometry& geometry ()
     {
-      return _geom;
+      return geom_;
     }
 
   private:
 
     int _neigh;
 
-    OneDGridElement<dim,dimworld> _geom;
+    Geometry geom_;
 
   };
 
