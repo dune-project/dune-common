@@ -58,8 +58,21 @@ evaluate(int baseFunct,
                               diffVariable[0]);
     break;
   default :
-    DUNE_THROW(NotImplemented, "Sorry, only derivatives up to first order allowed");
+    DUNE_THROW(NotImplemented,
+               "Sorry, only derivatives up to first order allowed");
   }
+}
+
+template <class FunctionSpaceType>
+template <class QuadratureType>
+void
+CachingBaseFunctionSet<FunctionSpaceType>::
+evaluate(int numberInSelf,
+         int baseFunct,
+         QuadratureType& quad,
+         int quadPoint,
+         Range& phi) const {
+  phi = faces(numberInSelf, baseFunct, quad)[quadPoint];
 }
 
 template <class FunctionSpaceType>
