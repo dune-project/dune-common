@@ -116,6 +116,9 @@ namespace Dune {
     //! number of unknows for this function space
     int size () const;
 
+    //! The grid level that this space belongs to
+    int level () const {return level_;}
+
     //! return boundary type for given boundary id
     //! uses the parameter class BoundaryIdentifierType
     BoundaryType boundaryType ( int id ) const;
