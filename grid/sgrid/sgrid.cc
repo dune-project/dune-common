@@ -376,25 +376,25 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline SNeighborIterator<dim,dimworld> SEntity<0,dim,dimworld>::nbegin ()
+  inline SIntersectionIterator<dim,dimworld> SEntity<0,dim,dimworld>::ibegin ()
   {
-    return SNeighborIterator<dim,dimworld>(*grid,*this,0);
+    return SIntersectionIterator<dim,dimworld>(*grid,*this,0);
   }
 
   template<int dim, int dimworld>
-  inline void SEntity<0,dim,dimworld>::nbegin (SNeighborIterator<dim,dimworld>& i)
+  inline void SEntity<0,dim,dimworld>::ibegin (SIntersectionIterator<dim,dimworld>& i)
   {
     return i.make(*grid,*this,0);
   }
 
   template<int dim, int dimworld>
-  inline SNeighborIterator<dim,dimworld> SEntity<0,dim,dimworld>::nend ()
+  inline SIntersectionIterator<dim,dimworld> SEntity<0,dim,dimworld>::iend ()
   {
-    return SNeighborIterator<dim,dimworld>(*grid,*this,count<1>());
+    return SIntersectionIterator<dim,dimworld>(*grid,*this,count<1>());
   }
 
   template<int dim, int dimworld>
-  inline void SEntity<0,dim,dimworld>::nend (SNeighborIterator<dim,dimworld>& i)
+  inline void SEntity<0,dim,dimworld>::iend (SIntersectionIterator<dim,dimworld>& i)
   {
     return i.make(*grid,*this,count<1>());
   }
@@ -652,10 +652,10 @@ namespace Dune {
 
 
   //************************************************************************
-  // inline methods for NeighborIterator
+  // inline methods for IntersectionIterator
 
   template<int dim, int dimworld>
-  inline void SNeighborIterator<dim,dimworld>::make (int _count)
+  inline void SIntersectionIterator<dim,dimworld>::make (int _count)
   {
     // reset cache flags
     built_intersections = false;
@@ -695,7 +695,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline SNeighborIterator<dim,dimworld>::SNeighborIterator
+  inline SIntersectionIterator<dim,dimworld>::SIntersectionIterator
     (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count)
     : e(_grid,_self.l, _self.id), is_self_local(false), is_global(false),
       is_nb_local(false)
@@ -712,12 +712,12 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline SNeighborIterator<dim,dimworld>::SNeighborIterator ()
+  inline SIntersectionIterator<dim,dimworld>::SIntersectionIterator ()
     : is_self_local(false), is_global(false), is_nb_local(false)
   { }
 
   template<int dim, int dimworld>
-  inline void SNeighborIterator<dim,dimworld>::make (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count)
+  inline void SIntersectionIterator<dim,dimworld>::make (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count)
   {
     grid = &_grid;
     self = &_self;
@@ -733,7 +733,7 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline SNeighborIterator<dim,dimworld>& SNeighborIterator<dim,dimworld>::operator++ ()
+  inline SIntersectionIterator<dim,dimworld>& SIntersectionIterator<dim,dimworld>::operator++ ()
   {
     count++;
     make(count);
@@ -741,43 +741,43 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline bool SNeighborIterator<dim,dimworld>::operator== (const SNeighborIterator<dim,dimworld>& i) const
+  inline bool SIntersectionIterator<dim,dimworld>::operator== (const SIntersectionIterator<dim,dimworld>& i) const
   {
     return (count==i.count)&&(self==i.self);
   }
 
   template<int dim, int dimworld>
-  inline bool SNeighborIterator<dim,dimworld>::operator!= (const SNeighborIterator<dim,dimworld>& i) const
+  inline bool SIntersectionIterator<dim,dimworld>::operator!= (const SIntersectionIterator<dim,dimworld>& i) const
   {
     return (count!=i.count)||(self!=i.self);
   }
 
   template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>& SNeighborIterator<dim,dimworld>::operator* ()
+  inline SEntity<0,dim,dimworld>& SIntersectionIterator<dim,dimworld>::operator* ()
   {
     return e;
   }
 
   template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>* SNeighborIterator<dim,dimworld>::operator-> ()
+  inline SEntity<0,dim,dimworld>* SIntersectionIterator<dim,dimworld>::operator-> ()
   {
     return &e;
   }
 
   template<int dim, int dimworld>
-  inline bool SNeighborIterator<dim,dimworld>::boundary ()
+  inline bool SIntersectionIterator<dim,dimworld>::boundary ()
   {
     return is_on_boundary;
   }
 
   template<int dim, int dimworld>
-  inline bool SNeighborIterator<dim,dimworld>::neighbor ()
+  inline bool SIntersectionIterator<dim,dimworld>::neighbor ()
   {
     return (!is_on_boundary);
   }
 
   template<int dim, int dimworld>
-  inline void SNeighborIterator<dim,dimworld>::makeintersections ()
+  inline void SIntersectionIterator<dim,dimworld>::makeintersections ()
   {
     if (built_intersections) return;     // already done
     if (!valid_count) return;     // nothing to do
@@ -854,55 +854,55 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
-  inline SElement<dim-1,dim>& SNeighborIterator<dim,dimworld>::intersection_self_local ()
+  inline SElement<dim-1,dim>& SIntersectionIterator<dim,dimworld>::intersection_self_local ()
   {
     makeintersections();
     return is_self_local;
   }
 
   template<int dim, int dimworld>
-  inline SElement<dim-1,dimworld>& SNeighborIterator<dim,dimworld>::intersection_self_global ()
+  inline SElement<dim-1,dimworld>& SIntersectionIterator<dim,dimworld>::intersection_self_global ()
   {
     makeintersections();
     return is_global;
   }
 
   template<int dim, int dimworld>
-  inline SElement<dim-1,dim>& SNeighborIterator<dim,dimworld>::intersection_neighbor_local ()
+  inline SElement<dim-1,dim>& SIntersectionIterator<dim,dimworld>::intersection_neighbor_local ()
   {
     makeintersections();
     return is_nb_local;
   }
 
   template<int dim, int dimworld>
-  inline SElement<dim-1,dimworld>& SNeighborIterator<dim,dimworld>::intersection_neighbor_global ()
+  inline SElement<dim-1,dimworld>& SIntersectionIterator<dim,dimworld>::intersection_neighbor_global ()
   {
     makeintersections();
     return is_global;
   }
 
   template<int dim, int dimworld>
-  inline int SNeighborIterator<dim,dimworld>::number_in_self ()
+  inline int SIntersectionIterator<dim,dimworld>::number_in_self ()
   {
     return count;
   }
 
   template<int dim, int dimworld>
-  inline int SNeighborIterator<dim,dimworld>::number_in_neighbor ()
+  inline int SIntersectionIterator<dim,dimworld>::number_in_neighbor ()
   {
     return (count/2)*2 + (1-count%2);
   }
 
   template<int dim, int dimworld>
   inline Vec<dimworld,sgrid_ctype>&
-  SNeighborIterator<dim,dimworld>::unit_outer_normal (Vec<dim-1,sgrid_ctype>& local)
+  SIntersectionIterator<dim,dimworld>::unit_outer_normal (Vec<dim-1,sgrid_ctype>& local)
   {
     return normal;
   }
 
   template<int dim, int dimworld>
   inline Vec<dimworld,sgrid_ctype>&
-  SNeighborIterator<dim,dimworld>::unit_outer_normal ()
+  SIntersectionIterator<dim,dimworld>::unit_outer_normal ()
   {
     return normal;
   }

@@ -1453,8 +1453,8 @@ namespace Dune
 
   //***************************************************************
   //
-  //  --AlbertGridNeighborIterator
-  //  --NeighborIterator
+  //  --AlbertGridIntersectionIterator
+  //  --IntersectionIterator
   //
   //***************************************************************
 
@@ -1464,7 +1464,7 @@ namespace Dune
   // for a LevelIterator we only need one virtualNeighbour Entity, which is
   // given to the Neighbour Iterator, we need a list of Neighbor Entitys
   template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>::~AlbertGridNeighborIterator ()
+  inline AlbertGridIntersectionIterator<dim,dimworld>::~AlbertGridIntersectionIterator ()
   {
     if(manageObj_)
       grid_.entityProvider_.freeObjectEntity(manageObj_);
@@ -1481,8 +1481,8 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>::
-  AlbertGridNeighborIterator(AlbertGrid<dim,dimworld> &grid, int level) :
+  inline AlbertGridIntersectionIterator<dim,dimworld>::
+  AlbertGridIntersectionIterator(AlbertGrid<dim,dimworld> &grid, int level) :
     grid_(grid), level_ (level) , neighborCount_ (dim+1), virtualEntity_ (NULL)
     , fakeNeigh_ (NULL)
     , neighGlob_ (NULL) , elInfo_ (NULL)
@@ -1493,7 +1493,7 @@ namespace Dune
     , manageNeighInfo_ (NULL) , neighElInfo_ (NULL) {}
 
   template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>::AlbertGridNeighborIterator
+  inline AlbertGridIntersectionIterator<dim,dimworld>::AlbertGridIntersectionIterator
     (AlbertGrid<dim,dimworld> &grid, int level, ALBERT EL_INFO *elInfo ) :
     grid_(grid) , level_ (level), neighborCount_ (0), elInfo_ ( elInfo )
     , fakeNeigh_ (NULL) , neighGlob_ (NULL)
@@ -1509,8 +1509,8 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>&
-  AlbertGridNeighborIterator<dim,dimworld>::
+  inline AlbertGridIntersectionIterator<dim,dimworld>&
+  AlbertGridIntersectionIterator<dim,dimworld>::
   operator ++()
   {
     builtNeigh_ = false;
@@ -1520,8 +1520,8 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>&
-  AlbertGridNeighborIterator<dim,dimworld>::operator ++(int steps)
+  inline AlbertGridIntersectionIterator<dim,dimworld>&
+  AlbertGridIntersectionIterator<dim,dimworld>::operator ++(int steps)
   {
     neighborCount_ += steps;
     if(neighborCount_ > dim+1) neighborCount_ = dim+1;
@@ -1531,22 +1531,22 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline bool AlbertGridNeighborIterator<dim,dimworld>::operator ==
-    (const AlbertGridNeighborIterator& I) const
+  inline bool AlbertGridIntersectionIterator<dim,dimworld>::operator ==
+    (const AlbertGridIntersectionIterator& I) const
   {
     return (neighborCount_ == I.neighborCount_);
   }
 
   template< int dim, int dimworld>
-  inline bool AlbertGridNeighborIterator<dim,dimworld>::
-  operator !=(const AlbertGridNeighborIterator& I) const
+  inline bool AlbertGridIntersectionIterator<dim,dimworld>::
+  operator !=(const AlbertGridIntersectionIterator& I) const
   {
     return (neighborCount_ != I.neighborCount_);
   }
 
   template< int dim, int dimworld>
   inline AlbertGridEntity < 0, dim ,dimworld >&
-  AlbertGridNeighborIterator<dim,dimworld>::
+  AlbertGridIntersectionIterator<dim,dimworld>::
   operator *()
   {
     if(!builtNeigh_)
@@ -1566,7 +1566,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridEntity < 0, dim ,dimworld >*
-  AlbertGridNeighborIterator<dim,dimworld>::
+  AlbertGridIntersectionIterator<dim,dimworld>::
   operator ->()
   {
     if(!builtNeigh_)
@@ -1586,7 +1586,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridBoundaryEntity<dim,dimworld>&
-  AlbertGridNeighborIterator<dim,dimworld>::boundaryEntity ()
+  AlbertGridIntersectionIterator<dim,dimworld>::boundaryEntity ()
   {
     if(!boundaryEntity_)
     {
@@ -1597,19 +1597,19 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline bool AlbertGridNeighborIterator<dim,dimworld>::boundary()
+  inline bool AlbertGridIntersectionIterator<dim,dimworld>::boundary()
   {
     return (elInfo_->boundary[neighborCount_] != NULL);
   }
 
   template< int dim, int dimworld>
-  inline bool AlbertGridNeighborIterator<dim,dimworld>::neighbor()
+  inline bool AlbertGridIntersectionIterator<dim,dimworld>::neighbor()
   {
     return (elInfo_->neigh[neighborCount_] != NULL);
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,albertCtype>& AlbertGridNeighborIterator<dim,dimworld>::
+  inline Vec<dimworld,albertCtype>& AlbertGridIntersectionIterator<dim,dimworld>::
   unit_outer_normal(Vec<dim-1,albertCtype>& local)
   {
     // calculates the outer_normal
@@ -1623,7 +1623,7 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,albertCtype>& AlbertGridNeighborIterator<dim,dimworld>::
+  inline Vec<dimworld,albertCtype>& AlbertGridIntersectionIterator<dim,dimworld>::
   unit_outer_normal()
   {
     // calculates the outer_normal
@@ -1637,7 +1637,7 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,albertCtype>& AlbertGridNeighborIterator<dim,dimworld>::
+  inline Vec<dimworld,albertCtype>& AlbertGridIntersectionIterator<dim,dimworld>::
   outer_normal(Vec<dim-1,albertCtype>& local)
   {
     // we dont have curved boundary
@@ -1646,7 +1646,7 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,albertCtype>& AlbertGridNeighborIterator<dim,dimworld>::
+  inline Vec<dimworld,albertCtype>& AlbertGridIntersectionIterator<dim,dimworld>::
   outer_normal()
   {
     std::cout << "outer_normal() not correctly implemented yet! \n";
@@ -1657,7 +1657,7 @@ namespace Dune
   }
 
   template <>
-  inline Vec<2,albertCtype>& AlbertGridNeighborIterator<2,2>::
+  inline Vec<2,albertCtype>& AlbertGridIntersectionIterator<2,2>::
   outer_normal()
   {
     // seems to work
@@ -1670,7 +1670,7 @@ namespace Dune
   }
 
   template <>
-  inline Vec<3,albertCtype>& AlbertGridNeighborIterator<3,3>::
+  inline Vec<3,albertCtype>& AlbertGridIntersectionIterator<3,3>::
   outer_normal()
   {
     // rechne Kreuzprodukt der Vectoren aus
@@ -1692,7 +1692,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridElement< dim-1, dim >&
-  AlbertGridNeighborIterator<dim,dimworld>::
+  AlbertGridIntersectionIterator<dim,dimworld>::
   intersection_self_local()
   {
     std::cout << "intersection_self_local not check until now! \n";
@@ -1708,7 +1708,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridElement< dim-1, dimworld >&
-  AlbertGridNeighborIterator<dim,dimworld>::
+  AlbertGridIntersectionIterator<dim,dimworld>::
   intersection_self_global()
   {
     if(!manageNeighEl_)
@@ -1726,7 +1726,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridElement< dim-1, dim >&
-  AlbertGridNeighborIterator<dim,dimworld>::
+  AlbertGridIntersectionIterator<dim,dimworld>::
   intersection_neighbor_local()
   {
     std::cout << "intersection_neighbor_local not check until now! \n";
@@ -1747,7 +1747,7 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertGridElement< dim-1, dimworld >&
-  AlbertGridNeighborIterator<dim,dimworld>::
+  AlbertGridIntersectionIterator<dim,dimworld>::
   intersection_neighbor_global()
   {
     std::cout << "intersection_neighbor_global not check until now! \n";
@@ -1767,14 +1767,14 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline int AlbertGridNeighborIterator<dim,dimworld>::
+  inline int AlbertGridIntersectionIterator<dim,dimworld>::
   number_in_self ()
   {
     return neighborCount_;
   }
 
   template< int dim, int dimworld>
-  inline int AlbertGridNeighborIterator<dim,dimworld>::
+  inline int AlbertGridIntersectionIterator<dim,dimworld>::
   number_in_neighbor ()
   {
     return elInfo_->opp_vertex[neighborCount_];
@@ -1782,7 +1782,7 @@ namespace Dune
 
   // setup neighbor element with the information of elInfo_
   template< int dim, int dimworld>
-  inline void AlbertGridNeighborIterator<dim,dimworld>::setupVirtEn()
+  inline void AlbertGridIntersectionIterator<dim,dimworld>::setupVirtEn()
   {
 
     // set the neighbor element as element
@@ -1806,7 +1806,7 @@ namespace Dune
     builtNeigh_ = true;
   }
 
-  // end NeighborIterator
+  // end IntersectionIterator
 
 
   //*******************************************************
@@ -2287,18 +2287,18 @@ namespace Dune
 
 
   template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>
-  AlbertGridEntity < 0, dim ,dimworld >::nbegin()
+  inline AlbertGridIntersectionIterator<dim,dimworld>
+  AlbertGridEntity < 0, dim ,dimworld >::ibegin()
   {
-    AlbertGridNeighborIterator<dim,dimworld> it(grid_,level(),elInfo_);
+    AlbertGridIntersectionIterator<dim,dimworld> it(grid_,level(),elInfo_);
     return it;
   }
 
   template< int dim, int dimworld>
-  inline AlbertGridNeighborIterator<dim,dimworld>
-  AlbertGridEntity < 0, dim ,dimworld >::nend()
+  inline AlbertGridIntersectionIterator<dim,dimworld>
+  AlbertGridEntity < 0, dim ,dimworld >::iend()
   {
-    AlbertGridNeighborIterator<dim,dimworld> it(grid_,level());
+    AlbertGridIntersectionIterator<dim,dimworld> it(grid_,level());
     return it;
   }
 
@@ -2692,8 +2692,8 @@ namespace Dune
     {
       int elNum = it->index();
 
-      typedef AlbertGridNeighborIterator<dim,dimworld> Neighit;
-      Neighit nit = it->nbegin();
+      typedef AlbertGridIntersectionIterator<dim,dimworld> Neighit;
+      Neighit nit = it->ibegin();
 
       for (int i = 0; i < dim+1; i++)
       {

@@ -41,7 +41,7 @@ namespace Dune {
   template<int codim, int dim, int dimworld> class SimpleEntity;
   template<int dim, int dimworld>            class SimpleGrid;
   template<int codim, int dim, int dimworld> class SimpleLevelIterator;
-  template<int dim, int dimworld>            class SimpleNeighborIterator;
+  template<int dim, int dimworld>            class SimpleIntersectionIterator;
   template<int dim, int dimworld>            class SimpleHierarchicIterator;
 
   /** \todo Please doc me! */
@@ -117,12 +117,6 @@ namespace Dune {
   class SimpleElement : public ElementDefault<dim,dimworld,simplegrid_ctype,SimpleElement>
   {
   public:
-    //! know dimension
-    enum { dimension=dim };
-
-    //! know dimension of world
-    enum { dimensionworld=dimworld };
-
     //! define type used for coordinates in grid module
     typedef simplegrid_ctype ctype;
 
@@ -262,12 +256,6 @@ namespace Dune {
   {
   public:
     friend class SimpleElement<dim-1,dim>; // access granted for faces
-
-    //! know dimension
-    enum { dimension=dim };
-
-    //! know dimension of world
-    enum { dimensionworld=dim };
 
     //! define type used for coordinates in grid module
     typedef simplegrid_ctype ctype;
@@ -471,12 +459,6 @@ namespace Dune {
   class SimpleElement<0,dimworld> : public ElementDefault<0,dimworld,simplegrid_ctype,SimpleElement>
   {
   public:
-    //! know dimension
-    enum { dimension=0 };
-
-    //! know dimension of world
-    enum { dimensionworld=dimworld };
-
     //! define type used for coordinates in grid module
     typedef simplegrid_ctype ctype;
 
@@ -608,25 +590,19 @@ namespace Dune {
 
   //************************************************************************
   /*!
-     NeighborIterator
+     IntersectionIterator
    */
 
   template<int dim, int dimworld>
-  class SimpleNeighborIterator : public NeighborIteratorDefault<dim,dimworld,simplegrid_ctype,
-                                     SimpleNeighborIterator,SimpleEntity,SimpleElement,SimpleBoundaryEntity>
+  class SimpleIntersectionIterator : public IntersectionIteratorDefault<dim,dimworld,simplegrid_ctype,
+                                         SimpleIntersectionIterator,SimpleEntity,SimpleElement,SimpleBoundaryEntity>
   {
   public:
-    //! know your own dimension
-    enum { dimension=dim };
-
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
-
     //! define type used for coordinates in grid module
     typedef simplegrid_ctype ctype;
 
     //! prefix increment
-    SimpleNeighborIterator<dim,dimworld>& operator++()
+    SimpleIntersectionIterator<dim,dimworld>& operator++()
     {
       // we have a valid count
       int c = count/2;
@@ -658,13 +634,13 @@ namespace Dune {
     }
 
     //! equality
-    bool operator== (const SimpleNeighborIterator<dim,dimworld>& i) const
+    bool operator== (const SimpleIntersectionIterator<dim,dimworld>& i) const
     {
       return (count==i.count);
     }
 
     //! inequality
-    bool operator!= (const SimpleNeighborIterator<dim,dimworld>& i) const
+    bool operator!= (const SimpleIntersectionIterator<dim,dimworld>& i) const
     {
       return (count!=i.count);
     }
@@ -755,7 +731,7 @@ namespace Dune {
     }
 
     //! constructor
-    SimpleNeighborIterator (SimpleElement<dim,dimworld>& _self, int _count) :
+    SimpleIntersectionIterator (SimpleElement<dim,dimworld>& _self, int _count) :
       nb_geo(_self),    // Kopie erstellen
       nb(nb_geo),          // entity kennt geometrie
       is_self_local(SimpleReferenceElement<dim>::refelem),
@@ -774,10 +750,10 @@ namespace Dune {
       normal(c) = 2*d-1;
     }
 
-    SimpleNeighborIterator (const SimpleNeighborIterator<dim,dimworld>& i) : nb(nb_geo), is_global(nb_geo)
+    SimpleIntersectionIterator (const SimpleIntersectionIterator<dim,dimworld>& i) : nb(nb_geo), is_global(nb_geo)
     { }
 
-    SimpleNeighborIterator () :
+    SimpleIntersectionIterator () :
       nb(nb_geo), is_global(nb_geo),
       is_self_local(SimpleReferenceElement<dim>::refelem),
       is_nb_local(SimpleReferenceElement<dim>::refelem)
@@ -822,7 +798,7 @@ namespace Dune {
 
   template<int codim, int dim, int dimworld>
   class SimpleEntity : public EntityDefault<codim,dim,dimworld,simplegrid_ctype,SimpleEntity,SimpleElement,
-                           SimpleLevelIterator,SimpleNeighborIterator,SimpleHierarchicIterator>
+                           SimpleLevelIterator,SimpleIntersectionIterator,SimpleHierarchicIterator>
   {
     SimpleEntity () {}
   };
@@ -830,20 +806,11 @@ namespace Dune {
   // codimension 0 -- the elements
   template<int dim, int dimworld>
   class SimpleEntity<0,dim,dimworld> : public EntityDefault<0,dim,dimworld,simplegrid_ctype,SimpleEntity,SimpleElement,
-                                           SimpleLevelIterator,SimpleNeighborIterator,SimpleHierarchicIterator>
+                                           SimpleLevelIterator,SimpleIntersectionIterator,SimpleHierarchicIterator>
 
   {
   public:
-    friend class SimpleNeighborIterator<dim,dimworld>;
-
-    //! know your own codimension
-    enum { codimension=0 };
-
-    //! know your own dimension
-    enum { dimension=dim };
-
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
+    friend class SimpleIntersectionIterator<dim,dimworld>;
 
     //! level of this element
     int level ()
@@ -898,21 +865,21 @@ namespace Dune {
           is provided using iterators. This allows meshes to be nonmatching. Returns iterator
           referencing the first neighbor.
      */
-    SimpleNeighborIterator<dim,dimworld> nbegin ()
+    SimpleIntersectionIterator<dim,dimworld> ibegin ()
     {
-      return SimpleNeighborIterator<dim,dimworld>(geo,0);
+      return SimpleIntersectionIterator<dim,dimworld>(geo,0);
     }
-    void nbegin (SimpleNeighborIterator<dim,dimworld>& i)
+    void ibegin (SimpleIntersectionIterator<dim,dimworld>& i)
     {
       i.make(geo,0);
     }
 
     //! Reference to one past the last neighbor
-    SimpleNeighborIterator<dim,dimworld> nend ()
+    SimpleIntersectionIterator<dim,dimworld> iend ()
     {
-      return SimpleNeighborIterator<dim,dimworld>(geo,2*dim);
+      return SimpleIntersectionIterator<dim,dimworld>(geo,2*dim);
     }
-    void nend (SimpleNeighborIterator<dim,dimworld>& i)
+    void iend (SimpleIntersectionIterator<dim,dimworld>& i)
     {
       i.make(geo,2*dim);
     }
@@ -964,18 +931,9 @@ namespace Dune {
   // codimension dim -- the vertices
   template<int dim, int dimworld>
   class SimpleEntity<dim,dim,dimworld> : public EntityDefault<dim,dim,dimworld,simplegrid_ctype,SimpleEntity,SimpleElement,
-                                             SimpleLevelIterator,SimpleNeighborIterator,SimpleHierarchicIterator>
+                                             SimpleLevelIterator,SimpleIntersectionIterator,SimpleHierarchicIterator>
   {
   public:
-    //! know your own codimension
-    enum { codimension=dim };
-
-    //! know your own dimension
-    enum { dimension=dim };
-
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
-
     // disambiguate member functions with the same name in both bases
     //! level of this element
     int level () {return geo.level();}
@@ -1022,15 +980,6 @@ namespace Dune {
   class SimpleLevelIterator<0,dim,dimworld> : public LevelIteratorDefault<0,dim,dimworld,simplegrid_ctype,SimpleLevelIterator,SimpleEntity>
   {
   public:
-    //! know your own codimension
-    enum { codimension=0 };
-
-    //! know your own dimension
-    enum { dimension=dim };
-
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
-
     //! prefix increment
     SimpleLevelIterator<0,dim,dimworld>& operator++()
     {
@@ -1084,15 +1033,6 @@ namespace Dune {
   class SimpleLevelIterator<dim,dim,dimworld> : public LevelIteratorDefault<dim,dim,dimworld,simplegrid_ctype,SimpleLevelIterator,SimpleEntity>
   {
   public:
-    //! know your own codimension
-    enum { codimension=dim };
-
-    //! know your own dimension
-    enum { dimension=dim };
-
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
-
     //! prefix increment
     SimpleLevelIterator<dim,dim,dimworld>& operator++()
     {
