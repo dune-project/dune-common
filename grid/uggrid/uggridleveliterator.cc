@@ -65,6 +65,28 @@ UGGridLevelIterator < 0,2,2,All_Partition >::operator++()
   virtualEntity_.elNum_++;
   return (*this);
 }
+
+template<>
+inline UGGridLevelIterator < 2,2,2,Interior_Partition >&
+UGGridLevelIterator < 2,2,2,Interior_Partition>::operator++()
+{
+
+  target_ = target_->succ;
+
+  setToTarget(target_);
+  virtualEntity_.elNum_++;
+
+  return (*this);
+}
+
+template<>
+inline UGGridLevelIterator < 0,2,2,Interior_Partition >&
+UGGridLevelIterator < 0,2,2,Interior_Partition >::operator++()
+{
+  setToTarget(target_->ge.succ);
+  virtualEntity_.elNum_++;
+  return (*this);
+}
 #endif
 
 // gehe zum i Schritte weiter , wie auch immer
