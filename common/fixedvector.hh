@@ -121,7 +121,7 @@ namespace Dune {
     {
       T s=0.0;
       for (int i=0; i<n; i++)
-        if (ABS(x[i])>s) s = ABS(a[i]);
+        if (ABS(a[i])>s) s = ABS(a[i]);
       return s;
     }
 
