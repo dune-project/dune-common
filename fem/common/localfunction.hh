@@ -33,6 +33,7 @@ namespace Dune {
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
     typedef typename DiscreteFunctionSpaceType::Domain DomainType;
     typedef typename DiscreteFunctionSpaceType::Range RangeType;
+    typedef typename DiscreteFunctionSpaceType::JacobianRange JacobianRangeType;
 
     //! access to dof number num, all dofs of the local function
     RangeFieldType& operator [] (int num)

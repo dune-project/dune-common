@@ -102,6 +102,12 @@ namespace Dune {
       return baseFunctionList_.size();
     };
 
+    //! return the number of base fucntions for this BaseFunctionSet
+    int getNumberOfDiffBaseFuncs () const
+    {
+      return numOfDiffFct_;
+    };
+
     //! evaluate base function baseFunct with the given diffVariable and a
     //! point x and range phi
     template <int diffOrd>
@@ -135,7 +141,15 @@ namespace Dune {
       baseFunctionList_[baseFunc] = func;
     };
 
+    void setNumOfDiffFct ( int num )
+    {
+      numOfDiffFct_ = num;
+    };
+
   private:
+    //! number of different basefunctions
+    int numOfDiffFct_;
+
     //! vector which holds the base function pointers
     std::vector< BaseFunctionInterfaceType *  > baseFunctionList_ ;
 
