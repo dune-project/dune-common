@@ -170,7 +170,7 @@ namespace Dune
 
        To get the inverse Jacobian, we have to take the global unit vectors
        \f$g^g_\alpha\f$, tranform them into local coordinates
-       \f$g^l_\alpha\f$ and use them as rows of the matrix.
+       \f$g^l_\alpha\f$ and use them as columns of the matrix.
      */
     const FieldMatrix<ct,mydim,mydim>& jacobianInverse (const FieldVector<ct, mydim>& local) const
     {
