@@ -446,6 +446,7 @@ namespace Dune
 
     //! local coord within father
     mutable FieldVector<albertCtype, dim> localFatherCoords_;
+    mutable bool localFCoordCalced_;
 
     //! Which Face of the Geometry
     int face_;
@@ -1572,16 +1573,12 @@ namespace Dune
       return 0;
     }
 
-
     // codim = dim  means we get from dim-cd = 0
     int getIndex ( const ALBERTA EL * el, int i , Int2Type<0> fake ) const
     {
       assert(el);
       return (el->dof[i][0]);
     }
-
-    friend class MarkEdges<GridType,3>;
-
   };
 
 

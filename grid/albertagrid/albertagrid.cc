@@ -884,6 +884,7 @@ namespace Dune
     grid_(grid)
     , level_ (level)
     , geo_ ( false )
+    , localFCoordCalced_(false)
   {
     travStack_ = 0;
     makeDescription();
@@ -906,6 +907,7 @@ namespace Dune
     vertex_ = vertex;
     elInfo_ = elInfo;
     builtgeometry_ = geo_.builtGeom(elInfo_,face,edge,vertex);
+    localFCoordCalced_ = false;
   }
 
   template<int codim, int dim, class GridImp>
@@ -1041,10 +1043,44 @@ namespace Dune
     return vati;
   }
 
+  // coords for 2d
+  static double fatherref [2][3][2] =
+  {
+    { {0.0,1.0},{0.0,0.0 }, {0.5,0.0 } }  ,
+    { {1.0,0.0},{0.0,1.0 }, {0.5,0.0 } }
+  };
+
   template<int codim, int dim, class GridImp>
   inline FieldVector<albertCtype, dim>&
   AlbertaGridEntity<codim,dim,GridImp>::positionInOwnersFather() const
   {
+    assert( codim == dim );
+    if(!localFCoordCalced_)
+    {
+      EntityPointer vati = this->ownersFather();
+      localFatherCoords_ = (*vati).geometry().local( this->geometry()[0] );
+      localFCoordCalced_ = true;
+      /*
+          // check
+          if((level_ > 0) && (dim == 2))
+          {
+            ALBERTA EL_INFO * fatty = ALBERTA AlbertHelp::getFatherInfo(travStack_,elInfo_,level_);
+            int child = 0;
+            if(elInfo_->el == fatty->el->child[1])
+            {
+              child = 1;
+            }
+
+            FieldVector<double,2> tmp(0.0);
+            for(int j=0; j<2; j++) tmp[j] = fatherref[child][vertex_][j];
+            if( (localFatherCoords_ - tmp).two_norm() > 1.0E-10)
+            {
+              std::cout << localFatherCoords_ << " c|r " << tmp << " localF \n";
+              assert(false);
+            }
+          }
+       */
+    }
     return localFatherCoords_;
   }
 
