@@ -83,6 +83,13 @@ namespace Dune {
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
   class Element {
   public:
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef ElementImp<dim,dimworld>  Element;
+    };
+
     //! know dimension
     enum { dimension=dim };
 
@@ -153,6 +160,13 @@ namespace Dune {
   template<int dimworld, class ct,template<int,int> class ElementImp>
   class Element<0,dimworld,ct,ElementImp> {
   public:
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef ElementImp<0,dimworld>  Element;
+    };
+
     //! know dimension
     enum { dimension=0 };
 
@@ -200,6 +214,16 @@ namespace Dune {
   class NeighborIterator
   {
   public:
+
+    //! rember the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef EntityImp<0,dim,dimworld>         Entity;
+      typedef ElementImp<dim,dimworld>          Element;
+      typedef NeighborIteratorImp<dim,dimworld> NeighborIterator;
+    };
+
     //! know your own dimension
     enum { dimension=dim };
 
@@ -291,6 +315,14 @@ namespace Dune {
   class HierarchicIterator
   {
   public:
+
+    //! remember the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef EntityImp<0,dim,dimworld>           Entity;
+      typedef HierarchicIteratorImp<dim,dimworld> HierarchicIterator;
+    };
     //! know your own dimension
     enum { dimension=dim };
 
@@ -347,6 +379,17 @@ namespace Dune {
       >
   class Entity {
   public:
+
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef ElementImp<dim,dimworld>             Element;
+      typedef LevelIteratorImp<codim,dim,dimworld> LevelIterator;
+      typedef NeighborIteratorImp<dim,dimworld>    NeighborIterator;
+      typedef HierarchicIteratorImp<dim,dimworld>  HierarchicIterator;
+    };
+
     //! know your own codimension
     enum { codimension=codim };
 
@@ -400,6 +443,20 @@ namespace Dune {
       >
   class Entity<0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp> {
   public:
+
+
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef ElementImp<dim,dimworld>             Element;
+      typedef EntityImp<0,dim,dimworld>            Entity;
+      typedef LevelIteratorImp<0,dim,dimworld>     LevelIterator;
+      typedef NeighborIteratorImp<dim,dimworld>    NeighborIterator;
+      typedef HierarchicIteratorImp<dim,dimworld>  HierarchicIterator;
+    };
+
+
     //! know your own codimension
     enum { codimension=0 };
 
@@ -490,6 +547,17 @@ namespace Dune {
       >
   class Entity<dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp> {
   public:
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef ElementImp<dim,dimworld>             Element;
+      typedef EntityImp<dim,dim,dimworld>          Entity;
+      typedef LevelIteratorImp<dim,dim,dimworld>   LevelIterator;
+      typedef NeighborIteratorImp<dim,dimworld>    NeighborIterator;
+      typedef HierarchicIteratorImp<dim,dimworld>  HierarchicIterator;
+    };
+
     //! know your own codimension
     enum { codimension=dim };
 
@@ -544,6 +612,14 @@ namespace Dune {
   class LevelIterator
   {
   public:
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef EntityImp<codim,dim,dimworld>        Entity;
+      typedef LevelIteratorImp<codim,dim,dimworld> LevelIterator;
+    };
+
     //! know your own codimension
     enum { codimension=dim };
 
@@ -610,6 +686,17 @@ namespace Dune {
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
   class Grid {
   public:
+
+    //! remember the types of template parameters
+    template <int codim>
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef GridImp<dim,dimworld>                 ImpGrid;
+      typedef LevelIteratorImp<codim,dim,dimworld>  LevelIterator;
+      typedef EntityImp<codim,dim,dimworld>         Entity;
+    };
+
     //! A grid exports its dimension
     enum { dimension=dim };
 
