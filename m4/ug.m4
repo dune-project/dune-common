@@ -134,6 +134,7 @@ AC_DEFUN([DUNE_PATH_UG],[
                #include "initug.h"],
 	      [int i = UG${UG_DIM}d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
+	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
 	       HAVE_UG="1"
 	       AC_MSG_RESULT(yes)
               ],
