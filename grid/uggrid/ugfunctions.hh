@@ -188,6 +188,7 @@ namespace Dune {
     //         }
   };
 
+#ifdef _2
   template<>
   class UGGridSubEntityFactory<0,2> {
   public:
@@ -205,12 +206,51 @@ namespace Dune {
   };
 
   template<>
+  /** \todo Method not implemented! */
   class UGGridSubEntityFactory<1,2> {
   public:
     static TargetType<1,2>::T* get(TargetType<0,2>::T* c, int i){
       DUNE_THROW(GridError, "UGGridSubEntityFactory<1,2>::get() not implemented!");
     }
   };
+#endif
+
+#ifdef _3
+  // Specializations for dimworld==3
+  template<>
+  class UGGridSubEntityFactory<0,3> {
+  public:
+    static TargetType<0,3>::T* get(TargetType<0,3>::T* c, int i){
+      return c;
+    }
+  };
+
+  template<>
+  class UGGridSubEntityFactory<3,3> {
+  public:
+    static TargetType<3,3>::T* get(TargetType<0,3>::T* c, int i){
+      return UG_NS<3>::Corner(c, i);
+    }
+  };
+
+  template<>
+  /** \todo Method not implemented! */
+  class UGGridSubEntityFactory<1,3> {
+  public:
+    static TargetType<1,3>::T* get(TargetType<0,3>::T* c, int i){
+      DUNE_THROW(GridError, "UGGridSubEntityFactory<1,3>::get() not implemented!");
+    }
+  };
+
+  template<>
+  /** \todo Method not implemented! */
+  class UGGridSubEntityFactory<2,3> {
+  public:
+    static TargetType<2,3>::T* get(TargetType<0,3>::T* c, int i){
+      DUNE_THROW(GridError, "UGGridSubEntityFactory<2,3>::get() not implemented!");
+    }
+  };
+#endif
 
 } // namespace Dune
 

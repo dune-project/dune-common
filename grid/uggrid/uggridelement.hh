@@ -29,12 +29,14 @@ namespace Dune {
   class UGGridElement :
     public ElementDefault <dim,dimworld, UGCtype,UGGridElement>
   {
+    template <int codim_, int dim_, int dimworld_>
+    friend class UGGridEntity;
 
-    friend class UGGridEntity<0,dim,dimworld>;
-    friend class UGGridEntity<2,dim,dimworld>;
-    friend class UGGridEntity<2,2,dimworld>;
-    friend class UGGridEntity<3,dim,dimworld>;
-    friend class UGGridEntity<3,3,dimworld>;
+    //     friend class UGGridEntity<0,dim,dimworld>;
+    //     friend class UGGridEntity<2,dim,dimworld>;
+    //     friend class UGGridEntity<2,2,dimworld>;
+    //     friend class UGGridEntity<3,dim,dimworld>;
+    //     friend class UGGridEntity<3,3,dimworld>;
 
   public:
 
@@ -136,6 +138,10 @@ namespace Dune {
   class UGGridElement<2, 3> :
     public ElementDefault <2, 3, UGCtype,UGGridElement>
   {
+
+    template <int codim_, int dim_, int dimworld_>
+    friend class UGGridEntity;
+
   public:
 
     //! for makeRefElement == true a Element with the coordinates of the
