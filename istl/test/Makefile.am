@@ -1,6 +1,8 @@
 # $Id $
 
+if MPI
 TESTPROGS = indicestest
+endif
 
 # which tests to run
 TESTS = $(TESTPROGS)
