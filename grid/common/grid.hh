@@ -66,7 +66,8 @@ namespace Dune {
      This specifier should be located in a geometry class.
    */
   enum BoundaryType { Neumann ,    //!< Neumann type boundary
-                      Dirichlet   //!< Dirichlet type boundary
+                      Dirichlet,   //!< Dirichlet type boundary
+                      Periodic,    //!< Periodic boundary
   };
 
   enum AdaptationState { NONE ,     //!< notin' to do and notin' was done
@@ -666,6 +667,9 @@ namespace Dune {
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
     int index ();
 
+    //! index of the boundary which is associated with the entity, 0 for inner entities
+    int boundaryId ();
+
     //! geometry of this entity
     ElementImp<dim-codim,dimworld>& geometry ();
 
@@ -788,7 +792,7 @@ namespace Dune {
     //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
     LevelIteratorImp<0,dim,dimworld> father ();
 
-    /*! Location of this element relative to the reference element element of the father.
+    /*! Location of this element relative to the reference element of the father.
        This is sufficient to interpolate all dofs in conforming case.
        Nonconforming may require access to neighbors of father and
        computations with local coordinates.

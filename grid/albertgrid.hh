@@ -320,6 +320,9 @@ namespace Dune
     //! used for access to degrees of freedom
     int index ();
 
+    //! index of the boundary which is associated with the entity, 0 for inner entities
+    int boundaryId ();
+
     //! return the global unique index in grid
     int global_index();
 
@@ -432,6 +435,9 @@ namespace Dune
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedo
     int index ();
+
+    //! index of the boundary which is associated with the entity, 0 for inner entities
+    int boundaryId ();
 
     //! geometry of this entity
     AlbertGridElement<dim,dimworld>& geometry ();
@@ -666,7 +672,7 @@ namespace Dune
       assert(_elInfo->boundary[_neigh] != NULL);
       // if bound == 0 then interior edge ==> error
       assert(_elInfo->boundary[_neigh]->bound != 0);
-      return (( _elInfo->boundary[_neigh]->bound < 0 ) ? Neumann : Dirichlet );
+      return ( (_elInfo->boundary[_neigh]->bound < 100) ? ( ( _elInfo->boundary[_neigh]->bound < 0 ) ? Neumann : Dirichlet) : Periodic );
     }
 
     //! return identifier of boundary segment, number
