@@ -443,9 +443,9 @@ catch (const char* msg) {
 /*****************************************************************/
 
 /** \todo This is quadratic --> very slow */
-void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::detectBoundarySegments(int* elemData,
-                                                                              int numHexas,
-                                                                              std::vector<Vec<4, int> >& face_list)
+void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elemData,
+                                                                       int numHexas,
+                                                                       std::vector<Vec<4, int> >& face_list)
 {
   static const int idx[][4] = {
     {0,4,5,1},{1,5,6,2},{2,6,7,3},{3,7,4,0},{4,7,6,5},{1,2,3,0}
@@ -482,9 +482,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::detectBoundarySegments(in
 
 }
 
-int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::detectBoundaryNodes(const std::vector<Vec<4, int> >& face_list,
-                                                                          unsigned int noOfNodes,
-                                                                          std::vector<bool>& isBoundaryNode)
+int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundaryNodes(const std::vector<Vec<4, int> >& face_list,
+                                                                   unsigned int noOfNodes,
+                                                                   std::vector<bool>& isBoundaryNode)
 {
   unsigned int i, j;
 
@@ -540,9 +540,9 @@ static int LinearSegmentDescription(void *data, double *param, double *result)
 }
 #endif
 
-int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::createHexaDomain(UGGrid<3,3>& grid,
-                                                                       AmiraMesh* am,
-                                                                       const std::string& filename)
+int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& grid,
+                                                                AmiraMesh* am,
+                                                                const std::string& filename)
 {
   //const int DIM = 3;
   //const int MAX_CORNERS_OF_LINEAR_PATCH = DIM;
@@ -680,8 +680,8 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::createHexaDomain(UGGrid<3,
   return 0;
 }
 
-void Dune::AmiraMeshReader<Dune::UGGrid<3,3>, double>::readHexaGrid(Dune::UGGrid<3,3>& grid,
-                                                                    AmiraMesh* am)  try
+void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::readHexaGrid(Dune::UGGrid<3,3>& grid,
+                                                             AmiraMesh* am)  try
 {
   printf("This is the AmiraMesh HexaGrid reader for UGGrid<3,3>!\n");
 
@@ -1084,7 +1084,7 @@ int Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
     cerr << "2D AmiraMesh loader: field 'Nodes' not found!\n";
     return(1);
   }
-  float*   am_node_coordinates       = (float*) am_coordinateData->dataPtr();
+  float*   am_node_coordinates = (float*) am_coordinateData->dataPtr();
 
   AmiraMesh::Data* triangleData = am->findData("Triangles", HxINT32, 3, "Nodes");
   if (!triangleData) {
@@ -1135,8 +1135,8 @@ int Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
 
 
   /** \todo Can I patch UG such as to make the following const_cast unnecessary? */
-  if (UG2d::CreateDomain(const_cast<char*>(domainName.c_str()), MidPoint, radius, noOfBSegments, noOfBNodes,
-                         false ) == NULL) {
+  if (UG2d::CreateDomain(const_cast<char*>(domainName.c_str()), MidPoint, radius,
+                         noOfBSegments, noOfBNodes, false ) == NULL) {
     delete am;
     return(1);
   }
@@ -1194,8 +1194,6 @@ int Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
     left++;
     right++;
 
-    int res = 20;    // something large...
-
     int renumNode[2];
     renumNode[0] = boundary_nodes[thisEdge.idx[0]];
     renumNode[1] = boundary_nodes[thisEdge.idx[1]];
@@ -1205,7 +1203,7 @@ int Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
                                     right,          /*id of right subdomain*/
                                     i,              /*id of segment*/
                                     UG2d::NON_PERIODIC,
-                                    res,
+                                    20,             // Resolution, whatever that means
                                     renumNode,
                                     &alpha,
                                     &beta,
@@ -1236,10 +1234,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
   //char DomainName[NAMESIZE];
   //double nodePos[DIM];
-  int maxBndNodeID, noOfNodes,
-      noOfElem, noOfCreatedElem, created;
+  int maxBndNodeID, noOfNodes, noOfElem, noOfCreatedElem;
   int i;
-  //NODE* theNode;
+  UG2d::NODE* theNode;
 
 
   cout << "Loading 2D Amira mesh " << filename << "\n";
@@ -1255,7 +1252,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
 
   //loaddomain $file @PARA_FILE $name @DOMAIN
-  CreateDomain(grid, "olisDomain", "cube.par.am");
+  CreateDomain(grid, "olisDomain", filename);
 
   //configure @PROBLEM $d @DOMAIN;
   char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
@@ -1277,8 +1274,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
   AmiraMesh::Data* triangleData = am->findData("Triangles", HxINT32, 3, "Nodes");
   if (!triangleData) {
-    PrintErrorMessage('E', "AmiraMesh loader", "field 'BaseGridTriangles' not found");
-    return(1);
+    cerr << "AmiraMesh loader: field 'Triangles' not found\n";
+    return;
   }
   int*  elemData         = (int*)triangleData->dataPtr();
 
@@ -1287,17 +1284,21 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
      All Boundary nodes are  assumed to be inserted already.
      We just have to insert the inner nodes and the elements
    */
-  UG2d::multigrid* theMG = UG3d::GetMultigrid("DuneMG");
+  UG2d::multigrid* theMG = UG2d::GetMultigrid("DuneMG");
   assert(theMG);
 
   maxBndNodeID = -1;
-  for (theNode=FIRSTNODE(GRID_ON_LEVEL(theMG,0)); theNode!=NULL; theNode=SUCCN(theNode))
+  for (theNode=theMG->grids[0]->firstNode[0]; theNode!=NULL; theNode=theNode->succ)
   {
-    if(OBJT(MYVERTEX(theNode)) == IVOBJ)
-      UserWriteF("Warning: Node %d is inner node\n", ID(theNode));
+    // The following two lines ought to be in here, but the
+    // OBJT macros is somewhat complicated, so I leave it out
+    // for the time being.
+    //       if(OBJT(theNode->myvertex) == UG3d::IVOBJ)
+    //           UserWriteF("Warning: Node %d is inner node\n", ID(theNode));
     maxBndNodeID = MAX(theNode->id, maxBndNodeID);
   }
-  UserWriteF("Already %d nodes existing\n", maxBndNodeID+1);
+
+  std::cout << "Already " << maxBndNodeID+1 << " nodes existing\n";
 
   //noOfBndNodes = maxBndNodeID;
 
@@ -1305,31 +1306,29 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   noOfElem  = am->nElements("Triangles");
 
   //   noOfInnerNodes = noOfNodes - noOfBndNodes;
-  UserWriteF("AmiraMesh has %d total nodes\n", noOfNodes);
+  cout << "AmiraMesh has " << noOfNodes << " total nodes\n";
 
   int* isBoundaryNode = DetectBoundaryNodes(elemData, noOfElem, noOfNodes);
 
-  created = 0;
+
   for(i = 0; i < noOfNodes; i++) {
 
     if (isBoundaryNode[i] != -1)
       continue;
 
+    double nodePos[2];
     nodePos[0] = am_node_coordinates[2*i];
     nodePos[1] = am_node_coordinates[2*i+1];
 
-    if (InsertInnerNode(GRID_ON_LEVEL(theMG,0), nodePos) == NULL)
+    if (InsertInnerNode(theMG->grids[0], nodePos) == NULL)
     {
-      PrintErrorMessage('E',"amiraloadmesh2D","inserting an inner node failed");
-      error = TRUE;
-      continue;
+      cerr << "2d AmiraMesh reader: Inserting an inner node failed\n";
+      return;
     }
 
     isBoundaryNode[i] = ++maxBndNodeID;
-    created++;
 
   }
-
 
   noOfCreatedElem = 0;
   for(i=0; i < noOfElem; i++) {
@@ -1337,47 +1336,66 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
     int cornerIDs[3];
 
     /* only triangles */
-    cornerIDs[0] = isBoundaryNode[elemData[3*i]];
-    cornerIDs[1] = isBoundaryNode[elemData[3*i+1]];
-    cornerIDs[2] = isBoundaryNode[elemData[3*i+2]];
+    cornerIDs[0] = isBoundaryNode[elemData[3*i]-1];
+    cornerIDs[1] = isBoundaryNode[elemData[3*i+1]-1];
+    cornerIDs[2] = isBoundaryNode[elemData[3*i+2]-1];
     //printf("elem id : %d, node ids : %d %d %d\n", i, cornerIDs[0], cornerIDs[1], cornerIDs[2]);
 
-    if (InsertElementFromIDs(GRID_ON_LEVEL(theMG,0), 3,cornerIDs, NULL) == NULL)
+    if (InsertElementFromIDs(theMG->grids[0], 3,cornerIDs, NULL) == NULL)
     {
-      PrintErrorMessage('E',"amiraloadmesh","inserting an element failed");
-      error = TRUE;
+      cerr << "2d AmiraMesh reader: Inserting an element failed\n";
+      return;
     }
     noOfCreatedElem++;
 
   }
 
+  cout << "amiraloadmesh: " << noOfCreatedElem << " elements created\n";
 
-  if(noOfElem != noOfCreatedElem)
-    PrintErrorMessage('E',"amiraloadmesh","inserting an element failed");
+  // set the subdomainIDs
+  AmiraMesh::Data* am_material_ids = am->findData("Triangles", HxBYTE, 1, "Materials");
+  if (!am_material_ids)
+    throw("Field 'Materials' not found.");
 
-  UserWriteF("amiraloadmesh: %d elements created\n", noOfCreatedElem);
+  char* material_ids         = (char*)am_material_ids->dataPtr();
 
+  i = 0;
+  UG2d::ELEMENT* theElement;
+  for (theElement=theMG->grids[0]->elements[0]; theElement!=NULL; theElement=theElement->ge.succ)
+  {
+
+    /* get subdomain of element */
+    int id = material_ids[i];
+
+#define ControlWord(p,ce) (((unsigned int *)(p))[UG2d::control_entries[ce].offset_in_object])
+#define CW_WRITE(p, ce, n)   ControlWord(p,ce) = (ControlWord(p,ce)&UG2d::control_entries[ce].xor_mask)|(((n)<<UG2d::control_entries[ce].offset_in_word)&UG2d::control_entries[ce].mask)
+#define SETSUBDOMAIN(p,n) CW_WRITE(p,UG2d::SUBDOMAIN_CE,n)
+
+    SETSUBDOMAIN(theElement, /*id+*/ 1);
+
+#undef ControlWord
+#undef CW_WRITE
+#undef SETSUBDOMAIN
+
+    i++;
+  }
 
   delete am;
 
-
-
-  if (MG_COARSE_FIXED(theMG))
-    return (GM_OK);
-
   //   if(SetSubdomainIDsFromAmira(theMG, filename, noOfElem))
   //     PrintErrorMessage('W', "SetSubdomainIDsFromAmira","setting id's failed");
+  UG2d::SetEdgeAndNodeSubdomainFromElements(theMG->grids[0]);
 
 
-
-  if (CreateAlgebra(theMG) != GM_OK)
-    REP_ERR_RETURN (GM_ERROR);
+  /** \bug This needs to be back in for grid refinement! */
+  //   if (CreateAlgebra(theMG) != UG2d::GM_OK)
+  //       return;
 
   /* here all temp memory since CreateMultiGrid is released */
-  ReleaseTmpMem(MGHEAP(theMG),MG_MARK_KEY(theMG));
-  MG_MARK_KEY(theMG) = 0;
-
-  UserWriteF("Coarse grid fixed. Do not call fixcoarsegrid.\n");
+#define ReleaseTmpMem(p,k) Release(p, UG2d::FROM_TOP,k)
+  ReleaseTmpMem(theMG->theHeap, theMG->MarkKey);
+#undef ReleaseTmpMem
+  theMG->MarkKey = 0;
 
 }
 
