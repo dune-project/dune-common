@@ -4,6 +4,7 @@
 #define __DUNE_DEFAULTINDEXSETS_HH__
 
 #include <dune/common/misc.hh>
+#include <dune/grid/common/grid.hh>
 
 namespace Dune {
 
@@ -19,8 +20,19 @@ namespace Dune {
      index sets that cope with adaptation, but aren't needed for the following
      index set, so most of this methods do notin'.
    */
+
+  /*! /brief Interface of IndexSet for DofManager, some functions that only
+   * are called once per timestep are virtual ofr simplicity
+   */
+  class IndexSetInterface
+  {
+  public:
+    virtual bool compress () = 0;
+    virtual void resize ()   = 0;
+  };
+
   template <class GridType>
-  class DefaultGridIndexSetBase
+  class DefaultGridIndexSetBase : public IndexSetInterface
   {
     // dummy value
     enum { myType = -1 };
@@ -30,39 +42,35 @@ namespace Dune {
     DefaultGridIndexSetBase ( GridType & grid ) : grid_ (grid) {}
 
     //! return false mean the no memory has to be allocated
-    bool compress () { return false; }
+    virtual bool compress () { return false; }
 
-    //! father index should already exist
-    template <class EntityType>
-    void createFatherIndex (EntityType &en)  {}
+    //! do nothing here, because fathers index should already exist
+    void createFatherIndex (const typename GridType::template codim<0>::Entity & en ) {}
 
     //! nothing to do here
-    void resize () {}
+    virtual void resize () {}
 
     //! no extra memory for restriction is needed
     int tmpSize () const { return 0; }
 
     //! all indices are old
-    bool indexNew(int num) const { return false; }
+    bool indexNew(int num, int codim ) const { return false; }
 
     //! we have no old size
     int oldSize ( int level , int codim ) const
     {
-      assert(false);
       return 0;
     }
 
     //! return old index, for dof manager only
-    int oldIndex (int elNum) const
+    int oldIndex (int elNum, int codim ) const
     {
-      assert(false);
       return 0;
     }
 
     //! return new index, for dof manager only
-    int newIndex (int elNum) const
+    int newIndex (int elNum, int codim ) const
     {
-      assert(false);
       return 0;
     }
 
