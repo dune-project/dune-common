@@ -20,11 +20,13 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   // hexagrid format.
   bool containsOnlyTetrahedra = true;
 
-  typename GridType::template codim<0>::LevelIterator element = grid.template lbegin<0>(level);
-  typename GridType::template codim<0>::LevelIterator end     = grid.template lend<0>(level);
+  typedef typename GridType::template codim<0>::LevelIterator ElementIterator;
 
-  for (; element!=end; ++element) {
-    if (element->geometry().type() != tetrahedron) {
+  ElementIterator eIt    = grid.template lbegin<0>(level);
+  ElementIterator eEndIt = grid.template lend<0>(level);
+
+  for (; eIt!=eEndIt; ++eIt) {
+    if (eIt->geometry().type() != tetrahedron) {
       containsOnlyTetrahedra = false;
       break;
     }
@@ -101,45 +103,61 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   int *dPtr = (int*)element_data->dataPtr();
 
-  typedef typename GridType::template codim<0>::LevelIterator ElementIterator;
-  ElementIterator element2    = grid.template lbegin<0>(level);
-  ElementIterator endelement = grid.template lend<0>(level);
+  eIt    = grid.template lbegin<0>(level);
 
-  for (i=0; element2!=endelement; ++element2, i++) {
-    switch (element2->geometry().type()) {
+  if (containsOnlyTetrahedra) {
 
-    case hexahedron :
+    for (i=0; eIt!=eEndIt; ++eIt, i++) {
 
-      dPtr[i*maxVerticesPerElement+0] = element2->template subIndex<3>(0)+1;
-      dPtr[i*maxVerticesPerElement+1] = element2->template subIndex<3>(1)+1;
-      dPtr[i*maxVerticesPerElement+2] = element2->template subIndex<3>(3)+1;
-      dPtr[i*maxVerticesPerElement+3] = element2->template subIndex<3>(2)+1;
-      dPtr[i*maxVerticesPerElement+4] = element2->template subIndex<3>(4)+1;
-      dPtr[i*maxVerticesPerElement+5] = element2->template subIndex<3>(5)+1;
-      dPtr[i*maxVerticesPerElement+6] = element2->template subIndex<3>(7)+1;
-      dPtr[i*maxVerticesPerElement+7] = element2->template subIndex<3>(6)+1;
-      break;
+      for (int j=0; j<4; j++)
+        dPtr[i*4+j] = eIt->template subIndex<3>(j)+1;
 
-    case prism :
-      dPtr[i*maxVerticesPerElement+0] = element2->template subIndex<3>(0)+1;
-      dPtr[i*maxVerticesPerElement+1] = element2->template subIndex<3>(1)+1;
-      dPtr[i*maxVerticesPerElement+2] = element2->template subIndex<3>(1)+1;
-      dPtr[i*maxVerticesPerElement+3] = element2->template subIndex<3>(2)+1;
-      dPtr[i*maxVerticesPerElement+4] = element2->template subIndex<3>(3)+1;
-      dPtr[i*maxVerticesPerElement+5] = element2->template subIndex<3>(4)+1;
-      dPtr[i*maxVerticesPerElement+6] = element2->template subIndex<3>(4)+1;
-      dPtr[i*maxVerticesPerElement+7] = element2->template subIndex<3>(5)+1;
-      break;
+    }
 
-    default :
+  } else {
 
-      for (int j=0; j<element2->geometry().corners(); j++)
-        dPtr[i*maxVerticesPerElement+j] = element2->template subIndex<3>(j)+1;
+    for (i=0; eIt!=eEndIt; ++eIt, i++) {
+      switch (eIt->geometry().type()) {
 
-      // If the element has less than 8 vertices use the last value
-      // to fill up the remaining slots
-      for (int j=element2->geometry().corners(); j<maxVerticesPerElement; j++)
-        dPtr[i*maxVerticesPerElement+j] = dPtr[i*maxVerticesPerElement+element2->geometry().corners()-1];
+      case hexahedron : {
+
+        const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+        for (int j=0; j<8; j++)
+          dPtr[8*i + j] = eIt->template subIndex<3>(hexaReordering[j])+1;
+
+        break;
+      }
+
+      case prism : {
+        const int prismReordering[8] = {0, 1, 1, 2, 3, 4, 4, 5};
+        for (int j=0; j<8; j++)
+          dPtr[8*i + j] = eIt->template subIndex<3>(prismReordering[j])+1;
+
+        break;
+      }
+
+      case pyramid : {
+        const int pyramidReordering[8] = {0, 1, 2, 3, 4, 4, 4, 4};
+        for (int j=0; j<8; j++)
+          dPtr[8*i + j] = eIt->template subIndex<3>(pyramidReordering[j])+1;
+
+        break;
+      }
+
+      case tetrahedron : {
+
+        const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
+        for (int j=0; j<8; j++)
+          dPtr[8*i + j] = eIt->template subIndex<3>(tetraReordering[j])+1;
+
+        break;
+      }
+
+      default :
+        DUNE_THROW(NotImplemented, "Unknown element type encountered");
+
+      }
+
     }
 
   }
