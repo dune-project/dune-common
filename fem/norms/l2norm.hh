@@ -4,7 +4,7 @@
 #define __DUNE_L2NORM_HH__
 
 #include <dune/fem/norms/norm.hh>
-#include <dune/fem/fastquad.hh>
+#include <dune/quadrature/dunequad.hh>
 
 namespace Dune {
 
@@ -38,7 +38,7 @@ namespace Dune {
       LevelIterator endit = grid.template lend<0> ( level );
       LevelIterator it = grid.template lbegin<0> ( level );
 
-      FastQuad < typename FunctionSpaceType::RangeField,
+      DuneQuad < typename FunctionSpaceType::RangeField,
           typename FunctionSpaceType::Domain , polOrd > quad ( *it );
 
       for(; it != endit ; ++it) {
