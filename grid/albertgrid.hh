@@ -1130,8 +1130,11 @@ namespace Dune
     //! the grid which is of minor cost
     int global_size (int codim) const;
 
-    // return number of my processor
+    //! return number of my processor
     int myProcessor () const { return myProc_; };
+
+    //! transform grid N = scalar * x + trans
+    void setNewCoords(const Vec<dimworld,albertCtype> & trans, const albertCtype scalar);
   private:
     // initialize of some members
     void initGrid(int proc);
@@ -1169,6 +1172,9 @@ namespace Dune
 
     // number of entitys of each level an codim
     mutable Array<int> size_;
+
+    // help vector for setNewCoords
+    mutable Array<int> macroVertices_;
 
     // remember on which level an ALBERT EL lives, is needed for the new
     // fillElInfo method that takes the level of an element into account
