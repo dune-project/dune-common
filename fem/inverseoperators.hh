@@ -3,23 +3,23 @@
 #ifndef __INVERSE_OPERATORS_HH__
 #define __INVERSE_OPERATORS_HH__
 
-#include "discretefunction.hh"
-#include "../common/operator.hh"
+#include <dune/fem/common/discretefunction.hh>
+#include <dune/common/operator.hh>
 
 namespace Dune {
 
   template <class DiscreteFunctionType>
-  class CGInverseOperator : public Operator<DiscreteFunctionType::Traits<0>::RangeField,
+  class CGInverseOperator : public Operator<DiscreteFunctionType::RangeFieldType,
                                 DiscreteFunctionType,DiscreteFunctionType> {
 
-    DiscreteFunctionType::Traits<0>::RangeField epsilon_;
+    typename DiscreteFunctionType::RangeFieldType epsilon_;
     int maxIter_;
 
     double _redEps;
 
   public:
 
-    CGInverseOperator( const Mapping<DiscreteFunctionType::Traits<0>::RangeField,
+    CGInverseOperator( const typename Mapping<DiscreteFunctionType::RangeFieldType,
                            DiscreteFunctionType,DiscreteFunctionType>& op ,
                        double redEps , double absLimit , int maxIter , int verbose ) : op_(op),
                                                                                        _redEps ( redEps ), epsilon_ ( absLimit*absLimit ) ,
@@ -49,8 +49,6 @@ namespace Dune {
 
       while((spn > epsilon_) && (count++ < maxIter_))
       {
-
-        std::cout << "CG Step\n";
         // fall ab der zweiten iteration *************
 
         if(count > 1)
@@ -83,26 +81,36 @@ namespace Dune {
     }
 
   private:
-    const Mapping<DiscreteFunctionType::Traits<0>::RangeField,DiscreteFunctionType,DiscreteFunctionType> &op_;
+    const typename Mapping<DiscreteFunctionType::RangeFieldType,DiscreteFunctionType,DiscreteFunctionType> &op_;
     int _verbose ;
   };
 
 
   template <class DiscreteFunctionType, class OperatorType>
-  class CGInverseOp : public Operator<DiscreteFunctionType::Traits<0>::RangeField,
+  class CGInverseOp : public Operator<DiscreteFunctionType::RangeFieldType,
                           DiscreteFunctionType,DiscreteFunctionType> {
 
-    DiscreteFunctionType::Traits<0>::RangeField epsilon_;
+    DiscreteFunctionType::RangeFieldType epsilon_;
     int maxIter_;
 
     double _redEps;
 
   public:
 
-    //CGInverseOp( const OperatorType & op , double  redEps , double absLimit , int maxIter , int verbose ) : op_(op),
     CGInverseOp( OperatorType & op , double redEps , double absLimit , int maxIter , int verbose ) : op_(op),
                                                                                                      _redEps ( redEps ), epsilon_ ( absLimit ) ,
                                                                                                      maxIter_ (maxIter ) , _verbose ( verbose ) {}
+
+    void prepare (int level, DiscreteFunctionType& Arg, DiscreteFunctionType& Dest,
+                  DiscreteFunctionType* tmp, double a, double b)
+    {
+      op_.prepare(level, Arg,Dest,tmp,a,b);
+    }
+
+    void finalize (DiscreteFunctionType& Arg, DiscreteFunctionType& Dest)
+    {
+      op_.finalize(Arg,Dest);
+    }
 
     void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) //const
     {
@@ -161,51 +169,17 @@ namespace Dune {
         std::cerr << "\n";
     }
 
+    void operator ()( const DiscreteFunctionType& arg, DiscreteFunctionType& dest )
+    {
+      apply(arg,dest);
+    }
+
   private:
     //const OperatorType &op_;
     OperatorType &op_;
     int _verbose ;
   };
 
-
-
-  //********************************************************
-  //
-  //  with CGnew
-  //
-  //********************************************************
-  //template <class DiscreteFunctionType>
-  template <class DiscreteFunctionType, class OperatorType>
-  class CGInvOp : public Operator<DiscreteFunctionType::Traits<0>::RangeField,
-                      DiscreteFunctionType,DiscreteFunctionType> {
-
-    DiscreteFunctionType::Traits<0>::RangeField epsilon_;
-    int maxIter_;
-
-    double _redEps;
-
-  public:
-
-    //CGInvOp( const Mapping<DiscreteFunctionType::Traits<0>::RangeField,
-    //	     DiscreteFunctionType,DiscreteFunctionType>& op ,
-    CGInvOp( const OperatorType & op ,
-             double redEps , double absLimit , int maxIter , int verbose ) : op_(op),
-                                                                             _redEps ( redEps ), epsilon_ ( absLimit ) ,
-                                                                             maxIter_ (maxIter ) , _verbose ( verbose ) {}
-
-    void apply( DiscreteFunctionType& arg, DiscreteFunctionType& dest )
-    {
-      int status = CGnew(op_,arg,dest,_redEps, epsilon_,maxIter_,_verbose);
-    }
-  private:
-    //const Mapping<DiscreteFunctionType::Traits<0>::RangeField,
-    //        DiscreteFunctionType,DiscreteFunctionType> &op_;
-    const OperatorType & op_;
-
-    int _verbose ;
-
-  };
-
-}
+} // end namespace Dune
 
 #endif

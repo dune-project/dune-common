@@ -3,10 +3,12 @@
 #ifndef __DUNE_QUADLQH_HH__
 #define __DUNE_QUADLQH_HH__
 
-#include "../grid/common/grid.hh"
-#include "quadrature.hh"
+#include <dune/grid/common/grid.hh>
+
+#include "common/quadrature.hh"
 #include <dune/common/misc.hh>
-#include "gaussquadimp.hh"
+
+#include "quadlqh/gaussquadimp.hh"
 
 
 namespace Dune {

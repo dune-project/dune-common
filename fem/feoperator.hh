@@ -3,10 +3,7 @@
 #ifndef __DUNE_FEOPERATOR_HH__
 #define __DUNE_FEOPERATOR_HH__
 
-#include "discreteoperator.hh"
-#include <dune/fem/basefunctions.hh>
-#include <dune/fem/dofiterator.hh>
-#include <dune/fem/discretefunction.hh>
+#include <dune/fem/common/discreteoperator.hh>
 
 namespace Dune {
 
@@ -65,8 +62,6 @@ namespace Dune {
 
       GridType &grid = const_cast<GridType &> (functionSpace_.getGrid());
 
-      //typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
-      //typedef typename FunctionSpaceType::JacobianRange JacobianRange;
       {
         LevelIterator it = grid.lbegin<0>( grid.maxlevel() );
         LevelIterator endit = grid.lend<0> ( grid.maxlevel() );
@@ -92,7 +87,6 @@ namespace Dune {
         }
       }
 
-#if 0
       {
 
         // eliminate the Dirichlet rows
@@ -136,57 +130,11 @@ namespace Dune {
           }
         }
       }
-#endif
       matrix_assembled_ = true;
-    }
-
-    template <class EntityType>
-    void multiOnTheFly( EntityType &en,
-                        const DiscFunctionType &arg, DiscFunctionType &dest ) const
-    {
-      //std::cout << "Mulitipla on the fla local\n";
-      typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
-      typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
-      typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
-
-      GridType &grid = const_cast<GridType &> (functionSpace_.getGrid());
-
-      typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
-      typedef typename FunctionSpaceType::Range RangeType;
-      typedef typename FunctionSpaceType::JacobianRange JacobianRange;
-      typedef typename FunctionSpaceType::Domain DomainType;
-
-      typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
-      int level = arg.getFunctionSpace().getGrid().maxlevel();
-
-      DofIteratorType dest_it = dest.dbegin( level );
-      DofIteratorType arg_it = const_cast<DiscFunctionType&>(arg).dbegin( level );
-
-      dest.clear();
-
-      //prepare( *it );
-
-      const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
-      int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
-
-      for(int i=0; i<numOfBaseFct; i++)
-      {
-        int row = functionSpace_.mapToGlobal( en , i );
-        for (int j=0; j<numOfBaseFct; j++ )
-        {
-          int col = functionSpace_.mapToGlobal( en , j );
-
-          double val = getLocalMatrixEntry( en , i, j );
-
-          dest_it[col] += arg_it[ row ] * val;
-        }
-      }
     }
 
     void multiplyOnTheFly( const DiscFunctionType &arg, DiscFunctionType &dest ) const
     {
-      //std::cout << "Mulitipla on the fla\n";
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
       typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
@@ -232,7 +180,6 @@ namespace Dune {
     }
 
   public:
-
     enum OpMode { ON_THE_FLY, ASSEMBLED };
 
     FiniteElementOperator( const DiscFunctionType::FunctionSpaceType &fuspace,
@@ -246,25 +193,124 @@ namespace Dune {
       if ( matrix_ ) delete matrix_;
     }
 
-    void apply( const DiscFunctionType &arg, DiscFunctionType &dest) const {
-      if ( opMode_ == ASSEMBLED ) {
-        if ( !matrix_assembled_ ) {
+    void apply( const DiscFunctionType &arg, DiscFunctionType &dest) const
+    {
+      if ( opMode_ == ASSEMBLED )
+      {
+        if ( !matrix_assembled_ )
+        {
           matrix_ = newEmptyMatrix( );
           assemble();
         }
-        std::cout << "Matrix apply \n";
         matrix_->apply( arg, dest );
-      } else {
+      }
+      else
+      {
         multiplyOnTheFly( arg, dest );
       }
     }
 
   public:
-    template <class EntityType>
-    void applyLocal ( EntityType &en , const DiscFunctionType &Arg , DiscFunctionType &Dest ) //const
+
+    // makes local multiply on the fly
+    template <class GridIteratorType>
+    void applyLocal ( GridIteratorType &it ,
+                      const DiscFunctionType &arg , DiscFunctionType &dest ) const
     {
-      std::cout << "FEOperator::applyLocal \n";
-      //multiOnTheFly(en , Arg, Dest );
+      typedef typename GridType::Traits<0>::Entity EntityType;
+      EntityType &en = (*it);
+
+      typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
+      typedef typename FunctionSpaceType::GridType GridType;
+
+      typedef typename EntityType::Traits::NeighborIterator NeighIt;
+      typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+
+      typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
+
+      GridType &grid = const_cast<GridType &> (functionSpace_.getGrid());
+
+      typedef typename FunctionSpaceType::Range RangeType;
+      typedef typename FunctionSpaceType::JacobianRange JacobianRange;
+      typedef typename FunctionSpaceType::Domain DomainType;
+
+      typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
+      int level = grid.maxlevel();
+
+      DofIteratorType dest_it = dest.dbegin( level );
+      DofIteratorType arg_it = const_cast<DiscFunctionType&>(arg).dbegin( level );
+
+      const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
+      int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
+
+      for(int i=0; i<numOfBaseFct; i++)
+      {
+        int row = functionSpace_.mapToGlobal( en , i );
+        for (int j=0; j<numOfBaseFct; j++ )
+        {
+          int col = functionSpace_.mapToGlobal( en , j );
+          double val = getLocalMatrixEntry( en , i, j );
+
+          dest_it[ row ] += arg_it[ col ] * val;
+        }
+      }
+    } // end applyLocal
+
+    // find Dirichlet points and erase them
+    void finalizeGlobal (const DiscFunctionType &arg , DiscFunctionType &dest )
+    {
+#if 0
+      typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
+      typedef typename FunctionSpaceType::GridType GridType;
+      typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
+      typedef typename GridType::Traits<0>::Entity EntityType;
+      typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
+
+      GridType &grid = const_cast<GridType &> (functionSpace_.getGrid());
+
+      typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
+      int level = grid.maxlevel();
+
+      DofIteratorType dest_it = dest.dbegin( level );
+
+      LevelIterator it = grid.lbegin<0>( grid.maxlevel() );
+      LevelIterator endit = grid.lend<0> ( grid.maxlevel() );
+      for( ; it != endit; ++it )
+      {
+        typedef typename EntityType::Traits::NeighborIterator NeighIt;
+        typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+
+        EntityType &en = (*it);
+
+        const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
+        int numDof = baseSet.getNumberOfBaseFunctions();
+
+        NeighIt nit = en.nbegin();
+        NeighIt endnit = en.nend();
+        for(nit; nit != endnit ; ++nit)
+        {
+          if(nit.boundary())
+          {
+            BoundaryEntityType & bEl = nit.boundaryEntity();
+
+            if( bEl.type() == Dirichlet )
+            {
+              int neigh = nit.number_in_self();
+
+              if(en.geometry().type() == triangle)
+              {
+                for(int i=1; i<numDof; i++)
+                {
+                  int col = functionSpace_.mapToGlobal(*it,(neigh+i)%numDof);
+                  dest_it[col] = 0.0;
+                }
+              }
+            }
+          }
+        } // end fot(nit..
+
+      } // end for(it ..
+#endif
     }
 
   private:

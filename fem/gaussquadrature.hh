@@ -62,6 +62,6 @@ namespace Dune {
 
 } // end namespace
 
-#include "gaussquadrature.cc"
+#include "gaussquadrature/gaussquadrature.cc"
 
 #endif
