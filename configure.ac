@@ -26,6 +26,7 @@ AC_CONFIG_FILES([Makefile
                  grid/sgrid/Makefile
                  grid/spgrid/Makefile
                  lib/Makefile
+                 lib/io/Makefile
                  solver/Makefile
                  solver/common/Makefile
                  solver/pmgsolver/Makefile
