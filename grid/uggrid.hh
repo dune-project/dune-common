@@ -85,7 +85,7 @@ namespace Dune
   template<int dim, int dimworld>            class UGGridIntersectionIterator;
   template<int dim, int dimworld>            class UGGrid;
 
-  template <class Object> class UGGridMemory;
+  //template <class Object> class UGGridMemory;
 
   // singleton holding reference elements
   template<int dim> struct UGGridReferenceElement;
@@ -99,6 +99,7 @@ namespace Dune
 #include "uggrid/uggridboundent.hh"
 #include "uggrid/ugintersectionit.hh"
 #include "uggrid/uggridleveliterator.hh"
+#include "uggrid/uggridhieriterator.hh"
 
 namespace Dune {
 
