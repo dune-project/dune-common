@@ -75,7 +75,7 @@ namespace Dune
      whatever you choose for DIM and DIMWORLD in the line above must be equal
      and either 2 or 3.  The two dimension-related arguments must both be
      there because they actually refer to all external grid implementations
-     that may require it, and there are some that do no necessarily pose
+     that may require it, and there are some that do not necessarily pose
      restrictions as strict as UG does.
 
      In your DUNE application, you can only instantiate UGGrid<2,2> or
@@ -270,6 +270,11 @@ namespace Dune {
 
     void adaptWithoutClosure();
 
+    void getChildrenOfSubface(typename Traits::template codim<0>::EntityPointer & e,
+                              int elementSide,
+                              int maxl,
+                              Array<FixedArray<unsigned int, 3> >& children) const;
+
     /** \brief The different forms of grid refinement that UG supports */
     enum RefinementType {
       /** \brief New level consists only of the refined elements */
@@ -372,8 +377,6 @@ namespace Dune {
 
   }; // end Class UGGrid
 
-#include "uggrid/uggrid.cc"
-
 #if 0
   namespace Capabilities
   {
@@ -400,5 +403,8 @@ namespace Dune {
 #endif
 
 } // namespace Dune
+
+// Include the method definitions
+#include "uggrid/uggrid.cc"
 
 #endif

@@ -8,7 +8,9 @@
 //
 //************************************************************************
 
-#include <stdlib.h>
+//#include <stdlib.h>
+#include <dune/common/tuples.hh>
+#include <dune/common/sllist.hh>
 
 // *********************************************************************
 //
@@ -16,101 +18,105 @@
 //
 // *********************************************************************
 
-/** \brief Default implementation, just throws an exception */
-template <int codim, PartitionIteratorType PiType, class GridImp>
-class UGGridLevelIteratorFactory
-{
-public:
-  static inline
-  UGGridLevelIterator<codim,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
-    DUNE_THROW(GridError, "Unknown LevelIterator requested");
-  }
+namespace Dune {
 
-};
+  /** \brief Default implementation, just throws an exception */
+  template <int codim, PartitionIteratorType PiType, class GridImp>
+  class UGGridLevelIteratorFactory
+  {
+  public:
+    static inline
+    UGGridLevelIterator<codim,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
+      DUNE_THROW(GridError, "Unknown LevelIterator requested");
+    }
 
-// //////////////////////////////////////////////////////////////////////
-//   Specializations for the element iterator-factories
-//   There is no overlap.  Therefore, All_Partition and Ghost_Partition
-//   loop over _all_ elements, and the remaining PartitionTypes only
-//   over the interior ones.
-// //////////////////////////////////////////////////////////////////////
-template <class GridImp>
-class UGGridLevelIteratorFactory<0,All_Partition,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<0,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
+  };
 
-    UGGridLevelIterator<0,All_Partition,GridImp> it(level);
-    it.setToTarget(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
-    return it;
-  }
+  // //////////////////////////////////////////////////////////////////////
+  //   Specializations for the element iterator-factories
+  //   There is no overlap.  Therefore, All_Partition and Ghost_Partition
+  //   loop over _all_ elements, and the remaining PartitionTypes only
+  //   over the interior ones.
+  // //////////////////////////////////////////////////////////////////////
+  template <class GridImp>
+  class UGGridLevelIteratorFactory<0,All_Partition,GridImp>
+  {
+  public:
+    static inline
+    UGGridLevelIterator<0,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-};
+      UGGridLevelIterator<0,All_Partition,GridImp> it(level);
+      it.setToTarget(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
+      return it;
+    }
 
-template <class GridImp>
-class UGGridLevelIteratorFactory<0,Ghost_Partition,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<0,Ghost_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
+  };
 
-    UGGridLevelIterator<0,Ghost_Partition,GridImp> it(level);
-    it.setToTarget(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
-    return it;
-  }
+  template <class GridImp>
+  class UGGridLevelIteratorFactory<0,Ghost_Partition,GridImp>
+  {
+  public:
+    static inline
+    UGGridLevelIterator<0,Ghost_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-};
+      UGGridLevelIterator<0,Ghost_Partition,GridImp> it(level);
+      it.setToTarget(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
+      return it;
+    }
 
-template <PartitionIteratorType PiType,class GridImp>
-class UGGridLevelIteratorFactory<0,PiType,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<0,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
+  };
 
-    UGGridLevelIterator<0,PiType,GridImp> it(level);
-    it.setToTarget(UG_NS<GridImp::dimension>::FirstElement(theGrid), level);
-    return it;
-  }
+  template <PartitionIteratorType PiType,class GridImp>
+  class UGGridLevelIteratorFactory<0,PiType,GridImp>
+  {
+  public:
+    static inline
+    UGGridLevelIterator<0,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-};
+      UGGridLevelIterator<0,PiType,GridImp> it(level);
+      it.setToTarget(UG_NS<GridImp::dimension>::FirstElement(theGrid), level);
+      return it;
+    }
+
+  };
 
 
 
 #ifdef _2
-template <class GridImp>
-class UGGridLevelIteratorFactory<2,All_Partition,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<2,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
+  template <class GridImp>
+  class UGGridLevelIteratorFactory<2,All_Partition,GridImp>
+  {
+  public:
+    static inline
+    UGGridLevelIterator<2,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-    UGGridLevelIterator<2,All_Partition,GridImp> it(level);
-    it.setToTarget(UG_NS<2>::PFirstNode(theGrid), level);
-    return it;
-  }
+      UGGridLevelIterator<2,All_Partition,GridImp> it(level);
+      it.setToTarget(UG_NS<2>::PFirstNode(theGrid), level);
+      return it;
+    }
 
-};
+  };
 
 
 #endif
 
 #ifdef _3
-template <class GridImp>
-class UGGridLevelIteratorFactory<3,All_Partition,GridImp>
-{
-public:
-  static inline
-  UGGridLevelIterator<3,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
+  template <class GridImp>
+  class UGGridLevelIteratorFactory<3,All_Partition,GridImp>
+  {
+  public:
+    static inline
+    UGGridLevelIterator<3,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-    UGGridLevelIterator<3,All_Partition,GridImp> it(level);
+      UGGridLevelIterator<3,All_Partition,GridImp> it(level);
 
-    it.setToTarget(UG_NS<3>::FirstNode(theGrid), level);
-    return it;
-  }
-};
+      it.setToTarget(UG_NS<3>::FirstNode(theGrid), level);
+      return it;
+    }
+  };
 #endif
+
+}  // end namespace Dune
 
 //***********************************************************************
 //
@@ -119,24 +125,24 @@ public:
 //
 //***********************************************************************
 
-template<> int UGGrid < 2, 2 >::numOfUGGrids = 0;
-template<> int UGGrid < 3, 3 >::numOfUGGrids = 0;
+template<> int Dune::UGGrid < 2, 2 >::numOfUGGrids = 0;
+template<> int Dune::UGGrid < 3, 3 >::numOfUGGrids = 0;
 
 template < int dim, int dimworld >
-inline UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL), refinementType_(COPY), omitGreenClosure_(false)
+inline Dune::UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL), refinementType_(COPY), omitGreenClosure_(false)
 {
   init(500, 10);
 }
 
 template < int dim, int dimworld >
-inline UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned envHeapSize)
+inline Dune::UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned envHeapSize)
   : multigrid_(NULL), refinementType_(COPY), omitGreenClosure_(false)
 {
   init(heapSize, envHeapSize);
 }
 
 template < int dim, int dimworld >
-inline void UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHeapSize)
+inline void Dune::UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHeapSize)
 {
   heapsize = heapSize;
 
@@ -213,7 +219,7 @@ inline void UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHe
 }
 
 template < int dim, int dimworld >
-inline UGGrid < dim, dimworld >::~UGGrid()
+inline Dune::UGGrid < dim, dimworld >::~UGGrid()
 {
   if (extra_boundary_data_)
     free(extra_boundary_data_);
@@ -261,7 +267,7 @@ inline UGGrid < dim, dimworld >::~UGGrid()
 };
 
 template < int dim, int dimworld >
-inline int UGGrid < dim, dimworld >::maxlevel() const
+inline int Dune::UGGrid < dim, dimworld >::maxlevel() const
 {
   assert(multigrid_);
   return multigrid_->topLevel;
@@ -271,8 +277,8 @@ inline int UGGrid < dim, dimworld >::maxlevel() const
 
 template<int dim, int dimworld>
 template<int codim>
-typename UGGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
-UGGrid<dim, dimworld>::lbegin (int level) const
+typename Dune::UGGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
+Dune::UGGrid<dim, dimworld>::lbegin (int level) const
 {
   assert(multigrid_);
   typename UGTypes<dim>::GridType* theGrid = multigrid_->grids[level];
@@ -284,9 +290,9 @@ UGGrid<dim, dimworld>::lbegin (int level) const
 }
 
 template<int dim, int dimworld>
-template<int codim, PartitionIteratorType PiType>
-inline typename UGGrid<dim,dimworld>::Traits::template codim<codim>::template partition<PiType>::LevelIterator
-UGGrid<dim, dimworld>::lbegin (int level) const
+template<int codim, Dune::PartitionIteratorType PiType>
+inline typename Dune::UGGrid<dim,dimworld>::Traits::template codim<codim>::template partition<PiType>::LevelIterator
+Dune::UGGrid<dim, dimworld>::lbegin (int level) const
 {
   assert(multigrid_);
   typename UGTypes<dim>::GridType* theGrid = multigrid_->grids[level];
@@ -299,22 +305,22 @@ UGGrid<dim, dimworld>::lbegin (int level) const
 
 template < int dim, int dimworld >
 template<int codim>
-typename UGGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
-UGGrid < dim, dimworld >::lend (int level) const
+typename Dune::UGGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
+Dune::UGGrid < dim, dimworld >::lend (int level) const
 {
   return UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> >(level);
 }
 
 template < int dim, int dimworld >
-template<int codim, PartitionIteratorType PiType>
-inline typename UGGrid<dim,dimworld>::Traits::template codim<codim>::template partition<PiType>::LevelIterator
-UGGrid < dim, dimworld >::lend (int level) const
+template<int codim, Dune::PartitionIteratorType PiType>
+inline typename Dune::UGGrid<dim,dimworld>::Traits::template codim<codim>::template partition<PiType>::LevelIterator
+Dune::UGGrid < dim, dimworld >::lend (int level) const
 {
   return UGGridLevelIterator<codim,PiType, const UGGrid<dim,dimworld> >(level);
 }
 
 template < int dim, int dimworld >
-inline int UGGrid < dim, dimworld >::size (int level, int codim) const
+inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
 {
   int numberOfElements = 0;
 
@@ -345,7 +351,7 @@ inline int UGGrid < dim, dimworld >::size (int level, int codim) const
 
 
 template < int dim, int dimworld >
-void UGGrid < dim, dimworld >::makeNewUGMultigrid()
+void Dune::UGGrid < dim, dimworld >::makeNewUGMultigrid()
 {
   //configure @PROBLEM $d @DOMAIN;
   std::string configureArgs[2] = {"configure " + name() + "_Problem", "d " + name() + "_Domain"};
@@ -385,8 +391,8 @@ void UGGrid < dim, dimworld >::makeNewUGMultigrid()
 }
 
 template < int dim, int dimworld >
-bool UGGrid < dim, dimworld >::mark(int refCount,
-                                    typename Traits::template codim<0>::EntityPointer & e )
+bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
+                                          typename Traits::template codim<0>::EntityPointer & e )
 {
   typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
 
@@ -408,13 +414,13 @@ bool UGGrid < dim, dimworld >::mark(int refCount,
 }
 
 template < int dim, int dimworld >
-bool UGGrid < dim, dimworld >::mark(typename Traits::template codim<0>::EntityPointer & e,
+bool Dune::UGGrid < dim, dimworld >::mark(typename Traits::template codim<0>::EntityPointer & e,
 #ifdef _3
-                                    UG3d::RefinementRule rule
+                                          UG3d::RefinementRule rule
 #else
-                                    UG2d::RefinementRule rule
+                                          UG2d::RefinementRule rule
 #endif
-                                    )
+                                          )
 {
   typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
 
@@ -436,7 +442,7 @@ bool UGGrid < dim, dimworld >::mark(typename Traits::template codim<0>::EntityPo
 }
 
 template < int dim, int dimworld >
-bool UGGrid < dim, dimworld >::adapt()
+bool Dune::UGGrid < dim, dimworld >::adapt()
 {
   int rv;
   int mode;
@@ -494,7 +500,7 @@ bool UGGrid < dim, dimworld >::adapt()
 }
 
 template <int dim, int dimworld>
-void UGGrid <dim, dimworld>::adaptWithoutClosure()
+void Dune::UGGrid <dim, dimworld>::adaptWithoutClosure()
 {
   bool omitClosureBackup = omitGreenClosure_;
   omitGreenClosure_ = true;
@@ -503,7 +509,7 @@ void UGGrid <dim, dimworld>::adaptWithoutClosure()
 }
 
 template < int dim, int dimworld >
-void UGGrid < dim, dimworld >::globalRefine(int n)
+void Dune::UGGrid < dim, dimworld >::globalRefine(int n)
 {
   for (int i=0; i<n; i++) {
 
@@ -522,8 +528,103 @@ void UGGrid < dim, dimworld >::globalRefine(int n)
 
 }
 
+template <int dim, int dimworld>
+void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template codim<0>::EntityPointer & e,
+                                                      int elementSide,
+                                                      int maxl,
+                                                      Array<FixedArray<unsigned int, 3> >& children) const
+{
+#if 0
+  typedef typename TargetType<0,dim>::T ElementType;
+  typedef Tuple<ElementType*,int, int> ListEntryType;
+
+  SLList<ListEntryType> list;
+
+  // The starting level
+  int level = e->level();
+
+  const int MAX_SONS = 30;    // copied from UG
+
+  // ///////////////
+  //   init list
+  // ///////////////
+  if (level < maxl) {
+
+    ElementType* theElement = getRealEntity<0>(*e).target_;
+    int Sons_of_Side = 0;
+    ElementType* SonList[MAX_SONS];
+    int SonSides[MAX_SONS];
+
+#ifdef _2
+    UG2d::Get_Sons_of_ElementSide(
+#else
+    UG3d::Get_Sons_of_ElementSide(
+#endif
+      theElement,
+      elementSide,                                  // needs to be renumbered!
+      &Sons_of_Side,
+      SonList,                                      // the output elements
+      SonSides,                                     // Output element side numbers
+      false,                                        // Element sons are not precomputed
+      true);                                        // ioflag: I have no idea what this is supposed to do
+
+    for (int i=0; i<Sons_of_Side; i++)
+      list.push_back(ListEntryType(SonList[i],SonSides[i], level+1));
+
+  }
+
+  // //////////////////////////////////////////////////
+  //   Traverse and collect all children of the side
+  // //////////////////////////////////////////////////
+
+  typename SLList<ListEntryType>::iterator f = list.begin();
+  for (; f!=list.end(); ++f) {
+
+    ElementType* theElement = (*f)[0];
+                               int side                 = (*f)[1];
+                               level                    = (*f)[2];
+
+                               int Sons_of_Side = 0;
+                               ElementType* SonList[MAX_SONS];
+                               int SonSides[MAX_SONS];
+
+                               if (level < maxl) {
+
+#ifdef _2
+                                 UG2d::Get_Sons_of_ElementSide(
+#else
+                                 UG3d::Get_Sons_of_ElementSide(
+#endif
+                                   theElement,
+                                   side,                // Input element side number
+                                   &Sons_of_Side,        // Number of topological sons of the element side
+                                   SonList,             // Output elements
+                                   SonSides,            // Output element side numbers
+                                   false,
+                                   true);
+
+                                 for (int i=0; i<Sons_of_Side; i++)
+                                   list.push_back(ListEntryType(SonList[i],SonSides[i], level+1));
+
+                               }
+
+  }
+
+  // //////////////////////////////
+  //   Extract result from stack
+  // //////////////////////////////
+  children.resize(list.size());
+  int i=0;
+  for (f = list.begin(); f!=list.end(); ++f, ++i) {
+    children[i][0] = (*f)[0];
+    children[i][1] = (*f)[1];
+    children[i][2] = (*f)[2];
+  }
+#endif
+}
+
 template < int dim, int dimworld >
-void UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth, int maxlevel, int minelement)
+void Dune::UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth, int maxlevel, int minelement)
 {
   /** \todo Test for valid arguments */
   std::string argStrings[4];
@@ -561,67 +662,71 @@ void UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth
 }
 
 #ifdef ModelP
-template <class T, template <class> class P, int GridDim>
-class UGDataCollector {
-public:
+namespace Dune {
 
-  static int gather(DDD_OBJ obj, void* data)
-  {
-    int codim=0;
+  template <class T, template <class> class P, int GridDim>
+  class UGDataCollector {
+  public:
 
-    P<T>* p = (P<T>*)data;
+    static int gather(DDD_OBJ obj, void* data)
+    {
+      int codim=0;
 
-    int index = 0;
-    switch (codim) {
-    case 0 :
-      index = UG_NS<GridDim>::index((typename TargetType<0,GridDim>::T*)obj);
-      break;
-    case GridDim :
-      index = UG_NS<GridDim>::index((typename TargetType<GridDim,GridDim>::T*)obj);
-      break;
-    default :
-      DUNE_THROW(GridError, "UGGrid::communicate only implemented for this codim");
+      P<T>* p = (P<T>*) data;
+
+                 int index = 0;
+                 switch (codim) {
+                 case 0 :
+                   index = UG_NS<GridDim>::index((typename TargetType<0,GridDim>::T*)obj);
+                   break;
+                 case GridDim :
+                   index = UG_NS<GridDim>::index((typename TargetType<GridDim,GridDim>::T*)obj);
+                   break;
+                 default :
+                   DUNE_THROW(GridError, "UGGrid::communicate only implemented for this codim");
+                 }
+
+                 p->gather(*dataArray, index);
+
+                 return 0;
     }
 
-    p->gather(*dataArray, index);
+    static int scatter(DDD_OBJ obj, void* data)
+    {
+      int codim=0;
 
-    return 0;
-  }
+      P<T>* p = (P<T>*)data;
 
-  static int scatter(DDD_OBJ obj, void* data)
-  {
-    int codim=0;
+      int index = 0;
+      switch (codim) {
+      case 0 :
+        index = UG_NS<GridDim>::index((typename TargetType<0,GridDim>::T*)obj);
+        break;
+      case GridDim :
+        index = UG_NS<GridDim>::index((typename TargetType<GridDim,GridDim>::T*)obj);
+        break;
+      default :
+        DUNE_THROW(GridError, "UGGrid::communicate only implemented for codim 0 and dim");
+      }
 
-    P<T>* p = (P<T>*)data;
+      p->scatter(*dataArray, index);
 
-    int index = 0;
-    switch (codim) {
-    case 0 :
-      index = UG_NS<GridDim>::index((typename TargetType<0,GridDim>::T*)obj);
-      break;
-    case GridDim :
-      index = UG_NS<GridDim>::index((typename TargetType<GridDim,GridDim>::T*)obj);
-      break;
-    default :
-      DUNE_THROW(GridError, "UGGrid::communicate only implemented for codim 0 and dim");
+      return 0;
     }
 
-    p->scatter(*dataArray, index);
+    static T* dataArray;
 
-    return 0;
-  }
+  };
 
-  static T* dataArray;
-
-};
+}   // end namespace Dune
 
 template <class T, template<class> class P, int GridDim>
-T* UGDataCollector<T,P,GridDim>::dataArray = 0;
+T* Dune::UGDataCollector<T,P,GridDim>::dataArray = 0;
 #endif
 
 template < int dim, int dimworld >
 template<class T, template<class> class P, int codim>
-void UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
+void Dune::UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
 {
 #ifdef ModelP
 
@@ -637,12 +742,12 @@ void UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, Communic
 
 
 template < int dim, int dimworld >
-void UGGrid < dim, dimworld >::createbegin()
+void Dune::UGGrid < dim, dimworld >::createbegin()
 {}
 
 
 template < int dim, int dimworld >
-void UGGrid < dim, dimworld >::createend()
+void Dune::UGGrid < dim, dimworld >::createend()
 {
   // set the subdomainIDs
   typename TargetType<0,dim>::T* theElement;
@@ -676,7 +781,7 @@ void UGGrid < dim, dimworld >::createend()
 
 
 template < int dim, int dimworld >
-void UGGrid < dim, dimworld >::setLocalIndices()
+void Dune::UGGrid < dim, dimworld >::setLocalIndices()
 {
   // Renumber everything
   for (int i=0; i<=maxlevel(); i++) {
