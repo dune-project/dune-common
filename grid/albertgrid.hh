@@ -19,8 +19,20 @@ namespace Albert
 #define ALBERT
 #endif
 
-#define DIM MYDIM
-#define DIM_OF_WORLD MYDOW
+#ifndef DIM
+#error "DIM must be defined by compiler flag '-DDIM=2' or 3\n"
+#endif
+
+#ifndef DIM_OF_WORLD
+#error "DIM_OF_WORLD must be defined by compiler flag '-DDIM_OF_WORLD=2' or 3\n"
+#endif
+
+#ifndef EL_INDEX
+#error "EL_INDEX must be defined by compiler flag '-DEL_INDEX=1' \n"
+#endif
+
+  //#define DIM MYDIM
+  //#define DIM_OF_WORLD MYDOW
 
 #ifndef __ALBERTNAME__
   extern "C"
