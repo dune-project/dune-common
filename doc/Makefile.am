@@ -6,22 +6,28 @@ EXTRA_DIST = Buildsystem CodingStyles Doxyfile Doxydep \
 
 all: doxygen-tag
 
-doxygen-tag: Doxyfile
-@AMDEP_TRUE@	$(srcdir)/Doxydep $< $(DEPDIR)/doxygen.Po $@
-	$(DOXYGEN) > doxygen.log 2>&1
-	touch doxygen-tag
-
 WEBDIR = /var/www/dune/doxygen
 WEBFILES = html/*.html html/*.css html/*.png doxygen.log
+
+# what files does the doxygen-generated stuff depend on (find-syntax)
+DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.css -o -name \*.html
+
+# check dependency ourself to be robust
+doxygen-tag: FORCE
+	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -cnewer doxygen-tag`" != x ; then \
+	  echo Running doxygen. This may take a while... ; \
+	  $(DOXYGEN) > doxygen.log 2>&1 ; \
+	  touch doxygen-tag ; \
+	fi
+
+# nice trick from the GNU make infopage to force a rule to run
+FORCE:
 
 web-install: doxygen-tag
 	if [ ! -d $(WEBDIR) ]; then \
 	  install -d -g web -m 775 $(WEBDIR); \
 	fi
 	install -g web -m 664 $(WEBFILES) $(WEBDIR)
-
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/doxygen.Po
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/doxygen.Po@am__quote@
 
 clean-local:
 	rm -rf html latex doxygen-tag *~
