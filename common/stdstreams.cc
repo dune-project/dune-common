@@ -7,20 +7,25 @@
 
 namespace Dune {
 
-  /*! \file debugstream.cc */
+  /*! \file
 
-  /*! \addtogroup DebugOut
+     The standard debug streams declared in stdstreams.hh exist in this
+     file so that they can be compiled into libdune
+
+   */
+
+  /*!
+     \defgroup StdStreams Standard Debug Streams
+     \ingroup DebugOut
+     @{
 
      Dune defines several standard output streams for the library
      routines.
 
-     Note: don't use these streams in applications. You should instead use
-     DebugStream to instatiate your own set of independent output streams.
+     Applications may control the standard streams via the attach/detach,
+     push/pop interface but should define an independent set of streams (see \ref DebugAppl )
 
    */
-
-
-  /* -- standard streams depending on the debug level -- */
 
   /*! stream for very verbose output: information on the lowest
      level. This is expected to report insane amounts of
@@ -46,5 +51,7 @@ namespace Dune {
      completely will redirect it. The output of derr is independant on
      the debug-level, only the activation-flag is checked */
   DErrType derr(std::cerr);
+
+  /*! }@ */
 
 };
