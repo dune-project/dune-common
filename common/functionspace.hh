@@ -13,7 +13,8 @@ namespace Dune {
 
     typedef DomainFieldType DomainField ;
     typedef RangeFieldType RangeField ;
-    typedef Mat < n, m, RangeField> GradientRange;
+
+    typedef Mat < n, m, RangeField> JacobianRange;
     typedef Vec < m,  Mat< n, n, RangeField> > HessianRange ;
 
     typedef Vec<n, DomainField> Domain;

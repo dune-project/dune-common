@@ -86,7 +86,7 @@ namespace Dune {
 
     typedef typename FunctionSpaceType::Domain Domain ;
     typedef typename FunctionSpaceType::Range Range ;
-    typedef typename FunctionSpaceType::GradientRange GradientRange;
+    typedef typename FunctionSpaceType::JacobianRange JacobianRange;
     typedef typename FunctionSpaceType::HessianRange HessianRange;
 
     enum { DimDomain = FunctionSpaceType::DimDomain };
@@ -133,6 +133,86 @@ namespace Dune {
 
   private:
     FunctionSpaceType & funcSpace_;
+
+    //! Barton-Nackman trick
+    BaseFunctionSetImp &asImp() { return static_cast<BaseFunctionSetImp&>(*this); }
+    const BaseFunctionSetImp &asImp() const
+    { return static_cast<const BaseFunctionSetImp&>(*this); }
+
+  };
+
+  //*************************************************************************
+  //
+  //
+  //
+  //
+  //
+  //
+  //*************************************************************************
+  template<class FunctionSpaceType, class BaseFunctionSetImp>
+  class BaseFunctionSetDefault
+    : public BaseFunctionSetInterface < FunctionSpaceType , BaseFunctionSetImp>
+  {
+    enum { dimRow = JacobianRange::dimRow };
+    enum { dimCol = JacobianRange::dimCol };
+
+  public:
+    //! set the default diffVar Types
+    BaseFunctionSetDefault ( FunctionSpaceType & f ) :
+      BaseFunctionSetInterface < FunctionSpaceType , BaseFunctionSetImp> (f)
+    {
+      for(int i=0; i<dimCol; i++)
+        jacobianDiffVar_[i] = i;
+    };
+
+    //! default evaluate using the evaluate interface
+    void eval ( int baseFunct, const Domain & x, Range & phi ) const
+    {
+      asImp().evaluate(baseFunct, diffVariable_ , x , phi);
+      return;
+    }
+
+    //! default implementation for evaluation
+    template <class QuadratureType>
+    void eval ( int baseFunct, QuadratureType & quad, int quadPoint, Range & phi ) const
+    {
+      asImp().evaluate( baseFunct, diffVariable_ , quad, quadPoint, phi );
+      return;
+    }
+
+    //! default evaluate using the evaluate interface
+    void jacobian ( int baseFunct, const Domain & x, JacobianRange & phi ) const
+    {
+      Range tmp;
+      for(int i=0; i<dimCol; i++)
+      {
+        asImp().evaluate( baseFunct, jacobianDiffVar_[i] , x , tmp );
+        for(int j=0; j<dimRow; j++)
+          phi(i,j) = tmp(j);
+      }
+      return;
+    }
+
+    //! default implementation of evaluation the gradient
+    template <class QuadratureType>
+    void jacobian ( int baseFunct, QuadratureType & quad,
+                    int quadPoint, JacobianRange & phi ) const
+    {
+      Range tmp;
+      for(int i=0; i<dimCol; i++)
+      {
+        asImp().evaluate( baseFunct, jacobianDiffVar_[i] , quad, quadPoint, tmp );
+        for(int j=0; j<dimRow; j++)
+          phi(i,j) = tmp(j);
+      }
+      return;
+    }
+
+  private:
+    //! just diffVariable for evaluation of the functions
+    const Vec<0,deriType> diffVariable_;
+
+    Vec<1,deriType> jacobianDiffVar_[dimCol];
 
     //! Barton-Nackman trick
     BaseFunctionSetImp &asImp() { return static_cast<BaseFunctionSetImp&>(*this); }
