@@ -69,6 +69,9 @@ if test "x$X_LIBS" != x ; then
      AC_MSG_WARN([libgr not found in $GRAPEROOT!])])
   fi
 
+  # pre-set variable for summary
+  with_grape="no"
+
   # did it work?
   if test x$HAVE_GRAPE = x1 ; then
     AC_SUBST(GRAPE_LIBS, "$LIBS $GRAPE_LIBS")
@@ -80,6 +83,9 @@ if test "x$X_LIBS" != x ; then
     DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $GRAPE_LDFLAGS"
     DUNE_PKG_LIBS="$DUNE_PKG_LIBS $GRAPE_LIBS"
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $GRAPE_CPPFLAGS"
+
+    # re-set variable correctly
+    with_grape="yes"
   fi
 
   # also tell automake

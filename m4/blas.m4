@@ -71,10 +71,16 @@ if test x$HAVE_BLAS = x1 ; then
   # add to global list
   DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $BLAS_LDFLAGS"
   DUNE_PKG_LIBS="$DUNE_PKG_LIBS $BLAS_LIBS"
+
+  # set variable for summary
+  with_blas="yes"
 else
   echo "******** no BLAS Library is uesd. Enable with the --enable-blas option." 
   AC_SUBST(BLAS_LIBS, "")
   AC_SUBST(BLAS_LDFLAGS, "")
+
+  # set variable for summary
+  with_blas="no"
 fi
   
 # also tell automake

@@ -92,11 +92,17 @@ if test x$HAVE_ALBERT = x1 ; then
   DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $ALBERT_LDFLAGS"
   DUNE_PKG_LIBS="$DUNE_PKG_LIBS $ALBERT_LIBS"
   DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $ALBERT_CPPFLAGS"
+
+  # set variable for summary
+  with_albert="yes"
 else
   echo no albert found...
   AC_SUBST(ALBERT_LIBS, "")
   AC_SUBST(ALBERT_LDFLAGS, "")
   AC_SUBST(ALBERT_CPPFLAGS, "")
+
+  # set variable for summary
+  with_albert="no"
 fi
   
 # also tell automake
