@@ -3,6 +3,7 @@
 #ifndef __DUNE_DISFUNCARRAY_HH__
 #define __DUNE_DISFUNCARRAY_HH__
 
+#include "../common/array.hh"
 #include "discretefunction.hh"
 #include "localfunction.hh"
 #include "dofiterator.hh"
@@ -213,7 +214,7 @@ namespace Dune {
     MyType * next_;
 
     //! diffVar for evaluate, is empty
-    static const DiffVariable<0>::Type diffVar;
+    const DiffVariable<0>::Type diffVar;
 
     //! number of dofs
     int numOfDof_;
