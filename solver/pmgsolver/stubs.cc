@@ -9,14 +9,15 @@ namespace Dune {
     template <class GRID>
     class GaussSeidel {
       enum { DIM = GRID::griddim };
-      double * x;
-      double * b;
+      Dune::Vector<GRID> & x;
+      Dune::Vector<GRID> & b;
       GRID & g;
       coefflist & cl;
       discrete<GRID> &mydiscrete;
       array<DIM> add;
     public:
-      GaussSeidel(double * _x, double * _b, GRID & _g,
+      GaussSeidel(Dune::Vector<GRID> & _x, Dune::Vector<GRID> & _b,
+                  GRID & _g,
                   int l, coefflist & _cl, discrete<GRID> &d) :
         x(_x), b(_b), g(_g), cl(_cl), mydiscrete(d), add(0) {
         add = g.init_add(l);
@@ -40,14 +41,15 @@ namespace Dune {
     template <class GRID>
     class GaussSeidelBorder {
       enum { DIM = GRID::griddim };
-      double * x;
-      double * b;
+      Dune::Vector<GRID> & x;
+      Dune::Vector<GRID> & b;
       GRID & g;
       coefflist & cl;
       discrete<GRID> &mydiscrete;
       array<DIM> add;
     public:
-      GaussSeidelBorder(double * _x, double * _b, GRID & _g,
+      GaussSeidelBorder(Dune::Vector<GRID> & _x, Dune::Vector<GRID> & _b,
+                        GRID & _g,
                         int l, coefflist & _cl, discrete<GRID> &d) :
         x(_x), b(_b), g(_g), cl(_cl), mydiscrete(d), add(0) {
         add = g.init_add(l);

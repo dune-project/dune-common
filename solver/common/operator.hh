@@ -4,6 +4,8 @@
 #define OPERATOR_HH
 
 #include <iostream>
+// needed for bzero
+#include <string.h>
 
 namespace Dune {
 
@@ -178,6 +180,10 @@ namespace Dune {
       opStack.clear();
       return *this;
     }
+    Vector& operator = (double d) {
+      for (int i=0; i<_size; i++) { _data[i] = d; }
+      return *this;
+    }
     T & operator [] (int i) { return _data[i]; }
     const T & operator [] (int i) const { return _data[i]; }
     T* data() { return _data; };
@@ -188,7 +194,6 @@ namespace Dune {
     FLOAT applyLocal(int i) {
       return _data[i];
     };
-
     // print your Vector
     friend
     inline std::ostream &

@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include <dune/grid/spgrid/array.hh>
+#include "common/operator.hh"
 
 namespace Dune {
 
@@ -55,41 +56,37 @@ namespace Dune {
 
     enum { DIM = GRID::griddim };
     typedef double data;
-    typedef data* vec;
     typedef typename GRID::level level;
     typedef struct {
       int id; data value;
     } rhs;
     GRID &g;
     int n1, n2; // Vor-/Nachglaetter-Zyklen
-    double d; // defekt-reduction
+    double reduction; // defekt-reduction
     int Processes; // Anzahl der Prozesse
     int rank;
     bool need_recalc; // true if no dirichlet-condition is specified
     discrete<GRID> &mydiscrete;
-  public:
-    data* b; // rhs, stores the the inbox flow
-    data* defect_v; // defect
+    Vector<GRID> & x; // defect
+    Vector<GRID> & b; // defect
+    Vector<GRID> & d; // defect
   private:
-    double defect(level l, vec x, vec b, vec d=0) const;
-    double localdefect(level, const array<DIM>&, const array<DIM>&,
-                       int, vec x, vec b, vec d=0) const;
-    void adddefect(double, vec, int,
-                   typename GRID::level, array<DIM>, array<DIM>);
-    void restrict (level l, vec x, vec b);
-    double correction(vec x, int dir,
-                      typename GRID::level, array<DIM>, array<DIM>);
-    void   prolongate(level l, vec x);
-    void   smoother(level l, vec x, vec b) {
+    double defect(level l) const;
+    double localdefect(level, const array<DIM>&, const array<DIM>&, int) const;
+    void adddefect(double, int, typename GRID::level, array<DIM>, array<DIM>);
+    void restrict (level l);
+    double correction(int dir, typename GRID::level, array<DIM>, array<DIM>);
+    void   prolongate(level l);
+    void   smoother(level l) {
       switch (SMOOTHER) {
-      case GaussSeidel : smootherGaussSeidel(l,x,b); break;
-      case Jacobi : smootherJacobi(l,x,b); break;
+      case GaussSeidel : smootherGaussSeidel(l); break;
+      case Jacobi : smootherJacobi(l); break;
       default :
         throw std::string("Unknown Smoother");
       }
     };
-    void   smootherGaussSeidel(level l, vec x, vec b);
-    void   smootherJacobi(level l, vec x, vec b);
+    void   smootherGaussSeidel(level l);
+    void   smootherJacobi(level l);
     /* datatyp for exchange */
     MPI_Datatype indexed_double_type;
     typedef struct {
@@ -104,12 +101,14 @@ namespace Dune {
     exchange_data** exchange_data_from;
     exchange_data** exchange_data_to;
     void   initExchange();              /**< Datenabgleich vorbereiten */
-    void   exchange(level l, vec ex);   /**< Datenabgleich auf Level l */
-    void   mgc (level l, vec x, vec b); /**< Multi-Grid-Cycle */
+    void   exchange(level l, Vector<GRID> & ex);   /**< Datenabgleich auf Level l */
+    void   mgc (level l); /**< Multi-Grid-Cycle */
   public:
-    pmgsolver(GRID &_g, double _d, discrete<GRID> &d,
-              int _n1, int _n2) :
-      g(_g), n1(_n1), n2(_n2), d(_d), mydiscrete(d)
+    pmgsolver(GRID &_g, double _reduction, discrete<GRID> &dis,
+              int _n1, int _n2,
+              Vector<GRID> & X, Vector<GRID> & B, Vector<GRID> & D) :
+      g(_g), n1(_n1), n2(_n2), reduction(_reduction), mydiscrete(dis),
+      x(X), b(B), d(D)
     {
 
       MPI_Comm_size(g.comm(), &Processes);
@@ -133,9 +132,9 @@ namespace Dune {
        */
       MPI_Type_free(&indexed_double_type);
     }
-    void solve(vec);
-    void init(vec);
-    inline void initIterator(vec x, typename GRID::iterator it) {
+    void solve();
+    void init();
+    inline void initIterator(typename GRID::iterator it) {
       int i=it.id();
       b[i] = mydiscrete.rhs(it);
       x[i] = 0;
