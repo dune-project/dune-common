@@ -11,6 +11,7 @@ namespace Dune
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(DiscreteFunctionSpaceType & f) :
     DiscreteFunctionDefaultType ( f )
+    , name_ ( "no name" )
     , built_ ( false )
     , levOcu_ (0)
     , level_ (-1)
@@ -23,7 +24,28 @@ namespace Dune
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(DiscreteFunctionSpaceType & f,
                 int level , int codim , bool allLevel )
-    : DiscreteFunctionDefaultType ( f ) , level_ ( level ) ,
+    : DiscreteFunctionDefaultType ( f )
+      , name_ ( "no name" )
+      , level_ ( level ) ,
+      allLevels_ ( allLevel ) , freeLocalFunc_ (NULL)
+      , localFunc_ ( f , dofVec_ )
+  {
+    if(allLevels_)
+      levOcu_ = level_+1;
+    else
+      levOcu_ = 1;
+
+    getMemory();
+  }
+
+  // Constructor makeing discrete function
+  template<class DiscreteFunctionSpaceType >
+  inline DiscFuncArray< DiscreteFunctionSpaceType >::
+  DiscFuncArray(const char * name, DiscreteFunctionSpaceType & f,
+                int level , int codim , bool allLevel )
+    : DiscreteFunctionDefaultType ( f )
+      , name_ ( name )
+      , level_ ( level ) ,
       allLevels_ ( allLevel ) , freeLocalFunc_ (NULL)
       , localFunc_ ( f , dofVec_ )
   {

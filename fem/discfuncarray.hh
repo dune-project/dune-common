@@ -52,16 +52,6 @@ namespace Dune {
     typedef LocalFunctionArray < DiscreteFunctionSpaceType > LocalFunctionType;
     typedef DofIteratorArray < typename DiscreteFunctionSpaceType::RangeField > DofIteratorType;
 
-#if 0
-    template <class GridIteratorType>
-    struct Traits
-    {
-      typedef LocalFunctionArrayIterator < DiscreteFunctionType,
-          GridIteratorType> LocalFunctionIteratorType;
-    };
-#endif
-
-
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
 
     //! Constructor make empty DiscFuncArray
@@ -69,6 +59,10 @@ namespace Dune {
 
     //! Constructor make Discrete Function for all or leaf level
     DiscFuncArray ( DiscreteFunctionSpaceType & f,
+                    int level , int codim , bool leaf ) ;
+
+    //! Constructor make Discrete Function for all or leaf level
+    DiscFuncArray ( const char * name, DiscreteFunctionSpaceType & f,
                     int level , int codim , bool leaf ) ;
 
     //! Constructor make Discrete Function for all or leaf level
@@ -187,6 +181,9 @@ namespace Dune {
       (dofVec_[level_]).resize( length );
       for( int j=0; j<length; j++) (dofVec_[level_])[j] = 0.0;
     }
+
+    //! the name of the function
+    const char * name_;
 
     //! true if memory was allocated
     bool built_;
