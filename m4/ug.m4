@@ -1,72 +1,154 @@
+#! /bin/bash
 # $Id$
 # searches for UG headers and libs
+
+# TODO:
+#
+# - wenn X gefunden ist -> devX, sonst devS
+# - $UGROOT auswerten, wenn es schon gesetzt ist
+# - ug.conf auswerten
+
+          # IF = X|S
+          # DOM_MODULE -> -D...
+          # GRAPE
+          # DIM? 
 
 AC_DEFUN([DUNE_PATH_UG],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
+  AC_REQUIRE([DUNE_DIMENSION])
 
   AC_ARG_WITH(ug,
-    AC_HELP_STRING([--with-ug=PATH],[directory with UG inside]),
-dnl     expand tilde / other stuff
-    eval with_ug=$with_ug
-dnl     extract absolute path
-dnl    eval with_ug=`cd $with_ug ; pwd`
- 
-if test x$with_ug != x ; then 
- # store values
- ac_save_CFLAGS="$CFLAGS"
- ac_save_LDFLAGS="$LDFLAGS"
- ac_save_LIBS="$LIBS"
- LIBS=""
+    AC_HELP_STRING([--with-ug=PATH],[directory with UG inside]))
 
- # start building variables
+  # store old values
+  ac_save_LDFLAGS="$LDFLAGS"
+  ac_save_CPPFLAGS="$CPPFLAGS"
+  ac_save_LIBS="$LIBS"
 
- # use special UG-lib-path if it's set
- if test x$with_ug != x ; then
-   LDFLAGS="$LDFLAGS -L$with_ug/lib"
-   UG_LDFLAGS="$LDFLAGS"
- fi
+  if test "x$X_LIBS" != x ; then
+      LIBS="$X_PRE_LIBS -lX11 $X_LIBS $X_EXTRA_LIBS -lXt -lXaw"
+  else
+      LIBS=""
+  fi
 
- # read ug.conf
- # IF = X|S
- # DOM_MODULE -> -D...
- # GRAPE
- # DIM? 
+  echo UG-Test
 
- # nach den UG-Unterlibs suchen
+  ## do nothing if --without-ug is used
+  if test x$with_ug != xno ; then
 
- AC_CHECK_LIB([devS], [UserWrite], UG_DEVLIB="-ldevS")
+      echo Vor Check
 
- # devX oder devS
- AC_CHECK_LIB([Xaw], [XawInitializeWidgetSet],,,[$X_LIBS])  
- AC_CHECK_LIB([devX], [UserWrite], UG_DEVLIB="-ldevX $X_PRE_LIBS $X_LIBS -lX11 -lXaw $X_EXTRA_LIBS",,[$X_PRE_LIBS $X_LIBS -lX11 -lXaw $X_EXTRA_LIBS])
- 
- if test x$UG_DEVLIB != x ; then
+      # is --with-ug=bla used?
+      if test "x$with_ug" != x ; then
+          # expand tilde / other stuff
+          UGROOT=`cd $with_ug && pwd`
+	  if ! test -d $UGROOT; then
+	      AC_MSG_ERROR([directory $with_ug does not exist!])
+	  fi      
+      else
+          # use some default value...
+	  UGROOT="/usr/local/ug"
+      fi
 
- fi 
- 
- # wurde irgendeine dev-lib gefunden?
- if test "x$UG_DEVLIB" = "x" ; then
-   AC_MSG_WARN([No UG device-lib found!])
- fi
+      echo UGROOT: $UGROOT
 
- AC_CHECK_LIB([domS$with_dim], [InitDom],,,[$X_LIBS])
- AC_CHECK_LIB([gg$with_dim], [InitGG],,,[$X_LIBS])
+      UG_LIB_PATH="$UGROOT/lib"
+      UG_INCLUDE_PATH="$UGROOT/include"
+      
+      UG_LDFLAGS="-L$UG_LIB_PATH"
 
- 
- # grapeOFF oder nicht
- # -> alles in eine lib-Zeile packen
+      # set variables so that tests can use them
+      LDFLAGS="$LDFLAGS -L$UG_LIB_PATH"
+      CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH"
 
- # jetzt ist alles beisammen
- AC_CHECK_LIB([ug$with_dim],[InitUg],,,[-lgrapeOFF$with_dim -ldevX -ldomS$with_dim -lgg$with_dim -lm ])
+      echo Header-Check
 
- UG_LIBS="$LIBS"
- AC_SUBST(UG_LIBS, $UG_LIBS)
+# besserer Test, klappt aber nicht, weil compiler.h auf der
+# Kommandozeile ein define mit dem Compilertyp braucht...
+#
+#      AC_CHECK_HEADER([ugm.h],
+#	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
+#	      HAVE_UG="1"],
+#	  [HAVE_UG="0"]
+#      )
+      
+      # AC_CHECK_FILE macht mit AFS-Namen Ärger...
+      echo -n checking for gm.h... 
+      if test -e $UG_INCLUDE_PATH/gm.h ; then
+	  UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
+	  HAVE_UG="1"
+	  echo yes
+      else
+	  HAVE_UG="0"
+	  echo no
+      fi
 
- # reset values					    
- CFLAGS="$ac_save_CFLAGS"
- LIBS="$ac_save_LIBS"
- LDFLAGS="$ac_save_LDFLAGS"
-fi
+#      if test x$HAVE_UG = x1 ; then
+#	  AC_CHECK_LIB([devX], [UserWrite], 
+#	      [UG_LDFLAGS="$UG_LDFLAGS -ldevX"],
+#	      [HAVE_UG="0"]
+#	  )
+#      fi
 
+      if test "$with_problem_dim" != "$with_world_dim" ; then
+	  AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
+      fi
+      UG_DIM="$with_problem_dim"
+
+      echo Dimension: $UG_DIM
+
+#      if test x$HAVE_UG = x1 ; then
+#	  AC_CHECK_LIB([domS$UG_DIM], [InitDom],
+#	      [UG_LDFLAGS="$UG_LDFLAGS -ldomS$UG_DIM"],
+#	      [HAVE_UG="0"],
+#	      [$X_LIBS])
+#      fi
+
+#      if test x$HAVE_UG = x1 ; then
+#	  AC_CHECK_LIB([gg$UG_DIM], [InitGG]
+#	      [UG_LDFLAGS="$UG_LDFLAGS -ldomS$UG_DIM"],
+#	      [HAVE_UG="0"],
+#	      [$X_LIBS])      
+#      fi
+
+      if test x$HAVE_UG = x1 ; then
+	  AC_CHECK_LIB([ug$UG_DIM],[InitUg],
+	      [UG_LDFLAGS="$UG_LDFLAGS"
+	       UG_LIBS="-lgrapeOFF$UG_DIM -ldevS -ldomS$UG_DIM -lgg$UG_DIM -lug$UG_DIM"],
+	      [HAVE_UG="0"],
+	      [-lgrapeOFF$UG_DIM -ldevS -ldomS$UG_DIM -lgg$UG_DIM])
+      fi
+
+      # pre-set variable for summary
+      with_ug="no"
+
+      # did it work?
+      if test x$HAVE_UG = x1 ; then
+	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
+	  AC_SUBST(UG_LIBS, $UG_LIBS)
+	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
+	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
+	  
+          # add to global list
+	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $UG_LDFLAGS"
+	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $UG_LIBS"
+	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CFLAGS $UG_CPPFLAGS"
+
+          # re-set variable correctly
+	  with_ug="yes"
+      fi 
+
+  # end of "no --without-ug"
+  fi
+  
+  # tell automake	
+  AM_CONDITIONAL(UG, test x$HAVE_UG = x1)
+
+  # restore variables
+  LDFLAGS="$ac_save_LDFLAGS"
+  CPPFLAGS="$ac_save_CPPFLAGS"
+  LIBS="$ac_save_LIBS"
+  
 ])
+
