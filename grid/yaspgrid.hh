@@ -346,7 +346,7 @@ namespace Dune {
     bool checkInside (const FieldVector<yaspgrid_ctype, dim>& local)
     {
       for (int i=0; i<dim; i++)
-        if (local(i)<-yasptolerance || local(i)>1+yasptolerance) return false;
+        if (local[i]<-yasptolerance || local[i]>1+yasptolerance) return false;
       return true;
     }
 
@@ -538,7 +538,7 @@ namespace Dune {
         for (int k=0; k<dim; k++)
           if (i&(1<<k)) (coord[k])++;
 
-        return YaspLevelIterator<dim,dim,dimworld,All_Partition>(_g,_g.vertex_overlapfront().tsubbegin(coord));
+        return YaspLevelIterator<cc,dim,dimworld,All_Partition>(_g,_g.vertex_overlapfront().tsubbegin(coord));
       }
       DUNE_THROW(GridError, "codim not (yet) implemented");
     }
@@ -547,7 +547,7 @@ namespace Dune {
     YaspLevelIterator<0,dim,dimworld,All_Partition> father ()
     {
       // check if coarse level exists
-      if (_g.level<=0)
+      if (_g.level()<=0)
         DUNE_THROW(GridError, "tried to call father on level 0");
 
       // yes, get iterator to it
