@@ -113,9 +113,9 @@ namespace Dune {
     }
 
     // is called once and calcs the insertion points too
-    int tmpSize() const
+    int additionalSizeEstimate () const
     {
-      return indexSet_.tmpSize();
+      return indexSet_.additionalSizeEstimate();
     }
 
     void calcInsertPoints () {};
@@ -199,9 +199,9 @@ namespace Dune {
     }
 
     // is called once and calcs the insertion points too
-    int tmpSize() const
+    int additionalSizeEstimate () const
     {
-      return indexSet_.tmpSize();
+      return indexSet_.additionalSizeEstimate();
     }
 
     void calcInsertPoints () {};
@@ -289,14 +289,94 @@ namespace Dune {
     }
 
     // is called once and calcs the insertion points too
-    int tmpSize() const
+    int additionalSizeEstimate () const
     {
-      return dimrange * indexSet_.tmpSize();
+      return dimrange * indexSet_.additionalSizeEstimate();
     }
 
     int numberOfDofs () const
     {
       return numberOfDofs_;
+    }
+
+    //! calc the new insertion points
+    void calcInsertPoints ()
+    {
+      // insertion point is 0
+    }
+  };
+
+  template <class IndexSetImp>
+  class LagrangeMapper<IndexSetImp,0,1>
+    : public DofMapperDefault < LagrangeMapper <IndexSetImp,0,1> >
+  {
+    IndexSetImp & indexSet_;
+    // level of function space
+    int level_;
+  public:
+    typedef IndexSetImp IndexSetType;
+
+    LagrangeMapper ( IndexSetType  & is , int numDofs , int level)
+      : indexSet_ (is) , level_(level) {}
+
+    // we have virtual function ==> virtual destructor
+    ~LagrangeMapper () {}
+
+    //! return size of function space, here number of elements
+    int size () const
+    {
+      return indexSet_.size(level_,0);
+    }
+
+    //! map Entity an local Dof number to global Dof number
+    //! for Lagrange with polOrd = 0
+    template <class EntityType>
+    int mapToGlobal (EntityType &en, int localNum ) const
+    {
+      return indexSet_.template index<0> (en,localNum);
+    }
+
+    //! for dof manager, to check whether it has to copy dof or not
+    bool indexNew (int num)
+    {
+      return indexSet_.template indexNew(num,0);
+    }
+
+    //! return old index, for dof manager only
+    int oldIndex (int num) const
+    {
+      return indexSet_.oldIndex(num,0);
+    }
+
+    //! return new index, for dof manager only
+    int newIndex (int num) const
+    {
+      return indexSet_.newIndex(num,0);
+    }
+
+    //! return size of grid entities per level and codim
+    //! for dof mapper
+    int oldSize () const
+    {
+      // this index set works only for codim = 0 at the moment
+      return indexSet_.oldSize(level_,0);
+    }
+
+    // is called once and calcs the insertion points too
+    int newSize() const
+    {
+      return this->size();
+    }
+
+    // is called once and calcs the insertion points too
+    int additionalSizeEstimate () const
+    {
+      return indexSet_.additionalSizeEstimate();
+    }
+
+    int numberOfDofs () const
+    {
+      return 1;
     }
 
     //! calc the new insertion points
