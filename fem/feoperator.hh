@@ -29,8 +29,8 @@ namespace Dune {
       return asImp().getLocalMatrixEntry( entity, i, j );
     }
 
-    template <class EntityType>
-    void getLocalMatrix( EntityType &entity, const int matSize, MatrixType& mat) const {
+    template <class EntityType,class MatrixImp>
+    void getLocalMatrix( EntityType &entity, const int matSize, MatrixImp& mat) const {
       return asImp().getLocalMatrix( entity, matSize, mat);
     }
 
