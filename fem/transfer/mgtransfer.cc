@@ -98,11 +98,12 @@ void Dune::MGTransfer<DiscFuncType>::prolong(const DiscFuncType& f, DiscFuncType
   assert(t.getFunctionSpace().size()   == matrix_.rows());
   assert(f.getFunctionSpace().size() == matrix_.cols());
 
-  typedef typename DiscFuncType::DofIteratorType DofIteratorType;
+  typedef typename DiscFuncType::DofIteratorType Iterator;
+  typedef typename DiscFuncType::ConstDofIteratorType ConstIterator;
   typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
 
-  DofIteratorType tIt = t.dbegin();
-  DofIteratorType fIt = f.dbegin();
+  Iterator tIt = t.dbegin();
+  ConstIterator fIt = f.dbegin();
 
   for(int row=0; row<matrix_.rows(); row++) {
 
@@ -125,13 +126,14 @@ void Dune::MGTransfer<DiscFuncType>::restrict (const DiscFuncType & f, DiscFuncT
   assert(f.getFunctionSpace().size()   == matrix_.rows());
   assert(t.getFunctionSpace().size() == matrix_.cols());
 
-  typedef typename DiscFuncType::DofIteratorType DofIteratorType;
+  typedef typename DiscFuncType::DofIteratorType IteratorType;
+  typedef typename DiscFuncType::ConstDofIteratorType ConstIteratorType;
   typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
 
   t.clear();
 
-  DofIteratorType tIt = t.dbegin();
-  DofIteratorType fIt = f.dbegin();
+  IteratorType tIt = t.dbegin();
+  ConstIteratorType fIt = f.dbegin();
 
 
   for (int row=0; row<matrix_.rows(); row++) {
