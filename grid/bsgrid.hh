@@ -251,6 +251,30 @@ namespace Dune
     friend class BSGridIntersectionIterator < dim, dimworld>;
     friend class BSGridHierarchicIterator < dim, dimworld>;
     friend class BSGridLevelIterator <0,dim,dimworld,All_Partition>;
+
+    // partial specialisation of subIndex
+    template <int codim>
+    struct IndexWrapper
+    {
+      static inline int subIndex(BSSPACE GEOElementType &elem, int i)
+      {
+        return elem.myvertex(i)->vertexIndex();
+        //return elem.getIndex();
+      }
+    };
+
+    /*
+       // partial specialisation of subIndex for codim == dim
+       template <>
+       struct IndexWrapper<dim>
+       {
+       static int subIndex(BSSPACE GEOElementType &elem, int i) const
+       {
+        return elem.myvertex(i)->getIndex();
+       }
+       };
+     */
+
   public:
     typedef BSGridIntersectionIterator<dim,dimworld> IntersectionIterator;
     typedef BSGridHierarchicIterator<dim,dimworld> HierarchicIterator;
@@ -290,7 +314,7 @@ namespace Dune
 
     //! return index of sub entity with codim = cc and local number i
     //! i.e. return global number of vertex i
-    template<int cc> int subIndex (int i)  {  return 0; }
+    template<int cc> int subIndex (int i);
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
@@ -558,27 +582,31 @@ namespace Dune
     // set behind last neighbour
     void done ();
 
-    void calcNormal ( BSSPACE GEOFaceType * face , int twist );
-
     BSGridEntity<0,dim,dimworld> entity_; //! neighbour entity
 
     // current element from which we started the intersection iterator
-    BSSPACE HElementType *item_;
+    typename BSSPACE GEOElementType *item_;
 
-    int index_; //! internal index of intersection
+    //! current neighbour
+    typename BSSPACE GEOElementType *neigh_;
+
+    int index_;       //! internal index of intersection
+    int numberInNeigh_; //! index of intersection in neighbor
 
     bool theSituation_;   //! true if the "situation" occurs :-)
     bool daOtherSituation_; //! true if the "da other situation" occurs :-)
                             //! see bsgrid.cc for descritption
 
-    FieldVector<bs_ctype, dimworld> outerNormal_; //! outerNormal ro current intersection
+    bool isBoundary_; //! true if intersection is with boundary
+
+    FieldVector<bs_ctype, dimworld> outNormal_; //! outerNormal ro current intersection
     FieldVector<bs_ctype, dimworld> unitOuterNormal_;
 
     bool needSetup_; //! true if setup is needed
     bool needNormal_;
 
     // pair holding pointer to face and twist
-    BSSPACE NeighbourPairType neighpair_;
+    BSSPACE NeighbourFaceType neighpair_;
 
     BSGridElement<dim-1,dimworld> interSelfGlobal_; //! intersection_self_global
   };
