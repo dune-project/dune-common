@@ -119,7 +119,7 @@ structure. Here are some examples:
 \begin{itemize}
 \item Certain discretizations for systems of PDEs or higher order
   methods result in matrices where individual entries are replaced by
-  small blocks, say of size $2\time 2$ or $4\times 4$. Straightforward
+  small blocks, say of size $2\times 2$ or $4\times 4$. Straightforward
   iterative methods solve these small blocks exactly, see
   e.~g.~\cite{BH99}.
 \item Equation-wise ordering for systems results in matrices having an
@@ -137,7 +137,7 @@ structure. Here are some examples:
 It is very important to note that this structure is typically known at
 compile-time and this knowledge should be exploited to produce
 efficient code. Moreover, block structuredness is recursive,
-i.~e.~blocks are build from blocks which are themselves build from
+i.~e.~matrices are build from blocks which can themselves be build from
 blocks. 
 
 The Matrix Template Library also offers the possibility to partition a
@@ -283,57 +283,47 @@ in the section on memory management.
 \hline
 \hline
 \texttt{X::field\_type} & T & T is assignable\\
-\hline
 \texttt{X::block\_type} & T & T is assignable\\
-\hline
 \texttt{X::allocator\_type} & T & see mem.~mgt.\\
-\hline
 \texttt{X::blocklevel} & \texttt{int} & block levels inside\\
-\hline
 \texttt{X::Iterator} & T & read/write access\\
-\hline
 \texttt{X::ConstIterator} & T & read-only access\\
 \hline
-\texttt{X::operator=(field\_type\&)} & \texttt{X\&} & \\
+\texttt{X::X()} & & empty vector \\
+\texttt{X::X(X\&)} & & deep copy\\
+\texttt{X::}$\sim$\texttt{X()} & & free memory\\
+\texttt{X::operator=(X\&)} & \texttt{X\&} & \\
+\texttt{X::operator=(field\_type\&)} & \texttt{X\&} & from scalar\\
 \hline
 \texttt{X::operator[](int)} & \texttt{field\_type\&} & \\
-\hline
 \texttt{X::operator[](int)} & \texttt{const field\_type\&} & \\
+\texttt{X::begin()} & \texttt{Iterator} & \\
+\texttt{X::end()} & \texttt{Iterator} & \\
+\texttt{X::begin()} & \texttt{ConstIterator} & \\
+\texttt{X::end()} & \texttt{ConstIterator} & \\
+\texttt{X::find(int)} & \texttt{Iterator} & \\
 \hline
 \texttt{X::operator+=(X\&)} & \texttt{X\&} & $x = x+y$\\
-\hline
 \texttt{X::operator-=(X\&)} & \texttt{X\&} & $x = x-y$\\
-\hline
-\texttt{X::operator*=(field\_type\&)} & \texttt{X\&} & $x =
-\alpha x$\\
-\hline
-\texttt{X::operator/=(field\_type\&)} & \texttt{X\&} & $x =
-\alpha^{-1} x$\\
-\hline
+\texttt{X::operator*=(field\_type\&)} & \texttt{X\&} & $x = \alpha x$\\
+\texttt{X::operator/=(field\_type\&)} & \texttt{X\&} & $x = \alpha^{-1} x$\\
 \texttt{X::axpy(field\_type\&,X\&)} & \texttt{X\&} & $x = x+\alpha y$\\
-\hline
 \texttt{X::operator*(X\&)} & \texttt{field\_type} & $x\cdot y$\\
 \hline
 \texttt{X::one\_norm()} & \texttt{double} & $\sum_i\sqrt{Re(x_i)^2+Im(x_i)^2}$\\
-\hline
 \texttt{X::one\_norm\_real()} & \texttt{double} &$\sum_i(|Re(x_i)|+|Im(x_i)|)$\\
-\hline
 \texttt{X::two\_norm()} & \texttt{double} &$\sqrt{\sum_i(Re(x_i)^2+Im(x_i)^2)}$\\
-\hline
 \texttt{X::two\_norm2()} & \texttt{double} &$\sum_i (Re(x_i)^2+Im(x_i)^2)$\\
-\hline
 \texttt{X::infinity\_norm()} & \texttt{double} &$\max_i\sqrt{Re(x_i)^2+Im(x_i)^2}$\\
-\hline
 \texttt{X::infinity\_norm\_real()} & \texttt{double} &$\max_i(|Re(x_i)|+|Im(x_i)|)$\\
 \hline
 \texttt{X::N()} & \texttt{int} & number of blocks\\
-\hline
 \texttt{X::dim()} & \texttt{int} & dimension of space\\
 \hline
 \end{tabular}
 \end{center}
 
-\caption{Members of a vector class.}
+\caption{Members of a class \lstinline!X! conforming to the vector interface.}
 \label{Fig:VectorMembers}
 \end{figure}
 
@@ -359,6 +349,64 @@ structure can be generated simply with the copy constructor.
 \subsection{Matrices are containers of containers}
 
 \subsection{Operations}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{expression} & \textbf{return type} & \textbf{note}\\
+\hline
+\hline
+\texttt{M::field\_type} & T & T is assignable\\
+\texttt{M::block\_type} & T & T is assignable\\
+\texttt{M::row\_type} & T & a T is assignable\\
+\texttt{M::allocator\_type} & T & see mem.~mgt.\\
+\texttt{M::blocklevel} & \texttt{int} & block levels inside\\
+\texttt{M::RowIterator} & T & over rows\\
+\texttt{M::ColIterator} & T & over columns\\
+\hline
+\texttt{M::M()} & & empty matrix \\
+\texttt{M::M(M\&)} & & deep copy\\
+\texttt{M::}$\sim$\texttt{M()} & & free memory\\
+\texttt{M::operator=(M\&)} & \texttt{M\&} & \\
+\texttt{M::operator=(field\_type\&)} & \texttt{M\&} & from scalar\\
+\hline
+\texttt{M::operator[](int)} & \texttt{row\_type\&} & \\
+\texttt{M::operator[](int)} & \texttt{const row\_type\&} & \\
+\texttt{M::begin()} & \texttt{RowIterator} & \\
+\texttt{M::end()} & \texttt{RowIterator} & \\
+\hline
+\texttt{M::operator*=(field\_type\&)} & \texttt{M\&} & $A = \alpha A$\\
+\texttt{M::operator/=(field\_type\&)} & \texttt{M\&} & $A = \alpha^{-1} A$\\
+\hline
+\texttt{M::umv(X\& x,Y\& y)}    &  & $y = y + Ax$\\
+\texttt{M::mmv(X\& x,Y\& y)}    &  & $y = y - Ax$\\
+\texttt{M::usmv(field\_type\&,X\& x,Y\& y)}   &  & $y = y + \alpha Ax$\\
+\texttt{M::umtv(X\& x,Y\& y)}   &  & $y = y + A^Tx$\\
+\texttt{M::mmtv(X\& x,Y\& y)}   &  & $y = y - A^Tx$\\
+\texttt{M::usmtv(field\_type\&,X\& x,Y\& y)}  &  & $y = y + \alpha A^Tx$\\
+\texttt{M::umhv(X\& x,Y\& y)}   &  & $y = y + A^Hx$\\
+\texttt{M::mmhv(X\& x,Y\& y)}   &  & $y = y - A^Hx$\\
+\texttt{M::usmhv(field\_type\&,X\& x,Y\& y)}  &  & $y = y + \alpha A^Hx$\\
+\hline
+\texttt{M::frobenius\_norm()} & \texttt{double} &\small$\sqrt{\sum\limits_{i,j} (Re(a_{ij})^2+Im(a_{ij})^2)}$\\
+\texttt{M::frobenius\_norm2()} & \texttt{double} &\small$\sum\limits_{i,j} (Re(a_{ij})^2+Im(a_{ij})^2)$\\
+\hline
+\texttt{M::N()} & \texttt{int} & row blocks\\
+\texttt{M::M()} & \texttt{int} & col blocks\\
+\texttt{M::rowdim(int)} & \texttt{int} & dim.~of row block\\
+\texttt{M::rowdim()} & \texttt{int} & dim.~of row space\\
+\texttt{M::coldim(int)} & \texttt{int} & dim.~of col block\\
+\texttt{M::coldim()} & \texttt{int} & dim.~of col space\\
+\texttt{M::exists(int i, int j)} & \texttt{bool} &\\
+\hline
+\end{tabular}
+\end{center}
+
+\caption{Members of a class \lstinline!M! conforming to the matrix
+  interface. \lstinline!X! and \lstinline!Y! are any vector classes.}
+\label{Fig:MatrixMembers}
+\end{figure}
 
 \subsection{Matrix creation}
 
