@@ -1084,7 +1084,7 @@ namespace Dune
   //*****************************************************************
   // count
   template <class GridImp, int dim, int cc> struct AlbertaGridCount {
-    static int count () { return dim-cc+1; }
+    static int count () { return dim+1; }
   };
   template <class GridImp> struct AlbertaGridCount<GridImp,3,2> {
     static int count () { return 6; }
