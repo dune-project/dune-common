@@ -4,11 +4,11 @@
 #define __DUNE_DISCRETEOPERATOR_INTERFACE_HH__
 
 #include <dune/common/operator.hh>
+// object pointer management for combined discrete operators
+#include "objpointer.hh"
 
 namespace Dune {
 
-  // object pointer management for combined discrete operators
-#include "objpointer.hh"
 
   /** @defgroup DiscreteOperator DiscreteOperator
       @ingroup OperatorCommon
