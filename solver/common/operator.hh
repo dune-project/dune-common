@@ -141,8 +141,13 @@ namespace Dune {
 
   template <class GRID, class T>
   class Vector : public gridOperator< GRID, Vector<GRID,T> > {
+  private:
     int _size;
     T *_data;
+    Vector(const Vector<GRID,T> & v) {
+      assert(0);
+      throw("Warning: you should _never_ use the copy constructor for Vector");
+    }
   public:
     Vector(const GRID &G) : gridOperator< GRID, Vector<GRID,T> >(G) {
       _size = g.max(g.smoothest());
@@ -158,7 +163,7 @@ namespace Dune {
       _data = new T[_size];
       for (int i=0; i<_size; i++) _data[i]=d;
     }
-    ~Vector() { /* delete[] _data; */ }
+    ~Vector() { delete[] _data; }
 #if 0
     template <class OP>
     Vector(OP o) {
