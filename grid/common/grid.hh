@@ -67,7 +67,7 @@ namespace Dune {
    */
   enum BoundaryType { Neumann ,    //!< Neumann type boundary
                       Dirichlet,   //!< Dirichlet type boundary
-                      Periodic,    //!< Periodic boundary
+                      Periodic     //!< Periodic boundary
   };
 
   enum AdaptationState { NONE ,     //!< notin' to do and notin' was done
