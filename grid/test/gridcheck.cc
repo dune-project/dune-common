@@ -43,7 +43,8 @@ struct ElementInterface
     e.local(g);
     e.checkInside(v);
     e.integrationElement(v);
-    e.jacobianInverse(v);
+#warning disabled, because it is only supported if codim==0
+    //      e.jacobianInverse(v);
   }
   ElementInterface()
   {
