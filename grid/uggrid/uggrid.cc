@@ -67,10 +67,10 @@ class UGGridLevelIteratorFactory<0,PiType,GridImp>
 {
 public:
   static inline
-  UGGridLevelIterator<0,PiType,GridImp> getIterator(UGTypes<2>::GridType* theGrid, int level) {
+  UGGridLevelIterator<0,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
     UGGridLevelIterator<0,PiType,GridImp> it(level);
-    it.setToTarget(UG_NS<2>::FirstElement(theGrid), level);
+    it.setToTarget(UG_NS<GridImp::dimension>::FirstElement(theGrid), level);
     return it;
   }
 
@@ -580,17 +580,28 @@ public:
   static int gather(DDD_OBJ obj, void* data)
   {
     int codim=0;
+#ifdef _2
     enum {dim = 2};
-
+#else
+    enum {dim = 3};
+#endif
     P<T>* p = (P<T>*)data;
 
     int index = 0;
     switch (codim) {
     case 0 :
+#ifdef _2
       index = ((UG2d::element*)obj)->ge.id;
+#else
+      index = ((UG3d::element*)obj)->ge.id;
+#endif
       break;
     case dim :
+#ifdef _2
       index = ((UG2d::node*)obj)->id;
+#else
+      index = ((UG3d::node*)obj)->id;
+#endif
       break;
     default :
       DUNE_THROW(GridError, "UGGrid::communicate only implemented for this codim");
@@ -604,17 +615,29 @@ public:
   static int scatter(DDD_OBJ obj, void* data)
   {
     int codim=0;
+#ifdef _2
     enum {dim = 2};
+#else
+    enum {dim = 3};
+#endif
 
     P<T>* p = (P<T>*)data;
 
     int index = 0;
     switch (codim) {
     case 0 :
+#ifdef _2
       index = ((UG2d::element*)obj)->ge.id;
+#else
+      index = ((UG3d::element*)obj)->ge.id;
+#endif
       break;
     case dim :
+#ifdef _2
       index = ((UG2d::node*)obj)->id;
+#else
+      index = ((UG3d::node*)obj)->id;
+#endif
       break;
     default :
       DUNE_THROW(GridError, "UGGrid::communicate only implemented for codim 0 and dim");
