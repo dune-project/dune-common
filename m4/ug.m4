@@ -32,12 +32,8 @@ AC_DEFUN([DUNE_PATH_UG],[
       LIBS=""
   fi
 
-  echo UG-Test
-
   ## do nothing if --without-ug is used
   if test x$with_ug != xno ; then
-
-      echo Vor Check
 
       # is --with-ug=bla used?
       if test "x$with_ug" != x ; then
@@ -51,8 +47,6 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  UGROOT="/usr/local/ug"
       fi
 
-      echo UGROOT: $UGROOT
-
       UG_LIB_PATH="$UGROOT/lib"
       UG_INCLUDE_PATH="$UGROOT/include"
       
@@ -61,8 +55,6 @@ AC_DEFUN([DUNE_PATH_UG],[
       # set variables so that tests can use them
       LDFLAGS="$LDFLAGS -L$UG_LIB_PATH"
       CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH"
-
-      echo Header-Check
 
 # besserer Test, klappt aber nicht, weil compiler.h auf der
 # Kommandozeile ein define mit dem Compilertyp braucht...
@@ -73,7 +65,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 #	  [HAVE_UG="0"]
 #      )
       
-      # AC_CHECK_FILE macht mit AFS-Namen Ärger...
+      # !!! AC_CHECK_FILE sollte hier gehen
       echo -n checking for gm.h... 
       if test -e $UG_INCLUDE_PATH/gm.h ; then
 	  UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
@@ -95,8 +87,6 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
       fi
       UG_DIM="$with_problem_dim"
-
-      echo Dimension: $UG_DIM
 
 #      if test x$HAVE_UG = x1 ; then
 #	  AC_CHECK_LIB([domS$UG_DIM], [InitDom],
