@@ -1514,6 +1514,12 @@ namespace Dune {
       static const bool v = true;
     };
 
+    template<int dim, int dimw>
+    struct isParallel< YaspGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
   }
 
 } // end namespace

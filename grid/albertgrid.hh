@@ -21,6 +21,7 @@
 #include "../common/misc.hh"
 #include "../common/matvec.hh"
 #include "../common/array.hh"
+#include "../common/capabilities.hh"
 #include "common/grid.hh"
 
 #ifndef __ALBERTpp__
@@ -1370,6 +1371,22 @@ namespace Dune
 
   /** @} end documentation group */
 
+  namespace Capabilities
+  {
+
+    template<int dim,int dimw>
+    struct hasLeafIterator< AlbertGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+    template<int dim, int dimw, int cdim>
+    struct hasEntity< AlbertGrid<dim,dimw>, AlbertGridEntity<cdim,dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+  }
 
 }; // namespace Dune
 
