@@ -67,7 +67,8 @@ REM_LDFLAGS=$LDFLAGS
 
 # TODO: check if static flag exists 
 # link_static_flag defines the flag for the linker to link only static
-LDFLAGS="$LDFLAGS $link_static_flag"
+# didnt work, with $link_static_flag, so quick hack here
+LDFLAGS="$LDFLAGS -static"
 
 # if header is found...
 if test x$HAVE_ALBERTA = x1 ; then
