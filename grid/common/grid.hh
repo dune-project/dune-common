@@ -22,11 +22,7 @@ namespace Dune {
      - Albert Grid (AlbertGrid) : Provides the simplicial meshes of the finite element tool box ALBERT
      written by Kunibert Siebert and Alfred Schmidt.
 
-     - Quoc Mesh Grid  : Provides the meshes of the QuocMesh.
-
      - UG Grid (UGGrid) : Provides the meshes of the finite element toolbox UG.
-
-     - Structured Parallel Grid (SPGrid) : Provides a distributed structured mesh.
 
      This Module contains only the description of compounds that are common to all implementations
      of the grid interface.
@@ -36,17 +32,17 @@ namespace Dune {
      of the interface. As with STL containers, all implementations must implement the
      same classes with exactly the same members to be used in generic algorithms.
 
-     \sa AlbertGrid UGGrid SPGrid SGrid YaspGrid
+     \sa AlbertGrid UGGrid SGrid YaspGrid
 
 
      @{
    */
 
   //************************************************************************
-  /*!
-      Enum that declares identifiers for different element types. This
-      list can be extended in the future. Not all meshes need to implement
-      all element types.
+  /** \brief Identifiers for different element types.
+   *
+   * This list can be extended in the future. Not all meshes need to implement
+   * all element types.
    */
 
   enum ElementType {vertex=0,line=1, triangle=2, quadrilateral=3, tetrahedron=4,
