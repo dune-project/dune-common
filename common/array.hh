@@ -406,23 +406,23 @@ namespace Dune
 
   //! a simple vector class derived from array
   template <class T>
-  class Vector : public Array<T> {
+  class SimpleVector : public Array<T> {
   public:
     //! make empty vector
-    Vector() {};
+    SimpleVector() {};
 
     //! make array with m components
-    Vector(int m) : Array<T>::Array(m) {}
+    SimpleVector(int m) : Array<T>::Array(m) {}
 
     //! assignment from scalar
-    Vector<T>& operator= (const T t)
+    SimpleVector<T>& operator= (const T t)
     {
       for (int i=0; i<n; ++i) p[i] = t;
       return *this;
     }
 
     //! scalar product of two vectors, no check for size !
-    T ddot (const Vector<T>& x)
+    T ddot (const SimpleVector<T>& x)
     {
       T sum = 0;
       for (int i=0; i<n; ++i) sum += p[i]*x.p[i];
@@ -430,7 +430,7 @@ namespace Dune
     }
 
     // add scalar times other vector
-    void daxpy (T a, const Vector<T>& x)
+    void daxpy (T a, const SimpleVector<T>& x)
     {
       for (int i=0; i<n; ++i) p[i] += a*x.p[i];
     }
