@@ -291,7 +291,7 @@ namespace Dune {
     const char * name () const { return name_; }
 
     //! if grid changed, then calulate new size of dofset
-    int newSize (int level) const { return dofmap_->newSize(level); }
+    int newSize () const { return dofmap_->newSize(); }
 
     //! return number of entities
     int size () const { return vecSize_; }
@@ -485,7 +485,7 @@ namespace Dune {
       for( ; it != endit ; ++it)
       {
 
-        int newSize = (*it)->newSize(grid_.maxlevel());
+        int newSize = (*it)->newSize();
         int memSize  = (*it)->memSize();
         MemPointerType * mem  = (*it)->myMem();
 
@@ -538,7 +538,7 @@ namespace Dune {
           }
 
           // stroe new size, which is smaller then size
-          int newSize = (*it)->newSize(grid_.maxlevel());
+          int newSize = (*it)->newSize();
           int memSize = (*it)->memSize();
           (*it)->resize(mem,memSize,newSize);
         }
