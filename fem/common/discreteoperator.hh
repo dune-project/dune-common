@@ -7,67 +7,101 @@
 
 namespace Dune {
 
-
-  // Note: Range has to have Vector structure as well.
-  template <class DiscreteFunctionType, class LocalOperatorImp
-      , class DiscreteOperatorImp  >
-  class DiscreteOperatorInterface
-    : public Operator <typename DiscreteFunctionType::RangeFieldType,
-          DiscreteFunctionType , DiscreteFunctionType>
+  //! strorage class for new generated operators during operator + on
+  //! DiscreteOperator
+  template <class ObjType>
+  struct ObjPointer
   {
-  public:
-    //! prepare operator for apply
-    void prepare ( int level , Domain &Arg, Range &Dest,
-                   Range *tmp , double a, double b)
-    {
-      asImp().prepare(level,Arg,Dest,tmp,a,b);
-    }
+    typedef ObjPointer<ObjType> ObjPointerType;
+    // remember object item and next pointer
+    ObjPointerType *next;
+    ObjType * item;
 
-    //! go over all Entitys and call the LocalOperator.applyLocal Method
-    //! Note that the LocalOperator can be an combined Operator
-    //! Domain and Range are defined through class Operator
-    void apply ( Domain &Arg, Range &Dest )
-    {
-      asImp().apply( Arg, Dest);
-    }
+    //! new ObjPointer is only created with pointer for item
+    ObjPointer () : item (NULL) , next (NULL) {}
 
-    //! finalize the operation
-    double finalize (  Domain &Arg, Range &Dest )
-    {
-      return asImp().finalize( Arg, Dest );
-    }
+    //! new ObjPointer is only created with pointer for item
+    ObjPointer (ObjType  *t) : item (t) , next (NULL) {}
 
-    //! apply the operator
-    void operator()( Domain &Arg, Range &Dest )
+    //! delete the next ObjPointer and the item
+    ~ObjPointer ()
     {
-      apply(Arg,Dest);
+      if(next) delete next;next = NULL;
+      if(item) delete item;item = NULL;
     }
-
-  private:
-    //! Barton Nackman
-    DiscreteOperatorImp & asImp()
-    {
-      return static_cast<DiscreteOperatorImp &> (*this);
-    }
-
   };
 
+  //*******************************************************************
+  //*******************************************************************
+  //*******************************************************************
+  //*******************************************************************
 
-  // Note: Range has to have Vector structure as well.
-  template <class DiscreteFunctionType, class LocalOperatorImp
-      , class DiscreteOperatorImp  >
+  /*! Default Implementation class for DiscreteOperators
+     Here the ObjPointer is stored which is used during
+     the generation of new objects with the operator + method.
+     There is corresponding interface class is Operator.
+   */
+  template < class DF_DomainType , class DF_RangeType>
   class DiscreteOperatorDefault
-    : public DiscreteOperatorInterface < DiscreteFunctionType,
-          LocalOperatorImp , DiscreteOperatorImp >
+    : public Operator <typename DF_DomainType::RangeFieldType,
+          typename DF_RangeType::RangeFieldType,
+          DF_DomainType , DF_RangeType>
   {
+    typedef DiscreteOperatorDefault<DF_DomainType,DF_RangeType> MyType;
+  public:
+    //! make new operator with item points to null
+    DiscreteOperatorDefault () : item_ (NULL) {}
 
-  private:
-    //! Barton Nackman
-    DiscreteOperatorImp & asImp()
+    // set level
+    void initLevel (int level) const
     {
-      return static_cast<DiscreteOperatorImp &> (*this);
+      level_ = level;
     }
-  };
+
+    //! call initLevel
+    void initialize (int level) const
+    {
+      initLevel ( level );
+    }
+
+    //! apply operator, only used by mapping
+    void apply ( const DF_DomainType & arg, DF_RangeType & dest) const
+    {
+      std::cerr << "ERROR: DiscreteOperatorDefault::apply called! \n";
+    }
+
+    //! apply operator
+    void operator () ( const DF_DomainType & arg, DF_RangeType & dest ) const
+    {
+      std::cerr << "ERROR: DiscreteOperatorDefault::operator () called! \n";
+    }
+
+
+    //! delete all other operators with are generated
+    //! using the operator + of derived operators
+    ~DiscreteOperatorDefault ()
+    {
+      std::cout << "delete Operator "<< this << " \n";
+      if(item_) delete item_;item_ = NULL;
+    }
+
+  protected:
+    // store the objects created by operator + in here
+    typedef ObjPointer<MyType> ObjPointerType;
+    ObjPointer<MyType> * item_;
+
+    // store new generated DiscreteOperator Pointer
+    template <class DiscrOpType>
+    void saveObjPointer ( DiscrOpType * discrOp )
+    {
+      ObjPointerType *next = new ObjPointerType ( discrOp );
+      next->next = item_;
+      item_ = next;
+    }
+
+    // current level of operator
+    mutable int level_;
+  }; // end class DiscreteOperatorDefault
 
 } // end namespace Dune
 
