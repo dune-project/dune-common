@@ -207,6 +207,57 @@ namespace Dune {
   };
 
 
+  /*! Wraps the naked ISTL generic ILU(n) preconditioner into the
+      solver framework.
+   */
+  template<class M, class X, class Y>
+  class SeqILUn : public Preconditioner<X,Y> {
+  public:
+    //! export types, they come from the derived class
+    typedef M matrix_type;
+    typedef X domain_type;
+    typedef Y range_type;
+    typedef typename X::field_type field_type;
+
+    //! constructor gets all parameters to operate the prec.
+    SeqILUn (const M& A, int n)
+      : ILU(A.N(),A.M(),M::row_wise)
+    {
+      _n = n;
+      bilu_decomposition(A,n,ILU);
+    }
+
+    //! prepare: nothing to do here
+    virtual void pre (X& x, Y& b) {}
+
+    //! just calls the istl functions
+    virtual void apply (X& v, const Y& d)
+    {
+      bilu_backsolve(ILU,v,d);
+    }
+
+    //! sequential case: just call vector function
+    virtual field_type dot (const Y& y, const Y& z)
+    {
+      return y*z;
+    }
+
+    //! sequential case: just call vector function
+    virtual double norm (const Y& y)
+    {
+      return y.two_norm();     // my favourite norm
+    }
+
+
+    // nothing to do here
+    virtual void post (X& x) {}
+
+  private:
+    M ILU;
+    int _n;
+  };
+
+
 
   /** @} end documentation */
 
