@@ -2,13 +2,8 @@
 
 all: doxygen-tag
 
-doxygen_DEPS = $(shell: cat $(DEPDIR)/doxygen.Po)
-doxygen_FILES = Doxyfile doxy-header.html doxy-footer.html dune-doxy.css
-
-$(DEPDIR)/doxygen.Po: Doxyfile
-	./Doxydep $< $@
-
-doxygen-tag: $(doxygen_FILES) $(doxygen_DEPS)
+doxygen-tag: Doxyfile
+@AMDEP_TRUE@	./Doxydep $< $(DEPDIR)/doxygen.Po $@
 	doxygen >& doxygen.log
 	touch doxygen-tag
 
@@ -21,7 +16,8 @@ web-install: doxygen-tag
 	fi
 	install -g web -m 664 $(WEBFILES) $(WEBDIR)
 
-include $(DEPDIR)/doxygen.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/doxygen.Po
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/doxygen.Po@am__quote@
 
 clean-local:
-	rm -rf html latex $(DEPDIR) doxygen-tag	*~
+	rm -rf html latex doxygen-tag *~
