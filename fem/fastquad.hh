@@ -66,6 +66,8 @@ namespace Dune {
       }
     };
 
+    virtual ~FastQuad() {}
+
     //! return number of quadrature points
     int nop() const { return numberOfQuadPoints_; }
 
@@ -176,6 +178,8 @@ namespace Dune {
       }
     };
 
+    virtual ~BaryCenterQuad () {}
+
     //! return number of quadrature points
     int nop() const { return numberOfQuadPoints_; }
 
@@ -270,6 +274,8 @@ namespace Dune {
       }
     };
 
+    virtual ~QuadratureImp() {}
+
     //! return number of quadrature points
     int nop () const { return numQuadPoints_; };
 
@@ -317,11 +323,11 @@ namespace Dune {
 
     };
 
-    // remember which element type the quadrature was made for
-    const ElementType eltype_;
-
     // order of quadrature
     int order_;
+
+    // remember which element type the quadrature was made for
+    const ElementType eltype_;
 
     //! number of quadrature points
     int numQuadPoints_;
