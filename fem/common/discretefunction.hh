@@ -195,8 +195,8 @@ namespace Dune {
     };
 
 
-    //! evaluate an scalar product of the dofs of two DiscreteFunctions
-    typename DiscreteFunctionSpaceType::RangeField scalarProductDofs( const DiscreteFunctionDefault &g );
+    //! Evaluate a scalar product of the dofs of two DiscreteFunctions
+    typename DiscreteFunctionSpaceType::RangeField scalarProductDofs( const DiscreteFunctionDefault &g ) const;
 
     //! Assignment
     Vector<typename DiscreteFunctionSpaceType::RangeField> &
