@@ -410,6 +410,96 @@ namespace Dune
     std::cout << "Written Dof to file `" << filename << "' !\n";
   }
 
+  template<class DiscreteFunctionSpaceType >
+  inline void DiscFuncArray< DiscreteFunctionSpaceType >::
+  addScaled( const DiscFuncArray<DiscreteFunctionSpaceType> &g,
+             const RangeField &scalar )
+  {
+    int level = functionSpace_.getGrid().maxlevel();
+    int length = dofVec_[level].size();
+
+    Array<RangeField> &v = dofVec_[level];
+    const Array<RangeField> &gvec = g.dofVec_[level];
+
+    for(int i=0; i<length; i++)
+      v[i] += scalar*gvec[i];
+  }
+
+  //**********************************************************************
+  //  --LocalFunctionArray
+  //**********************************************************************
+  template<class DiscreteFunctionSpaceType >
+  inline LocalFunctionArray < DiscreteFunctionSpaceType >::
+  LocalFunctionArray( const DiscreteFunctionSpaceType &f ,
+                      std::vector < Array < RangeField > > & dofVec )
+    : fSpace_ ( f ), dofVec_ ( dofVec )  , next_ (NULL)
+      , baseFuncSet_ (NULL)
+      , uniform_(true)
+  {}
+
+  template<class DiscreteFunctionSpaceType >
+  inline LocalFunctionArray < DiscreteFunctionSpaceType >::~LocalFunctionArray()
+  {
+    if(next_) delete next_;
+  }
+
+  template<class DiscreteFunctionSpaceType >
+  inline LocalFunctionArray < DiscreteFunctionSpaceType >::RangeField &
+  LocalFunctionArray < DiscreteFunctionSpaceType >::operator [] (int num)
+  {
+    return (* (values_[num]));
+  }
+
+  template<class DiscreteFunctionSpaceType >
+  inline int LocalFunctionArray < DiscreteFunctionSpaceType >::
+  numberOfDofs () const
+  {
+    return numOfDof_;
+  }
+
+  template<class DiscreteFunctionSpaceType > template <class EntityType>
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
+  evaluate (EntityType &en, const Domain & x, Range & ret)
+  {
+    ret = 0.0;
+    for(int i=0; i<numOfDof_; i++)
+    {
+      baseFuncSet_->evaluate(i,diffVar,x,tmp);
+      ret += this->operator [] (i) * tmp;
+    }
+  }
+
+  template<class DiscreteFunctionSpaceType >
+  inline LocalFunctionArray < DiscreteFunctionSpaceType > *
+  LocalFunctionArray < DiscreteFunctionSpaceType >::getNext () const
+  {
+    return next_;
+  }
+
+  template<class DiscreteFunctionSpaceType >
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
+  setNext (LocalFunctionArray < DiscreteFunctionSpaceType > *n)
+  {
+    next_ = n;
+  }
+
+  template<class DiscreteFunctionSpaceType > template <class EntityType>
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
+  init (EntityType &en )
+  {
+    if((!uniform_) || (!baseFuncSet_))
+    {
+      baseFuncSet_ = & ( fSpace_.getBaseFunctionSet(en) );
+      numOfDof_ = baseFuncSet_->getNumberOfBaseFunctions();
+
+      if(numOfDof_ > values_.size())
+        values_.resize( numOfDof_ );
+    }
+
+    for(int i=0; i<numOfDof_; i++)
+      values_ [i] = &((dofVec_[ en.level() ])[fSpace_.mapToGlobal ( en , i)]);
+  }
+
 } // end namespace
 
 #endif

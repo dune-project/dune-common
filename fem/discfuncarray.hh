@@ -4,12 +4,17 @@
 #define __DUNE_DISFUNCARRAY_HH__
 
 #include "discretefunction.hh"
-#include "localfunctionarray.hh"
+#include "localfunction.hh"
+#include "dofiterator.hh"
+
 
 #include <fstream>
 #include <rpc/xdr.h>
 
 namespace Dune {
+
+  template <class DiscreteFunctionSpaceType > class LocalFunctionArray;
+  template < class DofType > class DofIteratorArray;
 
   //**********************************************************************
   //
@@ -77,6 +82,9 @@ namespace Dune {
     //! set all dof to value x
     void set( RangeField x );
     void setLevel( RangeField x, int level );
+
+    void addScaled (const DiscFuncArray <DiscreteFunctionSpaceType> & g,
+                    const RangeField &scalar);
 
     //! print all dofs
     void print(std::ostream& s, int level);
@@ -151,7 +159,138 @@ namespace Dune {
 
     //! for all level an Array < RangeField > , the data
     std::vector < Array < RangeField > > dofVec_;
-  };
+  }; // end class DiscFuncArray
+
+
+  //**************************************************************************
+  //
+  //  --LocalFunctionArray
+  //
+  //! Implementation of the local functions
+  //
+  //**************************************************************************
+  template < class DiscreteFunctionSpaceType >
+  class LocalFunctionArray
+    : public LocalFunctionDefault <DiscreteFunctionSpaceType ,
+          LocalFunctionArray < DiscreteFunctionSpaceType >  >
+  {
+    typedef FastBaseFunctionSet < DiscreteFunctionSpaceType > BaseFunctionSetType;
+    typedef LocalFunctionArray < DiscreteFunctionSpaceType > MyType;
+
+  public:
+    //! Constructor
+    LocalFunctionArray ( const DiscreteFunctionSpaceType &f ,
+                         std::vector < Array < RangeField > > & dofVec );
+
+    //! Destructor
+    ~LocalFunctionArray ();
+
+    //! access to dof number num, all dofs of the dof entity
+    RangeField & operator [] (int num);
+
+    //! return number of degrees of freedom
+    int numberOfDofs () const;
+
+    //! sum over all local base functions
+    template <class EntityType>
+    void evaluate (EntityType &en, const Domain & x, Range & ret);
+
+    //! get pointer to next LocalFunction
+    MyType * getNext() const;
+
+    //! set pointer to next LocalFunction
+    void setNext (MyType * n);
+
+    //! methods that do not belong to the interface but have to be public
+    //! used like setElInfo and so on
+    template <class EntityType > void init ( EntityType &en);
+
+  protected:
+    //! needed once
+    Range tmp;
+
+    //! remember pointer to next LocalFunction
+    MyType * next_;
+
+    //! diffVar for evaluate, is empty
+    static const DiffVariable<0>::Type diffVar;
+
+    //! number of dofs
+    int numOfDof_;
+
+    //! the corresponding function space which provides the base function set
+    const DiscreteFunctionSpaceType &fSpace_;
+
+    //! Array holding pointers to the local dofs
+    Array < RangeField * > values_;
+
+    //! dofVec from all levels of the discrete function
+    std::vector < Array < RangeField > > & dofVec_;
+
+    //! do we have the same base function set for all elements
+    bool uniform_;
+
+    //! the corresponding base function set
+    BaseFunctionSetType *baseFuncSet_;
+  }; // end LocalFunctionArray
+
+
+  //***********************************************************************
+  //
+  //  --DofIteratorArray
+  //
+  //***********************************************************************
+  template < class DofType >
+  class DofIteratorArray : public
+                           DofIteratorDefault < DofType , DofIteratorArray < DofType > >
+  {
+  public:
+    DofIteratorArray ( Array < DofType > & dofArray , int count )
+      :  dofArray_ ( dofArray ) , count_ ( count ) {};
+
+    DofType & operator *()
+    {
+      return dofArray_ [ count_ ];
+    };
+
+    DofIteratorType & operator++ ()
+    {
+      count_++;
+      return (*this);
+    };
+
+    DofIteratorType & operator++ (int i)
+    {
+      count_ += i;
+      return (*this);
+    };
+
+    DofType& operator[] (int i) {
+      return dofArray_[i];
+    }
+
+    bool operator == (const DofIteratorType & I ) const
+    {
+      return count_  == I.count_;
+    }
+
+    bool operator != (const DofIteratorType & I ) const
+    {
+      return count_  != I.count_;
+    }
+
+    int index () { return count_; }
+
+    void reset () { count_ = 0; };
+
+  private:
+    //! index
+    int count_;
+
+    //! the array holding the dofs
+    Array < DofType > &dofArray_;
+
+  }; // end DofIteratorArray
 
 } // end namespace Dune
 
