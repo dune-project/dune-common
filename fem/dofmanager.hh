@@ -795,18 +795,17 @@ namespace Dune {
   inline bool DofManager<GridType,DataCollectorType>::
   write_xdr(const char * filename , int timestep)
   {
-    //std::cout << indexSet_.size(grid_.maxlevel(),0) << " Size\n";
     assert( filename );
 
     int count = 0;
     IndexListIteratorType endit = indexList_.end();
     for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
     {
-      char * newFilename = new char [strlen(filename) + 5];
+      char * newFilename = new char [strlen(filename) + 10];
       sprintf(newFilename,"%s_%d_",filename,count);
       (*it)->write_xdr(newFilename,timestep);
       count ++;
-      delete newFilename;
+      if(newFilename) delete [] newFilename;
     }
     return true;
   }
@@ -815,19 +814,17 @@ namespace Dune {
   inline bool DofManager<GridType,DataCollectorType>::
   read_xdr(const char * filename , int timestep)
   {
-    std::cout << "Read DofManager IndexSets \n";
     assert( filename );
 
     int count = 0;
     IndexListIteratorType endit = indexList_.end();
     for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
     {
-      std::cout << "Raad " << count << " IndexSet\n";
-      char * newFilename = new char [strlen(filename) + 5];
+      char * newFilename = new char [strlen(filename) + 10];
       sprintf(newFilename,"%s_%d_",filename,count);
       (*it)->read_xdr(newFilename,timestep);
       count ++;
-      delete newFilename;
+      if(newFilename) delete [] newFilename;
     }
     return true;
   }
