@@ -4,7 +4,7 @@
 #define __SGRID_HH__
 
 #include "../common/matvec.hh"
-#include "../common/Stack.hh"
+#include "../common/stack.hh"
 #include "common/grid.hh"
 #include "sgrid/numbering.hh"
 
