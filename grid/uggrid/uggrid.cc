@@ -340,7 +340,10 @@ UGGrid < dim, dimworld >::lend (int level) const
 template < int dim, int dimworld >
 inline int UGGrid < dim, dimworld >::size (int level, int codim) const
 {
+  DUNE_THROW(NotImplemented, "size currently not available");
+
   int numberOfElements = 0;
+#if 0
 
   if(codim == 0)
   {
@@ -362,7 +365,7 @@ inline int UGGrid < dim, dimworld >::size (int level, int codim) const
                                     << ">::size(int level, int codim) is only implemented"
                                     << " for codim==0 and codim==dim!");
   }
-
+#endif
   return numberOfElements;
 }
 

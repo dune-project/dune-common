@@ -88,7 +88,11 @@ namespace Dune {
     FieldVector<UGCtype, mydim> local (const FieldVector<UGCtype, coorddim>& global) const;
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<UGCtype, coorddim> &global) const;
+    /** \todo Not implemented yet! */
+    bool checkInside(const FieldVector<UGCtype, coorddim> &global) const {
+      DUNE_THROW(GridError, "UGGridGeometry::checkInside() not implemented yet!");
+      return true;
+    }
 
     /**
        Integration over a general element is done by integrating over the reference element
@@ -188,7 +192,11 @@ namespace Dune {
     FieldVector<UGCtype, 2> local (const FieldVector<UGCtype, 3>& global) const;
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<UGCtype, 3> &global) const;
+    /** \todo Not implemented yet! */
+    bool checkInside(const FieldVector<UGCtype, 3> &global) const {
+      DUNE_THROW(GridError, "UGGridGeometry::checkInside() not implemented yet!");
+      return true;
+    }
 
     // A(l)
     UGCtype integrationElement (const FieldVector<UGCtype, 2>& local) const;
@@ -273,7 +281,11 @@ namespace Dune {
     FieldVector<UGCtype, 1> local (const FieldVector<UGCtype, 2>& global) const;
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<UGCtype, 1> &global) const;
+    /** \todo Not implemented yet! */
+    bool checkInside(const FieldVector<UGCtype, 1> &global) const {
+      DUNE_THROW(GridError, "UGGridGeometry::checkInside() not implemented yet!");
+      return true;
+    }
 
     // A(l)
     UGCtype integrationElement (const FieldVector<UGCtype, 1>& local) const;

@@ -74,7 +74,7 @@ namespace Dune {
   private:
 
     //! implement with virtual element
-    UGMakeableEntity<0,GridImp::dimension,GridImp> virtualEntity_;
+    mutable UGMakeableEntity<0,GridImp::dimension,GridImp> virtualEntity_;
 
     //! max level to go down
     int maxlevel_;

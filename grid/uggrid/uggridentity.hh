@@ -83,23 +83,29 @@ namespace Dune {
     /** \todo So far only implemented for cc==dim */
     template<int cc> int subIndex (int i) const;
 
+#if 0
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
     template<int cc>
     UGGridLevelIterator<cc,All_Partition,GridImp> entity (int i);
+#endif
 
     //! geometry of this entity
     //const UGGridGeometry<dim-codim,dim,GridImp>& geometry () const;
     const Geometry& geometry () const;
 
-    UGGridLevelIterator<0,All_Partition,GridImp> ownersFather() const;
+    UGGridLevelIterator<0,All_Partition,GridImp> ownersFather() const {
+      DUNE_THROW(NotImplemented, "ownersFather");
+    }
 
     /** \brief Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
      *
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    FieldVector<UGCtype, dim>& positionInOwnersFather() const;
+    FieldVector<UGCtype, dim>& positionInOwnersFather() const {
+      DUNE_THROW(NotImplemented, "positionInOwnersFather");
+    }
 
 
 
@@ -122,7 +128,7 @@ namespace Dune {
     FieldVector<UGCtype, dim> localFatherCoords_;
 
     //! element number
-    int elNum_;
+    //t elNum_;
 
     //! level
     int level_;
@@ -207,7 +213,8 @@ namespace Dune {
      *  are numbered 0 ... count<cc>()-1
      */
     template<int cc>
-    UGGridLevelIterator<cc,All_Partition,GridImp> entity (int i) const;
+    //GridLevelIterator<cc,All_Partition,GridImp> entity (int i) const;
+    typename GridImp::template codim<cc>::EntityPointer entity (int i) const;
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
@@ -219,7 +226,9 @@ namespace Dune {
     UGGridIntersectionIterator<GridImp> iend () const;
 
     //! returns true if Entity has children
-    bool isLeaf() const;
+    bool isLeaf() const {
+      DUNE_THROW(NotImplemented, "isLeaf");
+    }
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
@@ -234,7 +243,7 @@ namespace Dune {
        We assume that on-the-fly implementation of numerical algorithms
        is only done for simple discretizations. Assumes that meshes are nested.
      */
-    UGGridGeometry<dim,dim,GridImp>& father_relative_local ();
+    UGGridGeometry<dim,dim,GridImp>& father_relative_local();
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.
@@ -278,7 +287,7 @@ namespace Dune {
     bool builtgeometry_; //!< true if geometry has been constructed
 
     //! element number
-    int elNum_;
+    //t elNum_;
 
     //! the level of the entity
     int level_;

@@ -147,6 +147,16 @@ namespace Dune {
       return 0;
     }
 
+    //! Next element in the UG element lists
+    static typename TargetType<0,dim>::T* succ(const typename TargetType<0,dim>::T* theElement) {
+      return theElement->ge.succ;
+    }
+
+    //! Next element in the UG nodes lists
+    static typename TargetType<dim,dim>::T* succ(const typename TargetType<dim,dim>::T* theNode) {
+      return theNode->succ;
+    }
+
     //! \todo Please doc me!
     static void Local_To_Global(int n, DOUBLE** y,
                                 const FieldVector<double, dim>& local,
