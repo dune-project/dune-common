@@ -45,6 +45,7 @@ namespace Dune
 
   template<int cd, int dim, class GridImp> class ALU3dGridEntity;
   template<int cd, PartitionIteratorType pitype, class GridImp > class ALU3dGridLevelIterator;
+  template<int cd, PartitionIteratorType pitype, class GridImp > class ALU3dGridEntityPointer;
 
   template<int mydim, int coorddim, class GridImp>  class ALU3dGridGeometry;
   template<class GridImp>            class ALU3dGridBoundaryEntity;
@@ -248,6 +249,11 @@ namespace Dune
     {
       this->realEntity.setGhost(ghost);
     }
+
+    void reset ( int l )
+    {
+      this->realEntity.reset(l);
+    }
   };
 
   /*!
@@ -354,6 +360,7 @@ namespace Dune
 
     friend class ALU3dGrid < dim , dimworld >;
     friend class ALU3dGridIntersectionIterator < GridImp >;
+    friend class ALU3dGridHierarchicIterator   < const GridImp >;
     friend class ALU3dGridHierarchicIterator   < GridImp >;
     friend class ALU3dGridLevelIterator <0,All_Partition,GridImp>;
     friend class ALU3dGridLevelIterator <1,All_Partition,GridImp>;
@@ -494,7 +501,10 @@ namespace Dune
     //! set original element pointer to fake entity
     void setGhost(ALU3DSPACE PLLBndFaceType  &ghost);
 
+    //! set actual walk level
+    void reset ( int l );
   private:
+
     //! index is unique within the grid hierachie and per codim
     int getIndex () const;
 
@@ -550,6 +560,9 @@ namespace Dune
     ALU3dGridHierarchicIterator(const GridImp &grid,
                                 const ALU3DSPACE HElementType & elem, int maxlevel, bool end=false);
 
+    //! the Destructor
+    ~ALU3dGridHierarchicIterator();
+
     //! increment
     void increment();
 
@@ -567,6 +580,8 @@ namespace Dune
     const ALU3DSPACE HElementType & elem_; //!< the start  element of this iterator
     ALU3DSPACE HElementType * item_; //!< the actual element of this iterator
     int maxlevel_; //!< maxlevel
+
+    //EntityImp * entity_;
 
     // holds the entity, copy pointer and delete if no refcount is left
     ALU3DSPACE AutoPointer< EntityImp > objEntity_;
@@ -733,7 +748,11 @@ namespace Dune
     // set behind last neighbour
     void done ();
 
-    mutable EntityImp entity_; //! neighbour entity
+    //! the grid
+    const GridImp & grid_;
+
+    EntityImp * entity_; //! neighbour entity
+    //EntityImp fEntity_; //! neighbour entity
 
     // current element from which we started the intersection iterator
     mutable ALU3DSPACE GEOElementType *item_;
@@ -891,6 +910,63 @@ namespace Dune
     const PartitionIteratorType pitype_;
   };
 
+  //**********************************************************************
+  //
+  // --ALU3dGridEntityPointer
+  // --EntityPointer
+  // --EnPointer
+  /*!
+     Enables iteration over all entities of a given codimension and level of a grid.
+   */
+  template<int cd, PartitionIteratorType pitype, class GridImp>
+  class ALU3dGridEntityPointer :
+    public LevelIteratorDefault <cd,pitype,GridImp,ALU3dGridEntityPointer>
+  {
+    enum { dim       = GridImp::dimension };
+    enum { dimworld  = GridImp::dimensionworld };
+
+    friend class ALU3dGridEntity<3,dim,GridImp>;
+    friend class ALU3dGridEntity<2,dim,GridImp>;
+    friend class ALU3dGridEntity<1,dim,GridImp>;
+    friend class ALU3dGridEntity<0,dim,GridImp>;
+    friend class ALU3dGrid < dim , dimworld >;
+
+  public:
+    typedef typename GridImp::template codim<cd>::Entity Entity;
+
+    typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
+
+    //! typedef of my type
+    typedef ALU3dGridEntityPointer<cd,pitype,GridImp> ALU3dGridEntityPointerType;
+
+    //! Constructor for father
+    ALU3dGridEntityPointer(const GridImp & grid, const ALU3DSPACE HElementType & item);
+
+    //! make empty entity pointer (to be revised)
+    ALU3dGridEntityPointer(const GridImp & grid);
+
+    //! Destructor
+    ~ALU3dGridEntityPointer();
+
+    //! prefix increment
+    void increment ();
+
+    //! equality
+    bool equals (const ALU3dGridEntityPointerType& i) const;
+
+    //! dereferencing
+    Entity & dereference () const ;
+
+    //! ask for level of entities
+    int level () const ;
+
+  private:
+    // reference to grid
+    const GridImp & grid_;
+
+    // entity the this EntityPointer points to
+    EntityImp * entity_;
+  };
 
   //**********************************************************************
   //
@@ -916,6 +992,13 @@ namespace Dune
     friend class ALU3dGridEntity <0,dim,const MyType>;
     friend class ALU3dGridIntersectionIterator<MyType>;
 
+    friend class ALU3dGridEntityPointer<0,All_Partition,const MyType >;
+    friend class ALU3dGridEntityPointer<1,All_Partition,const MyType >;
+    friend class ALU3dGridEntityPointer<2,All_Partition,const MyType >;
+    friend class ALU3dGridEntityPointer<3,All_Partition,const MyType >;
+
+    friend class ALU3dGridIntersectionIterator<const MyType>;
+    friend class ALU3dGridHierarchicIterator<const MyType>;
 
     //**********************************************************
     // The Interface Methods
@@ -924,8 +1007,11 @@ namespace Dune
     enum { myElementType = tetra };
     typedef GridTraits<dim,dimworld, MyType ,
         ALU3dGridGeometry,ALU3dGridEntity,
-        ALU3dGridBoundaryEntity,ALU3dGridLevelIterator,
-        ALU3dGridIntersectionIterator,ALU3dGridHierarchicIterator,
+        ALU3dGridBoundaryEntity,
+        ALU3dGridEntityPointer,
+        ALU3dGridLevelIterator,
+        ALU3dGridIntersectionIterator,
+        ALU3dGridHierarchicIterator,
         ALU3dGridLeafIterator>  Traits;
 
 
@@ -1129,6 +1215,12 @@ namespace Dune
 
     // the level index set ( default type )
     mutable LevelIndexSetType * levelIndexSet_;
+
+    // the entity codim 0
+    typedef ALU3dGridMakeableEntity<0,dim,const MyType> EntityImp;
+    typedef ALU3DSPACE MemoryProvider< EntityImp > EntityProvider;
+
+    mutable EntityProvider entityProvider_;
 
   }; // end Class ALU3dGridGrid
 
