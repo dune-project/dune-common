@@ -282,8 +282,50 @@ namespace Dune
     };
 
     /** @brief The iterator over the pairs. */
-    typedef typename
-    ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N>::iterator iterator;
+    class iterator :
+      public ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N>::iterator
+    {
+      typedef typename ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N>::iterator
+      Father;
+
+    public:
+      iterator(IndexSet<TG,TL,N>& indexSet, const Father& father)
+        : Father(father), indexSet_(indexSet)
+      {}
+
+      iterator(const iterator& other)
+        : Father(other), indexSet_(other.indexSet_)
+      {}
+
+      iterator& operator==(const iterator& other)
+      {
+        Father::operator==(other);
+        indexSet_ = other.indexSet_;
+      }
+
+      /**
+       * @brief Mark the index as deleted.
+       *
+       * It will be removed in the endResize method of the
+       * index set.
+       */
+      inline void markAsDeleted() throw(InvalidIndexSetState)
+      {
+#ifndef NDEBUG
+        if(state_ != RESIZE)
+          DUNE_THROW(InvalidIndexSetState, "Indices can only be removed "
+                     <<"while in RESIZE state!");
+#endif
+        Father::operator*().local().setState(DELETED);
+      }
+
+    private:
+      /** @brief The index set we are an iterator of. */
+      IndexSet<TG,TL,N>* indexSet_;
+
+    };
+
+
 
     /** @brief The constant iterator over the pairs. */
     typedef typename
@@ -726,6 +768,9 @@ namespace Dune
     else if(newIndices_.size()>0)
     {
       ArrayList<IndexPair<TG,TL>,N> tempPairs;
+      typedef typename ArrayList<IndexPair<TG,TL>,N>::iterator iterator;
+      typedef typename ArrayList<IndexPair<TG,TL>,N>::const_iterator const_iterator;
+
       iterator old=localIndices_.begin();
       iterator added=newIndices_.begin();
       const const_iterator endold=localIndices_.end();
@@ -826,7 +871,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline typename ArrayList<IndexPair<TG,TL>,N>::iterator
+  inline typename IndexSet<TG,TL,N>::iterator
   IndexSet<TG,TL,N>::begin()
   {
     return localIndices_.begin();
@@ -834,14 +879,14 @@ namespace Dune
 
 
   template<class TG, class TL, int N>
-  inline typename ArrayList<IndexPair<TG,TL>,N>::iterator
+  inline typename IndexSet<TG,TL,N>::iterator
   IndexSet<TG,TL,N>::end()
   {
     return localIndices_.end();
   }
 
   template<class TG, class TL, int N>
-  inline typename ArrayList<IndexPair<TG,TL>,N>::const_iterator
+  inline typename IndexSet<TG,TL,N>::const_iterator
   IndexSet<TG,TL,N>::begin() const
   {
     return localIndices_.begin();
@@ -849,7 +894,7 @@ namespace Dune
 
 
   template<class TG, class TL, int N>
-  inline typename ArrayList<IndexPair<TG,TL>,N>::const_iterator
+  inline typename IndexSet<TG,TL,N>::const_iterator
   IndexSet<TG,TL,N>::end() const
   {
     return localIndices_.end();
