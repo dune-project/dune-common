@@ -54,7 +54,16 @@ namespace Dune {
 
     //! equality
     bool operator== (const OneDGridIntersectionIterator& i) const {
-      DUNE_THROW(NotImplemented, "operator==");
+      bool isValid = center_ && (neighbor_==0 || neighbor_==1);
+      bool iisValid = i.center_ && (i.neighbor_==0 || i.neighbor_==1);
+
+      // Two intersection iterators are equal if they have the same
+      // validity.  Furthermore, if they are both valid, they have
+      // to have the same center and neighborCount_
+      return (!isValid && !iisValid)
+             || (isValid && iisValid &&
+                 (center_ == i.center_ && neighbor_ == i.neighbor_));
+
     }
 
     //! inequality
@@ -68,10 +77,55 @@ namespace Dune {
     //! access neighbor, arrow
     OneDGridEntity<0,dim,dimworld>* operator->();
 
-    //! return true if intersection is with boundary. \todo connection with
-    //! boundary information, processor/outer boundary
+    //! return true if intersection is with boundary.
     bool boundary () {
-      DUNE_THROW(NotImplemented, "boundary()");
+      assert(neighbor_==0 || neighbor_==1);
+
+      // Check whether we're on the left boundary
+      if (neighbor_==0) {
+
+        // If there's an element to the left we can't be on the boundary
+        if (center_->pred_)
+          return false;
+
+        OneDGridEntity<0,dim,dimworld>* ancestor = center_;
+
+        while (ancestor->level()!=0) {
+
+          // Check if we're the left son of our father
+          if (ancestor != ancestor->father_->sons_[0])
+            return false;
+
+          ancestor = ancestor->father_;
+        }
+
+        // We have reached level 0.  If there is no element of the left
+        // we're truly on the boundary
+        return !ancestor->pred_;
+      }
+
+      // ////////////////////////////////
+      //   Same for the right boundary
+      // ////////////////////////////////
+      // If there's an element to the right we can't be on the boundary
+      if (center_->succ_)
+        return false;
+
+      OneDGridEntity<0,dim,dimworld>* ancestor = center_;
+
+      while (ancestor->level()!=0) {
+
+        // Check if we're the left son of our father
+        if (ancestor != ancestor->father_->sons_[1])
+          return false;
+
+        ancestor = ancestor->father_;
+      }
+
+      // We have reached level 0.  If there is no element of the left
+      // we're truly on the boundary
+      return !ancestor->succ_;
+
     }
 
     //! return true if across the edge an neighbor on this level exists
