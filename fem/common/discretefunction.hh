@@ -21,8 +21,6 @@ namespace Dune {
      @{
    */
 
-  enum DFSpaceIdentifier {  LagrangeSpace_id , DGSpace_id , RaviartThomasSpace_id };
-
   typedef std::basic_string <char> StringType;
 
   template <typename T>
