@@ -112,6 +112,7 @@ namespace Dune {
 
   //! specialisation for int
   template <>
+  inline
   bool DofArrayMemory::processXdr<int>(XDR *xdrs)
   {
     typedef int T;
@@ -129,6 +130,7 @@ namespace Dune {
 
   //! specialisation for double
   template <>
+  inline
   bool DofArrayMemory::processXdr<double>(XDR *xdrs)
   {
     typedef double T;
