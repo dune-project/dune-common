@@ -365,7 +365,7 @@ namespace Dune {
     virtual ~MemObjectInterface() {};
     virtual void realloc (int newSize) = 0;
     virtual int size () const = 0;
-    virtual int tmpSize () const = 0;
+    virtual int additionalSizeEstimate () const = 0;
     virtual int newSize () const = 0;
     virtual const char * name () const  = 0;
     virtual void dofCompress () = 0;
@@ -413,7 +413,10 @@ namespace Dune {
     int size () const { return array_.size(); }
 
     //! return number of entities
-    int tmpSize () const { return mapper_.tmpSize(); }
+    int additionalSizeEstimate () const
+    {
+      return mapper_.additionalSizeEstimate();
+    }
 
     //! reallocate the memory with the new size
     void realloc ( int nSize )
@@ -647,7 +650,7 @@ namespace Dune {
 
       for( ; it != endit ; ++it)
       {
-        (*it)->realloc ( (*it)->size() + (*it)->tmpSize() );
+        (*it)->realloc ( (*it)->size() + (*it)->additionalSizeEstimate() );
       }
     }
 
