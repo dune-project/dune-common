@@ -34,7 +34,6 @@ class ManageTravStack
   int *refCount_;
 
 public:
-
   //! if a copy is made, the refcout is increased
   ManageTravStack(const ManageTravStack & copy)
   {
@@ -101,7 +100,7 @@ public:
   }
 
   //! return the TRAVERSE_STACK pointer for use
-  TRAVERSE_STACK * getStack()
+  TRAVERSE_STACK * getStack() const
   {
     return stack_;
   }
@@ -109,7 +108,7 @@ public:
 };
 
 //! copy all memory entries from org to copy via memcpy
-void hardCopyStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
+inline void hardCopyStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 {
   copy->traverse_mesh = org->traverse_mesh;
   copy->traverse_level = org->traverse_level;
@@ -148,7 +147,7 @@ void hardCopyStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 }
 
 //! copy all memory entries from org to copy via memcpy
-void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
+inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 {
   copy->traverse_mesh = org->traverse_mesh;
   copy->traverse_level = org->traverse_level;
@@ -188,7 +187,7 @@ void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 }
 
 
-TRAVERSE_STACK & removeTraverseStack(TRAVERSE_STACK& copy)
+inline TRAVERSE_STACK & removeTraverseStack(TRAVERSE_STACK& copy)
 {
   FUNCNAME("removeStack");
 
@@ -213,7 +212,7 @@ TRAVERSE_STACK & removeTraverseStack(TRAVERSE_STACK& copy)
 }
 
 
-void initTraverseStack(TRAVERSE_STACK *stack)
+inline void initTraverseStack(TRAVERSE_STACK *stack)
 {
   FUNCNAME("initTraverseStack");
 
@@ -231,7 +230,7 @@ void initTraverseStack(TRAVERSE_STACK *stack)
 }
 
 
-void enlargeTraverseStack(TRAVERSE_STACK *stack)
+inline void enlargeTraverseStack(TRAVERSE_STACK *stack)
 {
   FUNCNAME("enlargeTraverseStack");
   int i;
@@ -289,8 +288,27 @@ void printElInfo(const EL_INFO *elf)
       printf(" %d |",el->index);
   }
   printf("\n");
+}
 
+//****************************************************************
+//
+//  Wrapper for ALBERT refine and coarsen routines.
+//  Calling direct refine in the grid.refine() method leads to
+//  infinite loop. Donno wy?
+//  This wrappers solved the problem.
+//
+//****************************************************************
 
+// wrapper for Albert refine routine
+inline static U_CHAR AlbertRefine ( MESH * mesh )
+{
+  return refine ( mesh );
+}
+
+// wrapper for Albert coarsen routine
+inline static U_CHAR AlbertCoarsen ( MESH * mesh )
+{
+  return coarsen ( mesh );
 }
 
 

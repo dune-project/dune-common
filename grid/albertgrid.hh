@@ -10,7 +10,8 @@
 #include "../common/array.hh"
 #include "common/grid.hh"
 
-#define REALINDEX 1
+// if defined, then used Albert Index
+//#define REALINDEX
 
 #ifdef __ALBERTNAME__
 #define ALBERT Albert::
@@ -90,10 +91,11 @@ namespace Albert
      */
 
 
+    // i.e. double or float
     typedef ALBERT REAL albertCtype;
 
+    // forward declarations
     class AlbertMarkerVector;
-    class AlbertGridIndices;
 
     template<int codim, int dim, int dimworld> class AlbertGridEntity;
     template<int codim, int dim, int dimworld> class AlbertGridLevelIterator;
@@ -126,6 +128,7 @@ namespace Albert
     class AlbertGridElement :
       public Element<dim,dimworld,albertCtype,AlbertGridElement>
     {
+
     public:
       //! know dimension
       enum { dimension=dim };
@@ -198,22 +201,17 @@ namespace Albert
       //***********************************************************************
       //  Methods that not belong to the Interface, but have to be public
       //***********************************************************************
+      //! generate the geometry for the ALBERT EL_INFO
       bool builtGeom(ALBERT EL_INFO *elInfo, unsigned char face,
                      unsigned char edge, unsigned char vertex);
+      // init geometry with zeros
       void initGeom();
 
     private:
       //! print internal data
       void print (std::ostream& ss, int indent);
 
-#if 0
-      //! return unit outer normal of this element, work for Faces nad Edges
-      Vec<dimworld,albertCtype>& unit_outer_normal ();
-
-      //! return outer normal of this element, work for Faces nad Edges
-      Vec<dimworld,albertCtype>& outer_normal ();
-#endif
-
+      // calc the local barycentric coordinates
       template <int dimbary>
       Vec<dimbary,albertCtype>& localB (const Vec<dimworld,albertCtype>& global)
       {
@@ -488,9 +486,10 @@ namespace Albert
       void setTraverseStack (ALBERT TRAVERSE_STACK *travStack);
       void setElInfo (ALBERT EL_INFO *elInfo, int elNum, unsigned char face,
                       unsigned char edge, unsigned char vertex );
+      // needed for the LevelIterator
       ALBERT EL_INFO *getElInfo () const;
 
-      // returns the global vertex number
+      // returns the global vertex number as default
       int globalIndex() { return elInfo_->el->dof[vertex_][0]; }
 
       // private Methods
@@ -523,7 +522,7 @@ namespace Albert
       //! Which Edge of the Face of the Element
       unsigned char edge_;
 
-      //! Which Edge of the Face of the Element
+      //! Which Vertex of the Edge of the Face of the Element
       unsigned char vertex_;
     };
 
@@ -661,7 +660,8 @@ namespace Albert
 
     private:
       // called from HierarchicIterator, because only this
-      // class changes the level of the entity
+      // class changes the level of the entity, otherwise level is set by
+      // Constructor
       void setLevel ( int actLevel );
 
       // face, edge and vertex only for codim > 0, in this
@@ -672,7 +672,9 @@ namespace Albert
                       unsigned char face = 0,
                       unsigned char edge = 0,
                       unsigned char vertex = 0 );
+      // needed for LevelIterator to compare
       ALBERT EL_INFO *getElInfo () const;
+
       // return the global unique index in mesh
       int globalIndex() { return elInfo_->el->index; }
 
@@ -1086,6 +1088,8 @@ namespace Albert
       //friend class AlbertGridEntity <1 << dim-1 ,dim,dimworld>;
       friend class AlbertGridEntity <dim,dim,dimworld>;
 
+      friend class AlbertMarkerVector;
+
       // friends because of fillElInfo
       friend class AlbertGridLevelIterator<0,dim,dimworld>;
       friend class AlbertGridLevelIterator<1,dim,dimworld>;
@@ -1136,24 +1140,27 @@ namespace Albert
       int size (int level, int codim) ;
       int size (int level, int codim) const;
 
+      //! refine all positive marked leaf entities
+      //! return true if the grid was changed
+      bool refine  ( );
+
+      //! coarsen all negative marked leaf entities
+      //! return true if the grid was changed
+      bool coarsen ( );
       //**********************************************************
       // End of Interface Methods
       //**********************************************************
-      //! refine all positive marked leaf entities
-      //! return true if the grid was refined
-      bool refineLocal ();
-      bool coarsenLocal();
 
       //! uses the interface, mark on entity and refineLocal
       bool globalRefine(int refCount);
 
-
+      // write Grid to file
       void writeGrid(int level=-1);
 
+    private:
       //! access to mesh pointer, needed by some methods
       ALBERT MESH* getMesh () const { return mesh_; };
 
-    private:
       // pointer to an Albert Mesh, which contains the data
       ALBERT MESH *mesh_;
 
@@ -1166,9 +1173,17 @@ namespace Albert
       // number of entitys of each level an codim
       Array<int> size_;
 
+      // remember on which level an ALBERT EL lives, is needed for the new
+      // fillElInfo method that takes the level of an element into account
+      // for calculation of the neighbor realtions
       std::vector<int> neighOnLevel_;
 
-      void fillElInfo(int ichild, int level_, const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo) const ;
+      // this method is new fill_elinfo from ALBERT but here the neighbor
+      // relations are calced diffrent, on ervery level there are neighbor
+      // realtions ( in ALBERT only on leaf level ), so we needed a new
+      // fill_elinfo.
+      void fillElInfo(int ichild, int actLevel ,
+                      const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo) const;
 
       // needed for VertexIterator, mark on which element a vertex is treated
       AlbertMarkerVector * vertexMarker_;
@@ -1183,7 +1198,7 @@ namespace Albert
 
       //! map the global index from the Albert Mesh to the local index on Level
       template <int codim>
-      int indexOnLevel(int globalIndex, int level );
+      int indexOnLevel(int globalIndex, int level ) ;
 
       //! map the global index from the Albert Mesh to the local index on Level
       template <>

@@ -11,15 +11,43 @@ namespace Albert
 void AlbertLeafRefine(EL *parent, EL *child[2]){};
 void AlbertLeafCoarsen(EL *parent, EL *child[2]){};
 
-static int maxLevel=0;
-static std::vector<int> *neighArray;
 
-void getMaxLevel(const EL_INFO * elf)
+//**************************************************************************
+//  calc Maxlevel of AlbertGrid and remember on wich level an element lives
+//**************************************************************************
+
+namespace AlbertHelp
 {
-  int level = elf->level;
-  if(maxLevel < level) maxLevel = level;
-  (*neighArray)[elf->el->index] = level;
-}
+
+  static int Albert_MaxLevel_help=-1;
+  static std::vector<int> *Albert_neighArray_help;
+
+  inline void initMaxLevelAndNeighborMark (std::vector<int> &nA)
+  {
+    Albert_neighArray_help = &nA;
+    Albert_MaxLevel_help = -1;
+  }
+
+  inline int getMaxLevel()
+  {
+    if(Albert_MaxLevel_help == -1)
+    {
+      std::cerr << "Call mesh_traverse first to calc the maxlevel!\n";
+      abort();
+    }
+    return Albert_MaxLevel_help;
+  }
+
+  // function for mesh_traverse, is called on every element
+  inline static void calcMaxLevelAndMarkNeighbors (const EL_INFO * elf)
+  {
+    int level = elf->level;
+    if(Albert_MaxLevel_help < level) Albert_MaxLevel_help = level;
+    (* Albert_neighArray_help )[elf->el->index] = level;
+  }
+
+} // end namespace AlbertHelp
+  //**************************************************************************
 
 void initLeafData(LEAF_DATA_INFO * linfo)
 {
@@ -2387,7 +2415,8 @@ namespace Dune
   }
 #endif
 
-  inline bool AlbertMarkerVector::notOnThisElement(ALBERT EL * el, int level, int localNum)
+  inline bool AlbertMarkerVector::
+  notOnThisElement(ALBERT EL * el, int level, int localNum)
   {
     return (vec_[ numVertex_ * level + el->dof[localNum][0]] != el->index);
   }
@@ -2494,32 +2523,29 @@ namespace Dune
     for(LevIt it = lbegin<0>(maxlevel()); it != endit; ++it)
       (*it).mark(refCount);
 
-    wasChanged_ = refineLocal ();
+    wasChanged_ = refine ();
 
     return wasChanged_;
   }
 
 
   template < int dim, int dimworld >
-  inline bool AlbertGrid < dim, dimworld >::refineLocal()
+  inline bool AlbertGrid < dim, dimworld >::refine()
   {
     unsigned char flag;
 
     // refine underlying mesh
-    flag = ALBERT refine(mesh_);
+    // AlbertRefine defined in albertextra.hh
+    flag = ALBERT AlbertRefine( mesh_ );
 
     // determine new maxlevel
     neighOnLevel_.resize( mesh_->n_hier_elements );
-    //for(int i=0; i<neighOnLevel_.size(); i++) neighOnLevel_[i] = -1;
-    neighArray = &neighOnLevel_;
 
-    ALBERT maxLevel = 0;
-    ALBERT mesh_traverse(mesh_,-1,
-                         CALL_EVERY_EL_INORDER|FILL_NOTHING,ALBERT getMaxLevel);
-    maxlevel_ = ALBERT maxLevel;
-
-    //for(int i=0; i<neighOnLevel_.size(); i++)
-    //  std::cout << neighOnLevel_[i] << " \n";
+    ALBERT AlbertHelp::initMaxLevelAndNeighborMark(neighOnLevel_);
+    // see ALBERT Doc page 72, traverse over all hierarchical elements
+    ALBERT mesh_traverse(mesh_,-1, CALL_EVERY_EL_PREORDER|FILL_NOTHING,
+                         ALBERT AlbertHelp::calcMaxLevelAndMarkNeighbors);
+    maxlevel_ = ALBERT AlbertHelp::getMaxLevel();
 
     // mark vertices on elements
     vertexMarker_->markNewVertices(*this);
@@ -2529,7 +2555,7 @@ namespace Dune
 
     wasChanged_ = (flag == 0) ? false : true;
 
-    printf("AlbertGrid<%d,%d>::refineLocal: Grid refined, maxlevel = %d \n",
+    printf("AlbertGrid<%d,%d>::refine: Grid refined, maxlevel = %d \n",
            dim,dimworld,maxlevel_);
 
     return wasChanged_;
@@ -2537,11 +2563,16 @@ namespace Dune
 
   template < int dim, int dimworld >
   inline bool AlbertGrid < dim, dimworld >::
-  coarsenLocal()
+  coarsen()
   {
     unsigned char flag;
-    flag = ALBERT coarsen(mesh_);
+    // AlbertCoarsen defined in albertextra.hh
+    flag = ALBERT AlbertCoarsen ( mesh_ );
     wasChanged_ = (flag == 0) ? false : true;
+
+    printf("AlbertGrid<%d,%d>::coarsen: Grid coarsend, maxlevel = %d \n",
+           dim,dimworld,maxlevel_);
+
     return wasChanged_;
   }
 
@@ -2599,7 +2630,6 @@ namespace Dune
       }
 
       size_[ind] = numberOfElements;
-      std::cout << numberOfElements << " Calced Noe \n";
       return numberOfElements;
     }
     else
@@ -2809,7 +2839,7 @@ namespace Dune
     // level = 0 is not interesting for this implementation
     // +1, because if Entity is Boundary then globalIndex == -1
     // an therefore we add 1 and get Entry 0, which schould be -1
-#if REALINDEX
+#ifndef REALINDEX
     if (globalIndex < 0)
       return globalIndex;
     else
@@ -2878,15 +2908,17 @@ namespace Dune
     };
   }
 
+
+  // if defined some debugging test were made that reduce the performance
+  // so they were switch off normaly
+
   //#define DEBUG_FILLELINFO
 
   template<int dim, int dimworld>
   inline void AlbertGrid<dim,dimworld >::
-  fillElInfo(int ichild, int level_, const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo) const
+  fillElInfo(int ichild, int actLevel , const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo) const
   {
-    int j;
     ALBERT EL      *nb=NULL;
-    ALBERT EL      *othNb=NULL;
     ALBERT EL      *el = elinfo_old->el;
     ALBERT FLAGS fill_flag = elinfo_old->fill_flag;
     ALBERT FLAGS fill_opp_coords;
@@ -2907,19 +2939,19 @@ namespace Dune
       {
         if (el->new_coord)
         {
-          for (j = 0; j < dimworld; j++)
+          for (int j = 0; j < dimworld; j++)
             elinfo->coord[2][j] = el->new_coord[j];
         }
         else
         {
-          for (j = 0; j < dimworld; j++)
+          for (int j = 0; j < dimworld; j++)
             elinfo->coord[2][j] =
               0.5 * (elinfo_old->coord[0][j] + elinfo_old->coord[1][j]);
         }
 
         if (ichild==0)
         {
-          for (j = 0; j < dimworld; j++)
+          for (int j = 0; j < dimworld; j++)
           {
             elinfo->coord[0][j] = elinfo_old->coord[2][j];
             elinfo->coord[1][j] = elinfo_old->coord[0][j];
@@ -2927,7 +2959,7 @@ namespace Dune
         }
         else
         {
-          for (j = 0; j < dimworld; j++)
+          for (int j = 0; j < dimworld; j++)
           {
             elinfo->coord[0][j] = elinfo_old->coord[1][j];
             elinfo->coord[1][j] = elinfo_old->coord[2][j];
@@ -2948,22 +2980,52 @@ namespace Dune
           elinfo->opp_vertex[2] = elinfo_old->opp_vertex[1];
           if ((elinfo->neigh[2] = elinfo_old->neigh[1]))
           {
+
+            // this is new
             ALBERT EL * nextNb = elinfo->neigh[2]->child[0];
             if(nextNb)
             {
-              if( elinfo->opp_vertex[2] == 0)
+#ifdef DEBUG_FILLELINFO
+              ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] != 2) ("invalid neighbour\n");
+#endif
+              int oppV = elinfo->opp_vertex[2];
+              // if oppV == 0 neighbour must be the child 1
+              if( oppV == 0)
                 nextNb = elinfo->neigh[2]->child[1];
-              if(neighOnLevel_[nextNb->index] <= level_)
+
+              if(neighOnLevel_[nextNb->index] <= actLevel )
                 elinfo->neigh[2] = nextNb;
               // if we go down the opposite vertex now must be 2
               elinfo->opp_vertex[2] = 2;
+
+              if (fill_opp_coords)
+              {
+                if(oppV == 0)
+                {
+                  for (int k=0; k < dimworld ; k++)
+                    elinfo->opp_coord[2][k] = 0.5 *
+                                              (elinfo_old->opp_coord[oppV][k] +
+                                               elinfo_old->coord[1][k]);
+                }
+                else
+                {
+                  for (int k=0; k < dimworld ; k++)
+                    elinfo->opp_coord[2][k] = 0.5 *
+                                              (elinfo_old->opp_coord[oppV][k] +
+                                               elinfo_old->coord[0][k]);
+                }
+              }
             }
-            if (fill_opp_coords)
+            else
             {
-              for (j=0; j<dimworld; j++)
-                elinfo->opp_coord[2][j] = elinfo_old->opp_coord[1][j];
+              if (fill_opp_coords)
+              {
+                for (int j=0; j<dimworld; j++)
+                  elinfo->opp_coord[2][j] = elinfo_old->opp_coord[1][j];
+              }
             }
-          } // ok
+
+          } // end new code
 
           if (el->child[0])
           {
@@ -2972,7 +3034,7 @@ namespace Dune
 
             if(chi1->child[0])
             {
-              if(neighOnLevel_[chi1->child[1]->index] <= level_)
+              if(neighOnLevel_[chi1->child[1]->index] <= actLevel )
                 goDownNextChi = true;
             }
 
@@ -2986,12 +3048,12 @@ namespace Dune
               {
                 if (chi1->new_coord)
                 {
-                  for (j=0; j<dimworld; j++)
+                  for (int j=0; j<dimworld; j++)
                     elinfo->opp_coord[1][j] = chi1->new_coord[j];
                 }
                 else
                 {
-                  for (j=0; j<dimworld; j++)
+                  for (int j=0; j<dimworld; j++)
                     elinfo->opp_coord[1][j] =
                       0.5 * (elinfo_old->coord[1][j] + elinfo_old->coord[2][j]);
                 }
@@ -3004,22 +3066,24 @@ namespace Dune
               elinfo->opp_vertex[1] = 0;
               if (fill_opp_coords)
               {
-                for (j=0; j<dimworld; j++)
+                for (int j=0; j<dimworld; j++)
                   elinfo->opp_coord[1][j] = elinfo_old->coord[1][j];
               }
             }
           }
+#ifdef DEBUG_FILLELINFO
           else
           {
             ALBERT_TEST_EXIT((el->child[0]))
               ("No Child\n");
           }
+#endif
 
           if ((nb = elinfo_old->neigh[2]))
           {
 #ifdef DEBUG_FILLELINFO
-            printf("OppVx %d \n",elinfo_old->opp_vertex[2]);
-            printf("El  %d , Neigh %d \n",el->index,nb->index);
+            //printf("OppVx %d \n",elinfo_old->opp_vertex[2]);
+            //printf("El  %d , Neigh %d \n",el->index,nb->index);
             ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] == 2) ("invalid neighbour\n");
 #endif
             if(nb->child[0])
@@ -3028,7 +3092,7 @@ namespace Dune
             if (nb->child[0])
             {
               bool goDownNextChi = false;
-              if(neighOnLevel_[nb->child[0]->index] <= level_)
+              if(neighOnLevel_[nb->child[0]->index] <= actLevel )
                 goDownNextChi = true;
 
               if(goDownNextChi)
@@ -3039,12 +3103,12 @@ namespace Dune
                 {
                   if (nb->new_coord)
                   {
-                    for (j=0; j<dimworld; j++)
+                    for (int j=0; j<dimworld; j++)
                       elinfo->opp_coord[0][j] = nb->new_coord[j];
                   }
                   else
                   {
-                    for (j=0; j<dimworld; j++)
+                    for (int j=0; j<dimworld; j++)
                     {
                       elinfo->opp_coord[0][j] = 0.5*
                                                 (elinfo_old->opp_coord[2][j] + elinfo_old->coord[0][j]);
@@ -3058,7 +3122,7 @@ namespace Dune
                 elinfo->opp_vertex[0] = 1;
                 if (fill_opp_coords)
                 {
-                  for (j=0; j<dimworld; j++)
+                  for (int j=0; j<dimworld; j++)
                     elinfo->opp_coord[0][j] = elinfo_old->opp_coord[2][j];
                 }
               }
@@ -3074,17 +3138,41 @@ namespace Dune
             ALBERT EL * nextNb = elinfo->neigh[2]->child[0];
             if(nextNb)
             {
-              if( elinfo->opp_vertex[2] == 0)
+              int oppV = elinfo->opp_vertex[2];
+              // if oppV == 0 neighbour must be the child 1
+              if( oppV == 0 )
                 nextNb = elinfo->neigh[2]->child[1];
-              if(neighOnLevel_[nextNb->index] <= level_)
+
+              if(neighOnLevel_[nextNb->index] <= actLevel )
                 elinfo->neigh[2] = nextNb;
               // if we go down the opposite vertex now must be 2
               elinfo->opp_vertex[2] = 2;
+
+              if (fill_opp_coords)
+              {
+                if(oppV == 0)
+                {
+                  for (int k=0; k < dimworld ; k++)
+                    elinfo->opp_coord[2][k] = 0.5 *
+                                              (elinfo_old->opp_coord[oppV][k] +
+                                               elinfo_old->coord[1][k]);
+                }
+                else
+                {
+                  for (int k=0; k < dimworld ; k++)
+                    elinfo->opp_coord[2][k] = 0.5 *
+                                              (elinfo_old->opp_coord[oppV][k] +
+                                               elinfo_old->coord[0][k]);
+                }
+              }
             }
-            if (fill_opp_coords)
+            else
             {
-              for (j=0; j<dimworld; j++)
-                elinfo->opp_coord[2][j] = elinfo_old->opp_coord[0][j];
+              if (fill_opp_coords)
+              {
+                for (int j=0; j<dimworld; j++)
+                  elinfo->opp_coord[2][j] = elinfo_old->opp_coord[0][j];
+              }
             }
           }
 
@@ -3095,7 +3183,7 @@ namespace Dune
           {
             elinfo->neigh[0] = chi0;
 
-            if(neighOnLevel_[chi0->child[0]->index] <= level_)
+            if(neighOnLevel_[chi0->child[0]->index] <= actLevel )
               elinfo->neigh[0] = chi0->child[0];
 
             elinfo->opp_vertex[0] = 2;
@@ -3103,12 +3191,12 @@ namespace Dune
             {
               if (chi0->new_coord)
               {
-                for (j=0; j<dimworld; j++)
+                for (int j=0; j<dimworld; j++)
                   elinfo->opp_coord[0][j] = chi0->new_coord[j];
               }
               else
               {
-                for (j=0; j<dimworld; j++)
+                for (int j=0; j<dimworld; j++)
                   elinfo->opp_coord[0][j] = 0.5 *
                                             (elinfo_old->coord[0][j] + elinfo_old->coord[2][j]);
               }
@@ -3120,7 +3208,7 @@ namespace Dune
             elinfo->opp_vertex[0] = 1;
             if (fill_opp_coords)
             {
-              for (j=0; j<dimworld; j++)
+              for (int j=0; j<dimworld; j++)
                 elinfo->opp_coord[0][j] = elinfo_old->coord[0][j];
             }
           }
@@ -3128,7 +3216,7 @@ namespace Dune
           if ((nb = elinfo_old->neigh[2]))
           {
 #ifdef DEBUG_FILLELINFO
-            printf("OppVx %d \n",elinfo_old->opp_vertex[2]);
+            //printf("OppVx %d \n",elinfo_old->opp_vertex[2]);
             ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] == 2) ("invalid neighbour\n");
 #endif
             if(nb->child[0])
@@ -3137,7 +3225,7 @@ namespace Dune
             bool goDownChild = false;
             if (nb->child[0])
             {
-              if(neighOnLevel_[nb->child[1]->index] <= level_)
+              if(neighOnLevel_[nb->child[1]->index] <= actLevel )
                 goDownChild = true;
             }
 
@@ -3147,10 +3235,10 @@ namespace Dune
               if (fill_opp_coords)
               {
                 if (nb->new_coord)
-                  for (j=0; j<dimworld; j++)
+                  for (int j=0; j<dimworld; j++)
                     elinfo->opp_coord[1][j] = nb->new_coord[j];
                 else
-                  for (j=0; j<dimworld; j++)
+                  for (int j=0; j<dimworld; j++)
                     elinfo->opp_coord[1][j] = 0.5 *
                                               (elinfo_old->opp_coord[2][j] + elinfo_old->coord[1][j]);
               }
@@ -3161,7 +3249,7 @@ namespace Dune
               elinfo->opp_vertex[1] = 0;
               if (fill_opp_coords)
               {
-                for (j=0; j<dimworld; j++)
+                for (int j=0; j<dimworld; j++)
                   elinfo->opp_coord[1][j] = elinfo_old->opp_coord[2][j];
               }
             }
@@ -3203,44 +3291,50 @@ namespace Dune
       memcpy(elinfo,elinfo_old,sizeof(ALBERT EL_INFO));
       elinfo->level = elinfo_old->level + 1;
 
-      // we use triangles here
-      enum { numberOfNeighbors = 3 };
-      enum { numOfVx = 3 };
-      for(int i=0; i<numberOfNeighbors; i++)
+      if (fill_flag & (FILL_NEIGH | FILL_OPP_COORDS))
       {
-        if(elinfo_old->neigh[i])
+        fill_opp_coords = (fill_flag & FILL_OPP_COORDS);
+
+        // we use triangles here
+        enum { numberOfNeighbors = 3 };
+        enum { numOfVx = 3 };
+        for(int i=0; i<numberOfNeighbors; i++)
         {
-          // if children of neighbour
-          if(elinfo_old->neigh[i]->child[0])
+          if(elinfo_old->neigh[i])
           {
+            // if children of neighbour
+            if(elinfo_old->neigh[i]->child[0])
+            {
 #ifdef DEBUG_FILLELINFO
-            ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] != 2) ("invalid neighbour\n");
+              ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] != 2) ("invalid neighbour\n");
 #endif
-            int oppV = elinfo_old->opp_vertex[i];
-            if(oppV == 0)
-            {
-              elinfo->neigh[i] = elinfo_old->neigh[i]->child[1];
-              elinfo->opp_vertex[i] = 2;
-              for (int k=0; k < dimworld ; k++)
-                elinfo->opp_coord[i][k] = 0.5 *
-                                          (elinfo_old->opp_coord[oppV][k] +
-                                           elinfo_old->coord[(i-1)%numOfVx][k]);
-            }
-            else
-            {
-              elinfo->neigh[i] = elinfo_old->neigh[i]->child[0];
-              elinfo->opp_vertex[i] = 2;
-              for (int k=0; k < dimworld ; k++)
-                elinfo->opp_coord[i][k] = 0.5 *
-                                          (elinfo_old->opp_coord[oppV][k] +
-                                           elinfo_old->coord[(i+1)%numOfVx][k]);
+              int oppV = elinfo_old->opp_vertex[i];
+              if(oppV == 0)
+              {
+                elinfo->neigh[i] = elinfo_old->neigh[i]->child[1];
+                elinfo->opp_vertex[i] = 2;
+
+                if( fill_opp_coords )
+                  for (int k=0; k < dimworld ; k++)
+                    elinfo->opp_coord[i][k] = 0.5 *
+                                              (elinfo_old->opp_coord[oppV][k] +
+                                               elinfo_old->coord[(i-1)%numOfVx][k]);
+              }
+              else
+              {
+                elinfo->neigh[i] = elinfo_old->neigh[i]->child[0];
+                elinfo->opp_vertex[i] = 2;
+                if( fill_opp_coords )
+                  for (int k=0; k < dimworld ; k++)
+                    elinfo->opp_coord[i][k] = 0.5 *
+                                              (elinfo_old->opp_coord[oppV][k] +
+                                               elinfo_old->coord[(i+1)%numOfVx][k]);
+              }
             }
           }
         }
-      }
-
-    }
-
+      } // end if (fill_flag & (FILL_NEIGH | FILL_OPP_COORDS))
+    } //end else
 
   } // end Grid::fillElInfo
 
