@@ -21,7 +21,7 @@ namespace Dune
   public:
     typedef T Ttype; //!< remember the value type
 
-  private:
+
     Array<T> values_;     //!< data values (nz_ elements)
     Array<int> col_;      //!< row_ptr (dim_[0]+1 elements)
     int dim_[2];    //!< dim_[0] x dim_[1] Matrix
@@ -122,15 +122,6 @@ namespace Dune
     /*******************************/
     /*  Access and info functions  */
     /*******************************/
-
-    // Deprecated
-#if 0
-    //! Direct access to the internal data array
-    T&      val(int i) { return values_[i]; }
-
-    //! Direct const access to the internal data array
-    const T&  val(int i) const { return values_[i]; }
-#endif
 
     /** \brief Gets the position of an entry in the internal data structure
      *
