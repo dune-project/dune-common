@@ -69,9 +69,6 @@ namespace Dune {
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    UGGridLevelIterator<0,dim,dimworld,All_Partition> father ();
-
-    //! local coordinates within father
     FieldVector<UGCtype, dim>& local ();
 
 
