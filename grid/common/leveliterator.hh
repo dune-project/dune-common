@@ -3,7 +3,7 @@
 #ifndef DUNE_GRID_LEVELITERATOR_HH
 #define DUNE_GRID_LEVELITERATOR_HH
 
-#include <dune/common/iteratorfacades.hh>
+#include "entitypointer.hh"
 
 namespace Dune
 {
@@ -11,34 +11,28 @@ namespace Dune
   template<int codim, PartitionIteratorType pitype, class GridImp,
       template<int,PartitionIteratorType,class> class LevelIteratorImp>
   class LevelIterator :
-    public Dune::ForwardIteratorFacade<LevelIterator<codim,pitype,GridImp,LevelIteratorImp>,
-        typename GridImp::template codim<codim>::Entity>
+    public EntityPointer<GridImp, LevelIteratorImp<codim,pitype,GridImp> >
   {
-  protected:
-    LevelIteratorImp<codim,pitype,GridImp> realIterator;
   public:
     typedef typename GridImp::template codim<codim>::Entity Entity;
-    //! dereferencing
-    Entity & dereference() const
+    /** @brief Preincrement operator. */
+    LevelIterator& operator++()
     {
-      return realIterator.dereference();
-    }
-    //! prefix increment
-    void increment() { return realIterator.increment(); }
-    //! equality
-    bool equals(const LevelIterator<codim,pitype,GridImp,LevelIteratorImp> & i) const
-    {
-      return realIterator.equals(i.realIterator);
-    }
-    //! ask for level of entity
-    int level () const
-    {
-      return realIterator.level();
+      this->realIterator.increment();
+      return *this;
     }
 
-    // copy constructor from LevelIteratorImp
+    /** @brief Postincrement operator. */
+    LevelIterator& operator++(int)
+    {
+      this->realIterator.operator++();
+      return *this;
+    }
+
+    /** @brief copy constructor from LevelIteratorImp */
     LevelIterator(const LevelIteratorImp<codim,pitype,const GridImp> & i) :
-      realIterator(i) {};
+      EntityPointer<GridImp, LevelIteratorImp<codim,pitype,GridImp> >(i) {};
+
   };
 
   //************************************************************************
@@ -54,28 +48,12 @@ namespace Dune
   public:
     typedef typename GridImp::template codim<codim>::Entity Entity;
 
-    //! know your own codimension
-    enum { codimension=codim };
-    //! know your own dimension
-    enum { dimension=GridImp::dimension };
-    //! know your own dimension of world
-    enum { dimensionworld=GridImp::dimensionworld };
-
     //! define type used for coordinates in grid module
     typedef typename GridImp::ctype ctype;
 
     //! prefix increment
     void increment() { return asImp().increment(); }
-    //! equality
-    bool equals(const LevelIteratorImp<codim,pitype,GridImp>& i) const
-    {
-      return asImp().equals(i);
-    }
-    //! dereferencing
-    Entity& dereference() const { return asImp().dereference(); }
 
-    //! ask for level of entity
-    int level () const { return asImp().level(); }
   private:
     //!  Barton-Nackman trick
     LevelIteratorImp<codim,pitype,GridImp>& asImp ()
