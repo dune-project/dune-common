@@ -22,6 +22,34 @@ class CheckError : public Dune::Exception {};
 
 // --- compile-time check of element-interface
 
+template <class Geometry, bool doCheck>
+struct JacobianInverse
+{
+  static void check(const Geometry &e)
+  {
+    typedef typename Geometry::ctype ctype;
+    Dune::FieldVector<ctype, Geometry::mydimension> v;
+    e.jacobianInverse(v);
+  }
+  JacobianInverse()
+  {
+    c = check;
+  };
+  void (*c)(const Geometry&);
+};
+
+template <class Geometry>
+struct JacobianInverse<Geometry, false>
+{
+  static void check(const Geometry &e)
+  {}
+  JacobianInverse()
+  {
+    c = check;
+  };
+  void (*c)(const Geometry&);
+};
+
 template <class Geometry, int codim, int dim>
 struct ElementInterface
 {
@@ -43,8 +71,8 @@ struct ElementInterface
     e.local(g);
     e.checkInside(v);
     e.integrationElement(v);
-#warning disabled, because it is only supported if codim==0
-    //      e.jacobianInverse(v);
+    JacobianInverse<Geometry,
+        (int)Geometry::coorddimension == (int)Geometry::mydimension>();
   }
   ElementInterface()
   {
