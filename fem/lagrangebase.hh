@@ -880,6 +880,19 @@ namespace Dune {
       return false;
     }
 
+    //! get maximal global polynom order
+    int polynomOrder ( ) const
+    {
+      return polOrd;
+    }
+
+    //! get local polynom order on entity
+    template <class EntityType>
+    int localPolynomOrder ( EntityType &en ) const
+    {
+      return polOrd;
+    }
+
     //! length of the dof vector
     //! size knows the correct way to calculate the size of the functionspace
     int size ( int level ) const
