@@ -85,16 +85,18 @@ namespace Dune
     extra_boundary_data_ = 0;
 
     // Create unique name
+    /** \todo Do this safely */
     static unsigned int nameCounter = 0;
     char buffer[20];
     sprintf(buffer, "%d", nameCounter);
     //     std::ostrstream numberAsAscii;
     //     numberAsAscii << nameCounter;
-    name = "DuneUGGrid_";
+    name_ = "DuneUGGrid_";
     //    name += numberAsAscii.str();
-    name += buffer;
+    name_ += buffer;
 
-    std::cout << "UGGrid<" << dim << "," << dimworld <<"> with name " << name << " created!\n";
+    std::cout << "UGGrid<" << dim << "," << dimworld <<"> with name "
+              << name_ << " created!" << std::endl;
 
     nameCounter++;
   }
@@ -259,11 +261,14 @@ namespace Dune
   void UGGrid < dim, dimworld >::makeNewUGMultigrid()
   {
     //configure @PROBLEM $d @DOMAIN;
-    char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
+    //char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
+    std::string configureArgs[2] = {"configure DuneDummyProblem", "d " + name() + "_Domain"};
+    const char* configureArgs_c[2]     = {configureArgs[0].c_str(), configureArgs[1].c_str()};
+    /** \todo Kann man ConfigureCommand so ‰ndern daﬂ man auch ohne den const_cast auskommt? */
 #ifdef _3
-    UG3d::ConfigureCommand(2, configureArgs);
+    UG3d::ConfigureCommand(2, configureArgs_c);
 #else
-    UG2d::ConfigureCommand(2, configureArgs);
+    UG2d::ConfigureCommand(2, const_cast<char**>(configureArgs_c));
 #endif
 
     //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
@@ -271,7 +276,7 @@ namespace Dune
     for (int i=0; i<4; i++)
       newArgs[i] = (char*)::malloc(50*sizeof(char));
 
-    sprintf(newArgs[0], "new DuneMG");
+    sprintf(newArgs[0], "new %s", name().c_str());
     sprintf(newArgs[1], "b DuneDummyProblem");
     sprintf(newArgs[2], "f DuneFormat");
     sprintf(newArgs[3], "h %dM", heapsize);
@@ -283,12 +288,11 @@ namespace Dune
 #endif
       DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
 
-    /** \bug The newArgs array needs to be deleted here or when shutting down UG */
-    //     for (int i=0; i<4; i++)
-    //         free(newArgs[i]);
+    for (int i=0; i<4; i++)
+      free(newArgs[i]);
 
     // Get a direct pointer to the newly created multigrid
-    multigrid_ = UG_NS<dim>::GetMultigrid("DuneMG");
+    multigrid_ = UG_NS<dim>::GetMultigrid(name().c_str());
     if (!multigrid_)
       DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
   }
