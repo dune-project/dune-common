@@ -339,9 +339,16 @@ namespace Dune
   template <class T> template <class DiscFType , class DiscFuncType>
   void SparseRowMatrix<T>::apply(const DiscFType &f, DiscFuncType &ret) const
   {
+    int level = f.getFunctionSpace().getGrid().maxlevel();
+    apply(f, ret, level);
+  }
+
+  template <class T> template <class DiscFType , class DiscFuncType>
+  void SparseRowMatrix<T>::apply(const DiscFType &f, DiscFuncType &ret, int level) const
+  {
     typedef typename DiscFType::DofIteratorType DofFItType;
     typedef typename DiscFuncType::DofIteratorType DofIteratorType;
-    int level = f.getFunctionSpace().getGrid().maxlevel();
+    //int level = f.getFunctionSpace().getGrid().maxlevel();
 
     //! we assume that the dimension of the functionspace of f is the same as
     //! the size of the matrix
