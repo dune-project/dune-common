@@ -22,6 +22,7 @@ namespace Dune {
     ObjPointer (ObjType  *t) : item (t) , next (0) {}
 
     //! delete the next ObjPointer and the item
+    //! need virtual desctructor for deleting the real objects.
     virtual ~ObjPointer ()
     {
       if(next) delete next;next = 0;
@@ -37,6 +38,7 @@ namespace Dune {
     //! make new operator with item points to null
     ObjPointerStorage () : item_ (0) {}
 
+    //! need virtual desctructor for deleting the real objects.
     virtual ~ObjPointerStorage ()
     {
       if(item_) delete item_;item_ = 0;
