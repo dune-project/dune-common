@@ -16,7 +16,7 @@ DISTDOCS = doc/istl.tex doc/istl.bib doc/istl.ps doc/istl.pdf
 DISTTUT = tutorial/example.cc
 
 # parts from dune needed for istl (only common, please!)
-DUNESTUFF = common/exceptions.hh common/fvector.hh common/timer.hh
+DUNESTUFF = common/exceptions.hh common/fvector.hh common/timer.hh common/arraylist.hh common/smartpointer.hh common/fixedarray.hh common/iteratorfacades.hh
 
 # these files are copied into the distribution but with .istl-dist stripped
 RENAMESTUFF = README.istl-dist tutorial/Makefile.istl-dist
@@ -32,7 +32,7 @@ istl-dist:
 	for NAME in $(RENAMESTUFF) ; do \
 	  cp $$NAME istl/`dirname $$NAME`/`basename $$NAME .istl-dist`; \
 	done
-	$(AMTAR) chf - istl --format=posix | \
+	$(AMTAR) chf - istl --posix | \
 	  GZIP=$(GZIP_ENV) gzip -c > istl.tar.gz
 	rm -r istl
 
