@@ -43,16 +43,18 @@ namespace Dune {
     }
 
     //! operator () for read/write access to element in matrix
-    T& operator() (int i, int j) {return a[j][i];}
+    T& operator() (int i, int j) DUNE_DEPRECATED {return a[j][i];}
 
     //! operator () for read/write access to element in matrix
-    const T& operator() (int i, int j) const {return a[j][i];}
+    const T& operator() (int i, int j) const DUNE_DEPRECATED {return a[j][i];}
 
     //! operator () for read/write access to column vector
     FieldVector<T,n>& operator() (int j) DUNE_DEPRECATED {return a[j];}
+    const FieldVector<T,n>& operator() (int j) const DUNE_DEPRECATED {return a[j];}
 
     //! operator [] for read/write access to column vector
     FieldVector<T,n>& operator[] (int j) {return a[j];}
+    const FieldVector<T,n>& operator[] (int j) const {return a[j];}
 
     //! matrix/vector multiplication
     FieldVector<T,n> operator* (const FieldVector<T,m>& x) const
