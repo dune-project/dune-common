@@ -49,7 +49,15 @@ extern "C"
 #define _ABS_NOT_DEFINED_
 #endif
 
+#ifndef DIM
+#error "DIM or DIM_OF_WORLD not defined!"
+#endif
+
 #include <alberta.h>
+
+#ifndef _ALBERTA_H_
+#error "Couldn't find alberta.h for include! "
+#endif
 
 #ifdef _ABS_NOT_DEFINED_
 #undef ABS
