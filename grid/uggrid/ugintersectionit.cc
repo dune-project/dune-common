@@ -1,12 +1,12 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-template< int dim, int dimworld>
-inline UGGridIntersectionIterator<dim,dimworld>::
+template<class GridImp>
+inline UGGridIntersectionIterator<GridImp>::
 UGGridIntersectionIterator() : virtualEntity_(-1), center_(0), neighborCount_(-1)
 {}
 
-template< int dim, int dimworld>
-inline typename TargetType<0,dimworld>::T* UGGridIntersectionIterator<dim,dimworld>::
+template< class GridImp>
+inline typename TargetType<0,GridImp::dimensionworld>::T* UGGridIntersectionIterator<GridImp>::
 target() const
 {
   if (!isValid())
@@ -15,9 +15,9 @@ target() const
   return UG_NS<dimworld>::NbElem(center_, neighborCount_);
 }
 
-template< int dim, int dimworld>
-inline void UGGridIntersectionIterator<dim,dimworld>::
-setToTarget(typename TargetType<0,dimworld>::T* center, int nb)
+template< class GridImp>
+inline void UGGridIntersectionIterator<GridImp>::
+setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb)
 {
   //printf("entering II::setToTarget %d %d\n", (int)center, nb);
   center_ = center;
@@ -25,18 +25,18 @@ setToTarget(typename TargetType<0,dimworld>::T* center, int nb)
   virtualEntity_.setToTarget(target());
 }
 
-template< int dim, int dimworld>
+template< class GridImp>
 inline bool
-UGGridIntersectionIterator<dim,dimworld>::
+UGGridIntersectionIterator<GridImp>::
 isValid() const
 {
   return center_
          && neighborCount_ >=0
-         && neighborCount_ < UG_NS<dimworld>::Sides_Of_Elem(center_);
+         && neighborCount_ < UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(center_);
 }
 
-template< int dim, int dimworld>
-inline bool UGGridIntersectionIterator<dim,dimworld>::
+template< class GridImp>
+inline bool UGGridIntersectionIterator<GridImp>::
 operator ==(const UGGridIntersectionIterator& I) const
 {
   // Two intersection iterators are equal iff they have the same
@@ -47,54 +47,58 @@ operator ==(const UGGridIntersectionIterator& I) const
              (center_ == I.center_ && neighborCount_ == I.neighborCount_));
 }
 
-template< int dim, int dimworld>
-inline bool UGGridIntersectionIterator<dim,dimworld>::
+template< class GridImp>
+inline bool UGGridIntersectionIterator<GridImp>::
 operator !=(const UGGridIntersectionIterator& I) const
 {
   return !((*this)==I);
 }
 
-template<int dim, int dimworld>
-inline UGGridEntity< 0,dim,dimworld >*
-UGGridIntersectionIterator< dim,dimworld >::operator ->()
+template<class GridImp>
+inline UGGridEntity< 0,GridImp::dimension,GridImp>*
+UGGridIntersectionIterator< GridImp >::operator ->()
 {
   return &virtualEntity_;
 }
 
-template<int dim, int dimworld>
-inline UGGridEntity< 0,dim,dimworld >&
-UGGridIntersectionIterator< dim,dimworld >::operator *()
+template<class GridImp>
+inline UGGridEntity< 0,GridImp::dimension,GridImp>&
+UGGridIntersectionIterator< GridImp >::operator *()
 {
   return virtualEntity_;
 }
 
 
-template<int dim, int dimworld>
-inline UGGridIntersectionIterator<dim,dimworld>&
-UGGridIntersectionIterator< dim,dimworld >::operator++()
+template<class GridImp>
+inline UGGridIntersectionIterator<GridImp>&
+UGGridIntersectionIterator< GridImp >::operator++()
 {
   setToTarget(center_, neighborCount_+1);
   return (*this);
 }
 
-template<int dim, int dimworld>
-inline bool UGGridIntersectionIterator< dim,dimworld >::neighbor()
+template<class GridImp>
+inline bool UGGridIntersectionIterator< GridImp >::neighbor() const
 {
-  return UG_NS<dim>::NbElem(center_, neighborCount_) != NULL;
+  return UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_) != NULL;
 }
 
 /** \todo Doesn't work for locally refined grids! */
-template<int dim, int dimworld>
+template<class GridImp>
 inline bool
-UGGridIntersectionIterator<dim, dimworld>::boundary()
+UGGridIntersectionIterator<GridImp>::boundary() const
 {
   return !neighbor();
 }
 
-template<>
-inline FieldVector<UGCtype, 3>&
-UGGridIntersectionIterator < 3,3 >::unit_outer_normal ()
+template<class GridImp>
+inline FieldVector<UGCtype, GridImp::dimensionworld>&
+UGGridIntersectionIterator <GridImp>::unit_outer_normal ()
 {
+  // //////////////////////////////////////////////////////
+  //   Implementation for 3D
+  // //////////////////////////////////////////////////////
+
 #ifdef _3
   // Get the first three vertices of this side.  Since quadrilateral faces
   // are plane in UG, the normal doesn't depend on the fourth vertex
@@ -131,14 +135,11 @@ UGGridIntersectionIterator < 3,3 >::unit_outer_normal ()
   // normalize
   outerNormal_ *= (1/outerNormal_.two_norm());
 #endif
-  return outerNormal_;
 
-}
+  // //////////////////////////////////////////////////////
+  //   Implementation for 2D
+  // //////////////////////////////////////////////////////
 
-template<>
-inline FieldVector<UGCtype, 2>&
-UGGridIntersectionIterator < 2,2 >::unit_outer_normal ()
-{
 #ifdef _2
   // Get the vertices of this side.
 #define CORNER_OF_SIDE(p, s, c)   (UG2d::element_descriptors[UG_NS<2>::Tag(p)]->corner_of_side[(s)][(c)])
@@ -156,38 +157,38 @@ UGGridIntersectionIterator < 2,2 >::unit_outer_normal ()
   return outerNormal_;
 }
 
-template<int dim, int dimworld>
-inline FieldVector<UGCtype, dimworld>&
-UGGridIntersectionIterator < dim,dimworld >::
-unit_outer_normal (const FieldVector<UGCtype, dim-1>& local)
+template<class GridImp>
+inline FieldVector<UGCtype, GridImp::dimensionworld>&
+UGGridIntersectionIterator < GridImp >::
+unit_outer_normal (const FieldVector<UGCtype, GridImp::dimension-1>& local)
 {
   return unit_outer_normal();
 }
 
-template< int dim, int dimworld>
-inline UGGridElement< dim-1, dim >&
-UGGridIntersectionIterator<dim,dimworld>::
-intersection_self_local()
+template< class GridImp>
+inline UGGridGeometry< GridImp::dimension-1, GridImp::dimension-1,GridImp >&
+UGGridIntersectionIterator<GridImp>::
+intersectionSelfLocal()
 {
   DUNE_THROW(NotImplemented, "intersection_self_local()");
   return fakeNeigh_;
 }
 
-template< int dim, int dimworld>
-inline UGGridElement< dim-1, dimworld >&
-UGGridIntersectionIterator<dim,dimworld>::
-intersection_self_global()
+template< class GridImp>
+inline UGGridGeometry< GridImp::dimension-1, GridImp::dimensionworld,GridImp>&
+UGGridIntersectionIterator<GridImp>::
+intersectionGlobal()
 {
-  int numCornersOfSide = UG_NS<dimworld>::Corners_Of_Side(center_, neighborCount_);
+  int numCornersOfSide = UG_NS<GridImp::dimensionworld>::Corners_Of_Side(center_, neighborCount_);
 
   //std::cout << "Element side has " << numCornersOfSide << " corners" << std::endl;
   neighGlob_.setNumberOfCorners(numCornersOfSide);
 
   for (int i=0; i<numCornersOfSide; i++) {
 
-    int cornerIdx = UG_NS<dimworld>::Corner_Of_Side(center_, neighborCount_, i);
-    typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(center_, cornerIdx);
-    for (int j=0; j<dimworld; j++)
+    int cornerIdx = UG_NS<GridImp::dimensionworld>::Corner_Of_Side(center_, neighborCount_, i);
+    typename TargetType<dim,dim>::T* node = UG_NS<GridImp::dimensionworld>::Corner(center_, cornerIdx);
+    for (int j=0; j<GridImp::dimensionworld; j++)
       neighGlob_.coord_[i][j] = node->myvertex->iv.x[j];
 
   }
@@ -195,43 +196,33 @@ intersection_self_global()
   return neighGlob_;
 }
 
-template< int dim, int dimworld>
-inline UGGridElement< dim-1, dim >&
-UGGridIntersectionIterator<dim,dimworld>::
-intersection_neighbor_local()
+template< class GridImp>
+inline UGGridGeometry<GridImp::dimension-1, GridImp::dimension,GridImp>&
+UGGridIntersectionIterator<GridImp>::
+intersectionNeighborLocal()
 {
   DUNE_THROW(NotImplemented, "intersection_neighbor_local()");
   return fakeNeigh_;
 }
 
-template< int dim, int dimworld>
-inline UGGridElement< dim-1, dimworld >&
-UGGridIntersectionIterator<dim,dimworld>::
-intersection_neighbor_global()
-{
-  // According to Peter this method is supposed to do precisely the
-  // same as intersection_self_global()
-  return intersection_self_global();
-}
-
-template< int dim, int dimworld>
-inline int UGGridIntersectionIterator<dim,dimworld>::
-number_in_self ()  const
+template< class GridImp>
+inline int UGGridIntersectionIterator<GridImp>::
+numberInSelf ()  const
 {
   /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
-  const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);
+  const int nSides = UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(center_);
 
   return (neighborCount_ + nSides -1)%nSides;
 }
 
-template< int dim, int dimworld>
-inline int UGGridIntersectionIterator<dim,dimworld>::
-number_in_neighbor ()
+template< class GridImp>
+inline int UGGridIntersectionIterator<GridImp>::
+numberInNeighbor ()
 {
-  const typename TargetType<0,dimworld>::T* other = target();
+  const typename TargetType<0,GridImp::dimensionworld>::T* other = target();
 
   /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
-  const int nSides = UG_NS<dimworld>::Sides_Of_Elem(other);
+  const int nSides = UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(other);
 
   int i;
   for (i=0; i<Sides_Of_Elem(other); i++)
@@ -241,10 +232,10 @@ number_in_neighbor ()
   return (i+nSides-1)%nSides;
 }
 
-template<int dim, int dimworld>
+template<class GridImp>
 inline
-UGGridBoundaryEntity<dim,dimworld>&
-UGGridIntersectionIterator<dim,dimworld>::
+UGGridBoundaryEntity<GridImp>&
+UGGridIntersectionIterator<GridImp>::
 boundaryEntity ()
 {
   return boundaryEntity_;

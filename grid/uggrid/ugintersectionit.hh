@@ -21,13 +21,17 @@ namespace Dune {
      non-matching meshes. The number of neigbors may be different from the number
      of an element!
    */
-  template<int dim, int dimworld>
+  template<class GridImp>
   class UGGridIntersectionIterator :
-    public IntersectionIteratorDefault <dim,dimworld,UGCtype,
-        UGGridIntersectionIterator,UGGridEntity,
-        UGGridElement, UGGridBoundaryEntity>
+    public IntersectionIteratorDefault <GridImp,UGGridIntersectionIterator>
   {
-    friend class UGGridEntity<0,dim,dimworld>;
+
+    enum {dim=GridImp::dimension};
+
+    enum {dimworld=GridImp::dimensionworld};
+
+    friend class UGGridEntity<0,dim,GridImp>;
+
   public:
     //! prefix increment
     UGGridIntersectionIterator& operator ++();
@@ -45,51 +49,47 @@ namespace Dune {
     bool operator!= (const UGGridIntersectionIterator& i) const;
 
     //! access neighbor, dereferencing
-    UGGridEntity<0,dim,dimworld>& operator*();
+    UGGridEntity<0,GridImp::dimension,GridImp>& operator*();
 
     //! access neighbor, arrow
-    UGGridEntity<0,dim,dimworld>* operator->();
+    UGGridEntity<0,GridImp::dimension,GridImp>* operator->();
 
     //! return true if intersection is with boundary. \todo connection with
     //! boundary information, processor/outer boundary
-    bool boundary ();
+    bool boundary () const;
 
     //! return true if across the edge an neighbor on this level exists
-    bool neighbor ();
+    bool neighbor () const;
 
     //! return information about the Boundary
-    UGGridBoundaryEntity<dim,dimworld> & boundaryEntity ();
+    UGGridBoundaryEntity<GridImp> & boundaryEntity ();
 
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<UGCtype, dimworld>& unit_outer_normal (const FieldVector<UGCtype, dim-1>& local);
+    FieldVector<UGCtype, GridImp::dimensionworld>& unit_outer_normal (const FieldVector<UGCtype, GridImp::dimension-1>& local);
 
     //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<UGCtype, dimworld>& unit_outer_normal ();
+    FieldVector<UGCtype, GridImp::dimensionworld>& unit_outer_normal ();
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    UGGridElement<dim-1,dim>& intersection_self_local ();
+    UGGridGeometry<GridImp::dimension-1,GridImp::dimension-1,GridImp>& intersectionSelfLocal ();
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    UGGridElement<dim-1,dimworld>& intersection_self_global ();
+    UGGridGeometry<GridImp::dimension-1,GridImp::dimensionworld,GridImp>& intersectionGlobal ();
 
     //! local number of codim 1 entity in self where intersection is contained in
-    int number_in_self () const;
+    int numberInSelf () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    UGGridElement<dim-1,dim>& intersection_neighbor_local ();
-
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in LOCAL coordinates of neighbor
-    UGGridElement<dim-1,dimworld>& intersection_neighbor_global ();
+    UGGridGeometry<GridImp::dimension-1,GridImp::dimension,GridImp>& intersectionNeighborLocal ();
 
     //! local number of codim 1 entity in neighbor where intersection is contained
-    int number_in_neighbor ();
+    int numberInNeighbor ();
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
@@ -105,29 +105,29 @@ namespace Dune {
 
     //! Returns the element whose intersection with center_
     //! is represented by the intersection iterator
-    typename TargetType<0,dimworld>::T* target() const;
+    typename TargetType<0,GridImp::dimensionworld>::T* target() const;
 
     //! Set intersection iterator to nb-th neighbor of element 'center'
-    void setToTarget(typename TargetType<0,dimworld>::T* center, int nb);
+    void setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb);
 
     //! Returns true if the iterator represents an actual intersection
     bool isValid() const;
 
-    UGGridEntity<0,dim,dimworld> virtualEntity_;
+    UGGridEntity<0,dim,GridImp> virtualEntity_;
 
     //! vector storing the outer normal
     FieldVector<UGCtype, dimworld> outerNormal_;
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
-    UGGridElement<dim-1,dim> fakeNeigh_;
+    UGGridGeometry<dim-1,dim,GridImp> fakeNeigh_;
 
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
-    UGGridElement<dim-1,dimworld> neighGlob_;
+    UGGridGeometry<dim-1,dimworld,GridImp> neighGlob_;
 
     //! BoundaryEntity
-    UGGridBoundaryEntity<dim,dimworld> boundaryEntity_;
+    UGGridBoundaryEntity<GridImp> boundaryEntity_;
 
     //! The element whose neighbors we are looking at
     typename TargetType<0,dimworld>::T* center_;

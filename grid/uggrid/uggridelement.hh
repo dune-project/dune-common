@@ -29,21 +29,19 @@ namespace Dune {
 
      dimworld: Each corner is a point with dimworld coordinates.
    */
-  template<int dim, int dimworld>
-  class UGGridElement :
-    public ElementDefault <dim,dimworld, UGCtype,UGGridElement>
+  template<int mydim, int coorddim, class GridImp>
+  class UGGridGeometry :
+    public GeometryDefault <mydim, coorddim, GridImp, UGGridGeometry>
   {
-    template <int codim_, int dim_, int dimworld_>
+    template <int codim_, int dim_, class GridImp_>
     friend class UGGridEntity;
 
   public:
 
     /** Default constructor.
-     *
-     * \param makeRefElement If true an element with the coordinates of the
-     * reference element is made
      */
-    UGGridElement(bool makeRefElement=false);
+    UGGridGeometry()
+    {}
 
     /** \brief Return the element type identifier
      *
@@ -56,24 +54,24 @@ namespace Dune {
     int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<UGCtype, dimworld>& operator[] (int i) const;
+    const FieldVector<UGCtype, coorddim>& operator[] (int i) const;
 
     /** \brief Return reference element corresponding to this element.
      *
      **If this is a reference element then self is returned.
      */
-    UGGridElement<dim,dim>& refelem ();
+    //UGGridElement<dim,dim>& refelem ();
 
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
-    FieldVector<UGCtype, dimworld> global (const FieldVector<UGCtype, dim>& local) const;
+    FieldVector<UGCtype, coorddim> global (const FieldVector<UGCtype, mydim>& local) const;
 
     /** \brief Maps a global coordinate within the element to a
      * local coordinate in its reference element */
-    FieldVector<UGCtype, dim> local (const FieldVector<UGCtype, dimworld>& global) const;
+    FieldVector<UGCtype, mydim> local (const FieldVector<UGCtype, coorddim>& global) const;
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<UGCtype, dimworld> &global);
+    bool checkInside(const FieldVector<UGCtype, coorddim> &global) const;
 
     /**
        Integration over a general element is done by integrating over the reference element
@@ -95,34 +93,33 @@ namespace Dune {
        will directly translate in substantial savings in the computation of finite element
        stiffness matrices.
      */
-    UGCtype integration_element (const FieldVector<UGCtype, dim>& local) const;
+    UGCtype integrationElement (const FieldVector<UGCtype, mydim>& local) const;
 
     //! The Jacobian matrix of the mapping from the reference element to this element
-    const Mat<dim,dim>& Jacobian_inverse (const FieldVector<UGCtype, dim>& local) const;
+    const Mat<mydim,mydim>& jacobianInverse (const FieldVector<UGCtype, mydim>& local) const;
 
 
   private:
 
     /** \brief Init the element with a given UG elemend */
-    void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}
+    void setToTarget(typename TargetType<coorddim-mydim,coorddim>::T* target) {target_ = target;}
 
     //! built the reference element
-    void makeRefElemCoords();
+    //void makeRefElemCoords();
 
     //! the vertex coordinates
-    //Mat<dimworld,dim+1, UGCtype> coord_;
-    mutable FixedArray<FieldVector<UGCtype, dimworld>, (dim==2) ? 4 : 8> coord_;
+    mutable FixedArray<FieldVector<UGCtype, coorddim>, (mydim==2) ? 4 : 8> coord_;
 
     //! The jacobian inverse
-    mutable Mat<dimworld,dimworld> jac_inverse_;
+    mutable Mat<coorddim,coorddim> jac_inverse_;
 
     //! storage for global coords
-    FieldVector<UGCtype, dimworld> globalCoord_;
+    FieldVector<UGCtype, coorddim> globalCoord_;
 
     //! storage for local coords
-    FieldVector<UGCtype, dim> localCoord_;
+    FieldVector<UGCtype, mydim> localCoord_;
 
-    typename TargetType<dimworld-dim,dimworld>::T* target_;
+    typename TargetType<coorddim-mydim,coorddim>::T* target_;
 
   };
 
@@ -132,22 +129,22 @@ namespace Dune {
   /****************************************************************/
 
 
-  template<>
-  class UGGridElement<2, 3> :
-    public ElementDefault <2, 3, UGCtype,UGGridElement>
+  template<class GridImp>
+  class UGGridGeometry<2, 3, GridImp> :
+    public GeometryDefault <2, 3, GridImp, UGGridGeometry>
   {
 
-    template <int codim_, int dim_, int dimworld_>
+    template <int codim_, int dim_, class GridImp_>
     friend class UGGridEntity;
 
-    template <int dim_, int dimworld_>
+    template <class GridImp_>
     friend class UGGridIntersectionIterator;
 
   public:
 
-    //! for makeRefElement == true a Element with the coordinates of the
-    //! reference element is made
-    UGGridElement(){}
+    /** \brief Default constructor */
+    UGGridGeometry()
+    {}
 
     //! return the element type identifier (triangle or quadrilateral)
     GeometryType type () const {return elementType_;}
@@ -163,7 +160,7 @@ namespace Dune {
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
      */
-    UGGridElement<2,2>& refelem ();
+    UGGridGeometry<2,2,GridImp>& refelem ();
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
@@ -177,10 +174,10 @@ namespace Dune {
     bool checkInside(const FieldVector<UGCtype, 3> &global);
 
     // A(l)
-    UGCtype integration_element (const FieldVector<UGCtype, 2>& local) const;
+    UGCtype integrationElement (const FieldVector<UGCtype, 2>& local) const;
 
     //! can only be called for dim=dimworld!
-    const Mat<2,2>& Jacobian_inverse (const FieldVector<UGCtype, 2>& local) const;
+    const Mat<2,2>& jacobianInverse (const FieldVector<UGCtype, 2>& local) const;
 
   private:
 
@@ -215,24 +212,22 @@ namespace Dune {
   /****************************************************************/
 
 
-  template<>
-  class UGGridElement <1, 2> :
-    public ElementDefault <1, 2, UGCtype,UGGridElement>
+  template<class GridImp>
+  class UGGridGeometry <1, 2, GridImp> :
+    public GeometryDefault <1, 2, GridImp, UGGridGeometry>
   {
 
-    template <int codim_, int dim_, int dimworld_>
+    template <int codim_, int dim_, class GridImp_>
     friend class UGGridEntity;
 
-    template <int dim_, int dimworld_>
+    template <class GridImp_>
     friend class UGGridIntersectionIterator;
 
   public:
 
-    //! for makeRefElement == true a Element with the coordinates of the
-    //! reference element is made
-    UGGridElement(bool makeRefElement=false) {
-      //std::cout << "UGGridElement<1,2> created!" << std::endl;
-    }
+    /** \brief Default constructor */
+    UGGridGeometry()
+    {}
 
     /** Return the element type identifier.  This class always returns 'line' */
     GeometryType type () const {return line;}
@@ -248,24 +243,24 @@ namespace Dune {
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
      */
-    UGGridElement<1,1>& refelem ();
+    UGGridGeometry<1,1,GridImp>& refelem ();
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
-    FieldVector<UGCtype, 2> global (const FieldVector<UGCtype, 1>& local);
+    FieldVector<UGCtype, 2> global (const FieldVector<UGCtype, 1>& local) const;
 
     //! Maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    FieldVector<UGCtype, 1> local (const FieldVector<UGCtype, 2>& global);
+    FieldVector<UGCtype, 1> local (const FieldVector<UGCtype, 2>& global) const;
 
     //! Returns true if the point is in the current element
     bool checkInside(const FieldVector<UGCtype, 2> &global);
 
     // A(l)
-    UGCtype integration_element (const FieldVector<UGCtype, 1>& local) const;
+    UGCtype integrationElement (const FieldVector<UGCtype, 1>& local) const;
 
     //! can only be called for dim=dimworld!
-    const Mat<1,1>& Jacobian_inverse (const FieldVector<UGCtype, 1>& local) const;
+    const Mat<1,1>& jacobianInverse (const FieldVector<UGCtype, 1>& local) const;
 
   private:
     //void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}

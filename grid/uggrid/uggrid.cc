@@ -16,12 +16,12 @@
 //
 // *********************************************************************
 
-template <int codim, int dim, int dimworld, PartitionIteratorType PiType>
+template <int codim, PartitionIteratorType PiType, class GridImp>
 class UGGridLevelIteratorFactory
 {
 public:
   static inline
-  UGGridLevelIterator<codim,dim,dimworld,PiType> getIterator(typename UGTypes<dim>::GridType* theGrid, int level) {
+  UGGridLevelIterator<codim,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
     std::cout << "LevelIteratorFactory default implementation" << std::endl;
   }
 
@@ -29,60 +29,58 @@ public:
 
 
 #ifdef _2
-template <>
-class UGGridLevelIteratorFactory<2,2,2,All_Partition>
+template <class GridImp>
+class UGGridLevelIteratorFactory<2,All_Partition,GridImp>
 {
 public:
   static inline
-  UGGridLevelIterator<2,2,2,All_Partition> getIterator(UGTypes<2>::GridType* theGrid, int level) {
+  UGGridLevelIterator<2,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-    UGGridLevelIterator<2,2,2,All_Partition> it(level);
+    UGGridLevelIterator<2,All_Partition,GridImp> it(level);
     it.setToTarget(UG_NS<2>::PFirstNode(theGrid), level);
     return it;
   }
 
 };
 
-template <>
-class UGGridLevelIteratorFactory<0,2,2,All_Partition>
+template <class GridImp>
+class UGGridLevelIteratorFactory<0,All_Partition,GridImp>
 {
 public:
   static inline
-  UGGridLevelIterator<0,2,2,All_Partition> getIterator(UGTypes<2>::GridType* theGrid, int level) {
+  UGGridLevelIterator<0,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
 
-    UGGridLevelIterator<0,2,2,All_Partition> it(level);
-    it.setToTarget(UG_NS<2>::PFirstElement(theGrid), level);
+    UGGridLevelIterator<0,All_Partition,GridImp> it(level);
+    it.setToTarget(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
     return it;
   }
 
 };
 
 
-template <>
-template <PartitionIteratorType PiType>
-class UGGridLevelIteratorFactory<2,2,2,PiType>
+template <PartitionIteratorType PiType, class GridImp>
+class UGGridLevelIteratorFactory<2,PiType,GridImp>
 {
 public:
   static inline
-  UGGridLevelIterator<2,2,2,PiType> getIterator(UGTypes<2>::GridType* theGrid, int level) {
+  UGGridLevelIterator<2,PiType,GridImp> getIterator(UGTypes<2>::GridType* theGrid, int level) {
     std::cout << "Simulating a parallel LevelIterator using a sequential one!" << std::endl;
-    UGGridLevelIterator<2,2,2,PiType> it(level);
+    UGGridLevelIterator<2,PiType,GridImp> it(level);
     it.setToTarget(UG_NS<2>(theGrid), level);
     return it;
   }
 
 };
 
-template <>
-template <PartitionIteratorType PiType>
-class UGGridLevelIteratorFactory<0,2,2,PiType>
+template <PartitionIteratorType PiType,class GridImp>
+class UGGridLevelIteratorFactory<0,PiType,GridImp>
 {
 public:
   static inline
-  UGGridLevelIterator<0,2,2,PiType> getIterator(UGTypes<2>::GridType* theGrid, int level) {
+  UGGridLevelIterator<0,PiType,GridImp> getIterator(UGTypes<2>::GridType* theGrid, int level) {
 
     std::cout << "Simulating a parallel LevelIterator using a sequential one!" << std::endl;
-    UGGridLevelIterator<0,2,2,PiType> it(level);
+    UGGridLevelIterator<0,PiType,GridImp> it(level);
     it.setToTarget(UG_NS<2>::PFirstElement(theGrid), level);
     return it;
   }
@@ -295,7 +293,7 @@ inline int UGGrid < dim, dimworld >::maxlevel() const
 
 template<int dim, int dimworld>
 template<int codim>
-inline UGGridLevelIterator<codim, dim, dimworld, All_Partition>
+inline UGGridLevelIterator<codim, All_Partition, const UGGrid<dim,dimworld> >
 UGGrid<dim, dimworld>::lbegin (int level) const
 {
   assert(multigrid_);
@@ -304,12 +302,12 @@ UGGrid<dim, dimworld>::lbegin (int level) const
   if (!theGrid)
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  return UGGridLevelIteratorFactory<codim,dim,dimworld,All_Partition>::getIterator(theGrid, level);
+  return UGGridLevelIteratorFactory<codim,All_Partition, const UGGrid<dim,dimworld> >::getIterator(theGrid, level);
 }
 
 template<int dim, int dimworld>
 template<int codim, PartitionIteratorType PiType>
-inline UGGridLevelIterator<codim, dim, dimworld,PiType>
+inline UGGridLevelIterator<codim,PiType,UGGrid<dim,dimworld> >
 UGGrid<dim, dimworld>::lbegin (int level) const
 {
   assert(multigrid_);
@@ -318,23 +316,24 @@ UGGrid<dim, dimworld>::lbegin (int level) const
   if (!theGrid)
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  return UGGridLevelIteratorFactory<codim,dim,dimworld,PiType>::getIterator(theGrid, level);
+  return UGGridLevelIteratorFactory<codim,PiType,UGGrid<dim,dimworld> >::getIterator(theGrid, level);
 }
 
-template < int dim, int dimworld > template<int codim>
-inline UGGridLevelIterator<codim,dim,dimworld, All_Partition>
+template < int dim, int dimworld >
+template<int codim>
+inline UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> >
 UGGrid < dim, dimworld >::lend (int level) const
 {
-  UGGridLevelIterator<codim,dim,dimworld,All_Partition> it(level);
+  UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> > it(level);
   return it;
 }
 
 template < int dim, int dimworld >
 template<int codim, PartitionIteratorType PiType>
-inline UGGridLevelIterator<codim,dim,dimworld,PiType>
+inline UGGridLevelIterator<codim,PiType,UGGrid<dim,dimworld> >
 UGGrid < dim, dimworld >::lend (int level) const
 {
-  UGGridLevelIterator<codim,dim,dimworld,PiType> it(level);
+  UGGridLevelIterator<codim,PiType,UGGrid<dim,dimworld> > it(level);
   return it;
 }
 
@@ -345,15 +344,15 @@ inline int UGGrid < dim, dimworld >::size (int level, int codim) const
 
   if(codim == 0)
   {
-    UGGridLevelIterator<0,dim,dimworld, All_Partition> endit = lend<0>(level);
-    for(UGGridLevelIterator<0,dim,dimworld, All_Partition> it = lbegin<0>(level);
+    UGGridLevelIterator<0,All_Partition,const UGGrid<dim,dimworld> > endit = lend<0>(level);
+    for(UGGridLevelIterator<0,All_Partition, const UGGrid<dim,dimworld> > it = lbegin<0>(level);
         it != endit; ++it)
       numberOfElements++;
   } else
   if(codim == dim)
   {
-    UGGridLevelIterator<dim,dim,dimworld, All_Partition> endit = lend<dim>(level);
-    for(UGGridLevelIterator<dim,dim,dimworld, All_Partition> it = lbegin<dim>(level);
+    UGGridLevelIterator<dim,All_Partition, const UGGrid<dim,dimworld> > endit = lend<dim>(level);
+    for(UGGridLevelIterator<dim,All_Partition, const UGGrid<dim,dimworld> > it = lbegin<dim>(level);
         it != endit; ++it)
       numberOfElements++;
   }
@@ -487,8 +486,8 @@ template < int dim, int dimworld >
 void UGGrid < dim, dimworld >::globalRefine(int refCount)
 {
   // mark all entities for grid refinement
-  UGGridLevelIterator<0, dim, dimworld, All_Partition> iIt    = lbegin<0>(maxlevel());
-  UGGridLevelIterator<0, dim, dimworld, All_Partition> iEndIt = lend<0>(maxlevel());
+  UGGridLevelIterator<0, All_Partition, UGGrid<dim,dimworld> > iIt    = lbegin<0>(maxlevel());
+  UGGridLevelIterator<0, All_Partition, UGGrid<dim,dimworld> > iEndIt = lend<0>(maxlevel());
 
   for (; iIt!=iEndIt; ++iIt)
     iIt->mark(1);

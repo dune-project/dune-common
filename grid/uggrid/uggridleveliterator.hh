@@ -10,7 +10,7 @@
 namespace Dune {
 
   // Forward declaration
-  template <int codim, int dim, int dimworld, PartitionIteratorType PiType>
+  template <int codim, PartitionIteratorType PiType, class GridImp>
   class UGGridLevelIteratorFactory;
 
   //**********************************************************************
@@ -20,15 +20,14 @@ namespace Dune {
   /** \brief Iterator over all entities of a given codimension and level of a grid.
    * \ingroup UGGrid
    */
-  template<int codim, int dim, int dimworld, PartitionIteratorType pitype>
+  template<int codim, PartitionIteratorType pitype, class GridImp>
   class UGGridLevelIterator :
-    public LevelIteratorDefault <codim,dim,dimworld, pitype, UGCtype,
-        UGGridLevelIterator,UGGridEntity>
+    public LevelIteratorDefault <codim,pitype,GridImp,UGGridLevelIterator>
   {
-    friend class UGGridEntity<codim,dim,dimworld>;
-    friend class UGGridEntity<0,dim,dimworld>;
+    friend class UGGridEntity<codim,GridImp::dimension,GridImp>;
+    friend class UGGridEntity<0,    GridImp::dimension,GridImp>;
 
-    template <int codim_, int dim_, int dimworld_, PartitionIteratorType PiType_>
+    template <int codim_, PartitionIteratorType PiType_, class GridImp_>
     friend class UGGridLevelIteratorFactory;
 
   public:
@@ -37,19 +36,19 @@ namespace Dune {
     explicit UGGridLevelIterator(int travLevel);
 
     //! prefix increment
-    UGGridLevelIterator<codim,dim,dimworld,pitype>& operator ++();
+    UGGridLevelIterator<codim,pitype,GridImp>& operator ++();
 
     //! equality
-    bool operator== (const UGGridLevelIterator<codim,dim,dimworld, pitype>& i) const;
+    bool operator== (const UGGridLevelIterator<codim,pitype,GridImp>& i) const;
 
     //! inequality
-    bool operator!= (const UGGridLevelIterator<codim,dim,dimworld, pitype>& i) const;
+    bool operator!= (const UGGridLevelIterator<codim,pitype,GridImp>& i) const;
 
     //! dereferencing
-    UGGridEntity<codim,dim,dimworld>& operator*() ;
+    UGGridEntity<codim,GridImp::dimension,GridImp>& operator*() ;
 
     //! arrow
-    UGGridEntity<codim,dim,dimworld>* operator->() ;
+    UGGridEntity<codim,GridImp::dimension,GridImp>* operator->() ;
 
     //! ask for level of entity
     int level ();
@@ -58,19 +57,19 @@ namespace Dune {
 
     void makeIterator();
 
-    void setToTarget(typename TargetType<codim,dim>::T* target) {
+    void setToTarget(typename TargetType<codim,GridImp::dimension>::T* target) {
       target_ = target;
       virtualEntity_.setToTarget(target);
     }
 
-    void setToTarget(typename TargetType<codim,dim>::T* target, int level) {
+    void setToTarget(typename TargetType<codim,GridImp::dimension>::T* target, int level) {
       target_ = target;
       level_  = level;
       virtualEntity_.setToTarget(target, level);
     }
 
     // private Members
-    UGGridEntity<codim,dim,dimworld> virtualEntity_;
+    UGGridEntity<codim,GridImp::dimension,GridImp> virtualEntity_;
 
     //! element number
     int elNum_;
@@ -78,7 +77,7 @@ namespace Dune {
     //! level
     int level_;
 
-    typename TargetType<codim,dim>::T* target_;
+    typename TargetType<codim,GridImp::dimension>::T* target_;
 
   };
 

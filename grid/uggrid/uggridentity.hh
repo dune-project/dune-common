@@ -24,24 +24,25 @@ namespace Dune {
      An entity of codimension c in dimension d is a d-c dimensional object.
 
    */
-  template<int codim, int dim, int dimworld>
+  template<int codim, int dim, class GridImp>
   class UGGridEntity :
-    public EntityDefault <codim,dim,dimworld, UGCtype,
-        UGGridEntity,UGGridElement,UGGridLevelIterator,
-        UGGridIntersectionIterator,UGGridHierarchicIterator>
+    public EntityDefault <codim,dim,GridImp,UGGridEntity>
   {
 
-    template <int codim_, int dim_, int dimworld_, PartitionIteratorType PiType_>
+    template <int codim_, PartitionIteratorType PiType_, class GridImp_>
     friend class UGGridLevelIterator;
 
   public:
 
+    //! Constructor for an entity in a given grid level
+    UGGridEntity(int level);
+
     //! level of this element
-    int level ();
+    int level () const;
 
     //! index is unique and consecutive per level and codim
     //! used for access to degrees of freedom
-    int index ();
+    int index () const;
 
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
@@ -56,20 +57,20 @@ namespace Dune {
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
-    template<int cc> UGGridLevelIterator<cc,dim,dimworld,All_Partition> entity (int i);
-
-    //! Constructor for an entity in a given grid level
-    UGGridEntity(int level);
+    template<int cc>
+    UGGridLevelIterator<cc,All_Partition,GridImp> entity (int i);
 
     //! geometry of this entity
-    const UGGridElement<dim-codim,dimworld>& geometry () const;
+    const UGGridGeometry<dim-codim,dim,GridImp>& geometry () const;
+
+    UGGridLevelIterator<0,All_Partition,GridImp> ownersFather() const;
 
     /** \brief Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
      *
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    FieldVector<UGCtype, dim>& local ();
+    FieldVector<UGCtype, dim>& positionInOwnersFather() const;
 
 
 
@@ -84,7 +85,8 @@ namespace Dune {
     void makeDescription();
 
     //! the current geometry
-    UGGridElement<dim-codim,dimworld> geo_;
+    UGGridGeometry<dim-codim,dim,GridImp> geo_;
+
     bool builtgeometry_;       //!< true if geometry has been constructed
 
     FieldVector<UGCtype, dim> localFatherCoords_;
@@ -114,17 +116,15 @@ namespace Dune {
    *
    * UGGrid only implements the cases dim==dimworld==2 and dim=dimworld==3.
    */
-  template<int dim, int dimworld>
-  class UGGridEntity<0,dim,dimworld> :
-    public EntityDefault<0,dim,dimworld, UGCtype,UGGridEntity,UGGridElement,
-        UGGridLevelIterator,UGGridIntersectionIterator,
-        UGGridHierarchicIterator>
+  template<int dim, class GridImp>
+  class UGGridEntity<0,dim,GridImp> :
+    public EntityDefault<0,dim,GridImp, UGGridEntity>
   {
-    friend class UGGrid < dim , dimworld >;
-    friend class UGGridIntersectionIterator < dim, dimworld>;
-    friend class UGGridHierarchicIterator < dim, dimworld>;
+    friend class UGGrid < dim , dim>;
+    friend class UGGridIntersectionIterator <GridImp>;
+    friend class UGGridHierarchicIterator <GridImp>;
 
-    template <int codim_, int dim_, int dimworld_, PartitionIteratorType PiType_>
+    template <int codim_, PartitionIteratorType PiType_, class GridImp_>
     friend class UGGridLevelIterator;
 
     // Either UG3d::ELEMENT or UG2d:ELEMENT
@@ -133,10 +133,10 @@ namespace Dune {
   public:
 
     //! The Iterator over neighbors
-    typedef UGGridIntersectionIterator<dim,dimworld> IntersectionIterator;
+    typedef UGGridIntersectionIterator<GridImp> IntersectionIterator;
 
     //! Iterator over descendants of the entity
-    typedef UGGridHierarchicIterator<dim,dimworld> HierarchicIterator;
+    typedef UGGridHierarchicIterator<GridImp> HierarchicIterator;
 
     //! Constructor with a given grid level
     UGGridEntity(int level);
@@ -145,10 +145,10 @@ namespace Dune {
     ~UGGridEntity() {};
 
     //! Level of this element
-    int level ();
+    int level () const;
 
     //! Index is unique and consecutive per level and codim
-    int index ();
+    int index () const;
 
     /** \brief Return the global unique index in mesh
      * \todo So far returns the same as index()
@@ -156,7 +156,7 @@ namespace Dune {
     int globalIndex() { return index(); }
 
     //! Geometry of this entity
-    const UGGridElement<dim,dimworld>& geometry () const;
+    const UGGridGeometry<dim,dim,GridImp>& geometry () const;
 
     /** \brief Return the number of subentities of codimension cc.
      */
@@ -172,23 +172,23 @@ namespace Dune {
      *  are numbered 0 ... count<cc>()-1
      */
     template<int cc>
-    UGGridLevelIterator<cc,dim,dimworld, All_Partition> entity (int i);
+    UGGridLevelIterator<cc,All_Partition,GridImp> entity (int i) const;
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
-    UGGridIntersectionIterator<dim,dimworld> ibegin ();
+    UGGridIntersectionIterator<GridImp> ibegin () const;
 
     //! Reference to one past the last neighbor
-    UGGridIntersectionIterator<dim,dimworld> iend ();
+    UGGridIntersectionIterator<GridImp> iend () const;
 
     //! returns true if Entity has children
-    bool hasChildren ();
+    bool isLeaf() const;
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
-    UGGridLevelIterator<0,dim,dimworld,All_Partition> father ();
+    UGGridLevelIterator<0,All_Partition,GridImp> father () const;
 
     /*! Location of this element relative to the reference element
        of the father. This is sufficient to interpolate all
@@ -199,16 +199,16 @@ namespace Dune {
        We assume that on-the-fly implementation of numerical algorithms
        is only done for simple discretizations. Assumes that meshes are nested.
      */
-    UGGridElement<dim,dim>& father_relative_local ();
+    UGGridGeometry<dim,dim,GridImp>& father_relative_local ();
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
      */
-    UGGridHierarchicIterator<dim,dimworld> hbegin (int maxlevel);
+    UGGridHierarchicIterator<GridImp> hbegin (int maxlevel) const;
 
     //! Returns iterator to one past the last son
-    UGGridHierarchicIterator<dim,dimworld> hend (int maxlevel);
+    UGGridHierarchicIterator<GridImp> hend (int maxlevel) const;
 
     //***************************************************************
     //  Interface for Adaptation
@@ -237,7 +237,7 @@ namespace Dune {
     void setToTarget(typename TargetType<0,dim>::T* target);
 
     //! the current geometry
-    UGGridElement<dim,dimworld> geo_;
+    UGGridGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
     bool builtgeometry_; //!< true if geometry has been constructed
 
     //! element number
@@ -248,7 +248,7 @@ namespace Dune {
 
     typename TargetType<0,dim>::T* target_;
 
-    UGGridElement <dim,dim> fatherReLocal_;
+    UGGridGeometry <dim,dim,GridImp> fatherReLocal_;
 
   }; // end of UGGridEntity codim = 0
 

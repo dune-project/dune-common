@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_UGGRID_BOUNDENT_HH__
-#define __DUNE_UGGRID_BOUNDENT_HH__
+#ifndef DUNE_UGGRID_BOUNDARY_ENTITY_HH
+#define DUNE_UGGRID_BOUNDARY_ENTITY_HH
 
 /** \file
  * \brief The UGGridBoundaryEntity class
@@ -12,14 +12,19 @@ namespace Dune {
   /** \todo Please doc me!
    * \ingroup UGGrid
    */
-  template<int dim, int dimworld>
+  template<class GridImp>
   class UGGridBoundaryEntity
-    : public BoundaryEntityDefault <dim,dimworld, UGCtype,
-          UGGridElement,UGGridBoundaryEntity>
+    : public BoundaryEntityDefault <GridImp,UGGridBoundaryEntity>
   {
-    friend class UGGridIntersectionIterator<dim,dimworld>;
+
+    friend class UGGridIntersectionIterator<GridImp>;
+
+    enum {dim=GridImp::dimension};
+
+    enum {coorddim=GridImp::dimensionworld};
+
   public:
-    UGGridBoundaryEntity () : _neigh(-1), _geom (false)
+    UGGridBoundaryEntity () : _neigh(-1), _geom()
     {}
 
     //! return identifier of boundary segment, number
@@ -38,7 +43,7 @@ namespace Dune {
     }
 
     //! return geometry of the ghost cell
-    UGGridElement<dim,dimworld> geometry ()
+    UGGridGeometry<dim,coorddim,GridImp> geometry ()
     {
       return _geom;
     }
@@ -47,7 +52,7 @@ namespace Dune {
 
     int _neigh;
 
-    UGGridElement<dim,dimworld> _geom;
+    UGGridGeometry<dim,coorddim,GridImp> _geom;
 
   };
 

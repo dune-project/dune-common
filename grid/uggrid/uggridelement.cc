@@ -2,82 +2,35 @@
 // vi: set et ts=4 sw=2 sts=2:
 //****************************************************************
 //
-// --UGGridElement
-// --Element
+// --UGGridGeometry
 //
 //****************************************************************
 
 #include <algorithm>
 
-// singleton holding reference elements
-template<int dim>
-struct UGGridReferenceElement
-{
-  enum { dimension = dim };
-  UGGridElement<dim,dim> refelem;
 
-  UGGridReferenceElement () : refelem (true) {};
-};
-
-// initialize static variable with bool constructor
-// (which makes reference element)
-// this sucks but for gcc we do a lot
-static UGGridReferenceElement<3> reftetrahedron;
-static UGGridReferenceElement<3> refpyramid;
-static UGGridReferenceElement<3> refprism;
-static UGGridReferenceElement<3> refhexahedron;
-
-static UGGridReferenceElement<2> reftriangle;
-static UGGridReferenceElement<2> refquadrangle;
-
-static UGGridReferenceElement<1> refline;
-
-
-//****************************************************************
-//
-//  specialization of mapVertices
-//
-//****************************************************************
-
-
-template< int dim, int dimworld>
-inline UGGridElement<dim,dimworld>::
-UGGridElement(bool makeRefElement)
-{
-#if 0
-  // make empty element
-  initGeom();
-
-  // make coords for reference elements, spezial for different dim
-  if(makeRefElement)
-    makeRefElemCoords();
-#endif
-}
-
-
-
-template< int dim, int dimworld>
-inline GeometryType UGGridElement<dim,dimworld>::type() const
+template< int mydim, int coorddim, class GridImp>
+inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
 {
 
-  switch (dim)
+  switch (mydim)
   {
   case 1 : return line;
   case 2 :
 #ifdef _2
-    switch (UG_NS<dimworld>::Tag(target_)) {
+    switch (UG_NS<coorddim>::Tag(target_)) {
     case UG2d::TRIANGLE :
       return triangle;
     case UG2d::QUADRILATERAL :
       return quadrilateral;
     default :
-      DUNE_THROW(GridError, "UGGridElement::type():  ERROR:  Unknown type "
-                 << UG_NS<dimworld>::Tag(target_) << " found!");
+      DUNE_THROW(GridError, "UGGridGeometry::type():  ERROR:  Unknown type "
+                 << UG_NS<coorddim>::Tag(target_) << " found!");
     }
 #endif
 
   case 3 :
-    switch (UG_NS<dimworld>::Tag(target_)) {
+    switch (UG_NS<coorddim>::Tag(target_)) {
 #ifdef _3
     case UG3d::TETRAHEDRON :
       return tetrahedron;
@@ -88,8 +41,8 @@ inline GeometryType UGGridElement<dim,dimworld>::type() const
     case UG3d::HEXAHEDRON :
       return hexahedron;
     default :
-      DUNE_THROW(GridError, "UGGridElement::type():  ERROR:  Unknown type "
-                 << UG_NS<dimworld>::Tag(target_) << " found!");
+      DUNE_THROW(GridError, "UGGridGeometry::type():  ERROR:  Unknown type "
+                 << UG_NS<coorddim>::Tag(target_) << " found!");
 #endif
     }
   }
@@ -98,27 +51,27 @@ inline GeometryType UGGridElement<dim,dimworld>::type() const
   return tetrahedron;
 }
 
-template< int dim, int dimworld>
-inline int UGGridElement<dim,dimworld>::corners() const
+template< int mydim, int coorddim, class GridImp>
+inline int UGGridGeometry<mydim,coorddim,GridImp>::corners() const
 {
-  return UG_NS<dimworld>::Corners_Of_Elem(target_);
+  return UG_NS<coorddim>::Corners_Of_Elem(target_);
 }
 
 
 ///////////////////////////////////////////////////////////////////////
 
-template<int dim, int dimworld>
-inline const FieldVector<UGCtype, dimworld>& UGGridElement<dim,dimworld>::
+template<int mydim, int coorddim, class GridImp>
+inline const FieldVector<UGCtype, coorddim>& UGGridGeometry<mydim,coorddim,GridImp>::
 operator [](int i) const
 {
-  std::cerr << "UGGridElement<" << dim << "," << dimworld << ">::operator[]:\n"
+  std::cerr << "UGGridGeometry<" << mydim << "," << coorddim << ">::operator[]:\n"
   "Default implementation, should not be called!\n";
-  return coord_(i);
+  return coord_[i];
 }
 
 #ifdef _3
-template<>
-inline const FieldVector<UGCtype, 3>& UGGridElement<0,3>::
+template<class GridImp>
+inline const FieldVector<UGCtype, 3>& UGGridGeometry<0,3, GridImp>::
 operator [](int i) const
 {
   const UG3d::VERTEX* vertex = target_->myvertex;
@@ -130,8 +83,8 @@ operator [](int i) const
   return coord_[0];
 }
 
-template<>
-inline const FieldVector<UGCtype, 3>& UGGridElement<3,3>::
+template<class GridImp>
+inline const FieldVector<UGCtype, 3>& UGGridGeometry<3,3,GridImp>::
 operator [](int i) const
 {
   assert(0<=i && i<corners());
@@ -153,8 +106,10 @@ operator [](int i) const
 #endif
 
 #ifdef _2
-template<>
-inline const FieldVector<UGCtype, 2>& UGGridElement<0,2>::
+
+#if 0
+template <class GridImp>
+inline const FieldVector<UGCtype, 2>& UGGridGeometry<0,2, GridImp>::
 operator [](int i) const
 {
   const UG2d::VERTEX* vertex = target_->myvertex;
@@ -165,8 +120,8 @@ operator [](int i) const
   return coord_[i];
 }
 
-template<>
-inline const FieldVector<UGCtype, 2>& UGGridElement<2,2>::
+template<class GridImp>
+inline const FieldVector<UGCtype, 2>& UGGridGeometry<2,2,GridImp>::
 operator [](int i) const
 {
   assert(0<=i && i<corners());
@@ -180,87 +135,29 @@ operator [](int i) const
 }
 #endif
 
-
-/** \todo It should be able to write this more concisely
-    using partial spezialization.
- */
-template<>
-inline UGGridElement<3,3>& UGGridElement<3,3>::
-refelem()
-{
-  switch (type()) {
-  case tetrahedron :
-    return reftetrahedron.refelem;
-  case pyramid :
-    return refpyramid.refelem;
-  case prism :
-    return refprism.refelem;
-  case hexahedron :
-    return refhexahedron.refelem;
-  default :
-    std::cerr << "Unknown element type in refelem()\n";
-  }
-
-  return reftetrahedron.refelem;
-}
-
-#if 0
-template<>
-inline UGGridElement<2,2>& UGGridElement<2,3>::
-refelem()
-{
-  if (type() == triangle)
-    return reftriangle.refelem;
-  else
-    return refquadrangle.refelem;
-}
 #endif
 
-template<>
-inline UGGridElement<1,1>& UGGridElement<1,3>::
-refelem()
+template< int mydim, int coorddim, class GridImp>
+inline FieldVector<UGCtype, coorddim> UGGridGeometry<mydim,coorddim,GridImp>::
+global(const FieldVector<UGCtype, mydim>& local) const
 {
-  return refline.refelem;
-}
+  FieldVector<UGCtype, coorddim> globalCoord;
 
-template<>
-inline UGGridElement<2,2>& UGGridElement<2,2>::
-refelem()
-{
-  if (type() == triangle)
-    return reftriangle.refelem;
-  else
-    return refquadrangle.refelem;
-}
-
-//template<>
-inline UGGridElement<1,1>& UGGridElement<1,2>::
-refelem()
-{
-  return refline.refelem;
-}
-
-
-template< int dim, int dimworld>
-inline FieldVector<UGCtype, dimworld> UGGridElement<dim,dimworld>::
-global(const FieldVector<UGCtype, dim>& local) const
-{
-  FieldVector<UGCtype, dimworld> globalCoord;
-
-  // dimworld*dimworld is an upper bound for the number of vertices
-  UGCtype* cornerCoords[dimworld*dimworld];
-  UG_NS<dimworld>::Corner_Coordinates(target_, cornerCoords);
+  // coorddim*coorddim is an upper bound for the number of vertices
+  UGCtype* cornerCoords[coorddim*coorddim];
+  UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
 
   // Actually do the computation
-  UG_NS<dimworld>::Local_To_Global(corners(), cornerCoords, local, globalCoord);
+  UG_NS<coorddim>::Local_To_Global(corners(), cornerCoords, local, globalCoord);
 
   return globalCoord;
 }
 
-// Specialization for dim==1, dimworld==2.  This is necessary
+// Specialization for dim==1, coorddim==2.  This is necessary
 // because we specialized the whole class
-inline FieldVector<UGCtype, 2> UGGridElement<1,2>::
-global(const FieldVector<UGCtype, 1>& local)
+template <class GridImp>
+inline FieldVector<UGCtype, 2> UGGridGeometry<1,2,GridImp>::
+global(const FieldVector<UGCtype, 1>& local) const
 {
   FieldVector<UGCtype, 2> globalCoord;
 
@@ -271,33 +168,34 @@ global(const FieldVector<UGCtype, 1>& local)
   return globalCoord;
 }
 
-// Specialization for dim==2, dimworld==3.  This is necessary
+// Specialization for dim==2, coorddim==3.  This is necessary
 // because we specialized the whole class
-inline FieldVector<UGCtype, 3> UGGridElement<2,3>::
+template <class GridImp>
+inline FieldVector<UGCtype, 3> UGGridGeometry<2,3,GridImp>::
 global(const FieldVector<UGCtype, 2>& local) const
 {
-  DUNE_THROW(GridError, "UGGridElement<2,3>::global not implemented yet!");
+  DUNE_THROW(GridError, "UGGridGeometry<2,3>::global not implemented yet!");
   //return FieldVector<UGCtype, 3> dummy;
 }
 
 
 // Maps a global coordinate within the element to a
 // local coordinate in its reference element
-template< int dim, int dimworld>
-inline FieldVector<UGCtype, dim> UGGridElement<dim,dimworld>::
-local (const FieldVector<UGCtype, dimworld>& global) const
+template< int mydim, int coorddim, class GridImp>
+inline FieldVector<UGCtype, mydim> UGGridGeometry<mydim,coorddim, GridImp>::
+local (const FieldVector<UGCtype, coorddim>& global) const
 {
-  FieldVector<UGCtype, dim> result;
-  UGCtype localCoords[dim];
+  FieldVector<UGCtype, mydim> result;
+  UGCtype localCoords[mydim];
 
   // Copy input ADT into C-style array
-  UGCtype global_c[dimworld];
-  for (int i=0; i<dimworld; i++)
+  UGCtype global_c[coorddim];
+  for (int i=0; i<coorddim; i++)
     global_c[i] = global[i];
 
-  // dimworld*dimworld is an upper bound for the number of vertices
-  UGCtype* cornerCoords[dimworld*dimworld];
-  UG_NS<dimworld>::Corner_Coordinates(target_, cornerCoords);
+  // coorddim*coorddim is an upper bound for the number of vertices
+  UGCtype* cornerCoords[coorddim*coorddim];
+  UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
 
   // Actually do the computation
   /** \todo Why is this const_cast necessary? */
@@ -308,39 +206,40 @@ local (const FieldVector<UGCtype, dimworld>& global) const
 #endif
 
   // Copy result into array
-  for (int i=0; i<dim; i++)
+  for (int i=0; i<mydim; i++)
     result[i] = localCoords[i];
 
   return result;
 }
 
-template<int dim, int dimworld>
-inline bool UGGridElement<dim,dimworld>::
-checkInside(const FieldVector<UGCtype, dimworld> &global)
+template<int mydim, int coorddim, class GridImp>
+inline bool UGGridGeometry<mydim,coorddim, GridImp>::
+checkInside(const FieldVector<UGCtype, coorddim> &global) const
 {
-  DUNE_THROW(GridError, "UGGridElement::checkInside() not implemented yet!");
+  DUNE_THROW(GridError, "UGGridGeometry::checkInside() not implemented yet!");
   return true;
 }
 
 
-template< int dim, int dimworld>
-inline UGCtype UGGridElement<dim,dimworld>::
-integration_element (const FieldVector<UGCtype, dim>& local) const
+template< int mydim, int coorddim, class GridImp>
+inline UGCtype UGGridGeometry<mydim,coorddim,GridImp>::
+integrationElement (const FieldVector<UGCtype, mydim>& local) const
 {
-  //std::cout << "integration element: " << std::abs(Jacobian_inverse(local).determinant()) << std::endl;
-  return std::abs(1/Jacobian_inverse(local).determinant());
+  return std::abs(1/jacobianInverse(local).determinant());
 }
 
-inline UGCtype UGGridElement<1,2>::
-integration_element (const FieldVector<UGCtype, 1>& local) const
+template <class GridImp>
+inline UGCtype UGGridGeometry<1,2,GridImp>::
+integrationElement (const FieldVector<UGCtype, 1>& local) const
 {
   FieldVector<UGCtype, 2> diff = coord_[0];
   diff -= coord_[1];
   return diff.two_norm();
 }
 
-inline UGCtype UGGridElement<2,3>::
-integration_element (const FieldVector<UGCtype, 2>& local) const
+template <class GridImp>
+inline UGCtype UGGridGeometry<2,3,GridImp>::
+integrationElement (const FieldVector<UGCtype, 2>& local) const
 {
   FieldVector<UGCtype, 3> normal;
   FieldVector<UGCtype, 3> ba = coord_[1] - coord_[0];
@@ -356,17 +255,15 @@ integration_element (const FieldVector<UGCtype, 2>& local) const
   return normal.two_norm();
 }
 
-template< int dim, int dimworld>
-inline const Mat<dim,dim>& UGGridElement<dim,dimworld>::
-Jacobian_inverse (const FieldVector<UGCtype, dim>& local) const
+template< int mydim, int coorddim, class GridImp>
+inline const Mat<mydim,mydim>& UGGridGeometry<mydim,coorddim, GridImp>::
+jacobianInverse (const FieldVector<UGCtype, mydim>& local) const
 {
-  // dimworld*dimworld is an upper bound for the number of vertices
-  UGCtype* cornerCoords[dimworld*dimworld];
-  UG_NS<dimworld>::Corner_Coordinates(target_, cornerCoords);
-
+  // coorddim*coorddim is an upper bound for the number of vertices
+  UGCtype* cornerCoords[coorddim*coorddim];
+  UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
 
   // compute the transformation onto the reference element (or vice versa?)
-  UG_NS<dimworld>::Transformation(corners(), cornerCoords, local, jac_inverse_);
-  //std::cout << jac_inverse_ << std::endl;
+  UG_NS<coorddim>::Transformation(corners(), cornerCoords, local, jac_inverse_);
   return jac_inverse_;
 }

@@ -6,9 +6,9 @@
 //  --HierarchicIterator
 //
 //***************************************************************
-template< int dim, int dimworld>
+template<class GridImp>
 inline
-UGGridHierarchicIterator< dim,dimworld >::UGGridHierarchicIterator(int actLevel,int maxLevel)
+UGGridHierarchicIterator<GridImp>::UGGridHierarchicIterator(int actLevel,int maxLevel)
   : virtualEntity_(0)
 {
   //level_ = actLevel;
@@ -18,9 +18,9 @@ UGGridHierarchicIterator< dim,dimworld >::UGGridHierarchicIterator(int actLevel,
 }
 
 
-template< int dim, int dimworld>
-inline UGGridHierarchicIterator<dim,dimworld>&
-UGGridHierarchicIterator< dim,dimworld >::operator ++()
+template<class GridImp>
+inline UGGridHierarchicIterator<GridImp>&
+UGGridHierarchicIterator<GridImp>::operator ++()
 {
   if (elemStack.empty())
     return (*this);
@@ -62,8 +62,8 @@ UGGridHierarchicIterator< dim,dimworld >::operator ++()
 }
 
 
-template< int dim, int dimworld>
-inline bool UGGridHierarchicIterator<dim,dimworld>::
+template<class GridImp>
+inline bool UGGridHierarchicIterator<GridImp>::
 operator ==(const UGGridHierarchicIterator& I) const
 {
   return ( (elemStack.size()==0 && I.elemStack.size()==0) ||
@@ -71,24 +71,24 @@ operator ==(const UGGridHierarchicIterator& I) const
             (elemStack.top().element == I.elemStack.top().element)));
 }
 
-template< int dim, int dimworld>
-inline bool UGGridHierarchicIterator<dim,dimworld>::
+template<class GridImp>
+inline bool UGGridHierarchicIterator<GridImp>::
 operator !=(const UGGridHierarchicIterator& I) const
 {
   return !((*this) == I);
 }
 
-template< int dim, int dimworld>
-inline UGGridEntity < 0, dim ,dimworld >&
-UGGridHierarchicIterator<dim,dimworld>::
+template<class GridImp>
+inline UGGridEntity < 0, GridImp::dimension,GridImp>&
+UGGridHierarchicIterator<GridImp>::
 operator *()
 {
   return virtualEntity_;
 }
 
-template< int dim, int dimworld>
-inline UGGridEntity < 0, dim ,dimworld >*
-UGGridHierarchicIterator<dim,dimworld>::
+template<class GridImp>
+inline UGGridEntity < 0, GridImp::dimension,GridImp>*
+UGGridHierarchicIterator<GridImp>::
 operator ->()
 {
   return &virtualEntity_;

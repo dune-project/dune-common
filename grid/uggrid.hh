@@ -82,19 +82,16 @@ namespace Dune
   /** @} end documentation group */
 
   // forward declarations
-  template<int codim, int dim, int dimworld> class UGGridEntity;
-  template<int codim, int dim, int dimworld, PartitionIteratorType pitype> class UGGridLevelIterator;
-
-  template<int dim, int dimworld>            class UGGridElement;
-  template<int dim, int dimworld>            class UGGridBoundaryEntity;
-  template<int dim, int dimworld>            class UGGridHierarchicIterator;
-  template<int dim, int dimworld>            class UGGridIntersectionIterator;
   template<int dim, int dimworld>            class UGGrid;
-
-  //template <class Object> class UGGridMemory;
+  template<int codim, int dim, class GridImp> class UGGridEntity;
+  template<int codim, PartitionIteratorType pitype, class GridImp> class UGGridLevelIterator;
+  template<int mydim, int coorddim, class GridImp>            class UGGridGeometry;
+  template<class GridImp>            class UGGridBoundaryEntity;
+  template<class GridImp>            class UGGridHierarchicIterator;
+  template<class GridImp>            class UGGridIntersectionIterator;
 
   // singleton holding reference elements
-  template<int dim> struct UGGridReferenceElement;
+  //template<int dim> struct UGGridReferenceElement;
 
 
 }  // namespace Dune
@@ -120,15 +117,13 @@ namespace Dune {
    * \todo Please doc me!
    */
   template <int dim, int dimworld>
-  class UGGrid : public GridDefault  < dim, dimworld,
-                     UGCtype, UGGrid,
-                     UGGridLevelIterator,UGGridEntity>
+  class UGGrid : public GridDefault  <dim, dimworld,UGCtype, UGGrid>
   {
 
-    friend class UGGridEntity <0,dim,dimworld>;
-    friend class UGGridEntity <dim,dim,dimworld>;
-    friend class UGGridHierarchicIterator<dim,dimworld>;
-    friend class UGGridIntersectionIterator<dim,dimworld>;
+    friend class UGGridEntity <0,dim,UGGrid<dim,dimworld> >;
+    friend class UGGridEntity <dim,dim,UGGrid<dim,dimworld> >;
+    friend class UGGridHierarchicIterator<UGGrid<dim,dimworld> >;
+    friend class UGGridIntersectionIterator<UGGrid<dim,dimworld> >;
 
 
     /** \brief UGGrid is only implemented for 2 and 3 dimension
@@ -146,12 +141,17 @@ namespace Dune {
     //**********************************************************
   public:
 
+    typedef GridTraits<dim,
+        dimworld,
+        Dune::UGGrid,
+        UGGridGeometry,
+        UGGridEntity,
+        UGGridBoundaryEntity,
+        UGGridLevelIterator,
+        UGGridIntersectionIterator,
+        UGGridHierarchicIterator> Traits;
 
-    typedef UGGridReferenceElement<dim> ReferenceElement;
-
-    /** \brief The leaf iterator type  (currently only a level iterator)
-     * \todo Replace this by a true leaf iterator */
-    typedef UGGridLevelIterator<0,dim,dimworld, All_Partition> LeafIterator;
+    //typedef UGGridReferenceElement<dim> ReferenceElement;
 
     /** \brief Constructor with control over UG's memory requirements
      *
@@ -178,27 +178,20 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    UGGridLevelIterator<codim,dim,dimworld, All_Partition> lbegin (int level) const;
+    UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> > lbegin (int level) const;
+    //typename Traits::template codim<cd>::template partition<pitype>::LevelIterator lbegin (int level) const;
 
     //! one past the end on this level
     template<int codim>
-    UGGridLevelIterator<codim,dim,dimworld, All_Partition> lend (int level) const;
+    UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> > lend (int level) const;
 
     //! Iterator to first entity of given codim on level
     template<int codim, PartitionIteratorType PiType>
-    UGGridLevelIterator<codim,dim,dimworld, PiType> lbegin (int level) const;
+    UGGridLevelIterator<codim,PiType,UGGrid<dim,dimworld> > lbegin (int level) const;
 
     //! one past the end on this level
     template<int codim, PartitionIteratorType PiType>
-    UGGridLevelIterator<codim,dim,dimworld, PiType> lend (int level) const;
-
-    /** \brief Create leaf iterator  (currently only a level iterator)
-     * \todo Replace this by a true leaf iterator */
-    LeafIterator leafbegin (int level) const {return lbegin<0>(level);}
-
-    /** \brief Create one past last on leaf level  (currently only a level iterator)
-     * \todo Replace this by a true leaf iterator */
-    LeafIterator leafend (int level) const {return lend<0>(level);}
+    UGGridLevelIterator<codim,PiType,UGGrid<dim,dimworld> > lend (int level) const;
 
     /** \brief Number of grid entities per level and codim
      */
@@ -325,6 +318,7 @@ namespace Dune {
 
 #include "uggrid/uggrid.cc"
 
+#if 0
   namespace Capabilities
   {
 
@@ -347,6 +341,7 @@ namespace Dune {
     };
 
   }
+#endif
 
 } // namespace Dune
 

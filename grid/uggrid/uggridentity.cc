@@ -14,23 +14,23 @@
 //*********************************************************************
 
 
-template<int codim, int dim, int dimworld>
-inline UGGridEntity < codim, dim ,dimworld >::
+template<int codim, int dim, class GridImp>
+inline UGGridEntity < codim, dim ,GridImp>::
 UGGridEntity(int level) :
-  geo_(false),
+  geo_(),
   level_ (level)
 {}
 
-template<int codim, int dim, int dimworld>
-inline void UGGridEntity < codim, dim ,dimworld >::
+template<int codim, int dim, class GridImp>
+inline void UGGridEntity < codim, dim ,GridImp>::
 setToTarget(typename TargetType<codim,dim>::T* target)
 {
   target_ = target;
   geo_.setToTarget(target);
 }
 
-template<int codim, int dim, int dimworld>
-inline void UGGridEntity < codim, dim ,dimworld >::
+template<int codim, int dim, class GridImp>
+inline void UGGridEntity < codim, dim ,GridImp>::
 setToTarget(typename TargetType<codim,dim>::T* target, int level)
 {
   target_ = target;
@@ -38,26 +38,26 @@ setToTarget(typename TargetType<codim,dim>::T* target, int level)
   geo_.setToTarget(target);
 }
 
-template<int codim, int dim, int dimworld>
-inline int UGGridEntity < codim, dim ,dimworld >::
-level()
+template<int codim, int dim, class GridImp>
+inline int UGGridEntity < codim, dim ,GridImp>::
+level() const
 {
   return level_;
 }
 
 
-template<int codim, int dim, int dimworld>
-inline int UGGridEntity < codim, dim ,dimworld >::
-index()
+template<int codim, int dim, class GridImp>
+inline int UGGridEntity < codim, dim ,GridImp>::
+index() const
 {
-  std::cerr << "UGGridEntity <" << codim << ", " << dim << ", " << dimworld
+  std::cerr << "UGGridEntity <" << codim << ", " << dim
             << ">::index() not implemented!\n";
   return -1;
 }
 
 #ifdef _3
-template<>
-inline int UGGridEntity < 3, 3 ,3 >::
+template<class GridImp>
+inline int UGGridEntity < 3, 3 ,GridImp>::
 index()
 {
   return target_->myvertex->iv.id;
@@ -72,8 +72,9 @@ index()
 #endif
 
 #ifdef _2
-template<>
-inline int UGGridEntity < 2, 2 ,2 >::
+#if 0
+template<class GridImp>
+inline int UGGridEntity < 2, 2 ,GridImp>::
 index()
 {
   return target_->myvertex->iv.id;
@@ -86,10 +87,11 @@ index()
   return target_->ge.id;
 }
 #endif
+#endif
 
-template< int codim, int dim, int dimworld>
-inline const UGGridElement<dim-codim,dimworld>&
-UGGridEntity < codim, dim ,dimworld >::
+template< int codim, int dim, class GridImp>
+inline const UGGridGeometry<dim-codim,dim,GridImp>&
+UGGridEntity < codim, dim ,GridImp>::
 geometry() const
 {
   return geo_;
@@ -103,8 +105,8 @@ geometry() const
 //  --Entity codim = 0
 //
 //************************************
-template< int dim, int dimworld>
-inline bool UGGridEntity < 0, dim ,dimworld >::
+template< int dim, class GridImp>
+inline bool UGGridEntity < 0, dim ,GridImp>::
 mark( int refCount )
 {
 #ifdef _3
@@ -128,31 +130,33 @@ mark( int refCount )
 
 //*****************************************************************8
 // count
-template <int codim, int dim, int dimworld> template <int cc>
-inline int UGGridEntity<codim,dim,dimworld>::count () const
+template <int codim, int dim, class GridImp>
+template <int cc>
+inline int UGGridEntity<codim,dim,GridImp>::count () const
 {
-  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim << ", " << dimworld
+  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim
                                         << ">::count() not implemented yet!");
   return -1;
 }
 
-template <int codim, int dim, int dimworld>
+template <int codim, int dim, class GridImp>
 template <int cc>
-inline int UGGridEntity<codim, dim, dimworld>::subIndex(int i) const
+inline int UGGridEntity<codim, dim, GridImp>::subIndex(int i) const
 {
-  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim << ", " << dimworld
+  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim
                                         << ">::subIndex(int i) not implemented yet!");
   return 0;
 }
 
 
-template <int codim, int dim, int dimworld> template <int cc>
-inline UGGridLevelIterator<cc,dim,dimworld,All_Partition>
-UGGridEntity<codim,dim,dimworld>::entity ( int i )
+template <int codim, int dim, class GridImp>
+template <int cc>
+inline UGGridLevelIterator<cc,All_Partition,GridImp>
+UGGridEntity<codim,dim,GridImp>::entity ( int i )
 {
-  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim << ", " << dimworld
+  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim
                                         << ">::entity(int i) not implemented yet!");
-  UGGridLevelIterator<cc,dim,dimworld,All_Partition> tmp (level_);
+  UGGridLevelIterator<cc,All_Partition,GridImp> tmp (level_);
   return tmp;
 }
 
@@ -163,17 +167,17 @@ UGGridEntity<codim,dim,dimworld>::entity ( int i )
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-template< int dim, int dimworld>
-inline AdaptationState UGGridEntity < 0, dim ,dimworld >::state() const
+template< int dim, class GridImp>
+inline AdaptationState UGGridEntity < 0, dim ,GridImp >::state() const
 {
   std::cerr << "UGGridEntity::state() not yet implemented!\n";
   return NONE;
 }
 //*****************************************************************8
 // count
-template <int dim, int dimworld>
+template <int dim, class GridImp>
 template <int cc>
-inline int UGGridEntity<0,dim,dimworld>::count() const
+inline int UGGridEntity<0,dim,GridImp>::count() const
 {
   if (dim==3) {
 
@@ -208,9 +212,9 @@ inline int UGGridEntity<0,dim,dimworld>::count() const
 }
 
 
-template <int dim, int dimworld>
+template <int dim, class GridImp>
 template <int cc>
-inline int UGGridEntity<0, dim, dimworld>::subIndex(int i) const
+inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
 {
   assert(i>=0 && i<count<cc>());
 
@@ -224,15 +228,15 @@ inline int UGGridEntity<0, dim, dimworld>::subIndex(int i) const
     i = renumbering[i];
   }
 
-  typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(target_,i);
+  typename TargetType<dim,dim>::T* node = UG_NS<dim>::Corner(target_,i);
   return node->myvertex->iv.id;
 }
 
 
-template <int dim, int dimworld>
+template <int dim, class GridImp>
 template <int cc>
-inline UGGridLevelIterator<cc,dim,dimworld,All_Partition>
-UGGridEntity<0,dim,dimworld>::entity ( int i )
+inline UGGridLevelIterator<cc,All_Partition,GridImp>
+UGGridEntity<0,dim,GridImp>::entity ( int i ) const
 {
   assert(i>=0 && i<count<cc>());
 
@@ -246,22 +250,21 @@ UGGridEntity<0,dim,dimworld>::entity ( int i )
     i = renumbering[i];
   }
 
-  //typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(target_,i);
-  typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dimworld>::get(target_,i);
-  UGGridLevelIterator<cc,dim,dimworld,All_Partition> it (level_);
+  typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,i);
+  UGGridLevelIterator<cc,All_Partition,GridImp> it (level_);
   it.setToTarget(subEntity, level_);
   return it;
 }
 
-template<int dim, int dimworld>
-inline UGGridEntity < 0, dim ,dimworld >::
+template<int dim, class GridImp>
+inline UGGridEntity < 0, dim ,GridImp >::
 UGGridEntity(int level) :
-  geo_(false),
+  geo_(),
   level_ (level)
 {}
 
-template<int dim, int dimworld>
-inline void UGGridEntity < 0, dim ,dimworld >::
+template<int dim, class GridImp>
+inline void UGGridEntity < 0, dim ,GridImp >::
 setToTarget(typename TargetType<0,dim>::T* target, int level)
 {
   target_ = target;
@@ -269,20 +272,20 @@ setToTarget(typename TargetType<0,dim>::T* target, int level)
   geo_.setToTarget(target);
 }
 
-template<int dim, int dimworld>
-inline void UGGridEntity < 0, dim ,dimworld >::
+template<int dim, class GridImp>
+inline void UGGridEntity < 0, dim ,GridImp >::
 setToTarget(typename TargetType<0,dim>::T* target)
 {
   target_ = target;
   geo_.setToTarget(target);
 }
 
-template<int dim, int dimworld>
-inline UGGridIntersectionIterator<dim,dimworld>
-UGGridEntity < 0, dim ,dimworld >::ibegin()
+template<int dim, class GridImp>
+inline UGGridIntersectionIterator<GridImp>
+UGGridEntity < 0, dim ,GridImp >::ibegin() const
 {
-  UGGridIntersectionIterator<dim,dimworld> it;
-  //printf("ibegin:  target: %d\n", (int)target_);
+  UGGridIntersectionIterator<GridImp> it;
+
   // Set intersection iterator to zeroth neighbor of target_
   it.setToTarget(target_, 0);
 
@@ -290,22 +293,22 @@ UGGridEntity < 0, dim ,dimworld >::ibegin()
 }
 
 
-template< int dim, int dimworld>
-inline UGGridIntersectionIterator<dim,dimworld>
-UGGridEntity < 0, dim ,dimworld >::iend()
+template< int dim, class GridImp>
+inline UGGridIntersectionIterator<GridImp>
+UGGridEntity < 0, dim ,GridImp >::iend() const
 {
-  UGGridIntersectionIterator<dim,dimworld> it;
+  UGGridIntersectionIterator<GridImp> it;
 
   it.setToTarget(NULL, -1);
 
   return it;
 }
 
-template<int dim, int dimworld>
-inline UGGridHierarchicIterator<dim,dimworld>
-UGGridEntity < 0, dim ,dimworld >::hbegin(int maxlevel)
+template<int dim, class GridImp>
+inline UGGridHierarchicIterator<GridImp>
+UGGridEntity < 0, dim ,GridImp >::hbegin(int maxlevel) const
 {
-  UGGridHierarchicIterator<dim,dimworld> it(level(), maxlevel);
+  UGGridHierarchicIterator<GridImp> it(level(), maxlevel);
 
   if (level()<maxlevel) {
 
@@ -324,9 +327,8 @@ UGGridEntity < 0, dim ,dimworld >::hbegin(int maxlevel)
 #endif
     // Load sons of entity into the iterator
     for (unsigned int i=0; i<NSONS(target_); i++) {
-      typename UGGridHierarchicIterator<dim,dimworld>::StackEntry se;
+      typename UGGridHierarchicIterator<GridImp>::StackEntry se;
       se.element = sonList[i];
-      //printf("new element %d\n", se.element);
       se.level   = level()+1;
       it.elemStack.push(se);
     }
@@ -345,11 +347,11 @@ UGGridEntity < 0, dim ,dimworld >::hbegin(int maxlevel)
 }
 
 
-template< int dim, int dimworld>
-inline UGGridHierarchicIterator<dim,dimworld>
-UGGridEntity < 0, dim ,dimworld >::hend(int maxlevel)
+template< int dim, class GridImp>
+inline UGGridHierarchicIterator<GridImp>
+UGGridEntity < 0, dim ,GridImp >::hend(int maxlevel) const
 {
-  UGGridHierarchicIterator<dim,dimworld> it(level(), maxlevel);
+  UGGridHierarchicIterator<GridImp> it(level(), maxlevel);
 
   it.target_ = 0;
 
@@ -357,35 +359,35 @@ UGGridEntity < 0, dim ,dimworld >::hend(int maxlevel)
 }
 
 
-template<int dim, int dimworld>
-inline int UGGridEntity < 0, dim ,dimworld >::
-level()
+template<int dim, class GridImp>
+inline int UGGridEntity < 0, dim ,GridImp >::
+level() const
 {
   return level_;
 }
 
-template< int dim, int dimworld>
-inline const UGGridElement<dim,dimworld>&
-UGGridEntity < 0, dim ,dimworld >::
+template< int dim, class GridImp>
+inline const UGGridGeometry<dim,dim,GridImp>&
+UGGridEntity < 0, dim ,GridImp >::
 geometry() const
 {
   return geo_;
 }
 
 
-template<int dim, int dimworld>
-inline UGGridLevelIterator<0,dim,dimworld, All_Partition>
-UGGridEntity < 0, dim, dimworld>::father()
+template<int dim, class GridImp>
+inline UGGridLevelIterator<0,All_Partition,GridImp>
+UGGridEntity < 0, dim, GridImp>::father() const
 {
-  UGGridLevelIterator<0,dim,dimworld, All_Partition> it(level()-1);
-  it.setToTarget(UG_NS<dimworld>::EFather(target_));
+  UGGridLevelIterator<0,All_Partition,GridImp> it(level()-1);
+  it.setToTarget(UG_NS<dim>::EFather(target_));
   return it;
 }
 
 /** \todo Method not implemented yet! */
-template<int dim, int dimworld>
-inline UGGridElement<dim,dim>&
-UGGridEntity < 0, dim, dimworld>::father_relative_local()
+template<int dim, class GridImp>
+inline UGGridGeometry<dim,dim,GridImp>&
+UGGridEntity < 0, dim, GridImp>::father_relative_local()
 {
   DUNE_THROW(GridError, "UGGridEntity < 0, dim, dimworld>::father_relative_local() not implemented yet!");
   return fatherReLocal_;
