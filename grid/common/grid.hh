@@ -52,8 +52,6 @@ namespace Dune {
    */
   enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, Ug_Grid_Id };
 
-  enum IteratorType { Master, Interior, Border, Ghost, InteriorBorder, All };
-
   /*!
      Specify the format to store grid and vector data
    */
@@ -71,9 +69,29 @@ namespace Dune {
                       Dirichlet   //!< Dirichlet type boundary
   };
 
-  enum AdaptationState { NONE ,     //!< notin' to od
+  enum AdaptationState { NONE ,     //!< notin' to do
                          COARSEND,  //!< entity could be coarsend
                          REFINED    //!< enity was refined
+  };
+
+
+  /*! IteratorType specify the set of entities over which an
+      LevelIterator or HierarchicIterator or LeafIterator iterates.
+      Default value is InteriorBorder
+   */
+  enum IteratorType { Master  ,   //!< iterate over all entities which belong to this processor
+                      Interior,   //!< iterate over all interior entities
+                      Border  ,   //!< iterate over entities which define the processor
+                                  //!< border , all codims possible
+                      Ghosts ,    //!< iterate over all ghost cells
+                      InteriorBorder,    //!< iterate over Interior and Border
+                      All ,      //!< iterate over all cells on this processor
+  };
+
+  enum PartitionType { InteriorEntity,   //!< all interior entities
+                       OverlapEntity ,   //!< all entites lying in the overlap zone
+                       BorderEntity  ,   //!< all entities which have neighboring ghosts
+                       GhostEntity       //!< ghost entities
   };
 
 
