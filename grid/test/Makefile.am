@@ -1,17 +1,12 @@
 # $Id$
 
-# need two lists because yaspgrid needs small shell-wrapper to start with MPI
-PROGLIST = test-sgrid
-RUNLIST = test-sgrid
-
 if MPI
-  PROGLIST += test-yaspgrid
-  RUNLIST += run-yaspgrid
+  YPROG = test-yaspgrid
+  YRUN = run-yaspgrid
 endif
 
 if ALBERT
-  PROGLIST += test-albert
-  RUNLIST += test-albert
+  APROG = test-albert
 endif
 
 # UGGrid needs AmiraMeshReader for now...
@@ -23,15 +18,17 @@ else
 endif
 
 if UG
-  PROGLIST += $(DO_UGTEST)
-  RUNLIST += $(DO_UGTEST)
+  UPROG = $(DO_UGTEST)
 endif
 
-# which tests to run
-TESTS = $(RUNLIST)
+# tests where program to build and program to run are equal
+NORMALTESTS = test-sgrid $(APROG) $(UPROG)
+
+# list of tests to run (yaspgrid is special case)
+TESTS = $(NORMALTESTS) $(YRUN)
 
 # programs just to build when "make check" is used
-check_PROGRAMS = $(PROGLIST)
+check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 
 # define the programs
 
