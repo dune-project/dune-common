@@ -157,6 +157,12 @@ namespace Dune {
       return theNode->succ;
     }
 
+    //! Calm the compiler
+    static void* succ(const void* theWhatever) {
+      DUNE_THROW(NotImplemented, "No successor available for this kind of object");
+      return 0;
+    }
+
     //! Gets the index of a UG element
     static int index(const typename TargetType<0,dim>::T* theElement) {
       return theElement->ge.id;
