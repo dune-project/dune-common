@@ -6,6 +6,8 @@
 #include <dune/common/array.hh>
 #include <dune/fem/common/objpointer.hh>
 
+#include <dune/quadrature/barycenter.hh>
+
 namespace Dune {
 
   /** @defgroup AdaptOperatorImp AdaptOperatorImp
@@ -238,13 +240,25 @@ namespace Dune {
   class RestProlOperatorFV
   {
     typedef typename DiscreteFunctionType::LocalFunctionType LocalFunctionType;
+
+    typedef typename DiscreteFunctionType::RangeFieldType RangeFieldType;
+    typedef typename DiscreteFunctionType::DomainType DomainType;
+    typedef BaryCenterQuad < RangeFieldType , DomainType , 0 > BaryQuadType;
   public:
     //! ???
-    RestProlOperatorFV ( DiscreteFunctionType & df ) : df_ (df) ,
-                                                       vati_ ( df_.newLocalFunction() ) , sohn_ ( df_.newLocalFunction() )
+    RestProlOperatorFV ( DiscreteFunctionType & df , ElementType eltype = tetrahedron  ) : df_ (df) ,
+                                                                                           vati_ ( df_.newLocalFunction() ) , sohn_ ( df_.newLocalFunction() ) , quad_(eltype)
     {}
 
-    //! ???
+    template <class EntityType>
+    void calcFatherChildWeight (EntityType &father, EntityType &son) const
+    {
+      weight_ =
+        son.geometry().integration_element(quad_.point(0))/
+        father.geometry().integration_element(quad_.point(0));
+    }
+
+    //! restrict data to father
     template <class EntityType>
     void restrictLocal ( EntityType &father, EntityType &son, bool initialize ) const
     {
@@ -260,20 +274,21 @@ namespace Dune {
 
           if(initialize)
           {
+            calcFatherChildWeight(father,son);
             for(int i=0; i<vati_.numberOfDofs(); i++)
-              vati_[i] = 0.5 * sohn_[i];
+              vati_[i] = weight_ * sohn_[i];
           }
           else
           {
             for(int i=0; i<vati_.numberOfDofs(); i++)
-              vati_[i] += 0.5 * sohn_[i];
+              vati_[i] += weight_ * sohn_[i];
           }
 
         }
       }
     }
 
-    //! ???
+    //! prolong data to children
     template <class EntityType>
     void prolongLocal ( EntityType &father, EntityType &son, bool initialize ) const
     {
@@ -291,6 +306,9 @@ namespace Dune {
 
     mutable LocalFunctionType vati_;
     mutable LocalFunctionType sohn_;
+
+    mutable RangeFieldType weight_;
+    const BaryQuadType quad_;
   };
 
 
