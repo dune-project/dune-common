@@ -100,7 +100,7 @@ AC_CONFIG_FILES([Makefile
          fem/operator/Makefile
          fem/transfer/Makefile
          grid/Makefile
-         grid/albertgrid/Makefile
+         grid/albertagrid/Makefile
          grid/bsgrid/Makefile
          grid/common/Makefile
          grid/onedgrid/Makefile
