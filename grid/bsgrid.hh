@@ -558,16 +558,18 @@ namespace Dune
     // set behind last neighbour
     void done ();
 
+    void calcNormal ( BSSPACE GEOFaceType * face , int twist );
+
     BSGridEntity<0,dim,dimworld> entity_; //! neighbour entity
 
     // current element from which we started the intersection iterator
     BSSPACE HElementType *item_;
 
-    int index_; //! internal count of faces
+    int index_; //! internal index of intersection
 
-    int count_; //! index of intersection
-
-    bool theSituation_; //! true if the "situation" occurs :-)
+    bool theSituation_;   //! true if the "situation" occurs :-)
+    bool daOtherSituation_; //! true if the "da other situation" occurs :-)
+                            //! see bsgrid.cc for descritption
 
     FieldVector<bs_ctype, dimworld> outerNormal_; //! outerNormal ro current intersection
     FieldVector<bs_ctype, dimworld> unitOuterNormal_;
