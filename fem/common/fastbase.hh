@@ -20,52 +20,6 @@ namespace Dune {
      @{
    */
 
-
-  //************************************************************************
-  //
-  //  --MapperInterface
-  //
-  //! Interface for calculating the size of a function space for a grid on a
-  //! specified level.
-  //! Furthermore the local to global mapping of dof number is done.
-  //
-  //************************************************************************
-  template <class MapperImp>
-  class MapperInterface
-  {
-  public:
-    //! return number of dofs for special function space and grid on
-    //! specified level
-    template <class GridType>
-    int size ( GridType &grid, int level ) const
-    {
-      return asImp().size(grid,level);
-    };
-
-    //! map a local dof num of a given entity to a global dof num
-    template <class EntityType>
-    int mapToGlobal ( EntityType &en, int localNum ) const
-    {
-      return asImp().mapToGlobal( en , localNum );
-    };
-
-  private:
-    //! Barton-Nackman trick
-    MapperImp &asImp()  { return static_cast<MapperImp &>(*this); };
-  };
-
-  //***********************************************************************
-  //
-  //!  Provide default implementation of MapperInterface
-  //
-  //***********************************************************************
-  template <class MapperImp>
-  class MapperDefault
-  {
-  public: //! at the moment nothin'
-  };
-
-
   //*************************************************************************
   //
   //  --FastBaseFunctionSet
