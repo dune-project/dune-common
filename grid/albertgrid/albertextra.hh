@@ -279,15 +279,22 @@ void printElInfo(const EL_INFO *elf)
 {
   FUNCNAME("printElInfo");
 
-  MSG("level %d\n",elf->level);
+  MSG("Element %d | level %d  | ",elf->el->index,elf->level);
   printf("Neighs: ");
-  for(int i=0; i<2; i++)
+  for(int i=0; i<N_VERTICES; i++)
   {
     ALBERT EL* el = elf->neigh[i];
-    if(el)
-      printf(" %d |",el->index);
+    if(el) printf(" %d |",el->index);
   }
   printf("\n");
+
+
+  for(int i=0; i<N_VERTICES; i++)
+    printf("%d %f %f \n",i,elf->coord[i][0],elf->coord[i][1]);
+
+
+  printf("\n******************************************\n");
+
 }
 
 //****************************************************************
