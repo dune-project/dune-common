@@ -84,9 +84,9 @@ namespace Dune {
     static char name[256];
     char         *cp;
 
-    if (path == NULL || path[0] == '\0')
+    if (path == 0 || path[0] == '\0')
     {
-      sprintf(name, "./%s", fn);
+      sprintf(name, "%s", fn);
     }
     else
     {
