@@ -3,8 +3,6 @@
 #include <dune/fem/dofmanager.hh>
 #include <dune/fem/lagrangebase.hh>
 #include <dune/common/functionspace.hh>
-#include <dune/fem/fastquad.hh>
-
 
 template<class DiscFuncType>
 void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& fS, int cL, int fL)
