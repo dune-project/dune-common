@@ -12,7 +12,7 @@ namespace Dune {
   public:
 
     //! Compute the norm
-    virtual double compute(const DiscFuncType& f) = 0;
+    virtual double compute(const DiscFuncType& f, int level) = 0;
 
   };
 
