@@ -17,7 +17,7 @@ void Dune::LinearSolver<OP_TYPE, VEC_TYPE>::solve()
   double normOfOldCorrection = 0;
 
   // Loop until desired tolerance or maximum number of iterations is reached
-  for (i=0; i<numIt && error>tolerance_; i++) {
+  for (i=0; i<numIt && (error>tolerance_ || isnan(error)); i++) {
 
     // Backup of the current solution for the error computation later on
     VEC_TYPE oldSolution = iterationStep->getSol();
@@ -26,10 +26,10 @@ void Dune::LinearSolver<OP_TYPE, VEC_TYPE>::solve()
     iterationStep->iterate();
 
     // Compute error
-    double oldNorm = errorNorm_->compute(oldSolution);
+    double oldNorm = errorNorm_->compute(oldSolution, iterationStep->level());
     oldSolution -= iterationStep->getSol();
 
-    double normOfCorrection = errorNorm_->compute(oldSolution);
+    double normOfCorrection = errorNorm_->compute(oldSolution, iterationStep->level());
 
     error = normOfCorrection / oldNorm;
 
