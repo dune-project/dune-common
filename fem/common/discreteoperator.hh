@@ -7,14 +7,9 @@
 
 namespace Dune {
 
-  /** @defgroup DiscreteOperator DiscreteOperator
-      @ingroup OperatorCommon
 
-     @{
-   */
-
-  //! strorage class for new generated operators during operator + on
-  //! DiscreteOperator
+  // strorage class for new generated operators during operator + on
+  // DiscreteOperator
   template <class ObjType>
   struct ObjPointer
   {
@@ -23,19 +18,25 @@ namespace Dune {
     ObjPointerType *next;
     ObjType * item;
 
-    //! new ObjPointer is only created with pointer for item
+    // new ObjPointer is only created with pointer for item
     ObjPointer () : item (NULL) , next (NULL) {}
 
-    //! new ObjPointer is only created with pointer for item
+    // new ObjPointer is only created with pointer for item
     ObjPointer (ObjType  *t) : item (t) , next (NULL) {}
 
-    //! delete the next ObjPointer and the item
+    // delete the next ObjPointer and the item
     ~ObjPointer ()
     {
       if(next) delete next;next = NULL;
       if(item) delete item;item = NULL;
     }
   };
+
+  /** @defgroup DiscreteOperator DiscreteOperator
+      @ingroup OperatorCommon
+
+     @{
+   */
 
   //*******************************************************************
   //*******************************************************************

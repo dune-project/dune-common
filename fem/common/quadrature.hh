@@ -10,23 +10,16 @@
 
 namespace Dune {
 
-  /** @defgroup Quadrature The Quadrature Interface
 
-     This is the interface for qaudratures. It contains three methods,
-     namely for geting the number of quadrature points, the quadrature points
-     and the quadrature weights.
-
-     @{
-   */
 
   //************************************************************************
   //
   //  --QuadraturePoints
   //
-  //! Every specialization of this class implements a diffrent quadrature
-  //! for diffrent elements and polynomial order. This implementation in left
-  //! to the user.
-  //!
+  // Every specialization of this class implements a diffrent quadrature
+  // for diffrent elements and polynomial order. This implementation in left
+  // to the user.
+  //
   //************************************************************************
   // calculates the number of points on on segment, i.e. a line
   template <int order>
@@ -71,6 +64,15 @@ namespace Dune {
     enum { power = 1 };
   };
 
+
+  /** @defgroup Quadrature Quadrature
+     @ingroup DiscreteFunction
+     This is the interface for qaudratures. It contains three methods,
+     namely for geting the number of quadrature points, the quadrature points
+     and the quadrature weights.
+
+     @{
+   */
 
   //***********************************************************************
   //!
@@ -177,23 +179,25 @@ namespace Dune {
     QuadratureInterface ( int ident ) : DynamicType (ident) {};
 
     //! return number of quadrature points
-    int getNumberOfQuadPoints () const
-    {
-      return asImp().getNumberOfQuadPoints();
-    };
+    int nop() const { return asImp().nop(); }
 
-    //! return the weight cooresponding to quadrature point
-    //! with the given number
-    const RangeFieldType&  getQuadratureWeight ( int number ) const
-    {
-      return asImp().getQuadratureWeight(number);
-    };
 
-    //! return the quadrature point with the given number
-    const DomainType&  getQuadraturePoint (int number ) const
+    //! return order of quadrature
+    int order () const { return asImp().order(); }
+
+    //! return  quadrature weight for point i
+    const RangeFieldType& weight ( int i) const
     {
-      return asImp().getQuadraturePoint(number);
-    };
+      return (asImp().weight(i));
+    }
+
+
+    //! return  quadrature point i in local coordinates
+    const DomainType& point (int i) const
+    {
+      return (asImp().point(i));
+    }
+
 
   private:
     //! Barton - Nackman trick
@@ -226,206 +230,19 @@ namespace Dune {
 
   }; // end class QuadraturDefault
 
-
-#if 0
-  //********************************************************************
-  //
-  //  --FastQuadrature
-  //
-  //! FastQuadrature class implementation
-  //! FastQuadrature is diffrent for diffrent Domain and RangeField types and of
-  //! course for diffrent element types and polynomial order.
-  //! The element type comes from a given entity or the grid and polOrd is
-  //! user defined but known a compilation time (if not this has to be
-  //! changed.
-  //
-  //********************************************************************
-  template< class FunctionSpaceType, ElementType ElType, int polOrd >
-  class FastQuadrature : public QuadratureDefault  < FunctionSpaceType ,
-                             FastQuadrature < FunctionSpaceType, ElType, polOrd > >
-  {
-  private:
-    // just for readability
-    typedef typename FunctionSpaceType::Domain DomainType ;
-    typedef typename FunctionSpaceType::RangeField RangeFieldType ;
-
-    //! here we know already the type of our Initializer
-    typedef QuadraturePoints<DomainType,RangeFieldType,ElType,polOrd> QuadInitializer;
-
-    //! my Type
-    typedef FastQuadrature < FunctionSpaceType , ElType , polOrd > FastQuadratureType;
-
-    //! the identifier is given staticaly by the initializer class
-    enum { id = QuadInitializer::identifier };
-
-    //! the number of quadrature points is stored as enum
-    enum { numQuadPoints_ = QuadInitializer::numberOfQuadPoints };
-
-  public:
-    //! Constructor build the vec with the points and weights
-    FastQuadrature ( bool dualQuad=false ) :
-      QuadratureDefault < FunctionSpaceType, FastQuadratureType > (id)
-    {
-      if(dualQuad)
-      {
-        //std::cout << "Make dual Quadrature\n";
-        typedef DualQuadraturePoints<DomainType,RangeFieldType,ElType,polOrd> MyQuadInitializer;
-        //std::cout << numQuadPoints_ << " Making FastQuadrature! \n";
-        for(int i=0; i<numQuadPoints_; i++)
-        {
-          points_(i) = MyQuadInitializer::getPoint(i);
-          weights_(i) = MyQuadInitializer::getWeight(i);
-        }
-      }
-      else
-      {
-        //std::cout <<"Making FastQuadrature! \n";
-        for(int i=0; i<numQuadPoints_; i++)
-        {
-          points_(i) = QuadInitializer::getPoint(i);
-          weights_(i) = QuadInitializer::getWeight(i);
-        }
-      }
-    };
-
-    //! return number of quadrature points
-    int getNumberOfQuadPoints () const { return numQuadPoints_; };
-
-    //! return weight for point i
-    const RangeFieldType& getQuadratureWeight ( int i) const
-    {
-      return (weights_(i));
-    };
-
-    //! return point i
-    const DomainType& getQuadraturePoint (int i) const
-    {
-      //(points_.read(i)).print(std::cout , 1); std::cout << "QuadRead \n";
-      return (points_(i));
-    };
-
-  private:
-    //! Vecs with constant length holding the weights and points
-    Vec < numQuadPoints_ , RangeFieldType > weights_;
-    Vec < numQuadPoints_ , DomainType >     points_;
-
-  }; // end class FastQuadrature
+  /** @} end documentation group */
 
 
 
-  //**************************************************************************
-  //
-  //  Fast Quadrature for unspecified Element type
-  //
-  //**************************************************************************
-  template< class FunctionSpaceType, int polOrd >
-  class FastQuad : public QuadratureDefault  < FunctionSpaceType ,
-                       FastQuad < FunctionSpaceType, polOrd > >
-  {
-  private:
-    typedef typename FunctionSpaceType::GridType GridType;
-    enum { dim = GridType::dimension };
+  /** @defgroup QuadratureImp QuadratureImp
+     @ingroup Quadrature
 
-    // just for readability
-    typedef typename FunctionSpaceType::Domain DomainType ;
-    typedef typename FunctionSpaceType::RangeField RangeFieldType ;
-
-    //! my Type
-    typedef FastQuad < FunctionSpaceType , polOrd > FastQuadType;
-
-    // number of quadrature points on segment line
-    // upper bound
-    enum { m = PointsOnLine<polOrd>::points+2 };
-
-    //! the number of quadrature points is stored as enum
-    enum { maxQuadPoints = power_M_P < m , dim >::power };
-
-  public:
-    //! Constructor build the vec with the points and weights
-    template <class EntityType>
-    FastQuad ( EntityType &en ) :
-      QuadratureDefault < FunctionSpaceType, FastQuadType > (6)
-    {
-      switch(en.geometry().type())
-      {
-      case line :          { makeQuadrature<line> (); break; }
-      case quadrilateral : { makeQuadrature<quadrilateral> (); break; }
-      case hexahedron :    { makeQuadrature<hexahedron> (); break; }
-      case triangle :      { makeQuadrature<triangle> (); break; }
-      case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown ElementType in FastQuad::makeQuadrature()\n"; abort();  break; }
-      }
-    };
-
-    //! return number of quadrature points
-    int nop() const { return numberOfQuadPoints_; };
-
-    //! return number of quadrature points
-    int getNumberOfQuadPoints () const { return numberOfQuadPoints_; };
-
-    //! return number of quadrature points
-    int order () const { return order_ };
-
-    //! return weight for point i
-    const RangeFieldType& weight ( int i) const
-    {
-      return (weights_(i));
-    };
-
-    //! return weight for point i
-    const RangeFieldType& getQuadratureWeight ( int i) const
-    {
-      return (weights_(i));
-    };
-
-    //! return point i
-    const DomainType& point (int i) const
-    {
-      return (points_(i));
-    };
-
-    //! return point i
-    const DomainType& getQuadraturePoint (int i) const
-    {
-      return (points_(i));
-    };
-
-  private:
-    template <ElementType ElType>
-    void makeQuadrature ()
-    {
-      // is called by the constructor
-      typedef QuadraturePoints< DomainType,
-          RangeFieldType,ElType,polOrd>  QuadInitializer;
-
-      // same story as above
-      numberOfQuadPoints_ = QuadInitializer::numberOfQuadPoints();
-      order_              = 0 ; //QuadInitializer::order();
-
-      for(int i=0; i<numberOfQuadPoints_; i++)
-      {
-        points_(i) = QuadInitializer::getPoint(i);
-        weights_(i) = QuadInitializer::getWeight(i);
-      }
-    }
-
-    //! number of quadrature points
-    int numberOfQuadPoints_;
-
-    //! real quadrature order
-    int order_;
-
-    //! Vecs with constant length holding the weights and points
-    Vec < maxQuadPoints , RangeFieldType > weights_;
-    Vec < maxQuadPoints , DomainType >     points_;
-
-  }; // end class FastQuadrature
-
-#endif
+     @{
+   */
 
   //********************************************************************
   //
-  //  --Quadrature
+  //  --QuadratureImp
   //
   //! Quadrature class implementation
   //! Quadrature is diffrent for diffrent Domain and RangeField types and of
@@ -436,9 +253,9 @@ namespace Dune {
   //
   //********************************************************************
   template< class FunctionSpaceType, ElementType ElType >
-  class Quadrature : public QuadratureDefault  <
-                         typename FunctionSpaceType::RangeField , typename
-                         FunctionSpaceType::Domain, Quadrature < FunctionSpaceType, ElType > >  {
+  class QuadratureImp : public QuadratureDefault  <
+                            typename FunctionSpaceType::RangeField , typename
+                            FunctionSpaceType::Domain, Quadrature < FunctionSpaceType, ElType > >  {
 
     // just for readability
     typedef typename FunctionSpaceType::Domain DomainType ;
@@ -541,7 +358,7 @@ namespace Dune {
       };
       }
     };
-  }; // end class Quadrature
+  }; // end class QuadratureImp
 
   /** @} end documentation group */
 

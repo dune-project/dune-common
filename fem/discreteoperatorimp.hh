@@ -8,7 +8,8 @@
 
 namespace Dune {
 
-  /** @defgroup DiscreteOperators
+  /** @defgroup DiscreteOperatorImp DiscreteOperatorImp
+      @ingroup DiscreteOperator
 
       The DiscreteFunction is resposible for the dof storage. This can be
       done in various ways an is left to the user. The user has to derive his
