@@ -106,61 +106,61 @@ namespace Dune {
 
   // general case dim!=0
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline ElementType Element<dim,dimworld,ct,ElementImp>::type ()
+  inline ElementType Element<dim,dimworld,ct,ElementImp>::type () const
   {
     return asImp().type();
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline int Element<dim,dimworld,ct,ElementImp>::corners ()
+  inline int Element<dim,dimworld,ct,ElementImp>::corners () const
   {
     return asImp().corners();
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline FieldVector<ct, dimworld>& Element<dim,dimworld,ct,ElementImp>::operator[] (int i)
+  inline FieldVector<ct, dimworld>& Element<dim,dimworld,ct,ElementImp>::operator[] (int i) const
   {
     return asImp().operator[](i);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline ElementImp<dim,dim>& Element<dim,dimworld,ct,ElementImp>::refelem ()
+  inline ElementImp<dim,dim>& Element<dim,dimworld,ct,ElementImp>::refelem () const
   {
     return asImp().refelem();
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline FieldVector<ct, dimworld> Element<dim,dimworld,ct,ElementImp>::global (const FieldVector<ct, dim>& local)
+  inline FieldVector<ct, dimworld> Element<dim,dimworld,ct,ElementImp>::global (const FieldVector<ct, dim>& local) const
   {
     return asImp().global(local);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline FieldVector<ct, dim> Element<dim,dimworld,ct,ElementImp>::local (const FieldVector<ct, dimworld>& global)
+  inline FieldVector<ct, dim> Element<dim,dimworld,ct,ElementImp>::local (const FieldVector<ct, dimworld>& global) const
   {
     return asImp().local(global);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline bool Element<dim,dimworld,ct,ElementImp>::checkInside (const FieldVector<ct, dim>& local)
+  inline bool Element<dim,dimworld,ct,ElementImp>::checkInside (const FieldVector<ct, dim>& local) const
   {
     return asImp().checkInside(local);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline ct Element<dim,dimworld,ct,ElementImp>::integration_element (const FieldVector<ct, dim>& local)
+  inline ct Element<dim,dimworld,ct,ElementImp>::integration_element (const FieldVector<ct, dim>& local) const
   {
     return asImp().integration_element(local);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline Mat<dim,dim,ct>& Element<dim,dimworld,ct,ElementImp>::Jacobian_inverse (const FieldVector<ct, dim>& local)
+  inline Mat<dim,dim,ct>& Element<dim,dimworld,ct,ElementImp>::Jacobian_inverse (const FieldVector<ct, dim>& local) const
   {
     return asImp().Jacobian_inverse(local);
   }
 
   template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
-  inline void Element<dim,dimworld,ct,ElementImp>::checkIF ()
+  inline void Element<dim,dimworld,ct,ElementImp>::checkIF () const
   {
     // simply call all members, this forces compiler to compile them ...
     type();
@@ -207,25 +207,25 @@ namespace Dune {
 
   // special case dim=0
   template<int dimworld, class ct,template<int,int> class ElementImp>
-  inline ElementType Element<0,dimworld,ct,ElementImp>::type ()
+  inline ElementType Element<0,dimworld,ct,ElementImp>::type () const
   {
     return asImp().type();
   }
 
   template<int dimworld, class ct,template<int,int> class ElementImp>
-  inline int Element<0,dimworld,ct,ElementImp>::corners ()
+  inline int Element<0,dimworld,ct,ElementImp>::corners () const
   {
     return asImp().corners();
   }
 
   template<int dimworld, class ct,template<int,int> class ElementImp>
-  inline FieldVector<ct, dimworld>& Element<0,dimworld,ct,ElementImp>::operator[] (int i)
+  inline FieldVector<ct, dimworld>& Element<0,dimworld,ct,ElementImp>::operator[] (int i) const
   {
     return asImp().operator[](i);
   }
 
   template<int dimworld, class ct,template<int,int> class ElementImp>
-  inline void Element<0,dimworld,ct,ElementImp>::checkIF ()
+  inline void Element<0,dimworld,ct,ElementImp>::checkIF () const
   {
     // simply call all members, this forces compiler to compile them ...
     type();

@@ -3,6 +3,7 @@
 #ifndef __DUNE_GRID_HH__
 #define __DUNE_GRID_HH__
 
+#include <config.h>
 #include <string>
 #include <dune/common/matvec.hh>
 #include <dune/common/exceptions.hh>
@@ -287,29 +288,29 @@ namespace Dune {
     typedef ct ctype;
 
     //! return the element type identifier
-    ElementType type ();
+    ElementType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
+    int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    FieldVector<ct, dimworld>& operator[] (int i);
+    FieldVector<ct, dimworld>& operator[] (int i) const;
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned. A reference to a reference
        element is returned. Usually, the implementation will store the finite
        set of reference elements as global variables.
      */
-    ElementImp<dim,dim>& refelem ();
+    ElementImp<dim,dim>& refelem () const;
 
     //! maps a local coordinate within reference element to global coordinate in element
-    FieldVector<ct, dimworld> global (const FieldVector<ct, dim>& local);
+    FieldVector<ct, dimworld> global (const FieldVector<ct, dim>& local) const;
 
     //! maps a global coordinate within the element to a local coordinate in its reference element
-    FieldVector<ct, dim> local (const FieldVector<ct, dimworld>& global);
+    FieldVector<ct, dim> local (const FieldVector<ct, dimworld>& global) const;
 
     //! return true if the point in local coordinates lies inside the reference element
-    bool checkInside (const FieldVector<ct, dim>& local);
+    bool checkInside (const FieldVector<ct, dim>& local) const;
 
     /*! Integration over a general element is done by integrating over the reference element
        and using the transformation from the reference element to the global element as follows:
@@ -330,16 +331,16 @@ namespace Dune {
        will directly translate in substantial savings in the computation of finite element
        stiffness matrices.
      */
-    ct integration_element (const FieldVector<ct, dim>& local);
+    ct integration_element (const FieldVector<ct, dim>& local) const;
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim,ct>& Jacobian_inverse (const FieldVector<ct, dim>& local);
+    Mat<dim,dim,ct>& Jacobian_inverse (const FieldVector<ct, dim>& local) const;
 
     /*! \internal
        Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
-    void checkIF ();
+    void checkIF () const DUNE_DEPRECATED;
 
   private:
     //!  Barton-Nackman trick
@@ -386,18 +387,18 @@ namespace Dune {
     typedef ct ctype;
 
     //! return the element type identifier
-    ElementType type ();
+    ElementType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
+    int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    FieldVector<ct, dimworld>& operator[] (int i);
+    FieldVector<ct, dimworld>& operator[] (int i) const;
 
     /*! \internal Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
-    void checkIF ();
+    void checkIF () const DUNE_DEPRECATED;
 
   private:
     //!  Barton-Nackman trick
