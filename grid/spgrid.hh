@@ -277,8 +277,15 @@ namespace Dune {
       }
       return true;
     }
+    void global_to_local_NOCHECK(level lvl,
+                                 const array<DIM> & global,
+                                 array<DIM> & local) const {
+      for (int d=0; d<DIM; d++) {
+        local[d] = global[d] - global_offset(lvl,d) + front_overlap(lvl,d);
+      }
+    }
     int global_offset(level lvl, int d) const {
-      return process(d)*(globalsize(lvl,d)/dim(d));
+      return (size_[d]*process_[d])*(1<<lvl);
     }
   }; /* end spgrid */
 
