@@ -58,10 +58,13 @@ namespace Dune
     //const int&         col_ind(int i) const { return colind_(i);}
 
     //! Returns number of matrix rows (i==0) and columns (i==1)
-    int size(int i) const {return dim_[i];};
+    int size(int i) const {return dim_[i];}
+
+    //! Returns the number of columns
+    int cols() const {return size(1);}
 
     //! Returns total number of nonzero entries
-    int numNonZeros() const {return nz_;};
+    int numNonZeros() const {return nz_;}
 
     //int base() const {return base_;}
 
