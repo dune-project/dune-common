@@ -103,18 +103,15 @@ namespace Dune
     enum { codim = IteratorImp::codimension };
 
     typedef IteratorImp DerivedType;
-    typedef Entity Value;
-    typedef Entity* Pointer;
-    typedef Entity& Reference;
 
     /** @brief Dereferencing operator. */
-    Reference operator*() const
+    Entity & operator*() const
     {
       return realIterator.dereference();
     }
 
     /** @brief Pointer operator. */
-    Pointer operator->() const
+    Entity * operator->() const
     {
       return & realIterator.dereference();
     }
