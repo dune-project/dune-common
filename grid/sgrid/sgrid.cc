@@ -125,7 +125,7 @@ namespace Dune {
     // check wether they are in the reference element
     for(int i=0; i<dim; i++)
     {
-      if((local(i) < 0.0) || (local(i) > 1.0 ))
+      if((local[i] < 0.0) || (local[i] > 1.0 ))
         return false;
     }
     return true;
@@ -436,13 +436,13 @@ namespace Dune {
         // component i is odd
         zz[i] -= 1;
         zz[i] /= 2;
-        delta(i) = 1.0;
+        delta[i] = 1.0;
       }
       else
       {
         // component i is even
         zz[i] /= 2;
-        delta(i) = 0.0;
+        delta[i] = 0.0;
       }
 
     // zz is now the reduced coordinate of the father, compute id
@@ -454,10 +454,10 @@ namespace Dune {
     FieldVector<sgrid_ctype, dim> v;
     for (int i=0; i<dim; i++)
     {
-      v = 0.0; v(i) = 0.5;
+      v = 0.0; v[i] = 0.5;
       As(i) = v;
     }
-    for (int i=0; i<dim; i++) v(i) = 0.5*delta(i);
+    for (int i=0; i<dim; i++) v[i] = 0.5*delta[i];
     As(dim) =v;
     in_father_local.make(As);     // build geometry
 
@@ -534,7 +534,7 @@ namespace Dune {
       if (zz[i]%2)
       {
         // component i is odd
-        delta(i) = 0.0;
+        delta[i] = 0.0;
       }
       else
       {
@@ -542,12 +542,12 @@ namespace Dune {
         if (zz[i]>0)
         {
           zz[i] -= 1;                       // now it is odd and >= 1
-          delta(i) = 0.5;
+          delta[i] = 0.5;
         }
         else
         {
           zz[i] += 1;                       // now it is odd and >= 1
-          delta(i) = -0.5;
+          delta[i] = -0.5;
         }
       }
 
@@ -556,7 +556,7 @@ namespace Dune {
 
     // compute the local coordinates in father
     in_father_local = 0.5;
-    for (int i=0; i<dim; i++) in_father_local(i) += delta(i);
+    for (int i=0; i<dim; i++) in_father_local[i] += delta[i];
 
     built_father = true;
   }
@@ -828,7 +828,7 @@ namespace Dune {
 
     // local coordinates in self
     p1 = 0.0;
-    p1(dir) = c;        // all points have p[dir]=c in entity
+    p1[dir] = c;        // all points have p[dir]=c in entity
     As(dim-1) = p1;     // position vector
     t = 0;
     for (int i=0; i<dim; ++i)     // this loop makes dim-1 direction vectors
@@ -836,7 +836,7 @@ namespace Dune {
       {
         // each i!=dir gives one direction vector
         p2 = p1;
-        p2(i) = 1.0;
+        p2[i] = 1.0;
         As(t) = p2-p1;                 // a direction vector
         ++t;
       }
@@ -844,7 +844,7 @@ namespace Dune {
 
     // local coordinates in neighbor
     p1 = 0.0;
-    p1(dir) = 1-c;        // all points have p[dir]=1-c in entity
+    p1[dir] = 1-c;        // all points have p[dir]=1-c in entity
     As(dim-1) = p1;       // position vector
     t = 0;
     for (int i=0; i<dim; ++i)     // this loop makes dim-1 direction vectors
@@ -852,7 +852,7 @@ namespace Dune {
       {
         // each i!=dir gives one direction vector
         p2 = p1;
-        p2(i) = 1.0;
+        p2[i] = 1.0;
         As(t) = p2-p1;                 // a direction vector
         ++t;
       }
