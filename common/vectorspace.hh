@@ -21,7 +21,8 @@ namespace Dune {
   /** \brief ???
    * \todo Please doc me!
    */
-  template <typename Field> class Vector
+  template <typename Field>
+  class Vector
   {
   public:
     //virtual Vector<Field> operator + (const Vector<Field> &) const = 0;
@@ -29,14 +30,17 @@ namespace Dune {
     //virtual Vector<Field> operator * (const Field &) const = 0;
     //virtual Vector<Field> operator / (const Field &) const = 0;
 
-    //! note: Oli changed all method to, I changed it back, because
+    //! \todo Oli changed all method to, I changed it back, because
     //! otherwise the code will not compile and I fixed this hack later.
     virtual Vector<Field>& operator  = (const Vector<Field> &) { return *this;};
 
-    //! Methods are pure virtual, that the user is forced to implement them
+    //! !
     virtual Vector<Field>& operator += (const Vector<Field> &) = 0;
+    //! !
     virtual Vector<Field>& operator -= (const Vector<Field> &) = 0;
+    //! !
     virtual Vector<Field>& operator *= (const Field &) = 0;
+    //! !
     virtual Vector<Field>& operator /= (const Field &) = 0;
   };
 
