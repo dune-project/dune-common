@@ -1976,6 +1976,32 @@ namespace Dune
   }
 
   // setup neighbor element with the information of elInfo_
+  inline void AlbertGridIntersectionIterator<2,2>::setupVirtEn()
+  {
+    enum { dim = 2 };
+    enum { dimworld = 2 };
+    // set the neighbor element as element
+    neighElInfo_->el = elInfo_->neigh[neighborCount_];
+
+    int vx = elInfo_->opp_vertex[neighborCount_];
+
+    for(int i=0; i<dimworld; i++)
+      neighElInfo_->coord[vx][i] = elInfo_->opp_coord[neighborCount_][i];
+
+    for(int i=1; i<dim+1; i++)
+    {
+      int nb = (((neighborCount_-i)%(dim+1)) +dim+1)%(dim+1);
+      for(int j=0; j<dimworld; j++)
+        neighElInfo_->coord[(vx+i)%(dim+1)][j] = elInfo_->coord[nb][j];
+    }
+    /* works, tested many times */
+
+    virtualEntity_->setElInfo(neighElInfo_);
+    builtNeigh_ = true;
+  }
+
+
+  // setup neighbor element with the information of elInfo_
   template< int dim, int dimworld>
   inline void AlbertGridIntersectionIterator<dim,dimworld>::setupVirtEn()
   {
@@ -2016,9 +2042,12 @@ namespace Dune
     for(int i=0; i<dimworld; i++)
       neighElInfo_->coord[vx][i] = elInfo_->opp_coord[neighborCount_][i];
 
+    //printf(" nb %d \n",neighborCount_);
+
     for(int i=1; i<dim+1; i++)
     {
       int nb = (((neighborCount_-i)%(dim+1)) +dim+1)%(dim+1);
+      //int nb = AlbertHelp::tetraFace[neighborCount_][i];
       for(int j=0; j<dimworld; j++)
         neighElInfo_->coord[(vx+i)%(dim+1)][j] = elInfo_->coord[nb][j];
     }
@@ -3040,6 +3069,8 @@ namespace Dune
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
 
+    assert(dim == 2);
+
     ALBERT MESH * oldMesh = oldGrid.getMesh();
 
     vertexMarker_ = new AlbertMarkerVector ();
@@ -3074,7 +3105,7 @@ namespace Dune
           assert(no == length);
         }
 
-#if 0
+#ifdef _ALBERTA_H_
         ALBERT write_macro(oldMesh,fakename);
         ALBERT read_macro(fakeMesh,fakename,ALBERT AlbertHelp::initBoundary);
 #else
@@ -3099,7 +3130,7 @@ namespace Dune
 
       {
 
-#if 0
+#ifdef _ALBERTA_H_
         ALBERT write_macro ( fakeMesh, fakename );
         ALBERT read_macro  ( mesh_ , fakename, ALBERT AlbertHelp::initBoundary);
 #else
@@ -3842,8 +3873,7 @@ namespace Dune
     {
       a.resize(newNumberOfEntries);
     }
-    for(Array<int>::Iterator it = a.begin(); it != a.end(); ++it)
-      (*it) = -1;
+    for(int i=0; i<a.size(); i++) a[i] = -1;
   }
 
   template < int dim, int dimworld > template <int codim>

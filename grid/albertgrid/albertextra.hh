@@ -21,12 +21,10 @@ namespace Albert {
   (assert(drv != NULL); (vec = (drv)->vec); assert(vec != NULL));
 //vec = (drv)->vec;
 
-//#define _ALBERTA_
-
 inline void fillMacroInfo(TRAVERSE_STACK *stack,
                           const MACRO_EL *mel, EL_INFO *elinfo)
 {
-#ifdef _ALBERTA_
+#ifdef _ALBERTA_H_
   /* Alberta version */
   fill_macro_info(stack->traverse_mesh,mel,elinfo);
 #else
@@ -341,6 +339,8 @@ namespace AlbertHelp
   static const int tetraFace_1[3] = {2,3,0};
   static const int tetraFace_2[3] = {0,3,1};
   static const int tetraFace_3[3] = {0,1,2};
+
+  static const int tetraFace[4][3] = { {3,2,1}, {2,3,0} , {0,3,1} , {0,1,2} };
 
   static const int * localTetraFaceNumber[4] = {tetraFace_0, tetraFace_1,
                                                 tetraFace_2 , tetraFace_3 };
@@ -1193,7 +1193,10 @@ namespace AlbertHelp
     elOwner = NULL;
   }
 
+#ifndef _ALBERTA_H_
 #include "part.cc"
+#endif
+
 } // end namespace AlbertHelp
 
 #ifdef __ALBERTpp__
