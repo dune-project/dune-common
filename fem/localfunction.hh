@@ -18,9 +18,9 @@ namespace Dune {
   public:
 
     //! this are the types for the derived classes
-    typedef DiscreteFunctionSpaceType::RangeField RangeField;
-    typedef DiscreteFunctionSpaceType::Domain Domain;
-    typedef DiscreteFunctionSpaceType::Range Range;
+    typedef typename DiscreteFunctionSpaceType::RangeField RangeField;
+    typedef typename DiscreteFunctionSpaceType::Domain Domain;
+    typedef typename DiscreteFunctionSpaceType::Range Range;
 
     //! access to dof number num, all dofs of the local function
     RangeField& operator [] (int num)
