@@ -91,7 +91,7 @@ namespace Dune {
 
     //! provide the access to the base function set for a given entity
     template <class EntityType>
-    FastBaseFunctionSetType& getBaseFunctionSet ( EntityType &en ) const;
+    const FastBaseFunctionSetType& getBaseFunctionSet ( EntityType &en ) const;
 
     //! default for polOrd 0
     template <class EntityType>

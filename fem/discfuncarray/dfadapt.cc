@@ -383,7 +383,6 @@ namespace Dune
   LocalFunctionAdapt( const DiscreteFunctionSpaceType &f ,
                       DofArrayType & dofVec )
     : fSpace_ ( f ), dofVec_ ( dofVec )
-      , baseFuncSet_ (0)
       , uniform_(true) {}
 
   template<class DiscreteFunctionSpaceType >
@@ -478,7 +477,7 @@ namespace Dune
       ret = 0.0;
       for(int i=0; i<numOfDifferentDofs_; i++)
       {
-        baseFuncSet_->jacobian(i,quad,quadPoint,tmpGrad_);
+        fspace_.getBaseFunctionSet(en).jacobian(i,quad,quadPoint,tmpGrad_);
         tmpGrad_(0) = inv.mult_t(tmpGrad_(0));
 
         tmpGrad_(0) *= (* (values_[i]));
@@ -496,13 +495,12 @@ namespace Dune
   inline bool LocalFunctionAdapt < DiscreteFunctionSpaceType >::
   init (EntityType &en ) const
   {
-    if((!uniform_) || (!baseFuncSet_))
+    if(!uniform_)
     {
-      // * this is a hack and needs to go away
-      baseFuncSet_ = const_cast<BaseFunctionSetType*>(& ( fSpace_.getBaseFunctionSet(en) ));
-      //baseFuncSet_ = & ( fSpace_.getBaseFunctionSet(en) );
-      numOfDof_ = baseFuncSet_->getNumberOfBaseFunctions();
-      numOfDifferentDofs_ = baseFuncSet_->getNumberOfDiffBaseFuncs();
+      numOfDof_ =
+        fSpace_.getBaseFunctionSet(en).getNumberOfBaseFunctions();
+      numOfDifferentDofs_ =
+        fSpace_.getBaseFunctionSet(en).getNumberOfDiffBaseFuncs();
 
       if(numOfDof_ > this->values_.size())
         this->values_.resize( numOfDof_ );

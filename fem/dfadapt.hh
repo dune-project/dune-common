@@ -262,7 +262,7 @@ namespace Dune {
     DofArrayType & dofVec_;
 
     //! the corresponding base function set
-    mutable BaseFunctionSetType* baseFuncSet_;
+    //BaseFunctionSetType* baseFuncSet_;
 
     //! do we have the same base function set for all elements
     bool uniform_;
