@@ -52,6 +52,10 @@ dnl check all components
     AC_MSG_ERROR([Can't work without the DUNE-library. Maybe you have to supply your DUNE-directory as --with-dune=dir])
   fi
 
+  # convenience-variables if every found package should be used
+  AC_SUBST(ALL_PKG_LIBS, "$LIBS $DUNE_PKG_LIBS")
+  AC_SUBST(ALL_PKG_LDFLAGS, "$LDFLAGS $DUNE_PKG_LDFLAGS")
+  AC_SUBST(ALL_PKG_CPPFLAGS, "$CPPFLAGS $DUNE_PKG_CPPFLAGS")
 ])
 
 AC_DEFUN([DUNE_SUMMARY_ALL],[
