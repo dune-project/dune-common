@@ -13,6 +13,7 @@ namespace Dune
   /*****************************/
   /*  Constructor(s)           */
   /*****************************/
+
   template <class T>
   SparseRowMatrix<T>::SparseRowMatrix()
   {
@@ -26,10 +27,6 @@ namespace Dune
   template <class T>
   SparseRowMatrix<T>::~SparseRowMatrix()
   {}
-
-  /***********************************/
-  /*  Construct from storage vectors */
-  /***********************************/
 
   template <class T>
   SparseRowMatrix<T>::SparseRowMatrix(int rows, int cols, int nz)
@@ -58,7 +55,7 @@ namespace Dune
   /* Iterator creation          */
   /******************************/
 
-  // Return iterator refering to first nonzero element in row
+  //! Return iterator refering to first nonzero element in row
   template <class T>
   typename SparseRowMatrix<T>::ColumnIterator SparseRowMatrix<T>::rbegin (int row)
   {
@@ -74,7 +71,7 @@ namespace Dune
     return it;
   }
 
-  // Return iterator refering to one past the last nonzero element of row
+  //! Return iterator refering to one past the last nonzero element of row
   template <class T>
   typename SparseRowMatrix<T>::ColumnIterator SparseRowMatrix<T>::rend (int row)
   {
@@ -86,9 +83,7 @@ namespace Dune
     return it;
   }
 
-  /***************************/
-  /* Assignment operator...  (deep copy) */
-  /***************************/
+  //! Assignment operator...  (deep copy)
 
   template <class T>
   SparseRowMatrix<T>& SparseRowMatrix<T>::operator=(const SparseRowMatrix<T>& other)
@@ -106,9 +101,7 @@ namespace Dune
   }
 
 
-  /***************************/
-  /* resize()                */
-  /***************************/
+  //! resize the Matrix and reset the content
 
   template <class T>
   void SparseRowMatrix<T>::resize(int M, int N, int nz)
@@ -121,7 +114,12 @@ namespace Dune
     // resize data fields
     values_.resize(dim_[0]*nz_);
     col_.resize(dim_[0]*nz_);
+
+    values_.set(0.0);
+    col_.set(-1);
   }
+
+  //! resize the Matrix and reset the content
 
   template <class T>
   void SparseRowMatrix<T>::resize(int M, int N)
@@ -133,6 +131,9 @@ namespace Dune
     // resize data fields
     values_.resize(dim_[0]*nz_);
     col_.resize(dim_[0]*nz_);
+
+    values_.set(0.0);
+    col_.set(-1);
   }
 
   template <class T>
@@ -240,6 +241,7 @@ namespace Dune
   /***************************************/
   /*  Matrix-MV_Vector multiplication    */
   /***************************************/
+
   template <class T> template <class VECtype>
   void SparseRowMatrix<T>::mult(VECtype &ret, const VECtype &x) const
   {
@@ -484,6 +486,43 @@ namespace Dune
         set(i,col,0.0);
       else
         set(col,col,1.0);
+  }
+
+  template <class T>
+  void SparseRowMatrix<T>::createSuperMatrix(SuperMatrix & A)
+  {
+    // non zero values before this line
+    nzval_.resize(dim_[0]+1);
+    for (int i=0; i<nzval_.size(); i++)
+      nzval_[i] = 3*i;
+    // fill missing entries
+    for (int row = 0; row < dim_[0]; row++)
+    {
+      int whichCol;
+      while((whichCol = colIndex(row,-2)) != -1)
+      {
+        int col;
+        for (col = 0; col < dim_[1]; col++)
+        {
+          bool newcol = true;
+          for (int i=0; i<nz_; i++)
+            if (col_[row*nz_ +i] == col)
+              newcol = false;
+          if (newcol) break;
+        }
+        col_[row*nz_ + whichCol] = col;
+      }
+    }
+    // create matrix
+    dCreate_CompCol_Matrix(&A, dim_[0], dim_[1], values_.size(),
+                           values_.raw(), col_.raw(), nzval_.raw(),
+                           SLU_NR, SLU_D, SLU_GE);
+  }
+
+  template <class T>
+  void SparseRowMatrix<T>::destroySuperMatrix(SuperMatrix & A)
+  {
+    nzval_.resize(0);
   }
 
 } // end namespace Dune
