@@ -433,9 +433,9 @@ namespace Dune {
   inline Vec<dimworld,ct>& IntersectionIteratorDefault<dim,dimworld,ct,IntersectionIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>::outer_normal ()
   {
     // make a copy, is nessasary
-    outerNormal_ = &asImp().unit_outer_normal();
-    (*outerNormal_) *= asImp().intersection_self_global().integration_element(tmp_);
-    return (*outerNormal_);
+    outerNormal_ = asImp().unit_outer_normal();
+    outerNormal_ *= asImp().intersection_self_global().integration_element(tmp_);
+    return outerNormal_;
   }
 
   template<int dim, int dimworld, class ct,
@@ -448,9 +448,9 @@ namespace Dune {
   outer_normal (Vec<dim-1,ct>& local)
   {
     // make a copy, is nessasary
-    outerNormal_ = &asImp().unit_outer_normal(local);
-    (*outerNormal_) *= asImp().intersection_self_global().integration_element(local);
-    return (*outerNormal_);
+    outerNormal_ = asImp().unit_outer_normal(local);
+    outerNormal_ *= asImp().intersection_self_global().integration_element(local);
+    return outerNormal_;
   }
 
 
