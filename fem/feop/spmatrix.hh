@@ -39,8 +39,8 @@ namespace Dune
 
     //! make matrix with 'rows' rows and 'cols' columns,
     //! maximum 'nz' non zero values in each row
-    //! and initialize all values with 'val'
-    SparseRowMatrix(int rows, int cols, int nz, const T& val);
+    //! and initialize all values with zero
+    SparseRowMatrix(int rows, int cols, int nz);
 
     //! free memory for values_ and col_
     ~SparseRowMatrix();

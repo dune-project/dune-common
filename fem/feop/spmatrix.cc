@@ -30,7 +30,7 @@ namespace Dune
   /***********************************/
 
   template <class T>
-  SparseRowMatrix<T>::SparseRowMatrix(int rows, int cols, int nz, const T& val)
+  SparseRowMatrix<T>::SparseRowMatrix(int rows, int cols, int nz)
   {
     dim_[0] = rows;
     dim_[1] = cols;
@@ -39,7 +39,6 @@ namespace Dune
     values_.resize(dim_[0]*nz_);
     col_.resize(dim_[0]*nz_);
 
-    values_.set(val);
     col_.set(-1);
   }
 
@@ -235,7 +234,7 @@ namespace Dune
   {
     assert(A.rows() == A.cols());
 
-    SparseRowMatrix<T> result(rows(), rows(), A.numNonZeros(), 0);
+    SparseRowMatrix<T> result(rows(), rows(), A.numNonZeros());
 
     for (int i=0; i<rows(); i++)
       for (int j=0; j<rows(); j++) {
