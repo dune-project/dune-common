@@ -14,10 +14,8 @@
 // All UG includes have to be includes via the file ugincludes.hh
 // for easier parsing by undefAllMacros.pl
 #define __PC__  // hack:  choose the architecture
-//#define _3      // Choose the dimension
 #include "uggrid/ugincludes.hh"
 #undef __PC__
-//#undef _3
 
 // Wrap a few large UG macros by functions before they get undef'ed away
 #include "uggrid/ugfunctions.hh"
@@ -213,7 +211,7 @@ namespace Dune {
      */
     int size (int level, int codim) const;
 
-    int global_size (int codim) const { return size(maxlevel(),codim); }
+    int global_size (int codim) const DUNE_DEPRECATED { return size(maxlevel(),codim); }
 
     /** \brief Mark entity for refinement
      *
@@ -243,6 +241,7 @@ namespace Dune {
 
     /** \brief Distributes this grid over the available nodes in a distributed machine
      *
+       \param minlevel The coarsest grid level that gets distributed
        \param maxlevel does currently get ignored
      */
     void loadBalance(int strategy, int minlevel, int depth, int maxlevel, int minelement);
@@ -319,6 +318,8 @@ namespace Dune {
     }
 
     void init(unsigned int heapSize, unsigned int envHeapSize);
+
+    void setLocalIndices();
 
     // Each UGGrid object has a unique name to identify it in the
     // UG environment structure

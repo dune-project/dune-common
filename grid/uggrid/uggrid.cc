@@ -486,23 +486,7 @@ bool UGGrid < dim, dimworld >::adapt()
       DUNE_THROW(GridError, "UG?d::Collapse returned error code!");
 
   // Renumber everything
-  for (int i=0; i<=maxlevel(); i++) {
-
-    typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(i);
-    typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(i);
-
-    int id = 0;
-    for (; eIt!=eEndIt; ++eIt)
-      getRealEntity<0>(*eIt).target_->ge.id = id++;
-
-    typename Traits::template codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
-    typename Traits::template codim<dim>::LevelIterator vEndIt = lend<dim>(i);
-
-    id = 0;
-    for (; vIt!=vEndIt; ++vIt)
-      getRealEntity<dim>(*vIt).target_->id = id++;
-
-  }
+  setLocalIndices();
 
   /** \bug Should return true only if at least one element has actually
       been refined */
@@ -572,24 +556,7 @@ void UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth
     DUNE_THROW(GridError, "UG" << dim << "d::LBCommand returned error code " << errCode);
 
   // Renumber everything
-  /** \todo Make this a separate routine? */
-  for (int i=0; i<=0; i++) {
-
-    typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(i);
-    typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(i);
-
-    int id = 0;
-    for (; eIt!=eEndIt; ++eIt)
-      getRealEntity<0>(*eIt).target_->ge.id = id++;
-
-    typename Traits::template codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
-    typename Traits::template codim<dim>::LevelIterator vEndIt = lend<dim>(i);
-
-    id = 0;
-    for (; vIt!=vEndIt; ++vIt)
-      getRealEntity<dim>(*vIt).target_->id = id++;
-
-  }
+  setLocalIndices();
 
 }
 
@@ -728,4 +695,33 @@ void UGGrid < dim, dimworld >::createend()
   ReleaseTmpMem(multigrid_->theHeap, multigrid_->MarkKey);
 #undef ReleaseTmpMem
   multigrid_->MarkKey = 0;
+
+  // Set the local indices
+  setLocalIndices();
+
+}
+
+
+template < int dim, int dimworld >
+void UGGrid < dim, dimworld >::setLocalIndices()
+{
+  // Renumber everything
+  for (int i=0; i<=maxlevel(); i++) {
+
+    typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(i);
+    typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(i);
+
+    int id = 0;
+    for (; eIt!=eEndIt; ++eIt)
+      UG_NS<dim>::index(getRealEntity<0>(*eIt).target_) = id++;
+
+    typename Traits::template codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
+    typename Traits::template codim<dim>::LevelIterator vEndIt = lend<dim>(i);
+
+    id = 0;
+    for (; vIt!=vEndIt; ++vIt)
+      UG_NS<dim>::index(getRealEntity<dim>(*vIt).target_) = id++;
+
+  }
+
 }
