@@ -210,7 +210,7 @@ namespace Dune
      *
      * Does not call the contructor!
      * @param n The number of object to free. Has to be one!
-     * @parma p Pointer to the first object.
+     * @param p Pointer to the first object.
      */
     inline void deallocate(pointer p, std::size_t n);
 

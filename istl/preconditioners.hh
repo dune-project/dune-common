@@ -31,7 +31,8 @@ namespace Dune {
 
 
   //=====================================================================
-  /*! Base class for matrix free definition of preconditioners.
+  /*! \brief Base class for matrix free definition of preconditioners.
+
           Note that the operator, which is the basis for the preconditioning,
       is supplied to the preconditioner from the outside in the
       constructor or some other method.
@@ -48,7 +49,9 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
-    /*! A solver solves a linear operator equation A(x)=b by applying
+    /*! \brief Prepare the preconditioner.
+
+       A solver solves a linear operator equation A(x)=b by applying
        one or several steps of the preconditioner. The method pre()
        is called before before the first apply operation.
        x and b are right hand side and solution vector of the linear
@@ -60,7 +63,8 @@ namespace Dune {
      */
     virtual void pre (X& x, Y& b) = 0;
 
-    /*! Apply one step of the preconditioner to the system A(v)=d.
+    /*! \brief Apply one step of the preconditioner to the system A(v)=d.
+
        On entry v=0 and d=b-A(x) (although this might not be
        computed in that way. On exit v contains the update, i.e
        one step computes \f$ v = M^{-1} d \f$ where \f$ M \f$ is the
@@ -69,7 +73,9 @@ namespace Dune {
      */
     virtual void apply (X& v, const Y& d) = 0;
 
-    /*! Dot product of two right-hand side vectors. This
+    /*! \brief Dot product of two right-hand side vectors.
+
+       This
        method is in the interface for parallel implementations.
             It will require at least a global communication and also
             some local communication depending on the consistency model.
@@ -78,7 +84,9 @@ namespace Dune {
      */
     virtual field_type dot (const Y& y, const Y& z) = 0;
 
-    /*! Norm of a right-hand side vector. This
+    /*! \brief Norm of a right-hand side vector.
+
+       This
        method is in the interface for parallel implementations.
             It will require at least a global communication and also
             some local communication depending on the consistency model.
@@ -89,7 +97,9 @@ namespace Dune {
     virtual double norm (const Y& y) = 0;
 
 
-    /*! This method is called after the last apply call for the
+    /*! \brief Clean up.
+
+       This method is called after the last apply call for the
        linear system to be solved. Memory may be deallocated safely
        here. x is the solution of the linear equation.
      */
@@ -117,7 +127,13 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
-    //! constructor gets all parameters to operate the prec.
+    /*! \brief Constructor.
+
+       constructor gets all parameters to operate the prec.
+       \param A The matrix to operate on.
+       \param n The number of iterations to perform.
+       \param w The relaxation factor.
+     */
     SeqSSOR (const M& A, int n, field_type w)
       : _A_(A), _n(n), _w(w)
     {       }
@@ -170,7 +186,13 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
-    //! constructor gets all parameters to operate the prec.
+    /*! \brief Constructor.
+
+       constructor gets all parameters to operate the prec.
+       \param A The matrix to operate on.
+       \param n The number of iterations to perform.
+       \param w The relaxation factor.
+     */
     SeqSOR (const M& A, int n, field_type w)
       : _A_(A), _n(n), _w(w)
     {       }
@@ -222,7 +244,13 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
-    //! constructor gets all parameters to operate the prec.
+    /*! \brief Constructor.
+
+       Constructor gets all parameters to operate the prec.
+       \param A The matrix to operate on.
+       \param n The number of iterations to perform.
+       \param w The relaxation factor.
+     */
     SeqGS (const M& A, int n, field_type w)
       : _A_(A), _n(n), _w(w)
     {       }
@@ -274,7 +302,13 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
-    //! constructor gets all parameters to operate the prec.
+    /*! \brief Constructor.
+
+       Constructor gets all parameters to operate the prec.
+       \param A The matrix to operate on.
+       \param n The number of iterations to perform.
+       \param w The relaxation factor.
+     */
     SeqJac (const M& A, int n, field_type w)
       : _A_(A), _n(n), _w(w)
     {       }
@@ -327,7 +361,12 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
-    //! constructor gets all parameters to operate the prec.
+    /*! Constructor.
+
+       Constructor gets all parameters to operate the prec.
+       \param A The matrix to operate on.
+       \param w The relaxation factor.
+     */
     SeqILU0 (const M& A, field_type w)
       : ILU(A)     // copy A
     {
@@ -379,7 +418,13 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
-    //! constructor gets all parameters to operate the prec.
+    /*! \brief Constructor.
+
+       Constructor gets all parameters to operate the prec.
+       \param A The matrix to operate on.
+       \param n The number of iterations to perform.
+       \param w The relaxation factor.
+     */
     SeqILUn (const M& A, int n, field_type w)
       : ILU(A.N(),A.M(),M::row_wise)
     {

@@ -107,7 +107,7 @@ namespace Dune {
      depth is known in advance. Note that no error checking is
      performed!
 
-     \tparam n Maximum number of stack entries
+     \param n Maximum number of stack entries
    */
   template<class T, int n>
   class FiniteStack {
@@ -162,6 +162,6 @@ namespace Dune {
 
 }
 
-//! @}
+//! }@
 
 #endif

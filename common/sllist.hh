@@ -387,5 +387,5 @@ namespace Dune
     return const_iterator(static_cast<Element*>(0));
   }
 }
-/** @} */
+/** }@ */
 #endif
