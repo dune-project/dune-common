@@ -78,7 +78,7 @@ namespace Dune {
     enum { DimDomain = FunctionSpaceType::DimDomain };
     enum { DimRange  = FunctionSpaceType::DimRange  };
 
-    typedef  Quadrature < FunctionSpaceType > QuadratureType ;
+    //typedef  Quadrature < FunctionSpaceType > QuadratureType ;
     typedef  BaseFunctionInterface < FunctionSpaceType > BaseFunctionType;
 
     // to be declared in derived extension class:
@@ -105,7 +105,7 @@ namespace Dune {
       asImp().evaluate( baseFunct, diffVariable, x, phi );
     }
 
-    template <int diffOrd>
+    template <int diffOrd, class QuadratureType >
     void evaluate ( int baseFunct, const Vec<diffOrd,char> &diffVariable, QuadratureType & quad, int quadPoint, Range & phi ) const {
       asImp().evaluate( baseFunct, diffVariable, quad, quadPoint, phi );
     }

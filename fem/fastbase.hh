@@ -88,7 +88,7 @@ namespace Dune {
     //! the identifier of the quadrature is stored to check , whether the
     //! qaudrature has changed an the values at the quadrature have to be
     //! calulated again
-    template <int diffOrd>
+    template <int diffOrd, class QuadratureType>
     void evaluate ( int baseFunct, const Vec<diffOrd,char> &diffVariable,
                     QuadratureType & quad, int quadPoint, Range & phi ) const;
 
@@ -119,25 +119,27 @@ namespace Dune {
     //! method to navigate through the vector vecEvaluate, which holds
     //! precalculated values
     template <int diffOrd>
-    int index( int baseFunc, const Vec<diffOrd,char> &diffVariable,
+    int index( int baseFunct, const Vec<diffOrd,char> &diffVariable,
                int quadPt, int numQuadPoints ) const
     {
       int n = 0;
       for ( int i = 0; i < diffOrd; i++ ) {
-        n = diffVariable(i) + n * dimDomain;
+        n = diffVariable.read(i) + n * DimDomain;
       }
-      return numQuadPoints*(getNumberOfBaseFunctions()*n + baseFunc) + quadPt;
+
+      return numQuadPoints*(getNumberOfBaseFunctions()*n + baseFunct) + quadPt;
     };
 
     //! vector holding the cached evaluation of the base functions
-    std::vector<std::vector<Range> > vecEvaluate_;
+    std::vector< std::vector< Range > > vecEvaluate_;
 
     //! for which waudrature are we holding precalculated values ;
     IdentifierType evaluateQuad_[ numDiffOrd ];
 
     //! init the vecEvaluate vector
-    template <int diffOrd>
-    void evaluateInit ( QuadratureType & quad, Vec<diffOrd,char> & diffVariable ) ;
+    template <int diffOrd, class QuadratureType >
+    void evaluateInit ( const Vec<diffOrd,char> & diffVariable,
+                        const QuadratureType & quad ) ;
   };
 
 

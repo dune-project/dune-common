@@ -9,13 +9,14 @@
 namespace Dune {
 
   template< typename DomainFieldType, typename RangeFieldType,
-      int n, int m, class GridTemp, class DiscreteFunctionSpaceImp >
+      int n, int m, class GridTemp, class DiscreteFunctionSpaceImp,
+      class BaseFunctionSetInter >
   class DiscreteFunctionSpace
     : public FunctionSpace < DomainFieldType, RangeFieldType, n, m >
   {
 
   public:
-    typedef BaseFunctionSet< DiscreteFunctionSpaceImp> BaseFunctionSetType;
+    typedef BaseFunctionSetInter BaseFunctionSetType;
     typedef GridTemp GridType;
 
     //! Constructor

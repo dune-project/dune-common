@@ -5,6 +5,7 @@
 
 #include "fastbase.hh"
 #include "discretefunctionspace.hh"
+#include "quadtriangle.hh"
 
 
 namespace Dune {
@@ -197,10 +198,13 @@ namespace Dune {
       int n, int m, class GridType >
   class LinDiscreteFunctionSpace
     : public DiscreteFunctionSpace < DomainFieldType, RangeFieldType, n, m,
-          GridType, LinDiscreteFunctionSpace <DomainFieldType,RangeFieldType,n,m,GridType> >
+          GridType, LinDiscreteFunctionSpace <DomainFieldType,RangeFieldType,n,m,GridType>,
+          LinFastBaseFunctionSet < LinDiscreteFunctionSpace
+              <DomainFieldType,RangeFieldType,n,m,GridType> >  >
   {
     typedef DiscreteFunctionSpace < DomainFieldType, RangeFieldType, n, m, GridType,
-        LinDiscreteFunctionSpace <DomainFieldType,RangeFieldType,n,m,GridType> >
+        LinDiscreteFunctionSpace <DomainFieldType,RangeFieldType,n,m,GridType>, LinFastBaseFunctionSet < LinDiscreteFunctionSpace
+            <DomainFieldType,RangeFieldType,n,m,GridType> > >
     DiscreteFunctionSpaceType;
 
     typedef LinDiscreteFunctionSpace
