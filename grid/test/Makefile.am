@@ -47,8 +47,11 @@ check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 # library-parts explicitly
 LDFLAGS = $(top_builddir)/common/libcommon.la
 
+# paranoia
+DUNE_EXTRA_CHECKS =  -DDUNE__ISTL_WITH_CHECKING -DDUNE_DEVEL_MODE
 # output coverage
-AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
+COVERAGE = -fprofile-arcs -ftest-coverage
+AM_CXXFLAGS = $(COVERAGE) $(DUNE_EXTRA_CHECKS)
 
 #
 ## define the programs

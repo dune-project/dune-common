@@ -499,7 +499,8 @@ void assertNeighbor (Grid &g)
         assert(it->index() >= 0);
         LevelIterator n = g.template lbegin<0>(it->level());
         LevelIterator nend = g.template lend<0>(it->level());
-        while (n->index() != it->index()&& n != nend) ++n;
+        //        while (n->index() != it->index()&& n != nend) ++n;
+        while (n != it && n != nend) ++n;
       }
     }
   }
@@ -508,11 +509,26 @@ void assertNeighbor (Grid &g)
 /*
  * Iterate over the grid und do some runtime checks
  */
+template <class Grid, class It>
+struct _callMark {
+  static void mark (Grid & g, It it) { g.mark(1,it); };
+};
+template <class Grid, class It>
+struct _callMark<const Grid, It> {
+  static void mark (const Grid & g, It it) { };
+};
+template <class Grid, class It>
+void callMark(Grid & g, It it)
+{
+  _callMark<Grid,It>::mark(g,it);
+}
 
 template <class Grid>
 void iterate(Grid &g)
 {
   typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
+  typedef typename Grid::template codim<0>::EntityPointer EntityPointer;
+  typedef typename Grid::template codim<0>::HierarchicIterator HierarchicIterator;
   typedef typename Grid::template codim<0>::Geometry Geometry;
   LevelIterator it = g.template lbegin<0>(0);
   const LevelIterator endit = g.template lend<0>(0);
@@ -536,7 +552,17 @@ void iterate(Grid &g)
     it->geometry().type();
     it->geometry().corners();
     it->geometry()[0];
+#warning refelem is deprecated
+#if 0
     it->geometry().refelem();
+#endif
+
+    callMark(g, it);
+    EntityPointer ept = it;
+    callMark(g, ept);
+    HierarchicIterator hit = ept->hbegin(99);
+    HierarchicIterator hend = ept->hend(99);
+    if (hit != hend) callMark(g, hit);
   }
 
   typedef typename Grid::template codim<0>::LeafIterator LeafIterator;
@@ -564,6 +590,39 @@ void iterate(Grid &g)
 };
 
 template <class Grid>
+void iteratorEquals (Grid &g)
+{
+  typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
+  typedef typename Grid::template codim<0>::LeafIterator LeafIterator;
+  typedef typename Grid::template codim<0>::HierarchicIterator HierarchicIterator;
+  typedef typename Grid::template codim<0>::IntersectionIterator IntersectionIterator;
+  typedef typename Grid::template codim<0>::EntityPointer EntityPointer;
+
+  LevelIterator l1 = g.template lbegin<0>(0);
+  LevelIterator l2 = g.template lbegin<0>(0);
+  LeafIterator L1 = g.leafbegin(99);
+  LeafIterator L2 = g.leafbegin(99);
+  HierarchicIterator h1 = l1->hbegin(99);
+  HierarchicIterator h2 = l2->hbegin(99);
+  IntersectionIterator i1 = l1->ibegin();
+  IntersectionIterator i2 = l2->ibegin();
+  EntityPointer e1 = l1;
+  EntityPointer e2 = h2;
+
+  l1 == l2;
+  i1 == i2;
+  L1 == L2;
+  h1 == h2;
+  e1 == e2;
+  e1 == l2;
+  e2 == h2;
+  e1 == L1;
+  l2 == e1;
+  l2 == L2;
+  i1 == h2;
+}
+
+template <class Grid>
 void gridcheck (Grid &g)
 {
   /*
@@ -576,6 +635,8 @@ void gridcheck (Grid &g)
    * now the runtime-tests
    */
   const Grid & cg = g;
+  iteratorEquals(g);
+  iteratorEquals(cg);
   iterate(g);
   iterate(cg);
   zeroEntityConsistency(g);
