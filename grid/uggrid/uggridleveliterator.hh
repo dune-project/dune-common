@@ -3,6 +3,9 @@
 #ifndef DUNE_UGGRIDLEVELITERATOR_HH
 #define DUNE_UGGRIDLEVELITERATOR_HH
 
+/** \file
+ * \brief The UGGridLevelIterator class and its specializations
+ */
 
 namespace Dune {
 

@@ -250,7 +250,7 @@ intersection_neighbor_global()
 
 template< int dim, int dimworld>
 inline int UGGridIntersectionIterator<dim,dimworld>::
-number_in_self ()
+number_in_self ()  const
 {
   /** \todo Muﬂ ich die Seitennummer wirklich umrechnen? */
   const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);

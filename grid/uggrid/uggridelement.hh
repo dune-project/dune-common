@@ -3,6 +3,10 @@
 #ifndef DUNE_UGGRIDELEMENT_HH
 #define DUNE_UGGRIDELEMENT_HH
 
+/** \file
+ * \brief The UGGridElement class and its specializations
+ */
+
 #include "ugtypes.hh"
 #include <dune/common/fixedarray.hh>
 
@@ -52,13 +56,13 @@ namespace Dune {
      * UGGrid supports triangles and quadrilaterals in 2D, and
      * tetrahedra, pyramids, prisms, and hexahedra in 3D.
      */
-    ElementType type ();
+    ElementType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners ();
+    int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<UGCtype, dimworld>& operator[] (int i);
+    const FieldVector<UGCtype, dimworld>& operator[] (int i) const;
 
     /** \brief Return reference element corresponding to this element.
      *
@@ -97,10 +101,10 @@ namespace Dune {
        will directly translate in substantial savings in the computation of finite element
        stiffness matrices.
      */
-    UGCtype integration_element (const FieldVector<UGCtype, dim>& local);
+    UGCtype integration_element (const FieldVector<UGCtype, dim>& local) const;
 
     //! The Jacobian matrix of the mapping from the reference element to this element
-    const Mat<dim,dim>& Jacobian_inverse (const FieldVector<UGCtype, dim>& local);
+    const Mat<dim,dim>& Jacobian_inverse (const FieldVector<UGCtype, dim>& local) const;
 
 
   private:
@@ -113,10 +117,10 @@ namespace Dune {
 
     //! the vertex coordinates
     //Mat<dimworld,dim+1, UGCtype> coord_;
-    FixedArray<FieldVector<UGCtype, dimworld>, (dim==2) ? 4 : 8> coord_;
+    mutable FixedArray<FieldVector<UGCtype, dimworld>, (dim==2) ? 4 : 8> coord_;
 
     //! The jacobian inverse
-    Mat<dimworld,dimworld> jac_inverse_;
+    mutable Mat<dimworld,dimworld> jac_inverse_;
 
     //! storage for global coords
     FieldVector<UGCtype, dimworld> globalCoord_;
@@ -176,10 +180,10 @@ namespace Dune {
     bool checkInside(const FieldVector<UGCtype, 3> &global);
 
     // A(l)
-    UGCtype integration_element (const FieldVector<UGCtype, 2>& local);
+    UGCtype integration_element (const FieldVector<UGCtype, 2>& local) const;
 
     //! can only be called for dim=dimworld!
-    const Mat<2,2>& Jacobian_inverse (const FieldVector<UGCtype, 2>& local);
+    const Mat<2,2>& Jacobian_inverse (const FieldVector<UGCtype, 2>& local) const;
 
   private:
     //void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}
@@ -192,10 +196,10 @@ namespace Dune {
 
     //! the vertex coordinates
     //Mat<3,3, UGCtype> coord_;
-    FixedArray<FieldVector<UGCtype, 3>, 4> coord_;
+    mutable FixedArray<FieldVector<UGCtype, 3>, 4> coord_;
 
     //! The jacobian inverse
-    Mat<3,3> jac_inverse_;
+    mutable Mat<3,3> jac_inverse_;
 
     //! storage for global coords
     FieldVector<UGCtype, 4> globalCoord_;
@@ -254,10 +258,10 @@ namespace Dune {
     bool checkInside(const FieldVector<UGCtype, 2> &global);
 
     // A(l)
-    UGCtype integration_element (const FieldVector<UGCtype, 1>& local);
+    UGCtype integration_element (const FieldVector<UGCtype, 1>& local) const;
 
     //! can only be called for dim=dimworld!
-    const Mat<1,1>& Jacobian_inverse (const FieldVector<UGCtype, 1>& local);
+    const Mat<1,1>& Jacobian_inverse (const FieldVector<UGCtype, 1>& local) const;
 
   private:
     //void setToTarget(typename TargetType<dimworld-dim,dimworld>::T* target) {target_ = target;}

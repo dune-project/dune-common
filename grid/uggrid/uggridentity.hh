@@ -3,6 +3,10 @@
 #ifndef __DUNE_UGGRIDENTITY_HH__
 #define __DUNE_UGGRIDENTITY_HH__
 
+/** \file
+ * \brief The UGGridEntity class and its specializations
+ */
+
 #include "ugtypes.hh"
 
 
@@ -43,12 +47,12 @@ namespace Dune {
        with codimension cc.
      */
     //!< Default codim 1 Faces and codim == dim Vertices
-    template<int cc> int count ();
+    template<int cc> int count () const;
 
     //! return index of sub entity with codim = cc and local number i
     //! i.e. return global number of vertex i
     /** \todo So far only implemented for cc==dim */
-    template<int cc> int subIndex (int i);
+    template<int cc> int subIndex (int i) const;
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
@@ -58,7 +62,7 @@ namespace Dune {
     UGGridEntity(int level);
 
     //! geometry of this entity
-    UGGridElement<dim-codim,dimworld>& geometry ();
+    const UGGridElement<dim-codim,dimworld>& geometry () const;
 
     /** \brief Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
      *
@@ -153,15 +157,17 @@ namespace Dune {
     int globalIndex() { return index(); }
 
     //! Geometry of this entity
-    UGGridElement<dim,dimworld>& geometry ();
+    const UGGridElement<dim,dimworld>& geometry () const;
 
     /** \brief Return the number of subentities of codimension cc.
      */
-    template<int cc> int count ();
+    template<int cc>
+    int count () const;
 
     /** \brief Return index of sub entity with codim = cc and local number i
      */
-    template<int cc> int subIndex (int i);
+    template<int cc>
+    int subIndex (int i) const;
 
     /** \brief Provide access to sub entity i of given codimension. Entities
      *  are numbered 0 ... count<cc>()-1

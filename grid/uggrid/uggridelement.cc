@@ -57,7 +57,7 @@ UGGridElement(bool makeRefElement)
 
 
 template< int dim, int dimworld>
-inline ElementType UGGridElement<dim,dimworld>::type()
+inline ElementType UGGridElement<dim,dimworld>::type() const
 {
 
   switch (dim)
@@ -99,7 +99,7 @@ inline ElementType UGGridElement<dim,dimworld>::type()
 }
 
 template< int dim, int dimworld>
-inline int UGGridElement<dim,dimworld>::corners()
+inline int UGGridElement<dim,dimworld>::corners() const
 {
   return UG_NS<dimworld>::Corners_Of_Elem(target_);
 }
@@ -109,7 +109,7 @@ inline int UGGridElement<dim,dimworld>::corners()
 
 template<int dim, int dimworld>
 inline const FieldVector<UGCtype, dimworld>& UGGridElement<dim,dimworld>::
-operator [](int i)
+operator [](int i) const
 {
   std::cerr << "UGGridElement<" << dim << "," << dimworld << ">::operator[]:\n"
   "Default implementation, should not be called!\n";
@@ -119,7 +119,7 @@ operator [](int i)
 #ifdef _3
 template<>
 inline const FieldVector<UGCtype, 3>& UGGridElement<0,3>::
-operator [](int i)
+operator [](int i) const
 {
   const UG3d::VERTEX* vertex = target_->myvertex;
 
@@ -132,7 +132,7 @@ operator [](int i)
 
 template<>
 inline const FieldVector<UGCtype, 3>& UGGridElement<3,3>::
-operator [](int i)
+operator [](int i) const
 {
   assert(0<=i && i<corners());
 
@@ -152,7 +152,7 @@ operator [](int i)
 #ifdef _2
 template<>
 inline const FieldVector<UGCtype, 2>& UGGridElement<0,2>::
-operator [](int i)
+operator [](int i) const
 {
   const UG2d::VERTEX* vertex = target_->myvertex;
 
@@ -164,7 +164,7 @@ operator [](int i)
 
 template<>
 inline const FieldVector<UGCtype, 2>& UGGridElement<2,2>::
-operator [](int i)
+operator [](int i) const
 {
   assert(0<=i && i<corners());
 
@@ -322,14 +322,14 @@ checkInside(const FieldVector<UGCtype, dimworld> &global)
 
 template< int dim, int dimworld>
 inline UGCtype UGGridElement<dim,dimworld>::
-integration_element (const FieldVector<UGCtype, dim>& local)
+integration_element (const FieldVector<UGCtype, dim>& local) const
 {
   //std::cout << "integration element: " << std::abs(Jacobian_inverse(local).determinant()) << std::endl;
   return std::abs(1/Jacobian_inverse(local).determinant());
 }
 
 inline UGCtype UGGridElement<1,2>::
-integration_element (const FieldVector<UGCtype, 1>& local)
+integration_element (const FieldVector<UGCtype, 1>& local) const
 {
   FieldVector<UGCtype, 2> diff = coord_[0];
   diff -= coord_[1];
@@ -337,14 +337,14 @@ integration_element (const FieldVector<UGCtype, 1>& local)
 }
 
 inline UGCtype UGGridElement<2,3>::
-integration_element (const FieldVector<UGCtype, 2>& local)
+integration_element (const FieldVector<UGCtype, 2>& local) const
 {
   DUNE_THROW(GridError, "integration_element for UGGridElement<2,3> not implemented yet!");
 }
 
 template< int dim, int dimworld>
 inline const Mat<dim,dim>& UGGridElement<dim,dimworld>::
-Jacobian_inverse (const FieldVector<UGCtype, dim>& local)
+Jacobian_inverse (const FieldVector<UGCtype, dim>& local) const
 {
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];

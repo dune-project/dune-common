@@ -3,6 +3,10 @@
 #ifndef __DUNE_UG_FUNCTIONS_HH__
 #define __DUNE_UG_FUNCTIONS_HH__
 
+/** \file
+ * \brief Encapsulates some UG macros and functions
+ */
+
 #include "ugtypes.hh"
 
 namespace Dune {

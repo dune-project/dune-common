@@ -3,6 +3,10 @@
 #ifndef __DUNE_UGTYPES_HH__
 #define __DUNE_UGTYPES_HH__
 
+/** \file
+ * \brief Encapsulates a few types from UG
+ */
+
 namespace UG2d {
   struct multigrid;
   struct domain;

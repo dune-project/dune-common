@@ -3,6 +3,10 @@
 #ifndef __DUNE_UGHIERITERATOR_HH__
 #define __DUNE_UGHIERITERATOR_HH__
 
+/** \file
+ * \brief The UGGridHierarchicIterator class
+ */
+
 #include <dune/common/stack.hh>
 
 namespace Dune {

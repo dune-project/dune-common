@@ -3,6 +3,9 @@
 #ifndef __DUNE_UGGRID_BOUNDENT_HH__
 #define __DUNE_UGGRID_BOUNDENT_HH__
 
+/** \file
+ * \brief The UGGridBoundaryEntity class
+ */
 
 namespace Dune {
 

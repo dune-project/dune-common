@@ -88,9 +88,9 @@ index()
 #endif
 
 template< int codim, int dim, int dimworld>
-inline UGGridElement<dim-codim,dimworld>&
+inline const UGGridElement<dim-codim,dimworld>&
 UGGridEntity < codim, dim ,dimworld >::
-geometry()
+geometry() const
 {
   return geo_;
 }
@@ -129,7 +129,7 @@ mark( int refCount )
 //*****************************************************************8
 // count
 template <int codim, int dim, int dimworld> template <int cc>
-inline int UGGridEntity<codim,dim,dimworld>::count ()
+inline int UGGridEntity<codim,dim,dimworld>::count () const
 {
   DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim << ", " << dimworld
                                         << ">::count() not implemented yet!");
@@ -138,7 +138,7 @@ inline int UGGridEntity<codim,dim,dimworld>::count ()
 
 template <int codim, int dim, int dimworld>
 template <int cc>
-inline int UGGridEntity<codim, dim, dimworld>::subIndex(int i)
+inline int UGGridEntity<codim, dim, dimworld>::subIndex(int i) const
 {
   DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim << ", " << dimworld
                                         << ">::subIndex(int i) not implemented yet!");
@@ -173,7 +173,7 @@ inline AdaptationState UGGridEntity < 0, dim ,dimworld >::state() const
 // count
 template <int dim, int dimworld>
 template <int cc>
-inline int UGGridEntity<0,dim,dimworld>::count ()
+inline int UGGridEntity<0,dim,dimworld>::count() const
 {
   if (dim==3) {
 
@@ -210,7 +210,7 @@ inline int UGGridEntity<0,dim,dimworld>::count ()
 
 template <int dim, int dimworld>
 template <int cc>
-inline int UGGridEntity<0, dim, dimworld>::subIndex(int i)
+inline int UGGridEntity<0, dim, dimworld>::subIndex(int i) const
 {
   assert(i>=0 && i<count<cc>());
 
@@ -365,9 +365,9 @@ level()
 }
 
 template< int dim, int dimworld>
-inline UGGridElement<dim,dimworld>&
+inline const UGGridElement<dim,dimworld>&
 UGGridEntity < 0, dim ,dimworld >::
-geometry()
+geometry() const
 {
   return geo_;
 }

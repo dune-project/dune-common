@@ -3,6 +3,10 @@
 #ifndef DUNE_UGINTERSECTIONIT_HH
 #define DUNE_UGINTERSECTIONIT_HH
 
+/** \file
+ * \brief The UGGridIntersectionIterator class
+ */
+
 namespace Dune {
 
   //**********************************************************************
@@ -74,7 +78,7 @@ namespace Dune {
     UGGridElement<dim-1,dimworld>& intersection_self_global ();
 
     //! local number of codim 1 entity in self where intersection is contained in
-    int number_in_self ();
+    int number_in_self () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
