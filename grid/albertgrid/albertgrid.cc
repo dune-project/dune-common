@@ -12,9 +12,13 @@ void AlbertLeafRefine(EL *parent, EL *child[2]){};
 void AlbertLeafCoarsen(EL *parent, EL *child[2]){};
 
 static int maxLevel=0;
+static std::vector<int> *neighArray;
+
 void getMaxLevel(const EL_INFO * elf)
 {
-  if(maxLevel < elf->level) maxLevel = elf->level;
+  int level = elf->level;
+  if(maxLevel < level) maxLevel = level;
+  (*neighArray)[elf->el->index] = level;
 }
 
 void initLeafData(LEAF_DATA_INFO * linfo)
@@ -1184,6 +1188,7 @@ namespace Dune
   level()
   {
     return level_;
+    //return elInfo_->level;
   }
 
   template<int dim, int dimworld>
@@ -1426,21 +1431,37 @@ namespace Dune
       int i = stack->info_stack[stack->stack_used];
       el = el->child[i];
       stack->info_stack[stack->stack_used]++;
-      ALBERT fill_elinfo(i, stack->elinfo_stack + stack->stack_used,
-                         stack->elinfo_stack + (stack->stack_used + 1));
-      stack->stack_used++;
-
-      stack->info_stack[stack->stack_used] = 0;
 
       // new: go down maxlevel, but fake the elements
       level_++;
+      grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,stack->elinfo_stack+stack->stack_used+1);
+      //ALBERT fill_elinfo(i, stack->elinfo_stack + stack->stack_used,
+      //  stack->elinfo_stack + (stack->stack_used + 1));
+      stack->stack_used++;
+
+      stack->info_stack[stack->stack_used] = 0;
     }
     // the case if we have no child but level_ < maxlevel_
     // then we want to fake the next maxlevel_ - level_ elements
     else if(level_ < maxlevel_)
     {
       // new: go down until maxlevel, but fake the not existant elements
+      if(stack->stack_used >= stack->stack_size - 1)
+        ALBERT enlargeTraverseStack(stack);
+
+      el = el;
+
+      // means all elements visited
+      stack->info_stack[stack->stack_used] = 2;
+
+      // new: go down maxlevel, but fake the elements
       level_++;
+      grid_.fillElInfo(0, level_, stack->elinfo_stack+stack->stack_used,stack->elinfo_stack+stack->stack_used+1);
+      //ALBERT fill_elinfo(i, stack->elinfo_stack + stack->stack_used,
+      //  stack->elinfo_stack + (stack->stack_used + 1));
+      stack->stack_used++;
+
+      stack->info_stack[stack->stack_used] = 0;
     }
 
     return (stack->elinfo_stack + stack->stack_used);
@@ -1495,7 +1516,6 @@ namespace Dune
       std::cout << "Sorry, elInfo == NULL, no Neighbour Iterator! \n\n";
       makeIterator();
     }
-
   }
 
   template< int dim, int dimworld>
@@ -1989,7 +2009,7 @@ namespace Dune
 
       if((travLevel < 0) || (travLevel > grid_.maxlevel()))
       {
-        printf("AlbertGridLevelIterator<%d,%d,%d>: Wrong Level (%d) in Contructor, grid,maxlevel() = %d ! \n",
+        printf("AlbertGridLevelIterator<%d,%d,%d>: Wrong Level (%d) in Contructor, grid.maxlevel() = %d ! \n",
                codim,dim,dimworld,travLevel, grid_.maxlevel());
         abort();
       }
@@ -2092,7 +2112,7 @@ namespace Dune
       return elInfo; // if no more Vertices, return
 
     // go next, if Vertex is not treated on this Element
-    if(vertexMarker_->notOnThisElement(elInfo,vertex_))
+    if(vertexMarker_->notOnThisElement(elInfo->el,level_,vertex_))
       elInfo = goNextVertex(stack,elInfo);
 
     return elInfo;
@@ -2176,18 +2196,6 @@ namespace Dune
     FUNCNAME("goNextElInfo");
     ALBERT EL_INFO       *elinfo=NULL;
 
-#if 0
-    if (stack->stack_used)
-    {
-      ALBERT_TEST_EXIT(elinfo_old == stack->elinfo_stack+stack->stack_used)
-        ("invalid old elinfo\n");
-    }
-    else
-    {
-      ALBERT_TEST_EXIT(elinfo_old == nil) ("invalid old elinfo != nil\n");
-    }
-#endif
-
     if (stack->traverse_fill_flag & CALL_LEAF_EL_LEVEL)
     {
       // this is done in traverse_next
@@ -2211,6 +2219,7 @@ namespace Dune
     }
     else
     {
+      std::cout << "Warning: dont use traverse_next becasue we overloaded fill_elinfo\n";
       // the original ALBERT traverse_next, goes to next elinfo,
       // depending on the flags choosen
       elinfo = ALBERT traverse_next(stack,elinfo_old);
@@ -2287,8 +2296,9 @@ namespace Dune
       i = stack->info_stack[stack->stack_used];
       el = el->child[i];
       stack->info_stack[stack->stack_used]++;
-      fill_elinfo(i, stack->elinfo_stack+stack->stack_used,
-                  stack->elinfo_stack+stack->stack_used+1);
+      //fill_elinfo(i, stack->elinfo_stack+stack->stack_used,
+      grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
+                       stack->elinfo_stack+stack->stack_used+1);
       stack->stack_used++;
 
 
@@ -2359,17 +2369,15 @@ namespace Dune
   //  AlbertMarkerVertex
   //
   //*********************************************************************
-  AlbertMarkerVector::AlbertMarkerVector ()
-  {}
-
-  void AlbertMarkerVector::makeNewSize(int newNumberOfEntries)
+#if 0
+  inline void AlbertMarkerVector::makeNewSize(int newNumberOfEntries)
   {
     vec_.resize(newNumberOfEntries);
     for(Array<int>::Iterator it = vec_.begin(); it != vec_.end(); ++it)
       (*it) = -1;
   }
 
-  void AlbertMarkerVector::makeSmaller(int newNumberOfEntries)
+  inline void AlbertMarkerVector::makeSmaller(int newNumberOfEntries)
   {}
 
   void AlbertMarkerVector::checkMark(ALBERT EL_INFO * elInfo, int localNum)
@@ -2377,43 +2385,48 @@ namespace Dune
     if(vec_[elInfo->el->dof[localNum][0]] == -1)
       vec_[elInfo->el->dof[localNum][0]] = elInfo->el->index;
   }
+#endif
 
-  bool AlbertMarkerVector::notOnThisElement(ALBERT EL_INFO * elInfo, int localNum)
+  inline bool AlbertMarkerVector::notOnThisElement(ALBERT EL * el, int level, int localNum)
   {
-    return (vec_[numVertex_*elInfo->level +
-                 elInfo->el->dof[localNum][0]] != elInfo->el->index);
+    return (vec_[ numVertex_ * level + el->dof[localNum][0]] != el->index);
   }
 
-  template <class Grid>
-  void AlbertMarkerVector::markNewVertices(Grid &grid)
+  template <class GridType>
+  inline void AlbertMarkerVector::markNewVertices(GridType &grid)
   {
     ALBERT MESH *mesh_ = grid.getMesh();
 
     int nvx = mesh_->n_vertices;
+    // remember the number of vertices of the mesh
     numVertex_ = nvx;
+
     int maxlevel = grid.maxlevel();
 
-    if(vec_.size() < maxlevel* nvx)
-      makeNewSize(2*maxlevel* nvx);
+    int number = (maxlevel+1) * nvx;
+    if(vec_.size() < number) vec_.resize( 2 * number );
+    for(int i=0; i<vec_.size(); i++) vec_[i] = -1;
 
     for(int level=0; level <= maxlevel; level++)
     {
-      typedef typename Grid::Traits<0>::LevelIterator LevelIterator;
+      //std::cout << level << " Level \n";
+      typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
       LevelIterator endit = grid.lend<0> (level);
       for(LevelIterator it = grid.lbegin<0> (level); it != endit; ++it)
       {
-        for(int local=0; local<Grid::dimension+1; local++)
+        for(int local=0; local<GridType::dimension+1; local++)
         {
           int num = it->getElInfo()->el->dof[local][0];
-          if( vec_[it->level()* nvx + num] == -1 )
-            vec_[it->level()* nvx + num] = it->globalIndex();
+          //std::cout << num << " Vx Num \n";
+          if( vec_[level * nvx + num] == -1 )
+            vec_[level * nvx + num] = it->globalIndex();
         }
       }
       // remember the number of entity on level and codim = 0
     }
   }
 
-  void AlbertMarkerVector::print()
+  inline void AlbertMarkerVector::print()
   {
     printf("\nEntries %d \n",vec_.size());
     for(int i=0; i<vec_.size(); i++)
@@ -2435,11 +2448,13 @@ namespace Dune
     // we have at least one level, level 0
     maxlevel_ = 0;
 
+    neighOnLevel_.resize( mesh_->n_hier_elements);
+
     vertexMarker_ = new AlbertMarkerVector ();
     vertexMarker_->markNewVertices(*this);
 
     markNew();
-
+    wasChanged_ = true;
   }
 
 
@@ -2479,11 +2494,9 @@ namespace Dune
     for(LevIt it = lbegin<0>(maxlevel()); it != endit; ++it)
       (*it).mark(refCount);
 
-    bool fake = refineLocal ();
+    wasChanged_ = refineLocal ();
 
-    printf("AlbertGrid<%d,%d>::globalRefine: Grid refined, maxlevel = %d \n",
-           dim,dimworld,maxlevel_);
-    return fake;
+    return wasChanged_;
   }
 
 
@@ -2496,17 +2509,30 @@ namespace Dune
     flag = ALBERT refine(mesh_);
 
     // determine new maxlevel
+    neighOnLevel_.resize( mesh_->n_hier_elements );
+    //for(int i=0; i<neighOnLevel_.size(); i++) neighOnLevel_[i] = -1;
+    neighArray = &neighOnLevel_;
+
     ALBERT maxLevel = 0;
-    ALBERT mesh_traverse(mesh_,-1,CALL_LEAF_EL|FILL_NOTHING,ALBERT getMaxLevel);
+    ALBERT mesh_traverse(mesh_,-1,
+                         CALL_EVERY_EL_INORDER|FILL_NOTHING,ALBERT getMaxLevel);
     maxlevel_ = ALBERT maxLevel;
 
+    //for(int i=0; i<neighOnLevel_.size(); i++)
+    //  std::cout << neighOnLevel_[i] << " \n";
+
+    // mark vertices on elements
     vertexMarker_->markNewVertices(*this);
 
     // map the indices
     markNew();
 
-    bool refined = (flag == 0) ? false : true;
-    return refined;
+    wasChanged_ = (flag == 0) ? false : true;
+
+    printf("AlbertGrid<%d,%d>::refineLocal: Grid refined, maxlevel = %d \n",
+           dim,dimworld,maxlevel_);
+
+    return wasChanged_;
   }
 
   template < int dim, int dimworld >
@@ -2515,8 +2541,8 @@ namespace Dune
   {
     unsigned char flag;
     flag = ALBERT coarsen(mesh_);
-    bool coarsend = (flag == 0) ? false : true;
-    return coarsend;
+    wasChanged_ = (flag == 0) ? false : true;
+    return wasChanged_;
   }
 
 
@@ -2573,6 +2599,7 @@ namespace Dune
       }
 
       size_[ind] = numberOfElements;
+      std::cout << numberOfElements << " Calced Noe \n";
       return numberOfElements;
     }
     else
@@ -2596,10 +2623,13 @@ namespace Dune
     enum {dim = 2}; enum {dimworld = 2};
     typedef AlbertGridLevelIterator<0,dim,dimworld> LEVit;
 
-    if(level == -1) level = maxlevel_;
+    //if(level == -1) level = maxlevel_;
+
     LEVit endit = lend<0>(level);
 
     int nvx = size(level,dim);
+    //std::cout << nvx << " Nvx \n";
+
     int noe = size(level,0);
 
     double **coord = new double *[nvx];
@@ -2625,11 +2655,12 @@ namespace Dune
       for (int i = 0; i < dim+1; i++)
       {
         int k = it->entity<dim>(i)->index();
+        //std::cout << k << " K " << nvx << " Nop\n";
         vertex[elNum][i] = k;
 
         nb[elNum][i] = nit->index();
 
-        Vec<dimworld> vec = (it->geometry())[i];
+        Vec<dimworld>& vec = (it->geometry())[i];
         for (int j = 0; j < dimworld; j++)
           coord[k][j] = vec(j);
 
@@ -2778,10 +2809,14 @@ namespace Dune
     // level = 0 is not interesting for this implementation
     // +1, because if Entity is Boundary then globalIndex == -1
     // an therefore we add 1 and get Entry 0, which schould be -1
+#if REALINDEX
     if (globalIndex < 0)
       return globalIndex;
     else
-      return levelIndex_[codim][globalIndex];
+      return levelIndex_[codim][(level * mesh_->n_hier_elements) + globalIndex];
+#else
+    return globalIndex;
+#endif
   }
 
   // create lookup table for indices of the elements
@@ -2789,15 +2824,19 @@ namespace Dune
   inline void AlbertGrid < dim, dimworld >::markNew()
   {
     // only for gcc, means notin'
-    typedef AlbertGrid < dim ,dimworld > GridType;
+    //typedef AlbertGrid < dim ,dimworld > GridType;
 
-    if(mesh_->n_hier_elements > levelIndex_[0].size())
-      makeNewSize(levelIndex_[0], mesh_->n_hier_elements);
+    int nElements = mesh_->n_hier_elements;
+    int nVertices = mesh_->n_vertices;
 
+    int number = (maxlevel_+1) * nElements;
+    if(number > levelIndex_[0].size())
+      //makeNewSize(levelIndex_[0], number);
+      levelIndex_[0].resize(number);
+
+    // make new size and set all levels to -1 ==> new calc
     if((maxlevel_+1)*(numCodim) > size_.size())
       makeNewSize(size_, 2*((maxlevel_+1)*numCodim));
-
-    //  AlbertGrid<dim,dimworld> &grid = (*this);
 
     // the easiest way, in Albert all elements have unique global element
     // numbers, therefore we make one big array from which we get with the
@@ -2810,31 +2849,400 @@ namespace Dune
       for(LevelIterator it = lbegin<0> (level); it != endit; ++it)
       {
         int no = it->globalIndex();
-        levelIndex_[0][no] = num;
+        levelIndex_[0][level * nElements + no] = num;
         num++;
       }
       // remember the number of entity on level and codim = 0
-      size_[level*numCodim + 0] = num;
+      size_[level*numCodim /* +0 */] = num;
     };
 
-    if((maxlevel_+1) * mesh_->n_vertices > levelIndex_[dim].size())
-      makeNewSize(levelIndex_[dim], ((maxlevel_+1)* mesh_->n_vertices));
+    if((maxlevel_+1) * nVertices > levelIndex_[dim].size())
+      makeNewSize(levelIndex_[dim], ((maxlevel_+1)* nVertices));
 
     for(int level=0; level <= maxlevel_; level++)
     {
+      //std::cout << level << " " << maxlevel_ << "\n";
       typedef AlbertGridLevelIterator<dim,dim,dimworld> LevelIterator;
       int num = 0;
-      LevelIterator endit = lend<dim>(level);
+      LevelIterator endit = lend<dim> (level);
       for(LevelIterator it = lbegin<dim> (level); it != endit; ++it)
       {
         int no = it->globalIndex();
-        levelIndex_[dim][level*mesh_->n_vertices + no] = num;
+        //   std::cout << no << " Glob Num\n";
+        levelIndex_[dim][level * nVertices + no] = num;
         num++;
       }
+      //   std::cout << "Done LevelIt \n";
       // remember the number of entity on level and codim = 0
       size_[level*numCodim + dim] = num;
     };
   }
+
+  //#define DEBUG_FILLELINFO
+
+  template<int dim, int dimworld>
+  inline void AlbertGrid<dim,dimworld >::
+  fillElInfo(int ichild, int level_, const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo) const
+  {
+    int j;
+    ALBERT EL      *nb=NULL;
+    ALBERT EL      *othNb=NULL;
+    ALBERT EL      *el = elinfo_old->el;
+    ALBERT FLAGS fill_flag = elinfo_old->fill_flag;
+    ALBERT FLAGS fill_opp_coords;
+
+    //ALBERT_TEST_EXIT(el->child[0])("no children?\n");
+    // in this implementation we can go down without children
+    if(el->child[0])
+    {
+      ALBERT_TEST_EXIT((elinfo->el = el->child[ichild])) ("missing child %d?\n", ichild);
+
+      elinfo->macro_el  = elinfo_old->macro_el;
+      elinfo->fill_flag = fill_flag;
+      elinfo->mesh      = elinfo_old->mesh;
+      elinfo->parent    = el;
+      elinfo->level     = elinfo_old->level + 1;
+
+      if (fill_flag & FILL_COORDS)
+      {
+        if (el->new_coord)
+        {
+          for (j = 0; j < dimworld; j++)
+            elinfo->coord[2][j] = el->new_coord[j];
+        }
+        else
+        {
+          for (j = 0; j < dimworld; j++)
+            elinfo->coord[2][j] =
+              0.5 * (elinfo_old->coord[0][j] + elinfo_old->coord[1][j]);
+        }
+
+        if (ichild==0)
+        {
+          for (j = 0; j < dimworld; j++)
+          {
+            elinfo->coord[0][j] = elinfo_old->coord[2][j];
+            elinfo->coord[1][j] = elinfo_old->coord[0][j];
+          }
+        }
+        else
+        {
+          for (j = 0; j < dimworld; j++)
+          {
+            elinfo->coord[0][j] = elinfo_old->coord[1][j];
+            elinfo->coord[1][j] = elinfo_old->coord[2][j];
+          }
+        }
+      }
+
+      /* ! NEIGH_IN_EL */
+      // make the neighbour relations
+
+      if (fill_flag & (FILL_NEIGH | FILL_OPP_COORDS))
+      {
+        fill_opp_coords = (fill_flag & FILL_OPP_COORDS);
+
+        // first child
+        if (ichild==0)
+        {
+          elinfo->opp_vertex[2] = elinfo_old->opp_vertex[1];
+          if ((elinfo->neigh[2] = elinfo_old->neigh[1]))
+          {
+            ALBERT EL * nextNb = elinfo->neigh[2]->child[0];
+            if(nextNb)
+            {
+              if( elinfo->opp_vertex[2] == 0)
+                nextNb = elinfo->neigh[2]->child[1];
+              if(neighOnLevel_[nextNb->index] <= level_)
+                elinfo->neigh[2] = nextNb;
+              // if we go down the opposite vertex now must be 2
+              elinfo->opp_vertex[2] = 2;
+            }
+            if (fill_opp_coords)
+            {
+              for (j=0; j<dimworld; j++)
+                elinfo->opp_coord[2][j] = elinfo_old->opp_coord[1][j];
+            }
+          } // ok
+
+          if (el->child[0])
+          {
+            bool goDownNextChi = false;
+            ALBERT EL *chi1 = el->child[1];
+
+            if(chi1->child[0])
+            {
+              if(neighOnLevel_[chi1->child[1]->index] <= level_)
+                goDownNextChi = true;
+            }
+
+            if(goDownNextChi)
+            {
+              ALBERT_TEST_EXIT((elinfo->neigh[1] = chi1->child[1]))
+                ("el->child[1]->child[0]!=nil, but el->child[1]->child[1]=nil\n");
+
+              elinfo->opp_vertex[1] = 2;
+              if (fill_opp_coords)
+              {
+                if (chi1->new_coord)
+                {
+                  for (j=0; j<dimworld; j++)
+                    elinfo->opp_coord[1][j] = chi1->new_coord[j];
+                }
+                else
+                {
+                  for (j=0; j<dimworld; j++)
+                    elinfo->opp_coord[1][j] =
+                      0.5 * (elinfo_old->coord[1][j] + elinfo_old->coord[2][j]);
+                }
+              }
+            }
+            else
+            {
+              ALBERT_TEST_EXIT((elinfo->neigh[1] = chi1))
+                ("el->child[0] != nil, but el->child[1] = nil\n");
+              elinfo->opp_vertex[1] = 0;
+              if (fill_opp_coords)
+              {
+                for (j=0; j<dimworld; j++)
+                  elinfo->opp_coord[1][j] = elinfo_old->coord[1][j];
+              }
+            }
+          }
+          else
+          {
+            ALBERT_TEST_EXIT((el->child[0]))
+              ("No Child\n");
+          }
+
+          if ((nb = elinfo_old->neigh[2]))
+          {
+#ifdef DEBUG_FILLELINFO
+            printf("OppVx %d \n",elinfo_old->opp_vertex[2]);
+            printf("El  %d , Neigh %d \n",el->index,nb->index);
+            ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] == 2) ("invalid neighbour\n");
+#endif
+            if(nb->child[0])
+              ALBERT_TEST_EXIT((nb = nb->child[1])) ("missing child[1]?\n");
+
+            if (nb->child[0])
+            {
+              bool goDownNextChi = false;
+              if(neighOnLevel_[nb->child[0]->index] <= level_)
+                goDownNextChi = true;
+
+              if(goDownNextChi)
+              {
+
+                elinfo->opp_vertex[0] = 2;
+                if (fill_opp_coords)
+                {
+                  if (nb->new_coord)
+                  {
+                    for (j=0; j<dimworld; j++)
+                      elinfo->opp_coord[0][j] = nb->new_coord[j];
+                  }
+                  else
+                  {
+                    for (j=0; j<dimworld; j++)
+                    {
+                      elinfo->opp_coord[0][j] = 0.5*
+                                                (elinfo_old->opp_coord[2][j] + elinfo_old->coord[0][j]);
+                    }
+                  }
+                }
+                nb = nb->child[0];
+              }
+              else
+              {
+                elinfo->opp_vertex[0] = 1;
+                if (fill_opp_coords)
+                {
+                  for (j=0; j<dimworld; j++)
+                    elinfo->opp_coord[0][j] = elinfo_old->opp_coord[2][j];
+                }
+              }
+            }
+          }
+          elinfo->neigh[0] = nb;
+        }
+        else /* ichild==1 , second child */
+        {
+          elinfo->opp_vertex[2] = elinfo_old->opp_vertex[0];
+          if ((elinfo->neigh[2] = elinfo_old->neigh[0]))
+          {
+            ALBERT EL * nextNb = elinfo->neigh[2]->child[0];
+            if(nextNb)
+            {
+              if( elinfo->opp_vertex[2] == 0)
+                nextNb = elinfo->neigh[2]->child[1];
+              if(neighOnLevel_[nextNb->index] <= level_)
+                elinfo->neigh[2] = nextNb;
+              // if we go down the opposite vertex now must be 2
+              elinfo->opp_vertex[2] = 2;
+            }
+            if (fill_opp_coords)
+            {
+              for (j=0; j<dimworld; j++)
+                elinfo->opp_coord[2][j] = elinfo_old->opp_coord[0][j];
+            }
+          }
+
+
+          ALBERT EL *chi0=el->child[0];
+
+          if (chi0->child[0])
+          {
+            elinfo->neigh[0] = chi0;
+
+            if(neighOnLevel_[chi0->child[0]->index] <= level_)
+              elinfo->neigh[0] = chi0->child[0];
+
+            elinfo->opp_vertex[0] = 2;
+            if (fill_opp_coords)
+            {
+              if (chi0->new_coord)
+              {
+                for (j=0; j<dimworld; j++)
+                  elinfo->opp_coord[0][j] = chi0->new_coord[j];
+              }
+              else
+              {
+                for (j=0; j<dimworld; j++)
+                  elinfo->opp_coord[0][j] = 0.5 *
+                                            (elinfo_old->coord[0][j] + elinfo_old->coord[2][j]);
+              }
+            }
+          }
+          else
+          {
+            elinfo->neigh[0] = el->child[0];
+            elinfo->opp_vertex[0] = 1;
+            if (fill_opp_coords)
+            {
+              for (j=0; j<dimworld; j++)
+                elinfo->opp_coord[0][j] = elinfo_old->coord[0][j];
+            }
+          }
+
+          if ((nb = elinfo_old->neigh[2]))
+          {
+#ifdef DEBUG_FILLELINFO
+            printf("OppVx %d \n",elinfo_old->opp_vertex[2]);
+            ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] == 2) ("invalid neighbour\n");
+#endif
+            if(nb->child[0])
+              ALBERT_TEST_EXIT((nb = nb->child[0])) ("missing child?\n");
+
+            bool goDownChild = false;
+            if (nb->child[0])
+            {
+              if(neighOnLevel_[nb->child[1]->index] <= level_)
+                goDownChild = true;
+            }
+
+            if(goDownChild)
+            {
+              elinfo->opp_vertex[1] = 2;
+              if (fill_opp_coords)
+              {
+                if (nb->new_coord)
+                  for (j=0; j<dimworld; j++)
+                    elinfo->opp_coord[1][j] = nb->new_coord[j];
+                else
+                  for (j=0; j<dimworld; j++)
+                    elinfo->opp_coord[1][j] = 0.5 *
+                                              (elinfo_old->opp_coord[2][j] + elinfo_old->coord[1][j]);
+              }
+              nb = nb->child[1];
+            }
+            else
+            {
+              elinfo->opp_vertex[1] = 0;
+              if (fill_opp_coords)
+              {
+                for (j=0; j<dimworld; j++)
+                  elinfo->opp_coord[1][j] = elinfo_old->opp_coord[2][j];
+              }
+            }
+          }
+          elinfo->neigh[1] = nb;
+        }
+      }
+
+      if (fill_flag & FILL_BOUND)
+      {
+        if (elinfo_old->boundary[2])
+          elinfo->bound[2] = elinfo_old->boundary[2]->bound;
+        else
+          elinfo->bound[2] = INTERIOR;
+
+        if (ichild==0)
+        {
+          elinfo->bound[0] = elinfo_old->bound[2];
+          elinfo->bound[1] = elinfo_old->bound[0];
+          elinfo->boundary[0] = elinfo_old->boundary[2];
+          elinfo->boundary[1] = nil;
+          elinfo->boundary[2] = elinfo_old->boundary[1];
+        }
+        else
+        {
+          elinfo->bound[0] = elinfo_old->bound[1];
+          elinfo->bound[1] = elinfo_old->bound[2];
+          elinfo->boundary[0] = nil;
+          elinfo->boundary[1] = elinfo_old->boundary[2];
+          elinfo->boundary[2] = elinfo_old->boundary[0];
+        }
+      }
+
+    }
+    // no child exists, but go down maxlevel
+    // means neighbour may be changed but element itself not
+    else
+    {
+      memcpy(elinfo,elinfo_old,sizeof(ALBERT EL_INFO));
+      elinfo->level = elinfo_old->level + 1;
+
+      // we use triangles here
+      enum { numberOfNeighbors = 3 };
+      enum { numOfVx = 3 };
+      for(int i=0; i<numberOfNeighbors; i++)
+      {
+        if(elinfo_old->neigh[i])
+        {
+          // if children of neighbour
+          if(elinfo_old->neigh[i]->child[0])
+          {
+#ifdef DEBUG_FILLELINFO
+            ALBERT_TEST_EXIT(elinfo_old->opp_vertex[2] != 2) ("invalid neighbour\n");
+#endif
+            int oppV = elinfo_old->opp_vertex[i];
+            if(oppV == 0)
+            {
+              elinfo->neigh[i] = elinfo_old->neigh[i]->child[1];
+              elinfo->opp_vertex[i] = 2;
+              for (int k=0; k < dimworld ; k++)
+                elinfo->opp_coord[i][k] = 0.5 *
+                                          (elinfo_old->opp_coord[oppV][k] +
+                                           elinfo_old->coord[(i-1)%numOfVx][k]);
+            }
+            else
+            {
+              elinfo->neigh[i] = elinfo_old->neigh[i]->child[0];
+              elinfo->opp_vertex[i] = 2;
+              for (int k=0; k < dimworld ; k++)
+                elinfo->opp_coord[i][k] = 0.5 *
+                                          (elinfo_old->opp_coord[oppV][k] +
+                                           elinfo_old->coord[(i+1)%numOfVx][k]);
+            }
+          }
+        }
+      }
+
+    }
+
+
+  } // end Grid::fillElInfo
 
 
 } // end namespace dune

@@ -3,11 +3,14 @@
 #ifndef DUNE_ALBERTGRID_HH
 #define DUNE_ALBERTGRID_HH
 
+#include <vector>
+
 #include "../common/misc.hh"
 #include "../common/matvec.hh"
 #include "../common/array.hh"
 #include "common/grid.hh"
 
+#define REALINDEX 1
 
 #ifdef __ALBERTNAME__
 #define ALBERT Albert::
@@ -1083,6 +1086,13 @@ namespace Albert
       //friend class AlbertGridEntity <1 << dim-1 ,dim,dimworld>;
       friend class AlbertGridEntity <dim,dim,dimworld>;
 
+      // friends because of fillElInfo
+      friend class AlbertGridLevelIterator<0,dim,dimworld>;
+      friend class AlbertGridLevelIterator<1,dim,dimworld>;
+      friend class AlbertGridLevelIterator<2,dim,dimworld>;
+      friend class AlbertGridLevelIterator<3,dim,dimworld>;
+      friend class AlbertGridHierarchicIterator<dim,dimworld>;
+
       //! AlbertGrid is only implemented for 2 and 3 dimension
       //! for 1d use SGrid or SimpleGrid
       CompileTimeChecker<dimworld != 1>   Do_not_use_AlbertGrid_for_1d_Grids;
@@ -1150,11 +1160,18 @@ namespace Albert
       // number of maxlevel of the mesh
       int maxlevel_;
 
+      // true if grid was refined
+      bool wasChanged_;
+
       // number of entitys of each level an codim
       Array<int> size_;
 
-      // needed for VertexIterator
-      AlbertMarkerVector *vertexMarker_;
+      std::vector<int> neighOnLevel_;
+
+      void fillElInfo(int ichild, int level_, const ALBERT EL_INFO *elinfo_old, ALBERT EL_INFO *elinfo) const ;
+
+      // needed for VertexIterator, mark on which element a vertex is treated
+      AlbertMarkerVector * vertexMarker_;
 
       //*********************************************************
       // Methods for mapping the global Index to local on Level
@@ -1185,23 +1202,22 @@ namespace Albert
     // for the LevelIterator codim == dim
     class AlbertMarkerVector
     {
-      Array<int> vec_;
-      int numVertex_;
       friend class AlbertGrid<2,2>;
       friend class AlbertGrid<3,3>;
     public:
+      AlbertMarkerVector () {} ;
 
-      AlbertMarkerVector ();
+      bool notOnThisElement(ALBERT EL * el, int level , int vertex);
 
-      void makeNewSize(int newNumberOfEntries);
-      void makeSmaller(int newNumberOfEntries);
-      bool notOnThisElement(ALBERT EL_INFO * elInfo, int vertex);
       template <class Grid>
       void markNewVertices(Grid &grid);
       void print();
-    private:
-      void checkMark(ALBERT EL_INFO * elInfo, int vertex);
 
+    private:
+      // built in array to mark on which element a vertex is reached
+      Array<int> vec_;
+      // number of vertices
+      int numVertex_;
     };
 
     /** @} end documentation group */
