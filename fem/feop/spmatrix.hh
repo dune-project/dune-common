@@ -22,9 +22,9 @@ namespace Dune
     typedef T Ttype; //!< remember the value type
 
   private:
-    T* values_;     //!< data values (nz_ elements)
+    Array<T> values_;     //!< data values (nz_ elements)
   public:
-    int* col_;      //!< row_ptr (dim_[0]+1 elements)
+    Array<int> col_;      //!< row_ptr (dim_[0]+1 elements)
   private:
     int dim_[2];    //!< dim_[0] x dim_[1] Matrix
     int nz_;        //!< number of nonzeros per row
@@ -39,7 +39,7 @@ namespace Dune
 
     //! make matrix with 'rows' rows and 'cols' columns,
     //! maximum 'nz' non zero values in each row
-    //! and intialize all values with 'val'
+    //! and initialize all values with 'val'
     SparseRowMatrix(int rows, int cols, int nz, const T& val);
 
     //! free memory for values_ and col_
@@ -135,8 +135,9 @@ namespace Dune
     void apply_t(const SimpleVector<T> &f, SimpleVector<T> &ret) const;
 
     /** \brief For an argument \f$ A \f$, this computes \f$ M A M^T \f$
-     * \todo This is a hack!  It does not use the fact that the matrices
-     * are sparse!
+     * \todo This routine's complexity still scales linearly with the total number
+     * of matrix entries of the result (not only the nonzero ones).
+     * Isn't there anything better?
      */
     SparseRowMatrix<T> applyFromLeftAndRightTo(const SparseRowMatrix<T>& A) const;
 

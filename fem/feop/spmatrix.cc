@@ -14,8 +14,8 @@ namespace Dune
   template <class T>
   SparseRowMatrix<T>::SparseRowMatrix()
   {
-    values_ = NULL;
-    col_ = NULL;
+    //  values_ = NULL;
+    //  col_ = NULL;
     dim_[0] = 0;
     dim_[1] = 0;
     nz_ = 0;
@@ -23,10 +23,7 @@ namespace Dune
 
   template <class T>
   SparseRowMatrix<T>::~SparseRowMatrix()
-  {
-    if(values_) delete values_;
-    if(col_) delete col_;
-  }
+  {}
 
   /***********************************/
   /*  Construct from storage vectors */
@@ -39,14 +36,11 @@ namespace Dune
     dim_[1] = cols;
     nz_ = nz;
 
-    values_ = new T [dim_[0]*nz_];
-    col_ = new int [dim_[0]*nz_];
+    values_.resize(dim_[0]*nz_);
+    col_.resize(dim_[0]*nz_);
 
-    for(int i=0; i<dim_[0]*nz_; i++)
-    {
-      values_[i] = val;
-      col_[i] = -1;
-    }
+    values_.set(val);
+    col_.set(-1);
   }
 
   /***************************
@@ -70,17 +64,9 @@ namespace Dune
     dim_[1] = other.dim_[1];
     nz_     = other.nz_;
 
-    // resize data fields
-    free(values_);
-    free(col_);
-    values_ = new T [dim_[0]*nz_];
-    col_ = new int [dim_[0]*nz_];
-
     // copy data
-    for(int i=0; i<dim_[0]*nz_; i++) {
-      values_[i] = other.values_[i];
-      col_[i]    = other.col_[i];
-    }
+    values_ = other.values_;
+    col_    = other.col_;
 
     return *this;
   }
@@ -99,10 +85,8 @@ namespace Dune
     nz_     = nz;
 
     // resize data fields
-    free(values_);
-    free(col_);
-    values_ = new T [dim_[0]*nz_];
-    col_ = new int [dim_[0]*nz_];
+    values_.resize(dim_[0]*nz_);
+    col_.resize(dim_[0]*nz_);
   }
 
   template <class T>
@@ -113,17 +97,14 @@ namespace Dune
     dim_[1] = N;
 
     // resize data fields
-    free(values_);
-    free(col_);
-    values_ = new T [dim_[0]*nz_];
-    col_ = new int [dim_[0]*nz_];
+    values_.resize(dim_[0]*nz_);
+    col_.resize(dim_[0]*nz_);
   }
 
   template <class T>
   void SparseRowMatrix<T>::clear()
   {
-    for (int i=0; i<size(0)*numNonZeros(); i++)
-      col_[i] = -1;
+    col_.set(-1);
   }
 
   /*********************/
@@ -218,6 +199,7 @@ namespace Dune
     }
     return (*this);
   }
+
   /***************************************/
   /*  Matrix-MV_Vector multiplication    */
   /***************************************/
@@ -453,8 +435,10 @@ namespace Dune
   void SparseRowMatrix<T>::unitCol(int col)
   {
     for(int i=0; i<dim_[0]; i++)
-      if (i != col) set(i,col,0.0);
-      else set(col,col,1.0);
+      if (i != col)
+        set(i,col,0.0);
+      else
+        set(col,col,1.0);
   }
 
 } // end namespace Dune
