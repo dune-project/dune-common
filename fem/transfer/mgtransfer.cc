@@ -5,18 +5,19 @@
 #include <dune/common/functionspace.hh>
 
 template<class DiscFuncType>
-void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& fS, int cL, int fL)
+template<class FunctionSpaceType>
+void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& cS, const FunctionSpaceType& fS)
 {
-  coarseLevel = cL;
-  fineLevel   = fL;
+  coarseLevel = cS.level();
+  fineLevel   = fS.level();
 
-  assert(fL == cL+1);
+  //assert(fL == cL+1);
   //assert(level<grid_->maxlevel());
 
   typedef typename FunctionSpaceType::GridType GridType;
 
-  int rows = fS.size(fineLevel);
-  int cols = fS.size(coarseLevel);
+  int rows = fS.size();
+  int cols = cS.size();
 
   GridType& grid = fS.getGrid();
 
@@ -94,14 +95,14 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& fS, int cL, 
 template<class DiscFuncType>
 void Dune::MGTransfer<DiscFuncType>::prolong(const DiscFuncType& f, DiscFuncType& t) const
 {
-  assert(t.getFunctionSpace().size(fineLevel)   == matrix_.rows());
-  assert(f.getFunctionSpace().size(coarseLevel) == matrix_.cols());
+  assert(t.getFunctionSpace().size()   == matrix_.rows());
+  assert(f.getFunctionSpace().size() == matrix_.cols());
 
   typedef typename DiscFuncType::DofIteratorType DofIteratorType;
   typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
 
-  DofIteratorType tIt = t.dbegin( fineLevel );
-  DofIteratorType fIt = f.dbegin( coarseLevel );
+  DofIteratorType tIt = t.dbegin();
+  DofIteratorType fIt = f.dbegin();
 
   for(int row=0; row<matrix_.rows(); row++) {
 
@@ -121,16 +122,16 @@ void Dune::MGTransfer<DiscFuncType>::prolong(const DiscFuncType& f, DiscFuncType
 template<class DiscFuncType>
 void Dune::MGTransfer<DiscFuncType>::restrict (const DiscFuncType & f, DiscFuncType& t) const
 {
-  assert(f.getFunctionSpace().size(fineLevel)   == matrix_.rows());
-  assert(t.getFunctionSpace().size(coarseLevel) == matrix_.cols());
+  assert(f.getFunctionSpace().size()   == matrix_.rows());
+  assert(t.getFunctionSpace().size() == matrix_.cols());
 
   typedef typename DiscFuncType::DofIteratorType DofIteratorType;
   typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
 
-  t.clearLevel(coarseLevel);
+  t.clear();
 
-  DofIteratorType tIt = t.dbegin( coarseLevel );
-  DofIteratorType fIt = f.dbegin( fineLevel );
+  DofIteratorType tIt = t.dbegin();
+  DofIteratorType fIt = f.dbegin();
 
 
   for (int row=0; row<matrix_.rows(); row++) {
