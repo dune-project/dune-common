@@ -292,7 +292,7 @@ namespace Dune
 
   template<typename T, class A>
   SLList<T,A>::SLList()
-    : head_(0), tail_(0), allocator_()
+    : head_(0), tail_(0), allocator_(), size_(0)
   {}
 
   template<typename T, class A>
