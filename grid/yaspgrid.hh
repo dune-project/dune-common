@@ -1390,7 +1390,9 @@ namespace Dune {
     typedef const YaspGrid<dim,dimworld> GridImp;
   public:
     typedef GridTraits<dim,dimworld,Dune::YaspGrid<dim,dimworld>,YaspGeometry,YaspEntity,
-        YaspBoundaryEntity,YaspLevelIterator,
+        YaspBoundaryEntity,
+        YaspLevelIterator,              // to be replaced by YaspEntityPointer
+        YaspLevelIterator,
         YaspIntersectionIterator,YaspHierarchicIterator> Traits;
 
     //! define type used for coordinates in grid module

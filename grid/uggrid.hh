@@ -165,6 +165,7 @@ namespace Dune {
         UGGridGeometry,
         UGGridEntity,
         UGGridBoundaryEntity,
+        UGGridLevelIterator,                  // to be replaced by UGGridEntityPointer
         UGGridLevelIterator,
         UGGridIntersectionIterator,
         UGGridHierarchicIterator> Traits;
