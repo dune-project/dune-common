@@ -1302,7 +1302,7 @@ namespace Dune
   {
     if(!boundaryEntity_)
     {
-      boundaryEntity_ = new AlbertGridBoundaryEntity();
+      boundaryEntity_ = new AlbertGridBoundaryEntity<dim,dimworld> ();
     }
     boundaryEntity_->setElInfo(elInfo_,neighborCount_);
     return (*boundaryEntity_);
@@ -1503,7 +1503,7 @@ namespace Dune
     neighElInfo_->el = elInfo_->neigh[neighborCount_];
 
     int vx = elInfo_->opp_vertex[neighborCount_];
-#if 0
+
     memcpy(&neighElInfo_->coord[vx], &elInfo_->coord[neighborCount_],
            dimworld*sizeof(ALBERT REAL));
 
@@ -1513,21 +1513,21 @@ namespace Dune
       memcpy(&neighElInfo_->coord[(vx+i)%(dim+1)], &elInfo_->coord[nb],
              dimworld*sizeof(ALBERT REAL));
     }
-#else
-    ALBERT REAL_D *elcoord = &elInfo_->coord;
-    ALBERT REAL_D *nbcoord = &neighElInfo_->coord;
 
-    for(int j=0; j<dimworld; j++)
-      nbcoord[vx][j] = elcoord[neighborCount_][j];
+    /*
+       ALBERT REAL_D *elcoord = (REAL_D *) &elInfo_->coord;
+       ALBERT REAL_D *nbcoord = (REAL_D *) &neighElInfo_->coord;
 
-    for(int i=1; i<dim+1; i++)
-    {
-      int nb = (neighborCount_-i+dim+1)%(dim+1);
-      for(int j=0; j<dimworld; j++)
-        nbcoord[(vx+i)%(dim+1)][j] = elcoord[nb][j];
-    }
-#endif
+       for(int j=0; j<dimworld; j++)
+        nbcoord[vx][j] = elcoord[neighborCount_][j];
 
+       for(int i=1; i<dim+1; i++)
+       {
+        int nb = (neighborCount_-i+dim+1)%(dim+1);
+        for(int j=0; j<dimworld; j++)
+          nbcoord[(vx+i)%(dim+1)][j] = elcoord[nb][j];
+       }
+     */
     virtualEntity_->setElInfo(neighElInfo_);
     builtNeigh_ = true;
   }
