@@ -522,8 +522,10 @@ namespace Dune
   {
     if(!uniform_)
     {
-      numOfDof_ = this->fspace_.getBaseFunctionSet(en).getNumberOfBaseFunctions();
-      numOfDifferentDofs_ = getBaseFunctionSet(en).getNumberOfDiffBaseFuncs();
+      numOfDof_ =
+        fSpace_.getBaseFunctionSet(en).getNumberOfBaseFunctions();
+      numOfDifferentDofs_ =
+        fSpace_.getBaseFunctionSet(en).getNumberOfDiffBaseFuncs();
 
       if(numOfDof_ > values_.size())
         values_.resize( numOfDof_ );
