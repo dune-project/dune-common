@@ -53,7 +53,7 @@ AC_DEFUN([DUNE_PATH_HDF5],[
    AC_DEFINE(HAVE_HDF5, 1, [Define to 1 if hdf5 was found])
 
    # proudly show in summary
-   with_hdf5="no"
+   with_hdf5="yes"
  fi
 
  # reset values					    
