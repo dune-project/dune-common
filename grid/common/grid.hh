@@ -46,7 +46,9 @@ namespace Dune {
 
   enum GridIdentifier { SGrid_Id, AlbertGrid_Id };
 
-  enum FileFormatType { ascii , xdr };
+  enum FileFormatType { ascii , xdr , USPM };
+
+  enum BoundaryType { Neumann , Dirichlet };
 
   //************************************************************************
   // E L E M E N T
@@ -269,6 +271,60 @@ namespace Dune {
   }; // end ElementDefault, dim = 0
      //****************************************************************************
 
+  //********************************************************************
+  //  BoundaryEntity
+  //
+  //! First Version of a BoundaryEntity which holds some information about
+  //! the boundary on an intersection with the boundary
+  //
+  //********************************************************************
+  template<int dim , int dimworld, class ct,
+      template<int,int> class ElementImp ,
+      template<int,int> class BoundaryEntityImp >
+  class BoundaryEntity
+  {
+  public:
+    //! return boundary identifier
+    BoundaryType type ();
+
+    int id ();
+
+    //! return true if ghost cell was filled
+    bool hasGeometry ();
+
+    //! return geometry of ghostcell
+    ElementImp<dim,dimworld> & geometry ();
+
+    //! return barycenter of ghostcell
+    Vec<dimworld,ct>& outerPoint ();
+
+  private:
+    //! Barton-Nackman trick
+    BoundaryEntityImp<dim,dimworld> & asImp ()
+    {return static_cast<BoundaryEntityImp<dim,dimworld>&>(*this);}
+  };
+
+  //********************************************************************
+  //
+  // BoundaryEntityDefault
+  //
+  //! Default implementations for the BoundaryEntity
+  //!
+  //********************************************************************
+  template<int dim , int dimworld, class ct,
+      template<int,int> class ElementImp  ,
+      template<int,int> class BoundaryEntityImp>
+  class BoundaryEntityDefault
+    : public BoundaryEntity<dim,dimworld,ct,ElementImp,BoundaryEntityImp>
+  {
+  public:
+
+  private:
+    //! Barton-Nackman trick
+    BoundaryEntityImp<dim,dimworld> & asImp ()
+    {return static_cast<BoundaryEntityImp<dim,dimworld>&>(*this);}
+  };
+
 
   //************************************************************************
   // N E I G H B O R I T E R A T O R
@@ -283,7 +339,8 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int> class NeighborIteratorImp,
       template<int,int,int> class EntityImp,
-      template<int,int> class ElementImp
+      template<int,int> class ElementImp ,
+      template<int,int> class BoundaryEntityImp
       >
   class NeighborIterator
   {
@@ -324,6 +381,11 @@ namespace Dune {
 
     //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
     bool boundary ();
+
+    //! return true if intersection is with neighbor on this level.
+    bool neighbor ();
+
+    BoundaryEntityImp<dim,dimworld> & boundaryEntity ();
 
     //! return unit outer normal, this should be dependent on local coordinates for higher order boundary
     Vec<dimworld,ct>& unit_outer_normal (Vec<dim-1,ct>& local);
@@ -380,10 +442,11 @@ namespace Dune {
   template<int dim, int dimworld, class ct,
       template<int,int> class NeighborIteratorImp,
       template<int,int,int> class EntityImp,
-      template<int,int> class ElementImp
+      template<int,int> class ElementImp ,
+      template<int,int> class BoundaryEntityImp
       >
   class NeighborIteratorDefault
-    : public NeighborIterator <dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp>
+    : public NeighborIterator <dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp,BoundaryEntityImp>
   {
   public:
     // no default functionality at this moment
@@ -748,9 +811,6 @@ namespace Dune {
     // default implementation for access to subIndex via interface method entity
     // default is to return the index of the sub entity, is very slow, but works
     template <int cc> int subIndex ( int i );
-    //  {
-    //    return (asImp().entity<cc>(i))->index();
-    //  };
 
   private:
     //! Barton-Nackman trick
