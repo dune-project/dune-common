@@ -4,6 +4,9 @@
 # barf on errors
 set -e
 
+# may be used to force a certain automake-version e.g. 1.7
+AMVERS=
+
 DEFAULTCONFOPT=
 
 usage () {
@@ -69,6 +72,13 @@ if [ "$OPTIM" = "1" ] ; then
     COMPFLAGS="$COMPFLAGS $OPTIMFLAGS"
 fi
 
+# check if automake-version was set
+if test "x$AMVERS" != x ; then
+  echo Warning: explicitly using automake version $AMVERS
+  # binaries are called automake-$AMVERS
+  AMVERS="-$AMVERS"
+fi
+
 ## run autotools
 
 echo "--> libtoolize..."
@@ -78,14 +88,14 @@ libtoolize --force
 
 # prepare everything
 echo "--> aclocal..."
-aclocal
+aclocal$AMVERS
 
 # applications should provide a config.h for now
 #echo "--> autoheader..."
 #autoheader
 
 echo "--> automake..."
-automake --add-missing
+automake$AMVERS --add-missing
 
 echo "--> autoconf..."
 autoconf
