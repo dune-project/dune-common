@@ -23,7 +23,8 @@ dnl checks for header files.
   AC_CHECK_HEADERS([malloc.h string.h])
 
 dnl checks for typedefs, structures, and compiler characteristics.
-  AC_REQUIRE([AC_HEADER_STDBOOL])
+#  doesn't work, but we don't need it currently
+#  AC_REQUIRE([AC_HEADER_STDBOOL])
   AC_REQUIRE([AC_C_CONST])
   AC_REQUIRE([AC_C_INLINE])
   AC_REQUIRE([AC_TYPE_SIZE_T])
@@ -31,7 +32,8 @@ dnl checks for typedefs, structures, and compiler characteristics.
 
 dnl check for library functions
   AC_REQUIRE([AC_FUNC_MALLOC])
-  AC_REQUIRE([AC_FUNC_REALLOC])
+#  doesn't work, but we don't need it currently
+#  AC_REQUIRE([AC_FUNC_REALLOC])
 
   AC_LANG_PUSH([C++])
   AC_CHECK_LIB([m], [pow])
