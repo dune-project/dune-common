@@ -89,7 +89,7 @@ namespace Dune
     /*! Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
      */
-    template<int cc> const typename codim<cc>::EntityPointer entity (int i) const
+    template<int cc> typename codim<cc>::EntityPointer entity (int i) const
     {
       return realEntity.entity<cc>(i);
     }

@@ -30,6 +30,7 @@ namespace Dune
     enum { mydimension=mydim };
     //! know dimension of embedding coordsystem
     enum { coorddimension=cdim };
+
     //! know dimension of world
     enum { dimensionworld=GridImp::dimensionworld };
     //! define type used for coordinates in grid module
@@ -104,7 +105,7 @@ namespace Dune
     //! can only be called for mydim=cdim!
     const Mat<mydim,mydim,ct>& jacobianInverse (const FieldVector<ct, mydim>& local) const
     {
-      assert(mydim == cdim);
+      IsTrue< ( mydim == cdim ) >::yes();
       return realGeometry.jacobianInverse(local);
     }
 
