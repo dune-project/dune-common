@@ -813,22 +813,25 @@ template <class T, template<class> class P, int GridDim>
 T* Dune::UGDataCollector<T,P,GridDim>::dataArray = 0;
 #endif
 
+/** \todo How do I incorporate the level argument? */
 template < int dim, int dimworld >
 template<class T, template<class> class P, int codim>
 void Dune::UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
 {
 #ifdef ModelP
 
+  // Currently only elementwise communication is supported
+  if (codim != 0)
+    DUNE_THROW(GridError, "Currently UG supports only element-wise communication!");
+
   UGDataCollector<T,P,dim>::dataArray = &t;
 
-  //     DDD_IFAExchange(UG::ElementIF,
-  //                     UG_NS<dim>::Grid_Attr(multigrid_->grids[level]),
-  //                     sizeof(P<T>),
-  //                     &UGDataCollector<T,P,dim>::gather,
-  //                     &UGDataCollector<T,P,dim>::scatter);
+  // Translate the communication direction from Dune-Speak to UG-Speak
+  DDD_IF_DIR UGIfDir = (dir==ForwardCommunication) ? IF_FORWARD : IF_BACKWARD;
 
+  // Trigger communication
   DDD_IFOneway(UG::ElementVHIF,
-               IF_FORWARD,
+               UGIfDir,
                sizeof(P<T>),
                &UGDataCollector<T,P,dim>::gather,
                &UGDataCollector<T,P,dim>::scatter);
