@@ -50,7 +50,7 @@ namespace Dune {
   /*! \internal
      Used for grid I/O
    */
-  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, Ug_Grid_Id };
+  enum GridIdentifier { SGrid_Id, AlbertGrid_Id , SimpleGrid_Id, UGGrid_Id };
 
   /*!
      Specify the format to store grid and vector data
