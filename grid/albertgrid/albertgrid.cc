@@ -2465,7 +2465,9 @@ namespace Dune
   }
 
   template < int dim, int dimworld >
-  inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename)
+  inline AlbertGrid < dim, dimworld >::AlbertGrid(const char *MacroTriangFilename) :
+    mesh_ (NULL), maxlevel_ (0) , wasChanged_ (false), time_ (0.0)
+    , isMarked_ (false)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);

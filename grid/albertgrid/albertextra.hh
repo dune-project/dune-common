@@ -353,6 +353,7 @@ namespace AlbertHelp
 
   static int Albert_MaxLevel_help=-1;
   static int Albert_GlobalIndex_help=-1;
+  static bool doItAgain = false;
   static std::vector<int> *Albert_neighArray_help;
 
   // function for mesh_traverse, is called on every element
@@ -361,11 +362,16 @@ namespace AlbertHelp
     int level = elf->level;
     int index = elf->el->index;
 
-    assert(index < Albert_neighArray_help->size());
-
     if(index > Albert_GlobalIndex_help) Albert_GlobalIndex_help = index;
-    if(Albert_MaxLevel_help < level) Albert_MaxLevel_help = level;
-    (* Albert_neighArray_help )[index] = level;
+    if(Albert_neighArray_help->size() <= index)
+    {
+      doItAgain = true;
+    }
+    else
+    {
+      if(Albert_MaxLevel_help < level) Albert_MaxLevel_help = level;
+      (* Albert_neighArray_help )[index] = level;
+    }
   }
 
 
@@ -378,9 +384,18 @@ namespace AlbertHelp
     Albert_neighArray_help = &nb;
     Albert_MaxLevel_help = -1;
     Albert_GlobalIndex_help = -1;
+    doItAgain = false;
 
     // see ALBERT Doc page 72, traverse over all hierarchical elements
     mesh_traverse(mesh,-1, CALL_EVERY_EL_PREORDER|FILL_NOTHING,calcMaxLevel);
+    if(doItAgain)
+    {
+      nb.resize( Albert_GlobalIndex_help+1 );
+      mesh_traverse(mesh,-1, CALL_EVERY_EL_PREORDER|FILL_NOTHING,calcMaxLevel);
+    }
+
+    Albert_neighArray_help = NULL;
+    doItAgain = false;
 
     if(Albert_MaxLevel_help == -1)
     {
