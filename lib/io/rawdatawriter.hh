@@ -18,7 +18,6 @@ namespace Dune {
    * <li> SimpleGrid<3,3> </li>
    * </ul>
    */
-  */
   template<class GRID, class T>
   class RawDataWriter {
 
