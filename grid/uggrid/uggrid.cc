@@ -30,7 +30,7 @@ namespace Dune
   template<> int UGGrid < 3, 3 >::numOfUGGrids = 0;
 
   template < int dim, int dimworld >
-  inline UGGrid < dim, dimworld >::UGGrid()
+  inline UGGrid < dim, dimworld >::UGGrid(unsigned int heap) : heapsize(heap)
   {
     if (numOfUGGrids==0) {
 
@@ -64,6 +64,7 @@ namespace Dune
       // UG writes into one of the strings, and code compiled by some
       // compilers (gcc, for example) crashes on this.
       //newformat P1_conform $V n1: nt 9 $M implicit(nt): mt 2 $I n1;
+      /** \todo Use a smaller format in order to save memory */
       for (int i=0; i<4; i++)
         newformatArgs[i] = (char*)::malloc(50*sizeof(char));
 
@@ -255,7 +256,7 @@ namespace Dune
 
 
   template < int dim, int dimworld >
-  inline void UGGrid < dim, dimworld >::makeNewUGMultigrid()
+  void UGGrid < dim, dimworld >::makeNewUGMultigrid()
   {
     //configure @PROBLEM $d @DOMAIN;
     char* configureArgs[2] = {"configure DuneDummyProblem", "d olisDomain"};
@@ -273,14 +274,14 @@ namespace Dune
     sprintf(newArgs[0], "new DuneMG");
     sprintf(newArgs[1], "b DuneDummyProblem");
     sprintf(newArgs[2], "f DuneFormat");
-    sprintf(newArgs[3], "h 1G");
+    sprintf(newArgs[3], "h %dM", heapsize);
 
 #ifdef _3
     if (UG3d::NewCommand(4, newArgs))
 #else
     if (UG2d::NewCommand(4, newArgs))
 #endif
-      assert(false);
+      DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
 
     /** \bug The newArgs array needs to be deleted here or when shutting down UG */
     //     for (int i=0; i<4; i++)
@@ -288,7 +289,8 @@ namespace Dune
 
     // Get a direct pointer to the newly created multigrid
     multigrid_ = UG_NS<dim>::GetMultigrid("DuneMG");
-    assert(multigrid_);
+    if (!multigrid_)
+      DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
   }
 
   template < int dim, int dimworld >
