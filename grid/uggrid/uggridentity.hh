@@ -237,19 +237,15 @@ namespace Dune {
     // Constructor
     void setLevel ( int actLevel );
 
+#if 0
     // return the global unique index in mesh
     int globalIndex() { return elInfo_->el->index; }
+#endif
 
     //! make a new UGGridEntity
     void makeDescription();
 
     void setToTarget(typename TargetType<0,dim>::T* target);
-
-    //! the corresponding grid
-    //UGGrid<dim,dimworld> &grid_;
-
-    //! for vertex access, to be revised, filled on demand
-    //UGGridLevelIterator<dim,dim,dimworld> vxEntity_;
 
     //! the cuurent geometry
     UGGridElement<dim,dimworld> geo_;

@@ -90,7 +90,7 @@ namespace Dune {
     UGCtype integration_element (const Vec<dim, UGCtype>& local);
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim>& Jacobian_inverse (const Vec<dim, UGCtype>& local);
+    const Mat<dim,dim>& Jacobian_inverse (const Vec<dim, UGCtype>& local);
 
     //***********************************************************************
     //  Methods that not belong to the Interface, but have to be public

@@ -120,8 +120,8 @@ template<int dim, int dimworld>
 inline const Vec<dimworld,UGCtype>& UGGridElement<dim,dimworld>::
 operator [](int i)
 {
-  cerr << "UGGridElement<" << dim << "," << dimworld << ">::operator[]:\n";
-  cerr << "Default implementation, should not be called!\n";
+  std::cerr << "UGGridElement<" << dim << "," << dimworld << ">::operator[]:\n"
+  "Default implementation, should not be called!\n";
   return coord_(i);
 }
 
@@ -281,11 +281,11 @@ integration_element (const Vec<dim,UGCtype>& local)
   Mat<dimworld,dimworld> mat;
   UG<dimworld>::Transformation(corners(), cornerCoords, local, mat);
 
-  return mat.determinant();
+  return ABS(mat.determinant());
 }
 
 template< int dim, int dimworld>
-inline Mat<dim,dim>& UGGridElement<dim,dimworld>::
+inline const Mat<dim,dim>& UGGridElement<dim,dimworld>::
 Jacobian_inverse (const Vec<dim,UGCtype>& local)
 {
   // dimworld*dimworld is an upper bound for the number of vertices

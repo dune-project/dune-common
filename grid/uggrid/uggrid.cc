@@ -26,8 +26,8 @@ namespace Dune
   //
   //***********************************************************************
 
-  int UGGrid < 2, 2 >::numOfUGGrids = 0;
-  int UGGrid < 3, 3 >::numOfUGGrids = 0;
+  template<> int UGGrid < 2, 2 >::numOfUGGrids = 0;
+  template<> int UGGrid < 3, 3 >::numOfUGGrids = 0;
 
   template < int dim, int dimworld >
   inline UGGrid < dim, dimworld >::UGGrid()

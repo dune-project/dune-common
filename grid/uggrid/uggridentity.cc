@@ -41,8 +41,8 @@ template<int codim, int dim, int dimworld>
 inline int UGGridEntity < codim, dim ,dimworld >::
 index()
 {
-  cerr << "UGGridEntity <" << codim << ", " << dim << ", " << dimworld
-       << ">::index() not implemented!\n";
+  std::cerr << "UGGridEntity <" << codim << ", " << dim << ", " << dimworld
+            << ">::index() not implemented!\n";
   return -1;
 }
 
@@ -256,8 +256,8 @@ template<>
 template< int dim, int dimworld>
 inline AdaptationState UGGridEntity < 0, dim ,dimworld >::state() const
 {
-  cerr << "UGGridEntity::state() not yet implemented!\n";
-
+  std::cerr << "UGGridEntity::state() not yet implemented!\n";
+  return NONE;
 }
 
 template <int dim, int dimworld>
