@@ -236,6 +236,9 @@ namespace Dune
    */
   class InvalidIndexSetState : public Exception {};
 
+  // Forward declaration
+  template<class I> class GlobalLookupIndexSet;
+
   /**
    * @brief Manager class for the mapping between local indices and globally unique indices.
    *
@@ -245,6 +248,7 @@ namespace Dune
   template<typename TG, typename TL, int N=100>
   class IndexSet
   {
+    friend class GlobalLookupIndexSet<IndexSet<TG,TL,N> >;
 
   public:
     /**
@@ -437,6 +441,103 @@ namespace Dune
      */
     inline void merge();
   };
+
+  /**
+   * @brief Decorates an index set with the possibility to find a global index
+   * that is mapped to a specific local.
+   *
+   */
+  template<class I>
+  class GlobalLookupIndexSet
+  {
+  public:
+    /**
+     * @brief The type of the index set.
+     */
+    typedef I IndexSet;
+
+    /**
+     * @brief The type of the local index.
+     */
+    typedef typename IndexSet::LocalIndexType LocalIndexType;
+
+    /**
+     * @brief The type of the global index.
+     */
+    typedef typename IndexSet::GlobalIndexType GlobalIndexType;
+
+    /**
+     * @brief The iterator over the index pairs.
+     */
+    typedef typename IndexSet::const_iterator const_iterator;
+
+    /**
+     * @brief Constructor.
+     * @param indexset The index set we want to be able to lookup the corresponding
+     * global index of a local index.
+     */
+    GlobalLookupIndexSet(const IndexSet& indexset);
+
+    /**
+     * @brief Destructor.
+     */
+    ~GlobalLookupIndexSet();
+
+    /**
+     * @brief Find the index pair with a specific global id.
+     *
+     * This starts a binary search for the entry and therefor has complexity
+     * N log(N). This method is forwarded to the underlying index set.
+     * @param global The globally unique id of the pair.
+     * @return The pair of indices for the id.
+     * @exception NoSuchEntry Thrown if the global id is not known.
+     */
+    inline const IndexPair<GlobalIndexType,LocalIndexType>&
+    operator[](const GlobalIndexType& global) const;
+
+    /**
+     * @brief Get the index pair corresponding to a local index.
+     */
+    inline const IndexPair<GlobalIndexType,LocalIndexType>&
+    pair(const std::size_t& local) const;
+
+    /**
+     * @brief Get an iterator over the indices positioned at the first index.
+     * @return Iterator over the local indices.
+     */
+    inline const_iterator begin() const;
+
+    /**
+     * @brief Get an iterator over the indices positioned after the last index.
+     * @return Iterator over the local indices.
+     */
+    inline const_iterator end() const;
+
+    /**
+     * @brief Get the internal sequence number.
+     *
+     * Is initially 0 is incremented for each resize.
+     * @return The sequence number.
+     */
+    inline int seqNo() const;
+
+    /**
+     * @brief Get the total number (public and nonpublic) indices.
+     * @return The total number (public and nonpublic) indices.
+     */
+    inline int size() const;
+  private:
+    /**
+     * @brief Array with the positions of the corresponding index pair of the index set.
+     */
+    std::size_t* index_;
+
+    /**
+     * @brief The index set we lookup in.
+     */
+    const IndexSet& indexSet_;
+  };
+
 
   template<class TG, class TL>
   inline std::ostream& operator<<(std::ostream& os, const IndexPair<TG,TL>& pair)
@@ -640,6 +741,11 @@ namespace Dune
           tempPairs.push_back(*old);
           old.eraseToHere();
         }
+        else if(old->global() == added->global()) {
+          // Indices have to b unique
+          assert(old->local().attribute()==added->local().attribute());
+          old.eraseToHere();
+        }
         else
         {
           tempPairs.push_back(*added);
@@ -775,6 +881,62 @@ namespace Dune
   inline int IndexSet<TG,TL,N>::size() const
   {
     return localIndices_.size();
+  }
+
+  template<class I>
+  GlobalLookupIndexSet<I>::GlobalLookupIndexSet(const I& indexset)
+    : indexSet_(indexset)
+  {
+    index_ = new std::size_t[indexSet_.size()];
+    const_iterator end_ = indexSet_.end();
+    size_t i=0;
+    for(const_iterator pair = indexSet_.begin(); pair!=end; ++pair, ++i)
+      index_[pair->local()] = i;
+  }
+
+  template<class I>
+  GlobalLookupIndexSet<I>::~GlobalLookupIndexSet()
+  {
+    delete index_;
+  }
+
+
+  template<class I>
+  inline const IndexPair<typename I::GlobalIndexType, typename I::LocalIndexType>&
+  GlobalLookupIndexSet<I>::pair(const std::size_t& local) const
+  {
+    return indexSet_.localIndices_[local];
+  }
+
+  template<class I>
+  inline const IndexPair<typename I::GlobalIndexType, typename I::LocalIndexType>&
+  GlobalLookupIndexSet<I>::operator[](const GlobalIndexType& global) const
+  {
+    return indexSet_[global];
+  }
+
+  template<class I>
+  typename I::const_iterator GlobalLookupIndexSet<I>::begin() const
+  {
+    return indexSet_.begin();
+  }
+
+  template<class I>
+  typename I::const_iterator GlobalLookupIndexSet<I>::end() const
+  {
+    return indexSet_.end();
+  }
+
+  template<class I>
+  inline int GlobalLookupIndexSet<I>::size() const
+  {
+    return indexSet_.size();
+  }
+
+  template<class I>
+  inline int GlobalLookupIndexSet<I>::seqNo() const
+  {
+    return indexSet_.seqNo();
   }
 }
 #endif
