@@ -5,6 +5,8 @@
 
 #include "common/quadrature.hh"
 
+#include <vector>
+
 // the specialisations
 #include "fixedorder/quadlqh.hh"
 #include "fixedorder/quadtetratri.hh"
@@ -61,7 +63,8 @@ namespace Dune {
       case hexahedron :    { makeQuadrature<hexahedron> (); break; }
       case triangle :      { makeQuadrature<triangle> (); break; }
       case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown GeometryType in FixedOrderQuad::makeQuadrature()\n"; abort();  break; }
+      default :
+        DUNE_THROW(NotImplemented, "Unkown GeometryType in FixedOrderQuad::makeQuadrature()");
       }
     };
 
@@ -75,7 +78,8 @@ namespace Dune {
       case hexahedron :    { makeQuadrature<hexahedron> (); break; }
       case triangle :      { makeQuadrature<triangle> (); break; }
       case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown GeometryType in FixedOrderQuad::makeQuadrature()\n"; abort();  break; }
+      default :
+        DUNE_THROW(NotImplemented, "Unkown GeometryType in FixedOrderQuad::makeQuadrature()");
       }
     };
 
@@ -176,7 +180,8 @@ namespace Dune {
       case hexahedron   : { buildQuadrature<hexahedron> ( id , polOrd ); break; }
       case iso_triangle : { buildQuadrature<iso_triangle> ( id , polOrd ); break; }
       case iso_quadrilateral : { buildQuadrature<iso_quadrilateral> ( id , polOrd ); break; }
-      default : { std::cerr << "Element type is unkown in Constructor of Quadrature! \n"; abort(); }
+      default :
+        DUNE_THROW(NotImplemented, "Element type is unkown in Constructor of Quadrature!");
       }
     };
 
@@ -270,11 +275,8 @@ namespace Dune {
       case 18 : { makeQuadrature<18,ElType> (id); break; };
       case 19 : { makeQuadrature<19,ElType> (id); break; };
       case 20 : { makeQuadrature<20,ElType> (id); break; };
-      default : {
-        std::cerr << "No Rule to make Quadrature with polOrd ";
-        std::cerr << polOrd << " in Quadrature ( id , polOrd ) !\n";
-        abort();
-      };
+      default :
+        DUNE_THROW(NotImplemented, "No Rule to make Quadrature with polOrd " << polOrd << " in Quadrature ( id , polOrd ) !");
       }
     };
   }; // end class Quadrature
