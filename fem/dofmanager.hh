@@ -275,6 +275,11 @@ namespace Dune {
       myMem_   = ghmm_.Malloc( memSize_ * sizeOfObj_ );
     }
 
+    ~MemObject ()
+    {
+      if(myMem_) ghmm_.Free(myMem_);
+    }
+
     // defines the corresponding array type
     typedef DofArrayMemory DefaultArrayType;
 
@@ -367,12 +372,19 @@ namespace Dune {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
 
+      int count = 0;
       for( ; it != endit ; ++it)
       {
+        assert(count < memList_.size());
+        count++;
         // alloc new mem an copy old mem
-        MemPointerType * mem = (*it)->myMem();
-        ghmm_.Free(mem);
+        //MemPointerType * mem = (*it)->myMem();
+        //ghmm_.Free(mem);
         MemObjectType * mobj = (*it);
+        if(verbose_)
+        {
+          std::cout << "Removing " << count << " '" << mobj->name() << "' from DofManager!\n";
+        }
         memList_.erase( it );
         if(mobj) delete mobj;
       }
@@ -406,8 +418,8 @@ namespace Dune {
         if((*it) == &obj)
         {
           // alloc new mem an copy old mem
-          MemPointerType * mem  = (*it)->myMem();
-          ghmm_.Free(mem);
+          //MemPointerType * mem  = (*it)->myMem();
+          //ghmm_.Free(mem);
           MemObjectType * mobj = (*it);
           memList_.erase( it );
           if(verbose_)

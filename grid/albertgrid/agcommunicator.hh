@@ -288,6 +288,14 @@ namespace Dune {
       return(ret);
     }
 
+    // minimize timestepsize over all processors
+    void waitForAll()
+    {
+      double timestep = 1.0;
+      double ret=-1.0;
+      MPI_Allreduce(&timestep, &ret, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    }
+
     // send and recive a vector
     template <class DofArrayType>
     void sendReciveVec( DofArrayType & vec)
