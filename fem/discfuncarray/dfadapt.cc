@@ -217,6 +217,8 @@ namespace Dune
     {
       int lev    = this->functionSpace_.getGrid().maxlevel();
       int length = this->functionSpace_.size( lev );
+
+      assert(length <= dofVec_.size());
       outfile << length << "\n";
       DofIteratorType enddof = dend ( lev );
       for(DofIteratorType itdof = dbegin ( lev ); itdof != enddof; ++itdof)
@@ -496,6 +498,34 @@ namespace Dune
     {
       for(int l=0; l<dimrange; l++)
         ret(l) = (* (values_[ l ]));
+    }
+  }
+
+  // hier noch evaluate mit Quadrature Regel einbauen
+  template<class DiscreteFunctionSpaceType >
+  template <class EntityType, class QuadratureType>
+  inline void LocalFunctionAdapt < DiscreteFunctionSpaceType >::
+  jacobian (EntityType &en, QuadratureType &quad, int quadPoint, JacobianRangeType & ret) const
+  {
+    enum { dim = EntityType::dimension };
+    Mat<dim,dim,RangeFieldType> & inv = en.geometry().Jacobian_inverse(quad.point(quadPoint));
+
+    if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
+    {
+      ret = 0.0;
+      for(int i=0; i<numOfDifferentDofs_; i++)
+      {
+        baseFuncSet_->jacobian(i,quad,quadPoint,tmpGrad_);
+        tmpGrad_(0) = inv.mult_t(tmpGrad_(0));
+
+        tmpGrad_(0) *= (* (values_[i]));
+
+        ret(0) += tmpGrad_(0);
+      }
+    }
+    else
+    {
+      ret = 0.0;
     }
   }
 

@@ -59,7 +59,7 @@ namespace Dune {
     const typename DiscFunctionType::FunctionSpaceType & functionSpace_;
 
     // the representing matrix
-    mutable MatrixType *matrix_;
+    mutable MatrixType *matrix_ ;
 
     // is matrix assembled
     mutable bool matrix_assembled_;
@@ -77,6 +77,9 @@ namespace Dune {
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
       GridType &grid = functionSpace_.getGrid();
+
+
+      std::cout << "Assemble Matrix!" << std::endl ;
 
       {
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
@@ -238,6 +241,15 @@ namespace Dune {
       if ( matrix_ ) delete matrix_;
     }
 
+    void initialize(){
+      std::cout << "Matrix reinitialized!" << std::endl ;
+
+      matrix_assembled_ = false;
+      delete(matrix_);
+
+      matrix_ = 0;
+    }
+
     void apply( const DiscFunctionType &arg, DiscFunctionType &dest) const
     {
       if ( opMode_ == ASSEMBLED )
@@ -337,6 +349,94 @@ namespace Dune {
         }
       }
     } // end applyLocal
+
+
+    //
+    template <class EntityType>
+    void finalizeLocal ( EntityType &en ) const
+    {
+      // eliminate the Dirichlet rows and columns
+      typedef typename GridType::template Traits<0>::Entity EntityType;
+      typedef typename EntityType::Traits::IntersectionIterator NeighIt;
+      typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
+      typedef typename FunctionSpaceType::GridType GridType;
+
+      GridType &grid = functionSpace_.getGrid();
+
+      DiscFunctionType & arg  = const_cast<DiscFunctionType &> (*arg_);
+      DiscFunctionType & dest = (*dest_);
+
+      typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
+      int level = grid.maxlevel();
+
+      DofIteratorType dest_it = dest.dbegin( level );
+      DofIteratorType arg_it = arg.dbegin( level );
+
+      NeighIt nit = en.ibegin();
+      NeighIt endnit = en.iend();
+
+      //std::cout << "bin in finalize bei Element "<< en.index() << std::endl;
+      for( ; nit != endnit ; ++nit) {
+
+        if(nit.boundary())
+        {
+          BoundaryEntityType & bEl = nit.boundaryEntity();
+
+          if( bEl.type() == Dirichlet )
+          {
+            int neigh = nit.number_in_self();
+
+            if(en.geometry().type() == triangle)
+            {
+              int numDof = 3;
+              //std::cout << "Dreieck erkannt "<< en.index() << std::endl;
+
+              for(int i=1; i<numDof; i++)
+              {
+                // funktioniert nur fuer Dreiecke
+                // hier muss noch gearbeitet werden. Wie kommt man von den
+                // Intersections zu den localen Dof Nummern?
+                int col = functionSpace_.mapToGlobal(en,(neigh+i)%numDof);
+                // unitRow unitCol for boundary
+                //matrix_->kroneckerKill(col,col);
+                dest_it[col] = arg_it[col];
+              }
+            }
+            if(en.geometry().type() == tetrahedron)
+            {
+              int numDof = 4;
+              for(int i=1; i<numDof; i++)
+              {
+                // funktioniert nur fuer Dreiecke
+                // hier muss noch gearbeitet werden. Wie kommt man von den
+                // Intersections zu den localen Dof Nummern?
+                int col = functionSpace_.mapToGlobal(en,(neigh+i)%numDof);
+                // unitRow unitCol for boundary
+                //matrix_->kroneckerKill(col,col);
+                dest_it[col] = arg_it[col];
+
+              }
+            }
+            if(en.geometry().type() == quadrilateral)
+            {
+              for(int i=0; i<2; i++)
+              {
+                // funktioniert nur fuer Dreiecke
+                // hier muss noch gearbeitet werden. Wie kommt man von den
+                // Intersections zu den localen Dof Nummern?
+                int col = functionSpace_.mapToGlobal(en,edge[neigh][i]);
+                // unitRow unitCol for boundary
+                //matrix_->kroneckerKill(col,col);
+                dest_it[col] = arg_it[col];
+              }
+            }
+          }
+        }
+
+      }
+
+    } // end finalizeLocal
+
 
   private:
     OpMode opMode_;

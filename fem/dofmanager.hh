@@ -269,6 +269,7 @@ namespace Dune {
       int len = size_;
       xdr_int( xdrs, &len );
       assert(size_ <= len);
+
       xdr_vector(xdrs,(char *) vec_,size_, sizeof(T) ,(xdrproc_t)xdr_double);
       return true;
     }

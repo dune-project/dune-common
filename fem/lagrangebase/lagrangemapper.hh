@@ -58,12 +58,15 @@ namespace Dune {
 
     virtual int newSize(int level) const
     {
+
       /*
          int s=0;
          for(int i=0; i<numCodims; i++)
          s+= (dofCodim_[i] * indexSet_.size(20,i));
        */
+
       return this->size(level);
+
     }
 
   };
