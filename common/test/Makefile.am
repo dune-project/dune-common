@@ -1,6 +1,6 @@
 # $Id$
 
-TESTPROGS = parsetest test-stack
+TESTPROGS = parsetest test-stack arraylisttest
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -13,3 +13,5 @@ check_PROGRAMS = $(TESTPROGS)
 parsetest_SOURCES = parsetest.cc
 
 test_stack_SOURCES = test-stack.cc
+
+arraylisttest_SOURCES = arraylisttest.cc
