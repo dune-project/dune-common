@@ -17,6 +17,15 @@ namespace Dune {
 
   public:
 
+    //! Default constructor
+    BitField() : std::vector<bool>() {}
+
+    //! Constructor which initializes the field
+    BitField(int n, bool v) : std::vector<bool>(n) {
+      for (int i=0; i<size(); i++)
+        (*this)[i] = v;
+    }
+
     //! Sets all entries to <tt> true </tt>
     void setAll() {
       for (int i=0; i<size(); i++)
