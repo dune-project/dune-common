@@ -24,8 +24,6 @@ namespace Dune
      * @brief Provides classes for initializing the link attributes of a matrix graph.
      */
 
-    class EdgeProperties;
-
     /**
      * @brief Class representing the properties of an ede in the matrix graph.
      *
@@ -102,12 +100,15 @@ namespace Dune
        */
       void printFlags() const;
     };
+
     /**
      * @brief Class representing a node in the matrix graph.
      *
      * Contains methods for getting and setting node attributes.
      */
     class VertexProperties {
+      friend std::ostream& operator<<(std::ostream& os, const VertexProperties& props);
+
     private:
       enum { ISOLATED, VISITED, FRONT, EXCLUDED, SIZE };
 
@@ -246,6 +247,11 @@ namespace Dune
       return ((flags_) & std::bitset<SIZE>((1<<INFLUENCE)|(1<<DEPEND))).to_ulong();
     }
 
+
+    inline std::ostream& operator<<(std::ostream& os, const VertexProperties& props)
+    {
+      return os << props.flags_;
+    }
 
     inline VertexProperties::VertexProperties()
       : flags_(0)
