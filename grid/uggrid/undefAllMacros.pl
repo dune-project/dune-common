@@ -16,6 +16,14 @@ unless (open OUTFILE, ">$outfilename") {
 # recursively parse them for macro definitions.
 foreach $file (@ARGV) {
 
+  # Write header comment
+  print OUTFILE "/** \\file\n";
+  print OUTFILE "* \\brief Contains <tt>#undef</tt>s for all preprocessor macros\n";
+  print OUTFILE "* defined by UG.\n";
+  print OUTFILE "*\n";
+  print OUTFILE "* This file is created automatically by the perl script <tt>undefAllMacros.pl</tt>.\n";
+  print OUTFILE "*/\n\n";
+
   # Parse the file itself
   emitUndefs($file);
 
