@@ -1262,6 +1262,9 @@ namespace Dune
   {
     friend class AlbertaGrid<2,2>;
     friend class AlbertaGrid<3,3>;
+
+    enum { MAXL = 64 };
+    enum { vxBufferSize_ = 10000 };
   public:
     AlbertaMarkerVector () {} ;
 
@@ -1274,7 +1277,7 @@ namespace Dune
 
   private:
     // built in array to mark on which element a vertex is reached
-    Array<int> vec_;
+    Array<int> vec_[MAXL];
     // number of vertices
     int numVertex_;
   };
