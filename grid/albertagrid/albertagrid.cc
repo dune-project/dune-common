@@ -1290,9 +1290,9 @@ namespace Dune
     int fatherIndex = grid_.template indexOnLevel<0>(grid_.getElementNumber(fatherInfo->el),fatherLevel);
     // new LevelIterator with EL_INFO one level above
 
-    AlbertaGridMakeableEntity<0,dim,GridImp> en (grid_,fatherLevel);
-    en.setElInfo(fatherInfo,fatherIndex,0,0,0);
-    return en;
+    AlbertaGridLevelIterator<0,All_Partition,GridImp>
+    vati(grid,fatherLevel,fatherInfo,fatherIndex,0,0,0);
+    return vati;
   }
 
   template< int dim, class GridImp >
