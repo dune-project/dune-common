@@ -101,7 +101,7 @@ AC_CONFIG_FILES([Makefile
          fem/transfer/Makefile
          grid/Makefile
          grid/albertagrid/Makefile
-         grid/bsgrid/Makefile
+         grid/alu3dgrid/Makefile
          grid/common/Makefile
 	 grid/common/refinement/Makefile
          grid/onedgrid/Makefile
