@@ -10,3 +10,6 @@ smartpointertest
 iteratorfacadetest
 sllisttest
 settest
+*.gcda
+*.gcno
+gmon.out
