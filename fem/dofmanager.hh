@@ -3,6 +3,8 @@
 #ifndef __DUNE_DOFMANAGER_HH__
 #define __DUNE_DOFMANAGER_HH__
 
+#include <assert.h>
+
 #include <dune/common/dlist.hh>
 #include <dune/fem/common/dofmapperinterface.hh>
 
