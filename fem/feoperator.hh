@@ -89,15 +89,15 @@ namespace Dune {
 
         // eliminate the Dirichlet rows
         typedef typename GridType::Traits<0>::Entity EntityType;
-        typedef typename EntityType::Traits::NeighborIterator NeighIt;
+        typedef typename EntityType::Traits::IntersectionIterator NeighIt;
         typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
 
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
         LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
         for( it ; it != endit; ++it )
         {
-          NeighIt nit = it->nbegin();
-          NeighIt endnit = it->nend();
+          NeighIt nit = it->ibegin();
+          NeighIt endnit = it->iend();
           for(nit; nit != endnit ; ++nit)
           {
 
@@ -138,7 +138,7 @@ namespace Dune {
       typedef typename GridType::Traits<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
-      GridType &grid = const_cast<GridType &> (functionSpace_.getGrid());
+      GridType &grid = functionSpace_.getGrid();
 
       typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
       typedef typename FunctionSpaceType::Range RangeType;
@@ -149,7 +149,7 @@ namespace Dune {
       int level = arg.getFunctionSpace().getGrid().maxlevel();
 
       DofIteratorType dest_it = dest.dbegin( level );
-      DofIteratorType arg_it = const_cast<DiscFunctionType&>(arg).dbegin( level );
+      DofIteratorType arg_it = arg.dbegin( level );
 
       dest.clear();
 
@@ -229,7 +229,7 @@ namespace Dune {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
 
-      typedef typename EntityType::Traits::NeighborIterator NeighIt;
+      typedef typename EntityType::Traits::IntersectionIterator NeighIt;
       typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
 
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
@@ -283,7 +283,7 @@ namespace Dune {
       LevelIterator endit = grid.lend<0> ( grid.maxlevel() );
       for( ; it != endit; ++it )
       {
-        typedef typename EntityType::Traits::NeighborIterator NeighIt;
+        typedef typename EntityType::Traits::IntersectionIterator NeighIt;
         typedef typename NeighIt::Traits::BoundaryEntity BoundaryEntityType;
 
         EntityType &en = (*it);
@@ -291,8 +291,8 @@ namespace Dune {
         const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
         int numDof = baseSet.getNumberOfBaseFunctions();
 
-        NeighIt nit = en.nbegin();
-        NeighIt endnit = en.nend();
+        NeighIt nit = en.ibegin();
+        NeighIt endnit = en.iend();
         for(nit; nit != endnit ; ++nit)
         {
           if(nit.boundary())
