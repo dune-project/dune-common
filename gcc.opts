@@ -1,0 +1,17 @@
+# $Id$
+
+# options for gcc/g++
+# remember to run ./autogen.sh after changing these values!
+
+# name of compiler binaries
+COMP="gcc"
+CXXCOMP="g++"
+
+# flags set in any case
+FLAGS="-Wall"
+
+# additional flags for debugging
+DEBUGFLAGS="-g"
+
+# additional flags for optimization
+OPTIMFLAGS="-O2"
