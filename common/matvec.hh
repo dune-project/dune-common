@@ -22,9 +22,16 @@ namespace Dune {
   /*!
      Generic vector class for short vectors in d dimensions. Used e.g. for global or local coordinates.
    */
-  template<int n, class T = double>
+  template<int dim, class T = double>
   class Vec {
+    enum { n = ( dim > 0 ) ? dim : 1 };
   public:
+    //! remember the storage type
+    typedef T MemberType;
+
+    //! know length
+    enum { dimension = dim};
+
     //! Constructor making uninizialized vector
     Vec() {}
 
@@ -75,6 +82,7 @@ namespace Dune {
       for (int i=0; i<n; i++) x[i] += b.x[i];
       return *this;
     }
+
     Vec<n,T> operator+ (const Vec<n,T>& b) const
     {
       Vec<n,T> z = *this;
@@ -183,9 +191,16 @@ namespace Dune {
   /*!
      Generic vector class for short vectors in d dimensions. Used e.g. for global or local coordinates.
    */
-  template<int n, int m, class T = double>
+  template<int n, int dim, class T = double>
   class Mat {
+    enum { m = ( dim > 0 ) ? dim : 1 };
   public:
+    //! remember the storage type
+    typedef T MemberType;
+
+    //! know length
+    enum { dimension = dim };
+
     //! Constructor making uninizialized matrix
     Mat() {}
 
@@ -195,7 +210,6 @@ namespace Dune {
       for(int j=0; j<m; j++)
         for (int i=0; i<n; i++) a[j](i) = t;
     }
-
 
     //! operator () for read/write access to element in matrix
     T& operator() (int i, int j) {return a[j](i);}
@@ -222,13 +236,13 @@ namespace Dune {
     void print (std::ostream& s, int indent)
     {
       for (int k=0; k<indent; k++) s << " ";
-      s << "Mat [n=" << n << ",m=" << m << "]" << endl;
+      s << "Mat [n=" << n << ",m=" << m << "]" << std::endl;
       for (int i=0; i<n; i++)
       {
         for (int k=0; k<indent+2; k++) s << " ";
         s << "row " << i << " [ ";
         for (int j=0; j<n; j ++) s << this->operator()(i,j) << " ";
-        s << "]" << endl;
+        s << "]" << std::endl;
       }
     }
 
