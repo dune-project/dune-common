@@ -2165,7 +2165,7 @@ namespace Dune
 
   inline void AlbertGrid <2,2>::writeGrid ()
   {
-    cout << "\nStarting USPM Grid write! \n";
+    std::cout << "\nStarting USPM Grid write! \n";
     // USPM 2d
 
     enum {dim = 2}; enum {dimworld = 2};
@@ -2228,7 +2228,7 @@ namespace Dune
     FILE *file = fopen("out.uspm", "w");
     if(!file)
     {
-      cout << "Couldnt open out.uspm \n";
+      std::cout << "Couldnt open out.uspm \n";
       abort();
     }
     fprintf(file, "USPM 2\n");
@@ -2275,7 +2275,7 @@ namespace Dune
 
   inline void AlbertGrid<3,3>::writeGrid()
   {
-    cout << "\nStarting 3d Grid write\n";
+    std::cout << "\nStarting 3d Grid write\n";
 
     enum {dim = 3}; enum {dimworld = 3};
     typedef AlbertGridLevelIterator<0,dim,dimworld> LEVit;
@@ -2322,7 +2322,7 @@ namespace Dune
     FILE *file = fopen("test3dOUT.0", "w");
     if(!file)
     {
-      cout << "Couldnt open test3dOUT.0 \n";
+      std::cout << "Couldnt open test3dOUT.0 \n";
       abort();
     }
     // die Zeit
@@ -2358,7 +2358,7 @@ namespace Dune
     delete [] vertex;
 
     system("gzip -fq test3dOUT.0");
-    cout << "3d Grid written! \n";
+    std::cout << "3d Grid written! \n";
   }
 
 
