@@ -8,6 +8,8 @@
 #include <dune/common/exceptions.hh>
 #include <iostream>
 
+#include <stdint.h> // for uint32_t
+
 namespace Dune
 {
   /** @addtogroup ISTL_Comm
