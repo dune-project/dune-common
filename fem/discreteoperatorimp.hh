@@ -19,7 +19,7 @@ namespace Dune {
 
      A discrete operator of this type consists of a local operator and a grid
      walkthrough. On each Entity then the local operator is called.
-     Before strating the walkthrough the prepareGlobal method of the local
+     Before starting the walk through the prepareGlobal method of the local
      operator is called once. Then during the walkthrough on each entity the
      methods prepareLocal, applyLocal, and finalizeLocal are called respectively.
      After the walkthorugh the method finalizeGlobal of the local operator is
@@ -28,37 +28,30 @@ namespace Dune {
      There are two ways to change a discrete operator, namely by adding
      another discrete operator or by multiplying with a scalar.
      The result of a sum has to be a mapping ( :-( ).
-
-
+     DiscreteOperators which differ only by there LocalOperatorImp
+     can be combinded via operator + and sclaed
+     via operator *. This means you can combine your schemes all working on the
+     same types of DiscreteFunctions but all doing different things on one
+     entity. An example how to use this operator class can be found in
+     duneapps/tester/operator.
      @{
    */
 
   /*!
      DiscreteOperator manages the grid walk through of and numerical scheme.
      Here the scheme is defined by the LocalOperatorImp which defines the
-     action of the algorithm one on grid entity. DiscreteOperators which differ
-     only by there LocalOperatorImp can be combinded via operator + and sclaed
-     via operator *. This means you can combine your schemes all working on the
-     same types of DiscreteFunctions but all doing different things on one
-     entity. An example how to use this operator class can be found in
-     duneapps/tester/operator.
+     action of the algorithm one on grid entity.
    */
   template <class LocalOperatorImp, class DFDomainType, class DFRangeType = DFDomainType >
   class DiscreteOperator
     : public DiscreteOperatorDefault < LocalOperatorImp , DFDomainType, DFRangeType , DiscreteOperator >
   {
-    typedef DFDomainType DiscreteFunctionType;
+    typedef typename DFDomainType::FunctionSpaceType::RangeField RangeFieldType;
 
-    typedef typename DiscreteFunctionType::FunctionSpaceType::
-    RangeField RangeFieldType;
-    typedef ScaledLocalOperator < LocalOperatorImp,
-        typename  DiscreteFunctionType::RangeFieldType > ScalOperatorType;
-    typedef DiscreteOperator<ScalOperatorType,DFDomainType,DFRangeType> ScalDiscrType;
-
-    typedef typename DiscreteOperatorDefaultType::DomainType DomainType;
-    typedef typename DiscreteOperatorDefaultType::RangeType RangeType;
-    typedef typename DiscreteOperatorDefaultType::DomainFieldType DFieldType;
-    typedef typename DiscreteOperatorDefaultType::RangeFieldType RFieldType;
+    typedef typename DFDomainType::DomainType DomainType;
+    typedef typename DFDomainType::RangeType RangeType;
+    typedef typename DFDomainType::DomainFieldType DFieldType;
+    typedef typename DFDomainType::RangeFieldType RFieldType;
 
     //! remember what type this class has
     typedef Mapping<DFieldType,RFieldType,DomainType,RangeType> MappingType;
@@ -66,7 +59,7 @@ namespace Dune {
   public:
     //! create DiscreteOperator with a LocalOperator
     DiscreteOperator (LocalOperatorImp &op, bool leaf=false , bool printMsg = false )
-      : DiscreteOperatorDefaultType ( op )
+      : localOp_ (op)
         , leaf_ (leaf), prepared_ (false) , printMsg_ (printMsg)
     {
       if(printMsg_)
@@ -77,7 +70,7 @@ namespace Dune {
     template <class LocalOperatorType>
     DiscreteOperator (const DiscreteOperator<LocalOperatorType,DFDomainType,DFRangeType> &copy,
                       LocalOperatorImp &op)
-      : DiscreteOperatorDefaultType ( op )
+      : localOp_ (op)
         , leaf_ (copy.leaf_), prepared_ (copy.prepared_) , printMsg_ (copy.printMsg_)
     {
       if(printMsg_)
@@ -95,7 +88,7 @@ namespace Dune {
     //********************************************************************
     //! apply operator which means make a grid walktrough on spezified level
     //! and call the local operator on each entity
-    void apply ( const DomainType &Arg, RangeType &Dest ) const
+    void apply ( const DFDomainType &Arg, DFRangeType &Dest ) const
     {
       if(printMsg_)
         std::cout << "DiscrOP::apply \n";
@@ -111,7 +104,7 @@ namespace Dune {
       }
 
       // useful typedefs
-      typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
+      typedef typename DFDomainType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
       // the corresponding grid
       FunctionSpaceType & functionSpace_= dest.getFunctionSpace();
@@ -158,14 +151,14 @@ namespace Dune {
   private:
     //! remember time step size
     template <class ArgParamType , class DestParamType>
-    void prepare ( const ArgParamType &arg, DestParamType &dest )
+    void prepare ( const ArgParamType &arg, DestParamType &dest ) const
     {
       localOp_.prepareGlobal(arg,dest);
       prepared_ = true;
     }
 
     //! remember time step size
-    void prepare ( const DomainType &Arg, RangeType &Dest ) const
+    void prepare ( const DFDomainType &Arg, DFRangeType &Dest ) const
     {
       //localOp_.setArguments(Arg,Dest);
       localOp_.prepareGlobal(Arg,Dest);
@@ -173,7 +166,7 @@ namespace Dune {
     }
 
     //! finalize the operation
-    void finalize ( const DomainType &Arg, RangeType &Dest ) const
+    void finalize ( const DFDomainType &Arg, DFRangeType &Dest ) const
     {
       prepared_ = false;
       localOp_.finalizeGlobal();
@@ -181,7 +174,7 @@ namespace Dune {
 
     template <class GridIteratorType>
     void applyOnGrid ( GridIteratorType &it, GridIteratorType &endit,
-                       const DomainType &Arg, RangeType &Dest ) const
+                       const DFDomainType &Arg, DFRangeType &Dest ) const
     {
       // erase destination function
       Dest.clearLevel ( this->level_ );
@@ -206,11 +199,16 @@ namespace Dune {
         localOp_.finalizeLocal(*it);
       }
     }
-
-
   public:
+    //! return reference to local operator, is called from operator + and
+    //! operator *
+    LocalOperatorImp & getLocalOp () { return localOp_; }
+
     // return printMsg variable for DiscreteOperatorDefault
-    bool printInfo () { return printMsg_; }
+    bool printInfo () const { return printMsg_; }
+
+    //! Local operator which represents the numerical scheme
+    mutable LocalOperatorImp & localOp_;
 
     //! if true use LeafIterator else LevelIterator
     mutable bool leaf_;
