@@ -12,7 +12,8 @@ namespace Dune
   DiscFuncArray(DiscreteFunctionSpaceType & f) :
     DiscreteFunctionDefaultType ( f )
     , built_ ( false ) , freeLocalFunc_ (NULL)
-    , allLevels_ (false) , level_ (-1), levOcu_ (0) {}
+    , allLevels_ (false) , level_ (-1), levOcu_ (0)
+    , localFunc_ ( f, dofVec_ ) {}
 
   // Constructor makeing discrete function
   template<class DiscreteFunctionSpaceType >
