@@ -68,7 +68,7 @@ AC_DEFUN([DUNE_PATH_F5],[
  fi
 
  # also tell automake
- AM_CONDITIONAL(FIBER_HDF5, test x$HAVE_F5 == x1)
+ AM_CONDITIONAL(FIBER_HDF5, test x$HAVE_F5 = x1)
 
  # reset values					    
  CFLAGS="$ac_save_CFLAGS"
