@@ -19,12 +19,7 @@ inline UGGridEntity < codim, dim ,dimworld >::
 UGGridEntity(int level) :
   geo_(false),
   level_ (level)
-{
-#if 0
-  travStack_ = NULL;
-  makeDescription();
-#endif
-}
+{}
 
 template<int codim, int dim, int dimworld>
 inline void UGGridEntity < codim, dim ,dimworld >::
@@ -32,7 +27,6 @@ setToTarget(typename TargetType<codim,dim>::T* target)
 {
   target_ = target;
   geo_.setToTarget(target);
-  //printf("UGGridEntity::setToTarget  %d\n", target);
 }
 
 template<int codim, int dim, int dimworld>
@@ -100,70 +94,33 @@ UGGridEntity < 0, 3 ,3>::father()
   return it;
 }
 
-#if 0
 //************************************
 //
-//  --AlbertGridEntity codim = 0
-//  --0Entity codim = 0
+//  --UGGridEntity codim = 0
+//  --Entity codim = 0
 //
 //************************************
 template< int dim, int dimworld>
-inline bool AlbertGridEntity < 0, dim ,dimworld >::
+inline bool UGGridEntity < 0, dim ,dimworld >::
 mark( int refCount )
 {
-  if(! hasChildren() )
-  {
-    elInfo_->el->mark = refCount;
-    return true;
-  }
 
-  std::cout << "Element not marked!\n";
-  return false;
+  if (!UG3d::EstimateHere(target_))
+    return false;
+
+  return UG3d::MarkForRefinement(target_,
+                                 UG3d::RED,
+                                 0);    // no user data
 }
 
 template< int dim, int dimworld>
-inline bool AlbertGridEntity < 0, dim ,dimworld >::hasChildren()
+inline UGGridElement<dim,dimworld>&
+UGGridEntity < 0, dim ,dimworld >::
+geometry()
 {
-  //return (elInfo_->el->child[0] != NULL);
-  return ( level_ != grid_.maxlevel() );
+  return geo_;
 }
 
-template< int dim, int dimworld>
-inline int AlbertGridEntity < 0, dim ,dimworld >::refDistance()
-{
-  return 0;
-}
-
-//***************************
-
-template< int dim, int dimworld>
-inline void AlbertGridEntity < 0, dim ,dimworld >::
-makeDescription()
-{
-  elInfo_ = NULL;
-  builtgeometry_ = false;
-
-  // not fast , and also not needed
-  //geo_.initGeom();
-}
-
-template<int dim, int dimworld>
-inline void AlbertGridEntity < 0, dim ,dimworld >::
-setTraverseStack(ALBERT TRAVERSE_STACK * travStack)
-{
-  travStack_ = travStack;
-}
-
-//#endif
-template< int dim, int dimworld>
-inline UGGridEntity < 0, dim ,dimworld >::
-UGGridEntity(UGGrid<dim,dimworld> &grid, int level) : grid_(grid)
-                                                      , level_ (level)
-                                                      , vxEntity_ ( grid_ , NULL, 0, 0, 0, 0)
-                                                      , geo_(false) , travStack_ (NULL) , elInfo_ (NULL)
-                                                      , builtgeometry_ (false)
-{}
-#endif
 //*****************************************************************8
 // count
 /** \todo So far only works in 3d */
@@ -263,9 +220,38 @@ UGGridEntity < codim, dim ,dimworld >::iend()
   return it;
 }
 
-template< int codim, int dim, int dimworld>
-inline AdaptationState UGGridEntity < codim, dim ,dimworld >::state() const
+template<>
+template< int dim, int dimworld>
+inline AdaptationState UGGridEntity < 0, dim ,dimworld >::state() const
 {
   cerr << "UGGridEntity::state() not yet implemented!\n";
 
+}
+
+template <int dim, int dimworld>
+template <int cc>
+inline int UGGridEntity<0, dim, dimworld>::subIndex(int i)
+{
+#define TAG(p) ReadCW(p, UG3d::TAG_CE)
+#define CORNER(p,i) ((UG3d::node *) (p)->ge.refs[UG3d::n_offset[TAG(p)]+(i)])
+  UG3d::node* node = CORNER(target_,i);
+#undef CORNER
+#undef TAG
+  UG3d::vertex* vertex = node->myvertex;
+  return vertex->iv.id;
+}
+
+template<int dim, int dimworld>
+inline UGGridEntity < 0, dim ,dimworld >::
+UGGridEntity(int level) :
+  geo_(false),
+  level_ (level)
+{}
+
+template<int dim, int dimworld>
+inline void UGGridEntity < 0, dim ,dimworld >::
+setToTarget(typename TargetType<0,dim>::T* target)
+{
+  target_ = target;
+  geo_.setToTarget(target);
 }

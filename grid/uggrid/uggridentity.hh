@@ -25,11 +25,11 @@ namespace Dune {
         UGGridEntity,UGGridElement,UGGridLevelIterator,
         UGGridIntersectionIterator,UGGridHierarchicIterator>
   {
-    friend class UGGrid < dim , dimworld >;
+    //friend class UGGrid < dim , dimworld >;
     //friend class UGGridEntity < 0, dim, dimworld>;
     friend class UGGridLevelIterator < codim, dim, dimworld>;
     //friend class UGGridLevelIterator < dim, dim, dimworld>;
-    friend class UGGridIntersectionIterator < dim, dimworld>;
+    //friend class UGGridIntersectionIterator < dim, dimworld>;
   public:
 
     //! level of this element
@@ -81,20 +81,7 @@ namespace Dune {
     //! local coordinates within father
     Vec<dim, UGCtype>& local ();
 
-    /** \brief Mark entity for refinement
-     *
-     * This only works for entities of codim 0.
-     * The parameter is currently ignored
-     *
-     * \return <ul>
-     * <li> true, if element was marked </li>
-     * <li> false, if nothing changed </li>
-     * </ul>
-     */
-    bool mark(int refCount);
 
-    /** \todo Please doc me! */
-    AdaptationState state() const;
 
   private:
 
@@ -121,7 +108,6 @@ namespace Dune {
     typename TargetType<codim,dim>::T* target_;
   };
 
-#if 0
   /*!
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
      An entity of codimension c in dimension d is a d-c dimensional object.
@@ -159,8 +145,10 @@ namespace Dune {
     //! there are only implementations for dim==dimworld 2,3
     ~UGGridEntity() {};
 
+    UGGridEntity(int level);
+
     //! Constructor, real information is set via setElInfo method
-    UGGridEntity(UGGrid<dim,dimworld> &grid, int level);
+    //UGGridEntity(UGGrid<dim,dimworld> &grid, int level);
 
     //! level of this element
     int level ();
@@ -228,10 +216,20 @@ namespace Dune {
     //  Interface for Adaptation
     //***************************************************************
 
-    //! marks an element for refCount refines. if refCount is negative the
-    //! element is coarsend -refCount times
-    //! mark returns true if element was marked, otherwise false
-    bool mark( int refCount );
+    /** \brief Mark entity for refinement
+     *
+     * This only works for entities of codim 0.
+     * The parameter is currently ignored
+     *
+     * \return <ul>
+     * <li> true, if element was marked </li>
+     * <li> false, if nothing changed </li>
+     * </ul>
+     */
+    bool mark(int refCount);
+
+    /** \todo Please doc me! */
+    AdaptationState state() const;
 
   private:
     // called from HierarchicIterator, because only this
@@ -239,49 +237,34 @@ namespace Dune {
     // Constructor
     void setLevel ( int actLevel );
 
-#if 0
-    // face, edge and vertex only for codim > 0, in this
-    // case just to supply the same interface
-    void setTraverseStack (ALBERT TRAVERSE_STACK *travStack);
-    void setElInfo (ALBERT EL_INFO *elInfo,
-                    int elNum = 0,
-                    unsigned char face = 0,
-                    unsigned char edge = 0,
-                    unsigned char vertex = 0 );
-
-    // needed for LevelIterator to compare
-    ALBERT EL_INFO *getElInfo () const;
-#endif
-
     // return the global unique index in mesh
     int globalIndex() { return elInfo_->el->index; }
 
     //! make a new UGGridEntity
     void makeDescription();
 
+    void setToTarget(typename TargetType<0,dim>::T* target);
+
     //! the corresponding grid
-    UGGrid<dim,dimworld> &grid_;
+    //UGGrid<dim,dimworld> &grid_;
 
     //! for vertex access, to be revised, filled on demand
-    UGGridLevelIterator<dim,dim,dimworld> vxEntity_;
+    //UGGridLevelIterator<dim,dim,dimworld> vxEntity_;
 
     //! the cuurent geometry
     UGGridElement<dim,dimworld> geo_;
     bool builtgeometry_; //!< true if geometry has been constructed
 
-#if 0
-    //! pointer to the real UG element data
-    ALBERT EL_INFO *elInfo_;
-#endif
+    //! element number
+    int elNum_;
 
     //! the level of the entity
     int level_;
 
-
-    UGGridElement <dim,dim> fatherReLocal_;
+    typename TargetType<0,dim>::T* target_;
+    //UGGridElement <dim,dim> fatherReLocal_;
   }; // end of UGGridEntity codim = 0
 
-#endif  // #if 0
 
 } // namespace Dune
 

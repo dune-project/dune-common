@@ -9,10 +9,10 @@
 // All UG includes have to be includes via the file ugincludes.hh
 // for easier parsing by undefAllMacros.pl
 #define __PC__  // hack:  choose the architecture
-#define _3      // Choose the dimension
+//#define _3      // Choose the dimension
 #include "uggrid/ugincludes.hh"
 #undef __PC__
-#undef _3
+//#undef _3
 
 // Wrap a few large UG macros by functions before they get undef'ed away
 
@@ -80,6 +80,7 @@ namespace Dune
      Now you must use the UGGrid with DIM and DIMWORLD, otherwise
      unpredictable results may occur.
 
+     @addtogroup UGGrid
      @{
    */
 
@@ -108,159 +109,7 @@ namespace Dune
 
 #include "uggrid/uggridelement.hh"
 #include "uggrid/uggridentity.hh"
-
-namespace Dune {
-
-
-  //**********************************************************************
-  //
-  // --UGGridHierarchicIterator
-  // --HierarchicIterator
-  /*!
-     Mesh entities of codimension 0 ("elements") allow to visit all entities of
-     codimension 0 obtained through nested, hierarchic refinement of the entity.
-     Iteration over this set of entities is provided by the HIerarchicIterator,
-     starting from a given entity.
-     This is redundant but important for memory efficient implementations of unstru
-     hierarchically refined meshes.
-   */
-
-  template<int dim, int dimworld>
-  class UGGridHierarchicIterator :
-    public HierarchicIteratorDefault <dim,dimworld, UGCtype,
-        UGGridHierarchicIterator,UGGridEntity>
-  {
-  public:
-    //! know your own dimension
-    //enum { dimension=dim };
-
-    //! know your own dimension of world
-    //enum { dimensionworld=dimworld };
-
-#if 1
-
-#if 0
-    //! the normal Constructor
-    UGGridHierarchicIterator(UGGrid<dim,dimworld> &grid,
-                             ALBERT TRAVERSE_STACK *travStack, int actLevel, int maxLevel);
-#endif
-
-    //! the default Constructor
-    UGGridHierarchicIterator(UGGrid<dim,dimworld> &grid,
-                             int actLevel,int maxLevel);
-#else
-    //! the normal Constructor
-    UGGridHierarchicIterator(UGGrid<dim,dimworld> &grid,
-                             ALBERT TRAVERSE_STACK *travStack, int travLevel);
-
-    //! the default Constructor
-    UGGridHierarchicIterator(UGGrid<dim,dimworld> &grid);
-#endif
-
-    //! prefix increment
-    UGGridHierarchicIterator& operator ++();
-
-    //! postfix increment
-    UGGridHierarchicIterator& operator ++(int i);
-
-    //! equality
-    bool operator== (const UGGridHierarchicIterator& i) const;
-
-    //! inequality
-    bool operator!= (const UGGridHierarchicIterator& i) const;
-
-    //! dereferencing
-    UGGridEntity<0,dim,dimworld>& operator*();
-
-    //! arrow
-    UGGridEntity<0,dim,dimworld>* operator->();
-
-  private:
-    //! implement with virtual element
-    UGGridEntity<0,dim,dimworld> virtualEntity_;
-
-    //! know the grid were im comming from
-    UGGrid<dim,dimworld> &grid_;
-
-    //! the actual Level of this Hierarichic Iterator
-    int level_;
-
-    //! max level to go down
-    //int maxlevel_;
-
-#if 0
-    //! we need this for Albert traversal, and we need ManageTravStack, which
-    //! does count References when copied
-    ALBERT ManageTravStack manageStack_;
-
-    //! The nessesary things for Albert
-    ALBERT EL_INFO * recursiveTraverse(ALBERT TRAVERSE_STACK * stack);
-#endif
-
-    //! make empty HierarchicIterator
-    void makeIterator();
-  };
-
-
-#define NEIGH_DEBUG
-
-  /** \todo Please doc me! */
-  template<int dim, int dimworld>
-  class UGGridBoundaryEntity
-    : public BoundaryEntityDefault <dim,dimworld, UGCtype,
-          UGGridElement,UGGridBoundaryEntity>
-  {
-    friend class UGGridIntersectionIterator<dim,dimworld>;
-  public:
-    UGGridBoundaryEntity () : _geom (false) , /* _elInfo ( NULL ), */
-                              _neigh (-1) {};
-
-    //! return type of boundary , i.e. Neumann, Dirichlet ...
-    BoundaryType type ()
-    {
-#ifdef NEIGH_DEBUG
-      if(_elInfo->boundary[_neigh] == NULL)
-      {
-        std::cerr << "No Boundary, fella! \n";
-        abort();
-      }
-#endif
-      return (( _elInfo->boundary[_neigh]->bound < 0 ) ? Neumann : Dirichlet );
-    }
-
-    //! return identifier of boundary segment, number
-    int id ()
-    {
-#ifdef NEIGH_DEBUG
-      if(_elInfo->boundary[_neigh] == NULL)
-      {
-        std::cerr << "No Boundary, fella! \n";
-        abort();
-      }
-#endif
-      return _elInfo->boundary[_neigh]->bound;
-    }
-
-    //! return true if geometry of ghost cells was filled
-    bool hasGeometry () { return _geom.builtGeom(_elInfo,0,0,0); }
-
-    //! return geometry of the ghost cell
-    UGGridElement<dim,dimworld> geometry ()
-    {
-      return _geom;
-    }
-
-  private:
-
-    int _neigh;
-
-    // UGGrid<dim,dimworld> & _grid;
-    UGGridElement<dim,dimworld> _geom;
-
-  };
-
-}  // namespace Dune
-
+#include "uggrid/uggridboundent.hh"
 #include "uggrid/ugintersectionit.hh"
 #include "uggrid/uggridleveliterator.hh"
 
@@ -273,6 +122,7 @@ namespace Dune {
   //**********************************************************************
 
   /** \brief The UG %Grid class
+   * @addtogroup UGGrid
    *
    * \todo Please doc me!
    */
@@ -335,15 +185,11 @@ namespace Dune {
     /** \brief Number of grid entities per level and codim
      */
     int size (int level, int codim) const;
+
+    //! Triggers the grid refinement process
+    bool adapt();
+
 #if 0
-    //! refine all positive marked leaf entities
-    //! return true if the grid was changed
-    bool refine  ( );
-
-    //! coarsen all negative marked leaf entities
-    //! return true if the grid was changed
-    bool coarsen ( );
-
     /** \brief Please doc me! */
     GridIdentifier type () { return UGGrid_Id; };
 
@@ -357,28 +203,11 @@ namespace Dune {
     // write Grid to file
     //void writeGrid(int level=-1);
 
-    /** \brief write Grid to file in specified FileFormatType
-     */
-    template <FileFormatType ftype>
-    bool writeGrid( const char * filename, UGCtype time );
-
-    /** \brief read Grid from file filename and store time of mesh in time
-     */
-    template <FileFormatType ftype>
-    bool readGrid( const char * filename, UGCtype & time );
 #endif
     UGCtype getTime () const { return time_; };
 
     //private:
   public:
-    // make the calculation of indexOnLevel and so on.
-    // extra method because of Reihenfolge
-    void calcExtras();
-
-#if 0
-    //! access to mesh pointer, needed by some methods
-    ALBERT MESH* getMesh () const { return mesh_; };
-#endif
 
     // UG multigrid, which contains the data
     UG3d::multigrid mesh_;
@@ -416,31 +245,6 @@ namespace Dune {
 
   }; // end Class UGGrid
 
-#if 0
-  // Class to mark the Vertices on the leaf level
-  // to visit every vertex only once
-  // for the LevelIterator codim == dim
-  class UGMarkerVector
-  {
-    friend class UGGrid<2,2>;
-    friend class UGGrid<3,3>;
-  public:
-    UGMarkerVector () {} ;
-
-    bool notOnThisElement(ALBERT EL * el, int level , int vertex);
-
-    template <class GridType>
-    void markNewVertices(GridType &grid);
-
-    void print();
-
-  private:
-    // built in array to mark on which element a vertex is reached
-    Array<int> vec_;
-    // number of vertices
-    int numVertex_;
-  };
-#endif
   /** @} end documentation group */
 
 

@@ -94,49 +94,33 @@ namespace Dune
   template < int dim, int dimworld >
   inline int UGGrid < dim, dimworld >::maxlevel() const
   {
-    return mesh_.topLevel;
+    /** \todo Use a member variable instead of search by name */
+    UG3d::multigrid* theMG = UG3d::GetMultigrid("DuneMG");
+    return theMG->topLevel;
   }
 
-  //template < int dim, int dimworld > template<int codim>
   template <>
-#ifndef __GNUC__
-  template <>
-#endif
   inline UGGridLevelIterator<3,3,3>
   UGGrid < 3, 3 >::lbegin<3> (int level) const
   {
+    /** \todo Use a member variable instead of search by name */
     UG3d::multigrid* theMG = UG3d::GetMultigrid("DuneMG");
     assert(theMG);
     UG3d::grid* theGrid = theMG->grids[level];
 
     UGGridLevelIterator<3,3,3> it((*const_cast<UGGrid< 3, 3 >* >(this)),level);
 
-    // Choose the first *inner* vertex
     UG3d::node* mytarget = theGrid->firstNode[0];
-    //     UG3d::vertex* myvertex = mytarget->myvertex;
-
-    // #define OBJT(p) ReadCW(p, UG3d::OBJ_CE)
-    //     while (mytarget && OBJT(myvertex)!= UG3d::IVOBJ) {
-    // #undef OBJT
-
-    //         mytarget = mytarget->succ;
-    //         if (!mytarget)
-    //             break;
-    //         myvertex = mytarget->myvertex;
-
-    //     }
 
     it.setToTarget(mytarget);
     return it;
   }
 
   template <>
-#ifndef __GNUC__
-  template <>
-#endif
   inline UGGridLevelIterator<0,3,3>
   UGGrid < 3, 3 >::lbegin<0> (int level) const
   {
+    /** \todo Use a member variable instead of search by name */
     UG3d::multigrid* theMG = UG3d::GetMultigrid("DuneMG");
     assert(theMG);
     UG3d::grid* theGrid = theMG->grids[level];
@@ -231,13 +215,42 @@ namespace Dune
     sprintf(newArgs[1], "b DuneDummyProblem");
     sprintf(newArgs[2], "f DuneFormat");
     sprintf(newArgs[3], "h 1G");
-    //char* newArgs[4] = {"new DuneMG", "b DuneDummyProblem", "f DuneFormat", "h 1G"};
+
     if (UG3d::NewCommand(4, newArgs))
       assert(false);
 
+    /** \bug The newArgs array needs to be deleted here or when shutting down UG */
     //     for (int i=0; i<4; i++)
     //         free(newArgs[i]);
     printf("C\n");
+  }
+
+  template < int dim, int dimworld >
+  inline bool UGGrid < dim, dimworld >::adapt()
+  {
+    int rv;
+    int mode;
+
+    /** \todo Use a member variable instead of search by name */
+    UG3d::multigrid* theMG = UG3d::GetMultigrid("DuneMG");
+    assert(theMG);
+
+    mode = UG3d::GM_REFINE_TRULY_LOCAL;
+    mode = mode | UG3d::GM_COPY_ALL;
+
+    // I don't really know what this means
+    int seq = UG3d::GM_REFINE_PARALLEL;
+
+    // I don't really know what this means either
+    int mgtest = UG3d::GM_REFINE_HEAPTEST;
+
+    rv = AdaptMultiGrid(theMG,mode,seq,mgtest);
+
+    cout << "adapt():  error code " << rv << "\n";
+
+    /** \bug Should return true only if at least one element has actually
+        been refined */
+    return true;
   }
 
 } // namespace Dune
