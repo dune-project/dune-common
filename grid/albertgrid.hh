@@ -7,6 +7,7 @@
 #include <vector>
 #include <assert.h>
 
+//#include "albertgrid/indexset.hh"
 
 #ifdef __ALBERTNAME__
 #define ALBERT Albert::
@@ -16,6 +17,8 @@ namespace Albert
 #else
 #define ALBERT
 #endif
+
+#include "albertgrid/agindex.hh"
 
 #ifndef __ALBERTNAME__
   extern "C"
@@ -28,11 +31,13 @@ namespace Albert
 #define EL_INDEX 1
 #endif
 
+
   // the original ALBERT header
 #include <albert.h>
 
-  // some extra functions for handling the Albert Mesh
-#include "albertgrid/albertextra.hh"
+  // read and write mesh
+#include "albertgrid/read_mesh_xdr.cc"
+#include "albertgrid/write_mesh_xdr.cc"
 
 #ifdef ABS
 #undef ABS
@@ -49,6 +54,9 @@ namespace Albert
 #ifndef __ALBERTNAME__
 } // end extern "C"
 #endif
+
+  // some extra functions for handling the Albert Mesh
+#include "albertgrid/albertextra.hh"
 
 #ifdef __ALBERTNAME__
 } //end namespace Albert
@@ -88,6 +96,7 @@ namespace Albert
 
        @{
      */
+
 
     // i.e. double or float
     typedef ALBERT REAL albertCtype;
@@ -320,6 +329,10 @@ namespace Albert
 
       //! local coordinates within father
       Vec<dim,albertCtype>& local ();
+
+      // returns the global vertex number as default
+      int el_index() { return elInfo_->el->dof[vertex_][0]; }
+
     private:
       // methods for setting the infos from the albert mesh
       void setTraverseStack (ALBERT TRAVERSE_STACK *travStack);
@@ -327,9 +340,6 @@ namespace Albert
                       int edge, int vertex );
       // needed for the LevelIterator
       ALBERT EL_INFO *getElInfo () const;
-
-      // returns the global vertex number as default
-      int globalIndex() { return elInfo_->el->dof[vertex_][0]; }
 
       // private Methods
       void makeDescription();
@@ -454,6 +464,8 @@ namespace Albert
       //! Inter-level access to father element on coarser grid.
       //! Assumes that meshes are nested.
       AlbertGridLevelIterator<0,dim,dimworld> father ();
+      void father (AlbertGridEntity<0,dim,dimworld> & vati);
+      AlbertGridEntity<0,dim,dimworld> newEntity();
 
       /*! Location of this element relative to the reference element
          of the father. This is sufficient to interpolate all
@@ -483,6 +495,13 @@ namespace Albert
       //! element is coarsend -refCount times
       //! mark returns true if element was marked, otherwise false
       bool mark( int refCount );
+      AdaptationState state ();
+
+      //! return the global unique index in grid
+      int el_index() { return elInfo_->el->index; }
+
+      //! return the global unique index in grid
+      int global_index();
 
     private:
       // called from HierarchicIterator, because only this
@@ -501,9 +520,6 @@ namespace Albert
 
       // needed for LevelIterator to compare
       ALBERT EL_INFO *getElInfo () const;
-
-      // return the global unique index in mesh
-      int globalIndex() { return elInfo_->el->index; }
 
       //! make a new AlbertGridEntity
       void makeDescription();
@@ -849,15 +865,16 @@ namespace Albert
     public:
 
       //! Constructor
-      AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid, int travLevel);
+      AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid, int
+                              travLevel, bool leafIt=false);
 
       //! Constructor
-      AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid,
+      AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid, int travLevel,
                               ALBERT EL_INFO *elInfo,int elNum = 0 , int face=0, int edge=0,int vertex=0);
 
       //! Constructor
       AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid,
-                              AlbertMarkerVector * vec ,int travLevel);
+                              AlbertMarkerVector * vec ,int travLevel,bool leafIt=false);
 
       //! prefix increment
       AlbertGridLevelIterator<codim,dim,dimworld>& operator ++();
@@ -881,6 +898,9 @@ namespace Albert
       int level ();
 
     private:
+      bool okReturn_;
+      bool leafIt_;
+
       // private Methods
       void makeIterator();
 
@@ -888,6 +908,7 @@ namespace Albert
                                       ALBERT MESH *mesh,
                                       int level, ALBERT FLAGS fill_flag);
       ALBERT EL_INFO * traverseLeafElLevel(ALBERT TRAVERSE_STACK * stack);
+      ALBERT EL_INFO * traverseElLevel(ALBERT TRAVERSE_STACK * stack);
 
       // the default is, go to next elInfo
       //template <int cc>
@@ -969,6 +990,7 @@ namespace Albert
       // The Interface Methods
       //**********************************************************
     public:
+      typedef AlbertGridLevelIterator<0,dim,dimworld> LeafIterator;
       typedef AlbertGridReferenceElement<dim> ReferenceElement;
 
       /** \todo Please doc me! */
@@ -1001,16 +1023,21 @@ namespace Albert
 
       /** \brief Number of grid entities per level and codim
        * \todo Why is there a non-const version of this method?
+       * because lbegin and lend are none const, and we need this methods
+       * counting the entities on each level, you know.
        */
       int size (int level, int codim) const;
 
       //! refine all positive marked leaf entities
-      //! return true if the grid was changed
-      bool refine  ( );
+      //! coarsen all negative marked entities if possible
+      //! return true if a least one element was refined
+      bool adapt ( );
 
-      //! coarsen all negative marked leaf entities
-      //! return true if the grid was changed
-      bool coarsen ( );
+      //! returns true, if a least one element is marked for coarsening
+      bool preAdapt ();
+
+      //! clean up some markers
+      bool postAdapt();
 
       /** \brief Please doc me! */
       GridIdentifier type () { return AlbertGrid_Id; };
@@ -1021,7 +1048,6 @@ namespace Albert
 
       //! uses the interface, mark on entity and refineLocal
       bool globalRefine(int refCount);
-
 
       /** \brief write Grid to file in specified FileFormatType
        */
@@ -1037,7 +1063,21 @@ namespace Albert
       //! not an interface method yet
       albertCtype getTime () const { return time_; };
 
+      //! return LeafIterator which points to first leaf entity
+      LeafIterator leafbegin ( int maxlevel );
+
+      //! return LeafIterator which points behind last leaf entity
+      LeafIterator leafend   ( int maxlevel );
+
+      int hierSize () const;
+
     private:
+      // max global index in Grid
+      int maxHierIndex_;
+
+      // return true if entity with global number num is new
+      bool checkElNew ( int num ) const;
+
       // make the calculation of indexOnLevel and so on.
       // extra method because of Reihenfolge
       void calcExtras();
@@ -1056,8 +1096,15 @@ namespace Albert
       // number of maxlevel of the mesh
       int maxlevel_;
 
-      // true if grid was refined
+      // true if grid was refined or coarsend
       bool wasChanged_;
+
+      // is true, if a least one entity is marked for coarsening
+      bool isMarked_;
+
+      // set isMarked, isMarked is true if at least one entity is marked for
+      // coarsening
+      void setMark ( bool isMarked );
 
       // number of entitys of each level an codim
       mutable Array<int> size_;
@@ -1080,10 +1127,20 @@ namespace Albert
       //*********************************************************
       // Methods for mapping the global Index to local on Level
       // contains the index on level for each unique el->index of Albert
-      Array<int> levelIndex_[dim+1];
+      enum { AG_MAXLEVELS = 100 };
+      Array<int> levelIndex_[dim+1][AG_MAXLEVELS];
+      Array<int> oldLevelIndex_[dim+1][AG_MAXLEVELS];
+
       void makeNewSize(Array<int> &a, int newNumberOfEntries);
       void markNew();
       //**********************************************************
+      template <int codim>
+      int globalIndexConsecutive(int globalIndex) ;
+
+      //! map the global index from the Albert Mesh to the local index on Level
+      // returns -1 if no index exists, i.e. element is new
+      template <int codim>
+      int oldIndexOnLevel(int globalIndex, int level ) ;
 
       //! map the global index from the Albert Mesh to the local index on Level
       template <int codim>
@@ -1091,7 +1148,10 @@ namespace Albert
 
       // pointer to the real number of elements or vertices
       // i.e. points to mesh->n_hier_elements or mesh->n_vertices
-      typename std::vector<int *> numberOfEntitys_;
+      int numberOfEntitys_[dim+1];
+      int oldNumberOfEntities_[dim+1];
+
+      SerialIndexSet gIndex_;
 
       //! actual time of Grid
       albertCtype time_;

@@ -16,10 +16,13 @@
 
 // This three function are used by albertgrid.hh ~.cc
 // but not defined in the regular albert.h
-extern void free_leaf_data(void *leaf_data, MESH *mesh);
-extern void free_dof(DOF *dof, MESH *mesh, int position);
+//extern void free_leaf_data(void *leaf_data, MESH *mesh);
+//extern void free_dof(DOF *dof, MESH *mesh, int position);
 
 void enlargeTraverseStack(TRAVERSE_STACK *stack);
+static TRAVERSE_STACK *getTraverseStack(void);
+static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack);
+void printTraverseStack(TRAVERSE_STACK *stack);
 
 //! organize the TRAVERSE_STACK Management, so we can use the nice Albert
 //! fucntions get_traverse_stack and free_traverse_stack
@@ -31,25 +34,24 @@ class ManageTravStack
   TRAVERSE_STACK * stack_;
 
   //! number of copies that exist from this stack_
-  int *refCount_;
+  mutable int *refCount_;
 
 public:
   //! if a copy is made, the refcout is increased
   ManageTravStack(const ManageTravStack & copy)
   {
-    stack_ = copy.stack_;
+    stack_ = NULL;
+    refCount_ = NULL;
     if(copy.stack_ != NULL)
     {
-      (*const_cast<ManageTravStack &> (copy).refCount_)++;
+      stack_ = copy.stack_;
+      refCount_ = copy.refCount_;
+      (*refCount_)++;
     }
-    refCount_ = copy.refCount_;
   }
 
   //! initialize the member variables
-  ManageTravStack()
-  {
-    init();
-  }
+  ManageTravStack() : stack_ (NULL) , refCount_ (NULL) {}
 
   //! get new TRAVERSE_STACK using the original Albert Routine
   //! get_traverse_stack, which get an new or free stack
@@ -57,24 +59,17 @@ public:
   {
     if(realyMakeIt)
     {
-      stack_ = get_traverse_stack();
-      int *tmp = new int;
+      stack_ = getTraverseStack();
+      int * tmp = new int;
       refCount_ = tmp;
       (*refCount_) = 1;
     }
   }
 
-  //! initialize the member variables
-  void init()
-  {
-    stack_ = NULL;
-    refCount_ = NULL;
-  }
-
   //! set Stack free, if no more refences exist
   ~ManageTravStack()
   {
-    if(refCount_)
+    if(refCount_ && stack_)
     {
       (*refCount_)--;
       if((*refCount_) <= 0)
@@ -82,21 +77,15 @@ public:
         // in free_traverse_stack stack != NULL is checked
         if(stack_)
         {
-          free_traverse_stack(stack_);
-          stack_ = NULL;
+          stack_ = freeTraverseStack(stack_);
         }
-        if(refCount_) delete refCount_ ;
+        if(refCount_)
+        {
+          delete refCount_;
+          refCount_ = NULL;
+        }
       }
     }
-  }
-
-  //! if copy is made than one more Reference exists
-  ManageTravStack & operator = (const ManageTravStack & copy)
-  {
-    (*copy.refCount_)++;
-    stack_ = copy.stack_;
-    refCount_ = copy.refCount_;
-    return (*this);
   }
 
   //! return the TRAVERSE_STACK pointer for use
@@ -104,49 +93,68 @@ public:
   {
     return stack_;
   }
+private:
+  //! if copy is made than one more Reference exists
+  ManageTravStack & operator = (const ManageTravStack & copy)
+  {
+    std::cout << "ManageTravStack::operator = do not use!\n";
+    abort();
+    if(copy.stack_)
+    {
+      std::cout << "Copy Stack! \n";
+      (*copy.refCount_)++;
+      stack_ = copy.stack_;
+      refCount_ = copy.refCount_;
+    }
 
+    return (*this);
+  }
 };
 
-//! copy all memory entries from org to copy via memcpy
-inline void hardCopyStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
+
+static TRAVERSE_STACK *freeStack = NULL;
+static int stackCount=0;
+
+static inline void initTraverseStack(TRAVERSE_STACK *stack);
+
+static TRAVERSE_STACK *getTraverseStack(void)
 {
-  copy->traverse_mesh = org->traverse_mesh;
-  copy->traverse_level = org->traverse_level;
-  copy->traverse_fill_flag = org->traverse_fill_flag;
-  copy->traverse_mel = org->traverse_mel;
+#if 0
+  TRAVERSE_STACK *stack;
 
-  copy->stack_size = org->stack_size;
-  copy->stack_used = org->stack_used;
-  copy->elinfo_stack = NULL;
-  copy->elinfo_stack = MEM_ALLOC(org->stack_size, EL_INFO);
-
-  memcpy(copy->elinfo_stack,org->elinfo_stack,
-         copy->stack_size * sizeof(EL_INFO));
-
-  copy->info_stack = NULL;
-  copy->info_stack = MEM_ALLOC(copy->stack_size, U_CHAR);
-  memcpy(copy->info_stack,org->info_stack,
-         copy->stack_size * sizeof(U_CHAR));
-
-  copy->save_elinfo_stack = NULL;
-  copy->save_elinfo_stack = MEM_ALLOC(copy->stack_size, EL_INFO);
-  memcpy(copy->save_elinfo_stack,org->save_elinfo_stack,
-         copy->stack_size * sizeof(EL_INFO));
-
-  copy->save_info_stack = NULL;
-  copy->save_info_stack = MEM_ALLOC(copy->stack_size,U_CHAR);
-  memcpy(copy->save_info_stack,org->save_info_stack,
-         copy->stack_size * sizeof(U_CHAR));
-  copy->save_stack_used = org->save_stack_used;
-  copy->el_count = org->el_count;
-
-  copy->next = org->next;
-  org->next = copy;
-
-  return;
+  if (!freeStack)
+  {
+    stack = (TRAVERSE_STACK *) std::malloc(sizeof(TRAVERSE_STACK));
+    initTraverseStack(stack);
+    stackCount++;
+  }
+  else
+  {
+    stack = freeStack;
+    freeStack = freeStack->next;
+  }
+  return(stack);
+#else
+  return get_traverse_stack();
+#endif
 }
 
-//! copy all memory entries from org to copy via memcpy
+static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack)
+{
+#if 0
+  if (!stack) {
+    std::cout << "stack==NULL ???\n";
+    abort();
+    return NULL;
+  }
+  stack->next = freeStack;
+  freeStack = stack;
+  return NULL;
+#endif
+  free_traverse_stack(stack);
+  return NULL;
+}
+
 inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 {
   copy->traverse_mesh = org->traverse_mesh;
@@ -154,8 +162,10 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
   copy->traverse_fill_flag = org->traverse_fill_flag;
   copy->traverse_mel = org->traverse_mel;
 
-  if(copy->stack_size < 5)
+  if(copy->stack_size < org->stack_size)
+  {
     enlargeTraverseStack(copy);
+  }
 
   int used = org->stack_used;
   copy->stack_used = 1;
@@ -180,62 +190,35 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
   copy->save_stack_used = org->save_stack_used;
   copy->el_count = 1;
 
-  copy->next = org->next;
-  org->next = copy;
-
   return;
 }
 
-inline TRAVERSE_STACK & removeTraverseStack(TRAVERSE_STACK& copy)
+#if 0
+static inline void initTraverseStack(TRAVERSE_STACK *stack)
 {
-  FUNCNAME("removeStack");
-
-  if(copy.elinfo_stack)
-    MEM_FREE(copy.elinfo_stack, copy.stack_size, EL_INFO);
-  copy.elinfo_stack = NULL;
-
-  if(copy.info_stack)
-    MEM_FREE(copy.info_stack,copy.stack_size, U_CHAR);
-  copy.info_stack = NULL;
-
-  if(copy.save_elinfo_stack)
-    MEM_FREE(copy.save_elinfo_stack,
-             copy.stack_size, EL_INFO);
-  copy.save_elinfo_stack = NULL;
-
-  if(copy.save_info_stack)
-    MEM_FREE(copy.save_info_stack,copy.stack_size,U_CHAR);
-  copy.save_info_stack = NULL;
-
-  return copy;
-}
-
-
-inline void initTraverseStack(TRAVERSE_STACK *stack)
-{
-  FUNCNAME("initTraverseStack");
-
-  stack->traverse_mesh = nil;
+  std::cout << "initTraverseStack !\n";
+  stack->traverse_mesh = NULL;
   stack->stack_size = 0;
   stack->stack_used = 0;
-  stack->elinfo_stack = nil;
-  stack->info_stack = nil;
-  stack->save_elinfo_stack = nil;
-  stack->save_info_stack = nil;
+  stack->elinfo_stack = NULL;
+  stack->info_stack = NULL;
+  stack->save_elinfo_stack = NULL;
+  stack->save_info_stack = NULL;
   stack->save_stack_used = 0;
   stack->el_count = 0;
-  stack->next = nil;
-
+  stack->next = NULL;
+  return;
 }
+#endif
 
 inline void enlargeTraverseStack(TRAVERSE_STACK *stack)
 {
-  FUNCNAME("enlargeTraverseStack");
   int i;
   int new_stack_size = stack->stack_size + 10;
 
   stack->elinfo_stack = MEM_REALLOC(stack->elinfo_stack, stack->stack_size,
                                     new_stack_size, EL_INFO);
+
   if (stack->stack_size > 0)
     for (i=stack->stack_size; i<new_stack_size; i++)
       stack->elinfo_stack[i].fill_flag = stack->elinfo_stack[0].fill_flag;
@@ -248,10 +231,6 @@ inline void enlargeTraverseStack(TRAVERSE_STACK *stack)
   stack->save_info_stack   = MEM_REALLOC(stack->save_info_stack,
                                          stack->stack_size,
                                          new_stack_size, U_CHAR);
-#if 0
-  MSG("increase stack at %8X from %d to %d\n", stack,
-      stack->stack_size, new_stack_size);
-#endif
 
   stack->stack_size = new_stack_size;
 }
@@ -259,10 +238,10 @@ inline void enlargeTraverseStack(TRAVERSE_STACK *stack)
 void printTraverseStack(TRAVERSE_STACK *stack)
 {
   FUNCNAME("printTraverseStack");
-
   MSG("****************************************************\n");
-  MSG("current stack %8X | size %d \n", stack,stack->stack_size);
+  MSG("current stack %8X | size %d, Count = %d \n", stack,stack->stack_size,stackCount);
   MSG("traverse_level %d \n",stack->traverse_level);
+  MSG("traverse_mesh  %8X \n",stack->traverse_mesh);
   MSG("elinfo_stack      = %8X\n",stack->elinfo_stack);
   MSG("info_stack        = %8X\n",stack->info_stack);
   MSG("save_elinfo_stack = %8X\n",stack->save_elinfo_stack);
@@ -324,6 +303,8 @@ inline static U_CHAR AlbertCoarsen ( MESH * mesh )
 //*********************************************************************
 namespace AlbertHelp
 {
+
+
   //****************************************************************
   //
   //  Albert reference element local numbering for 2D
@@ -366,35 +347,37 @@ namespace AlbertHelp
   static const int * localTetraFaceNumber[4] = {tetraFace_0, tetraFace_1,
                                                 tetraFace_2 , tetraFace_3 };
 
-  //*********************************************************************
-
-  void AlbertLeafRefine(EL *parent, EL *child[2]){};
-  void AlbertLeafCoarsen(EL *parent, EL *child[2]){};
-
   //**************************************************************************
   //  calc Maxlevel of AlbertGrid and remember on wich level an element lives
   //**************************************************************************
 
   static int Albert_MaxLevel_help=-1;
+  static int Albert_GlobalIndex_help=-1;
   static std::vector<int> *Albert_neighArray_help;
 
   // function for mesh_traverse, is called on every element
   inline static void calcMaxLevel (const EL_INFO * elf)
   {
     int level = elf->level;
+    int index = elf->el->index;
+
+    assert(index < Albert_neighArray_help->size());
+
+    if(index > Albert_GlobalIndex_help) Albert_GlobalIndex_help = index;
     if(Albert_MaxLevel_help < level) Albert_MaxLevel_help = level;
-    (* Albert_neighArray_help )[elf->el->index] = level;
+    (* Albert_neighArray_help )[index] = level;
   }
 
 
   // remember on which level an element realy lives
-  inline int calcMaxLevelAndMarkNeighbours ( MESH * mesh, std::vector< int > &nb )
+  inline int calcMaxLevelAndMarkNeighbours ( MESH * mesh, std::vector< int > &nb, int & GlobalIndex )
   {
     // determine new maxlevel
-    nb.resize( mesh->n_hier_elements );
+    nb.resize( 2 * mesh->n_hier_elements );
 
     Albert_neighArray_help = &nb;
     Albert_MaxLevel_help = -1;
+    Albert_GlobalIndex_help = -1;
 
     // see ALBERT Doc page 72, traverse over all hierarchical elements
     mesh_traverse(mesh,-1, CALL_EVERY_EL_PREORDER|FILL_NOTHING,calcMaxLevel);
@@ -404,6 +387,7 @@ namespace AlbertHelp
       std::cerr << "Error: in calcMaxLevelAndMarkNeighbours!\n";
       abort();
     }
+    GlobalIndex = Albert_GlobalIndex_help+1;
     return Albert_MaxLevel_help;
   }
 
@@ -419,23 +403,22 @@ namespace AlbertHelp
     printf("----------------------------------\n");
   }
 
-  // we dont need Leaf Data
-  void initLeafData(LEAF_DATA_INFO * linfo)
-  {
-    linfo->leaf_data_size = sizeof(NULL); //AlbertLeafData);
-    linfo->refine_leaf_data = NULL; // &AlbertLeafRefine;
-    linfo->coarsen_leaf_data =NULL; //&AlbertLeafCoarsen;
+  //*********************************************************************
 
+  // Leaf Data for Albert, only the leaf elements have this data set
+  typedef struct {} AlbertLeafData;
+
+  inline static void AlbertLeafRefine(EL *parent, EL *child[2]) {}
+  inline static void AlbertLeafCoarsen(EL *parent, EL *child[2]){}
+
+  // we dont need Leaf Data
+  inline static void initLeafData(LEAF_DATA_INFO * linfo)
+  {
+    linfo->leaf_data_size = sizeof(AlbertLeafData);
+    linfo->refine_leaf_data = &AlbertLeafRefine;
+    linfo->coarsen_leaf_data =&AlbertLeafCoarsen;
     return;
   }
-
-#if 0
-  const FE_SPACE *feSpace;
-  const FE_SPACE *getFeSpace ()
-  {
-    return feSpace;
-  }
-#endif
 
   // initialize dofAdmin for vertex numbering
   void initDofAdmin(MESH *mesh)
@@ -448,7 +431,7 @@ namespace AlbertHelp
     // just for vertex numbering
     lagrange = get_lagrange(degree);
     TEST_EXIT(lagrange) ("no lagrange BAS_FCTS\n");
-    feSpace = get_fe_space(mesh, "Linear Lagrangian Elements", nil, lagrange);
+    feSpace = get_fe_space(mesh, "Linear Lagrangian Elements", NULL, lagrange);
 
     return;
   }
