@@ -27,7 +27,7 @@ namespace Dune {
   /** @addtogroup YaspGrid
       \ingroup GridCommon
 
-        This is the basis of a parallel implementation of the dune grid interface
+          This is the basis of a parallel implementation of the dune grid interface
           supporting codim 0 and dim.
 
           You can also use the structured interface and write really fast code.
@@ -845,13 +845,8 @@ namespace Dune {
       }
 
       //! Make transforming iterator from iterator (used for automatic conversion of end)
-      TransformingSubIterator (SubIterator& i) :
-        SubIterator(i)
-      {}
-
-      TransformingSubIterator (const TransformingSubIterator & t) :
-        SubIterator(t), _h(t._h), _begin(t._begin), _position(t._position)
-      {}
+      TransformingSubIterator (SubIterator& i) : SubIterator(i)
+      {       }
 
       //! Make iterator pointing to given cell in a grid.
       void reinit (SubYGrid<d,ct>& r, iTupel& coord)
@@ -929,6 +924,7 @@ namespace Dune {
       fTupel _begin;        //!< position of origin of grid
       fTupel _position;     //!< current position
     };
+
     //! return iterator to first element of index set
     TransformingSubIterator tsubbegin ()
     {
@@ -1026,7 +1022,7 @@ namespace Dune {
       iTupel dims;
       double opt=1E100;
       optimize_dims(d-1,size,_procs,dims,opt);
-      if (_rank==0) dinfo << "Torus<" << d
+      if (_rank==0) std::cout << "Torus<" << d     // changed dinfo tocout
         << ">: mapping " << _procs << " processes onto "
         << _dims << " torus." << std::endl;
 
@@ -1646,7 +1642,7 @@ namespace Dune {
       _levels[_maxlevel] = makelevel(L,s,periodic,o_interior,s_interior,overlap);
 
       // output
-      if (_torus.rank()==0) dinfo << "MultiYGrid<" << d
+      if (_torus.rank()==0) std::cout << "MultiYGrid<" << d     // changed dinfo to cout
         << ">: coarse grid with size " << s
         << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
       //      print(std::cout);
@@ -1667,7 +1663,7 @@ namespace Dune {
       if (keep_overlap) overlap = 2*cg.overlap;else overlap = cg.overlap;
 
       // output
-      if (_torus.rank()==0) dinfo << "MultiYGrid<"
+      if (_torus.rank()==0) std::cout << "MultiYGrid<"     // changed dinfo to cout
         << d << ">: refined to size "
         << s << std::endl;
 
@@ -1706,6 +1702,10 @@ namespace Dune {
       int l;
       YGridLevel* i;
     public:
+      //! empty constructor, use with care
+      YGridLevelIterator ()
+      {}
+
       //! make iterator pointing to level k (no check made)
       YGridLevelIterator (YGridLevel* start, int level)
       {
