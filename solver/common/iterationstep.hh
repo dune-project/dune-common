@@ -24,6 +24,8 @@ namespace Dune {
 
     virtual VECTOR_TYPE getSol() = 0;
 
+    virtual OP_TYPE* getMatrix() {return mat_;}
+
     VECTOR_TYPE* x_;
 
     VECTOR_TYPE* rhs_;
