@@ -106,7 +106,6 @@ void AlbertLeafCoarsen(EL * parent, EL * child[2])
 
 void initLeafData(LEAF_DATA_INFO * linfo)
 {
-  std::cout << "AlbertLeafRefine: Muss noch getestet werden \n";
   linfo->leaf_data_size = sizeof(AlbertLeafData);
   linfo->refine_leaf_data = &AlbertLeafRefine;
   linfo->coarsen_leaf_data = &AlbertLeafCoarsen;
@@ -399,7 +398,9 @@ namespace Dune
                          ALBERT setReached);
     maxlevel_ = 0;
 
-    //  vertexMarker_ = new vector<int> mesh->n_elements;
+    vertexMarker_ = new AlbertMarkerVector ();
+    vertexMarker_->markNewVertices(mesh_);
+
   }
 
   template < int dim, int dimworld >
@@ -425,8 +426,9 @@ namespace Dune
     unsigned char flag;
     flag = ALBERT refine(mesh_);
 
-  }
+    vertexMarker_->markNewVertices(mesh_);
 
+  }
 
   template < int dim, int dimworld >
   inline void AlbertGrid < dim, dimworld >::
@@ -468,6 +470,8 @@ namespace Dune
     vertex_ = 0;
     face_ = 0;
     edge_ = 0;
+    vertexMarker_ = NULL;
+
     travStack_ = NULL;
     virtualEntity_ = new AlbertGridEntity<codim,dim,dimworld> (); //el_ = new Element();
   }
@@ -492,6 +496,8 @@ namespace Dune
       face_ = 0;
       edge_ = 0;
 
+      vertexMarker_ = NULL;
+
       // set traverse_stack
       travStack_ = travStack;
       virtualEntity_ = new AlbertGridEntity<codim,dim,dimworld> (travStack_);
@@ -508,13 +514,17 @@ namespace Dune
   }
   template<int codim, int dim, int dimworld>
   inline AlbertGridLevelIterator<codim,dim,dimworld >::
-  AlbertGridLevelIterator(ALBERT MESH * mesh, int travLevel)
+  AlbertGridLevelIterator(ALBERT MESH * mesh, AlbertMarkerVector * vertexMark,
+                          int travLevel)
   {
     if(mesh)
     {
       vertex_ = 0;
       face_ = 0;
       edge_ = 0;
+
+      vertexMarker_ = vertexMark;
+
       ALBERT FLAGS travFlags = FILL_COORDS | FILL_NEIGH;
       if(travLevel >= 0)
         travFlags = travFlags | CALL_LEAF_EL_LEVEL;
@@ -637,19 +647,9 @@ namespace Dune
     if(!elInfo)
       return elInfo; // if no more Vertices, return
 
-    // on leaf level, child[1] hides the leaf data pointer
-    if(elInfo->el->child[1])
-    {
-      ldata = (ALBERT AlbertLeafData *) elInfo->el->child[1];
-
-      // treat Vertices a little diffrent from Faces
-      // if reachedFace the previous or next face ist reached before,
-      // then the vertex has reached before
-      if(ldata->reachedVertex[vertex_] != 1)
-      {
-        elInfo = goNextVertex(stack,elInfo);
-      }
-    }
+    // go next, if Vertex is not treated on this Element
+    if(vertexMarker_->vertexNotOnElement(elInfo,vertex_))
+      elInfo = goNextVertex(stack,elInfo);
 
     return elInfo;
   }
@@ -940,9 +940,11 @@ namespace Dune
   inline int AlbertGridEntity < codim, dim ,dimworld >::
   index()
   {
+    if ( dim == codim)
+      return elInfo_->el->dof[vertex_][0];
+
     return elInfo_->el->index;
   }
-
 
   template<int dim, int dimworld>
   inline int AlbertGridEntity < 0, dim ,dimworld >::
@@ -1408,6 +1410,72 @@ namespace Dune
   {
     NeighborIterator it;
     return it;
+  }
+
+  //*********************************************************************
+  //
+  //  AlbertMarkerVertex
+  //
+  //*********************************************************************
+  AlbertMarkerVector::AlbertMarkerVector ()
+  {
+    vec_ = NULL;
+    numberOfEntries_ = 0;
+  }
+
+  void AlbertMarkerVector::makeNewSize(int newNumberOfEntries)
+  {
+    delete vec_;
+
+    vec_ = new int [newNumberOfEntries];
+
+    for(int i=0; i<newNumberOfEntries; i++)
+      vec_[i] = -1;
+
+    numberOfEntries_ = newNumberOfEntries;
+  }
+
+  void AlbertMarkerVector::makeSmaller(int newNumberOfEntries)
+  {}
+
+  void AlbertMarkerVector::checkMark(ALBERT EL_INFO * elInfo, int vertex)
+  {
+    if(vec_[elInfo->el->dof[vertex][0]] == -1)
+      vec_[elInfo->el->dof[vertex][0]] = elInfo->el->index;
+  }
+
+  bool AlbertMarkerVector::vertexNotOnElement(ALBERT EL_INFO * elInfo, int vertex)
+  {
+    return (vec_[elInfo->el->dof[vertex][0]] != elInfo->el->index);
+  }
+
+  void AlbertMarkerVector::markNewVertices(ALBERT MESH * mesh)
+  {
+    makeNewSize(mesh->n_vertices);
+
+    ALBERT FLAGS travFlags = FILL_NOTHING | CALL_LEAF_EL;
+
+    // get traverse_stack
+    ALBERT TRAVERSE_STACK * travStack = ALBERT get_traverse_stack();
+
+    // diese Methode muss neu geschrieben werden, da man
+    // die ParentElement explizit speichern moechte.
+    ALBERT EL_INFO* elInfo =
+      ALBERT traverse_first(travStack, mesh, -1,travFlags);
+
+    while(elInfo)
+    {
+      for(int i=0; i<N_VERTICES; i++)
+        checkMark(elInfo,i);
+      elInfo = traverse_next(travStack,elInfo);
+    }
+  }
+
+  void AlbertMarkerVector::print()
+  {
+    printf("\nEntries %d \n",numberOfEntries_);
+    for(int i=0; i<numberOfEntries_; i++)
+      printf("Konten %d visited on Element %d \n",i,vec_[i]);
   }
 
 } // end namespace dune

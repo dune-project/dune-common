@@ -35,7 +35,6 @@ namespace Albert
 }
 #endif
 
-
   typedef struct albert_leaf_data
   {
     /// Wegen Fehler in memory.cc, der noch behoben werden muss
@@ -45,6 +44,7 @@ namespace Albert
   } AlbertLeafData;
 
   void setReached(const EL_INFO *elInfo);
+  void markNewVertices(const EL_INFO *elInfo);
   void AlbertLeafRefine(EL *parent, EL *child[2]);
   void AlbertLeafCoarsen(EL *parent, EL *child[2]);
   void initLeafData(LEAF_DATA_INFO *linfo);
@@ -58,6 +58,23 @@ namespace Albert
 
   namespace Dune
   {
+
+    class AlbertMarkerVector
+    {
+      int *vec_;
+      int numberOfEntries_;
+    public:
+      AlbertMarkerVector ();
+
+      void makeNewSize(int newNumberOfEntries);
+      void makeSmaller(int newNumberOfEntries);
+      bool vertexNotOnElement(ALBERT EL_INFO * elInfo, int vertex);
+      void markNewVertices(ALBERT MESH * mesh);
+      void print();
+    private:
+      void checkMark(ALBERT EL_INFO * elInfo, int vertex);
+
+    };
 
 
     template<int dim, int dimworld> class AlbertGridElement;
@@ -565,7 +582,8 @@ namespace Albert
                               ALBERT EL_INFO * elInfo);
 
       //! Constructor
-      AlbertGridLevelIterator(ALBERT MESH * mesh, int travLevel);
+      AlbertGridLevelIterator(ALBERT MESH * mesh, AlbertMarkerVector * vec,
+                              int travLevel);
 
       //! Constructor
       AlbertGridLevelIterator();
@@ -637,6 +655,9 @@ namespace Albert
       unsigned char face_;
       unsigned char edge_;
       unsigned char vertex_;
+
+      AlbertMarkerVector * vertexMarker_;
+
     };
 
 
@@ -669,7 +690,7 @@ namespace Albert
       template<int codim>
       AlbertGridLevelIterator<codim,dim,dimworld> lbegin (int level)
       {
-        AlbertGridLevelIterator<codim,dim,dimworld> it(mesh_,level);
+        AlbertGridLevelIterator<codim,dim,dimworld> it(mesh_,vertexMarker_,level);
         return it;
       }
 
@@ -743,51 +764,10 @@ namespace Albert
       //! pointer to an Albert Mesh, which contains the data
       ALBERT MESH *mesh_;
       int maxlevel_;
-      //    vector<int> *vertexMarker_;
+      AlbertMarkerVector *vertexMarker_;
 
     }; // end Class AlbertGridGrid
 
-#if 0
-    class AlbertMarkerVector
-    {
-      int *vec_;
-      int numberOfEntries_;
-
-      AlbertMarkerVector ()
-      {
-        vec_ = NULL;
-        numberOfEntries_ = 0;
-      }
-
-      AlbertMarkerVector (int numberOfEntries)
-      {
-        numberOfEntries_ = numberOfEntries;
-        vec_ = new int [numberOfEntries_];
-        for(int i=0; i<numberOfEntries_; i++)
-          vec_[i] = -1;
-      }
-
-      void makeBigger(int newNumberOfEntries)
-      {
-        int *newVec = new int [newNumberOfEntries];
-        for(int i=0; i<numberOfEntries_; i++)
-          newVec[i] = vec_[i];
-        for(int i=numberOfEntries_; i<newNumberOfEntries; i++)
-          newVec[i] = -1;
-
-        int *swap;
-
-        swap = newVec;
-        newVec = vec_;
-        vec_ = swap;
-
-        delete newVec;
-        numberOfEntries_ = newNumberOfEntries;
-      }
-
-    };
-
-#endif
 
   }; // namespace Dune
 
