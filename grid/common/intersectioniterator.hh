@@ -261,7 +261,9 @@ namespace Dune
     //! the normal is scaled with the integration element
     FieldVector<ct, dimworld> integrationOuterNormal (const FieldVector<ct, dim-1>& local) const
     {
-      return unitOuterNormal(local) * asImp().intersectionGlobal().integrationElement(local);
+      FieldVector<ct, dimworld> n = unitOuterNormal(local);
+      n *= asImp().intersectionGlobal().integrationElement(local);
+      return n;
     }
     //! return unit outer normal
     FieldVector<ct, dimworld> unitOuterNormal (const FieldVector<ct, dim-1>& local) const
