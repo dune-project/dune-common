@@ -30,7 +30,7 @@ fi
 cat >conftest.c <<_ACEOF
 #include <unistd.h>
 #include <stdio.h>
-int main() { printf("%i", getpagesize()); }
+int main() { printf("%i", getpagesize()); return 0; }
 _ACEOF
 
 if test x$DUNE_PAGESIZE == x ; then
@@ -48,7 +48,7 @@ fi
 cat >conftest.c <<_ACEOF
 #include <unistd.h>
 #include <stdio.h>
-int main() { printf("%i", sysconf(_SC_PAGESIZE)); }
+int main() { printf("%i", sysconf(_SC_PAGESIZE)); return 0; }
 _ACEOF
 
 if test x$DUNE_PAGESIZE == x ; then
@@ -66,7 +66,7 @@ fi
 cat >conftest.c <<_ACEOF
 #include <unistd.h>
 #include <stdio.h>
-int main() { printf("%i", sysconf(_SC_PAGE_SIZE)); }
+int main() { printf("%i", sysconf(_SC_PAGE_SIZE)); return 0; }
 _ACEOF
 
 if test x$DUNE_PAGESIZE == x ; then
@@ -84,7 +84,7 @@ fi
 cat >conftest.c <<_ACEOF
 #include <sys/param.h>
 #include <stdio.h>
-int main() { printf("%i", PAGE_SIZE); }
+int main() { printf("%i", PAGE_SIZE); return 0; }
 _ACEOF
 
 if test x$DUNE_PAGESIZE == x ; then
