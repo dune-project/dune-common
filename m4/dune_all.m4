@@ -46,9 +46,35 @@ dnl check all components
   AC_REQUIRE([DUNE_PATH_UG])
   AC_REQUIRE([DUNE_PATH_F5])
   AC_REQUIRE([DUNE_PATH_AMIRAMESH])
+  AC_REQUIRE([DUNE_MPI])
 
   if test x$HAVE_DUNE != x1 ; then
     AC_MSG_ERROR([Can't work without the DUNE-library. Maybe you have to supply your DUNE-directory as --with-dune=dir])
   fi
+
+])
+
+AC_DEFUN([DUNE_SUMMARY_ALL],[
+  # show search results
+
+  echo
+  echo "Found the following Dune-components: "
+  echo
+  echo "-----------------------------"
+  echo  
+  echo "Albert...........: $with_albert"
+  echo "AmiraMesh........: $with_amiramesh"
+  echo "BLAS-lib.........: $with_blas"
+  echo "Grape............: $with_grape"
+  echo "HDF5.............: $with_hdf5"
+  echo "FiberHDF5........: $with_f5"
+  echo "MPI..............: $with_mpi"
+  echo "OpenGL...........: $with_opengl"
+  echo "UG...............: $with_ug"
+  echo
+  echo "-----------------------------"
+  echo
+  echo "See ./configure --help and config.log for reasons why a component wasn't found"
+  echo
 
 ])
