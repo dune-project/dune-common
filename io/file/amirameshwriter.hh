@@ -4,6 +4,7 @@
 #define __DUNE_AMIRAMESHWRITER_HH__
 
 #include <string>
+#include <dune/istl/bvector.hh>
 
 namespace Dune {
 
@@ -41,6 +42,8 @@ namespace Dune {
     static void writeFunction(const DiscFuncType& f,
                               const std::string& filename);
 
+    static void writeBlockVector(const Dune::BlockVector<Dune::FieldVector<double, 3> >& f,
+                                 const std::string& filename);
     AmiraMeshWriter() {}
 
   };
@@ -51,6 +54,6 @@ namespace Dune {
 #include "amiramesh/amirameshwriter.cc"
 
 // the amiramesh writer for SGrid
-#include "amiramesh/amsgridwriter.cc"
+//#include "amiramesh/amsgridwriter.cc"
 
 #endif
