@@ -601,6 +601,7 @@ namespace Dune
 
     // is faster than the lower method
     volume_ = volFactor * ALBERT el_grd_lambda(elInfo_,lambda);
+
     for(int i=0; i<dim; i++)
     {
       for(int j=0; j<dimworld; j++)
@@ -1491,15 +1492,41 @@ namespace Dune
 
   // setup neighbor element with the information of elInfo_
   template< int dim, int dimworld>
-  inline void AlbertGridNeighborIterator<dim,dimworld>::
-  setupVirtEn()
+  inline void AlbertGridNeighborIterator<dim,dimworld>::setupVirtEn()
   {
+
+#if DIM > 2
+    std::cout << "dim Formel not checked in setupVirtEn !\n ";
+    abort();
+#endif
     // set the neighbor element as element
     neighElInfo_->el = elInfo_->neigh[neighborCount_];
 
-    // copy coords of opposite vertex
-    memcpy(& (neighElInfo_->coord[neighborCount_]),
-           & (elInfo_->opp_coord[neighborCount_]) , dimworld*sizeof(ALBERT REAL));
+    int vx = elInfo_->opp_vertex[neighborCount_];
+#if 0
+    memcpy(&neighElInfo_->coord[vx], &elInfo_->coord[neighborCount_],
+           dimworld*sizeof(ALBERT REAL));
+
+    for(int i=1; i<dim+1; i++)
+    {
+      int nb = (((neighborCount_-i)%(dim+1)) +dim+1)%(dim+1);
+      memcpy(&neighElInfo_->coord[(vx+i)%(dim+1)], &elInfo_->coord[nb],
+             dimworld*sizeof(ALBERT REAL));
+    }
+#else
+    ALBERT REAL_D *elcoord = &elInfo_->coord;
+    ALBERT REAL_D *nbcoord = &neighElInfo_->coord;
+
+    for(int j=0; j<dimworld; j++)
+      nbcoord[vx][j] = elcoord[neighborCount_][j];
+
+    for(int i=1; i<dim+1; i++)
+    {
+      int nb = (neighborCount_-i+dim+1)%(dim+1);
+      for(int j=0; j<dimworld; j++)
+        nbcoord[(vx+i)%(dim+1)][j] = elcoord[nb][j];
+    }
+#endif
 
     virtualEntity_->setElInfo(neighElInfo_);
     builtNeigh_ = true;
