@@ -102,6 +102,12 @@ namespace Dune {
     operator[](0);
   }
 
+  //***********************************************************************
+  //  E L E M E N T  Default
+  //***********************************************************************
+
+
+
   //************************************************************************
   // N E I G H B O R I T E R A T O R
   //************************************************************************
@@ -271,6 +277,12 @@ namespace Dune {
   }
 
   //************************************************************************
+  // N E I G H B O R I T E R A T O R Default
+  //************************************************************************
+
+
+
+  //************************************************************************
   // H I E R A R C H I C I T E R A T O R
   //************************************************************************
 
@@ -331,6 +343,9 @@ namespace Dune {
     operator*();
     operator->();
   }
+  //************************************************************************
+  // H I E R A R C H I C I T E R A T O R Default
+  //************************************************************************
 
   //************************************************************************
   // E N T I T Y
@@ -622,6 +637,23 @@ namespace Dune {
     father();
     local();
   }
+  //************************************************************************
+  // E N T I T Y Default codim = 0
+  //************************************************************************
+
+  template<int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int> class LevelIteratorImp,
+      template<int,int> class NeighborIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      > template <int cc>
+  inline int EntityDefault <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>::subIndex (int i)
+  {
+    // return index of sub Entity number i
+    return (asImp().entity<cc>(i))->index();
+  }
+
 
   //************************************************************************
   // L E V E L I T E R A T O R
@@ -694,6 +726,9 @@ namespace Dune {
     operator->();
     level();
   }
+  //************************************************************************
+  // L E V E L I T E R A T O R Default
+  //************************************************************************
 
   //************************************************************************
   // G R I D
@@ -817,8 +852,310 @@ namespace Dune {
     meta_grid_checkIF<dim>::f(*this);
   }
 
+  //************************************************************************
+  // G R I D Default
+  //************************************************************************
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
+  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafbegin (int maxLevel )
+  {
+    // return LeafIterator pointing to first leaf entity of maxlevel
+    LeafIterator tmp (asImp(),maxLevel,false);
+    return tmp;
+  };
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
+  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::leafend (int maxLevel )
+  {
+    // return LeafIterator pointing behind the last leaf entity of maxlevel
+    LeafIterator tmp (asImp(),maxLevel,true);
+    return tmp;
+  };
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  template <FileFormatType ftype>
+  inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  grid2File ( const char * filename , int processor ,ct time,
+              bool adaptive, int timestep)
+  {
+    if(adaptive)
+    {
+      {
+        std::fstream file (filename,std::ios::in);
+        GridIdentifier type;
+        int helpType;
+
+        file >> helpType;
+        type = ( GridIdentifier ) helpType;
+        if(type != asImp().type())
+        {
+          std::cerr << "Cannot write diffrent GridIdentifier!\n";
+          abort();
+        }
+      }
+      {
+        std::fstream file (filename,std::ios::app);
+
+        char fileTemp[1024];
+        sprintf(fileTemp,"%s.grid_%d",filename,timestep);
+
+        file << time << " " << fileTemp << "\n";
+
+        return asImp().writeGrid<ftype>(fileTemp,time);
+      }
+    }
+    else
+    {
+      std::fstream file (filename,std::ios::out);
+
+      file << asImp().type() << "\n";
+      file << adaptive << "\n";
+
+      char fileTemp[1024];
+      sprintf(fileTemp,"%s.grid_%d",filename,timestep);
+
+      file << time << " " << fileTemp << "\n";
+
+      return asImp().writeGrid<ftype>(fileTemp,time);
+    }
+  } // end grid2File
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  template <FileFormatType ftype>
+  inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  file2Grid ( const char * filename , ct & time, int processor ,
+              bool adaptive, int timestep)
+  {
+    {
+      std::fstream file (filename,std::ios::in);
+      GridIdentifier type;
+      int helpType;
+
+      file >> helpType;
+      type = ( GridIdentifier ) helpType;
+      if(type != asImp().type())
+      {
+        std::cerr << "Cannot read diffrent GridIdentifier!\n";
+        abort();
+      }
+
+      int adaptTemp;
+      file >> adaptTemp;
+
+      if(adaptive)
+      {
+        if(adaptTemp == 1)
+        {}
+        else
+        {}
+        std::cout << "adaptive Not implemented yet! \n";
+        abort();
+      }
+      else
+      {
+        char fileTemp[1024];
+        double timeTemp;
+
+        file >> timeTemp >> fileTemp;
+
+        time = timeTemp;
+        printf("Read file: time = `%le' , filename = `%s' \n",time,fileTemp);
+
+        return asImp().readGrid<ftype>(fileTemp,time);
+      }
+    }
+  } // end file2Grid
 
 
-} // end namespace
+
+
+  //************************************************************************
+  //  G R I D Default :: LeafIterator
+  //************************************************************************
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  LeafIterator::LeafIterator (GridType &grid, int maxlevel, bool end) :
+    maxLev_ ( maxlevel ) , end_ ( end )
+  {
+    it_    = new LevelIterator ( grid.lbegin<0>( 0 ) );
+    endit_ = new LevelIterator ( grid.lend<0>( 0 ) );
+
+    hierit_ = NULL;
+    endhierit_ = NULL;
+
+    goNextMacroEntity_ = false;
+    built_ = false;
+
+    en_ = & (*it_[0]);
+
+    if(maxLev_ == 0)
+    {
+      useHierarchic_ = false;
+      goNextMacroEntity_ = true;
+    }
+    else
+    {
+      useHierarchic_ = true;
+    }
+
+    if(useHierarchic_)
+    {
+      if(en_->hasChildren())
+      {
+        hierit_ = new HierIterator ( en_->hbegin( maxLev_ ) );
+        endhierit_ = new HierIterator ( en_->hend( maxLev_ ) );
+        built_ = true;
+        en_ = & (*hierit_[0]);
+      }
+
+      if( ((en_->level() < maxLev_) && ( en_->hasChildren() )))
+        en_ = goNextEntity();
+    }
+
+  } // end Constructor LeafIterator
+
+  // operator ++, i.e. goNextEntity
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator &
+  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator ++ ()
+  {
+    en_ = goNextEntity();
+    return (*this);
+  }
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator &
+  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator ++ (int i)
+  {
+    for(int j=0; j<i; j++)
+      en_ = goNextEntity();
+
+    return (*this);
+  }
+
+  // operator ==
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  LeafIterator::operator == (const LeafIterator& i) const
+  {
+    return end_ == i.end_;
+  }
+  // operator !=
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  LeafIterator::operator != (const LeafIterator& i) const
+  {
+    return end_ != i.end_;
+  }
+
+#if 0
+  // operator * ()
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline EntityImp<0,dim,dimworld> &
+  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator*()
+  {
+    return (*en_);
+  }
+
+  // operator -> ()
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline EntityImp<0,dim,dimworld> *
+  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::operator * ()
+  {
+    return en_;
+  }
+
+#endif
+
+  // level
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline int GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  LeafIterator::level ()
+  {
+    return en_->level();
+  }
+
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline EntityImp<0,dim,dimworld> *
+  GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator::goNextEntity  ()
+  {
+    if(goNextMacroEntity_)
+    {
+      if( it_[0] == endit_[0] )
+      {
+        end_ = true;
+        return NULL;
+      }
+
+      ++it_[0];
+
+      if( it_[0] == endit_[0] )
+      {
+        end_ = true;
+        return NULL;
+      }
+
+      en_ = & (*it_[0]);
+      goNextMacroEntity_ = false;
+    }
+    if(useHierarchic_)
+    {
+      if( !built_ )
+      {
+        hierit_ = new HierIterator ( en_->hbegin( maxLev_ ) );
+        endhierit_ = new HierIterator ( en_->hend( maxLev_ ) );
+        built_ = true;
+        en_ = & ( *hierit_[0]);
+      }
+      else
+      {
+        ++hierit_[0];
+        if(hierit_[0] == endhierit_[0] )
+        {
+          built_ = false;
+          goNextMacroEntity_ = true;
+          delete hierit_;
+          delete endhierit_;
+
+          en_ = NULL;
+
+          return goNextEntity();
+        }
+        else
+        {
+          en_ = & (*hierit_[0]);
+        }
+      }
+
+      if( ((en_->level() < maxLev_) && ( en_->hasChildren() )))
+        return goNextEntity();
+    }
+    else
+    {
+      goNextMacroEntity_ = true;
+    }
+
+    return en_;
+
+  }
+
+
+
+} // end namespace Dune
 
 #endif

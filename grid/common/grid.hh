@@ -6,32 +6,32 @@
 namespace Dune {
 
   /** @defgroup GridCommon Dune Grid Module
-          The Dune Grid module defines a general interface to a hierarchical finite element mesh.
-          The interface is independent of dimension and element type. Various implementations
-          of this interface exits:
+     The Dune Grid module defines a general interface to a hierarchical finite element mesh.
+     The interface is independent of dimension and element type. Various implementations
+     of this interface exits:
 
-          - Structured Grid (SGrid) : A structured mesh in d dimensions consisting of "cubes". The number
-          of elements per dimension is variable.
+     - Structured Grid (SGrid) : A structured mesh in d dimensions consisting of "cubes". The number
+     of elements per dimension is variable.
 
-          - Albert Grid (AlbertGrid) : Provides the simplicial meshes of the finite element tool box ALBERT
-          written by Kunibert Siebert and Alfred Schmidt.
+     - Albert Grid (AlbertGrid) : Provides the simplicial meshes of the finite element tool box ALBERT
+     written by Kunibert Siebert and Alfred Schmidt.
 
-          - Quoc Mesh Grid  : Provides the meshes of the QuocMesh.
+     - Quoc Mesh Grid  : Provides the meshes of the QuocMesh.
 
-          - UG Grid (UGGrid) : Provides the meshes of the finite element toolbox UG.
+     - UG Grid (UGGrid) : Provides the meshes of the finite element toolbox UG.
 
-          - Structured Parallel Grid (SPGrid) : Provides a distributed structured mesh.
+     - Structured Parallel Grid (SPGrid) : Provides a distributed structured mesh.
 
-          This Module contains only the description of compounds that are common to all implementations
-          of the grid interface.
+     This Module contains only the description of compounds that are common to all implementations
+     of the grid interface.
 
-          For a detailed description of the interface itself please see the documentation
-          of the "Structured Grid Module". Since Dune uses the Engine concept there is no abstract definition
-          of the interface. As with STL containers, all implementations must implement the
-          same classes with exactly the same members to be used in generic algorithms.
+     For a detailed description of the interface itself please see the documentation
+     of the "Structured Grid Module". Since Dune uses the Engine concept there is no abstract definition
+     of the interface. As with STL containers, all implementations must implement the
+     same classes with exactly the same members to be used in generic algorithms.
 
 
-          @{
+     @{
    */
 
   //************************************************************************
@@ -43,6 +43,10 @@ namespace Dune {
 
   enum ElementType {unknown,vertex,line, triangle, quadrilateral, tetrahedron, pyramid, prism, hexahedron,
                     iso_triangle, iso_quadrilateral};
+
+  enum GridIdentifier { SGrid_Id, AlbertGrid_Id };
+
+  enum FileFormatType { ascii , xdr };
 
   //************************************************************************
   // E L E M E N T
@@ -121,6 +125,9 @@ namespace Dune {
     //! maps a global coordinate within the element to a local coordinate in its reference element
     Vec<dim,ct> local (const Vec<dimworld,ct>& global);
 
+    //! return true if the point global lies inside the element
+    bool checkInside (const Vec<dimworld,ct>& global);
+
     /*! Integration over a general element is done by integrating over the reference element
        and using the transformation from the reference element to the global element as follows:
        \f[\int\limits_{\Omega_e} f(x) dx = \int\limits_{\Omega_{ref}} f(g(l)) A(l) dl \f] where
@@ -155,6 +162,38 @@ namespace Dune {
     ElementImp<dim,dimworld>& asImp () {return static_cast<ElementImp<dim,dimworld>&>(*this);}
   };
 
+  //*****************************************************************************
+  //
+  //
+  //
+  //
+  //*****************************************************************************
+  template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
+  class ElementDefault : public Element <dim,dimworld,ct,ElementImp>
+  {
+  public:
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef ElementImp<dim,dimworld>  Element;
+    };
+
+    //! know dimension
+    enum { dimension=dim };
+
+    //! know dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef ct ctype;
+
+
+  private:
+    //! Barton-Nackman trick
+    ElementImp<dim,dimworld>& asImp () {return static_cast<ElementImp<dim,dimworld>&>(*this);}
+  }; // end ElementDefault
+     //************************************************************
 
   //! Specialization of Element for dim=0 (vertices)
   template<int dimworld, class ct,template<int,int> class ElementImp>
@@ -194,6 +233,41 @@ namespace Dune {
     //! Barton-Nackman trick
     ElementImp<0,dimworld>& asImp () {return static_cast<ElementImp<0,dimworld>&>(*this);}
   };
+
+
+  //*************************************************************************
+  //
+  // --ElementDefault
+  //
+  //! Default implementation for class Element with dim = 0 (vertices)
+  //!
+  //
+  //*************************************************************************
+  template<int dimworld, class ct,template<int,int> class ElementImp>
+  class ElementDefault <0,dimworld,ct,ElementImp>
+    : public Element<0,dimworld,ct,ElementImp>
+  {
+  public:
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef ElementImp<0,dimworld>  Element;
+    };
+
+    //! know dimension
+    enum { dimension=0 };
+
+    //! know dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef ct ctype;
+  private:
+    //! Barton-Nackman trick
+    ElementImp<0,dimworld>& asImp () {return static_cast<ElementImp<0,dimworld>&>(*this);}
+  }; // end ElementDefault, dim = 0
+     //****************************************************************************
 
 
   //************************************************************************
@@ -296,6 +370,30 @@ namespace Dune {
     {return static_cast<const NeighborIteratorImp<dim,dimworld>&>(*this);}
   };
 
+  //**************************************************************************
+  //
+  // --NeighborIteratorDefault
+  //
+  //! Default implementation for NeighborIterator.
+  //
+  //**************************************************************************
+  template<int dim, int dimworld, class ct,
+      template<int,int> class NeighborIteratorImp,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp
+      >
+  class NeighborIteratorDefault
+    : public NeighborIterator <dim,dimworld,ct,NeighborIteratorImp,EntityImp,ElementImp>
+  {
+  public:
+    // no default functionality at this moment
+  private:
+    //! Barton-Nackman trick
+    NeighborIteratorImp<dim,dimworld>& asImp ()
+    {return static_cast<NeighborIteratorImp<dim,dimworld>&>(*this);}
+    const NeighborIteratorImp<dim,dimworld>& asImp () const
+    {return static_cast<const NeighborIteratorImp<dim,dimworld>&>(*this);}
+  }; // end NeighborIteratorDefault
 
   //************************************************************************
   // H I E R A R C H I C I T E R A T O R
@@ -351,6 +449,49 @@ namespace Dune {
        this method all derived classes can check their correct definition.
      */
     void checkIF ();
+
+  private:
+    //! Barton-Nackman trick
+    HierarchicIteratorImp<dim,dimworld>& asImp ()
+    {return static_cast<HierarchicIteratorImp<dim,dimworld>&>(*this);}
+    const HierarchicIteratorImp<dim,dimworld>& asImp () const
+    {return static_cast<const HierarchicIteratorImp<dim,dimworld>&>(*this);}
+  };
+
+  //***************************************************************************
+  //
+  // --HierarchicIteratorDefault
+  //
+  //! Default implementation of the HierarchicIterator.
+  //! This class provides functionality which uses the interface of
+  //! HierarchicIterator. For performance implementation the method of this
+  //! class should be overloaded if a fast implementation can be done.
+  //
+  //***************************************************************************
+  template<int dim, int dimworld, class ct,
+      template<int,int> class HierarchicIteratorImp,
+      template<int,int,int> class EntityImp
+      >
+  class HierarchicIteratorDefault
+    : public HierarchicIterator <dim,dimworld,ct,HierarchicIteratorImp,EntityImp>
+  {
+  public:
+
+    //! remember the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef EntityImp<0,dim,dimworld>           Entity;
+      typedef HierarchicIteratorImp<dim,dimworld> HierarchicIterator;
+    };
+    //! know your own dimension
+    enum { dimension=dim };
+
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef ct ctype;
 
   private:
     //! Barton-Nackman trick
@@ -421,6 +562,34 @@ namespace Dune {
     EntityImp<codim,dim,dimworld>& asImp () {return static_cast<EntityImp<codim,dim,dimworld>&>(*this);}
   };
 
+
+  //********************************************************************
+  //
+  // --EntityDefault
+  //
+  //! EntityDefault provides default implementations for Entity which uses
+  //! the implemented interface which has to be done by the user.
+  //
+  //********************************************************************
+  template<int codim, int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int> class LevelIteratorImp,
+      template<int,int> class NeighborIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      >
+  class EntityDefault
+    : public Entity <codim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>
+  {
+  public:
+    // at this moment no default implementation
+  private:
+    //! Barton-Nackman trick
+    EntityImp<codim,dim,dimworld>& asImp () {return static_cast<EntityImp<codim,dim,dimworld>&>(*this);}
+
+  }; // end EntityDefault
+
+
   /*!
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
      An entity of codimension c in dimension d is a d-c dimensional object.
@@ -486,7 +655,7 @@ namespace Dune {
     /*! Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
      */
-    template<int cc> LevelIteratorImp<cc,dim,dimworld> entity (int i);     // 0 <= i < count()
+    template<int cc> LevelIteratorImp<cc,dim,dimworld> entity (int i); // 0 <= i < count()
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
@@ -530,6 +699,65 @@ namespace Dune {
     //! Barton-Nackman trick
     EntityImp<0,dim,dimworld>& asImp () {return static_cast<EntityImp<0,dim,dimworld>&>(*this);}
   };
+
+
+  //********************************************************************
+  //
+  // --EntityDefault
+  //
+  //! EntityDefault provides default implementations for Entity which uses
+  //! the implemented interface which has to be done by the user.
+  //
+  //********************************************************************
+  template<int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int> class LevelIteratorImp,
+      template<int,int> class NeighborIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      >
+  class EntityDefault
+  <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>
+    : public Entity <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,
+          NeighborIteratorImp,HierarchicIteratorImp>
+  {
+  public:
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef ElementImp<dim,dimworld>             Element;
+      typedef EntityImp<0,dim,dimworld>            Entity;
+      typedef LevelIteratorImp<0,dim,dimworld>     LevelIterator;
+      typedef NeighborIteratorImp<dim,dimworld>    NeighborIterator;
+      typedef HierarchicIteratorImp<dim,dimworld>  HierarchicIterator;
+    };
+
+    //! know your own codimension
+    enum { codimension=0 };
+
+    //! know your own dimension
+    enum { dimension=dim };
+
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef ct ctype;
+
+    // default implementation for access to subIndex via interface method entity
+    // default is to return the index of the sub entity, is very slow, but works
+    template <int cc> int subIndex ( int i );
+    //  {
+    //    return (asImp().entity<cc>(i))->index();
+    //  };
+
+  private:
+    //! Barton-Nackman trick
+    EntityImp<0,dim,dimworld>& asImp () {return static_cast<EntityImp<0,dim,dimworld>&>(*this);}
+  };
+  // end EntityDefault
+  //******************************************************************************
 
   /*!
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
@@ -598,6 +826,24 @@ namespace Dune {
     EntityImp<dim,dim,dimworld>& asImp () {return static_cast<EntityImp<dim,dim,dimworld>&>(*this);}
   };
 
+  template<int dim, int dimworld, class ct,
+      template<int,int,int> class EntityImp,
+      template<int,int> class ElementImp,
+      template<int,int,int> class LevelIteratorImp,
+      template<int,int> class NeighborIteratorImp,
+      template<int,int> class HierarchicIteratorImp
+      >
+  class EntityDefault <dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>
+    : public Entity <dim,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,NeighborIteratorImp,HierarchicIteratorImp>
+  {
+  public:
+    // no default implementation at the moment
+  private:
+    //! Barton-Nackman trick
+    EntityImp<dim,dim,dimworld>& asImp () {return static_cast<EntityImp<dim,dim,dimworld>&>(*this);}
+  };
+
+
 
   //************************************************************************
   // L E V E L I T E R A T O R
@@ -663,6 +909,49 @@ namespace Dune {
     {return static_cast<const LevelIteratorImp<codim,dim,dimworld>&>(*this);}
   };
 
+  //**********************************************************************
+  //
+  //  --LevelIteratorDefault
+  //
+  //! Default implementation of LevelIterator.
+  //
+  //**********************************************************************
+  template<int codim, int dim, int dimworld, class ct,
+      template<int,int,int> class LevelIteratorImp,
+      template<int,int,int> class EntityImp
+      >
+  class LevelIteratorDefault
+    : public LevelIterator <codim,dim,dimworld,ct,LevelIteratorImp,EntityImp>
+  {
+  public:
+    //! remeber the template types
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef EntityImp<codim,dim,dimworld>        Entity;
+      typedef LevelIteratorImp<codim,dim,dimworld> LevelIterator;
+    };
+
+    //! know your own codimension
+    enum { codimension=dim };
+
+    //! know your own dimension
+    enum { dimension=dim };
+
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef ct ctype;
+  private:
+    //! Barton-Nackman trick
+    LevelIteratorImp<codim,dim,dimworld>& asImp ()
+    {return static_cast<LevelIteratorImp<codim,dim,dimworld>&>(*this);}
+    const LevelIteratorImp<codim,dim,dimworld>& asImp () const
+    {return static_cast<const LevelIteratorImp<codim,dim,dimworld>&>(*this);}
+  }; // end LevelIteratorDefault
+     //**************************************************************************
+
 
   //************************************************************************
   // G R I D
@@ -722,6 +1011,15 @@ namespace Dune {
     template<int codim>
     LevelIteratorImp<codim,dim,dimworld> lend (int level);
 
+    //! return GridIdentifierType of Grid, i.e. SGrid_Id or AlbertGrid_Id ...
+    GridIdentifier type();
+
+    //! write Grid to file filename
+    bool writeGrid ( const char * filename );
+
+    //! read Grid from file filename
+    bool readGrid ( const char * filename );
+
     /*! Checking presence and format of all interface functions. With
        this method all derived classes can check their correct definition.
      */
@@ -731,6 +1029,133 @@ namespace Dune {
     //! Barton-Nackman trick
     GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
   };
+
+
+  //************************************************************************
+  //
+  //  Default Methods of Grid
+  //
+  //************************************************************************
+  //
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  class GridDefault : public Grid <dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>
+  {
+  public:
+
+    //! remember the types of template parameters
+    template <int codim>
+    struct Traits
+    {
+      typedef ct CoordType;
+      typedef GridImp<dim,dimworld>                 ImpGrid;
+      typedef LevelIteratorImp<codim,dim,dimworld>  LevelIterator;
+      typedef EntityImp<codim,dim,dimworld>         Entity;
+    };
+
+    class LeafIterator;
+
+    //! A grid exports its dimension
+    enum { dimension=dim };
+
+    //! A grid knowns the dimension of the world
+    enum { dimensionworld=dimworld };
+
+    //! Define type used for coordinates in grid module
+    typedef ct ctype;
+
+    //! return LeafIterator which points to the first entity in maxLevel
+    LeafIterator leafbegin (int maxLevel);
+
+    //! return LeafIterator which points behind the last entity in maxLevel
+    LeafIterator leafend( int maxLevel);
+
+    //! write Grid with GridType file filename and time
+    //! this method use the Grid Interface Method writeGrid
+    //! is not the same
+    template <FileFormatType ftype>
+    bool grid2File ( const char * filename , int processor =0, ct time=0.0,
+                     bool adaptive=false , int timestep = 0);
+
+    //! get Grid from file with time and timestep , return true if ok
+    template <FileFormatType ftype>
+    bool file2Grid ( const char * filename , ct & time , int processor=0,
+                     bool adaptive= false, int timestep=0 );
+
+  private:
+    //! Barton-Nackman trick
+    GridImp<dim,dimworld>& asImp () {return static_cast<GridImp<dim,dimworld>&>(*this);}
+  };
+
+
+  // GridDefault::LeafIterator
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  class GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
+  //: public LevelIterator <0,dim,dimworld,ct,LevelIteratorImp,EntityImp>
+  {
+    // some typedefs
+    typedef GridImp<dim,dimworld> GridType;
+    typedef typename Traits<0>::LevelIterator LevelIterator;
+    typedef typename Traits<0>::Entity EntityType;
+    typedef typename EntityType::Traits::HierarchicIterator HierIterator;
+
+  public:
+    //! Constructor making new LeafIterator
+    LeafIterator (GridType &grid, int maxlevel, bool end);
+
+    //! prefix increment
+    LeafIterator& operator ++();
+
+    //! prefix increment i times
+    LeafIterator& operator ++(int i);
+
+    //! equality
+    bool operator == (const LeafIterator& i) const;
+
+    //! inequality
+    bool operator != (const LeafIterator& i) const;
+
+    // didn't work with implementation in .cc file, so what
+    //! dereferencing
+    EntityImp<0,dim,dimworld>& operator*() { return (*en_); };
+
+    //! arrow
+    EntityImp<0,dim,dimworld>* operator->() { return (en_); };
+
+    //! ask for level of entity
+    int level ();
+
+  private:
+    EntityImp<0,dim,dimworld> * goNextEntity();
+
+    // private member varibles
+    // pointer to actual Entity
+    EntityType        *en_;
+
+    // macro grid iterator
+    LevelIterator *it_;
+    // end of macro grid iterator
+    LevelIterator *endit_;
+
+    // hierarchical iterator
+    HierIterator *hierit_;
+
+    // end of hierarchical iterator
+    HierIterator *endhierit_;
+
+    // true if we must go to next macro element
+    bool goNextMacroEntity_;
+    bool built_;
+    bool useHierarchic_;
+    bool end_;
+
+    // go down until max level
+    int maxLev_;
+
+  public:
+  };
+
 
 
   /** @} */
