@@ -7,24 +7,6 @@
 
 namespace Dune {
 
-  template <class T>
-  T* realloc(T* & pointer, int size) {
-    if (size==0) {
-      std::cerr << "Warning request for realloc with size=0\n";
-      size = 1;
-    }
-    pointer =
-      static_cast<T*>(::realloc(static_cast<void*>(pointer), size*sizeof(T)));
-    if (pointer == 0)
-      throw std::string("Bad realloc");
-    return pointer;
-  }
-
-  template <class T>
-  T* malloc(int size) {
-    return static_cast<T*>(::malloc(size*sizeof(T)));
-  }
-
 #undef NODUMP
 #define NODUMP
 
@@ -106,7 +88,7 @@ namespace Dune {
     delete[] x_old;
 
     TIME_SMOOTHER += MPI_Wtime();
-  }; /* end jakobi() */
+  };   /* end jakobi() */
 
   /**
      Multi-Grid-Cycle
@@ -114,7 +96,7 @@ namespace Dune {
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
   mgc (level l) {
-    if (l==0) { //g.roughest()) {
+    if (l==0) {    //g.roughest()) {
       double my_d = defect(l);
       double max_d = my_d*reduction;
       // alles auf einen Knoten schieben und loesen :-)
@@ -138,7 +120,6 @@ namespace Dune {
           return;
         }
       };
-      std::cout << "roughest: " << c << std::endl;
     }
     else {
       // Vorglaetter
@@ -174,63 +155,7 @@ namespace Dune {
       /* Nachglaetter */
       for (int n=0; n<n2; n++) smoother(l);
     }
-  }; /* end mgc() */
-
-  /** local defect */
-  template <class GRID, int SMOOTHER>
-  double pmgsolver<GRID,SMOOTHER>::
-  localdefect(level l, const array<DIM> & add, const array<DIM> & coord,
-              int i) const {
-    double defect=b[i];
-
-    //    discrete... get the coeffs
-    static coefflist cl = mydiscrete.newcoefflist();
-    mydiscrete.coeffs(cl, g, l, add, coord, i);
-
-    defect -= cl.aii * x[i];
-    /*
-       std::cout << coord << " -> " << cl.aii << " * x[" << i << "]\n";
-       for (int n=0; n<cl.size; n++) {
-       std::cout << cl.aij[n] << " * " << "x[" << cl.j[n] << "]\n";
-       }
-       exit(0);
-     */
-    for (int n=0; n<cl.size; n++) {
-      int j = cl.j[n];
-      defect -= cl.aij[n] * x[j];
-    }
-    if (!finite(defect))
-      std::cerr << "DEFECT ERROR Element " << i << coord << std::endl;
-    assert(finite(defect));
-
-    d[i]=defect;
-
-    return defect;
-  }
-
-  template <class GRID, int SMOOTHER>
-  class loopstubDefect {
-    typedef int level;
-    enum { DIM = GRID::griddim };
-    const pmgsolver<GRID,SMOOTHER> & solver;
-    Dune::Vector<GRID> & x;
-    Dune::Vector<GRID> & b;
-    array<DIM> add;
-  public:
-    array<2,double> defect_array;
-    loopstubDefect(const pmgsolver<GRID,SMOOTHER> & solver_,
-                   Dune::Vector<GRID> & X, Dune::Vector<GRID> & B, level l) :
-      solver(solver_), x(X), b(B),
-      add(solver.g.init_add(l)), defect_array(0)
-    {}
-    void evaluate(level l, const array<DIM> & coord, int i) {
-      /* do something */
-      double defect = solver.localdefect(l, add, coord, i);
-      // update process defect
-      defect_array[0] += defect*defect;
-      defect_array[1] ++;
-    }
-  };
+  };   /* end mgc() */
 
   template <class GRID, int SMOOTHER>
   double pmgsolver<GRID,SMOOTHER>::
@@ -238,7 +163,7 @@ namespace Dune {
     TIME_DEFECT -= MPI_Wtime();
 
     // run through lines
-    loopstubDefect<GRID,SMOOTHER> stub(*this, x, b, l);
+    PMGStubs::Defect<GRID,SMOOTHER> stub(*this, x, b, l);
     g.loop_owner(l,stub);
 
     assert(finite(stub.defect_array[0]));
@@ -251,143 +176,39 @@ namespace Dune {
     stub.defect_array[1]=defect_array_recv[1];
 
     TIME_DEFECT += MPI_Wtime();
-    return sqrt(stub.defect_array[0]); // /defect_array[1];
+    return sqrt(stub.defect_array[0]);    // /defect_array[1];
   };
 
   /**
      Restriktion d_l -> b_{l-1}
    */
   template <class GRID, int SMOOTHER>
-  inline void
-  pmgsolver<GRID,SMOOTHER>::
-  adddefect(double d, int dir,
-            typename GRID::level l, array<DIM> coord,
-            array<DIM> coord_shift){
-    dir--;
-
-    if (dir<0) {
-      int f = g.father_id(l,coord);
-      b[f] += d;
-      return;
-    }
-
-    if (coord[dir]%2==coord_shift[dir]) {
-      adddefect(d,dir,l,coord,coord_shift);
-    }
-    else {
-      array<DIM> shiftl=coord;
-      array<DIM> shiftr=coord;
-      shiftl[dir]-=1;
-      shiftr[dir]+=1;
-      if (! (!g.do_end_share(dir) &&
-             coord[dir]==
-             g.size(l,dir)+g.end_overlap(l,dir)+g.front_overlap(l,dir)-1)) {
-        adddefect(d/2.0,dir,l,shiftr,coord_shift);
-      }
-      if (! (!g.do_front_share(dir) &&
-             coord[dir]==0)) {
-        adddefect(d/2.0,dir,l,shiftl,coord_shift);
-      }
-    }
-  }
-
-  template <class GRID, int SMOOTHER>
-  class loopstubRestrict {
-    typedef int level;
-    enum { DIM = GRID::griddim };
-    pmgsolver<GRID,SMOOTHER> & solver;
-    array<DIM> coord_shift;
-    Dune::Vector<GRID> & b;
-    level L;
-  public:
-    loopstubRestrict(pmgsolver<GRID,SMOOTHER> & solver_,
-                     Dune::Vector<GRID> & b_, level l) :
-      solver(solver_), b(b_), L(l)
-    {
-      for(int d=0; d<DIM; d++)
-        coord_shift[d] = solver.g.has_coord_shift(l,d);
-    }
-    void evaluate(level l, const array<DIM> & coord, int i) {
-      solver.adddefect(solver.d[i], DIM, l, coord, coord_shift);
-    }
-  };
-
-  template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
   restrict (level l) {
-    std::cout << "restrict " << l << std::endl;
-
     assert(l>0);
 
     defect(l);
     exchange(l,d);
 
     TIME_REST -= MPI_Wtime();
-    loopstubRestrict<GRID,SMOOTHER> stub(*this,b,l);
+    PMGStubs::Restrict<GRID,SMOOTHER> stub(*this,l);
     g.loop_all( l, stub );
     TIME_REST += MPI_Wtime();
 
     // ABGLEICH vector b Level l-1
     exchange(l-1,b);
-    std::cout << "restrict done" << std::endl;
-  }; /* end restrict() */
+  };   /* end restrict() */
 
   /**
       Prolongation x_{l-1} -> x_l
    */
-  template <class GRID, int SMOOTHER>
-  inline
-  double pmgsolver<GRID,SMOOTHER>::
-  correction(int dir,
-             typename GRID::level l, array<DIM> coord,
-             array<DIM> coord_shift){
-
-    dir--;
-
-    if (dir<0) {
-      int f=g.father_id(l, coord);
-      return x[f];
-    }
-
-    if (coord[dir]%2==coord_shift[dir])
-      return correction(dir,l,coord,coord_shift);
-    else {
-      array<DIM> shiftl=coord;
-      array<DIM> shiftr=coord;
-      shiftl[dir]-=1;
-      shiftr[dir]+=1;
-      return 0.5*correction(dir,l,shiftl,coord_shift) +
-             0.5*correction(dir,l,shiftr,coord_shift);
-    }
-  };
-
-  template <class GRID, int SMOOTHER>
-  class loopstubProlongate {
-    typedef int level;
-    enum { DIM = GRID::griddim };
-    pmgsolver<GRID,SMOOTHER> & solver;
-    array<DIM> coord_shift;
-    Dune::Vector<GRID> & x;
-  public:
-    loopstubProlongate(pmgsolver<GRID,SMOOTHER> & solver_,
-                       Dune::Vector<GRID> & x_, level l) :
-      solver(solver_), x(x_)
-    {
-      for(int d=0; d<DIM; d++)
-        coord_shift[d] = solver.g.has_coord_shift(l,d);
-    }
-    void evaluate(level l, const array<DIM> & coord, int i) {
-      x[i] += solver.correction(DIM, l, coord, coord_shift);
-    }
-  };
-
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
   prolongate(level l) {
     assert(l>0);
 
     TIME_PROL -= MPI_Wtime();
-    loopstubProlongate<GRID,SMOOTHER> stub(*this,x,l);
+    PMGStubs::Prolongate<GRID,SMOOTHER> stub(*this,l);
     g.loop_owner( l, stub );
     TIME_PROL += MPI_Wtime();
 
@@ -395,48 +216,8 @@ namespace Dune {
     exchange(l,x);
   };
 
-  template <class GRID, int SMOOTHER>
-  class loopstubInitExchange {
-    typedef int level;
-    enum { DIM = GRID::griddim };
-    pmgsolver<GRID,SMOOTHER> & solver;
-  public:
-    loopstubInitExchange(pmgsolver<GRID,SMOOTHER> & solver_) :
-      solver(solver_) {}
-    void evaluate(level l, const array<DIM> & coord, int id) {
-      typename GRID::iterator it(id,solver.g);
-      typename GRID::index i=*it;
-      typename GRID::remotelist remote=i.remote();
-      /* if i own the data, I'll search all processes to receive the data */
-      if(i.owner()) {
-        for (int r=0; r<remote.size; r++) {
-          int & size = solver.exchange_data_to[l][remote.list[r].process()].size;
-          realloc<int>(solver.exchange_data_to[l][remote.list[r].process()].id,
-                       size + 1);
-          solver.exchange_data_to[l][remote.list[r].process()].id[size]
-            = it.id();
-          size ++;
-        }
-      }
-      /* if I share the data, find the owner-processes */
-      else {
-        for (int r=0; r<remote.size; r++) {
-          if (remote.list[r].owner()) {
-            int & size = solver.exchange_data_from[l][remote.list[r].process()].size;
-            realloc<int>(solver.exchange_data_from[l][remote.list[r].process()].id,
-                         size + 1);
-            solver.exchange_data_from[l][remote.list[r].process()].id[size]
-              = it.id();
-            size ++;
-            continue;
-          }
-        }
-      }
-    }
-  };
-
   /**
-      Datenabgleich auf Level l
+      Datenabgleich auf Level l vorbereiten
    */
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
@@ -455,7 +236,7 @@ namespace Dune {
         exchange_data_to[l][p].size = 0;
         exchange_data_to[l][p].id = malloc<int>(1);
       }
-      loopstubInitExchange<GRID,SMOOTHER> stub(*this);
+      PMGStubs::InitExchange<GRID,SMOOTHER> stub(*this);
       g.loop_overlap(l, stub);
     }
   };
@@ -471,7 +252,7 @@ namespace Dune {
     //#define TALKALOT
 #ifdef TALKALOT
     int P;
-    MPI_Comm_size(g.comm(), &P); // Number of Processors
+    MPI_Comm_size(g.comm(), &P);     // Number of Processors
     for (int p=0; p<P; p++) {
       if (rank==p) {
         cout << "Rank " << rank << " " << g.process_
@@ -587,7 +368,7 @@ namespace Dune {
       }
     }
     TIME_EX += MPI_Wtime();
-  }; /* end exchange() */
+  };   /* end exchange() */
 
   template <class GRID>
   class loopstubInitIterator {
@@ -661,15 +442,12 @@ namespace Dune {
     array<2> coord;
     coord[0]=7;
     coord[1]=0;
-    double starttime, endtime;
+    TIME_SMOOTHER = 0;
+    TIME_PROL = 0;
+    TIME_REST = 0;
+    TIME_DEFECT = 0;
     while (mydefect > maxdefect)
     {
-      TIME_SMOOTHER = 0;
-      TIME_PROL = 0;
-      TIME_REST = 0;
-      TIME_DEFECT = 0;
-
-      starttime = MPI_Wtime();
 #ifndef NODUMP
       dump2D(g,lvl,x,"jakobi","X");
       //    dump2D(g,lvl,b,"jakobi","B");
@@ -683,19 +461,15 @@ namespace Dune {
                              << " " << mydefect/lastdefect
                              << std::endl;
       lastdefect = mydefect;
-      endtime = MPI_Wtime();
-      if (rank==0)
-        std::cout << "0: That took " << endtime-starttime
-                  << " seconds" << std::endl;
-      if (rank==0)
-        std::cout << "Time in smoother:" << TIME_SMOOTHER << std::endl
-                  << "Time in prolongate:" << TIME_PROL << std::endl
-                  << "Time in restrict:" << TIME_REST << std::endl
-                  << "Time in exchange:" << TIME_EX << std::endl
-                  << "Time in defect:" << TIME_DEFECT << std::endl;
       //if (cycle==10) return;
       cycle ++;
     };
+    if (rank==0)
+      std::cout << "Time in smoother:" << TIME_SMOOTHER << std::endl
+                << "Time in prolongate:" << TIME_PROL << std::endl
+                << "Time in restrict:" << TIME_REST << std::endl
+                << "Time in exchange:" << TIME_EX << std::endl
+                << "Time in defect:" << TIME_DEFECT << std::endl;
   };
 
 } // namespace Dune

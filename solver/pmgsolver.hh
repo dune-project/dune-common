@@ -12,6 +12,25 @@
 
 namespace Dune {
 
+  template <class T>
+  T* realloc(T* & pointer, int size) {
+    if (size==0) {
+      std::cerr << "Warning request for realloc with size=0\n";
+      size = 1;
+    }
+    pointer =
+      static_cast<T*>(::realloc(static_cast<void*>(pointer),
+                                size*sizeof(T)));
+    if (pointer == 0)
+      throw std::string("Bad realloc");
+    return pointer;
+  }
+
+  template <class T>
+  T* malloc(int size) {
+    return static_cast<T*>(::malloc(size*sizeof(T)));
+  }
+
 #warning we need an intelligent way of coordinating the MPI_Send-Tags
   const int exchange_tag=42;
 
@@ -24,18 +43,14 @@ namespace Dune {
   double TIME_DEFECT;
 
   /* Forward declaration of the loopstubs */
-  template <class GRID>
-  class loopstubGaussSeidel;
-  template <class GRID>
-  class loopstubGaussSeidelBorder;
-  template <class GRID, int SMOOTHER>
-  class loopstubDefect;
-  template <class GRID, int SMOOTHER>
-  class loopstubRestrict;
-  template <class GRID, int SMOOTHER>
-  class loopstubProlongate;
-  template <class GRID, int SMOOTHER>
-  class loopstubInitExchange;
+  namespace PMGStubs {
+    template <class GRID> class GaussSeidel;
+    template <class GRID> class GaussSeidelBorder;
+    template <class GRID, int SMOOTHER> class Defect;
+    template <class GRID, int SMOOTHER> class Restrict;
+    template <class GRID, int SMOOTHER> class Prolongate;
+    template <class GRID, int SMOOTHER> class InitExchange;
+  }
   template <class GRID>
   class loopstubInitIterator;
 
@@ -46,12 +61,12 @@ namespace Dune {
   class pmgsolver {
   private:
     /** Friendclasses implementing out loopstubs */
-    friend class loopstubGaussSeidel<GRID>;
-    friend class loopstubGaussSeidelBorder<GRID>;
-    friend class loopstubDefect<GRID,SMOOTHER>;
-    friend class loopstubRestrict<GRID,SMOOTHER>;
-    friend class loopstubProlongate<GRID,SMOOTHER>;
-    friend class loopstubInitExchange<GRID,SMOOTHER>;
+    friend class PMGStubs::GaussSeidel<GRID>;
+    friend class PMGStubs::GaussSeidelBorder<GRID>;
+    friend class PMGStubs::Defect<GRID,SMOOTHER>;
+    friend class PMGStubs::Restrict<GRID,SMOOTHER>;
+    friend class PMGStubs::Prolongate<GRID,SMOOTHER>;
+    friend class PMGStubs::InitExchange<GRID,SMOOTHER>;
     friend class loopstubInitIterator<GRID>;
 
     enum { DIM = GRID::griddim };
@@ -67,15 +82,12 @@ namespace Dune {
     int rank;
     bool need_recalc; // true if no dirichlet-condition is specified
     discrete<GRID> &mydiscrete;
-    Vector<GRID> & x; // defect
-    Vector<GRID> & b; // defect
-    Vector<GRID> & d; // defect
+    Vector<GRID> & x; /**< solution vector */
+    Vector<GRID> & b; /**< rhs vector */
+    Vector<GRID> & d; /**< defect vector */
   private:
     double defect(level l) const;
-    double localdefect(level, const array<DIM>&, const array<DIM>&, int) const;
-    void adddefect(double, int, typename GRID::level, array<DIM>, array<DIM>);
     void restrict (level l);
-    double correction(int dir, typename GRID::level, array<DIM>, array<DIM>);
     void   prolongate(level l);
     void   smoother(level l) {
       switch (SMOOTHER) {
@@ -88,21 +100,19 @@ namespace Dune {
     void   smootherGaussSeidel(level l);
     void   smootherJacobi(level l);
     /* datatyp for exchange */
-    MPI_Datatype indexed_double_type;
-    typedef struct {
-      int id;
-      double data;
-    } indexed_double;
-    MPI_Status mpi_status;
     typedef struct {
       int size;
       int* id;
     } exchange_data;
     exchange_data** exchange_data_from;
     exchange_data** exchange_data_to;
-    void   initExchange();              /**< Datenabgleich vorbereiten */
-    void   exchange(level l, Vector<GRID> & ex);   /**< Datenabgleich auf Level l */
-    void   mgc (level l); /**< Multi-Grid-Cycle */
+    MPI_Status mpi_status;
+    /**< prepare dataexchange */
+    void   initExchange();
+    /**< exchange data on level l */
+    void   exchange(level l, Vector<GRID> & ex);
+    /**< Multi-Grid-Cycle */
+    void   mgc (level l);
   public:
     pmgsolver(GRID &_g, double _reduction, discrete<GRID> &dis,
               int _n1, int _n2,
@@ -110,18 +120,8 @@ namespace Dune {
       g(_g), n1(_n1), n2(_n2), reduction(_reduction), mydiscrete(dis),
       x(X), b(B), d(D)
     {
-
       MPI_Comm_size(g.comm(), &Processes);
       MPI_Comm_rank(g.comm(), &rank);
-
-      /* create a new  type and register the according MPI_Datatype */
-      int array_of_blocklengths[2] = { 1, 1 };
-      MPI_Aint array_of_displacements[2] = {0, sizeof(int)};
-      MPI_Datatype array_of_types[2] = { MPI_INT, MPI_DOUBLE };
-      MPI_Type_struct(2, array_of_blocklengths,
-                      array_of_displacements, array_of_types,
-                      &indexed_double_type );
-      MPI_Type_commit( &indexed_double_type );
     };
     ~pmgsolver() {
       std::cerr << "exchange_data_from not cleaned up!!!\n";
@@ -130,7 +130,6 @@ namespace Dune {
          free(exchange_data_from);
          free(exchange_data_to);
        */
-      MPI_Type_free(&indexed_double_type);
     }
     void solve();
     void init();

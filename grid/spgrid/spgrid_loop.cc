@@ -14,7 +14,7 @@ namespace Dune {
    */
   template<int DIM> template <class stubEngine> inline
   void spgrid<DIM>::
-  loop_all(level l, stubEngine & stub) {
+  loop_all(level l, stubEngine & stub) const {
     switch(DIM) {
     case 3 :
     {
@@ -46,7 +46,7 @@ namespace Dune {
    */
   template<int DIM> template <class stubEngine> inline
   void spgrid<DIM>::
-  loop_owner(level l, stubEngine & stub) {
+  loop_owner(level l, stubEngine & stub) const {
     switch(DIM) {
     case 3 :
     {
@@ -80,7 +80,7 @@ namespace Dune {
    */
   template<int DIM> template <class stubEngine> inline
   void spgrid<DIM>::
-  loop_not_overlap(level l, stubEngine & stub) {
+  loop_not_overlap(level l, stubEngine & stub) const {
     iterator gEnd=end(l);
     for (iterator it=begin(l); it != gEnd; ++it) {
       if ( (*it).overlap() ) continue;
@@ -99,7 +99,7 @@ namespace Dune {
   template<int DIM> template <class stubEngine> inline
   void spgrid<DIM>::
   loop_border(level l, stubEngine & stub,
-              const array<DIM, array<2> > & skip) {
+              const array<DIM, array<2> > & skip) const {
     switch(DIM) {
     case 3 :
     {
@@ -141,7 +141,7 @@ namespace Dune {
    */
   template<int DIM> template <class stubEngine> inline
   void spgrid<DIM>::
-  loop_overlap(level l, stubEngine & stub) {
+  loop_overlap(level l, stubEngine & stub) const {
     switch(DIM) {
     case 3 :
     {
@@ -182,7 +182,7 @@ namespace Dune {
   loop3D(level l,
          array<DIM> & begin_f, array<DIM> & end_f,
          array<DIM> & begin_e, array<DIM> & end_e,
-         stubEngine & stub) {
+         stubEngine & stub) const {
     array<DIM> coord;
     array<DIM> id=0;
     array<DIM> add=init_add(l);

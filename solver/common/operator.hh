@@ -3,6 +3,7 @@
 #ifndef OPERATOR_HH
 #define OPERATOR_HH
 
+#include <assert.h>
 #include <iostream>
 // needed for bzero
 #include <string.h>
@@ -135,23 +136,24 @@ namespace Dune {
     void preProcess() { return static_cast<OP&>(*this).preProcess(); }
     void postProcess() { return static_cast<OP&>(*this).postProcess(); }
     FLOAT applyLocal(int i) { return static_cast<OP&>(*this).applyLocal(i); }
+    const GRID & grid() const { return g; };
   };
 
   template <class GRID, class T>
-  class Vector : public gridOperator< GRID, Vector<GRID> > {
+  class Vector : public gridOperator< GRID, Vector<GRID,T> > {
     int _size;
     T *_data;
   public:
-    Vector(const GRID &G) : gridOperator< GRID, Vector<GRID> >(G) {
+    Vector(const GRID &G) : gridOperator< GRID, Vector<GRID,T> >(G) {
       _size = g.max(g.smoothest());
       _data = new T[_size];
     }
-    Vector(const GRID &G, FLOAT d) : gridOperator< GRID, Vector<GRID> >(G) {
+    Vector(const GRID &G, FLOAT d) : gridOperator< GRID, Vector<GRID,T> >(G) {
       _size = g.max(g.smoothest());
       _data = new T[_size];
       for (int i=0; i<_size; i++) _data[i]=d;
     }
-    Vector(const GRID &G, int d) : gridOperator< GRID, Vector<GRID> >(G) {
+    Vector(const GRID &G, int d) : gridOperator< GRID, Vector<GRID,T> >(G) {
       _size = g.max(g.smoothest());
       _data = new T[_size];
       for (int i=0; i<_size; i++) _data[i]=d;
@@ -204,8 +206,13 @@ namespace Dune {
       o << v[v._size-1] << "]";
       return o;
     }
+    void swap (Vector<GRID,T> & v) {
+      assert(_size == v._size);
+      T *dummy = v._data;
+      v._data = _data;
+      _data = dummy;
+    };
   };
-
 
   template <class A, class B>
   class OperatorPlus : public OperatorMath<A,B, OperatorPlus<A,B> > {

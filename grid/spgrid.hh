@@ -42,6 +42,8 @@ namespace Dune {
     class index;
     class remoteindex;
     class remotelist;
+    friend class iterator;
+    friend class index;
     /// fixed number of max levels
     enum {
       maxlevels=64
@@ -56,6 +58,7 @@ namespace Dune {
     array<DIM> size_;          ///< size of level 0
     array<DIM> size_add_;      ///< additional size for right_end processors
     array<DIM> dim_;           ///< global arrangement of the processors
+    array<DIM,FLOAT> h_;       ///< step size on level 0
     array<DIM> process_;       ///< locatation of this processor
     /// where do we have periodic boundry conditions?
     array<DIM,bool> periodic_;
@@ -78,9 +81,6 @@ namespace Dune {
     int globalmax(level l) const;
     //! global grid size in direction d on level l
     int globalsize(level l, int d) const;
-  private:
-    friend class iterator;
-    friend class index;
     //! get id from coord
     int coord_to_id(level, const array<DIM>&, const array<DIM>&) const;
     int coord_to_id(level, const array<DIM>&) const;
@@ -89,31 +89,19 @@ namespace Dune {
     const array<DIM> &id_to_coord(level l, int id) const;
     const array<DIM> &id_to_coord(level l, int id, const array<DIM> &) const;
     const array<DIM> &id_to_coord_impl(level l, int id) const;
+  private:
     //! initialize the grid
     void init();
-    //! Allpurpose 3D loop
-    template <class stubEngine>
-    void loop3D(level l,
-                array<DIM> & begin_f, array<DIM> & end_f,
-                array<DIM> & begin_e, array<DIM> & end_e,
-                stubEngine & );
   public:
     // Constructors
-    spgrid(array<DIM> size, int o, bool periodic) :
-      globalsize_(size), periodic_(periodic), levels(0)
+    spgrid(array<DIM> & gsize, array<DIM,FLOAT> & _h,
+           array<DIM,bool> & periodic, int o) :
+      globalsize_(gsize), periodic_(periodic), levels(0)
     {
-      for (int d=0; d<DIM; d++)
-        if (size[d]<=0) throw std::string("Size Error");
-      overlap_[0]=0;
-      levels++;
-      overlap_[levels]=o; overlap_[levels+1]=0;
-      init();
-    };
-    spgrid(array<DIM> size, int o, array<DIM,bool> periodic) :
-      globalsize_(size), periodic_(periodic), levels(0)
-    {
-      for (int d=0; d<DIM; d++)
-        if (size[d]<=0) throw std::string("Size Error");
+      for (int d=0; d<DIM; d++) {
+        if (gsize[d]<=0) throw std::string("Size Error");
+        h_[d] = _h[d] / gsize[d];
+      }
       overlap_[0]=0;
       levels++;
       overlap_[levels]=o; overlap_[levels+1]=0;
@@ -132,26 +120,32 @@ namespace Dune {
     iterator end(level l=0) const { return iterator(max(l),*this); };
     //! loop over all vertices
     template <class stubEngine>
-    void loop_all(level l, stubEngine & );
+    void loop_all(level l, stubEngine & ) const;
     //! loop over all owner vertices
     template <class stubEngine>
-    void loop_owner(level l, stubEngine & );
+    void loop_owner(level l, stubEngine & ) const;
     //! loop over all ! overlap vertices
     template <class stubEngine>
-    void loop_not_overlap(level l, stubEngine & );
+    void loop_not_overlap(level l, stubEngine & ) const;
     //! loop over all border vertices
     template <class stubEngine>
-    void loop_border(level l, stubEngine & stub) {
+    void loop_border(level l, stubEngine & stub) const {
       static array<2> a(0);
       static array<DIM, array<2> > b(a);
       loop_border(l, stub, a);
     };
     template <class stubEngine>
     void loop_border(level l, stubEngine & ,
-                     const array<DIM, array<2> > & );
+                     const array<DIM, array<2> > & ) const;
     //! loop over all overlap vertices
     template <class stubEngine>
-    void loop_overlap(level l, stubEngine & );
+    void loop_overlap(level l, stubEngine & ) const;
+    //! Allpurpose 3D loop
+    template <class stubEngine>
+    void loop3D(level l,
+                array<DIM> & begin_f, array<DIM> & end_f,
+                array<DIM> & begin_e, array<DIM> & end_e,
+                stubEngine & ) const;
     //! this feature is deprecated we should put this in private
     const array<DIM> &init_add(level l) const {
       array<DIM> & add = ((spgrid<DIM>*) this)->add_buffer;
@@ -190,8 +184,8 @@ namespace Dune {
     };
     //! does process have a left neigbour in direction d?
     bool do_front_share(int d, const array<DIM> &process) const {
-      return (((dim_[d] > 1) && (process[d]!=0)) ||
-              (periodic_[d]==true));
+      return (dim_[d] > 1) &&
+             !((periodic_[d]==false)&&(process[d]==0));
     };
     //! do we have a right neigbour in direction d?
     bool do_end_share(int d) const {
@@ -200,12 +194,14 @@ namespace Dune {
     };
     //! does process have a right neigbour in direction d?
     bool do_end_share(int d, const array<DIM> &process) const {
-      return (((dim_[d] > 1) && (process[d]!=dim_[d]-1)) ||
-              (periodic_[d]==true));
+      return (dim_[d] > 1) &&
+             !((periodic_[d]==false)&&(process[d]==dim_[d]-1));
     };
     const array<DIM> & process() { return process_; }
     int father_id(level l, const array<DIM> & coord) const;
     int has_coord_shift(level, int d) const;
+    //! return the step size on level l in direction d
+    double h(level l, int d) const { return h_[d] / (2<<l); };
   }; /* end spgrid */
 
   ////////////////////////////////////////////////////////////////////////////
