@@ -591,7 +591,7 @@ void UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth
 #endif
 
   if (errCode)
-    DUNE_THROW(GridError, "UG?d::LBCommand returned error code " << errCode);
+    DUNE_THROW(GridError, "UG" << dim << "d::LBCommand returned error code " << errCode);
 }
 
 #ifdef ModelP
