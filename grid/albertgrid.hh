@@ -80,6 +80,7 @@ typedef Dune::IndexStack<int,10000> IndexManagerType;
 #endif
 #endif
 
+#include <dune/common/exceptions.hh>
 
 namespace Dune {
 
@@ -91,6 +92,10 @@ namespace Dune {
                       InteriorBorder, //!< iterate over Interior and Border
                       All      //!< iterate over all cells on this processor
   };
+
+  // own exception classes
+  class AlbertError : public Exception {};
+  class AlbertIOError : public IOError {};
 }
 
 // contains a simple memory management for some componds of this grid
