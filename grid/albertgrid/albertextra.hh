@@ -384,6 +384,14 @@ namespace AlbertHelp
     return;
   }
 
+#if 0
+  const FE_SPACE *feSpace;
+  const FE_SPACE *getFeSpace ()
+  {
+    return feSpace;
+  }
+#endif
+
   // initialize dofAdmin for vertex numbering
   void initDofAdmin(MESH *mesh)
   {
