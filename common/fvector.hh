@@ -666,7 +666,7 @@ namespace Dune {
     //===== Euclidean scalar product
 
     //! scalar product
-    const K operator* (const FieldVector& y) const
+    K operator* (const FieldVector& y) const
     {
       return fvmeta_dot<n-1>::dot(*this,y);
     }
