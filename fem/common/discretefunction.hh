@@ -15,8 +15,8 @@ namespace Dune {
       The DiscreteFunction is responsible for the dof storage. This can be
       done in various ways an is left to the user. The user has to derive his
       own implementation from the DiscreteFunctionDefault class. If some of
-      the implementations in the default class are for his dof storage
-      inefficient, then one can overload this functions.
+      the implementations in the default class are for ineffecient for the
+      dof storage in the derived class these functions can be overloaded.
 
      @{
    */
@@ -57,9 +57,9 @@ namespace Dune {
   //  --DiscreteFunctionInterface
   //
   //! This is the minimal interface of a discrete function which has to be
-  //! implemented. It contains an local function and a dof iterator which can
-  //! iterator over all dofs of one level. Via the method access the local
-  //! dofs and basfunction can be accessed for a given entity.
+  //! implemented. It contains a local function and a dof iterator which can
+  //! iterate over all dofs of one level. Via the method access the local
+  //! dofs and basis functions can be accessed for a given entity.
   //!
   //************************************************************************
   template<class DiscreteFunctionSpaceType,
@@ -77,27 +77,37 @@ namespace Dune {
         DiscreteFunctionInterface <DiscreteFunctionSpaceType,
             DofIteratorImp , LocalFunctionIteratorImp,  DiscreteFunctionImp > > FunctionType;
 
+    //! ???
     typedef typename DiscreteFunctionSpaceType::Domain DomainType;
+    //! ???
     typedef typename DiscreteFunctionSpaceType::Range RangeType;
 
+    //! ???
     typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
+    //! ???
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
 
     //! remember the template types
     template <class GridIteratorType>
     struct Traits
     {
+      //! ???
       typedef LocalFunctionIteratorImp<DiscreteFunctionImp,GridIteratorType> LocalFunctionIteratorType;
     };
 
+    //! Type of the underlying grid
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
+
+    //! Type of the Dof iterator
     typedef DofIteratorImp DofIteratorType;
 
     //* end of type declarations
 
+    //! ???
     DiscreteFunctionInterface ( DiscreteFunctionSpaceType &f )
       : FunctionType ( f ) {} ;
 
+    //! ???
     template <class GridIteratorType>
     LocalFunctionIteratorImp<DiscreteFunctionImp,GridIteratorType>
     localFunction ( GridIteratorType & it)
@@ -125,6 +135,8 @@ namespace Dune {
     {
       return static_cast<DiscreteFunctionImp&>(*this);
     }
+
+    //! ???
     const DiscreteFunctionImp &asImp() const
     {
       return static_cast<const DiscreteFunctionImp&>(*this);
@@ -145,7 +157,6 @@ namespace Dune {
   //!
   //*************************************************************************
   template<class DiscreteFunctionSpaceType,
-      // class DofIteratorImp, class LocalFunctionImp, class DiscreteFunctionImp >
       class DofIteratorImp,
       template <class , class> class LocalFunctionIteratorImp,
       class DiscreteFunctionImp >
@@ -161,10 +172,14 @@ namespace Dune {
     enum { myId_ = 0 };
 
   public:
+    //! ???
     typedef typename DiscreteFunctionSpaceType::Domain DomainType;
+    //! ???
     typedef typename DiscreteFunctionSpaceType::Range RangeType;
 
+    //! ???
     typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
+    //! ???
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
 
     //! pass the function space to the interface class
@@ -183,34 +198,35 @@ namespace Dune {
     //! evaluate an scalar product of the dofs of two DiscreteFunctions
     typename DiscreteFunctionSpaceType::RangeField scalarProductDofs( const DiscreteFunctionDefault &g );
 
-    // assign
+    //! Assignment
     Vector<typename DiscreteFunctionSpaceType::RangeField> &
     assign(const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
 
-    // assign
+    //! Assignment operator
     Vector<typename DiscreteFunctionSpaceType::RangeField> &
     operator = (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
 
-    // add
+    //! Addition
     Vector<typename DiscreteFunctionSpaceType::RangeField> &
     operator += (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
 
-    // add
+    //! !
     void addScaled (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g,
                     const typename DiscreteFunctionSpaceType::RangeField &scalar);
 
-    // substract
+    //! substract
     Vector<typename DiscreteFunctionSpaceType::RangeField> &
     operator -= (const Vector<typename DiscreteFunctionSpaceType::RangeField> &g);
 
-    // multiply
+    //! multiply
     Vector<typename DiscreteFunctionSpaceType::RangeField> &
     operator *= (const typename DiscreteFunctionSpaceType::RangeField &scalar);
 
+    //! Division by a scalar
     Vector<typename DiscreteFunctionSpaceType::RangeField> &
     operator /= (const typename DiscreteFunctionSpaceType::RangeField &scalar);
 
-    // add
+    //! add
     Vector<typename DiscreteFunctionSpaceType::RangeField> &
     add(const Vector<typename DiscreteFunctionSpaceType::RangeField> &g ,
         typename DiscreteFunctionSpaceType::RangeField scalar );
