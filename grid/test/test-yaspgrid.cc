@@ -20,11 +20,14 @@ void check_yasp() {
             << std::endl << std::endl;
 
   fTupel Len; Len = 1.0;
-  iTupel s; s = 10;
+  iTupel s; s = 5;
   bTupel p; p = false;
   int overlap = 1;
 
   Dune::YaspGrid<dim,dim> grid(MPI_COMM_WORLD,Len,s,p,overlap);
+
+  grid.globalRefine(1);
+
   gridcheck(grid);
 };
 

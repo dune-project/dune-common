@@ -1073,7 +1073,6 @@ namespace Dune {
       return _dims[i];
     }
 
-    #warning should this be a reference?
     //! return MPI communicator
     MPI_Comm comm () const
     {
@@ -1094,7 +1093,6 @@ namespace Dune {
       return true;
     }
 
-    #warning should this be a reference?
     //! map rank to coordinate in torus using lexicographic ordering
     iTupel rank_to_coord (int rank) const
     {
@@ -1721,7 +1719,7 @@ namespace Dune {
 
       //! make iterator pointing to level k (no check made)
       YGridLevelIterator (const YGridLevelIterator & it)
-        : i(it.i), l(it.l)
+        : l(it.l), i(it.i)
       {}
 
       //! return number of this grid level

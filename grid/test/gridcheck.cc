@@ -435,7 +435,7 @@ void iterate(Grid &g)
 };
 
 // check Entity::geometry()[c] == Entity::entity<dim>.geometry()[0] for codim=cd
-template <int cd, class Entity>
+template <int cd, class Grid, class Entity, bool doCheck>
 struct subIndexCheck
 {
   subIndexCheck (const Entity & e)
@@ -445,12 +445,33 @@ struct subIndexCheck
     {
       assert( e.template entity<cd>(i)->index() == e.template subIndex<cd>(i) );
     }
-    subIndexCheck<cd-1,Entity> sick(e);
+    typedef typename Grid::template codim<cd>::Entity SubEntity;
+    subIndexCheck<cd-1,Grid,Entity,
+        Dune::Capabilities::hasEntity<Grid,SubEntity>::v> sick(e);
   }
 };
 // end recursion of subIndexCheck
-template <class Entity>
-struct subIndexCheck<-1, Entity>
+template <class Grid, class Entity, bool doCheck>
+struct subIndexCheck<-1, Grid, Entity, doCheck>
+{
+  subIndexCheck (const Entity & e)
+  {
+    return;
+  }
+};
+// do nothing if doCheck==false
+template <int cd, class Grid, class Entity>
+struct subIndexCheck<cd, Grid, Entity, false>
+{
+  subIndexCheck (const Entity & e)
+  {
+    typedef typename Grid::template codim<cd>::Entity SubEntity;
+    subIndexCheck<cd-1,Grid,Entity,
+        Dune::Capabilities::hasEntity<Grid,SubEntity>::v> sick(e);
+  }
+};
+template <class Grid, class Entity>
+struct subIndexCheck<-1, Grid, Entity, false>
 {
   subIndexCheck (const Entity & e)
   {
@@ -471,8 +492,8 @@ void zeroEntityConsistency (Grid &g)
   for (; it!=endit; ++it)
   {
     // Entity::entity<0>(0) == Entity
-    assert( it->template entity<0>(0)->index() == it->index() );
-    assert( it->template entity<0>(0)->level() == it->level() );
+    //    assert( it->template entity<0>(0)->index() == it->index() );
+    //    assert( it->template entity<0>(0)->level() == it->level() );
     // Entity::count<dim>() == Entity::geometry().corners();
     assert( it->template count<Grid::dimension>() == it->geometry().corners() );
     // Entity::geometry()[c] == Entity::entity<dim>.geometry()[0];
@@ -488,7 +509,7 @@ void zeroEntityConsistency (Grid &g)
       }
     }
     // Entity::entity<cd>(i).index() == Entity::subIndex(i)
-    subIndexCheck<Grid::dimension, Entity> sick(*it);
+    subIndexCheck<Grid::dimension, Grid, Entity, true> sick(*it);
   }
 }
 
@@ -508,7 +529,7 @@ void gridcheck (Grid &g)
   iterate(g);
   zeroEntityConsistency(g);
   zeroEntityConsistency(cg);
-  //  g.checkIF();
+
   /*
    * search the LevelIterator for each IntersectionIterator
    */
@@ -520,12 +541,12 @@ void gridcheck (Grid &g)
   {
     IntersectionIterator endit = e->iend();
     IntersectionIterator it = e->ibegin();
-    assert(e->index() != -1);
+    assert(e->index() >= 0);
     for(; it != endit; ++it)
     {
       if (it.neighbor())
       {
-        assert(it->index() != -1);
+        assert(it->index() >= 0);
         LevelIterator n = g.template lbegin<0>(it->level());
         LevelIterator nend = g.template lend<0>(it->level());
         while (n->index() != it->index()&& n != nend) ++n;

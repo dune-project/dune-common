@@ -430,12 +430,17 @@ namespace Dune {
       for (int i=0; i<mydim; i++)
         s << " " << extension[i];
     }
-  private:
+
     const YaspGeometry<mydim,mydim,GridImp>&
     operator = (const YaspGeometry<mydim,mydim,GridImp>& g)
     {
-      midpoint = g.midpoint;
-      extension = g.extension;
+      // check that the const data is the same
+      for (int d=0; d<mydim; d++)
+      {
+        assert(midpoint[d] == g.midpoint[d]);
+        assert(extension[d] == g.extension[d]);
+      }
+      // update the mutable data
       Jinv = g.Jinv;
       c = g.c;
       return *this;
@@ -659,10 +664,7 @@ namespace Dune {
     template<int cc>
     typename codim<cc>::EntityPointer entity (int i) const
     {
-#warning please reenable the compile-time error
-#if 0
       IsTrue< ( cc == dim || cc == 0 ) >::yes();
-#endif
       // coordinates of the cell == coordinates of lower left corner
       if (cc==dim)
       {
@@ -676,7 +678,7 @@ namespace Dune {
       }
       if (cc==0)
       {
-        return *this;
+        return YaspLevelIterator<cc,All_Partition,GridImp>(_g,_it);
       }
       DUNE_THROW(GridError, "codim not (yet) implemented");
     }
