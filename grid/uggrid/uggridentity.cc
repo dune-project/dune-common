@@ -30,6 +30,15 @@ setToTarget(typename TargetType<codim,dim>::T* target)
 }
 
 template<int codim, int dim, int dimworld>
+inline void UGGridEntity < codim, dim ,dimworld >::
+setToTarget(typename TargetType<codim,dim>::T* target, int level)
+{
+  target_ = target;
+  level_  = level;
+  geo_.setToTarget(target);
+}
+
+template<int codim, int dim, int dimworld>
 inline int UGGridEntity < codim, dim ,dimworld >::
 level()
 {
@@ -257,6 +266,15 @@ UGGridEntity(int level) :
 
 template<int dim, int dimworld>
 inline void UGGridEntity < 0, dim ,dimworld >::
+setToTarget(typename TargetType<0,dim>::T* target, int level)
+{
+  target_ = target;
+  level_  = level;
+  geo_.setToTarget(target);
+}
+
+template<int dim, int dimworld>
+inline void UGGridEntity < 0, dim ,dimworld >::
 setToTarget(typename TargetType<0,dim>::T* target)
 {
   target_ = target;
@@ -286,6 +304,55 @@ UGGridEntity < 0, dim ,dimworld >::iend()
 
   return it;
 }
+
+template<int dim, int dimworld>
+inline UGGridHierarchicIterator<dim,dimworld>
+UGGridEntity < 0, dim ,dimworld >::hbegin(int maxlevel)
+{
+  UGGridHierarchicIterator<dim,dimworld> it(level(), maxlevel);
+
+  if (level()<maxlevel) {
+
+    // The 30 is the macro MAX_SONS from ug/gm/gm.h
+    UGElementType* sonList[30];
+    UG2d::GetSons(target_,sonList);
+
+#define NSONS(p) UG2d::ReadCW(p, UG2d::NSONS_CE)
+    // Load sons of entity into the iterator
+    for (unsigned int i=0; i<NSONS(target_); i++) {
+      typename UGGridHierarchicIterator<dim,dimworld>::StackEntry se;
+      se.element = sonList[i];
+      //printf("new element %d\n", se.element);
+      se.level   = level()+1;
+      it.elemStack.push_front(se);
+    }
+#undef NSONS
+
+  }
+
+  if (it.elemStack.isempty()) {
+    it.virtualEntity_.setToTarget(0);
+  } else {
+    // Set intersection iterator to first son
+    it.virtualEntity_.setToTarget(it.elemStack.front().element, it.elemStack.front().level);
+  }
+
+  return it;
+}
+
+
+template< int dim, int dimworld>
+inline UGGridHierarchicIterator<dim,dimworld>
+UGGridEntity < 0, dim ,dimworld >::hend(int maxlevel)
+{
+  UGGridHierarchicIterator<dim,dimworld> it(level(), maxlevel);
+
+  //it.elemStack.clear();
+  it.target_ = 0;
+
+  return it;
+}
+
 
 template<int dim, int dimworld>
 inline int UGGridEntity < 0, dim ,dimworld >::
