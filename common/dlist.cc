@@ -207,20 +207,20 @@ namespace Dune {
 
   template<class T>
   inline bool DoubleLinkedList<T>::Iterator::operator!=
-    (typename DoubleLinkedList<T>::Iterator x)
+    (typename DoubleLinkedList<T>::Iterator x) const
   {
     return p != x.p;
   }
 
   template<class T>
   inline bool DoubleLinkedList<T>::Iterator::operator==
-    (typename DoubleLinkedList::Iterator x)
+    (typename DoubleLinkedList::Iterator x) const
   {
     return p == x.p;
   }
 
   template<class T>
-  inline typename DoubleLinkedList<T>::Iterator
+  inline typename DoubleLinkedList<T>::Iterator &
   DoubleLinkedList<T>::Iterator::operator++ () // prefix
   {
     p = p->next; return *this;
@@ -236,7 +236,7 @@ namespace Dune {
   }
 
   template<class T>
-  inline typename DoubleLinkedList<T>::Iterator
+  inline typename DoubleLinkedList<T>::Iterator &
   DoubleLinkedList<T>::Iterator::operator-- () // prefix
   {
     p = p->prev; return *this;

@@ -39,19 +39,19 @@ namespace Dune {
       Iterator();
 
       //! comparison
-      bool operator!= (Iterator x);
+      bool operator!= (Iterator x) const;
 
       //! comparison
-      bool operator== (Iterator x);
+      bool operator== (Iterator x) const;
 
       //! Prefix increment
-      Iterator operator++ ();
+      Iterator& operator++ ();
 
       //! Postfix increment
       Iterator operator++ (int);
 
       //! Prefix decrement
-      Iterator operator-- ();
+      Iterator& operator-- ();
 
       //! Postfix decrement
       Iterator operator-- (int);
@@ -87,16 +87,20 @@ namespace Dune {
     //! destructor
     ~DoubleLinkedList();
 
-    //!
+    //! Deep copy operator
     DoubleLinkedList<T>& operator= (const DoubleLinkedList<T>&);
 
     //! current list size
     int size () const;
 
-    //! insert after an iterators position
+    /** \brief insert after an iterators position
+     * \return Iterator pointing to new element
+     */
     Iterator insert_after (Iterator i, T& t);
 
-    //! insert befor an iterators position
+    /** \brief insert before an iterators position
+     * \return Iterator pointing to new element
+     */
     Iterator insert_before (Iterator i, T& t);
 
     //! remove selected element
