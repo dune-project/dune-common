@@ -96,7 +96,7 @@ namespace Dune
 
 }  // namespace Dune
 
-#include "uggrid/uggridelement.hh"
+#include "uggrid/uggridgeometry.hh"
 #include "uggrid/uggridentity.hh"
 #include "uggrid/uggridboundent.hh"
 #include "uggrid/ugintersectionit.hh"
