@@ -185,8 +185,8 @@ template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
 numberInSelf ()  const
 {
-#ifdef _3
   const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);
+#ifdef _3
   if (nSides==6) {   // Hexahedron
     // Dune numbers the faces of a hexahedron differently than UG.
     // The following two lines do the transformation
@@ -200,7 +200,13 @@ numberInSelf ()  const
   } else
     return neighborCount_;
 #else
-  return neighborCount_;
+  if (nSides==3) {   // Triangle
+    // Dune numbers the faces of a triangle differently from UG.
+    // The following two lines do the transformation
+    const int renumbering[3] = {2, 0, 1};
+    return renumbering[neighborCount_];
+  } else
+    return neighborCount_;
 #endif
 }
 
