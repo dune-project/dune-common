@@ -18,8 +18,17 @@ namespace Dune {
   //
   //**************************************************************************
 
-  /** \brief ???
-   * \todo Please doc me!
+  /** \brief Quadrature class using the order as template-parameter
+
+   * Class to create a quadrature-object returning a number of
+   * Quadrature points. Needs a RangeType (type of the quadrature
+   * weight), a DomainType (type of local coordinates) and a polynomial
+   * order as template parameter. The constructor expects an
+   * Codim-0-Entity (Element) as parameter.
+
+   * With this class the quadratures are created as templates, whereas
+   * with QuadratureImp the constructor decides on the rule. Thus, this
+   * quadrature is instantiated quicker.
    */
   template< class RangeFieldType , class DomainType ,int poly_order >
   class FastQuad
