@@ -7,7 +7,7 @@
 template <class FunctionSpaceType>
 CachingBaseFunctionSet<FunctionSpaceType>::
 CachingBaseFunctionSet(FunctionSpaceType& fuspace,
-                       ElementType elType,
+                       GeometryType elType,
                        int nBaseFnc) :
   BaseFunctionSetDefault<FunctionSpaceType,
       CachingBaseFunctionSet<FunctionSpaceType> > (fuspace),
@@ -88,11 +88,23 @@ gradients(int baseFunct, const QuadratureType& quad) const {
   return it->second[baseFunct];
 }
 
+template <class FunctionSpaceType>
+template <class QuadratureType>
+const std::vector<FunctionSpaceType::Range>&
+CachingBaseFunctionSet<FunctionSpaceType>::
+faces(int faceIdx, int baseFct, const QuadratureType& quad) const {
+  ConstFaceMapIterator it = faces_.find(quad.getIdentifier());
+
+  assert(it != faces_.end());
+  assert(baseFct < numOfBaseFct_);
+
+  return it->second[faceIdx][baseFct];
+}
 
 //! if the quadrature is new, then once cache the values
 template <class FunctionSpaceType>
 template <class QuadratureType>
-void CachingBaseFunctionSet<FunctionSpaceType >::
+void CachingBaseFunctionSet<FunctionSpaceType>::
 registerQuadrature( const QuadratureType &quad )
 {
   // check if quadrature is already registered
@@ -107,8 +119,9 @@ registerQuadrature( const QuadratureType &quad )
     // Get iterators to the right map entries
     std::pair<RangeMapIterator, bool> rp =
       vals_.insert(std::make_pair(identifier,
-                                  std::vector<std::vector<Range> >(nBaseFct,
-                                                                   std::vector<Range>(nQuadPts, tmp))));
+                                  std::vector<std::vector<Range> >
+                                    (nBaseFct,
+                                    std::vector<Range>(nQuadPts, tmp))));
 
     std::pair<JacobianMapIterator, bool> jp =
       grads_.insert(std::make_pair(identifier,
@@ -128,12 +141,60 @@ registerQuadrature( const QuadratureType &quad )
 }
 
 template <class FunctionSpaceType>
+template <class QuadratureType, class EntityType>
+void CachingBaseFunctionSet<FunctionSpaceType>::
+registerQuadrature(const QuadratureType &quad, const EntityType& en) {
+  //- Local typedefs
+  typedef typename EntityType::IntersectionIterator IntersectionIterator;
+
+  //- Actual code
+  // Check if quadrature is already present
+  int identifier = quad.getIdentifier();
+  if (faces_.find(identifier) == faces_.end()) {
+
+    // Initialise face values
+    int nBaseFct = getNumberOfBaseFunctions();
+    int nQuadPts = quad.nop();
+    Range tmp(0.0);
+
+    // Count faces
+    int count = 0;
+    IntersectionIterator endit = en.iend();
+    for (IntersectionIterator it = en.ibegin(); it != endit; ++it, ++count) ;
+
+    // Get iterator to the right map entry
+    std::pair<FaceMapIterator, bool> rp =
+      faces_.
+      insert(std::make_pair(identifier,
+                            std::vector<std::vector<std::vector<Range> > >
+                              (count,
+                              std::vector<std::vector<Range> >
+                                (nBaseFct,
+                                std::vector<Range>(nQuadPts, tmp)))));
+
+    for (IntersectionIterator it = en.ibegin(); it != endit; ++it) {
+      for (int i = 0; i < nBaseFct; ++i) {
+        for (int j = 0; j < nQuadPts; ++j) {
+          // * Is this correct? (intersectionSelfLocal().global(quad.point(j)))
+          this->eval(i,
+                     it.intersectionSelfLocal().global(quad.point(j)),
+                     rp.first->second[it.numberInSelf()][i][j]);
+        }
+      }
+    } // end for
+
+  } // end if
+}
+
+
+template <class FunctionSpaceType>
 const FunctionSpaceType::Range
 CachingBaseFunctionSet<FunctionSpaceType>::
 extractGradientComp(const JacobianRange& jr, int idx) const {
   Range result;
   for (int i = 0; i < DimRange; ++i) {
-    result[i] = jr(idx, i);
+    // * check order of operators
+    result[i] = jr[idx][i];
   }
   return result;
 }
