@@ -3,6 +3,7 @@
 AC_INIT(dune, 0.0, dune@hal.iwr.uni-heidelberg.de)
 AM_INIT_AUTOMAKE(dune, 0.0, dune@hal.iwr.uni-heidelberg.de)
 AC_CONFIG_SRCDIR([grid/common/grid.hh])
+AM_CONFIG_HEADER([config.h])
 
 # do almost nothing, an application using Dune should provide the
 # checks (use the macro provided in m4/dune.m4 to do this)
@@ -35,6 +36,8 @@ DUNE_PATH_UG
 DUNE_PATH_AMIRAMESH
 # Yaspgrid-check
 DUNE_MPI
+# how to create a deprecated warning
+DUNE_CHECKDEPRECATED
 
 # create symlink for consistent paths even when $(top_srcdir) is not
 # called dune/ (if filesystem/OS supports symlinks)
@@ -84,35 +87,40 @@ echo
 
 # write output
 AC_CONFIG_FILES([Makefile
-	         common/Makefile
-		 common/test/Makefile
-                 fem/Makefile
-                 fem/common/Makefile
-                 fem/discfuncarray/Makefile
-                 fem/operator/Makefile
-                 grid/Makefile
-                 grid/albertgrid/Makefile
-		 grid/bsgrid/Makefile
-                 grid/common/Makefile
-                 grid/sgrid/Makefile
-		 grid/test/Makefile
-		 grid/uggrid/Makefile
-                 grid/yaspgrid/Makefile
-		 istl/Makefile
-		 istl/doc/Makefile
-		 istl/tutorial/Makefile
-                 lib/Makefile
-		 lib/test/Makefile
-                 operator/Makefile
-	         quadrature/Makefile
-	         quadrature/common/Makefile
-	         quadrature/barycenter/Makefile
-	         quadrature/gaussquadrature/Makefile
-	         quadrature/fixedorder/Makefile
-                 solver/Makefile
-                 solver/common/Makefile
-                 solver/pmgsolver/Makefile
-		 doc/Makefile
-		 m4/Makefile
-                 dune.pc])
+		 common/Makefile
+         common/test/Makefile
+         fem/Makefile
+         fem/common/Makefile
+         fem/discfuncarray/Makefile
+         fem/operator/Makefile
+         grid/Makefile
+         grid/albertgrid/Makefile
+         grid/bsgrid/Makefile
+         grid/common/Makefile
+         grid/sgrid/Makefile
+         grid/test/Makefile
+         grid/uggrid/Makefile
+         grid/yaspgrid/Makefile
+         istl/Makefile
+         istl/doc/Makefile
+         istl/tutorial/Makefile
+         lib/Makefile
+         lib/test/Makefile
+         operator/Makefile
+         quadrature/Makefile
+         quadrature/common/Makefile
+         quadrature/barycenter/Makefile
+         quadrature/gaussquadrature/Makefile
+         quadrature/fixedorder/Makefile
+         solver/Makefile
+         solver/common/Makefile
+         solver/pmgsolver/Makefile
+         doc/Makefile
+         m4/Makefile
+         dune.pc])
 AC_OUTPUT
+
+# if we are in verbose mode print the summary information
+if test x$verbose == xyes; then
+  DUNE_SUMMARY_ALL
+fi
