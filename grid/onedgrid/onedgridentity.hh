@@ -262,22 +262,6 @@ namespace Dune {
     //  Interface for Adaptation
     // ***************************************************************
 
-    /** \brief Mark entity for refinement
-     *
-     * \param refCount if >0 mark for refinement, if <0 mark for coarsening
-     *
-     * \return false, which is not compliant with the official specification!
-     */
-    bool mark(int refCount) {
-      if (refCount < 0)
-        adaptationState = COARSEN;
-      else if (refCount > 0)
-        adaptationState = REFINED;
-      else
-        adaptationState = NONE;
-      return false;
-    }
-
     /** \todo Please doc me! */
     AdaptationState state() const {return adaptationState;}
 

@@ -539,8 +539,6 @@ void Dune::OneDGrid<dim,dimworld>::globalRefine(int refCount)
   // mark all entities for grid refinement
   typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
   typename Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
-  //OneDGridLevelIterator<0,All_Partition,OneDGrid<1,1> > iIt    = lbegin<0>(maxlevel());
-  //OneDGridLevelIterator<0,All_Partition,OneDGrid<1,1> > iEndIt = lend<0>(maxlevel());
 
   for (; iIt!=iEndIt; ++iIt)
     mark(1, iIt);
@@ -548,4 +546,17 @@ void Dune::OneDGrid<dim,dimworld>::globalRefine(int refCount)
   this->preAdapt();
   adapt();
   this->postAdapt();
+}
+
+template <int dim, int dimworld>
+bool Dune::OneDGrid < dim, dimworld >::mark(int refCount,
+                                            typename Traits::template codim<0>::EntityPointer & e )
+{
+  if (refCount < 0)
+    getRealEntity<0>(*e).adaptationState = COARSEN;
+  else if (refCount > 0)
+    getRealEntity<0>(*e).adaptationState = REFINED;
+  else
+    getRealEntity<0>(*e).adaptationState = NONE;
+  return false;
 }

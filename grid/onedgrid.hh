@@ -255,13 +255,9 @@ namespace Dune {
 
     /** \brief Mark entity for refinement
      *
-     * This only works for entities of codim 0.
-     * The parameter is currently ignored
+     * \param refCount if >0 mark for refinement, if <0 mark for coarsening
      *
-     * \return <ul>
-     * <li> true, if element was marked </li>
-     * <li> false, if nothing changed </li>
-     * </ul>
+     * \return false, which is not compliant with the official specification!
      */
     bool mark(int refCount, typename Traits::template codim<0>::EntityPointer& e );
 
