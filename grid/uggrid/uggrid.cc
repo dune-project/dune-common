@@ -10,28 +10,6 @@
 
 namespace Dune
 {
-#if 0
-  static ALBERT EL_INFO statElInfo[DIM+1];
-
-  // singleton holding reference elements
-  template<int dim> struct AlbertGridReferenceElement
-  {
-    enum { dimension = dim };
-
-    static AlbertGridElement<dim,dim> refelem;
-    static ALBERT EL_INFO elInfo_;
-
-  };
-
-
-  // initialize static variable with bool constructor
-  // (which makes reference element)
-  template<int dim>
-  AlbertGridElement<dim,dim> AlbertGridReferenceElement<dim>::refelem(true);
-
-#endif
-
-
 
 #include "uggridelement.cc"
 #include "uggridentity.cc"
@@ -79,7 +57,9 @@ namespace Dune
                                 "V n1: nt 9",
                                 "M implicit(nt): mt 2",
                                 "I n1"};
+      printf("Before format\n");
       UG3d::CreateFormatCmd(4, newformatArgs);
+      printf("after format\n");
 
     }
 

@@ -97,6 +97,10 @@ inline ElementType UGGridElement<dim,dimworld>::type()
     }
   }
 #undef TAG
+  // Mustn't happen
+  assert(false);
+  // Just to calm the compiler
+  return tetrahedron;
 }
 
 template< int dim, int dimworld>
@@ -232,16 +236,23 @@ template< int dim, int dimworld>
 inline UGCtype UGGridElement<dim,dimworld>::
 integration_element (const Vec<dim,UGCtype>& local)
 {
-  UGCtype area;
-
   // dimworld*dimworld is an upper bound for the number of vertices
   UGCtype* cornerCoords[dimworld*dimworld];
   Corner_Coordinates(target_, cornerCoords);
 
-  // compute the volume of the element
-  Area_Of_Element(corners(), cornerCoords, area);
+  //
+  Mat<dimworld,dimworld> mat;
 
-  return area;
+  // compute the volume of the element
+  Transformation(corners(), cornerCoords, local, mat);
+
+  /** \todo Avoid the unnecessary copying */
+  //     for (int i=0; i<dimworld; i++)
+  //         for (int j=0; j<dimworld; j++)
+  //             mat[i][j] = mat_c[i][j];
+
+
+  return mat.determinant();
 }
 
 #if 0

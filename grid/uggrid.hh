@@ -3,6 +3,9 @@
 #ifndef DUNE_UGGRID_HH
 #define DUNE_UGGRID_HH
 
+
+#include "../common/matvec.hh"
+
 // All UG includes have to be includes via the file ugincludes.hh
 // for easier parsing by undefAllMacros.pl
 #define __PC__  // hack:  choose the architecture
@@ -12,39 +15,48 @@
 // Wrap a few large UG macros by functions before they get undef'ed away
 
 // I can't use the following because the index operator of Vec is () and not []
+namespace Dune {
 #if 0
-void Local_To_Global(int n, DOUBLE** y,
-                     const Dune::Vec<3, double>& local,  const Dune::Vec<3, double>& global)
-{
-  LOCAL_TO_GLOBAL(n,y,local,global);
-}
+  void Local_To_Global(int n, DOUBLE** y,
+                       const Dune::Vec<3, double>& local,  const Dune::Vec<3, double>& global)
+  {
+    LOCAL_TO_GLOBAL(n,y,local,global);
+  }
 #endif
-void Local_To_Global(int n, DOUBLE** y, DOUBLE* local, DOUBLE* global)
-{
-  LOCAL_TO_GLOBAL(n,y,local,global);
-}
+  void Local_To_Global(int n, DOUBLE** y, DOUBLE* local, DOUBLE* global)
+  {
+    LOCAL_TO_GLOBAL(n,y,local,global);
+  }
 
-/** \brief Computes the volume of an element */
-void Area_Of_Element(int n, DOUBLE** y, double& area)
-{
-  using UG3d::DOUBLE_VECTOR;
+  /**
+   * \param n Number of corners of the element
+   * \param x Coordinates of the corners of the element
+   * \param local Local evaluation point
+   *
+   * \todo It should be possible to have M be Mat<3,3>, but I can't get it to compile
+   */
+  void Transformation(int n, double** x,
+                      const Vec<3, double>& local, Mat<3,3,double>& mat)
+  {
+    //double mat_c[dimworld][dimworld] = {{0,0,0},{0,0,0},{0,0,0}};
 
-  AREA_OF_ELEMENT(n,y,area);
-}
+    TRANSFORMATION(n, x, local, mat);
+  }
 
-/** \brief Returns pointers to the coordinate arrays of an UG element */
-void Corner_Coordinates(UG3d::ELEMENT* theElement, double* x[])
-{
-  using UG3d::TETRAHEDRON;
-  using UG3d::NODE;
-  using UG3d::PYRAMID;
-  using UG3d::PRISM;
-  using UG3d::HEXAHEDRON;
-  using UG3d::n_offset;
-  int n;    // Dummy variable just to please the macro
-  CORNER_COORDINATES(theElement, n, x);
-}
+  /** \brief Returns pointers to the coordinate arrays of an UG element */
+  void Corner_Coordinates(UG3d::ELEMENT* theElement, double* x[])
+  {
+    using UG3d::TETRAHEDRON;
+    using UG3d::NODE;
+    using UG3d::PYRAMID;
+    using UG3d::PRISM;
+    using UG3d::HEXAHEDRON;
+    using UG3d::n_offset;
+    int n;  // Dummy variable just to please the macro
+    CORNER_COORDINATES(theElement, n, x);
+  }
 
+} // namespace Dune
 
 // undef stuff defined by UG
 #include "uggrid/ug_undefs.hh"

@@ -17,8 +17,8 @@
 template<int codim, int dim, int dimworld>
 inline UGGridEntity < codim, dim ,dimworld >::
 UGGridEntity(int level) :
+  geo_(false),
   level_ (level)
-  , geo_ ( false )
 {
 #if 0
   travStack_ = NULL;
@@ -28,7 +28,7 @@ UGGridEntity(int level) :
 
 template<int codim, int dim, int dimworld>
 inline void UGGridEntity < codim, dim ,dimworld >::
-setToTarget(TargetType<codim,dim>::T* target)
+setToTarget(typename TargetType<codim,dim>::T* target)
 {
   target_ = target;
   geo_.setToTarget(target);

@@ -63,7 +63,7 @@ namespace Dune {
     // private Methods
     void makeIterator();
 
-    void setToTarget(TargetType<codim,dim>::T* target) {
+    void setToTarget(typename TargetType<codim,dim>::T* target) {
       target_ = target;
       virtualEntity_.setToTarget(target);
     }
@@ -85,7 +85,7 @@ namespace Dune {
     //   UGMarkerVector * vertexMarker_;
 
 
-    TargetType<codim,dim>::T* target_;
+    typename TargetType<codim,dim>::T* target_;
 
   };
 

@@ -90,7 +90,7 @@ namespace Dune {
   private:
 
 
-    void setToTarget(TargetType<codim,dim>::T* target);
+    void setToTarget(typename TargetType<codim,dim>::T* target);
 
     // returns the global vertex number as default
     //int globalIndex() { return elInfo_->el->dof[vertex_][0]; }
@@ -112,7 +112,7 @@ namespace Dune {
     //! level
     int level_;
 
-    TargetType<codim,dim>::T* target_;
+    typename TargetType<codim,dim>::T* target_;
   };
 
 #if 0
