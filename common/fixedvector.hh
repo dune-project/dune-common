@@ -100,6 +100,19 @@ namespace Dune {
       return *this;
     }
 
+    //! operator ==
+    bool operator== (const Vec<dim,T> & b) const
+    {
+      for (int i=0; i<dim; i++) if (this->a[i] != b.a[i]) return false;
+      return true;
+    }
+
+    //! operator !=
+    bool operator!= (const Vec<dim,T> & b) const
+    {
+      return ! operator== (b);
+    }
+
     //! 1 norm
     T norm1 () const
     {
