@@ -1167,7 +1167,6 @@ namespace Dune {
       }
       else
       {
-        B* entry=0;
         for (int i=0; i<n; i++)
         {
           int* j = r[i].getindexptr();
