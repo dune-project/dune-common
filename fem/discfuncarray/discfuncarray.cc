@@ -168,17 +168,15 @@ namespace Dune
   //**************************************************************************
   template<class DiscreteFunctionSpaceType >
   inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
-  write_xdr( const char *filename , int timestep )
+  write_xdr( const char *fn )
   {
     FILE  *file;
     XDR xdrs;
-    const char *path = NULL;
 
-    const char * fn  = genFilename(path,filename, timestep);
     file = fopen(fn, "wb");
     if (!file)
     {
-      printf( "\aERROR in DiscFuncArray::write_xdr(..): couldnot open <%s>!\n", filename);
+      printf( "\aERROR in DiscFuncArray::write_xdr(..): couldnot open <%s>!\n", fn);
       fflush(stderr);
       return false;
     }
@@ -195,18 +193,16 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
-  read_xdr( const char *filename , int timestep )
+  read_xdr( const char *fn )
   {
     FILE   *file;
     XDR xdrs;
-    const char *path = NULL;
 
-    const char * fn  = genFilename(path,filename, timestep);
     std::cout << "Reading <" << fn << "> \n";
     file = fopen(fn, "rb");
     if(!file)
     {
-      printf( "\aERROR in DiscFuncArray::read_xdr(..): couldnot open <%s>!\n", filename);
+      printf( "\aERROR in DiscFuncArray::read_xdr(..): couldnot open <%s>!\n", fn);
       fflush(stderr);
       return(false);
     }
@@ -225,33 +221,34 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
-  write_ascii( const char *filename , int timestep )
+  write_ascii( const char *fn )
   {
-    const char * path=NULL;
-    const char * fn = genFilename(path,filename,timestep);
     std::fstream outfile( fn , std::ios::out );
+    if(outfile)
     {
       int length = this->functionSpace_.size();
-      outfile << length << "\n";
+      outfile << length << std::endl;
       DofIteratorType enddof = this->dend ();
       for(DofIteratorType itdof = this->dbegin (); itdof != enddof; ++itdof)
       {
-        outfile << (*itdof) << " ";
+        outfile << (*itdof) << std::endl;
       }
-      outfile << "\n";
+      outfile.close();
     }
-
-    outfile.close();
+    else
+    {
+      fprintf(stderr,"\aERROR in DiscFuncArray::read_xdr(..): couldnot open <%s>!\n", fn);
+      fflush(stderr);
+      return(false);
+    }
     return true;
   }
 
 
   template<class DiscreteFunctionSpaceType >
   inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
-  read_ascii( const char *filename , int timestep )
+  read_ascii( const char *fn )
   {
-    const char * path=NULL;
-    const char * fn = genFilename(path,filename,timestep);
     FILE *infile=NULL;
     infile = fopen( fn, "r" );
     if(!infile)
@@ -280,10 +277,8 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
-  write_pgm( const char *filename , int timestep )
+  write_pgm( const char *fn )
   {
-    const char * path=NULL;
-    const char * fn = genFilename(path,filename,timestep);
     std::ofstream out( fn );
 
     enum { dim = GridType::dimension };
@@ -306,15 +301,14 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
-  read_pgm( const char *filename , int timestep )
+  read_pgm( const char *fn )
   {
     FILE *in;
     int v;
 
     getMemory();
-    const char * path=NULL;
-    const char * fn = genFilename(path,filename,timestep);
     in = fopen( fn, "r" );
+    assert(in);
     fscanf( in, "P2\n%d %d\n%d\n", &v, &v, &v );
     DofIteratorType enddof = this->dend ( );
     for(DofIteratorType itdof = this->dbegin ( ); itdof != enddof; ++itdof) {

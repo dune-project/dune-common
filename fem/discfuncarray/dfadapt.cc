@@ -130,17 +130,14 @@ namespace Dune
   //**************************************************************************
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  write_xdr( const char *filename , int timestep )
+  write_xdr( const char *fn )
   {
     FILE  *file;
     XDR xdrs;
-    const char *path = 0;
-
-    const char * fn  = genFilename(path,filename, timestep);
     file = fopen(fn, "wb");
     if (!file)
     {
-      printf( "\aERROR in DFAdapt::write_xdr(..): couldnot open <%s>!\n", filename);
+      printf( "\aERROR in DFAdapt::write_xdr(..): couldnot open <%s>!\n", fn);
       fflush(stderr);
       return false;
     }
@@ -156,18 +153,15 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  read_xdr( const char *filename , int timestep )
+  read_xdr( const char *fn )
   {
     FILE   *file;
     XDR xdrs;
-    const char *path = 0;
-
-    const char * fn  = genFilename(path,filename, timestep);
     std::cout << "Reading <" << fn << "> \n";
     file = fopen(fn, "rb");
     if(!file)
     {
-      printf( "\aERROR in DFAdapt::read_xdr(..): couldnot open <%s>!\n", filename);
+      printf( "\aERROR in DFAdapt::read_xdr(..): couldnot open <%s>!\n", fn);
       fflush(stderr);
       return(false);
     }
@@ -183,11 +177,16 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  write_ascii( const char *filename , int timestep )
+  write_ascii( const char *fn )
   {
-    const char * path=0;
-    const char * fn = genFilename(path,filename,timestep);
     std::fstream outfile( fn , std::ios::out );
+    if (!outfile)
+    {
+      printf( "\aERROR in DFAdapt::write_ascii(..): couldnot open <%s>!\n", fn);
+      fflush(stderr);
+      return false;
+    }
+
     {
       int length = this->functionSpace_.size();
       outfile << length << "\n";
@@ -206,10 +205,8 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  read_ascii( const char *filename , int timestep )
+  read_ascii( const char *fn )
   {
-    const char * path=0;
-    const char * fn = genFilename(path,filename,timestep);
     FILE *infile=0;
     infile = fopen( fn, "r" );
     assert(infile != 0);
@@ -230,35 +227,40 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  write_pgm( const char *filename , int timestep )
+  write_pgm( const char *fn )
   {
-    const char * path=0;
-    const char * fn = genFilename(path,filename,timestep);
     std::ofstream out( fn );
 
     enum { dim = GridType::dimension };
 
-    int danz = 129;
+    if(out)
+    {
+      int danz = 129;
 
-    out << "P2\n " << danz << " " << danz <<"\n255\n";
-    DofIteratorType enddof = dend ();
-    for(DofIteratorType itdof = dbegin (); itdof != enddof; ++itdof) {
-      out << (int)((*itdof)*255.) << "\n";
+      out << "P2\n " << danz << " " << danz <<"\n255\n";
+      DofIteratorType enddof = dend ();
+      for(DofIteratorType itdof = dbegin (); itdof != enddof; ++itdof) {
+        out << (int)((*itdof)*255.) << "\n";
+      }
+      out.close();
     }
-    out.close();
+    else
+    {
+      std::cerr << "Couldn't open file '"<<fn<<"' \n";
+    }
     return true;
   }
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  read_pgm( const char *filename , int timestep )
+  read_pgm( const char *fn )
   {
     FILE *in;
     int v;
 
-    const char * path=0;
-    const char * fn = genFilename(path,filename,timestep);
     in = fopen( fn, "r" );
+    assert(in);
+
     fscanf( in, "P2\n%d %d\n%d\n", &v, &v, &v );
     DofIteratorType enddof = dend ();
     for(DofIteratorType itdof = dbegin (); itdof != enddof; ++itdof) {
