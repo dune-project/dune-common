@@ -6,11 +6,12 @@
 #include <iostream>
 #include <math.h>
 
-template <bool flag>
-class CompileTimeChecker { };
+//! Check condition at compilation time
+template <bool flag> class CompileTimeChecker;
 
+//! it exists only an implementation for true so the compiler throws an
+//! error if the condition is false
 template <> class CompileTimeChecker<true> { };
-
 
 
 namespace Dune {

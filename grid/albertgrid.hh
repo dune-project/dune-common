@@ -3,8 +3,8 @@
 #ifndef DUNE_ALBERTGRID_HH
 #define DUNE_ALBERTGRID_HH
 
-#include "../common/matvec.hh"
 #include "../common/misc.hh"
+#include "../common/matvec.hh"
 #include "../common/array.hh"
 #include "common/grid.hh"
 
@@ -48,6 +48,18 @@ namespace Albert
 
 #include <albert.h>
 #include "albertgrid/albertextra.hh"
+
+#ifdef ABS
+#undef ABS
+#endif
+
+#ifdef MIN
+#undef MIN
+#endif
+
+#ifdef MAX
+#undef MAX
+#endif
 
 #ifndef __ALBERTNAME__
 } // end extern "C"
@@ -162,13 +174,6 @@ namespace Albert
       //! local coordinate in its reference element
       Vec<dim,albertCtype>& local (const Vec<dimworld,albertCtype>& global);
 
-      template <int dimbary>
-      Vec<dimbary,albertCtype>& localB (const Vec<dimworld,albertCtype>& global)
-      {
-        localBary_ = localBary(global);
-        return localBary_;
-      }
-
       //! returns true if the point is in the current element
       bool pointIsInside(const Vec<dimworld,albertCtype> &point);
 
@@ -201,15 +206,6 @@ namespace Albert
       //! can only be called for dim=dimworld!
       Mat<dim,dim>& Jacobian_inverse (const Vec<dim,albertCtype>& local);
 
-      //! print internal data
-      void print (std::ostream& ss, int indent);
-
-      //! return unit outer normal of this element, work for Faces nad Edges
-      Vec<dimworld,albertCtype>& unit_outer_normal ();
-
-      //! return outer normal of this element, work for Faces nad Edges
-      Vec<dimworld,albertCtype>& outer_normal ();
-
       //***********************************************************************
       //  Methods that not belong to the Interface, but have to be public
       //***********************************************************************
@@ -218,6 +214,24 @@ namespace Albert
       void initGeom();
 
     private:
+      //! print internal data
+      void print (std::ostream& ss, int indent);
+
+#if 0
+      //! return unit outer normal of this element, work for Faces nad Edges
+      Vec<dimworld,albertCtype>& unit_outer_normal ();
+
+      //! return outer normal of this element, work for Faces nad Edges
+      Vec<dimworld,albertCtype>& outer_normal ();
+#endif
+
+      template <int dimbary>
+      Vec<dimbary,albertCtype>& localB (const Vec<dimworld,albertCtype>& global)
+      {
+        localBary_ = localBary(global);
+        return localBary_;
+      }
+
       //! built the reference element
       void makeRefElemCoords();
 
@@ -267,10 +281,16 @@ namespace Albert
       }
 
 
+      //! the vertex coordinates
       Mat<dimworld,dim+1,albertCtype> coord_;
 
+      //! storage for global coords
       Vec<dimworld,albertCtype> globalCoord_;
+
+      //! storage for local coords
       Vec<dim,albertCtype> localCoord_;
+
+      //! storage for barycentric coords
       Vec<dimbary,albertCtype> localBary_;
 
 
@@ -287,11 +307,12 @@ namespace Albert
       //! Which Edge of the Face of the Element 0...dim-1
       unsigned char vertex_;
 
-      Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
-      albertCtype volume_;
+      //! is true if Jinv_ and volume_ is calced
       bool builtinverse;
+      Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
+      albertCtype volume_; //!< storage of element volume
 
-      Vec<dimworld,albertCtype> outerNormal_;
+      //Vec<dimworld,albertCtype> outerNormal_;
     };
 
 
@@ -451,6 +472,7 @@ namespace Albert
       /*! Intra-element access to entities of codimension cc > codim. Return number of entities
          with codimension cc.
        */
+
 #if 0
       //!< Default codim 1 Faces and codim == dim Vertices
       template <int cc> int count () { return ((dim-codim)+1); };
@@ -581,7 +603,8 @@ namespace Albert
       //!< Default codim 1 Faces and codim == dim Vertices
       template<int cc> int count () { return (dim+1); };
 
-      // specialization only for codim == 2 , edges
+      // specialization only for codim == 2 , edges,
+      // a tetrahedron has always 6 edges
       template<> int count<2 << dim> () { return 6; };
 
 
@@ -617,14 +640,14 @@ namespace Albert
       //! Assumes that meshes are nested.
       AlbertGridLevelIterator<0,dim,dimworld> father ();
 
-      /*! Location of this element relative to the reference element element of the father.
-         This is sufficient to interpolate all dofs in conforming case.
-         Nonconforming may require access to neighbors of father and
-         computations with local coordinates.
-         On the fly case is somewhat inefficient since dofs  are visited several times.
-         If we store interpolation matrices, this is tolerable. We assume that on-the-fly
-         implementation of numerical algorithms is only done for simple discretizations.
-         Assumes that meshes are nested.
+      /*! Location of this element relative to the reference element
+         of the father. This is sufficient to interpolate all
+         dofs in conforming case. Nonconforming may require access to
+         neighbors of father and computations with local coordinates.
+         On the fly case is somewhat inefficient since dofs  are visited
+         several times. If we store interpolation matrices, this is tolerable.
+         We assume that on-the-fly implementation of numerical algorithms
+         is only done for simple discretizations. Assumes that meshes are nested.
        */
       AlbertGridElement<dim,dim>& father_relative_local ();
 
@@ -710,11 +733,11 @@ namespace Albert
       //! know your own dimension of world
       enum { dimensionworld=dimworld };
 
-      // the normal Constructor
+      //! the normal Constructor
       AlbertGridHierarchicIterator(AlbertGrid<dim,dimworld> &grid,
                                    ALBERT TRAVERSE_STACK *travStack, int travLevel);
 
-      // the default Constructor
+      //! the default Constructor
       AlbertGridHierarchicIterator(AlbertGrid<dim,dimworld> &grid);
 
       //! prefix increment
@@ -818,13 +841,6 @@ namespace Albert
       //! return unit outer normal, if you know it is constant use this function instead
       Vec<dimworld,albertCtype>& unit_outer_normal ();
 
-      //! return outer normal, this should be dependent on local
-      //! coordinates for higher order boundary
-      Vec<dimworld,albertCtype>& outer_normal (Vec<dim-1,albertCtype>& local);
-
-      //! return unit outer normal, if you know it is constant use this function instead
-      Vec<dimworld,albertCtype>& outer_normal ();
-
       //! intersection of codimension 1 of this neighbor with element where
       //! iteration started.
       //! Here returned element is in LOCAL coordinates of the element
@@ -850,6 +866,13 @@ namespace Albert
       int number_in_neighbor ();
 
     private:
+      //! return outer normal, this should be dependent on local
+      //! coordinates for higher order boundary
+      Vec<dimworld,albertCtype>& outer_normal (Vec<dim-1,albertCtype>& local);
+
+      //! return unit outer normal, if you know it is constant use this function instead
+      Vec<dimworld,albertCtype>& outer_normal ();
+
       //! setup the virtual entity
       void setupVirtualEntity(int neighbor);
 
@@ -969,7 +992,7 @@ namespace Albert
       };
 
       template <>  ALBERT EL_INFO *
-      goNextEntity<1>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
+      goNextEntity<1 << dim>(ALBERT TRAVERSE_STACK *stack,ALBERT EL_INFO *elinfo_old)
       {
         return goNextFace(stack,elinfo_old);
       };
@@ -1035,6 +1058,13 @@ namespace Albert
       //friend class AlbertGridEntity <1 << dim-1 ,dim,dimworld>;
       friend class AlbertGridEntity <dim,dim,dimworld>;
 
+      //! AlbertGrid is only implemented for 2 and 3 dimension
+      //! for 1d use SGrid or SimpleGrid
+      CompileTimeChecker<dimworld != 1>   Do_not_use_AlbertGrid_for_1d_Grids;
+
+      //! At this time AlbertGrid only supports the dim == dimworld case
+      CompileTimeChecker<dimworld == dim> Only_dim_equal_dimworld_is_implemented;
+
       //**********************************************************
       // The Interface Methods
       //**********************************************************
@@ -1057,12 +1087,7 @@ namespace Albert
 
       //! Return maximum level defined in this grid. Levels are numbered
       //! 0 ... maxlevel with 0 the coarsest level.
-      int maxlevel();
-
-      int maxlevel() const
-      {
-        return const_cast<AlbertGrid<dim,dimworld> *> (this)->maxlevel();
-      };
+      int maxlevel() const;
 
       //! Iterator to first entity of given codim on level
       template<int codim>
@@ -1074,11 +1099,7 @@ namespace Albert
 
       //! number of grid entities per level and codim
       int size (int level, int codim) ;
-
-      int size (int level, int codim) const
-      {
-        return const_cast<AlbertGrid<dim,dimworld> *> (this)->size(level,codim);
-      }
+      int size (int level, int codim) const;
 
       //**********************************************************
       // End of Interface Methods

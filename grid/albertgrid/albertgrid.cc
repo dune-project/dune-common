@@ -491,12 +491,15 @@ namespace Dune
   inline Vec<dimworld,albertCtype>& AlbertGridElement<dim,dimworld>::
   global(const Vec<dim>& local)
   {
-    // Umrechnen von localen Koordinaten zu baryzentrischen Koordinaten
-    Vec<dim+1> tmp (1.0); // Wichtig, da tmp(0) = 1 - tmp(1)- ... -tmp(dim+1)
+    // only the dim first components are needed, because we don't use
+    // barycentric coordinates
+    Vec<dim+1,albertCtype> tmp;
     for(int i=0; i<dim; i++)
-      tmp(0) -= local.read(i);
-    for(int i=1; i<dim+1; i++)
-      tmp(i) = local.read(i-1);
+      tmp(i) = local.read(i);
+
+    tmp(dim) = 1.0;
+    for(int i=0; i<dim; i++)
+      tmp(dim) -= local.read(i);
 
     // globale Koordinaten ausrechnen
     globalCoord_ = globalBary(tmp);
@@ -532,12 +535,14 @@ namespace Dune
   inline Vec<dim>& AlbertGridElement<dim,dimworld>::
   local(const Vec<dimworld>& global)
   {
+    ALBERT REAL lambda[dim+1];
+
     Vec<dim+1,albertCtype> tmp = localBary(global);
 
     // Umrechnen von baryzentrischen localen Koordinaten nach
     // localen Koordinaten,
     for(int i=0; i<dim; i++)
-      localCoord_(i) = tmp(i+1);
+      localCoord_(i) = tmp(i);
 
     return localCoord_;
   }
@@ -564,7 +569,7 @@ namespace Dune
     ALBERT REAL *v = NULL;
 
     /*
-     * wir haben das gleichungssystem zu loesen:
+     * we got to solve the problem :
      */
     /*
      * ( q1x q2x ) (lambda1) = (qx)
@@ -573,7 +578,7 @@ namespace Dune
      * ( q1y q2y ) (lambda2) = (qy)
      */
     /*
-     * mit qi=pi-p3, q=global-p3
+     * with qi=pi-p3, q=global-p3
      */
 
     v = static_cast<ALBERT REAL *> (elInfo_->coord[0]);
@@ -616,11 +621,11 @@ namespace Dune
     Vec<dim+1,albertCtype> lambda;
     int j, k;
 
-    //! wir haben das gleichungssystem zu loesen:
+    //! we got to solve the problem :
     //! ( q1x q2x q3x) (lambda1) (qx)
     //! ( q1y q2y q3y) (lambda2) = (qy)
     //! ( q1z q2z q3z) (lambda3) (qz)
-    //! mit qi=pi-p3, q=xy-p3
+    //! with qi=pi-p3, q=xy-p3
 
     for (int j = 0; j < dimworld; j++)
     {
@@ -728,6 +733,7 @@ namespace Dune
     return ret;
   }
 
+#if 0
   template< int dim, int dimworld>
   inline Vec<dimworld,albertCtype>& AlbertGridElement<dim,dimworld>::
   unit_outer_normal()
@@ -785,6 +791,7 @@ namespace Dune
     return outerNormal_;
   }
 
+#endif
 
 #if 0
   //************************************************************************
@@ -1107,94 +1114,6 @@ namespace Dune
     edgeEntity_ = NULL;
   }
 
-#if 0
-  //****************************************
-  //
-  //  specialization of count and entity
-  //
-  //****************************************
-  // specialization for codim == 2 , edges
-  template <>
-  inline int AlbertGridEntity<0,3,3>::count<2> ()
-  {
-    // number of edges of a tetrahedron
-    return 6;
-  }
-
-  //****************************
-  // the vertex entitys
-  template <>
-  inline AlbertGridLevelIterator<2,2,2>& AlbertGridEntity <0,2,2>::
-  entity<2> ( int i)
-  {
-    vxEntity_.virtualEntity_.setElInfo(elInfo_,elInfo_->el->dof[i][0],0,0,i);
-    return vxEntity_;
-  }
-  template <>
-  inline AlbertGridLevelIterator<3,3,3>& AlbertGridEntity <0,3,3>::
-  entity<3> ( int i)
-  {
-    vxEntity_.virtualEntity_.setElInfo(elInfo_,elInfo_->el->dof[i][0],0,0,i);
-    return vxEntity_;
-  }
-
-  //*********************
-  // the face access
-  template <>
-  inline AlbertGridLevelIterator<1,2,2>& AlbertGridEntity <0,2,2>::
-  entity<1> ( int i)
-  {
-    std::cout << "Not checked yet! \n";
-    if(!faceEntity_)
-    {
-      faceEntity_ = new AlbertGridLevelIterator<1,2,2>
-                      ( grid_ , elInfo_,index(),i,0,0 );
-      return (*faceEntity_);
-    }
-
-    faceEntity_->virtualEntity_.setElInfo(elInfo_,index(),i,0,0);
-    return (*faceEntity_);
-  }
-
-  template <>
-  inline AlbertGridLevelIterator<1,3,3>& AlbertGridEntity <0,3,3>::
-  entity<1> ( int i)
-  {
-    std::cout << "Not checked yet! \n";
-    if(!faceEntity_)
-    {
-      faceEntity_ = new AlbertGridLevelIterator<1,3,3>
-                      ( grid_ , elInfo_,index(),i,0,0 );
-      return (*faceEntity_);
-    }
-
-    faceEntity_->virtualEntity_.setElInfo(elInfo_,index(),i,0,0);
-    return (*faceEntity_);
-  }
-  //*********************
-  // the edge access, only for dim == 3
-  template <>
-  inline AlbertGridLevelIterator<2,3,3>& AlbertGridEntity <0,3,3>::
-  entity<2> ( int i)
-  {
-    printf("Entity::entity<codim = %d>: Warning elNum may be not correct! \n",2);
-    if(!edgeEntity_)
-    {
-      edgeEntity_ = new AlbertGridLevelIterator<2,3,3>
-                      ( grid_ , NULL , 0,0,0,0);
-    }
-
-    if(i < 3)
-    { // 0,1,2
-      edgeEntity_->virtualEntity_.setElInfo(elInfo_,index(),0,i,0);
-    }
-    else
-    { // 3,4,5
-      edgeEntity_->virtualEntity_.setElInfo(elInfo_,index(),i-2,1,0);
-    }
-    return (*edgeEntity_);
-  }
-#endif
   template <int dim, int dimworld>
   inline AlbertGridLevelIterator<1,dim,dimworld>& AlbertGridEntity <0,dim,dimworld>::
   faceEntity ( int i)
@@ -1214,6 +1133,10 @@ namespace Dune
   inline AlbertGridLevelIterator<2,dim,dimworld>& AlbertGridEntity <0,dim,dimworld>::
   edgeEntity ( int i)
   {
+    // check whether dim == 3 or not, because this method is only for
+    // dim == 3 and codim == 2
+    CompileTimeChecker<dim == 3> edgeEntity_only_for_dim_equal_3;
+
     printf("Entity::entity<codim = %d>: Warning elNum may be not correct! \n",2);
     if(!edgeEntity_)
     {
@@ -1291,15 +1214,16 @@ namespace Dune
   inline AlbertGridLevelIterator<0,dim,dimworld>
   AlbertGridEntity < 0, dim ,dimworld >::father()
   {
-    ALBERT TRAVERSE_STACK travStack;
-    initTraverseStack(&travStack);
+    ALBERT EL_INFO * fatherInfo = NULL;
+    // if level <= 0 return father = this entity
+    if(elInfo_->level <= 0)
+      fatherInfo = &travStack_->elinfo_stack[travStack_->stack_used-1];
+    else
+      fatherInfo = elInfo_;
 
-    travStack = (*travStack_);
-
-    travStack.stack_used--;
-
+    // new LevelIterator with EL_INFO one level above
     AlbertGridLevelIterator <0,dim,dimworld>
-    it(travStack.elinfo_stack+travStack.stack_used);
+    it(grid_,fatherInfo,grid_.indexOnLevel<0>(fatherInfo->el->index,fatherInfo->level),0,0,0);
     return it;
   }
 
@@ -1307,7 +1231,15 @@ namespace Dune
   inline AlbertGridElement<dim,dim>&
   AlbertGridEntity < 0, dim ,dimworld >::father_relative_local()
   {
-    std::cout << "\nfather_realtive_local not implemented yet! \n";
+    //AlbertGridLevelIterator<0,dim,dimworld> daddy = father();
+    AlbertGridElement<dim,dimworld> daddy = (*father()).geometry();
+
+    fatherReLocal_.initGeom();
+    // compute the local coordinates in father refelem
+    for(int i=0; i<fatherReLocal_.corners(); i++)
+      fatherReLocal_[i] = daddy.local(geometry()[i]);
+
+    std::cout << "\nfather_realtive_local not tested yet! \n";
     return fatherReLocal_;
   }
 
@@ -2536,9 +2468,15 @@ namespace Dune
 
 
   template < int dim, int dimworld >
-  inline int AlbertGrid < dim, dimworld >::maxlevel()
+  inline int AlbertGrid < dim, dimworld >::maxlevel() const
   {
     return maxlevel_;
+  }
+
+  template < int dim, int dimworld >
+  inline int AlbertGrid < dim, dimworld >::size (int level, int codim) const
+  {
+    return const_cast<AlbertGrid<dim,dimworld> *> (this)->size(level,codim);
   }
 
   template < int dim, int dimworld >
