@@ -1820,24 +1820,21 @@ namespace Dune
     enum { dim = 3 };
     // rechne Kreuzprodukt der Vectoren aus
     ALBERT REAL_D *coord = elInfo_->coord;
-    Vec<3,albertCtype> v;
-    Vec<3,albertCtype> u;
-    const albertCtype val = 0.5;
+
+    // in this case the orientation is negative, therefore multiply with -1
+    const albertCtype val = (elInfo_->orientation > 0) ? 0.5 : -0.5;
 
     // neighborCount_ is the local face number
     const int * localFaces = ALBERT AlbertHelp::localTetraFaceNumber[neighborCount_];
     for(int i=0; i<dim; i++)
     {
-      v(i) =   coord[localFaces[1]][i] - coord[localFaces[0]][i];
-      u(i) =   coord[localFaces[2]][i] - coord[localFaces[1]][i];
-
-      //v(i) = coord[(neighborCount_+2)%4][i] - coord[(neighborCount_+1)%4][i];
-      //u(i) = coord[(neighborCount_+3)%4][i] - coord[(neighborCount_+2)%4][i];
+      tmpV_(i) = coord[localFaces[1]][i] - coord[localFaces[0]][i];
+      tmpU_(i) = coord[localFaces[2]][i] - coord[localFaces[1]][i];
     }
 
     // outNormal_ has length 3
     for(int i=0; i<dim; i++)
-      outNormal_(i) = u((i+1)%dim)*v((i+2)%dim) - u((i+2)%dim)*v((i+1)%dim);
+      outNormal_(i) = tmpU_((i+1)%dim) * tmpV_((i+2)%dim) - tmpU_((i+2)%dim) * tmpV_((i+1)%dim);
 
     outNormal_ *= val;
     return outNormal_;

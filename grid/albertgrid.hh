@@ -864,6 +864,10 @@ namespace Dune
 
     Vec<dimworld,albertCtype> outNormal_;
 
+    // tmp memory for normal calculation
+    Vec<dimworld,albertCtype> tmpU_;
+    Vec<dimworld,albertCtype> tmpV_;
+
   };
 
 
