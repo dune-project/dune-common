@@ -63,6 +63,15 @@ namespace Dune {
       return z;
     }
 
+    //! matrix/vector multiplication with vector stored in matrixform
+    Mat<n,1,T> mult_vector (const Mat<n,1,T>& x)
+    {
+      Mat<n,1,T> z(0.0);
+      for (int j=0; j<m; j++)
+        for (int i=0; i<n; i++) z(i,0) += a[j](i) * x(j,0);
+      return z;
+    }
+
     //! matrix/vector multiplication with transpose of matrix
     Vec<m,T> mult_t (const Vec<n,T>& x) const
     {
