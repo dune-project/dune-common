@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <string>
 #include <rpc/rpc.h>
+#include <assert.h>
 
 namespace Dune
 {
@@ -329,8 +330,7 @@ namespace Dune
   template <class T>
   inline T& Array<T>::operator[] (int i)
   {
-    assert(i>=0);
-    assert(i<size());
+    assert( ((i<0) || (i>=size()) ? (std::cout << std::endl << i << " i|size " << size() << std::endl, 0) : 1));
     return p[i];
   }
 
