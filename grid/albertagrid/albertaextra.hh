@@ -1079,45 +1079,11 @@ namespace AlbertHelp
     if(elf->level <= 0) return;
 
     assert(el && papi);
-    //assert(AlbertHelp_processor >= 0);
-
-    // don't change the macro level, because there we need the owner info
-    /*
-       if(!(el->child[0]))
-       {
-       AlbertLeafData *ldata = (AlbertLeafData *) el->child[1];
-       assert(ldata != NULL);
-       int processor = ldata->processor;
-       }
-     */
     GET_DOF_VEC(vec,elOwner);
 
-    //int proc     = vec[el->dof[k][nv]];
     int papiProc = vec[papi->dof[k][nv]];
     vec[el->dof[k][nv]] = papiProc;
-
-    /*
-       if(papiProc < 0)
-       {
-       vec[el->dof[k][nv]] = -1;
-       return ;
-       }
-
-       //printf("proc %d \n",proc);
-
-       if((proc == processor) || (proc < 0)) return;
-
-       for(int i=0; i<N_NEIGH; i++)
-       {
-       EL * nb = NEIGH(el,elf)[i];
-       if(nb)
-       {
-        if(vec[nb->dof[k][nv]] == processor)
-          return;
-       }
-       }
-       vec[el->dof[k][nv]] = -1;
-     */
+    return ;
   }
 
   // remember on which level an element realy lives
@@ -1128,6 +1094,7 @@ namespace AlbertHelp
     // see ALBERTA Doc page 72, traverse over all hierarchical elements
     mesh_traverse(mesh,-1, CALL_EVERY_EL_PREORDER|FILL_NEIGH,setElOwner);
     elOwner = 0;
+    return ;
   }
 
 } // end namespace AlbertHelp
