@@ -118,12 +118,12 @@ namespace Dune {
     //! The base function set will only work for quadratures which were
     //! registered
     template <class QuadratureType>
-    void registerQuadrature(const QuadratureType & quad);
+    void registerQuadrature(const QuadratureType & quad) const;
 
     //! Register face quadrature
     template <class QuadratureType, class EntityType>
     void registerQuadrature(const QuadratureType& quad,
-                            const EntityType& en);
+                            const EntityType& en) const;
 
   private:
     //- Local typedefs
@@ -151,13 +151,13 @@ namespace Dune {
     std::vector<BaseFunctionInterfaceType *> baseFunctionList_ ;
 
     //! map with cached values for base functions
-    RangeMap vals_;
+    mutable RangeMap vals_;
 
     //! map with cached values for base function gradients
-    JacobianMap grads_;
+    mutable JacobianMap grads_;
 
     //! map with cached values for face values of base functions
-    FaceMap faces_;
+    mutable FaceMap faces_;
 
   }; // end class CachingBaseFunctionSet
 

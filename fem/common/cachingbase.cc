@@ -82,6 +82,10 @@ CachingBaseFunctionSet<FunctionSpaceType >::
 values(int baseFunct, const QuadratureType& quad) const {
   ConstRangeMapIterator it = vals_.find(quad.getIdentifier());
 
+  if (it == vals_.end()) {
+    registerQuadrature(quad);
+    it = vals_.find(quad.getIdentifier());
+  }
   assert(it != vals_.end()); // Forgot to initialise with quadrature, eh?
   assert(baseFunct < numOfBaseFct_);
 
@@ -95,6 +99,10 @@ CachingBaseFunctionSet<FunctionSpaceType >::
 gradients(int baseFunct, const QuadratureType& quad) const {
   ConstJacobianMapIterator it = grads_.find(quad.getIdentifier());
 
+  if (it == grads_.end()) {
+    registerQuadrature(quad);
+    it = grads_.find(quad.getIdentifier());
+  }
   assert(it != grads_.end());
   assert(baseFunct < numOfBaseFct_);
 
@@ -118,7 +126,7 @@ faces(int faceIdx, int baseFct, const QuadratureType& quad) const {
 template <class FunctionSpaceType>
 template <class QuadratureType>
 void CachingBaseFunctionSet<FunctionSpaceType>::
-registerQuadrature( const QuadratureType &quad )
+registerQuadrature( const QuadratureType &quad ) const
 {
   // check if quadrature is already registered
   int identifier = quad.getIdentifier();
@@ -156,7 +164,7 @@ registerQuadrature( const QuadratureType &quad )
 template <class FunctionSpaceType>
 template <class QuadratureType, class EntityType>
 void CachingBaseFunctionSet<FunctionSpaceType>::
-registerQuadrature(const QuadratureType &quad, const EntityType& en) {
+registerQuadrature(const QuadratureType &quad, const EntityType& en) const {
   //- Local typedefs
   typedef typename EntityType::IntersectionIterator IntersectionIterator;
 
