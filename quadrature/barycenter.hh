@@ -13,7 +13,8 @@
 namespace Dune {
 
   /*********************************************************************/
-  /** \brief  Quadrature for barycenter of the faces of one element
+  /** \brief  %Quadrature for barycenter of the faces of one element
+   * \ingroup Quadrature
    *
    * Supported element types are
    * lines, triangles, quadrilaterals, tetrahedrons, hexahedrons

@@ -29,9 +29,8 @@ namespace Dune {
   //************************************************************************
 
   /** @defgroup Quadrature Quadrature
-     @ingroup DiscreteFunction
-     This is the interface for qaudratures. It contains three methods,
-     namely for geting the number of quadrature points, the quadrature points
+     This is the interface for quadratures. It contains three methods,
+     namely for getting the number of quadrature points, the quadrature points
      and the quadrature weights.
 
      @{

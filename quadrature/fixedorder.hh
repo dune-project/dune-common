@@ -19,13 +19,14 @@ namespace Dune {
   //
   //**************************************************************************
 
-  /** \brief Quadrature class using the order as template-parameter
+  /** \brief %Quadrature class using the order as template-parameter
+   * \ingroup Quadrature
 
    * Class to create a quadrature-object returning a number of
    * Quadrature points. Needs a RangeType (type of the quadrature
    * weight), a DomainType (type of local coordinates) and a polynomial
    * order as template parameter. The constructor expects an
-   * Codim-0-Entity (Element) as parameter or a ElementType such as triangle
+   * Codim-0-Entity (Element) as parameter or an ElementType such as triangle
    * or hexahedron.
 
    * With this class the quadratures are created as templates, whereas
@@ -142,10 +143,11 @@ namespace Dune {
   //
   //  --Quadrature
   /**
-   * \brief Quadrature class where the quadrature order can be choosen
-   * dynamicaly.
+   * \brief %Quadrature class where the quadrature order can be chosen
+   * dynamically.
+   * \ingroup Quadrature
 
-   * Quadrature is different for different Domain and RangeField types and of
+   * %Quadrature is different for different Domain and RangeField types and of
    * course for different element types but for dynamical polynomial order.
    * The element type comes from a given entity or the grid
    * and polOrd is given at runtime. For fast quadratures use the
