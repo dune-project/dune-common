@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include <dune/istl/indexset.hh>
 #include <dune/istl/remoteindices.hh>
+#include <algorithm>
 #include "mpi.h"
 
 enum GridFlags {
@@ -14,14 +15,16 @@ void testIndices()
   using namespace Dune;
 
   // The global grid size
-  const int N = 10;
+  const int Nx = 20;
+  const int Ny = 2;
+
   // Process configuration
   int procs, rank;
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // The local grid
-  int n = N/procs;
+  int nx = Nx/procs;
   // distributed indexset
   //  typedef ParallelLocalIndex<GridFlags> LocalIndexType;
 
@@ -30,52 +33,62 @@ void testIndices()
   IndexSet<int,ParallelLocalIndex<GridFlags> >* globalIndexSet;
 
   // Set up the indexsets.
-  int start = rank*n;
-  int end = (rank + 1) * n;
+  int start = std::max(rank*nx-1,0);
+  int end = std::min((rank + 1) * nx+1, Nx);
 
   distIndexSet.beginResize();
 
-  for(int i=start; i<end; i++)
-    for(int j=start; j<end; j++) {
-      bool isPublic = true|| (i==start)||(i==end)||(j==start)||(j==end);
+  int localIndex=0;
+
+  for(int j=0; j<Ny; j++)
+    for(int i=start; i<end; i++) {
+      bool isPublic = (i<=start+1)||(i>=end-2);
       GridFlags flag = owner;
 
-      if((i==start && i!=0)||(i==end && i!=N-1)
-         ||(j==start && j==0)||(j==end && j!=N-1))
+      if((i==start && i!=0)||(i==end-1 && i!=Nx-1))
         flag = overlap;
 
-
-
-      distIndexSet.add(i*N+j, ParallelLocalIndex<GridFlags> (flag,isPublic));
+      distIndexSet.add(i+j*Nx, ParallelLocalIndex<GridFlags> (localIndex++,flag,isPublic));
     }
 
   distIndexSet.endResize();
 
-  // build global indexset on first process
+  // Build remote indices
+  /*  RemoteIndices<int,GridFlags> distRemote(distIndexSet,
+                                          distIndexSet, MPI_COMM_WORLD);
+     std::cout<<rank<<": "<<distRemote<<std::endl;
+     std::cout<< rank<<": Finished!"<<std::endl;
+   */
   if(rank==0) {
+    // build global indexset on first process
     globalIndexSet = new IndexSet<int,ParallelLocalIndex<GridFlags> >();
     globalIndexSet->beginResize();
-    for(int i=0; i<N; i++)
-      for(int j=0; j<N; j++)
-        globalIndexSet->add(i*N+j, ParallelLocalIndex<GridFlags> (owner,false));
+    for(int j=0; j<Ny; j++)
+      for(int i=0; i<Nx; i++)
+        globalIndexSet->add(i+j*Nx, ParallelLocalIndex<GridFlags> (i+j*Nx,owner,false));
     globalIndexSet->endResize();
-  }
-
-  // Build remote indices
-  RemoteIndices<int,GridFlags> distRemote(distIndexSet,
-                                          distIndexSet, MPI_COMM_WORLD);
-  if(rank==0) {
+    std::cout<<std::flush;
+    std::cout<< rank<<": distributed and global index set!"<<std::endl;
     RemoteIndices<int,GridFlags> crossRemote(distIndexSet,
                                              *globalIndexSet, MPI_COMM_WORLD);
+    std::cout << crossRemote;
+
     delete globalIndexSet;
-  }else
+  }else{
+    std::cout<< rank<<": distributed and global index set!"<<std::endl;
     RemoteIndices<int,GridFlags> distRemote(distIndexSet,
                                             distIndexSet, MPI_COMM_WORLD);
+  }
 }
+
 
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
+#ifdef DEBUG
+  bool wait=1;
+  while(wait) ;
+#endif
   testIndices();
   MPI_Finalize();
 }

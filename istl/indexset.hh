@@ -520,7 +520,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   IndexSet<TG,TL,N>::IndexSet()
-    : state_(GROUND), noPublic_(0), seqNo_(0)
+    : state_(GROUND), seqNo_(0), noPublic_(0)
   {}
 
   template<class TG, class TL, int N>

@@ -8,6 +8,7 @@
 #include <dune/common/sllist.hh>
 #include <map>
 #include <utility>
+#include <iostream>
 #include <dune/istl/mpitraits.hh>
 #include "mpi.h"
 
@@ -34,14 +35,22 @@ namespace Dune {
     /**
      * @brief Constructor.
      *
-     * The local index will be initialized to 0.
-     * @param globalIndex The global index.
+     * @param localIndex The local index.
      * @param attribute The attribute of the index.
      * @param isPublic True if the index might also be
      * known to other processes.
      */
     ParallelLocalIndex(const AttributeType& attribute, bool isPublic);
 
+    /**
+     * @brief Constructor.
+     *
+     * The local index will be initialized to 0.
+     * @param attribute The attribute of the index.
+     * @param isPublic True if the index might also be
+     * known to other processes.
+     */
+    ParallelLocalIndex(uint32_t localIndex, const AttributeType& attribute, bool isPublic);
     /**
      * @brief Parameterless constructor.
      *
@@ -64,7 +73,7 @@ namespace Dune {
      * @brief Get the attribute of the index.
      * @return The associated attribute.
      */
-    inline const AttributeType& attribute() const;
+    inline const AttributeType attribute() const;
 
     /**
      * @brief Set the attribute of the index.
@@ -151,6 +160,12 @@ namespace Dune {
   template<typename T1, typename T2>
   class RemoteIndices;
 
+  template<typename T1, typename T2>
+  class RemoteIndex;
+
+  template<typename T1, typename T2>
+  std::ostream& operator<<(std::ostream& os, const RemoteIndex<T1,T2>& index);
+
   /**
    * @brief Information about an index residing on another processor.
    */
@@ -158,6 +173,8 @@ namespace Dune {
   class RemoteIndex
   {
     friend class RemoteIndices<T1,T2>;
+    friend std::ostream& operator<<<>(std::ostream& os, const RemoteIndex<T1,T2>& index);
+
   public:
     /**
      * @brief the type of the global index.
@@ -183,14 +200,14 @@ namespace Dune {
      * @brief Get the attribute of the index on the remote process.
      * @return The remote attribute.
      */
-    const AttributeType& getAttribute() const;
+    const AttributeType attribute() const;
 
     /**
-     * @brief Get the corresponding local index.
-     * @return The corresponding local index.
+     * @brief Get the corresponding local index pair.
+     * @return The corresponding local index pair.
      */
 
-    const PairType& getLocalIndex() const;
+    const PairType& localIndexPair() const;
 
     /**
      * @brief Parameterless Constructor.
@@ -204,8 +221,8 @@ namespace Dune {
      * @param attribute The attribute of the index on the remote processor.
      * @param local The corresponding local index.
      */
-    RemoteIndex(const T1& global, const T2& attribute,
-                const PairType& local);
+    RemoteIndex(const T2& attribute,
+                const PairType* local);
 
 
     /** @brief The corresponding local index for this process. */
@@ -215,11 +232,16 @@ namespace Dune {
     char attribute_;
   };
 
+  template<class TG, class TA>
+  std::ostream& operator<<(std::ostream& os, const RemoteIndices<TG,TA>& indices);
+
   /**
    * @brief The indices present on remote processes.
    */
   template<class TG,class TA>
-  class RemoteIndices {
+  class RemoteIndices
+  {
+    friend std::ostream& operator<<<>(std::ostream& os, const RemoteIndices<TG,TA>& indices);
 
   public:
     /**
@@ -318,37 +340,16 @@ namespace Dune {
 
   };
 
-  /**
-   * @brief Information about an index on a remote process.
-   *
-   * Only used for temporary storing the information during
-   * RemoteIndices::rebuild.
-   */
-  template<typename T1, typename T2>
-  struct RemoteIndexInformation
-  {
-    /** @brief The type of the global index.*/
-    typedef T1 GlobalIndexType;
-    /** @brief The type of the attribute.*/
-    typedef T2 AttributeType;
-    /** @brief THe global index.*/
-    GlobalIndexType globalIndex_;
-    /** @brief The attribute on the remote process.*/
-    AttributeType attribute_;
-  };
-
-  template<typename T1, typename T2>
-  class MPITraits<RemoteIndexInformation<T1,T2> >
-  {
-  public:
-    inline static MPI_Datatype getType();
-  private:
-    static MPI_Datatype type;
-  };
-
   template<class T>
   ParallelLocalIndex<T>::ParallelLocalIndex(const T& attribute, bool isPublic)
     : localIndex_(0), attribute_(static_cast<char>(attribute)),
+      public_(static_cast<char>(isPublic)), state_(static_cast<char>(VALID))
+  {}
+
+
+  template<class T>
+  ParallelLocalIndex<T>::ParallelLocalIndex(uint32_t local, const T& attribute, bool isPublic)
+    : localIndex_(local), attribute_(static_cast<char>(attribute)),
       public_(static_cast<char>(isPublic)), state_(static_cast<char>(VALID))
   {}
 
@@ -368,9 +369,9 @@ namespace Dune {
    */
 
   template<class T>
-  inline const T& ParallelLocalIndex<T>::attribute() const
+  inline const T ParallelLocalIndex<T>::attribute() const
   {
-    return attribute_;
+    return T(attribute_);
   }
 
   template<class T>
@@ -468,33 +469,8 @@ namespace Dune {
   MPI_Datatype MPITraits<IndexPair<TG,ParallelLocalIndex<TA> > >::type=MPI_DATATYPE_NULL;
 
   template<typename T1, typename T2>
-  MPI_Datatype MPITraits<RemoteIndexInformation<T1,T2> >::getType()
-  {
-    if(type==MPI_DATATYPE_NULL) {
-      int length[4];
-      MPI_Aint disp[4];
-      MPI_Datatype types[4] = {MPI_LB, MPITraits<T1>::getType(),
-                               MPITraits<char>::getType(), MPI_UB};
-      RemoteIndexInformation<T1,T2> rep[2];
-      length[0]=length[1]=length[2]=length[3]=1;
-      MPI_Address(rep, disp); // lower bound of the datatype
-      MPI_Address(&(rep[0].globalIndex_), disp+1);
-      MPI_Address(&(rep[0].attribute_), disp+2);
-      MPI_Address(rep+1, disp+3); // upper bound od the datatype
-      for(int i=0; i < 4; i++)
-        disp[i] -= disp[0];
-      MPI_Type_struct(4, length, disp, types, &type);
-      MPI_Type_commit(&type);
-    }
-    return type;
-  }
-
-  template<typename T1, typename T2>
-  MPI_Datatype MPITraits<RemoteIndexInformation<T1,T2> >::type = MPI_DATATYPE_NULL;
-
-  template<typename T1, typename T2>
-  RemoteIndex<T1,T2>::RemoteIndex(const T1& global, const T2& attribute, const PairType& local)
-    : attribute_(attribute), localIndex_(&local)
+  RemoteIndex<T1,T2>::RemoteIndex(const T2& attribute, const PairType* local)
+    : localIndex_(local), attribute_(attribute)
   {}
 
 
@@ -504,13 +480,13 @@ namespace Dune {
   {}
 
   template<typename T1, typename T2>
-  inline const T2& RemoteIndex<T1,T2>::getAttribute() const
+  inline const T2 RemoteIndex<T1,T2>::attribute() const
   {
-    return attribute_;
+    return T2(attribute_);
   }
 
   template<typename T1, typename T2>
-  inline const IndexPair<T1,ParallelLocalIndex<T2> >& RemoteIndex<T1,T2>::getLocalIndex() const
+  inline const IndexPair<T1,ParallelLocalIndex<T2> >& RemoteIndex<T1,T2>::localIndexPair() const
   {
     return *localIndex_;
   }
@@ -529,24 +505,28 @@ namespace Dune {
   inline void RemoteIndices<TG,TA>::buildLocal()
   {
     //typedef typename IndexSetType::iterator const_iterator;
-    typedef Dune::ConstArrayListIterator<Dune::IndexPair<int, Dune::ParallelLocalIndex<TA> >, 100, std::allocator<Dune::IndexPair<int, Dune::ParallelLocalIndex<TA> > > > const_iterator;
+    typedef Dune::ConstArrayListIterator<Dune::IndexPair<int, Dune::ParallelLocalIndex<TA> >, 100,
+        std::allocator<Dune::IndexPair<int, Dune::ParallelLocalIndex<TA> > > > const_iterator;
 
     copyLocal_.clear();
 
     const_iterator sourceIndex = source_.begin(), destIndex = dest_.begin();
     const_iterator sourceEnd = source_.end(), destEnd = dest_.end();
+    int i=0;
 
     while(sourceIndex != sourceEnd && destIndex != destEnd) {
       if(destIndex->global() == sourceIndex->global()) {
         copyLocal_.push_back(std::make_pair(sourceIndex->local(), destIndex->local()));
         ++sourceIndex;
         ++destIndex;
+        ++i;
       }
       else if(destIndex->global() < sourceIndex->global())
         ++destIndex;
       else
         ++sourceIndex;
     }
+    std::cout << i<<" indices marked for copying!"<<std::endl;
   }
 
   template<class TG, class TA>
@@ -577,8 +557,9 @@ namespace Dune {
     int bufferSize;
     int position=0;
     int intSize;
+    MPI_Datatype type = MPITraits<PairType>::getType();
 
-    MPI_Pack_size(maxPublish, MPITraits<PairType>::getType(), comm_,
+    MPI_Pack_size(maxPublish, type, comm_,
                   &bufferSize);
     MPI_Pack_size(1, MPI_INT, comm_,
                   &intSize);
@@ -588,41 +569,43 @@ namespace Dune {
 
     // send mesages in ring
     for(int proc=1; proc<procs; proc++) {
+      // pointers to the current input and output buffers
+      char* p_out = buffer[1-(proc%2)];
+      char* p_in = buffer[proc%2];
+
       if(proc==1) {
         // fill with own indices
         typedef typename IndexSetType::const_iterator const_iterator;
         const_iterator end = source_.end();
 
         // first pack the number of indices we send
-        MPI_Pack(&publish, 1, MPI_INT, buffer[0], bufferSize, &position,
+        MPI_Pack(&publish, 1, MPI_INT, p_out, bufferSize, &position,
                  comm_);
 
         //Now pack the indices
-        const PairType* pair = myPairs[0];
+        int i=0;
         MPI_Datatype type = MPITraits<PairType>::getType();
+
         for(const_iterator index=source_.begin(); index != end; ++index)
           if(b || index->local().isPublic()) {
 
             MPI_Pack(const_cast<PairType*>(&(*index)), 1,
                      type,
-                     buffer[0], bufferSize, &position, comm_);
-            pair = &(*index);
-            ++pair;
+                     p_out, bufferSize, &position, comm_);
+            myPairs[i++] = const_cast<PairType*>(&(*index));
           }
+        assert(i==publish);
       }
 
-      char* p_out = buffer[1-(proc%2)];
-      char* p_in = buffer[proc%2];
-      int receiveCount=bufferSize;
       MPI_Status status;
 
       if(rank%2==0) {
         MPI_Ssend(p_out, position, MPI_PACKED, (rank+1)%procs,
                   commTag_, comm_);
-        MPI_Recv(p_in, receiveCount, MPI_PACKED, (rank+procs-1)%procs,
+        MPI_Recv(p_in, bufferSize, MPI_PACKED, (rank+procs-1)%procs,
                  commTag_, comm_, &status);
       }else{
-        MPI_Recv(p_in, receiveCount, MPI_PACKED, (rank+procs-1)%procs,
+        MPI_Recv(p_in, bufferSize, MPI_PACKED, (rank+procs-1)%procs,
                  commTag_, comm_, &status);
         MPI_Ssend(p_out, position, MPI_PACKED, (rank+1)%procs,
                   commTag_, comm_);
@@ -631,32 +614,53 @@ namespace Dune {
       // unpack the number of indices we received
       int noReceived;
       position=0;
-      MPI_Unpack(p_in, receiveCount, &position, &noReceived, 1, MPI_INT, comm_);
+      MPI_Unpack(p_in, bufferSize, &position, &noReceived, 1, MPI_INT, comm_);
+
       // The process these indices are from
       int remoteProc = (rank+procs-proc)%procs;
       SLList<RemoteIndex<GlobalIndexType,AttributeType> >& remoteIndices = remoteIndices_[remoteProc];
 
-      int pairIndex=0;
+      if(noReceived>0) {
+        PairType index;
+        MPI_Unpack(p_in, bufferSize, &position, &index, 1,
+                   type, comm_);
 
-      for(int i=0; i < noReceived; i++) {
-        RemoteIndexInformation<TG,TA> index;
-        MPI_Unpack(p_in, receiveCount, &position, &index, 1,
-                   MPITraits<RemoteIndexInformation<TG,TA> >::getType(), comm_);
+        int n_in=0, pairIndex=0;
+
         //Check if we know the global index
         while(pairIndex<publish) {
-          if(myPairs[pairIndex]->global()==index.globalIndex_) {
-            remoteIndices.push_back(RemoteIndex<TG,TA>());
-            break;
-          }else
+          if(myPairs[pairIndex]->global()==index.global()) {
+
+            remoteIndices.push_back(RemoteIndex<TG,TA>(index.local().attribute(), myPairs[pairIndex]));
             ++pairIndex;
+            // unpack next remote index
+            if((++n_in)<noReceived) {
+              MPI_Unpack(p_in, bufferSize, &position, &index, 1,
+                         type, comm_);
+            }else{
+              // No more received indices
+              break;
+            }
+          }else if (myPairs[pairIndex]->global()<index.global()) {
+            ++pairIndex;
+          }else{
+            // We do not know the index, unpack next
+            if((++n_in)<noReceived) {
+              MPI_Unpack(p_in, bufferSize, &position, &index, 1,
+                         type, comm_);
+            }else
+              // No more received indices
+              break;
+          }
         }
-        if(pairIndex==publish)
-          // no more global indices
-          break;
       }
-      if(remoteIndices.empty()==0)
+      if(remoteIndices.empty())
         remoteIndices_.erase(remoteProc);
     }
+    // delete allocated memory
+    delete[] myPairs;
+    delete[] buffer[0];
+    delete[] buffer[1];
   }
 
   template<class TG, class TA>
@@ -673,5 +677,47 @@ namespace Dune {
     return sourceSeqNo_==source_.seqNo() && destSeqNo_ ==dest_.seqNo();
   }
 
+  template<typename TG, typename TA>
+  inline std::ostream& operator<<(std::ostream& os, const RemoteIndex<TG,TA>& index)
+  {
+    os<<"[global="<<index.localIndexPair().global()<<",attribute="<<index.attribute()<<"]";
+    return os;
+  }
+
+  template<class TG, class TA>
+  inline std::ostream& operator<<(std::ostream& os, const RemoteIndices<TG,TA>& indices)
+  {
+    if(!indices.copyLocal_.empty()) {
+      typedef typename SLList<std::pair<int,int> >::const_iterator const_iterator;
+
+      const const_iterator end=indices.copyLocal_.end();
+      const_iterator pair=indices.copyLocal_.begin();
+      if(pair!=end) {
+
+        os<<"Copying local: ";
+
+        for(; pair !=end; ++pair)
+          os<<pair->first<<"->"<<pair->second<<", ";
+
+        os<<std::endl<<std::flush;
+      }
+
+    }
+    typedef SLList<RemoteIndex<TG,TA> > RList;
+    typedef typename std::map<int,RList>::const_iterator const_iterator;
+
+    const const_iterator rend = indices.remoteIndices_.end();
+
+    for(const_iterator rindex = indices.remoteIndices_.begin(); rindex!=rend; ++rindex) {
+      os<<"Prozess "<<rindex->first<<": ";
+      const typename RList::const_iterator end= rindex->second.end();
+
+      for(typename RList::const_iterator index = rindex->second.begin(); index != end; ++index)
+        os<<*index<<" ";
+      os<<std::endl<<std::flush;
+    }
+    return os;
+  }
 }
+
 #endif
