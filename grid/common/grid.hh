@@ -1151,14 +1151,12 @@ namespace Dune {
     //! write Grid with GridType file filename and time
     //! this method use the Grid Interface Method writeGrid
     //! is not the same
-    template <FileFormatType ftype>
-    bool grid2File ( const char * filename , ct time=0.0, int timestep=0,
-                     bool adaptive=false , int processor = 0);
+    bool write (const FileFormatType ftype, const char * filename , ct time=0.0, int timestep=0,
+                bool adaptive=false , int processor = 0);
 
     //! get Grid from file with time and timestep , return true if ok
-    template <FileFormatType ftype>
-    bool file2Grid ( const char * filename , ct & time , int timestep,
-                     bool adaptive= false, int processor=0 );
+    bool read ( const char * filename , ct & time , int timestep,
+                bool adaptive= false, int processor=0 );
 
   private:
     //! Barton-Nackman trick

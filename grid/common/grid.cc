@@ -3,6 +3,8 @@
 #ifndef __GRID_CC__
 #define __GRID_CC__
 
+#include "../../common/misc.hh"
+
 namespace Dune {
 
   //************************************************************************
@@ -106,8 +108,17 @@ namespace Dune {
   //  E L E M E N T  Default
   //***********************************************************************
 
+  template<int dim, int dimworld, class ct,template<int,int> class ElementImp>
+  inline Vec<dimworld,ct>& ElementDefault<dim,dimworld,ct,ElementImp>::
+  barycenter ()
+  {
+    baryCenter_ = 0.0;
+    for(int i=0; i<asImp().corners(); i++)
+      baryCenter_ += asImp().operator [] (i);
 
-
+    baryCenter_ *= fraction (asImp().corners());
+    return baryCenter_;
+  }
   //************************************************************************
   // N E I G H B O R I T E R A T O R
   //************************************************************************
@@ -906,27 +917,37 @@ namespace Dune {
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  template <FileFormatType ftype>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  grid2File ( const char * filename , ct time, int timestep,
-              bool adaptive, int processor)
+  write ( const FileFormatType ftype, const char * filename , ct time, int timestep,
+          bool adaptive, int processor)
   {
     const char *fn;
     const char *path = NULL;
     std::fstream file (filename,std::ios::out);
-    file << asImp().type() << "   #GridType \n";
+    file << asImp().type() << " " << ftype;
 
     fn = genFilename(path,filename,timestep);
     file.close();
-    return asImp().writeGrid<ftype>(fn,time);
+    switch (ftype)
+    {
+    case xdr  :   return asImp().writeGrid<xdr>(fn,time);
+    case ascii :   return asImp().writeGrid<ascii>(fn,time);
+    case pgm  :   return asImp().writeGrid<pgm>(fn,time);
+    default :
+    {
+      std::cerr << ftype << " FileFormatType not supported at the moment! \n";
+      abort();
+      return false;
+    }
+    }
+    return false;
   } // end grid2File
 
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
-  template <FileFormatType ftype>
   inline bool GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
-  file2Grid ( const char * filename , ct & time, int timestep ,
-              bool adaptive, int processor )
+  read ( const char * filename , ct & time, int timestep ,
+         bool adaptive, int processor )
   {
     const char * fn;
     std::fstream file (filename,std::ios::in);
@@ -941,11 +962,27 @@ namespace Dune {
       abort();
     }
 
+    file >> helpType;
+    FileFormatType ftype = (FileFormatType) helpType;
+
     const char *path = NULL;
     fn = genFilename(path,filename,timestep);
     printf("Read file: filename = `%s' \n",fn);
     file.close();
-    return asImp().readGrid<ftype>(fn,time);
+
+    switch (ftype)
+    {
+    case xdr  :   return asImp().readGrid<xdr>  (fn,time);
+    case ascii :   return asImp().readGrid<ascii>(fn,time);
+    case pgm  :   return asImp().readGrid<pgm>  (fn,time);
+    default :
+    {
+      std::cerr << ftype << " FileFormatType not supported at the moment! \n";
+      abort();
+      return false;
+    }
+    }
+    return false;
   } // end file2Grid
 
 
