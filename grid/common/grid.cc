@@ -862,7 +862,7 @@ namespace Dune {
   inline int EntityDefault <0,dim,dimworld,ct,EntityImp,ElementImp,LevelIteratorImp,IntersectionIteratorImp,HierarchicIteratorImp>::subIndex (int i)
   {
     // return index of sub Entity number i
-    return (asImp().entity<cc>(i))->index();
+    return (asImp().template entity<cc>(i))->index();
   }
 
 
@@ -1112,6 +1112,7 @@ namespace Dune {
   // G R I D Default
   //************************************************************************
 
+  // return LeafIterator pointing to first leaf entity of maxlevel
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline typename GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::LeafIterator
@@ -1139,7 +1140,7 @@ namespace Dune {
           bool adaptive, int processor)
   {
     const char *fn;
-    const char *path = NULL;
+    const char *path = 0;
     std::fstream file (filename,std::ios::out);
     file << asImp().type() << " " << ftype;
 
@@ -1176,13 +1177,14 @@ namespace Dune {
     if(type != asImp().type())
     {
       std::cerr << "Cannot read different GridIdentifier!\n";
+      assert(type == asImp().type());
       abort();
     }
 
     file >> helpType;
     FileFormatType ftype = (FileFormatType) helpType;
 
-    const char *path = NULL;
+    const char *path = 0;
     fn = genFilename(path,filename,timestep);
     printf("Read file: filename = `%s' \n",fn);
     file.close();
@@ -1212,17 +1214,14 @@ namespace Dune {
       template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
   LeafIterator::LeafIterator (GridType &grid, int maxlevel, bool end) :
-    it_ (NULL) , endit_ (NULL) , hierit_(NULL) , endhierit_(NULL)
-    , en_ (NULL) , goNextMacroEntity_(false) , built_(false)
+    it_ (0) , endit_ (0) , hierit_(0) , endhierit_(0)
+    , en_ (0) , goNextMacroEntity_(false) , built_(false)
     , useHierarchic_ (false) , end_ ( end ) , maxLev_ ( maxlevel )
   {
     if(!end_)
     {
       it_    = new LevelIterator ( grid.template lbegin<0>( 0 ) );
       endit_ = new LevelIterator ( grid.template lend<0>( 0 ) );
-
-      hierit_ = NULL;
-      endhierit_ = NULL;
 
       goNextMacroEntity_ = false;
       built_ = false;
@@ -1254,6 +1253,18 @@ namespace Dune {
       }
     }
   } // end Constructor LeafIterator
+
+  // Desctructor
+  template< int dim, int dimworld, class ct, template<int,int> class GridImp,
+      template<int,int,int,PartitionIteratorType> class LevelIteratorImp, template<int,int,int> class EntityImp>
+  inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
+  LeafIterator::~LeafIterator ()
+  {
+    if(it_) delete it_;
+    if(endit_) delete endit_;
+    if(hierit_) delete hierit_;
+    if(endhierit_) delete endhierit_;
+  }
 
   // operator ++, i.e. goNextEntity
   template< int dim, int dimworld, class ct, template<int,int> class GridImp,
@@ -1333,7 +1344,7 @@ namespace Dune {
       if( it_[0] == endit_[0] )
       {
         end_ = true;
-        return NULL;
+        return 0;
       }
 
       ++it_[0];
@@ -1341,7 +1352,7 @@ namespace Dune {
       if( it_[0] == endit_[0] )
       {
         end_ = true;
-        return NULL;
+        return 0;
       }
 
       en_ = & (*it_[0]);
@@ -1363,10 +1374,10 @@ namespace Dune {
         {
           built_ = false;
           goNextMacroEntity_ = true;
-          delete hierit_;
-          delete endhierit_;
+          delete hierit_;    hierit_ = 0;
+          delete endhierit_; endhierit_ = 0;
 
-          en_ = NULL;
+          en_ = 0;
 
           return goNextEntity();
         }
@@ -1386,7 +1397,7 @@ namespace Dune {
 
     return en_;
   }
-
+  // end class LeafIterator
 
 
 } // end namespace Dune
