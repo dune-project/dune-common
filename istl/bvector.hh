@@ -255,7 +255,8 @@ namespace Dune {
     }
 
     //! copy constructor
-    BlockVector (const BlockVector& a)
+    BlockVector (const BlockVector& a) :
+      block_vector_unmanaged<B,A>(a)
     {
       // allocate memory with same size as a
       this->n = a.n;
