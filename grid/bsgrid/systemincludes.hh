@@ -18,6 +18,10 @@
 #include <limits.h>
 #include <time.h>
 
+#ifdef _BSGRID_PARALLEL_
+#include <mpi.h>
+#endif
+
 #include <rpc/rpc.h>
 
 #ifdef _ANSI_HEADER
@@ -34,6 +38,7 @@
   #include <deque>
   #include <stack>
   #include <map>
+  #include <numeric>
 #else
   #include <memory.h>
   #include <iostream.h>
@@ -50,6 +55,13 @@
   #include <map.h>
 #endif
 
+#ifdef _BSGRID_PARALLEL_
+// partitioning libs
+extern "C" {
+#include <metis.h>
+}
+#include <party_lib.h>
+#endif
 
 
 #endif
