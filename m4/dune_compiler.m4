@@ -14,6 +14,11 @@ SUPPORTED_COMPILER="gcc (>= 3.4.1) or icc (>= 7.0)"
 
 AC_REQUIRE([AC_PROG_CXX])
 cat >conftest.cc <<_ACEOF
+#ifdef __xlC__
+  #if __xlC__ >= 0x0600
+    #define CXX_SUPPORTED
+  #endif
+#endif
 #ifdef __ICC
   #if __ICC >= 700
     #define CXX_SUPPORTED
