@@ -186,7 +186,16 @@ namespace Dune
   /**
    * @brief A Tuple of objects.
    *
-   * A maximum of 9 objects is suported.
+   * A maximum of 9 objects is supported.
+   *
+   * Use the following construction to access the individual elements.
+     \code
+      Tuple<std::string, float*, int> my_tuple;
+
+      std:string s = Element<0>::get(my_tuple);
+      float      p = Element<1>::get(my_tuple);
+      int        i = Element<0>::get(my_tuple);
+     \endcode
    */
   template<typename T1, typename T2 = Nil, typename T3 = Nil,
       typename T4 = Nil, typename T5 = Nil,typename T6 = Nil,
