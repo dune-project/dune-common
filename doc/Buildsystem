@@ -1,0 +1,253 @@
+Using the DUNE build-system
+===========================
+
+Overview
+--------
+
+ 1. Rationale (why the autotools?)
+
+ 2. small Makefile.am tutorial
+
+ 3. How do I... (recipes for common actions)
+
+
+Rationale
+---------
+
+[obviously needs text]
+
+- we need platform independent build
+
+- check which features are present -> autoconf
+
+- build libraries on all platforms -> libtool
+
+- create portable but flexible Makefiles -> automake
+
+
+
+small Makefile.am tutorial
+--------------------------
+
+Building programs
+.................
+
+Let's start off with a simple program "hello" built from "hello.c". As
+automake is designed to build and install a package it needs to know
+
+ - what programs it should build
+
+ - where to put them when installing
+
+ - which sources to use
+
+The Makefile.am thus looks like this:
+
+ noinst_PROGRAMS = hello
+ hello_SOURCES = hello.c
+
+This would build hello and won't install it when "make install" is
+called. Using "bin_PROGRAMS" instead of "noinst_PROGRAMS" would install
+the hello-binary into a standard-"bin"-directory which we don't want
+to do with most of the DUNE-applications :)
+
+Building more programs with a couple of source-files works like this
+
+ noinst_PROGRAMS = hello bye
+
+ hello_SOURCES = common.c common.h hello.c 
+ bye_SOURCES = common.c common.h bye.c parser.y lexer.l
+
+automake has more integrated rules than the standard make, the example
+above would automatically use yacc/lex to create parser.c/lexer.c and
+build them into the "bye"-binary.
+
+Make-Variables may be defined and used as usual:
+
+ noinst_PROGRAMS = hello bye
+
+ COMMON = common.c common.h
+
+ hello_SOURCES = $(COMMON) hello.c 
+ bye_SOURCES = $(COMMON) bye.c parser.y lexer.l
+
+Even normal make-rules may be used in a Makefile.am
+
+
+
+Using flags
+...........
+
+Compiler/linker/preprocessor-flags can be set either globally:
+
+ noinst_PROGRAMS = hello bye
+
+ AM_CPPFLAGS = -DDEBUG
+
+ hello_SOURCES = hello.c 
+ bye_SOURCES = bye.c
+
+or locally:
+
+ noinst_PROGRAMS = hello bye
+
+ hello_SOURCES = hello.c 
+ hello_CPPFLAGS = -DHELLO
+
+ bye_SOURCES = bye.c
+ bye_CPPFLAGS = -DBYE
+
+The local setting overrides the global one, thus
+
+ hello_CPPFLAGS = $(AM_CPPFLAGS) -Dmyflags
+
+may be a good idea.
+
+It is even possible to compile the same sources with different flags:
+
+ noinst_PROGRAMS = hello bye
+
+ hello_SOURCES = generic-greeting.c
+ hello_CPPFLAGS = -DHELLO
+
+ bye_SOURCES = generic-greeting.c
+ bye_CPPFLAGS = -DBYE
+
+
+Perhaps you're wondering why the above examples used AM_CPPFLAGS
+instead of the normal CPPFLAGS? The reason for this is that the
+variables CFLAGS, CPPFLAGS, CXXFLAGS etc. are considered "user
+variables" which may be set on the commandline:
+
+  make CXXFLAGS="-O2000"
+
+This would override any settings in Makefile.am which might be
+necessary to build. Thus, if the variables should be set even if the
+user wishes to modify the values, you should use the AM_* version.
+
+The real compile-command always uses both AM_VAR and VAR. Options that
+autoconf finds are stored in the user variables (so that they may be
+overridden)
+
+Commonly used variables are:
+
+ AM_CPPFLAGS   flags for the C-Preprocessor. This includes
+               preprocessor-defines like -DNDEBUG and include-pathes
+               like -I/usr/local/package/include
+
+ AM_CFLAGS
+ AM_CXXFLAGS   flags for the compiler (-g, -O, ...). One difference
+               between these and the CPPFLAGS is that the linker will
+               get CFLAGS/CXXFLAGS and LDFLAGS but not CPPFLAGS
+
+ AM_LDFLAGS    options for the linker
+
+ LDADD         libraries to link to a binary
+
+ LIBADD        libraries to add to a library
+
+ SOURCES       list of source-files (may include headers as well)
+
+ 
+
+Conditional builds
+..................
+
+Some parts of DUNE only make sense if certain addon-packages were
+found. autoconf therefore defines "conditionals" which automake can
+use:
+
+  if OPENGL
+    PROGS = hello glhello
+  else
+    PROGS = hello
+  endif
+
+  hello_SOURCES = hello.c
+
+  glhello_SOURCES = glhello.c hello.c
+
+This will only build the "glhello"-program if OpenGL was found. An
+important feature of these conditionals is that they work with any
+make program, even those without a native "if"-construct like
+GNU-make.
+
+
+
+default targets
+...............
+
+An automake-generated Makefile does not only know the usual "all",
+"clean" and "install" targets but also
+
+  tags       travel recursively through the directories and create
+             TAGS-files which can be used in many editors to quickly
+             find where symbols/functions are defined (use emacs-format)
+
+  ctags      the same as "tags" but uses the vi-format for the
+             tags-files
+
+  dist       create a distribution tarball
+
+  distcheck  create a tarball and do a test-build if it really works
+
+
+
+3. How do I...
+--------------
+
+... set my favourite compiler-options?
+
+ As the Makefiles should work on any system you must not include
+ compiler-specific options into those. However there are two ways to
+ pass special flags to the compiler:
+
+ 1. use a .opts-file
+ 
+   You may copy gcc.opts or icc.opts to a different file, set
+   arbitrary compiler-commands/options and pass it to autogen.sh via
+   the --opts=OPTFILE parameter. This will add the options into your
+   Makefiles. This is the best way for global options you want to use
+   for developing.
+
+ 2. pass flags via commandline
+
+   If you want to use special flags locally or just for a couple of
+   builds you can set them as make-parameters, e.g.
+
+       make CXXFLAGS="-O5 -march=pentium2000"
+ 
+   This setting is recursively passed on into the subdirs. 
+
+
+... add new directories?
+
+  When you add a new directory you have to do the following:
+
+  1. create a Makefile.am in the new directory (e.g. by copying)
+
+  2. add the new directory to the SUBDIRS in the Makefile.am above so
+     that the full build enters the new location
+
+  3. add the new Makefile to the AC_CONFIG_FILES-section in
+     configure.ac in the applications base-directory so that autoconf
+     generates it
+
+  4. run ./autogen.sh
+
+  Now a "Makefile.in" and a "Makefile" should have appeared in the new
+  directory.
+
+
+... do stuff not mentioned in this document?
+
+ The "Autobook" contains many recipies on how to use the autotools. It
+ is available online on
+
+  http://sources.redhat.com/autobook/autobook/autobook_toc.html
+
+ Additionally, the info-pages of autoconf, automake and libtool
+ contain the reference documents for those tools.
+
+
+$Id$
