@@ -19,13 +19,16 @@ AC_DEFUN(DUNE_PATH_DUNE,
 
   # the usual option...
   AC_ARG_WITH(dune,
-    AC_HELP_STRING([--with-dune=PATH],[directory with Dune inside]),
-# expand tilde / other stuff
-    eval with_dune=$with_dune)
+    AC_HELP_STRING([--with-dune=PATH],[directory with Dune inside]))
 
 # is a directory set?
-  if test "x$with_dune" != x ; then
-    DUNEROOT=$with_dune
+  if test "x$with_dune" != x ; then        
+    if test -d $with_dune; then
+      # expand tilde / other stuff
+      DUNEROOT=`cd $with_dune && pwd`
+    else
+      AC_MSG_ERROR([directory $with_dune does not exist])
+    fi      
   else
     # set default path
     DUNEROOT=/usr/local/include/

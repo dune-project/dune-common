@@ -17,11 +17,7 @@ AC_DEFUN(DUNE_PATH_ALBERT,
   AC_REQUIRE([DUNE_DIMENSION])
 
   AC_ARG_WITH(albert,
-    AC_HELP_STRING([--with-albert=PATH],[directory with Albert inside]),
-dnl expand tilde / other stuff
-    eval with_albert=$with_albert)
-dnl extract absolute path
-dnl eval with_albert=`cd $with_albert ; pwd`
+    AC_HELP_STRING([--with-albert=PATH],[directory with Albert inside]))
 
 # also ask for elindex
   AC_ARG_WITH(albert_elindex,
@@ -37,7 +33,12 @@ ac_save_LIBS="$LIBS"
 
 # is --with-albert=bla used?
 if test x$with_albert != x ; then
-  ALBERTROOT="$with_albert"
+    if test -d $with_albert; then
+      # expand tilde / other stuff
+      ALBERTROOT=`cd $with_albert && pwd`
+    else
+      AC_MSG_ERROR([directory $with_albert does not exist])
+    fi      
 else
   # use some default value...
   ALBERTROOT="/usr/local/albert"

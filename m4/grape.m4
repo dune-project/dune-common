@@ -21,11 +21,7 @@ AC_DEFUN(DUNE_PATH_GRAPE,
   AC_REQUIRE([DUNE_PATH_OPENGL])
 
   AC_ARG_WITH(grape,
-    AC_HELP_STRING([--with-grape=PATH],[directory with Grape inside]),
-dnl expand tilde / other stuff
-    eval with_grape=$with_grape)
-dnl extract absolute path
-dnl eval with_grape=`cd $with_grape ; pwd`
+    AC_HELP_STRING([--with-grape=PATH],[directory with Grape inside]))
 
 if test "x$X_LIBS" != x ; then
   # store old values
@@ -37,7 +33,12 @@ if test "x$X_LIBS" != x ; then
 
   # is --with-grape=bla used?
   if test x$with_grape != x ; then
-    GRAPEROOT="$with_grape"
+    if test -d $with_grape; then
+      # expand tilde / other stuff
+      GRAPEROOT=`cd $with_grape && pwd`
+    else
+      AC_MSG_ERROR([directory $with_grape does not exist])
+    fi      
   else
     # set some kind of default grape-path...
     GRAPEROOT="/usr/local/grape/"
