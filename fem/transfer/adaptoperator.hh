@@ -4,6 +4,7 @@
 #define __DUNE_ADAPTOPERATORIMP_HH__
 
 #include <dune/common/array.hh>
+#include <dune/fem/common/objpointer.hh>
 
 namespace Dune {
 
