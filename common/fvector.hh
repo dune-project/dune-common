@@ -6,9 +6,7 @@
 #include <math.h>
 #include <complex>
 
-#ifdef DUNE_ISTL_WITH_CHECKING
-#include "istlexception.hh"
-#endif
+#include "exception.hh"
 
 /*! \file __FILE__
 
@@ -19,8 +17,8 @@
 namespace Dune {
 
   /** @defgroup ISTL Iterative Solvers Template Library
-              @addtogroup ISTL
-              @{
+          @addtogroup ISTL
+          @{
    */
 
   // forward declaration of template
@@ -309,13 +307,13 @@ namespace Dune {
   };
 
   /**! Construct a vector space out of a tensor product of fields.
-           K is the field type (use float, double, complex, etc) and n
-       is the number of components.
+         K is the field type (use float, double, complex, etc) and n
+         is the number of components.
 
-           It is generally assumed that K is a numerical type compatible with double
-       (E.g. norms are always computed in double precision).
+         It is generally assumed that K is a numerical type compatible with double
+         (E.g. norms are always computed in double precision).
 
-           Implementation of all members uses template meta programs where appropriate
+         Implementation of all members uses template meta programs where appropriate
    */
   template<class K, int SIZE>
   class FieldVector
@@ -368,7 +366,7 @@ namespace Dune {
     K& operator[] (int i)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+      if (i<0 || i>=n) DUNE_THROW(MathError,"index out of range");
 #endif
       return p[i];
     }
@@ -377,7 +375,7 @@ namespace Dune {
     const K& operator[] (int i) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+      if (i<0 || i>=n) DUNE_THROW(MathError,"index out of range");
 #endif
       return p[i];
     }
