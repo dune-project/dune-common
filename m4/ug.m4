@@ -90,27 +90,28 @@ all:
 EOF`
 }
 
-      echo Reading ug.conf...
+      if test x$HAVE_UG = x1 ; then
+          echo Reading ug.conf...
 
-      echo -n "UG-domain-module... "
-      UGCONFVAL="DOM_MODULE"
-      dune_ug_getopt
-      UGDOMAIN=$retval
-      echo $UGDOMAIN      
+          echo -n "UG-domain-module... "
+          UGCONFVAL="DOM_MODULE"
+          dune_ug_getopt
+          UGDOMAIN=$retval
+          echo $UGDOMAIN      
 
-      # the libs have a single character defining the domain
-      case "$UGDOMAIN" in
-	  STD_DOMAIN)  UGDCHAR=S ;;
-	  LGM_DOMAIN)  UGDCHAR=L ;;
-	  *)   AC_MSG_ERROR([I don't know this UG-domain-module!]) ;;
-      esac
+          # the libs have a single character defining the domain
+          case "$UGDOMAIN" in
+              STD_DOMAIN)  UGDCHAR=S ;;
+              LGM_DOMAIN)  UGDCHAR=L ;;
+              *)   AC_MSG_ERROR([I don't know this UG-domain-module!]) ;;
+          esac
 
-      echo -n "UG-GRAPE-bindings... "
-      UGCONFVAL="GRAPE"
-      dune_ug_getopt
-      UGGRAPE=$retval
-      echo $UGGRAPE
-      # !!! check for grape-lib if this is set!
+          echo -n "UG-GRAPE-bindings... "
+          UGCONFVAL="GRAPE"
+          dune_ug_getopt
+          UGGRAPE=$retval
+          echo $UGGRAPE
+          # !!! check for grape-lib if this is set!
 
 #      if test x$HAVE_UG = x1 ; then
 #	  AC_CHECK_LIB([devX], [UserWrite], 
@@ -119,10 +120,11 @@ EOF`
 #	  )
 #      fi
 
-      if test "$with_problem_dim" != "$with_world_dim" ; then
-	  AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
+          if test "$with_problem_dim" != "$with_world_dim" ; then
+	      AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
+          fi
+          UG_DIM="$with_problem_dim"
       fi
-      UG_DIM="$with_problem_dim"
 
 #      if test x$HAVE_UG = x1 ; then
 #	  AC_CHECK_LIB([domS$UG_DIM], [InitDom],
