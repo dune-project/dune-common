@@ -7,7 +7,7 @@
 
 #include "common/grid.hh"     // the grid base classes
 #include "yaspgrid/grids.hh"  // the yaspgrid base classes
-#include "../common/Stack.hh" // the stack class
+#include "../common/stack.hh" // the stack class
 
 /*! \file yaspgrid.hh
    Yaspgrid stands for yet another structured parallel grid.
@@ -1146,7 +1146,7 @@ namespace Dune {
     YaspLevelIterator<codim,dim,dimworld,pitype>& operator++()
     {
       ++_it;
-      //	std::cout << "TSI= ";_it.print(std::cout); std::cout << std::endl;
+      //      std::cout << "TSI= ";_it.print(std::cout); std::cout << std::endl;
       return *this;
     }
 
