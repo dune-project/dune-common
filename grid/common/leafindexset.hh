@@ -157,6 +157,8 @@ namespace Dune {
     {
       // create index set
       resize();
+
+      print("LeafindexSet created !\n\n");
     }
 
     void createFatherIndex (const typename GridType::template codim<0>::Entity & en )
@@ -190,6 +192,8 @@ namespace Dune {
 
       // give all entities that lie below the old entities new numbers
       markAllBelowOld ();
+
+      print("Resize of LeafIndexSet done \n");
     }
 
     //! for dof manager, to check whether it has to copy dof or not
@@ -209,12 +213,13 @@ namespace Dune {
       bool haveToCopy = false;
 
       // if not marked, mark which indices are still used
-      if(!marked_) markAllUsed();
+      if(!marked_) actSize_ = markAllUsed(); // returns actual size of leaf level
 
       // mark holes
       actHole_ = 0;
       for(int i=0; i<state_.size(); i++)
       {
+        // if index is not used but >=0 then its a hole
         if((state_[i] == UNUSED) && (leafIndex_[i] >= 0))
         {
           holes_[actHole_] = leafIndex_[i];
@@ -228,17 +233,25 @@ namespace Dune {
       // close holes
       for(int i=0; i<leafIndex_.size(); i++)
       {
+        // a index that is used but larger then actual size
+        // has to move to a hole
         if(state_[i] != UNUSED)
         {
+          // if used index lies behind size, then index has to move
+          // to one of the holes
           if(leafIndex_[i] >= actSize_)
           {
             // serach next hole that is smaler than actual size
             actHole_--;
+            // if actHole_ < 0 then error, because we have index larger then
+            // actual size
             assert(actHole_ >= 0);
-            while ( holes_[actHole_] >= actSize_)
+            while ( holes_[actHole_] >= actSize_ )
             {
               actHole_--;
+              if(actHole_ < 0) break;
             }
+
             assert(actHole_ >= 0);
             leafIndex_[i] = holes_[actHole_];
 
@@ -249,6 +262,7 @@ namespace Dune {
         }
         else
         {
+          // all unsed indices are reset to -1
           leafIndex_[i] = -1;
         }
       }
@@ -258,6 +272,8 @@ namespace Dune {
 
       // next turn mark again
       marked_ = false;
+
+      print("Done Compress \n\n");
 
       return haveToCopy;
     }
@@ -270,7 +286,7 @@ namespace Dune {
     }
 
     //! return how much extra memory is needed for restriction
-    int tmpSize () const { return nextFreeIndex_; }
+    int additionalSizeEstimate () const { return nextFreeIndex_; }
 
     //! return size of grid entities per level and codim
     int size ( int level , int codim ) const
@@ -372,25 +388,26 @@ namespace Dune {
 
     //! mark indices that are still used and give new indices to
     //! elements that need one
-    void markAllUsed ()
+    int markAllUsed ()
     {
-      typedef typename GridType::LeafIterator LeafIterator;
-
       for(int i=0; i<state_.size(); i++) state_[i] = UNUSED;
 
       // remember size
       oldSize_ = nextFreeIndex_;
 
-      actSize_ = 0;
+      int nSize = 0;
 
+      typedef typename GridType::LeafIterator LeafIterator;
       // walk over leaf level on locate all needed entities
       LeafIterator endit  = this->grid_.leafend   ( this->grid_.maxlevel() );
       for(LeafIterator it = this->grid_.leafbegin ( this->grid_.maxlevel() ); it != endit ; ++it )
       {
         this->insert( *it );
-        actSize_++;
+        nSize++;
       }
+
       marked_ = true;
+      return nSize;
     }
 
     //! give all entities that lie below the old entities new numbers
@@ -433,25 +450,13 @@ namespace Dune {
         } // end grid walk trough
       } // end for all levels
 
-      marked_ = true;
+      // means on compress we have to mark the leaf level
+      marked_ = false;
     }
 
     // print interal data, for debugging only
-    void print (bool oldtoo = false ) const
-    {
-      std::cout << "Size " << leafIndex_.size() << "\n";
-      std::cout << "i    |   val    | state  \n";
-      int actSize =0;
-      for(int i=0; i<leafIndex_.size(); i++)
-      {
-        if(state_[i] != UNUSED) actSize++;
-        std::cout << i << " | " << leafIndex_[i] << " | " << state_[i];
-        if(oldtoo) std::cout << " | " << oldLeafIndex_[i];
-        std::cout << "\n";
-      }
-      std::cout << "Real Size " << nextFreeIndex_ << "\n";
-      std::cout << "ActSize   " << actSize << "\n";
-    }
+    // print if only done, if DEBUG_LEAFINDEXSET is defined
+    void print (const char * msg, bool oldtoo = false ) const;
 
   public:
 
@@ -525,6 +530,30 @@ namespace Dune {
     }
   }; // end of class AdaptiveLeafIndexSet
 
+
+  template <class GridType>
+  inline void AdaptiveLeafIndexSet<GridType>::
+  print (const char * msg, bool oldtoo ) const
+  {
+#ifdef DEBUG_LEAFINDEXSET
+    std::cout << "Size " << leafIndex_.size() << "\n";
+    std::cout << "i    |   val    | state  \n";
+    int actSize =0;
+    for(int i=0; i<leafIndex_.size(); i++)
+    {
+      if(state_[i] != UNUSED) actSize++;
+      std::cout << i << " | " << leafIndex_[i] << " | " << state_[i];
+      std::cout << "\n";
+    }
+
+    std::cout << "Real Size " << nextFreeIndex_ << "\n";
+    std::cout << "ActSize   " << actSize << "\n";
+    std::cout << "Grid global Size " << grid.global_size(0) << "\n";
+
+    std::cout << msg;
+    return ;
+#endif
+  }
 
 } // end namespace Dune
 

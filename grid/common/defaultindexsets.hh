@@ -28,7 +28,7 @@ namespace Dune {
   {
   public:
     virtual bool compress () = 0;
-    virtual void resize ()   = 0;
+    virtual void resize   () = 0;
   };
 
   template <class GridType>
@@ -51,7 +51,7 @@ namespace Dune {
     virtual void resize () {}
 
     //! no extra memory for restriction is needed
-    int tmpSize () const { return 0; }
+    int additionalSizeEstimate () const { return 0; }
 
     //! all indices are old
     bool indexNew(int num, int codim ) const { return false; }
