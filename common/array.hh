@@ -22,7 +22,11 @@ namespace Dune
      @{
    */
 
-  //! simple fixed size array class
+  /** \brief simple fixed size array class
+   *
+   * \todo Template parameter n should be uppercase according
+   * to the coding style rules.
+   */
   template<class T, int n>
   class FixedArray {
   public:
@@ -54,6 +58,7 @@ namespace Dune
       return a[i];
     }
 
+    //! \todo Please doc me!
     FixedArray<T,n-1> shrink (int comp)
     {
       FixedArray<T,n-1> x;
@@ -62,6 +67,7 @@ namespace Dune
       return x;
     }
 
+    //! \todo Please doc me!
     FixedArray<T,n+1> expand (int comp, T value)
     {
       FixedArray<T,n+1> x;
@@ -90,12 +96,15 @@ namespace Dune
   class Array {
   public:
 
-    //! an Iterator to access all components of array
-    class Iterator {      // Iteratorklasse zum
-    private:              // Durchlaufen der Elemente des Containers
+    /** \brief An iterator to access all components of array.
+    *
+    * This iterator currently has no range checking!       */
+    class Iterator {
+    private:
       T* p;             // Iterator ist Zeiger auf Feldelement
-    public:               // Iterator ohne Bereichstest !
-      //! make iterator
+
+    public:
+      //! Default constructor
       Iterator();
 
       //! equality of two iterators
@@ -154,12 +163,19 @@ namespace Dune
 
     //! random access operator
     T& operator[](int i);
+
+    //! Const random access operator
     const T& operator[](int i) const;
 
     //! export base type of array
-    typedef T MemberType;      // Merke den Grundtyp ...
+    typedef T MemberType;
 
-    //! print contents of array, k elements in a row
+    /** \brief Print contents of the array to cout.
+     *
+     * @param k Number of elements per printed row.
+     * @param s Name of the array appearing in the first line.
+     * @param row String being printed in each line.
+     */
     void print (int k, std::string s, std::string row)
     {
       char buf[96];
@@ -190,6 +206,8 @@ namespace Dune
       std::cout << "}" << std::endl;
     }
 
+    /** \todo Please doc me!
+     */
     bool processXdr(XDR *xdrs)
     {
       if(xdrs != NULL)
@@ -202,8 +220,8 @@ namespace Dune
     }
 
   protected:
-    int n;      // Anzahl Elemente; n=0 heisst, dass kein array allokiert ist!
-    T *p;       // Zeiger auf built-in array
+    int n;    // Anzahl Elemente; n=0 heisst, dass kein array allokiert ist!
+    T *p;     // Zeiger auf built-in array
   } ;
 
 
@@ -432,7 +450,7 @@ namespace Dune
       return sum;
     }
 
-    // add scalar times other vector
+    //! add scalar times other vector
     void daxpy (T a, const SimpleVector<T>& x)
     {
       for (int i=0; i<n; ++i) p[i] += a*x.p[i];
