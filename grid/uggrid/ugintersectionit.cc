@@ -111,6 +111,15 @@ namespace Dune {
   }
 #endif
 
+  /** \todo Test this for locally refined grids! */
+  template<int dim, int dimworld>
+  inline bool
+  UGGridIntersectionIterator<dim, dimworld>::neighbor()
+  {
+    //std::cout << "neighbor not implemented yet!" << std::endl;
+    return !boundary();
+  }
+
   template<>
   inline FieldVector<UGCtype, 3>&
   UGGridIntersectionIterator < 3,3 >::unit_outer_normal ()
@@ -191,7 +200,7 @@ namespace Dune {
   intersection_self_local()
   {
     std::cout << "\nintersection_self_local not implemented yet!\n";
-    return (*fakeNeigh_);
+    return fakeNeigh_;
   }
 
   template< int dim, int dimworld>
@@ -199,8 +208,28 @@ namespace Dune {
   UGGridIntersectionIterator<dim,dimworld>::
   intersection_self_global()
   {
-    std::cout << "\nintersection_self_global not implemented yet!\n";
-    return (*neighGlob_);
+
+    //#define CORNERS_OF_SIDE(p, i)   (UG2d::element_descriptors[UG_NS<dimworld>::Tag(p)]->corners_of_side[(i)])
+    int numCornersOfSide = UG_NS<dimworld>::Corners_Of_Side(center_, neighborCount_);
+    //#undef CORNERS_OF_SIDE
+
+    //#define         CORNER_OF_SIDE(p, s, c)   (UG2d::element_descriptors[UG_NS<dimworld>::Tag(p)]->corner_of_side[(s)][(c)])
+
+
+    //std::cout << "Element side has " << numCornersOfSide << " corners" << std::endl;
+
+    for (int i=0; i<numCornersOfSide; i++) {
+
+      int cornerIdx = UG_NS<dimworld>::Corner_Of_Side(center_, neighborCount_, i);
+      typename TargetType<dim,dim>::T* node = UG_NS<dimworld>::Corner(center_, cornerIdx);
+      for (int j=0; j<dimworld; j++)
+        neighGlob_.coord_[i][j] = node->myvertex->iv.x[j];
+
+    }
+
+    //#undef CORNER_OF_SIDE
+
+    return neighGlob_;
   }
 
   template< int dim, int dimworld>
@@ -209,7 +238,7 @@ namespace Dune {
   intersection_neighbor_local()
   {
     std::cout << "\nintersection_neighbor_local not implemented yet!\n";
-    return (*fakeNeigh_);
+    return fakeNeigh_;
   }
 
   template< int dim, int dimworld>
@@ -217,8 +246,9 @@ namespace Dune {
   UGGridIntersectionIterator<dim,dimworld>::
   intersection_neighbor_global()
   {
-    std::cout << "\nintersection_neighbor_global not implemented yet!\n";
-    return (*neighGlob_);
+    // According to Peter this method is supposed to do precisely the
+    // same as intersection_self_global()
+    return intersection_self_global();
   }
 
   template< int dim, int dimworld>

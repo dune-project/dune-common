@@ -118,11 +118,11 @@ namespace Dune {
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
-    UGGridElement<dim-1,dim> *fakeNeigh_;
+    UGGridElement<dim-1,dim> fakeNeigh_;
 
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
-    UGGridElement<dim-1,dimworld> *neighGlob_;
+    UGGridElement<dim-1,dimworld> neighGlob_;
 
     //! BoundaryEntity
     UGGridBoundaryEntity<dim,dimworld> boundaryEntity_;
