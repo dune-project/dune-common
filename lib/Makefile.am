@@ -8,7 +8,7 @@ SUBDIRS = io
 lib_LTLIBRARIES = libdune.la
 
 # common code
-libdune_la_SOURCES = example.cc
+libdune_la_SOURCES = example.cc gridwriter.cc amirameshwriter.cc
 
 # sub-libraries
 libdune_la_LIBADD = io/libduneio.la
