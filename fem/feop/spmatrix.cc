@@ -488,6 +488,7 @@ namespace Dune
         set(col,col,1.0);
   }
 
+#ifdef HAVE_SUPERLU
   template <class T>
   void SparseRowMatrix<T>::createSuperMatrix(SuperMatrix & A)
   {
@@ -524,5 +525,7 @@ namespace Dune
   {
     nzval_.resize(0);
   }
+
+#endif // HAVE_SUPERLU
 
 } // end namespace Dune
