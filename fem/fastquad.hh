@@ -244,8 +244,8 @@ namespace Dune {
 
   public:
     //! Constructor building the quadrature
-    QuadratureImp ( int id , ElementType eltype, int polOrd ) : order_ ( polOrd ) ,
-                                                                , eltype_ ( eltype )
+    QuadratureImp ( int id , ElementType eltype, int polOrd ) : order_ ( polOrd )
+                                                                , eltype_ ( eltype ),
                                                                 QuadratureDefault < RangeFieldType , DomainType , QuadratureType > (id)
     {
       switch ( eltype_ )
@@ -260,7 +260,7 @@ namespace Dune {
       case hexahedron   : { buildQuadrature<hexahedron> ( id , polOrd ); break; }
       case iso_triangle : { buildQuadrature<iso_triangle> ( id , polOrd ); break; }
       case iso_quadrilateral : { buildQuadrature<iso_quadrilateral> ( id , polOrd ); break; }
-      case default : { std::cerr << "Element type is unkown in Constructor of QuadratureImp! \n"; abort(); }
+      default : { std::cerr << "Element type is unkown in Constructor of QuadratureImp! \n"; abort(); }
       }
     };
 
@@ -291,13 +291,6 @@ namespace Dune {
       typedef QuadraturePoints< DomainType,
           RangeFieldType,ElType,polynomialOrder>  QuadInitializer;
 
-      if(id != QuadInitializer::identifier)
-      {
-        std::cerr << "wrong identifier given to constructor! \n";
-        abort();
-      }
-      std::cout <<"Making Quadrature with dynamic polOrd! \n";
-
       // same story as above
       numQuadPoints_ = QuadInitializer::numberOfQuadPoints();
       order_ = QuadInitializer::order();
@@ -314,7 +307,7 @@ namespace Dune {
     };
 
     // remember which element type the quadrature was made for
-    ElementType eltyp_;
+    const ElementType eltype_;
 
     // order of quadrature
     int order_;
