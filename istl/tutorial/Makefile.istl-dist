@@ -1,0 +1,5 @@
+# $Id$
+
+CXXFLAGS = -I .. -I ../common
+
+all: example

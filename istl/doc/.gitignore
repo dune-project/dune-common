@@ -9,3 +9,4 @@
 *.ps
 Makefile
 Makefile.in
+semantic.cache
