@@ -51,7 +51,7 @@ namespace Dune {
     enum { polynomOrder = 1 };
     static Domain getPoint (int i)
     {
-      Domain tmp = (1.0/3.0);
+      Domain tmp (1.0/3.0);
       return tmp;
     };
     static RangeField getWeight (int i) { return 0.5; };
@@ -80,18 +80,18 @@ namespace Dune {
   {
     // check whether dimension is 2 or not
     //CompileTimeChecker < Domain::dimension == 2 > check;
-    Domain tmp = 0.5;
+    Domain tmp (0.5);
     switch (i)
     {
     case 0 : {
       return tmp;
     }
     case 1 : {
-      tmp(0) = 0.0;
+      tmp[0] = 0.0;
       return tmp;
     }
     case 2 : {
-      tmp(1) = 0.0;
+      tmp[1] = 0.0;
       return tmp;
     }
     default :
@@ -113,7 +113,7 @@ namespace Dune {
     enum { polynomOrder = 1 };
     static Domain getPoint (int i)
     {
-      Domain tmp = (0.25);
+      Domain tmp (0.25);
       return tmp;
     };
     static RangeField getWeight (int i) { return (1.0/6.0); };
@@ -140,12 +140,12 @@ namespace Dune {
   template <class Domain, class RangeField , int codim>
   Domain BaryCenterPoints<Domain,RangeField,tetrahedron,codim>::getPoint(int i)
   {
-    Domain tmp = (1.0/3.0);
+    Domain tmp (1.0/3.0);
     assert( (i>=0) && (i<4) );
 
     if(i==0) return tmp;
 
-    tmp(i-1) = 0.0;
+    tmp[i-1] = 0.0;
     return tmp;
   }
 
@@ -159,7 +159,7 @@ namespace Dune {
     enum { polynomOrder = 1 };
     static Domain getPoint (int i)
     {
-      Domain tmp = 0.5;
+      Domain tmp (0.5);
       return tmp;
     };
     static RangeField getWeight (int i) { return 1.0; };
@@ -191,13 +191,13 @@ namespace Dune {
 
     if(i < 2 )
     {
-      tmp(1) = 0.5;
-      tmp(0) = static_cast<RangeField> (i);
+      tmp[1] = 0.5;
+      tmp[0] = static_cast<RangeField> (i);
     }
     else
     {
-      tmp(0) = 0.5;
-      tmp(1) = static_cast<RangeField> (i-2);
+      tmp[0] = 0.5;
+      tmp[1] = static_cast<RangeField> (i-2);
     }
     return tmp;
   }
@@ -212,7 +212,7 @@ namespace Dune {
     enum { polynomOrder = 1 };
     static Domain getPoint (int i)
     {
-      Domain tmp = 0.5;
+      Domain tmp (0.5);
       return tmp;
     };
     static RangeField getWeight (int i) { return 1.0; };
@@ -241,22 +241,22 @@ namespace Dune {
     assert( (i>=0) && (i<6) );
     Domain tmp;
 
-    tmp(2) = 0.5;
+    tmp[2] = 0.5;
     if(i < 2 )
     {
-      tmp(1) = 0.5;
-      tmp(0) = static_cast<RangeField> (i);
+      tmp[1] = 0.5;
+      tmp[0] = static_cast<RangeField> (i);
       return tmp;
     }
     if( (i >= 2) && (i<4) )
     {
-      tmp(0) = 0.5;
-      tmp(1) = static_cast<RangeField> (i-2);
+      tmp[0] = 0.5;
+      tmp[1] = static_cast<RangeField> (i-2);
       return tmp;
     }
 
     tmp = 0.5;
-    tmp(2) = static_cast<RangeField> (i-4);
+    tmp[2] = static_cast<RangeField> (i-4);
     return tmp;
   }
 
