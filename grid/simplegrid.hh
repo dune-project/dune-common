@@ -40,6 +40,7 @@ namespace Dune {
 
   template<int dim, int dimworld>            class SimpleElement;
   template<int codim, int dim, int dimworld> class SimpleEntity;
+  template<int dim, int dimworld>            class SimpleBoundaryEntity;
   template<int dim, int dimworld>            class SimpleGrid;
   template<int codim, int dim, int dimworld> class SimpleLevelIterator;
   template<int dim, int dimworld>            class SimpleIntersectionIterator;
