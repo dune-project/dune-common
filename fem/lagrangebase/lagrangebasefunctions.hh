@@ -3,7 +3,6 @@
 #ifndef DUNE_LAGRANGEBASEFUNCTIONS_HH
 #define DUNE_LAGRANGEBASEFUNCTIONS_HH
 
-#include <dune/common/matvec.hh>
 #include <dune/common/array.hh>
 #include <dune/grid/common/grid.hh>
 
