@@ -68,54 +68,27 @@ UGGridIntersectionIterator< dim,dimworld >::operator *()
   return virtualEntity_;
 }
 
-#ifdef _3
-template<>
-inline UGGridIntersectionIterator < 3,3 >&
-UGGridIntersectionIterator < 3,3 >::operator++()
-{
-  //printf("This is II::operator++\n");
-  setToTarget(center_, neighborCount_+1);
 
-  return (*this);
-}
-#endif
-
-#ifdef _2
-template<>
-inline UGGridIntersectionIterator < 2,2 >&
-UGGridIntersectionIterator < 2,2 >::operator++()
+template<int dim, int dimworld>
+inline UGGridIntersectionIterator<dim,dimworld>&
+UGGridIntersectionIterator< dim,dimworld >::operator++()
 {
   setToTarget(center_, neighborCount_+1);
-
   return (*this);
 }
-#endif
 
-#ifdef _3
-template<>
-inline bool
-UGGridIntersectionIterator < 3,3 >::boundary()
+template<int dim, int dimworld>
+inline bool UGGridIntersectionIterator< dim,dimworld >::neighbor()
 {
-  return UG_NS<3>::NbElem(center_, neighborCount_) == NULL;
+  return UG_NS<dim>::NbElem(center_, neighborCount_) != NULL;
 }
-#endif
 
-#ifdef _2
-template<>
-inline bool
-UGGridIntersectionIterator < 2,2 >::boundary()
-{
-  return UG_NS<2>::NbElem(center_, neighborCount_) == NULL;
-}
-#endif
-
-/** \todo Test this for locally refined grids! */
+/** \todo Doesn't work for locally refined grids! */
 template<int dim, int dimworld>
 inline bool
-UGGridIntersectionIterator<dim, dimworld>::neighbor()
+UGGridIntersectionIterator<dim, dimworld>::boundary()
 {
-  //std::cout << "neighbor not implemented yet!" << std::endl;
-  return !boundary();
+  return !neighbor();
 }
 
 template<>
@@ -196,7 +169,7 @@ inline UGGridElement< dim-1, dim >&
 UGGridIntersectionIterator<dim,dimworld>::
 intersection_self_local()
 {
-  std::cout << "\nintersection_self_local not implemented yet!\n";
+  DUNE_THROW(NotImplemented, "intersection_self_local()");
   return fakeNeigh_;
 }
 
@@ -205,15 +178,10 @@ inline UGGridElement< dim-1, dimworld >&
 UGGridIntersectionIterator<dim,dimworld>::
 intersection_self_global()
 {
-
-  //#define CORNERS_OF_SIDE(p, i)   (UG2d::element_descriptors[UG_NS<dimworld>::Tag(p)]->corners_of_side[(i)])
   int numCornersOfSide = UG_NS<dimworld>::Corners_Of_Side(center_, neighborCount_);
-  //#undef CORNERS_OF_SIDE
-
-  //#define         CORNER_OF_SIDE(p, s, c)   (UG2d::element_descriptors[UG_NS<dimworld>::Tag(p)]->corner_of_side[(s)][(c)])
-
 
   //std::cout << "Element side has " << numCornersOfSide << " corners" << std::endl;
+  neighGlob_.setNumberOfCorners(numCornersOfSide);
 
   for (int i=0; i<numCornersOfSide; i++) {
 
@@ -224,8 +192,6 @@ intersection_self_global()
 
   }
 
-  //#undef CORNER_OF_SIDE
-
   return neighGlob_;
 }
 
@@ -234,7 +200,7 @@ inline UGGridElement< dim-1, dim >&
 UGGridIntersectionIterator<dim,dimworld>::
 intersection_neighbor_local()
 {
-  std::cout << "\nintersection_neighbor_local not implemented yet!\n";
+  DUNE_THROW(NotImplemented, "intersection_neighbor_local()");
   return fakeNeigh_;
 }
 
