@@ -268,19 +268,44 @@ global(const Vec<dim>& local)
   return globalCoord;
 }
 
+// Maps a global coordinate within the element to a
+// local coordinate in its reference element
+template< int dim, int dimworld>
+inline Vec<dim, UGCtype> UGGridElement<dim,dimworld>::
+local (const Vec<dimworld, UGCtype>& global)
+{
+  Vec<dim, UGCtype> result;
+  UGCtype localCoords[dim];
+
+  // Copy input ADT into C-style array
+  UGCtype global_c[dimworld];
+  for (int i=0; i<dimworld; i++)
+    global_c[i] = global[i];
+
+  // dimworld*dimworld is an upper bound for the number of vertices
+  UGCtype* cornerCoords[dimworld*dimworld];
+  UG_NS<dimworld>::Corner_Coordinates(target_, cornerCoords);
+
+  // Actually do the computation
+  /** \todo Why is this const_cast necessary? */
+#ifdef _2
+  UG2d::UG_GlobalToLocal(corners(), const_cast<const double**>(cornerCoords), global_c, localCoords);
+#else
+  UG3d::UG_GlobalToLocal(corners(), const_cast<const double**>(cornerCoords), global_c, localCoords);
+#endif
+
+  // Copy result into array
+  for (int i=0; i<dim; i++)
+    result[i] = localCoords[i];
+
+  return result;
+}
+
 
 template< int dim, int dimworld>
 inline UGCtype UGGridElement<dim,dimworld>::
 integration_element (const Vec<dim,UGCtype>& local)
 {
-  //     // dimworld*dimworld is an upper bound for the number of vertices
-  //     UGCtype* cornerCoords[dimworld*dimworld];
-  //     UG_NS<dimworld>::Corner_Coordinates(target_, cornerCoords);
-
-  //     // compute the transformation onto the reference element (or vice versa?)
-  //     Mat<dimworld,dimworld> mat;
-  //     UG_NS<dimworld>::Transformation(corners(), cornerCoords, local, mat);
-
   return ABS(Jacobian_inverse(local).determinant());
 }
 
