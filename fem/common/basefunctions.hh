@@ -227,9 +227,8 @@ namespace Dune {
       {
         asImp().evaluate( baseFunct, jacobianDiffVar_[i] , x , tmp_ );
         for(int j=0; j<dimRow; j++)
-          phi(i,j) = tmp_[j];
+          phi[j][i] = tmp_[j];
       }
-      return;
     }
 
     //! default implementation of evaluation the gradient
@@ -237,15 +236,12 @@ namespace Dune {
     void jacobian ( int baseFunct, QuadratureType & quad,
                     int quadPoint, JacobianRange & phi ) const
     {
-      //std::cout << dimCol << " Col | Row " << dimRow << "\n";
-      // Achtung , dimRow und dimCol vertauscht
       for(int i=0; i<dimCol; i++)
       {
         asImp().evaluate( baseFunct, jacobianDiffVar_[i] , quad, quadPoint, tmp_ );
         for(int j=0; j<dimRow; j++)
           phi[j][i] = tmp_[j];
       }
-      return;
     }
 
   private:
