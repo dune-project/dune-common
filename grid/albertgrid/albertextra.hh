@@ -704,9 +704,14 @@ namespace AlbertHelp
     FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = ownvec[dof] );
   }
 
-#define PROCRESTORE 6666666
 
-  // clear Dof Vec
+
+#define PROCRESTORE 66666666
+
+  // save processor number in owner vec
+  // to the value at the position with the processor number
+  // the significant value PROCRESTORE is added or if the value is smaller
+  // then zero substracted.
   inline static int saveMyProcNum ( DOF_INT_VEC * drv , const int myProc,
                                     int & entry)
   {
@@ -719,32 +724,34 @@ namespace AlbertHelp
                    spot = dof;
                    entry = vec[dof];
                    if(vec[dof] >= 0)
-                     vec[dof] = PROCRESTORE;
+                     vec[dof] += PROCRESTORE;
                    else
-                     vec[dof] = -PROCRESTORE;
+                     vec[dof] -= PROCRESTORE;
                  }
                  );
     return spot;
   }
 
-  // clear Dof Vec
+  // restore processor number for owner vec
   inline static int restoreMyProcNum ( DOF_INT_VEC * drv)
   {
     int myProc = -1;
     int * vec=NULL;
+
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin,
-                 if(vec[dof] == PROCRESTORE)
+                 if(vec[dof] >= PROCRESTORE)
                  {
-                   vec[dof] = dof;
+                   vec[dof] -= PROCRESTORE;
                    myProc = dof;
                  }
-                 else if (vec[dof] == -PROCRESTORE)
+                 else if (vec[dof] <= -PROCRESTORE)
                  {
-                   vec[dof] = -1;
+                   vec[dof] += PROCRESTORE;
                    myProc = dof;
                  }
                  );
+
     return myProc;
   }
 
