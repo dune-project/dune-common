@@ -58,6 +58,7 @@ namespace Dune {
   //! FastBaseFunctionSet is the Implementation of a BaseFunctionSet.
   //! It stores the values at the quadrature points to speed up the evaluation
   //! of the base functions
+  //! deriType is defined in basefunctions.hh
   //!
   //*************************************************************************
   template<class FunctionSpaceType>
@@ -81,7 +82,7 @@ namespace Dune {
     //! evaluate base function baseFunct with the given diffVariable and a
     //! point x and range phi
     template <int diffOrd>
-    void evaluate ( int baseFunct, const Vec<diffOrd,int> &diffVariable,
+    void evaluate ( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
                     const Domain & x,  Range & phi ) const;
 
     //! evaluate base fucntion baseFunct at a given quadrature point
@@ -89,7 +90,7 @@ namespace Dune {
     //! qaudrature has changed an the values at the quadrature have to be
     //! calulated again
     template <int diffOrd, class QuadratureType>
-    void evaluate ( int baseFunct, const Vec<diffOrd,int> &diffVariable,
+    void evaluate ( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
                     QuadratureType & quad, int quadPoint, Range & phi ) const;
 
     //! get a reference of the base function baseFunct
@@ -119,12 +120,12 @@ namespace Dune {
     //! method to navigate through the vector vecEvaluate, which holds
     //! precalculated values
     template <int diffOrd>
-    int index( int baseFunct, const Vec<diffOrd,int> &diffVariable,
+    int index( int baseFunct, const Vec<diffOrd, deriType> &diffVariable,
                int quadPt, int numQuadPoints ) const
     {
       int n = 0;
       for ( int i = 0; i < diffOrd; i++ )
-        n = diffVariable.read(i) + i * DimDomain;
+        n = diffVariable.get(i) + i * DimDomain;
 
       return numQuadPoints*(getNumberOfBaseFunctions()*n + baseFunct) + quadPt;
     };
@@ -138,6 +139,7 @@ namespace Dune {
     //! init the vecEvaluate vector
     template <int diffOrd, class QuadratureType >
     void evaluateInit ( const QuadratureType & quad ) ;
+
   }; // end class FastBaseFunctionSet
 
 #include "fastbase.cc"

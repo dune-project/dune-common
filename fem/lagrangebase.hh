@@ -54,25 +54,25 @@ namespace Dune {
       //    \n",baseNum,alpha,beta,gamma);
     }
 
-    virtual void evaluate ( const Vec<0,int> &diffVariable,
+    virtual void evaluate ( const Vec<0, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       phi = alpha * x.get(0) + beta * x.get(1) + gamma ;
       //x.print ( std::cout, 1); phi.print ( std::cout, 1); std::cout << " Phi \n";
     }
 
-    virtual void evaluate ( const Vec<1,int> &diffVariable,
+    virtual void evaluate ( const Vec<1, deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // derivate phi_0
-      if((diffVariable.read(0) == 0) && (alpha > 0.0))
+      if((diffVariable.get(0) == 0) && (alpha > 0.0))
       {
         phi = 1.0;
         return;
       }
 
       // derivate phi_1
-      if((diffVariable.read(0) == 1) && (beta > 0.0))
+      if((diffVariable.get(0) == 1) && (beta > 0.0))
       {
         phi = 1.0;
         return;
@@ -81,7 +81,7 @@ namespace Dune {
       // derivate phi_2
       if(gamma > 0.0)
       {
-        if(diffVariable.read(0) == 0)
+        if(diffVariable.get(0) == 0)
         {
           phi = static_cast<RangeField> (alpha);
           return;
@@ -117,7 +117,8 @@ namespace Dune {
   {
     //! phi(x,y) = (alpha + beta * x) * ( gamma + delta * y)
     //
-    char alpha,beta,gamma,delta;
+    typedef typename FunctionSpaceType::RangeField RangeField;
+    RangeField alpha,beta,gamma,delta;
 #if 0
     enum { alpha = ( baseNum%2 == 0 ) ?  1 : 0 };
     enum { beta  = ( baseNum%2 == 0 ) ? -1 : 1 };
@@ -135,14 +136,14 @@ namespace Dune {
         std::cout << "Wrong baseNum given to LagrangeBase \n";
         abort();
       }
-      alpha = ( baseNum%2 == 0 ) ?  1 : 0 ;
-      beta  = ( baseNum%2 == 0 ) ? -1 : 1 ;
-      gamma = ( baseNum < 2    ) ?  1 : 0 ;
-      delta = ( baseNum < 2    ) ? -1 : 1 ;
+      alpha = ( baseNum%2 == 0 ) ?  1.0 : 0.0 ;
+      beta  = ( baseNum%2 == 0 ) ? -1.0 : 1.0 ;
+      gamma = ( baseNum < 2    ) ?  1.0 : 0.0 ;
+      delta = ( baseNum < 2    ) ? -1.0 : 1.0 ;
     };
 
     //! evaluate the basefunction on point x
-    virtual void evaluate ( const Vec<0,int> &diffVariable,
+    virtual void evaluate ( const Vec<0,deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // supposse that phi is element R
@@ -153,7 +154,7 @@ namespace Dune {
     //! diffVariable(0) == 0   ==> x
     //! diffVariable(0) == 1   ==> y
     //! diffVariable(0) == 2   ==> z,  and so on
-    virtual void evaluate ( const Vec<1,char> &diffVariable,
+    virtual void evaluate ( const Vec<1,deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       if(diffVariable.get(0)) // differtiate to x component
@@ -169,7 +170,7 @@ namespace Dune {
       phi = 0.0;
     }
 
-    virtual void evaluate ( const Vec<2,char> &diffVariable,
+    virtual void evaluate ( const Vec<2,deriType> &diffVariable,
                             const Domain & x, Range & phi) const
     {
       // which means derivative xx or yy
@@ -313,8 +314,6 @@ namespace Dune {
 
     typedef LagrangeDiscreteFunctionSpace
     < FunctionSpaceType , GridType , polOrd > LagrangeDiscreteFunctionSpaceType;
-    typedef LagrangeFastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType, triangle , 1 > LagrangeFastBaseFunctionSetType;
-    //typedef FastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType > FastBaseFunctionSetType;
     typedef BaseFunctionSetType FastBaseFunctionSetType;
 
     // id is  neighbor of the beast

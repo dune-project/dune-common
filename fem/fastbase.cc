@@ -21,26 +21,27 @@ FastBaseFunctionSet( FunctionSpaceType & fuspace, int numOfBaseFct )
 
 template <class FunctionSpaceType> template <int diffOrd>
 void FastBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const Vec<diffOrd,char> &diffVariable, const Domain & x,  Range & phi ) const
+evaluate( int baseFunct, const Vec<diffOrd, deriType> &diffVariable, const Domain & x,  Range & phi ) const
 {
-  std::cout << "FastBaseFunctionSet::evaluate \n";
   getBaseFunction( baseFunct ).evaluate( diffVariable, x, phi );
 }
 
 template <class FunctionSpaceType> template <int diffOrd, class QuadratureType>
 void FastBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const Vec<diffOrd,char> &diffVariable, QuadratureType & quad,
+evaluate( int baseFunct, const Vec<diffOrd, deriType> &diffVariable, QuadratureType & quad,
           int quadPoint, Range & phi ) const
 {
   // check if cache is for the used quadrature
   if ( quad.getIdentifier() != evaluateQuad_[ diffOrd ] )
   {
-    std::cout << "call evaluateInit ()! \n";
-    const_cast<FastBaseFunctionSet<FunctionSpaceType >& > (*this).evaluateInit( diffVariable , quad);
+    const_cast<FastBaseFunctionSet<FunctionSpaceType >& >
+    (*this).evaluateInit<diffOrd>(quad);
   }
 
+  int idex = index( baseFunct, diffVariable, quadPoint,
+                    quad.getNumberOfQuadPoints());
   //! copy the value to phi
-  phi = (vecEvaluate_[diffOrd])[ index( baseFunct, diffVariable, quadPoint, quad.getNumberOfQuadPoints()) ];
+  phi = vecEvaluate_[diffOrd][ idex ];
 }
 
 
@@ -48,8 +49,7 @@ evaluate( int baseFunct, const Vec<diffOrd,char> &diffVariable, QuadratureType &
 template <class FunctionSpaceType>
 template <int diffOrd, class QuadratureType>
 void FastBaseFunctionSet<FunctionSpaceType >::
-evaluateInit( const Vec<diffOrd,char> &diffVariable,
-              const QuadratureType &quad )
+evaluateInit( const QuadratureType &quad )
 {
   int p = 1;
   for ( int i = 0; i < diffOrd; i++ ) { p *= DimDomain; }
@@ -58,11 +58,32 @@ evaluateInit( const Vec<diffOrd,char> &diffVariable,
   vecEvaluate_[ diffOrd ].resize( p * baseFunctionList_.size() * quad.getNumberOfQuadPoints () );
 
   // cache the basefunction evaluation
+  DiffVariable<diffOrd>::Type diffVariable (0);
   int count = index( 0, diffVariable, 0, quad.getNumberOfQuadPoints ());
-  for ( int baseFunc = 0; baseFunc < baseFunctionList_.size(); baseFunc++ ) {
-    for ( int quadPt = 0; quadPt < quad.getNumberOfQuadPoints (); quadPt++ ) {
-      getBaseFunction( baseFunc ).evaluate( diffVariable, quad.getQuadraturePoint ( quadPt ),
-                                            vecEvaluate_[ diffOrd ][ count++ ] );
+
+  int diffCount = 0;
+  // for all posible diffVariable values
+  for(int i=0; i<p; i++)
+  {
+    // go through all possible combinations of 0,1,2
+    if(diffOrd == 2)
+    {
+      diffVariable(0) = i % DimDomain;
+      diffVariable(1) = diffCount;
+      diffCount++;
+      if (diffCount >= DimDomain) diffCount = 0;
+    }
+    else
+      for(int j=0; j<diffOrd; j++) diffVariable(j) = i % DimDomain;
+
+    for ( int baseFunc = 0; baseFunc < baseFunctionList_.size(); baseFunc++ )
+    {
+      for ( int quadPt = 0; quadPt < quad.getNumberOfQuadPoints (); quadPt++ )
+      {
+        getBaseFunction( baseFunc ).evaluate( diffVariable, quad.getQuadraturePoint ( quadPt ),
+                                              vecEvaluate_[ diffOrd ][ count ] );
+        count++;
+      }
     }
   }
 
