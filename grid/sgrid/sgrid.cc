@@ -121,7 +121,7 @@ namespace Dune {
     // check wether they are in the reference element
     for(int i=0; i<dim; i++)
     {
-      if((local.read(i) < 0.0) || (local.read(i) > 1.0 ))
+      if((local(i) < 0.0) || (local(i) > 1.0 ))
         return false;
     }
     return true;
