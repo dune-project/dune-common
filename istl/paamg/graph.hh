@@ -105,6 +105,7 @@ namespace Dune
          * @brief Free allocated memory.
          */
         void free();
+
         /**
          * @brief Reserve space for edges.
          * @param vertices The number of vertices the graph contains.
@@ -216,6 +217,9 @@ namespace Dune
         /** @brief The index of the target vertex of the current edge. */
         VertexDescriptor target() const;
 
+        /** @brief The index of the source vertex of the current edge. */
+        VertexDescriptor source() const;
+
       private:
         /** The current edge. */
         typename Edges::const_iterator edge_;
@@ -232,7 +236,7 @@ namespace Dune
        */
       class EdgeIterator
       {
-        typedef typename Matrix::row_type::Iterator ColIterator;
+        typedef typename Matrix::row_type::ConstIterator ColIterator;
         friend class ConstEdgeIterator;
 
       public:
@@ -255,7 +259,7 @@ namespace Dune
         /**
          * @brief Access the edge weight.
          */
-        Weight& weight() const;
+        const Weight& weight() const;
 
         /** @brief preincrement operator. */
         EdgeIterator& operator++();
@@ -269,6 +273,8 @@ namespace Dune
         /** @brief The index of the target vertex of the current edge. */
         VertexDescriptor target() const;
 
+        /** @brief The index of the source vertex of the current edge. */
+        VertexDescriptor source() const;
       private:
         /** The current edge. */
         typename Edges::iterator edge_;
@@ -326,21 +332,21 @@ namespace Dune
          * @brief Get the descriptor of the current vertex.
          * @return The index of the currently referenced vertex.
          */
-        VertexDescriptor index() const;
+        const VertexDescriptor& index() const;
 
         /**
          * @brief Get an iterator over all edges starting at the
          * current vertex.
          * @return Iterator position on the first edge to another vertex.
          */
-        ConstEdgeIterator begin() const;
+        EdgeIterator begin() const;
 
         /**
          * @brief Get an iterator over all edges starting at the
          * current vertex.
          * @return Iterator position on the first edge to another vertex.
          */
-        ConstEdgeIterator end() const;
+        EdgeIterator end() const;
 
       private:
         /** @brief Reference to the outer graph. */
@@ -535,6 +541,11 @@ namespace Dune
       VertexIterator end();
 
       /**
+       * @brief Get the number of vertices in the graph.
+       */
+      int noVertices() const;
+
+      /**
        * @brief Print the matrix graph.
        * @param os The output stream to use.
        */
@@ -574,6 +585,13 @@ namespace Dune
       }
 
       matrix_ = &matrix;
+      built_ = true;
+    }
+
+    template<class M, class VP, class EP>
+    inline int Graph<M,VP,EP>::noVertices() const
+    {
+      return noVertices_;
     }
 
     template<class M, class VP, class EP>
@@ -602,38 +620,51 @@ namespace Dune
     template<class M, class VP, class EP>
     inline typename Graph<M,VP,EP>::ConstEdgeIterator Graph<M,VP,EP>::beginEdges(VertexDescriptor row) const
     {
-      return ConstEdgeIterator(row, edges_[row], matrix_[row].begin(), matrix_[row].end());
+      return ConstEdgeIterator(row, edges_[row], matrix_->operator[](row).begin(), matrix_->operator[](row).end());
     }
 
     template<class M, class VP, class EP>
     inline typename Graph<M,VP,EP>::ConstEdgeIterator Graph<M,VP,EP>::endEdges(VertexDescriptor row) const
     {
-      return ConstEdgeIterator(row, edges_[row+1], matrix_[row].end(), matrix_[row].end());
+      return ConstEdgeIterator(row, edges_[row+1], matrix_->operator[](row).end(), matrix_->operator[](row).end());
     }
 
     template<class M, class VP, class EP>
     inline typename Graph<M,VP,EP>::EdgeIterator Graph<M,VP,EP>::beginEdges(VertexDescriptor row)
     {
-      return EdgeIterator(row, edges_[row], matrix_[row].begin(), matrix_[row].end());
+      return EdgeIterator(row, edges_[row], matrix_->operator[](row).begin(), matrix_->operator[](row).end());
     }
 
     template<class M, class VP, class EP>
     inline typename Graph<M,VP,EP>::EdgeIterator Graph<M,VP,EP>::endEdges(VertexDescriptor row)
     {
-      return EdgeIterator(row, edges_[row+1], matrix_[row].end(), matrix_[row].end());
+      return EdgeIterator(row, edges_[row+1], matrix_->operator[](row).end(), matrix_->operator[](row).end());
     }
 
     template<class M, class VP, class EP>
     inline EP& Graph<M,VP,EP>::operator()(VertexDescriptor source, VertexDescriptor target)
     {
-      return edges_[source] + matrix[source].find(target).offset();
+      return edges_[source][matrix_->operator[](source).find(target).offset()];
     }
 
 
     template<class M, class VP, class EP>
     inline const EP& Graph<M,VP,EP>::operator()(VertexDescriptor source, VertexDescriptor target) const
     {
-      return edges_[source] + matrix[source].find(target).offset();
+      return edges_[source][matrix_->operator[](source).find(target).offset()];
+    }
+
+    template<class M, class VP, class EP>
+    inline VP& Graph<M,VP,EP>::operator()(VertexDescriptor vertex)
+    {
+      return vertexProperties_[vertex];
+    }
+
+
+    template<class M, class VP, class EP>
+    inline const VP& Graph<M,VP,EP>::operator()(VertexDescriptor vertex) const
+    {
+      return vertexProperties_[vertex];
     }
 
     template<class M, class VP, class EP>
@@ -650,7 +681,7 @@ namespace Dune
 
     template<class M, class VP, class EP>
     inline Graph<M,VP,EP>::ConstEdgeIterator::ConstEdgeIterator(const EdgeIterator& other)
-      : edge_(other.edge_), block_(other.block_), source_(other.source_)
+      : edge_(other.edge_), block_(other.block_), blockEnd_(other.blockEnd_), source_(other.source_)
     {}
 
     template<class M, class VP, class EP>
@@ -699,13 +730,18 @@ namespace Dune
       return block_.index();
     }
 
+    template<class M, class VP, class EP>
+    inline typename Graph<M,VP,EP>::VertexDescriptor Graph<M,VP,EP>::ConstEdgeIterator::source() const
+    {
+      return source_;
+    }
 
     template<class M, class VP, class EP>
     inline Graph<M,VP,EP>::EdgeIterator::EdgeIterator(VertexDescriptor source, const typename Edges::iterator edge,
                                                       const ColIterator& block, const ColIterator& blockEnd) :
       edge_(edge), block_(block), blockEnd_(blockEnd), source_(source)
     {
-      if(block_!=blockEnd_ && block->index() == source_) {
+      if(block_!=blockEnd_ && block_.index() == source_) {
         // This is the edge from the diagonal to the diagonal. Skip it.
         ++block_;
         ++edge_;
@@ -720,7 +756,7 @@ namespace Dune
 
 
     template<class M, class VP, class EP>
-    inline typename M::block_type& Graph<M,VP,EP>::EdgeIterator::weight() const
+    inline const typename M::block_type& Graph<M,VP,EP>::EdgeIterator::weight() const
     {
       return *block_;
     }
@@ -731,7 +767,7 @@ namespace Dune
       ++block_;
       ++edge_;
 
-      if(block_!=blockEnd_ && block_->index() == source_) {
+      if(block_!=blockEnd_ && block_.index() == source_) {
         // This is the edge from the diagonal to the diagonal. Skip it.
         ++block_;
       }
@@ -752,7 +788,13 @@ namespace Dune
     template<class M, class VP, class EP>
     inline typename Graph<M,VP,EP>::VertexDescriptor Graph<M,VP,EP>::EdgeIterator::target() const
     {
-      return block_->index();
+      return block_.index();
+    }
+
+    template<class M, class VP, class EP>
+    inline typename Graph<M,VP,EP>::VertexDescriptor Graph<M,VP,EP>::EdgeIterator::source() const
+    {
+      return source_;
     }
 
     template<class M, class VP, class EP>
@@ -760,7 +802,8 @@ namespace Dune
     {
       for(ConstVertexIterator vertex = begin(); vertex!=end(); ++vertex) {
         const ConstEdgeIterator endEdge = vertex.end();
-        os<<"Edges starting from Vertex "<<vertex.index()<<" (weight="<<vertex.weight()<<", properties="<<vertex.properties()<<") to vertices ";
+        os<<"Edges starting from Vertex "<<vertex.index()<<" (weight="<<vertex.weight();
+        os<<", properties="<<vertex.properties()<<") to vertices ";
 
         for(ConstEdgeIterator edge = vertex.begin(); edge != endEdge; ++edge)
           os<<edge.target()<<" (weight="<<edge.weight()<<", properties="<<edge.properties()<<"), ";
@@ -829,23 +872,23 @@ namespace Dune
     }
 
     template<class M, class VP, class EP>
-    inline typename Graph<M,VP,EP>::VertexDescriptor Graph<M,VP,EP>::VertexIterator::index() const
+    inline const typename Graph<M,VP,EP>::VertexDescriptor& Graph<M,VP,EP>::VertexIterator::index() const
     {
       return current_;
     }
 
     template<class M, class VP, class EP>
-    inline typename Graph<M,VP,EP>::ConstEdgeIterator Graph<M,VP,EP>::VertexIterator::begin() const
+    inline typename Graph<M,VP,EP>::EdgeIterator Graph<M,VP,EP>::VertexIterator::begin() const
     {
-      return ConstEdgeIterator(current_, graph_->edges_[current_],
-                               graph_->matrix()[current_].begin(), graph_->matrix()[current_].end());
+      return EdgeIterator(current_, graph_->edges_[current_],
+                          graph_->matrix()[current_].begin(), graph_->matrix()[current_].end());
     }
 
     template<class M, class VP, class EP>
-    inline typename Graph<M,VP,EP>::ConstEdgeIterator Graph<M,VP,EP>::VertexIterator::end() const
+    inline typename Graph<M,VP,EP>::EdgeIterator Graph<M,VP,EP>::VertexIterator::end() const
     {
-      return ConstEdgeIterator(current_, graph_->edges_[current_+1],
-                               graph_->matrix()[current_].end(), graph_->matrix()[current_].end());
+      return EdgeIterator(current_, graph_->edges_[current_+1],
+                          graph_->matrix()[current_].end(), graph_->matrix()[current_].end());
     }
 
     template<class M, class VP, class EP>
