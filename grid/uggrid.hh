@@ -125,8 +125,11 @@ namespace Dune {
     friend class UGGridHierarchicIterator<UGGrid<dim,dimworld> >;
     friend class UGGridIntersectionIterator<UGGrid<dim,dimworld> >;
 
+    template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
+    friend class Entity;
+
     /** \brief UGGrid is only implemented for 2 and 3 dimension
-     * for 1d use SGrid or SimpleGrid  */
+     * for 1d use SGrid or OneDGrid  */
     CompileTimeChecker< (dimworld==dim) && ((dim==2) || (dim==3)) >   Use_UGGrid_only_for_2d_and_3d;
     // #ifdef _2
     //   CompileTimeChecker< (dimworld==dim) && (dim==2) >   Use_UGGrid_only_for_2d_when_built_for_2d;
@@ -149,8 +152,6 @@ namespace Dune {
         UGGridLevelIterator,
         UGGridIntersectionIterator,
         UGGridHierarchicIterator> Traits;
-
-    //typedef UGGridReferenceElement<dim> ReferenceElement;
 
     /** \brief Constructor with control over UG's memory requirements
      *
@@ -177,12 +178,11 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    //UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> > lbegin (int level) const;
     typename Traits::template codim<codim>::LevelIterator lbegin (int level) const;
 
     //! one past the end on this level
     template<int codim>
-    UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> > lend (int level) const;
+    typename Traits::template codim<codim>::LevelIterator lend (int level) const;
 
     //! Iterator to first entity of given codim on level
     template<int codim, PartitionIteratorType PiType>
@@ -275,6 +275,11 @@ namespace Dune {
     void* extra_boundary_data_;
 
   private:
+
+    template <int cd>
+    UGGridEntity<cd,dim,const UGGrid>& getRealEntity(typename Traits::template codim<cd>::Entity& entity) {
+      return entity.realEntity;
+    }
 
     void init(unsigned int heapSize, unsigned int envHeapSize);
 

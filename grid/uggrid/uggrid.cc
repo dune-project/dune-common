@@ -412,9 +412,7 @@ template < int dim, int dimworld >
 bool UGGrid < dim, dimworld >::mark(int refCount,
                                     typename Traits::template codim<0>::EntityPointer & e )
 {
-  //DUNE_THROW(NotImplemented, "Mark currently not available");
-#if 1
-  typename TargetType<0,dim>::T* target = e->realEntity.target_;
+  typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
 
 #ifdef _3
   if (!UG3d::EstimateHere(target))
@@ -430,7 +428,6 @@ bool UGGrid < dim, dimworld >::mark(int refCount,
   return UG2d::MarkForRefinement(target,
                                  UG2d::RED,   // red refinement rule
                                  0);    // no user data
-#endif
 #endif
 }
 
@@ -512,14 +509,14 @@ bool UGGrid < dim, dimworld >::adapt()
 
     int id = 0;
     for (; eIt!=eEndIt; ++eIt)
-      eIt->realEntity.target_->ge.id = id++;
+      getRealEntity<0>(*eIt).target_->ge.id = id++;
 
     typename Traits::template codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
     typename Traits::template codim<dim>::LevelIterator vEndIt = lend<dim>(i);
 
     id = 0;
     for (; vIt!=vEndIt; ++vIt)
-      vIt->realEntity.target_->id = id++;
+      getRealEntity<dim>(*vIt).target_->id = id++;
 
   }
 #endif

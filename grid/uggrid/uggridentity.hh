@@ -30,10 +30,6 @@ namespace Dune {
       this->realEntity.setToTarget(target, level);
     }
 
-    typename TargetType<codim,dim>::T* getTarget() {
-      return this->realEntity.target_;
-    }
-
   };
 
   //**********************************************************************
@@ -57,6 +53,8 @@ namespace Dune {
     friend class UGGridLevelIterator;
 
     friend class UGMakeableEntity<codim,dim,GridImp>;
+
+    friend class UGGrid<dim, dim>;
 
   public:
 
@@ -120,15 +118,11 @@ namespace Dune {
     void makeDescription();
 
     //! the current geometry
-    //UGGridGeometry<dim-codim,dim,GridImp> geo_;
     UGMakeableGeometry<dim-codim,dim,GridImp> geo_;
 
     bool builtgeometry_;       //!< true if geometry has been constructed
 
     FieldVector<UGCtype, dim> localFatherCoords_;
-
-    //! element number
-    //t elNum_;
 
     //! level
     int level_;
