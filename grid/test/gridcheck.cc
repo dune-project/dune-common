@@ -572,6 +572,8 @@ void iterate(Grid &g)
   typedef typename Grid::template codim<0>::LeafIterator LeafIterator;
   LeafIterator lit = g.leafbegin(g.maxlevel());
   const LeafIterator lend = g.leafend(g.maxlevel());
+  if(lit == lend)
+    DUNE_THROW(CheckError, "leafbegin() == leafend()");
   for (; lit != lend; ++lit)
   {
     result = lit->geometry().local(lit->geometry().global(origin));
