@@ -305,11 +305,17 @@ namespace Dune
   template <class T>
   inline T& Array<T>::operator[] (int i)
   {
+    assert(i>=0);
+    assert(i<size());
     return p[i];
   }
+
+
   template <class T>
   inline const T& Array<T>::operator[] (int i) const
   {
+    assert(i>=0);
+    assert(i<size());
     return p[i];
   }
 
