@@ -33,9 +33,10 @@ check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 # define the programs
 
 test_sgrid_SOURCES = test-sgrid.cc
+test_sgrid_LDFLAGS = ../../common/libcommon.la
 
 test_yaspgrid_SOURCES = test-yaspgrid.cc
-test_yaspgrid_CPPFLAGS = $(AM_CPPFLAGS) $(MPI_CPPFLAGS)
+test_yaspgrid_CXXFLAGS = $(AM_CPPFLAGS) $(MPI_CPPFLAGS)
 # !! last lib a bit weird...
 test_yaspgrid_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS) ../../common/libcommon.la
 

@@ -8,6 +8,8 @@
 #include "common/grid.hh"     // the grid base classes
 #include "yaspgrid/grids.hh"  // the yaspgrid base classes
 #include "../common/stack.hh" // the stack class
+#include "../common/capabilities.hh" // the capabilities
+#include "../../common/helpertemplates.hh"
 
 /*! \file yaspgrid.hh
    Yasppergrid stands for yet another structured parallel grid.
@@ -32,7 +34,6 @@ namespace Dune {
 
      @{
    */
-
 
   //************************************************************************
   /*! define name for floating point type used for coordinates in yaspgrid.
@@ -529,6 +530,7 @@ namespace Dune {
     template<int cc>
     YaspLevelIterator<cc,dim,dimworld,All_Partition> entity (int i)
     {
+      IsTrue< ( cc == dim || cc == 0 ) >::yes();
       // coordinates of the cell == coordinates of lower left corner
       if (cc==dim)
       {
@@ -1255,6 +1257,7 @@ namespace Dune {
     template<int cd, PartitionIteratorType pitype>
     YaspLevelIterator<cd,dim,dimworld,pitype> lbegin (int level)
     {
+      IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = _mg.begin(level);
       if (cd==0)   // the elements
       {
@@ -1275,6 +1278,7 @@ namespace Dune {
     template<int cd, PartitionIteratorType pitype>
     YaspLevelIterator<cd,dim,dimworld,pitype> lend (int level)
     {
+      IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = _mg.begin(level);
       if (cd==0)   // the elements
       {
@@ -1295,6 +1299,7 @@ namespace Dune {
     template<int cd>
     YaspLevelIterator<cd,dim,dimworld,All_Partition> lbegin (int level)
     {
+      IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = _mg.begin(level);
       if (cd==0)   // the elements
       {
@@ -1311,6 +1316,7 @@ namespace Dune {
     template<int cd>
     YaspLevelIterator<cd,dim,dimworld,All_Partition> lend (int level)
     {
+      IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = _mg.begin(level);
       if (cd==0)   // the elements
       {
@@ -1331,15 +1337,15 @@ namespace Dune {
     }
 
     //! return size (= distance in graph) of ghost region
-    int ghost_size (int level, int codim)
+    int ghost_size (int level, int codim) const
     {
       return 0;
     }
 
     //! number of grid entities per level and codim
-    int size (int level, int codim)
+    int size (int level, int codim) const
     {
-      YGLI g = _mg.begin(level);
+      YGLI g = const_cast<YaspGrid<dim, dimworld>*>(this)->_mg.begin(level);
       if (codim==0)
       {
         return g.cell_overlap().totalsize();
@@ -1365,6 +1371,7 @@ namespace Dune {
     template<class T, template<class> class P, int codim>
     void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
     {
+      IsTrue< ( codim == dim || codim == 0 ) >::yes();
       // access to grid level
       YGLI g = _mg.begin(level);
 
@@ -1484,9 +1491,30 @@ namespace Dune {
     YMG _mg;
   };
 
-
-
   /** @} end documentation group */
+
+  namespace Capabilities
+  {
+
+    template<int dim,int dimw>
+    struct hasLeafIterator< YaspGrid<dim,dimw> >
+    {
+      static const bool v = false;
+    };
+
+    template<int dim, int dimw>
+    struct hasEntity< YaspGrid<dim,dimw>, YaspEntity<0,dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+    template<int dim, int dimw>
+    struct hasEntity< YaspGrid<dim,dimw>, YaspEntity<dim,dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+  }
 
 } // end namespace
 

@@ -38,5 +38,19 @@ template<class T1, class T2, class T3 = T1> struct Can_multiply {
   Can_multiply() { void (*p)(T1,T2,T3) = constraints; }
 };
 
+/*
+   helper template so that compilation fails if condition is not true
+ */
+template <bool condition>
+struct IsTrue
+{
+  static void no() {};
+};
+
+template <>
+struct IsTrue<true>
+{
+  static void yes() {};
+};
 
 #endif

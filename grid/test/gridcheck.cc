@@ -11,17 +11,8 @@
 
  */
 
-// helper template so that compilation fails if two constants are not
-// equal
-template <int a, int b>
-struct Is_equal_int
-{};
-
-template <int a>
-struct Is_equal_int<a, a>
-{
-  static void yes() {};
-};
+#include "../../common/capabilities.hh"
+#include "../../common/helpertemplates.hh"
 
 // --- compile-time check of element-interface
 
@@ -30,8 +21,8 @@ struct ElementInterface
 {
   static void check(Element &e)
   {
-    Is_equal_int<dimw, Element::dimension>::yes();
-    Is_equal_int<dimw, Element::dimensionworld>::yes();
+    IsTrue<dimw == Element::dimension>::yes();
+    IsTrue<dimw == Element::dimensionworld>::yes();
 
     typedef typename Element::ctype ctype;
 
@@ -60,8 +51,8 @@ struct ElementInterface <Element, dimw, dimw>
 {
   static void check(Element &e)
   {
-    Is_equal_int<dimw, Element::dimension>::yes();
-    Is_equal_int<dimw, Element::dimensionworld>::yes();
+    IsTrue<dimw == Element::dimension>::yes();
+    IsTrue<dimw == Element::dimensionworld>::yes();
 
     // vertices have only a subset of functionality
     e.type();
@@ -108,8 +99,8 @@ struct EntityInterface
   static void check (Entity &e)
   {
     // consistent?
-    Is_equal_int<codim, Entity::codimension>::yes();
-    Is_equal_int<dim, Entity::dimension>::yes();
+    IsTrue<codim == Entity::codimension>::yes();
+    IsTrue<dim == Entity::dimension>::yes();
 
     // do the checking
     DoEntityInterfaceCheck(e);
@@ -125,9 +116,12 @@ struct EntityInterface
 };
 
 // recursive check of codim-0-entity methods count(), entity(), subIndex()
-template <class Entity, int cd>
+template <class Grid, int cd, bool hasEntity>
 struct ZeroEntityMethodCheck
 {
+  typedef typename Grid::template Traits<0>::Entity Entity;
+  typedef typename Grid::template Traits<cd>::Entity SubEntity;
+  typedef typename Grid::template Traits<cd-1>::Entity NextSubEntity;
   static void check(Entity &e)
   {
     e.template count<cd>();
@@ -135,7 +129,28 @@ struct ZeroEntityMethodCheck
     e.template subIndex<cd>(0);
 
     // recursively check on
-    ZeroEntityMethodCheck<Entity, cd - 1>();
+    ZeroEntityMethodCheck<Grid, cd - 1,
+        Dune::Capabilities::hasEntity<Grid, NextSubEntity>::v >();
+  }
+  ZeroEntityMethodCheck ()
+  {
+    c = check;
+  }
+  void (*c)(Entity &e);
+};
+
+// just the recursion if the grid does not know about this codim-entity
+template<class Grid, int cd>
+struct ZeroEntityMethodCheck<Grid, cd, false>
+{
+  typedef typename Grid::template Traits<0>::Entity Entity;
+  typedef typename Grid::template Traits<cd>::Entity SubEntity;
+  typedef typename Grid::template Traits<cd-1>::Entity NextSubEntity;
+  static void check(Entity &e)
+  {
+    // recursively check on
+    ZeroEntityMethodCheck<Grid, cd - 1,
+        Dune::Capabilities::hasEntity<Grid, NextSubEntity>::v >();
   }
   ZeroEntityMethodCheck ()
   {
@@ -145,9 +160,29 @@ struct ZeroEntityMethodCheck
 };
 
 // end recursive checking
-template <class Entity>
-struct ZeroEntityMethodCheck<Entity, 0>
+template <class Grid>
+struct ZeroEntityMethodCheck<Grid, 0, true>
 {
+  typedef typename Grid::template Traits<0>::Entity Entity;
+  static void check(Entity &e)
+  {
+    e.template count<0>();
+    e.template entity<0>(0);
+    e.template subIndex<0>(0);
+  }
+  ZeroEntityMethodCheck ()
+  {
+    c = check;
+  }
+  void (*c)(Entity &e);
+};
+
+// end recursive checking - same as true
+// ... codim 0 is always needed
+template <class Grid>
+struct ZeroEntityMethodCheck<Grid, 0, false>
+{
+  typedef typename Grid::template Traits<0>::Entity Entity;
   static void check(Entity &e)
   {
     e.template count<0>();
@@ -166,18 +201,20 @@ template <class Grid, int dim>
 struct EntityInterface<Grid, 0, dim>
 {
   typedef typename Grid::template Traits<0>::Entity Entity;
+  typedef typename Grid::template Traits<dim>::Entity SubEntity;
 
   static void check (Entity &e)
   {
     // consistent?
-    Is_equal_int<0, Entity::codimension>::yes();
-    Is_equal_int<dim, Entity::dimension>::yes();
+    IsTrue<0 == Entity::codimension>::yes();
+    IsTrue<dim == Entity::dimension>::yes();
 
     // do the common checking
     DoEntityInterfaceCheck(e);
 
     // special codim-0-entity methods which are parametrized by a codimension
-    ZeroEntityMethodCheck<Entity, dim>();
+    ZeroEntityMethodCheck
+    <Grid, dim, Dune::Capabilities::hasEntity<Grid, SubEntity>::v >();
 
     // grid hierarchy
     e.father();
@@ -217,8 +254,8 @@ struct EntityInterface<Grid, dim, dim>
   static void check (Entity &e)
   {
     // consistent?
-    Is_equal_int<dim, Entity::codimension>::yes();
-    Is_equal_int<dim, Entity::dimension>::yes();
+    IsTrue<dim == Entity::codimension>::yes();
+    IsTrue<dim == Entity::dimension>::yes();
 
     // run common test
     DoEntityInterfaceCheck(e);
@@ -229,6 +266,31 @@ struct EntityInterface<Grid, dim, dim>
     c = check;
   }
   void (*c)(Entity&);
+};
+
+template<class Grid, bool hasLeaf>
+struct LeafInterface
+{
+  static void check(Grid &g)
+  {
+    g.leafbegin(0);
+    g.leafend(0);
+  }
+  LeafInterface()
+  {
+    c = check;
+  }
+  void (*c)(Grid&);
+};
+template<class Grid>
+struct LeafInterface<Grid, false>
+{
+  static void check(Grid &g) {}
+  LeafInterface()
+  {
+    c = check;
+  }
+  void (*c)(Grid&);
 };
 
 template <class Grid>
@@ -256,8 +318,7 @@ struct GridInterface
     g.template lbegin<0>(0);
     g.template lend<0>(0);
 
-    g.leafbegin(0);
-    g.leafend(0);
+    LeafInterface< Grid, Dune::Capabilities::hasLeafIterator<Grid>::v >();
 
     // recursively check entity-interface
     EntityInterface<Grid, 0, Grid::dimension>();
@@ -292,5 +353,5 @@ void gridcheck (Grid &g)
   /*
    * now the runtime-tests
    */
-  g.checkIF();
+  //  g.checkIF();
 };

@@ -1,7 +1,9 @@
 #!/bin/sh
 
 # run lamboot if possible
-lamboot 2>&1 > /dev/null
+if which lamboot; then
+  lamboot 2>&1 > /dev/null
+fi
 
 # start test and abort on fail
 set -e
@@ -9,4 +11,6 @@ mpirun -np 1 test-yaspgrid
 set +e
 
 # possibly stop LAM again
-lamhalt 2>&1 > /dev/null
+if which lamhalt; then
+  lamhalt 2>&1 > /dev/null
+fi
