@@ -109,7 +109,8 @@ namespace Dune
   {
     /** \todo Use a member variable instead of search by name */
 #ifdef _3
-    typename UGTypes<dimworld>::MultiGridType* theMG = UG3d::GetMultigrid("DuneMG");
+    //typename UGTypes<dimworld>::MultiGridType* theMG = UG3d::GetMultigrid("DuneMG");
+    UG3d::multigrid* theMG = UG3d::GetMultigrid("DuneMG");
 #else
     typename UGTypes<dimworld>::MultiGridType* theMG = UG2d::GetMultigrid("DuneMG");
 #endif
@@ -144,6 +145,39 @@ namespace Dune
     UG3d::grid* theGrid = theMG->grids[level];
 
     UGGridLevelIterator<0,3,3> it((*const_cast<UGGrid< 3, 3 >* >(this)),level);
+    it.setToTarget(theGrid->elements[0]);
+    return it;
+  }
+#endif
+
+#ifdef _2
+  template <>
+  inline UGGridLevelIterator<2,2,2>
+  UGGrid < 2, 2 >::lbegin<2> (int level) const
+  {
+    /** \todo Use a member variable instead of search by name */
+    UG2d::multigrid* theMG = UG2d::GetMultigrid("DuneMG");
+    assert(theMG);
+    UG2d::grid* theGrid = theMG->grids[level];
+
+    UGGridLevelIterator<2,2,2> it((*const_cast<UGGrid< 2, 2 >* >(this)),level);
+
+    UG2d::node* mytarget = theGrid->firstNode[0];
+
+    it.setToTarget(mytarget);
+    return it;
+  }
+
+  template <>
+  inline UGGridLevelIterator<0,2,2>
+  UGGrid < 2, 2 >::lbegin<0> (int level) const
+  {
+    /** \todo Use a member variable instead of search by name */
+    UG2d::multigrid* theMG = UG2d::GetMultigrid("DuneMG");
+    assert(theMG);
+    UG2d::grid* theGrid = theMG->grids[level];
+
+    UGGridLevelIterator<0,2,2> it((*const_cast<UGGrid< 2, 2 >* >(this)),level);
     it.setToTarget(theGrid->elements[0]);
     return it;
   }
@@ -256,7 +290,6 @@ namespace Dune
   inline bool UGGrid < dim, dimworld >::adapt()
   {
     int rv;
-    int mode;
 
     /** \todo Use a member variable instead of search by name */
 #ifdef _3
@@ -266,7 +299,8 @@ namespace Dune
 #endif
     assert(theMG);
 
-#if 0
+#ifdef _3
+    int mode;
     mode = UG3d::GM_REFINE_TRULY_LOCAL;
     mode = mode | UG3d::GM_COPY_ALL;
 

@@ -150,12 +150,8 @@ namespace Dune {
     //! storage for barycentric coords
     Vec<dimbary, UGCtype> localBary_;
 
-    //! is true if Jinv_ and volume_ is calced
-    //bool builtinverse_;
-    //Mat<dim,dim, UGCtype> Jinv_;  //!< storage for inverse of jacobian
-    //UGCtype volume_; //!< storage of element volume
-
     typename TargetType<dimworld-dim,dimworld>::T* target_;
+
   };
 
 }  // namespace Dune

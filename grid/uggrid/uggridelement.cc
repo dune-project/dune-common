@@ -73,6 +73,7 @@ inline ElementType UGGridElement<dim,dimworld>::type()
   {
   case 1 : return line;
   case 2 :
+#ifdef _2
     switch (UG<dimworld>::Tag(target_)) {
     case UG2d::TRIANGLE :
       return triangle;
@@ -81,6 +82,7 @@ inline ElementType UGGridElement<dim,dimworld>::type()
     default :
       std::cerr << "UGGridElement::type():  ERROR:  Unknown type found!\n";
     }
+#endif
 
   case 3 :
     switch (UG<dimworld>::Tag(target_)) {
@@ -118,18 +120,28 @@ inline int UGGridElement<dim,dimworld>::corners()
 
 
 ///////////////////////////////////////////////////////////////////////
+
+template<int dim, int dimworld>
+inline const Vec<dimworld,UGCtype>& UGGridElement<dim,dimworld>::
+operator [](int i)
+{
+  cerr << "UGGridElement<" << dim << "," << dimworld << ">::operator[]:\n";
+  cerr << "Default implementation, should not be called!\n";
+  return coord_(i);
+}
+
 #ifdef _3
 template<>
 inline const Vec<3,UGCtype>& UGGridElement<0,3>::
 operator [](int i)
 {
-  UG3d::VERTEX* vertex = target_->myvertex;
+  const UG3d::VERTEX* vertex = target_->myvertex;
 
   coord_(0,0) = vertex->iv.x[0];
   coord_(1,0) = vertex->iv.x[1];
   coord_(2,0) = vertex->iv.x[2];
 
-  return coord_(i);
+  return coord_(0);
 }
 
 template<>
@@ -150,6 +162,40 @@ operator [](int i)
   return coord_(i);
 }
 #endif
+
+#ifdef _2
+template<>
+inline const Vec<2,UGCtype>& UGGridElement<0,2>::
+operator [](int i)
+{
+  const UG2d::VERTEX* vertex = target_->myvertex;
+
+  coord_(0,0) = vertex->iv.x[0];
+  coord_(1,0) = vertex->iv.x[1];
+
+  return coord_(i);
+}
+
+template<>
+inline const Vec<2,UGCtype>& UGGridElement<2,2>::
+operator [](int i)
+{
+  assert(0<=i && i<corners());
+
+  // #define TAG(p) ReadCW(p, UG2d::TAG_CE)
+  // #define CORNER(p,i) ((UG3d::NODE *) ((p)->ge.refs[UG3d::n_offset[TAG(p)]+(i)]))
+  //     UG3d::VERTEX* vertex = CORNER(target_,i)->myvertex;
+  // #undef CORNER
+  // #undef TAG
+  UG2d::VERTEX* vertex = UG<2>::Corner(target_,i)->myvertex;
+
+  for (int j=0; j<2; j++)
+    coord_(j,i) = vertex->iv.x[j];
+
+  return coord_(i);
+}
+#endif
+
 
 /** \todo It should be able to write this more concisely
     using partial spezialization.
@@ -174,6 +220,7 @@ refelem()
   return reftetrahedron.refelem;
 }
 
+#if 0
 template<>
 inline UGGridElement<2,2>& UGGridElement<2,3>::
 refelem()
@@ -183,6 +230,7 @@ refelem()
   else
     return refquadrangle.refelem;
 }
+#endif
 
 template<>
 inline UGGridElement<1,1>& UGGridElement<1,3>::

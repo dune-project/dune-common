@@ -52,6 +52,30 @@ UGGridLevelIterator < 0,3,3 >::operator++()
 }
 #endif
 
+#ifdef _2
+template<>
+inline UGGridLevelIterator < 2,2,2 >&
+UGGridLevelIterator < 2,2,2 >::operator++()
+{
+
+  target_ = target_->succ;
+
+  setToTarget(target_);
+  virtualEntity_.elNum_++;
+
+  return (*this);
+}
+
+template<>
+inline UGGridLevelIterator < 0,2,2 >&
+UGGridLevelIterator < 0,2,2 >::operator++()
+{
+  setToTarget(target_->ge.succ);
+  virtualEntity_.elNum_++;
+  return (*this);
+}
+#endif
+
 // gehe zum i Schritte weiter , wie auch immer
 template<int codim, int dim, int dimworld>
 inline UGGridLevelIterator < codim,dim,dimworld >&

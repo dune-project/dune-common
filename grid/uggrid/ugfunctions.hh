@@ -15,13 +15,18 @@ namespace Dune {
     static void Corner_Coordinates(typename TargetType<0,dim>::T* theElement, double* x[]);
 
     static int Sides_Of_Elem(typename TargetType<0,dim>::T* theElement) {
+#ifdef _3
+      using UG3d::nb_offset;
+      using UG3d::element_descriptors;
+#endif
       return SIDES_OF_ELEM(theElement);
     }
 
     //! Encapsulates the NBELEM macro
-    static int NbElem(typename TargetType<0,dim>::T* theElement, int nb) {
+    static typename TargetType<0,dim>::T* NbElem(typename TargetType<0,dim>::T* theElement, int nb) {
 #ifdef _3
       using UG3d::ELEMENT;
+      using UG3d::nb_offset;
 #else
       using UG2d::ELEMENT;
 #endif
@@ -57,6 +62,17 @@ namespace Dune {
     static void Transformation(int n, double** x,
                                const Vec<dim, double>& local, Mat<dim,dim,double>& mat) {
       TRANSFORMATION(n, x, local, mat);
+    }
+
+    static typename TargetType<dim,dim>::T* Corner(typename TargetType<0,dim>::T* theElement, int i) {
+#ifdef _2
+      using UG2d::NODE;
+      using UG2d::n_offset;
+#else
+      using UG3d::NODE;
+      using UG3d::n_offset;
+#endif
+      return CORNER(theElement, i);
     }
 
     static void InitUg(int* argcp, char*** argvp) {
