@@ -298,8 +298,14 @@ namespace Dune
     //! is true if elMat_ was calced
     mutable bool builtElMat_;
     mutable FieldMatrix<albertCtype,matdim,matdim> elMat_; //!< storage for mapping matrix
+
+    mutable bool calcedDet_; //! true if determinant was calculated
     mutable albertCtype elDet_; //!< storage of element determinant
 
+    // temporary mem for integrationElement with mydim < cdim
+    mutable FieldVector<albertCtype,cdim> tmpV_;
+    mutable FieldVector<albertCtype,cdim> tmpU_;
+    mutable FieldVector<albertCtype,cdim> tmpZ_;
   };
 
   //******************************************************************
