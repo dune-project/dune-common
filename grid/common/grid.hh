@@ -70,6 +70,13 @@ namespace Dune {
   enum BoundaryType { Neumann ,    //!< Neumann type boundary
                       Dirichlet   //!< Dirichlet type boundary
   };
+
+  enum AdaptationState { NONE ,     //!< notin' to od
+                         COARSEND,  //!< entity could be coarsend
+                         REFINED    //!< enity was refined
+  };
+
+
   //************************************************************************
   // E L E M E N T
   //************************************************************************

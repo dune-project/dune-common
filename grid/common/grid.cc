@@ -1045,43 +1045,47 @@ namespace Dune {
       template<int,int,int> class LevelIteratorImp, template<int,int,int> class EntityImp>
   inline GridDefault<dim,dimworld,ct,GridImp,LevelIteratorImp,EntityImp>::
   LeafIterator::LeafIterator (GridType &grid, int maxlevel, bool end) :
-    maxLev_ ( maxlevel ) , end_ ( end )
+    maxLev_ ( maxlevel ) , end_ ( end ),
+    it_ (NULL) , endit_ (NULL) , hierit_(NULL) , endhierit_(NULL) ,
+    built_(false) , goNextMacroEntity_(false) , deleteMe_ (false)
   {
-    it_    = new LevelIterator ( grid.template lbegin<0>( 0 ) );
-    endit_ = new LevelIterator ( grid.template lend<0>( 0 ) );
-
-    hierit_ = NULL;
-    endhierit_ = NULL;
-
-    goNextMacroEntity_ = false;
-    built_ = false;
-
-    en_ = & (*it_[0]);
-
-    if(maxLev_ == 0)
+    if(!end_)
     {
-      useHierarchic_ = false;
-      goNextMacroEntity_ = true;
-    }
-    else
-    {
-      useHierarchic_ = true;
-    }
+      it_    = new LevelIterator ( grid.template lbegin<0>( 0 ) );
+      endit_ = new LevelIterator ( grid.template lend<0>( 0 ) );
 
-    if(useHierarchic_)
-    {
-      if(en_->hasChildren())
+      hierit_ = NULL;
+      endhierit_ = NULL;
+
+      goNextMacroEntity_ = false;
+      built_ = false;
+
+      en_ = & (*it_[0]);
+
+      if(maxLev_ == 0)
       {
-        hierit_ = new HierIterator ( en_->hbegin( maxLev_ ) );
-        endhierit_ = new HierIterator ( en_->hend( maxLev_ ) );
-        built_ = true;
-        en_ = & (*hierit_[0]);
+        useHierarchic_ = false;
+        goNextMacroEntity_ = true;
+      }
+      else
+      {
+        useHierarchic_ = true;
       }
 
-      if( ((en_->level() < maxLev_) && ( en_->hasChildren() )))
-        en_ = goNextEntity();
-    }
+      if(useHierarchic_)
+      {
+        if(en_->hasChildren())
+        {
+          hierit_ = new HierIterator ( en_->hbegin( maxLev_ ) );
+          endhierit_ = new HierIterator ( en_->hend( maxLev_ ) );
+          built_ = true;
+          en_ = & (*hierit_[0]);
+        }
 
+        if( ((en_->level() < maxLev_) && ( en_->hasChildren() )))
+          en_ = goNextEntity();
+      }
+    }
   } // end Constructor LeafIterator
 
   // operator ++, i.e. goNextEntity
