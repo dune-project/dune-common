@@ -52,7 +52,7 @@ void Dune::IterativeSolver<OperatorType, DiscFuncType>::solve()
 
     // Output
     if (verbosity_ != QUIET) {
-      std::cout << "||u^{n+1} - u^n||: " << error << ",      "
+      std::cout << i << "  --  ||u^{n+1} - u^n||: " << error << ",      "
                 << "convrate " << convRate << "\n";
     }
 
