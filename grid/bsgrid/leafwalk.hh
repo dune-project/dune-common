@@ -8,20 +8,21 @@
 //! level <= the desired level
 template < class A > class leaf_or_has_level
 {
-  int lvl;
+  int lvl_;
 public:
-  // Constructor storing the level
-  leaf_or_has_level (int i = 0) : lvl (i) { }
-  //! \todo Please doc me!
+  //! Constructor storing the level
+  leaf_or_has_level (int i = 0) : lvl_ (i) { }
+
+  //! check if go next
   int operator () (const A * x) const
   {
-    return ((x->level () == lvl) || (x->leaf () && (x->level () <= lvl) )) ? 1 : 0 ;
+    return ((x->level () == lvl_) || (x->leaf () && (x->level () <= lvl_) )) ? 1 : 0 ;
   }
 
-  //! \todo Please doc me!
+  //! check if go next
   int operator () (const A & x) const
   {
-    return ((x.level  () == lvl) || (x.leaf  () && (x.level  () <= lvl) )) ? 1 : 0 ;
+    return ((x.level  () == lvl_) || (x.leaf  () && (x.level  () <= lvl_) )) ? 1 : 0 ;
   }
 };
 
