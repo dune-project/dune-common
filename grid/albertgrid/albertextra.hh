@@ -704,6 +704,50 @@ namespace AlbertHelp
     FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = ownvec[dof] );
   }
 
+#define PROCRESTORE 6666666
+
+  // clear Dof Vec
+  inline static int saveMyProcNum ( DOF_INT_VEC * drv , const int myProc,
+                                    int & entry)
+  {
+    int * vec=NULL;
+    int spot = -1;
+    GET_DOF_VEC(vec,drv);
+    FOR_ALL_DOFS(drv->fe_space->admin,
+                 if(dof == myProc)
+                 {
+                   spot = dof;
+                   entry = vec[dof];
+                   if(vec[dof] >= 0)
+                     vec[dof] = PROCRESTORE;
+                   else
+                     vec[dof] = -PROCRESTORE;
+                 }
+                 );
+    return spot;
+  }
+
+  // clear Dof Vec
+  inline static int restoreMyProcNum ( DOF_INT_VEC * drv)
+  {
+    int myProc = -1;
+    int * vec=NULL;
+    GET_DOF_VEC(vec,drv);
+    FOR_ALL_DOFS(drv->fe_space->admin,
+                 if(vec[dof] == PROCRESTORE)
+                 {
+                   vec[dof] = dof;
+                   myProc = dof;
+                 }
+                 else if (vec[dof] == -PROCRESTORE)
+                 {
+                   vec[dof] = -1;
+                   myProc = dof;
+                 }
+                 );
+    return myProc;
+  }
+
   inline DOF_INT_VEC * getDofNewCheck(const FE_SPACE * espace)
   {
     DOF_INT_VEC * drv = get_dof_int_vec("el_new_check",espace);
@@ -719,7 +763,8 @@ namespace AlbertHelp
   inline void makeTheRest( DOFVEC_STACK * dofvecs)
   {
     dofvecs->elNewCheck = getDofNewCheck(dofvecs->elNumbers->fe_space);
-    dofvecs->owner    = getDofNewCheck(dofvecs->elNumbers->fe_space);
+    // if owner vec not has been read
+    if(!dofvecs->owner) dofvecs->owner = getDofNewCheck(dofvecs->elNumbers->fe_space);
     dofvecs->owner->refine_interpol = &refineElOwner;
   }
 
