@@ -420,6 +420,7 @@ namespace Dune {
     int coord[dim];            // my integer position
     simplegrid_ctype s[dim];   // my position
     levelinfo<dim>* li;        // access to information common to all elements on a level
+    Mat<dim,dim,sgrid_ctype> Jinv; //!< storage for inverse of jacobian
 
     Vec<dim,simplegrid_ctype> c; // needed for returning references
   };
@@ -546,17 +547,21 @@ namespace Dune {
     : public BoundaryEntityDefault <dim,dimworld,simplegrid_ctype,SimpleElement,SimpleBoundaryEntity>
   {
   public:
+    //! make default Entity
+    SimpleBoundaryEntity() {};
+
     //! return type of boundary segment
-    BoundaryType type () {};
+    BoundaryType type () { return Neumann; };
 
     //! return true if ghost cell was calced
-    bool hasGeometry ();
+    bool hasGeometry () { return false; };
 
     //! return outer ghost cell
-    SimpleElement<dim,dimworld> & geometry();
+    SimpleElement<dim,dimworld> & geometry()
+    {};
 
     //! return outer barycenter of ghost cell
-    Vec<dimworld,simplegrid_ctype> & outerPoint ();
+    Vec<dimworld,simplegrid_ctype> & outerPoint () {};
   private:
   };
 
@@ -635,6 +640,11 @@ namespace Dune {
     {
       return !(nb_geo.boundary(count/2)) ;
     }
+
+    SimpleBoundaryEntity<dim,dimworld>& boundaryEntity ()
+    {
+      //return bndEntity;
+    };
 
     //! access neighbor, dereferencing
     SimpleEntity<0,dim,dimworld>& operator*()
@@ -748,6 +758,7 @@ namespace Dune {
     }
 
   private:
+    //SimpleBoundaryEntity<dim,dimworld> bndEntity;
     int count;                             //!< neighbor count
     SimpleElement<dim,dimworld> nb_geo;    //!< intersection in own local coordinates
     SimpleEntity<0,dim,dimworld> nb;       //!< virtual neighbor entity, built on the fly
@@ -778,7 +789,7 @@ namespace Dune {
 
   // codimension 0 -- the elements
   template<int dim, int dimworld>
-  class SimpleEntity<0,dim,dimworld> : public Entity<0,dim,dimworld,simplegrid_ctype,SimpleEntity,SimpleElement,
+  class SimpleEntity<0,dim,dimworld> : public EntityDefault<0,dim,dimworld,simplegrid_ctype,SimpleEntity,SimpleElement,
                                            SimpleLevelIterator,SimpleNeighborIterator,SimpleHierarchicIterator>
 
   {
@@ -825,7 +836,7 @@ namespace Dune {
     template<int cc>
     SimpleLevelIterator<cc,dim,dimworld> entity (int i)
     {
-      assert(cc==dim);   // support only vertices
+      assert(cc==dim);     // support only vertices
       return SimpleLevelIterator<cc,dim,dimworld>();
     }
     template<>
@@ -1064,13 +1075,13 @@ namespace Dune {
     //! dereferencing
     SimpleEntity<dim,dim,dimworld>& operator*()
     {
-      return &e;
+      return enty;
     }
 
     //! arrow
     SimpleEntity<dim,dim,dimworld>* operator->()
     {
-      return &e;
+      return &enty;
     }
 
     //! ask for level of entity
@@ -1234,6 +1245,11 @@ namespace Dune {
       li[L-1].nelements = 1;
       for (int i=0; i<dim; i++)
         li[L-1].nelements *= li[L-1].ne[i];
+
+      // calc number of elemnts
+      li[L-1].nvertices = 1;
+      for (int i=0; i<dim; i++)
+        li[L-1].nvertices *= (li[L-1].ne[i]+1);
     }
 
     void globalRefine (int refCount)
@@ -1289,6 +1305,11 @@ namespace Dune {
       li[L-1].nelements = 1;
       for (int i=0; i<dim; i++)
         li[L-1].nelements *= li[L-1].ne[i];
+
+      // calc number of vertices
+      li[L-1].nvertices = 1;
+      for (int i=0; i<dim; i++)
+        li[L-1].nvertices *= (li[L-1].ne[i]+1);
     }
 
     levelinfo<dim>* get_levelinfo (int l) {return &li[l];}
