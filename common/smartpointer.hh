@@ -4,7 +4,7 @@
 
 #ifndef __DUNE_SMARTPOINTER_HH__
 #define __DUNE_SMARTPOINTER_HH__
-
+#include <iostream>
 /**
  * @file
  * @brief This file implements the class SmartPointer which is a reference counting
@@ -16,7 +16,7 @@ namespace Dune {
    *
    * @{
    */
-
+  int smcounter=0;
   /**
    * @brief A reference counting smart pointer.
    *
@@ -56,10 +56,15 @@ namespace Dune {
 
     inline MemberType* operator->();
 
-    int count();
+    inline const MemberType& operator*() const;
+
+    inline const MemberType* operator->() const;
+
+    int count() const;
   private:
     /** @brief The object we reference. */
-    class PointerRep {
+    class PointerRep
+    {
       friend class SmartPointer<MemberType>;
       /** @brief The number of references. */
       int count_;
@@ -71,42 +76,64 @@ namespace Dune {
   };
 
   template<class T>
-  inline SmartPointer<T>::SmartPointer(){
+  inline SmartPointer<T>::SmartPointer()
+  {
     rep_ = new PointerRep(MemberType());
+    //std::cout<<"Constructing "<<smcounter++<<std::endl;
   }
 
   template<class T>
-  inline SmartPointer<T>::SmartPointer(const SmartPointer<T>& other) : rep_(other.rep_){
+  inline SmartPointer<T>::SmartPointer(const SmartPointer<T>& other) : rep_(other.rep_)
+  {
     ++(rep_->count_);
   }
 
   template<class T>
-  inline SmartPointer<T>& SmartPointer<T>::operator=(const SmartPointer<T>& other){
+  inline SmartPointer<T>& SmartPointer<T>::operator=(const SmartPointer<T>& other)
+  {
     (other.rep_->count_)++;
-    if(--(rep_->count_)<=0) delete rep_;
+    if(rep_!=0 && --(rep_->count_)<=0) delete rep_;
     rep_ = other.rep_;
     return *this;
   }
 
   template<class T>
-  inline SmartPointer<T>::~SmartPointer(){
-    if(--(rep_->count_)<=0) {
+  inline SmartPointer<T>::~SmartPointer()
+  {
+    if(rep_!=0 && --(rep_->count_)==0) {
+      //std::cout<< "Deleting! "<<rep_->count_<<" "<<rep_<<std::endl;
       delete rep_;
+      rep_=0;
     }
   }
 
   template<class T>
-  inline T& SmartPointer<T>::operator*(){
+  inline T& SmartPointer<T>::operator*()
+  {
     return rep_->rep_;
   }
 
   template<class T>
-  inline T *SmartPointer<T>::operator->(){
+  inline T *SmartPointer<T>::operator->()
+  {
     return &(rep_->rep_);
   }
 
   template<class T>
-  inline int SmartPointer<T>::count(){
+  inline const T& SmartPointer<T>::operator*() const
+  {
+    return rep_->rep_;
+  }
+
+  template<class T>
+  inline const T *SmartPointer<T>::operator->() const
+  {
+    return &(rep_->rep_);
+  }
+
+  template<class T>
+  inline int SmartPointer<T>::count() const
+  {
     return rep_->count_;
   }
 
