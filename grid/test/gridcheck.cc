@@ -6,6 +6,9 @@
 
    Implements a generic grid check
 
+   TODO:
+   - check return types
+
  */
 
 // helper template so that compilation fails if two constants are not
@@ -88,7 +91,7 @@ void DoEntityInterfaceCheck (Entity &e)
   e.level();
   e.index();
   e.partition_type();
-  // ???
+  // !!! Albert-only method!
   // e.boundaryId();
   e.geometry();
 
@@ -129,8 +132,7 @@ struct ZeroEntityMethodCheck
   {
     e.template count<cd>();
     e.template entity<cd>(0);
-    // ???
-    // e.template subIndex<cd>();
+    e.template subIndex<cd>(0);
 
     // recursively check on
     ZeroEntityMethodCheck<Entity, cd - 1>();
@@ -150,8 +152,7 @@ struct ZeroEntityMethodCheck<Entity, 0>
   {
     e.template count<0>();
     e.template entity<0>(0);
-    // ???
-    // e.template subIndex<0>();
+    e.template subIndex<0>(0);
   }
   ZeroEntityMethodCheck ()
   {
@@ -246,9 +247,17 @@ struct GridInterface
     g.overlap_size(0,0);
     g.ghost_size(0,0);
 
+    // adaption
+    g.adapt();
+    g.preAdapt();
+    g.postAdapt();
+
     // check for iterator functions
     g.template lbegin<0>(0);
     g.template lend<0>(0);
+
+    g.leafbegin(0);
+    g.leafend(0);
 
     // recursively check entity-interface
     EntityInterface<Grid, 0, Grid::dimension>();
