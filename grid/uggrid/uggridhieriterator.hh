@@ -81,7 +81,6 @@ namespace Dune {
 
     Stack<StackEntry> elemStack;
 
-    UGElementType* target_;
   };
 
   // Include class method definitions
