@@ -543,7 +543,7 @@ void UGGrid <dim, dimworld>::adaptWithoutClosure()
 }
 
 template < int dim, int dimworld >
-void UGGrid < dim, dimworld >::globalRefine(int refCount)
+void UGGrid < dim, dimworld >::globalRefine()
 {
   // mark all entities for grid refinement
   typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());

@@ -288,11 +288,8 @@ namespace Dune {
     void makeNewUGMultigrid();
 
     /** \brief Does one uniform refinement step
-     *
-     * \param refCount I don't know what this is good for.  It doesn't
-     *        actually do anything.
      */
-    void globalRefine(int refCount);
+    void globalRefine();
 
     // UG multigrid, which contains the data
     typename UGTypes<dimworld>::MultiGridType* multigrid_;
