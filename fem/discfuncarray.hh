@@ -74,6 +74,12 @@ namespace Dune {
     //! return object of type LocalFunctionType
     LocalFunctionArray<DiscreteFunctionSpaceType> newLocalFunction ( );
 
+    //! return reference to this
+    //! this methods is only to fullfil the interface os parameter classes
+    DiscreteFunctionType & argument    () { return *this; }
+    const DiscreteFunctionType & argument () const { return *this; }
+    DiscreteFunctionType & destination () { return *this; }
+
     //! update LocalFunction to given Entity en
     template <class EntityType>
     void localFunction ( EntityType &en,
