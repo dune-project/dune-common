@@ -1,3 +1,5 @@
+.deps
+doxygen-tag
 html
 latex
 Makefile
