@@ -9,14 +9,16 @@
 #include <dune/common/smartpointer.hh>
 #include <dune/common/fixedarray.hh>
 #include <dune/common/iteratorfacades.hh>
+#include <dune/common/poolallocator.hh>
+
 namespace Dune
 {
   // forward declaration
-  template<class T, int N>
+  template<class T, int N, class A>
   class ArrayListIterator;
 
 
-  template<class T, int N>
+  template<class T, int N, class A>
   class ConstArrayListIterator;
 
   /**
@@ -41,16 +43,9 @@ namespace Dune
    * std::vector this approach prevents data copying. On the outside
    * we provide the same interface as the stl random access containers.
    */
-  template<class T, int N=100>
+  template<class T, int N=100, class A=std::allocator<T> >
   class ArrayList
   {
-
-    /**
-     * @brief The iterator needs access to the private variables.
-     */
-    friend class ArrayListIterator<T,N>;
-    friend class ConstArrayListIterator<T,N>;
-
   public:
     /**
      * @brief The member type that is stored.
@@ -71,12 +66,12 @@ namespace Dune
     /**
      * @brief A random access iterator.
      */
-    typedef ArrayListIterator<MemberType,N> iterator;
+    typedef ArrayListIterator<MemberType,N,A> iterator;
 
     /**
      * @brief A constant random access iterator.
      */
-    typedef ConstArrayListIterator<MemberType,N> const_iterator;
+    typedef ConstArrayListIterator<MemberType,N,A> const_iterator;
 
 
     /**
@@ -135,6 +130,16 @@ namespace Dune
      * @return The capacity.
      */
     inline int capacity() const;
+
+    /**
+     * @brief Purge the list.
+     *
+     * If there are empty chunks at the front all nonempty
+     * chunks will be moved towards the front and the capacity
+     * increases.
+     */
+    inline void purge();
+
     /**
      * @brief Delete all entries from the list.
      */
@@ -144,9 +149,23 @@ namespace Dune
      */
     ArrayList();
 
-  protected:
+  private:
+
+    /**
+     * @brief The allocators for the fixed array.
+     */
+    typedef typename A::template rebind<SmartPointer<FixedArray<MemberType,chunkSize_> > >::other
+    SmartPointerAllocator;
+
+    /**
+     * @brief The iterator needs access to the private variables.
+     */
+    friend class ArrayListIterator<T,N,A>;
+    friend class ConstArrayListIterator<T,N,A>;
+
     /** @brief the data chunks of our list. */
-    std::vector<SmartPointer<FixedArray<MemberType,chunkSize_> > > chunks_;
+    std::vector<SmartPointer<FixedArray<MemberType,chunkSize_> >,
+        SmartPointerAllocator> chunks_;
     /** @brief The current data capacity. */
     int capacity_;
     /** @brief The current number of elements in our data structure. */
@@ -178,12 +197,12 @@ namespace Dune
   /**
    * @brief A random access iterator for the Dune::ArrayList class.
    */
-  template<class T, int N>
-  class ArrayListIterator : public RandomAccessIteratorFacade<ArrayListIterator<T,N>,T>
+  template<class T, int N, class A>
+  class ArrayListIterator : public RandomAccessIteratorFacade<ArrayListIterator<T,N,A>,T>
   {
 
-    friend class ArrayList<T,N>;
-    friend class ConstArrayListIterator<T,N>;
+    friend class ArrayList<T,N,A>;
+    friend class ConstArrayListIterator<T,N,A>;
   public:
     /**
      * @brief The member type.
@@ -207,14 +226,14 @@ namespace Dune
      * @return True if the iterators are for the same list and
      * at the position.
      */
-    inline bool equals(const ArrayListIterator<MemberType,N>& other) const;
+    inline bool equals(const ArrayListIterator<MemberType,N,A>& other) const;
 
     /**
      * @brief Comares two iterators.
      * @return True if the iterators are for the same list and
      * at the position.
      */
-    inline bool equals(const ConstArrayListIterator<MemberType,N>& other) const;
+    inline bool equals(const ConstArrayListIterator<MemberType,N,A>& other) const;
 
     /**
      * @brief Increment the iterator.
@@ -244,10 +263,8 @@ namespace Dune
      *
      * Afterwards the iterator will be positioned at the next
      * unerased entry or the end if the list is empty.
-     *
-     * @warning This invalidates all other iterators of the list.
-     * An iterator the pointed to the end of the list before
-     * does not do that after this method is called.
+     * This does not invalidate any iterators positioned after
+     * the current position but those positioned at previous ones.
      * @return An iterator to the first position after the deleted
      * ones or to the end if the list is empty.
      */
@@ -257,9 +274,9 @@ namespace Dune
 
     inline void advance(int n);
 
-    inline int distanceTo(const ArrayListIterator<MemberType,N>& other) const;
+    inline int distanceTo(const ArrayListIterator<MemberType,N,A>& other) const;
 
-    inline ArrayListIterator<MemberType,N>& operator=(const ArrayListIterator<MemberType,N>& other);
+    inline ArrayListIterator<MemberType,N,A>& operator=(const ArrayListIterator<MemberType,N,A>& other);
 
     inline ArrayListIterator() : position_(0), list_(list_)
     {}
@@ -270,7 +287,7 @@ namespace Dune
      * @param list The list we are an iterator for.
      * @param position The initial position of the iterator.
      */
-    inline ArrayListIterator(ArrayList<T,N>& arrayList, int position);
+    inline ArrayListIterator(ArrayList<T,N,A>& arrayList, int position);
 
     /**
      * @brief The current postion.
@@ -279,19 +296,19 @@ namespace Dune
     /**
      * @brief The list we are an iterator for.
      */
-    ArrayList<T,N>* list_;
+    ArrayList<T,N,A>* list_;
   };
 
   /**
    * @brief A constant random access iterator for the Dune::ArrayList class.
    */
-  template<class T, int N>
+  template<class T, int N, class A>
   class ConstArrayListIterator
-    : public RandomAccessIteratorFacade<ConstArrayListIterator<T,N>, const T>
+    : public RandomAccessIteratorFacade<ConstArrayListIterator<T,N,A>, const T>
   {
 
-    friend class ArrayList<T,N>;
-    friend class ArrayListIterator<T,N>;
+    friend class ArrayList<T,N,A>;
+    friend class ArrayListIterator<T,N,A>;
 
   public:
     /**
@@ -315,7 +332,7 @@ namespace Dune
      * @return true if the iterators are for the same list and
      * at the position.
      */
-    inline bool equals(const ConstArrayListIterator<MemberType,N>& other) const;
+    inline bool equals(const ConstArrayListIterator<MemberType,N,A>& other) const;
 
     /**
      * @brief Increment the iterator.
@@ -329,7 +346,7 @@ namespace Dune
 
     inline void advance(int n);
 
-    inline int distanceTo(const ConstArrayListIterator<MemberType,N>& other) const;
+    inline int distanceTo(const ConstArrayListIterator<MemberType,N,A>& other) const;
 
     /**
      * @brief Get the value of the list at an arbitrary position.
@@ -343,12 +360,12 @@ namespace Dune
      */
     inline const MemberType& dereference() const;
 
-    inline const ConstArrayListIterator<MemberType,N>& operator=(const ConstArrayListIterator<MemberType,N>& other);
+    inline const ConstArrayListIterator<MemberType,N,A>& operator=(const ConstArrayListIterator<MemberType,N,A>& other);
 
     inline ConstArrayListIterator() : position_(0), list_(list_)
     {}
 
-    inline ConstArrayListIterator(const ArrayListIterator<MemberType,N>& other);
+    inline ConstArrayListIterator(const ArrayListIterator<MemberType,N,A>& other);
 
   private:
 
@@ -357,7 +374,7 @@ namespace Dune
      * @param list The list we are an iterator for.
      * @param position The initial position of the iterator.
      */
-    inline ConstArrayListIterator(const ArrayList<T,N>& arrayList, int position);
+    inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, int position);
 
     /**
      * @brief The current postion.
@@ -366,39 +383,39 @@ namespace Dune
     /**
      * @brief The list we are an iterator for.
      */
-    const ArrayList<T,N>* list_;
+    const ArrayList<T,N,A>* list_;
   };
 
 
-  template<class T, int N>
-  ArrayList<T,N>::ArrayList()
+  template<class T, int N, class A>
+  ArrayList<T,N,A>::ArrayList()
     : capacity_(0), size_(0), start_(0)
   {
     chunks_.reserve(100);
   }
 
-  template<class T, int N>
-  void ArrayList<T,N>::clear(){
+  template<class T, int N, class A>
+  void ArrayList<T,N,A>::clear(){
     capacity_=0;
     size_=0;
     start_=0;
     chunks_.clear();
   }
 
-  template<class T, int N>
-  int ArrayList<T,N>::size() const
+  template<class T, int N, class A>
+  int ArrayList<T,N,A>::size() const
   {
     return size_;
   }
 
-  template<class T, int N>
-  int ArrayList<T,N>::capacity() const
+  template<class T, int N, class A>
+  int ArrayList<T,N,A>::capacity() const
   {
     return capacity_;
   }
 
-  template<class T, int N>
-  void ArrayList<T,N>::push_back(const T& entry)
+  template<class T, int N, class A>
+  void ArrayList<T,N,A>::push_back(const T& entry)
   {
     int index=start_+size_;
     if(index==capacity_)
@@ -410,72 +427,93 @@ namespace Dune
     ++size_;
   }
 
-  template<class T, int N>
-  T& ArrayList<T,N>::operator[](int i)
+  template<class T, int N, class A>
+  T& ArrayList<T,N,A>::operator[](int i)
   {
     return elementAt(start_+i);
   }
 
 
-  template<class T, int N>
-  const T& ArrayList<T,N>::operator[](int i) const
+  template<class T, int N, class A>
+  const T& ArrayList<T,N,A>::operator[](int i) const
   {
     return elementAt(start_+i);
   }
 
-  template<class T, int N>
-  T& ArrayList<T,N>::elementAt(int i)
+  template<class T, int N, class A>
+  T& ArrayList<T,N,A>::elementAt(int i)
   {
     return chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
 
 
-  template<class T, int N>
-  const T& ArrayList<T,N>::elementAt(int i) const
+  template<class T, int N, class A>
+  const T& ArrayList<T,N,A>::elementAt(int i) const
   {
     return chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
 
-  template<class T, int N>
-  ArrayListIterator<T,N> ArrayList<T,N>::begin()
+  template<class T, int N, class A>
+  ArrayListIterator<T,N,A> ArrayList<T,N,A>::begin()
   {
-    return ArrayListIterator<T,N>(*this, start_);
+    return ArrayListIterator<T,N,A>(*this, start_);
   }
 
-  template<class T, int N>
-  ConstArrayListIterator<T,N> ArrayList<T,N>::begin() const
+  template<class T, int N, class A>
+  ConstArrayListIterator<T,N,A> ArrayList<T,N,A>::begin() const
   {
-    return ConstArrayListIterator<T,N>(*this, start_);
+    return ConstArrayListIterator<T,N,A>(*this, start_);
   }
 
-  template<class T, int N>
-  ArrayListIterator<T,N> ArrayList<T,N>::end()
+  template<class T, int N, class A>
+  ArrayListIterator<T,N,A> ArrayList<T,N,A>::end()
   {
-    return ArrayListIterator<T,N>(*this, start_+size_);
+    return ArrayListIterator<T,N,A>(*this, start_+size_);
   }
 
-  template<class T, int N>
-  ConstArrayListIterator<T,N> ArrayList<T,N>::end() const
+  template<class T, int N, class A>
+  ConstArrayListIterator<T,N,A> ArrayList<T,N,A>::end() const
   {
-    return ConstArrayListIterator<T,N>(*this, start_+size_);
+    return ConstArrayListIterator<T,N,A>(*this, start_+size_);
   }
 
+  template<class T, int N, class A>
+  void ArrayList<T,N,A>::purge()
+  {
+    // Distance to copy to the left.
+    int distance = start_/chunkSize_;
+    if(distance>0) {
+      // Number of chunks with entries in it;
+      int chunks = ((start_%chunkSize_ + size_)/chunkSize_ );
 
-  template<class T, int N>
-  void ArrayListIterator<T,N>::advance(int i)
+      typedef typename std::vector<SmartPointer<FixedArray<MemberType,
+                  chunkSize_> > >::iterator iterator;
+
+      // Copy chunks to the left.
+      std::copy(chunks_.begin()+distance,
+                chunks_.begin()+(distance+chunks), chunks_.begin());
+
+      // Calculate new parameters
+      start_ = start_ % chunkSize_;
+      //capacity += distance * chunkSize_;
+    }
+  }
+
+  template<class T, int N, class A>
+  void ArrayListIterator<T,N,A>::advance(int i)
   {
     position_+=i;
   }
 
-  template<class T, int N>
-  void ConstArrayListIterator<T,N>::advance(int i)
+  template<class T, int N, class A>
+  void ConstArrayListIterator<T,N,A>::advance(int i)
   {
     position_+=i;
   }
 
 
-  template<class T, int N>
-  bool ArrayListIterator<T,N>::equals(const ArrayListIterator<MemberType,N>& other) const
+  template<class T, int N, class A>
+  bool ArrayListIterator<T,N,A>::equals(const ArrayListIterator<MemberType,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
@@ -483,8 +521,8 @@ namespace Dune
   }
 
 
-  template<class T, int N>
-  bool ArrayListIterator<T,N>::equals(const ConstArrayListIterator<MemberType,N>& other) const
+  template<class T, int N, class A>
+  bool ArrayListIterator<T,N,A>::equals(const ConstArrayListIterator<MemberType,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
@@ -492,123 +530,127 @@ namespace Dune
   }
 
 
-  template<class T, int N>
-  bool ConstArrayListIterator<T,N>::equals(const ConstArrayListIterator<MemberType,N>& other) const
+  template<class T, int N, class A>
+  bool ConstArrayListIterator<T,N,A>::equals(const ConstArrayListIterator<MemberType,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
     return position_==other.position_ ;
   }
 
-  template<class T, int N>
-  void ArrayListIterator<T,N>::increment()
+  template<class T, int N, class A>
+  void ArrayListIterator<T,N,A>::increment()
   {
     ++position_;
   }
 
-  template<class T, int N>
-  void ConstArrayListIterator<T,N>::increment()
+  template<class T, int N, class A>
+  void ConstArrayListIterator<T,N,A>::increment()
   {
     ++position_;
   }
 
-  template<class T, int N>
-  void ArrayListIterator<T,N>::decrement()
+  template<class T, int N, class A>
+  void ArrayListIterator<T,N,A>::decrement()
   {
     --position_;
   }
 
-  template<class T, int N>
-  void ConstArrayListIterator<T,N>::decrement()
+  template<class T, int N, class A>
+  void ConstArrayListIterator<T,N,A>::decrement()
   {
     --position_;
   }
 
-  template<class T, int N>
-  T& ArrayListIterator<T,N>::elementAt(int i) const
+  template<class T, int N, class A>
+  T& ArrayListIterator<T,N,A>::elementAt(int i) const
   {
     i+=position_;
     return list_->elementAt(i+position_);
   }
 
-  template<class T, int N>
-  const T& ConstArrayListIterator<T,N>::elementAt(int i) const
+  template<class T, int N, class A>
+  const T& ConstArrayListIterator<T,N,A>::elementAt(int i) const
   {
     return list_->elementAt(i+position_);
   }
 
-  template<class T, int N>
-  T& ArrayListIterator<T,N>::dereference() const
+  template<class T, int N, class A>
+  T& ArrayListIterator<T,N,A>::dereference() const
   {
     return list_->elementAt(position_);
   }
 
-  template<class T, int N>
-  const T& ConstArrayListIterator<T,N>::dereference() const
+  template<class T, int N, class A>
+  const T& ConstArrayListIterator<T,N,A>::dereference() const
   {
     return list_->elementAt(position_);
   }
 
-  template<class T, int N>
-  int ArrayListIterator<T,N>::distanceTo(const ArrayListIterator<T,N>& other) const
+  template<class T, int N, class A>
+  int ArrayListIterator<T,N,A>::distanceTo(const ArrayListIterator<T,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
     return other.position_ - position_;
   }
 
-  template<class T, int N>
-  int ConstArrayListIterator<T,N>::distanceTo(const ConstArrayListIterator<T,N>& other) const
+  template<class T, int N, class A>
+  int ConstArrayListIterator<T,N,A>::distanceTo(const ConstArrayListIterator<T,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
     return other.position_ - position_;
   }
 
-  template<class T, int N>
-  ArrayListIterator<T,N>& ArrayListIterator<T,N>::operator=(const ArrayListIterator<T,N>& other)
+  template<class T, int N, class A>
+  ArrayListIterator<T,N,A>& ArrayListIterator<T,N,A>::operator=(const ArrayListIterator<T,N,A>& other)
   {
     position_=other.position_;
     list_=other.list_;
     return *this;
   }
 
-  template<class T, int N>
-  const ConstArrayListIterator<T,N>& ConstArrayListIterator<T,N>::operator=(const ConstArrayListIterator<T,N>& other)
+  template<class T, int N, class A>
+  const ConstArrayListIterator<T,N,A>& ConstArrayListIterator<T,N,A>::operator=(const ConstArrayListIterator<T,N,A>& other)
   {
     position_=other.position_;
     list_=other.list_;
     return *this;
   }
 
-  template<class T, int N>
-  void ArrayListIterator<T,N>::eraseToHere()
+  template<class T, int N, class A>
+  void ArrayListIterator<T,N,A>::eraseToHere()
   {
     list_->size_ -= ++position_ - list_->start_;
-    int chunks = position_/chunkSize_;
-    list_->start_ = position_ % chunkSize_;
-    position_ = list_->start_;
-    if(chunks>0) {
-      typedef typename std::vector<SmartPointer<FixedArray<MemberType,chunkSize_> > >::iterator iterator;
-      iterator chunk=list_->chunks_.begin(), chunk1=chunk+chunks;
-      list_->chunks_.erase(chunk,chunk1);
-    }
+    // chunk number of the new position.
+    int posChunkStart = position_ / chunkSize_;
+    // number of chunks to deallocate
+    int chunks = (position_ - list_->start_ + list_->start_ % chunkSize_)
+                 / chunkSize_;
+    list_->start_ = position_;
+
+    // Deallocate memory not needed any more.
+    for(int chunk=0; chunk<chunks; chunk++)
+      list_->chunks_[--posChunkStart].deallocate();
+
+    // As new entries only get append the capacity shrinks
     list_->capacity_-=chunks*chunkSize_;
   }
 
-  template<class T, int N>
-  ArrayListIterator<T,N>::ArrayListIterator(ArrayList<T,N>& arrayList, int position)
+  template<class T, int N, class A>
+  ArrayListIterator<T,N,A>::ArrayListIterator(ArrayList<T,N,A>& arrayList, int position)
     : position_(position), list_(&arrayList)
   {}
 
 
-  template<class T, int N>
-  ConstArrayListIterator<T,N>::ConstArrayListIterator(const ArrayList<T,N>& arrayList, int position)
+  template<class T, int N, class A>
+  ConstArrayListIterator<T,N,A>::ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, int position)
     : position_(position), list_(&arrayList)
   {}
 
-  template<class T, int N>
-  ConstArrayListIterator<T,N>::ConstArrayListIterator(const ArrayListIterator<T,N>& other)
+  template<class T, int N, class A>
+  ConstArrayListIterator<T,N,A>::ConstArrayListIterator(const ArrayListIterator<T,N,A>& other)
     : position_(other.position_), list_(other.list_)
   {}
 
