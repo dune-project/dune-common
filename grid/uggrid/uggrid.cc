@@ -177,18 +177,21 @@ inline void UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHe
     // compilers (gcc, for example) crashes on this.
     //newformat P1_conform $V n1: nt 9 $M implicit(nt): mt 2 $I n1;
     /** \todo Use a smaller format in order to save memory */
-    for (int i=0; i<4; i++)
-      newformatArgs[i] = (char*)::malloc(50*sizeof(char));
+    //         for (int i=0; i<4; i++)
+    //             newformatArgs[i] = (char*)::malloc(50*sizeof(char));
 
-    sprintf(newformatArgs[0], "newformat DuneFormat");
-    sprintf(newformatArgs[1], "V n1: nt 9");
-    sprintf(newformatArgs[2], "M implicit(nt): mt 2");
-    sprintf(newformatArgs[3], "I n1");
+    //         sprintf(newformatArgs[0], "newformat DuneFormat");
+    //sprintf(newformatArgs[1], "V n1: nt 0");
+    //sprintf(newformatArgs[2], "M implicit(nt): mt 0");
+    //sprintf(newformatArgs[3], "I n1");
 
+    char* nfarg = "newformat DuneFormat";
 #ifdef _3
-    UG3d::CreateFormatCmd(4, newformatArgs);
+    UG3d::CreateFormatCmd(1, &nfarg);
+    //UG3d::CreateFormatCmd(1, newformatArgs);
 #else
-    UG2d::CreateFormatCmd(4, newformatArgs);
+    UG2d::CreateFormatCmd(1, &nfarg);
+    //UG2d::CreateFormatCmd(1, newformatArgs);
 #endif
   }
 
@@ -227,8 +230,8 @@ inline UGGrid < dim, dimworld >::~UGGrid()
     UG2d::ExitUg();
 #endif
 
-    for (int i=0; i<4; i++)
-      free(newformatArgs[i]);
+    //         for (int i=0; i<4; i++)
+    //             free(newformatArgs[i]);
 
     // remove defaults file, if we wrote one on startup
     if (!useExistingDefaultsFile)
