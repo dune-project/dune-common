@@ -261,7 +261,7 @@ inline UGGrid < dim, dimworld >::~UGGrid()
     UG3d::Set_Current_BVP((void**)thisBVP);
     UG3d::DisposeMultiGrid(multigrid_);
 #else
-    UG3d::Set_Current_BVP((void**)thisBVP);
+    UG2d::Set_Current_BVP((void**)thisBVP);
     UG2d::DisposeMultiGrid(multigrid_);
 #endif
   }
