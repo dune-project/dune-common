@@ -19,6 +19,8 @@
 extern void free_leaf_data(void *leaf_data, MESH *mesh);
 extern void free_dof(DOF *dof, MESH *mesh, int position);
 
+void enlargeTraverseStack(TRAVERSE_STACK *stack);
+
 //! organize the TRAVERSE_STACK Management, so we can use the nice Albert
 //! fucntions get_traverse_stack and free_traverse_stack
 //! this count the copy made of this class and call free_traverse_stack
@@ -102,7 +104,6 @@ public:
 
 };
 
-
 //! copy all memory entries from org to copy via memcpy
 void hardCopyStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 {
@@ -141,6 +142,47 @@ void hardCopyStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 
   return;
 }
+
+//! copy all memory entries from org to copy via memcpy
+void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
+{
+  copy->traverse_mesh = org->traverse_mesh;
+  copy->traverse_level = org->traverse_level;
+  copy->traverse_fill_flag = org->traverse_fill_flag;
+  copy->traverse_mel = org->traverse_mel;
+
+  if(copy->stack_size < 5)
+    enlargeTraverseStack(copy);
+
+  int used = org->stack_used;
+  copy->stack_used = 1;
+
+  // copy only the last 2 elements
+  int copyUse = used-1;
+  if(copyUse < 0) copyUse = 0;
+
+  memcpy(copy->elinfo_stack,org->elinfo_stack+copyUse,
+         2*sizeof(EL_INFO));
+
+  copy->info_stack[0] = org->info_stack[used];
+  // go to child 0
+  copy->info_stack[1] = 0;
+
+  memcpy(copy->save_elinfo_stack,org->save_elinfo_stack+copyUse,
+         2*sizeof(EL_INFO));
+
+  copy->save_info_stack[0] = org->save_info_stack[used];
+  copy->save_info_stack[1] = 0;
+
+  copy->save_stack_used = org->save_stack_used;
+  copy->el_count = 1;
+
+  copy->next = org->next;
+  org->next = copy;
+
+  return;
+}
+
 
 TRAVERSE_STACK & removeTraverseStack(TRAVERSE_STACK& copy)
 {
@@ -217,12 +259,17 @@ void printTraverseStack(TRAVERSE_STACK *stack)
 {
   FUNCNAME("printTraverseStack");
 
+  MSG("****************************************************\n");
   MSG("current stack %8X | size %d \n", stack,stack->stack_size);
   MSG("traverse_level %d \n",stack->traverse_level);
   MSG("elinfo_stack      = %8X\n",stack->elinfo_stack);
   MSG("info_stack        = %8X\n",stack->info_stack);
   MSG("save_elinfo_stack = %8X\n",stack->save_elinfo_stack);
-  MSG("save_info_stack   = %8X\n",stack->save_info_stack);
+  MSG("save_info_stack   = %8X\n\n",stack->save_info_stack);
+
+  MSG("stack_used        = %d\n",stack->stack_used);
+  MSG("save_stack_used   = %d\n",stack->save_stack_used);
+  MSG("****************************************************\n");
 }
 
 
