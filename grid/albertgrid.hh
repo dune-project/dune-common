@@ -1096,6 +1096,16 @@ namespace Dune
     int maxlevel() const;
 
     //! Iterator to first entity of given codim on level
+    template<int codim, PartitionType pitype>
+    AlbertGridLevelIterator<codim,dim,dimworld,pitype>
+    lbegin (int level,IteratorType IType = InteriorBorder, int proc = -1 );
+
+    //! one past the end on this level
+    template<int codim, PartitionType pitype>
+    AlbertGridLevelIterator<codim,dim,dimworld,pitype>
+    lend (int level, IteratorType IType = InteriorBorder, int proc = -1 );
+
+    //! Iterator to first entity of given codim on level
     template<int codim> AlbertGridLevelIterator<codim,dim,dimworld,All_Partition>
     lbegin (int level,IteratorType IType = InteriorBorder, int proc = -1 );
 
@@ -1191,7 +1201,6 @@ namespace Dune
 
     // read and write mesh_ via ALBERT routines
     bool writeGridXdr  ( const char * filename, albertCtype time );
-    bool writeGridUSPM ( const char * filename, albertCtype time, int level );
     bool readGridXdr   ( const char * filename, albertCtype & time );
 
     //! access to mesh pointer, needed by some methods
