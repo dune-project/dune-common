@@ -1,12 +1,13 @@
 # $Id$
 
-SUBDIRS = localbase operator
+SUBDIRS = common discfuncarray gaussquadrature quadlqh
 
 femincludedir = $(includedir)/dune/fem
-feminclude_HEADERS = discretefunction.hh \
-                     discreteoperator.hh \
-                     fem.hh \
-                     functionspace.hh \
-                     gaussquadrature.cc \
-                     gaussquadrature.hh \
-                     localbase.hh
+feminclude_HEADERS = \
+              discfuncarray.hh \
+              discreteoperatorimp.hh \
+              feoperator.hh \
+              gaussquadrature.hh \
+              inverseoperators.hh \
+              quadlqh.hh \
+              quadtetratri.hh
