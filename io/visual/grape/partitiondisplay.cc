@@ -42,12 +42,12 @@ static int last_partition;  /*  true wenn wir auf der letzten partition arbeiten
 static int max_partition = 1;  /* max number of partitions */
 static int thread = 0;  /* actual partition number */
 
-SUPROP_DEV suprop;
+static SUPROP_DEV suprop;
 
 /*  ------------------------------------------------------------------  */
 
 
-GENMESHnD* genmesh3d_switch_part_light_model_on_off ()
+inline GENMESHnD* genmesh3d_switch_part_light_model_on_off ()
 {
   GENMESHnD*          hmesh = (GENMESHnD*) START_METHOD (G_INSTANCE);
   ALERT (hmesh, "genmesh3d-switch-part-light-model-on-off: No hmesh!", END_METHOD(NULL));
@@ -62,7 +62,7 @@ GENMESHnD* genmesh3d_switch_part_light_model_on_off ()
   END_METHOD (hmesh);
 }
 
-GENMESHnD* genmesh3d_switch_part_diagnostic_on_off ()
+inline GENMESHnD* genmesh3d_switch_part_diagnostic_on_off ()
 {
   GENMESHnD*   hmesh = (GENMESHnD*) START_METHOD (G_INSTANCE);
   ALERT (hmesh, "genmesh3d-switch-part-diagnostic-on-off: No hmesh!", END_METHOD(NULL));
@@ -76,7 +76,7 @@ GENMESHnD* genmesh3d_switch_part_diagnostic_on_off ()
   END_METHOD (hmesh);
 }
 
-GENMESHnD* genmesh3d_switch_part_displaybar_on_off ()
+inline GENMESHnD* genmesh3d_switch_part_displaybar_on_off ()
 {
   GENMESHnD*   hmesh = (GENMESHnD*) START_METHOD (G_INSTANCE);
   ALERT (hmesh, "genmesh3d-switch-part-displaybar-on-off: No hmesh!", END_METHOD(NULL));
@@ -91,17 +91,17 @@ GENMESHnD* genmesh3d_switch_part_displaybar_on_off ()
 }
 
 static int * globalNumberOfElements = 0 ;
-double globalTime = 0.0;
-double minmax[15][2] = {{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
-                        {0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1}};
-double ymin=-1.0;
-double ymax=1.0;
-int norm_data = 1;
-int show_sc1_item = 0;
-int show_sc2_item = 0;
-int linear_item = 0;
-int which_part_sc1_trans = -1;
-int which_part_sc2_trans = -1;
+static double globalTime = 0.0;
+static double minmax[15][2] = {{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
+                               {0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1}};
+static double ymin=-1.0;
+static double ymax=1.0;
+static int norm_data = 1;
+static int show_sc1_item = 0;
+static int show_sc2_item = 0;
+static int linear_item = 0;
+static int which_part_sc1_trans = -1;
+static int which_part_sc2_trans = -1;
 
 static double maxnoElements = 8000000;
 static double maxTime = 200;
@@ -126,7 +126,7 @@ static int initColorBarDone = 0;
 
 static void set_colors (int currProcs);
 
-static void get_graphicdevice()
+inline static void get_graphicdevice()
 {
   dev = (GRAPHICDEVICE *)GRAPE(GraphicDevice,"get-stddev") ();
 
@@ -141,7 +141,7 @@ static void get_graphicdevice()
 }
 
 
-void initColorBarDisp()
+inline void initColorBarDisp()
 {
   int i ;
   assert (max_partition >= 0) ;
@@ -156,7 +156,7 @@ void initColorBarDisp()
 }
 
 
-static void colorbar_display(int nProcs)
+inline static void colorbar_display(int nProcs)
 {
   int i, light_model, off = OFF,totalnoElements;
   VEC3 xyz, xyz_g, back_color = { 0.3, 0.3, 0.3 };
@@ -267,7 +267,7 @@ static void colorbar_display(int nProcs)
   return;
 }
 
-static void hsv_to_rgb (VEC3 rgb, VEC3 hsv)
+inline static void hsv_to_rgb (VEC3 rgb, VEC3 hsv)
 {
   double h, s, v, f, p, q, t;
   int i;
@@ -317,7 +317,7 @@ static void hsv_to_rgb (VEC3 rgb, VEC3 hsv)
 }
 
 /* set partition colors */
-static void set_colors (int currProcs)
+inline static void set_colors (int currProcs)
 {
   /*
      for( i=0; i<max_partition+1; ++i )
@@ -362,7 +362,7 @@ GENMESHnD* genmesh3d_partition_disp ();
 
 static int initialized = 0;
 /* init max_partition and declare partition methods */
-void initPartitionDisp (int mp)
+inline void initPartitionDisp (int mp)
 {
   if(!initialized)
   {
@@ -380,7 +380,7 @@ void initPartitionDisp (int mp)
   }
 }
 
-GENMESHnD* genmesh3d_partition_disp ()
+inline GENMESHnD* genmesh3d_partition_disp ()
 {
   MANAGER*             mgr;
   GRAPHICDEVICE*       dev;
@@ -537,8 +537,8 @@ GENMESHnD* genmesh3d_partition_disp ()
   END_METHOD (hmesh);
 }
 
-static int hm3_partition_draw_element (HELEMENT3D* helement,
-                                       HM3_GENERAL* general, void* el_data, void* action_arg)
+inline static int hm3_partition_draw_element (HELEMENT3D* helement,
+                                              HM3_GENERAL* general, void* el_data, void* action_arg)
 {
   GRAPHICDEVICE*          dev   = general->dev;
   HELEMENT3D_DESCRIPTION* descr = (HELEMENT3D_DESCRIPTION*) helement->descr;
@@ -633,10 +633,10 @@ static int hm3_partition_draw_element (HELEMENT3D* helement,
 }
 
 
-int hm3_simpl_projection (HELEMENT3D*  helement,
-                          HM3_GENERAL* general,
-                          void*        el_data,
-                          void*        pa_data)
+inline int hm3_simpl_projection (HELEMENT3D*  helement,
+                                 HM3_GENERAL* general,
+                                 void*        el_data,
+                                 void*        pa_data)
 {
   HM3_COORD_DATA* element_data = (HM3_COORD_DATA*)el_data;
   HM3_COORD_DATA* parent_data  = (HM3_COORD_DATA*)pa_data;
@@ -664,9 +664,9 @@ int hm3_simpl_projection (HELEMENT3D*  helement,
   return TRUE;
 }
 
-int hm3_simpl_test_if_proceed  (HELEMENT3D*  helement,
-                                HM3_GENERAL* general,
-                                void*        el_data)
+inline int hm3_simpl_test_if_proceed  (HELEMENT3D*  helement,
+                                       HM3_GENERAL* general,
+                                       void*        el_data)
 {
   int result;
 

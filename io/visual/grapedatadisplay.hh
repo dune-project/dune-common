@@ -34,20 +34,20 @@ namespace Dune
 
   public:
     //! Constructor, make a GrapeDataDisplay for given grid and myRank = -1
-    GrapeDataDisplay(GridType &grid);
+    inline GrapeDataDisplay(GridType &grid);
 
     //! Constructor, make a GrapeDataDisplay for given grid
-    GrapeDataDisplay(GridType &grid, const int myrank);
+    inline GrapeDataDisplay(GridType &grid, const int myrank);
 
     //! Calls the display of the grid and draws the discrete function
     //! if discretefunction is NULL, then only the grid is displayed
-    void dataDisplay(DiscFuncType &func);
+    inline void dataDisplay(DiscFuncType &func);
 
     //!
-    void addData(DiscFuncType &func, const char * name , double time );
+    inline void addData(DiscFuncType &func, const char * name , double time );
 
   private:
-    void createQuadrature();
+    inline void createQuadrature();
 
     //! hold the diffrent datas on this mesh
     // std::vector sucks
@@ -63,41 +63,41 @@ namespace Dune
 
     // for the data visualization
     template <class EntityType, class LocalFuncType>
-    void evalCoord (EntityType &en, DiscFuncType &func, LocalFuncType &lf,
-                    int comp, const double *coord, double * val);
+    inline void evalCoord (EntityType &en, DiscFuncType &func, LocalFuncType &lf,
+                           int comp, const double *coord, double * val);
 
     // for the data visualization
     template <class EntityType, class LocalFuncType>
-    void evalDof (EntityType &en, DiscFuncType &func,LocalFuncType &lf,
-                  int comp , int localNum, double * val);
+    inline void evalDof (EntityType &en, DiscFuncType &func,LocalFuncType &lf,
+                         int comp , int localNum, double * val);
     // for the data visualization
     template <class EntityType, class LocalFuncType>
-    void evalScalar (EntityType &en, DiscFuncType & func, LocalFuncType &lf,
-                     int comp , int localNum, double * val);
+    inline void evalScalar (EntityType &en, DiscFuncType & func, LocalFuncType &lf,
+                            int comp , int localNum, double * val);
 
     // for the data visualization
     template <class EntityType, class LocalFuncType>
-    void evalVector (EntityType &en, DiscFuncType & func,LocalFuncType &lf,
-                     int comp , int localNum, double * val);
+    inline void evalVector (EntityType &en, DiscFuncType & func,LocalFuncType &lf,
+                            int comp , int localNum, double * val);
 
-    void evalCoord (DUNE_ELEM *he, DUNE_FDATA *df,
-                    const double *coord, double * val);
-    void evalDof (DUNE_ELEM *he, DUNE_FDATA *df, int localNum, double * val);
+    inline void evalCoord (DUNE_ELEM *he, DUNE_FDATA *df,
+                           const double *coord, double * val);
+    inline void evalDof (DUNE_ELEM *he, DUNE_FDATA *df, int localNum, double * val);
 
-    static void func_real (DUNE_ELEM *he , DUNE_FDATA * fe,int ind,
-                           const double *coord, double *val);
+    inline static void func_real (DUNE_ELEM *he , DUNE_FDATA * fe,int ind,
+                                  const double *coord, double *val);
   };
 
   //! default, do nothing
   template <GeometryType elType>
-  int mapElType(int localNum)
+  inline int mapElType(int localNum)
   {
     return localNum;
   }
 
   //! specialization for quadrilaterals
   template <>
-  int mapElType<quadrilateral>(int localNum)
+  inline int mapElType<quadrilateral>(int localNum)
   {
     switch(localNum)
     {
@@ -109,7 +109,7 @@ namespace Dune
 
   //! specialization for hexahedrons
   template <>
-  int mapElType<hexahedron>(int localNum)
+  inline int mapElType<hexahedron>(int localNum)
   {
     switch(localNum)
     {

@@ -13,28 +13,28 @@ namespace Dune {
   /** \brief convert type to string
    */
   template <typename T>
-  StringType typeIdentifier ()
+  inline StringType typeIdentifier ()
   {
     StringType tmp = "unknown";
     return tmp;
   };
 
   template <>
-  StringType typeIdentifier<float> ()
+  inline StringType typeIdentifier<float> ()
   {
     StringType tmp = "float";
     return tmp;
   };
 
   template <>
-  StringType typeIdentifier<int> ()
+  inline StringType typeIdentifier<int> ()
   {
     StringType tmp = "int";
     return tmp;
   };
 
   template <>
-  StringType typeIdentifier<double> ()
+  inline StringType typeIdentifier<double> ()
   {
     StringType tmp = "double";
     return tmp;
@@ -55,13 +55,13 @@ namespace Dune {
      * to actually write the grid, within this method the real file name is
      * generated out of filename and timestep
      */
-    bool writeGrid (const GridType & grid,
-                    const FileFormatType ftype, const char * fnprefix
-                    , double time=0.0, int timestep=0, int precision = 6);
+    inline bool writeGrid (const GridType & grid,
+                           const FileFormatType ftype, const char * fnprefix
+                           , double time=0.0, int timestep=0, int precision = 6);
 
     //! get Grid from file with time and timestep , return true if ok
-    bool readGrid (GridType & grid,
-                   const char * fnprefix , double & time , int timestep);
+    inline bool readGrid (GridType & grid,
+                          const char * fnprefix , double & time , int timestep);
 
 
     /**
@@ -71,19 +71,19 @@ namespace Dune {
     //! this method use the write method of the implementation of the
     //! discrete function
     template <class DiscreteFunctionType>
-    bool writeData(DiscreteFunctionType & df,
-                   const FileFormatType ftype, const char *filename,
-                   int timestep, int precision = 6);
+    inline bool writeData(DiscreteFunctionType & df,
+                          const FileFormatType ftype, const char *filename,
+                          int timestep, int precision = 6);
 
     //! same as write only read
     template <class DiscreteFunctionType>
-    bool readData(DiscreteFunctionType & df,
-                  const char *filename, int timestep);
+    inline bool readData(DiscreteFunctionType & df,
+                         const char *filename, int timestep);
   };
 
 
   template <class GridType>
-  bool GrapeDataIO<GridType> :: writeGrid
+  inline bool GrapeDataIO<GridType> :: writeGrid
     (const GridType & grid,
     const FileFormatType ftype, const char * fnprefix ,
     double time, int timestep, int precision )
@@ -113,7 +113,7 @@ namespace Dune {
 
 
   template <class GridType>
-  bool GrapeDataIO<GridType> :: readGrid
+  inline bool GrapeDataIO<GridType> :: readGrid
     (GridType & grid, const char * fnprefix , double & time , int timestep)
   {
     const char * fn;
@@ -156,8 +156,8 @@ namespace Dune {
 
   template <class GridType>
   template <class DiscreteFunctionType>
-  bool GrapeDataIO<GridType> :: writeData(DiscreteFunctionType & df,
-                                          const FileFormatType ftype, const char *filename, int timestep, int precision )
+  inline bool GrapeDataIO<GridType> :: writeData(DiscreteFunctionType & df,
+                                                 const FileFormatType ftype, const char *filename, int timestep, int precision )
   {
     {
       typedef typename DiscreteFunctionType::FunctionSpaceType DiscreteFunctionSpaceType;
@@ -197,7 +197,7 @@ namespace Dune {
 
   template <class GridType>
   template <class DiscreteFunctionType>
-  bool GrapeDataIO<GridType> ::
+  inline bool GrapeDataIO<GridType> ::
   readData(DiscreteFunctionType & df, const char *filename, int timestep)
   {
     typedef typename DiscreteFunctionType::FunctionSpaceType DiscreteFunctionSpaceType;

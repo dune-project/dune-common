@@ -80,14 +80,14 @@ int switchMethods( GENMESHnD *actHmesh);
 //void setupLeafButton(MANAGER *mgr, void *sc, int yesTimeScene);
 
 /***************************************************************************/
-static void swapQuadrilateral( double ** vertex, double (* vp)[3])
+inline static void swapQuadrilateral( double ** vertex, double (* vp)[3])
 {
   vertex[2] = vp[3];
   vertex[3] = vp[2];
 }
 
 #if GRAPE_DIM == 3
-static void swapHexahedron( double ** vertex, DUNE_ELEM * el)
+inline static void swapHexahedron( double ** vertex, DUNE_ELEM * el)
 {
   swapQuadrilateral(vertex,el->vpointer);
 
@@ -103,7 +103,7 @@ static void swapHexahedron( double ** vertex, DUNE_ELEM * el)
 **                      **
 ******************************************************************************
 *****************************************************************************/
-static HELEMENT *get_stackentry()
+inline static HELEMENT *get_stackentry()
 {
   STACKENTRY *stel;
   DUNE_ELEM * elem;
@@ -123,14 +123,14 @@ static HELEMENT *get_stackentry()
 }
 
 
-static void free_stackentry(HELEMENT *stel)
+inline static void free_stackentry(HELEMENT *stel)
 {
   ((STACKENTRY *)stel)->next = stackfree ;
   stackfree = (STACKENTRY*)stel;
 }
 
 
-static void gFreeElement(ELEMENT *el)
+inline static void gFreeElement(ELEMENT *el)
 {
   if (el)
   {
@@ -142,7 +142,7 @@ static void gFreeElement(ELEMENT *el)
 /*****************************************************************************
 * little help routines
 *****************************************************************************/
-static double dist(const double *x,  const double *y)
+inline static double dist(const double *x,  const double *y)
 {
   double dist=0.0;
   int i;
@@ -154,7 +154,7 @@ static double dist(const double *x,  const double *y)
   return (sqrt(dist));
 }
 
-static double calc_hmax(HELEMENT *el)
+inline static double calc_hmax(HELEMENT *el)
 {
   return ( dist(el->vertex[0], el->vertex[1]) );
 }
@@ -167,7 +167,7 @@ static double calc_hmax(HELEMENT *el)
 **
 ******************************************************************************
 *****************************************************************************/
-static void helementUpdate( DUNE_ELEM *elem, HELEMENT *grapeEl )
+inline static void helementUpdate( DUNE_ELEM *elem, HELEMENT *grapeEl )
 {
   grapeEl->vindex       = elem->vindex ;
   grapeEl->eindex       = elem->eindex ;
@@ -176,7 +176,7 @@ static void helementUpdate( DUNE_ELEM *elem, HELEMENT *grapeEl )
   grapeEl->user_data    = (void *)elem ;
 }
 
-static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
+inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
 {
   int i ;
   HELEMENT * el = get_stackentry();
@@ -263,7 +263,7 @@ static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
 }
 
 /* go next macro element */
-static HELEMENT * next_macro(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
+inline static HELEMENT * next_macro(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
 {
   int mflag=0;
   assert(el) ;
@@ -286,7 +286,7 @@ static HELEMENT * next_macro(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
 /***********************************************************/
 /* first_child, go to first child of current element */
 /************************************************************/
-static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
+inline static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
 {
   HELEMENT * el;
   DUNE_ELEM * elem;
@@ -371,7 +371,7 @@ static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
 }
 
 /* go to next child of the current element */
-static HELEMENT * next_child(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
+inline static HELEMENT * next_child(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
 {
   assert(el) ;
   el->present = (MESH_ELEMENT_FLAGS) (hefAll & !hefVinh);
@@ -393,14 +393,14 @@ static HELEMENT * next_child(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
 }
 
 /* fake that no children exixst */
-static HELEMENT * fake_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
+inline static HELEMENT * fake_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
 {
   return NULL;
 }
 
 /* first_child, go to first child of current element */
-static HELEMENT * select_child (HELEMENT * ael, double *parent_coord,
-                                double *child_coord, MESH_ELEMENT_FLAGS flag)
+inline static HELEMENT * select_child (HELEMENT * ael, double *parent_coord,
+                                       double *child_coord, MESH_ELEMENT_FLAGS flag)
 {
   HELEMENT *child = NULL;
   HMESH *mesh = (HMESH *) ael->mesh;
@@ -434,13 +434,13 @@ static HELEMENT * select_child (HELEMENT * ael, double *parent_coord,
   return NULL;
 }
 
-static ELEMENT * first_element (GRAPEMESH *mesh, MESH_ELEMENT_FLAGS flag)
+inline static ELEMENT * first_element (GRAPEMESH *mesh, MESH_ELEMENT_FLAGS flag)
 {
   return first_macro((GENMESHnD * )mesh,flag);
 }
 
 /* go next macro element */
-static ELEMENT * next_element(ELEMENT * el, MESH_ELEMENT_FLAGS flag)
+inline static ELEMENT * next_element(ELEMENT * el, MESH_ELEMENT_FLAGS flag)
 {
   return next_macro(el,flag);
 }
@@ -449,16 +449,16 @@ static ELEMENT * next_element(ELEMENT * el, MESH_ELEMENT_FLAGS flag)
 *  f_data function
 *
 ***************************************************************************/
-void f_bounds(HELEMENT *el, double* min, double* max,
-              void *function_data)
+inline void f_bounds(HELEMENT *el, double* min, double* max,
+                     void *function_data)
 {
   (*min) =  1.0E+308;
   (*max) = -1.0E+308;
   return;
 }
 /****************************************************************************/
-void grape_get_vertex_estimate(HELEMENT *el, double *value,
-                               void *function_data)
+inline void grape_get_vertex_estimate(HELEMENT *el, double *value,
+                                      void *function_data)
 {
   *value = 1.0E+308;
   return;
@@ -466,14 +466,14 @@ void grape_get_vertex_estimate(HELEMENT *el, double *value,
 
 /****************************************************************************/
 
-double grape_get_element_estimate(HELEMENT *el, void *function_data)
+inline double grape_get_element_estimate(HELEMENT *el, void *function_data)
 {
   return 1.0E+308;
 }
 
 /***************************************************************************/
-void f_real_el_info(HELEMENT *el, F_EL_INFO *f_el_info,
-                    void *function_data)
+inline void f_real_el_info(HELEMENT *el, F_EL_INFO *f_el_info,
+                           void *function_data)
 {
   f_el_info->polynomial_degree = ((DUNE_FDATA *) function_data)->polyOrd;
   return;
@@ -482,14 +482,14 @@ void f_real_el_info(HELEMENT *el, F_EL_INFO *f_el_info,
 /***************************************************************************/
 
 /* print DUNE_FUNC STRUCT */
-void printfFdata(DUNE_FUNC *df)
+inline void printfFdata(DUNE_FUNC *df)
 {
   DUNE_FDATA *fem = df->all;
   printf("Dune Func %p | Dune Fdata %p \n",df,fem);
   printf("comp %d      | DiscFunc   %p \n",fem->component,fem->discFunc);
   printf("-------------------------------------------\n");
 }
-void printDuneFunc(DUNE_FDATA *df)
+inline void printDuneFunc(DUNE_FDATA *df)
 {
   printf("DUNE_FDATA %p \n",df);
   printf("discFunc %p \n",df->discFunc);
@@ -498,8 +498,8 @@ void printDuneFunc(DUNE_FDATA *df)
 }
 
 
-void f_real(HELEMENT *el, int ind, double G_CONST *coord,
-            double *val, void *function_data)
+inline void f_real(HELEMENT *el, int ind, double G_CONST *coord,
+                   double *val, void *function_data)
 {
   assert(el);
   DUNE_ELEM * elem = (DUNE_ELEM *)el->user_data;
@@ -520,7 +520,7 @@ void f_real(HELEMENT *el, int ind, double G_CONST *coord,
 }
 
 /***************************************************************************/
-void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
+inline void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
 {
   F_DATA *f_data = NULL;
   char * name = NULL;
@@ -600,7 +600,7 @@ void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
 ******************************************************************************
 *****************************************************************************/
 
-static ELEMENT * copy_element(ELEMENT *el, MESH_ELEMENT_FLAGS flag)
+inline static ELEMENT * copy_element(ELEMENT *el, MESH_ELEMENT_FLAGS flag)
 {
   HELEMENT * cel = get_stackentry();
 
@@ -625,7 +625,7 @@ static ELEMENT * copy_element(ELEMENT *el, MESH_ELEMENT_FLAGS flag)
   return ( (ELEMENT *)cel );
 }
 
-static void get_geometry_vertex_estimate(HELEMENT* helement, double* results)
+inline static void get_geometry_vertex_estimate(HELEMENT* helement, double* results)
 {
   /* planar mesh -> all geometry-estimates 0*/
   int i;
@@ -635,14 +635,14 @@ static void get_geometry_vertex_estimate(HELEMENT* helement, double* results)
 }
 
 
-static double get_geometry_element_estimate(HELEMENT* helement)
+inline static double get_geometry_element_estimate(HELEMENT* helement)
 {
   /*planar mesh -> estimators 0*/
   return(1e5);
 }
 
 /* method to get partition number from mesh */
-HMESH * get_partition_number (int * partition)
+inline HMESH * get_partition_number (int * partition)
 {
   HMESH * hmesh = (HMESH *) START_METHOD (G_INSTANCE);
   assert(hmesh != 0);
@@ -661,16 +661,16 @@ HMESH * get_partition_number (int * partition)
 **
 ******************************************************************************
 *****************************************************************************/
-void * hmesh(int (* const f_leaf) (DUNE_ELEM *), int (* const n_leaf) (DUNE_ELEM *),
-             int (* const f_mac) (DUNE_ELEM *), int (* const n_mac) (DUNE_ELEM *),
-             int (* const f_chi) (DUNE_ELEM *), int (* const n_chi) (DUNE_ELEM *),
-             void * (* const cp)(const void *),
-             int (* const check_inside) (DUNE_ELEM *, const double *),
-             int (* const wtoc) (DUNE_ELEM *, const double *, double *),
-             void (* const ctow) (DUNE_ELEM *, const double *, double *),
-             void (* const func_real) (DUNE_ELEM *, DUNE_FDATA*, int ind, const double *, double *),
-             const int noe, const int nov, const int maxlev, int partition,
-             DUNE_ELEM *he , DUNE_FDATA * fe)
+inline void * hmesh(int (* const f_leaf) (DUNE_ELEM *), int (* const n_leaf) (DUNE_ELEM *),
+                    int (* const f_mac) (DUNE_ELEM *), int (* const n_mac) (DUNE_ELEM *),
+                    int (* const f_chi) (DUNE_ELEM *), int (* const n_chi) (DUNE_ELEM *),
+                    void * (* const cp)(const void *),
+                    int (* const check_inside) (DUNE_ELEM *, const double *),
+                    int (* const wtoc) (DUNE_ELEM *, const double *, double *),
+                    void (* const ctow) (DUNE_ELEM *, const double *, double *),
+                    void (* const func_real) (DUNE_ELEM *, DUNE_FDATA*, int ind, const double *, double *),
+                    const int noe, const int nov, const int maxlev, int partition,
+                    DUNE_ELEM *he , DUNE_FDATA * fe)
 {
   DUNE_DAT *dune   = (DUNE_DAT *) malloc(sizeof(DUNE_DAT));
   assert(dune != NULL);
@@ -758,7 +758,7 @@ void * hmesh(int (* const f_leaf) (DUNE_ELEM *), int (* const n_leaf) (DUNE_ELEM
 /* forward declaration */
 static void grape_add_remove_methods(void);
 
-void handleMesh(void *hmesh)
+inline void handleMesh(void *hmesh)
 {
   GRAPEMESH *mesh = (GRAPEMESH *) hmesh;
   assert(mesh != NULL);
@@ -794,8 +794,8 @@ void handleMesh(void *hmesh)
 }
 
 /* setup TimeScene Tree  */
-void addDataToHmesh(void  *hmesh, DUNE_FDATA * fe,
-                    void (* const func_real) (DUNE_ELEM *, DUNE_FDATA*, int ind, const double *, double *)  )
+inline void addDataToHmesh(void  *hmesh, DUNE_FDATA * fe,
+                           void (* const func_real) (DUNE_ELEM *, DUNE_FDATA*, int ind, const double *, double *)  )
 {
   GRAPEMESH *mesh = (GRAPEMESH *) hmesh;
   assert(mesh != NULL);
@@ -823,7 +823,7 @@ void addDataToHmesh(void  *hmesh, DUNE_FDATA * fe,
 
 /*
  * setup TimeScene Tree  */
-void addHmeshToTimeScene(void * timescene, double time, void  *hmesh, int proc)
+inline void addHmeshToTimeScene(void * timescene, double time, void  *hmesh, int proc)
 {
   TIMESCENE *tsc = (TIMESCENE *) timescene;
   GRAPEMESH *mesh = (GRAPEMESH *) hmesh;
@@ -846,7 +846,7 @@ void addHmeshToTimeScene(void * timescene, double time, void  *hmesh, int proc)
   return;
 }
 
-DUNE_FDATA * extractData ( void * hmesh , int num )
+inline DUNE_FDATA * extractData ( void * hmesh , int num )
 {
   HMESH *mesh = (HMESH *) hmesh;
   int count = 0;
@@ -873,7 +873,7 @@ DUNE_FDATA * extractData ( void * hmesh , int num )
 
 
 /* copy function data */
-void copyFdata(F_DATA *copy, F_DATA *org)
+inline void copyFdata(F_DATA *copy, F_DATA *org)
 {
   copy->name = org->name;
   copy->last = org->last;
@@ -899,8 +899,8 @@ void copyFdata(F_DATA *copy, F_DATA *org)
 }
 
 /* interpol method for timescence, just constant interpolation */
-static GRAPEMESH *grape_mesh_interpol(GRAPEMESH *mesh1, GRAPEMESH *mesh2,
-                                      double factor)
+inline static GRAPEMESH *grape_mesh_interpol(GRAPEMESH *mesh1, GRAPEMESH *mesh2,
+                                             double factor)
 {
   GRAPEMESH *self=NULL;
   GRAPEMESH *newMesh =NULL;
@@ -1017,7 +1017,7 @@ static GRAPEMESH *grape_mesh_interpol(GRAPEMESH *mesh1, GRAPEMESH *mesh2,
 /* handling of multiple functions (selection by next/last)                  */
 /****************************************************************************/
 
-static HMESH *next_f_data_send(void)
+inline static HMESH *next_f_data_send(void)
 {
   HMESH *self;
   printf("next_f_data_send called! \n");
@@ -1036,7 +1036,7 @@ static HMESH *next_f_data_send(void)
   END_METHOD(self);
 }
 
-static HMESH *prev_f_data_send(void)
+inline static HMESH *prev_f_data_send(void)
 {
   HMESH *self;
   printf("prev_f_data_send called! \n");
@@ -1055,7 +1055,7 @@ static HMESH *prev_f_data_send(void)
   END_METHOD(self);
 }
 
-SCENE* scene_leaf_button_on_off ()
+inline SCENE* scene_leaf_button_on_off ()
 {
   SCENE*   sc = (SCENE*) START_METHOD (G_INSTANCE);
   ALERT (sc, "level-button-on-off: No hmesh!", END_METHOD(NULL));
@@ -1074,7 +1074,7 @@ SCENE* scene_leaf_button_on_off ()
   END_METHOD (sc);
 }
 
-SCENE* scene_maxlevel_on_off ()
+inline SCENE* scene_maxlevel_on_off ()
 {
   SCENE* sc = (SCENE*) START_METHOD (G_INSTANCE);
   ALERT( sc, "maxlevel-on-off: No hmesh!", END_METHOD(NULL));
@@ -1101,7 +1101,7 @@ GENMESH3D * genmesh3d_switch_iterateLeafs_on_off();
 static int calledAddMethods = 0;
 
 /* add some usefull methods */
-static void grape_add_remove_methods(void)
+inline static void grape_add_remove_methods(void)
 {
   if(!calledAddMethods)
   {
@@ -1141,7 +1141,7 @@ static void grape_add_remove_methods(void)
 }
 
 /* switch methods from LevelIterator to LeafIterator */
-int switchMethods(GENMESHnD *actHmesh)
+inline int switchMethods(GENMESHnD *actHmesh)
 {
   DUNE_DAT * dune = (DUNE_DAT *) actHmesh->user_data;
   GENMESH_FDATA *fd = NULL;
@@ -1184,7 +1184,7 @@ int switchMethods(GENMESHnD *actHmesh)
 
 /* action function for the levelButton */
 /* switch button on or off */
-GENMESH3D * genmesh3d_switch_iterateLeafs_on_off()
+inline GENMESH3D * genmesh3d_switch_iterateLeafs_on_off()
 {
   GENMESH3D * self = (GENMESH3D *) START_METHOD(G_INSTANCE);
   assert(self!=NULL);

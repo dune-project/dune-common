@@ -513,7 +513,7 @@ namespace Dune
   }
 
   template<class GridType>
-  void GrapeGridDisplay<GridType>::display()
+  inline void GrapeGridDisplay<GridType>::display()
   {
     /* call handle mesh in g_hmesh.c */
     GrapeInterface<dim,dimworld>::handleMesh ( hmesh_ );
@@ -521,20 +521,27 @@ namespace Dune
   }
 
   template<class GridType>
-  void * GrapeGridDisplay<GridType>::getHmesh()
+  inline void * GrapeGridDisplay<GridType>::getHmesh()
   {
     if(!hmesh_) hmesh_ = setupHmesh();
     return (void *) hmesh_;
   }
 
   template<class GridType>
-  GridType & GrapeGridDisplay<GridType>::getGrid()
+  inline void GrapeGridDisplay<GridType>::
+  addMyMeshToTimeScene(void * timescene, double time, int proc)
+  {
+    GrapeInterface<dim,dimworld>::addHmeshToTimeScene(timescene,time,this->getHmesh(),proc);
+  }
+
+  template<class GridType>
+  inline GridType & GrapeGridDisplay<GridType>::getGrid()
   {
     return grid_;
   }
 
   template<class GridType>
-  void * GrapeGridDisplay<GridType>::setupHmesh()
+  inline void * GrapeGridDisplay<GridType>::setupHmesh()
   {
     int noe, nov;
     int maxlevel;

@@ -9,7 +9,7 @@
 #include "grapecommon.hh"
 
 /* add Button which can switch between LevelIteration and LeafIteration */
-void setupLeafButton(MANAGER *mgr, void *sc, int yesTimeScene)
+inline void setupLeafButton(MANAGER *mgr, void *sc, int yesTimeScene)
 {
   assert(!leafButton);
   assert(!maxlevelButton);
@@ -42,16 +42,10 @@ void setupLeafButton(MANAGER *mgr, void *sc, int yesTimeScene)
 }
 
 
-void timeSceneInit(INFO *info, int n_info, int procs, int time_bar)
+inline void timeSceneInit(INFO *info, int n_info, int procs, int time_bar)
 {
   int n,p;
   int numProcs = (procs <= 1) ? 1 : (procs-1);
-#ifdef TIMEBAR
-  void def_timebar_methods(void);
-
-  if (time_bar)
-    def_timebar_methods();
-#endif
 
   for (n = 0; n < MAXIMUM(1, n_info); n++)
   {
@@ -87,7 +81,7 @@ void timeSceneInit(INFO *info, int n_info, int procs, int time_bar)
 }
 
 /* call handle for a bunch of timescenes */
-void displayTimeScene(INFO * info, int numberOfProcs )
+inline void displayTimeScene(INFO * info, int numberOfProcs )
 {
   TIMESCENE *tsc = (TIMESCENE *) info[0].tsc;
   if(tsc)
@@ -115,16 +109,6 @@ void displayTimeScene(INFO * info, int numberOfProcs )
     GRAPE(mgr,"handle") (tsc);
   }
 }
-
-#ifdef TIMEBAR
-void tsc_timebar(void *timescene, double t_start, double t_end)
-{
-  TIMESCENE *tsc = (TIMESCENE *) timescene;
-  GRAPE(tsc,"timebar-v") (t_start, t_end);
-}
-
-#include "tsc_timebar.c"
-#endif
 
 #undef MINIMUM
 #undef MAXIMUM

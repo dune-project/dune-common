@@ -143,9 +143,9 @@ static VINHERIT vinherit_point_2    = {2,pindex_point_2,pweight_point_2};
 ******************************************************************************
 *****************************************************************************/
 
-static HELEMENT2D * triangle_neighbour(HELEMENT2D *el, int np, int flag,
+inline static HELEMENT2D * triangle_neighbour(HELEMENT2D *el, int np, int flag,
 
-                                       double * coord, double * xyz, MESH_ELEMENT_FLAGS p) {
+                                              double * coord, double * xyz, MESH_ELEMENT_FLAGS p) {
 
   printf(" neighbour nicht implementiert \n");
 
@@ -153,7 +153,7 @@ static HELEMENT2D * triangle_neighbour(HELEMENT2D *el, int np, int flag,
 
 }
 
-int triangle_boundary(HELEMENT2D * el, int np) {
+inline int triangle_boundary(HELEMENT2D * el, int np) {
 
   printf(" boundary  \n");
 
@@ -170,40 +170,40 @@ int triangle_boundary(HELEMENT2D * el, int np) {
 ***********************************************************************/
 
 /* the 2d versions */
-int el_check_inside(HELEMENT2D * e, const double * coord)
+inline int el_check_inside(HELEMENT2D * e, const double * coord)
 {
   DUNE_DAT * dat = (DUNE_DAT *) ((HMESH2D *) e->mesh)->user_data;
   return dat->check_inside((DUNE_ELEM *) e->user_data, coord);
 }
 
-int world2coord(HELEMENT2D * e, const double * xyz,double * coord)
+inline int world2coord(HELEMENT2D * e, const double * xyz,double * coord)
 {
   DUNE_DAT * dat = (DUNE_DAT *) ((HMESH2D *) e->mesh)->user_data;
   return dat->wtoc((DUNE_ELEM *) e->user_data, xyz, coord);
 }
 
-void coord2world(HELEMENT2D * e, const double * coord,double * xyz)
+inline void coord2world(HELEMENT2D * e, const double * coord,double * xyz)
 {
   DUNE_DAT * dat = (DUNE_DAT *) ((HMESH2D *) e->mesh)->user_data;
   dat->ctow((DUNE_ELEM *) e->user_data, coord, xyz);
 }
 
 /* the 3d versions */
-int el_check_inside_3d(HELEMENT3D * e, double * coord)
+inline int el_check_inside_3d(HELEMENT3D * e, double * coord)
 {
   DUNE_DAT * dat = (DUNE_DAT *) ((HMESH3D *) e->mesh)->user_data;
   return dat->check_inside((DUNE_ELEM *) e->user_data, coord);
 }
 
-static int world2coord_3d(HELEMENT3D * e, const double * xyz,
-                          double * coord)
+inline static int world2coord_3d(HELEMENT3D * e, const double * xyz,
+                                 double * coord)
 {
   DUNE_DAT * dat = (DUNE_DAT *) ((HMESH3D *) e->mesh)->user_data;
   return dat->wtoc((DUNE_ELEM *) e->user_data, xyz, coord);
 }
 
-static void coord2world_3d(HELEMENT3D * e, const double * coord,
-                           double * xyz)
+inline static void coord2world_3d(HELEMENT3D * e, const double * coord,
+                                  double * xyz)
 {
   DUNE_DAT * dat = (DUNE_DAT *) ((HMESH3D *) e->mesh)->user_data;
   dat->ctow((DUNE_ELEM *) e->user_data, coord, xyz);
@@ -302,9 +302,9 @@ static int    *tetra_next_polygon_o[4] = {t_p0_o,t_p1_o,t_p2_o,t_p3_o};
 ******************************************************************************
 *****************************************************************************/
 
-static HELEMENT3D * tetra_neighbour(HELEMENT3D *el, int np, int flag,
+inline static HELEMENT3D * tetra_neighbour(HELEMENT3D *el, int np, int flag,
 
-                                    double * coord, double * xyz, MESH_ELEMENT_FLAGS p) {
+                                           double * coord, double * xyz, MESH_ELEMENT_FLAGS p) {
 
   printf(" neighbour nicht implementiert \n");
 
@@ -312,7 +312,7 @@ static HELEMENT3D * tetra_neighbour(HELEMENT3D *el, int np, int flag,
 
 }
 
-static int tetra_boundary(HELEMENT3D * el, int np)
+inline static int tetra_boundary(HELEMENT3D * el, int np)
 {
   return ((DUNE_ELEM *)el->user_data)->bnd[np] ;
 }
@@ -483,7 +483,7 @@ static int  cube_world2coord(HELEMENT3D *cube,
 #endif
 
 /* fill the upper reference elements */
-void setupReferenceElements()
+inline void setupReferenceElements()
 {
   /* fill the helement description in 2D*/
 
