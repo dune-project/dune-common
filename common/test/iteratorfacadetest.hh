@@ -3,16 +3,15 @@
 #ifndef __DUNE_ITERATORFACADETEST_HH__
 #define __DUNE_ITERATORFACADETEST_HH__
 #include <dune/common/iteratorfacades.hh>
+#include <dune/common/genericiterator.hh>
 #include <dune/common/typetraits.hh>
-
-template<class C, class T> class TestIterator;
 
 template<class T>
 class TestContainer {
 public:
-  typedef TestIterator<TestContainer<T>,T> iterator;
+  typedef GenericIterator<TestContainer<T>,T> iterator;
 
-  typedef TestIterator<const TestContainer<T>,const T> const_iterator;
+  typedef GenericIterator<const TestContainer<T>,const T> const_iterator;
 
   TestContainer(){
     for(int i=0; i < 100; i++)
@@ -47,77 +46,4 @@ private:
   T values_[100];
 };
 
-
-template<class C, class T>
-class TestIterator : public Dune::RandomAccessIteratorFacade<TestIterator<C,T>,T, T&, int>
-{
-  friend class TestIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type >;
-  friend class TestIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >;
-
-public:
-
-  // Constructors needed by the base iterators.
-  TestIterator() : container_(0), position_(0)
-  { }
-
-  TestIterator(C& cont, int pos)
-    : container_(&cont), position_(pos)
-  {}
-
-  TestIterator(const TestIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type >& other) : container_(other.container_), position_(other.position_)
-  {}
-
-
-  TestIterator(const TestIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >& other) : container_(other.container_), position_(other.position_)
-  {}
-
-  // Methods needed by the forward iterator
-  bool equals(const TestIterator<typename Dune::RemoveConst<C>::Type,typename Dune::RemoveConst<T>::Type>& other) const
-  {
-    return position_ == other.position_ && container_ == other.container_;
-  }
-
-
-  bool equals(const TestIterator<const typename Dune::RemoveConst<C>::Type,const typename Dune::RemoveConst<T>::Type>& other) const
-  {
-    return position_ == other.position_ && container_ == other.container_;
-  }
-
-  T& dereference() const {
-    return container_->operator[](position_);
-  }
-
-  void increment(){
-    ++position_;
-  }
-
-  // Additional function needed by BidirectionalIterator
-  void decrement(){
-    --position_;
-  }
-
-  // Additional function needed by RandomAccessIterator
-  T& elementAt(int i) const {
-    return container_->operator[](position_+i);
-  }
-
-  void advance(int n){
-    position_=position_+n;
-  }
-
-  std::ptrdiff_t distanceTo(TestIterator<const typename Dune::RemoveConst<C>::Type,const typename Dune::RemoveConst<T>::Type> other) const
-  {
-    assert(other.container_==container_);
-    return other.position_ - position_;
-  }
-
-  std::ptrdiff_t distanceTo(TestIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type> other) const
-  {
-    assert(other.container_==container_);
-    return other.position_ - position_;
-  }
-private:
-  C *container_;
-  size_t position_;
-};
 #endif
