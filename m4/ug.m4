@@ -12,8 +12,7 @@ dnl     expand tilde / other stuff
     eval with_ug=$with_ug
 dnl     extract absolute path
 dnl    eval with_ug=`cd $with_ug ; pwd`
-    AC_SUBST(UGROOT, $with_ug))
-
+ 
 if test x$with_ug != x ; then 
  # store values
  ac_save_CFLAGS="$CFLAGS"
@@ -24,29 +23,36 @@ if test x$with_ug != x ; then
  # start building variables
 
  # use special UG-lib-path if it's set
- if test x$ugpath != x ; then   
+ if test x$with_ug != x ; then
    LDFLAGS="$LDFLAGS -L$with_ug/lib"
    UG_LDFLAGS="$LDFLAGS"
  fi
 
+ # read ug.conf
+ # IF = X|S
+ # DOM_MODULE -> -D...
+ # GRAPE
+ # DIM? 
+
  # nach den UG-Unterlibs suchen
+
+ AC_CHECK_LIB([devS], [UserWrite], UG_DEVLIB="-ldevS")
 
  # devX oder devS
  AC_CHECK_LIB([Xaw], [XawInitializeWidgetSet],,,[$X_LIBS])  
  AC_CHECK_LIB([devX], [UserWrite], UG_DEVLIB="-ldevX $X_PRE_LIBS $X_LIBS -lX11 -lXaw $X_EXTRA_LIBS",,[$X_PRE_LIBS $X_LIBS -lX11 -lXaw $X_EXTRA_LIBS])
  
  if test x$UG_DEVLIB != x ; then
-   AC_CHECK_LIB([devS], [UserWrite], UG_DEVLIB="-ldevS")
+
  fi 
  
  # wurde irgendeine dev-lib gefunden?
  if test "x$UG_DEVLIB" = "x" ; then
-   AC_MSG_ERROR([No UG device-lib found! Cannot use UG!])
+   AC_MSG_WARN([No UG device-lib found!])
  fi
 
  AC_CHECK_LIB([domS$with_dim], [InitDom],,,[$X_LIBS])
  AC_CHECK_LIB([gg$with_dim], [InitGG],,,[$X_LIBS])
-
 
  
  # grapeOFF oder nicht
