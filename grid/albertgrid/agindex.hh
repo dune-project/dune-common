@@ -77,7 +77,7 @@ namespace Dune {
           state_[i] = UNUSED;
         }
       }
-      std::cout << maxIndex() << " max Index of Set \n";
+      //std::cout << maxIndex() << " max Index of Set \n";
     }
 
     int maxIndex () const
