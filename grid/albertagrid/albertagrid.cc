@@ -218,10 +218,11 @@ namespace Dune
     coord_[1][0] = 1.0;
 
     // vertex 2
-    coord_[1][2] = 1.0;
+    coord_[2][1] = 1.0;
 
     // vertex 3
-    coord_[2][3] = 1.0;
+    coord_[3][2] = 1.0;
+    std::cout << "Made Reference Element in 3d \n";
   }
   template <>
   inline void AlbertaGridGeometry<1,1,const AlbertaGrid<1,1> >::
@@ -637,6 +638,7 @@ namespace Dune
 
     builtinverse_ = true;
   }
+
   // default implementation calls ALBERTA routine
   template <int mydim, int cdim, class GridImp>
   inline albertCtype AlbertaGridGeometry<mydim,cdim,GridImp>::elDeterminant () const
@@ -2048,8 +2050,26 @@ namespace Dune
   inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
   goNextEdge(ALBERTA TRAVERSE_STACK *stack, ALBERTA EL_INFO *elInfo)
   {
-    DUNE_THROW(AlbertaError,"EdgeIterator not implemented for 3d!");
-    return 0;
+    // go next Element, Edge 0
+    // treat Edge like Faces
+    edge_++;
+    if(edge_ >= 6) // in 3d only 6 Edges
+    {
+      elInfo = goNextElInfo(stack, elInfo);
+      edge_ = 0;
+    }
+
+    if(!elInfo) return 0; // if no more Edges, return
+
+    // go next, if Vertex is not treated on this Element
+    if(vertexMarker_->edgeNotOnElement(elInfo->el,
+                                       grid_.getElementNumber(elInfo->el),level_,
+                                       grid_.getEdgeNumber(elInfo->el,edge_)))
+    {
+      elInfo = goNextEdge(stack,elInfo);
+    }
+
+    return elInfo;
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
@@ -2069,7 +2089,8 @@ namespace Dune
 
     // go next, if Vertex is not treated on this Element
     if(vertexMarker_->notOnThisElement(elInfo->el,
-                                       grid_.getElementNumber(elInfo->el),level_,vertex_))
+                                       grid_.getElementNumber(elInfo->el),level_,
+                                       grid_.getVertexNumber(elInfo->el,vertex_)))
       elInfo = goNextVertex(stack,elInfo);
 
     return elInfo;
@@ -2635,10 +2656,37 @@ namespace Dune
   //
   //*********************************************************************
   inline bool AlbertaMarkerVector::
-  notOnThisElement(ALBERTA EL * el, int elIndex, int level, int localNum)
+  notOnThisElement(ALBERTA EL * el, int elIndex, int level, int vertex)
   {
-    return (vec_[level][ el->dof[localNum][0] ] != elIndex);
+    return (vec_[level][ vertex ] != elIndex);
   }
+
+  inline bool AlbertaMarkerVector::
+  edgeNotOnElement(ALBERTA EL * el, int elIndex, int level, int edgenum)
+  {
+    return (edgevec_[level][ edgenum ] != elIndex);
+  }
+
+  template <class GridType, int dim>
+  struct MarkEdges
+  {
+    inline static void mark(GridType & grid , Array<int> & vec, const ALBERTA EL * el, int count, int elindex)
+    {}
+  };
+
+  // only for 3d calc edges markers
+  template <class GridType>
+  struct MarkEdges<GridType,3>
+  {
+    inline static void mark(GridType & grid , Array<int> & vec, const ALBERTA EL * el, int count, int elindex)
+    {
+      for(int i=0; i<count; i++)
+      {
+        int num = grid.hierarchicIndexSet().getIndex(el ,i, Int2Type<2>() );
+        if( vec[num] == -1 ) vec[num] = elindex;
+      }
+    }
+  };
 
   template <class GridType>
   inline void AlbertaMarkerVector::markNewVertices(GridType &grid)
@@ -2646,19 +2694,19 @@ namespace Dune
     enum { dim      = GridType::dimension };
     enum { dimworld = GridType::dimensionworld };
 
-    ALBERTA MESH *mesh_ = grid.getMesh();
+    int nvx = grid.hierarchicIndexSet().size(grid.maxlevel(),dim);
+    int edg = grid.hierarchicIndexSet().size(grid.maxlevel(),dim-1);
 
-    int nvx = mesh_->n_vertices;
-    // remember the number of vertices of the mesh
-    numVertex_ = nvx;
-
-    int maxlevel = grid.maxlevel();
-
-    for(int level=0; level <= maxlevel; level++)
+    for(int level=0; level <= grid.maxlevel(); level++)
     {
-      Array<int> & vec = vec_[level];
+      Array<int> & vec     = vec_[level];
+      Array<int> & edgevec = edgevec_[level];
 
-      if(vec.size() < nvx) vec.resize( nvx + vxBufferSize_ );
+      if(vec.size()     < nvx) vec.resize( nvx + vxBufferSize_ );
+
+#if DIM == 3
+      if(edgevec.size() < edg) edgevec.resize( edg + vxBufferSize_ );
+#endif
 
       for(int i=0; i<vec.size(); i++) vec[i] = -1;
 
@@ -2667,14 +2715,24 @@ namespace Dune
       LevelIteratorType endit = grid.template lend<0> (level);
       for(LevelIteratorType it = grid.template lbegin<0> (level); it != endit; ++it)
       {
+        int elindex = grid.hierarchicIndexSet().index(*it);
         for(int local=0; local<dim+1; local++)
         {
           int num = (grid.template getRealEntity<0> (*it)).getElInfo()->el->dof[local][0]; // vertex num
-          if( vec[num] == -1 ) vec[num] = grid.hierarchicIndexSet().index(*it); //->globalIndex();
+          if( vec[num] == -1 ) vec[num] = elindex;
         }
+
+#if DIM == 3
+        // mark edges for this element
+        MarkEdges<GridType,dim>::mark(grid,edgevec,
+                                      (grid.template getRealEntity<0> (*it)).getElInfo()->el,
+                                      (grid.template getRealEntity<0> (*it)).template count<2> (), elindex );
+#endif
       }
       // remember the number of entity on level and codim = 0
     }
+
+    up2Date_ = true;
   }
 
   inline void AlbertaMarkerVector::print()
@@ -2701,7 +2759,7 @@ namespace Dune
   inline AlbertaGrid < dim, dimworld >::AlbertaGrid() :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0) , hasLevelIndex_ (true)
+    , time_ (0.0)
     , nv_ (dim+1) , dof_ (0) , myProc_ (0)
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexSet_(0)
@@ -2736,7 +2794,7 @@ namespace Dune
     // this could be seen as a hack but is the only way i know to store
     // whether we have level index or not in the grid files , :(
     // default value of swapEls = true
-    if(mesh_ && hasLevelIndex_ && swapEls )
+    if(mesh_ && levelIndexSet_ && swapEls )
     {
       ALBERTA MACRO_EL *mel = mesh_->first_macro_el;
       assert(mel != 0);
@@ -2758,10 +2816,7 @@ namespace Dune
       }
       std::cerr << "AlbertaGrid: LevelIndex is used!\n";
     }
-    else
-    {
-      hasLevelIndex_ = false;
-    }
+
     calcExtras();
   }
 
@@ -2769,7 +2824,7 @@ namespace Dune
   inline AlbertaGrid < dim, dimworld >::AlbertaGrid(const char *MacroTriangFilename, bool levInd) :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0) , hasLevelIndex_ (levInd)
+    , time_ (0.0)
     , nv_ (dim+1) , dof_ (0) , myProc_ (-1)
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexSet_(0)
@@ -2812,7 +2867,7 @@ namespace Dune
   AlbertaGrid(AlbertaGrid<dim,dimworld> & oldGrid, int proc , bool levInd) :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
-    , time_ (0.0) , hasLevelIndex_ (levInd)
+    , time_ (0.0)
     , nv_ (dim+1) , dof_ (0), myProc_ (proc)
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexSet_(0)
@@ -2862,6 +2917,7 @@ namespace Dune
   inline typename AlbertaGrid<dim, dimworld>::Traits::template codim<codim>::template partition<pitype>::LevelIterator
   AlbertaGrid < dim, dimworld >::lbegin (int level, int proc) const
   {
+    //if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
     typename Traits::template codim<codim>::template partition<pitype>::LevelIterator
     it(*this,vertexMarker_,level,proc);
     return it;
@@ -2879,6 +2935,7 @@ namespace Dune
   inline typename AlbertaGrid<dim, dimworld>::Traits::template codim<codim>::template partition<All_Partition>::LevelIterator
   AlbertaGrid < dim, dimworld >::lbegin (int level, int proc) const
   {
+    //if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
     AlbertaGridLevelIterator<codim,All_Partition,const MyType>
     it(*this,vertexMarker_,level,proc);
     return it;
@@ -3146,6 +3203,19 @@ namespace Dune
   };
 
   template < int dim, int dimworld >
+  inline int AlbertaGrid < dim, dimworld >::getEdgeNumber ( ALBERTA EL * el , int i ) const
+  {
+    assert(dim == 3);
+    return hIndexSet_.getIndex(el,i,Int2Type<dim-1>());
+  };
+
+  template < int dim, int dimworld >
+  inline int AlbertaGrid < dim, dimworld >::getVertexNumber ( ALBERTA EL * el , int vx ) const
+  {
+    return hIndexSet_.getIndex(el,vx,Int2Type<0>());
+  };
+
+  template < int dim, int dimworld >
   inline void AlbertaGrid < dim, dimworld >::calcExtras ()
   {
     arrangeDofVec ();
@@ -3159,11 +3229,12 @@ namespace Dune
 
     maxHierIndex_[dim] = mesh_->n_vertices;
 
+    //vertexMarker_->unsetUp2Date();
     // mark vertices on elements
     vertexMarker_->markNewVertices(*this);
 
-    // map the indices
-    markNew();
+    // if levelIndexSet exists, then update now
+    if(levelIndexSet_) (*levelIndexSet_).calcNewIndex();
 
     // we have a new grid
     wasChanged_ = true;
@@ -3279,12 +3350,15 @@ namespace Dune
 
     // if hasLevelIndex_ then number of first element is 1 and not 0
     // see initGrid ()
-    hasLevelIndex_ = (getElementNumber( mesh_->first_macro_el->el ) == 1) ? true : false;
+    bool hasLevelIndex = (getElementNumber( mesh_->first_macro_el->el ) == 1) ? true : false;
+    if(hasLevelIndex) this->levelIndexSet();
 
     // calc maxlevel and indexOnLevel and so on
     calcExtras();
+
     // set el_index of index manager to max element index
-    indexStack_[0].setMaxIndex(maxHierIndex_[0]);
+    for(int i=0; i<ALBERTA AlbertHelp::numOfElNumVec; i++)
+      indexStack_[i].setMaxIndex(maxHierIndex_[i]);
 
     return true;
   }
@@ -3320,24 +3394,6 @@ namespace Dune
     }
     for(int i=0; i<a.size(); i++) a[i] = -1;
   }
-
-  // create lookup table for indices of the elements
-  template < int dim, int dimworld >
-  inline void AlbertaGrid < dim, dimworld >::markNew()
-  {
-    int nElements = maxHierIndex_[0];
-    int nVertices = mesh_->n_vertices;
-
-    // make new size and set all levels to -1 ==> new calc
-    if((maxlevel_+1)*(numCodim) > size_.size())
-      makeNewSize(size_, 2*((maxlevel_+1)*numCodim));
-
-    // if hasLevelIndex_ == false then the LevelIndex should not be generated
-    if(levelIndexSet_) (*levelIndexSet_).calcNewIndex();
-
-    return ;
-  }
-
 
   // if defined some debugging test were made that reduce the performance
   // so they were switch off normaly

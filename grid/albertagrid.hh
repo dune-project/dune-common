@@ -18,6 +18,8 @@
 #include <dune/common/capabilities.hh>
 #include "common/grid.hh"
 
+#include "dune/common/exceptions.hh"
+
 // some cpp defines and include of alberta.h
 #include "albertagrid/albertaheader.hh"
 
@@ -25,13 +27,13 @@
 #include <dune/grid/common/indexstack.hh>
 
 // IndexManager defined in indexstack.hh
+// 10000 is the size of the finite stack used by IndexStack
 typedef Dune::IndexStack<int,10000> IndexManagerType;
 
 // some extra functions for handling the Albert Mesh
 #include "albertagrid/albertaextra.hh"
 
-
-#include <dune/common/exceptions.hh>
+//#define DUNE_THROW(E, m) assert(false)
 
 namespace Dune {
   // own exception classes
@@ -1277,9 +1279,6 @@ namespace Dune
     // coarsening
     void setMark ( bool isMarked ) const;
 
-    // number of entitys of each level an codim
-    mutable Array<int> size_;
-
     // help vector for setNewCoords
     mutable Array<int> macroVertices_;
 
@@ -1315,16 +1314,8 @@ namespace Dune
     void makeNewSize(Array<int> &a, int newNumberOfEntries);
     void markNew();
 
-    // pointer to the real number of elements or vertices
-    // i.e. points to mesh->n_hier_elements or mesh->n_vertices
-    //int numberOfEntitys_[dim+1];
-    //int oldNumberOfEntities_[dim+1];
-
     //! actual time of Grid
     albertCtype time_;
-
-    // true if level index is porvided
-    bool hasLevelIndex_;
 
     //***********************************************************************
     //  MemoryManagement for Entitys and Geometrys
@@ -1369,6 +1360,12 @@ namespace Dune
     // read global element number form elNumbers_
     int getElementNumber ( ALBERTA EL * el ) const;
 
+    // read global element number form elNumbers_
+    int getEdgeNumber ( ALBERTA EL * el, int edge ) const;
+
+    // read global element number form elNumbers_
+    int getVertexNumber ( ALBERTA EL * el, int vx ) const;
+
     //********************************************************************
     //  organisation of the parallelisation
     //********************************************************************
@@ -1398,6 +1395,8 @@ namespace Dune
     mutable LevelIndexSetType * levelIndexSet_;
 
   }; // end Class AlbertaGridGrid
+
+  template <class GridType, int dim> struct MarkEdges;
 
   template <int dim, int dimworld>
   class AlbertaGridHierarchicIndexSet
@@ -1500,8 +1499,14 @@ namespace Dune
     // this method we have only in 3d
     int getIndex ( const ALBERTA EL * el, int i , Int2Type<cd2> fake ) const
     {
+      enum { cd = 2 };
+      assert(el);
+      // dof_[cd] marks the insertion point form which this dofs start
+      // then i is the i-th dof
+      //return elNumVec_[cd][ el->dof[ dof_[cd] + i ][ nv_[cd] ] ];
       return 0;
     }
+
 
     // codim = dim  means we get from dim-cd = 0
     int getIndex ( const ALBERTA EL * el, int i , Int2Type<0> fake ) const
@@ -1509,6 +1514,9 @@ namespace Dune
       assert(el);
       return (el->dof[i][0]);
     }
+
+    friend class MarkEdges<GridType,3>;
+
   };
 
 
@@ -1518,25 +1526,34 @@ namespace Dune
   class AlbertaMarkerVector
   {
     friend class AlbertaGrid<2,2>;
+    friend class AlbertaGrid<2,3>;
     friend class AlbertaGrid<3,3>;
 
     enum { MAXL = 64 };
     enum { vxBufferSize_ = 10000 };
   public:
-    AlbertaMarkerVector () {} ;
+    AlbertaMarkerVector () : up2Date_(false) {} ;
 
     bool notOnThisElement(ALBERTA EL * el, int elIndex, int level , int vertex);
+    bool edgeNotOnElement(ALBERTA EL * el, int elIndex, int level , int edgenum);
 
     template <class GridType>
     void markNewVertices(GridType &grid);
+
+    bool up2Date () const { return up2Date_; }
+    void unsetUp2Date () { up2Date_ = false; }
 
     void print();
 
   private:
     // built in array to mark on which element a vertex is reached
     Array<int> vec_[MAXL];
+    Array<int> edgevec_[MAXL];
     // number of vertices
     int numVertex_;
+
+    // true is vertex marker is up to date
+    bool up2Date_;
   };
 
 
