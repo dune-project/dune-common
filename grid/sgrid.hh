@@ -748,7 +748,10 @@ namespace Dune {
     //! empty constructor making grid of unit square
     SGrid ();
 
-    // refine mesh globally by one level
+    /** \brief Refine mesh globally by one level
+     *
+     * \param refCount gets ignored
+     */
     void globalRefine (int refCount);
 
     //! map expanded coordinates to position
