@@ -19,7 +19,7 @@ namespace Dune
     , freeLocalFunc_ (NULL)
     , localFunc_ ( f, dofVec_ ) {}
 
-  // Constructor makeing discrete function
+  // Constructor making discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(DiscreteFunctionSpaceType & f,
@@ -38,7 +38,7 @@ namespace Dune
     getMemory();
   }
 
-  // Constructor makeing discrete function
+  // Constructor making discrete function
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(const char * name, DiscreteFunctionSpaceType & f,
@@ -62,6 +62,7 @@ namespace Dune
   DiscFuncArray(const DiscFuncArray <DiscreteFunctionSpaceType> & df ) :
     DiscreteFunctionDefaultType ( df.functionSpace_ ) , localFunc_ ( df.localFunc_ )
   {
+    name_ = df.name_;
     built_ = df.built_;
     levOcu_ = df.levOcu_;
     level_ = df.level_;
@@ -128,12 +129,13 @@ namespace Dune
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::print(std::ostream &s, int level )
+  inline void DiscFuncArray< DiscreteFunctionSpaceType >::print(std::ostream &s, int level ) const
   {
+    s << "DiscFuncArray '" << name_ << "', level " << level << "\n";
     DofIteratorType enddof = this->dend ( level );
     for(DofIteratorType itdof = this->dbegin ( level ); itdof != enddof; ++itdof)
     {
-      s << (*itdof) << " DofValue \n";
+      s << (*itdof) << " \n";
     }
   }
   //*************************************************************************
