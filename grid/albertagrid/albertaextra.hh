@@ -695,8 +695,10 @@ namespace AlbertHelp
     }
 
     vdof[0] = 1;
-    fdof[1] = 1; // face has codim 1
-    edgedof[DIM-1] = 1;
+#if DIM == 3
+    edgedof[1] = 1; // edge dof only in 3d
+#endif
+    fdof[DIM-1] = 1; // means edges in 2d and faces in 3d
     edof[DIM] = 1;
 
     get_fe_space(mesh, "vertex_dofs", vdof, NULL);
