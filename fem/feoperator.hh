@@ -86,6 +86,7 @@ namespace Dune {
     //! Stores the destination
     DiscFunctionType * dest_;
 
+  public:
     //! ???
     void assemble ( ) const
     {
@@ -246,7 +247,7 @@ namespace Dune {
     }
 
   public:
-    //! Operator mode
+    //! %Operator mode
     enum OpMode { ON_THE_FLY, ASSEMBLED };
 
     //! ???
@@ -288,6 +289,24 @@ namespace Dune {
       else
       {
         multiplyOnTheFly( arg, dest );
+      }
+    }
+
+    //! ???
+    void assembleMatrix() const
+    {
+      if ( opMode_ == ASSEMBLED )
+      {
+        if ( !matrix_assembled_ )
+        {
+          matrix_ = this->newEmptyMatrix( );
+          assemble();
+        }
+        //matrix_->apply( arg, dest );
+      }
+      else
+      {
+        //multiplyOnTheFly( arg, dest );
       }
     }
 
@@ -375,7 +394,7 @@ namespace Dune {
     } // end applyLocal
 
 
-    //! ???
+    //! Eliminates the Dirichlet rows and columns
     template <class EntityType>
     void finalizeLocal ( EntityType &en ) const
     {
