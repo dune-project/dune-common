@@ -127,28 +127,25 @@ namespace Dune {
     //! print all dofs
     void print(std::ostream& s);
 
-    //! write leaf data to file in USPM format for Grape
-    bool write_USPM(const char *filename , int timestep);
+    //! write data of discrete function to file filename|timestep
+    //! with xdr methods
+    bool write_xdr( const char *filename );
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
-    bool write_xdr( const char *filename , int timestep );
-
-    //! write data of discrete function to file filename|timestep
-    //! with xdr methods
-    bool read_xdr( const char *filename , int timestep );
+    bool read_xdr( const char *filename );
 
     //! write function data to file filename|timestep in ascii Format
-    bool write_ascii(const char *filename, int timestep);
+    bool write_ascii(const char *filename);
 
     //! read function data from file filename|timestep in ascii Format
-    bool read_ascii(const char *filename, int timestep);
+    bool read_ascii(const char *filename);
 
     //! write function data in pgm fromat file
-    bool write_pgm(const char *filename, int timestep) ;
+    bool write_pgm(const char *filename );
 
     //! read function data from pgm fromat file
-    bool read_pgm(const char *filename, int timestep);
+    bool read_pgm(const char *filename);
 
     //! return name of this discrete function
     const char * name () const { return name_; }
