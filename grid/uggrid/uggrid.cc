@@ -102,12 +102,14 @@ template<> int UGGrid < 3, 3 >::numOfUGGrids = 0;
 template < int dim, int dimworld >
 inline UGGrid < dim, dimworld >::UGGrid()
 {
+  multigrid_ = NULL;
   init(500, 10);
 }
 
 template < int dim, int dimworld >
 inline UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned envHeapSize)
 {
+  multigrid_ = NULL;
   init(heapSize, envHeapSize);
 }
 
@@ -199,13 +201,16 @@ inline void UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned envHe
 template < int dim, int dimworld >
 inline UGGrid < dim, dimworld >::~UGGrid()
 {
-  free(extra_boundary_data_);
+  if (extra_boundary_data_)
+    free(extra_boundary_data_);
 
+  if (multigrid_) {
 #ifdef _3
-  UG3d::DisposeMultiGrid(multigrid_);
+    UG3d::DisposeMultiGrid(multigrid_);
 #else
-  UG2d::DisposeMultiGrid(multigrid_);
+    UG2d::DisposeMultiGrid(multigrid_);
 #endif
+  }
 
   numOfUGGrids--;
 
