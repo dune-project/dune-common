@@ -4,6 +4,43 @@
 
 namespace Dune {
 
+  namespace SPGridStubs {
+    template <int DIM>
+    class InitExchange {
+      spgrid<DIM> & g;
+    public:
+      InitExchange(spgrid<DIM> & g_) :
+        g(g_) {}
+      void evaluate(level l, const array<DIM> & coord, int id) {
+        spgrid<DIM>::iterator it(id,g);
+        spgrid<DIM>::index i=*it;
+        spgrid<DIM>::remotelist remote=i.remote();
+        /* if i own the data, I'll search all processes
+           to receive the data */
+        if(i.owner()) {
+          for (int r=0; r<remote.size; r++) {
+            int & size = g.exchange_data_to[l][remote.list[r].process()].size;
+            realloc<int>(g.exchange_data_to[l][remote.list[r].process()].id, size + 1);
+            g.exchange_data_to[l][remote.list[r].process()].id[size] = it.id();
+            size ++;
+          }
+        }
+        /* if I share the data, find the owner-processes */
+        else {
+          for (int r=0; r<remote.size; r++) {
+            if (remote.list[r].owner()) {
+              int & size = g.exchange_data_from[l][remote.list[r].process()].size;
+              realloc<int>(g.exchange_data_from[l][remote.list[r].process()].id, size + 1);
+              g.exchange_data_from[l][remote.list[r].process()].id[size] = it.id();
+              size ++;
+              continue;
+            }
+          }
+        }
+      }
+    };
+  } // namespace SPGridStubs
+
   ////////////////////////////////////////////////////////////////////////////
 
   /** overlap size at front */
@@ -385,4 +422,105 @@ namespace Dune {
       return 1;
     return 0;
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+
+  /**
+      Datenabgleich auf Level l vorbereiten
+   */
+  template <int DIM>
+  void spgrid<DIM>::initExchange() {
+    int P;
+    /* Size of Communicator */
+    MPI_Comm_size(comm_, &P);
+    exchange_data_from = new exchange_data*[smoothest()+1];
+    exchange_data_to = new exchange_data*[smoothest()+1];
+    for (level l=roughest(); l<=smoothest(); l++) {
+      exchange_data_from[l] = new exchange_data[P];
+      exchange_data_to[l] = new exchange_data[P];
+      for (int p=0; p<P; p++) {
+        exchange_data_from[l][p].size = 0;
+        exchange_data_from[l][p].id = malloc<int>(1);
+        exchange_data_to[l][p].size = 0;
+        exchange_data_to[l][p].id = malloc<int>(1);
+      }
+      SPGridStubs::InitExchange<DIM> stub(*this);
+      loop_overlap(l, stub);
+    }
+  };
+
+  /**
+      Datenabgleich auf Level l
+   */
+  template <int DIM>
+  void spgrid<DIM>::exchange(level l, Vector< spgrid<DIM> > & ex) {
+    TIME_EX -= MPI_Wtime();
+
+    for (int d=0; d<DIM; d++) {
+      for (int s=-1; s<=2; s+=2) {
+        /* remote rank */
+        array<DIM> remote_process = process();
+        int shift;
+        if ( process()[d] % 2 == 0 ) {
+          shift = s;
+        }
+        else {
+          shift = -s;
+        }
+        // calc neighbour coord
+        remote_process[d] += shift;
+
+        // check cart boundries
+        if (shift==-1) {
+          if (! do_front_share(d) ) continue;
+        }
+        else {
+          if (! do_end_share(d) ) continue;
+        }
+
+        int remote_rank;
+        MPI_Cart_rank(comm_, remote_process, &remote_rank);
+        if (remote_rank < 0 )
+          continue;
+
+        /* data buffers and ids */
+        int* & id_from =
+          exchange_data_from[l][remote_rank].id;
+        int* & id_to =
+          exchange_data_to[l][remote_rank].id;
+        int size_from = exchange_data_from[l][remote_rank].size;
+        int size_to = exchange_data_to[l][remote_rank].size;
+        double* data_from = new double[size_from];
+        double* data_to = new double[size_to];
+
+        /* collect data */
+        for (int i=0; i<size_to; i++)
+          data_to[i] = ex[id_to[i]];
+
+        /* the real exchange */
+        if ( process()[d] % 2 == 0 ) {
+          MPI_Send( data_to, size_to, MPI_DOUBLE, remote_rank,
+                    exchange_tag, comm_);
+          MPI_Recv( data_from, size_from, MPI_DOUBLE, remote_rank,
+                    exchange_tag, comm_, &mpi_status);
+        }
+        else {
+          MPI_Recv( data_from, size_from, MPI_DOUBLE, remote_rank,
+                    exchange_tag, comm_, &mpi_status);
+          MPI_Send( data_to, size_to, MPI_DOUBLE, remote_rank,
+                    exchange_tag, comm_);
+        }
+
+        /* store data */
+        for (int i=0; i<size_from; i++)
+          ex[id_from[i]] = data_from[i];
+
+        /* clean up */
+        delete[] data_from;
+        delete[] data_to;
+      }
+    }
+    TIME_EX += MPI_Wtime();
+  }; /* end exchange() */
+
 }

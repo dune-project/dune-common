@@ -12,7 +12,6 @@ namespace Dune {
     template <class GRID, int SMOOTHER, int TYP> class Defect;
     template <class GRID, int SMOOTHER, int TYP> class Restrict;
     template <class GRID, int SMOOTHER, int TYP> class Prolongate;
-    template <class GRID, int SMOOTHER> class InitExchange;
     template <class GRID> class InitIterator;
   }
 }

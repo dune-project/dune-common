@@ -35,7 +35,7 @@ namespace Dune {
     g.loop3D(l,beginB,beginI,endI,endB,stub_border); // border
 
     TIME_SMOOTHER += MPI_Wtime();
-    exchange(l,x);
+    g.exchange(l,x);
   }
 
   /**
@@ -90,7 +90,7 @@ namespace Dune {
       double omega=0.5;
       x[i] = (1-omega) * x[i] + omega * x_old[i-xoff];
     };
-    exchange(l,x);
+    g.exchange(l,x);
     delete[] x_old;
 
     TIME_SMOOTHER += MPI_Wtime();
@@ -225,7 +225,7 @@ namespace Dune {
 
     // defect(l);
     // We also need the defect of out neighbours
-    exchange(l,d);
+    g.exchange(l,d);
 
     TIME_REST -= MPI_Wtime();
 
@@ -250,7 +250,7 @@ namespace Dune {
     TIME_REST += MPI_Wtime();
 
     // ABGLEICH vector b Level l-1
-    exchange(l-1,b);
+    g.exchange(l-1,b);
   }; /* end restrict() */
 
   /**
@@ -284,177 +284,16 @@ namespace Dune {
     TIME_PROL += MPI_Wtime();
 
     // ABGLEICH Level l
-    exchange(l,x);
+    g.exchange(l,x);
   };
-
-  /**
-      Datenabgleich auf Level l vorbereiten
-   */
-  template <class GRID, int SMOOTHER>
-  void pmgsolver<GRID,SMOOTHER>::
-  initExchange() {
-    int P;
-    /* Size of Communicator */
-    MPI_Comm_size(g.comm(), &P);
-    exchange_data_from = new exchange_data*[g.smoothest()+1];
-    exchange_data_to = new exchange_data*[g.smoothest()+1];
-    for (level l=g.roughest(); l<=g.smoothest(); l++) {
-      exchange_data_from[l] = new exchange_data[P];
-      exchange_data_to[l] = new exchange_data[P];
-      for (int p=0; p<P; p++) {
-        exchange_data_from[l][p].size = 0;
-        exchange_data_from[l][p].id = malloc<int>(1);
-        exchange_data_to[l][p].size = 0;
-        exchange_data_to[l][p].id = malloc<int>(1);
-      }
-      PMGStubs::InitExchange<GRID,SMOOTHER> stub(*this);
-      g.loop_overlap(l, stub);
-    }
-  };
-
-  /**
-      Datenabgleich auf Level l
-   */
-  template <class GRID, int SMOOTHER>
-  void pmgsolver<GRID,SMOOTHER>::
-  exchange(level l, Vector<GRID> & ex) {
-    TIME_EX -= MPI_Wtime();
-
-    //#define TALKALOT
-#ifdef TALKALOT
-    int P;
-    MPI_Comm_size(g.comm(), &P); // Number of Processors
-    for (int p=0; p<P; p++) {
-      if (rank==p) {
-        cout << "Rank " << rank << " " << g.process_
-             << " ProcessorArrangement: " << g.dim_ << std::endl;
-        for (int d=0; d<DIM; d++) {
-          cout << d << " do_front_share=" << g.do_front_share(d)
-               << " do_end_share=" << g.do_end_share(d) << std::endl;
-        }
-        std::cout << std::flush;
-      }
-      MPI_Barrier(g.comm());
-    }
-#endif
-
-    for (int d=0; d<DIM; d++) {
-      for (int s=-1; s<=2; s+=2) {
-        /* remote rank */
-        array<DIM> remote_process = g.process();
-        int shift;
-        if ( g.process()[d] % 2 == 0 ) {
-          shift = s;
-        }
-        else {
-          shift = -s;
-        }
-        // calc neighbour coord
-        remote_process[d] += shift;
-
-        // check cart boundries
-#ifdef TALKALOT
-        std::cout << rank << g.process_ << " checking "
-                  << remote_process << "(d=" << d
-                  << ",shift=" << shift << ")" << std::endl << std::flush;
-#endif
-        if (shift==-1) {
-          if (! g.do_front_share(d) ) continue;
-        }
-        else {
-          if (! g.do_end_share(d) ) continue;
-        }
-
-        int remote_rank;
-#ifdef TALKALOT
-        std::cout << rank << g.process_ << "exchange with coord "
-                  << remote_process << std::endl << std::flush;
-#endif
-        MPI_Cart_rank(g.comm(), remote_process, &remote_rank);
-        if (remote_rank < 0 )
-          continue;
-
-        /* data buffers and ids */
-        int* & id_from =
-          exchange_data_from[l][remote_rank].id;
-        int* & id_to =
-          exchange_data_to[l][remote_rank].id;
-        int size_from = exchange_data_from[l][remote_rank].size;
-        int size_to = exchange_data_to[l][remote_rank].size;
-        double* data_from = new double[size_from];
-        double* data_to = new double[size_to];
-
-        /* collect data */
-        for (int i=0; i<size_to; i++)
-          data_to[i] = ex[id_to[i]];
-
-        /* the real exchange */
-        if ( g.process()[d] % 2 == 0 ) {
-#ifndef NDEBUG
-          /*
-             int debug_size = size_to;
-             MPI_Send( &debug_size, 1, MPI_INT, remoteprocess,
-             exchange_tag, g.comm());
-           */
-#endif
-#ifdef VERBOSE_EXCHANGE
-          std::cout << "Process " << rank << " sending " << size_to
-                    << " to " << remote_rank
-                    << std::endl << std::flush;
-#endif
-          MPI_Send( data_to, size_to, MPI_DOUBLE, remote_rank,
-                    exchange_tag, g.comm());
-#ifdef VERBOSE_EXCHANGE
-          std::cout << "Process " << rank << " receiving " << size_from
-                    << " from " << remote_rank
-                    << std::endl << std::flush;
-#endif
-          MPI_Recv( data_from, size_from, MPI_DOUBLE, remote_rank,
-                    exchange_tag, g.comm(), &mpi_status);
-        }
-        else {
-#ifdef VERBOSE_EXCHANGE
-          std::cout << "Process " << rank << " receiving " << size_from
-                    << " from " << remote_rank
-                    << std::endl << std::flush;
-#endif
-          MPI_Recv( data_from, size_from, MPI_DOUBLE, remote_rank,
-                    exchange_tag, g.comm(), &mpi_status);
-#ifdef VERBOSE_EXCHANGE
-          std::cout << "Process " << rank << " sending " << size_to
-                    << " to " << remote_rank
-                    << std::endl << std::flush;
-#endif
-          MPI_Send( data_to, size_to, MPI_DOUBLE, remote_rank,
-                    exchange_tag, g.comm());
-        }
-
-        /* store data */
-        for (int i=0; i<size_from; i++)
-          ex[id_from[i]] = data_from[i];
-
-        /* clean up */
-        delete[] data_from;
-        delete[] data_to;
-      }
-    }
-    TIME_EX += MPI_Wtime();
-  }; /* end exchange() */
 
   /** solve the problem for a certain perm an store the result in x */
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
   init() {
 
-    std::cout << rank << " initalizing exchange data structures..."
-              << std::flush;
-
-    /* Initialize the exchange data structures */
-    initExchange();
-    std::cout << " done\n" << std::flush;
-
     /* build rhs and x-values at the border on smoothest level */
-    typename GRID::level lvl = g.smoothest();
+    level lvl = g.smoothest();
     b = 0;
     d = 0;
 
@@ -463,8 +302,8 @@ namespace Dune {
 
     std::cout << rank << " Exchanging x and b\n" << std::flush;
 
-    exchange(g.smoothest(),x);
-    exchange(g.smoothest(),b);
+    g.exchange(g.smoothest(),x);
+    g.exchange(g.smoothest(),b);
 
     MPI_Barrier(g.comm());
   }
@@ -472,7 +311,7 @@ namespace Dune {
   template <class GRID, int SMOOTHER>
   void pmgsolver<GRID,SMOOTHER>::
   solve(int maxCycles) {
-    typename GRID::level lvl = g.smoothest();
+    level lvl = g.smoothest();
 
     init();
 

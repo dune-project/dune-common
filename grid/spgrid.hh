@@ -5,6 +5,8 @@
 #ifndef DUNE_SPGRID_HH
 #define DUNE_SPGRID_HH
 
+#include <dune/solver/common/operator.hh>
+
 /**
  * Structured parallel Grid
  *   spgrid<DIM>
@@ -26,10 +28,21 @@ typedef int ID_t;
 
 namespace Dune {
 
+  typedef int level;
+
+#warning we need an intelligent way of coordinating the MPI_Send-Tags
+  const int exchange_tag=42;
+
   // consts for flag-index
-  const int f_owner=0;
-  const int f_border=1;
-  const int f_overlap=2;
+  enum flag_index {
+    f_owner=0,
+    f_border=1,
+    f_overlap=2
+  };
+
+  namespace SPGridStubs {
+    template <int DIM> class InitExchange;
+  };
 
   ////////////////////////////////////////////////////////////////////////////
   /// The Structured parallel Grid
@@ -39,13 +52,13 @@ namespace Dune {
   {
   public:
     // forward declarations
-    typedef int level;
     class iterator;
     class index;
     class remoteindex;
     class remotelist;
     friend class iterator;
     friend class index;
+    friend class SPGridStubs::InitExchange<DIM>;
     /// fixed number of max levels
     enum {
       maxlevels=64
@@ -91,7 +104,19 @@ namespace Dune {
     const array<DIM> &id_to_coord(level l, int id) const;
     const array<DIM> &id_to_coord(level l, int id, const array<DIM> &) const;
     const array<DIM> &id_to_coord_impl(level l, int id) const;
+    /* datatyp for exchange */
+    typedef struct {
+      int size;
+      int* id;
+    } exchange_data;
+    MPI_Status mpi_status;
+    /**< prepare dataexchange */
+    void   initExchange();
+    /**< exchange data on level l */
+    void   exchange(level l, Vector< spgrid<DIM> > & ex);
   private:
+    exchange_data** exchange_data_from;
+    exchange_data** exchange_data_to;
     //! initialize the grid
     void init();
   public:

@@ -32,9 +32,6 @@ namespace Dune {
     return static_cast<T*>(::malloc(size*sizeof(T)));
   }
 
-#warning we need an intelligent way of coordinating the MPI_Send-Tags
-  const int exchange_tag=42;
-
   enum smootherTyp { GaussSeidel, Jacobi };
 
   double TIME_SMOOTHER;
@@ -58,12 +55,10 @@ namespace Dune {
     friend class PMGStubs::Restrict<GRID,SMOOTHER,PMGStubs::Border>;
     friend class PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Inner>;
     friend class PMGStubs::Prolongate<GRID,SMOOTHER,PMGStubs::Border>;
-    friend class PMGStubs::InitExchange<GRID,SMOOTHER>;
     friend class PMGStubs::InitIterator<GRID>;
 
     enum { DIM = GRID::griddim };
     typedef double data;
-    typedef typename GRID::level level;
     typedef struct {
       int id; data value;
     } rhs;
@@ -91,18 +86,6 @@ namespace Dune {
     };
     void   smootherGaussSeidel(level l);
     void   smootherJacobi(level l);
-    /* datatyp for exchange */
-    typedef struct {
-      int size;
-      int* id;
-    } exchange_data;
-    exchange_data** exchange_data_from;
-    exchange_data** exchange_data_to;
-    MPI_Status mpi_status;
-    /**< prepare dataexchange */
-    void   initExchange();
-    /**< exchange data on level l */
-    void   exchange(level l, Vector<GRID> & ex);
     /**< Multi-Grid-Cycle */
     void   mgc (level l);
   public:

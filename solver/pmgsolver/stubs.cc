@@ -9,15 +9,13 @@ namespace Dune {
      */
     template <class GRID, int SMOOTHER, int TYP>
     class GaussSeidel {
-      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       const pmgsolver<GRID,SMOOTHER> & solver;
       Dune::Vector<GRID> & x;
       Dune::Vector<GRID> & b;
       array<DIM> add;
     public:
-      GaussSeidel(const pmgsolver<GRID,SMOOTHER> & solver_,
-                  level l) :
+      GaussSeidel(const pmgsolver<GRID,SMOOTHER> & solver_, level l) :
         solver(solver_), x(solver.x), b(solver.b),
         add(solver.g.init_add(l))
       {}
@@ -66,7 +64,6 @@ namespace Dune {
      */
     template <class GRID, int SMOOTHER, int TYP>
     class Defect {
-      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       const pmgsolver<GRID,SMOOTHER> & solver;
       Dune::Vector<GRID> & x;
@@ -74,8 +71,7 @@ namespace Dune {
       array<DIM> add;
     public:
       array<2,double> defect_array;
-      Defect(const pmgsolver<GRID,SMOOTHER> & solver_,
-             level l) :
+      Defect(const pmgsolver<GRID,SMOOTHER> & solver_, level l) :
         solver(solver_), x(solver.x), b(solver.b),
         add(solver.g.init_add(l)), defect_array(0)
       {}
@@ -125,7 +121,6 @@ namespace Dune {
 
     template <class GRID, int SMOOTHER, int TYP>
     class Restrict {
-      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       pmgsolver<GRID,SMOOTHER> & solver;
       GRID & g;
@@ -151,8 +146,7 @@ namespace Dune {
         }
         }
       }
-      void adddefect(double d, int dir,
-                     typename GRID::level l, array<DIM> coord){
+      void adddefect(double d, int dir, level l, array<DIM> coord){
         dir--;
 
         if (dir<0) {
@@ -206,7 +200,6 @@ namespace Dune {
 
     template <class GRID, int SMOOTHER, int TYP>
     class Prolongate {
-      typedef typename GRID::level level;
       enum { DIM = GRID::griddim };
       pmgsolver<GRID,SMOOTHER> & solver;
       GRID & g;
@@ -233,8 +226,7 @@ namespace Dune {
         }
         }
       }
-      double correction(int dir, typename GRID::level l,
-                        array<DIM> coord) {
+      double correction(int dir, level l, array<DIM> coord) {
         dir--;
 
         if (dir<0) {
@@ -272,47 +264,9 @@ namespace Dune {
       }
     };
 
-    template <class GRID, int SMOOTHER>
-    class InitExchange {
-      typedef typename GRID::level level;
-      enum { DIM = GRID::griddim };
-      pmgsolver<GRID,SMOOTHER> & solver;
-    public:
-      InitExchange(pmgsolver<GRID,SMOOTHER> & solver_) :
-        solver(solver_) {}
-      void evaluate(level l, const array<DIM> & coord, int id) {
-        typename GRID::iterator it(id,solver.g);
-        typename GRID::index i=*it;
-        typename GRID::remotelist remote=i.remote();
-        /* if i own the data, I'll search all processes
-           to receive the data */
-        if(i.owner()) {
-          for (int r=0; r<remote.size; r++) {
-            int & size = solver.exchange_data_to[l][remote.list[r].process()].size;
-            realloc<int>(solver.exchange_data_to[l][remote.list[r].process()].id, size + 1);
-            solver.exchange_data_to[l][remote.list[r].process()].id[size] = it.id();
-            size ++;
-          }
-        }
-        /* if I share the data, find the owner-processes */
-        else {
-          for (int r=0; r<remote.size; r++) {
-            if (remote.list[r].owner()) {
-              int & size = solver.exchange_data_from[l][remote.list[r].process()].size;
-              realloc<int>(solver.exchange_data_from[l][remote.list[r].process()].id, size + 1);
-              solver.exchange_data_from[l][remote.list[r].process()].id[size] = it.id();
-              size ++;
-              continue;
-            }
-          }
-        }
-      }
-    };
-
     template <class GRID>
     class InitIterator {
       enum { DIM = GRID::griddim };
-      typedef typename GRID::level level;
       Dune::Vector<GRID> & b;
       Dune::Vector<GRID> & x;
       Discrete<GRID> & discrete;

@@ -128,7 +128,7 @@ namespace Dune {
 
   /** tell the iterators level */
   template<int DIM> inline
-  typename spgrid<DIM>::level spgrid<DIM>::iterator::
+  level spgrid<DIM>::iterator::
   lvl() const {
     return l_;
   }; /* end lvl */
