@@ -57,23 +57,6 @@ namespace Dune {
       return virtualEntity_;
     }
 
-#if 0
-    //! prefix increment
-    UGGridIntersectionIterator& operator ++();
-
-    //! equality
-    bool operator== (const UGGridIntersectionIterator& i) const;
-
-    //! inequality
-    bool operator!= (const UGGridIntersectionIterator& i) const;
-
-    //! access neighbor, dereferencing
-    UGGridEntity<0,GridImp::dimension,GridImp>& operator*();
-
-    //! access neighbor, arrow
-    UGGridEntity<0,GridImp::dimension,GridImp>* operator->();
-#endif
-
     //! return true if intersection is with boundary. \todo connection with
     //! boundary information, processor/outer boundary
     bool boundary () const;
