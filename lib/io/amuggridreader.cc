@@ -50,14 +50,6 @@ namespace Dune {
                                        int noOfElem,
                                        std::vector<Vec<3, int> >& face_list);
 
-    //         static int detectBoundaryNodes(const std::vector<Vec<4, int> >& face_list,
-    //                                        unsigned int noOfNodes,
-    //                                        std::vector<bool>& isBoundaryNode);
-
-    //         static int detectBoundaryNodes(const std::vector<Vec<3, int> >& face_list,
-    //                                        unsigned int noOfNodes,
-    //                                        std::vector<int>& isBoundaryNode);
-
     AmiraMeshReader() {}
 
   };
@@ -413,8 +405,8 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
     return(1);
   }
 
-  for (int ii=0; ii<isBoundaryNode.size(); ii++)
-    printf("%d\n", isBoundaryNode[ii]);
+  //     for (int ii=0; ii<isBoundaryNode.size(); ii++)
+  //         printf("%d\n", isBoundaryNode[ii]);
 
   printf("%d boundary nodes found!\n", nBndNodes);
 
@@ -969,29 +961,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
 
 }
 
-int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundaryNodes(const std::vector<Vec<4, int> >& face_list,
-                                                                   unsigned int noOfNodes,
-                                                                   std::vector<bool>& isBoundaryNode)
-{
-  unsigned int i, j;
-
-  //! \todo Should be a bitfield
-  isBoundaryNode.resize(noOfNodes);
-  for (i=0; i<noOfNodes; i++)
-    isBoundaryNode[i] = false;
-
-  for (i=0; i<face_list.size(); i++)
-    for (j=0; j<4; j++)
-      isBoundaryNode[face_list[i][j]] = true;
-
-  // Count number of boundary nodes
-  int count=0;
-  for (i=0; i<noOfNodes; i++)
-    count += isBoundaryNode[i];
-
-  return count;
-}
-
 
 int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& grid,
                                                                 AmiraMesh* am,
@@ -1022,16 +991,11 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gri
 
   int nBndSegments = face_list.size();
 
-  printf("%d boundary segments found!\n", face_list.size());
-  for (unsigned int i=0; i<face_list.size(); i++) {
-    //face_list[i].print(cout, 3);
-
-    std::cout << face_list[i] << "\n";
-  }
+  std::out << face_list.size() << " boundary segments found!\n";
 
   int noOfNodes = am->nElements("Nodes");
 
-  std::vector<bool> isBoundaryNode;
+  std::vector<int> isBoundaryNode;
 
   int nBndNodes = detectBoundaryNodes(face_list, noOfNodes, isBoundaryNode);
   if(nBndNodes <= 0)
@@ -1750,8 +1714,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
   delete am;
 
-  //   if(SetSubdomainIDsFromAmira(theMG, filename, noOfElem))
-  //     PrintErrorMessage('W', "SetSubdomainIDsFromAmira","setting id's failed");
   UG2d::SetEdgeAndNodeSubdomainFromElements(theMG->grids[0]);
 
 
