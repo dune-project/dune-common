@@ -146,24 +146,23 @@ namespace Dune {
   spgrid<DIM>::id_to_coord(level l, int id, const array<DIM> &process) const
   {
     init_add(l,process);
-    return id_to_coord_impl(l,id);
+    return id_to_coord_impl(l, id - max(l-1,process));
   }; /* end id_to_coord */
 
   template<int DIM> inline
   const array<DIM>& spgrid<DIM>::
   id_to_coord(level l, int id) const {
     init_add(l);
-    return id_to_coord_impl(l,id);
+    return id_to_coord_impl(l, id - max(l-1));
   } /* end id_to_coord */
 
   template<int DIM> inline
   const array<DIM>& spgrid<DIM>::
-  id_to_coord_impl(level l, int id) const
+  id_to_coord_impl(level l, int pos) const
   {
     array<DIM> &coord_buffer = const_cast<array<DIM>&>(this->coord_buffer);
 
     // remove offset
-    int pos=id - max(l-1);
     int subpos = 0;
 
     coord_buffer[0] = pos / add_buffer[0];
@@ -185,7 +184,7 @@ namespace Dune {
               const array<DIM> &process) const
   {
     init_add(l, process);
-    return coord_to_id_impl(l, coord);
+    return coord_to_id_impl(l, coord) + max(l-1, process);
   }; /* end coord_to_id */
 
   template<int DIM> inline
@@ -193,14 +192,14 @@ namespace Dune {
   coord_to_id(level l, const array<DIM> &coord) const
   {
     init_add(l);
-    return coord_to_id_impl(l, coord);
+    return coord_to_id_impl(l, coord) + max(l-1);
   }
 
   template<int DIM> inline
   int spgrid<DIM>::
   coord_to_id_impl(level l, const array<DIM> &coord) const
   {
-    int id = max(l-1);
+    int id = 0;
     for (int d=0; d<DIM; d++)
       id += coord[d]*add_buffer[d];
     assert(id >= 0);
