@@ -231,18 +231,19 @@ namespace Dune {
     //! for makeRefElement == true a Element with the coordinates of the
     //! reference element is made
     UGGridElement(bool makeRefElement=false) {
-      std::cout << "UGGridElement<1,2> created!" << std::endl;
+      //std::cout << "UGGridElement<1,2> created!" << std::endl;
     }
 
-    //! return the element type identifier
-    //! line , triangle or tetrahedron, depends on dim
+    /** Return the element type identifier.  This class always returns 'line' */
     ElementType type () const {return line;}
 
-    //! return the number of corners of this element. Corners are numbered 0...n-1
+    //! return the number of corners of this element. This class always returns 2
     int corners () const {return 2;}
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<UGCtype, 2>& operator[] (int i) const;
+    const FieldVector<UGCtype, 2>& operator[] (int i) const {
+      return coord_[i];
+    }
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
@@ -271,6 +272,9 @@ namespace Dune {
     void setToTarget(TargetType<1,2>::T* target) {
       DUNE_THROW(GridError, "UGGridElement<1,2>::setToTarget called!");
     }
+
+    // Do nothing: faces in a 2d grid always have 2 corners
+    void setNumberOfCorners(int n) {}
 
     //! the vertex coordinates
     FixedArray<FieldVector<UGCtype, 2>, 2> coord_;
