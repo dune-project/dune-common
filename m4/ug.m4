@@ -126,6 +126,7 @@ AC_DEFUN([DUNE_PATH_UG],[
  	      AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
      fi
      UG_DIM="$with_problem_dim"
+     UG_CPPFLAGS="${UG_CPPFLAGS} -D_${UG_DIM}"
 
       AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
