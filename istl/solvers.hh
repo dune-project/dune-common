@@ -13,7 +13,7 @@
 #include "istlexception.hh"
 #include "operators.hh"
 #include "preconditioners.hh"
-#include "timer.hh"
+#include "dune/common/timer.hh"
 
 /*! \file __FILE__
 
@@ -174,6 +174,95 @@ namespace Dune {
 
       // final print
       if (_verbose>0)
+        printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
+    }
+
+    //! apply inverse operator, with given reduction factor
+    virtual void apply (X& x, Y& b, double reduction, InverseOperatorResult& r)
+    {
+      _reduction = reduction;
+      (*this).apply(x,b,r);
+    }
+
+  private:
+    LinearOperator<X,Y>& _op;
+    Preconditioner<X,Y>& _prec;
+    double _reduction;
+    int _maxit;
+    int _verbose;
+  };
+
+
+
+
+  //! conjugate gradient method
+  template<class X, class Y>
+  class CGSolver : public InverseOperator<X,Y> {
+  public:
+    //! export types, usually they come from the derived class
+    typedef X domain_type;
+    typedef Y range_type;
+    typedef typename X::field_type field_type;
+
+    //! set up Loop solver
+    CGSolver (LinearOperator<X,Y>& op, Preconditioner<X,Y>& prec,
+              double reduction, int maxit, int verbose) :
+      _op(op), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {}
+
+    //! apply inverse operator
+    virtual void apply (X& x, Y& b, InverseOperatorResult& r)
+    {
+      r.clear();                      // clear solver statistics
+      Timer watch;                    // start a timer
+      _prec.pre(x,b);                 // prepare preconditioner
+      _op.applyscaleadd(-1,x,b);      // overwrite b with defect
+
+      X p(x);                         // create local vectors
+      Y q(b);
+
+      double def0 = _prec.norm(b);    // compute norm
+
+      if (_verbose>0)                 // printing
+      {
+        printf("=== CGSolver\n");
+        if (_verbose>1) printf(" Iter       Defect         Rate\n");
+        if (_verbose>1) printf("%5d %12.4E\n",0,def0);
+      }
+
+      int i=1; double def=def0;       // loop variables
+      field_type rho,rholast,lambda;
+      for ( ; i<=_maxit; i++ )
+      {
+        p = 0;                                // clear correction
+        _prec.apply(p,b);                     // apply preconditioner
+        rho = _prec.dot(p,b);                 // orthogonalization
+        if (i>1) p.axpy(rho/rholast,q);
+        rholast = rho;                        // remember rho for recurrence
+        _op.apply(p,q);                       // q=Ap
+        lambda = rho/_prec.dot(q,p);          // minimization
+        x.axpy(lambda,p);                     // update solution
+        b.axpy(-lambda,q);                    // update defect
+        q=p;                                  // remember search direction
+        double defnew=_prec.norm(b);          // comp defect norm
+        if (_verbose>1)                       // print
+          printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
+        def = defnew;                         // update norm
+        if (def<def0*_reduction)              // convergence check
+        {
+          r.converged  = true;
+          break;
+        }
+      }
+
+      if (_verbose==1)                    // printing for non verbose
+        printf("%5d %12.4E\n",i,def);
+      _prec.post(x);                      // postprocess preconditioner
+      r.iterations = i;                   // fill statistics
+      r.reduction = def/def0;
+      r.conv_rate  = pow(r.reduction,1.0/i);
+      r.elapsed = watch.elapsed();
+      if (_verbose>0)                     // final print
         printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
     }
 

@@ -435,7 +435,7 @@ void test_Iter ()
 void test_Interface ()
 {
   // define Types
-  const int BlockSize = 6;
+  const int BlockSize = 1;
   typedef Dune::FieldVector<double,BlockSize> VB;
   typedef Dune::FieldMatrix<double,BlockSize,BlockSize> MB;
   typedef Dune::BlockVector<VB> Vector;
@@ -452,7 +452,7 @@ void test_Interface ()
     E[i][i] = -1;
 
   // make a block compressed row matrix with five point stencil
-  const int N=10000, BW1=1, BW2=100;
+  const int BW2=512, BW1=1, N=BW2*BW2;
   Matrix A(N,N,5*N,Dune::BCRSMatrix<MB>::row_wise);
   for (Matrix::CreateIterator i=A.createbegin(); i!=A.createend(); ++i)
   {
@@ -477,8 +477,9 @@ void test_Interface ()
 
   // set up the high-level solver objects
   Dune::MatrixAdapter<Matrix,Vector,Vector> op(A);        // make linear operator from A
-  Dune::SeqSSOR<Matrix,Vector,Vector> ssor(A,2,1.0);      // preconditioner object
-  Dune::LoopSolver<Vector,Vector> solver(op,ssor,1E-4,50,2); // an inverse operator
+  Dune::SeqSSOR<Matrix,Vector,Vector> ssor(A,1,1.78);     // SSOR preconditioner
+  Dune::SeqILU0<Matrix,Vector,Vector> ilu0(A);            // preconditioner object
+  Dune::CGSolver<Vector,Vector> solver(op,ssor,1E-8,8000,2); // an inverse operator
 
   // call the solver
   Dune::InverseOperatorResult r;
