@@ -217,11 +217,9 @@ namespace Dune {
     //! write disc func information file and write dofs to file+timestep
     //! this method use the write method of the implementation of the
     //! discrete function
-    template <FileFormatType ftype>
-    bool write(const char *filename, int timestep);
+    bool write(const FileFormatType ftype, const char *filename, int timestep);
 
     //! same as write only read
-    template <FileFormatType ftype>
     bool read(const char *filename, int timestep);
 
   private:
