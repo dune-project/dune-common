@@ -577,11 +577,13 @@ namespace Dune {
       // finish off
       build_mode = row_wise;     // dummy
       ready = true;
+      return *this;
     }
 
     BCRSMatrix& operator= (const field_type& k)
     {
       for (int i=0; i<n; i++) r[i] = k;
+      return *this;
     }
 
     //===== row-wise creation interface
