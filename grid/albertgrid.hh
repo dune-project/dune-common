@@ -96,7 +96,7 @@ namespace Albert
 
     //**********************************************************************
     //
-    // --- AlbertGridElement
+    // --AlbertGridElement
     /*!
        Defines the geometry part of a mesh entity. Works for all dimensions, element types and dime
        of world. Provides reference element and mapping between local and global coordinates.
@@ -142,18 +142,13 @@ namespace Albert
        */
       static AlbertGridElement<dim,dim>& refelem ();
 
-      //! maps a local coordinate within reference element to global coordinate in element
+      //! maps a local coordinate within reference element to
+      //! global coordinate in element
       Vec<dimworld,albertCtype>& global (Vec<dim,albertCtype> local);
 
-      //! maps a barycentric coordinate within element to global coordinate in element
-      Vec<dimworld,albertCtype> globalBary (Vec<dim+1,albertCtype> local);
-
-      //! maps a global coordinate within the element to a local coordinate in its reference eleme
+      //! maps a global coordinate within the element to a
+      //! local coordinate in its reference element
       Vec<dim,albertCtype>& local (Vec<dimworld,albertCtype> global);
-
-      //! maps a global coordinate within the elements local barycentric
-      //! koordinates
-      Vec<dim+1,albertCtype> localBary (Vec<dimworld,albertCtype> global);
 
       //! returns true if the point is in the current element
       bool pointIsInside(const Vec<dimworld,albertCtype> &point);
@@ -188,6 +183,12 @@ namespace Albert
       //! print internal data
       void print (std::ostream& ss, int indent);
 
+      //! return unit outer normal of this element, work for Faces nad Edges
+      Vec<dimworld,albertCtype>& unit_outer_normal ();
+
+      //! return outer normal of this element, work for Faces nad Edges
+      Vec<dimworld,albertCtype>& outer_normal ();
+
       //***********************************************************************
       //  Methods that not belong to the Interface, but have to be public
       //***********************************************************************
@@ -196,14 +197,25 @@ namespace Albert
       void initGeom();
 
     private:
+      //! maps a barycentric coordinate within element to global coordinate in element
+      Vec<dimworld,albertCtype> globalBary (Vec<dim+1,albertCtype> local);
+
+      //! maps a global coordinate within the elements local barycentric
+      //! koordinates
+      Vec<dim+1,albertCtype> localBary (Vec<dimworld,albertCtype> global);
+
       // template method for map the vertices of EL_INFO to the actual
       // coords with face_,edge_ and vertex_ , needes for operator []
       template <int cc>
       int mapVertices (int i) { return i; };
 
-      template <> int mapVertices< 1 > (int i) { return ((face_+1)+i); };
-      template <> int mapVertices< 2 > (int i) { return ((face_+1)+ (edge_+1) +i); };
-      template <> int mapVertices< 3 > (int i) { return ((face_+1)+ (edge_+1) +(vertex_+1) +i); };
+      template <> int mapVertices< 1 > (int i)
+      { return ((face_+1+i)%N_VERTICES); };
+
+      template <> int mapVertices< 2 << dimworld > (int i)
+      { return ((face_+1)+ (edge_+1) +i)%N_VERTICES; };
+      template <> int mapVertices< 3 > (int i)
+      { return ((face_+1)+ (edge_+1) +(vertex_+1) +i)%N_VERTICES; };
 
       Mat<dimworld,dim+1,albertCtype> coord_;
 
@@ -226,12 +238,13 @@ namespace Albert
       Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
       bool builtinverse;
 
+      Vec<dimworld,albertCtype> outerNormal_;
     };
 
 
     //**********************************************************************
     //
-    // --- AlbertGridEntity
+    // --AlbertGridEntity
     //
     /*!
        A Grid is a container of grid entities. An entity is parametrized by the codimension.
@@ -303,7 +316,8 @@ namespace Albert
 
       //! the cuurent geometry
       AlbertGridElement<dim-codim,dimworld> geo_;
-      bool builtgeometry_;           //!< true if geometry has been constructed
+      bool builtgeometry_;     //!< true if geometry has been constructed
+
 
       Vec<dim,albertCtype> localFatherCoords_;
 
@@ -330,6 +344,11 @@ namespace Albert
        non-matching meshes. The number of neigbors may be different from the number of faces/edges
        of an element!
      */
+    //***********************
+    //
+    //  --AlbertGridEntity
+    //
+    //***********************
     template<int dim, int dimworld>
     class AlbertGridEntity<0,dim,dimworld> :
       public Entity<0,dim,dimworld,albertCtype,AlbertGridEntity,AlbertGridElement,
@@ -367,12 +386,39 @@ namespace Albert
       /*! Intra-element access to entities of codimension cc > codim. Return number of entities
          with codimension cc.
        */
-      template<int cc> int count ();
+      template<int cc> int count   () { return dim+1; }; //!< Default codim 1 Faces
+      template<> int count<2<<dim> () { return (dim*2); }; //!< Edges Codim = 2, only 3d
+      template<> int count<dim>    () { return dim+1; }; //!< Vertices codim = dim
 
       /*! Provide access to mesh entity i of given codimension. Entities
          are numbered 0 ... count<cc>()-1
        */
-      template<int cc> AlbertGridLevelIterator<cc,dim,dimworld> entity (int i); // 0 <= i < count()
+      template<int cc> AlbertGridLevelIterator<cc,dim,dimworld> entity (int i) // 0 <= i < count()
+      { // Default == Codim 1 Faces
+        AlbertGridLevelIterator<cc,dim,dimworld> tmp(elInfo_,i,0,0);
+        return tmp;
+      };
+
+      template <> AlbertGridLevelIterator<2 << dim,dim,dimworld> entity<2 << dim> (int i)
+      {
+        if(i < 3)
+        { // 0,1,2
+          AlbertGridLevelIterator<2,3,3> tmp(elInfo_,0,i,0);
+          return tmp;
+        }
+        else
+        { // 3,4,5
+          AlbertGridLevelIterator<2,3,3> tmp(elInfo_,i-2,1,0);
+          return tmp;
+        }
+      };
+
+      // spezialization for dim = dimworld = 3 ind albertgrid.cc
+      template<> AlbertGridLevelIterator<dim,dim,dimworld> entity<dim> (int i)
+      {
+        AlbertGridLevelIterator<dim,dim,dimworld> tmp(elInfo_,0,0,i);
+        return tmp;
+      };
 
       /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
          which has an entity of codimension 1 in commen with this entity. Access to neighbors
@@ -441,7 +487,11 @@ namespace Albert
 
 
 
-    /*! Mesh entities of codimension 0 ("elements") allow to visit all entities of
+    //**********************************************************************
+    //
+    // --AlbertGridHierarchicIterator
+    /*!
+       Mesh entities of codimension 0 ("elements") allow to visit all entities of
        codimension 0 obtained through nested, hierarchic refinement of the entity.
        Iteration over this set of entities is provided by the HIerarchicIterator,
        starting from a given entity.
@@ -460,8 +510,6 @@ namespace Albert
 
       //! know your own dimension of world
       enum { dimensionworld=dimworld };
-
-      enum { numberOfVertices_= 4 };
 
       // the normal Constructor
       AlbertGridHierarchicIterator(ALBERT TRAVERSE_STACK travStack, int travLevel);
@@ -507,7 +555,11 @@ namespace Albert
 
 
 
-    /*! Mesh entities of codimension 0 ("elements") allow to visit all neighbors, wh
+    //**********************************************************************
+    //
+    // --AlbertGridNeighborIterator
+    /*!
+       Mesh entities of codimension 0 ("elements") allow to visit all neighbors, wh
        a neighbor is an entity of codimension 0 which has a common entity of codimens
        These neighbors are accessed via a NeighborIterator. This allows the implement
        non-matching meshes. The number of neigbors may be different from the number o
@@ -555,7 +607,8 @@ namespace Albert
       //! access neighbor, arrow
       AlbertGridEntity<0,dim,dimworld>* operator->();
 
-      //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer bo
+      //! return true if intersection is with boundary. \todo connection with
+      //! boundary information, processor/outer boundary
       bool boundary ();
 
       //! return unit outer normal, this should be dependent on local
@@ -565,30 +618,32 @@ namespace Albert
       //! return unit outer normal, if you know it is constant use this function instead
       Vec<dimworld,albertCtype>& unit_outer_normal ();
 
+      //! return outer normal, this should be dependent on local
+      //! coordinates for higher order boundary
+      Vec<dimworld,albertCtype>& outer_normal (Vec<dim-1,albertCtype>& local);
+
       //! return unit outer normal, if you know it is constant use this function instead
       Vec<dimworld,albertCtype>& outer_normal ();
 
-      /*! intersection of codimension 1 of this neighbor with element where iteratio
-         Here returned element is in LOCAL coordinates of the element where iteration
-       */
+      //! intersection of codimension 1 of this neighbor with element where
+      //! iteration started.
+      //! Here returned element is in LOCAL coordinates of the element
+      //! where iteration started.
       AlbertGridElement<dim-1,dim>& intersection_self_local ();
 
-      /*! intersection of codimension 1 of this neighbor with element where iteratio
-         Here returned element is in GLOBAL coordinates of the element where iteratio
-       */
+      //! intersection of codimension 1 of this neighbor with element where iteration started.
+      //! Here returned element is in GLOBAL coordinates of the element where iteration started.
       AlbertGridElement<dim-1,dimworld>& intersection_self_global ();
 
       //! local number of codim 1 entity in self where intersection is contained in
       int number_in_self ();
 
-      /*! intersection of codimension 1 of this neighbor with element where iteratio
-         Here returned element is in LOCAL coordinates of neighbor
-       */
+      //! intersection of codimension 1 of this neighbor with element where iteration started.
+      //! Here returned element is in LOCAL coordinates of neighbor
       AlbertGridElement<dim-1,dim>& intersection_neighbor_local ();
 
-      /*! intersection of codimension 1 of this neighbor with element where iteratio
-         Here returned element is in LOCAL coordinates of neighbor
-       */
+      //! intersection of codimension 1 of this neighbor with element where iteration started.
+      //! Here returned element is in LOCAL coordinates of neighbor
       AlbertGridElement<dim-1,dimworld>& intersection_neighbor_global ();
 
       //! local number of codim 1 entity in neighbor where intersection is contained
@@ -619,7 +674,11 @@ namespace Albert
 
 
 
-    /*! Enables iteration over all entities of a given codimension and level of a grid.
+    //**********************************************************************
+    //
+    // --AlbertGridLevelIterator
+    /*!
+       Enables iteration over all entities of a given codimension and level of a grid.
      */
     template<int codim, int dim, int dimworld>
     class AlbertGridLevelIterator :
@@ -637,7 +696,7 @@ namespace Albert
       enum { dimensionworld=dimworld };
 
       //! Constructor
-      AlbertGridLevelIterator(ALBERT EL_INFO *elInfo);
+      AlbertGridLevelIterator(ALBERT EL_INFO *elInfo,int face=0, int edge=0,int vertex=0);
 
       //! Constructor
       AlbertGridLevelIterator(ALBERT MESH * mesh, AlbertMarkerVector * vec,
@@ -734,7 +793,7 @@ namespace Albert
 
     //**********************************************************************
     //
-    // --- AlbertGrid
+    // --AlbertGrid
     //
     //**********************************************************************
     template <int dim, int dimworld>
