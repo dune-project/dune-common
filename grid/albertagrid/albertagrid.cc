@@ -839,7 +839,7 @@ namespace Dune
 
   template<int codim, int dim, int dimworld>
   inline AlbertaGridEntity < codim, dim ,dimworld >::
-  AlbertaGridEntity(AlbertaGrid<dim,dimworld> &grid, int level,
+  AlbertaGridEntity(const AlbertaGrid<dim,dimworld> &grid, int level,
                     ALBERTA TRAVERSE_STACK * travStack) : grid_(grid)
                                                           , level_ ( level )
                                                           , geo_ (false)
@@ -858,7 +858,7 @@ namespace Dune
 
   template<int codim, int dim, int dimworld>
   inline AlbertaGridEntity < codim, dim ,dimworld >::
-  AlbertaGridEntity(AlbertaGrid<dim,dimworld> &grid, int level) :
+  AlbertaGridEntity(const AlbertaGrid<dim,dimworld> &grid, int level) :
     grid_(grid)
     , level_ (level)
     , geo_ ( false )
@@ -898,6 +898,7 @@ namespace Dune
   inline int AlbertaGridEntity < codim, dim ,dimworld >::
   index() const
   {
+    assert(elNum_ >= 0);
     return elNum_;
   }
 
@@ -1107,12 +1108,13 @@ namespace Dune
 
   template< int dim, int dimworld>
   inline AlbertaGridEntity < 0, dim ,dimworld >::
-  AlbertaGridEntity(AlbertaGrid<dim,dimworld> &grid, int level) : grid_(grid)
-                                                                  , level_ (level)
-                                                                  , vxEntity_ ( grid_ , -1, 0, 0, 0, 0, 0)
-                                                                  , travStack_ (0) , elInfo_ (0)
-                                                                  , geo_(false)
-                                                                  , builtgeometry_ (false)
+  AlbertaGridEntity(AlbertaGrid<dim,dimworld> &grid, int level)
+    : grid_(grid)
+      , level_ (level)
+      , vxEntity_ ( grid_ , -1, 0, 0, 0, 0, 0)
+      , travStack_ (0) , elInfo_ (0)
+      , geo_(false)
+      , builtgeometry_ (false)
   {}
 
   //*****************************************************************8
@@ -2122,7 +2124,8 @@ namespace Dune
   inline AlbertaGridLevelIterator<codim,dim,dimworld,pitype>::
   AlbertaGridLevelIterator(AlbertaGrid<dim,dimworld> &grid, int travLevel,
                            int proc, bool leafIt ) :
-    grid_(grid), level_ (travLevel) ,  virtualEntity_(grid,travLevel)
+    grid_(grid), level_ (travLevel) ,
+    virtualEntity_(grid,travLevel)
     ,leafIt_(leafIt) , proc_(proc)
   {
     makeIterator();
@@ -2133,7 +2136,8 @@ namespace Dune
   inline AlbertaGridLevelIterator<codim,dim,dimworld,pitype>::
   AlbertaGridLevelIterator(AlbertaGrid<dim,dimworld> &grid, int level,
                            ALBERTA EL_INFO *elInfo,int elNum,int face,int edge,int vertex) :
-    grid_(grid), level_ (level) , virtualEntity_(grid,level) , elNum_ ( elNum ) , face_ ( face ) ,
+    grid_(grid), level_ (level)
+    , virtualEntity_(grid,level) , elNum_ ( elNum ) , face_ ( face ) ,
     edge_ ( edge ), vertex_ ( vertex ) , leafIt_(false) ,
     proc_(-1)
   {
@@ -2287,6 +2291,22 @@ namespace Dune
   template<int codim, int dim, int dimworld,PartitionIteratorType pitype>
   inline AlbertaGridEntity< codim,dim,dimworld >*
   AlbertaGridLevelIterator<codim,dim,dimworld,pitype>::operator ->()
+  {
+    assert(virtualEntity_.getElInfo() != 0);
+    return &virtualEntity_;
+  }
+
+  template<int codim, int dim, int dimworld,PartitionIteratorType pitype>
+  inline const AlbertaGridEntity<codim,dim,dimworld> &
+  AlbertaGridLevelIterator<codim,dim,dimworld,pitype>::operator *() const
+  {
+    assert(virtualEntity_.getElInfo() != 0);
+    return virtualEntity_;
+  }
+
+  template<int codim, int dim, int dimworld,PartitionIteratorType pitype>
+  inline const AlbertaGridEntity< codim,dim,dimworld >*
+  AlbertaGridLevelIterator<codim,dim,dimworld,pitype>::operator ->() const
   {
     assert(virtualEntity_.getElInfo() != 0);
     return &virtualEntity_;
@@ -3197,6 +3217,53 @@ namespace Dune
     return it;
   }
 
+  //**********************************************
+  // the const versions of LevelIterator
+  //**********************************************
+  template < int dim, int dimworld > template<int codim, PartitionIteratorType pitype>
+  inline typename AlbertaGrid < dim, dimworld > :: template ConstAlbertaGridLevelIterator<codim,pitype> :: IteratorType
+  AlbertaGrid < dim, dimworld >::lbegin (int level, int proc) const
+  {
+    // const_cast ok, because constness of object is preserved via const iterator
+    AlbertaGrid<dim,dimworld> & mygrid = const_cast<AlbertaGrid<dim,dimworld> &> (*this);
+    AlbertaGridLevelIterator<codim,dim,dimworld,pitype> it( mygrid ,vertexMarker_,level,proc);
+    typename ConstAlbertaGridLevelIterator<codim,pitype> :: IteratorType cit ( it );
+    return cit;
+  }
+
+  template < int dim, int dimworld > template<int codim, PartitionIteratorType pitype>
+  inline typename AlbertaGrid < dim, dimworld >::template ConstAlbertaGridLevelIterator<codim,pitype> :: IteratorType
+  AlbertaGrid < dim, dimworld >::lend (int level, int proc ) const
+  {
+    // const_cast ok, because constness of object is preserved via const iterator
+    AlbertaGrid<dim,dimworld> & mygrid = const_cast<AlbertaGrid<dim,dimworld> &> (*this);
+    AlbertaGridLevelIterator<codim,dim,dimworld,pitype> it( mygrid ,level,proc);
+    typename ConstAlbertaGridLevelIterator<codim,pitype> :: IteratorType cit ( it );
+    return cit;
+  }
+
+  template < int dim, int dimworld > template<int codim>
+  inline typename AlbertaGrid < dim, dimworld >:: template ConstAlbertaGridLevelIterator<codim,All_Partition> :: IteratorType
+  AlbertaGrid < dim, dimworld >::lbegin (int level, int proc) const
+  {
+    // const_cast ok, because constness of object is preserved via const iterator
+    AlbertaGrid<dim,dimworld> & mygrid = const_cast<AlbertaGrid<dim,dimworld> &> (*this);
+    AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition> it( mygrid ,vertexMarker_,level,proc);
+    typename ConstAlbertaGridLevelIterator<codim,All_Partition> :: IteratorType cit ( it );
+    return cit;
+  }
+
+  template < int dim, int dimworld > template<int codim>
+  inline typename AlbertaGrid < dim, dimworld >:: template ConstAlbertaGridLevelIterator<codim,All_Partition> :: IteratorType
+  AlbertaGrid < dim, dimworld >::lend (int level, int proc ) const
+  {
+    // const_cast ok, because constness of object is preserved via const iterator
+    AlbertaGrid<dim,dimworld> & mygrid = const_cast<AlbertaGrid<dim,dimworld> &> (*this);
+    AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition> it( mygrid ,level,proc);
+    typename ConstAlbertaGridLevelIterator<codim,All_Partition> :: IteratorType cit ( it );
+    return cit;
+  }
+
   //*****************************************************************
   template < int dim, int dimworld >
   inline AlbertaGridLevelIterator<0,dim,dimworld,All_Partition>
@@ -3617,7 +3684,7 @@ namespace Dune
 
   template < int dim, int dimworld > template <int codim>
   inline int AlbertaGrid < dim, dimworld >::
-  indexOnLevel(int globalIndex, int level)
+  indexOnLevel(int globalIndex, int level) const
   {
     assert(hasLevelIndex_ == true);
     // level = 0 is not interesting for this implementation

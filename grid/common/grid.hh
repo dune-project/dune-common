@@ -1591,5 +1591,6 @@ namespace Dune {
 }
 
 #include "grid.cc"
+#include "constgriditerators.hh"
 
 #endif

@@ -312,10 +312,10 @@ namespace Dune
     //! return the global unique index in grid
     int global_index() const ;
 
-    AlbertaGridEntity(AlbertaGrid<dim,dimworld> &grid, int level,
+    AlbertaGridEntity(const AlbertaGrid<dim,dimworld> &grid, int level,
                       ALBERTA TRAVERSE_STACK * travStack);
 
-    AlbertaGridEntity(AlbertaGrid<dim,dimworld> &grid, int level);
+    AlbertaGridEntity(const AlbertaGrid<dim,dimworld> &grid, int level);
 
     //! geometry of this entity
     AlbertaGridElement<dim-codim,dimworld>& geometry () const;
@@ -344,7 +344,7 @@ namespace Dune
     // private Methods
     void makeDescription();
 
-    AlbertaGrid<dim,dimworld> &grid_;
+    const AlbertaGrid<dim,dimworld> &grid_;
 
     // private Members
     ALBERTA EL_INFO *elInfo_;
@@ -550,7 +550,7 @@ namespace Dune
     void makeDescription();
 
     //! the corresponding grid
-    AlbertaGrid<dim,dimworld> &grid_;
+    AlbertaGrid<dim,dimworld> & grid_;
 
     //! the level of the entity
     int level_;
@@ -879,10 +879,16 @@ namespace Dune
     bool operator!= (const AlbertaGridLevelIteratorType & i) const;
 
     //! dereferencing
-    AlbertaGridEntity<codim,dim,dimworld>& operator*() ;
+    AlbertaGridEntity<codim,dim,dimworld>& operator *() ;
 
     //! arrow
     AlbertaGridEntity<codim,dim,dimworld>* operator->() ;
+
+    //! dereferencing
+    const AlbertaGridEntity<codim,dim,dimworld>& operator *() const ;
+
+    //! arrow
+    const AlbertaGridEntity<codim,dim,dimworld>* operator->() const ;
 
     //! ask for level of entity
     int level () const;
@@ -915,7 +921,7 @@ namespace Dune
     ALBERTA MACRO_EL * nextGhostMacro(ALBERTA MACRO_EL *mel);
 
     //! the grid were it all comes from
-    AlbertaGrid<dim,dimworld> &grid_;
+    AlbertaGrid<dim,dimworld> & grid_;
 
     //! level :)
     int level_;
@@ -953,6 +959,7 @@ namespace Dune
   //**********************************************************************
   //
   // --AlbertaGrid
+  // --Grid
   //
   //**********************************************************************
 
@@ -989,12 +996,72 @@ namespace Dune
     // The Interface Methods
     //**********************************************************
   public:
+    //! remember the types of template parameters
+    template <int codim>
+    struct Traits
+    {
+      //! Please doc me!
+      typedef albertCtype CoordType;
+
+      //! Please doc me!
+      typedef AlbertaGrid<dim,dimworld>           ImpGrid;
+
+      //! Please doc me!
+      typedef AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>  LevelIterator;
+
+      //! Please doc me!
+      typedef AlbertaGridLevelIterator<codim,dim,dimworld,Interior_Partition>        InteriorLevelIterator;
+
+      //! Please doc me!
+      typedef AlbertaGridLevelIterator<codim,dim,dimworld,InteriorBorder_Partition>  InteriorBorderLevelIterator;
+
+      //! Please doc me!
+      typedef AlbertaGridLevelIterator<codim,dim,dimworld,Overlap_Partition>         OverlapLevelIterator;
+
+      //! Please doc me!
+      typedef AlbertaGridLevelIterator<codim,dim,dimworld,OverlapFront_Partition>    OverlapFrontLevelIterator;
+
+      //! Please doc me!
+      typedef AlbertaGridLevelIterator<codim,dim,dimworld,Ghost_Partition>           GhostLevelIterator;
+
+      //! Please doc me!
+      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition> >  ConstLevelIterator;
+
+      //! Please doc me!
+      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Interior_Partition> > ConstInteriorLevelIterator;
+
+      //! Please doc me!
+      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,InteriorBorder_Partition> > ConstInteriorBorderLevelIterator;
+
+      //! Please doc me!
+      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Overlap_Partition> > ConstOverlapLevelIterator;
+
+      //! Please doc me!
+      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,OverlapFront_Partition> > ConstOverlapFrontLevelIterator;
+
+      //! Please doc me!
+      typedef ConstLevelIteratorWrapper<AlbertaGridLevelIterator<codim,dim,dimworld,Ghost_Partition> > ConstGhostLevelIterator;
+
+      //! Please doc me!
+      typedef AlbertaGridEntity<codim,dim,dimworld>         Entity;
+    };
+
     typedef AlbertaGridLevelIterator<0,dim,dimworld,All_Partition> LeafIterator;
     typedef AlbertaGridReferenceElement<dim> ReferenceElement;
 
     typedef ObjectStream ObjectStreamType;
     typedef std::pair < ObjectStreamType * ,
         AlbertaGridEntity<0,dim,dimworld>  * > DataCollectorParamType;
+
+    template<int codim, PartitionIteratorType pitype>
+    struct ConstAlbertaGridLevelIterator
+    {
+      typedef ConstLevelIteratorWrapper<
+          AlbertaGridLevelIterator<codim,dim,dimworld,pitype> > IteratorType;
+    };
+
+    typedef typename ConstAlbertaGridLevelIterator<0,All_Partition> :: IteratorType Const0LevelIteratorType;
+    typedef typename ConstAlbertaGridLevelIterator<dim,All_Partition> :: IteratorType ConstDimLevelIteratorType;
 
     //! we always have dim+1 codimensions since we use only simplices
     enum { numCodim = dim+1 };
@@ -1042,6 +1109,28 @@ namespace Dune
     //! one past the end on this level
     template<int codim> AlbertaGridLevelIterator<codim,dim,dimworld,All_Partition>
     lend (int level, int proc = -1 );
+
+    // the const versions
+
+    //! Iterator to first entity of given codim on level
+    template<int codim, PartitionIteratorType pitype>
+    typename ConstAlbertaGridLevelIterator <codim,pitype> :: IteratorType
+    lbegin (int level, int proc = -1 ) const;
+
+    //! one past the end on this level
+    template<int codim, PartitionIteratorType pitype>
+    typename ConstAlbertaGridLevelIterator <codim,pitype> :: IteratorType
+    lend (int level, int proc = -1 ) const;
+
+    //! Iterator to first entity of given codim on level
+    template<int codim>
+    typename ConstAlbertaGridLevelIterator <codim,All_Partition> :: IteratorType
+    lbegin (int level, int proc = -1 ) const;
+
+    //! one past the end on this level
+    template<int codim>
+    typename ConstAlbertaGridLevelIterator <codim,All_Partition> :: IteratorType
+    lend (int level, int proc = -1 ) const;
 
     /** \brief Number of grid entities per level and codim
      * because lbegin and lend are none const, and we need this methods
@@ -1183,7 +1272,7 @@ namespace Dune
 
     //! map the global index from the Albert Mesh to the local index on Level
     template <int codim>
-    int indexOnLevel(int globalIndex, int level ) ;
+    int indexOnLevel(int globalIndex, int level ) const ;
 
     // pointer to the real number of elements or vertices
     // i.e. points to mesh->n_hier_elements or mesh->n_vertices
