@@ -846,19 +846,20 @@ namespace Dune
 
   template<int dim, int dimworld>
   inline bool AlbertGridElement <dim ,dimworld >::
-  checkInside(const Vec<dimworld> &global)
+  checkInside(const Vec<dim,albertCtype> &local)
   {
-    Vec<dim+1> localCoords = localBary(global);
+    // only 2d
+    albertCtype sum = 0.0;
 
-    // return true if point is inside element
-    bool ret=true;
+    for(int i=0; i<dim; i++)
+    {
+      sum += local.get(i);
+      if(local.get(i) < 0.0) return false;
+    }
 
-    // if one of the barycentric coordinates is negativ
-    // then the point must be outside of the element
-    for(int i=0; i<dim+1; i++)
-      if(localCoords(i) < 0.0) ret = false;
+    if( sum > 1.0 ) return false;
 
-    return ret;
+    return true;
   }
 
   //*************************************************************************

@@ -210,6 +210,18 @@ namespace Dune {
       return l;
     }
 
+    bool checkInside (const Vec<dim,simplegrid_ctype>& local)
+    {
+      // check wether they are in the reference element
+      for(int i=0; i<dim; i++)
+      {
+        if((local.read(i) < 0.0) || (local.read(i) > 1.0 ))
+          return false;
+      }
+      return true;
+    }
+
+
     /*! Integration over a general element is done by integrating over the reference element
      */
     simplegrid_ctype integration_element (const Vec<dim,simplegrid_ctype>& local)
