@@ -1,0 +1,176 @@
+#!/bin/bash
+
+#
+# TODO:
+#
+# * anpasen, dass bei installiertem Dune das DUNEDIR nicht an
+#   autogen.sh uebergeben weden muss.
+#
+
+set -e
+
+echo Dune project generator
+echo ----------------------
+
+################## READ OPTIONS ##################
+
+while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
+  PROJECT=""
+  while [ -z $PROJECT ]; do
+    read -p "Project name? " PROJECT
+  done
+  VERSION=""
+  while [ -z $VERSION ]; do
+    read -p "Project version? " VERSION
+  done
+  MAINTAINER=""
+  while [ -z $MAINTAINER ]; do
+    read -p "Maintainers email address? " MAINTAINER
+  done
+
+  echo
+  echo -n "creating Project \"$PROJECT\", version $VERSION "
+  echo "with maintainer \"$MAINTAINER\""
+
+  read -p "Are these informations correct? [y/N] " DATACORRECT
+  echo
+done
+
+################## CONFIGURE.AC ##################
+mkdir "$PROJECT"
+cat > "$PROJECT/configure.ac" <<C_DELIM
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.50)
+AC_INIT($PROJECT, $VERSION, $MAINTAINER)
+AM_INIT_AUTOMAKE($PROJECT, $VERSION, $MAINTAINER)
+AC_CONFIG_SRCDIR([$PROJECT.cc])
+AM_CONFIG_HEADER([config.h])
+
+# we need no more than the standard DUNE-stuff
+DUNE_CHECK_ALL
+
+# implicitly set the Dune-flags everywhere
+AC_SUBST(AM_CPPFLAGS, \$DUNE_CPPFLAGS)
+AC_SUBST(AM_LDFLAGS, \$DUNE_LDFLAGS)
+LIBS="\$DUNE_LIBS"
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
+
+# finally print the summary information
+DUNE_SUMMARY_ALL
+C_DELIM
+
+################## AUTOGEN.SH ##################
+cat > "$PROJECT/autogen.sh" <<A_DELIM
+#!/bin/sh
+
+set -e
+
+# may be used to force a certain automake-version e.g. 1.7
+AMVERS=
+
+if test x\$1 = "x" ; then
+  echo "Usage: ./autogen.sh DUNEDIR"
+  exit 0
+fi
+
+if test ! -d \$1/m4 ; then
+  echo \$1/m4 not found! Wrong directory supplied?
+  exit 1
+fi
+
+if test "x\$AMVERS" != x ; then
+  echo Warning: explicitly using automake version \$AMVERS
+  # binaries are called automake-\$AMVERS
+  AMVERS="-\$AMVERS"
+fi
+
+# convert to absolute path so that aclocal 1.8 does the right thing
+DUNEM4=\`cd \$1/m4 && pwd\`
+
+aclocal\$AMVERS -I \$DUNEM4
+
+libtoolize --force
+
+autoheader
+
+automake\$AMVERS --add-missing
+
+autoconf
+A_DELIM
+
+chmod +x "$PROJECT/autogen.sh"
+
+################## README ##################
+cat > "$PROJECT/README" <<R_DELIM
+Getting started
+===============
+
+You have to create the configure-script on your own!
+
+First, you'll need the followings programs installed:
+
+  automake >= 1.5
+
+  autoconf >= 2.50
+
+  libtool
+
+Then run
+
+  ./autogen.sh DUNEDIR
+
+where DUNEDIR is the (absolute or relative) path of the dune/-directory.
+
+The directory is needed because autogen.sh needs access to the tests
+stored in DUNEDIR/m4
+
+Now call
+
+  ./configure --with-dune=DIR
+
+where DIR is the directory _above_ dune/. If you want to include third
+party packages check
+
+  ./configure --help
+
+for options on how to include Albert, Grape, UG, ...
+
+If configure checked your system without problems you can use
+
+  make
+
+to build all examples.
+
+R_DELIM
+
+################## MAKEFILE.AM ##################
+cat> "$PROJECT/Makefile.am" << M_DELIM
+# \$Id$
+
+# possible options
+#LDADD = \$(UG_LDFLAGS) \$(AMIRAMESH_LDFLAGS) \$(UG_LIBS) \$(AMIRAMESH_LIBS)
+#AM_CPPFLAGS = \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS)
+
+noinst_PROGRAMS = ${PROJECT}
+
+${PROJECT}_SOURCES = ${PROJECT}.cc
+
+# don't follow the full GNU-standard
+# we need automake 1.5
+AUTOMAKE_OPTIONS = foreign 1.5
+M_DELIM
+
+################## PROJECT.CC ##################
+cat> "$PROJECT/$PROJECT.cc" << CC_DELIM
+#include <iostream>
+
+int main()
+{
+  std::cout << "Hello World! This is ${PROJECT}." << std::endl;
+  return 0;
+}
+CC_DELIM
