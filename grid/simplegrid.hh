@@ -581,9 +581,6 @@ namespace Dune {
     //! make default Entity
     SimpleBoundaryEntity() {};
 
-    //! return type of boundary segment
-    BoundaryType type () { return Neumann; };
-
     //! return true if ghost cell was calced
     bool hasGeometry () { return false; };
 

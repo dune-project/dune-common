@@ -22,14 +22,6 @@ namespace Dune {
     OneDGridBoundaryEntity () : _neigh(-1), _geom()
     {}
 
-    //! return type of boundary , i.e. Neumann, Dirichlet ...
-    BoundaryType type ()
-    {
-      //       std::cerr << "OneDGridBoundaryEntity::type(): Preliminary implementation,"
-      //           "always returns 'Dirichlet'\n";
-      return Dirichlet;
-    }
-
     //! return identifier of boundary segment, number
     int id ()
     {

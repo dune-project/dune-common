@@ -698,15 +698,6 @@ namespace Dune
     AlbertGridBoundaryEntity () : _geom (false) , _elInfo ( NULL ),
                                   _neigh (-1) {};
 
-    //! return type of boundary , i.e. Neumann, Dirichlet ...
-    BoundaryType type ()
-    {
-      assert(_elInfo->boundary[_neigh] != NULL);
-      // if bound == 0 then interior edge ==> error
-      assert(_elInfo->boundary[_neigh]->bound != 0);
-      return ( (_elInfo->boundary[_neigh]->bound < 100) ? ( ( _elInfo->boundary[_neigh]->bound < 0 ) ? Neumann : Dirichlet) : Periodic );
-    }
-
     //! return identifier of boundary segment, number
     int id ()
     {
