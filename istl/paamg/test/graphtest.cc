@@ -10,6 +10,7 @@
 #include <dune/istl/istlexception.hh>
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/typetraits.hh>
 #include <dune/istl/io.hh>
 
 int testEdgeDepends(const Dune::amg::EdgeProperties& flags)
@@ -344,11 +345,87 @@ void setupAnisotropic(Dune::BCRSMatrix<B>& A, double eps)
   }
 }
 
+template<class G>
+void printWeightedGraph(G& graph, std::ostream& os)
+{
+  using Dune::RemoveConst;
+  using Dune::SelectType;
+  using Dune::SameType;
+
+  typedef typename RemoveConst<G>::Type Mutable;
+  typedef typename SelectType<SameType<G,Mutable>::value,
+      typename G::VertexIterator,
+      typename G::ConstVertexIterator>::Type VertexIterator;
+
+  typedef typename SelectType<SameType<G,Mutable>::value,
+      typename G::EdgeIterator,
+      typename G::ConstEdgeIterator>::Type EdgeIterator;
+  for(VertexIterator vertex = graph.begin(); vertex!=graph.end(); ++vertex) {
+    const EdgeIterator endEdge = vertex.end();
+    os<<"Edges starting from Vertex "<<*vertex<<" (weight="<<vertex.weight();
+    os<<") to vertices ";
+
+    for(EdgeIterator edge = vertex.begin(); edge != endEdge; ++edge)
+      os<<edge.target()<<" (weight="<<edge.weight()<<"), ";
+    os<<std::endl;
+  }
+}
+
+template<class G>
+void printPropertiesGraph(G& graph, std::ostream& os)
+{
+  using Dune::RemoveConst;
+  using Dune::SelectType;
+  using Dune::SameType;
+
+  typedef typename RemoveConst<G>::Type Mutable;
+  typedef typename SelectType<SameType<G,Mutable>::value,
+      typename G::VertexIterator,
+      typename G::ConstVertexIterator>::Type VertexIterator;
+
+  typedef typename SelectType<SameType<G,Mutable>::value,
+      typename G::EdgeIterator,
+      typename G::ConstEdgeIterator>::Type EdgeIterator;
+  for(VertexIterator vertex = graph.begin(); vertex!=graph.end(); ++vertex) {
+    const EdgeIterator endEdge = vertex.end();
+    os<<"Edges starting from Vertex "<<*vertex<<" to vertices (";
+    os<<vertex.properties()<<") ";
+
+    for(EdgeIterator edge = vertex.begin(); edge != endEdge; ++edge)
+      os<<edge.target()<<" ("<<edge.properties()<<"), ";
+    os<<std::endl;
+  }
+}
+
+template<class G>
+void printGraph(G& graph, std::ostream& os)
+{
+  using Dune::RemoveConst;
+  using Dune::SelectType;
+  using Dune::SameType;
+
+  typedef typename RemoveConst<G>::Type Mutable;
+  typedef typename SelectType<SameType<G,Mutable>::value,
+      typename G::VertexIterator,
+      typename G::ConstVertexIterator>::Type VertexIterator;
+
+  typedef typename SelectType<SameType<G,Mutable>::value,
+      typename G::EdgeIterator,
+      typename G::ConstEdgeIterator>::Type EdgeIterator;
+  for(VertexIterator vertex = graph.begin(); vertex!=graph.end(); ++vertex) {
+    const EdgeIterator endEdge = vertex.end();
+    os<<"Edges starting from Vertex "<<vertex.index()<<" to vertices ";
+
+    for(EdgeIterator edge = vertex.begin(); edge != endEdge; ++edge)
+      os<<edge.target()<<", ";
+    os<<std::endl;
+  }
+}
 
 
 void testGraph ()
 {
-  const int N=20;
+  const int N=8;
 
   typedef Dune::FieldMatrix<double,1,1> ScalarDouble;
   typedef Dune::BCRSMatrix<ScalarDouble> BCRSMat;
@@ -367,13 +444,39 @@ void testGraph ()
 
   //Dune::printmatrix(std::cout,laplacian2d,"2d Laplacian","row",9,1);
 
-  typedef Dune::amg::Graph<BCRSMat,int,int> BCRSGraph;
+  typedef Dune::amg::MatrixGraph<BCRSMat> MatrixGraph;
 
-  BCRSGraph graph;
+  MatrixGraph mg(laplacian2d);
+  printWeightedGraph(mg,std::cout);
+  printWeightedGraph(static_cast<const MatrixGraph&>(mg),std::cout);
 
-  graph.build(laplacian2d);
-  //graph.print(std::cout);
+  std::vector<bool> excluded(N*N, false);
 
+  for(int i=0; i < N; i++) {
+    excluded[i]=excluded[(N-1)*N+i]=true;
+    excluded[i*N]=excluded[i*N+N-1]=true;
+  }
+
+
+  typedef Dune::amg::SubGraph<Dune::amg::MatrixGraph<BCRSMat> > SubGraph;
+  SubGraph sub(mg, excluded);
+
+  for(std::vector<bool>::iterator iter=excluded.begin(); iter != excluded.end(); ++iter)
+    std::cout<<*iter<<" ";
+
+  std::cout<<std::endl<<"SubGraph:"<<std::endl;
+
+  printGraph(sub, std::cout);
+
+  typedef Dune::amg::PropertiesGraph<MatrixGraph,
+      Dune::amg::VertexProperties,
+      Dune::amg::EdgeProperties> PropertiesGraph;
+
+  std::cout<<std::endl<<"PropertiesGraph:"<<std::endl;
+  PropertiesGraph pgraph(mg);
+
+  printPropertiesGraph(pgraph, std::cout);
+  printPropertiesGraph(static_cast<const PropertiesGraph&>(pgraph), std::cout);
   using Dune::amg::FirstDiagonal;
   using Dune::amg::SymmetricDependency;
   using Dune::amg::SymmetricCriterion;

@@ -1,8 +1,8 @@
-# $Id $
+# $Id$
 
-if MPI
+#if MPI
   TESTPROGS = graphtest
-endif
+#endif
 
 # which tests to run
 TESTS = $(TESTPROGS)
