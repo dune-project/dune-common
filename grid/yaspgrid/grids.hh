@@ -1906,6 +1906,18 @@ namespace Dune {
           s << "[" << rank << "]:    " << " r_v_ib_ib "
           << i->rank << " " << i->grid << std::endl;
         }
+        for (typename std::deque<Intersection>::iterator i=g.send_vertex_interiorborder_overlapfront().begin();
+             i!=g.send_vertex_interiorborder_overlapfront().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " s_v_ib_of "
+          << i->rank << " " << i->grid << std::endl;
+        }
+        for (typename std::deque<Intersection>::iterator i=g.recv_vertex_overlapfront_interiorborder().begin();
+             i!=g.recv_vertex_overlapfront_interiorborder().end(); ++i)
+        {
+          s << "[" << rank << "]:    " << " s_v_of_ib "
+          << i->rank << " " << i->grid << std::endl;
+        }
       }
 
       s << std::endl;
