@@ -14,10 +14,8 @@
 #include "istlexception.hh"
 #include "io.hh"
 
-/*! \file __FILE__
-
-    Simple iterative methods like Jacobi, Gauss-Seidel, SOR, SSOR, etc.
-    in a generic way
+/** \file
+ * \brief  ???
  */
 
 namespace Dune {

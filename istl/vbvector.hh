@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_VBVECTOR_HH__
-#define __DUNE_VBVECTOR_HH__
+#ifndef DUNE_VBVECTOR_HH
+#define DUNE_VBVECTOR_HH
 
 #include <math.h>
 #include <complex>
@@ -11,11 +11,8 @@
 #include "allocator.hh"
 #include "bvector.hh"
 
-/*! \file __FILE__
-
-   This file implements a vector space as a tensor product of
-   a given vector space. The number of components can be given at
-   run-time as well as the size of the blocks.
+/** \file
+ * \brief ???
  */
 
 namespace Dune {

@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_GSETC_HH__
-#define __DUNE_GSETC_HH__
+#ifndef DUNE_GSETC_HH
+#define DUNE_GSETC_HH
 
 #include <math.h>
 #include <complex>
@@ -11,9 +11,8 @@
 
 #include "istlexception.hh"
 
-/*! \file __FILE__
-
-    Simple iterative methods like Jacobi, Gauss-Seidel, SOR, SSOR, etc.
+/*! \file
+   \brief Simple iterative methods like Jacobi, Gauss-Seidel, SOR, SSOR, etc.
     in a generic way
  */
 

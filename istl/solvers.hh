@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_SOLVERS_HH__
-#define __DUNE_SOLVERS_HH__
+#ifndef DUNE_SOLVERS_HH
+#define DUNE_SOLVERS_HH
 
 #include <math.h>
 #include <complex>
@@ -15,10 +15,11 @@
 #include "preconditioners.hh"
 #include "dune/common/timer.hh"
 
-/*! \file __FILE__
+/** \file
 
-    Define general, extensible interface for inverse operators.
-        Implementation here coverse only inversion of linear operators,
+   \brief   Define general, extensible interface for inverse operators.
+
+        Implementation here covers only inversion of linear operators,
         but the implementation might be used for nonlinear operators
     as well.
  */

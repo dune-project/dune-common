@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_BCRSMATRIX_HH__
-#define __DUNE_BCRSMATRIX_HH__
+#ifndef DUNE_BCRSMATRIX_HH
+#define DUNE_BCRSMATRIX_HH
 
 #include <math.h>
 #include <complex>
@@ -11,10 +11,8 @@
 #include "allocator.hh"
 #include "bvector.hh"
 
-/*! \file __FILE__
-
-   This file implements a vector constructed from a given type
-   representing a field and a compile-time given size.
+/*! \file
+ * \brief ???
  */
 
 namespace Dune {
