@@ -7,5 +7,5 @@ Name: Dune
 Version: @VERSION@
 Description: the Dune numerics library
 Requires:
-Libs: @LIBS@
-Cflags:
+Libs:
+Cflags: -I${includedir}
