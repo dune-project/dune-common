@@ -45,6 +45,6 @@ namespace Dune {
 #include "amirameshwriter.cc"
 
 // the amiramesh writer for SimpleGrid
-#include "amsimplegridwriter.cc"
+//#include "amsimplegridwriter.cc"
 
 #endif

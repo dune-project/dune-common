@@ -17,8 +17,8 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
   // hexagrid format.
   bool containsOnlyTetrahedra = true;
 
-  GRID::Traits<0>::LevelIterator element = grid.template lbegin<0>(level);
-  GRID::Traits<0>::LevelIterator end     = grid.template lend<0>(level);
+  typename GRID::template Traits<0>::LevelIterator element = grid.template lbegin<0>(level);
+  typename GRID::template Traits<0>::LevelIterator end     = grid.template lend<0>(level);
 
   for (; element!=end; ++element) {
     if (element->geometry().type() != tetrahedron) {
@@ -36,7 +36,8 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
   int noOfElem  = grid.size(level, 0);
 
   printf("noOfNodes %d,  nodeOfElem: %d\n", noOfNodes, noOfElem);
-  int tl, k, i, noOfBndTri, MarkKey, ncomp, maxSubDom;
+  int i;
+  //int tl, k, noOfBndTri, MarkKey, ncomp, maxSubDom;
 
   std::string solFilename;
 
@@ -57,8 +58,8 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
   am_geometry.insert(geo_node_data);
 
 
-  GRID::Traits<3>::LevelIterator vertex    = grid.template lbegin<3>(level);
-  GRID::Traits<3>::LevelIterator endvertex = grid.template lend<3>(level);
+  typename GRID::template Traits<3>::LevelIterator vertex    = grid.template lbegin<3>(level);
+  typename GRID::template Traits<3>::LevelIterator endvertex = grid.template lend<3>(level);
   i=0;
   for (; vertex!=endvertex; ++vertex)
   {
@@ -114,27 +115,27 @@ void Dune::AmiraMeshWriter<GRID, T>::write(GRID& grid,
 
   int (*dPtr)[maxVerticesPerElement] = (int(*)[maxVerticesPerElement])element_data->dataPtr();
 
-  GRID::Traits<0>::LevelIterator element2    = grid.template lbegin<0>(level);
-  GRID::Traits<0>::LevelIterator endelement = grid.template lend<0>(level);
+  typename GRID::template Traits<0>::LevelIterator element2    = grid.template lbegin<0>(level);
+  typename GRID::template Traits<0>::LevelIterator endelement = grid.template lend<0>(level);
 
   for (i=0; element2!=endelement; ++element2, i++) {
     switch (element2->geometry().type()) {
 
     case hexahedron :
 
-      dPtr[i][0] = element2->subIndex<3>(0)+1;
-      dPtr[i][1] = element2->subIndex<3>(1)+1;
-      dPtr[i][2] = element2->subIndex<3>(3)+1;
-      dPtr[i][3] = element2->subIndex<3>(2)+1;
-      dPtr[i][4] = element2->subIndex<3>(4)+1;
-      dPtr[i][5] = element2->subIndex<3>(5)+1;
-      dPtr[i][6] = element2->subIndex<3>(7)+1;
-      dPtr[i][7] = element2->subIndex<3>(6)+1;
+      dPtr[i][0] = element2->template subIndex<3>(0)+1;
+      dPtr[i][1] = element2->template subIndex<3>(1)+1;
+      dPtr[i][2] = element2->template subIndex<3>(3)+1;
+      dPtr[i][3] = element2->template subIndex<3>(2)+1;
+      dPtr[i][4] = element2->template subIndex<3>(4)+1;
+      dPtr[i][5] = element2->template subIndex<3>(5)+1;
+      dPtr[i][6] = element2->template subIndex<3>(7)+1;
+      dPtr[i][7] = element2->template subIndex<3>(6)+1;
       break;
     default :
 
       for (int j=0; j<element2->geometry().corners(); j++)
-        dPtr[i][j] = element2->subIndex<3>(j)+1;
+        dPtr[i][j] = element2->template subIndex<3>(j)+1;
 
       // If the element has less than 8 vertices use the last value
       // to fill up the remaining slots
