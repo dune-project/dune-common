@@ -24,10 +24,11 @@ namespace Dune {
     static RangeField getWeight (int i);
   };
 
+  //! the weight is the volume of the reference element
   template <class Domain, class RangeField >
   RangeField QuadraturePoints<Domain,RangeField,triangle,1>::getWeight(int i)
   {
-    return 1.0;
+    return 0.5;
   }
 
   template <class Domain, class RangeField >
@@ -50,10 +51,11 @@ namespace Dune {
     static RangeField getWeight (int i);
   };
 
+  //! the sum over the weigths is the volume of the reference element
   template <class Domain, class RangeField >
   RangeField QuadraturePoints<Domain,RangeField,triangle,2>::getWeight(int i)
   {
-    return (1.0/3.0);
+    return (1.0/6.0);
   }
   template <class Domain, class RangeField >
   Domain QuadraturePoints<Domain,RangeField,triangle,2>::getPoint(int i)
