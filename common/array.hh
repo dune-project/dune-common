@@ -31,19 +31,19 @@ namespace Dune
       //! Default constructor
       Iterator();
 
-      //! equality of two iterators
-      bool operator!= (Iterator x);
+      //! Inequality of two iterators
+      bool operator!= (const Iterator& x);
 
-      //! inequality of two iterators
-      bool operator== (Iterator x);
+      //! Equality of two iterators
+      bool operator== (const Iterator& x);
 
-      //! prefix increment
+      //! Prefix increment
       Iterator operator++ ();       // prefix Stroustrup p. 292
 
-      //! postfix increment
+      //! Postfix increment
       Iterator operator++ (int);    // postfix
 
-      //! dereferencing
+      //! Dereferencing
       T& operator* () const;
 
       //! selector
@@ -52,10 +52,10 @@ namespace Dune
       friend class Array<T>;
     } ;
 
-    //! return iterator refering to first element in array
+    //! Return iterator refering to first element in array
     Iterator begin () const;
 
-    //! return iterator refering to on past the last element of the array
+    //! Return iterator refering to one past the last element of the array
     Iterator end () const;
 
     //! make empty array
@@ -346,14 +346,14 @@ namespace Dune
 
   template<class T>
   inline bool Array<T>::Iterator::operator!=
-    (Array<T>::Iterator x)
+    (const Array<T>::Iterator& x)
   {
     return p != x.p;
   }
 
   template<class T>
   inline bool Array<T>::Iterator::operator==
-    (Array::Iterator x)
+    (const Array<T>::Iterator& x)
   {
     return p == x.p;
   }
