@@ -118,22 +118,20 @@ EOF`
           fi
           UG_DIM="$with_problem_dim"
 
+          # use full options for link-test
+          UG_CPPFLAGS="-D_${UGDOMAIN}_ -D_${UG_DIM} $UG_CPPFLAGS"
       fi
 
       AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
-	echo -n "checking for libug$UG_DIM... "
-          LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"
 
-          if test $UG_DIM = 2 ; then
-            DIMDEFINE="__TWODIM__"
-	  else	
-            DIMDEFINE="__THREEDIM__"
-          fi
+	echo -n "checking for libug$UG_DIM... "
+
+	CPPFLAGS="$UG_CPPFLAGS"
+        LIBS="-lug$UG_DIM -ldom$UGDCHAR$UG_DIM -lgrape$UGGRAPE$UG_DIM -lgg$UG_DIM -ldevS"
 
           AC_TRY_LINK(
               [#define INT int
-               #define $DIMDEFINE
                #include "initug.h"],
 	      [int i = UG${UG_DIM}d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
@@ -153,7 +151,7 @@ EOF`
       if test x$HAVE_UG = x1 ; then
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
-	  AC_SUBST(UG_CPPFLAGS, "-D_${UGDOMAIN}_ -D_${UG_DIM} $UG_CPPFLAGS")
+	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
           # add to global list
