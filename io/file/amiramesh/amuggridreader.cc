@@ -133,6 +133,28 @@ static int linearSegmentDescription3d(void *data, double *param, double *result)
     //   printf("result: %g %g %g\n", result[0], result[1], result[2]);
   return 0;
 }
+
+  // The same thing for triangles
+static int linearSegmentDescription3d_tri(void *data, double *param, double *result)
+{
+    Dune::FieldVector<double, 3> a,b,c;
+    a[0] = ((double*)data)[0];
+    a[1] = ((double*)data)[1];
+    a[2] = ((double*)data)[2];
+    b[0] = ((double*)data)[3];
+    b[1] = ((double*)data)[4];
+    b[2] = ((double*)data)[5];
+    c[0] = ((double*)data)[6];
+    c[1] = ((double*)data)[7];
+    c[2] = ((double*)data)[8];
+
+    // linear interpolation
+    for (int i=0; i<3; i++)
+        result[i] = a[i] + param[0]*(b[i]-a[i]) + param[1]*(c[i]-b[i]);
+  
+    //   printf("result: %g %g %g\n", result[0], result[1], result[2]);
+  return 0;
+}
 #endif // #ifdef _3
 
 /** \todo This is quadratic --> very slow */
@@ -222,7 +244,7 @@ static int detectBoundaryNodes(const std::vector< Dune::FieldVector<int, NUM_VER
 #ifdef _3
 #ifdef __USE_PARAMETRIZATION_LIBRARY__
 // Create the domain from an explicitly given boundary description
-int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
+void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
                                                             const std::string& domainName, 
                                                             const std::string& filename)
 {
@@ -232,18 +254,12 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
     
     /* Load data */
     if(AmiraLoadMesh(domainName.c_str(), filename.c_str()) != AMIRA_OK)
-        {
-            std::cerr << "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain:"
-                 << "Domain file could not be opened!" << std::endl;
-            return 1;
-        }
+        DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain:"
+                   << "Domain file could not be opened!");
 
     if(AmiraStartEditingDomain(domainName.c_str()) != AMIRA_OK)
-        {
-            std::cerr << "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain:"
-                      << "StartEditing failed!" << std::endl;
-            return 1;
-        }
+        DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain:"
+                   << "StartEditing failed!");
 
     /* Alle weiteren Anfragen an die Bibliothek beziehen sich jetzt auf das eben
        geladen Gebiet. Maessig elegant, sollte aber gehen */
@@ -331,11 +347,7 @@ int Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
         
     }
     
-    std::cout << noOfSegments << " segments created!\n";
-    
-    /* That's it!*/
-    return(0);
-    
+    std::cout << noOfSegments << " segments created!" << std::endl;
     
 } 
 #endif // #define __USE_PARAMETRIZATION_LIBRARY__
@@ -386,9 +398,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
     int nBndSegments = face_list.size();
 
     std::cout << face_list.size() << " boundary segments found!" << std::endl;
-//     for (unsigned int i=0; i<face_list.size(); i++){
-//         std::cout << face_list[i] << "\n";
-//     }
   
     int noOfNodes = am->nElements("Nodes");
 
@@ -397,9 +406,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
     int nBndNodes = detectBoundaryNodes(face_list, noOfNodes, isBoundaryNode);
     if(nBndNodes <= 0)
         DUNE_THROW(IOError, "CreateDomain: no boundary nodes found");
-
-//     for (int ii=0; ii<isBoundaryNode.size(); ii++)
-//         printf("%d\n", isBoundaryNode[ii]);
 
     std::cout << nBndNodes << " boundary nodes found!" << std::endl;
   
@@ -467,7 +473,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
                                         1,          // resolution, needed for UG graphics
                                         point,
                                         alpha, beta,
-                                        linearSegmentDescription3d,
+                                        linearSegmentDescription3d_tri,
                                         ((double*)grid.extra_boundary_data_)+9*i
                                       )==NULL) 
             DUNE_THROW(IOError, "Error calling CreateBoundarySegment");;
@@ -485,7 +491,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
                                       point,
                                       paramCoords
                                       )==NULL) 
-            DUNE_THROW(IOError, "Error calling CreateLinearSegment");;
+            DUNE_THROW(IOError, "Error calling CreateLinearSegment");
 #endif
     }
     
@@ -579,7 +585,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
         if (am_coordinateData)
             am_node_coordinates_double = (double*) am_coordinateData->dataPtr();
         else 
-            throw("No vertex coordinates found in the file!");
+            DUNE_THROW(IOError, "No vertex coordinates found in the file!");
         
     }
 
