@@ -473,6 +473,7 @@ namespace Dune {
 
       xdr_destroy(&xdrs);
       fclose(file);
+      return true;
     }
 
     //! read index set from given xdr file
