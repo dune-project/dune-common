@@ -20,48 +20,71 @@ namespace Dune
         SparseRowMatrix<double>,
         LaplaceFEOp<DiscFunctionType,TensorType> > {
 
+    //! The corresponding function space type
     typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
+
+    //! The grid
     typedef typename FunctionSpaceType::GridType GridType;
+
+    //! The grid's dimension
     enum { dim = GridType::dimension };
+
+    //! The coordinate type
     typedef typename GridType::template Traits<0>::CoordType CoordType;
+
+    //! ???
     typedef typename FunctionSpaceType::JacobianRange JacobianRange;
+
+    //! ???
     typedef typename FunctionSpaceType::RangeField RangeFieldType;
 
+    //! ???
     typedef typename FiniteElementOperator<DiscFunctionType,
         SparseRowMatrix<double>,
         LaplaceFEOp<DiscFunctionType, TensorType> >::OpMode OpMode;
+
 
     mutable JacobianRange grad;
     mutable JacobianRange othGrad;
     mutable JacobianRange mygrad[4];
 
   public:
+
+    //! ???
     FastQuad < typename FunctionSpaceType::RangeField, typename
         FunctionSpaceType::Domain , 1 > quad;
 
+    //! ???
     DiscFunctionType *stiffFunktion_;
+
+    //! ???
     TensorType *stiffTensor_;
 
-    LaplaceFEOp( const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :    //= ASSEMBLED ) :
-                                                                                         FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType> >( f, opMode ) ,
-                                                                                         quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(NULL), stiffTensor_(NULL)
+    //! ???
+    LaplaceFEOp( const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :
+      FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType> >( f, opMode ) ,
+      quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(NULL), stiffTensor_(NULL)
     {}
 
-    LaplaceFEOp( const DiscFunctionType &stiff, const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :    //= ASSEMBLED ) :
-                                                                                                                        FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType> >( f, opMode ) ,
-                                                                                                                        quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(&stiff), stiffTensor_(NULL)
+    //! ???
+    LaplaceFEOp( const DiscFunctionType &stiff, const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :
+      FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType> >( f, opMode ) ,
+      quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(&stiff), stiffTensor_(NULL)
     {}
 
+    //! ???
     LaplaceFEOp( TensorType &stiff, const typename DiscFunctionType::FunctionSpace &f, OpMode opMode ) :    //= ASSEMBLED ) :
                                                                                                             FiniteElementOperator<DiscFunctionType,SparseRowMatrix<double>,LaplaceFEOp<DiscFunctionType,TensorType> >( f, opMode ) ,
                                                                                                             quad ( *(f.getGrid().template lbegin<0> (0))), stiffFunktion_(NULL), stiffTensor_(&stiff)
     {}
 
+    //! Returns the actual matrix if it is assembled
     const SparseRowMatrix<double>* getMatrix() const {
       assert(this->matrix_);
       return this->matrix_;
     }
 
+    //! Creates a new empty matrix
     SparseRowMatrix<double>* newEmptyMatrix( ) const
     {
       return new SparseRowMatrix<double>( this->functionSpace_.size ( this->functionSpace_.getGrid().maxlevel() ) ,
@@ -69,6 +92,7 @@ namespace Dune
                                           15 * dim);
     }
 
+    //! ???
     void prepareGlobal ( const DiscFunctionType &arg, DiscFunctionType &dest )
     {
       this->arg_  = &arg.argument();
@@ -77,6 +101,7 @@ namespace Dune
       dest.clear();
     }
 
+    //! ???
     template <class EntityType>
     double getLocalMatrixEntry( EntityType &entity, const int i, const int j ) const
     {
@@ -116,7 +141,7 @@ namespace Dune
       return val;
     }
 
-
+    //! ???
     template < class EntityType, class MatrixType>
     void getLocalMatrix( EntityType &entity, const int matSize, MatrixType& mat) const {
       enum { dim = GridType::dimension };
@@ -174,7 +199,6 @@ namespace Dune
       return;
     }
 
-  protected:
   };   // end class
 
 } // end namespace
