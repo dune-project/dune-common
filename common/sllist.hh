@@ -168,17 +168,15 @@ namespace Dune
 
       Element(const MemberType& item);
 
+      Element();
+
     };
 
     /** @brief The first element in the list. */
     Element* head_;
 
-    /**
-     * @brief iterator position at the first element.
-     *
-     * Needed for oneBeforeBegin().
-     */
-    iterator ihead_;
+    /** @brief Pseudo element before the first entry. */
+    Element beforeHead_;
 
     /** @brief The last element in the list. */
     Element* tail_;
@@ -200,12 +198,13 @@ namespace Dune
     friend class SLList<T,A>;
 
   public:
-    inline SLListIterator(typename SLList<T,A>::Element* item)
-      : current_(item)
+    inline SLListIterator(typename SLList<T,A>::Element* item,
+                          typename SLList<T,A>::Allocator& alloc)
+      : current_(item), allocator_(&alloc)
     {}
 
-    inline SLListIterator()
-      : current_(0)
+    inline SLListIterator(typename SLList<T,A>::Element* item)
+      : current_(0), allocator_(0)
     {}
 
     /**
@@ -246,9 +245,26 @@ namespace Dune
       current_ = current_->next_;
     }
 
+    /**
+     * @brief Insert an element in the underlying list after
+     * the current position.
+     * @param v The value to insert.
+     */
+    inline void insertAfter(const T& v) const
+    {
+      assert(current_ != 0 && allocator_ != 0);
+      typename SLList<T,A>::Element* added = allocator_->allocate(1, 0);
+      added->item_    = v;
+      added->next_    = current_->next_;
+      current_->next_ = added;
+    }
+
+
   private:
     /**  @brief The current element. */
     typename SLList<T,A>::Element* current_;
+    /** @brief The allocator of the list. */
+    typename SLList<T,A>::Allocator* allocator_;
   };
 
   /**
@@ -320,12 +336,17 @@ namespace Dune
 
   template<typename T, class A>
   SLList<T,A>::Element::Element(const T& item)
-    : item_(item)
+    : next_(0), item_(item)
+  {}
+
+  template<typename T, class A>
+  SLList<T,A>::Element::Element()
+    : next_(0), item_()
   {}
 
   template<typename T, class A>
   SLList<T,A>::SLList()
-    : head_(0), ihead_(head_), tail_(0), allocator_(), size_(0)
+    : head_(0), beforeHead_(), tail_(0), allocator_(), size_(0)
   {}
 
   template<typename T, class A>
@@ -337,8 +358,7 @@ namespace Dune
       tail_->item_=item;
       tail_->next_=0;
     }else{
-      tail_=head_=allocator_.allocate(1, 0);
-      ihead_.current_=head_;
+      beforeHead_.next_ = tail_ = head_ = allocator_.allocate(1, 0);
       tail_->next_=0;
       tail_->item_=item;
     }
@@ -358,7 +378,7 @@ namespace Dune
       added->next_=head_;
       head_=added;
     }
-    ihead_.current_ = head_;
+    beforeHead_.next_ = head_;
     ++size_;
   }
 
@@ -368,7 +388,7 @@ namespace Dune
     assert(head_!=0);
     Element* tmp = head_;
     head_=head_->next_;
-    ihead_.current_ = head_;
+    beforeHead_.next_ = head_;
     allocator_.destroy(tmp);
     allocator_.deallocate(tmp, 1);
     --size_;
@@ -384,7 +404,7 @@ namespace Dune
       allocator_.deallocate(current, 1);
     }
     tail_ = head_;
-    ihead_.current_ = head_;
+    beforeHead_.next_ = head_;
     size_=0;
   }
 
@@ -403,7 +423,7 @@ namespace Dune
   template<typename T, class A>
   inline SLListIterator<T,A> SLList<T,A>::begin()
   {
-    return iterator(head_);
+    return iterator(head_, allocator_);
   }
 
   template<typename T, class A>
@@ -415,17 +435,13 @@ namespace Dune
   template<typename T, class A>
   inline SLListIterator<T,A> SLList<T,A>::oneBeforeBegin()
   {
-    iterator tmp();
-    tmp.current_ = reinterpret_cast<Element*>(&ihead_);
-    return tmp;
+    return iterator(&beforeHead_, allocator_);
   }
 
   template<typename T, class A>
   inline SLListConstIterator<T,A> SLList<T,A>::oneBeforeBegin() const
   {
-    const_iterator tmp();
-    tmp.current_ = reinterpret_cast<Element*>(&ihead_);
-    return tmp;
+    return const_iterator(&beforeHead_);
   }
 
   template<typename T, class A>
