@@ -284,13 +284,13 @@ namespace Albert
       //friend class AlbertGridLevelIterator < dim, dim, dimworld>;
     public:
       //! know your own codimension
-      enum { codimension=codim };
+      //enum { codimension=codim };
 
       //! know your own dimension
-      enum { dimension=dim };
+      //enum { dimension=dim };
 
       //! know your own dimension of world
-      enum { dimensionworld=dimworld };
+      //enum { dimensionworld=dimworld };
 
       //! level of this element
       int level ();
@@ -392,13 +392,13 @@ namespace Albert
       typedef AlbertGridHierarchicIterator<dim,dimworld> HierarchicIterator;
 
       //! know your own codimension
-      enum { codimension=0 };
+      //enum { codimension=0 };
 
       //! know your own dimension
-      enum { dimension=dim };
+      //enum { dimension=dim };
 
       //! know your own dimension of world
-      enum { dimensionworld=dimworld };
+      //enum { dimensionworld=dimworld };
 
       //! Destructor, needed perhaps needed for deleteing faceEntity_ and
       //! edgeEntity_ , see below
@@ -545,10 +545,10 @@ namespace Albert
     {
     public:
       //! know your own dimension
-      enum { dimension=dim };
+      //enum { dimension=dim };
 
       //! know your own dimension of world
-      enum { dimensionworld=dimworld };
+      //enum { dimensionworld=dimworld };
 
 #if 1
       //! the normal Constructor
@@ -612,6 +612,7 @@ namespace Albert
 
 #define NEIGH_DEBUG
 
+    /** \todo Please doc me! */
     template<int dim, int dimworld>
     class AlbertGridBoundaryEntity
       : public BoundaryEntityDefault <dim,dimworld,albertCtype,
@@ -696,10 +697,10 @@ namespace Albert
     {
     public:
       //! know your own dimension
-      enum { dimension=dim };
+      //enum { dimension=dim };
 
       //! know your own dimension of world
-      enum { dimensionworld=dimworld };
+      //enum { dimensionworld=dimworld };
 
       //! prefix increment
       AlbertGridNeighborIterator& operator ++();
@@ -850,14 +851,6 @@ namespace Albert
     public:
 
       //friend class AlbertGrid<dim,dimworld>;
-      //! know your own codimension
-      enum { codimension=dim };
-
-      //! know your own dimension
-      enum { dimension=dim };
-
-      //! know your own dimension of world
-      enum { dimensionworld=dimworld };
 
       //! Constructor
       AlbertGridLevelIterator(AlbertGrid<dim,dimworld> &grid, int travLevel);
@@ -946,6 +939,11 @@ namespace Albert
     // --AlbertGrid
     //
     //**********************************************************************
+
+    /** \brief The Albert %Grid class
+     *
+     * \todo Please doc me!
+     */
     template <int dim, int dimworld>
     class AlbertGrid : public GridDefault  < dim, dimworld,
                            albertCtype,AlbertGrid,
@@ -977,12 +975,7 @@ namespace Albert
     public:
       typedef AlbertGridReferenceElement<dim> ReferenceElement;
 
-      //! know your own dimension
-      enum { dimension=dim };
-
-      //! know your own dimension of world
-      enum { dimensionworld=dimworld };
-
+      /** \todo Please doc me! */
       enum { numCodim = dim+1 };
 
       //! Constructor which reads an Albert Macro Triang file
@@ -1008,7 +1001,11 @@ namespace Albert
       AlbertGridLevelIterator<codim,dim,dimworld> lend (int level);
 
       //! number of grid entities per level and codim
-      int size (int level, int codim) ;
+      int size (int level, int codim);
+
+      /** \brief Number of grid entities per level and codim
+       * \todo Why is there a non-const version of this method?
+       */
       int size (int level, int codim) const;
 
       //! refine all positive marked leaf entities
@@ -1019,6 +1016,7 @@ namespace Albert
       //! return true if the grid was changed
       bool coarsen ( );
 
+      /** \brief Please doc me! */
       GridIdentifier type () { return AlbertGrid_Id; };
 
       //**********************************************************
@@ -1031,11 +1029,13 @@ namespace Albert
       // write Grid to file
       //void writeGrid(int level=-1);
 
-      // write Grid to file in specified FileFormatType
+      /** \brief write Grid to file in specified FileFormatType
+       */
       template <FileFormatType ftype>
       bool writeGrid( const char * filename, albertCtype time );
 
-      // read Grid from file filename and store time of mesh in time
+      /** \brief read Grid from file filename and store time of mesh in time
+       */
       template <FileFormatType ftype>
       bool readGrid( const char * filename, albertCtype & time );
 
