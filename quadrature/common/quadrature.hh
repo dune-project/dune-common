@@ -10,6 +10,8 @@
 // For ElementType
 #include <dune/grid/common/grid.hh>
 
+#include <dune/common/exceptions.hh>
+
 // For Quadrature::Iterator
 #include "../../common/genericiterator.hh"
 
@@ -46,10 +48,22 @@ namespace Dune {
   struct QuadraturePoints
   {
     enum { identifier = 0 };
-    static int numberOfQuadPoints () {};
-    static int order () {};
-    static Domain getPoint (int i) {};
-    static RangeField getWeight (int i) {};
+    static int numberOfQuadPoints () {
+      DUNE_THROW(NotImplemented, "");
+      return -1;
+    };
+    static int order () {
+      DUNE_THROW(NotImplemented, "");
+      return -1;
+    };
+    static Domain getPoint (int i) {
+      DUNE_THROW(NotImplemented, "");
+      return Domain();
+    };
+    static RangeField getWeight (int i) {
+      DUNE_THROW(NotImplemented, "");
+      return RangeField();
+    };
   };
 
   template <class Domain, class RangeField, ElementType ElType, int polOrd>
@@ -57,8 +71,8 @@ namespace Dune {
   {
     enum { identifier = 0 };
     enum { numberOfQuadPoints = 0 };
-    static Domain getPoint (int i) {};
-    static RangeField getWeight (int i) {};
+    static Domain getPoint (int i) { DUNE_THROW(NotImplemented, ""); };
+    static RangeField getWeight (int i) { DUNE_THROW(NotImplemented, ""); };
   };
 
   //**************************************************************************
