@@ -68,10 +68,7 @@ namespace Dune {
     /* Buffers */
     array<DIM> coord_buffer;
     array<DIM> add_buffer;
-  private:
-    friend class iterator;
-    friend class index;
-    int has_coord_shift(level, int d) const;
+  public:
     //! local maximum index on level l (lookup)
     int max(level l) const
     { assert(l>=-1 && l<=maxlevels); return max_[l+1]; };
@@ -81,6 +78,10 @@ namespace Dune {
     int globalmax(level l) const;
     //! global grid size in direction d on level l
     int globalsize(level l, int d) const;
+  private:
+    friend class iterator;
+    friend class index;
+    int has_coord_shift(level, int d) const;
     //! get id from coord
     int coord_to_id(level, const array<DIM>&, const array<DIM>&) const;
     int coord_to_id(level, const array<DIM>&) const;
@@ -322,9 +323,9 @@ namespace Dune {
       level oldlevel=l_;
       recalc_level();
       if (oldlevel!=l_) {
-        cout << g.rank_ << ": Constructor for element " << coord
-             << " on level " << oldlevel << ", but lemt would be on level "
-             << l_ << endl;
+        std::cout << g.rank_ << ": Constructor for element " << coord
+                  << " on level " << oldlevel
+                  << ", but lemt would be on level " << l_ << std::endl;
       }
     };
   public:

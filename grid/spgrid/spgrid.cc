@@ -17,7 +17,7 @@ namespace Dune {
     int ov2=
       overlap_[l+1]*do_front_share(d,process);
     if (ov1 != ov2) {
-      std::cout << rank << " expected front_overlap=" << ov2
+      std::cout << rank_ << " expected front_overlap=" << ov2
                 << " got " << ov1 << std::endl;
       throw std::string("ERROR");
     }
@@ -38,7 +38,7 @@ namespace Dune {
     int ov2=
       overlap_[l+1]*do_front_share(d);
     if (ov1 != ov2) {
-      std::cout << rank << " expected front_overlap=" << ov2
+      std::cout << rank_ << " expected front_overlap=" << ov2
                 << " got " << ov1 << std::endl;
       throw std::string("ERROR");
     }
@@ -60,7 +60,7 @@ namespace Dune {
     int ov2=
       overlap_[l+1]*do_end_share(d,process);
     if (ov1 != ov2) {
-      std::cout << rank << " expected front_overlap=" << ov2
+      std::cout << rank_ << " expected front_overlap=" << ov2
                 << " got " << ov1 << std::endl;
       throw std::string("ERROR");
     }
@@ -81,7 +81,7 @@ namespace Dune {
     int ov2=
       overlap_[l+1]*do_end_share(d);
     if (ov1 != ov2) {
-      std::cout << rank << " expected front_overlap=" << ov2
+      std::cout << rank_ << " expected front_overlap=" << ov2
                 << " got " << ov1 << std::endl;
       throw std::string("ERROR");
     }
@@ -207,19 +207,19 @@ namespace Dune {
   id_to_coord(level l, int id) const {
     init_add(l);
 #if 0
-    cout << rank << " level = " << l << " id = " << id << endl;
+    cout << rank_ << " level = " << l << " id = " << id << endl;
     for (int d=0; d<DIM; d++)
-      cout << rank << " " << "d=" << d
+      cout << rank_ << " " << "d=" << d
            << " front " << front_overlap(l,d) << endl
-           << rank << " " << "d=" << d
+           << rank_ << " " << "d=" << d
            << " size " << size(l,d) << endl
-           << rank << " " << "d=" << d
+           << rank_ << " " << "d=" << d
            << " end " << end_overlap(l,d) << endl;
 
-    cout << rank << " add = " << add << endl;
+    cout << rank_ << " add = " << add << endl;
     array<DIM> & c = id_to_coord_impl(l,id);
     for (int d=0; d<DIM; d++)
-      cout << rank << " " << "d=" << d
+      cout << rank_ << " " << "d=" << d
            << " coord = " << c[d] << endl;
     return c;
 #else
