@@ -30,6 +30,10 @@ namespace Dune {
     template <int dim_, int dimworld_>
     friend class OneDGridElement;
 
+    template <int cc_, int dim_, int dimworld_>
+    friend class OneDGridSubEntityFactory;
+
+
   public:
 
     /** \todo Constructor with a given coordinate */
@@ -94,56 +98,77 @@ namespace Dune {
 
     friend class OneDGrid<dim,dimworld>;
 
+    template <int cc_, int dim_, int dimworld_>
+    friend class OneDGridSubEntityFactory;
+
   public:
 
     /** \brief Return the element type identifier
      *
      * OneDGrid obviously supports only lines
      */
-    ElementType type () {return line;}
+    ElementType type () const {return line;}
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners () {return 2;}
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<OneDCType, dimworld>& operator[] (int i) {
+    const FieldVector<OneDCType, dimworld>& operator[](int i) const {
       assert(i==0 || i==1);
-      OneDGridEntity<1,1,1> v = *vertex[i];
-      OneDGridElement<0,1> g = v.geometry();
-      return v.geometry().pos_;
+      return vertex[i]->geometry().pos_;
     }
 
     /** \brief Return reference element corresponding to this element.
      *
+     * \todo Implement this!
      **If this is a reference element then self is returned.
      */
-    OneDGridElement<dim,dim>& refelem ();
+    OneDGridElement<dim,dim>& refelem () {
+      DUNE_THROW(NotImplemented, " OneDGridElement<dim,dim>& refelem ()");
+    }
 
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
-    FieldVector<OneDCType, dimworld> global (const FieldVector<OneDCType, dim>& local);
+    FieldVector<OneDCType, dimworld> global (const FieldVector<OneDCType, dim>& local) const {
+      FieldVector<OneDCType, dimworld> g;
+      g[0] = vertex[0]->geometry().pos_[0] * (1-local[0]) + vertex[1]->geometry().pos_[0] * local[0];
+      return g;
+    }
 
     /** \brief Maps a global coordinate within the element to a
      * local coordinate in its reference element */
-    FieldVector<OneDCType, dim> local (const FieldVector<OneDCType, dimworld>& global);
+    FieldVector<OneDCType, dim> local (const FieldVector<OneDCType, dimworld>& global) const {
+      FieldVector<OneDCType, dim> l;
+      const double& v0 = vertex[0]->geometry().pos_[0];
+      const double& v1 = vertex[1]->geometry().pos_[0];
+      l[0] = (global[0] - v0) / (v1 - v0);
+      return l;
+    }
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<OneDCType, dimworld> &global);
+    bool checkInside(const FieldVector<OneDCType, dimworld> &global) {
+      return vertex[0]->geometry().pos_ <= global[0] && global[0] <= vertex[1]->geometry().pos_;
+    }
 
     /** ???
      */
-    OneDCType integration_element (const FieldVector<OneDCType, dim>& local);
+    OneDCType integration_element (const FieldVector<OneDCType, dim>& local) const {
+      return vertex[1]->geometry().pos_ - vertex[0]->geometry().pos_;
+    }
 
     //! The Jacobian matrix of the mapping from the reference element to this element
-    const Mat<dim,dim>& Jacobian_inverse (const FieldVector<OneDCType, dim>& local);
+    const Mat<dim,dim>& Jacobian_inverse (const FieldVector<OneDCType, dim>& local) const {
+      jacInverse_[0][0] = vertex[1]->geometry().pos_ - vertex[0]->geometry().pos_;
+      return jacInverse_;
+    }
 
 
   private:
 
-    FixedArray<DoubleLinkedList<OneDGridEntity<1,1,1> >::Iterator, 2> vertex;
+    FixedArray<OneDGridEntity<1,1,1>*, 2> vertex;
 
     //! The jacobian inverse
-    Mat<dimworld,dimworld> jac_inverse_;
+    mutable Mat<dimworld,dimworld> jacInverse_;
 
     //! storage for local coords
     //FieldVector<OneDCType, dim> localCoord_;

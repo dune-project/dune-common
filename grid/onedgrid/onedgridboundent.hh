@@ -19,7 +19,7 @@ namespace Dune {
   {
     friend class OneDGridIntersectionIterator<dim,dimworld>;
   public:
-    OneDGridBoundaryEntity () : _neigh(-1), _geom (false)
+    OneDGridBoundaryEntity () : _neigh(-1), _geom()
     {}
 
     //! return type of boundary , i.e. Neumann, Dirichlet ...

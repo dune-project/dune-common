@@ -47,7 +47,114 @@ namespace Dune
 #include "onedgrid/onedgridleveliterator.hh"
 #include "onedgrid/onedgridhieriterator.hh"
 
+#include "onedgrid/onedgridentity.cc"
+
 namespace Dune {
+
+  // A simple double linked list
+  template<class T>
+  class List
+  {
+
+  public:
+
+    List() : numelements(0), begin(0), rbegin(0) {}
+
+    int size() const {return numelements;}
+
+    T* insert_after (T* i, T* t) {
+
+      // Teste Eingabe
+      if (i==0 && begin!=0)
+        DUNE_THROW(DoubleLinkedListError, "invalid iterator for insert_after");
+
+      // einfuegen
+      if (begin==0) {
+        // einfuegen in leere Liste
+        begin = t;
+        rbegin = t;
+      }
+      else
+      {
+        // nach Element i.p einsetzen
+        t->pred_ = i;
+        t->succ_ = i->succ_;
+        i->succ_ = t;
+
+        if (t->succ_!=0)
+          t->succ_->pred_ = t;
+
+        // tail neu ?
+        if (rbegin==i)
+          rbegin = t;
+      }
+
+      // Groesse und Rueckgabeiterator
+      numelements = numelements+1;
+
+      return t;
+    }
+
+    T* insert_before (T* i, T* t) {
+
+      // Teste Eingabe
+      if (i==0 && begin!=0)
+        DUNE_THROW(DoubleLinkedListError,
+                   "invalid iterator for insert_before");
+
+      // einfuegen
+      if (begin==0)
+      {
+        // einfuegen in leere Liste
+        begin=t;
+        rbegin=t;
+      }
+      else
+      {
+        // vor Element i.p einsetzen
+        t->succ_ = i;
+        t->pred_ = i->pred_;
+        i->pred_ = t;
+
+        if (t->pred_!=0)
+          t->pred_->succ_ = t;
+        // head neu ?
+        if (begin==i)
+          begin = t;
+      }
+
+      // Groesse und Rueckgabeiterator
+      numelements = numelements+1;
+      return t;
+    }
+
+    void remove (T* i)
+    {
+      // Teste Eingabe
+      if (i==0)
+        return;
+
+      // Ausfaedeln
+      if (i.p->next!=0) i.p->next->prev = i.p->prev;
+      if (i.p->prev!=0) i.p->prev->next = i.p->next;
+
+      // head & tail
+      if (begin==i)
+        begin=i->succ_;
+      if (rbegin==i)
+        rbegin = i->pred_;
+
+      // Groesse
+      numelements = numelements-1;
+    }
+
+
+    int numelements;
+
+    T* begin;
+    T* rbegin;
+
+  };
 
   //**********************************************************************
   //
@@ -77,6 +184,7 @@ namespace Dune {
 
     /** \brief OneDGrid is only implemented for 1d */
     CompileTimeChecker< (dim==1 && dimworld==1) >   Use_OneDGrid_only_for_1d;
+
 
     // **********************************************************
     // The Interface Methods
@@ -160,24 +268,24 @@ namespace Dune {
 
   private:
 
-    typedef DoubleLinkedList<OneDGridEntity<1,1,1> > VertexContainer;
+    //     typedef DoubleLinkedList<OneDGridEntity<1,1,1> > VertexContainer;
 
-    typedef DoubleLinkedList<OneDGridEntity<0,1,1> > ElementContainer;
+    //     typedef DoubleLinkedList<OneDGridEntity<0,1,1> > ElementContainer;
 
-    VertexContainer::Iterator getLeftUpperVertex(const ElementContainer::Iterator& eIt);
+    OneDGridEntity<1,1,1>* getLeftUpperVertex(const OneDGridEntity<0,1,1>* eIt);
 
-    VertexContainer::Iterator getRightUpperVertex(const ElementContainer::Iterator& eIt);
+    OneDGridEntity<1,1,1>* getRightUpperVertex(const OneDGridEntity<0,1,1>* eIt);
 
     /** \brief Returns an iterator the the first element on the left of
         the input element which has sons.
      */
-    ElementContainer::Iterator getLeftNeighborWithSon(const ElementContainer::Iterator& eIt);
+    OneDGridEntity<0,1,1>* getLeftNeighborWithSon(OneDGridEntity<0,1,1>* eIt);
 
     // The vertices of the grid hierarchy
-    std::vector<DoubleLinkedList<OneDGridEntity<1,1,1> > > vertices;
+    std::vector<List<OneDGridEntity<1,1,1> > > vertices;
 
     // The elements of the grid hierarchy
-    std::vector<DoubleLinkedList<OneDGridEntity<0,1,1> > > elements;
+    std::vector<List<OneDGridEntity<0,1,1> > > elements;
 
 
   }; // end Class OneDGrid
