@@ -43,7 +43,8 @@ namespace ALU3dGridSpace {
       BndsegPllBaseXClosure < GitterType :: hbndseg3_GEO > ,
       BndsegPllBaseXMacroClosure < GitterType :: hbndseg3_GEO > > :: micro_t MicroType;
 
-  enum { ProcessorBoundary_t = GitterImplType:: hbndseg_STI :: closure };
+  // value for boundary to other processes
+  static const int ProcessorBoundary_t = GitterImplType:: hbndseg_STI :: closure;
 
 #else
   typedef GatherScatter GatherScatterType;
@@ -129,7 +130,6 @@ namespace ALU3dGridSpace {
   };
 
   template <> struct BSIMPLElementType<3> {
-    //typedef GitterType :: vertex_STI ElementType;
     typedef GitterType::Geometric::VertexGeo ElementType;
   };
 
