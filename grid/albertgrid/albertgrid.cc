@@ -369,68 +369,35 @@ namespace Dune
   }
 
   template< int dim, int dimworld>
-  inline Vec<dimworld,albertCtype>& AlbertGridElement<dim,dimworld>::
+  inline Vec<dimworld,albertCtype> AlbertGridElement<dim,dimworld>::
   global(const Vec<dim>& local)
   {
-    // only the dim first components are needed, because we don't use
-    // barycentric coordinates
-    Vec<dim+1,albertCtype> tmp;
-    for(int i=0; i<dim; i++)
-      tmp(i) = local.read(i);
-
-    tmp(dim) = 1.0;
-    for(int i=0; i<dim; i++)
-      tmp(dim) -= local.read(i);
-
-    // globale Koordinaten ausrechnen
-    globalCoord_ = globalBary(tmp);
-
-    return globalCoord_;
-  }
-
-  //template< int dim, int dimworld>
-  template <>
-  inline Vec<3,albertCtype>& AlbertGridElement<2,3>::
-  global(const Vec<2>& local)
-  {
-    // only the dim first components are needed, because we don't use
-    // barycentric coordinates
-    Vec<dimension+1,albertCtype> tmp;
-    for(int i=0; i<dimension; i++)
-      tmp(i) = local.read(i);
-
-    tmp(dimension) = 1.0;
-    for(int i=0; i<dimension; i++)
-      tmp(dimension) -= local.read(i);
-
-    // globale Koordinaten ausrechnen
-    globalCoord_ = globalBary(tmp);
-
-    return globalCoord_;
-  }
-
-  template< int dim, int dimworld>
-  inline Vec<dimworld> AlbertGridElement<dim,dimworld>::
-  globalBary(const Vec<dim+1>& local)
-  {
-    ALBERT REAL *v = NULL;
+    ALBERT REAL *v = static_cast<ALBERT REAL *> (elInfo_->coord[0]);
     ALBERT REAL c;
-    Vec<dimworld> ret(0.0);
+    // fake the third local coordinate via localFake
+    albertCtype localFake=1.0;
 
-    v = static_cast<ALBERT REAL *> (elInfo_->coord[0]);
     c = local.read(0);
-    for (int j = 0; j < dimworld; j++)
-      ret(j) = c * v[j];
+    localFake -= c;
 
-    for (int i = 1; i < dim+1; i++)
+    for (int j = 0; j < dimworld; j++)
+      globalCoord_(j) = c * v[j];
+
+    for (int i = 1; i < dim; i++)
     {
       v = static_cast<ALBERT REAL *> (elInfo_->coord[i]);
       c = local.read(i);
+      localFake -= c;
       for (int j = 0; j < dimworld; j++)
-        ret(j) += c * v[j];
+        globalCoord_(j) += c * v[j];
     }
 
-    return ret;
+    // we have allways dim+1 coords, therefore
+    v = static_cast<ALBERT REAL *> (elInfo_->coord[dim]);
+    for (int j = 0; j < dimworld; j++)
+      globalCoord_(j) += localFake * v[j];
+
+    return globalCoord_;
   }
 
   template< int dim, int dimworld>
@@ -439,12 +406,12 @@ namespace Dune
   {
     ALBERT REAL lambda[dim+1];
 
-    Vec<dim+1,albertCtype> tmp = localBary(global);
+    tmpVec_ = localBary(global);
 
     // Umrechnen von baryzentrischen localen Koordinaten nach
     // localen Koordinaten,
     for(int i=0; i<dim; i++)
-      localCoord_(i) = tmp(i);
+      localCoord_(i) = tmpVec_.read(i);
 
     return localCoord_;
   }
@@ -575,15 +542,71 @@ namespace Dune
     return lambda;
   }
 
+
+  template< int dim, int dimworld>
+  inline albertCtype AlbertGridElement<dim,dimworld>::elVolume () const
+  {
+    return ALBERT el_volume(elInfo_);
+  }
+
+  template <>
+  inline albertCtype AlbertGridElement<2,2>::elVolume () const
+  {
+    enum { dim = 2 };
+    enum { dimworld = 2 };
+    const double volFac = 0.5;
+    REAL e1[dimworld], e2[dimworld], det;
+    const REAL  *v0;
+
+    v0 = elInfo_->coord[0];
+    for (int i = 0; i < DIM_OF_WORLD; i++)
+    {
+      e1[i] = elInfo_->coord[1][i] - v0[i];
+      e2[i] = elInfo_->coord[2][i] - v0[i];
+    }
+
+    det = e1[0]*e2[1] - e1[1]*e2[0];
+    det = ABS(det);
+
+    return volFac*det;
+  }
+
+
+  template <>
+  inline albertCtype AlbertGridElement<3,3>::elVolume () const
+  {
+    enum { dim = 3 };
+    enum { dimworld = 3 };
+    const double volFac = 1.0/6.0;
+
+    REAL e1[dimworld], e2[dimworld], e3[dimworld], det;
+    const REAL  *v0;
+
+    v0 = elInfo_->coord[0];
+    for (int i = 0; i < dimworld; i++)
+    {
+      e1[i] = elInfo_->coord[1][i] - v0[i];
+      e2[i] = elInfo_->coord[2][i] - v0[i];
+      e3[i] = elInfo_->coord[3][i] - v0[i];
+    }
+
+    det =   e1[0] * (e2[1]*e3[2] - e2[2]*e3[1])
+          - e1[1] * (e2[0]*e3[2] - e2[2]*e3[0])
+          + e1[2] * (e2[0]*e3[1] - e2[1]*e3[0]);
+    det = ABS(det);
+
+    return volFac*det;
+  }
+
   template< int dim, int dimworld>
   inline albertCtype AlbertGridElement<dim,dimworld>::
   integration_element (const Vec<dim,albertCtype>& local)
   {
+    // if inverse was built, volume was calced already
     if(builtinverse_)
       return volume_;
 
-    // builds the jacobian inverse and calculates the volume
-    builtJacobianInverse(local);
+    volume_ = elVolume();
     return volume_;
   }
 
@@ -635,13 +658,76 @@ namespace Dune
 
     // is faster than the lower method
     volume_ = volFactor * ALBERT el_grd_lambda(elInfo_,lambda);
-
     for(int i=0; i<dim; i++)
     {
       for(int j=0; j<dimworld; j++)
         Jinv_(i,j) = lambda[i][j];
     }
     builtinverse_ = true;
+  }
+
+  inline void AlbertGridElement<3,3>::
+  builtJacobianInverse(const Vec<3,albertCtype>& local)
+  {
+    // volFactor should be 1/6, see ALBERT Doc
+    static const albertCtype volFactor = 1.0/6.0;
+
+    enum { dimworld = 3 };
+    enum { dim = 3 };
+
+    int i, j;
+    REAL e1[dimworld], e2[dimworld], e3[dimworld];
+    const REAL  *v0;
+    REAL det, adet;
+    REAL a11, a12, a13, a21, a22, a23, a31, a32, a33;
+
+    v0 = elInfo_->coord[0];
+    for (i = 0; i < dimworld; i++) {
+      e1[i] = elInfo_->coord[1][i] - v0[i];
+      e2[i] = elInfo_->coord[2][i] - v0[i];
+      e3[i] = elInfo_->coord[3][i] - v0[i];
+    }
+
+    det =   e1[0] * (e2[1]*e3[2] - e2[2]*e3[1])
+          - e1[1] * (e2[0]*e3[2] - e2[2]*e3[0])
+          + e1[2] * (e2[0]*e3[1] - e2[1]*e3[0]);
+
+    adet = ABS(det);
+    if (adet < 1.0E-25)
+    {
+      std::cout << "abs(det) = " << adet << "\n";
+      Jinv_ = 0.0;
+    }
+    else
+    {
+      det = 1.0 / det;
+      a11 = (e2[1]*e3[2] - e2[2]*e3[1]) * det;  /* (a_ij) = A^{-T} */
+      a12 = (e2[2]*e3[0] - e2[0]*e3[2]) * det;
+      a13 = (e2[0]*e3[1] - e2[1]*e3[0]) * det;
+      a21 = (e1[2]*e3[1] - e1[1]*e3[2]) * det;
+      a22 = (e1[0]*e3[2] - e1[2]*e3[0]) * det;
+      a23 = (e1[1]*e3[0] - e1[0]*e3[1]) * det;
+      a31 = (e1[1]*e2[2] - e1[2]*e2[1]) * det;
+      a32 = (e1[2]*e2[0] - e1[0]*e2[2]) * det;
+      a33 = (e1[0]*e2[1] - e1[1]*e2[0]) * det;
+
+      Jinv_(1,0) = a11;
+      Jinv_(1,1) = a12;
+      Jinv_(1,2) = a13;
+      Jinv_(2,0) = a21;
+      Jinv_(2,1) = a22;
+      Jinv_(2,2) = a23;
+      Jinv_(3,0) = a31;
+      Jinv_(3,1) = a32;
+      Jinv_(3,2) = a33;
+      Jinv_(0,0) = -Jinv_(1,0) -Jinv_(2,0) -Jinv_(3,0);
+      Jinv_(0,1) = -Jinv_(1,1) -Jinv_(2,1) -Jinv_(3,1);
+      Jinv_(0,2) = -Jinv_(1,2) -Jinv_(2,2) -Jinv_(3,2);
+    }
+
+    volume_ = volFactor * adet;
+    builtinverse_ = true;
+    return;
   }
 
   template <>
@@ -1485,8 +1571,8 @@ namespace Dune
   {
     // rechne Kreuzprodukt der Vectoren aus
     ALBERT REAL_D *coord = elInfo_->coord;
-    Vec<3,albertCtype> v(0.0);
-    Vec<3,albertCtype> u(0.0);
+    Vec<3,albertCtype> v;
+    Vec<3,albertCtype> u;
 
     for(int i=0; i<3; i++)
     {
@@ -1505,8 +1591,8 @@ namespace Dune
   {
     // rechne Kreuzprodukt der Vectoren aus
     ALBERT REAL_D *coord = elInfo_->coord;
-    Vec<3,albertCtype> v(0.0);
-    Vec<3,albertCtype> u(0.0);
+    Vec<3,albertCtype> v;
+    Vec<3,albertCtype> u;
 
     for(int i=0; i<3; i++)
     {
@@ -1547,11 +1633,6 @@ namespace Dune
       neighGlob_ = manageNeighEl_->item;
     }
 
-    //Vec<dim-1> tmp;
-
-    //std::cout << elInfo_ << " NeighborIt Elinfo \n";
-    //std::cout << neighGlob_ << " \n";
-    // built neighGlob_ first
     if(neighGlob_->builtGeom(elInfo_,neighborCount_,0,0))
       return (*neighGlob_);
     else

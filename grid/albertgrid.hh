@@ -150,7 +150,7 @@ namespace Albert
 
       //! maps a local coordinate within reference element to
       //! global coordinate in element
-      Vec<dimworld,albertCtype>& global (const Vec<dim,albertCtype>& local);
+      Vec<dimworld,albertCtype> global (const Vec<dim,albertCtype>& local);
 
       //! maps a global coordinate within the element to a
       //! local coordinate in its reference element
@@ -200,7 +200,6 @@ namespace Albert
       //! print internal data
       void print (std::ostream& ss, int indent);
     private:
-
       // calc the local barycentric coordinates
       template <int dimbary>
       Vec<dimbary,albertCtype>& localB (const Vec<dimworld,albertCtype>& global)
@@ -215,9 +214,6 @@ namespace Albert
       //! built the jacobian inverse and store the volume
       void builtJacobianInverse (const Vec<dim,albertCtype>& local);
 
-      //! maps a barycentric coordinate within element to global coordinate in element
-      Vec<dimworld,albertCtype> globalBary (const Vec<dim+1,albertCtype>& local);
-
       //! maps a global coordinate within the elements local barycentric
       //! koordinates
       Vec<dim+1,albertCtype> localBary (const Vec<dimworld,albertCtype>& global);
@@ -225,6 +221,9 @@ namespace Albert
       // template method for map the vertices of EL_INFO to the actual
       // coords with face_,edge_ and vertex_ , needes for operator []
       int mapVertices (int i) const;
+
+      // calculates the volume of the element
+      albertCtype elVolume () const;
 
       //! the vertex coordinates
       Mat<dimworld,dim+1,albertCtype> coord_;
@@ -257,7 +256,6 @@ namespace Albert
       Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
       albertCtype volume_; //!< storage of element volume
 
-      //Vec<dimworld,albertCtype> outerNormal_;
     };
 
 
