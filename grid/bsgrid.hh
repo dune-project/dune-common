@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include <dune/common/misc.hh>
-#include <dune/common/matvec.hh>
+#include <dune/common/fmatrix.hh>
 
 #include "common/grid.hh"
 
@@ -34,26 +34,29 @@ namespace Dune
      @{
    */
 
+  enum BSGridElementType { tetra = 4, hexa = 7 };
+
   // i.e. double or float
   typedef double bs_ctype;
 
-  template<int codim, int dim, int dimworld> class BSGridEntity;
-  template<int codim, int dim, int dimworld,PartitionIteratorType pitype> class BSGridLevelIterator;
+  template<int cd, int dim, class GridImp> class BSGridEntity;
+  template<int cd, PartitionIteratorType pitype, class GridImp > class BSGridLevelIterator;
 
-  template<int dim, int dimworld>            class BSGridElement;
-  template<int dim, int dimworld>            class BSGridBoundaryEntity;
-  template<int dim, int dimworld>            class BSGridHierarchicIterator;
-  template<int dim, int dimworld>            class BSGridIntersectionIterator;
+  template<int mydim, int coorddim, class GridImp>  class BSGridGeometry;
+  template<class GridImp>            class BSGridBoundaryEntity;
+  template<class GridImp>            class BSGridHierarchicIterator;
+  template<class GridImp>            class BSGridIntersectionIterator;
+  template<class GridImp>            class BSGridLeafIterator;
   template<int dim, int dimworld>            class BSGrid;
 
 
   // singleton holding reference elements
-  template<int dim> struct BSGridReferenceElement;
+  template<int dim,class GridImp> struct BSGridReferenceGeometry;
 
   //**********************************************************************
   //
-  // --BSGridElement
-  // --Element
+  // --BSGridGeometry
+  // --Geometry
   /*!
      Defines the geometry part of a mesh entity. Works for all dimensions, element types and dime
      of world. Provides reference element and mapping between local and global coordinates.
@@ -70,19 +73,49 @@ namespace Dune
   static int __MyRank__ = -1;
 #endif
 
-  template<int dim, int dimworld>
-  class BSGridElement :
-    public ElementDefault <dim,dimworld,bs_ctype,BSGridElement>
+  template<int mydim, int coorddim, class GridImp>
+  class BSGridMakeableGeometry : public Geometry<mydim, coorddim,
+                                     GridImp, BSGridGeometry>
   {
-    friend class BSGridBoundaryEntity<dim,dimworld>;
+    typedef Geometry<mydim, coorddim, GridImp, BSGridGeometry> GeometryType;
+  public:
+    BSGridMakeableGeometry(bool makeRefelem=false) :
+      GeometryType (BSGridGeometry<mydim, coorddim,GridImp>(makeRefelem)) {}
+
+    //! build geometry out of different BSGrid Geometrys
+    bool buildGeom(const BSSPACE IMPLElementType & item)
+    {
+      return this->realGeometry.buildGeom(item);
+    }
+
+    bool buildGeom(const BSSPACE HFaceType & item)
+    {
+      return this->realGeometry.buildGeom(item);
+    }
+
+    bool buildGhost(const BSSPACE PLLBndFaceType & ghost)
+    {
+      return this->realGeometry.buildGeom(ghost);
+    }
+
+    void print (std::ostream& ss) const
+    {
+      this->realGeometry.print(ss);
+    }
+  };
+
+  template<int mydim, int cdim, class GridImp>
+  class BSGridGeometry :
+    public GeometryDefault <mydim,cdim,GridImp,BSGridGeometry>
+  {
+    friend class BSGridBoundaryEntity<GridImp>;
 
     //! know dimension of barycentric coordinates
-    enum { dimbary=dim+1};
+    enum { dimbary=mydim+1};
   public:
-
-    //! for makeRefElement == true a Element with the coordinates of the
+    //! for makeRefGeometry == true a Geometry with the coordinates of the
     //! reference element is made
-    BSGridElement(bool makeRefElement=false);
+    BSGridGeometry(bool makeRefGeometry=false);
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
@@ -92,23 +125,23 @@ namespace Dune
     int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<bs_ctype, dimworld>& operator[] (int i) const;
+    const FieldVector<bs_ctype, cdim>& operator[] (int i) const;
 
     /*! return reference element corresponding to this element. If this is
        a reference element then self is returned.
      */
-    BSGridElement<dim,dim>& refelem () const;
+    static const Dune::Geometry<mydim,mydim,GridImp,Dune::BSGridGeometry> & refelem ();
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
-    FieldVector<bs_ctype, dimworld> global (const FieldVector<bs_ctype, dim>& local) const;
+    FieldVector<bs_ctype, cdim> global (const FieldVector<bs_ctype, mydim>& local) const;
 
     //! maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    FieldVector<bs_ctype, dim> local (const FieldVector<bs_ctype, dimworld>& global) const;
+    FieldVector<bs_ctype,  mydim> local (const FieldVector<bs_ctype, cdim>& global) const;
 
     //! returns true if the point in local coordinates is inside reference element
-    bool checkInside(const FieldVector<bs_ctype, dim>& local) const;
+    bool checkInside(const FieldVector<bs_ctype, mydim>& local) const;
 
     /*!
        Copy from grid.hh:
@@ -134,24 +167,24 @@ namespace Dune
      */
 
     //! A(l)
-    bs_ctype integration_element (const FieldVector<bs_ctype, dim>& local) const;
+    bs_ctype integrationElement (const FieldVector<bs_ctype, mydim>& local) const;
 
     //! can only be called for dim=dimworld!
-    Mat<dim,dim>& Jacobian_inverse (const FieldVector<bs_ctype, dim>& local) const;
+    const FieldMatrix<bs_ctype,mydim,mydim>& jacobianInverse (const FieldVector<bs_ctype, cdim>& local) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry for the ALBERT EL_INFO
     //! no interface method
-    bool builtGeom(const BSSPACE IMPLElementType & item);
-    bool builtGeom(const BSSPACE HFaceType & item);
+    bool buildGeom(const BSSPACE IMPLElementType & item);
+    bool buildGeom(const BSSPACE HFaceType & item);
 
-    bool builtGhost(const BSSPACE PLLBndFaceType & ghost);
+    bool buildGhost(const BSSPACE PLLBndFaceType & ghost);
 
     //! print internal data
     //! no interface method
-    void print (std::ostream& ss, int indent) const;
+    void print (std::ostream& ss) const;
 
   private:
     // generate Jacobian Inverse and calculate integration_element
@@ -160,22 +193,21 @@ namespace Dune
     // calculates the element matrix for calculation of the jacobian inverse
     void calcElMatrix () const;
 
-    // element type of element
-    const GeometryType eltype_;
-
     //! the vertex coordinates
-    mutable Mat<dimworld,dim+1,bs_ctype> coord_;
+    mutable FieldMatrix<bs_ctype,mydim+1,cdim> coord_;
 
     //! is true if Jinv_, A and detDF_ is calced
     mutable bool builtinverse_;
     mutable bool builtA_;
     mutable bool builtDetDF_;
 
-    mutable Mat<dim,dim,bs_ctype> Jinv_; //!< storage for inverse of jacobian
+    enum { matdim = (mydim > 0) ? mydim : 1 };
+    mutable FieldMatrix<bs_ctype,matdim,matdim> Jinv_; //!< storage for inverse of jacobian
     mutable bs_ctype detDF_;             //!< storage of integration_element
-    mutable Mat<dimworld,dim,bs_ctype> A_; //!< for map2world NORMALE Nr.(ZEILE/SPALTE)
+    mutable FieldMatrix<bs_ctype,matdim,matdim> A_; //!< for map2world NORMALE Nr.(ZEILE/SPALTE)
 
-    mutable FieldVector<bs_ctype, dimworld> tmpVec_;
+    mutable FieldVector<bs_ctype, mydim> localCoord_;
+    mutable FieldVector<bs_ctype, cdim>  globalCoord_;
   };
 
 
@@ -184,23 +216,59 @@ namespace Dune
   // --BSGridEntity
   // --Entity
   //
+  //**********************************************************************
+  template<int codim, int dim, class GridImp>
+  class BSGridMakeableEntity :
+    public GridImp::template codim<codim>::Entity
+  {
+    typedef typename GridImp::template codim<codim>::Entity EntityType;
+    friend class BSGridEntity<codim, dim, GridImp>;
+  public:
+    // Constructor creating the realEntity
+    BSGridMakeableEntity(const GridImp & grid, int level) :
+      GridImp::template codim<codim>::
+      Entity (BSGridEntity<codim, dim, GridImp>(grid,level)) {}
+
+    // set element as normal entity
+    void setElement(BSSPACE HElementType &element)
+    {
+      this->realEntity.setElement(element);
+    }
+
+    // set element as ghost
+    void setGhost(BSSPACE HElementType &ghost)
+    {
+      this->realEntity.setGhost(ghost);
+    }
+
+    //! set original element pointer to fake entity
+    void setGhost(BSSPACE PLLBndFaceType  &ghost)
+    {
+      this->realEntity.setGhost(ghost);
+    }
+
+  };
+
   /*!
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
      An entity of codimension c in dimension d is a d-c dimensional object.
 
      Here: the general template
    */
-  template<int codim, int dim, int dimworld>
+  template<int cd, int dim, class GridImp>
   class BSGridEntity :
-    public EntityDefault <codim,dim,dimworld,bs_ctype,
-        BSGridEntity,BSGridElement,BSGridLevelIterator,
-        BSGridIntersectionIterator,BSGridHierarchicIterator>
+    public EntityDefault <cd,dim,GridImp,BSGridEntity>
   {
+    enum { dimworld = GridImp::dimensionworld };
+
     friend class BSGrid < dim , dimworld >;
-    friend class BSGridEntity < 0, dim, dimworld>;
-    friend class BSGridLevelIterator < codim, dim, dimworld, All_Partition>;
-    //friend class BSGridLevelIterator < dim, dim, dimworld>;
+    friend class BSGridEntity < 0, dim, GridImp >;
+    friend class BSGridLevelIterator < cd, All_Partition, GridImp >;
+
   public:
+    typedef typename GridImp::template codim<cd>::Geometry Geometry;
+    typedef BSGridMakeableGeometry<dim-cd,GridImp::dimensionworld,GridImp> GeometryImp;
+    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
 
     //! level of this element
     int level () const;
@@ -210,33 +278,33 @@ namespace Dune
     int index () const;
 
     //! index is unique within the grid hierachie and per codim
-    int global_index () const;
+    int globalIndex () const;
 
     //! Constructor
-    BSGridEntity(BSGrid<dim,dimworld> &grid, int level);
+    BSGridEntity(const GridImp &grid, int level);
 
     //! geometry of this entity
-    BSGridElement<dim-codim,dimworld>& geometry () const;
+    const Geometry & geometry () const;
 
     /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    BSGridLevelIterator<0,dim,dimworld,All_Partition> father () const;
+    EntityPointer ownersFather () const;
 
-    //! local coordinates within father
-    FieldVector<bs_ctype, dim>& local () const;
+    //! my position in local coordinates of the owners father
+    FieldVector<bs_ctype, dim>& positionInOwnersFather () const;
+
   private:
-    BSGrid<dim,dimworld> &grid_;
+    // the grid this entity belongs to
+    const GridImp &grid_;
 
-    BSSPACE HElementType * item_;
-
-    mutable Mat<dimworld,dim+1,bs_ctype> coord_; //
+    // corresponding BSGridElement
+    const BSSPACE HElementType * item_;
 
     //! the cuurent geometry
-    mutable BSGridElement<dim-codim,dimworld> geo_;
+    mutable GeometryImp geo_;
     mutable bool builtgeometry_;       //!< true if geometry has been constructed
-
   };
 
   /*!
@@ -258,20 +326,20 @@ namespace Dune
   //  --0Entity
   //
   //***********************
-  template<int dim, int dimworld>
-  class BSGridEntity<0,dim,dimworld> :
-    public EntityDefault<0,dim,dimworld,bs_ctype,BSGridEntity,BSGridElement,
-        BSGridLevelIterator,BSGridIntersectionIterator,
-        BSGridHierarchicIterator>
+  template<int dim, class GridImp>
+  class BSGridEntity<0,dim,GridImp>
+    : public EntityDefault<0,dim,GridImp,BSGridEntity>
   {
+    enum { dimworld = GridImp::dimensionworld };
+
     friend class BSGrid < dim , dimworld >;
-    friend class BSGridIntersectionIterator < dim, dimworld>;
-    friend class BSGridHierarchicIterator < dim, dimworld>;
-    friend class BSGridLevelIterator <0,dim,dimworld,All_Partition>;
-    friend class BSGridLevelIterator <1,dim,dimworld,All_Partition>;
-    friend class BSGridLevelIterator <2,dim,dimworld,All_Partition>;
-    friend class BSGridLevelIterator <3,dim,dimworld,All_Partition>;
-    friend class BSGrid < dim , dimworld > :: LeafIterator ;
+    friend class BSGridIntersectionIterator < GridImp >;
+    friend class BSGridHierarchicIterator   < GridImp >;
+    friend class BSGridLevelIterator <0,All_Partition,GridImp>;
+    friend class BSGridLevelIterator <1,All_Partition,GridImp>;
+    friend class BSGridLevelIterator <2,All_Partition,GridImp>;
+    friend class BSGridLevelIterator <3,All_Partition,GridImp>;
+    friend class BSGridLeafIterator <GridImp>;
 
     // partial specialisation of subIndex
     template <int codim>
@@ -297,8 +365,17 @@ namespace Dune
      */
 
   public:
-    typedef BSGridIntersectionIterator<dim,dimworld> IntersectionIterator;
-    typedef BSGridHierarchicIterator<dim,dimworld> HierarchicIterator;
+    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef  BSGridMakeableGeometry<dim,dimworld,GridImp> GeometryImp;
+
+    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
+
+    template <int cd>
+    struct codim
+    {
+      typedef typename GridImp::template codim<cd>::EntityPointer EntityPointer;
+    };
 
     //! Destructor, needed perhaps needed for deleteing faceEntity_ and
     //! edgeEntity_ , see below
@@ -306,11 +383,13 @@ namespace Dune
     ~BSGridEntity() {};
 
     //! Constructor, real information is set via setElInfo method
-    BSGridEntity(BSGrid<dim,dimworld> &grid,
-                 BSSPACE HElementType &element,int index, int wLevel);
+    //BSGridEntity(BSGrid<dim,dimworld> &grid,
+    //            BSSPACE HElementType &element,int index, int wLevel);
+
+    BSGridEntity(const GridImp &grid, int level);
 
     //! Default-Constructor
-    BSGridEntity(BSGrid<dim,dimworld> &grid) : grid_(grid) { }
+    //BSGridEntity(BSGrid<dim,dimworld> &grid) : grid_(grid) { }
 
     //! level of this element
     int level () const ;
@@ -319,10 +398,10 @@ namespace Dune
     int index () const;
 
     //! index is unique within the grid hierachie and per codim
-    int global_index () const;
+    int globalIndex () const;
 
     //! geometry of this entity
-    BSGridElement<dim,dimworld>& geometry () const;
+    const Geometry & geometry () const;
 
     //! return partition type of this entity ( see grid.hh )
     PartitionType partitionType() const;
@@ -338,33 +417,25 @@ namespace Dune
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
-    template<int cc> BSGridLevelIterator<cc,dim,dimworld,All_Partition> entity (int i) const;
+    template <int cc>
+    typename codim<cc>::EntityPointer entity (int i) const;
 
     /*! Intra-level access to intersection with neighboring elements.
        A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
-    BSGridIntersectionIterator<dim,dimworld> ibegin ();
+    BSGridIntersectionIterator<GridImp> ibegin () const;
 
     //! Reference to one past the last intersection with neighbor
-    BSGridIntersectionIterator<dim,dimworld> iend ();
-
-    void ibegin (BSGridIntersectionIterator<dim,dimworld> & it);
-    void iend   (BSGridIntersectionIterator<dim,dimworld> & it);
-
-    //! returns true if Entity has children
-    bool hasChildren () const ;
+    BSGridIntersectionIterator<GridImp> iend () const;
 
     //! returns true if Entity is leaf (i.e. has no children)
     bool isLeaf () const;
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
-    BSGridLevelIterator<0,dim,dimworld,All_Partition> father ();
-
-    BSGridEntity<0,dim,dimworld> newEntity();
-    void father ( BSGridEntity<0,dim,dimworld> &vati);
+    EntityPointer father () const;
 
     /*! Location of this element relative to the reference element
        of the father. This is sufficient to interpolate all
@@ -375,16 +446,16 @@ namespace Dune
        We assume that on-the-fly implementation of numerical algorithms
        is only done for simple discretizations. Assumes that meshes are nested.
      */
-    BSGridElement<dim,dim>& father_relative_local ();
+    const Geometry & geometryInFather () const;
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
      */
-    BSGridHierarchicIterator<dim,dimworld> hbegin (int maxlevel);
+    BSGridHierarchicIterator<GridImp> hbegin (int maxlevel) const;
 
     //! Returns iterator to one past the last son
-    BSGridHierarchicIterator<dim,dimworld> hend (int maxlevel);
+    BSGridHierarchicIterator<GridImp> hend (int maxlevel) const;
 
     //***************************************************************
     //  Interface for Adaptation
@@ -393,7 +464,7 @@ namespace Dune
     //! marks an element for refCount refines. if refCount is negative the
     //! element is coarsend -refCount times
     //! mark returns true if element was marked, otherwise false
-    bool mark( int refCount );
+    bool mark( int refCount ) const;
 
     //! return whether entity could be cosrsend (COARSEND) or was refined
     //! (REFINED) or nothing happend (NONE)
@@ -408,14 +479,14 @@ namespace Dune
         arguments of these methods
         set original element pointer to fake entity
      */
-    void setGhost(BSSPACE HElementType &element);
+    void setGhost(BSSPACE HElementType &ghost);
 
     //! set original element pointer to fake entity
     void setGhost(BSSPACE PLLBndFaceType  &ghost);
 
   private:
     // corresponding grid
-    BSGrid<dim,dimworld> &grid_;
+    const GridImp  & grid_;
 
     // the current element of grid
     BSSPACE IMPLElementType *item_;
@@ -425,7 +496,7 @@ namespace Dune
     mutable bool isGhost_; //! true if entity is ghost entity
 
     //! the cuurent geometry
-    mutable BSGridElement<dim,dimworld> geo_;
+    mutable GeometryImp geo_;
     mutable bool builtgeometry_; //!< true if geometry has been constructed
 
 
@@ -436,7 +507,7 @@ namespace Dune
     int glIndex_; //!< global index of element
     int level_;  //!< level of element
 
-    //BSGridElement <dim,dim> fatherReLocal_;
+    //BSGridGeometry <dim,dim> fatherReLocal_;
   }; // end of BSGridEntity codim = 0
 
   //**********************************************************************
@@ -452,53 +523,75 @@ namespace Dune
      hierarchically refined meshes.
    */
 
-  template<int dim, int dimworld>
+  template<class GridImp>
   class BSGridHierarchicIterator :
-    public HierarchicIteratorDefault <dim,dimworld,bs_ctype,
-        BSGridHierarchicIterator,BSGridEntity>
+    public HierarchicIteratorDefault <GridImp,BSGridHierarchicIterator>
   {
+    enum { dim = GridImp::dimension };
   public:
-    //! the normal Constructor
-    BSGridHierarchicIterator(BSGrid<dim,dimworld> &grid,
-                             BSSPACE HElementType & elem,int maxlevel, bool end=false);
+    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::ctype ctype;
+    typedef BSGridMakeableEntity<0,dim,GridImp> EntityImp;
 
-    //! prefix increment
-    BSGridHierarchicIterator& operator ++();
+    //! the normal Constructor
+    BSGridHierarchicIterator(const GridImp &grid,
+                             const BSSPACE HElementType & elem, int maxlevel, bool end=false);
+
+    //! increment
+    void increment();
 
     //! equality
-    bool operator== (const BSGridHierarchicIterator& i) const;
-
-    //! inequality
-    bool operator!= (const BSGridHierarchicIterator& i) const;
+    bool equals (const BSGridHierarchicIterator<GridImp>& i) const;
 
     //! dereferencing
-    BSGridEntity<0,dim,dimworld>& operator*();
-
-    //! arrow
-    BSGridEntity<0,dim,dimworld>* operator->();
+    Entity & dereference() const;
 
   private:
     // go to next valid element
     BSSPACE HElementType * goNextElement (BSSPACE HElementType * oldEl);
 
-    BSGrid<dim,dimworld> &grid_; //!< the corresponding BSGrid
-    BSSPACE HElementType & elem_; //!< the start  element of this iterator
+    const GridImp & grid_; //!< the corresponding BSGrid
+    const BSSPACE HElementType & elem_; //!< the start  element of this iterator
     BSSPACE HElementType * item_; //!< the actual element of this iterator
     int maxlevel_; //!< maxlevel
 
     // holds the entity, copy pointer and delete if no refcount is left
-    AutoPointer< BSGridEntity<0,dim,dimworld> > objEntity_;
+    AutoPointer< EntityImp > objEntity_;
   };
 
+  //*******************************************************************
+  //
+  //  --BSGridBoundaryEntity
+  //  --BoundaryEntity
+  //
+  //*******************************************************************
+  template<class GridImp>
+  class BSGridMakeableBoundaryEntity :
+    public GridImp::template codim<0>::BoundaryEntity
+  {
+  public:
+    BSGridMakeableBoundaryEntity () :
+      GridImp::template codim<0>::BoundaryEntity (BSGridBoundaryEntity<GridImp>()) {};
+
+    // set boundary Id, done by IntersectionIterator
+    void setId ( int id )
+    {
+      this->realBoundaryEntity.setId(id);
+    }
+  };
 
   /** BoundaryEntity of the BSGrid module */
-  template<int dim, int dimworld>
+  template<class GridImp>
   class BSGridBoundaryEntity
-    : public BoundaryEntityDefault <dim,dimworld,bs_ctype,
-          BSGridElement,BSGridBoundaryEntity>
+    : public BoundaryEntityDefault <GridImp,BSGridBoundaryEntity>
   {
-    friend class BSGridIntersectionIterator<dim,dimworld>;
+    enum {dim = GridImp::dimension };
+    friend class BSGridIntersectionIterator<GridImp>;
+    friend class BSGridIntersectionIterator<const GridImp>;
   public:
+    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef BSGridMakeableGeometry<dim,dim,GridImp> GeometryImp;
+
     //! Constructor
     BSGridBoundaryEntity ();
 
@@ -510,12 +603,12 @@ namespace Dune
     bool hasGeometry () const ;
 
     //! return geometry of the ghost cell
-    BSGridElement<dim,dimworld>& geometry () const ;
+    const Geometry & geometry () const ;
 
-  private:
     void setId ( int id ) ;
 
-    BSGridElement<dim,dimworld> _geom;
+  private:
+    mutable GeometryImp _geom;
     int _id;
   };
 
@@ -530,36 +623,42 @@ namespace Dune
      non-matching meshes. The number of neigbors may be different from the number o
      of an element!
    */
-  template<int dim, int dimworld>
+  template<class GridImp>
   class BSGridIntersectionIterator :
-    public IntersectionIteratorDefault <dim,dimworld,bs_ctype,
-        BSGridIntersectionIterator,BSGridEntity,
-        BSGridElement, BSGridBoundaryEntity>
+    public IntersectionIteratorDefault <GridImp,BSGridIntersectionIterator>
   {
-    friend class BSGridEntity<0,dim,dimworld>;
+    enum { dim       = GridImp::dimension };
+    enum { dimworld  = GridImp::dimensionworld };
+
+    friend class BSGridEntity<0,dim,GridImp>;
+
   public:
-    //! prefix increment
-    BSGridIntersectionIterator& operator ++();
+    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template codim<0>::BoundaryEntity BoundaryEntity;
+    typedef BSGridMakeableBoundaryEntity<GridImp> MakeableBndEntityImp;
+    typedef typename GridImp::template codim<1>::Geometry Geometry;
+    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
+    typedef BSGridMakeableEntity<0,dim,GridImp> EntityImp;
+    typedef BSGridMakeableGeometry<dim-1,dimworld,GridImp> GeometryImp;
+    typedef BSGridMakeableGeometry<dim-1,dimworld,GridImp> LocalGeometryImp;
+
 
     //! The default Constructor , level tells on which level we want
     //! neighbours
-    BSGridIntersectionIterator(BSGrid<dim,dimworld> &grid,BSSPACE HElementType *el,
+    BSGridIntersectionIterator(const GridImp & grid, BSSPACE HElementType *el,
                                int wLevel,bool end=false);
 
     //! The Destructor
     ~BSGridIntersectionIterator();
 
-    //! equality
-    bool operator== (const BSGridIntersectionIterator& i) const;
+    //! increment iterator
+    void increment ();
 
-    //! inequality
-    bool operator!= (const BSGridIntersectionIterator& i) const;
+    //! equality
+    bool equals(const BSGridIntersectionIterator<GridImp> & i) const;
 
     //! access neighbor, dereferencing
-    BSGridEntity<0,dim,dimworld>& operator*();
-
-    //! access neighbor, arrow
-    BSGridEntity<0,dim,dimworld>* operator->();
+    Entity & dereference () const;
 
     //! return true if intersection is with boundary. \todo connection with
     //! boundary information, processor/outer boundary
@@ -569,45 +668,41 @@ namespace Dune
     bool neighbor () const;
 
     //! return information about the Boundary
-    BSGridBoundaryEntity<dim,dimworld> & boundaryEntity () const;
-
-    //! return unit outer normal, this should be dependent on local
-    //! coordinates for higher order boundary
-    FieldVector<bs_ctype, dimworld>& unit_outer_normal (FieldVector<bs_ctype, dim-1>& local) const ;
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<bs_ctype, dimworld>& unit_outer_normal () const;
+    const BoundaryEntity & boundaryEntity () const;
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    BSGridElement<dim-1,dim>& intersection_self_local () const;
+    const LocalGeometry & intersectionSelfLocal () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    BSGridElement<dim-1,dimworld>& intersection_self_global () const;
+    const Geometry & intersectionGlobal () const;
 
     //! local number of codim 1 entity in self where intersection is contained in
-    int number_in_self () const;
+    int numberInSelf () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    BSGridElement<dim-1,dim>& intersection_neighbor_local () const;
-
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in LOCAL coordinates of neighbor
-    BSGridElement<dim-1,dimworld>& intersection_neighbor_global () const;
+    const LocalGeometry & intersectionNeighborLocal () const;
 
     //! local number of codim 1 entity in neighbor where intersection is contained
-    int number_in_neighbor () const;
+    int numberInNeighbor () const;
+
+    //! return unit outer normal, this should be dependent on local
+    //! coordinates for higher order boundary
+    typedef FieldVector<bs_ctype, dimworld> NormalType;
+
+    const NormalType & unitOuterNormal (const FieldVector<bs_ctype, dim-1>& local) const ;
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<bs_ctype, dimworld>& outer_normal (FieldVector<bs_ctype, dim-1>& local) const;
+    const NormalType & outerNormal (const FieldVector<bs_ctype, dim-1>& local) const;
 
-    //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<bs_ctype, dimworld>& outer_normal () const;
+    //! return outer normal, this should be dependent on local
+    //! coordinates for higher order boundary
+    const NormalType & integrationOuterNormal (const FieldVector<bs_ctype, dim-1>& local) const;
 
   private:
     // if neighbour exists , do setup of new neighbour
@@ -625,7 +720,7 @@ namespace Dune
     // set behind last neighbour
     void done ();
 
-    mutable BSGridEntity<0,dim,dimworld> entity_; //! neighbour entity
+    mutable EntityImp entity_; //! neighbour entity
 
     // current element from which we started the intersection iterator
     mutable BSSPACE GEOElementType *item_;
@@ -656,12 +751,10 @@ namespace Dune
     mutable BSSPACE NeighbourFaceType neighpair_;
 
     mutable bool initInterGl_; //! true if interSelfGlobal_ was initialized
-    mutable BSGridElement<dim-1,dimworld> interSelfGlobal_; //! intersection_self_global
+    mutable GeometryImp interSelfGlobal_; //! intersection_self_global
 
-    mutable BSGridBoundaryEntity<dim,dimworld> bndEntity_; //! boundaryEntity
+    mutable MakeableBndEntityImp bndEntity_; //! boundaryEntity
   };
-
-
 
   //**********************************************************************
   //
@@ -670,47 +763,47 @@ namespace Dune
   /*!
      Enables iteration over all entities of a given codimension and level of a grid.
    */
-  template<int codim, int dim, int dimworld,PartitionIteratorType pitype>
+  template<int cd, PartitionIteratorType pitype, class GridImp>
   class BSGridLevelIterator :
-    public LevelIteratorDefault <codim,dim,dimworld,pitype,bs_ctype,
-        BSGridLevelIterator,BSGridEntity>
+    public LevelIteratorDefault <cd,pitype,GridImp,BSGridLevelIterator>
   {
-    friend class BSGridEntity<3,dim,dimworld>;
-    friend class BSGridEntity<2,dim,dimworld>;
-    friend class BSGridEntity<1,dim,dimworld>;
-    friend class BSGridEntity<0,dim,dimworld>;
+    enum { dim       = GridImp::dimension };
+    enum { dimworld  = GridImp::dimensionworld };
+
+    friend class BSGridEntity<3,dim,GridImp>;
+    friend class BSGridEntity<2,dim,GridImp>;
+    friend class BSGridEntity<1,dim,GridImp>;
+    friend class BSGridEntity<0,dim,GridImp>;
     friend class BSGrid < dim , dimworld >;
+
   public:
+    typedef typename GridImp::template codim<cd>::Entity Entity;
+    typedef BSGridMakeableEntity<cd,dim,GridImp> EntityImp;
+
     //! typedef of my type
-    typedef BSGridLevelIterator<codim,dim,dimworld,pitype> BSGridLevelIteratorType;
+    typedef BSGridLevelIterator<cd,pitype,GridImp> BSGridLevelIteratorType;
 
     //! Constructor
-    BSGridLevelIterator(BSGrid<dim,dimworld> &grid, int level , bool end=false);
+    BSGridLevelIterator(const GridImp & grid, int level , bool end=false);
 
     //! Constructor for father
-    BSGridLevelIterator(BSGrid<dim,dimworld> &grid, BSSPACE HElementType & item);
+    BSGridLevelIterator(const GridImp & grid, BSSPACE HElementType & item);
 
     //! prefix increment
-    BSGridLevelIteratorType& operator ++();
+    void increment ();
 
     //! equality
-    bool operator== (const BSGridLevelIteratorType& i) const;
-
-    //! inequality
-    bool operator!= (const BSGridLevelIteratorType& i) const;
+    bool equals (const BSGridLevelIteratorType& i) const;
 
     //! dereferencing
-    BSGridEntity<codim,dim,dimworld>& operator*();
-
-    //! arrow
-    BSGridEntity<codim,dim,dimworld>* operator->();
+    Entity & dereference () const ;
 
     //! ask for level of entities
     int level () const ;
 
   private:
     // reference to grid
-    BSGrid<dim,dimworld> &grid_;
+    const GridImp & grid_;
 
     // element index, -1 for end
     int index_;
@@ -719,12 +812,67 @@ namespace Dune
     int level_;
 
     // the original iterator of the BSGrid
-    typename BSSPACE BSLevelIterator<codim>::IteratorType iter_;
+    typename BSSPACE BSLevelIterator<cd>::IteratorType iter_;
 
     // holds the entity, copy pointer and delete if no refcount is left
-    AutoPointer< BSGridEntity<codim,dim,dimworld> > objEntity_;
+    AutoPointer< EntityImp > objEntity_;
   };
 
+  //********************************************************************
+  //
+  //  --BSGridLeafIterator
+  //  --LeafIterator
+  //
+  //********************************************************************
+  template<class GridImp>
+  class BSGridLeafIterator
+  {
+    enum { dim = GridImp :: dimension };
+
+    friend class BSGridEntity<0,dim,GridImp>;
+    //friend class BSGrid < dim , dimworld >;
+    enum { codim = 0 };
+
+  public:
+    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef BSGridMakeableEntity<0,dim,GridImp> EntityImp;
+
+    typedef BSGridLeafIterator<GridImp> BSGridLeafIteratorType;
+
+    //! Constructor
+    BSGridLeafIterator(const GridImp & grid, int level , bool end,
+                       PartitionIteratorType pitype );
+
+    //! prefix increment
+    void increment ();
+
+    //! equality
+    bool equals (const BSGridLeafIteratorType & i) const;
+
+    //! dereferencing
+    Entity & dereference () const ;
+
+    //! ask for level of entities
+    int level () const;
+
+  private:
+    const GridImp & grid_;
+
+    // element index, -1 for end
+    int index_;
+
+    // actual level
+    int level_;
+
+    // the original iterator of the BSGrid
+    typedef typename BSSPACE BSLeafIterator<codim>::IteratorType IteratorType;
+    mutable typename BSSPACE BSLeafIterator<codim>::IteratorType *iter_;
+
+    // holds the entity, copy pointer and delete if no refcount is left
+    AutoPointer< EntityImp > objEntity_;
+
+    const PartitionIteratorType pitype_;
+  };
 
 
   //**********************************************************************
@@ -739,29 +887,40 @@ namespace Dune
    * \todo Please doc me!
    */
   template <int dim, int dimworld>
-  class BSGrid : public GridDefault  < dim, dimworld,
-                     bs_ctype,BSGrid,
-                     BSGridLevelIterator,BSGridEntity>
+  class BSGrid : public GridDefault  < dim, dimworld, bs_ctype,BSGrid<dim,dimworld> >
   {
-    CompileTimeChecker<dim      == 3>   BSGrid_only_implemented_for_3dp;
-    CompileTimeChecker<dimworld == 3>   BSGrid_only_implemented_for_3dw;
+    //CompileTimeChecker<dim      == 3>   BSGrid_only_implemented_for_3dp;
+    //CompileTimeChecker<dimworld == 3>   BSGrid_only_implemented_for_3dw;
+    //CompileTimeChecker< (eltype == BSSPACE tetra_t) || (eltype == BSSPACE hexa_t ) > BSGrid_only_implemented_for_tetra_or_hexa;
 
-    friend class BSGridEntity <0,dim,dimworld>;
-    friend class BSGridIntersectionIterator<dim,dimworld>;
+    typedef BSGrid<dim,dimworld> MyType;
+    friend class BSGridEntity <0,dim,MyType>;
+    friend class BSGridEntity <0,dim,const MyType>;
+    friend class BSGridIntersectionIterator<MyType>;
+
 
     //**********************************************************
     // The Interface Methods
     //**********************************************************
   public:
-    class BSGridLeafIterator;
+    enum { myElementType = tetra };
+    typedef GridTraits<dim,dimworld, MyType ,
+        BSGridGeometry,BSGridEntity,
+        BSGridBoundaryEntity,BSGridLevelIterator,
+        BSGridIntersectionIterator,BSGridHierarchicIterator,
+        BSGridLeafIterator>  Traits;
 
-    typedef BSGridReferenceElement<dim> ReferenceElement;
-    typedef BSGridLeafIterator LeafIterator;
 
-    typedef BSSPACE ObjectStream ObjectStreamType;
+    typedef BSGridLeafIterator<MyType>       LeafIteratorImp;
+    typedef BSGridHierarchicIterator<MyType> HierarchicIteratorImp;
 
-    typedef typename std::pair < ObjectStreamType * , BSGridEntity<0,dim,dimworld> * >
-    DataCollectorParamType;
+    typedef typename Traits::LeafIterator LeafIteratorType;
+    //typedef BSGridReferenceGeometry<dim> ReferenceGeometry;
+
+    //typedef BSSPACE ObjectStream ObjectStreamType;
+
+    //typedef typename std::pair < ObjectStreamType * , BSGridEntity<0,dim,dimworld> * >
+    //              DataCollectorParamType;
 
     /** \todo Please doc me! */
 
@@ -790,34 +949,40 @@ namespace Dune
     int maxlevel() const;
 
     //! Iterator to first entity of given codim on level
-    template<int codim, PartitionIteratorType pitype>
-    BSGridLevelIterator<codim,dim,dimworld,pitype> lbegin (int level);
+    template<int cd, PartitionIteratorType pitype>
+    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator
+    lbegin (int level) const;
 
     //! one past the end on this level
-    template<int codim, PartitionIteratorType pitype>
-    BSGridLevelIterator<codim,dim,dimworld,pitype> lend (int level);
+    template<int cd, PartitionIteratorType pitype>
+    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator
+    lend (int level) const;
 
     //! Iterator to first entity of given codim on level
-    template<int codim>
-    BSGridLevelIterator<codim,dim,dimworld,All_Partition> lbegin (int level);
+    template<int cd>
+    typename Traits::template codim<cd>::
+    template partition<All_Partition>::LevelIterator
+    lbegin (int level) const;
 
     //! one past the end on this level
-    template<int codim>
-    BSGridLevelIterator<codim,dim,dimworld,All_Partition> lend (int level);
+    template<int cd>
+    typename Traits::template codim<cd>::
+    template partition<All_Partition>::LevelIterator
+    lend (int level) const;
 
     //! Iterator to first entity of given codim on leaf level
-    LeafIterator leafbegin (int level,
-                            PartitionIteratorType pitype=InteriorBorder_Partition );
+    LeafIteratorType leafbegin (int level,
+                                PartitionIteratorType pitype=InteriorBorder_Partition ) const;
 
     //! one past the end on this leaf level
-    LeafIterator leafend (int level,
-                          PartitionIteratorType pitype=InteriorBorder_Partition );
+    LeafIteratorType leafend (int level,
+                              PartitionIteratorType pitype=InteriorBorder_Partition ) const;
 
     //! number of grid entities per level and codim
-    int size (int level, int codim) const;
+    int size (int level, int cd) const;
 
     //! number of grid entities on all levels for given codim
-    int global_size (int codim) const ;
+    int global_size (int cd) const ;
 
     //! calculate load of each proc and repartition if neccessary
     bool loadBalance ();
@@ -845,7 +1010,7 @@ namespace Dune
     // End of Interface Methods
     //**********************************************************
     //! uses the interface, mark on entity and refineLocal
-    bool globalRefine(int refCount);
+    bool globalRefine(int refCount) const;
 
     /** \brief write Grid to file in specified FileFormatType
      */
@@ -856,10 +1021,6 @@ namespace Dune
      */
     template <FileFormatType ftype>
     bool readGrid( const char * filename, bs_ctype & time );
-
-    //! return current time of grid
-    //! not an interface method yet
-    bs_ctype getTime () const { return time_; };
 
     //! return pointer to org BSGrid
     //! private method, but otherwise we have to friend class all possible
@@ -877,6 +1038,27 @@ namespace Dune
     //! no interface method, but has to be public
     void updateStatus ();
 
+    bool mark( int refCount , typename Traits::template codim<0>::EntityPointer & ep )
+    {
+      return this->mark(*ep);
+    }
+    bool mark( int refCount , const typename Traits::template codim<0>::Entity & en ) const;
+
+    template <int cd>
+    BSGridEntity<cd,dim,const BSGrid<dim,dimworld> >&
+    getRealEntity(typename Traits::template codim<cd>::Entity& entity)
+    {
+      return entity.realEntity;
+    }
+
+  private:
+    template <int cd>
+    const BSGridEntity<cd,dim,const BSGrid<dim,dimworld> >&
+    getRealEntity(const typename Traits::template codim<cd>::Entity& entity) const
+    {
+      return entity.realEntity;
+    }
+
   private:
     // calculate new level size
     int calcNewSize (int level, int codim);
@@ -891,7 +1073,7 @@ namespace Dune
     void recalcGlobalSize();
 
     // set _coarsenMark to true
-    void setCoarsenMark();
+    void setCoarsenMark() const;
 
     BSSPACE BSGitterType * mygrid_;
 #ifdef _BSGRID_PARALLEL_
@@ -908,59 +1090,9 @@ namespace Dune
     int maxlevel_;
 
     // true if at least one element is marked for coarsening
-    bool coarsenMark_;
+    mutable bool coarsenMark_;
 
     const int myRank_;
-
-    double time_; // time of grid
-  public:
-    //template<int codim, int dim, int dimworld,PartitionIteratorType pitype>
-    class BSGridLeafIterator
-    {
-      friend class BSGridEntity<0,dim,dimworld>;
-      friend class BSGrid < dim , dimworld >;
-    public:
-      enum { codim = 0 };
-
-      typedef BSGridLeafIterator BSGridLeafIteratorType;
-
-      //! Constructor
-      BSGridLeafIterator(BSGrid<dim,dimworld> &grid, int level , bool end,
-                         PartitionIteratorType pitype );
-
-      //! prefix increment
-      BSGridLeafIteratorType& operator ++();
-
-      //! equality
-      bool operator== (const BSGridLeafIteratorType& i) const;
-
-      //! inequality
-      bool operator!= (const BSGridLeafIteratorType& i) const;
-
-      //! dereferencing
-      BSGridEntity<0,dim,dimworld>& operator*();
-
-      //! arrow
-      BSGridEntity<0,dim,dimworld>* operator->();
-    private:
-      //! ask for level of entities
-      int level () const;
-
-      // element index, -1 for end
-      int index_;
-
-      // actual level
-      int level_;
-
-      // the original iterator of the BSGrid
-      typename BSSPACE BSLeafIterator<codim>::IteratorType iter_;
-
-      // holds the entity, copy pointer and delete if no refcount is left
-      AutoPointer< BSGridEntity<codim,dim,dimworld> > objEntity_;
-
-      const PartitionIteratorType pitype_;
-    };
-
 
   }; // end Class BSGridGrid
 
