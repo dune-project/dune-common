@@ -642,7 +642,6 @@ namespace Dune {
           FastBaseFunctionSet < LagrangeDiscreteFunctionSpace
               < FunctionSpaceType , GridType, polOrd   > > >
   {
-
     typedef DiscreteFunctionSpaceInterface <
         FunctionSpaceType , GridType,
         LagrangeDiscreteFunctionSpace < FunctionSpaceType , GridType, polOrd >,
@@ -696,6 +695,13 @@ namespace Dune {
       ElementType type =  en.geometry().type();
       return (*baseFuncSet_.get( type ));
     };
+
+    //! return true if we have continuous discrete functions
+    bool continuous ( ) const
+    {
+      bool ret = (polOrd == 0) ? false : true;
+      return ret;
+    }
 
     //! get maximal global polynom order
     int polynomOrder ( ) const
