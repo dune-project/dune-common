@@ -4,7 +4,6 @@
 #define __DUNE_AMIRAMESHWRITER_HH__
 
 #include <string>
-//#include "../../common/array.hh"
 
 namespace Dune {
 
@@ -24,16 +23,20 @@ namespace Dune {
 
   public:
 
-    /** \brief The method that does the writing.
+    /** \brief Writes a grid in AmiraMesh format
      *
      * @param grid The grid objects that is to be written
-     * @param sol  Data that should be written along with the grid
      * @param filename The filename
      */
     static void writeGrid(const GRID& grid,
                           const std::string& filename);
 
-    static void writeFunction(const DiscFuncType& sol,
+    /** \brief Writes a discrete function in AmiraMesh format
+     *
+     * @param f Function that should be written
+     * @param filename The filename
+     */
+    static void writeFunction(const DiscFuncType& f,
                               const std::string& filename);
 
     AmiraMeshWriter() {}
