@@ -8,6 +8,60 @@
 // which is the only valid instantiation
 template class Dune::OneDGrid<1,1>;
 
+// Explicitly instantiate the necessary member templates contained in OneDGrid<1,1>
+template Dune::OneDGridLevelIterator<0,1,1,Dune::All_Partition> Dune::OneDGrid<1,1>::lbegin<0>(int level) const;
+template Dune::OneDGridLevelIterator<1,1,1,Dune::All_Partition> Dune::OneDGrid<1,1>::lbegin<1>(int level) const;
+
+template Dune::OneDGridLevelIterator<0,1,1,Dune::All_Partition> Dune::OneDGrid<1,1>::lend<0>(int level) const;
+template Dune::OneDGridLevelIterator<1,1,1,Dune::All_Partition> Dune::OneDGrid<1,1>::lend<1>(int level) const;
+
+
+// ///////////////////////////////////////////////////////////////
+//
+//    OneDGridHelper, a class used to simulate
+//    specialization of member templates
+//
+// ///////////////////////////////////////////////////////////////
+namespace Dune {
+
+  template <int codim>
+  struct OneDGridHelper {};
+
+  template <>
+  struct OneDGridHelper<1>
+  {
+    static Dune::OneDGridLevelIterator<1,1,1, Dune::All_Partition> lbegin(const Dune::OneDGrid<1,1> * g, int level);
+  };
+
+  template <>
+  struct OneDGridHelper<0>
+  {
+    static Dune::OneDGridLevelIterator<0,1,1, Dune::All_Partition> lbegin(const Dune::OneDGrid<1,1> * g, int level);
+  };
+
+}
+
+inline Dune::OneDGridLevelIterator<1,1,1,Dune::All_Partition>
+Dune::OneDGridHelper<1>::lbegin (const OneDGrid<1,1> * g, int level)
+{
+  if (level<0 || level>g->maxlevel())
+    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
+
+  OneDGridLevelIterator<1,1,1,All_Partition> it(g->vertices[level].begin);
+  return it;
+}
+
+inline Dune::OneDGridLevelIterator<0,1,1,Dune::All_Partition>
+Dune::OneDGridHelper<0>::lbegin (const OneDGrid<1,1> * g, int level)
+{
+  if (level<0 || level>g->maxlevel())
+    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
+
+  OneDGridLevelIterator<0,1,1,All_Partition> it(g->elements[level].begin);
+  return it;
+}
+
+
 template <int dim, int dimworld>
 Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, double rightBoundary)
 {
@@ -110,23 +164,23 @@ Dune::OneDGrid<dim,dimworld>::~OneDGrid()
 
 }
 
-inline Dune::OneDGridLevelIterator<1,1,1,Dune::All_Partition>
-Dune::OneDGridHelper<1>::lbegin (const OneDGrid<1,1> * g, int level)
+template <int dim, int dimworld>
+template <int codim>
+Dune::OneDGridLevelIterator<codim,dim,dimworld,Dune::All_Partition>
+Dune::OneDGrid<dim,dimworld>::lbegin(int level) const
 {
-  if (level<0 || level>g->maxlevel())
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  OneDGridLevelIterator<1,1,1,All_Partition> it(g->vertices[level].begin);
-  return it;
+  return OneDGridHelper<codim>::lbegin(this, level);
 }
 
-inline Dune::OneDGridLevelIterator<0,1,1,Dune::All_Partition>
-Dune::OneDGridHelper<0>::lbegin (const OneDGrid<1,1> * g, int level)
+template <int dim, int dimworld>
+template <int codim>
+Dune::OneDGridLevelIterator<codim,dim,dimworld,Dune::All_Partition>
+Dune::OneDGrid<dim,dimworld>::lend(int level) const
 {
-  if (level<0 || level>g->maxlevel())
+  if (level<0 || level>maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<0,1,1,All_Partition> it(g->elements[level].begin);
+  OneDGridLevelIterator<codim,dim,dimworld,All_Partition> it(0);
   return it;
 }
 

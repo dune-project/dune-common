@@ -29,7 +29,6 @@ namespace Dune
   template<int codim, int dim, int dimworld, PartitionIteratorType pitype> class OneDGridLevelIterator;
 
   template<int dim, int dimworld>            class OneDGridElement;
-  // template<int dim, int dimworld>            class UGGridBoundaryEntity;
   template<int dim, int dimworld>            class OneDGridHierarchicIterator;
   template<int dim, int dimworld>            class OneDGridIntersectionIterator;
   template<int dim, int dimworld>            class OneDGrid;
@@ -166,21 +165,6 @@ namespace Dune {
   //
   //**********************************************************************
 
-  template <int codim>
-  struct OneDGridHelper {};
-
-  template <>
-  struct OneDGridHelper<1>
-  {
-    static OneDGridLevelIterator<1,1,1, All_Partition> lbegin(const OneDGrid<1,1> * g, int level);
-  };
-
-  template <>
-  struct OneDGridHelper<0>
-  {
-    static OneDGridLevelIterator<0,1,1, All_Partition> lbegin(const OneDGrid<1,1> * g, int level);
-  };
-
   /** \brief The 1D-Grid class
    * \ingroup OneDGrid
    *
@@ -236,21 +220,11 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lbegin (int level) const
-    {
-      return OneDGridHelper<codim>::lbegin(this, level);
-    }
+    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lbegin (int level) const;
 
     //! one past the end on this level
     template<int codim>
-    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lend (int level) const
-    {
-      if (level<0 || level>maxlevel())
-        DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-      OneDGridLevelIterator<codim,dim,dimworld,All_Partition> it(0);
-      return it;
-    }
+    OneDGridLevelIterator<codim,dim,dimworld, All_Partition> lend (int level) const;
 
 #if 0
     //! Iterator to first entity of given codim on level
