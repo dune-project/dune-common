@@ -540,45 +540,16 @@ namespace Dune
   template <>
   inline albertCtype AlbertGridElement<2,2>::elDeterminant ()
   {
-    enum { dim = 2 };
-    enum { dimworld = 2 };
-    REAL e1[dimworld], e2[dimworld], det;
-    Vec<dimworld,albertCtype> & coord2 = coord_(2);
-
-    for (int i=0; i<dimworld; i++)
-    {
-      e1[i] = coord_(i,0) - coord2(i);
-      e2[i] = coord_(i,1) - coord2(i);
-    }
-    det = e1[0] * e2[1] - e1[1] * e2[0];
-
-    // check wether it has to be ABS or not
-    return ABS(det);
+    calcElMatrix();
+    return ABS ( elMat_.determinant () );
   }
 
   // volume of one Element, here therahedron
   template <>
   inline albertCtype AlbertGridElement<3,3>::elDeterminant ()
   {
-    enum { dim = 3 };
-    enum { dimworld = 3 };
-
-    REAL e1[dimworld], e2[dimworld], e3[dimworld];
-    Vec<dimworld,albertCtype> & coord0 = coord_(0);
-    REAL det;
-
-    for (int i=0; i<dimworld; i++)
-    {
-      e1[i] = coord_(i,1) - coord0(i);
-      e2[i] = coord_(i,2) - coord0(i);
-      e3[i] = coord_(i,3) - coord0(i);
-    }
-
-    det =   e1[0] * (e2[1]*e3[2] - e2[2]*e3[1])
-          - e1[1] * (e2[0]*e3[2] - e2[2]*e3[0])
-          + e1[2] * (e2[0]*e3[1] - e2[1]*e3[0]);
-
-    return ABS(det);
+    calcElMatrix();
+    return ABS ( elMat_.determinant () );
   }
 
   template< int dim, int dimworld>
@@ -633,23 +604,154 @@ namespace Dune
   inline void AlbertGridElement<dim,dimworld>::
   buildJacobianInverse(const Vec<dim,albertCtype>& local)
   {
-    ALBERT REAL lambda[dim+1][dimworld];
-
-    // is faster than the lower method
-    elDet_ = ALBERT el_grd_lambda(elInfo_,lambda);
-
-    // Achtung bei Jinv muessen die i,j vertauscht sein,
-    // so ist es richtig
-    for(int i=0; i<dim; i++)
-    {
-      for(int j=0; j<dimworld; j++)
-        Jinv_(j,i) = lambda[i+div2][j];
-    }
-
-    builtinverse_ = true;
+    std::cout << "AlbertGridElement::buildJacobianInverse: no default implementation! \n"
+    abort();
   }
 
-  // tested
+  template <int dim, int dimworld>
+  inline void AlbertGridElement<dim,dimworld>::calcElMatrix ()
+  {
+    std::cout << "AlbertGridElement::calcElMatrix: No default implementation \n";
+    abort();
+  }
+
+  // calc A for triangles
+  inline void AlbertGridElement<2,2>::calcElMatrix ()
+  {
+    enum { dimworld = 2 };
+    Vec<dimworld,albertCtype> & coord0 = coord_(2);
+    for (int i=0; i<dimworld; i++)
+    {
+      elMat_(i,0) = coord_(i,0) - coord0(i);
+      elMat_(i,1) = coord_(i,1) - coord0(i);
+    }
+  }
+
+  // calc A for tetrahedra
+  inline void AlbertGridElement<3,3>::calcElMatrix ()
+  {
+    enum { dimworld = 3 };
+    for(int i=0 ; i<dimworld; i++)
+    {
+      elMat_(i,0) = coord_(i,3) - coord_(i,0);
+      elMat_(i,1) = coord_(i,2) - coord_(i,3);
+      elMat_(i,2) = coord_(i,1) - coord_(i,2);
+    }
+  }
+
+  //************************************************************************
+  //  checkMapping and checkInverseMapping are for checks of Jinv_
+  //************************************************************************
+  template <int dim, int dimworld>
+  inline bool AlbertGridElement<dim,dimworld>::checkInverseMapping (int loc)
+  {
+    std::cout << "AlbertGridElement::checkInverseMapping: no default implemantation! \n";
+    abort();
+    return false;
+  }
+
+  inline bool AlbertGridElement<2,2>::checkInverseMapping (int loc)
+  {
+    // checks if F^-1 (x_i) == xref_i
+    enum { dim =2 };
+
+    Vec<dim> & coord    = coord_(loc);
+    Vec<dim> & refcoord = refelem()[loc];
+    buildJacobianInverse(refcoord);
+
+    Vec<dim> tmp2 = coord - coord_(2);
+    tmp2 = Jinv_ * tmp2;
+
+    for(int j=0; j<dim; j++)
+      if(tmp2(j) != refcoord(j))
+      {
+        std::cout << "AlbertGridElement<2,2>::checkInverseMapping: Mapping of coord " << loc << " incorrect! \n";
+        return false;
+      }
+    return true;
+  }
+
+  inline bool AlbertGridElement<3,3>::checkInverseMapping (int loc)
+  {
+    // checks if F^-1 (x_i) == xref_i
+    enum { dim =3 };
+
+    Vec<dim> & coord    = coord_(loc);
+    Vec<dim> & refcoord = refelem()[loc];
+    buildJacobianInverse(refcoord);
+
+    Vec<dim> tmp2 = coord - coord_(0);
+    tmp2 = Jinv_ * tmp2;
+
+    for(int j=0; j<dim; j++)
+      if(tmp2(j) != refcoord(j))
+      {
+        std::cout << "AlbertGridElement<3,3>::checkInverseMapping: Mapping of coord " << loc << " incorrect! \n";
+        return false;
+      }
+    return true;
+  }
+
+
+  template <int dim, int dimworld>
+  inline bool AlbertGridElement<dim,dimworld>::checkMapping (int loc)
+  {
+    std::cout << "AlbertGridElement::checkMapping: no default implemantation! \n";
+    abort();
+    return false;
+  }
+
+  inline bool AlbertGridElement<2,2>::checkMapping (int loc)
+  {
+    // checks the mapping
+    // F = Ax + P_2
+    enum { dim =2 };
+
+    calcElMatrix ();
+
+    Vec<dim> & coord    = coord_(loc);
+    Vec<dim> & refcoord = refelem()[loc];
+
+    Vec<dim> tmp2 =  elMat_ * refcoord;
+    tmp2 += coord_(2);
+
+    for(int j=0; j<dim; j++)
+      if(tmp2(j) != coord(j))
+      {
+        std::cout << "AlbertGridElement<2,2>::checkMapping: Mapping of coord " << loc << " incorrect! \n";
+        return false;
+      }
+    return true;
+  }
+
+  inline bool AlbertGridElement<3,3>::checkMapping (int loc)
+  {
+    // checks the mapping
+    // F = Ax + P_0
+
+    enum { dim = 3 };
+
+    calcElMatrix ();
+
+    Vec<dim> & coord    = coord_(loc);
+    Vec<dim> & refcoord = refelem()[loc];
+
+    Vec<dim> tmp2 =  elMat_ * refcoord;
+    tmp2 += coord_(0);
+
+    for(int j=0; j<dim; j++)
+    {
+      if(tmp2(j) != coord(j))
+      {
+        coord.print(std::cout,1); refcoord.print(std::cout,1);
+        tmp2.print(std::cout,1); std::cout << "\n";
+        std::cout << "AlbertGridElement<3,3>::checkMapping: Mapping of coord " << loc << " incorrect! \n";
+        return false;
+      }
+    }
+    return true;
+  }
+
   inline void AlbertGridElement<2,2>::
   buildJacobianInverse(const Vec<2,albertCtype>& local)
   {
@@ -662,76 +764,21 @@ namespace Dune
     //
     //  F(x) = A * x + P_2    with   A := ( P_0 , P_1 )
     //
-    //  A consist of the column vectors P_0 and P_1
+    //  A consist of the column vectors P_0 and P_1 and
+    //  is calculated by the method calcElMatrix
     //
     //******************************************************
 
-    enum { dimworld = 2 };
-    enum { dim = 2 };
+    // calc A and stores it in elMat_
+    calcElMatrix();
+    // Jinv = A^-1
+    elDet_ = ABS( elMat_.invert(Jinv_) );
 
-    REAL e1[dimworld], e2[dimworld], det, adet;
-    Vec<dimworld,albertCtype> & coord0 = coord_(2);
-
-    for (int i=0; i<dimworld; i++)
-    {
-      e1[i] = coord_(i,0) - coord0(i);
-      e2[i] = coord_(i,1) - coord0(i);
-    }
-
-    det = e1[0] * e2[1] - e1[1] * e2[0];
-    adet = ABS(det);
-    if (adet < 1.0E-25)
-    {
-      std::cout << "abs(det) = " << adet << "\n";
-      Jinv_ = 0.0;
-    }
-    else
-    {
-      det = 1.0 / det;
-      Jinv_(0,0) =  e2[1] * det;     /* (a_ij) = A^{-T} */
-      Jinv_(1,0) = -e2[0] * det;
-      Jinv_(0,1) = -e1[1] * det;
-      Jinv_(1,1) =  e1[0] * det;
-    }
-
-    // the test suite
-#if 0
-    for(int i=0; i<dim; i++)
-    {
-      Jinv_(i).print(std::cout, 1);
-      std::cout << "\n";
-    }
-
-    ALBERT REAL lambda[dim+1][dimworld];
-
-    // is faster than the lower method
-    ALBERT el_grd_lambda(elInfo_,lambda);
-
-    for(int i=0; i<dim; i++)
-    {
-      printf("lambda %d %f %f \n",i,lambda[i][0],lambda[i][1]);
-    }
-
-    for(int i=0; i<dim; i++)
-    {
-      for(int j=0; j<dimworld; j++)
-        Jinv_(j,i) = lambda[i][j];
-    }
-    for(int i=0; i<dim; i++)
-    {
-      Jinv_(i).print(std::cout, 1);
-      std::cout << "\n";
-    }
-
-    std::cout << "***********************\n";
-#endif
-
-    elDet_ = adet;
+    assert(elDet_ > 1.0E-25);
     builtinverse_ = true;
     return;
   }
 
-  //tested
   inline void AlbertGridElement<3,3>::
   buildJacobianInverse(const Vec<3,albertCtype>& local)
   {
@@ -750,74 +797,9 @@ namespace Dune
     //
     //***********************************************************
 
-    REAL e1[dimworld], e2[dimworld], e3[dimworld];
-    Vec<dimworld,albertCtype> & coord0 = coord_(0);
-    REAL det, adet;
-
-    for (int i=0; i<dimworld; i++)
-    {
-      e1[i] = coord_(i,1) - coord0(i);
-      e2[i] = coord_(i,2) - coord0(i);
-      e3[i] = coord_(i,3) - coord0(i);
-    }
-
-    det =   e1[0] * (e2[1]*e3[2] - e2[2]*e3[1])
-          - e1[1] * (e2[0]*e3[2] - e2[2]*e3[0])
-          + e1[2] * (e2[0]*e3[1] - e2[1]*e3[0]);
-
-    adet = ABS(det);
-    if (adet < 1.0E-25)
-    {
-      std::cout << "abs(det) = " << adet << "\n";
-      Jinv_ = 0.0;
-    }
-    else
-    {
-      det = 1.0 / det;
-      Jinv_(0,0) = (e2[1]*e3[2] - e2[2]*e3[1]) * det;  /* (a_ij) = A^{-T} */
-      Jinv_(1,0) = (e2[2]*e3[0] - e2[0]*e3[2]) * det;
-      Jinv_(2,0) = (e2[0]*e3[1] - e2[1]*e3[0]) * det;
-      Jinv_(0,1) = (e1[2]*e3[1] - e1[1]*e3[2]) * det;
-      Jinv_(1,1) = (e1[0]*e3[2] - e1[2]*e3[0]) * det;
-      Jinv_(2,1) = (e1[1]*e3[0] - e1[0]*e3[1]) * det;
-      Jinv_(0,2) = (e1[1]*e2[2] - e1[2]*e2[1]) * det;
-      Jinv_(1,2) = (e1[2]*e2[0] - e1[0]*e2[2]) * det;
-      Jinv_(2,2) = (e1[0]*e2[1] - e1[1]*e2[0]) * det;
-    }
-
-    // the test suite
-#if 0
-    for(int i=0; i<dim; i++)
-    {
-      Jinv_(i).print(std::cout, 1);
-      std::cout << "\n";
-    }
-
-    ALBERT REAL lambda[dim+1][dimworld];
-
-    // is faster than the lower method
-    ALBERT el_grd_lambda(elInfo_,lambda);
-
-    for(int i=1; i<dim+1; i++)
-    {
-      printf("lambda %d %f %f %f \n",i,lambda[i][0],lambda[i][1],lambda[i][2]);
-    }
-
-    for(int i=0; i<dim; i++)
-    {
-      for(int j=0; j<dimworld; j++)
-        Jinv_(j,i) = lambda[i+1][j];
-    }
-    for(int i=0; i<dim; i++)
-    {
-      Jinv_(i).print(std::cout, 1);
-      std::cout << "\n";
-    }
-
-    std::cout << "***********************\n";
-#endif
-
-    elDet_ = adet;
+    calcElMatrix();
+    elDet_ = ABS ( elMat_.invert(Jinv_) );
+    assert(elDet_ > 1.0E-25);
     builtinverse_ = true;
     return;
   }
@@ -2489,8 +2471,8 @@ namespace Dune
   template < int dim, int dimworld >
   inline AlbertGrid < dim, dimworld >::~AlbertGrid()
   {
-    ALBERT free_mesh(mesh_);
     if(vertexMarker_) delete vertexMarker_;
+    ALBERT free_mesh(mesh_);
   };
 
   template < int dim, int dimworld > template<int codim>

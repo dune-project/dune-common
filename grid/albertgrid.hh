@@ -7,8 +7,6 @@
 #include <vector>
 #include <assert.h>
 
-// if defined, then used Albert Index
-//#define REALINDEX
 
 #ifdef __ALBERTNAME__
 #define ALBERT Albert::
@@ -33,11 +31,13 @@ namespace Albert
   {
 #endif
 
-  //#if EL_INDEX != 1
-  //#error "EL_INDEX must be set to 1 !!! \n"
-  //#endif
+  // we need EL_INDEX to be defined 1, cause we need the elements to be
+  // numberd, see Albert Doc
+#ifndef EL_INDEX
+#define EL_INDEX 1
+#endif
 
-  // the original ALBERT Lib
+  // the original ALBERT header
 #include <albert.h>
 
   // some extra functions for handling the Albert Mesh
@@ -205,7 +205,16 @@ namespace Albert
       //! no interface method
       void print (std::ostream& ss, int indent);
 
+      //! check if A * xref_i + P_2 == x_i
+      bool checkMapping (int loc);
+
+      //! check if A^-1 * x_i - A^-1 * P_2 == xref_i
+      bool checkInverseMapping (int loc);
+
     private:
+      // calculate Matrix for Mapping from reference element to actual element
+      void calcElMatrix ();
+
       // calc the local barycentric coordinates
       template <int dimbary>
       Vec<dimbary,albertCtype>& localB (const Vec<dimworld,albertCtype>& global)
@@ -244,7 +253,7 @@ namespace Albert
       //! storage for barycentric coords
       Vec<dimbary,albertCtype> localBary_;
 
-
+      // make empty EL_INFO
       ALBERT EL_INFO * makeEmptyElInfo();
 
       ALBERT EL_INFO * elInfo_;
@@ -261,6 +270,7 @@ namespace Albert
       //! is true if Jinv_ and volume_ is calced
       bool builtinverse_;
       Mat<dim,dim,albertCtype> Jinv_; //!< storage for inverse of jacobian
+      Mat<dim,dim,albertCtype> elMat_; //!< storage for mapping matrix
       albertCtype elDet_; //!< storage of element determinant
 
     };
