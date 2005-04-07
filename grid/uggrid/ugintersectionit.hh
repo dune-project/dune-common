@@ -50,14 +50,6 @@ namespace Dune {
       setToTarget(center_, neighborCount_+1);
     }
 
-    //! equality
-    bool equals(const UGGridIntersectionIterator& i) const;
-
-    //! dereferencing
-    Entity& dereference() const {
-      return virtualEntity_;
-    }
-
     //! return true if intersection is with boundary. \todo connection with
     //! boundary information, processor/outer boundary
     bool boundary () const;
@@ -113,8 +105,6 @@ namespace Dune {
 
     //! Returns true if the iterator represents an actual intersection
     bool isValid() const;
-
-    mutable UGMakeableEntity<0,dim,GridImp> virtualEntity_;
 
     //! vector storing the outer normal
     mutable FieldVector<UGCtype, dimworld> outerNormal_;

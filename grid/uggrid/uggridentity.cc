@@ -234,7 +234,7 @@ UGGridEntity < 0, dim ,GridImp >::iend() const
 {
   UGGridIntersectionIterator<GridImp> it;
 
-  it.setToTarget(NULL, -1);
+  it.setToTarget(target_, -1);
 
   return it;
 }
@@ -256,6 +256,7 @@ UGGridEntity < 0, dim ,GridImp >::hbegin(int maxlevel) const
     // Set intersection iterator to myself
     it.virtualEntity_.setToTarget(target_, level());
 
+    /** \todo Directly put all sons onto the stack */
     it.increment();
 
   } else {

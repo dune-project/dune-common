@@ -2,7 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 template<class GridImp>
 inline UGGridIntersectionIterator<GridImp>::
-UGGridIntersectionIterator() : virtualEntity_(-1), center_(0), neighborCount_(-1)
+UGGridIntersectionIterator() : center_(0), neighborCount_(-1)
 {}
 
 template< class GridImp>
@@ -10,7 +10,7 @@ inline typename TargetType<0,GridImp::dimensionworld>::T* UGGridIntersectionIter
 target() const
 {
   if (!isValid())
-    return NULL;
+    return center_;
 
   return UG_NS<dimworld>::NbElem(center_, neighborCount_);
 }
@@ -22,7 +22,7 @@ setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb)
   //printf("entering II::setToTarget %d %d\n", (int)center, nb);
   center_ = center;
   neighborCount_ = nb;
-  virtualEntity_.setToTarget(target());
+  this->virtualEntity_.setToTarget(target());
 }
 
 template< class GridImp>
@@ -31,7 +31,7 @@ setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb, i
 {
   center_ = center;
   neighborCount_ = nb;
-  virtualEntity_.setToTarget(target(), level);
+  this->virtualEntity_.setToTarget(target(), level);
 }
 
 template< class GridImp>
@@ -43,19 +43,6 @@ isValid() const
          && neighborCount_ >=0
          && neighborCount_ < UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(center_);
 }
-
-template< class GridImp>
-inline bool UGGridIntersectionIterator<GridImp>::
-equals (const UGGridIntersectionIterator& I) const
-{
-  // Two intersection iterators are equal iff they have the same
-  // validity.  Furthermore, if they are both valid, they have
-  // to have the same center and neighborCount_
-  return (!isValid() && !I.isValid())
-         || (isValid() && I.isValid() &&
-             (center_ == I.center_ && neighborCount_ == I.neighborCount_));
-}
-
 
 template<class GridImp>
 inline bool UGGridIntersectionIterator< GridImp >::neighbor() const
