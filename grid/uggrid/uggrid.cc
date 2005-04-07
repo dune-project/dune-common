@@ -482,6 +482,7 @@ bool Dune::UGGrid < dim, dimworld >::mark(typename Traits::template codim<0>::En
 template < int dim, int dimworld >
 bool Dune::UGGrid < dim, dimworld >::adapt()
 {
+
   int rv;
   int mode;
 
@@ -536,6 +537,27 @@ bool Dune::UGGrid < dim, dimworld >::adapt()
       been refined */
   return true;
 }
+
+template <int dim, int dimworld>
+void Dune::UGGrid <dim, dimworld>::postAdapt()
+{
+
+  for (int i=0; i<=maxlevel(); i++) {
+
+    typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(i);
+    typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(i);
+
+    for (; eIt!=eEndIt; ++eIt)
+#ifdef _2
+      WriteCW(getRealEntity<0>(*eIt).target_, UG2d::NEWEL_CE, 0);
+#else
+      WriteCW(getRealEntity<0>(*eIt).target_, UG3d::NEWEL_CE, 0);
+#endif
+
+  }
+
+}
+
 
 template <int dim, int dimworld>
 void Dune::UGGrid <dim, dimworld>::adaptWithoutClosure()
@@ -866,15 +888,22 @@ void Dune::UGGrid < dim, dimworld >::createend()
     DUNE_THROW(IOError, "Call of 'UG::CreateAlgebra' failed!");
 
   /* here all temp memory since CreateMultiGrid is released */
-  // #define ReleaseTmpMem(p,k) Release(p, UG::FROM_TOP,k)
-  //     ReleaseTmpMem(multigrid_->theHeap, multigrid_->MarkKey);
-  // #undef ReleaseTmpMem
   Release(multigrid_->theHeap, UG::FROM_TOP, multigrid_->MarkKey);
   multigrid_->MarkKey = 0;
 
   // Set the local indices
   setLocalIndices();
 
+  // Clear refinement flags
+  typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(0);
+  typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(0);
+
+  for (; eIt!=eEndIt; ++eIt)
+#ifdef _2
+    WriteCW(getRealEntity<0>(*eIt).target_, UG2d::NEWEL_CE, 0);
+#else
+    WriteCW(getRealEntity<0>(*eIt).target_, UG3d::NEWEL_CE, 0);
+#endif
 }
 
 

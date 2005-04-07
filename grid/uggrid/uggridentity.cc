@@ -98,7 +98,20 @@ inline int UGGridEntity<codim, dim, GridImp>::subIndex(int i) const
 template< int dim, class GridImp>
 inline AdaptationState UGGridEntity < 0, dim ,GridImp >::state() const
 {
-  std::cerr << "UGGridEntity::state() not yet implemented!\n";
+#ifdef _2
+  if (ReadCW(target_, UG2d::NEWEL_CE))
+    return REFINED;
+
+  if (ReadCW(target_, UG2d::COARSEN_CE))
+    return COARSEN;
+#else
+  if (ReadCW(target_, UG3d::NEWEL_CE))
+    return REFINED;
+
+  if (ReadCW(target_, UG3d::COARSEN_CE))
+    return COARSEN;
+#endif
+
   return NONE;
 }
 
