@@ -602,22 +602,18 @@ namespace Dune {
      */
     SHierarchicIterator (GridImp* _grid, const SEntity<0,GridImp::dimension,GridImp>& _e, int _maxlevel, bool makeend);
 
-    const SHierarchicIterator<GridImp>&
-    operator = (const SHierarchicIterator<GridImp>& i)
-    {
-      if (grid != i.grid)
-        DUNE_THROW(GridError, "Iterator can't change grid");
-      e = i.e;
-      maxlevel = i.maxlevel;
-      orig_l = i.orig_l;
-      orig_id = i.orig_id;
-      stack = i.stack;
-      return *this;
-    }
+    //   const SHierarchicIterator<GridImp>&
+    //   operator = (const SHierarchicIterator<GridImp>& i)
+    //     {
+    //       static_cast<SEntityPointer<0,GridImp>&>(*this) = i;
+    //       maxlevel = i.maxlevel;
+    //       orig_l = i.orig_l;
+    //       orig_id = i.orig_id;
+    //       stack = i.stack;
+    //       return *this;
+    //     }
 
   private:
-    GridImp* const grid; //!< my grid
-    mutable SMakeableEntity<0,dim,GridImp> e;            //!< virtual son entity
     int maxlevel;              //!< maximum level of elements to be processed
     int orig_l, orig_id;       //!< element where begin was called (the root of the tree to be processed)
 

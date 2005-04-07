@@ -568,21 +568,23 @@ namespace Dune {
     if (level+1>maxlevel) return;     // nothing to do
 
     // compute reduced coordinates of element
-    FixedArray<int,dim> z = grid->z(level,fatherid,0);      // expanded coordinates from id
-    FixedArray<int,dim> zred = grid->compress(level,z);     // reduced coordinates from expaned coordinates
+    FixedArray<int,dim> z =
+      this->grid->z(level,fatherid,0);      // expanded coordinates from id
+    FixedArray<int,dim> zred =
+      this->grid->compress(level,z);     // reduced coordinates from expaned coordinates
 
     // refine to first son
     for (int i=0; i<dim; i++) zred[i] = 2*zred[i];
 
     // generate all \f$2^{dim}\f$ sons
-    int partition = grid->partition(level,z);
+    int partition = this->grid->partition(level,z);
     for (int b=0; b<(1<<dim); b++)
     {
       FixedArray<int,dim> zz = zred;
       for (int i=0; i<dim; i++)
         if (b&(1<<i)) zz[i] += 1;
       // zz is reduced coordinate of a son on level level+1
-      int sonid = grid->n(level+1,grid->expand(level+1,zz,partition));
+      int sonid = this->grid->n(level+1,this->grid->expand(level+1,zz,partition));
 
       // push son on stack
       SHierarchicStackElem son(level+1,sonid);
@@ -595,25 +597,25 @@ namespace Dune {
   inline SHierarchicIterator<GridImp>::SHierarchicIterator (GridImp* _grid,
                                                             const SEntity<0,GridImp::dimension,GridImp>& _e,
                                                             int _maxlevel, bool makeend) :
-    Dune::SEntityPointer<0,GridImp>(_grid,_e.level(),_e.index()),
-    grid(_grid),e(_e)
+    Dune::SEntityPointer<0,GridImp>(_grid,_e.level(),_e.index())
   {
-    // without sons, we are done (i.e. this is te end iterator, having original element in it)
+    // without sons, we are done
+    // (the end iterator is equal to the calling iterator)
     if (makeend) return;
 
     // remember element where begin has been called
-    orig_l = e.level();
-    orig_id = e.index();
+    orig_l = this->e.level();
+    orig_id = this->e.index();
 
     // push original element on stack
     SHierarchicStackElem originalElement(orig_l, orig_id);
     stack.push(originalElement);
 
     // compute maxlevel
-    maxlevel = std::min(_maxlevel,grid->maxlevel());
+    maxlevel = std::min(_maxlevel,this->grid->maxlevel());
 
     // ok, push all the sons as well
-    push_sons(e.level(),e.index());
+    push_sons(this->e.level(),this->e.index());
 
     // and pop the first son
     increment();
@@ -627,7 +629,9 @@ namespace Dune {
 
     // OK, lets pop
     SHierarchicStackElem newe = stack.pop();
-    e.make(newe.l,newe.id);     // here is our new element
+    this->l = newe.l;
+    this->id = newe.id;
+    this->e.make(this->l,this->id);     // here is our new element
 
     // push all sons of this element if it is not the original element
     if (newe.l!=orig_l || newe.id!=orig_id)
