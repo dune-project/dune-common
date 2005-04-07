@@ -147,10 +147,11 @@ namespace Dune
         // level 0 is leaf
         static_cast<EntityPointerImp&>(*this) = lit.realIterator;
       }
+      return;
     }
 
     GenericLeafIterator(const GenericLeafIterator & rhs) :
-      EntityPointerImp(rhs.hit.realIterator),
+      EntityPointerImp(rhs),
       grid(rhs.grid), maxlevel(rhs.maxlevel),
       lit(rhs.lit), lend(rhs.lend),
       hit(rhs.hit), hend(rhs.hend)
