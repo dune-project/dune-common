@@ -1,0 +1,49 @@
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set et ts=4 sw=2 sts=2:
+#ifndef DUNE_UGGRID_ENTITY_POINTER_HH
+#define DUNE_UGGRID_ENTITY_POINTER_HH
+
+
+namespace Dune {
+
+  /*! Acts as a pointer to an  entities of a given codimension.
+   */
+  template<int codim, class GridImp>
+  class UGGridEntityPointer :
+    public EntityPointerDefault <codim, GridImp,
+        Dune::UGGridEntityPointer<codim,GridImp> >
+  {
+    enum { dim = GridImp::dimension };
+  public:
+    typedef typename GridImp::template codim<codim>::Entity Entity;
+
+    //! constructor
+    UGGridEntityPointer () : virtualEntity_(-1) {
+      virtualEntity_.setToTarget(0);
+    }
+
+    //! equality
+    bool equals(const UGGridEntityPointer<codim,GridImp>& i) const {
+      return virtualEntity_.getTarget() == i.virtualEntity_.getTarget();
+    }
+
+    //! dereferencing
+    Entity& dereference() const {
+      return virtualEntity_;
+    }
+
+    //! ask for level of entity
+    int level () const {return level_;}
+
+  protected:
+
+    int level_;                       //!< level where element is on
+
+    mutable UGMakeableEntity<codim,dim,GridImp> virtualEntity_; //!< virtual entity
+
+  };
+
+
+} // end namespace Dune
+
+#endif

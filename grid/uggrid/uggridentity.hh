@@ -30,6 +30,10 @@ namespace Dune {
       this->realEntity.setToTarget(target, level);
     }
 
+    typename TargetType<codim,dim>::T* getTarget() {
+      return this->realEntity.target_;
+    }
+
   };
 
   //**********************************************************************
@@ -288,7 +292,7 @@ namespace Dune {
     /** \todo Please doc me! */
     AdaptationState state() const;
 
-  private:
+    //private:
 
     void setToTarget(typename TargetType<0,dim>::T* target, int level);
 

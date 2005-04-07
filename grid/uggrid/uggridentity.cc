@@ -255,6 +255,9 @@ UGGridEntity < 0, dim ,GridImp >::hbegin(int maxlevel) const
 
     // Set intersection iterator to myself
     it.virtualEntity_.setToTarget(target_, level());
+
+    it.increment();
+
   } else {
     it.virtualEntity_.setToTarget(0);
   }

@@ -22,6 +22,7 @@ namespace Dune {
    */
   template<int codim, PartitionIteratorType pitype, class GridImp>
   class UGGridLevelIterator :
+    public Dune::UGGridEntityPointer <codim,GridImp>,
     public LevelIteratorDefault <codim,pitype,GridImp,UGGridLevelIterator>
   {
     friend class UGGridEntity<codim,GridImp::dimension,GridImp>;
@@ -35,18 +36,20 @@ namespace Dune {
     typedef typename GridImp::template codim<codim>::Entity Entity;
 
     //! Constructor
-    explicit UGGridLevelIterator(int travLevel) : virtualEntity_(0),
-                                                  level_(travLevel),
-                                                  target_(0)
+    explicit UGGridLevelIterator(int travLevel) /*: virtualEntity_(0),
+                                                    level_(travLevel),
+                                                    target_(0) */
     {
-      virtualEntity_.setToTarget(0);
+      this->virtualEntity_.setToTarget(0);
     }
 
     //! prefix increment
     void increment() {
-      setToTarget(UG_NS<GridImp::dimension>::succ(target_));
+      //setToTarget(UG_NS<GridImp::dimension>::succ(target_));
+      this->virtualEntity_.setToTarget(UG_NS<GridImp::dimension>::succ(this->virtualEntity_.getTarget()));
     }
 
+#if 0
     //! equality
     bool equals(const UGGridLevelIterator<codim,pitype,GridImp>& other) const {
       return target_ == other.target_;
@@ -57,20 +60,24 @@ namespace Dune {
 
     //! ask for level of entity
     int level () const {return level_;}
+#endif
 
   private:
 
+    /** \todo Move this to base class */
     void setToTarget(typename TargetType<codim,GridImp::dimension>::T* target) {
-      target_ = target;
-      virtualEntity_.setToTarget(target);
+      //target_ = target;
+      this->virtualEntity_.setToTarget(target);
     }
 
+    /** \todo Move this to base class */
     void setToTarget(typename TargetType<codim,GridImp::dimension>::T* target, int level) {
-      target_ = target;
-      level_  = level;
-      virtualEntity_.setToTarget(target, level);
+      //target_ = target;
+      //level_  = level;
+      this->virtualEntity_.setToTarget(target, level);
     }
 
+#if 0
     // private Members
     mutable UGMakeableEntity<codim,GridImp::dimension,GridImp> virtualEntity_;
 
@@ -78,7 +85,7 @@ namespace Dune {
     int level_;
 
     typename TargetType<codim,GridImp::dimension>::T* target_;
-
+#endif
   };
 
 }  // namespace Dune

@@ -9,11 +9,11 @@
 template<class GridImp>
 inline
 UGGridHierarchicIterator<GridImp>::UGGridHierarchicIterator(int maxLevel)
-  : virtualEntity_(0)
+/*  : virtualEntity_(0) */
 {
   maxlevel_ = maxLevel;
 
-  virtualEntity_.setToTarget(NULL);
+  this->virtualEntity_.setToTarget(NULL);
 }
 
 template<class GridImp>
@@ -51,12 +51,13 @@ void UGGridHierarchicIterator<GridImp>::increment()
   }
 
   if (elemStack.empty())
-    virtualEntity_.setToTarget(0);
+    this->virtualEntity_.setToTarget(0);
   else
-    virtualEntity_.setToTarget(elemStack.top().element, elemStack.top().level);
+    this->virtualEntity_.setToTarget(elemStack.top().element, elemStack.top().level);
 
 }
 
+#if 0
 template<class GridImp>
 inline bool UGGridHierarchicIterator<GridImp>::
 equals(const UGGridHierarchicIterator& I) const
@@ -73,3 +74,4 @@ dereference() const
 {
   return virtualEntity_;
 }
+#endif
