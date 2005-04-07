@@ -892,49 +892,20 @@ namespace Dune {
   ALU3dGridIntersectionIterator(const GridImp & grid,
                                 ALU3DSPACE HElementType *el, int wLevel,bool end)
     : grid_ ( grid )
-      , walkLevel_ (wLevel)
-      , entity_( (!end) ? grid_.entityProvider_.getNewObjectEntity( grid_ , wLevel ) : 0)
-      , item_(0), neigh_(0), ghost_(0)
-      , index_(0) , numberInNeigh_ (-1)
-      , theSituation_ (false) , daOtherSituation_ (false)
-      , isBoundary_ (true) // isBoundary_ == true means no neighbour
-      , isGhost_(false)
-      , needSetup_ (true), needNormal_(true)
-      , initInterGl_ (false)
-      , interSelfGlobal_ (false)
   {
     if( !end )
     {
+      walkLevel_   = wLevel;
+      entity_      = (!end) ? grid_.entityProvider_.getNewObjectEntity( grid_ , wLevel ) : 0;
+      numberInNeigh_  = -1;
+      interSelfGlobal_ = (!end) ? grid_.geometryProvider_.getNewObjectEntity( grid_ ,wLevel ) : 0;
+      bndEntity_       = (!end) ? grid_.bndProvider_.getNewObjectEntity( grid_ , walkLevel_ ) : 0;
       first(*el,wLevel);
     }
     else
     {
       done();
     }
-  }
-  // copy constructor
-  template<class GridImp>
-  inline ALU3dGridIntersectionIterator<GridImp> ::
-  ALU3dGridIntersectionIterator(const ALU3dGridIntersectionIterator<GridImp> & org)
-    : grid_ ( org.grid_ )
-      , walkLevel_ ( org.walkLevel_ )
-      , entity_( (org.entity_) ? grid_.entityProvider_.getNewObjectEntity( grid_ , walkLevel_ ) : 0)
-      , item_(org.item_), neigh_(org.neigh_), ghost_(org.ghost_)
-      , index_(org.index_) , numberInNeigh_ (org.numberInNeigh_)
-      , theSituation_ (org.theSituation_)
-      , daOtherSituation_ (org.daOtherSituation_)
-      , isBoundary_ (org.isBoundary_) // isBoundary_ == true means no neighbour
-      , isGhost_(org.isGhost_)
-      , needSetup_ (true), needNormal_(true)
-      , initInterGl_ (false)
-      , interSelfGlobal_ (false)
-  {}
-
-  template<class GridImp>
-  inline ALU3dGridIntersectionIterator<GridImp> :: ~ALU3dGridIntersectionIterator()
-  {
-    if(entity_) grid_.entityProvider_.freeObjectEntity( entity_ );
-    entity_ = 0;
   }
 
   template<class GridImp>
@@ -943,25 +914,6 @@ namespace Dune {
     needSetup_   = true;
     needNormal_  = true;
     initInterGl_ = false;
-  }
-
-  template<class GridImp>
-  inline void ALU3dGridIntersectionIterator<GridImp> :: checkGhost () const
-  {
-#ifdef _ALU3DGRID_PARALLEL_
-    isGhost_ = false;
-    ghost_   = 0;
-    if(isBoundary_)
-    {
-      ALU3DSPACE PLLBndFaceType * bnd =
-        dynamic_cast<ALU3DSPACE PLLBndFaceType *> (item_->myneighbour(index_).first);
-      if(bnd->bndtype() == ALU3DSPACE ProcessorBoundary_t)
-      {
-        isBoundary_ = false;
-        isGhost_ = true;
-      }
-    }
-#endif
   }
 
   template<class GridImp>
@@ -989,14 +941,83 @@ namespace Dune {
   template<class GridImp>
   inline void ALU3dGridIntersectionIterator<GridImp> :: done ()
   {
-    item_  = 0;
-    index_ = 4;
+    entity_    = 0;
+    interSelfGlobal_ = 0;
+    bndEntity_ = 0;
+    item_      = 0;
+    index_     = 4;
+  }
+
+  // copy constructor
+  template<class GridImp>
+  inline ALU3dGridIntersectionIterator<GridImp> ::
+  ALU3dGridIntersectionIterator(const ALU3dGridIntersectionIterator<GridImp> & org)
+    : grid_ ( org.grid_ )
+  {
+    if(org.entity_) // else its a end iterator
+    {
+      entity_         = (org.entity_) ? grid_.entityProvider_.getNewObjectEntity( grid_ , walkLevel_ ) : 0;
+      walkLevel_      = org.walkLevel_;
+      item_           = org.item_;
+      neigh_          = org.neigh_;
+      ghost_          = org.ghost_;
+      index_          = org.index_;
+      numberInNeigh_  = org.numberInNeigh_;
+      theSituation_   = org.theSituation_;
+      daOtherSituation_ = org.daOtherSituation_;
+      isBoundary_     = org.isBoundary_; // isBoundary_ == true means no neighbour
+      isGhost_        = org.isGhost_;
+      needSetup_      = true;
+      needNormal_     = true;
+      initInterGl_    = false;
+      interSelfGlobal_  = (org.interSelfGlobal_) ? grid_.geometryProvider_.getNewObjectEntity( grid_ , walkLevel_ ) : 0;
+      bndEntity_      = (org.bndEntity_) ? grid_.bndProvider_.getNewObjectEntity( grid_ , walkLevel_ ) : 0;
+    }
+    else
+    {
+      done();
+    }
+  }
+
+  template<class GridImp>
+  inline ALU3dGridIntersectionIterator<GridImp> :: ~ALU3dGridIntersectionIterator()
+  {
+    if(entity_) grid_.entityProvider_.freeObjectEntity( entity_ );
+    entity_ = 0;
+
+    if(interSelfGlobal_) grid_.geometryProvider_.freeObjectEntity( interSelfGlobal_ );
+    interSelfGlobal_ = 0;
+
+    if(bndEntity_) grid_.bndProvider_.freeObjectEntity( bndEntity_ );
+    bndEntity_ = 0;
+  }
+
+
+  template<class GridImp>
+  inline void ALU3dGridIntersectionIterator<GridImp> :: checkGhost () const
+  {
+#ifdef _ALU3DGRID_PARALLEL_
+    isGhost_ = false;
+    ghost_   = 0;
+    if(isBoundary_)
+    {
+      ALU3DSPACE PLLBndFaceType * bnd =
+        dynamic_cast<ALU3DSPACE PLLBndFaceType *> (item_->myneighbour(index_).first);
+      if(bnd->bndtype() == ALU3DSPACE ProcessorBoundary_t)
+      {
+        isBoundary_ = false;
+        isGhost_ = true;
+      }
+    }
+#else
+    isGhost_ = false;
+#endif
   }
 
   template<class GridImp>
   inline void ALU3dGridIntersectionIterator<GridImp> :: increment ()
   {
-    assert(item_ != 0);
+    assert(item_);
 
     if( neighpair_.first && theSituation_ && daOtherSituation_ )
     {
@@ -1163,7 +1184,7 @@ namespace Dune {
   }
 
   template<class GridImp>
-  inline const typename ALU3dGridIntersectionIterator<GridImp>::NormalType &
+  inline typename ALU3dGridIntersectionIterator<GridImp>::NormalType
   ALU3dGridIntersectionIterator<GridImp>::
   integrationOuterNormal(const FieldVector<alu3d_ctype, dim-1>& local) const
   {
@@ -1171,13 +1192,14 @@ namespace Dune {
   }
 
   template<class GridImp>
-  inline const typename ALU3dGridIntersectionIterator<GridImp>::NormalType &
+  inline typename ALU3dGridIntersectionIterator<GridImp>::NormalType
   ALU3dGridIntersectionIterator<GridImp>::
   outerNormal(const FieldVector<alu3d_ctype, dim-1>& local) const
   {
     assert(item_ != 0);
-    if(needNormal_)
+    assert(needNormal_);
     {
+      NormalType outNormal;
       // NOTE: &(outNormal_[0]) is a pointer to the inside vector
       // of the FieldVector class, we need this here, because
       // in ALU3dGrid we dont now the type FieldVector
@@ -1185,7 +1207,7 @@ namespace Dune {
       if( boundary() || ( !daOtherSituation_ ) )
       {
         // if boundary calc normal normal ;)
-        item_->outerNormal(index_, &(outNormal_[0]) );
+        (*item_).outerNormal(index_, &(outNormal[0]) );
       }
       else
       {
@@ -1193,29 +1215,32 @@ namespace Dune {
 
         if(neigh_)
         {
-          neigh_->neighOuterNormal(numberInNeigh_, &(outNormal_[0]));
+          (*neigh_).neighOuterNormal(numberInNeigh_, &(outNormal[0]));
         }
         else
         {
           assert(ghost_);
-          assert(ghost_->level() != item_->level());
+          assert(ghost_->level() != (*item_).level());
 
           // ghostpair_.second stores the twist of the face
-          item_->outerNormal(index_, &(outNormal_[0]));
-          outNormal_ *= 0.25;
+          (*item_).outerNormal(index_, &(outNormal[0]));
+          outNormal *= 0.25;
         }
       }
       needNormal_ = false;
+      return outNormal;
     }
-    return outNormal_;
+    assert(false);
+    NormalType tmp;
+    return tmp;
   }
 
   template<class GridImp>
-  inline const typename ALU3dGridIntersectionIterator<GridImp>::NormalType &
+  inline typename ALU3dGridIntersectionIterator<GridImp>::NormalType
   ALU3dGridIntersectionIterator<GridImp>::
   unitOuterNormal(const FieldVector<alu3d_ctype, dim-1>& local) const
   {
-    unitOuterNormal_  = this->outerNormal(local);
+    NormalType unitOuterNormal_  = this->outerNormal(local);
     unitOuterNormal_ *= (1.0/unitOuterNormal_.two_norm());
     return unitOuterNormal_;
   }
@@ -1224,20 +1249,26 @@ namespace Dune {
   inline const typename ALU3dGridIntersectionIterator<GridImp>::Geometry &
   ALU3dGridIntersectionIterator<GridImp>::intersectionGlobal () const
   {
-    if(initInterGl_) return interSelfGlobal_;
+    if(initInterGl_)
+    {
+      assert( interSelfGlobal_ );
+      return (*interSelfGlobal_);
+    }
 
     if( boundary() )
     {
-      const ALU3DSPACE GEOFaceType & face = *(item_->myhface3(index_));
-      initInterGl_ = interSelfGlobal_.buildGeom(face);
-      return interSelfGlobal_;
+      assert( interSelfGlobal_ );
+      const ALU3DSPACE GEOFaceType & face = *( (*item_).myhface3(index_));
+      initInterGl_ = (*interSelfGlobal_).buildGeom(face);
+      return (*interSelfGlobal_);
     }
 
     // in case of neighbor
     if( needSetup_ ) setNeighbor();
 
-    initInterGl_ = interSelfGlobal_.buildGeom( *(neighpair_.first) );
-    return interSelfGlobal_;
+    assert( interSelfGlobal_ );
+    initInterGl_ = (*interSelfGlobal_).buildGeom( *(neighpair_.first) );
+    return (*interSelfGlobal_);
   }
 
   template<class GridImp>
@@ -1247,10 +1278,8 @@ namespace Dune {
     assert(boundary());
     ALU3DSPACE BNDFaceType * bnd = dynamic_cast<ALU3DSPACE BNDFaceType *> (item_->myneighbour(index_).first);
     int id = bnd->bndtype(); // id's are positive
-    //if(id == 2)
-    //  std::cout << __MyRank__ << "=p: bndid = " << -id << "\n";
-    bndEntity_.setId( -id );
-    return bndEntity_;
+    (*bndEntity_).setId( -id );
+    return (*bndEntity_);
   }
 
   /************************************************************************************
