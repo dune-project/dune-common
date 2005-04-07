@@ -437,9 +437,11 @@ namespace Dune {
     //***************************************************************
     //  Interface for Adaptation
     //***************************************************************
-    /*! \brief marks an entity for refCount refines.
+    /** \brief marks an entity for refCount refines.
+     *
      * If refCount is negative the entity is coarsened -refCount times
-     * mark returns true if entity was marked, otherwise false
+     * \return true if entity was marked, false otherwise
+     *
      *  - Note:
      *    default implementation is: return false; for grids with no
      *    adaptation.
@@ -447,7 +449,7 @@ namespace Dune {
      *    this method is implemented as a template method, because the
      *    Entity type is not defined when the class is instantiated
      *
-     *    You wont need this trick in the implementation.
+     *    You won't need this trick in the implementation.
      *    In your implementation you should use it as
      *    \code
      *    bool mark( int refCount,
