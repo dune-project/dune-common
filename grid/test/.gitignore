@@ -8,3 +8,5 @@ test-oned
 test-ug
 test-yaspgrid
 semantic.cache
+*.gcda
+*.gcno
