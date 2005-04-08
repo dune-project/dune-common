@@ -132,30 +132,6 @@ namespace Dune {
   }
 
   template <int dim, int dimworld>
-  inline void ALU3dGrid<dim,dimworld>::recalcGlobalSize()
-  {
-    for(int i=0; i<dim+1; i++) globalSize_[i] = -1;
-
-
-    // hier den macIndex vom IndexSet erfragen
-    LeafIteratorType endit  = leafend   (0);
-    for(LeafIteratorType it = leafbegin (0); it != endit; ++it)
-    {
-      if((*it).globalIndex() > globalSize_[0])
-        globalSize_[0] = (*it).globalIndex();
-
-      HierarchicIteratorImp hierend = it->hend (maxlevel());
-      for(HierarchicIteratorImp hierit  = (*it).hbegin (maxlevel()) ;
-          hierit != hierend; ++hierit )
-      {
-        if((*hierit).globalIndex() > globalSize_[0])
-          globalSize_[0] = (*hierit).globalIndex();
-      }
-    }
-    globalSize_[0]++;
-  }
-
-  template <int dim, int dimworld>
   inline int ALU3dGrid<dim,dimworld>::global_size(int codim) const
   {
     assert(globalSize_[codim] >= 0);
@@ -271,7 +247,8 @@ namespace Dune {
 #endif
     if(ref)
     {
-      calcMaxlevel();             // calculate new maxlevel
+      maxlevel_++;
+      //calcMaxlevel();             // calculate new maxlevel
       calcExtras();               // reset size and things
     }
     return ref;
@@ -283,23 +260,32 @@ namespace Dune {
   inline void ALU3dGrid<dim,dimworld>::postAdapt()
   {
 #ifdef _ALU3DGRID_PARALLEL_
-    for(int l=0; l<= maxlevel(); l++)
+    if(mpAccess_.nlinks() <= 1)
+#endif
     {
-      {
-        typename ALU3DSPACE
-        ALU3dGridLevelIteratorWrapper<0> w ( *this, l ) ;
-        for (w.first () ; ! w.done () ; w.next ())
-        {
-          w.item ().resetRefinedTag();
-        }
-      }
-    }
-#else
-    {
+      maxlevel_ = 0;
       ALU3DSPACE BSLeafIteratorMaxLevel w ( myGrid() ) ;
       for (w->first () ; ! w->done () ; w->next ())
       {
+        if(w->item().level() > maxlevel_ ) maxlevel_ = w->item().level();
         w->item ().resetRefinedTag();
+      }
+    }
+#ifdef _ALU3DGRID_PARALLEL_
+    else
+    {
+      int fakeLevel = maxlevel_;
+      maxlevel_ = 0;
+      for(int l=0; l<= fakeLevel; l++)
+      {
+        {
+          ALU3DSPACE ALU3dGridLevelIteratorWrapper<0> w ( *this, l ) ;
+          for (w.first () ; ! w.done () ; w.next ())
+          {
+            if(w.item().level() > maxlevel_ ) maxlevel_ = w.item().level();
+            w.item ().resetRefinedTag();
+          }
+        }
       }
     }
 #endif
