@@ -69,11 +69,9 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 #ifdef _3
   // Get the first three vertices of this side.  Since quadrilateral faces
   // are plane in UG, the normal doesn't depend on the fourth vertex
-#define CORNER_OF_SIDE(p, s, c)   (UG3d::element_descriptors[UG_NS<3>::Tag(p)]->corner_of_side[(s)][(c)])
-  UG3d::VERTEX* a = UG_NS<3>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 0))->myvertex;
-  UG3d::VERTEX* b = UG_NS<3>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 1))->myvertex;
-  UG3d::VERTEX* c = UG_NS<3>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 2))->myvertex;
-#undef CORNER_OF_SIDE
+  UG3d::VERTEX* a = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex;
+  UG3d::VERTEX* b = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex;
+  UG3d::VERTEX* c = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex;
 
   FieldVector<UGCtype, 3> aPos, bPos, cPos;
 
@@ -103,10 +101,8 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 
 #ifdef _2
   // Get the vertices of this side.
-#define CORNER_OF_SIDE(p, s, c)   (UG2d::element_descriptors[UG_NS<2>::Tag(p)]->corner_of_side[(s)][(c)])
-  UGCtype* aPos = UG_NS<2>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 0))->myvertex->iv.x;
-  UGCtype* bPos = UG_NS<2>::Corner(center_,CORNER_OF_SIDE(center_, neighborCount_, 1))->myvertex->iv.x;
-#undef CORNER_OF_SIDE
+  UGCtype* aPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
+  UGCtype* bPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
 
   // compute normal
   outerNormal_[0] = bPos[1] - aPos[1];
