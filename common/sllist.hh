@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <assert.h>
+#include <config.h>
 #include "iteratorfacades.hh"
 
 namespace Dune
@@ -26,6 +27,9 @@ namespace Dune
 
   template<typename T, class A>
   class SLListConstIterator;
+
+  template<typename T, class A>
+  class SLListModifyIterator;
 
   /**
    * @brief A single linked list.
@@ -63,6 +67,12 @@ namespace Dune
      */
     typedef SLListConstIterator<T,A> const_iterator;
     SLList();
+
+    /**
+     * @brief The type of the iterator capable of deletion
+     * and insertion.
+     */
+    typedef SLListModifyIterator<T,A> ModifyIterator;
 
     /**
      * @brief Add a new entry to the end of the list.
@@ -110,8 +120,11 @@ namespace Dune
      * has to be called once.
      * @return An iterator pointing before the first
      * element.
+     * @deprecated There is no use for this function! For insertion
+     * or deletion of elements use beginModify()
      */
-    inline iterator oneBeforeBegin();
+    inline iterator oneBeforeBegin() DUNE_DEPRECATED;
+
 
     /**
      * @brief Get an iterator pointing before the first
@@ -121,8 +134,29 @@ namespace Dune
      * has to be called once.
      * @return An iterator pointing before the first
      * element.
+     * @deprecated There is no use for this function! For insertion
+     * or deletion of elements use beginModify()
      */
-    inline const_iterator oneBeforeBegin() const;
+    inline const_iterator oneBeforeBegin() const DUNE_DEPRECATED;
+
+
+    /**
+     * @brief Get an iterator capable of deleting and
+     * inserting elements.
+     *
+     * @return Modifying iterator positioned at the beginning
+     * of the list.
+     */
+    inline ModifyIterator beginModify();
+
+    /**
+     * @brief Get an iterator capable of deleting and
+     * inserting elements.
+     *
+     * @return Modifying iterator positioned after the end
+     * of the list.
+     */
+    inline ModifyIterator endModify();
 
     /**
      * @brief Get an iterator pointing to the
@@ -146,7 +180,7 @@ namespace Dune
      *
      * @return An iterator pointing to the last element.
      */
-    inline iterator tail();
+    inline iterator tail() DUNE_DEPRECATED;
 
     /**
      * @brief Get an iterator pointing to the
@@ -154,7 +188,7 @@ namespace Dune
      *
      * @return An iterator pointing to the last element.
      */
-    inline const_iterator tail() const;
+    inline const_iterator tail() const DUNE_DEPRECATED;
 
     /**
      * @brief Check whether the list is empty.
@@ -221,6 +255,10 @@ namespace Dune
 
     inline SLListIterator()
       : current_(0), list_(0)
+    {}
+
+    inline SLListIterator(const SLListModifyIterator<T,A>& other)
+      : current_(other.iterator_.current_)
     {}
 
     /**
@@ -329,6 +367,10 @@ namespace Dune
       : current_(other.current_)
     {}
 
+    inline SLListConstIterator(const SLListModifyIterator<T,A>& other)
+      : current_(other.iterator_.current_)
+    {}
+
     /**
      * @brief Dereferencing function for the facade.
      * @return A reference to the element at the current position.
@@ -346,6 +388,16 @@ namespace Dune
     inline bool equals(const SLListConstIterator<T,A>& other) const
     {
       return current_==other.current_;
+    }
+
+    /**
+     * @brief Equality test for the iterator facade.
+     * @param other The other iterator to check.
+     * @return true If the other iterator is at the same position.
+     */
+    inline bool equals(const SLListModifyIterator<T,A>& other) const
+    {
+      return current_==other.iterator_.current_;
     }
 
 
@@ -372,7 +424,77 @@ namespace Dune
     typename SLList<T,A>::Element* current_;
   };
 
+  /**
+   * @brief A mutable iterator for the SLList.
+   */
+  template<typename T, class A>
+  class SLListModifyIterator : public Dune::ForwardIteratorFacade<SLListIterator<T,A>, T, T&, std::size_t>
+  {
+    friend class SLListConstIterator<T,A>;
+    friend class SLListIterator<T,A>;
+  public:
+    inline SLListModifyIterator(SLListIterator<T,A> beforeIterator,
+                                SLListConstIterator<T,A> _iterator)
+      : beforeIterator_(beforeIterator), iterator_(_iterator)
+    {}
 
+    inline SLListModifyIterator()
+      : beforeIterator_(), iterator_()
+    {}
+
+    /**
+     * @brief Dereferencing function for the iterator facade.
+     * @return A reference to the element at the current position.
+     */
+    inline T& dereference() const
+    {
+      return iterator_.dereference();
+    }
+
+    /**
+     * @brief Increment function for the iterator facade.
+     */
+    inline void increment()
+    {
+      ++iterator_;
+      ++beforeIterator_;
+    }
+
+    /**
+     * @brief Insert an element at the current position.
+     *
+     * Starting from the element at the current position all
+     * elements will be shifted by one position to the back.
+     * The iterator will point to the same element after the insertion.
+     * This means the inserted element is the one before the one
+     * the iterator points to.
+     * @param v The value to insert.
+     */
+    inline void insert(const T& v)
+    {
+      beforeIterator_.insertAfter(v);
+      ++beforeIterator_;
+    }
+
+    /**
+     * @brief Delete the entry at the current position.
+     *
+     * The iterator will be positioned at the next postion after the
+     * deletion
+     * @warning This will invalidate all iterators positioned at the delete position! Use with care!
+     */
+    inline void remove()
+    {
+      ++iterator_;
+      beforeIterator_.deleteNext();
+    }
+
+  private:
+    /** @brief Iterator positioned at the position before the current. */
+    SLListIterator<T,A> beforeIterator_;
+    /** @brief Iterator positioned at the current position. */
+    SLListConstIterator<T,A> iterator_;
+  };
   template<typename T, class A>
   SLList<T,A>::Element::Element(const T& item)
     : next_(0), item_(item)
@@ -499,6 +621,20 @@ namespace Dune
   inline SLListIterator<T,A> SLList<T,A>::end()
   {
     return iterator();
+  }
+
+  template<typename T, class A>
+  inline SLListModifyIterator<T,A> SLList<T,A>::endModify()
+  {
+    return SLListModifyIterator<T,A>(tail(),end());
+  }
+
+
+  template<typename T, class A>
+  inline SLListModifyIterator<T,A> SLList<T,A>::beginModify()
+  {
+    return SLListModifyIterator<T,A>(iterator(&beforeHead_, this),
+                                     iterator(beforeHead_.next_, this));
   }
 
   template<typename T, class A>
