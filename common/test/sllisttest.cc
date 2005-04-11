@@ -50,7 +50,7 @@ void randomizeListFront(Dune::SLList<T,A>& alist){
     alist.push_back((range*(rand()/(RAND_MAX+1.0))));
 }
 
-int testDeleteNext()
+int testDelete()
 {
   typedef Dune::SLList<int,Dune::PoolAllocator<int,8*1024-16> > List;
   List alist;
@@ -59,82 +59,86 @@ int testDeleteNext()
   alist.push_back(4);
   alist.push_back(5);
 
-  List::iterator iter=alist.oneBeforeBegin();
-  iter.deleteNext();
-  List::iterator iter1=iter;
-  ++iter1;
+  List::ModifyIterator iter = alist.beginModify();
+  iter.remove();
   if(*(alist.begin())!=4) {
-    std::cerr<<"delete next on position before head failed!"<<std::endl;
+    std::cerr<<"delete next on position before head failed! "<<__FILE__<<":"<<__LINE__<<std::endl;
     return 1;
   }
-  if(*iter1!=4) {
-    std::cerr<<"delete next failed"<<std::endl;
+  if(*iter!=4) {
+    std::cerr<<"delete next failed! "<<__FILE__<<":"<<__LINE__<<std::endl;
     return 1;
   }
   ++iter;
-  iter.deleteNext();
-  ++iter;
+  iter.remove();
   if(iter!=alist.end()) {
-    std::cerr<<"delete next faild"<<std::endl;
+    std::cerr<<"delete next faild! "<<__FILE__<<":"<<__LINE__<<std::endl;
     return 1;
   }
   if(*(alist.tail())!=4) {
-    std::cerr<<"delete before tail did not change tail!"<<std::endl;
+    std::cerr<<"delete before tail did not change tail! "<<__FILE__<<":"<<__LINE__<<std::endl;
   }
 
   return 0;
 }
 
-int testInsertAfter()
+int testInsert()
 {
   typedef Dune::SLList<int,Dune::PoolAllocator<int,8*1024-16> > List;
   List alist;
 
   alist.push_back(3);
-  List::iterator iter=alist.begin();
-  iter.insertAfter(5);
+  List::ModifyIterator iter=alist.beginModify();
+  iter.insert(7);
   int ret=0;
 
   if(*iter!=3) {
-    std::cerr<<"Value at current position changed due to insertAfter"<<std::endl;
+    std::cerr<<"Value at current position changed due to insert! "<<__FILE__<<":"<<__LINE__<<std::endl;
     ret++;
   }
-  ++iter;
-  if(iter==alist.end() || *iter!=5) {
-    std::cerr<<"Insertion failed!"<<std::endl;
+
+  if(*alist.begin()!=7) {
+    std::cerr<<"Insert did not change first element! "<<__FILE__<<":"<<__LINE__<<std::endl;
+    ret++;
+  }
+
+  iter=alist.beginModify();
+  iter.insert(5);
+
+  if(iter==alist.end() || *iter!=7) {
+    std::cerr<<"Insertion failed.! "<<__FILE__<<":"<<__LINE__<<std::endl;
     ++ret;
   }
 
-  iter=alist.oneBeforeBegin();
-  iter.insertAfter(5);
-  ++iter;
-  if(iter==alist.end() || *iter!=5) {
-    std::cerr<<"Insertion failed!"<<std::endl;
-    ++ret;
-  }
   if(*(alist.begin())!=5) {
-    std::cerr<<"Insert after at onebeforeBegin did not change head!"<<std::endl;
+    std::cerr<<"Insert after at onebeforeBegin did not change head! "<<__FILE__<<":"<<__LINE__<<std::endl;
     ++ret;
   }
-  iter = alist.tail();
-  iter.insertAfter(20);
-  ++iter;
-  if(iter == alist.end() || *iter != 20) {
-    std::cerr<<"Insertion failed!"<<std::endl;
+  iter = alist.endModify();
+
+  if(iter!=alist.end()) {
+    std::cerr <<" Iterator got by endModify does not equal that got by end()! "<<__FILE__<<":"<<__LINE__<<std::endl;
+    ++ret;
+  }
+
+
+  iter.insert(20);
+
+  if(iter != alist.end()) {
+    std::cerr<<"Insertion changed end iterator! "<<__FILE__<<":"<<__LINE__<<std::endl;
     ++ret;
   }
 
   if(*(alist.tail())!=20) {
-    std::cerr<<"tail was not changed!!"<<std::endl;
+    std::cerr<<"tail was not changed!! "<<__FILE__<<":"<<__LINE__<<std::endl;
     ++ret;
   }
 
   alist.clear();
-  iter=alist.oneBeforeBegin();
-  iter.insertAfter(5);
-  ++iter;
-  if(iter==alist.end() || *iter!=5) {
-    std::cerr<<"Insertion failed!"<<std::endl;
+  iter=alist.beginModify();
+  iter.insert(5);
+  if(iter!=alist.end()) {
+    std::cerr<<"Insertion failed! "<<__FILE__<<":"<<__LINE__<<std::endl;
     ++ret;
   }
   return ret;
@@ -152,11 +156,11 @@ int testOneBeforeBegin(T& alist)
   ++citerBefore;
 
   if(iterBefore!=iter || &(*iterBefore) != &(*iter)) {
-    std::cerr<<"one before iterator incremented once should point to begin()"<<std::endl;
+    std::cerr<<"one before iterator incremented once should point to begin()! "<<__FILE__<<":"<<__LINE__<<std::endl;
     ret++;
   }
   if(citerBefore!=iter || &(*citerBefore) != &(*iter)) {
-    std::cerr<<"one before iterator incremented once should point to begin()"<<std::endl;
+    std::cerr<<"one before iterator incremented once should point to begin()! "<<__FILE__<<":"<<__LINE__<<std::endl;
     ret++;
   }
   return ret;
@@ -212,13 +216,29 @@ int main()
   randomizeListFront(list);
   randomizeListFront(list2);
 
+  Printer<std::iterator_traits<Dune::SLList<double>::ModifyIterator>::value_type> print;
 
+  Dune::SLList<double>::ModifyIterator lbegin = list.beginModify(), lend = list.endModify();
+
+  double& d = lbegin.dereference();
+
+  d= 2.0;
+
+  double& d1 = lbegin.dereference();
+
+  lbegin.dereference()=5.0;
+
+  lbegin.operator*()=5.0;
+
+  *lbegin=5.0;
+
+  ret+=testConstIterator(lbegin, lend, print);
   ret+=testIterator(list);
   ret+=testIterator(list1);
   ret+=testPushPop();
   ret+=testOneBeforeBegin(list1);
-  ret+=testInsertAfter();
-  ret+=testDeleteNext();
+  ret+=testInsert();
+  ret+=testDelete();
 
   list.clear();
   list1.clear();

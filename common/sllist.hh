@@ -245,6 +245,7 @@ namespace Dune
   class SLListIterator : public Dune::ForwardIteratorFacade<SLListIterator<T,A>, T, T&, std::size_t>
   {
     friend class SLListConstIterator<T,A>;
+    friend class SLListModifyIterator<T,A>;
     friend class SLList<T,A>;
 
   public:
@@ -258,7 +259,7 @@ namespace Dune
     {}
 
     inline SLListIterator(const SLListModifyIterator<T,A>& other)
-      : current_(other.iterator_.current_)
+      : current_(other.iterator_.current_), list_(other.iterator_.list_)
     {}
 
     /**
@@ -280,7 +281,6 @@ namespace Dune
       return current_==other.current_;
     }
 
-
     /**
      * @brief Equality test for the iterator facade.
      * @param other The other iterator to check.
@@ -289,6 +289,16 @@ namespace Dune
     inline bool equals(const SLListIterator<T,A>& other) const
     {
       return current_==other.current_;
+    }
+
+    /**
+     * @brief Equality test for the iterator facade.
+     * @param other The other iterator to check.
+     * @return true If the other iterator is at the same position.
+     */
+    inline bool equals(const SLListModifyIterator<T,A>& other) const
+    {
+      return current_==other.iterator_.current_;
     }
 
     /**
@@ -367,6 +377,10 @@ namespace Dune
       : current_(other.current_)
     {}
 
+    inline SLListConstIterator(const SLListConstIterator<T,A>& other)
+      : current_(other.current_)
+    {}
+
     inline SLListConstIterator(const SLListModifyIterator<T,A>& other)
       : current_(other.iterator_.current_)
     {}
@@ -391,27 +405,6 @@ namespace Dune
     }
 
     /**
-     * @brief Equality test for the iterator facade.
-     * @param other The other iterator to check.
-     * @return true If the other iterator is at the same position.
-     */
-    inline bool equals(const SLListModifyIterator<T,A>& other) const
-    {
-      return current_==other.iterator_.current_;
-    }
-
-
-    /**
-     * @brief Equality test for the iterator facade.
-     * @param other The other iterator to check.
-     * @return true If the other iterator is at the same position.
-     */
-    inline bool equals(const SLListIterator<T,A>& other) const
-    {
-      return current_==other.current_;
-    }
-
-    /**
      * @brief Increment function for the iterator facade.
      */
     inline void increment()
@@ -428,14 +421,18 @@ namespace Dune
    * @brief A mutable iterator for the SLList.
    */
   template<typename T, class A>
-  class SLListModifyIterator : public Dune::ForwardIteratorFacade<SLListIterator<T,A>, T, T&, std::size_t>
+  class SLListModifyIterator : public Dune::ForwardIteratorFacade<SLListModifyIterator<T,A>, T, T&, std::size_t>
   {
     friend class SLListConstIterator<T,A>;
     friend class SLListIterator<T,A>;
   public:
     inline SLListModifyIterator(SLListIterator<T,A> beforeIterator,
-                                SLListConstIterator<T,A> _iterator)
+                                SLListIterator<T,A> _iterator)
       : beforeIterator_(beforeIterator), iterator_(_iterator)
+    {}
+
+    inline SLListModifyIterator(const SLListModifyIterator<T,A>& other)
+      : beforeIterator_(other.beforeIterator_), iterator_(other.iterator_)
     {}
 
     inline SLListModifyIterator()
@@ -448,7 +445,39 @@ namespace Dune
      */
     inline T& dereference() const
     {
-      return iterator_.dereference();
+      return *iterator_;
+    }
+
+    /**
+     * @brief Test whether another iterator is equal.
+     * @return true if the other iterator is at the same position as
+     * this one.
+     */
+    inline bool equals(const SLListConstIterator<T,A>& other) const
+    {
+      return iterator_== other;
+    }
+
+
+    /**
+     * @brief Test whether another iterator is equal.
+     * @return true if the other iterator is at the same position as
+     * this one.
+     */
+    inline bool equals(const SLListIterator<T,A>& other) const
+    {
+      return iterator_== other;
+    }
+
+
+    /**
+     * @brief Test whether another iterator is equal.
+     * @return true if the other iterator is at the same position as
+     * this one.
+     */
+    inline bool equals(const SLListModifyIterator<T,A>& other) const
+    {
+      return iterator_== other.iterator_;
     }
 
     /**
@@ -465,7 +494,10 @@ namespace Dune
      *
      * Starting from the element at the current position all
      * elements will be shifted by one position to the back.
-     * The iterator will point to the same element after the insertion.
+     * The iterator will point to the same element as before
+     * after the insertion, i.e the number of increments to
+     * reach the same position from a begin iterator increases
+     * by one.
      * This means the inserted element is the one before the one
      * the iterator points to.
      * @param v The value to insert.
@@ -493,7 +525,7 @@ namespace Dune
     /** @brief Iterator positioned at the position before the current. */
     SLListIterator<T,A> beforeIterator_;
     /** @brief Iterator positioned at the current position. */
-    SLListConstIterator<T,A> iterator_;
+    SLListIterator<T,A> iterator_;
   };
   template<typename T, class A>
   SLList<T,A>::Element::Element(const T& item)
@@ -626,7 +658,7 @@ namespace Dune
   template<typename T, class A>
   inline SLListModifyIterator<T,A> SLList<T,A>::endModify()
   {
-    return SLListModifyIterator<T,A>(tail(),end());
+    return SLListModifyIterator<T,A>(iterator(tail_, this),iterator());
   }
 
 
