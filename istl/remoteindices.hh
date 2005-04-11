@@ -5,8 +5,10 @@
 #define DUNE_REMOTEINDICES_HH
 
 #include "indexset.hh"
+#include "istlexception.hh"
 #include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
+#include <dune/common/helpertemplates.hh>
 #include <map>
 #include <utility>
 #include <iostream>
@@ -187,6 +189,10 @@ namespace Dune {
   template<typename T1, typename T2>
   std::ostream& operator<<(std::ostream& os, const RemoteIndex<T1,T2>& index);
 
+
+  template<typename TG, typename TA, int N, bool mode>
+  class RemoteIndexListModifier;
+
   /**
    * @brief Information about an index residing on another processor.
    */
@@ -199,6 +205,10 @@ namespace Dune {
     template<typename TG, typename TA, typename A, int N>
     friend void repairLocalIndexPointers(std::map<int,SLList<TG,A> >&, RemoteIndices<TG,TA,N>&,
                                          const IndexSet<TG,ParallelLocalIndex<TA>,N>&);
+
+    template<typename TG, typename TA, int N, bool mode>
+    friend class RemoteIndexListModifier;
+
   public:
     /**
      * @brief the type of the global index.
@@ -290,6 +300,7 @@ void addFakeRemoteIndices(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
                           Dune::RemoteIndices<TG,TA,N>&);
 namespace Dune
 {
+
   /**
    * @brief The indices present on remote processes.
    */
@@ -350,6 +361,8 @@ namespace Dune
     typedef std::map<int, std::pair<RemoteIndexList*,RemoteIndexList*> >
     RemoteIndexMap;
 
+    typedef typename RemoteIndexMap::const_iterator const_iterator;
+
     /**
      * @brief Constructor.
      * @param comm The communicator to use.
@@ -392,6 +405,18 @@ namespace Dune
      * @brief Get the mpi communicator used.
      */
     inline MPI_Comm communicator() const;
+
+    /**
+     * @brief Get a modifier for a remote index list.
+     *
+     * Sometimes the user knows in advance which indices will be present
+     * on other processors, too. Then he can set them up using this modifier.
+     *
+     * @warn Use with care. If the remote index list will be inconsistent
+     * after the modification the communication might result in a dead lock!
+     */
+    template<bool mode, bool send>
+    inline RemoteIndexListModifier<TG,TA,N,mode> getModifier(int process);
 
     /**
      * @brief Get an iterator over all remote index lists.
@@ -536,6 +561,160 @@ namespace Dune
                               MPI_Datatype type, int* position, int bufferSize);
 
   };
+
+  /**
+   * @brief Modifier for adding and/or deleting remote indices from
+   * the remote index list.
+   *
+   * In some cases all the information about the indices also present
+   * on remote process might already be known. In this case this
+   * information can be provided to the RemoteIndices via this modifier.
+   * This prevents the global communication needed by a call to
+   * RemoteIndices::rebuild.
+   *
+   * In some cases it might advisable to run IndicesSyncer::sync afterwards.
+   *
+   * @warning Use with care. If the indices are not consistant afterwards
+   * communication attempts might deadlock!
+   */
+  template<class TG,class TA, int N, bool mode>
+  class RemoteIndexListModifier
+  {
+  public:
+    class InvalidPosition : public ISTLError
+    {};
+
+    enum {
+      /**
+       * @brief If true the index set corresponding to the
+       * remote indices might get modified.
+       *
+       * If for example new indices are added to an index set
+       * all pointers of the remote indices to the local indices
+       * become invalid after IndexSet::endResize() was called.
+       */
+      MODIFYINDEXSET=mode
+    };
+
+    /**
+     * @brief The type of the global index.
+     */
+    typedef TG GlobalIndex;
+
+    /**
+     * @brief The type of the attribute.
+     */
+    typedef TA Attribute;
+
+    /**
+     * @brief The type of the local index.
+     */
+    typedef ParallelLocalIndex<Attribute> LocalIndex;
+
+    /**
+     * @brief Type of the index set we use.
+     */
+    typedef IndexSet<GlobalIndex,LocalIndex,N> IndexSet;
+
+    /**
+     * @brief Type of the remote indices we manage.
+     */
+    typedef RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
+
+    /**
+     * @brief The type of the allocator for the remote index list.
+     */
+    typedef PoolAllocator<RemoteIndex,1> Allocator;
+
+    /** @brief The type of the remote index list. */
+    typedef SLList<RemoteIndex,Allocator>
+    RemoteIndexList;
+
+    /**
+     * @brief The type of the modifying iterator of the remote index list.
+     */
+    typedef SLListModifyIterator<RemoteIndex,Allocator> ModifyIterator;
+
+    /**
+     * @brief The type of the remote index list iterator.
+     */
+    typedef typename RemoteIndexList::const_iterator ConstIterator;
+
+    /**
+     * @brief Insert an index to the list.
+     *
+     * Moves to the position where the index fits and inserts it.
+     * After the insertion only indices with an bigger global index
+     * than the inserted can be inserted.
+     *
+     * This method is only available if MODIFYINDEXSET is false.
+     *
+     * @param index The index to insert.
+     * @exception InvalidPosition Thrown if the index at the current position or
+     * the one before has bigger global index than the one to be inserted.
+     */
+    void insert(const RemoteIndex& index) throw(InvalidPosition);
+
+
+    /**
+     * @brief Insert an index to the list.
+     *
+     * Moves to the position where the index fits and inserts it.
+     * After the insertion only indices with an bigger global index
+     * than the inserted can be inserted.
+     *
+     * This method is only available if MODIFYINDEXSET is true.
+     *
+     * @param index The index to insert.
+     * @param global The global index of the remote index.
+     * @exception InvalidPosition Thrown if the index at the current position or
+     * the one before has bigger global index than the one to be inserted.
+     */
+    void insert(const RemoteIndex& index, const GlobalIndex& global) throw(InvalidPosition);
+
+    /**
+     * @brief Remove a remote index.
+     * @param global The global index corresponding to the remote index.
+     * @return True If there was a corresponding remote index.
+     * @exception InvalidPostion If there was an insertion or deletion of
+     * a remote index corresponding to a bigger global index before.
+     */
+    bool remove(const TG& global) throw(InvalidPosition);
+
+    RemoteIndexListModifier(const IndexSet& indexSet,
+                            RemoteIndexList& rList);
+
+
+    RemoteIndexListModifier(const RemoteIndexListModifier<TG,TA,N,mode>&);
+
+    /**
+     * @brief Repair the pointers to the local index pairs.
+     *
+     * Due to adding new indices or/and deleting indices in the
+     * index set all pointers to the local index pair might become
+     * invalid during IndexSet::endResize().
+     * This method repairs them.
+     *
+     * @exception InvalidIndexSetState Thrown if the underlying
+     * index set is not in IndexSetState::GROUND mode (only when
+     * compiled with DUNE_ISTL_WITH_CHECKING!).
+     */
+    void repairLocalIndexPointers() throw(InvalidIndexSetState);
+
+  private:
+
+    typedef SLList<TG,Allocator> GlobalList;
+    typedef typename GlobalList::ModifyIterator GlobalModifyIterator;
+    RemoteIndexList* rList_;
+    const IndexSet* indexSet_;
+    GlobalList glist_;
+    ModifyIterator iter_;
+    GlobalModifyIterator giter_;
+    ConstIterator end_;
+    bool first_;
+    TG last_;
+  };
+
 
   /**
    * @brief A collective iterator for moving over the remote indices for
@@ -1227,6 +1406,31 @@ namespace Dune
   }
 
   template<class TG, class TA, int N>
+  template<bool mode, bool send>
+  RemoteIndexListModifier<TG,TA,N,mode> RemoteIndices<TG,TA,N>::getModifier(int process)
+  {
+    typename RemoteIndexMap::iterator found = remoteIndices_.find(process);
+
+    if(found == remoteIndices_.end())
+      if(&source_ != &target_)
+        remoteIndices_.insert(std::make_pair(process,
+                                             std::make_pair(new RemoteIndexList(),
+                                                            new RemoteIndexList())));
+      else{
+        RemoteIndexList* rlist = new RemoteIndexList();
+        remoteIndices_.insert(std::make_pair(process,
+                                             std::make_pair(rlist, rlist)));
+
+        found = remoteIndices_.find(process);
+      }
+
+    if(send)
+      return RemoteIndexListModifier<TG,TA,N,mode>(source_, *(found->second.first));
+    else
+      return RemoteIndexListModifier<TG,TA,N,mode>(target_, *(found->second.second));
+  }
+
+  template<class TG, class TA, int N>
   inline typename std::map<int, std::pair<SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*,
           SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*> >::const_iterator
   RemoteIndices<TG,TA,N>::begin() const
@@ -1240,6 +1444,140 @@ namespace Dune
   RemoteIndices<TG,TA,N>::end() const
   {
     return remoteIndices_.end();
+  }
+
+  template<class TG, class TA, int N, bool mode>
+  RemoteIndexListModifier<TG,TA,N,mode>::RemoteIndexListModifier(const IndexSet& indexSet,
+                                                                 RemoteIndexList& rList)
+    : rList_(&rList), indexSet_(&indexSet), iter_(rList.beginModify()), end_(rList.end()), first_(true)
+  {
+    if(MODIFYINDEXSET) {
+      assert(indexSet_);
+      for(ConstIterator iter=iter_; iter != end_; ++iter)
+        glist_.push_back(iter->localIndexPair().global());
+      giter_ = glist_.beginModify();
+    }
+  }
+
+  template<class TG, class TA, int N, bool mode>
+  RemoteIndexListModifier<TG,TA,N,mode>::RemoteIndexListModifier(const RemoteIndexListModifier<TG,TA,N,mode>& other)
+    : rList_(other.rList_), indexSet_(other.indexSet_), glist_(other.glist_), iter_(other.iter_),
+      giter_(other.giter_), end_(other.end_), first_(other.first_), last_(other.last_)
+  {}
+
+  template<class TG, class TA, int N, bool mode>
+  inline void RemoteIndexListModifier<TG,TA,N,mode>::repairLocalIndexPointers() throw(InvalidIndexSetState)
+  {
+    IsTrue<mode>::yes();
+
+    if(MODIFYINDEXSET) {
+      // repair pointers to local index set.
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if(indexSet_->state()!=GROUND)
+        DUNE_THROW(InvalidIndexSetState, "Index has to be in ground mode for repairing pointers to indices");
+#endif
+      typedef typename IndexSet::const_iterator IndexIterator;
+      typedef typename GlobalList::const_iterator GlobalIterator;
+      typedef typename RemoteIndexList::iterator Iterator;
+      GlobalIterator giter = glist_.begin();
+      IndexIterator index = indexSet_->begin();
+
+      for(Iterator iter=rList_->begin(); iter != end_; ++iter) {
+        while(index->global()<*giter) {
+          ++index;
+#ifdef DUNE_ISTL_WITH_CHECKING
+          if(index == indexSet_.end())
+            DUNE_THROW(ISTLError, "No such global index in set!");
+#endif
+        }
+
+#ifdef DUNE_ISTL_WITH_CHECKING
+        if(index->global() != *giter)
+          DUNE_THROW(ISTLError, "No such global index in set!");
+#endif
+        iter->localIndex_ = &(*index);
+      }
+    }
+  }
+
+  template<class TG, class TA, int N, bool mode>
+  inline void RemoteIndexListModifier<TG,TA,N,mode>::insert(const RemoteIndex& index) throw(InvalidPosition)
+  {
+    IsTrue<mode>::no();
+
+#ifdef DUNE_ISTL_WITH_CHECKING
+    if(!first_ && index.localIndexPair().global()<last_)
+      DUNE_THROW(InvalidPosition, "Modifcation of remote indices have to occur with ascending global index.");
+#endif
+    // Move to the correct position
+    while(iter_ != end_ && iter_->localIndexPair().global() < index.localIndexPair().global()) {
+      ++iter_;
+    }
+
+    // No duplicate entries allowed
+    assert(iter_==end_ || iter_->localIndexPair().global() != index.localIndexPair().global());
+    iter_.insert(index);
+    last_ = index.localIndexPair().global();
+    first_ = false;
+  }
+
+  template<class TG, class TA, int N, bool mode>
+  inline void RemoteIndexListModifier<TG,TA,N,mode>::insert(const RemoteIndex& index, const TG& global) throw(InvalidPosition)
+  {
+    typename IsTrue<mode>::yes();
+#ifdef DUNE_ISTL_WITH_CHECKING
+    if(!first_ && global<last_)
+      DUNE_THROW(InvalidPosition, "Modification of remote indices have to occur with ascending global index.");
+#endif
+    // Move to the correct position
+    while(iter_ != end_ && *giter_ < global) {
+      ++giter_;
+      ++iter_;
+    }
+
+    // No duplicate entries allowed
+    assert(iter_->localIndexPair().global() != global);
+    iter_.insert(index);
+    giter_.insert(global);
+
+    last_ = global;
+    first_ = false;
+  }
+
+  template<class TG, class TA, int N, bool mode>
+  bool RemoteIndexListModifier<TG,TA,N,mode>::remove(const TG& global) throw(InvalidPosition)
+  {
+#ifdef DUNE_ISTL_WITH_CHECKING
+    if(!first_ && global<last_)
+      DUNE_THROW(InvalidPosition, "Modifcation of remote indices have to occur with ascending global index.");
+#endif
+
+    bool found= false;
+
+    if(MODIFYINDEXSET) {
+      // Move to the correct position
+      while(iter_!=end_ && *giter_< global) {
+        ++giter_;
+        ++iter_;
+      }
+      if(*giter_ == global()) {
+        giter_.remove();
+        iter_.remove();
+        found=true;
+      }
+    }else{
+      while(iter_!=end_ && iter_->localIndexPair().global() < global)
+        ++iter_;
+
+      if(iter_->localIndexPair().global()==global) {
+        iter_.remove();
+        found = true;
+      }
+    }
+
+    last_ = global;
+    first_ = false;
+    return found;
   }
 
   template<class TG, class TA, int N>
