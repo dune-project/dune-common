@@ -12,7 +12,7 @@
 
 namespace Dune
 {
-  namespace amg
+  namespace Amg
   {
     /**
      * @addtogroup ISTL_PAAMG
