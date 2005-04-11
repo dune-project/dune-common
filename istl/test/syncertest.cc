@@ -18,7 +18,7 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
   typedef typename RemoteIndices::RemoteIndexList::iterator RemoteIterator;
   typedef Dune::SLList<TG, typename RemoteIndices::RemoteIndexList::Allocator> GlobalList;
   typedef typename GlobalList::iterator GlobalIterator;
-  typedef Dune::Tuple<RemoteIterator,RemoteIterator,GlobalIterator,const RemoteIterator> IteratorTuple;
+  typedef Dune::Tuple<RemoteIterator,RemoteIterator,const RemoteIterator> IteratorTuple;
   typedef std::map<int,IteratorTuple> IteratorMap;
   typedef typename RemoteIndices::RemoteIndexMap::iterator RemoteMapIterator;
 
@@ -43,7 +43,6 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
     iterators.insert(std::make_pair(remote->first,
                                     IteratorTuple(remote->second.first->oneBeforeBegin(),
                                                   remote->second.first->begin(),
-                                                  gList.oneBeforeBegin(),
                                                   rend
                                                   )));
   }
@@ -64,15 +63,14 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
       for(iterator remote = iterators.begin();
           remote != end; ++remote) {
         // Search for the index
-        while(Dune::Element<1>::get(remote->second) != Dune::Element<3>::get(remote->second)
+        while(Dune::Element<1>::get(remote->second) != Dune::Element<2>::get(remote->second)
               && Dune::Element<1>::get(remote->second)->localIndexPair().global() < index->global()) {
           // increment all iterators
           ++(Dune::Element<0>::get(remote->second));
           ++(Dune::Element<1>::get(remote->second));
-          ++(Dune::Element<2>::get(remote->second));
         }
         // Delete the entry if present
-        if(Dune::Element<1>::get(remote->second) != Dune::Element<3>::get(remote->second)
+        if(Dune::Element<1>::get(remote->second) != Dune::Element<2>::get(remote->second)
            && Dune::Element<1>::get(remote->second)->localIndexPair().global() == index->global()) {
           assert(&Dune::Element<1>::get(remote->second)->localIndexPair()==&(*index));
 
@@ -83,7 +81,6 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
 
           // Delete entries
           Dune::Element<0>::get(remote->second).deleteNext();
-          Dune::Element<2>::get(remote->second).deleteNext();
         }
       }
     }
