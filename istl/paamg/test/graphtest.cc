@@ -13,7 +13,7 @@
 #include <dune/common/typetraits.hh>
 #include <dune/istl/io.hh>
 
-int testEdgeDepends(const Dune::amg::EdgeProperties& flags)
+int testEdgeDepends(const Dune::Amg::EdgeProperties& flags)
 {
   int ret=0;
 
@@ -49,7 +49,7 @@ int testEdgeDepends(const Dune::amg::EdgeProperties& flags)
   return ret;
 }
 
-int testEdgeInfluences(const Dune::amg::EdgeProperties& flags)
+int testEdgeInfluences(const Dune::Amg::EdgeProperties& flags)
 {
   int ret=0;
 
@@ -80,7 +80,7 @@ int testEdgeInfluences(const Dune::amg::EdgeProperties& flags)
 
 }
 
-int testEdgeTwoWay(const Dune::amg::EdgeProperties& flags)
+int testEdgeTwoWay(const Dune::Amg::EdgeProperties& flags)
 {
   int ret=0;
 
@@ -118,7 +118,7 @@ int testEdgeTwoWay(const Dune::amg::EdgeProperties& flags)
 
 }
 
-int testEdgeReset(const Dune::amg::EdgeProperties& flags)
+int testEdgeReset(const Dune::Amg::EdgeProperties& flags)
 {
   int ret=0;
   if(flags.depends()) {
@@ -159,7 +159,7 @@ int testEdgeReset(const Dune::amg::EdgeProperties& flags)
 
 }
 
-int testVertexReset(Dune::amg::VertexProperties& flags)
+int testVertexReset(Dune::Amg::VertexProperties& flags)
 {
   int ret=0;
 
@@ -189,7 +189,7 @@ int testVertex()
 {
   int ret=0;
 
-  Dune::amg::VertexProperties flags;
+  Dune::Amg::VertexProperties flags;
 
   ret+=testVertexReset(flags);
 
@@ -246,7 +246,7 @@ int testEdge()
 {
   int ret=0;
 
-  Dune::amg::EdgeProperties flags;
+  Dune::Amg::EdgeProperties flags;
 
   ret += testEdgeReset(flags);
 
@@ -444,11 +444,11 @@ void testGraph ()
 
   //Dune::printmatrix(std::cout,laplacian2d,"2d Laplacian","row",9,1);
 
-  typedef Dune::amg::MatrixGraph<BCRSMat> MatrixGraph;
+  typedef Dune::Amg::MatrixGraph<BCRSMat> MatrixGraph;
 
   MatrixGraph mg(laplacian2d);
 
-  using Dune::amg::FirstDiagonal;
+  using Dune::Amg::FirstDiagonal;
   printWeightedGraph(mg,std::cout,FirstDiagonal<BCRSMat::block_type>());
   printWeightedGraph(static_cast<const MatrixGraph&>(mg),
                      std::cout,FirstDiagonal<BCRSMat::block_type>());
@@ -461,7 +461,7 @@ void testGraph ()
   }
 
 
-  typedef Dune::amg::SubGraph<Dune::amg::MatrixGraph<BCRSMat> > SubGraph;
+  typedef Dune::Amg::SubGraph<Dune::Amg::MatrixGraph<BCRSMat> > SubGraph;
   SubGraph sub(mg, excluded);
 
   for(std::vector<bool>::iterator iter=excluded.begin(); iter != excluded.end(); ++iter)
@@ -471,9 +471,9 @@ void testGraph ()
 
   printGraph(sub, std::cout);
 
-  typedef Dune::amg::PropertiesGraph<MatrixGraph,
-      Dune::amg::VertexProperties,
-      Dune::amg::EdgeProperties> PropertiesGraph;
+  typedef Dune::Amg::PropertiesGraph<MatrixGraph,
+      Dune::Amg::VertexProperties,
+      Dune::Amg::EdgeProperties> PropertiesGraph;
 
   std::cout<<std::endl<<"PropertiesGraph: ";
   PropertiesGraph pgraph(mg);
@@ -484,16 +484,16 @@ void testGraph ()
   printPropertiesGraph(pgraph, std::cout);
   //printPropertiesGraph(static_cast<const PropertiesGraph&>(pgraph), std::cout);
 
-  using Dune::amg::SymmetricDependency;
-  using Dune::amg::SymmetricCriterion;
+  using Dune::Amg::SymmetricDependency;
+  using Dune::Amg::SymmetricCriterion;
 
   //SymmetricCriterion<BCRSGraph, FirstDiagonal<typename BCRSMat::block_type> > crit;
   SymmetricCriterion<PropertiesGraph,BCRSMat,FirstDiagonal> crit;
 
-  Dune::amg::Aggregates<PropertiesGraph> aggregates;
-
-  aggregates.build(laplacian2d, pgraph,  crit);
-  aggregates.print2d(N, std::cout);
+  Dune::Amg::Aggregates<PropertiesGraph> aggregates;
+  Dune::Amg::AggregatesMap<int> aggregatesMap(pgraph.maxVertex());
+  aggregates.build(laplacian2d, pgraph,  aggregatesMap, crit);
+  Dune::Amg::printAggregates2d(aggregatesMap, N, std::cout);
 
 }
 
@@ -510,10 +510,10 @@ void testAggregate(double eps)
   setupSparsityPattern<N>(mat);
   setupAnisotropic<N>(mat, .001);
 
-  typedef Dune::amg::MatrixGraph<BCRSMat> BCRSGraph;
-  typedef Dune::amg::SubGraph<BCRSGraph> SubGraph;
-  typedef Dune::amg::PropertiesGraph<BCRSGraph,Dune::amg::VertexProperties,Dune::amg::EdgeProperties> PropertiesGraph;
-  typedef Dune::amg::PropertiesGraph<SubGraph,Dune::amg::VertexProperties,Dune::amg::EdgeProperties> SPropertiesGraph;
+  typedef Dune::Amg::MatrixGraph<BCRSMat> BCRSGraph;
+  typedef Dune::Amg::SubGraph<BCRSGraph> SubGraph;
+  typedef Dune::Amg::PropertiesGraph<BCRSGraph,Dune::Amg::VertexProperties,Dune::Amg::EdgeProperties> PropertiesGraph;
+  typedef Dune::Amg::PropertiesGraph<SubGraph,Dune::Amg::VertexProperties,Dune::Amg::EdgeProperties> SPropertiesGraph;
 
   BCRSGraph graph(mat);
   PropertiesGraph pgraph(graph);
@@ -529,26 +529,29 @@ void testAggregate(double eps)
   SPropertiesGraph spgraph(sgraph);
 
 
-  using Dune::amg::FirstDiagonal;
-  using Dune::amg::SymmetricDependency;
-  using Dune::amg::SymmetricCriterion;
+  using Dune::Amg::FirstDiagonal;
+  using Dune::Amg::SymmetricDependency;
+  using Dune::Amg::SymmetricCriterion;
 
   //SymmetricCriterion<BCRSGraph, FirstDiagonal<typename BCRSMat::block_type> > crit;
   SymmetricCriterion<PropertiesGraph,BCRSMat, FirstDiagonal> crit;
 
-  Dune::amg::Aggregates<PropertiesGraph> aggregates;
+  Dune::Amg::Aggregates<PropertiesGraph> aggregates;
 
   SymmetricCriterion<SPropertiesGraph,BCRSMat, FirstDiagonal> scrit;
 
-  Dune::amg::Aggregates<SPropertiesGraph> saggregates;
-  aggregates.build(mat, pgraph, crit);
+  Dune::Amg::Aggregates<SPropertiesGraph> saggregates;
+  Dune::Amg::AggregatesMap<int> aggregatesMap(pgraph.maxVertex());
 
-  aggregates.print2d(N, std::cout);
+  aggregates.build(mat, pgraph, aggregatesMap, crit);
+
+  Dune::Amg::printAggregates2d(aggregatesMap, N, std::cout);
 
   std::cout<<"Excluded!"<<std::endl;
 
-  saggregates.build(mat, spgraph, scrit);
-  saggregates.print2d(N, std::cout);
+  Dune::Amg::AggregatesMap<int> saggregatesMap(pgraph.maxVertex());
+  saggregates.build(mat, spgraph, saggregatesMap, scrit);
+  Dune::Amg::printAggregates2d(saggregatesMap, N, std::cout);
 
 
 
