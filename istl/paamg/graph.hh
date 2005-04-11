@@ -13,7 +13,7 @@
 
 namespace Dune
 {
-  namespace amg
+  namespace Amg
   {
     /**
      * @defgroup ISTL_PAAMG Parallel Algebraic Multigrid
@@ -660,6 +660,237 @@ namespace Dune
       int* end_;
     };
 
+
+    /**
+     * @brief Attaches properties to the vertices of a graph.
+     */
+    template<class G, class VP>
+    class VertexPropertiesGraph
+    {
+    public:
+      /**
+       * @brief The graph we attach properties to.
+       */
+      typedef G Graph;
+
+      /**
+       * @brief The vertex descriptor.
+       */
+      typedef typename Graph::VertexDescriptor VertexDescriptor;
+
+      /**
+       * @brief The edge descritor.
+       */
+      typedef typename Graph::EdgeDescriptor EdgeDescriptor;
+
+      /**
+       * @brief The type of the properties of the vertices.
+       */
+      typedef VP VertexProperties;
+
+      /**
+       * @brief The type of the mutable edge iterator.
+       */
+      typedef typename Graph::EdgeIterator EdgeIterator;
+
+      /**
+       * @brief The type of the constant edge iterator.
+       */
+      typedef typename Graph::ConstEdgeIterator ConstEdgeIterator;
+
+      /**
+       * @brief Get the mutable edge iterator over edges starting at a vertex.
+       * @return  An edge iterator over edges starting at a vertex
+       * positioned at the first edge.
+       */
+      EdgeIterator beginEdges(const VertexDescriptor& source);
+
+      /**
+       * @brief Get the mutable edge iterator over edges starting at a vertex.
+       * @return  An edge iterator over edges starting at a vertex
+       * positioned after the last edge.
+       */
+      EdgeIterator endEdges(const VertexDescriptor& source);
+
+      /**
+       * @brief Get the mutable edge iterator over edges starting at a vertex.
+       * @return  An edge iterator over edges starting at a vertex
+       * positioned at the first edge.
+       */
+      ConstEdgeIterator beginEdges(const VertexDescriptor& source) const;
+
+      /**
+       * @brief Get the mutable edge iterator over edges starting at a vertex.
+       * @return  An edge iterator over edges starting at a vertex
+       * positioned after the last edge.
+       */
+      ConstEdgeIterator endEdges(const VertexDescriptor& source) const;
+
+
+      template<class C>
+      class VertexIteratorT
+        : public SelectType<SameType<typename RemoveConst<C>::Type,
+                  C>::value,
+              typename Graph::VertexIterator,
+              typename Graph::ConstVertexIterator>::Type
+      {
+        friend class VertexIteratorT<const typename RemoveConst<C>::Type>;
+        friend class VertexIteratorT<typename RemoveConst<C>::Type>;
+      public:
+        /**
+         * @brief The father class.
+         */
+        typedef typename SelectType<SameType<typename RemoveConst<C>::Type,
+                C>::value,
+            typename Graph::VertexIterator,
+            typename Graph::ConstVertexIterator>::Type
+        Father;
+
+        /**
+         * @brief The class of the edge iterator.
+         */
+        typedef typename SelectType<SameType<typename RemoveConst<C>::Type,
+                C>::value,
+            typename Graph::EdgeIterator,
+            typename Graph::ConstEdgeIterator>::Type
+        EdgeIterator;
+
+        /**
+         * @brief Constructor.
+         * @param iter The iterator of the underlying graph.
+         * @param graph The property graph over whose vertices we iterate.
+         */
+        explicit VertexIteratorT(const Father& iter,
+                                 C* graph);
+
+
+        /**
+         * @brief Constructor for the end iterator.
+         *
+         * Only operator!= or operator== can be calles safely on an iterator
+         * constructed this way.
+         * @param iter The iterator of the underlying graph.
+         */
+        explicit VertexIteratorT(const Father& iter);
+
+        /**
+         * @brief Copy Constructor.
+         * @param other The iterator to copy.
+         */
+        template<class C1>
+        VertexIteratorT(const VertexIteratorT<C1>& other);
+
+        /**
+         * @brief Get the properties of the current Vertex.
+         */
+        typename SelectType<SameType<C,typename RemoveConst<C>::Type>::value,
+            VertexProperties&,
+            const VertexProperties&>::Type
+        properties() const;
+
+        /**
+         * @brief Get an iterator over the edges starting from the current vertex.
+         * @return An iterator over the edges starting from the current vertex
+         * positioned at the first edge.
+         */
+        EdgeIterator begin() const;
+
+        /**
+         * @brief Get an iterator over the edges starting from the current vertex.
+         * @return An iterator over the edges starting from the current vertex
+         * positioned after the last edge.
+         */
+        EdgeIterator end() const;
+
+      private:
+        /**
+         * @brief The graph over whose vertices we iterate.
+         */
+        C* graph_;
+      };
+
+      /**
+       * @brief The type of the mutable Vertex iterator.
+       */
+      typedef VertexIteratorT<VertexPropertiesGraph<Graph,
+              VertexProperties> > VertexIterator;
+
+      /**
+       * @brief The type of the constant Vertex iterator.
+       */
+      typedef VertexIteratorT<const VertexPropertiesGraph<Graph,
+              VertexProperties> > ConstVertexIterator;
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned at the first vertex.
+       */
+      VertexIterator begin();
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned behind the last vertex.
+       */
+      VertexIterator end();
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned at the first vertex.
+       */
+      ConstVertexIterator begin() const;
+
+      /**
+       * @brief Get an iterator over the vertices.
+       * @return A vertex Iterator positioned behind the last vertex.
+       */
+      ConstVertexIterator end() const;
+
+      /**
+       * @brief Get the properties associated with a vertex.
+       * @param vertex The descriptor identifying the vertex.
+       * @return The properties of the vertex.
+       */
+      VertexProperties& getVertexProperties(const VertexDescriptor& vertex);
+
+      /**
+       * @brief Get the properties associated with a vertex.
+       * @param vertex The descriptor identifying the vertex.
+       * @return The properties of the vertex.
+       */
+      const VertexProperties& getVertexProperties(const VertexDescriptor& vertex) const;
+
+      /**
+       * @brief Get the graph the properties are attached to.
+       * @return The underlying graph.
+       */
+      const Graph& graph() const;
+
+      /**
+       * @brief Get the number of vertices in the graph.
+       */
+      int noVertices() const;
+
+      /**
+       * @brief Get the maximal vertex descriptor.
+       *
+       * @return The minimum value v such that for
+       * all vertices w in the graph w&lt;v holds.
+       */
+      VertexDescriptor maxVertex() const;
+
+      /**
+       * @brief Constructor.
+       * @param graph The graph we attach properties to.
+       */
+      VertexPropertiesGraph(Graph& graph);
+
+    private:
+      /** @brief The graph the properties are attached to. */
+      Graph& graph_;
+      /** @brief The vertex properties. */
+      std::vector<VertexProperties> vertexProperties_;
+    };
+
     /**
      * @brief Attaches properties to the edges and vertices of a graph.
      */
@@ -693,18 +924,31 @@ namespace Dune
       typedef EP EdgeProperties;
 
       template<class C>
-      class EdgeIteratorT :  public Graph::ConstEdgeIterator
+      class EdgeIteratorT
+        :  public SelectType<SameType<typename RemoveConst<C>::Type,
+                  C>::value,
+              typename Graph::EdgeIterator,
+              typename Graph::ConstEdgeIterator>::Type
       {
 
         friend class EdgeIteratorT<const typename RemoveConst<C>::Type>;
         friend class EdgeIteratorT<typename RemoveConst<C>::Type>;
       public:
         /**
+         * @brief The father class.
+         */
+        typedef typename SelectType<SameType<typename RemoveConst<C>::Type,
+                C>::value,
+            typename Graph::EdgeIterator,
+            typename Graph::ConstEdgeIterator>::Type
+        Father;
+
+        /**
          * @param Constructor.
          * @param iter The iterator of the underlying graph.
          * @param graph The graph over whose edges we iterate.
          */
-        explicit EdgeIteratorT(const typename Graph::ConstEdgeIterator& iter,
+        explicit EdgeIteratorT(const Father& iter,
                                C* graph);
 
         /**
@@ -715,7 +959,7 @@ namespace Dune
          * @param iter The iterator of the underlying graph.
          * @param graph The graph over whose edges we iterate.
          */
-        explicit EdgeIteratorT(const typename Graph::ConstEdgeIterator& iter);
+        explicit EdgeIteratorT(const Father& iter);
 
         /**
          * @brief Copy constructor.
@@ -783,17 +1027,30 @@ namespace Dune
 
 
       template<class C>
-      class VertexIteratorT : public Graph::ConstVertexIterator
+      class VertexIteratorT
+        : public SelectType<SameType<typename RemoveConst<C>::Type,
+                  C>::value,
+              typename Graph::VertexIterator,
+              typename Graph::ConstVertexIterator>::Type
       {
         friend class VertexIteratorT<const typename RemoveConst<C>::Type>;
         friend class VertexIteratorT<typename RemoveConst<C>::Type>;
       public:
         /**
+         * @brief The father class.
+         */
+        typedef typename SelectType<SameType<typename RemoveConst<C>::Type,
+                C>::value,
+            typename Graph::VertexIterator,
+            typename Graph::ConstVertexIterator>::Type
+        Father;
+
+        /**
          * @brief Constructor.
          * @param iter The iterator of the underlying graph.
          * @param graph The property graph over whose vertices we iterate.
          */
-        explicit VertexIteratorT(const typename Graph::ConstVertexIterator& iter,
+        explicit VertexIteratorT(const Father& iter,
                                  C* graph);
 
 
@@ -804,7 +1061,7 @@ namespace Dune
          * constructed this way.
          * @param iter The iterator of the underlying graph.
          */
-        explicit VertexIteratorT(const typename Graph::ConstVertexIterator& iter);
+        explicit VertexIteratorT(const Father& iter);
 
         /**
          * @brief Copy Constructor.
@@ -950,17 +1207,29 @@ namespace Dune
        * @brief Constructor.
        * @param graph The graph we attach properties to.
        */
-      PropertiesGraph(const Graph& graph);
+      PropertiesGraph(Graph& graph);
 
     private:
       /** @brief The graph the properties are attached to. */
-      const Graph& graph_;
+      Graph& graph_;
       /** @brief The vertex properties. */
       std::vector<VertexProperties> vertexProperties_;
       /** @brief The edge properties. */
       std::vector<EdgeProperties> edgeProperties_;
     };
 
+
+    /**
+     * @brief Visit all neighbour vertices of a vertex in a graph.
+     *
+     * @param vertex The vertex whose neighbours we want to
+     * visit.
+     * @param visitor The visitor evaluated for each EdgeIterator
+     * (by its method operator()(const ConstEdgeIterator& edge)
+     */
+    template<class G, class V>
+    void visitNeighbours(const G& graph, const typename G::VertexDescriptor& vertex,
+                         V& visitor);
 
     template<class M>
     MatrixGraph<M>::MatrixGraph(M& matrix)
@@ -1059,7 +1328,7 @@ namespace Dune
     template<class C>
     template<class C1>
     MatrixGraph<M>::EdgeIteratorT<C>::EdgeIteratorT(const EdgeIteratorT<C1>& other)
-      : source_(other.source_), block_(other.block_), blockEnd_(other.blockEnd_)
+      : source_(other.source_), block_(other.block_), blockEnd_(other.blockEnd_), edge_(other.edge_)
     {}
 
 
@@ -1519,24 +1788,167 @@ namespace Dune
       ++endVertex_;
     }
 
-    template<class G, class V, class E>
+    template<class G, class V>
+    inline typename VertexPropertiesGraph<G,V>::EdgeIterator
+    VertexPropertiesGraph<G,V>::beginEdges(const VertexDescriptor& source)
+    {
+      return graph_.beginEdges(source);
+    }
+
+    template<class G, class V>
+    inline typename VertexPropertiesGraph<G,V>::EdgeIterator
+    VertexPropertiesGraph<G,V>::endEdges(const VertexDescriptor& source)
+    {
+      return graph_.endEdges(source);
+    }
+
+    template<class G, class V>
+    typename VertexPropertiesGraph<G,V>::ConstEdgeIterator
+    inline VertexPropertiesGraph<G,V>::beginEdges(const VertexDescriptor& source) const
+    {
+      return graph_.beginEdges(source);
+    }
+
+    template<class G, class V>
+    typename VertexPropertiesGraph<G,V>::ConstEdgeIterator
+    VertexPropertiesGraph<G,V>::endEdges(const VertexDescriptor& source) const
+    {
+      return graph_.endEdges(source);
+    }
+
+    template<class G, class V>
     template<class C>
-    PropertiesGraph<G,V,E>::EdgeIteratorT<C>::EdgeIteratorT(const typename G::ConstEdgeIterator& iter,
-                                                            C* graph)
-      : G::ConstEdgeIterator(iter), graph_(graph)
+    VertexPropertiesGraph<G,V>::VertexIteratorT<C>
+    ::VertexIteratorT(const Father& iter,
+                      C* graph)
+      : Father(iter), graph_(graph)
+    {}
+
+    template<class G, class V>
+    template<class C>
+    VertexPropertiesGraph<G,V>::VertexIteratorT<C>
+    ::VertexIteratorT(const Father& iter)
+      : Father(iter)
+    {}
+
+    template<class G, class V>
+    template<class C>
+    template<class C1>
+    VertexPropertiesGraph<G,V>::VertexIteratorT<C>
+    ::VertexIteratorT(const VertexIteratorT<C1>& other)
+      : Father(other), graph_(other.graph_)
+    {}
+
+    template<class G, class V>
+    template<class C>
+    typename SelectType<SameType<C,typename RemoveConst<C>::Type>::value,
+        V&, const V&>::Type
+    inline VertexPropertiesGraph<G,V>::VertexIteratorT<C>::properties() const
+    {
+      return graph_->getVertexProperties(Father::operator*());
+    }
+
+    template<class G, class V>
+    template<class C>
+    typename SelectType<SameType<typename RemoveConst<C>::Type,
+            C>::value,
+        typename G::EdgeIterator,
+        typename G::ConstEdgeIterator>::Type
+    inline VertexPropertiesGraph<G,V>::VertexIteratorT<C>::begin() const
+    {
+      return graph_->beginEdges(Father::operator*());
+    }
+
+    template<class G, class V>
+    template<class C>
+    typename SelectType<SameType<typename RemoveConst<C>::Type,
+            C>::value,
+        typename G::EdgeIterator,
+        typename G::ConstEdgeIterator>::Type
+    inline VertexPropertiesGraph<G,V>::VertexIteratorT<C>::end() const
+    {
+      return graph_->endEdges(Father::operator*());
+    }
+
+    template<class G, class V>
+    inline typename VertexPropertiesGraph<G,V>::VertexIterator VertexPropertiesGraph<G,V>::begin()
+    {
+      return VertexIterator(graph_.begin(), this);
+    }
+
+    template<class G, class V>
+    inline typename VertexPropertiesGraph<G,V>::VertexIterator VertexPropertiesGraph<G,V>::end()
+    {
+      return VertexIterator(graph_.end());
+    }
+
+
+    template<class G, class V>
+    inline typename VertexPropertiesGraph<G,V>::ConstVertexIterator VertexPropertiesGraph<G,V>::begin() const
+    {
+      return ConstVertexIterator(graph_.begin(), this);
+    }
+
+    template<class G, class V>
+    inline typename VertexPropertiesGraph<G,V>::ConstVertexIterator VertexPropertiesGraph<G,V>::end() const
+    {
+      return ConstVertexIterator(graph_.end());
+    }
+
+    template<class G,  class V>
+    inline V& VertexPropertiesGraph<G,V>::getVertexProperties(const VertexDescriptor& vertex)
+    {
+      return vertexProperties_[vertex];
+    }
+
+    template<class G,  class V>
+    inline const V& VertexPropertiesGraph<G,V>::getVertexProperties(const VertexDescriptor& vertex) const
+    {
+      return vertexProperties_[vertex];
+    }
+
+    template<class G, class V>
+    inline const G& VertexPropertiesGraph<G,V>::graph() const
+    {
+      return graph_;
+    }
+
+    template<class G, class V>
+    inline int VertexPropertiesGraph<G,V>::noVertices() const
+    {
+      return graph_.noVertices();
+    }
+
+
+    template<class G, class V>
+    inline typename VertexPropertiesGraph<G,V>::VertexDescriptor VertexPropertiesGraph<G,V>::maxVertex() const
+    {
+      return graph_.maxVertex();
+    }
+
+    template<class G, class V>
+    VertexPropertiesGraph<G,V>::VertexPropertiesGraph(Graph& graph)
+      : graph_(graph), vertexProperties_(graph_.maxVertex(), V())
     {}
 
     template<class G, class V, class E>
     template<class C>
-    PropertiesGraph<G,V,E>::EdgeIteratorT<C>::EdgeIteratorT(const typename G::ConstEdgeIterator& iter)
-      : G::ConstEdgeIterator(iter)
+    PropertiesGraph<G,V,E>::EdgeIteratorT<C>::EdgeIteratorT(const Father& iter,
+                                                            C* graph)
+      : Father(iter), graph_(graph)
+    {}
+
+    template<class G, class V, class E>
+    template<class C>
+    PropertiesGraph<G,V,E>::EdgeIteratorT<C>::EdgeIteratorT(const Father& iter)
+      : Father(iter)
     {}
 
     template<class G, class V, class E>
     template<class C>
     template<class C1>
     PropertiesGraph<G,V,E>::EdgeIteratorT<C>::EdgeIteratorT(const EdgeIteratorT<C1>& other)
-      : G::ConstEdgeIterator(other), graph_(other.graph_)
+      : Father(other), graph_(other.graph_)
     {}
 
     template<class G, class V, class E>
@@ -1544,7 +1956,7 @@ namespace Dune
     inline typename SelectType<SameType<C,typename RemoveConst<C>::Type>::value,E&,const E&>::Type
     PropertiesGraph<G,V,E>::EdgeIteratorT<C>::properties() const
     {
-      return graph_->getEdgeProperties(G::ConstEdgeIterator::operator*());
+      return graph_->getEdgeProperties(Father::operator*());
     }
 
     template<class G, class V, class E>
@@ -1575,58 +1987,58 @@ namespace Dune
       return ConstEdgeIterator(graph_.endEdges(source));
     }
 
-    template<class G,class V, class E>
+    template<class G, class V, class E>
     template<class C>
     PropertiesGraph<G,V,E>::VertexIteratorT<C>
-    ::VertexIteratorT(const typename Graph::ConstVertexIterator& iter,
+    ::VertexIteratorT(const Father& iter,
                       C* graph)
-      : G::ConstVertexIterator(iter), graph_(graph)
+      : Father(iter), graph_(graph)
     {}
 
-    template<class G,class V, class E>
+    template<class G, class V, class E>
     template<class C>
     PropertiesGraph<G,V,E>::VertexIteratorT<C>
-    ::VertexIteratorT(const typename Graph::ConstVertexIterator& iter)
-      : G::ConstVertexIterator(iter)
+    ::VertexIteratorT(const Father& iter)
+      : Father(iter)
     {}
 
-    template<class G,class V, class E>
+    template<class G, class V, class E>
     template<class C>
     template<class C1>
     PropertiesGraph<G,V,E>::VertexIteratorT<C>
     ::VertexIteratorT(const VertexIteratorT<C1>& other)
-      : G::ConstVertexIterator(other), graph_(other.graph_)
+      : Father(other), graph_(other.graph_)
     {}
 
-    template<class G,class V, class E>
+    template<class G, class V, class E>
     template<class C>
     typename SelectType<SameType<C,typename RemoveConst<C>::Type>::value,
         V&, const V&>::Type
     inline PropertiesGraph<G,V,E>::VertexIteratorT<C>::properties() const
     {
-      return graph_->getVertexProperties(Graph::ConstVertexIterator::operator*());
+      return graph_->getVertexProperties(Father::operator*());
     }
 
-    template<class G,class V, class E>
+    template<class G, class V, class E>
     template<class C>
     PropertiesGraph<G,V,E>::EdgeIteratorT<C>
     inline PropertiesGraph<G,V,E>::VertexIteratorT<C>::begin() const
     {
-      return graph_->beginEdges(Graph::ConstVertexIterator::operator*());
+      return graph_->beginEdges(Father::operator*());
     }
 
-    template<class G,class V, class E>
+    template<class G, class V, class E>
     template<class C>
     PropertiesGraph<G,V,E>::EdgeIteratorT<C>
     inline PropertiesGraph<G,V,E>::VertexIteratorT<C>::end() const
     {
-      return graph_->endEdges(Graph::ConstVertexIterator::operator*());
+      return graph_->endEdges(Father::operator*());
     }
 
     template<class G, class V, class E>
     inline typename PropertiesGraph<G,V,E>::VertexIterator PropertiesGraph<G,V,E>::begin()
     {
-      return VertexIterator(static_cast<const G&>(graph_).begin(), this);
+      return VertexIterator(graph_.begin(), this);
     }
 
     template<class G, class V, class E>
@@ -1706,10 +2118,21 @@ namespace Dune
     }
 
     template<class G, class V, class E>
-    PropertiesGraph<G,V,E>::PropertiesGraph(const Graph& graph)
+    PropertiesGraph<G,V,E>::PropertiesGraph(Graph& graph)
       : graph_(graph), vertexProperties_(graph_.maxVertex(), V()),
         edgeProperties_(graph_.noEdges(), E())
     {}
+
+    template<class G, class V>
+    inline void visitNeighbours(const G& graph, const typename G::VertexDescriptor& vertex,
+                                V& visitor)
+    {
+      typedef typename G::ConstEdgeIterator iterator;
+      const iterator end = graph.endEdges(vertex);
+      for(iterator edge = graph.beginEdges(vertex); edge != end; ++edge)
+        visitor(edge);
+    }
+
 
     /** @} */
   }
