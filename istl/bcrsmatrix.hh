@@ -74,7 +74,32 @@ namespace Dune {
     enum {blocklevel = B::blocklevel+1};
 
     //! we support two modes
-    enum BuildMode {row_wise, random, unknown};
+    enum BuildMode {
+      /**
+       * @brief Build in a row-wise manner.
+       *
+       * Rows are built up in sequential order. Size of the row and
+       * the column indices are defined. A row can be used as soon as it
+       * is initialized. With respect to memory there are two variants of
+       * this scheme: (a) number of non-zeroes known in advance (application
+       * finite difference schemes), (b) number of non-zeroes not known
+       * in advance (application: Sparse LU, ILU(n)).
+       */
+      row_wise,
+      /**
+       * @brief Build entries randomly.
+       *
+       * For general finite element implementations the number of rows n
+       * is known, the number of non-zeroes might also be known (e.g.
+       * #edges + #nodes for P1) but the size of a row and the indices of a row
+       * can not be defined in sequential order.
+       */
+      random,
+      /**
+       * @brief Build mode not set!
+       */
+      unknown
+    };
 
 
     //===== random access interface to rows of the matrix
