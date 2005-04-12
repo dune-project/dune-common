@@ -552,8 +552,8 @@ namespace Dune
         hel_.vpointer[i][j] = 0.0;
 
     maxlevel = grid_.maxlevel();
-    noe = grid_.size(maxlevel,0);
-    nov = grid_.size(maxlevel,dim);
+    noe = grid_.global_size(0);
+    nov = grid_.global_size(dim);
 
     hel_.display = (void *) this;
     hel_.liter = NULL;

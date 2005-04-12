@@ -37,6 +37,7 @@ namespace GrapeInterface_three_three
 namespace Dune
 {
 
+  static int __MaxPartition = 1;
   // the interface to dune
   template <int dim, int dimworld>
   struct GrapeInterface
@@ -130,7 +131,7 @@ namespace Dune
 
     inline static void init()
     {
-      GrapeInterface_three_three::initPartitionDisp(2);
+      GrapeInterface_three_three::initPartitionDisp(__MaxPartition);
       GrapeInterface_three_three::grape_add_remove_methods();
       //if((!leafButton) || (!maxlevelButton))
       //GrapeInterface_two_two::setupLeafButton(mgr,tsc,1);

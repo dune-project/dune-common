@@ -47,6 +47,8 @@ inline void timeSceneInit(INFO *info, int n_info, int procs, int time_bar)
   int n,p;
   int numProcs = (procs <= 1) ? 1 : (procs-1);
 
+  Dune :: __MaxPartition = numProcs;
+
   for (n = 0; n < MAXIMUM(1, n_info); n++)
   {
     printf("n = %d, make TimeScene \n",n);

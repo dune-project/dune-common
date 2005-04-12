@@ -109,12 +109,10 @@ static double maxTime = 200;
 
 static int * globalLastStep = 0 ;
 
-/* Anfang: Ralph, partdisp.c  */
-
 static GRAPHICDEVICE * dev = 0 ;
 static double colorbarHeight = 1.8, colorbarWidth = 0.07,
               colorbarBoundingScale = 0.1 ;
-static double colorbarX = -0.55, colorbarY = -0.9 , colorbarZ = 0.9 ;
+static double colorbarX = -0.75, colorbarY = -0.9 , colorbarZ = 0.9 ;
 static void (*patch_normal)(const double *),
 (*patch_color)(const double *),
 (*patch_vertex)(const double *),
@@ -122,7 +120,7 @@ static void (*patch_normal)(const double *),
 (*move)(const double *),
 (*draw)(const double *),
 (*text)(const double*, const char*);
-/* Ende: Ralph, partdisp.c  */
+
 static int initColorBarDone = 0;
 
 static void set_colors (int currProcs);
@@ -371,6 +369,7 @@ inline void initPartitionDisp (int mp)
 
     printf("Add Method 'switch-part-light-model-on-off' on GenMesh3d!\n");
     GRAPE(GenMesh3d,"add-method") ("switch-part-light-model-on-off",genmesh3d_switch_part_light_model_on_off);
+
     printf("Add Method 'switch-part-displaybar-on-off' on GenMesh3d!\n");
     GRAPE(GenMesh3d,"add-method") ("switch-part-displaybar-on-off",genmesh3d_switch_part_displaybar_on_off);
     GRAPE(GenMesh3d,"add-method") ("switch-part-diagnostic-on-off",genmesh3d_switch_part_diagnostic_on_off);
