@@ -983,7 +983,7 @@ namespace Dune
   inline const IndexPair<typename I::GlobalIndexType, typename I::LocalIndexType>&
   GlobalLookupIndexSet<I>::pair(const std::size_t& local) const
   {
-    return indexSet_.localIndices_[local];
+    return indexSet_.localIndices_[index_[local]];
   }
 
   template<class I>
