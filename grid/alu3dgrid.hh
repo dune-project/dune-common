@@ -1145,6 +1145,8 @@ namespace Dune
        return true if a least one entity was refined */
     bool adapt ( );
 
+    template <class DofManagerType, class RestrictProlongOperatorType>
+    bool adapt (DofManagerType &, RestrictProlongOperatorType &);
 
     //**********************************************************
     // End of Interface Methods
@@ -1210,9 +1212,6 @@ namespace Dune
     // make grid walkthrough and calc global size
     void recalcGlobalSize();
 
-    // set _coarsenMark to true
-    void setCoarsenMark() const;
-
     // the real grid
     ALU3DSPACE GitterImplType * mygrid_;
 #ifdef _ALU3DGRID_PARALLEL_
@@ -1224,8 +1223,9 @@ namespace Dune
     // max level of grid
     int maxlevel_;
 
-    // true if at least one element is marked for coarsening
-    mutable bool coarsenMark_;
+    // count how much elements where marked
+    mutable int coarsenMarked_;
+    mutable int refineMarked_;
 
     const int myRank_;
 
