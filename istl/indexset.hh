@@ -869,7 +869,7 @@ namespace Dune
     if(probe==-1)
       DUNE_THROW(RangeError, "No entries!");
 
-    if( localIndices_[probe].global() != global)
+    if( localIndices_[low].global() != global)
       DUNE_THROW(RangeError, "Could not find entry of "<<global);
     else
 #endif
@@ -968,7 +968,7 @@ namespace Dune
     index_ = new std::size_t[indexSet_.size()];
     const_iterator end_ = indexSet_.end();
     size_t i=0;
-    for(const_iterator pair = indexSet_.begin(); pair!=end; ++pair, ++i)
+    for(const_iterator pair = indexSet_.begin(); pair!=end_; ++pair, ++i)
       index_[pair->local()] = i;
   }
 
