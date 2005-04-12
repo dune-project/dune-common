@@ -56,16 +56,109 @@ namespace ALU3dGridSpace {
     virtual void recvData ( ObjectStreamType & str , HGhostType & ghost )
     {
       // set ghost as entity
-      //en_.setGhost( static_cast <PLLBndFaceType &> (ghost) );
-
       PLLBndFaceType & gh = static_cast <PLLBndFaceType &> (ghost);
+      /*
+         if(gh.ghostLevel() < ghost.level())
+         {
+         HElementType & up = *(gh.getGhost()->up());
+         realEntity_.setGhost( up );
+         }
+         else
+         {
+         realEntity_.setGhost( *(gh.getGhost()) );
+         }
+       */
       realEntity_.setGhost( *(gh.getGhost()) );
-
       dc_.gather(str, en_);
     }
 
   };
 
-}
+  template <class GridType, class EntityType,
+      class DofManagerType, class RestrictProlongOperatorType >
+  class AdaptRestrictProlongImpl : public AdaptRestrictProlongType
+  {
+    GridType & grid_;
+    typedef typename GridType::template codim<0>::Entity Entity;
+
+    Entity & reFather_;
+    Entity & reSon_;
+    EntityType & realFather_;
+    EntityType & realSon_;
+
+    DofManagerType & dm_;
+    RestrictProlongOperatorType & rp_;
+
+    int maxlevel_;
+    int chunkSize_;
+
+  public:
+    //! Constructor
+    AdaptRestrictProlongImpl (GridType & grid, EntityType & f, EntityType & s,
+                              DofManagerType &dm, RestrictProlongOperatorType & rp, int chunkSize )
+      : grid_(grid), reFather_(f), reSon_(s), realFather_(f)
+        , realSon_(s) , dm_(dm), rp_(rp) , maxlevel_(-1) , chunkSize_(chunkSize) {}
+
+    virtual ~AdaptRestrictProlongImpl () {};
+
+    //! restrict data , elem is always the father
+    int preCoarsening ( HElemType & elem )
+    {
+      // set element and then start
+      HElemType * son = elem.down();
+      if(elem.level() > maxlevel_) maxlevel_ = elem.level();
+      //elem.resetRefinedTag();
+      assert( son );
+
+      dm_.resizeChunk(elem.getIndex(),chunkSize_);
+
+      realSon_.setElement(*son);
+      realFather_.setElement(elem);
+      rp_.restrictLocal(reFather_,reSon_,true);
+
+      son = son->next();
+      while( son )
+      {
+        realSon_.setElement(*son);
+        rp_.restrictLocal(reFather_,reSon_,false);
+        son = son->next();
+      }
+      return 0;
+    }
+
+    //! prolong data, elem is the father
+    int postRefinement ( HElemType & elem )
+    {
+      // set element and then start
+      HElemType * son = elem.down();
+      assert( son );
+      //elem.resetRefinedTag();
+
+      dm_.resizeChunk((*son).getIndex(),chunkSize_);
+
+      realFather_.setElement(elem);
+      realSon_.setElement(*son);
+      if(realSon_.level() > maxlevel_) maxlevel_ = realSon_.level();
+
+      rp_.prolongLocal(reFather_,reSon_,false);
+
+      son = son->next();
+      while( son )
+      {
+        assert( son );
+        dm_.resizeChunk((*son).getIndex(),chunkSize_);
+        realSon_.setElement(*son);
+        rp_.prolongLocal(reFather_,reSon_,false);
+        //(*son).resetRefinedTag();
+
+        son = son->next();
+      }
+      return 0;
+    }
+
+    int maxlevel () const { return maxlevel_; }
+  };
+
+} // end namespace
 
 #endif
