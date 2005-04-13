@@ -590,7 +590,9 @@ void iterate(Grid &g)
     lit->geometry().type();
     lit->geometry().corners();
     lit->geometry()[0];
+#if 0
     lit->geometry().refelem();
+#endif
   }
 
 };
