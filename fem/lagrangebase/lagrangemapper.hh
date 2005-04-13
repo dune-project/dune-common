@@ -56,7 +56,7 @@ namespace Dune {
       dofCodim_[0] = dimrange;
     }
 
-    ~LagrangeMapper () {}
+    virtual ~LagrangeMapper () {}
 
     //! return size, i.e. size of functions space
     //! the default is Lagrange polord == 1
@@ -152,7 +152,7 @@ namespace Dune {
     LagrangeMapper ( IndexSetType & is, int numLocalDofs , int level )
       : numLocalDofs_ (numLocalDofs) , level_(level) , indexSet_ (is) {}
 
-    ~LagrangeMapper () {}
+    virtual ~LagrangeMapper () {}
 
     //! return size, i.e. size of functions space == number of vertices
     int size () const
@@ -236,7 +236,7 @@ namespace Dune {
       : numberOfDofs_ (numDofs) , indexSet_ (is) , level_(level) {}
 
     // we have virtual function ==> virtual destructor
-    ~LagrangeMapper () {}
+    virtual ~LagrangeMapper () {}
 
     //! return size of function space, here number of elements
     int size () const
@@ -320,7 +320,7 @@ namespace Dune {
       : indexSet_ (is) , level_(level) {}
 
     // we have virtual function ==> virtual destructor
-    ~LagrangeMapper () {}
+    virtual ~LagrangeMapper () {}
 
     //! return size of function space, here number of elements
     int size () const
