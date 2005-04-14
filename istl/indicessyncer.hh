@@ -60,8 +60,22 @@ namespace Dune
      *
      * Computes the missing indices in the local and the remote index list and adds them.
      * No global communication is necessary!
+     * All indices added to the index will become the local index
+     * std::numeric_limits<size_t>::max()
      */
     void sync();
+
+    /**
+     * @brief Synce the index set and assign local numbers to new indices
+     *
+     * Computes the missing indices in the local and the remote index list and adds them.
+     * No global communication is necessary!
+     * @param numberer Functor providing the local indices for the added global indices.
+     * has to provide a function size_t operator()(const TG& global) that provides the
+     * local index to a global one. It will be called for ascending global indices.
+     */
+    template<typename T>
+    void sync(T& numberer);
 
   private:
 
@@ -94,6 +108,23 @@ namespace Dune
        * we publish to each neighbour process.
        */
       int pairs;
+    };
+
+    /**
+     * @brief Default numberer for sync().
+     */
+    class DefaultNumberer
+    {
+    public:
+      /**
+       * @brief Provide the lcoal index, always
+       * std::numeric_limits<size_t>::max()
+       * @param global The global index (ignored).
+       */
+      size_t operator()(const TG& global)
+      {
+        return std::numeric_limits<size_t>::max();
+      }
     };
 
     /** @brief The mpi datatype for the MessageInformation */
@@ -300,8 +331,10 @@ namespace Dune
     /**
      * @brief Recv and unpack the message from another process and add the indices.
      * @param source The rank of the process we receive from.
+     * @param numberer Functor providing local indices for added global indices.
      */
-    void recvAndUnpack(int source);
+    template<typename T>
+    void recvAndUnpack(int source, T& numberer);
 
     /**
      * @brief Register the MPI datatype for the MessageInformation.
@@ -588,7 +621,15 @@ namespace Dune
   }
 
   template<typename  TG, typename TA, int N>
-  void IndicesSyncer<TG,TA,N>::sync()
+  inline void IndicesSyncer<TG,TA,N>::sync()
+  {
+    DefaultNumberer numberer;
+    sync(numberer);
+  }
+
+  template<typename  TG, typename TA, int N>
+  template<typename T>
+  void IndicesSyncer<TG,TA,N>::sync(T& numberer)
   {
 
     // The pointers to the local indices in the remote indices
@@ -635,9 +676,9 @@ namespace Dune
     for(RemoteIterator remote = remoteIndices_.begin(); remote != rend; ++remote)
       if(remote->first < rank_) {
         packAndSend(remote->first);
-        recvAndUnpack(remote->first);
+        recvAndUnpack(remote->first, numberer);
       }else{
-        recvAndUnpack(remote->first);
+        recvAndUnpack(remote->first, numberer);
         packAndSend(remote->first);
       }
     // No need for the iterator tuples any more
@@ -777,7 +818,8 @@ namespace Dune
   }
 
   template<typename TG, typename TA, int N>
-  void IndicesSyncer<TG,TA,N>::recvAndUnpack(int source)
+  template<typename T>
+  void IndicesSyncer<TG,TA,N>::recvAndUnpack(int source, T& numberer)
   {
     typedef typename IndexSet::const_iterator IndexIterator;
     typedef typename RemoteIndexList::iterator RemoteIndexIterator;
@@ -835,7 +877,8 @@ namespace Dune
 
           if(index == iEnd || index->global() != global) {
             // No, we do not. Add it!
-            indexSet_.add(global,ParallelLocalIndex<TA>(TA(attribute), true));
+            indexSet_.add(global,ParallelLocalIndex<TA>(numberer(global),
+                                                        TA(attribute), true));
           }else{
             // Attributes have to match!
             assert(attribute==index->local().attribute());
