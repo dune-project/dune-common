@@ -15,10 +15,11 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
 {
   typedef typename Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>::iterator IndexIterator;
   typedef Dune::RemoteIndices<TG,TA,N> RemoteIndices;
-  typedef typename RemoteIndices::RemoteIndexList::iterator RemoteIterator;
+  typedef typename RemoteIndices::RemoteIndexList::ModifyIterator RemoteModifier;
+  typedef typename RemoteIndices::RemoteIndexList::const_iterator RemoteIterator;
   typedef Dune::SLList<TG, typename RemoteIndices::RemoteIndexList::Allocator> GlobalList;
-  typedef typename GlobalList::iterator GlobalIterator;
-  typedef Dune::Tuple<RemoteIterator,RemoteIterator,const RemoteIterator> IteratorTuple;
+  typedef typename GlobalList::ModifyIterator GlobalModifier;
+  typedef Dune::Tuple<RemoteModifier,GlobalModifier,const RemoteIterator> IteratorTuple;
   typedef std::map<int,IteratorTuple> IteratorMap;
   typedef typename RemoteIndices::RemoteIndexMap::iterator RemoteMapIterator;
 
@@ -41,8 +42,8 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
       gList.push_back(index->localIndexPair().global());
 
     iterators.insert(std::make_pair(remote->first,
-                                    IteratorTuple(remote->second.first->oneBeforeBegin(),
-                                                  remote->second.first->begin(),
+                                    IteratorTuple(remote->second.first->beginModify(),
+                                                  gList.beginModify(),
                                                   rend
                                                   )));
   }
@@ -63,24 +64,22 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
       for(iterator remote = iterators.begin();
           remote != end; ++remote) {
         // Search for the index
-        while(Dune::Element<1>::get(remote->second) != Dune::Element<2>::get(remote->second)
-              && Dune::Element<1>::get(remote->second)->localIndexPair().global() < index->global()) {
+        while(Dune::Element<0>::get(remote->second) != Dune::Element<2>::get(remote->second)
+              && *(Dune::Element<1>::get(remote->second)) < index->global()) {
           // increment all iterators
           ++(Dune::Element<0>::get(remote->second));
           ++(Dune::Element<1>::get(remote->second));
         }
         // Delete the entry if present
-        if(Dune::Element<1>::get(remote->second) != Dune::Element<2>::get(remote->second)
-           && Dune::Element<1>::get(remote->second)->localIndexPair().global() == index->global()) {
-          assert(&Dune::Element<1>::get(remote->second)->localIndexPair()==&(*index));
+        if(Dune::Element<0>::get(remote->second) != Dune::Element<2>::get(remote->second)
+           && *(Dune::Element<1>::get(remote->second)) == index->global()) {
 
           std::cout<<rank<<": Deleting remote "<<*(Dune::Element<1>::get(remote->second))<<" of process "
                    << remote->first<<std::endl;
-          // positon becomes invalid, so move on
-          ++(Dune::Element<1>::get(remote->second));
 
           // Delete entries
-          Dune::Element<0>::get(remote->second).deleteNext();
+          Dune::Element<0>::get(remote->second).remove();
+          Dune::Element<1>::get(remote->second).remove();
         }
       }
     }
