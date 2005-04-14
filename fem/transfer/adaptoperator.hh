@@ -164,8 +164,10 @@ namespace Dune {
       if(restr || ref)
         dm_.dofCompress();
 
-      //grid_.loadBalance( dm_ );
-      //grid_.communicate( dm_ );
+#ifdef _ALU3DGRID_PARALLEL_
+      grid_.loadBalance( dm_ );
+      grid_.communicate( dm_ );
+#endif
 
       // do cleanup
       grid_.postAdapt();
@@ -259,10 +261,6 @@ namespace Dune {
       calcedWeight_ = true;
     }
 
-    // assume constant weihgt, i.e. grid is refined and coarsend
-    // the same way every step
-    mutable bool calcedWeight_;
-
     //! corresponding grid
     mutable GridType & grid_;
 
@@ -271,6 +269,10 @@ namespace Dune {
 
     //! Restriction and Prolongation Operator
     mutable RestProlOperatorImp & rpOp_;
+
+    // assume constant weihgt, i.e. grid is refined and coarsend
+    // the same way every step
+    mutable bool calcedWeight_;
 
   };
 
@@ -344,7 +346,9 @@ namespace Dune {
         df_.localFunction( father, vati_ );
         df_.localFunction( son   , sohn_ );
         for(int i=0; i<vati_.numberOfDofs(); i++)
+        {
           sohn_[i] = vati_[i];
+        }
       }
     }
 
@@ -354,8 +358,8 @@ namespace Dune {
     mutable LocalFunctionType vati_;
     mutable LocalFunctionType sohn_;
 
-    const RangeFieldType weight_;
     const BaryQuadType quad_;
+    const RangeFieldType weight_;
   };
 
 
