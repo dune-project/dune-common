@@ -451,7 +451,7 @@ namespace Dune
      * @brief Get the number of processors we share indices with.
      * @return The number of neighbours.
      */
-    inline int neighbours();
+    inline int neighbours() const;
 
   private:
     /** @brief Index set used at the source of the communication. */
@@ -1372,7 +1372,7 @@ namespace Dune
   }
 
   template<class TG, class TA, int N>
-  inline int RemoteIndices<TG,TA,N>::neighbours()
+  inline int RemoteIndices<TG,TA,N>::neighbours() const
   {
     return remoteIndices_.size();
   }
