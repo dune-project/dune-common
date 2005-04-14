@@ -166,13 +166,13 @@ namespace Dune {
     // name of this func
     const char * name_;
 
-    // MemObject that manages the memory for the dofs of this function
-    MemObjectType & memObj_;
-
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
     //! array containing the dof of this function, see dofmanager.hh
     DofArrayType dofVec_;
+
+    // MemObject that manages the memory for the dofs of this function
+    MemObjectType & memObj_;
 
     //! hold one object for addLocal and setLocal and so on
     LocalFunctionType localFunc_;
