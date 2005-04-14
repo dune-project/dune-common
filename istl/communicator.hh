@@ -1307,9 +1307,6 @@ namespace Dune
     for(const_iterator info = messageInformation_.begin(); info != end; ++info, ++i) {
       processMap[i]=info->first;
       if(FORWARD) {
-        int proc = info->first;
-        int start = info->second.second.start_;
-        int size = info->second.second.size_;
         assert(info->second.second.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.second.size_ <= recvBufferSize );
         MPI_Irecv(recvBuffer+info->second.second.start_, info->second.second.size_,
                   MPI_BYTE, info->first, commTag_, interface_->communicator(),
