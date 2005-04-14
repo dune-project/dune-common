@@ -69,29 +69,26 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 #ifdef _3
   // Get the first three vertices of this side.  Since quadrilateral faces
   // are plane in UG, the normal doesn't depend on the fourth vertex
-  UG3d::VERTEX* a = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex;
-  UG3d::VERTEX* b = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex;
-  UG3d::VERTEX* c = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex;
+  UGCtype* aPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
+  UGCtype* bPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
+  UGCtype* cPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
 
-  FieldVector<UGCtype, 3> aPos, bPos, cPos;
+  FieldVector<UGCtype, 3> ba, ca;
 
-#define CVECT(p)   ((p)->iv.x)
-#define V3_COPY(A,C)    {(C)[0] = (A)[0];   (C)[1] = (A)[1];   (C)[2] = (A)[2];}
-  V3_COPY(CVECT(a), aPos);
-  V3_COPY(CVECT(b), bPos);
-  V3_COPY(CVECT(c), cPos);
-#undef CVECT
-#undef V3_COPY
+  for (int i=0; i<3; i++) {
+    ba[i] = bPos[i] - aPos[i];
+    ca[i] = cPos[i] - aPos[i];
+  }
 
-  FieldVector<UGCtype, 3> ba = bPos - aPos;
-  FieldVector<UGCtype, 3> ca = cPos - aPos;
+  // #define V3_VECTOR_PRODUCT(A,B,C) {(C)[0] = (A)[1]*(B)[2] - (A)[2]*(B)[1];\
+  //                                      (C)[1] = (A)[2]*(B)[0] - (A)[0]*(B)[2];\
+  //                                      (C)[2] = (A)[0]*(B)[1] - (A)[1]*(B)[0];}
 
-#define V3_VECTOR_PRODUCT(A,B,C) {(C)[0] = (A)[1]*(B)[2] - (A)[2]*(B)[1];\
-                                  (C)[1] = (A)[2]*(B)[0] - (A)[0]*(B)[2];\
-                                  (C)[2] = (A)[0]*(B)[1] - (A)[1]*(B)[0];}
-
-  V3_VECTOR_PRODUCT(ba, ca, outerNormal_);
-#undef V3_VECTOR_PRODUCT
+  //     V3_VECTOR_PRODUCT(ba, ca, outerNormal_);
+  // #undef V3_VECTOR_PRODUCT
+  outerNormal_[0] = ba[1]*ca[2] - ba[2]*ca[1];
+  outerNormal_[1] = ba[2]*ca[0] - ba[0]*ca[2];
+  outerNormal_[2] = ba[0]*ca[1] - ba[1]*ca[0];
 
 #endif
 
