@@ -67,7 +67,7 @@ namespace Dune {
      * @param isPublic True if the index might also be
      * known to other processes.
      */
-    ParallelLocalIndex(uint32_t localIndex, const AttributeType& attribute, bool isPublic);
+    ParallelLocalIndex(size_t localIndex, const AttributeType& attribute, bool isPublic);
     /**
      * @brief Parameterless constructor.
      *
@@ -83,7 +83,7 @@ namespace Dune {
      * @param isPublic True if the index might also be
      * known to other processes.
      *
-       ParallelLocalIndex(const AttributeType& attribute, uint32_t local,
+       ParallelLocalIndex(const AttributeType& attribute, size_t local,
        bool isPublic);
      */
     /**
@@ -102,19 +102,19 @@ namespace Dune {
      * @brief get the local index.
      * @return The local index.
      */
-    inline uint32_t local() const;
+    inline size_t local() const;
 
     /**
      * @brief Convert to the local index represented by an int.
      */
-    inline operator uint32_t() const;
+    inline operator size_t() const;
 
     /**
      * @brief Assign a new local index.
      *
      * @param index The new local index.
      */
-    inline ParallelLocalIndex<AttributeType>& operator=(uint32_t index);
+    inline ParallelLocalIndex<AttributeType>& operator=(size_t index);
 
     /**
      * @brief Check whether the index might also be known other processes.
@@ -136,7 +136,7 @@ namespace Dune {
 
   private:
     /** @brief The local index. */
-    uint32_t localIndex_;
+    size_t localIndex_;
 
     /** @brief An attribute for the index. */
     char attribute_;
@@ -859,7 +859,7 @@ namespace Dune
 
 
   template<class T>
-  ParallelLocalIndex<T>::ParallelLocalIndex(uint32_t local, const T& attribute, bool isPublic)
+  ParallelLocalIndex<T>::ParallelLocalIndex(size_t local, const T& attribute, bool isPublic)
     : localIndex_(local), attribute_(static_cast<char>(attribute)),
       public_(static_cast<char>(isPublic)), state_(static_cast<char>(VALID))
   {}
@@ -884,20 +884,20 @@ namespace Dune
   }
 
   template<class T>
-  inline uint32_t ParallelLocalIndex<T>::local() const
+  inline size_t ParallelLocalIndex<T>::local() const
   {
     return localIndex_;
   }
 
   template<class T>
-  inline ParallelLocalIndex<T>::operator uint32_t() const
+  inline ParallelLocalIndex<T>::operator size_t() const
   {
     return localIndex_;
   }
 
   template<class T>
   inline ParallelLocalIndex<T>&
-  ParallelLocalIndex<T>::operator=(uint32_t index)
+  ParallelLocalIndex<T>::operator=(size_t index)
   {
     localIndex_=index;
     return *this;
