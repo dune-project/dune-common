@@ -525,11 +525,6 @@ bool Dune::UGGrid < dim, dimworld >::adapt()
   if (rv!=0)
     DUNE_THROW(GridError, "UG::adapt() returned with error code " << rv);
 
-  // Collapse the complete grid hierarchy into a single level if requested
-  if (refinementType_==COLLAPSE)
-    if (Collapse(multigrid_))
-      DUNE_THROW(GridError, "UG" << dim << "d::Collapse returned error code!");
-
   // Renumber everything
   setLocalIndices();
 

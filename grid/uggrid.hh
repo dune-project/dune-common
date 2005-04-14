@@ -312,14 +312,18 @@ namespace Dune {
       /** \brief New level consists only of the refined elements */
       LOCAL,
       /** \brief New level consists of the refined elements and the unrefined ones, too */
-      COPY,
-      /** \brief %Grid hierarchy is collapsed into a single grid level after refinement */
-      COLLAPSE
+      COPY
     };
 
     /** \brief Sets the type of grid refinement */
     void setRefinementType(RefinementType type) {
       refinementType_ = type;
+    }
+
+    /** \brief Collapses the grid hierarchy into a single grid */
+    void collapse() {
+      if (Collapse(multigrid_))
+        DUNE_THROW(GridError, "UG" << dim << "d::Collapse() returned error code!");
     }
 
     /** \brief Read access to the UG-internal grid name */
