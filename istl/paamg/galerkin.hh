@@ -5,6 +5,7 @@
 #define DUNE_GALERKIN_HH
 
 #include "aggregates.hh"
+#include <set>
 
 namespace Dune
 {
@@ -33,8 +34,8 @@ namespace Dune
        * be stored
        */
       template<class M, class G, class I, class A, class Set>
-      void build(const M& fine, const G& fineGraph, const I& fineIndices, const A aggregates, M& coarse,
-                 const Set& overlap);
+      M* build(const M& fine, const G& fineGraph, const I& fineIndices, const A aggregates,
+               const Set& overlap);
 
 
     private:
@@ -111,7 +112,7 @@ namespace Dune
          * @param aggregates The mapping of the vertices onto the aggregates.
          * @param connected The set to added the connected aggregates to.
          */
-        ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, Set& connected);
+        ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, Graph& graph, Set& connected);
 
         /**
          * @brief Process an edge pointing to another aggregate.
@@ -124,6 +125,9 @@ namespace Dune
          * @brief The mapping of the vertices onto the aggregates.
          */
         const AggregatesMap<Vertex>& aggregates_;
+
+        Graph& graph_;
+
         /**
          * @brief The set to add the connected vertices to.
          */
@@ -176,7 +180,7 @@ namespace Dune
                                                 const AggregatesMap<typename G::VertexDescriptor>& aggregates,
                                                 const typename G::VertexDescriptor& seed)
     {
-      connected.put(aggregates[seed]);
+      connected.insert(aggregates[seed]);
       ConnectedBuilder<G,S> conBuilder(aggregates, connected);
       aggregates.breadthFirstSearch(seed,aggregates[seed],graph, conBuilder);
     }
@@ -187,7 +191,7 @@ namespace Dune
                                                        const OverlapVertex<typename G::VertexDescriptor>* seed)
     {
       const typename G::VertexDescriptor aggregate=seed.aggregate;
-      connected.put(aggregate);
+      connected.insert(aggregate);
       ConnectedBuilder<G,S> conBuilder(aggregates, connected);
       while(aggregate != seed.aggregate) {
         // Walk over all neighbours and add them to the connected array.
@@ -199,14 +203,16 @@ namespace Dune
     }
 
     template<class G, class S>
-    GalerkinProduct::ConnectedBuilder<G,S>::ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, Set& connected)
-      : aggregates_(aggregates), connected_(connected)
+    GalerkinProduct::ConnectedBuilder<G,S>::ConnectedBuilder(const AggregatesMap<Vertex>& aggregates,
+                                                             Graph& graph, Set& connected)
+      : aggregates_(aggregates), graph_(graph), connected_(connected)
     {}
 
 
     template<class G, class S>
     void GalerkinProduct::ConnectedBuilder<G,S>::operator()(const ConstEdgeIterator& edge)
     {
+      graph_.getVertextProperties(edge.target()).setVisited();
       connected_.put(edge.target());
     }
 
@@ -268,6 +274,7 @@ namespace Dune
       typedef typename I::const_iterator IndexIterator;
       const IndexIterator end = indices.end();
       int nonzeros = 0;
+      int unknowns = 0;
 
       for(IndexIterator index=indices.begin(); index != end; ++index) {
         connected.clear();
@@ -280,12 +287,45 @@ namespace Dune
             constructConnectivity(connected, graph, aggregates, index);
           }
           nonzeros += connected.size();
+          ++unknowns;
         }
       }
       connected.clear();
 
-      return nonzeros;
+      // Reset the visited flags of all vertices.
+      typedef typename G::iterator Vertex;
+      Vertex vend = graph.end();
+      for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
+        vertex.properties().resetVisited();
+      return std::make_pair(unknowns,nonzeros);
     }
+
+    template<class M, class G, class I, class A, class Set>
+    M* GalerkinProduct::build(const M& fine, const G& fineGraph,
+                              const I& fineIndices, const A aggregates,
+                              const Set& overlap)
+    {
+
+      typedef OverlapVertex<typename G::VertexDescriptor> OverlapVertex;
+      std::set<typename G::VertexDescriptor> connected;
+      OverlapVertex* overlapVertices = buildOverlapVertices(fineGraph,
+                                                            fineIndices,
+                                                            aggregates,
+                                                            overlap);
+      int nonZeros, unknowns;
+      std::pair<int&,int&> res(nonZeros,unknowns);
+
+      res = countNonZeros(connected,
+                          fineGraph,
+                          fineIndices,
+                          aggregates,
+                          overlap,
+                          overlapVertices);
+      M* coarseMatrix = new M(unknowns, unknowns, nonZeros, M::row_wise);
+
+      return coarseMatrix;
+    }
+
   } // namespace Amg
 } // namespace Dune
 #endif
