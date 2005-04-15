@@ -493,7 +493,7 @@ void testGraph ()
   Dune::Amg::Aggregates<PropertiesGraph> aggregates;
   Dune::Amg::AggregatesMap<int> aggregatesMap(pgraph.maxVertex());
   aggregates.build(laplacian2d, pgraph,  aggregatesMap, crit);
-  Dune::Amg::printAggregates2d(aggregatesMap, N, std::cout);
+  Dune::Amg::printAggregates2d(aggregatesMap, N, N, std::cout);
 
 }
 
@@ -545,13 +545,13 @@ void testAggregate(double eps)
 
   aggregates.build(mat, pgraph, aggregatesMap, crit);
 
-  Dune::Amg::printAggregates2d(aggregatesMap, N, std::cout);
+  Dune::Amg::printAggregates2d(aggregatesMap, N, N, std::cout);
 
   std::cout<<"Excluded!"<<std::endl;
 
   Dune::Amg::AggregatesMap<int> saggregatesMap(pgraph.maxVertex());
   saggregates.build(mat, spgraph, saggregatesMap, scrit);
-  Dune::Amg::printAggregates2d(saggregatesMap, N, std::cout);
+  Dune::Amg::printAggregates2d(saggregatesMap, N, N, std::cout);
 
 
 
