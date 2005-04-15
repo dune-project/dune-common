@@ -642,9 +642,18 @@ namespace Dune
 
     const RemoteIterator end = remoteIndices_.end();
 
-    for(RemoteIterator remote = remoteIndices_.begin(); remote != end; ++remote) {
+    // Number of neighbours might change during the syncing.
+    // save the old neighbours
+    int noOldNeighbours = remoteIndices_.neighbours();
+    int* oldNeighbours = new int[noOldNeighbours];
+    int i=0;
+
+    for(RemoteIterator remote = remoteIndices_.begin(); remote != end; ++remote, ++i) {
       typedef typename RemoteIndices::RemoteIndexList::const_iterator
       RemoteIndexIterator;
+
+      oldNeighbours[i]=remote->first;
+
       // Make sure we only have one remote index list.
       assert(remote->second.first==remote->second.second);
 
@@ -673,18 +682,29 @@ namespace Dune
 
     indexSet_.beginResize();
 
-    for(RemoteIterator remote = remoteIndices_.begin(); remote != rend; ++remote)
-      if(remote->first < rank_) {
-        packAndSend(remote->first);
-        recvAndUnpack(remote->first, numberer);
+    std::cout<<rank_<<": neighbours=";
+
+    for(i = 0; i<noOldNeighbours; ++i)
+      std::cout<<oldNeighbours[i]<<" ";
+
+    std::cout<<std::endl;
+
+    for(i = 0; i<noOldNeighbours; ++i) {
+      if(oldNeighbours[i] < rank_) {
+        packAndSend(oldNeighbours[i]);
+        recvAndUnpack(oldNeighbours[i], numberer);
       }else{
-        recvAndUnpack(remote->first, numberer);
-        packAndSend(remote->first);
+        recvAndUnpack(oldNeighbours[i], numberer);
+        packAndSend(oldNeighbours[i]);
       }
+    }
+
     // No need for the iterator tuples any more
     iteratorsMap_.clear();
 
     indexSet_.endResize();
+
+    delete[] oldNeighbours;
 
     repairLocalIndexPointers<TG,TA,typename RemoteIndices::Allocator,N>(globalMap_, remoteIndices_, indexSet_);
 
@@ -781,6 +801,8 @@ namespace Dune
 
     resetIteratorsMap();
 
+    std::cout << rank_<<": Sending message to "<<destination<<std::endl;
+
     MPI_Send(buffer_, bpos, MPI_PACKED, destination, 111, remoteIndices_.communicator());
   }
 
@@ -831,6 +853,8 @@ namespace Dune
     int publish;
 
     assert(checkReset());
+
+    std::cout<<rank_<<": Waiting for message from "<< source<<std::endl;
 
     // Receive the data
     MPI_Status status;
