@@ -479,7 +479,7 @@ namespace Dune
      * @brief Get the total number (public and nonpublic) indices.
      * @return The total number (public and nonpublic) indices.
      */
-    inline int size() const;
+    inline size_t size() const;
 
   private:
     /** @brief The index pairs. */
@@ -591,7 +591,7 @@ namespace Dune
      * @brief Get the total number (public and nonpublic) indices.
      * @return The total number (public and nonpublic) indices.
      */
-    inline int size() const;
+    inline size_t size() const;
   private:
     /**
      * @brief Array with the positions of the corresponding index pair of the index set.
@@ -854,7 +854,7 @@ namespace Dune
   IndexSet<TG,TL,N>::operator[](const TG& global) const
   {
     // perform a binary search
-    int low=0, high=localIndices_.size(), probe=-1;
+    int low=0, high=localIndices_.size()-1, probe=-1;
 
     while(low<high)
     {
@@ -896,7 +896,7 @@ namespace Dune
     if(probe==-1)
       DUNE_THROW(RangeError, "No entries!");
 
-    if( localIndices_[probe].global() != global)
+    if( localIndices_[low].global() != global)
       DUNE_THROW(RangeError, "Could not find entry of "<<global);
     else
 #endif
@@ -956,7 +956,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline int IndexSet<TG,TL,N>::size() const
+  inline size_t IndexSet<TG,TL,N>::size() const
   {
     return localIndices_.size();
   }
@@ -1006,7 +1006,7 @@ namespace Dune
   }
 
   template<class I>
-  inline int GlobalLookupIndexSet<I>::size() const
+  inline size_t GlobalLookupIndexSet<I>::size() const
   {
     return indexSet_.size();
   }
