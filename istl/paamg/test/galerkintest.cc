@@ -5,6 +5,7 @@
 #include <dune/istl/paamg/galerkin.hh>
 #include <dune/istl/paamg/dependency.hh>
 #include <dune/istl/io.hh>
+#include <dune/istl/communicator.hh>
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/istl/paamg/indicescoarsener.hh>
@@ -13,8 +14,10 @@
 enum GridFlag { owner, overlap   };
 
 typedef Dune::ParallelLocalIndex<GridFlag> LocalIndex;
-typedef Dune::IndexSet<int,LocalIndex,100> IndexSet;
-typedef Dune::RemoteIndices<int,GridFlag,100> RemoteIndices;
+typedef Dune::IndexSet<int,LocalIndex,101> IndexSet;
+typedef Dune::RemoteIndices<int,GridFlag,101> RemoteIndices;
+typedef Dune::Interface<int,GridFlag,101> Interface;
+typedef Dune::BufferedCommunicator<int,GridFlag,101> Communicator;
 
 template<int N, class M>
 void setupPattern(M& mat, IndexSet& indices, int overlapStart, int overlapEnd,
@@ -118,7 +121,7 @@ void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end)
 }
 
 template<int N, int BS>
-Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(IndexSet& indices)
+Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(IndexSet& indices, int *nout)
 {
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -156,6 +159,8 @@ Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(IndexSet& 
 
   int noKnown = overlapEnd-overlapStart;
 
+  *nout = noKnown;
+
   BCRSMat mat(noKnown*N, noKnown*N, noKnown*N*5, BCRSMat::row_wise);
 
   setupPattern<N>(mat, indices, overlapStart, overlapEnd, start, end);
@@ -166,13 +171,83 @@ Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(IndexSet& 
   return mat;
 }
 
+template<typename T, typename TG, typename TA, int N>
+struct GlobalAggregatesMap
+{
+public:
+  typedef TG IndexedType;
+
+  GlobalAggregatesMap(Dune::Amg::AggregatesMap<T>& aggregates,
+                      Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& indexset)
+    : aggregates_(aggregates), indexset_(indexset)
+  {}
+
+  inline const TG& operator[](size_t index) const
+  {
+    const T& aggregate = aggregates_[index];
+    const Dune::IndexPair<TG,Dune::ParallelLocalIndex<TA> >& pair = indexset_.pair(aggregate);
+    assert(pair.local()==aggregate);
+    assert(pair.local().attribute()==owner);
+    return pair.global();
+  }
+
+  inline void put(const TG& global, size_t i)
+  {
+    const T& index = indexset_[global].local();
+    aggregates_[i]=index;
+
+  }
+
+private:
+  Dune::Amg::AggregatesMap<T>& aggregates_;
+  Dune::GlobalLookupIndexSet<Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N> > indexset_;
+};
+
+template<typename T, typename TG, typename TA, int N>
+struct AggregatesGatherScatter
+{
+  static const TG& gather(const GlobalAggregatesMap<T,TG,TA,N>& ga, size_t i)
+  {
+    const TG& g = ga[i];
+    return g;
+  }
+
+  static void scatter(GlobalAggregatesMap<T,TG,TA,N>& ga, TG global, size_t i)
+  {
+    ga.put(global, i);
+  }
+};
+
+
+namespace Dune
+{
+  template<typename T, typename TG, typename TA, int N>
+  struct CommPolicy<GlobalAggregatesMap<T,TG,TA,N> >
+  {
+    typedef Amg::AggregatesMap<T> Type;
+    typedef TG IndexedType;
+    typedef SizeOne IndexedTypeFlag;
+    static int getSize(const Type&, int)
+    {
+      return 1;
+    }
+  };
+}
+
 template<int N, int BS>
 void testCoarsenIndices()
 {
+
+  int procs, rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &procs);
+
   IndexSet indices;
   typedef Dune::FieldMatrix<double,BS,BS> Block;
   typedef Dune::BCRSMatrix<Block> BCRSMat;
-  BCRSMat mat = setupAnisotropic2d<N,BS>(indices);
+  int n;
+
+  BCRSMat mat = setupAnisotropic2d<N,BS>(indices, &n);
 
   RemoteIndices remoteIndices(indices,indices,MPI_COMM_WORLD);
   remoteIndices.rebuild<false>();
@@ -181,6 +256,7 @@ void testCoarsenIndices()
   typedef Dune::Amg::SubGraph<Dune::Amg::MatrixGraph<BCRSMat> > SubGraph;
   typedef Dune::Amg::PropertiesGraph<SubGraph,Dune::Amg::VertexProperties,
       Dune::Amg::EdgeProperties> PropertiesGraph;
+  typedef typename PropertiesGraph::VertexDescriptor Vertex;
   typedef Dune::Amg::Aggregates<PropertiesGraph> Aggregates;
   typedef Dune::Amg::SymmetricCriterion<PropertiesGraph,BCRSMat,Dune::Amg::FirstDiagonal>
   Criterion;
@@ -198,7 +274,7 @@ void testCoarsenIndices()
   SubGraph sg(mg, excluded);
   PropertiesGraph pg(sg);
   Aggregates aggregates;
-  Dune::Amg::AggregatesMap<int> aggregatesMap(pg.maxVertex());
+  Dune::Amg::AggregatesMap<Vertex> aggregatesMap(pg.maxVertex());
 
   std::cout << "fine indices: "<<indices << std::endl;
   std::cout << "fine remote: "<<remoteIndices << std::endl;
@@ -208,22 +284,38 @@ void testCoarsenIndices()
   IndexSet coarseIndices;
   RemoteIndices coarseRemote(coarseIndices,coarseIndices, MPI_COMM_WORLD);
 
-  Dune::Amg::IndicesCoarsener<Dune::EnumItem<GridFlag,overlap>,int,GridFlag,100>::coarsen(indices,
+  Dune::Amg::IndicesCoarsener<Dune::EnumItem<GridFlag,overlap>,int,GridFlag,101>::coarsen(indices,
                                                                                           remoteIndices,
                                                                                           pg,
                                                                                           aggregatesMap,
                                                                                           coarseIndices,
                                                                                           coarseRemote);
+  std::cout << rank <<": coarse indices: " <<coarseIndices << std::endl;
+  std::cout << rank <<": coarse remote indices:"<<coarseRemote <<std::endl;
 
-  std::cout << "coarse indices: " <<coarseIndices << std::endl;
-  std::cout << "coarse remote indices:"<<coarseRemote <<std::endl;
 
+  Interface interface;
+  interface.build(remoteIndices, Dune::EnumItem<GridFlag,owner>(), Dune::EnumItem<GridFlag, overlap>());
+  Communicator communicator;
+
+  typedef GlobalAggregatesMap<Vertex,int,GridFlag,101> GlobalMap;
+
+  GlobalMap gmap(aggregatesMap,coarseIndices);
+
+  communicator.build<GlobalMap>(interface);
+
+  Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
+
+  communicator.template forward<AggregatesGatherScatter<int,int,GridFlag,101> >(gmap);
+
+  std::cout<<"Communicated: ";
+  Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
 }
 
 
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
-  testCoarsenIndices<5,1>();
+  testCoarsenIndices<10,1>();
   MPI_Finalize();
 }
