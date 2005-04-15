@@ -37,7 +37,7 @@ namespace Dune {
     assert(mygrid_ != 0);
 
 #ifdef _ALU3DGRID_PARALLEL_
-    loadBalance();
+    //loadBalance();
     __MyRank__ = mpAccess_.myrank();
 #endif
 
@@ -1232,28 +1232,28 @@ namespace Dune {
       // NOTE: &(outNormal_[0]) is a pointer to the inside vector
       // of the FieldVector class, we need this here, because
       // in ALU3dGrid we dont now the type FieldVector
-
-      if( boundary() || ( !daOtherSituation_ ) )
-      {
+      if( boundary()) {
         // if boundary calc normal normal ;)
         (*item_).outerNormal(index_, &(outNormal[0]) );
-      }
-      else
-      {
+      } else {
         if(needSetup_) setNeighbor();
 
-        if(neigh_)
-        {
-          (*neigh_).neighOuterNormal(numberInNeigh_, &(outNormal[0]));
-        }
-        else
-        {
-          assert(ghost_);
-          assert(ghost_->level() != (*item_).level());
+        if (!daOtherSituation_) {
+          (*item_).outerNormal(index_, &(outNormal[0]) );
+        } else {
+          if(neigh_)
+          {
+            (*neigh_).neighOuterNormal(numberInNeigh_, &(outNormal[0]));
+          }
+          else
+          {
+            assert(ghost_);
+            assert(ghost_->level() != (*item_).level());
 
-          // ghostpair_.second stores the twist of the face
-          (*item_).outerNormal(index_, &(outNormal[0]));
-          outNormal *= 0.25;
+            // ghostpair_.second stores the twist of the face
+            (*item_).outerNormal(index_, &(outNormal[0]));
+            outNormal *= 0.25;
+          }
         }
       }
       needNormal_ = false;
