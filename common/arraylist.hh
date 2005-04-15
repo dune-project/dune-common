@@ -110,26 +110,26 @@ namespace Dune
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline T& operator[](int i);
+    inline T& operator[](size_t i);
 
     /**
      * @brief Get the element at specific position.
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline const T& operator[](int i) const;
+    inline const T& operator[](size_t i) const;
 
     /**
      * @brief Get the number of elements in the lisz.
      * @return The number of elements.
      */
-    inline int size() const;
+    inline size_t size() const;
 
     /**
      * @brief Get the current capacity of the list.
      * @return The capacity.
      */
-    inline int capacity() const;
+    inline size_t capacity() const;
 
     /**
      * @brief Purge the list.
@@ -167,11 +167,11 @@ namespace Dune
     std::vector<SmartPointer<FixedArray<MemberType,chunkSize_> >,
         SmartPointerAllocator> chunks_;
     /** @brief The current data capacity. */
-    int capacity_;
+    size_t capacity_;
     /** @brief The current number of elements in our data structure. */
-    int size_;
+    size_t size_;
     /** @brief The index of the first entry. */
-    int start_;
+    size_t start_;
     /**
      * @brief Get the element at specific position.
      *
@@ -180,7 +180,7 @@ namespace Dune
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline T& elementAt(int i);
+    inline T& elementAt(size_t i);
 
     /**
      * @brief Get the element at specific position.
@@ -190,7 +190,7 @@ namespace Dune
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline const T& elementAt(int i) const;
+    inline const T& elementAt(size_t i) const;
   };
 
 
@@ -249,7 +249,7 @@ namespace Dune
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that postion.
      */
-    inline MemberType& elementAt(int i) const;
+    inline MemberType& elementAt(size_t i) const;
 
     /**
      * @brief Access the element at the current position.
@@ -271,13 +271,13 @@ namespace Dune
     inline void eraseToHere();
 
     /** \todo Please doc me! */
-    inline int position(){return position_;}
+    inline size_t position(){return position_;}
 
     /** \todo Please doc me! */
-    inline void advance(int n);
+    inline void advance(size_t n);
 
     /** \todo Please doc me! */
-    inline int distanceTo(const ArrayListIterator<MemberType,N,A>& other) const;
+    inline size_t distanceTo(const ArrayListIterator<MemberType,N,A>& other) const;
 
     /** \todo Please doc me! */
     inline ArrayListIterator<MemberType,N,A>& operator=(const ArrayListIterator<MemberType,N,A>& other);
@@ -292,12 +292,12 @@ namespace Dune
      * @param list The list we are an iterator for.
      * @param position The initial position of the iterator.
      */
-    inline ArrayListIterator(ArrayList<T,N,A>& arrayList, int position);
+    inline ArrayListIterator(ArrayList<T,N,A>& arrayList, size_t position);
 
     /**
      * @brief The current postion.
      */
-    int position_;
+    size_t position_;
     /**
      * @brief The list we are an iterator for.
      */
@@ -350,16 +350,16 @@ namespace Dune
     inline void decrement();
 
     /** \todo Please doc me! */
-    inline void advance(int n);
+    inline void advance(size_t n);
 
     /** \todo Please doc me! */
-    inline int distanceTo(const ConstArrayListIterator<MemberType,N,A>& other) const;
+    inline size_t distanceTo(const ConstArrayListIterator<MemberType,N,A>& other) const;
 
     /**
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that postion.
      */
-    inline const MemberType& elementAt(int i) const;
+    inline const MemberType& elementAt(size_t i) const;
 
     /**
      * @brief Access the element at the current position.
@@ -381,12 +381,12 @@ namespace Dune
      * @param list The list we are an iterator for.
      * @param position The initial position of the iterator.
      */
-    inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, int position);
+    inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, size_t position);
 
     /**
      * @brief The current postion.
      */
-    int position_;
+    size_t position_;
     /**
      * @brief The list we are an iterator for.
      */
@@ -410,13 +410,13 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  int ArrayList<T,N,A>::size() const
+  size_t ArrayList<T,N,A>::size() const
   {
     return size_;
   }
 
   template<class T, int N, class A>
-  int ArrayList<T,N,A>::capacity() const
+  size_t ArrayList<T,N,A>::capacity() const
   {
     return capacity_;
   }
@@ -424,7 +424,7 @@ namespace Dune
   template<class T, int N, class A>
   void ArrayList<T,N,A>::push_back(const T& entry)
   {
-    int index=start_+size_;
+    size_t index=start_+size_;
     if(index==capacity_)
     {
       chunks_.push_back(SmartPointer<FixedArray<MemberType,chunkSize_> >());
@@ -435,27 +435,27 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  T& ArrayList<T,N,A>::operator[](int i)
+  T& ArrayList<T,N,A>::operator[](size_t i)
   {
     return elementAt(start_+i);
   }
 
 
   template<class T, int N, class A>
-  const T& ArrayList<T,N,A>::operator[](int i) const
+  const T& ArrayList<T,N,A>::operator[](size_t i) const
   {
     return elementAt(start_+i);
   }
 
   template<class T, int N, class A>
-  T& ArrayList<T,N,A>::elementAt(int i)
+  T& ArrayList<T,N,A>::elementAt(size_t i)
   {
     return chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
 
 
   template<class T, int N, class A>
-  const T& ArrayList<T,N,A>::elementAt(int i) const
+  const T& ArrayList<T,N,A>::elementAt(size_t i) const
   {
     return chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
@@ -488,10 +488,10 @@ namespace Dune
   void ArrayList<T,N,A>::purge()
   {
     // Distance to copy to the left.
-    int distance = start_/chunkSize_;
+    size_t distance = start_/chunkSize_;
     if(distance>0) {
       // Number of chunks with entries in it;
-      int chunks = ((start_%chunkSize_ + size_)/chunkSize_ );
+      size_t chunks = ((start_%chunkSize_ + size_)/chunkSize_ );
 
       typedef typename std::vector<SmartPointer<FixedArray<MemberType,
                   chunkSize_> > >::iterator iterator;
@@ -507,13 +507,13 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  void ArrayListIterator<T,N,A>::advance(int i)
+  void ArrayListIterator<T,N,A>::advance(size_t i)
   {
     position_+=i;
   }
 
   template<class T, int N, class A>
-  void ConstArrayListIterator<T,N,A>::advance(int i)
+  void ConstArrayListIterator<T,N,A>::advance(size_t i)
   {
     position_+=i;
   }
@@ -570,14 +570,14 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  T& ArrayListIterator<T,N,A>::elementAt(int i) const
+  T& ArrayListIterator<T,N,A>::elementAt(size_t i) const
   {
     i+=position_;
     return list_->elementAt(i+position_);
   }
 
   template<class T, int N, class A>
-  const T& ConstArrayListIterator<T,N,A>::elementAt(int i) const
+  const T& ConstArrayListIterator<T,N,A>::elementAt(size_t i) const
   {
     return list_->elementAt(i+position_);
   }
@@ -595,7 +595,7 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  int ArrayListIterator<T,N,A>::distanceTo(const ArrayListIterator<T,N,A>& other) const
+  size_t ArrayListIterator<T,N,A>::distanceTo(const ArrayListIterator<T,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
@@ -603,7 +603,7 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  int ConstArrayListIterator<T,N,A>::distanceTo(const ConstArrayListIterator<T,N,A>& other) const
+  size_t ConstArrayListIterator<T,N,A>::distanceTo(const ConstArrayListIterator<T,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
@@ -631,14 +631,14 @@ namespace Dune
   {
     list_->size_ -= ++position_ - list_->start_;
     // chunk number of the new position.
-    int posChunkStart = position_ / chunkSize_;
+    size_t posChunkStart = position_ / chunkSize_;
     // number of chunks to deallocate
-    int chunks = (position_ - list_->start_ + list_->start_ % chunkSize_)
-                 / chunkSize_;
+    size_t chunks = (position_ - list_->start_ + list_->start_ % chunkSize_)
+                    / chunkSize_;
     list_->start_ = position_;
 
     // Deallocate memory not needed any more.
-    for(int chunk=0; chunk<chunks; chunk++)
+    for(size_t chunk=0; chunk<chunks; chunk++)
       list_->chunks_[--posChunkStart].deallocate();
 
     // As new entries only get append the capacity shrinks
@@ -646,13 +646,13 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  ArrayListIterator<T,N,A>::ArrayListIterator(ArrayList<T,N,A>& arrayList, int position)
+  ArrayListIterator<T,N,A>::ArrayListIterator(ArrayList<T,N,A>& arrayList, size_t position)
     : position_(position), list_(&arrayList)
   {}
 
 
   template<class T, int N, class A>
-  ConstArrayListIterator<T,N,A>::ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, int position)
+  ConstArrayListIterator<T,N,A>::ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, size_t position)
     : position_(position), list_(&arrayList)
   {}
 
