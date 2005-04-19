@@ -8,10 +8,13 @@
 namespace Dune {
 
   /**
-              @addtogroup COMMON
-              @{
+      @addtogroup DenseMatVec
+      @{
    */
 
+  /**
+   * @brief Precisions for calculations with FieldMatrix and FieldVector.
+   */
   template <class ctype = double>
   class FMatrixPrecision {
   public:

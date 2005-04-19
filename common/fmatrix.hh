@@ -8,22 +8,20 @@
 #include <complex>
 #include <iostream>
 #include "exceptions.hh"
-//#include <dune/istl/allocator.hh>
 #include "fvector.hh"
 #include "precision.hh"
-
-/*! \file
-
-   \brief  This file implements a matrix constructed from a given type
-   representing a field and compile-time given number of rows and columns.
- */
 
 namespace Dune {
 
   /**
               @addtogroup DenseMatVec
-              @ingroup Common
               @{
+   */
+
+  /*! \file
+
+     \brief  This file implements a matrix constructed from a given type
+     representing a field and compile-time given number of rows and columns.
    */
 
   template<class K, int n, int m> class FieldMatrix;
@@ -493,7 +491,10 @@ namespace Dune {
     A[1][1] = C[1][0]*M[0][1] + C[1][1]*M[1][1];
   }
 
-  /** Matrices represent linear maps from a vector space V to a vector space W.
+  /**
+      @brief A dense n x m matrix.
+
+     Matrices represent linear maps from a vector space V to a vector space W.
        This class represents such a linear map by storing a two-dimensional
        array of numbers of a given field type K. The number of rows and
        columns is given at compile time.

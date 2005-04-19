@@ -9,16 +9,15 @@
 
 #include "exceptions.hh"
 
-/*! \file
- * \brief This file implements a vector constructed from a given type
-   representing a field and a compile-time given size.
- */
-
 namespace Dune {
 
   /** @defgroup DenseMatVec Dense Matrix and Vector Template Library
-          @addtogroup DenseMatVec
           @{
+   */
+
+  /*! \file
+   * \brief This file implements a vector constructed from a given type
+     representing a field and a compile-time given size.
    */
 
   // forward declaration of template
@@ -778,7 +777,7 @@ namespace Dune {
   template<class K> class K1Vector;
   template<class K> class K11Matrix;
 
-  /**! Vectors containing only one component
+  /**! \brief Vectors containing only one component
    */
   template<class K>
   class K1Vector
