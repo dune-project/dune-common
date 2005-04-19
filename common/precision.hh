@@ -8,12 +8,12 @@
 namespace Dune {
 
   /**
-              @addtogroup ISTL
+              @addtogroup COMMON
               @{
    */
 
   template <class ctype = double>
-  class ISTLPrecision {
+  class FMatrixPrecision {
   public:
     //! return threshold to do pivoting
     static ctype pivoting_limit ()
@@ -59,11 +59,11 @@ namespace Dune {
   };
 
   template <class ctype>
-  ctype ISTLPrecision<ctype>::_pivoting = 1E-8;
+  ctype FMatrixPrecision<ctype>::_pivoting = 1E-8;
   template <class ctype>
-  ctype ISTLPrecision<ctype>::_singular = 1E-14;
+  ctype FMatrixPrecision<ctype>::_singular = 1E-14;
   template <class ctype>
-  ctype ISTLPrecision<ctype>::_absolute = 1E-80;
+  ctype FMatrixPrecision<ctype>::_absolute = 1E-80;
 
   /** @} end documentation */
 

@@ -7,11 +7,10 @@
 #include <math.h>
 #include <complex>
 #include <iostream>
-
-#include <dune/istl/istlexception.hh>
-#include <dune/istl/allocator.hh>
-#include <dune/common/fvector.hh>
-#include <dune/istl/precision.hh>
+#include "exceptions.hh"
+//#include <dune/istl/allocator.hh>
+#include "fvector.hh"
+#include "precision.hh"
 
 /*! \file
 
@@ -28,6 +27,9 @@ namespace Dune {
    */
 
   template<class K, int n, int m> class FieldMatrix;
+
+  /** @brief Error thrown if operations of a FieldMatrix fail. */
+  class FMatrixError : public Exception {};
 
   // template meta program for assignment from scalar
   template<int I>
@@ -247,8 +249,8 @@ namespace Dune {
 
     // Gaussian elimination with maximum column pivot
     double norm=A.infinity_norm_real();     // for relative thresholds
-    double pivthres = std::max(ISTLPrecision<>::absolute_limit(),norm*ISTLPrecision<>::pivoting_limit());
-    double singthres = std::max(ISTLPrecision<>::absolute_limit(),norm*ISTLPrecision<>::singular_limit());
+    double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
+    double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
     V& rhs = x;          // use x to store rhs
     rhs = b;             // copy data
 
@@ -275,7 +277,7 @@ namespace Dune {
 
       // singular ?
       if (pivmax<singthres)
-        DUNE_THROW(ISTLError,"matrix is singular");
+        DUNE_THROW(FMatrixError,"matrix is singular");
 
       // eliminate
       for (int k=i+1; k<n; k++)
@@ -300,9 +302,9 @@ namespace Dune {
   template<class K, class V>
   inline void fm_solve (const FieldMatrix<K,1,1>& A,  V& x, const V& b)
   {
-#ifdef DUNE_ISTL_WITH_CHECKING
-    if (fvmeta_absreal(A[0][0])<ISTLPrecision<>::absolute_limit())
-      DUNE_THROW(ISTLError,"matrix is singular");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+    if (fvmeta_absreal(A[0][0])<FMatrixPrecision<>::absolute_limit())
+      DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
     x[0] = b[0]/A[0][0];
   }
@@ -311,10 +313,10 @@ namespace Dune {
   template<class K, class V>
   inline void fm_solve (const FieldMatrix<K,2,2>& A,  V& x, const V& b)
   {
-#ifdef DUNE_ISTL_WITH_CHECKING
+#ifdef DUNE_FMatrix_WITH_CHECKING
     K detinv = A[0][0]*A[1][1]-A[0][1]*A[1][0];
-    if (fvmeta_absreal(detinv)<ISTLPrecision<>::absolute_limit())
-      DUNE_THROW(ISTLError,"matrix is singular");
+    if (fvmeta_absreal(detinv)<FMatrixPrecision<>::absolute_limit())
+      DUNE_THROW(FMatrixError,"matrix is singular");
     detinv = 1/detinv;
 #else
     K detinv = 1.0/(A[0][0]*A[1][1]-A[0][1]*A[1][0]);
@@ -336,8 +338,8 @@ namespace Dune {
     FieldMatrix<K,n,n>& U=A;
 
     double norm=A.infinity_norm_real();     // for relative thresholds
-    double pivthres = std::max(ISTLPrecision<>::absolute_limit(),norm*ISTLPrecision<>::pivoting_limit());
-    double singthres = std::max(ISTLPrecision<>::absolute_limit(),norm*ISTLPrecision<>::singular_limit());
+    double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
+    double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
 
     // LU decomposition of A in A
     for (int i=0; i<n; i++)      // loop over all rows
@@ -362,7 +364,7 @@ namespace Dune {
 
       // singular ?
       if (pivmax<singthres)
-        DUNE_THROW(ISTLError,"matrix is singular");
+        DUNE_THROW(FMatrixError,"matrix is singular");
 
       // eliminate
       for (int k=i+1; k<n; k++)
@@ -398,9 +400,9 @@ namespace Dune {
   template<class K>
   void fm_invert (FieldMatrix<K,1,1>& A)
   {
-#ifdef DUNE_ISTL_WITH_CHECKING
-    if (fvmeta_absreal(A[0][0])<ISTLPrecision<>::absolute_limit())
-      DUNE_THROW(ISTLError,"matrix is singular");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+    if (fvmeta_absreal(A[0][0])<FMatrixPrecision<>::absolute_limit())
+      DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
     A[0][0] = 1/A[0][0];
   }
@@ -410,9 +412,9 @@ namespace Dune {
   void fm_invert (FieldMatrix<K,2,2>& A)
   {
     K detinv = A[0][0]*A[1][1]-A[0][1]*A[1][0];
-#ifdef DUNE_ISTL_WITH_CHECKING
-    if (fvmeta_absreal(detinv)<ISTLPrecision<>::absolute_limit())
-      DUNE_THROW(ISTLError,"matrix is singular");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+    if (fvmeta_absreal(detinv)<FMatrixPrecision<>::absolute_limit())
+      DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
     detinv = 1/detinv;
 
@@ -491,7 +493,6 @@ namespace Dune {
     A[1][1] = C[1][0]*M[0][1] + C[1][1]*M[1][1];
   }
 
-
   /** Matrices represent linear maps from a vector space V to a vector space W.
        This class represents such a linear map by storing a two-dimensional
        array of numbers of a given field type K. The number of rows and
@@ -539,8 +540,8 @@ namespace Dune {
     //! random access to the rows
     row_type& operator[] (int i)
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
 #endif
       return p[i];
     }
@@ -548,8 +549,8 @@ namespace Dune {
     //! same for read only access
     const row_type& operator[] (int i) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
 #endif
       return p[i];
     }
@@ -805,9 +806,9 @@ namespace Dune {
     template<class X, class Y>
     void umv (const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
       fmmeta_umv<n-1>::template umv<FieldMatrix,X,Y,m-1>(*this,x,y);
     }
@@ -816,9 +817,9 @@ namespace Dune {
     template<class X, class Y>
     void umtv (const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
       for (int i=0; i<n; i++)
@@ -830,9 +831,9 @@ namespace Dune {
     template<class X, class Y>
     void umhv (const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
       for (int i=0; i<n; i++)
@@ -844,9 +845,9 @@ namespace Dune {
     template<class X, class Y>
     void mmv (const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
       fmmeta_mmv<n-1>::template mmv<FieldMatrix,X,Y,m-1>(*this,x,y);
       //fm_mmv(*this,x,y);
@@ -856,9 +857,9 @@ namespace Dune {
     template<class X, class Y>
     void mmtv (const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
       for (int i=0; i<n; i++)
@@ -870,9 +871,9 @@ namespace Dune {
     template<class X, class Y>
     void mmhv (const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
       for (int i=0; i<n; i++)
@@ -884,9 +885,9 @@ namespace Dune {
     template<class X, class Y>
     void usmv (const K& alpha, const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
       fmmeta_usmv<n-1>::template usmv<FieldMatrix,K,X,Y,m-1>(*this,alpha,x,y);
     }
@@ -895,9 +896,9 @@ namespace Dune {
     template<class X, class Y>
     void usmtv (const K& alpha, const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
       for (int i=0; i<n; i++)
@@ -909,9 +910,9 @@ namespace Dune {
     template<class X, class Y>
     void usmhv (const K& alpha, const X& x, Y& y) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
       for (int i=0; i<n; i++)
@@ -957,7 +958,7 @@ namespace Dune {
 
     /** \brief Solve system A x = b
      *
-     * \exception ISTLError if the matrix is singular
+     * \exception FMatrixError if the matrix is singular
      */
     template<class V>
     void solve (V& x, const V& b) const
@@ -967,7 +968,7 @@ namespace Dune {
 
     /** \brief Compute inverse
      *
-     * \exception ISTLError if the matrix is singular
+     * \exception FMatrixError if the matrix is singular
      */
     void invert ()
     {
@@ -1035,9 +1036,9 @@ namespace Dune {
     //! return true when (i,j) is in pattern
     bool exists (int i, int j) const
     {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
-      if (j<0 || i>=m) DUNE_THROW(ISTLError,"index out of range");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
+      if (j<0 || i>=m) DUNE_THROW(FMatrixError,"index out of range");
 #endif
       return true;
     }
@@ -1071,9 +1072,9 @@ namespace Dune {
     static inline K determinantMatrix (const FieldMatrix<K,row,col> &matrix)
     {
       if (row!=col)
-        DUNE_THROW(ISTLError, "There is no determinant for a " << row << "x" << col << " matrix!");
+        DUNE_THROW(FMatrixError, "There is no determinant for a " << row << "x" << col << " matrix!");
 
-      DUNE_THROW(ISTLError, "No implementation of determinantMatrix "
+      DUNE_THROW(FMatrixError, "No implementation of determinantMatrix "
                  << "for FieldMatrix<" << row << "," << col << "> !");
 
       return 0.0;
