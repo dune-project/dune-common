@@ -150,7 +150,7 @@ namespace Dune
     // corners , kind of hack, but works for the moment
     if(func.getFunctionSpace().polynomOrder() == 0)
     {
-      val[0] = lf[0];
+      val[0] = lf[comp];
       return;
     }
     else
@@ -301,8 +301,7 @@ namespace Dune
     // add function wether is exists or not
     if(!already)
     {
-      //int num = (int) DiscFuncType::FunctionSpace::DimRange;
-      int num = 1;
+      int num = (int) DiscFuncType::FunctionSpace::DimRange;
       vecFdata_.resize(size+num);
       for(int n=size; n < size+num; n++)
       {
