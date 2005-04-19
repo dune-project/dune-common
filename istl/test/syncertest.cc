@@ -21,7 +21,7 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
   typedef typename GlobalList::ModifyIterator GlobalModifier;
   typedef Dune::Tuple<RemoteModifier,GlobalModifier,const RemoteIterator> IteratorTuple;
   typedef std::map<int,IteratorTuple> IteratorMap;
-  typedef typename RemoteIndices::RemoteIndexMap::iterator RemoteMapIterator;
+  typedef typename RemoteIndices::const_iterator RemoteMapIterator;
 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -29,9 +29,9 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
   std::map<int,GlobalList> globalLists;
 
   IteratorMap iterators;
-  RemoteMapIterator rmEnd = remoteIndices.remoteIndices_.end();
+  RemoteMapIterator rmEnd = remoteIndices.end();
 
-  for(RemoteMapIterator remote = remoteIndices.remoteIndices_.begin();
+  for(RemoteMapIterator remote = remoteIndices.begin();
       remote != rmEnd; ++remote) {
     // Initialize global indices
     GlobalList& gList=globalLists[remote->first];

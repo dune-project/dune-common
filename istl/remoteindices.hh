@@ -288,18 +288,6 @@ namespace Dune {
 
   template<class TG, class TA, int N>
   class IndicesSyncer;
-}
-
-template<typename TG, typename TA, int N>
-void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& indices,
-                          Dune::RemoteIndices<TG,TA,N>& remoteIndices);
-template<typename TG, typename TA, int N>
-void addFakeRemoteIndices(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
-                          Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
-                          Dune::RemoteIndices<TG,TA,N>&,
-                          Dune::RemoteIndices<TG,TA,N>&);
-namespace Dune
-{
 
   /**
    * @brief The indices present on remote processes.
@@ -314,12 +302,6 @@ namespace Dune
     friend void repairLocalIndexPointers(std::map<int,SLList<T1,A> >&, RemoteIndices<T1,T2,M>&,
                                          const IndexSet<T1,ParallelLocalIndex<T2>,M>&);
     friend std::ostream& operator<<<>(std::ostream&, const RemoteIndices<TG,TA,N>&);
-    friend void deleteOverlapEntries<>(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
-                                       Dune::RemoteIndices<TG,TA,N>&);
-    friend void addFakeRemoteIndices<>(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
-                                       Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>&,
-                                       Dune::RemoteIndices<TG,TA,N>&,
-                                       Dune::RemoteIndices<TG,TA,N>&);
 
   public:
     /**
@@ -422,13 +404,13 @@ namespace Dune
      * @brief Get an iterator over all remote index lists.
      * @return The iterator over all remote index lists postioned at the first process.
      */
-    inline typename RemoteIndexMap::const_iterator begin() const;
+    inline const_iterator begin() const;
 
     /**
      * @brief Get an iterator over all remote index lists.
      * @return The iterator over all remote index lists postioned at the end.
      */
-    inline typename RemoteIndexMap::const_iterator end() const;
+    inline const_iterator end() const;
 
     /**
      * @brief Get an iterator for colletively iterating over the remote indices of all remote processes.
