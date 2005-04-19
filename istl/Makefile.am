@@ -2,7 +2,7 @@
 
 SUBDIRS = . doc tutorial test paamg
 
-SOURCES = allocator.hh basearray.hh bcrsmatrix.hh bvector.hh gsetc.hh io.hh istlexception.hh istl.hh precision.hh vbcrsmatrix.hh vbvector.hh ilu.hh operators.hh preconditioners.hh solvers.hh indexset.hh communicator.hh remoteindices.hh mpitraits.hh interface.hh
+SOURCES = allocator.hh basearray.hh bcrsmatrix.hh bvector.hh gsetc.hh io.hh istlexception.hh istl.hh vbcrsmatrix.hh vbvector.hh ilu.hh operators.hh preconditioners.hh solvers.hh indexset.hh communicator.hh remoteindices.hh mpitraits.hh interface.hh
 
 istldir = $(includedir)/dune/istl
 istl_HEADERS = $(SOURCES)
@@ -16,7 +16,8 @@ DISTDOCS = doc/istl.tex doc/istl.bib doc/istl.ps doc/istl.pdf
 DISTTUT = tutorial/example.cc
 
 # parts from dune needed for istl (only common, please!)
-DUNESTUFF = common/exceptions.hh common/fvector.hh common/timer.hh common/arraylist.hh \
+DUNESTUFF = common/exceptions.hh common/fvector.hh common/fmatrix.hh \
+	common/precision.hh common/timer.hh common/arraylist.hh \
 	common/smartpointer.hh common/fixedarray.hh \
 	common/poolallocator.hh common/iteratorfacades.hh common/sllist.hh \
 	common/enumset.hh common/typetraits.hh common/logictraits.hh \
