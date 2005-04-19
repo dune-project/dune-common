@@ -12,6 +12,8 @@ AM_CONFIG_HEADER([config.h])
 # Checks for programs.
 AC_PROG_CXX
 AC_LANG_PUSH([C++])
+DUNE_CHECK_COMPILER
+DUNE_CHECKDEPRECATED
 
 # don't build shared libs per default, this is way better for debugging...
 AC_DISABLE_SHARED
