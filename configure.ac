@@ -144,6 +144,7 @@ AC_CONFIG_FILES([Makefile
          solver/common/Makefile
          solver/pmgsolver/Makefile
          doc/Makefile
+	 doc/doxygen/Makefile
          m4/Makefile
 	 am/Makefile
          dune.pc])
