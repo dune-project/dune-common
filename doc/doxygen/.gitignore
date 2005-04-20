@@ -1,5 +1,8 @@
 .deps
+doxygen-tag
 doxygen.log
+html
+latex
 Makefile
 Makefile.in
 semantic.cache
