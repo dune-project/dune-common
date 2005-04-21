@@ -47,7 +47,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	      AC_MSG_WARN([parmetis.h not found in $PARMETIS_INCLUDE_PATH with $CPPFLAGS])]
       )
 
-      PARMETIS_CPPFLAGS="${PARMETIS_CPPFLAGS}"
+      PARMETIS_CPPFLAGS="${MPI_CPPFLAGS} ${PARMETIS_CPPFLAGS}"
 
 #      AC_LANG_PUSH([C++])
       
@@ -64,8 +64,8 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_CHECK_LIB(parmetis, [parmetis_v3_partkway],[
-		  PARMETIS_LIBS="-lparmetis -lmetis"
-		  PARMETIS_LDFLAGS="-L$PARMETIS_LIB_PATH"
+		  PARMETIS_LIBS="$MPILIBS -lparmetis -lmetis"
+		  PARMETIS_LDFLAGS="$MPI_LDFLAGS -L$PARMETIS_LIB_PATH"
 		  LIBS="$LIBS $PARMETIS_LIBS"],[
 		  HAVE_PARMETIS="0"
 		  AC_MSG_WARN(libparmetis not found!)])
