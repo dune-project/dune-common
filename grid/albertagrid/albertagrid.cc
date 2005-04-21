@@ -2987,13 +2987,12 @@ namespace Dune
     if(dofvecs_.owner ) ALBERTA free_dof_int_vec(dofvecs_.owner);
 
 #if DIM == 3
-    // because of bug in Alberta 1.2 , here until bug fixed
-    if((maxlevel() <= 0) && mesh_ )
+    if(mesh_)
     {
+      // because of bug in Alberta 1.2 , here until bug fixed
       RC_LIST_EL * rclist = ALBERTA get_rc_list(mesh_);
       rclist = 0;
     }
-
 #endif
     if(mesh_) ALBERTA free_mesh(mesh_);
   }
