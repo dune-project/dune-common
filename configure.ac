@@ -43,6 +43,9 @@ DUNE_MPI
 # check for ALU3dGrid (needs MPI to build parallel version)
 DUNE_PATH_ALU3DGRID
 
+# check for ParMETIS
+DUNE_PATH_PARMETIS
+
 # how to create a deprecated warning
 DUNE_CHECKDEPRECATED
 
