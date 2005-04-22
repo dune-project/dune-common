@@ -10,8 +10,9 @@
 # CURDIR should be defined in the same way as in dune-web
 
 
-# pass on this variable to wmlwrap via environment
+# pass on this variables to wmlwrap via environment
 export DUNEWEBDIR
+export BASEDIR
 
 # pass files through wrapper
 .wml.html:
