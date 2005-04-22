@@ -166,5 +166,6 @@ AC_CONFIG_FILES([Makefile
 	 doc/doxygen/Makefile
          m4/Makefile
 	 am/Makefile
+	 bin/wmlwrap
          dune.pc])
 AC_OUTPUT

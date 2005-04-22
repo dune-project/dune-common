@@ -9,7 +9,7 @@
 
 if test x"$DUNEWEBDIR" = x ; then
     # call wml without tricks
-    wml $*
+    @WML@ $*
 fi
 
 # rewrite filenames to absolute pathes
@@ -26,8 +26,8 @@ done
 if test -d $DUNEWEBDIR && test -r $DUNEWEBDIR/layout/default.wml ; then
     # call wml from within dune-web
     # --nocd lets wml use the .wmlrc from dune-web
-    ( cd $DUNEWEBDIR && wml --nocd -DROOT=$BASEDIR $ARGS )
+    ( cd $DUNEWEBDIR && @WML@ --nocd -DROOT=$BASEDIR $ARGS )
 else
     # call wml without tricks
-    wml $*
+    @WML@ $*
 fi
