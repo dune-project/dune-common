@@ -1,0 +1,28 @@
+# -*- html -*-
+# $Id$
+
+#use wml::layout::default title="DUNE - Reference Elements"
+
+<h1> The Reference Elements </h1>
+
+<p>
+This page gives a short overview on how the different reference
+elements look like in DUNE.  All grid implementations are supposed
+to comply with this.
+</p>
+
+
+<h2> 1) Line </h2>
+<img SRC="refelements/line.png">
+<h2> 2) Triangle </h2>
+<img SRC="refelements/triangle.png">
+<h2> 3) Quadrilateral </h2>
+<img SRC="refelements/quadrilateral.png">
+<h2> 4) Tetrahedron </h2>
+<img SRC="refelements/tetrahedron.png">
+<h2> 5) Pyramid </h2>
+<img SRC="refelements/pyramid.png">
+<h2> 6) Prism </h2>
+<img SRC="refelements/prism.png">
+<h2> 7) Hexahedron </h2>
+<img SRC="refelements/hexahedron.png">

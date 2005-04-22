@@ -1,0 +1,27 @@
+# -*- makefile -*-
+# $Id$
+
+## rules to create HTML-pages from wml-files with additional magic to
+## possibly use the layout of the Dune-homepage
+
+# if DUNEWEBDIR is set to the dune-web directory the layout and
+# install-stuff from that place will be used
+
+# CURDIR should be defined in the same way as in dune-web
+
+
+# pass on this variable to wmlwrap via environment
+export DUNEWEBDIR
+
+# pass files through wrapper
+.wml.html:
+	$(top_srcdir)/bin/wmlwrap $< -o $@
+
+web-install: all
+	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
+	  for DIR in $(SUBDIRS) ; do \
+	    $(MAKE) -C $$DIR web-install ; \
+	  done ; \
+	  $(MAKE) -f $(DUNEWEBDIR)/Make.global \
+            EXTRAINSTALL="$(EXTRAINSTALL)" CURDIR="$(CURDIR)" install ; \
+	fi

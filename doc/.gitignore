@@ -1,5 +1,5 @@
 .deps
-doxygen.log
 Makefile
 Makefile.in
 semantic.cache
+*.html

@@ -1,0 +1,26 @@
+# -*- html -*-
+# $Id$
+
+#use wml::layout::default title="DUNE - Documentation"
+
+<h1>Documentation</h1>
+
+<h2>Documentation for application writers</h2>
+
+<ul>
+<li><a href="doxygen/">The class documentation</a> (generated 
+with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
+<li><a href="appl/refelements.html">The Reference Elements</a></li>
+</ul>
+
+<h2>Documentation for developers of the core library</h2>
+
+<ul>
+<li><a href="devel/codingstyle.html">Coding Style</a></li>
+<li><a href="devel/ugreader.html">Howto write
+	  file readers for the UGGrid</a></li>
+<li><a href="devel/portability.html">Some notes on writing
+		portable code</a></li>
+<li><a href="devel/const-refactoring.html">Howto adapt your code to the
+		  refactored grid interface</a></li>
+</ul>

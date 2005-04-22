@@ -6,8 +6,9 @@ EXTRA_DIST = Doxyfile Doxydep \
 
 all: doxygen-tag
 
-WEBDIR = /var/www/dune/doxygen
-WEBFILES = html/*.html html/*.css html/*.png doxygen.log
+# setting like in dune-web
+CURDIR=doc/doxygen
+EXTRAINSTALL = html/*.html html/*.css html/*.png doxygen.log
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.css -o -name \*.html -o -name \*.png
@@ -24,11 +25,7 @@ doxygen-tag: FORCE
 # nice trick from the GNU make infopage to force a rule to run
 FORCE:
 
-web-install: doxygen-tag
-	if [ ! -d $(WEBDIR) ]; then \
-	  install -d -g web -m 775 $(WEBDIR); \
-	fi
-	install -g web -m 664 $(WEBFILES) $(WEBDIR)
+include $(top_srcdir)/am/webstuff
 
 clean-local:
 	rm -rf html latex doxygen-tag *~

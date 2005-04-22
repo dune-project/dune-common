@@ -1,0 +1,258 @@
+# -*- html -*-
+# $Id$
+
+#use wml::layout::default title="DUNE - UGGrid file reader"
+
+<h1> How to Write a File Reader for UGGrid Objects </h1>
+
+<p>
+If you want to write a routine that reads a grid from some
+file into a Dune UGGrid object you have to now a few things
+about UG.  That is somewhat unfortunate but for the moment it cannot be helped.
+</p>
+
+<p>
+This little text will point out the steps that are necessary
+in order to create a UGGrid object.  In the following we
+assume that you have a grid in some file format and an
+empty UGGrid object, created by one of its constructors.
+Hence, your method signature may look like this:
+</p>
+
+<pre>
+void readMyFileFormat(Dune::UGGrid&lt;3,3&gt;& grid, const std::string& filename)
+</pre>
+
+Now, in order to create a valid UGGrid object do the
+following steps:
+
+<h2> 1) Create a Domain </h2>
+<p>
+First, you have to create a 'Domain'.  In UG-speak, this is the
+      description of the <i>boundary</i> of your computational domain.  In
+2D it consists of vertices and edges, in 3d of vertices and
+triangles and/or quadrilaterals.  First, call the method
+</p>
+
+<pre>
+void* UG3d::CreateDomain(const char* name,
+		         double* MidPoint,
+		         double	radius,
+		         int segments,
+		         int corners,
+		         int Convex
+	                )
+</pre>  	
+
+<p>
+      (Here and in the followin the namespace is called <tt>UG2d</tt> if you're using a two-dimensional
+UGGrid).
+The parameters have the following meaning:
+</p>
+
+<ul>
+<li> <b> name </b> -- Name of the domain. <br>
+        It should be constructed as
+<pre>
+    std::string domainName = grid.name() + "_Domain";
+</pre>
+<li> <b> MidPoint </b> --Coordinates of some inner point <br>
+    	<b> radius </b>	 -- Radius of a circle containing the domain <br>
+        Those two arguments are not needed in DUNE and you can enter
+        anything you like.
+
+<li> <b> segments </b> -- Number of the boundary segments
+<li> <b> corners </b> -- Number of corners
+<li> <b> Convex </b> -- 0 if the domain is convex, 1 otherwise <br>
+        This argument is not used, either.
+</ul>
+
+<p>
+      <tt>CreateDomain</tt> will return NULL upon failure.
+</p>
+
+<h2> 2)  Build the Domain </h2>
+
+<p>
+Next you have to fill in the boundary segments.  For each
+boundary segment you have, call
+</p>
+
+<pre>
+void* UG3d::CreateBoundarySegment(char* name,
+		                  int left,
+		                  int right,
+		                  int id,
+		                  enum BoundaryType type,
+		                  int res,
+		                  int* point,
+		                  double* alpha,
+		                  double* beta,
+		                  BndSegFuncPtr BndSegFunc,
+		                  void* data
+	                         )
+</pre>
+
+<p>  	
+Here, the parameters mean
+</p>
+
+    <ul>
+      <li> <b>name</b> 	- name of the boundary segment <br>
+        Some arbitrary string</li>
+      <li> <b>left</b> 	- id of left subdomain</li>
+      <li> <b>right</b> 	- id of right subdomain</li>
+      <li> <b>id</b> 	- id of this boundary segment</li>
+      <li> <b>type</b> 	- type of the boundary segment <br>
+        use <tt>UG3d::NON_PERIODIC</tt></li>
+
+      <li> <b>res</b> 	- resolution of the boundary segment
+        not needed in DUNE.  Take '1'.</li>
+
+      <li> <b>point</b> - The endpoints of the boundary segment <br>
+        An array containing the indices of the endpoints of the boundary
+        segment, counting starting with 0.  Note that in 3d the routine
+        will expect FOUR values.  So if you want to insert a triangle
+        explicitly set the fourth entry to -1.</li>
+
+      <li> <b>alpha</b> -- Lower left corner of parameter space <br>
+    	<b>beta</b> 	-- Upper right corner of parameter space <br>
+        use 
+        <pre>
+        double alpha[2] = {0, 0};
+        double beta[2]  = {1, 1};
+      </pre>
+      </li>
+      <li> <b>BndSegFunc</b> -- Function implementing the geometry <br>
+        This a pointer to a function supplying the geometry of the
+        boundary segment.  In most cases you will want a linear segment.
+        In theory, UG provides the method <tt>CreateLinearSegment</tt> which
+        does just that.  However it appears to be buggy, so for the
+        time being we propose you use <tt>CreateBoundarySegment</tt> and provide
+        a pointer to the routine <tt>linearSegmentDescription3d</tt> (resp. <tt>2d</tt>)
+        defined in <tt>dune/io/file/amiramesh/amuggridreader.cc</tt>.
+        For technical reasons you will have to copy that routine into your
+        own code, even though this is certainly not the most elegant solution.
+      </li>
+
+      <li> <b>data</b> -- User defined space <br>
+        This data gets handed over to the segment description method.
+        <tt>LinearSegmentDescription3d</tt> expects a double array containing
+        the world coordinates of the vertices of the current boundary
+        segment.  The UGGrid member variable <tt>extra_boundary_data_</tt>
+        is meant to store this information during the lifetime of the
+        UGGrid object.  We propose you use malloc to create a large
+        array which holds all the vertex coordinates of all the boundary
+        segments and hand over pointers into this array.  The UGGrid
+        destructor will take care of deleting the array.</li>
+    </ul>
+    
+    <p>
+Note that you do not have to enter the boundary vertices
+explicitly as UG creates them for you.
+</p>
+
+<h2> 3) Intermediate Initialization Work </h2>
+
+<p>
+At this point you have to let UG do a little initialization
+work on its own.  Trigger this by calling
+</p>
+
+<pre>
+grid.makeNewUGMultigrid();
+</pre>
+
+<h2> 4)  Enter the Inner Vertices </h2>
+
+<p>
+Now you have to enter the grid vertices.  As UG has already
+created the boundary vertices all you need to do is enter the
+remaining ones.  Note that if your input file doesn't contain
+the vertices in an boundary -- interior order you are
+implicitly reordering your vertices and you'll have to adjust
+your elements accordingly.
+</p>
+
+<p>
+Create an inner vertex by writing its coordinates into a
+<tt> double vertexPosition[2] </tt>  (resp. <tt>3</tt>)
+and calling
+
+<pre>
+UG3d::InsertInnerNode(grid.multigrid_-&gt;grids[0], vertexPosition);
+</pre>
+
+<p>
+This will again return NULL upon failure.
+</p>
+
+<h2> 5) Enter the elements </h2>
+
+<p>
+For each element call
+</p>
+
+<pre>
+UG3d::element* UG3d::InsertElementFromIDs(UG3d::grid* theGrid,
+		                          int n,
+		                          int* idList,
+		                          int* bnds_flag
+	                                 )
+</pre>  	
+
+<p>
+The parameters are
+</p>
+
+<ul>
+      <li> <b>theGrid</b> - Grid structure<br>
+        Hand over <tt>grid.multigrid_-&gt;grids[0]</tt></li>
+      <li> <b>n</b> - Number of nodes in node id list</li>
+      <li> <b>idList</b> - Ids of the nodes</li>
+      <li> <b>bnds_flag</b> <br>
+        I don't know what that means.  Handing over NULL
+        seems to work fine, though.</li>
+</ul>
+
+<p>
+      <tt>InsertElementFromIDs</tt> returns a pointer to a <tt>UG3d::element</tt> 
+      (<tt>UG2d::...</tt> in 2d). Use this pointer to set the subdomain id of the element by calling
+</p>
+
+<pre>
+Dune::UG_NS&lt;3&gt;::SetSubdomain(UG3d::element* element, int id);
+</pre>
+
+<p>
+      As DUNE currently doesn't support subdomains the value of <tt>id</tt> doesn't
+matter.  For internal reasons you cannot use 0, though.
+</p>
+
+
+<h2> 6) Finish construction </h2>
+
+<p>
+To finish off the construction of the UGGrid object call
+</p>
+
+<pre>
+  UG3d::SetEdgeAndNodeSubdomainFromElements(grid.multigrid_-&gt;grids[0]);
+
+  UG3d::CreateAlgebra(grid.multigrid_);
+  
+\#define ReleaseTmpMem(p,k) Release(p, UG::FROM_TOP,k)
+  ReleaseTmpMem(grid.multigrid_-&gt;theHeap, grid.multigrid_-&gt;MarkKey);
+\#undef ReleaseTmpMem
+  grid.multigrid_-&gt;MarkKey = 0;
+</pre>
+
+<p>
+Good luck!  Remember that DUNE is still in an unstable state and that
+any interface, method or class may change without much notice.
+Subscribe to the DUNE mailing list for newest information.
+</p>
+
+<p>
+Mail comments, critique, and corrections to sander_at_math.fu.berlin.de.
+</p>

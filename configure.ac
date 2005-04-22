@@ -25,7 +25,16 @@ AC_CHECK_PROGS([TEX], [latex], [true])
 AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
 AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
 AC_CHECK_PROGS([DVIPS], [dvips], [true])
+AC_CHECK_PROGS([WML], [wml], [true])
 DUNE_INKSCAPE
+
+# special variable to include the documentation into the website
+AC_ARG_WITH(duneweb,
+    AC_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))
+if test x$with_duneweb != x && test -e $with_duneweb/layout/default.wml ; then
+  AC_MSG_WARN([duneweb-directory seems to be wrong!])
+fi
+AC_SUBST(DUNEWEBDIR, $with_duneweb)
 
 echo
 echo Checking for libraries the self-test could use:
@@ -147,6 +156,10 @@ AC_CONFIG_FILES([Makefile
          solver/common/Makefile
          solver/pmgsolver/Makefile
          doc/Makefile
+	 doc/devel/Makefile
+	 doc/appl/Makefile
+	 doc/appl/refelements/Makefile
+	 doc/layout/Makefile
 	 doc/doxygen/Makefile
          m4/Makefile
 	 am/Makefile

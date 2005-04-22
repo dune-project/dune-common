@@ -1,0 +1,56 @@
+#
+# In order to rename the identifiers call
+# path-to-dune/bin/idrename replacements path-to-dune
+#
+
+#
+# Methods should not contain underscores (unless it's a STL equivalent)
+#
+
+### Grid
+partition_type	        partitionType
+overlap_size			overlapSize
+ghost_size				ghostSize
+
+### Entity
+global_index            globalIndex
+father_relative_local   geometryInFather
+
+# !!!NOTE!!! must be done by hand
+#father			ownersFather
+#local			positionInOwnersFather
+
+# clearer purpose
+# !!!NOTE!!! changes the sematic... be careful
+hasChildren		isLeaf
+
+### Element aka Geometry
+integration_element     integrationElement
+Jacobian_inverse        jacobianInverse
+
+### IntersectionIterator
+outer_normal			outerNormal
+unit_outer_normal		unitOuterNormal
+integration_outer_normal	integrationOuterNormal
+
+intersection_self_local			intersectionSelfLocal
+intersection_neighbor_local		intersectionNeighborLocal
+intersection_global				intersectionGlobal
+intersection_self_global		intersectionGlobal
+intersection_neighbor_global	intersectionGlobal
+
+number_in_self					numberInSelf
+number_in_neighbor				numberInNeighbor
+
+#
+# class names
+#
+
+Element	                Geometry
+LocalElement LocalGeometry
+ReferenceElement ReferenceGeometry
+ElementDefault GeometryDefault
+
+### this shows how you can use the script to andjust your code as well :-)
+SElement SGeometry
+

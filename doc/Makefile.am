@@ -1,6 +1,13 @@
 # $Id$
 
 # distribute these files:
-EXTRA_DIST = BuildSystem CodingStyles
+EXTRA_DIST = BuildSystem
 
-SUBDIRS = doxygen
+SUBDIRS = devel appl doxygen layout
+
+all: index.html
+
+# setting like in dune-web
+CURDIR=doc
+
+include $(top_srcdir)/am/webstuff

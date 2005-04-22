@@ -1,0 +1,32 @@
+#!/bin/sh
+# $Id$
+
+# script wrapping a call to wml
+# 
+# if the environment-variable DUNEWEBDIR is set to a checked out
+# version of dune-web then wml is called in a way that the real web
+# layout is used
+
+if test x"$DUNEWEBDIR" = x ; then
+    # call wml without tricks
+    wml $*
+fi
+
+# rewrite filenames to absolute pathes
+PWD=`pwd`
+for OPT in $* ; do
+    case "$OPT" in
+	*.wml) ARGS="$ARGS $PWD/$OPT";;
+	*.html) ARGS="$ARGS $PWD/$OPT";;
+	*) ARGS="$ARGS $OPT" ;;
+    esac
+done
+
+# check if DUNEWEBDIR seems correct
+if test -d $DUNEWEBDIR && test -r $DUNEWEBDIR/layout/default.wml ; then
+    # call wml from within WEBDIR
+    ( cd $DUNEWEBDIR && wml $ARGS )
+else
+    # call wml without tricks
+    wml $*
+fi
