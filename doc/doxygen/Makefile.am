@@ -11,7 +11,7 @@ CURDIR=doc/doxygen
 EXTRAINSTALL = html/*.html html/*.css html/*.png doxygen.log
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
-DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.css -o -name \*.html -o -name \*.png
+DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
 
 # check dependency ourself to be robust
 doxygen-tag: FORCE
