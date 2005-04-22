@@ -7,6 +7,7 @@ SUBDIRS = refelements
 all: $(PAGES)
 
 # place in website
+BASEDIR=../..
 CURDIR=doc/appl
 
 include $(top_srcdir)/am/webstuff

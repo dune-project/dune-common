@@ -1,6 +1,7 @@
 # $Id$
 
 # place in website
+BASEDIR=../../..
 CURDIR=doc/appl/refelements
 
 # include this into website

@@ -10,6 +10,7 @@ PAGES = index.html
 all: $(PAGES)
 
 # setting like in dune-web
+BASEDIR=..
 CURDIR=doc
 
 include $(top_srcdir)/am/webstuff

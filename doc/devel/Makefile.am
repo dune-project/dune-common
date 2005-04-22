@@ -6,6 +6,7 @@ PAGES = codingstyle.html const-refactoring.html portability.html \
 all: $(PAGES)
 
 # place in website
+BASEDIR=../..
 CURDIR=doc/devel
 
 # include this into website
