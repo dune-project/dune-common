@@ -66,8 +66,10 @@ namespace Dune
 
     /**
      * @brief The type we get at each index with operator[].
+     *
+     * The default is the value_type typedef of the container.
      */
-    typedef typename V::IndexedType IndexedType;
+    typedef typename V::value_type IndexedType;
 
     /**
      * @brief Whether the indexed type has variable size or there
