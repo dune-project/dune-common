@@ -22,7 +22,10 @@ namespace Dune {
               @{
    */
 
-  /** implements a vector consisting of a number of blocks (to
+  /**
+      \brief A Vector of blocks with different blocksizes.
+
+          implements a vector consisting of a number of blocks (to
           be given at run-time) which themselves consist of a number
           of blocks (also given at run-time) of the given type B.
 
@@ -54,7 +57,10 @@ namespace Dune {
     /** increment block level counter, yes, it is two levels because
             VariableBlockVector is a container of containers
      */
-    enum {blocklevel = B::blocklevel+2};
+    enum {
+      //! The number of blocklevels this vector contains.
+      blocklevel = B::blocklevel+2
+    };
 
     // just a shorthand
     typedef BlockVectorWindow<B,A> window_type;

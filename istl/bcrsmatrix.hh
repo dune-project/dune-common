@@ -71,7 +71,10 @@ namespace Dune {
     typedef CompressedBlockVectorWindow<B,A> row_type;
 
     //! increment block level counter
-    enum {blocklevel = B::blocklevel+1};
+    enum {
+      //! The number of blocklevels the matrix contains.
+      blocklevel = B::blocklevel+1
+    };
 
     //! we support two modes
     enum BuildMode {

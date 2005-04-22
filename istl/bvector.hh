@@ -25,7 +25,10 @@ namespace Dune {
    */
 
 
-  /** block_vector_unmanaged extends the base_array_unmanaged by
+  /**
+      \brief An unmanaged vector of blocks.
+
+      block_vector_unmanaged extends the base_array_unmanaged by
       vector operations such as addition and scalar multiplication.
           No memory management is added.
 
@@ -203,7 +206,10 @@ namespace Dune {
   };
 
 
-  /** BlockVector adds memory management with ordinary
+  /**
+      \brief A vector of blocks with memory management.
+
+      BlockVector adds memory management with ordinary
       copy semantics to the block_vector_unmanaged template.
 
           Error checking: no error checking is provided normally.
@@ -227,7 +233,10 @@ namespace Dune {
     typedef A allocator_type;
 
     //! increment block level counter
-    enum {blocklevel = B::blocklevel+1};
+    enum {
+      //! The number of blocklevel we contain.
+      blocklevel = B::blocklevel+1
+    };
 
     //! make iterators available as types
     typedef typename block_vector_unmanaged<B,A>::Iterator Iterator;
@@ -398,7 +407,10 @@ namespace Dune {
     typedef A allocator_type;
 
     //! increment block level counter
-    enum {blocklevel = B::blocklevel+1};
+    enum {
+      //! The number of blocklevels we contain
+      blocklevel = B::blocklevel+1
+    };
 
     //! make iterators available as types
     typedef typename block_vector_unmanaged<B,A>::Iterator Iterator;
@@ -730,7 +742,10 @@ namespace Dune {
     typedef A allocator_type;
 
     //! increment block level counter
-    enum {blocklevel = B::blocklevel+1};
+    enum {
+      //! The number of block level this vector contains.
+      blocklevel = B::blocklevel+1
+    };
 
     //! make iterators available as types
     typedef typename compressed_block_vector_unmanaged<B,A>::Iterator Iterator;

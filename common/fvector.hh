@@ -356,10 +356,16 @@ namespace Dune {
     typedef K block_type;
 
     //! We are at the leaf of the block recursion
-    enum {blocklevel = 1};
+    enum {
+      //! The number of block levels we contain
+      blocklevel = 1
+    };
 
     //! export size
-    enum {size = n};
+    enum {
+      //! The size of this vector.
+      size = n
+    };
 
     //! Constructor making uninitialized vector
     FieldVector() {}
@@ -794,10 +800,18 @@ namespace Dune {
     typedef K block_type;
 
     //! We are at the leaf of the block recursion
-    enum {blocklevel = 1};
+    enum {
+      //! The number of block levels we contain.
+      // This is always one for this type.
+      blocklevel = 1
+    };
 
     //! export size
-    enum {size = 1};
+    enum {
+      //! The size of this vector.
+      // This is always one for this type.
+      size = 1
+    };
 
     //===== construction
 

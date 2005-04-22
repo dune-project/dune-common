@@ -516,13 +516,21 @@ namespace Dune {
     typedef K block_type;
 
     //! We are at the leaf of the block recursion
-    enum {blocklevel = 1};
+    enum {
+      //! The number of block levels we contain. This is 1.
+      blocklevel = 1
+    };
 
     //! Each row is implemented by a field vector
     typedef FieldVector<K,m> row_type;
 
     //! export size
-    enum {rows = n, cols = m};
+    enum {
+      //! The number of rows.
+      rows = n,
+      //! The number of columns.
+      cols = m
+    };
 
     //===== constructors
     /** \brief Default constructor
@@ -1136,10 +1144,21 @@ namespace Dune {
     typedef K block_type;
 
     //! We are at the leaf of the block recursion
-    enum {blocklevel = 1};
+    enum {
+      //! The number of block levels we contain.
+      //! This is always one for this type.
+      blocklevel = 1
+    };
 
     //! export size
-    enum {rows = 1, cols = 1};
+    enum {
+      //! \brief The number of rows.
+      //! This is always one for this type.
+      rows = 1,
+      //! \brief The number of columns.
+      //! This is always one for this type.
+      cols = 1
+    };
 
     //===== assignment from scalar
 
