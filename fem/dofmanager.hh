@@ -177,7 +177,11 @@ namespace Dune {
     //! return reference to entry i
     T&       operator [] ( int i )
     {
-      assert( ((i<0) || (i>=size()) ? (std::cout << std::endl << i << " i|size " << size() << std::endl, 0) : 1));
+      assert( ((i<0) || (i>=size()) ? (std::cout << std::endl << i << " i|size " << size() <<
+#ifdef _ALU3DGRID_PARALLEL_
+                                       " on p=" << __MyRank__ <<
+#endif
+                                       std::endl, 0) : 1));
       return vec_[i];
     }
 
@@ -662,20 +666,25 @@ namespace Dune {
 
     void resizeChunk (int index, int chunkSize)
     {
-      //std::cout << "index = " << index << " |m=" << maxIndex_ << "\n";
+      //std::cout << "index = " << index << " |m=" << maxIndex_ << " chunks="<<chunkSize<<"\n";
+      assert(chunkSize > 0);
       if(index >= maxIndex_)
       {
+        int newChunk = std::max( chunkSize, index+1 - maxIndex_ );
+
+        //std::cout << "doing the resize \n";
         ListIteratorType it    = memList_.begin();
         ListIteratorType endit = memList_.end();
 
         maxIndex_ = 0;
         for( ; it != endit ; ++it)
         {
-          (*it)->realloc ( (*it)->size() + chunkSize );
+          (*it)->realloc ( (*it)->size() + newChunk );
           //std::cout << "Resized with new size = " << (*it)->size() << "\n";
           maxIndex_ = std::max( (*it)->size() , maxIndex_ );
           //std::cout << "index = " << index << " |m=" << maxIndex_ << "\n";
         }
+        //std::cout << "new maxindex = " << maxIndex_ << "\n";
       }
     }
 
