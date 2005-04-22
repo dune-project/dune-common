@@ -1232,32 +1232,64 @@ namespace Dune {
   outerNormal(const FieldVector<alu3d_ctype, dim-1>& local) const
   {
     assert(item_ != 0);
-    assert(needNormal_);
+    assert( (!needNormal_) ? (std::cout << "WARNING: outerNormal called twice for the same face! \n", 1) : 1 );
     {
       NormalType outNormal;
       // NOTE: &(outNormal_[0]) is a pointer to the inside vector
       // of the FieldVector class, we need this here, because
       // in ALU3dGrid we dont now the type FieldVector
-      if( boundary()) {
+
+      if( boundary() ) {
         // if boundary calc normal normal ;)
-        (*item_).outerNormal(index_, &(outNormal[0]) );
+        ALU3DSPACE BSGridLinearSurfaceMapping
+        LSM (
+          (*item_).myvertex(index_,0)->Point(),
+          (*item_).myvertex(index_,1)->Point(),
+          (*item_).myvertex(index_,2)->Point()
+          );
+        LSM.normal(outNormal);
+        //(*item_).outerNormal(index_, &(outNormal[0]) );
       } else {
         if(needSetup_) setNeighbor();
 
-        if (!daOtherSituation_) {
-          (*item_).outerNormal(index_, &(outNormal[0]) );
-        } else {
+        if (!daOtherSituation_)
+        {
+          ALU3DSPACE BSGridLinearSurfaceMapping
+          LSM (
+            (*item_).myvertex(index_,0)->Point(),
+            (*item_).myvertex(index_,1)->Point(),
+            (*item_).myvertex(index_,2)->Point()
+            );
+          LSM.normal(outNormal);
+          //(*item_).outerNormal(index_, &(outNormal[0]) );
+        }
+        else
+        {
           if(neigh_)
           {
-            (*neigh_).neighOuterNormal(numberInNeigh_, &(outNormal[0]));
+            ALU3DSPACE BSGridLinearSurfaceMapping
+            LSM (
+              (*neigh_).myvertex(numberInNeigh_,2)->Point(),
+              (*neigh_).myvertex(numberInNeigh_,1)->Point(),
+              (*neigh_).myvertex(numberInNeigh_,0)->Point()
+              );
+            LSM.normal(outNormal);
+            //(*neigh_).neighOuterNormal(numberInNeigh_, &(outNormal[0]));
           }
           else
           {
             assert(ghost_);
             assert(ghost_->level() != (*item_).level());
 
+            ALU3DSPACE BSGridLinearSurfaceMapping
+            LSM (
+              (*item_).myvertex(index_,0)->Point(),
+              (*item_).myvertex(index_,1)->Point(),
+              (*item_).myvertex(index_,2)->Point()
+              );
+            LSM.normal(outNormal);
             // ghostpair_.second stores the twist of the face
-            (*item_).outerNormal(index_, &(outNormal[0]));
+            //(*item_).outerNormal(index_, &(outNormal[0]));
             outNormal *= 0.25;
           }
         }
