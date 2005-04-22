@@ -260,12 +260,17 @@ namespace Dune {
   template <int dim, int dimworld>
   template <class DofManagerType, class RestrictProlongOperatorType>
   inline bool ALU3dGrid<dim,dimworld>::
-  adapt(DofManagerType & dm, RestrictProlongOperatorType & rpo)
+  adapt(DofManagerType & dm, RestrictProlongOperatorType & rpo, bool verbose )
   {
+    assert( ((verbose) ? (std::cout << "ALU3dGrid :: adapt() new method called!\n", 1) : 1 ) );
     EntityImp f ( *this, this->maxlevel() );
     EntityImp s ( *this, this->maxlevel() );
 
-    int newElements = 16*refineMarked_; // guess how many new elements we get
+    int defaultChunk = newElementsChunk_;
+    int actChunk     = refineEstimate_ * refineMarked_;
+
+    // guess how many new elements we get
+    int newElements = std::max( actChunk , defaultChunk );
     ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim,dimworld>, EntityImp, DofManagerType, RestrictProlongOperatorType >
     rp(*this,f,s,dm,rpo, newElements);
 
@@ -274,7 +279,7 @@ namespace Dune {
 
     // if new maxlevel was claculated
     if(rp.maxlevel() >= 0) maxlevel_ = rp.maxlevel();
-    //std::cout << maxlevel_ << "\n";
+    assert( ((verbose) ? (std::cout << "maxlevel = " << maxlevel_ << "!\n", 1) : 1 ) );
 
     if(ref)
     {
@@ -288,6 +293,7 @@ namespace Dune {
     communicate(dm);
 
     postAdapt();
+    assert( ((verbose) ? (std::cout << "ALU3dGrid :: adapt() new method finished!\n", 1) : 1 ) );
     return ref;
   }
 
