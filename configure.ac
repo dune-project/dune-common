@@ -34,6 +34,9 @@ AC_ARG_WITH(duneweb,
 if test x$with_duneweb != x && test -e $with_duneweb/layout/default.wml ; then
   AC_MSG_WARN([duneweb-directory seems to be wrong!])
 fi
+if test -d $with_duneweb ; then
+  with_duneweb=`(cd $with_duneweb && pwd)` ;
+fi
 AC_SUBST(DUNEWEBDIR, $with_duneweb)
 
 echo
