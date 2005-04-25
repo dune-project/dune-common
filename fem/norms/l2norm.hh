@@ -31,7 +31,7 @@ namespace Dune {
       typedef typename DiscreteFunctionType::LocalFunctionType LocalFuncType;
 
 
-      GridType & grid = functionSpace_.getGrid();
+      const GridType & grid = functionSpace_.getGrid();
 
       typename FunctionSpaceType::Range phi (0.0);
 
