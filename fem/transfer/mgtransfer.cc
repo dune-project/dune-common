@@ -16,7 +16,7 @@ void Dune::MGTransfer<DiscFuncType>::setup(const FunctionSpaceType& cS, const Fu
   int rows = fS.size();
   int cols = cS.size();
 
-  GridType& grid = fS.getGrid();
+  const GridType& grid = fS.getGrid();
 
   //
   matrix_.resize(rows, cols, GridType::dimension*10);
