@@ -37,11 +37,6 @@ AC_DEFUN([DUNE_PATH_DUNE],[
       # expand tilde / other stuff
       DUNEROOT=`cd $with_dune && pwd`
 
-      # automagically use directory above if complete Dune-dir was supplied
-      if test `basename $DUNEROOT` = "dune" ; then
-        DUNEROOT=`cd $DUNEROOT/.. && pwd`
-      fi
-    
       # expand search path (otherwise empty CPPFLAGS)
       CPPFLAGS="-I$DUNEROOT"
     else
@@ -67,8 +62,8 @@ AC_DEFUN([DUNE_PATH_DUNE],[
 	LDFLAGS="$LDFLAGS -L$DUNEROOT/dune/lib"
 
  	# only check for a .la-file
- 	if test -s $DUNEROOT/dune/lib/libdune.la ; then
- 	    DUNE_LDFLAGS="-L$DUNEROOT/dune/lib"
+ 	if test -s $DUNEROOT/lib/libdune.la ; then
+ 	    DUNE_LDFLAGS="-L$DUNEROOT/lib"
  	    echo found libdune.la, setting LDFLAGS to $DUNE_LDFLAGS
 
  	    # provide arguments like normal lib-check
