@@ -52,6 +52,7 @@ dnl check all components
   AC_REQUIRE([DUNE_PATH_F5])
   AC_REQUIRE([DUNE_PATH_AMIRAMESH])
   AC_REQUIRE([DUNE_MPI])
+  AC_REQUIRE([DUNE_PATH_PARMETIS])
   AC_REQUIRE([DUNE_PATH_ALU3DGRID])
   AC_REQUIRE([DUNE_GETPAGESIZE])
 
@@ -82,6 +83,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "HDF5.............: $with_hdf5"
   echo "FiberHDF5........: $with_f5"
   echo "MPI..............: $with_mpi"
+  echo "ParMETIS.........: $with_parmetis"
   echo "OpenGL...........: $with_opengl"
   echo "UG...............: $with_ug"
   echo
