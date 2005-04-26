@@ -1,7 +1,7 @@
 # $Id$
 
 # distribute these files:
-EXTRA_DIST = BuildSystem
+EXTRA_DIST = Buildsystem
 
 SUBDIRS = devel appl doxygen layout
 
