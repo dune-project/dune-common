@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = common pmgsolver
+SUBDIRS = common
 
 solverdir = $(includedir)/dune/solver/
-solver_HEADERS = exeuler.hh pmgsolver.hh
+solver_HEADERS = gaussseidelstep.hh iterativesolver.hh
