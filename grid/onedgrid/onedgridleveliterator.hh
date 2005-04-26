@@ -11,39 +11,6 @@
 
 namespace Dune {
 
-  template<int codim, class GridImp>
-  class OneDGridEntityPointer
-    : public EntityPointerDefault <codim, GridImp, Dune::OneDGridEntityPointer<codim,GridImp> >
-  {
-    enum { dim = GridImp::dimension };
-  public:
-    typedef typename GridImp::template codim<codim>::Entity Entity;
-
-    //! equality
-    bool equals(const OneDGridEntityPointer<codim,GridImp>& other) const {
-      return other.target_ == target_;
-    }
-
-    //! dereferencing
-    Entity& dereference() const {return virtualEntity_;}
-
-    //! ask for level of entity
-    int level () const {return target_->level();}
-
-  protected:
-
-    /** \brief Constructor from a given iterator */
-    OneDGridEntityPointer(OneDEntityImp<dim-codim>* it)
-    /*: virtualEntity_()*/ {
-      target_ = it;
-      virtualEntity_.setToTarget(it);
-    };
-
-  protected:
-    mutable OneDEntityWrapper<codim,GridImp::dimension,GridImp> virtualEntity_;
-
-    OneDEntityImp<dim-codim>* target_;
-  };
 
 
   //**********************************************************************

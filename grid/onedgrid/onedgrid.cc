@@ -50,7 +50,6 @@ Dune::OneDGridLevelIteratorFactory<1>::lbegin (const OneDGrid<1,1> * g, int leve
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
   OneDGridLevelIterator<1,All_Partition, const Dune::OneDGrid<1,1> > it(g->vertices[level].begin);
-  //it.setToTarget(g->vertices[level].begin, level);
   return it;
 }
 

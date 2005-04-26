@@ -43,8 +43,6 @@ namespace Dune {
   typename GridImp::template codim<cc>::EntityPointer
   OneDGridEntity<0,dim,GridImp>::entity ( int i ) const
   {
-    /** \todo Remove this const cast */
-    //OneDGridEntity<0,dim,GridImp>* nonconst_this = const_cast< OneDGridEntity<0,dim,GridImp>*>(this);
     return OneDGridLevelIterator<cc,All_Partition,GridImp>(OneDGridSubEntityFactory<cc,dim,GridImp>::get(this->target_, i));
   }
 
