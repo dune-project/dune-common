@@ -58,36 +58,6 @@ namespace Dune {
       }
     }
 
-    //! equality
-    bool equals (const OneDGridIntersectionIterator& i) const {
-      bool isValid = center_ && (neighbor_==0 || neighbor_==1);
-      bool iisValid = i.center_ && (i.neighbor_==0 || i.neighbor_==1);
-
-      // Two intersection iterators are equal if they have the same
-      // validity.  Furthermore, if they are both valid, they have
-      // to have the same center and neighborCount_
-      return (!isValid && !iisValid)
-             || (isValid && iisValid &&
-                 (center_ == i.center_ && neighbor_ == i.neighbor_));
-
-    }
-
-    //! access neighbor, dereferencing
-    Entity& dereference() const {
-      if (neighbor_==0) {
-        if (center_->pred_ && center_->pred_->vertex_[1] == center_->vertex_[0]) {
-          virtualEntity_.setToTarget(center_->pred_);
-          return virtualEntity_;
-        }
-      } else {
-        if (center_->succ_ && center_->succ_->vertex_[0] == center_->vertex_[1]) {
-          virtualEntity_.setToTarget(center_->succ_);
-          return virtualEntity_;
-        }
-      }
-
-      DUNE_THROW(GridError, "Trying to dereferentiate a NULL-pointer!");
-    }
 
     //! return true if intersection is with boundary.
     bool boundary () const {
@@ -220,8 +190,6 @@ namespace Dune {
     //! BoundaryEntity
     OneDGridBoundaryEntity<GridImp> boundaryEntity_;
 #endif
-
-    mutable OneDEntityWrapper<0,dim,GridImp> virtualEntity_;
 
     //! count on which neighbor we are lookin' at
     int neighbor_;
