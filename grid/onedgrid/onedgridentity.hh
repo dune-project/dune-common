@@ -104,11 +104,7 @@ namespace Dune {
       this->realEntity.setToTarget(target);
     }
 
-#if 0
-    void setToTarget(typename TargetType<codim,dim>::T* target, int level) {
-      this->realEntity.setToTarget(target, level);
-    }
-#endif
+    OneDEntityImp<dim-codim>* target() {return this->realEntity.target_;}
   };
 
 
@@ -284,12 +280,12 @@ namespace Dune {
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
     IntersectionIterator ibegin () const {
-      return OneDGridIntersectionIterator<GridImp>(target_);
+      return OneDGridIntersectionIterator<GridImp>(target_, 0);
     }
 
     //! Reference to one past the last neighbor
     IntersectionIterator iend () const {
-      return IntersectionIterator(NULL);
+      return OneDGridIntersectionIterator<GridImp>(target_, 2);
     }
 
     //! returns true if Entity has no children

@@ -33,11 +33,10 @@ namespace Dune {
     friend class OneDGridEntity<0,dim,GridImp>;
 
     //! Constructor for a given grid entity
-    OneDGridIntersectionIterator(const OneDEntityImp<1>* center) : center_(center), neighbor_(0)
-    {}
-
-    //! The default Constructor makes empty Iterator
-    OneDGridIntersectionIterator();
+    OneDGridIntersectionIterator(OneDEntityImp<1>* center, int nb) : center_(center), neighbor_(nb)
+    {
+      this->virtualEntity_.setToTarget(target());
+    }
 
   public:
 
@@ -50,14 +49,20 @@ namespace Dune {
 
     //! prefix increment
     void increment() {
-      if (center_ && neighbor_==0) {
-        neighbor_ = 1;
-      } else if (center_ && neighbor_==1) {
-        center_ = NULL;
-        neighbor_ = -1;
-      }
+      neighbor_++;
+      this->virtualEntity_.setToTarget(target());
     }
 
+    OneDEntityImp<1>* target() const {
+      const bool isValid = center_ && (neighbor_==0 || neighbor_==1);
+
+      if (!isValid)
+        return center_;
+      else if (!neighbor())
+        return NULL;
+      else
+        return (neighbor_==0) ? center_->pred_ : center_->succ_;
+    }
 
     //! return true if intersection is with boundary.
     bool boundary () const {
@@ -171,7 +176,7 @@ namespace Dune {
     //  private methods
     //**********************************************************
 
-    const OneDEntityImp<1>* center_;
+    OneDEntityImp<1>* center_;
 
     //! vector storing the outer normal
     FieldVector<OneDCType, dimworld> outerNormal_;

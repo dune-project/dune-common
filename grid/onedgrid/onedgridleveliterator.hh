@@ -45,8 +45,7 @@ namespace Dune {
 
     //! prefix increment
     void increment() {
-      this->target_ = this->target_->succ_;
-      this->virtualEntity_.setToTarget(this->target_);
+      this->virtualEntity_.setToTarget(this->virtualEntity_.target()->succ_);
     }
   };
 
