@@ -147,6 +147,12 @@ AC_CONFIG_FILES([Makefile
 	 istl/test/Makefile
 	 istl/paamg/Makefile
 	 istl/paamg/test/Makefile
+	 io/Makefile
+	 io/file/Makefile
+	 io/file/amiramesh/Makefile
+	 io/file/rawdata/Makefile
+	 io/visual/Makefile
+	 io/visual/grape/Makefile
          lib/Makefile
          lib/test/Makefile
          operator/Makefile

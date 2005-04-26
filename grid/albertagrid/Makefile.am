@@ -2,4 +2,4 @@
 
 albertadir = $(includedir)/dune/grid/albertagrid/
 alberta_HEADERS = agelementindex.cc albertagrid.cc \
-  agcommunicator.hh agmemory.hh albertaextra.hh
+  agcommunicator.hh agmemory.hh albertaextra.hh albertaheader.hh

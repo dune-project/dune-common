@@ -4,7 +4,7 @@
 # need automake >= 1.5
 AUTOMAKE_OPTIONS = foreign 1.5
 
-SUBDIRS = common fem grid operator quadrature solver lib istl doc bin m4 am
+SUBDIRS = common fem grid operator quadrature solver lib io istl doc bin m4 am
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = dune.pc

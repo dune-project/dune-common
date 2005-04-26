@@ -8,5 +8,6 @@ grid_HEADERS = albertagrid.hh \
                sgrid.hh \
                simplegrid.hh \
                uggrid.hh \
-	       yaspgrid.hh \
-               onedgrid.hh
+               yaspgrid.hh \
+               onedgrid.hh \
+               reftopology.hh
