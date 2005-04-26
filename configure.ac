@@ -157,7 +157,6 @@ AC_CONFIG_FILES([Makefile
          quadrature/fixedorder/Makefile
          solver/Makefile
          solver/common/Makefile
-         solver/pmgsolver/Makefile
          doc/Makefile
 	 doc/devel/Makefile
 	 doc/appl/Makefile
