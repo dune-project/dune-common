@@ -43,11 +43,10 @@ namespace Dune {
 
     typedef typename GridImp::template codim<0>::Entity Entity;
 
-    //! the default Constructor
-    OneDGridHierarchicIterator(int maxlevel) : elemStack() {
-      maxlevel_ = maxlevel;
-      //target_   = NULL;
-    }
+    //! Constructor
+    OneDGridHierarchicIterator(int maxlevel) : OneDGridEntityPointer<0,GridImp>(NULL),
+                                               elemStack(), maxlevel_(maxlevel)
+    {}
 
     //! prefix increment
     void increment() {
@@ -79,19 +78,7 @@ namespace Dune {
 
       }
 
-      virtualEntity_.setToTarget((elemStack.empty()) ? NULL : elemStack.top().element);
-    }
-
-    //! equality
-    bool equals (const OneDGridHierarchicIterator& other) const {
-      return ( (elemStack.size()==0 && other.elemStack.size()==0) ||
-               ((elemStack.size() == other.elemStack.size()) &&
-                (elemStack.top().element == other.elemStack.top().element)));
-    }
-
-    //! dereferencing
-    Entity& dereference() const {
-      return virtualEntity_;
+      this->virtualEntity_.setToTarget((elemStack.empty()) ? NULL : elemStack.top().element);
     }
 
   private:
@@ -100,9 +87,6 @@ namespace Dune {
     int maxlevel_;
 
     Stack<StackEntry> elemStack;
-
-    //! implement with virtual element
-    mutable OneDEntityWrapper<0,GridImp::dimension,GridImp> virtualEntity_;
 
   };
 
