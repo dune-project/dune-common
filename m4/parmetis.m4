@@ -93,8 +93,10 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       fi 
       
   # end of "no --without-parmetis"
+  else
+  	with_parmetis="no"
   fi
-  
+ 
   # tell automake	
   AM_CONDITIONAL(PARMETIS, test x$HAVE_PARMETIS = x1)
   
