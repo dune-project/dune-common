@@ -26,6 +26,7 @@ namespace Dune
   /** \brief The type used by to store coordinates */
   typedef double OneDCType;
 
+
   // forward declarations
   template<int codim, int dim, class GridImp> class OneDGridEntity;
   template<int codim, class GridImp> class OneDGridEntityPointer;
@@ -251,6 +252,32 @@ namespace Dune {
 
       return vertices[level].size();
     }
+
+
+
+    //! number of leaf entities per codim in this process
+    int size (int codim) const
+    {
+      DUNE_THROW(NotImplemented, "not implemented");
+      return 0;
+    }
+
+    //! number of entities per level, codim and geometry type in this process
+    int size (int level, int codim, GeometryType type) const
+    {
+      DUNE_THROW(NotImplemented, "not implemented");
+      return 0;
+    }
+
+    //! number of leaf entities per codim and geometry type in this process
+    int size (int codim, GeometryType type) const
+    {
+      DUNE_THROW(NotImplemented, "not implemented");
+      return 0;
+    }
+
+
+
 
     /** \brief Mark entity for refinement
      *
