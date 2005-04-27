@@ -10,6 +10,7 @@
 #include "../common/stack.hh" // the stack class
 #include "../common/capabilities.hh" // the capabilities
 #include "../common/helpertemplates.hh"
+#include "../common/bigunsignedint.hh"
 
 /*! \file yaspgrid.hh
    Yasppergrid stands for yet another structured parallel grid.
@@ -41,7 +42,16 @@ namespace Dune {
    */
   typedef double yaspgrid_ctype;
 
+
   static const yaspgrid_ctype yasptolerance=1E-13; // tolerance in coordinate computations
+
+  /*! type used for the persistent indices
+   */
+
+  // globally define the persistent index type
+  typedef bigunsignedint<64> yaspgrid_persistentindextype;
+
+
 
   //************************************************************************
   // forward declaration of templates
@@ -604,6 +614,9 @@ namespace Dune {
     typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
 
+    //! define the type used for persisitent indices
+    typedef yaspgrid_persistentindextype PersistentIndexType;
+
     //! define type used for coordinates in grid module
     typedef typename YGrid<dim,ctype>::iTupel iTupel;
 
@@ -634,18 +647,18 @@ namespace Dune {
     //! geometry of this entity
     const Geometry& geometry () const { return _geometry; }
 
-    /*! Intra-element access to entities of codimension cc > codim. Return number of entities
-          with codimension cc.
+    /*! Return number of subentities with codimension cc.
      */
     template<int cc> int count () const
     {
-      if (cc==1) return 2*dim;
       if (cc==dim) return 1<<dim;
+      if (cc==1) return 2*dim;
+      if (cc==dim-1) return dim*(1<<(dim-1));
+      if (cc==0) return 1;
       DUNE_THROW(GridError, "codim not (yet) implemented");
     }
 
-    /*! Intra-element access to entities of codimension cc > codim. Return number of entities
-          with codimension cc.
+    /*! Intra-element access to subentities of codimension cc > codim.
      */
     template<int cc>
     typename codim<cc>::EntityPointer entity (int i) const
@@ -724,9 +737,9 @@ namespace Dune {
 
     bool isLeaf() const
     {
-      std::cout << _g.level() << " ... " << _g.mg()->maxlevel() << std::endl;
-      if (_g.level() == _g.mg()->maxlevel())
-        std::cout << "is Leaf\n";
+      //    std::cout << _g.level() << " ... " << _g.mg()->maxlevel() << std::endl;
+      //   if (_g.level() == _g.mg()->maxlevel())
+      //      std::cout << "is Leaf\n";
       return (_g.level() == _g.mg()->maxlevel());
     }
 
@@ -758,6 +771,244 @@ namespace Dune {
     }
 
   private:
+    friend class GridImp::IndexType; // needs access to the private index methods
+
+    //! globally unique, persistent index
+    PersistentIndexType persistentIndex () const
+    {
+      // get coordinate and size of global grid
+      const iTupel& size =  _g.cell_global().size();
+      int coord[dim];
+
+      // correction for periodic boundaries
+      for (int i=0; i<dim; i++)
+      {
+        coord[i] = _it.coord(i);
+        if (coord[i]<0) coord[i] += size[i];
+        if (coord[i]>=size[i]) coord[i] -= size[i];
+      }
+
+      // make one number from coordinate
+      PersistentIndexType number1(coord[dim-1]);
+      for (int i=dim-2; i>=0; i--)
+        number1 = (number1*size[i])+coord[i];
+
+      // encode codim and level
+      PersistentIndexType number2((_g.level()<<4));
+
+      return number1|(number2<<52);
+    }
+
+    //! consecutive, codim-wise, level-wise index
+    int compressedIndex () const
+    {
+      _it.superindex();
+    }
+
+    //! subentity persistent index
+    template<int cc>
+    PersistentIndexType subPersistentIndex (int i) const
+    {
+      // get position of cell, note that global origin is zero
+      // adjust for periodic boundaries
+      int coord[dim];
+      for (int k=0; k<dim; k++)
+      {
+        coord[k] = _it.coord(k);
+        if (coord[k]<0) coord[k] += _g.cell_global().size(k);
+        if (coord[k]>=_g.cell_global().size(k)) coord[k] -= _g.cell_global().size(k);
+      }
+
+      if (cc==dim)
+      {
+        // transform to vertex coordinates
+        for (int k=0; k<dim; k++)
+          if (i&(1<<k)) (coord[k])++;
+
+        // make one number from coordinate
+        PersistentIndexType number1(coord[dim-1]);
+        for (int k=dim-2; k>=0; k--)
+          number1 = (number1*(_g.cell_global().size(k)+1))+coord[k];
+
+        // encode codim and level
+        PersistentIndexType number2((_g.level()<<4)+cc);
+
+        return number1|(number2<<52);
+      }
+
+      if (cc==1)   // faces, i.e. for dim=2 codim=1 is treated as a face
+      {
+        // Idea: direction ivar varies, all others are fixed, i.e. 2 possibilities per direction
+
+        // ivar is the direction that varies
+        int ivar=i/2;
+
+        // compute position from cell position
+        if (i%2) coord[ivar] += 1;
+
+        // do lexicographic numbering
+        PersistentIndexType index(coord[dim-1]);
+        for (int k=dim-2; k>=0; --k)
+          if (k==ivar)
+            index = (index*(_g.cell_global().size(k)+1))+coord[k];             // one more
+          else
+            index = (index*(_g.cell_global().size(k)))+coord[k];
+
+        // add size of all subsets for smaller directions
+        for (int j=0; j<ivar; j++)
+        {
+          PersistentIndexType n(_g.cell_global().size(j)+1);
+          for (int l=0; l<dim; l++)
+            if (l!=j) n = n*_g.cell_global().size(l);
+          index = index+n;
+        }
+
+        // encode codim and level
+        PersistentIndexType modifier((_g.level()<<4)+cc);
+
+        return index|(modifier<<52);
+      }
+
+      if (cc==dim-1)   // edges, exist only for dim>2
+      {
+        // Idea: direction i is fixed, all others are vary, i.e. 2^(dim-1) possibilities per direction
+
+        // number of entities per direction
+        int m=1<<(dim-1);
+
+        // ifix is the direction that is fixed
+        int ifix=(dim-1)-(i/m);
+
+        // compute position from cell position
+        int bit=1;
+        for (int k=0; k<dim; k++)
+        {
+          if (k==ifix) continue;
+          if ((i%m)&bit) coord[k] += 1;
+          bit *= 2;
+        }
+
+        // do lexicographic numbering
+        PersistentIndexType index(coord[dim-1]);
+        for (int k=dim-2; k>=0; --k)
+          if (k!=ifix)
+            index = (index*(_g.cell_global().size(k)+1))+coord[k];             // one more
+          else
+            index = (index*(_g.cell_global().size(k)))+coord[k];
+
+        // add size of all subsets for smaller directions
+        for (int j=dim-1; j>ifix; j--)
+        {
+          PersistentIndexType n(_g.cell_overlap().size(j));
+          for (int l=0; l<dim; l++)
+            if (l!=j) n = n*(_g.cell_global().size(l)+1);
+          index = index+n;
+        }
+
+        // encode codim and level
+        PersistentIndexType modifier((_g.level()<<4)+cc);
+
+        return index|(modifier<<52);
+      }
+
+      DUNE_THROW(GridError, "codim not (yet) implemented");
+    }
+
+    //! subentity compressed index
+    template<int cc>
+    int subCompressedIndex (int i) const
+    {
+      // get cell position relative to origin of local cell grid
+      iTupel coord;
+      for (int k=0; k<dim; ++k)
+        coord[k] = _it.coord(k)-_g.cell_overlap().origin(k);
+
+      if (cc==dim)   // vertices
+      {
+        // transform cell coordinate to corner coordinate
+        for (int k=0; k<dim; k++)
+          if (i&(1<<k)) (coord[k])++;
+
+        // do lexicographic numbering
+        int index = coord[dim-1];
+        for (int k=dim-2; k>=0; --k)
+          index = (index*(_g.cell_overlap().size(k)+1))+coord[k];
+        return index;
+      }
+
+      if (cc==1)   // faces, i.e. for dim=2 codim=1 is treated as a face
+      {
+        // Idea: direction ivar varies, all others are fixed, i.e. 2 possibilities per direction
+
+        // ivar is the direction that varies
+        int ivar=i/2;
+
+        // compute position from cell position
+        if (i%2) coord[ivar] += 1;
+
+        // do lexicographic numbering
+        int index = coord[dim-1];
+        for (int k=dim-2; k>=0; --k)
+          if (k==ivar)
+            index = (index*(_g.cell_overlap().size(k)+1))+coord[k];             // one more
+          else
+            index = (index*(_g.cell_overlap().size(k)))+coord[k];
+
+        // add size of all subsets for smaller directions
+        for (int j=0; j<ivar; j++)
+        {
+          int n=_g.cell_overlap().size(j)+1;
+          for (int l=0; l<dim; l++)
+            if (l!=j) n *= _g.cell_overlap().size(l);
+          index += n;
+        }
+
+        return index;
+      }
+
+      if (cc==dim-1)   // edges, exist only for dim>2
+      {
+        // Idea: direction i is fixed, all others are vary, i.e. 2^(dim-1) possibilities per direction
+
+        // number of entities per direction
+        int m=1<<(dim-1);
+
+        // ifix is the direction that is fixed
+        int ifix=(dim-1)-(i/m);
+
+        // compute position from cell position
+        int bit=1;
+        for (int k=0; k<dim; k++)
+        {
+          if (k==ifix) continue;
+          if ((i%m)&bit) coord[k] += 1;
+          bit *= 2;
+        }
+
+        // do lexicographic numbering
+        int index = coord[dim-1];
+        for (int k=dim-2; k>=0; --k)
+          if (k!=ifix)
+            index = (index*(_g.cell_overlap().size(k)+1))+coord[k];             // one more
+          else
+            index = (index*(_g.cell_overlap().size(k)))+coord[k];
+
+        // add size of all subsets for smaller directions
+        for (int j=dim-1; j>ifix; j--)
+        {
+          int n=_g.cell_overlap().size(j);
+          for (int l=0; l<dim; l++)
+            if (l!=j) n *= _g.cell_overlap().size(l)+1;
+          index += n;
+        }
+
+        return index;
+      }
+
+      DUNE_THROW(GridError, "codim not (yet) implemented");
+    }
+
+
     const TSI& _it;         // position in the grid level
     const YGLI& _g;         // access to grid level
     SpecialGeometry _geometry; // the element geometry
@@ -785,6 +1036,9 @@ namespace Dune {
     };
     typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
 
+    //! define the type used for persisitent indices
+    typedef yaspgrid_persistentindextype PersistentIndexType;
+
     //! define type used for coordinates in grid module
     typedef typename YGrid<dim,ctype>::iTupel iTupel;
 
@@ -799,10 +1053,9 @@ namespace Dune {
     //! index is unique and consecutive per level
     int index () const {return _it.superindex();}
 
-    //! globalIndex is unique and consecutive per global level
-    int globalIndex () const {
-      return _g.cell_global().index(_it.coord());
-    }
+    //! globally unique, persistent index
+    int globalIndex () const { return _g.cell_global().index(_it.coord()); }
+
 
     //! geometry of this entity
     const Geometry& geometry () const { return _geometry; }
@@ -877,6 +1130,37 @@ namespace Dune {
     }
 
   private:
+    friend class GridImp::IndexType; // needs access to the private index methods
+
+    //! globally unique, persistent index
+    PersistentIndexType persistentIndex () const
+    {
+      // get coordinate and size of global grid
+      const iTupel& size =  _g.vertex_global().size();
+      int coord[dim];
+
+      // correction for periodic boundaries
+      for (int i=0; i<dim; i++)
+      {
+        coord[i] = _it.coord(i);
+        if (coord[i]<0) coord[i] += size[i];
+        if (coord[i]>=size[i]) coord[i] -= size[i];
+      }
+
+      // make one number from coordinate
+      PersistentIndexType number1(coord[dim-1]);
+      for (int i=dim-2; i>=0; i--)
+        number1 = (number1*size[i])+coord[i];
+
+      // encode codim and level
+      PersistentIndexType number2((_g.level()<<4)+dim);
+
+      return number1|(number2<<52);
+    }
+
+    //! consecutive, codim-wise, level-wise index
+    int compressedIndex () const { return _it.superindex();}
+
     const TSI& _it;              // position in the grid level
     const YGLI& _g;              // access to grid level
     SpecialGeometry _geometry;    // the element geometry
@@ -1389,16 +1673,70 @@ namespace Dune {
   template <class GridImp>
   class YaspLeafIterator : public YaspLevelIterator<0,All_Partition,GridImp>
   {
+    //! know your own dimension
+    enum { dim=GridImp::dimension };
     typedef typename GridImp::ctype ctype;
   public:
-    typedef typename MultiYGrid<0,ctype>::YGridLevelIterator YGLI;
-    typedef typename SubYGrid<0,ctype>::TransformingSubIterator TSI;
+    typedef typename MultiYGrid<dim,ctype>::YGridLevelIterator YGLI;
+    typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
     YaspLeafIterator(const YGLI & g, const TSI & it) :
       YaspLevelIterator<0,All_Partition,GridImp>(g,it)
     {}
     YaspLeafIterator(const YaspLeafIterator& i) :
-      YaspLevelIterator<0,All_Partition,GridImp>(i.g,i.it)
+      YaspLevelIterator<0,All_Partition,GridImp>(i)
     {}
+  };
+
+
+
+  //========================================================================
+  /*!
+     YaspIndex provides mappers with index information for an entity
+
+     Numbering of the entities on one level which can also be used as leaf index
+   */
+  //========================================================================
+
+  // Index class for level indices, we implement it with methods in the entity
+  template<class GridImp>
+  class YaspIndex
+  {
+  public:
+    //! define the type used for persisitent indices
+    typedef yaspgrid_persistentindextype PersistentIndexType;
+
+    //! globally unique, persistent index
+    template<int cd>
+    PersistentIndexType persistent (const typename GridImp::Traits::template codim<cd>::Entity& e) const
+    {
+      return grid.template getRealEntity<cd>(e).persistentIndex();
+    }
+
+    //! consecutive, codim-wise and geometrytype-wise index
+    template<int cd>
+    int compressed (const typename GridImp::Traits::template codim<cd>::Entity& e) const
+    {
+      return grid.template getRealEntity<cd>(e).compressedIndex();
+    }
+
+    //! subentity persistent index
+    template<int cc>
+    PersistentIndexType subpersistent (const typename GridImp::Traits::template codim<0>::Entity& e, int i) const
+    {
+      return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
+    }
+
+    //! subentity compressed index
+    template<int cc>
+    int subcompressed (const typename GridImp::Traits::template codim<0>::Entity& e, int i) const
+    {
+      return grid.template getRealEntity<0>(e).template subCompressedIndex<cc>(i);
+    }
+
+    YaspIndex (const GridImp& g) : grid(g) {}
+
+  private:
+    const GridImp& grid;
   };
 
 
@@ -1425,10 +1763,16 @@ namespace Dune {
     typedef GridTraits<dim,dimworld,Dune::YaspGrid<dim,dimworld>,
         YaspGeometry,YaspEntity,YaspBoundaryEntity,
         YaspEntityPointer,YaspLevelIterator,
-        YaspIntersectionIterator,YaspHierarchicIterator> Traits;
+        YaspIntersectionIterator,YaspHierarchicIterator,
+        YaspLeafIterator> Traits;
+
+    typedef YaspIndex<YaspGrid<dim,dimworld> > IndexType;
 
     //! define type used for coordinates in grid module
     typedef yaspgrid_ctype ctype;
+
+    //! define the type used for persisitent indices
+    typedef yaspgrid_persistentindextype PersistentIndexType;
 
     //! maximum number of levels allowed
     enum { MAXL=64 };
@@ -1451,8 +1795,10 @@ namespace Dune {
     YaspGrid (MPI_Comm comm, Dune::FieldVector<ctype, dim> L,
               Dune::FieldVector<int, dim> s,
               Dune::FieldVector<bool, dim> periodic, int overlap) :
-      MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap)
-    {}
+      MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap),yi(*this)
+    {
+      setsizes();
+    }
 
     /*! Return maximum level defined in this grid. Levels are numbered
           0 ... maxlevel with 0 the coarsest level.
@@ -1465,6 +1811,14 @@ namespace Dune {
       bool b=false;
       if (refCount>0) b=true;
       MultiYGrid<dim,ctype>::refine(b);
+      setsizes();
+    }
+
+    //! refine the grid refCount times. What about overlap?
+    void refine (bool b)
+    {
+      MultiYGrid<dim,ctype>::refine(b);
+      setsizes();
     }
 
     //! one past the end on this level
@@ -1473,6 +1827,7 @@ namespace Dune {
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
+      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
       if (cd==0)   // the elements
       {
         if (pitype<=InteriorBorder_Partition)
@@ -1500,6 +1855,7 @@ namespace Dune {
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
+      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
       if (cd==0)   // the elements
       {
         if (pitype<=InteriorBorder_Partition)
@@ -1527,6 +1883,7 @@ namespace Dune {
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
+      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
       if (cd==0)   // the elements
       {
         return YaspLevelIterator<cd,All_Partition,GridImp>(g,g.cell_overlap().tsubbegin());
@@ -1544,6 +1901,7 @@ namespace Dune {
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
+      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
       if (cd==0)   // the elements
       {
         return YaspLevelIterator<cd,All_Partition,GridImp>(g,g.cell_overlap().tsubend());
@@ -1553,6 +1911,22 @@ namespace Dune {
         return YaspLevelIterator<cd,All_Partition,GridImp>(g,g.vertex_overlapfront().tsubend());
       }
       DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
+    }
+
+    //! return LeafIterator which points to the first entity in maxLevel
+    typename Traits::LeafIterator leafbegin(int maxLevel) const
+    {
+      int level = std::min(maxLevel,maxlevel());
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
+      return YaspLeafIterator<const GridImp>(g,g.cell_overlap().tsubbegin());
+    };
+
+    //! return LeafIterator which points behind the last entity in maxLevel
+    typename Traits::LeafIterator leafend(int maxLevel) const
+    {
+      int level = std::min(maxLevel,maxlevel());
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
+      return YaspLeafIterator<const GridImp>(g,g.cell_overlap().tsubend());
     }
 
     //! return size (= distance in graph) of overlap region
@@ -1568,20 +1942,48 @@ namespace Dune {
       return 0;
     }
 
-    //! number of grid entities per level and codim
+    //! number of entities per level and codim in this process
     int size (int level, int codim) const
     {
-      YaspGrid<dim, dimworld>* p = const_cast<YaspGrid<dim, dimworld>*>(this);
-      YGLI g = p->begin(level);
-      if (codim==0)
+      return sizes[level][codim];
+    }
+
+    //! number of leaf entities per codim in this process
+    int size (int codim) const
+    {
+      return sizes[maxlevel()][codim];
+    }
+
+    //! number of entities per level, codim and geometry type in this process
+    int size (int level, int codim, GeometryType type) const
+    {
+      if (type==hypercube) return sizes[level][codim];
+      switch (dim-codim)
       {
-        return g.cell_overlap().totalsize();
+      case 0 :
+        if (type==vertex) return sizes[level][codim];
+        break;
+
+      case 1 :
+        if (type==line) return sizes[level][codim];
+        break;
+
+      case 2 :
+        if (type==quadrilateral) return sizes[level][codim];
+        if (type==iso_quadrilateral) return sizes[level][codim];
+        break;
+
+      case 3 :
+        if (type==hexahedron) return sizes[level][codim];
+        break;
       }
-      if (codim==dim)
-      {
-        return g.vertex_overlapfront().totalsize();
-      }
-      DUNE_THROW(GridError, "Yasp does not implement this codim (yet)");
+      return 0;
+    }
+
+    //! number of leaf entities per codim and geometry type in this process
+    int size (int codim, GeometryType type) const
+    {
+      return size(maxlevel(),codim,type);
     }
 
     /*! The communication interface
@@ -1714,19 +2116,95 @@ namespace Dune {
 
     // implement leaf communication. Problem: supply vector of vectors
 
+    // the index methods
+    const IndexType& leafindex () const
+    {
+      return yi;
+    }
+
+    const IndexType& levelindex () const
+    {
+      return yi;
+    }
+
+    const IndexType& savedleafindex () const
+    {
+      return yi;
+    }
+
+    const IndexType& savedlevelindex () const
+    {
+      return yi;
+    }
+
   private:
+    IndexType yi;
+
+    // Index classes need access to the real entity
+    friend class Dune::YaspIndex<Dune::YaspGrid<dim,dimworld> >;
+
     template<int codim>
     YaspEntity<codim,dim,const YaspGrid<dim,dimworld> >&
-    getRealEntity(typename Traits::template codim<codim>::Entity& e );
+    getRealEntity(typename Traits::template codim<codim>::Entity& e )
+    {
+      return e.realEntity;
+    }
 
     template<int codim>
     const YaspEntity<codim,dim,const YaspGrid<dim,dimworld> >&
-    getRealEntity(const typename Traits::template codim<codim>::Entity& e ) const ;
+    getRealEntity(const typename Traits::template codim<codim>::Entity& e ) const
+    {
+      return e.realEntity;
+    }
 
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
 
-    //  YMG _mg;
+    void setsizes ()
+    {
+      for (YGLI g=MultiYGrid<dim,ctype>::begin(); g!=MultiYGrid<dim,ctype>::end(); ++g)
+      {
+        // codim 0 (elements)
+        sizes[g.level()][0] = 1;
+        for (int i=0; i<dim; ++i)
+          sizes[g.level()][0] *= g.cell_overlap().size(i);
+
+        // codim 1 (faces)
+        if (dim>1)
+        {
+          sizes[g.level()][1] = 0;
+          for (int i=0; i<dim; ++i)
+          {
+            int s=g.cell_overlap().size(i)+1;
+            for (int j=0; j<dim; ++j)
+              if (j!=i)
+                s *= g.cell_overlap().size(j);
+            sizes[g.level()][1] += s;
+          }
+        }
+
+        // codim dim-1 (edges)
+        if (dim>2)
+        {
+          sizes[g.level()][dim-1] = 0;
+          for (int i=0; i<dim; ++i)
+          {
+            int s=g.cell_overlap().size(i);
+            for (int j=0; j<dim; ++j)
+              if (j!=i)
+                s *= g.cell_overlap().size(j)+1;
+            sizes[g.level()][dim-1] += s;
+          }
+        }
+
+        // codim dim (vertices)
+        sizes[g.level()][dim] = 1;
+        for (int i=0; i<dim; ++i)
+          sizes[g.level()][dim] *= g.vertex_overlapfront().size(i);
+      }
+    }
+
+    int sizes[MAXL][dim+1]; // total number of entities per level and codim
   };
 
   /** @} end documentation group */
