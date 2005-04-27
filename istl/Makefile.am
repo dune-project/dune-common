@@ -12,7 +12,7 @@ istl_HEADERS = $(SOURCES)
 # which documentation files should be put into special istl-only-tarball
 DISTDOCS = istl.tex istl.bib istl.ps istl.pdf \
 	comm/communication.pdf comm/communication.ps comm/indexset.cc \
-	comm/reverse.hh comm/buildindexset.hh
+	comm/reverse.hh comm/buildindexset.hh comm/figures/darray.eps
 
 # same for tutorial
 DISTTUT = tutorial/example.cc

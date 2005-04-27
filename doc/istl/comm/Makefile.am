@@ -9,8 +9,6 @@ SUFFIXES = .dvi .tex .pdf
 
 dist_pkgdata_DATA = communication.pdf communication.ps
 
-#communication.dvi_DEPENDENCIES = communication.tex indexset.cc reverse.hh
-
 noinst_PROGRAMS = $(MPIPROGRAMS)
 
 indexset_SOURCES = indexset.cc
@@ -37,5 +35,9 @@ indexset_LDADD = $(MPI_LDFLAGS)
 
 .dvi.ps:
 	$(DVIPS) $*
+
+
+communication.dvi : communication.tex buildindexset.hh reverse.hh
+
 
 CLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi *.pdf *.ps

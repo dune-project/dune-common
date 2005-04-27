@@ -65,7 +65,7 @@
 Markus Blatt\\
 Interdisziplinäres Zentrum für Wissenschaftliches Rechnen,\\
 Universität Heidelberg, Im Neuenheimer Feld 368, D-69120 Heidelberg, \\
-email: \texttt{Markus.Blarr@iwr.uni-heidelberg.de}}
+email: \texttt{Markus.Blatt@iwr.uni-heidelberg.de}}
 
 \date{\today}
 
@@ -184,15 +184,40 @@ present on other processes there is the possiblity to mark the index
 as public.
 
 \paragraph{Usage Examples}
-Let us look at a short example on how to build an index set:
+Let us look at a short example on how to build an index set. The code
+in Listing \ref{lst:build_indexset} sets up an index set with 8
+components on two processes. This index set might be used to access as
+distributed field or \lstinline!std::vector! as sketched in Figure
+\ref{fig:distributed_field}. 
 
+\begin{figure}[htb]
+  \centering
+  \includegraphics{figures/darray.eps}
+  \caption{A Distributed Field}
+  \label{fig:distributed_field}
+\end{figure}
+
+The process $0$ stores in his {/em local}
+field $a_0$ the values corresponding to the global indices
+$I_0=\{0,2,6,3,5\}$, in that order, of the global field $a$ and process
+$I$ the entries corresponding to the values at the indices
+$I_1=\{0,1,7,5,4\}$.
 \lstinputlisting[caption=Build an Index Set,
 label=lst:build_indexset]{buildindexset.hh}
 
 Due to the complexity of \lstinline!operator[](TG& global)! it is
-always advisable to use iterators to access the index pairs of the
-set.
-The following example demonstrates their usage:
+always advisable to use iterators, obtained by calling
+\lstinline!begin()! and \lstinline!end()! respectively, to access the
+index pairs of the set.
+
+Listing \ref{lst:indexset_iterator} demonstrates their
+usage. First the maximum local index $i_{\mbox{max}}$ of the set is
+computed, and the 
+the local indices are renumbered. Due to the ordering the local index with
+the smallest corresponding global index becomes $i_{\mbox{max}}$ and the rest is
+numbered consecutively decreasingly with increasing global index. Let
+$n$ be the number of index pairs in the set than local index
+corresponding to the largets global index becomes $i_{\mbox{max}}-n$.
 \lstinputlisting[caption=Usage of Index Set Iterators,
 label=lst:indexset_iterator]{reverse.hh}
 
