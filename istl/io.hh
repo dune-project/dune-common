@@ -150,9 +150,9 @@ namespace Dune {
         }
   }
 
-  //! print one row of a matrix, specialization for K11Matrix
+  //! print one row of a matrix, specialization for FieldMatrix<K,1,1>
   template<class K>
-  void print_row (std::ostream& s, const K11Matrix<K>& A, int I, int J, int therow, int width, int precision)
+  void print_row (std::ostream& s, const FieldMatrix<K,1,1>& A, int I, int J, int therow, int width, int precision)
   {
     if (I==therow)
     {
