@@ -221,6 +221,28 @@ namespace Dune {
      */
     int size (int level, int codim) const;
 
+    //! number of leaf entities per codim in this process
+    int size (int codim) const
+    {
+      DUNE_THROW(NotImplemented, "not implemented");
+      return 0;
+    }
+
+    //! number of entities per level, codim and geometry type in this process
+    int size (int level, int codim, GeometryType type) const
+    {
+      DUNE_THROW(NotImplemented, "not implemented");
+      return 0;
+    }
+
+    //! number of leaf entities per codim and geometry type in this process
+    int size (int codim, GeometryType type) const
+    {
+      DUNE_THROW(NotImplemented, "not implemented");
+      return 0;
+    }
+
+
 #ifdef UGGRID_WITH_INDEX_SETS
     int global_size (int codim) const DUNE_DEPRECATED { return hierarchicIndexSet().size(maxlevel(),codim); }
 #else
