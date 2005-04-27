@@ -1027,9 +1027,9 @@ namespace Dune {
       iTupel dims;
       double opt=1E100;
       optimize_dims(d-1,size,_procs,dims,opt);
-      if (_rank==0) std::cout << "Torus<" << d     // changed dinfo tocout
-        << ">: mapping " << _procs << " processes onto "
-        << _dims << " torus." << std::endl;
+      //          if (_rank==0) std::cout << "Torus<" << d
+      //                                                          << ">: mapping " << _procs << " processes onto "
+      //                                                          << _dims << " torus." << std::endl;
 
       // compute increments for lexicographic ordering
       int inc = 1;
@@ -1647,9 +1647,9 @@ namespace Dune {
       _levels[_maxlevel] = makelevel(L,s,periodic,o_interior,s_interior,overlap);
 
       // output
-      if (_torus.rank()==0) std::cout << "MultiYGrid<" << d     // changed dinfo to cout
-        << ">: coarse grid with size " << s
-        << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
+      //          if (_torus.rank()==0) std::cout << "MultiYGrid<" << d // changed dinfo to cout
+      //                                                                          << ">: coarse grid with size " << s
+      //                                                                          << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
       //      print(std::cout);
     }
 
@@ -1668,9 +1668,9 @@ namespace Dune {
       if (keep_overlap) overlap = 2*cg.overlap;else overlap = cg.overlap;
 
       // output
-      if (_torus.rank()==0) std::cout << "MultiYGrid<"     // changed dinfo to cout
-        << d << ">: refined to size "
-        << s << std::endl;
+      //          if (_torus.rank()==0) std::cout << "MultiYGrid<" // changed dinfo to cout
+      //                                                                          << d << ">: refined to size "
+      //                                                                          << s << std::endl;
 
       // the cell interior grid obtained from coarse cell interior grid
       iTupel o_interior;
@@ -2014,7 +2014,7 @@ namespace Dune {
     // make a new YGridLevel structure. For that we need
     // L           size of the whole domain in each direction
     // s           number of cells in each direction
-    // periodic    boolen indication periodicity in each direction
+    // periodic    boolean indication periodicity in each direction
     // o_interior  origin of interior (non-overlapping) cell decomposition
     // s_interior  size of interior cell decomposition
     // overlap     to be used on this grid level
