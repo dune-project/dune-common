@@ -359,6 +359,28 @@ namespace Dune {
     return SUnitCubeMapper<dim>::mapper.elements(cc);
   }
 
+  // subentity compressed index
+  template<int dim, class GridImp> template<int cc>
+  inline int SEntity<0,dim,GridImp>::subCompressedIndex (int i) const
+  {
+    int cindex;
+    if(cc == 100) // the vertex case
+    {
+      // find expanded coordinates of entity in reference cube
+      // has components in {0,1,2}
+      // the grid hold the memory because its faster
+      FixedArray<int,dim>& zref = this->grid->zrefStatic;
+      FixedArray<int,dim>& zentity = this->grid->zentityStatic;
+
+      zref = SUnitCubeMapper<dim>::mapper.z(i,dim);
+      for (int i=0; i<dim; i++) zentity[i] = this->z[i] + zref[i] - 1;
+      cindex = this->grid->n(this->l,zentity);
+    }
+    else
+    {
+      cindex = entity<cc>(i)->index();
+    }
+  }
 
   template<int dim, class GridImp> template<int cc>
   inline typename SEntity<0,dim,GridImp>::template codim<cc>::EntityPointer SEntity<0,dim,GridImp>::entity (int i) const
