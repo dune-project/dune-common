@@ -142,7 +142,6 @@ AC_CONFIG_FILES([Makefile
          grid/uggrid/Makefile
          grid/yaspgrid/Makefile
          istl/Makefile
-         istl/doc/Makefile
          istl/tutorial/Makefile
 	 istl/test/Makefile
 	 istl/paamg/Makefile
