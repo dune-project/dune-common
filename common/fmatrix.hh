@@ -1263,6 +1263,18 @@ namespace Dune {
       m = 1
     };
 
+    //===== constructors
+    /** \brief Default constructor
+     */
+    FieldMatrix () {}
+
+    /** \brief Constructor initializing the whole matrix with a scalar
+     */
+    FieldMatrix (const K& k)
+    {
+      a = k;
+    }
+
     //===== random access interface to rows of the matrix
 
     //! random access to the rows
