@@ -6,6 +6,9 @@
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/common/fmatrix.hh>
 
+// for backward compatibility
+#include <dune/fem/feop/spmatrix.hh>
+
 namespace Dune {
 
 
@@ -65,6 +68,22 @@ namespace Dune {
 
     /** \brief Direct access to the operator matrix, if you absolutely want it! */
     const OperatorType& getMatrix() const {return matrix_;}
+
+    /** \brief Galerkin assemble a coarse stiffness matrix
+
+       \deprecated Only exists for backward compatibility
+     */
+    SparseRowMatrix<double> galerkinRestrict(const SparseRowMatrix<double>& fineMat) const;
+
+    /** \brief Restrict a DiscFuncArray from the fine onto the coarse grid
+       \deprecated Only exists for backward compatibility
+     */
+    void restrictDFA(const DiscFuncType& f, DiscFuncType &t) const;
+
+    /** \brief Prolong a DiscFuncArray from the coarse onto the fine grid
+       \deprecated Only exists for backward compatibility
+     */
+    void prolongDFA(const DiscFuncType& f, DiscFuncType &t) const;
 
   protected:
 

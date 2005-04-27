@@ -330,3 +330,120 @@ galerkinRestrict(const OperatorType& fineMat, OperatorType& coarseMat) const
   }
 
 }
+
+
+
+/***************************************************************************/
+/***************************************************************************/
+/*  The following functions are the deprecated ones for DiscFuncArrays     */
+/***************************************************************************/
+/***************************************************************************/
+
+template<class DiscFuncType>
+void Dune::MultiGridTransfer<DiscFuncType>::prolongDFA(const DiscFuncType& f, DiscFuncType& t) const
+{
+  assert(t.getFunctionSpace().size() == matrix_.N());
+  assert(f.getFunctionSpace().size() == matrix_.M());
+
+  typedef typename DiscFuncType::DofIteratorType Iterator;
+  typedef typename DiscFuncType::ConstDofIteratorType ConstIterator;
+
+  typedef typename OperatorType::row_type RowType;
+  typedef typename RowType::ConstIterator ConstColumnIterator;
+
+  Iterator tIt = t.dbegin();
+  ConstIterator fIt = f.dbegin();
+
+  for(int row=0; row<matrix_.N(); row++) {
+
+    *tIt = 0.0;
+
+    ConstColumnIterator cIt    = matrix_[row].begin();
+    ConstColumnIterator cEndIt = matrix_[row].end();
+
+    for(; cIt!=cEndIt; ++cIt)
+      *tIt += *cIt * fIt[cIt.index()];
+
+    ++tIt;
+  }
+}
+
+template<class DiscFuncType>
+void Dune::MultiGridTransfer<DiscFuncType>::restrictDFA(const DiscFuncType& f, DiscFuncType& t) const
+{
+  assert(f.getFunctionSpace().size() == matrix_.N());
+  assert(t.getFunctionSpace().size() == matrix_.M());
+
+  typedef typename DiscFuncType::DofIteratorType IteratorType;
+  typedef typename DiscFuncType::ConstDofIteratorType ConstIteratorType;
+  typedef typename OperatorType::row_type RowType;
+  typedef typename RowType::ConstIterator ConstColumnIterator;
+
+  t.clear();
+
+  IteratorType tIt = t.dbegin();
+  ConstIteratorType fIt = f.dbegin();
+
+
+  for (int row=0; row<matrix_.N(); row++) {
+
+    ConstColumnIterator cIt    = matrix_[row].begin();
+    ConstColumnIterator cEndIt = matrix_[row].end();
+
+    for(; cIt!=cEndIt; ++cIt)
+      tIt[cIt.index()] += fIt[row] * (*cIt);
+
+  }
+
+}
+
+
+template<class DiscFuncType>
+Dune::SparseRowMatrix<double> Dune::MultiGridTransfer<DiscFuncType>::
+galerkinRestrict(const Dune::SparseRowMatrix<double>& fineMat) const
+{
+  typedef typename OperatorType::row_type RowType;
+  //typedef typename RowType::Iterator ColumnIterator;
+  typedef typename RowType::ConstIterator ConstColumnIterator;
+
+  typedef typename SparseRowMatrix<double>::ColumnIterator ColumnIterator;
+
+  SparseRowMatrix<double> result(matrix_.M(), matrix_.M() , fineMat.numNonZeros());
+
+  for (int rowIdx=0; rowIdx<fineMat.rows(); rowIdx++) {
+
+    ColumnIterator cIt    = const_cast<SparseRowMatrix<double>&>(fineMat).template rbegin(rowIdx);
+    ColumnIterator cEndIt = const_cast<SparseRowMatrix<double>&>(fineMat).template rend(rowIdx);
+
+    for(; cIt!=cEndIt; ++cIt) {
+
+      double mvalue = *cIt;
+
+      const RowType& row = matrix_[rowIdx];
+
+      //             ColumnIterator tciIt    = const_cast<SparseRowMatrix<double>&>(matrix_).template rbegin(rowIdx);
+      //             ColumnIterator tciEndIt = const_cast<SparseRowMatrix<double>&>(matrix_).template rend(rowIdx);
+      ConstColumnIterator tciIt    = row.begin();
+      ConstColumnIterator tciEndIt = row.end();
+
+      for (; tciIt!=tciEndIt; ++tciIt) {
+
+        double fac = mvalue * ((*tciIt)[0][0]);
+
+        //ColumnIterator tcjIt    = const_cast<SparseRowMatrix<double>&>(matrix_).template rbegin(cIt.col());
+        //ColumnIterator tcjEndIt = const_cast<SparseRowMatrix<double>&>(matrix_).template rend(cIt.col());
+        ConstColumnIterator tcjIt    = matrix_[cIt.col()].begin();
+        ConstColumnIterator tcjEndIt = matrix_[cIt.col()].end();
+
+        for (; tcjIt!=tcjEndIt; ++tcjIt)
+          result.add( tcjIt.index(), tciIt.index(), fac * ((*tcjIt)));
+
+      }
+
+    }
+
+
+  }
+
+  return result;
+}
