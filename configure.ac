@@ -167,6 +167,8 @@ AC_CONFIG_FILES([Makefile
 	 doc/devel/Makefile
 	 doc/appl/Makefile
 	 doc/appl/refelements/Makefile
+	 doc/istl/Makefile
+	 doc/istl/comm/Makefile
 	 doc/layout/Makefile
 	 doc/doxygen/Makefile
          m4/Makefile

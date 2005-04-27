@@ -3,7 +3,7 @@
 # distribute these files:
 EXTRA_DIST = Buildsystem
 
-SUBDIRS = devel appl doxygen layout
+SUBDIRS = devel appl doxygen layout istl
 
 PAGES = index.html
 

@@ -1,0 +1,17 @@
+Makefile
+Makefile.in
+semantic.cache
+output
+indexset
+.deps
+.libs
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.dvi
+*.pdf
+*.ps
+*.rel
