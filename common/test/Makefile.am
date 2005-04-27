@@ -1,7 +1,7 @@
 # $Id$
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
-	sllisttest iteratorfacadetest tuplestest
+	sllisttest iteratorfacadetest tuplestest fmatrixtest
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -29,3 +29,5 @@ tuplestest_SOURCES = tuplestest.cc
 # mention headers so that they are distributed too
 iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
    iteratortest.hh
+
+fmatrixtest_SOURCES = fmatrixtest.cc

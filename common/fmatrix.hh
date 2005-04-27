@@ -566,211 +566,71 @@ namespace Dune {
 
 
     //===== iterator interface to rows of the matrix
-
-    // forward declaration
-    class ConstIterator;
-
-    //! Iterator access to rows
-    class Iterator
-    {
-    public:
-      //! constructor
-      Iterator (row_type* _p, int _i)
-      {
-        p = _p;
-        i = _i;
-      }
-
-      //! empty constructor, use with care!
-      Iterator ()
-      {       }
-
-      //! prefix increment
-      Iterator& operator++()
-      {
-        ++i;
-        return *this;
-      }
-
-      //! prefix decrement
-      Iterator& operator--()
-      {
-        --i;
-        return *this;
-      }
-
-      //! equality
-      bool operator== (const Iterator& it) const
-      {
-        return (p+i)==(it.p+it.i);
-      }
-
-      //! inequality
-      bool operator!= (const Iterator& it) const
-      {
-        return (p+i)!=(it.p+it.i);
-      }
-
-      //! dereferencing
-      row_type& operator* ()
-      {
-        return p[i];
-      }
-
-      //! arrow
-      row_type* operator-> ()
-      {
-        return p+i;
-      }
-
-      //! return index
-      int index ()
-      {
-        return i;
-      }
-
-      friend class ConstIterator;
-
-    private:
-      row_type* p;
-      int i;
-    };
+    //! Iterator class for sequential access
+    typedef Dune::GenericIterator<FieldMatrix<K,n,m>,row_type> Iterator;
+    //! typedef for stl compliant access
+    typedef Iterator iterator;
+    //! rename the iterators for easier access
+    typedef Iterator RowIterator;
+    //! rename the iterators for easier access
+    typedef typename row_type::Iterator ColIterator;
 
     //! begin iterator
     Iterator begin ()
     {
-      return Iterator(p,0);
+      return Iterator(*this,0);
     }
 
     //! end iterator
     Iterator end ()
     {
-      return Iterator(p,n);
+      return Iterator(*this,n);
     }
 
     //! begin iterator
     Iterator rbegin ()
     {
-      return Iterator(p,n-1);
+      return Iterator(*this,n-1);
     }
 
     //! end iterator
     Iterator rend ()
     {
-      return Iterator(p,-1);
+      return Iterator(*this,-1);
     }
 
+    //! Iterator class for sequential access
+    typedef Dune::GenericIterator<const FieldMatrix<K,n,m>,const row_type> ConstIterator;
+    //! typedef for stl compliant access
+    typedef ConstIterator const_iterator;
     //! rename the iterators for easier access
-    typedef Iterator RowIterator;
-    typedef typename row_type::Iterator ColIterator;
-
-
-    //! Iterator access to rows
-    class ConstIterator
-    {
-    public:
-      //! constructor
-      ConstIterator (const row_type* _p, int _i) : p(_p), i(_i)
-      {       }
-
-      //! empty constructor, use with care!
-      ConstIterator ()
-      {
-        p = 0;
-        i = 0;
-      }
-
-      //! prefix increment
-      ConstIterator& operator++()
-      {
-        ++i;
-        return *this;
-      }
-
-      //! prefix decrement
-      ConstIterator& operator--()
-      {
-        --i;
-        return *this;
-      }
-
-      //! equality
-      bool operator== (const ConstIterator& it) const
-      {
-        return (p+i)==(it.p+it.i);
-      }
-
-      //! inequality
-      bool operator!= (const ConstIterator& it) const
-      {
-        return (p+i)!=(it.p+it.i);
-      }
-
-      //! equality
-      bool operator== (const Iterator& it) const
-      {
-        return (p+i)==(it.p+it.i);
-      }
-
-      //! inequality
-      bool operator!= (const Iterator& it) const
-      {
-        return (p+i)!=(it.p+it.i);
-      }
-
-      //! dereferencing
-      const row_type& operator* () const
-      {
-        return p[i];
-      }
-
-      //! arrow
-      const row_type* operator-> () const
-      {
-        return p+i;
-      }
-
-      //! return index
-      int index () const
-      {
-        return i;
-      }
-
-      friend class Iterator;
-
-    private:
-      const row_type* p;
-      int i;
-    };
+    typedef ConstIterator ConstRowIterator;
+    //! rename the iterators for easier access
+    typedef typename row_type::ConstIterator ConstColIterator;
 
     //! begin iterator
     ConstIterator begin () const
     {
-      return ConstIterator(p,0);
+      return ConstIterator(*this,0);
     }
 
     //! end iterator
     ConstIterator end () const
     {
-      return ConstIterator(p,n);
+      return ConstIterator(*this,n);
     }
 
     //! begin iterator
     ConstIterator rbegin () const
     {
-      return ConstIterator(p,n-1);
+      return ConstIterator(*this,n-1);
     }
 
     //! end iterator
     ConstIterator rend () const
     {
-      return ConstIterator(p,-1);
+      return ConstIterator(*this,-1);
     }
-
-    //! rename the iterators for easier access
-    typedef ConstIterator ConstRowIterator;
-    typedef typename row_type::ConstIterator ConstColIterator;
-
 
     //===== assignment from scalar
     FieldMatrix& operator= (const K& k)
@@ -1126,7 +986,7 @@ namespace Dune {
     return HelpMat::determinantMatrix(*this);
   }
 
-
+#ifdef USE_DEPRECATED_K1
   /** \brief Special type for 1x1 matrices
    */
   template<class K>
@@ -1363,7 +1223,336 @@ namespace Dune {
     // the data, just a single scalar
     K a;
   };
+#endif // USE_DEPRECATED_K1
 
+  /** \brief Special type for 1x1 matrices
+   */
+  template<class K>
+  class FieldMatrix<K,1,1>
+  {
+  public:
+    // standard constructor and everything is sufficient ...
+
+    //===== type definitions and constants
+
+    //! export the type representing the field
+    typedef K field_type;
+
+    //! export the type representing the components
+    typedef K block_type;
+
+    //! We are at the leaf of the block recursion
+    enum {
+      //! The number of block levels we contain.
+      //! This is always one for this type.
+      blocklevel = 1
+    };
+
+    //! Each row is implemented by a field vector
+    typedef FieldVector<K,1> row_type;
+
+    //! export size
+    enum {
+      //! \brief The number of rows.
+      //! This is always one for this type.
+      rows = 1,
+      n = 1,
+      //! \brief The number of columns.
+      //! This is always one for this type.
+      cols = 1,
+      m = 1
+    };
+
+    //===== random access interface to rows of the matrix
+
+    //! random access to the rows
+    row_type& operator[] (int i)
+    {
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
+#endif
+      return a;
+    }
+
+    //! same for read only access
+    const row_type& operator[] (int i) const
+    {
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
+#endif
+      return a;
+    }
+
+    //===== iterator interface to rows of the matrix
+    //! Iterator class for sequential access
+    typedef Dune::GenericIterator<FieldMatrix<K,n,m>,row_type> Iterator;
+    //! typedef for stl compliant access
+    typedef Iterator iterator;
+    //! rename the iterators for easier access
+    typedef Iterator RowIterator;
+    //! rename the iterators for easier access
+    typedef typename row_type::Iterator ColIterator;
+
+    //! begin iterator
+    Iterator begin ()
+    {
+      return Iterator(*this,0);
+    }
+
+    //! end iterator
+    Iterator end ()
+    {
+      return Iterator(*this,n);
+    }
+
+    //! begin iterator
+    Iterator rbegin ()
+    {
+      return Iterator(*this,n-1);
+    }
+
+    //! end iterator
+    Iterator rend ()
+    {
+      return Iterator(*this,-1);
+    }
+
+    //! Iterator class for sequential access
+    typedef Dune::GenericIterator<const FieldMatrix<K,n,m>,const row_type> ConstIterator;
+    //! typedef for stl compliant access
+    typedef ConstIterator const_iterator;
+    //! rename the iterators for easier access
+    typedef ConstIterator ConstRowIterator;
+    //! rename the iterators for easier access
+    typedef typename row_type::ConstIterator ConstColIterator;
+
+    //! begin iterator
+    ConstIterator begin () const
+    {
+      return ConstIterator(*this,0);
+    }
+
+    //! end iterator
+    ConstIterator end () const
+    {
+      return ConstIterator(*this,n);
+    }
+
+    //! begin iterator
+    ConstIterator rbegin () const
+    {
+      return ConstIterator(*this,n-1);
+    }
+
+    //! end iterator
+    ConstIterator rend () const
+    {
+      return ConstIterator(*this,-1);
+    }
+
+    //===== assignment from scalar
+
+    FieldMatrix& operator= (const K& k)
+    {
+      a[0] = k;
+      return *this;
+    }
+
+    //===== vector space arithmetic
+
+    //! vector space addition
+    FieldMatrix& operator+= (const K& y)
+    {
+      a[0] += y;
+      return *this;
+    }
+
+    //! vector space subtraction
+    FieldMatrix& operator-= (const K& y)
+    {
+      a[0] -= y;
+      return *this;
+    }
+
+    //! vector space multiplication with scalar
+    FieldMatrix& operator*= (const K& k)
+    {
+      a[0] *= k;
+      return *this;
+    }
+
+    //! vector space division by scalar
+    FieldMatrix& operator/= (const K& k)
+    {
+      a[0] /= k;
+      return *this;
+    }
+
+    //===== linear maps
+
+    //! y += A x
+    void umv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p += a[0] * x.p;
+    }
+
+    //! y += A^T x
+    void umtv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p += a[0] * x.p;
+    }
+
+    //! y += A^H x
+    void umhv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p += fm_ck(a[0]) * x.p;
+    }
+
+    //! y -= A x
+    void mmv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p -= a[0] * x.p;
+    }
+
+    //! y -= A^T x
+    void mmtv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p -= a[0] * x.p;
+    }
+
+    //! y -= A^H x
+    void mmhv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p -= fm_ck(a[0]) * x.p;
+    }
+
+    //! y += alpha A x
+    void usmv (const K& alpha, const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p += alpha * a[0] * x.p;
+    }
+
+    //! y += alpha A^T x
+    void usmtv (const K& alpha, const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p += alpha * a[0] * x.p;
+    }
+
+    //! y += alpha A^H x
+    void usmhv (const K& alpha, const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p += alpha * fm_ck(a[0]) * x.p;
+    }
+
+    //===== norms
+
+    //! frobenius norm: sqrt(sum over squared values of entries)
+    double frobenius_norm () const
+    {
+      return sqrt(fvmeta_abs2(a[0]));
+    }
+
+    //! square of frobenius norm, need for block recursion
+    double frobenius_norm2 () const
+    {
+      return fvmeta_abs2(a[0]);
+    }
+
+    //! infinity norm (row sum norm, how to generalize for blocks?)
+    double infinity_norm () const
+    {
+      return fvmeta_abs(a[0]);
+    }
+
+    //! simplified infinity norm (uses Manhattan norm for complex values)
+    double infinity_norm_real () const
+    {
+      return fvmeta_abs_real(a[0]);
+    }
+
+    //===== solve
+
+    //! Solve system A x = b
+    void solve (FieldVector<K,1>& x, const FieldVector<K,1>& b) const
+    {
+      x.p = b.p/a[0];
+    }
+
+    //! compute inverse
+    void invert ()
+    {
+      a[0] = 1/a[0];
+    }
+
+    //! left multiplication
+    FieldMatrix& leftmultiply (const FieldMatrix& M)
+    {
+      a[0] *= M.a[0];
+      return *this;
+    }
+
+    //! left multiplication
+    FieldMatrix& rightmultiply (const FieldMatrix& M)
+    {
+      a[0] *= M.a[0];
+      return *this;
+    }
+
+
+    //===== sizes
+
+    //! number of blocks in row direction
+    int N () const
+    {
+      return 1;
+    }
+
+    //! number of blocks in column direction
+    int M () const
+    {
+      return 1;
+    }
+
+    //! row dimension of block r
+    int rowdim (int r) const
+    {
+      return 1;
+    }
+
+    //! col dimension of block c
+    int coldim (int c) const
+    {
+      return 1;
+    }
+
+    //! dimension of the destination vector space
+    int rowdim () const
+    {
+      return 1;
+    }
+
+    //! dimension of the source vector space
+    int coldim () const
+    {
+      return 1;
+    }
+
+    //===== query
+
+    //! return true when (i,j) is in pattern
+    bool exists (int i, int j) const
+    {
+      return i==0 && j==0;
+    }
+
+    //===== conversion operator
+
+    operator K () const {return a[0];}
+
+  private:
+    // the data, just a single row with a single scalar
+    row_type a;
+  };
 
   namespace FMatrixHelp {
 

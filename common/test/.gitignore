@@ -11,6 +11,7 @@ iteratorfacadetest
 sllisttest
 tuplestest
 settest
+fmatrixtest
 *.gcda
 *.gcno
 gmon.out

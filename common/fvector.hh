@@ -4,10 +4,14 @@
 #ifndef DUNE_FVECTOR_HH
 #define DUNE_FVECTOR_HH
 
+// this for backwards compatiblity
+#define USE_DEPRECATED_K1
+
 #include <math.h>
 #include <complex>
 
 #include "exceptions.hh"
+#include "genericiterator.hh"
 
 namespace Dune {
 
@@ -405,221 +409,80 @@ namespace Dune {
       return p[i];
     }
 
-    // forward declaration
-    class ConstIterator;
-
     //! Iterator class for sequential access
-    class Iterator
-    {
-    public:
-      //! constructor
-      Iterator (K* _p, int _i)
-      {
-        p = _p;
-        i = _i;
-      }
-
-      //! empty constructor, use with care
-      Iterator ()
-      {       }
-
-      //! prefix increment
-      Iterator& operator++()
-      {
-        ++i;
-        return *this;
-      }
-
-      //! prefix decrement
-      Iterator& operator--()
-      {
-        --i;
-        return *this;
-      }
-
-      //! equality
-      bool operator== (const Iterator& it) const
-      {
-        return (p+i)==(it.p+it.i);
-      }
-
-      //! inequality
-      bool operator!= (const Iterator& it) const
-      {
-        return (p+i)!=(it.p+it.i);
-      }
-
-      //! dereferencing
-      K& operator* ()
-      {
-        return p[i];
-      }
-
-      //! arrow
-      K* operator-> ()
-      {
-        return p+i;
-      }
-
-      //! return index
-      int index ()
-      {
-        return i;
-      }
-
-      friend class ConstIterator;
-
-    private:
-      K* p;
-      int i;
-    };
+    typedef Dune::GenericIterator<FieldVector<K,n>,K> Iterator;
+    //! typedef for stl compliant access
+    typedef Iterator iterator;
 
     //! begin iterator
     Iterator begin ()
     {
-      return Iterator(p,0);
+      return Iterator(*this,0);
     }
 
     //! end iterator
     Iterator end ()
     {
-      return Iterator(p,n);
+      return Iterator(*this,n);
     }
 
     //! begin iterator
     Iterator rbegin ()
     {
-      return Iterator(p,n-1);
+      return Iterator(*this,n-1);
     }
 
     //! end iterator
     Iterator rend ()
     {
-      return Iterator(p,-1);
+      return Iterator(*this,-1);
     }
 
     //! return iterator to given element or end()
     Iterator find (int i)
     {
       if (i>=0 && i<n)
-        return Iterator(p,i);
+        return Iterator(*this,i);
       else
-        return Iterator(p,n);
+        return Iterator(*this,n);
     }
 
     //! ConstIterator class for sequential access
-    class ConstIterator
-    {
-    public:
-      //! constructor
-      ConstIterator ()
-      {
-        p = 0;
-        i = 0;
-      }
-
-      //! constructor from pointer
-      ConstIterator (const K* _p, int _i) : p(_p), i(_i)
-      {       }
-
-      //! constructor from non_const iterator
-      ConstIterator (const Iterator& it) : p(it.p), i(it.i)
-      {       }
-
-      //! prefix increment
-      ConstIterator& operator++()
-      {
-        ++i;
-        return *this;
-      }
-
-      //! prefix decrement
-      ConstIterator& operator--()
-      {
-        --i;
-        return *this;
-      }
-
-      //! equality
-      bool operator== (const ConstIterator& it) const
-      {
-        return (p+i)==(it.p+it.i);
-      }
-
-      //! inequality
-      bool operator!= (const ConstIterator& it) const
-      {
-        return (p+i)!=(it.p+it.i);
-      }
-
-      //! equality
-      bool operator== (const Iterator& it) const
-      {
-        return (p+i)==(it.p+it.i);
-      }
-
-      //! inequality
-      bool operator!= (const Iterator& it) const
-      {
-        return (p+i)!=(it.p+it.i);
-      }
-
-      //! dereferencing
-      const K& operator* () const
-      {
-        return p[i];
-      }
-
-      //! arrow
-      const K* operator-> () const
-      {
-        return p+i;
-      }
-
-      //! return index corresponding to pointer
-      int index () const
-      {
-        return i;
-      }
-
-      friend class Iterator;
-
-    private:
-      const K* p;
-      int i;
-    };
+    typedef Dune::GenericIterator<const FieldVector<K,n>,const K> ConstIterator;
+    //! typedef for stl compliant access
+    typedef ConstIterator const_iterator;
 
     //! begin ConstIterator
     ConstIterator begin () const
     {
-      return ConstIterator(p,0);
+      return ConstIterator(*this,0);
     }
 
     //! end ConstIterator
     ConstIterator end () const
     {
-      return ConstIterator(p,n);
+      return ConstIterator(*this,n);
     }
 
     //! begin ConstIterator
     ConstIterator rbegin () const
     {
-      return ConstIterator(p,n-1);
+      return ConstIterator(*this,n-1);
     }
 
     //! end ConstIterator
     ConstIterator rend () const
     {
-      return ConstIterator(p,-1);
+      return ConstIterator(*this,-1);
     }
 
     //! return iterator to given element or end()
     ConstIterator find (int i) const
     {
       if (i>=0 && i<n)
-        return ConstIterator(p,i);
+        return ConstIterator(*this,i);
       else
-        return ConstIterator(p,n);
+        return ConstIterator(*this,n);
     }
 
     //===== vector space arithmetic
@@ -779,9 +642,9 @@ namespace Dune {
     return s;
   }
 
+#ifdef USE_DEPRECATED_K1
   // forward declarations
   template<class K> class K1Vector;
-  template<class K> class K11Matrix;
 
   /**! \brief Vectors containing only one component
    */
@@ -958,7 +821,279 @@ namespace Dune {
     // the data
     K p;
   };
+#endif // USE_DEPRECATED_K1
 
+  // forward declarations
+  template<class K, int n, int m> class FieldMatrix;
+
+  /**! Vectors containing only one component
+   */
+  template<class K>
+  class FieldVector<K,1>
+  {
+    enum { n = 1 };
+  public:
+    friend class FieldMatrix<K,1,1>;
+
+    //===== type definitions and constants
+
+    //! export the type representing the field
+    typedef K field_type;
+
+    //! export the type representing the components
+    typedef K block_type;
+
+    //! We are at the leaf of the block recursion
+    enum {blocklevel = 1};
+
+    //! export size
+    enum {size = 1};
+
+    //===== construction
+
+    /** \brief Default constructor */
+    FieldVector ()
+    {       }
+
+    /** \brief Constructor with a given scalar */
+    FieldVector (const K& k)
+    {
+      p = k;
+    }
+
+    /** \brief Assignment from the base type */
+    FieldVector& operator= (const K& k)
+    {
+      p = k;
+      return *this;
+    }
+
+    //===== access to components
+
+    //! random access
+    K& operator[] (int i)
+    {
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (i != 0) DUNE_THROW(MathError,"index out of range");
+#endif
+      return p;
+    }
+
+    //! same for read only access
+    const K& operator[] (int i) const
+    {
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (i != 0) DUNE_THROW(MathError,"index out of range");
+#endif
+      return p;
+    }
+
+    //! Iterator class for sequential access
+    typedef Dune::GenericIterator<FieldVector<K,n>,K> Iterator;
+    //! typedef for stl compliant access
+    typedef Iterator iterator;
+
+    //! begin iterator
+    Iterator begin ()
+    {
+      return Iterator(*this,0);
+    }
+
+    //! end iterator
+    Iterator end ()
+    {
+      return Iterator(*this,n);
+    }
+
+    //! begin iterator
+    Iterator rbegin ()
+    {
+      return Iterator(*this,n-1);
+    }
+
+    //! end iterator
+    Iterator rend ()
+    {
+      return Iterator(*this,-1);
+    }
+
+    //! return iterator to given element or end()
+    Iterator find (int i)
+    {
+      if (i>=0 && i<n)
+        return Iterator(*this,i);
+      else
+        return Iterator(*this,n);
+    }
+
+    //! ConstIterator class for sequential access
+    typedef Dune::GenericIterator<const FieldVector<K,n>,const K> ConstIterator;
+    //! typedef for stl compliant access
+    typedef ConstIterator const_iterator;
+
+    //! begin ConstIterator
+    ConstIterator begin () const
+    {
+      return ConstIterator(*this,0);
+    }
+
+    //! end ConstIterator
+    ConstIterator end () const
+    {
+      return ConstIterator(*this,n);
+    }
+
+    //! begin ConstIterator
+    ConstIterator rbegin () const
+    {
+      return ConstIterator(*this,n-1);
+    }
+
+    //! end ConstIterator
+    ConstIterator rend () const
+    {
+      return ConstIterator(*this,-1);
+    }
+
+    //! return iterator to given element or end()
+    ConstIterator find (int i) const
+    {
+      if (i>=0 && i<n)
+        return ConstIterator(*this,i);
+      else
+        return ConstIterator(*this,n);
+    }
+    //===== vector space arithmetic
+
+    //! vector space addition
+    FieldVector& operator+= (const FieldVector& y)
+    {
+      p += y.p;
+      return *this;
+    }
+
+    //! vector space subtraction
+    FieldVector& operator-= (const FieldVector& y)
+    {
+      p -= y.p;
+      return *this;
+    }
+
+    //! vector space add scalar to each comp
+    FieldVector& operator+= (const K& k)
+    {
+      p += k;
+      return *this;
+    }
+
+    //! vector space subtract scalar from each comp
+    FieldVector& operator-= (const K& k)
+    {
+      p -= k;
+      return *this;
+    }
+
+    //! vector space multiplication with scalar
+    FieldVector& operator*= (const K& k)
+    {
+      p *= k;
+      return *this;
+    }
+
+    //! vector space division by scalar
+    FieldVector& operator/= (const K& k)
+    {
+      p /= k;
+      return *this;
+    }
+
+    //! vector space axpy operation
+    FieldVector& axpy (const K& a, const FieldVector& y)
+    {
+      p += a*y.p;
+      return *this;
+    }
+
+
+    //===== Euclidean scalar product
+
+    //! scalar product
+    const K operator* (const FieldVector& y) const
+    {
+      return p*y.p;
+    }
+
+
+    //===== norms
+
+    //! one norm (sum over absolute values of entries)
+    double one_norm () const
+    {
+      return fvmeta_abs(p);
+    }
+
+    //! simplified one norm (uses Manhattan norm for complex values)
+    double one_norm_real () const
+    {
+      return fvmeta_abs_real(p);
+    }
+
+    //! two norm sqrt(sum over squared values of entries)
+    double two_norm () const
+    {
+      return sqrt(fvmeta_abs2(p));
+    }
+
+    //! square of two norm (sum over squared values of entries), need for block recursion
+    double two_norm2 () const
+    {
+      return fvmeta_abs2(p);
+    }
+
+    //! infinity norm (maximum of absolute values of entries)
+    double infinity_norm () const
+    {
+      return fvmeta_abs(p);
+    }
+
+    //! simplified infinity norm (uses Manhattan norm for complex values)
+    double infinity_norm_real () const
+    {
+      return fvmeta_abs_real(p);
+    }
+
+
+    //===== sizes
+
+    //! number of blocks in the vector (are of size 1 here)
+    int N () const
+    {
+      return 1;
+    }
+
+    //! dimension of the vector space (==1)
+    int dim () const
+    {
+      return 1;
+    }
+
+    //! Send vector to output stream
+    void print (std::ostream& s) const
+    {
+      s << p;
+    }
+    //===== conversion operator
+
+    /** \brief Conversion operator */
+    operator K () {return p;}
+
+    /** \brief Const conversion operator */
+    operator K () const {return p;}
+
+  private:
+    // the data
+    K p;
+  };
 
   /** @} end documentation */
 
