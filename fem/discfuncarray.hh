@@ -45,6 +45,10 @@ namespace Dune {
 
     //! Type of the range field
     typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+
+    /** \brief For ISTL-compatibility */
+    typedef FieldVector<RangeFieldType,1> block_type;
+
     //! Type of the grid
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
