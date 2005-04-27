@@ -147,6 +147,19 @@ to be persistent. Further on we will call this global identifier
   \lstinline!N! is used internally to specify the chunk size of the
   array list.
 
+The pairs of global and local index are ordered by ascending global
+index. Thus it it possible to access the pairs via
+\lstinline!operator[](TG& global)! in $log(n)$ time, where $n$ is the
+number of pairs in the set.
+
+Due to the ordering the index set can only be changed, i.~e. indices
+added or deleted, in a special resize phase. By calling the functions
+\lstinline!beginResize()! and \lstinline!endResize()! the programmer
+indicates that the resize phase starts and ends, respectively. During
+the call of \lstinline!endResize()! the deleted indices will be
+removed and the added indices will be merged with the existing
+ones.
+
 To be able to attach further information to the index the only
 prerequesite for the type of the local index is that it is convertible
 to \lstinline!std::size_t! as it it meant for adressing array
@@ -170,9 +183,19 @@ As the programmer often knows in advance which indices might also be
 present on other processes there is the possiblity to mark the index
 as public.
 
-Let us look at a short example on how to use the classes:
+\paragraph{Usage Examples}
+Let us look at a short example on how to build an index set:
 
-\lstinputlisting[caption=build an index set, label=lst:build_indexset]{indexset.cc}
+\lstinputlisting[caption=Build an Index Set,
+label=lst:build_indexset]{buildindexset.hh}
+
+Due to the complexity of \lstinline!operator[](TG& global)! it is
+always advisable to use iterators to access the index pairs of the
+set.
+The following example demonstrates their usage:
+\lstinputlisting[caption=Usage of Index Set Iterators,
+label=lst:indexset_iterator]{reverse.hh}
+
 \section{Remote Indices}
 \label{sec:remote-indices}
 

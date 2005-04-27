@@ -5,12 +5,8 @@
 #include <dune/istl/plocalindex.hh>
 #include <iostream>
 #include "mpi.h"
-
-/**
- * @brief Flag for marking the indices.
- */
-enum Flag {owner, overlap};
-
+#include "buildindexset.hh"
+#include "reverse.hh"
 
 int main(int argc, char **argv)
 {
@@ -20,11 +16,10 @@ int main(int argc, char **argv)
 
   // The number of processes
   int size;
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   // The rank of our process
   int rank;
-
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // The type used as the local index
@@ -40,30 +35,22 @@ int main(int argc, char **argv)
   // The index set
   IndexSet indexSet;
 
-  // Indicate that we add or remove indices.
-  indexSet.beginResize();
-
-  if(rank==0) {
-    indexSet.add(0, LocalIndex(0,overlap,true));
-    indexSet.add(2, LocalIndex(1,owner,true));
-    indexSet.add(6, LocalIndex(2,owner,true));
-    indexSet.add(3, LocalIndex(3,owner,true));
-    indexSet.add(5, LocalIndex(4,owner,true));
-  }
-  if(rank==1) {
-
-    indexSet.add(0, LocalIndex(0,owner,true));
-    indexSet.add(1, LocalIndex(1,owner,true));
-    indexSet.add(7, LocalIndex(2,owner,true));
-    indexSet.add(5, LocalIndex(3,overlap,true));
-    indexSet.add(4, LocalIndex(4,owner,true));
-  }
-
-  // Modification is over
-  indexSet.endResize();
+  build(indexSet);
 
   // Print the index set
   std::cout<<indexSet<<std::endl;
+
+
+  reverseLocalIndex(indexSet);
+
+  // Print the index set
+  if(rank==0)
+    std::cout<<"Reordered lcoal indices:"<<std::endl;
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  std::cout<<indexSet<<std::endl;
+  // Assign new local indices
 
   // Let MPI do a cleanup
   MPI_Finalize();

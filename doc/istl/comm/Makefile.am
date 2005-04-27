@@ -9,6 +9,8 @@ SUFFIXES = .dvi .tex .pdf
 
 dist_pkgdata_DATA = communication.pdf communication.ps
 
+#communication.dvi_DEPENDENCIES = communication.tex indexset.cc reverse.hh
+
 noinst_PROGRAMS = $(MPIPROGRAMS)
 
 indexset_SOURCES = indexset.cc
