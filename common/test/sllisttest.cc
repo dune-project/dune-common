@@ -47,7 +47,7 @@ void randomizeListFront(Dune::SLList<T,A>& alist){
   int lowest=0, highest=1000, range=(highest-lowest)+1;
 
   for(int i=0; i < 10; i++)
-    alist.push_back((range*(rand()/(RAND_MAX+1.0))));
+    alist.push_front((range*(rand()/(RAND_MAX+1.0))));
 }
 
 int testDelete()
