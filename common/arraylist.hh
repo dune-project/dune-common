@@ -54,6 +54,31 @@ namespace Dune
      */
     typedef T MemberType;
 
+    /**
+     * @brief Value type for stl compliance.
+     */
+    typedef T value_type;
+
+    /**
+     * @brief The type of a reference to the type we store.
+     */
+    typedef T& reference;
+
+    /**
+     * @brief The type of a const reference to the type we store.
+     */
+    typedef const T& const_reference;
+
+    /**
+     * @brief The type of a pointer to the type we store.
+     */
+    typedef T* pointer;
+
+    /**
+     * @brief The type of a const pointer to the type we store.
+     */
+    typedef const T* const_pointer;
+
     enum
     {
       /**
@@ -73,6 +98,15 @@ namespace Dune
      */
     typedef ConstArrayListIterator<MemberType,N,A> const_iterator;
 
+    /**
+     * @brief The size type.
+     */
+    typedef std::size_t size_type;
+
+    /**
+     * @brief The difference type.
+     */
+    typedef std::ptrdiff_t difference_type;
 
     /**
      * @brief Get an iterator that is positioned at the first element.
@@ -103,33 +137,33 @@ namespace Dune
      * @brief Append an entry to the list.
      * @param entry The new entry.
      */
-    inline void push_back(const T& entry);
+    inline void push_back(const_reference entry);
 
     /**
      * @brief Get the element at specific position.
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline T& operator[](size_t i);
+    inline reference operator[](difference_type i);
 
     /**
      * @brief Get the element at specific position.
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline const T& operator[](size_t i) const;
+    inline const_reference operator[](difference_type i) const;
 
     /**
      * @brief Get the number of elements in the lisz.
      * @return The number of elements.
      */
-    inline size_t size() const;
+    inline size_type size() const;
 
     /**
      * @brief Get the current capacity of the list.
      * @return The capacity.
      */
-    inline size_t capacity() const;
+    inline size_type capacity() const;
 
     /**
      * @brief Purge the list.
@@ -167,11 +201,11 @@ namespace Dune
     std::vector<SmartPointer<FixedArray<MemberType,chunkSize_> >,
         SmartPointerAllocator> chunks_;
     /** @brief The current data capacity. */
-    size_t capacity_;
+    size_type capacity_;
     /** @brief The current number of elements in our data structure. */
-    size_t size_;
+    size_type size_;
     /** @brief The index of the first entry. */
-    size_t start_;
+    difference_type start_;
     /**
      * @brief Get the element at specific position.
      *
@@ -180,7 +214,7 @@ namespace Dune
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline T& elementAt(size_t i);
+    inline reference elementAt(difference_type i);
 
     /**
      * @brief Get the element at specific position.
@@ -190,7 +224,7 @@ namespace Dune
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline const T& elementAt(size_t i) const;
+    inline const_reference elementAt(difference_type i) const;
   };
 
 
@@ -198,7 +232,10 @@ namespace Dune
    * @brief A random access iterator for the Dune::ArrayList class.
    */
   template<class T, int N, class A>
-  class ArrayListIterator : public RandomAccessIteratorFacade<ArrayListIterator<T,N,A>,T>
+  class ArrayListIterator : public RandomAccessIteratorFacade<ArrayListIterator<T,N,A>,
+                                typename A::value_type,
+                                typename A::reference,
+                                typename A::difference_type>
   {
 
     friend class ArrayList<T,N,A>;
@@ -207,8 +244,9 @@ namespace Dune
     /**
      * @brief The member type.
      */
-    typedef T MemberType;
+    typedef typename A::value_type MemberType;
 
+    typedef typename A::difference_type difference_type;
 
     enum
     {
@@ -249,7 +287,7 @@ namespace Dune
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that postion.
      */
-    inline MemberType& elementAt(size_t i) const;
+    inline MemberType& elementAt(difference_type i) const;
 
     /**
      * @brief Access the element at the current position.
@@ -271,16 +309,16 @@ namespace Dune
     inline void eraseToHere();
 
     /** \todo Please doc me! */
-    inline size_t position(){return position_;}
+    inline difference_type position(){return position_;}
 
     /** \todo Please doc me! */
-    inline void advance(size_t n);
+    inline void advance(difference_type n);
 
     /** \todo Please doc me! */
-    inline size_t distanceTo(const ArrayListIterator<MemberType,N,A>& other) const;
+    inline difference_type distanceTo(const ArrayListIterator<T,N,A>& other) const;
 
     /** \todo Please doc me! */
-    inline ArrayListIterator<MemberType,N,A>& operator=(const ArrayListIterator<MemberType,N,A>& other);
+    inline ArrayListIterator<T,N,A>& operator=(const ArrayListIterator<T,N,A>& other);
 
     //! Standard constructor
     inline ArrayListIterator() : position_(0)
@@ -292,12 +330,12 @@ namespace Dune
      * @param list The list we are an iterator for.
      * @param position The initial position of the iterator.
      */
-    inline ArrayListIterator(ArrayList<T,N,A>& arrayList, size_t position);
+    inline ArrayListIterator(ArrayList<T,N,A>& arrayList, difference_type position);
 
     /**
      * @brief The current postion.
      */
-    size_t position_;
+    difference_type position_;
     /**
      * @brief The list we are an iterator for.
      */
@@ -309,7 +347,10 @@ namespace Dune
    */
   template<class T, int N, class A>
   class ConstArrayListIterator
-    : public RandomAccessIteratorFacade<ConstArrayListIterator<T,N,A>, const T>
+    : public RandomAccessIteratorFacade<ConstArrayListIterator<T,N,A>,
+          const typename A::value_type,
+          typename A::const_reference,
+          typename A::difference_type>
   {
 
     friend class ArrayList<T,N,A>;
@@ -319,8 +360,9 @@ namespace Dune
     /**
      * @brief The member type.
      */
-    typedef T MemberType;
+    typedef typename A::value_type MemberType;
 
+    typedef typename A::difference_type difference_type;
 
     enum
     {
@@ -350,16 +392,16 @@ namespace Dune
     inline void decrement();
 
     /** \todo Please doc me! */
-    inline void advance(size_t n);
+    inline void advance(difference_type n);
 
     /** \todo Please doc me! */
-    inline size_t distanceTo(const ConstArrayListIterator<MemberType,N,A>& other) const;
+    inline difference_type distanceTo(const ConstArrayListIterator<T,N,A>& other) const;
 
     /**
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that postion.
      */
-    inline const MemberType& elementAt(size_t i) const;
+    inline const MemberType& elementAt(difference_type i) const;
 
     /**
      * @brief Access the element at the current position.
@@ -367,12 +409,12 @@ namespace Dune
      */
     inline const MemberType& dereference() const;
 
-    inline const ConstArrayListIterator<MemberType,N,A>& operator=(const ConstArrayListIterator<MemberType,N,A>& other);
+    inline const ConstArrayListIterator<T,N,A>& operator=(const ConstArrayListIterator<T,N,A>& other);
 
     inline ConstArrayListIterator() : position_(0)
     {}
 
-    inline ConstArrayListIterator(const ArrayListIterator<MemberType,N,A>& other);
+    inline ConstArrayListIterator(const ArrayListIterator<T,N,A>& other);
 
   private:
 
@@ -381,12 +423,12 @@ namespace Dune
      * @param list The list we are an iterator for.
      * @param position The initial position of the iterator.
      */
-    inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, size_t position);
+    inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, difference_type position);
 
     /**
      * @brief The current postion.
      */
-    size_t position_;
+    difference_type position_;
     /**
      * @brief The list we are an iterator for.
      */
@@ -422,7 +464,7 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  void ArrayList<T,N,A>::push_back(const T& entry)
+  void ArrayList<T,N,A>::push_back(const_reference entry)
   {
     size_t index=start_+size_;
     if(index==capacity_)
@@ -435,27 +477,27 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  T& ArrayList<T,N,A>::operator[](size_t i)
+  typename ArrayList<T,N,A>::reference ArrayList<T,N,A>::operator[](difference_type i)
   {
     return elementAt(start_+i);
   }
 
 
   template<class T, int N, class A>
-  const T& ArrayList<T,N,A>::operator[](size_t i) const
+  typename ArrayList<T,N,A>::const_reference ArrayList<T,N,A>::operator[](difference_type i) const
   {
     return elementAt(start_+i);
   }
 
   template<class T, int N, class A>
-  T& ArrayList<T,N,A>::elementAt(size_t i)
+  typename ArrayList<T,N,A>::reference ArrayList<T,N,A>::elementAt(difference_type i)
   {
     return chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
 
 
   template<class T, int N, class A>
-  const T& ArrayList<T,N,A>::elementAt(size_t i) const
+  typename ArrayList<T,N,A>::const_reference ArrayList<T,N,A>::elementAt(difference_type i) const
   {
     return chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
@@ -507,13 +549,13 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  void ArrayListIterator<T,N,A>::advance(size_t i)
+  void ArrayListIterator<T,N,A>::advance(difference_type i)
   {
     position_+=i;
   }
 
   template<class T, int N, class A>
-  void ConstArrayListIterator<T,N,A>::advance(size_t i)
+  void ConstArrayListIterator<T,N,A>::advance(difference_type i)
   {
     position_+=i;
   }
@@ -570,32 +612,32 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  T& ArrayListIterator<T,N,A>::elementAt(size_t i) const
+  typename ArrayListIterator<T,N,A>::MemberType& ArrayListIterator<T,N,A>::elementAt(difference_type i) const
   {
     i+=position_;
     return list_->elementAt(i+position_);
   }
 
   template<class T, int N, class A>
-  const T& ConstArrayListIterator<T,N,A>::elementAt(size_t i) const
+  const typename ConstArrayListIterator<T,N,A>::MemberType& ConstArrayListIterator<T,N,A>::elementAt(difference_type i) const
   {
     return list_->elementAt(i+position_);
   }
 
   template<class T, int N, class A>
-  T& ArrayListIterator<T,N,A>::dereference() const
+  typename ArrayListIterator<T,N,A>::MemberType& ArrayListIterator<T,N,A>::dereference() const
   {
     return list_->elementAt(position_);
   }
 
   template<class T, int N, class A>
-  const T& ConstArrayListIterator<T,N,A>::dereference() const
+  const typename ConstArrayListIterator<T,N,A>::MemberType& ConstArrayListIterator<T,N,A>::dereference() const
   {
     return list_->elementAt(position_);
   }
 
   template<class T, int N, class A>
-  size_t ArrayListIterator<T,N,A>::distanceTo(const ArrayListIterator<T,N,A>& other) const
+  typename ArrayListIterator<T,N,A>::difference_type ArrayListIterator<T,N,A>::distanceTo(const ArrayListIterator<T,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
@@ -603,7 +645,7 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  size_t ConstArrayListIterator<T,N,A>::distanceTo(const ConstArrayListIterator<T,N,A>& other) const
+  typename ConstArrayListIterator<T,N,A>::difference_type ConstArrayListIterator<T,N,A>::distanceTo(const ConstArrayListIterator<T,N,A>& other) const
   {
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
@@ -646,13 +688,14 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  ArrayListIterator<T,N,A>::ArrayListIterator(ArrayList<T,N,A>& arrayList, size_t position)
+  ArrayListIterator<T,N,A>::ArrayListIterator(ArrayList<T,N,A>& arrayList, difference_type position)
     : position_(position), list_(&arrayList)
   {}
 
 
   template<class T, int N, class A>
-  ConstArrayListIterator<T,N,A>::ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, size_t position)
+  ConstArrayListIterator<T,N,A>::ConstArrayListIterator(const ArrayList<T,N,A>& arrayList,
+                                                        difference_type position)
     : position_(position), list_(&arrayList)
   {}
 
