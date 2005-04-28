@@ -156,6 +156,21 @@ namespace Dune {
 #endif
       return NBELEM(theElement, nb);
     }
+
+    //! Returns true if the i-th side of the element is on the domain boundary
+    static bool Side_On_Bnd(typename TargetType<0,dim>::T* theElement, int i) {
+#ifdef _3
+      using UG3d::BNDS;
+      using UG3d::BEOBJ;
+      using UG3d::side_offset;
+#else
+      using UG2d::BNDS;
+      using UG2d::BEOBJ;
+      using UG2d::side_offset;
+#endif
+      return OBJT(theElement)==BEOBJ && SIDE_ON_BND(theElement, i);
+    }
+
     //! \todo Please doc me!
     static int Edges_Of_Elem(const typename TargetType<0,dim>::T* theElement) {
 #ifdef _2

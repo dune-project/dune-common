@@ -50,12 +50,11 @@ inline bool UGGridIntersectionIterator< GridImp >::neighbor() const
   return UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_) != NULL;
 }
 
-/** \todo Doesn't work for locally refined grids! */
 template<class GridImp>
 inline bool
 UGGridIntersectionIterator<GridImp>::boundary() const
 {
-  return !neighbor();
+  return UG_NS<GridImp::dimension>::Side_On_Bnd(center_, neighborCount_);
 }
 
 template<class GridImp>
