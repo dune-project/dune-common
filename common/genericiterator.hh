@@ -85,20 +85,25 @@ namespace Dune {
    * @brief Generic class for stl conformant iterators for container classes with operator[].
    *
    */
-  template<class C, class T>
+  template<class C, class T, class D = std::ptrdiff_t>
   class GenericIterator :
-    public Dune::RandomAccessIteratorFacade<GenericIterator<C,T>,T, T&, int>
+    public Dune::RandomAccessIteratorFacade<GenericIterator<C,T>,T, T&, D>
   {
     friend class GenericIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type >;
     friend class GenericIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >;
 
   public:
 
+    /**
+     * @brief The type of the difference between two positions.
+     */
+    typedef D DifferenceType;
+
     // Constructors needed by the base iterators.
     GenericIterator() : container_(0), position_(0)
     {}
 
-    GenericIterator(C& cont, int pos)
+    GenericIterator(C& cont, DifferenceType pos)
       : container_(&cont), position_(pos)
     {}
 
@@ -135,11 +140,11 @@ namespace Dune {
     }
 
     // Additional function needed by RandomAccessIterator
-    T& elementAt(int i) const {
+    T& elementAt(DifferenceType i) const {
       return container_->operator[](position_+i);
     }
 
-    void advance(int n){
+    void advance(DifferenceType n){
       position_=position_+n;
     }
 
@@ -156,7 +161,7 @@ namespace Dune {
     }
   private:
     C *container_;
-    size_t position_;
+    DifferenceType position_;
   };
 
   /** @} */
