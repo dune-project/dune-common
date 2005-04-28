@@ -327,6 +327,96 @@ namespace Dune {
     }
   };
 
+  //! Iterator class for sequential access to FieldVector and FieldMatrix
+  template<class C, class T>
+  class FieldIterator :
+    public Dune::RandomAccessIteratorFacade<FieldIterator<C,T>,T, T&, int>
+  {
+    friend class FieldIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type >;
+    friend class FieldIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >;
+
+  public:
+
+    /**
+     * @brief The type of the difference between two positions.
+     */
+    typedef int DifferenceType;
+
+    // Constructors needed by the base iterators.
+    FieldIterator()
+      : container_(0), position_(0)
+    {}
+
+    FieldIterator(C& cont, DifferenceType pos)
+      : container_(&cont), position_(pos)
+    {}
+
+    FieldIterator(const FieldIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type >& other)
+      : container_(other.container_), position_(other.position_)
+    {}
+
+
+    FieldIterator(const FieldIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >& other)
+      : container_(other.container_), position_(other.position_)
+    {}
+
+    // Methods needed by the forward iterator
+    bool equals(const FieldIterator<typename Dune::RemoveConst<C>::Type,typename Dune::RemoveConst<T>::Type>& other) const
+    {
+      return position_ == other.position_ && container_ == other.container_;
+    }
+
+
+    bool equals(const FieldIterator<const typename Dune::RemoveConst<C>::Type,const typename Dune::RemoveConst<T>::Type>& other) const
+    {
+      return position_ == other.position_ && container_ == other.container_;
+    }
+
+    T& dereference() const {
+      return container_->operator[](position_);
+    }
+
+    void increment(){
+      ++position_;
+    }
+
+    // Additional function needed by BidirectionalIterator
+    void decrement(){
+      --position_;
+    }
+
+    // Additional function needed by RandomAccessIterator
+    T& elementAt(DifferenceType i) const {
+      return container_->operator[](position_+i);
+    }
+
+    void advance(DifferenceType n){
+      position_=position_+n;
+    }
+
+    std::ptrdiff_t distanceTo(FieldIterator<const typename Dune::RemoveConst<C>::Type,const typename Dune::RemoveConst<T>::Type> other) const
+    {
+      assert(other.container_==container_);
+      return other.position_ - position_;
+    }
+
+    std::ptrdiff_t distanceTo(FieldIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type> other) const
+    {
+      assert(other.container_==container_);
+      return other.position_ - position_;
+    }
+
+    //! return index
+    DifferenceType index ()
+    {
+      return this->position_;
+    }
+
+  private:
+    C *container_;
+    DifferenceType position_;
+  };
+
   /** \brief Construct a vector space out of a tensor product of fields.
 
          K is the field type (use float, double, complex, etc) and n
@@ -410,7 +500,7 @@ namespace Dune {
     }
 
     //! Iterator class for sequential access
-    typedef Dune::GenericIterator<FieldVector<K,n>,K> Iterator;
+    typedef FieldIterator<FieldVector<K,n>,K> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
 
@@ -448,7 +538,7 @@ namespace Dune {
     }
 
     //! ConstIterator class for sequential access
-    typedef Dune::GenericIterator<const FieldVector<K,n>,const K> ConstIterator;
+    typedef FieldIterator<const FieldVector<K,n>,const K> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
 
@@ -644,7 +734,7 @@ namespace Dune {
 
 #ifdef USE_DEPRECATED_K1
   // forward declarations
-  template<class K> class K1Vector;
+  template<class K> class K11Matrix;
 
   /**! \brief Vectors containing only one component
    */
@@ -889,7 +979,7 @@ namespace Dune {
     }
 
     //! Iterator class for sequential access
-    typedef Dune::GenericIterator<FieldVector<K,n>,K> Iterator;
+    typedef FieldIterator<FieldVector<K,n>,K> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
 
@@ -927,7 +1017,7 @@ namespace Dune {
     }
 
     //! ConstIterator class for sequential access
-    typedef Dune::GenericIterator<const FieldVector<K,n>,const K> ConstIterator;
+    typedef FieldIterator<const FieldVector<K,n>,const K> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
 

@@ -3,6 +3,7 @@
 #define DUNE_ISTL_WITH_CHECKING
 #include "../fmatrix.hh"
 #include <iostream>
+#include <algorithm>
 
 using namespace Dune;
 
@@ -23,9 +24,13 @@ void test_matrix()
   typename FieldMatrix<K,n,m>::RowIterator rit = A.begin();
   for (; rit!=A.end(); ++rit)
   {
+    rit.index();
     typename FieldMatrix<K,n,m>::ColIterator cit = rit->begin();
     for (; cit!=rit->end(); ++cit)
+    {
+      cit.index();
       (*cit) *= 2;
+    }
   }
 
   // assign vector
@@ -37,7 +42,10 @@ void test_matrix()
   typename FieldVector<K,m>::iterator it = v.begin();
   typename FieldVector<K,m>::ConstIterator end = v.end();
   for (; it!=end; ++it)
+  {
+    it.index();
     (*it) *= 2;
+  }
   // reverse iterator vector
   it = v.rbegin();
   end = v.rend();
@@ -54,6 +62,8 @@ void test_matrix()
   A.umv(v,f);
 
   A.infinity_norm();
+
+  std::sort(v.begin(), v.end());
 
   // print matrix
   std::cout << A << std::endl;
