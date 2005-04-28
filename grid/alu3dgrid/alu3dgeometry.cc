@@ -47,15 +47,21 @@ inline TrilinearMapping :: TrilinearMapping (const TrilinearMapping & map)
   return ;
 }
 
+FieldMatrix<alu3d_ctype, 3, 3>
+TrilinearMapping::jacobianInverse(const coord_t& p) {
+  inverse (p);
+  return Dfi;
+}
+
 inline void TrilinearMapping ::
 map2world(const coord_t& p, coord_t& world) const {
-  double x = p [0];
-  double y = p [1];
-  double z = p [2];
-  double t3 = y * z ;
-  double t8 = x * z ;
-  double t13 = x * y ;
-  double t123 = x * t3 ;
+  alu3d_ctype x = p [0];
+  alu3d_ctype y = p [1];
+  alu3d_ctype z = p [2];
+  alu3d_ctype t3 = y * z ;
+  alu3d_ctype t8 = x * z ;
+  alu3d_ctype t13 = x * y ;
+  alu3d_ctype t123 = x * t3 ;
   world [0] = a [0][0] + a [1][0] * x + a [2][0] * y + a [3][0] * z + a [4][0] * t13 + a [5][0] * t3 + a [6][0] * t8 + a [7][0] * t123 ;
   world [1] = a [0][1] + a [1][1] * x + a [2][1] * y + a [3][1] * z + a [4][1] * t13 + a [5][1] * t3 + a [6][1] * t8 + a [7][1] * t123 ;
   world [2] = a [0][2] + a [1][2] * x + a [2][2] * y + a [3][2] * z + a [4][2] * t13 + a [5][2] * t3 + a [6][2] * t8 + a [7][2] * t123 ;
@@ -63,8 +69,8 @@ map2world(const coord_t& p, coord_t& world) const {
 }
 
 inline void TrilinearMapping ::
-map2world(const double x1, const double x2,
-          const double x3, coord_t& world ) const {
+map2world(const alu3d_ctype x1, const alu3d_ctype x2,
+          const alu3d_ctype x3, coord_t& world ) const {
   coord_t map ;
   map [0] = x1 ;
   map [1] = x2 ;
@@ -74,13 +80,13 @@ map2world(const double x1, const double x2,
 }
 
 void TrilinearMapping :: linear(const coord_t& p ) {
-  double x = p[0];
-  double y = p[1];
-  double z = p[2];
-  // ? get rid of that  double t0 = .5 ;
-  double t3 = y * z ;
-  double t8 = x * z ;
-  double t13 = x * y ;
+  alu3d_ctype x = p[0];
+  alu3d_ctype y = p[1];
+  alu3d_ctype z = p[2];
+  // ? get rid of that  alu3d_ctype t0 = .5 ;
+  alu3d_ctype t3 = y * z ;
+  alu3d_ctype t8 = x * z ;
+  alu3d_ctype t13 = x * y ;
   Df[2][0] = a[1][2] + y * a[4][2] + z * a[6][2] + t3 * a[7][2] ;
   Df[2][1] = a[2][2] + x * a[4][2] + z * a[5][2] + t8 * a[7][2] ;
   Df[1][2] = a[3][1] + y * a[5][1] + x * a[6][1] + t13 * a[7][1] ;
@@ -93,18 +99,16 @@ void TrilinearMapping :: linear(const coord_t& p ) {
 
 }
 
-double TrilinearMapping :: det(const coord_t& point ) {
+alu3d_ctype TrilinearMapping :: det(const coord_t& point ) {
   //  Determinante der Abbildung f:[-1,1]^3 -> Hexaeder im Punkt point.
   linear (point) ;
-  return (DetDf =
-            Df[0][0] * Df[1][1] * Df[2][2] - Df[0][0] * Df[1][2] * Df[2][1] -
-            Df[1][0] * Df[0][1] * Df[2][2] + Df[1][0] * Df[0][2] * Df[2][1] +
-            Df[2][0] * Df[0][1] * Df[1][2] - Df[2][0] * Df[0][2] * Df[1][1]) ;
+  return (DetDf = Df.determinant());
+
 }
 
 void TrilinearMapping :: inverse(const coord_t& p ) {
   //  Kramer - Regel, det() rechnet Df und DetDf neu aus.
-  double val = 1.0 / det(p) ;
+  alu3d_ctype val = 1.0 / det(p) ;
   Dfi[0][0] = ( Df[1][1] * Df[2][2] - Df[1][2] * Df[2][1] ) * val ;
   Dfi[0][1] = ( Df[0][2] * Df[2][1] - Df[0][1] * Df[2][2] ) * val ;
   Dfi[0][2] = ( Df[0][1] * Df[1][2] - Df[0][2] * Df[1][1] ) * val ;
@@ -119,7 +123,7 @@ void TrilinearMapping :: inverse(const coord_t& p ) {
 
 void TrilinearMapping :: world2map (const coord_t& wld , coord_t& map ) {
   //  Newton - Iteration zum Invertieren der Abbildung f.
-  double err = 10.0 * _epsilon ;
+  alu3d_ctype err = 10.0 * _epsilon ;
 #ifndef NDEBUG
   int count = 0 ;
 #endif
@@ -128,12 +132,12 @@ void TrilinearMapping :: world2map (const coord_t& wld , coord_t& map ) {
     coord_t upd ;
     map2world (map, upd) ;
     inverse (map) ;
-    double u0 = upd [0] - wld [0] ;
-    double u1 = upd [1] - wld [1] ;
-    double u2 = upd [2] - wld [2] ;
-    double c0 = Dfi [0][0] * u0 + Dfi [0][1] * u1 + Dfi [0][2] * u2 ;
-    double c1 = Dfi [1][0] * u0 + Dfi [1][1] * u1 + Dfi [1][2] * u2 ;
-    double c2 = Dfi [2][0] * u0 + Dfi [2][1] * u1 + Dfi [2][2] * u2 ;
+    alu3d_ctype u0 = upd [0] - wld [0] ;
+    alu3d_ctype u1 = upd [1] - wld [1] ;
+    alu3d_ctype u2 = upd [2] - wld [2] ;
+    alu3d_ctype c0 = Dfi [0][0] * u0 + Dfi [0][1] * u1 + Dfi [0][2] * u2 ;
+    alu3d_ctype c1 = Dfi [1][0] * u0 + Dfi [1][1] * u1 + Dfi [1][2] * u2 ;
+    alu3d_ctype c2 = Dfi [2][0] * u0 + Dfi [2][1] * u1 + Dfi [2][2] * u2 ;
     map [0] -= c0 ;
     map [1] -= c1 ;
     map [2] -= c2 ;
@@ -684,37 +688,33 @@ template <>
 FieldVector<alu3d_ctype, 3>
 ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::
 global (const FieldVector<alu3d_ctype, 3>& local) const {
-  FieldVector<alu3d_ctype, 3> result;
-  triMap_->map2world(local, result);
-  return result;
+  triMap_->map2world(local, tmp2_);
+  return tmp2_;
 }
 
 template <>
 FieldVector<alu3d_ctype, 3>
 ALU3dGridGeometry<2, 3, const ALU3dGrid<3, 3, hexa> >::
 global (const FieldVector<alu3d_ctype, 2>& local) const {
-  FieldVector<alu3d_ctype, 3> result;
-  biMap_->map2world(local, result);
-  return result;
+  biMap_->map2world(local, tmp2_);
+  return tmp2_;
 }
 
 template <>
 FieldVector<alu3d_ctype,  3>
 ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::
 local (const FieldVector<alu3d_ctype, 3>& global) const {
-  FieldVector<alu3d_ctype, 3> result;
-  triMap_->world2map(global, result);
-  return result;
+  triMap_->world2map(global, tmp2_);
+  return tmp2_;
 }
 
 template <>
 FieldVector<alu3d_ctype,  2>
 ALU3dGridGeometry<2, 3, const ALU3dGrid<3, 3, hexa> >::
 local (const FieldVector<alu3d_ctype, 3>& global) const {
-  FieldVector<alu3d_ctype, 2> result;
   assert(false); // could be a bit tricky, eh?
-  //biMap_->world2map(global, result);
-  return result;
+  //biMap_->world2map(global, tmp1_);
+  //return tmp1_;
 }
 
 template <int mydim, int cdim>
@@ -728,10 +728,27 @@ checkInside(const FieldVector<alu3d_ctype, mydim>& local) const {
   return result;
 }
 
-template <int mydim, int cdim>
-const FieldMatrix<alu3d_ctype,mydim,mydim>&
-ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::
-jacobianInverse (const FieldVector<alu3d_ctype, cdim>& local) const {}
+template<>
+inline alu3d_ctype
+ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::
+integrationElement (const FieldVector<alu3d_ctype, 3>& local) const {
+  return triMap_->det(local);
+}
+
+template<>
+inline alu3d_ctype
+ALU3dGridGeometry<2, 3, const ALU3dGrid<3, 3, hexa> >::
+integrationElement (const FieldVector<alu3d_ctype, 2>& local) const {
+  biMap_->normal(local, tmp2_);
+  return tmp2_.two_norm();
+}
+
+template <>
+const FieldMatrix<alu3d_ctype, 3, 3>&
+ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::
+jacobianInverse (const FieldVector<alu3d_ctype, 3>& local) const {
+  return triMap_->jacobianInverse(local);
+}
 
 template <int mydim, int cdim>
 void

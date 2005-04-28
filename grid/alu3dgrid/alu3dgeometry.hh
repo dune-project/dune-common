@@ -24,7 +24,8 @@ struct POWER_M_P< m , 0>
 //! space (same as in mapp_cube_3d.h, but for a different reference hexahedron)
 class TrilinearMapping {
   typedef FieldVector<alu3d_ctype, 3> coord_t;
-  static const double _epsilon ;
+  typedef FieldMatrix<alu3d_ctype, 3, 3> mat_t;
+  static const alu3d_ctype _epsilon ;
 
   const coord_t& p0;
   const coord_t& p1;
@@ -36,9 +37,9 @@ class TrilinearMapping {
   const coord_t& p7;
 
   double a [8][3] ;
-  double Df [3][3] ;
-  double Dfi [3][3] ;
-  double DetDf ;
+  mat_t Df;
+  mat_t Dfi;
+  alu3d_ctype DetDf ;
   void linear (const coord_t&) ;
   void inverse (const coord_t&) ;
 public:
@@ -48,7 +49,8 @@ public:
                            const coord_t&, const coord_t&);
   inline TrilinearMapping (const TrilinearMapping &) ;
   ~TrilinearMapping () {}
-  double det (const coord_t&) ;
+  alu3d_ctype det (const coord_t&) ;
+  mat_t jacobianInverse(const coord_t&);
   inline void map2world (const coord_t&, coord_t&) const ;
   inline void map2world (const double , const double , const double ,
                          coord_t&) const ;
@@ -249,7 +251,9 @@ public:
 
 private:
   //! the vertex coordinates
-  mutable FieldMatrix<alu3d_ctype,mydim+1,cdim> coord_;
+  mutable FieldMatrix<alu3d_ctype, POWER_M_P<2,mydim>::power, cdim> coord_;
+  //mutable FieldVector<alu3d_ctype, mydim> tmp1_;
+  mutable FieldVector<alu3d_ctype, cdim> tmp2_;
 
   TrilinearMapping* triMap_;
   BilinearSurfaceMapping* biMap_;
