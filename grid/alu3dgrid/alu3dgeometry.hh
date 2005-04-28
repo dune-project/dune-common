@@ -23,31 +23,57 @@ struct POWER_M_P< m , 0>
 //! A trilinear mapping from the Dune reference hexahedron into the physical
 //! space (same as in mapp_cube_3d.h, but for a different reference hexahedron)
 class TrilinearMapping {
+  typedef FieldVector<alu3d_ctype, 3> coord_t;
   static const double _epsilon ;
-  const double (&p0)[3], (&p1)[3], (&p2)[3], (&p3)[3] ;
-  const double (&p4)[3], (&p5)[3], (&p6)[3], (&p7)[3] ;
+
+  const coord_t& p0;
+  const coord_t& p1;
+  const coord_t& p2;
+  const coord_t& p3;
+  const coord_t& p4;
+  const coord_t& p5;
+  const coord_t& p6;
+  const coord_t& p7;
+
   double a [8][3] ;
   double Df [3][3] ;
   double Dfi [3][3] ;
   double DetDf ;
-  void linear (const double (&)[3]) ;
-  void inverse (const double (&)[3]) ;
+  void linear (const coord_t&) ;
+  void inverse (const coord_t&) ;
 public:
-  inline TrilinearMapping (const double (&)[3], const double (&)[3],
-                           const double (&)[3], const double (&)[3],
-                           const double (&)[3], const double (&)[3],
-                           const double (&)[3], const double (&)[3]) ;
+  inline TrilinearMapping (const coord_t&, const coord_t&,
+                           const coord_t&, const coord_t&,
+                           const coord_t&, const coord_t&,
+                           const coord_t&, const coord_t&);
   inline TrilinearMapping (const TrilinearMapping &) ;
   ~TrilinearMapping () {}
-  double det (const double (&)[3]) ;
-  inline void map2world (const double (&)[3], double (&)[3]) const ;
+  double det (const coord_t&) ;
+  inline void map2world (const coord_t&, coord_t&) const ;
   inline void map2world (const double , const double , const double ,
-                         double (&)[3]) const ;
-  void world2map (const double (&)[3], double (&)[3]) ;
+                         coord_t&) const ;
+  void world2map (const coord_t&, coord_t&) ;
 };
 
 //! A bilinear surface mapping
-
+class BilinearSurfaceMapping {
+  typedef FieldVector<alu3d_ctype, 3> coord3_t;
+  typedef FieldVector<alu3d_ctype, 2> coord2_t;
+  const coord3_t& _p0;
+  const coord3_t& _p1;
+  const coord3_t& _p2;
+  const coord3_t& _p3;
+  double _b [4][3] ;
+  double _n [3][3] ;
+public:
+  inline BilinearSurfaceMapping (const coord3_t&, const coord3_t&,
+                                 const coord3_t&, const coord3_t&) ;
+  inline BilinearSurfaceMapping (const BilinearSurfaceMapping &) ;
+  ~BilinearSurfaceMapping () {}
+  inline void map2world(const coord2_t&, coord3_t&) const ;
+  inline void map2world(double x, double y, coord3_t&) const ;
+  inline void normal(const coord2_t&, coord3_t&) const ;
+} ;
 
 //! Empty definition, needs to be specialized for element type
 template <int mydim, int cdim, class GridImp>
@@ -132,7 +158,7 @@ private:
   void calcElMatrix () const;
 
   //! the vertex coordinates
-  mutable FieldMatrix<alu3d_ctype,mydim+1,cdim> coord_;
+  mutable FieldMatrix<alu3d_ctype, POWER_M_P<2,mydim>::power, cdim> coord_;
 
   //! is true if Jinv_, A and detDF_ is calced
   mutable bool builtinverse_;
@@ -225,6 +251,9 @@ private:
   //! the vertex coordinates
   mutable FieldMatrix<alu3d_ctype,mydim+1,cdim> coord_;
 
+  TrilinearMapping* triMap_;
+  BilinearSurfaceMapping* biMap_;
+
   /* OLD
      //const static int alu2duneVol[8] = {0, 1, 3, 2, 4, 5, 7, 6};
      const static int dune2aluVol[8] = {0, 1, 3, 2, 4, 5, 7, 6};
@@ -236,14 +265,14 @@ private:
      const static int dune2aluQuad[4] = {0, 1, 3, 2};
    */
 
-  const static int alu2duneVol[8] = {1, 3, 2, 0, 5, 7, 6, 4};
-  const static int dune2aluVol[8] = {3, 0, 2, 1, 7, 4, 6, 5};
+  const static int alu2duneVol[8];
+  const static int dune2aluVol[8];
 
-  const static int alu2duneFace[6] = {2, 5, 1, 3, 0, 4};
-  const static int dune2aluFace[6] = {4, 2, 0, 3, 5, 1};
+  const static int alu2duneFace[6];
+  const static int dune2aluFace[6];
 
-  const static int alu2duneQuad[4] = {0, 1, 3, 2};
-  const static int dune2aluQuad[4] = {0, 1, 3, 2};
+  const static int alu2duneQuad[4];
+  const static int dune2aluQuad[4];
 };
 
 
