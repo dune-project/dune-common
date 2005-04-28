@@ -24,46 +24,15 @@ namespace Dune {
   class UG_NS {
   public:
 
-    enum {GM_REFINE_NOT_CLOSED =
-#ifdef _2
-            UG2d::GM_REFINE_NOT_CLOSED
-#else
-            UG3d::GM_REFINE_NOT_CLOSED
-#endif
-    };
+    enum {GM_REFINE_NOT_CLOSED = NS_DIM_PREFIX GM_REFINE_NOT_CLOSED};
 
-    enum {GM_COPY_ALL =
-#ifdef _2
-            UG2d::GM_COPY_ALL
-#else
-            UG3d::GM_COPY_ALL
-#endif
-    };
+    enum {GM_COPY_ALL = NS_DIM_PREFIX GM_COPY_ALL};
 
-    enum {GM_REFINE_TRULY_LOCAL =
-#ifdef _2
-            UG2d::GM_REFINE_TRULY_LOCAL
-#else
-            UG3d::GM_REFINE_TRULY_LOCAL
-#endif
-    };
+    enum {GM_REFINE_TRULY_LOCAL = NS_DIM_PREFIX GM_REFINE_TRULY_LOCAL};
 
-    enum {GM_REFINE_PARALLEL =
-#ifdef _2
-            UG2d::GM_REFINE_PARALLEL
-#else
-            UG3d::GM_REFINE_PARALLEL
-#endif
-    };
+    enum {GM_REFINE_PARALLEL = NS_DIM_PREFIX GM_REFINE_PARALLEL};
 
-    enum {GM_REFINE_NOHEAPTEST =
-#ifdef _2
-            UG2d::GM_REFINE_NOHEAPTEST
-#else
-            UG3d::GM_REFINE_NOHEAPTEST
-#endif
-    };
-
+    enum {GM_REFINE_NOHEAPTEST = NS_DIM_PREFIX GM_REFINE_NOHEAPTEST};
 
     /** \brief The PFIRSTNODE macro which returns the first node in a
      * grid even in a parallel setting.
@@ -117,12 +86,12 @@ namespace Dune {
     static void Corner_Coordinates(typename TargetType<0,dim>::T* theElement, double* x[]) {
 
 #ifdef _3
-      using UG3d::TETRAHEDRON;
-      using UG3d::NODE;
-      using UG3d::PYRAMID;
-      using UG3d::PRISM;
-      using UG3d::HEXAHEDRON;
-      using UG3d::n_offset;
+      using NS_DIM_PREFIX TETRAHEDRON;
+      using NS_DIM_PREFIX NODE;
+      using NS_DIM_PREFIX PYRAMID;
+      using NS_DIM_PREFIX PRISM;
+      using NS_DIM_PREFIX HEXAHEDRON;
+      using NS_DIM_PREFIX n_offset;
       int n;    // Dummy variable just to please the macro
       CORNER_COORDINATES(theElement, n, x);
 #else
@@ -134,59 +103,37 @@ namespace Dune {
       CORNER_COORDINATES(theElement, n, x);
 #endif
     }
+
     //! \todo Please doc me!
     static int Sides_Of_Elem(typename TargetType<0,dim>::T* theElement) {
-#ifdef _3
-      using UG3d::nb_offset;
-      using UG3d::element_descriptors;
-#else
-      using UG2d::element_descriptors;
-#endif
+      using NS_DIM_PREFIX element_descriptors;
       return SIDES_OF_ELEM(theElement);
     }
 
     //! Encapsulates the NBELEM macro
     static typename TargetType<0,dim>::T* NbElem(typename TargetType<0,dim>::T* theElement, int nb) {
-#ifdef _3
-      using UG3d::ELEMENT;
-      using UG3d::nb_offset;
-#else
-      using UG2d::ELEMENT;
-      using UG2d::nb_offset;
-#endif
+      using NS_DIM_PREFIX ELEMENT;
+      using NS_DIM_PREFIX nb_offset;
       return NBELEM(theElement, nb);
     }
 
     //! Returns true if the i-th side of the element is on the domain boundary
     static bool Side_On_Bnd(typename TargetType<0,dim>::T* theElement, int i) {
-#ifdef _3
-      using UG3d::BNDS;
-      using UG3d::BEOBJ;
-      using UG3d::side_offset;
-#else
-      using UG2d::BNDS;
-      using UG2d::BEOBJ;
-      using UG2d::side_offset;
-#endif
+      using NS_DIM_PREFIX BNDS;
+      using NS_DIM_PREFIX BEOBJ;
+      using NS_DIM_PREFIX side_offset;
       return OBJT(theElement)==BEOBJ && SIDE_ON_BND(theElement, i);
     }
 
     //! \todo Please doc me!
     static int Edges_Of_Elem(const typename TargetType<0,dim>::T* theElement) {
-#ifdef _2
-      using UG2d::element_descriptors;
-#else
-      using UG3d::element_descriptors;
-#endif
+      using NS_DIM_PREFIX element_descriptors;
       return EDGES_OF_ELEM(theElement);
     }
+
     //! \todo Please doc me!
     static int Corners_Of_Elem(const typename TargetType<0,dim>::T* theElement) {
-#ifdef _2
-      using UG2d::element_descriptors;
-#else
-      using UG3d::element_descriptors;
-#endif
+      using NS_DIM_PREFIX element_descriptors;
       return CORNERS_OF_ELEM(theElement);
     }
 
@@ -198,20 +145,13 @@ namespace Dune {
 
     //! \todo Please doc me!
     static int Corners_Of_Side(const typename TargetType<0,dim>::T* theElement, int side) {
-#ifdef _2
-      using UG2d::element_descriptors;
-#else
-      using UG3d::element_descriptors;
-#endif
+      using NS_DIM_PREFIX element_descriptors;
       return CORNERS_OF_SIDE(theElement, side);
     }
+
     //! \todo Please doc me!
     static int Corner_Of_Side(const typename TargetType<0,dim>::T* theElement, int side, int corner) {
-#ifdef _2
-      using UG2d::element_descriptors;
-#else
-      using UG3d::element_descriptors;
-#endif
+      using NS_DIM_PREFIX element_descriptors;
       return CORNER_OF_SIDE(theElement, side, corner);
     }
 
@@ -298,74 +238,41 @@ namespace Dune {
 
     //! Returns the i-th corner of a UG element
     static typename TargetType<dim,dim>::T* Corner(typename TargetType<0,dim>::T* theElement, int i) {
-#ifdef _2
-      using UG2d::NODE;
-      using UG2d::n_offset;
-#else
-      using UG3d::NODE;
-      using UG3d::n_offset;
-#endif
+      using NS_DIM_PREFIX NODE;
+      using NS_DIM_PREFIX n_offset;
       return CORNER(theElement, i);
     }
     //! \todo Please doc me!
     static typename TargetType<0,dim>::T* EFather(typename TargetType<0,dim>::T* theElement) {
-#ifdef _3
-      using UG3d::ELEMENT;
-      using UG3d::father_offset;
-#else
-      using UG2d::ELEMENT;
-      using UG2d::father_offset;
-#endif
+      using NS_DIM_PREFIX ELEMENT;
+      using NS_DIM_PREFIX father_offset;
       return EFATHER(theElement);
     }
 
     //! \todo Please doc me!
     static void InitUg(int* argcp, char*** argvp) {
-#ifdef _3
-      UG3d::InitUg(argcp, argvp);
-#else
-      UG2d::InitUg(argcp, argvp);
-#endif
+      NS_DIM_PREFIX InitUg(argcp, argvp);
     }
 
-#ifdef _3
     //! \todo Please doc me!
     static void* CreateBoundaryValueProblem(const char* BVPname,
                                             int numOfCoeffFunc,
-                                            UG3d::CoeffProcPtr coeffs[],
+                                            NS_DIM_PREFIX CoeffProcPtr coeffs[],
                                             int numOfUserFct,
-                                            UG3d::UserProcPtr userfct[]) {
-      return UG3d::CreateBoundaryValueProblem(BVPname, 0, numOfCoeffFunc, coeffs,
-                                              numOfUserFct, userfct);
+                                            NS_DIM_PREFIX UserProcPtr userfct[]) {
+      return NS_DIM_PREFIX CreateBoundaryValueProblem(BVPname, 0, numOfCoeffFunc, coeffs,
+                                                      numOfUserFct, userfct);
     }
-#else
-    //! \todo Please doc me!
-    static void* CreateBoundaryValueProblem(const char* BVPname,
-                                            int numOfCoeffFunc,
-                                            UG2d::CoeffProcPtr coeffs[],
-                                            int numOfUserFct,
-                                            UG2d::UserProcPtr userfct[]) {
-      return UG2d::CreateBoundaryValueProblem(BVPname, 0, numOfCoeffFunc, coeffs,
-                                              numOfUserFct, userfct);
-    }
-#endif
+
     //! \todo Please doc me!
     static typename UGTypes<dim>::MultiGridType* GetMultigrid(const char* name) {
-#ifdef _3
-      return UG3d::GetMultigrid(name);
-#else
-      return UG2d::GetMultigrid(name);
-#endif
+      return NS_DIM_PREFIX GetMultigrid(name);
     }
+
     //! \todo Please doc me!
     static void SetSubdomain(typename TargetType<0,dim>::T* theElement, int id) {
-#ifdef _2
-      using UG2d::control_entries;
-      using UG2d::SUBDOMAIN_CE;
-#else
-      using UG3d::control_entries;
-      using UG3d::SUBDOMAIN_CE;
-#endif
+      using NS_DIM_PREFIX control_entries;
+      using NS_DIM_PREFIX SUBDOMAIN_CE;
       SETSUBDOMAIN(theElement, id);
     }
 
