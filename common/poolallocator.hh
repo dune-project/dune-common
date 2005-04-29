@@ -5,7 +5,14 @@
 #define DUNE_COMMON_POOLALLOCATOR_HH
 
 #include "alignment.hh"
+#include "helpertemplates.hh"
 #include <typeinfo>
+#include <iostream>
+
+
+template<std::size_t size, typename T>
+int testPool();
+
 
 namespace Dune
 {
@@ -23,6 +30,7 @@ namespace Dune
    *
    * @{
    */
+
   /**
    * @brief A memory pool of objects.
    *
@@ -32,11 +40,27 @@ namespace Dune
    * for fast access.
    * Deallocated objects are cached for reuse to prevent memory
    * fragmentation.
+   * @warning If the size of the objects allocated is less than the
+   * size of a pointer memory is wasted.
+   * @warning Due to aligned issues at the number of bytes of the
+   * alignment prerequisite (< 4 bytes) are wasted. This effect
+   * becomes neglectable for big sizes of chunkSize.
    */
-  template<class T, int s>
+  template<class T, std::size_t s>
   class Pool
   {
+    friend int ::testPool<s,T>();
+
+  private:
+
+    /** @brief Reference to next free element. */
+    struct Reference
+    {
+      Reference *next_;
+    };
+
   public:
+
     /** @brief The type of object we allocate memory for. */
     typedef T MemberType;
     enum
@@ -45,7 +69,9 @@ namespace Dune
        * @brief size requirement. At least one object has to
        * stored.
        */
-      size = (sizeof(MemberType)>s) ? sizeof(MemberType) : s,
+      size = (sizeof(MemberType) <= s && sizeof(Reference) <= s) ? s
+             : ((sizeof(MemberType) < sizeof(Reference)) ? sizeof(Reference)
+                : sizeof(MemberType)),
 
       /**
        * @brief The aligned size of the type.
@@ -53,10 +79,9 @@ namespace Dune
        * This size is bigger than sizeof of the type and a multiple of
        * the alignment requirement.
        */
-      alignedSize = (sizeof(MemberType) % AlignmentOf<MemberType>::value == 0) ?
-                    sizeof(MemberType) :
-                    (sizeof(MemberType) / AlignmentOf<MemberType>::value + 1)
-                    * AlignmentOf<MemberType>::value,
+      alignedSize = (size % AlignmentOf<MemberType>::value == 0) ?
+                    size : ((size / AlignmentOf<MemberType>::value + 1)
+                            * AlignmentOf<MemberType>::value),
 
       /**
        * @brief The size of each chunk memory chunk.
@@ -65,25 +90,24 @@ namespace Dune
        * an offset to handle the case that the pointer to the memory
        * does not satisfy the alignment requirements.
        */
-      chunkSize = ((size % AlignmentOf<MemberType>::value == 0) ? size
-                   : (size / AlignmentOf<MemberType>::value + 1)
-                   * AlignmentOf<MemberType>::value) + AlignmentOf<MemberType>::value - 1,
+      chunkSize = ((size % AlignmentOf<MemberType>::value == 0) ? size :
+                   ((size / AlignmentOf<MemberType>::value + 1)
+                    * AlignmentOf<MemberType>::value))
+                  + AlignmentOf<MemberType>::value - 1,
+
       /**
        * @brief The number of element each chunk can hold.
        */
-      elements = (chunkSize / alignedSize)
+      elements = ((chunkSize - AlignmentOf<MemberType>::value + 1)/ alignedSize)
     };
 
   private:
-    /** \todo Please doc me! */
-    struct Reference
-    {
-      Reference *next_;
-    };
-
-    /** \todo Please doc me! */
+    /** @brief Chunk of memory managed by the pool. */
     struct Chunk
     {
+
+      //friend int testPool<s,T>();
+
       /** @brief The memory we hold. */
       char chunk_[chunkSize];
 
@@ -102,10 +126,10 @@ namespace Dune
       Chunk()
       {
         unsigned long lmemory = reinterpret_cast<unsigned long>(chunk_);
-
         if(lmemory % AlignmentOf<MemberType>::value != 0)
           lmemory = (lmemory / AlignmentOf<MemberType>::value + 1)
                     * AlignmentOf<MemberType>::value;
+
         memory_ = reinterpret_cast<char *>(lmemory);
       }
     };
@@ -155,7 +179,7 @@ namespace Dune
    * for the use in standard containers as it cannot allocate
    * arrays of arbituary size
    */
-  template<class T, int s>
+  template<class T, std::size_t s>
   class PoolAllocator
   {
   public:
@@ -261,12 +285,21 @@ namespace Dune
     static Pool<T,s> memoryPool_;
   };
 
-  template<class T, int S>
+  template<class T, std::size_t S>
   inline Pool<T,S>::Pool()
     : head_(0), chunks_(0)
-  {}
+  {
+    IsTrue<sizeof(T)<=size>::yes();
+    IsTrue<sizeof(Reference)<=size>::yes();
+    IsTrue<sizeof(T)<=alignedSize>::yes();
+    IsTrue<sizeof(Reference)<=alignedSize>::yes();
+    IsTrue<sizeof(T)<=chunkSize>::yes();
+    IsTrue<sizeof(Reference)<=chunkSize>::yes();
+    IsTrue<(chunkSize - (AlignmentOf<T>::value - 1)) % AlignmentOf<T>::value == 0>::yes();
+    IsTrue<elements>=1>::yes();
+  }
 
-  template<class T, int S>
+  template<class T, std::size_t S>
   inline Pool<T,S>::~Pool()
   {
     // delete the allocated chunks.
@@ -280,7 +313,7 @@ namespace Dune
     }
   }
 
-  template<class T, int S>
+  template<class T, std::size_t S>
   inline void Pool<T,S>::print()
   {
     Chunk* current=chunks_;
@@ -291,7 +324,7 @@ namespace Dune
     std::cout<<current<<" ";
   }
 
-  template<class T, int S>
+  template<class T, std::size_t S>
   inline void Pool<T,S>::grow()
   {
     Chunk *newChunk = new Chunk;
@@ -301,16 +334,16 @@ namespace Dune
     char* start = reinterpret_cast<char *>(chunks_->memory_);
     char* last  = &start[(elements-1)*alignedSize];
 
-    for(char* element=start; element<last; element+=alignedSize)
+    for(char* element=start; element<last; element=element+alignedSize) {
       reinterpret_cast<Reference*>(element)->next_
         = reinterpret_cast<Reference*>(element+alignedSize);
+    }
 
     reinterpret_cast<Reference*>(last)->next_=0;
-
     head_ = reinterpret_cast<Reference*>(start);
   }
 
-  template<class T, int S>
+  template<class T, std::size_t S>
   inline void Pool<T,S>::free(void* b)
   {
     Reference* freed = static_cast<Reference*>(b);
@@ -318,7 +351,7 @@ namespace Dune
     head_ = freed;
   }
 
-  template<class T, int S>
+  template<class T, std::size_t S>
   inline void* Pool<T,S>::allocate()
   {
     if(head_==0)
@@ -329,34 +362,34 @@ namespace Dune
     return p;
   }
 
-  template<class T, int s>
+  template<class T, std::size_t s>
   Pool<T,s> PoolAllocator<T,s>::memoryPool_;
 
-  template<class T, int s>
+  template<class T, std::size_t s>
   inline PoolAllocator<T,s>::PoolAllocator()
   { }
 
-  template<class T, int s>
+  template<class T, std::size_t s>
   inline T* PoolAllocator<T,s>::allocate(std::size_t n, const T* hint)
   {
     assert(n<=(Pool<T,s>::elements));
     return static_cast<T*>(memoryPool_.allocate());
   }
 
-  template<class T, int s>
+  template<class T, std::size_t s>
   inline void PoolAllocator<T,s>::deallocate(T* p, std::size_t n)
   {
     assert(n==1);
     memoryPool_.free(p);
   }
 
-  template<class T, int s>
+  template<class T, std::size_t s>
   inline void PoolAllocator<T,s>::construct(T* p, const T& value)
   {
     new (p) T(value);
   }
 
-  template<class T, int s>
+  template<class T, std::size_t s>
   inline void PoolAllocator<T,s>::destroy(T* p)
   {
     p->~T();
