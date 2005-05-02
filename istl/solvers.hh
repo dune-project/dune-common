@@ -195,6 +195,90 @@ namespace Dune {
 
 
   // all these solvers are taken from the SUMO library
+  //! gradient method
+  template<class X>
+  class GradientSolver : public InverseOperator<X,X> {
+  public:
+    //! export types, usually they come from the derived class
+    typedef X domain_type;
+    typedef X range_type;
+    typedef typename X::field_type field_type;
+
+    //! set up Loop solver
+    GradientSolver (LinearOperator<X,X>& op, Preconditioner<X,X>& prec,
+                    double reduction, int maxit, int verbose) :
+      _op(op), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {}
+
+    //! apply inverse operator
+    virtual void apply (X& x, X& b, InverseOperatorResult& r)
+    {
+      r.clear();                      // clear solver statistics
+      Timer watch;                    // start a timer
+      _prec.pre(x,b);                 // prepare preconditioner
+      _op.applyscaleadd(-1,x,b);      // overwrite b with defect
+
+      X p(x);                         // create local vectors
+      X q(b);
+
+      double def0 = _prec.norm(b);    // compute norm
+
+      if (_verbose>0)                 // printing
+      {
+        printf("=== GradientSolver\n");
+        if (_verbose>1) printf(" Iter       Defect         Rate\n");
+        if (_verbose>1) printf("%5d %12.4E\n",0,def0);
+      }
+
+      int i=1; double def=def0;       // loop variables
+      field_type lambda;
+      for ( ; i<=_maxit; i++ )
+      {
+        p = 0;                                // clear correction
+        _prec.apply(p,b);                     // apply preconditioner
+        _op.apply(p,q);                       // q=Ap
+        lambda = _prec.dot(p,b)/_prec.dot(q,p);          // minimization
+        x.axpy(lambda,p);                     // update solution
+        b.axpy(-lambda,q);                    // update defect
+
+        double defnew=_prec.norm(b);          // comp defect norm
+        if (_verbose>1)                       // print
+          printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
+        def = defnew;                         // update norm
+        if (def<def0*_reduction)              // convergence check
+        {
+          r.converged  = true;
+          break;
+        }
+      }
+
+      if (_verbose==1)                    // printing for non verbose
+        printf("%5d %12.4E\n",i,def);
+      _prec.post(x);                      // postprocess preconditioner
+      r.iterations = i;                   // fill statistics
+      r.reduction = def/def0;
+      r.conv_rate  = pow(r.reduction,1.0/i);
+      r.elapsed = watch.elapsed();
+      if (_verbose>0)                     // final print
+        printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
+    }
+
+    //! apply inverse operator, with given reduction factor
+    virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& r)
+    {
+      _reduction = reduction;
+      (*this).apply(x,b,r);
+    }
+
+  private:
+    LinearOperator<X,X>& _op;
+    Preconditioner<X,X>& _prec;
+    double _reduction;
+    int _maxit;
+    int _verbose;
+  };
+
+
 
   //! conjugate gradient method
   template<class X>
