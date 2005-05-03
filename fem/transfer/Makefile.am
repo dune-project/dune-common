@@ -1,7 +1,7 @@
 # $Id$
 
 femtransferdir =  $(includedir)/dune/fem/transfer
-femtransfer_HEADERS = mgtransfer.cc adaptoperator.hh mgtransfer.hh \
+femtransfer_HEADERS = adaptoperator.hh \
   multigridtransfer.cc multigridtransfer.hh \
   truncatedtransfer.cc truncatedtransfer.hh \
   datacollector.hh
