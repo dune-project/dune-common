@@ -83,3 +83,5 @@ GRIDFILES = alberta-testgrid-2-2.al alberta-testgrid-3-3.al \
 EXTRA_DIST = gridcheck.cc $(GRIDFILES)
 
 CLEANFILES = *.gcda *.gcno semantic.cache
+
+include $(top_srcdir)/am/sourcescheck

@@ -18,3 +18,5 @@ commoninclude_HEADERS = dlist.cc mapping.cc stdstreams.cc alignment.hh \
   mapping.hh matrix.hh misc.hh operator.hh poolallocator.hh simplevector.hh \
   sllist.hh smartpointer.hh stack.hh stdstreams.hh timer.hh tuples.hh \
   typeinfo.hh typetraits.hh vectorspace.hh precision.hh bigunsignedint.hh
+
+include $(top_srcdir)/am/sourcescheck

@@ -2,7 +2,7 @@
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fmatrixtest \
-	poolallocatortest
+	poolallocatortest settest
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -34,3 +34,7 @@ iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
 fmatrixtest_SOURCES = fmatrixtest.cc
 
 poolallocatortest_SOURCES = poolallocatortest.cc
+
+settest_SOURCES=settest.cc
+
+include $(top_srcdir)/am/sourcescheck

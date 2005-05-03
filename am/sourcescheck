@@ -3,10 +3,12 @@
 
 sourcescheck: sourcescheck-recursive
 
-sourcescheck-am: $(SOURCES) $(HEADERS) $(sourcescheck_IGNORE)
-	@(for f in $^; do echo $$f; done) | \
-	   grep [hc][hc]$$ | sort > header_CHECK.install
-	@ls *.cc *.hh > header_CHECK.present
+sourcescheck-am:
+	@(for f in $(SOURCES) $(HEADERS) $(sourcescheck_NOSOURCES); \
+       do echo $$f; done) | \
+	 grep [hc][hc]$$ | sort | uniq > header_CHECK.install
+	@ls | \
+	 grep [hc][hc]$$ | sort | uniq > header_CHECK.present
 	@RESULT=0; \
 	if diff header_CHECK.* | grep ^[\<\>] -q; then \
 		echo "==== ERROR ===="; \

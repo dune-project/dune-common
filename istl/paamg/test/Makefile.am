@@ -21,3 +21,5 @@ galerkintest_SOURCES = galerkintest.cc
 
 galerkintest_CXXFLAGS = $(MPI_CPPFLAGS)
 galerkintest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+
+include $(top_srcdir)/am/sourcescheck

@@ -27,3 +27,5 @@ dist_pkgdata_DATA = istl.pdf istl.ps
 	$(DVIPS) $*
 
 CLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi *.pdf *.ps
+
+include $(top_srcdir)/am/sourcescheck

@@ -8,3 +8,5 @@ uggrid_HEADERS = uggrid.cc uggridentity.cc uggridgeometry.cc \
   ugintersectionit.hh ugtypes.hh ug_undefs.hh ughierarchicindexset.hh
 
 # tricks like undefAllMacros.pl don't have to be shipped, have they?
+
+include $(top_srcdir)/am/sourcescheck

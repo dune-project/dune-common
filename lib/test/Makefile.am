@@ -14,3 +14,5 @@ LDADD = ../libdune.la
 # define the programs
 
 test_stream_SOURCES = test-stream.cc
+
+include $(top_srcdir)/am/sourcescheck

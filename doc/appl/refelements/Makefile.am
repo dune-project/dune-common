@@ -11,3 +11,5 @@ EXTRAINSTALL=hexahedron.png line.png prism.png pyramid.png \
 include $(top_srcdir)/am/webstuff
 
 # !! rules to convert fig, svg -> png
+
+include $(top_srcdir)/am/sourcescheck

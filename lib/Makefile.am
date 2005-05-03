@@ -12,3 +12,4 @@ libdune_la_SOURCES =
 libdune_la_LIBADD = ../common/libcommon.la
 libdune_la_LIBADD += ../grid/onedgrid/libonedgrid.la
 
+include $(top_srcdir)/am/sourcescheck

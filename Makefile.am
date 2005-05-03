@@ -12,3 +12,5 @@ pkgconfig_DATA = dune.pc
 # use configured compiler for "make distcheck"
 # doxygen is difficult to convince to build in a special directory...
 DISTCHECK_CONFIGURE_FLAGS = CXX="$(CXX)" CC="$(CC)" DOXYGEN="true"
+
+include $(top_srcdir)/am/sourcescheck

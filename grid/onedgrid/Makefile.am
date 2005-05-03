@@ -9,3 +9,4 @@ onedgrid_HEADERS = onedgrid.cc onedgridentity.cc onedgridboundent.hh \
    onedgridgeometry.hh onedgridentity.hh onedgridhieriterator.hh \
    onedgridleveliterator.hh onedintersectionit.hh onedgridentitypointer.hh
 
+include $(top_srcdir)/am/sourcescheck

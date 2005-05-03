@@ -48,3 +48,5 @@ istl-dist:
 CLEANFILES = istl.tar.gz
 
 .PHONY: istl-dist
+
+include $(top_srcdir)/am/sourcescheck

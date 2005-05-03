@@ -6,3 +6,4 @@ femtransfer_HEADERS = mgtransfer.cc adaptoperator.hh mgtransfer.hh \
   truncatedtransfer.cc truncatedtransfer.hh \
   datacollector.hh
 
+include $(top_srcdir)/am/sourcescheck
