@@ -18,11 +18,6 @@
 
 namespace Dune
 {
-  /** @defgroup OneDGrid OneDGrid
-      \ingroup GridCommon
-
-   */
-
   /** \brief The type used by to store coordinates */
   typedef double OneDCType;
 
@@ -166,10 +161,11 @@ namespace Dune {
   //
   //**********************************************************************
 
-  /** \brief The 1D-Grid class
-   * \ingroup OneDGrid
-   *
-   * This implementation of the grid interface provides one-dimensional
+  /**
+     \brief [<em> provides \ref Dune::Grid </em>]
+     \brief onedimensional adaptive grid
+     \ingroup GridInterface
+     This implementation of the grid interface provides one-dimensional
      grids only.  No matter what the values of dim and dimworld may be,
      you'll always get a 1D-grid in a 1D-world.  Unlike SGrid, however,
      which can also be instantiated in 1D, the OneDGrid is nonuniform

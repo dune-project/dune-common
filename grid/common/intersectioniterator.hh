@@ -8,10 +8,16 @@
 namespace Dune
 {
 
-  //************************************************************************
-  // IntersectionIterator
-  //************************************************************************
+  /**
+     Mesh entities of codimension 0 ("elements") allow to visit all
+     neighbors, where a neighbor is an entity of codimension 0 which has
+     a common entity of codimension 1 with the entity.  These neighbors
+     are accessed via a IntersectionIterator. This allows the
+     implementation of non-matching meshes. The number of neigbors may be
+     different from the number of faces/edges of an element!
 
+     @ingroup GridInterface
+   */
   template<class GridImp, template<class> class IntersectionIteratorImp>
   class IntersectionIterator :
     public EntityPointer<GridImp, IntersectionIteratorImp<GridImp> >
@@ -123,15 +129,11 @@ namespace Dune
       EntityPointer<GridImp, IntersectionIteratorImp<GridImp> >(i) {};
   };
 
-  //************************************************************************
-  // IntersectionIteratorInterface
-  //************************************************************************
+  /**********************************************************************/
+  /**
+     @brief Interface Definition for IntersectionIteratorImp
 
-  /*! Mesh entities of codimension 0 ("elements") allow to visit all neighbors, where
-     a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the entity.
-     These neighbors are accessed via a IntersectionIterator. This allows the implementation of
-     non-matching meshes. The number of neigbors may be different from the number of faces/edges
-     of an element!
+     @ingroup GridDevel
    */
   template<class GridImp, template<class> class IntersectionIteratorImp>
   class IntersectionIteratorInterface
@@ -227,13 +229,12 @@ namespace Dune
     {return static_cast<const IntersectionIteratorImp<GridImp>&>(*this);}
   };
 
-  //**************************************************************************
-  //
-  // --IntersectionIteratorDefault
-  //
-  //! Default implementation for IntersectionIterator.
-  //
-  //**************************************************************************
+  //**********************************************************************
+  /**
+     @brief Default Implementations for IntersectionIteratorImp
+
+     @ingroup GridDevel
+   */
   template<class GridImp, template<class> class IntersectionIteratorImp>
   class IntersectionIteratorDefault
     : public IntersectionIteratorInterface <GridImp,IntersectionIteratorImp>

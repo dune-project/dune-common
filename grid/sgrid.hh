@@ -19,46 +19,6 @@
 
 namespace Dune {
 
-  /** @defgroup SGrid Structured Grid (SGrid)
-      \ingroup GridCommon
-
-          This module describes the pilot implementation of the Dune grid interface.
-          It implements the grid interface for simple structured meshes.
-
-          The following class diagram shows how the classes are related with
-          each other:
-
-          \image html sgridclasses.png "Class diagram for classes in the grid interface"
-          \image latex sgridclasses.eps "Class diagram for classes in the grid interface" width=\textwidth
-
-          Short description of the classes:
-
-          - SGeometry is a class template providing the geometric part of a grid entity, i.e. a general polyhedron
-          with a mapping from a reference polyhedron to the actual polyhedron.
-
-          - SLevelIterator is a class template which allows to iterate over all grid entities of a given
-          codimension and level.
-
-          - SEntity is a class template realizing the grid entities. Grid entities are the constituents
-          of a grid. Grid entities of codimension 0 and codimension dim are defines through specialization.
-          Entities can be used as template parameters to generic algorithms. Each entity must therefore
-          provide the nested classes Geometry, LevelIterator, HierarchicIterator and IntersectionIterator.
-          Geometry and LevelIterator are derived from the classes SELement and SLevelIterator.
-          Note that entities of codimension 0 and dim have an extended interface.
-
-          - SEntity::IntersectionIterator provides access to all entities of codimension 0 sharing an object of codimension 1
-          with the given entity of codimension 0. This interface covers nonmatching grids.
-
-          - SEntity::HierarchicIterator provides access to the sons of an entity of codimension 0.
-
-          - SGrid is conceptualized as a container of grid entities of various codimensions. Since grids
-          are used as template parameters to generic algorithms they must include the nested classes
-          LevelIterator and Entity which are derived from SLevelIterator and SEntity.
-
-          @{
-   */
-
-
   //************************************************************************
   /*! define name for floating point type used for coordinates in sgrid.
      You can change the type for coordinates by changing this single typedef.
@@ -825,7 +785,44 @@ namespace Dune {
   };
 
   //************************************************************************
-  /*!
+  /**
+     \brief [<em> provides \ref Dune::Grid </em>]
+     \brief A structured mesh in d dimensions consisting of "cubes".
+     \ingroup GridInterface
+
+          This module describes the pilot implementation of the Dune grid interface.
+          It implements the grid interface for simple structured meshes.
+
+          The following class diagram shows how the classes are related with
+          each other:
+
+          \image html sgridclasses.png "Class diagram for classes in the grid interface"
+          \image latex sgridclasses.eps "Class diagram for classes in the grid interface" width=\textwidth
+
+          Short description of the classes:
+
+          - SGeometry is a class template providing the geometric part of a grid entity, i.e. a general polyhedron
+          with a mapping from a reference polyhedron to the actual polyhedron.
+
+          - SLevelIterator is a class template which allows to iterate over all grid entities of a given
+          codimension and level.
+
+          - SEntity is a class template realizing the grid entities. Grid entities are the constituents
+          of a grid. Grid entities of codimension 0 and codimension dim are defines through specialization.
+          Entities can be used as template parameters to generic algorithms. Each entity must therefore
+          provide the nested classes Geometry, LevelIterator, HierarchicIterator and IntersectionIterator.
+          Geometry and LevelIterator are derived from the classes SELement and SLevelIterator.
+          Note that entities of codimension 0 and dim have an extended interface.
+
+          - SEntity::IntersectionIterator provides access to all entities of codimension 0 sharing an object of codimension 1
+          with the given entity of codimension 0. This interface covers nonmatching grids.
+
+          - SEntity::HierarchicIterator provides access to the sons of an entity of codimension 0.
+
+          - SGrid is conceptualized as a container of grid entities of various codimensions. Since grids
+          are used as template parameters to generic algorithms they must include the nested classes
+          LevelIterator and Entity which are derived from SLevelIterator and SEntity.
+
      A Grid is a container of grid entities. Given a dimension dim these entities have a
      codimension codim with 0 <= codim <= dim.
 
@@ -1047,8 +1044,6 @@ namespace Dune {
     mutable FixedArray <int,dim> zrefStatic;   // for subIndex of SEntity
     mutable FixedArray <int,dim> zentityStatic; // for subIndex of SEntity
   };
-
-  /** @} end documentation group */
 
   namespace Capabilities
   {

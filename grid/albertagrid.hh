@@ -54,36 +54,6 @@ namespace Dune {
 namespace Dune
 {
 
-  /** @defgroup AlbertaGrid AlbertaGrid
-     @ingroup GridCommon
-
-     This is one implementation of the grid interface using the
-     the finite elemente tool box ALBERTA ( ALBERTA was written
-     by Alfred Schmidt and Kunibert G. Siebert, see http://www.alberta-fem.de/).
-     ALBERTA provides simplex meshes in 1d, 2d, and 3d space dimensions.
-     Also the ALBERTA meshes can be dynamically adapted using
-     bisection algorithms.
-
-     The actual version of ALBERTA 1.2 can be
-     downloaded at http://www.alberta-fem.de/.
-     After installing the lib to a path of your choise (the PATH_TO_ALBERTA)
-     you can use %Dune with this package and you have only to deliver
-     the path with the --with-alberta option to %Dune.
-
-     For using %Dune with ALBERTA you must tell %Dune where to find ALBERTA,
-     which dimension to use and which dimension your world should have, i.e:
-
-     <tt> ./autogen.sh [OPTIONS]
-        --with-alberta=PATH_TO_ALBERTA and
-        --with-problem-dim=DIM --with-world-dim=DIMWORLD
-     </tt>
-
-     Now you must use the AlbertaGrid with DIM and DIMWORLD, otherwise
-     unpredictable results may occur.
-
-     @{
-   */
-
   // i.e. double or float
   typedef ALBERTA REAL albertCtype;
 
@@ -1101,9 +1071,38 @@ namespace Dune
   //
   //**********************************************************************
 
-  /** \brief The Albert %Grid class
-   *
-   * This is the implementation of the grid interface class.
+  /**
+     \class AlbertaGrid
+
+     \brief [<em> provides \ref Dune::Grid </em>]
+     \brief Provides the simplicial meshes of the finite element tool box
+     \brief ALBERTA (http://www.alberta-fem.de/)
+     \brief written by Kunibert Siebert and Alfred Schmidt.
+     \ingroup GridInterface
+
+     This is one implementation of the grid interface using the
+     the finite elemente tool box ALBERTA ( ALBERTA was written
+     by Alfred Schmidt and Kunibert G. Siebert, see http://www.alberta-fem.de/).
+     ALBERTA provides simplex meshes in 1d, 2d, and 3d space dimensions.
+     Also the ALBERTA meshes can be dynamically adapted using
+     bisection algorithms.
+
+     The actual version of ALBERTA 1.2 can be
+     downloaded at http://www.alberta-fem.de/.
+     After installing the lib to a path of your choise (the PATH_TO_ALBERTA)
+     you can use %Dune with this package and you have only to deliver
+     the path with the --with-alberta option to %Dune.
+
+     For using %Dune with ALBERTA you must tell %Dune where to find ALBERTA,
+     which dimension to use and which dimension your world should have, i.e:
+
+     <tt> ./autogen.sh [OPTIONS]
+        --with-alberta=PATH_TO_ALBERTA and
+        --with-problem-dim=DIM --with-world-dim=DIMWORLD
+     </tt>
+
+     Now you must use the AlbertaGrid with DIM and DIMWORLD, otherwise
+     unpredictable results may occur.
    */
   template <int dim, int dimworld>
   class AlbertaGrid
@@ -1652,8 +1651,6 @@ namespace Dune
     bool up2Date_;
   };
 
-
-  /** @} end documentation group */
   namespace Capabilities
   {
     template<int dim,int dimw>

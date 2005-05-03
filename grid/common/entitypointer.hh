@@ -13,14 +13,14 @@ namespace Dune
 {
 
   /** \brief Encapsulates the static part of an arbitrary Grid::Iterator
-      \ingroup GridCommon
+      \ingroup GridInterface
 
       The EntityPointer can be used like a static iterator. It point to a
       Dune::Entity and can be dereferenced, compared and knows the
       Entities level.
 
       You should be able to initialize and interpret every Dune::XxxIterator
-      as Dune::EntityPointer. There for we need an inheritance hierarchy of
+      as a Dune::EntityPointer. There for we need an inheritance hierarchy of
       the Iterator wrappers:
       \code
       class Dune::EntityPointer<...>;
@@ -54,7 +54,7 @@ namespace Dune
       ...
       \endcode
       Please note that dereference(...), equals(...) and level() are only
-      implemented in SEntityPointer, SLevelIterator inherits these methods.
+      implemented in SEntityPointer -- SLevelIterator inherits these methods.
       And it is not possible to specialize these, because EntityPointer always
       uses the base class.
 
@@ -106,59 +106,58 @@ namespace Dune
 
     typedef IteratorImp DerivedType;
 
-    /** @brief Dereferencing operator. */
+    /** Dereferencing operator. */
     Entity & operator*() const
     {
       return realIterator.dereference();
     }
 
-    /** @brief Pointer operator. */
+    /** Pointer operator. */
     Entity * operator->() const
     {
       return & realIterator.dereference();
     }
 
-    /** @brief ask for level of entity */
+    /** ask for level of entity */
     int level () const
     {
       return realIterator.level();
     }
 
-    /** @brief copy constructor from IteratorImp */
+    /**
+       Copy Constructor from an Iterator implementation.
+
+       You can supply LeafIterator LevelIterator HierarchicIterator
+       EntityPointer or IntersectionIterator.
+     */
     EntityPointer(const IteratorImp & i) :
       realIterator(i) {};
 
-    /** @brief indirect copy constructor from arbitrary IteratorImp */
+    /* indirect copy constructor from arbitrary IteratorImp */
     template<class ItImp>
     EntityPointer(const EntityPointer<GridImp,ItImp> & ep) :
       realIterator(ep.realIterator) {}
 
-    /** @brief cast to ,,base class'' */
+    /** cast to ,,base class'' */
     operator EntityPointer<GridImp,base>&()
     {
       return reinterpret_cast<EntityPointer<GridImp,base>&>(*this);
     };
 
-    /** @brief cast to const ,,base class'' */
+    /** cast to const ,,base class'' */
     operator const EntityPointer<GridImp,base>&() const
     {
       return reinterpret_cast<const EntityPointer<GridImp,base>&>(*this);
     };
 
-    /** @brief forward equality check to realIterator */
-    bool equals(const EntityPointer& rhs) const
-    {
-      return this->realIterator.equals(rhs.realIterator);
-    }
-
-    /** @brief Checks for equality.
+    /** Checks for equality.
      * only works EntityPointers on the same grid */
     bool operator==(const EntityPointer<GridImp,base>& rhs) const
     {
       return rhs.equals(*this);
     }
 
-    /** @brief Checks for inequality.
+    /** Checks for inequality.
      * only works EntityPointers on the same grid */
     bool operator!=(const EntityPointer<GridImp,base>& rhs) const
     {

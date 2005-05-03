@@ -18,6 +18,7 @@
  */
 
 /*! @defgroup VirtualRefinement
+   \ingroup Refinement
     <!--WWWWWWWWWWWWWWWWWWWW-->
 
    Please have a look on the non-virtual @link Refinement

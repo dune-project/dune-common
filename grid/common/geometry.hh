@@ -181,7 +181,7 @@ namespace Dune
     //! copy constructor from GeometryImp
     explicit Geometry(const GeometryImp<mydim,cdim,GridImp> & e) : realGeometry(e) {};
 
-    //protected:
+  protected:
     /** hide copy constructor */
     Geometry(const Geometry& rhs) : realGeometry(rhs.realGeometry) {};
     /** hide assignment operator */
@@ -233,7 +233,10 @@ namespace Dune
     /** hide copy constructor */
     Geometry(const Geometry& rhs) : realGeometry(rhs.realGeometry) {};
     /** hide assignment operator */
-    Geometry & operator = (const Geometry& rhs) { realGeometry = rhs.realGeometry; };
+    Geometry & operator = (const Geometry& rhs) {
+      realGeometry = rhs.realGeometry;
+      return *this;
+    };
   };
 
   //************************************************************************

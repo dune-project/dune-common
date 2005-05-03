@@ -7,16 +7,18 @@
 
 namespace Dune {
 
-  //************************************************************************
-  // H I E R A R C H I C I T E R A T O R
-  //************************************************************************
+  /**
+     @brief Enables iteration over all codim zero entities
+     in a subtree
 
-  /*! Mesh entities of codimension 0 ("elements") allow to visit all entities of
-     codimension 0 obtained through nested, hierarchic refinement of the entity.
-     Iteration over this set of entities is provided by the HierarchicIterator,
-     starting from a given entity.
-     This is redundant but important for memory efficient implementations of unstructured
-     hierarchically refined meshes.
+     Mesh entities of codimension 0 ("elements") allow to visit all
+     entities of codimension 0 obtained through nested, hierarchic
+     refinement of the entity.  Iteration over this set of entities is
+     provided by the HierarchicIterator, starting from a given entity.
+     This is redundant but important for memory efficient
+     implementations of unstructured hierarchically refined meshes.
+
+     @ingroup GridInterface
    */
   template<class GridImp, template<class> class HierarchicIteratorImp>
   class HierarchicIterator :
@@ -24,27 +26,40 @@ namespace Dune {
   {
   public:
     typedef typename GridImp::template codim<0>::Entity Entity;
-    /** @brief Preincrement operator. */
+    /**
+       @brief Preincrement operator.
+
+       @note Forwarded to LevelIteratorImp.increment()
+     */
     HierarchicIterator& operator++()
     {
       this->realIterator.increment();
       return *this;
     }
 
-    /** @brief Postincrement operator. */
+    /**
+       @brief Postincrement operator.
+
+       @note Forwarded to LevelIteratorImp.increment()
+     */
     HierarchicIterator& operator++(int)
     {
       this->realIterator.operator++();
       return *this;
     }
 
-    /** @brief copy constructor from HierarchicIteratorImp */
+    /**
+       @brief copy constructor from HierarchicIteratorImp
+     */
     HierarchicIterator (const HierarchicIteratorImp<const GridImp> & i) :
       EntityPointer<GridImp,HierarchicIteratorImp<GridImp> >(i) {};
   };
 
-  /*
-     HierarchicIteratorInterface
+  /**********************************************************************/
+  /**
+     @brief Interface Definition for HierarchicIteratorImp
+
+     @ingroup GridDevel
    */
   template<class GridImp, template<class> class HierarchicIteratorImp>
   class HierarchicIteratorInterface
@@ -52,36 +67,38 @@ namespace Dune {
   public:
     typedef typename GridImp::template codim<0>::Entity Entity;
 
-    //! increment
-    void increment()
-    {
-      asImp().increment();
-    }
+    /**
+       @brief coordinate type of this Grid
+     */
+    typedef typename GridImp::ctype ctype;
+
+    /**
+       @brief prefix increment
+
+       implement this in LevelIteratorImp to increment your EntityPointerImp
+     */
+    void increment() { return asImp().increment(); }
 
   private:
-    //!  Barton-Nackman trick
+    //  Barton-Nackman trick
     HierarchicIteratorImp<GridImp>& asImp ()
     {return static_cast<HierarchicIteratorImp<GridImp>&>(*this);}
     const HierarchicIteratorImp<GridImp>& asImp () const
     {return static_cast<const HierarchicIteratorImp<GridImp>&>(*this);}
   };
 
-  //***************************************************************************
-  //
-  // --HierarchicIteratorDefault
-  //
-  //! Default implementation of the HierarchicIterator.
-  //! This class provides functionality which uses the interface of
-  //! HierarchicIterator. For performance implementation the method of this
-  //! class should be overloaded if a fast implementation can be done.
-  //
-  //***************************************************************************
+  //**********************************************************************
+  /**
+     @brief Default Implementations for HierarchicIteratorImp
+
+     @ingroup GridDevel
+   */
   template<class GridImp, template<class> class HierarchicIteratorImp>
   class HierarchicIteratorDefault
     : public HierarchicIteratorInterface <GridImp,HierarchicIteratorImp>
   {
   private:
-    //!  Barton-Nackman trick
+    // Barton-Nackman trick
     HierarchicIteratorImp<GridImp>& asImp ()
     {return static_cast<HierarchicIteratorImp<GridImp>&>(*this);}
     const HierarchicIteratorImp<GridImp>& asImp () const

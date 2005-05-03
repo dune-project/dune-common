@@ -6,6 +6,13 @@
 namespace Dune
 {
 
+  /**********************************************************************/
+  /**
+     @brief Enables iteration over all leaf entities
+     of a codimension zero of a grid.
+
+     @ingroup GridInterface
+   */
   template<class GridImp, template<class> class LeafIteratorImp>
   class LeafIterator :
     public EntityPointer<GridImp, LeafIteratorImp<GridImp> >
@@ -32,8 +39,11 @@ namespace Dune
       EntityPointer<GridImp, LeafIteratorImp<GridImp> >(i) {};
   };
 
-  /*
-     LeafIteratorInterface
+  /**********************************************************************/
+  /**
+     @brief Interface Definition for LeafIteratorImp
+
+     @ingroup GridDevel
    */
   template<class GridImp, template<class> class LeafIteratorImp>
   class LeafIteratorInterface
@@ -55,6 +65,12 @@ namespace Dune
     {return static_cast<const LeafIteratorImp<GridImp>&>(*this);}
   };
 
+  //**********************************************************************
+  /**
+     @brief Default Implementations for LevelIteratorImp
+
+     @ingroup GridDevel
+   */
   template<class GridImp, template<class> class LeafIteratorImp>
   class LeafIteratorDefault
     : public LeafIteratorInterface <GridImp,LeafIteratorImp>
@@ -67,6 +83,12 @@ namespace Dune
     {return static_cast<const LeafIteratorImp<GridImp>&>(*this);}
   };
 
+  //**********************************************************************
+  /**
+     @brief Generic Implementation of a LeafIteratorImp
+
+     @ingroup GridDevel
+   */
   template<class GridImp>
   class GenericLeafIterator :
     public GridImp::template codim<0>::EntityPointer::base,

@@ -11,38 +11,35 @@
 
 namespace Dune {
 
-  /** @defgroup GridCommon Grid Interface
+  /**
+     @defgroup Grid
 
-     The Dune Grid module defines a general interface to a hierarchical finite element mesh.
-     The interface is independent of dimension and element type (GeometryType). Various implementations
-     of this interface exits:
+     The Dune Grid module defines a general interface to a hierarchical
+     finite element mesh.  The interface is independent of dimension and
+     element type (GeometryType).
+     @{@}
+   */
 
-     - Structured Grid (SGrid) : A structured mesh in d dimensions consisting of "cubes". The number
-     of elements per dimension is variable.
+  /**
+     @defgroup GridInterface Grid Application API
+     @ingroup Grid
+     \brief Interfaces needed when working with a \ref Grid "Dune::Grid"
+     @{@}
+   */
 
-     - Albert Grid (AlbertGrid) : Provides the simplicial meshes of the finite element tool box ALBERT
-     written by Kunibert Siebert and Alfred Schmidt.
+  /**
+     @defgroup GridDevel Grid Developer API
+     @ingroup Grid
+     \brief Interfaces needed to implement a new \ref Grid "Dune::Grid"
+     @{@}
+   */
 
-     - UG Grid (UGGrid) : Provides the meshes of the finite element toolbox UG.
-
-     - Yet Another Structured Parallel Grid (YaspGrid) : Provides a distributed structured mesh.
-
-     This Module contains only the description of compounds that are common to all implementations
-     of the grid interface.
-
-     For a detailed description of the interface itself please see the documentation
-     of the "Structured Grid Module". Since Dune uses the Engine concept there is no abstract definition
-     of the interface. As with STL containers, all implementations must implement the
-     same classes with exactly the same members to be used in generic algorithms.
-
-     \sa AlbertGrid UGGrid SPGrid SGrid YaspGrid
-
-
+  /**
+     \ingroup GridInterface
      @{
    */
 
-  //************************************************************************
-  /*!
+  /**
       Enum that declares identifiers for different geometry types. This
       list can be extended in the future. Not all meshes need to implement
       all geometry types.
@@ -264,24 +261,12 @@ namespace Dune {
   template<class GridImp, template<class> class LeafIteratorImp> class LeafIterator;
   template<class GridImp> class GenericLeafIterator;
 
+  /** @} */
+
   //************************************************************************
   // G R I D
   //************************************************************************
 
-  /*!
-     A Grid is a container of grid entities. Given a dimension dim these entities have a
-     codimension codim with 0 <= codim <= dim.
-
-     The Grid is assumed to be hierachically refined and nested. It enables iteration over
-     entities of a given level and codimension.
-
-     The grid can be non-matching.
-
-     All information is provided to allocate degrees of freedom in appropriate vector
-     data structures (which are not part of this module).
-
-     Template class Grid defines a "base class" for all grids.
-   */
   template< int dim, int dimworld, class ct, class GridImp>
   class Grid {
   public:
@@ -418,9 +403,40 @@ namespace Dune {
   //************************************************************************
   //
 
-  /** \brief The Default Methods of Grid
-   *
-   * \todo Please doc me!
+  /**
+     \ingroup GridInterface
+     @{
+
+     A Grid is a container of grid entities. Given a dimension dim
+     these entities have a codimension codim with 0 <= codim <= dim.
+
+     The Grid is assumed to be hierachically refined and nested. It
+     enables iteration over entities of a given level and codimension.
+
+     The grid can be non-matching.
+
+     All information is provided to allocate degrees of freedom in
+     appropriate vector data structures (which are not part of this
+     module).
+
+     Template class Grid defines a "base class" for all grids.
+
+     \par Classes implementing the Grid Interface
+     \li Dune::AlbertaGrid <br>
+         <i> Provides the simplicial meshes of the finite element tool box
+             ALBERTA (http://www.alberta-fem.de/)
+             written by Kunibert Siebert and Alfred Schmidt.</i>
+     \li Dune::ALU3dGrid <br>
+         <i> 3D grid with support for hexahedrons and tetrahedrons.</i>
+     \li Dune::OneDGrid <br>
+         <i> Onedimensional adaptive grid</i>
+     \li Dune::SGrid <br>
+         <i> A structured mesh in d dimensions consisting of "cubes".</i>
+     \li Dune::UGGrid <br>
+         <i> Provides the meshes of the finite element toolbox UG.
+             (http://cox.iwr.uni-heidelberg.de/~ug).</i>
+     \li Dune::YaspGrid (Yet Another Structured Parallel Grid) <br>
+         <i> Provides a distributed structured cube mesh.</i>
    */
   template<int dim,
       int dimworld,

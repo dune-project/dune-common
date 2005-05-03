@@ -29,8 +29,47 @@
 
 namespace Dune
 {
-  /** @defgroup UGGrid UGGrid
-      \ingroup GridCommon
+  /** \brief The type used by UG to store coordinates */
+  typedef double UGCtype;
+
+
+  // forward declarations
+  template<int dim, int dimworld>          class UGGrid;
+  template<int codim, int dim,
+      class GridImp>                  class UGGridEntity;
+  template<int codim,
+      PartitionIteratorType pitype,
+      class GridImp>                  class UGGridLevelIterator;
+  template<int mydim, int coorddim,
+      class GridImp>                  class UGGridGeometry;
+  template<class GridImp>                 class UGGridBoundaryEntity;
+  template<class GridImp>                 class UGGridHierarchicIterator;
+  template<class GridImp>                 class UGGridIntersectionIterator;
+
+}  // namespace Dune
+
+#include "uggrid/uggridgeometry.hh"
+#include "uggrid/uggridentity.hh"
+#include "uggrid/uggridentitypointer.hh"
+#include "uggrid/uggridboundent.hh"
+#include "uggrid/ugintersectionit.hh"
+#include "uggrid/uggridleveliterator.hh"
+#include "uggrid/uggridhieriterator.hh"
+#include "uggrid/ughierarchicindexset.hh"
+
+namespace Dune {
+
+  //**********************************************************************
+  //
+  // --UGGrid
+  //
+  //**********************************************************************
+
+  /**
+     \brief [<em> provides \ref Dune::Grid </em>]
+     \brief Provides the meshes of the finite element toolbox UG.
+     \brief (http://cox.iwr.uni-heidelberg.de/~ug).
+     \ingroup GridInterface
 
      This is the implementation of the grid interface
      using the UG grid management system.  UG provides conforming grids
@@ -84,57 +123,6 @@ namespace Dune
 
      Please send any questions, suggestions, or bug reports to
      sander@math.fu-berlin.de
-
-   */
-
-  /** \brief The type used by UG to store coordinates */
-  typedef double UGCtype;
-
-
-  // forward declarations
-  template<int dim, int dimworld>          class UGGrid;
-  template<int codim, int dim,
-      class GridImp>                  class UGGridEntity;
-  template<int codim,
-      PartitionIteratorType pitype,
-      class GridImp>                  class UGGridLevelIterator;
-  template<int mydim, int coorddim,
-      class GridImp>                  class UGGridGeometry;
-  template<class GridImp>                 class UGGridBoundaryEntity;
-  template<class GridImp>                 class UGGridHierarchicIterator;
-  template<class GridImp>                 class UGGridIntersectionIterator;
-
-}  // namespace Dune
-
-#include "uggrid/uggridgeometry.hh"
-#include "uggrid/uggridentity.hh"
-#include "uggrid/uggridentitypointer.hh"
-#include "uggrid/uggridboundent.hh"
-#include "uggrid/ugintersectionit.hh"
-#include "uggrid/uggridleveliterator.hh"
-#include "uggrid/uggridhieriterator.hh"
-#include "uggrid/ughierarchicindexset.hh"
-
-namespace Dune {
-
-  //**********************************************************************
-  //
-  // --UGGrid
-  //
-  //**********************************************************************
-
-  /** \brief The UG %Grid class
-   * \ingroup UGGrid
-   *
-     This is the implementation of the grid interface
-     using the UG grid management system.  UG provides conforming grids
-     in two and three space dimensions.  The grids can be mixed, i.e.
-     2d grids can contain triangles and quadrilaterals and 3d grid can
-     contain tetrahedra and hexahedra and also pyramids and prisms.
-     The grid refinement rules are very flexible.  Local adaptive red/green
-     refinement is the default, but a special method in the UGGrid class
-     allows you to directly access a number of anisotropic refinements rules.
-     Last but not least, the UG grid manager is completely parallelized.
    */
   template <int dim, int dimworld>
   class UGGrid : public GridDefault  <dim, dimworld,UGCtype, UGGrid<dim,dimworld> >

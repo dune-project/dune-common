@@ -8,6 +8,13 @@
 namespace Dune
 {
 
+  /**********************************************************************/
+  /**
+     @brief Enables iteration over all entities
+     of a given codimension and level of a grid.
+
+     @ingroup GridInterface
+   */
   template<int codim, PartitionIteratorType pitype, class GridImp,
       template<int,PartitionIteratorType,class> class LevelIteratorImp>
   class LevelIterator :
@@ -15,31 +22,41 @@ namespace Dune
   {
   public:
     typedef typename GridImp::template codim<codim>::Entity Entity;
-    /** @brief Preincrement operator. */
+    /**
+       @brief Preincrement operator.
+
+       @note Forwarded to LevelIteratorImp.increment()
+     */
     LevelIterator& operator++()
     {
       this->realIterator.increment();
       return *this;
     }
 
-    /** @brief Postincrement operator. */
+    /**
+       @brief Postincrement operator.
+
+       @note Forwarded to LevelIteratorImp.increment()
+     */
     LevelIterator& operator++(int)
     {
       this->realIterator.operator++();
       return *this;
     }
 
-    /** @brief copy constructor from LevelIteratorImp */
+    /**
+       @brief copy constructor from LevelIteratorImp
+     */
     LevelIterator(const LevelIteratorImp<codim,pitype,const GridImp> & i) :
       EntityPointer<GridImp, LevelIteratorImp<codim,pitype,GridImp> >(i) {};
 
   };
 
-  //************************************************************************
-  // L E V E L I T E R A T O R
-  //************************************************************************
+  /**********************************************************************/
+  /**
+     @brief Interface Definition for LevelIteratorImp
 
-  /** \brief Enables iteration over all entities of a given codimension and level of a grid.
+     @ingroup GridDevel
    */
   template<int codim, PartitionIteratorType pitype, class GridImp,
       template<int,PartitionIteratorType,class> class LevelIteratorImp>
@@ -48,14 +65,20 @@ namespace Dune
   public:
     typedef typename GridImp::template codim<codim>::Entity Entity;
 
-    //! define type used for coordinates in grid module
+    /**
+       @brief coordinate type of this Grid
+     */
     typedef typename GridImp::ctype ctype;
 
-    //! prefix increment
+    /**
+       @brief prefix increment
+
+       implement this in LevelIteratorImp to increment your EntityPointerImp
+     */
     void increment() { return asImp().increment(); }
 
   private:
-    //!  Barton-Nackman trick
+    //  Barton-Nackman trick
     LevelIteratorImp<codim,pitype,GridImp>& asImp ()
     {return static_cast<LevelIteratorImp<codim,pitype,GridImp>&>(*this);}
     const LevelIteratorImp<codim,pitype,GridImp>& asImp () const
@@ -63,19 +86,18 @@ namespace Dune
   };
 
   //**********************************************************************
-  //
-  //  --LevelIteratorDefault
-  //
-  //! Default implementation of LevelIterator.
-  //
-  //**********************************************************************
+  /**
+     @brief Default Implementations for LevelIteratorImp
+
+     @ingroup GridDevel
+   */
   template<int codim, PartitionIteratorType pitype, class GridImp,
       template<int,PartitionIteratorType,class> class LevelIteratorImp>
   class LevelIteratorDefault
     : public LevelIteratorInterface <codim,pitype,GridImp,LevelIteratorImp>
   {
   private:
-    //!  Barton-Nackman trick
+    //  Barton-Nackman trick
     LevelIteratorImp<codim,pitype,GridImp>& asImp () {
       return static_cast<LevelIteratorImp<codim,pitype,GridImp>&>(*this);
     }

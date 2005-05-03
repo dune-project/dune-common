@@ -8,9 +8,58 @@
 namespace Dune
 {
 
-  /** \brief The wrapper class for entities of arbitrary codimension
-   * \ingroup GridCommon
-   *
+  /**
+     @brief Encapsulates the implmentation of an Entity in a Grid.
+
+     \dot
+        digraph entity {
+           rankdir=LR;
+           node [ shape=record, fontname=Helvetica, fontsize=10, height=0.25 ];
+           Entity [ label="Dune::Entity\<codim,dim,GridImp,EntityImp\>"
+                    style=filled, bgcolor=lightgrey
+                    shape=record, URL="\ref Dune::Entity"];
+           Element [ label="Dune::Entity\<0,dim,GridImp,EntityImp\>"
+                     URL="\ref Dune::Entity<0,dim,GridImp,EntityImp>"];
+           Vertex [ label="Dune::Entity\<dim,dim,GridImp,EntityImp\>"
+                    URL="\ref Dune::Entity<dim,dim,GridImp,EntityImp>"];
+           Entity -> Element [ dirType="back", arrowType="open",
+                               style="dashed"
+                               fontname=Helvetica, fontsize=8,
+                               label="codim=0" ];
+           Entity -> Vertex [ dirType="back", arrowType="open", style="dashed"
+                               fontname=Helvetica, fontsize=8,
+                               label="codim=dim" ];
+        }
+     \enddot
+
+     @note @{
+     There a three versions of Dune::Entity. Two of them are
+     template specializations:
+     \li Dune::Entity<codim,dim,GridImp,EntityImp> (general version)
+     \li Dune::Entity<0,dim,GridImp,EntityImp> (Elements [codim=0])
+     \li Dune::Entity<dim,dim,GridImp,EntityImp> (Vertices [codim=dim])
+     These template specializations also show differences in the interface.
+     \par
+     An Entity is only accessible via an Iterator
+     \li Dune::EntityPointer
+     \li Dune::LevelIterator
+     \li Dune::LeafIterator
+     \li Dune::HierarchicIterator
+     \li Dune::IntersectionIterator
+     @}
+
+     A Grid is a container of grid entities. An entity is parametrized
+     by the codimension.
+     An entity of codimension c in dimension d is a d-c dimensional object.
+
+     Entities of codimension 0 allow to visit all neighbors, where a
+     neighbor is an entity of codimension 0 which has a common entity of
+     codimension 1 with the entity.  These neighbors are accessed via an
+     iterator. This allows the implementation of non-matching
+     meshes. The number of neigbors may be different from the number of
+     faces/edges of an element!
+
+     \ingroup GridInterface
    */
   template<int codim, int dim, class GridImp, template<int,int,class> class EntityImp>
   class Entity {
@@ -20,17 +69,27 @@ namespace Dune
     EntityImp<codim,dim,GridImp> realEntity;
   public:
 
-    //! The corresponding geometry type
+    /** The corresponding geometry type */
     typedef typename GridImp::template codim<codim>::Geometry Geometry;
-    //! know your own codimension
-    enum { codimension=codim };
-    //! know the grid dimension
-    enum { dimension=dim };
-    //! know dimension of the entity
-    enum { mydimension=dim-codim };
-    //! know the dimension of world
-    enum { dimensionworld=dimworld };
-    //! define type used for coordinates in grid module
+    enum {
+      /** know your own codimension */
+      codimension=codim
+    };
+    enum {
+      /** know the grid dimension */
+      dimension=dim
+    };
+    enum {
+      /** know dimension of the entity */
+      mydimension=dim-codim
+    };
+    enum {
+      /** know the dimension of world */
+      dimensionworld=dimworld
+    };
+    /**
+       @brief coordinate type of the Grid
+     */
     typedef ct ctype;
 
     //! The level of this entity
@@ -41,8 +100,10 @@ namespace Dune
     int globalIndex () const { return realEntity.globalIndex(); }
     //! Return partition type attribute
     PartitionType partitionType () const { return realEntity.partitionType(); }
-    /** \brief Id of the boundary which is associated with
-        the entity, returns 0 for inner entities, arbitrary int otherwise */
+    /**
+       \brief Id of the boundary which is associated with
+       the entity, returns 0 for inner entities, arbitrary int otherwise
+     */
     int boundaryId () const { return realEntity.boundaryId(); }
     //! Geometry of this entity
     const Geometry& geometry () const { return realEntity.geometry(); }
@@ -52,6 +113,15 @@ namespace Dune
 
     typedef typename RemoveConst<GridImp>::Type mutableGridImp;
 
+    /*
+       give the Grid access to realEntiy
+
+       We can't make GridImp friend because GridImp is only a typename
+       and not necessarily a class. Friend declarations are only valid
+       for functions and classes. So we must make Grid::getRealEntity()
+       friend but this is tricky because getRealEntity needs a codim
+       template parameter.
+     */
 #ifdef __ICC
     // for icc
     friend EntityImp<codim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<codim>::Entity& e );
@@ -71,8 +141,33 @@ namespace Dune
     Entity & operator = (const Entity& rhs) { realEntity = rhs.realEntity; };
   };
 
-  /** \brief The wrapper class for entities of codimension zero, i.e. elements
-   * \ingroup GridCommon
+  /**
+     @brief Template specialization of Dune::Entity for Elements [codim==0]
+
+     @see Dune::Entity (general version) for the full documentation
+
+     \dot
+        digraph entity {
+           rankdir=LR;
+           node [ shape=record, fontname=Helvetica, fontsize=10, height=0.25 ];
+           Entity [ label="Dune::Entity\<codim,dim,GridImp,EntityImp\>"
+                    shape=record, URL="\ref Dune::Entity"];
+           Element [ label="Dune::Entity\<0,dim,GridImp,EntityImp\>"
+                    style=filled, bgcolor=lightgrey
+                     URL="\ref Dune::Entity<0,dim,GridImp,EntityImp>"];
+           Vertex [ label="Dune::Entity\<dim,dim,GridImp,EntityImp\>"
+                    URL="\ref Dune::Entity<dim,dim,GridImp,EntityImp>"];
+           Entity -> Element [ dirType="back", arrowType="open",
+                               style="dashed"
+                               fontname=Helvetica, fontsize=8,
+                               label="codim=0" ];
+           Entity -> Vertex [ dirType="back", arrowType="open", style="dashed"
+                               fontname=Helvetica, fontsize=8,
+                               label="codim=dim" ];
+        }
+     \enddot
+
+     \ingroup GridInterface
    */
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
   class Entity <0,dim,GridImp,EntityImp>
@@ -82,6 +177,9 @@ namespace Dune
 
     typedef typename RemoveConst<GridImp>::Type mutableGridImp;
 
+    /*
+       see the comment in Entity<codim,dim,GridImp,EntityImp>
+     */
 #ifdef __ICC
     // for icc
     friend EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<0>::Entity& e );
@@ -142,17 +240,20 @@ namespace Dune
     //! geometry of this entity
     const Geometry& geometry () const { return realEntity.geometry(); }
 
-    /** \brief Number of subentities with codimension <tt>cc</tt>.
+    /**
+       \brief Number of subentities with codimension <tt>cc</tt>.
      */
     template<int cc> int count () const { return realEntity.count<cc>(); }
 
-    /** \brief Access to subentity <tt>i</tt> of codimension <tt>cc</tt>.
+    /**
+       \brief Access to subentity <tt>i</tt> of codimension <tt>cc</tt>.
      */
     template<int cc> typename codim<cc>::EntityPointer entity (int i) const
     {
       return realEntity.entity<cc>(i);
     }
-    /** \brief Intra-level access to intersections with neighboring elements.
+    /**
+       \brief Intra-level access to intersections with neighboring elements.
 
        A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in common with this entity. Access to neighbors
@@ -164,24 +265,32 @@ namespace Dune
       return realEntity.ibegin();
     }
 
-    //! Reference to an IntersectionIterator  past the last intersection
+    /**
+       \brief Reference to an IntersectionIterator  past the last intersection
+     */
     IntersectionIterator iend () const
     {
       return realEntity.iend();
     }
-    //! Inter-level access to father entity on the next-coarser grid. Assumes that meshes are nested.
+    /**
+       \brief Inter-level access to father entity on the next-coarser grid.
+       Assumes that meshes are nested.
+     */
     EntityPointer father () const
     {
       return realEntity.father();
     }
 
-    //! Returns true if the entity is a leaf in the grid hierarchy
+    /**
+       \brief Returns true if the entity is a leaf in the grid hierarchy
+     */
     bool isLeaf ()
     {
       return realEntity.isLeaf();
     }
 
-    /** \brief Location of this element relative to the reference element of the father.
+    /**
+       \brief Location of this element relative to the reference element of the father.
 
        This is sufficient to interpolate all dofs in conforming case.
        Nonconforming may require access to neighbors of father and
@@ -196,7 +305,8 @@ namespace Dune
       return realEntity.geometryInFather();
     }
 
-    /** \brief Inter-level access to son elements on higher levels<=maxlevel.
+    /**
+       \brief Inter-level access to son elements on higher levels<=maxlevel.
 
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
@@ -207,40 +317,39 @@ namespace Dune
       return realEntity.hbegin(maxlevel);
     }
 
-    //! Returns iterator to one past the last son
+    /**
+       \brief Returns iterator to one past the last son
+     */
     HierarchicIterator hend (int maxlevel) const
     {
       return realEntity.hend(maxlevel);
     }
 
-    /** \brief The index of the i-th subentity of codimension <tt>cc</tt>
-     *
-     * This does the same as <code>entity<cc>(i).index()</code>, but it is
-     * usually a lot faster.
+    /**
+       \brief The index of the i-th subentity of codimension <tt>cc</tt>
+
+       This does the same as <code>entity<cc>(i).index()</code>, but it is
+       usually a lot faster.
      */
     template <int cc> int subIndex ( int i ) const
     {
       return realEntity.subIndex<cc>(i);
     }
 
-    /** \brief The boundaryId of the i-th subentity of codimension <tt>cc</tt>
-     *
-     * This does the same as <code>entity<cc>(i).boundaryId()</code>, but it is
-     * usually a lot faster.
+    /**
+       \brief The boundaryId of the i-th subentity of codimension <tt>cc</tt>
+
+       This does the same as <code>entity<cc>(i).boundaryId()</code>, but it is
+       usually a lot faster.
      */
     template <int cc> int subBoundaryId  ( int i ) const
     {
       return realEntity.subBoundaryId<cc>(i);
     }
 
-    //***************************************************************
-    //  Interface for Adaptation
-    //***************************************************************
-    /* \brief Return whether entity could be coarsened (COARSEN) or was refined
-       (REFINED) or nothing happened (NONE)
-
-       @return The default implementation returns NONE for grid with no
-       adaptation
+    /**
+       \brief Return whether entity could be coarsened or was refined
+       or nothing happened
      */
     AdaptationState state () const { return realEntity.state(); }
 
@@ -257,8 +366,33 @@ namespace Dune
     };
   };
 
-  /** \brief The wrapper class for entities representing vertices
-   * \ingroup GridCommon
+  /**
+     \brief Template specialization of Dune::Entity for Vertices [codim==dim]
+
+     @see Dune::Entity (general version) for the full documentation
+
+     \dot
+        digraph entity {
+           rankdir=LR;
+           node [ shape=record, fontname=Helvetica, fontsize=10, height=0.25 ];
+           Entity [ label="Dune::Entity\<codim,dim,GridImp,EntityImp\>"
+                    shape=record, URL="\ref Dune::Entity"];
+           Element [ label="Dune::Entity\<0,dim,GridImp,EntityImp\>"
+                     URL="\ref Dune::Entity<0,dim,GridImp,EntityImp>"];
+           Vertex [ label="Dune::Entity\<dim,dim,GridImp,EntityImp\>"
+                    style=filled, bgcolor=lightgrey
+                    URL="\ref Dune::Entity<dim,dim,GridImp,EntityImp>"];
+           Entity -> Element [ dirType="back", arrowType="open",
+                               style="dashed"
+                               fontname=Helvetica, fontsize=8,
+                               label="codim=0" ];
+           Entity -> Vertex [ dirType="back", arrowType="open", style="dashed"
+                               fontname=Helvetica, fontsize=8,
+                               label="codim=dim" ];
+        }
+     \enddot
+
+     \ingroup GridInterface
    */
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
   class Entity <dim,dim,GridImp,EntityImp>
@@ -268,6 +402,9 @@ namespace Dune
 
     typedef typename RemoveConst<GridImp>::Type mutableGridImp;
 
+    /*
+       see the comment in Entity<codim,dim,GridImp,EntityImp>
+     */
 #ifdef __ICC
     // for icc
     friend EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<dim>::Entity& e );
@@ -330,17 +467,14 @@ namespace Dune
     Entity & operator = (const Entity& rhs) { realEntity = rhs.realEntity; };
   };
 
-  //********************************************************************
-  //
-  // --EntityInterface
-  //
-  //********************************************************************
+  /********************************************************************/
+  /**
+     @brief Interface Definition for EntityImp
 
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
+     @note this is the general version, but there are specializations
+     for codim=0 and codim=dim
 
-     Here: the general template
+     @ingroup GridDevel
    */
   template<int codim, int dim, class GridImp, template<int,int,class> class EntityImp>
   class EntityInterface {
@@ -386,18 +520,14 @@ namespace Dune
   };
 
 
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
+  //********************************************************************
+  /**
+     @brief Interface Definition for EntityImp (Vertices [codim=dim])
 
-     Entities of codimension 0 ("elements") are defined through template specialization. Note
-     that this specialization has an extended interface compared to the general case
+     @note
+     this specialization has an extended interface compared to the general case
 
-     Entities of codimension 0  allow to visit all neighbors, where
-     a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the entity.
-     These neighbors are accessed via an iterator. This allows the implementation of
-     non-matching meshes. The number of neigbors may be different from the number of faces/edges
-     of an element!
+     @ingroup GridDevel
    */
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
   class EntityInterface <0,dim,GridImp,EntityImp>
@@ -512,12 +642,14 @@ namespace Dune
     const EntityImp<0,dim,GridImp>& asImp () const { return static_cast<const EntityImp<0,dim,GridImp>&>(*this); }
   };
 
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
+  //********************************************************************
+  /**
+     @brief Interface Definition for EntityImp (Vertices [codim=dim])
 
-     Entities of codimension=dimension ("vertices") are defined through template specialization. Note
-     that this specialization has an extended interface compared to the general case
+     @note
+     this specialization has a reduced interface compared to the general case
+
+     @ingroup GridDevel
    */
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
   class EntityInterface <dim,dim,GridImp,EntityImp>
@@ -571,14 +703,17 @@ namespace Dune
   };
 
   //********************************************************************
-  //
-  // --EntityDefault
-  //
-  //! EntityDefault provides default implementations for Entity which uses
-  //! the implemented interface which has to be done by the user.
-  //
-  //********************************************************************
+  /**
+     @brief Default Implementations for EntityImp
 
+     EntityDefault provides default implementations for Entity which uses
+     the implemented interface which has to be done by the user.
+
+     @note this is the general version, but there are specializations
+     for codim=0 and codim=dim
+
+     @ingroup GridDevel
+   */
   template<int codim, int dim, class GridImp, template<int,int,class> class EntityImp>
   class EntityDefault
     : public EntityInterface <codim,dim,GridImp,EntityImp>
@@ -591,6 +726,18 @@ namespace Dune
     const EntityImp<codim,dim,GridImp>& asImp () const { return static_cast<const EntityImp<codim,dim,GridImp>&>(*this); }
   }; // end EntityDefault
 
+  //********************************************************************
+  /**
+     @brief Default Implementations for EntityImp (Elements [codim=0])
+
+     EntityDefault provides default implementations for Entity which uses
+     the implemented interface which has to be done by the user.
+
+     @note
+     this specialization has an extended interface compared to the general case
+
+     @ingroup GridDevel
+   */
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
   class EntityDefault <0,dim,GridImp,EntityImp> : public EntityInterface <0,dim,GridImp,EntityImp>
   {
@@ -626,18 +773,30 @@ namespace Dune
     AdaptationState state () const { return NONE; }
 
   private:
-    //!  Barton-Nackman trick
+    //  Barton-Nackman trick
     EntityImp<0,dim,GridImp>& asImp () { return static_cast<EntityImp<0,dim,GridImp>&>(*this); }
     const EntityImp<0,dim,GridImp>& asImp () const { return static_cast<const EntityImp<0,dim,GridImp>&>(*this); }
   };
 
+  //********************************************************************
+  /**
+     @brief Default Implementations for EntityImp (Vertice [codim=dim])
+
+     EntityDefault provides default implementations for Entity which uses
+     the implemented interface which has to be done by the user.
+
+     @note
+     this specialization has a reduced interface compared to the general case
+
+     @ingroup GridDevel
+   */
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
   class EntityDefault <dim,dim,GridImp,EntityImp> : public EntityInterface <dim,dim,GridImp,EntityImp>
   {
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   private:
-    //!  Barton-Nackman trick
+    //  Barton-Nackman trick
     EntityImp<dim,dim,GridImp>& asImp () {return static_cast<EntityImp<dim,dim,GridImp>&>(*this);}
     const EntityImp<dim,dim,GridImp>& asImp () const { return static_cast<const EntityImp<dim,dim,GridImp>&>(*this); }
   };
