@@ -12,7 +12,7 @@ sllisttest
 tuplestest
 settest
 fmatrixtest
-poolallocatertest
+poolallocatortest
 *.gcda
 *.gcno
 gmon.out
