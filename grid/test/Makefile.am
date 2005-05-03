@@ -77,6 +77,9 @@ test_ug_LDADD = $(UG_LDFLAGS) $(UG_LIBS) $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
 
 ## distribution tarball
 
+testdir = $(includedir)/dune/grid/test/
+test_HEADERS = gridcheck.cc
+
 GRIDFILES = alberta-testgrid-2-2.al alberta-testgrid-3-3.al \
   ug-testgrid-2.am ug-testgrid-3.am
 # gridcheck not used explicitly, we should still ship it :)
