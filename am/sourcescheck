@@ -1,11 +1,13 @@
 # -*- Makefile -*-
 # $Id$
 
+sourcescheck_LIST = $(SOURCES) $(HEADERS) \
+	$(sourcescheck_NOSOURCES) $(dist_noinst_DATA)
+
 sourcescheck: sourcescheck-recursive
 
 sourcescheck-am:
-	@(for f in $(SOURCES) $(HEADERS) $(sourcescheck_NOSOURCES); \
-       do echo $$f; done) | \
+	@(for f in $(sourcescheck_LIST); do echo $$f; done) | \
 	 grep [hc][hc]$$ | sort | uniq > header_CHECK.install
 	@ls | \
 	 grep [hc][hc]$$ | sort | uniq > header_CHECK.present
