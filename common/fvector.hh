@@ -939,6 +939,9 @@ namespace Dune {
     //! export size
     enum {size = 1};
 
+    //! export size
+    enum {dimension = 1};
+
     //===== construction
 
     /** \brief Default constructor */
