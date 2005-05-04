@@ -164,6 +164,11 @@ namespace Dune
       return ! rhs.equals(*this);
     }
 
+    /** @brief forward equality check to realIterator */
+    bool equals(const EntityPointer& rhs) const
+    {
+      return this->realIterator.equals(rhs.realIterator);
+    }
   };
 
   //************************************************************************
