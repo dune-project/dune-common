@@ -58,7 +58,11 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   for (; vertex!=endvertex; ++vertex) {
 
+#ifndef UGGRID_WITH_INDEX_SETS
     int index = vertex->index();
+#else
+    int index = grid.levelIndexSet().index(*vertex);
+#endif
     const FieldVector<double, 3>& coords = vertex->geometry()[0];
 
     ((float*)geo_node_data->dataPtr())[3*index+0] = coords[0];
@@ -90,8 +94,11 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     for (i=0; eIt!=eEndIt; ++eIt, i++) {
 
       for (int j=0; j<4; j++)
+#ifndef UGGRID_WITH_INDEX_SETS
         dPtr[i*4+j] = eIt->template subIndex<3>(j)+1;
-
+#else
+        dPtr[i*4+j] = grid.levelIndexSet().template subIndex<3>(*eIt,j)+1;
+#endif
     }
 
   } else {
@@ -103,15 +110,22 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
         const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
         for (int j=0; j<8; j++)
+#ifndef UGGRID_WITH_INDEX_SETS
           dPtr[8*i + j] = eIt->template subIndex<3>(hexaReordering[j])+1;
-
+#else
+          dPtr[8*i + j] = grid.levelIndexSet().template subIndex<3>(*eIt, hexaReordering[j])+1;
+#endif
         break;
       }
 
       case prism : {
         const int prismReordering[8] = {0, 1, 1, 2, 3, 4, 4, 5};
         for (int j=0; j<8; j++)
+#ifndef UGGRID_WITH_INDEX_SETS
           dPtr[8*i + j] = eIt->template subIndex<3>(prismReordering[j])+1;
+#else
+          dPtr[8*i + j] = grid.levelIndexSet().template subIndex<3>(*eIt, prismReordering[j])+1;
+#endif
 
         break;
       }
@@ -119,7 +133,11 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
       case pyramid : {
         const int pyramidReordering[8] = {0, 1, 2, 3, 4, 4, 4, 4};
         for (int j=0; j<8; j++)
+#ifndef UGGRID_WITH_INDEX_SETS
           dPtr[8*i + j] = eIt->template subIndex<3>(pyramidReordering[j])+1;
+#else
+          dPtr[8*i + j] = grid.levelIndexSet().template subIndex<3>(*eIt, pyramidReordering[j])+1;
+#endif
 
         break;
       }
@@ -128,7 +146,11 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
         const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
         for (int j=0; j<8; j++)
+#ifndef UGGRID_WITH_INDEX_SETS
           dPtr[8*i + j] = eIt->template subIndex<3>(tetraReordering[j])+1;
+#else
+          dPtr[8*i + j] = grid.levelIndexSet().template subIndex<3>(*eIt, tetraReordering[j])+1;
+#endif
 
         break;
       }
@@ -219,7 +241,11 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   for (; vertex!=endvertex; ++vertex)
   {
+#ifndef UGGRID_WITH_INDEX_SETS
     int index = vertex->index();
+#else
+    int index = grid.levelIndexSet().index(*vertex);
+#endif
     const FieldVector<double, DIM>& coords = vertex->geometry()[0];
 
     ((float*)geo_node_data->dataPtr())[2*index+0] = coords[0];
@@ -252,7 +278,11 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     default :
 
       for (int j=0; j<element2->geometry().corners(); j++)
+#ifndef UGGRID_WITH_INDEX_SETS
         dPtr[i*maxVerticesPerElement+j] = element2->template subIndex<DIM>(j)+1;
+#else
+        dPtr[i*maxVerticesPerElement+j] = grid.levelIndexSet().template subIndex<DIM>(*element2, j)+1;
+#endif
 
       // If the element has less than 8 vertices use the last value
       // to fill up the remaining slots
@@ -379,7 +409,7 @@ void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const GridType& grid,
 
   AmiraMesh::Field* nodeField;
 
-  if (containsOnlyTetrahedra) {
+  if (containsOnlyTetrahedra || GridType::dimension==2) {
     nodeField = new AmiraMesh::Field("sol", ncomp, McPrimType::mc_double,
                                      AmiraMesh::t_linear, nodeData);
   } else {
