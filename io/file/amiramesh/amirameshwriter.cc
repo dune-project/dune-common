@@ -67,26 +67,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   }
 
-#if 0
-  // handle materials
-  HxParamBundle* materials = new HxParamBundle("Materials");
-
-  for (k=0; k<=maxSubDom; k++) {
-
-    char buffer[100];
-    sprintf(buffer, "Material%d", k);
-    HxParamBundle* newMaterial = new HxParamBundle(buffer);
-
-    HxParameter* newId = new HxParameter("Id", k);
-    newMaterial->insert(newId);
-
-    materials->insert(newMaterial);
-
-  }
-
-  am_geometry.parameters.insert(materials);
-#endif
-
   /* write element section to file */
   AmiraMesh::Location* element_loc = NULL;
 
@@ -246,30 +226,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     ((float*)geo_node_data->dataPtr())[2*index+1] = coords[1];
 
   }
-
-#if 0
-  // handle materials
-  HxParamBundle* materials = new HxParamBundle("Materials");
-
-  for (k=0; k<=maxSubDom; k++) {
-
-    char buffer[100];
-    sprintf(buffer, "Material%d", k);
-    HxParamBundle* newMaterial = new HxParamBundle(buffer);
-
-    HxParameter* newId = new HxParameter("Id", k);
-    newMaterial->insert(newId);
-
-    materials->insert(newMaterial);
-
-  }
-
-  am_geometry.parameters.insert(materials);
-
-  ncomp = 0;
-  for(i=0; i<NVECTYPES; i++)
-    ncomp = std::max(ncomp,VD_NCMPS_IN_TYPE(sol, i));
-#endif
 
   /* write element section to geo - file */
   AmiraMesh::Location* element_loc = NULL;
