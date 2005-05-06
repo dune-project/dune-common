@@ -79,12 +79,6 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
     ca[i] = cPos[i] - aPos[i];
   }
 
-  // #define V3_VECTOR_PRODUCT(A,B,C) {(C)[0] = (A)[1]*(B)[2] - (A)[2]*(B)[1];\
-  //                                      (C)[1] = (A)[2]*(B)[0] - (A)[0]*(B)[2];\
-  //                                      (C)[2] = (A)[0]*(B)[1] - (A)[1]*(B)[0];}
-
-  //     V3_VECTOR_PRODUCT(ba, ca, outerNormal_);
-  // #undef V3_VECTOR_PRODUCT
   outerNormal_[0] = ba[1]*ca[2] - ba[2]*ca[1];
   outerNormal_[1] = ba[2]*ca[0] - ba[0]*ca[2];
   outerNormal_[2] = ba[0]*ca[1] - ba[1]*ca[0];
