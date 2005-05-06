@@ -74,6 +74,11 @@ namespace Dune {
     int getIndex() const {
       return UG_NS<dim>::index(target_);
     }
+
+    int index () const {
+      DUNE_THROW(NotImplemented, "You have compiled UGGrid with index sets and thus"
+                 << " you cannot call UGGridEntity::index()");
+    }
 #else
     //! index is unique and consecutive per level and codim
     //! used for access to degrees of freedom
@@ -98,7 +103,6 @@ namespace Dune {
     template<int cc> int subIndex (int i) const;
 
     //! geometry of this entity
-    //const UGGridGeometry<dim-codim,dim,GridImp>& geometry () const;
     const Geometry& geometry () const;
 
     UGGridLevelIterator<0,All_Partition,GridImp> ownersFather() const {
@@ -194,6 +198,11 @@ namespace Dune {
     int getIndex() const {
       return UG_NS<dim>::index(target_);
     }
+
+    int index () const {
+      DUNE_THROW(NotImplemented, "You have compiled UGGrid with index sets and thus"
+                 << " you cannot call UGGridEntity::index()");
+    }
 #else
     //! Index is unique and consecutive per level and codim
     int index () const;
@@ -239,7 +248,6 @@ namespace Dune {
      *  are numbered 0 ... count<cc>()-1
      */
     template<int cc>
-    //GridLevelIterator<cc,All_Partition,GridImp> entity (int i) const;
     typename GridImp::template codim<cc>::EntityPointer entity (int i) const;
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
