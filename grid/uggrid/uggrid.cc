@@ -401,17 +401,14 @@ void Dune::UGGrid < dim, dimworld >::makeNewUGMultigrid()
 }
 
 template < int dim, int dimworld >
-// bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
-//                                          typename Traits::template codim<0>::EntityPointer & e )
 bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
-                                          typename Traits::template codim<0>::Entity& e )
+                                          typename Traits::template codim<0>::EntityPointer & e )
 {
   // No refinement requested
   if (refCount==0)
     return false;
 
-  //typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
-  typename TargetType<0,dim>::T* target = getRealEntity<0>(e).target_;
+  typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
 
   // Check whether element can be marked for refinement
   if (!EstimateHere(target))
