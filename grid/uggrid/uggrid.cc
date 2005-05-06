@@ -924,5 +924,13 @@ void Dune::UGGrid < dim, dimworld >::setLocalIndices()
       UG_NS<dim>::index(getRealEntity<dim>(*vIt).target_) = id++;
 
   }
+
+#else
+
+  if (levelIndexSet_) {
+    delete(levelIndexSet_);
+    levelIndexSet_ = NULL;
+  }
+
 #endif
 }
