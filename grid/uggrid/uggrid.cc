@@ -127,6 +127,10 @@ namespace Dune {
 template<> int Dune::UGGrid < 2, 2 >::numOfUGGrids = 0;
 template<> int Dune::UGGrid < 3, 3 >::numOfUGGrids = 0;
 
+template<> bool Dune::UGGrid < 2, 2 >::useExistingDefaultsFile = false;
+template<> bool Dune::UGGrid < 3, 3 >::useExistingDefaultsFile = false;
+
+
 template < int dim, int dimworld >
 inline Dune::UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL),
                                                   refinementType_(COPY),
