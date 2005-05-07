@@ -78,13 +78,14 @@ namespace Dune {
     }
 
     //! write index set to xdr file
-    bool write_xdr(const char * filename , int timestep)
+    bool write_xdr(const std::basic_string<char> filename , int timestep)
     {
       FILE  *file;
       XDR xdrs;
       const char *path = NULL;
 
-      const char * fn  = genFilename(path,filename, timestep);
+      std::basic_string<char> fnstr  = genFilename(path,filename, timestep);
+      const char * fn = fnstr.c_str();
       file = fopen(fn, "wb");
       if (!file)
       {
@@ -103,13 +104,14 @@ namespace Dune {
     }
 
     //! read index set to xdr file
-    bool read_xdr(const char * filename , int timestep)
+    bool read_xdr(const std::basic_string<char> filename , int timestep)
     {
       FILE   *file;
       XDR xdrs;
       const char *path = NULL;
 
-      const char * fn  = genFilename(path,filename, timestep);
+      std::basic_string<char> fnstr = genFilename(path,filename, timestep);
+      const char * fn  = fnstr.c_str();
       std::cout << "Reading <" << fn << "> \n";
       file = fopen(fn, "rb");
       if(!file)
