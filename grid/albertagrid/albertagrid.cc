@@ -3658,7 +3658,8 @@ namespace Dune
   }
 
   template < int dim, int dimworld >  template <FileFormatType ftype>
-  inline bool AlbertaGrid < dim, dimworld >::readGrid (const char * filename, albertCtype &time )
+  inline bool AlbertaGrid < dim, dimworld >::
+  readGrid (const std::basic_string<char> filename, albertCtype &time )
   {
     switch(ftype)
     {
@@ -3673,16 +3674,13 @@ namespace Dune
 
   template < int dim, int dimworld >
   inline bool AlbertaGrid < dim, dimworld >::
-  writeGridXdr (const char * filename, albertCtype time ) const
+  writeGridXdr (const std::basic_string<char> filename, albertCtype time ) const
   {
-    char * elnumfile = 0;
-    char * ownerfile = 0;
-    if(filename)
+    std::ostringstream ownerfile;
+    if(filename.size() > 0)
     {
-      elnumfile = new char [strlen(filename) + 10];
-      sprintf(elnumfile,"%s_num",filename);
-      ownerfile = new char [strlen(filename) + 6];
-      sprintf(ownerfile,"%s_own",filename);
+      ownerfile << filename;
+      ownerfile << "_own";
     }
     else
       DUNE_THROW(AlbertaIOError, "no filename given in writeGridXdr ");
@@ -3690,72 +3688,70 @@ namespace Dune
     // strore element numbering to file
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
     {
-      sprintf(elnumfile,"%s_num_c%d",filename,i);
-      ALBERTA write_dof_int_vec_xdr(dofvecs_.elNumbers[i],elnumfile);
+      std::ostringstream elnumfile;
+      elnumfile << filename;
+      elnumfile << "_num_c" << i;
+      ALBERTA write_dof_int_vec_xdr(dofvecs_.elNumbers[i],elnumfile.str().c_str());
     }
-    if(elnumfile) delete [] elnumfile;
 
     if(myRank() >= 0)
     {
       int val = -1;
       int entry = ALBERTA AlbertHelp::saveMyProcNum(dofvecs_.owner,myRank(),val);
 
-      assert(ownerfile);
-      sprintf(ownerfile,"%s_own",filename);
-      ALBERTA write_dof_int_vec_xdr(dofvecs_.owner,ownerfile);
+      ALBERTA write_dof_int_vec_xdr(dofvecs_.owner,ownerfile.str().c_str());
 
       // set old value of owner vec
       dofvecs_.owner->vec[entry] = val;
     }
-    if(ownerfile) delete [] ownerfile;
 
     // use write_mesh_xdr, but works not correctly
-    return static_cast<bool> (ALBERTA write_mesh_xdr (mesh_ , filename, time) );
+    return static_cast<bool> (ALBERTA write_mesh_xdr (mesh_ , filename.c_str(), time) );
   }
 
   template < int dim, int dimworld >
-  inline bool AlbertaGrid < dim, dimworld >::readGridXdr (const char * filename, albertCtype & time )
+  inline bool AlbertaGrid < dim, dimworld >::
+  readGridXdr (const std::basic_string<char> filename, albertCtype & time )
   {
     // use read_mesh_xdr, but works not correctly
-    mesh_ = (ALBERTA read_mesh_xdr (filename, &time , ALBERTA AlbertHelp::initLeafData ,
+    mesh_ = (ALBERTA read_mesh_xdr (filename.c_str(), &time , ALBERTA AlbertHelp::initLeafData ,
                                     ALBERTA AlbertHelp::initBoundary) );
     if (mesh_ == 0)
       DUNE_THROW(AlbertaIOError, "could not open grid file " << filename);
 
     // read element numbering from file
-    char * elnumfile = 0;
-    char * ownerfile = 0;
-    if(filename)
+    std::ostringstream ownerfile;
+    if(filename.size() > 0)
     {
-      elnumfile = new char [strlen(filename) + 10];
-      ownerfile = new char [strlen(filename) + 6];
-      sprintf(ownerfile,"%s_own",filename);
+      ownerfile << filename;
+      ownerfile << "_own";
     }
     else
       return false;
 
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
     {
-      sprintf(elnumfile,"%s_num_c%d",filename,i);
-      std::cout << elnumfile << " filename " << "\n";
-      dofvecs_.elNumbers[i] = ALBERTA read_dof_int_vec_xdr(elnumfile, mesh_ , 0 );
+      std::ostringstream elnumfile;
+      elnumfile << filename;
+      elnumfile << "_num_c" << i;
+      std::cout << elnumfile.str() << " filename " << "\n";
+      dofvecs_.elNumbers[i] = ALBERTA read_dof_int_vec_xdr(elnumfile.str().c_str(), mesh_ , 0 );
     }
-    if(elnumfile) delete [] elnumfile;
 
     // if owner file exists, read it
     {
       dofvecs_.owner = 0;
       FILE * file=0;
+      const char * ownfile = ownerfile.str().c_str();
 
-      if(ownerfile) file = fopen(ownerfile,"r");
+      file = fopen(ownfile,"r");
       if(file)
       {
         fclose(file);
-        dofvecs_.owner = ALBERTA read_dof_int_vec_xdr(ownerfile, mesh_ , 0 );
+        dofvecs_.owner = ALBERTA read_dof_int_vec_xdr(ownfile, mesh_ , 0 );
         const_cast<int &> (myRank_) = ALBERTA AlbertHelp::restoreMyProcNum(dofvecs_.owner);
       }
     }
-    if(ownerfile) delete [] ownerfile;
 
     // make the rest of the dofvecs
     ALBERTA AlbertHelp::makeTheRest(&dofvecs_);
@@ -3774,13 +3770,13 @@ namespace Dune
 
   template < int dim, int dimworld >
   inline bool AlbertaGrid < dim, dimworld >::readGridAscii
-    (const char * filename, albertCtype & time )
+    (const std::basic_string<char> filename, albertCtype & time )
   {
     removeMesh(); // delete all objects
 
     mesh_ = ALBERTA get_mesh("AlbertaGrid", ALBERTA AlbertHelp::initDofAdmin,
                              ALBERTA AlbertHelp::initLeafData);
-    ALBERTA read_macro(mesh_, filename, ALBERTA AlbertHelp::initBoundary);
+    ALBERTA read_macro(mesh_, filename.c_str(), ALBERTA AlbertHelp::initBoundary);
 
     if( !readParameter(filename,"Time",time) )
       time = 0.0;

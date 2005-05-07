@@ -1262,11 +1262,11 @@ namespace Dune
     //**********************************************************
     /** \brief write Grid to file in specified FileFormatType */
     template <FileFormatType ftype>
-    bool writeGrid( const char * filename, albertCtype time ) const;
+    bool writeGrid( const std::basic_string<char> filename, albertCtype time ) const;
 
     /** \brief read Grid from file filename and store time of mesh in time */
     template <FileFormatType ftype>
-    bool readGrid( const char * filename, albertCtype & time );
+    bool readGrid( const std::basic_string<char> filename, albertCtype & time );
 
     //! returns size of mesh include all levels
     //! max Index of grid entities with given codim
@@ -1353,13 +1353,13 @@ namespace Dune
     void calcExtras();
 
     // write ALBERTA mesh file
-    bool writeGridXdr  ( const char * filename, albertCtype time ) const;
+    bool writeGridXdr  ( const std::basic_string<char> filename, albertCtype time ) const;
 
     //! reads ALBERTA mesh file
-    bool readGridXdr   ( const char * filename, albertCtype & time );
+    bool readGridXdr   ( const std::basic_string<char> filename, albertCtype & time );
 
     //! reads ALBERTA macro file
-    bool readGridAscii ( const char * filename, albertCtype & time );
+    bool readGridAscii ( const std::basic_string<char> filename, albertCtype & time );
 
     // delete mesh and all vectors
     void removeMesh();
