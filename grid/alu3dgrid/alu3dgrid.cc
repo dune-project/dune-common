@@ -443,7 +443,7 @@ namespace Dune {
   }
 
   template <int dim, int dimworld>
-  template <FileFormatType ftype>
+  template <GrapeIOFileFormatType ftype>
   inline bool ALU3dGrid<dim,dimworld>::
   writeGrid( const std::basic_string<char> filename, alu3d_ctype time ) const
   {
@@ -474,7 +474,7 @@ namespace Dune {
   }
 
   template <int dim, int dimworld>
-  template <FileFormatType ftype>
+  template <GrapeIOFileFormatType ftype>
   inline bool ALU3dGrid<dim,dimworld>::
   readGrid( const std::basic_string<char> filename, alu3d_ctype & time )
   {
