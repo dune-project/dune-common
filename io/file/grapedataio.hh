@@ -88,7 +88,7 @@ namespace Dune {
     const FileFormatType ftype, const GrapeIOStringType fnprefix ,
     double time, int timestep, int precision )
   {
-    const char *path = 0;
+    const char *path = "";
     std::fstream file (fnprefix.c_str(),std::ios::out);
     file << "Grid: "   << transformToGridName(grid.type()) << std::endl;
     file << "Format: " << ftype <<  std::endl;
@@ -134,7 +134,7 @@ namespace Dune {
     int precision = 6;
     readParameter(fnprefix,"Precision",precision);
 
-    const char *path = 0;
+    const char *path = "";
     GrapeIOStringType fn = genFilename(path,fnprefix,timestep,precision);
     printf("Read file: fnprefix = `%s' \n",fn);
 
@@ -181,7 +181,7 @@ namespace Dune {
       file.close();
     }
 
-    const char * path = 0;
+    const char * path = "";
     GrapeIOStringType fn = genFilename(path,filename,timestep,precision);
 
     if(ftype == xdr)
@@ -233,7 +233,7 @@ namespace Dune {
       abort();
     }
 
-    const char * path = 0;
+    const char * path = "";
     GrapeIOStringType fn = genFilename(path,filename,timestep,precision);
 
     if(ftype == xdr)
