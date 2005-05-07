@@ -89,7 +89,7 @@ namespace Dune {
     double time, int timestep, int precision )
   {
     const char *path = 0;
-    std::fstream file (fnprefix,std::ios::out);
+    std::fstream file (fnprefix.c_str(),std::ios::out);
     file << "Grid: "   << transformToGridName(grid.type()) << std::endl;
     file << "Format: " << ftype <<  std::endl;
     file << "Precision: " << precision << std::endl;
@@ -166,7 +166,7 @@ namespace Dune {
       enum { n = DiscreteFunctionSpaceType::DimDomain };
       enum { m = DiscreteFunctionSpaceType::DimRange };
 
-      std::fstream file( filename , std::ios::out );
+      std::fstream file( filename.c_str() , std::ios::out );
       GrapeIOStringType d = typeIdentifier<DomainFieldType>();
       GrapeIOStringType r = typeIdentifier<RangeFieldType>();
 
