@@ -11,10 +11,10 @@ namespace Dune {
   //! if verbose is true then an output of what was read is given
   //! the token '%' stands for comment
   template <class T>
-  bool readParameter (const char * filename,
+  bool readParameter (const std::basic_string<char> filename,
                       const char keywd[], T & data, bool verbose = true)
   {
-    std::fstream file (filename,std::ios::in);
+    std::fstream file (filename.c_str(),std::ios::in);
     if( !file )
     {
       std::cerr << "ERROR: cannot open file '" << filename << "' in " <<  __FILE__<< " line: " << __LINE__ << std::endl;
