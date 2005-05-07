@@ -240,7 +240,7 @@ namespace Dune
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
   write_pgm( const std::basic_string<char> fn )
   {
-    std::ofstream out( fn );
+    std::ofstream out( fn.c_str() );
 
     enum { dim = GridType::dimension };
 
