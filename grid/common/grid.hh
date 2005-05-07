@@ -50,14 +50,6 @@ namespace Dune {
                      iso_triangle=8, iso_quadrilateral=9,
                      simplex=64, hypercube=65, unknown=127};
 
-  /*!
-     Specify the format to store grid and vector data
-   */
-  enum FileFormatType { ascii , //!< store data in a human readable form
-                        xdr ,   //!< store data in SUN's library routines
-                                //!< for external data representation (xdr)
-                        pgm };  //!< store data in portable graymap file format (pgm)
-
   enum AdaptationState {
     NONE ,   //!< notin' to do and notin' was done
     COARSEN, //!< entity could be coarsend in adaptation step
