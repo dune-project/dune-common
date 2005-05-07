@@ -944,7 +944,7 @@ namespace Dune {
   inline ALU3dGridIntersectionIterator<GridImp> ::
   ALU3dGridIntersectionIterator(const GridImp & grid,
                                 ALU3DSPACE HElementType * el, int wLevel,bool end)
-    : ALU3dGridEntityPointer<0,GridImp> ( grid , el, wLevel )
+    : ALU3dGridEntityPointer<0,GridImp> ( grid , wLevel, end )
   {
     if( !end )
     {
@@ -1006,9 +1006,9 @@ namespace Dune {
   template<class GridImp>
   inline ALU3dGridIntersectionIterator<GridImp> ::
   ALU3dGridIntersectionIterator(const ALU3dGridIntersectionIterator<GridImp> & org)
-    : ALU3dGridEntityPointer<0,GridImp> (org.grid_ ,org.item_ ,org.walkLevel_ )
+    : ALU3dGridEntityPointer<0,GridImp> (org.grid_ , org.walkLevel_ , (org.item_) ? false : true )
   {
-    if(org.entity_) // else its a end iterator
+    if(org.item_) // else its a end iterator
     {
       walkLevel_      = org.walkLevel_;
       item_           = org.item_;
