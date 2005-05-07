@@ -69,7 +69,7 @@ inline ALUMemoryProvider<Object>::~ALUMemoryProvider()
 }
 
 template <class Object>
-inline void ALUMemoryProvider<Object>::freeObjectEntity(ObjectType * obj)
+inline void ALUMemoryProvider<Object>::freeObjectEntity(Object * obj)
 {
   objStack_.push( obj );
 }
