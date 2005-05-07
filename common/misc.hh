@@ -44,8 +44,11 @@ namespace Dune {
   {
     std::ostringstream name;
 
-    name << path;
-    name << "/";
+    if(path.size() > 0)
+    {
+      name << path;
+      name << "/";
+    }
     name << fn;
 
     char cp[256];
