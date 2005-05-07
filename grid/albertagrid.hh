@@ -28,6 +28,9 @@
 // stack for index management
 #include <dune/grid/common/indexstack.hh>
 
+// grape data io
+#include <dune/io/file/grapedataio.hh>
+
 // IndexManager defined in indexstack.hh
 // 10000 is the size of the finite stack used by IndexStack
 typedef Dune::IndexStack<int,10000> IndexManagerType;
@@ -1260,12 +1263,12 @@ namespace Dune
     //**********************************************************
     // End of Interface Methods
     //**********************************************************
-    /** \brief write Grid to file in specified FileFormatType */
-    template <FileFormatType ftype>
+    /** \brief write Grid to file in specified GrapeIOFileFormatType */
+    template <GrapeIOFileFormatType ftype>
     bool writeGrid( const std::basic_string<char> filename, albertCtype time ) const;
 
     /** \brief read Grid from file filename and store time of mesh in time */
-    template <FileFormatType ftype>
+    template <GrapeIOFileFormatType ftype>
     bool readGrid( const std::basic_string<char> filename, albertCtype & time );
 
     //! returns size of mesh include all levels
@@ -1670,7 +1673,6 @@ namespace Dune
 
 #include "albertagrid/agmemory.hh"
 #include <dune/io/file/asciiparser.hh>
-#include <dune/io/file/grapedataio.hh>
 #include "albertagrid/albertagrid.cc"
 
 #endif
