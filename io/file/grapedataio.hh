@@ -147,7 +147,7 @@ namespace Dune {
 
     const char *path = "";
     GrapeIOStringType fn = genFilename(path,fnprefix,timestep,precision);
-    printf("Read file: fnprefix = `%s' \n",fn);
+    std::cout << "Read file: fnprefix = `" << fn << "' \n";
 
     switch (ftype)
     {
