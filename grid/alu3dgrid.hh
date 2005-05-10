@@ -1,10 +1,10 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_ALU3DGRID_HH__
-#define __DUNE_ALU3DGRID_HH__
+#ifndef DUNE_ALU3DGRID_HH
+#define DUNE_ALU3DGRID_HH
 
 #include <vector>
-#include <assert.h>
+#include <cassert>
 
 #include <dune/common/misc.hh>
 #include <dune/common/fmatrix.hh>
@@ -13,6 +13,7 @@
 #include "common/defaultindexsets.hh"
 
 #include "alu3dgrid/alu3dinclude.hh"
+#include "alu3dgrid/alu3dmappings.hh"
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/stdstreams.hh>
@@ -27,7 +28,71 @@ namespace Dune
   //#undef DUNE_THROW
   //#define DUNE_THROW(e,m) assert(false);
 
-  enum ALU3dGridElementType { tetra = 4, hexa = 7 };
+  enum ALU3dGridElementType { tetra = 4, hexa = 7, mixed, error };
+
+  //ALU3dGridElementType convertGeometryType2ALU3dGridElementType(GeometryType);
+  //GeometryType convertALU3dGridElementType2GeometryType(ALU3dGridElementType);
+
+  template <ALU3dGridElementType elType>
+  struct ALU3dImplTraits;
+
+  template <>
+  struct ALU3dImplTraits<tetra> {
+    typedef ALU3DSPACE GEOFace3Type GEOFaceType;
+    typedef ALU3DSPACE GEOEdgeT GEOEdgeType;
+    typedef ALU3DSPACE GEOVertexT GEOVertexType;
+    typedef ALU3DSPACE IMPLTetraElementType IMPLElementType;
+    typedef ALU3DSPACE GEOTetraElementType GEOElementType;
+    typedef ALU3DSPACE HasFace3Type HasFaceType;
+    typedef ALU3DSPACE BNDFace3Type BNDFaceType;
+    typedef ALU3DSPACE ImplBndFace3Type ImplBndFaceType;
+    typedef ALU3DSPACE BNDFace3Type PLLBndFaceType;
+
+    // refinement and coarsening enum for tetrahedons
+    enum { refine_element_t =
+             ALU3DSPACE GitterType::Geometric::TetraRule::iso8 };
+    enum { coarse_element_t =
+             ALU3DSPACE GitterType::Geometric::TetraRule::crs  };
+
+    typedef std::pair<GEOFaceType*, int> NeighbourFaceType;
+    typedef std::pair<HasFaceType*, int> NeighbourPairType;
+    typedef std::pair<PLLBndFaceType*, int> GhostPairType;
+
+    static int alu2duneFace(int index) { return index; }
+    static int dune2aluFace(int index) { return index; }
+  };
+
+  template <>
+  struct ALU3dImplTraits<hexa> {
+    typedef ALU3DSPACE GEOFace4Type GEOFaceType;
+    typedef ALU3DSPACE GEOEdgeT GEOEdgeType;
+    typedef ALU3DSPACE GEOVertexT GEOVertexType;
+    typedef ALU3DSPACE IMPLHexaElementType IMPLElementType;
+    typedef ALU3DSPACE GEOHexaElementType GEOElementType;
+    typedef ALU3DSPACE HasFace4Type HasFaceType;
+    typedef ALU3DSPACE BNDFace4Type BNDFaceType;
+    typedef ALU3DSPACE ImplBndFace4Type ImplBndFaceType;
+    typedef ALU3DSPACE BNDFace4Type PLLBndFaceType;
+
+    // refinement and coarsening enum for hexahedrons
+    enum { refine_element_t = ALU3DSPACE GitterType::Geometric::HexaRule::iso8 };
+    enum { coarse_element_t = ALU3DSPACE GitterType::Geometric::HexaRule::crs  };
+
+    typedef std::pair<GEOFaceType*, int> NeighbourFaceType;
+    typedef std::pair<HasFaceType*, int> NeighbourPairType;
+    typedef std::pair<PLLBndFaceType*, int> GhostPairType;
+
+    //inline static int alu2duneVertex(int);
+    //inline static int dune2aluVertex(int);
+    static int alu2duneFace(int index) { return alu2duneFace_[index]; }
+    static int dune2aluFace(int index) { return dune2aluFace_[index]; }
+    //inline static int alu2duneQuad(int);
+    //inline static int dune2aluQuad(int);
+
+  private:
+    static const int alu2duneFace_[6];
+    static const int dune2aluFace_[6];
+  };
 
   // i.e. double or float
   typedef double alu3d_ctype;
@@ -41,10 +106,12 @@ namespace Dune
   template<class GridImp>            class ALU3dGridHierarchicIterator;
   template<class GridImp>            class ALU3dGridIntersectionIterator;
   template<class GridImp>            class ALU3dGridLeafIterator;
-  template<int dim, int dimworld>            class ALU3dGrid;
+  template<int dim, int dimworld,
+      ALU3dGridElementType elType> class ALU3dGrid;
 
   // the hierarhic index set
-  template<int dim, int dimworld> class ALU3dGridHierarchicIndexSet;
+  template<int dim, int dimworld,
+      ALU3dGridElementType elType> class ALU3dGridHierarchicIndexSet;
 
   // singleton holding reference elements
   template<int dim,class GridImp> struct ALU3dGridReferenceGeometry;
@@ -75,6 +142,9 @@ namespace Dune
                                         GridImp, ALU3dGridGeometry>
   {
     typedef Geometry<mydim, coorddim, GridImp, ALU3dGridGeometry> GeometryType;
+    typedef ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
+
+    friend class ALU3dGridIntersectionIterator<GridImp>;
   public:
     ALU3dGridMakeableGeometry(bool makeRefelem=false) :
       GeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>(makeRefelem)) {}
@@ -90,8 +160,13 @@ namespace Dune
       return this->realGeometry.buildGeom(item);
     }
 
+    bool buildGeom(const ALU3DSPACE HFaceType& item,
+                   int twist, int faceIdx) {
+      return this->realGeometry.buildGeom(item, twist, faceIdx);
+    }
+
     // call buildGhost of realGeometry
-    bool buildGhost(const ALU3DSPACE PLLBndFaceType & ghost)
+    bool buildGhost(const PLLBndFaceType & ghost)
     {
       return this->realGeometry.buildGhost(ghost);
     }
@@ -111,12 +186,39 @@ namespace Dune
   };
 
   //! ALU3dGridGeometry
-  template<int mydim, int cdim, class GridImp>
-  class ALU3dGridGeometry :
-    public GeometryDefault <mydim,cdim,GridImp,ALU3dGridGeometry>
+  // calculates m^p at compile-time
+  template <int m, int p>
+  struct POWER_M_P
   {
+    // power stores m^p
+    enum { power = (m * POWER_M_P<m,p-1>::power ) };
+  };
+
+  // end of recursion via specialization
+  template <int m>
+  struct POWER_M_P< m , 0>
+  {
+    // m^0 = 1
+    enum { power = 1 };
+  };
+
+  //! Empty definition, needs to be specialized for element type
+  template <int mydim, int cdim, class GridImp>
+  class ALU3dGridGeometry :
+    public GeometryDefault <mydim,cdim,GridImp,ALU3dGridGeometry> {};
+
+  template <int mydim, int cdim>
+  class ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, tetra> > :
+    public GeometryDefault<mydim, cdim, const ALU3dGrid<3, 3, tetra>,
+        ALU3dGridGeometry> {
+    typedef const ALU3dGrid<3, 3, tetra> GridImp;
     friend class ALU3dGridBoundaryEntity<GridImp>;
 
+    typedef ALU3dImplTraits<tetra>::IMPLElementType IMPLElementType;
+    typedef ALU3dImplTraits<tetra>::PLLBndFaceType PLLBndFaceType;
+    typedef ALU3dImplTraits<tetra>::GEOFaceType GEOFaceType;
+    typedef ALU3dImplTraits<tetra>::GEOEdgeType GEOEdgeType;
+    typedef ALU3dImplTraits<tetra>::GEOVertexType GEOVertexType;
     //! know dimension of barycentric coordinates
     enum { dimbary=mydim+1};
   public:
@@ -160,13 +262,13 @@ namespace Dune
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry for out of given ALU3dGridElement
-    bool buildGeom(const ALU3DSPACE IMPLElementType & item);
-    bool buildGeom(const ALU3DSPACE HFaceType & item);
+    bool buildGeom(const IMPLElementType & item);
+    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int faceIdx);
     bool buildGeom(const ALU3DSPACE HEdgeType & item);
     bool buildGeom(const ALU3DSPACE VertexType & item);
 
     //! build ghost out of internal boundary segment
-    bool buildGhost(const ALU3DSPACE PLLBndFaceType & ghost);
+    bool buildGhost(const PLLBndFaceType & ghost);
 
     //! print internal data
     //! no interface method
@@ -183,7 +285,7 @@ namespace Dune
     void calcElMatrix () const;
 
     //! the vertex coordinates
-    mutable FieldMatrix<alu3d_ctype,mydim+1,cdim> coord_;
+    mutable FieldMatrix<alu3d_ctype, POWER_M_P<2,mydim>::power, cdim> coord_;
 
     //! is true if Jinv_, A and detDF_ is calced
     mutable bool builtinverse_;
@@ -202,6 +304,105 @@ namespace Dune
     mutable FieldVector<alu3d_ctype,cdim> tmpU_; //! temporary memory
   };
 
+  template <int mydim, int cdim>
+  class ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> > :
+    public GeometryDefault<mydim, cdim, const ALU3dGrid<3, 3, hexa>,
+        ALU3dGridGeometry> {
+    typedef const ALU3dGrid<3, 3, hexa> GridImp;
+    friend class ALU3dGridBoundaryEntity<GridImp>;
+    friend class ALU3dGridIntersectionIterator<GridImp>;
+
+    typedef ALU3dImplTraits<hexa>::IMPLElementType IMPLElementType;
+    typedef ALU3dImplTraits<hexa>::PLLBndFaceType PLLBndFaceType;
+    typedef ALU3dImplTraits<hexa>::GEOFaceType GEOFaceType;
+    typedef ALU3dImplTraits<hexa>::GEOEdgeType GEOEdgeType;
+    typedef ALU3dImplTraits<hexa>::GEOVertexType GEOVertexType;
+
+  public:
+    //! for makeRefGeometry == true a Geometry with the coordinates of the
+    //! reference element is made
+    ALU3dGridGeometry(bool makeRefGeometry=false);
+
+    //! Destructor
+    ~ALU3dGridGeometry();
+
+    //! return the element type identifier
+    //! line , triangle or tetrahedron, depends on dim
+    GeometryType type () const;
+
+    //! return the number of corners of this element. Corners are numbered 0..n-1
+    int corners () const;
+
+    //! access to coordinates of corners. Index is the number of the corner
+    const FieldVector<alu3d_ctype, cdim>& operator[] (int i) const;
+
+    //! return reference element corresponding to this element. If this is
+    //!  a reference element then self is returned.
+    static const Dune::Geometry<mydim,mydim,GridImp,Dune::ALU3dGridGeometry> & refelem ();
+
+    //! maps a local coordinate within reference element to
+    //! global coordinate in element
+    FieldVector<alu3d_ctype, cdim> global (const FieldVector<alu3d_ctype, mydim>& local) const;
+
+    //! maps a global coordinate within the element to a
+    //! local coordinate in its reference element
+    FieldVector<alu3d_ctype,  mydim> local (const FieldVector<alu3d_ctype, cdim>& global) const;
+
+    //! returns true if the point in local coordinates is inside reference
+    //! element
+    bool checkInside(const FieldVector<alu3d_ctype, mydim>& local) const;
+
+    //! A(l) , see grid.hh
+    alu3d_ctype integrationElement (const FieldVector<alu3d_ctype, mydim>& local) const;
+
+    //! can only be called for dim=dimworld! (Trivially true, since there is no
+    //! other specialization...)
+    const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverse (const FieldVector<alu3d_ctype, cdim>& local) const;
+
+    //***********************************************************************
+    //!  Methods that not belong to the Interface, but have to be public
+    //***********************************************************************
+    //! generate the geometry out of a given ALU3dGridElement
+    bool buildGeom(const IMPLElementType & item);
+    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int faceIdx);
+    bool buildGeom(const ALU3DSPACE HEdgeType & item);
+    bool buildGeom(const ALU3DSPACE VertexType & item);
+
+    //! build ghost out of internal boundary segment
+    bool buildGhost(const PLLBndFaceType & ghost);
+
+    //! print internal data
+    //! no interface method
+    void print (std::ostream& ss) const;
+
+    // for changing the coordinates of one element
+    FieldVector<alu3d_ctype, cdim> & getCoordVec (int i);
+
+  private:
+    //! calculates local index of ALU3dGrid Face using the twist of the face regarding the element prototype
+    int faceTwist(int val, int idx) const;
+
+    //! the vertex coordinates
+    mutable FieldMatrix<alu3d_ctype, POWER_M_P<2,mydim>::power, cdim> coord_;
+    //mutable FieldVector<alu3d_ctype, mydim> tmp1_;
+    mutable FieldVector<alu3d_ctype, cdim> tmp2_;
+
+    TrilinearMapping* triMap_;
+    BilinearSurfaceMapping* biMap_;
+
+    mutable FieldMatrix<alu3d_ctype, 3, 3> jInv_;
+
+    const static int alu2duneVol[8];
+    const static int dune2aluVol[8];
+
+    const static int alu2duneFace[6];
+    const static int dune2aluFace[6];
+
+    const static int alu2duneQuad[4];
+    const static int dune2aluQuad[4];
+
+    const static int dune2aluFaceVertex[6][4];
+  };
 
   //**********************************************************************
   //
@@ -215,6 +416,10 @@ namespace Dune
   {
     // typedef typename GridImp::template codim<codim>::Entity EntityType;
     friend class ALU3dGridEntity<codim, dim, GridImp>;
+
+    typedef ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
+    typedef ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
+
   public:
 
     // Constructor creating the realEntity
@@ -237,7 +442,7 @@ namespace Dune
     }
 
     //! set original element pointer to fake entity
-    void setGhost(ALU3DSPACE PLLBndFaceType  &ghost)
+    void setGhost(PLLBndFaceType  &ghost)
     {
       this->realEntity.setGhost(ghost);
     }
@@ -275,11 +480,11 @@ namespace Dune
   {
     enum { dimworld = GridImp::dimensionworld };
 
-    friend class ALU3dGrid < dim , dimworld >;
+    friend class ALU3dGrid < dim , dimworld, GridImp::elementType >;
     friend class ALU3dGridEntity < 0, dim, GridImp >;
     friend class ALU3dGridLevelIterator < cd, All_Partition, GridImp >;
 
-    friend class ALU3dGridHierarchicIndexSet<dim,dimworld>;
+    friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
   public:
     typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType BSElementType;
@@ -376,8 +581,15 @@ namespace Dune
     : public EntityDefault<0,dim,GridImp,ALU3dGridEntity>
   {
     enum { dimworld = GridImp::dimensionworld };
+    typedef ALU3dImplTraits<GridImp::elementType>::GEOElementType GEOElementType;
+    typedef ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
 
-    friend class ALU3dGrid < dim , dimworld >;
+    enum { refine_element_t =
+             ALU3dImplTraits<GridImp::elementType>::refine_element_t };
+    enum { coarse_element_t =
+             ALU3dImplTraits<GridImp::elementType>::coarse_element_t };
+
+    friend class ALU3dGrid < dim , dimworld, GridImp::elementType>;
     friend class ALU3dGridIntersectionIterator < GridImp >;
     friend class ALU3dGridHierarchicIterator   < const GridImp >;
     friend class ALU3dGridHierarchicIterator   < GridImp >;
@@ -387,7 +599,7 @@ namespace Dune
     friend class ALU3dGridLevelIterator <3,All_Partition,GridImp>;
     friend class ALU3dGridLeafIterator <GridImp>;
 
-    friend class ALU3dGridHierarchicIndexSet<dim,dimworld>;
+    friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
   public:
     typedef typename GridImp::template codim<0>::Geometry Geometry;
@@ -496,7 +708,7 @@ namespace Dune
     void setGhost(ALU3DSPACE HElementType &ghost);
 
     //! set original element pointer to fake entity
-    void setGhost(ALU3DSPACE PLLBndFaceType  &ghost);
+    void setGhost(PLLBndFaceType  &ghost);
 
     //! set actual walk level
     void reset ( int l );
@@ -509,6 +721,7 @@ namespace Dune
 
     void setEntity ( const ALU3dGridEntity<0,dim,GridImp> & org );
   private:
+    typedef ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
 
     //! index is unique within the grid hierachie and per codim
     int getIndex () const;
@@ -517,10 +730,10 @@ namespace Dune
     const GridImp  & grid_;
 
     // the current element of grid
-    ALU3DSPACE IMPLElementType *item_;
+    IMPLElementType *item_;
 
     // the current ghost, if element is ghost
-    ALU3DSPACE PLLBndFaceType * ghost_;
+    PLLBndFaceType * ghost_;
     mutable bool isGhost_; //! true if entity is ghost entity
 
     //! the cuurent geometry
@@ -735,6 +948,12 @@ namespace Dune
     enum { dim       = GridImp::dimension };
     enum { dimworld  = GridImp::dimensionworld };
 
+    typedef ALU3dImplTraits<GridImp::elementType>::GEOElementType GEOElementType;
+    typedef ALU3dImplTraits<GridImp::elementType>::GEOFaceType GEOFaceType;
+    typedef ALU3dImplTraits<GridImp::elementType>::NeighbourPairType NeighbourPairType;
+    typedef ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
+    typedef ALU3dImplTraits<GridImp::elementType>::BNDFaceType BNDFaceType;
+
     friend class ALU3dGridEntity<0,dim,GridImp>;
 
   public:
@@ -749,7 +968,8 @@ namespace Dune
 
     //! The default Constructor , level tells on which level we want
     //! neighbours
-    ALU3dGridIntersectionIterator(const GridImp & grid, ALU3DSPACE HElementType *el,
+    ALU3dGridIntersectionIterator(const GridImp & grid,
+                                  ALU3DSPACE HElementType *el,
                                   int wLevel,bool end=false);
 
     //! The copy constructor
@@ -812,8 +1032,35 @@ namespace Dune
     NormalType integrationOuterNormal (const FieldVector<alu3d_ctype, dim-1>& local) const;
 
   private:
+    typedef ALU3dImplTraits<GridImp::elementType>::NeighbourFaceType NeighbourFaceType;
+
+
+    // calculate normal
+    void calculateNormal(const FieldVector<alu3d_ctype, dim-1>& local,
+                         NormalType& result) const;
+
+    // calculate normal seen from neighbor
+    void calculateNormalNeighbor(const FieldVector<alu3d_ctype, dim-1>& local,
+                                 NormalType& result) const;
+
+    // get the face corresponding to the index
+    ALU3dImplTraits<tetra>::GEOFaceType& getFace(int, Int2Type<tetra>) const;
+
+    ALU3dImplTraits<hexa>::GEOFaceType& getFace(int, Int2Type<hexa>) const;
+
     // if neighbour exists , do setup of new neighbour
     void setNeighbor () const ;
+
+    // \brief get neighboring face \index of the element where the iteration started
+    // Index conversion from Dune to Alu3dGrid reference element is done in this
+    // method
+    // \param index Local face index in the Dune reference element
+    NeighbourPairType getNeighPair (int index) const;
+
+    // Index conversion from Dune to Alu3dGrid reference element is done in this
+    // method
+    // \param index Local face index in the Dune reference element
+    NeighbourFaceType getNeighFace (int index) const;
 
     // check wether we at ghost boundary, only parallel grid
     void checkGhost () const ;
@@ -829,36 +1076,38 @@ namespace Dune
 
     //! the grid
     //const GridImp & grid_;
+    const int nFaces_;
+
     int walkLevel_;
 
     //EntityImp * entity_; //! neighbour entity
 
     // current element from which we started the intersection iterator
-    mutable ALU3DSPACE GEOElementType *item_;
+    mutable GEOElementType *item_;
 
     //! current neighbour
-    mutable ALU3DSPACE GEOElementType *neigh_;
+    mutable GEOElementType *neigh_;
 
     //! current ghost if we have one
-    mutable ALU3DSPACE PLLBndFaceType *ghost_;
+    mutable PLLBndFaceType *ghost_;
 
     mutable int index_;       //! internal index of intersection
     mutable int numberInNeigh_; //! index of intersection in neighbor
 
     mutable bool theSituation_;   //! true if the "situation" occurs :-)
     mutable bool daOtherSituation_; //! true if the "da other situation" occurs :-)
-    //! see bsgrid.cc for descritption
+    //! see alugrid.cc for description
 
     mutable bool isBoundary_; //! true if intersection is with boundary
     mutable bool isGhost_; //! true if intersection is with internal boundary (only parallel grid)
 
     mutable bool needSetup_; //! true if setup is needed
-    mutable bool needNormal_; //! true if normal has to be calculated
 
     // pair holding pointer to face and twist
-    mutable ALU3DSPACE NeighbourFaceType neighpair_;
+    mutable NeighbourFaceType neighpair_;
 
     mutable bool initInterGl_; //! true if interSelfGlobal_ was initialized
+    mutable bool twist_; //! true if orientation is such that normal points into hexahedron
     GeometryImp * interSelfGlobal_; //! intersection_self_global
 
     MakeableBndEntityImp * bndEntity_; //! boundaryEntity
@@ -883,7 +1132,7 @@ namespace Dune
     friend class ALU3dGridEntity<2,dim,GridImp>;
     friend class ALU3dGridEntity<1,dim,GridImp>;
     friend class ALU3dGridEntity<0,dim,GridImp>;
-    friend class ALU3dGrid < dim , dimworld >;
+    friend class ALU3dGrid < dim , dimworld, GridImp::elementType >;
 
   public:
     typedef typename GridImp::template codim<cd>::Entity Entity;
@@ -991,14 +1240,14 @@ namespace Dune
      @}
 
    */
-  template <int dim, int dimworld>
-  class ALU3dGrid : public GridDefault  < dim, dimworld, alu3d_ctype,ALU3dGrid<dim,dimworld> >
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  class ALU3dGrid : public GridDefault  < dim, dimworld, alu3d_ctype,ALU3dGrid<dim,dimworld, elType> >
   {
     //CompileTimeChecker<dim      == 3>   ALU3dGrid_only_implemented_for_3dp;
     //CompileTimeChecker<dimworld == 3>   ALU3dGrid_only_implemented_for_3dw;
     //CompileTimeChecker< (eltype == ALU3DSPACE tetra_t) || (eltype == ALU3DSPACE hexa_t ) > ALU3dGrid_only_implemented_for_tetra_or_hexa;
 
-    typedef ALU3dGrid<dim,dimworld> MyType;
+    typedef ALU3dGrid<dim,dimworld,elType> MyType;
     friend class ALU3dGridEntity <0,dim,MyType>;
     friend class ALU3dGridEntity <0,dim,const MyType>;
     friend class ALU3dGridIntersectionIterator<MyType>;
@@ -1015,7 +1264,8 @@ namespace Dune
     // The Interface Methods
     //**********************************************************
   public:
-    enum { myElementType = tetra };
+    static const ALU3dGridElementType elementType = elType;
+
     typedef GridTraits<dim,dimworld, MyType ,
         ALU3dGridGeometry,ALU3dGridEntity,
         ALU3dGridBoundaryEntity,
@@ -1037,7 +1287,7 @@ namespace Dune
     //typedef typename std::pair < ObjectStreamType * , ALU3dGridEntity<0,dim,dimworld> * >
     //              DataCollectorParamType;
 
-    typedef ALU3dGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSetType;
+    typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSetType;
     typedef DefaultLevelIndexSet<MyType>           LevelIndexSetType;
 
     typedef typename Traits::LeafIterator LeafIterator;
@@ -1114,6 +1364,8 @@ namespace Dune
     const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
     const LevelIndexSetType & levelIndexSet () const
     {
+      // * This is pure evil when adapting
+      assert(false);
       if(!levelIndexSet_) levelIndexSet_ = new LevelIndexSetType (*this);
       return *levelIndexSet_;
     }
@@ -1179,7 +1431,7 @@ namespace Dune
     bool mark( int refCount , const typename Traits::template codim<0>::Entity & en );
 
     template <int cd>
-    ALU3dGridEntity<cd,dim,const ALU3dGrid<dim,dimworld> >&
+    ALU3dGridEntity<cd,dim,const MyType >&
     getRealEntity(typename Traits::template codim<cd>::Entity& entity)
     {
       return entity.realEntity;
@@ -1187,7 +1439,7 @@ namespace Dune
 
     //private:
     template <int cd>
-    const ALU3dGridEntity<cd,dim,const ALU3dGrid<dim,dimworld> >&
+    const ALU3dGridEntity<cd,dim,const MyType >&
     getRealEntity(const typename Traits::template codim<cd>::Entity& entity) const
     {
       return entity.realEntity;
@@ -1195,10 +1447,11 @@ namespace Dune
 
   private:
     //! Copy constructor should not be used
-    ALU3dGrid( const ALU3dGrid<dim,dimworld> & g);
+    ALU3dGrid( const MyType & g);
 
     //! assignment operator should not be used
-    ALU3dGrid<dim,dimworld> & operator = (const ALU3dGrid<dim,dimworld> & g);
+    ALU3dGrid<dim,dimworld,elType>&
+    operator = (const MyType & g);
 
     // reset size and global size
     void calcExtras();
@@ -1256,13 +1509,13 @@ namespace Dune
     mutable BndProvider bndProvider_;
     //mutable VertexProvider vertexProvider_;
 
-  }; // end Class ALU3dGridGrid
+  }; // end class ALU3dGridGrid
 
   //! hierarchic index set of ALU3dGrid
-  template <int dim, int dimworld>
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGridHierarchicIndexSet
   {
-    typedef ALU3dGrid<dim,dimworld> GridType;
+    typedef ALU3dGrid<dim,dimworld,elType> GridType;
     enum { numCodim = 4 };
 
   public:

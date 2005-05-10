@@ -39,12 +39,12 @@ namespace ALU3dGridSpace {
   typedef GitterDunePll GitterType;
   typedef GitterDunePll GitterImplType;
 
-  typedef Hbnd3PllInternal < GitterType :: Objects :: Hbnd3Default,
-      BndsegPllBaseXClosure < GitterType :: hbndseg3_GEO > ,
-      BndsegPllBaseXMacroClosure < GitterType :: hbndseg3_GEO > > :: micro_t MicroType;
+  typedef Hbnd3PllInternal<GitterType::Objects::Hbnd3Default,
+      BndsegPllBaseXClosure<GitterType::hbndseg3_GEO>,
+      BndsegPllBaseXMacroClosure<GitterType::hbndseg3_GEO> > :: micro_t MicroType;
 
   // value for boundary to other processes
-  static const int ProcessorBoundary_t = GitterImplType:: hbndseg_STI :: closure;
+  static const int ProcessorBoundary_t = GitterImplType::hbndseg_STI::closure;
 
 #else
   typedef GatherScatter GatherScatterType;
@@ -52,7 +52,7 @@ namespace ALU3dGridSpace {
   // the header
   typedef Gitter GitterType;
   typedef GitterDuneImpl GitterImplType;
-  typedef GitterType::hface_STI PLLFaceType;                   // Interface Face
+  typedef GitterType::hface_STI PLLFaceType;                     // Interface Face
 
 #endif
 
@@ -60,28 +60,27 @@ namespace ALU3dGridSpace {
 #include "leafwalk.hh"
 
   // typedefs of Element types
-  typedef GitterType::helement_STI HElementType;             // Interface Element
-  typedef GitterType::hface_STI HFaceType;                   // Interface Face
-  typedef GitterType::hedge_STI HEdgeType;                   // Interface Edge
-  typedef GitterType::vertex_STI VertexType;                 // Interface Vertex
-  typedef GitterType::Geometric::hface3_GEO GEOFaceType;     // real Face
-  typedef GitterType::Geometric::hedge1_GEO GEOEdgeType;     // real Face
-  typedef GitterType::Geometric::VertexGeo GEOVertexType;      // real Face
-  typedef GitterImplType::Objects::tetra_IMPL IMPLElementType; // impl Element
-  typedef GitterType::Geometric::tetra_GEO GEOElementType;   // real Element
-  typedef GitterType::Geometric::hasFace3 HasFace3Type;      // has Face with 3 polygons
+  typedef GitterType::helement_STI HElementType;               // Interface Element
+  typedef GitterType::hface_STI HFaceType;                     // Interface Face
+  typedef GitterType::hedge_STI HEdgeType;                     // Interface Edge
+  typedef GitterType::vertex_STI VertexType;                   // Interface Vertex
+  typedef GitterType::Geometric::hface3_GEO GEOFace3Type;     // Tetra Face
+  typedef GitterType::Geometric::hface4_GEO GEOFace4Type; // Hexa Face
+  typedef GitterType::Geometric::hedge1_GEO GEOEdgeT;     // * stays real Face
+  typedef GitterType::Geometric::VertexGeo GEOVertexT;     // * stays real Face
+  typedef GitterImplType::Objects::tetra_IMPL IMPLTetraElementType; //impl Element
+  typedef GitterImplType::Objects::hexa_IMPL IMPLHexaElementType;
+  typedef GitterType::Geometric::tetra_GEO GEOTetraElementType;  // real Element
+  typedef GitterType::Geometric::hexa_GEO GEOHexaElementType;
+  typedef GitterType::Geometric::hasFace3 HasFace3Type;    // has Face with 3 polygons
+  typedef GitterType::Geometric::hasFace4 HasFace4Type;
 
-  typedef GitterImplType::Objects::Hbnd3Default BNDFaceType;   // boundary segment
-  typedef GitterImplType::Objects::hbndseg3_IMPL ImplBndFaceType;  // boundary segment
-  typedef BNDFaceType PLLBndFaceType;
+  typedef GitterImplType::Objects::Hbnd3Default BNDFace3Type;    // boundary segment
+  typedef GitterImplType::Objects::Hbnd4Default BNDFace4Type;
+  typedef GitterImplType::Objects::hbndseg3_IMPL ImplBndFace3Type;    // boundary segment
+  typedef GitterImplType::Objects::hbndseg4_IMPL ImplBndFace4Type;
 
-  // refinement and coarsening enum for tetrahedons
-  enum { refine_element_t = GitterType::Geometric::TetraRule::iso8 };
-  enum { coarse_element_t = GitterType::Geometric::TetraRule::crs  };
-
-  typedef pair < GEOFaceType *    , int > NeighbourFaceType;
-  typedef pair < HasFace3Type*    , int > NeighbourPairType;
-  typedef pair < PLLBndFaceType * , int > GhostPairType;
+  // * end new
 
   //*************************************************************
   //  definition of original LeafIterators of ALU3dGrid
@@ -90,7 +89,7 @@ namespace ALU3dGridSpace {
   template <int codim>
   struct BSMacroIterator
   {
-    typedef AccessIterator < GitterType::helement_STI > :: Handle IteratorType;
+    typedef AccessIterator<GitterType::helement_STI>::Handle IteratorType;
   };
 
   //******************************************************************

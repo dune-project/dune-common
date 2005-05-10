@@ -3,6 +3,12 @@
 #ifndef __DUNE_ALU3DGRID_DATAHANDLE_HH__
 #define __DUNE_ALU3DGRID_DATAHANDLE_HH__
 
+#include <iostream>
+
+using std::endl;
+using std::cout;
+using std::flush;
+
 namespace ALU3dGridSpace {
 
   //! the corresponding interface class is defined in bsinclude.hh

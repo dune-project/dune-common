@@ -3,6 +3,7 @@
 #ifndef DUNE_ALU3DGEOMETRY_HH
 #define DUNE_ALU3DGEOMETRY_HH
 
+#include "alu3dmappings.hh"
 // * temporary, should be moved to misc.hh or something
 // calculates m^p at compile-time
 template <int m, int p>
@@ -19,63 +20,6 @@ struct POWER_M_P< m , 0>
   // m^0 = 1
   enum { power = 1 };
 };
-
-//! A trilinear mapping from the Dune reference hexahedron into the physical
-//! space (same as in mapp_cube_3d.h, but for a different reference hexahedron)
-class TrilinearMapping {
-  typedef FieldVector<alu3d_ctype, 3> coord_t;
-  typedef FieldMatrix<alu3d_ctype, 3, 3> mat_t;
-  static const alu3d_ctype _epsilon ;
-
-  const coord_t& p0;
-  const coord_t& p1;
-  const coord_t& p2;
-  const coord_t& p3;
-  const coord_t& p4;
-  const coord_t& p5;
-  const coord_t& p6;
-  const coord_t& p7;
-
-  double a [8][3] ;
-  mat_t Df;
-  mat_t Dfi;
-  alu3d_ctype DetDf ;
-  void linear (const coord_t&) ;
-  void inverse (const coord_t&) ;
-public:
-  inline TrilinearMapping (const coord_t&, const coord_t&,
-                           const coord_t&, const coord_t&,
-                           const coord_t&, const coord_t&,
-                           const coord_t&, const coord_t&);
-  inline TrilinearMapping (const TrilinearMapping &) ;
-  ~TrilinearMapping () {}
-  alu3d_ctype det (const coord_t&) ;
-  mat_t jacobianInverse(const coord_t&);
-  inline void map2world (const coord_t&, coord_t&) const ;
-  inline void map2world (const double , const double , const double ,
-                         coord_t&) const ;
-  void world2map (const coord_t&, coord_t&) ;
-};
-
-//! A bilinear surface mapping
-class BilinearSurfaceMapping {
-  typedef FieldVector<alu3d_ctype, 3> coord3_t;
-  typedef FieldVector<alu3d_ctype, 2> coord2_t;
-  const coord3_t& _p0;
-  const coord3_t& _p1;
-  const coord3_t& _p2;
-  const coord3_t& _p3;
-  double _b [4][3] ;
-  double _n [3][3] ;
-public:
-  inline BilinearSurfaceMapping (const coord3_t&, const coord3_t&,
-                                 const coord3_t&, const coord3_t&) ;
-  inline BilinearSurfaceMapping (const BilinearSurfaceMapping &) ;
-  ~BilinearSurfaceMapping () {}
-  inline void map2world(const coord2_t&, coord3_t&) const ;
-  inline void map2world(double x, double y, coord3_t&) const ;
-  inline void normal(const coord2_t&, coord3_t&) const ;
-} ;
 
 //! Empty definition, needs to be specialized for element type
 template <int mydim, int cdim, class GridImp>

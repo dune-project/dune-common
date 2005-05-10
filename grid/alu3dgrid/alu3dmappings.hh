@@ -4,7 +4,6 @@
 #define DUNE_ALU3DMAPPINGS_HH
 
 //- Dune includes
-//#include <dune/grid/alu3dgrid.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 
@@ -65,6 +64,7 @@ namespace Dune {
     void map2world(double x, double y, coord3_t&) const ;
     void normal(const coord2_t&, coord3_t&) const ;
   } ;
+
 
 } // end namespace Dune
 
