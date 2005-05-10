@@ -705,7 +705,7 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  template <FileFormatType ftype>
+  template <GrapeIOFileFormatType ftype>
   inline bool ALU3dGrid<dim, dimworld, elType>::
   writeGrid( std::string filename, alu3d_ctype time ) const
   {
@@ -837,16 +837,18 @@ namespace Dune {
   };
 
   // return Grid type
-  template <int dim, int dimworld> template <int cd>
-  inline ALU3dGridMakeableEntity<cd,dim,const ALU3dGrid<dim,dimworld> > *
-  ALU3dGrid<dim,dimworld>::getNewEntity (int level) const
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  template <int cd>
+  inline ALU3dGridMakeableEntity<cd,dim,const ALU3dGrid<dim,dimworld,elType> > *
+  ALU3dGrid<dim,dimworld,elType>::getNewEntity (int level) const
   {
     return ALU3dGridEntityFactory<MyType,cd>::getNewEntity(*this,entityProvider_,level);
   }
 
-  template <int dim, int dimworld> template <int cd>
-  inline void ALU3dGrid<dim,dimworld>::
-  freeEntity (ALU3dGridMakeableEntity<cd,dim,const ALU3dGrid<dim,dimworld> > * e) const
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  template <int cd>
+  inline void ALU3dGrid<dim,dimworld,elType>::
+  freeEntity (ALU3dGridMakeableEntity<cd,dim,const ALU3dGrid<dim,dimworld,elType> > * e) const
   {
     return ALU3dGridEntityFactory<MyType,cd>::freeEntity(entityProvider_, e);
   }
@@ -1863,49 +1865,50 @@ namespace Dune {
   }
 
   //********* begin method subIndex ********************
-  // partial specialisation of subIndex
-  template <int codim> struct IndexWrapper;
+  /*
+     // partial specialisation of subIndex
+     template <int codim> struct IndexWrapper;
 
-  // specialisation for vertices
-  template <> struct IndexWrapper<3>
-  {
-    static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
-    {
+     // specialisation for vertices
+     template <> struct IndexWrapper<3>
+     {
+     static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
+     {
       return elem.myvertex(i)->getIndex();
-    }
-  };
+     }
+     };
 
-  // specialisation for faces
-  template <> struct IndexWrapper<1>
-  {
-    static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
-    {
+     // specialisation for faces
+     template <> struct IndexWrapper<1>
+     {
+     static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
+     {
       return elem.myhface3(i)->getIndex();
-    }
-  };
+     }
+     };
 
-  // specialisation for faces
-  template <> struct IndexWrapper<2>
-  {
-    static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
-    {
+     // specialisation for faces
+     template <> struct IndexWrapper<2>
+     {
+     static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
+     {
       dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
       if(i<3)
         return elem.myhface3(0)->myhedge1(i)->getIndex();
       else
         return elem.myhface3(i-2)->myhedge1(i-3)->getIndex();
-    }
-  };
+     }
+     };
 
-  template<int dim, class GridImp>
-  template<int cc>
-  inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
-  {
-    assert(cc == dim);
-    assert(item_ != 0);
-    return IndexWrapper<cc>::subIndex ( *item_ ,i);
-  }
-
+     template<int dim, class GridImp>
+     template<int cc>
+     inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
+     {
+     assert(cc == dim);
+     assert(item_ != 0);
+     return IndexWrapper<cc>::subIndex ( *item_ ,i);
+     }
+   */
   //******** end method subIndex *************
 
   template <class GridImp, int dim, int cc> struct ALU3dGridCount {
@@ -1930,7 +1933,7 @@ namespace Dune {
   struct SubEntities<GridImp,dim,1>
   {
     static typename ALU3dGridEntity<0,dim,GridImp> :: template codim<1>:: EntityPointer
-    entity (const GridImp & grid, const ALU3DSPACE IMPLElementType & item, int i)
+    entity (const GridImp & grid, const ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
       return ALU3dGridEntityPointer<1,GridImp> (grid, *(item.myhface3(i)) );
     }
@@ -1941,7 +1944,7 @@ namespace Dune {
   struct SubEntities<GridImp,dim,2>
   {
     static typename ALU3dGridEntity<0,dim,GridImp> :: template codim<2>:: EntityPointer
-    entity (const GridImp & grid, const ALU3DSPACE IMPLElementType & item, int i)
+    entity (const GridImp & grid, const ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
       dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
       if(i<3)
@@ -1960,7 +1963,7 @@ namespace Dune {
   struct SubEntities<GridImp,dim,3>
   {
     static typename ALU3dGridEntity<0,dim,GridImp> :: template codim<3>:: EntityPointer
-    entity (const GridImp & grid, const ALU3DSPACE IMPLElementType & item, int i)
+    entity (const GridImp & grid, const ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
       return ALU3dGridEntityPointer<3,GridImp> (grid, (*(item.myvertex(i))) );
     }
