@@ -1175,11 +1175,8 @@ namespace Dune
     //! no interface method, but has to be public
     void updateStatus ();
 
-    bool mark( int refCount , typename Traits::template codim<0>::EntityPointer & ep )
-    {
-      return this->mark(*ep);
-    }
-    bool mark( int refCount , const typename Traits::template codim<0>::Entity & en ) const;
+    bool mark( int refCount , typename Traits::template codim<0>::EntityPointer & ep );
+    bool mark( int refCount , const typename Traits::template codim<0>::Entity & en );
 
     template <int cd>
     ALU3dGridEntity<cd,dim,const ALU3dGrid<dim,dimworld> >&
