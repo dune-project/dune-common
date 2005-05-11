@@ -19,7 +19,7 @@ namespace Dune {
 
 
 
-  typedef std::basic_string <char> GrapeIOStringType;
+  typedef std::string GrapeIOStringType;
 
   /** \brief convert type to string
    */
@@ -67,12 +67,12 @@ namespace Dune {
      * generated out of filename and timestep
      */
     inline bool writeGrid (const GridType & grid,
-                           const GrapeIOFileFormatType ftype, const GrapeIOStringType fnprefix
+                           const GrapeIOFileFormatType ftype, const GrapeIOStringType& fnprefix
                            , double time=0.0, int timestep=0, int precision = 6);
 
     //! get Grid from file with time and timestep , return true if ok
     inline bool readGrid (GridType & grid,
-                          const GrapeIOStringType fnprefix , double & time , int timestep);
+                          const GrapeIOStringType& fnprefix , double & time , int timestep);
 
 
     /**
@@ -83,20 +83,20 @@ namespace Dune {
     //! discrete function
     template <class DiscreteFunctionType>
     inline bool writeData(DiscreteFunctionType & df,
-                          const GrapeIOFileFormatType ftype, const GrapeIOStringType filename,
+                          const GrapeIOFileFormatType ftype, const GrapeIOStringType& filename,
                           int timestep, int precision = 6);
 
     //! same as write only read
     template <class DiscreteFunctionType>
     inline bool readData(DiscreteFunctionType & df,
-                         const GrapeIOStringType filename, int timestep);
+                         const GrapeIOStringType& filename, int timestep);
   };
 
 
   template <class GridType>
   inline bool GrapeDataIO<GridType> :: writeGrid
     (const GridType & grid,
-    const GrapeIOFileFormatType ftype, const GrapeIOStringType fnprefix ,
+    const GrapeIOFileFormatType ftype, const GrapeIOStringType& fnprefix ,
     double time, int timestep, int precision )
   {
     const char *path = "";
@@ -105,7 +105,7 @@ namespace Dune {
     file << "Format: " << ftype <<  std::endl;
     file << "Precision: " << precision << std::endl;
 
-    const GrapeIOStringType fnstr = genFilename(path,fnprefix,timestep,precision);
+    GrapeIOStringType fnstr = genFilename(path,fnprefix,timestep,precision);
     file.close();
     switch (ftype)
     {
@@ -125,7 +125,7 @@ namespace Dune {
 
   template <class GridType>
   inline bool GrapeDataIO<GridType> :: readGrid
-    (GridType & grid, const GrapeIOStringType fnprefix , double & time , int timestep)
+    (GridType & grid, const GrapeIOStringType& fnprefix , double & time , int timestep)
   {
     int helpType;
 
@@ -167,7 +167,7 @@ namespace Dune {
   template <class GridType>
   template <class DiscreteFunctionType>
   inline bool GrapeDataIO<GridType> :: writeData(DiscreteFunctionType & df,
-                                                 const GrapeIOFileFormatType ftype, const GrapeIOStringType filename, int timestep, int precision )
+                                                 const GrapeIOFileFormatType ftype, const GrapeIOStringType& filename, int timestep, int precision )
   {
     {
       typedef typename DiscreteFunctionType::FunctionSpaceType DiscreteFunctionSpaceType;
@@ -208,7 +208,7 @@ namespace Dune {
   template <class GridType>
   template <class DiscreteFunctionType>
   inline bool GrapeDataIO<GridType> ::
-  readData(DiscreteFunctionType & df, const GrapeIOStringType filename, int timestep)
+  readData(DiscreteFunctionType & df, const GrapeIOStringType& filename, int timestep)
   {
     typedef typename DiscreteFunctionType::FunctionSpaceType DiscreteFunctionSpaceType;
     typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
