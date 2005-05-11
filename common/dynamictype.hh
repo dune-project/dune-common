@@ -1,9 +1,10 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_DYNAMICTYPE_HH__
-#define __DUNE_DYNAMICTYPE_HH__
+#ifndef DUNE_DYNAMICTYPE_HH
+#define DUNE_DYNAMICTYPE_HH
 
-#include <assert.h>
+#include <cassert>
+//#include <iostream>
 
 namespace Dune {
 
@@ -37,6 +38,7 @@ namespace Dune {
     //! return identifier
     IdentifierType getIdentifier() const
     {
+      //std::cout << "Id: " << identifier_ << "(" << undefined << ")" << std::endl;
       assert(identifier_ != undefined);
       return identifier_;
     }

@@ -40,7 +40,10 @@ namespace Dune {
   //
   //********************************************************************
 
-  inline std::basic_string<char> genFilename(std::basic_string <char> path, std::basic_string <char> fn, int ntime, int precision = 6)
+  inline std::string genFilename(const std::string& path,
+                                 const std::string& fn,
+                                 int ntime,
+                                 int precision = 6)
   {
     std::ostringstream name;
 
@@ -72,7 +75,7 @@ namespace Dune {
     name << cp;
 
     // here implicitly a string is generated
-    return name.str().c_str();
+    return name.str();
   }
 
   /** @} */
