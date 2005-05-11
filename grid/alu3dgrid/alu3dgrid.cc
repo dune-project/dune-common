@@ -1278,7 +1278,7 @@ namespace Dune {
   template<class GridImp>
   inline ALU3dGridIntersectionIterator<GridImp> ::
   ALU3dGridIntersectionIterator(const ALU3dGridIntersectionIterator<GridImp> & org)
-    : ALU3dGridEntityPointer<0,GridImp> (org.grid_ , org.walkLevel_ , (org.item_) ? false : true )
+    : ALU3dGridEntityPointer<0,GridImp> (org.grid_ , org.walkLevel_ , (org.item_) ? false : true ) ,
       nFaces_ (org.nFaces_)
 
   {
