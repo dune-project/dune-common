@@ -1,8 +1,9 @@
 AM_CPPFLAGS = $(ALU3DGRID_CPPFLAGS)
 
-noinst_LTLIBRARIES = libalu3d.la
-
-libalu3d_la_SOURCES = alu3dmappings.cc
+if ALU3DGRID
+  noinst_LTLIBRARIES = libalu3d.la
+  libalu3d_la_SOURCES = alu3dmappings.cc
+endif
 
 alu3dgriddir = $(includedir)/dune/grid/alu3dgrid/
 alu3dgrid_HEADERS = alu3dgrid.cc alu3dinclude.hh alu3dgridcomm.hh \
