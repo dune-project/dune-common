@@ -4,6 +4,7 @@
 #define __DUNE_ALU3DGRID_DATAHANDLE_HH__
 
 #include <iostream>
+#include "../alu3dgrid.hh"
 
 using std::endl;
 using std::cout;
@@ -17,6 +18,7 @@ namespace ALU3dGridSpace {
   {
     GridType & grid_;
     typedef typename GridType::template codim<0>::Entity Entity;
+    typedef Dune::ALU3dImplTraits<GridType::elementType>::PLLBndFaceType PLLBndFaceType;
     Entity & en_;
     EntityType & realEntity_;
 
