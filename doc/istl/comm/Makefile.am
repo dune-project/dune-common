@@ -42,4 +42,5 @@ communication.dvi : communication.tex buildindexset.hh reverse.hh
 
 CLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi *.pdf *.ps
 
+include $(top_srcdir)/am/webstuff
 include $(top_srcdir)/am/sourcescheck
