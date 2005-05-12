@@ -293,6 +293,11 @@ namespace Dune {
 #ifdef _ALU3DGRID_PARALLEL_
     //loadBalance();
     __MyRank__ = mpAccess_.myrank();
+
+    dverb << "************************************************\n";
+    dverb << "Created grid on p=" << mpAccess_.myrank() << "\n";
+    dverb << "************************************************\n";
+
 #endif
 
     mygrid_->printsize();
@@ -489,7 +494,10 @@ namespace Dune {
       ref = this->adapt();
       if(ref) this->postAdapt();
     }
-    if(ref) this->loadBalance();
+
+    // important that loadbalance is called on each processor
+    this->loadBalance();
+
     return ref;
   }
 
@@ -564,9 +572,9 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline void ALU3dGrid<dim, dimworld, elType>::postAdapt()
   {
-#ifdef _ALU3DGRID_PARALLEL_
-    if(mpAccess_.nlinks() < 1)
-#endif
+#ifndef _ALU3DGRID_PARALLEL_
+    //  if(mpAccess_.nlinks() < 1)
+    //#endif
     {
       maxlevel_ = 0;
       ALU3DSPACE BSLeafIteratorMaxLevel w ( myGrid() ) ;
@@ -576,8 +584,9 @@ namespace Dune {
         w->item ().resetRefinedTag();
       }
     }
-#ifdef _ALU3DGRID_PARALLEL_
-    else
+    //#ifdef _ALU3DGRID_PARALLEL_
+#else
+    //  else
     {
       // we have to walk over all hierarchcy because during loadBalance
       // we get newly refined elements, which have to be cleared
@@ -678,6 +687,7 @@ namespace Dune {
 
     if(changed)
     {
+      std::cout << "Grid was balanced no p = " << mpAccess_.myrank() << "\n";
       calcMaxlevel();             // calculate new maxlevel
       calcExtras();               // reset size and things
     }
@@ -739,16 +749,15 @@ namespace Dune {
   {
     {
       typedef std::ostringstream StreamType;
-      StreamType mName;
-
-      mName << filename;
-      mName << ".macro";
-      const char * macroName = mName.str().c_str();
+      std::string mName(filename);
+      mName += ".macro";
+      const char * macroName = mName.c_str();
 
       { //check if file exists
         std::ifstream check ( macroName );
         if( !check )
           DUNE_THROW(ALU3dGridError,"cannot read file " << macroName << "\n");
+        check.close();
       }
 
       mygrid_ = new ALU3DSPACE GitterImplType (macroName
@@ -878,6 +887,8 @@ namespace Dune {
         (*(this->entity_)).setElement( (*iter_).item());
       }
     }
+    else
+      this->done();
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp >
@@ -941,6 +952,8 @@ namespace Dune {
         (*(this->entity_)).setElement( (*iter_).item());
       }
     }
+    else
+      this->done();
   }
 
   template<class GridImp>
@@ -1082,6 +1095,7 @@ namespace Dune {
         else
         { // otherwise do nothing
           item_ = 0;
+          this->done();
         }
       }
       else
@@ -1262,7 +1276,7 @@ namespace Dune {
   inline void ALU3dGridIntersectionIterator<GridImp> :: last ()
   {
     // reset entity pointer for equality
-    ALU3dGridEntityPointer<0,GridImp>::done();
+    this->done();
 
     interSelfGlobal_ = 0;
     bndEntity_ = 0;
@@ -1447,8 +1461,11 @@ namespace Dune {
 
       assert( ghost_->getGhost() );
 
-      //entity_.setGhost( *ghost_ ); // old method
-      (*(this->entity_)).setGhost( *(ghost_->getGhost()) );
+      // old set ghost method
+      (*(this->entity_)).setGhost( *ghost_ );
+
+      // new ghost not supported for a moment
+      //(*(this->entity_)).setGhost( *(ghost_->getGhost()) );
 
       needSetup_ = false;
       neigh_ = 0;
@@ -1722,7 +1739,8 @@ namespace Dune {
   inline void ALU3dGridEntity<0,dim,GridImp> ::
   removeElement ()
   {
-    item_ = 0;
+    item_  = 0;
+    ghost_ = 0;
   }
 
   template<int dim, class GridImp>
@@ -1781,7 +1799,6 @@ namespace Dune {
   inline void
   ALU3dGridEntity<0,dim,GridImp> :: setGhost(PLLBndFaceType & ghost)
   {
-    abort();
     item_    = 0;
     ghost_   = &ghost;
     isGhost_ = true;
@@ -1802,7 +1819,7 @@ namespace Dune {
   inline bool ALU3dGridEntity<0,dim,GridImp> ::
   equals (const ALU3dGridEntity<0,dim,GridImp> &org ) const
   {
-    return (item_ == org.item_);
+    return ( (item_ == org.item_) && (ghost_ == org.ghost_) );
   }
 
   template<int dim, class GridImp>

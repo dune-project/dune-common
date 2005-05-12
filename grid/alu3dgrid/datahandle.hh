@@ -65,18 +65,9 @@ namespace ALU3dGridSpace {
     {
       // set ghost as entity
       PLLBndFaceType & gh = static_cast <PLLBndFaceType &> (ghost);
-      /*
-         if(gh.ghostLevel() < ghost.level())
-         {
-         HElementType & up = *(gh.getGhost()->up());
-         realEntity_.setGhost( up );
-         }
-         else
-         {
-         realEntity_.setGhost( *(gh.getGhost()) );
-         }
-       */
-      realEntity_.setGhost( *(gh.getGhost()) );
+      //realEntity_.setGhost( *(gh.getGhost()) );
+      // old set ghost method
+      realEntity_.setGhost( gh );
       dc_.gather(str, en_);
     }
 
