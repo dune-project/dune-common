@@ -1877,50 +1877,49 @@ namespace Dune {
   }
 
   //********* begin method subIndex ********************
-  /*
-     // partial specialisation of subIndex
-     template <int codim> struct IndexWrapper;
+  // partial specialisation of subIndex
+  template <class IMPLElemType, int codim> struct IndexWrapper;
 
-     // specialisation for vertices
-     template <> struct IndexWrapper<3>
-     {
-     static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
-     {
+  // specialisation for vertices
+  template <class IMPLElemType> struct IndexWrapper<IMPLElemType,3>
+  {
+    static inline int subIndex(const IMPLElemType &elem, int i)
+    {
       return elem.myvertex(i)->getIndex();
-     }
-     };
+    }
+  };
 
-     // specialisation for faces
-     template <> struct IndexWrapper<1>
-     {
-     static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
-     {
+  // specialisation for faces
+  template <class IMPLElemType> struct IndexWrapper<IMPLElemType,1>
+  {
+    static inline int subIndex(const IMPLElemType &elem, int i)
+    {
       return elem.myhface3(i)->getIndex();
-     }
-     };
+    }
+  };
 
-     // specialisation for faces
-     template <> struct IndexWrapper<2>
-     {
-     static inline int subIndex(const ALU3DSPACE IMPLElementType &elem, int i)
-     {
+  // specialisation for faces
+  template <class IMPLElemType> struct IndexWrapper<IMPLElemType,2>
+  {
+    static inline int subIndex(const IMPLElemType &elem, int i)
+    {
       dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
       if(i<3)
         return elem.myhface3(0)->myhedge1(i)->getIndex();
       else
         return elem.myhface3(i-2)->myhedge1(i-3)->getIndex();
-     }
-     };
+    }
+  };
 
-     template<int dim, class GridImp>
-     template<int cc>
-     inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
-     {
-     assert(cc == dim);
-     assert(item_ != 0);
-     return IndexWrapper<cc>::subIndex ( *item_ ,i);
-     }
-   */
+  template<int dim, class GridImp>
+  template<int cc>
+  inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
+  {
+    assert(cc == dim);
+    assert(item_ != 0);
+    typedef typename  ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElType;
+    return IndexWrapper<IMPLElType,cc>::subIndex ( *item_ ,i);
+  }
   //******** end method subIndex *************
 
   template <class GridImp, int dim, int cc> struct ALU3dGridCount {
