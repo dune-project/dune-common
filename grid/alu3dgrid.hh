@@ -142,7 +142,7 @@ namespace Dune
                                         GridImp, ALU3dGridGeometry>
   {
     typedef Geometry<mydim, coorddim, GridImp, ALU3dGridGeometry> GeometryType;
-    typedef ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
 
     friend class ALU3dGridIntersectionIterator<GridImp>;
   public:
@@ -417,8 +417,8 @@ namespace Dune
     // typedef typename GridImp::template codim<codim>::Entity EntityType;
     friend class ALU3dGridEntity<codim, dim, GridImp>;
 
-    typedef ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
-    typedef ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
 
   public:
 
@@ -581,8 +581,8 @@ namespace Dune
     : public EntityDefault<0,dim,GridImp,ALU3dGridEntity>
   {
     enum { dimworld = GridImp::dimensionworld };
-    typedef ALU3dImplTraits<GridImp::elementType>::GEOElementType GEOElementType;
-    typedef ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::GEOElementType GEOElementType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
 
     enum { refine_element_t =
              ALU3dImplTraits<GridImp::elementType>::refine_element_t };
@@ -721,7 +721,7 @@ namespace Dune
 
     void setEntity ( const ALU3dGridEntity<0,dim,GridImp> & org );
   private:
-    typedef ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
 
     //! index is unique within the grid hierachie and per codim
     int getIndex () const;
@@ -948,11 +948,11 @@ namespace Dune
     enum { dim       = GridImp::dimension };
     enum { dimworld  = GridImp::dimensionworld };
 
-    typedef ALU3dImplTraits<GridImp::elementType>::GEOElementType GEOElementType;
-    typedef ALU3dImplTraits<GridImp::elementType>::GEOFaceType GEOFaceType;
-    typedef ALU3dImplTraits<GridImp::elementType>::NeighbourPairType NeighbourPairType;
-    typedef ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
-    typedef ALU3dImplTraits<GridImp::elementType>::BNDFaceType BNDFaceType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::GEOElementType GEOElementType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::GEOFaceType GEOFaceType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::NeighbourPairType NeighbourPairType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::BNDFaceType BNDFaceType;
 
     friend class ALU3dGridEntity<0,dim,GridImp>;
 
@@ -1032,7 +1032,7 @@ namespace Dune
     NormalType integrationOuterNormal (const FieldVector<alu3d_ctype, dim-1>& local) const;
 
   private:
-    typedef ALU3dImplTraits<GridImp::elementType>::NeighbourFaceType NeighbourFaceType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::NeighbourFaceType NeighbourFaceType;
 
 
     // calculate normal
@@ -1044,9 +1044,9 @@ namespace Dune
                                  NormalType& result) const;
 
     // get the face corresponding to the index
-    ALU3dImplTraits<tetra>::GEOFaceType& getFace(int, Int2Type<tetra>) const;
+    typename ALU3dImplTraits<tetra>::GEOFaceType& getFace(int, Int2Type<tetra>) const;
 
-    ALU3dImplTraits<hexa>::GEOFaceType& getFace(int, Int2Type<hexa>) const;
+    typename ALU3dImplTraits<hexa>::GEOFaceType& getFace(int, Int2Type<hexa>) const;
 
     // if neighbour exists , do setup of new neighbour
     void setNeighbor () const ;
@@ -1409,12 +1409,12 @@ namespace Dune
     /** \brief write Grid to file in specified FileFormatType
      */
     template <GrapeIOFileFormatType ftype>
-    bool writeGrid( const std::basic_string<char> filename, alu3d_ctype time ) const ;
+    bool writeGrid( const std::string filename, alu3d_ctype time ) const ;
 
     /** \brief read Grid from file filename and store time of mesh in time
      */
     template <GrapeIOFileFormatType ftype>
-    bool readGrid( const std::basic_string<char> filename, alu3d_ctype & time );
+    bool readGrid( const std::string filename, alu3d_ctype & time );
 
     //! return pointer to org ALU3dGrid
     //! private method, but otherwise we have to friend class all possible

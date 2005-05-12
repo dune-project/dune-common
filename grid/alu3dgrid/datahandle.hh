@@ -18,7 +18,7 @@ namespace ALU3dGridSpace {
   {
     GridType & grid_;
     typedef typename GridType::template codim<0>::Entity Entity;
-    typedef Dune::ALU3dImplTraits<GridType::elementType>::PLLBndFaceType PLLBndFaceType;
+    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::PLLBndFaceType PLLBndFaceType;
     Entity & en_;
     EntityType & realEntity_;
 
