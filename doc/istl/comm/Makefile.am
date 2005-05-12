@@ -42,5 +42,8 @@ communication.dvi : communication.tex buildindexset.hh reverse.hh
 
 CLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi *.pdf *.ps
 
+# setting like in dune-web
+CURDIR=doc/istl/comm
+
 include $(top_srcdir)/am/webstuff
 include $(top_srcdir)/am/sourcescheck

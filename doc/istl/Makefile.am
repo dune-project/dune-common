@@ -28,5 +28,8 @@ dist_pkgdata_DATA = istl.pdf istl.ps
 
 CLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi *.pdf *.ps
 
+# setting like in dune-web
+CURDIR=doc/istl
+
 include $(top_srcdir)/am/webstuff
 include $(top_srcdir)/am/sourcescheck
