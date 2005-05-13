@@ -47,7 +47,6 @@ namespace Dune {
 
   enum GeometryType {vertex=0,line=1, triangle=2, quadrilateral=3, tetrahedron=4,
                      pyramid=5, prism=6, hexahedron=7,
-                     iso_triangle=8, iso_quadrilateral=9,
                      simplex=64, hypercube=65, unknown=127};
 
   enum AdaptationState {
@@ -133,10 +132,6 @@ namespace Dune {
       return "prism";
     case hexahedron :
       return "hexahedron";
-    case iso_triangle :
-      return "iso_triangle";
-    case iso_quadrilateral :
-      return "iso_quadrilateral";
     case simplex :
       return "simplex";
     case hypercube :
