@@ -523,8 +523,6 @@ namespace Dune {
         switch(coerceTo) {
         case triangle :
           return VirtualRefinementImp<triangle, CoordType, triangle>::instance();
-        case iso_triangle :
-          return VirtualRefinementImp<triangle, CoordType, iso_triangle>::instance();
         default :
           break;
         }
@@ -535,34 +533,6 @@ namespace Dune {
           return VirtualRefinementImp<quadrilateral, CoordType, triangle>::instance();
         case quadrilateral :
           return VirtualRefinementImp<quadrilateral, CoordType, quadrilateral>::instance();
-        case iso_triangle :
-          return VirtualRefinementImp<quadrilateral, CoordType, iso_triangle>::instance();
-        case iso_quadrilateral :
-          return VirtualRefinementImp<quadrilateral, CoordType, iso_quadrilateral>::instance();
-        default :
-          break;
-        }
-        break;
-      case iso_triangle :
-        switch(coerceTo) {
-        case triangle :
-          return VirtualRefinementImp<iso_triangle, CoordType, triangle>::instance();
-        case iso_triangle :
-          return VirtualRefinementImp<iso_triangle, CoordType, iso_triangle>::instance();
-        default :
-          break;
-        }
-        break;
-      case iso_quadrilateral :
-        switch(coerceTo) {
-        case triangle :
-          return VirtualRefinementImp<iso_quadrilateral, CoordType, triangle>::instance();
-        case quadrilateral :
-          return VirtualRefinementImp<iso_quadrilateral, CoordType, quadrilateral>::instance();
-        case iso_triangle :
-          return VirtualRefinementImp<iso_quadrilateral, CoordType, iso_triangle>::instance();
-        case iso_quadrilateral :
-          return VirtualRefinementImp<iso_quadrilateral, CoordType, iso_quadrilateral>::instance();
         default :
           break;
         }

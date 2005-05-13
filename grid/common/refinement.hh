@@ -48,10 +48,10 @@
    subelements which are triangles.
 
    Currently the following geometry types are supportet:
-   - hypercubes ((iso_)quadrilaterals, hexahedrons),
-   - simplices ((iso_)triangles, tetrahedrons),
-   - triangulating hypercubes into simplices ((iso_)quadrilaterals ->
-    (iso_)triangles, hexahedrons -> tetrahedrons).
+   - hypercubes (quadrilaterals, hexahedrons),
+   - simplices (triangles, tetrahedrons),
+   - triangulating hypercubes into simplices (quadrilaterals ->
+    triangles, hexahedrons -> tetrahedrons).
 
    @subsection Cannot_do What Refinement can't do for you
    <!--------------------------------------------------->

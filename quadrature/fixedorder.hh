@@ -178,8 +178,6 @@ namespace Dune {
       case pyramid      : { buildQuadrature<pyramid> ( id , polOrd ); break; }
       case prism        : { buildQuadrature<prism> ( id , polOrd ); break; }
       case hexahedron   : { buildQuadrature<hexahedron> ( id , polOrd ); break; }
-      case iso_triangle : { buildQuadrature<iso_triangle> ( id , polOrd ); break; }
-      case iso_quadrilateral : { buildQuadrature<iso_quadrilateral> ( id , polOrd ); break; }
       default :
         DUNE_THROW(NotImplemented, "Element type is unkown in Constructor of Quadrature!");
       }
