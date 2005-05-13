@@ -3,6 +3,8 @@
 #ifndef DUNE_UGGRIDLEVELITERATOR_HH
 #define DUNE_UGGRIDLEVELITERATOR_HH
 
+#include <dune/grid/uggrid/uggridentitypointer.hh>
+
 /** \file
  * \brief The UGGridLevelIterator class and its specializations
  */
