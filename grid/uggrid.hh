@@ -287,6 +287,7 @@ namespace Dune {
     // End of Interface Methods
     // **********************************************************
 
+#ifdef UGGRID_WITH_INDEX_SETS
     const HierarchicIndexSetType& hierarchicIndexSet() const {
       return hierarchicIndexSet_;
     }
@@ -296,6 +297,7 @@ namespace Dune {
         levelIndexSet_ = new LevelIndexSetType(*this);
       return *levelIndexSet_;
     }
+#endif
 
     void createbegin();
 
@@ -449,6 +451,6 @@ namespace Dune {
 } // namespace Dune
 
 // Include the method definitions
-#include "uggrid/uggrid.cc"
+//#include "uggrid/uggrid.cc"
 
 #endif

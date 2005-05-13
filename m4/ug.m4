@@ -153,7 +153,15 @@ AC_DEFUN([DUNE_PATH_UG],[
       if test x$HAVE_UG = x1 ; then
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
+          # The libs necessary to instantiate UGGrid<2,2>
+	  AC_SUBST(UG_LIBS2, "-lug2 -ldomS2 -lgg2 -ldevS")
+          # The libs necessary to instantiate UGGrid<3,3>
+          # TODO: We tacitly assume that we can link to 3d-UG, even though we've
+          #       only checked for the existence of the 2d-libs.
+          # TODO: Not working for the parallel UG
+	  AC_SUBST(UG_LIBS3, "-lug3 -ldomS3 -lgg3 -ldevS")
 	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
+          AC_SUBST(UG_INCLUDE_PATH, $UG_INCLUDE_PATH)
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
     # add to global list

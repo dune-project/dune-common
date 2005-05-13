@@ -1,15 +1,16 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-//************************************************************************
-//
-//  Implementation von UGGrid
-//
-//  namespace Dune
-//
-//************************************************************************
+#include "config.h"
+#include <dune/grid/uggrid.hh>
 
 #include <dune/common/tuples.hh>
 #include <dune/common/sllist.hh>
+
+#ifdef _2
+template class Dune::UGGrid<2,2>;
+#else
+template class Dune::UGGrid<3,3>;
+#endif
 
 // *********************************************************************
 //
@@ -117,6 +118,8 @@ namespace Dune {
 
 }  // end namespace Dune
 
+using namespace Dune;
+
 //***********************************************************************
 //
 // --UGGrid
@@ -133,10 +136,10 @@ template<> bool Dune::UGGrid < 3, 3 >::useExistingDefaultsFile = false;
 
 template < int dim, int dimworld >
 inline Dune::UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL),
-                                                  refinementType_(COPY),
-                                                  omitGreenClosure_(false),
                                                   hierarchicIndexSet_(*this),
-                                                  levelIndexSet_(NULL)
+                                                  levelIndexSet_(NULL),
+                                                  refinementType_(COPY),
+                                                  omitGreenClosure_(false)
 {
   init(500, 10);
 }
@@ -144,10 +147,10 @@ inline Dune::UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL),
 template < int dim, int dimworld >
 inline Dune::UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned envHeapSize)
   : multigrid_(NULL),
-    refinementType_(COPY),
-    omitGreenClosure_(false),
     hierarchicIndexSet_(*this) ,
-    levelIndexSet_(NULL)
+    levelIndexSet_(NULL),
+    refinementType_(COPY),
+    omitGreenClosure_(false)
 {
   init(heapSize, envHeapSize);
 }
@@ -627,6 +630,10 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
     elementSide = renumbering[elementSide];
     break;
   }
+  default :
+    DUNE_THROW(NotImplemented, "Unknown element type '"
+               << e->geometry().type() << "'found!");
+
   }
 
   // ///////////////
@@ -721,6 +728,10 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
       side = renumbering[side];
       break;
     }
+    default :
+      DUNE_THROW(NotImplemented, "Unknown element type '"
+                 << e->geometry().type() << "'found!");
+
     }
 
     children[i][0] = UG_NS<dim>::index(Element<0>::get(*f));

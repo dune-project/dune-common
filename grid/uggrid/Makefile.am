@@ -1,7 +1,22 @@
 # $Id$
 
+if UG
+
+noinst_LTLIBRARIES = libuggrid2.la libuggrid3.la
+
+# The two libs are compiled from the same source, but with different options
+libuggrid2_la_SOURCES  = uggrid.cc
+libuggrid2_la_CXXFLAGS = $(AM_CPPFLAGS) -I$(UG_INCLUDE_PATH) -D_2
+libuggrid2_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS2)
+
+libuggrid3_la_SOURCES  = uggrid.cc
+libuggrid3_la_CXXFLAGS = $(AM_CPPFLAGS) -I$(UG_INCLUDE_PATH) -D_3
+libuggrid3_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS3)
+
+endif
+
 uggriddir = $(includedir)/dune/grid/uggrid/
-uggrid_HEADERS = uggrid.cc uggridentity.cc uggridgeometry.cc \
+uggrid_HEADERS = uggridentity.cc uggridgeometry.cc \
   uggridentitypointer.hh uggridhieriterator.cc ugintersectionit.cc \
   ugfunctions.hh uggridboundent.hh uggridentity.hh uggridgeometry.hh \
   uggridhieriterator.hh uggridleveliterator.hh ugincludes.hh \
