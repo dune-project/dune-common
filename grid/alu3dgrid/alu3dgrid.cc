@@ -262,7 +262,7 @@ namespace Dune {
     ALU3dGridReferenceGeometry () : refelem (true) {};
   };
 
-  const char * elType2Name( ALU3dGridElementType elType )
+  inline const char * elType2Name( ALU3dGridElementType elType )
   {
     switch( elType )
     {
@@ -273,7 +273,7 @@ namespace Dune {
     }
   }
 
-  bool checkMacroGrid ( ALU3dGridElementType elType , const std::string filename )
+  inline bool checkMacroGrid ( ALU3dGridElementType elType , const std::string filename )
   {
     std::fstream file (filename.c_str(),std::ios::in);
     if( file )
@@ -336,7 +336,7 @@ namespace Dune {
     assert(mygrid_ != 0);
 
 #ifdef _ALU3DGRID_PARALLEL_
-    //loadBalance();
+    loadBalance();
     __MyRank__ = mpAccess_.myrank();
 
     dverb << "************************************************\n";
@@ -709,6 +709,7 @@ namespace Dune {
     bool changed = myGrid().duneLoadBalance();
     if(changed)
     {
+      std::cout << "Grid was balanced on p=" << myRank() << "\n";
       calcMaxlevel();             // calculate new maxlevel
       calcExtras();               // reset size and things
     }
@@ -732,7 +733,7 @@ namespace Dune {
 
     if(changed)
     {
-      std::cout << "Grid was balanced no p = " << mpAccess_.myrank() << "\n";
+      std::cout << "Grid was balanced on p = " << myRank() << "\n";
       calcMaxlevel();             // calculate new maxlevel
       calcExtras();               // reset size and things
     }
