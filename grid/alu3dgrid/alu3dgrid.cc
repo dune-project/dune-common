@@ -262,7 +262,47 @@ namespace Dune {
     ALU3dGridReferenceGeometry () : refelem (true) {};
   };
 
-  //-- Grid
+  const char * elType2Name( ALU3dGridElementType elType )
+  {
+    switch( elType )
+    {
+    case tetra  : return "Tetraeder";
+    case hexa   : return "Hexaeder";
+    case mixed  : return "Mixed";
+    default     : return "Error";
+    }
+  }
+
+  bool checkMacroGrid ( ALU3dGridElementType elType , const std::string filename )
+  {
+    std::fstream file (filename.c_str(),std::ios::in);
+    if( file )
+    {
+      std::string str;
+      file >> str;
+
+      std::string cmp ("!");
+      cmp += elType2Name( elType );
+
+      if (strcmp (str.c_str() , cmp.c_str()) != 0)
+      {
+        derr << "ALU3DGrid<" << elType2Name(elType) << "> tries to read MacroGridFile with < " << str
+             << " >. Identifier should be < " << cmp << " >!\n";
+        abort();
+      }
+
+      file.close();
+      return true;
+    }
+    else
+    {
+      derr << "Couldn't open macro grid file < " << filename << " > !\n";
+      abort();
+    }
+    return false;
+  }
+
+  //--Grid
   //template <int dim, int dimworld, ALU3dGridElementType elType>
   //const ALU3dGridElementType
   //ALU3dGrid<dim, dimworld, elType>::elementType = elType;
@@ -283,6 +323,11 @@ namespace Dune {
       , hIndexSet_ (*this,globalSize_)
       , levelIndexSet_(0)
   {
+    if( myRank_ <= 0 )
+    {
+      checkMacroGrid ( elType , macroTriangFilename );
+    }
+
     mygrid_ = new ALU3DSPACE GitterImplType (macroTriangFilename
 #ifdef _ALU3DGRID_PARALLEL_
                                              , mpAccess_
