@@ -25,9 +25,6 @@ namespace Dune
 
   class ALU3dGridError : public Exception {};
 
-  //#undef DUNE_THROW
-  //#define DUNE_THROW(e,m) assert(false);
-
   enum ALU3dGridElementType { tetra = 4, hexa = 7, mixed, error };
 
   //ALU3dGridElementType convertGeometryType2ALU3dGridElementType(GeometryType);
@@ -444,6 +441,7 @@ namespace Dune
   //
   // --ALU3dGridEntity
   // --Entity
+  // --Men
   //
   //**********************************************************************
   template<int codim, int dim, class GridImp>
@@ -757,6 +755,7 @@ namespace Dune
     bool equals ( const ALU3dGridEntity<0,dim,GridImp> & org ) const;
 
     void setEntity ( const ALU3dGridEntity<0,dim,GridImp> & org );
+
   private:
     typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
 
@@ -897,6 +896,9 @@ namespace Dune
      */
 
   private:
+    //! return reference to EntityPointers entity_
+    EntityImp & myEntity () { return (*(this->entity_)); }
+
     // go to next valid element
     ALU3DSPACE HElementType * goNextElement (ALU3DSPACE HElementType * oldEl);
 
@@ -1122,8 +1124,6 @@ namespace Dune
 
     int walkLevel_;
 
-    //EntityImp * entity_; //! neighbour entity
-
     // current element from which we started the intersection iterator
     mutable GEOElementType *item_;
 
@@ -1198,6 +1198,9 @@ namespace Dune
     void increment ();
 
   private:
+    //! return reference to EntityPointers entity_
+    EntityImp & myEntity () { return (*(this->entity_)); }
+
     // element index, -1 for end
     int index_;
 
@@ -1242,6 +1245,9 @@ namespace Dune
     void increment ();
 
   private:
+    //! return reference to EntityPointers entity_
+    EntityImp & myEntity () { return (*(this->entity_)); }
+
     // element index, -1 for end
     int index_;
 
