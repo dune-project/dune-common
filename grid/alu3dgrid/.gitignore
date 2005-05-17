@@ -1,3 +1,7 @@
 Makefile
 Makefile.in
 semantic.cache
+.deps
+.libs
+alu3dmappings.lo
+libalu3d.la
