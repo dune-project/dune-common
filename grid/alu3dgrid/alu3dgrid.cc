@@ -1523,7 +1523,7 @@ namespace Dune {
         assert(ghost_->level() == ghost_->ghostLevel());
       }
 
-      assert( ghost_->getGhost() );
+      //assert( ghost_->getGhost() );
 
       // old set ghost method
       (*(this->entity_)).setGhost( *ghost_ );
