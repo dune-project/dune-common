@@ -627,6 +627,9 @@ namespace Dune {
       {
         if(w->item().level() > maxlevel_ ) maxlevel_ = w->item().level();
         w->item ().resetRefinedTag();
+
+        // note, resetRefinementRequest sets the request to coarsen
+        w->item ().resetRefinementRequest();
       }
     }
     //#ifdef _ALU3DGRID_PARALLEL_
@@ -654,6 +657,9 @@ namespace Dune {
       {
         if(w->item().level() > maxlevel_ ) maxlevel_ = w->item().level();
         w->item ().resetRefinedTag();
+
+        // note, resetRefinementRequest sets the request to coarsen
+        w->item ().resetRefinementRequest();
       }
     }
 #endif
@@ -1360,13 +1366,13 @@ namespace Dune {
       needSetup_      = true;
       twist_          = org.twist_;
       initInterGl_    = false;
-      interSelfGlobal_  = (org.interSelfGlobal_) ? this->grid_.geometryProvider_.getNewObjectEntity( grid_ , walkLevel_ ) : 0;
+      interSelfGlobal_  = (org.interSelfGlobal_) ? this->grid_.geometryProvider_.getNewObjectEntity( this->grid_ , walkLevel_ ) : 0;
       initInterLocal_ = false;
       interSelfLocal_ = (org.interSelfLocal_) ?
-                        this->grid_.geometryProvider_.getNewObjectEntity(grid_, walkLevel_) : 0;
+                        this->grid_.geometryProvider_.getNewObjectEntity(this->grid_, walkLevel_) : 0;
       interNeighLocal_ = (org.interNeighLocal_) ?
-                         this->grid_.geometryProvider_.getNewObjectEntity(grid_, walkLevel_) : 0;
-      bndEntity_      = (org.bndEntity_) ? this->grid_.bndProvider_.getNewObjectEntity( grid_ , walkLevel_ ) : 0;
+                         this->grid_.geometryProvider_.getNewObjectEntity(this->grid_, walkLevel_) : 0;
+      bndEntity_      = (org.bndEntity_) ? this->grid_.bndProvider_.getNewObjectEntity( this->grid_ , walkLevel_ ) : 0;
     }
     else
     {
@@ -1577,7 +1583,7 @@ namespace Dune {
 
 
   template <class GridImp>
-  inline const ALU3dGridIntersectionIterator<GridImp>::LocalGeometry &
+  inline const typename ALU3dGridIntersectionIterator<GridImp>::LocalGeometry &
   ALU3dGridIntersectionIterator<GridImp>::intersectionSelfLocal() const {
     initLocals();
     return *interSelfLocal_;
@@ -1612,7 +1618,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  inline const ALU3dGridIntersectionIterator<GridImp>::LocalGeometry &
+  inline const typename ALU3dGridIntersectionIterator<GridImp>::LocalGeometry &
   ALU3dGridIntersectionIterator<GridImp>::intersectionNeighborLocal() const {
     assert(!boundary());
 
@@ -2180,6 +2186,7 @@ namespace Dune {
       return true;
     }
 
+    (*item_).request( nosplit_element_t );
     return false;
   }
 
@@ -2560,7 +2567,7 @@ namespace Dune {
     enum { dim = 2 };
     enum { dimworld = 3};
 
-    const Geometry<3, 3, const ALU3dGrid<3, 3, tetra>, ALU3dGridGeometry>&
+    const Geometry<3, 3, const ALU3dGrid<3, 3, tetra>, Dune::ALU3dGridGeometry> &
     refElem =
       ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, tetra> >::refelem();
 
@@ -3110,7 +3117,7 @@ namespace Dune {
     enum { dim = 2 };
     enum { dimworld = 3 };
 
-    const Geometry<3, 3, const ALU3dGrid<3, 3, hexa>, ALU3dGridGeometry >&
+    const Geometry<3, 3, const ALU3dGrid<3, 3, hexa>, Dune::ALU3dGridGeometry >&
     refElem =
       ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::refelem();
 
