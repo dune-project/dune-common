@@ -160,9 +160,13 @@ namespace Dune
       return this->realGeometry.buildGeom(item);
     }
 
-    bool buildGeom(const ALU3DSPACE HFaceType& item,
-                   int twist, int faceIdx) {
-      return this->realGeometry.buildGeom(item, twist, faceIdx);
+    bool buildGeom(const ALU3DSPACE HFaceType& item) {
+      return this->realGeometry.buildGeom(item);
+    }
+
+    // build a face geometry in the reference element
+    bool buildGeom(int twist, int faceIdx) {
+      return this->realGeometry.buildGeom(twist, faceIdx);
     }
 
     // call buildGhost of realGeometry
@@ -263,7 +267,8 @@ namespace Dune
     //***********************************************************************
     //! generate the geometry for out of given ALU3dGridElement
     bool buildGeom(const IMPLElementType & item);
-    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int faceIdx);
+    bool buildGeom(const ALU3DSPACE HFaceType & item);
+    bool buildGeom(int twist, int faceIdx);
     bool buildGeom(const ALU3DSPACE HEdgeType & item);
     bool buildGeom(const ALU3DSPACE VertexType & item);
 
@@ -278,6 +283,16 @@ namespace Dune
     FieldVector<alu3d_ctype, cdim> & getCoordVec (int i);
 
   private:
+    //! calculates the vertex index in the reference element out of a face index
+    //! and a local vertex index
+    int faceIndex(int faceIdx, int vtxIdx) const;
+
+    //! calculates local index of ALU3dGrid face using the twist of the face regarding the element prototype
+    int faceTwist(int val, int idx) const;
+
+    //! calculates inverse of faceTwist;
+    int invTwist(int val, int idx) const;
+
     // generate Jacobian Inverse and calculate integration_element
     void buildJacobianInverse() const;
 
@@ -302,6 +317,8 @@ namespace Dune
 
     mutable FieldVector<alu3d_ctype,cdim> tmpV_; //! temporary memory
     mutable FieldVector<alu3d_ctype,cdim> tmpU_; //! temporary memory
+
+    const static int faceIndex_[4][3];
   };
 
   template <int mydim, int cdim>
@@ -364,7 +381,8 @@ namespace Dune
     //***********************************************************************
     //! generate the geometry out of a given ALU3dGridElement
     bool buildGeom(const IMPLElementType & item);
-    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int faceIdx);
+    bool buildGeom(const ALU3DSPACE HFaceType & item);
+    bool buildGeom(int twist, int faceIdx);
     bool buildGeom(const ALU3DSPACE HEdgeType & item);
     bool buildGeom(const ALU3DSPACE VertexType & item);
 
@@ -379,8 +397,11 @@ namespace Dune
     FieldVector<alu3d_ctype, cdim> & getCoordVec (int i);
 
   private:
-    //! calculates local index of ALU3dGrid Face using the twist of the face regarding the element prototype
+    //! calculates local index of ALU3dGrid face using the twist of the face regarding the element prototype
     int faceTwist(int val, int idx) const;
+
+    //! calculates inverse of faceTwist;
+    int invTwist(int val, int idx) const;
 
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, POWER_M_P<2,mydim>::power, cdim> coord_;
@@ -392,16 +413,29 @@ namespace Dune
 
     mutable FieldMatrix<alu3d_ctype, 3, 3> jInv_;
 
+    //! maps a vertex index in the ALU3dGrid reference element on the vertex
+    //! index in the Dune reference element
     const static int alu2duneVol[8];
     const static int dune2aluVol[8];
 
+    //! maps a face number of the ALU3dGrid reference element on the face number
+    //! of the Dune reference element
     const static int alu2duneFace[6];
     const static int dune2aluFace[6];
 
+    //! maps a vertex of the ALU3dGrid reference face on the vertex index of the
+    //! Dune reference face
     const static int alu2duneQuad[4];
     const static int dune2aluQuad[4];
 
+    //! maps a local vertex index on a Dune face on a local vertex index of the
+    //! topologically identical face of the ALU3dGrid reference element
     const static int dune2aluFaceVertex[6][4];
+    const static int alu2duneFaceVertex[6][4];
+
+    //! maps a local vertex index on a ALU3dGrid face on a global vertex index in
+    //! the Dune reference element
+    const static int alu2duneFaceVertexGlobal[6][4];
   };
 
   //**********************************************************************
@@ -1033,7 +1067,12 @@ namespace Dune
 
   private:
     typedef typename ALU3dImplTraits<GridImp::elementType>::NeighbourFaceType NeighbourFaceType;
+    // initialise both local geometries
+    void initLocals() const;
 
+    // initialise a local geometry
+    void initLocal(const GEOElementType& item, int faceIdx,
+                   LocalGeometryImp& geo) const;
 
     // calculate normal
     void calculateNormal(const FieldVector<alu3d_ctype, dim-1>& local,
@@ -1109,6 +1148,10 @@ namespace Dune
     mutable bool initInterGl_; //! true if interSelfGlobal_ was initialized
     mutable bool twist_; //! true if orientation is such that normal points into hexahedron
     GeometryImp * interSelfGlobal_; //! intersection_self_global
+
+    mutable bool initInterLocal_;
+    LocalGeometryImp * interSelfLocal_; //! intersection_self_local
+    LocalGeometryImp * interNeighLocal_; //! intersection_neigh_local
 
     MakeableBndEntityImp * bndEntity_; //! boundaryEntity
   };
