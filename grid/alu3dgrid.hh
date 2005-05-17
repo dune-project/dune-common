@@ -53,6 +53,7 @@ namespace Dune
              ALU3DSPACE GitterType::Geometric::TetraRule::iso8 };
     enum { coarse_element_t =
              ALU3DSPACE GitterType::Geometric::TetraRule::crs  };
+    enum { nosplit_element_t = ALU3DSPACE GitterType::Geometric::TetraRule::nosplit };
 
     typedef std::pair<GEOFaceType*, int> NeighbourFaceType;
     typedef std::pair<HasFaceType*, int> NeighbourPairType;
@@ -75,8 +76,9 @@ namespace Dune
     typedef ALU3DSPACE BNDFace4Type PLLBndFaceType;
 
     // refinement and coarsening enum for hexahedrons
-    enum { refine_element_t = ALU3DSPACE GitterType::Geometric::HexaRule::iso8 };
-    enum { coarse_element_t = ALU3DSPACE GitterType::Geometric::HexaRule::crs  };
+    enum { refine_element_t  = ALU3DSPACE GitterType::Geometric::HexaRule::iso8 };
+    enum { coarse_element_t  = ALU3DSPACE GitterType::Geometric::HexaRule::crs  };
+    enum { nosplit_element_t = ALU3DSPACE GitterType::Geometric::HexaRule::nosplit };
 
     typedef std::pair<GEOFaceType*, int> NeighbourFaceType;
     typedef std::pair<HasFaceType*, int> NeighbourPairType;
@@ -622,6 +624,7 @@ namespace Dune
              ALU3dImplTraits<GridImp::elementType>::refine_element_t };
     enum { coarse_element_t =
              ALU3dImplTraits<GridImp::elementType>::coarse_element_t };
+    enum { nosplit_element_t = ALU3dImplTraits<GridImp::elementType>::nosplit_element_t };
 
     friend class ALU3dGrid < dim , dimworld, GridImp::elementType>;
     friend class ALU3dGridIntersectionIterator < GridImp >;
