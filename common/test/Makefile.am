@@ -2,7 +2,7 @@
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fmatrixtest \
-	poolallocatortest settest
+	poolallocatortest settest gcdlcdtest
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -36,5 +36,7 @@ fmatrixtest_SOURCES = fmatrixtest.cc
 poolallocatortest_SOURCES = poolallocatortest.cc
 
 settest_SOURCES=settest.cc
+
+gcdlcdtest_SOURCES = gcdlcdtest.cc
 
 include $(top_srcdir)/am/sourcescheck

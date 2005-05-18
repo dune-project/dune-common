@@ -16,3 +16,4 @@ poolallocatortest
 *.gcda
 *.gcno
 gmon.out
+gcdlcdtest
