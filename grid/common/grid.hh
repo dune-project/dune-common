@@ -136,7 +136,7 @@ namespace Dune {
       return "simplex";
     case hypercube :
       return "hypercube";
-    case unknown :
+      default unknown :
       return "unknown";
     }
   }
