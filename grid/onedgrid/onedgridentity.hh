@@ -90,21 +90,21 @@ namespace Dune {
 
 namespace Dune {
 
-  template<int codim, int dim, class GridImp>
+  template<int cd, int dim, class GridImp>
   class OneDEntityWrapper :
-    public GridImp::template codim<codim>::Entity
+    public GridImp::template codim<cd>::Entity
   {
   public:
 
     OneDEntityWrapper() :
-      GridImp::template codim<codim>::Entity (OneDGridEntity<codim, dim, GridImp>())
+      GridImp::template codim<cd>::Entity (OneDGridEntity<cd, dim, GridImp>())
     {}
 
-    void setToTarget(OneDEntityImp<dim-codim>* target) {
+    void setToTarget(OneDEntityImp<dim-cd>* target) {
       this->realEntity.setToTarget(target);
     }
 
-    OneDEntityImp<dim-codim>* target() {return this->realEntity.target_;}
+    OneDEntityImp<dim-cd>* target() {return this->realEntity.target_;}
   };
 
 
@@ -120,9 +120,9 @@ namespace Dune {
      An entity of codimension c in dimension d is a d-c dimensional object.
 
    */
-  template<int codim, int dim, class GridImp>
+  template<int cd, int dim, class GridImp>
   class OneDGridEntity :
-    public EntityDefault <codim,dim,GridImp,OneDGridEntity>
+    public EntityDefault <cd,dim,GridImp,OneDGridEntity>
   {
 
     template <int codim_, PartitionIteratorType PiType_, class GridImp_>
@@ -137,8 +137,8 @@ namespace Dune {
     //! Constructor with a given grid level
     OneDGridEntity() : target_(NULL) {}
 
-    typedef typename GridImp::template codim<codim>::Geometry Geometry;
-    typedef typename GridImp::template codim<codim>::LevelIterator LevelIterator;
+    typedef typename GridImp::template codim<cd>::Geometry Geometry;
+    typedef typename GridImp::template codim<cd>::LevelIterator LevelIterator;
     typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
 
@@ -173,7 +173,7 @@ namespace Dune {
 
     OneDGridLevelIterator<0,All_Partition, GridImp> ownersFather () const {
       DUNE_THROW(NotImplemented, "ownersFather");
-      //return OneDGridLevelIterator<codim,All_Partition,GridImp>();
+      //return OneDGridLevelIterator<cd,All_Partition,GridImp>();
     }
 
     /** \brief Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
@@ -191,7 +191,7 @@ namespace Dune {
     }
 
     //! the current geometry
-    OneDMakeableGeometry<dim-codim,dim,GridImp> geo_;
+    OneDMakeableGeometry<dim-cd,dim,GridImp> geo_;
 
     OneDEntityImp<0>* target_;
 
