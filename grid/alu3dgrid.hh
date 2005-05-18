@@ -444,12 +444,12 @@ namespace Dune
   // --Men
   //
   //**********************************************************************
-  template<int codim, int dim, class GridImp>
+  template<int cd, int dim, class GridImp>
   class ALU3dGridMakeableEntity :
-    public GridImp::template codim<codim>::Entity
+    public GridImp::template codim<cd>::Entity
   {
     // typedef typename GridImp::template codim<codim>::Entity EntityType;
-    friend class ALU3dGridEntity<codim, dim, GridImp>;
+    friend class ALU3dGridEntity<cd, dim, GridImp>;
 
     typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
     typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
@@ -458,8 +458,8 @@ namespace Dune
 
     // Constructor creating the realEntity
     ALU3dGridMakeableEntity(const GridImp & grid, int level) :
-      GridImp::template codim<codim>::
-      Entity (ALU3dGridEntity<codim, dim, GridImp>(grid,level)) {}
+      GridImp::template codim<cd>::
+      Entity (ALU3dGridEntity<cd, dim, GridImp>(grid,level)) {}
 
     //! set element as normal entity
     //! ItemTypes are HElementType, HFaceType, HEdgeType and VertexType
@@ -491,12 +491,12 @@ namespace Dune
       this->realEntity.removeElement();
     }
 
-    bool equals ( const ALU3dGridMakeableEntity<codim,dim,GridImp> & org )
+    bool equals ( const ALU3dGridMakeableEntity<cd,dim,GridImp> & org )
     {
       return this->realEntity.equals(org.realEntity);
     }
 
-    void setEntity ( const ALU3dGridMakeableEntity<codim,dim,GridImp> & org )
+    void setEntity ( const ALU3dGridMakeableEntity<cd,dim,GridImp> & org )
     {
       this->realEntity.setEntity(org.realEntity);
     }

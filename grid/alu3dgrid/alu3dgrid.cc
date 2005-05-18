@@ -1827,7 +1827,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  inline typename ALU3dImplTraits<GridImp::elementType>::NeighbourPairType
+  inline typename ALU3dGridIntersectionIterator<GridImp>::NeighbourPairType
   ALU3dGridIntersectionIterator<GridImp>::
   getNeighPair (int index) const {
     return item_->myneighbour
@@ -1835,7 +1835,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  inline typename ALU3dImplTraits<GridImp::elementType>::NeighbourFaceType
+  inline typename ALU3dGridIntersectionIterator<GridImp>::NeighbourFaceType
   ALU3dGridIntersectionIterator<GridImp>::
   getNeighFace (int index) const {
     return item_->myintersection
