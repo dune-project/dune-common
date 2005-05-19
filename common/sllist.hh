@@ -5,9 +5,11 @@
 #define DUNE__SLLIST_HH
 
 #include <memory>
-#include <assert.h>
+#include <cassert>
 #include <config.h>
 #include "iteratorfacades.hh"
+#include <ostream>
+#include <iostream>
 
 namespace Dune
 {
@@ -66,7 +68,18 @@ namespace Dune
      * @brief The mutable iterator of the list.
      */
     typedef SLListConstIterator<T,A> const_iterator;
+
+    /**
+     * @brief Constructor.
+     */
     SLList();
+
+    /**
+     * @brief Destructor.
+     *
+     * Deallocates all elements in the list.
+     */
+    ~SLList();
 
     /**
      * @brief The type of the iterator capable of deletion
@@ -222,13 +235,37 @@ namespace Dune
 
     };
 
-    /** @brief The first element in the list. */
-    //Element* head_;
+    /**
+     * @brief Delete the next element in the list.
+     * @param current Element whose next element should be deleted.
+     */
+    void deleteNext(Element* current);
+
+
+    /**
+     * @brief Delete the next element in the list.
+     *
+     * If the template parameter watchForTail is true, it is checked whether
+     * the deleted element is the tail and therefore the tail must be updated.
+     * @param current Element whose next element should be deleted.
+     */
+    template<bool watchForTail>
+    void deleteNext(Element* current);
+    /**
+     * @brief Insert an element after another one in the list.
+     * @param current The element after which we insert.
+     * @param item The item to insert.
+     */
+    void insertAfter(Element* current, const T& item);
 
     /** @brief Pseudo element before the first entry. */
     Element beforeHead_;
 
-    /** @brief The last element in the list. */
+    /**
+     * @brief Pointer to he last element in the list.
+     *
+     * If list is empty this will point to beforeHead_
+     */
     Element* tail_;
 
     /** @brief The allocator we use. */
@@ -316,17 +353,8 @@ namespace Dune
      */
     inline void insertAfter(const T& v) const
     {
-      assert(current_ != 0 && list_ != 0);
-      typename SLList<T,A>::Element* added = list_->allocator_.allocate(1, 0);
-      added->item_    = v;
-      added->next_    = current_->next_;
-
-      current_->next_ = added;
-      if(current_==list_->tail_)
-        // We add a new tail to the list
-        list_->tail_=added;
-
-      ++(list_->size_);
+      assert(list_ );
+      list_->insertAfter(current_, v);
     }
 
     /**
@@ -336,16 +364,8 @@ namespace Dune
      */
     inline void deleteNext() const
     {
-      assert(current_->next_!=0 && list_!=0);
-      typename SLList<T,A>::Element* tmp =current_->next_;
-      current_->next_ = tmp->next_;
-
-      if(tmp==list_->tail_)
-        list_->tail_=current_;
-
-      list_->allocator_.destroy(tmp);
-      list_->allocator_.deallocate(tmp, 1);
-      --(list_->size_);
+      assert(list_);
+      list_->deleteNext(current_);
     }
 
   private:
@@ -527,6 +547,35 @@ namespace Dune
     /** @brief Iterator positioned at the current position. */
     SLListIterator<T,A> iterator_;
   };
+} // namespace Dune
+
+namespace std
+{
+
+  template<typename T, typename A>
+  ostream& operator<<(ostream& os, const Dune::SLList<T,A> sllist)
+  {
+    typedef typename Dune::SLList<T,A>::const_iterator Iterator;
+    Iterator end = sllist.end();
+    Iterator current= sllist.begin();
+
+    os << "{ ";
+
+    if(current!=end) {
+      os<<*current<<" ("<<static_cast<const void*>(&(*current))<<")";
+      ++current;
+
+      for(; current != end; ++current)
+        os<<", "<<*current<<" ("<<static_cast<const void*>(&(*current))<<")";
+    }
+    os<<"} ";
+    return os;
+  }
+} //namespace std
+
+namespace Dune
+{
+
   template<typename T, class A>
   SLList<T,A>::Element::Element(const T& item)
     : next_(0), item_(item)
@@ -539,72 +588,132 @@ namespace Dune
 
   template<typename T, class A>
   SLList<T,A>::SLList()
-    : beforeHead_(), tail_(0), allocator_(), size_(0)
-  {}
+    : beforeHead_(), tail_(&beforeHead_), allocator_(), size_(0)
+  {
+    beforeHead_.next_=0;
+    assert(&beforeHead_==tail_);
+    assert(tail_->next_==0);
+  }
+
+  template<typename T, class A>
+  SLList<T,A>::~SLList()
+  {
+    clear();
+    std::cout<<"Destructor called! Pool="<<allocator_<<std::endl;
+  }
 
   template<typename T, class A>
   inline void SLList<T,A>::push_back(const T& item)
   {
-    if(tail_!=0) {
-      tail_->next_ = allocator_.allocate(1, 0);
-      tail_ = tail_->next_;
-      tail_->item_=item;
-      tail_->next_=0;
-    }else{
-      beforeHead_.next_ = tail_ = allocator_.allocate(1, 0);
-      tail_->next_=0;
-      tail_->item_=item;
+    tail_->next_ = allocator_.allocate(1, 0);
+    tail_ = tail_->next_;
+    ::new (static_cast<void*>(&(tail_->item_)))T(item);
+    tail_->next_=0;
+    assert(tail_->next_==0);
+    ++size_;
+  }
+
+  template<typename T, class A>
+  inline void SLList<T,A>::insertAfter(Element* current, const T& item)
+  {
+    assert(current);
+
+    bool changeTail = (current == tail_);
+
+    // Save old next element
+    Element* tmp = current->next_;
+
+    assert(!changeTail || !tmp);
+
+    // Allocate space
+    current->next_ = allocator_.allocate(1, 0);
+
+    // Use copy constructor to initialize memory
+    ::new(static_cast<void*>(&(current->next_->item_)))T(item);
+
+    // Set next element
+    current->next_->next_=tmp;
+
+    if(!current->next_->next_) {
+      // Update tail
+      assert(changeTail);
+      tail_ = current->next_;
     }
     ++size_;
+    assert(!tail_->next_);
   }
 
   template<typename T, class A>
   inline void SLList<T,A>::push_front(const T& item)
   {
-    if(beforeHead_.next_==0) {
+    if(tail_ == &beforeHead_) {
       // list was empty
       beforeHead_.next_ = tail_ = allocator_.allocate(1, 0);
-      beforeHead_.next_->item_=item;
+      ::new(static_cast<void*>(&beforeHead_.next_->item_))T(item);
       beforeHead_.next_->next_=0;
     }else{
       Element* added = allocator_.allocate(1, 0);
-      added->item_=item;
+      ::new(static_cast<void*>(&added->item_))T(item);
       added->next_=beforeHead_.next_;
       beforeHead_.next_=added;
     }
+    assert(tail_->next_==0);
     ++size_;
+  }
+
+
+  template<typename T, class A>
+  inline void SLList<T,A>::deleteNext(Element* current)
+  {
+    this->template deleteNext<true>(current);
+  }
+
+  template<typename T, class A>
+  template<bool watchForTail>
+  inline void SLList<T,A>::deleteNext(Element* current)
+  {
+    assert(current->next_);
+    Element* next = current->next_;
+
+    if(!watchForTail || next == tail_) {
+      // deleting last element changes tail!
+      tail_ = current;
+    }
+
+    current->next_ = next->next_;
+    next->item_.~T();
+    next->next_ = 0;
+    allocator_.deallocate(next, 1);
+    --size_;
+    assert(!watchForTail || &beforeHead_ != tail_ || size_==0);
   }
 
   template<typename T, class A>
   inline void SLList<T,A>::pop_front()
   {
-    assert(beforeHead_.next_!=0);
-    if(beforeHead_.next_ == tail_)
-      tail_ = 0;
-    Element* tmp = beforeHead_.next_;
-    beforeHead_.next_ = beforeHead_.next_->next_;
-    allocator_.destroy(tmp);
-    allocator_.deallocate(tmp, 1);
-    --size_;
+    deleteNext(&beforeHead_);
   }
 
   template<typename T, class A>
   inline void SLList<T,A>::clear()
   {
     while(beforeHead_.next_ ) {
-      Element* current = beforeHead_.next_ ;
-      beforeHead_.next_  = current->next_;
-      allocator_.destroy(current);
-      allocator_.deallocate(current, 1);
+      this->template deleteNext<false>(&beforeHead_);
     }
-    tail_ = 0;
+
+#ifdef NDEBUG
     size_=0;
+#endif
+
+    assert(size_==0);
+    // update the tail!
+    tail_ = &beforeHead_;
   }
 
   template<typename T, class A>
   inline bool SLList<T,A>::empty() const
   {
-    return  (beforeHead_.next_ == 0);
+    return  (&beforeHead_ == tail_);
   }
 
   template<typename T, class A>

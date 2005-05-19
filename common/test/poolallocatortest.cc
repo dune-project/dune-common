@@ -27,7 +27,6 @@ int testPool()
   //int chunkSize   = Pool<T,size>::chunkSize;
   //int alignedSize = Pool<T,size>::alignedSize;
 
-  char** fields= new char*[10];
   unsigned long* oelements = new unsigned long[10*elements];
 
   typedef typename Pool<T,size>::Chunk Chunk;
@@ -35,7 +34,6 @@ int testPool()
   //Fill 10 chunks
   for(int chunk=0; chunk < 10; ++chunk) {
     //std::cout<< std::endl<<"Chunk "<<chunk<<" ";
-    //fields[chunk] = new char[333];
     unsigned long element = reinterpret_cast<unsigned long>(pool.allocate());
     void* celement = reinterpret_cast<void*>(element);
     //std::cout << element<<" "<< celement<<",  "<<std::endl;
@@ -87,10 +85,10 @@ int testPool()
     }
   }
 
-  //for(int chunk=0; chunk < 10; ++chunk)
-  //delete[] fields[chunk];
 
-  delete[] fields;
+
+  for(int i=0; i < elements*10; ++i)
+    pool.free(reinterpret_cast<T*>(oelements+i));
   delete[] oelements;
 
   return ret;
@@ -125,15 +123,15 @@ int testPool()
 int main(int argc, char **argv)
 {
   int ret=0;
-  /*
-     ret += testPool<int>();
 
-     ret+= testPool<double>();
+  ret += testPool<int>();
 
-     ret+= testPool<char>();
+  ret+= testPool<double>();
 
-     ret += testPool<Dune::FieldMatrix<double,10,10> >();
-   */
+  ret+= testPool<char>();
+
+  ret += testPool<Dune::FieldMatrix<double,10,10> >();
+
 
   std::cout<<AlignmentOf<UnAligned>::value<<" "<<sizeof(UnAligned)<<std::endl;
 
