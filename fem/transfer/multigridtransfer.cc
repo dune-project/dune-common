@@ -246,7 +246,7 @@ void Dune::MultiGridTransfer<DiscFuncType>::restrict (const DiscFuncType & f, Di
 template<class DiscFuncType>
 void Dune::MultiGridTransfer<DiscFuncType>::restrict (const Dune::BitField& f, Dune::BitField& t) const
 {
-  if (f.size() != matrix_.N())
+  if (f.size() != (unsigned int)matrix_.N())
     DUNE_THROW(Exception, "Fine grid bitfield has " << f.size() << " entries "
                                                     << "but the interpolation matrix has " << matrix_.N() << " rows!");
 
