@@ -20,6 +20,9 @@ namespace Dune {
     //! Default constructor
     BitField() : std::vector<bool>() {}
 
+    //! Constructor with a given length
+    BitField(int n) : std::vector<bool>(n) {}
+
     //! Constructor which initializes the field
     BitField(int n, bool v) : std::vector<bool>(n) {
       for (size_t i=0; i<size(); i++)
