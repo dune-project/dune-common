@@ -9,7 +9,6 @@
 #include <config.h>
 #include "iteratorfacades.hh"
 #include <ostream>
-#include <iostream>
 
 namespace Dune
 {
@@ -599,7 +598,6 @@ namespace Dune
   SLList<T,A>::~SLList()
   {
     clear();
-    std::cout<<"Destructor called! Pool="<<allocator_<<std::endl;
   }
 
   template<typename T, class A>
