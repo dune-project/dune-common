@@ -15,15 +15,31 @@ namespace Dune {
   template<class GridType>
   class AmiraMeshWriter {
 
+    enum {dim = GridType::dimension};
+
+    typedef typename GridType::template codim<0>::LevelIterator ElementIterator;
+    typedef typename GridType::template codim<dim>::LevelIterator VertexIterator;
+    typedef typename GridType::LeafIterator LeafIterator;
+
   public:
 
-    /** \brief Writes a grid in AmiraMesh format
+    /** \brief Write the leaf level of a grid in AmiraMesh format
      *
      * @param grid The grid objects that is to be written
      * @param filename The filename
      */
     static void writeGrid(const GridType& grid,
                           const std::string& filename);
+
+    /** \brief Write one level of a grid in AmiraMesh format
+     *
+     * @param grid The grid objects that is to be written
+     * @param filename The filename
+     * @param level The level to be written
+     */
+    static void writeGrid(const GridType& grid,
+                          const std::string& filename,
+                          int level);
 
     /** \brief Writes a discrete function in AmiraMesh format
      *
@@ -49,6 +65,6 @@ namespace Dune {
 #include "amiramesh/amirameshwriter.cc"
 
 // the amiramesh writer for SGrid
-//#include "amiramesh/amsgridwriter.cc"
+#include "amiramesh/amsgridwriter.cc"
 
 #endif
