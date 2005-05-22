@@ -950,6 +950,15 @@ namespace Dune
     builtgeometry_ = geo_.builtGeom(elInfo_,face,edge,vertex);
     localFCoordCalced_ = false;
   }
+
+  template<int codim, int dim, class GridImp>
+  inline void AlbertaGridEntity<codim,dim,GridImp>::
+  setEntity(const AlbertaGridEntity<codim,dim,GridImp> & org)
+  {
+    setElInfo(org.elInfo_,org.face_,org.edge_,org.vertex_);
+    setLevel(org.level_);
+  }
+
   template<int codim, int dim, class GridImp>
   inline void AlbertaGridEntity<codim,dim,GridImp>::
   setLevel(int level)
@@ -1065,7 +1074,7 @@ namespace Dune
   inline int AlbertaGridEntity<codim,dim,GridImp>::
   globalIndex() const
   {
-    assert(codim == dim);
+    //assert(codim == dim);
     const Entity en (*this);
     return grid_.hierarchicIndexSet().index(en);
   }
@@ -1085,9 +1094,7 @@ namespace Dune
     ALBERTA EL_INFO * fatherInfo = ALBERTA AlbertHelp::getFatherInfo(travStack_,elInfo_,level_);
     int fatherLevel = (level_ > 0) ? (level_-1) : 0;
 
-    AlbertaGridLevelIterator<0,All_Partition,GridImp>
-    vati(grid_,travStack_,fatherLevel,fatherInfo,0,0,0);
-    return vati;
+    return AlbertaGridEntityPointer<0,GridImp> (grid_,travStack_,fatherLevel,fatherInfo,0,0,0);
   }
 
   /*
@@ -1199,7 +1206,6 @@ namespace Dune
   AlbertaGridEntity(const GridImp &grid, int level)
     : grid_(grid)
       , level_ (level)
-      //, vxEntity_ ( grid_ , -1, 0, 0, 0, 0, 0)
       , travStack_ (0) , elInfo_ (0)
       , fatherReLocal_(false)
       , geo_(false)
@@ -1254,8 +1260,7 @@ namespace Dune
     static EntityPointer entity(GridImp & grid, ALBERTA TRAVERSE_STACK * stack,
                                 int level, ALBERTA EL_INFO * elInfo, int i )
     {
-      return AlbertaGridLevelIterator<1,All_Partition,GridImp>
-               (grid, stack , level ,elInfo, i,0,0);
+      return AlbertaGridEntityPointer<1,GridImp> (grid, stack , level ,elInfo, i,0,0);
     }
   };
 
@@ -1268,8 +1273,7 @@ namespace Dune
     static EntityPointer entity(GridImp & grid, ALBERTA TRAVERSE_STACK * stack,
                                 int level, ALBERTA EL_INFO * elInfo, int i )
     {
-      return AlbertaGridLevelIterator<2,All_Partition,GridImp>
-               (grid, stack , level ,elInfo, 0,i,0);
+      return AlbertaGridEntityPointer<2,GridImp> (grid, stack , level ,elInfo, 0,i,0);
     }
   };
 
@@ -1281,8 +1285,7 @@ namespace Dune
     static EntityPointer entity(GridImp & grid, ALBERTA TRAVERSE_STACK * stack,
                                 int level, ALBERTA EL_INFO * elInfo, int i )
     {
-      return AlbertaGridLevelIterator<dim,All_Partition,GridImp>
-               (grid, stack , level ,elInfo, 0,0,i);
+      return AlbertaGridEntityPointer<dim,GridImp> (grid, stack , level ,elInfo, 0,0,i);
     }
   };
 
@@ -1344,6 +1347,15 @@ namespace Dune
   }
 
   template<int dim, class GridImp>
+  inline void AlbertaGridEntity<0,dim,GridImp>::
+  setEntity(const AlbertaGridEntity<0,dim,GridImp> & org)
+  {
+    setElInfo(org.elInfo_);
+    setTraverseStack(org.travStack_);
+    setLevel(org.level());
+  }
+
+  template<int dim, class GridImp>
   inline const typename AlbertaGridEntity <0,dim,GridImp>::Geometry &
   AlbertaGridEntity <0,dim,GridImp>::geometry() const
   {
@@ -1359,9 +1371,7 @@ namespace Dune
     ALBERTA EL_INFO * fatherInfo = ALBERTA AlbertHelp::getFatherInfo(travStack_,elInfo_,level_);
     int fatherLevel = (level_ > 0) ? (level_-1) : 0;
 
-    AlbertaGridLevelIterator<0,All_Partition,GridImp>
-    vati(grid_,travStack_,fatherLevel,fatherInfo,0,0,0);
-    return vati;
+    return AlbertaGridEntityPointer<0,GridImp> (grid_,travStack_,fatherLevel,fatherInfo,0,0,0);
   }
 
   template< int dim, class GridImp >
@@ -1379,6 +1389,97 @@ namespace Dune
     return fatherReLocal_;
   }
   // end AlbertaGridEntity
+
+  //*******************************************************************
+  //
+  //  --EntityPointer
+  //  --EnPointer
+  //
+  //*******************************************************************
+  template<int codim, class GridImp >
+  inline AlbertaGridEntityPointer<codim,GridImp> ::
+  AlbertaGridEntityPointer(const GridImp & grid,
+                           int level,  ALBERTA EL_INFO *elInfo,int face,int edge,int vertex)
+    : grid_(grid)
+      , entity_ ( grid_.template getNewEntity<codim> ( level ) )
+      , done_ (false)
+  {
+    assert( entity_ );
+    (*entity_).setElInfo(elInfo,face,edge,vertex);
+    (*entity_).setLevel(level);
+  }
+
+  template<int codim, class GridImp >
+  inline AlbertaGridEntityPointer<codim,GridImp> ::
+  AlbertaGridEntityPointer(const GridImp & grid, ALBERTA TRAVERSE_STACK * stack ,
+                           int level,  ALBERTA EL_INFO *elInfo,int face,int edge,int vertex)
+    : grid_(grid)
+      , entity_ ( grid_.template getNewEntity<codim> ( level ) )
+      , done_ (false)
+  {
+    assert( entity_ );
+    (*entity_).setElInfo(elInfo,face,edge,vertex);
+    (*entity_).setTraverseStack(stack);
+    (*entity_).setLevel(level);
+  }
+
+  template<int codim, class GridImp >
+  inline AlbertaGridEntityPointer<codim,GridImp> ::
+  AlbertaGridEntityPointer(const GridImp & grid, int level , bool done )
+    : grid_(grid)
+      , entity_ ( grid_.template getNewEntity<codim> (level) )
+      , done_ (done)
+  {}
+
+  template<int codim, class GridImp >
+  inline AlbertaGridEntityPointer<codim,GridImp> ::
+  AlbertaGridEntityPointer(const AlbertaGridEntityPointerType & org)
+    : grid_(org.grid_)
+      , entity_ ( grid_.template getNewEntity<codim> ( org.entity_->level() ) )
+  {
+    (*entity_).setEntity( *(org.entity_) );
+  }
+
+  template<int codim, class GridImp >
+  inline AlbertaGridEntityPointer<codim,GridImp> :: ~AlbertaGridEntityPointer()
+  {
+    grid_.freeEntity( entity_ );
+  }
+
+  template<int codim, class GridImp >
+  inline void AlbertaGridEntityPointer<codim,GridImp>::done ()
+  {
+    // sets entity pointer in the status of an end iterator
+    (*entity_).removeElInfo();
+    done_ = true;
+  }
+
+  template<int codim, class GridImp >
+  inline bool AlbertaGridEntityPointer<codim,GridImp>::
+  equals (const AlbertaGridEntityPointer<codim,GridImp>& i) const
+  {
+    //return (((*entity_).getElInfo() == (*(i.entity_).getElInfo()) && (done_ == i.done_)));
+    ALBERTA EL_INFO * e1 = (*entity_).getElInfo();
+    ALBERTA EL_INFO * e2 = (*(i.entity_)).getElInfo();
+    return ((e1 == e2 ) && (done_ == i.done_));
+  }
+
+  template<int codim, class GridImp >
+  inline typename AlbertaGridEntityPointer<codim,GridImp>::Entity &
+  AlbertaGridEntityPointer<codim,GridImp>::dereference () const
+  {
+    assert(entity_);
+    return (*entity_);
+  }
+
+  template<int codim, class GridImp >
+  inline int AlbertaGridEntityPointer<codim,GridImp>::level () const
+  {
+    assert(entity_);
+    return (*entity_).level();
+  }
+
+
 
 
   //***************************************************************
@@ -1400,8 +1501,11 @@ namespace Dune
   AlbertaGridHierarchicIterator(const GridImp & grid,
                                 int actLevel,
                                 int maxLevel)
-    : grid_(grid), level_ (actLevel)
-      , maxlevel_ (maxLevel) , virtualEntity_(grid,level_)
+    : AlbertaGridEntityPointer<0,GridImp> (grid,actLevel,true)
+      , level_ (actLevel)
+      , maxlevel_ (maxLevel)
+      , virtualEntity_(*(this->entity_))
+      , end_ (true)
   {
     makeIterator();
   }
@@ -1409,9 +1513,12 @@ namespace Dune
   template< class GridImp >
   inline AlbertaGridHierarchicIterator<GridImp>::
   AlbertaGridHierarchicIterator(const GridImp & grid,
-                                ALBERTA TRAVERSE_STACK *travStack,int actLevel, int maxLevel) :
-    grid_(grid), level_ (actLevel),
-    maxlevel_ ( maxLevel), virtualEntity_(grid,level_)
+                                ALBERTA TRAVERSE_STACK *travStack,int actLevel, int maxLevel)
+    : AlbertaGridEntityPointer<0,GridImp> (grid,actLevel,false)
+      , level_ (actLevel)
+      , maxlevel_ ( maxLevel)
+      , virtualEntity_( *(this->entity_) )
+      , end_ (false)
   {
     if(travStack)
     {
@@ -1430,7 +1537,7 @@ namespace Dune
         // this means, we go until leaf level
         stack->traverse_fill_flag = CALL_LEAF_EL | stack->traverse_fill_flag;
         // exact here has to stand Grid->maxlevel, but is ok anyway
-        maxlevel_ = grid_.maxlevel(); //123456789;
+        maxlevel_ = this->grid_.maxlevel(); //123456789;
       }
       // set new traverse level
       stack->traverse_level = maxlevel_;
@@ -1452,28 +1559,29 @@ namespace Dune
   }
 
   template< class GridImp >
+  inline AlbertaGridHierarchicIterator<GridImp>::
+  AlbertaGridHierarchicIterator(const AlbertaGridHierarchicIterator<GridImp> & org)
+    : AlbertaGridEntityPointer<0,GridImp> (org.grid_,org.level(), org.end_ )
+      , level_ ( org.level_ )
+      , maxlevel_ ( org.maxlevel_ )
+      , virtualEntity_( *(this->entity_) )
+      , manageStack_ ( org.manageStack_ )
+  {}
+
+  template< class GridImp >
   inline void AlbertaGridHierarchicIterator< GridImp >::increment()
   {
-    virtualEntity_.setElInfo(
-      recursiveTraverse(manageStack_.getStack())
-      );
+    ALBERTA EL_INFO * nextinfo = recursiveTraverse(manageStack_.getStack());
+    if(!nextinfo)
+    {
+      this->done();
+      return;
+    }
+
+    virtualEntity_.setElInfo( nextinfo );
     // set new actual level, calculated by recursiveTraverse
     virtualEntity_.setLevel(level_);
     return ;
-  }
-
-  template< class GridImp >
-  inline bool AlbertaGridHierarchicIterator<GridImp>::
-  equals(const AlbertaGridHierarchicIterator<GridImp> & I) const
-  {
-    return (virtualEntity_.getElInfo() == I.virtualEntity_.getElInfo());
-  }
-
-  template< class GridImp >
-  inline typename AlbertaGridHierarchicIterator<GridImp>::Entity &
-  AlbertaGridHierarchicIterator<GridImp>::dereference() const
-  {
-    return virtualEntity_;
   }
 
   template< class GridImp >
@@ -1530,8 +1638,8 @@ namespace Dune
 
       // new: go down maxlevel, but fake the elements
       level_++;
-      grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
-                       stack->elinfo_stack+stack->stack_used+1 ,true);
+      this->grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
+                             stack->elinfo_stack+stack->stack_used+1 ,true);
       //ALBERTA fill_elinfo(i, stack->elinfo_stack + stack->stack_used,
       //  stack->elinfo_stack + (stack->stack_used + 1));
 
@@ -1603,23 +1711,20 @@ namespace Dune
   template< class GridImp >
   inline void AlbertaGridIntersectionIterator<GridImp>::freeObjects () const
   {
-    if(manageObj_)
-      manageObj_ = grid_->entityProvider_.freeObjectEntity(manageObj_);
+    if(fakeNeigh_)
+      this->grid_.interSelfProvider_.freeObjectEntity(fakeNeigh_);
 
-    if(manageInterEl_)
-      manageInterEl_ = grid_->interSelfProvider_.freeObjectEntity(manageInterEl_);
+    if(neighGlob_)
+      this->grid_.interNeighProvider_.freeObjectEntity(neighGlob_);
 
-    if(manageNeighEl_)
-      manageNeighEl_ = grid_->interNeighProvider_.freeObjectEntity(manageNeighEl_);
-
-    if(manageBndEntity_)
+    if(boundaryEntity_)
     {
-      manageBndEntity_ = grid_->interBndProvider_.freeObjectEntity(manageBndEntity_);
+      this->grid_.interBndProvider_.freeObjectEntity(boundaryEntity_);
       boundaryEntity_ = 0;
     }
 
-    if(manageNeighInfo_)
-      manageNeighInfo_ = elinfoProvider.freeObjectEntity(manageNeighInfo_);
+    if(neighElInfo_)
+      elinfoProvider.freeObjectEntity(neighElInfo_);
   }
 
   template< class GridImp >
@@ -1630,59 +1735,46 @@ namespace Dune
 
   template< class GridImp >
   inline AlbertaGridIntersectionIterator<GridImp>::
-  AlbertaGridIntersectionIterator(const GridImp & grid,int level) :
-    grid_( &grid ), level_ (level) , neighborCount_ (dim+1), virtualEntity_ (0)
-    , elInfo_ (0)
-    , manageObj_ (0)
-    , manageInterEl_ (0)
-    , manageNeighEl_ (0)
-    , manageBndEntity_ (0)
-    , fakeNeigh_ (0)
-    , neighGlob_ (0)
-    , boundaryEntity_ (0)
-    , manageNeighInfo_ (0)
-    , neighElInfo_ (0) {}
+  AlbertaGridIntersectionIterator(const GridImp & grid,int level)
+    : AlbertaGridEntityPointer<0,GridImp> (grid,level,true)
+      , level_ (level) , neighborCount_ (dim+1)
+      , virtualEntity_ ( *(this->entity_) )
+      , elInfo_ (0)
+      , fakeNeigh_ (0)
+      , neighGlob_ (0)
+      , boundaryEntity_ (0)
+      , neighElInfo_ (0)
+  {}
 
 
   template< class GridImp >
   inline AlbertaGridIntersectionIterator<GridImp>::AlbertaGridIntersectionIterator
-    (const GridImp & grid, int level, ALBERTA EL_INFO *elInfo ) :
-    grid_( &grid ) , level_ (level), neighborCount_ (0)
-    , builtNeigh_ (false)
-    , virtualEntity_ (0)
-    , elInfo_ ( elInfo )
-    , manageObj_ (0)
-    , manageInterEl_ (0)
-    , manageNeighEl_ (0)
-    , manageBndEntity_ (0)
-    , fakeNeigh_ (0)
-    , neighGlob_ (0)
-    , boundaryEntity_ (0)
-    , manageNeighInfo_ (0)
-    , neighElInfo_ (0)
-  {
-    manageNeighInfo_ = elinfoProvider.getNewObjectEntity();
-    neighElInfo_ = manageNeighInfo_->item;
-  }
+    (const GridImp & grid, int level, ALBERTA EL_INFO *elInfo )
+    : AlbertaGridEntityPointer<0,GridImp> (grid,level,false)
+      , level_ (level), neighborCount_ (0)
+      , builtNeigh_ (false)
+      , virtualEntity_ ( *(this->entity_) )
+      , elInfo_ ( elInfo )
+      , fakeNeigh_ (0)
+      , neighGlob_ (0)
+      , boundaryEntity_ (0)
+      , neighElInfo_ ( elinfoProvider.getNewObjectEntity() )
+  {}
 
   // copy constructor
   template< class GridImp >
   inline AlbertaGridIntersectionIterator<GridImp>::AlbertaGridIntersectionIterator
     (const AlbertaGridIntersectionIterator<GridImp> & org)
-    : grid_ (org.grid_) , level_(org.level_)
+    : AlbertaGridEntityPointer<0,GridImp> (org.grid_,org.level(), (org.elInfo_) ? false : true )
+      , level_(org.level_)
       , neighborCount_(org.neighborCount_)
       , builtNeigh_ (false)
-      , virtualEntity_ (0)
+      , virtualEntity_ ( *(this->entity_) )
       , elInfo_ ( org.elInfo_ )
-      , manageObj_ (0)
-      , manageInterEl_ (0)
-      , manageNeighEl_ (0)
-      , manageBndEntity_ (0)
       , fakeNeigh_ (0)
       , neighGlob_ (0)
       , boundaryEntity_ (0)
-      , manageNeighInfo_ ( (elInfo_) ? elinfoProvider.getNewObjectEntity() : 0 )
-      , neighElInfo_ ( (manageNeighInfo_) ? manageNeighInfo_->item : 0 )
+      , neighElInfo_ ( (elInfo_) ? elinfoProvider.getNewObjectEntity() : 0 )
   {}
 
   // assignment operator
@@ -1690,8 +1782,10 @@ namespace Dune
   inline AlbertaGridIntersectionIterator<GridImp> &
   AlbertaGridIntersectionIterator<GridImp>::operator = (const AlbertaGridIntersectionIterator<GridImp> & org)
   {
+    assert( false );
+
     // only assign iterators from the same grid
-    assert( &grid_ == &(org.grid_));
+    assert( &this->grid_ == &(org.grid_));
     level_ =  org.level_;
     neighborCount_ = org.neighborCount_;
     elInfo_ = org.elInfo_;
@@ -1706,14 +1800,12 @@ namespace Dune
     // is like go to the next neighbour
     neighborCount_++;
 
+    // (dim+1) is neigbourCount for end iterators
+    if(neighborCount_ > dim)
+    {
+      this->done();
+    }
     return ;
-  }
-
-  template< class GridImp >
-  inline bool AlbertaGridIntersectionIterator<GridImp>::equals
-    (const AlbertaGridIntersectionIterator<GridImp> & I) const
-  {
-    return (neighborCount_ == I.neighborCount_);
   }
 
   template< class GridImp >
@@ -1722,32 +1814,27 @@ namespace Dune
   {
     if(!builtNeigh_)
     {
-      if(!manageObj_)
-      {
-        manageObj_ = grid_->entityProvider_.getNewObjectEntity( *grid_ ,level_);
-        virtualEntity_ = manageObj_->item;
-        (*virtualEntity_).setLevel(level_);
+      virtualEntity_.setLevel(level_);
 
-        assert( elInfo_ );
-        assert( neighElInfo_ );
-        // just copy elInfo and then set some values
-        std::memcpy(neighElInfo_,elInfo_,sizeof(ALBERTA EL_INFO));
-      }
+      assert( elInfo_ );
+      assert( neighElInfo_ );
+      // just copy elInfo and then set some values
+      std::memcpy(neighElInfo_,elInfo_,sizeof(ALBERTA EL_INFO));
 
       setupVirtEn();
     }
-    return (*virtualEntity_);
+    return virtualEntity_;
   }
 
   template< class GridImp >
   inline typename AlbertaGridIntersectionIterator<GridImp>::BoundaryEntity &
   AlbertaGridIntersectionIterator<GridImp>::boundaryEntity () const
   {
-    if(!manageBndEntity_)
+    if(!boundaryEntity_)
     {
-      manageBndEntity_ = grid_->interBndProvider_.getNewObjectEntity();
-      boundaryEntity_  = manageBndEntity_->item;
+      boundaryEntity_  = this->grid_.interBndProvider_.getNewObjectEntity();
     }
+
     assert( boundaryEntity_ );
     (*boundaryEntity_).setElInfo(elInfo_,neighborCount_);
     return (*boundaryEntity_);
@@ -1855,11 +1942,8 @@ namespace Dune
   intersectionSelfLocal () const
   {
     //std::cout << "\nintersection_self_local not checked until now! \n";
-    if(!manageInterEl_)
-    {
-      manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();
-      fakeNeigh_ = manageInterEl_->item;
-    }
+    if(!fakeNeigh_)
+      fakeNeigh_ = this->grid_.interSelfProvider_.getNewObjectEntity();
 
     fakeNeigh_->builtGeom(elInfo_,neighborCount_,0,0);
     return (*fakeNeigh_);
@@ -1870,11 +1954,8 @@ namespace Dune
   AlbertaGridIntersectionIterator<GridImp>::
   intersectionGlobal () const
   {
-    if(!manageNeighEl_)
-    {
-      manageNeighEl_ = grid_->interNeighProvider_.getNewObjectEntity();
-      neighGlob_ = manageNeighEl_->item;
-    }
+    if(!neighGlob_)
+      neighGlob_ = this->grid_.interNeighProvider_.getNewObjectEntity();
 
     if(neighGlob_->builtGeom(elInfo_,neighborCount_,0,0))
       return (*neighGlob_);
@@ -1890,19 +1971,17 @@ namespace Dune
   AlbertaGridIntersectionIterator<GridImp>::intersectionNeighborLocal () const
   {
     std::cout << "intersection_neighbor_local not checked until now! \n";
-    if(!manageInterEl_)
-    {
-      manageInterEl_ = grid_->interSelfProvider_.getNewObjectEntity();
-      fakeNeigh_ = manageInterEl_->item;
-    }
+    if(!fakeNeigh_)
+      fakeNeigh_ = this->grid_.interSelfProvider_.getNewObjectEntity();
 
-    if(!builtNeigh_)
+    if(fakeNeigh_->builtGeom(neighElInfo_,neighborCount_,0,0))
+      return (*fakeNeigh_);
+    else
     {
-      setupVirtEn();
+      DUNE_THROW(AlbertaError, "intersection_neighbor_local: error occured!");
     }
-
-    fakeNeigh_->builtGeom(neighElInfo_,neighborCount_,0,0);
     return (*fakeNeigh_);
+
   }
 
   template< class GridImp >
@@ -1942,7 +2021,7 @@ namespace Dune
     }
     /* works, tested many times */
 
-    virtualEntity_->setElInfo(neighElInfo_);
+    virtualEntity_.setElInfo(neighElInfo_);
     builtNeigh_ = true;
   }
   // end IntersectionIterator
@@ -1950,7 +2029,7 @@ namespace Dune
 
   //*******************************************************
   //
-  // --AlbertaGridLevelIterator
+  // --AlbertaGridTreeIterator
   // --LevelIterator
   //
   //*******************************************************
@@ -1960,7 +2039,7 @@ namespace Dune
   //***********************************************************
   // default implementation, go next elInfo
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   goNextEntity(ALBERTA TRAVERSE_STACK *stack,ALBERTA EL_INFO *elinfo_old)
   {
     // to be revised , use specialisation for speedup
@@ -1969,13 +2048,13 @@ namespace Dune
     if((codim == 2) && (GridImp::dimension ==3)) return goNextEdge(stack,elinfo_old);
     if(codim == GridImp::dimension) return goNextVertex(stack,elinfo_old);
 
-    DUNE_THROW(AlbertaError,"worng codimension and dimension in goNExtEntity of AlbertaGridLevelIterator \n");
+    DUNE_THROW(AlbertaError,"worng codimension and dimension in goNExtEntity of AlbertaGridTreeIterator \n");
     return 0;
   }
   //***************************************
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline void AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline void AlbertaGridTreeIterator<codim,pitype,GridImp>::
   makeIterator()
   {
     level_ = 0;
@@ -1991,30 +2070,59 @@ namespace Dune
 
   // Make LevelIterator with point to element from previous iterations
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline AlbertaGridLevelIterator<codim,pitype,GridImp>::
-  AlbertaGridLevelIterator(const GridImp & grid, int travLevel,int proc, bool leafIt ) :
-    grid_(grid)
-    , level_   (travLevel)
-    , enLevel_ (travLevel)
-    , virtualEntity_(grid,travLevel)
-    , leafIt_(leafIt) , proc_(proc)
+  inline AlbertaGridTreeIterator<codim,pitype,GridImp>::
+  AlbertaGridTreeIterator(const GridImp & grid, int travLevel,int proc, bool leafIt )
+    : AlbertaGridEntityPointer<codim,GridImp> (grid,travLevel,true)
+      , level_   (travLevel)
+      , enLevel_ (travLevel)
+      , virtualEntity_(*(this->entity_))
+      , leafIt_(leafIt) , proc_(proc)
+      , vertexMarker_(0)
+      , vertex_ (0)
+      , face_(0)
+      , edge_ (0)
   {
     makeIterator();
   }
 
   // Make LevelIterator with point to element from previous iterations
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline AlbertaGridLevelIterator<codim,pitype,GridImp>::
-  AlbertaGridLevelIterator(const GridImp & grid, TRAVERSE_STACK * stack,
-                           int level,  ALBERTA EL_INFO *elInfo,int face,int edge,int vertex) :
-    grid_(grid), level_ (level)
-    , enLevel_(level)
-    , virtualEntity_(grid,level)
-    , face_ ( face ) ,  edge_ ( edge ), vertex_ ( vertex )
-    , leafIt_(false) ,  proc_(-1)
+  inline AlbertaGridTreeIterator<codim,pitype,GridImp>::
+  AlbertaGridTreeIterator(const AlbertaGridTreeIterator<codim,pitype,GridImp> & org)
+    : AlbertaGridEntityPointer<codim,GridImp> (org.grid_,org.level_, (org.vertexMarker_) ? false : true)
+      , level_   (org.level_)
+      , enLevel_ (org.enLevel_)
+      , virtualEntity_(*(this->entity_))
+      , leafIt_(org.leafIt_) , proc_(org.proc_)
+      , vertexMarker_(org.vertexMarker_)
+      , vertex_ ( org.vertex_)
+      , face_(org.face_)
+      , edge_ (org.edge_)
+      , manageStack_ ( org.manageStack_ )
   {
-    vertexMarker_ = 0;
+    if(vertexMarker_)
+    {
+      virtualEntity_.setTraverseStack(manageStack_.getStack());
+      virtualEntity_.setEntity( *(org.entity_) );
+    }
+  }
 
+  // Make LevelIterator with point to element from previous iterations
+  template<int codim, PartitionIteratorType pitype, class GridImp>
+  inline AlbertaGridTreeIterator<codim,pitype,GridImp>::
+  AlbertaGridTreeIterator(const GridImp & grid, TRAVERSE_STACK * stack,
+                          int level,  ALBERTA EL_INFO *elInfo,int face,int edge,int vertex)
+    : AlbertaGridEntityPointer<codim,GridImp> (grid,level,elInfo,face,edge,vertex)
+      , level_ (level)
+      , enLevel_(level)
+      , virtualEntity_(*(this->entity_))
+      , face_ ( face ) ,  edge_ ( edge ), vertex_ ( vertex )
+      , leafIt_(false) ,  proc_(-1)
+      , vertexMarker_(0)
+      , vertex_ (0)
+      , face_(0)
+      , edge_ (0)
+  {
     assert(stack);
     virtualEntity_.setTraverseStack(stack);
 
@@ -2027,22 +2135,23 @@ namespace Dune
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline AlbertaGridLevelIterator<codim,pitype,GridImp>::
-  AlbertaGridLevelIterator(const GridImp & grid,
-                           AlbertaMarkerVector * vertexMark,
-                           int travLevel, int proc, bool leafIt)
-    : grid_(grid) , level_ (travLevel) , enLevel_(travLevel)
-      , virtualEntity_(grid,travLevel)
+  inline AlbertaGridTreeIterator<codim,pitype,GridImp>::
+  AlbertaGridTreeIterator(const GridImp & grid,
+                          AlbertaMarkerVector * vertexMark,
+                          int travLevel, int proc, bool leafIt)
+    : AlbertaGridEntityPointer<codim,GridImp> (grid,travLevel,false)
+      , level_ (travLevel) , enLevel_(travLevel)
+      , virtualEntity_(*(this->entity_))
       , leafIt_(leafIt), proc_(proc)
+      , vertexMarker_(0)
+      , vertex_ (0)
+      , face_(0)
+      , edge_ (0)
   {
-    ALBERTA MESH * mesh = grid_.getMesh();
+    ALBERTA MESH * mesh = this->grid_.getMesh();
 
-    if( mesh && ((travLevel >= 0) && (travLevel <= grid_.maxlevel())) )
+    if( mesh && ((travLevel >= 0) && (travLevel <= this->grid_.maxlevel())) )
     {
-      vertex_ = 0;
-      face_   = 0;
-      edge_   = 0;
-
       vertexMarker_ = vertexMark;
 
       ALBERTA FLAGS travFlags = FILL_ANY; //FILL_COORDS | FILL_NEIGH;
@@ -2054,6 +2163,7 @@ namespace Dune
       manageStack_.makeItNew(true);
 
       virtualEntity_.setTraverseStack(manageStack_.getStack());
+      std::cout << manageStack_.getStack() << " TStack is \n";
 
       // diese Methode muss neu geschrieben werden, da man
       // die ParentElement explizit speichern moechte.
@@ -2070,25 +2180,19 @@ namespace Dune
     }
   }
 
-  template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline bool AlbertaGridLevelIterator<codim,pitype,GridImp>::
-  equals(const AlbertaGridLevelIterator<codim,pitype,GridImp> &I) const
-  {
-    return ((virtualEntity_.getElInfo() == I.virtualEntity_.getElInfo()));
-  }
-
   // gehe zum naechsten Element, wie auch immer
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline void AlbertaGridLevelIterator<codim,pitype,GridImp>::increment()
+  inline void AlbertaGridTreeIterator<codim,pitype,GridImp>::increment()
   {
     ALBERTA EL_INFO * nextinfo = goNextEntity(manageStack_.getStack(),virtualEntity_.getElInfo());
     virtualEntity_.setElInfo( nextinfo , face_, edge_, vertex_);
     virtualEntity_.setLevel( enLevel_ );
+    if(!nextinfo) this->done();
     return ;
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   goNextFace(ALBERTA TRAVERSE_STACK *stack, ALBERTA EL_INFO *elInfo)
   {
     // go next Element, if face_ > numberOfVertices, then go to next elInfo
@@ -2103,7 +2207,7 @@ namespace Dune
       return elInfo; // if no more Faces, return
 
     if( (elInfo->neigh[face_]) &&
-        (grid_.getElementNumber(elInfo->el) > grid_.getElementNumber(elInfo->neigh[face_])))
+        (this->grid_.getElementNumber(elInfo->el) > this->grid_.getElementNumber(elInfo->neigh[face_])))
     {
       // if reachedFace before, go next
       elInfo = goNextFace(stack,elInfo);
@@ -2113,7 +2217,7 @@ namespace Dune
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   goNextEdge(ALBERTA TRAVERSE_STACK *stack, ALBERTA EL_INFO *elInfo)
   {
     // go next Element, Edge 0
@@ -2129,8 +2233,8 @@ namespace Dune
 
     // go next, if Vertex is not treated on this Element
     if(vertexMarker_->edgeNotOnElement(elInfo->el,
-                                       grid_.getElementNumber(elInfo->el),level_,
-                                       grid_.getEdgeNumber(elInfo->el,edge_)))
+                                       this->grid_.getElementNumber(elInfo->el),level_,
+                                       this->grid_.getEdgeNumber(elInfo->el,edge_)))
     {
       elInfo = goNextEdge(stack,elInfo);
     }
@@ -2139,7 +2243,7 @@ namespace Dune
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   goNextVertex(ALBERTA TRAVERSE_STACK *stack, ALBERTA EL_INFO *elInfo)
   {
     // go next Element, Vertex 0
@@ -2155,8 +2259,8 @@ namespace Dune
 
     // go next, if Vertex is not treated on this Element
     if(vertexMarker_->notOnThisElement(elInfo->el,
-                                       grid_.getElementNumber(elInfo->el),level_,
-                                       grid_.getVertexNumber(elInfo->el,vertex_)))
+                                       this->grid_.getElementNumber(elInfo->el),level_,
+                                       this->grid_.getVertexNumber(elInfo->el,vertex_)))
     {
       elInfo = goNextVertex(stack,elInfo);
     }
@@ -2164,16 +2268,18 @@ namespace Dune
     return elInfo;
   }
 
-  template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline typename AlbertaGridLevelIterator<codim,pitype,GridImp>::Entity &
-  AlbertaGridLevelIterator<codim,pitype,GridImp>::dereference () const
-  {
-    assert(virtualEntity_.getElInfo() != 0);
-    return virtualEntity_;
-  }
+  /*
+     template<int codim, PartitionIteratorType pitype, class GridImp>
+     inline typename AlbertaGridTreeIterator<codim,pitype,GridImp>::Entity &
+     AlbertaGridTreeIterator<codim,pitype,GridImp>::dereference () const
+     {
+     assert(virtualEntity_.getElInfo() != 0);
+     return virtualEntity_;
+     }
+   */
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   goFirstElement(ALBERTA TRAVERSE_STACK *stack,ALBERTA MESH *mesh, int level,
                  ALBERTA FLAGS fill_flag)
   {
@@ -2213,7 +2319,7 @@ namespace Dune
 
   // --travNext
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   goNextElInfo(ALBERTA TRAVERSE_STACK *stack, ALBERTA EL_INFO *elinfo_old)
   {
     FUNCNAME("goNextElInfo");
@@ -2230,7 +2336,7 @@ namespace Dune
     }
 
     PartitionIteratorType pt = pitype;
-    if(grid_.myRank() < 0) pt = All_Partition;
+    if(this->grid_.myRank() < 0) pt = All_Partition;
 
     switch (pt)
     {
@@ -2315,7 +2421,7 @@ namespace Dune
           ALBERTA EL * neigh = NEIGH(elinfo->el,elinfo)[i];
           if(neigh)
           {
-            if(grid_.getOwner(neigh) == grid_.myRank())
+            if(this->grid_.getOwner(neigh) == this->grid_.myRank())
             {
               return elinfo;
             }
@@ -2358,8 +2464,8 @@ namespace Dune
           ALBERTA EL * neigh = NEIGH(elinfo->el,elinfo)[i];
           if(neigh)
           {
-            if(((proc_ == -1) && (grid_.getOwner(neigh) != grid_.myRank()))||
-               ((proc_ != -1) && (grid_.getOwner(neigh) == proc_) ))
+            if(((proc_ == -1) && (this->grid_.getOwner(neigh) != this->grid_.myRank()))||
+               ((proc_ != -1) && (this->grid_.getOwner(neigh) == proc_) ))
             {
               return elinfo;
             }
@@ -2377,14 +2483,14 @@ namespace Dune
     // default iterator type no supported
     default :
     {
-      DUNE_THROW(AlbertaError, "AlbertaGridLevelIterator::goNextEntity: Unsupported IteratorType!");
+      DUNE_THROW(AlbertaError, "AlbertaGridTreeIterator::goNextEntity: Unsupported IteratorType!");
       return 0;
     }
     } // end switch
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   traverseElLevel(ALBERTA TRAVERSE_STACK *stack)
   {
     FUNCNAME("traverseElLevel");
@@ -2397,8 +2503,8 @@ namespace Dune
       if(proc_ >= 0)
       {
         ALBERTA MACRO_EL * mel = stack->traverse_mesh->first_macro_el;
-        while((grid_.getOwner(mel->el) != grid_.myRank()
-               && grid_.isNoElement(mel)))
+        while((this->grid_.getOwner(mel->el) != this->grid_.myRank()
+               && this->grid_.isNoElement(mel)))
         {
           mel = mel->next;
           if(!mel) break;
@@ -2442,8 +2548,8 @@ namespace Dune
         ALBERTA MACRO_EL * mel = stack->traverse_mel->next;
         if(mel && (proc_ >= 0))
         {
-          while((grid_.getOwner(mel->el) != grid_.myRank()
-                 && grid_.isNoElement(mel)))
+          while((this->grid_.getOwner(mel->el) != this->grid_.myRank()
+                 && this->grid_.isNoElement(mel)))
           {
             mel = mel->next;
             if(!mel) break;
@@ -2479,8 +2585,8 @@ namespace Dune
       el = el->child[i];
       stack->info_stack[stack->stack_used]++;
 
-      grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
-                       stack->elinfo_stack+stack->stack_used+1, false , leafIt_);
+      this->grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
+                             stack->elinfo_stack+stack->stack_used+1, false , leafIt_);
 
       stack->stack_used++;
 
@@ -2501,7 +2607,7 @@ namespace Dune
 
   // iterate over interior elements
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   traverseElLevelInteriorBorder(ALBERTA TRAVERSE_STACK *stack)
   {
     FUNCNAME("traverseElLevelInteriorBorder");
@@ -2512,7 +2618,7 @@ namespace Dune
     if (stack->stack_used == 0) /* first call */
     {
       ALBERTA MACRO_EL * mel = stack->traverse_mesh->first_macro_el;
-      while(grid_.getOwner(mel->el) != grid_.myRank())
+      while(this->grid_.getOwner(mel->el) != this->grid_.myRank())
       {
         mel = mel->next;
         if(!mel) break;
@@ -2551,7 +2657,7 @@ namespace Dune
         ALBERTA MACRO_EL * mel = stack->traverse_mel->next;
         if(mel)
         {
-          while(grid_.getOwner(mel->el) != grid_.myRank())
+          while(this->grid_.getOwner(mel->el) != this->grid_.myRank())
           {
             mel = mel->next;
             if(!mel) break;
@@ -2586,8 +2692,8 @@ namespace Dune
       el = el->child[i];
       stack->info_stack[stack->stack_used]++;
 
-      grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
-                       stack->elinfo_stack+stack->stack_used+1, false, leafIt_);
+      this->grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
+                             stack->elinfo_stack+stack->stack_used+1, false, leafIt_);
 
       stack->stack_used++;
 
@@ -2607,13 +2713,13 @@ namespace Dune
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA MACRO_EL * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA MACRO_EL * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   nextGhostMacro(ALBERTA MACRO_EL * oldmel)
   {
     ALBERTA MACRO_EL * mel = oldmel;
     if(mel)
     {
-      while( (!grid_.isGhost(mel)) )
+      while( (!this->grid_.isGhost(mel)) )
       {
         mel = mel->next;
         if(!mel) break;
@@ -2623,7 +2729,7 @@ namespace Dune
   }
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline ALBERTA EL_INFO * AlbertaGridLevelIterator<codim,pitype,GridImp>::
+  inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
   traverseElLevelGhosts(ALBERTA TRAVERSE_STACK *stack)
   {
     FUNCNAME("traverseElLevelGhosts");
@@ -2686,7 +2792,7 @@ namespace Dune
     }
 
     /* go down tree until leaf oder level*/
-    while (el->child[0] && (grid_.getOwner(el) >= 0) &&
+    while (el->child[0] && (this->grid_.getOwner(el) >= 0) &&
            ( stack->traverse_level > (stack->elinfo_stack+stack->stack_used)->level))
     {
       if(stack->stack_used >= stack->stack_size-1)
@@ -2698,11 +2804,11 @@ namespace Dune
       stack->info_stack[stack->stack_used]++;
 
       // go next possible element, if not ghost
-      if( grid_.getOwner(el) < 0)
+      if( this->grid_.getOwner(el) < 0)
         return traverseElLevelGhosts(stack);
 
-      grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
-                       stack->elinfo_stack+stack->stack_used+1, false);
+      this->grid_.fillElInfo(i, level_, stack->elinfo_stack+stack->stack_used,
+                             stack->elinfo_stack+stack->stack_used+1, false);
 
       stack->stack_used++;
 
@@ -2722,14 +2828,16 @@ namespace Dune
 
   }
 
-  template<int codim, PartitionIteratorType pitype, class GridImp>
-  inline int AlbertaGridLevelIterator<codim,pitype,GridImp>::level() const
-  {
-    return (manageStack_.getStack())->stack_used;
-  }
+  /*
+     template<int codim, PartitionIteratorType pitype, class GridImp>
+     inline int AlbertaGridTreeIterator<codim,pitype,GridImp>::level() const
+     {
+     return (manageStack_.getStack())->stack_used;
+     }
+   */
 
   //*************************************************************************
-  //  end AlbertaGridLevelIterator
+  //  end AlbertaGridTreeIterator
   //*************************************************************************
 
   template <int dim, class GridImp>
@@ -2740,9 +2848,8 @@ namespace Dune
     // sich deshalb die Werte anedern koennen, der elinfo_stack bleibt jedoch
     // der gleiche, deshalb kann man auch nur nach unten, d.h. zu den Kindern
     // laufen
-    AlbertaGridHierarchicIterator<GridImp>
-    it(grid_,travStack_,level(),maxlevel);
-    return it;
+    std::cout << travStack_ << "Traverse Stack \n";
+    return AlbertaGridHierarchicIterator<GridImp> (grid_,travStack_,level(),maxlevel);
   }
 
   template <int dim, class GridImp>
@@ -3013,17 +3120,14 @@ namespace Dune
     {
       if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
     }
-    AlbertaGridLevelIterator<codim,pitype,const MyType>
-    it(*this,vertexMarker_,level,proc);
-    return it;
+    return AlbertaGridLevelIterator<codim,pitype,const MyType> (*this,vertexMarker_,level,proc);
   }
 
   template < int dim, int dimworld > template<int codim, PartitionIteratorType pitype>
   inline typename AlbertaGrid<dim, dimworld>::Traits::template codim<codim>::template partition<pitype>::LevelIterator
   AlbertaGrid < dim, dimworld >::lend (int level, int proc ) const
   {
-    AlbertaGridLevelIterator<codim,pitype,const MyType> it((*this),level,proc);
-    return it;
+    return AlbertaGridLevelIterator<codim,pitype,const MyType> ((*this),level,proc);
   }
 
   template < int dim, int dimworld > template<int codim>
@@ -3034,18 +3138,14 @@ namespace Dune
     {
       if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
     }
-    AlbertaGridLevelIterator<codim,All_Partition,const MyType>
-    it(*this,vertexMarker_,level,proc);
-    return it;
+    return AlbertaGridLevelIterator<codim,All_Partition,const MyType> (*this,vertexMarker_,level,proc);
   }
 
   template < int dim, int dimworld > template<int codim>
   inline typename AlbertaGrid<dim, dimworld>::Traits::template codim<codim>::template partition<All_Partition>::LevelIterator
   AlbertaGrid < dim, dimworld >::lend (int level, int proc ) const
   {
-    AlbertaGridLevelIterator<codim,All_Partition,const MyType>
-    it((*this),level,proc);
-    return it;
+    return AlbertaGridLevelIterator<codim,All_Partition,const MyType> ((*this),level,proc);
   }
 
   template < int dim, int dimworld >
@@ -3053,8 +3153,7 @@ namespace Dune
   inline typename AlbertaGrid<dim,dimworld>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
   {
-    AlbertaGridLeafIterator<const MyType> it(*this,vertexMarker_,level,proc);
-    return it;
+    return AlbertaGridLeafIterator<const MyType> (*this,vertexMarker_,level,proc);
   }
 
   template < int dim, int dimworld >
@@ -3062,24 +3161,21 @@ namespace Dune
   inline typename AlbertaGrid<dim,dimworld>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafend (int level, int proc ) const
   {
-    AlbertaGridLeafIterator<const MyType> it(*this,level,proc);
-    return it;
+    return AlbertaGridLeafIterator<const MyType> (*this,level,proc);
   }
 
   template < int dim, int dimworld >
   inline typename AlbertaGrid<dim,dimworld>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
   {
-    AlbertaGridLeafIterator<const MyType> it(*this,vertexMarker_,level,proc);
-    return it;
+    return AlbertaGridLeafIterator<const MyType> (*this,vertexMarker_,level,proc);
   }
 
   template < int dim, int dimworld >
   inline typename AlbertaGrid<dim,dimworld>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafend (int level, int proc ) const
   {
-    AlbertaGridLeafIterator<const MyType> it(*this,level,proc);
-    return it;
+    return AlbertaGridLeafIterator<const MyType> (*this,level,proc);
   }
 
   //**************************************
@@ -3384,8 +3480,6 @@ namespace Dune
     assert( en.level() == 0 ); // call only on macro elements
     os.writeObject( BEGINELEMENT );
     os.writeObject( en.globalIndex ());
-    //std::cout << "Pack el = " << globalIndex () << "\n";
-    //std::cout << isLeaf() << " children? \n";
 
     if(! (en.isLeaf()) )
     {
@@ -3410,7 +3504,6 @@ namespace Dune
         }
       }
     }
-    //std::cout << "Done with element !\n";
     return ;
   }
 
@@ -3459,7 +3552,7 @@ namespace Dune
     // only for debugging
     else
     {
-      fprintf(stderr,"ERROR in AlbertaGridEntity<0,%d,%d>::mark(%d) : called on non LeafEntity! \n",dim,dimworld,refCount);
+      fprintf(stderr,"ERROR in AlbertaGridEntity<0,%d,%d>::mark(%d) : called on non LeafEntity! in: %s line: %d \n",dim,dimworld,refCount,__FILE__,__LINE__);
       abort();
     }
     elInfo->el->mark = 0;
@@ -3650,7 +3743,7 @@ namespace Dune
 
   template < int dim, int dimworld >  template <GrapeIOFileFormatType ftype>
   inline bool AlbertaGrid < dim, dimworld >::
-  writeGrid (const char * filename, albertCtype time ) const
+  writeGrid (const std::basic_string<char> filename, albertCtype time ) const
   {
     // use only with xdr as filetype
     assert(ftype == xdr);
