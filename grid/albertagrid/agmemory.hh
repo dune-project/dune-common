@@ -3,172 +3,114 @@
 #ifndef __DUNE_AGMEMORY_HH__
 #define __DUNE_AGMEMORY_HH__
 
+#include <stack>
+
 namespace Dune
 {
 
   //! organize the memory management for entitys used by the NeighborIterator
   template <class Object>
-  class MemoryProvider
+  class AGMemoryProvider
   {
+    std::stack < Object * > objStack_;
+
+    typedef AGMemoryProvider < Object > MyType;
   public:
     typedef Object ObjectType;
 
-    //! \todo Please doc me!
-    struct ObjectEntity
-    {
-      ObjectEntity () : next (0), item (0) {};
-
-      ObjectEntity *next;
-      Object       *item;
-    };
-
-    //! freeEntity_ = NULL
-    MemoryProvider() : freeEntity_ (0) {};
-
-    //! do not copy pointers
-    MemoryProvider(const MemoryProvider<Object> & org) : freeEntity_ (0) {}
+    //! delete all objects stored in stack
+    AGMemoryProvider() {};
 
     //! call deleteEntity
-    ~MemoryProvider ();
+    ~AGMemoryProvider ();
 
-    //! delete recursive all free ObjectEntitys
-    void deleteEntity(ObjectEntity *obj);
+    //! create object with empty constructor
+    Object * getNewObjectEntity(int l = 0)
+    {
+      if( objStack_.empty() )
+      {
+        return ( new Object () );
+      }
+      else
+      {
+        ObjectType * obj = objStack_.top();
+        objStack_.pop();
+        return obj;
+      }
+    }
 
     //! i.e. return pointer to Entity
     template <class GridType>
-    ObjectEntity *getNewObjectEntity(const GridType &grid, int level);
-
-    //! i.e. return pointer to Entity
-    template <class FuncSpaceType, class DofVecType>
-    ObjectEntity *getNewObjectEntity(const FuncSpaceType &f, DofVecType &d);
-
-    //! i.e. get pointer to element
-    ObjectEntity * getNewObjectEntity();
+    ObjectType * getNewObjectEntity(const GridType &grid, int level);
 
     //! free, move element to stack, returns NULL
-    ObjectEntity * freeObjectEntity (ObjectEntity *obj);
+    void freeObjectEntity (ObjectType * obj);
 
   private:
-    ObjectEntity  *freeEntity_;
+    //! do not copy pointers
+    AGMemoryProvider(const AGMemoryProvider<Object> & org) {}
   };
 
 
   //************************************************************************
   //
-  //  MemoryProvider implementation
+  //  AGMemoryProvider implementation
   //
   //************************************************************************
   template <class Object> template <class GridType>
-  inline typename MemoryProvider<Object>::ObjectEntity *
-  MemoryProvider<Object>::getNewObjectEntity
+  inline typename AGMemoryProvider<Object>::ObjectType *
+  AGMemoryProvider<Object>::getNewObjectEntity
     (const GridType &grid, int level )
   {
-    if(!freeEntity_)
+    if( objStack_.empty() )
     {
-      ObjectEntity *oe = new ObjectEntity ();
-      oe->item = new Object (grid,level);
-      return oe;
+      return ( new Object (grid,level) );
     }
     else
     {
-      ObjectEntity *oe = freeEntity_;
-      freeEntity_ = oe->next;
-      return oe;
+      ObjectType * obj = objStack_.top();
+      objStack_.pop();
+      return obj;
     }
   }
 
-  template <class Object> template <class FuncSpaceType, class DofVecType>
-  inline typename MemoryProvider<Object>::ObjectEntity *
-  MemoryProvider<Object>::getNewObjectEntity(const FuncSpaceType &f , DofVecType &d )
+  /*
+     template <class Object> template <class GridType>
+     inline Object * AGMemoryProvider<Object>::getNewObjectEntity(int l)
+     {
+     if( objStack_.empty() )
+     {
+      return ( new Object () );
+     }
+     else
+     {
+      ObjectType * obj = objStack_.top();
+      objStack_.pop();
+      return obj;
+     }
+     }
+   */
+
+  template <class Object>
+  inline AGMemoryProvider<Object>::~AGMemoryProvider()
   {
-    if(!freeEntity_)
+    while ( !objStack_.empty() )
     {
-      ObjectEntity *oe = new ObjectEntity ();
-      oe->item = new Object (f,d);
-      return oe;
-    }
-    else
-    {
-      ObjectEntity *oe = freeEntity_;
-      freeEntity_ = oe->next;
-      return oe;
+      ObjectType * obj = objStack_.top();
+      objStack_.pop();
+      if( obj ) delete obj;
     }
   }
 
   template <class Object>
-  inline typename MemoryProvider<Object>::ObjectEntity *
-  MemoryProvider<Object>::getNewObjectEntity()
+  inline void AGMemoryProvider<Object>::freeObjectEntity(Object * obj)
   {
-    if(!freeEntity_)
-    {
-      ObjectEntity *oe = new ObjectEntity ();
-      oe->item = new Object ();
-      return oe;
-    }
-    else
-    {
-      ObjectEntity *oe = freeEntity_;
-      freeEntity_ = oe->next;
-      return oe;
-    }
+    objStack_.push( obj );
   }
 
-  template <>
-  inline MemoryProvider<ALBERTA EL_INFO>::ObjectEntity *
-  MemoryProvider<ALBERTA EL_INFO>::getNewObjectEntity()
-  {
-    if(!freeEntity_)
-    {
-      ObjectEntity *oe = new ObjectEntity ();
-      oe->item = (ALBERTA EL_INFO *) std::malloc (sizeof(ALBERTA EL_INFO));
-      return oe;
-    }
-    else
-    {
-      ObjectEntity *oe = freeEntity_;
-      freeEntity_ = oe->next;
-      return oe;
-    }
-  }
-
-  template <class Object>
-  inline MemoryProvider<Object>::~MemoryProvider()
-  {
-    if(freeEntity_) deleteEntity(freeEntity_);
-  }
-
-  template <class Object>
-  inline typename MemoryProvider<Object>::ObjectEntity *
-  MemoryProvider<Object>::freeObjectEntity(ObjectEntity *obj)
-  {
-    obj->next = freeEntity_;
-    freeEntity_ = obj;
-    return 0;
-  }
-
-  template <class Object>
-  inline void MemoryProvider<Object>::deleteEntity(ObjectEntity *obj)
-  {
-    if(obj)
-    {
-      if(obj->next)
-        deleteEntity(obj->next);
-
-      if(obj->item) delete obj->item;
-      delete obj;
-    }
-  }
-
-  template <>
-  inline void MemoryProvider<ALBERTA EL_INFO>::deleteEntity(ObjectEntity *obj)
-  {
-    std::free(obj->item);
-    delete obj;
-  }
-
-  typedef MemoryProvider < ALBERTA EL_INFO > ElInfoProvider;
+  typedef AGMemoryProvider < ALBERTA EL_INFO > ElInfoProvider;
   static ElInfoProvider elinfoProvider;
 
-} // end namespace Dune
+} //end namespace
 
 #endif
