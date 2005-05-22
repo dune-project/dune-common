@@ -270,7 +270,7 @@ inline void printElInfo(const EL_INFO *elf)
   for(int i=0; i<N_VERTICES; i++)
   {
     ALBERTA EL* el = elf->neigh[i];
-    if(el) printf(" %d |",INDEX(el));
+    printf(" %p |",el);
   }
   printf("\n");
 
