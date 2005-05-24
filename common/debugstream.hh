@@ -24,7 +24,7 @@ namespace Dune {
   /*! \defgroup DebugOut Debug output
      \ingroup Common
 
-     The debug output is implemented by instaces of DebugStream which
+     The debug output is implemented by instances of DebugStream which
      provides the following features:
 
      - output-syntax in the standard ostream-notation
