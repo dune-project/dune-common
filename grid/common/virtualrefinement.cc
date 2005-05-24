@@ -535,10 +535,6 @@ namespace Dune {
           return VirtualRefinementImp<quadrilateral, CoordType, quadrilateral>::instance();
         case hypercube :
           return VirtualRefinementImp<quadrilateral, CoordType, quadrilateral>::instance();
-        case iso_triangle :
-          return VirtualRefinementImp<quadrilateral, CoordType, iso_triangle>::instance();
-        case iso_quadrilateral :
-          return VirtualRefinementImp<quadrilateral, CoordType, iso_quadrilateral>::instance();
         default :
           break;
         }
