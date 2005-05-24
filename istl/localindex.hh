@@ -45,25 +45,25 @@ namespace Dune
      * @brief Constructor.
      * @param index The value of the index.
      */
-    LocalIndex(uint32_t index) :
+    LocalIndex(std::ptrdiff_t index) :
       localIndex_(index), state_(VALID){}
     /**
      * @brief get the local index.
      * @return The local index.
      */
-    inline const uint32_t& local() const;
+    inline const std::ptrdiff_t& local() const;
 
     /**
      * @brief Convert to the local index represented by an int.
      */
-    inline operator uint32_t() const;
+    inline operator std::ptrdiff_t() const;
 
     /**
      * @brief Assign a new local index.
      *
      * @param index The new local index.
      */
-    inline LocalIndex& operator=(uint32_t index);
+    inline LocalIndex& operator=(std::ptrdiff_t index);
 
     /**
      * @brief Get the state.
@@ -79,7 +79,7 @@ namespace Dune
 
   private:
     /** @brief The local index. */
-    uint32_t localIndex_;
+    std::ptrdiff_t localIndex_;
 
     /**
      * @brief The state of the index.
@@ -93,15 +93,15 @@ namespace Dune
 
 
 
-  inline const uint32_t& LocalIndex::local() const {
+  inline const std::ptrdiff_t& LocalIndex::local() const {
     return localIndex_;
   }
 
-  inline LocalIndex::operator uint32_t() const {
+  inline LocalIndex::operator std::ptrdiff_t() const {
     return localIndex_;
   }
 
-  inline LocalIndex& LocalIndex::operator=(uint32_t index){
+  inline LocalIndex& LocalIndex::operator=(std::ptrdiff_t index){
     localIndex_ = index;
     return *this;
   }
