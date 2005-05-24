@@ -281,10 +281,8 @@ namespace Dune
       return realEntity.father();
     }
 
-    /**
-       \brief Returns true if the entity is a leaf in the grid hierarchy
-     */
-    bool isLeaf ()
+    //! Returns true if the entity is a leaf in the grid hierarchy
+    bool isLeaf () const
     {
       return realEntity.isLeaf();
     }
