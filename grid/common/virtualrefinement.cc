@@ -527,6 +527,22 @@ namespace Dune {
           break;
         }
         break;
+      case hypercube :
+        switch(coerceTo) {
+        case triangle :
+          return VirtualRefinementImp<quadrilateral, CoordType, triangle>::instance();
+        case quadrilateral :
+          return VirtualRefinementImp<quadrilateral, CoordType, quadrilateral>::instance();
+        case hypercube :
+          return VirtualRefinementImp<quadrilateral, CoordType, quadrilateral>::instance();
+        case iso_triangle :
+          return VirtualRefinementImp<quadrilateral, CoordType, iso_triangle>::instance();
+        case iso_quadrilateral :
+          return VirtualRefinementImp<quadrilateral, CoordType, iso_quadrilateral>::instance();
+        default :
+          break;
+        }
+        break;
       case quadrilateral :
         switch(coerceTo) {
         case triangle :
@@ -566,6 +582,16 @@ namespace Dune {
         case tetrahedron :
           return VirtualRefinementImp<hexahedron, CoordType, tetrahedron>::instance();
         case hexahedron :
+          return VirtualRefinementImp<hexahedron, CoordType, hexahedron>::instance();
+        }
+        break;
+      case hypercube :
+        switch(coerceTo) {
+        case tetrahedron :
+          return VirtualRefinementImp<hexahedron, CoordType, tetrahedron>::instance();
+        case hexahedron :
+          return VirtualRefinementImp<hexahedron, CoordType, hexahedron>::instance();
+        case hypercube :
           return VirtualRefinementImp<hexahedron, CoordType, hexahedron>::instance();
         }
         break;
