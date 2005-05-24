@@ -462,7 +462,7 @@ namespace Dune
   {
 
     if(allocated_!=0)
-      std::cerr<<"There are still "<<allocated_<<" allocated elements by the pool "
+      std::cerr<<"There are still "<<allocated_<<" allocated elements by the Pool<"<<typeid(T).name()<<","<<S<<"> "
                <<static_cast<void*>(this)<<"! This is a memory leak and might result in segfaults"
                <<std::endl;
 
