@@ -182,7 +182,7 @@ public:
     : aggregates_(aggregates), indexset_(indexset)
   {}
 
-  inline const TG& operator[](size_t index) const
+  inline const TG& operator[](std::ptrdiff_t index) const
   {
     const T& aggregate = aggregates_[index];
     const Dune::IndexPair<TG,Dune::ParallelLocalIndex<TA> >& pair = indexset_.pair(aggregate);
@@ -253,7 +253,7 @@ void testCoarsenIndices()
   remoteIndices.rebuild<false>();
 
   typedef Dune::Amg::MatrixGraph<BCRSMat> MatrixGraph;
-  typedef Dune::Amg::SubGraph<Dune::Amg::MatrixGraph<BCRSMat> > SubGraph;
+  typedef Dune::Amg::SubGraph<Dune::Amg::MatrixGraph<BCRSMat>,std::vector<bool> > SubGraph;
   typedef Dune::Amg::PropertiesGraph<SubGraph,Dune::Amg::VertexProperties,
       Dune::Amg::EdgeProperties> PropertiesGraph;
   typedef typename PropertiesGraph::VertexDescriptor Vertex;

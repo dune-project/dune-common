@@ -429,7 +429,7 @@ namespace Dune
      *
      * The vertex descriptors are not changed.
      */
-    template<class G>
+    template<class G, class T>
     class SubGraph
     {
     public:
@@ -437,6 +437,12 @@ namespace Dune
        * @brief The type of the graph we are a sub graph for.
        */
       typedef G Graph;
+
+      /**
+       * @brief Random access container providing information about
+       * which vertices are excluded.
+       */
+      typedef T Excluded;
 
       /**
        * @brief The vertex descriptor.
@@ -514,7 +520,7 @@ namespace Dune
          * @param current The position of the iterator.
          * @param end The last vertex of the graph.
          */
-        explicit VertexIterator(const SubGraph<G>* graph, const VertexDescriptor& current,
+        explicit VertexIterator(const SubGraph<G,T>* graph, const VertexDescriptor& current,
                                 const VertexDescriptor& end);
 
 
@@ -554,7 +560,7 @@ namespace Dune
 
       private:
         /** @brief The graph we are a vertex iterator for. */
-        const SubGraph<Graph>* graph_;
+        const SubGraph<Graph,T>* graph_;
         /** @brief The current position. */
         VertexDescriptor current_;
         /** @brief The number of vertices of the graph. */
@@ -631,7 +637,7 @@ namespace Dune
        * @param excluded If excluded[i] is true then vertex i will not appear
        * in the sub graph.
        */
-      SubGraph(const Graph& graph, const std::vector<bool>& excluded);
+      SubGraph(const Graph& graph, const T& excluded);
 
       /**
        * @brief Destructor.
@@ -640,7 +646,7 @@ namespace Dune
 
     private:
       /** @brief flags indication which vertices are excluded. */
-      std::vector<bool> excluded_;
+      const T& excluded_;
       /** @brief The number of vertices in this sub graph. */
       int noVertices_;
       /** @brief Vertex behind the last valid vertex of this sub graph. */
@@ -1563,77 +1569,77 @@ namespace Dune
     }
 
 
-    template<class G>
-    SubGraph<G>::EdgeIterator::EdgeIterator(const VertexDescriptor& source,
-                                            const EdgeDescriptor& edge, const VertexDescriptor* first)
+    template<class G, class T>
+    SubGraph<G,T>::EdgeIterator::EdgeIterator(const VertexDescriptor& source,
+                                              const EdgeDescriptor& edge, const VertexDescriptor* first)
       : source_(source), edge_(edge), firstEdge_(first)
     {}
 
 
-    template<class G>
-    SubGraph<G>::EdgeIterator::EdgeIterator(const EdgeDescriptor& edge)
+    template<class G, class T>
+    SubGraph<G,T>::EdgeIterator::EdgeIterator(const EdgeDescriptor& edge)
       : edge_(edge)
     {}
 
-    template<class G>
-    inline bool SubGraph<G>::EdgeIterator::equals(const EdgeIterator & other) const
+    template<class G, class T>
+    inline bool SubGraph<G,T>::EdgeIterator::equals(const EdgeIterator & other) const
     {
       return other.edge_==edge_;
     }
 
-    template<class G>
-    inline typename SubGraph<G>::EdgeIterator& SubGraph<G>::EdgeIterator::increment()
+    template<class G, class T>
+    inline typename SubGraph<G,T>::EdgeIterator& SubGraph<G,T>::EdgeIterator::increment()
     {
       ++edge_;
       return *this;
     }
 
-    template<class G>
-    inline typename SubGraph<G>::EdgeIterator& SubGraph<G>::EdgeIterator::decrement()
+    template<class G, class T>
+    inline typename SubGraph<G,T>::EdgeIterator& SubGraph<G,T>::EdgeIterator::decrement()
     {
       --edge_;
       return *this;
     }
 
-    template<class G>
-    inline typename SubGraph<G>::EdgeIterator& SubGraph<G>::EdgeIterator::advance(std::ptrdiff_t n)
+    template<class G, class T>
+    inline typename SubGraph<G,T>::EdgeIterator& SubGraph<G,T>::EdgeIterator::advance(std::ptrdiff_t n)
     {
       edge_+=n;
       return *this;
     }
-    template<class G>
-    inline const typename G::VertexDescriptor& SubGraph<G>::EdgeIterator::source() const
+    template<class G, class T>
+    inline const typename G::VertexDescriptor& SubGraph<G,T>::EdgeIterator::source() const
     {
       return source_;
     }
 
-    template<class G>
-    inline const typename G::VertexDescriptor& SubGraph<G>::EdgeIterator::target() const
+    template<class G, class T>
+    inline const typename G::VertexDescriptor& SubGraph<G,T>::EdgeIterator::target() const
     {
       return firstEdge_[edge_];
     }
 
 
-    template<class G>
-    inline const typename SubGraph<G>::EdgeDescriptor& SubGraph<G>::EdgeIterator::dereference() const
+    template<class G, class T>
+    inline const typename SubGraph<G,T>::EdgeDescriptor& SubGraph<G,T>::EdgeIterator::dereference() const
     {
       return edge_;
     }
 
-    template<class G>
-    inline std::ptrdiff_t SubGraph<G>::EdgeIterator::distanceTo(const EdgeIterator & other) const
+    template<class G, class T>
+    inline std::ptrdiff_t SubGraph<G,T>::EdgeIterator::distanceTo(const EdgeIterator & other) const
     {
       return other.edge_-edge_;
     }
 
-    template<class G>
-    SubGraph<G>::VertexIterator::VertexIterator(const SubGraph<G>* graph,
-                                                const VertexDescriptor& current,
-                                                const VertexDescriptor& end)
+    template<class G, class T>
+    SubGraph<G,T>::VertexIterator::VertexIterator(const SubGraph<G,T>* graph,
+                                                  const VertexDescriptor& current,
+                                                  const VertexDescriptor& end)
       : graph_(graph), current_(current), end_(end)
     {
       // Skip excluded vertices
-      typedef typename std::vector<bool>::const_iterator Iterator;
+      typedef typename T::const_iterator Iterator;
 
       for(Iterator vertex = graph_->excluded_.begin();
           current_ != end_ && *vertex;
@@ -1642,13 +1648,13 @@ namespace Dune
       assert(current_ == end_ || !graph_->excluded_[current_]);
     }
 
-    template<class G>
-    SubGraph<G>::VertexIterator::VertexIterator(const VertexDescriptor& current)
+    template<class G, class T>
+    SubGraph<G,T>::VertexIterator::VertexIterator(const VertexDescriptor& current)
       : current_(current)
     {}
 
-    template<class G>
-    inline typename SubGraph<G>::VertexIterator& SubGraph<G>::VertexIterator::increment()
+    template<class G, class T>
+    inline typename SubGraph<G,T>::VertexIterator& SubGraph<G,T>::VertexIterator::increment()
     {
       ++current_;
       //Skip excluded vertices
@@ -1659,77 +1665,77 @@ namespace Dune
       return *this;
     }
 
-    template<class G>
-    inline bool SubGraph<G>::VertexIterator::equals(const VertexIterator & other) const
+    template<class G, class T>
+    inline bool SubGraph<G,T>::VertexIterator::equals(const VertexIterator & other) const
     {
       return current_==other.current_;
     }
 
-    template<class G>
-    inline const typename G::VertexDescriptor& SubGraph<G>::VertexIterator::dereference() const
+    template<class G, class T>
+    inline const typename G::VertexDescriptor& SubGraph<G,T>::VertexIterator::dereference() const
     {
       return current_;
     }
 
-    template<class G>
-    inline typename SubGraph<G>::EdgeIterator SubGraph<G>::VertexIterator::begin() const
+    template<class G, class T>
+    inline typename SubGraph<G,T>::EdgeIterator SubGraph<G,T>::VertexIterator::begin() const
     {
       return graph_->beginEdges(current_);
     }
 
-    template<class G>
-    inline typename SubGraph<G>::EdgeIterator SubGraph<G>::VertexIterator::end() const
+    template<class G, class T>
+    inline typename SubGraph<G,T>::EdgeIterator SubGraph<G,T>::VertexIterator::end() const
     {
       return graph_->endEdges(current_);
     }
 
-    template<class G>
-    inline typename SubGraph<G>::VertexIterator SubGraph<G>::begin() const
+    template<class G, class T>
+    inline typename SubGraph<G,T>::VertexIterator SubGraph<G,T>::begin() const
     {
       return VertexIterator(this, 0, endVertex_);
     }
 
 
-    template<class G>
-    inline typename SubGraph<G>::VertexIterator SubGraph<G>::end() const
+    template<class G, class T>
+    inline typename SubGraph<G,T>::VertexIterator SubGraph<G,T>::end() const
     {
       return VertexIterator(endVertex_);
     }
 
 
-    template<class G>
-    inline typename SubGraph<G>::EdgeIterator SubGraph<G>::beginEdges(const VertexDescriptor& source) const
+    template<class G, class T>
+    inline typename SubGraph<G,T>::EdgeIterator SubGraph<G,T>::beginEdges(const VertexDescriptor& source) const
     {
       return EdgeIterator(source, start_[source], edges_);
     }
 
-    template<class G>
-    inline typename SubGraph<G>::EdgeIterator SubGraph<G>::endEdges(const VertexDescriptor& source) const
+    template<class G, class T>
+    inline typename SubGraph<G,T>::EdgeIterator SubGraph<G,T>::endEdges(const VertexDescriptor& source) const
     {
       return EdgeIterator(end_[source]);
     }
 
-    template<class G>
-    int SubGraph<G>::noVertices() const
+    template<class G, class T>
+    int SubGraph<G,T>::noVertices() const
     {
       return noVertices_;
     }
 
-    template<class G>
-    inline typename SubGraph<G>::VertexDescriptor SubGraph<G>::maxVertex() const
+    template<class G, class T>
+    inline typename SubGraph<G,T>::VertexDescriptor SubGraph<G,T>::maxVertex() const
     {
       return maxVertex_;
     }
 
-    template<class G>
-    inline int SubGraph<G>::noEdges() const
+    template<class G, class T>
+    inline int SubGraph<G,T>::noEdges() const
     {
       return noEdges_;
     }
 
-    template<class G>
-    inline const typename SubGraph<G>::EdgeDescriptor& SubGraph<G>::findEdge(const VertexDescriptor & source,
-                                                                             const VertexDescriptor & target) const
+    template<class G, class T>
+    inline const typename SubGraph<G,T>::EdgeDescriptor& SubGraph<G,T>::findEdge(const VertexDescriptor & source,
+                                                                                 const VertexDescriptor & target) const
     {
       const EdgeDescriptor* edge = std::lower_bound(edges_+start_[source], edges_+end_[source], target);
 #ifdef DUNE_ISTL_WITH_CHECKING
@@ -1740,16 +1746,16 @@ namespace Dune
       return *edge;
     }
 
-    template<class G>
-    SubGraph<G>::~SubGraph()
+    template<class G, class T>
+    SubGraph<G,T>::~SubGraph()
     {
       delete[] edges_;
       delete[] end_;
       delete[] start_;
     }
 
-    template<class G>
-    SubGraph<G>::SubGraph(const G& graph, const std::vector<bool>& excluded)
+    template<class G, class T>
+    SubGraph<G,T>::SubGraph(const G& graph, const T& excluded)
       : excluded_(excluded), noVertices_(0), endVertex_(0), maxVertex_(graph.maxVertex())
     {
       start_ = new int[graph.noVertices()];

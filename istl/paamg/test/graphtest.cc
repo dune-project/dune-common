@@ -461,7 +461,7 @@ void testGraph ()
   }
 
 
-  typedef Dune::Amg::SubGraph<Dune::Amg::MatrixGraph<BCRSMat> > SubGraph;
+  typedef Dune::Amg::SubGraph<Dune::Amg::MatrixGraph<BCRSMat>,std::vector<bool> > SubGraph;
   SubGraph sub(mg, excluded);
 
   for(std::vector<bool>::iterator iter=excluded.begin(); iter != excluded.end(); ++iter)
@@ -511,7 +511,7 @@ void testAggregate(double eps)
   setupAnisotropic<N>(mat, .001);
 
   typedef Dune::Amg::MatrixGraph<BCRSMat> BCRSGraph;
-  typedef Dune::Amg::SubGraph<BCRSGraph> SubGraph;
+  typedef Dune::Amg::SubGraph<BCRSGraph,std::vector<bool> > SubGraph;
   typedef Dune::Amg::PropertiesGraph<BCRSGraph,Dune::Amg::VertexProperties,Dune::Amg::EdgeProperties> PropertiesGraph;
   typedef Dune::Amg::PropertiesGraph<SubGraph,Dune::Amg::VertexProperties,Dune::Amg::EdgeProperties> SPropertiesGraph;
 
