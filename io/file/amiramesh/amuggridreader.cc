@@ -5,6 +5,7 @@
 // /////////////////////////////////////////////////////////////////////////
 
 #include <dune/grid/uggrid.hh>
+#include <dune/common/stdstreams.hh>
 
 #include <amiramesh/AmiraMesh.h>
 
@@ -388,7 +389,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
 
   int nBndSegments = face_list.size();
 
-  std::cout << face_list.size() << " boundary segments found!" << std::endl;
+  dverb << face_list.size() << " boundary segments found!" << std::endl;
 
   int noOfNodes = am->nElements("Nodes");
 
@@ -398,7 +399,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
   if(nBndNodes <= 0)
     DUNE_THROW(IOError, "CreateDomain: no boundary nodes found");
 
-  std::cout << nBndNodes << " boundary nodes found!" << std::endl;
+  dverb << nBndNodes << " boundary nodes found!" << std::endl;
 
 
   /* Zuerst wird ein neues gebiet konstruiert und
@@ -493,7 +494,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
                                                      const std::string& filename,
                                                      const std::string& domainFilename)
 {
-  std::cout << "This is the AmiraMesh reader for UGGrid<3,3>!" << std::endl;
+  dverb << "This is the AmiraMesh reader for UGGrid<3,3>!" << std::endl;
 
   // /////////////////////////////////////////////////////
   // Load the AmiraMesh file
@@ -527,7 +528,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
                                                      const std::string& filename)
 {
-  std::cout << "This is the AmiraMesh reader for UGGrid<3,3>!" << std::endl;
+  dverb << "This is the AmiraMesh reader for UGGrid<3,3>!" << std::endl;
 
   // /////////////////////////////////////////////////////
   // Load the AmiraMesh file
@@ -615,7 +616,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
   for (theNode=UG_NS<3>::FirstNode(grid.multigrid_->grids[0]); theNode!=NULL; theNode=theNode->succ)
     maxBndNodeID = std::max(theNode->id, maxBndNodeID);
 
-  std::cout << "Already " << maxBndNodeID+1 << " nodes existing\n";
+  dverb << "Already " << maxBndNodeID+1 << " nodes existing\n";
 
   int noOfBndNodes = maxBndNodeID;
   int noOfNodes = am->nElements("Nodes");
@@ -802,7 +803,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
 
   // Rearranging face_list entries that represent triangles
   // They can be recognized by containing an index twice
-  for (int i=0; i<face_list.size(); i++) {
+  for (unsigned int i=0; i<face_list.size(); i++) {
 
     FieldVector<int,4>& f = face_list[i];
 
@@ -867,14 +868,14 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
   // Count the number of triangular and quadrilateral boundary segments
   int numTriangles = 0;
   int numQuads     = 0;
-  for (int i=0; i<face_list.size(); i++) {
+  for (unsigned int i=0; i<face_list.size(); i++) {
     if (face_list[i][3]==-1)
       numTriangles++;
     else
       numQuads++;
   }
 
-  std::cout << face_list.size() << " boundary segments found!" << std::endl;
+  dverb << face_list.size() << " boundary segments found!" << std::endl;
 
   int noOfNodes = am->nElements("Nodes");
 
@@ -884,7 +885,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
   if(nBndNodes <= 0)
     DUNE_THROW(IOError, "createHexaDomain: no nodes found");
 
-  std::cout << nBndNodes << " boundary nodes found!" << std::endl;
+  dverb << nBndNodes << " boundary nodes found!" << std::endl;
 
 
   /* Zuerst wird ein neues gebiet konstruiert und
@@ -1185,7 +1186,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
 
   int noOfBSegments = boundary_segments.size();
 
-  std::cout << noOfBSegments << " Boundary segments found!" << std::endl;
+  dverb << noOfBSegments << " Boundary segments found!" << std::endl;
 
   // extract boundary nodes
   std::vector<int> boundary_nodes;
@@ -1201,7 +1202,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
       noOfBNodes++;
   }
 
-  std::cout << noOfBNodes << " boundary nodes found!" << std::endl;
+  dverb << noOfBNodes << " boundary nodes found!" << std::endl;
 
 
   /* Jetzt geht es an's eingemachte. Zuerst wird ein neues gebiet konstruiert und
@@ -1364,7 +1365,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   for (theNode=UG_NS<2>::FirstNode(theMG->grids[0]); theNode!=NULL; theNode=theNode->succ)
     maxBndNodeID = std::max(theNode->id, maxBndNodeID);
 
-  std::cout << "Already " << maxBndNodeID+1 << " nodes existing" << std::endl;
+  dverb << "Already " << maxBndNodeID+1 << " nodes existing" << std::endl;
 
   noOfNodes = am->nElements("Nodes");
   noOfElem  = am->nElements("Triangles");

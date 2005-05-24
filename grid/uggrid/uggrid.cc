@@ -5,6 +5,7 @@
 
 #include <dune/common/tuples.hh>
 #include <dune/common/sllist.hh>
+#include <dune/common/stdstreams.hh>
 
 #ifdef _2
 template class Dune::UGGrid<2,2>;
@@ -166,7 +167,7 @@ inline void Dune::UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned
 
     if (access("defaults", F_OK) == 0) {
 
-      std::cout << "Using existing UG defaults file" << std::endl;
+      dverb << "Using existing UG defaults file" << std::endl;
       useExistingDefaultsFile = true;
 
     } else {
@@ -226,8 +227,8 @@ inline void Dune::UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned
 
   extra_boundary_data_ = 0;
 
-  std::cout << "UGGrid<" << dim << "," << dimworld <<"> with name "
-            << name_ << " created!" << std::endl;
+  dverb << "UGGrid<" << dim << "," << dimworld <<"> with name "
+        << name_ << " created!" << std::endl;
 
   nameCounter++;
 }
