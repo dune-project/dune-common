@@ -166,13 +166,7 @@ namespace Dune {
     //! return the element type identifier
     GeometryType type () const
     {
-      switch (mydim)
-      {
-      case 1 : return line;
-      case 2 : return quadrilateral;
-      case 3 : return hexahedron;
-      default : return unknown;
-      }
+      return hypercube;
     }
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
@@ -319,13 +313,7 @@ namespace Dune {
     //! return the element type identifier
     GeometryType type () const
     {
-      switch (mydim)
-      {
-      case 1 : return line;
-      case 2 : return quadrilateral;
-      case 3 : return hexahedron;
-      default : return unknown;
-      }
+      return hypercube;
     }
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
@@ -784,7 +772,7 @@ namespace Dune {
     //! consecutive, codim-wise, level-wise index
     int compressedIndex () const
     {
-      _it.superindex();
+      return _it.superindex();
     }
 
     //! subentity persistent index
