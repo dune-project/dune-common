@@ -175,7 +175,8 @@ inline void Dune::UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned
       // Pass the explicitly given environment heap size
       // This is only possible by passing a pseudo 'defaults'-file
       FILE* fp = fopen("defaults", "w");
-      fprintf(fp, "envmemory  %d000000\n", envHeapSize);
+      fprintf(fp, "envmemory %d000000\n", envHeapSize);
+      fprintf(fp, "mutelevel -1001\n");
       fclose(fp);
 
     }
