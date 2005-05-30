@@ -22,6 +22,10 @@ int main () {
     Dune::derr.push(true);
     Dune::derr << "Teststring" << std::endl;
 
+    // enums are a nice special case (was a bug)
+    enum { VALUE = 5 };
+    Dune::derr << VALUE << std::endl;
+
     // instantiate private stream and connect global stream
     {
       Dune::DebugStream<> mystream(dummy);

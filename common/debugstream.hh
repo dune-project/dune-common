@@ -269,7 +269,28 @@ namespace Dune {
 
     //! generic types are passed on to current output stream
     template <class T>
-    DebugStream& operator<<(T data)  {
+    DebugStream& operator<<(const T data) {
+      // remove the following code if stream wasn't compiled active
+      if (activator<thislevel, dlevel>::value) {
+        if (! _tied) {
+          if (_active)
+            current->out << data;
+        } else {
+          if (_active && tiedstate->_active)
+            tiedstate->current->out << data;
+        };
+      };
+
+      return *this;
+    }
+
+    //! explicit specialization so that enums can be printed
+    /** Operators for built-in types follow special
+       rules (§11.2.3) so that enums won't fit into the generic
+       method above. With an existing operator<< for int however
+       the enum will be automatically casted.
+     */
+    DebugStream& operator<<(const int data) {
       // remove the following code if stream wasn't compiled active
       if (activator<thislevel, dlevel>::value) {
         if (! _tied) {
@@ -382,7 +403,6 @@ namespace Dune {
        need to remeber */
     std::stack<bool> _actstack;
   };
-
 }
 
 
