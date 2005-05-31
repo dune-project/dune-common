@@ -134,7 +134,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   // Actually write the file
   if(!am.write(filename.c_str(), 1))
-    DUNE_THROW(IOError, "Writing geometry file failed");
+    DUNE_THROW(IOError, "Writing geometry file to " << filename << " failed");
 
 
   std::cout << "Grid written successfully to: " << filename << std::endl;
