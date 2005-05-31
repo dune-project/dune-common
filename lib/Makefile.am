@@ -21,4 +21,11 @@ if ALU3DGRID
   libdune_la_LIBADD += ../grid/alu3dgrid/libalu3d.la
 endif
 
+if AMIRAMESH
+if UG
+libdune_la_LIBADD += ../io/file/amiramesh/libug2amiramesh.la
+libdune_la_LIBADD += ../io/file/amiramesh/libug3amiramesh.la
+endif
+endif
+
 include $(top_srcdir)/am/sourcescheck

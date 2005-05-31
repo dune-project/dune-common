@@ -48,7 +48,7 @@ void Dune::AmiraMeshReader<GridType>::read(GridType& grid,
 
 // the amiramesh reader for UGGrid
 #ifdef HAVE_UG
-#include "amiramesh/amuggridreader.cc"
+#include "amiramesh/amuggridreader.hh"
 #endif
 
 #endif

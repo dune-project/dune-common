@@ -1,3 +1,8 @@
 Makefile
 Makefile.in
+.deps
+.libs
+*.lo
+libug2amiramesh.la
+libug3amiramesh.la
 semantic.cache
