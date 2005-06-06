@@ -33,11 +33,9 @@ namespace Dune {
     }
 
     //! ask for level of entity
-    int level () const {return level_;}
+    int level () const {return virtualEntity_.level();}
 
   protected:
-
-    int level_;                       //!< level where element is on
 
     mutable UGMakeableEntity<codim,dim,GridImp> virtualEntity_; //!< virtual entity
 
