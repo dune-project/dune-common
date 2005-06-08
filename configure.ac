@@ -112,9 +112,10 @@ fi
 AC_SUBST(AM_CPPFLAGS)
 
 echo
-echo Note: the libraries checked for above are only used for the self-test of Dune.
-echo The library itself will build and the headers will work even if
-echo Albert, UG, Amiramesh, MPI, etc. cannot be found.
+echo Note: Most of the libraries checked for above are only used for the self-test
+echo of Dune.  The library itself will build and the headers will work even if
+echo Albert, MPI, etc. cannot be found.  An exception to this are UG and AmiraMesh
+echo which need to be found right now if you want to use them later.
 echo
 
 # write output
