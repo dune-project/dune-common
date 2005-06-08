@@ -101,7 +101,7 @@ static int linearSegmentDescription3d_tri(void *data, double *param, double *res
 /** \todo This is quadratic --> very slow */
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elemData,
                                                                        int numTetras,
-                                                                       std::vector<FieldVector<int, 3> >& face_list)
+                                                                       std::vector<FieldVector<int, 3> >& faceList)
 {
   int i, j;
 
@@ -109,7 +109,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
     {3,2,0},{1,2,3},{1,3,0},{2,1,0}
   };
 
-  face_list.resize(0);
+  faceList.resize(0);
 
   for (i=0; i<numTetras; i++) {
 
@@ -122,9 +122,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
 
       // Check if new face exists already in the list
       // (then it is no boundary face)
-      for (j=0; j<(int)face_list.size(); j++) {
+      for (j=0; j<(int)faceList.size(); j++) {
 
-        const FieldVector<int, 3>& o = face_list[j];
+        const FieldVector<int, 3>& o = faceList[j];
         if ( (v[0]==o[0] && v[1]==o[1] && v[2]==o[2]) ||
              (v[0]==o[0] && v[1]==o[2] && v[2]==o[1]) ||
              (v[0]==o[1] && v[1]==o[0] && v[2]==o[2]) ||
@@ -137,58 +137,62 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
 
       }
 
-      if (j<(int)face_list.size()) {
+      if (j<(int)faceList.size()) {
         // face has been found
-        face_list[j] = face_list.back();
-        face_list.pop_back();
+        faceList[j] = faceList.back();
+        faceList.pop_back();
 
       } else {
 
         // Insert k-th face of i-th tetrahedron into face list
-        face_list.push_back(v);
+        faceList.push_back(v);
 
       }
     }
   }
 
   // Switch from AmiraMesh numbering (1,2,3,...) to internal numbering (0,1,2,...)
-  for (i=0; i<(int)face_list.size(); i++)
+  for (i=0; i<(int)faceList.size(); i++)
     for (j=0; j<3; j++)
-      face_list[i][j]--;
+      faceList[i][j]--;
 
 }
 #endif // #ifdef _3
 
 template<int NUM_VERTICES>
-static int detectBoundaryNodes(const std::vector< Dune::FieldVector<int, NUM_VERTICES> >& face_list,
+static int detectBoundaryNodes(const std::vector< Dune::FieldVector<int, NUM_VERTICES> >& faceList,
                                int noOfNodes,
                                std::vector<int>& isBoundaryNode)
 {
-  int i, j;
   isBoundaryNode.resize(noOfNodes);
 
   int UGNodeIdxCounter = 0;
 
-  for (i=0; i<noOfNodes; i++)
+  for (int i=0; i<noOfNodes; i++)
     isBoundaryNode[i] = -1;
 
-  for (i=0; i<(int)face_list.size(); i++) {
+  for (unsigned int i=0; i<faceList.size(); i++) {
 
-    for (j=0; j<NUM_VERTICES; j++)
-      if (face_list[i][j]!=-1 && isBoundaryNode[face_list[i][j]] == -1)
-        isBoundaryNode[face_list[i][j]] = UGNodeIdxCounter++;
+    for (int j=0; j<NUM_VERTICES; j++)
+      if (faceList[i][j]!=-1 && isBoundaryNode[faceList[i][j]] == -1)
+        isBoundaryNode[faceList[i][j]] = 1;
 
   }
 
-  return UGNodeIdxCounter++;
+  for (unsigned int i=0; i<isBoundaryNode.size(); i++)
+    if (isBoundaryNode[i] != -1)
+      isBoundaryNode[i] = UGNodeIdxCounter++;
+
+  return UGNodeIdxCounter;
 }
 
 #ifdef _3
 
 // Create the domain from an explicitly given boundary description
-void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
+void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
                                                              const std::string& domainName,
-                                                             const std::string& filename)
+                                                             const std::string& filename,
+                                                             std::vector<int>& isBoundaryNode)
 {
 #ifdef HAVE_PARAMETRIZATION_LIBRARY
   const int CORNERS_OF_BND_SEG = 4;
@@ -197,11 +201,11 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
 
   /* Load data */
   if(AmiraLoadMesh(domainName.c_str(), filename.c_str()) != AMIRA_OK)
-    DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain:"
+    DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain:"
                << "Domain file could not be opened!");
 
   if(AmiraStartEditingDomain(domainName.c_str()) != AMIRA_OK)
-    DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain:"
+    DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain:"
                << "StartEditing failed!");
 
   /* Alle weiteren Anfragen an die Bibliothek beziehen sich jetzt auf das eben
@@ -295,9 +299,10 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
 
 
 // Create the domain by extracting the boundary of the given grid
-void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
+void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
                                                              const std::string& domainName,
-                                                             AmiraMesh* am)
+                                                             AmiraMesh* am,
+                                                             std::vector<int>& isBoundaryNode)
 {
   const int CORNERS_OF_BND_SEG = 4;
 
@@ -327,35 +332,32 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
   int noOfElem = am->nElements("Tetrahedra");
 
   // Extract boundary faces
-  std::vector<FieldVector<int, 3> > face_list;
-  detectBoundarySegments(elemData, noOfElem, face_list);
+  std::vector<FieldVector<int, 3> > faceList;
+  detectBoundarySegments(elemData, noOfElem, faceList);
 
-  if(face_list.size() == 0)
+  if(faceList.size() == 0)
   {
     delete am;
     DUNE_THROW(IOError, "createTetraDomain: no segments found");
   }
 
-  int nBndSegments = face_list.size();
+  int nBndSegments = faceList.size();
 
-  dverb << face_list.size() << " boundary segments found!" << std::endl;
+  dverb << faceList.size() << " boundary segments found!" << std::endl;
 
   int noOfNodes = am->nElements("Nodes");
 
-  std::vector<int> isBoundaryNode;
-
-  int nBndNodes = detectBoundaryNodes(face_list, noOfNodes, isBoundaryNode);
+  int nBndNodes = detectBoundaryNodes(faceList, noOfNodes, isBoundaryNode);
   if(nBndNodes <= 0)
-    DUNE_THROW(IOError, "CreateDomain: no boundary nodes found");
+    DUNE_THROW(IOError, "createDomain: no boundary nodes found");
 
   dverb << nBndNodes << " boundary nodes found!" << std::endl;
-
 
   /* Zuerst wird ein neues gebiet konstruiert und
      in der internen UG Datenstruktur eingetragen */
   if (!UG3d::CreateDomain(domainName.c_str(),
                           midPoint, radius,
-                          face_list.size(), nBndNodes,
+                          faceList.size(), nBndNodes,
                           false)) {
     delete am;
     DUNE_THROW(IOError, "Could not create UG domain data structure!");
@@ -380,23 +382,23 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::CreateDomain(UGGrid<3,3>& grid,
     int left = 1;
     int right = 2;
 
-    point[0] = face_list[i][0];
-    point[1] = face_list[i][1];
-    point[2] = face_list[i][2];
+    point[0] = isBoundaryNode[faceList[i][0]];
+    point[1] = isBoundaryNode[faceList[i][1]];
+    point[2] = isBoundaryNode[faceList[i][2]];
 
     if(sprintf(segmentName, "Segment %d", i) < 0)
-      DUNE_THROW(IOError, "CreateDomain: sprintf returned error value");
+      DUNE_THROW(IOError, "createDomain: sprintf returned error value");
 
     /* left = innerRegion, right = outerRegion */
-    ((double*)grid.extra_boundary_data_)[9*i+0] = am_node_coordinates_float[3*face_list[i][0] + 0];
-    ((double*)grid.extra_boundary_data_)[9*i+1] = am_node_coordinates_float[3*face_list[i][0] + 1];
-    ((double*)grid.extra_boundary_data_)[9*i+2] = am_node_coordinates_float[3*face_list[i][0] + 2];
-    ((double*)grid.extra_boundary_data_)[9*i+3] = am_node_coordinates_float[3*face_list[i][1] + 0];
-    ((double*)grid.extra_boundary_data_)[9*i+4] = am_node_coordinates_float[3*face_list[i][1] + 1];
-    ((double*)grid.extra_boundary_data_)[9*i+5] = am_node_coordinates_float[3*face_list[i][1] + 2];
-    ((double*)grid.extra_boundary_data_)[9*i+6] = am_node_coordinates_float[3*face_list[i][2] + 0];
-    ((double*)grid.extra_boundary_data_)[9*i+7] = am_node_coordinates_float[3*face_list[i][2] + 1];
-    ((double*)grid.extra_boundary_data_)[9*i+8] = am_node_coordinates_float[3*face_list[i][2] + 2];
+    ((double*)grid.extra_boundary_data_)[9*i+0] = am_node_coordinates_float[3*faceList[i][0] + 0];
+    ((double*)grid.extra_boundary_data_)[9*i+1] = am_node_coordinates_float[3*faceList[i][0] + 1];
+    ((double*)grid.extra_boundary_data_)[9*i+2] = am_node_coordinates_float[3*faceList[i][0] + 2];
+    ((double*)grid.extra_boundary_data_)[9*i+3] = am_node_coordinates_float[3*faceList[i][1] + 0];
+    ((double*)grid.extra_boundary_data_)[9*i+4] = am_node_coordinates_float[3*faceList[i][1] + 1];
+    ((double*)grid.extra_boundary_data_)[9*i+5] = am_node_coordinates_float[3*faceList[i][1] + 2];
+    ((double*)grid.extra_boundary_data_)[9*i+6] = am_node_coordinates_float[3*faceList[i][2] + 0];
+    ((double*)grid.extra_boundary_data_)[9*i+7] = am_node_coordinates_float[3*faceList[i][2] + 1];
+    ((double*)grid.extra_boundary_data_)[9*i+8] = am_node_coordinates_float[3*faceList[i][2] + 2];
 
 #if 1
     double alpha[2] = {0, 0};
@@ -465,7 +467,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
     std::string domainName = grid.name() + "_Domain";
 
     //loaddomain $file @PARA_FILE $name @DOMAIN
-    CreateDomain(grid, domainName, domainFilename);
+    createDomain(grid, domainName, domainFilename);
 
   }
 
@@ -484,6 +486,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   // /////////////////////////////////////////////////////
   // Load the AmiraMesh file
   AmiraMesh* am = AmiraMesh::read(filename.c_str());
+  std::vector<int> isBoundaryNode;
 
   if(!am)
     DUNE_THROW(IOError, "read: Could not open AmiraMesh file" << filename);
@@ -491,7 +494,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   if (am->findData("Hexahedra", HxINT32, 8, "Nodes")) {
 
     // Create a domain from an AmiraMesh hexagrid file
-    createHexaDomain(grid, am);
+    createHexaDomain(grid, am, isBoundaryNode);
 
   } else {
 
@@ -499,16 +502,18 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
     std::string domainName = grid.name() + "_Domain";
 
     //loaddomain $file @PARA_FILE $name @DOMAIN
-    CreateDomain(grid, domainName, am);
+    createDomain(grid, domainName, am, isBoundaryNode);
 
   }
 
-  buildGrid(grid, am);
+  buildGrid(grid, am, isBoundaryNode);
 
 }
 
 
-void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, AmiraMesh* am)
+void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
+                                                          AmiraMesh* am,
+                                                          std::vector<int>& isBoundaryNode)
 {
   bool isTetraGrid = am->findData("Tetrahedra", HxINT32, 4, "Nodes");
 
@@ -562,16 +567,24 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
   for (theNode=UG_NS<3>::FirstNode(grid.multigrid_->grids[0]); theNode!=NULL; theNode=theNode->succ)
     maxBndNodeID = std::max(theNode->id, maxBndNodeID);
 
-  dverb << "Already " << maxBndNodeID+1 << " nodes existing\n";
+  dverb << "Already " << maxBndNodeID+1 << " nodes existing" << std::endl;
 
-  int noOfBndNodes = maxBndNodeID;
   int noOfNodes = am->nElements("Nodes");
 
   std::cout << "AmiraMesh has " << noOfNodes << " total nodes." << std::endl;
 
-  for(i = noOfBndNodes+1; i < noOfNodes; i++) {
+  int noOfElem = (isTetraGrid)
+                 ? am->nElements("Tetrahedra")
+                 : am->nElements("Hexahedra");
+
+  // Insert interior nodes
+  for(i = 0; i < noOfNodes; i++) {
+
+    if (isBoundaryNode[i] != -1)
+      continue;
 
     assert(am_node_coordinates_float || am_node_coordinates_double);
+
     if (am_node_coordinates_float) {
       nodePos[0] = am_node_coordinates_float[3*i];
       nodePos[1] = am_node_coordinates_float[3*i+1];
@@ -585,15 +598,13 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
     if (UG3d::InsertInnerNode(grid.multigrid_->grids[0], nodePos) == NULL)
       DUNE_THROW(IOError, "inserting an inner node failed");
 
+    isBoundaryNode[i] = ++maxBndNodeID;
+
   }
 
 
 
   /* all inner nodes are inserted , now we insert the elements */
-  int noOfElem = (isTetraGrid)
-                 ? am->nElements("Tetrahedra")
-                 : am->nElements("Hexahedra");
-
   int noOfCreatedElem = 0;
 
   for(i=0; i < noOfElem; i++) {
@@ -605,7 +616,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
       int cornerIDs[numberOfCorners];
 
       for (int j=0; j<numberOfCorners; j++)
-        cornerIDs[j] = elemData[numberOfCorners*i+j]-1;
+        cornerIDs[j] = isBoundaryNode[elemData[numberOfCorners*i+j]-1];
 
       if (UG3d::InsertElementFromIDs(grid.multigrid_->grids[0], numberOfCorners, cornerIDs, NULL) == NULL)
         DUNE_THROW(IOError, "Inserting element failed");
@@ -615,16 +626,24 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
       // Prism
       if (thisElem[1]==thisElem[2] && thisElem[5]==thisElem[6]) {
 
-        int cornerIDs[6] = {thisElem[0]-1, thisElem[1]-1, thisElem[3]-1,
-                            thisElem[4]-1, thisElem[5]-1, thisElem[7]-1};
+        int cornerIDs[6] = {isBoundaryNode[thisElem[0]-1],
+                            isBoundaryNode[thisElem[1]-1],
+                            isBoundaryNode[thisElem[3]-1],
+                            isBoundaryNode[thisElem[4]-1],
+                            isBoundaryNode[thisElem[5]-1],
+                            isBoundaryNode[thisElem[7]-1]};
 
         if (UG3d::InsertElementFromIDs(grid.multigrid_->grids[0], 6, cornerIDs, NULL) == NULL)
           DUNE_THROW(IOError, "Inserting element failed");
 
       } else if (thisElem[2]==thisElem[3] && thisElem[6]==thisElem[7]) {
 
-        int cornerIDs[6] = {thisElem[0]-1, thisElem[1]-1, thisElem[2]-1,
-                            thisElem[4]-1, thisElem[5]-1, thisElem[6]-1};
+        int cornerIDs[6] = {isBoundaryNode[thisElem[0]-1],
+                            isBoundaryNode[thisElem[1]-1],
+                            isBoundaryNode[thisElem[2]-1],
+                            isBoundaryNode[thisElem[4]-1],
+                            isBoundaryNode[thisElem[5]-1],
+                            isBoundaryNode[thisElem[6]-1]};
 
         if (UG3d::InsertElementFromIDs(grid.multigrid_->grids[0], 6, cornerIDs, NULL) == NULL)
           DUNE_THROW(IOError, "Inserting element failed");
@@ -635,7 +654,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
         int cornerIDs[numberOfCorners];
 
         for (int j=0; j<numberOfCorners; j++)
-          cornerIDs[j] = elemData[numberOfCorners*i+j]-1;
+          cornerIDs[j] = isBoundaryNode[elemData[numberOfCorners*i+j]-1];
 
         if (UG3d::InsertElementFromIDs(grid.multigrid_->grids[0], numberOfCorners, cornerIDs, NULL) == NULL)
           DUNE_THROW(IOError, "Inserting element failed");
@@ -667,13 +686,13 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid, Ami
 /** \todo This is quadratic --> very slow */
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elemData,
                                                                        int numHexas,
-                                                                       std::vector<FieldVector<int, 4> >& face_list)
+                                                                       std::vector<FieldVector<int, 4> >& faceList)
 {
   static const int idx[][4] = {
     {0,4,5,1},{1,5,6,2},{2,6,7,3},{3,7,4,0},{4,7,6,5},{1,2,3,0}
   };
 
-  face_list.resize(0);
+  faceList.resize(0);
 
   for (int i=0; i<numHexas; i++) {
 
@@ -698,9 +717,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
       // Check if new face exists already in the list
       // (then it is no boundary face)
       int j;
-      for (j=0; j<(int)face_list.size(); j++) {
+      for (j=0; j<(int)faceList.size(); j++) {
 
-        const FieldVector<int, 4>& o = face_list[j];
+        const FieldVector<int, 4>& o = faceList[j];
         if ( (v[0]==o[0] && v[1]==o[1] && v[2]==o[2] && v[3]==o[3]) ||
              (v[0]==o[0] && v[1]==o[1] && v[2]==o[3] && v[3]==o[2]) ||
              (v[0]==o[0] && v[1]==o[2] && v[2]==o[1] && v[3]==o[3]) ||
@@ -734,23 +753,23 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
 
 
 
-      if (j<(int)face_list.size()) {
+      if (j<(int)faceList.size()) {
         // face has been found
-        face_list[j] = face_list.back();
-        face_list.pop_back();
+        faceList[j] = faceList.back();
+        faceList.pop_back();
 
       } else {
         // Insert k-th face of i-th hexahedron into face list
-        face_list.push_back(v);
+        faceList.push_back(v);
       }
     }
   }
 
-  // Rearranging face_list entries that represent triangles
+  // Rearranging faceList entries that represent triangles
   // They can be recognized by containing an index twice
-  for (unsigned int i=0; i<face_list.size(); i++) {
+  for (unsigned int i=0; i<faceList.size(); i++) {
 
-    FieldVector<int,4>& f = face_list[i];
+    FieldVector<int,4>& f = faceList[i];
 
     if (f[0]==f[1]) {
       f[1] = f[2];
@@ -775,7 +794,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
 
 
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& grid,
-                                                                 AmiraMesh* am)
+                                                                 AmiraMesh* am,
+                                                                 std::vector<int>& isBoundaryNode)
 {
   const int DIMWORLD = 3;
 
@@ -804,29 +824,27 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
   int noOfElem = am->nElements("Hexahedra");
 
   // Extract boundary faces
-  std::vector<FieldVector<int, 4> > face_list;
-  detectBoundarySegments(elemData, noOfElem, face_list);
+  std::vector<FieldVector<int, 4> > faceList;
+  detectBoundarySegments(elemData, noOfElem, faceList);
 
-  if(face_list.size() == 0)
+  if(faceList.size() == 0)
     DUNE_THROW(IOError, "CreateHexaDomain: no boundary segments extracted");
 
   // Count the number of triangular and quadrilateral boundary segments
   int numTriangles = 0;
   int numQuads     = 0;
-  for (unsigned int i=0; i<face_list.size(); i++) {
-    if (face_list[i][3]==-1)
+  for (unsigned int i=0; i<faceList.size(); i++) {
+    if (faceList[i][3]==-1)
       numTriangles++;
     else
       numQuads++;
   }
 
-  dverb << face_list.size() << " boundary segments found!" << std::endl;
+  dverb << faceList.size() << " boundary segments found!" << std::endl;
 
   int noOfNodes = am->nElements("Nodes");
 
-  std::vector<int> isBoundaryNode;
-
-  int nBndNodes = detectBoundaryNodes(face_list, noOfNodes, isBoundaryNode);
+  int nBndNodes = detectBoundaryNodes(faceList, noOfNodes, isBoundaryNode);
   if(nBndNodes <= 0)
     DUNE_THROW(IOError, "createHexaDomain: no nodes found");
 
@@ -841,7 +859,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
 
   UG3d::domain* newDomain = (UG3d::domain*)UG3d::CreateDomain(domainName.c_str(),
                                                               midPoint, radius,
-                                                              face_list.size(), nBndNodes,
+                                                              faceList.size(), nBndNodes,
                                                               false);
 
   if (!newDomain)
@@ -872,18 +890,17 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
     int left = 1;
     int right = 2;
 
-    if (face_list[i][3]!=-1) {
+    if (faceList[i][3]!=-1) {
 
       // change around ordering
-      point[0] = face_list[i][3];
-      point[1] = face_list[i][2];
-      point[2] = face_list[i][1];
-      point[3] = face_list[i][0];
+      point[0] = isBoundaryNode[faceList[i][3]];
+      point[1] = isBoundaryNode[faceList[i][2]];
+      point[2] = isBoundaryNode[faceList[i][1]];
+      point[3] = isBoundaryNode[faceList[i][0]];
 
-      /* left = innerRegion, right = outerRegion */
       for (int j=0; j<4; j++)
         for (int k=0; k<3; k++)
-          boundaryCoords[3*j+k] = am_node_coordinates_float[DIMWORLD*point[j] + k];
+          boundaryCoords[3*j+k] = am_node_coordinates_float[DIMWORLD*faceList[i][3-j] + k];
 
       double alpha[2] = {0, 0};
       double beta[2]  = {1, 1};
@@ -905,15 +922,15 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
 
     } else {
 
-      point[0] = face_list[i][0];
-      point[1] = face_list[i][1];
-      point[2] = face_list[i][2];
-      point[3] = face_list[i][3];
+      point[0] = isBoundaryNode[faceList[i][0]];
+      point[1] = isBoundaryNode[faceList[i][1]];
+      point[2] = isBoundaryNode[faceList[i][2]];
+      point[3] = -1;
 
       /* left = innerRegion, right = outerRegion */
       for (int j=0; j<3; j++)
         for (int k=0; k<3; k++)
-          boundaryCoords[3*j+k]  = am_node_coordinates_float[DIMWORLD*point[j] + k];
+          boundaryCoords[3*j+k]  = am_node_coordinates_float[DIMWORLD*faceList[i][j] + k];
 
       double alpha[2] = {0, 0};
       double beta[2]  = {1, 1};
@@ -975,7 +992,7 @@ static int linearSegmentDescription2d(void *data, double *param, double *result)
 /** \todo This is quadratic --> very slow */
 void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::detectBoundarySegments(int* elemData,
                                                                        int numElems,
-                                                                       std::vector<FieldVector<int, 2> >& face_list,
+                                                                       std::vector<FieldVector<int, 2> >& faceList,
                                                                        bool containsOnlyTriangles)
 {
   int i, j;
@@ -990,7 +1007,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::detectBoundarySegments(int* elem
 
   int verticesPerElement = (containsOnlyTriangles) ? 3 : 4;
 
-  face_list.resize(0);
+  faceList.resize(0);
 
   for (i=0; i<numElems; i++) {
 
@@ -1008,9 +1025,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::detectBoundarySegments(int* elem
 
       // Check if new face exists already in the list
       // (then it is no boundary face
-      for (j=0; j<(int)face_list.size(); j++) {
+      for (j=0; j<(int)faceList.size(); j++) {
 
-        const FieldVector<int, 2>& o = face_list[j];
+        const FieldVector<int, 2>& o = faceList[j];
         if ( (v[0]==o[0] && v[1]==o[1]) ||
              (v[0]==o[1] && v[1]==o[0]) ) {
           break;
@@ -1018,24 +1035,24 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::detectBoundarySegments(int* elem
 
       }
 
-      if (j<(int)face_list.size()) {
+      if (j<(int)faceList.size()) {
         // face has been found
-        face_list[j] = face_list.back();
-        face_list.pop_back();
+        faceList[j] = faceList.back();
+        faceList.pop_back();
 
       } else {
 
         // Insert k-th face of i-th element into face list
-        face_list.push_back(v);
+        faceList.push_back(v);
 
       }
     }
   }
 
   // Switch from AmiraMesh numbering (1,2,3,...) to internal numbering (0,1,2,...)
-  for (i=0; i<(int)face_list.size(); i++)
+  for (i=0; i<(int)faceList.size(); i++)
     for (j=0; j<2; j++)
-      face_list[i][j]--;
+      faceList[i][j]--;
 
 }
 
@@ -1047,7 +1064,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::detectBoundarySegments(int* elem
 /****************************************************************************/
 /****************************************************************************/
 
-void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
+void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::createDomain(UGGrid<2,2>& grid,
                                                              const std::string& domainName,
                                                              const std::string& filename)
 {
@@ -1061,7 +1078,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
   AmiraMesh* am = AmiraMesh::read(filename.c_str());
 
   if(!am)
-    DUNE_THROW(IOError, "AmiraMeshReader<UGGrid<2,2> >::CreateDomain: Can't open input file");
+    DUNE_THROW(IOError, "AmiraMeshReader<UGGrid<2,2> >::createDomain: Can't open input file");
 
   // Determine whether grid contains only triangles
   bool containsOnlyTriangles = am->findData("Triangles", HxINT32, 3, "Nodes");
@@ -1111,16 +1128,16 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
   dverb << noOfBSegments << " Boundary segments found!" << std::endl;
 
   // extract boundary nodes
-  std::vector<int> boundary_nodes;
-  detectBoundaryNodes(boundary_segments, noOfNodes, boundary_nodes);
-  if (boundary_nodes.size() == 0) {
+  std::vector<int> isBoundaryNode;
+  detectBoundaryNodes(boundary_segments, noOfNodes, isBoundaryNode);
+  if (isBoundaryNode.size() == 0) {
     delete am;
     DUNE_THROW(IOError, "2d AmiraMesh reader: couldn't extract any boundary nodes!");
   }
 
   int noOfBNodes = 0;
   for (i=0; i<noOfNodes; i++) {
-    if (boundary_nodes[i] != -1)
+    if (isBoundaryNode[i] != -1)
       noOfBNodes++;
   }
 
@@ -1158,7 +1175,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
   for(i = 0; i < noOfBSegments; i++)
   {
     char segmentName[20];
-    int left, right;
 
     // Every boundary segment has a name
     if(sprintf(segmentName, "BS %d", i) < 0) {
@@ -1167,8 +1183,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
     }
 
     /* left = innerRegion, right = outerRegion */
-    left = 0;
-    right = 1;
+    int left = 1;
+    int right = 2;
 
 
     const FieldVector<int, 2>& thisEdge = boundary_segments[i];
@@ -1178,15 +1194,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::CreateDomain(UGGrid<2,2>& grid,
     ((double*)grid.extra_boundary_data_)[4*i+2] = am_node_coordinates[2*thisEdge[1]];
     ((double*)grid.extra_boundary_data_)[4*i+3] = am_node_coordinates[2*thisEdge[1]+1];
 
-    /* map Amira Material ID's to UG material ID's */
-    /** \todo Make sure, this is neccessary */
-
-    left++;
-    right++;
-
     int renumNode[2];
-    renumNode[0] = boundary_nodes[thisEdge[0]];
-    renumNode[1] = boundary_nodes[thisEdge[1]];
+    renumNode[0] = isBoundaryNode[thisEdge[0]];
+    renumNode[1] = isBoundaryNode[thisEdge[1]];
 
     if (UG2d::CreateBoundarySegment(segmentName,
                                     left,           /*id of left subdomain */
@@ -1218,7 +1228,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
                                                      const std::string& filename)
 {
   int maxBndNodeID, noOfNodes, noOfElem, noOfCreatedElem;
-  int i;
   UG2d::NODE* theNode;
 
   std::cout << "Loading 2D Amira mesh " << filename << std::endl;
@@ -1234,7 +1243,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   std::string domainname = grid.name() + "_Domain";
 
   // extract domain from the grid filee
-  CreateDomain(grid, domainname, filename);
+  createDomain(grid, domainname, filename);
 
   // call configureCommand and newCommand
   grid.makeNewUGMultigrid();
@@ -1280,11 +1289,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
      All Boundary nodes are  assumed to be inserted already.
      We just have to insert the inner nodes and the elements
    */
-  UG2d::multigrid* theMG = grid.multigrid_;
-  assert(theMG);
-
   maxBndNodeID = -1;
-  for (theNode=UG_NS<2>::FirstNode(theMG->grids[0]); theNode!=NULL; theNode=theNode->succ)
+  for (theNode=UG_NS<2>::FirstNode(grid.multigrid_->grids[0]); theNode!=NULL; theNode=theNode->succ)
     maxBndNodeID = std::max(theNode->id, maxBndNodeID);
 
   dverb << "Already " << maxBndNodeID+1 << " nodes existing" << std::endl;
@@ -1295,13 +1301,15 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   std::cout << "AmiraMesh has " << noOfNodes << " total nodes" << std::endl;
 
   // Extract boundary faces
-  std::vector<FieldVector<int, 2> > face_list;
-  detectBoundarySegments(elemData, noOfElem, face_list, containsOnlyTriangles);
+  /** \todo The two detect...-methods have been called already.  Don't call
+      them again. */
+  std::vector<FieldVector<int, 2> > faceList;
+  detectBoundarySegments(elemData, noOfElem, faceList, containsOnlyTriangles);
   std::vector<int> isBoundaryNode;
-  detectBoundaryNodes(face_list, noOfNodes, isBoundaryNode);
+  detectBoundaryNodes(faceList, noOfNodes, isBoundaryNode);
 
-
-  for(i = 0; i < noOfNodes; i++) {
+  // Insert interior nodes
+  for(int i=0; i < noOfNodes; i++) {
 
     if (isBoundaryNode[i] != -1)
       continue;
@@ -1310,7 +1318,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
     nodePos[0] = am_node_coordinates[2*i];
     nodePos[1] = am_node_coordinates[2*i+1];
 
-    if (InsertInnerNode(theMG->grids[0], nodePos) == NULL)
+    if (InsertInnerNode(grid.multigrid_->grids[0], nodePos) == NULL)
       DUNE_THROW(IOError, "2d AmiraMesh reader: Inserting an inner node failed");
 
     isBoundaryNode[i] = ++maxBndNodeID;
@@ -1318,7 +1326,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   }
 
   noOfCreatedElem = 0;
-  for(i=0; i < noOfElem; i++) {
+  for (int i=0; i < noOfElem; i++) {
 
     if (containsOnlyTriangles ||
         (elemData[3*i+2] == elemData[3*i+3])) {
@@ -1330,7 +1338,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
       cornerIDs[1] = isBoundaryNode[elemData[3*i+1]-1];
       cornerIDs[2] = isBoundaryNode[elemData[3*i+2]-1];
 
-      if (InsertElementFromIDs(theMG->grids[0], 3,cornerIDs, NULL) == NULL)
+      if (InsertElementFromIDs(grid.multigrid_->grids[0], 3,cornerIDs, NULL) == NULL)
         DUNE_THROW(IOError, "2d AmiraMesh reader: Inserting an element failed");
 
     } else {
@@ -1343,7 +1351,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
       cornerIDs[2] = isBoundaryNode[elemData[4*i+2]-1];
       cornerIDs[3] = isBoundaryNode[elemData[4*i+3]-1];
 
-      if (InsertElementFromIDs(theMG->grids[0], 4,cornerIDs, NULL) == NULL)
+      if (InsertElementFromIDs(grid.multigrid_->grids[0], 4, cornerIDs, NULL) == NULL)
         DUNE_THROW(IOError, "2d AmiraMesh reader: Inserting an element failed");
 
     }
