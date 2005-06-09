@@ -1,45 +1,48 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __MISC_HH__
-#define __MISC_HH__
+/** \file
+    \brief Miscellaneous helper stuff
+ */
+
+#ifndef MISC_HH
+#define MISC_HH
 
 #include <iostream>
 #include <sstream>
 
-//! Check condition at compilation time
-template <bool flag> class CompileTimeChecker;
-
-//! it exists only an implementation for true so the compiler throws an
-//! error if the condition is false
-template <> class CompileTimeChecker<true> { };
-
-
-//! Map an integer value to a type
-//! This comes in handy if one tries to emulate member function specialization.
-//! The idea how to do it is presented in "Modern C++ Design" by Alexandrescu.
-template <int N>
-struct Int2Type {
-  enum { value = N };
-};
-
 namespace Dune {
+
+  //! Check condition at compilation time
+  template <bool flag> class CompileTimeChecker;
+
+  //! it exists only an implementation for true so the compiler throws an
+  //! error if the condition is false
+  template <> class CompileTimeChecker<true> { };
+
+
+  /** \brief Map an integer value to a type
+
+     This comes in handy if one tries to emulate member function specialization.
+     The idea how to do it is presented in "Modern C++ Design" by Alexandrescu.
+   */
+  template <int N>
+  struct Int2Type {
+    enum { value = N };
+  };
+
   /** @addtogroup Common
 
           @{
    */
 
+  /** \brief Compute the square of T */
   template<class T>
   T SQR (T t)
   {
     return t*t;
   }
 
-  //********************************************************************
-  //
-  // generate filenames with timestep number in it
-  //
-  //********************************************************************
-
+  /** \brief Generate filenames with timestep number in it */
   inline std::string genFilename(const std::string& path,
                                  const std::string& fn,
                                  int ntime,
