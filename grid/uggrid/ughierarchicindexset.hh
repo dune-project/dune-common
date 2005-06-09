@@ -3,78 +3,82 @@
 #ifndef DUNE_UG_HIERARCHIC_INDEX_SET_HH
 #define DUNE_UG_HIERARCHIC_INDEX_SET_HH
 
-//! Hierarchic index set of UGGrid
-template <class GridType>
-class UGGridHierarchicIndexSet
-{
-  enum { dim      = GridType::dimension};
-  enum { numCodim = GridType::dimension+1 };
+namespace Dune {
 
-public:
-  typedef typename GridType::Traits::template codim<0>::Entity EntityCodim0Type;
-
-  UGGridHierarchicIndexSet(const GridType & grid) : grid_(grid) {}
-
-  //! return hierarchic index of given entity
-  template <class EntityType>
-  int index (const EntityType & ep) const
+  //! Hierarchic index set of UGGrid
+  template <class GridType>
+  class UGGridHierarchicIndexSet
   {
-    enum { cd = EntityType :: codimension };
-    return (grid_.template getRealEntity<cd>(ep)).getIndex();
-  }
+    enum { dim      = GridType::dimension};
+    enum { numCodim = GridType::dimension+1 };
 
-  //! return subIndex of given entity
-  template <int cd>
-  int subIndex (const EntityCodim0Type & ep, int i) const
-  {
-    return grid_.template getRealEntity<0>(ep).template subIndex<cd>(i);
-  }
+  public:
+    typedef typename GridType::Traits::template codim<0>::Entity EntityCodim0Type;
 
-  /** \brief Return the size of the hierarchic index set, i.e. the largest
-      occurring index plus one
-      \todo Precompute this value
-   */
-  int size ( int level, int codim ) const {
-    int maxIdx = -1;
+    UGGridHierarchicIndexSet(const GridType & grid) : grid_(grid) {}
 
-    switch (codim) {
-    case 0 : {
-      for (int i=0; i<=grid_.maxlevel(); i++) {
+    //! return hierarchic index of given entity
+    template <class EntityType>
+    int index (const EntityType & ep) const
+    {
+      enum { cd = EntityType :: codimension };
+      return (grid_.template getRealEntity<cd>(ep)).getIndex();
+    }
 
-        typename GridType::Traits::template codim<0>::LevelIterator eIt    = grid_.template lbegin<0>(i);
-        typename GridType::Traits::template codim<0>::LevelIterator eEndIt = grid_.template lend<0>(i);
+    //! return subIndex of given entity
+    template <int cd>
+    int subIndex (const EntityCodim0Type & ep, int i) const
+    {
+      return grid_.template getRealEntity<0>(ep).template subIndex<cd>(i);
+    }
 
-        for (; eIt!=eEndIt; ++eIt)
-          maxIdx = std::max(maxIdx, index(*eIt));
-        //UG_NS<dim>::index(getRealEntity<0>(*eIt).target_) = id++;
+    /** \brief Return the size of the hierarchic index set, i.e. the largest
+        occurring index plus one
+        \todo Precompute this value
+     */
+    int size ( int level, int codim ) const {
+      int maxIdx = -1;
 
+      switch (codim) {
+      case 0 : {
+        for (int i=0; i<=grid_.maxlevel(); i++) {
+
+          typename GridType::Traits::template codim<0>::LevelIterator eIt    = grid_.template lbegin<0>(i);
+          typename GridType::Traits::template codim<0>::LevelIterator eEndIt = grid_.template lend<0>(i);
+
+          for (; eIt!=eEndIt; ++eIt)
+            maxIdx = std::max(maxIdx, index(*eIt));
+          //UG_NS<dim>::index(getRealEntity<0>(*eIt).target_) = id++;
+
+        }
+        break;
       }
-      break;
-    }
 
-    case dim : {
-      for (int i=0; i<=grid_.maxlevel(); i++) {
+      case dim : {
+        for (int i=0; i<=grid_.maxlevel(); i++) {
 
-        typename GridType::Traits::template codim<dim>::LevelIterator vIt    = grid_.template lbegin<dim>(i);
-        typename GridType::Traits::template codim<dim>::LevelIterator vEndIt = grid_.template lend<dim>(i);
+          typename GridType::Traits::template codim<dim>::LevelIterator vIt    = grid_.template lbegin<dim>(i);
+          typename GridType::Traits::template codim<dim>::LevelIterator vEndIt = grid_.template lend<dim>(i);
 
-        for (; vIt!=vEndIt; ++vIt)
-          maxIdx = std::max(maxIdx, index(*vIt));
-        //UG_NS<dim>::index(getRealEntity<dim>(*vIt).target_) = id++;
+          for (; vIt!=vEndIt; ++vIt)
+            maxIdx = std::max(maxIdx, index(*vIt));
+          //UG_NS<dim>::index(getRealEntity<dim>(*vIt).target_) = id++;
 
+        }
+        break;
       }
-      break;
-    }
+      }
+
+      return maxIdx + 1;
     }
 
-    return maxIdx + 1;
-  }
+  private:
+    // our Grid
+    const GridType & grid_;
+    // size of indexset, managed by grid
+    //const int (& size_)[numCodim];
+  };
 
-private:
-  // our Grid
-  const GridType & grid_;
-  // size of indexset, managed by grid
-  //const int (& size_)[numCodim];
-};
+}  // end namespace Dune
 
 #endif
