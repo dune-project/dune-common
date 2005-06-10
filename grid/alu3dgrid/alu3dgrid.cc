@@ -284,11 +284,11 @@ namespace Dune {
       std::string cmp ("!");
       cmp += elType2Name( elType );
 
-      if (strcmp (str.c_str() , cmp.c_str()) != 0)
+      if (str != cmp)
       {
         derr << "ALU3DGrid<" << elType2Name(elType) << "> tries to read MacroGridFile with < " << str
              << " >. Identifier should be < " << cmp << " >!\n";
-        abort();
+        //abort();
       }
 
       file.close();
@@ -1797,9 +1797,11 @@ namespace Dune {
   ALU3dGridIntersectionIterator<GridImp>::
   initLocal(const GEOElementType& item, int faceIdx,
             LocalGeometryImp& geo) const {
-    geo.buildGeom
-      (item.twist(ALU3dImplTraits<GridImp::elementType>::dune2aluFace(faceIdx)),
-      faceIdx);
+
+    // * OLD CODE
+    //geo.buildGeom
+    //(item.twist(ALU3dImplTraits<GridImp::elementType>::dune2aluFace(faceIdx)),
+    //   faceIdx);
   }
 
   template <class GridImp>
