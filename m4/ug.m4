@@ -96,11 +96,15 @@ AC_DEFUN([DUNE_PATH_UG],[
 #           UG_CPPFLAGS="-D_${UGDOMAIN}_ -D_${UG_DIM} $UG_CPPFLAGS"
 #       fi
 
+
+
       # use global dimension
       if test "$with_problem_dim" != "$with_world_dim" ; then
 	  AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
       fi
       UG_DIM="$with_problem_dim"
+      # The same as UG_CPPFLAGS, but without the dimensionality parameter
+      UG_NODIM_CPPFLAGS="${UG_CPPFLAGS}"
       UG_CPPFLAGS="${UG_CPPFLAGS} -D_${UG_DIM}"
 
       AC_LANG_PUSH([C++])
@@ -135,6 +139,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 	      [int i = UG${UG_DIM}d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
+               UG_NODIM_CPPFLAGS="$UG_NODIM_CPPFLAGS -DModelP"
 	       HAVE_UG="1"
 	       AC_MSG_RESULT(yes)
               ],
@@ -161,7 +166,7 @@ AC_DEFUN([DUNE_PATH_UG],[
           # TODO: Not working for the parallel UG
 	  AC_SUBST(UG_LIBS3, "-lug3 -ldomS3 -lgg3 -ldevS")
 	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
-          AC_SUBST(UG_INCLUDE_PATH, $UG_INCLUDE_PATH)
+          AC_SUBST(UG_NODIM_CPPFLAGS, $UG_NODIM_CPPFLAGS)
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
     # add to global list
