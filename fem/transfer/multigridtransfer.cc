@@ -42,7 +42,6 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
 
   // ///////////////////////////////////////////
   // Determine the indices present in the matrix
-  /** \todo Do a have to do that _before_ actually computing the matrix?  */
   // /////////////////////////////////////////////////
   MatrixIndexSet indices(rows, cols);
 
