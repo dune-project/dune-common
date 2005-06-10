@@ -1,5 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+/** \file
+    \brief A few common exception classes
+ */
+
 // $Id$
 
 #ifndef DUNE_EXCEPTIONS_HH
@@ -133,7 +137,7 @@ namespace Dune {
                               th__out << THROWSPEC(E) << m; th__ex.message(th__out.str()); throw th__ex; \
 } while (0)
 
-  /*! default exception class for I/O errors
+  /*! \brief Default exception class for I/O errors
 
      This is a superclass for any errors dealing with file/socket I/O problems
      like
@@ -144,7 +148,7 @@ namespace Dune {
    */
   class IOError : public Exception {};
 
-  /*! default exception class for Mathematical errors
+  /*! \brief Default exception class for mathematical errors
 
      This is the superclass for all errors which are caused by
      mathematical problems like
@@ -154,10 +158,10 @@ namespace Dune {
    */
   class MathError : public Exception {};
 
-  /*! default exception class for Range errors
+  /*! \brief Default exception class for range errors
 
      This is the superclass for all errors which are caused because
-     the user tries to access data, that was not allocated before.
+     the user tries to access data that was not allocated before.
      These can be problems like
 
      - accessing array entries behind the last entry
@@ -167,7 +171,7 @@ namespace Dune {
    */
   class RangeError : public Exception {};
 
-  /*! default exception for dummy implementations
+  /*! \brief Default exception for dummy implementations
 
      This exception can be used for functions/methods
 
@@ -176,7 +180,7 @@ namespace Dune {
    */
   class NotImplemented : public Exception {};
 
-  /*! default exception class for OS errors
+  /*! \brief Default exception class for OS errors
 
      This class is thrown when a system-call is used and returns an
      error.
@@ -184,7 +188,7 @@ namespace Dune {
    */
   class SystemError : public Exception {};
 
-  /*! default exception if memory allocation fails
+  /*! \brief Default exception if memory allocation fails
 
    */
   class OutOfMemoryError : public SystemError {};
