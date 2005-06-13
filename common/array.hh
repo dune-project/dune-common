@@ -207,18 +207,14 @@ namespace Dune
      Creates an array of size 0.
    */
   template <class T>
-  inline Array<T>::Array ()
-  {
-    n = 0;
-  }
+  inline Array<T>::Array () : n(0), p(0) {}
 
   /*! \brief Constructor with size indicator
      Creates an empty array of size m.
    */
   template <class T>
-  inline Array<T>::Array (int m)
+  inline Array<T>::Array (int m) : n(m) ,p(0)
   {
-    n = m;
     if (n<=0)
     {
       n = 0;
