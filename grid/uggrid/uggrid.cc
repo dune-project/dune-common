@@ -341,6 +341,19 @@ Dune::UGGrid < dim, dimworld >::lend (int level) const
 template < int dim, int dimworld >
 inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
 {
+#ifndef ModelP
+  switch (codim) {
+  case 0 :
+    return multigrid_->grids[level]->nElem[0];
+  case dim :
+    return multigrid_->grids[level]->nNode[0];
+  default :
+    DUNE_THROW(GridError, "UGGrid<" << dim << ", " << dimworld
+                                    << ">::size(int level, int codim) is only implemented"
+                                    << " for codim==0 and codim==dim!");
+  }
+#else
+
   int numberOfElements = 0;
 
   if(codim == 0)
@@ -366,6 +379,7 @@ inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
   }
 
   return numberOfElements;
+#endif
 }
 
 
