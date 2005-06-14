@@ -1,0 +1,13 @@
+# -*- Makefile -*-
+# $Id$
+
+#
+# this file should be included into any Makefile.am so that we can
+# easily introduce new global rules. DO NOT OVERUSE!
+#
+
+# add "sourcescheck"-target testing if all source files are mentioned
+include $(top_srcdir)/am/sourcescheck
+
+# prevent "make check" if libdune does not yet exist
+include $(top_srcdir)/am/no-check-without-lib
