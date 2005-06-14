@@ -17,4 +17,4 @@ include $(top_srcdir)/am/webstuff
 
 CLEANFILES = $(PAGES)
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

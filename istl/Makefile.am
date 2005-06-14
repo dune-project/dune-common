@@ -49,4 +49,4 @@ CLEANFILES = istl.tar.gz
 
 .PHONY: istl-dist
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

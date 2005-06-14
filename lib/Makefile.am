@@ -31,4 +31,4 @@ endif
 # use the correct selection
 libdune_la_LIBADD = $(SUBLIBS) $(UGLIB) $(ALU3DLIB) $(AMIRALIB)
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

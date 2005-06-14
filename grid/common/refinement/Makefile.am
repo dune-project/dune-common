@@ -11,4 +11,4 @@ noinst_DATA = referencetokuhn0.png simplexvertexindex.png
 
 include $(top_srcdir)/am/inkscape.am
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

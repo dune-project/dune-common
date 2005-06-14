@@ -20,4 +20,4 @@ commoninclude_HEADERS = dlist.cc mapping.cc stdstreams.cc alignment.hh \
   typeinfo.hh typetraits.hh vectorspace.hh precision.hh bigunsignedint.hh \
   autoptr.hh
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

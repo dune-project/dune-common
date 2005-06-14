@@ -12,4 +12,4 @@ include $(top_srcdir)/am/webstuff
 
 # !! rules to convert fig, svg -> png
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

@@ -30,4 +30,4 @@ uggrid_HEADERS = uggridentity.cc uggridgeometry.cc \
 # This may lead to spurious UG macros bleeding into Dune.
 
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

@@ -12,6 +12,7 @@ check_PROGRAMS = $(TESTPROGS)
 
 # output code coverage
 AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
+AM_LDFLAGS = $(top_builddir)/lib/libdune.la
 
 # define the programs
 
@@ -39,4 +40,4 @@ settest_SOURCES=settest.cc
 
 gcdlcdtest_SOURCES = gcdlcdtest.cc
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

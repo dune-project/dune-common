@@ -46,4 +46,4 @@ CLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi *.pdf *.ps
 CURDIR=doc/istl/comm
 
 include $(top_srcdir)/am/webstuff
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

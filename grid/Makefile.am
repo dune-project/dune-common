@@ -15,4 +15,4 @@ grid_HEADERS = albertagrid.hh \
                onedgrid.hh \
                reftopology.hh
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

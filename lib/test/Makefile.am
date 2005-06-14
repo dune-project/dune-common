@@ -15,4 +15,4 @@ LDADD = ../libdune.la
 
 test_stream_SOURCES = test-stream.cc
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

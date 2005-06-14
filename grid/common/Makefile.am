@@ -9,4 +9,4 @@ common_HEADERS = grid.cc virtualrefinement.cc boundary.hh \
 
 SUBDIRS = refinement
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

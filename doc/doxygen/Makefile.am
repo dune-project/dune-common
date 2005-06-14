@@ -30,4 +30,4 @@ include $(top_srcdir)/am/webstuff
 clean-local:
 	rm -rf html latex doxygen-tag *~
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules

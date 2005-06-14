@@ -34,4 +34,4 @@ syncertest_SOURCES = syncertest.cc
 syncertest_CXXFLAGS = $(MPI_CPPFLAGS)
 syncertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
-include $(top_srcdir)/am/sourcescheck
+include $(top_srcdir)/am/global-rules
