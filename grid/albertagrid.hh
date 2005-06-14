@@ -789,15 +789,16 @@ namespace Dune
     }
   };
 
-  /** \todo Please doc me! */
+  /** Boundary Entity of AlbertaGrid. See Interface for description of methods. */
   template <class GridImp>
   class AlbertaGridBoundaryEntity :
     public BoundaryEntityDefault <GridImp,AlbertaGridBoundaryEntity>
   {
     friend class AlbertaGridIntersectionIterator<GridImp>;
     friend class AlbertaGridMakeableBoundaryEntity<GridImp>;
+    typedef AlbertaGridMakeableGeometry<GridImp::dimension,GridImp::dimensionworld,GridImp> GeometryImp;
   public:
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp:: template codim<0>:: Geometry Geometry;
 
     //! Constructor
     AlbertaGridBoundaryEntity ();
@@ -816,7 +817,7 @@ namespace Dune
     void setElInfo(ALBERTA EL_INFO * elInfo, int nb);
 
     // ghost cell
-    mutable Geometry _geom;
+    mutable GeometryImp _geom;
 
     // cooresponding el_info
     ALBERTA EL_INFO * _elInfo;
