@@ -6,4 +6,15 @@ iofiledir = $(includedir)/dune/io/file
 iofile_HEADERS = amirameshreader.hh asciiparser.hh rawdatawriter.hh \
   amirameshwriter.hh grapedataio.hh
 
+noinst_LTLIBRARIES = libfileio.la
+
+if AMIRAMESH
+if UG
+  AMIRALIB = amiramesh/libug2amiramesh.la amiramesh/libug3amiramesh.la
+endif
+endif
+
+libfileio_la_SOURCES =
+libfileio_la_LIBADD = $(AMIRALIB)
+
 include $(top_srcdir)/am/global-rules

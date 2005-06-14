@@ -42,10 +42,7 @@ check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 ## common flags
 #
 
-# note that $(top_builddir)/lib/libdune.la cannot be used because the
-# lib/-directory will be compiled last. Thus we need to add the
-# library-parts explicitly
-AM_LDFLAGS = $(top_builddir)/common/libcommon.la
+AM_LDFLAGS = $(top_builddir)/lib/libdune.la
 
 # paranoia
 DUNE_EXTRA_CHECKS =  -DDUNE__ISTL_WITH_CHECKING -DDUNE_DEVEL_MODE
