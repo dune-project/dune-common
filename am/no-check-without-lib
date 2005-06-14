@@ -1,0 +1,27 @@
+# -*- Makefile -*-
+# $Id$
+
+# many tests need parts of libdune. Telling the tests to use
+# previously build partial libs is possible but difficult to maintain:
+# the SUBDIRS have to be very carefully defined for this to work...
+# Additionally, testing with a partial lib is unrealistic.
+#
+# As users may try to use "make check" without a full build we
+# generate a meaningful error message instead of silently failing on a
+# lib-dependency
+
+# add a new dependency to automake-internal rule
+check-am: libcheck
+
+libcheck: libcheck-FORCE
+	@if test ! -f $(top_builddir)/lib/libdune.la ; then \
+	  echo ; \
+	  echo '   libdune not built, checks will not work yet!' ; \
+	  echo '   Run a full make to fix this' ; \
+	  echo ; \
+	  exit 1; \
+	fi
+
+libcheck-FORCE:
+
+.PHONY: libcheck libcheck-FORCE
