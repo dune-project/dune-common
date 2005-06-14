@@ -3,7 +3,7 @@
 /** \file
  * \brief Implementation of the reference topologies
  */
-#include <dune/grid/reftopology.hh>
+#include <dune/grid/common/reftopology.hh>
 
 using namespace Dune;
 
