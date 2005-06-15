@@ -1701,10 +1701,29 @@ namespace Dune {
       return grid.template getRealEntity<0>(e).template subCompressedIndex<cc>(i);
     }
 
+    //! map new compressed index to old compressed index
+    int oldcompressed (int newcompressed, int codim, int level) const
+    {
+      return newcompressed;
+    }
+
+    //! deliver sizes of IndexSet
+    int size (int codim, GeometryType type, int level) const
+    {
+      return 0;
+    }
+
+    //! deliver all geometry types used in this grid
+    const std::vector<GeometryType>& geomtypes () const
+    {
+      return mytypes;
+    }
+
     YaspIndex (const GridImp& g) : grid(g) {}
 
   private:
     const GridImp& grid;
+    std::vector<GeometryType> mytypes;
   };
 
 
@@ -2094,16 +2113,6 @@ namespace Dune {
     }
 
     const IndexType& levelindex () const
-    {
-      return yi;
-    }
-
-    const IndexType& savedleafindex () const
-    {
-      return yi;
-    }
-
-    const IndexType& savedlevelindex () const
     {
       return yi;
     }
