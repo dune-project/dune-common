@@ -28,6 +28,11 @@ AC_CHECK_PROGS([DVIPS], [dvips], [true])
 AC_CHECK_PROGS([WML], [wml], [true])
 DUNE_INKSCAPE
 
+# doxygen and latex take a lot of time...
+AC_ARG_ENABLE(documentation,
+   AC_HELP_STRING([--disable-documentation],[don't generate docs, speeds up the build]))
+AM_CONDITIONAL(BUILD_DOCS, test x$enable_documentation != xno)
+
 # special variable to include the documentation into the website
 AC_ARG_WITH(duneweb,
     AC_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))

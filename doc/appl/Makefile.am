@@ -1,6 +1,8 @@
 # $Id$
 
-PAGES = refelements.html
+if BUILD_DOCS
+ PAGES = refelements.html
+endif
 
 SUBDIRS = refelements
 

@@ -2,8 +2,11 @@
 
 SUBDIRS = comm
 
-dist_pkgdata_DATA = istl.pdf istl.ps
+if BUILD_DOCS
+  DOCS = istl.pdf istl.ps
+endif
 
+dist_pkgdata_DATA = $(DOCS)
 
 # rerun TEX if log-file suggests that
 .tex.dvi:

@@ -1,7 +1,9 @@
 # $Id$
 
+if BUILD_DOCS
 PAGES = codingstyle.html const-refactoring.html portability.html \
   ugreader.html
+endif
 
 all: $(PAGES)
 

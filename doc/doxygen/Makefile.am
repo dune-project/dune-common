@@ -4,7 +4,11 @@
 EXTRA_DIST = Doxyfile Doxydep \
   doxy-footer.html doxy-header.html dune-doxy.css mainpage
 
-all: doxygen-tag
+if BUILD_DOCS
+  WHAT = doxygen-tag
+endif
+
+all: $(WHAT)
 
 # setting like in dune-web
 CURDIR=doc/doxygen

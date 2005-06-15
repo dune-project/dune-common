@@ -5,7 +5,9 @@ EXTRA_DIST = Buildsystem
 
 SUBDIRS = devel appl doxygen layout istl
 
-PAGES = index.html
+if BUILD_DOCS
+ PAGES = index.html
+endif
 
 all: $(PAGES)
 
