@@ -13,7 +13,7 @@ sourcescheck-am:
 	 grep [hc][hc]$$ | sort | uniq > header_CHECK.present
 	@RESULT=0; \
 	if diff header_CHECK.* | grep ^[\<\>] -q; then \
-		echo "==== ERROR ===="; \
+		echo "==== WARNING ===="; \
 	    echo -n "Directory: "; pwd; \
 		echo "Files present but not installed:"; \
 		diff -u header_CHECK.install header_CHECK.present | \

@@ -9,5 +9,8 @@
 # add "sourcescheck"-target testing if all source files are mentioned
 include $(top_srcdir)/am/sourcescheck
 
+# add "check-log"-target to create automated build logs
+include $(top_srcdir)/am/checklog
+
 # prevent "make check" if libdune does not yet exist
 include $(top_srcdir)/am/no-check-without-lib

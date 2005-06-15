@@ -26,6 +26,7 @@ AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
 AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
 AC_CHECK_PROGS([DVIPS], [dvips], [true])
 AC_CHECK_PROGS([WML], [wml], [true])
+AC_CHECK_PROGS([PERL], [perl], [true])
 DUNE_INKSCAPE
 
 # doxygen and latex take a lot of time...
@@ -43,6 +44,19 @@ if test -d $with_duneweb ; then
   with_duneweb=`(cd $with_duneweb && pwd)` ;
 fi
 AC_SUBST(DUNEWEBDIR, $with_duneweb)
+
+# special settings for check-log
+AC_SUBST(host, $(echo "$ac_hostname ($(uname -sm), $COMPILER_NAME)") )
+AC_ARG_WITH(tag,
+  AC_HELP_STRING([--with-tag=TAG],
+                 [tag to use for automated test runs]))
+if test x$with_tag == xno ; then with_tag=foo; fi
+AC_SUBST(tag, $with_tag)
+AC_ARG_WITH(revision,
+  AC_HELP_STRING([--with-revision=TAG],
+                 [revision to use for automated test runs]))
+if test x$with_revision == xno ; then with_revision=bar; fi
+AC_SUBST(revision, $with_revision)
 
 echo
 echo Checking for libraries the self-test could use:
@@ -179,5 +193,9 @@ AC_CONFIG_FILES([Makefile
          m4/Makefile
 	 am/Makefile
 	 bin/wmlwrap
+	 bin/check-log-store
          dune.pc])
 AC_OUTPUT
+
+chmod +x bin/wmlwrap
+chmod +x bin/check-log-store
