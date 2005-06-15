@@ -9,7 +9,7 @@
 use strict;
 use DBI;
 
-my $dbh = DBI->connect( 'dbi:CSV:f_dir=~/.allread/check-log/',
+my $dbh = DBI->connect( 'dbi:CSV:f_dir=/afs/iwr/home/christi/.allread/check-log/',
                         'dune',
                         'dunepwd',
 						{

@@ -26,7 +26,7 @@ my $path = shift || die $USAGE;
 #
 # <tag> <revision> <host> <mode> <module> <path> <errors> <warnings> <log>
 
-my $dbh = DBI->connect( 'dbi:CSV:f_dir=~/.allread/check-log/',
+my $dbh = DBI->connect( 'dbi:CSV:f_dir=/afs/iwr/home/christi/.allread/check-log/',
                         'dune',
                         'dunepwd',
 						{
