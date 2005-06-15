@@ -317,15 +317,28 @@ galerkinRestrict(const OperatorType& fineMat, OperatorType& coarseMat) const
 
           MatrixBlock& cm = coarseMat[iv][jv];
 
-          MatrixBlock prod = *jm;
-          prod.leftmultiply(*m);
-          /** \bug The transpose of im should be multiplied here! */
-          prod.leftmultiply(*im);
-          cm += prod;
+          // Compute cm = im^T * m * jm
+          for (int i=0; i<blocksize; i++) {
+
+            for (int j=0; j<blocksize; j++) {
+
+              for (int k=0; k<blocksize; k++) {
+
+                for (int l=0; l<blocksize; l++)
+                  cm[i][j] += (*im)[k][i] * (*m)[k][l] * (*jm)[l][j];
+
+              }
+
+            }
+
+          }
 
         }
+
       }
+
     }
+
   }
 
 }
