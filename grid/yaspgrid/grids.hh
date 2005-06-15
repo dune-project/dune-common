@@ -37,7 +37,7 @@ namespace Dune {
      You can also use the structured interface and write really fast code.
 
      The YGrid considered here describes a finite set \f$d\f$-tupels of the form
-     \f[ G = \{ (k_0,\ldots,k_{d-1}) | o_o \leq k_i < o_i+s_i \}  \f]
+     \f[ G = \{ (k_0,\ldots,k_{d-1}) | o_i \leq k_i < o_i+s_i \}  \f]
 
      togehter with an affine mapping
 
@@ -2079,9 +2079,27 @@ namespace Dune {
       // now overlap only (i.e. without front), is subgrid of overlapfront
       iTupel o_vertex_overlap;
       iTupel s_vertex_overlap;
-      for (int i=0; i<d; i++) o_vertex_overlap[i] = g.cell_overlap.origin(i)+1;
-      for (int i=0; i<d; i++) s_vertex_overlap[i] = g.cell_overlap.size(i)-1;
-      for (int i=0; i<d; i++) offset[i] = o_vertex_overlap[i]-o_vertex_overlapfront[i];
+      for (int i=0; i<d; i++)
+      {
+        o_vertex_overlap[i] = g.cell_overlap.origin(i);
+        s_vertex_overlap[i] = g.cell_overlap.size(i)+1;
+
+        if (!periodic[i] && g.cell_overlap.origin(i)>g.cell_global.origin(i))
+        {
+          // not at the lower boundary
+          o_vertex_overlap[i] += 1;
+          s_vertex_overlap[i] -= 1;
+        }
+
+        if (!periodic[i] && g.cell_overlap.origin(i)+g.cell_overlap.size(i)<g.cell_global.origin(i)+g.cell_global.size(i))
+        {
+          // not at the upper boundary
+          s_vertex_overlap[i] -= 1;
+        }
+
+
+        offset[i] = o_vertex_overlap[i]-o_vertex_overlapfront[i];
+      }
       g.vertex_overlap = SubYGrid<d,ct>(o_vertex_overlap,s_vertex_overlap,offset,s_vertex_overlapfront,h,r);
 
       // now interior with border
@@ -2095,9 +2113,26 @@ namespace Dune {
       // now only interior
       iTupel o_vertex_interior;
       iTupel s_vertex_interior;
-      for (int i=0; i<d; i++) o_vertex_interior[i] = g.cell_interior.origin(i)+1;
-      for (int i=0; i<d; i++) s_vertex_interior[i] = g.cell_interior.size(i)-1;
-      for (int i=0; i<d; i++) offset[i] = o_vertex_interior[i]-o_vertex_overlapfront[i];
+      for (int i=0; i<d; i++)
+      {
+        o_vertex_interior[i] = g.cell_interior.origin(i);
+        s_vertex_interior[i] = g.cell_interior.size(i)+1;
+
+        if (!periodic[i] && g.cell_interior.origin(i)>g.cell_global.origin(i))
+        {
+          // not at the lower boundary
+          o_vertex_interior[i] += 1;
+          s_vertex_interior[i] -= 1;
+        }
+
+        if (!periodic[i] && g.cell_interior.origin(i)+g.cell_interior.size(i)<g.cell_global.origin(i)+g.cell_global.size(i))
+        {
+          // not at the upper boundary
+          s_vertex_interior[i] -= 1;
+        }
+
+        offset[i] = o_vertex_interior[i]-o_vertex_overlapfront[i];
+      }
       g.vertex_interior = SubYGrid<d,ct>(o_vertex_interior,s_vertex_interior,offset,s_vertex_overlapfront,h,r);
 
       // compute vertex intersections
