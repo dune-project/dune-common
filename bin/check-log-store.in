@@ -1,0 +1,115 @@
+#!/usr/bin/perl -w
+
+use strict;
+use DBI;
+
+#
+# configure settings
+#
+my $host = "@host@";
+my $tag = "@tag@";
+my $revision = "@revision@";
+
+##
+## PARAMS
+##
+my $USAGE = "$0 <mode> <module> <base> [logfile]\n";
+my $mode = shift || die $USAGE;
+my $module = shift || die $USAGE;
+my $path = shift || die $USAGE;
+
+##
+## OPEN DB
+##
+
+# DB format
+#
+# <tag> <revision> <host> <mode> <module> <path> <errors> <warnings> <log>
+
+my $dbh = DBI->connect( 'dbi:CSV:f_dir=~/.allread/check-log/',
+                        'dune',
+                        'dunepwd',
+						{
+							### Don't report errors via warn(  )
+							PrintError => 0,
+							### Do report errors via die(  )
+							RaiseError => 1
+						} 
+                      ) || die "Database connection not made: $DBI::errstr";
+
+##
+## LOG
+##
+my $errors=0;
+my $warnings=0;
+my $log="";
+if ($mode ne "dir")
+{
+	## parse logfile and count errors and warnings
+	my $logfile=shift || die $USAGE;
+	open LOG, $logfile || die "Error reading $logfile";
+	while(<LOG>)
+	{
+		$log = $log.$_;
+		$errors++ if (/error/ || /ERROR/);
+		$warnings++ if (/warning/ || /WARNING/);
+	}
+	close LOG;
+}
+else
+{
+	## sum all errors and warings in entries with this newpath as path
+	my $newpath = $path.'/'.$module;
+	$newpath =~ s/\/+/\//g;
+	my $sql = qq{ SELECT errors, warnings FROM results 
+			      WHERE tag = ?
+			      AND revision = ?
+			      AND host = ?
+				  AND path = ? };
+	my $sth = $dbh->prepare( $sql );
+	$sth->bind_param( 1, $tag, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 2, $revision, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 3, $host, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 4, $newpath, q{ TYPE => SQL_VARCHAR } );
+	$sth->execute();
+	
+	my( $err, $warn );
+	$sth->bind_columns( undef, \$err, \$warn );
+	
+	while( $sth->fetch() ) {
+		$errors += $err;
+		$warnings += $warn;
+		print "$newpath, $err, $warn\n";
+	}
+
+	$sth->finish();
+}
+
+##
+## STORE
+##
+my $sql = qq{ INSERT INTO results VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) };
+my $sth = $dbh->prepare( $sql );
+
+eval {
+	$sth->bind_param( 1, $tag, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 2, $revision, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 3, $host, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 4, $mode, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 5, $module, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 6, $path, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 7, $errors, q{ TYPE => SQL_INTEGER } );
+	$sth->bind_param( 8, $warnings, q{ TYPE => SQL_INTEGER } );
+	$sth->bind_param( 9, $log, q{ TYPE => SQL_LONGVARCHAR } );
+	$sth->execute();
+	$dbh->commit();
+};
+
+if($@) {
+    warn "Store failed: $DBI::errstr\n";
+    $dbh->rollback;
+}
+
+$sth->finish();
+
+$dbh->disconnect();

@@ -1,0 +1,35 @@
+#!/usr/bin/perl -w
+
+#
+# DB format
+#
+# <tag> <revison> <host> <mode> <module> <path> <errors> <warnings> <log>
+#
+
+use strict;
+use DBI;
+
+my $dbh = DBI->connect( 'dbi:CSV:f_dir=~/.allread/check-log/',
+                        'dune',
+                        'dunepwd',
+						{
+							### Don't report errors via warn(  )
+							PrintError => 0,
+							### Do report errors via die(  )
+							RaiseError => 1
+						} 
+                      ) || die "Database connection not made: $DBI::errstr";
+
+my $sql = qq{ CREATE TABLE results ( tag VARCHAR(128) NOT NULL,
+                                     revision VARCHAR(128) NOT NULL, 
+                                     host VARCHAR(128) NOT NULL, 
+                                     mode VARCHAR(128) NOT NULL, 
+                                     module VARCHAR(128) NOT NULL, 
+                                     path VARCHAR(128) NOT NULL, 
+                                     errors INTEGER, 
+                                     warnings INTEGER, 
+                                     log TEXT
+                                     ) };
+$dbh->do( $sql ) || die "Could not create table: $DBI::errstr";
+
+$dbh->disconnect();
