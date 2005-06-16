@@ -9,7 +9,7 @@
 template <class Object>
 class ALUMemoryProvider
 {
-  stack < Object * > objStack_;
+  std::stack < Object * > objStack_;
 
   typedef ALUMemoryProvider < Object > MyType;
 public:
