@@ -11,6 +11,7 @@
 
 #include "common/grid.hh"
 #include "common/defaultindexsets.hh"
+#include "common/adleafidset.hh"
 
 #include "alu3dgrid/alu3dinclude.hh"
 #include "alu3dgrid/alu3dmappings.hh"
@@ -19,6 +20,12 @@
 #include <dune/common/stdstreams.hh>
 
 #include <dune/io/file/grapedataio.hh>
+
+// provides an implementation of auto pointers for the special use here
+#include "alu3dgrid/autoptr.hh"
+
+// provides heap management for entity objects
+#include "alu3dgrid/alumemory.hh"
 
 namespace Dune
 {
@@ -1209,7 +1216,7 @@ namespace Dune
 
     // the wrapper for the original iterator of the ALU3dGrid
     typedef typename ALU3DSPACE ALU3dGridLevelIteratorWrapper<cd> IteratorType;
-    AutoPointer< IteratorType > iter_;
+    ALU3DSPACE AutoPointer< IteratorType > iter_;
   };
 
   //********************************************************************
@@ -1256,7 +1263,7 @@ namespace Dune
 
     // the wrapper for the original iterator of the ALU3dGrid
     typedef typename ALU3DSPACE ALU3dGridLeafIteratorWrapper<codim> IteratorType;
-    AutoPointer < IteratorType > iter_;
+    ALU3DSPACE AutoPointer < IteratorType > iter_;
 
     //! my partition tpye
     const PartitionIteratorType pitype_;
@@ -1341,6 +1348,7 @@ namespace Dune
 
     typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSetType;
     typedef DefaultLevelIndexSet<MyType>           LevelIndexSetType;
+    typedef AdaptiveLeafIdSet<MyType>          LeafIndexSetType;
 
     typedef typename Traits::LeafIterator LeafIterator;
 
@@ -1414,10 +1422,12 @@ namespace Dune
     int global_size (int cd) const ;
 
     const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
+    const LeafIndexSetType & leafIndexSet () const { return *leafIndexSet_; }
+    LeafIndexSetType & leafIndexSet () { return *leafIndexSet_; }
     const LevelIndexSetType & levelIndexSet () const
     {
       // * This is pure evil when adapting
-      assert(false);
+      std::cout << "WARNING: LevelIndexSet is being used! \n";
       if(!levelIndexSet_) levelIndexSet_ = new LevelIndexSetType (*this);
       return *levelIndexSet_;
     }
@@ -1519,9 +1529,6 @@ namespace Dune
 #ifdef _ALU3DGRID_PARALLEL_
     ALU3DSPACE MpAccessMPI mpAccess_;
 #endif
-    // save global_size of grid
-    mutable int globalSize_[dim+1];
-
     // max level of grid
     int maxlevel_;
 
@@ -1536,6 +1543,9 @@ namespace Dune
 
     // the level index set ( default type )
     mutable LevelIndexSetType * levelIndexSet_;
+
+    // the leaf index set
+    LeafIndexSetType * leafIndexSet_;
 
     // the entity codim 0
     typedef ALU3dGridMakeableEntity<0,dim,const MyType> EntityImp;
@@ -1573,7 +1583,8 @@ namespace Dune
   public:
     typedef typename GridType::Traits::template codim<0>::Entity EntityCodim0Type;
 
-    ALU3dGridHierarchicIndexSet(const GridType & grid, const int (& s)[numCodim]) : grid_(grid) , size_(s) {}
+    ALU3dGridHierarchicIndexSet(const GridType & grid) : grid_(grid)
+    {}
 
     //! return hierarchic index of given entity
     template <class EntityType>
@@ -1597,15 +1608,13 @@ namespace Dune
     //! return size of indexset, i.e. maxindex+1
     int size ( int level, int codim ) const
     {
-      assert(size_[codim] >= 0);
-      return size_[codim];
+      // return maxIndex of hierarchic index set
+      return grid_.global_size(codim);
     }
 
   private:
     // our Grid
     const GridType & grid_;
-    // size of indexset, managed by grid
-    const int (& size_)[numCodim];
   };
 
 }; // namespace Dune
