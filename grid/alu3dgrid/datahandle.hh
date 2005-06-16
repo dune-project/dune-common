@@ -73,8 +73,7 @@ namespace ALU3dGridSpace {
 
   };
 
-  template <class GridType, class EntityType,
-      class DofManagerType, class RestrictProlongOperatorType >
+  template <class GridType, class EntityType, class RestrictProlongOperatorType >
   class AdaptRestrictProlongImpl : public AdaptRestrictProlongType
   {
     GridType & grid_;
@@ -85,18 +84,16 @@ namespace ALU3dGridSpace {
     EntityType & realFather_;
     EntityType & realSon_;
 
-    DofManagerType & dm_;
     RestrictProlongOperatorType & rp_;
 
     int maxlevel_;
-    int chunkSize_;
 
   public:
     //! Constructor
-    AdaptRestrictProlongImpl (GridType & grid, EntityType & f, EntityType & s,
-                              DofManagerType &dm, RestrictProlongOperatorType & rp, int chunkSize )
+    AdaptRestrictProlongImpl (GridType & grid, EntityType & f,
+                              EntityType & s, RestrictProlongOperatorType & rp )
       : grid_(grid), reFather_(f), reSon_(s), realFather_(f)
-        , realSon_(s) , dm_(dm), rp_(rp) , maxlevel_(-1) , chunkSize_(chunkSize) {}
+        , realSon_(s) , rp_(rp) , maxlevel_(-1) {}
 
     virtual ~AdaptRestrictProlongImpl () {};
 
@@ -109,17 +106,15 @@ namespace ALU3dGridSpace {
       //elem.resetRefinedTag();
       assert( son );
 
-      //dm_.resizeChunk(elem.getIndex(),chunkSize_);
-
       realSon_.setElement(*son);
       realFather_.setElement(elem);
-      rp_.restrictLocal(reFather_,reSon_, chunkSize_ ,true);
+      rp_.restrictLocal(reFather_,reSon_,true);
 
       son = son->next();
       while( son )
       {
         realSon_.setElement(*son);
-        rp_.restrictLocal(reFather_,reSon_, chunkSize_,false);
+        rp_.restrictLocal(reFather_,reSon_,false);
         son = son->next();
       }
       return 0;
@@ -137,7 +132,7 @@ namespace ALU3dGridSpace {
       realSon_.setElement(*son);
       if(realSon_.level() > maxlevel_) maxlevel_ = realSon_.level();
 
-      rp_.prolongLocal(reFather_,reSon_, chunkSize_, false);
+      rp_.prolongLocal(reFather_,reSon_, false);
 
       son = son->next();
       while( son )
@@ -145,7 +140,7 @@ namespace ALU3dGridSpace {
         assert( son );
 
         realSon_.setElement(*son);
-        rp_.prolongLocal(reFather_,reSon_, chunkSize_, false);
+        rp_.prolongLocal(reFather_,reSon_, false);
         //(*son).resetRefinedTag();
 
         son = son->next();
