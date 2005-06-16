@@ -444,7 +444,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
                                                      const std::string& domainFilename)
 {
 #ifndef HAVE_PARAMETRIZATION_LIBRARY
-  DUNE_THROW(IOError, "Dune has not be built with support for the "
+  DUNE_THROW(IOError, "Dune has not been built with support for the "
              << "AmiraMesh-Parametrization library!");
 #else
   dverb << "This is the AmiraMesh reader for UGGrid<3,3>!" << std::endl;
