@@ -781,6 +781,7 @@ namespace Dune
   {
     return const_iterator();
   }
+
+  /** }@ */
 }
-/** }@ */
 #endif
