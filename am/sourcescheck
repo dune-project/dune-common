@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 # $Id$
 
-sourcescheck_LIST = $(SOURCES) $(HEADERS) \
+sourcescheck_LIST = $(SOURCES) $(DIST_SOURCES) $(HEADERS) $(DIST_HEADERS) \
 	$(sourcescheck_NOSOURCES) $(dist_noinst_DATA)
 
 sourcescheck: sourcescheck-recursive
