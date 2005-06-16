@@ -130,6 +130,12 @@ namespace Dune {
       return this->size();
     }
 
+    int elementDofs () const
+    {
+      int sum = 0;
+      for(int i = 0; i<numCodims; i++) sum += dofCodim_[i];
+      return sum;
+    }
   };
 
 
@@ -215,6 +221,11 @@ namespace Dune {
     {
       return this->size();
     }
+
+    int elementDofs () const
+    {
+      return numCodims;
+    }
   };
 
   template <class IndexSetImp, int dimrange>
@@ -286,6 +297,11 @@ namespace Dune {
     int newSize() const
     {
       return this->size();
+    }
+
+    int elementDofs () const
+    {
+      return dimrange;
     }
 
     // is called once and calcs the insertion points too
@@ -366,6 +382,11 @@ namespace Dune {
     int newSize() const
     {
       return this->size();
+    }
+
+    int elementDofs () const
+    {
+      return 1;
     }
 
     // is called once and calcs the insertion points too
