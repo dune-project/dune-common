@@ -485,9 +485,6 @@ namespace Dune {
 
       // dont needed anymore, because here the grid was
       // adapted before
-
-      //int size = countEntities( en , mxlvl );
-      //dm_.resizeMem ( size );
       goDown(str,en,mxlvl);
     }
 
@@ -526,20 +523,6 @@ namespace Dune {
           }
         }
       }
-    }
-
-    int countEntities( EntityType &en, int mxlvl ) const
-    {
-      int size = en.global_index()+1;
-      {
-        typedef typename EntityType::HierarchicIterator HierItType;
-        HierItType endit = en.hend(mxlvl);
-        for(HierItType it = en.hbegin(mxlvl); it != endit; ++it )
-        {
-          size = std::max( size , it->global_index()+1);
-        }
-      }
-      return size;
     }
 
     //! corresponding grid
