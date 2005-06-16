@@ -36,7 +36,7 @@ check-log-libs-am:
 	$(LOG_SET_OPTIONS); \
 	for target in $(LTLIBRARIES); do \
 	  $(MAKE) $$i >& $(LOG_FILE); \
-	  $(LOG_STORE) "build" "$$target" "$$path" $(LOG_FILE) >& /dev/null; \
+	  $(LOG_STORE) "lib" "$$target" "$$path" $(LOG_FILE) >& /dev/null; \
 	done;
 
 check-log-build-am:
@@ -48,7 +48,7 @@ check-log-build-am:
 
 check-log-test-am:
 	@LOG () { \
-	  ( echo "$$1"; echo ) > $(LOG_FILE).2; \
+	  echo "$$1" > $(LOG_FILE).2; \
 	  cat $(LOG_FILE) >> $(LOG_FILE).2; \
 	  mv $(LOG_FILE).2 $(LOG_FILE); \
 	}; \

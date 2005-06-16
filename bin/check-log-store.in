@@ -47,16 +47,22 @@ if ($mode ne "dir")
 {
 	## parse logfile and count errors and warnings
 	my $logfile=shift || die $USAGE;
+	my $makeerrors=0;
 	open LOG, $logfile || die "Error reading $logfile";
 	while(<LOG>)
 	{
 		$log = $log.$_;
-		$errors++ if (/error/i);
-		$warnings++ if (/warning/i);
+		$errors++ if (/error/i && ! /^make/);
+		$makeerrors++ if (/error/i && /^make/);
+		$errors++ if (/ld: cannot open/);
+		$warnings++ if (/warning/i && ! /^make/);
+	}
+	if ($makeerrors > $errors + $warnings) {
+		$errors = $makeerrors;
 	}
 	close LOG;
 }
-else
+if ($mode eq "dir")
 {
 	## sum all errors and warings in entries with this newpath as path
 	my $newpath = $path.'/'.$module;
