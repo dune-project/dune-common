@@ -18,7 +18,7 @@ endif
 
 # construct only from sub-libraries
 libgrid_la_SOURCES =
-libgrid_la_LIBADD = $(UGLIB) $(ALU3DLIB)
+libgrid_la_LIBADD = $(SUBLIBS) $(UGLIB) $(ALU3DLIB)
 
 
 griddir = $(includedir)/dune/grid
