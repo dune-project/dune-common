@@ -273,7 +273,6 @@ namespace Dune {
     {
       int len = size_;
       xdr_int( xdrs, &len );
-      //std::cout << len << " len|size "<< size_ << "\n";
       assert(size_ <= len);
 
       xdr_vector(xdrs,(char *) vec_,size_, sizeof(T) ,(xdrproc_t)xdr_double);
@@ -307,6 +306,9 @@ namespace Dune {
     virtual void write_xdr(const char * filename, int timestep) const = 0;
   };
 
+  template <class IndexSetType, class EntityType> class RemoveIndicesFromSet;
+  template <class IndexSetType, class EntityType> class InsertIndicesToSet;
+
   template <class IndexSetType, class EntityType>
   class IndexSetObject : public IndexSetObjectInterface ,
                          public LocalInlinePlus < IndexSetObject<IndexSetType,EntityType> , EntityType >
@@ -318,9 +320,13 @@ namespace Dune {
     //! true if compress has been called
     bool compressed_;
 
+    InsertIndicesToSet   <IndexSetType,EntityType> insertIdxObj_;
+    RemoveIndicesFromSet <IndexSetType,EntityType> removeIdxObj_;
+
   public:
     // Constructor of MemObject, only to call from DofManager
-    IndexSetObject ( IndexSetType & iset ) : indexSet_ (iset) , compressed_(false) {}
+    IndexSetObject ( IndexSetType & iset ) : indexSet_ (iset)
+                                             , compressed_(false), insertIdxObj_(indexSet_), removeIdxObj_(indexSet_) {}
 
     void resize ()
     {
@@ -347,7 +353,6 @@ namespace Dune {
 
     void apply ( EntityType & en )
     {
-      //std::cout << "Create Index for father " << en.globalIndex() << "\n";
       indexSet_.createFatherIndex ( en );
     }
 
@@ -360,6 +365,15 @@ namespace Dune {
       indexSet_.write_xdr(filename,timestep);
     }
 
+    InsertIndicesToSet<IndexSetType,EntityType> & insertIndexObj()
+    {
+      return insertIdxObj_;
+    }
+
+    RemoveIndicesFromSet<IndexSetType,EntityType> & removeIndexObj()
+    {
+      return removeIdxObj_;
+    }
   };
 
   //****************************************************************
@@ -377,8 +391,14 @@ namespace Dune {
     virtual int newSize () const = 0;
     virtual const char * name () const  = 0;
     virtual void dofCompress () = 0;
+
+    virtual bool resizeNeeded () const = 0;
+    virtual int  elementMemory() const = 0;
   };
 
+
+  template <class MemObjectType> class CheckMemObjectResize;
+  template <class MemObjectType> class ResizeMemoryObjects;
 
   /*!
      A MemObject holds the memory for one DiscreteFunction and the
@@ -394,6 +414,8 @@ namespace Dune {
   class MemObject : public MemObjectInterface
   {
   private:
+    typedef MemObject < MapperType , DofArrayType> MemObjectType;
+
     // the dof set stores number of dofs on entity for each codim
     MapperType & mapper_;
 
@@ -406,11 +428,15 @@ namespace Dune {
     // name of mem object, i.e. name of discrete function
     const char * name_;
 
+    CheckMemObjectResize < MemObjectType > checkResize_;
+    ResizeMemoryObjects  < MemObjectType > resizeMemObj_;
+
   public:
     // Constructor of MemObject, only to call from DofManager
     MemObject ( MapperType & mapper, IndexSetObjectInterface & iobj,
                 DofArrayType & array, const char * name )
-      : mapper_ (mapper) , indexObject_(iobj) , array_( array ), name_ (name) {}
+      : mapper_ (mapper) , indexObject_(iobj) , array_( array ), name_ (name) ,
+        checkResize_(*this) , resizeMemObj_(*this) {}
 
     //! returns name of this vector
     const char * name () const { return name_; }
@@ -419,6 +445,16 @@ namespace Dune {
     int newSize () const { return mapper_.newSize(); }
 
     int size () const { return array_.size(); }
+
+    bool resizeNeeded () const
+    {
+      return (size() < newSize());
+    }
+
+    int elementMemory () const
+    {
+      return mapper_.elementDofs();
+    }
 
     //! return number of entities
     int additionalSizeEstimate () const
@@ -455,7 +491,131 @@ namespace Dune {
     {
       return indexObject_;
     }
+
+    // return object that checks for resize
+    CheckMemObjectResize < MemObjectType > & checkResizeObj ()
+    {
+      return checkResize_;
+    }
+
+    // return object that make the resize
+    ResizeMemoryObjects < MemObjectType > & resizeMemObject()
+    {
+      return resizeMemObj_;
+    }
   };
+
+  template <class IndexSetType, class EntityType>
+  class RemoveIndicesFromSet
+    : public LocalInlinePlus < RemoveIndicesFromSet<IndexSetType,EntityType> , EntityType >
+  {
+  private:
+    // the dof set stores number of dofs on entity for each codim
+    IndexSetType & indexSet_;
+
+  public:
+    // Constructor of MemObject, only to call from DofManager
+    RemoveIndicesFromSet ( IndexSetType & iset ) : indexSet_ (iset) {}
+
+    void apply ( EntityType & en )
+    {
+      indexSet_.removeOldIndex( en );
+    }
+  };
+
+  template <class IndexSetType, class EntityType>
+  class InsertIndicesToSet
+    : public LocalInlinePlus < InsertIndicesToSet<IndexSetType,EntityType> , EntityType >
+  {
+  private:
+    // the dof set stores number of dofs on entity for each codim
+    IndexSetType & indexSet_;
+
+  public:
+    // Constructor of MemObject, only to call from DofManager
+    InsertIndicesToSet ( IndexSetType & iset ) : indexSet_ (iset) {}
+
+    void apply ( EntityType & en )
+    {
+      indexSet_.insertNewIndex( en );
+    }
+  };
+
+  template <class MemObjectType>
+  class CheckMemObjectResize
+    : public LocalInlinePlus < CheckMemObjectResize < MemObjectType > , int >
+  {
+  private:
+    // the dof set stores number of dofs on entity for each codim
+    MemObjectType & memobj_;
+
+  public:
+    // Constructor of MemObject, only to call from DofManager
+    CheckMemObjectResize ( MemObjectType & mo ) : memobj_ (mo) {}
+
+    // if resize is needed the check is set to true
+    void apply ( int & check )
+    {
+      if( memobj_.resizeNeeded() ) check = 1;
+    }
+  };
+
+  // this class is the object for a single MemObject to
+  template <class MemObjectType>
+  class ResizeMemoryObjects
+    : public LocalInlinePlus < ResizeMemoryObjects < MemObjectType > , int >
+  {
+  private:
+    // the dof set stores number of dofs on entity for each codim
+    MemObjectType & memobj_;
+
+  public:
+    // Constructor of MemObject, only to call from DofManager
+    ResizeMemoryObjects ( MemObjectType & mo ) : memobj_ (mo) {}
+
+    // resize with own size plus chunksize
+    void apply ( int & nsize )
+    {
+      memobj_.realloc ( memobj_.size() + memobj_.elementMemory() * nsize );
+    }
+  };
+
+  // this is the dofmanagers object which is being used during restriction
+  // and prolongation process for adding and removing indices to and from
+  // index sets which belong to functions that belong to that dofmanager
+  template <class DofManagerType , class RestrictProlongIndexSetType>
+  class IndexSetRestrictProlong
+  {
+    DofManagerType & dm_;
+
+    RestrictProlongIndexSetType & insert_;
+    RestrictProlongIndexSetType & remove_;
+  public:
+
+    IndexSetRestrictProlong ( DofManagerType & dm , RestrictProlongIndexSetType & is, RestrictProlongIndexSetType & rm )
+      : dm_(dm) , insert_(is), remove_(rm) {}
+
+    //! restrict data to father
+    template <class EntityType>
+    void restrictLocal ( EntityType & father, EntityType & son , bool initialize ) const
+    {
+      //std::cout << "restrict for el=" << father.globalIndex() << "\n";
+      insert_.apply( father );
+      remove_.apply( son );
+      dm_.checkMemorySize();
+    }
+
+    //! prolong data to children
+    template <class EntityType>
+    void prolongLocal ( EntityType & father, EntityType & son , bool initialize ) const
+    {
+      //std::cout << "prolong for el=" << father.globalIndex() << "\n";
+      remove_.apply( father );
+      insert_.apply( son );
+      dm_.checkMemorySize();
+    }
+  };
+
 
   class DofManError : public Exception {};
 
@@ -478,6 +638,7 @@ namespace Dune {
   template <class GridType , class DataCollectorType >
   class DofManager
   {
+    typedef DofManager<GridType,DataCollectorType> MyType;
   public:
     // all things for one discrete function are put together in a MemObject
     typedef MemPointerType MemoryPointerType;
@@ -485,6 +646,8 @@ namespace Dune {
   private:
     typedef DoubleLinkedList < MemObjectInterface * > ListType;
     typedef typename ListType::Iterator ListIteratorType;
+
+    typedef LocalInterface< int > MemObjectCheckType;
 
     typedef DoubleLinkedList < IndexSetObjectInterface * > IndexListType;
     typedef typename IndexListType::Iterator IndexListIteratorType;
@@ -506,12 +669,26 @@ namespace Dune {
     mutable LocalDataCollectorType dataWriter_;
     mutable LocalDataCollectorType dataReader_;
 
-    typedef LocalInterface<typename GridType::template codim<0>::Entity> LocalIndexSetObjectsType;
+    typedef LocalInterface<typename GridType::
+        template codim<0>::Entity> LocalIndexSetObjectsType;
+
     mutable LocalIndexSetObjectsType indexSets_;
 
-    int maxIndex_;
+    mutable LocalIndexSetObjectsType insertIndices_;
+    mutable LocalIndexSetObjectsType removeIndices_;
+
+    mutable MemObjectCheckType checkResize_;
+    mutable MemObjectCheckType resizeMemObjs_;
+
+    int chunkSize_;
 
   public:
+    typedef IndexSetRestrictProlong< MyType , LocalIndexSetObjectsType > IndexSetRestrictProlongType;
+  private:
+    IndexSetRestrictProlongType indexRPop_;
+  public:
+    //**********************************************************
+    //**********************************************************
     template <class MapperType , class DofStorageType >
     struct Traits
     {
@@ -519,66 +696,15 @@ namespace Dune {
     };
 
     //! Constructor
-    DofManager (const GridType & grid) : grid_(grid) , maxIndex_(0) {}
+    DofManager (const GridType & grid) : grid_(grid) , chunkSize_ (0)
+                                         , indexRPop_( *this, insertIndices_ , removeIndices_ ) {}
 
     //! Desctructor, removes all MemObjects and IndexSetObjects
-    ~DofManager ()
-    {
-      if(memList_.size() > 0)
-      {
-        while( indexList_.rbegin() != indexList_.rend())
-        {
-          MemObjectInterface * mobj = (* memList_.rbegin() );
-          indexList_.erase( indexList_.rbegin() );
+    ~DofManager ();
 
-          // alloc new mem an copy old mem
-          dverb << "Removing '" << mobj->name() << "' from DofManager!\n";
-          if(mobj) delete mobj;
-        }
-      }
-
-      if(indexList_.size() > 0)
-      {
-        while ( indexList_.rbegin() != indexList_.rend())
-        {
-          IndexSetObjectInterface * iobj = (* indexList_.rbegin() );
-          indexList_.erase( indexList_.rbegin() );
-          if(iobj) delete iobj;
-        }
-      }
-    }
-
+    //! add new index set to the list of the indexsets of this dofmanager
     template <class IndexSetType>
-    void addIndexSet (const GridType &grid, IndexSetType &iset)
-    {
-      if(&grid_ != &grid)
-        DUNE_THROW(DofManError,"DofManager can only be used for one grid! \n");
-
-      IndexSetInterface & set = iset;
-      typedef IndexSetObject< IndexSetType,
-          typename GridType::template codim<0>::Entity > IndexSetObjectType;
-
-      IndexSetObjectType * indexSet = 0;
-
-      IndexListIteratorType endit = indexList_.end();
-      for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
-      {
-        if( (* (*it)) == set )
-        {
-          indexSet = static_cast<IndexSetObjectType *> ((*it));
-          break;
-        }
-      }
-
-      if(!indexSet)
-      {
-        indexSet = new IndexSetObjectType ( iset );
-        IndexSetObjectInterface * iobj = indexSet;
-        indexList_.insert_after ( indexList_.rbegin() , iobj );
-        indexSets_ += *indexSet;
-      }
-      return ;
-    }
+    void addIndexSet (const GridType &grid, IndexSetType &iset);
 
     //! add dofset to dof manager
     //! this method should be called at signIn of DiscreteFucntion, and there
@@ -586,41 +712,7 @@ namespace Dune {
     template <class DofStorageType, class IndexSetType, class MapperType >
     MemObject<MapperType,DofStorageType> &
     addDofSet(DofStorageType & ds, const GridType &grid, IndexSetType &iset,
-              MapperType & mapper, const char * name )
-    {
-      if(&grid_ != &grid)
-        DUNE_THROW(DofManError,"DofManager can only be used for one grid! \n");
-      dverb << "Adding '" << name << "' to DofManager! \n";
-
-      IndexSetInterface & set = iset;
-      typedef IndexSetObject< IndexSetType,
-          typename GridType::template codim<0>::Entity > IndexSetObjectType;
-
-      IndexSetObjectType * indexSet = 0;
-
-      IndexListIteratorType endit = indexList_.end();
-      for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
-      {
-        if( (* (*it)) == set )
-        {
-          indexSet = static_cast<IndexSetObjectType *> ((*it));
-          break;
-        }
-      }
-
-      // index was added when functions space is created, should be here
-      assert( indexSet );
-      if( !indexSet )
-        DUNE_THROW(DofManError,"No IndexSet for DofSet! \n");
-
-      MemObject<MapperType,DofStorageType> * obj =
-        new MemObject<MapperType,DofStorageType> ( mapper, *indexSet , ds , name );
-
-      MemObjectInterface * saveObj = obj;
-      memList_.insert_after ( memList_.rbegin() , saveObj );
-
-      return *obj;
-    }
+              MapperType & mapper, const char * name );
 
     //! remove MemObject, is called from DiscreteFucntionSpace at sign out of
     //! DiscreteFunction
@@ -646,61 +738,91 @@ namespace Dune {
       return removed;
     }
 
-    //! generate index for father
-    void createFatherIndex (typename GridType::template codim<0>::Entity & en )
+    template <class EntityType>
+    void createFatherIndex ( EntityType & en )
     {
-      // calls createFatherIndex for all IndexSets
-      indexSets_.apply( en );
+      indexSets_.apply ( en );
     }
 
+
+    // returns the index set restrinction and prolongation operator
+    IndexSetRestrictProlongType & indexSetRPop ()
+    {
+      return indexRPop_;
+    }
+
+    // this method resizes the memory before restriction is done
     void resizeForRestrict ()
     {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
 
-      maxIndex_ = 0;
       for( ; it != endit ; ++it)
       {
         (*it)->realloc ( (*it)->size() + (*it)->additionalSizeEstimate() );
-        maxIndex_ = std::max( (*it)->size() , maxIndex_ );
       }
     }
 
-    void resizeChunk (int index, int chunkSize)
+    // check if there is still enough memory
+    void checkMemorySize ()
     {
-      //std::cout << "index = " << index << " |m=" << maxIndex_ << " chunks="<<chunkSize<<"\n";
-      assert(chunkSize > 0);
-      if(index >= maxIndex_)
-      {
-        int newChunk = std::max( chunkSize, index+1 - maxIndex_ );
+      // here it is necessary that this is fast, therefore we use
+      // the combined objects technique
+      assert(chunkSize_ > 0);
+      int check = 0;
+      checkResize_.apply( check );
+      if( check ) resizeMemObjs_.apply ( chunkSize_ );
 
-        //std::cout << "doing the resize \n";
-        ListIteratorType it    = memList_.begin();
-        ListIteratorType endit = memList_.end();
+      /*
+         bool resizeNeeded = false;
+         {
+         ListIteratorType it    = memList_.begin();
+         ListIteratorType endit = memList_.end();
 
-        maxIndex_ = 0;
-        for( ; it != endit ; ++it)
-        {
-          (*it)->realloc ( (*it)->size() + newChunk );
-          //std::cout << "Resized with new size = " << (*it)->size() << "\n";
-          maxIndex_ = std::max( (*it)->size() , maxIndex_ );
-          //std::cout << "index = " << index << " |m=" << maxIndex_ << "\n";
-        }
-        //std::cout << "new maxindex = " << maxIndex_ << "\n";
-      }
+
+         for( ; it != endit ; ++it)
+         {
+          if ( (*it)->resizeNeeded() )
+            resizeNeeded = true;
+         }
+         }
+
+         if( resizeNeeded )
+         {
+         ListIteratorType it    = memList_.begin();
+         ListIteratorType endit = memList_.end();
+         for( ; it != endit ; ++it)
+         {
+          (*it)->realloc ( (*it)->size() + (chunkSize_ * (*it)->elementMemory()) );
+         }
+         }
+       */
+
+      /*
+         #ifndef NDEBUG
+         {
+         resizeNeeded = false;
+         ListIteratorType it    = memList_.begin();
+         ListIteratorType endit = memList_.end();
+
+         for( ; it != endit ; ++it)
+         {
+          if ( (*it)->resizeNeeded() )
+            resizeNeeded = true;
+         }
+         assert( !resizeNeeded );
+         }
+         #endif
+       */
     }
 
+    // resize the memory
     void resizeMem (int nsize)
     {
-      ListIteratorType it    = memList_.begin();
-      ListIteratorType endit = memList_.end();
-
-      maxIndex_ = 0;
-      for( ; it != endit ; ++it)
-      {
-        (*it)->realloc ( (*it)->size() + nsize );
-        maxIndex_ = std::max( (*it)->size() , maxIndex_ );
-      }
+      // remember the chunksize
+      chunkSize_ = nsize;
+      assert( chunkSize_ > 0 );
+      resizeMemObjs_.apply ( chunkSize_ );
     }
 
     void resize()
@@ -721,12 +843,10 @@ namespace Dune {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
 
-      maxIndex_ = 0;
       for( ; it != endit ; ++it)
       {
         int nSize = (*it)->newSize();
         (*it)->realloc ( nSize );
-        maxIndex_ = std::max( (*it)->size() , maxIndex_ );
       }
     }
 
@@ -748,13 +868,11 @@ namespace Dune {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
 
-      maxIndex_ = 0;
       for( ; it != endit ; ++it)
       {
         // if correponding index was not compressed yet, yhis is called in
         // the MemObject dofCompress, if index has not changes, nothing happens
         (*it)->dofCompress () ;
-        maxIndex_ = std::max( (*it)->size() , maxIndex_ );
       }
     }
 
@@ -792,7 +910,6 @@ namespace Dune {
     void scatter ( ObjectStreamType & str, EntityType & en )
     {
       //resize();
-      //std::cout << "Scatter of el = " << en.global_index () << "\n";
       std::pair < ObjectStreamType * , const EntityType * > p (&str,&en);
       dataWriter_.apply( p );
     }
@@ -800,7 +917,6 @@ namespace Dune {
     template <class ObjectStreamType, class EntityType>
     void gather ( ObjectStreamType & str, EntityType & en )
     {
-      //std::cout << "Gather of el = " << en.global_index () << "\n";
       resize();
       std::pair < ObjectStreamType * , const EntityType * > p (&str,&en);
       dataReader_.apply( p );
@@ -809,6 +925,8 @@ namespace Dune {
     template <class ObjectStreamType, class EntityType>
     void xtractData ( ObjectStreamType & str, EntityType & en )
     {
+      // here the elements already have been created that means we can
+      // all resize and the memory is adapted
       resize();
       dataXtractor_.apply(str,en);
     }
@@ -821,6 +939,127 @@ namespace Dune {
     bool write_xdr( const char * filename, int timestep);
     bool read_xdr( const char * filename, int timestep);
   };
+
+  //***************************************************************************
+  //
+  //  inline implemenations
+  //
+  //***************************************************************************
+
+  template <class GridType, class DataCollectorType>
+  inline DofManager<GridType,DataCollectorType>::~DofManager ()
+  {
+    if(memList_.size() > 0)
+    {
+      while( indexList_.rbegin() != indexList_.rend())
+      {
+        MemObjectInterface * mobj = (* memList_.rbegin() );
+        indexList_.erase( indexList_.rbegin() );
+
+        // alloc new mem an copy old mem
+        dverb << "Removing '" << mobj->name() << "' from DofManager!\n";
+        if(mobj) delete mobj;
+      }
+    }
+
+    if(indexList_.size() > 0)
+    {
+      while ( indexList_.rbegin() != indexList_.rend())
+      {
+        IndexSetObjectInterface * iobj = (* indexList_.rbegin() );
+        indexList_.erase( indexList_.rbegin() );
+        if(iobj) delete iobj;
+      }
+    }
+  }
+
+
+  template <class GridType, class DataCollectorType>
+  template <class IndexSetType>
+  inline void DofManager<GridType,DataCollectorType>::
+  addIndexSet (const GridType &grid, IndexSetType &iset)
+  {
+    if(&grid_ != &grid)
+      DUNE_THROW(DofManError,"DofManager can only be used for one grid! \n");
+
+    IndexSetInterface & set = iset;
+    typedef IndexSetObject< IndexSetType,
+        typename GridType::template codim<0>::Entity > IndexSetObjectType;
+
+    typedef typename GridType::template codim<0>::Entity EntityType;
+
+    IndexSetObjectType * indexSet = 0;
+
+    IndexListIteratorType endit = indexList_.end();
+    for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+    {
+      if( (* (*it)) == set )
+      {
+        indexSet = static_cast<IndexSetObjectType *> ((*it));
+        break;
+      }
+    }
+
+    if(!indexSet)
+    {
+      indexSet = new IndexSetObjectType ( iset );
+      IndexSetObjectInterface * iobj = indexSet;
+      indexList_.insert_after ( indexList_.rbegin() , iobj );
+      indexSets_ += *indexSet;
+
+      insertIndices_ += (*indexSet).insertIndexObj();
+      removeIndices_ += (*indexSet).removeIndexObj();
+    }
+    return ;
+  }
+
+  template <class GridType, class DataCollectorType>
+  template <class DofStorageType, class IndexSetType, class MapperType >
+  inline MemObject<MapperType,DofStorageType> &
+  DofManager<GridType,DataCollectorType>::
+  addDofSet(DofStorageType & ds, const GridType &grid, IndexSetType &iset,
+            MapperType & mapper, const char * name );
+  {
+    if(&grid_ != &grid)
+      DUNE_THROW(DofManError,"DofManager can only be used for one grid! \n");
+    dverb << "Adding '" << name << "' to DofManager! \n";
+
+    IndexSetInterface & set = iset;
+    typedef IndexSetObject< IndexSetType,
+        typename GridType::template codim<0>::Entity > IndexSetObjectType;
+
+    IndexSetObjectType * indexSet = 0;
+
+    IndexListIteratorType endit = indexList_.end();
+    for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+    {
+      if( (* (*it)) == set )
+      {
+        indexSet = static_cast<IndexSetObjectType *> ((*it));
+        break;
+      }
+    }
+
+    // index was added when functions space is created, should be here
+    assert( indexSet );
+    if( !indexSet )
+      DUNE_THROW(DofManError,"No IndexSet for DofSet! \n");
+
+    typedef MemObject<MapperType,DofStorageType> MemObjectType;
+    MemObjectType * obj = new MemObjectType ( mapper, *indexSet , ds , name );
+
+    MemObjectInterface * saveObj = obj;
+    memList_.insert_after ( memList_.rbegin() , saveObj );
+
+    // add the special object to the checkResize list object
+    checkResize_ += (*obj).checkResizeObj();
+
+    // the same for the resize call
+    resizeMemObjs_ += (*obj).resizeMemObject();
+
+    return *obj;
+  }
+
 
   template <class GridType, class DataCollectorType>
   inline bool DofManager<GridType,DataCollectorType>::
