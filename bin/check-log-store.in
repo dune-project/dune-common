@@ -51,8 +51,8 @@ if ($mode ne "dir")
 	while(<LOG>)
 	{
 		$log = $log.$_;
-		$errors++ if (/error/ || /ERROR/);
-		$warnings++ if (/warning/ || /WARNING/);
+		$errors++ if (/error/i);
+		$warnings++ if (/warning/i);
 	}
 	close LOG;
 }
