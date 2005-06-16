@@ -138,7 +138,7 @@ public:
     // if this assertion is thrown then either the stack = 0
     // or we want to uese the pointer but are not the owner
     assert( stack_ );
-    assert( owner_ );
+    assert( (!owner_) ? (std::cerr << "\nERROR:The feature of copying iterators is not supported by AlbertaGrid at the moment! \n\n", 0) : 1);
     return stack_;
   }
 private:
