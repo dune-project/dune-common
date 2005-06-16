@@ -178,9 +178,6 @@ namespace Dune
     };
 
   public:
-    /** @brief The type of object we allocate memory for. */
-    typedef T MemberType;
-
     /** @brief Constructor. */
     inline Pool();
     /** @brief Destructor. */
