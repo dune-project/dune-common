@@ -13,6 +13,9 @@
 
 #include <dune/common/stdstreams.hh>
 
+// enums are a nice special case (was a bug)
+enum check { VALUE = 5 };
+
 int main () {
   try {
     // let output happen but vanish
@@ -22,8 +25,6 @@ int main () {
     Dune::derr.push(true);
     Dune::derr << "Teststring" << std::endl;
 
-    // enums are a nice special case (was a bug)
-    enum { VALUE = 5 };
     Dune::derr << VALUE << std::endl;
 
     // instantiate private stream and connect global stream
