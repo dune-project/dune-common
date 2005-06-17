@@ -1565,7 +1565,9 @@ namespace Dune
       , maxlevel_ ( org.maxlevel_ )
       , virtualEntity_( *(this->entity_) )
       , manageStack_ ( org.manageStack_ )
-  {}
+  {
+    if(!virtualEntity_.getElInfo()) this->done();
+  }
 
   template< class GridImp >
   inline void AlbertaGridHierarchicIterator< GridImp >::increment()
@@ -3527,6 +3529,7 @@ namespace Dune
     ALBERTA EL_INFO * elInfo = (this->template getRealEntity<0>(ep)).getElInfo();
     if(!elInfo)
     {
+      assert(false);
       derr << "ERROR in mark: elinfo NULL! \n";
       return false;
     }
@@ -3553,16 +3556,7 @@ namespace Dune
         return true;
       }
     }
-    /*
-       // only for debugging
-       else
-       {
-       derr << "ERROR in AlbertaGridEntity<0,"<<dim<<","<<dimworld<<">::mark("<<refCount<<") : called on non LeafEntity! in: " << __FILE__ << " line: "<< __LINE__ << "\n";
-       assert(false);
-       abort();
-       }
-     */
-    derr << "ERROR in AlbertaGridEntity<0,"<<dim<<","<<dimworld<<">::mark("<<refCount<<") : called on non LeafEntity! in: " << __FILE__ << " line: "<< __LINE__ << "\n";
+    //dwarn << "WARNING: in AlbertaGrid<"<<dim<<","<<dimworld<<">::mark("<<refCount<<",EP &) : called on non LeafEntity! in: " << __FILE__ << " line: "<< __LINE__ << "\n";
     elInfo->el->mark = 0;
     return false;
   }

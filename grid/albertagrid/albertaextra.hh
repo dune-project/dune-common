@@ -201,6 +201,66 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 
   copy->save_stack_used = org->save_stack_used;
   copy->el_count = 1;
+  return;
+}
+
+inline void copyTraverseStack( TRAVERSE_STACK* stack, TRAVERSE_STACK* org )
+{
+  int used = stack->stack_size;
+
+  if(stack->elinfo_stack) MEM_FREE(stack->elinfo_stack,used, EL_INFO);
+  if(stack->info_stack) MEM_FREE(stack->info_stack,used, U_CHAR );
+  if(stack->save_elinfo_stack) MEM_FREE(stack->save_elinfo_stack,used,EL_INFO );
+  if(stack->save_info_stack) MEM_FREE(stack->save_info_stack,used,U_CHAR);
+
+  memcpy( stack, org, sizeof(TRAVERSE_STACK));
+
+  stack->elinfo_stack = 0;
+  stack->elinfo_stack = MEM_ALLOC(stack->stack_size, EL_INFO);
+
+  if (stack->stack_size > 0)
+    for (int i=0; i<stack->stack_size; i++)
+      stack->elinfo_stack[i].fill_flag = org->elinfo_stack[0].fill_flag;
+
+  stack->info_stack        = 0;
+  stack->info_stack        = MEM_ALLOC(stack->stack_size, U_CHAR);
+  stack->save_elinfo_stack = 0;
+  stack->save_elinfo_stack = MEM_ALLOC(stack->stack_size, EL_INFO);
+  stack->save_info_stack   = 0;
+  stack->save_info_stack   = MEM_ALLOC(stack->stack_size, U_CHAR);
+
+  memcpy(stack->elinfo_stack     ,org->elinfo_stack,     used * sizeof(EL_INFO));
+  memcpy(stack->info_stack       ,org->info_stack,       used * sizeof(U_CHAR));
+  memcpy(stack->save_elinfo_stack,org->save_elinfo_stack,used * sizeof(EL_INFO));
+  memcpy(stack->save_info_stack  ,org->save_info_stack,  used * sizeof(U_CHAR));
+
+  /*
+     copy->traverse_mesh = org->traverse_mesh;
+     copy->traverse_level = org->traverse_level;
+     copy->traverse_fill_flag = org->traverse_fill_flag;
+     copy->traverse_mel = org->traverse_mel;
+
+     memcpy(copy->elinfo_stack     ,org->elinfo_stack,     used * sizeof(EL_INFO));
+     memcpy(copy->info_stack       ,org->info_stack,       used * sizeof(U_CHAR));
+     memcpy(copy->save_elinfo_stack,org->save_elinfo_stack,used * sizeof(EL_INFO));
+     memcpy(copy->save_info_stack  ,org->save_info_stack,  used * sizeof(U_CHAR));
+
+     while (copy->stack_size < org->stack_size)
+     {
+     enlargeTraverseStack(copy);
+     }
+
+     int used = org->stack_used;
+     copy->stack_used = used;
+
+     memcpy(copy->elinfo_stack     ,org->elinfo_stack,     used * sizeof(EL_INFO));
+     memcpy(copy->info_stack       ,org->info_stack,       used * sizeof(U_CHAR));
+     memcpy(copy->save_elinfo_stack,org->save_elinfo_stack,used * sizeof(EL_INFO));
+     memcpy(copy->save_info_stack  ,org->save_info_stack,  used * sizeof(U_CHAR));
+
+     copy->save_stack_used = org->save_stack_used;
+     copy->el_count = used;
+   */
 
   return;
 }
@@ -208,6 +268,8 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 static inline void initTraverseStack(TRAVERSE_STACK *stack)
 {
   stack->traverse_mesh = 0;
+  stack->traverse_level = 0;
+  stack->traverse_mel = 0;
   stack->stack_size = 0;
   stack->stack_used = 0;
   stack->elinfo_stack = 0;
