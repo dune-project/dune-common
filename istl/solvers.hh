@@ -13,7 +13,9 @@
 #include "istlexception.hh"
 #include "operators.hh"
 #include "preconditioners.hh"
+#include "scalarproducts.hh"
 #include "dune/common/timer.hh"
+#include "dune/common/helpertemplates.hh"
 
 /** \file
 
@@ -107,10 +109,23 @@ namespace Dune {
     typedef typename X::field_type field_type;
 
     //! set up Loop solver
-    LoopSolver (LinearOperator<X,X>& op, Preconditioner<X,X>& prec,
+    template<class L, class P>
+    LoopSolver (L& op, P& prec,
                 double reduction, int maxit, int verbose) :
-      _op(op), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
-    {}
+      _op(op), ssp(), _sp(ssp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
+    }
+    template<class L, class S, class P>
+    LoopSolver (L& op, S& sp, P& prec,
+                double reduction, int maxit, int verbose) :
+      _op(op), _sp(sp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
+    }
+
 
     //! apply inverse operator
     virtual void apply (X& x, X& b, InverseOperatorResult& r)
@@ -128,7 +143,7 @@ namespace Dune {
       _op.applyscaleadd(-1,x,b);
 
       // compute norm, \todo parallelization
-      double def0 = _prec.norm(b);
+      double def0 = _sp.norm(b);
 
       // printing
       if (_verbose>0)
@@ -149,11 +164,11 @@ namespace Dune {
         _prec.apply(v,b);                     // apply preconditioner
         x += v;                               // update solution
         _op.applyscaleadd(-1,v,b);            // update defect
-        double defnew=_prec.norm(b);          // comp defect norm
+        double defnew=_sp.norm(b);          // comp defect norm
         if (_verbose>1)                       // print
           printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
         def = defnew;                         // update norm
-        if (def<def0*_reduction)              // convergence check
+        if (def<def0*_reduction || def<1E-30)              // convergence check
         {
           r.converged  = true;
           break;
@@ -186,8 +201,10 @@ namespace Dune {
     }
 
   private:
+    SeqScalarProduct<X> ssp;
     LinearOperator<X,X>& _op;
     Preconditioner<X,X>& _prec;
+    ScalarProduct<X>& _sp;
     double _reduction;
     int _maxit;
     int _verbose;
@@ -205,10 +222,22 @@ namespace Dune {
     typedef typename X::field_type field_type;
 
     //! set up Loop solver
-    GradientSolver (LinearOperator<X,X>& op, Preconditioner<X,X>& prec,
+    template<class L, class P>
+    GradientSolver (L& op, P& prec,
                     double reduction, int maxit, int verbose) :
-      _op(op), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
-    {}
+      _op(op), ssp(), _sp(ssp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
+    }
+    template<class L, class S, class P>
+    GradientSolver (L& op, S& sp, P& prec,
+                    double reduction, int maxit, int verbose) :
+      _op(op), _sp(sp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
+    }
 
     //! apply inverse operator
     virtual void apply (X& x, X& b, InverseOperatorResult& r)
@@ -221,7 +250,7 @@ namespace Dune {
       X p(x);                         // create local vectors
       X q(b);
 
-      double def0 = _prec.norm(b);    // compute norm
+      double def0 = _sp.norm(b);    // compute norm
 
       if (_verbose>0)                 // printing
       {
@@ -237,15 +266,15 @@ namespace Dune {
         p = 0;                                // clear correction
         _prec.apply(p,b);                     // apply preconditioner
         _op.apply(p,q);                       // q=Ap
-        lambda = _prec.dot(p,b)/_prec.dot(q,p);          // minimization
+        lambda = _sp.dot(p,b)/_sp.dot(q,p);          // minimization
         x.axpy(lambda,p);                     // update solution
         b.axpy(-lambda,q);                    // update defect
 
-        double defnew=_prec.norm(b);          // comp defect norm
+        double defnew=_sp.norm(b);          // comp defect norm
         if (_verbose>1)                       // print
           printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
         def = defnew;                         // update norm
-        if (def<def0*_reduction)              // convergence check
+        if (def<def0*_reduction || def<1E-30)              // convergence check
         {
           r.converged  = true;
           break;
@@ -271,8 +300,10 @@ namespace Dune {
     }
 
   private:
+    SeqScalarProduct<X> ssp;
     LinearOperator<X,X>& _op;
     Preconditioner<X,X>& _prec;
+    ScalarProduct<X>& _sp;
     double _reduction;
     int _maxit;
     int _verbose;
@@ -290,10 +321,20 @@ namespace Dune {
     typedef typename X::field_type field_type;
 
     //! set up Loop solver
-    CGSolver (LinearOperator<X,X>& op, Preconditioner<X,X>& prec,
-              double reduction, int maxit, int verbose) :
-      _op(op), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
-    {}
+    template<class L, class P>
+    CGSolver (L& op, P& prec, double reduction, int maxit, int verbose) :
+      _op(op), ssp(), _sp(ssp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
+    }
+    template<class L, class S, class P>
+    CGSolver (L& op, S& sp, P& prec, double reduction, int maxit, int verbose) :
+      _op(op), _sp(sp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
+    }
 
     //! apply inverse operator
     virtual void apply (X& x, X& b, InverseOperatorResult& r)
@@ -306,7 +347,18 @@ namespace Dune {
       X p(x);                         // create local vectors
       X q(b);
 
-      double def0 = _prec.norm(b);    // compute norm
+      double def0 = _sp.norm(b);    // compute norm
+      if (def0<1E-30)        // convergence check
+      {
+        r.converged  = true;
+        r.iterations = 0;                         // fill statistics
+        r.reduction = 0;
+        r.conv_rate  = 0;
+        r.elapsed=0;
+        if (_verbose>0)                           // final print
+          printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed);
+        return;
+      }
 
       if (_verbose>0)                 // printing
       {
@@ -321,19 +373,19 @@ namespace Dune {
       {
         p = 0;                                // clear correction
         _prec.apply(p,b);                     // apply preconditioner
-        rho = _prec.dot(p,b);                 // orthogonalization
+        rho = _sp.dot(p,b);                 // orthogonalization
         if (i>1) p.axpy(rho/rholast,q);
         rholast = rho;                        // remember rho for recurrence
         _op.apply(p,q);                       // q=Ap
-        lambda = rho/_prec.dot(q,p);          // minimization
+        lambda = rho/_sp.dot(q,p);          // minimization
         x.axpy(lambda,p);                     // update solution
         b.axpy(-lambda,q);                    // update defect
         q=p;                                  // remember search direction
-        double defnew=_prec.norm(b);          // comp defect norm
+        double defnew=_sp.norm(b);          // comp defect norm
         if (_verbose>1)                       // print
           printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
         def = defnew;                         // update norm
-        if (def<def0*_reduction)              // convergence check
+        if (def<def0*_reduction || def<1E-30)              // convergence check
         {
           r.converged  = true;
           break;
@@ -359,8 +411,10 @@ namespace Dune {
     }
 
   private:
+    SeqScalarProduct<X> ssp;
     LinearOperator<X,X>& _op;
     Preconditioner<X,X>& _prec;
+    ScalarProduct<X>& _sp;
     double _reduction;
     int _maxit;
     int _verbose;
@@ -378,10 +432,22 @@ namespace Dune {
     typedef typename X::field_type field_type;
 
     //! set up Loop solver
-    BiCGSTABSolver (LinearOperator<X,X>& op, Preconditioner<X,X>& prec,
+    template<class L, class P>
+    BiCGSTABSolver (L& op, P& prec,
                     double reduction, int maxit, int verbose) :
-      _op(op), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
-    {}
+      _op(op), ssp(), _sp(ssp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
+    }
+    template<class L, class S, class P>
+    BiCGSTABSolver (L& op, S& sp, P& prec,
+                    double reduction, int maxit, int verbose) :
+      _op(op), _sp(sp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+    {
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
+      IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
+    }
 
     //! apply inverse operator
     virtual void apply (X& x, X& b, InverseOperatorResult& res)
@@ -414,7 +480,7 @@ namespace Dune {
 
       rt=r;
 
-      norm = norm_old = norm_0 = r.two_norm();
+      norm = norm_old = norm_0 = _sp.norm(r);
 
       p=0;
       v=0;
@@ -430,7 +496,7 @@ namespace Dune {
         if (_verbose>1) printf("%5d %12.4E\n",0,norm_0);
       }
 
-      if ( norm < (_reduction * norm_0) )
+      if ( norm < (_reduction * norm_0)  || norm<1E-30)
       {
         res.converged = 1;
         _prec.post(x);                            // postprocess preconditioner
@@ -454,7 +520,7 @@ namespace Dune {
         //
 
         // rho_new = < rt , r >
-        rho_new = _prec.dot(rt,r);
+        rho_new = _sp.dot(rt,r);
 
         // look if breakdown occured
         if (std::abs(rho) <= EPSILON)
@@ -485,7 +551,7 @@ namespace Dune {
         _op.apply(y,v);
 
         // alpha = rho_new / < rt, v >
-        h = _prec.dot(rt,v);
+        h = _sp.dot(rt,v);
 
         if ( std::abs(h) < EPSILON )
           DUNE_THROW(ISTLError,"h=0 in BiCGSTAB");
@@ -504,7 +570,7 @@ namespace Dune {
         //
 
         it++;
-        norm = r.two_norm();
+        norm = _sp.norm(r);
 
         if (_verbose>1)                       // print
           printf("%5d %12.4E %12.4g\n",it,norm,norm/norm_old);
@@ -528,7 +594,7 @@ namespace Dune {
         _op.apply(y,t);
 
         // omega = < t, r > / < t, t >
-        omega = _prec.dot(t,r)/_prec.dot(t,t);
+        omega = _sp.dot(t,r)/_sp.dot(t,t);
 
         // apply second correction to x
         // x <- x + omega y
@@ -545,12 +611,12 @@ namespace Dune {
 
         it++;
 
-        norm = r.two_norm();
+        norm = _sp.norm(r);
 
         if (_verbose>1)                       // print
           printf("%5d %12.4E %12.4g\n",it,norm,norm/norm_old);
 
-        if ( norm < (_reduction * norm_0) )
+        if ( norm < (_reduction * norm_0)  || norm<1E-30)
         {
           res.converged = 1;
           break;
@@ -581,8 +647,10 @@ namespace Dune {
     }
 
   private:
+    SeqScalarProduct<X> ssp;
     LinearOperator<X,X>& _op;
     Preconditioner<X,X>& _prec;
+    ScalarProduct<X>& _sp;
     double _reduction;
     int _maxit;
     int _verbose;

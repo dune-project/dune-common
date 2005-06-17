@@ -23,6 +23,7 @@
 #include "operators.hh"
 #include "solvers.hh"
 #include "preconditioners.hh"
+#include "scalarproducts.hh"
 
 // a simple stop watch
 class Timer
@@ -452,7 +453,7 @@ void test_Interface ()
     E[i][i] = -1;
 
   // make a block compressed row matrix with five point stencil
-  const int BW2=512, N=BW2*BW2;
+  const int BW2=31, N=BW2*BW2;
   Matrix A(N,N,5*N,Dune::BCRSMatrix<MB>::row_wise);
   for (Matrix::CreateIterator i=A.createbegin(); i!=A.createend(); ++i)
   {
@@ -486,16 +487,18 @@ void test_Interface ()
   Dune::SeqJac<Matrix,Vector,Vector> jac(A,1,1);          // Jacobi preconditioner
   Dune::SeqGS<Matrix,Vector,Vector> gs(A,1,1);            // GS preconditioner
   Dune::SeqSOR<Matrix,Vector,Vector> sor(A,1,1.9520932);  // SSOR preconditioner
-  Dune::SeqSSOR<Matrix,Vector,Vector> ssor(A,1,1.9064547); // SSOR preconditioner
+  Dune::SeqSSOR<Matrix,Vector,Vector> ssor(A,1,1.0); // SSOR preconditioner
   Dune::SeqILU0<Matrix,Vector,Vector> ilu0(A,1.0);        // preconditioner object
   Dune::SeqILUn<Matrix,Vector,Vector> ilu1(A,1,0.92);     // preconditioner object
-  Dune::LoopSolver<Vector> loop(op,ilu0,1E-8,8000,2);     // an inverse operator
-  Dune::CGSolver<Vector> cg(op,ilu1,1E-8,8000,2);         // an inverse operator
+
+  Dune::LoopSolver<Vector> loop(op,jac,1E-4,18000,2);     // an inverse operator
+  Dune::CGSolver<Vector> cg(op,ilu0,1E-4,8000,2);         // an inverse operator
   Dune::BiCGSTABSolver<Vector> bcgs(op,ilu1,1E-8,8000,2); // an inverse operator
+  Dune::GradientSolver<Vector> gras(op,jac,1E-4,18000,2);         // an inverse operator
 
   // call the solver
   Dune::InverseOperatorResult r;
-  cg.apply(x,b,r);
+  loop.apply(x,b,r);
 }
 
 

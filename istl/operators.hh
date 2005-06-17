@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <string>
 
+#include "solvercategory.hh"
 
 /** \file
 
@@ -47,8 +48,23 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
-    //! apply operator to x:  \f$ y = A(x) \f$
+    /*! \brief apply operator to x:  \f$ y = A(x) \f$
+       The input vector is consistent and the output must also be
+       consistent on the interior+border partition.
+     */
     virtual void apply (const X& x, Y& y) const = 0;
+
+    /*! \brief Dot product of two vectors.
+       It is assumed that the vectors are consistent on the interior+border
+       partition.
+     */
+    virtual field_type dot (const X& x, const X& y) = 0;
+
+    /*! \brief Norm of a right-hand side vector.
+       The vector must be consistent on the interior+border partition
+     */
+    virtual double norm (const X& x) = 0;
+
 
     //! every abstract base class has a virtual destructor
     virtual ~Operator () {}
@@ -114,6 +130,9 @@ namespace Dune {
     typedef Y range_type;
     typedef typename X::field_type field_type;
 
+    //! define the category
+    enum {category=SolverCategory::sequential};
+
     //! constructor: just store a reference to a matrix
     MatrixAdapter (const M& A) : _A_(A) {}
 
@@ -122,6 +141,23 @@ namespace Dune {
     {
       y = 0;
       _A_.umv(x,y);
+    }
+
+    /*! \brief Dot product of two vectors.
+       It is assumed that the vectors are consistent on the interior+border
+       partition.
+     */
+    virtual field_type dot (const X& x, const X& y)
+    {
+      return x*y;
+    }
+
+    /*! \brief Norm of a right-hand side vector.
+       The vector must be consistent on the interior+border partition
+     */
+    virtual double norm (const X& x)
+    {
+      return x.two_norm();
     }
 
     //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
