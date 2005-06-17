@@ -11,7 +11,7 @@ dist_pkgdata_DATA = communication.pdf communication.ps
 
 noinst_PROGRAMS = $(MPIPROGRAMS)
 
-indexset_SOURCES = indexset.cc
+indexset_SOURCES = indexset.cc buildindexset.hh reverse.hh
 indexset_CXXFLAGS = $(MPI_CPPFLAGS)
 indexset_LDADD = $(MPI_LDFLAGS)
 
