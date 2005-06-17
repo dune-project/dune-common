@@ -53,6 +53,7 @@ if ($mode ne "dir")
 	{
 		$log = $log.$_;
 		$errors++ if (/error/i && ! /^make/);
+		$errors-- if (/no\s+error/i && ! /^make/);
 		$makeerrors++ if (/error/i && /^make/);
 		$errors++ if (/ld: cannot open/);
 		$warnings++ if (/warning/i && ! /^make/);
