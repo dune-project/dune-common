@@ -16,11 +16,6 @@ AC_REQUIRE([AC_PROG_CXX])
 cat >conftest.cc <<_ACEOF
 #include <cstdio>
 
-#if defined __xlC__ && ! defined CXX_SUPPORTED
-  #if __xlC__ >= 0x0600
-    #define CXX_SUPPORTED "xlC %X", __xlC__
-  #endif
-#endif
 #if defined __ICC && ! defined CXX_SUPPORTED
   #if __ICC >= 700
     #define CXX_SUPPORTED "icc %2.2f", 1.0*__ICC/100
@@ -56,7 +51,7 @@ else
   fi
 fi
 
-if test x$COMPILER_NAME = x; then
+if test "x$COMPILER_NAME" = "x"; then
 	$COMPILER_NAME="unknown compiler"
 fi
 
