@@ -213,9 +213,6 @@ namespace Dune {
     /** \brief Constructor for a uniform grid */
     OneDGrid(int numElements, double leftBoundary, double rightBoundary);
 
-    /** \brief Default constructor */
-    OneDGrid();
-
     //! Destructor
     ~OneDGrid();
 
