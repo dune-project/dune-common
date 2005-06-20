@@ -50,12 +50,12 @@ AC_SUBST(host, $(echo "$ac_hostname ($(uname -sm), $COMPILER_NAME)") )
 AC_ARG_WITH(tag,
   AC_HELP_STRING([--with-tag=TAG],
                  [tag to use for automated test runs]))
-if test x$with_tag == xno ; then with_tag=foo; fi
+if test "x$with_tag" == "xno" ; then with_tag=foo; fi
 AC_SUBST(tag, $with_tag)
 AC_ARG_WITH(revision,
   AC_HELP_STRING([--with-revision=TAG],
                  [revision to use for automated test runs]))
-if test x$with_revision == xno ; then with_revision=bar; fi
+if test "x$with_revision" == "xno" ; then with_revision=bar; fi
 AC_SUBST(revision, $with_revision)
 
 echo
