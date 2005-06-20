@@ -9,6 +9,9 @@
 
 #ifdef PARAM_CLASSNAME
 
+// this call combines two objects in such a way that a certain method is
+// can be called for both objects
+// first A.method then B.method is called.
 template <class A, class B >
 class PARAM_CLASSNAME
 #ifdef PARAM_INHERIT
