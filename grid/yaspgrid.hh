@@ -1988,7 +1988,7 @@ namespace Dune {
        the protocol. Therefore P is called the "protocol class".
      */
     template<class T, template<class> class P, int codim>
-    void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level)
+    void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level) const
     {
       IsTrue< ( codim == dim || codim == 0 ) >::yes();
       // access to grid level
