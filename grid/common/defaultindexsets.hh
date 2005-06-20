@@ -338,10 +338,13 @@ namespace Dune {
     typedef typename GridType :: HierarchicIndexSetType HierarchicIndexSetType;
 
     typedef DefaultLevelIndexSet<GridType> MyType;
+
   public:
     //! create LevelIndex by using the HierarchicIndexSet of a grid
-    DefaultLevelIndexSet(const GridType & grid ) :
-      grid_(grid) , hIndexSet_ ( grid.hierarchicIndexSet() )
+    //! for the given level
+    DefaultLevelIndexSet(const GridType & grid , const int level ) :
+      grid_(grid) , level_(level) , hIndexSet_ ( grid.hierarchicIndexSet() )
+      , size_ ( numCodim )
     {
       calcNewIndex ();
     }
@@ -351,7 +354,8 @@ namespace Dune {
     int index (const EntityType & en) const
     {
       enum { cd = EntityType :: codimension };
-      return indexOnLevel< cd > (hIndexSet_.index(en),en.level());
+      assert( level_ == en.level() );
+      return levelIndex_[cd][ hIndexSet_.index(en) ];
     }
 
     //! return subIndex (LevelIndex) for a given Entity of codim = 0 and a
@@ -359,66 +363,58 @@ namespace Dune {
     template <int cd>
     int subIndex (const typename GridType::template codim<0>::Entity & en, int i) const
     {
-      return indexOnLevel< cd > (hIndexSet_.template subIndex<cd>(en,i),en.level());
+      assert( level_ == en.level() );
+      return levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ];
     }
 
     //! return size of IndexSet for a given level and codim
-    int size ( int level, int codim ) const
+    int size ( int codim ) const
     {
-      return size_[level*numCodim + codim];
+      return size_[codim];
+    }
+
+    //! do calculation of the index set, has to be called when grid was
+    //! changed or if index set is created
+    void calcNewIndex ()
+    {
+      // make new size and set all levels to -1 ==> new calc
+      CalcLevelForCodim<MyType,dim>::recursive(*this);
+    }
+
+    // calculate index for the codim
+    template <int cd>
+    void calcLevelIndexForCodim ()
+    {
+      int nEntities = hIndexSet_.size(cd);
+      Array<int> & levIndex = levelIndex_[cd];
+      // resize memory if necessary
+      if(nEntities > levIndex.size())
+        makeNewSize(levIndex, nEntities);
+
+      // walk grid and store index
+      typedef typename GridType::Traits::template codim<cd>::LevelIterator LevelIterator;
+      int num = 0;
+      LevelIterator endit  = grid_.template lend< cd >   (level_);
+      for(LevelIterator it = grid_.template lbegin< cd > (level_); it != endit; ++it)
+      {
+        int no = hIndexSet_.index(*it);
+        levIndex[no] = num;
+        num++;
+      }
+      // remember the number of entity on level and cd = 0
+      size_[cd] = num;
     }
 
   private:
     // grid this level set belongs to
     const GridType & grid_;
+
+    // the level for which this index set is created
+    const int level_;
+
     // the grids HierarchicIndexSet
     const HierarchicIndexSetType & hIndexSet_;
 
-    //! map the hierarchicIndex from the grid to the index on Level
-    template <int cd>
-    int indexOnLevel(int hIndex, int level ) const
-    {
-      return levelIndex_[cd][level][hIndex];
-    };
-
-  public:
-    template <int cd>
-    void calcLevelIndexForCodim ()
-    {
-      int nEntities = hIndexSet_.size(grid_.maxlevel(),cd);
-      for(int level=0; level <= grid_.maxlevel(); level++)
-      {
-        Array<int> & levIndex = levelIndex_[cd][level];
-        // resize memory if necessary
-        if(nEntities > levIndex.size())
-          makeNewSize(levIndex, nEntities);
-
-        // walk grid and store index
-        typedef typename GridType::Traits::template codim<cd>::LevelIterator LevelIterator;
-        int num = 0;
-        LevelIterator endit  = grid_.template lend< cd >   (level);
-        for(LevelIterator it = grid_.template lbegin< cd > (level); it != endit; ++it)
-        {
-          int no = hIndexSet_.index(*it);
-          levIndex[no] = num;
-          num++;
-        }
-        // remember the number of entity on level and cd = 0
-        size_[level*numCodim + cd ] = num;
-      }
-    }
-
-    void calcNewIndex ()
-    {
-      int numLevel = grid_.maxlevel() + 1;
-      // make new size and set all levels to -1 ==> new calc
-      if( (numLevel) * (numCodim) > size_.size() )
-        makeNewSize(size_, 2*((numLevel) * numCodim) );
-
-      CalcLevelForCodim<MyType,dim>::recursive(*this);
-    }
-
-  private:
     void makeNewSize(Array<int> &a, int newNumberOfEntries)
     {
       if(newNumberOfEntries > a.size())
@@ -433,8 +429,7 @@ namespace Dune {
 
     //*********************************************************
     // Methods for mapping the hierarchic Index to index on Level
-    enum { MAXL = 128 }; // to be revised
-    Array<int> levelIndex_[dim+1][MAXL];
+    Array<int> levelIndex_[numCodim];
   };
 
 } // end namespace Dune
