@@ -61,7 +61,7 @@ namespace Dune {
   // Implementation for ISTL-matrix based operator
   //=====================================================================
 
-  //! Adapts a matrix to the assembled linear operator interface
+  //! Default implementation for the scalar case
   template<class X>
   class SeqScalarProduct : public ScalarProduct<X>
   {
