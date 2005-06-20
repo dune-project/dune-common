@@ -34,9 +34,9 @@ check-log-sources-am:
 
 check-log-libs-am:
 	$(LOG_SET_OPTIONS); \
-	for target in $(LTLIBRARIES); do \
-	  $(MAKE) $$i >& $(LOG_FILE); \
-	  $(LOG_STORE) "lib" "$$target" "$$path" $(LOG_FILE) >& /dev/null; \
+	for lib in $(LTLIBRARIES); do \
+	  $(MAKE) $$lib >& $(LOG_FILE); \
+	  $(LOG_STORE) "lib" "$$lib" "$$path" $(LOG_FILE) >& /dev/null; \
 	done;
 
 check-log-build-am:
