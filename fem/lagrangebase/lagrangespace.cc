@@ -13,8 +13,24 @@ namespace Dune {
   LagrangeDiscreteFunctionSpace (const GridType & g, IndexSetType & iset, DofManagerType & dm , int level) :
     DiscreteFunctionSpaceType (g,id, level) , dm_ ( dm ) , indexSet_ (iset)
   {
+    makeFunctionSpace(level);
+  }
+
+  // Constructor
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
+  LagrangeDiscreteFunctionSpace (const GridType & g, IndexSetType & iset, int level) :
+    DiscreteFunctionSpaceType (g,id, level) , dm_ ( DofManagerFactoryType::getDofManager(g) ) , indexSet_ (iset)
+  {
+    makeFunctionSpace(level);
+  }
+
+  template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
+  inline void LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
+  makeFunctionSpace (int level)
+  {
     // add index set to list of indexset of dofmanager
-    dm_.addIndexSet( g, indexSet_ );
+    dm_.addIndexSet( this->grid_ , indexSet_ );
 
     mapper_ = 0;
     maxNumBase_ = 0;
@@ -26,8 +42,8 @@ namespace Dune {
     {
       // search the macro grid for diffrent element types
       typedef typename GridType::template codim<0>::LevelIterator LevelIteratorType;
-      LevelIteratorType endit  = g.template lend<0>(level);
-      for(LevelIteratorType it = g.template lbegin<0>(level); it != endit; ++it)
+      LevelIteratorType endit  = this->grid_.template lend<0>(level);
+      for(LevelIteratorType it = this->grid_.template lbegin<0>(level); it != endit; ++it)
       {
         GeometryType type = (*it).geometry().type(); // Hack
         if(baseFuncSet_[type] == 0 )

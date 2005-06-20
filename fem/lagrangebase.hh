@@ -29,6 +29,10 @@ namespace Dune {
           FastBaseFunctionSet < LagrangeDiscreteFunctionSpace
               < FunctionSpaceT , GridType,IndexSetType, polOrd, DofManagerType > > >
   {
+
+    typedef DofManagerFactory<GridType,
+        typename DofManagerType::DataCollectorType> DofManagerFactoryType;
+
   public:
     /** \todo Please doc me! */
     typedef LagrangeDiscreteFunctionSpace
@@ -67,7 +71,6 @@ namespace Dune {
     };
 
 
-
     /** \todo Please doc me! */
     typedef typename FunctionSpaceT::Domain Domain;
     /** \todo Please doc me! */
@@ -87,6 +90,10 @@ namespace Dune {
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
     LagrangeDiscreteFunctionSpace ( const GridType & g, IndexSetType & iset , DofManagerType & dm , int level );
+
+    //! Constructor generating for each different element type of the grid a
+    //! LagrangeBaseSet with polOrd
+    LagrangeDiscreteFunctionSpace ( const GridType & g, IndexSetType & iset , int level );
 
     //! return max number of baseset that holds this space
     int maxNumberBase () const;
@@ -144,6 +151,9 @@ namespace Dune {
     bool signOut (DiscFuncType & df) const;
 
   protected:
+    // create functions space with basefunction set for given level
+    void makeFunctionSpace (int level);
+
     //! get the right BaseFunctionSet for a given Entity
     template <class EntityType>
     FastBaseFunctionSetType* setBaseFuncSetPointer ( EntityType &en );
