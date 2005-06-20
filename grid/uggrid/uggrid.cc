@@ -7,12 +7,6 @@
 #include <dune/common/sllist.hh>
 #include <dune/common/stdstreams.hh>
 
-#ifdef _2
-template class Dune::UGGrid<2,2>;
-#else
-template class Dune::UGGrid<3,3>;
-#endif
-
 // *********************************************************************
 //
 //  -- UGGridLevelIteratorFactory
@@ -962,3 +956,13 @@ void Dune::UGGrid < dim, dimworld >::setLocalIndices()
 
 #endif
 }
+
+// /////////////////////////////////////////////////////////////////////////////////
+//   Explicit instantiation of the dimensions that are actually supported by UG.
+//   g++-4.0 wants them to be _after_ the method implementations.
+// /////////////////////////////////////////////////////////////////////////////////
+#ifdef _2
+template class Dune::UGGrid<2,2>;
+#else
+template class Dune::UGGrid<3,3>;
+#endif
