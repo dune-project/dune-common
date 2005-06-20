@@ -218,9 +218,15 @@ inline void copyTraverseStack( TRAVERSE_STACK* stack, TRAVERSE_STACK* org )
   stack->elinfo_stack = 0;
   stack->elinfo_stack = MEM_ALLOC(stack->stack_size, EL_INFO);
 
+  // here we have to copy all EL_INFOs seperately, the normal way does not
+  // work, unfortunately
   if (stack->stack_size > 0)
+  {
     for (int i=0; i<stack->stack_size; i++)
-      stack->elinfo_stack[i].fill_flag = org->elinfo_stack[0].fill_flag;
+    {
+      memcpy(&(stack->elinfo_stack[i]),&(org->elinfo_stack[i]),sizeof(EL_INFO));
+    }
+  }
 
   stack->info_stack        = 0;
   stack->info_stack        = MEM_ALLOC(stack->stack_size, U_CHAR);
