@@ -12,6 +12,18 @@
 
 namespace Dune {
 
+  // Forward declarations
+  template<int codim, int dim, class GridImp>
+  class UGGridEntity;
+  template<int dim, int dimworld>
+  class UGGrid;
+  template<int codim, PartitionIteratorType pitype, class GridImp>
+  class UGGridLevelIterator;
+  template<class GridImp>
+  class UGGridIntersectionIterator;
+  template<class GridImp>
+  class UGGridHierarchicIterator;
+
   template<int codim, int dim, class GridImp>
   class UGMakeableEntity :
     public GridImp::template codim<codim>::Entity
@@ -59,6 +71,8 @@ namespace Dune {
     friend class UGMakeableEntity<codim,dim,GridImp>;
 
     friend class UGGrid<dim, dim>;
+
+    typedef typename GridImp::ctype UGCtype;
 
   public:
 

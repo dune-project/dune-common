@@ -18,7 +18,7 @@ struct UGGridGeometryPositionAccess<0,3>
   static inline
   void get(TargetType<3,3>::T* target,
            int i,
-           FieldVector<UGCtype, 3>& coord) {
+           FieldVector<double, 3>& coord) {
 
 #ifdef _3
     coord[0] = target->myvertex->iv.x[0];
@@ -36,7 +36,7 @@ struct UGGridGeometryPositionAccess<3,3>
   static inline
   void get(TargetType<0,3>::T* target,
            int i,
-           FieldVector<UGCtype, 3>& coord) {
+           FieldVector<double, 3>& coord) {
 #ifdef _3
     if (UG_NS<3>::Tag(target) == UG3d::HEXAHEDRON) {
       // Dune numbers the vertices of a hexahedron differently than UG.
@@ -60,7 +60,7 @@ struct UGGridGeometryPositionAccess<0,2>
   static inline
   void get(TargetType<2,2>::T* target,
            int i,
-           FieldVector<UGCtype, 2>& coord) {
+           FieldVector<double, 2>& coord) {
 #ifdef _2
     coord[0] = target->myvertex->iv.x[0];
     coord[1] = target->myvertex->iv.x[1];
@@ -75,7 +75,7 @@ struct UGGridGeometryPositionAccess<2,2>
   static inline
   void get(TargetType<0,2>::T* target,
            int i,
-           FieldVector<UGCtype, 2>& coord) {
+           FieldVector<double, 2>& coord) {
 #ifdef _2
     UG2d::VERTEX* vertex = UG_NS<2>::Corner(target,i)->myvertex;
 
@@ -140,7 +140,7 @@ inline int UGGridGeometry<mydim,coorddim,GridImp>::corners() const
 ///////////////////////////////////////////////////////////////////////
 
 template<int mydim, int coorddim, class GridImp>
-inline const FieldVector<UGCtype, coorddim>& UGGridGeometry<mydim,coorddim,GridImp>::
+inline const FieldVector<typename GridImp::ctype, coorddim>& UGGridGeometry<mydim,coorddim,GridImp>::
 operator [](int i) const
 {
   UGGridGeometryPositionAccess<mydim,coorddim>::get(target_, i, coord_[i]);
@@ -199,7 +199,7 @@ checkInside(const FieldVector<UGCtype, coorddim> &loc) const
 }
 
 template< int mydim, int coorddim, class GridImp>
-inline FieldVector<UGCtype, coorddim> UGGridGeometry<mydim,coorddim,GridImp>::
+inline FieldVector<typename GridImp::ctype, coorddim> UGGridGeometry<mydim,coorddim,GridImp>::
 global(const FieldVector<UGCtype, mydim>& local) const
 {
   FieldVector<UGCtype, coorddim> globalCoord;
@@ -217,8 +217,8 @@ global(const FieldVector<UGCtype, mydim>& local) const
 // Specialization for dim==1, coorddim==2.  This is necessary
 // because we specialized the whole class
 template <class GridImp>
-inline FieldVector<UGCtype, 2> UGGridGeometry<1,2,GridImp>::
-global(const FieldVector<UGCtype, 1>& local) const
+inline FieldVector<typename GridImp::ctype, 2> UGGridGeometry<1,2,GridImp>::
+global(const FieldVector<typename GridImp::ctype, 1>& local) const
 {
   FieldVector<UGCtype, 2> globalCoord;
 
@@ -232,8 +232,8 @@ global(const FieldVector<UGCtype, 1>& local) const
 // Specialization for dim==2, coorddim==3.  This is necessary
 // because we specialized the whole class
 template <class GridImp>
-inline FieldVector<UGCtype, 3> UGGridGeometry<2,3,GridImp>::
-global(const FieldVector<UGCtype, 2>& local) const
+inline FieldVector<typename GridImp::ctype, 3> UGGridGeometry<2,3,GridImp>::
+global(const FieldVector<typename GridImp::ctype, 2>& local) const
 {
 
   FieldVector<UGCtype, 3> result;
@@ -265,8 +265,8 @@ global(const FieldVector<UGCtype, 2>& local) const
 // Maps a global coordinate within the element to a
 // local coordinate in its reference element
 template< int mydim, int coorddim, class GridImp>
-inline FieldVector<UGCtype, mydim> UGGridGeometry<mydim,coorddim, GridImp>::
-local (const FieldVector<UGCtype, coorddim>& global) const
+inline FieldVector<typename GridImp::ctype, mydim> UGGridGeometry<mydim,coorddim, GridImp>::
+local (const FieldVector<typename GridImp::ctype, coorddim>& global) const
 {
   FieldVector<UGCtype, mydim> result;
   UGCtype localCoords[mydim];
@@ -297,15 +297,15 @@ local (const FieldVector<UGCtype, coorddim>& global) const
 
 
 template< int mydim, int coorddim, class GridImp>
-inline UGCtype UGGridGeometry<mydim,coorddim,GridImp>::
-integrationElement (const FieldVector<UGCtype, mydim>& local) const
+inline typename GridImp::ctype UGGridGeometry<mydim,coorddim,GridImp>::
+integrationElement (const FieldVector<typename GridImp::ctype, mydim>& local) const
 {
   return std::abs(1/jacobianInverse(local).determinant());
 }
 
 template <class GridImp>
-inline UGCtype UGGridGeometry<1,2,GridImp>::
-integrationElement (const FieldVector<UGCtype, 1>& local) const
+inline typename GridImp::ctype UGGridGeometry<1,2,GridImp>::
+integrationElement (const FieldVector<typename GridImp::ctype, 1>& local) const
 {
   FieldVector<UGCtype, 2> diff = coord_[0];
   diff -= coord_[1];
@@ -313,8 +313,8 @@ integrationElement (const FieldVector<UGCtype, 1>& local) const
 }
 
 template <class GridImp>
-inline UGCtype UGGridGeometry<2,3,GridImp>::
-integrationElement (const FieldVector<UGCtype, 2>& local) const
+inline typename GridImp::ctype UGGridGeometry<2,3,GridImp>::
+integrationElement (const FieldVector<typename GridImp::ctype, 2>& local) const
 {
   FieldVector<UGCtype, 3> normal;
   FieldVector<UGCtype, 3> ba = coord_[1] - coord_[0];
@@ -331,8 +331,8 @@ integrationElement (const FieldVector<UGCtype, 2>& local) const
 }
 
 template< int mydim, int coorddim, class GridImp>
-inline const FieldMatrix<UGCtype, mydim,mydim>& UGGridGeometry<mydim,coorddim, GridImp>::
-jacobianInverse (const FieldVector<UGCtype, mydim>& local) const
+inline const FieldMatrix<typename GridImp::ctype, mydim,mydim>& UGGridGeometry<mydim,coorddim, GridImp>::
+jacobianInverse (const FieldVector<typename GridImp::ctype, mydim>& local) const
 {
   // coorddim*coorddim is an upper bound for the number of vertices
   UGCtype* cornerCoords[coorddim*coorddim];

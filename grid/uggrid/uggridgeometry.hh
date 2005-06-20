@@ -14,6 +14,9 @@
 namespace Dune {
 
   template<int mydim, int coorddim, class GridImp>
+  class UGGridGeometry;
+
+  template<int mydim, int coorddim, class GridImp>
   class UGMakeableGeometry : public Geometry<mydim, coorddim, GridImp, UGGridGeometry>
   {
   public:
@@ -30,6 +33,8 @@ namespace Dune {
   template<class GridImp>
   class UGMakeableGeometry<2,3,GridImp> : public Geometry<2, 3, GridImp, UGGridGeometry>
   {
+    typedef typename GridImp::ctype UGCtype;
+
   public:
     UGMakeableGeometry() :
       Geometry<2, 3, GridImp, UGGridGeometry>(UGGridGeometry<2,3,GridImp>())
@@ -47,6 +52,8 @@ namespace Dune {
   template<class GridImp>
   class UGMakeableGeometry<1,2,GridImp> : public Geometry<1, 2, GridImp, UGGridGeometry>
   {
+    typedef typename GridImp::ctype UGCtype;
+
   public:
     UGMakeableGeometry() :
       Geometry<1, 2, GridImp, UGGridGeometry>(UGGridGeometry<1,2,GridImp>())
@@ -88,6 +95,8 @@ namespace Dune {
   class UGGridGeometry :
     public GeometryDefault <mydim, coorddim, GridImp, UGGridGeometry>
   {
+    typedef typename GridImp::ctype UGCtype;
+
     template <int codim_, int dim_, class GridImp_>
     friend class UGGridEntity;
 
@@ -190,6 +199,8 @@ namespace Dune {
 
     friend class UGMakeableGeometry<2,3,GridImp>;
 
+    typedef typename GridImp::ctype UGCtype;
+
   public:
 
     /** \brief Default constructor */
@@ -270,6 +281,8 @@ namespace Dune {
     friend class UGGridIntersectionIterator;
 
     friend class UGMakeableGeometry<1,2,GridImp>;
+
+    typedef typename GridImp::ctype UGCtype;
 
   public:
 

@@ -58,7 +58,7 @@ UGGridIntersectionIterator<GridImp>::boundary() const
 }
 
 template<class GridImp>
-inline FieldVector<UGCtype, GridImp::dimensionworld>&
+inline FieldVector<typename GridImp::ctype, GridImp::dimensionworld>&
 UGGridIntersectionIterator <GridImp>::outerNormal () const
 {
   // //////////////////////////////////////////////////////
@@ -68,9 +68,9 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 #ifdef _3
   // Get the first three vertices of this side.  Since quadrilateral faces
   // are plane in UG, the normal doesn't depend on the fourth vertex
-  UGCtype* aPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
-  UGCtype* bPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
-  UGCtype* cPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
+  const UGCtype* aPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
+  const UGCtype* bPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
+  const UGCtype* cPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
 
   FieldVector<UGCtype, 3> ba, ca;
 
@@ -91,8 +91,8 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 
 #ifdef _2
   // Get the vertices of this side.
-  UGCtype* aPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
-  UGCtype* bPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
+  const UGCtype* aPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
+  const UGCtype* bPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
 
   // compute normal
   outerNormal_[0] = bPos[1] - aPos[1];
@@ -103,7 +103,7 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 }
 
 template<class GridImp>
-inline FieldVector<UGCtype, GridImp::dimensionworld>&
+inline FieldVector<typename GridImp::ctype, GridImp::dimensionworld>&
 UGGridIntersectionIterator < GridImp >::
 outerNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const
 {

@@ -33,6 +33,9 @@ namespace Dune {
 
     friend class UGGridEntity<0,dim,GridImp>;
 
+    // The type used to store coordinates
+    typedef typename GridImp::ctype UGCtype;
+
   public:
 
     typedef typename GridImp::template codim<1>::Geometry Geometry;

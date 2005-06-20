@@ -9,7 +9,6 @@
 
 #include "../common/capabilities.hh"
 #include <dune/grid/common/grid.hh>
-#include <dune/common/misc.hh>
 
 // All UG includes have to be includes via the file ugincludes.hh
 // for easier parsing by undefAllMacros.pl
@@ -21,33 +20,13 @@
 #include "uggrid/ugfunctions.hh"
 
 
-// undef stuff defined by UG
+// undef all macros defined by UG
 #include "uggrid/ug_undefs.hh"
 
 #include <dune/common/array.hh>
 #include <dune/grid/common/defaultindexsets.hh>
 
-namespace Dune
-{
-  /** \brief The type used by UG to store coordinates */
-  typedef double UGCtype;
-
-
-  // forward declarations
-  template<int dim, int dimworld>          class UGGrid;
-  template<int codim, int dim,
-      class GridImp>                  class UGGridEntity;
-  template<int codim,
-      PartitionIteratorType pitype,
-      class GridImp>                  class UGGridLevelIterator;
-  template<int mydim, int coorddim,
-      class GridImp>                  class UGGridGeometry;
-  template<class GridImp>                 class UGGridBoundaryEntity;
-  template<class GridImp>                 class UGGridHierarchicIterator;
-  template<class GridImp>                 class UGGridIntersectionIterator;
-
-}  // namespace Dune
-
+// The components of the UGGrid interface
 #include "uggrid/uggridgeometry.hh"
 #include "uggrid/uggridentity.hh"
 #include "uggrid/uggridentitypointer.hh"
@@ -125,7 +104,7 @@ namespace Dune {
      sander@math.fu-berlin.de
    */
   template <int dim, int dimworld>
-  class UGGrid : public GridDefault  <dim, dimworld,UGCtype, UGGrid<dim,dimworld> >
+  class UGGrid : public GridDefault  <dim, dimworld, double, UGGrid<dim,dimworld> >
   {
 
     friend class UGGridEntity <0,dim,UGGrid<dim,dimworld> >;
@@ -386,16 +365,13 @@ namespace Dune {
     std::string name_;
 
     // number of maxlevel of the mesh
-    int maxlevel_;
+    //int maxlevel_;
 
     // Our hierarchic index set
     HierarchicIndexSetType hierarchicIndexSet_;
 
     // Our set of level indices
     mutable LevelIndexSetType* levelIndexSet_;
-
-    // number of entitys of each level an codim
-    Array<int> size_;
 
     //! Marks whether the UG environment heap size is taken from
     //! an existing defaults file or whether the values from
