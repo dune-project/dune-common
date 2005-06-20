@@ -21,7 +21,7 @@ namespace Dune {
 
   // forward declaration
   template <class GridType,
-      class DataCollectorType = DataCollectorInterface<GridType> >
+      class DataCollectorImp = DataCollectorInterface<GridType> >
   class DofManager;
 
   template <class GridType,
@@ -645,12 +645,14 @@ namespace Dune {
      created. The default value for the IndexSet is the DefaultIndexSet class
      which is mostly a wrapper for the grid indices.
    */
-  template <class GridType , class DataCollectorType >
+  template <class GridType , class DataCollectorImp >
   class DofManager
   {
-    typedef DofManager<GridType,DataCollectorType> MyType;
-    friend class DofManagerFactory<GridType,DataCollectorType>;
+
+    typedef DofManager<GridType,DataCollectorImp> MyType;
+    friend class DofManagerFactory<GridType,DataCollectorImp>;
   public:
+    typedef DataCollectorImp DataCollectorType;
     // all things for one discrete function are put together in a MemObject
     typedef MemPointerType MemoryPointerType;
 
@@ -1110,7 +1112,7 @@ namespace Dune {
   class DofManagerFactory
   {
     typedef DofManager<GridType,DataCollectorType> DofManagerType;
-    typedef DoubleLinkedList < std::pair < GridType * , DofManagerType * > > ListType;
+    typedef DoubleLinkedList < std::pair < const GridType * , DofManagerType * > > ListType;
     typedef typename ListType::Iterator ListIteratorType;
 
     //! list that store pairs of grid/dofmanager pointers
@@ -1118,7 +1120,7 @@ namespace Dune {
   public:
     //! return reference to the DofManager for the given grid.
     //! If the object does not exist, then it is created first.
-    inline static DofManagerType & getDofManager (GridType & grid)
+    inline static DofManagerType & getDofManager (const GridType & grid)
     {
       ListIteratorType endit = gridList_.end();
       for(ListIteratorType it = gridList_.begin(); it!=endit; ++it)
@@ -1130,7 +1132,7 @@ namespace Dune {
       }
 
       DofManagerType * dm = new DofManagerType ( grid );
-      std::pair < GridType * , DofManagerType * > tmp ( & grid , dm );
+      std::pair < const GridType * , DofManagerType * > tmp ( & grid , dm );
       gridList_.insert_after( gridList_.rbegin() , tmp );
       return *dm;
     }
@@ -1158,7 +1160,7 @@ namespace Dune {
 
   //! singelton
   template <class GridType, class DataCollectorType>
-  DoubleLinkedList < std::pair < GridType * , DofManager<GridType,DataCollectorType> * > >
+  DoubleLinkedList < std::pair < const GridType * , DofManager<GridType,DataCollectorType> * > >
   DofManagerFactory<GridType,DataCollectorType>::gridList_;
 
 } // end namespace Dune
