@@ -516,7 +516,7 @@ namespace Dune {
         for(HierItType it = en.hbegin(mxlvl);
             it != endit; ++it )
         {
-          if((*it).isLeaf())
+          //if((*it).isLeaf())
           {
             p.second = it.operator -> ();
             ldc_.apply( p );
@@ -568,8 +568,8 @@ namespace Dune {
     typedef typename DiscreteFunctionType::DomainType DomainType;
 
   public:
-    DataInliner ( DiscreteFunctionType & df )
-      : df_ (df) , lf_ (df.newLocalFunction() ) {}
+    DataInliner ( DiscreteFunctionType & df , bool leaf = true )
+      : df_ (df) , lf_ (df.newLocalFunction() ) , leaf_(leaf) {}
 
     //! store data to stream
     //template <class ObjectStreamType, class EntityType>
@@ -577,6 +577,9 @@ namespace Dune {
     {
       assert( p.first && p.second );
       EntityType & en = const_cast<EntityType &> (*(p.second));
+
+      if(leaf_) if(!en.isLeaf()) return;
+
       df_.localFunction( en ,  lf_ );
       for(int l=0; l<lf_.numberOfDofs(); l++)
       {
@@ -587,6 +590,9 @@ namespace Dune {
   private:
     mutable DiscreteFunctionType & df_;
     mutable LocalFunctionType lf_;
+
+    // true if only leaf data is transferd
+    bool leaf_;
   };
 
 
@@ -633,8 +639,8 @@ namespace Dune {
     //typedef void ScatterFunctionType( ObjectStreamType & , LocalFunctionType & );
 
   public:
-    DataXtractor ( DiscreteFunctionType & df )
-      : df_ (df) , lf_ (df.newLocalFunction() ) {}
+    DataXtractor ( DiscreteFunctionType & df , bool leaf = true)
+      : df_ (df) , lf_ (df.newLocalFunction() ) , leaf_(leaf) {}
 
     //! store data to stream
     //template <class ObjectStreamType, class EntityType>
@@ -642,6 +648,9 @@ namespace Dune {
     {
       assert( p.first && p.second );
       EntityType & en = const_cast<EntityType &> (*(p.second));
+
+      if(leaf_) if(!en.isLeaf()) return;
+
       df_.localFunction( en , lf_ );
       //assert( gatherFunc_ );
       //gatherFunc_( (*(p.first)) , lf_ ) ;
@@ -663,6 +672,9 @@ namespace Dune {
   private:
     mutable DiscreteFunctionType & df_;
     mutable LocalFunctionType lf_;
+
+    // true if only leaf data is transferd
+    bool leaf_;
 
     //GatherFunctionType * gatherFunc_;
   };
