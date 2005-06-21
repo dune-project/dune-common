@@ -542,6 +542,13 @@ void iterate(Grid &g)
 
   for (; it != endit; ++it)
   {
+    LevelIterator l1 = it;
+    LevelIterator l2 = l1++;
+    assert(l2 == it);
+    assert(l1 != it);
+    l2++;
+    assert(l1 == l2);
+
     result = it->geometry().local(it->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
     if(error >= factorEpsilon * std::numeric_limits<typename Grid::ctype>::epsilon())
@@ -556,10 +563,6 @@ void iterate(Grid &g)
     it->geometry().type();
     it->geometry().corners();
     it->geometry()[0];
-#warning refelem is deprecated
-#if 0
-    it->geometry().refelem();
-#endif
 
     callMark(g, it);
     EntityPointer ept = it;
@@ -576,6 +579,13 @@ void iterate(Grid &g)
     DUNE_THROW(CheckError, "leafbegin() == leafend()");
   for (; lit != lend; ++lit)
   {
+    LeafIterator l1 = lit;
+    LeafIterator l2 = l1++;
+    assert(l2 == lit);
+    assert(l1 != lit);
+    l2++;
+    assert(l1 == l2);
+
     result = lit->geometry().local(lit->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
     if(error >= factorEpsilon * std::numeric_limits<typename Grid::ctype>::epsilon())
@@ -590,9 +600,6 @@ void iterate(Grid &g)
     lit->geometry().type();
     lit->geometry().corners();
     lit->geometry()[0];
-#if 0
-    lit->geometry().refelem();
-#endif
   }
 
 };
