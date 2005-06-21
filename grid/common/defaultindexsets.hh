@@ -24,13 +24,20 @@ namespace Dune {
      index set, so most of this methods do notin'.
    */
 
-  /*! /brief Interface of IndexSet for DofManager, some functions that only
-   * are called once per timestep are virtual ofr simplicity
+  /*! \brief Interface of IndexSet for DofManager, some functions that are only
+   * called once per timestep are virtual for simplicity
    */
   class IndexSetInterface
   {
   public:
+
+    /** \brief Virtual destructor */
+    virtual ~IndexSetInterface() {};
+
+    /** \todo Please doc me! */
     virtual bool compress () = 0;
+
+    /** \todo Please doc me! */
     virtual void resize   () = 0;
   };
 
