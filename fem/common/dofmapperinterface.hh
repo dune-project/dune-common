@@ -23,6 +23,9 @@ namespace Dune {
   class DofMapperInterface
   {
   public:
+    /** \brief Virtual destructor */
+    virtual ~DofMapperInterface() {}
+
     //! if grid has changed determine new size
     //! (to be called once per timestep, therefore virtual )
     virtual int newSize() const = 0;

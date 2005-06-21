@@ -25,6 +25,9 @@ namespace Dune {
   class Vector
   {
   public:
+
+    virtual ~Vector() {};
+
     //virtual Vector<Field> operator + (const Vector<Field> &) const = 0;
     //virtual Vector<Field> operator - (const Vector<Field> &) const = 0;
     //virtual Vector<Field> operator * (const Field &) const = 0;
