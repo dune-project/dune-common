@@ -45,10 +45,11 @@ namespace Dune
     }
 
     /** @brief Postincrement operator. */
-    IntersectionIterator& operator++(int)
+    IntersectionIterator operator++(int)
     {
-      this->realIterator.operator++();
-      return *this;
+      const IntersectionIterator tmp(*this);
+      this->realIterator.increment();
+      return tmp;
     }
 
     //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
