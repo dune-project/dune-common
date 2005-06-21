@@ -34,10 +34,10 @@ namespace Dune {
     /** \brief Virtual destructor */
     virtual ~IndexSetInterface() {};
 
-    /** \todo Please doc me! */
+    /** compress the index set if holes exists. */
     virtual bool compress () = 0;
 
-    /** \todo Please doc me! */
+    /** resize the index set after adaptation. */
     virtual void resize   () = 0;
   };
 
@@ -70,7 +70,7 @@ namespace Dune {
     bool indexNew(int num, int codim ) const { return false; }
 
     //! we have no old size
-    int oldSize ( int level , int codim ) const
+    int oldSize ( int codim ) const
     {
       return 0;
     }
@@ -225,14 +225,17 @@ namespace Dune {
       }
     };
 
+    //! level of this index set
+    const int level_;
+
   public:
     enum { ncodim = GridType::dimension + 1 };
-    DefaultGridIndexSet (const GridType & grid ) : DefaultGridIndexSetBase <GridType> (grid) {}
+    DefaultGridIndexSet (const GridType & grid , const int level ) : DefaultGridIndexSetBase <GridType> (grid) , level_(level) {}
 
     //! return size of grid entities per level and codim
-    int size ( int level , int codim ) const
+    int size ( int codim ) const
     {
-      return this->grid_.size(level,codim);
+      return this->grid_.size(level_,codim);
     }
 
     //! return index of entity with codim codim belonging to entity en which
@@ -291,9 +294,9 @@ namespace Dune {
 
   public:
     enum { ncodim = GridType::dimension + 1 };
-    DefaultGridIndexSet ( GridType & grid ) : DefaultGridIndexSetBase <GridType> (grid) {}
+    DefaultGridIndexSet ( const GridType & grid , const int level =-1 ) : DefaultGridIndexSetBase <GridType> (grid) {}
 
-    int size ( int level , int codim ) const
+    int size ( int codim ) const
     {
       return this->grid_.global_size(codim);
     }
