@@ -55,10 +55,12 @@ if ($mode ne "dir")
 		$errors++ if (/error/i && ! /^make/);
 		$errors-- if (/no\s+error/i && ! /^make/);
 		$makeerrors++ if (/error/i && /^make/);
-		$errors++ if (/ld: cannot open/);
+		$errors++ if (/No rule to make target/);
+		$errors++ if (/ld: cannot /);
+		$errors++ if (/link: cannot /);
 		$warnings++ if (/warning/i && ! /^make/);
 	}
-	if ($makeerrors > $errors + $warnings) {
+	if ($makeerrors > $errors) {
 		$errors = $makeerrors;
 	}
 	close LOG;
