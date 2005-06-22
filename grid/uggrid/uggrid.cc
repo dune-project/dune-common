@@ -601,7 +601,8 @@ template <int dim, int dimworld>
 void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template codim<0>::EntityPointer & e,
                                                       int elementSide,
                                                       int maxl,
-                                                      Array<FixedArray<unsigned int, 3> >& children) const
+                                                      Array<typename Dune::UGGridEntityPointer<0, UGGrid> >& childElements,
+                                                      Array<unsigned char>& childElementSides) const
 {
 
   typedef typename TargetType<0,dim>::T ElementType;
@@ -714,7 +715,9 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
   // //////////////////////////////
   //   Extract result from stack
   // //////////////////////////////
-  children.resize(list.size());
+  childElements.resize(list.size());
+  childElementSides.resize(list.size());
+
   int i=0;
   for (f = list.begin(); f!=list.end(); ++f, ++i) {
 
@@ -744,9 +747,9 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
 
     }
 
-    children[i][0] = UG_NS<dim>::index(Element<0>::get(*f));
-    children[i][1] = side;
-    children[i][2] = Element<2>::get(*f);
+    childElements[i].setToTarget(Element<0>::get(*f), Element<2>::get(*f));
+    childElementSides[i] = side;
+
   }
 
 }
