@@ -67,7 +67,10 @@ echo
 DUNE_PATH_ALBERTA
 # UG-check
 DUNE_PATH_UG
+# Check for the AmiraMesh library
 DUNE_PATH_AMIRAMESH
+# Check for the psurface library
+DUNE_PATH_PSURFACE
 # Yaspgrid-check
 DUNE_MPI
 
