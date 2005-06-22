@@ -13,6 +13,12 @@ libug3amiramesh_la_SOURCES = amuggridreader.cc
 libug3amiramesh_la_CXXFLAGS = $(AMIRAMESH_CPPFLAGS) $(UG_NODIM_CPPFLAGS) -D_3
 libug3amiramesh_la_LIBADD   = $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
 
+if PSURFACE
+# psurface only supports three-dimensional grids
+libug3amiramesh_la_CXXFLAGS += $(PSURFACE_CPPFLAGS)
+libug3amiramesh_la_LIBADD   += $(PSURFACE_LDFLAGS) $(PSURFACE_LIBS)
+endif
+
 endif
 endif
 

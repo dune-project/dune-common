@@ -4,6 +4,7 @@
 // Specialization of the AmiraMesh reader for UGGrid<3,3> and UGGrid<2,2>
 // /////////////////////////////////////////////////////////////////////////
 
+#include <dune/config.h>
 #include <dune/io/file/amiramesh/amuggridreader.hh>
 #include <dune/grid/uggrid.hh>
 #include <dune/common/stdstreams.hh>
@@ -13,15 +14,15 @@
 #include <vector>
 #include <algorithm>
 
-#ifdef HAVE_PARAMETRIZATION_LIBRARY
-#include <AmiraParamAccess.h>
+#if defined HAVE_PSURFACE && defined _3
+#include <parametrization/AmiraParamAccess.h>
 #endif
 
 
 #ifdef _3
 // //////////////////////////////////////////////////
 // //////////////////////////////////////////////////
-#ifdef HAVE_PARAMETRIZATION_LIBRARY
+#ifdef HAVE_PSURFACE
 static int SegmentDescriptionByAmira(void *data, double *param, double *result)
 {
 
@@ -43,7 +44,7 @@ static int SegmentDescriptionByAmira(void *data, double *param, double *result)
 
   return 0;
 }
-#endif // #define HAVE_PARAMETRIZATION_LIBRARY
+#endif // #define HAVE_PSURFACE
 
 /** This method implements a linear function in order to be able to
  *  work with straight line boundaries.
@@ -194,7 +195,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
                                                              const std::string& filename,
                                                              std::vector<int>& isBoundaryNode)
 {
-#ifdef HAVE_PARAMETRIZATION_LIBRARY
+#ifdef HAVE_PSURFACE
   const int CORNERS_OF_BND_SEG = 4;
   int point[CORNERS_OF_BND_SEG] = {-1, -1, -1, -1};
   double alpha[2], beta[2];
@@ -293,7 +294,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
   boundaryNumber++;
   std::cout << noOfSegments << " segments created!" << std::endl;
 
-#endif // #define HAVE_PARAMETRIZATION_LIBRARY
+#endif // #define HAVE_PSURFACE
 
 }
 
@@ -443,7 +444,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
                                                      const std::string& filename,
                                                      const std::string& domainFilename)
 {
-#ifndef HAVE_PARAMETRIZATION_LIBRARY
+#ifndef HAVE_PSURFACE
   DUNE_THROW(IOError, "Dune has not been built with support for the "
              << "AmiraMesh-Parametrization library!");
 #else
@@ -452,6 +453,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   // /////////////////////////////////////////////////////
   // Load the AmiraMesh file
   AmiraMesh* am = AmiraMesh::read(filename.c_str());
+  std::vector<int> isBoundaryNode;
 
   if(!am)
     DUNE_THROW(IOError, "Could not open AmiraMesh file " << filename);
@@ -459,7 +461,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   if (am->findData("Hexahedra", HxINT32, 8, "Nodes")) {
 
     // Load a domain from an AmiraMesh hexagrid file
-    createHexaDomain(grid, am);
+    std::cout << "Hexahedral grids with a parametrized boundary are not supported!" << std::endl;
+    std::cout << "I will therefore ignore the boundary parametrization." << std::endl;
+    createHexaDomain(grid, am, isBoundaryNode);
 
   } else {
 
@@ -467,13 +471,13 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
     std::string domainName = grid.name() + "_Domain";
 
     //loaddomain $file @PARA_FILE $name @DOMAIN
-    createDomain(grid, domainName, domainFilename);
+    createDomain(grid, domainName, domainFilename, isBoundaryNode);
 
   }
 
   // read and build the grid
-  buildGrid(grid, am);
-#endif // #define HAVE_PARAMETRIZATION_LIBRARY
+  buildGrid(grid, am, isBoundaryNode);
+#endif // #define HAVE_PSURFACE
 }
 
 
@@ -577,7 +581,21 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
                  ? am->nElements("Tetrahedra")
                  : am->nElements("Hexahedra");
 
-  // Insert interior nodes
+  // ///////////////////////////////////////////////////////////////////////////////
+  //   The isBoundaryNode array contains information about which of all nodes is
+  //   on the grid boundary.  If we have read a parametrized domain description,
+  //   though, the array is empty.  To be able to proceed without to much hassle
+  //   we fill the array now.
+  // ///////////////////////////////////////////////////////////////////////////////
+  isBoundaryNode.resize(noOfNodes);
+  for (i=0; i<=maxBndNodeID; i++)
+    isBoundaryNode[i] = i;
+  for (; i<noOfNodes; i++)
+    isBoundaryNode[i] = -1;
+
+  // //////////////////////////////////////
+  //   Insert interior nodes
+  // //////////////////////////////////////
   for(i = 0; i < noOfNodes; i++) {
 
     if (isBoundaryNode[i] != -1)
