@@ -22,6 +22,10 @@ namespace Dune {
       virtualEntity_.setToTarget(0);
     }
 
+    void setToTarget(typename TargetType<codim,dim>::T* target, int level) {
+      virtualEntity_.setToTarget(target, level);
+    }
+
     //! equality
     bool equals(const UGGridEntityPointer<codim,GridImp>& i) const {
       return virtualEntity_.getTarget() == i.virtualEntity_.getTarget();
