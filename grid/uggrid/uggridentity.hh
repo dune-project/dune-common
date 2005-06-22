@@ -31,7 +31,7 @@ namespace Dune {
   public:
 
     UGMakeableEntity(int level) :
-      GridImp::template codim<codim>::Entity (UGGridEntity<codim, dim, GridImp>(level))
+      GridImp::template codim<codim>::Entity (UGGridEntity<codim, dim, const GridImp>(level))
     {}
 
     void setToTarget(typename TargetType<codim,dim>::T* target) {
