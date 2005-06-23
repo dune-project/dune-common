@@ -6,6 +6,11 @@
 #include <vector>
 #include <cassert>
 
+#ifdef _ALU3DGRID_PARALLEL_
+static int __MyRank__ = -1;
+#endif
+
+
 #include <dune/common/misc.hh>
 #include <dune/common/fmatrix.hh>
 
@@ -138,10 +143,6 @@ namespace Dune
 
      dimworld: Each corner is a point with dimworld coordinates.
    */
-
-#ifdef _ALU3DGRID_PARALLEL_
-  static int __MyRank__ = -1;
-#endif
 
   //! MakeableGeometry
   template<int mydim, int coorddim, class GridImp>
@@ -1247,7 +1248,7 @@ namespace Dune
 
     //! Constructor
     ALU3dGridLeafIterator(const GridImp & grid, int level , bool end,
-                          PartitionIteratorType pitype );
+                          const int nlinks , PartitionIteratorType pitype );
 
     //! copy Constructor
     ALU3dGridLeafIterator(const ALU3dGridLeafIterator<GridImp> & org);
@@ -1266,8 +1267,10 @@ namespace Dune
     int level_;
 
     // the wrapper for the original iterator of the ALU3dGrid
-    typedef typename ALU3DSPACE ALU3dGridLeafIteratorWrapper<codim> IteratorType;
-    ALU3DSPACE AutoPointer < IteratorType > iter_;
+    typedef typename ALU3DSPACE ALU3dGridLeafIteratorWrapper<codim,InteriorBorder_Partition> IteratorType;
+
+    typedef ALU3DSPACE IteratorWrapperInterface<ALU3DSPACE LeafValType> IterInterface;
+    ALU3DSPACE AutoPointer < IterInterface > iter_;
 
     //! my partition tpye
     const PartitionIteratorType pitype_;
