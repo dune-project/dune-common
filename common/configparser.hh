@@ -29,23 +29,23 @@ namespace dune {
      */
     ConfigParser();
 
-    void parseFile(string file);
+    void parseFile(std::string file);
     void parseCmd(int argc, char* argv []);
 
-    bool hasKey(const string& key);
-    bool hasSub(const string& key);
+    bool hasKey(const std::string& key);
+    bool hasSub(const std::string& key);
 
-    string& operator[] (const string& key);
+    std::string& operator[] (const std::string& key);
 
     void report() const;
-    void report(const string prefix) const;
+    void report(const std::string prefix) const;
 
-    ConfigParser& sub(const string& key);
+    ConfigParser& sub(const std::string& key);
 
-    string get(const string& key, string defaultValue);
-    string get(const string& key, char* defaultValue);
-    int get(const string& key, int defaultValue);
-    double get(const string& key, double defaultValue);
+    std::string get(const std::string& key, std::string defaultValue);
+    std::string get(const std::string& key, char* defaultValue);
+    int get(const std::string& key, int defaultValue);
+    double get(const std::string& key, double defaultValue);
 
     /** \brief kurz
      *
@@ -54,13 +54,13 @@ namespace dune {
      * \param defaultValue
      * \return
      */
-    bool get(const string& key, bool defaultValue);
+    bool get(const std::string& key, bool defaultValue);
 
 
   private:
-    map<string, string> values;
-    map<string, Config> subs;
-    string trim(string s);
+    std::map<std::string, std::string> values;
+    std::map<std::string, ConfigParser> subs;
+    std::string trim(std::string s);
 
 
   };

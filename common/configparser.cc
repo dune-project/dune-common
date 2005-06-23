@@ -9,6 +9,7 @@
 
 
 using namespace dune;
+using namespace std;
 
 ConfigParser::ConfigParser()
 {}
@@ -81,7 +82,7 @@ void ConfigParser::report(const string prefix) const
   for(; vit!=vend; ++vit)
     cout << prefix + vit->first << " = " << vit->second << endl;
 
-  typedef map<string, Config>::const_iterator SubIt;
+  typedef map<string, ConfigParser>::const_iterator SubIt;
   SubIt sit = subs.begin();
   SubIt send = subs.end();
   for(; sit!=send; ++sit)
@@ -101,7 +102,7 @@ bool ConfigParser::hasKey(const string& key)
     if (subs.count(prefix) == 0)
       return false;
 
-    Config& s = sub(prefix);
+    ConfigParser& s = sub(prefix);
     return s.hasKey(key.substr(dot+1));
   }
   else
@@ -118,7 +119,7 @@ bool ConfigParser::hasSub(const string& key)
     if (subs.count(prefix) == 0)
       return false;
 
-    Config& s = sub(prefix);
+    ConfigParser& s = sub(prefix);
     return s.hasSub(key.substr(dot+1));
   }
   else
@@ -131,7 +132,7 @@ ConfigParser& ConfigParser::sub(const string& key)
 
   if (dot != string::npos)
   {
-    Config& s = sub(key.substr(0,dot));
+    ConfigParser& s = sub(key.substr(0,dot));
     return s.sub(key.substr(dot+1));
   }
   else
@@ -144,7 +145,7 @@ string& ConfigParser::operator[] (const string& key)
 
   if (dot != string::npos)
   {
-    Config& s = sub(key.substr(0,dot));
+    ConfigParser& s = sub(key.substr(0,dot));
     return s[key.substr(dot+1)];
   }
   else
