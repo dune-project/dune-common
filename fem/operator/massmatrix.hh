@@ -128,6 +128,202 @@ namespace Dune {
     DiscFunctionType *_tmp;
   };
 
+
+
+
+
+
+  /** \brief The mass matrix operator for block matrices
+   *
+   * \tparam polOrd The quadrature order
+   *
+   * This is an implementation of the mass matrix operator using the ISTL-classes
+   *
+   * \todo Giving the quadrature order as a template parameter is
+   * a hack.  It would be better to determine the optimal order automatically.
+   */
+  template <class FunctionSpaceType, int blocksize, int polOrd>
+  class MassMatrix {
+
+    //! The grid
+    typedef typename FunctionSpaceType::GridType GridType;
+
+    typedef typename GridType::template codim<0>::Entity EntityType;
+
+    //!
+    typedef FieldMatrix<double, blocksize, blocksize> MatrixBlock;
+
+    //! ???
+    typedef typename FunctionSpaceType::JacobianRange JacobianRange;
+
+    //! ???
+    typedef typename FunctionSpaceType::RangeField RangeFieldType;
+
+    typedef typename FunctionSpaceType::Range RangeType;
+
+
+  public:
+
+    /** \todo Does actually belong into the base class */
+    BCRSMatrix<MatrixBlock>* matrix_;
+
+    /** \todo Does actually belong into the base class */
+    const GridType* grid;
+
+    /** \todo Does actually belong into the base class */
+    const FunctionSpaceType& functionSpace_;
+
+    //! ???
+    MassMatrix(const FunctionSpaceType &f) :
+      functionSpace_(f)
+    {
+      grid = &f.getGrid();
+    }
+
+    //! Returns the actual matrix if it is assembled
+    const BCRSMatrix<MatrixBlock>* getMatrix() const {
+      assert(this->matrix_);
+      return this->matrix_;
+    }
+
+    /** \todo Generalize this to higher-order spaces */
+    void getNeighborsPerVertex(MatrixIndexSet& nb) {
+
+      int i, j;
+      int n = functionSpace_.size();
+
+      nb.resize(n, n);
+
+      typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
+      LevelIterator it = grid->template lbegin<0>( grid->maxlevel() );
+      LevelIterator endit = grid->template lend<0> ( grid->maxlevel() );
+
+      for (; it!=endit; ++it) {
+
+        for (i=0; i<it->template count<blocksize>(); i++) {
+
+          for (j=0; j<it->template count<blocksize>(); j++) {
+
+            int iIdx = it->template subIndex<blocksize>(i);
+            int jIdx = it->template subIndex<blocksize>(j);
+
+            nb.add(iIdx, jIdx);
+
+          }
+
+        }
+
+      }
+
+    }
+
+    void assembleMatrix() {
+
+      typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
+      typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
+
+      int n = functionSpace_.size();
+
+      MatrixIndexSet neighborsPerVertex;
+      getNeighborsPerVertex(neighborsPerVertex);
+
+      matrix_ = new BCRSMatrix<MatrixBlock>(n, n, BCRSMatrix<MatrixBlock>::random);
+
+      neighborsPerVertex.exportIdx(*matrix_);
+      (*matrix_) = 0;
+
+      LevelIterator it = grid->template lbegin<0>( grid->maxlevel() );
+      LevelIterator endit = grid->template lend<0> ( grid->maxlevel() );
+      enum {maxnumOfBaseFct = 10};
+
+      Matrix<MatrixBlock> mat;
+
+      for( ; it != endit; ++it ) {
+
+        const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( *it );
+        const int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
+
+        //printf("%d base functions on element\n", numOfBaseFct);
+        mat.resize(numOfBaseFct, numOfBaseFct);
+        // setup matrix
+        getLocalMatrix( *it, numOfBaseFct, mat);
+
+        for(int i=0; i<numOfBaseFct; i++) {
+
+          int row = functionSpace_.mapToGlobal( *it , i );
+          //int row = it->template subIndex<dim>(i);
+          for (int j=0; j<numOfBaseFct; j++ ) {
+
+            int col = functionSpace_.mapToGlobal( *it , j );
+            //int col = it->template subIndex<dim>(j);
+            (*matrix_)[row][col] += mat[i][j];
+
+          }
+        }
+      }
+
+    }
+
+    //! ???
+    template < class EntityType, class MatrixType>
+    void getLocalMatrix( EntityType &entity, const int matSize, MatrixType& mat) const
+    {
+      int i,j;
+      typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
+      const BaseFunctionSetType & baseSet
+        = this->functionSpace_.getBaseFunctionSet( entity );
+
+      // Clear local scalar matrix
+      Matrix<double> scalarMat(matSize, matSize);
+      for(i=0; i<matSize; i++)
+        for (j=0; j<=i; j++ )
+          scalarMat[i][j]=0.0;
+
+      // Get UG quadrature rule
+      UG_Quadratures::QUADRATURE* quad =
+        UG_Quadratures::GetQuadrature(EntityType::dimension, entity.geometry().corners(), polOrd);
+
+      if (!quad)
+        DUNE_THROW(Exception, "Creating a ug quadrature rule failed!");
+
+      for ( int pt=0; pt < quad->nip; pt++ ) {
+
+        // Get position of the quadrature point
+        FieldVector<double,EntityType::dimension> quadPos;
+        for (int j=0; j<EntityType::dimension; j++)
+          quadPos[j] = quad->local[pt][j];
+
+        // The factor in the integral transformation formula
+        const double integrationElement = entity.geometry().integrationElement(quadPos);
+
+        RangeType v[matSize];
+        for(i=0; i<matSize; i++)
+          baseSet.eval(i,quadPos,v[i]);
+
+        for(i=0; i<matSize; i++)
+          for (int j=0; j<=i; j++ )
+            scalarMat[i][j] += ( v[i] * v[j] ) * quad->weight[pt] * integrationElement;
+      }
+
+      // Clear local matrix
+      for(i=0; i<matSize; i++)
+        for (j=0; j<matSize; j++)
+          mat[i][j] = 0;
+
+      // Turn scalar triangular matrix into symmetric block matrix
+      for(i=0; i<matSize; i++)
+        for (j=0; j<=i; j++)
+          for (int k=0; k<blocksize; k++)
+            mat[i][j][k][k] = mat[j][i][k][k] = scalarMat[i][j];
+
+    }
+
+
+  };   // end class
+
+
+
+
 } // namespace Dune
 
 #endif
