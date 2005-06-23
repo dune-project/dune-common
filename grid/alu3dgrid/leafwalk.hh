@@ -26,4 +26,27 @@ public:
   }
 };
 
+//! new rule for Dune LeafIterator minus one
+//! all entities with are either leaf entities or thier children are leaf entities
+template < class A > class leaf_minus_one
+{
+public:
+  typedef A val_t ;
+
+  //! Constructor storing the level
+  leaf_minus_one () {}
+
+  //! check if go next
+  int operator () (const A * x) const
+  {
+    return ( x->leaf() || ( (!x->leaf()) && (x->down()->leaf()) ) ) ? 1 : 0 ;
+  }
+
+  //! check if go next
+  int operator () (const A & x) const
+  {
+    return ( x->leaf() || ( (!x->leaf()) && (x->down()->leaf() ) ) ) ? 1 : 0 ;
+  }
+};
+
 #endif
