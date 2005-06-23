@@ -536,14 +536,26 @@ namespace Dune {
   ALU3dGrid<dim, dimworld, elType>::leafbegin(int level, PartitionIteratorType pitype) const
   {
     assert( level >= 0 );
-    return ALU3dGridLeafIterator<const MyType> ((*this),level,false,pitype);
+    return ALU3dGridLeafIterator<const MyType> ((*this),level,false,
+#ifdef _ALU3DGRID_PARALLEL_
+                                                mpAccess_.nlinks(),
+#else
+                                                1,
+#endif
+                                                pitype);
   }
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafend(int level, PartitionIteratorType pitype) const
   {
     assert( level >= 0 );
-    return ALU3dGridLeafIterator<const MyType> ((*this),level,true,pitype);
+    return ALU3dGridLeafIterator<const MyType> ((*this),level,true,
+#ifdef _ALU3DGRID_PARALLEL_
+                                                mpAccess_.nlinks(),
+#else
+                                                1,
+#endif
+                                                pitype);
   }
 
   // global refine
@@ -1046,7 +1058,7 @@ namespace Dune {
   template<class GridImp>
   inline ALU3dGridLeafIterator<GridImp> ::
   ALU3dGridLeafIterator(const GridImp &grid, int level,
-                        bool end, PartitionIteratorType pitype)
+                        bool end, const int nlinks, PartitionIteratorType pitype)
     : ALU3dGridEntityPointer <0,GridImp> ( grid,level,end)
       , index_(-1)
       , level_(level)
@@ -1054,8 +1066,27 @@ namespace Dune {
   {
     if(!end)
     {
-      IteratorType * it = new IteratorType ( this->grid_ , level_ );
-      iter_.store( it );
+#ifdef _ALU3DGRID_PARALLEL_
+      if(pitype == Ghost_Partition)
+      {
+        std::cout << "Erstelle GhostIterator \n";
+        typedef ALU3DSPACE ALU3dGridLeafIteratorWrapper<0,Ghost_Partition> GhostIterator;
+        IterInterface * it = new GhostIterator ( this->grid_, level_, nlinks );
+        iter_.store( it );
+      }
+      else if(pitype == All_Partition)
+      {
+        std::cout << "Erstelle All Partition Iterator! \n";
+        typedef ALU3DSPACE ALU3dGridLeafIteratorWrapper<0,All_Partition> AllIterator;
+        IterInterface * it = new AllIterator ( this->grid_, level_, nlinks );
+        iter_.store( it );
+      }
+      else
+#endif
+      {
+        IteratorType * it = new IteratorType ( this->grid_ , level_ );
+        iter_.store( it );
+      }
 
       (*iter_).first();
       if(!(*iter_).done()) // else iterator empty
@@ -1063,7 +1094,12 @@ namespace Dune {
         assert((*iter_).size() > 0);
         index_=0;
         myEntity().reset( level_ );
-        myEntity().setElement( (*iter_).item() );
+        ALU3DSPACE LeafValType & item = (*iter_).item();
+        //myEntity().setElement( (*iter_).item());
+        if( item.first )
+          myEntity().setElement( * item.first );
+        else
+          myEntity().setGhost( * item.second );
       }
     }
     else
@@ -1082,7 +1118,12 @@ namespace Dune {
     if(index_ >= 0)
     {
       myEntity().reset( level_ );
-      myEntity().setElement( iter_->item() );
+      ALU3DSPACE LeafValType & item = (*iter_).item();
+      if( item.first )
+        myEntity().setElement( * item.first );
+      else
+        myEntity().setGhost( * item.second );
+      //myEntity().setElement( iter_->item() );
     }
   }
 
@@ -1102,7 +1143,12 @@ namespace Dune {
       return ;
     }
 
-    myEntity().setElement( (*iter_).item());
+    ALU3DSPACE LeafValType & item = (*iter_).item();
+    //myEntity().setElement( (*iter_).item());
+    if( item.first )
+      myEntity().setElement( * item.first );
+    else
+      myEntity().setGhost( * item.second );
     return ;
   }
 
