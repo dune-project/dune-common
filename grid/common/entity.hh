@@ -9,7 +9,7 @@ namespace Dune
 {
 
   /**
-     @brief Encapsulates the implmentation of an Entity in a Grid.
+     @brief Encapsulates the implementation of an Entity in a Grid.
 
      \dot
         digraph entity {
