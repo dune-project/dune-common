@@ -8,10 +8,12 @@
 #include <assert.h>
 
 
-Config::Config()
+using namespace dune;
+
+ConfigParser::ConfigParser()
 {}
 
-void Config::parseFile(string file)
+void ConfigParser::parseFile(string file)
 {
   ifstream in(file.c_str());
   assert(in);
@@ -44,7 +46,7 @@ void Config::parseFile(string file)
 }
 
 
-void Config::parseCmd(int argc, char* argv [])
+void ConfigParser::parseCmd(int argc, char* argv [])
 {
   string v = "";
   string k = "";
@@ -65,12 +67,12 @@ void Config::parseCmd(int argc, char* argv [])
   return;
 }
 
-void Config::report() const
+void ConfigParser::report() const
 {
   report("");
 }
 
-void Config::report(const string prefix) const
+void ConfigParser::report(const string prefix) const
 {
   typedef map<string, string>::const_iterator ValueIt;
   ValueIt vit = values.begin();
@@ -89,7 +91,7 @@ void Config::report(const string prefix) const
   }
 }
 
-bool Config::hasKey(const string& key)
+bool ConfigParser::hasKey(const string& key)
 {
   int dot = key.find(".");
 
@@ -106,7 +108,7 @@ bool Config::hasKey(const string& key)
     return (values.count(key) != 0);
 }
 
-bool Config::hasSub(const string& key)
+bool ConfigParser::hasSub(const string& key)
 {
   int dot = key.find(".");
 
@@ -123,7 +125,7 @@ bool Config::hasSub(const string& key)
     return (subs.count(key) != 0);
 }
 
-Config& Config::sub(const string& key)
+ConfigParser& ConfigParser::sub(const string& key)
 {
   int dot = key.find(".");
 
@@ -136,7 +138,7 @@ Config& Config::sub(const string& key)
     return subs[key];
 }
 
-string& Config::operator[] (const string& key)
+string& ConfigParser::operator[] (const string& key)
 {
   int dot = key.find(".");
 
@@ -149,7 +151,7 @@ string& Config::operator[] (const string& key)
     return values[key];
 }
 
-string Config::get(const string& key, string defaultValue)
+string ConfigParser::get(const string& key, string defaultValue)
 {
   if (hasKey(key))
     return (*this)[key];
@@ -158,14 +160,14 @@ string Config::get(const string& key, string defaultValue)
 }
 
 
-string Config::get(const string& key, char* defaultValue)
+string ConfigParser::get(const string& key, char* defaultValue)
 {
   string s = defaultValue;
 
   return get(key, s);
 }
 
-int Config::get(const string& key, int defaultValue)
+int ConfigParser::get(const string& key, int defaultValue)
 {
   stringstream stream;
   stream << defaultValue;
@@ -174,7 +176,7 @@ int Config::get(const string& key, int defaultValue)
   return atoi(ret.c_str());
 }
 
-double Config::get(const string& key, double defaultValue)
+double ConfigParser::get(const string& key, double defaultValue)
 {
   stringstream stream;
   stream << defaultValue;
@@ -183,7 +185,7 @@ double Config::get(const string& key, double defaultValue)
   return atof(ret.c_str());
 }
 
-bool Config::get(const string& key, bool defaultValue)
+bool ConfigParser::get(const string& key, bool defaultValue)
 {
   stringstream stream;
   if (defaultValue)
@@ -196,7 +198,7 @@ bool Config::get(const string& key, bool defaultValue)
   return (atoi(ret.c_str()) !=0 );
 }
 
-string Config::trim(string s)
+string ConfigParser::trim(string s)
 {
   int i = 0;
   while (s[i] == ' ')
