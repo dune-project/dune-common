@@ -4,6 +4,7 @@
 #define DUNE_GRID_ENTITY_HH
 
 #include <dune/common/typetraits.hh>
+#include "grid.hh"
 
 namespace Dune
 {
