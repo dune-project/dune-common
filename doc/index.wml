@@ -19,6 +19,7 @@ with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
 <li><a href="devel/codingstyle.html">Coding Style</a></li>
 <li><a href="devel/ugreader.html">Howto write
 	  file readers for the UGGrid</a></li>
+<li><a href="buildsystem.html">Understanding the build system</a>
 <li><a href="devel/portability.html">Some notes on writing
 		portable code</a></li>
 <li><a href="devel/const-refactoring.html">Howto adapt your code to the
