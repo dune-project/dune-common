@@ -176,7 +176,6 @@ AC_CONFIG_FILES([Makefile
 	 io/visual/Makefile
 	 io/visual/grape/Makefile
          lib/Makefile
-         lib/test/Makefile
          operator/Makefile
          quadrature/Makefile
          quadrature/common/Makefile

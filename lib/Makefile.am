@@ -1,7 +1,5 @@
 # $Id$
 
-SUBDIRS = test
-
 # the main library
 lib_LTLIBRARIES = libdune.la
 

@@ -28,6 +28,8 @@ smartpointertest_SOURCES = smartpointertest.cc
 
 tuplestest_SOURCES = tuplestest.cc
 
+streamtest_SOURCES = streamtest.cc
+
 # mention headers so that they are distributed too
 iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
    iteratortest.hh
