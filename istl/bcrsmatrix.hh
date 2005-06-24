@@ -6,6 +6,7 @@
 #include <math.h>
 #include <complex>
 #include <set>
+#include <iostream>
 
 #include "istlexception.hh"
 #include "allocator.hh"
