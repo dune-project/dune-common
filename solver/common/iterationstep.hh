@@ -18,14 +18,14 @@ namespace Dune {
     IterationStep() {}
 
     //! Constructor being given linear operator, solution and right hand side
-    IterationStep(OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
+    IterationStep(const OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
       mat_ = &mat;
       x_   = &x;
       rhs_ = &rhs;
     }
 
     //! Set linear operator, solution and right hand side
-    void setProblem(OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
+    void setProblem(const OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
       x_   = &x;
       rhs_ = &rhs;
       mat_ = &mat;
@@ -38,7 +38,7 @@ namespace Dune {
     virtual DiscFuncType getSol() = 0;
 
     //! Return linear operator
-    virtual OperatorType* getMatrix() {return mat_;}
+    virtual const OperatorType* getMatrix() {return mat_;}
 
     /** \brief Checks whether all relevant member variables are set
      * \exception SolverError if the iteration step is not set up properly
@@ -61,7 +61,7 @@ namespace Dune {
     DiscFuncType* rhs_;
 
     //! The linear operator
-    OperatorType* mat_;
+    const OperatorType* mat_;
 
     /** \brief A flag for each degree of freedom stating whether the
      * dof is dirichlet or not */
