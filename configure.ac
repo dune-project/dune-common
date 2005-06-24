@@ -12,7 +12,10 @@ AM_CONFIG_HEADER([config.h])
 # Checks for programs.
 AC_PROG_CXX
 AC_LANG_PUSH([C++])
+
 DUNE_CHECK_COMPILER
+
+# how to create a deprecated warning
 DUNE_CHECKDEPRECATED
 
 # don't build shared libs per default, this is way better for debugging...
@@ -79,9 +82,6 @@ DUNE_PATH_ALU3DGRID
 
 # check for ParMETIS
 DUNE_PATH_PARMETIS
-
-# how to create a deprecated warning
-DUNE_CHECKDEPRECATED
 
 # create symlink for consistent paths even when $(top_srcdir) is not
 # called dune/ (if filesystem/OS supports symlinks)
