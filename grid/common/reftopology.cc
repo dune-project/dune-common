@@ -3,7 +3,7 @@
 /** \file
  * \brief Implementation of the reference topologies
  */
-#include <dune/grid/common/reftopology.hh>
+#include "reftopology.hh"
 
 using namespace Dune;
 
@@ -120,33 +120,40 @@ namespace Dune {
 
 }  // end namespace Dune
 
-const int Dune::ReferenceTopologySet::lineVerticesPerFace[2] = {0,1};
+const int Dune::ReferenceTopologySet::lineVerticesPerFace[2] =
+{0,1};
 
-const int Dune::ReferenceTopologySet::triangleVerticesPerFace[3][2] = { {1,2}, {2,0}, {0,1} };
+const int Dune::ReferenceTopologySet::triangleVerticesPerFace[3][2] =
+{ {1,2}, {2,0}, {0,1} };
 
-const int Dune::ReferenceTopologySet::quadrilateralVerticesPerFace[4][2] = { {2,0}, {1,3} , {0,1} , {3,2}};
+const int Dune::ReferenceTopologySet::quadrilateralVerticesPerFace[4][2] =
+{ {2,0}, {1,3} , {0,1} , {3,2}};
 
-const int Dune::ReferenceTopologySet::tetrahedronVerticesPerFace[4][3] = { {1, 2, 3},
-                                                                           {0, 3, 2},
-                                                                           {0, 1, 3},
-                                                                           {0, 2, 1} };
+const int Dune::ReferenceTopologySet::tetrahedronVerticesPerFace[4][3] =
+{ {1, 3, 2},
+  {0, 2, 3},
+  {0, 3, 1},
+  {0, 1, 2} };
 
-const int Dune::ReferenceTopologySet::pyramidVerticesPerFace[5][4] = { {0, 3, 2, 1},
-                                                                       {0, 1, 4, -1},
-                                                                       {1, 2, 4, -1},
-                                                                       {2, 3, 4, -1},
-                                                                       {0, 4, 3, -1} };
+const int Dune::ReferenceTopologySet::pyramidVerticesPerFace[5][4] =
+{ {0, 3, 2, 1},
+  {0, 1, 4, -1},
+  {1, 2, 4, -1},
+  {2, 3, 4, -1},
+  {0, 4, 3, -1} };
 
-const int Dune::ReferenceTopologySet::prismVerticesPerFace[5][4] = { {0, 2, 1, -1},
-                                                                     {0, 1, 4, 3},
-                                                                     {1, 2, 5, 4},
-                                                                     {0, 3, 5, 2},
-                                                                     {3, 4, 5, -1} };
+const int Dune::ReferenceTopologySet::prismVerticesPerFace[5][4] =
+{ {0, 2, 1, -1},
+  {0, 1, 4, 3},
+  {1, 2, 5, 4},
+  {0, 3, 5, 2},
+  {3, 4, 5, -1} };
 
 
-const int Dune::ReferenceTopologySet::hexahedronVerticesPerFace[6][4] = { {0, 4, 6, 2},
-                                                                          {1, 3, 7, 5},
-                                                                          {0, 1, 5, 4},
-                                                                          {2, 6, 7, 3},
-                                                                          {0, 2, 3, 1},
-                                                                          {5, 7, 6, 4} };
+const int Dune::ReferenceTopologySet::hexahedronVerticesPerFace[6][4] =
+{ {0, 2, 4, 6},
+  {1, 3, 5, 7},
+  {0, 1, 4, 5},
+  {2, 3, 6, 7},
+  {0, 1, 2, 3},
+  {4, 5, 6, 7} };
