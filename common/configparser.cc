@@ -31,7 +31,7 @@ void ConfigParser::parseFile(string file)
       prefix = trim(line.substr(1, line.length()-2)) + ".";
     else
     {
-      int mid = line.find("=");
+      string::size_type mid = line.find("=");
       if (mid != string::npos)
       {
         string key = prefix+trim(line.substr(0, mid));
@@ -94,7 +94,7 @@ void ConfigParser::report(const string prefix) const
 
 bool ConfigParser::hasKey(const string& key)
 {
-  int dot = key.find(".");
+  string::size_type dot = key.find(".");
 
   if (dot != string::npos)
   {
@@ -111,7 +111,7 @@ bool ConfigParser::hasKey(const string& key)
 
 bool ConfigParser::hasSub(const string& key)
 {
-  int dot = key.find(".");
+  string::size_type dot = key.find(".");
 
   if (dot != string::npos)
   {
@@ -128,7 +128,7 @@ bool ConfigParser::hasSub(const string& key)
 
 ConfigParser& ConfigParser::sub(const string& key)
 {
-  int dot = key.find(".");
+  string::size_type dot = key.find(".");
 
   if (dot != string::npos)
   {
@@ -141,7 +141,7 @@ ConfigParser& ConfigParser::sub(const string& key)
 
 string& ConfigParser::operator[] (const string& key)
 {
-  int dot = key.find(".");
+  string::size_type dot = key.find(".");
 
   if (dot != string::npos)
   {
