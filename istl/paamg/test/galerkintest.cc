@@ -9,6 +9,8 @@
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/istl/paamg/indicescoarsener.hh>
+#include <dune/istl/paamg/galerkin.hh>
+#include <dune/common/propertymap.hh>
 //#include<dune/istl/paamg/aggregates.hh>
 
 enum GridFlag { owner, overlap   };
@@ -284,9 +286,12 @@ void testCoarsenIndices()
   IndexSet coarseIndices;
   RemoteIndices coarseRemote(coarseIndices,coarseIndices, MPI_COMM_WORLD);
 
+  typename Dune::PropertyMapTypeSelector<Dune::Amg::VertexVisitedTag,PropertiesGraph>::Type visitedMap = Dune::get(Dune::Amg::VertexVisitedTag(), pg);
+
   Dune::Amg::IndicesCoarsener<Dune::EnumItem<GridFlag,overlap>,int,GridFlag,101>::coarsen(indices,
                                                                                           remoteIndices,
                                                                                           pg,
+                                                                                          visitedMap,
                                                                                           aggregatesMap,
                                                                                           coarseIndices,
                                                                                           coarseRemote);
@@ -310,6 +315,22 @@ void testCoarsenIndices()
 
   std::cout<<"Communicated: ";
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
+
+  Dune::Amg::GalerkinProduct productBuilder;
+
+  typedef std::vector<bool> Vector;
+  typedef typename Vector::iterator Iterator;
+  typedef Dune::IteratorPropertyMap<Iterator, Dune::IdentityMap> VisitedMap2;
+
+  Vector visited;
+  visited.reserve(mg.maxVertex());
+  Iterator visitedIterator=visited.begin();
+  VisitedMap2 visitedMap2(visitedIterator, Dune::IdentityMap());
+
+  BCRSMat* coarseMat = productBuilder.build(mat, mg, visitedMap2, indices,
+                                            aggregatesMap,
+                                            Dune::EnumItem<GridFlag,overlap>());
+
 }
 
 

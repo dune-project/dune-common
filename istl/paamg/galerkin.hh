@@ -5,6 +5,7 @@
 #define DUNE_GALERKIN_HH
 
 #include "aggregates.hh"
+#include <dune/common/poolallocator.hh>
 #include <set>
 
 namespace Dune
@@ -33,13 +34,14 @@ namespace Dune
        * @param coarse A reference to a matrix were the resulting coarse martix should
        * be stored
        */
-      template<class M, class G, class I, class A, class Set>
-      M* build(const M& fine, const G& fineGraph, const I& fineIndices, const A aggregates,
+      template<class M, class G, class V, class I, class Set>
+      M* build(const M& fine, G& fineGraph, V& visitedMap, const I& fineIndices,
+               const AggregatesMap<typename G::VertexDescriptor>& aggregates,
                const Set& overlap);
 
 
     private:
-      int* overlapStart_;
+      std::size_t* overlapStart_;
 
       template<class T>
       struct OverlapVertex
@@ -84,7 +86,7 @@ namespace Dune
       /**
        * @brief Visitor for identifying connected aggregates during a breadthFirstSearch.
        */
-      template<class G, class S>
+      template<class G, class S, class V>
       class ConnectedBuilder
       {
       public:
@@ -103,6 +105,11 @@ namespace Dune
         typedef S Set;
 
         /**
+         * @brief The type of the map for marking vertices as visited.
+         */
+        typedef V VisitedMap;
+
+        /**
          * @brief The vertex descriptor of the graph.
          */
         typedef typename Graph::VertexDescriptor Vertex;
@@ -112,7 +119,8 @@ namespace Dune
          * @param aggregates The mapping of the vertices onto the aggregates.
          * @param connected The set to added the connected aggregates to.
          */
-        ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, Graph& graph, Set& connected);
+        ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, Graph& graph,
+                         VisitedMap& visitedMap, Set& connected);
 
         /**
          * @brief Process an edge pointing to another aggregate.
@@ -127,6 +135,11 @@ namespace Dune
         const AggregatesMap<Vertex>& aggregates_;
 
         Graph& graph_;
+
+        /**
+         * @brief The map for marking vertices as visited.
+         */
+        VisitedMap& visitedMap_;
 
         /**
          * @brief The set to add the connected vertices to.
@@ -152,68 +165,166 @@ namespace Dune
          const A& aggregates, const typename G::VertexDescriptor& seed,
          const C& overlap);
        */
-      template<class S, class G>
-      void constructOverlapConnectivity(S& connected, const G& graph,
+      template<class S, class G, class V>
+      void constructOverlapConnectivity(S& connected, G& graph, V& visitedMap,
                                         const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-                                        const OverlapVertex<typename G::VertexDescriptor>* seed);
+                                        const OverlapVertex<typename G::VertexDescriptor>* seed) const;
 
       /**
        * @brief Construct the connectivity of an aggregate in the overlap.
        */
-      template<class S, class G>
-      void constructConnectivity(S& connected, const G& graph,
+      template<class S, class G, class V>
+      void constructConnectivity(S& connected, G& graph, V& visitedMap,
                                  const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-                                 const typename G::VertexDescriptor& seed);
+                                 const typename G::VertexDescriptor& seed) const;
+
+      /**
+       * @brief Functor for counting the nonzeros and unknowns using examineConnectivity.
+       */
+      template<class Set>
+      class NonZeroCounter
+      {
+      public:
+        /** @brief Constructor. */
+        NonZeroCounter();
+
+        /**
+         * @brief Count the connected vertices and update.
+         * @param connected The set of connected vertices.
+         */
+        void operator()(const Set& connect);
+
+        /** @brief Get the number of unknowns and nonzeros.*/
+        const std::pair<int,int>& getUnknownsNonZeros();
+
+      private:
+        /** @brief Pair of the number of unknowns and the number of nonzeros. */
+        std::pair<int,int> unknownsNonZeros_;
+      };
+
+      /**
+       * @brief Functor for building the sparsity pattern of the matrix
+       * using examineConnectivity.
+       */
+      template<class Set, class M>
+      class SparsityBuilder
+      {
+      public:
+        /**
+         * @brief Constructor.
+         * @param matrix The matrix whose sparsity pattern we
+         * should set up.
+         */
+        SparsityBuilder(M& matrix);
+
+        /**
+         * @brief Examine the connected vertices and set up the sparsity of
+         * the current row.
+         * @param connected The set of connected vertices.
+         */
+        void operator()(const Set& connected);
+
+      private:
+        /** @brief Create iterator for the current row. */
+        typename M::CreateIterator row_;
+      };
+
+      /**
+       * @brief Examine all connected aggregates.
+       * @param connected Set to store the connected vertices in.
+       * @param graph The fine level matrix graph.
+       * @param visitedMap The map for marking the vertices as visited.
+       * @param indices The fine level indices.
+       * @param overlap The set of flags identifying the overlap vertices.
+       * @param overlapVertices helper array for efficient building of overlap aggregates.
+       * @param func A functor to examine all connected aggregates of an aggregate.
+       */
+      template<class S, class G, class V, class I, class Set, class Functor>
+      void examineConnectivity(S& connected, G& graph, V& visitedMap, const I& indices,
+                               const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+                               const Set& overlap,
+                               const OverlapVertex<typename G::VertexDescriptor>* overlapVertices,
+                               Functor& func) const;
 
       /**
        * @brief Count the number of nonzero blocks of the coarse matrix.
+       * @param connected Set to store the connected vertices in.
+       * @param graph The fine level matrix graph.
+       * @param visitedMap The map for marking the vertices as visited.
+       * @param indices The fine level indices.
+       * @param overlap The set of flags identifying the overlap vertices.
+       * @param overlapVertices helper array for efficient building of overlap aggregates.
        */
-      template<class S, class G, class I, class Set>
-      int countNonZeros(S& connected, const G& graph, const I& indices,
-                        const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-                        const Set& overlap,
-                        const OverlapVertex<typename G::VertexDescriptor> overlapVertices);
+      template<class S, class G, class V, class I, class Set>
+      std::pair<int,int> countNonZeros(S& connected, G& graph, V& visitedMap, const I& indices,
+                                       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+                                       const Set& overlap,
+                                       const OverlapVertex<typename G::VertexDescriptor>* overlapVertices) const;
+
+      /**
+       * @brief Initialize the sparsity patteren from the aggregates.
+       * @param connected Set to store the connected vertices in.
+       * @param graph The fine level matrix graph.
+       * @param visitedMap The map for marking the vertices as visited.
+       * @param indices The fine level indices.
+       * @param coarseMatrix The coarse matrix.
+       * @param overlap The set of flags identifying the overlap vertices.
+       * @param overlapVertices helper array for efficient building of overlap aggregates.
+       */
+      template<class S, class G, class V, class I, class M, class Set>
+      void setupSparsityPattern(S& connected, G& graph, V& visitedMap, const I& indices,
+                                const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+                                M& coarseMatrix,
+                                const Set& overlap,
+                                const OverlapVertex<typename G::VertexDescriptor>* overlapVertices) const;
     };
 
-    template<class S, class G>
-    void GalerkinProduct::constructConnectivity(S& connected, const G& graph,
+    template<class S, class G, class V>
+    void GalerkinProduct::constructConnectivity(S& connected, G& graph, V& visitedMap,
                                                 const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-                                                const typename G::VertexDescriptor& seed)
+                                                const typename G::VertexDescriptor& seed) const
     {
       connected.insert(aggregates[seed]);
-      ConnectedBuilder<G,S> conBuilder(aggregates, connected);
-      aggregates.breadthFirstSearch(seed,aggregates[seed],graph, conBuilder);
+      ConnectedBuilder<G,S,V> conBuilder(aggregates, graph, visitedMap, connected);
+      typedef typename G::VertexDescriptor Vertex;
+      typedef PoolAllocator<Vertex,100*sizeof(int)> Allocator;
+      typedef SLList<Vertex,Allocator> VertexList;
+      typedef typename AggregatesMap<Vertex>::DummyEdgeVisitor DummyVisitor;
+      VertexList vlist;
+      DummyVisitor dummy;
+      aggregates.template breadthFirstSearch<true,false>(seed,aggregates[seed], graph, vlist, dummy,
+                                                         conBuilder, visitedMap);
     }
 
-    template<class S, class G>
-    void GalerkinProduct::constructOverlapConnectivity(S& connected, const G& graph,
+    template<class S, class G, class V>
+    void GalerkinProduct::constructOverlapConnectivity(S& connected, G& graph, V& visitedMap,
                                                        const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-                                                       const OverlapVertex<typename G::VertexDescriptor>* seed)
+                                                       const OverlapVertex<typename G::VertexDescriptor>* seed) const
     {
-      const typename G::VertexDescriptor aggregate=seed.aggregate;
+      const typename G::VertexDescriptor aggregate=seed->aggregate;
       connected.insert(aggregate);
-      ConnectedBuilder<G,S> conBuilder(aggregates, connected);
-      while(aggregate != seed.aggregate) {
+      ConnectedBuilder<G,S,V> conBuilder(aggregates, graph, visitedMap, connected);
+      while(aggregate == seed->aggregate) {
         // Walk over all neighbours and add them to the connected array.
-        visitNeighbours(graph, seed.vertex, conBuilder);
+        visitNeighbours(graph, seed->vertex, conBuilder);
         // Mark vertex as visited
-        graph.getVertexProperties(seed.vertex).setVisited();
+        put(visitedMap, seed->vertex, true);
         ++seed;
       }
     }
 
-    template<class G, class S>
-    GalerkinProduct::ConnectedBuilder<G,S>::ConnectedBuilder(const AggregatesMap<Vertex>& aggregates,
-                                                             Graph& graph, Set& connected)
-      : aggregates_(aggregates), graph_(graph), connected_(connected)
+    template<class G, class S, class V>
+    GalerkinProduct::ConnectedBuilder<G,S,V>::ConnectedBuilder(const AggregatesMap<Vertex>& aggregates,
+                                                               Graph& graph, VisitedMap& visitedMap,
+                                                               Set& connected)
+      : aggregates_(aggregates), graph_(graph), visitedMap_(visitedMap), connected_(connected)
     {}
 
-
-    template<class G, class S>
-    void GalerkinProduct::ConnectedBuilder<G,S>::operator()(const ConstEdgeIterator& edge)
+    template<class G, class S, class V>
+    void GalerkinProduct::ConnectedBuilder<G,S,V>::operator()(const ConstEdgeIterator& edge)
     {
-      graph_.getVertextProperties(edge.target()).setVisited();
-      connected_.put(edge.target());
+      put(visitedMap_, edge.target(), true);
+      connected_.insert(edge.target());
     }
 
     template<class G, class I, class Set>
@@ -228,7 +339,7 @@ namespace Dune
       int overlapCount = 0;
 
       for(ConstIterator pair=fineIndices.begin(); pair != end; ++pair)
-        if(overlap.includes(pair.local().attribute()))
+        if(overlap.contains(pair->local().attribute()))
           ++overlapCount;
 
       // Allocate space
@@ -239,9 +350,9 @@ namespace Dune
       // Initialize them
       overlapCount=0;
       for(ConstIterator pair=fineIndices.begin(); pair != end; ++pair)
-        if(overlap.includes(pair.local().attribute())) {
-          overlapVertices[overlapCount].aggregate = aggregates[pair.local()];
-          overlapVertices[overlapCount].vertex = pair.local();
+        if(overlap.contains(pair->local().attribute())) {
+          overlapVertices[overlapCount].aggregate = aggregates[pair->local()];
+          overlapVertices[overlapCount].vertex = pair->local();
           ++overlapCount;
         }
 
@@ -256,74 +367,141 @@ namespace Dune
 
       for(OverlapVertex<Vertex>* vertex=overlapVertices; vertex != overlapVertices+overlapCount;
           ++vertex, index++) {
-        if(aggregate != vertex.aggregate) {
-          aggregate = vertex.aggregate;
+        if(aggregate != vertex->aggregate) {
+          aggregate = vertex->aggregate;
           index=i;
         }
-        overlapStart_[vertex.vertex]=i;
+        overlapStart_[vertex->vertex]=i;
       }
       return overlapVertices;
     }
 
-    template<class S, class G, class I, class Set>
-    int GalerkinProduct::countNonZeros(S& connected, const G& graph, const I& indices,
-                                       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-                                       const Set& overlap,
-                                       const OverlapVertex<typename G::VertexDescriptor> overlapVertices)
+    template<class S, class G, class V, class I, class Set, class Functor>
+    void GalerkinProduct::examineConnectivity(S& connected, G& graph, V& visitedMap, const I& indices,
+                                              const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+                                              const Set& overlap,
+                                              const OverlapVertex<typename G::VertexDescriptor>* overlapVertices,
+                                              Functor& func) const
     {
+
+      // Reset visited flags
+      // Reset the visited flags of all vertices.
+      typedef typename G::VertexIterator Vertex;
+      Vertex vend = graph.end();
+      for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
+        put(visitedMap, *vertex, false);
+
       typedef typename I::const_iterator IndexIterator;
       const IndexIterator end = indices.end();
-      int nonzeros = 0;
-      int unknowns = 0;
-
       for(IndexIterator index=indices.begin(); index != end; ++index) {
         connected.clear();
-        if(!graph.getVertexProperties(index.local()).isVisited()) {
+        if(!get(visitedMap, index->local())) {
           // Mark vertex
-          graph.getVertexProperties(index.local()).setVisited();
-          if(overlap.includes(index.local().attribute())) {
-            costructOverlapConnectivity(connected, graph, aggregates, overlapVertices);
-          }else{
-            constructConnectivity(connected, graph, aggregates, index);
+          put(visitedMap, index->local(), true);
+
+          // Skip isolated vertices
+          if(aggregates[index->local()] != AggregatesMap<typename G::VertexDescriptor>::ISOLATED) {
+            if(overlap.contains(index->local().attribute())) {
+              constructOverlapConnectivity(connected, graph, visitedMap, aggregates, overlapVertices);
+            }else{
+              constructConnectivity(connected, graph, visitedMap, aggregates, index->local());
+            }
+            func(connected);
           }
-          nonzeros += connected.size();
-          ++unknowns;
         }
       }
       connected.clear();
-
-      // Reset the visited flags of all vertices.
-      typedef typename G::iterator Vertex;
-      Vertex vend = graph.end();
-      for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
-        vertex.properties().resetVisited();
-      return std::make_pair(unknowns,nonzeros);
     }
 
-    template<class M, class G, class I, class A, class Set>
-    M* GalerkinProduct::build(const M& fine, const G& fineGraph,
-                              const I& fineIndices, const A aggregates,
+    template<class Set>
+    GalerkinProduct::NonZeroCounter<Set>::NonZeroCounter()
+      : unknownsNonZeros_(std::make_pair(0,0))
+    {}
+
+    template<class Set>
+    void GalerkinProduct::NonZeroCounter<Set>::operator()(const Set& connected)
+    {
+      ++unknownsNonZeros_.first;
+      unknownsNonZeros_.second+=connected.size();
+    }
+    template<class Set>
+    const std::pair<int, int>& GalerkinProduct::NonZeroCounter<Set>::getUnknownsNonZeros()
+    {
+      return unknownsNonZeros_;
+    }
+
+    template<class Set, class M>
+    GalerkinProduct::SparsityBuilder<Set,M>::SparsityBuilder(M& matrix)
+      : row_(matrix.createbegin())
+    {}
+
+    template<class Set, class M>
+    void GalerkinProduct::SparsityBuilder<Set,M>::operator()(const Set& connected)
+    {
+      typedef typename Set::const_iterator Iterator;
+      Iterator end = connected.end();
+      for(Iterator entry = connected.begin(); entry != end; ++entry)
+        row_.insert(*entry);
+      ++row_;
+    }
+
+    template<class S, class G, class V, class I, class Set>
+    std::pair<int,int>
+    GalerkinProduct::countNonZeros(S& connected, G& graph, V& visitedMap,
+                                   const I& indices,
+                                   const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+                                   const Set& overlap,
+                                   const OverlapVertex<typename G::VertexDescriptor>* overlapVertices)
+    const
+    {
+
+      NonZeroCounter<S> counter;
+      examineConnectivity(connected, graph, visitedMap, indices, aggregates, overlap, overlapVertices, counter);
+      return counter.getUnknownsNonZeros();
+    }
+
+    template<class M, class G, class V, class I, class Set>
+    M* GalerkinProduct::build(const M& fine, G& fineGraph, V& visitedMap,
+                              const I& fineIndices,
+                              const AggregatesMap<typename G::VertexDescriptor>& aggregates,
                               const Set& overlap)
     {
 
       typedef OverlapVertex<typename G::VertexDescriptor> OverlapVertex;
       std::set<typename G::VertexDescriptor> connected;
-      OverlapVertex* overlapVertices = buildOverlapVertices(fineGraph,
-                                                            fineIndices,
-                                                            aggregates,
-                                                            overlap);
-      int nonZeros, unknowns;
-      std::pair<int&,int&> res(nonZeros,unknowns);
+      const OverlapVertex* overlapVertices = buildOverlapVertices(fineGraph,
+                                                                  fineIndices,
+                                                                  aggregates,
+                                                                  overlap);
+      std::pair<int,int> res = countNonZeros(connected,
+                                             fineGraph,
+                                             visitedMap,
+                                             fineIndices,
+                                             aggregates,
+                                             overlap,
+                                             overlapVertices);
 
-      res = countNonZeros(connected,
-                          fineGraph,
-                          fineIndices,
-                          aggregates,
-                          overlap,
-                          overlapVertices);
-      M* coarseMatrix = new M(unknowns, unknowns, nonZeros, M::row_wise);
+      M* coarseMatrix = new M(res.first, res.first, res.second, M::row_wise);
+
+      setupSparsityPattern(connected, fineGraph, visitedMap, fineIndices, aggregates,
+                           *coarseMatrix, overlap, overlapVertices);
+
+      //calculate(fine, aggregates, *coarse, overlap);
 
       return coarseMatrix;
+    }
+
+    template<class S, class G, class V, class I, class M, class Set>
+    void
+    GalerkinProduct::setupSparsityPattern(S& connected, G& graph, V& visitedMap, const I& indices,
+                                          const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+                                          M& coarseMatrix, const Set& overlap,
+                                          const OverlapVertex<typename G::VertexDescriptor>* overlapVertices)
+    const
+    {
+      SparsityBuilder<S,M> sparsityBuilder(coarseMatrix);
+      examineConnectivity(connected, graph, visitedMap, indices, aggregates, overlap, overlapVertices,
+                          sparsityBuilder);
     }
 
   } // namespace Amg

@@ -9,6 +9,9 @@
 #include <iostream>
 
 #include "graph.hh"
+#include "properties.hh"
+#include "dune/common/propertymap.hh"
+
 
 namespace Dune
 {
@@ -43,6 +46,13 @@ namespace Dune
     public:
       /** @brief Constructor. */
       EdgeProperties();
+
+      /** @brief Access the bits directly */
+      std::bitset<SIZE>::reference operator[](std::size_t v);
+
+      /** @brief Acess the bits directly */
+      bool operator[](std::size_t v) const;
+
       /**
        * @brief Checks wether the vertex the edge points to depends on
        * the vertex the edge starts.
@@ -124,6 +134,12 @@ namespace Dune
       /** @brief Constructor. */
       VertexProperties();
 
+      /** @brief Access the bits directly */
+      std::bitset<SIZE>::reference operator[](std::size_t v);
+
+      /** @brief Acess the bits directly */
+      bool operator[](std::size_t v) const;
+
       /**
        * @brief Marks that node as being isolated.
        *
@@ -195,6 +211,87 @@ namespace Dune
 
     };
 
+    template<typename G, std::size_t i>
+    class PropertyGraphVertexPropertyMap
+      : public RAPropertyMapHelper<typename std::bitset<VertexProperties::SIZE>::reference,
+            PropertyGraphVertexPropertyMap<G,i> >
+    {
+    public:
+      enum {
+        /** @brief the index to access in the bitset. */
+        index = i
+      };
+
+      /**
+       * @brief The type of the graph with internal properties.
+       */
+      typedef G Graph;
+
+      /**
+       * @brief The type of the bitset.
+       */
+      typedef std::bitset<VertexProperties::SIZE> BitSet;
+
+      /**
+       * @brief The reference type.
+       */
+      typedef typename BitSet::reference Reference;
+
+      /**
+       * @brief The value type.
+       */
+      typedef bool ValueType;
+
+      /**
+       * @brief The vertex descriptor.
+       */
+      typedef typename G::VertexDescriptor Vertex;
+
+      /**
+       * @brief Constructor.
+       * @param g The graph whose properties we access.
+       */
+      PropertyGraphVertexPropertyMap(G& g)
+        : graph_(&g)
+      {}
+
+      /**
+       * @brief Default constructor.
+       */
+      PropertyGraphVertexPropertyMap()
+        : graph_(0)
+      {}
+
+
+      /**
+       * @brief Get the properties associated to a vertex.
+       * @param vertex The vertex whose Properties we want.
+       */
+      Reference operator[](const Vertex& vertex) const
+      {
+        return graph_->getVertexProperties(vertex)[index];
+      }
+    private:
+      Graph* graph_;
+    };
+
+  } // end namespace Amg
+
+  template<typename G, typename EP>
+  struct PropertyMapTypeSelector<Amg::VertexVisitedTag,Amg::PropertiesGraph<G,Amg::VertexProperties,EP> >
+  {
+    typedef Amg::PropertyGraphVertexPropertyMap<Amg::PropertiesGraph<G,Amg::VertexProperties,EP>, Amg::VertexProperties::VISITED> Type;
+  };
+
+  template<typename G, typename EP>
+  typename PropertyMapTypeSelector<Amg::VertexVisitedTag,Amg::PropertiesGraph<G,Amg::VertexProperties,EP> >::Type
+  get(const Amg::VertexVisitedTag& tag, Amg::PropertiesGraph<G,Amg::VertexProperties,EP>& graph)
+  {
+    return Amg::PropertyGraphVertexPropertyMap<Amg::PropertiesGraph<G,Amg::VertexProperties,EP>, Amg::VertexProperties::VISITED>(graph);
+  }
+
+  namespace Amg
+  {
     inline std::ostream& operator<<(std::ostream& os, const EdgeProperties& props)
     {
       return os << props.flags_;
@@ -203,6 +300,17 @@ namespace Dune
     EdgeProperties::EdgeProperties()
       : flags_(0)
     {}
+
+    inline std::bitset<EdgeProperties::SIZE>::reference
+    EdgeProperties::operator[](std::size_t v)
+    {
+      return flags_[v];
+    }
+
+    inline bool EdgeProperties::operator[](std::size_t i) const
+    {
+      return flags_[i];
+    }
 
     inline void EdgeProperties::reset()
     {
@@ -272,6 +380,18 @@ namespace Dune
     inline VertexProperties::VertexProperties()
       : flags_(0)
     {}
+
+
+    inline std::bitset<VertexProperties::SIZE>::reference
+    VertexProperties::operator[](std::size_t v)
+    {
+      return flags_[v];
+    }
+
+    inline bool VertexProperties::operator[](std::size_t v) const
+    {
+      return flags_[v];
+    }
 
     inline void VertexProperties::setIsolated()
     {

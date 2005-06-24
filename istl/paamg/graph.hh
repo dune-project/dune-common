@@ -5,8 +5,9 @@
 #define DUNE_AMG_GRAPH_HH
 
 #include <iostream>
-#include <vector>
+#include <cstddef>
 #include <algorithm>
+#include <vector>
 #include <dune/common/typetraits.hh>
 #include <dune/common/iteratorfacades.hh>
 #include <dune/istl/istlexception.hh>
@@ -1222,6 +1223,102 @@ namespace Dune
       std::vector<VertexProperties> vertexProperties_;
       /** @brief The edge properties. */
       std::vector<EdgeProperties> edgeProperties_;
+    };
+
+
+    /**
+     * @brief Wrapper to access the internal edge properties of a graph
+     * via operator[]()
+     */
+    template<typename G>
+    class GraphVertexPropertiesSelector
+    {
+    public:
+      /**
+       * @brief The type of the graph with internal properties.
+       */
+      typedef G Graph;
+      /**
+       * @brief The type of the vertex properties.
+       */
+      typedef typename G::VertexProperties VertexProperties;
+      /**
+       * @brief The vertex descriptor.
+       */
+      typedef typename G::VertexDescriptor Vertex;
+
+      /**
+       * @brief Constructor.
+       * @param g The graph whose properties we access.
+       */
+      GraphVertexPropertiesSelector(G& g)
+        : graph_(g)
+      {}
+      /**
+       * @brief Default constructor.
+       */
+      GraphVertexPropertiesSelector()
+        : graph_(0)
+      {}
+
+
+      /**
+       * @brief Get the properties associated to a vertex.
+       * @param vertex The vertex whose Properties we want.
+       */
+      VertexProperties& operator[](const Vertex& vertex) const
+      {
+        return graph_->getVertexProperties(vertex);
+      }
+    private:
+      Graph* graph_;
+    };
+
+    /**
+     * @brief Wrapper to access the internal vertex properties of a graph
+     * via operator[]()
+     */
+    template<typename G>
+    class GraphEdgePropertiesSelector
+    {
+    public:
+      /**
+       * @brief The type of the graph with internal properties.
+       */
+      typedef G Graph;
+      /**
+       * @brief The type of the vertex properties.
+       */
+      typedef typename G::VertexProperties VertexProperties;
+      /**
+       * @brief The vertex descriptor.
+       */
+      typedef typename G::VertexDescriptor Vertex;
+
+      /**
+       * @brief Constructor.
+       * @param g The graph whose properties we access.
+       */
+      GraphEdgePropertiesSelector(G& g)
+        : graph_(g)
+      {}
+      /**
+       * @brief Default constructor.
+       */
+      GraphEdgePropertiesSelector()
+        : graph_(0)
+      {}
+
+      /**
+       * @brief Get the properties associated to a vertex.
+       * @param vertex The vertex whose Properties we want.
+       */
+      VertexProperties& operator[](const Vertex& vertex) const
+      {
+        return graph_->getEdgeProperties(vertex);
+      }
+    private:
+      Graph* graph_;
     };
 
 
