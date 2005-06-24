@@ -1,10 +1,10 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_ALU3DGRID_DATAHANDLE_HH__
-#define __DUNE_ALU3DGRID_DATAHANDLE_HH__
+#ifndef DUNE_ALU3DGRIDDATAHANDLE_HH
+#define DUNE_ALU3DGRIDDATAHANDLE_HH
 
 #include <iostream>
-#include "../alu3dgrid.hh"
+#include "alu3dinclude.hh"
 
 using std::endl;
 using std::cout;
