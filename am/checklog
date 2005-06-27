@@ -37,14 +37,14 @@ check-log-libs-am:
 	$(LOG_SET_OPTIONS); \
 	for lib in $(LTLIBRARIES); do \
 	  $(MAKE) $$lib >& $(LOG_FILE); \
-	  $(LOG_STORE) "lib" "$$lib" "$$path" \
+	  $(LOG_STORE) "lib" "$$lib" "$$path"; \
 	done;
 
 check-log-build-am:
 	$(LOG_SET_OPTIONS); \
 	for target in $(check_PROGRAMS) $(PROGRAMS); do \
 	  $(MAKE) $$target >& $(LOG_FILE); \
-	  $(LOG_STORE) "build" "$$target" "$$path" \
+	  $(LOG_STORE) "build" "$$target" "$$path"; \
 	done;
 
 check-log-test-am:
@@ -79,12 +79,12 @@ check-log-test-am:
 	  else \
 	    LOG "WARNING: SKIP ($$tst)"; \
 	  fi; \
-	  $(LOG_STORE) "run" "$$tst" "$$path" \
+	  $(LOG_STORE) "run" "$$tst" "$$path"; \
 	done;
 
 check-log-dir-am:
 	$(LOG_SET_OPTIONS); \
-	$(LOG_STORE) "dir" "$$dir" "$$ppath" >& /dev/null
+	$(LOG_STORE) "dir" "$$dir" "$$ppath"
 
 check-log-libs-recursive \
 check-log-build-recursive \
