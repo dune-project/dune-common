@@ -1,8 +1,9 @@
 # -*- Makefile -*-
 # $Id$
 
-LOG_STORE = $(PERL) $(top_srcdir)/bin/check-log-store
 LOG_FILE = $(top_srcdir)/check-log.log
+LOG_DIR = $(top_srcdir)/check-log
+LOG_STORE = $(SHELL) $(top_srcdir)/bin/check-log-store $(LOG_FILE) $(LOG_DIR)
 LOG_SET_OPTIONS = \
 	path=$$(test "$(subdir)" = "." && echo "/dune"|| echo "/dune/$(subdir)");\
 	ppath=$$(dirname $$path); \
@@ -30,20 +31,20 @@ check-log-dir: check-log-dir-recursive
 check-log-sources-am:
 	$(LOG_SET_OPTIONS); \
 	$(MAKE) sourcescheck-am >& $(LOG_FILE); \
-	$(LOG_STORE) "sources" "Makefile.am" "$$path" $(LOG_FILE) >& /dev/null;
+	$(LOG_STORE) "sources" "Makefile.am" "$$path"
 
 check-log-libs-am:
 	$(LOG_SET_OPTIONS); \
 	for lib in $(LTLIBRARIES); do \
 	  $(MAKE) $$lib >& $(LOG_FILE); \
-	  $(LOG_STORE) "lib" "$$lib" "$$path" $(LOG_FILE) >& /dev/null; \
+	  $(LOG_STORE) "lib" "$$lib" "$$path" \
 	done;
 
 check-log-build-am:
 	$(LOG_SET_OPTIONS); \
 	for target in $(check_PROGRAMS) $(PROGRAMS); do \
 	  $(MAKE) $$target >& $(LOG_FILE); \
-	  $(LOG_STORE) "build" "$$target" "$$path" $(LOG_FILE) >& /dev/null; \
+	  $(LOG_STORE) "build" "$$target" "$$path" \
 	done;
 
 check-log-test-am:
@@ -78,7 +79,7 @@ check-log-test-am:
 	  else \
 	    LOG "WARNING: SKIP ($$tst)"; \
 	  fi; \
-	  $(LOG_STORE) "run" "$$tst" "$$path" $(LOG_FILE) >& /dev/null; \
+	  $(LOG_STORE) "run" "$$tst" "$$path" \
 	done;
 
 check-log-dir-am:

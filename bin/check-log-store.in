@@ -1,126 +1,39 @@
-#!/usr/bin/perl -w
+#!/bin/sh
 
-use strict;
-use DBI;
-
-#
-# configure settings
-#
-my $host = "@host@";
-my $tag = "@tag@";
-my $revision = "@revision@";
-
-##
-## PARAMS
-##
-my $DB='dbi:Pg:dbname=checklog';
-my $USER='';
-my $PWD='';
-
-my $USAGE = "$0 <mode> <module> <base> [logfile]\n";
-my $mode = shift || die $USAGE;
-my $module = shift || die $USAGE;
-my $path = shift || die $USAGE;
-
-##
-## OPEN DB
-##
+set -e
 
 # DB format
 #
 # <tag> <revision> <host> <mode> <module> <path> <errors> <warnings> <log>
 
-my $dbh = DBI->connect( $DB, $USER, $PWD,
-						{
-							### Don't report errors via warn(  )
-							PrintError => 0,
-							### Do report errors via die(  )
-							RaiseError => 1
-						} 
-                      ) || die "Database connection not made: $DBI::errstr";
+# parameter:
+# $(LOG_FILE) $(LOG_DIR) "build" "$$target" "$$path"
 
-##
-## LOG
-##
-my $errors=0;
-my $warnings=0;
-my $log="";
-if ($mode ne "dir")
-{
-	## parse logfile and count errors and warnings
-	my $logfile=shift || die $USAGE;
-	my $makeerrors=0;
-	open LOG, $logfile || die "Error reading $logfile";
-	while(<LOG>)
-	{
-		$log = $log.$_;
-		$errors++ if (/error/i && ! /^make/);
-		$errors-- if (/no\s+error/i && ! /^make/);
-		$makeerrors++ if (/error/i && /^make/);
-		$errors++ if (/No rule to make target/);
-		$errors++ if (/ld: cannot /);
-		$errors++ if (/link: cannot /);
-		$warnings++ if (/warning/i && ! /^make/);
-	}
-	if ($makeerrors > $errors) {
-		$errors = $makeerrors;
-	}
-	close LOG;
-}
-if ($mode eq "dir")
-{
-	## sum all errors and warings in entries with this newpath as path
-	my $newpath = $path.'/'.$module;
-	$newpath =~ s/\/+/\//g;
-	my $sql = qq{ SELECT errors, warnings FROM results 
-			      WHERE tag = ?
-			      AND revision = ?
-			      AND host = ?
-				  AND path = ? };
-	my $sth = $dbh->prepare( $sql );
-	$sth->bind_param( 1, $tag, DBI::SQL_VARCHAR );
-	$sth->bind_param( 2, $revision, DBI::SQL_VARCHAR );
-	$sth->bind_param( 3, $host, DBI::SQL_VARCHAR );
-	$sth->bind_param( 4, $newpath, DBI::SQL_VARCHAR );
-	$sth->execute();
-	
-	my( $err, $warn );
-	$sth->bind_columns( undef, \$err, \$warn );
-	
-	while( $sth->fetch() ) {
-		$errors += $err;
-		$warnings += $warn;
-		print "$newpath, $err, $warn\n";
-	}
+host="@host@"
+tag="@tag@"
+revision="@revision@"
 
-	$sth->finish();
-}
+logfile="$1"
+logdir="$2"
+mode="$3"
+module="$4"
+path="$5"
 
-##
-## STORE
-##
-my $sql = qq{ INSERT INTO results VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) };
-my $sth = $dbh->prepare( $sql );
+test -d $logdir || mkdir $logdir
 
-eval {
-	$sth->bind_param( 1, $tag, DBI::SQL_VARCHAR );
-	$sth->bind_param( 2, $revision, DBI::SQL_VARCHAR );
-	$sth->bind_param( 3, $host, DBI::SQL_VARCHAR );
-	$sth->bind_param( 4, $mode, DBI::SQL_VARCHAR );
-	$sth->bind_param( 5, $module, DBI::SQL_VARCHAR );
-	$sth->bind_param( 6, $path, DBI::SQL_VARCHAR );
-	$sth->bind_param( 7, $errors, DBI::SQL_INTEGER );
-	$sth->bind_param( 8, $warnings, DBI::SQL_INTEGER );
-	$sth->bind_param( 9, $log, DBI::SQL_VARCHAR );
-	$sth->execute();
-	$dbh->commit();
-};
+storelog=`tempfile -d $logdir`
 
-if($@) {
-    warn "Store failed: $DBI::errstr\n";
-    $dbh->rollback;
-}
+trap "rm -f $storelog" EXIT
 
-$sth->finish();
+if true; then
+	echo "TAG: $tag"
+	echo "REVISION: $revision"
+	echo "HOST: $host"
+	echo "MODE: $mode"
+	echo "MODULE: $module"
+	echo "PATH: $path"
+	echo "LOG:"
+	cat $logfile
+fi > $storelog
 
-$dbh->disconnect();
+trap EXIT
