@@ -13,6 +13,10 @@ my $revision = "@revision@";
 ##
 ## PARAMS
 ##
+my $DB='dbi:Pg:dbname=checklog';
+my $USER='';
+my $PWD='';
+
 my $USAGE = "$0 <mode> <module> <base> [logfile]\n";
 my $mode = shift || die $USAGE;
 my $module = shift || die $USAGE;
@@ -26,9 +30,7 @@ my $path = shift || die $USAGE;
 #
 # <tag> <revision> <host> <mode> <module> <path> <errors> <warnings> <log>
 
-my $dbh = DBI->connect( 'dbi:CSV:f_dir=/afs/iwr/home/christi/.allread/check-log/',
-                        'dune',
-                        'dunepwd',
+my $dbh = DBI->connect( $DB, $USER, $PWD,
 						{
 							### Don't report errors via warn(  )
 							PrintError => 0,
@@ -76,10 +78,10 @@ if ($mode eq "dir")
 			      AND host = ?
 				  AND path = ? };
 	my $sth = $dbh->prepare( $sql );
-	$sth->bind_param( 1, $tag, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 2, $revision, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 3, $host, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 4, $newpath, q{ TYPE => SQL_VARCHAR } );
+	$sth->bind_param( 1, $tag, DBI:: SQL_VARCHAR );
+	$sth->bind_param( 2, $revision, DBI::SQL_VARCHAR );
+	$sth->bind_param( 3, $host, DBI::SQL_VARCHAR );
+	$sth->bind_param( 4, $newpath, DBI::SQL_VARCHAR );
 	$sth->execute();
 	
 	my( $err, $warn );
@@ -101,15 +103,15 @@ my $sql = qq{ INSERT INTO results VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) };
 my $sth = $dbh->prepare( $sql );
 
 eval {
-	$sth->bind_param( 1, $tag, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 2, $revision, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 3, $host, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 4, $mode, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 5, $module, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 6, $path, q{ TYPE => SQL_VARCHAR } );
-	$sth->bind_param( 7, $errors, q{ TYPE => SQL_INTEGER } );
-	$sth->bind_param( 8, $warnings, q{ TYPE => SQL_INTEGER } );
-	$sth->bind_param( 9, $log, q{ TYPE => SQL_LONGVARCHAR } );
+	$sth->bind_param( 1, $tag, DBI::SQL_VARCHAR );
+	$sth->bind_param( 2, $revision, DBI::SQL_VARCHAR );
+	$sth->bind_param( 3, $host, DBI::SQL_VARCHAR );
+	$sth->bind_param( 4, $mode, DBI::SQL_VARCHAR );
+	$sth->bind_param( 5, $module, DBI::SQL_VARCHAR );
+	$sth->bind_param( 6, $path, DBI::SQL_VARCHAR );
+	$sth->bind_param( 7, $errors, DBI::SQL_INTEGER );
+	$sth->bind_param( 8, $warnings, DBI::SQL_INTEGER );
+	$sth->bind_param( 9, $log, DBI::SQL_VARCHAR );
 	$sth->execute();
 	$dbh->commit();
 };

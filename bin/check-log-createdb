@@ -9,9 +9,11 @@
 use strict;
 use DBI;
 
-my $dbh = DBI->connect( 'dbi:CSV:f_dir=/afs/iwr/home/christi/.allread/check-log/',
-                        'dune',
-                        'dunepwd',
+my $DB='dbi:Pg:dbname=checklog';
+my $USER='';
+my $PWD='';
+
+my $dbh = DBI->connect( $DB, $USER, $PWD,
 						{
 							### Don't report errors via warn(  )
 							PrintError => 0,
