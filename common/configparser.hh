@@ -10,17 +10,17 @@
 
 namespace Dune {
 
-  /** \brief Parser for hierarchical config files
+  /** \brief Parser for hierarchical configuration files
    * \ingroup Common
    *
-   * This class parses config files into a hierachical structure.
+   * This class parses config files into a hierarchical structure.
    * Config files should look like this
    *
      \verbatim
-   # this file configure fruit colors in fruitsalad
+   # this file configures fruit colors in fruitsalad
 
 
-   ##these are no fruit but could also apper in fruit salad
+   ##these are no fruit but could also appear in fruit salad
      honeydewmelon = yellow
      watermelon = green
 
@@ -36,7 +36,7 @@ namespace Dune {
 
      [fruit.stonefruit]
      cherry = red
-     plup = purple
+     plum = purple
 
      \endverbatim
    *
@@ -50,7 +50,7 @@ namespace Dune {
      fruit.stonefruit.cherry = red
      \endverbatim
    *
-   * All keys with a commen 'prefix.' belong to the same substructre called 'prefix'.
+   * All keys with a common 'prefix.' belong to the same substructure called 'prefix'.
    *
    */
   class ConfigParser
