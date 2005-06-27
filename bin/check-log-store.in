@@ -78,7 +78,7 @@ if ($mode eq "dir")
 			      AND host = ?
 				  AND path = ? };
 	my $sth = $dbh->prepare( $sql );
-	$sth->bind_param( 1, $tag, DBI:: SQL_VARCHAR );
+	$sth->bind_param( 1, $tag, DBI::SQL_VARCHAR );
 	$sth->bind_param( 2, $revision, DBI::SQL_VARCHAR );
 	$sth->bind_param( 3, $host, DBI::SQL_VARCHAR );
 	$sth->bind_param( 4, $newpath, DBI::SQL_VARCHAR );
