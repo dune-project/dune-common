@@ -22,6 +22,4 @@ with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
 <li><a href="buildsystem.html">Understanding the build system</a>
 <li><a href="devel/portability.html">Some notes on writing
 		portable code</a></li>
-<li><a href="devel/const-refactoring.html">Howto adapt your code to the
-		  refactored grid interface</a></li>
 </ul>
