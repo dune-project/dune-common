@@ -26,6 +26,8 @@ namespace Dune {
   template<int cd, class GridImp >
   class ALU3dGridEntityPointer;
   template<int mydim, int coorddim, class GridImp>
+  class ALU3dGridMakeableGeometry;
+  template<int mydim, int coorddim, class GridImp>
   class ALU3dGridGeometry;
   template<class GridImp>
   class ALU3dGridBoundaryEntity;
