@@ -96,13 +96,13 @@ namespace Dune {
       , levelIndexVec_(MAXL) , leafIndexSet_(0)
   {
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
-    DUNE_THROW(ALU3dGridError,"Do not use copy constructor of ALU3dGrid! \n");
+    DUNE_THROW(GridError,"Do not use copy constructor of ALU3dGrid! \n");
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline ALU3dGrid<dim, dimworld, elType> & ALU3dGrid<dim, dimworld, elType>::operator = (const ALU3dGrid<dim, dimworld, elType> & g)
   {
-    DUNE_THROW(ALU3dGridError,"Do not use assignment operator of ALU3dGrid! \n");
+    DUNE_THROW(GridError,"Do not use assignment operator of ALU3dGrid! \n");
     return (*this);
   }
 
@@ -185,7 +185,7 @@ namespace Dune {
   ALU3dGrid<dim, dimworld, elType>::levelIndexSet( int level ) const
   {
     if( (level < 0) && (level >= MAXL) )
-      DUNE_THROW(ALU3dGridError,"Only " << MAXL << "levels allowed for this grid!\n");
+      DUNE_THROW(GridError,"Only " << MAXL << "levels allowed for this grid!\n");
 
     if( levelIndexVec_[level] == 0 )
       levelIndexVec_[level] = new LevelIndexSetType ( *this , level );
@@ -328,8 +328,10 @@ namespace Dune {
       EntityImp f ( *this, this->maxlevel() );
       EntityImp s ( *this, this->maxlevel() );
 
-      ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>, EntityImp, LeafIndexSetType,
+      ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>,
+          EntityImp, LeafIndexSetType, LeafIndexSetType >
       rp(*this,f,s, *leafIndexSet_  ,*leafIndexSet_);
+
       ref = myGrid().duneAdapt(rp); // adapt grid
       leafIndexSet_->compress();
     }
@@ -622,7 +624,7 @@ namespace Dune {
       { //check if file exists
         std::ifstream check ( macroName );
         if( !check )
-          DUNE_THROW(ALU3dGridError,"cannot read file " << macroName << "\n");
+          DUNE_THROW(GridError,"cannot read file " << macroName << "\n");
         check.close();
       }
 
