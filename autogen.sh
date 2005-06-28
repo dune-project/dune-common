@@ -81,21 +81,21 @@ fi
 echo "--> libtoolize..."
 # this script won't rewrite the files if they already exist. This is a
 # PITA when you want to upgrade libtool, thus I'm setting --force
-#libtoolize --force
+libtoolize --force
 
 # prepare everything
 echo "--> aclocal..."
-#aclocal$AMVERS -I m4
+aclocal$AMVERS -I m4
 
 # applications should provide a config.h for now
 echo "--> autoheader..."
-#autoheader
+autoheader
 
 echo "--> automake..."
-#automake$AMVERS --add-missing
+automake$AMVERS --add-missing
 
 echo "--> autoconf..."
-#autoconf
+autoconf
 
 #### start configure with special environment
 
