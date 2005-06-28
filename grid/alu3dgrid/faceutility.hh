@@ -62,6 +62,10 @@ namespace Dune {
     //! Lies the face on an internal boundary
     bool internalBoundary() const;
 
+    //! is the neighbour element a ghost elemenet or a ghost face
+    //! ic case of face true is returned
+    bool isGhostBnd () const;
+
     //! Returns the ALU3dGrid face
     const GEOFaceType& face() const;
     //! Returns the inner element at that face
@@ -99,6 +103,10 @@ namespace Dune {
 
     int innerFaceNumber_;
     int outerFaceNumber_;
+
+    bool isBoundary_;
+    bool internalBnd_;
+    bool isGhostBnd_;
   };
 
   template <class GridImp>
@@ -106,14 +114,13 @@ namespace Dune {
   private:
     //- private typedefs
     typedef GridImp GridType;
-    typedef typename ALU3dImplTraits<GridImp::elementType> ImplTraitsType;
-    typedef GridType::template codim<0>::Geometry ElementGeometryType;
+    typedef ALU3dImplTraits<GridImp::elementType> ImplTraitsType;
+    typedef typename GridType::template codim<0>::Geometry ElementGeometryType;
     typedef ElementTopologyMapping<GridImp::elementType> ElementTopo;
     typedef FaceTopologyMapping<GridImp::elementType> FaceTopo;
     typedef NonConformingFaceMapping<GridImp::elementType> NonConformingMappingType;
-    typedef SelectType<
-        SameType<Int2Type<tetra>,
-            Int2Type<GridImp::elementType> >::value,
+    typedef typename SelectType<
+        SameType<Int2Type<tetra>,Int2Type<GridImp::elementType> >::value,
         ALU3DSPACE LinearSurfaceMapping,
         BilinearSurfaceMapping
         >::Type SurfaceMappingType;
@@ -124,15 +131,15 @@ namespace Dune {
              EntityCount<GridImp::elementType>::numVerticesPerFace };
   public:
     //- public typedefs
-    typedef typename FieldVector<alu3d_ctype, 3> NormalType;
-    typedef typename FieldMatrix<alu3d_ctype,
+    typedef FieldVector<alu3d_ctype, 3> NormalType;
+    typedef FieldMatrix<alu3d_ctype,
         numVerticesPerFace,
         dimworld> CoordinateType;
-    typedef GridType::template codim<1>::Geometry FaceGeometryType;
+    typedef typename GridType::template codim<1>::Geometry FaceGeometryType;
     typedef ALU3dGridMakeableGeometry<2, 3, GridImp> FaceGeometryImp;
 
   public:
-    typedef typename ALU3dGridFaceInfo<GridImp::elementType> ConnectorType;
+    typedef ALU3dGridFaceInfo<GridImp::elementType> ConnectorType;
 
     //- constructors and destructors
     ALU3dGridFaceGeometryInfo(const ConnectorType& ctor,
