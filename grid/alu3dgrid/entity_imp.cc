@@ -150,6 +150,7 @@ namespace Dune {
       , walkLevel_ (wLevel)
       , glIndex_(-1), level_(-1)
       , geoInFather_ (false)
+      , isLeaf_ (false)
   {}
 
   template<int dim, class GridImp>
@@ -173,6 +174,7 @@ namespace Dune {
     walkLevel_     = walkLevel;
     glIndex_    = -1;
     level_      = -1;
+    isLeaf_     = false;
   }
 
   // works like assignment
@@ -188,6 +190,7 @@ namespace Dune {
     level_         = org.level_;
     walkLevel_     = org.walkLevel_;
     glIndex_       = org.glIndex_;
+    isLeaf_        = org.isLeaf_;
   }
 
   template<int dim, class GridImp>
@@ -201,6 +204,7 @@ namespace Dune {
     index_   = -1;
     level_   = (*item_).level();
     glIndex_ = (*item_).getIndex();
+    isLeaf_  = ((*item_).down() == 0);
   }
 
   template<int dim, class GridImp>
@@ -214,6 +218,17 @@ namespace Dune {
     index_   = -1;
     level_   = (*item_).level();
     glIndex_ = (*item_).getIndex();
+
+    // check wether ghost is leaf or not, ghost leaf means
+    // that this is the ghost that we want in the leaf iterator
+    // not necessarily is real leaf element
+    // see Intersection Iterator, same story
+    if(!(*item_).down()) isLeaf_ = true;
+    else
+    {
+      if(item_->down()->ghostLevel() == level_) isLeaf_ = true;
+      else isLeaf_ = false;
+    }
   }
 
   template<int dim, class GridImp>
@@ -228,6 +243,17 @@ namespace Dune {
     glIndex_ = ghost_->getIndex();
     level_   = ghost_->level();
     builtgeometry_ = false;
+
+    // check wether ghost is leaf or not, ghost leaf means
+    // that this is the ghost that we want in the leaf iterator
+    // not necessarily is real leaf element
+    // see Intersection Iterator, same story
+    if(!ghost.down()) isLeaf_ = true;
+    else
+    {
+      if(ghost.down()->ghostLevel() == ghost.level()) isLeaf_ = true;
+      else isLeaf_ = false;
+    }
   }
 
   template<int dim, class GridImp>
@@ -422,8 +448,7 @@ namespace Dune {
   template<int dim, class GridImp>
   inline bool ALU3dGridEntity<0,dim,GridImp> :: isLeaf() const
   {
-    assert(item_ != 0);
-    return (item_->down() == 0);
+    return isLeaf_;
   }
   template<int dim, class GridImp>
   inline ALU3dGridHierarchicIterator<GridImp> ALU3dGridEntity<0,dim,GridImp> :: hbegin (int maxlevel) const
@@ -507,17 +532,22 @@ namespace Dune {
   template<int dim, class GridImp>
   inline AdaptationState ALU3dGridEntity<0,dim,GridImp> :: state () const
   {
-    assert(item_ != 0);
-    if((*item_).requestrule() == coarse_element_t)
+    assert((item_ != 0) || (ghost_ != 0));
+    if(item_)
     {
-      return COARSEN;
-    }
+      if((*item_).requestrule() == coarse_element_t)
+      {
+        return COARSEN;
+      }
 
-    if(item_->hasBeenRefined())
-    {
-      return REFINED;
-    }
+      if(item_->hasBeenRefined())
+      {
+        return REFINED;
+      }
 
+      return NONE;
+    }
+    // is case of ghosts return none, because they are not considered
     return NONE;
   }
 

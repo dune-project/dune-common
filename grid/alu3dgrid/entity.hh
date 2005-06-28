@@ -382,6 +382,9 @@ namespace Dune {
     int level_;  //!< level of element
 
     mutable GeometryImp geoInFather_;
+
+    // is true if entity is leaf entity
+    bool isLeaf_;
   }; // end of ALU3dGridEntity codim = 0
 
   //**********************************************************************
