@@ -1834,13 +1834,13 @@ namespace Dune
     inline const typename SubGraph<G,T>::EdgeDescriptor& SubGraph<G,T>::findEdge(const VertexDescriptor & source,
                                                                                  const VertexDescriptor & target) const
     {
-      const EdgeDescriptor* edge = std::lower_bound(edges_+start_[source], edges_+end_[source], target);
+      const VertexDescriptor* edge = std::lower_bound(edges_+start_[source], edges_+end_[source], target);
 #ifdef DUNE_ISTL_WITH_CHECKING
       if(edge==edges_+end_[source] || *edge!=target)
         DUNE_THROW(ISTLError, "No such edge found!");
 #endif
       assert(*edge<noEdges_);
-      return *edge;
+      return edge-edges_;
     }
 
     template<class G, class T>
