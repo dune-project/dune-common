@@ -39,6 +39,14 @@ namespace Dune
                const AggregatesMap<typename G::VertexDescriptor>& aggregates,
                const Set& overlap);
 
+      /**
+       * @brief Calculate the galerkin product.
+       * @param fine The fine matrix.
+       * @param aggregates The aggregate mapping.
+       * @param coarse The coarse Matric.
+       */
+      template<class M, class V>
+      void calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse);
 
     private:
       std::size_t* overlapStart_;
@@ -142,7 +150,7 @@ namespace Dune
         VisitedMap& visitedMap_;
 
         /**
-         * @brief The set to add the connected vertices to.
+         * @brief The set to add the connected aggregates to.
          */
         Set& connected_;
       };
@@ -206,7 +214,7 @@ namespace Dune
        * @brief Functor for building the sparsity pattern of the matrix
        * using examineConnectivity.
        */
-      template<class Set, class M>
+      template<class Set, class M, class V>
       class SparsityBuilder
       {
       public:
@@ -214,8 +222,9 @@ namespace Dune
          * @brief Constructor.
          * @param matrix The matrix whose sparsity pattern we
          * should set up.
+         * @param aggregates THe mapping of the vertices onto the aggregates.
          */
-        SparsityBuilder(M& matrix);
+        SparsityBuilder(M& matrix, const AggregatesMap<V>& aggregates);
 
         /**
          * @brief Examine the connected vertices and set up the sparsity of
@@ -227,6 +236,9 @@ namespace Dune
       private:
         /** @brief Create iterator for the current row. */
         typename M::CreateIterator row_;
+        /** @brief The aggregates mapping. */
+        const AggregatesMap<V>& aggregates_;
+
       };
 
       /**
@@ -323,8 +335,7 @@ namespace Dune
     template<class G, class S, class V>
     void GalerkinProduct::ConnectedBuilder<G,S,V>::operator()(const ConstEdgeIterator& edge)
     {
-      put(visitedMap_, edge.target(), true);
-      connected_.insert(edge.target());
+      connected_.insert(aggregates_[edge.target()]);
     }
 
     template<class G, class I, class Set>
@@ -383,25 +394,25 @@ namespace Dune
                                               const OverlapVertex<typename G::VertexDescriptor>* overlapVertices,
                                               Functor& func) const
     {
-
-      // Reset visited flags
       // Reset the visited flags of all vertices.
       typedef typename G::VertexIterator Vertex;
       Vertex vend = graph.end();
       for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
         put(visitedMap, *vertex, false);
 
+      for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
+        assert(!get(visitedMap, *vertex));
+
       typedef typename I::const_iterator IndexIterator;
       const IndexIterator end = indices.end();
       for(IndexIterator index=indices.begin(); index != end; ++index) {
         connected.clear();
         if(!get(visitedMap, index->local())) {
-          // Mark vertex
-          put(visitedMap, index->local(), true);
 
           // Skip isolated vertices
           if(aggregates[index->local()] != AggregatesMap<typename G::VertexDescriptor>::ISOLATED) {
             if(overlap.contains(index->local().attribute())) {
+              std::cout<<"Overlap"<<std::endl;
               constructOverlapConnectivity(connected, graph, visitedMap, aggregates, overlapVertices);
             }else{
               constructConnectivity(connected, graph, visitedMap, aggregates, index->local());
@@ -430,18 +441,21 @@ namespace Dune
       return unknownsNonZeros_;
     }
 
-    template<class Set, class M>
-    GalerkinProduct::SparsityBuilder<Set,M>::SparsityBuilder(M& matrix)
-      : row_(matrix.createbegin())
+    template<class Set, class M, class V>
+    GalerkinProduct::SparsityBuilder<Set,M,V>::SparsityBuilder(M& matrix, const AggregatesMap<V>& aggregates)
+      : row_(matrix.createbegin()), aggregates_(aggregates)
     {}
 
-    template<class Set, class M>
-    void GalerkinProduct::SparsityBuilder<Set,M>::operator()(const Set& connected)
+    template<class Set, class M, class V>
+    void GalerkinProduct::SparsityBuilder<Set,M,V>::operator()(const Set& connected)
     {
       typedef typename Set::const_iterator Iterator;
       Iterator end = connected.end();
-      for(Iterator entry = connected.begin(); entry != end; ++entry)
+      for(Iterator entry = connected.begin(); entry != end; ++entry) {
+        int ientry = *entry;
+        int aggregate = aggregates_[*entry];
         row_.insert(*entry);
+      }
       ++row_;
     }
 
@@ -457,6 +471,12 @@ namespace Dune
 
       NonZeroCounter<S> counter;
       examineConnectivity(connected, graph, visitedMap, indices, aggregates, overlap, overlapVertices, counter);
+
+      typedef typename G::VertexIterator Vertex;
+      Vertex vend = graph.end();
+      for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
+        assert(get(visitedMap, *vertex));
+
       return counter.getUnknownsNonZeros();
     }
 
@@ -491,6 +511,35 @@ namespace Dune
       return coarseMatrix;
     }
 
+    template<class M, class V>
+    void GalerkinProduct::calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse)
+    {
+      coarse = static_cast<typename M::field_type>(0);
+
+      typedef typename M::ConstIterator RowIterator;
+      RowIterator endRow = fine.end();
+
+      for(RowIterator row = fine.begin(); row != endRow; ++row)
+        if(aggregates[row.index()] != AggregatesMap<V>::ISOLATED) {
+          //typedef typename RowIterator::Iterator ColIterator;
+          typedef typename M::ConstColIterator ColIterator;
+          ColIterator endCol = row->end();
+
+          for(ColIterator col = row->begin(); col != endCol; ++col)
+            if(aggregates[col.index()] != AggregatesMap<V>::ISOLATED) {
+              coarse[aggregates[row.index()]][aggregates[col.index()]]+=*col;
+            }
+        }
+
+      // Set the dirichlet border
+      //typedef D::ConstIterator DirichletIterator;
+      //DirichletIterator endborder = dirichlet.end();
+
+      std::cerr <<"Process borders should be dirichlet borders"<<std::endl;
+
+    }
+
+
     template<class S, class G, class V, class I, class M, class Set>
     void
     GalerkinProduct::setupSparsityPattern(S& connected, G& graph, V& visitedMap, const I& indices,
@@ -499,7 +548,7 @@ namespace Dune
                                           const OverlapVertex<typename G::VertexDescriptor>* overlapVertices)
     const
     {
-      SparsityBuilder<S,M> sparsityBuilder(coarseMatrix);
+      SparsityBuilder<S,M,typename G::VertexDescriptor> sparsityBuilder(coarseMatrix, aggregates);
       examineConnectivity(connected, graph, visitedMap, indices, aggregates, overlap, overlapVertices,
                           sparsityBuilder);
     }

@@ -320,23 +320,34 @@ void testCoarsenIndices()
 
   typedef std::vector<bool> Vector;
   typedef typename Vector::iterator Iterator;
-  typedef Dune::IteratorPropertyMap<Iterator, Dune::IdentityMap> VisitedMap2;
+  //typedef Dune::IteratorPropertyMap<Iterator, Dune::IdentityMap> VisitedMap2;
+  typedef Dune::IteratorPropertyMap<bool*, Dune::IdentityMap> VisitedMap2;
+  /*
+     Vector visited;
+     visited.reserve(mg.maxVertex());
+     Iterator visitedIterator=visited.begin();
+   */
+  std::cout<<N*N<<"=="<<mg.maxVertex()<<std::endl;
 
-  Vector visited;
-  visited.reserve(mg.maxVertex());
-  Iterator visitedIterator=visited.begin();
+  assert(N*N==mg.maxVertex());
+
+  bool visitedIterator[N*N];
+  for(int i=0; i < mg.maxVertex(); ++i)
+    visitedIterator[i]=false;
+
   VisitedMap2 visitedMap2(visitedIterator, Dune::IdentityMap());
 
   BCRSMat* coarseMat = productBuilder.build(mat, mg, visitedMap2, indices,
                                             aggregatesMap,
                                             Dune::EnumItem<GridFlag,overlap>());
-
+  productBuilder.calculate(mat, aggregatesMap, *coarseMat);
+  Dune::printmatrix(std::cout,*coarseMat,"coarse","row",9,1);
 }
 
 
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
-  testCoarsenIndices<10,1>();
+  testCoarsenIndices<8,1>();
   MPI_Finalize();
 }
