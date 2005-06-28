@@ -322,7 +322,19 @@ namespace Dune {
   inline bool ALU3dGrid<dim, dimworld, elType>::adapt()
   {
 #ifdef _ALU3DGRID_PARALLEL_
-    bool ref = myGrid().dAdapt(); // adapt grid
+    bool ref = false;
+    if(leafIndexSet_)
+    {
+      EntityImp f ( *this, this->maxlevel() );
+      EntityImp s ( *this, this->maxlevel() );
+
+      ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>, EntityImp, LeafIndexSetType,
+      rp(*this,f,s, *leafIndexSet_  ,*leafIndexSet_);
+      ref = myGrid().duneAdapt(rp); // adapt grid
+      leafIndexSet_->compress();
+    }
+    else
+      ref = myGrid().dAdapt(); // adapt grid
 #else
     bool ref = myGrid().adapt(); // adapt grid
 #endif
@@ -365,8 +377,9 @@ namespace Dune {
 
     // guess how many new elements we get
     int newElements = std::max( actChunk , defaultChunk );
-    ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>, EntityImp, COType >
-    rp(*this,f,s,tmprpop);
+    ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>,
+        EntityImp, DofManagerType, COType >
+    rp(*this,f,s,dm,tmprpop);
 
     dm.resizeMem( newElements );
     bool ref = myGrid().duneAdapt(rp); // adapt grid
@@ -384,7 +397,8 @@ namespace Dune {
     // check whether we have balance
     loadBalance(dm);
     dm.dofCompress();
-    communicate(dm);
+
+    //communicate(dm);
 
     postAdapt();
     assert( ((verbose) ? (dverb << "ALU3dGrid :: adapt() new method finished!\n", 1) : 1 ) );
@@ -408,7 +422,7 @@ namespace Dune {
         w->item ().resetRefinedTag();
 
         // note, resetRefinementRequest sets the request to coarsen
-        w->item ().resetRefinementRequest();
+        //w->item ().resetRefinementRequest();
       }
     }
     //#ifdef _ALU3DGRID_PARALLEL_
@@ -438,7 +452,7 @@ namespace Dune {
         w->item ().resetRefinedTag();
 
         // note, resetRefinementRequest sets the request to coarsen
-        w->item ().resetRefinementRequest();
+        //w->item ().resetRefinementRequest();
       }
     }
 #endif
@@ -509,19 +523,40 @@ namespace Dune {
   inline bool ALU3dGrid<dim, dimworld, elType>::loadBalance(DataCollectorType & dc)
   {
 #ifdef _ALU3DGRID_PARALLEL_
-    EntityImp en ( *this, this->maxlevel() );
+    EntityImp en     ( *this, this->maxlevel() );
+    EntityImp father ( *this, this->maxlevel() );
+    EntityImp son    ( *this, this->maxlevel() );
+
+    if(leafIndexSet_)
+    {
+      if( ! dc.checkIndexSetExists( *leafIndexSet_ ))
+      {
+        std::cout << "Add LeafIndexSet to DofManager! \n";
+        dc.addIndexSet( *this , *leafIndexSet_ );
+      }
+    }
 
     ALU3DSPACE GatherScatterImpl< ALU3dGrid<dim, dimworld, elType>, EntityImp, DataCollectorType >
     gs(*this,en,dc);
 
-    bool changed = myGrid().duneLoadBalance(gs);
+    ALU3DSPACE LoadBalanceRestrictProlongImpl < MyType , EntityImp,
+        DataCollectorType > idxop ( *this, father , son , dc );
+
+    int defaultChunk = newElementsChunk_;
+
+    bool changed = myGrid().duneLoadBalance(gs,idxop);
+    int memSize = std::max( idxop.newElements(), defaultChunk );
+    dc.resizeMem( memSize );
 
     if(changed)
     {
       dverb << "Grid was balanced on p = " << myRank() << std::endl;
-      calcMaxlevel();                 // calculate new maxlevel
-      calcExtras();                   // reset size and things
+      calcMaxlevel();               // calculate new maxlevel
+      calcExtras();                 // reset size and things
     }
+
+    // checken, ob wir das hier wirklich brauchen
+    myGrid().duneExchangeData(gs);
     return changed;
 #else
     return false;
@@ -535,7 +570,7 @@ namespace Dune {
 #ifdef _ALU3DGRID_PARALLEL_
     EntityImp en ( *this, this->maxlevel() );
 
-    ALU3DSPACE GatherScatterImpl< ALU3dGrid<dim, dimworld, elType> , EntityImp ,
+    ALU3DSPACE GatherScatterExchange < ALU3dGrid<dim, dimworld, elType> , EntityImp ,
         DataCollectorType > gs(*this,en,dc);
 
     myGrid().duneExchangeData(gs);
