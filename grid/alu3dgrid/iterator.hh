@@ -184,6 +184,14 @@ namespace ALU3dGridSpace {
 
   typedef Dune::PartitionIteratorType PartitionIteratorType;
 
+  // defines the pair of element and boundary
+  template <int codim>
+  struct IteratorElType
+  {
+    typedef typename ALUHElementType<codim>::ElementType ElType;
+    typedef pair < ElType * , HBndSegType * > val_t;
+  };
+
   template <int codim, PartitionIteratorType pitype> class ALU3dGridLeafIteratorWrapper;
   typedef pair <ALUHElementType<0>::ElementType * , HBndSegType * > LeafValType;
   typedef IteratorWrapperInterface<LeafValType> IteratorWrapperInterfaceType;
@@ -193,25 +201,21 @@ namespace ALU3dGridSpace {
   //**********************************************************
   template <PartitionIteratorType pitype>
   class ALU3dGridLeafIteratorWrapper<0,pitype>
-    : public IteratorWrapperInterface< LeafValType >
+    : public IteratorWrapperInterface< typename IteratorElType<0>::val_t >
   {
-    typedef ALUHElementType<0>::ElementType ElType;
+    typedef IteratorElType<0>::ElType ElType;
     typedef Insert < AccessIterator < ElType >::Handle,
         TreeIterator < ElType , leaf_or_has_level < ElType > > > IteratorType;
 
     // the ALU3dGrid Iterator
     IteratorType it_;
 
-    typedef LeafValType val_t;
+    typedef typename IteratorElType<0>::val_t val_t;
     val_t elem_;
   public:
     template <class GridImp>
     ALU3dGridLeafIteratorWrapper (const GridImp & grid, int level)
-      : it_(const_cast<GridImp &> (grid).myGrid().container(),level)
-    {
-      elem_.first  = 0;
-      elem_.second = 0;
-    }
+      : it_(const_cast<GridImp &> (grid).myGrid().container(),level), elem_(0,0) {}
 
     int size  ()    { return it_.size(); }
     void next ()    { it_.next(); }
@@ -224,18 +228,12 @@ namespace ALU3dGridSpace {
     }
   };
 
-  template <int codim>
-  struct IteratorElType
-  {
-    typedef ALUHElementType<codim>::ElementType ElType;
-    typedef pair < ElType * , ElType * > val_t;
-  };
 
   template <PartitionIteratorType pitype>
   class ALU3dGridLeafIteratorWrapper<1,pitype>
     : public IteratorWrapperInterface < typename IteratorElType<1>::val_t >
   {
-    typedef ALUHElementType<1>::ElementType ElType;
+    typedef IteratorElType<1>::ElType ElType;
     typedef Insert < AccessIterator < ElType >::Handle,
         TreeIterator < ElType , leaf_or_has_level < ElType > > > IteratorType;
 
@@ -264,7 +262,7 @@ namespace ALU3dGridSpace {
   class ALU3dGridLeafIteratorWrapper<2,pitype>
     : public IteratorWrapperInterface < typename IteratorElType<2>::val_t >
   {
-    typedef ALUHElementType<2>::ElementType ElType;
+    typedef IteratorElType<2>::ElType ElType;
     typedef Insert < AccessIterator < ElType >::Handle,
         TreeIterator < ElType , leaf_or_has_level < ElType > > > IteratorType;
 
@@ -295,6 +293,9 @@ namespace ALU3dGridSpace {
   {
     typedef LeafIterator < GitterType::vertex_STI > IteratorType;
 
+    // the vertex iterator
+    IteratorType it_;
+
     typedef IteratorElType<3>::val_t val_t;
     val_t elem_;
   public:
@@ -308,7 +309,7 @@ namespace ALU3dGridSpace {
     int done ()     { return it_->done(); }
     val_t & item ()
     {
-      elem_.first  = & it_.item();
+      elem_.first  = & it_->item();
       return elem_;
     }
   };
@@ -421,7 +422,7 @@ namespace ALU3dGridSpace {
       if(!it.done())
       {
         pair < ElementPllXIF_t *, int > p = it.item ().accessPllX ().accessOuterPllX () ;
-        pair < Gitter::helement_STI* , Gitter::hbndseg_STI * > elems;
+        pair < HElementType * , HBndSegType * > elems;
         p.first->getAttachedElement(elems);
 
         assert( elems.first || elems.second );
@@ -437,7 +438,7 @@ namespace ALU3dGridSpace {
       if(!out.done())
       {
         pair < ElementPllXIF_t *, int > p = out.item ().accessPllX ().accessOuterPllX () ;
-        pair < Gitter::helement_STI* , Gitter::hbndseg_STI * > elems;
+        pair < HElementType * , HBndSegType * > elems;
         p.first->getAttachedElement(elems);
 
         assert( elems.second );
@@ -466,7 +467,7 @@ namespace ALU3dGridSpace {
         if(!it_->done())
         {
           val_t & el = item();
-          BNDFace3Type * face = el.second;
+          HBndSegType * face = el.second;
           assert( face );
 
           if( face->leaf() )
@@ -477,7 +478,7 @@ namespace ALU3dGridSpace {
           }
           else
           {
-            BNDFace3Type * dwn = dynamic_cast<BNDFace3Type * > (face->down());
+            HBndSegType * dwn = face->down();
             assert( dwn );
             // if owr child is ok then we go to the children
             if(dwn->ghostLevel() == dwn->level())
@@ -499,16 +500,19 @@ namespace ALU3dGridSpace {
         link_++;
         createIterator();
       }
-
       checkLevel();
       // if we still have iterator
     }
 
-    void first() {
+    void first()
+    {
       link_ = 0;
       createIterator();
-      if(it_) it_->first();
-      checkLevel();
+      if(it_)
+      {
+        it_->first();
+        checkLevel();
+      }
     }
 
     int done ()
@@ -521,10 +525,10 @@ namespace ALU3dGridSpace {
     {
       assert(it_);
       pair < ElementPllXIF_t *, int > p = it_->item ().accessPllX ().accessOuterPllX () ;
-      pair < Gitter::helement_STI* , Gitter::hbndseg_STI * > p2;
+      pair < HElementType  * , HBndSegType * > p2;
       p.first->getAttachedElement(p2);
       assert(p2.second);
-      elem_.second = dynamic_cast< BNDFace3Type * > (p2.second);
+      elem_.second = p2.second;
       return elem_;
     }
   };
@@ -642,19 +646,19 @@ namespace Dune {
     enum { dim       = GridImp::dimension };
     enum { dimworld  = GridImp::dimensionworld };
 
-    typedef typename ALU3dImplTraits<GridImp::elementType> ImplTraits;
+    typedef ALU3dImplTraits<GridImp::elementType> ImplTraits;
     typedef typename ImplTraits::GEOElementType GEOElementType;
     typedef typename ImplTraits::GEOFaceType GEOFaceType;
     typedef typename ImplTraits::NeighbourPairType NeighbourPairType;
     typedef typename ImplTraits::PLLBndFaceType PLLBndFaceType;
     typedef typename ImplTraits::BNDFaceType BNDFaceType;
 
-    typedef typename ALU3dGridFaceInfo<GridImp::elementType> FaceInfoType;
+    typedef ALU3dGridFaceInfo<GridImp::elementType> FaceInfoType;
     typedef typename std::auto_ptr<FaceInfoType> FaceInfoPointer;
 
-    typedef typename ALU3dGridFaceGeometryInfo<GridImp> GeometryInfoType;
-    typedef typename ElementTopologyMapping<GridImp::elementType> ElementTopo;
-    typedef typename FaceTopologyMapping<GridImp::elementType> FaceTopo;
+    typedef ALU3dGridFaceGeometryInfo<GridImp> GeometryInfoType;
+    typedef ElementTopologyMapping<GridImp::elementType> ElementTopo;
+    typedef FaceTopologyMapping<GridImp::elementType> FaceTopo;
 
     enum { numFaces = EntityCount<GridImp::elementType>::numFaces };
     enum { numVerticesPerFace =
