@@ -3,6 +3,7 @@
 #ifndef __DUNE_GRAPEDATAIO_HH__
 #define __DUNE_GRAPEDATAIO_HH__
 
+#include <dune/common/misc.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/io/file/asciiparser.hh>
 
