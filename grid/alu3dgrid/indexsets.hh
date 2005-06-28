@@ -16,6 +16,10 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
 
+  template<int cd, int dim, class GridImp>
+  class ALU3dGridEntity;
+
+
   //! hierarchic index set of ALU3dGrid
   template <int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGridHierarchicIndexSet
@@ -44,6 +48,8 @@ namespace Dune {
       assert(cd == dim);
       const ALU3dGridEntity<0,dim,const GridType> & en = (grid_.template getRealEntity<0>(ep));
       return en.template getSubIndex<cd>(i);
+      //assert(false);
+      //return -1;
     }
 
     //! return size of indexset, i.e. maxindex+1
