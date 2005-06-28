@@ -125,7 +125,7 @@ namespace Dune {
     /** \brief Return reference element corresponding to this element.
      */
     static const Dune::Geometry<mydim,mydim,GridImp,Dune::UGGridGeometry>& refelem () {
-      std::cout << "Calling unimplemented method UGGridGeometry::refelem()" << std::endl;
+      DUNE_THROW(NotImplemented, "Calling unimplemented method UGGridGeometry::refelem()");
     }
 
     /** \brief Maps a local coordinate within reference element to
@@ -137,7 +137,7 @@ namespace Dune {
     FieldVector<UGCtype, mydim> local (const FieldVector<UGCtype, coorddim>& global) const;
 
     //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<UGCtype, coorddim> &local) const;
+    bool checkInside(const FieldVector<UGCtype, mydim> &local) const;
 
     /**
        Integration over a general element is done by integrating over the reference element
@@ -234,8 +234,8 @@ namespace Dune {
 
     //! Returns true if the point is in the current element
     /** \todo Not implemented yet! */
-    bool checkInside(const FieldVector<UGCtype, 3> &local) const {
-      DUNE_THROW(GridError, "UGGridGeometry<2,3>::checkInside() not implemented yet!");
+    bool checkInside(const FieldVector<UGCtype, 2> &local) const {
+      DUNE_THROW(NotImplemented, "UGGridGeometry<2,3>::checkInside() not implemented yet!");
       return true;
     }
 

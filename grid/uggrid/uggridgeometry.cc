@@ -149,7 +149,7 @@ operator [](int i) const
 
 template<int mydim, int coorddim, class GridImp>
 inline bool UGGridGeometry<mydim,coorddim,GridImp>::
-checkInside(const FieldVector<UGCtype, coorddim> &loc) const
+checkInside(const FieldVector<UGCtype, mydim> &loc) const
 {
   switch (mydim) {
 
