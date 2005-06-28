@@ -199,7 +199,7 @@ namespace Dune {
     void calcElMatrix () const;
 
     //! the vertex coordinates
-    mutable FieldMatrix<alu3d_ctype, POWER_M_P<2,mydim>::power, cdim> coord_;
+    mutable FieldMatrix<alu3d_ctype, Power_m_p<2,mydim>::power, cdim> coord_;
 
     //! is true if Jinv_, A and detDF_ is calced
     mutable bool builtinverse_;
@@ -301,7 +301,7 @@ namespace Dune {
 
   private:
     //! the vertex coordinates
-    mutable FieldMatrix<alu3d_ctype, POWER_M_P<2,mydim>::power, cdim> coord_;
+    mutable FieldMatrix<alu3d_ctype, Power_m_p<2,mydim>::power, cdim> coord_;
     //mutable FieldVector<alu3d_ctype, mydim> tmp1_;
     mutable FieldVector<alu3d_ctype, cdim> tmp2_;
 
