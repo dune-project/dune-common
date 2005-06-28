@@ -45,7 +45,7 @@ namespace Dune {
   inline void ALU3dGridIntersectionIterator<GridImp> ::
   first (ALU3DSPACE HElementType & elem, int wLevel)
   {
-    item_  = static_cast<mutable GEOElementType *> (&elem);
+    item_  = static_cast<GEOElementType *> (&elem);
 
     // Get first face
     const GEOFaceType* firstFace = getFace(*item_, index_);
@@ -114,12 +114,7 @@ namespace Dune {
   {
     assert(item_);
 
-#ifdef _ALU3DGRID_PARALLEL_
-    // * need to consider cases on internal boundaries...
-    assert(false);
-#endif
-
-    const GEOFaceType* nextFace;
+    const GEOFaceType * nextFace = 0;
 
     // When neighbour element is refined, try to get the next child on the face
     if (connector_->refinementState() == FaceInfoType::REFINED_OUTER) {
@@ -168,7 +163,16 @@ namespace Dune {
   inline typename ALU3dGridIntersectionIterator<GridImp>::Entity &
   ALU3dGridIntersectionIterator<GridImp>::dereference () const
   {
-    this->entity_->setElement(const_cast<GEOElementType&>(connector_->outerEntity()));
+#ifdef _ALU3DGRID_PARALLEL_
+    if(connector_->isGhostBnd())
+    {
+      this->entity_->setGhost(const_cast<BNDFaceType &>(connector_->boundaryFace()) );
+    }
+    else
+#endif
+    {
+      this->entity_->setElement(const_cast<GEOElementType&>(connector_->outerEntity()));
+    }
     return ALU3dGridEntityPointer<0,GridImp>::dereference();
   }
 
@@ -406,7 +410,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  ALU3dGridIntersectionIterator<GridImp>::NormalType
+  typename ALU3dGridIntersectionIterator<GridImp>::NormalType
   ALU3dGridIntersectionIterator<GridImp>::
   convert2FV(const alu3d_ctype (&p)[3]) const {
     NormalType result;
