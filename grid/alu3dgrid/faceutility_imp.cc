@@ -12,7 +12,10 @@ namespace Dune {
     innerElement_(0),
     outerElement_(0),
     innerFaceNumber_(-1),
-    outerFaceNumber_(-1)
+    outerFaceNumber_(-1),
+    isBoundary_  ( false ),
+    internalBnd_ ( false ),
+    isGhostBnd_  ( false )
   {
     // points face from inner element away?
     if (innerTwist < 0) {
@@ -27,6 +30,24 @@ namespace Dune {
       outerFaceNumber_ = face.nb.rear().second;
     } // end if
 
+    isBoundary_ = outerElement_->isboundary();
+#ifdef _ALU3DGRID_PARALLEL_
+    // check for ghosts
+    // this check is only need in the parallel case
+    if( isBoundary_ )
+    {
+      const BndFaceType * bnd = dynamic_cast<const BndFaceType *> (outerElement_);
+      if(bnd->bndtype() ==  ALU3DSPACE ProcessorBoundary_t)
+      {
+        // NOTE: this changes if ghost elements are implemented
+        // at the moment there is no difference between internalBoundary
+        // and isGhostBnd
+        isGhostBnd_  = true;
+        internalBnd_ = true;
+      }
+    }
+#endif
+
     assert(innerTwist == innerEntity().twist(innerFaceNumber_));
   }
 
@@ -40,17 +61,24 @@ namespace Dune {
     innerElement_(orig.innerElement_),
     outerElement_(orig.outerElement_),
     innerFaceNumber_(orig.innerFaceNumber_),
-    outerFaceNumber_(orig.outerFaceNumber_) {}
+    outerFaceNumber_(orig.outerFaceNumber_),
+    isBoundary_(orig.isBoundary_),
+    internalBnd_(orig.internalBnd_),
+    isGhostBnd_(orig.isGhostBnd_) {}
 
   template <ALU3dGridElementType type>
-  bool ALU3dGridFaceInfo<type>::boundary() const {
-    return outerElement_->isboundary();
+  inline bool ALU3dGridFaceInfo<type>::boundary() const {
+    return isBoundary_;
   }
 
   template <ALU3dGridElementType type>
-  bool ALU3dGridFaceInfo<type>::internalBoundary() const {
-    assert(false); // not implemented yet
-    return false;
+  inline bool ALU3dGridFaceInfo<type>::internalBoundary() const {
+    return internalBnd_;
+  }
+
+  template <ALU3dGridElementType type>
+  inline bool ALU3dGridFaceInfo<type>::isGhostBnd () const {
+    return isGhostBnd_;
   }
 
   template <ALU3dGridElementType type>
@@ -105,7 +133,7 @@ namespace Dune {
   }
 
   template <ALU3dGridElementType type>
-  ALU3dGridFaceInfo<type>::RefinementState
+  typename ALU3dGridFaceInfo<type>::RefinementState
   ALU3dGridFaceInfo<type>::refinementState() const {
     RefinementState result = UNREFINED;
 
@@ -187,7 +215,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  const ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
+  const typename ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
   ALU3dGridFaceGeometryInfo<GridImp>::
   intersectionGlobal() const {
     assert(intersectionGlobal_);
@@ -195,7 +223,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  const ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
+  const typename ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
   ALU3dGridFaceGeometryInfo<GridImp>::
   intersectionSelfLocal() const {
     assert(intersectionSelfLocal_);
@@ -203,7 +231,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  const ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
+  const typename ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
   ALU3dGridFaceGeometryInfo<GridImp>::
   intersectionNeighborLocal() const {
     assert(intersectionNeighborLocal_);
