@@ -1,6 +1,6 @@
 SUBDIRS = test
 
-SOURCES = aggregates.hh dependency.hh galerkin.hh graph.hh indicescoarsener.hh
+SOURCES = aggregates.hh dependency.hh galerkin.hh graph.hh indicescoarsener.hh properties.hh
 
 paamgdir = $(includedir)/dune/istl/paamg
 paamg_HEADERS = $(SOURCES)
