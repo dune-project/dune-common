@@ -295,11 +295,13 @@ namespace ALU3dGridSpace {
   {
     typedef ALUHElementType<1>::ElementType ElType;
 
+    typedef leaf_minus_one < ElType > StopRule_t;
+
     typedef Insert < AccessIteratorTT < ElType > :: InnerHandle,
-        TreeIterator < ElType, leaf_minus_one < ElType > > > InnerIteratorType;
+        TreeIterator < ElType, StopRule_t > > InnerIteratorType;
 
     typedef Insert < AccessIteratorTT < ElType > :: OuterHandle,
-        TreeIterator < ElType, leaf_minus_one < ElType > > > OuterIteratorType;
+        TreeIterator < ElType, StopRule_t > > OuterIteratorType;
 
     typedef IteratorSTI < ElType > IteratorType;
 
@@ -419,15 +421,15 @@ namespace ALU3dGridSpace {
         return ;
       }
 
-      assert(false);
       it_ = 0;
     }
 
     int size  ()
     {
+      // if no iterator then size is zero
+      // which can happen in the case of parallel grid with 1 processor
       if(!it_)
       {
-        assert(false);
         return 0;
       }
       return it_->size();
