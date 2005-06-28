@@ -16,7 +16,7 @@ endif
 # UGGrid needs AmiraMeshReader for now...
 # !!! trick around to beat automake
 if AMIRAMESH
-  DO_UGTEST = test-ug
+  DO_UGTEST = test-ug2 test-ug3
 else
   DO_UGTEST =
 endif
@@ -68,9 +68,14 @@ test_alberta_SOURCES = test-alberta.cc
 test_alberta_CXXFLAGS = $(ALBERTA_CPPFLAGS) $(AM_CPPFLAGS)
 test_alberta_LDADD = $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS)
 
-test_ug_SOURCES = test-ug.cc
-test_ug_CXXFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
-test_ug_LDADD = $(UG_LDFLAGS) $(UG_LIBS) $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
+# libdune contains both libug2 and libug3, always test both dimensions
+test_ug2_SOURCES = test-ug.cc
+test_ug2_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS) -D_2 $(AMIRAMESH_CPPFLAGS)
+test_ug2_LDADD = $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
+
+test_ug3_SOURCES = test-ug.cc
+test_ug3_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS) -D_3 $(AMIRAMESH_CPPFLAGS)
+test_ug3_LDADD = $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
 
 ## distribution tarball
 

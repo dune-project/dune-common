@@ -5,7 +5,8 @@ Makefile.in
 test-alberta
 test-sgrid
 test-oned
-test-ug
+test-ug2
+test-ug3
 test-yaspgrid
 semantic.cache
 *.gcda
