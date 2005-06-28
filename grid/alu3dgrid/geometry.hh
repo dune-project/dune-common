@@ -118,14 +118,14 @@ namespace Dune {
     typedef const ALU3dGrid<3, 3, tetra> GridImp;
     friend class ALU3dGridBoundaryEntity<GridImp>;
 
-    typedef ALU3dImplTraits<tetra>::IMPLElementType IMPLElementType;
-    typedef ALU3dImplTraits<tetra>::PLLBndFaceType PLLBndFaceType;
-    typedef ALU3dImplTraits<tetra>::GEOFaceType GEOFaceType;
-    typedef ALU3dImplTraits<tetra>::GEOEdgeType GEOEdgeType;
-    typedef ALU3dImplTraits<tetra>::GEOVertexType GEOVertexType;
+    typedef typename ALU3dImplTraits<tetra>::IMPLElementType IMPLElementType;
+    typedef typename ALU3dImplTraits<tetra>::PLLBndFaceType PLLBndFaceType;
+    typedef typename ALU3dImplTraits<tetra>::GEOFaceType GEOFaceType;
+    typedef typename ALU3dImplTraits<tetra>::GEOEdgeType GEOEdgeType;
+    typedef typename ALU3dImplTraits<tetra>::GEOVertexType GEOVertexType;
 
-    typedef typename ElementTopologyMapping<tetra> ElementTopo;
-    typedef typename FaceTopologyMapping<tetra> FaceTopo;
+    typedef ElementTopologyMapping<tetra> ElementTopo;
+    typedef FaceTopologyMapping<tetra> FaceTopo;
     //! know dimension of barycentric coordinates
     enum { dimbary=mydim+1};
   public:
@@ -227,14 +227,14 @@ namespace Dune {
     friend class ALU3dGridBoundaryEntity<GridImp>;
     friend class ALU3dGridIntersectionIterator<GridImp>;
 
-    typedef ALU3dImplTraits<hexa>::IMPLElementType IMPLElementType;
-    typedef ALU3dImplTraits<hexa>::PLLBndFaceType PLLBndFaceType;
-    typedef ALU3dImplTraits<hexa>::GEOFaceType GEOFaceType;
-    typedef ALU3dImplTraits<hexa>::GEOEdgeType GEOEdgeType;
-    typedef ALU3dImplTraits<hexa>::GEOVertexType GEOVertexType;
+    typedef typename ALU3dImplTraits<hexa>::IMPLElementType IMPLElementType;
+    typedef typename ALU3dImplTraits<hexa>::PLLBndFaceType PLLBndFaceType;
+    typedef typename ALU3dImplTraits<hexa>::GEOFaceType GEOFaceType;
+    typedef typename ALU3dImplTraits<hexa>::GEOEdgeType GEOEdgeType;
+    typedef typename ALU3dImplTraits<hexa>::GEOVertexType GEOVertexType;
 
-    typedef typename ElementTopologyMapping<hexa> ElementTopo;
-    typedef typename FaceTopologyMapping<hexa> FaceTopo;
+    typedef ElementTopologyMapping<hexa> ElementTopo;
+    typedef FaceTopologyMapping<hexa> FaceTopo;
   public:
     typedef FieldMatrix<alu3d_ctype, 4, 3> FaceCoordinatesType;
 
