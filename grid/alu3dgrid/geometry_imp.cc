@@ -511,7 +511,7 @@ namespace Dune {
   template <int mydim, int cdim>
   inline int
   ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::corners() const {
-    return POWER_M_P<2,mydim>::power;
+    return Power_m_p<2,mydim>::power;
   }
 
   template <int mydim, int cdim>
