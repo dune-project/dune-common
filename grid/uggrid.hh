@@ -7,7 +7,7 @@
  * \brief The UGGrid class
  */
 
-#include "../common/capabilities.hh"
+#include <dune/common/capabilities.hh>
 #include <dune/grid/common/grid.hh>
 
 // All UG includes have to be includes via the file ugincludes.hh
@@ -412,7 +412,6 @@ namespace Dune {
 
   }; // end Class UGGrid
 
-#if 0
   namespace Capabilities
   {
 
@@ -422,8 +421,14 @@ namespace Dune {
       static const bool v = true;
     };
 
-    template<int dim, int dimw, int cdim>
-    struct hasEntity< UGGrid<dim,dimw>, UGGridEntity<cdim,dim,dimw> >
+    template<int dim, int dimw>
+    struct hasEntity< UGGrid<dim,dimw>, UGGridEntity<0,dim, UGGrid<dim, dimw> > >
+    {
+      static const bool v = true;
+    };
+
+    template<int dim, int dimw>
+    struct hasEntity< UGGrid<dim,dimw>, UGGridEntity<dim,dim, UGGrid<dim, dimw> > >
     {
       static const bool v = true;
     };
@@ -435,7 +440,6 @@ namespace Dune {
     };
 
   }
-#endif
 
 } // namespace Dune
 
