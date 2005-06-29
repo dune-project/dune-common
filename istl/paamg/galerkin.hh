@@ -451,11 +451,9 @@ namespace Dune
     {
       typedef typename Set::const_iterator Iterator;
       Iterator end = connected.end();
-      for(Iterator entry = connected.begin(); entry != end; ++entry) {
-        int ientry = *entry;
-        int aggregate = aggregates_[*entry];
+      for(Iterator entry = connected.begin(); entry != end; ++entry)
         row_.insert(*entry);
-      }
+
       ++row_;
     }
 

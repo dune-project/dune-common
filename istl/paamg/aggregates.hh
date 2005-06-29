@@ -329,7 +329,8 @@ namespace Dune
        * @param graph The matrix graph to perform the search on.
        */
       template<class G>
-      int breadthFirstSearch(const VertexDescriptor& start, int aggregate,
+      int breadthFirstSearch(const VertexDescriptor& start,
+                             const AggregateDescriptor& aggregate,
                              G& graph) const;
 
       /**
@@ -342,7 +343,8 @@ namespace Dune
        * @param visitedMap a map for marking the vertices as visited.
        */
       template<class G, class VM>
-      int breadthFirstSearch(const VertexDescriptor& start, int aggregate,
+      int breadthFirstSearch(const VertexDescriptor& start,
+                             const AggregateDescriptor& aggregate,
                              G& graph, VM& visitedMap) const;
       /**
        * @brief Breadth first search within an aggregate
@@ -353,7 +355,7 @@ namespace Dune
        * @param graph The matrix graph to perform the search on.
        *
          template<class G, class F1, class F2>
-         int breadthFirstSearch(const VertexDescriptor& start, int aggregate,
+         int breadthFirstSearch(const VertexDescriptor& start, AggregateDescriptor aggregate,
                              G& graph, F1& aggregateVisitor, F2& nongAggregateVisitor) const;
        */
       /**
@@ -374,7 +376,8 @@ namespace Dune
        * aggregate. Use DummyVisitor these are of no interest.
        */
       template<bool reset, class G, class F, class VM>
-      int breadthFirstSearch(const VertexDescriptor& start, int aggregate,
+      int breadthFirstSearch(const VertexDescriptor& start,
+                             const AggregateDescriptor& aggregate,
                              G& graph,
                              F& aggregateVisitor,
                              VM& visitedMap) const;
@@ -400,7 +403,8 @@ namespace Dune
        * aggregate. Use DummyVisitor these are of no interest.
        */
       template<bool remove, bool reset, class G, class L, class F1, class F2, class VM>
-      int breadthFirstSearch(const VertexDescriptor& start, int aggregate,
+      int breadthFirstSearch(const VertexDescriptor& start,
+                             const AggregateDescriptor& aggregate,
                              G& graph, L& visited, F1& aggregateVisitor,
                              F2& nonAggregateVisitor,
                              VM& visitedMap) const;
@@ -756,7 +760,7 @@ namespace Dune
         /** @brief Mapping of vertices to aggregates. */
         const AggregatesMap<Vertex>& aggregates_;
         /** @brief The aggregate id we want to visit. */
-        int aggregate_;
+        AggregateDescriptor aggregate_;
         /** @brief The visitor to use on the aggregate. */
         Visitor& visitor_;
       };
@@ -1202,7 +1206,8 @@ namespace Dune
 
     template<class V>
     template<class G>
-    inline int AggregatesMap<V>::breadthFirstSearch(const V& start, int aggregate,
+    inline int AggregatesMap<V>::breadthFirstSearch(const V& start,
+                                                    const AggregateDescriptor& aggregate,
                                                     G& graph) const
     {
       typename PropertyMapTypeSelector<VertexVisitedTag,G>::Type visitedMap = get(VertexVisitedTag(), graph);
@@ -1213,7 +1218,8 @@ namespace Dune
 
     template<class V>
     template<class G, class VM>
-    inline int AggregatesMap<V>::breadthFirstSearch(const V& start, int aggregate,
+    inline int AggregatesMap<V>::breadthFirstSearch(const V& start,
+                                                    const AggregateDescriptor& aggregate,
                                                     G& graph, VM& visitedMap) const
     {
       VertexList vlist;
@@ -1224,7 +1230,8 @@ namespace Dune
 
     template<class V>
     template<bool reset, class G, class F,class VM>
-    inline int AggregatesMap<V>::breadthFirstSearch(const V& start, int aggregate,
+    inline int AggregatesMap<V>::breadthFirstSearch(const V& start,
+                                                    const AggregateDescriptor& aggregate,
                                                     G& graph, F& aggregateVisitor,
                                                     VM& visitedMap) const
     {
@@ -1235,7 +1242,8 @@ namespace Dune
 
     template<class V>
     template<bool remove, bool reset, class G, class L, class F1, class F2, class VM>
-    int AggregatesMap<V>::breadthFirstSearch(const V& start, int aggregate,
+    int AggregatesMap<V>::breadthFirstSearch(const V& start,
+                                             const AggregateDescriptor& aggregate,
                                              G& graph,
                                              L& visited,
                                              F1& aggregateVisitor,

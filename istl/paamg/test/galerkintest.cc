@@ -114,7 +114,7 @@ void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end)
       for(ColIterator j = (*i).begin(); j != endi; ++j)
         if(j.index() == i.index())
           *j=dval;
-        else if(std::abs(j.index()-i.index())==1)
+        else if(j.index()+1==i.index() || i.index()+1==j.index())
           *j=beps;
         else
           *j=bmone;
@@ -184,7 +184,7 @@ public:
     : aggregates_(aggregates), indexset_(indexset)
   {}
 
-  inline const TG& operator[](std::ptrdiff_t index) const
+  inline const TG& operator[](std::size_t index) const
   {
     const T& aggregate = aggregates_[index];
     const Dune::IndexPair<TG,Dune::ParallelLocalIndex<TA> >& pair = indexset_.pair(aggregate);
@@ -257,7 +257,7 @@ void testCoarsenIndices()
   typedef Dune::Amg::MatrixGraph<BCRSMat> MatrixGraph;
   typedef Dune::Amg::SubGraph<Dune::Amg::MatrixGraph<BCRSMat>,std::vector<bool> > SubGraph;
   typedef Dune::Amg::PropertiesGraph<SubGraph,Dune::Amg::VertexProperties,
-      Dune::Amg::EdgeProperties> PropertiesGraph;
+      Dune::Amg::EdgeProperties, Dune::IdentityMap, typename SubGraph::EdgeIndexMap> PropertiesGraph;
   typedef typename PropertiesGraph::VertexDescriptor Vertex;
   typedef Dune::Amg::Aggregates<PropertiesGraph> Aggregates;
   typedef Dune::Amg::SymmetricCriterion<PropertiesGraph,BCRSMat,Dune::Amg::FirstDiagonal>
@@ -274,7 +274,7 @@ void testCoarsenIndices()
     *iter = (index->local().attribute()==overlap);
 
   SubGraph sg(mg, excluded);
-  PropertiesGraph pg(sg);
+  PropertiesGraph pg(sg, Dune::IdentityMap(), sg.getEdgeIndexMap());
   Aggregates aggregates;
   Dune::Amg::AggregatesMap<Vertex> aggregatesMap(pg.maxVertex());
 
@@ -311,7 +311,7 @@ void testCoarsenIndices()
 
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
 
-  communicator.template forward<AggregatesGatherScatter<int,int,GridFlag,101> >(gmap);
+  communicator.template forward<AggregatesGatherScatter<typename MatrixGraph::VertexDescriptor,int,GridFlag,101> >(gmap);
 
   std::cout<<"Communicated: ";
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
@@ -332,7 +332,7 @@ void testCoarsenIndices()
   assert(N*N==mg.maxVertex());
 
   bool visitedIterator[N*N];
-  for(int i=0; i < mg.maxVertex(); ++i)
+  for(std::size_t i=0; i < mg.maxVertex(); ++i)
     visitedIterator[i]=false;
 
   VisitedMap2 visitedMap2(visitedIterator, Dune::IdentityMap());
@@ -348,6 +348,6 @@ void testCoarsenIndices()
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
-  testCoarsenIndices<8,1>();
+  testCoarsenIndices<10,1>();
   MPI_Finalize();
 }

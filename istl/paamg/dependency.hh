@@ -277,17 +277,17 @@ namespace Dune
 
   } // end namespace Amg
 
-  template<typename G, typename EP>
-  struct PropertyMapTypeSelector<Amg::VertexVisitedTag,Amg::PropertiesGraph<G,Amg::VertexProperties,EP> >
+  template<typename G, typename EP, typename VM, typename EM>
+  struct PropertyMapTypeSelector<Amg::VertexVisitedTag,Amg::PropertiesGraph<G,Amg::VertexProperties,EP,VM,EM> >
   {
-    typedef Amg::PropertyGraphVertexPropertyMap<Amg::PropertiesGraph<G,Amg::VertexProperties,EP>, Amg::VertexProperties::VISITED> Type;
+    typedef Amg::PropertyGraphVertexPropertyMap<Amg::PropertiesGraph<G,Amg::VertexProperties,EP,VM,EM>, Amg::VertexProperties::VISITED> Type;
   };
 
-  template<typename G, typename EP>
-  typename PropertyMapTypeSelector<Amg::VertexVisitedTag,Amg::PropertiesGraph<G,Amg::VertexProperties,EP> >::Type
-  get(const Amg::VertexVisitedTag& tag, Amg::PropertiesGraph<G,Amg::VertexProperties,EP>& graph)
+  template<typename G, typename EP, typename VM, typename EM>
+  typename PropertyMapTypeSelector<Amg::VertexVisitedTag,Amg::PropertiesGraph<G,Amg::VertexProperties,EP,VM,EM> >::Type
+  get(const Amg::VertexVisitedTag& tag, Amg::PropertiesGraph<G,Amg::VertexProperties,EP,VM,EM>& graph)
   {
-    return Amg::PropertyGraphVertexPropertyMap<Amg::PropertiesGraph<G,Amg::VertexProperties,EP>, Amg::VertexProperties::VISITED>(graph);
+    return Amg::PropertyGraphVertexPropertyMap<Amg::PropertiesGraph<G,Amg::VertexProperties,EP,VM,EM>, Amg::VertexProperties::VISITED>(graph);
   }
 
   namespace Amg
