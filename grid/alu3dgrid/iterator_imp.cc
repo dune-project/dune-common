@@ -179,7 +179,7 @@ namespace Dune {
   template<class GridImp>
   inline bool ALU3dGridIntersectionIterator<GridImp> :: boundary () const
   {
-    return connector_->boundary();
+    return connector_->outerBoundary();
   }
 
   template<class GridImp>
@@ -289,8 +289,8 @@ namespace Dune {
       FaceInfoPointer(new FaceInfoType(newFace,
                                        item_->twist(ElementTopo::dune2aluFace(index_))));
 
-    //std::cout << "Face " << index_ << ": twist = " << connector_->innerTwist() <<
-    //  std::endl;
+    //std::cout << " Item = " << item_ << "\n";
+    //std::cout << "Face " << index_ << ": twist = " << connector_->innerTwist() << std::endl;
 
     if (geoProvider_) {
       delete geoProvider_;
@@ -301,7 +301,17 @@ namespace Dune {
   template <class GridImp>
   bool ALU3dGridIntersectionIterator<GridImp>::
   canGoDown(const GEOFaceType& nextFace) const {
+#ifdef _ALU3DGRID_PARALLEL_
+    bool canGoDwn = (item_->level() < walkLevel_ && item_->leaf() && nextFace.down());
+    if( canGoDwn )
+    {
+      // check ghost level
+    }
+    return canGoDwn;
+#else
     return (item_->level() < walkLevel_ && item_->leaf() && nextFace.down());
+#endif
+
   }
 
   template <class GridImp>
