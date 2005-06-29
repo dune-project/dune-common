@@ -166,6 +166,10 @@ namespace Dune {
 #ifdef _ALU3DGRID_PARALLEL_
     if(connector_->isGhostBnd())
     {
+      BNDFaceType * ghost = const_cast<BNDFaceType *>(&connector_->boundaryFace());
+      if( connector_->boundaryFace().level () != connector_->boundaryFace().ghostLevel() )
+        ghost = static_cast<BNDFaceType *>(ghost->up());
+
       this->entity_->setGhost(const_cast<BNDFaceType &>(connector_->boundaryFace()) );
     }
     else
@@ -179,7 +183,7 @@ namespace Dune {
   template<class GridImp>
   inline bool ALU3dGridIntersectionIterator<GridImp> :: boundary () const
   {
-    return connector_->outerBoundary();
+    return (connector_->outerBoundary());
   }
 
   template<class GridImp>
@@ -301,17 +305,7 @@ namespace Dune {
   template <class GridImp>
   bool ALU3dGridIntersectionIterator<GridImp>::
   canGoDown(const GEOFaceType& nextFace) const {
-#ifdef _ALU3DGRID_PARALLEL_
-    bool canGoDwn = (item_->level() < walkLevel_ && item_->leaf() && nextFace.down());
-    if( canGoDwn )
-    {
-      // check ghost level
-    }
-    return canGoDwn;
-#else
     return (item_->level() < walkLevel_ && item_->leaf() && nextFace.down());
-#endif
-
   }
 
   template <class GridImp>
