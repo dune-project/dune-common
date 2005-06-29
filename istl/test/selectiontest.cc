@@ -23,7 +23,6 @@ int meassure(const T& selection)
   typedef typename T::const_iterator iterator;
 
   const iterator end = selection.end();
-  const iterator iterOrig = selection.begin();
 
   int count=0;
   Dune::Timer timer;
