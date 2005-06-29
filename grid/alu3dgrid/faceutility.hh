@@ -60,11 +60,11 @@ namespace Dune {
     //! Lies the face on an outer boundary?
     bool outerBoundary() const;
     //! Lies the face on an internal boundary
-    bool internalBoundary() const;
+    bool boundary() const;
 
     //! is the neighbour element a ghost elemenet or a ghost face
     //! ic case of face true is returned
-    bool isGhostBnd () const;
+    bool ghostBoundary () const;
 
     //! Returns the ALU3dGrid face
     const GEOFaceType& face() const;
@@ -105,8 +105,7 @@ namespace Dune {
     int outerFaceNumber_;
 
     bool outerBoundary_;
-    bool internalBnd_;
-    bool isGhostBnd_;
+    bool ghostBoundary_;
   };
 
   template <class GridImp>

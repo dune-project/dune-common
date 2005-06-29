@@ -14,8 +14,7 @@ namespace Dune {
     innerFaceNumber_(-1),
     outerFaceNumber_(-1),
     outerBoundary_  ( false ),
-    internalBnd_ ( false ),
-    isGhostBnd_  ( false )
+    ghostBoundary_  ( false )
   {
     // points face from inner element away?
     if (innerTwist < 0) {
@@ -41,9 +40,8 @@ namespace Dune {
       {
         // NOTE: this changes if ghost elements are implemented
         // at the moment there is no difference between internalBoundary
-        // and isGhostBnd
-        isGhostBnd_  = true;
-        internalBnd_ = true;
+        // and ghostBoundary
+        ghostBoundary_  = true;
 
         // this dosen't count as outer boundary
         outerBoundary_ = false;
@@ -65,8 +63,7 @@ namespace Dune {
     innerFaceNumber_(orig.innerFaceNumber_),
     outerFaceNumber_(orig.outerFaceNumber_),
     outerBoundary_(orig.outerBoundary_),
-    internalBnd_(orig.internalBnd_),
-    isGhostBnd_(orig.isGhostBnd_) {}
+    ghostBoundary_(orig.ghostBoundary_) {}
 
   template <ALU3dGridElementType type>
   inline bool ALU3dGridFaceInfo<type>::outerBoundary() const {
@@ -74,13 +71,13 @@ namespace Dune {
   }
 
   template <ALU3dGridElementType type>
-  inline bool ALU3dGridFaceInfo<type>::internalBoundary() const {
-    return internalBnd_;
+  inline bool ALU3dGridFaceInfo<type>::boundary() const {
+    return outerBoundary_ || ghostBoundary_;
   }
 
   template <ALU3dGridElementType type>
-  inline bool ALU3dGridFaceInfo<type>::isGhostBnd () const {
-    return isGhostBnd_;
+  inline bool ALU3dGridFaceInfo<type>::ghostBoundary () const {
+    return ghostBoundary_;
   }
 
   template <ALU3dGridElementType type>
@@ -99,14 +96,14 @@ namespace Dune {
   template <ALU3dGridElementType type>
   const typename ALU3dGridFaceInfo<type>::GEOElementType&
   ALU3dGridFaceInfo<type>::outerEntity() const {
-    assert(!outerBoundary() && !isGhostBnd());
+    assert(!boundary());
     return static_cast<const GEOElementType&>(*outerElement_);
   }
 
   template <ALU3dGridElementType type>
   const typename ALU3dGridFaceInfo<type>::BndFaceType&
   ALU3dGridFaceInfo<type>::boundaryFace() const {
-    assert(outerBoundary() || isGhostBnd());
+    assert(boundary());
     return static_cast<const BndFaceType&>(*outerElement_);
   }
 
@@ -117,7 +114,7 @@ namespace Dune {
 
   template <ALU3dGridElementType type>
   int ALU3dGridFaceInfo<type>::outerTwist() const {
-    if (!outerBoundary() && !isGhostBnd() ) {
+    if (!boundary() ) {
       return outerEntity().twist(outerALUFaceIndex());
     } else {
       return boundaryFace().twist(outerALUFaceIndex());
@@ -140,19 +137,18 @@ namespace Dune {
     RefinementState result = UNREFINED;
 
     // A boundary is always unrefined
-    if (!outerBoundary()) {
-      int levelDifference = 0 ;
-      if ( isGhostBnd() )
-        levelDifference = innerEntity().level() - boundaryFace().level();
-      else
-        levelDifference = innerEntity().level() - outerEntity().level();
+    int levelDifference = 0 ;
+    if ( boundary() )
+      levelDifference = innerEntity().level() - boundaryFace().level();
+    else
+      levelDifference = innerEntity().level() - outerEntity().level();
 
-      if (levelDifference < 0) {
-        result = REFINED_OUTER;
-      } else if (levelDifference > 0) {
-        result = REFINED_INNER;
-      }
+    if (levelDifference < 0) {
+      result = REFINED_OUTER;
+    } else if (levelDifference > 0) {
+      result = REFINED_INNER;
     }
+
     return result;
   }
 
@@ -298,8 +294,6 @@ namespace Dune {
 
     }
     else {
-      assert(!connector_.outerBoundary());
-
       FaceGeometryImp* refinedGeometry = 0;
       FaceGeometryImp* unrefinedGeometry = 0;
       SideIdentifier refinedSide = INNER;
