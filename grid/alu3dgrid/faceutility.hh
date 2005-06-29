@@ -38,7 +38,7 @@ namespace Dune {
     typedef typename ALU3dImplTraits<type>::GEOFaceType GEOFaceType;
     typedef typename ALU3dImplTraits<type>::GEOElementType GEOElementType;
     typedef typename ALU3dImplTraits<type>::IMPLElementType IMPLElementType;
-#ifdef _PARALLEL_
+#ifdef _ALU3DGRID_PARALLEL_
     typedef typename ALU3dImplTraits<type>::PLLBndFaceType BndFaceType;
 #else
     typedef typename ALU3dImplTraits<type>::BNDFaceType BndFaceType;
@@ -58,7 +58,7 @@ namespace Dune {
 
     //- queries
     //! Lies the face on an outer boundary?
-    bool boundary() const;
+    bool outerBoundary() const;
     //! Lies the face on an internal boundary
     bool internalBoundary() const;
 
@@ -104,7 +104,7 @@ namespace Dune {
     int innerFaceNumber_;
     int outerFaceNumber_;
 
-    bool isBoundary_;
+    bool outerBoundary_;
     bool internalBnd_;
     bool isGhostBnd_;
   };

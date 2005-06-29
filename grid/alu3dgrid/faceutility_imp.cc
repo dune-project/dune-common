@@ -13,7 +13,7 @@ namespace Dune {
     outerElement_(0),
     innerFaceNumber_(-1),
     outerFaceNumber_(-1),
-    isBoundary_  ( false ),
+    outerBoundary_  ( false ),
     internalBnd_ ( false ),
     isGhostBnd_  ( false )
   {
@@ -30,11 +30,11 @@ namespace Dune {
       outerFaceNumber_ = face.nb.rear().second;
     } // end if
 
-    isBoundary_ = outerElement_->isboundary();
+    outerBoundary_ = outerElement_->isboundary();
 #ifdef _ALU3DGRID_PARALLEL_
     // check for ghosts
     // this check is only need in the parallel case
-    if( isBoundary_ )
+    if( outerBoundary_ )
     {
       const BndFaceType * bnd = dynamic_cast<const BndFaceType *> (outerElement_);
       if(bnd->bndtype() ==  ALU3DSPACE ProcessorBoundary_t)
@@ -44,10 +44,17 @@ namespace Dune {
         // and isGhostBnd
         isGhostBnd_  = true;
         internalBnd_ = true;
+
+        // this dosen't count as outer boundary
+        outerBoundary_ = false;
       }
     }
 #endif
-
+    //if( innerTwist != innerEntity().twist(innerFaceNumber_) )
+    //{
+    //  std::cout << "inner item = " << & innerEntity() << "\n";
+    //  std::cout << innerTwist << " itw | en->itw " << innerEntity().twist(innerFaceNumber_) << "\n";
+    //}
     assert(innerTwist == innerEntity().twist(innerFaceNumber_));
   }
 
@@ -62,13 +69,13 @@ namespace Dune {
     outerElement_(orig.outerElement_),
     innerFaceNumber_(orig.innerFaceNumber_),
     outerFaceNumber_(orig.outerFaceNumber_),
-    isBoundary_(orig.isBoundary_),
+    outerBoundary_(orig.outerBoundary_),
     internalBnd_(orig.internalBnd_),
     isGhostBnd_(orig.isGhostBnd_) {}
 
   template <ALU3dGridElementType type>
-  inline bool ALU3dGridFaceInfo<type>::boundary() const {
-    return isBoundary_;
+  inline bool ALU3dGridFaceInfo<type>::outerBoundary() const {
+    return outerBoundary_;
   }
 
   template <ALU3dGridElementType type>
@@ -97,14 +104,14 @@ namespace Dune {
   template <ALU3dGridElementType type>
   const typename ALU3dGridFaceInfo<type>::GEOElementType&
   ALU3dGridFaceInfo<type>::outerEntity() const {
-    assert(!boundary());
+    assert(!outerBoundary());
     return static_cast<const GEOElementType&>(*outerElement_);
   }
 
   template <ALU3dGridElementType type>
   const typename ALU3dGridFaceInfo<type>::BndFaceType&
   ALU3dGridFaceInfo<type>::boundaryFace() const {
-    assert(boundary());
+    assert(outerBoundary() || isGhostBnd());
     return static_cast<const BndFaceType&>(*outerElement_);
   }
 
@@ -115,7 +122,7 @@ namespace Dune {
 
   template <ALU3dGridElementType type>
   int ALU3dGridFaceInfo<type>::outerTwist() const {
-    if (!boundary()) {
+    if (!outerBoundary()) {
       return outerEntity().twist(outerALUFaceIndex());
     } else {
       return boundaryFace().twist(outerALUFaceIndex());
@@ -138,7 +145,7 @@ namespace Dune {
     RefinementState result = UNREFINED;
 
     // A boundary is always unrefined
-    if (!boundary()) {
+    if (!outerBoundary()) {
       int levelDifference = innerEntity().level() - outerEntity().level();
       if (levelDifference < 0) {
         result = REFINED_OUTER;
@@ -235,7 +242,7 @@ namespace Dune {
   ALU3dGridFaceGeometryInfo<GridImp>::
   intersectionNeighborLocal() const {
     assert(intersectionNeighborLocal_);
-    assert(!connector_.boundary());
+    assert(!connector_.outerBoundary());
     return *intersectionNeighborLocal_;
   }
 
@@ -250,10 +257,7 @@ namespace Dune {
       for (int i = 0; i < numVerticesPerFace; ++i) {
         const double (&p)[3] =
           connector_.face().myvertex(FaceTopo::dune2aluVertex(i))->Point();
-        FieldVector<alu3d_ctype, 3> tmp;
-        convert2FieldVector(p, tmp);
-
-        coords[i] = tmp;
+        convert2FieldVector(p, coords[i] );
       } // end for
 
       mappingGlobal_ = buildSurfaceMapping(coords);
@@ -271,7 +275,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  void ALU3dGridFaceGeometryInfo<GridImp>::generateGlobalGeometry() {
+  inline void ALU3dGridFaceGeometryInfo<GridImp>::generateGlobalGeometry() {
     intersectionGlobal_->buildGeom(connector_.face());
   }
 
@@ -287,14 +291,14 @@ namespace Dune {
       intersectionSelfLocal_->buildGeom(coords);
       // generate outer local geometry only when not at boundary
       // * in the parallel case, this needs to be altered for the ghost cells
-      if (!connector_.boundary()) {
+      if (!connector_.outerBoundary()) {
         referenceElementCoordinatesRefined(OUTER, coords);
         intersectionNeighborLocal_->buildGeom(coords);
       } // end if
 
     }
     else {
-      assert(!connector_.boundary());
+      assert(!connector_.outerBoundary());
 
       FaceGeometryImp* refinedGeometry = 0;
       FaceGeometryImp* unrefinedGeometry = 0;
