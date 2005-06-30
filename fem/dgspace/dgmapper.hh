@@ -76,22 +76,28 @@ namespace Dune {
     //! for dof manager, to check whether it has to copy dof or not
     bool indexNew (int num)
     {
-      int newn = (num / numberOfDofs_) + num % numberOfDofs_;
+      const int newn = static_cast<int> (num / numberOfDofs_);
       return indexSet_.template indexNew(newn,0);
     }
 
     //! return old index, for dof manager only
     int oldIndex (int num) const
     {
-      int newn = (num / numberOfDofs_) + num % numberOfDofs_;
-      return indexSet_.oldIndex(newn,0);
+      // corresponding number of set is newn
+      const int newn  = static_cast<int> (num / numberOfDofs_);
+      // local number of dof is local
+      const int local = (num % numberOfDofs_);
+      return (numberOfDofs_ * indexSet_.oldIndex(newn,0)) + local;
     }
 
     //! return new index, for dof manager only
     int newIndex (int num) const
     {
-      int newn = (num / numberOfDofs_) + num % numberOfDofs_;
-      return indexSet_.newIndex(newn,0);
+      // corresponding number of set is newn
+      const int newn = static_cast<int> (num / numberOfDofs_);
+      // local number of dof is local
+      const int local = (num % numberOfDofs_);
+      return (numberOfDofs_ * indexSet_.newIndex(newn,0)) + local;
     }
 
     //! return size of grid entities per level and codim
@@ -174,24 +180,29 @@ namespace Dune {
     //! for dof manager, to check whether it has to copy dof or not
     bool indexNew (int num)
     {
-      int newn = (num / numberOfDofs_) + num % numberOfDofs_;
+      const int newn = static_cast<int> ( num / numberOfDofs_ );
       return indexSet_.template indexNew(newn,0);
     }
 
     //! return old index, for dof manager only
     int oldIndex (int num) const
     {
-      int newn = (num / numberOfDofs_) + num % numberOfDofs_;
-      return indexSet_.oldIndex(newn,0);
+      // corresponding number of set is newn
+      const int newn  = static_cast<int> ( num / numberOfDofs_ );
+      // local number of dof is local
+      const int local = (num % numberOfDofs_);
+      return (numberOfDofs_ * indexSet_.oldIndex(newn,0)) + local;
     }
 
     //! return new index, for dof manager only
     int newIndex (int num) const
     {
-      int newn = (num / numberOfDofs_) + num % numberOfDofs_;
-      return indexSet_.newIndex(newn,0);
+      // corresponding number of set is newn
+      const int newn = static_cast<int> ( num / numberOfDofs_ );
+      // local number of dof is local
+      const int local = (num % numberOfDofs_);
+      return (numberOfDofs_ * indexSet_.newIndex(newn,0)) + local;
     }
-
     //! return size of grid entities per level and codim
     //! for dof mapper
     int oldSize () const
