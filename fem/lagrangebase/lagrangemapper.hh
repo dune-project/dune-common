@@ -239,7 +239,9 @@ namespace Dune {
     typedef IndexSetImp IndexSetType;
 
     LagrangeMapper ( IndexSetType  & is , int numDofs , int level)
-      : numberOfDofs_ (numDofs) , indexSet_ (is) , level_(level) {}
+      : numberOfDofs_ (numDofs) , indexSet_ (is) , level_(level) {
+      assert(numberOfDofs_ == dimrange);
+    }
 
     // we have virtual function ==> virtual destructor
     virtual ~LagrangeMapper () {}
@@ -261,23 +263,29 @@ namespace Dune {
     //! for dof manager, to check whether it has to copy dof or not
     bool indexNew (int num)
     {
-      int newn = (num / dimrange) + num % dimrange;
-      if(dimrange == 1) assert(newn == num);
+      // all numbers of one entity are maped to the one number of the set
+      const int newn = static_cast<int> (num/dimrange);
       return indexSet_.template indexNew(newn,0);
     }
 
     //! return old index, for dof manager only
     int oldIndex (int num) const
     {
-      int newn = (num / dimrange) + num % dimrange;
-      return dimrange * indexSet_.oldIndex(newn,0);
+      // corresponding number of set is newn
+      const int newn  = static_cast<int> (num/dimrange);
+      // local number of dof is local
+      const int local = (num % dimrange);
+      return (dimrange * indexSet_.oldIndex(newn,0)) + local;
     }
 
     //! return new index, for dof manager only
     int newIndex (int num) const
     {
-      int newn = (num / dimrange) + num % dimrange;
-      return dimrange * indexSet_.newIndex(newn,0);
+      // corresponding number of set is newn
+      const int newn = static_cast<int> (num / dimrange);
+      // local number of dof is local
+      const int local = (num % dimrange);
+      return (dimrange * indexSet_.newIndex(newn,0)) + local;
     }
 
     //! return size of grid entities per level and codim
@@ -339,7 +347,10 @@ namespace Dune {
     template <class EntityType>
     int mapToGlobal (EntityType &en, int localNum ) const
     {
-      return indexSet_.template index<0> (en,localNum);
+      int idx = indexSet_.template index<0> (en,localNum);
+      assert( idx >=0 );
+      return idx;
+      //return indexSet_.template index<0> (en,localNum);
     }
 
     //! for dof manager, to check whether it has to copy dof or not
