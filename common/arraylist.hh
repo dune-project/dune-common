@@ -144,17 +144,17 @@ namespace Dune
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline reference operator[](difference_type i);
+    inline reference operator[](size_type i);
 
     /**
      * @brief Get the element at specific position.
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline const_reference operator[](difference_type i) const;
+    inline const_reference operator[](size_type i) const;
 
     /**
-     * @brief Get the number of elements in the lisz.
+     * @brief Get the number of elements in the list.
      * @return The number of elements.
      */
     inline size_type size() const;
@@ -205,7 +205,7 @@ namespace Dune
     /** @brief The current number of elements in our data structure. */
     size_type size_;
     /** @brief The index of the first entry. */
-    difference_type start_;
+    size_type start_;
     /**
      * @brief Get the element at specific position.
      *
@@ -214,7 +214,7 @@ namespace Dune
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline reference elementAt(difference_type i);
+    inline reference elementAt(size_type i);
 
     /**
      * @brief Get the element at specific position.
@@ -224,7 +224,7 @@ namespace Dune
      * @param i The index of the position.
      * @return The element at that position.
      */
-    inline const_reference elementAt(difference_type i) const;
+    inline const_reference elementAt(size_type i) const;
   };
 
 
@@ -247,6 +247,8 @@ namespace Dune
     typedef typename A::value_type MemberType;
 
     typedef typename A::difference_type difference_type;
+
+    typedef typename A::size_type size_type;
 
     enum
     {
@@ -287,7 +289,7 @@ namespace Dune
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that postion.
      */
-    inline MemberType& elementAt(difference_type i) const;
+    inline MemberType& elementAt(size_type i) const;
 
     /**
      * @brief Access the element at the current position.
@@ -309,7 +311,7 @@ namespace Dune
     inline void eraseToHere();
 
     /** \todo Please doc me! */
-    inline difference_type position(){return position_;}
+    inline size_type position(){return position_;}
 
     /** \todo Please doc me! */
     inline void advance(difference_type n);
@@ -330,12 +332,12 @@ namespace Dune
      * @param list The list we are an iterator for.
      * @param position The initial position of the iterator.
      */
-    inline ArrayListIterator(ArrayList<T,N,A>& arrayList, difference_type position);
+    inline ArrayListIterator(ArrayList<T,N,A>& arrayList, size_type position);
 
     /**
      * @brief The current postion.
      */
-    difference_type position_;
+    size_type position_;
     /**
      * @brief The list we are an iterator for.
      */
@@ -363,6 +365,8 @@ namespace Dune
     typedef typename A::value_type MemberType;
 
     typedef typename A::difference_type difference_type;
+
+    typedef typename A::size_type size_type;
 
     enum
     {
@@ -401,7 +405,7 @@ namespace Dune
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that postion.
      */
-    inline const MemberType& elementAt(difference_type i) const;
+    inline const MemberType& elementAt(size_type i) const;
 
     /**
      * @brief Access the element at the current position.
@@ -423,12 +427,12 @@ namespace Dune
      * @param list The list we are an iterator for.
      * @param position The initial position of the iterator.
      */
-    inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, difference_type position);
+    inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, size_type position);
 
     /**
      * @brief The current postion.
      */
-    difference_type position_;
+    size_type position_;
     /**
      * @brief The list we are an iterator for.
      */
@@ -477,27 +481,27 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  typename ArrayList<T,N,A>::reference ArrayList<T,N,A>::operator[](difference_type i)
+  typename ArrayList<T,N,A>::reference ArrayList<T,N,A>::operator[](size_type i)
   {
     return elementAt(start_+i);
   }
 
 
   template<class T, int N, class A>
-  typename ArrayList<T,N,A>::const_reference ArrayList<T,N,A>::operator[](difference_type i) const
+  typename ArrayList<T,N,A>::const_reference ArrayList<T,N,A>::operator[](size_type i) const
   {
     return elementAt(start_+i);
   }
 
   template<class T, int N, class A>
-  typename ArrayList<T,N,A>::reference ArrayList<T,N,A>::elementAt(difference_type i)
+  typename ArrayList<T,N,A>::reference ArrayList<T,N,A>::elementAt(size_type i)
   {
     return chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
 
 
   template<class T, int N, class A>
-  typename ArrayList<T,N,A>::const_reference ArrayList<T,N,A>::elementAt(difference_type i) const
+  typename ArrayList<T,N,A>::const_reference ArrayList<T,N,A>::elementAt(size_type i) const
   {
     return chunks_[i/chunkSize_]->operator[](i%chunkSize_);
   }
@@ -612,14 +616,14 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  typename ArrayListIterator<T,N,A>::MemberType& ArrayListIterator<T,N,A>::elementAt(difference_type i) const
+  typename ArrayListIterator<T,N,A>::MemberType& ArrayListIterator<T,N,A>::elementAt(size_type i) const
   {
     i+=position_;
     return list_->elementAt(i+position_);
   }
 
   template<class T, int N, class A>
-  const typename ConstArrayListIterator<T,N,A>::MemberType& ConstArrayListIterator<T,N,A>::elementAt(difference_type i) const
+  const typename ConstArrayListIterator<T,N,A>::MemberType& ConstArrayListIterator<T,N,A>::elementAt(size_type i) const
   {
     return list_->elementAt(i+position_);
   }
@@ -688,14 +692,14 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  ArrayListIterator<T,N,A>::ArrayListIterator(ArrayList<T,N,A>& arrayList, difference_type position)
+  ArrayListIterator<T,N,A>::ArrayListIterator(ArrayList<T,N,A>& arrayList, size_type position)
     : position_(position), list_(&arrayList)
   {}
 
 
   template<class T, int N, class A>
   ConstArrayListIterator<T,N,A>::ConstArrayListIterator(const ArrayList<T,N,A>& arrayList,
-                                                        difference_type position)
+                                                        size_type position)
     : position_(position), list_(&arrayList)
   {}
 
