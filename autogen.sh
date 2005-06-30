@@ -9,6 +9,10 @@ AMVERS=
 
 DEFAULTCONFOPT=
 
+# default values
+DEBUG=1
+OPTIM=0
+
 usage () {
     echo "Usage: ./autogen.sh [options]"
     echo "  -i, --intel        use intel compiler"
