@@ -71,6 +71,9 @@ namespace Dune {
     //! implement row_type with compressed vector
     typedef CompressedBlockVectorWindow<B,A> row_type;
 
+    //! The type for the index access and the size
+    typedef typename A::size_type size_type;
+
     //! increment block level counter
     enum {
       //! The number of blocklevels the matrix contains.
@@ -109,22 +112,22 @@ namespace Dune {
     //===== random access interface to rows of the matrix
 
     //! random access to the rows
-    row_type& operator[] (int i)
+    row_type& operator[] (size_type i)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (r==0) DUNE_THROW(ISTLError,"row not initialized yet");
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+      if (i>=n) DUNE_THROW(ISTLError,"index out of range");
       if (r[i].getptr()==0) DUNE_THROW(ISTLError,"row not initialized yet");
 #endif
       return r[i];
     }
 
     //! same for read only access
-    const row_type& operator[] (int i) const
+    const row_type& operator[] (size_type i) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (!ready) DUNE_THROW(ISTLError,"row not initialized yet");
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+      if (i>=n) DUNE_THROW(ISTLError,"index out of range");
 #endif
       return r[i];
     }
@@ -140,7 +143,7 @@ namespace Dune {
     {
     public:
       //! constructor
-      Iterator (row_type* _p, int _i)
+      Iterator (row_type* _p, size_type _i)
       {
         p = _p;
         i = _i;
@@ -197,7 +200,7 @@ namespace Dune {
       }
 
       //! return index
-      int index ()
+      size_type index ()
       {
         return i;
       }
@@ -206,7 +209,7 @@ namespace Dune {
 
     private:
       row_type* p;
-      int i;
+      size_type i;
     };
 
     //! Get iterator to first row
@@ -245,7 +248,7 @@ namespace Dune {
     {
     public:
       //! constructor
-      ConstIterator (const row_type* _p, int _i) : p(_p), i(_i)
+      ConstIterator (const row_type* _p, size_type _i) : p(_p), i(_i)
       {       }
 
       //! empty constructor, use with care!
@@ -311,7 +314,7 @@ namespace Dune {
       }
 
       //! return index
-      int index () const
+      size_type index () const
       {
         return i;
       }
@@ -320,7 +323,7 @@ namespace Dune {
 
     private:
       const row_type* p;
-      int i;
+      size_type i;
     };
 
     //! Get const iterator to first row
@@ -376,7 +379,7 @@ namespace Dune {
     }
 
     //! matrix with known number of nonzeroes
-    BCRSMatrix (int _n, int _m, int _nnz, BuildMode bm)
+    BCRSMatrix (size_type _n, size_type _m, size_type _nnz, BuildMode bm)
     {
       // the state
       build_mode = bm;
@@ -401,7 +404,7 @@ namespace Dune {
       if (nnz>0)
       {
         a = A::template malloc<B>(nnz);
-        j = A::template malloc<int>(nnz);
+        j = A::template malloc<size_type>(nnz);
       }
       else
       {
@@ -411,7 +414,7 @@ namespace Dune {
     }
 
     //! matrix with unknown number of nonzeroes
-    BCRSMatrix (int _n, int _m, BuildMode bm)
+    BCRSMatrix (size_type _n, size_type _m, BuildMode bm)
     {
       // the state
       build_mode = bm;
@@ -451,7 +454,7 @@ namespace Dune {
       if (nnz<=0)
       {
         nnz = 0;
-        for (int i=0; i<n; i++)
+        for (size_type i=0; i<n; i++)
           nnz += Mat.r[i].getsize();
       }
 
@@ -469,7 +472,7 @@ namespace Dune {
       if (nnz>0)
       {
         a = A::template malloc<B>(nnz);
-        j = A::template malloc<int>(nnz);
+        j = A::template malloc<size_type>(nnz);
       }
       else
       {
@@ -478,7 +481,7 @@ namespace Dune {
       }
 
       // build window structure
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
       {
         // set row i
         r[i].setsize(Mat.r[i].getsize());
@@ -495,7 +498,7 @@ namespace Dune {
       }
 
       // copy data
-      for (int i=0; i<n; i++) r[i] = Mat.r[i];
+      for (size_type i=0; i<n; i++) r[i] = Mat.r[i];
 
       // finish off
       build_mode = row_wise;     // dummy
@@ -508,16 +511,16 @@ namespace Dune {
       if (nnz>0)
       {
         // a,j have been allocated as one long vector
-        A::template free<int>(j);
+        A::template free<size_type>(j);
         A::template free<B>(a);
       }
       else
       {
         // check if memory for rows have been allocated individually
-        for (int i=0; i<n; i++)
+        for (size_type i=0; i<n; i++)
           if (r[i].getsize()>0)
           {
-            A::template free<int>(r[i].getindexptr());
+            A::template free<size_type>(r[i].getindexptr());
             A::template free<B>(r[i].getptr());
           }
       }
@@ -536,16 +539,16 @@ namespace Dune {
       if (nnz>0)
       {
         // a,j have been allocated as one long vector
-        A::template free<int>(j);
+        A::template free<size_type>(j);
         A::template free<B>(a);
       }
       else
       {
         // check if memory for rows have been allocated individually
-        for (int i=0; i<n; i++)
+        for (size_type i=0; i<n; i++)
           if (r[i].getsize()>0)
           {
-            A::template free<int>(r[i].getindexptr());
+            A::template free<size_type>(r[i].getindexptr());
             A::template free<B>(r[i].getptr());
           }
       }
@@ -576,7 +579,7 @@ namespace Dune {
       if (nnz<=0)
       {
         nnz = 0;
-        for (int i=0; i<n; i++)
+        for (size_type i=0; i<n; i++)
           nnz += Mat.r[i].getsize();
       }
 
@@ -584,7 +587,7 @@ namespace Dune {
       if (nnz>0)
       {
         a = A::template malloc<B>(nnz);
-        j = A::template malloc<int>(nnz);
+        j = A::template malloc<size_type>(nnz);
       }
       else
       {
@@ -593,7 +596,7 @@ namespace Dune {
       }
 
       // build window structure
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
       {
         // set row i
         r[i].setsize(Mat.r[i].getsize());
@@ -610,7 +613,7 @@ namespace Dune {
       }
 
       // copy data
-      for (int i=0; i<n; i++) r[i] = Mat.r[i];
+      for (size_type i=0; i<n; i++) r[i] = Mat.r[i];
 
       // finish off
       build_mode = row_wise;     // dummy
@@ -621,7 +624,7 @@ namespace Dune {
     //! Assignment from a scalar
     BCRSMatrix& operator= (const field_type& k)
     {
-      for (int i=0; i<n; i++) r[i] = k;
+      for (size_type i=0; i<n; i++) r[i] = k;
       return *this;
     }
 
@@ -632,7 +635,7 @@ namespace Dune {
     {
     public:
       //! constructor
-      CreateIterator (BCRSMatrix& _Mat, int _i) : Mat(_Mat)
+      CreateIterator (BCRSMatrix& _Mat, size_type _i) : Mat(_Mat)
       {
         if (Mat.build_mode!=row_wise)
           DUNE_THROW(ISTLError,"creation only allowed for uninitialized matrix");
@@ -653,7 +656,7 @@ namespace Dune {
         // this depends on the allocation mode
 
         // compute size of the row
-        int s = pattern.size();
+        size_type s = pattern.size();
 
         // update number of nonzeroes including this row
         nnz += s;
@@ -681,7 +684,7 @@ namespace Dune {
           if (s>0)
           {
             B*   a = A::template malloc<B>(s);
-            int* j = A::template malloc<int>(s);
+            size_type* j = A::template malloc<size_type>(s);
             Mat.r[i].set(s,a,j);
           }
           else
@@ -689,9 +692,9 @@ namespace Dune {
         }
 
         // initialize the j array for row i from pattern
-        int k=0;
-        int *j =  Mat.r[i].getindexptr();
-        for (std::set<int>::const_iterator it=pattern.begin(); it!=pattern.end(); ++it)
+        size_type k=0;
+        size_type *j =  Mat.r[i].getindexptr();
+        for (typename std::set<size_type>::const_iterator it=pattern.begin(); it!=pattern.end(); ++it)
           j[k++] = *it;
 
         // now go to next row
@@ -720,19 +723,19 @@ namespace Dune {
       }
 
       //! dereferencing
-      int index ()
+      size_type index ()
       {
         return i;
       }
 
       //! put column index in row
-      void insert (int j)
+      void insert (size_type j)
       {
         pattern.insert(j);
       }
 
       //! return true if column index is in row
-      bool contains (int j)
+      bool contains (size_type j)
       {
         if (pattern.find(j)!=pattern.end())
           return true;
@@ -742,9 +745,9 @@ namespace Dune {
 
     private:
       BCRSMatrix& Mat;     // the matrix we are defining
-      int i;               // current row to be defined
-      int nnz;             // count total number of nonzeros
-      std::set<int> pattern;     // used to compile entries in a row
+      size_type i;               // current row to be defined
+      size_type nnz;             // count total number of nonzeros
+      std::set<size_type> pattern;     // used to compile entries in a row
     };
 
 
@@ -767,7 +770,7 @@ namespace Dune {
     //===== random creation interface
 
     //! set number of indices in row i to s
-    void setrowsize (int i, int s)
+    void setrowsize (size_type i, size_type s)
     {
       if (build_mode!=random)
         DUNE_THROW(ISTLError,"requires random build mode");
@@ -778,7 +781,7 @@ namespace Dune {
     }
 
     //! increment size of row i by 1
-    void incrementrowsize (int i)
+    void incrementrowsize (size_type i)
     {
       if (build_mode!=random)
         DUNE_THROW(ISTLError,"requires random build mode");
@@ -797,8 +800,8 @@ namespace Dune {
         DUNE_THROW(ISTLError,"matrix already built up");
 
       // compute total size, check positivity
-      int total=0;
-      for (int i=0; i<n; i++)
+      size_type total=0;
+      for (size_type i=0; i<n; i++)
       {
         if (r[i].getsize()<=0)
           DUNE_THROW(ISTLError,"rowsize must be positive");
@@ -819,7 +822,7 @@ namespace Dune {
         if (nnz>0)
         {
           a = A::template malloc<B>(nnz);
-          j = A::template malloc<int>(nnz);
+          j = A::template malloc<size_type>(nnz);
         }
         else
         {
@@ -829,7 +832,7 @@ namespace Dune {
       }
 
       // set the window pointers correctly
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
       {
         // set row i
         if (i==0)
@@ -846,12 +849,12 @@ namespace Dune {
 
       // initialize j array with m (an invalid column index)
       // this indicates an unused entry
-      for (int k=0; k<nnz; k++)
+      for (size_type k=0; k<nnz; k++)
         j[k] = m;
     }
 
     //! add index (row,col) to the matrix
-    void addindex (int row, int col)
+    void addindex (size_type row, size_type col)
     {
       if (build_mode!=random)
         DUNE_THROW(ISTLError,"requires random build mode");
@@ -859,14 +862,14 @@ namespace Dune {
         DUNE_THROW(ISTLError,"matrix already built up");
 
       // get row
-      int* p = r[row].getindexptr();
-      int s = r[row].getsize();
+      size_type* p = r[row].getindexptr();
+      size_type s = r[row].getsize();
 
       // binary search for col
-      int l=0, r=s-1;
+      size_type l=0, r=s-1;
       while (l<r)
       {
-        int q = (l+r)/2;
+        size_type q = (l+r)/2;
         if (col <= p[q]) r=q;
         else l = q+1;
       }
@@ -878,7 +881,7 @@ namespace Dune {
       l=0; r=s-1;
       while (l<r)
       {
-        int q = (l+r)/2;
+        size_type q = (l+r)/2;
         if (m <= p[q]) r=q;
         else l = q+1;
       }
@@ -889,7 +892,7 @@ namespace Dune {
       p[l] = col;
 
       // use insertion sort to move index to correct position
-      for (int i=l-1; i>=0; i--)
+      for (size_type i=l-1; i>=0; i--)
         if (p[i]>p[i+1])
           std::swap(p[i],p[i+1]);
         else
@@ -905,7 +908,7 @@ namespace Dune {
         DUNE_THROW(ISTLError,"matrix already built up");
 
       // check if there are undefined indices
-      for (int k=0; k<nnz; k++)
+      for (size_type k=0; k<nnz; k++)
         if (j[k]<0 || j[k]>=m)
         {
           std::cout << "j[" << k << "]=" << j[k] << std::endl;
@@ -923,7 +926,7 @@ namespace Dune {
       if (nnz>0)
       {
         // process 1D array
-        for (int i=0; i<nnz; i++)
+        for (size_type i=0; i<nnz; i++)
           a[i] *= k;
       }
       else
@@ -946,7 +949,7 @@ namespace Dune {
       if (nnz>0)
       {
         // process 1D array
-        for (int i=0; i<nnz; i++)
+        for (size_type i=0; i<nnz; i++)
           a[i] /= k;
       }
       else
@@ -1180,41 +1183,41 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in row direction
-    int N () const
+    size_type N () const
     {
       return n;
     }
 
     //! number of blocks in column direction
-    int M () const
+    size_type M () const
     {
       return m;
     }
 
     //! row dimension of block r
-    int rowdim (int i) const
+    size_type rowdim (size_type i) const
     {
       return r[i].getptr()->rowdim();
     }
 
     //! col dimension of block c
-    int coldim (int c) const
+    size_type coldim (size_type c) const
     {
       // find an entry in column j
       if (nnz>0)
       {
-        for (int k=0; k<nnz; k++)
+        for (size_type k=0; k<nnz; k++)
           if (j[k]==c) {
             return a[k].coldim();
           }
       }
       else
       {
-        for (int i=0; i<n; i++)
+        for (size_type i=0; i<n; i++)
         {
-          int* j = r[i].getindexptr();
+          size_type* j = r[i].getindexptr();
           B*   a = r[i].getptr();
-          for (int k=0; k<r[i].getsize(); k++)
+          for (size_type k=0; k<r[i].getsize(); k++)
             if (j[k]==c) {
               return a[k].coldim();
             }
@@ -1226,19 +1229,19 @@ namespace Dune {
     }
 
     //! dimension of the destination vector space
-    int rowdim () const
+    size_type rowdim () const
     {
-      int nn=0;
-      for (int i=0; i<n; i++)
+      size_type nn=0;
+      for (size_type i=0; i<n; i++)
         nn += rowdim(i);
       return nn;
     }
 
     //! dimension of the source vector space
-    int coldim () const
+    size_type coldim () const
     {
-      int mm=0;
-      for (int i=0; i<m; i++)
+      size_type mm=0;
+      for (size_type i=0; i<m; i++)
         mm += coldim(i);
       return mm;
     }
@@ -1246,7 +1249,7 @@ namespace Dune {
     //===== query
 
     //! return true if (i,j) is in pattern
-    bool exists (int i, int j) const
+    bool exists (size_type i, size_type j) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
@@ -1265,9 +1268,9 @@ namespace Dune {
     bool ready;               // true if matrix is ready to use
 
     // size of the matrix
-    int n;       // number of rows
-    int m;       // number of columns
-    int nnz;     // number of nonzeros allocated in the a and j array below
+    size_type n;       // number of rows
+    size_type m;       // number of columns
+    size_type nnz;     // number of nonzeros allocated in the a and j array below
     // zero means that memory is allocated seperately for each row.
 
     // the rows are dynamically allocated
@@ -1275,7 +1278,7 @@ namespace Dune {
 
     // dynamically allocated memory
     B*   a;      // [nnz] non-zero entries of the matrix in row-wise ordering
-    int* j;      // [nnz] column indices of entries
+    size_type* j;      // [nnz] column indices of entries
   };
 
 

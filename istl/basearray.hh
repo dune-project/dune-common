@@ -3,8 +3,9 @@
 #ifndef DUNE_BASEARRAY_HH
 #define DUNE_BASEARRAY_HH
 
-#include <math.h>
+#include <cmath>
 #include <complex>
+#include <cstddef>
 
 #include "istlexception.hh"
 #include "allocator.hh"
@@ -49,23 +50,26 @@ namespace Dune {
     //! export the allocator type
     typedef A allocator_type;
 
+    //! the type for the index access
+    typedef typename A::size_type size_type;
+
 
     //===== access to components
 
     //! random access to blocks
-    B& operator[] (int i)
+    B& operator[] (size_type i)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+      if (i>=n) DUNE_THROW(ISTLError,"index out of range");
 #endif
       return p[i];
     }
 
     //! same for read only access
-    const B& operator[] (int i) const
+    const B& operator[] (size_type i) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(ISTLError,"index out of range");
+      if (i>=n) DUNE_THROW(ISTLError,"index out of range");
 #endif
       return p[i];
     }
@@ -84,7 +88,7 @@ namespace Dune {
         i = 0;
       }
 
-      iterator (B* _p, int _i) : p(_p), i(_i)
+      iterator (const B* _p, B* _i) : p(_p), i(_i)
       {       }
 
       //! prefix increment
@@ -104,83 +108,84 @@ namespace Dune {
       //! equality
       bool operator== (const iterator& it) const
       {
-        return (p+i)==(it.p+it.i);
+        return (i)==(it.i);
       }
 
       //! inequality
       bool operator!= (const iterator& it) const
       {
-        return (p+i)!=(it.p+it.i);
+        return (i)!=(it.i);
       }
 
       //! equality with a const iterator
       bool operator== (const const_iterator& it) const
       {
-        return (p+i)==(it.p+it.i);
+        return (i)==(it.i);
       }
 
       //! inequality with a const iterator
       bool operator!= (const const_iterator& it) const
       {
-        return (p+i)!=(it.p+it.i);
+        return (i)!=(it.i);
       }
 
       //! dereferencing
       B& operator* () const
       {
-        return p[i];
+        return *i;
       }
 
       //! arrow
       B* operator-> () const
       {
-        return p+i;
+        return i;
       }
 
       //! return index corresponding to pointer
-      int index () const
+      size_type index () const
       {
-        return i;
+        return i-p;
       }
 
       friend class const_iterator;
 
     private:
-      B* p;
-      int i;
+      const B* p;
+      B* i;
+
     };
 
     //! begin iterator
     iterator begin ()
     {
-      return iterator(p,0);
+      return iterator(p,p);
     }
 
     //! end iterator
     iterator end ()
     {
-      return iterator(p,n);
+      return iterator(p,p+n);
     }
 
     //! begin reverse iterator
     iterator rbegin ()
     {
-      return iterator(p,n-1);
+      return iterator(p,p+n-1);
     }
 
     //! end reverse iterator
     iterator rend ()
     {
-      return iterator(p,-1);
+      return iterator(p,p-1);
     }
 
     //! random access returning iterator (end if not contained)
-    iterator find (int i)
+    iterator find (size_type i)
     {
-      if (i>=0 && i<n)
-        return iterator(p,i);
+      if (i<n)
+        return iterator(p,p+i);
       else
-        return iterator(p,n);
+        return iterator(p,p+n);
     }
 
     //! const_iterator class for sequential access
@@ -194,7 +199,7 @@ namespace Dune {
         i = 0;
       }
 
-      const_iterator (const B* _p, int _i) : p(_p), i(_i)
+      const_iterator (const B* _p, const B* _i) : p(_p), i(_i)
       {       }
 
       const_iterator (const iterator& it) : p(it.p), i(it.i)
@@ -217,90 +222,90 @@ namespace Dune {
       //! equality
       bool operator== (const const_iterator& it) const
       {
-        return (p+i)==(it.p+it.i);
+        return (i)==(it.i);
       }
 
       //! inequality
       bool operator!= (const const_iterator& it) const
       {
-        return (p+i)!=(it.p+it.i);
+        return (i)!=(it.i);
       }
 
       //! equality
       bool operator== (const iterator& it) const
       {
-        return (p+i)==(it.p+it.i);
+        return (i)==(it.i);
       }
 
       //! inequality
       bool operator!= (const iterator& it) const
       {
-        return (p+i)!=(it.p+it.i);
+        return (i)!=(it.i);
       }
 
       //! dereferencing
       const B& operator* () const
       {
-        return p[i];
+        return *i;
       }
 
       //! arrow
       const B* operator-> () const
       {
-        return p+i;
+        return i;
       }
 
       //! return index corresponding to pointer
-      int index () const
+      size_type index () const
       {
-        return i;
+        return i-p;
       }
 
       friend class iterator;
 
     private:
       const B* p;
-      int i;
+      const B* i;
     };
 
     //! begin const_iterator
     const_iterator begin () const
     {
-      return const_iterator(p,0);
+      return const_iterator(p,p+0);
     }
 
     //! end const_iterator
     const_iterator end () const
     {
-      return const_iterator(p,n);
+      return const_iterator(p,p+n);
     }
 
     //! begin reverse const_iterator
     const_iterator rbegin () const
     {
-      return const_iterator(p,n-1);
+      return const_iterator(p,p+n-1);
     }
 
     //! end reverse const_iterator
     const_iterator rend () const
     {
-      return const_iterator(p,-1);
+      return const_iterator(p,p-1);
     }
 
     //! random access returning iterator (end if not contained)
-    const_iterator find (int i) const
+    const_iterator find (size_type i) const
     {
-      if (i>=0 && i<n)
-        return const_iterator(p,i);
+      if (i<n)
+        return const_iterator(p,p+i);
       else
-        return const_iterator(p,n);
+        return const_iterator(p,p+n);
     }
 
 
     //===== sizes
 
     //! number of blocks in the array (are of size 1 here)
-    int size () const
+    size_type size () const
     {
       return n;
     }
@@ -313,7 +318,7 @@ namespace Dune {
       p = 0;
     }
 
-    int n;     // number of elements in array
+    size_type n;     // number of elements in array
     B *p;      // pointer to dynamically allocated built-in array
   };
 
@@ -352,6 +357,11 @@ namespace Dune {
     //! make iterators available as types
     typedef typename base_array_unmanaged<B,A>::const_iterator const_iterator;
 
+    //! The type used for the index access
+    typedef typename base_array_unmanaged<B,A>::size_type size_type;
+
+    //! The type used for the difference between two iterator positions
+    typedef typename A::difference_type difference_type;
 
     //===== constructors and such
 
@@ -363,7 +373,7 @@ namespace Dune {
     }
 
     //! make array from given pointer and size
-    base_array_window (B* _p, int _n)
+    base_array_window (B* _p, size_type _n)
     {
       this->n = _n;
       this->p = _p;
@@ -372,28 +382,28 @@ namespace Dune {
     //===== window manipulation methods
 
     //! set pointer and length
-    void set (int _n, B* _p)
+    void set (size_type _n, B* _p)
     {
       this->n = _n;
       this->p = _p;
     }
 
     //! advance pointer by newsize elements and then set size to new size
-    void advance (int newsize)
+    void advance (difference_type newsize)
     {
       this->p += this->n;
       this->n = newsize;
     }
 
     //! increment pointer by offset and set size
-    void move (int offset, int newsize)
+    void move (difference_type offset, size_type newsize)
     {
       this->p += offset;
       this->n = newsize;
     }
 
     //! increment pointer by offset, leave size
-    void move (int offset)
+    void move (difference_type offset)
     {
       this->p += offset;
     }
@@ -441,6 +451,12 @@ namespace Dune {
     //! make iterators available as types
     typedef typename base_array_unmanaged<B,A>::const_iterator const_iterator;
 
+    //! The type used for the index access
+    typedef typename base_array_unmanaged<B,A>::size_type size_type;
+
+    //! The type used for the difference between two iterator positions
+    typedef typename A::difference_type difference_type;
+
     //===== constructors and such
 
     //! makes empty array
@@ -451,7 +467,7 @@ namespace Dune {
     }
 
     //! make array with _n components
-    base_array (int _n)
+    base_array (size_type _n)
     {
       this->n = _n;
       if (this->n>0)
@@ -477,7 +493,7 @@ namespace Dune {
       }
 
       // and copy elements
-      for (int i=0; i<this->n; i++) this->p[i]=a.p[i];
+      for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
     }
 
     //! construct from base class object
@@ -496,7 +512,7 @@ namespace Dune {
       }
 
       // and copy elements
-      for (int i=0; i<this->n; i++) this->p[i]=a.p[i];
+      for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
     }
 
 
@@ -507,7 +523,7 @@ namespace Dune {
     }
 
     //! reallocate array to given size, any data is lost
-    void resize (int _n)
+    void resize (size_type _n)
     {
       if (this->n==_n) return;
 
@@ -541,7 +557,7 @@ namespace Dune {
           }
         }
         // copy data
-        for (int i=0; i<this->n; i++) this->p[i]=a.p[i];
+        for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
       }
       return *this;
     }
@@ -588,16 +604,18 @@ namespace Dune {
     //! export the allocator type
     typedef A allocator_type;
 
+    //! The type used for the index access
+    typedef typename A::size_type size_type;
 
     //===== access to components
 
     //! random access to blocks, assumes ascending ordering
-    B& operator[] (int i)
+    B& operator[] (size_type i)
     {
-      int l=0, r=n-1;
+      size_type l=0, r=n-1;
       while (l<r)
       {
-        int q = (l+r)/2;
+        size_type q = (l+r)/2;
         if (i <= j[q]) r=q;
         else l = q+1;
       }
@@ -608,12 +626,12 @@ namespace Dune {
     }
 
     //! same for read only access, assumes ascending ordering
-    const B& operator[] (int i) const
+    const B& operator[] (size_type i) const
     {
-      int l=0, r=n-1;
+      size_type l=0, r=n-1;
       while (l<r)
       {
-        int q = (l+r)/2;
+        size_type q = (l+r)/2;
         if (i <= j[q]) r=q;
         else l = q+1;
       }
@@ -638,7 +656,7 @@ namespace Dune {
         i = 0;
       }
 
-      iterator (B* _p, int* _j, int _i) : p(_p), j(_j), i(_i)
+      iterator (B* _p, size_type* _j, size_type _i) : p(_p), j(_j), i(_i)
       {       }
 
       //! prefix increment
@@ -696,13 +714,13 @@ namespace Dune {
       }
 
       //! return index corresponding to pointer
-      int index () const
+      size_type index () const
       {
         return j[i];
       }
 
       //! Set index corresponding to pointer
-      void setindex (int k)
+      void setindex (size_type k)
       {
         return j[i] = k;
       }
@@ -714,7 +732,7 @@ namespace Dune {
        * has to be increment this amount of times to
        * the same position.
        */
-      int offset () const
+      size_type offset () const
       {
         return i;
       }
@@ -723,8 +741,8 @@ namespace Dune {
 
     private:
       B* p;
-      int* j;
-      int i;
+      size_type* j;
+      size_type i;
     };
 
     //! begin iterator
@@ -752,12 +770,12 @@ namespace Dune {
     }
 
     //! random access returning iterator (end if not contained)
-    iterator find (int i)
+    iterator find (size_type i)
     {
-      int l=0, r=n-1;
+      size_type l=0, r=n-1;
       while (l<r)
       {
-        int q = (l+r)/2;
+        size_type q = (l+r)/2;
         if (i <= j[q]) r=q;
         else l = q+1;
       }
@@ -781,7 +799,7 @@ namespace Dune {
       }
 
       //! \todo please doc me!
-      const_iterator (const B* _p, const int* _j, int _i) : p(_p), j(_j), i(_i)
+      const_iterator (const B* _p, const size_type* _j, size_type _i) : p(_p), j(_j), i(_i)
       {       }
 
       //! Copy constructor from a non-const iterator
@@ -843,7 +861,7 @@ namespace Dune {
       }
 
       //! return index corresponding to pointer
-      int index () const
+      size_type index () const
       {
         return j[i];
       }
@@ -855,7 +873,7 @@ namespace Dune {
        * has to be increment this amount of times to
        * the same position.
        */
-      int offset () const
+      size_type offset () const
       {
         return i;
       }
@@ -864,8 +882,8 @@ namespace Dune {
 
     private:
       const B* p;
-      const int* j;
-      int i;
+      const size_type* j;
+      size_type i;
     };
 
     //! begin const_iterator
@@ -893,12 +911,12 @@ namespace Dune {
     }
 
     //! random access returning iterator (end if not contained)
-    const_iterator find (int i) const
+    const_iterator find (size_type i) const
     {
-      int l=0, r=n-1;
+      size_type l=0, r=n-1;
       while (l<r)
       {
-        int q = (l+r)/2;
+        size_type q = (l+r)/2;
         if (i <= j[q]) r=q;
         else l = q+1;
       }
@@ -912,7 +930,7 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in the array (are of size 1 here)
-    int size () const
+    size_type size () const
     {
       return n;
     }
@@ -926,9 +944,9 @@ namespace Dune {
       j = 0;
     }
 
-    int n;      // number of elements in array
+    size_type n;      // number of elements in array
     B *p;       // pointer to dynamically allocated built-in array
-    int* j;     // the index set
+    size_type* j;     // the index set
   };
 
 

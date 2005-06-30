@@ -52,6 +52,9 @@ namespace Dune {
     //! export the allocator type
     typedef A allocator_type;
 
+    //! The size type for the index access
+    typedef typename A::size_type size_type;
+
     //! make iterators available as types
     typedef typename base_array_unmanaged<B,A>::iterator Iterator;
 
@@ -64,7 +67,7 @@ namespace Dune {
     //! Assignment from a scalar
     block_vector_unmanaged& operator= (const field_type& k)
     {
-      for (int i=0; i<this->n; i++)
+      for (size_type i=0; i<this->n; i++)
         (*this)[i] = k;
       return *this;
     }
@@ -78,7 +81,7 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (this->n!=y.N()) DUNE_THROW(ISTLError,"vector size mismatch");
 #endif
-      for (int i=0; i<this->n; ++i) (*this)[i] += y[i];
+      for (size_type i=0; i<this->n; ++i) (*this)[i] += y[i];
       return *this;
     }
 
@@ -88,14 +91,14 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (this->n!=y.N()) DUNE_THROW(ISTLError,"vector size mismatch");
 #endif
-      for (int i=0; i<this->n; ++i) (*this)[i] -= y[i];
+      for (size_type i=0; i<this->n; ++i) (*this)[i] -= y[i];
       return *this;
     }
 
     //! vector space multiplication with scalar
     block_vector_unmanaged& operator*= (const field_type& k)
     {
-      for (int i=0; i<this->n; ++i) (*this)[i] *= k;
+      for (size_type i=0; i<this->n; ++i) (*this)[i] *= k;
       return *this;
     }
 
@@ -112,7 +115,7 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (this->n!=y.N()) DUNE_THROW(ISTLError,"vector size mismatch");
 #endif
-      for (int i=0; i<this->n; ++i) (*this)[i].axpy(a,y[i]);
+      for (size_type i=0; i<this->n; ++i) (*this)[i].axpy(a,y[i]);
       return *this;
     }
 
@@ -126,7 +129,7 @@ namespace Dune {
       if (this->n!=y.N()) DUNE_THROW(ISTLError,"vector size mismatch");
 #endif
       field_type sum=0;
-      for (int i=0; i<this->n; ++i) sum += (*this)[i]*y[i];
+      for (size_type i=0; i<this->n; ++i) sum += (*this)[i]*y[i];
       return sum;
     }
 
@@ -137,7 +140,7 @@ namespace Dune {
     double one_norm () const
     {
       double sum=0;
-      for (int i=0; i<this->n; ++i) sum += (*this)[i].one_norm();
+      for (size_type i=0; i<this->n; ++i) sum += (*this)[i].one_norm();
       return sum;
     }
 
@@ -145,7 +148,7 @@ namespace Dune {
     double one_norm_real () const
     {
       double sum=0;
-      for (int i=0; i<this->n; ++i) sum += (*this)[i].one_norm_real();
+      for (size_type i=0; i<this->n; ++i) sum += (*this)[i].one_norm_real();
       return sum;
     }
 
@@ -153,7 +156,7 @@ namespace Dune {
     double two_norm () const
     {
       double sum=0;
-      for (int i=0; i<this->n; ++i) sum += (*this)[i].two_norm2();
+      for (size_type i=0; i<this->n; ++i) sum += (*this)[i].two_norm2();
       return sqrt(sum);
     }
 
@@ -161,7 +164,7 @@ namespace Dune {
     double two_norm2 () const
     {
       double sum=0;
-      for (int i=0; i<this->n; ++i) sum += (*this)[i].two_norm2();
+      for (size_type i=0; i<this->n; ++i) sum += (*this)[i].two_norm2();
       return sum;
     }
 
@@ -169,7 +172,7 @@ namespace Dune {
     double infinity_norm () const
     {
       double max=0;
-      for (int i=0; i<this->n; ++i) max = std::max(max,(*this)[i].infinity_norm());
+      for (size_type i=0; i<this->n; ++i) max = std::max(max,(*this)[i].infinity_norm());
       return max;
     }
 
@@ -177,7 +180,7 @@ namespace Dune {
     double infinity_norm_real () const
     {
       double max=0;
-      for (int i=0; i<this->n; ++i) max = std::max(max,(*this)[i].infinity_norm_real());
+      for (size_type i=0; i<this->n; ++i) max = std::max(max,(*this)[i].infinity_norm_real());
       return max;
     }
 
@@ -185,16 +188,16 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in the vector (are of size 1 here)
-    int N () const
+    size_type N () const
     {
       return this->n;
     }
 
     //! dimension of the vector space
-    int dim () const
+    size_type dim () const
     {
-      int d=0;
-      for (int i=0; i<this->n; i++)
+      size_type d=0;
+      for (size_type i=0; i<this->n; i++)
         d += (*this)[i].dim();
       return d;
     }
@@ -232,6 +235,9 @@ namespace Dune {
     //! export the allocator type
     typedef A allocator_type;
 
+    //! The type for the index access
+    typedef typename A::size_type size_type;
+
     //! increment block level counter
     enum {
       //! The number of blocklevel we contain.
@@ -251,7 +257,7 @@ namespace Dune {
     {       }
 
     //! make vector with _n components
-    BlockVector (int _n)
+    BlockVector (size_type _n)
     {
       this->n = _n;
       if (this->n>0)
@@ -278,7 +284,7 @@ namespace Dune {
       }
 
       // and copy elements
-      for (int i=0; i<this->n; i++) this->p[i]=a.p[i];
+      for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
     }
 
     //! construct from base class object
@@ -298,7 +304,7 @@ namespace Dune {
       }
 
       // and copy elements
-      for (int i=0; i<this->n; i++) this->p[i]=a.p[i];
+      for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
     }
 
 
@@ -309,7 +315,7 @@ namespace Dune {
     }
 
     //! reallocate vector to given size, any data is lost
-    void resize (int _n)
+    void resize (size_type _n)
     {
       if (this->n==_n) return;
 
@@ -343,7 +349,7 @@ namespace Dune {
           }
         }
         // copy data
-        for (int i=0; i<this->n; i++) this->p[i]=a.p[i];
+        for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
       }
       return *this;
     }
@@ -368,7 +374,9 @@ namespace Dune {
   template<class K, class A>
   std::ostream& operator<< (std::ostream& s, const BlockVector<K, A>& v)
   {
-    for (int i=0; i<v.size(); i++)
+    typedef typename  BlockVector<K, A>::size_type size_type;
+
+    for (size_type i=0; i<v.size(); i++)
       s << v[i] << std::endl;
 
     return s;
@@ -406,6 +414,9 @@ namespace Dune {
     //! export the allocator type
     typedef A allocator_type;
 
+    //! The type for the index access
+    typedef typename A::size_type size_type;
+
     //! increment block level counter
     enum {
       //! The number of blocklevels we contain
@@ -425,7 +436,7 @@ namespace Dune {
     {       }
 
     //! make array from given pointer and size
-    BlockVectorWindow (B* _p, int _n)
+    BlockVectorWindow (B* _p, size_type _n)
     {
       this->n = _n;
       this->p = _p;
@@ -461,7 +472,7 @@ namespace Dune {
       if (&a!=this)     // check if this and a are different objects
       {
         // copy data
-        for (int i=0; i<this->n; i++) this->p[i]=a.p[i];
+        for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
       }
       return *this;
     }
@@ -484,14 +495,14 @@ namespace Dune {
     //===== window manipulation methods
 
     //! set size and pointer
-    void set (int _n, B* _p)
+    void set (size_type _n, B* _p)
     {
       this->n = _n;
       this->p = _p;
     }
 
     //! set size only
-    void setsize (int _n)
+    void setsize (size_type _n)
     {
       this->n = _n;
     }
@@ -509,7 +520,7 @@ namespace Dune {
     }
 
     //! get size
-    int getsize ()
+    size_type getsize ()
     {
       return this->n;
     }
@@ -547,12 +558,14 @@ namespace Dune {
     //! make iterators available as types
     typedef typename compressed_base_array_unmanaged<B,A>::const_iterator ConstIterator;
 
+    //! The type for the index access
+    typedef typename A::size_type size_type;
 
     //===== assignment from scalar
 
     compressed_block_vector_unmanaged& operator= (const field_type& k)
     {
-      for (int i=0; i<this->n; i++)
+      for (size_type i=0; i<this->n; i++)
         (this->p)[i] = k;
       return *this;
     }
@@ -567,7 +580,7 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (!includesindexset(y)) DUNE_THROW(ISTLError,"index set mismatch");
 #endif
-      for (int i=0; i<this->n; ++i) (this->p)[i] += y[(this->j)[i]];
+      for (size_type i=0; i<this->n; ++i) (this->p)[i] += y[(this->j)[i]];
       return *this;
     }
 
@@ -578,7 +591,7 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (!includesindexset(y)) DUNE_THROW(ISTLError,"index set mismatch");
 #endif
-      for (int i=0; i<this->n; ++i) (this->p)[i] -= y[(this->j)[i]];
+      for (size_type i=0; i<this->n; ++i) (this->p)[i] -= y[(this->j)[i]];
       return *this;
     }
 
@@ -589,21 +602,21 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (!includesindexset(y)) DUNE_THROW(ISTLError,"index set mismatch");
 #endif
-      for (int i=0; i<this->n; ++i) (this->p)[i].axpy(a,y[(this->j)[i]]);
+      for (size_type i=0; i<this->n; ++i) (this->p)[i].axpy(a,y[(this->j)[i]]);
       return *this;
     }
 
     //! vector space multiplication with scalar
     compressed_block_vector_unmanaged& operator*= (const field_type& k)
     {
-      for (int i=0; i<this->n; ++i) (this->p)[i] *= k;
+      for (size_type i=0; i<this->n; ++i) (this->p)[i] *= k;
       return *this;
     }
 
     //! vector space division by scalar
     compressed_block_vector_unmanaged& operator/= (const field_type& k)
     {
-      for (int i=0; i<this->n; ++i) (this->p)[i] /= k;
+      for (size_type i=0; i<this->n; ++i) (this->p)[i] /= k;
       return *this;
     }
 
@@ -617,7 +630,7 @@ namespace Dune {
       if (!includesindexset(y)) DUNE_THROW(ISTLError,"index set mismatch");
 #endif
       field_type sum=0;
-      for (int i=0; i<this->n; ++i)
+      for (size_type i=0; i<this->n; ++i)
         sum += (this->p)[i] * y[(this->j)[i]];
       return sum;
     }
@@ -629,7 +642,7 @@ namespace Dune {
     double one_norm () const
     {
       double sum=0;
-      for (int i=0; i<this->n; ++i) sum += (this->p)[i].one_norm();
+      for (size_type i=0; i<this->n; ++i) sum += (this->p)[i].one_norm();
       return sum;
     }
 
@@ -637,7 +650,7 @@ namespace Dune {
     double one_norm_real () const
     {
       double sum=0;
-      for (int i=0; i<this->n; ++i) sum += (this->p)[i].one_norm_real();
+      for (size_type i=0; i<this->n; ++i) sum += (this->p)[i].one_norm_real();
       return sum;
     }
 
@@ -645,7 +658,7 @@ namespace Dune {
     double two_norm () const
     {
       double sum=0;
-      for (int i=0; i<this->n; ++i) sum += (this->p)[i].two_norm2();
+      for (size_type i=0; i<this->n; ++i) sum += (this->p)[i].two_norm2();
       return sqrt(sum);
     }
 
@@ -653,7 +666,7 @@ namespace Dune {
     double two_norm2 () const
     {
       double sum=0;
-      for (int i=0; i<this->n; ++i) sum += (this->p)[i].two_norm2();
+      for (size_type i=0; i<this->n; ++i) sum += (this->p)[i].two_norm2();
       return sum;
     }
 
@@ -661,7 +674,7 @@ namespace Dune {
     double infinity_norm () const
     {
       double max=0;
-      for (int i=0; i<this->n; ++i) max = std::max(max,(this->p)[i].infinity_norm());
+      for (size_type i=0; i<this->n; ++i) max = std::max(max,(this->p)[i].infinity_norm());
       return max;
     }
 
@@ -669,7 +682,7 @@ namespace Dune {
     double infinity_norm_real () const
     {
       double max=0;
-      for (int i=0; i<this->n; ++i) max = std::max(max,(this->p)[i].infinity_norm_real());
+      for (size_type i=0; i<this->n; ++i) max = std::max(max,(this->p)[i].infinity_norm_real());
       return max;
     }
 
@@ -677,16 +690,16 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in the vector (are of size 1 here)
-    int N () const
+    size_type N () const
     {
       return this->n;
     }
 
     //! dimension of the vector space
-    int dim () const
+    size_type dim () const
     {
-      int d=0;
-      for (int i=0; i<this->n; i++)
+      size_type d=0;
+      for (size_type i=0; i<this->n; i++)
         d += (this->p)[i].dim();
       return d;
     }
@@ -701,7 +714,7 @@ namespace Dune {
     bool includesindexset (const V& y)
     {
       typename V::Iterator e=y.end();
-      for (int i=0; i<this->n; i++)
+      for (size_type i=0; i<this->n; i++)
         if (y.find((this->j)[i])==e)
           return false;
       return true;
@@ -741,6 +754,9 @@ namespace Dune {
     //! export the allocator type
     typedef A allocator_type;
 
+    //! The type for the index access
+    typedef typename A::size_type size_type;
+
     //! increment block level counter
     enum {
       //! The number of block level this vector contains.
@@ -760,7 +776,7 @@ namespace Dune {
     {       }
 
     //! make array from given pointers and size
-    CompressedBlockVectorWindow (B* _p, int* _j, int _n)
+    CompressedBlockVectorWindow (B* _p, size_type* _j, size_type _n)
     {
       this->n = _n;
       this->p = _p;
@@ -799,8 +815,8 @@ namespace Dune {
       if (&a!=this)     // check if this and a are different objects
       {
         // copy data
-        for (int i=0; i<this->n; i++) this->p[i]=a.p[i];
-        for (int i=0; i<this->n; i++) this->j[i]=a.j[i];
+        for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
+        for (size_type i=0; i<this->n; i++) this->j[i]=a.j[i];
       }
       return *this;
     }
@@ -823,7 +839,7 @@ namespace Dune {
     //===== window manipulation methods
 
     //! set size and pointer
-    void set (int _n, B* _p, int* _j)
+    void set (size_type _n, B* _p, size_type* _j)
     {
       this->n = _n;
       this->p = _p;
@@ -831,7 +847,7 @@ namespace Dune {
     }
 
     //! set size only
-    void setsize (int _n)
+    void setsize (size_type _n)
     {
       this->n = _n;
     }
@@ -843,7 +859,7 @@ namespace Dune {
     }
 
     //! set pointer only
-    void setindexptr (int* _j)
+    void setindexptr (size_type* _j)
     {
       this->j = _j;
     }
@@ -855,13 +871,13 @@ namespace Dune {
     }
 
     //! get pointer
-    int* getindexptr ()
+    size_type* getindexptr ()
     {
       return this->j;
     }
 
     //! get size
-    int getsize ()
+    size_type getsize ()
     {
       return this->n;
     }

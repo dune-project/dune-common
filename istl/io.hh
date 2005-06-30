@@ -107,16 +107,18 @@ namespace Dune {
 
   //! print one row of a matrix
   template<class M>
-  void print_row (std::ostream& s, const M& A, int I, int J, int therow, int width, int precision)
+  void print_row (std::ostream& s, const M& A, typename M::size_type I,
+                  typename M::size_type J, typename M::size_type therow,
+                  int width, int precision)
   {
-    int i0=I;
-    for (int i=0; i<A.N(); i++)
+    typename M::size_type i0=I;
+    for (typename M::size_type i=0; i<A.N(); i++)
     {
       if (therow>=i0 && therow<i0+A.rowdim(i))
       {
         // the row is in this block row !
-        int j0=J;
-        for (int j=0; j<A.M(); j++)
+        typename M::size_type j0=J;
+        for (typename M::size_type j=0; j<A.M(); j++)
         {
           // find this block
           typename M::ConstColIterator it = A[i].find(j);
@@ -138,9 +140,13 @@ namespace Dune {
 
   //! print one row of a matrix, specialization for FieldMatrix
   template<class K, int n, int m>
-  void print_row (std::ostream& s, const FieldMatrix<K,n,m>& A, int I, int J, int therow, int width, int precision)
+  void print_row (std::ostream& s, const FieldMatrix<K,n,m>& A,
+                  typename FieldMatrix<K,n,m>::size_type I, typename FieldMatrix<K,n,m>::size_type J,
+                  typename FieldMatrix<K,n,m>::size_type therow, int width, int precision)
   {
-    for (int i=0; i<n; i++)
+    typedef typename FieldMatrix<K,n,m>::size_type size_type;
+
+    for (size_type i=0; i<n; i++)
       if (I+i==therow)
         for (int j=0; j<m; j++)
         {
@@ -152,7 +158,9 @@ namespace Dune {
 
   //! print one row of a matrix, specialization for FieldMatrix<K,1,1>
   template<class K>
-  void print_row (std::ostream& s, const FieldMatrix<K,1,1>& A, int I, int J, int therow, int width, int precision)
+  void print_row (std::ostream& s, const FieldMatrix<K,1,1>& A, typename FieldMatrix<K,1,1>::size_type I,
+                  typename FieldMatrix<K,1,1>::size_type J, typename FieldMatrix<K,1,1>::size_type therow,
+                  int width, int precision)
   {
     if (I==therow)
     {
@@ -181,7 +189,7 @@ namespace Dune {
       << "]" << std::endl;
 
     // print all rows
-    for (int i=0; i<A.rowdim(); i++)
+    for (typename M::size_type i=0; i<A.rowdim(); i++)
     {
       s << rowtext;            // start a new row
       s << " ";                // space in front of each entry

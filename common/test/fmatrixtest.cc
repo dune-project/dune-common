@@ -10,6 +10,8 @@ using namespace Dune;
 template<class K, int n, int m>
 void test_matrix()
 {
+  typedef typename FieldMatrix<K,n,m>::size_type size_type;
+
   FieldMatrix<K,n,m> A;
   FieldVector<K,n> f;
   FieldVector<K,m> v;
@@ -17,8 +19,8 @@ void test_matrix()
   // assign matrix
   A=0;
   // random access matrix
-  for (int i=0; i<A.rowdim(); i++)
-    for (int j=0; j<A.coldim(); j++)
+  for (size_type i=0; i<A.rowdim(); i++)
+    for (size_type j=0; j<A.coldim(); j++)
       A[i][j] = i*j;
   // iterator matrix
   typename FieldMatrix<K,n,m>::RowIterator rit = A.begin();
@@ -35,8 +37,9 @@ void test_matrix()
 
   // assign vector
   f = 1;
+
   // random access vector
-  for (int i=0; i<v.dim(); i++)
+  for (size_type i=0; i<v.dim(); i++)
     v[i] = i;
   // iterator vector
   typename FieldVector<K,m>::iterator it = v.begin();
@@ -52,7 +55,7 @@ void test_matrix()
   for (; it!=end; --it)
     (*it) /= 2;
   // find vector
-  for (int i=0; i<v.dim(); i++)
+  for (size_type i=0; i<v.dim(); i++)
   {
     it = v.find(i);
     (*it) += 1;

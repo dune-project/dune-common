@@ -4,7 +4,8 @@
 #ifndef DUNE_FMATRIX_HH
 #define DUNE_FMATRIX_HH
 
-#include <math.h>
+#include <cmath>
+#include <cstddef>
 #include <complex>
 #include <iostream>
 #include "exceptions.hh"
@@ -515,6 +516,9 @@ namespace Dune {
     //! export the type representing the components
     typedef K block_type;
 
+    //! The type used for the index access and size operations.
+    typedef std::size_t size_type;
+
     //! We are at the leaf of the block recursion
     enum {
       //! The number of block levels we contain. This is 1.
@@ -541,13 +545,13 @@ namespace Dune {
      */
     FieldMatrix (const K& k)
     {
-      for (int i=0; i<n; i++) p[i] = k;
+      for (size_type i=0; i<n; i++) p[i] = k;
     }
 
     //===== random access interface to rows of the matrix
 
     //! random access to the rows
-    row_type& operator[] (int i)
+    row_type& operator[] (size_type i)
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
@@ -556,7 +560,7 @@ namespace Dune {
     }
 
     //! same for read only access
-    const row_type& operator[] (int i) const
+    const row_type& operator[] (size_type i) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
@@ -691,8 +695,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (int i=0; i<n; i++)
-        for (int j=0; j<m; j++)
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
           y[j] += p[i][j]*x[i];
     }
 
@@ -705,8 +709,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (int i=0; i<n; i++)
-        for (int j=0; j<m; j++)
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
           y[j] += fm_ck(p[i][j])*x[i];
     }
 
@@ -731,8 +735,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (int i=0; i<n; i++)
-        for (int j=0; j<m; j++)
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
           y[j] -= p[i][j]*x[i];
     }
 
@@ -745,8 +749,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (int i=0; i<n; i++)
-        for (int j=0; j<m; j++)
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
           y[j] -= fm_ck(p[i][j])*x[i];
     }
 
@@ -770,8 +774,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (int i=0; i<n; i++)
-        for (int j=0; j<m; j++)
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
           y[j] += alpha*p[i][j]*x[i];
     }
 
@@ -784,8 +788,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (int i=0; i<n; i++)
-        for (int j=0; j<m; j++)
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
           y[j] += alpha*fm_ck(p[i][j])*x[i];
     }
 
@@ -795,7 +799,7 @@ namespace Dune {
     double frobenius_norm () const
     {
       double sum=0;
-      for (int i=0; i<n; ++i) sum += p[i].two_norm2();
+      for (size_type i=0; i<n; ++i) sum += p[i].two_norm2();
       return sqrt(sum);
     }
 
@@ -803,7 +807,7 @@ namespace Dune {
     double frobenius_norm2 () const
     {
       double sum=0;
-      for (int i=0; i<n; ++i) sum += p[i].two_norm2();
+      for (size_type i=0; i<n; ++i) sum += p[i].two_norm2();
       return sum;
     }
 
@@ -811,7 +815,7 @@ namespace Dune {
     double infinity_norm () const
     {
       double max=0;
-      for (int i=0; i<n; ++i) max = std::max(max,p[i].one_norm());
+      for (size_type i=0; i<n; ++i) max = std::max(max,p[i].one_norm());
       return max;
     }
 
@@ -819,7 +823,7 @@ namespace Dune {
     double infinity_norm_real () const
     {
       double max=0;
-      for (int i=0; i<n; ++i) max = std::max(max,p[i].one_norm_real());
+      for (size_type i=0; i<n; ++i) max = std::max(max,p[i].one_norm_real());
       return max;
     }
 
@@ -865,37 +869,37 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in row direction
-    int N () const
+    size_type N () const
     {
       return n;
     }
 
     //! number of blocks in column direction
-    int M () const
+    size_type M () const
     {
       return m;
     }
 
     //! row dimension of block r
-    int rowdim (int r) const
+    size_type rowdim (size_type r) const
     {
       return 1;
     }
 
     //! col dimension of block c
-    int coldim (int c) const
+    size_type coldim (size_type c) const
     {
       return 1;
     }
 
     //! dimension of the destination vector space
-    int rowdim () const
+    size_type rowdim () const
     {
       return n;
     }
 
     //! dimension of the source vector space
-    int coldim () const
+    size_type coldim () const
     {
       return m;
     }
@@ -903,7 +907,7 @@ namespace Dune {
     //===== query
 
     //! return true when (i,j) is in pattern
-    bool exists (int i, int j) const
+    bool exists (size_type i, size_type j) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
@@ -917,7 +921,7 @@ namespace Dune {
     /** \brief Sends the matrix to an output stream */
     void print (std::ostream& s) const
     {
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
         s << p[i] << std::endl;
     }
 
@@ -1003,6 +1007,9 @@ namespace Dune {
     //! export the type representing the components
     typedef K block_type;
 
+    //! The type used for index access and size operations
+    typedef int size_type;
+
     //! We are at the leaf of the block recursion
     enum {
       //! The number of block levels we contain.
@@ -1040,7 +1047,7 @@ namespace Dune {
     //===== random access interface to rows of the matrix
 
     //! random access to the rows
-    row_type& operator[] (int i)
+    row_type& operator[] (size_type i)
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
@@ -1049,7 +1056,7 @@ namespace Dune {
     }
 
     //! same for read only access
-    const row_type& operator[] (int i) const
+    const row_type& operator[] (size_type i) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
@@ -1276,37 +1283,37 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in row direction
-    int N () const
+    size_type N () const
     {
       return 1;
     }
 
     //! number of blocks in column direction
-    int M () const
+    size_type M () const
     {
       return 1;
     }
 
     //! row dimension of block r
-    int rowdim (int r) const
+    size_type rowdim (size_type r) const
     {
       return 1;
     }
 
     //! col dimension of block c
-    int coldim (int c) const
+    size_type coldim (size_type c) const
     {
       return 1;
     }
 
     //! dimension of the destination vector space
-    int rowdim () const
+    size_type rowdim () const
     {
       return 1;
     }
 
     //! dimension of the source vector space
-    int coldim () const
+    size_type coldim () const
     {
       return 1;
     }
@@ -1314,7 +1321,7 @@ namespace Dune {
     //===== query
 
     //! return true when (i,j) is in pattern
-    bool exists (int i, int j) const
+    bool exists (size_type i, size_type j) const
     {
       return i==0 && j==0;
     }
@@ -1387,10 +1394,12 @@ namespace Dune {
     template <typename K, int dim>
     static void multAssign(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
     {
-      for(int i=0; i<dim; i++)
+      typedef typename FieldMatrix<K,dim,dim>::size_type size_type;
+
+      for(size_type i=0; i<dim; i++)
       {
         ret[i] = 0.0;
-        for(int j=0; j<dim; j++)
+        for(size_type j=0; j<dim; j++)
         {
           ret[i] += matrix[i][j]*x[j];
         }

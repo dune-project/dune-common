@@ -4,7 +4,8 @@
 #ifndef DUNE_FVECTOR_HH
 #define DUNE_FVECTOR_HH
 
-#include <math.h>
+#include <cmath>
+#include <cstddef>
 #include <complex>
 
 #include "exceptions.hh"
@@ -337,7 +338,7 @@ namespace Dune {
     /**
      * @brief The type of the difference between two positions.
      */
-    typedef int DifferenceType;
+    typedef std::ptrdiff_t DifferenceType;
 
     // Constructors needed by the base iterators.
     FieldIterator()
@@ -446,6 +447,9 @@ namespace Dune {
     //! export the type representing the components
     typedef K block_type;
 
+    //! The type used for the index access and size operation
+    typedef std::size_t size_type;
+
     //! We are at the leaf of the block recursion
     enum {
       //! The number of block levels we contain
@@ -479,7 +483,7 @@ namespace Dune {
     //===== access to components
 
     //! random access
-    K& operator[] (int i)
+    K& operator[] (size_type i)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(MathError,"index out of range");
@@ -488,7 +492,7 @@ namespace Dune {
     }
 
     //! same for read only access
-    const K& operator[] (int i) const
+    const K& operator[] (size_type i) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (i<0 || i>=n) DUNE_THROW(MathError,"index out of range");
@@ -526,9 +530,9 @@ namespace Dune {
     }
 
     //! return iterator to given element or end()
-    Iterator find (int i)
+    Iterator find (size_type i)
     {
-      if (i>=0 && i<n)
+      if (i<n)
         return Iterator(*this,i);
       else
         return Iterator(*this,n);
@@ -564,9 +568,9 @@ namespace Dune {
     }
 
     //! return iterator to given element or end()
-    ConstIterator find (int i) const
+    ConstIterator find (size_type i) const
     {
-      if (i>=0 && i<n)
+      if (i<n)
         return ConstIterator(*this,i);
       else
         return ConstIterator(*this,n);
@@ -695,13 +699,13 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in the vector (are of size 1 here)
-    int N () const
+    size_type N () const
     {
       return n;
     }
 
     //! dimension of the vector space
-    int dim () const
+    size_type dim () const
     {
       return n;
     }
@@ -709,7 +713,7 @@ namespace Dune {
     //! Send vector to output stream
     void print (std::ostream& s) const
     {
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
         if (i>0)
           s << " " << p[i];
         else
@@ -750,6 +754,9 @@ namespace Dune {
     //! export the type representing the components
     typedef K block_type;
 
+    //! The type for the index access and size operations.
+    typedef int size_type;
+
     //! We are at the leaf of the block recursion
     enum {blocklevel = 1};
 
@@ -781,7 +788,7 @@ namespace Dune {
     //===== access to components
 
     //! random access
-    K& operator[] (int i)
+    K& operator[] (size_type i)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (i != 0) DUNE_THROW(MathError,"index out of range");
@@ -790,7 +797,7 @@ namespace Dune {
     }
 
     //! same for read only access
-    const K& operator[] (int i) const
+    const K& operator[] (size_type i) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (i != 0) DUNE_THROW(MathError,"index out of range");
@@ -828,9 +835,9 @@ namespace Dune {
     }
 
     //! return iterator to given element or end()
-    Iterator find (int i)
+    Iterator find (size_type i)
     {
-      if (i>=0 && i<n)
+      if (i<n)
         return Iterator(*this,i);
       else
         return Iterator(*this,n);
@@ -866,9 +873,9 @@ namespace Dune {
     }
 
     //! return iterator to given element or end()
-    ConstIterator find (int i) const
+    ConstIterator find (size_type i) const
     {
-      if (i>=0 && i<n)
+      if (i<n)
         return ConstIterator(*this,i);
       else
         return ConstIterator(*this,n);
@@ -989,13 +996,13 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in the vector (are of size 1 here)
-    int N () const
+    size_type N () const
     {
       return 1;
     }
 
     //! dimension of the vector space (==1)
-    int dim () const
+    size_type dim () const
     {
       return 1;
     }
