@@ -71,6 +71,10 @@ namespace Dune {
     typedef FieldVector<ct, d> fTupel;
     typedef FieldVector<bool, d> bTupel;
 
+    //! Destructor
+    virtual ~YGrid()
+    {}
+
     //! Make an empty YGrid with origin 0
     YGrid ()
     {
@@ -587,6 +591,10 @@ namespace Dune {
     typedef typename YGrid<d,ct>::iTupel iTupel;
     typedef typename YGrid<d,ct>::fTupel fTupel;
     typedef typename YGrid<d,ct>::bTupel bTupel;
+
+    //! Destructor
+    virtual ~SubYGrid()
+    {}
 
     //! make uninitialized subgrid
     SubYGrid () {}
