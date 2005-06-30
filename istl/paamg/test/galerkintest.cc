@@ -188,7 +188,7 @@ public:
   {
     const T& aggregate = aggregates_[index];
     const Dune::IndexPair<TG,Dune::ParallelLocalIndex<TA> >& pair = indexset_.pair(aggregate);
-    assert(pair.local()==aggregate);
+    assert(aggregate>=0 && pair.local()==static_cast<size_t>(aggregate));
     assert(pair.local().attribute()==owner);
     return pair.global();
   }
@@ -332,7 +332,7 @@ void testCoarsenIndices()
   assert(N*N==mg.maxVertex());
 
   bool visitedIterator[N*N];
-  for(std::size_t i=0; i < mg.maxVertex(); ++i)
+  for(Vertex i=0; i < mg.maxVertex(); ++i)
     visitedIterator[i]=false;
 
   VisitedMap2 visitedMap2(visitedIterator, Dune::IdentityMap());

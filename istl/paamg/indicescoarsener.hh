@@ -250,7 +250,7 @@ namespace Dune
             index != riEnd; ++index) {
           if(!E::contains(index->localIndexPair().local().attribute()))
           {
-            assert(aggregates[index->localIndexPair().local()]<attributes.size());
+            assert(aggregates[index->localIndexPair().local()]<(int)attributes.size());
             assert(attributes[aggregates[index->localIndexPair().local()]] == std::numeric_limits<char>::max()
                    || attributes[aggregates[index->localIndexPair().local()]] == index->attribute());
             attributes[aggregates[index->localIndexPair().local()]] = index->attribute();
