@@ -327,6 +327,11 @@ namespace Dune {
     ElementIterator eBegin(int level) const;
     //! Get an ElementIterator
     ElementIterator eEnd(int level) const;
+
+    //! Destructor
+    virtual ~VirtualRefinement()
+    {}
+
   protected:
     virtual VertexIteratorBack *vBeginBack(int level) const = 0;
     virtual VertexIteratorBack *vEndBack(int level) const = 0;
