@@ -316,6 +316,12 @@ namespace Dune
       return this->realEntity.getElInfo();
     }
 
+    // needed for equaltity
+    ALBERTA EL * getElement () const
+    {
+      return this->realEntity.getElement();
+    }
+
     void removeElInfo ()
     {
       this->realEntity.removeElInfo();
@@ -389,10 +395,13 @@ namespace Dune
     //***********************************************
     //  End of Interface methods
     //***********************************************
-    // needed for the LevelIterator and LeafIterator
+    //! needed for the LevelIterator and LeafIterator
     ALBERTA EL_INFO *getElInfo () const;
+    //! return element for equaltiy in EntityPointer
+    ALBERTA EL *getElement () const;
 
-    void removeElInfo() { elInfo_ = 0; }
+    //! set elInfo and Element to nil
+    void removeElInfo() { elInfo_ = 0; element_ = 0 ; }
 
     //! return the current face/edge or vertex number
     //! no interface method
@@ -415,8 +424,11 @@ namespace Dune
     // the grid this entity belong to
     const GridImp &grid_;
 
-    // Alberta element
+    // Alberta element info
     ALBERTA EL_INFO *elInfo_;
+
+    // Alberta element
+    ALBERTA EL * element_;
 
     // current traverse stack this entity belongs too
     ALBERTA TRAVERSE_STACK * travStack_;
@@ -579,6 +591,7 @@ namespace Dune
     //***************************************************************
     //  Interface for parallelisation
     //***************************************************************
+    //! \todo brief me
     void setLeafData( int proc );
 
     //! return partition type of this entity ( see grid.hh )
@@ -587,12 +600,17 @@ namespace Dune
     //! return true if this entity belong to master set of this grid
     bool master() const;
 
-    // return 0 for elements
+    //! return 0 for elements
     int getFEVnum () const { return 0; }
 
-    // needed for LevelIterator to compare
+    //! needed for LevelIterator to compare
     ALBERTA EL_INFO *getElInfo () const;
-    void removeElInfo() { elInfo_ = 0; }
+
+    //! return element for equaltiy in EntityPointer
+    ALBERTA EL *getElement () const;
+
+    //! set elInfo and Element to nil
+    void removeElInfo() { elInfo_ = 0; element_ = 0;}
   private:
     // called from HierarchicIterator, because only this
     // class changes the level of the entity, otherwise level is set by
@@ -607,7 +625,7 @@ namespace Dune
                     int edge = 0,
                     int vertex = 0 );
 
-    // same as setElInfo just with a entity given
+    //! same as setElInfo just with a entity given
     void setEntity (const AlbertaGridEntity<0,dim,GridImp> & org);
 
     //! make a new AlbertaGridEntity
@@ -627,6 +645,9 @@ namespace Dune
 
     //! pointer to the real Albert element data
     ALBERTA EL_INFO *elInfo_;
+
+    //! pointer to the real Albert element
+    ALBERTA EL *element_;
 
     // local coordinates within father
     mutable GeometryImp fatherReLocal_;
@@ -1007,6 +1028,7 @@ namespace Dune
   //
   // --AlbertaGridTreeIterator
   // --LevelIterator
+  // --TreeIterator
   /*!
      Enables iteration over all entities of a given codimension and level of a grid.
    */
@@ -1396,7 +1418,7 @@ namespace Dune
     void setNewCoords(const FieldVector<albertCtype, dimworld> & trans, const albertCtype scalar);
 
     const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
-    const LevelIndexSetType & levelIndexSet (int level) const
+    const LevelIndexSetType & levelIndexSet (int level= 0) const
     {
       if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSetType (*this,level);
       return *(levelIndexVec_[level]);
