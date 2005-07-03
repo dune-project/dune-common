@@ -52,7 +52,7 @@ namespace Dune {
 
 // contains the communication for parallel computing for this grid
 #include "albertagrid/agcommunicator.hh"
-#include "common/defaultindexsets.hh"
+#include "common/leafindexset.hh"
 
 namespace Dune
 {
@@ -1256,13 +1256,17 @@ namespace Dune
 
     typedef AlbertaGridReferenceGeometry<dim,AlbertaGrid<dim,dimworld> > ReferenceGeometry;
     typedef AlbertaGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSetType;
-    typedef DefaultLevelIndexSet<AlbertaGrid<dim,dimworld> > LevelIndexSetType;
+    typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetType;
+    typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetType;
 
     typedef ObjectStream ObjectStreamType;
     //typedef AlbertaObjectStream ObjectStreamType;
 
     //! we always have dim+1 codimensions
     enum { numCodim = dim+1 };
+
+    //! max number of allowed levels
+    enum { MAXL = 64 };
 
     //! Constructor which reads an Albert Macro Triang file
     //! or given GridFile
@@ -1356,6 +1360,9 @@ namespace Dune
     *  return true if a least one element was refined */
     bool adapt ( );
 
+    template <class DofManagerType, class RestrictProlongOperatorType>
+    bool adapt (DofManagerType &, RestrictProlongOperatorType &, bool verbose=false );
+
     //! returns true, if a least one element is marked for coarsening
     bool preAdapt ();
 
@@ -1389,10 +1396,22 @@ namespace Dune
     void setNewCoords(const FieldVector<albertCtype, dimworld> & trans, const albertCtype scalar);
 
     const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
-    const LevelIndexSetType & levelIndexSet () const
+    const LevelIndexSetType & levelIndexSet (int level) const
     {
-      if(!levelIndexSet_) levelIndexSet_ = new LevelIndexSetType (*this);
-      return *levelIndexSet_;
+      if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSetType (*this,level);
+      return *(levelIndexVec_[level]);
+    }
+
+    const LeafIndexSetType & leafIndexSet () const
+    {
+      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
+      return *leafIndexSet_;
+    }
+
+    LeafIndexSetType & leafIndexSet ()
+    {
+      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
+      return *leafIndexSet_;
     }
 
     //! access to mesh pointer, needed by some methods
@@ -1608,7 +1627,11 @@ namespace Dune
 
     // the level index set, is generated from the HierarchicIndexSet
     // is generated, when accessed
-    mutable LevelIndexSetType * levelIndexSet_;
+    mutable std::vector < LevelIndexSetType * > levelIndexVec_;
+
+    // the leaf index set, is generated from the HierarchicIndexSet
+    // is generated, when accessed
+    mutable LeafIndexSetType * leafIndexSet_;
 
   }; // end Class AlbertaGridGrid
 
@@ -1654,7 +1677,7 @@ namespace Dune
                       ,i,Int2Type<dim-cd>());
     }
 
-    int size ( int level, int codim ) const
+    int size ( int codim ) const
     {
       assert(size_[codim] >= 0);
       return size_[codim];
