@@ -1317,7 +1317,7 @@ namespace Dune
   index() const
   {
     const Entity en (*this);
-    return grid_.levelIndexSet().index(en);
+    return grid_.levelIndexSet(level()).index(en);
   }
 
   template<int dim, class GridImp>
@@ -1566,7 +1566,10 @@ namespace Dune
       , virtualEntity_( *(this->entity_) )
       , manageStack_ ( org.manageStack_ )
   {
-    if(!virtualEntity_.getElInfo()) this->done();
+    if( org.virtualEntity_.getElInfo() )
+      virtualEntity_.setEntity( org.virtualEntity_ );
+    else
+      this->done();
   }
 
   template< class GridImp >
@@ -2095,6 +2098,7 @@ namespace Dune
       , level_   (org.level_)
       , enLevel_ (org.enLevel_)
       , virtualEntity_(*(this->entity_))
+      //  , manageStack_ ()
       , manageStack_ ( org.manageStack_ )
       , face_(org.face_)
       , edge_ (org.edge_)
@@ -2104,6 +2108,17 @@ namespace Dune
   {
     if(vertexMarker_)
     {
+      /*
+         manageStack_.makeItNew(true);
+         ALBERTA TRAVERSE_STACK * stack = manageStack_.getStack();
+         ALBERTA copyTraverseStack( stack , org.manageStack_.getStack() );
+
+         virtualEntity_.setTraverseStack( stack );
+         ALBERTA EL_INFO * elInfo = stack->elinfo_stack+stack->stack_used;
+         virtualEntity_.setElInfo( elInfo,face_,edge_,vertex_ );
+         virtualEntity_.setLevel( enLevel_ );
+       */
+
       virtualEntity_.setTraverseStack(manageStack_.getStack());
       virtualEntity_.setEntity( *(org.entity_) );
     }
@@ -2920,9 +2935,9 @@ namespace Dune
     enum { dim      = GridType::dimension };
     enum { dimworld = GridType::dimensionworld };
 
-    int nvx = grid.hierarchicIndexSet().size(grid.maxlevel(),dim);
+    int nvx = grid.hierarchicIndexSet().size(dim);
 #if DIM == 3
-    int edg = grid.hierarchicIndexSet().size(grid.maxlevel(),dim-1);
+    int edg = grid.hierarchicIndexSet().size(dim-1);
 #endif
 
     for(int level=0; level <= grid.maxlevel(); level++)
@@ -2987,8 +3002,10 @@ namespace Dune
     , isMarked_ (false)
     , nv_ (dim+1) , dof_ (0) , myRank_ (0)
     , hIndexSet_(*this,maxHierIndex_)
-    , levelIndexSet_(0)
+    , levelIndexVec_(MAXL)
+    , leafIndexSet_ (0)
   {
+    for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
     vertexMarker_ = new AlbertaMarkerVector ();
 
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++) dofvecs_.elNumbers[i] = 0;
@@ -3023,10 +3040,13 @@ namespace Dune
     , isMarked_ (false)
     , nv_ (dim+1) , dof_ (0) , myRank_ (-1)
     , hIndexSet_(*this,maxHierIndex_)
-    , levelIndexSet_(0)
+    , levelIndexVec_(MAXL)
+    , leafIndexSet_ (0)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
+
+    for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
 
     bool makeNew = true;
     {
@@ -3066,11 +3086,13 @@ namespace Dune
     , isMarked_ (false)
     , nv_ (dim+1) , dof_ (0), myRank_ (proc)
     , hIndexSet_(*this,maxHierIndex_)
-    , levelIndexSet_(0)
+    , levelIndexVec_(MAXL)
+    , leafIndexSet_ (0)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
 
+    for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
     assert(dim == 2);
 
     ALBERTA MESH * oldMesh = oldGrid.getMesh();
@@ -3084,7 +3106,11 @@ namespace Dune
   template < int dim, int dimworld >
   inline void AlbertaGrid < dim, dimworld >::removeMesh()
   {
-    if(levelIndexSet_) delete levelIndexSet_;
+    for(unsigned int i=0; i<levelIndexVec_.size(); i++)
+      if(levelIndexVec_[i]) delete levelIndexVec_[i];
+
+    if(leafIndexSet_) delete leafIndexSet_;
+
     if(vertexMarker_) delete vertexMarker_;
 
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
@@ -3527,14 +3553,9 @@ namespace Dune
   mark( int refCount , const typename Traits::template codim<0>::Entity & ep ) const
   {
     ALBERTA EL_INFO * elInfo = (this->template getRealEntity<0>(ep)).getElInfo();
-    if(!elInfo)
-    {
-      assert(false);
-      derr << "ERROR in mark: elinfo NULL! \n";
-      return false;
-    }
-    //std::cout << elInfo << "\n";
+    if(!elInfo) return false;
     assert(elInfo);
+
     if( ep.isLeaf() )
     {
       // we can not mark for coarsening if already marked for refinement
@@ -3597,6 +3618,47 @@ namespace Dune
     // remove global pointer in elmem.cc
     ALBERTA AlbertHelp::removeIndexManager_elmem_cc();
 
+    return refined;
+  }
+
+  template < int dim, int dimworld >
+  template <class DofManagerType, class RestrictProlongOperatorType>
+  inline bool AlbertaGrid < dim, dimworld >::
+  adapt(DofManagerType &, RestrictProlongOperatorType &, bool verbose)
+  {
+    unsigned char flag;
+    bool refined = false;
+    wasChanged_ = false;
+    /*
+
+       // set global pointer to index manager in elmem.cc
+       ALBERTA AlbertHelp::initIndexManager_elmem_cc( indexStack_ );
+       ALBERTA AlbertHelp::clearDofVec ( dofvecs_.elNewCheck );
+
+       flag = ALBERTA AlbertRefine ( mesh_ );
+       refined = (flag == 0) ? false : true;
+
+       if(isMarked_) // true if a least on element is marked for coarseing
+       flag = ALBERTA AlbertCoarsen( mesh_ );
+
+       if(!refined)
+       {
+       wasChanged_ = (flag == 0) ? false : true;
+       }
+       else
+       wasChanged_ = true;
+
+       if(wasChanged_)
+       {
+       calcExtras();
+       isMarked_ = false;
+       }
+
+       ALBERTA AlbertHelp::setElOwnerNew(mesh_, dofvecs_.owner);
+
+       // remove global pointer in elmem.cc
+       ALBERTA AlbertHelp::removeIndexManager_elmem_cc();
+     */
     return refined;
   }
 
@@ -3674,14 +3736,14 @@ namespace Dune
   inline int AlbertaGrid < dim, dimworld >::global_size (int codim) const
   {
     // at this moment only for codim=0 and codim=dim
-    assert((codim == dim) || (codim == 0));
-    return maxHierIndex_[codim];
+    //assert((codim == dim) || (codim == 0));
+    return indexStack_[codim].getMaxIndex()+1;
   }
 
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
-    return this->levelIndexSet().size(level,codim);
+    return this->levelIndexSet(level).size(codim);
   }
 
   template < int dim, int dimworld >
@@ -3729,15 +3791,18 @@ namespace Dune
 
     // calculate the new maximal index used, this value+1 is then used as size
     for(int i=0; i<ALBERTA AlbertHelp::numOfElNumVec; i++)
-      maxHierIndex_[i] = ALBERTA AlbertHelp::calcMaxIndex(dofvecs_.elNumbers[i]);
+      maxHierIndex_[i] = indexStack_[i].getMaxIndex();
 
-    maxHierIndex_[dim] = mesh_->n_vertices;
+    //maxHierIndex_[dim] = mesh_->n_vertices;
 
     // unset up2Dat status, if lbegin is called then this status is updated
     vertexMarker_->unsetUp2Date();
 
     // if levelIndexSet exists, then update now
-    if(levelIndexSet_) (*levelIndexSet_).calcNewIndex();
+    for(unsigned int i=0; i<levelIndexVec_.size(); i++)
+      if(levelIndexVec_[i]) (*levelIndexVec_[i]).calcNewIndex();
+
+    if( leafIndexSet_ ) (*leafIndexSet_).resize();
 
     // we have a new grid
     wasChanged_ = true;
