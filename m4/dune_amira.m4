@@ -17,7 +17,7 @@ if test x$with_amiramesh != xno ; then
 
 # is --with-amiramesh=bla used?
 if test "x$with_amiramesh" != x ; then
-	if ! test -d $AMIRAMESHROOT; then
+	if ! test -d $with_amiramesh; then
         AC_MSG_WARN([Amiramesh directory $with_amiramesh does not exist])
 	else
         # expand tilde / other stuff
