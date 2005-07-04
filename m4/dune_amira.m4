@@ -15,16 +15,18 @@ ac_save_LIBS="$LIBS"
 ## do nothing if --without-amiramesh is used
 if test x$with_amiramesh != xno ; then
 
-if test x$with_amiramesh != x ; then
-    if test -d $with_amiramesh; then
-      # expand tilde / other stuff
-      AMIRAMESHROOT=`cd $with_amiramesh && pwd`
-    else
-      AC_MSG_ERROR([directory $with_amiramesh does not exist])
-    fi      
-else
-  # use some default value...
-  AMIRAMESHROOT="/usr/local/amiramesh"
+# is --with-amiramesh=bla used?
+if test "x$with_amiramesh" != x ; then
+	if ! test -d $AMIRAMESHROOT; then
+        AC_MSG_WARN([Amiramesh directory $with_amiramesh does not exist])
+	else
+        # expand tilde / other stuff
+		AMIRAMESHROOT=`cd $with_amiramesh && pwd`
+	fi
+fi
+if test "x$AMIRAMESHROOT" = x; then
+    # use some default value...
+    AMIRAMESHROOT="/usr/local/amiramesh"
 fi
 
 AMIRAMESH_LIB_PATH="$AMIRAMESHROOT/lib"
