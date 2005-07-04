@@ -34,11 +34,18 @@ if test x$with_alberta != x && test x$with_alberta != xno ; then
     AC_MSG_ERROR([You have to provide a directory --with-alberta=PATH])
   fi
 
-  if test -d $with_alberta; then
-    # expand tilde / other stuff
-    ALBERTAROOT=`cd $with_alberta && pwd`
-  else
-    AC_MSG_ERROR([Path $with_alberta supplied for --with-alberta does not exist!])
+  # is --with-alberta=bla used?
+  if test "x$with_alberta" != x ; then
+	if ! test -d $with_alberta; then
+        AC_MSG_WARN([Alberta directory $with_alberta does not exist])
+	else
+        # expand tilde / other stuff
+		ALBERTAROOT=`cd $with_alberta && pwd`
+	fi
+  fi
+  if test "x$ALBERTAROOT" = x; then
+    # use some default value...
+    ALBERTAROOT="/usr/local/alberta"
   fi
 
 ALBERTA_LIB_PATH="$ALBERTAROOT/lib"
