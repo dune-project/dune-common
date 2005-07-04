@@ -21,8 +21,8 @@ AC_DEFUN([DUNE_PATH_UG],[
       
       # is --with-ug=bla used?
       if test "x$with_ug" != x ; then
-		  if ! test -d $UGROOT; then
-			  AC_MSG_WARN([directory $with_ug does not exist!])
+		  if ! test -d $with_ug; then
+			  AC_MSG_WARN([UG directory $with_ug does not exist!])
 		  else
               # expand tilde / other stuff
 			  UGROOT=`cd $with_ug && pwd`
