@@ -132,9 +132,9 @@ namespace Dune {
   }
 
   template <ALU3dGridElementType type>
-  typename ALU3dGridFaceInfo<type>::RefinementState
-  ALU3dGridFaceInfo<type>::refinementState() const {
-    RefinementState result = UNREFINED;
+  typename ALU3dGridFaceInfo<type>::ConformanceState
+  ALU3dGridFaceInfo<type>::conformanceState() const {
+    ConformanceState result = CONFORMING;
 
     // A boundary is always unrefined
     int levelDifference = 0 ;
@@ -152,101 +152,69 @@ namespace Dune {
     return result;
   }
 
-  //- class ALU3dGridFaceGeometryInfo
+  //- class ALU3dGridFaceGeometryCoordinates
   template <class GridImp>
-  ALU3dGridFaceGeometryInfo<GridImp>::
-  ALU3dGridFaceGeometryInfo(const ConnectorType& connector,
-                            const GridImp& grid,
-                            int wLevel) :
+  ALU3dGridGeometricFaceInfo<GridImp>::
+  ALU3dGridGeometricFaceInfo(const ConnectorType& connector) :
     connector_(connector),
-    grid_(grid),
     mappingGlobal_(0),
-    wLevel_(wLevel)
-  {
-    intersectionGlobal_ =
-      grid_.geometryProvider_.getNewObjectEntity(grid_ ,wLevel_);
-    intersectionSelfLocal_ =
-      grid_.geometryProvider_.getNewObjectEntity(grid_, wLevel_);
-    intersectionNeighborLocal_ =
-      grid_.geometryProvider_.getNewObjectEntity(grid_, wLevel_);
-
-    generateGlobalGeometry();
-    generateLocalGeometries();
-  }
+    generatedGlobal_(false),
+    generatedLocal_(false),
+    coordsGlobal_(-1.0), // dummy value
+    coordsSelfLocal_(-1.0),
+    coordsNeighborLocal_(-1.0)
+  {}
 
   template <class GridImp>
-  ALU3dGridFaceGeometryInfo<GridImp>::
-  ALU3dGridFaceGeometryInfo(const ALU3dGridFaceGeometryInfo<GridImp>& orig) :
+  ALU3dGridGeometricFaceInfo<GridImp>::
+  ALU3dGridGeometricFaceInfo(const ALU3dGridGeometricFaceInfo<GridImp>& orig) :
     connector_(orig.connector_),
-    grid_(orig.grid_),
     mappingGlobal_(orig.mappingGlobal_),
-    wLevel_(orig.wLevel_)
-  {
-    intersectionGlobal_ =
-      grid_.geometryProvider_.getNewObjectEntity(grid_ ,wLevel_);
-    intersectionSelfLocal_ =
-      grid_.geometryProvider_.getNewObjectEntity(grid_, wLevel_);
-    intersectionNeighborLocal_ =
-      grid_.geometryProvider_.getNewObjectEntity(grid_, wLevel_);
-
-    generateGlobalGeometry();
-    generateLocalGeometries();
-  }
+    generatedGlobal_(orig.generatedGlobal_),
+    generatedLocal_(orig.generatedLocal_),
+    coordsGlobal_(orig.coordsGlobal_),
+    coordsSelfLocal_(orig.coordsSelfLocal_),
+    coordsNeighborLocal_(orig.coordsNeighborLocal_)
+  {}
 
   template <class GridImp>
-  ALU3dGridFaceGeometryInfo<GridImp>::
-  ~ALU3dGridFaceGeometryInfo() {
+  ALU3dGridGeometricFaceInfo<GridImp>::
+  ~ALU3dGridGeometricFaceInfo() {
     if (mappingGlobal_) {
       delete mappingGlobal_;
       mappingGlobal_ = 0;
     }
-
-    if (intersectionGlobal_) {
-      grid_.geometryProvider_.freeObjectEntity(intersectionGlobal_);
-      intersectionGlobal_ = 0;
-    }
-
-    if (intersectionSelfLocal_) {
-      grid_.geometryProvider_.freeObjectEntity(intersectionSelfLocal_);
-      intersectionSelfLocal_ = 0;
-    }
-
-    if (intersectionNeighborLocal_) {
-      grid_.geometryProvider_.freeObjectEntity(intersectionNeighborLocal_);
-      intersectionNeighborLocal_ = 0;
-    }
   }
 
   template <class GridImp>
-  const typename ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
-  ALU3dGridFaceGeometryInfo<GridImp>::
-  intersectionGlobal() const {
-    assert(intersectionGlobal_);
-    return *intersectionGlobal_;
+  const typename ALU3dGridGeometricFaceInfo<GridImp>::CoordinateType&
+  ALU3dGridGeometricFaceInfo<GridImp>::intersectionGlobal() const {
+    generateGlobalGeometry();
+    assert(generatedGlobal_);
+    return coordsGlobal_;
   }
 
   template <class GridImp>
-  const typename ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
-  ALU3dGridFaceGeometryInfo<GridImp>::
-  intersectionSelfLocal() const {
-    assert(intersectionSelfLocal_);
-    return *intersectionSelfLocal_;
+  const typename ALU3dGridGeometricFaceInfo<GridImp>::CoordinateType&
+  ALU3dGridGeometricFaceInfo<GridImp>::intersectionSelfLocal() const {
+    generateLocalGeometries();
+    assert(generatedLocal_);
+    return coordsSelfLocal_;
   }
 
   template <class GridImp>
-  const typename ALU3dGridFaceGeometryInfo<GridImp>::FaceGeometryType&
-  ALU3dGridFaceGeometryInfo<GridImp>::
-  intersectionNeighborLocal() const {
-    assert(intersectionNeighborLocal_);
+  const typename ALU3dGridGeometricFaceInfo<GridImp>::CoordinateType&
+  ALU3dGridGeometricFaceInfo<GridImp>::intersectionNeighborLocal() const {
     assert(!connector_.outerBoundary());
-    return *intersectionNeighborLocal_;
+    generateLocalGeometries();
+    assert(generatedLocal_);
+    return coordsNeighborLocal_;
   }
 
   template <class GridImp>
   FieldVector<alu3d_ctype, 3>
-  ALU3dGridFaceGeometryInfo<GridImp>::
+  ALU3dGridGeometricFaceInfo<GridImp>::
   outerNormal(const FieldVector<alu3d_ctype, 2>& local) const {
-
     // construct a mapping (either a linear or a bilinear one)
     if (!mappingGlobal_) {
       CoordinateType coords;
@@ -271,60 +239,57 @@ namespace Dune {
   }
 
   template <class GridImp>
-  inline void ALU3dGridFaceGeometryInfo<GridImp>::generateGlobalGeometry() {
-    intersectionGlobal_->buildGeom(connector_.face());
-  }
-
-  template <class GridImp>
-  void ALU3dGridFaceGeometryInfo<GridImp>::generateLocalGeometries() {
-    // Get the coordinates of the face in the reference element of the adjoining
-    // inner and outer elements and initialise the respective geometries
-
-    // if this is a conforming face...
-    if (connector_.refinementState() == ConnectorType::UNREFINED) {
-      CoordinateType coords;
-      referenceElementCoordinatesRefined(INNER, coords);
-      intersectionSelfLocal_->buildGeom(coords);
-      // generate outer local geometry only when not at boundary
-      // * in the parallel case, this needs to be altered for the ghost cells
-      if (!connector_.outerBoundary()) {
-        referenceElementCoordinatesRefined(OUTER, coords);
-        intersectionNeighborLocal_->buildGeom(coords);
-      } // end if
-
-    }
-    else {
-      FaceGeometryImp* refinedGeometry = 0;
-      FaceGeometryImp* unrefinedGeometry = 0;
-      SideIdentifier refinedSide = INNER;
-      SideIdentifier unrefinedSide = INNER;
-
-      if (connector_.refinementState() == ConnectorType::REFINED_INNER) {
-        refinedSide = INNER;
-        unrefinedSide = OUTER;
-        refinedGeometry = intersectionSelfLocal_;
-        unrefinedGeometry = intersectionNeighborLocal_;
+  inline void ALU3dGridGeometricFaceInfo<GridImp>::
+  generateGlobalGeometry() const
+  {
+    if (!generatedGlobal_) {
+      for (int i = 0; i < numVerticesPerFace; ++i) {
+        const double (&p)[3] =
+          connector_.face().myvertex(FaceTopo::dune2aluVertex(i))->Point();
+        for (int j = 0; j < 3; ++j) {
+          coordsGlobal_[i][j] = p[j];
+        }
       }
-      else {
-        refinedSide = OUTER;
-        unrefinedSide = INNER;
-        refinedGeometry = intersectionNeighborLocal_;
-        unrefinedGeometry = intersectionSelfLocal_;
-      }
-      // refined element
-      // get local corner coordinates of refined element and generate geometry
-      CoordinateType coords;
-      referenceElementCoordinatesRefined(refinedSide, coords);
-      refinedGeometry->buildGeom(coords);
 
-      // unrefined element
-      referenceElementCoordinatesUnrefined(unrefinedSide, coords);
-      unrefinedGeometry->buildGeom(coords);
+      generatedGlobal_ = true;
     } // end if
   }
 
   template <class GridImp>
-  void ALU3dGridFaceGeometryInfo<GridImp>::
+  inline void ALU3dGridGeometricFaceInfo<GridImp>::
+  generateLocalGeometries() const
+  {
+    if (!generatedLocal_) {
+      // Get the coordinates of the face in the reference element of the
+      // adjoining inner and outer elements and initialise the respective
+      // geometries
+      switch (connector_.conformanceState()) {
+      case (ConnectorType::CONFORMING) :
+        referenceElementCoordinatesRefined(INNER, coordsSelfLocal_);
+        // generate outer local geometry only when not at boundary
+        // * in the parallel case, this needs to be altered for the ghost cells
+        if (!connector_.outerBoundary()) {
+          referenceElementCoordinatesRefined(OUTER, coordsNeighborLocal_);
+        } // end if
+        break;
+      case (ConnectorType::REFINED_INNER) :
+        referenceElementCoordinatesRefined(INNER, coordsSelfLocal_);
+        referenceElementCoordinatesUnrefined(OUTER, coordsNeighborLocal_);
+        break;
+      case (ConnectorType::REFINED_OUTER) :
+        referenceElementCoordinatesUnrefined(INNER, coordsSelfLocal_);
+        referenceElementCoordinatesRefined(OUTER, coordsNeighborLocal_);
+        break;
+      default :
+        assert(false);
+      } // end switch
+
+      generatedLocal_ = true;
+    } // end if
+  }
+
+  template <class GridImp>
+  void ALU3dGridGeometricFaceInfo<GridImp>::
   referenceElementCoordinatesRefined(SideIdentifier side,
                                      CoordinateType& result) const
   {
@@ -332,12 +297,14 @@ namespace Dune {
       ElementGeometryType::refelem();
 
     // this is a dune face index
-    int faceIndex = (side == INNER ?
-                     ElementTopo::alu2duneFace(connector_.innerALUFaceIndex()) :
-                     ElementTopo::alu2duneFace(connector_.outerALUFaceIndex()));
-    int faceTwist = (side == INNER ?
-                     connector_.innerTwist() :
-                     connector_.outerTwist());
+    int faceIndex =
+      (side == INNER ?
+       ElementTopo::alu2duneFace(connector_.innerALUFaceIndex()) :
+       ElementTopo::alu2duneFace(connector_.outerALUFaceIndex()));
+    int faceTwist =
+      (side == INNER ?
+       connector_.innerTwist() :
+       connector_.outerTwist());
 
     for (int i = 0; i < numVerticesPerFace; ++i) {
       result[i] =
@@ -346,7 +313,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  void ALU3dGridFaceGeometryInfo<GridImp>::
+  void ALU3dGridGeometricFaceInfo<GridImp>::
   convert2CArray(const FieldVector<alu3d_ctype, 3>& in,
                  alu3d_ctype (&out)[3]) const {
     out[0] = in[0];
@@ -355,7 +322,7 @@ namespace Dune {
   }
 
   template <class GridImp>
-  void ALU3dGridFaceGeometryInfo<GridImp>::
+  void ALU3dGridGeometricFaceInfo<GridImp>::
   convert2FieldVector(const alu3d_ctype (&in)[3],
                       FieldVector<alu3d_ctype, 3>& out) const {
     out[0] = in[0];

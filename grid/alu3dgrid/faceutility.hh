@@ -10,11 +10,8 @@
 #include "topology.hh"
 
 namespace Dune {
-  // * Note 1: idea for refactoring: make ALU3dGridFaceGeometryInfo return only the coordinates of the respective geometries, so that the inclusion of grid.hh and geometry.hh can be removed. The intersectionIterator then needs to manage the geometries, which is more natural anyway
-
-  // * Note 2: generate the geometries only when necessary (also ALU3dGridFaceGeometryInfo)
-
-  // * Note 3: change that silly name...
+  // * Note 1: change template argument of ALU3dGeometricFaceInfo to elementType as soon as new reference elements are available
+  // * Note 2: reconsider lazy evaluation of coordinates
 
   // Forward declarations
   template <int mydim, int coorddim, class GridImp>
@@ -33,7 +30,7 @@ namespace Dune {
     //- private typedefs
     typedef typename ALU3dImplTraits<type>::HasFaceType HasFaceType;
   public:
-    enum RefinementState {UNREFINED, REFINED_INNER, REFINED_OUTER};
+    enum ConformanceState {CONFORMING, REFINED_INNER, REFINED_OUTER};
     //- typedefs
     typedef typename ALU3dImplTraits<type>::GEOFaceType GEOFaceType;
     typedef typename ALU3dImplTraits<type>::GEOElementType GEOElementType;
@@ -88,7 +85,7 @@ namespace Dune {
     int outerALUFaceIndex() const;
 
     //! Description of conformance on the face
-    RefinementState refinementState() const;
+    ConformanceState conformanceState() const;
 
   private:
     //- forbidden methods
@@ -109,11 +106,10 @@ namespace Dune {
   };
 
   template <class GridImp>
-  class ALU3dGridFaceGeometryInfo {
+  class ALU3dGridGeometricFaceInfo {
   private:
     //- private typedefs
     typedef GridImp GridType;
-    typedef ALU3dImplTraits<GridImp::elementType> ImplTraitsType;
     typedef typename GridType::template codim<0>::Geometry ElementGeometryType;
     typedef ElementTopologyMapping<GridImp::elementType> ElementTopo;
     typedef FaceTopologyMapping<GridImp::elementType> FaceTopo;
@@ -134,34 +130,31 @@ namespace Dune {
     typedef FieldMatrix<alu3d_ctype,
         numVerticesPerFace,
         dimworld> CoordinateType;
-    typedef typename GridType::template codim<1>::Geometry FaceGeometryType;
-    typedef ALU3dGridMakeableGeometry<2, 3, GridImp> FaceGeometryImp;
+    typedef ALU3dGridMakeableGeometry<2, 3, const ALU3dGrid<3, 3, GridImp::elementType> > FaceGeometryType;
 
   public:
     typedef ALU3dGridFaceInfo<GridImp::elementType> ConnectorType;
 
     //- constructors and destructors
-    ALU3dGridFaceGeometryInfo(const ConnectorType& ctor,
-                              const GridImp& grid,
-                              int wLevel);
-    ALU3dGridFaceGeometryInfo(const ALU3dGridFaceGeometryInfo& orig);
-    ~ALU3dGridFaceGeometryInfo();
+    ALU3dGridGeometricFaceInfo(const ConnectorType& ctor);
+    ALU3dGridGeometricFaceInfo(const ALU3dGridGeometricFaceInfo& orig);
+    ~ALU3dGridGeometricFaceInfo();
 
     //- functions
-    const FaceGeometryType& intersectionGlobal() const;
-    const FaceGeometryType& intersectionSelfLocal() const;
-    const FaceGeometryType& intersectionNeighborLocal() const;
+    const CoordinateType& intersectionGlobal() const;
+    const CoordinateType& intersectionSelfLocal() const;
+    const CoordinateType& intersectionNeighborLocal() const;
 
     NormalType outerNormal(const FieldVector<alu3d_ctype, 2>& local) const;
 
   private:
     //- forbidden methods
-    const ALU3dGridFaceGeometryInfo<GridImp>& operator=(const ALU3dGridFaceGeometryInfo<GridImp>&);
+    const ALU3dGridGeometricFaceInfo<GridImp>& operator=(const ALU3dGridGeometricFaceInfo<GridImp>&);
 
   private:
     //- private methods
-    void generateGlobalGeometry();
-    void generateLocalGeometries();
+    void generateGlobalGeometry() const;
+    void generateLocalGeometries() const;
 
     int referenceElementCornerIndex(int faceIndex,
                                     int faceTwist,
@@ -185,15 +178,14 @@ namespace Dune {
   private:
     //- private data
     const ConnectorType& connector_;
-    const GridImp& grid_;
 
     mutable SurfaceMappingType* mappingGlobal_; // needed for calculation of normal
+    mutable bool generatedGlobal_;
+    mutable bool generatedLocal_;
 
-    int wLevel_;
-
-    FaceGeometryImp* intersectionSelfLocal_;
-    FaceGeometryImp* intersectionNeighborLocal_;
-    FaceGeometryImp* intersectionGlobal_;
+    mutable CoordinateType coordsGlobal_;
+    mutable CoordinateType coordsSelfLocal_;
+    mutable CoordinateType coordsNeighborLocal_;
   };
 
 } // end namespace Dune
