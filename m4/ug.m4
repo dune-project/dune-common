@@ -21,14 +21,16 @@ AC_DEFUN([DUNE_PATH_UG],[
       
       # is --with-ug=bla used?
       if test "x$with_ug" != x ; then
-          # expand tilde / other stuff
-          UGROOT=`cd $with_ug && pwd`
-	  if ! test -d $UGROOT; then
-	      AC_MSG_ERROR([directory $with_ug does not exist!])
-	  fi      
-      else
+		  if ! test -d $UGROOT; then
+			  AC_MSG_WARN([directory $with_ug does not exist!])
+		  else
+              # expand tilde / other stuff
+			  UGROOT=`cd $with_ug && pwd`
+		  fi
+	  fi
+      if test "x$UGROOT" = x; then
           # use some default value...
-	  UGROOT="/usr/local/ug"
+		  UGROOT="/usr/local/ug"
       fi
       
       # intermediate variables
