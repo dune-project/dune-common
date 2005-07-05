@@ -34,6 +34,12 @@ if true; then
 	echo "MODE: $mode"
 	echo "MODULE: $module"
 	echo "PATH: $path"
+	if test "x$errors" != x; then
+		echo "ERRORS: $errors"
+	fi
+	if test "x$warnings" != x; then
+		echo "WARNINGS: $warnings"
+	fi
 	echo "LOG:"
 	cat $logfile
 fi > $storelog
