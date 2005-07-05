@@ -247,7 +247,7 @@ namespace Dune {
     /** \brief Return the global unique index in mesh
      * \todo So far returns the same as index()
      */
-    int globalIndex() { return index(); }
+    int globalIndex() const { return index(); }
 
     //! Geometry of this entity
     const Geometry& geometry () const {return geo_;}
