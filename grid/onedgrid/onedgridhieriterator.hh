@@ -45,7 +45,7 @@ namespace Dune {
 
     //! Constructor
     OneDGridHierarchicIterator(int maxlevel) : OneDGridEntityPointer<0,GridImp>(NULL),
-                                               elemStack(), maxlevel_(maxlevel)
+                                               maxlevel_(maxlevel), elemStack()
     {}
 
     //! prefix increment

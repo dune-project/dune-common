@@ -10,11 +10,16 @@ using namespace Dune;
 template<class T>
 void test(T& tuple)
 {
-  float f = Element<0>::get(tuple);
-  int i = Element<1>::get(tuple);
-  double d = Element<2>::get(tuple);
-  char c = Element<3>::get(tuple);
-  std::string s = Element<4>::get(tuple);
+  float f;
+  f = Element<0>::get(tuple);
+  int i;
+  i = Element<1>::get(tuple);
+  double d;
+  d = Element<2>::get(tuple);
+  char c;
+  c = Element<3>::get(tuple);
+  std::string s;
+  s = Element<4>::get(tuple);
 }
 
 int iteratorTupleTest()
