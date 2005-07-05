@@ -3778,6 +3778,8 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::global_size (int codim) const
   {
+    if(codim == dim)
+      return mesh_->n_vertices;
     // at this moment only for codim=0 and codim=dim
     //assert((codim == dim) || (codim == 0));
     return indexStack_[codim].getMaxIndex()+1;
