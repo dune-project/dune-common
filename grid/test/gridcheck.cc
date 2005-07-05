@@ -54,7 +54,7 @@ struct JacobianInverse<Geometry, false>
 };
 
 template <class Geometry, int codim, int dim>
-struct ElementInterface
+struct GeometryInterface
 {
   static void check(const Geometry &e)
   {
@@ -77,7 +77,7 @@ struct ElementInterface
     JacobianInverse<Geometry,
         (int)Geometry::coorddimension == (int)Geometry::mydimension>();
   }
-  ElementInterface()
+  GeometryInterface()
   {
     c = check;
   };
@@ -86,7 +86,7 @@ struct ElementInterface
 
 // reduced test on vertices
 template <class Geometry, int dim>
-struct ElementInterface <Geometry, dim, dim>
+struct GeometryInterface <Geometry, dim, dim>
 {
   static void check(const Geometry &e)
   {
@@ -98,7 +98,7 @@ struct ElementInterface <Geometry, dim, dim>
     e.corners();
     e[0];
   }
-  ElementInterface()
+  GeometryInterface()
   {
     c = check;
   };
@@ -121,47 +121,20 @@ void DoEntityInterfaceCheck (Entity &e)
   e.geometry();
 
   // check interface of attached element-interface
-  ElementInterface<typename Entity::Geometry, Entity::codimension, Entity::dimension>();
+  GeometryInterface<typename Entity::Geometry, Entity::codimension, Entity::dimension>();
 }
-
-// check codim-entity and pass on to codim + 1
-template <class Grid, int codim, int dim>
-struct EntityInterface
-{
-  typedef typename Grid::template codim<codim>::Entity Entity;
-
-  static void check (Entity &e)
-  {
-    // consistent?
-    IsTrue<codim == Entity::codimension>::yes();
-    IsTrue<dim == Entity::dimension>::yes();
-
-    // do the checking
-    DoEntityInterfaceCheck(e);
-
-    // recursively check sub-entities
-    EntityInterface<Grid, codim + 1, dim>();
-  }
-  EntityInterface ()
-  {
-    c = check;
-  }
-  void (*c)(Entity&);
-};
 
 // recursive check of codim-0-entity methods count(), entity(), subIndex()
 template <class Grid, int cd, bool hasEntity>
 struct ZeroEntityMethodCheck
 {
   typedef typename Grid::template codim<0>::Entity Entity;
-  typedef typename Grid::template codim<cd>::Entity SubEntity;
-  typedef typename Grid::template codim<cd-1>::Entity NextSubEntity;
   static void check(Entity &e)
   {
     // check types
     typedef typename Entity::IntersectionIterator IntersectionIterator;
     typedef typename Entity::HierarchicIterator HierarchicIterator;
-    typedef typename Entity::LevelIterator LevelIterator;
+    typedef typename Entity::EntityPointer EntityPointer;
 
     e.template count<cd>();
     e.template entity<cd>(0);
@@ -169,7 +142,7 @@ struct ZeroEntityMethodCheck
 
     // recursively check on
     ZeroEntityMethodCheck<Grid, cd - 1,
-        Dune::Capabilities::hasEntity<Grid, NextSubEntity>::v >();
+        Dune::Capabilities::hasEntity<Grid, cd - 1>::v >();
   }
   ZeroEntityMethodCheck ()
   {
@@ -183,8 +156,6 @@ template<class Grid, int cd>
 struct ZeroEntityMethodCheck<Grid, cd, false>
 {
   typedef typename Grid::template codim<0>::Entity Entity;
-  typedef typename Grid::template codim<cd>::Entity SubEntity;
-  typedef typename Grid::template codim<cd-1>::Entity NextSubEntity;
   static void check(Entity &e)
   {
     // check types
@@ -194,7 +165,7 @@ struct ZeroEntityMethodCheck<Grid, cd, false>
 
     // recursively check on
     ZeroEntityMethodCheck<Grid, cd - 1,
-        Dune::Capabilities::hasEntity<Grid, NextSubEntity>::v >();
+        Dune::Capabilities::hasEntity<Grid, cd - 1>::v >();
   }
   ZeroEntityMethodCheck ()
   {
@@ -250,12 +221,56 @@ struct ZeroEntityMethodCheck<Grid, 0, false>
   void (*c)(Entity &e);
 };
 
+// check codim-entity and pass on to codim + 1
+template <class Grid, int codim, int dim, bool hasEntity>
+struct EntityInterface
+{
+  typedef typename Grid::template codim<codim>::Entity Entity;
+
+  static void check (Entity &e)
+  {
+    // consistent?
+    IsTrue<codim == Entity::codimension>::yes();
+    IsTrue<dim == Entity::dimension>::yes();
+
+    // do the checking
+    DoEntityInterfaceCheck(e);
+
+    // recursively check sub-entities
+    EntityInterface<Grid, codim + 1, dim,
+        Dune::Capabilities::hasEntity<Grid, codim + 1>::v >();
+  }
+  EntityInterface ()
+  {
+    c = check;
+  }
+  void (*c)(Entity&);
+};
+
+// just the recursion if the grid does not know about this codim-entity
+template <class Grid, int codim, int dim>
+struct EntityInterface<Grid, codim, dim, false>
+{
+  typedef typename Grid::template codim<codim>::Entity Entity;
+
+  static void check (Entity &e)
+  {
+    // recursively check sub-entities
+    EntityInterface<Grid, codim + 1, dim,
+        Dune::Capabilities::hasEntity<Grid, codim + 1>::v >();
+  }
+  EntityInterface ()
+  {
+    c = check;
+  }
+  void (*c)(Entity&);
+};
+
 // codim-0 entities have different interface
 template <class Grid, int dim>
-struct EntityInterface<Grid, 0, dim>
+struct EntityInterface<Grid, 0, dim, true>
 {
   typedef typename Grid::template codim<0>::Entity Entity;
-  typedef typename Grid::template codim<dim>::Entity SubEntity;
 
   static void check (Entity &e)
   {
@@ -268,7 +283,7 @@ struct EntityInterface<Grid, 0, dim>
 
     // special codim-0-entity methods which are parametrized by a codimension
     ZeroEntityMethodCheck
-    <Grid, dim, Dune::Capabilities::hasEntity<Grid, SubEntity>::v >();
+    <Grid, dim, Dune::Capabilities::hasEntity<Grid, dim>::v >();
 
     // grid hierarchy
     e.father();
@@ -286,7 +301,27 @@ struct EntityInterface<Grid, 0, dim>
     e.state();
 
     // recursively check sub-entities
-    EntityInterface<Grid, 1, dim>();
+    EntityInterface<Grid, 1, dim,
+        Dune::Capabilities::hasEntity<Grid, 1>::v >();
+  }
+  EntityInterface ()
+  {
+    c = check;
+  }
+  void (*c)(Entity&);
+};
+
+// non existinng codim-0 entity
+template <class Grid, int dim>
+struct EntityInterface<Grid, 0, dim, false>
+{
+  typedef typename Grid::template codim<0>::Entity Entity;
+
+  static void check (Entity &e)
+  {
+    // recursively check sub-entities
+    EntityInterface<Grid, 1, dim,
+        Dune::Capabilities::hasEntity<Grid, 1>::v >();
   }
   EntityInterface ()
   {
@@ -297,7 +332,7 @@ struct EntityInterface<Grid, 0, dim>
 
 // end the recursion over entity-codimensions
 template <class Grid, int dim>
-struct EntityInterface<Grid, dim, dim>
+struct EntityInterface<Grid, dim, dim, true>
 {
   typedef typename Grid::template codim<dim>::Entity Entity;
 
@@ -315,6 +350,24 @@ struct EntityInterface<Grid, dim, dim>
     e.ownersFather();
     e.positionInOwnersFather();
   }
+
+  EntityInterface()
+  {
+    c = check;
+  }
+  void (*c)(Entity&);
+};
+
+// end the recursion over entity-codimensions
+// ... codim dim entity does not exist
+template <class Grid, int dim>
+struct EntityInterface<Grid, dim, dim, false>
+{
+  typedef typename Grid::template codim<dim>::Entity Entity;
+
+  // end recursion
+  static void check (Entity &e)
+  {}
 
   EntityInterface()
   {
@@ -379,7 +432,12 @@ struct GridInterface
     LeafInterface< Grid, Dune::Capabilities::hasLeafIterator<Grid>::v >();
 
     // recursively check entity-interface
-    EntityInterface<Grid, 0, Grid::dimension>();
+    // ... we only allow grids with codim 0 zero entites
+    IsTrue<Dune::Capabilities::hasEntity<Grid, 0>::v>::yes();
+    IsTrue<Dune::Capabilities::hasEntity<const Grid, 0>::v>::yes();
+
+    EntityInterface<Grid, 0, Grid::dimension,
+        Dune::Capabilities::hasEntity<Grid, 0>::v >();
 
     // !!! check for parallel grid?
     /*
@@ -409,9 +467,8 @@ struct subIndexCheck
         DUNE_THROW(CheckError, "e.template entity<cd>(i)->index() == e.template subIndex<cd>(i) && "<<
                    "e.template entity<cd>(i)->globalIndex() != e.template subIndex<cd>(i) faild!");
     }
-    typedef typename Grid::template codim<cd>::Entity SubEntity;
     subIndexCheck<cd-1,Grid,Entity,
-        Dune::Capabilities::hasEntity<Grid,SubEntity>::v> sick(e);
+        Dune::Capabilities::hasEntity<Grid,cd-1>::v> sick(e);
   }
 };
 // end recursion of subIndexCheck
@@ -429,9 +486,8 @@ struct subIndexCheck<cd, Grid, Entity, false>
 {
   subIndexCheck (const Entity & e)
   {
-    typedef typename Grid::template codim<cd>::Entity SubEntity;
     subIndexCheck<cd-1,Grid,Entity,
-        Dune::Capabilities::hasEntity<Grid,SubEntity>::v> sick(e);
+        Dune::Capabilities::hasEntity<Grid,cd-1>::v> sick(e);
   }
 };
 template <class Grid, class Entity>
