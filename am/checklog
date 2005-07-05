@@ -31,20 +31,20 @@ check-log-dir: check-log-dir-recursive
 
 check-log-sources-am:
 	$(LOG_SET_OPTIONS); \
-	$(MAKE) sourcescheck-am >& $(LOG_FILE); \
+	$(MAKE) sourcescheck-am > $(LOG_FILE) 2>&1; \
 	$(LOG_STORE) "sources" "Makefile.am" "$$path"
 
 check-log-libs-am:
 	$(LOG_SET_OPTIONS); \
 	for lib in $(LTLIBRARIES); do \
-	  $(MAKE) $$lib >& $(LOG_FILE); \
+	  $(MAKE) $$lib > $(LOG_FILE) 2>&1; \
 	  $(LOG_STORE) "lib" "$$lib" "$$path"; \
 	done;
 
 check-log-build-am:
 	$(LOG_SET_OPTIONS); \
 	for target in $(check_PROGRAMS) $(PROGRAMS); do \
-	  $(MAKE) $$target >& $(LOG_FILE); \
+	  $(MAKE) $$target > $(LOG_FILE) 2>&1; \
 	  $(LOG_STORE) "build" "$$target" "$$path"; \
 	done;
 
@@ -59,28 +59,32 @@ check-log-test-am:
 	  if test -f ./$$tst; then dir=./; \
 	  elif test -f $$tst; then dir=; \
 	  else dir="$(srcdir)/"; fi; \
-	  if $(TESTS_ENVIRONMENT) $${dir}$$tst >& $(LOG_FILE); then \
+	  if $(TESTS_ENVIRONMENT) $${dir}$$tst > $(LOG_FILE) 2>&1; then \
 	    case " $(XFAIL_TESTS) " in \
 	    *" $$tst "*) \
 	      LOG "ERROR: XPASS ($$tst)"; \
+		  $(LOG_STORE) "run" "$$tst" "$$path" 1 0; \
 	    ;; \
 	    *) \
 	      LOG "SUCCESS: PASS ($$tst)"; \
+		  $(LOG_STORE) "run" "$$tst" "$$path" 0 0; \
 	    ;; \
 	    esac; \
 	  elif test $$? -ne 77; then \
 	    case " $(XFAIL_TESTS) " in \
 	    *" $$tst "*) \
 	      LOG "SUCCESS: XFAIL ($$tst)"; \
+		  $(LOG_STORE) "run" "$$tst" "$$path" 0 0; \
 	    ;; \
 	    *) \
 	      LOG "ERROR: FAIL ($$tst)"; \
+		  $(LOG_STORE) "run" "$$tst" "$$path" 1 0; \
 	    ;; \
 	    esac; \
 	  else \
 	    LOG "WARNING: SKIP ($$tst)"; \
+		$(LOG_STORE) "run" "$$tst" "$$path" 0 1; \
 	  fi; \
-	  $(LOG_STORE) "run" "$$tst" "$$path"; \
 	done;
 
 check-log-dir-am:
