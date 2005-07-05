@@ -3838,7 +3838,7 @@ namespace Dune
     for(int i=0; i<ALBERTA AlbertHelp::numOfElNumVec; i++)
       maxHierIndex_[i] = indexStack_[i].getMaxIndex();
 
-    //maxHierIndex_[dim] = mesh_->n_vertices;
+    maxHierIndex_[dim] = mesh_->n_vertices;
 
     // unset up2Dat status, if lbegin is called then this status is updated
     vertexMarker_->unsetUp2Date();
