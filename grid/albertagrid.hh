@@ -1835,7 +1835,7 @@ namespace Dune
     };
 
     template<int dim, int dimw, int cdim>
-    struct hasEntity< AlbertaGrid<dim,dimw>, AlbertaGridEntity<cdim,dim,AlbertaGrid<dim,dimw> > >
+    struct hasEntity< AlbertaGrid<dim,dimw>, cdim>
     {
       static const bool v = true;
     };

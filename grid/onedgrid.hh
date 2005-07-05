@@ -350,30 +350,30 @@ namespace Dune {
 
   }; // end Class OneDGrid
 
-#if 0  // to be implemented
   namespace Capabilities
   {
 
-    template<int dim,int dimw>
-    struct hasLeafIterator< UGGrid<dim,dimw> >
-    {
-      static const bool v = true;
-    };
-
     template<int dim, int dimw, int cdim>
-    struct hasEntity< UGGrid<dim,dimw>, UGGridEntity<cdim,dim,dimw> >
+    struct hasEntity< OneDGrid<dim,dimw>, cdim >
+    {
+      static const bool v = true;
+    };
+
+#if 0  // to be implemented
+    template<int dim,int dimw>
+    struct hasLeafIterator< OneDGrid<dim,dimw> >
     {
       static const bool v = true;
     };
 
     template<int dim,int dimw>
-    struct isParallel< UGGrid<dim,dimw> >
+    struct isParallel< OneDGrid<dim,dimw> >
     {
       static const bool v = true;
     };
+#endif
 
   }
-#endif
 
 } // namespace Dune
 

@@ -2197,13 +2197,13 @@ namespace Dune {
     };
 
     template<int dim, int dimw>
-    struct hasEntity< YaspGrid<dim,dimw>, YaspEntity<0,dim,YaspGrid<dim,dimw> > >
+    struct hasEntity< YaspGrid<dim,dimw>, 0 >
     {
       static const bool v = true;
     };
 
     template<int dim, int dimw>
-    struct hasEntity< YaspGrid<dim,dimw>, YaspEntity<dim,dim,YaspGrid<dim,dimw> > >
+    struct hasEntity< YaspGrid<dim,dimw>, dim >
     {
       static const bool v = true;
     };
