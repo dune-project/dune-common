@@ -14,16 +14,18 @@ ac_save_LIBS="$LIBS"
 ## do nothing if --without-psurface is used
 if test x$with_psurface != xno ; then
 
-if test x$with_psurface != x ; then
+# is --with-psurface=bla used?
+if test "x$with_psurface" != x ; then
     if test -d $with_psurface; then
       # expand tilde / other stuff
       PSURFACEROOT=`cd $with_psurface && pwd`
     else
       AC_MSG_ERROR([directory $with_psurface does not exist])
     fi      
-else
-  # use some default value...
-  PSURFACEROOT="/usr/local/psurface"
+fi
+if test "x$PSURFACEROOT" = x; then  
+    # use some default value...
+    PSURFACEROOT="/usr/local/psurface"
 fi
 
 PSURFACE_LIB_PATH="$PSURFACEROOT/lib"
