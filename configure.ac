@@ -49,7 +49,13 @@ fi
 AC_SUBST(DUNEWEBDIR, $with_duneweb)
 
 # special settings for check-log
-AC_SUBST(host, $(echo "$ac_hostname ($(uname -sm), $COMPILER_NAME)") )
+AC_ARG_WITH(hostid,
+  AC_HELP_STRING([--with-hostid=HOST_IDENTIFIER],
+                 [host identifier used for automated test runs]))
+if test "x$with_hostid" == "xno" ; then
+  with_hostid="$ac_hostname ($(uname -sm), $COMPILER_NAME)";
+fi
+AC_SUBST(host, $with_hostid)
 AC_ARG_WITH(tag,
   AC_HELP_STRING([--with-tag=TAG],
                  [tag to use for automated test runs]))
