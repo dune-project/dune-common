@@ -7,7 +7,11 @@ endif
 
 SUFFIXES = .dvi .tex .pdf
 
-dist_pkgdata_DATA = communication.pdf communication.ps
+if BUILD_DOCS
+  DOCS = communication.pdf communication.ps
+endif
+
+dist_pkgdata_DATA = $(DOCS)
 
 noinst_PROGRAMS = $(MPIPROGRAMS)
 
