@@ -46,7 +46,6 @@ namespace Dune {
   template<int codim, int dim, class GridImp>   class YaspEntity;
   template<int codim, class GridImp>            class YaspEntityPointer;
   template<int codim, PartitionIteratorType pitype, class GridImp> class YaspLevelIterator;
-  template<class GridImp>            class YaspLeafIterator;
   template<class GridImp>            class YaspIntersectionIterator;
   template<class GridImp>            class YaspHierarchicIterator;
   template<class GridImp>            class YaspBoundaryEntity;
@@ -1632,33 +1631,6 @@ namespace Dune {
 
   //========================================================================
   /*!
-     YaspLeafIterator enables iteration over entities of one leaf level
-
-     We have specializations for codim==0 (elements) and
-     codim=dim (vertices).
-     The general version throws a GridError.
-   */
-  //========================================================================
-
-  template <class GridImp>
-  class YaspLeafIterator : public YaspLevelIterator<0,All_Partition,GridImp>
-  {
-    //! know your own dimension
-    enum { dim=GridImp::dimension };
-    typedef typename GridImp::ctype ctype;
-  public:
-    typedef typename MultiYGrid<dim,ctype>::YGridLevelIterator YGLI;
-    typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
-    YaspLeafIterator(const YGLI & g, const TSI & it) :
-      YaspLevelIterator<0,All_Partition,GridImp>(g,it)
-    {}
-    YaspLeafIterator(const YaspLeafIterator& i) :
-      YaspLevelIterator<0,All_Partition,GridImp>(i)
-    {}
-  };
-
-  //========================================================================
-  /*!
      YaspIndex provides mappers with index information for an entity
 
      Numbering of the entities on one level which can also be used as leaf index
@@ -1841,7 +1813,7 @@ namespace Dune {
         YaspGeometry,YaspEntity,YaspBoundaryEntity,
         YaspEntityPointer,YaspLevelIterator,
         YaspIntersectionIterator,YaspHierarchicIterator,
-        YaspLeafIterator> Traits;
+        YaspLevelIterator> Traits;
 
     typedef YaspIndex<YaspGrid<dim,dimworld> > IndexType;
 
@@ -1905,108 +1877,56 @@ namespace Dune {
     template<int cd, PartitionIteratorType pitype>
     typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator lbegin (int level) const
     {
-      IsTrue< ( cd == dim || cd == 0 ) >::yes();
-      YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
-      if (cd==0)   // the elements
-      {
-        if (pitype<=InteriorBorder_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.cell_interior().tsubbegin());
-        if (pitype<=All_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.cell_overlap().tsubbegin());
-      }
-      if (cd==dim)   // the vertices
-      {
-        if (pitype==Interior_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_interior().tsubbegin());
-        if (pitype==InteriorBorder_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_interiorborder().tsubbegin());
-        if (pitype==Overlap_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_overlap().tsubbegin());
-        if (pitype<=All_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_overlapfront().tsubbegin());
-      }
-      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
+      return levelbegin<cd,pitype>(level);
     }
 
     //! Iterator to one past the last entity of given codim on level for partition type
     template<int cd, PartitionIteratorType pitype>
     typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator lend (int level) const
     {
-      IsTrue< ( cd == dim || cd == 0 ) >::yes();
-      YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
-      if (cd==0)   // the elements
-      {
-        if (pitype<=InteriorBorder_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.cell_interior().tsubend());
-        if (pitype<=All_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.cell_overlap().tsubend());
-      }
-      if (cd==dim)   // the vertices
-      {
-        if (pitype==Interior_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_interior().tsubend());
-        if (pitype==InteriorBorder_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_interiorborder().tsubend());
-        if (pitype==Overlap_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_overlap().tsubend());
-        if (pitype<=All_Partition)
-          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_overlapfront().tsubend());
-      }
-      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
+      return levelend<cd,pitype>(level);
     }
 
     //! version without second template parameter for convenience
     template<int cd>
     typename Traits::template Codim<cd>::template partition<All_Partition>::LevelIterator lbegin (int level) const
     {
-      IsTrue< ( cd == dim || cd == 0 ) >::yes();
-      YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
-      if (cd==0)   // the elements
-      {
-        return YaspLevelIterator<cd,All_Partition,GridImp>(g,g.cell_overlap().tsubbegin());
-      }
-      if (cd==dim)   // the vertices
-      {
-        return YaspLevelIterator<cd,All_Partition,GridImp>(g,g.vertex_overlapfront().tsubbegin());
-      }
-      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
+      return levelbegin<cd,All_Partition>(level);
     }
 
     //! version without second template parameter for convenience
     template<int cd>
     typename Traits::template Codim<cd>::template partition<All_Partition>::LevelIterator lend (int level) const
     {
-      IsTrue< ( cd == dim || cd == 0 ) >::yes();
-      YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
-      if (cd==0)   // the elements
-      {
-        return YaspLevelIterator<cd,All_Partition,GridImp>(g,g.cell_overlap().tsubend());
-      }
-      if (cd==dim)   // the vertices
-      {
-        return YaspLevelIterator<cd,All_Partition,GridImp>(g,g.vertex_overlapfront().tsubend());
-      }
-      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
+      return levelend<cd,All_Partition>(level);
     }
 
     //! return LeafIterator which points to the first entity in maxLevel
-    typename Traits::LeafIterator leafbegin(int maxLevel) const
+    template<int cd, PartitionIteratorType pitype>
+    typename Traits::template Codim<cd>::template partition<pitype>::LeafIterator leafbegin () const
     {
-      int level = std::min(maxLevel,maxlevel());
-      YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      return YaspLeafIterator<const GridImp>(g,g.cell_overlap().tsubbegin());
+      return levelbegin<cd,pitype>(maxlevel());
     };
 
     //! return LeafIterator which points behind the last entity in maxLevel
-    typename Traits::LeafIterator leafend(int maxLevel) const
+    template<int cd, PartitionIteratorType pitype>
+    typename Traits::template Codim<cd>::template partition<pitype>::LeafIterator leafend () const
     {
-      int level = std::min(maxLevel,maxlevel());
-      YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      return YaspLeafIterator<const GridImp>(g,g.cell_overlap().tsubend());
+      return levelend<cd,pitype>(maxlevel());
+    }
+
+    //! return LeafIterator which points to the first entity in maxLevel
+    template<int cd>
+    typename Traits::template Codim<cd>::template partition<All_Partition>::LeafIterator leafbegin () const
+    {
+      return levelbegin<cd,All_Partition>(maxlevel());
+    };
+
+    //! return LeafIterator which points behind the last entity in maxLevel
+    template<int cd>
+    typename Traits::template Codim<cd>::template partition<All_Partition>::LeafIterator leafend () const
+    {
+      return levelend<cd,All_Partition>(maxlevel());
     }
 
     //! return size (= distance in graph) of overlap region
@@ -2299,6 +2219,62 @@ namespace Dune {
         for (int i=0; i<dim; ++i)
           sizes[g.level()][dim] *= g.vertex_overlapfront().size(i);
       }
+    }
+
+    //! one past the end on this level
+    template<int cd, PartitionIteratorType pitype>
+    YaspLevelIterator<cd,pitype,GridImp> levelbegin (int level) const
+    {
+      IsTrue< ( cd == dim || cd == 0 ) >::yes();
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
+      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
+      if (cd==0)   // the elements
+      {
+        if (pitype<=InteriorBorder_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.cell_interior().tsubbegin());
+        if (pitype<=All_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.cell_overlap().tsubbegin());
+      }
+      if (cd==dim)   // the vertices
+      {
+        if (pitype==Interior_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_interior().tsubbegin());
+        if (pitype==InteriorBorder_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_interiorborder().tsubbegin());
+        if (pitype==Overlap_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_overlap().tsubbegin());
+        if (pitype<=All_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_overlapfront().tsubbegin());
+      }
+      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
+    }
+
+    //! Iterator to one past the last entity of given codim on level for partition type
+    template<int cd, PartitionIteratorType pitype>
+    YaspLevelIterator<cd,pitype,GridImp> levelend (int level) const
+    {
+      IsTrue< ( cd == dim || cd == 0 ) >::yes();
+      YGLI g = MultiYGrid<dim,ctype>::begin(level);
+      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
+      if (cd==0)   // the elements
+      {
+        if (pitype<=InteriorBorder_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.cell_interior().tsubend());
+        if (pitype<=All_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.cell_overlap().tsubend());
+      }
+      if (cd==dim)   // the vertices
+      {
+        if (pitype==Interior_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_interior().tsubend());
+        if (pitype==InteriorBorder_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_interiorborder().tsubend());
+        if (pitype==Overlap_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_overlap().tsubend());
+        if (pitype<=All_Partition)
+          return YaspLevelIterator<cd,pitype,GridImp>(g,g.vertex_overlapfront().tsubend());
+      }
+      DUNE_THROW(GridError, "YaspLevelIterator with this codim or partition type not implemented");
     }
 
     int sizes[MAXL][dim+1]; // total number of entities per level and codim
