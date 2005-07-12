@@ -50,56 +50,6 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  [HAVE_UG="0"]
       )
 
-#       # check if config is found
-#       if test x$HAVE_UG = x1 ; then
-# 	  AC_CHECK_FILE([$UGROOT/ug.conf],
-# 	      [UG_CONF="$UGROOT/ug.conf"],
-# 	      [HAVE_UG="0"])
-#       fi
-
-# # define local function for getting the Makefile-Variable-Values from ug.conf
-# dune_ug_getopt () {
-#     retval=`make -f - <<EOF
-# include $UG_CONF
-# all:
-# 	@echo \\$($UGCONFVAL)
-# EOF`
-# }
-
-#       if test x$HAVE_UG = x1 ; then
-#           echo Reading ug.conf...
-
-#           echo -n "UG-domain-module... "
-#           UGCONFVAL="DOM_MODULE"
-#           dune_ug_getopt
-#           UGDOMAIN=$retval
-#           echo $UGDOMAIN      
-
-#           # the libs have a single character defining the domain
-#           case "$UGDOMAIN" in
-#               STD_DOMAIN)  UGDCHAR=S ;;
-#               LGM_DOMAIN)  UGDCHAR=L ;;
-#               *)   AC_MSG_ERROR([I don't know this UG-domain-module!]) ;;
-#           esac
-
-#           echo -n "UG-GRAPE-bindings... "
-#           UGCONFVAL="GRAPE"
-#           dune_ug_getopt
-#           UGGRAPE=$retval
-#           echo $UGGRAPE
-#           # !!! check for grape-lib if this is set!
-
-#           if test "$with_problem_dim" != "$with_world_dim" ; then
-# 	      AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
-#           fi
-#           UG_DIM="$with_problem_dim"
-
-#           # use full options for link-test
-#           UG_CPPFLAGS="-D_${UGDOMAIN}_ -D_${UG_DIM} $UG_CPPFLAGS"
-#       fi
-
-
-
       # use global dimension
       if test "$with_problem_dim" != "$with_world_dim" ; then
 	  AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
