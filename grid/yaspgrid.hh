@@ -166,7 +166,7 @@ namespace Dune {
     //! return the element type identifier
     GeometryType type () const
     {
-      return hypercube;
+      return cube;
     }
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
@@ -313,7 +313,7 @@ namespace Dune {
     //! return the element type identifier
     GeometryType type () const
     {
-      return hypercube;
+      return cube;
     }
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
@@ -1741,7 +1741,7 @@ namespace Dune {
     //! constructor stores reference to a grid and level
     YaspLevelIndexSet (const GridImp& g, int l) : grid(g), level(l)
     {
-      mytypes.push_back(hypercube);   // contains a single element type;
+      mytypes.push_back(cube);   // contains a single element type;
     }
 
     //! get index of an entity
@@ -2037,7 +2037,7 @@ namespace Dune {
     //! number of entities per level, codim and geometry type in this process
     int size (int level, int codim, GeometryType type) const
     {
-      if (type==hypercube) return sizes[level][codim];
+      if (type==cube) return sizes[level][codim];
       switch (dim-codim)
       {
       case 0 :
