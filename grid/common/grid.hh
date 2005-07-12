@@ -47,7 +47,7 @@ namespace Dune {
 
   enum GeometryType {vertex=0,line=1, triangle=2, quadrilateral=3, tetrahedron=4,
                      pyramid=5, prism=6, hexahedron=7,
-                     simplex=64, hypercube=65, unknown=127};
+                     simplex=64, cube=65, unknown=127};
 
   enum AdaptationState {
     NONE ,   //!< notin' to do and notin' was done
@@ -134,8 +134,8 @@ namespace Dune {
       return "hexahedron";
     case simplex :
       return "simplex";
-    case hypercube :
-      return "hypercube";
+    case cube :
+      return "cube";
     default :
       return "unknown";
     }
