@@ -247,6 +247,7 @@ namespace Dune {
 
   template<int codim, int dim, class GridImp>
   class SEntityBase {
+    friend class SEntityPointer<codim,GridImp>;
     friend class SIntersectionIterator<GridImp>;
     enum { dimworld = GridImp::dimensionworld };
   public:
@@ -661,13 +662,13 @@ namespace Dune {
    */
   template<class GridImp>
   class SIntersectionIterator :
-    public Dune::SEntityPointer <0,GridImp>,
     public IntersectionIteratorDefault <GridImp,SIntersectionIterator>
   {
     enum { dim=GridImp::dimension };
     enum { dimworld=GridImp::dimensionworld };
   public:
     typedef typename GridImp::template Codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
     typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
@@ -678,8 +679,21 @@ namespace Dune {
     //! define type used for coordinates in grid module
     typedef typename GridImp::ctype ctype;
 
+    //! ask for level of intersection
+    int level () const;
+
+    //! equality
+    bool equals(const SIntersectionIterator<GridImp>& i) const;
     //! increment
     void increment();
+
+    //! return EntityPointer to the Entity on the inside of this intersection
+    //! (that is the Entity where we started this Iterator)
+    EntityPointer inside() const;
+
+    //! return EntityPointer to the Entity on the outside of this intersection
+    //! (that is the neighboring Entity)
+    EntityPointer outside() const;
 
     //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
     bool boundary () const;
@@ -718,11 +732,16 @@ namespace Dune {
   private:
     void make (int _count) const;               //!< reinitialze iterator with given neighbor
     void makeintersections () const;            //!< compute intersections
-    const SEntity<0,dim,GridImp >* self;        //!< myself, SEntity is a friend class
+    const SEntityPointer<0,GridImp> self;       //!< EntityPointer for myself
+    mutable SEntityPointer<0,GridImp> ne;       //!< EntityPointer for neighbor
+    //  GridImp* grid;                                //!< my grid
+    //  int l;                                        //!< level where element is on
+    //  mutable int id;                               //!< my consecutive id
     const int partition;                        //!< partition number of self, needed for coordinate expansion
     const FixedArray<int,dim> zred;               //!< reduced coordinates of myself, allows easy computation of neighbors
     mutable int count;                            //!< number of neighbor
     mutable bool valid_count;                     //!< true if count is in range
+    mutable bool valid_nb;                        //!< true if nb is initialized
     mutable bool is_on_boundary;                  //!< true if neighbor is otside the domain
     mutable bool built_intersections;             //!< true if all intersections have been built
     mutable SMakeableGeometry<dim-1,dim,const GridImp> is_self_local;    //!< intersection in own local coordinates
@@ -741,6 +760,7 @@ namespace Dune {
         Dune::SEntityPointer<codim,GridImp> >
   {
     enum { dim = GridImp::dimension };
+    friend class SIntersectionIterator<GridImp>;
   public:
     typedef typename GridImp::template Codim<codim>::Entity Entity;
 
@@ -754,6 +774,10 @@ namespace Dune {
     //! constructor
     SEntityPointer (GridImp * _grid, int _l, int _id) :
       grid(_grid), l(_l), id(_id), e(_grid,_l,_id) { }
+
+    //! constructor
+    SEntityPointer (const SEntity<codim,dim,GridImp> & _e) :
+      grid(_e.grid), l(_e.l), id(_e.id), e(_e) { }
 
   protected:
     GridImp* grid;               //!< my grid

@@ -556,10 +556,14 @@ void assertNeighbor (Grid &g)
       {
         if (it.neighbor())
         {
-          assert(it->index() >= 0);
-          LevelIterator n = g.template lbegin<0>(it->level());
-          LevelIterator nend = g.template lend<0>(it->level());
-          while (n != it && n != nend) ++n;
+          assert(it.outside()->index() >= 0);
+          assert(it.outside()->index() != e->index());
+          LevelIterator n = g.template lbegin<0>(it.level());
+          LevelIterator nend = g.template lend<0>(it.level());
+          while (n != it.outside() && n != nend) {
+            assert(it.outside()->index() != n->index());
+            ++n;
+          }
         }
       }
     }
@@ -690,7 +694,8 @@ void iteratorEquals (Grid &g)
   e1 == L1;
   l2 == e1;
   l2 == L2;
-  i1 == h2;
+  i1.inside() == h2;
+  i1.outside() == h2;
 }
 
 template <class Grid>
