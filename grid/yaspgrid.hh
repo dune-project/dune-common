@@ -1174,6 +1174,7 @@ namespace Dune {
     typedef typename MultiYGrid<dim,ctype>::YGridLevelIterator YGLI;
     typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
     typedef typename GridImp::template Codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
     typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
@@ -1275,6 +1276,20 @@ namespace Dune {
 #endif
     }
 
+    //! return EntityPointer to the Entity on the inside of this intersection
+    //! (that is the Entity where we started this Iterator)
+    EntityPointer inside() const
+    {
+      return _selfp;
+    }
+
+    //! return EntityPointer to the Entity on the outside of this intersection
+    //! (that is the neighboring Entity)
+    EntityPointer outside() const
+    {
+      return *this;
+    }
+
     //! return unit outer normal, this should be dependent on local coordinates for higher order boundary
     FieldVector<ctype, dimworld> outerNormal (const FieldVector<ctype, dim-1>& local) const
     {
@@ -1329,6 +1344,8 @@ namespace Dune {
     YaspIntersectionIterator (const YaspEntity<0,dim,GridImp>& myself, bool toend)
       : YaspEntityPointer<0,GridImp>(myself.gridlevel(),
                                      myself.transformingsubiterator()),
+        _selfp(myself.gridlevel(),
+               myself.transformingsubiterator()),
         _myself(myself),
         _pos_self_local(0.5),
         _pos_nb_local(0.5),
@@ -1369,6 +1386,7 @@ namespace Dune {
         _count(it._count),
         _dir(it._dir),
         _face(it._face),
+        _selfp(it._selfp),
         _myself(it._myself),
         _pos_self_local(it._pos_self_local),
         _pos_nb_local(it._pos_nb_local),
@@ -1385,6 +1403,7 @@ namespace Dune {
     int _count;                           //!< valid neighbor count in 0 .. 2*dim-1
     int _dir;                             //!< count/2
     int _face;                            //!< count%2
+    const YaspEntityPointer<0,GridImp> _selfp; //!< entitypointer to myself
     const YaspEntity<0,dim,GridImp>&
     _myself;                              //!< reference to myself
     FieldVector<ctype, dim> _pos_self_local; //!< center of face in own local coordinates
