@@ -535,8 +535,6 @@ namespace Dune {
 #include "hierarchiciterator.hh"
 #include "leafiterator.hh"
 
-#include "grid.cc"
-
 inline std::ostream& operator<< (std::ostream& s, Dune::GeometryType t)
 {
   s << Dune::GeometryName(t);
