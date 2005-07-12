@@ -41,7 +41,7 @@ namespace Dune {
 
   public:
 
-    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
 
     //! Constructor
     OneDGridHierarchicIterator(int maxlevel) : OneDGridEntityPointer<0,GridImp>(NULL),

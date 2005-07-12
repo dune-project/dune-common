@@ -43,25 +43,12 @@ namespace Dune {
     };
 
   public:
-    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
 
     //! the default Constructor
     UGGridHierarchicIterator(int maxLevel);
 
     void increment();
-
-#if 0
-    bool equals (const UGGridHierarchicIterator& i) const;
-
-    Entity& dereference() const;
-#endif
-
-  private:
-
-#if 0
-    //! implement with virtual element
-    mutable UGMakeableEntity<0,GridImp::dimension,GridImp> virtualEntity_;
-#endif
 
     //! max level to go down
     int maxlevel_;

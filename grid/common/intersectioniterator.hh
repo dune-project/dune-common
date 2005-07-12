@@ -26,10 +26,10 @@ namespace Dune
     enum { dimworld=GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   public:
-    typedef typename GridImp::template codim<0>::Entity Entity;
-    typedef typename GridImp::template codim<0>::BoundaryEntity BoundaryEntity;
-    typedef typename GridImp::template codim<1>::Geometry Geometry;
-    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
+    typedef typename GridImp::template Codim<1>::Geometry Geometry;
+    typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     //! know your own dimension
     enum { dimension=dim };
     //! know your own dimension of world
@@ -143,10 +143,10 @@ namespace Dune
     enum { dimworld=GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   public:
-    typedef typename GridImp::template codim<0>::Entity Entity;
-    typedef typename GridImp::template codim<0>::BoundaryEntity BoundaryEntity;
-    typedef typename GridImp::template codim<1>::Geometry Geometry;
-    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
+    typedef typename GridImp::template Codim<1>::Geometry Geometry;
+    typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     //! know your own dimension
     enum { dimension=dim };
     //! know your own dimension of world

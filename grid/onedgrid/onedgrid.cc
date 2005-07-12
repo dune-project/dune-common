@@ -162,7 +162,7 @@ Dune::OneDGrid<dim,dimworld>::~OneDGrid()
 
 template <int dim, int dimworld>
 template <int codim>
-typename Dune::OneDGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
+typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LevelIterator
 Dune::OneDGrid<dim,dimworld>::lbegin(int level) const
 {
   return OneDGridLevelIteratorFactory<codim>::lbegin(this, level);
@@ -170,7 +170,7 @@ Dune::OneDGrid<dim,dimworld>::lbegin(int level) const
 
 template <int dim, int dimworld>
 template <int codim>
-typename Dune::OneDGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
+typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LevelIterator
 Dune::OneDGrid<dim,dimworld>::lend(int level) const
 {
   if (level<0 || level>maxlevel())
@@ -524,8 +524,8 @@ template <int dim, int dimworld>
 void Dune::OneDGrid<dim,dimworld>::globalRefine(int refCount)
 {
   // mark all entities for grid refinement
-  typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
-  typename Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
+  typename Traits::template Codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
+  typename Traits::template Codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
 
   for (; iIt!=iEndIt; ++iIt)
     mark(1, iIt);
@@ -537,7 +537,7 @@ void Dune::OneDGrid<dim,dimworld>::globalRefine(int refCount)
 
 template <int dim, int dimworld>
 bool Dune::OneDGrid < dim, dimworld >::mark(int refCount,
-                                            typename Traits::template codim<0>::EntityPointer & e )
+                                            typename Traits::template Codim<0>::EntityPointer & e )
 {
   if (refCount < 0)
     getRealEntity<0>(*e).target_->adaptationState = COARSEN;
@@ -556,8 +556,8 @@ bool Dune::OneDGrid < dim, dimworld >::mark(int refCount,
 template class Dune::OneDGrid<1,1>;
 
 // Explicitly instantiate the necessary member templates contained in OneDGrid<1,1>
-template Dune::OneDGrid<1,1>::Traits::codim<0>::LevelIterator Dune::OneDGrid<1,1>::lbegin<0>(int level) const;
-template Dune::OneDGrid<1,1>::Traits::codim<1>::LevelIterator Dune::OneDGrid<1,1>::lbegin<1>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<0>::LevelIterator Dune::OneDGrid<1,1>::lbegin<0>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::LevelIterator Dune::OneDGrid<1,1>::lbegin<1>(int level) const;
 
-template Dune::OneDGrid<1,1>::Traits::codim<0>::LevelIterator Dune::OneDGrid<1,1>::lend<0>(int level) const;
-template Dune::OneDGrid<1,1>::Traits::codim<1>::LevelIterator Dune::OneDGrid<1,1>::lend<1>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<0>::LevelIterator Dune::OneDGrid<1,1>::lend<0>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::LevelIterator Dune::OneDGrid<1,1>::lend<1>(int level) const;

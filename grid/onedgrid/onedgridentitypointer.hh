@@ -14,7 +14,7 @@ namespace Dune {
   {
     enum { dim = GridImp::dimension };
   public:
-    typedef typename GridImp::template codim<codim>::Entity Entity;
+    typedef typename GridImp::template Codim<codim>::Entity Entity;
 
     //! equality
     bool equals(const OneDGridEntityPointer<codim,GridImp>& other) const {

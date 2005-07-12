@@ -71,7 +71,7 @@ namespace Dune
   public:
 
     /** The corresponding geometry type */
-    typedef typename GridImp::template codim<cd>::Geometry Geometry;
+    typedef typename GridImp::template Codim<cd>::Geometry Geometry;
     enum {
       /** know your own codimension */
       codimension=cd
@@ -125,14 +125,14 @@ namespace Dune
      */
 #ifdef __ICC
     // for icc
-    friend EntityImp<cd,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<cd>::Entity& e );
-    friend const EntityImp<cd,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template codim<cd>::Entity& e ) const;
+    friend EntityImp<cd,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template Codim<cd>::Entity& e );
+    friend const EntityImp<cd,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template Codim<cd>::Entity& e ) const;
 #else
     // for g++
     template <int cc>
-    friend EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template codim<cc>::Entity& e );
+    friend EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template Codim<cc>::Entity& e );
     template <int cc>
-    friend const EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(const typename GridImp::Traits::template codim<cc>::Entity& e ) const;
+    friend const EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(const typename GridImp::Traits::template Codim<cc>::Entity& e ) const;
 #endif
 
   protected:
@@ -183,14 +183,14 @@ namespace Dune
      */
 #ifdef __ICC
     // for icc
-    friend EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<0>::Entity& e );
-    friend const EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template codim<0>::Entity& e ) const;
+    friend EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template Codim<0>::Entity& e );
+    friend const EntityImp<0,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template Codim<0>::Entity& e ) const;
 #else
     // for g++
     template <int cc>
-    friend EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(typename mutableGridImp::Traits::template codim<cc>::Entity& e );
+    friend EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(typename mutableGridImp::Traits::template Codim<cc>::Entity& e );
     template <int cc>
-    friend const EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(const typename mutableGridImp::Traits::template codim<cc>::Entity& e ) const;
+    friend const EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(const typename mutableGridImp::Traits::template Codim<cc>::Entity& e ) const;
 #endif
 
   protected:
@@ -198,23 +198,23 @@ namespace Dune
   public:
 
     /** \brief The geometry type of this entity */
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
 
     /** \brief EntityPointer types of the different codimensions */
     template <int cd>
-    struct codim
+    struct Codim
     {
-      typedef typename GridImp::template codim<cd>::EntityPointer EntityPointer;
+      typedef typename GridImp::template Codim<cd>::EntityPointer EntityPointer;
     };
 
     /** \brief The codim==0 EntityPointer type */
-    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
 
     /** \brief The IntersectionIterator type*/
-    typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename GridImp::template Codim<0>::IntersectionIterator IntersectionIterator;
 
     /** \brief The HierarchicIterator type*/
-    typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
+    typedef typename GridImp::template Codim<0>::HierarchicIterator HierarchicIterator;
 
     //! Know your own codimension
     enum { codimension=0 };
@@ -249,7 +249,7 @@ namespace Dune
     /**
        \brief Access to subentity <tt>i</tt> of codimension <tt>cc</tt>.
      */
-    template<int cc> typename codim<cc>::EntityPointer entity (int i) const
+    template<int cc> typename Codim<cc>::EntityPointer entity (int i) const
     {
       return realEntity.entity<cc>(i);
     }
@@ -406,14 +406,14 @@ namespace Dune
      */
 #ifdef __ICC
     // for icc
-    friend EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template codim<dim>::Entity& e );
-    friend const EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template codim<dim>::Entity& e ) const;
+    friend EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(typename GridImp::Traits::template Codim<dim>::Entity& e );
+    friend const EntityImp<dim,dim,GridImp>& mutableGridImp::template getRealEntity<>(const typename GridImp::Traits::template Codim<dim>::Entity& e ) const;
 #else
     // for g++
     template <int cc>
-    friend EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template codim<cc>::Entity& e );
+    friend EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(typename GridImp::Traits::template Codim<cc>::Entity& e );
     template <int cc>
-    friend const EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(const typename GridImp::Traits::template codim<cc>::Entity& e ) const;
+    friend const EntityImp<cc,dim,GridImp>& mutableGridImp::getRealEntity(const typename GridImp::Traits::template Codim<cc>::Entity& e ) const;
 #endif
 
   protected:
@@ -421,10 +421,10 @@ namespace Dune
   public:
 
     /** \brief Geometry type of this entity */
-    typedef typename GridImp::template codim<dim>::Geometry Geometry;
+    typedef typename GridImp::template Codim<dim>::Geometry Geometry;
 
     /** \brief Codim 0 EntityPointer type*/
-    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
     //! Know your own codimension
     enum { codimension=dim };
     //! Know the grid's dimension
@@ -485,7 +485,7 @@ namespace Dune
     typedef typename GridImp::ctype ct;
   public:
 
-    typedef typename GridImp::template codim<cd>::Geometry Geometry;
+    typedef typename GridImp::template Codim<cd>::Geometry Geometry;
 
     //! know your own codimension
     enum { codimension=cd };
@@ -539,10 +539,10 @@ namespace Dune
     typedef typename GridImp::ctype ct;
   public:
 
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
-    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
-    typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
-    typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename GridImp::template Codim<0>::HierarchicIterator HierarchicIterator;
 
     //! know your own codimension
     enum { codimension=0 };
@@ -660,8 +660,8 @@ namespace Dune
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   public:
-    typedef typename GridImp::template codim<dim>::Geometry Geometry;
-    typedef typename GridImp::template codim<dim>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<dim>::Geometry Geometry;
+    typedef typename GridImp::template Codim<dim>::EntityPointer EntityPointer;
 
     //! know your own codimension
     enum { codimension=dim };

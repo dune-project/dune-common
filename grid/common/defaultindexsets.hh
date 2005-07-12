@@ -371,7 +371,7 @@ namespace Dune {
     //! return subIndex (LevelIndex) for a given Entity of codim = 0 and a
     //! given SubEntity codim and number of SubEntity
     template <int cd>
-    int subIndex (const typename GridType::template codim<0>::Entity & en, int i) const
+    int subIndex (const typename GridType::template Codim<0>::Entity & en, int i) const
     {
       assert( level_ == en.level() );
       return levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ];

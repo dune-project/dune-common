@@ -26,12 +26,12 @@ namespace Dune {
 
   template<int codim, int dim, class GridImp>
   class UGMakeableEntity :
-    public GridImp::template codim<codim>::Entity
+    public GridImp::template Codim<codim>::Entity
   {
   public:
 
     UGMakeableEntity(int level) :
-      GridImp::template codim<codim>::Entity (UGGridEntity<codim, dim, const GridImp>(level))
+      GridImp::template Codim<codim>::Entity (UGGridEntity<codim, dim, const GridImp>(level))
     {}
 
     void setToTarget(typename TargetType<codim,dim>::T* target) {
@@ -76,7 +76,7 @@ namespace Dune {
 
   public:
 
-    typedef typename GridImp::template codim<codim>::Geometry Geometry;
+    typedef typename GridImp::template Codim<codim>::Geometry Geometry;
 
     //! Constructor for an entity in a given grid level
     UGGridEntity(int level);
@@ -191,7 +191,7 @@ namespace Dune {
 
   public:
 
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
 
     //! The Iterator over neighbors
     typedef UGGridIntersectionIterator<GridImp> IntersectionIterator;
@@ -262,7 +262,7 @@ namespace Dune {
      *  are numbered 0 ... count<cc>()-1
      */
     template<int cc>
-    typename GridImp::template codim<cc>::EntityPointer entity (int i) const;
+    typename GridImp::template Codim<cc>::EntityPointer entity (int i) const;
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors

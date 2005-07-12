@@ -13,7 +13,7 @@ namespace Dune {
     enum { numCodim = GridType::dimension+1 };
 
   public:
-    typedef typename GridType::Traits::template codim<0>::Entity EntityCodim0Type;
+    typedef typename GridType::Traits::template Codim<0>::Entity EntityCodim0Type;
 
     UGGridHierarchicIndexSet(const GridType & grid) : grid_(grid) {}
 
@@ -43,8 +43,8 @@ namespace Dune {
       case 0 : {
         for (int i=0; i<=grid_.maxlevel(); i++) {
 
-          typename GridType::Traits::template codim<0>::LevelIterator eIt    = grid_.template lbegin<0>(i);
-          typename GridType::Traits::template codim<0>::LevelIterator eEndIt = grid_.template lend<0>(i);
+          typename GridType::Traits::template Codim<0>::LevelIterator eIt    = grid_.template lbegin<0>(i);
+          typename GridType::Traits::template Codim<0>::LevelIterator eEndIt = grid_.template lend<0>(i);
 
           for (; eIt!=eEndIt; ++eIt)
             maxIdx = std::max(maxIdx, index(*eIt));
@@ -57,8 +57,8 @@ namespace Dune {
       case dim : {
         for (int i=0; i<=grid_.maxlevel(); i++) {
 
-          typename GridType::Traits::template codim<dim>::LevelIterator vIt    = grid_.template lbegin<dim>(i);
-          typename GridType::Traits::template codim<dim>::LevelIterator vEndIt = grid_.template lend<dim>(i);
+          typename GridType::Traits::template Codim<dim>::LevelIterator vIt    = grid_.template lbegin<dim>(i);
+          typename GridType::Traits::template Codim<dim>::LevelIterator vEndIt = grid_.template lend<dim>(i);
 
           for (; vIt!=vEndIt; ++vIt)
             maxIdx = std::max(maxIdx, index(*vIt));

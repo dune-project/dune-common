@@ -35,7 +35,7 @@ namespace Dune {
 
   public:
 
-    typedef typename GridImp::template codim<codim>::Entity Entity;
+    typedef typename GridImp::template Codim<codim>::Entity Entity;
 
     //! Constructor
     explicit UGGridLevelIterator(int travLevel) /*: virtualEntity_(0),
@@ -50,19 +50,6 @@ namespace Dune {
       //setToTarget(UG_NS<GridImp::dimension>::succ(target_));
       this->virtualEntity_.setToTarget(UG_NS<GridImp::dimension>::succ(this->virtualEntity_.getTarget()));
     }
-
-#if 0
-    //! equality
-    bool equals(const UGGridLevelIterator<codim,pitype,GridImp>& other) const {
-      return target_ == other.target_;
-    }
-
-    //! dereferencing
-    Entity& dereference() const {return virtualEntity_;}
-
-    //! ask for level of entity
-    int level () const {return level_;}
-#endif
 
   private:
 
@@ -79,15 +66,6 @@ namespace Dune {
       this->virtualEntity_.setToTarget(target, level);
     }
 
-#if 0
-    // private Members
-    mutable UGMakeableEntity<codim,GridImp::dimension,GridImp> virtualEntity_;
-
-    //! level
-    int level_;
-
-    typename TargetType<codim,GridImp::dimension>::T* target_;
-#endif
   };
 
 }  // namespace Dune

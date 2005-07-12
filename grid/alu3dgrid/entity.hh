@@ -43,9 +43,9 @@ namespace Dune {
   //**********************************************************************
   template<int cd, int dim, class GridImp>
   class ALU3dGridMakeableEntity :
-    public GridImp::template codim<cd>::Entity
+    public GridImp::template Codim<cd>::Entity
   {
-    // typedef typename GridImp::template codim<codim>::Entity EntityType;
+    // typedef typename GridImp::template Codim<codim>::Entity EntityType;
     friend class ALU3dGridEntity<cd, dim, GridImp>;
 
     typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
@@ -55,7 +55,7 @@ namespace Dune {
 
     // Constructor creating the realEntity
     ALU3dGridMakeableEntity(const GridImp & grid, int level) :
-      GridImp::template codim<cd>::
+      GridImp::template Codim<cd>::
       Entity (ALU3dGridEntity<cd, dim, GridImp>(grid,level)) {}
 
     //! set element as normal entity
@@ -121,10 +121,10 @@ namespace Dune {
     typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType BSElementType;
     typedef typename ALU3DSPACE BSIMPLElementType<cd>::ElementType BSIMPLElementType;
 
-    typedef typename GridImp::template codim<cd>::Entity Entity;
-    typedef typename GridImp::template codim<cd>::Geometry Geometry;
+    typedef typename GridImp::template Codim<cd>::Entity Entity;
+    typedef typename GridImp::template Codim<cd>::Geometry Geometry;
     typedef ALU3dGridMakeableGeometry<dim-cd,GridImp::dimensionworld,GridImp> GeometryImp;
-    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
 
     //! level of this element
     int level () const;
@@ -234,16 +234,16 @@ namespace Dune {
     friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
   public:
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
     typedef  ALU3dGridMakeableGeometry<dim,dimworld,GridImp> GeometryImp;
 
-    typedef typename GridImp::template codim<0>::Entity Entity;
-    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
 
     template <int cd>
-    struct codim
+    struct Codim
     {
-      typedef typename GridImp::template codim<cd>::EntityPointer EntityPointer;
+      typedef typename GridImp::template Codim<cd>::EntityPointer EntityPointer;
     };
 
     //! Constructor creating empty Entity
@@ -276,7 +276,7 @@ namespace Dune {
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
     template <int cc>
-    typename codim<cc>::EntityPointer entity (int i) const;
+    typename Codim<cc>::EntityPointer entity (int i) const;
 
     /*! Intra-level access to intersection with neighboring elements.
        A neighbor is an entity of codimension 0
@@ -409,7 +409,7 @@ namespace Dune {
     typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType MyHElementType;
   public:
 
-    typedef typename GridImp::template codim<cd>::Entity Entity;
+    typedef typename GridImp::template Codim<cd>::Entity Entity;
     typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
 
     //! typedef of my type
@@ -459,14 +459,14 @@ namespace Dune {
   //*******************************************************************
   template<class GridImp>
   class ALU3dGridMakeableBoundaryEntity :
-    public GridImp::template codim<0>::BoundaryEntity
+    public GridImp::template Codim<0>::BoundaryEntity
   {
   public:
     ALU3dGridMakeableBoundaryEntity () :
-      GridImp::template codim<0>::BoundaryEntity (ALU3dGridBoundaryEntity<GridImp>()) {};
+      GridImp::template Codim<0>::BoundaryEntity (ALU3dGridBoundaryEntity<GridImp>()) {};
 
     ALU3dGridMakeableBoundaryEntity (GridImp & grid, int level ) :
-      GridImp::template codim<0>::BoundaryEntity (ALU3dGridBoundaryEntity<GridImp>()) {};
+      GridImp::template Codim<0>::BoundaryEntity (ALU3dGridBoundaryEntity<GridImp>()) {};
 
     // set boundary Id, done by IntersectionIterator
     void setId ( int id )
@@ -484,7 +484,7 @@ namespace Dune {
     friend class ALU3dGridIntersectionIterator<GridImp>;
     friend class ALU3dGridIntersectionIterator<const GridImp>;
   public:
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
     typedef ALU3dGridMakeableGeometry<dim,dim,GridImp> GeometryImp;
 
     //! Constructor

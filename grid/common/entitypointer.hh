@@ -181,7 +181,7 @@ namespace Dune
   class EntityPointerInterface
   {
   public:
-    typedef typename GridImp::template codim<codim>::Entity Entity;
+    typedef typename GridImp::template Codim<codim>::Entity Entity;
 
     //! know your own codimension
     enum { codimension=codim };

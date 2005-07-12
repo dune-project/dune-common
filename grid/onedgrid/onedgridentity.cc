@@ -40,7 +40,7 @@ namespace Dune {
 
   template <int dim, class GridImp>
   template <int cc>
-  typename GridImp::template codim<cc>::EntityPointer
+  typename GridImp::template Codim<cc>::EntityPointer
   OneDGridEntity<0,dim,GridImp>::entity ( int i ) const
   {
     return OneDGridLevelIterator<cc,All_Partition,GridImp>(OneDGridSubEntityFactory<cc,dim,GridImp>::get(this->target_, i));

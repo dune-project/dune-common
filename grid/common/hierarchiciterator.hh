@@ -25,7 +25,7 @@ namespace Dune {
     public EntityPointer<GridImp, HierarchicIteratorImp<GridImp> >
   {
   public:
-    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
     /**
        @brief Preincrement operator.
 
@@ -66,7 +66,7 @@ namespace Dune {
   class HierarchicIteratorInterface
   {
   public:
-    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
 
     /**
        @brief coordinate type of this Grid

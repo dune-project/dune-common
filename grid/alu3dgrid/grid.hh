@@ -168,23 +168,23 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator
+    typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator
     lbegin (int level) const;
 
     //! one past the end on this level
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator
+    typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator
     lend (int level) const;
 
     //! Iterator to first entity of given codim on level
     template<int cd>
-    typename Traits::template codim<cd>::
+    typename Traits::template Codim<cd>::
     template partition<All_Partition>::LevelIterator
     lbegin (int level) const;
 
     //! one past the end on this level
     template<int cd>
-    typename Traits::template codim<cd>::
+    typename Traits::template Codim<cd>::
     template partition<All_Partition>::LevelIterator
     lend (int level) const;
 
@@ -263,12 +263,12 @@ namespace Dune {
     //! no interface method, but has to be public
     void updateStatus ();
 
-    bool mark( int refCount , typename Traits::template codim<0>::EntityPointer & ep );
-    bool mark( int refCount , const typename Traits::template codim<0>::Entity & en );
+    bool mark( int refCount , typename Traits::template Codim<0>::EntityPointer & ep );
+    bool mark( int refCount , const typename Traits::template Codim<0>::Entity & en );
 
     template <int cd>
     ALU3dGridEntity<cd,dim,const MyType >&
-    getRealEntity(typename Traits::template codim<cd>::Entity& entity)
+    getRealEntity(typename Traits::template Codim<cd>::Entity& entity)
     {
       return entity.realEntity;
     }
@@ -276,7 +276,7 @@ namespace Dune {
     //private:
     template <int cd>
     const ALU3dGridEntity<cd,dim,const MyType >&
-    getRealEntity(const typename Traits::template codim<cd>::Entity& entity) const
+    getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const
     {
       return entity.realEntity;
     }

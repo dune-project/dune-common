@@ -28,7 +28,7 @@ namespace Dune {
     enum { numCodim = 4 };
 
   public:
-    typedef typename GridType::Traits::template codim<0>::Entity EntityCodim0Type;
+    typedef typename GridType::Traits::template Codim<0>::Entity EntityCodim0Type;
 
     ALU3dGridHierarchicIndexSet(const GridType & grid) : grid_(grid)
     {}

@@ -38,9 +38,9 @@ namespace Dune {
 
   public:
 
-    typedef typename GridImp::template codim<1>::Geometry Geometry;
-    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
-    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<1>::Geometry Geometry;
+    typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
 
     //! The default Constructor makes empty Iterator
     UGGridIntersectionIterator();

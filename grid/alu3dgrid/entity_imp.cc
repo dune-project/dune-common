@@ -398,7 +398,7 @@ namespace Dune {
   template <class GridImp, int dim>
   struct SubEntities<GridImp,dim,1>
   {
-    static typename ALU3dGridEntity<0,dim,GridImp> :: template codim<1>:: EntityPointer
+    static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<1>:: EntityPointer
     entity (const GridImp & grid, const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
       return ALU3dGridEntityPointer<1,GridImp> (grid, *(item.myhface3(i)) );
@@ -409,7 +409,7 @@ namespace Dune {
   template <class GridImp, int dim>
   struct SubEntities<GridImp,dim,2>
   {
-    static typename ALU3dGridEntity<0,dim,GridImp> :: template codim<2>:: EntityPointer
+    static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<2>:: EntityPointer
     entity (const GridImp & grid, const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
       dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
@@ -428,7 +428,7 @@ namespace Dune {
   template <class GridImp, int dim>
   struct SubEntities<GridImp,dim,3>
   {
-    static typename ALU3dGridEntity<0,dim,GridImp> :: template codim<3>:: EntityPointer
+    static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<3>:: EntityPointer
     entity (const GridImp & grid, const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
       return ALU3dGridEntityPointer<3,GridImp> (grid, (*(item.myvertex(i))) );
@@ -437,7 +437,7 @@ namespace Dune {
 
   template<int dim, class GridImp>
   template<int cc>
-  inline typename ALU3dGridEntity<0,dim,GridImp> :: template codim<cc>:: EntityPointer
+  inline typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<cc>:: EntityPointer
   ALU3dGridEntity<0,dim,GridImp> :: entity (int i) const
   {
     return SubEntities<GridImp,dim,cc>::entity(grid_,*item_,i);

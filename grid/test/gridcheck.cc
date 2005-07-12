@@ -128,7 +128,7 @@ void DoEntityInterfaceCheck (Entity &e)
 template <class Grid, int cd, bool hasEntity>
 struct ZeroEntityMethodCheck
 {
-  typedef typename Grid::template codim<0>::Entity Entity;
+  typedef typename Grid::template Codim<0>::Entity Entity;
   static void check(Entity &e)
   {
     // check types
@@ -155,7 +155,7 @@ struct ZeroEntityMethodCheck
 template<class Grid, int cd>
 struct ZeroEntityMethodCheck<Grid, cd, false>
 {
-  typedef typename Grid::template codim<0>::Entity Entity;
+  typedef typename Grid::template Codim<0>::Entity Entity;
   static void check(Entity &e)
   {
     // check types
@@ -178,7 +178,7 @@ struct ZeroEntityMethodCheck<Grid, cd, false>
 template <class Grid>
 struct ZeroEntityMethodCheck<Grid, 0, true>
 {
-  typedef typename Grid::template codim<0>::Entity Entity;
+  typedef typename Grid::template Codim<0>::Entity Entity;
   static void check(Entity &e)
   {
     // check types
@@ -202,7 +202,7 @@ struct ZeroEntityMethodCheck<Grid, 0, true>
 template <class Grid>
 struct ZeroEntityMethodCheck<Grid, 0, false>
 {
-  typedef typename Grid::template codim<0>::Entity Entity;
+  typedef typename Grid::template Codim<0>::Entity Entity;
   static void check(Entity &e)
   {
     // check types
@@ -225,7 +225,7 @@ struct ZeroEntityMethodCheck<Grid, 0, false>
 template <class Grid, int codim, int dim, bool hasEntity>
 struct EntityInterface
 {
-  typedef typename Grid::template codim<codim>::Entity Entity;
+  typedef typename Grid::template Codim<codim>::Entity Entity;
 
   static void check (Entity &e)
   {
@@ -251,7 +251,7 @@ struct EntityInterface
 template <class Grid, int codim, int dim>
 struct EntityInterface<Grid, codim, dim, false>
 {
-  typedef typename Grid::template codim<codim>::Entity Entity;
+  typedef typename Grid::template Codim<codim>::Entity Entity;
 
   static void check (Entity &e)
   {
@@ -270,7 +270,7 @@ struct EntityInterface<Grid, codim, dim, false>
 template <class Grid, int dim>
 struct EntityInterface<Grid, 0, dim, true>
 {
-  typedef typename Grid::template codim<0>::Entity Entity;
+  typedef typename Grid::template Codim<0>::Entity Entity;
 
   static void check (Entity &e)
   {
@@ -315,7 +315,7 @@ struct EntityInterface<Grid, 0, dim, true>
 template <class Grid, int dim>
 struct EntityInterface<Grid, 0, dim, false>
 {
-  typedef typename Grid::template codim<0>::Entity Entity;
+  typedef typename Grid::template Codim<0>::Entity Entity;
 
   static void check (Entity &e)
   {
@@ -334,7 +334,7 @@ struct EntityInterface<Grid, 0, dim, false>
 template <class Grid, int dim>
 struct EntityInterface<Grid, dim, dim, true>
 {
-  typedef typename Grid::template codim<dim>::Entity Entity;
+  typedef typename Grid::template Codim<dim>::Entity Entity;
 
   // end recursion
   static void check (Entity &e)
@@ -363,7 +363,7 @@ struct EntityInterface<Grid, dim, dim, true>
 template <class Grid, int dim>
 struct EntityInterface<Grid, dim, dim, false>
 {
-  typedef typename Grid::template codim<dim>::Entity Entity;
+  typedef typename Grid::template Codim<dim>::Entity Entity;
 
   // end recursion
   static void check (Entity &e)
@@ -408,8 +408,8 @@ struct GridInterface
   {
     // check for exported types
     typedef typename Grid::ctype ctype;
-    typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
-    typedef typename Grid::template codim<0>::EntityPointer EntityPointer;
+    typedef typename Grid::template Codim<0>::LevelIterator LevelIterator;
+    typedef typename Grid::template Codim<0>::EntityPointer EntityPointer;
     typedef typename Grid::LeafIterator LeafIterator;
 
     // check for member functions
@@ -503,9 +503,9 @@ struct subIndexCheck<-1, Grid, Entity, false>
 template <class Grid>
 void zeroEntityConsistency (Grid &g)
 {
-  typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
-  typedef typename Grid::template codim<0>::Geometry Geometry;
-  typedef typename Grid::template codim<0>::Entity Entity;
+  typedef typename Grid::template Codim<0>::LevelIterator LevelIterator;
+  typedef typename Grid::template Codim<0>::Geometry Geometry;
+  typedef typename Grid::template Codim<0>::Entity Entity;
   LevelIterator it = g.template lbegin<0>(g.maxlevel());
   const LevelIterator endit = g.template lend<0>(g.maxlevel());
 
@@ -539,8 +539,8 @@ void zeroEntityConsistency (Grid &g)
 template <class Grid>
 void assertNeighbor (Grid &g)
 {
-  typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
-  typedef typename Grid::template codim<0>::IntersectionIterator IntersectionIterator;
+  typedef typename Grid::template Codim<0>::LevelIterator LevelIterator;
+  typedef typename Grid::template Codim<0>::IntersectionIterator IntersectionIterator;
   LevelIterator e = g.template lbegin<0>(0);
   const LevelIterator eend = g.template lend<0>(0);
   LevelIterator next = e; ++next;
@@ -586,10 +586,10 @@ void callMark(Grid & g, It it)
 template <class Grid>
 void iterate(Grid &g)
 {
-  typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
-  typedef typename Grid::template codim<0>::EntityPointer EntityPointer;
-  typedef typename Grid::template codim<0>::HierarchicIterator HierarchicIterator;
-  typedef typename Grid::template codim<0>::Geometry Geometry;
+  typedef typename Grid::template Codim<0>::LevelIterator LevelIterator;
+  typedef typename Grid::template Codim<0>::EntityPointer EntityPointer;
+  typedef typename Grid::template Codim<0>::HierarchicIterator HierarchicIterator;
+  typedef typename Grid::template Codim<0>::Geometry Geometry;
   LevelIterator it = g.template lbegin<0>(0);
   const LevelIterator endit = g.template lend<0>(0);
 
@@ -628,7 +628,7 @@ void iterate(Grid &g)
     if (hit != hend) callMark(g, hit);
   }
 
-  typedef typename Grid::template codim<0>::LeafIterator LeafIterator;
+  typedef typename Grid::template Codim<0>::LeafIterator LeafIterator;
   LeafIterator lit = g.leafbegin(g.maxlevel());
   const LeafIterator lend = g.leafend(g.maxlevel());
   if(lit == lend)
@@ -663,11 +663,11 @@ void iterate(Grid &g)
 template <class Grid>
 void iteratorEquals (Grid &g)
 {
-  typedef typename Grid::template codim<0>::LevelIterator LevelIterator;
-  typedef typename Grid::template codim<0>::LeafIterator LeafIterator;
-  typedef typename Grid::template codim<0>::HierarchicIterator HierarchicIterator;
-  typedef typename Grid::template codim<0>::IntersectionIterator IntersectionIterator;
-  typedef typename Grid::template codim<0>::EntityPointer EntityPointer;
+  typedef typename Grid::template Codim<0>::LevelIterator LevelIterator;
+  typedef typename Grid::template Codim<0>::LeafIterator LeafIterator;
+  typedef typename Grid::template Codim<0>::HierarchicIterator HierarchicIterator;
+  typedef typename Grid::template Codim<0>::IntersectionIterator IntersectionIterator;
+  typedef typename Grid::template Codim<0>::EntityPointer EntityPointer;
 
   LevelIterator l1 = g.template lbegin<0>(0);
   LevelIterator l2 = g.template lbegin<0>(0);

@@ -21,7 +21,7 @@ namespace Dune
     public EntityPointer<GridImp, LevelIteratorImp<codim,pitype,GridImp> >
   {
   public:
-    typedef typename GridImp::template codim<codim>::Entity Entity;
+    typedef typename GridImp::template Codim<codim>::Entity Entity;
     /**
        @brief Preincrement operator.
 
@@ -64,7 +64,7 @@ namespace Dune
   class LevelIteratorInterface
   {
   public:
-    typedef typename GridImp::template codim<codim>::Entity Entity;
+    typedef typename GridImp::template Codim<codim>::Entity Entity;
 
     /**
        @brief coordinate type of this Grid

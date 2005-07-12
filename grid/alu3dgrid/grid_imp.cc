@@ -207,7 +207,7 @@ namespace Dune {
   // lbegin methods
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int cd, PartitionIteratorType pitype>
-  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template codim<cd>::template partition<pitype>::LevelIterator
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template partition<pitype>::LevelIterator
   ALU3dGrid<dim, dimworld, elType>::lbegin(int level) const {
     assert( level >= 0 );
     return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,level);
@@ -215,7 +215,7 @@ namespace Dune {
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int cd, PartitionIteratorType pitype>
-  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template codim<cd>::template partition<pitype>::LevelIterator
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template partition<pitype>::LevelIterator
   ALU3dGrid<dim, dimworld, elType>::lend(int level) const {
     assert( level >= 0 );
     return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,level,true);
@@ -224,7 +224,7 @@ namespace Dune {
   // lbegin methods
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int cd>
-  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template codim<cd>::template partition<All_Partition>::LevelIterator
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template partition<All_Partition>::LevelIterator
   ALU3dGrid<dim, dimworld, elType>::lbegin(int level) const {
     assert( level >= 0 );
     return ALU3dGridLevelIterator<cd,All_Partition,const MyType> (*this,level);
@@ -232,7 +232,7 @@ namespace Dune {
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int cd>
-  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template codim<cd>::template partition<All_Partition>::LevelIterator
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template partition<All_Partition>::LevelIterator
   ALU3dGrid<dim, dimworld, elType>::lend(int level) const {
     assert( level >= 0 );
     return ALU3dGridLevelIterator<cd,All_Partition,const MyType> (*this,level,true);
@@ -269,7 +269,7 @@ namespace Dune {
   // global refine
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline bool ALU3dGrid<dim,dimworld, elType>::
-  mark(int ref, typename Traits::template codim<0>::EntityPointer & ep )
+  mark(int ref, typename Traits::template Codim<0>::EntityPointer & ep )
   {
     return this->mark(ref,*ep);
   }
@@ -277,7 +277,7 @@ namespace Dune {
   // global refine
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline bool ALU3dGrid<dim,dimworld, elType>::
-  mark(int ref, const typename Traits::template codim<0>::Entity & ep )
+  mark(int ref, const typename Traits::template Codim<0>::Entity & ep )
   {
     bool marked = (this->template getRealEntity<0> (ep)).mark(ref);
     if(marked)

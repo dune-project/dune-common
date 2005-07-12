@@ -500,7 +500,7 @@ namespace Dune {
 
   template<int codim, int dim, class GridImp>
   class YaspSpecialEntity :
-    public GridImp::template codim<codim>::Entity
+    public GridImp::template Codim<codim>::Entity
   {
   public:
     typedef typename GridImp::ctype ctype;
@@ -509,10 +509,10 @@ namespace Dune {
     typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
 
     YaspSpecialEntity(const YGLI& g, const TSI& it) :
-      GridImp::template codim<codim>::Entity (YaspEntity<codim, dim, GridImp>(g,it))
+      GridImp::template Codim<codim>::Entity (YaspEntity<codim, dim, GridImp>(g,it))
     {};
     YaspSpecialEntity(const YaspEntity<codim, dim, GridImp>& e) :
-      GridImp::template codim<codim>::Entity (e)
+      GridImp::template Codim<codim>::Entity (e)
     {};
     const TSI& transformingsubiterator () const
     {
@@ -530,7 +530,7 @@ namespace Dune {
   public:
     typedef typename GridImp::ctype ctype;
 
-    typedef typename GridImp::template codim<codim>::Geometry Geometry;
+    typedef typename GridImp::template Codim<codim>::Geometry Geometry;
     //! level of this element
     int level () const
     {
@@ -577,15 +577,15 @@ namespace Dune {
 
     typedef YaspSpecialGeometry<dim-0,dim,GridImp> SpecialGeometry;
 
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
     template <int cd>
-    struct codim
+    struct Codim
     {
-      typedef typename GridImp::template codim<cd>::EntityPointer EntityPointer;
+      typedef typename GridImp::template Codim<cd>::EntityPointer EntityPointer;
     };
-    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
-    typedef typename GridImp::template codim<0>::IntersectionIterator IntersectionIterator;
-    typedef typename GridImp::template codim<0>::HierarchicIterator HierarchicIterator;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename GridImp::template Codim<0>::HierarchicIterator HierarchicIterator;
 
     //! define the type used for persisitent indices
     typedef yaspgrid_persistentindextype PersistentIndexType;
@@ -634,7 +634,7 @@ namespace Dune {
     /*! Intra-element access to subentities of codimension cc > codim.
      */
     template<int cc>
-    typename codim<cc>::EntityPointer entity (int i) const
+    typename Codim<cc>::EntityPointer entity (int i) const
     {
       IsTrue< ( cc == dim || cc == 0 ) >::yes();
       // coordinates of the cell == coordinates of lower left corner
@@ -998,13 +998,13 @@ namespace Dune {
 
     typedef YaspSpecialGeometry<dim-dim,dim,GridImp> SpecialGeometry;
 
-    typedef typename GridImp::template codim<dim>::Geometry Geometry;
+    typedef typename GridImp::template Codim<dim>::Geometry Geometry;
     template <int cd>
-    struct codim
+    struct Codim
     {
-      typedef typename GridImp::template codim<cd>::EntityPointer EntityPointer;
+      typedef typename GridImp::template Codim<cd>::EntityPointer EntityPointer;
     };
-    typedef typename GridImp::template codim<0>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
 
     //! define the type used for persisitent indices
     typedef yaspgrid_persistentindextype PersistentIndexType;
@@ -1174,10 +1174,10 @@ namespace Dune {
     // types used from grids
     typedef typename MultiYGrid<dim,ctype>::YGridLevelIterator YGLI;
     typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
-    typedef typename GridImp::template codim<0>::Entity Entity;
-    typedef typename GridImp::template codim<0>::BoundaryEntity BoundaryEntity;
-    typedef typename GridImp::template codim<1>::Geometry Geometry;
-    typedef typename GridImp::template codim<1>::LocalGeometry LocalGeometry;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
+    typedef typename GridImp::template Codim<1>::Geometry Geometry;
+    typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     typedef YaspSpecialEntity<0,dim,GridImp> SpecialEntity;
     typedef YaspSpecialGeometry<dim-1,dimworld,GridImp> SpecialGeometry;
     typedef YaspSpecialGeometry<dim-1,dim,GridImp> SpecialLocalGeometry;
@@ -1417,7 +1417,7 @@ namespace Dune {
     // types used from grids
     typedef typename MultiYGrid<dim,ctype>::YGridLevelIterator YGLI;
     typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
-    typedef typename GridImp::template codim<0>::Entity Entity;
+    typedef typename GridImp::template Codim<0>::Entity Entity;
     typedef YaspSpecialEntity<0,dim,GridImp> SpecialEntity;
 
     //! define type used for coordinates in grid module
@@ -1533,7 +1533,7 @@ namespace Dune {
     enum { dimworld=GridImp::dimensionworld };
     typedef typename GridImp::ctype ctype;
   public:
-    typedef typename GridImp::template codim<codim>::Entity Entity;
+    typedef typename GridImp::template Codim<codim>::Entity Entity;
     typedef typename MultiYGrid<dim,ctype>::YGridLevelIterator YGLI;
     typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
     typedef YaspSpecialEntity<codim,dim,GridImp> SpecialEntity;
@@ -1610,7 +1610,7 @@ namespace Dune {
     enum { dimworld=GridImp::dimensionworld };
     typedef typename GridImp::ctype ctype;
   public:
-    typedef typename GridImp::template codim<codim>::Entity Entity;
+    typedef typename GridImp::template Codim<codim>::Entity Entity;
     typedef typename MultiYGrid<dim,ctype>::YGridLevelIterator YGLI;
     typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
     typedef YaspSpecialEntity<codim,dim,GridImp> SpecialEntity;
@@ -1675,28 +1675,28 @@ namespace Dune {
 
     //! globally unique, persistent index
     template<int cd>
-    PersistentIndexType persistent (const typename GridImp::Traits::template codim<cd>::Entity& e) const
+    PersistentIndexType persistent (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
     {
       return grid.template getRealEntity<cd>(e).persistentIndex();
     }
 
     //! consecutive, codim-wise and geometrytype-wise index
     template<int cd>
-    int compressed (const typename GridImp::Traits::template codim<cd>::Entity& e) const
+    int compressed (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
     {
       return grid.template getRealEntity<cd>(e).compressedIndex();
     }
 
     //! subentity persistent index
     template<int cc>
-    PersistentIndexType subpersistent (const typename GridImp::Traits::template codim<0>::Entity& e, int i) const
+    PersistentIndexType subpersistent (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
     }
 
     //! subentity compressed index
     template<int cc>
-    int subcompressed (const typename GridImp::Traits::template codim<0>::Entity& e, int i) const
+    int subcompressed (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid.template getRealEntity<0>(e).template subCompressedIndex<cc>(i);
     }
@@ -1814,7 +1814,7 @@ namespace Dune {
 
     //! one past the end on this level
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator lbegin (int level) const
+    typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator lbegin (int level) const
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
@@ -1842,7 +1842,7 @@ namespace Dune {
 
     //! Iterator to one past the last entity of given codim on level for partition type
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template codim<cd>::template partition<pitype>::LevelIterator lend (int level) const
+    typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator lend (int level) const
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
@@ -1870,7 +1870,7 @@ namespace Dune {
 
     //! version without second template parameter for convenience
     template<int cd>
-    typename Traits::template codim<cd>::template partition<All_Partition>::LevelIterator lbegin (int level) const
+    typename Traits::template Codim<cd>::template partition<All_Partition>::LevelIterator lbegin (int level) const
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
@@ -1888,7 +1888,7 @@ namespace Dune {
 
     //! version without second template parameter for convenience
     template<int cd>
-    typename Traits::template codim<cd>::template partition<All_Partition>::LevelIterator lend (int level) const
+    typename Traits::template Codim<cd>::template partition<All_Partition>::LevelIterator lend (int level) const
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
@@ -2125,14 +2125,14 @@ namespace Dune {
 
     template<int codim>
     YaspEntity<codim,dim,const YaspGrid<dim,dimworld> >&
-    getRealEntity(typename Traits::template codim<codim>::Entity& e )
+    getRealEntity(typename Traits::template Codim<codim>::Entity& e )
     {
       return e.realEntity;
     }
 
     template<int codim>
     const YaspEntity<codim,dim,const YaspGrid<dim,dimworld> >&
-    getRealEntity(const typename Traits::template codim<codim>::Entity& e ) const
+    getRealEntity(const typename Traits::template Codim<codim>::Entity& e ) const
     {
       return e.realEntity;
     }

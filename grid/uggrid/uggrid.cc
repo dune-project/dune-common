@@ -290,7 +290,7 @@ inline int Dune::UGGrid < dim, dimworld >::maxlevel() const
 
 template<int dim, int dimworld>
 template<int codim>
-typename Dune::UGGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
+typename Dune::UGGrid<dim,dimworld>::Traits::template Codim<codim>::LevelIterator
 Dune::UGGrid<dim, dimworld>::lbegin (int level) const
 {
   assert(multigrid_);
@@ -304,7 +304,7 @@ Dune::UGGrid<dim, dimworld>::lbegin (int level) const
 
 template<int dim, int dimworld>
 template<int codim, Dune::PartitionIteratorType PiType>
-inline typename Dune::UGGrid<dim,dimworld>::Traits::template codim<codim>::template partition<PiType>::LevelIterator
+inline typename Dune::UGGrid<dim,dimworld>::Traits::template Codim<codim>::template partition<PiType>::LevelIterator
 Dune::UGGrid<dim, dimworld>::lbegin (int level) const
 {
   assert(multigrid_);
@@ -318,7 +318,7 @@ Dune::UGGrid<dim, dimworld>::lbegin (int level) const
 
 template < int dim, int dimworld >
 template<int codim>
-typename Dune::UGGrid<dim,dimworld>::Traits::template codim<codim>::LevelIterator
+typename Dune::UGGrid<dim,dimworld>::Traits::template Codim<codim>::LevelIterator
 Dune::UGGrid < dim, dimworld >::lend (int level) const
 {
   return UGGridLevelIterator<codim,All_Partition, const UGGrid<dim,dimworld> >(level);
@@ -326,7 +326,7 @@ Dune::UGGrid < dim, dimworld >::lend (int level) const
 
 template < int dim, int dimworld >
 template<int codim, Dune::PartitionIteratorType PiType>
-inline typename Dune::UGGrid<dim,dimworld>::Traits::template codim<codim>::template partition<PiType>::LevelIterator
+inline typename Dune::UGGrid<dim,dimworld>::Traits::template Codim<codim>::template partition<PiType>::LevelIterator
 Dune::UGGrid < dim, dimworld >::lend (int level) const
 {
   return UGGridLevelIterator<codim,PiType, const UGGrid<dim,dimworld> >(level);
@@ -352,16 +352,16 @@ inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
 
   if(codim == 0)
   {
-    typename Traits::template codim<0>::LevelIterator it = lbegin<0>(level);
-    typename Traits::template codim<0>::LevelIterator endit = lend<0>(level);
+    typename Traits::template Codim<0>::LevelIterator it = lbegin<0>(level);
+    typename Traits::template Codim<0>::LevelIterator endit = lend<0>(level);
     for (; it != endit; ++it)
       numberOfElements++;
 
   } else
   if(codim == dim)
   {
-    typename Traits::template codim<dim>::LevelIterator it    = lbegin<dim>(level);
-    typename Traits::template codim<dim>::LevelIterator endit = lend<dim>(level);
+    typename Traits::template Codim<dim>::LevelIterator it    = lbegin<dim>(level);
+    typename Traits::template Codim<dim>::LevelIterator endit = lend<dim>(level);
     for(; it != endit; ++it)
       numberOfElements++;
   }
@@ -419,7 +419,7 @@ void Dune::UGGrid < dim, dimworld >::makeNewUGMultigrid()
 
 template < int dim, int dimworld >
 bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
-                                          typename Traits::template codim<0>::EntityPointer & e )
+                                          typename Traits::template Codim<0>::EntityPointer & e )
 {
   // No refinement requested
   if (refCount==0)
@@ -466,7 +466,7 @@ bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
 }
 
 template < int dim, int dimworld >
-bool Dune::UGGrid < dim, dimworld >::mark(typename Traits::template codim<0>::EntityPointer & e,
+bool Dune::UGGrid < dim, dimworld >::mark(typename Traits::template Codim<0>::EntityPointer & e,
 #ifdef _3
                                           UG3d::RefinementRule rule
 #else
@@ -553,8 +553,8 @@ void Dune::UGGrid <dim, dimworld>::postAdapt()
 
   for (int i=0; i<=maxlevel(); i++) {
 
-    typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(i);
-    typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(i);
+    typename Traits::template Codim<0>::LevelIterator eIt    = lbegin<0>(i);
+    typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(i);
 
     for (; eIt!=eEndIt; ++eIt)
 #ifdef _2
@@ -583,8 +583,8 @@ void Dune::UGGrid < dim, dimworld >::globalRefine(int n)
   for (int i=0; i<n; i++) {
 
     // mark all entities for grid refinement
-    typename Traits::template codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
-    typename Traits::template codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
+    typename Traits::template Codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
+    typename Traits::template Codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
 
     for (; iIt!=iEndIt; ++iIt)
       mark(1, iIt);
@@ -598,7 +598,7 @@ void Dune::UGGrid < dim, dimworld >::globalRefine(int n)
 }
 
 template <int dim, int dimworld>
-void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template codim<0>::EntityPointer & e,
+void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template Codim<0>::EntityPointer & e,
                                                       int elementSide,
                                                       int maxl,
                                                       Array<typename Dune::UGGridEntityPointer<0, UGGrid> >& childElements,
@@ -641,10 +641,11 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
     elementSide = renumbering[elementSide];
     break;
   }
+#if 0
   default :
     DUNE_THROW(NotImplemented, "Unknown element type '"
                << e->geometry().type() << "'found!");
-
+#endif
   }
 
   // ///////////////
@@ -741,10 +742,11 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
       side = renumbering[side];
       break;
     }
+#if 0
     default :
       DUNE_THROW(NotImplemented, "Unknown element type '"
                  << e->geometry().type() << "'found!");
-
+#endif
     }
 
     childElements[i].setToTarget(Element<0>::get(*f), Element<2>::get(*f));
@@ -915,8 +917,8 @@ void Dune::UGGrid < dim, dimworld >::createend()
   setLocalIndices();
 
   // Clear refinement flags
-  typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(0);
-  typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(0);
+  typename Traits::template Codim<0>::LevelIterator eIt    = lbegin<0>(0);
+  typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(0);
 
   for (; eIt!=eEndIt; ++eIt)
 #ifdef _2
@@ -934,15 +936,15 @@ void Dune::UGGrid < dim, dimworld >::setLocalIndices()
   // Renumber everything
   for (int i=0; i<=maxlevel(); i++) {
 
-    typename Traits::template codim<0>::LevelIterator eIt    = lbegin<0>(i);
-    typename Traits::template codim<0>::LevelIterator eEndIt = lend<0>(i);
+    typename Traits::template Codim<0>::LevelIterator eIt    = lbegin<0>(i);
+    typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(i);
 
     int id = 0;
     for (; eIt!=eEndIt; ++eIt)
       UG_NS<dim>::index(getRealEntity<0>(*eIt).target_) = id++;
 
-    typename Traits::template codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
-    typename Traits::template codim<dim>::LevelIterator vEndIt = lend<dim>(i);
+    typename Traits::template Codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
+    typename Traits::template Codim<dim>::LevelIterator vEndIt = lend<dim>(i);
 
     id = 0;
     for (; vIt!=vEndIt; ++vIt)

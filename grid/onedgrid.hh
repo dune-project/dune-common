@@ -224,11 +224,11 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    typename Traits::template codim<codim>::LevelIterator lbegin (int level) const;
+    typename Traits::template Codim<codim>::LevelIterator lbegin (int level) const;
 
     //! one past the end on this level
     template<int codim>
-    typename Traits::template codim<codim>::LevelIterator lend (int level) const;
+    typename Traits::template Codim<codim>::LevelIterator lend (int level) const;
 
 #if 0
     //! Iterator to first entity of given codim on level
@@ -284,7 +284,7 @@ namespace Dune {
      *
      * \return false, which is not compliant with the official specification!
      */
-    bool mark(int refCount, typename Traits::template codim<0>::EntityPointer& e );
+    bool mark(int refCount, typename Traits::template Codim<0>::EntityPointer& e );
 
     //! Triggers the grid refinement process
     bool adapt();
@@ -320,12 +320,12 @@ namespace Dune {
   private:
 
     template <int cd>
-    OneDGridEntity<cd,dim,const OneDGrid>& getRealEntity(typename Traits::template codim<cd>::Entity& entity) {
+    OneDGridEntity<cd,dim,const OneDGrid>& getRealEntity(typename Traits::template Codim<cd>::Entity& entity) {
       return entity.realEntity;
     }
 
     template <int cd>
-    const OneDGridEntity<cd,dim,const OneDGrid>& getRealEntity(const typename Traits::template codim<cd>::Entity& entity) const {
+    const OneDGridEntity<cd,dim,const OneDGrid>& getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const {
       return entity.realEntity;
     }
 

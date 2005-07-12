@@ -183,22 +183,22 @@ namespace Dune {
   class Grid {
   public:
     template <int cd>
-    struct codim
+    struct Codim
     {
       // IMPORTANT: codim<codim>::Geometry == Geometry<dim-codim,dimworld>
-      typedef typename GridImp::Traits::template codim<cd>::Geometry Geometry;
-      typedef typename GridImp::Traits::template codim<cd>::LocalGeometry LocalGeometry;
+      typedef typename GridImp::Traits::template Codim<cd>::Geometry Geometry;
+      typedef typename GridImp::Traits::template Codim<cd>::LocalGeometry LocalGeometry;
 
-      typedef typename GridImp::Traits::template codim<cd>::Entity Entity;
+      typedef typename GridImp::Traits::template Codim<cd>::Entity Entity;
 
-      typedef typename GridImp::Traits::template codim<cd>::LevelIterator LevelIterator;
+      typedef typename GridImp::Traits::template Codim<cd>::LevelIterator LevelIterator;
 
-      typedef typename GridImp::Traits::template codim<cd>::EntityPointer EntityPointer;
+      typedef typename GridImp::Traits::template Codim<cd>::EntityPointer EntityPointer;
 
       template <PartitionIteratorType pitype>
       struct partition
       {
-        typedef typename GridImp::Traits::template codim<cd>::template partition<pitype>::LevelIterator LevelIterator;
+        typedef typename GridImp::Traits::template Codim<cd>::template partition<pitype>::LevelIterator LevelIterator;
       };
 
       typedef typename GridImp::Traits::HierarchicIterator HierarchicIterator;
@@ -265,28 +265,28 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
-    typename codim<cd>::template partition<pitype>::LevelIterator lbegin (int level) const
+    typename Codim<cd>::template partition<pitype>::LevelIterator lbegin (int level) const
     {
       return asImp().template lbegin<cd,pitype>(level);
     }
 
     //! one past the end on this level
     template<int cd, PartitionIteratorType pitype>
-    typename codim<cd>::template partition<pitype>::LevelIterator lend (int level) const
+    typename Codim<cd>::template partition<pitype>::LevelIterator lend (int level) const
     {
       return asImp().template lend<cd,pitype>(level);
     }
 
     //! Iterator to first entity of given codim on level
     template<int cd>
-    typename codim<cd>::template partition<All_Partition>::LevelIterator lbegin (int level) const
+    typename Codim<cd>::template partition<All_Partition>::LevelIterator lbegin (int level) const
     {
       return asImp().template lbegin<cd,All_Partition>(level);
     }
 
     //! one past the end on this level
     template<int cd>
-    typename codim<cd>::template partition<All_Partition>::LevelIterator lend (int level) const
+    typename Codim<cd>::template partition<All_Partition>::LevelIterator lend (int level) const
     {
       return asImp().template lend<cd,All_Partition>(level);
     }
@@ -404,7 +404,7 @@ namespace Dune {
      *    In your implementation you should use it as
      *    \code
      *    bool mark( int refCount,
-     *               typename Traits::template codim<0>::EntityPointer & e ).
+     *               typename Traits::template Codim<0>::EntityPointer & e ).
      *    \endcode
      *    This template method will vanish due to the inheritance
      *    rules.
@@ -412,7 +412,7 @@ namespace Dune {
     template <class T>
     bool mark( int refCount, T & e )
     {
-      IsTrue<Conversion<T, typename Grid<dim,dimworld,ct,GridImp>::template codim<0>::EntityPointer>::exists >::yes();
+      IsTrue<Conversion<T, typename Grid<dim,dimworld,ct,GridImp>::template Codim<0>::EntityPointer>::exists >::yes();
       return false;
     }
 
@@ -459,9 +459,9 @@ namespace Dune {
     typedef Dune::BoundaryEntity<const GridImp, BoundaryEntityImp> BoundaryEntity;
 
     template <int cd>
-    struct codim
+    struct Codim
     {
-      // IMPORTANT: codim<codim>::Geometry == Geometry<dim-codim,dimw>
+      // IMPORTANT: Codim<codim>::Geometry == Geometry<dim-codim,dimw>
       typedef Dune::Geometry<dim-cd, dimw, const GridImp, GeometryImp> Geometry;
       typedef Dune::Geometry<dim-cd, dim, const GridImp, GeometryImp> LocalGeometry;
       // we could - if needed - introduce an other struct for dimglobal of Geometry

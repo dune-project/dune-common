@@ -185,7 +185,7 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
 
 template <int dim, class GridImp>
 template <int cc>
-inline typename GridImp::template codim<cc>::EntityPointer
+inline typename GridImp::template Codim<cc>::EntityPointer
 UGGridEntity<0,dim,GridImp>::entity ( int i ) const
 {
   assert(i>=0 && i<count<cc>());
