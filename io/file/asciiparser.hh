@@ -3,6 +3,8 @@
 #ifndef __DUNE_ASCIIPARSER_HH__
 #define __DUNE_ASCIIPARSER_HH__
 
+#include <fstream>
+
 namespace Dune {
 
   static const int MAXTAB = 30;
@@ -15,7 +17,7 @@ namespace Dune {
                       const char keywd[], T & data, bool verbose = true)
   {
     std::fstream file (filename.c_str(),std::ios::in);
-    if( !file )
+    if( !file.is_open() )
     {
       std::cerr << "ERROR: cannot open file '" << filename << "' in " <<  __FILE__<< " line: " << __LINE__ << std::endl;
       DUNE_THROW(IOError,"cannot open file " << filename << std::endl);
