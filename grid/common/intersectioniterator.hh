@@ -236,17 +236,17 @@ namespace Dune
 
     //! return EntityPointer to the Entity on the inside of this intersection
     //! (that is the Entity where we started this Iterator)
-    EntityPointer inside() const
-    {
-      return asImp().inside();
-    }
+    //   EntityPointer inside() const
+    //     {
+    //       return asImp().inside();
+    //     }
 
     //! return EntityPointer to the Entity on the outside of this intersection
     //! (that is the neighboring Entity)
-    EntityPointer outside() const
-    {
-      return asImp().outside();
-    }
+    //   EntityPointer outside() const
+    //     {
+    //       return asImp().outside();
+    //     }
 
     /*! return an outer normal (length not necessarily 1)
 
