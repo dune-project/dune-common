@@ -188,8 +188,6 @@ namespace Dune {
       // IMPORTANT: codim<codim>::Geometry == Geometry<dim-codim,dimworld>
       typedef typename GridImp::Traits::template codim<cd>::Geometry Geometry;
       typedef typename GridImp::Traits::template codim<cd>::LocalGeometry LocalGeometry;
-      // do we need this?
-      typedef typename GridImp::Traits::template codim<cd>::ReferenceGeometry ReferenceGeometry;
 
       typedef typename GridImp::Traits::template codim<cd>::Entity Entity;
 
@@ -466,8 +464,6 @@ namespace Dune {
       // IMPORTANT: codim<codim>::Geometry == Geometry<dim-codim,dimw>
       typedef Dune::Geometry<dim-cd, dimw, const GridImp, GeometryImp> Geometry;
       typedef Dune::Geometry<dim-cd, dim, const GridImp, GeometryImp> LocalGeometry;
-      // do we need this?
-      typedef Dune::Geometry<dim-cd, dim-cd, const GridImp, GeometryImp> ReferenceGeometry;
       // we could - if needed - introduce an other struct for dimglobal of Geometry
       typedef Dune::Entity<cd, dim, const GridImp, EntityImp> Entity;
 
