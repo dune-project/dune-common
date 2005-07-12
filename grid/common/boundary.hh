@@ -23,7 +23,7 @@ namespace Dune {
   protected:
     BoundaryEntityImp<GridImp> realBoundaryEntity;
   public:
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
 
     //! return id of boundary segment, any integer but != 0
     int id () const
@@ -60,7 +60,7 @@ namespace Dune {
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   public:
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
 
     int id () const
     {

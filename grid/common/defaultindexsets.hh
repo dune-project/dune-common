@@ -402,7 +402,7 @@ namespace Dune {
         makeNewSize(levIndex, nEntities);
 
       // walk grid and store index
-      typedef typename GridType::Traits::template codim<cd>::LevelIterator LevelIterator;
+      typedef typename GridType::Traits::template Codim<cd>::LevelIterator LevelIterator;
       int num = 0;
       LevelIterator endit  = grid_.template lend< cd >   (level_);
       for(LevelIterator it = grid_.template lbegin< cd > (level_); it != endit; ++it)
