@@ -620,25 +620,34 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
   // //////////////////////////////////////////////////////////////////////
 
   switch (e->geometry().type()) {
-  case hexahedron : {
-    // Dune numbers the faces of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-    elementSide = renumbering[elementSide];
+  case cube : {
+
+    if (dim==3) {
+      // Dune numbers the faces of a hexahedron differently than UG.
+      // The following two lines do the transformation
+      const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+      elementSide = renumbering[elementSide];
+    }
     break;
   }
-  case tetrahedron : {
-    // Dune numbers the faces of a tetrahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[4] = {1, 2, 3, 0};
-    elementSide = renumbering[elementSide];
-    break;
-  }
-  case triangle : {
-    // Dune numbers the faces of a triangle differently from UG.
-    // The following two lines do the transformation
-    const int renumbering[3] = {1, 2, 0};
-    elementSide = renumbering[elementSide];
+  case simplex : {
+
+    if (dim==3) {      // Tetrahedron
+
+      // Dune numbers the faces of a tetrahedron differently than UG.
+      // The following two lines do the transformation
+      const int renumbering[4] = {1, 2, 3, 0};
+      elementSide = renumbering[elementSide];
+
+    } else {          // Triangle
+
+      // Dune numbers the faces of a triangle differently from UG.
+      // The following two lines do the transformation
+      const int renumbering[3] = {1, 2, 0};
+      elementSide = renumbering[elementSide];
+
+    }
+
     break;
   }
 #if 0
@@ -727,21 +736,25 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
     // Dune numbers the faces of several elements differently than UG.
     // The following switch does the transformation
     switch (e->geometry().type()) {
-    case hexahedron : {
-      const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-      side = renumbering[side];
+    case cube :
+
+      if (dim==3) {        // hexahedron
+        const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+        side = renumbering[side];
+      }
       break;
-    }
-    case tetrahedron : {
-      const int renumbering[4] = {3, 0, 1, 2};
-      side = renumbering[side];
+
+    case simplex :
+
+      if (dim==3) {
+        const int renumbering[4] = {3, 0, 1, 2};
+        side = renumbering[side];
+      } else {
+        const int renumbering[3] = {2, 0, 1};
+        side = renumbering[side];
+      }
       break;
-    }
-    case triangle : {
-      const int renumbering[3] = {2, 0, 1};
-      side = renumbering[side];
-      break;
-    }
+
 #if 0
     default :
       DUNE_THROW(NotImplemented, "Unknown element type '"
