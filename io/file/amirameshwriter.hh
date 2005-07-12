@@ -17,8 +17,8 @@ namespace Dune {
 
     enum {dim = GridType::dimension};
 
-    typedef typename GridType::template codim<0>::LevelIterator ElementIterator;
-    typedef typename GridType::template codim<dim>::LevelIterator VertexIterator;
+    typedef typename GridType::template Codim<0>::LevelIterator ElementIterator;
+    typedef typename GridType::template Codim<dim>::LevelIterator VertexIterator;
     typedef typename GridType::LeafIterator LeafIterator;
 
   public:

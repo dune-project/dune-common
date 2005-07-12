@@ -41,7 +41,7 @@ namespace Dune {
 
     {
       // search the macro grid for diffrent element types
-      typedef typename GridType::template codim<0>::LevelIterator LevelIteratorType;
+      typedef typename GridType::template Codim<0>::LevelIterator LevelIteratorType;
       LevelIteratorType endit  = this->grid_.template lend<0>(level);
       for(LevelIteratorType it = this->grid_.template lbegin<0>(level); it != endit; ++it)
       {

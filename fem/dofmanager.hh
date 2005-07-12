@@ -685,7 +685,7 @@ namespace Dune {
     mutable LocalDataCollectorType dataReader_;
 
     typedef LocalInterface<typename GridType::
-        template codim<0>::Entity> LocalIndexSetObjectsType;
+        template Codim<0>::Entity> LocalIndexSetObjectsType;
 
     mutable LocalIndexSetObjectsType indexSets_;
 
@@ -969,9 +969,9 @@ namespace Dune {
 
     IndexSetInterface & set = iset;
     typedef IndexSetObject< IndexSetType,
-        typename GridType::template codim<0>::Entity > IndexSetObjectType;
+        typename GridType::template Codim<0>::Entity > IndexSetObjectType;
 
-    typedef typename GridType::template codim<0>::Entity EntityType;
+    typedef typename GridType::template Codim<0>::Entity EntityType;
 
     IndexSetObjectType * indexSet = 0;
 
@@ -1030,7 +1030,7 @@ namespace Dune {
 
     IndexSetInterface & set = iset;
     typedef IndexSetObject< IndexSetType,
-        typename GridType::template codim<0>::Entity > IndexSetObjectType;
+        typename GridType::template Codim<0>::Entity > IndexSetObjectType;
 
     IndexSetObjectType * indexSet = 0;
 

@@ -195,7 +195,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
                                                        McPrimType::mc_float, dim);
   am.insert(geo_node_data);
 
-  typedef typename GridType::template codim<dim>::LevelIterator VertexIterator;
+  typedef typename GridType::template Codim<dim>::LevelIterator VertexIterator;
   VertexIterator vertex    = grid.template lbegin<dim>(level);
   VertexIterator endvertex = grid.template lend<dim>(level);
 
@@ -326,8 +326,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   } else {
 
-    typename GridType::template codim<0>::LevelIterator element2   = grid.template lbegin<0>(level);
-    typename GridType::template codim<0>::LevelIterator endelement = grid.template lend<0>(level);
+    typename GridType::template Codim<0>::LevelIterator element2   = grid.template lbegin<0>(level);
+    typename GridType::template Codim<0>::LevelIterator endelement = grid.template lend<0>(level);
 
     for (i=0; element2!=endelement; ++element2, i++) {
       switch (element2->geometry().type()) {
