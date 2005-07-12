@@ -1727,6 +1727,92 @@ namespace Dune {
   };
 
 
+  //========================================================================
+  /*!
+     \brief level-wise, non-persistent, consecutive index
+
+   */
+  //========================================================================
+
+  template<class GridImp>
+  class YaspLevelIndexSet
+  {
+  public:
+    //! constructor stores reference to a grid and level
+    YaspLevelIndexSet (const GridImp& g, int l) : grid(g), level(l)
+    {
+      mytypes.push_back(hypercube);   // contains a single element type;
+    }
+
+    //! get index of an entity
+    template<int cd>
+    int index (const typename GridImp::Traits::template codim<cd>::Entity& e) const
+    {
+      return grid.template getRealEntity<cd>(e).compressedIndex();
+    }
+
+    //! get index of subentity of a codim 0 entity
+    template<int cc>
+    int subindex (const typename GridImp::Traits::template codim<0>::Entity& e, int i) const
+    {
+      return grid.template getRealEntity<0>(e).template subCompressedIndex<cc>(i);
+    }
+
+    //! get number of entities of given codim, type and level (the level is known to the object)
+    int size (int codim, GeometryType type) const
+    {
+      return grid.size(level,codim);
+    }
+
+    //! deliver all geometry types used in this grid
+    const std::vector<GeometryType>& geomtypes () const
+    {
+      return mytypes;
+    }
+
+  private:
+    const GridImp& grid;
+    int level;
+    std::vector<GeometryType> mytypes;
+  };
+
+
+  //========================================================================
+  /*!
+     \brief persistent, globally unique Ids
+
+   */
+  //========================================================================
+
+  template<class GridImp>
+  class YaspGlobalIdSet
+  {
+  public:
+    //! define the type used for persisitent indices
+    typedef yaspgrid_persistentindextype GlobalIdType;
+
+    //! constructor stores reference to a grid
+    YaspGlobalIdSet (const GridImp& g) : grid(g) {}
+
+    //! get id of an entity
+    template<int cd>
+    GlobalIdType id (const typename GridImp::Traits::template codim<cd>::Entity& e) const
+    {
+      return grid.template getRealEntity<cd>(e).persistentIndex();
+    }
+
+    //! get id of subentity
+    template<int cc>
+    GlobalIdType subid (const typename GridImp::Traits::template codim<0>::Entity& e, int i) const
+    {
+      return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
+    }
+
+  private:
+    const GridImp& grid;
+  };
+
+
   //************************************************************************
   /*!
      \brief [<em> provides \ref Dune::Grid </em>]
@@ -1786,9 +1872,10 @@ namespace Dune {
     YaspGrid (MPI_Comm comm, Dune::FieldVector<ctype, dim> L,
               Dune::FieldVector<int, dim> s,
               Dune::FieldVector<bool, dim> periodic, int overlap) :
-      MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap),yi(*this)
+      MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap),yi(*this), theglobalidset(*this)
     {
       setsizes();
+      indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,0) );
     }
 
     /*! Return maximum level defined in this grid. Levels are numbered
@@ -1803,6 +1890,7 @@ namespace Dune {
       if (refCount>0) b=true;
       MultiYGrid<dim,ctype>::refine(b);
       setsizes();
+      indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,maxlevel()) );
     }
 
     //! refine the grid refCount times. What about overlap?
@@ -1810,6 +1898,7 @@ namespace Dune {
     {
       MultiYGrid<dim,ctype>::refine(b);
       setsizes();
+      indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,maxlevel()) );
     }
 
     //! one past the end on this level
@@ -2117,8 +2206,36 @@ namespace Dune {
       return yi;
     }
 
+    // The new index sets from DDM 11.07.2005
+    typedef YaspLevelIndexSet<YaspGrid<dim,dimworld> > LevelIndexSet;
+    typedef YaspLevelIndexSet<YaspGrid<dim,dimworld> > LeafIndexSet;
+    typedef YaspGlobalIdSet<YaspGrid<dim,dimworld> > GlobalIdSet;
+    typedef YaspGlobalIdSet<YaspGrid<dim,dimworld> > LocalIdSet;
+
+    const GlobalIdSet& globalidset()
+    {
+      return globalidset;
+    }
+
+    const LocalIdSet& localidset()
+    {
+      return theglobalidset;
+    }
+
+    const LevelIndexSet& levelindexset(int level)
+    {
+      return *(indexsets[level]);
+    }
+
+    const LeafIndexSet& leafindexset()
+    {
+      return *(indexsets[maxlevel()]);
+    }
+
   private:
     IndexType yi;
+    std::vector<YaspLevelIndexSet<YaspGrid<dim,dimworld> >*> indexsets;
+    YaspGlobalIdSet<YaspGrid<dim,dimworld> > theglobalidset;
 
     // Index classes need access to the real entity
     friend class Dune::YaspIndex<Dune::YaspGrid<dim,dimworld> >;
