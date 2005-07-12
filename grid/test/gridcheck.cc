@@ -381,8 +381,8 @@ struct LeafInterface
 {
   static void check(Grid &g)
   {
-    g.leafbegin(0);
-    g.leafend(0);
+    g.template leafbegin<0>();
+    g.template leafend<0>();
   }
   LeafInterface()
   {
@@ -410,7 +410,7 @@ struct GridInterface
     typedef typename Grid::ctype ctype;
     typedef typename Grid::template Codim<0>::LevelIterator LevelIterator;
     typedef typename Grid::template Codim<0>::EntityPointer EntityPointer;
-    typedef typename Grid::LeafIterator LeafIterator;
+    typedef typename Grid::template Codim<0>::LeafIterator LeafIterator;
 
     // check for member functions
     g.maxlevel();
@@ -633,8 +633,8 @@ void iterate(Grid &g)
   }
 
   typedef typename Grid::template Codim<0>::LeafIterator LeafIterator;
-  LeafIterator lit = g.leafbegin(g.maxlevel());
-  const LeafIterator lend = g.leafend(g.maxlevel());
+  LeafIterator lit = g.template leafbegin<0>();
+  const LeafIterator lend = g.template leafend<0>();
   if(lit == lend)
     DUNE_THROW(CheckError, "leafbegin() == leafend()");
   for (; lit != lend; ++lit)
@@ -675,8 +675,8 @@ void iteratorEquals (Grid &g)
 
   LevelIterator l1 = g.template lbegin<0>(0);
   LevelIterator l2 = g.template lbegin<0>(0);
-  LeafIterator L1 = g.leafbegin(99);
-  LeafIterator L2 = g.leafbegin(99);
+  LeafIterator L1 = g.template leafbegin<0>();
+  LeafIterator L2 = g.template leafbegin<0>();
   HierarchicIterator h1 = l1->hbegin(99);
   HierarchicIterator h2 = l2->hbegin(99);
   IntersectionIterator i1 = l1->ibegin();
