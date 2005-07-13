@@ -19,7 +19,7 @@ namespace Dune {
 
     typedef typename GridType::template Codim<0>::LevelIterator ElementIterator;
     typedef typename GridType::template Codim<dim>::LevelIterator VertexIterator;
-    typedef typename GridType::LeafIterator LeafIterator;
+    typedef typename GridType::template Codim<0>::LeafIterator LeafIterator;
 
   public:
 
