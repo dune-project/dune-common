@@ -67,30 +67,6 @@ namespace Dune {
       return target_->pos_;
     }
 
-#if 0
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned.
-     */
-    OneDGridGeometry<0,0>& refelem ();
-
-
-    //! maps a local coordinate within reference element to
-    //! global coordinate in element
-    FieldVector<OneDCType, 1> global (const FieldVector<OneDCType, 1>& local);
-
-    //! Maps a global coordinate within the element to a
-    //! local coordinate in its reference element
-    FieldVector<OneDCType, 1> local (const FieldVector<OneDCType, 2>& global);
-
-    //! Returns true if the point is in the current element
-    bool checkInside(const FieldVector<OneDCType, 2> &global) const;
-
-    // A(l)
-    OneDCType integration_element (const FieldVector<OneDCType, 1>& local);
-
-    //! can only be called for dim=dimworld!
-    const Mat<1,1>& Jacobian_inverse (const FieldVector<OneDCType, 1>& local);
-#endif
     //private:
     OneDEntityImp<0>* target_;
 
@@ -129,7 +105,7 @@ namespace Dune {
      *
      * OneDGrid obviously supports only lines
      */
-    GeometryType type () const {return line;}
+    GeometryType type () const {return cube;}
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners () const {return 2;}
