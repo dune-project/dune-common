@@ -45,9 +45,9 @@ namespace Dune {
       all geometry types.
    */
 
-  enum GeometryType {vertex=0,line=1, triangle=2, quadrilateral=3, tetrahedron=4,
-                     pyramid=5, prism=6, hexahedron=7,
-                     simplex=64, cube=65, unknown=127};
+  enum GeometryType {vertex,line, triangle, quadrilateral, tetrahedron,
+                     pyramid, prism, hexahedron,
+                     simplex, cube, unknown};
 
   enum AdaptationState {
     NONE ,   //!< notin' to do and notin' was done
