@@ -209,6 +209,27 @@ namespace Dune {
     case pyramid      : return makeBaseSet<pyramid,polOrd> ();
     case prism        : return makeBaseSet<prism,polOrd> ();
     case hexahedron   : return makeBaseSet<hexahedron,polOrd> ();
+
+    case simplex :
+      switch (EntityType::dimension) {
+      case 1 : return makeBaseSet<line,polOrd> ();
+      case 2 : return makeBaseSet<triangle,polOrd> ();
+      case 3 : return makeBaseSet<tetrahedron,polOrd> ();
+      default :
+        DUNE_THROW(NotImplemented, "No Lagrange function spaces for simplices of dimension "
+                   << EntityType::dimension << "!");
+      }
+
+    case cube :
+      switch (EntityType::dimension) {
+      case 1 : return makeBaseSet<line,polOrd> ();
+      case 2 : return makeBaseSet<quadrilateral,polOrd> ();
+      case 3 : return makeBaseSet<hexahedron,polOrd> ();
+      default :
+        DUNE_THROW(NotImplemented, "No Lagrange function spaces for cubes of dimension "
+                   << EntityType::dimension << "!");
+      }
+
     default : {
       DUNE_THROW(NotImplemented, "Element type " << en.geometry().type() << " is not provided yet!");
     }
