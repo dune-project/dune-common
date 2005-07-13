@@ -134,7 +134,8 @@ namespace Dune {
         UGGridEntityPointer,
         UGGridLevelIterator,
         UGGridIntersectionIterator,
-        UGGridHierarchicIterator> Traits;
+        UGGridHierarchicIterator,
+        UGGridLevelIterator> Traits;
 
     /** \brief The type of a UGGrid hierarchic index set */
     typedef UGGridHierarchicIndexSet<Dune::UGGrid<dim,dimworld> > HierarchicIndexSetType;
