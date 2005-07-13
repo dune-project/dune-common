@@ -24,7 +24,7 @@ namespace Dune {
    */
   template<class GridImp>
   class OneDGridIntersectionIterator :
-    public Dune::OneDGridEntityPointer<0, GridImp>,
+    //        public Dune::OneDGridEntityPointer<0, GridImp>,
     public IntersectionIteratorDefault <GridImp, OneDGridIntersectionIterator>
   {
     enum { dim=GridImp::dimension };
@@ -35,22 +35,28 @@ namespace Dune {
     //! Constructor for a given grid entity
     OneDGridIntersectionIterator(OneDEntityImp<1>* center, int nb) : center_(center), neighbor_(nb)
     {
-      this->virtualEntity_.setToTarget(target());
+      //        this->virtualEntity_.setToTarget(target());
     }
 
   public:
 
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
     typedef typename GridImp::template Codim<0>::Entity Entity;
 
     //! The Destructor
     ~OneDGridIntersectionIterator() {};
 
+    //! equality
+    bool equals(const OneDGridIntersectionIterator<GridImp>& other) const {
+      return (center_ == other.center_) && (neighbor_ == other.neighbor_);
+    }
+
     //! prefix increment
     void increment() {
       neighbor_++;
-      this->virtualEntity_.setToTarget(target());
+      //        this->virtualEntity_.setToTarget(target());
     }
 
     OneDEntityImp<1>* target() const {
@@ -122,6 +128,23 @@ namespace Dune {
       else
         return center_->succ_ && center_->succ_->vertex_[0] == center_->vertex_[1];
     }
+
+    //! return EntityPointer to the Entity on the inside of this intersection
+    //! (that is the Entity where we started this Iterator)
+    EntityPointer inside() const
+    {
+      return OneDGridEntityPointer<0,GridImp>(center_);
+    }
+
+    //! return EntityPointer to the Entity on the outside of this intersection
+    //! (that is the neighboring Entity)
+    EntityPointer outside() const
+    {
+      return OneDGridEntityPointer<0,GridImp>(target());
+    }
+
+    //! ask for level of entity
+    int level () const {return center_->level_;}
 
 #if 0
     //! return information about the Boundary
@@ -198,7 +221,6 @@ namespace Dune {
 
     //! count on which neighbor we are lookin' at
     int neighbor_;
-
 
   };
 

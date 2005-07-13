@@ -181,6 +181,27 @@ Dune::OneDGrid<dim,dimworld>::lend(int level) const
 }
 
 template <int dim, int dimworld>
+template <int codim>
+typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LeafIterator
+Dune::OneDGrid<dim,dimworld>::leafbegin() const
+{
+#warning DUMMY IMPLEMENTATION
+  DUNE_THROW(NotImplemented, "leafbegin/end");
+  return OneDGridLevelIteratorFactory<codim>::lbegin(this, maxlevel());
+}
+
+template <int dim, int dimworld>
+template <int codim>
+typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LeafIterator
+Dune::OneDGrid<dim,dimworld>::leafend() const
+{
+#warning DUMMY IMPLEMENTATION
+  DUNE_THROW(NotImplemented, "leafbegin/end");
+  OneDGridLevelIterator<codim,All_Partition, const Dune::OneDGrid<dim,dimworld> > it(0);
+  return it;
+}
+
+template <int dim, int dimworld>
 Dune::OneDEntityImp<0>*
 Dune::OneDGrid<dim,dimworld>::getLeftUpperVertex(const OneDEntityImp<1>* eIt)
 {
@@ -561,3 +582,10 @@ template Dune::OneDGrid<1,1>::Traits::Codim<1>::LevelIterator Dune::OneDGrid<1,1
 
 template Dune::OneDGrid<1,1>::Traits::Codim<0>::LevelIterator Dune::OneDGrid<1,1>::lend<0>(int level) const;
 template Dune::OneDGrid<1,1>::Traits::Codim<1>::LevelIterator Dune::OneDGrid<1,1>::lend<1>(int level) const;
+
+
+template Dune::OneDGrid<1,1>::Traits::Codim<0>::LeafIterator Dune::OneDGrid<1,1>::leafbegin<0>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::LeafIterator Dune::OneDGrid<1,1>::leafbegin<1>() const;
+
+template Dune::OneDGrid<1,1>::Traits::Codim<0>::LeafIterator Dune::OneDGrid<1,1>::leafend<0>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::LeafIterator Dune::OneDGrid<1,1>::leafend<1>() const;

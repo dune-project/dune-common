@@ -205,7 +205,8 @@ namespace Dune {
         OneDGridEntityPointer,
         OneDGridLevelIterator,
         OneDGridIntersectionIterator,
-        OneDGridHierarchicIterator> Traits;
+        OneDGridHierarchicIterator,
+        OneDGridLevelIterator> Traits;
 
     /** \brief Constructor with an explicit set of coordinates */
     OneDGrid(const SimpleVector<OneDCType>& coords);
@@ -230,15 +231,13 @@ namespace Dune {
     template<int codim>
     typename Traits::template Codim<codim>::LevelIterator lend (int level) const;
 
-#if 0
-    //! Iterator to first entity of given codim on level
-    template<int codim, PartitionIteratorType PiType>
-    OneDGridLevelIterator<codim,dim,dimworld, PiType> lbegin (int level) const;
+    //! Iterator to first entity of given codim on leaf level
+    template<int codim>
+    typename Traits::template Codim<codim>::LeafIterator leafbegin () const;
 
-    //! one past the end on this level
-    template<int codim, PartitionIteratorType PiType>
-    OneDGridLevelIterator<codim,dim,dimworld, PiType> lend (int level) const;
-#endif
+    //! one past the end on leaf level
+    template<int codim>
+    typename Traits::template Codim<codim>::LeafIterator leafend () const;
 
     /** \brief Number of grid entities per level and codim
      */

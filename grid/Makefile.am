@@ -5,12 +5,11 @@ SUBDIRS = albertagrid alu3dgrid common onedgrid sgrid uggrid yaspgrid test
 noinst_LTLIBRARIES = libgrid.la
 
 # always part of lib:
-SUBLIBS = common/libgridcommon.la
-# onedgrid/libonedgrid.la
+SUBLIBS = common/libgridcommon.la onedgrid/libonedgrid.la
 
 # conditional parts:
 if UG
-  UGLIB = uggrid/libuggrid2.la uggrid/libuggrid3.la
+#  UGLIB = uggrid/libuggrid2.la uggrid/libuggrid3.la
 endif
 
 if ALU3DGRID

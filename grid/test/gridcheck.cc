@@ -554,6 +554,7 @@ void assertNeighbor (Grid &g)
       assert(it != endit);
       for(; it != endit; ++it)
       {
+        assert(it.inside()->index() == e->index());
         if (it.neighbor())
         {
           assert(it.outside()->index() >= 0);

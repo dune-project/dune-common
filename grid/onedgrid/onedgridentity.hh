@@ -295,8 +295,8 @@ namespace Dune {
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
-    OneDGridLevelIterator<0,All_Partition, GridImp> ownersFather () const {
-      return OneDGridLevelIterator<0,All_Partition,GridImp>(target_->father_);
+    OneDGridEntityPointer<0, GridImp> ownersFather () const {
+      return OneDGridEntityPointer<0,GridImp>(target_->father_);
     }
 
     /*! Location of this element relative to the reference element
