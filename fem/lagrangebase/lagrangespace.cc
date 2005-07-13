@@ -210,9 +210,7 @@ namespace Dune {
     case prism        : return makeBaseSet<prism,polOrd> ();
     case hexahedron   : return makeBaseSet<hexahedron,polOrd> ();
     default : {
-      std::cerr << en.geometry().type() << " This element type is not provided yet! \n";
-      abort();
-      return 0;
+      DUNE_THROW(NotImplemented, "Element type " << en.geometry().type() << " is not provided yet!");
     }
     }
   }
