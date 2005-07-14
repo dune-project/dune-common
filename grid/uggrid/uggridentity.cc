@@ -172,7 +172,7 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
   if (cc!=dim)
     DUNE_THROW(GridError, "UGGrid::subIndex isn't implemented for cc != dim");
 
-  if (geometry().type()==hexahedron) {
+  if (geometry().type()==cube && dim==3) {
     // Dune numbers the vertices of a hexahedron differently than UG.
     // The following two lines do the transformation
     const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
@@ -193,7 +193,7 @@ UGGridEntity<0,dim,GridImp>::entity ( int i ) const
   if (cc!=dim)
     DUNE_THROW(GridError, "UGGrid::subIndex isn't implemented for cc != dim");
 
-  if (geometry().type()==hexahedron) {
+  if (geometry().type()==cube && dim==3) {
     // Dune numbers the vertices of a hexahedron differently than UG.
     // The following two lines do the transformation
     const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
