@@ -118,20 +118,10 @@ namespace Dune {
     switch(type) {
     case vertex :
       return "vertex";
-    case line :
-      return "line";
-    case triangle :
-      return "triangle";
-    case quadrilateral :
-      return "quadrilateral";
-    case tetrahedron :
-      return "tetrahedron";
     case pyramid :
       return "pyramid";
     case prism :
       return "prism";
-    case hexahedron :
-      return "hexahedron";
     case simplex :
       return "simplex";
     case cube :
