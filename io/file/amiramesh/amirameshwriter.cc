@@ -106,7 +106,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   int *dPtr = (int*)elementData->dataPtr();
 
   LeafIterator lIt2    = grid.leafbegin(maxlevel);
-  //LeafIterator lEndIt = grid.leafend(maxlevel);
 
   for (int i=0; lIt2!=lEndIt; ++lIt2, i++) {
 
@@ -163,9 +162,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   ElementIterator eEndIt = grid.template lend<0>(level);
 
   for (; eIt!=eEndIt; ++eIt) {
-    if (eIt->geometry().type() != tetrahedron &&
-        eIt->geometry().type() != triangle &&
-        eIt->geometry().type() != simplex) {
+    if (eIt->geometry().type() != simplex) {
       containsOnlySimplices = false;
       break;
     }
@@ -266,7 +263,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
       for (i=0; eIt!=eEndIt; ++eIt, i++) {
         switch (eIt->geometry().type()) {
 
-        case hexahedron : {
+        case cube : {        // Hexahedron
 
           const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
           for (int j=0; j<8; j++)
@@ -302,7 +299,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
           break;
         }
 
-        case tetrahedron : {
+        case simplex : {        // tetrahedron
 
           const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
           for (int j=0; j<8; j++)
@@ -435,7 +432,8 @@ void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const GridType& grid,
   ElementIterator end     = grid.template lend<0>(level);
 
   for (; element!=end; ++element) {
-    if (element->geometry().type() != tetrahedron) {
+    if (element->geometry().type() != simplex &&
+        (GridType::dimension!=1 || element->geometry().type() != cube)) {
       containsOnlyTetrahedra = false;
       break;
     }
