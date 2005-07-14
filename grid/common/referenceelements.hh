@@ -9,7 +9,6 @@
 #include "dune/common/fvector.hh"
 #include "dune/common/exceptions.hh"
 #include "dune/grid/common/grid.hh"
-#include "power.hh"
 
 /**
  * @file
@@ -170,7 +169,7 @@ namespace Dune
   class ReferenceCube
   {
   public:
-    enum { MAXE = POWER_M_P<3,dim>::power };     // maximum number of entities per codim
+    enum { MAXE = Power_m_p<3,dim>::power };     // maximum number of entities per codim
 
     // compile time sizes
     enum { d=dim };        // maps from R^d
