@@ -211,7 +211,7 @@ namespace Dune {
     GeometryType type () const {return elementType_;}
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners () const {return (elementType_==triangle) ? 3 : 4;}
+    int corners () const {return (elementType_==simplex) ? 3 : 4;}
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<UGCtype, 3>& operator[] (int i) const {
@@ -249,7 +249,7 @@ namespace Dune {
 
     void setNumberOfCorners(int n) {
       assert(n==3 || n==4);
-      elementType_ = (n==3) ? triangle : quadrilateral;
+      elementType_ = (n==3) ? simplex : cube;
     }
 
     //! The element type, either triangle or quadrilateral
@@ -290,8 +290,9 @@ namespace Dune {
     UGGridGeometry()
     {}
 
-    /** Return the element type identifier.  This class always returns 'line' */
-    GeometryType type () const {return line;}
+    /** \brief Return the element type identifier.  This class always returns 'simplex',
+       because a one-dimensional simplex is a line.*/
+    GeometryType type () const {return simplex;}
 
     //! return the number of corners of this element. This class always returns 2
     int corners () const {return 2;}

@@ -94,7 +94,7 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
   switch (mydim)
   {
   case 0 : return vertex;
-  case 1 : return line;
+  case 1 : return simplex;
   case 2 :
 #ifdef _2
     switch (UG_NS<coorddim>::Tag(target_)) {
@@ -127,7 +127,7 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
   }
 
   // Just to calm the compiler
-  return tetrahedron;
+  return simplex;
 }
 
 template< int mydim, int coorddim, class GridImp>
@@ -238,7 +238,7 @@ global(const FieldVector<typename GridImp::ctype, 2>& local) const
 
   FieldVector<UGCtype, 3> result;
 
-  if (elementType_ == triangle) {
+  if (elementType_ == simplex) {
 
     for (int i=0; i<3; i++)
       result[i] = (1.0-local[0]-local[1])*coord_[0][i]
