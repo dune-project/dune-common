@@ -863,7 +863,7 @@ namespace Dune {
     //! select the appropriate rule
     const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
     {
-      if ( (type==hypercube) || (type==line) || (type==quadrilateral) ||
+      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
            (type==hexahedron) )
       {
         if (p>=1 && p<=cube_maxorder)
