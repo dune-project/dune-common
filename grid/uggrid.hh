@@ -9,6 +9,7 @@
 
 #include <dune/common/capabilities.hh>
 #include <dune/grid/common/grid.hh>
+#include <dune/common/misc.hh>
 
 // All UG includes have to be includes via the file ugincludes.hh
 // for easier parsing by undefAllMacros.pl
@@ -23,8 +24,8 @@
 // undef all macros defined by UG
 #include "uggrid/ug_undefs.hh"
 
+/** \todo Remove this once getChildrenOfSubface is gone */
 #include <dune/common/array.hh>
-#include <dune/grid/common/defaultindexsets.hh>
 
 // The components of the UGGrid interface
 #include "uggrid/uggridgeometry.hh"
@@ -34,7 +35,7 @@
 #include "uggrid/ugintersectionit.hh"
 #include "uggrid/uggridleveliterator.hh"
 #include "uggrid/uggridhieriterator.hh"
-#include "uggrid/ughierarchicindexset.hh"
+#include "uggrid/uggridindexsets.hh"
 
 namespace Dune {
 
@@ -115,8 +116,6 @@ namespace Dune {
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
 
-    friend class UGGridHierarchicIndexSet<UGGrid<dim,dimworld> >;
-
     /** \brief UGGrid is only implemented for 2 and 3 dimension */
     CompileTimeChecker< (dimworld==dim) && ((dim==2) || (dim==3)) >   Use_UGGrid_only_for_2d_and_3d;
 
@@ -137,11 +136,10 @@ namespace Dune {
         UGGridHierarchicIterator,
         UGGridLevelIterator> Traits;
 
-    /** \brief The type of a UGGrid hierarchic index set */
-    typedef UGGridHierarchicIndexSet<Dune::UGGrid<dim,dimworld> > HierarchicIndexSetType;
-
-    /** \brief The type of a UGGrid level index set */
-    typedef DefaultLevelIndexSet<Dune::UGGrid<dim,dimworld> >      LevelIndexSetType;
+    typedef UGGridLevelIndexSet<UGGrid<dim,dimworld> > LevelIndexSet;
+    typedef UGGridLeafIndexSet<UGGrid<dim,dimworld> >  LeafIndexSet;
+    typedef UGGridGlobalIdSet<UGGrid<dim,dimworld> >   GlobalIdSet;
+    typedef UGGridLocalIdSet<UGGrid<dim,dimworld> >    LocalIdSet;
 
     //! The type used to store coordinates
     typedef double ctype;
@@ -185,6 +183,22 @@ namespace Dune {
     template<int codim, PartitionIteratorType PiType>
     typename Traits::template Codim<codim>::template partition<PiType>::LevelIterator lend (int level) const;
 
+    //! Iterator to first entity of given codim on level
+    template<int codim>
+    typename Traits::template Codim<codim>::LeafIterator leafbegin() const;
+
+    //! one past the end on this level
+    template<int codim>
+    typename Traits::template Codim<codim>::LeafIterator leafend() const;
+
+    //! Iterator to first entity of given codim on level
+    template<int codim, PartitionIteratorType PiType>
+    typename Traits::template Codim<codim>::template partition<PiType>::LeafIterator leafbegin() const;
+
+    //! one past the end on this level
+    template<int codim, PartitionIteratorType PiType>
+    typename Traits::template Codim<codim>::template partition<PiType>::LeafIterator leafend() const;
+
     /** \brief Number of grid entities per level and codim
      */
     int size (int level, int codim) const;
@@ -209,6 +223,27 @@ namespace Dune {
       DUNE_THROW(NotImplemented, "not implemented");
       return 0;
     }
+
+    const GlobalIdSet& globalidset() const
+    {
+      return globalIdSet_;
+    }
+
+    const LocalIdSet& localidset() const
+    {
+      return localIdSet_;
+    }
+
+    const LevelIndexSet& levelindexset(int level) const
+    {
+      return levelIndexSets_[level];
+    }
+
+    const LeafIndexSet& leafindexset() const
+    {
+      return leafIndexSet_;
+    }
+
 
     /** \brief Mark entity for refinement
      *
@@ -263,18 +298,6 @@ namespace Dune {
     // **********************************************************
     // End of Interface Methods
     // **********************************************************
-
-#ifdef UGGRID_WITH_INDEX_SETS
-    const HierarchicIndexSetType& hierarchicIndexSet() const {
-      return hierarchicIndexSet_;
-    }
-
-    const LevelIndexSetType& levelIndexSet() const {
-      if (!levelIndexSet_)
-        levelIndexSet_ = new LevelIndexSetType(*this);
-      return *levelIndexSet_;
-    }
-#endif
 
     /** \brief Start the coarse grid creation process */
     void createbegin();
@@ -366,14 +389,14 @@ namespace Dune {
     // UG environment structure
     std::string name_;
 
-    // number of maxlevel of the mesh
-    //int maxlevel_;
-
-    // Our hierarchic index set
-    HierarchicIndexSetType hierarchicIndexSet_;
-
     // Our set of level indices
-    mutable LevelIndexSetType* levelIndexSet_;
+    std::vector<LevelIndexSet> levelIndexSets_;
+
+    LeafIndexSet leafIndexSet_;
+
+    GlobalIdSet globalIdSet_;
+
+    LocalIdSet localIdSet_;
 
     //! Marks whether the UG environment heap size is taken from
     //! an existing defaults file or whether the values from
