@@ -5,7 +5,7 @@ AC_DEFUN([DUNE_CHECK_COMPILER],[
 
 AC_ARG_ENABLE(compilercheck,
   AC_HELP_STRING([--enable-compilercheck],
-                 [check for supported compilers \[default=yes\]]),
+                 [check for supported compilers [[default=yes]]]),
   [compilercheck=$enable],
   [compilercheck=yes]
 )
@@ -52,7 +52,7 @@ else
 fi
 
 if test "x$COMPILER_NAME" = "x"; then
-	$COMPILER_NAME="unknown compiler"
+	COMPILER_NAME="unknown compiler"
 fi
 
 ])
