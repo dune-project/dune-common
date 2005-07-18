@@ -4,7 +4,6 @@
 #define DUNE_MATRIX_HH
 
 #include <vector>
-#include <assert.h>
 #include "simplevector.hh"
 
 namespace Dune {
@@ -44,13 +43,23 @@ namespace Dune {
 
     /** \brief The index operator */
     T* operator[](int row) {
-      assert(0<=row && row<rows_);
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (row<0)
+        DUNE_THROW(ISTLError, "Can't access negative rows!");
+      if (row>=rows_)
+        DUNE_THROW(ISTLError, "Row index out of range!");
+#endif
       return &data[row*cols_];
     }
 
     /** \brief The const index operator */
     const T* operator[](int row) const {
-      assert(0<=row && row<rows_);
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (row<0)
+        DUNE_THROW(ISTLError, "Can't access negative rows!");
+      if (row>=rows_)
+        DUNE_THROW(ISTLError, "Row index out of range!");
+#endif
       return &data[row*cols_];
     }
 
@@ -95,7 +104,10 @@ namespace Dune {
 
     //! Multiplication of the transposed matrix times a vector
     SimpleVector<T> transposedMult(const SimpleVector<T>& vec) {
-      assert(rows() == vec.size());
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (rows()!=vec.size())
+        DUNE_THROW(ISTLError, "Vector size doesn't match the number of matrix rows!");
+#endif
       SimpleVector<T> out(cols());
       out = 0;
 
@@ -109,7 +121,6 @@ namespace Dune {
 
     /// Generic matrix multiplication.
     friend Matrix<T> operator*(const Matrix<T>& m1, const Matrix<T>& m2) {
-      assert(m1.cols()==m2.rows());
       Matrix<T> out(m1.rows(), m2.cols());
       out.clear();
 
@@ -124,7 +135,10 @@ namespace Dune {
 
     /// Generic matrix-vector multiplication.
     friend SimpleVector<T> operator*(const Matrix<T>& m, const SimpleVector<T>& vec) {
-      assert(m.cols() == vec.size());
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if (cols()!=vec.size())
+        DUNE_THROW(ISTLError, "Vector size doesn't match the number of matrix columns!");
+#endif
       SimpleVector<T> out(m.rows());
       out = 0;
 
