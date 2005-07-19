@@ -59,7 +59,7 @@ dune_mpi_getflags () {
 
     # the additional brackets keep m4 from interpreting the brackets
     # in the sed-command...
-    retval=[`$MPICOMP ${1} ${2} 2>/dev/null | sed -e 's/^[^-][^ ]\+ //'`]
+    retval=[`$MPICOMP ${1} ${2} 2>/dev/null | head -1 | sed -e 's/^[^-][^ ]\+ //'`]
     # remove dummy-parameter (if existing)
     if test ${#} = 2 ; then
       retval=`echo $retval | sed -e "s/${2}//"`
@@ -124,9 +124,33 @@ dune_mpi_getflags () {
         MPI_LDFLAGS="$retval"
 
         AC_MSG_RESULT([MPICH])
-      else
-        # neither MPICH nor LAM....
-        AC_MSG_RESULT([unknown])
+      else	
+	# check exitcode of -v
+        if $MPICOMP -v -c $MPISOURCE > /dev/null 2>&1 ; then
+          AC_MSG_RESULT([IBM mpCC])
+          with_mpi="IBM-mpCC"
+
+          dune_mpi_getflags "-v" "-c dummy.c"
+	  # mpCC passes on it's own parameter...
+          retval=`echo $retval | sed -e "s/-v//"`
+	  # remove compiler name (double bracket to quote for m4)
+          retval=`echo $retval | sed -e 's/^xl[[cC]] //'`
+	  # remove stuff we passed
+          retval=`echo $retval | sed -e "s/-c dummy.c//"`
+          MPI_CPPFLAGS="$retval"
+
+          dune_mpi_getflags "-v" "dummy.o -o dummy"
+	  # mpCC passes on it's own parameter...
+          retval=`echo $retval | sed -e "s/-v//"`
+	  # remove compiler name
+          retval=`echo $retval | sed -e 's/^xl[[cC]] //'`
+	  # remove stuff we passed
+          retval=`echo $retval | sed -e "s/dummy.o -o dummy//"`
+          MPI_LDFLAGS="$retval"
+        else
+          # don't know MPI....
+          AC_MSG_RESULT([unknown])
+        fi
       fi
     fi
 
