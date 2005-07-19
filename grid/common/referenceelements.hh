@@ -8,6 +8,7 @@
 #include <iostream>
 #include "dune/common/fvector.hh"
 #include "dune/common/exceptions.hh"
+#include "dune/common/helpertemplates.hh"
 #include "dune/grid/common/grid.hh"
 
 /**
@@ -819,6 +820,8 @@ namespace Dune
 
     void prism_entities(int c)
     {
+      // compile time error if dim is not equal to 3
+      IsTrue<dim == 3>::yes();
       // hard coding the size of entities
       sizes[0]=1; // element
       sizes[1]=5; // face
@@ -1123,6 +1126,8 @@ namespace Dune
     void pyramid_entities(int c)
 
     {
+      // compile time error if dim is not 3
+      IsTrue<dim == 3>::yes();
       // hard coding the size of entities
       sizes[0]=1; // element
       sizes[1]=5; // face
