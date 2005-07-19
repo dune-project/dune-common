@@ -66,12 +66,19 @@ dune_mpi_getflags () {
     fi
 }
 
+# removes regexp $2 from string $1
+dune_mpi_remove () {
+   retval=`echo ${1} | sed -e "s/${2}//"`
+}
+
   # get compilation script
   AC_LANG_CASE([C],[
 	MPICOMP="$MPICC"
+        dune_mpi_isgnu="$GCC"
 ],
 [C++],[
 	MPICOMP="$MPICXX"
+        dune_mpi_isgnu="$GXX"
 ]
 )
 
@@ -120,6 +127,10 @@ dune_mpi_getflags () {
         # hack in option to disable MPICH-C++-bindings...
         AC_LANG_CASE([C++], [MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPICH_SKIP_MPICXX"])
 
+        # remove implicitly set -c
+	dune_mpi_remove "$MPI_CPPFLAGS" '-c'
+	MPI_CPPFLAGS="$retval"
+
         dune_mpi_getflags "-link_info"
         MPI_LDFLAGS="$retval"
 
@@ -127,8 +138,8 @@ dune_mpi_getflags () {
       else	
 	# check exitcode of -v
         if $MPICOMP -v -c $MPISOURCE > /dev/null 2>&1 ; then
-          AC_MSG_RESULT([IBM mpCC])
-          with_mpi="IBM-mpCC"
+          AC_MSG_RESULT([IBM MPI])
+          with_mpi="IBM MPI"
 
           dune_mpi_getflags "-v" "-c dummy.c"
 	  # mpCC passes on it's own parameter...
@@ -137,6 +148,12 @@ dune_mpi_getflags () {
           retval=`echo $retval | sed -e 's/^xl[[cC]] //'`
 	  # remove stuff we passed
           retval=`echo $retval | sed -e "s/-c dummy.c//"`
+
+	  # mpCC assumes xlc is used...
+	  if test x$dune_mpi_isgnu = xyes ; then
+	    # change commandline if GNU compiler is used
+            retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
+          fi
           MPI_CPPFLAGS="$retval"
 
           dune_mpi_getflags "-v" "dummy.o -o dummy"
@@ -146,6 +163,12 @@ dune_mpi_getflags () {
           retval=`echo $retval | sed -e 's/^xl[[cC]] //'`
 	  # remove stuff we passed
           retval=`echo $retval | sed -e "s/dummy.o -o dummy//"`
+
+	  if test x$dune_mpi_isgnu = xyes ; then
+	    # change commandline if GNU compiler is used
+            retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
+          fi
+
           MPI_LDFLAGS="$retval"
         else
           # don't know MPI....
@@ -155,7 +178,7 @@ dune_mpi_getflags () {
     fi
 
     # fallback... can't extract flags :( 
-    if test x$with_mpi = xno ; then
+    if test x"$with_mpi" = xno ; then
       AC_MSG_WARN([Could not identify MPI-package! Please send a bugreport and tell us what MPI-package you're using])
     fi
   else
@@ -163,8 +186,54 @@ dune_mpi_getflags () {
     with_mpi="no"
   fi
 
+  # if an MPI implementation was found..
+  if test x"$with_mpi" != xno ; then
+    ### do a sanity check: can we compile and link a trivial MPI program?
+
+    # store old values
+    ac_save_LIBS="$LIBS"
+    ac_save_CPPFLAGS="$CPPFLAGS"
+	
+    # looks weird but as the -l... are contained in the MPI_LDFLAGS these
+    # parameters have to be last on the commandline: with LIBS this is true
+    LIBS="$MPI_LDFLAGS"
+    CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
+
+    AC_MSG_CHECKING([whether compiling/running with $with_mpi works])
+	
+    if test x"$with_mpi" = xLAM ; then
+      AC_MSG_NOTICE([Starting "lamboot" for checking...])
+      lamboot -H
+    fi
+
+    # try to create program
+    AC_RUN_IFELSE(
+      AC_LANG_SOURCE([#include <mpi.h>
+
+                      int main (int argc, char** argv) { 
+	                MPI_Init(&argc, &argv); 
+                        MPI_Finalize();
+                      }
+                      ]),
+      [ AC_MSG_RESULT([yes]) ],
+      [ AC_MSG_RESULT([no])
+        AC_MSG_WARN([could not compile or run MPI testprogram, deactivating MPI! See config.log for details])
+        with_mpi=no
+      ]
+    )
+
+    if test x"$with_mpi" = xLAM ; then
+      AC_MSG_NOTICE([Stopping LAM via "lamhalt"...])
+      lamhalt -H
+    fi
+
+    # restore variables
+    LIBS="$ac_save_LIBS"
+    CPPFLAGS="$ac_save_CPPFLAGS"
+  fi
+    
   # set flags
-  if test x$with_mpi != xno ; then
+  if test x"$with_mpi" != xno ; then
     AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
   else
@@ -172,5 +241,5 @@ dune_mpi_getflags () {
     AC_SUBST(MPI_LDFLAGS, "")
   fi
 
-  AM_CONDITIONAL(MPI, test x$with_mpi != xno)
+  AM_CONDITIONAL(MPI, test x"$with_mpi" != xno)
 ])
