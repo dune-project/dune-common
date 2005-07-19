@@ -352,7 +352,7 @@ namespace Dune {
   public:
     //! create LevelIndex by using the HierarchicIndexSet of a grid
     //! for the given level
-    DefaultLevelIndexSet(const GridType & grid , const int level ) :
+    DefaultLevelIndexSet(const GridType & grid , int level ) :
       grid_(grid) , level_(level) , hIndexSet_ ( grid.hierarchicIndexSet() )
       , size_ ( numCodim )
     {
