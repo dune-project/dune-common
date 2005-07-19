@@ -60,6 +60,8 @@ system-defines and compiler-defines. Also features links to other
 pages about portability</li>
 <li><a href="http://www.opengroup.org/onlinepubs/009695399/mindex.html">http://www.opengroup.org/onlinepubs/009695399/mindex.html</a>
 current "standard operating system interface and environment"
-including information about standard headers and functions
+including information about standard headers and functions</li>
+<li>The <a href="http://bhami.com/rosetta.html">Rosetta Stone for
+	  Unix</a> with an overview of the different systems</li>
 </li>
 </ul>
