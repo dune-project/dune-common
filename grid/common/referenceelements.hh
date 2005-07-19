@@ -728,6 +728,322 @@ namespace Dune
   };
 
 
+  //++++++++++++++++++++++++++++++++++++++++
+  //Reference Prism
+  //++++++++++++++++++++++++++++++++++++++++
+
+  /*                   5(0,1,1)
+                       ¸.¸
+                       y            ¸ *  . ` ,
+   |           *_________ *4(1,0,1)
+   |   3(0,0,1)|     .    |
+   |           |     |    |
+   |           |     .    |
+   |           |     |    |
+   |           |   ¸2¸(0,1,0)
+   |           | ¸`    *¸ |
+   |           |*________*|
+   |    0(0,0,0)         1(1,0,0)
+   ||_ _ _ _ _ _ _ _
+                       x
+
+                       volume of triangular prism =1/2
+
+                       http://hal.iwr.uni-heidelberg.de/dune/doc/appl/refelements.html
+   */
+
+
+
+  template<typename ctype, int dim>
+  class ReferencePrism
+  {
+  public:
+    //assert dim=3;// dim must be 3
+    enum {MAXE=9}; // 9 edges
+    enum {d=dim};
+    typedef ctype CoordType;
+
+
+    ReferencePrism()
+    {
+      for (int i=0; i<=3; ++i)
+        sizes[i]=0;
+
+      for (int i=0; i<MAXE; ++i)
+        for (int j=0; j<=dim; ++j)
+          for (int k=0; k<=dim; ++k)
+            subsizes[i][j][k] = 0;
+
+      for (int c=3; c>=0; --c)
+        prism_entities (c);
+    }
+
+    //! number of entities of codim c
+    int size (int c) const
+    {
+      return sizes[c];
+    }
+
+    //! number of subentities of codim cc of entitity (i,c)
+    int size (int i, int c, int cc) const
+    {
+      return subsizes[i][c][cc];
+    }
+
+    //! number of ii'th subentity with codim cc of (i,c)
+    int subentity (int i, int c, int ii, int cc) const
+    {
+      return subentityindex[i][c][ii][cc];
+    }
+
+    //! position of entity (i,c)
+    const FieldVector<ctype,dim>& position (int i, int c) const
+    {
+      return pos[i][c];
+    }
+    //! type of (i,c)
+    GeometryType type (int i, int c) const
+    {
+      return prism;
+    }
+
+    //! volume of the reference prism
+
+    double volume () const
+    {
+      double vol=1.0/2.0;
+      return vol;
+
+    }
+  private:
+
+    void prism_entities(int c)
+    {
+      // hard coding the size of entities
+      sizes[0]=1; // element
+      sizes[1]=5; // face
+      sizes[2]=9; // edge
+      sizes[3]=6; // vertex
+
+      //-----------------------------------------------
+      // hard coding the number of subentities
+      // prism has 6 vertices, 9 edges and 5 facese on element
+      subsizes[0][0][3]=6;
+      subsizes[0][0][2]=9;
+      subsizes[0][0][1]=5;
+
+      // there are two kind of faces on prism (triangular and rectangular)
+      // face indices according to that given in
+      //http://hal.iwr.uni-heidelberg.de/dune/doc/appl/refelements.html
+
+      //  prism has 3 vertices on bott triang. face
+      subsizes[0][1][3]=3;
+      //  prism has 4 vertices on front,right and left  rectang. faces
+      subsizes[1][1][3]=4;
+      subsizes[2][1][3]=4;
+      subsizes[3][1][3]=4;
+      //  prism has 3 vertices on top triang. face
+      subsizes[4][1][3]=3;
+      // prism has 3 edges on a bott triang. face
+      subsizes[0][1][2]=3;
+      // prism has 4 edges on  front,right and left rec. faces
+      subsizes[1][1][2]=4;
+      subsizes[2][1][2]=4;
+      subsizes[3][1][2]=4;
+      // prism has 3 edges on a top triang. face
+      subsizes[4][1][2]=3;
+      // prism has 2 vertices on each  edge
+      for (int k=0; k<9; ++k)
+        subsizes[k][2][3]=2;
+      //------------------------------------------
+
+      // positions of vertex with local index "i", there are 6 vertices
+      // here c = codim = 3
+      // -----------------------------------
+      FieldVector<int,3> x;
+      x=0;
+      for (int n=0; n<3; n++)
+      {
+        pos[0][3][n]=x[n];
+
+      }
+      for(int k=1; k<=5; ++k)
+        for (int j=0; j<3; ++j)
+        {
+          if(k>3)
+          {
+            x[j]=0;
+            x[k-4]=1;
+            x[2]=1;
+            pos[k][3][j]= x[j];
+          }
+          else
+          {
+            x[j]=0;
+            x[k-1]=1;
+            pos[k][3][j]= x[j];
+          }
+        }
+      //---------------------------------------
+
+      // position of centre of gravity of the element
+      for(int k=0; k<3; ++k)
+      {
+        pos[sizes[0]-1][0][k]=(pos[0][3][k])/sizes[3];
+        for (int j=1; j<sizes[3]; ++j)
+          pos[sizes[0]-1][0][k]+=(pos[j][3][k])/(sizes[3]);
+      }
+
+
+      // subentity indices
+      // node indices on element
+      for(int i=0; i<subsizes[0][0][3]; ++i)
+        subentityindex[0][0][i][3]=i;
+      // edge indices on element
+      for(int i=0; i<subsizes[0][0][2]; ++i)
+        subentityindex[0][0][i][2]=i;
+      // face indices on element
+      for(int i=0; i<subsizes[0][0][1]; ++i)
+        subentityindex[0][0][i][1]=i;
+      // node indices on face 0
+      for(int i=0; i<subsizes[0][1][3]; ++i)
+        subentityindex[0][1][i][3]=i;
+      // node indices on face 1
+      subentityindex[1][1][0][3]=0;
+      subentityindex[1][1][1][3]=1;
+      subentityindex[1][1][2][3]=3;
+      subentityindex[1][1][3][3]=4;
+      // node indices on face 2
+      subentityindex[2][1][0][3]=1;
+      subentityindex[2][1][1][3]=2;
+      subentityindex[2][1][2][3]=4;
+      subentityindex[2][1][3][3]=5;
+      // node indices on face 3
+      subentityindex[3][1][0][3]=0;
+      subentityindex[3][1][1][3]=1;
+      subentityindex[3][1][2][3]=3;
+      subentityindex[3][1][3][3]=5;
+      // node indices on face 4
+      for(int i=0; i<subsizes[4][1][3]; ++i)
+        subentityindex[4][1][i][3]=i+3;
+      // edge indices on face 0
+      subentityindex[0][1][0][2]=0;
+      subentityindex[0][1][1][2]=1;
+      subentityindex[0][1][2][2]=2;
+      // edge indices on face 1
+      subentityindex[1][1][0][2]=0;
+      subentityindex[1][1][1][2]=3;
+      subentityindex[1][1][2][2]=4;
+      subentityindex[1][1][3][2]=5;
+      // edge indices on face 2
+      subentityindex[2][1][0][2]=2;
+      subentityindex[2][1][1][2]=4;
+      subentityindex[2][1][2][2]=6;
+      subentityindex[2][1][3][2]=7;
+      // edge indices on face 3
+      subentityindex[3][1][0][2]=1;
+      subentityindex[3][1][1][2]=3;
+      subentityindex[3][1][2][2]=6;
+      subentityindex[3][1][3][2]=8;
+      // edge indices on face 4
+      subentityindex[4][1][0][2]=5;
+      subentityindex[4][1][1][2]=8;
+      subentityindex[4][1][2][2]=7;
+      // node indices on edge 0
+      subentityindex[0][2][0][3]=0;
+      subentityindex[0][2][1][3]=1;
+      // node indices on edge 1
+      subentityindex[1][2][0][3]=0;
+      subentityindex[1][2][1][3]=2;
+      // node indices on edge 2
+      subentityindex[2][2][0][3]=1;
+      subentityindex[2][2][1][3]=2;
+      // node indices on edge 3
+      subentityindex[3][2][0][3]=0;
+      subentityindex[3][2][1][3]=3;
+      // node indices on edge 4
+      subentityindex[4][2][0][3]=1;
+      subentityindex[4][2][1][3]=4;
+      // node indices on edge 5
+      subentityindex[5][2][0][3]=3;
+      subentityindex[5][2][1][3]=4;
+      // node indices on edge 6
+      subentityindex[6][2][0][3]=2;
+      subentityindex[6][2][1][3]=5;
+      // node indices on edge 7
+      subentityindex[7][2][0][3]=4;
+      subentityindex[7][2][1][3]=5;
+      // node indices on edge 8
+      subentityindex[8][2][0][3]=3;
+      subentityindex[8][2][1][3]=5;
+      //
+
+      //position of faces and edges
+      for(int j=0; j<3; ++j)
+      {
+        //face 0 (nodes 0,1,2)
+        pos[0][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[2][3][j])/3.0;
+        //face 1 (nodes 0,1,3,4)
+        pos[1][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[3][3][j]+pos[4][3][j])/4.0;
+        //face 2 (nodes 1,2,4,5)
+        pos[2][1][j]=(pos[1][3][j]+pos[2][3][j]+pos[4][3][j]+pos[5][3][j])/4.0;
+        //face 3 (nodes 0,2,3,5)
+        pos[3][1][j]=(pos[0][3][j]+pos[2][3][j]+pos[3][3][j]+pos[5][3][j])/4.0;
+        //face 4 (nodes 3,4,5)
+        pos[4][1][j]=(pos[3][3][j]+pos[4][3][j]+pos[5][3][j])/3.0;
+        //edge 0 (nodes 0,1)
+        pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
+        //edge 1 (nodes 0,2)
+        pos[1][2][j]=(pos[0][3][j]+pos[2][3][j])/2.0;
+        //edge 2 (nodes 1,2)
+        pos[2][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+        //edge 3 (nodes 0,3)
+        pos[3][2][j]=(pos[0][3][j]+pos[3][3][j])/2.0;
+        //edge 4 (nodes 1,4)
+        pos[4][2][j]=(pos[1][3][j]+pos[4][3][j])/2.0;
+        //edge 5 (nodes 3,4)
+        pos[5][2][j]=(pos[3][3][j]+pos[4][3][j])/2.0;
+        //edge 6 (nodes 2,5)
+        pos[6][2][j]=(pos[2][3][j]+pos[5][3][j])/2.0;
+        //edge 7 (nodes 4,5)
+        pos[7][2][j]=(pos[4][3][j]+pos[5][3][j])/2.0;
+        //edge 8 (nodes 3,5)
+        pos[8][2][j]=(pos[3][3][j]+pos[5][3][j])/2.0;
+
+      }
+
+
+    }
+
+
+    int sizes[dim+1];
+    int subsizes[MAXE][dim+1][dim+1];
+    int subentityindex[MAXE][dim+1][MAXE][dim+1];
+    FieldVector<ctype,dim> pos[MAXE][dim+1];
+
+
+  };
+
+  //! Make the reference Prism accessible as a container
+  template<typename ctype, int dim>
+  class ReferencePrismContainer
+  {
+  public:
+
+    //! export type elements in the container
+    typedef ReferencePrism<ctype,dim> value_type;
+
+    //! return element of the container via geometry type
+    const value_type& operator() (GeometryType type) const
+    {
+      if (type==prism)
+        return pris;
+      DUNE_THROW(RangeError, "expected a prism!");
+    }
+
+  private:
+    ReferencePrism<ctype,dim> pris;
+  };
 
 
 
@@ -754,6 +1070,8 @@ namespace Dune
         return hcube;
       else if( (type==simplex ) || (type==triangle ) || (type==tetrahedron))
         return simplices;
+      else if (type==prism)
+        return pris;
       else
         DUNE_THROW(NotImplemented, "type not implemented yet");
     }
@@ -761,6 +1079,7 @@ namespace Dune
   private:
     ReferenceElementWrapper<ReferenceCube<ctype,dim> > hcube;
     ReferenceElementWrapper<ReferenceSimplex<ctype,dim> > simplices;
+    ReferenceElementWrapper<ReferencePrism<ctype,dim> > pris;
   };
 
 
@@ -769,6 +1088,7 @@ namespace Dune
   struct ReferenceElements {
     static ReferenceCubeContainer<ctype,dim> cube;
     static ReferenceSimplexContainer<ctype,dim> simplices;
+    static ReferencePrismContainer<ctype,dim> pris;
     static ReferenceElementContainer<ctype,dim> general;
   };
 
@@ -777,8 +1097,8 @@ namespace Dune
 
   template<typename ctype, int dim>
   ReferenceSimplexContainer<ctype,dim> ReferenceElements<ctype,dim>::simplices;
-
-
+  template<typename ctype, int dim>
+  ReferencePrismContainer<ctype,dim> ReferenceElements<ctype,dim>::pris;
   template<typename ctype, int dim>
   ReferenceElementContainer<ctype,dim> ReferenceElements<ctype,dim>::general;
 
