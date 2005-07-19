@@ -134,7 +134,7 @@ inline Dune::UGGrid < dim, dimworld >::UGGrid() : multigrid_(NULL),
                                                   leafIndexSet_(*this),
                                                   globalIdSet_(*this),
                                                   localIdSet_(*this),
-                                                  refinementType_(COPY),
+                                                  refinementType_(LOCAL),
                                                   omitGreenClosure_(false)
 {
   init(500, 10);
@@ -146,7 +146,7 @@ inline Dune::UGGrid < dim, dimworld >::UGGrid(unsigned int heapSize, unsigned en
     leafIndexSet_(*this),
     globalIdSet_(*this),
     localIdSet_(*this),
-    refinementType_(COPY),
+    refinementType_(LOCAL),
     omitGreenClosure_(false)
 {
   init(heapSize, envHeapSize);
