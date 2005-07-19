@@ -618,7 +618,7 @@ namespace Dune {
   class ALU3dGridHierarchicIterator;
   template<class GridImp>
   class ALU3dGridIntersectionIterator;
-  template<class GridImp>
+  template<int codim, PartitionIteratorType pitype, class GridImp>
   class ALU3dGridLeafIterator;
   template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
@@ -677,6 +677,7 @@ namespace Dune {
     typedef ALU3dGridMakeableGeometry<dim-1,dimworld,GridImp> GeometryImp;
     typedef ALU3dGridMakeableGeometry<dim-1,dimworld,GridImp> LocalGeometryImp;
     typedef FieldVector<alu3d_ctype, dimworld> NormalType;
+    typedef ALU3dGridEntityPointer<0,GridImp> EntityPointer;
 
     //! The default Constructor , level tells on which level we want
     //! neighbours
@@ -696,8 +697,11 @@ namespace Dune {
     //! equality
     bool equals(const ALU3dGridIntersectionIterator<GridImp> & i) const;
 
-    //! access neighbor, dereferencing
-    Entity & dereference () const;
+    //! access neighbor
+    EntityPointer outside() const;
+
+    //! access entity where iteration started
+    EntityPointer inside() const;
 
     //! return true if intersection is with boundary. \todo connection with
     //! boundary information, processor/outer boundary
@@ -862,28 +866,30 @@ namespace Dune {
   //  --LeafIterator
   //
   //********************************************************************
-  template<class GridImp>
+  //! Leaf iterator
+  template<int codim, PartitionIteratorType pitype, class GridImp>
   class ALU3dGridLeafIterator :
-    public ALU3dGridEntityPointer<0,GridImp>
+    public LeafIteratorDefault<codim, pitype, GridImp, ALU3dGridLeafIterator>,
+    public ALU3dGridEntityPointer<codim,GridImp>
   {
     enum { dim = GridImp :: dimension };
 
-    friend class ALU3dGridEntity<0,dim,GridImp>;
+    friend class ALU3dGridEntity<codim,dim,GridImp>;
     //friend class ALU3dGrid < dim , dimworld >;
-    enum { codim = 0 };
+    enum { codim = codim };
 
   public:
-    typedef typename GridImp::template Codim<0>::Entity Entity;
-    typedef ALU3dGridMakeableEntity<0,dim,GridImp> EntityImp;
+    typedef typename GridImp::template Codim<codim>::Entity Entity;
+    typedef ALU3dGridMakeableEntity<codim,dim,GridImp> EntityImp;
 
-    typedef ALU3dGridLeafIterator<GridImp> ALU3dGridLeafIteratorType;
+    typedef ALU3dGridLeafIterator<codim, pitype, GridImp> ALU3dGridLeafIteratorType;
 
     //! Constructor
     ALU3dGridLeafIterator(const GridImp & grid, int level , bool end,
-                          const int nlinks , PartitionIteratorType pitype );
+                          const int nlinks);
 
     //! copy Constructor
-    ALU3dGridLeafIterator(const ALU3dGridLeafIterator<GridImp> & org);
+    ALU3dGridLeafIterator(const ALU3dGridLeafIterator<codim, pitype, GridImp> & org);
 
     //! prefix increment
     void increment ();
@@ -899,13 +905,10 @@ namespace Dune {
     int level_;
 
     // the wrapper for the original iterator of the ALU3dGrid
-    typedef typename ALU3DSPACE ALU3dGridLeafIteratorWrapper<codim,InteriorBorder_Partition> IteratorType;
+    typedef typename ALU3DSPACE ALU3dGridLeafIteratorWrapper<codim, pitype> IteratorType;
 
     typedef ALU3DSPACE IteratorWrapperInterface<ALU3DSPACE LeafValType> IterInterface;
     ALU3DSPACE AutoPointer < IterInterface > iter_;
-
-    //! my partition tpye
-    const PartitionIteratorType pitype_;
   };
 
   // - HierarchicIteraor

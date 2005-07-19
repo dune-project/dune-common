@@ -3,8 +3,8 @@
 /****************************************************************************/
 /*  Header--File for extra Albert Functions                                 */
 /****************************************************************************/
-#ifndef _ALBERTAEXTRA_H_
-#define _ALBERTAEXTRA_H_
+#ifndef DUNE_ALBERTAEXTRA_HH
+#define DUNE_ALBERTAEXTRA_HH
 
 #include <algorithm>
 

@@ -240,30 +240,49 @@ namespace Dune {
 
   // leaf methods
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
-  ALU3dGrid<dim, dimworld, elType>::leafbegin(int level, PartitionIteratorType pitype) const
+  template <int codim, PartitionIteratorType pitype>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template partition<pitype>::LeafIterator
+  ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const
   {
     assert( level >= 0 );
-    return ALU3dGridLeafIterator<const MyType> ((*this),level,false,
+    return ALU3dGridLeafIterator<codim, pitype, const MyType> ((*this),
+                                                               level,
+                                                               false,
 #ifdef _ALU3DGRID_PARALLEL_
-                                                mpAccess_.nlinks(),
+                                                               mpAccess_.nlinks(),
 #else
-                                                1,
+                                                               1,
 #endif
-                                                pitype);
+                                                               pitype);
   }
+
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
-  ALU3dGrid<dim, dimworld, elType>::leafend(int level, PartitionIteratorType pitype) const
+  template <int codim, PartitionIteratorType pitype>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template partition<pitype>::LeafIterator
+  ALU3dGrid<dim, dimworld, elType>::leafend(int level) const
   {
     assert( level >= 0 );
-    return ALU3dGridLeafIterator<const MyType> ((*this),level,true,
+    return ALU3dGridLeafIterator<codim, pitype, const MyType> ((*this),
+                                                               level,
+                                                               true,
 #ifdef _ALU3DGRID_PARALLEL_
-                                                mpAccess_.nlinks(),
+                                                               mpAccess_.nlinks(),
 #else
-                                                1,
+                                                               1,
 #endif
-                                                pitype);
+                                                               pitype);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const {
+    return leafbegin<0, All_Partition>(level);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  ALU3dGrid<dim, dimworld, elType>::leafend(int level) const {
+    return leafend<0, All_Partition>(level);
   }
 
   // global refine
@@ -424,7 +443,7 @@ namespace Dune {
         w->item ().resetRefinedTag();
 
         // note, resetRefinementRequest sets the request to coarsen
-        //w->item ().resetRefinementRequest();
+        w->item ().resetRefinementRequest();
       }
     }
     //#ifdef _ALU3DGRID_PARALLEL_
@@ -454,7 +473,7 @@ namespace Dune {
         w->item ().resetRefinedTag();
 
         // note, resetRefinementRequest sets the request to coarsen
-        //w->item ().resetRefinementRequest();
+        w->item ().resetRefinementRequest();
       }
     }
 #endif

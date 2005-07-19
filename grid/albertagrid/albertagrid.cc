@@ -1744,14 +1744,14 @@ namespace Dune
   inline void AlbertaGridIntersectionIterator<GridImp>::freeObjects () const
   {
     if(fakeNeigh_)
-      this->grid_.interSelfProvider_.freeObjectEntity(fakeNeigh_);
+      grid_.interSelfProvider_.freeObjectEntity(fakeNeigh_);
 
     if(neighGlob_)
-      this->grid_.interNeighProvider_.freeObjectEntity(neighGlob_);
+      grid_.interNeighProvider_.freeObjectEntity(neighGlob_);
 
     if(boundaryEntity_)
     {
-      this->grid_.interBndProvider_.freeObjectEntity(boundaryEntity_);
+      grid_.interBndProvider_.freeObjectEntity(boundaryEntity_);
       boundaryEntity_ = 0;
     }
 
@@ -1767,15 +1767,16 @@ namespace Dune
 
   template< class GridImp >
   inline AlbertaGridIntersectionIterator<GridImp>::
-  AlbertaGridIntersectionIterator(const GridImp & grid,int level)
-    : AlbertaGridEntityPointer<0,GridImp> (grid,level,true)
-      , level_ (level) , neighborCount_ (dim+1)
-      , virtualEntity_ ( *(this->entity_) )
-      , elInfo_ (0)
-      , fakeNeigh_ (0)
-      , neighGlob_ (0)
-      , boundaryEntity_ (0)
-      , neighElInfo_ (0)
+  AlbertaGridIntersectionIterator(const GridImp & grid,int level) :
+    AlbertaGridEntityPointer<0,GridImp> (grid,level,false),
+    level_ (level),
+    neighborCount_ (dim+1),
+    virtualEntity_ ( *(this->entity_) ),
+    elInfo_ (0),
+    fakeNeigh_ (0),
+    neighGlob_ (0),
+    boundaryEntity_ (0),
+    neighElInfo_ (0)
   {}
 
 
@@ -1841,8 +1842,8 @@ namespace Dune
   }
 
   template< class GridImp >
-  inline typename AlbertaGridIntersectionIterator<GridImp>::Entity &
-  AlbertaGridIntersectionIterator<GridImp>::dereference () const
+  inline typename AlbertaGridIntersectionIterator<GridImp>::EntityPointer
+  AlbertaGridIntersectionIterator<GridImp>::outside () const
   {
     if(!builtNeigh_)
     {
@@ -1855,7 +1856,21 @@ namespace Dune
 
       setupVirtEn();
     }
-    return virtualEntity_;
+    return AlbertaGridEntityPointer<0, GridImp>(this->grid_,
+                                                (int) neighElInfo_->level,
+                                                neighElInfo_,
+                                                0, 0, 0);
+    //return virtualEntity_;
+  }
+
+  template< class GridImp >
+  inline typename AlbertaGridIntersectionIterator<GridImp>::EntityPointer
+  AlbertaGridIntersectionIterator<GridImp>::inside () const {
+    assert(elInfo_);
+    return AlbertaGridEntityPointer<0, GridImp>(this->grid_,
+                                                (int) elInfo_->level,
+                                                elInfo_,
+                                                0, 0, 0);
   }
 
   template< class GridImp >
@@ -3215,33 +3230,33 @@ namespace Dune
   }
 
   template < int dim, int dimworld >
-  template<PartitionIteratorType pitype>
+  template<int codim, PartitionIteratorType pitype>
+  inline typename AlbertaGrid<dim,dimworld>::Traits::template Codim<codim>::template partition<pitype>::LeafIterator
+  AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
+  {
+    return AlbertaGridLeafIterator<codim, pitype, const MyType> (*this,vertexMarker_,level,proc);
+  }
+
+  template < int dim, int dimworld >
+  template<int codim, PartitionIteratorType pitype>
+  inline typename AlbertaGrid<dim,dimworld>::Traits::template Codim<codim>::template partition<pitype>::LeafIterator
+  AlbertaGrid < dim, dimworld >::leafend (int level, int proc ) const
+  {
+    return AlbertaGridLeafIterator<codim, pitype, const MyType> (*this,level,proc);
+  }
+
+  template < int dim, int dimworld >
   inline typename AlbertaGrid<dim,dimworld>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
   {
-    return AlbertaGridLeafIterator<const MyType> (*this,vertexMarker_,level,proc);
-  }
-
-  template < int dim, int dimworld >
-  template<PartitionIteratorType pitype>
-  inline typename AlbertaGrid<dim,dimworld>::LeafIterator
-  AlbertaGrid < dim, dimworld >::leafend (int level, int proc ) const
-  {
-    return AlbertaGridLeafIterator<const MyType> (*this,level,proc);
-  }
-
-  template < int dim, int dimworld >
-  inline typename AlbertaGrid<dim,dimworld>::LeafIterator
-  AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
-  {
-    return AlbertaGridLeafIterator<const MyType> (*this,vertexMarker_,level,proc);
+    return AlbertaGridLeafIterator<0, All_Partition, const MyType> (*this,vertexMarker_,level,proc);
   }
 
   template < int dim, int dimworld >
   inline typename AlbertaGrid<dim,dimworld>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafend (int level, int proc ) const
   {
-    return AlbertaGridLeafIterator<const MyType> (*this,level,proc);
+    return AlbertaGridLeafIterator<0, All_Partition, const MyType> (*this,level,proc);
   }
 
   //**************************************

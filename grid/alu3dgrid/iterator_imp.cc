@@ -206,25 +206,30 @@ namespace Dune {
   }
 
   template<class GridImp>
-  inline typename ALU3dGridIntersectionIterator<GridImp>::Entity &
-  ALU3dGridIntersectionIterator<GridImp>::dereference () const
+  inline typename ALU3dGridIntersectionIterator<GridImp>::EntityPointer
+  ALU3dGridIntersectionIterator<GridImp>::outside () const
   {
 #ifdef _ALU3DGRID_PARALLEL_
-    if(connector_->isGhostBnd())
+    if(connector_->ghostBoundary())
     {
       BNDFaceType * ghost = const_cast<BNDFaceType *>(&connector_->boundaryFace());
       if( connector_->boundaryFace().level () != connector_->boundaryFace().ghostLevel() )
         ghost = static_cast<BNDFaceType *>(ghost->up());
 
       this->entity_->setGhost(const_cast<BNDFaceType &>(connector_->boundaryFace()) );
+      return EntityPointer(this->grid_, ghost); // * is this possible
     }
     else
 #endif
     {
       this->entity_->setElement(const_cast<GEOElementType&>(connector_->outerEntity()));
     }
-    return ALU3dGridEntityPointer<0,GridImp>::dereference();
+    return EntityPointer(this->grid_, connector_->outerEntity());
   }
+
+  template<class GridImp>
+  inline typename ALU3dGridIntersectionIterator<GridImp>::EntityPointer
+  ALU3dGridIntersectionIterator<GridImp>::inside () const {}
 
   template<class GridImp>
   inline bool ALU3dGridIntersectionIterator<GridImp> :: boundary () const
@@ -559,14 +564,13 @@ namespace Dune {
   //
   //--LeafIterator
   //*******************************************************************
-  template<class GridImp>
-  inline ALU3dGridLeafIterator<GridImp> ::
+  template<int codim, PartitionIteratorType pitype, class GridImp>
+  inline ALU3dGridLeafIterator<codim, pitype, GridImp> ::
   ALU3dGridLeafIterator(const GridImp &grid, int level,
-                        bool end, const int nlinks, PartitionIteratorType pitype)
+                        bool end, const int nlinks)
     : ALU3dGridEntityPointer <0,GridImp> ( grid,level,end)
       , index_(-1)
       , level_(level)
-      , pitype_ (pitype)
   {
     if(!end)
     {
@@ -610,14 +614,13 @@ namespace Dune {
       this->done();
   }
 
-  template<class GridImp>
-  inline ALU3dGridLeafIterator<GridImp> ::
-  ALU3dGridLeafIterator(const ALU3dGridLeafIterator<GridImp> &org)
+  template<int codim, PartitionIteratorType pitype, class GridImp>
+  inline ALU3dGridLeafIterator<codim, pitype, GridImp> ::
+  ALU3dGridLeafIterator(const ALU3dGridLeafIterator<codim, pitype, GridImp> &org)
     : ALU3dGridEntityPointer <0,GridImp> ( org.grid_,org.level_,(org.index_ < 0) ? true : false )
       , index_(org.index_)
       , level_(org.level_)
       , iter_ ( org.iter_ )
-      , pitype_(org.pitype_)
   {
     if(index_ >= 0)
     {
@@ -631,8 +634,8 @@ namespace Dune {
     }
   }
 
-  template<class GridImp>
-  inline void ALU3dGridLeafIterator<GridImp> :: increment ()
+  template<int codim, PartitionIteratorType pitype, class GridImp>
+  inline void ALU3dGridLeafIterator<codim, pitype, GridImp> :: increment ()
   {
     // if assertion is thrown then end iterator was forgotten or didnt stop
     assert(index_  >= 0);

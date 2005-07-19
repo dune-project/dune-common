@@ -578,6 +578,17 @@ namespace Dune {
 
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
+  ALU3dGridEntityPointer(const GridImp & grid, const BNDFaceType &ghost)
+    : grid_(grid)
+      , entity_ ( grid_.template getNewEntity<codim> ( item.level() ) )
+      , done_ (false)
+  {
+    assert( entity_ );
+    (*entity_).setGhost( const_cast<BNDFaceType &>(ghost) );
+  }
+
+  template<int codim, class GridImp >
+  inline ALU3dGridEntityPointer<codim,GridImp> ::
   ALU3dGridEntityPointer(const GridImp & grid, int level , bool done )
     : grid_(grid)
       , entity_ ( grid_.template getNewEntity<codim> (level) )

@@ -28,7 +28,7 @@ namespace Dune {
   class ALU3dGridHierarchicIterator;
   template<class GridImp>
   class ALU3dGridIntersectionIterator;
-  template<class GridImp>
+  template<int codim, PartitionIteratorType, class GridImp>
   class ALU3dGridLeafIterator;
   template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
@@ -229,7 +229,10 @@ namespace Dune {
     friend class ALU3dGridLevelIterator <1,All_Partition,GridImp>;
     friend class ALU3dGridLevelIterator <2,All_Partition,GridImp>;
     friend class ALU3dGridLevelIterator <3,All_Partition,GridImp>;
-    friend class ALU3dGridLeafIterator <GridImp>;
+    friend class ALU3dGridLeafIterator <0, All_Partition,GridImp>;
+    friend class ALU3dGridLeafIterator <1, All_Partition,GridImp>;
+    friend class ALU3dGridLeafIterator <2, All_Partition,GridImp>;
+    friend class ALU3dGridLeafIterator <3, All_Partition,GridImp>;
 
     friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
@@ -408,7 +411,7 @@ namespace Dune {
 
     typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType MyHElementType;
   public:
-
+    typedef ALU3dImplTraits<GridImp::elementType>::BNDFaceType BNDFaceType;
     typedef typename GridImp::template Codim<cd>::Entity Entity;
     typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
 
@@ -417,6 +420,9 @@ namespace Dune {
 
     //! Constructor for EntityPointer that points to an element
     ALU3dGridEntityPointer(const GridImp & grid, const MyHElementType & item);
+
+    //! Constructor for EntityPointer that points to a ghost
+    ALU3dGridEntityPointer(const GridImp& grid, const BNDFaceType& ghost);
 
     //! Constructor for EntityPointer init of Level- and LeafIterator
     ALU3dGridEntityPointer(const GridImp & grid, int level , bool done);
