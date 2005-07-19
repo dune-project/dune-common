@@ -43,7 +43,7 @@ AC_ARG_WITH(duneweb,
 if test x$with_duneweb != x && test -e $with_duneweb/layout/default.wml ; then
   AC_MSG_WARN([duneweb-directory seems to be wrong!])
 fi
-if test -d $with_duneweb ; then
+if test -d "$with_duneweb" ; then
   with_duneweb=`(cd $with_duneweb && pwd)` ;
 fi
 AC_SUBST(DUNEWEBDIR, $with_duneweb)
@@ -52,19 +52,19 @@ AC_SUBST(DUNEWEBDIR, $with_duneweb)
 AC_ARG_WITH(hostid,
   AC_HELP_STRING([--with-hostid=HOST_IDENTIFIER],
                  [host identifier used for automated test runs]))
-if test "x$with_hostid" == "xno" ; then
+if test "x$with_hostid" = "xno" ; then
   with_hostid="$ac_hostname ($(uname -sm), $COMPILER_NAME)";
 fi
 AC_SUBST(host, $with_hostid)
 AC_ARG_WITH(tag,
   AC_HELP_STRING([--with-tag=TAG],
                  [tag to use for automated test runs]))
-if test "x$with_tag" == "xno" ; then with_tag=foo; fi
+if test "x$with_tag" = "xno" ; then with_tag=foo; fi
 AC_SUBST(tag, $with_tag)
 AC_ARG_WITH(revision,
   AC_HELP_STRING([--with-revision=TAG],
                  [revision to use for automated test runs]))
-if test "x$with_revision" == "xno" ; then with_revision=bar; fi
+if test "x$with_revision" = "xno" ; then with_revision=bar; fi
 AC_SUBST(revision, $with_revision)
 
 echo
@@ -92,7 +92,7 @@ DUNE_PATH_PARMETIS
 # create symlink for consistent paths even when $(top_srcdir) is not
 # called dune/ (if filesystem/OS supports symlinks)
 AC_PROG_LN_S
-if test x"$LN_S" == x"ln -s" ; then
+if test x"$LN_S" = x"ln -s" ; then
   # Symlinks possible!
 
   # Note: we are currently in the build directory which may be != the
@@ -127,7 +127,7 @@ else
   # no symlinks possible... check name of directory
 
   # does dune-dir above exist and is it this directory?
-  if test -d ../dune && test `pwd` == `( cd ../dune && pwd)` ; then
+  if test -d ../dune && test `pwd` = `( cd ../dune && pwd)` ; then
     DIR=`(cd .. && pwd)`;
     # use directory above current dir in include-path
     AM_CPPFLAGS="-I$DIR";

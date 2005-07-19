@@ -30,7 +30,7 @@ ac_save_LIBS="$LIBS"
 ## do nothing if no --with-alberta was supplied
 if test x$with_alberta != x && test x$with_alberta != xno ; then
 
-  if test x$with_alberta == xyes ; then
+  if test x$with_alberta = xyes ; then
     AC_MSG_ERROR([You have to provide a directory --with-alberta=PATH])
   fi
 
