@@ -1418,6 +1418,7 @@ namespace Dune
     void setNewCoords(const FieldVector<albertCtype, dimworld> & trans, const albertCtype scalar);
 
     const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
+
     const LevelIndexSetType & levelIndexSet (int level= 0) const
     {
       if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSetType (*this,level);
@@ -1425,421 +1426,416 @@ namespace Dune
     }
 
     const LeafIndexSetType & leafIndexSet () const
-    {
-      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
-      return *leafIndexSet_;
-    }
-
-    LeafIndexSetType & leafIndexSet ()
-    {
-      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
-      return *leafIndexSet_;
-    }
-
-    //! access to mesh pointer, needed by some methods
-    ALBERTA MESH* getMesh () const { return mesh_; };
-
-    template <int cd>
-    AlbertaGridEntity<cd,dim,const AlbertaGrid<dim,dimworld> >&
-    getRealEntity(typename Traits::template Codim<cd>::Entity& entity)
-    {
-      return entity.realEntity;
-    }
-
-  private:
-    template <int cd>
-    const AlbertaGridEntity<cd,dim,const AlbertaGrid<dim,dimworld> >&
-    getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const
-    {
-      return entity.realEntity;
-    }
-
-  public:
-    //! create ghost cells
-    void createGhosts ();
-
-    //! get adaptation mark
-    template <class EntityType>
-    int getMark(const EntityType & ) const;
-
-    //! return processor number where entity is master
-    template <class EntityType>
-    int owner (const EntityType & ) const;
-
-    //! AlbertaGrid internal method for partitioning
-    //! set processor number of this entity
-    template <class EntityType>
-    bool partition( int proc , EntityType & );
-
-    //! unpack recieved ObjectStream
-    void unpackAll ( ObjectStreamType & os );
-
-    //! pack this entity and all chilcren to ObjectStream
-    template <class EntityType>
-    void packAll ( ObjectStreamType & os, EntityType & en );
-
-    //! pack this entity and all chilcren to ObjectStream
-    template <class EntityType>
-    void packBorder ( ObjectStreamType & os, EntityType & en );
-
-    // return true if macro element is ghost
-    bool isGhost( const ALBERTA MACRO_EL * mel) const;
-
-    // return true if element is neihter interior nor ghost
-    bool isNoElement( const ALBERTA MACRO_EL * mel) const;
-
-  private:
-    Array<int> ghostFlag_; // store ghost information
-
-    // initialize of some members
-    void initGrid(int proc);
-
-    // max global index in Grid
-    int maxHierIndex_[dim+1];
-
-    // make the calculation of indexOnLevel and so on.
-    // extra method because of Reihenfolge
-    void calcExtras();
-
-    // write ALBERTA mesh file
-    bool writeGridXdr  ( const std::basic_string<char> filename, albertCtype time ) const;
-
-    //! reads ALBERTA mesh file
-    bool readGridXdr   ( const std::basic_string<char> filename, albertCtype & time );
-
-    //! reads ALBERTA macro file
-    bool readGridAscii ( const std::basic_string<char> filename, albertCtype & time );
-
-    // delete mesh and all vectors
-    void removeMesh();
-
-    // pointer to an Albert Mesh, which contains the data
-    ALBERTA MESH *mesh_;
-
-    // number of maxlevel of the mesh
-    int maxlevel_;
-
-    // true if grid was refined or coarsend
-    bool wasChanged_;
-
-    // is true, if a least one entity is marked for coarsening
-    mutable bool isMarked_;
-
-    // set isMarked, isMarked is true if at least one entity is marked for
-    // coarsening
-    void setMark ( bool isMarked ) const;
-
-    // help vector for setNewCoords
-    mutable Array<int> macroVertices_;
-
-  public:
-    // this method is new fill_elinfo from ALBERTA but here the neighbor
-    // relations are calced diffrent, on ervery level there are neighbor
-    // realtions ( in ALBERTA only on leaf level ), so we needed a new
-    // fill_elinfo.
-    void fillElInfo(int ichild, int actLevel ,const ALBERTA EL_INFO *elinfo_old,
-                    ALBERTA EL_INFO *elinfo, bool hierachical, bool leaf=false ) const;
-
-    // calc the neigh[0]
-    void firstNeigh(const int ichild,const ALBERTA EL_INFO *elinfo_old,
-                    ALBERTA EL_INFO *elinfo, const bool leafLevel) const;
-
-    // calc the neigh[1]
-    void secondNeigh(const int ichild, const ALBERTA EL_INFO *elinfo_old,
-                     ALBERTA EL_INFO *elinfo, const bool leafLevel) const;
-
-    // calc the neigh[2]
-    void thirdNeigh(const int ichild, const ALBERTA EL_INFO *elinfo_old,
-                    ALBERTA EL_INFO *elinfo, const bool leafLevel) const;
-
-    // needed for VertexIterator, mark on which element a vertex is treated
-    AlbertaMarkerVector * vertexMarker_;
-
-  private:
-    //***********************************************************************
-    //  MemoryManagement for Entitys and Geometrys
-    //**********************************************************************
-    typedef AlbertaGridMakeableEntity<0,dim,const MyType>            EntityImp;
-    typedef AlbertaGridMakeableGeometry<dim-1,dimworld,const MyType> GeometryImp;
-    typedef AlbertaGridMakeableBoundaryEntity<const MyType> BoundaryImp;
-
-  public:
-    typedef AGMemoryProvider< EntityImp > EntityProvider;
-    typedef AGMemoryProvider< GeometryImp > IntersectionSelfProvider;
-    typedef AGMemoryProvider< GeometryImp > IntersectionNeighProvider;
-    typedef AGMemoryProvider< BoundaryImp > IntersectionBoundaryProvider;
-
-    mutable EntityProvider entityProvider_;
-    mutable IntersectionSelfProvider interSelfProvider_;
-    mutable IntersectionNeighProvider interNeighProvider_;
-    mutable IntersectionBoundaryProvider interBndProvider_;
-
-    template <int codim>
-    AlbertaGridMakeableEntity<codim,dim,const MyType> * getNewEntity (int level ) const
-    {
-      return new AlbertaGridMakeableEntity<codim,dim,const MyType> (*this,level);
-    }
-
-    template <int codim>
-    void freeEntity (AlbertaGridMakeableEntity<codim,dim,const MyType> * en) const
-    {
-      if(en) delete en;
-    }
-
-
-  private:
-    //*********************************************************************
-    // organisation of the global index
-    //*********************************************************************
-    // provides the indices for the elements
-    IndexManagerType indexStack_[AlbertHelp::numOfElNumVec];
-
-    // the DOF_INT_VECs we need
-    // * change to mutable here
-    mutable ALBERTA AlbertHelp::DOFVEC_STACK dofvecs_;
-
-    const ALBERTA DOF_ADMIN * elAdmin_;
-    // pointer to vec of elNumbers_
-    const int * elNewVec_;
-
-    // for access in the elNewVec and ownerVec
-    const int nv_;
-    const int dof_;
-
-    // make some shortcuts
-    void arrangeDofVec();
-
-  public:
-    // return true if el is new
-    bool checkElNew ( ALBERTA EL * el ) const;
-
-    // read global element number from elNumbers_
-    int getElementNumber ( ALBERTA EL * el ) const;
-
-    // read global element number from elNumbers_
-    int getEdgeNumber ( ALBERTA EL * el, int edge ) const;
-
-    // read global element number from elNumbers_
-    int getVertexNumber ( ALBERTA EL * el, int vx ) const;
-
-    //********************************************************************
-    //  organisation of the parallelisation
-    //********************************************************************
-
-    // set owner of element, for partioning
-    bool setOwner ( ALBERTA EL * el , int proc );
-
-    // return the processor number of element
-    int getOwner ( ALBERTA EL * el ) const;
-
-    // PartitionType (InteriorEntity , BorderEntity, GhostEntity )
-    PartitionType partitionType ( ALBERTA EL_INFO * elinfo) const;
-
-  private:
-
-    // pointer to vec  with processor number for each element,
-    // access via setOwner and getOwner
-    int * ownerVec_;
-
-    // rank of my thread, i.e. number of my processor
-    const int myRank_;
-
-    // the hierarchical numbering of AlbertaGrid, unique per codim and processor
-    AlbertaGridHierarchicIndexSet<dim,dimworld> hIndexSet_;
-
-    // the level index set, is generated from the HierarchicIndexSet
-    // is generated, when accessed
-    mutable std::vector < LevelIndexSetType * > levelIndexVec_;
-
-    // the leaf index set, is generated from the HierarchicIndexSet
-    // is generated, when accessed
-    mutable LeafIndexSetType * leafIndexSet_;
-
-  }; // end Class AlbertaGridGrid
-
-  template <class GridType, int dim> struct MarkEdges;
-
-  template <int dim, int dimworld>
-  class AlbertaGridHierarchicIndexSet
-  {
-    typedef AlbertaGrid<dim,dimworld> GridType;
-    typedef typename GridType :: Traits :: template Codim<0>::Entity EntityCodim0Type;
-    enum { numVecs  = AlbertHelp::numOfElNumVec };
-    enum { numCodim = dim + 1 };
-
-    template <int cd>
-    struct Codim
-    {
-      typedef AlbertaGridEntity<cd,dim,const GridType> RealEntityType;
-      typedef typename Dune::Entity<cd,dim,const GridType,AlbertaGridEntity> EntityType;
-    };
-
-    // all classes that are allowed to call private functions
-    friend class AlbertaGrid<dim,dimworld>;
-    friend class MarkEdges<GridType,3>;
-    friend class MarkEdges<const GridType,3>;
-
-  public:
-    AlbertaGridHierarchicIndexSet(const GridType & grid , const int (& s)[numCodim])
-      : grid_( grid ), size_(s) {}
-
-    template <class EntityType>
-    int index (const EntityType & ep) const
-    {
-      enum { cd = EntityType :: codimension };
-      const AlbertaGridEntity<cd,dim,const GridType> & en = (grid_.template getRealEntity<cd>(ep));
-      return getIndex(en.getElInfo()->el, en.getFEVnum(),Int2Type<dim-cd>());
-    }
-
-    template <int cd>
-    int subIndex (const EntityCodim0Type & en, int i) const
-    {
-      assert(cd == dim);
-      return getIndex((grid_.template getRealEntity<0>(en)).getElInfo()->el
-                      ,i,Int2Type<dim-cd>());
-    }
-
-    int size ( int codim ) const
-    {
-      assert(size_[codim] >= 0);
-      return size_[codim];
-    }
-
-  private:
-    const GridType & grid_;
-    const int * elNumVec_[numVecs];
-    const int (& size_)[numCodim];
-    int nv_[numVecs];
-    int dof_[numVecs];
-
-    // update vec pointer of the DOF_INT_VECs, which can change during resize
-    void updatePointers(ALBERTA AlbertHelp::DOFVEC_STACK & dofvecs)
-    {
-      for(int i=0; i<numVecs; i++)
-      {
-        elNumVec_[i] = (dofvecs.elNumbers[i])->vec;
-        assert(elNumVec_[i]);
-      }
-
-      setDofIdentifier<0> (dofvecs);
-      if(numVecs > 1) setDofIdentifier<1> (dofvecs);
-      if(numVecs > 2) setDofIdentifier<2> (dofvecs);
-      if(numVecs > 3) setDofIdentifier<3> (dofvecs);
-    }
-
-    template <int cd>
-    void setDofIdentifier (ALBERTA AlbertHelp::DOFVEC_STACK & dofvecs)
-    {
-      const ALBERTA DOF_ADMIN * elAdmin_ = dofvecs.elNumbers[cd]->fe_space->admin;
-      // see Albert Doc. , should stay the same
-
-      nv_ [cd] = elAdmin_->n0_dof    [ALBERTA AlbertHelp::AlbertaDofType<cd>::type];
-      dof_[cd] = elAdmin_->mesh->node[ALBERTA AlbertHelp::AlbertaDofType<cd>::type];
-    }
-
-    // codim = 0 means we get from dim-cd = dim
-    int getIndex ( const ALBERTA EL * el, int i , Int2Type<dim> fake ) const
-    {
-      enum { cd = 0 };
-      assert(el);
-      return elNumVec_[cd][ el->dof[ dof_[cd] ][nv_[cd]] ];
-    }
-
-    enum { cd1 = (dim > 1) ? 1 : 5 };
-    // codim = 0 means we get from dim-cd = dim
-    int getIndex ( const ALBERTA EL * el, int i , Int2Type<cd1> fake ) const
-    {
-      enum { cd = 1 };
-      assert(el);
-      // dof_[cd] marks the insertion point form which this dofs start
-      // then i is the i-th dof
-      return elNumVec_[cd][ el->dof[ dof_[cd] + i ][ nv_[cd] ] ];
-
-      //int idx = elNumVec_[cd][ el->dof[ dof_[cd]+i ][nv_[cd]] ];
-      //return idx;
-    }
-
-    enum { cd2 = (dim > 2) ? 2 : 6 };
-    // codim = 0 means we get from dim-cd = dim
-    // this method we have only in 3d
-    int getIndex ( const ALBERTA EL * el, int i , Int2Type<cd2> fake ) const
-    {
-      enum { cd = 2 };
-      assert(el);
-      // dof_[cd] marks the insertion point form which this dofs start
-      // then i is the i-th dof
-      //return elNumVec_[cd][ el->dof[ dof_[cd] + i ][ nv_[cd] ] ];
-      return 0;
-    }
-
-    // codim = dim  means we get from dim-cd = 0
-    int getIndex ( const ALBERTA EL * el, int i , Int2Type<0> fake ) const
-    {
-      assert(el);
-      return (el->dof[i][0]);
-    }
-
-    // codim = dim  means we get from dim-cd = 0
-    int getIndex ( const ALBERTA EL * el, int i , Int2Type<-1> fake ) const
-    {
-      assert(false);
-      DUNE_THROW(AlbertaError,"Error, wrong codimension!\n");
-      return -1;
-    }
-
-  };
-
-
-  // Class to mark the Vertices on the leaf level
-  // to visit every vertex only once
-  // for the LevelIterator codim == dim
-  class AlbertaMarkerVector
-  {
-    friend class AlbertaGrid<2,2>;
-    friend class AlbertaGrid<2,3>;
-    friend class AlbertaGrid<3,3>;
-
-    enum { MAXL = 64 };
-    enum { vxBufferSize_ = 10000 };
-  public:
-    AlbertaMarkerVector () : up2Date_(false) {} ;
-
-    bool notOnThisElement(ALBERTA EL * el, int elIndex, int level , int vertex);
-    bool edgeNotOnElement(ALBERTA EL * el, int elIndex, int level , int edgenum);
-
-    template <class GridType>
-    void markNewVertices(GridType &grid);
-
-    bool up2Date () const { return up2Date_; }
-    void unsetUp2Date () { up2Date_ = false; }
-
-    void print();
-
-  private:
-    // built in array to mark on which element a vertex is reached
-    Array<int> vec_[MAXL];
-    Array<int> edgevec_[MAXL];
-    // number of vertices
-    int numVertex_;
-
-    // true is vertex marker is up to date
-    bool up2Date_;
-  };
-
-  namespace Capabilities
-  {
-    template<int dim,int dimw>
-    struct hasLeafIterator< AlbertaGrid<dim,dimw> >
-    {
-      static const bool v = true;
-    };
-
-    template<int dim, int dimw, int cdim>
-    struct hasEntity< AlbertaGrid<dim,dimw>, cdim>
-    {
-      static const bool v = true;
-    };
+    if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
+    return *leafIndexSet_;
   }
+
+  //! access to mesh pointer, needed by some methods
+  ALBERTA MESH* getMesh () const {
+    return mesh_;
+  };
+
+  template <int cd>
+  AlbertaGridEntity<cd,dim,const AlbertaGrid<dim,dimworld> >&
+  getRealEntity(typename Traits::template Codim<cd>::Entity& entity)
+  {
+    return entity.realEntity;
+  }
+
+private:
+  template <int cd>
+  const AlbertaGridEntity<cd,dim,const AlbertaGrid<dim,dimworld> >&
+  getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const
+  {
+    return entity.realEntity;
+  }
+
+public:
+  //! create ghost cells
+  void createGhosts ();
+
+  //! get adaptation mark
+  template <class EntityType>
+  int getMark(const EntityType & ) const;
+
+  //! return processor number where entity is master
+  template <class EntityType>
+  int owner (const EntityType & ) const;
+
+  //! AlbertaGrid internal method for partitioning
+  //! set processor number of this entity
+  template <class EntityType>
+  bool partition( int proc , EntityType & );
+
+  //! unpack recieved ObjectStream
+  void unpackAll ( ObjectStreamType & os );
+
+  //! pack this entity and all chilcren to ObjectStream
+  template <class EntityType>
+  void packAll ( ObjectStreamType & os, EntityType & en );
+
+  //! pack this entity and all chilcren to ObjectStream
+  template <class EntityType>
+  void packBorder ( ObjectStreamType & os, EntityType & en );
+
+  // return true if macro element is ghost
+  bool isGhost( const ALBERTA MACRO_EL * mel) const;
+
+  // return true if element is neihter interior nor ghost
+  bool isNoElement( const ALBERTA MACRO_EL * mel) const;
+
+private:
+  Array<int> ghostFlag_; // store ghost information
+
+  // initialize of some members
+  void initGrid(int proc);
+
+  // max global index in Grid
+  int maxHierIndex_[dim+1];
+
+  // make the calculation of indexOnLevel and so on.
+  // extra method because of Reihenfolge
+  void calcExtras();
+
+  // write ALBERTA mesh file
+  bool writeGridXdr  ( const std::basic_string<char> filename, albertCtype time ) const;
+
+  //! reads ALBERTA mesh file
+  bool readGridXdr   ( const std::basic_string<char> filename, albertCtype & time );
+
+  //! reads ALBERTA macro file
+  bool readGridAscii ( const std::basic_string<char> filename, albertCtype & time );
+
+  // delete mesh and all vectors
+  void removeMesh();
+
+  // pointer to an Albert Mesh, which contains the data
+  ALBERTA MESH *mesh_;
+
+  // number of maxlevel of the mesh
+  int maxlevel_;
+
+  // true if grid was refined or coarsend
+  bool wasChanged_;
+
+  // is true, if a least one entity is marked for coarsening
+  mutable bool isMarked_;
+
+  // set isMarked, isMarked is true if at least one entity is marked for
+  // coarsening
+  void setMark ( bool isMarked ) const;
+
+  // help vector for setNewCoords
+  mutable Array<int> macroVertices_;
+
+public:
+  // this method is new fill_elinfo from ALBERTA but here the neighbor
+  // relations are calced diffrent, on ervery level there are neighbor
+  // realtions ( in ALBERTA only on leaf level ), so we needed a new
+  // fill_elinfo.
+  void fillElInfo(int ichild, int actLevel ,const ALBERTA EL_INFO *elinfo_old,
+                  ALBERTA EL_INFO *elinfo, bool hierachical, bool leaf=false ) const;
+
+  // calc the neigh[0]
+  void firstNeigh(const int ichild,const ALBERTA EL_INFO *elinfo_old,
+                  ALBERTA EL_INFO *elinfo, const bool leafLevel) const;
+
+  // calc the neigh[1]
+  void secondNeigh(const int ichild, const ALBERTA EL_INFO *elinfo_old,
+                   ALBERTA EL_INFO *elinfo, const bool leafLevel) const;
+
+  // calc the neigh[2]
+  void thirdNeigh(const int ichild, const ALBERTA EL_INFO *elinfo_old,
+                  ALBERTA EL_INFO *elinfo, const bool leafLevel) const;
+
+  // needed for VertexIterator, mark on which element a vertex is treated
+  AlbertaMarkerVector * vertexMarker_;
+
+private:
+  //***********************************************************************
+  //  MemoryManagement for Entitys and Geometrys
+  //**********************************************************************
+  typedef AlbertaGridMakeableEntity<0,dim,const MyType>            EntityImp;
+  typedef AlbertaGridMakeableGeometry<dim-1,dimworld,const MyType> GeometryImp;
+  typedef AlbertaGridMakeableBoundaryEntity<const MyType> BoundaryImp;
+
+public:
+  typedef AGMemoryProvider< EntityImp > EntityProvider;
+  typedef AGMemoryProvider< GeometryImp > IntersectionSelfProvider;
+  typedef AGMemoryProvider< GeometryImp > IntersectionNeighProvider;
+  typedef AGMemoryProvider< BoundaryImp > IntersectionBoundaryProvider;
+
+  mutable EntityProvider entityProvider_;
+  mutable IntersectionSelfProvider interSelfProvider_;
+  mutable IntersectionNeighProvider interNeighProvider_;
+  mutable IntersectionBoundaryProvider interBndProvider_;
+
+  template <int codim>
+  AlbertaGridMakeableEntity<codim,dim,const MyType> * getNewEntity (int level ) const
+  {
+    return new AlbertaGridMakeableEntity<codim,dim,const MyType> (*this,level);
+  }
+
+  template <int codim>
+  void freeEntity (AlbertaGridMakeableEntity<codim,dim,const MyType> * en) const
+  {
+    if(en) delete en;
+  }
+
+
+private:
+  //*********************************************************************
+  // organisation of the global index
+  //*********************************************************************
+  // provides the indices for the elements
+  IndexManagerType indexStack_[AlbertHelp::numOfElNumVec];
+
+  // the DOF_INT_VECs we need
+  // * change to mutable here
+  mutable ALBERTA AlbertHelp::DOFVEC_STACK dofvecs_;
+
+  const ALBERTA DOF_ADMIN * elAdmin_;
+  // pointer to vec of elNumbers_
+  const int * elNewVec_;
+
+  // for access in the elNewVec and ownerVec
+  const int nv_;
+  const int dof_;
+
+  // make some shortcuts
+  void arrangeDofVec();
+
+public:
+  // return true if el is new
+  bool checkElNew ( ALBERTA EL * el ) const;
+
+  // read global element number from elNumbers_
+  int getElementNumber ( ALBERTA EL * el ) const;
+
+  // read global element number from elNumbers_
+  int getEdgeNumber ( ALBERTA EL * el, int edge ) const;
+
+  // read global element number from elNumbers_
+  int getVertexNumber ( ALBERTA EL * el, int vx ) const;
+
+  //********************************************************************
+  //  organisation of the parallelisation
+  //********************************************************************
+
+  // set owner of element, for partioning
+  bool setOwner ( ALBERTA EL * el , int proc );
+
+  // return the processor number of element
+  int getOwner ( ALBERTA EL * el ) const;
+
+  // PartitionType (InteriorEntity , BorderEntity, GhostEntity )
+  PartitionType partitionType ( ALBERTA EL_INFO * elinfo) const;
+
+private:
+
+  // pointer to vec  with processor number for each element,
+  // access via setOwner and getOwner
+  int * ownerVec_;
+
+  // rank of my thread, i.e. number of my processor
+  const int myRank_;
+
+  // the hierarchical numbering of AlbertaGrid, unique per codim and processor
+  AlbertaGridHierarchicIndexSet<dim,dimworld> hIndexSet_;
+
+  // the level index set, is generated from the HierarchicIndexSet
+  // is generated, when accessed
+  mutable std::vector < LevelIndexSetType * > levelIndexVec_;
+
+  // the leaf index set, is generated from the HierarchicIndexSet
+  // is generated, when accessed
+  mutable LeafIndexSetType * leafIndexSet_;
+
+}; // end Class AlbertaGridGrid
+
+template <class GridType, int dim> struct MarkEdges;
+
+template <int dim, int dimworld>
+class AlbertaGridHierarchicIndexSet
+{
+  typedef AlbertaGrid<dim,dimworld> GridType;
+  typedef typename GridType :: Traits :: template Codim<0>::Entity EntityCodim0Type;
+  enum { numVecs  = AlbertHelp::numOfElNumVec };
+  enum { numCodim = dim + 1 };
+
+  template <int cd>
+  struct Codim
+  {
+    typedef AlbertaGridEntity<cd,dim,const GridType> RealEntityType;
+    typedef typename Dune::Entity<cd,dim,const GridType,AlbertaGridEntity> EntityType;
+  };
+
+  // all classes that are allowed to call private functions
+  friend class AlbertaGrid<dim,dimworld>;
+  friend class MarkEdges<GridType,3>;
+  friend class MarkEdges<const GridType,3>;
+
+public:
+  AlbertaGridHierarchicIndexSet(const GridType & grid , const int (& s)[numCodim])
+    : grid_( grid ), size_(s) {}
+
+  template <class EntityType>
+  int index (const EntityType & ep) const
+  {
+    enum { cd = EntityType :: codimension };
+    const AlbertaGridEntity<cd,dim,const GridType> & en = (grid_.template getRealEntity<cd>(ep));
+    return getIndex(en.getElInfo()->el, en.getFEVnum(),Int2Type<dim-cd>());
+  }
+
+  template <int cd>
+  int subIndex (const EntityCodim0Type & en, int i) const
+  {
+    assert(cd == dim);
+    return getIndex((grid_.template getRealEntity<0>(en)).getElInfo()->el
+                    ,i,Int2Type<dim-cd>());
+  }
+
+  int size (int codim) const
+  {
+    assert(size_[codim] >= 0);
+    return size_[codim];
+  }
+
+private:
+  const GridType & grid_;
+  const int * elNumVec_[numVecs];
+  const int (& size_)[numCodim];
+  int nv_[numVecs];
+  int dof_[numVecs];
+
+  // update vec pointer of the DOF_INT_VECs, which can change during resize
+  void updatePointers(ALBERTA AlbertHelp::DOFVEC_STACK & dofvecs)
+  {
+    for(int i=0; i<numVecs; i++)
+    {
+      elNumVec_[i] = (dofvecs.elNumbers[i])->vec;
+      assert(elNumVec_[i]);
+    }
+
+    setDofIdentifier<0> (dofvecs);
+    if(numVecs > 1) setDofIdentifier<1> (dofvecs);
+    if(numVecs > 2) setDofIdentifier<2> (dofvecs);
+    if(numVecs > 3) setDofIdentifier<3> (dofvecs);
+  }
+
+  template <int cd>
+  void setDofIdentifier (ALBERTA AlbertHelp::DOFVEC_STACK & dofvecs)
+  {
+    const ALBERTA DOF_ADMIN * elAdmin_ = dofvecs.elNumbers[cd]->fe_space->admin;
+    // see Albert Doc. , should stay the same
+
+    nv_ [cd] = elAdmin_->n0_dof    [ALBERTA AlbertHelp::AlbertaDofType<cd>::type];
+    dof_[cd] = elAdmin_->mesh->node[ALBERTA AlbertHelp::AlbertaDofType<cd>::type];
+  }
+
+  // codim = 0 means we get from dim-cd = dim
+  int getIndex ( const ALBERTA EL * el, int i , Int2Type<dim> fake ) const
+  {
+    enum { cd = 0 };
+    assert(el);
+    return elNumVec_[cd][ el->dof[ dof_[cd] ][nv_[cd]] ];
+  }
+
+  enum { cd1 = (dim > 1) ? 1 : 5 };
+  // codim = 0 means we get from dim-cd = dim
+  int getIndex ( const ALBERTA EL * el, int i , Int2Type<cd1> fake ) const
+  {
+    enum { cd = 1 };
+    assert(el);
+    // dof_[cd] marks the insertion point form which this dofs start
+    // then i is the i-th dof
+    return elNumVec_[cd][ el->dof[ dof_[cd] + i ][ nv_[cd] ] ];
+
+    //int idx = elNumVec_[cd][ el->dof[ dof_[cd]+i ][nv_[cd]] ];
+    //return idx;
+  }
+
+  enum { cd2 = (dim > 2) ? 2 : 6 };
+  // codim = 0 means we get from dim-cd = dim
+  // this method we have only in 3d
+  int getIndex ( const ALBERTA EL * el, int i , Int2Type<cd2> fake ) const
+  {
+    enum { cd = 2 };
+    assert(el);
+    // dof_[cd] marks the insertion point form which this dofs start
+    // then i is the i-th dof
+    //return elNumVec_[cd][ el->dof[ dof_[cd] + i ][ nv_[cd] ] ];
+    return 0;
+  }
+
+  // codim = dim  means we get from dim-cd = 0
+  int getIndex ( const ALBERTA EL * el, int i , Int2Type<0> fake ) const
+  {
+    assert(el);
+    return (el->dof[i][0]);
+  }
+
+  // codim = dim  means we get from dim-cd = 0
+  int getIndex ( const ALBERTA EL * el, int i , Int2Type<-1> fake ) const
+  {
+    assert(false);
+    DUNE_THROW(AlbertaError,"Error, wrong codimension!\n");
+    return -1;
+  }
+
+};
+
+
+// Class to mark the Vertices on the leaf level
+// to visit every vertex only once
+// for the LevelIterator codim == dim
+class AlbertaMarkerVector
+{
+  friend class AlbertaGrid<2,2>;
+  friend class AlbertaGrid<2,3>;
+  friend class AlbertaGrid<3,3>;
+
+  enum { MAXL = 64 };
+  enum { vxBufferSize_ = 10000 };
+public:
+  AlbertaMarkerVector () : up2Date_(false) {} ;
+
+  bool notOnThisElement(ALBERTA EL * el, int elIndex, int level , int vertex);
+  bool edgeNotOnElement(ALBERTA EL * el, int elIndex, int level , int edgenum);
+
+  template <class GridType>
+  void markNewVertices(GridType &grid);
+
+  bool up2Date () const { return up2Date_; }
+  void unsetUp2Date () { up2Date_ = false; }
+
+  void print();
+
+private:
+  // built in array to mark on which element a vertex is reached
+  Array<int> vec_[MAXL];
+  Array<int> edgevec_[MAXL];
+  // number of vertices
+  int numVertex_;
+
+  // true is vertex marker is up to date
+  bool up2Date_;
+};
+
+namespace Capabilities
+{
+  template<int dim,int dimw>
+  struct hasLeafIterator< AlbertaGrid<dim,dimw> >
+  {
+    static const bool v = true;
+  };
+
+  template<int dim, int dimw, int cdim>
+  struct hasEntity< AlbertaGrid<dim,dimw>, cdim>
+  {
+    static const bool v = true;
+  };
+}
 
 }; // namespace Dune
 
