@@ -122,12 +122,6 @@ namespace Dune {
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<UGCtype, coorddim>& operator[] (int i) const;
 
-    /** \brief Return reference element corresponding to this element.
-     */
-    static const Dune::Geometry<mydim,mydim,GridImp,Dune::UGGridGeometry>& refelem () {
-      DUNE_THROW(NotImplemented, "Calling unimplemented method UGGridGeometry::refelem()");
-    }
-
     /** \brief Maps a local coordinate within reference element to
      * global coordinate in element  */
     FieldVector<UGCtype, coorddim> global (const FieldVector<UGCtype, mydim>& local) const;
@@ -218,12 +212,6 @@ namespace Dune {
       return coord_[i];
     }
 
-    /*! return reference element corresponding to this element.
-     */
-    static const Dune::Geometry<2,2,GridImp,Dune::UGGridGeometry>& refelem () {
-      DUNE_THROW(NotImplemented, "UGGridGeometry<2,2>::refelem()");
-    }
-
     //! maps a local coordinate within reference element to
     //! global coordinate in element
     FieldVector<UGCtype, 3> global (const FieldVector<UGCtype, 2>& local) const;
@@ -300,13 +288,6 @@ namespace Dune {
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<UGCtype, 2>& operator[] (int i) const {
       return coord_[i];
-    }
-
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned.
-     */
-    static const Geometry<1,1,GridImp,Dune::UGGridGeometry>& refelem () {
-      DUNE_THROW(NotImplemented, "UGGridGeometry<1,1>::refelem()");
     }
 
     //! maps a local coordinate within reference element to
