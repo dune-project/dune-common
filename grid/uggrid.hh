@@ -13,6 +13,7 @@
 
 // All UG includes have to be includes via the file ugincludes.hh
 // for easier parsing by undefAllMacros.pl
+/** \todo Defining __PC__ here is certainly not the perfect way... */
 #define __PC__  // hack:  choose the architecture
 #include "uggrid/ugincludes.hh"
 #undef __PC__
@@ -185,19 +186,27 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim>
-    typename Traits::template Codim<codim>::LeafIterator leafbegin() const;
+    typename Traits::template Codim<codim>::LeafIterator leafbegin() const {
+      DUNE_THROW(NotImplemented, "leafbegin not implemented");
+    }
 
     //! one past the end on this level
     template<int codim>
-    typename Traits::template Codim<codim>::LeafIterator leafend() const;
+    typename Traits::template Codim<codim>::LeafIterator leafend() const {
+      DUNE_THROW(NotImplemented, "leafend not implemented");
+    }
 
     //! Iterator to first entity of given codim on level
     template<int codim, PartitionIteratorType PiType>
-    typename Traits::template Codim<codim>::template partition<PiType>::LeafIterator leafbegin() const;
+    typename Traits::template Codim<codim>::template partition<PiType>::LeafIterator leafbegin() const {
+      DUNE_THROW(NotImplemented, "leafbegin not implemented");
+    }
 
     //! one past the end on this level
     template<int codim, PartitionIteratorType PiType>
-    typename Traits::template Codim<codim>::template partition<PiType>::LeafIterator leafend() const;
+    typename Traits::template Codim<codim>::template partition<PiType>::LeafIterator leafend() const {
+      DUNE_THROW(NotImplemented, "leafend not implemented");
+    }
 
     /** \brief Number of grid entities per level and codim
      */
