@@ -232,12 +232,13 @@ template<int dim, class GridImp>
 inline UGGridIntersectionIterator<GridImp>
 UGGridEntity < 0, dim ,GridImp >::ibegin() const
 {
+#if 0
   UGGridIntersectionIterator<GridImp> it;
 
   // Set intersection iterator to zeroth neighbor of target_
   it.setToTarget(target_, 0, level());
-
-  return it;
+#endif
+  return UGGridIntersectionIterator<GridImp>(target_, 0, level());
 }
 
 
@@ -245,11 +246,12 @@ template< int dim, class GridImp>
 inline UGGridIntersectionIterator<GridImp>
 UGGridEntity < 0, dim ,GridImp >::iend() const
 {
+#if 0
   UGGridIntersectionIterator<GridImp> it;
 
   it.setToTarget(target_, -1);
-
-  return it;
+#endif
+  return UGGridIntersectionIterator<GridImp>(target_, -1, -1);
 }
 
 template<int dim, class GridImp>

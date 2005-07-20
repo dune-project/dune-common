@@ -1,17 +1,16 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+#if 0
 template<class GridImp>
 inline UGGridIntersectionIterator<GridImp>::
 UGGridIntersectionIterator() : center_(0), neighborCount_(-1)
 {}
+#endif
 
 template< class GridImp>
 inline typename TargetType<0,GridImp::dimensionworld>::T* UGGridIntersectionIterator<GridImp>::
 target() const
 {
-  if (!isValid())
-    return center_;
-
   return UG_NS<dimworld>::NbElem(center_, neighborCount_);
 }
 
@@ -34,32 +33,22 @@ setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb, i
   this->virtualEntity_.setToTarget(target(), level);
 }
 
-template< class GridImp>
-inline bool
-UGGridIntersectionIterator<GridImp>::
-isValid() const
-{
-  return center_
-         && neighborCount_ >=0
-         && neighborCount_ < UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(center_);
-}
-
 template<class GridImp>
 inline bool UGGridIntersectionIterator< GridImp >::neighbor() const
 {
-  return UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_) != NULL;
+  return UG_NS<GridImp::dimension>::NbElem(centerAddress_, neighborCount_) != NULL;
 }
 
 template<class GridImp>
 inline bool
 UGGridIntersectionIterator<GridImp>::boundary() const
 {
-  return UG_NS<GridImp::dimension>::Side_On_Bnd(center_, neighborCount_);
+  return UG_NS<GridImp::dimension>::Side_On_Bnd(centerAddress_, neighborCount_);
 }
 
 template<class GridImp>
-inline FieldVector<typename GridImp::ctype, GridImp::dimensionworld>&
-UGGridIntersectionIterator <GridImp>::outerNormal () const
+inline const FieldVector<typename GridImp::ctype, GridImp::dimensionworld>&
+UGGridIntersectionIterator <GridImp>::outerNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const
 {
   // //////////////////////////////////////////////////////
   //   Implementation for 3D
@@ -68,9 +57,9 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 #ifdef _3
   // Get the first three vertices of this side.  Since quadrilateral faces
   // are plane in UG, the normal doesn't depend on the fourth vertex
-  const UGCtype* aPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
-  const UGCtype* bPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
-  const UGCtype* cPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
+  const UGCtype* aPos = UG_NS<3>::Corner(centerAddress_,UG_NS<3>::Corner_Of_Side(centerAddress_, neighborCount_, 0))->myvertex->iv.x;
+  const UGCtype* bPos = UG_NS<3>::Corner(centerAddress_,UG_NS<3>::Corner_Of_Side(centerAddress_, neighborCount_, 1))->myvertex->iv.x;
+  const UGCtype* cPos = UG_NS<3>::Corner(centerAddress_,UG_NS<3>::Corner_Of_Side(centerAddress_, neighborCount_, 2))->myvertex->iv.x;
 
   FieldVector<UGCtype, 3> ba, ca;
 
@@ -91,8 +80,8 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 
 #ifdef _2
   // Get the vertices of this side.
-  const UGCtype* aPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
-  const UGCtype* bPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
+  const UGCtype* aPos = UG_NS<2>::Corner(centerAddress_,UG_NS<2>::Corner_Of_Side(centerAddress_, neighborCount_, 0))->myvertex->iv.x;
+  const UGCtype* bPos = UG_NS<2>::Corner(centerAddress_,UG_NS<2>::Corner_Of_Side(centerAddress_, neighborCount_, 1))->myvertex->iv.x;
 
   // compute normal
   outerNormal_[0] = bPos[1] - aPos[1];
@@ -100,14 +89,6 @@ UGGridIntersectionIterator <GridImp>::outerNormal () const
 
 #endif
   return outerNormal_;
-}
-
-template<class GridImp>
-inline FieldVector<typename GridImp::ctype, GridImp::dimensionworld>&
-UGGridIntersectionIterator < GridImp >::
-outerNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const
-{
-  return outerNormal();
 }
 
 template< class GridImp>
@@ -124,15 +105,15 @@ inline typename UGGridIntersectionIterator<GridImp>::Geometry&
 UGGridIntersectionIterator<GridImp>::
 intersectionGlobal() const
 {
-  int numCornersOfSide = UG_NS<GridImp::dimensionworld>::Corners_Of_Side(center_, neighborCount_);
+  int numCornersOfSide = UG_NS<GridImp::dimensionworld>::Corners_Of_Side(centerAddress_, neighborCount_);
 
   //std::cout << "Element side has " << numCornersOfSide << " corners" << std::endl;
   neighGlob_.setNumberOfCorners(numCornersOfSide);
 
   for (int i=0; i<numCornersOfSide; i++) {
 
-    int cornerIdx = UG_NS<GridImp::dimensionworld>::Corner_Of_Side(center_, neighborCount_, i);
-    typename TargetType<dim,dim>::T* node = UG_NS<GridImp::dimensionworld>::Corner(center_, cornerIdx);
+    int cornerIdx = UG_NS<GridImp::dimensionworld>::Corner_Of_Side(centerAddress_, neighborCount_, i);
+    typename TargetType<dim,dim>::T* node = UG_NS<GridImp::dimensionworld>::Corner(centerAddress_, cornerIdx);
 
     /** \todo Avoid the temporary */
     FieldVector<UGCtype, dimworld> tmp;
@@ -158,7 +139,7 @@ template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
 numberInSelf ()  const
 {
-  const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);
+  const int nSides = UG_NS<dimworld>::Sides_Of_Elem(centerAddress_);
 #ifdef _3
   if (nSides==6) {   // Hexahedron
     // Dune numbers the faces of a hexahedron differently than UG.
@@ -198,13 +179,4 @@ numberInNeighbor () const
       break;
 
   return (i+nSides-1)%nSides;
-}
-
-template<class GridImp>
-inline
-const UGGridBoundaryEntity<GridImp>&
-UGGridIntersectionIterator<GridImp>::
-boundaryEntity () const
-{
-  return boundaryEntity_;
 }

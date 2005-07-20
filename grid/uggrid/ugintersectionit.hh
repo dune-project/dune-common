@@ -23,7 +23,6 @@ namespace Dune {
    */
   template<class GridImp>
   class UGGridIntersectionIterator :
-    public Dune::UGGridEntityPointer <0,GridImp>,
     public IntersectionIteratorDefault <GridImp,UGGridIntersectionIterator>
   {
 
@@ -38,19 +37,53 @@ namespace Dune {
 
   public:
 
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
+    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     typedef typename GridImp::template Codim<0>::Entity Entity;
 
-    //! The default Constructor makes empty Iterator
-    UGGridIntersectionIterator();
+    /** The default Constructor makes empty Iterator
+        \todo Should be private
+     */
+    UGGridIntersectionIterator(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb, int level)
+      : center_(UGGridEntityPointer<0,GridImp>()), centerAddress_(center), neighborCount_(nb)
+    {
+      //center_.setToTarget(center, level);
+    }
 
     //! The Destructor
     ~UGGridIntersectionIterator() {};
 
+    //! ask for level of intersection
+    int level () const {
+      DUNE_THROW(NotImplemented, "level()");
+      return center_.level();
+    }
+
+    //! equality
+    bool equals(const UGGridIntersectionIterator<GridImp>& i) const {
+      return centerAddress_==i.centerAddress_ && neighborCount_ == i.neighborCount_;
+    }
+
     //! prefix increment
     void increment() {
-      setToTarget(center_, neighborCount_+1);
+      neighborCount_++;
+      if (neighborCount_ >= UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(centerAddress_))
+        neighborCount_ = -1;
+    }
+
+    //! return EntityPointer to the Entity on the inside of this intersection
+    //! (that is the Entity where we started this Iterator)
+    EntityPointer inside() const {
+      DUNE_THROW(NotImplemented, "inside() not implemented yet");
+      return center_;
+    }
+
+    //! return EntityPointer to the Entity on the outside of this intersection
+    //! (that is the neighboring Entity)
+    EntityPointer outside() const {
+      DUNE_THROW(NotImplemented, "outside() not implemented yet");
     }
 
     //! return true if intersection is with boundary. \todo connection with
@@ -61,7 +94,9 @@ namespace Dune {
     bool neighbor () const;
 
     //! return information about the Boundary
-    const UGGridBoundaryEntity<GridImp> & boundaryEntity () const;
+    const BoundaryEntity& boundaryEntity () const {
+      return boundaryEntity_;
+    }
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
@@ -85,10 +120,7 @@ namespace Dune {
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<UGCtype, GridImp::dimensionworld>& outerNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const;
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<UGCtype, GridImp::dimensionworld>& outerNormal () const;
+    const FieldVector<UGCtype, GridImp::dimensionworld>& outerNormal (const FieldVector<UGCtype, GridImp::dimension-1>& local) const;
 
   private:
     //**********************************************************
@@ -106,9 +138,6 @@ namespace Dune {
      * and set the level as well */
     void setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb, int level);
 
-    //! Returns true if the iterator represents an actual intersection
-    bool isValid() const;
-
     //! vector storing the outer normal
     mutable FieldVector<UGCtype, dimworld> outerNormal_;
 
@@ -124,7 +153,10 @@ namespace Dune {
     UGGridBoundaryEntity<GridImp> boundaryEntity_;
 
     //! The element whose neighbors we are looking at
-    typename TargetType<0,dimworld>::T* center_;
+    EntityPointer center_;
+
+    //! This points to the same UG element as center_ does
+    typename TargetType<0,GridImp::dimensionworld>::T* centerAddress_;
 
     //! count on which neighbor we are lookin' at
     int neighborCount_;
