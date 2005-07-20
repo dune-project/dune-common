@@ -52,6 +52,8 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 #      AC_LANG_PUSH([C++])
       
       # if header is found check for the libs
+
+      LIBS="$MPILIBS $MPI_LDFLAGS"
       
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_CHECK_LIB(metis, [metis_partgraphkway],[
@@ -64,7 +66,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_CHECK_LIB(parmetis, [parmetis_v3_partkway],[
-		  PARMETIS_LIBS="$MPILIBS -lparmetis -lmetis"
+		  PARMETIS_LIBS="-lparmetis -lmetis $MPILIBS $MPI_LDFLAGS"
 		  PARMETIS_LDFLAGS="$MPI_LDFLAGS -L$PARMETIS_LIB_PATH"
 		  LIBS="$LIBS $PARMETIS_LIBS"],[
 		  HAVE_PARMETIS="0"
