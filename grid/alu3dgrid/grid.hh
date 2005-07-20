@@ -201,6 +201,22 @@ namespace Dune {
     //! one past the end on this leaf level (codim 0 and All_Partition)
     LeafIteratorType leafend (int level) const;
 
+    //! General definiton for a leaf iterator
+    template <int codim, PartitionIteratorType pitype>
+    Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+    leafbegin() const;
+
+    //! General definition for an end iterator on leaf level
+    template <int codim, PartitionIteratorType pitype>
+    Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+    leafend() const;
+
+    //! Iterator to first entity of codim 0 on leaf level (All_Partition)
+    LeafIteratorType leafbegin () const;
+
+    //! one past the end on this leaf level (codim 0 and All_Partition)
+    LeafIteratorType leafend () const;
+
     //! number of grid entities per level and codim
     int size (int level, int cd) const;
 

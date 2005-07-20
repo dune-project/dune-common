@@ -259,6 +259,13 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int codim, PartitionIteratorType pitype>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+  ALU3dGrid<dim, dimworld, elType>::leafbegin() const {
+    return leafbegin<codim, pitype>(maxlevel_);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  template <int codim, PartitionIteratorType pitype>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
   ALU3dGrid<dim, dimworld, elType>::leafend(int level) const
   {
     assert( level >= 0 );
@@ -274,6 +281,13 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
+  template <int codim, PartitionIteratorType pitype>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+  ALU3dGrid<dim, dimworld, elType>::leafend() const {
+    return leafend<codim, pitype>(maxlevel_);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const {
     return leafbegin<0, All_Partition>(level);
@@ -283,6 +297,18 @@ namespace Dune {
   ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafend(int level) const {
     return leafend<0, All_Partition>(level);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  ALU3dGrid<dim, dimworld, elType>::leafbegin() const {
+    return leafbegin<0, All_Partition>(maxlevel_);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  ALU3dGrid<dim, dimworld, elType>::leafend() const {
+    return leafend<0, All_Partition>(maxlevel_);
   }
 
   // global refine
