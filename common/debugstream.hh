@@ -114,17 +114,7 @@ namespace Dune {
    */
   template <DebugLevel current, DebugLevel threshold>
   struct greater_or_equal {
-    static const bool value = greater_or_equal<current-1, threshold>::value;
-  };
-
-  template < DebugLevel threshold >
-  struct greater_or_equal<0, threshold> {
-    static const bool value = false;
-  };
-
-  template < DebugLevel threshold >
-  struct greater_or_equal<threshold, threshold> {
-    static const bool value = true;
+    static const bool value = (current >= threshold);
   };
 
   /*! data component value is true if template parameter is non-zero
