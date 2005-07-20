@@ -695,7 +695,7 @@ namespace Dune {
     void increment ();
 
     //! equality
-    bool equals(const ALU3dGridIntersectionIterator<GridImp> & i) const;
+    //bool equals(const ALU3dGridIntersectionIterator<GridImp> & i) const;
 
     //! access neighbor
     EntityPointer outside() const;
