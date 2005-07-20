@@ -882,44 +882,44 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator lbegin (int level) const;
+    typename Traits::template Codim<cd>::template Partition<pitype>::LevelIterator lbegin (int level) const;
 
     //! one past the end on this level
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator lend (int level) const;
+    typename Traits::template Codim<cd>::template Partition<pitype>::LevelIterator lend (int level) const;
 
     //! Iterator to first entity of given codim on level
     template<int cd>
-    typename Traits::template Codim<cd>::template partition<All_Partition>::LevelIterator lbegin (int level) const
+    typename Traits::template Codim<cd>::template Partition<All_Partition>::LevelIterator lbegin (int level) const
     {
       return lbegin<cd,All_Partition>(level);
     }
 
     //! one past the end on this level
     template<int cd>
-    typename Traits::template Codim<cd>::template partition<All_Partition>::LevelIterator lend (int level) const
+    typename Traits::template Codim<cd>::template Partition<All_Partition>::LevelIterator lend (int level) const
     {
       return lend<cd,All_Partition>(level);
     }
 
     //! return LeafIterator which points to the first entity
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template Codim<cd>::template partition<pitype>::LeafIterator leafbegin () const;
+    typename Traits::template Codim<cd>::template Partition<pitype>::LeafIterator leafbegin () const;
 
     //! one past the end on the leaf level
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template Codim<cd>::template partition<pitype>::LeafIterator leafend () const;
+    typename Traits::template Codim<cd>::template Partition<pitype>::LeafIterator leafend () const;
 
     //! return LeafIterator which points to the first entity
     template<int cd>
-    typename Traits::template Codim<cd>::template partition<All_Partition>::LeafIterator leafbegin () const
+    typename Traits::template Codim<cd>::template Partition<All_Partition>::LeafIterator leafbegin () const
     {
       return leafbegin<cd,All_Partition>();
     };
 
     //! return LeafIterator which points behind the last entity
     template<int cd>
-    typename Traits::template Codim<cd>::template partition<All_Partition>::LeafIterator leafend () const
+    typename Traits::template Codim<cd>::template Partition<All_Partition>::LeafIterator leafend () const
     {
       return leafend<cd,All_Partition>();
     }
@@ -1101,7 +1101,7 @@ namespace Dune {
     };
 
     template<int dim, int dimw, int cdim>
-    struct hasEntity< SGrid<dim,dimw>, cdim>
+    struct hasEntity< SGrid<dim,dimw>, SEntity<cdim, dim, const SGrid<dim,dimw> > >
     {
       static const bool v = true;
     };

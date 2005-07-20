@@ -345,7 +345,7 @@ namespace Dune {
           //std:: map < int , ObjectStreamType > & elmap = elmap_[link];
 
           // now refine grid
-          typedef typename GridType::template Codim<0>::template partition<Interior_Partition>::LevelIterator LevelIteratorType;
+          typedef typename GridType::template Codim<0>::template Partition<Interior_Partition>::LevelIterator LevelIteratorType;
           LevelIteratorType endit  = grid_.template lend<0,Interior_Partition>  (0);
           for(LevelIteratorType it = grid_.template lbegin<0,Interior_Partition>(0);
               it != endit ; ++it )
@@ -654,7 +654,7 @@ namespace Dune {
           {
             // over all levels
             //typedef typename GridType::template Codim<0>::InteriorBorderLevelIterator IBLevelIteratorType;
-            typedef typename GridType::template Codim<0>::template partition<InteriorBorder_Partition>::LevelIterator IBLevelIteratorType;
+            typedef typename GridType::template Codim<0>::template Partition<InteriorBorder_Partition>::LevelIterator IBLevelIteratorType;
             IBLevelIteratorType endit  = grid_.template lend  <0,InteriorBorder_Partition> ( l, d[link] );
             for(IBLevelIteratorType it = grid_.template lbegin<0,InteriorBorder_Partition> ( l, d[link] );
                 it != endit; ++it)
@@ -679,7 +679,7 @@ namespace Dune {
           for(int l=0; l<=mxl; l++)
           {
             // over all levels
-            typedef typename GridType::template Codim<0>::template partition<Ghost_Partition>::LevelIterator GLevelIteratorType;
+            typedef typename GridType::template Codim<0>::template Partition<Ghost_Partition>::LevelIterator GLevelIteratorType;
             GLevelIteratorType endit  = grid_.template lend  <0,Ghost_Partition> ( l, d[link] );
             for(GLevelIteratorType it = grid_.template lbegin<0,Ghost_Partition> ( l, d[link] );
                 it != endit; ++it)
@@ -747,7 +747,7 @@ namespace Dune {
           OlderElsMap & ghostEls    = (*ghostEls_)[link];
           for(int l=0; l<=mxl; l++)
           {
-            typedef typename GridType::template Codim<0>::template partition<Ghost_Partition>::LevelIterator GLevelIteratorType;
+            typedef typename GridType::template Codim<0>::template Partition<Ghost_Partition>::LevelIterator GLevelIteratorType;
             //typedef typename GridType::template LeafIteratorDef<Ghost_Partition>::LeafIteratorType GLevelIteratorType;
             GLevelIteratorType endit  = grid_.template lend  <0,Ghost_Partition>(l, d[link] );
             for(GLevelIteratorType it = grid_.template lbegin<0,Ghost_Partition>(l, d[link] );
@@ -778,7 +778,7 @@ namespace Dune {
           for(int l=0; l<=mxl; l++)
           {
 
-            typedef typename GridType::template Codim<0>::template partition<InteriorBorder_Partition>::LevelIterator IBLevelIteratorType;
+            typedef typename GridType::template Codim<0>::template Partition<InteriorBorder_Partition>::LevelIterator IBLevelIteratorType;
             //typedef typename GridType::template LeafIteratorDef<Ghost_Partition>::LeafIteratorType GLevelIteratorType;
             IBLevelIteratorType endit  = grid_.template lend  <0,InteriorBorder_Partition>(l, d[link] );
             for(IBLevelIteratorType it = grid_.template lbegin<0,InteriorBorder_Partition>(l, d[link] );
@@ -829,7 +829,7 @@ namespace Dune {
           for(int l=0; l<=mxl; l++)
           {
             // over all levels
-            typedef typename GridType::template Codim<0>::template partition<InteriorBorder_Partition>::LevelIterator IBLevelIteratorType;
+            typedef typename GridType::template Codim<0>::template Partition<InteriorBorder_Partition>::LevelIterator IBLevelIteratorType;
             IBLevelIteratorType endit  = grid_.template lend  <0,InteriorBorder_Partition> ( l, d[link] );
             for(IBLevelIteratorType it = grid_.template lbegin<0,InteriorBorder_Partition> ( l, d[link] );
                 it != endit; ++it)
@@ -863,7 +863,7 @@ namespace Dune {
           OlderElsMap & ghostEls    = (*ghostEls_)[link];
           for(int l=0; l<=mxl; l++)
           {
-            typedef typename GridType::template Codim<0>::template partition<Ghost_Partition>::LevelIterator GLevelIteratorType;
+            typedef typename GridType::template Codim<0>::template Partition<Ghost_Partition>::LevelIterator GLevelIteratorType;
             GLevelIteratorType endit  = grid_.template lend  <0,Ghost_Partition>(l, d[link] );
             for(GLevelIteratorType it = grid_.template lbegin<0,Ghost_Partition>(l, d[link] );
                 it != endit; ++it)
@@ -1043,7 +1043,7 @@ namespace Dune {
       LoadBalancer :: DataBase db ;
       // build up loadbalance data base with macro vertices and edges
       {
-        typedef typename GridType::template Codim<0>::template partition<Interior_Partition>::LevelIterator InteriorLevelIterator;
+        typedef typename GridType::template Codim<0>::template Partition<Interior_Partition>::LevelIterator InteriorLevelIterator;
         InteriorLevelIterator endit  = grid_.template lend   <0,Interior_Partition> (0);
         for(InteriorLevelIterator it = grid_.template lbegin <0,Interior_Partition> (0);
             it != endit; ++it )
@@ -1082,7 +1082,7 @@ namespace Dune {
         {
           int countMyEls = 0;
           int firstEl = 0;
-          typedef typename GridType::template Codim<0>::template partition<Interior_Partition>::LevelIterator InteriorLevelIterator;
+          typedef typename GridType::template Codim<0>::template Partition<Interior_Partition>::LevelIterator InteriorLevelIterator;
           InteriorLevelIterator endit= grid_.template lend  <0,Interior_Partition> (0);
           InteriorLevelIterator it   = grid_.template lbegin<0,Interior_Partition> (0);
           if(it != endit) firstEl = it->globalIndex();
@@ -1170,7 +1170,7 @@ namespace Dune {
 
         {
           // walk over my interior macro elements
-          typedef typename GridType::template Codim<0>::template partition<Interior_Partition>::LevelIterator InteriorLevelIteratorType;
+          typedef typename GridType::template Codim<0>::template Partition<Interior_Partition>::LevelIterator InteriorLevelIteratorType;
           InteriorLevelIteratorType it    = grid_.template lbegin<0,Interior_Partition> ( 0 );
           InteriorLevelIteratorType endit = grid_.template lend<0,Interior_Partition> ( 0 );
           for( ; it != endit; ++it)
@@ -1198,7 +1198,7 @@ namespace Dune {
         // pack data
         {
           // walk over my interior macro elements
-          typedef typename GridType::template Codim<0>::template partition<Interior_Partition>::LevelIterator InteriorLevelIteratorType;
+          typedef typename GridType::template Codim<0>::template Partition<Interior_Partition>::LevelIterator InteriorLevelIteratorType;
           InteriorLevelIteratorType it    = grid_.template lbegin<0,Interior_Partition> ( 0 );
           InteriorLevelIteratorType endit = grid_.template lend<0,Interior_Partition> ( 0 );
           for( ; it != endit; ++it)
@@ -1251,7 +1251,7 @@ namespace Dune {
       }
 
       {
-        typedef typename GridType::template Codim<0>::template partition<Interior_Partition>::LevelIterator InteriorLevelIteratorType;
+        typedef typename GridType::template Codim<0>::template Partition<Interior_Partition>::LevelIterator InteriorLevelIteratorType;
         InteriorLevelIteratorType it    = grid_.template lbegin<0,Interior_Partition> ( 0 );
         InteriorLevelIteratorType endit = grid_.template lend<0,Interior_Partition>   ( 0 );
         for( ; it != endit; ++it)
@@ -1306,7 +1306,7 @@ namespace Dune {
         for(int link=0; link<nlinks; link++)
         {
           // walk over my interior macro elements
-          typedef typename GridType::template Codim<0>::template partition<InteriorBorder_Partition>::LevelIterator IBLevelIteratorType;
+          typedef typename GridType::template Codim<0>::template Partition<InteriorBorder_Partition>::LevelIterator IBLevelIteratorType;
           IBLevelIteratorType it    = grid_.template lbegin<0,InteriorBorder_Partition>( 0, d[link] );
           IBLevelIteratorType endit = grid_.template lend  <0,InteriorBorder_Partition>( 0, d[link] );
           for( ; it != endit; ++it)

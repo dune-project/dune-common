@@ -1324,32 +1324,32 @@ namespace Dune
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator
+    typename Traits::template Codim<cd>::template Partition<pitype>::LevelIterator
     lbegin (int level, int proc=-1) const;
 
     //! one past the end on this level
     template<int cd, PartitionIteratorType pitype>
-    typename Traits::template Codim<cd>::template partition<pitype>::LevelIterator
+    typename Traits::template Codim<cd>::template Partition<pitype>::LevelIterator
     lend (int level, int proc=-1) const;
 
     //! Iterator to first entity of given codim on level
     template<int cd>  typename Traits::template Codim<cd>::
-    template partition<All_Partition>::LevelIterator
+    template Partition<All_Partition>::LevelIterator
     lbegin (int level, int proc=-1) const;
 
     //! one past the end on this level
     template<int cd>  typename Traits::template Codim<cd>::
-    template partition<All_Partition>::LevelIterator
+    template Partition<All_Partition>::LevelIterator
     lend (int level, int proc=-1) const;
 
     //! return LeafIterator which points to first leaf entity
     template <int codim, PartitionIteratorType pitype>
-    Traits::template Codim<codim>::template partition<pitype>::LeafIterator
+    Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
     leafbegin ( int maxlevel, int proc = -1 ) const;
 
     //! return LeafIterator which points behind last leaf entity
     template <int codim, PartitionIteratorType pitype>
-    Traits::template Codim<codim>::template partition<pitype>::LeafIterator
+    Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
     leafend   ( int maxlevel, int proc = -1 ) const;
 
     //! return LeafIterator which points to first leaf entity
