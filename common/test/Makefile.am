@@ -2,7 +2,7 @@
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fmatrixtest \
-	poolallocatortest settest gcdlcdtest streamtest
+	poolallocatortest settest gcdlcdtest streamtest exprtmpl
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -41,5 +41,10 @@ poolallocatortest_SOURCES = poolallocatortest.cc
 settest_SOURCES=settest.cc
 
 gcdlcdtest_SOURCES = gcdlcdtest.cc
+
+#bin_PROGRAMS = exprtmpl
+exprtmpl_SOURCES = exprtmpl.cc
+exprtmpl_CXXFLAGS = -DDUNE_ISTL_WITH_CHECKING -DDUNE_EXPRESSIONTEMPLATES
+exprtmpl_LDFLAGS = $(top_builddir)/common/libcommon.la
 
 include $(top_srcdir)/am/global-rules

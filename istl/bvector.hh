@@ -10,6 +10,10 @@
 #include "allocator.hh"
 #include "basearray.hh"
 
+#ifdef DUNE_EXPRESSIONTEMPLATES
+#include <dune/common/exprtmpl.hh>
+#endif
+
 /*! \file
 
    \brief  This file implements a vector space as a tensor product of
@@ -63,8 +67,8 @@ namespace Dune {
 
 
     //===== assignment from scalar
-
     //! Assignment from a scalar
+
     block_vector_unmanaged& operator= (const field_type& k)
     {
       for (size_type i=0; i<this->n; i++)
@@ -72,9 +76,8 @@ namespace Dune {
       return *this;
     }
 
-
     //===== vector space arithmetic
-
+#ifndef DUNE_EXPRESSIONTEMPLATES
     //! vector space addition
     block_vector_unmanaged& operator+= (const block_vector_unmanaged& y)
     {
@@ -108,7 +111,7 @@ namespace Dune {
       for (int i=0; i<this->n; ++i) (*this)[i] /= k;
       return *this;
     }
-
+#endif
     //! vector space axpy operation
     block_vector_unmanaged& axpy (const field_type& a, const block_vector_unmanaged& y)
     {
@@ -221,6 +224,9 @@ namespace Dune {
    */
   template<class B, class A=ISTLAllocator>
   class BlockVector : public block_vector_unmanaged<B,A>
+#ifdef DUNE_EXPRESSIONTEMPLATES
+                      , public Dune::ExprTmpl::Vector< Dune::BlockVector<B,A> >
+#endif
   {
   public:
 
@@ -269,6 +275,56 @@ namespace Dune {
       }
     }
 
+#ifdef DUNE_EXPRESSIONTEMPLATES
+    //! random access to blocks
+    B& operator[] (size_type i)
+    {
+      return block_vector_unmanaged<B,A>::operator[](i);
+    }
+
+    //! same for read only access
+    const B& operator[] (size_type i) const
+    {
+      return block_vector_unmanaged<B,A>::operator[](i);
+    }
+
+    //! dimension of the vector space
+    int N () const
+    {
+      return block_vector_unmanaged<B,A>::N();
+    }
+
+    BlockVector (const BlockVector& a) {
+      Dune::dvverb << INDENT << "BlockVector Copy Constructor BlockVector\n";
+      assignFrom(a);
+    }
+    template <class V>
+    BlockVector (Dune::ExprTmpl::Expression<V> op) {
+      Dune::dvverb << INDENT << "BlockVector Copy Constructor Expression\n";
+      assignFrom(op);
+    }
+    template <class V>
+    BlockVector (const Dune::ExprTmpl::Vector<V> & op) {
+      Dune::dvverb << INDENT << "BlockVector Copy Constructor Vector\n";
+      assignFrom(op);
+    }
+    BlockVector& operator = (const BlockVector& a) {
+      Dune::dvverb << INDENT << "BlockVector Assignment Operator BlockVector\n";
+      return assignFrom(a);
+    }
+    template <class E>
+    BlockVector&  operator = (Dune::ExprTmpl::Expression<E> op) {
+      Dune::dvverb << INDENT << "BlockVector Assignment Operator Expression\n";
+      return assignFrom(op);
+    }
+    template <class V>
+    BlockVector& operator = (const Dune::ExprTmpl::Vector<V> & op) {
+      Dune::dvverb << INDENT << "BlockVector Assignment Operator Vector\n";
+      return assignFrom(op);
+    }
+#endif
+
+#ifndef DUNE_EXPRESSIONTEMPLATES
     //! copy constructor
     BlockVector (const BlockVector& a) :
       block_vector_unmanaged<B,A>(a)
@@ -306,7 +362,7 @@ namespace Dune {
       // and copy elements
       for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
     }
-
+#endif
 
     //! free dynamic memory
     ~BlockVector ()
@@ -331,6 +387,7 @@ namespace Dune {
     }
 
     //! assignment
+#ifndef DUNE_EXPRESSIONTEMPLATES
     BlockVector& operator= (const BlockVector& a)
     {
       if (&a!=this)     // check if this and a are different objects
@@ -360,6 +417,7 @@ namespace Dune {
       // forward to regular assignement operator
       return this->operator=(static_cast<const BlockVector&>(a));
     }
+#endif
 
     //! assign from scalar
     BlockVector& operator= (const field_type& k)
@@ -883,7 +941,18 @@ namespace Dune {
     }
   };
 
-
+#ifdef DUNE_EXPRESSIONTEMPLATES
+  template <class B, class A>
+  struct FieldType< BlockVector<B,A> >
+  {
+    typedef typename FieldType<B>::type type;
+  };
+  template <class B, class A>
+  struct BlockType< BlockVector<B,A> >
+  {
+    typedef B type;
+  };
+#endif
 
   /** @} end documentation */
 

@@ -18,3 +18,4 @@ poolallocatortest
 gmon.out
 gcdlcdtest
 streamtest
+exprtmpl
