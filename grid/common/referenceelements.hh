@@ -2,14 +2,14 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_REFERENCEELEMENTS_HH__
-#define __DUNE_REFERENCEELEMENTS_HH__
+#ifndef DUNE_REFERENCEELEMENTS_HH
+#define DUNE_REFERENCEELEMENTS_HH
 
 #include <iostream>
 #include "dune/common/fvector.hh"
 #include "dune/common/exceptions.hh"
-#include "dune/common/helpertemplates.hh"
 #include "dune/grid/common/grid.hh"
+#include "dune/common/misc.hh"
 
 /**
  * @file
