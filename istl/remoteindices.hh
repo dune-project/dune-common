@@ -38,20 +38,20 @@ namespace Dune {
   };
 
 
-  template<typename T1, typename T2, int N>
+  template<typename T>
   class RemoteIndices;
 
   template<typename T1, typename T2>
   class RemoteIndex;
 
-  template<typename T1, typename T2, int N>
+  template<typename T>
   class IndicesSyncer;
 
   template<typename T1, typename T2>
   std::ostream& operator<<(std::ostream& os, const RemoteIndex<T1,T2>& index);
 
 
-  template<typename TG, typename TA, int N, bool mode>
+  template<typename T, bool mode>
   class RemoteIndexListModifier;
 
   /**
@@ -60,14 +60,14 @@ namespace Dune {
   template<typename T1, typename T2>
   class RemoteIndex
   {
-    template<typename T3, typename T4, int N>
+    template<typename T>
     friend class IndicesSyncer;
 
-    template<typename TG, typename TA, typename A, int N>
-    friend void repairLocalIndexPointers(std::map<int,SLList<TG,A> >&, RemoteIndices<TG,TA,N>&,
-                                         const IndexSet<TG,ParallelLocalIndex<TA>,N>&);
+    template<typename T, typename A>
+    friend void repairLocalIndexPointers(std::map<int,SLList<typename T::GlobalIndex,A> >&, RemoteIndices<T>&,
+                                         const T&);
 
-    template<typename TG, typename TA, int N, bool mode>
+    template<typename T, bool mode>
     friend class RemoteIndexListModifier;
 
   public:
@@ -75,7 +75,7 @@ namespace Dune {
      * @brief the type of the global index.
      * This type has to provide at least a operator&lt; for sorting.
      */
-    typedef T1 GlobalIndexType;
+    typedef T1 GlobalIndex;
     /**
      * @brief The type of the attributes.
      * Normally this will be an enumeration like
@@ -83,19 +83,19 @@ namespace Dune {
      * enum Attributes{owner, border, overlap}
      * </pre>
      */
-    typedef T2 AttributeType;
+    typedef T2 Attribute;
 
     /**
      * @brief The type of the index pair.
      */
-    typedef IndexPair<GlobalIndexType,ParallelLocalIndex<AttributeType> >
+    typedef IndexPair<GlobalIndex,ParallelLocalIndex<Attribute> >
     PairType;
 
     /**
      * @brief Get the attribute of the index on the remote process.
      * @return The remote attribute.
      */
-    const AttributeType attribute() const;
+    const Attribute attribute() const;
 
     /**
      * @brief Get the corresponding local index pair.
@@ -135,69 +135,72 @@ namespace Dune {
     char attribute_;
   };
 
-  template<class TG, class TA, int N>
-  std::ostream& operator<<(std::ostream& os, const RemoteIndices<TG,TA,N>& indices);
+  template<class T>
+  std::ostream& operator<<(std::ostream& os, const RemoteIndices<T>& indices);
 
-  template<typename TG, typename TA, int N>
+  template<typename T>
   class Communicator;
 
-  template<typename TG, typename TA, int N>
+  template<typename T>
   class InterfaceBuilder;
 
-  template<class TG, class TA, int N>
+  template<class T>
   class CollectiveIterator;
 
-  template<class TG, class TA, int N>
+  template<class T>
   class IndicesSyncer;
 
   /**
    * @brief The indices present on remote processes.
    */
-  template<class TG,class TA, int N=100>
+  template<class T>
   class RemoteIndices
   {
-    friend class InterfaceBuilder<TG,TA,N>;
-    friend class Communicator<TG,TA,N>;
-    friend class IndicesSyncer<TG,TA,N>;
-    template<typename T1, typename T2, typename A, int M>
-    friend void repairLocalIndexPointers(std::map<int,SLList<T1,A> >&, RemoteIndices<T1,T2,M>&,
-                                         const IndexSet<T1,ParallelLocalIndex<T2>,M>&);
-    friend std::ostream& operator<<<>(std::ostream&, const RemoteIndices<TG,TA,N>&);
+    friend class InterfaceBuilder<T>;
+    friend class Communicator<T>;
+    friend class IndicesSyncer<T>;
+    template<typename T1, typename A>
+    friend void repairLocalIndexPointers(std::map<int,SLList<typename T1::GlobalIndex,A> >&,
+                                         RemoteIndices<T1>&,
+                                         const T1&);
+    friend std::ostream& operator<<<>(std::ostream&, const RemoteIndices<T>&);
 
   public:
-    /**
-     * @brief The type of the global index.
-     */
-    typedef TG GlobalIndexType;
-
-    /**
-     * @brief The type of the attribute.
-     */
-    typedef TA AttributeType;
-
-    /**
-     * @brief The type of the local index.
-     */
-    typedef ParallelLocalIndex<AttributeType> LocalIndexType;
 
     /**
      * @brief Type of the index set we use.
      */
-    typedef IndexSet<GlobalIndexType,LocalIndexType,N> IndexSetType;
+    typedef T IndexSet;
+
+    /**
+     * @brief The type of the global index.
+     */
+    typedef typename IndexSet::GlobalIndex GlobalIndex;
+
+
+    /**
+     * @brief The type of the local index.
+     */
+    typedef typename IndexSet::LocalIndex LocalIndex;
+
+    /**
+     * @brief The type of the attribute.
+     */
+    typedef typename LocalIndex::Attribute Attribute;
 
     /**
      * @brief Type of the remote indices we manage.
      */
-    typedef RemoteIndex<GlobalIndexType,AttributeType> RemoteIndexType;
+    typedef RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
 
 
     /**
      * @brief The type of the allocator for the remote index list.
      */
-    typedef PoolAllocator<RemoteIndexType,1> Allocator;
+    typedef PoolAllocator<RemoteIndex,1> Allocator;
 
     /** @brief The type of the remote index list. */
-    typedef SLList<RemoteIndexType,Allocator>
+    typedef SLList<RemoteIndex,Allocator>
     RemoteIndexList;
 
     /** @brief The type of the map from rank to remote index list. */
@@ -215,7 +218,7 @@ namespace Dune {
      * local mapping at the destination of the communication.
      * May be the same as the source indexset.
      */
-    inline RemoteIndices(const IndexSetType& source, const IndexSetType& destination,
+    inline RemoteIndices(const IndexSet& source, const IndexSet& destination,
                          const MPI_Comm& comm);
 
     /**
@@ -255,11 +258,11 @@ namespace Dune {
      * Sometimes the user knows in advance which indices will be present
      * on other processors, too. Then he can set them up using this modifier.
      *
-     * @warn Use with care. If the remote index list will be inconsistent
+     * @warn Use with care. If the remote index list is inconsistent
      * after the modification the communication might result in a dead lock!
      */
     template<bool mode, bool send>
-    inline RemoteIndexListModifier<TG,TA,N,mode> getModifier(int process);
+    inline RemoteIndexListModifier<T,mode> getModifier(int process);
 
     /**
      * @brief Get an iterator over all remote index lists.
@@ -277,7 +280,7 @@ namespace Dune {
      * @brief Get an iterator for colletively iterating over the remote indices of all remote processes.
      */
     template<bool send>
-    inline CollectiveIterator<TG,TA,N> iterator() const;
+    inline CollectiveIterator<T> iterator() const;
 
     /**
      * @brief Test whether the index lists are built.
@@ -298,10 +301,10 @@ namespace Dune {
 
   private:
     /** @brief Index set used at the source of the communication. */
-    const IndexSetType& source_;
+    const IndexSet& source_;
 
     /** @brief Index set used at the destination of the communication. */
-    const IndexSetType& target_;
+    const IndexSet& target_;
 
     /** @brief The communicator to use.*/
     const MPI_Comm& comm_;
@@ -337,7 +340,7 @@ namespace Dune {
     bool built_;
 
     /** @brief The index pair type. */
-    typedef IndexPair<GlobalIndexType, ParallelLocalIndex<AttributeType> >
+    typedef IndexPair<GlobalIndex, LocalIndex>
     PairType;
 
     /**
@@ -362,7 +365,7 @@ namespace Dune {
      * @param indexSet The index set whose indices we count.
      * @return the number of indices marked as public.
      */
-    inline int noPublic(const IndexSetType& indexSet);
+    inline int noPublic(const IndexSet& indexSet);
 
     /**
      * @brief Pack the indices to send if source_ and target_ are the same.
@@ -376,7 +379,7 @@ namespace Dune {
      * @param position The position to start packing.
      */
     template<bool ignorePublic>
-    inline void packEntries(PairType** myPairs, const IndexSetType& indexSet,
+    inline void packEntries(PairType** myPairs, const IndexSet& indexSet,
                             char* p_out, MPI_Datatype type, int bufferSize,
                             int* position, int n);
 
@@ -420,7 +423,7 @@ namespace Dune {
    * @warning Use with care. If the indices are not consistant afterwards
    * communication attempts might deadlock!
    */
-  template<class TG,class TA, int N, bool mode>
+  template<class T, bool mode>
   class RemoteIndexListModifier
   {
   public:
@@ -440,24 +443,24 @@ namespace Dune {
     };
 
     /**
-     * @brief The type of the global index.
+     * @brief Type of the index set we use.
      */
-    typedef TG GlobalIndex;
+    typedef T IndexSet;
 
     /**
-     * @brief The type of the attribute.
+     * @brief The type of the global index.
      */
-    typedef TA Attribute;
+    typedef typename IndexSet::GlobalIndex GlobalIndex;
 
     /**
      * @brief The type of the local index.
      */
-    typedef ParallelLocalIndex<Attribute> LocalIndex;
+    typedef typename IndexSet::LocalIndex LocalIndex;
 
     /**
-     * @brief Type of the index set we use.
+     * @brief The type of the attribute.
      */
-    typedef IndexSet<GlobalIndex,LocalIndex,N> IndexSet;
+    typedef typename LocalIndex::Attribute Attribute;
 
     /**
      * @brief Type of the remote indices we manage.
@@ -522,13 +525,13 @@ namespace Dune {
      * @exception InvalidPostion If there was an insertion or deletion of
      * a remote index corresponding to a bigger global index before.
      */
-    bool remove(const TG& global) throw(InvalidPosition);
+    bool remove(const GlobalIndex& global) throw(InvalidPosition);
 
     RemoteIndexListModifier(const IndexSet& indexSet,
                             RemoteIndexList& rList);
 
 
-    RemoteIndexListModifier(const RemoteIndexListModifier<TG,TA,N,mode>&);
+    RemoteIndexListModifier(const RemoteIndexListModifier<T,mode>&);
 
     /**
      * @brief Repair the pointers to the local index pairs.
@@ -546,7 +549,7 @@ namespace Dune {
 
   private:
 
-    typedef SLList<TG,Allocator> GlobalList;
+    typedef SLList<GlobalIndex,Allocator> GlobalList;
     typedef typename GlobalList::ModifyIterator GlobalModifyIterator;
     RemoteIndexList* rList_;
     const IndexSet* indexSet_;
@@ -555,7 +558,7 @@ namespace Dune {
     GlobalModifyIterator giter_;
     ConstIterator end_;
     bool first_;
-    TG last_;
+    GlobalIndex last_;
   };
 
 
@@ -563,11 +566,32 @@ namespace Dune {
    * @brief A collective iterator for moving over the remote indices for
    * all processes collectively.
    */
-  template<class TG, class TA, int N>
+  template<class T>
   class CollectiveIterator
   {
+
+    /**
+     * @brief Type of the index set we use.
+     */
+    typedef T IndexSet;
+
+    /**
+     * @brief The type of the global index.
+     */
+    typedef typename IndexSet::GlobalIndex GlobalIndex;
+
+    /**
+     * @brief The type of the local index.
+     */
+    typedef typename IndexSet::LocalIndex LocalIndex;
+
+    /**
+     * @brief The type of the attribute.
+     */
+    typedef typename LocalIndex::Attribute Attribute;
+
     /** @brief The remote index type */
-    typedef RemoteIndex<TG,TA> RemoteIndex;
+    typedef RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
 
     /** @brief The allocator of the remote indices. */
     typedef PoolAllocator<RemoteIndex,1> Allocator;
@@ -601,7 +625,7 @@ namespace Dune {
      * Iterators pointing to their end are removed.
      * @param global The index we search for.
      */
-    inline void advance(const TG& global);
+    inline void advance(const GlobalIndex& global);
 
     /**
      * @brief Checks whether there are still iterators in the map.
@@ -622,7 +646,7 @@ namespace Dune {
 
 
       //! \todo Please doc me!
-      iterator(const RealIterator& iter, const ConstRealIterator& end, TG& index)
+      iterator(const RealIterator& iter, const ConstRealIterator& end, GlobalIndex& index)
         : iter_(iter), end_(end), index_(index)
       {
         // Move to the first valid entry
@@ -681,7 +705,7 @@ namespace Dune {
 
       RealIterator iter_;
       RealIterator end_;
-      TG index_;
+      GlobalIndex index_;
     };
 
     iterator begin();
@@ -691,7 +715,7 @@ namespace Dune {
   private:
 
     Map map_;
-    TG index_;
+    GlobalIndex index_;
   };
 
   template<typename TG, typename TA>
@@ -746,32 +770,32 @@ namespace Dune {
     return *localIndex_;
   }
 
-  template<class TG, class TA, int N>
-  inline RemoteIndices<TG,TA,N>::RemoteIndices(const IndexSetType& source,
-                                               const IndexSetType& destination,
-                                               const MPI_Comm& comm)
+  template<typename T>
+  inline RemoteIndices<T>::RemoteIndices(const IndexSet& source,
+                                         const IndexSet& destination,
+                                         const MPI_Comm& comm)
     : source_(source), target_(destination), comm_(comm),
       sourceSeqNo_(-1), destSeqNo_(-1), publicIgnored(false), firstBuild(true),
       built_(false)
   {}
 
-  template<class TG, class TA, int N>
-  RemoteIndices<TG,TA,N>::~RemoteIndices()
+  template<typename T>
+  RemoteIndices<T>::~RemoteIndices()
   {
     free();
   }
 
-  template<class TG, class TA, int N>
+  template<typename T>
   template<bool ignorePublic>
-  inline void RemoteIndices<TG,TA,N>::packEntries(IndexPair<GlobalIndexType,LocalIndexType>** pairs,
-                                                  const IndexSetType& indexSet,
-                                                  char* p_out, MPI_Datatype type,
-                                                  int bufferSize,
-                                                  int *position, int n)
+  inline void RemoteIndices<T>::packEntries(IndexPair<GlobalIndex,LocalIndex>** pairs,
+                                            const IndexSet& indexSet,
+                                            char* p_out, MPI_Datatype type,
+                                            int bufferSize,
+                                            int *position, int n)
   {
     // fill with own indices
-    typedef typename IndexSetType::const_iterator const_iterator;
-    typedef IndexPair<GlobalIndexType,LocalIndexType> PairType;
+    typedef typename IndexSet::const_iterator const_iterator;
+    typedef IndexPair<GlobalIndex,LocalIndex> PairType;
     const const_iterator end = indexSet.end();
 
     //Now pack the source indices
@@ -788,10 +812,10 @@ namespace Dune {
     assert(i==n);
   }
 
-  template<class TG, class TA, int N>
-  inline int RemoteIndices<TG,TA,N>::noPublic(const IndexSetType& indexSet)
+  template<typename T>
+  inline int RemoteIndices<T>::noPublic(const IndexSet& indexSet)
   {
-    typedef typename IndexSetType::const_iterator const_iterator;
+    typedef typename IndexSet::const_iterator const_iterator;
 
     int noPublic=0;
 
@@ -805,9 +829,9 @@ namespace Dune {
   }
 
 
-  template<class TG, class TA, int N>
+  template<typename T>
   template<bool ignorePublic>
-  inline void RemoteIndices<TG,TA,N>::buildRemote()
+  inline void RemoteIndices<T>::buildRemote()
   {
 
     // Processor configuration
@@ -836,7 +860,7 @@ namespace Dune {
     MPI_Allreduce(&publish, &maxPublish, 1, MPI_INT, MPI_MAX, comm_);
 
     // allocate buffers
-    typedef IndexPair<GlobalIndexType,LocalIndexType> PairType;
+    typedef IndexPair<GlobalIndex,LocalIndex> PairType;
 
     PairType** destPairs;
     PairType** sourcePairs = new PairType*[sourcePublish];
@@ -946,7 +970,7 @@ namespace Dune {
       //       <<", noSource="<<noRemoteSource<<", noDest="<<noRemoteDest
       //       <<" from process "<<remoteProc<<std::endl<<std::flush;
 
-      //typedef SLList<RemoteIndex<GlobalIndexType,AttributeType> >
+      //typedef SLList<RemoteIndex<GlobalIndex,Attribute> >
       //	RemoteIndexList;
 
       // Indices for which we receive
@@ -1005,15 +1029,15 @@ namespace Dune {
     delete[] buffer;
   }
 
-  template<class TG, class TA, int N>
-  inline void RemoteIndices<TG,TA,N>::unpackIndices(RemoteIndexList& remote,
-                                                    int remoteEntries,
-                                                    PairType** local,
-                                                    int localEntries,
-                                                    char* p_in,
-                                                    MPI_Datatype type,
-                                                    int* position,
-                                                    int bufferSize)
+  template<typename T>
+  inline void RemoteIndices<T>::unpackIndices(RemoteIndexList& remote,
+                                              int remoteEntries,
+                                              PairType** local,
+                                              int localEntries,
+                                              char* p_in,
+                                              MPI_Datatype type,
+                                              int* position,
+                                              int bufferSize)
   {
     if(remoteEntries==0)
       return;
@@ -1027,8 +1051,8 @@ namespace Dune {
     //Check if we know the global index
     while(localIndex<localEntries) {
       if(local[localIndex]->global()==index.global()) {
-        remote.push_back(RemoteIndex<TG,TA>(index.local().attribute(),
-                                            local[localIndex]));
+        remote.push_back(RemoteIndex(index.local().attribute(),
+                                     local[localIndex]));
         localIndex++;
         // unpack next remote index
         if((++n_in) < remoteEntries) {
@@ -1058,18 +1082,18 @@ namespace Dune {
   }
 
 
-  template<class TG, class TA, int N>
-  inline void RemoteIndices<TG,TA,N>::unpackIndices(RemoteIndexList& send,
-                                                    RemoteIndexList& receive,
-                                                    int remoteEntries,
-                                                    PairType** localSource,
-                                                    int localSourceEntries,
-                                                    PairType** localDest,
-                                                    int localDestEntries,
-                                                    char* p_in,
-                                                    MPI_Datatype type,
-                                                    int* position,
-                                                    int bufferSize)
+  template<typename T>
+  inline void RemoteIndices<T>::unpackIndices(RemoteIndexList& send,
+                                              RemoteIndexList& receive,
+                                              int remoteEntries,
+                                              PairType** localSource,
+                                              int localSourceEntries,
+                                              PairType** localDest,
+                                              int localDestEntries,
+                                              char* p_in,
+                                              MPI_Datatype type,
+                                              int* position,
+                                              int bufferSize)
   {
     int n_in=0, sourceIndex=0, destIndex=0;
 
@@ -1090,37 +1114,37 @@ namespace Dune {
 
       // Add a remote index if we found the global index.
       if(sourceIndex<localSourceEntries && localSource[sourceIndex]->global()==index.global())
-        send.push_back(RemoteIndex<TG,TA>(index.local().attribute(),
-                                          localSource[sourceIndex]));
+        send.push_back(RemoteIndex(index.local().attribute(),
+                                   localSource[sourceIndex]));
 
       if(destIndex < localDestEntries && localDest[destIndex]->global() == index.global())
-        receive.push_back(RemoteIndex<TG,TA>(index.local().attribute(),
-                                             localDest[sourceIndex]));
+        receive.push_back(RemoteIndex(index.local().attribute(),
+                                      localDest[sourceIndex]));
     }
 
   }
 
-  template<class TG, class TA, int N>
-  inline bool RemoteIndices<TG,TA,N>::isBuilt() const
+  template<typename T>
+  inline bool RemoteIndices<T>::isBuilt() const
   {
     return built_;
   }
 
-  template<class TG, class TA, int N>
-  inline void RemoteIndices<TG,TA,N>::free()
+  template<typename T>
+  inline void RemoteIndices<T>::free()
   {
     remoteIndices_.clear();
   }
 
-  template<class TG, class TA, int N>
-  inline int RemoteIndices<TG,TA,N>::neighbours() const
+  template<typename T>
+  inline int RemoteIndices<T>::neighbours() const
   {
     return remoteIndices_.size();
   }
 
-  template<class TG, class TA, int N>
+  template<typename T>
   template<bool ignorePublic>
-  inline void RemoteIndices<TG,TA,N>::rebuild()
+  inline void RemoteIndices<T>::rebuild()
   {
     // Test wether a rebuild is Needed.
     if(firstBuild ||
@@ -1140,15 +1164,15 @@ namespace Dune {
 
   }
 
-  template<class TG, class TA, int N>
-  inline bool RemoteIndices<TG,TA,N>::isSynced() const
+  template<typename T>
+  inline bool RemoteIndices<T>::isSynced() const
   {
     return sourceSeqNo_==source_.seqNo() && destSeqNo_ ==target_.seqNo();
   }
 
-  template<class TG, class TA, int N>
+  template<typename T>
   template<bool mode, bool send>
-  RemoteIndexListModifier<TG,TA,N,mode> RemoteIndices<TG,TA,N>::getModifier(int process)
+  RemoteIndexListModifier<T,mode> RemoteIndices<T>::getModifier(int process)
   {
     typename RemoteIndexMap::iterator found = remoteIndices_.find(process);
 
@@ -1166,30 +1190,34 @@ namespace Dune {
       }
 
     if(send)
-      return RemoteIndexListModifier<TG,TA,N,mode>(source_, *(found->second.first));
+      return RemoteIndexListModifier<T,mode>(source_, *(found->second.first));
     else
-      return RemoteIndexListModifier<TG,TA,N,mode>(target_, *(found->second.second));
+      return RemoteIndexListModifier<T,mode>(target_, *(found->second.second));
   }
 
-  template<class TG, class TA, int N>
-  inline typename std::map<int, std::pair<SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*,
-          SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*> >::const_iterator
-  RemoteIndices<TG,TA,N>::begin() const
+  template<typename T>
+  inline typename std::map<int, std::pair<SLList<typename RemoteIndices<T>::RemoteIndex,
+              PoolAllocator<typename RemoteIndices<T>::RemoteIndex,1> >*,
+          SLList<typename RemoteIndices<T>::RemoteIndex,
+              PoolAllocator<typename RemoteIndices<T>::RemoteIndex,1> >*> >::const_iterator
+  RemoteIndices<T>::begin() const
   {
     return remoteIndices_.begin();
   }
 
-  template<class TG, class TA, int N>
-  inline typename std::map<int, std::pair<SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*,
-          SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*> >::const_iterator
-  RemoteIndices<TG,TA,N>::end() const
+  template<typename T>
+  inline typename std::map<int, std::pair<SLList<typename RemoteIndices<T>::RemoteIndex,
+              PoolAllocator<typename RemoteIndices<T>::RemoteIndex,1> >*,
+          SLList<typename RemoteIndices<T>::RemoteIndex,
+              PoolAllocator<typename RemoteIndices<T>::RemoteIndex,1> >*> >::const_iterator
+  RemoteIndices<T>::end() const
   {
     return remoteIndices_.end();
   }
 
-  template<class TG, class TA, int N, bool mode>
-  RemoteIndexListModifier<TG,TA,N,mode>::RemoteIndexListModifier(const IndexSet& indexSet,
-                                                                 RemoteIndexList& rList)
+  template<class T, bool mode>
+  RemoteIndexListModifier<T,mode>::RemoteIndexListModifier(const IndexSet& indexSet,
+                                                           RemoteIndexList& rList)
     : rList_(&rList), indexSet_(&indexSet), iter_(rList.beginModify()), end_(rList.end()), first_(true)
   {
     if(MODIFYINDEXSET) {
@@ -1200,14 +1228,14 @@ namespace Dune {
     }
   }
 
-  template<class TG, class TA, int N, bool mode>
-  RemoteIndexListModifier<TG,TA,N,mode>::RemoteIndexListModifier(const RemoteIndexListModifier<TG,TA,N,mode>& other)
+  template<typename T, bool mode>
+  RemoteIndexListModifier<T,mode>::RemoteIndexListModifier(const RemoteIndexListModifier<T,mode>& other)
     : rList_(other.rList_), indexSet_(other.indexSet_), glist_(other.glist_), iter_(other.iter_),
       giter_(other.giter_), end_(other.end_), first_(other.first_), last_(other.last_)
   {}
 
-  template<class TG, class TA, int N, bool mode>
-  inline void RemoteIndexListModifier<TG,TA,N,mode>::repairLocalIndexPointers() throw(InvalidIndexSetState)
+  template<typename T, bool mode>
+  inline void RemoteIndexListModifier<T,mode>::repairLocalIndexPointers() throw(InvalidIndexSetState)
   {
     IsTrue<mode>::yes();
 
@@ -1241,8 +1269,8 @@ namespace Dune {
     }
   }
 
-  template<class TG, class TA, int N, bool mode>
-  inline void RemoteIndexListModifier<TG,TA,N,mode>::insert(const RemoteIndex& index) throw(InvalidPosition)
+  template<typename T, bool mode>
+  inline void RemoteIndexListModifier<T,mode>::insert(const RemoteIndex& index) throw(InvalidPosition)
   {
     IsTrue<mode>::no();
 
@@ -1262,8 +1290,8 @@ namespace Dune {
     first_ = false;
   }
 
-  template<class TG, class TA, int N, bool mode>
-  inline void RemoteIndexListModifier<TG,TA,N,mode>::insert(const RemoteIndex& index, const TG& global) throw(InvalidPosition)
+  template<typename T, bool mode>
+  inline void RemoteIndexListModifier<T,mode>::insert(const RemoteIndex& index, const GlobalIndex& global) throw(InvalidPosition)
   {
     typename IsTrue<mode>::yes();
 #ifdef DUNE_ISTL_WITH_CHECKING
@@ -1285,8 +1313,8 @@ namespace Dune {
     first_ = false;
   }
 
-  template<class TG, class TA, int N, bool mode>
-  bool RemoteIndexListModifier<TG,TA,N,mode>::remove(const TG& global) throw(InvalidPosition)
+  template<typename T, bool mode>
+  bool RemoteIndexListModifier<T,mode>::remove(const GlobalIndex& global) throw(InvalidPosition)
   {
 #ifdef DUNE_ISTL_WITH_CHECKING
     if(!first_ && global<last_)
@@ -1321,22 +1349,22 @@ namespace Dune {
     return found;
   }
 
-  template<class TG, class TA, int N>
+  template<typename T>
   template<bool send>
-  inline CollectiveIterator<TG,TA,N> RemoteIndices<TG,TA,N>::iterator() const
+  inline CollectiveIterator<T> RemoteIndices<T>::iterator() const
   {
-    return CollectiveIterator<TG,TA,N>(remoteIndices_, send);
+    return CollectiveIterator<T>(remoteIndices_, send);
   }
 
-  template<class TG, class TA, int N>
-  inline MPI_Comm RemoteIndices<TG,TA,N>::communicator() const
+  template<typename T>
+  inline MPI_Comm RemoteIndices<T>::communicator() const
   {
     return comm_;
 
   }
 
-  template<class TG, class TA, int N>
-  CollectiveIterator<TG,TA,N>::CollectiveIterator(const RemoteIndexMap& pmap, bool send)
+  template<typename T>
+  CollectiveIterator<T>::CollectiveIterator(const RemoteIndexMap& pmap, bool send)
   {
     typedef typename RemoteIndexMap::const_iterator const_iterator;
     typedef typename RemoteIndexMap::iterator iterator;
@@ -1350,8 +1378,8 @@ namespace Dune {
     }
   }
 
-  template<class TG, class TA, int N>
-  inline void CollectiveIterator<TG,TA,N>::advance(const TG& index)
+  template<typename T>
+  inline void CollectiveIterator<T>::advance(const GlobalIndex& index)
   {
     typedef typename Map::iterator iterator;
     typedef typename Map::const_iterator const_iterator;
@@ -1378,22 +1406,22 @@ namespace Dune {
     index_=index;
   }
 
-  template<class TG, class TA, int N>
-  inline bool CollectiveIterator<TG,TA,N>::empty()
+  template<typename T>
+  inline bool CollectiveIterator<T>::empty()
   {
     return map_.empty();
   }
 
-  template<class TG, class TA, int N>
-  inline typename CollectiveIterator<TG,TA,N>::iterator
-  CollectiveIterator<TG,TA,N>::begin()
+  template<typename T>
+  inline typename CollectiveIterator<T>::iterator
+  CollectiveIterator<T>::begin()
   {
     return iterator(map_.begin(), map_.end(), index_);
   }
 
-  template<class TG, class TA, int N>
-  inline typename CollectiveIterator<TG,TA,N>::iterator
-  CollectiveIterator<TG,TA,N>::end()
+  template<typename T>
+  inline typename CollectiveIterator<T>::iterator
+  CollectiveIterator<T>::end()
   {
     return iterator(map_.end(), map_.end(), index_);
   }
@@ -1405,13 +1433,13 @@ namespace Dune {
     return os;
   }
 
-  template<class TG, class TA, int N>
-  inline std::ostream& operator<<(std::ostream& os, const RemoteIndices<TG,TA,N>& indices)
+  template<typename T>
+  inline std::ostream& operator<<(std::ostream& os, const RemoteIndices<T>& indices)
   {
     int rank;
     MPI_Comm_rank(indices.comm_, &rank);
 
-    typedef typename RemoteIndices<TG,TA,N>::RemoteIndexList RList;
+    typedef typename RemoteIndices<T>::RemoteIndexList RList;
     typedef typename std::map<int,std::pair<RList*,RList*> >::const_iterator const_iterator;
 
     const const_iterator rend = indices.remoteIndices_.end();

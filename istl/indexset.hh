@@ -79,20 +79,20 @@ namespace Dune
      *
      * This type has to provide at least a operator&lt; for sorting.
      */
-    typedef TG GlobalIndexType;
+    typedef TG GlobalIndex;
 
     /**
      * @brief the type of the local index.
      *
      * This class to provide the following functions:
      * <pre>
-     * LocalIndexType operator=(int);
+     * LocalIndex operator=(int);
      * operator int() const;
      * LocalIndexState state() const;
      * void setState(LocalIndexState);
      * </pre>
      */
-    typedef TL LocalIndexType;
+    typedef TL LocalIndex;
 
     /**
      * @brief Constructs a new Pair.
@@ -100,7 +100,7 @@ namespace Dune
      * @param global The global index.
      * @param local The local index.
      */
-    IndexPair(const GlobalIndexType& global, const LocalIndexType& local);
+    IndexPair(const GlobalIndex& global, const LocalIndex& local);
 
     /**
      * @brief Construct a new Pair.
@@ -112,28 +112,28 @@ namespace Dune
      * The local index will be 0.
      * @param global The global index.
      */
-    IndexPair(const GlobalIndexType& global);
+    IndexPair(const GlobalIndex& global);
 
     /**
      * @brief Get the global index.
      *
      * @return The global index.
      */
-    inline const GlobalIndexType& global() const;
+    inline const GlobalIndex& global() const;
 
     /**
      * @brief Get the local index.
      *
      * @return The local index.
      */
-    inline LocalIndexType& local();
+    inline LocalIndex& local();
 
     /**
      * @brief Get the local index.
      *
      * @return The local index.
      */
-    inline const LocalIndexType& local() const;
+    inline const LocalIndex& local() const;
 
     /**
      * @brief Set the local index.
@@ -143,9 +143,9 @@ namespace Dune
     inline void setLocal(int index);
   private:
     /** @brief The global index. */
-    GlobalIndexType global_;
+    GlobalIndex global_;
     /** @brief The local index. */
-    LocalIndexType local_;
+    LocalIndex local_;
   };
 
   /**
@@ -198,20 +198,20 @@ namespace Dune
      * @brief the type of the global index.
      * This type has to provide at least a operator&lt; for sorting.
      */
-    typedef TG GlobalIndexType;
+    typedef TG GlobalIndex;
 
     /**
      * @brief The type of the local index.
      *
      * This class to provide the following functions:
      * <pre>
-     * LocalIndexType operator=(int);
+     * LocalIndex operator=(int);
      * operator int() const;
      * LocalIndexState state() const;
      * void setState(LocalIndexState);
      * </pre>
      */
-    typedef TL LocalIndexType;
+    typedef TL LocalIndex;
 
 
     enum {
@@ -226,11 +226,11 @@ namespace Dune
 
     /** @brief The iterator over the pairs. */
     class iterator :
-      public ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N>::iterator
+      public ArrayList<IndexPair<GlobalIndex,LocalIndex>,N>::iterator
     {
-      typedef typename ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N>::iterator
+      typedef typename ArrayList<IndexPair<GlobalIndex,LocalIndex>,N>::iterator
       Father;
-      friend class IndexSet<GlobalIndexType,LocalIndexType,N>;
+      friend class IndexSet<GlobalIndex,LocalIndex,N>;
     public:
       iterator(IndexSet<TG,TL,N>& indexSet, const Father& father)
         : Father(father), indexSet_(&indexSet)
@@ -273,7 +273,7 @@ namespace Dune
 
     /** @brief The constant iterator over the pairs. */
     typedef typename
-    ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N>::const_iterator
+    ArrayList<IndexPair<GlobalIndex,LocalIndex>,N>::const_iterator
     const_iterator;
 
     /**
@@ -302,7 +302,7 @@ namespace Dune
      * @exception InvalidState If index set is not in
      * IndexSetState::RESIZE mode.
      */
-    inline void add(const GlobalIndexType& global) throw(InvalidIndexSetState);
+    inline void add(const GlobalIndex& global) throw(InvalidIndexSetState);
 
     /**
      * @brief Add an new index to the set.
@@ -312,7 +312,7 @@ namespace Dune
      * @exception InvalidState If index set is not in
      * IndexSetState::RESIZE mode.
      */
-    inline void add(const GlobalIndexType& global, const LocalIndexType& local)
+    inline void add(const GlobalIndex& global, const LocalIndex& local)
     throw(InvalidIndexSetState);
 
     /**
@@ -347,8 +347,8 @@ namespace Dune
      * @return The pair of indices for the id.
      * @exception NoSuchEntry Thrown if the global id is not known.
      */
-    inline IndexPair<GlobalIndexType,LocalIndexType>&
-    operator[](const GlobalIndexType& global);
+    inline IndexPair<GlobalIndex,LocalIndex>&
+    operator[](const GlobalIndex& global);
 
 
     /**
@@ -360,8 +360,8 @@ namespace Dune
      * @return The pair of indices for the id.
      * @exception NoSuchEntry Thrown if the global id is not known.
      */
-    inline const IndexPair<GlobalIndexType,LocalIndexType>&
-    operator[](const GlobalIndexType& global) const;
+    inline const IndexPair<GlobalIndex,LocalIndex>&
+    operator[](const GlobalIndex& global) const;
 
     /**
      * @brief Get an iterator over the indices positioned at the first index.
@@ -414,9 +414,9 @@ namespace Dune
 
   private:
     /** @brief The index pairs. */
-    ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N> localIndices_;
+    ArrayList<IndexPair<GlobalIndex,LocalIndex>,N> localIndices_;
     /** @brief The new indices for the RESIZE state. */
-    ArrayList<IndexPair<GlobalIndexType,LocalIndexType>,N> newIndices_;
+    ArrayList<IndexPair<GlobalIndex,LocalIndex>,N> newIndices_;
     /** @brief The state of the index set. */
     IndexSetState state_;
     /** @brief Number to keep track of the number of resizes. */
@@ -456,12 +456,12 @@ namespace Dune
     /**
      * @brief The type of the local index.
      */
-    typedef typename IndexSet::LocalIndexType LocalIndexType;
+    typedef typename IndexSet::LocalIndex LocalIndex;
 
     /**
      * @brief The type of the global index.
      */
-    typedef typename IndexSet::GlobalIndexType GlobalIndexType;
+    typedef typename IndexSet::GlobalIndex GlobalIndex;
 
     /**
      * @brief The iterator over the index pairs.
@@ -489,13 +489,13 @@ namespace Dune
      * @return The pair of indices for the id.
      * @exception NoSuchEntry Thrown if the global id is not known.
      */
-    inline const IndexPair<GlobalIndexType,LocalIndexType>&
-    operator[](const GlobalIndexType& global) const;
+    inline const IndexPair<GlobalIndex,LocalIndex>&
+    operator[](const GlobalIndex& global) const;
 
     /**
      * @brief Get the index pair corresponding to a local index.
      */
-    inline const IndexPair<GlobalIndexType,LocalIndexType>&
+    inline const IndexPair<GlobalIndex,LocalIndex>&
     pair(const std::size_t& local) const;
 
     /**
@@ -646,7 +646,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline void IndexSet<TG,TL,N>::add(const GlobalIndexType& global)
+  inline void IndexSet<TG,TL,N>::add(const GlobalIndex& global)
   throw(InvalidIndexSetState)
   {
     // Checks in unproductive code
@@ -890,15 +890,15 @@ namespace Dune
 
 
   template<class I>
-  inline const IndexPair<typename I::GlobalIndexType, typename I::LocalIndexType>&
+  inline const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>&
   GlobalLookupIndexSet<I>::pair(const std::size_t& local) const
   {
     return indexSet_.localIndices_[index_[local]];
   }
 
   template<class I>
-  inline const IndexPair<typename I::GlobalIndexType, typename I::LocalIndexType>&
-  GlobalLookupIndexSet<I>::operator[](const GlobalIndexType& global) const
+  inline const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>&
+  GlobalLookupIndexSet<I>::operator[](const GlobalIndex& global) const
   {
     return indexSet_[global];
   }

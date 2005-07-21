@@ -9,15 +9,16 @@ enum GridFlags {
   owner, overlap, border
 };
 
-template<typename TG, typename TA, int N>
-void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& indices,
-                          Dune::RemoteIndices<TG,TA,N>& remoteIndices)
+template<typename T>
+void deleteOverlapEntries(T& indices,
+                          Dune::RemoteIndices<T>& remoteIndices)
 {
-  typedef typename Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>::iterator IndexIterator;
-  typedef Dune::RemoteIndices<TG,TA,N> RemoteIndices;
+  typedef typename T::iterator IndexIterator;
+  typedef typename T::GlobalIndex GlobalIndex;
+  typedef Dune::RemoteIndices<T> RemoteIndices;
   typedef typename RemoteIndices::RemoteIndexList::ModifyIterator RemoteModifier;
   typedef typename RemoteIndices::RemoteIndexList::const_iterator RemoteIterator;
-  typedef Dune::SLList<TG, typename RemoteIndices::RemoteIndexList::Allocator> GlobalList;
+  typedef Dune::SLList<GlobalIndex, typename RemoteIndices::RemoteIndexList::Allocator> GlobalList;
   typedef typename GlobalList::ModifyIterator GlobalModifier;
   typedef Dune::Tuple<RemoteModifier,GlobalModifier,const RemoteIterator> IteratorTuple;
   typedef std::map<int,IteratorTuple> IteratorMap;
@@ -92,14 +93,14 @@ void deleteOverlapEntries(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
 }
 
 
-template<typename TG, typename TA, int N>
-bool areEqual(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& indices,
-              Dune::RemoteIndices<TG,TA,N>& remoteIndices,
-              Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& oIndices,
-              Dune::RemoteIndices<TG,TA,N>& oRemoteIndices){
+template<typename T>
+bool areEqual(T& indices,
+              Dune::RemoteIndices<T>& remoteIndices,
+              T& oIndices,
+              Dune::RemoteIndices<T>& oRemoteIndices){
 
-  typedef typename Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>::iterator IndexIterator;
-  typedef Dune::RemoteIndices<TG,TA,N> RemoteIndices;
+  typedef typename T::iterator IndexIterator;
+  typedef Dune::RemoteIndices<T> RemoteIndices;
   typedef typename RemoteIndices::RemoteIndexList::iterator RemoteIterator;
 
   IndexIterator iEnd = indices.end();
@@ -157,14 +158,15 @@ bool areEqual(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& indices,
   return true;
 }
 
-template<typename TG, typename TA, int N>
-void addFakeRemoteIndices(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& indices,
-                          Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& oIndices,
-                          Dune::RemoteIndices<TG,TA,N>& remoteIndices,
-                          Dune::RemoteIndices<TG,TA,N>& oRemoteIndices){
-  typedef typename Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>::iterator
-  IndexIterator;
-  typedef typename Dune::RemoteIndices<TG,TA,N>::RemoteIndexList RemoteIndexList;
+template<typename T>
+void addFakeRemoteIndices(T& indices,
+                          T& oIndices,
+                          Dune::RemoteIndices<T>& remoteIndices,
+                          Dune::RemoteIndices<T>& oRemoteIndices){
+  typedef typename T::iterator IndexIterator;
+  typedef typename T::GlobalIndex GlobalIndex;
+  typedef typename T::LocalIndex::Attribute Attribute;
+  typedef typename Dune::RemoteIndices<T>::RemoteIndexList RemoteIndexList;
   assert(remoteIndices.neighbours()==0 && oRemoteIndices.neighbours()==0);
 
   RemoteIndexList* rlist = new RemoteIndexList();
@@ -177,8 +179,8 @@ void addFakeRemoteIndices(Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA>,N>& ind
     assert(*index == *oIndex);
     if(index->local().attribute()==overlap) {
       added++;
-      rlist->push_back(Dune::RemoteIndex<TG,TA>(owner,&(*index)));
-      orlist->push_back(Dune::RemoteIndex<TG,TA>(owner,&(*oIndex)));
+      rlist->push_back(Dune::RemoteIndex<GlobalIndex,Attribute>(owner,&(*index)));
+      orlist->push_back(Dune::RemoteIndex<GlobalIndex,Attribute>(owner,&(*oIndex)));
     }
   }
 
@@ -207,8 +209,8 @@ int testIndicesSyncer()
   // distributed indexset
   //  typedef ParallelLocalIndex<GridFlags> LocalIndexType;
 
-  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags> > indexSet;
-  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags> > changedIndexSet;
+  typedef Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags> > IndexSet;
+  IndexSet indexSet, changedIndexSet;
 
   // Set up the indexsets.
   int start = std::max(rank*nx-1,0);
@@ -234,8 +236,8 @@ int testIndicesSyncer()
   indexSet.endResize();
   changedIndexSet.endResize();
 
-  Dune::RemoteIndices<int,GridFlags> remoteIndices(indexSet, indexSet, MPI_COMM_WORLD);
-  Dune::RemoteIndices<int,GridFlags> changedRemoteIndices(changedIndexSet, changedIndexSet, MPI_COMM_WORLD);
+  Dune::RemoteIndices<IndexSet> remoteIndices(indexSet, indexSet, MPI_COMM_WORLD);
+  Dune::RemoteIndices<IndexSet> changedRemoteIndices(changedIndexSet, changedIndexSet, MPI_COMM_WORLD);
 
   remoteIndices.rebuild<false>();
   changedRemoteIndices.rebuild<false>();
@@ -254,7 +256,7 @@ int testIndicesSyncer()
   std::cout<<"Unchanged: "<<indexSet<<std::endl<<remoteIndices<<std::endl;
   std::cout<<"Changed:   "<<changedIndexSet<<std::endl<<changedRemoteIndices<<std::endl;
 
-  Dune::IndicesSyncer<int,GridFlags> syncer(changedIndexSet, changedRemoteIndices);
+  Dune::IndicesSyncer<IndexSet> syncer(changedIndexSet, changedRemoteIndices);
 
   std::cout<<"Syncing!"<<std::endl;
 

@@ -30,18 +30,22 @@ namespace Dune
    *
    * Missing local and remote indices will be added.
    */
-  template<typename TG, typename TA, int N=100>
+  template<typename T>
   class IndicesSyncer
   {
   public:
 
     /** @brief The type of the index set. */
-    typedef IndexSet<TG,ParallelLocalIndex<TA>,N> IndexSet;
+    typedef T IndexSet;
+
+    typedef typename IndexSet::GlobalIndex GlobalIndex;
+
+    typedef typename IndexSet::LocalIndex::Attribute Attribute;
 
     /**
      * @brief Type of the remote indices.
      */
-    typedef RemoteIndices<TG,TA,N> RemoteIndices;
+    typedef RemoteIndices<IndexSet> RemoteIndices;
 
     /**
      * @brief Constructor.
@@ -74,8 +78,8 @@ namespace Dune
      * has to provide a function size_t operator()(const TG& global) that provides the
      * local index to a global one. It will be called for ascending global indices.
      */
-    template<typename T>
-    void sync(T& numberer);
+    template<typename T1>
+    void sync(T1& numberer);
 
   private:
 
@@ -121,7 +125,7 @@ namespace Dune
        * std::numeric_limits<size_t>::max()
        * @param global The global index (ignored).
        */
-      size_t operator()(const TG& global)
+      size_t operator()(const GlobalIndex& global)
       {
         return std::numeric_limits<size_t>::max();
       }
@@ -137,7 +141,7 @@ namespace Dune
      * @brief List type for temporarily storing the global indices of the
      * remote indices.
      */
-    typedef SLList<TG, typename RemoteIndices::Allocator> GlobalIndexList;
+    typedef SLList<GlobalIndex, typename RemoteIndices::Allocator> GlobalIndexList;
 
     /** @brief The modifying iterator for the global index list. */
     typedef typename GlobalIndexList::ModifyIterator GlobalIndexModifier;
@@ -145,7 +149,7 @@ namespace Dune
     /**
      * @brief The type of the iterator of GlobalIndexList
      */
-    typedef typename SLList<TG, typename RemoteIndices::Allocator>::iterator
+    typedef typename SLList<GlobalIndex, typename RemoteIndices::Allocator>::iterator
     GlobalIndexIterator;
 
     /** @brief Type of the map of ranks onto GlobalIndexLists. */
@@ -193,7 +197,7 @@ namespace Dune
     typedef typename RemoteIndexList::ModifyIterator RemoteIndexModifier;
 
     /** @brief The type of the remote inde. */
-    typedef RemoteIndex<TG,TA> RemoteIndex;
+    typedef RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
 
     /** @brief The iterator of the remote index list. */
     typedef typename RemoteIndexList::iterator RemoteIndexIterator;
@@ -214,7 +218,7 @@ namespace Dune
      */
     class Iterators
     {
-      friend class IndicesSyncer<TG,TA,N>;
+      friend class IndicesSyncer<T>;
     public:
       /**
        * @brief Constructor.
@@ -243,7 +247,7 @@ namespace Dune
        * @param index The remote index.
        * @param global The global index corresponding to the remote index.
        */
-      void insert(const RemoteIndex& index, const TG& global);
+      void insert(const RemoteIndex& index, const GlobalIndex& global);
 
       /**
        * @brief Get the remote index at current position.
@@ -255,7 +259,7 @@ namespace Dune
        * @brief Get the global index of the remote index at current position.
        * @return The current global index.
        */
-      TG& globalIndex() const;
+      GlobalIndex& globalIndex() const;
 
       /**
        * @brief Was this entry already in the remote index list before the sync process?
@@ -333,8 +337,8 @@ namespace Dune
      * @param source The rank of the process we receive from.
      * @param numberer Functor providing local indices for added global indices.
      */
-    template<typename T>
-    void recvAndUnpack(int source, T& numberer);
+    template<typename T1>
+    void recvAndUnpack(int source, T1& numberer);
 
     /**
      * @brief Register the MPI datatype for the MessageInformation.
@@ -344,7 +348,7 @@ namespace Dune
     /**
      * @brief Insert an entry into the  remote index list if not yet present.
      */
-    void insertIntoRemoteIndexList(int process, const TG& global, char attribute);
+    void insertIntoRemoteIndexList(int process, const GlobalIndex& global, char attribute);
 
     /**
      * @brief Reset the iterator tuples of all neighbouring processes.
@@ -377,21 +381,22 @@ namespace Dune
    * @param remoteIndices The known remote indices.
    * @param indexSet The set of local indices of the current process.
    */
-  template<typename TG, typename TA, typename A, int N>
-  inline void repairLocalIndexPointers(std::map<int,SLList<TG,A> >& globalMap,
-                                       RemoteIndices<TG,TA,N>& remoteIndices,
-                                       const IndexSet<TG,ParallelLocalIndex<TA>,N>& indexSet)
+  template<typename T, typename A>
+  inline void repairLocalIndexPointers(std::map<int,SLList<typename T::GlobalIndex,A> >& globalMap,
+                                       RemoteIndices<T>& remoteIndices,
+                                       const T& indexSet)
   {
-    typedef typename RemoteIndices<TG,TA,N>::RemoteIndexMap::iterator RemoteIterator;
-    typedef typename RemoteIndices<TG,TA,N>::RemoteIndexList::iterator RemoteIndexIterator;
-    typedef typename SLList<TG,A>::iterator GlobalIndexIterator;
+    typedef typename RemoteIndices<T>::RemoteIndexMap::iterator RemoteIterator;
+    typedef typename RemoteIndices<T>::RemoteIndexList::iterator RemoteIndexIterator;
+    typedef typename T::GlobalIndex GlobalIndex;
+    typedef typename SLList<GlobalIndex,A>::iterator GlobalIndexIterator;
 
     // Repair pointers to index set in remote indices.
-    typename std::map<int,SLList<TG,A> >::iterator global = globalMap.begin();
+    typename std::map<int,SLList<GlobalIndex,A> >::iterator global = globalMap.begin();
     RemoteIterator end = remoteIndices.remoteIndices_.end();
 
     for(RemoteIterator remote = remoteIndices.remoteIndices_.begin(); remote != end; ++remote, ++global) {
-      typedef typename IndexSet<TG,ParallelLocalIndex<TA>,N>::const_iterator IndexIterator;
+      typedef typename T::const_iterator IndexIterator;
 
       assert(remote->first==global->first);
       assert(remote->second.first->size() == global->second.size());
@@ -419,9 +424,9 @@ namespace Dune
 
   }
 
-  template<typename  TG, typename TA, int N>
-  IndicesSyncer<TG,TA,N>::IndicesSyncer(IndexSet& indexSet,
-                                        RemoteIndices& remoteIndices)
+  template<typename T>
+  IndicesSyncer<T>::IndicesSyncer(IndexSet& indexSet,
+                                  RemoteIndices& remoteIndices)
     : indexSet_(indexSet), remoteIndices_(remoteIndices)
   {
     // index sets must match.
@@ -430,21 +435,21 @@ namespace Dune
     MPI_Comm_rank(remoteIndices_.communicator(), &rank_);
   }
 
-  template<typename  TG, typename TA, int N>
-  IndicesSyncer<TG,TA,N>::Iterators::Iterators(RemoteIndexList& remoteIndices,
-                                               GlobalIndexList& globalIndices,
-                                               BoolList& booleans)
+  template<typename T>
+  IndicesSyncer<T>::Iterators::Iterators(RemoteIndexList& remoteIndices,
+                                         GlobalIndexList& globalIndices,
+                                         BoolList& booleans)
     : iterators_(remoteIndices.beginModify(), globalIndices.beginModify(),
                  booleans.beginModify(), remoteIndices.end())
   { }
 
-  template<typename  TG, typename TA, int N>
-  IndicesSyncer<TG,TA,N>::Iterators::Iterators()
+  template<typename T>
+  IndicesSyncer<T>::Iterators::Iterators()
     : iterators_()
   {}
 
-  template<typename  TG, typename TA, int N>
-  inline typename IndicesSyncer<TG,TA,N>::Iterators& IndicesSyncer<TG,TA,N>::Iterators::operator++()
+  template<typename T>
+  inline typename IndicesSyncer<T>::Iterators& IndicesSyncer<T>::Iterators::operator++()
   {
     ++(Element<0>::get(iterators_));
     ++(Element<1>::get(iterators_));
@@ -452,58 +457,58 @@ namespace Dune
     return *this;
   }
 
-  template<typename  TG, typename TA, int N>
-  inline void IndicesSyncer<TG,TA,N>::Iterators::insert(const RemoteIndex & index,
-                                                        const TG & global)
+  template<typename T>
+  inline void IndicesSyncer<T>::Iterators::insert(const RemoteIndex & index,
+                                                  const GlobalIndex & global)
   {
     Element<0>::get(iterators_).insert(index);
     Element<1>::get(iterators_).insert(global);
     Element<2>::get(iterators_).insert(false);
   }
 
-  template<typename  TG, typename TA, int N>
-  inline typename IndicesSyncer<TG,TA,N>::RemoteIndex&
-  IndicesSyncer<TG,TA,N>::Iterators::remoteIndex() const
+  template<typename T>
+  inline typename IndicesSyncer<T>::RemoteIndex&
+  IndicesSyncer<T>::Iterators::remoteIndex() const
   {
     return *(Element<0>::get(iterators_));
   }
 
-  template<typename  TG, typename TA, int N>
-  inline TG &  IndicesSyncer<TG,TA,N>::Iterators::globalIndex() const
+  template<typename T>
+  inline typename IndicesSyncer<T>::GlobalIndex&  IndicesSyncer<T>::Iterators::globalIndex() const
   {
     return *(Element<1>::get(iterators_));
   }
 
-  template<typename  TG, typename TA, int N>
-  inline bool IndicesSyncer<TG,TA,N>::Iterators::isOld() const
+  template<typename T>
+  inline bool IndicesSyncer<T>::Iterators::isOld() const
   {
     return *(Element<2>::get(iterators_));
   }
 
-  template<typename  TG, typename TA, int N>
-  inline void IndicesSyncer<TG,TA,N>::Iterators::reset(RemoteIndexList& remoteIndices,
-                                                       GlobalIndexList& globalIndices,
-                                                       BoolList& booleans)
+  template<typename T>
+  inline void IndicesSyncer<T>::Iterators::reset(RemoteIndexList& remoteIndices,
+                                                 GlobalIndexList& globalIndices,
+                                                 BoolList& booleans)
   {
     Element<0>::get(iterators_) = remoteIndices.beginModify();
     Element<1>::get(iterators_) = globalIndices.beginModify();
     Element<2>::get(iterators_) = booleans.beginModify();
   }
 
-  template<typename  TG, typename TA, int N>
-  inline bool IndicesSyncer<TG,TA,N>::Iterators::isNotAtEnd() const
+  template<typename T>
+  inline bool IndicesSyncer<T>::Iterators::isNotAtEnd() const
   {
     return Element<0>::get(iterators_)!=Element<3>::get(iterators_);
   }
 
-  template<typename  TG, typename TA, int N>
-  inline bool IndicesSyncer<TG,TA,N>::Iterators::isAtEnd() const
+  template<typename T>
+  inline bool IndicesSyncer<T>::Iterators::isAtEnd() const
   {
     return Element<0>::get(iterators_)==Element<3>::get(iterators_);
   }
 
-  template<typename TG, typename TA, int N>
-  void IndicesSyncer<TG,TA,N>::registerMessageDatatype()
+  template<typename T>
+  void IndicesSyncer<T>::registerMessageDatatype()
   {
     MPI_Datatype type[2] = {MPI_INT, MPI_INT};
     int blocklength[2] = {1,1};
@@ -525,11 +530,11 @@ namespace Dune
     MPI_Type_commit(&datatype_);
   }
 
-  template<typename TG, typename TA, int N>
-  void IndicesSyncer<TG,TA,N>::calculateMessageSizes()
+  template<typename T>
+  void IndicesSyncer<T>::calculateMessageSizes()
   {
     typedef typename IndexSet::const_iterator IndexIterator;
-    typedef CollectiveIterator<TG,TA,N> CollectiveIterator;
+    typedef CollectiveIterator<T> CollectiveIterator;
 
     IndexIterator iEnd = indexSet_.end();
     CollectiveIterator collIter = remoteIndices_.template iterator<true>();
@@ -597,7 +602,7 @@ namespace Dune
 
     for(int i=0; i < maxSize.publish; ++i) {
       // The global index
-      MPI_Pack_size(1, MPITraits<TG>::getType(), remoteIndices_.communicator(), &tsize);
+      MPI_Pack_size(1, MPITraits<GlobalIndex>::getType(), remoteIndices_.communicator(), &tsize);
       bufferSize_ += tsize;
       // The attribute in the local index
       MPI_Pack_size(1, MPI_CHAR, remoteIndices_.communicator(), &tsize);
@@ -620,16 +625,16 @@ namespace Dune
 
   }
 
-  template<typename  TG, typename TA, int N>
-  inline void IndicesSyncer<TG,TA,N>::sync()
+  template<typename T>
+  inline void IndicesSyncer<T>::sync()
   {
     DefaultNumberer numberer;
     sync(numberer);
   }
 
-  template<typename  TG, typename TA, int N>
   template<typename T>
-  void IndicesSyncer<TG,TA,N>::sync(T& numberer)
+  template<typename T1>
+  void IndicesSyncer<T>::sync(T1& numberer)
   {
 
     // The pointers to the local indices in the remote indices
@@ -706,7 +711,7 @@ namespace Dune
 
     delete[] oldNeighbours;
 
-    repairLocalIndexPointers<TG,TA,typename RemoteIndices::Allocator,N>(globalMap_, remoteIndices_, indexSet_);
+    repairLocalIndexPointers<T,typename RemoteIndices::Allocator>(globalMap_, remoteIndices_, indexSet_);
 
     oldMap_.clear();
     globalMap_.clear();
@@ -716,8 +721,8 @@ namespace Dune
   }
 
 
-  template<typename TG, typename TA, int N>
-  void IndicesSyncer<TG,TA,N>::packAndSend(int destination)
+  template<typename T>
+  void IndicesSyncer<T>::packAndSend(int destination)
   {
     typedef typename IndexSet::const_iterator IndexIterator;
     typedef typename RemoteIndexList::const_iterator RemoteIndexIterator;
@@ -769,7 +774,7 @@ namespace Dune
       assert(pairs <= infoSend_[destination].pairs);
 
       // Pack the global index, the attribute and the number
-      MPI_Pack(const_cast<TG*>(&(index->global())), 1, MPITraits<TG>::getType(), buffer_, bufferSize_, &bpos,
+      MPI_Pack(const_cast<GlobalIndex*>(&(index->global())), 1, MPITraits<GlobalIndex>::getType(), buffer_, bufferSize_, &bpos,
                remoteIndices_.communicator());
 
       char attr = index->local().attribute();
@@ -806,9 +811,9 @@ namespace Dune
     MPI_Send(buffer_, bpos, MPI_PACKED, destination, 111, remoteIndices_.communicator());
   }
 
-  template<typename TG, typename TA, int N>
-  inline void IndicesSyncer<TG,TA,N>::insertIntoRemoteIndexList(int process, const TG& global,
-                                                                char attribute)
+  template<typename T>
+  inline void IndicesSyncer<T>::insertIntoRemoteIndexList(int process, const GlobalIndex& global,
+                                                          char attribute)
   {
     // There might be cases where there no remote indices for that process yet
     typename IteratorsMap::iterator found = iteratorsMap_.find(process);
@@ -832,16 +837,16 @@ namespace Dune
     if(iterators.isAtEnd() || iterators.globalIndex() != global) {
       // The entry is not yet known
       // Insert in the the list and do not change the first iterator.
-      iterators.insert(RemoteIndex(TA(attribute)),global);
+      iterators.insert(RemoteIndex(Attribute(attribute)),global);
     }else if(iterators.isNotAtEnd()) {
       // Assert that the attributes match
       assert(iterators.remoteIndex().attribute() == attribute);
     }
   }
 
-  template<typename TG, typename TA, int N>
   template<typename T>
-  void IndicesSyncer<TG,TA,N>::recvAndUnpack(int source, T& numberer)
+  template<typename T1>
+  void IndicesSyncer<T>::recvAndUnpack(int source, T1& numberer)
   {
     typedef typename IndexSet::const_iterator IndexIterator;
     typedef typename RemoteIndexList::iterator RemoteIndexIterator;
@@ -867,11 +872,11 @@ namespace Dune
     while(publish>0) {
 
       // Unpack information about the local index on the source process
-      TG global;           // global index of the current entry
+      GlobalIndex global;           // global index of the current entry
       char sourceAttribute; // Attribute on the source process
       int pairs;
 
-      MPI_Unpack(buffer_, bufferSize_, &bpos, &global, 1, MPITraits<TG>::getType(),
+      MPI_Unpack(buffer_, bufferSize_, &bpos, &global, 1, MPITraits<GlobalIndex>::getType(),
                  remoteIndices_.communicator());
       MPI_Unpack(buffer_, bufferSize_, &bpos, &sourceAttribute, 1, MPI_CHAR,
                  remoteIndices_.communicator());
@@ -901,8 +906,8 @@ namespace Dune
 
           if(index == iEnd || index->global() != global) {
             // No, we do not. Add it!
-            indexSet_.add(global,ParallelLocalIndex<TA>(numberer(global),
-                                                        TA(attribute), true));
+            indexSet_.add(global,ParallelLocalIndex<Attribute>(numberer(global),
+                                                               Attribute(attribute), true));
           }else{
             // Attributes have to match!
             assert(attribute==index->local().attribute());
@@ -919,8 +924,8 @@ namespace Dune
     resetIteratorsMap();
   }
 
-  template<typename TG, typename TA, int N>
-  void IndicesSyncer<TG,TA,N>::resetIteratorsMap(){
+  template<typename T>
+  void IndicesSyncer<T>::resetIteratorsMap(){
 
     // Reset iterators in all tuples.
     typedef typename IteratorsMap::iterator Iterator;
@@ -940,9 +945,9 @@ namespace Dune
     }
   }
 
-  template<typename TG, typename TA, int N>
-  bool IndicesSyncer<TG,TA,N>::checkReset(const Iterators& iterators, RemoteIndexList& rList, GlobalIndexList& gList,
-                                          BoolList& bList){
+  template<typename T>
+  bool IndicesSyncer<T>::checkReset(const Iterators& iterators, RemoteIndexList& rList, GlobalIndexList& gList,
+                                    BoolList& bList){
 
     if(Element<0>::get(iterators.iterators_)!=rList.begin())
       return false;
@@ -954,8 +959,8 @@ namespace Dune
   }
 
 
-  template<typename TG, typename TA, int N>
-  bool IndicesSyncer<TG,TA,N>::checkReset(){
+  template<typename T>
+  bool IndicesSyncer<T>::checkReset(){
 
     // Reset iterators in all tuples.
     typedef typename IteratorsMap::iterator Iterator;

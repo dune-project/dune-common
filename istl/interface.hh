@@ -26,24 +26,30 @@ namespace Dune
    * It provides an generic utility method for building the interface
    * for a set of remote indices.
    */
-  template<typename TG, typename TA, int N=100>
+  template<typename T>
   class InterfaceBuilder
   {
   public:
-    /**
-     * @brief The type of the global index.
-     */
-    typedef TG GlobalIndexType;
 
     /**
-     * @brief The type of the attribute.
+     * @brief Type of the index set.
      */
-    typedef TA AttributeType;
+    typedef T IndexSet;
 
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef RemoteIndices<GlobalIndexType,AttributeType,N> RemoteIndices;
+    typedef RemoteIndices<IndexSet> RemoteIndices;
+
+    /**
+     * @brief The type of the global index.
+     */
+    typedef typename RemoteIndices::GlobalIndex GlobalIndex;
+
+    /**
+     * @brief The type of the attribute.
+     */
+    typedef typename RemoteIndices::Attribute Attribute;
 
     virtual ~InterfaceBuilder()
     {}
@@ -60,10 +66,10 @@ namespace Dune
      *
      *
      * The types T1 and T2 are classes representing a set of
-     * enumeration values of type InterfaceBuilder::AttributeType. They have to provide
+     * enumeration values of type InterfaceBuilder::Attribute. They have to provide
      * a (static) method
      * <pre>
-     * bool contains(AttributeType flag) const;
+     * bool contains(Attribute flag) const;
      * </pre>
      * for checking whether the set contains a specfic flag.
      * This functionality is for example provided the classes
@@ -198,8 +204,8 @@ namespace Dune
    * Describes the communication interface between
    * indices on the local process and those on remote processes.
    */
-  template<typename TG, typename TA, int N=100>
-  class Interface : public InterfaceBuilder<TG,TA,N>
+  template<typename T>
+  class Interface : public InterfaceBuilder<T>
   {
 
   public:
@@ -207,30 +213,35 @@ namespace Dune
 
     typedef std::map<int,std::pair<Information,Information> > InformationMap;
 
-
     /**
-     * @brief The type of the global index.
+     * @brief Type of the index set.
      */
-    typedef TG GlobalIndexType;
-
-    /**
-     * @brief The type of the attribute.
-     */
-    typedef TA AttributeType;
+    typedef T IndexSet;
 
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef RemoteIndices<GlobalIndexType, AttributeType,N> RemoteIndices;
+    typedef RemoteIndices<IndexSet> RemoteIndices;
+
+
+    /**
+     * @brief The type of the global index.
+     */
+    typedef typename RemoteIndices::GlobalIndex GlobalIndex;
+
+    /**
+     * @brief The type of the attribute.
+     */
+    typedef typename RemoteIndices::Attribute Attribute;
 
     /**
      * @brief Builds the interface.
      *
      * The types T1 and T2 are classes representing a set of
-     * enumeration values of type Interface::AttributeType. They have to provide
+     * enumeration values of type Interface::Attribute. They have to provide
      * a (static) method
      * <pre>
-     * bool contains(AttributeType flag) const;
+     * bool contains(Attribute flag) const;
      * </pre>
      * for checking whether the set contains a specfic flag.
      * This functionality is for example provided the classes
@@ -321,13 +332,13 @@ namespace Dune
     };
   };
 
-  template<typename TG, typename TA, int N>
+  template<typename T>
   template<class T1, class T2, class Op, bool send>
-  void InterfaceBuilder<TG,TA,N>::buildInterface(const RemoteIndices& remoteIndices, const T1& sourceFlags, const T2& destFlags, Op& interfaceInformation) const
+  void InterfaceBuilder<T>::buildInterface(const RemoteIndices& remoteIndices, const T1& sourceFlags, const T2& destFlags, Op& interfaceInformation) const
   {
     // Allocate the memory for the data type construction.
     typedef typename RemoteIndices::RemoteIndexMap::const_iterator const_iterator;
-    typedef typename RemoteIndices::IndexSetType::const_iterator LocalIterator;
+    typedef typename RemoteIndices::IndexSet::const_iterator LocalIterator;
 
     const const_iterator end=remoteIndices.end();
 
@@ -368,7 +379,7 @@ namespace Dune
 
     // compare the local and remote indices and set up the types
 
-    CollectiveIterator<TG,TA,N> remote = remoteIndices.template iterator<send>();
+    CollectiveIterator<T> remote = remoteIndices.template iterator<send>();
     LocalIterator localIndex = send ? remoteIndices.source_.begin() : remoteIndices.target_.begin();
     const LocalIterator localEnd = send ?  remoteIndices.source_.end() : remoteIndices.target_.end();
 
@@ -379,7 +390,7 @@ namespace Dune
         // search for matching remote indices
         remote.advance(localIndex->global());
         // Iterate over the list that are positioned at global
-        typedef typename CollectiveIterator<TG,TA,N>::iterator ValidIterator;
+        typedef typename CollectiveIterator<T>::iterator ValidIterator;
         const ValidIterator end = remote.end();
         ValidIterator validEntry = remote.begin();
 
@@ -396,21 +407,21 @@ namespace Dune
     }
   }
 
-  template<typename TG, typename TA, int N>
-  inline MPI_Comm Interface<TG,TA,N>::communicator() const
+  template<typename T>
+  inline MPI_Comm Interface<T>::communicator() const
   {
     return remoteIndices_->communicator();
 
   }
 
-  template<typename TG, typename TA, int N>
-  inline const std::map<int,std::pair<InterfaceInformation,InterfaceInformation> >& Interface<TG,TA,N>::interfaces() const
+  template<typename T>
+  inline const std::map<int,std::pair<InterfaceInformation,InterfaceInformation> >& Interface<T>::interfaces() const
   {
     return interfaces_;
   }
 
-  template<typename TG, typename TA, int N>
-  void Interface<TG,TA,N>::print() const
+  template<typename T>
+  void Interface<T>::print() const
   {
     typedef typename InformationMap::const_iterator const_iterator;
     const const_iterator end=interfaces_.end();
@@ -436,10 +447,10 @@ namespace Dune
     }
   }
 
-  template<typename TG, typename TA, int N>
+  template<typename T>
   template<typename T1, typename T2>
-  void Interface<TG,TA,N>::build(const RemoteIndices& remoteIndices, const T1& sourceFlags,
-                                 const T2& destFlags)
+  void Interface<T>::build(const RemoteIndices& remoteIndices, const T1& sourceFlags,
+                           const T2& destFlags)
   {
     remoteIndices_=&remoteIndices;
 
@@ -458,8 +469,8 @@ namespace Dune
 
   }
 
-  template<typename TG, typename TA, int N>
-  void Interface<TG,TA,N>::free()
+  template<typename T>
+  void Interface<T>::free()
   {
     typedef InformationMap::iterator iterator;
     typedef InformationMap::const_iterator const_iterator;
@@ -470,8 +481,8 @@ namespace Dune
     }
     interfaces_.clear();
   }
-  template<typename TG, typename TA, int N>
-  Interface<TG,TA,N>::~Interface()
+  template<typename T>
+  Interface<T>::~Interface()
   {
     free();
   }
