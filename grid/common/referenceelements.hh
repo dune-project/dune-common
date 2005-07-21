@@ -38,7 +38,7 @@ namespace Dune
   public:
 
     // compile time sizes
-    enum { d=dim };        // maps from R^d
+    enum { d=dim };    // maps from R^d
 
     // export types
     typedef ctype CoordType;
@@ -68,13 +68,14 @@ namespace Dune
 
   //! The wrapper allows Imp to be used as a reference element without making methods of Imp virtual
   template<typename Imp>
-  class ReferenceElementWrapper : public ReferenceElement<typename Imp::CoordType,Imp::d>,
-                                  private Imp
+  class ReferenceElementWrapper :
+    public ReferenceElement<typename Imp::CoordType,Imp::d>,
+    private Imp
   {
   public:
 
     // compile time sizes
-    enum { d=Imp::d };        // maps from R^d
+    enum { d=Imp::d };    // maps from R^d
 
     // export types
     typedef typename Imp::CoordType CoordType;
@@ -170,10 +171,10 @@ namespace Dune
   class ReferenceCube
   {
   public:
-    enum { MAXE = Power_m_p<3,dim>::power };     // maximum number of entities per codim
+    enum { MAXE = Power_m_p<3,dim>::power }; // maximum number of entities per codim
 
     // compile time sizes
-    enum { d=dim };        // maps from R^d
+    enum { d=dim };    // maps from R^d
 
     // export types
     typedef ctype CoordType;
@@ -262,7 +263,7 @@ namespace Dune
               break;
             }
           if (done) continue;
-          direction[k] = i;                 // new direction selected
+          direction[k] = i;     // new direction selected
           generate(k+1,c,direction);
         }
       }
@@ -332,7 +333,7 @@ namespace Dune
               break;
             }
           if (done) continue;
-          direction[k] = i;                 // new direction selected
+          direction[k] = i;     // new direction selected
           generatesub(k+1,cc,direction,e,c);
         }
       }
@@ -396,12 +397,12 @@ namespace Dune
     {
       if ( (type==cube) || (type==line) || (type==quadrilateral) ||
            (type==hexahedron) )
-        return cube;
+        return cube_;
       DUNE_THROW(RangeError, "expected a cube!");
     }
 
   private:
-    ReferenceCube<ctype,dim> cube;
+    ReferenceCube<ctype,dim> cube_;
   };
 
 
@@ -455,7 +456,7 @@ namespace Dune
 
 
   //reference simplex without virtual functions
-
+  //! Reference simplex
   template<typename ctype, int dim>
   class ReferenceSimplex
   {
@@ -556,7 +557,7 @@ namespace Dune
 
       // position of centre of gravity of the element
       // codim=0 for element or cell
-      sizes[0]=1;   // only 1 cell !!
+      sizes[0]=1; // only 1 cell !!
       int node;
       for(int k=0; k<dim; ++k)
       { node=0;
@@ -572,15 +573,15 @@ namespace Dune
       subsizes[sizes[0]-1][0][dim]=node;
 
       //++++++++++++++++
-      if(dim==1)  // line
+      if(dim==1) // line
       {
         // node indices on element
         for(int i=0; i<subsizes[0][0][3]; ++i)
           subentityindex[0][0][i][3]=i;
       }
-      else if(dim==2)   // triangle
+      else if(dim==2) // triangle
       {
-        sizes[1]=3;     // edge
+        sizes[1]=3;   // edge
 
         // hard coding the number of subentities
         // triangle has 3 vertices, 3 edges
@@ -615,10 +616,10 @@ namespace Dune
           pos[2][1][j]=(pos[0][2][j]+pos[1][2][j])/2.0;
         }
       }
-      else if(dim==3)  // tetrahedron
+      else if(dim==3) // tetrahedron
       {
-        sizes[1]=4;     // face
-        sizes[2]=6;     // edge
+        sizes[1]=4;   // face
+        sizes[2]=6;   // edge
 
         // hard coding the number of subentities
         // tetrahedron has 4 vertices, 6 edges and 4 facese on element
@@ -1093,7 +1094,7 @@ namespace Dune
   /*
 
      http://hal.iwr.uni-heidelberg.de/dune/doc/appl/refelements.html
-       volume of pyramid = 1/3;
+     volume of pyramid = 1/3;
    */
 
 
