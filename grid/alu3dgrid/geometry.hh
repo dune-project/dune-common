@@ -132,7 +132,7 @@ namespace Dune {
     typedef FieldMatrix<alu3d_ctype, 3, 3> FaceCoordinatesType;
     //! for makeRefGeometry == true a Geometry with the coordinates of the
     //! reference element is made
-    ALU3dGridGeometry(bool makeRefGeometry=false);
+    explicit ALU3dGridGeometry(bool makeRefGeometry=false);
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
@@ -240,7 +240,7 @@ namespace Dune {
 
     //! for makeRefGeometry == true a Geometry with the coordinates of the
     //! reference element is made
-    ALU3dGridGeometry(bool makeRefGeometry=false);
+    explicit ALU3dGridGeometry(bool makeRefGeometry=false);
 
     //! Destructor
     ~ALU3dGridGeometry();

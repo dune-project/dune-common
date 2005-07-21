@@ -16,24 +16,25 @@
 
 namespace Dune {
 
-  template <class DofManagerType>
-  class CommunicatorInterface
-  {
-  public:
-    virtual bool firstMark() {return false;}
-    virtual bool secondMark(){return false;};
-    virtual bool thirdMark() {return false;};
+  /* Not used here
+     template <class DofManagerType>
+     class CommunicatorInterface
+     {
+     public:
+     virtual bool firstMark() {return false;}
+     virtual bool secondMark(){return false;};
+     virtual bool thirdMark() {return false;};
 
-    virtual bool markFirstLevel() {return false;};
-    virtual bool markNextLevel () {return false;};
+     virtual bool markFirstLevel() {return false;};
+     virtual bool markNextLevel () {return false;};
 
-    virtual bool xtractData (DofManagerType & dm) = 0;
+     virtual bool xtractData (DofManagerType & dm) = 0;
 
-    virtual bool repartition (DofManagerType & dm) = 0;
-    virtual bool communicate (DofManagerType & dm) = 0;
-    virtual bool consistencyGhosts () = 0;
-  };
-
+     virtual bool repartition (DofManagerType & dm) = 0;
+     virtual bool communicate (DofManagerType & dm) = 0;
+     virtual bool consistencyGhosts () = 0;
+     };
+   */
 
   /*!
      ALU3dGridCommunicator organizes the communication of ALU3dGrid on

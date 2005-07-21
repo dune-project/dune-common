@@ -4,20 +4,15 @@
 #define DUNE_ALU3DGRIDFACEUTILITY_HH
 
 #include <dune/common/misc.hh>
+#include <dune/grid/common/referenceelements.hh>
 
 #include "mappings.hh"
 #include "alu3dinclude.hh"
 #include "topology.hh"
 
 namespace Dune {
-  // * Note 1: change template argument of ALU3dGeometricFaceInfo to elementType as soon as new reference elements are available
-  // * Note 2: reconsider lazy evaluation of coordinates
+  // * Note: reconsider lazy evaluation of coordinates
 
-  // Forward declarations
-  template <int mydim, int coorddim, class GridImp>
-  class ALU3dGridMakeableGeometry;
-  template<int dim, int dimworld, ALU3dGridElementType elType>
-  class ALU3dGrid;
 
   //- class ALU3dGridFaceInfo
   /* \brief Stores face and adjoining elements of the underlying ALU3dGrid
@@ -105,35 +100,47 @@ namespace Dune {
     bool ghostBoundary_;
   };
 
-  template <class GridImp>
+  //! Helper class which provides geometric face information for the
+  //! ALU3dGridIntersectionIterator
+  template <ALU3dGridElementType type>
   class ALU3dGridGeometricFaceInfo {
   private:
     //- private typedefs
-    typedef GridImp GridType;
-    typedef typename GridType::template Codim<0>::Geometry ElementGeometryType;
-    typedef ElementTopologyMapping<GridImp::elementType> ElementTopo;
-    typedef FaceTopologyMapping<GridImp::elementType> FaceTopo;
-    typedef NonConformingFaceMapping<GridImp::elementType> NonConformingMappingType;
+    typedef ElementTopologyMapping<type> ElementTopo;
+    typedef FaceTopologyMapping<type> FaceTopo;
+    typedef NonConformingFaceMapping<type> NonConformingMappingType;
     typedef typename SelectType<
-        SameType<Int2Type<tetra>,Int2Type<GridImp::elementType> >::value,
+        SameType<Int2Type<tetra>,Int2Type<type> >::value,
         ALU3DSPACE LinearSurfaceMapping,
         BilinearSurfaceMapping
         >::Type SurfaceMappingType;
 
+    typedef typename SelectType<
+        SameType<Int2Type<tetra>, Int2Type<type> >::value,
+        ReferenceSimplex<alu3d_ctype, 3>,
+        ReferenceCube<alu3d_ctype, 3>
+        >::Type ReferenceElementType;
+
+    typedef typename SelectType<
+        SameType<Int2Type<tetra>, Int2Type<type> >::value,
+        ReferenceSimplex<alu3d_ctype, 2>,
+        ReferenceCube<alu3d_ctype, 2>
+        >::Type ReferenceFaceType;
+
+
     enum SideIdentifier { INNER, OUTER };
-    enum { dimworld = GridImp::dimensionworld };
+    enum { dimworld = 3 }; // ALU is a pure 3d grid
     enum { numVerticesPerFace =
-             EntityCount<GridImp::elementType>::numVerticesPerFace };
+             EntityCount<type>::numVerticesPerFace };
   public:
     //- public typedefs
     typedef FieldVector<alu3d_ctype, 3> NormalType;
     typedef FieldMatrix<alu3d_ctype,
         numVerticesPerFace,
         dimworld> CoordinateType;
-    typedef ALU3dGridMakeableGeometry<2, 3, const ALU3dGrid<3, 3, GridImp::elementType> > FaceGeometryType;
 
   public:
-    typedef ALU3dGridFaceInfo<GridImp::elementType> ConnectorType;
+    typedef ALU3dGridFaceInfo<type> ConnectorType;
 
     //- constructors and destructors
     ALU3dGridGeometricFaceInfo(const ConnectorType& ctor);
@@ -149,16 +156,16 @@ namespace Dune {
 
   private:
     //- forbidden methods
-    const ALU3dGridGeometricFaceInfo<GridImp>& operator=(const ALU3dGridGeometricFaceInfo<GridImp>&);
+    const ALU3dGridGeometricFaceInfo<type>& operator=(const ALU3dGridGeometricFaceInfo<type>&);
 
   private:
     //- private methods
     void generateGlobalGeometry() const;
     void generateLocalGeometries() const;
 
-    int referenceElementCornerIndex(int faceIndex,
-                                    int faceTwist,
-                                    int localVertexIndex) const;
+    int globalVertexIndex(int duneFaceIndex,
+                          int faceTwist,
+                          int duneFaceVertexIndex) const;
 
     void referenceElementCoordinatesRefined(SideIdentifier side,
                                             CoordinateType& result) const;
@@ -178,6 +185,8 @@ namespace Dune {
   private:
     //- private data
     const ConnectorType& connector_;
+    ReferenceElementType refElem_;
+    ReferenceFaceType refFace_;
 
     mutable SurfaceMappingType* mappingGlobal_; // needed for calculation of normal
     mutable bool generatedGlobal_;
