@@ -17,9 +17,9 @@ enum GridFlag { owner, overlap   };
 
 typedef Dune::ParallelLocalIndex<GridFlag> LocalIndex;
 typedef Dune::IndexSet<int,LocalIndex,101> IndexSet;
-typedef Dune::RemoteIndices<int,GridFlag,101> RemoteIndices;
-typedef Dune::Interface<int,GridFlag,101> Interface;
-typedef Dune::BufferedCommunicator<int,GridFlag,101> Communicator;
+typedef Dune::RemoteIndices<IndexSet> RemoteIndices;
+typedef Dune::Interface<IndexSet> Interface;
+typedef Dune::BufferedCommunicator<IndexSet> Communicator;
 
 template<int N, class M>
 void setupPattern(M& mat, IndexSet& indices, int overlapStart, int overlapEnd,
@@ -288,13 +288,13 @@ void testCoarsenIndices()
 
   typename Dune::PropertyMapTypeSelector<Dune::Amg::VertexVisitedTag,PropertiesGraph>::Type visitedMap = Dune::get(Dune::Amg::VertexVisitedTag(), pg);
 
-  Dune::Amg::IndicesCoarsener<Dune::EnumItem<GridFlag,overlap>,int,GridFlag,101>::coarsen(indices,
-                                                                                          remoteIndices,
-                                                                                          pg,
-                                                                                          visitedMap,
-                                                                                          aggregatesMap,
-                                                                                          coarseIndices,
-                                                                                          coarseRemote);
+  Dune::Amg::IndicesCoarsener<Dune::EnumItem<GridFlag,overlap>,IndexSet>::coarsen(indices,
+                                                                                  remoteIndices,
+                                                                                  pg,
+                                                                                  visitedMap,
+                                                                                  aggregatesMap,
+                                                                                  coarseIndices,
+                                                                                  coarseRemote);
   std::cout << rank <<": coarse indices: " <<coarseIndices << std::endl;
   std::cout << rank <<": coarse remote indices:"<<coarseRemote <<std::endl;
 

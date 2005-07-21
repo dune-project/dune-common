@@ -81,7 +81,7 @@ namespace Dune
           aggregates_[edge.target()]=number_;
         }
 
-        size_t operator()(const TG& global)
+        size_t operator()(const GlobalIndex& global)
         {
           size_t current = number_;
           ++number_;
@@ -113,12 +113,12 @@ namespace Dune
           isPublic_=false;
         }
 
-        void attribute(const TA& attribute)
+        void attribute(const Attribute& attribute)
         {
           attribute_=attribute;
         }
 
-        TA attribute()
+        Attribute attribute()
         {
           return attribute_;
         }
@@ -126,7 +126,7 @@ namespace Dune
       private:
         size_t number_;
         bool isPublic_;
-        TA attribute_;
+        Attribute attribute_;
         AggregatesMap<Vertex>& aggregates_;
 
       };
@@ -260,8 +260,8 @@ namespace Dune
         }
 
         // Build remote index list
-        typedef RemoteIndexListModifier<TG,TA,N,false> Modifier;
-        typedef typename RemoteIndices::RemoteIndexType RemoteIndex;
+        typedef RemoteIndexListModifier<T,false> Modifier;
+        typedef typename RemoteIndices::RemoteIndex RemoteIndex;
         typedef typename IndexSet::const_iterator IndexIterator;
 
         Modifier coarseList = coarseRemote.template getModifier<false,true>(process);
@@ -271,7 +271,7 @@ namespace Dune
         for(IndexIterator index = coarseIndices.begin(); index != iend; ++index, ++i)
           if(attributes[i] != std::numeric_limits<char>::max()) {
             // remote index is present
-            coarseList.insert(RemoteIndex(TA(attributes[i]), &(*index)));
+            coarseList.insert(RemoteIndex(Attribute(attributes[i]), &(*index)));
           }
       }
 
@@ -280,7 +280,7 @@ namespace Dune
 
       // snyc the index set and the remote indices to recompute missing
       // indices
-      IndicesSyncer<TG,TA,N> syncer(coarseIndices, coarseRemote);
+      IndicesSyncer<IndexSet> syncer(coarseIndices, coarseRemote);
       syncer.sync(renumberer);
     }
 
