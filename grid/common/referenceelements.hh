@@ -557,139 +557,176 @@ namespace Dune
       // position of centre of gravity of the element
       // codim=0 for element or cell
       sizes[0]=1;   // only 1 cell !!
+      int node;
       for(int k=0; k<dim; ++k)
-      {
+      { node=0;
         pos[sizes[0]-1][0][k]=(pos[0][dim][k])/sizes[dim];
         subentityindex[sizes[0]-1][0][0][dim]=0;
+        node+=1;
         for (int j=1; j<sizes[dim]; ++j)
         {
           pos[sizes[0]-1][0][k]+=(pos[j][dim][k])/(sizes[dim]);
           subentityindex[sizes[0]-1][0][j][dim]=j;
+          node+=1;
+        }}
+      subsizes[sizes[0]-1][0][dim]=node;
+
+      //++++++++++++++++
+      if(dim==1)  // line
+      {
+        // node indices on element
+        for(int i=0; i<subsizes[0][0][3]; ++i)
+          subentityindex[0][0][i][3]=i;
+      }
+      else if(dim==2)   // triangle
+      {
+        sizes[1]=3;     // edge
+
+        // hard coding the number of subentities
+        // triangle has 3 vertices, 3 edges
+        subsizes[0][0][2]=3;
+        subsizes[0][0][1]=3;
+        // triangle  has 2 vertices on each  edge
+        for (int k=0; k<3; ++k)
+          subsizes[k][1][2]=2;
+        // subentity indices
+        // node indices on element
+        for(int i=0; i<subsizes[0][0][2]; ++i)
+          subentityindex[0][0][i][2]=i;
+        // edge indices on element
+        for(int i=0; i<subsizes[0][0][1]; ++i)
+          subentityindex[0][0][i][1]=i;
+        // node indices on edge 0
+        subentityindex[0][1][0][2]=1;
+        subentityindex[0][1][1][2]=2;
+        // node indices on edge 1
+        subentityindex[1][1][0][2]=0;
+        subentityindex[1][1][1][2]=2;
+        // node indices on edge 2
+        subentityindex[2][1][0][2]=0;
+        subentityindex[2][1][1][2]=1;
+        for(int j=0; j<dim; ++j)
+        {
+          //edge 0 (nodes 1,2)
+          pos[0][1][j]=(pos[1][2][j]+pos[2][2][j])/2.0;
+          //edge 1 (nodes 0,2)
+          pos[1][1][j]=(pos[0][2][j]+pos[2][2][j])/2.0;
+          //edge 2 (nodes 0,1)
+          pos[2][1][j]=(pos[0][2][j]+pos[1][2][j])/2.0;
         }
       }
-
-      int face=0;
-      int edge=0;
-      for (int dir=0; dir<dim; ++dir)
+      else if(dim==3)  // tetrahedron
       {
+        sizes[1]=4;     // face
+        sizes[2]=6;     // edge
 
-        for(int side=1; side<=dim; ++side)
+        // hard coding the number of subentities
+        // tetrahedron has 4 vertices, 6 edges and 4 facese on element
+        subsizes[0][0][3]=4;
+        subsizes[0][0][2]=6;
+        subsizes[0][0][1]=4;
+        //  tetrahedron has 3 vertices on each triang. face
+        for(int i=0; i<subsizes[0][0][1]; ++i)
+          subsizes[i][1][3]=3;
+        //  tetrahedron has 3 edges on each triang. face
+        for(int i=0; i<subsizes[0][0][1]; ++i)
+          subsizes[i][1][2]=3;
+        //  tetrahedron has 3 vertices on each edge
+        for (int k=0; k<subsizes[0][0][2]; ++k)
+          subsizes[k][2][3]=2;
+        // subentity indices
+        // node indices on element
+        for(int i=0; i<subsizes[0][0][3]; ++i)
+          subentityindex[0][0][i][3]=i;
+        // edge indices on element
+        for(int i=0; i<subsizes[0][0][2]; ++i)
+          subentityindex[0][0][i][2]=i;
+        // face indices on element
+        for(int i=0; i<subsizes[0][0][1]; ++i)
+          subentityindex[0][0][i][1]=i;
+
+        // node indices on face 0
+        subentityindex[0][1][0][3]=1;
+        subentityindex[0][1][1][3]=2;
+        subentityindex[0][1][2][3]=3;
+        // node indices on face 1
+        subentityindex[1][1][0][3]=2;
+        subentityindex[1][1][1][3]=0;
+        subentityindex[1][1][2][3]=3;
+        // node indices on face 2
+        subentityindex[2][1][0][3]=0;
+        subentityindex[2][1][1][3]=1;
+        subentityindex[2][1][2][3]=3;
+        // node indices on face 3
+        subentityindex[3][1][0][3]=0;
+        subentityindex[3][1][1][3]=1;
+        subentityindex[3][1][2][3]=2;
+
+        // edge indices on face 0
+        subentityindex[0][1][0][2]=0;
+        subentityindex[0][1][1][2]=1;
+        subentityindex[0][1][2][2]=2;
+        // edge indices on face 1
+        subentityindex[1][1][0][2]=3;
+        subentityindex[1][1][1][2]=2;
+        subentityindex[1][1][2][2]=4;
+        // edge indices on face 2
+        subentityindex[2][1][0][2]=5;
+        subentityindex[2][1][1][2]=4;
+        subentityindex[2][1][2][2]=1;
+        // edge indices on face 3
+        subentityindex[3][1][0][2]=5;
+        subentityindex[3][1][1][2]=3;
+        subentityindex[3][1][2][2]=0;
+        // node indices on edge 0
+        subentityindex[0][2][0][3]=1;
+        subentityindex[0][2][1][3]=2;
+        // node indices on edge 1
+        subentityindex[1][2][0][3]=1;
+        subentityindex[1][2][1][3]=3;
+        // node indices on edge 2
+        subentityindex[2][2][0][3]=2;
+        subentityindex[2][2][1][3]=3;
+        // node indices on edge 3
+        subentityindex[3][2][0][3]=0;
+        subentityindex[3][2][1][3]=2;
+        // node indices on edge 4
+        subentityindex[4][2][0][3]=0;
+        subentityindex[4][2][1][3]=3;
+        // node indices on edge 5
+        subentityindex[5][2][0][3]=0;
+        subentityindex[5][2][1][3]=1;
+
+        for(int j=0; j<dim; ++j)
         {
 
-          if(side>dir)
-          {
-            for(int connect=side+1; connect<=dim; ++connect)
-            {
-              face+=1;
-              subentityindex[sizes[0]-1][0][face-1][dim-2]=face-1;          // face on cell
-              sizes[dim-2]=face;
-              subsizes[sizes[0]-1][0][dim-2]=face;
-              subsizes[face-1][dim-2][dim]=3;          // no of nodes on face
-              fnindex[face-1][0]=dir;           // fnindex is face node index
-              fnindex[face-1][1]=side;
-              fnindex[face-1][2]=connect;
-              //std::cout<<"dir::"<<dir<<side<<connect<<std::endl;
-              for (int j=0; j<dim; ++j)
-                subentityindex[face-1][dim-2][j][dim]=fnindex[face-1][j];
+          //face 0 (nodes 1,2,3)
+          pos[0][1][j]=(pos[1][3][j]+pos[2][3][j]+pos[3][3][j])/3.0;
+          //face 1 (nodes 0,2,3)
+          pos[1][1][j]=(pos[0][3][j]+pos[2][3][j]+pos[3][3][j])/3.0;
+          //face 2 (nodes 0,1,3)
+          pos[2][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[3][3][j])/3.0;
+          //face 3 (nodes 0,1,2)
+          pos[3][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[2][3][j])/3.0;
 
-              for (int j=0; j<dim; ++j)
-              {
-                double sum=0;
-                for(int jj=0; jj<subsizes[face-1][dim-2][dim]; ++jj)
-                  sum+=pos[fnindex[face-1][jj]][dim][j];
-                pos[face-1][dim-2][j]=sum/3.0;
-              }
-
-              if(face==1)
-              {
-                int count=0;
-                for(int i=0; i<2; ++i)
-                  for(int j=i+1; j<3; ++j)
-                  {
-                    //std::cout<<"i:"<<i<<"j:"<<j<<std::endl;
-                    count+=1;
-                    edge+=1;
-                    sizes[dim-1]=edge;
-                    subsizes[sizes[0]-1][0][dim-1]=edge;
-                    subentityindex[sizes[0]-1][0][edge-1][dim-1]=edge-1;              // edge on cell
-                    subsizes[edge-1][dim-1][dim]=2;               // nod on edge
-                    subsizes[face-1][dim-2][dim-1]=count;               // no of edges on face
-                    subentityindex[face-1][dim-2][count][dim-1]=edge;               // edge on cell
-                    enindex[count-1][0]=fnindex[face-1][i];               // edge node index
-                    enindex[count-1][1]=fnindex[face-1][j];
-                    ceindex[edge-1][0]=fnindex[face-1][i];               // cell edge index
-                    ceindex[edge-1][1]=fnindex[face-1][j];
-                    subentityindex[edge-1][dim-1][0][dim]=fnindex[face-1][i];              // nod on edge
-                    subentityindex[edge-1][dim-1][1][dim]=fnindex[face-1][j];              // nod on edge
-                    edgeindex[fnindex[face-1][i]][fnindex[face-1][j]]=edge-1;
-                    for(int k=0; k<dim; ++k)
-                    {
-                      double sum=0;
-                      for(int kk=0; kk<subsizes[edge-1][dim-1][dim]; ++kk)
-                        sum+=pos[subentityindex[edge-1][dim-1][kk][dim]][dim][k];
-                      pos[edge-1][dim-1][k]=sum/2.0;
-                    }
-                  }
-              }
-              else
-              {
-                int count=0;
-
-                int common=0;
-                for(int i=0; i<2; ++i)
-                  for(int j=i+1; j<3; ++j)
-                  {
-
-                    for(int k=0; k<edge; ++k)
-                    {
-
-
-                      if(ceindex[k][0]==fnindex[face-1][i] && ceindex[k][1]==fnindex[face-1][j])
-                      {
-                        common++;
-                        count+=1;
-                        subsizes[edge-1][dim-1][dim]=2;                   // nod on edge
-                        subsizes[face-1][dim-2][dim-1]=count;                   // no of edges on face
-                        subentityindex[face-1][dim-2][count-1][dim-1]=k;
-                        enindex[count-1][0]=fnindex[face-1][i];
-                        enindex[count-1][1]=fnindex[face-1][j];
-                      }
-                    }
-                  }
-
-                for(int i=common-1; i<2; ++i)
-
-                {
-                  int j=2;
-                  count+=1;
-                  edge+=1;
-                  sizes[dim-1]=edge;
-                  //std::cout<<"edge:"<<edge-1<<std::endl;
-                  subsizes[sizes[0]-1][0][dim-1]=edge;
-                  subentityindex[sizes[0]-1][0][edge-1][dim-1]=edge-1;              // edge on cell
-                  subsizes[edge-1][dim-1][dim]=2;               // nod on edge
-                  subsizes[face-1][dim-2][dim-1]=count;               // no of edges on face
-                  subentityindex[face-1][dim-2][count-1][dim-1]=edgeindex[fnindex[face-1][i]][fnindex[face-1][j]];              //edge on face
-                  enindex[count-1][0]=fnindex[face-1][i];
-                  enindex[count-1][1]=fnindex[face-1][j];
-                  ceindex[edge-1][0]=fnindex[face-1][i];
-                  ceindex[edge-1][1]=fnindex[face-1][j];
-                  subentityindex[edge-1][dim-1][0][dim]=fnindex[face-1][i];              // nod on edge
-                  subentityindex[edge-1][dim-1][1][dim]=fnindex[face-1][j];              // nod on edge
-                  edgeindex[fnindex[face-1][i]][fnindex[face-1][j]]=edge-1;
-                  for(int k=0; k<dim; ++k)
-                  {
-                    double sum=0;
-                    for(int kk=0; kk<subsizes[edge-1][dim-1][dim]; ++kk)
-                      sum+=pos[subentityindex[edge-1][dim-1][kk][dim]][dim][k];
-                    pos[edge-1][dim-1][k]=sum/2.0;
-                  }
-                }
-              }
-            }
-          }
+          //edge 0 (nodes 1,2)
+          pos[0][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+          //edge 1 (nodes 1,3)
+          pos[1][2][j]=(pos[1][3][j]+pos[3][3][j])/2.0;
+          //edge 2 (nodes 2,3)
+          pos[2][2][j]=(pos[2][3][j]+pos[3][3][j])/2.0;
+          //edge 3 (nodes 0,2)
+          pos[3][2][j]=(pos[0][3][j]+pos[2][3][j])/2.0;
+          //edge 4 (nodes 0,3)
+          pos[4][2][j]=(pos[0][3][j]+pos[3][3][j])/2.0;
+          //edge 5 (nodes 0,1)
+          pos[5][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
         }
       }
+      else
+        DUNE_THROW(NotImplemented, "dim not implemented yet");
+
+      //++++++++++++++++
 
     }
 
