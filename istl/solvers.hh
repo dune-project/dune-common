@@ -33,17 +33,21 @@ namespace Dune {
    */
 
 
-  /*! The return value of an application of the inverse
+  /** \brief Statistics about the application of an inverse operator
+
+     The return value of an application of the inverse
       operator delivers some important information about
           the iteration.
    */
   struct InverseOperatorResult
   {
+    /** \brief Default constructor */
     InverseOperatorResult ()
     {
       clear();
     }
 
+    /** \brief Resets all data */
     void clear ()
     {
       iterations = 0;
@@ -53,11 +57,20 @@ namespace Dune {
       elapsed = 0;
     }
 
-    int iterations;       // number of iterations
-    double reduction;     // reduction achieved: \f$ \|b-A(x^n)\|/\|b-A(x^0)\|\f$
-    bool converged;       // true if convergence criterion has been met
-    double conv_rate;     // convergence rate (average reduction per step)
-    double elapsed;       // elapsed time in seconds
+    /** \brief Number of iterations */
+    int iterations;
+
+    /** \brief Reduction achieved: \f$ \|b-A(x^n)\|/\|b-A(x^0)\|\f$ */
+    double reduction;
+
+    /** \brief True if convergence criterion has been met */
+    bool converged;
+
+    /** \brief Convergence rate (average reduction per step) */
+    double conv_rate;
+
+    /** \brief Elapsed time in seconds */
+    double elapsed;
   };
 
 
@@ -76,7 +89,10 @@ namespace Dune {
   public:
     //! export types, usually they come from the derived class
     typedef X domain_type;
+
+    /** \todo Please doc me! */
     typedef Y range_type;
+    /** \todo Please doc me! */
     typedef typename X::field_type field_type;
 
     //! apply inverse operator, Note: right hand side b may be overwritten!
@@ -95,10 +111,13 @@ namespace Dune {
   //=====================================================================
 
   /*! Implements a preconditioned loop.
+
           Verbose levels are:
-          0 : print nothing
-          1 : print initial and final defect and statistics
-          2 : print line for each iteration
+          <ul>
+          <li> 0 : print nothing </li>
+          <li> 1 : print initial and final defect and statistics </li>
+          <li> 2 : print line for each iteration </li>
+          </ul>
    */
   template<class X>
   class LoopSolver : public InverseOperator<X,X> {
@@ -117,6 +136,15 @@ namespace Dune {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
       IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
     }
+
+    /** \brief Set up loop solver
+
+       \tparam P The preconditioner type
+
+       \param prec A preconditioner object
+       \param maxit Maximum number of iterations
+       \param verbose Verbosity level
+     */
     template<class L, class S, class P>
     LoopSolver (L& op, S& sp, P& prec,
                 double reduction, int maxit, int verbose) :
