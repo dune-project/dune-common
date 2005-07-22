@@ -429,6 +429,25 @@ namespace Dune {
   const char* elType2Name( ALU3dGridElementType elType );
 }   // end namespace Dune
 
+namespace Capabilities {
+  template<int dim,int dimw, ALU3dGridElementType elType>
+  struct hasLeafIterator< ALU3dGrid<dim, dimw, elType> >
+  {
+    static const bool v = true;
+  };
+
+  template<int dim, int dimw, ALU3dGridElementType elType, int cdim>
+  struct hasEntity<ALU3dGrid<dim, dimw, elType>, cdim >
+  {
+    static const bool v = true;
+  };
+
+  template <int dim, int dimw, ALU3dGridElementType elType>
+  struct isParallel<const ALU3dGrid<dim, dimw, elType> > {
+    static const bool v = true;
+  };
+}
+
 #include "grid_imp.cc"
 
 #endif
