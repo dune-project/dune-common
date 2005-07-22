@@ -66,7 +66,6 @@ struct GeometryInterface
     e.type();
     e.corners();
     e[0];
-    e.refelem();
 
     Dune::FieldVector<ctype, Geometry::mydimension> v;
     e.global(v);
