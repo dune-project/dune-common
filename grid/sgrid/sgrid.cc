@@ -27,12 +27,12 @@ namespace Dune {
   Dune::Geometry<dim,dim,GridImp,SGeometry>
   SReferenceElement<dim,GridImp>::refelem(SGeometry<dim,dim,GridImp>(true));
 
+#if 0
   // members for SGeometry, general case dim!=0
   template<int mydim, int cdim, class GridImp>
   inline SGeometry<mydim,cdim,GridImp>::SGeometry (bool b)
   {
     builtinverse = false;
-
     if (!b) return;
 
     // copy arguments
@@ -56,6 +56,7 @@ namespace Dune {
       }
     }
   }
+#endif
 
   template<int mydim, int cdim, class GridImp>
   inline void SGeometry<mydim,cdim,GridImp>::make(FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As)
@@ -190,6 +191,7 @@ namespace Dune {
     for (int k=0; k<indent; k++) ss << " ";ss << "}";
   }
 
+#if 0
   // special case dim=0
   template<int cdim, class GridImp>
   inline SGeometry<0,cdim,GridImp>::SGeometry (bool b)
@@ -197,6 +199,7 @@ namespace Dune {
     if (!b) return;
     s = 0.0;
   }
+#endif
 
   template<int cdim, class GridImp>
   inline void SGeometry<0,cdim,GridImp>::make (FieldMatrix<sgrid_ctype,1,cdim>& __As)

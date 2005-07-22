@@ -86,13 +86,6 @@ namespace Dune {
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<sgrid_ctype, cdim>& operator[] (int i) const;
 
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned. A reference to a reference
-       element is returned. Usually, the implementation will store the finite
-       set of reference elements as global variables.
-     */
-    static const Dune::Geometry<mydim,mydim,GridImp,Dune::SGeometry>& refelem ();
-
     //! maps a local coordinate within reference element to global coordinate in element
     FieldVector<sgrid_ctype, cdim> global (const FieldVector<sgrid_ctype, mydim>& local) const;
 
@@ -135,8 +128,8 @@ namespace Dune {
      */
     void make (FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As);
 
-    //! constructor with bool argument makes reference element if true, uninitialized else
-    SGeometry (bool b);
+    //! constructor
+    SGeometry () : builtinverse(false) {};
 
   private:
     FieldVector<sgrid_ctype, cdim> s;             //!< position of element
@@ -170,7 +163,7 @@ namespace Dune {
     void make (FieldMatrix<sgrid_ctype,1,cdim>& __As);
 
     //! constructor with bool argument makes reference element if true, uninitialized else
-    SGeometry (bool b);
+    SGeometry () {};
 
     /** \brief This dummy routine always returns 1.0.
      *

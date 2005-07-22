@@ -54,24 +54,6 @@ namespace Dune {
   //========================================================================
   // The reference elements
 #if 0
-  /** Singleton holding reference elements */
-  template<int dim>
-  struct YaspReferenceElement {
-    static FieldVector<yaspgrid_ctype, dim> midpoint; // data neded for the refelem below
-    static FieldVector<yaspgrid_ctype, dim> extension; // data needed for the refelem below
-    static YaspGeometry<dim,dim> refelem;
-  };
-
-  // initialize static variable with bool constructor (which makes reference elements)
-  template<int dim>
-  YaspGeometry<dim,dim> YaspReferenceElement<dim>::refelem(YaspReferenceElement<dim>::midpoint,
-                                                           YaspReferenceElement<dim>::extension);
-  template<int dim>
-  FieldVector<yaspgrid_ctype, dim> YaspReferenceElement<dim>::midpoint(0.5);
-
-  template<int dim>
-  FieldVector<yaspgrid_ctype, dim> YaspReferenceElement<dim>::extension(1.0);
-
   template<int dim>
   class YaspFatherRelativeLocalElement {
   public:
@@ -196,18 +178,6 @@ namespace Dune {
       return c;
     }
 
-    /*! return reference element corresponding to this element.
-            Usually, the implementation will store the finite
-            set of reference elements as global variables.
-            But why in the hell do we need this reference element?
-     */
-    static const ReferenceGeometry& refelem ()
-    {
-#if 0
-      return YaspReferenceElement<mydim>::refelem;
-#endif
-    }
-
     //! maps a local coordinate within reference element to global coordinate in element
     FieldVector<ctype, cdim> global (const FieldVector<ctype, mydim>& local) const
     {
@@ -330,20 +300,6 @@ namespace Dune {
         else
           c[k] = midpoint[k]-0.5*extension[k];       // kth bit is 0 in i
       return c;
-    }
-
-    /*! return reference element corresponding to this element.
-            Usually, the implementation will store the finite
-            set of reference elements as global variables.
-            But why in the hell do we need this reference element?
-     */
-    static const ReferenceGeometry& refelem ()
-    {
-#warning Yasp::ReferenceGeometry not working!
-      DUNE_THROW(NotImplemented, "Yasp::ReferenceGeometry");
-#if 0
-      return YaspReferenceElement<mydim>::refelem;
-#endif
     }
 
     //! maps a local coordinate within reference element to global coordinate in element
