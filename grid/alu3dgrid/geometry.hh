@@ -23,8 +23,6 @@ namespace Dune {
   class ALU3dGridGeometry;
   template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
-  template<int dim,class GridImp>
-  struct ALU3dGridReferenceGeometry;
   class BilinearSurfaceMapping;
   class TrilinearMapping;
 
@@ -58,11 +56,11 @@ namespace Dune {
         EntityCount<GridImp::elementType>::numVerticesPerFace,
         3> FaceCoordinatesType;
 
-    ALU3dGridMakeableGeometry(bool makeRefelem=false) :
-      GeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>(makeRefelem)) {}
+    ALU3dGridMakeableGeometry() :
+      GeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>()) {}
 
     ALU3dGridMakeableGeometry(GridImp & grid , int level ) :
-      GeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>(false)) {}
+      GeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>()) {}
 
     //! build geometry out of different ALU3dGrid Geometrys
     //! ItemType are HElementType, HFaceType, HEdgeType and VertexType
@@ -132,7 +130,7 @@ namespace Dune {
     typedef FieldMatrix<alu3d_ctype, 3, 3> FaceCoordinatesType;
     //! for makeRefGeometry == true a Geometry with the coordinates of the
     //! reference element is made
-    explicit ALU3dGridGeometry(bool makeRefGeometry=false);
+    ALU3dGridGeometry();
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
@@ -143,11 +141,6 @@ namespace Dune {
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<alu3d_ctype, cdim>& operator[] (int i) const;
-
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned.
-     */
-    static const Dune::Geometry<mydim,mydim,GridImp,Dune::ALU3dGridGeometry> & refelem ();
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
@@ -240,7 +233,7 @@ namespace Dune {
 
     //! for makeRefGeometry == true a Geometry with the coordinates of the
     //! reference element is made
-    explicit ALU3dGridGeometry(bool makeRefGeometry=false);
+    ALU3dGridGeometry();
 
     //! Destructor
     ~ALU3dGridGeometry();
@@ -254,10 +247,6 @@ namespace Dune {
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<alu3d_ctype, cdim>& operator[] (int i) const;
-
-    //! return reference element corresponding to this element. If this is
-    //!  a reference element then self is returned.
-    static const Dune::Geometry<mydim,mydim,GridImp,Dune::ALU3dGridGeometry> & refelem ();
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
@@ -310,14 +299,6 @@ namespace Dune {
 
     mutable FieldMatrix<alu3d_ctype, 3, 3> jInv_;
 
-  };
-
-  // singleton holding reference elements
-  template<int dim, class GridImp>
-  struct ALU3dGridReferenceGeometry
-  {
-    ALU3dGridMakeableGeometry<dim,dim,GridImp> refelem;
-    ALU3dGridReferenceGeometry () : refelem (true) {};
   };
 
 } // end namespace Dune

@@ -8,17 +8,9 @@ namespace Dune {
   //- Tetra specialization
   template<int mydim, int cdim>
   inline ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> >::
-  ALU3dGridGeometry(bool makeRefElement)
+  ALU3dGridGeometry()
     : builtinverse_ (false) , builtA_ (false) , builtDetDF_ (false)
-  {
-    // create reference element
-    if(makeRefElement)
-    {
-      coord_ = 0.0;
-      for(int i=1; i<mydim+1; i++)
-        coord_[i][i-1] = 1.0;
-    }
-  }
+  {}
 
   //   B U I L T G E O M   - - -
 
@@ -417,82 +409,38 @@ namespace Dune {
     ss << "} \n";
   }
 
-  template <class GridImp, int dim> struct ALU3dGridRefElem;
-  template<int mydim, int cdim>
-  inline const Dune::Geometry<mydim,mydim,const ALU3dGrid<3,3,tetra>, Dune::ALU3dGridGeometry> &
-  ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3,3,tetra> >:: refelem () {
-    return ALU3dGridRefElem<const ALU3dGrid<3,3,tetra>,mydim>::refelem();
-  }
-
   //- Hexahedron specialization
   template <int mydim, int cdim>
   inline ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::
-  ALU3dGridGeometry(bool makeRefElement) :
+  ALU3dGridGeometry() :
     coord_(0.0),
     triMap_(0),
     biMap_(0)
-  {
-    assert(false);
-    if (makeRefElement) {
-      for (int i = 1; i < mydim+1; ++i) {
-        coord_[i][i-1] = 1.0;
-      }
-    }
-  }
+  {}
 
   template <>
   inline ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::
-  ALU3dGridGeometry(bool makeRefElement) :
+  ALU3dGridGeometry() :
     coord_(0.0),
     triMap_(0),
     biMap_(0)
-  {
-    // Dune reference element - hardwired
-    if (makeRefElement) {
-      coord_[1][0] = 1.0;
-      coord_[2][1] = 1.0;
-      coord_[3][0] = 1.0;
-      coord_[3][1] = 1.0;
-      coord_[4][2] = 1.0;
-      coord_[5][0] = 1.0;
-      coord_[5][2] = 1.0;
-      coord_[6][1] = 1.0;
-      coord_[6][2] = 1.0;
-      coord_[7][0] = 1.0;
-      coord_[7][1] = 1.0;
-      coord_[7][2] = 1.0;
-    }
-  }
+  {}
 
   template <>
   inline ALU3dGridGeometry<2, 3, const ALU3dGrid<3, 3, hexa> >::
-  ALU3dGridGeometry(bool makeRefElement)
+  ALU3dGridGeometry()
     : coord_(0.0),
       triMap_(0),
       biMap_(0)
-  {
-    if (makeRefElement) {
-      coord_[1][0] = 1.0;
-      coord_[2][1] = 1.0;
-      coord_[3][0] = 1.0;
-      coord_[3][1] = 1.0;
-    }
-  }
+  {}
 
   template <>
   inline ALU3dGridGeometry<2, 2, const ALU3dGrid<3, 3, hexa> >::
-  ALU3dGridGeometry(bool makeRefElement)
+  ALU3dGridGeometry()
     : coord_(0.0),
       triMap_(0),
       biMap_(0)
-  {
-    if (makeRefElement) {
-      coord_[1][0] = 1.0;
-      coord_[2][1] = 1.0;
-      coord_[3][0] = 1.0;
-      coord_[3][1] = 1.0;
-    }
-  }
+  {}
 
 
   template <int mydim, int cdim>
@@ -520,14 +468,6 @@ namespace Dune {
   operator[] (int i) const {
     assert((i >= 0) && (i < corners()));
     return coord_[i];
-  }
-
-  template <int mydim, int cdim>
-  const Dune::Geometry<mydim, mydim, const ALU3dGrid<3,3,hexa>,
-      Dune::ALU3dGridGeometry>&
-  ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::
-  refelem () {
-    return ALU3dGridRefElem<const ALU3dGrid<3, 3, hexa>, mydim>::refelem();
   }
 
   template <>
@@ -767,32 +707,6 @@ namespace Dune {
 
     return true;
   }
-
-  //**********************************************************
-  //  Reference Element
-  //**********************************************************
-  template <class GridImp> struct ALU3dGridRefElem<GridImp,1> {
-    static const Dune::Geometry<1,1,GridImp,Dune::ALU3dGridGeometry> & refelem ()
-    {
-      static ALU3dGridReferenceGeometry<1,GridImp> ref;
-      return ref.refelem;
-    }
-  };
-
-  template <class GridImp> struct ALU3dGridRefElem<GridImp,2> {
-    static const Dune::Geometry<2,2,GridImp,Dune::ALU3dGridGeometry> & refelem ()
-    {
-      static ALU3dGridReferenceGeometry<2,GridImp> ref;
-      return ref.refelem;
-    }
-  };
-  template <class GridImp> struct ALU3dGridRefElem<GridImp,3> {
-    static const Dune::Geometry<3,3,GridImp,Dune::ALU3dGridGeometry> & refelem ()
-    {
-      static ALU3dGridReferenceGeometry<3,GridImp> ref;
-      return ref.refelem;
-    }
-  };
 
 
 } // end namespace Dune

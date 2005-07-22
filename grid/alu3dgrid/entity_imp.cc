@@ -11,7 +11,7 @@ namespace Dune {
   ALU3dGridEntity(const GridImp  &grid, int level)
     : grid_(grid), level_(0) , gIndex_(-1)
       , item_(0) , father_(0)
-      , geo_(false) , builtgeometry_(false)
+      , geo_() , builtgeometry_(false)
       , localFCoordCalced_ (false)
   {}
 
@@ -146,10 +146,10 @@ namespace Dune {
   ALU3dGridEntity(const GridImp  &grid, int wLevel)
     : grid_(grid)
       , item_(0)
-      , ghost_(0), isGhost_(false), geo_(false) , builtgeometry_(false)
+      , ghost_(0), isGhost_(false), geo_() , builtgeometry_(false)
       , walkLevel_ (wLevel)
       , glIndex_(-1), level_(-1)
-      , geoInFather_ (false)
+      , geoInFather_ ()
       , isLeaf_ (false)
   {}
 
@@ -652,7 +652,7 @@ namespace Dune {
   //************************************************************************
   template <class GridImp>
   inline ALU3dGridBoundaryEntity<GridImp>::ALU3dGridBoundaryEntity () :
-    _geom (false) , _id(-1) {}
+    _geom () , _id(-1) {}
 
   template <class GridImp>
   inline int ALU3dGridBoundaryEntity<GridImp>::id () const
