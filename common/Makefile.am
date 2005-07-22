@@ -19,6 +19,6 @@ commoninclude_HEADERS = dlist.cc mapping.cc stdstreams.cc alignment.hh \
   sllist.hh smartpointer.hh stack.hh stdstreams.hh timer.hh tuples.hh \
   typeinfo.hh typetraits.hh vectorspace.hh precision.hh bigunsignedint.hh \
   gcd.hh lcm.hh configparser.hh propertymap.hh \
-  exprtmpl.hh exptmpl/scalar.inc exptmpl/exprexpr.inc
+  exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
 
 include $(top_srcdir)/am/global-rules
