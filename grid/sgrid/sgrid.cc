@@ -16,17 +16,6 @@ namespace Dune {
   //************************************************************************
   // SGeometry
 
-  // singleton holding reference elements
-  template<int dim, class GridImp>
-  struct SReferenceElement {
-    static Dune::Geometry<dim,dim,GridImp,SGeometry> refelem;
-  };
-
-  // initialize static variable with bool constructor (which makes reference elements)
-  template<int dim, class GridImp>
-  Dune::Geometry<dim,dim,GridImp,SGeometry>
-  SReferenceElement<dim,GridImp>::refelem(SGeometry<dim,dim,GridImp>(true));
-
 #if 0
   // members for SGeometry, general case dim!=0
   template<int mydim, int cdim, class GridImp>
@@ -92,12 +81,6 @@ namespace Dune {
     case 3 : return hexahedron;
     default : return unknown;
     }
-  }
-
-  template<int mydim, int cdim, class GridImp>
-  inline const Dune::Geometry<mydim,mydim,GridImp,Dune::SGeometry>& SGeometry<mydim,cdim,GridImp>::refelem ()
-  {
-    return SReferenceElement<mydim,GridImp>::refelem;
   }
 
   template<int mydim, int cdim, class GridImp>
