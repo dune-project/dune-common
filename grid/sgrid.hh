@@ -190,7 +190,7 @@ namespace Dune {
   {
   public:
     SMakeableGeometry() :
-      Geometry<mydim, cdim, GridImp, SGeometry>(SGeometry<mydim, cdim, GridImp>(false))
+      Geometry<mydim, cdim, GridImp, SGeometry>(SGeometry<mydim, cdim, GridImp>())
     {};
 
     void make (FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As) { this->realGeometry.make(__As); }
@@ -205,11 +205,11 @@ namespace Dune {
   public:
     typedef typename GridImp::template Codim<0>::Geometry Geometry;
 
-    SBoundaryEntity() : elem_(SGeometry<dim,dimworld,const GridImp>(true)) {}
+    SBoundaryEntity() : elem_(SGeometry<dim,dimworld,const GridImp>()) {}
 
     SBoundaryEntity(const SBoundaryEntity & rhs) :
       outerPoint_(rhs.outerPoint_),
-      elem_(SGeometry<dim,dimworld,const GridImp>(true))
+      elem_(SGeometry<dim,dimworld,const GridImp>())
     {};
 
     SBoundaryEntity & operator= (const SBoundaryEntity & b)
