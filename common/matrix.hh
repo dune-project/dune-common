@@ -14,6 +14,7 @@ namespace Dune {
   template<class T>
   class Matrix
   {
+    class ISTLError : public Exception {};
   public:
     /** \brief Create empty matrix */
     Matrix() : data(0), rows_(0), cols_(0)
