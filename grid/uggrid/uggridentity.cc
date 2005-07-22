@@ -45,15 +45,6 @@ level() const
   return level_;
 }
 
-#ifndef UGGRID_WITH_INDEX_SETS
-template<int codim, int dim, class GridImp>
-inline int UGGridEntity < codim, dim ,GridImp>::
-index() const
-{
-  return UG_NS<dim>::index(target_);
-}
-#endif
-
 template< int codim, int dim, class GridImp>
 inline const typename UGGridEntity<codim,dim,GridImp>::Geometry&
 UGGridEntity < codim, dim ,GridImp>::
@@ -75,18 +66,6 @@ inline int UGGridEntity<codim,dim,GridImp>::count () const
                                         << ">::count() not implemented yet!");
   return -1;
 }
-
-#ifndef UGGRID_WITH_INDEX_SETS
-template <int codim, int dim, class GridImp>
-template <int cc>
-inline int UGGridEntity<codim, dim, GridImp>::subIndex(int i) const
-{
-  DUNE_THROW(GridError, "UGGridEntity<" << codim << ", " << dim
-                                        << ">::subIndex(int i) not implemented yet!");
-  return 0;
-}
-#endif
-
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -115,14 +94,6 @@ inline AdaptationState UGGridEntity < 0, dim ,GridImp >::state() const
   return NONE;
 }
 
-#ifndef UGGRID_WITH_INDEX_SETS
-template<int dim, class GridImp>
-inline int UGGridEntity < 0, dim ,GridImp>::
-index() const
-{
-  return UG_NS<dim>::index(target_);
-}
-#endif
 
 //*****************************************************************8
 // count
@@ -232,12 +203,6 @@ template<int dim, class GridImp>
 inline UGGridIntersectionIterator<GridImp>
 UGGridEntity < 0, dim ,GridImp >::ibegin() const
 {
-#if 0
-  UGGridIntersectionIterator<GridImp> it;
-
-  // Set intersection iterator to zeroth neighbor of target_
-  it.setToTarget(target_, 0, level());
-#endif
   return UGGridIntersectionIterator<GridImp>(target_, 0, level());
 }
 
@@ -246,11 +211,6 @@ template< int dim, class GridImp>
 inline UGGridIntersectionIterator<GridImp>
 UGGridEntity < 0, dim ,GridImp >::iend() const
 {
-#if 0
-  UGGridIntersectionIterator<GridImp> it;
-
-  it.setToTarget(target_, -1);
-#endif
   return UGGridIntersectionIterator<GridImp>(target_, -1, -1);
 }
 

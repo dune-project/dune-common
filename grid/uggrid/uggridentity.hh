@@ -84,22 +84,9 @@ namespace Dune {
     //! level of this element
     int level () const;
 
-#ifdef UGGRID_WITH_INDEX_SETS
-    int getIndex() const {
-      return UG_NS<dim>::index(target_);
-    }
-
-    int index () const {
-      DUNE_THROW(NotImplemented, "You have compiled UGGrid with index sets and thus"
-                 << " you cannot call UGGridEntity::index()");
-    }
-#else
     //! index is unique and consecutive per level and codim
     //! used for access to degrees of freedom
     int index () const;
-
-    int globalIndex() const { return index(); }
-#endif
 
     /** \brief The partition type for parallel computing
      * \todo So far it always returns InteriorEntity */
@@ -141,13 +128,8 @@ namespace Dune {
 
     void setToTarget(typename TargetType<codim,dim>::T* target, int level);
 
-    // private Methods
-    void makeDescription();
-
     //! the current geometry
     UGMakeableGeometry<dim-codim,dim,GridImp> geo_;
-
-    bool builtgeometry_;       //!< true if geometry has been constructed
 
     FieldVector<UGCtype, dim> localFatherCoords_;
 
@@ -208,24 +190,8 @@ namespace Dune {
     //! Level of this element
     int level () const;
 
-#ifdef UGGRID_WITH_INDEX_SETS
-    int getIndex() const {
-      return UG_NS<dim>::index(target_);
-    }
-
-    int index () const {
-      DUNE_THROW(NotImplemented, "You have compiled UGGrid with index sets and thus"
-                 << " you cannot call UGGridEntity::index()");
-    }
-#else
     //! Index is unique and consecutive per level and codim
     int index () const;
-
-    /** \brief Return the global unique index in mesh
-     * \todo So far returns the same as index()
-     */
-    int globalIndex() const { return index(); }
-#endif
 
     /** \brief The partition type for parallel computing */
     PartitionType partitionType () const {
