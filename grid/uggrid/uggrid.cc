@@ -947,8 +947,10 @@ void Dune::UGGrid < dim, dimworld >::createend()
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::setIndices()
 {
+  levelIndexSets_.resize(maxlevel()+1);
+
   for (int i=0; i<=maxlevel(); i++)
-    levelIndexSets_[i].update();
+    levelIndexSets_[i].update(*this, i);
 
   leafIndexSet_.update();
 
