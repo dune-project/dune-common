@@ -68,6 +68,18 @@ namespace Dune {
     const static int alu2duneVertex_[EntityCount<type>::numVerticesPerFace];
   };
 
+  inline const ALU3dImplTraits<tetra>::GEOFaceType*
+  getFace(const ALU3DSPACE GEOTetraElementType& elem, int index) {
+    assert(index >= 0 && index < 4);
+    return elem.myhface3(ElementTopologyMapping<tetra>::dune2aluFace(index));
+  }
+
+  inline const ALU3dImplTraits<hexa>::GEOFaceType*
+  getFace(const ALU3DSPACE GEOHexaElementType& elem, int index) {
+    assert(index >= 0 && index < 6);
+    return elem.myhface4(ElementTopologyMapping<hexa>::dune2aluFace(index));
+  }
+
   //- IMPLEMENTATION
   //- class ElementTopologyMapping
   template <ALU3dGridElementType type>

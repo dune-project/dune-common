@@ -74,6 +74,7 @@ namespace Dune {
   inline void ALU3dGridEntity<3,3,const ALU3dGrid<3,3,tetra> > ::
   setElement(const ALU3DSPACE HElementType &el, const ALU3DSPACE VertexType &vx)
   {
+    // * what the heck does this static_cast!?
     item_   = static_cast<const BSIMPLElementType *> (&vx);
     gIndex_ = (*item_).getIndex();
     level_  = (*item_).level();
@@ -86,7 +87,7 @@ namespace Dune {
   inline int ALU3dGridEntity<cd,dim,GridImp> :: index () const
   {
     const Entity en (*this);
-    return grid_.levelIndexSet().index(en);
+    return grid_.levelIndexSet(en.level()).index(en);
   }
 
   template<int cd, int dim, class GridImp>
@@ -316,7 +317,7 @@ namespace Dune {
   inline int ALU3dGridEntity<0,dim,GridImp> :: index() const
   {
     const Entity en (*this);
-    return grid_.levelIndexSet().index(en);
+    return grid_.levelIndexSet(en.level()).index(en);
   }
 
   template<int dim, class GridImp>
@@ -333,10 +334,12 @@ namespace Dune {
 
   //********* begin method subIndex ********************
   // partial specialisation of subIndex
-  template <class IMPLElemType, int codim> struct IndexWrapper;
+  template <class IMPLElemType, ALU3dGridElementType type, int codim>
+  struct IndexWrapper {};
 
   // specialisation for vertices
-  template <class IMPLElemType> struct IndexWrapper<IMPLElemType,3>
+  template <class IMPLElemType, ALU3dGridElementType type>
+  struct IndexWrapper<IMPLElemType, type, 3>
   {
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
@@ -345,7 +348,8 @@ namespace Dune {
   };
 
   // specialisation for faces
-  template <class IMPLElemType> struct IndexWrapper<IMPLElemType,1>
+  template <class IMPLElemType>
+  struct IndexWrapper<IMPLElemType, tetra, 1>
   {
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
@@ -353,8 +357,18 @@ namespace Dune {
     }
   };
 
+  template <class IMPLElemType>
+  struct IndexWrapper<IMPLElemType, hexa, 1>
+  {
+    static inline int subIndex(const IMPLElemType &elem, int i)
+    {
+      return elem.myhface4(i)->getIndex();
+    }
+  };
+
   // specialisation for faces
-  template <class IMPLElemType> struct IndexWrapper<IMPLElemType,2>
+  template <class IMPLElemType>
+  struct IndexWrapper<IMPLElemType, tetra, 2>
   {
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
@@ -366,6 +380,41 @@ namespace Dune {
     }
   };
 
+  // specialisation for faces
+  template <class IMPLElemType>
+  struct IndexWrapper<IMPLElemType, hexa, 2>
+  {
+    static inline int subIndex(const IMPLElemType &elem, int i)
+    {
+      dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
+
+      assert(false); // just copied from tetra specialisation, definitely wrong
+      if(i<3)
+        return elem.myhface4(0)->myhedge1(i)->getIndex();
+      else
+        return elem.myhface4(i-2)->myhedge1(i-3)->getIndex();
+    }
+  };
+
+  // specialisation for elements
+  template <class IMPLElemType>
+  struct IndexWrapper<IMPLElemType, tetra, 0>
+  {
+    static inline int subIndex(const IMPLElemType &elem, int i) {
+      assert(false);
+      return i;
+    }
+  };
+
+  template <class IMPLElemType>
+  struct IndexWrapper<IMPLElemType, hexa, 0>
+  {
+    static inline int subIndex(const IMPLElemType &elem, int i) {
+      assert(false);
+      return i;
+    }
+  };
+
   template<int dim, class GridImp>
   template<int cc>
   inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
@@ -373,7 +422,7 @@ namespace Dune {
     assert(cc == dim);
     assert(item_ != 0);
     typedef typename  ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElType;
-    return IndexWrapper<IMPLElType,cc>::subIndex ( *item_ ,i);
+    return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_ ,i);
   }
   //******** end method subIndex *************
 
@@ -392,7 +441,17 @@ namespace Dune {
   }
 
   //******** begin method entity ******************
-  template <class GridImp, int dim, int cd> struct SubEntities;
+  template <class GridImp, int dim, int cd> struct SubEntities {};
+
+  // specialisation for elements
+  template <class GridImp, int dim>
+  struct SubEntities<GridImp, dim, 0>
+  {
+    static typename ALU3dGridEntity<0,dim,GridImp>::template Codim<0>::EntityPointer
+    entity (const GridImp & grid, const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i) {
+      return ALU3dGridEntityPointer<0, GridImp>(grid, item);
+    }
+  };
 
   // specialisation for faces
   template <class GridImp, int dim>
@@ -401,7 +460,8 @@ namespace Dune {
     static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<1>:: EntityPointer
     entity (const GridImp & grid, const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
-      return ALU3dGridEntityPointer<1,GridImp> (grid, *(item.myhface3(i)) );
+      // return ALU3dGridEntityPointer<1,GridImp> (grid, *(item.myhface3(i)) );
+      return ALU3dGridEntityPointer<1,GridImp> (grid, *(getFace(item, i)) );
     }
   };
 
@@ -415,11 +475,13 @@ namespace Dune {
       dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
       if(i<3)
       {
-        return ALU3dGridEntityPointer<2,GridImp> (grid, (*(item.myhface3(0)->myhedge1(i))) );
+        // return ALU3dGridEntityPointer<2,GridImp> (grid, (*(item.myhface3(0)->myhedge1(i))) );
+        return ALU3dGridEntityPointer<2,GridImp> (grid, *(getFace(item, 0)->myhedge1(i)) );
       }
       else
       {
-        return ALU3dGridEntityPointer<2,GridImp> (grid, (*(item.myhface3(i-2)->myhedge1(i-3))) );
+        //return ALU3dGridEntityPointer<2,GridImp> (grid, (*(item.myhface3(i-2)->myhedge1(i-3))) );
+        return ALU3dGridEntityPointer<2,GridImp> (grid, *(getFace(item, i-2)->myhedge1(i-3)) );
       }
     }
   };

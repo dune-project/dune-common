@@ -33,6 +33,11 @@ namespace Dune {
   template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
 
+  // helper structs from entity_imp.cc
+  //template <class GridImp, int dim, int cd>
+  //struct SubEntities;
+  //template <class IMPLElemType, ALU3dGridElementType type, int codim>
+  //struct IndexWrapper;
 
   //**********************************************************************
   //
@@ -118,8 +123,11 @@ namespace Dune {
     friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
   public:
-    typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType BSElementType;
-    typedef typename ALU3DSPACE BSIMPLElementType<cd>::ElementType BSIMPLElementType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::InterfaceType BSElementType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::ImplementationType BSIMPLElementType;
+
+    //typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType BSElementType;
+    //typedef typename ALU3DSPACE BSIMPLElementType<cd>::ElementType BSIMPLElementType;
 
     typedef typename GridImp::template Codim<cd>::Entity Entity;
     typedef typename GridImp::template Codim<cd>::Geometry Geometry;
@@ -409,7 +417,8 @@ namespace Dune {
     friend class ALU3dGridEntity< 0,dim,GridImp>;
     friend class ALU3dGrid < dim , dimworld, GridImp::elementType >;
 
-    typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType MyHElementType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::InterfaceType MyHElementType;
+    //typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType  MyHElementType;
   public:
     typedef ALU3dImplTraits<GridImp::elementType>::BNDFaceType BNDFaceType;
     typedef typename GridImp::template Codim<cd>::Entity Entity;

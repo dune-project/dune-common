@@ -229,7 +229,9 @@ namespace Dune {
 
   template<class GridImp>
   inline typename ALU3dGridIntersectionIterator<GridImp>::EntityPointer
-  ALU3dGridIntersectionIterator<GridImp>::inside () const {}
+  ALU3dGridIntersectionIterator<GridImp>::inside () const {
+    return EntityPointer(this->grid_, connector_->innerEntity());
+  }
 
   template<class GridImp>
   inline bool ALU3dGridIntersectionIterator<GridImp> :: boundary () const
