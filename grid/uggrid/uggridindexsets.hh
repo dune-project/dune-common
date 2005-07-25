@@ -51,24 +51,67 @@ namespace Dune {
     /** \todo Should be private */
     void update(const GridImp& grid, int level) {
 
+      // Commit the index set to a specific level of a specific grid
       grid_ = &grid;
       level_ = level;
 
       const int dim = GridImp::dimension;
 
+      // ///////////////////////////////
+      //   Init the element indices
+      // ///////////////////////////////
+      int numSimplices = 0;
+      int numPyramids  = 0;
+      int numPrisms    = 0;
+      int numCubes     = 0;
+
       typename GridImp::Traits::template Codim<0>::LevelIterator eIt    = grid_->template lbegin<0>(level_);
       typename GridImp::Traits::template Codim<0>::LevelIterator eEndIt = grid_->template lend<0>(level_);
 
-      int id = 0;
-      for (; eIt!=eEndIt; ++eIt)
-        UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = id++;
+      for (; eIt!=eEndIt; ++eIt) {
+
+        switch (eIt->geometry().type()) {
+        case simplex :
+          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numSimplices++;
+          break;
+        case pyramid :
+          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numPyramids++;
+          break;
+        case prism :
+          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numPrisms++;
+          break;
+        case cube :
+          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numCubes++;
+          break;
+        default :
+          DUNE_THROW(GridError, "Found the GeometryType " << eIt->geometry().type()
+                                                          << ", which should never occur in a UGGrid!");
+        }
+
+      }
+
+      // Update the list of geometry types present
+      myTypes_.resize(0);
+      if (numSimplices > 0)
+        myTypes_.push_back(simplex);
+      if (numPyramids > 0)
+        myTypes_.push_back(pyramid);
+      if (numPrisms > 0)
+        myTypes_.push_back(prism);
+      if (numCubes > 0)
+        myTypes_.push_back(cube);
+
+      // //////////////////////////////
+      //   Init the vertex indices
+      // //////////////////////////////
 
       typename GridImp::Traits::template Codim<dim>::LevelIterator vIt    = grid_->template lbegin<dim>(level_);
       typename GridImp::Traits::template Codim<dim>::LevelIterator vEndIt = grid_->template lend<dim>(level_);
 
-      id = 0;
+      int id = 0;
       for (; vIt!=vEndIt; ++vIt)
         UG_NS<dim>::levelIndex(grid_->template getRealEntity<dim>(*vIt).target_) = id++;
+
     }
 
   private:
@@ -109,19 +152,16 @@ namespace Dune {
     /** deliver all geometry types used in this grid */
     const std::vector<GeometryType>& geomtypes () const
     {
-      return mytypes;
+      return myTypes_;
     }
 
     /** \todo Should be private */
-    void update() {
-
-      // update the list of element types present
-    }
+    void update() {}
 
   private:
 
     const GridImp& grid_;
-    std::vector<GeometryType> mytypes;
+    std::vector<GeometryType> myTypes_;
   };
 
 
