@@ -230,14 +230,14 @@ namespace Dune {
     }
 
     unsigned int localId() const {
-      return target_->id;
+      return UG_NS<dim>::id(target_);
     }
 
     unsigned int globalId() const {
 #ifdef ModelP
       return target_->ddd.gid;
 #else
-      return target_->id;
+      return UG_NS<dim>::id(target_);
 #endif
     }
 

@@ -187,7 +187,11 @@ namespace Dune {
       return 0;
     }
 
-    //! Gets the index of a UG element
+    // /////////////////////////////////////////////
+    //   Level indices
+    // /////////////////////////////////////////////
+
+    //! Gets the level index of a UG element
     static int& levelIndex(typename TargetType<0,dim>::T* theElement) {
 #ifdef FOR_DUNE
       return theElement->ge.levelIndex;
@@ -196,7 +200,7 @@ namespace Dune {
 #endif
     }
 
-    //! Gets the index of a UG element
+    //! Gets the level index of a UG element
     static const int& levelIndex(const typename TargetType<0,dim>::T* theElement) {
 #ifdef FOR_DUNE
       return theElement->ge.levelIndex;
@@ -205,7 +209,7 @@ namespace Dune {
 #endif
     }
 
-    //! Gets the index of a UG node
+    //! Gets the level index of a UG node
     static int& levelIndex(typename TargetType<dim,dim>::T* theNode) {
 #ifdef FOR_DUNE
       return theNode->levelIndex;
@@ -214,7 +218,7 @@ namespace Dune {
 #endif
     }
 
-    //! Gets the index of a UG node
+    //! Gets the level index of a UG node
     static const int& levelIndex(const typename TargetType<dim,dim>::T* theNode) {
 #ifdef FOR_DUNE
       return theNode->levelIndex;
@@ -223,13 +227,30 @@ namespace Dune {
 #endif
     }
 
-#if 0
-    //! Calm the compiler
-    static int& index(const void* theWhatever) {
-      DUNE_THROW(NotImplemented, "No index available for this kind of object");
-      //return 0;
+    // /////////////////////////////////////////////
+    //   Leaf indices
+    // /////////////////////////////////////////////
+
+    //! Gets the leaf index of a UG element
+    static int& leafIndex(typename TargetType<0,dim>::T* theElement) {
+      return theElement->ge.leafIndex;
     }
-#endif
+
+    //! Gets the leaf index of a UG element
+    static const int& leafIndex(const typename TargetType<0,dim>::T* theElement) {
+      return theElement->ge.leafIndex;
+    }
+
+    //! Gets the leaf index of a UG node
+    static int& leafIndex(typename TargetType<dim,dim>::T* theNode) {
+      return theNode->myvertex.id;
+    }
+
+    //! Gets the leaf index of a UG node
+    static const int& leafIndex(const typename TargetType<dim,dim>::T* theNode) {
+      return theNode->myvertex.id;
+    }
+
 
     //! Gets the index of a UG element
     static int& id(typename TargetType<0,dim>::T* theElement) {
