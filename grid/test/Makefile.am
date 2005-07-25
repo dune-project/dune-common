@@ -13,6 +13,10 @@ if ALBERTA
   APROG = test-alberta
 endif
 
+if ALU3DGRID
+  ALUPROG = test-alu3dgrid
+endif
+
 # UGGrid needs AmiraMeshReader for now...
 # !!! trick around to beat automake
 if AMIRAMESH
@@ -30,7 +34,7 @@ endif
 #
 
 # tests where program to build and program to run are equal
-NORMALTESTS = test-sgrid test-oned $(APROG) $(UPROG)
+NORMALTESTS = test-sgrid test-oned $(APROG) $(UPROG) $(ALUPROG)
 
 # list of tests to run (yaspgrid is special case)
 TESTS = $(NORMALTESTS) $(YRUN)
@@ -66,6 +70,11 @@ test_yaspgrid_LDADD = $(MPI_LDFLAGS) $(MPI_LIBS)
 test_alberta_SOURCES = test-alberta.cc
 test_alberta_CXXFLAGS = $(ALBERTA_CPPFLAGS) $(AM_CPPFLAGS)
 test_alberta_LDADD = $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS)
+
+# files for alu3dgrid
+test_alu3dgrid_SOURCES = test-alu3dgrid.cc
+test_alu3dgrid_CXXFLAGS = $(ALU3DGRID_CPPFLAGS) $(AM_CPPFLAGS)
+test_alu3dgrid_LDADD = $(ALU3DGRID_LDFLAGS) $(ALU3DGRID_LIBS)
 
 # libdune contains both libug2 and libug3, always test both dimensions
 test_ug2_SOURCES = test-ug.cc

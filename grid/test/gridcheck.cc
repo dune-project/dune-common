@@ -435,8 +435,8 @@ struct GridInterface
     IsTrue<Dune::Capabilities::hasEntity<Grid, 0>::v>::yes();
     IsTrue<Dune::Capabilities::hasEntity<const Grid, 0>::v>::yes();
 
-    EntityInterface<Grid, 0, Grid::dimension,
-        Dune::Capabilities::hasEntity<Grid, 0>::v >();
+    //EntityInterface<Grid, 0, Grid::dimension,
+    //  Dune::Capabilities::hasEntity<Grid, 0>::v >();
 
     // !!! check for parallel grid?
     /*
