@@ -15,8 +15,10 @@
 // for easier parsing by undefAllMacros.pl
 /** \todo Defining __PC__ here is certainly not the perfect way... */
 #define __PC__  // hack:  choose the architecture
+//#define FOR_DUNE
 #include "uggrid/ugincludes.hh"
 #undef __PC__
+//#undef FOR_DUNE
 
 // Wrap a few large UG macros by functions before they get undef'ed away
 #include "uggrid/ugfunctions.hh"
@@ -113,6 +115,11 @@ namespace Dune {
     friend class UGGridEntity <dim,dim,UGGrid<dim,dimworld> >;
     friend class UGGridHierarchicIterator<UGGrid<dim,dimworld> >;
     friend class UGGridIntersectionIterator<UGGrid<dim,dimworld> >;
+
+    friend class UGGridLevelIndexSet<UGGrid<dim,dimworld> >;
+    friend class UGGridLeafIndexSet<UGGrid<dim,dimworld> >;
+    friend class UGGridGlobalIdSet<UGGrid<dim,dimworld> >;
+    friend class UGGridLocalIdSet<UGGrid<dim,dimworld> >;
 
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
@@ -392,7 +399,7 @@ namespace Dune {
     void init(unsigned int heapSize, unsigned int envHeapSize);
 
     // Recomputes entity indices after the grid was changed
-    void setLocalIndices();
+    void setIndices();
 
     // Each UGGrid object has a unique name to identify it in the
     // UG environment structure

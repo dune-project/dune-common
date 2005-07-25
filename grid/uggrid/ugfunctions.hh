@@ -188,29 +188,67 @@ namespace Dune {
     }
 
     //! Gets the index of a UG element
-    static int& index(typename TargetType<0,dim>::T* theElement) {
+    static int& levelIndex(typename TargetType<0,dim>::T* theElement) {
+#ifdef FOR_DUNE
+      return theElement->ge.levelIndex;
+#else
       return theElement->ge.id;
+#endif
     }
 
     //! Gets the index of a UG element
-    static const int& index(const typename TargetType<0,dim>::T* theElement) {
+    static const int& levelIndex(const typename TargetType<0,dim>::T* theElement) {
+#ifdef FOR_DUNE
+      return theElement->ge.levelIndex;
+#else
       return theElement->ge.id;
+#endif
     }
 
     //! Gets the index of a UG node
-    static int& index(typename TargetType<dim,dim>::T* theNode) {
+    static int& levelIndex(typename TargetType<dim,dim>::T* theNode) {
+#ifdef FOR_DUNE
+      return theNode->levelIndex;
+#else
       return theNode->id;
+#endif
     }
 
     //! Gets the index of a UG node
-    static const int& index(const typename TargetType<dim,dim>::T* theNode) {
+    static const int& levelIndex(const typename TargetType<dim,dim>::T* theNode) {
+#ifdef FOR_DUNE
+      return theNode->levelIndex;
+#else
       return theNode->id;
+#endif
     }
 
+#if 0
     //! Calm the compiler
     static int& index(const void* theWhatever) {
       DUNE_THROW(NotImplemented, "No index available for this kind of object");
       //return 0;
+    }
+#endif
+
+    //! Gets the index of a UG element
+    static int& id(typename TargetType<0,dim>::T* theElement) {
+      return theElement->ge.id;
+    }
+
+    //! Gets the index of a UG element
+    static const int& id(const typename TargetType<0,dim>::T* theElement) {
+      return theElement->ge.id;
+    }
+
+    //! Gets the index of a UG node
+    static int& id(typename TargetType<dim,dim>::T* theNode) {
+      return theNode->id;
+    }
+
+    //! Gets the index of a UG node
+    static const int& id(const typename TargetType<dim,dim>::T* theNode) {
+      return theNode->id;
     }
 
     //! \todo Please doc me!

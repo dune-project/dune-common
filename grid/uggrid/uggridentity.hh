@@ -72,6 +72,9 @@ namespace Dune {
 
     friend class UGGrid<dim, dim>;
 
+    template <class GridImp_>
+    friend class UGGridLevelIndexSet;
+
     typedef typename GridImp::ctype UGCtype;
 
   public:
@@ -86,7 +89,30 @@ namespace Dune {
 
     //! index is unique and consecutive per level and codim
     //! used for access to degrees of freedom
-    int index () const;
+    int index () const {
+      return levelIndex();
+    }
+
+    int levelIndex() const {
+      return UG_NS<dim>::levelIndex(target_);
+    }
+
+    int leafIndex() const {
+      return target_->myvertex->id;
+    }
+
+    unsigned int localId() const {
+      return target_->id;
+    }
+
+    unsigned int globalId() const {
+#ifdef ModelP
+      return target_->ddd.gid;
+#else
+      return target_->id;
+#endif
+    }
+
 
     /** \brief The partition type for parallel computing
      * \todo So far it always returns InteriorEntity */
@@ -191,7 +217,29 @@ namespace Dune {
     int level () const;
 
     //! Index is unique and consecutive per level and codim
-    int index () const;
+    int index () const {
+      return levelIndex();
+    }
+
+    int levelIndex() const {
+      return UG_NS<dim>::levelIndex(target_);
+    }
+
+    int leafIndex() const {
+      return UG_NS<dim>::leafIndex(target_);
+    }
+
+    unsigned int localId() const {
+      return target_->id;
+    }
+
+    unsigned int globalId() const {
+#ifdef ModelP
+      return target_->ddd.gid;
+#else
+      return target_->id;
+#endif
+    }
 
     /** \brief The partition type for parallel computing */
     PartitionType partitionType () const {
@@ -241,7 +289,6 @@ namespace Dune {
 
     //! returns true if Entity has children
     bool isLeaf() const {
-      // return NSONS == 0;
 #ifdef _2
       return UG2d::ReadCW(target_, UG2d::NSONS_CE) == 0;
 #else

@@ -539,7 +539,7 @@ bool Dune::UGGrid < dim, dimworld >::adapt()
     DUNE_THROW(GridError, "UG::adapt() returned with error code " << rv);
 
   // Renumber everything
-  setLocalIndices();
+  setIndices();
 
   /** \bug Should return true only if at least one element has actually
       been refined */
@@ -549,7 +549,6 @@ bool Dune::UGGrid < dim, dimworld >::adapt()
 template <int dim, int dimworld>
 void Dune::UGGrid <dim, dimworld>::postAdapt()
 {
-
   for (int i=0; i<=maxlevel(); i++) {
 
     typename Traits::template Codim<0>::LevelIterator eIt    = lbegin<0>(i);
@@ -563,7 +562,6 @@ void Dune::UGGrid <dim, dimworld>::postAdapt()
 #endif
 
   }
-
 }
 
 
@@ -670,18 +668,15 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
     ElementType* SonList[MAX_SONS];
     int SonSides[MAX_SONS];
 
-#ifdef _2
-    UG2d::Get_Sons_of_ElementSide(
-#else
-    UG3d::Get_Sons_of_ElementSide(
-#endif
-      theElement,
-      elementSide,                                  // needs to be renumbered!
-      &Sons_of_Side,
-      SonList,                                      // the output elements
-      SonSides,                                     // Output element side numbers
-      true,                                        // Element sons are not precomputed
-      true);                                        // ioflag: I have no idea what this is supposed to do
+    int rv = Get_Sons_of_ElementSide(theElement,
+                                     elementSide,      // needs to be renumbered!
+                                     &Sons_of_Side,
+                                     SonList,          // the output elements
+                                     SonSides,         // Output element side numbers
+                                     true,            // Element sons are not precomputed
+                                     true);            // ioflag: I have no idea what this is supposed to do
+    if (rv!=0)
+      DUNE_THROW(GridError, "Get_Sons_of_ElementSide returned with error value " << rv);
 
     for (int i=0; i<Sons_of_Side; i++)
       list.push_back(ListEntryType(SonList[i],SonSides[i], level+1));
@@ -801,7 +796,7 @@ void Dune::UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int
                          argStrings[3].c_str()};
 
 #ifdef _2
-  int errCode = UG2d::LBCommand(4, (char**) argv);
+  int errCode = UG2d::LBCommand(4, (char**)argv);
 #else
   int errCode = UG3d::LBCommand(4, (char**)argv);
 #endif
@@ -810,7 +805,7 @@ void Dune::UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int
     DUNE_THROW(GridError, "UG" << dim << "d::LBCommand returned error code " << errCode);
 
   // Renumber everything
-  setLocalIndices();
+  setIndices();
 
 }
 
@@ -934,7 +929,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
   multigrid_->MarkKey = 0;
 
   // Set the local indices
-  setLocalIndices();
+  setIndices();
 
   // Clear refinement flags
   typename Traits::template Codim<0>::LevelIterator eIt    = lbegin<0>(0);
@@ -950,36 +945,16 @@ void Dune::UGGrid < dim, dimworld >::createend()
 
 
 template < int dim, int dimworld >
-void Dune::UGGrid < dim, dimworld >::setLocalIndices()
+void Dune::UGGrid < dim, dimworld >::setIndices()
 {
-#ifndef UGGRID_WITH_INDEX_SETS
-  // Renumber everything
-  for (int i=0; i<=maxlevel(); i++) {
+  for (int i=0; i<=maxlevel(); i++)
+    levelIndexSets_[i].update();
 
-    typename Traits::template Codim<0>::LevelIterator eIt    = lbegin<0>(i);
-    typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(i);
+  leafIndexSet_.update();
 
-    int id = 0;
-    for (; eIt!=eEndIt; ++eIt)
-      UG_NS<dim>::index(getRealEntity<0>(*eIt).target_) = id++;
+  localIdSet_.update();
 
-    typename Traits::template Codim<dim>::LevelIterator vIt    = lbegin<dim>(i);
-    typename Traits::template Codim<dim>::LevelIterator vEndIt = lend<dim>(i);
-
-    id = 0;
-    for (; vIt!=vEndIt; ++vIt)
-      UG_NS<dim>::index(getRealEntity<dim>(*vIt).target_) = id++;
-
-  }
-
-#else
-
-  if (levelIndexSet_) {
-    delete(levelIndexSet_);
-    levelIndexSet_ = NULL;
-  }
-
-#endif
+  globalIdSet_.update();
 }
 
 // /////////////////////////////////////////////////////////////////////////////////

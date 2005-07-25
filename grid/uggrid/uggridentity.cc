@@ -150,7 +150,7 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
     i = renumbering[i];
   }
 
-  return UG_NS<dim>::index(UG_NS<dim>::Corner(target_,i));
+  return UG_NS<dim>::levelIndex(UG_NS<dim>::Corner(target_,i));
 }
 
 
