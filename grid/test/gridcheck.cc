@@ -695,7 +695,6 @@ void iteratorEquals (Grid &g)
   l2 == e1;
   l2 == L2;
   i1.inside() == h2;
-  i1.outside() == h2;
 }
 
 template <class Grid>
