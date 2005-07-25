@@ -430,6 +430,41 @@ struct GridInterface
 
     LeafInterface< Grid, Dune::Capabilities::hasLeafIterator<Grid>::v >();
 
+    // Check for index sets
+#ifdef WITH_INDEX_SETS
+    typedef typename Grid::LevelIndexSet LevelIndexSet;
+    typedef typename Grid::LeafIndexSet LeafIndexSet;
+    typedef typename Grid::LocalIdSet LocalIdSet;
+    typedef typename Grid::GlobalIdSet GlobalIdSet;
+
+    g.levelindexset(0);
+
+    // Instantiate all methods of LevelIndexSet
+    g.levelindexset(0).template index<0>(*g.template lbegin<0>(0));
+    /** \todo Test for subindex is missing, because I don't know yet
+       how to test for the existence of certain codims */
+    g.levelindexset(0).size(0, Dune::simplex);
+    g.levelindexset(0).geomtypes();
+
+    // Instantiate all methods of LeafIndexSet
+    g.leafindexset().template index<0>(*g.template lbegin<0>(0));
+    /** \todo Test for subindex is missing, because I don't know yet
+       how to test for the existence of certain codims */
+    g.leafindexset().size(0, Dune::simplex);
+    g.leafindexset().geomtypes();
+
+    // Instantiate all methods of LocalIdSet
+    /** \todo Test for subindex is missing, because I don't know yet
+       how to test for the existence of certain codims */
+    g.localidset().template id<0>(*g.template lbegin<0>(0));
+
+    // Instantiate all methods of GlobalIdSet
+    /** \todo Test for subindex is missing, because I don't know yet
+       how to test for the existence of certain codims */
+    g.globalidset().template id<0>(*g.template lbegin<0>(0));
+
+#endif
+
     // recursively check entity-interface
     // ... we only allow grids with codim 0 zero entites
     IsTrue<Dune::Capabilities::hasEntity<Grid, 0>::v>::yes();
@@ -461,10 +496,14 @@ struct subIndexCheck
     const int imax = e.template count<cd>();
     for (int i=0; i<imax; ++i)
     {
-      if( (e.template entity<cd>(i)->index() != e.template subIndex<cd>(i)      ) &&
+#ifndef WITH_INDEX_SETS
+      if( (e.template entity<cd>(i)->index() != e.template subIndex<cd>(i)) &&
           (e.template entity<cd>(i)->globalIndex() != e.template subIndex<cd>(i)) )
         DUNE_THROW(CheckError, "e.template entity<cd>(i)->index() == e.template subIndex<cd>(i) && "<<
-                   "e.template entity<cd>(i)->globalIndex() != e.template subIndex<cd>(i) faild!");
+                   "e.template entity<cd>(i)->globalIndex() != e.template subIndex<cd>(i) failed!");
+#else
+#warning subIndexCheck for index sets not implemented yet!
+#endif
     }
     subIndexCheck<cd-1,Grid,Entity,
         Dune::Capabilities::hasEntity<Grid,cd-1>::v> sick(e);
