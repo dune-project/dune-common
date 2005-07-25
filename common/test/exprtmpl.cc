@@ -1,6 +1,16 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+/*
+   TODO:
+   - test deeper Matrix nesting
+   - get rid of
+    int *M;
+   - fix RowBlock::N()
+   - remove second template parameter of FlatColIterator
+ */
+
 #include <iostream>
+#include <fstream>
 #include <dune/common/fvector.hh>
 #include <dune/istl/bvector.hh>
 #include <dune/istl/io.hh>
@@ -84,60 +94,238 @@ void test_blockblockvector()
 
 namespace Dune {
 
-  /**
-     B: rhs Vector type (usually a BlockType)
-     M: lhs Matrix type
-     V: lhs Vector type
-   */
-  // !TODO!
-  template <class B, class M, class V>
-  class BlockRowSum
+  //! Type Traits for Vector::Iterator vs (const Vector)::ConstIterator
+  template<class T>
+  struct ColIteratorType
+  {
+    typedef typename T::ColIterator type;
+  };
+
+  template<class T>
+  struct ColIteratorType<const T>
+  {
+    typedef typename T::ConstColIterator type;
+  };
+
+  //! Iterator class for flat sequential access to a nested Matrix Row
+  template<class A, class V>
+  class FlatColIterator :
+    public ForwardIteratorFacade<FlatColIterator<A,V>,
+        typename FieldType<A>::type,
+        typename FieldType<A>::type&,
+        int>
   {
   public:
-    typedef typename M::ConstColIterator ConstColIterator;
-    typedef typename M::row_type row_type;
-    typedef BlockRowSum<typename BlockType<B>::type,M,V> SubBlockRowSum;
-    typedef typename Dune::FieldType<V>::type field_type;
-    //  typedef typename
-    BlockRowSum(const row_type & _r, const V & _v) : r(_r), v(_v) {};
-    SubBlockRowSum operator[] (int i) const {
-      return SubBlockRowSum(r[i],v);
+    typedef typename ColIteratorType<A>::type ColBlockIterator;
+    typedef std::ptrdiff_t DifferenceType;
+    //    typedef typename BlockIterator::DifferenceType DifferenceType;
+    typedef typename BlockType<A>::type block_type;
+    typedef typename BlockType<V>::type vblock_type;
+    typedef typename FieldType<A>::type field_type;
+    typedef FlatColIterator<block_type, vblock_type> SubBlockIterator;
+    FlatColIterator(const ColBlockIterator & i, const int* _M) :
+      M(_M), it(i),
+      bit((*i)[(*M)].begin(), M+1),
+      bend((*i)[(*M)].end(), M+1) {};
+    void increment ()
+    {
+      ++bit;
+      if (bit == bend)
+      {
+        ++it;
+        bit = (*it)[(*M)].begin();
+        bend = (*it)[(*M)].end();
+      }
     }
-    int N() const { return r.begin()->N(); }
+    bool equals (const FlatColIterator & fit) const
+    {
+      return fit.it == it && fit.bit == bit;
+    }
+    const field_type& dereference() const
+    {
+      return *bit;
+    }
+    const field_type& vectorentry(const V & v) const
+    {
+      return bit.vectorentry(v[it.index()]);
+    }
+    //! return index
+    DifferenceType index () const
+    {
+      return bit.index();
+    }
+    FlatColIterator operator = (const ColBlockIterator & _i)
+    {
+      it = _i;
+      bit = (*it)[(*M)].begin();
+      bend = (*it)[(*M)].end();
+      return *this;
+    }
   private:
-    const row_type & r;
-    const V & v;
+    const int* M;
+    ColBlockIterator it;
+    SubBlockIterator bit;
+    SubBlockIterator bend;
+  };
+
+  template<class K, int N, int M>
+  class FlatColIterator<FieldMatrix<K,N,M>, FieldVector<K,M> > :
+    public ForwardIteratorFacade<
+        FlatColIterator< FieldMatrix<K,N,M>, FieldVector<K,M> >, K, K&, int>
+  {
+  public:
+    typedef
+    typename ColIteratorType< FieldMatrix<K,N,M> >::type ColBlockIterator;
+    typedef std::ptrdiff_t DifferenceType;
+    typedef K field_type;
+    FlatColIterator(const ColBlockIterator & i, const int*) :
+      it(i) {};
+    void increment ()
+    {
+      ++it;
+    }
+    bool equals (const FlatColIterator & fit) const
+    {
+      return fit.it == it;
+    }
+    field_type& dereference() const
+    {
+      return *it;
+    }
+    const field_type& vectorentry(const FieldVector<K,M> & v) const
+    {
+      return v[it.index()];
+    }
+    //! return index
+    DifferenceType index () const
+    {
+      return it.index();
+    }
+    FlatColIterator operator = (const ColBlockIterator & _i)
+    {
+      it = _i;
+      return *this;
+    }
+  private:
+    ColBlockIterator it;
+  };
+
+  template<class K, int N, int M>
+  class FlatColIterator<const FieldMatrix<K,N,M>, const FieldVector<K,M> > :
+    public ForwardIteratorFacade<
+        FlatColIterator< const FieldMatrix<K,N,M>, const FieldVector<K,M> >,
+        const K, const K&, int>
+  {
+  public:
+    typedef
+    typename ColIteratorType< const FieldMatrix<K,N,M> >::type ColBlockIterator;
+    typedef std::ptrdiff_t DifferenceType;
+    typedef const K field_type;
+    FlatColIterator(const ColBlockIterator & i, const int*) :
+      it(i) {};
+    void increment ()
+    {
+      ++it;
+    }
+    bool equals (const FlatColIterator & fit) const
+    {
+      return fit.it == it;
+    }
+    field_type& dereference() const
+    {
+      return *it;
+    }
+    const field_type& vectorentry(const FieldVector<K,M> & v) const
+    {
+      return v[it.index()];
+    }
+    //! return index
+    DifferenceType index () const
+    {
+      return it.index();
+    }
+    FlatColIterator operator = (const ColBlockIterator & _i)
+    {
+      it = _i;
+      return *this;
+    }
+  private:
+    ColBlockIterator it;
+  };
+
+  template<class M>
+  struct NestedDepth
+  {
+    enum { value = NestedDepth<typename BlockType<M>::type>::value + 1 };
+  };
+
+  template<class K, int N, int M>
+  struct NestedDepth< FieldMatrix<K,N,M> >
+  {
+    enum { value = 1 };
+  };
+
+  template<class Me, class M>
+  struct MyDepth
+  {
+    enum { value = MyDepth<Me,typename BlockType<M>::type>::value+1 };
+  };
+
+  template<class Me>
+  struct MyDepth<Me,Me>
+  {
+    enum { value = 0 };
+  };
+
+  /**
+     B: BlockMatrix type -> indicated the current level.
+     M: ,,global'' Matrix type
+     V: ,,global'' Vector type
+   */
+  template <class B, class Mat, class Vec>
+  class RowBlock
+  {
+  public:
+    typedef RowBlock<typename BlockType<B>::type,Mat,Vec> SubRowBlock;
+    typedef typename Dune::FieldType<Vec>::type field_type;
+    RowBlock(const Mat & _A, const Vec & _v, int* _M) :
+      M(_M), A(_A), v(_v) {};
+    SubRowBlock operator[] (int i) const {
+      M[MyDepth<B,Mat>::value] = i;
+      return SubRowBlock(A,v,M);
+    }
+    int N() const { return -1; }; //r.begin()->N(); }
+  private:
+    mutable int* M;
+    const Mat & A;
+    const Vec & v;
   };
 
   // template <class K, int n, class M, class V>
   // class BlockRowSum< FieldVector<K,n>, M, V >
-  template <class M, class V>
-  class BlockRowSum< void, M, V >
+  template <class K, int iN, int iM, class Mat, class Vec>
+  class RowBlock< FieldMatrix<K,iN,iM>, Mat, Vec >
   {
   public:
-    typedef typename M::ConstColIterator ConstColIterator;
-    typedef typename M::row_type row_type;
-    typedef typename FieldType<V>::type K;
-    BlockRowSum(const row_type & _r, const V & _v) : r(_r), v(_v) {};
+    RowBlock(const Mat & _A, const Vec & _v, int* _M) :
+      M(_M), A(_A), v(_v) {};
     K operator[] (int i) const {
       K x=0;
-      ConstColIterator j=r.begin();
-      ConstColIterator endj = r.end();
+      M[MyDepth<FieldMatrix<K,iN,iM>,Mat>::value] = i;
+
+      FlatColIterator<const Mat, const Vec> j(A[*M].begin(),M+1);
+      FlatColIterator<const Mat, const Vec> endj(A[*M].end(),M+1);
       for (; j!=endj; ++j)
       {
-        /*
-           x += (MatrixBlock * VectorBlock  )[i]
-         */
-        //      std::cout << "BRS x=" << x << std::endl;
-        x   += (     (*j)   * v[j.index()] )[i];
+        x   += (*j) * j.vectorentry(v);
       }
-      //    std::cout << "BRS x=" << x << std::endl;
       return x;
     }
-    int N() const { return r.begin()->N(); }
+    int N() const { return -1; }; //r.begin()->N(); }
   private:
-    const row_type & r;
-    const V & v;
+    mutable int* M;
+    const Mat & A;
+    const Vec & v;
   };
 
   template <class M, class V>
@@ -145,12 +333,13 @@ namespace Dune {
   {
   public:
     MV(const M & _A, const V & _v) : A(_A), v(_v) {};
-    BlockRowSum<void,M,V> operator[] (int i) const {
-      // !TODO!
-      return BlockRowSum<void,M,V>(A[i],v);
+    RowBlock<typename BlockType<M>::type,M,V> operator[] (int i) const {
+      indizes[0] = i;
+      return RowBlock<typename BlockType<M>::type,M,V>(A, v, indizes);
     }
     int N() const { return A.N(); }
   private:
+    mutable int indizes[256];
     const M & A;
     const V & v;
   };
@@ -164,6 +353,7 @@ namespace Dune {
     typedef typename Dune::FieldType<V>::type field_type;
     MV(const M & _A, const V & _v) : A(_A), v(_v) {};
     field_type operator[] (int i) const {
+      std::cout << "ARGH\n";
       field_type x=0;
       for (int j=0; j<iM; ++j) {
         x += A[i][j] * v[j];
@@ -199,25 +389,32 @@ namespace Dune {
   };
 
   template <class B, class A, class V>
-  struct FieldType< BlockRowSum<B,A,V> >
+  struct FieldType< RowBlock<B,A,V> >
   {
     typedef typename FieldType<V>::type type;
   };
 
   namespace ExprTmpl {
 
-    // !TODO!
     template <class A, class B>
     struct BlockExpression< MV< BCRSMatrix<A>,BlockVector<B> > >
     {
-      typedef ExprTmpl::Expression< BlockRowSum< void, BCRSMatrix<A>,BlockVector<B> > > type;
+      typedef ExprTmpl::Expression< RowBlock< A, BCRSMatrix<A>,BlockVector<B> > > type;
     };
 
+#if 0
     // !TODO!
     template <class A, class B>
-    struct BlockExpression< BlockRowSum< void, BCRSMatrix<A>,BlockVector<B> > >
+    struct BlockExpression< RowBlock< A, BCRSMatrix<A>,BlockVector<B> > >
     {
-      typedef typename B::field_type type;
+      typedef ExprTmpl::Expression< RowBlock< typename BlockType<A>::type, RowBlock< A, BCRSMatrix<A>,BlockVector<B> >,BlockVector<B> > > type;
+    };
+#endif
+
+    template <class K, int N, int M, class A, class B>
+    struct BlockExpression< RowBlock< FieldMatrix<K,N,M>, A, B > >
+    {
+      typedef K type;
     };
 
     template <class K, int N, int M>
@@ -226,8 +423,39 @@ namespace Dune {
       typedef K type;
     };
 
-  }
-}
+  } // NS ExpreTmpl
+
+  template <class T>
+  struct BlockType< BCRSMatrix<T> >
+  {
+    typedef T type;
+  };
+
+  template <class K, int N, int M>
+  struct BlockType< FieldMatrix<K,N,M> >
+  {
+    typedef K type;
+  };
+
+  template <>
+  struct BlockType< double >
+  {
+    typedef double type;
+  };
+
+  template <class T>
+  struct FieldType< BCRSMatrix<T> >
+  {
+    typedef typename FieldType<T>::type type;
+  };
+
+  template <class K, int N, int M>
+  struct FieldType< FieldMatrix<K,N,M> >
+  {
+    typedef K type;
+  };
+
+} // NS Dune
 
 void test_matrix()
 {
@@ -279,11 +507,17 @@ void test_matrix()
   std::cout << "Matrix N=" << A.M() << std::endl;
   std::cout << "Matrix M=" << A.N() << std::endl;
 
-  Matrix::Iterator cit=A.begin();
-  Matrix::Iterator cend=A.end();
-  for (; cit!=cend; ++cit)
+  Matrix::Iterator rit=A.begin();
+  Matrix::Iterator rend=A.end();
+  for (; rit!=rend; ++rit)
   {
-    *cit = cit.index();
+    Matrix::ColIterator cit=rit->begin();
+    Matrix::ColIterator cend=rit->end();
+    for (; cit!=cend; ++cit)
+    {
+      //    *rit = rit.index();
+      *cit = 10*cit.index()+rit.index();
+    }
   }
 
   printmatrix (std::cout, A, "Matrix", "r");
@@ -293,24 +527,37 @@ void test_matrix()
   v = 0;
   Vector x(M);
   x = 1;
-  x[M-1] = 2;
+  Dune::FlatIterator<Vector> fit = x.begin();
+  Dune::FlatIterator<Vector> fend = x.end();
+  c = 0;
+  for (; fit!=fend; ++fit)
+    *fit=c++;
 
   std::cout << A.M() << " " << x.N() << " " << v.N() << std::endl;
 
   A.umv(x,v);
 
+  using namespace Dune;
+  printvector (std::cout, x, "Vector X", "r");
   printvector (std::cout, v, "Vector", "r");
-  /*
-     v=1;
-     MV<Matrix,Vector> eximp (A,x);
-     Dune::ExprTmpl::Expression< MV<Matrix,Vector> > ex ( eximp );
-     v =
-     printvector (std::cout, v, "Vector", "r");
-   */
+  v=1;
+  MV<Matrix,Vector> eximp (A,x);
+  Dune::ExprTmpl::Expression< MV<Matrix,Vector> > ex ( eximp );
+  v = ex;
+  printvector (std::cout, v, "Vector", "r");
   v2 = A * x;
 
-  printvector (std::cout, v2, "Vector", "r");
-
+  printvector (std::cout, v2, "Vector2", "r");
+#if 0
+  int rowIndex[]={1};
+  FlatColIterator<Matrix,Vector> it(A[2].begin(),rowIndex);
+  for (int i=0; i<5; i++)
+  {
+    std::cout << *it << " ";
+    ++it;
+  }
+  std::cout << std::endl;
+#endif
 }
 
 int main()
@@ -318,6 +565,8 @@ int main()
   //  Dune::dvverb.attach(std::cout);
   try
   {
+    std::ofstream mylog("/dev/null");
+    Dune::dvverb.attach(mylog);
     test_fvector();
     test_blockvector();
     test_blockblockvector();

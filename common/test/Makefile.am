@@ -42,9 +42,10 @@ settest_SOURCES=settest.cc
 
 gcdlcdtest_SOURCES = gcdlcdtest.cc
 
-#bin_PROGRAMS = exprtmpl
+bin_PROGRAMS = exprtmpl
 exprtmpl_SOURCES = exprtmpl.cc
-exprtmpl_CXXFLAGS = -DDUNE_ISTL_WITH_CHECKING -DDUNE_EXPRESSIONTEMPLATES
+exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES
+# -DDUNE_ISTL_WITH_CHECKING
 exprtmpl_LDFLAGS = $(top_builddir)/common/libcommon.la
 
 include $(top_srcdir)/am/global-rules
