@@ -64,16 +64,6 @@ namespace Dune {
       return &data[row*cols_];
     }
 
-    /** \brief Send the matrix content to the screen*/
-    void print() const {
-      for (int row=0; row<rows_; row++) {
-        for (int col=0; col<cols_; col++)
-          std::cout << (*this)[row][col] << "  ";
-
-        std::cout << std::endl;
-      }
-    }
-
     /** \brief Return the number of rows */
     int rows() const {
       return rows_;
@@ -158,6 +148,20 @@ namespace Dune {
 
     int cols_;
   };
+
+  //! Send Matrix to an output stream
+  template<class T>
+  std::ostream& operator<< (std::ostream& s, const Matrix<T>& m)
+  {
+    for (int row=0; row<m.rows(); row++) {
+      for (int col=0; col<m.cols(); col++)
+        s << m[row][col] << "  ";
+
+      s << std::endl;
+    }
+
+    return s;
+  }
 
 } // end namespace Dune
 
