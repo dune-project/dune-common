@@ -74,9 +74,6 @@ namespace ALU3dGridSpace {
   typedef GitterImplType::Objects::Hbnd4Default BNDFace4Type;
   typedef GitterImplType::Objects::hbndseg3_IMPL ImplBndFace3Type;    // boundary segment
   typedef GitterImplType::Objects::hbndseg4_IMPL ImplBndFace4Type;
-
-
-  // * end new
 } // end namespace ALU3dSpace
 
 

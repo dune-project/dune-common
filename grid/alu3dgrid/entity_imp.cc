@@ -460,7 +460,6 @@ namespace Dune {
     static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<1>:: EntityPointer
     entity (const GridImp & grid, const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
-      // return ALU3dGridEntityPointer<1,GridImp> (grid, *(item.myhface3(i)) );
       return ALU3dGridEntityPointer<1,GridImp> (grid, *(getFace(item, i)) );
     }
   };

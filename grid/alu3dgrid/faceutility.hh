@@ -185,8 +185,6 @@ namespace Dune {
   private:
     //- private data
     const ConnectorType& connector_;
-    ReferenceElementType refElem_;
-    ReferenceFaceType refFace_;
 
     mutable SurfaceMappingType* mappingGlobal_; // needed for calculation of normal
     mutable bool generatedGlobal_;
@@ -195,6 +193,9 @@ namespace Dune {
     mutable CoordinateType coordsGlobal_;
     mutable CoordinateType coordsSelfLocal_;
     mutable CoordinateType coordsNeighborLocal_;
+
+    static ReferenceElementType refElem_;
+    static ReferenceFaceType refFace_;
   };
 
 } // end namespace Dune

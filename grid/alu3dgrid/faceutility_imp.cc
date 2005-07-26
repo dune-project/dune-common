@@ -151,11 +151,17 @@ namespace Dune {
 
   //- class ALU3dGridFaceGeometryCoordinates
   template <ALU3dGridElementType type>
+  typename ALU3dGridGeometricFaceInfo<type>::ReferenceElementType
+  ALU3dGridGeometricFaceInfo<type>::refElem_;
+
+  template <ALU3dGridElementType type>
+  typename ALU3dGridGeometricFaceInfo<type>::ReferenceFaceType
+  ALU3dGridGeometricFaceInfo<type>::refFace_;
+
+  template <ALU3dGridElementType type>
   ALU3dGridGeometricFaceInfo<type>::
   ALU3dGridGeometricFaceInfo(const ConnectorType& connector) :
     connector_(connector),
-    refElem_(),
-    refFace_(),
     mappingGlobal_(0),
     generatedGlobal_(false),
     generatedLocal_(false),
@@ -168,8 +174,6 @@ namespace Dune {
   ALU3dGridGeometricFaceInfo<type>::
   ALU3dGridGeometricFaceInfo(const ALU3dGridGeometricFaceInfo<type>& orig) :
     connector_(orig.connector_),
-    refElem_(),
-    refFace_(),
     mappingGlobal_(orig.mappingGlobal_),
     generatedGlobal_(orig.generatedGlobal_),
     generatedLocal_(orig.generatedLocal_),
