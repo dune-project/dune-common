@@ -553,6 +553,7 @@ namespace Dune {
   };
 #endif
 
+#ifdef DUNE_EXPRESSIONTEMPLATES
   /** \brief Construct a vector space out of a tensor product of fields.
 
          K is the field type (use float, double, complex, etc) and n
@@ -563,10 +564,22 @@ namespace Dune {
 
          Implementation of all members uses template meta programs where appropriate
    */
+#else
   template<class K, int SIZE>
   class FieldVector
-#ifdef DUNE_EXPRESSIONTEMPLATES
     : public Dune::ExprTmpl::Vector< FieldVector<K,SIZE> >
+      /** \brief Construct a vector space out of a tensor product of fields.
+
+             K is the field type (use float, double, complex, etc) and n
+             is the number of components.
+
+             It is generally assumed that K is a numerical type compatible with double
+             (E.g. norms are always computed in double precision).
+
+             Implementation of all members uses template meta programs where appropriate
+       */
+      template<class K, int SIZE>
+      class FieldVector
 #endif
   {
     //! The actual number of elements that gets allocated.
@@ -902,12 +915,17 @@ namespace Dune {
   // forward declarations
   template<class K, int n, int m> class FieldMatrix;
 
+#ifdef DUNE_EXPRESSIONTEMPLATES
   /**! Vectors containing only one component
    */
   template<class K>
   class FieldVector<K,1>
-#ifdef DUNE_EXPRESSIONTEMPLATES
     : public Dune::ExprTmpl::Vector< FieldVector<K,1> >
+#else
+  /**! Vectors containing only one component
+   */
+  template<class K>
+  class FieldVector<K,1>
 #endif
   {
     enum { n = 1 };
