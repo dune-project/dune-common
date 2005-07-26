@@ -564,22 +564,22 @@ namespace Dune {
 
          Implementation of all members uses template meta programs where appropriate
    */
-#else
   template<class K, int SIZE>
   class FieldVector
     : public Dune::ExprTmpl::Vector< FieldVector<K,SIZE> >
-      /** \brief Construct a vector space out of a tensor product of fields.
+#else
+  /** \brief Construct a vector space out of a tensor product of fields.
 
-             K is the field type (use float, double, complex, etc) and n
-             is the number of components.
+         K is the field type (use float, double, complex, etc) and n
+         is the number of components.
 
-             It is generally assumed that K is a numerical type compatible with double
-             (E.g. norms are always computed in double precision).
+         It is generally assumed that K is a numerical type compatible with double
+         (E.g. norms are always computed in double precision).
 
-             Implementation of all members uses template meta programs where appropriate
-       */
-      template<class K, int SIZE>
-      class FieldVector
+         Implementation of all members uses template meta programs where appropriate
+   */
+  template<class K, int SIZE>
+  class FieldVector
 #endif
   {
     //! The actual number of elements that gets allocated.
