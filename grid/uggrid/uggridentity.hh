@@ -290,9 +290,9 @@ namespace Dune {
     //! returns true if Entity has children
     bool isLeaf() const {
 #ifdef _2
-      return UG2d::ReadCW(target_, UG2d::NSONS_CE) == 0;
+      return UG2d::EstimateHere(target_);
 #else
-      return UG3d::ReadCW(target_, UG3d::NSONS_CE) == 0;
+      return UG3d::EstimateHere(target_);
 #endif
     }
 
