@@ -24,6 +24,8 @@ namespace Dune {
     enum {numVerticesPerFace = 4};
   };
 
+  //! Maps indices of the Dune reference element onto the indices of the
+  //! ALU3dGrid reference element and vice-versa.
   template <ALU3dGridElementType type>
   class ElementTopologyMapping
   {
@@ -32,13 +34,29 @@ namespace Dune {
     enum { numVerticesPerFace = EntityCount<type>::numVerticesPerFace };
 
   public:
+    //! Maps face index from Dune onto ALU3dGrid reference element
     static int dune2aluFace(int index);
+    //! Maps face index from ALU3dGrid onto Dune reference element
     static int alu2duneFace(int index);
 
+    //! Maps vertex index from Dune onto ALU3dGrid reference element
     static int dune2aluVertex(int index);
+    //! Maps vertex index from ALU3dGrid onto Dune reference element
     static int alu2duneVertex(int index);
 
+    //! Maps local vertex index of a face onto a global vertex index
+    //! (Dune->ALU3dGrid)
+    //! \param face Face index (Dune reference element)
+    //! \param localVertex Local vertex index on face \face (Dune reference
+    //! element)
+    //! \return global vertex index in ALU3dGrid reference element
     static int dune2aluFaceVertex(int face, int localVertex);
+    //! Maps local vertex index of a face onto a global vertex index
+    //! (ALU3dGrid->Dune)
+    //! \param face Face index (ALU3dGrid reference element)
+    //! \param localVertex Local vertex index on face \face
+    //! (ALU3dGrid reference element)
+    //! \return global vertex index in Dune reference element
     static int alu2duneFaceVertex(int face, int localVertex);
 
   private:
@@ -52,12 +70,31 @@ namespace Dune {
     const static int alu2duneFaceVertex_[numFaces][numVerticesPerFace];
   };
 
+  //! Maps indices of the Dune reference face onto the indices of the
+  //! ALU3dGrid reference face and vice-versa.
   template <ALU3dGridElementType type>
   class FaceTopologyMapping {
   public:
+    //! Maps vertex index from Dune onto ALU3dGrid reference face
     static int dune2aluVertex(int index);
+    //! Maps vertex index from Dune onto ALU3dGrid reference face, where the
+    //! face in the ALU3dGrid has the twist \twist compared to the orientation
+    //! of the respective face in the reference element
+    //! \param index local Dune vertex index on the particular face (i.e. the
+    //! face which has a twist \twist compared to the reference element's face
+    //! \param twist twist of the face in consideration
+    //! \return local ALU3dGrid vertex index on reference element face
     static int dune2aluVertex(int index, int twist);
+    //! Maps vertex index from ALU3dGrid onto Dune reference face
     static int alu2duneVertex(int index);
+    //! Maps vertex index from ALU3dGrid onto Dune reference face, where the
+    //! face in the ALU3dGrid has the twist \twist compared to the orientation
+    //! of the respective face in the reference element
+    //! \param index local ALU3dGrid vertex index on the particular face (i.e.
+    //! the face which has a twist \twist compared to the reference element's
+    //! face
+    //! \param twist twist of the face in consideration
+    //! \return local Dune vertex index on reference element face
     static int alu2duneVertex(int index, int twist);
 
     //  private:
