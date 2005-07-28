@@ -20,7 +20,8 @@ void deleteOverlapEntries(T& indices,
   typedef typename RemoteIndices::RemoteIndexList::const_iterator RemoteIterator;
   typedef Dune::SLList<GlobalIndex, typename RemoteIndices::RemoteIndexList::Allocator> GlobalList;
   typedef typename GlobalList::ModifyIterator GlobalModifier;
-  typedef Dune::Tuple<RemoteModifier,GlobalModifier,const RemoteIterator> IteratorTuple;
+  typedef Dune::Tuple<RemoteModifier,GlobalModifier,const RemoteIterator,const typename GlobalList::const_iterator,
+      const GlobalList*, const typename RemoteIndices::RemoteIndexList*> IteratorTuple;
   typedef std::map<int,IteratorTuple> IteratorMap;
   typedef typename RemoteIndices::const_iterator RemoteMapIterator;
 
@@ -42,11 +43,16 @@ void deleteOverlapEntries(T& indices,
         index != rend; ++index)
       gList.push_back(index->localIndexPair().global());
 
+    assert(gList.size()==remote->second.first->size());
+    std::cout << "Size of remote indices is "<<gList.size()<<std::endl;
+
     iterators.insert(std::make_pair(remote->first,
                                     IteratorTuple(remote->second.first->beginModify(),
                                                   gList.beginModify(),
-                                                  rend
-                                                  )));
+                                                  rend,
+                                                  gList.end(),
+                                                  &gList,
+                                                  remote->second.first)));
   }
 
   indices.beginResize();
@@ -62,29 +68,37 @@ void deleteOverlapEntries(T& indices,
       typedef typename IteratorMap::iterator iterator;
       iterator end = iterators.end();
 
-      for(iterator remote = iterators.begin();
-          remote != end; ++remote) {
+      for(iterator remote = iterators.begin(); remote != end; ++remote) {
+
         // Search for the index
         while(Dune::Element<0>::get(remote->second) != Dune::Element<2>::get(remote->second)
               && *(Dune::Element<1>::get(remote->second)) < index->global()) {
           // increment all iterators
           ++(Dune::Element<0>::get(remote->second));
           ++(Dune::Element<1>::get(remote->second));
+          if(Dune::Element<0>::get(remote->second)!=Dune::Element<2>::get(remote->second))
+            assert(Dune::Element<1>::get(remote->second)!=Dune::Element<3>::get(remote->second));
         }
+
         // Delete the entry if present
-        if(Dune::Element<0>::get(remote->second) != Dune::Element<2>::get(remote->second)
-           && *(Dune::Element<1>::get(remote->second)) == index->global()) {
+        if(Dune::Element<0>::get(remote->second) != Dune::Element<2>::get(remote->second)) {
+          assert(Dune::Element<1>::get(remote->second) != Dune::Element<3>::get(remote->second));
 
-          std::cout<<rank<<": Deleting remote "<<*(Dune::Element<1>::get(remote->second))<<" of process "
-                   << remote->first<<std::endl;
+          if(*(Dune::Element<1>::get(remote->second)) == index->global()) {
 
-          // Delete entries
-          Dune::Element<0>::get(remote->second).remove();
-          Dune::Element<1>::get(remote->second).remove();
+            std::cout<<rank<<": Deleting remote "<<*(Dune::Element<1>::get(remote->second))<<" of process "
+                     << remote->first<<std::endl;
+
+            // Delete entries
+            Dune::Element<0>::get(remote->second).remove();
+            Dune::Element<1>::get(remote->second).remove();
+            assert(Dune::Element<4>::get(remote->second)->size()==Dune::Element<5>::get(remote->second)->size());
+          }
         }
       }
     }
   }
+
   indices.endResize();
 
   // Update the pointers to the local index pairs
@@ -196,8 +210,8 @@ int testIndicesSyncer()
   //using namespace Dune;
 
   // The global grid size
-  const int Nx = 8;
-  const int Ny = 8;
+  const int Nx = 6;
+  const int Ny = 1;
 
   // Process configuration
   int procs, rank;
@@ -225,7 +239,7 @@ int testIndicesSyncer()
     for(int i=start; i<end; i++) {
       bool isPublic = (i<=start+1)||(i>=end-2);
       GridFlags flag = owner;
-      if((i==start && (procs==0 || i!=0))||(i==end-1 && ( procs==0 || i!=Nx-1))) {
+      if((i==start && (i!=0))||(i==end-1 && (i!=Nx-1))) {
         flag = overlap;
       }
 
@@ -244,7 +258,6 @@ int testIndicesSyncer()
 
 
   std::cout<<"Unchanged: "<<indexSet<<std::endl<<remoteIndices<<std::endl;
-  std::cout<<"Changed:   "<<changedIndexSet<<std::endl<<changedRemoteIndices<<std::endl;
   assert(areEqual(indexSet, remoteIndices,changedIndexSet, changedRemoteIndices));
 
   std::cout<<"Deleting entries!"<<std::endl;
@@ -253,18 +266,16 @@ int testIndicesSyncer()
   //addFakeRemoteIndices(indexSet, changedIndexSet, remoteIndices, changedRemoteIndices);
 
   deleteOverlapEntries(changedIndexSet, changedRemoteIndices);
-  std::cout<<"Unchanged: "<<indexSet<<std::endl<<remoteIndices<<std::endl;
   std::cout<<"Changed:   "<<changedIndexSet<<std::endl<<changedRemoteIndices<<std::endl;
 
   Dune::IndicesSyncer<IndexSet> syncer(changedIndexSet, changedRemoteIndices);
+  //  return 0;
 
   std::cout<<"Syncing!"<<std::endl;
 
   syncer.sync();
 
-
-  std::cout<<"Unchanged: "<<indexSet<<std::endl<<remoteIndices<<std::endl;
-  std::cout<<"Changed:   "<<changedIndexSet<<std::endl<<changedRemoteIndices<<std::endl;
+  std::cout<<"Synced:   "<<changedIndexSet<<std::endl<<changedRemoteIndices<<std::endl;
   if( areEqual(indexSet, remoteIndices,changedIndexSet, changedRemoteIndices))
     return 0;
   else
