@@ -8,7 +8,7 @@
 #include <cassert>
 #include <config.h>
 #include "iteratorfacades.hh"
-#include <ostream>
+#include <iostream>
 
 namespace Dune
 {
@@ -72,6 +72,17 @@ namespace Dune
      * @brief Constructor.
      */
     SLList();
+
+    /**
+     * @brief Copy constructor with type conversion.
+     */
+    template<typename T1, typename A1>
+    SLList(const SLList<T1,A1>& other);
+
+    /**
+     * @brief Copy constructor.
+     */
+    SLList(const SLList<T,A>& other);
 
     /**
      * @brief Destructor.
@@ -234,12 +245,29 @@ namespace Dune
 
     };
 
+    template<typename T1, typename A1>
+    SLList<T,A>& operator=(SLList<T1,A1>& other)
+    {
+      return *this;
+    }
+
+    SLList<T,A>& operator=(SLList<T,A>& other)
+    {
+      return *this;
+    }
+
     /**
      * @brief Delete the next element in the list.
      * @param current Element whose next element should be deleted.
      */
     void deleteNext(Element* current);
 
+    /**
+     * @brief Copy the elements from another list.
+     * @param other The other list.
+     */
+    template<class T1, class A1>
+    void copyElements(const SLList<T1,A1>& other);
 
     /**
      * @brief Delete the next element in the list.
@@ -595,6 +623,35 @@ namespace Dune
   }
 
   template<typename T, class A>
+  SLList<T,A>::SLList(const SLList<T,A>& other)
+    : beforeHead_(), tail_(&beforeHead_), allocator_(), size_(0)
+  {
+    copyElements(other);
+  }
+
+  template<typename T, class A>
+  template<typename T1, class A1>
+  SLList<T,A>::SLList(const SLList<T1,A1>& other)
+    : beforeHead_(), tail_(&beforeHead_), allocator_(), size_(0)
+  {
+    copyElements(other);
+  }
+
+  template<typename T, typename A>
+  template<typename T1, class A1>
+  void SLList<T,A>::copyElements(const SLList<T1,A1>& other)
+  {
+    assert(tail_==&beforeHead_);
+    assert(size_==0);
+    typedef typename SLList<T,A>::const_iterator Iterator;
+    Iterator iend = other.end();
+    for(Iterator element=other.begin(); element != iend; ++element)
+      push_back(*element);
+
+    assert(other.size()==size());
+  }
+
+  template<typename T, class A>
   SLList<T,A>::~SLList()
   {
     clear();
@@ -603,7 +660,9 @@ namespace Dune
   template<typename T, class A>
   inline void SLList<T,A>::push_back(const T& item)
   {
+    assert(size_>0 || tail_==&beforeHead_);
     tail_->next_ = allocator_.allocate(1, 0);
+    assert(size_>0 || tail_==&beforeHead_);
     tail_ = tail_->next_;
     ::new (static_cast<void*>(&(tail_->item_)))T(item);
     tail_->next_=0;
@@ -673,10 +732,11 @@ namespace Dune
     assert(current->next_);
     Element* next = current->next_;
 
-    if(!watchForTail || next == tail_) {
-      // deleting last element changes tail!
-      tail_ = current;
-    }
+    if(watchForTail)
+      if(next == tail_) {
+        // deleting last element changes tail!
+        tail_ = current;
+      }
 
     current->next_ = next->next_;
     next->item_.~T();
@@ -702,7 +762,7 @@ namespace Dune
 #ifdef NDEBUG
     size_=0;
 #endif
-
+    std::cout<<"size="<<size_<<std::endl;
     assert(size_==0);
     // update the tail!
     tail_ = &beforeHead_;
