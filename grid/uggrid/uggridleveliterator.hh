@@ -27,6 +27,8 @@ namespace Dune {
     public Dune::UGGridEntityPointer <codim,GridImp>,
     public LevelIteratorDefault <codim,pitype,GridImp,UGGridLevelIterator>
   {
+    enum {dim = GridImp::dimension};
+
     friend class UGGridEntity<codim,GridImp::dimension,GridImp>;
     friend class UGGridEntity<0,    GridImp::dimension,GridImp>;
 
@@ -38,16 +40,19 @@ namespace Dune {
     typedef typename GridImp::template Codim<codim>::Entity Entity;
 
     //! Constructor
-    explicit UGGridLevelIterator(int travLevel) /*: virtualEntity_(0),
-                                                    level_(travLevel),
-                                                    target_(0) */
+    explicit UGGridLevelIterator(int travLevel)
     {
       this->virtualEntity_.setToTarget(0);
     }
 
+    //! Constructor
+    explicit UGGridLevelIterator(typename TargetType<codim,dim>::T* target, int level)
+    {
+      this->virtualEntity_.setToTarget(target, level);
+    }
+
     //! prefix increment
     void increment() {
-      //setToTarget(UG_NS<GridImp::dimension>::succ(target_));
       this->virtualEntity_.setToTarget(UG_NS<GridImp::dimension>::succ(this->virtualEntity_.getTarget()));
     }
 
@@ -57,13 +62,6 @@ namespace Dune {
     void setToTarget(typename TargetType<codim,GridImp::dimension>::T* target) {
       //target_ = target;
       this->virtualEntity_.setToTarget(target);
-    }
-
-    /** \todo Move this to base class */
-    void setToTarget(typename TargetType<codim,GridImp::dimension>::T* target, int level) {
-      //target_ = target;
-      //level_  = level;
-      this->virtualEntity_.setToTarget(target, level);
     }
 
   };
