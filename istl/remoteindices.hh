@@ -553,7 +553,7 @@ namespace Dune {
     typedef typename GlobalList::ModifyIterator GlobalModifyIterator;
     RemoteIndexList* rList_;
     const IndexSet* indexSet_;
-    GlobalList glist_;
+    GlobalList* glist_;
     ModifyIterator iter_;
     GlobalModifyIterator giter_;
     ConstIterator end_;
@@ -1218,13 +1218,13 @@ namespace Dune {
   template<class T, bool mode>
   RemoteIndexListModifier<T,mode>::RemoteIndexListModifier(const IndexSet& indexSet,
                                                            RemoteIndexList& rList)
-    : rList_(&rList), indexSet_(&indexSet), iter_(rList.beginModify()), end_(rList.end()), first_(true)
+    : rList_(&rList), indexSet_(&indexSet), glist_(new GlobalList()), iter_(rList.beginModify()), end_(rList.end()), first_(true)
   {
     if(MODIFYINDEXSET) {
       assert(indexSet_);
       for(ConstIterator iter=iter_; iter != end_; ++iter)
-        glist_.push_back(iter->localIndexPair().global());
-      giter_ = glist_.beginModify();
+        glist_->push_back(iter->localIndexPair().global());
+      giter_ = glist_->beginModify();
     }
   }
 
@@ -1248,7 +1248,7 @@ namespace Dune {
       typedef typename IndexSet::const_iterator IndexIterator;
       typedef typename GlobalList::const_iterator GlobalIterator;
       typedef typename RemoteIndexList::iterator Iterator;
-      GlobalIterator giter = glist_.begin();
+      GlobalIterator giter = glist_->begin();
       IndexIterator index = indexSet_->begin();
 
       for(Iterator iter=rList_->begin(); iter != end_; ++iter) {
@@ -1329,7 +1329,7 @@ namespace Dune {
         ++giter_;
         ++iter_;
       }
-      if(*giter_ == global()) {
+      if(*giter_ == global) {
         giter_.remove();
         iter_.remove();
         found=true;
