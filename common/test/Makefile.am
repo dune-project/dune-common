@@ -42,7 +42,6 @@ settest_SOURCES=settest.cc
 
 gcdlcdtest_SOURCES = gcdlcdtest.cc
 
-bin_PROGRAMS = exprtmpl
 exprtmpl_SOURCES = exprtmpl.cc
 exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES
 # -DDUNE_ISTL_WITH_CHECKING
