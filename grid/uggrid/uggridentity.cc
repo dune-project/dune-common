@@ -172,9 +172,7 @@ UGGridEntity<0,dim,GridImp>::entity ( int i ) const
   }
 
   typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,i);
-  UGGridLevelIterator<cc,All_Partition,GridImp> it (level_);
-  it.setToTarget(subEntity, level_);
-  return it;
+  return UGGridLevelIterator<cc,All_Partition,GridImp>(subEntity, level_);
 }
 
 template<int dim, class GridImp>
