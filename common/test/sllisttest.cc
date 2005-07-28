@@ -374,6 +374,22 @@ int main()
 
   randomizeListBack(list1);
   randomizeListFront(list);
+
+  Dune::SLList<double,DoubleAllocator> copied(list);
+  if(copied.size()!=list.size()) {
+    std::cerr << "Size of copied list does not match!"<<std::endl;
+    ++ret;
+  }
+  else{
+    typedef Dune::SLList<double,DoubleAllocator>::const_iterator Iterator;
+    Iterator iend = list.end();
+    for(Iterator iter1=list.begin(), iter2=copied.begin(); iter1 != iend; ++iter1, ++iter2)
+      if(*iter1!=*iter2) {
+        std::cerr << "Entries of copied are not the same!"<<std::endl;
+        ++ret;
+      }
+  }
+
   //randomizeListFront(list2);
   /*
      Printer<std::iterator_traits<Dune::SLList<double,DoubleAllocator>::ModifyIterator>::value_type> print;

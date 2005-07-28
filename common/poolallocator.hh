@@ -447,11 +447,6 @@ namespace Dune
     IsTrue<(chunkSize - (alignment - 1)) % alignment == 0>::yes();
     IsTrue<elements>=1>::yes();
     IsTrue<elements*alignedSize<=chunkSize>::yes();
-    /*
-       std::cout<<"S="<<S<<" sizeof(MemberType)="<<sizeof(MemberType)<<" sizeof(Reference)="<<sizeof(Reference)
-             <<" alignment="<<alignment<<" unionSize="<<unionSize<<" size="<<size
-             <<" alignedSize="<<alignedSize<<" chunkSize="<<chunkSize<<" elements="<<elements<<std::endl;
-     */
   }
 
   template<class T, std::size_t S>
