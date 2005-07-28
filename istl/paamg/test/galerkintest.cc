@@ -104,9 +104,9 @@ void testCoarsenIndices()
      visited.reserve(mg.maxVertex());
      Iterator visitedIterator=visited.begin();
    */
-  std::cout<<N*N<<"=="<<mg.maxVertex()<<std::endl;
+  std::cout<<n*n<<"=="<<mg.maxVertex()<<std::endl;
 
-  assert(N*N==mg.maxVertex());
+  assert(mat.N()==mg.maxVertex());
 
   bool visitedIterator[N*N];
   for(Vertex i=0; i < mg.maxVertex(); ++i)
