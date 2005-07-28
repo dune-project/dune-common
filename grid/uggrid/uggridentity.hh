@@ -289,11 +289,7 @@ namespace Dune {
 
     //! returns true if Entity has children
     bool isLeaf() const {
-#ifdef _2
-      return UG2d::EstimateHere(target_);
-#else
-      return UG3d::EstimateHere(target_);
-#endif
+      return UG_NS<dim>::isLeaf(target_);
     }
 
     //! Inter-level access to father element on coarser grid.
