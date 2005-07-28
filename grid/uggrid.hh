@@ -15,6 +15,8 @@
 // for easier parsing by undefAllMacros.pl
 /** \todo Defining __PC__ here is certainly not the perfect way... */
 #define __PC__  // hack:  choose the architecture
+//#define UGLIB
+//#define AUTOTOOLS_BUILD
 #define FOR_DUNE
 #include "uggrid/ugincludes.hh"
 #undef __PC__
@@ -22,7 +24,6 @@
 
 // Wrap a few large UG macros by functions before they get undef'ed away
 #include "uggrid/ugfunctions.hh"
-
 
 // undef all macros defined by UG
 #include "uggrid/ug_undefs.hh"
@@ -37,6 +38,7 @@
 #include "uggrid/uggridboundent.hh"
 #include "uggrid/ugintersectionit.hh"
 #include "uggrid/uggridleveliterator.hh"
+#include "uggrid/uggridleafiterator.hh"
 #include "uggrid/uggridhieriterator.hh"
 #include "uggrid/uggridindexsets.hh"
 
@@ -142,7 +144,7 @@ namespace Dune {
         UGGridLevelIterator,
         UGGridIntersectionIterator,
         UGGridHierarchicIterator,
-        UGGridLevelIterator> Traits;
+        UGGridLeafIterator> Traits;
 
     typedef UGGridLevelIndexSet<UGGrid<dim,dimworld> > LevelIndexSet;
     typedef UGGridLeafIndexSet<UGGrid<dim,dimworld> >  LeafIndexSet;
@@ -194,25 +196,25 @@ namespace Dune {
     //! Iterator to first entity of given codim on level
     template<int codim>
     typename Traits::template Codim<codim>::LeafIterator leafbegin() const {
-      DUNE_THROW(NotImplemented, "leafbegin not implemented");
+      return typename Traits::template Codim<codim>::template Partition<All_Partition>::LeafIterator(*this);
     }
 
     //! one past the end on this level
     template<int codim>
     typename Traits::template Codim<codim>::LeafIterator leafend() const {
-      DUNE_THROW(NotImplemented, "leafend not implemented");
+      return UGGridLeafIterator<codim,All_Partition, const UGGrid<dim,dimworld> >();
     }
 
     //! Iterator to first entity of given codim on level
     template<int codim, PartitionIteratorType PiType>
     typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafbegin() const {
-      DUNE_THROW(NotImplemented, "leafbegin not implemented");
+      return typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator(*this);
     }
 
     //! one past the end on this level
     template<int codim, PartitionIteratorType PiType>
     typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafend() const {
-      DUNE_THROW(NotImplemented, "leafend not implemented");
+      return UGGridLeafIterator<codim,All_Partition, const UGGrid<dim,dimworld> >();
     }
 
     /** \brief Number of grid entities per level and codim
