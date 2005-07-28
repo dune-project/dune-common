@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <cassert>
 using namespace Dune;
 
 template<class T>
@@ -32,10 +33,10 @@ int iteratorTupleTest()
 
   typedef std::vector<int>::iterator iterator;
   typedef std::vector<int>::const_iterator const_iterator;
-  typedef Tuple<iterator,const_iterator> Tuple;
+  typedef Tuple<iterator,const_iterator, const_iterator> Tuple;
 
 
-  Tuple tuple(v.begin(), v.end());
+  Tuple tuple(v.begin(), v.begin(), v.end());
   int ret=0;
 
   if(Element<0>::get(tuple)!= v.begin()) {
@@ -43,14 +44,15 @@ int iteratorTupleTest()
     ret++;
   }
   assert(Element<0>::get(tuple) == v.begin());
-
-  if(Element<1>::get(tuple)!= v.end()) {
+  assert(Element<1>::get(tuple) == Element<0>::get(tuple));
+  if(Element<2>::get(tuple)!= v.end()) {
     std::cerr<<"Iterator tuple construction failed!"<<std::endl;
     ret++;
   }
 
-  assert(Element<1>::get(tuple) == v.end());
-
+  assert(Element<2>::get(tuple) == v.end());
+  assert(Element<0>::get(tuple) != v.end());
+  assert(Element<1>::get(tuple)!= Element<2>::get(tuple));
   return ret;
 }
 
