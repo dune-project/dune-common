@@ -391,6 +391,7 @@ namespace Dune
     typedef typename T::GlobalIndex GlobalIndex;
     typedef typename SLList<GlobalIndex,A>::iterator GlobalIndexIterator;
 
+    assert(globalMap.size()==remoteIndices.remoteIndices_.size());
     // Repair pointers to index set in remote indices.
     typename std::map<int,SLList<GlobalIndex,A> >::iterator global = globalMap.begin();
     RemoteIterator end = remoteIndices.remoteIndices_.end();
@@ -404,8 +405,13 @@ namespace Dune
       RemoteIndexIterator riEnd  = remote->second.first->end();
       RemoteIndexIterator rIndex = remote->second.first->begin();
       GlobalIndexIterator gIndex = global->second.begin();
+      GlobalIndexIterator gEnd   = global->second.end();
       IndexIterator index  = indexSet.begin();
 
+      int gsize = global->second.size();
+      int rsize = remote->second.first->size();
+
+      assert(rIndex==riEnd || gIndex != global->second.end());
       while(rIndex != riEnd) {
         // Search for the index in the set.
         assert(gIndex != global->second.end());
@@ -718,6 +724,8 @@ namespace Dune
 
     // update the sequence number
     remoteIndices_.sourceSeqNo_ = remoteIndices_.destSeqNo_ = indexSet_.seqNo();
+
+    remoteIndices_.built_ = true;
   }
 
 
@@ -815,10 +823,13 @@ namespace Dune
   inline void IndicesSyncer<T>::insertIntoRemoteIndexList(int process, const GlobalIndex& global,
                                                           char attribute)
   {
+    std::cout<<"Inserting from "<<process<<" "<<global<<" "<<attribute<<std::endl;
+
     // There might be cases where there no remote indices for that process yet
     typename IteratorsMap::iterator found = iteratorsMap_.find(process);
 
     if( found == iteratorsMap_.end() ) {
+      std::cout<<"Discovered new neighbour "<<process<<std::endl;
       RemoteIndexList* rlist = new RemoteIndexList();
       remoteIndices_.remoteIndices_.insert(std::make_pair(process,std::make_pair(rlist,rlist)));
       Iterators iterators = Iterators(*rlist, globalMap_[process], oldMap_[process]);
