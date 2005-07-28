@@ -792,12 +792,15 @@ namespace Dune
    */
 
 
-
   template<typename ctype, int dim>
-  class ReferencePrism
+  class ReferencePrism;
+
+  template<typename ctype>
+  class ReferencePrism<ctype,3>
   {
   public:
     //assert dim=3;// dim must be 3
+    enum {dim=3};
     enum {MAXE=9}; // 9 edges
     enum {d=dim};
     typedef ctype CoordType;
@@ -1099,10 +1102,14 @@ namespace Dune
 
 
   template<typename ctype, int dim>
-  class ReferencePyramid
+  class ReferencePyramid;
+
+  template<typename ctype>
+  class ReferencePyramid<ctype, 3>
   {
 
   public:
+    enum {dim=3};
     enum {MAXE=8}; // 8 edges
     enum {d=dim};
     typedef ctype CoordType;
@@ -1425,6 +1432,33 @@ namespace Dune
         return hcube;
       else if( (type==simplex ) || (type==triangle ) || (type==tetrahedron))
         return simplices;
+      else
+        DUNE_THROW(NotImplemented, "type not implemented yet");
+    }
+
+  private:
+    ReferenceElementWrapper<ReferenceCube<ctype,dim> > hcube;
+    ReferenceElementWrapper<ReferenceSimplex<ctype,dim> > simplices;
+  };
+
+  //! Combines all reference elements for dim==3
+  template<typename ctype>
+  class ReferenceElementContainer<ctype, 3>
+  {
+    enum { dim=3 };
+  public:
+
+    //! export type elements in the container
+    typedef ReferenceElement<ctype,dim> value_type;
+
+    //! return element of the container via geometry type
+    const ReferenceElement<ctype,dim>& operator() (GeometryType type) const
+    {
+      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
+           (type==hexahedron) )
+        return hcube;
+      else if( (type==simplex ) || (type==triangle ) || (type==tetrahedron))
+        return simplices;
       else if (type==prism)
         return pris;
       else if(type==pyramid)
@@ -1440,25 +1474,35 @@ namespace Dune
     ReferenceElementWrapper<ReferencePyramid<ctype,dim> > pyram;
   };
 
-
   // singleton holding several reference element containers
   template<typename ctype, int dim>
   struct ReferenceElements {
     static ReferenceCubeContainer<ctype,dim> cube;
     static ReferenceSimplexContainer<ctype,dim> simplices;
-    static ReferencePrismContainer<ctype,dim> pris;
-    static ReferencePyramidContainer<ctype,dim> pyram;
+    // static ReferencePrismContainer<ctype,3> pris;
+    //     static ReferencePyramidContainer<ctype,3> pyram;
     static ReferenceElementContainer<ctype,dim> general;
   };
+
+  // singleton holding several reference element containers dim==3
+  template<typename ctype>
+  struct ReferenceElements<ctype,3> {
+    //   static ReferenceCubeContainer<ctype,dim> cube;
+    //     static ReferenceSimplexContainer<ctype,dim> simplices;
+    static ReferencePrismContainer<ctype,3> pris;
+    static ReferencePyramidContainer<ctype,3> pyram;
+    //  static ReferenceElementContainer<ctype,dim> general;
+  };
+
 
   template<typename ctype, int dim>
   ReferenceCubeContainer<ctype,dim> ReferenceElements<ctype,dim>::cube;
   template<typename ctype, int dim>
   ReferenceSimplexContainer<ctype,dim> ReferenceElements<ctype,dim>::simplices;
-  template<typename ctype, int dim>
-  ReferencePrismContainer<ctype,dim> ReferenceElements<ctype,dim>::pris;
-  template<typename ctype, int dim>
-  ReferencePyramidContainer<ctype,dim> ReferenceElements<ctype,dim>::pyram;
+  template<typename ctype>
+  ReferencePrismContainer<ctype,3> ReferenceElements<ctype,3>::pris;
+  template<typename ctype>
+  ReferencePyramidContainer<ctype,3> ReferenceElements<ctype,3>::pyram;
   template<typename ctype, int dim>
   ReferenceElementContainer<ctype,dim> ReferenceElements<ctype,dim>::general;
 
