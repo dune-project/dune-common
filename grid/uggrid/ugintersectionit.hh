@@ -47,43 +47,42 @@ namespace Dune {
         \todo Should be private
      */
     UGGridIntersectionIterator(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb, int level)
-      : center_(UGGridEntityPointer<0,GridImp>()), centerAddress_(center), neighborCount_(nb)
-    {
-      //center_.setToTarget(center, level);
-    }
+      : center_(center), level_(level), neighborCount_(nb)
+    {}
 
     //! The Destructor
     ~UGGridIntersectionIterator() {};
 
-    //! ask for level of intersection
-    int level () const {
-      DUNE_THROW(NotImplemented, "level()");
-      return center_.level();
+    int level() const {
+      return level_;
     }
 
     //! equality
     bool equals(const UGGridIntersectionIterator<GridImp>& i) const {
-      return centerAddress_==i.centerAddress_ && neighborCount_ == i.neighborCount_;
+      return center_==i.center_ && neighborCount_ == i.neighborCount_;
     }
 
     //! prefix increment
     void increment() {
       neighborCount_++;
-      if (neighborCount_ >= UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(centerAddress_))
+      if (neighborCount_ >= UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(center_))
         neighborCount_ = -1;
     }
 
     //! return EntityPointer to the Entity on the inside of this intersection
     //! (that is the Entity where we started this Iterator)
     EntityPointer inside() const {
-      DUNE_THROW(NotImplemented, "inside() not implemented yet");
-      return center_;
+      UGGridEntityPointer<0,GridImp> center;
+      center.setToTarget(center_, this->level());
+      return center;
     }
 
     //! return EntityPointer to the Entity on the outside of this intersection
     //! (that is the neighboring Entity)
     EntityPointer outside() const {
-      DUNE_THROW(NotImplemented, "outside() not implemented yet");
+      UGGridEntityPointer<0,GridImp> other;
+      other.setToTarget(UG_NS<dimworld>::NbElem(center_, neighborCount_), this->level());
+      return other;
     }
 
     //! return true if intersection is with boundary. \todo connection with
@@ -127,17 +126,6 @@ namespace Dune {
     //  private methods
     //**********************************************************
 
-    //! Returns the element whose intersection with center_
-    //! is represented by the intersection iterator
-    typename TargetType<0,GridImp::dimensionworld>::T* target() const;
-
-    //! Set intersection iterator to nb-th neighbor of element 'center'
-    void setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb);
-
-    /** \brief Set intersection iterator to nb-th neighbor of element 'center'
-     * and set the level as well */
-    void setToTarget(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb, int level);
-
     //! vector storing the outer normal
     mutable FieldVector<UGCtype, dimworld> outerNormal_;
 
@@ -152,11 +140,11 @@ namespace Dune {
     //! BoundaryEntity
     UGGridBoundaryEntity<GridImp> boundaryEntity_;
 
-    //! The element whose neighbors we are looking at
-    EntityPointer center_;
-
     //! This points to the same UG element as center_ does
-    typename TargetType<0,GridImp::dimensionworld>::T* centerAddress_;
+    typename TargetType<0,GridImp::dimensionworld>::T* center_;
+
+    //! The level we're on
+    int level_;
 
     //! count on which neighbor we are lookin' at
     int neighborCount_;
