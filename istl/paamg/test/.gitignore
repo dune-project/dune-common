@@ -5,3 +5,4 @@ Makefile.in
 semantic.cache
 graphtest
 galerkintest
+hierarchytest

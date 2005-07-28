@@ -2,8 +2,8 @@
 
 #if MPI
   MPITESTS = graphtest
-  TESTPROGS = galerkintest
-  TESTRUNS = run-galerkin
+  TESTPROGS = galerkintest hierarchytest
+  TESTRUNS = run-galerkin run-hierarchy
 #endif
 
 NORMALTESTS = $(MPITESTS)
@@ -17,9 +17,13 @@ check_PROGRAMS = $(TESTPROGS) $(NORMALTESTS)
 
 graphtest_SOURCES = graphtest.cc
 
-galerkintest_SOURCES = galerkintest.cc
-
+galerkintest_SOURCES = galerkintest.cc anisotropic.hh
 galerkintest_CXXFLAGS = $(MPI_CPPFLAGS)
 galerkintest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+
+
+hierarchytest_SOURCES = hierarchytest.cc anisotropic.hh
+hierarchytest_CXXFLAGS = $(MPI_CPPFLAGS)
+hierarchytest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
 include $(top_srcdir)/am/global-rules
