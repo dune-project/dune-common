@@ -187,44 +187,38 @@ namespace Dune {
       return 0;
     }
 
+    //! Return true if the element is a leaf element
+    static bool isLeaf(const typename TargetType<0,dim>::T* theElement) {
+      return NS_DIM_PREFIX EstimateHere(theElement);
+    }
+
+    //! Return true if the node is a leaf node
+    static bool isLeaf(const typename TargetType<dim,dim>::T* theNode) {
+      DUNE_THROW(NotImplemented, "isLeaf for nodes");
+    }
+
     // /////////////////////////////////////////////
     //   Level indices
     // /////////////////////////////////////////////
 
     //! Gets the level index of a UG element
     static int& levelIndex(typename TargetType<0,dim>::T* theElement) {
-#ifdef FOR_DUNE
       return theElement->ge.levelIndex;
-#else
-      return theElement->ge.id;
-#endif
     }
 
     //! Gets the level index of a UG element
     static const int& levelIndex(const typename TargetType<0,dim>::T* theElement) {
-#ifdef FOR_DUNE
       return theElement->ge.levelIndex;
-#else
-      return theElement->ge.id;
-#endif
     }
 
     //! Gets the level index of a UG node
     static int& levelIndex(typename TargetType<dim,dim>::T* theNode) {
-#ifdef FOR_DUNE
       return theNode->levelIndex;
-#else
-      return theNode->id;
-#endif
     }
 
     //! Gets the level index of a UG node
     static const int& levelIndex(const typename TargetType<dim,dim>::T* theNode) {
-#ifdef FOR_DUNE
       return theNode->levelIndex;
-#else
-      return theNode->id;
-#endif
     }
 
     // /////////////////////////////////////////////
