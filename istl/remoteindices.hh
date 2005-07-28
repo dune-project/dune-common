@@ -1133,6 +1133,17 @@ namespace Dune {
   template<typename T>
   inline void RemoteIndices<T>::free()
   {
+    typedef typename RemoteIndexMap::iterator Iterator;
+    Iterator lend = remoteIndices_.end();
+    for(Iterator lists=remoteIndices_.begin(); lists != lend; ++lists) {
+      if(lists->second.first==lists->second.second) {
+        // there is only one remote index list.
+        delete lists->second.first;
+      }else{
+        delete lists->second.first;
+        delete lists->second.second;
+      }
+    }
     remoteIndices_.clear();
   }
 
