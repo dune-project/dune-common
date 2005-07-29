@@ -55,7 +55,7 @@ namespace Dune
   inline int GrapeGridDisplay<GridType>::
   el_update (GridIteratorType *it, DUNE_ELEM * he)
   {
-    typedef typename GridType::Traits::template codim<0>::Entity Entity;
+    typedef typename GridType::Traits::template Codim<0>::Entity Entity;
     typedef typename Entity::IntersectionIterator IntersectionIterator;
     typedef typename Entity::Geometry DuneElement;
 
@@ -266,7 +266,7 @@ namespace Dune
   inline int GrapeGridDisplay<GridType>::
   child_n_update(GridIteratorType *it, DUNE_ELEM * he)
   {
-    typedef typename  GridType::Traits::template codim<0>::Entity EntityType;
+    typedef typename  GridType::Traits::template Codim<0>::Entity EntityType;
     typedef typename  EntityType::HierarchicIterator HIERit;
 
     EntityType &en = (*it[0]);
@@ -341,20 +341,20 @@ namespace Dune
     {
       if(he->isLeafIterator)
       {
-        typedef typename GridType::LeafIterator LeafIt;
+        typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
         return disp[0].checkInside(*(it[0]),w);
       }
       else
       {
-        typedef typename GridType::Traits::template codim<0>::LevelIterator LevIt;
+        typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
         return disp[0].checkInside(*(it[0]),w);
       }
     }
     else if(iter == he->hiter)
     {
-      typedef typename GridType::Traits::template codim<0>::Entity::HierarchicIterator HierIt;
+      typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
       return disp[0].checkInside(*(it[0]),w);
     }
@@ -396,14 +396,14 @@ namespace Dune
     {
       if(he->isLeafIterator)
       {
-        typedef typename GridType::LeafIterator LeafIt;
+        typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
         disp[0].local_to_world(*(it[0]),c,w);
         return;
       }
       else
       {
-        typedef typename GridType::Traits::template codim<0>::LevelIterator LevIt;
+        typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
         disp[0].local_to_world(*(it[0]),c,w);
         return;
@@ -411,7 +411,7 @@ namespace Dune
     }
     else if(iter == he->hiter)
     {
-      typedef typename GridType::Traits::template codim<0>::Entity::HierarchicIterator HierIt;
+      typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
       disp[0].local_to_world(*(it[0]),c,w);
       return;
@@ -453,20 +453,20 @@ namespace Dune
     {
       if(he->isLeafIterator)
       {
-        typedef typename GridType::LeafIterator LeafIt;
+        typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
         return disp[0].world_to_local(*(it[0]),w,c);
       }
       else
       {
-        typedef typename GridType::Traits::template codim<0>::LevelIterator LevIt;
+        typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
         return disp[0].world_to_local(*(it[0]),w,c);
       }
     }
     else if(iter == he->hiter)
     {
-      typedef typename GridType::Traits::template codim<0>::Entity::HierarchicIterator HierIt;
+      typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
       return disp[0].world_to_local(*(it[0]),w,c);
     }
