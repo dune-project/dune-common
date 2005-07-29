@@ -26,7 +26,7 @@ namespace Dune
   template <class GridType, class DiscFuncType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::createQuadrature ()
   {
-    typedef typename GridType::Traits::template codim<0>::LevelIterator LevIter;
+    typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIter;
     LevIter it    = this->grid_.template lbegin<0> (0);
     LevIter endit = this->grid_.template lend<0> (0);
     if(it != endit)
@@ -73,7 +73,7 @@ namespace Dune
   evalCoord (DUNE_ELEM *he, DUNE_FDATA *df, const double *coord, double * val)
   {
     enum { dim = GridType::dimension };
-    typedef typename GridType::Traits::template codim<0>::Entity EntityType;
+    typedef typename GridType::Traits::template Codim<0>::Entity EntityType;
     DiscFuncType *func = (DiscFuncType *)  ( df->discFunc);
 
     typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
@@ -84,14 +84,14 @@ namespace Dune
     {
       if(he->isLeafIterator)
       {
-        typedef typename GridType::LeafIterator LeafIt;
+        typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
         evalCoord(*it[0],*func,*lf,df->component,coord,val);
         return;
       }
       else
       {
-        typedef typename GridType::Traits::template codim<0>::LevelIterator LevIt;
+        typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
         evalCoord(*it[0],*func,*lf,df->component,coord,val);
         return;
@@ -99,7 +99,7 @@ namespace Dune
     }
     else if(iter == he->hiter)
     {
-      typedef typename GridType::Traits::template codim<0>::Entity::HierarchicIterator HierIt;
+      typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
       evalCoord(*it[0],*func,*lf,df->component,coord,val);
       return;
@@ -220,7 +220,7 @@ namespace Dune
   {
     enum { dim = GridType::dimension };
     enum { dimRange = DiscFuncType::FunctionSpaceType::DimRange };
-    typedef typename GridType::Traits::template codim<0>::Entity EntityType;
+    typedef typename GridType::Traits::template Codim<0>::Entity EntityType;
     DiscFuncType *func = (DiscFuncType *)  ( df->discFunc);
 
     typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
@@ -231,14 +231,14 @@ namespace Dune
     {
       if(he->isLeafIterator == 1)
       {
-        typedef typename GridType::LeafIterator LeafIt;
+        typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
         evalDof( *it[0],*func,*lf,df->component,localNum,val);
         return;
       }
       else
       {
-        typedef typename GridType::Traits::template codim<0>::LevelIterator LevIt;
+        typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
         evalDof(*it[0],*func,*lf,df->component,localNum,val);
         return;
@@ -246,7 +246,7 @@ namespace Dune
     }
     else if(iter == he->hiter)
     {
-      typedef typename GridType::Traits::template codim<0>::Entity::HierarchicIterator HierIt;
+      typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
       evalDof(*it[0],*func,*lf,df->component,localNum,val);
       return;
