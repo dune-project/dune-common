@@ -439,7 +439,7 @@ namespace Dune {
 
       int nSize = 0;
 
-      typedef typename GridType::LeafIterator LeafIteratorType;
+      typedef typename GridType::template Codim<0>::LeafIterator LeafIteratorType;
       // walk over leaf level on locate all needed entities
       LeafIteratorType endit  = this->grid_.leafend   ( this->grid_.maxlevel() );
       for(LeafIteratorType it = this->grid_.leafbegin ( this->grid_.maxlevel() ); it != endit ; ++it )
