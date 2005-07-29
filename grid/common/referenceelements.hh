@@ -1479,19 +1479,17 @@ namespace Dune
   struct ReferenceElements {
     static ReferenceCubeContainer<ctype,dim> cube;
     static ReferenceSimplexContainer<ctype,dim> simplices;
-    // static ReferencePrismContainer<ctype,3> pris;
-    //     static ReferencePyramidContainer<ctype,3> pyram;
     static ReferenceElementContainer<ctype,dim> general;
   };
 
   // singleton holding several reference element containers dim==3
   template<typename ctype>
   struct ReferenceElements<ctype,3> {
-    //   static ReferenceCubeContainer<ctype,dim> cube;
-    //     static ReferenceSimplexContainer<ctype,dim> simplices;
+    static ReferenceCubeContainer<ctype,3> cube;
+    static ReferenceSimplexContainer<ctype,3> simplices;
     static ReferencePrismContainer<ctype,3> pris;
     static ReferencePyramidContainer<ctype,3> pyram;
-    //  static ReferenceElementContainer<ctype,dim> general;
+    static ReferenceElementContainer<ctype,3> general;
   };
 
 
@@ -1499,12 +1497,19 @@ namespace Dune
   ReferenceCubeContainer<ctype,dim> ReferenceElements<ctype,dim>::cube;
   template<typename ctype, int dim>
   ReferenceSimplexContainer<ctype,dim> ReferenceElements<ctype,dim>::simplices;
+  template<typename ctype, int dim>
+  ReferenceElementContainer<ctype,dim> ReferenceElements<ctype,dim>::general;
+
+  template<typename ctype>
+  ReferenceCubeContainer<ctype,3> ReferenceElements<ctype,3>::cube;
+  template<typename ctype>
+  ReferenceSimplexContainer<ctype,3> ReferenceElements<ctype,3>::simplices;
   template<typename ctype>
   ReferencePrismContainer<ctype,3> ReferenceElements<ctype,3>::pris;
   template<typename ctype>
   ReferencePyramidContainer<ctype,3> ReferenceElements<ctype,3>::pyram;
-  template<typename ctype, int dim>
-  ReferenceElementContainer<ctype,dim> ReferenceElements<ctype,dim>::general;
+  template<typename ctype>
+  ReferenceElementContainer<ctype,3> ReferenceElements<ctype,3>::general;
 
   /** @} */
 }
