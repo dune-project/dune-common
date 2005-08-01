@@ -142,6 +142,10 @@ namespace Dune {
   }
 
   // --0Entity
+  template <int dim, class GridImp>
+  const typename ALU3dGridEntity<0, dim, GridImp>::ReferenceElementType
+  ALU3dGridEntity<0, dim, GridImp>::refElem_;
+
   template<int dim, class GridImp>
   inline ALU3dGridEntity<0,dim,GridImp> ::
   ALU3dGridEntity(const GridImp  &grid, int wLevel)
@@ -362,6 +366,7 @@ namespace Dune {
   {
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
+      // * wrong: should use ElementTopology to map to ALU Indices and back
       return elem.myhface4(i)->getIndex();
     }
   };
@@ -376,6 +381,8 @@ namespace Dune {
       if(i<3)
         return elem.myhface3(0)->myhedge1(i)->getIndex();
       else
+        // * should probably be:
+        // elem.myhface3(i-2)->myhedge1(0)->getIndex()
         return elem.myhface3(i-2)->myhedge1(i-3)->getIndex();
     }
   };
@@ -425,19 +432,11 @@ namespace Dune {
     return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_ ,i);
   }
   //******** end method subIndex *************
-
-  template <class GridImp, int dim, int cc> struct ALU3dGridCount {
-    static int count () { return dim+1; }
-  };
-  template <class GridImp> struct ALU3dGridCount<GridImp,3,2> {
-    static int count () { return 6; }
-  };
-
   template<int dim, class GridImp>
   template<int cc>
   inline int ALU3dGridEntity<0,dim,GridImp> :: count () const
   {
-    return ALU3dGridCount<GridImp,dim,cc>::count();
+    return refElem_.size(cc);
   }
 
   //******** begin method entity ******************
@@ -641,7 +640,7 @@ namespace Dune {
   inline ALU3dGridEntityPointer<codim,GridImp> ::
   ALU3dGridEntityPointer(const GridImp & grid, const BNDFaceType &ghost)
     : grid_(grid)
-      , entity_ ( grid_.template getNewEntity<codim> ( item.level() ) )
+      , entity_ ( grid_.template getNewEntity<codim> ( ghost.level() ) )
       , done_ (false)
   {
     assert( entity_ );

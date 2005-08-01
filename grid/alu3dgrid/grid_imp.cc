@@ -316,25 +316,25 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const {
     return leafbegin<0, All_Partition>(level);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafend(int level) const {
     return leafend<0, All_Partition>(level);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafbegin() const {
     return leafbegin<0, All_Partition>(maxlevel_);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafend() const {
     return leafend<0, All_Partition>(maxlevel_);
   }

@@ -89,7 +89,7 @@ namespace Dune {
   //GeometryType convertALU3dGridElementType2GeometryType(ALU3dGridElementType);
 
   template <ALU3dGridElementType elType>
-  struct ALU3dImplTraits;
+  struct ALU3dImplTraits {};
 
   template <>
   struct ALU3dImplTraits<tetra> {
@@ -116,33 +116,35 @@ namespace Dune {
     typedef std::pair<PLLBndFaceType*, int> GhostPairType;
 
     template <int cdim>
-    struct Codim {};
-
-    template <>
-    struct Codim<0> {
-      typedef ALU3DSPACE GitterType::helement_STI InterfaceType;
-      typedef IMPLElementType ImplementationType;
-    };
-
-    template <>
-    struct Codim<1> {
-      typedef ALU3DSPACE GitterType::hface_STI InterfaceType;
-      typedef GEOFaceType ImplementationType;
-    };
-
-    template <>
-    struct Codim<2> {
-      typedef ALU3DSPACE GitterType::hedge_STI InterfaceType;
-      typedef GEOEdgeType ImplementationType;
-    };
-
-    template <>
-    struct Codim<3> {
-      typedef ALU3DSPACE GitterType::vertex_STI InterfaceType;
-      typedef ALU3DSPACE GitterType::Geometric::VertexGeo ImplementationType;
-    };
+    struct Codim;
 
   };
+
+  template <>
+  struct ALU3dImplTraits<tetra>::Codim<0> {
+    typedef ALU3DSPACE GitterType::helement_STI InterfaceType;
+    typedef IMPLElementType ImplementationType;
+  };
+
+  template <>
+  struct ALU3dImplTraits<tetra>::Codim<1> {
+    typedef ALU3DSPACE GitterType::hface_STI InterfaceType;
+    typedef GEOFaceType ImplementationType;
+  };
+
+  template <>
+  struct ALU3dImplTraits<tetra>::Codim<2> {
+    typedef ALU3DSPACE GitterType::hedge_STI InterfaceType;
+    typedef GEOEdgeType ImplementationType;
+  };
+
+  template <>
+  struct ALU3dImplTraits<tetra>::Codim<3> {
+    typedef ALU3DSPACE GitterType::vertex_STI InterfaceType;
+    typedef ALU3DSPACE GitterType::Geometric::VertexGeo ImplementationType;
+  };
+
+
 
   template <>
   struct ALU3dImplTraits<hexa> {
@@ -167,33 +169,33 @@ namespace Dune {
     typedef std::pair<PLLBndFaceType*, int> GhostPairType;
 
     template <int cdim>
-    struct Codim {};
-
-    template <>
-    struct Codim<0> {
-      typedef ALU3DSPACE GitterType::helement_STI InterfaceType;
-      typedef IMPLElementType ImplementationType;
-    };
-
-    template <>
-    struct Codim<1> {
-      typedef ALU3DSPACE GitterType::hface_STI InterfaceType;
-      typedef GEOFaceType ImplementationType;
-    };
-
-    template <>
-    struct Codim<2> {
-      typedef ALU3DSPACE GitterType::hedge_STI InterfaceType;
-      typedef GEOEdgeType ImplementationType;
-    };
-
-    template <>
-    struct Codim<3> {
-      typedef ALU3DSPACE GitterType::vertex_STI InterfaceType;
-      typedef ALU3DSPACE GitterType::Geometric::VertexGeo ImplementationType;
-    };
-
+    struct Codim;
   };
+
+  template <>
+  struct ALU3dImplTraits<hexa>::Codim<0> {
+    typedef ALU3DSPACE GitterType::helement_STI InterfaceType;
+    typedef IMPLElementType ImplementationType;
+  };
+
+  template <>
+  struct ALU3dImplTraits<hexa>::Codim<1> {
+    typedef ALU3DSPACE GitterType::hface_STI InterfaceType;
+    typedef GEOFaceType ImplementationType;
+  };
+
+  template <>
+  struct ALU3dImplTraits<hexa>::Codim<2> {
+    typedef ALU3DSPACE GitterType::hedge_STI InterfaceType;
+    typedef GEOEdgeType ImplementationType;
+  };
+
+  template <>
+  struct ALU3dImplTraits<hexa>::Codim<3> {
+    typedef ALU3DSPACE GitterType::vertex_STI InterfaceType;
+    typedef ALU3DSPACE GitterType::Geometric::VertexGeo ImplementationType;
+  };
+
 
 #ifdef _ALU3DGRID_PARALLEL_
   static int __MyRank__ = -1;

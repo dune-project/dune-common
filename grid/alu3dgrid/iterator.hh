@@ -867,29 +867,29 @@ namespace Dune {
   //
   //********************************************************************
   //! Leaf iterator
-  template<int codim, PartitionIteratorType pitype, class GridImp>
+  template<int cdim, PartitionIteratorType pitype, class GridImp>
   class ALU3dGridLeafIterator :
-    public LeafIteratorDefault<codim, pitype, GridImp, ALU3dGridLeafIterator>,
-    public ALU3dGridEntityPointer<codim,GridImp>
+    public LeafIteratorDefault<cdim, pitype, GridImp, ALU3dGridLeafIterator>,
+    public ALU3dGridEntityPointer<cdim,GridImp>
   {
     enum { dim = GridImp :: dimension };
 
-    friend class ALU3dGridEntity<codim,dim,GridImp>;
+    friend class ALU3dGridEntity<cdim,dim,GridImp>;
     //friend class ALU3dGrid < dim , dimworld >;
-    enum { codim = codim };
+    enum { codim = cdim };
 
   public:
-    typedef typename GridImp::template Codim<codim>::Entity Entity;
-    typedef ALU3dGridMakeableEntity<codim,dim,GridImp> EntityImp;
+    typedef typename GridImp::template Codim<cdim>::Entity Entity;
+    typedef ALU3dGridMakeableEntity<cdim,dim,GridImp> EntityImp;
 
-    typedef ALU3dGridLeafIterator<codim, pitype, GridImp> ALU3dGridLeafIteratorType;
+    typedef ALU3dGridLeafIterator<cdim, pitype, GridImp> ALU3dGridLeafIteratorType;
 
     //! Constructor
     ALU3dGridLeafIterator(const GridImp & grid, int level , bool end,
                           const int nlinks);
 
     //! copy Constructor
-    ALU3dGridLeafIterator(const ALU3dGridLeafIterator<codim, pitype, GridImp> & org);
+    ALU3dGridLeafIterator(const ALU3dGridLeafIterator<cdim, pitype, GridImp> & org);
 
     //! prefix increment
     void increment ();
@@ -905,7 +905,7 @@ namespace Dune {
     int level_;
 
     // the wrapper for the original iterator of the ALU3dGrid
-    typedef typename ALU3DSPACE ALU3dGridLeafIteratorWrapper<codim, pitype> IteratorType;
+    typedef typename ALU3DSPACE ALU3dGridLeafIteratorWrapper<cdim, pitype> IteratorType;
 
     typedef ALU3DSPACE IteratorWrapperInterface<ALU3DSPACE LeafValType> IterInterface;
     ALU3DSPACE AutoPointer < IterInterface > iter_;

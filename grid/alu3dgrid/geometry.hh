@@ -273,7 +273,6 @@ namespace Dune {
     //! generate the geometry out of a given ALU3dGridElement
     bool buildGeom(const IMPLElementType & item);
     bool buildGeom(const ALU3DSPACE HFaceType & item);
-    //bool buildGeom(int twist, int faceIdx);
     bool buildGeom(const FaceCoordinatesType& coords);
     bool buildGeom(const ALU3DSPACE HEdgeType & item);
     bool buildGeom(const ALU3DSPACE VertexType & item);
