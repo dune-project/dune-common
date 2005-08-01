@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include "geometry.hh"
 #include "grid.hh"
+#include <dune/common/exceptions.hh>
 
 namespace Dune {
 
@@ -470,6 +471,7 @@ namespace Dune {
     static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<2>:: EntityPointer
     entity (const GridImp & grid, const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item, int i)
     {
+      DUNE_THROW(NotImplemented, "Acces to edges not implemented in ALU3dGrid");
       dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
       if(i<3)
       {
