@@ -138,14 +138,34 @@ namespace Dune {
     template<int cc>
     int subindex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
-      DUNE_THROW(NotImplemented, "UGGridLeafIndexSet::subindex()");
-      //return grid.template getRealEntity<0>(e).template subCompressedIndex<cc>(i);
+      return grid_.template getRealEntity<0>(e).template subLeafIndex<cc>(i);
     }
 
     //! get number of entities of given codim, type and level (the level is known to the object)
     int size (int codim, GeometryType type) const
     {
-      return grid_.size(codim, type);
+      if (codim==GridImp::dimension) {
+
+        return numVertices_;
+
+      } else if (codim==0) {
+
+        switch (type) {
+        case simplex :
+          return numSimplices_;
+        case pyramid :
+          return numPyramids_;
+        case prism :
+          return numPrisms_;
+        case cube :
+          return numCubes_;
+        default :
+          return 0;
+        }
+
+      } else {
+        DUNE_THROW(NotImplemented, "UGGridLeafIndexSet::size(codim,type) for codim neither 0 nor dim");
+      }
     }
 
     /** deliver all geometry types used in this grid */
@@ -162,10 +182,10 @@ namespace Dune {
       // ///////////////////////////////
       //   Init the element indices
       // ///////////////////////////////
-      int numSimplices = 0;
-      int numPyramids  = 0;
-      int numPrisms    = 0;
-      int numCubes     = 0;
+      numSimplices_ = 0;
+      numPyramids_  = 0;
+      numPrisms_    = 0;
+      numCubes_     = 0;
 
       typename GridImp::Traits::template Codim<0>::LeafIterator eIt    = grid_.template leafbegin<0>();
       typename GridImp::Traits::template Codim<0>::LeafIterator eEndIt = grid_.template leafend<0>();
@@ -174,16 +194,16 @@ namespace Dune {
 
         switch (eIt->geometry().type()) {
         case simplex :
-          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numSimplices++;
+          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numSimplices_++;
           break;
         case pyramid :
-          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numPyramids++;
+          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numPyramids_++;
           break;
         case prism :
-          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numPrisms++;
+          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numPrisms_++;
           break;
         case cube :
-          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numCubes++;
+          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numCubes_++;
           break;
         default :
           DUNE_THROW(GridError, "Found the GeometryType " << eIt->geometry().type()
@@ -194,31 +214,37 @@ namespace Dune {
 
       // Update the list of geometry types present
       myTypes_.resize(0);
-      if (numSimplices > 0)
+      if (numSimplices_ > 0)
         myTypes_.push_back(simplex);
-      if (numPyramids > 0)
+      if (numPyramids_ > 0)
         myTypes_.push_back(pyramid);
-      if (numPrisms > 0)
+      if (numPrisms_ > 0)
         myTypes_.push_back(prism);
-      if (numCubes > 0)
+      if (numCubes_ > 0)
         myTypes_.push_back(cube);
 
       // //////////////////////////////
       //   Init the vertex indices
       // //////////////////////////////
-#if 0
-      typename GridImp::Traits::template Codim<dim>::LevelIterator vIt    = grid_.template leafbegin<dim>();
-      typename GridImp::Traits::template Codim<dim>::LevelIterator vEndIt = grid_.template leafend<dim>();
+      typename GridImp::Traits::template Codim<dim>::LeafIterator vIt    = grid_.template leafbegin<dim>();
+      typename GridImp::Traits::template Codim<dim>::LeafIterator vEndIt = grid_.template leafend<dim>();
 
-      int id = 0;
+      numVertices_ = 0;
       for (; vIt!=vEndIt; ++vIt)
-        UG_NS<dim>::leafIndex(grid_.template getRealEntity<dim>(*vIt).target_) = id++;
-#endif
+        UG_NS<dim>::leafIndex(grid_.template getRealEntity<dim>(*vIt).target_) = numVertices_++;
+
     }
 
   private:
 
     const GridImp& grid_;
+
+    int numSimplices_;
+    int numPyramids_;
+    int numPrisms_;
+    int numCubes_;
+    int numVertices_;
+
     std::vector<GeometryType> myTypes_;
   };
 

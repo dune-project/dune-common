@@ -74,6 +74,8 @@ namespace Dune {
 
     template <class GridImp_>
     friend class UGGridLevelIndexSet;
+    template <class GridImp_>
+    friend class UGGridLeafIndexSet;
 
     typedef typename GridImp::ctype UGCtype;
 
@@ -98,7 +100,7 @@ namespace Dune {
     }
 
     int leafIndex() const {
-      return target_->myvertex->id;
+      return target_->myvertex->iv.id;
     }
 
     unsigned int localId() const {
@@ -267,10 +269,15 @@ namespace Dune {
     template<int cc>
     int count () const;
 
-    /** \brief Return index of sub entity with codim = cc and local number i
+    /** \brief Return level index of sub entity with codim = cc and local number i
      */
     template<int cc>
     int subIndex (int i) const;
+
+    /** \brief Return leaf index of sub entity with codim = cc and local number i
+     */
+    template<int cc>
+    int subLeafIndex (int i) const;
 
     /** \brief Provide access to sub entity i of given codimension. Entities
      *  are numbered 0 ... count<cc>()-1

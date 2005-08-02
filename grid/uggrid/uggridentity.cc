@@ -153,6 +153,25 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
   return UG_NS<dim>::levelIndex(UG_NS<dim>::Corner(target_,i));
 }
 
+template <int dim, class GridImp>
+template <int cc>
+inline int UGGridEntity<0, dim, GridImp>::subLeafIndex(int i) const
+{
+  assert(i>=0 && i<count<cc>());
+
+  if (cc!=dim)
+    DUNE_THROW(GridError, "UGGrid::subLeafIndex isn't implemented for cc != dim");
+
+  if (geometry().type()==cube && dim==3) {
+    // Dune numbers the vertices of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    i = renumbering[i];
+  }
+
+  return UG_NS<dim>::leafIndex(UG_NS<dim>::Corner(target_,i));
+}
+
 
 template <int dim, class GridImp>
 template <int cc>
@@ -162,7 +181,7 @@ UGGridEntity<0,dim,GridImp>::entity ( int i ) const
   assert(i>=0 && i<count<cc>());
 
   if (cc!=dim)
-    DUNE_THROW(GridError, "UGGrid::subIndex isn't implemented for cc != dim");
+    DUNE_THROW(GridError, "UGGrid::entity isn't implemented for cc != dim");
 
   if (geometry().type()==cube && dim==3) {
     // Dune numbers the vertices of a hexahedron differently than UG.
