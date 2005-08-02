@@ -26,7 +26,7 @@ namespace Dune {
     Entity& dereference() const {return virtualEntity_;}
 
     //! ask for level of entity
-    int level () const {return virtualEntity_->level();}
+    int level () const {return virtualEntity_.level();}
 
     OneDGridEntityPointer() {}
   protected:
