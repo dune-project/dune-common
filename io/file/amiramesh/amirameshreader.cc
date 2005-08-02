@@ -29,16 +29,15 @@ void Dune::AmiraMeshReader<GridType>::readFunction(DiscFuncType& f, const std::s
     if (am_ValueData) {
 
       if (f.size()<am->nElements("Nodes"))
-        DUNE_THROW(IOError, "When reading data from a surface field your the "
+        DUNE_THROW(IOError, "When reading data from a surface field the "
                    << "array you provide has to have at least the size of the surface!");
 
       float* am_values_float = (float*) am_ValueData->dataPtr();
 
       for (i=0; i<am->nElements("Nodes"); i++) {
-        for (j=0; j<blocksize; j++) {
+        for (j=0; j<blocksize; j++)
           f[i][j] = am_values_float[i*blocksize+j];
-          //std::cout << "size " << f.size() << " i " << i << "  j " << j << std::endl;
-        }
+
       }
 
     } else {
