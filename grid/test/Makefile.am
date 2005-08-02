@@ -49,7 +49,7 @@ check_PROGRAMS = $(NORMALTESTS) $(YPROG)
 AM_LDFLAGS = $(top_builddir)/lib/libdune.la
 
 # paranoia
-DUNE_EXTRA_CHECKS =  -DDUNE__ISTL_WITH_CHECKING -DDUNE_DEVEL_MODE
+DUNE_EXTRA_CHECKS =  -DDUNE_ISTL_WITH_CHECKING -DDUNE_DEVEL_MODE
 # output coverage
 #COVERAGE = -fprofile-arcs -ftest-coverage
 AM_CXXFLAGS = $(COVERAGE) $(DUNE_EXTRA_CHECKS)
@@ -61,6 +61,7 @@ AM_CXXFLAGS = $(COVERAGE) $(DUNE_EXTRA_CHECKS)
 test_sgrid_SOURCES = test-sgrid.cc
 
 test_oned_SOURCES = test-oned.cc
+test_oned_CXXFLAGS = -DWITH_INDEX_SETS
 
 test_yaspgrid_SOURCES = test-yaspgrid.cc
 test_yaspgrid_CXXFLAGS = $(AM_CPPFLAGS) $(MPI_CPPFLAGS)
