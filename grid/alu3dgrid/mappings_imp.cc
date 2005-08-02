@@ -82,7 +82,6 @@ namespace Dune {
     double x = p[0];
     double y = p[1];
     double z = p[2];
-    // ? get rid of that  double t0 = .5 ;
     double t3 = y * z ;
     double t8 = x * z ;
     double t13 = x * y ;
