@@ -5,7 +5,6 @@
 
 #include <vector>
 
-#include <dune/common/fmatrix.hh>
 #include <dune/common/misc.hh>
 #include <dune/common/capabilities.hh>
 #include <dune/grid/common/grid.hh>
@@ -42,9 +41,9 @@ namespace Dune
 #include "onedgrid/onedgridboundent.hh"
 #include "onedgrid/onedintersectionit.hh"
 #include "onedgrid/onedgridleveliterator.hh"
+#include "onedgrid/onedgridleafiterator.hh"
 #include "onedgrid/onedgridhieriterator.hh"
-
-#include "onedgrid/onedgridentity.cc"
+#include "onedgrid/onedgridindexsets.hh"
 
 namespace Dune {
 
@@ -183,6 +182,13 @@ namespace Dune {
     friend class OneDGridHierarchicIterator<OneDGrid>;
     friend class OneDGridIntersectionIterator<OneDGrid>;
 
+    friend class OneDGridLevelIndexSet<OneDGrid<dim,dimworld> >;
+    friend class OneDGridLeafIndexSet<OneDGrid<dim,dimworld> >;
+    friend class OneDGridIdSet<OneDGrid<dim,dimworld> >;
+
+    template <int codim_, PartitionIteratorType PiType_, class GridImp_>
+    friend class OneDGridLeafIterator;
+
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
 
@@ -206,7 +212,12 @@ namespace Dune {
         OneDGridLevelIterator,
         OneDGridIntersectionIterator,
         OneDGridHierarchicIterator,
-        OneDGridLevelIterator> Traits;
+        OneDGridLeafIterator> Traits;
+
+    typedef OneDGridLevelIndexSet<OneDGrid<dim,dimworld> > LevelIndexSet;
+    typedef OneDGridLeafIndexSet<OneDGrid<dim,dimworld> >  LeafIndexSet;
+    typedef OneDGridIdSet<OneDGrid<dim,dimworld> >   GlobalIdSet;
+    typedef OneDGridIdSet<OneDGrid<dim,dimworld> >    LocalIdSet;
 
     /** \brief Constructor with an explicit set of coordinates */
     OneDGrid(const SimpleVector<OneDCType>& coords);
@@ -275,6 +286,25 @@ namespace Dune {
     }
 
 
+    const GlobalIdSet& globalidset() const
+    {
+      return idSet_;
+    }
+
+    const LocalIdSet& localidset() const
+    {
+      return idSet_;
+    }
+
+    const LevelIndexSet& levelindexset(int level) const
+    {
+      return levelIndexSets_[level];
+    }
+
+    const LeafIndexSet& leafindexset() const
+    {
+      return leafIndexSet_;
+    }
 
 
     /** \brief Mark entity for refinement
@@ -346,7 +376,18 @@ namespace Dune {
     // The elements of the grid hierarchy
     std::vector<List<OneDEntityImp<1> > > elements;
 
+    // Our set of level indices
+    std::vector<LevelIndexSet> levelIndexSets_;
 
+    LeafIndexSet leafIndexSet_;
+
+    OneDGridIdSet<OneDGrid<dim,dimworld> > idSet_;
+
+#if 0
+    GlobalIdSet globalIdSet_;
+
+    LocalIdSet localIdSet_;
+#endif
   }; // end Class OneDGrid
 
   namespace Capabilities

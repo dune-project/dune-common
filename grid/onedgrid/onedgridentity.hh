@@ -26,11 +26,18 @@ namespace Dune {
     OneDEntityImp(int level, const FieldVector<double, 1>& pos) : pos_(pos), level_(level), pred_(NULL), succ_(NULL)
     {}
     //private:
+    bool isLeaf() const {
+      DUNE_THROW(NotImplemented, "isLeaf for vertices");
+    }
 
     FieldVector<double, 1> pos_;
 
     //! entity number
-    int index_;
+    unsigned int levelIndex_;
+
+    unsigned int leafIndex_;
+
+    unsigned int id_;
 
     //! level
     int level_;
@@ -65,7 +72,11 @@ namespace Dune {
     OneDEntityImp<0>* vertex_[2];
 
     //! element number
-    int index_;
+    unsigned int levelIndex_;
+
+    unsigned int leafIndex_;
+
+    unsigned int id_;
 
     //! the level of the entity
     int level_;
@@ -147,10 +158,13 @@ namespace Dune {
 
     //! index is unique and consecutive per level and codim
     //! used for access to degrees of freedom
-    int index () const {return target_->index_;}
+    int index () const {return target_->levelIndex_;}
 
-    /** \todo So far only returns index() */
-    int globalIndex() const {return index();}
+    unsigned int levelIndex() const {return target_->levelIndex_;}
+
+    unsigned int leafIndex() const {return target_->leafIndex_;}
+
+    unsigned int globalId() const {return target_->id_;}
 
     /*! Intra-element access to entities of codimension cc > codim. Return number of entities
        with codimension cc.
@@ -242,12 +256,13 @@ namespace Dune {
     int level () const {return target_->level_;}
 
     //! Index is unique and consecutive per level and codim
-    int index () const {return target_->index_;}
+    int index () const {return target_->levelIndex_;}
 
-    /** \brief Return the global unique index in mesh
-     * \todo So far returns the same as index()
-     */
-    int globalIndex() const { return index(); }
+    unsigned int levelIndex() const {return target_->levelIndex_;}
+
+    unsigned int leafIndex() const {return target_->leafIndex_;}
+
+    unsigned int globalId() const {return target_->id_;}
 
     //! Geometry of this entity
     const Geometry& geometry () const {return geo_;}
@@ -325,12 +340,6 @@ namespace Dune {
 
       if (level()<=maxlevel) {
 
-        //             typename OneDGridHierarchicIterator<GridImp>::StackEntry se;
-        //             se.element = target_;
-        //             se.level   = level();
-        //             it.elemStack.push(se);
-
-#if 1
         // Load sons of old target onto the iterator stack
         if (!isLeaf()) {
           typename OneDGridHierarchicIterator<GridImp>::StackEntry se0;
@@ -343,7 +352,6 @@ namespace Dune {
           se1.level   = level() + 1;
           it.elemStack.push(se1);
         }
-#endif
 
       }
 
@@ -378,5 +386,7 @@ namespace Dune {
   }; // end of OneDGridEntity codim = 0
 
 } // namespace Dune
+
+#include "onedgridentity.cc"
 
 #endif

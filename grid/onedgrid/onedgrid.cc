@@ -54,6 +54,8 @@ Dune::OneDGridLevelIteratorFactory<0>::lbegin (const OneDGrid<1,1> * g, int leve
 
 template <int dim, int dimworld>
 Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, double rightBoundary)
+  : leafIndexSet_(*this),
+    idSet_(*this)
 {
   typedef const OneDGrid<dim,dimworld> GridImp;
 
@@ -66,7 +68,7 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, dou
     double newCoord = leftBoundary + i*(rightBoundary-leftBoundary) / numElements;
 
     OneDEntityImp<0>* newVertex = new OneDEntityImp<0>(0, newCoord);
-    newVertex->index_ = i;
+    newVertex->levelIndex_ = i;
 
     vertices[0].insert_after(vertices[0].rbegin, newVertex);
   }
@@ -79,7 +81,7 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, dou
     newElement->vertex_[0] = it;
     it = it->succ_;
     newElement->vertex_[1] = it;
-    newElement->index_ = i;
+    newElement->levelIndex_ = i;
 
     elements[0].insert_after(elements[0].rbegin, newElement);
 
@@ -89,6 +91,8 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, dou
 
 template <int dim, int dimworld>
 Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
+  : leafIndexSet_(*this),
+    idSet_(*this)
 {
   typedef const OneDGrid<dim,dimworld> GridImp;
 
@@ -99,7 +103,7 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
   // Init vertex set
   for (int i=0; i<coords.size(); i++) {
     OneDEntityImp<0>* newVertex = new OneDEntityImp<0>(0, coords[i]);
-    newVertex->index_ = i;
+    newVertex->levelIndex_ = i;
 
     vertices[0].insert_after(vertices[0].rbegin, newVertex);
   }
@@ -112,7 +116,7 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
     newElement->vertex_[0] = it;
     it = it->succ_;
     newElement->vertex_[1] = it;
-    newElement->index_ = i;
+    newElement->levelIndex_ = i;
 
     elements[0].insert_after(elements[0].rbegin, newElement);
 
@@ -185,9 +189,7 @@ template <int codim>
 typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LeafIterator
 Dune::OneDGrid<dim,dimworld>::leafbegin() const
 {
-#warning DUMMY IMPLEMENTATION
-  DUNE_THROW(NotImplemented, "leafbegin/end");
-  return OneDGridLevelIteratorFactory<codim>::lbegin(this, maxlevel());
+  return OneDGridLeafIterator<codim,All_Partition,const OneDGrid<dim,dimworld> >(*this);
 }
 
 template <int dim, int dimworld>
@@ -195,10 +197,7 @@ template <int codim>
 typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LeafIterator
 Dune::OneDGrid<dim,dimworld>::leafend() const
 {
-#warning DUMMY IMPLEMENTATION
-  DUNE_THROW(NotImplemented, "leafbegin/end");
-  OneDGridLevelIterator<codim,All_Partition, const Dune::OneDGrid<dim,dimworld> > it(0);
-  return it;
+  return OneDGridLeafIterator<codim,All_Partition, const Dune::OneDGrid<dim,dimworld> >();
 }
 
 template <int dim, int dimworld>
@@ -528,11 +527,11 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
     int idx = 0;
     OneDEntityImp<0>* vIt;
     for (vIt = vertices[i].begin; vIt!=NULL; vIt = vIt->succ_)
-      vIt->index_ = idx++;
+      vIt->levelIndex_ = idx++;
 
     idx = 0;
     for (eIt = elements[i].begin; eIt!=NULL; eIt = eIt->succ_)
-      eIt->index_ = idx++;
+      eIt->levelIndex_ = idx++;
 
   }
 
