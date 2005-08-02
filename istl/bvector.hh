@@ -222,10 +222,13 @@ namespace Dune {
           Setting the compile time switch DUNE_ISTL_WITH_CHECKING
           enables error checking.
    */
+#ifdef DUNE_EXPRESSIONTEMPLATES
+  template<class B, class A>
+  class BlockVector : public block_vector_unmanaged<B,A> ,
+                      public Dune::ExprTmpl::Vector< Dune::BlockVector<B,A> >
+#else
   template<class B, class A=ISTLAllocator>
   class BlockVector : public block_vector_unmanaged<B,A>
-#ifdef DUNE_EXPRESSIONTEMPLATES
-                      , public Dune::ExprTmpl::Vector< Dune::BlockVector<B,A> >
 #endif
   {
   public:

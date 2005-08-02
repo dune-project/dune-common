@@ -19,3 +19,5 @@ gmon.out
 gcdlcdtest
 streamtest
 exprtmpl
+timing_xpr
+timing_old

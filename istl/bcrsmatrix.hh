@@ -52,8 +52,13 @@ namespace Dune {
            Setting the compile time switch DUNE_ISTL_WITH_CHECKING
            enables error checking.
    */
+#ifdef DUNE_EXPRESSIONTEMPLATES
+  template<class B, class A>
+  class BCRSMatrix : public ExprTmpl::Matrix< BCRSMatrix<B,A> >
+#else
   template<class B, class A=ISTLAllocator>
   class BCRSMatrix
+#endif
   {
   public:
 
@@ -1281,6 +1286,25 @@ namespace Dune {
     size_type* j;      // [nnz] column indices of entries
   };
 
+
+#ifdef DUNE_EXPRESSIONTEMPLATES
+  template <class B, class A>
+  struct FieldType< BCRSMatrix<B,A> >
+  {
+    typedef typename FieldType<B>::type type;
+  };
+
+  template <class B, class A>
+  struct BlockType< BCRSMatrix<B,A> >
+  {
+    typedef B type;
+  };
+  template <class B, class A>
+  struct RowType< BCRSMatrix<B,A> >
+  {
+    typedef CompressedBlockVectorWindow<B,A> type;
+  };
+#endif
 
   /** @} end documentation */
 

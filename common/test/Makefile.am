@@ -11,8 +11,9 @@ TESTS = $(TESTPROGS)
 check_PROGRAMS = $(TESTPROGS)
 
 # output code coverage
-AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
-AM_LDFLAGS = $(top_builddir)/lib/libdune.la
+#AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
+#AM_LDFLAGS = $(top_builddir)/lib/libdune.la
+AM_LDFLAGS = $(top_builddir)/common/libcommon.la
 
 # define the programs
 
@@ -42,9 +43,13 @@ settest_SOURCES=settest.cc
 
 gcdlcdtest_SOURCES = gcdlcdtest.cc
 
+bin_PROGRAMS = exprtmpl timing_old timing_xpr
 exprtmpl_SOURCES = exprtmpl.cc
-exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES
+exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DNOPRINT
 # -DDUNE_ISTL_WITH_CHECKING
-exprtmpl_LDFLAGS = $(top_builddir)/common/libcommon.la
+
+timing_old_SOURCES = timing.cc
+timing_xpr_SOURCES = timing.cc
+timing_xpr_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -g
 
 include $(top_srcdir)/am/global-rules

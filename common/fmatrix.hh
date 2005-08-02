@@ -155,6 +155,7 @@ namespace Dune {
       fmmeta_umv<I-1>::template umv<Mat,X,Y,c>(A,x,y);
     }
   };
+
   template<>
   struct fmmeta_umv<0> {
     template<class Mat, class X, class Y, int c>
@@ -502,8 +503,13 @@ namespace Dune {
 
            Implementation of all members uses template meta programs where appropriate
    */
+#ifdef DUNE_EXPRESSIONTEMPLATES
+  template<class K, int n, int m>
+  class FieldMatrix : ExprTmpl::Matrix< FieldMatrix<K,n,m> >
+#else
   template<class K, int n, int m>
   class FieldMatrix
+#endif
   {
   public:
     // standard constructor and everything is sufficient ...
@@ -684,6 +690,9 @@ namespace Dune {
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
       fmmeta_umv<n-1>::template umv<FieldMatrix,X,Y,m-1>(*this,x,y);
+      //       for (int i=0; i<n; i++)
+      //         for (int j=0; j<m; j++)
+      //           y[i] += (*this)[i][j] * x[j];
     }
 
     //! y += A^T x
@@ -1417,6 +1426,19 @@ namespace Dune {
 
   } // end namespace FMatrixHelp
 
+#ifdef DUNE_EXPRESSIONTEMPLATES
+  template <class K, int N, int M>
+  struct BlockType< FieldMatrix<K,N,M> >
+  {
+    typedef K type;
+  };
+
+  template <class K, int N, int M>
+  struct FieldType< FieldMatrix<K,N,M> >
+  {
+    typedef K type;
+  };
+#endif // DUNE_EXPRESSIONTEMPLATES
 
   /** @} end documentation */
 
