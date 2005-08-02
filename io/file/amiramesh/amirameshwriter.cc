@@ -13,131 +13,185 @@ template<class GridType>
 void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
                                                 const std::string& filename)
 {
-  const int maxlevel = grid.maxlevel();
+  if ((dim!=2 && dim!=3) || int(dim) != int(GridType::dimensionworld))
+    DUNE_THROW(IOError, "You can only write grids as AmiraMesh if dim==dimworld==2"
+               << " or dim==dimworld==3.");
 
-#ifndef UGGRID_WITH_INDEX_SETS
-  writeGrid(grid, filename, maxlevel);
-#else
-  // Find out whether the grid contains only triangles.  If yes, then
-  // it is written as a HxTriangularGrid.  If not, it is written
-  // but it cannot (currently) be read by Amira
-  bool containsOnlySimplices = true;
+  typename GridType::LeafIndexSet leafIndexSet = grid.leafindexset();
 
-  LeafIterator element = grid.leafbegin(maxlevel);
-  LeafIterator end     = grid.leafend(maxlevel);
+  // Find out whether the grid contains only tetrahedra.  If yes, then
+  // it is written in TetraGrid format.  If not, it is written in
+  // hexagrid format.
+  bool containsOnlySimplices =
+    (leafIndexSet.geomtypes().size()==1)
+    && (leafIndexSet.geomtypes()[0] == simplex);
 
-  for (; element!=end; ++element) {
-    if (element->geometry().type() != triangle) {
-      containsOnlySimplices = false;
-      break;
-    }
-  }
+  int maxVerticesPerElement = (dim==3)
+                              ? ((containsOnlySimplices) ? 4 : 8)
+                              : ((containsOnlySimplices) ? 3 : 4);
 
-  int maxVerticesPerElement = (containsOnlySimplices) ? 3 : 4;
-
-  // /////////////////////////////////////////////////////
-  //   Extract the leaf vertices
-  // /////////////////////////////////////////////////////
-
-  LeafIterator lIt    = grid.leafbegin(maxlevel);
-  LeafIterator lEndIt = grid.leafend(maxlevel);
-
-  int noOfElem = 0;
-  Array<int> leafVertices(grid.hierarchicIndexSet().size(0,dim));
-  Array<FieldVector<double,dim> > leafVertexCoords(grid.hierarchicIndexSet().size(0,dim));
-
-  leafVertices.set(-1);
-
-  for (; lIt!=lEndIt; ++lIt) {
-
-    for (int i=0; i<lIt->template count<dim>(); i++) {
-      leafVertices[grid.hierarchicIndexSet().template subIndex<dim>(*lIt,i)] = 1;
-      leafVertexCoords[grid.hierarchicIndexSet().template subIndex<dim>(*lIt,i)] = lIt->geometry()[i];
-    }
-
-    noOfElem++;
-  }
-
-  int noOfNodes = 0;
-  for (int i=0; i<leafVertices.size(); i++)
-    if (leafVertices[i]==1)
-      leafVertices[i] = noOfNodes++;
+  int noOfNodes = leafIndexSet.size(dim, vertex);
+  /** \todo This sucks.  I want a size method that gives me the number of
+      all element types */
+  int noOfElem  = 0;  //grid.size(level, 0);
+  for (int i=0; i<leafIndexSet.geomtypes().size(); i++)
+    noOfElem += leafIndexSet.size(0, leafIndexSet.geomtypes()[i]);
 
   // create amiramesh object
   AmiraMesh am;
 
   // Set the appropriate content type
-  am.parameters.set("ContentType", "HxTriangularGrid");
+  if (dim==2)
+    am.parameters.set("ContentType", "HxTriangularGrid");
 
-  // //////////////////////////////////
-  //   Write grid vertex coordinates
-  // //////////////////////////////////
-  AmiraMesh::Location* geoNodes = new AmiraMesh::Location("Nodes", noOfNodes);
-  am.insert(geoNodes);
+  // write grid vertex coordinates
+  AmiraMesh::Location* geo_nodes = new AmiraMesh::Location("Nodes", noOfNodes);
+  am.insert(geo_nodes);
 
-  AmiraMesh::Data* geo_node_data = new AmiraMesh::Data("Coordinates", geoNodes,
+  AmiraMesh::Data* geo_node_data = new AmiraMesh::Data("Coordinates", geo_nodes,
                                                        McPrimType::mc_float, dim);
   am.insert(geo_node_data);
 
-  int vertexIdx = 0;
-  for (int i=0; i<leafVertices.size(); i++)
-    if (leafVertices[i] != -1) {
+  typedef typename GridType::template Codim<dim>::LeafIterator VertexIterator;
+  VertexIterator vertex    = grid.template leafbegin<dim>();
+  VertexIterator endvertex = grid.template leafend<dim>();
 
-      for (int j=0; j<dim; j++)
-        ((float*)geo_node_data->dataPtr())[dim*vertexIdx+j] = leafVertexCoords[i][j];
+  for (; vertex!=endvertex; ++vertex) {
 
-      vertexIdx++;
+    int index = leafIndexSet.template index<dim>(*vertex);
+    const FieldVector<double, dim>& coords = vertex->geometry()[0];
+
+    // Copy coordinates
+    for (int i=0; i<dim; i++)
+      ((float*)geo_node_data->dataPtr())[dim*index+i] = coords[i];
+
+  }
+
+  /* write element section to file */
+  AmiraMesh::Location* element_loc = NULL;
+
+  if (dim==3) {
+
+    if (containsOnlySimplices)
+      element_loc = new AmiraMesh::Location("Tetrahedra", noOfElem);
+    else
+      element_loc = new AmiraMesh::Location("Hexahedra", noOfElem);
+
+  } else {
+
+    if (containsOnlySimplices)
+      element_loc = new AmiraMesh::Location("Triangles", noOfElem);
+    else
+      element_loc = new AmiraMesh::Location("Quadrangles", noOfElem);
+
+  }
+
+  am.insert(element_loc);
+
+  AmiraMesh::Data* element_data = new AmiraMesh::Data("Nodes", element_loc,
+                                                      McPrimType::mc_int32, maxVerticesPerElement);
+  am.insert(element_data);
+
+  int *dPtr = (int*)element_data->dataPtr();
+
+  typedef typename GridType::template Codim<0>::LeafIterator ElementIterator;
+  ElementIterator eIt    = grid.template leafbegin<0>();
+  ElementIterator eEndIt = grid.template leafend<0>();
+
+  if (dim==3) {
+
+    // //////////////////////////////////////////////////
+    //   Write elements of a 3D-grid
+    // //////////////////////////////////////////////////
+
+    if (containsOnlySimplices) {
+
+      for (int i=0; eIt!=eEndIt; ++eIt, i++) {
+
+        for (int j=0; j<4; j++)
+          dPtr[i*4+j] = leafIndexSet.template subindex<3>(*eIt,j)+1;
+
+      }
+
+    } else {
+
+      for (int i=0; eIt!=eEndIt; ++eIt, i++) {
+        switch (eIt->geometry().type()) {
+
+        case cube : {        // Hexahedron
+
+          const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+          for (int j=0; j<8; j++)
+            dPtr[8*i + j] = leafIndexSet.template subindex<3>(*eIt, hexaReordering[j])+1;
+          break;
+        }
+
+        case prism : {
+          const int prismReordering[8] = {0, 1, 1, 2, 3, 4, 4, 5};
+          for (int j=0; j<8; j++)
+            dPtr[8*i + j] = leafIndexSet.template subindex<3>(*eIt, prismReordering[j])+1;
+
+          break;
+        }
+
+        case pyramid : {
+          const int pyramidReordering[8] = {0, 1, 2, 3, 4, 4, 4, 4};
+          for (int j=0; j<8; j++)
+            dPtr[8*i + j] = leafIndexSet.template subindex<3>(*eIt, pyramidReordering[j])+1;
+
+          break;
+        }
+
+        case simplex : {        // tetrahedron
+
+          const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
+          for (int j=0; j<8; j++)
+            dPtr[8*i + j] = leafIndexSet.template subindex<3>(*eIt, tetraReordering[j])+1;
+
+          break;
+        }
+
+        default :
+          DUNE_THROW(NotImplemented, "Unknown element type encountered");
+
+        }
+
+      }
 
     }
 
-  // ///////////////////////////////////////////
-  //    Write element section
-  // ///////////////////////////////////////////
-  AmiraMesh::Location* elementLoc = (containsOnlySimplices)
-                                    ? new AmiraMesh::Location("Triangles", noOfElem)
-                                    : new AmiraMesh::Location("Quadrangles", noOfElem);
+  } else {
 
-  am.insert(elementLoc);
+    for (int i=0; eIt!=eEndIt; ++eIt, i++) {
+      switch (eIt->geometry().type()) {
 
-  AmiraMesh::Data* elementData = new AmiraMesh::Data("Nodes", elementLoc,
-                                                     McPrimType::mc_int32, maxVerticesPerElement);
-  am.insert(elementData);
+      default :
 
-  int *dPtr = (int*)elementData->dataPtr();
+        for (int j=0; j<eIt->geometry().corners(); j++)
+          dPtr[i*maxVerticesPerElement+j] = leafIndexSet.template subindex<dim>(*eIt, j)+1;
 
-  LeafIterator lIt2    = grid.leafbegin(maxlevel);
+        // If the element has less than 4 vertices use the last value
+        // to fill up the remaining slots
+        for (int j=eIt->geometry().corners(); j<maxVerticesPerElement; j++)
+          dPtr[i*maxVerticesPerElement+j] = dPtr[i*maxVerticesPerElement+eIt->geometry().corners()-1];
+      }
 
-  for (int i=0; lIt2!=lEndIt; ++lIt2, i++) {
-
-    switch (lIt2->geometry().type()) {
-
-    default :
-
-      for (int j=0; j<lIt2->template count<dim>(); j++)
-        dPtr[i*maxVerticesPerElement+j] = leafVertices[grid.hierarchicIndexSet().template subIndex<dim>(*lIt2,j)]+1;
-
-      // If the element has less than four vertices use the last value
-      // to fill up the remaining slot
-      for (int j=lIt2->template count<dim>(); j<maxVerticesPerElement; j++)
-        dPtr[i*maxVerticesPerElement+j] = dPtr[i*maxVerticesPerElement+lIt2->template count<dim>()-1];
     }
 
   }
 
-  // write material section to AmiraMesh object
-  AmiraMesh::Data* elementMaterials = new AmiraMesh::Data("Materials", elementLoc, McPrimType::mc_uint8, 1);
-  am.insert(elementMaterials);
+  // write material section to grid file
+  AmiraMesh::Data* element_materials = new AmiraMesh::Data("Materials", element_loc, McPrimType::mc_uint8, 1);
+  am.insert(element_materials);
 
   for(int i=0; i<noOfElem; i++)
-    ((unsigned char*)elementMaterials->dataPtr())[i] = 0;
+    ((unsigned char*)element_materials->dataPtr())[i] = 0;
 
   // Actually write the file
   if(!am.write(filename.c_str(), 1))
-    DUNE_THROW(IOError, "Writing geometry file to " << filename << " failed");
-
+    DUNE_THROW(IOError, "Writing geometry file failed!");
 
   std::cout << "Grid written successfully to: " << filename << std::endl;
-#endif
 }
 
 
