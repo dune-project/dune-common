@@ -192,7 +192,7 @@ namespace Dune {
     void calcElMatrix () const;
 
     //! the vertex coordinates
-    mutable FieldMatrix<alu3d_ctype, Power_m_p<2,mydim>::power, cdim> coord_;
+    mutable FieldMatrix<alu3d_ctype, mydim+1, cdim> coord_;
 
     //! is true if Jinv_, A and detDF_ is calced
     mutable bool builtinverse_;
@@ -202,7 +202,7 @@ namespace Dune {
     enum { matdim = (mydim > 0) ? mydim : 1 };
     mutable FieldMatrix<alu3d_ctype,matdim,matdim> Jinv_; //!< storage for inverse of jacobian
     mutable alu3d_ctype detDF_;                           //!< storage of integration_element
-    mutable FieldMatrix<alu3d_ctype,matdim,matdim> A_;    //!< transformation matrix
+    mutable FieldMatrix<alu3d_ctype, mydim, cdim> AT_;    //!< transformation matrix (transposed)
 
     mutable FieldVector<alu3d_ctype, mydim> localCoord_;
     mutable FieldVector<alu3d_ctype, cdim>  globalCoord_;
