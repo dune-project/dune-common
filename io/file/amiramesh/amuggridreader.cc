@@ -587,11 +587,13 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
   //   though, the array is empty.  To be able to proceed without to much hassle
   //   we fill the array now.
   // ///////////////////////////////////////////////////////////////////////////////
-  isBoundaryNode.resize(noOfNodes);
-  for (i=0; i<=maxBndNodeID; i++)
-    isBoundaryNode[i] = i;
-  for (; i<noOfNodes; i++)
-    isBoundaryNode[i] = -1;
+  if (isBoundaryNode.size()==0) {
+    isBoundaryNode.resize(noOfNodes);
+    for (i=0; i<=maxBndNodeID; i++)
+      isBoundaryNode[i] = i;
+    for (; i<noOfNodes; i++)
+      isBoundaryNode[i] = -1;
+  }
 
   // //////////////////////////////////////
   //   Insert interior nodes
