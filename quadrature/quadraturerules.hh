@@ -486,7 +486,6 @@ namespace Dune {
     static SimplexQuadraturePoints<2> sqp;
   };
 
-  template<>
   SimplexQuadraturePoints<2> SimplexQuadraturePointsSingleton<2>::sqp;
 
 
@@ -691,7 +690,6 @@ namespace Dune {
     static SimplexQuadraturePoints<3> sqp;
   };
 
-  template<>
   SimplexQuadraturePoints<3> SimplexQuadraturePointsSingleton<3>::sqp;
 
 
@@ -893,7 +891,6 @@ namespace Dune {
     static PrismQuadraturePoints<3> prqp;
   };
 
-  template<>
   PrismQuadraturePoints<3> PrismQuadraturePointsSingleton<3>::prqp;
 
   template<typename ct, int dim>
@@ -1056,7 +1053,7 @@ namespace Dune {
   struct PyramidQuadraturePointsSingleton<3> {
     static PyramidQuadraturePoints<3> pyqp;
   };
-  template<>
+
   PyramidQuadraturePoints<3> PyramidQuadraturePointsSingleton<3>::pyqp;
 
   template<typename ct, int dim>
