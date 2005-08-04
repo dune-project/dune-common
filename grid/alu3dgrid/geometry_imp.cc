@@ -41,6 +41,14 @@ namespace Dune {
 
       // DetDf = integrationElement
       detDF_ = std::abs( FMatrixHelp::invertMatrix(AT_,Jinv_) );
+      // transpose Jinv_
+      for (int i = 0; i < matdim; ++i) {
+        for (int j = i+1; j < matdim; ++j) {
+          alu3d_ctype tmp = Jinv_[i][j];
+          Jinv_[i][j] = Jinv_[j][i];
+          Jinv_[j][i] = tmp;
+        }
+      }
       builtinverse_ = builtDetDF_ = true;
     }
   }
@@ -306,7 +314,7 @@ namespace Dune {
     globalCoord_ = global - coord_[0];
     localCoord_ = 0.0;
 
-    Jinv_.umtv(globalCoord_, localCoord_);
+    Jinv_.umv(globalCoord_, localCoord_);
     return localCoord_;
   }
 
