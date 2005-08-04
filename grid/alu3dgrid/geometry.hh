@@ -202,7 +202,7 @@ namespace Dune {
     enum { matdim = (mydim > 0) ? mydim : 1 };
     mutable FieldMatrix<alu3d_ctype,matdim,matdim> Jinv_; //!< storage for inverse of jacobian
     mutable alu3d_ctype detDF_;                           //!< storage of integration_element
-    mutable FieldMatrix<alu3d_ctype, mydim, cdim> AT_;    //!< transformation matrix (transposed)
+    mutable FieldMatrix<alu3d_ctype, matdim, cdim> AT_;    //!< transformation matrix (transposed)
 
     mutable FieldVector<alu3d_ctype, mydim> localCoord_;
     mutable FieldVector<alu3d_ctype, cdim>  globalCoord_;
