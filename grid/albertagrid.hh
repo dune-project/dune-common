@@ -75,9 +75,6 @@ namespace Dune
   template<int dim, int dimworld> class AlbertaGrid;
   template<int dim, int dimworld> class AlbertaGridHierarchicIndexSet;
 
-  // singleton holding reference elements
-  template<int dim, class GridImp> struct AlbertaGridReferenceGeometry;
-
   //**********************************************************************
   //
   // --AlbertaGridGeometry
@@ -98,8 +95,9 @@ namespace Dune
   {
     typedef Geometry<mydim, coorddim, GridImp, AlbertaGridGeometry> GeometryType;
   public:
-    AlbertaGridMakeableGeometry(bool makeRefelem=false) :
-      GeometryType (AlbertaGridGeometry<mydim, coorddim, GridImp>(makeRefelem)) {};
+    //! Default constructor
+    AlbertaGridMakeableGeometry() :
+      GeometryType (AlbertaGridGeometry<mydim, coorddim, GridImp>()) {};
 
     // just a wrapper call
     bool builtGeom(ALBERTA EL_INFO *elInfo, int face, int edge, int vertex)
@@ -138,9 +136,8 @@ namespace Dune
     //! know dimension of barycentric coordinates
     enum { dimbary=mydim+1};
   public:
-    //! for makeRefGeometry == true a Geometry with the coordinates of the
-    //! reference element is made
-    AlbertaGridGeometry(bool makeRefGeometry=false);
+    //! Default constructor
+    AlbertaGridGeometry();
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
@@ -151,11 +148,6 @@ namespace Dune
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<albertCtype, cdim> & operator[] (int i) const;
-
-    /*! return reference element corresponding to this element. If this is
-       a reference element then self is returned.
-     */
-    static const Dune::Geometry<mydim,mydim,GridImp,Dune::AlbertaGridGeometry> & refelem ();
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
@@ -224,9 +216,6 @@ namespace Dune
   private:
     // calculate Matrix for Mapping from reference element to actual element
     void calcElMatrix () const;
-
-    //! built the reference element
-    void makeRefElemCoords();
 
     //! built the jacobian inverse and store the volume
     void buildJacobianInverse () const;
@@ -1282,7 +1271,6 @@ namespace Dune
 
     typedef typename Traits::template Codim<0>::LeafIterator LeafIterator;
 
-    typedef AlbertaGridReferenceGeometry<dim,AlbertaGrid<dim,dimworld> > ReferenceGeometry;
     typedef AlbertaGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSetType;
     typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetType;
     typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetType;
@@ -1344,22 +1332,22 @@ namespace Dune
 
     //! return LeafIterator which points to first leaf entity
     template <int codim, PartitionIteratorType pitype>
-    Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+    typename Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
     leafbegin ( int maxlevel, int proc = -1 ) const;
 
     //! return LeafIterator which points to first leaf entity
     template <int codim>
-    Traits::template Codim<codim>::LeafIterator
+    typename Traits::template Codim<codim>::LeafIterator
     leafbegin ( int maxlevel, int proc = -1 ) const;
 
     //! return LeafIterator which points behind last leaf entity
     template <int codim, PartitionIteratorType pitype>
-    Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+    typename Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
     leafend   ( int maxlevel, int proc = -1 ) const;
 
     //! return LeafIterator which points behind last leaf entity
     template <int codim>
-    Traits::template Codim<codim>::LeafIterator
+    typename Traits::template Codim<codim>::LeafIterator
     leafend   ( int maxlevel, int proc = -1 ) const;
 
     //! return LeafIterator which points to first leaf entity
@@ -1370,21 +1358,21 @@ namespace Dune
 
     //! return LeafIterator which points to first leaf entity
     template <int codim, PartitionIteratorType pitype>
-    Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+    typename Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
     leafbegin () const;
 
     //! return LeafIterator which points to first leaf entity
     template <int codim>
-    Traits::template Codim<codim>::LeafIterator
+    typename Traits::template Codim<codim>::LeafIterator
     leafbegin () const;
 
     //! return LeafIterator which points behind last leaf entity
     template <int codim, PartitionIteratorType pitype>
-    Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+    typename Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
     leafend   () const;
 
     template <int codim>
-    Traits::template Codim<codim>::LeafIterator
+    typename Traits::template Codim<codim>::LeafIterator
     leafend   () const;
 
     //! return LeafIterator which points to first leaf entity
@@ -1872,12 +1860,11 @@ namespace Dune
       static const bool v = true;
     };
 
-    template<int dim, int dimw>
-    struct hasEntity<AlbertaGrid<dim,dimw>, 0>
+    template<int dim, int dimw, int cdim>
+    struct hasEntity<AlbertaGrid<dim,dimw>, cdim >
     {
       static const bool v = true;
     };
-
   } // end namespace Capabilities
 
 } // namespace Dune
