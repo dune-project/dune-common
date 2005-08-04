@@ -2,7 +2,6 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_QUADRATURERULES_HH
 #define DUNE_QUADRATURERULES_HH
-
 #include <iostream>
 #include <vector>
 #include "dune/common/fvector.hh"
@@ -344,14 +343,19 @@ namespace Dune {
   ***********************************************************/
 
   //!
-  class GaussPointsTriangle
+  template<int dim>
+  class SimplexQuadraturePoints;
+
+  template<>
+  class SimplexQuadraturePoints<2>
+
   {
   public:
     enum { MAXP=7};
     enum { highest_order=5 };
 
     //! initialize Gauss points on the interval for all orders
-    GaussPointsTriangle ()
+    SimplexQuadraturePoints ()
     {
       int m = 0;
       O[m] = 0;
@@ -465,27 +469,39 @@ namespace Dune {
 
   private:
     FieldVector<double, 2> G[MAXP+1][MAXP];
-    //double G[MAXP+1][MAXP]; // positions of Gauss points
+
     double W[MAXP+1][MAXP];     // weights associated with points
     int O[MAXP+1];              // order of the rule
   };
 
 
   /** Singleton holding the Gauss points on the interval */
-  struct GaussPointsTriangleSingleton {
-    static GaussPointsTriangle gp;
+  template<int dim>
+  struct SimplexQuadraturePointsSingleton {
+    static SimplexQuadraturePoints<dim> sqp;
   };
-  GaussPointsTriangle GaussPointsTriangleSingleton::gp;
+
+  template<>
+  struct SimplexQuadraturePointsSingleton<2> {
+    static SimplexQuadraturePoints<2> sqp;
+  };
+
+  template<>
+  SimplexQuadraturePoints<2> SimplexQuadraturePointsSingleton<2>::sqp;
+
 
   template<typename ct, int dim>
-  class TriangleQuadratureRule : public QuadratureRule<ct,dim>
+  class SimplexQuadratureRule;
+
+  template<typename ct>
+  class SimplexQuadratureRule<ct,2> : public QuadratureRule<ct,2>
   {
   public:
-    enum {d=dim};
-    enum {highest_order=GaussPointsTriangle::highest_order};
+    enum {d=2};
+    enum {highest_order=SimplexQuadraturePoints<2>::highest_order};
     typedef ct CoordType;
-    typedef TriangleQuadratureRule value_type;
-    TriangleQuadratureRule(int p)
+    typedef SimplexQuadratureRule value_type;
+    SimplexQuadratureRule(int p)
     {
       switch(p)
       {
@@ -509,16 +525,16 @@ namespace Dune {
         break;
       default : m=7;
       }
-      delivered_order = GaussPointsTriangleSingleton::gp.order(m);
-      FieldVector<ct, dim> local;
+      delivered_order = SimplexQuadraturePointsSingleton<2>::sqp.order(m);
+      FieldVector<ct, d> local;
       double weight;
       for(int i=0; i<m; ++i)
       {
-        for(int k=0; k<dim; ++k)
-          local[k]=GaussPointsTriangleSingleton::gp.point(m,i)[k];
-        weight=GaussPointsTriangleSingleton::gp.weight(m,i);
+        for(int k=0; k<d; ++k)
+          local[k]=SimplexQuadraturePointsSingleton<2>::sqp.point(m,i)[k];
+        weight=SimplexQuadraturePointsSingleton<2>::sqp.weight(m,i);
         // put in container
-        push_back(QuadraturePoint<ct,dim>(local,weight));
+        push_back(QuadraturePoint<ct,d>(local,weight));
 
       }
 
@@ -537,7 +553,7 @@ namespace Dune {
     }
 
     //! appear as your own container
-    const TriangleQuadratureRule& getelement (GeometryType type, int p)
+    const SimplexQuadratureRule<ct,2>& getelement (GeometryType type, int p)
     {
       return *this;
     }
@@ -552,16 +568,19 @@ namespace Dune {
   /***********************************************************
   * Gauss quadrature for Simplices/ tetrahedron
   ***********************************************************/
+  template<int dim>
+  class SimplexQuadraturePoints;
 
+  template<>
+  class SimplexQuadraturePoints<3>
   //!
-  class GaussPointsTetrahedron
   {
   public:
     enum { MAXP=8};
     enum { highest_order=3 };
 
     //! initialize Gauss points on the interval for all orders
-    GaussPointsTetrahedron ()
+    SimplexQuadraturePoints()
     {
       int m = 0;
       O[m] = 0;
@@ -665,21 +684,31 @@ namespace Dune {
   };
 
 
-  /** Singleton holding the Gauss points on the interval */
-  struct GaussPointsTetrahedronSingleton {
-    static GaussPointsTetrahedron gp;
+  /** Singleton holding the SimplexQuadrature points dim==3 */
+
+  template<>
+  struct SimplexQuadraturePointsSingleton<3> {
+    static SimplexQuadraturePoints<3> sqp;
   };
-  GaussPointsTetrahedron GaussPointsTetrahedronSingleton::gp;
+
+  template<>
+  SimplexQuadraturePoints<3> SimplexQuadraturePointsSingleton<3>::sqp;
+
+
 
   template<typename ct, int dim>
-  class TetrahedronQuadratureRule : public QuadratureRule<ct,dim>
+  class SimplexQuadratureRule;
+
+  template<typename ct>
+  class SimplexQuadratureRule<ct,3> : public QuadratureRule<ct,3>
   {
+
   public:
-    enum {d=dim};
-    enum {highest_order=GaussPointsTetrahedron::highest_order};
+    enum {d=3};
+    enum {highest_order=SimplexQuadraturePoints<3>::highest_order};
     typedef ct CoordType;
-    typedef TetrahedronQuadratureRule value_type;
-    TetrahedronQuadratureRule(int p)
+    typedef SimplexQuadratureRule<ct,3> value_type;
+    SimplexQuadratureRule(int p)
     {
       switch(p)
       {
@@ -697,16 +726,16 @@ namespace Dune {
         break;
       default : m=8;
       }
-      delivered_order = GaussPointsTetrahedronSingleton::gp.order(m);
-      FieldVector<ct, dim> local;
+      delivered_order = SimplexQuadraturePointsSingleton<3>::sqp.order(m);
+      FieldVector<ct, d> local;
       double weight;
       for(int i=0; i<m; ++i)
       {
-        for(int k=0; k<dim; ++k)
-          local[k]=GaussPointsTetrahedronSingleton::gp.point(m,i)[k];
-        weight=GaussPointsTetrahedronSingleton::gp.weight(m,i);
+        for(int k=0; k<d; ++k)
+          local[k]=SimplexQuadraturePointsSingleton<3>::sqp.point(m,i)[k];
+        weight=SimplexQuadraturePointsSingleton<3>::sqp.weight(m,i);
         // put in container
-        push_back(QuadraturePoint<ct,dim>(local,weight));
+        push_back(QuadraturePoint<ct,d>(local,weight));
 
       }
 
@@ -725,7 +754,7 @@ namespace Dune {
     }
 
     //! appear as your own container
-    const TetrahedronQuadratureRule& getelement (GeometryType type, int p)
+    const SimplexQuadratureRule<ct,d>& getelement (GeometryType type, int p)
     {
       return *this;
     }
@@ -734,6 +763,358 @@ namespace Dune {
   private:
     int delivered_order, m;
   };
+
+
+
+  /***********************************************************
+  * quadrature for Prism
+  ***********************************************************/
+
+  //!
+  template<int dim>
+  class PrismQuadraturePoints;
+
+  template<>
+  class PrismQuadraturePoints<3>
+  {
+  public:
+    enum { MAXP=6};
+    enum { highest_order=2 };
+
+    //! initialize Gauss points on the interval for all orders
+    PrismQuadraturePoints ()
+    {
+      int m = 0;
+      O[m] = 0;
+
+      // polynom degree 0  ???
+      m = 6;
+      G[m][0][0] = 0.0;
+      G[m][0][1] = 0.0;
+      G[m][0][2] = 0.0;
+
+      G[m][1][0] = 1.0;
+      G[m][1][1] = 0.0;
+      G[m][1][2] = 0.0;
+
+      G[m][2][0] = 0.0;
+      G[m][2][1] = 1.0;
+      G[m][2][2] = 0.0;
+
+      G[m][3][0] = 0.0;
+      G[m][3][1] = 0.0;
+      G[m][3][2] = 1.0;
+
+      G[m][4][0] = 1.0;
+      G[m][4][1] = 0.0;
+      G[m][4][2] = 1.0;
+
+      G[m][5][0] = 0.0;
+      G[m][5][1] = 0.1;
+      G[m][5][2] = 1.0;
+
+      W[m][0] = 0.16666666666666666;
+      W[m][1] = 0.16666666666666666;
+      W[m][2] = 0.16666666666666666;
+      W[m][3] = 0.16666666666666666;
+      W[m][4] = 0.16666666666666666;
+      W[m][5] = 0.16666666666666666;
+
+      O[m] = 0;    // verify ????????
+
+
+      // polynom degree 2  ???
+      m = 6;
+      G[m][0][0] =0.66666666666666666 ;
+      G[m][0][1] =0.16666666666666666 ;
+      G[m][0][2] =0.211324865405187 ;
+
+      G[m][1][0] = 0.16666666666666666;
+      G[m][1][1] =0.66666666666666666 ;
+      G[m][1][2] = 0.211324865405187;
+
+      G[m][2][0] = 0.16666666666666666;
+      G[m][2][1] = 0.16666666666666666;
+      G[m][2][2] = 0.211324865405187;
+
+      G[m][3][0] = 0.66666666666666666;
+      G[m][3][1] = 0.16666666666666666;
+      G[m][3][2] = 0.788675134594813;
+
+      G[m][4][0] = 0.16666666666666666;
+      G[m][4][1] = 0.66666666666666666;
+      G[m][4][2] = 0.788675134594813;
+
+      G[m][5][0] = 0.16666666666666666;
+      G[m][5][1] = 0.16666666666666666;
+      G[m][5][2] = 0.788675134594813;
+
+      W[m][0] = 0.16666666666666666;
+      W[m][1] = 0.16666666666666666;
+      W[m][2] = 0.16666666666666666;
+      W[m][3] = 0.16666666666666666;
+      W[m][4] = 0.16666666666666666;
+      W[m][5] = 0.16666666666666666;
+
+      O[m] = 2;    // verify ????????
+
+    }
+
+    FieldVector<double, 3> point(int m, int i)
+    {
+      return G[m][i];
+    }
+
+    double weight (int m, int i)
+    {
+      return W[m][i];
+    }
+
+    int order (int m)
+    {
+      return O[m];
+    }
+
+  private:
+    FieldVector<double, 3> G[MAXP+1][MAXP]; //positions
+
+    double W[MAXP+1][MAXP];     // weights associated with points
+    int O[MAXP+1];              // order of the rule
+  };
+
+
+  /** Singleton holding the Prism Quadrature points  */
+  template<int dim>
+  struct PrismQuadraturePointsSingleton {
+    static PrismQuadraturePoints<3> prqp;
+  };
+  template<>
+  struct PrismQuadraturePointsSingleton<3> {
+    static PrismQuadraturePoints<3> prqp;
+  };
+
+  template<>
+  PrismQuadraturePoints<3> PrismQuadraturePointsSingleton<3>::prqp;
+
+  template<typename ct, int dim>
+  class PrismQuadratureRule;
+
+  template<typename ct>
+  class PrismQuadratureRule<ct,3> : public QuadratureRule<ct,3>
+  {
+  public:
+    enum {d=3};
+    enum {highest_order=PrismQuadraturePoints<3>::highest_order};
+    typedef ct CoordType;
+    typedef PrismQuadratureRule<ct,3> value_type;
+    PrismQuadratureRule(int p)
+    {
+      switch(p)
+      {
+      case 2 :
+        m=6;
+        break;
+      default : m=6;
+      }
+      delivered_order = PrismQuadraturePointsSingleton<3>::prqp.order(m);
+      FieldVector<ct, d> local;
+      double weight;
+      for(int i=0; i<m; ++i)
+      {
+        for(int k=0; k<d; ++k)
+          local[k]=PrismQuadraturePointsSingleton<3>::prqp.point(m,i)[k];
+        weight=PrismQuadraturePointsSingleton<3>::prqp.weight(m,i);
+        // put in container
+        push_back(QuadraturePoint<ct,d>(local,weight));
+
+      }
+
+    }
+
+    //! return order
+    int order () const
+    {
+      return delivered_order;
+    }
+
+    //! return type of element
+    GeometryType type () const
+    {
+      return prism;
+    }
+
+    //! appear as your own container
+    const PrismQuadratureRule<ct,3>& getelement (GeometryType type, int p)
+    {
+      return *this;
+    }
+
+
+  private:
+    int delivered_order, m;
+  };
+
+  /***********************************************************
+  *   quadrature for Pyramid
+  ***********************************************************/
+
+  //!
+  template<int dim>
+  class PyramidQuadraturePoints;
+
+  template<>
+  class PyramidQuadraturePoints<3>
+  {
+  public:
+    enum { MAXP=8};
+    enum { highest_order=2 };
+
+    //! initialize Gauss points on the interval for all orders
+    PyramidQuadraturePoints()
+    {
+      int m = 0;
+      O[m] = 0;
+
+
+      // polynom degree 2  ???
+      m = 8;
+      G[m][0][0] =0.58541020;
+      G[m][0][1] =0.72819660;
+      G[m][0][2] =0.13819660;
+
+      G[m][1][0] =0.13819660;
+      G[m][1][1] =0.72819660;
+      G[m][1][2] =0.13819660;
+
+      G[m][2][0] =0.13819660;
+      G[m][2][1] =0.27630920;
+      G[m][2][2] =0.58541020;
+
+      G[m][3][0] =0.13819660;
+      G[m][3][1] =0.27630920;
+      G[m][3][2] =0.13819660;
+
+      G[m][4][0] =0.72819660;
+      G[m][4][1] =0.13819660;
+      G[m][4][2] =0.13819660;
+
+      G[m][5][0] =0.72819660;
+      G[m][5][1] =0.58541020;
+      G[m][5][2] =0.13819660;
+
+      G[m][6][0] =0.27630920;
+      G[m][6][1] =0.13819660;
+      G[m][6][2] =0.58541020;
+
+      G[m][7][0] =0.27630920;
+      G[m][7][1] =0.13819660;
+      G[m][7][2] =0.13819660;
+
+      W[m][0] = 0.125;
+      W[m][1] = 0.125;
+      W[m][2] = 0.125;
+      W[m][3] = 0.125;
+      W[m][4] = 0.125;
+      W[m][5] = 0.125;
+      W[m][6] = 0.125;
+      W[m][7] = 0.125;
+
+      O[m] = 2;    // verify ????????
+
+    }
+
+    FieldVector<double, 3> point(int m, int i)
+    {
+      return G[m][i];
+    }
+
+    double weight (int m, int i)
+    {
+      return W[m][i];
+    }
+
+    int order (int m)
+    {
+      return O[m];
+    }
+
+  private:
+    FieldVector<double, 3> G[MAXP+1][MAXP];
+    //double G[MAXP+1][MAXP]; // positions of Gauss points
+    double W[MAXP+1][MAXP];     // weights associated with points
+    int O[MAXP+1];              // order of the rule
+  };
+
+
+  /** Singleton holding the Quadrature  points  */
+
+  template<int dim>
+  struct PyramidQuadraturePointsSingleton {
+    static PyramidQuadraturePoints<3> pyqp;
+  };
+  template<>
+  struct PyramidQuadraturePointsSingleton<3> {
+    static PyramidQuadraturePoints<3> pyqp;
+  };
+  template<>
+  PyramidQuadraturePoints<3> PyramidQuadraturePointsSingleton<3>::pyqp;
+
+  template<typename ct, int dim>
+  class PyramidQuadratureRule;
+
+  template<typename ct>
+  class PyramidQuadratureRule<ct,3> : public QuadratureRule<ct,3>
+  {
+  public:
+    enum {d=3};
+    enum {highest_order=PyramidQuadraturePoints<3>::highest_order};
+    typedef ct CoordType;
+    typedef PyramidQuadratureRule<ct,3> value_type;
+    PyramidQuadratureRule(int p)
+    {
+      switch(p)
+      {
+      default : m=8;
+      }
+
+      delivered_order = PyramidQuadraturePointsSingleton<3>::pyqp.order(m);
+      FieldVector<ct, d> local;
+      double weight;
+      for(int i=0; i<m; ++i)
+      {
+        for(int k=0; k<d; ++k)
+          local[k]=PyramidQuadraturePointsSingleton<3>::pyqp.point(m,i)[k];
+        weight=PyramidQuadraturePointsSingleton<3>::pyqp.weight(m,i);
+        // put in container
+        push_back(QuadraturePoint<ct,d>(local,weight));
+
+      }
+
+    }
+
+    //! return order
+    int order () const
+    {
+      return delivered_order;
+    }
+
+    //! return type of element
+    GeometryType type () const
+    {
+      return pyramid;
+    }
+
+    //! appear as your own container
+    const PyramidQuadratureRule<ct,3>& getelement (GeometryType type, int p)
+    {
+      return *this;
+    }
+
+
+  private:
+    int delivered_order, m;
+  };
+
 
 
   /***********************************************************
@@ -753,8 +1134,8 @@ namespace Dune {
       // initialize index counter for rules in the array
       int index=0;
       int cubeindex=0;
-      int triaindex=0;
-      int tetraindex=0;
+      int simpindex=0;
+
       ////////////////////////
       // the cube rules
       ////////////////////////
@@ -781,60 +1162,29 @@ namespace Dune {
         else break;
       }
       ////////////
-      // triangle rule
+      // simplex rule
       /////////
 
-      for (int m=1; m<=GaussPointsTriangle::MAXP; m++)
+      for (int m=1; m<=SimplexQuadraturePoints<dim>::MAXP; m++)
       {
-        int p = GaussPointsTriangleSingleton::gp.order(m);       // order of rule with m points
+        int p = SimplexQuadraturePointsSingleton<dim>::sqp.order(m);       // order of rule with m points
         if (p<=pmax)
         {
-          QuadratureRule<ct,dim>* pointer = new TriangleQuadratureRule<ct,dim>(p);
+          QuadratureRule<ct,dim>* pointer = new SimplexQuadratureRule<ct,dim>(p);
           rules.push_back(pointer);
           if (m==1)
-            for (int i=0; i<=GaussPointsTriangle::highest_order; i++)
-              triangle_order_to_index[i] = index;
+            for (int i=0; i<=SimplexQuadraturePoints<dim>::highest_order; i++)
+              simplex_order_to_index[i] = index;
           else
-            for (int i=0; i<=GaussPointsTriangle::highest_order; i++)
-              if (rules[triangle_order_to_index[i]]->order()<i)
-                triangle_order_to_index[i] = index;
+            for (int i=0; i<=SimplexQuadraturePoints<dim>::highest_order; i++)
+              if (rules[simplex_order_to_index[i]]->order()<i)
+                simplex_order_to_index[i] = index;
 
           ++index;
-          triaindex=index;
+          simpindex=index;
         }
         else break;
       }
-
-
-      ////////////
-      // tetrahedron rule
-      /////////
-
-      for (int m=1; m<=GaussPointsTetrahedron::MAXP; m++)
-      {
-        int p = GaussPointsTetrahedronSingleton::gp.order(m);           // order of rule with m points
-        if (p<=pmax)
-        {
-          QuadratureRule<ct,dim>* pointer = new TetrahedronQuadratureRule<ct,dim>(p);
-          rules.push_back(pointer);
-          if (m==1)
-            for (int i=0; i<=GaussPointsTetrahedron::highest_order; i++)
-              tetrahedron_order_to_index[i] = index;
-          else
-            for (int i=0; i<=GaussPointsTetrahedron::highest_order; i++)
-              if (rules[tetrahedron_order_to_index[i]]->order()<i)
-                tetrahedron_order_to_index[i] = index;
-
-          ++index;
-          tetraindex=index;
-        }
-        else break;
-      }
-
-
-      //          for (int p=1; p<=pmax; p++)
-      //                std::cout << "p=" << p << " order=" << rules[cube_order_to_index[p]]->order() << std::endl;
-
 
 
       // check if order can be achieved
@@ -844,18 +1194,10 @@ namespace Dune {
         std::cout << "Warning: Quadrature rule order " << pmax
                   << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
 
-      triangle_maxorder = rules[triaindex-1]->order();
-      if(triangle_maxorder<pmax)
+      simplex_maxorder = rules[simpindex-1]->order();
+      if(simplex_maxorder<pmax)
         std::cout<<"Warning: Quadrature rule order " << pmax
-                 << " requested for triangles but only " << triangle_maxorder << " available" << std::endl;
-
-
-      tetrahedron_maxorder = rules[tetraindex-1]->order();
-      if(tetrahedron_maxorder<pmax)
-        std::cout<<"Warning: Quadrature rule order " << pmax
-                 << " requested for tetrahedrons but only " << tetrahedron_maxorder << " available" << std::endl;
-
-
+                 << " requested for simplex-" << dim<<"D"<<"  but only " << simplex_maxorder << " available" << std::endl;
 
     }
 
@@ -866,20 +1208,23 @@ namespace Dune {
       if ( (type==cube) || (type==line) || (type==quadrilateral) ||
            (type==hexahedron) )
       {
+
         if (p>=1 && p<=cube_maxorder)
           return *(rules[cube_order_to_index[p]]);
       }
 
-      else if(type==triangle || (type==simplex && dim==2))
+      else if( (type==simplex) || (type==triangle) || (type==tetrahedron))
       {
-        if(p>=1 && p<=triangle_maxorder)
-          return *(rules[triangle_order_to_index[p]]);
-      }
-
-      else if(type==tetrahedron || (type==simplex && dim==3))
-      {
-        if(p>=1 && p<=tetrahedron_maxorder)
-          return *(rules[tetrahedron_order_to_index[p]]);
+        if(dim>=2)
+        {
+          if(p>=1 && p<=simplex_maxorder)
+            return *(rules[simplex_order_to_index[p]]);
+        }
+        else
+        {
+          if (p>=1 && p<=cube_maxorder)
+            return *(rules[cube_order_to_index[p]]);
+        }
       }
 
       DUNE_THROW(NotImplemented, "order not available");
@@ -951,12 +1296,280 @@ namespace Dune {
 
     // mapping for cube rules
     int cube_maxorder;
-    int triangle_maxorder;
-    int tetrahedron_maxorder;
+    int simplex_maxorder;
     int cube_order_to_index[GaussPoints::highest_order+1];
-    int triangle_order_to_index[GaussPointsTriangle::highest_order+1];
-    int tetrahedron_order_to_index[GaussPointsTetrahedron::highest_order+1];
+    int simplex_order_to_index[SimplexQuadraturePoints<dim>::highest_order+1];
+
+
   };
+
+
+  /***********************************************************
+  * The general container and the singleton
+  ***********************************************************/
+
+  //! A container for all quadrature rules
+  template<typename ct>
+  class QuadratureRuleContainer<ct,3>
+  {
+    enum { dim=3 };
+  public:
+    typedef QuadratureRule<ct,3> value_type;
+
+    //! make rules for all element types up to given order
+    QuadratureRuleContainer (int pmax)
+    {
+      // initialize index counter for rules in the array
+      int index=0;
+      int cubeindex=0;
+      int simpindex=0;
+      int prisindex=0;
+      int pyrindex=0;
+      ////////////////////////
+      // the cube rules
+      ////////////////////////
+
+      // allocate all rules up to requested order
+      for (int m=1; m<=GaussPoints::MAXP; m++)
+      {
+        int p = GaussPointsSingleton::gp.order(m);           // order of rule with m points
+        if (p<=pmax)
+        {
+          QuadratureRule<ct,dim>* pointer = new CubeQuadratureRule<ct,dim>(p);
+          rules.push_back(pointer);
+          if (m==1)
+            for (int i=0; i<=GaussPoints::highest_order; i++)
+              cube_order_to_index[i] = index;
+          else
+            for (int i=0; i<=GaussPoints::highest_order; i++)
+              if (rules[cube_order_to_index[i]]->order()<i)
+                cube_order_to_index[i] = index;
+
+          ++index;
+          cubeindex=index;
+        }
+        else break;
+      }
+      ////////////
+      // simplex rule
+      /////////
+
+      for (int m=1; m<=SimplexQuadraturePoints<dim>::MAXP; m++)
+      {
+        int p = SimplexQuadraturePointsSingleton<dim>::sqp.order(m);       // order of rule with m points
+        if (p<=pmax)
+        {
+          QuadratureRule<ct,dim>* pointer = new SimplexQuadratureRule<ct,dim>(p);
+          rules.push_back(pointer);
+          if (m==1)
+            for (int i=0; i<=SimplexQuadraturePoints<dim>::highest_order; i++)
+              simplex_order_to_index[i] = index;
+          else
+            for (int i=0; i<=SimplexQuadraturePoints<dim>::highest_order; i++)
+              if (rules[simplex_order_to_index[i]]->order()<i)
+                simplex_order_to_index[i] = index;
+
+          ++index;
+          simpindex=index;
+        }
+        else break;
+      }
+
+      ////////////
+      // prism rule
+      /////////
+
+      for (int m=1; m<=PrismQuadraturePoints<3>::MAXP; m++)
+      {
+        int p = PrismQuadraturePointsSingleton<3>::prqp.order(m);           // order of rule with m points
+        if (p<=pmax)
+        {
+          QuadratureRule<ct,dim>* pointer = new PrismQuadratureRule<ct,3>(p);
+          rules.push_back(pointer);
+          if (m==1)
+            for (int i=0; i<=PrismQuadraturePoints<3>::highest_order; i++)
+              prism_order_to_index[i] = index;
+          else
+            for (int i=0; i<=PrismQuadraturePoints<3>::highest_order; i++)
+              if (rules[prism_order_to_index[i]]->order()<i)
+                prism_order_to_index[i] = index;
+
+          ++index;
+          prisindex=index;
+        }
+        else break;
+      }
+
+      ////////////
+      // pyramid rule
+      /////////
+
+      for (int m=1; m<=PyramidQuadraturePoints<3>::MAXP; m++)
+      {
+        int p = PyramidQuadraturePointsSingleton<3>::pyqp.order(m);           // order of rule with m points
+        if (p<=pmax)
+        {
+          QuadratureRule<ct,dim>* pointer = new PyramidQuadratureRule<ct,3>(p);
+          rules.push_back(pointer);
+          if (m==1)
+            for (int i=0; i<=PyramidQuadraturePoints<3>::highest_order; i++)
+              pyramid_order_to_index[i] = index;
+          else
+            for (int i=0; i<=PyramidQuadraturePoints<3>::highest_order; i++)
+              if (rules[pyramid_order_to_index[i]]->order()<i)
+                pyramid_order_to_index[i] = index;
+
+          ++index;
+          pyrindex=index;
+        }
+        else break;
+      }
+
+
+      // check if order can be achieved
+
+      cube_maxorder = rules[cubeindex-1]->order();
+      if (cube_maxorder<pmax)
+        std::cout << "Warning: Quadrature rule order " << pmax
+                  << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
+
+      simplex_maxorder = rules[simpindex-1]->order();
+      if(simplex_maxorder<pmax)
+        std::cout<<"Warning: Quadrature rule order " << pmax
+                 << " requested for simplex-" << dim<<"D"<<"  but only " << simplex_maxorder << " available" << std::endl;
+
+      prism_maxorder = rules[prisindex-1]->order();
+      if(prism_maxorder<pmax)
+        std::cout<<"Warning: Quadrature rule order " << pmax
+                 << " requested for prism" <<"  but only " << prism_maxorder << " available" << std::endl;
+      pyramid_maxorder = rules[pyrindex-1]->order();
+
+      if(pyramid_maxorder<pmax)
+        std::cout<<"Warning: Quadrature rule order " << pmax
+                 << " requested for pyramid" <<"  but only " << pyramid_maxorder << " available" << std::endl;
+    }
+
+
+    //! select the appropriate rule
+    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
+    {
+      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
+           (type==hexahedron) )
+      {
+
+        if (p>=1 && p<=cube_maxorder)
+          return *(rules[cube_order_to_index[p]]);
+      }
+
+      else if( (type==simplex) || (type==tetrahedron))
+      {
+
+        {
+          if(p>=1 && p<=simplex_maxorder)
+            return *(rules[simplex_order_to_index[p]]);
+        }
+
+      }
+      else if (type==prism)
+      {
+        if(p>=1 && p<=prism_maxorder)
+          return *(rules[prism_order_to_index[p]]);
+      }
+      else if(type==pyramid)
+      {
+        if(p>=1 && p<=pyramid_maxorder)
+          return *(rules[pyramid_order_to_index[p]]);
+      }
+
+
+
+      //   else  if(type==tetrahedron || (type==simplex && dim==3))
+      //            {
+      //              if(p>=1 && p<=tetrahedron_maxorder)
+      //                return *(rules[tetrahedron_order_to_index[p]]);
+      //            }
+
+      DUNE_THROW(NotImplemented, "order not available");
+    }
+
+    //! ConstIterator class for sequential access
+    class const_iterator
+    {
+    public:
+      //! construct from stl iterator
+      const_iterator (const typename std::vector<QuadratureRule<ct,dim>*>::const_iterator& _i) : i(_i)
+      {       }
+
+      //! prefix increment
+      const_iterator& operator++()
+      {
+        ++i;
+        return *this;
+      }
+
+      //! prefix decrement
+      const_iterator& operator--()
+      {
+        --i;
+        return *this;
+      }
+
+      //! equality
+      bool operator== (const const_iterator& it) const
+      {
+        return i==it.i;
+      }
+
+      //! inequality
+      bool operator!= (const const_iterator& it) const
+      {
+        return i!=it.i;
+      }
+
+      //! dereferencing
+      const QuadratureRule<ct,dim>& operator* () const
+      {
+        return **i;
+      }
+
+      //! arrow
+      const QuadratureRule<ct,dim>* operator-> () const
+      {
+        return *i;
+      }
+
+    private:
+      typename std::vector<QuadratureRule<ct,dim>*>::const_iterator i;
+    };
+
+    const_iterator begin ()
+    {
+      return const_iterator(rules.begin());
+    }
+
+    const_iterator end ()
+    {
+      return const_iterator(rules.end());
+    }
+
+  private:
+    // the vector of all rules
+    std::vector<QuadratureRule<ct,dim>*> rules;
+
+    // mapping for cube rules
+    int cube_maxorder;
+    int simplex_maxorder;
+    int prism_maxorder;
+    int pyramid_maxorder;
+
+    int cube_order_to_index[GaussPoints::highest_order+1];
+    int simplex_order_to_index[SimplexQuadraturePoints<dim>::highest_order+1];
+    int prism_order_to_index[PrismQuadraturePoints<3>::highest_order+1];
+    int pyramid_order_to_index[PyramidQuadraturePoints<3>::highest_order+1];
+
+  };
+
+
 
 
   // singleton holding a quadrature rule container
