@@ -118,10 +118,10 @@ namespace Dune {
     friend class UGGridHierarchicIterator<UGGrid<dim,dimworld> >;
     friend class UGGridIntersectionIterator<UGGrid<dim,dimworld> >;
 
-    friend class UGGridLevelIndexSet<UGGrid<dim,dimworld> >;
-    friend class UGGridLeafIndexSet<UGGrid<dim,dimworld> >;
-    friend class UGGridGlobalIdSet<UGGrid<dim,dimworld> >;
-    friend class UGGridLocalIdSet<UGGrid<dim,dimworld> >;
+    friend class UGGridLevelIndexSet<dim>;
+    friend class UGGridLeafIndexSet<dim>;
+    friend class UGGridGlobalIdSet<dim>;
+    friend class UGGridLocalIdSet<dim>;
 
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
@@ -146,10 +146,10 @@ namespace Dune {
         UGGridHierarchicIterator,
         UGGridLeafIterator> Traits;
 
-    typedef UGGridLevelIndexSet<UGGrid<dim,dimworld> > LevelIndexSet;
-    typedef UGGridLeafIndexSet<UGGrid<dim,dimworld> >  LeafIndexSet;
-    typedef UGGridGlobalIdSet<UGGrid<dim,dimworld> >   GlobalIdSet;
-    typedef UGGridLocalIdSet<UGGrid<dim,dimworld> >    LocalIdSet;
+    typedef UGGridLevelIndexSet<dim> LevelIndexSet;
+    typedef UGGridLeafIndexSet<dim>  LeafIndexSet;
+    typedef UGGridGlobalIdSet<dim>   GlobalIdSet;
+    typedef UGGridLocalIdSet<dim>    LocalIdSet;
 
     //! The type used to store coordinates
     typedef double ctype;

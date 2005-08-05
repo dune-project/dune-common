@@ -72,9 +72,9 @@ namespace Dune {
 
     friend class UGGrid<dim, dim>;
 
-    template <class GridImp_>
+    template <int dim_>
     friend class UGGridLevelIndexSet;
-    template <class GridImp_>
+    template <int dim_>
     friend class UGGridLeafIndexSet;
 
     typedef typename GridImp::ctype UGCtype;
@@ -278,6 +278,17 @@ namespace Dune {
      */
     template<int cc>
     int subLeafIndex (int i) const;
+
+    /** \brief Return global id of sub entity with codim = cc and local number i
+     */
+    template<int cc>
+    int subGlobalId (int i) const;
+
+    /** \brief Return local id of sub entity with codim = cc and local number i
+     */
+    template<int cc>
+    int subLocalId (int i) const;
+
 
     /** \brief Provide access to sub entity i of given codimension. Entities
      *  are numbered 0 ... count<cc>()-1

@@ -11,9 +11,10 @@
 
 namespace Dune {
 
-  template<class GridImp>
+  template<int dim>
   class UGGridLevelIndexSet
   {
+    typedef UGGrid<dim,dim> GridImp;
   public:
     /** \brief Default constructor
 
@@ -54,7 +55,6 @@ namespace Dune {
       // Commit the index set to a specific level of a specific grid
       grid_ = &grid;
       level_ = level;
-      const int dim = GridImp::dimension;
 
       // ///////////////////////////////
       //   Init the element indices
@@ -119,9 +119,11 @@ namespace Dune {
     std::vector<GeometryType> myTypes_;
   };
 
-  template<class GridImp>
+  template<int dim>
   class UGGridLeafIndexSet
   {
+    typedef UGGrid<dim,dim> GridImp;
+
   public:
     //! constructor stores reference to a grid and level
     UGGridLeafIndexSet (const GridImp& g) : grid_(g)
@@ -144,7 +146,7 @@ namespace Dune {
     //! get number of entities of given codim, type and level (the level is known to the object)
     int size (int codim, GeometryType type) const
     {
-      if (codim==GridImp::dimension) {
+      if (codim==dim) {
 
         return numVertices_;
 
@@ -176,8 +178,6 @@ namespace Dune {
 
     /** \todo Should be private */
     void update() {
-
-      const int dim = GridImp::dimension;
 
       // ///////////////////////////////
       //   Init the element indices
@@ -249,9 +249,12 @@ namespace Dune {
   };
 
 
-  template<class GridImp>
+  template<int dim>
   class UGGridGlobalIdSet
   {
+
+    typedef UGGrid<dim,dim> GridImp;
+
   public:
     //! define the type used for persistent indices
     typedef unsigned int GlobalIdType;
@@ -270,8 +273,7 @@ namespace Dune {
     template<int cc>
     GlobalIdType subid (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
-      DUNE_THROW(NotImplemented, "UGGridGlobalIdSet::subid");
-      //return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
+      return grid_.template getRealEntity<0>(e).template subGlobalId<cc>(i);
     }
 
     /** \todo Should be private */
@@ -283,9 +285,12 @@ namespace Dune {
   };
 
 
-  template<class GridImp>
+  template<int dim>
   class UGGridLocalIdSet
   {
+
+    typedef UGGrid<dim,dim> GridImp;
+
   public:
     //! define the type used for persistent local ids
     typedef uint LocalIdType;
@@ -304,8 +309,7 @@ namespace Dune {
     template<int cc>
     LocalIdType subid (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
-      DUNE_THROW(NotImplemented, "UGGridLocalIdSet::subid");
-      //return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
+      return grid_.template getRealEntity<0>(e).template subLocalId<cc>(i);
     }
 
     /** \todo Should be private */

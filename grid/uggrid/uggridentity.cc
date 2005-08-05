@@ -172,6 +172,47 @@ inline int UGGridEntity<0, dim, GridImp>::subLeafIndex(int i) const
   return UG_NS<dim>::leafIndex(UG_NS<dim>::Corner(target_,i));
 }
 
+template <int dim, class GridImp>
+template <int cc>
+inline int UGGridEntity<0, dim, GridImp>::subGlobalId(int i) const
+{
+  assert(i>=0 && i<count<cc>());
+
+  if (cc!=dim)
+    DUNE_THROW(GridError, "UGGrid::subGlobalId isn't implemented for cc != dim");
+
+  if (geometry().type()==cube && dim==3) {
+    // Dune numbers the vertices of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    i = renumbering[i];
+  }
+#ifdef ModelP
+  return UG_NS<dim>::Corner(target_,i)->ddd.gid;
+#else
+  return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,i));
+#endif
+}
+
+template <int dim, class GridImp>
+template <int cc>
+inline int UGGridEntity<0, dim, GridImp>::subLocalId(int i) const
+{
+  assert(i>=0 && i<count<cc>());
+
+  if (cc!=dim)
+    DUNE_THROW(GridError, "UGGrid::subLocalId isn't implemented for cc != dim");
+
+  if (geometry().type()==cube && dim==3) {
+    // Dune numbers the vertices of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    i = renumbering[i];
+  }
+
+  return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,i));
+}
+
 
 template <int dim, class GridImp>
 template <int cc>
