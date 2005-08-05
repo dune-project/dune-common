@@ -15,11 +15,18 @@ namespace Dune {
   class UGGridLevelIndexSet
   {
     typedef UGGrid<dim,dim> GridImp;
+
+    friend class UGGrid<dim,dim>;
+
   public:
+
     /** \brief Default constructor
 
        Unfortunately we can't force the user to init grid_ and level_, because
        UGGridLevelIndexSets are meant to be stored in an array.
+
+       \todo I want to make this constructor private, but I can't, because
+       it is called by UGGrid through a std::vector::resize()
      */
     UGGridLevelIndexSet () {}
 
@@ -49,7 +56,8 @@ namespace Dune {
       return myTypes_;
     }
 
-    /** \todo Should be private */
+  private:
+
     void update(const GridImp& grid, int level) {
 
       // Commit the index set to a specific level of a specific grid
@@ -113,7 +121,6 @@ namespace Dune {
 
     }
 
-  private:
     const GridImp* grid_;
     int level_;
     std::vector<GeometryType> myTypes_;
@@ -124,10 +131,13 @@ namespace Dune {
   {
     typedef UGGrid<dim,dim> GridImp;
 
-  public:
+    friend class UGGrid<dim,dim>;
+
     //! constructor stores reference to a grid and level
     UGGridLeafIndexSet (const GridImp& g) : grid_(g)
     {}
+
+  public:
 
     //! get index of an entity
     template<int cd>
@@ -176,7 +186,8 @@ namespace Dune {
       return myTypes_;
     }
 
-    /** \todo Should be private */
+  private:
+
     void update() {
 
       // ///////////////////////////////
@@ -235,7 +246,6 @@ namespace Dune {
 
     }
 
-  private:
 
     const GridImp& grid_;
 
@@ -255,12 +265,14 @@ namespace Dune {
 
     typedef UGGrid<dim,dim> GridImp;
 
-  public:
-    //! define the type used for persistent indices
-    typedef unsigned int GlobalIdType;
+    friend class UGGrid<dim,dim>;
 
     //! constructor stores reference to a grid
     UGGridGlobalIdSet (const GridImp& g) : grid_(g) {}
+
+  public:
+    //! define the type used for persistent indices
+    typedef unsigned int GlobalIdType;
 
     //! get id of an entity
     template<int cd>
@@ -276,10 +288,10 @@ namespace Dune {
       return grid_.template getRealEntity<0>(e).template subGlobalId<cc>(i);
     }
 
+  private:
+
     /** \todo Should be private */
     void update() {}
-
-  private:
 
     const GridImp& grid_;
   };
@@ -291,12 +303,14 @@ namespace Dune {
 
     typedef UGGrid<dim,dim> GridImp;
 
-  public:
-    //! define the type used for persistent local ids
-    typedef uint LocalIdType;
+    friend class UGGrid<dim,dim>;
 
     //! constructor stores reference to a grid
     UGGridLocalIdSet (const GridImp& g) : grid_(g) {}
+
+  public:
+    //! define the type used for persistent local ids
+    typedef uint LocalIdType;
 
     //! get id of an entity
     template<int cd>
@@ -312,10 +326,10 @@ namespace Dune {
       return grid_.template getRealEntity<0>(e).template subLocalId<cc>(i);
     }
 
+  private:
+
     /** \todo Should be private */
     void update() {}
-
-  private:
 
     const GridImp& grid_;
   };
