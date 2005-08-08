@@ -77,19 +77,11 @@ inline int UGGridEntity<codim,dim,GridImp>::count () const
 template< int dim, class GridImp>
 inline AdaptationState UGGridEntity < 0, dim ,GridImp >::state() const
 {
-#ifdef _2
-  if (ReadCW(target_, UG2d::NEWEL_CE))
+  if (UG_NS<dim>::ReadCW(target_, UG_NS<dim>::NEWEL_CE))
     return REFINED;
 
-  if (ReadCW(target_, UG2d::COARSEN_CE))
+  if (UG_NS<dim>::ReadCW(target_, UG_NS<dim>::COARSEN_CE))
     return COARSEN;
-#else
-  if (ReadCW(target_, UG3d::NEWEL_CE))
-    return REFINED;
-
-  if (ReadCW(target_, UG3d::COARSEN_CE))
-    return COARSEN;
-#endif
 
   return NONE;
 }
@@ -106,14 +98,12 @@ inline int UGGridEntity<0,dim,GridImp>::count() const
     switch (cc) {
     case 0 :
       return 1;
-#ifdef _3
     case 1 :
-      return UG_NS<3>::Sides_Of_Elem(target_);
+      return UG_NS<dim>::Sides_Of_Elem(target_);
     case 2 :
-      return UG_NS<3>::Edges_Of_Elem(target_);
+      return UG_NS<dim>::Edges_Of_Elem(target_);
     case 3 :
-      return UG_NS<3>::Corners_Of_Elem(target_);
-#endif
+      return UG_NS<dim>::Corners_Of_Elem(target_);
     }
 
   } else {
@@ -121,16 +111,15 @@ inline int UGGridEntity<0,dim,GridImp>::count() const
     switch (cc) {
     case 0 :
       return 1;
-#ifdef _2
     case 1 :
-      return UG_NS<2>::Edges_Of_Elem(target_);
+      return UG_NS<dim>::Edges_Of_Elem(target_);
     case 2 :
-      return UG_NS<2>::Corners_Of_Elem(target_);
-#endif
+      return UG_NS<dim>::Corners_Of_Elem(target_);
     }
 
   }
-  return -1;
+  DUNE_THROW(GridError, "You can't call UGGridEntity<0,dim>::count<codim> "
+             << "with dim==" << dim << " and codim==" << cc << "!");
 }
 
 

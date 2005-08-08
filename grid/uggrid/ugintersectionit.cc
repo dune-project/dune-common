@@ -20,41 +20,43 @@ UGGridIntersectionIterator <GridImp>::outerNormal (const FieldVector<UGCtype, Gr
   // //////////////////////////////////////////////////////
   //   Implementation for 3D
   // //////////////////////////////////////////////////////
+  const int dim = GridImp::dimension;
 
-#ifdef _3
-  // Get the first three vertices of this side.  Since quadrilateral faces
-  // are plane in UG, the normal doesn't depend on the fourth vertex
-  const UGCtype* aPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
-  const UGCtype* bPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
-  const UGCtype* cPos = UG_NS<3>::Corner(center_,UG_NS<3>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
+  if (dim == 3) {
 
-  FieldVector<UGCtype, 3> ba, ca;
+    // Get the first three vertices of this side.  Since quadrilateral faces
+    // are plane in UG, the normal doesn't depend on the fourth vertex
+    const UGCtype* aPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
+    const UGCtype* bPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
+    const UGCtype* cPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
 
-  for (int i=0; i<3; i++) {
-    ba[i] = bPos[i] - aPos[i];
-    ca[i] = cPos[i] - aPos[i];
+    FieldVector<UGCtype, 3> ba, ca;
+
+    for (int i=0; i<3; i++) {
+      ba[i] = bPos[i] - aPos[i];
+      ca[i] = cPos[i] - aPos[i];
+    }
+
+    outerNormal_[0] = ba[1]*ca[2] - ba[2]*ca[1];
+    outerNormal_[1] = ba[2]*ca[0] - ba[0]*ca[2];
+    outerNormal_[2] = ba[0]*ca[1] - ba[1]*ca[0];
+
+  } else {
+
+    // //////////////////////////////////////////////////////
+    //   Implementation for 2D
+    // //////////////////////////////////////////////////////
+
+    // Get the vertices of this side.
+    const UGCtype* aPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
+    const UGCtype* bPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
+
+    // compute normal
+    outerNormal_[0] = bPos[1] - aPos[1];
+    outerNormal_[1] = aPos[0] - bPos[0];
+
   }
 
-  outerNormal_[0] = ba[1]*ca[2] - ba[2]*ca[1];
-  outerNormal_[1] = ba[2]*ca[0] - ba[0]*ca[2];
-  outerNormal_[2] = ba[0]*ca[1] - ba[1]*ca[0];
-
-#endif
-
-  // //////////////////////////////////////////////////////
-  //   Implementation for 2D
-  // //////////////////////////////////////////////////////
-
-#ifdef _2
-  // Get the vertices of this side.
-  const UGCtype* aPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
-  const UGCtype* bPos = UG_NS<2>::Corner(center_,UG_NS<2>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
-
-  // compute normal
-  outerNormal_[0] = bPos[1] - aPos[1];
-  outerNormal_[1] = aPos[0] - bPos[0];
-
-#endif
   return outerNormal_;
 }
 
@@ -107,20 +109,20 @@ inline int UGGridIntersectionIterator<GridImp>::
 numberInSelf ()  const
 {
   const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);
-#ifdef _3
+
   if (nSides==6) {   // Hexahedron
     // Dune numbers the faces of a hexahedron differently than UG.
     // The following two lines do the transformation
     const int renumbering[6] = {4, 2, 1, 3, 0, 5};
     return renumbering[neighborCount_];
-  } else if (nSides==4) {   // Tetrahedron
+  } else if (nSides==4 && GridImp::dimension==3) {   // Tetrahedron
     // Dune numbers the faces of a tetrahedron differently than UG.
     // The following two lines do the transformation
     const int renumbering[4] = {3, 0, 1, 2};
     return renumbering[neighborCount_];
   } else
     return neighborCount_;
-#else
+
   if (nSides==3) {   // Triangle
     // Dune numbers the faces of a triangle differently from UG.
     // The following two lines do the transformation
@@ -128,7 +130,7 @@ numberInSelf ()  const
     return renumbering[neighborCount_];
   } else
     return neighborCount_;
-#endif
+
 }
 
 template< class GridImp>

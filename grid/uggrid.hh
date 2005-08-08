@@ -11,22 +11,68 @@
 #include <dune/grid/common/grid.hh>
 #include <dune/common/misc.hh>
 
-// All UG includes have to be includes via the file ugincludes.hh
-// for easier parsing by undefAllMacros.pl
-/** \todo Defining __PC__ here is certainly not the perfect way... */
-#define __PC__  // hack:  choose the architecture
-//#define UGLIB
-//#define AUTOTOOLS_BUILD
-#define FOR_DUNE
-#include "uggrid/ugincludes.hh"
-#undef __PC__
-#undef FOR_DUNE
+/* The following lines including the necessary UG headers are somewhat
+   tricky.  Here's what's happening:
+   UG can support two- and three-dimensional grids.  You choose be setting
+   either _2 oder _3 while compiling.  This changes all sorts of stuff, in
+   particular data structures in the headers.
+   UG was never supposed to provide 2d and 3d grids at the same time.
+   However, when compiling it as c++, the dimension-dependent parts are
+   wrapped up cleanly in the namespaces UG2d and UG3d, respectively.  That
+   way it is possible to link together the UG lib for 2d and the one for 3d.
+   But we also need the headers twice!  Once with _2 set and once with _3!
+   So here we go:*/
 
-// Wrap a few large UG macros by functions before they get undef'ed away
+/** \todo Defining __PC__ here is certainly not the perfect way... */
+/* We're still forced to include compiler.h, which expects the architecture
+   as a macro.  This sucks, but currently there's no better way.  We
+   choose __PC__ and hope for the best. */
+#define __PC__
+/* The following define tells the UG headers that we want access to a few
+   special fields, for example the extra index fields in the element data structures. */
+#define FOR_DUNE
+
+// Set UG's space-dimension flag to 2d
+#define _2
+// And include all necessary UG headers
+#include "uggrid/ugincludes.hh"
+
+// Wrap a few large UG macros by functions before they get undef'ed away.
+// Here: The 2d-version of the macros
 #include "uggrid/ugfunctions.hh"
+
+// UG defines a whole load of preprocessor macros.  ug_undef.hh undefines
+// them all, so we don't get name clashes.
+#include "uggrid/ug_undefs.hh"
+#undef _2
+
+/* Now we're done with 2d, and we can do the whole thing over again for 3d */
+
+/* All macros set by UG have been unset.  This includes the macros that ensure
+   single inclusion of headers.  We can thus include them again.  However, we
+   only want to include those headers that contain dimension-dependent stuff.
+   Therefore, we set a few single-inclusion defines manually before include
+   ugincludes.hh again.
+ */
+//#define __COMPILER__
+#define __HEAPS__
+#define __UGENV__
+#define __PARGM_H__
+#define __DEVICESH__
+#define __SM__
+
+#define _3
+#include "uggrid/ugincludes.hh"
+
+// Wrap a few large UG macros by functions before they get undef'ed away.
+// This time it's the 3d-versions.
+#include "uggrid/ugfunctions3d.hh"
 
 // undef all macros defined by UG
 #include "uggrid/ug_undefs.hh"
+
+#undef __PC__
+#undef FOR_DUNE
 
 /** \todo Remove this once getChildrenOfSubface is gone */
 #include <dune/common/array.hh>
@@ -277,11 +323,7 @@ namespace Dune {
 
     /** \brief Mark method accepting a UG refinement rule
      */
-#ifdef _3
-    bool mark(typename Traits::template Codim<0>::EntityPointer & e, UG3d::RefinementRule rule);
-#else
-    bool mark(typename Traits::template Codim<0>::EntityPointer & e, UG2d::RefinementRule rule);
-#endif
+    bool mark(typename Traits::template Codim<0>::EntityPointer & e, typename UG_NS<dim>::RefinementRule rule);
 
     //! Triggers the grid refinement process
     bool adapt();

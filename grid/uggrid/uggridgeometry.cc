@@ -20,11 +20,10 @@ struct UGGridGeometryPositionAccess<0,3>
            int i,
            FieldVector<double, 3>& coord) {
 
-#ifdef _3
     coord[0] = target->myvertex->iv.x[0];
     coord[1] = target->myvertex->iv.x[1];
     coord[2] = target->myvertex->iv.x[2];
-#endif
+
   }
 
 };
@@ -37,7 +36,7 @@ struct UGGridGeometryPositionAccess<3,3>
   void get(TargetType<0,3>::T* target,
            int i,
            FieldVector<double, 3>& coord) {
-#ifdef _3
+
     if (UG_NS<3>::Tag(target) == UG3d::HEXAHEDRON) {
       // Dune numbers the vertices of a hexahedron differently than UG.
       // The following two lines do the transformation
@@ -49,7 +48,7 @@ struct UGGridGeometryPositionAccess<3,3>
 
     for (int j=0; j<3; j++)
       coord[j] = vertex->iv.x[j];
-#endif
+
   }
 
 };
@@ -61,10 +60,10 @@ struct UGGridGeometryPositionAccess<0,2>
   void get(TargetType<2,2>::T* target,
            int i,
            FieldVector<double, 2>& coord) {
-#ifdef _2
+
     coord[0] = target->myvertex->iv.x[0];
     coord[1] = target->myvertex->iv.x[1];
-#endif
+
   }
 
 };
@@ -76,12 +75,12 @@ struct UGGridGeometryPositionAccess<2,2>
   void get(TargetType<0,2>::T* target,
            int i,
            FieldVector<double, 2>& coord) {
-#ifdef _2
+
     UG2d::VERTEX* vertex = UG_NS<2>::Corner(target,i)->myvertex;
 
     for (int j=0; j<2; j++)
       coord[j] = vertex->iv.x[j];
-#endif
+
   }
 
 };
@@ -96,7 +95,7 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
   case 0 : return vertex;
   case 1 : return simplex;
   case 2 :
-#ifdef _2
+
     switch (UG_NS<coorddim>::Tag(target_)) {
     case UG2d::TRIANGLE :
       return simplex;
@@ -106,11 +105,10 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
       DUNE_THROW(GridError, "UGGridGeometry::type():  ERROR:  Unknown type "
                  << UG_NS<coorddim>::Tag(target_) << " found!");
     }
-#endif
 
   case 3 :
     switch (UG_NS<coorddim>::Tag(target_)) {
-#ifdef _3
+
     case UG3d::TETRAHEDRON :
       return simplex;
     case UG3d::PYRAMID :
@@ -122,7 +120,7 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
     default :
       DUNE_THROW(GridError, "UGGridGeometry::type():  ERROR:  Unknown type "
                  << UG_NS<coorddim>::Tag(target_) << " found!");
-#endif
+
     }
   }
 
@@ -158,7 +156,7 @@ checkInside(const FieldVector<UGCtype, mydim> &loc) const
   case 1 :  // line
     return 0 <= loc[0] && loc[0] <= 1;
   case 2 :
-#ifdef _2
+
     switch (UG_NS<coorddim>::Tag(target_)) {
     case UG2d::TRIANGLE :
       return 0 <= loc[0] && 0 <= loc[1] && (loc[0]+loc[1])<=1;
@@ -169,11 +167,10 @@ checkInside(const FieldVector<UGCtype, mydim> &loc) const
       DUNE_THROW(GridError, "UGGridGeometry::checkInside():  ERROR:  Unknown type "
                  << UG_NS<coorddim>::Tag(target_) << " found!");
     }
-#endif
 
   case 3 :
     switch (UG_NS<coorddim>::Tag(target_)) {
-#ifdef _3
+
     case UG3d::TETRAHEDRON :
       return 0 <= loc[0] && 0 <= loc[1] && 0 <= loc[2]
              && (loc[0]+loc[1]+loc[2]) <= 1;
@@ -192,7 +189,7 @@ checkInside(const FieldVector<UGCtype, mydim> &loc) const
     default :
       DUNE_THROW(GridError, "UGGridGeometry::checkInside():  ERROR:  Unknown type "
                  << UG_NS<coorddim>::Tag(target_) << " found!");
-#endif
+
     }
   }
 
@@ -222,7 +219,7 @@ global(const FieldVector<typename GridImp::ctype, 1>& local) const
 {
   FieldVector<UGCtype, 2> globalCoord;
 
-  // I want operator +...  (sigh)
+  /** \todo Rewrite this once there are expression templates */
   globalCoord[0] = local[0]*coord_[1][0] + (1-local[0])*coord_[0][0];
   globalCoord[1] = local[0]*coord_[1][1] + (1-local[0])*coord_[0][1];
 
@@ -282,11 +279,7 @@ local (const FieldVector<typename GridImp::ctype, coorddim>& global) const
 
   // Actually do the computation
   /** \todo Why is this const_cast necessary? */
-#ifdef _2
-  UG2d::UG_GlobalToLocal(corners(), const_cast<const double**>(cornerCoords), global_c, localCoords);
-#else
-  UG3d::UG_GlobalToLocal(corners(), const_cast<const double**>(cornerCoords), global_c, localCoords);
-#endif
+  UG_NS<coorddim>::GlobalToLocal(corners(), const_cast<const double**>(cornerCoords), global_c, localCoords);
 
   // Copy result into array
   for (int i=0; i<mydim; i++)

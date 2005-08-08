@@ -9,7 +9,6 @@
 template<class GridImp>
 inline
 UGGridHierarchicIterator<GridImp>::UGGridHierarchicIterator(int maxLevel)
-/*  : virtualEntity_(0) */
 {
   maxlevel_ = maxLevel;
 
@@ -29,25 +28,16 @@ void UGGridHierarchicIterator<GridImp>::increment()
 
     // The 30 is the macro MAX_SONS from ug/gm/gm.h
     UGElementType* sonList[30];
-#ifdef _2
-    UG2d::GetSons(old_target.element,sonList);
-#else
-    UG3d::GetSons(old_target.element,sonList);
-#endif
+    UG_NS<GridImp::dimension>::GetSons(old_target.element,sonList);
 
-#ifdef _2
-#define NSONS(p) UG2d::ReadCW(p, UG2d::NSONS_CE)
-#else
-#define NSONS(p) UG3d::ReadCW(p, UG3d::NSONS_CE)
-#endif
     // Load sons of old target onto the iterator stack
-    for (unsigned int i=0; i<NSONS(old_target.element); i++) {
+    for (int i=0; i<UG_NS<GridImp::dimension>::nSons(old_target.element); i++) {
       StackEntry se;
       se.element = sonList[i];
       se.level   = old_target.level + 1;
       elemStack.push(se);
     }
-#undef NSONS
+
   }
 
   if (elemStack.empty())
@@ -56,22 +46,3 @@ void UGGridHierarchicIterator<GridImp>::increment()
     this->virtualEntity_.setToTarget(elemStack.top().element, elemStack.top().level);
 
 }
-
-#if 0
-template<class GridImp>
-inline bool UGGridHierarchicIterator<GridImp>::
-equals(const UGGridHierarchicIterator& I) const
-{
-  return ( (elemStack.size()==0 && I.elemStack.size()==0) ||
-           ((elemStack.size() == I.elemStack.size()) &&
-            (elemStack.top().element == I.elemStack.top().element)));
-}
-
-template<class GridImp>
-inline typename UGGridHierarchicIterator<GridImp>::Entity&
-UGGridHierarchicIterator<GridImp>::
-dereference() const
-{
-  return virtualEntity_;
-}
-#endif

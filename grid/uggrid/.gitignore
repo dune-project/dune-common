@@ -3,6 +3,5 @@ Makefile.in
 .deps
 .libs
 *.lo
-libuggrid2.la
-libuggrid3.la
+libuggrid.la
 semantic.cache

@@ -2,16 +2,16 @@
 
 if UG
 
-noinst_LTLIBRARIES = libuggrid2.la libuggrid3.la
+noinst_LTLIBRARIES = libuggrid.la# libuggrid3.la
 
 # The two libs are compiled from the same source, but with different options
-libuggrid2_la_SOURCES  = uggrid.cc
-libuggrid2_la_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS) -D_2
-libuggrid2_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS2)
+libuggrid_la_SOURCES  = uggrid.cc
+libuggrid_la_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS)
+libuggrid_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS2) $(UG_LIBS3)
 
-libuggrid3_la_SOURCES  = uggrid.cc
-libuggrid3_la_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS) -D_3
-libuggrid3_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS3)
+#libuggrid3_la_SOURCES  = uggrid.cc
+#libuggrid3_la_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS) -D_3
+#libuggrid3_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS3)
 
 endif
 

@@ -76,7 +76,6 @@ namespace Dune {
 
 
 
-#ifdef _2
   template <class GridImp>
   class UGGridLevelIteratorFactory<2,All_Partition,GridImp>
   {
@@ -89,10 +88,6 @@ namespace Dune {
 
   };
 
-
-#endif
-
-#ifdef _3
   template <class GridImp>
   class UGGridLevelIteratorFactory<3,All_Partition,GridImp>
   {
@@ -103,7 +98,6 @@ namespace Dune {
       return UGGridLevelIterator<3,All_Partition,GridImp>(UG_NS<3>::FirstNode(theGrid), level);
     }
   };
-#endif
 
 }  // end namespace Dune
 
@@ -183,13 +177,8 @@ inline void Dune::UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned
   }
 
   // Create a dummy problem
-#ifdef _3
-  UG3d::CoeffProcPtr coeffs[1];
-  UG3d::UserProcPtr upp[1];
-#else
-  UG2d::CoeffProcPtr coeffs[1];
-  UG2d::UserProcPtr upp[1];
-#endif
+  typename UG_NS<dim>::CoeffProcPtr coeffs[1];
+  typename UG_NS<dim>::UserProcPtr upp[1];
 
   upp[0] = NULL;
   coeffs[0] = NULL;
@@ -208,11 +197,9 @@ inline void Dune::UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned
   if (numOfUGGrids==0) {
 
     char* nfarg = "newformat DuneFormat";
-#ifdef _3
-    UG3d::CreateFormatCmd(1, &nfarg);
-#else
-    UG2d::CreateFormatCmd(1, &nfarg);
-#endif
+    if (UG_NS<dim>::CreateFormatCmd(1, &nfarg))
+      DUNE_THROW(GridError, "UG" << dim << "d::CreateFormat() returned and error code!");
+
   }
 
   numOfUGGrids++;
@@ -236,22 +223,13 @@ inline Dune::UGGrid < dim, dimworld >::~UGGrid()
     // grid.  This is necessary if we have more than one UGGrid in use.
     // DisposeMultiGrid will crash if we don't do this
     std::string BVPName = name() + "_Problem";
-#ifdef _3
-    void* thisBVP = UG3d::BVP_GetByName(BVPName.c_str());
-#else
-    void* thisBVP = UG2d::BVP_GetByName(BVPName.c_str());
-#endif
+    void* thisBVP = UG_NS<dim>::BVP_GetByName(BVPName.c_str());
 
     if (thisBVP == NULL)
       DUNE_THROW(GridError, "Couldn't find grid's own boundary value problem!");
 
-#ifdef _3
-    UG3d::Set_Current_BVP((void**)thisBVP);
-    UG3d::DisposeMultiGrid(multigrid_);
-#else
-    UG2d::Set_Current_BVP((void**)thisBVP);
-    UG2d::DisposeMultiGrid(multigrid_);
-#endif
+    UG_NS<dim>::Set_Current_BVP((void**)thisBVP);
+    UG_NS<dim>::DisposeMultiGrid(multigrid_);
   }
 
   numOfUGGrids--;
@@ -259,11 +237,7 @@ inline Dune::UGGrid < dim, dimworld >::~UGGrid()
   // Shut down UG if this was the last existing UGGrid object
   if (numOfUGGrids == 0) {
 
-#ifdef _3
-    UG3d::ExitUg();
-#else
-    UG2d::ExitUg();
-#endif
+    UG_NS<dim>::ExitUg();
 
     // remove defaults file, if we wrote one on startup
     if (!useExistingDefaultsFile)
@@ -376,13 +350,10 @@ void Dune::UGGrid < dim, dimworld >::makeNewUGMultigrid()
 {
   //configure @PROBLEM $d @DOMAIN;
   std::string configureArgs[2] = {"configure " + name() + "_Problem", "d " + name() + "_Domain"};
-  const char* configureArgs_c[2]     = {configureArgs[0].c_str(), configureArgs[1].c_str()};
-  /** \todo Kann man ConfigureCommand so ‰ndern daﬂ man auch ohne den const_cast auskommt? */
-#ifdef _3
-  UG3d::ConfigureCommand(2, const_cast<char**>(configureArgs_c));
-#else
-  UG2d::ConfigureCommand(2, const_cast<char**>(configureArgs_c));
-#endif
+  const char* configureArgs_c[2] = {configureArgs[0].c_str(), configureArgs[1].c_str()};
+
+  if (UG_NS<dim>::ConfigureCommand(2, configureArgs_c))
+    DUNE_THROW(GridError, "Calling UG" << dim << "d::ConfigureCommand failed!");
 
   //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
   char* newArgs[4];
@@ -395,11 +366,7 @@ void Dune::UGGrid < dim, dimworld >::makeNewUGMultigrid()
   sprintf(newArgs[2], "f DuneFormat");
   sprintf(newArgs[3], "h %dM", heapsize);
 
-#ifdef _3
-  if (UG3d::NewCommand(4, newArgs))
-#else
-  if (UG2d::NewCommand(4, newArgs))
-#endif
+  if (UG_NS<dim>::NewCommand(4, newArgs))
     DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
 
   for (int i=0; i<4; i++)
@@ -426,32 +393,18 @@ bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
     return false;
 
   if (refCount==1) {
-    if (
-#ifdef _3
-      UG3d::MarkForRefinement(target,
-                              UG3d::RED,        // red refinement rule
-                              0)        // no user data
-#else
-      UG2d::MarkForRefinement(target,
-                              UG2d::RED,       // red refinement rule
-                              0)        // no user data
-#endif
-      ) DUNE_THROW(GridError, "UG" << dim << "d::MarkForRefinement returned error code!");
+    if (UG_NS<dim>::MarkForRefinement(target,
+                                      UG_NS<dim>::RED,      // red refinement rule
+                                      0)      // no user data
+        ) DUNE_THROW(GridError, "UG" << dim << "d::MarkForRefinement returned error code!");
 
     return true;
   } else if (refCount==-1) {
 
-    if (
-#ifdef _3
-      UG3d::MarkForRefinement(target,
-                              UG3d::COARSE,        // coarsen the element
-                              0)        // no user data
-#else
-      UG2d::MarkForRefinement(target,
-                              UG2d::COARSE,       // coarsen the element
-                              0)        // no user data
-#endif
-      ) DUNE_THROW(GridError, "UG" << dim << "d::MarkForRefinement returned error code!");
+    if (UG_NS<dim>::MarkForRefinement(target,
+                                      UG_NS<dim>::COARSE,      // coarsen the element
+                                      0)      // no user data
+        ) DUNE_THROW(GridError, "UG" << dim << "d::MarkForRefinement returned error code!");
 
     return true;
   } else
@@ -461,30 +414,18 @@ bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
 
 template < int dim, int dimworld >
 bool Dune::UGGrid < dim, dimworld >::mark(typename Traits::template Codim<0>::EntityPointer & e,
-#ifdef _3
-                                          UG3d::RefinementRule rule
-#else
-                                          UG2d::RefinementRule rule
-#endif
+                                          typename UG_NS<dim>::RefinementRule rule
                                           )
 {
   typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
 
-#ifdef _3
-  if (!UG3d::EstimateHere(target))
+  if (!UG_NS<dim>::isLeaf(target))
     return false;
 
-  return UG3d::MarkForRefinement(target,
-                                 rule,
-                                 0);    // no user data
-#else
-  if (!UG2d::EstimateHere(target))
-    return false;
+  return UG_NS<dim>::MarkForRefinement(target,
+                                       rule,
+                                       0);   // no user data
 
-  return UG2d::MarkForRefinement(target,
-                                 rule,
-                                 0);    // no user data
-#endif
 }
 
 template < int dim, int dimworld >
@@ -499,20 +440,12 @@ bool Dune::UGGrid < dim, dimworld >::adapt()
   // Set UG's currBVP variable to the BVP corresponding to this
   // grid.  This is necessary if we have more than one UGGrid in use.
   std::string BVPName = name() + "_Problem";
-#ifdef _3
-  void* thisBVP = UG3d::BVP_GetByName(BVPName.c_str());
-#else
-  void* thisBVP = UG2d::BVP_GetByName(BVPName.c_str());
-#endif
+  void* thisBVP = UG_NS<dim>::BVP_GetByName(BVPName.c_str());
 
   if (thisBVP == NULL)
     DUNE_THROW(GridError, "Couldn't find grid's own boundary value problem!");
 
-#ifdef _3
-  UG3d::Set_Current_BVP((void**)thisBVP);
-#else
-  UG2d::Set_Current_BVP((void**)thisBVP);
-#endif
+  UG_NS<dim>::Set_Current_BVP((void**)thisBVP);
 
   mode = UG_NS<dim>::GM_REFINE_TRULY_LOCAL;
 
@@ -550,11 +483,7 @@ void Dune::UGGrid <dim, dimworld>::postAdapt()
     typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(i);
 
     for (; eIt!=eEndIt; ++eIt)
-#ifdef _2
-      WriteCW(getRealEntity<0>(*eIt).target_, UG2d::NEWEL_CE, 0);
-#else
-      WriteCW(getRealEntity<0>(*eIt).target_, UG3d::NEWEL_CE, 0);
-#endif
+      UG_NS<dim>::WriteCW(getRealEntity<0>(*eIt).target_, UG_NS<dim>::NEWEL_CE, 0);
 
   }
 }
@@ -696,18 +625,13 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
 
     if (level < maxl) {
 
-#ifdef _2
-      UG2d::Get_Sons_of_ElementSide(
-#else
-      UG3d::Get_Sons_of_ElementSide(
-#endif
-        theElement,
-        side,                                           // Input element side number
-        &Sons_of_Side,                                   // Number of topological sons of the element side
-        SonList,                                        // Output elements
-        SonSides,                                       // Output element side numbers
-        true,
-        true);
+      Get_Sons_of_ElementSide(theElement,
+                              side,             // Input element side number
+                              &Sons_of_Side,       // Number of topological sons of the element side
+                              SonList,            // Output elements
+                              SonSides,           // Output element side numbers
+                              true,
+                              true);
 
       for (int i=0; i<Sons_of_Side; i++)
         list.push_back(ListEntryType(SonList[i],SonSides[i], level+1));
@@ -791,11 +715,7 @@ void Dune::UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int
                          argStrings[2].c_str(),
                          argStrings[3].c_str()};
 
-#ifdef _2
-  int errCode = UG2d::LBCommand(4, (char**)argv);
-#else
-  int errCode = UG3d::LBCommand(4, (char**)argv);
-#endif
+  int errCode = UG_NS<dim>::LBCommand(4, argv);
 
   if (errCode)
     DUNE_THROW(GridError, "UG" << dim << "d::LBCommand returned error code " << errCode);
@@ -816,23 +736,23 @@ namespace Dune {
     {
       int codim=0;
 
-      P<T>* p = (P<T>*) data;
+      P<T>* p = (P<T>*)data;
 
-                 int index = 0;
-                 switch (codim) {
-                 case 0 :
-                   index = UG_NS<GridDim>::index((typename TargetType<0,GridDim>::T*)obj);
-                   break;
-                 case GridDim :
-                   index = UG_NS<GridDim>::index((typename TargetType<GridDim,GridDim>::T*)obj);
-                   break;
-                 default :
-                   DUNE_THROW(GridError, "UGGrid::communicate only implemented for this codim");
-                 }
+      int index = 0;
+      switch (codim) {
+      case 0 :
+        index = UG_NS<GridDim>::index((typename TargetType<0,GridDim>::T*)obj);
+        break;
+      case GridDim :
+        index = UG_NS<GridDim>::index((typename TargetType<GridDim,GridDim>::T*)obj);
+        break;
+      default :
+        DUNE_THROW(GridError, "UGGrid::communicate only implemented for this codim");
+      }
 
-                 p->gather(*dataArray, index);
+      p->gather(*dataArray, index);
 
-                 return 0;
+      return 0;
     }
 
     static int scatter(DDD_OBJ obj, void* data)
@@ -913,11 +833,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
   SetEdgeAndNodeSubdomainFromElements(multigrid_->grids[0]);
 
   // Complete the UG-internal grid data structure
-#ifdef _3
-  if (CreateAlgebra(multigrid_) != UG3d::GM_OK)
-#else
-  if (CreateAlgebra(multigrid_) != UG2d::GM_OK)
-#endif
+  if (CreateAlgebra(multigrid_) != UG_NS<dim>::GM_OK)
     DUNE_THROW(IOError, "Call of 'UG::CreateAlgebra' failed!");
 
   /* here all temp memory since CreateMultiGrid is released */
@@ -932,11 +848,8 @@ void Dune::UGGrid < dim, dimworld >::createend()
   typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(0);
 
   for (; eIt!=eEndIt; ++eIt)
-#ifdef _2
-    WriteCW(getRealEntity<0>(*eIt).target_, UG2d::NEWEL_CE, 0);
-#else
-    WriteCW(getRealEntity<0>(*eIt).target_, UG3d::NEWEL_CE, 0);
-#endif
+    UG_NS<dim>::WriteCW(getRealEntity<0>(*eIt).target_, UG_NS<dim>::NEWEL_CE, 0);
+
 }
 
 
@@ -960,8 +873,6 @@ void Dune::UGGrid < dim, dimworld >::setIndices()
 //   Explicit instantiation of the dimensions that are actually supported by UG.
 //   g++-4.0 wants them to be _after_ the method implementations.
 // /////////////////////////////////////////////////////////////////////////////////
-#ifdef _2
+
 template class Dune::UGGrid<2,2>;
-#else
 template class Dune::UGGrid<3,3>;
-#endif
