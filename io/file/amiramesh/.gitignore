@@ -3,6 +3,5 @@ Makefile.in
 .deps
 .libs
 *.lo
-libug2amiramesh.la
-libug3amiramesh.la
+libugamiramesh.la
 semantic.cache
