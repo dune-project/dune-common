@@ -4,25 +4,15 @@
 
 #include <config.h>
 
+#include <iostream>
+
 /*
 
    Instantiate UG-Grid and feed it to the generic gridcheck()
 
-   Note: UG needs -D_2 or -D_3 defined anyway, use it to select correct
-   gridfile and class
-
    Currently UGGrid can only be initialized via the AmiraMeshReader
 
  */
-
-#include <iostream>
-
-// transform define to value
-#ifdef _2
-static const int DIM = 2;
-#else
-static const int DIM = 3;
-#endif
 
 #include <dune/grid/uggrid.hh>
 #include <dune/io/file/amirameshreader.hh>
@@ -31,19 +21,22 @@ static const int DIM = 3;
 
 int main () {
   try {
-    /* use grid-file appropriate for dimensions */
-    std::ostringstream filename;
-    filename << "ug-testgrid-" << DIM << ".am";
-
-    std::cout << std::endl << "UGGrid<" << DIM << "," << DIM
-              << "> with grid file: " << filename.str()
-              << std::endl << std::endl;
 
     // extra-environment to check destruction
     {
-      typedef Dune::UGGrid<DIM,DIM> Grid;
-      Grid grid;
-      Dune::AmiraMeshReader<Grid>::read(grid, filename.str());
+      std::cout << std::endl << "UGGrid<2,2> with grid file: ug-testgrid-2.am"
+                << std::endl << std::endl;
+      Dune::UGGrid<2,2> grid;
+      Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(grid, "ug-testgrid-2.am");
+
+      gridcheck(grid);
+    };
+
+    {
+      std::cout << std::endl << "UGGrid<3,3> with grid file: ug-testgrid-3.am"
+                << std::endl << std::endl;
+      Dune::UGGrid<3,3> grid;
+      Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(grid, "ug-testgrid-3.am");
 
       gridcheck(grid);
     };
