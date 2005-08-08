@@ -9,7 +9,7 @@ SUBLIBS = common/libgridcommon.la onedgrid/libonedgrid.la
 
 # conditional parts:
 if UG
-  UGLIB = uggrid/libuggrid2.la uggrid/libuggrid3.la
+  UGLIB = uggrid/libuggrid.la
 endif
 
 if ALU3DGRID
