@@ -14,12 +14,11 @@
 #include <vector>
 #include <algorithm>
 
-#if defined HAVE_PSURFACE && defined _3
+#if defined HAVE_PSURFACE
 #include <parametrization/AmiraParamAccess.h>
 #endif
 
 
-#ifdef _3
 // //////////////////////////////////////////////////
 // //////////////////////////////////////////////////
 #ifdef HAVE_PSURFACE
@@ -158,7 +157,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elem
       faceList[i][j]--;
 
 }
-#endif // #ifdef _3
 
 template<int NUM_VERTICES>
 static int detectBoundaryNodes(const std::vector< Dune::FieldVector<int, NUM_VERTICES> >& faceList,
@@ -187,7 +185,6 @@ static int detectBoundaryNodes(const std::vector< Dune::FieldVector<int, NUM_VER
   return UGNodeIdxCounter;
 }
 
-#ifdef _3
 
 // Create the domain from an explicitly given boundary description
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
@@ -977,8 +974,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
 
 }
 
-#endif // #ifdef _3
-
 /*********************************************************************************/
 /*********************************************************************************/
 /*                                                                               */
@@ -986,8 +981,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
 /*                                                                               */
 /*********************************************************************************/
 /*********************************************************************************/
-
-#ifdef _2
 
 /** This method implements a linear function in order to be able to
  *  work with straight line boundaries.
@@ -1387,6 +1380,3 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   grid.createend();
 
 }
-
-
-#endif // #ifdef _2
