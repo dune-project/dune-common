@@ -76,6 +76,13 @@ struct UGGridGeometryPositionAccess<2,2>
            int i,
            FieldVector<double, 2>& coord) {
 
+    if (UG_NS<2>::Tag(target) == UG2d::QUADRILATERAL) {
+      // Dune numbers the vertices of a quadrilateral differently than UG.
+      // The following two lines do the transformation
+      const int renumbering[4] = {0, 1, 3, 2};
+      i = renumbering[i];
+    }
+
     UG2d::VERTEX* vertex = UG_NS<2>::Corner(target,i)->myvertex;
 
     for (int j=0; j<2; j++)

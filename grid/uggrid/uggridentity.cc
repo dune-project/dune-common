@@ -122,7 +122,22 @@ inline int UGGridEntity<0,dim,GridImp>::count() const
              << "with dim==" << dim << " and codim==" << cc << "!");
 }
 
+template <int dim, class GridImp>
+inline int UGGridEntity<0, dim, GridImp>::renumberVertex(int i) const {
 
+  if (geometry().type()==cube) {
+
+    // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+    // The following two lines do the transformation
+    // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+    // following code works for 2d and 3d.
+    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    return renumbering[i];
+
+  } else
+    return i;
+
+}
 template <int dim, class GridImp>
 template <int cc>
 inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
@@ -132,14 +147,7 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
   if (cc!=dim)
     DUNE_THROW(GridError, "UGGrid::subIndex isn't implemented for cc != dim");
 
-  if (geometry().type()==cube && dim==3) {
-    // Dune numbers the vertices of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    i = renumbering[i];
-  }
-
-  return UG_NS<dim>::levelIndex(UG_NS<dim>::Corner(target_,i));
+  return UG_NS<dim>::levelIndex(UG_NS<dim>::Corner(target_,renumberVertex(i)));
 }
 
 template <int dim, class GridImp>
@@ -151,14 +159,7 @@ inline int UGGridEntity<0, dim, GridImp>::subLeafIndex(int i) const
   if (cc!=dim)
     DUNE_THROW(GridError, "UGGrid::subLeafIndex isn't implemented for cc != dim");
 
-  if (geometry().type()==cube && dim==3) {
-    // Dune numbers the vertices of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    i = renumbering[i];
-  }
-
-  return UG_NS<dim>::leafIndex(UG_NS<dim>::Corner(target_,i));
+  return UG_NS<dim>::leafIndex(UG_NS<dim>::Corner(target_,renumberVertex(i)));
 }
 
 template <int dim, class GridImp>
@@ -170,16 +171,10 @@ inline int UGGridEntity<0, dim, GridImp>::subGlobalId(int i) const
   if (cc!=dim)
     DUNE_THROW(GridError, "UGGrid::subGlobalId isn't implemented for cc != dim");
 
-  if (geometry().type()==cube && dim==3) {
-    // Dune numbers the vertices of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    i = renumbering[i];
-  }
 #ifdef ModelP
-  return UG_NS<dim>::Corner(target_,i)->ddd.gid;
+  return UG_NS<dim>::Corner(target_,renumberVertex(i))->ddd.gid;
 #else
-  return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,i));
+  return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,renumberVertex(i)));
 #endif
 }
 
@@ -192,14 +187,7 @@ inline int UGGridEntity<0, dim, GridImp>::subLocalId(int i) const
   if (cc!=dim)
     DUNE_THROW(GridError, "UGGrid::subLocalId isn't implemented for cc != dim");
 
-  if (geometry().type()==cube && dim==3) {
-    // Dune numbers the vertices of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    i = renumbering[i];
-  }
-
-  return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,i));
+  return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,renumberVertex(i)));
 }
 
 
@@ -213,14 +201,7 @@ UGGridEntity<0,dim,GridImp>::entity ( int i ) const
   if (cc!=dim)
     DUNE_THROW(GridError, "UGGrid::entity isn't implemented for cc != dim");
 
-  if (geometry().type()==cube && dim==3) {
-    // Dune numbers the vertices of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    i = renumbering[i];
-  }
-
-  typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,i);
+  typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,renumberVertex(i));
   return UGGridLevelIterator<cc,All_Partition,GridImp>(subEntity, level_);
 }
 

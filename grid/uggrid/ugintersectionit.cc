@@ -115,19 +115,25 @@ numberInSelf ()  const
     // The following two lines do the transformation
     const int renumbering[6] = {4, 2, 1, 3, 0, 5};
     return renumbering[neighborCount_];
+
   } else if (nSides==4 && GridImp::dimension==3) {   // Tetrahedron
     // Dune numbers the faces of a tetrahedron differently than UG.
     // The following two lines do the transformation
     const int renumbering[4] = {3, 0, 1, 2};
     return renumbering[neighborCount_];
-  } else
-    return neighborCount_;
 
-  if (nSides==3) {   // Triangle
+  } else if (nSides==4 && GridImp::dimension==2) {   // Quadrilateral
+    // Dune numbers the faces of a quadrilateral differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[4] = {2, 1, 3, 0};
+    return renumbering[neighborCount_];
+
+  } else if (nSides==3) {   // Triangle
     // Dune numbers the faces of a triangle differently from UG.
     // The following two lines do the transformation
     const int renumbering[3] = {2, 0, 1};
     return renumbering[neighborCount_];
+
   } else
     return neighborCount_;
 
@@ -137,9 +143,10 @@ template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
 numberInNeighbor () const
 {
+  DUNE_THROW(NotImplemented, "The renumbering is missing!");
   const typename TargetType<0,GridImp::dimensionworld>::T* other = UG_NS<dimworld>::NbElem(center_, neighborCount_);
 
-  /** \todo Programm this correctly */
+  /** \bug The whole renumbering is missing */
   const int nSides = UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(other);
 
   int i;
