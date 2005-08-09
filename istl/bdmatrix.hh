@@ -47,7 +47,7 @@ namespace Dune {
     /** \brief Get the i-th diagonal element */
     B& operator[](int i) {return data_[i];}
 
-    /** \brief y -= Ax */
+    /** \brief y += Ax */
     template <class X, class Y>
     void umv(const X& x, Y& y) const {
 #ifdef DUNE_ISTL_WITH_CHECKING
