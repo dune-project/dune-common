@@ -47,7 +47,24 @@ namespace Dune {
     //! get number of entities of given codim, type and on this level
     int size (int codim, GeometryType type) const
     {
-      return grid_->size(level_,codim, type);
+      if (codim==0) {
+
+        switch (type) {
+        case simplex :
+          return numSimplices_;
+        case pyramid :
+          return numPyramids_;
+        case prism :
+          return numPrisms_;
+        case cube :
+          return numCubes_;
+        default :
+          return 0;
+        }
+      } else if (codim==dim) {
+        return (type==vertex) ? grid_->size(level_,dim) : 0;
+      } else
+        DUNE_THROW(NotImplemented, "Not yet implemented for this codim!");
     }
 
     /** \brief Deliver all geometry types used in this grid */
@@ -67,10 +84,10 @@ namespace Dune {
       // ///////////////////////////////
       //   Init the element indices
       // ///////////////////////////////
-      int numSimplices = 0;
-      int numPyramids  = 0;
-      int numPrisms    = 0;
-      int numCubes     = 0;
+      numSimplices_ = 0;
+      numPyramids_  = 0;
+      numPrisms_    = 0;
+      numCubes_     = 0;
 
       typename GridImp::Traits::template Codim<0>::LevelIterator eIt    = grid_->template lbegin<0>(level_);
       typename GridImp::Traits::template Codim<0>::LevelIterator eEndIt = grid_->template lend<0>(level_);
@@ -79,16 +96,16 @@ namespace Dune {
 
         switch (eIt->geometry().type()) {
         case simplex :
-          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numSimplices++;
+          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numSimplices_++;
           break;
         case pyramid :
-          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numPyramids++;
+          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numPyramids_++;
           break;
         case prism :
-          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numPrisms++;
+          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numPrisms_++;
           break;
         case cube :
-          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numCubes++;
+          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numCubes_++;
           break;
         default :
           DUNE_THROW(GridError, "Found the GeometryType " << eIt->geometry().type()
@@ -99,13 +116,13 @@ namespace Dune {
 
       // Update the list of geometry types present
       myTypes_.resize(0);
-      if (numSimplices > 0)
+      if (numSimplices_ > 0)
         myTypes_.push_back(simplex);
-      if (numPyramids > 0)
+      if (numPyramids_ > 0)
         myTypes_.push_back(pyramid);
-      if (numPrisms > 0)
+      if (numPrisms_ > 0)
         myTypes_.push_back(prism);
-      if (numCubes > 0)
+      if (numCubes_ > 0)
         myTypes_.push_back(cube);
 
       // //////////////////////////////
@@ -123,6 +140,12 @@ namespace Dune {
 
     const GridImp* grid_;
     int level_;
+
+    int numSimplices_;
+    int numPyramids_;
+    int numPrisms_;
+    int numCubes_;
+
     std::vector<GeometryType> myTypes_;
   };
 
