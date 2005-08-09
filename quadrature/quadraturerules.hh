@@ -39,7 +39,7 @@ namespace Dune {
     {
       return wght;
     }
-
+    virtual ~QuadraturePoint(){}
 
   private:
     FieldVector<ct, dim> local;
@@ -52,6 +52,7 @@ namespace Dune {
   class QuadratureRule : public std::vector<QuadraturePoint<ct,dim> >
   {
   public:
+    QuadratureRule(){}
     // compile time parameters
     enum { d=dim };
     typedef ct CoordType;
@@ -61,6 +62,8 @@ namespace Dune {
 
     //! return type of element
     virtual GeometryType type () const = 0;
+    virtual ~QuadratureRule(){}
+
   };
 
 
@@ -322,7 +325,7 @@ namespace Dune {
     {
       return *this;
     }
-
+    ~CubeQuadratureRule(){}
   private:
 
     int delivered_order;      // delivered order
@@ -556,6 +559,7 @@ namespace Dune {
     {
       return *this;
     }
+    ~SimplexQuadratureRule(){}
 
 
   private:
@@ -757,7 +761,7 @@ namespace Dune {
       return *this;
     }
 
-
+    ~SimplexQuadratureRule(){}
   private:
     int delivered_order, m;
   };
@@ -945,7 +949,7 @@ namespace Dune {
     {
       return *this;
     }
-
+    ~PrismQuadratureRule(){}
 
   private:
     int delivered_order, m;
@@ -1106,7 +1110,7 @@ namespace Dune {
     {
       return *this;
     }
-
+    ~PyramidQuadratureRule(){}
 
   private:
     int delivered_order, m;
@@ -1301,9 +1305,10 @@ namespace Dune {
   };
 
 
-  /***********************************************************
-  * The general container and the singleton
-  ***********************************************************/
+  /**********************************************
+   * The general container and the singleton
+     specialization for 3D
+   *********************************************/
 
   //! A container for all quadrature rules
   template<typename ct>
