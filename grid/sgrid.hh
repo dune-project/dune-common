@@ -695,7 +695,7 @@ namespace Dune {
     bool neighbor () const;
 
     //! return outer normal
-    FieldVector<ctype, GridImp::dimensionworld> outerNormal (FieldVector<ctype, GridImp::dimension-1>& local) const
+    FieldVector<ctype, GridImp::dimensionworld> outerNormal (const FieldVector<ctype, GridImp::dimension-1>& local) const
     {
       return unitOuterNormal(local);
     }
