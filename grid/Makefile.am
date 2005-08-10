@@ -12,7 +12,7 @@ if UG
   UGLIB = uggrid/libuggrid.la
 endif
 
-if ALU3DGRID
+if ALUGRID
   ALU3DLIB = alu3dgrid/libalu3d.la
 endif
 

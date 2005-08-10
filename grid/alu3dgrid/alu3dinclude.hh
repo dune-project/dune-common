@@ -7,8 +7,8 @@
 #define _ANSI_HEADER
 #endif
 
-// all methods and classes of the ALU3d-Grid are defined in the namespace
-#define ALU3DSPACE ALU3dGridSpace ::
+// all methods and classes of the ALUGrid are defined in the namespace
+#define ALU3DSPACE ALUGridSpace ::
 
 // if this is defined in bsgrid some methods are added which we only need
 // for the Dune interface
@@ -16,15 +16,14 @@
 
 // if MPI was found include all headers
 #ifdef _ALU3DGRID_PARALLEL_
-#include <mpi.h>
-#include <alu3dgrid_parallel.h>
+#include <alugrid_parallel.h>
 #else
 // if not, include only headers for serial version
-#include <alu3dgrid_serial.h>
+#include <alugrid_serial.h>
 #endif
 #undef _DUNE_USES_ALU3DGRID_
 
-namespace ALU3dGridSpace {
+namespace ALUGridSpace {
 
 #ifdef _ALU3DGRID_PARALLEL_
 
@@ -74,7 +73,7 @@ namespace ALU3dGridSpace {
   typedef GitterImplType::Objects::Hbnd4Default BNDFace4Type;
   typedef GitterImplType::Objects::hbndseg3_IMPL ImplBndFace3Type;    // boundary segment
   typedef GitterImplType::Objects::hbndseg4_IMPL ImplBndFace4Type;
-} // end namespace ALU3dSpace
+} // end namespace ALUGridSpace
 
 
 namespace Dune {

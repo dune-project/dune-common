@@ -1,6 +1,6 @@
-AM_CPPFLAGS = $(ALU3DGRID_CPPFLAGS)
+AM_CPPFLAGS = $(ALUGRID_CPPFLAGS)
 
-if ALU3DGRID
+if ALUGRID
   noinst_LTLIBRARIES = libalu3d.la
   libalu3d_la_SOURCES = mappings.cc topology.cc faceutility.cc
 endif

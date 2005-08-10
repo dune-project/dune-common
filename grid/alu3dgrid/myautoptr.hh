@@ -3,7 +3,7 @@
 #ifndef DUNE_MYAUTOPTR_HH
 #define DUNE_MYAUTOPTR_HH
 
-namespace ALU3dGridSpace {
+namespace ALUGridSpace {
   /** \brief An auto pointer class */
   template <class Pointer>
   class AutoPointer

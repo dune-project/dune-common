@@ -10,7 +10,7 @@ using std::endl;
 using std::cout;
 using std::flush;
 
-namespace ALU3dGridSpace {
+namespace ALUGridSpace {
 
   //! the corresponding interface class is defined in bsinclude.hh
   template <class GridType, class EntityType, class DataCollectorType >

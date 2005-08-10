@@ -13,7 +13,7 @@ if ALBERTA
   APROG = test-alberta
 endif
 
-if ALU3DGRID
+if ALUGRID
   ALUPROG = test-alu3dgrid
 endif
 
