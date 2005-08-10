@@ -5,3 +5,6 @@ semantic.cache
 .libs
 alu3dmappings.lo
 libalu3d.la
+faceutility.lo
+mappings.lo
+topology.lo
