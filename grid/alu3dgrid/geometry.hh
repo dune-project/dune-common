@@ -70,14 +70,10 @@ namespace Dune {
       return this->realGeometry.buildGeom(item);
     }
 
-    bool buildGeom(const ALU3DSPACE HFaceType& item) {
-      return this->realGeometry.buildGeom(item);
+    bool buildGeom(const ALU3DSPACE HFaceType& item, int twist) {
+      return this->realGeometry.buildGeom(item, twist);
     }
 
-    // build a face geometry in the reference element
-    //bool buildGeom(int twist, int faceIdx) {
-    //  return this->realGeometry.buildGeom(twist, faceIdx);
-    //}
     bool buildGeom(const FaceCoordinatesType& coords) {
       return this->realGeometry.buildGeom(coords);
     }
@@ -164,11 +160,11 @@ namespace Dune {
     //***********************************************************************
     //! generate the geometry for out of given ALU3dGridElement
     bool buildGeom(const IMPLElementType & item);
-    bool buildGeom(const ALU3DSPACE HFaceType & item);
+    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist);
     //bool buildGeom(int twist, int faceIdx);
     bool buildGeom(const FaceCoordinatesType& coords);
-    bool buildGeom(const ALU3DSPACE HEdgeType & item);
-    bool buildGeom(const ALU3DSPACE VertexType & item);
+    bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist);
+    bool buildGeom(const ALU3DSPACE VertexType & item, int twist);
 
     //! build ghost out of internal boundary segment
     bool buildGhost(const PLLBndFaceType & ghost);
@@ -272,10 +268,10 @@ namespace Dune {
     //***********************************************************************
     //! generate the geometry out of a given ALU3dGridElement
     bool buildGeom(const IMPLElementType & item);
-    bool buildGeom(const ALU3DSPACE HFaceType & item);
+    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist);
     bool buildGeom(const FaceCoordinatesType& coords);
-    bool buildGeom(const ALU3DSPACE HEdgeType & item);
-    bool buildGeom(const ALU3DSPACE VertexType & item);
+    bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist);
+    bool buildGeom(const ALU3DSPACE VertexType & item, int twist);
 
     //! build ghost out of internal boundary segment
     bool buildGhost(const PLLBndFaceType & ghost);

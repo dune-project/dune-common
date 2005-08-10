@@ -35,7 +35,7 @@ namespace ALUGridSpace {
     //! this method is called from the dunePackAll method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
     //! here the data is written to the ObjectStream
-    virtual void inlineData ( ObjectStreamType & str , HElemType & elem )
+    virtual void inlineData ( ObjectStreamType & str , HElementType & elem )
     {
       // set element and then start
       realEntity_.setElement(elem);
@@ -45,7 +45,7 @@ namespace ALUGridSpace {
     //! this method is called from the duneUnpackSelf method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
     //! here the data is read from the ObjectStream
-    virtual void xtractData ( ObjectStreamType & str , HElemType & elem )
+    virtual void xtractData ( ObjectStreamType & str , HElementType & elem )
     {
       // set element and then start
       grid_.updateStatus();
@@ -98,7 +98,7 @@ namespace ALUGridSpace {
     //! this method is called from the dunePackAll method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
     //! here the data is written to the ObjectStream
-    virtual void inlineData ( ObjectStreamType & str , HElemType & elem )
+    virtual void inlineData ( ObjectStreamType & str , HElementType & elem )
     {
       cerr << "Wrong Operator, do not use for load balance! in: " <<__FILE__ << " line: " << __LINE__ << endl;
       abort();
@@ -107,7 +107,7 @@ namespace ALUGridSpace {
     //! this method is called from the duneUnpackSelf method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
     //! here the data is read from the ObjectStream
-    virtual void xtractData ( ObjectStreamType & str , HElemType & elem )
+    virtual void xtractData ( ObjectStreamType & str , HElementType & elem )
     {
       cerr << "Wrong Operator, do not use for load balance! in: " <<__FILE__ << " line: " << __LINE__ << endl;
       abort();
@@ -162,10 +162,10 @@ namespace ALUGridSpace {
     virtual ~AdaptRestrictProlongImpl () {};
 
     //! restrict data , elem is always the father
-    int preCoarsening ( HElemType & elem )
+    int preCoarsening ( HElementType & elem )
     {
       // set element and then start
-      HElemType * son = elem.down();
+      HElementType * son = elem.down();
       if(elem.level() > maxlevel_) maxlevel_ = elem.level();
       //elem.resetRefinedTag();
       assert( son );
@@ -185,10 +185,10 @@ namespace ALUGridSpace {
     }
 
     //! prolong data, elem is the father
-    int postRefinement ( HElemType & elem )
+    int postRefinement ( HElementType & elem )
     {
       // set element and then start
-      HElemType * son = elem.down();
+      HElementType * son = elem.down();
       assert( son );
       //elem.resetRefinedTag();
 
@@ -295,13 +295,13 @@ namespace ALUGridSpace {
     virtual ~LoadBalanceRestrictProlongImpl () {};
 
     //! restrict data , elem is always the father
-    int postRefinement ( HElemType & elem )
+    int postRefinement ( HElementType & elem )
     {
       //cout << "create element durin ldb , el = " << elem.getIndex() << "\n";
       realFather_.setElement(elem);
       dm_.removeOldIndex( reFather_ );
 
-      HElemType * son = elem.down();
+      HElementType * son = elem.down();
       while( son )
       {
         realSon_.setElement(*son);
@@ -313,13 +313,13 @@ namespace ALUGridSpace {
     }
 
     //! prolong data, elem is the father
-    int preCoarsening ( HElemType & elem )
+    int preCoarsening ( HElementType & elem )
     {
       //cout << "remove element durin ldb , el = " << elem.getIndex() << "\n";
       realFather_.setElement(elem);
       dm_.insertNewIndex( reFather_ );
 
-      HElemType * son = elem.down();
+      HElementType * son = elem.down();
       while( son )
       {
         realSon_.setElement(*son);
