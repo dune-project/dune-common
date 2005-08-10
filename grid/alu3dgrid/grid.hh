@@ -62,18 +62,15 @@ namespace Dune {
      \brief [<em> provides \ref Dune::Grid </em>]
      \brief 3D grid with support for hexahedrons and tetrahedrons.
      @ingroup GridInterface
-     The ALU3dGrid implements the Dune GridInterface for 3d tetrahedral
+     The ALUGrid implements the Dune GridInterface for 3d tetrahedral
      meshes. This grid can be locally adapted and used in parallel
      computations using dynamcic load balancing.
 
      @note @{
-     Adaptive parallel grid supporting dynamic load balancing, written by
-     Bernard Schupp. This grid supports hexahedrons and tetrahedrons.
+     Adaptive parallel grid supporting dynamic load balancing, written
+     mainly by Bernard Schupp. This grid supports hexahedrons and tetrahedrons.
 
-     (See Bernhard Schupp:  Entwicklung eines
-     effizienten Verfahrens zur Simulation kompressibler Stroemungen
-     in 3D auf Parallelrechnern. 1999
-     http://www.freidok.uni-freiburg.de/volltexte/68/ )
+     (see ALUGrid homepage: http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/)
 
      Two tools are available for partitioning :
      \li Metis ( version 4.0 and higher, see http://www-users.cs.umn.edu/~karypis/metis/metis/ )
