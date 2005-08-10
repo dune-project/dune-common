@@ -83,8 +83,8 @@ DUNE_PATH_PSURFACE
 # Yaspgrid-check
 DUNE_MPI
 
-# check for ALU3dGrid (needs MPI to build parallel version)
-DUNE_PATH_ALU3DGRID
+# check for ALUGrid (needs MPI to build parallel version)
+DUNE_PATH_ALUGRID
 
 # check for ParMETIS
 DUNE_PATH_PARMETIS
