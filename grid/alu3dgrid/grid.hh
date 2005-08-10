@@ -124,6 +124,13 @@ namespace Dune {
 
     //! Type of the hierarchic index set
     typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSetType;
+
+    //! Type of the global id set
+    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSetType;
+
+    //! Type of the local id set
+    typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSetType;
+
     //! Type of the level index set
     typedef DefaultLevelIndexSet<MyType>           LevelIndexSetType;
     //! Type of the leaf index set
@@ -239,6 +246,12 @@ namespace Dune {
 
     //! number of grid entities on all levels for given codim
     int global_size (int cd) const ;
+
+    //! get global id set of grid
+    const GlobalIdSetType & globalIdSet () const { return globalIdSet_; }
+
+    //! get global id set of grid
+    const LocalIdSetType & localIdSet () const { return localIdSet_; }
 
     //! get hierarchic index set of the grid
     const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
@@ -359,6 +372,12 @@ namespace Dune {
 
     // our hierarchic index set
     HierarchicIndexSetType hIndexSet_;
+
+    // out global id set
+    GlobalIdSetType globalIdSet_;
+
+    // out global id set
+    LocalIdSetType localIdSet_;
 
     // the level index set ( default type )
     mutable std::vector < LevelIndexSetType * > levelIndexVec_;

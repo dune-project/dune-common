@@ -81,6 +81,8 @@ namespace Dune {
       , coarsenMarked_(0) , refineMarked_(0)
       , myRank_(myrank)
       , hIndexSet_ (*this)
+      , globalIdSet_ (*this)
+      , localIdSet_ (*this)
       , levelIndexVec_(MAXL) , leafIndexSet_(0)
   {
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
@@ -93,6 +95,8 @@ namespace Dune {
       , coarsenMarked_(0) , refineMarked_(0)
       , myRank_(-1)
       , hIndexSet_(*this)
+      , globalIdSet_ (*this)
+      , localIdSet_ (*this)
       , levelIndexVec_(MAXL) , leafIndexSet_(0)
   {
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
