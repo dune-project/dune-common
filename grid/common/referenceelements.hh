@@ -771,7 +771,7 @@ namespace Dune
   //Reference Prism
   //++++++++++++++++++++++++++++++++++++++++
 
-  /*                   5(0,1,1)
+  /*                                   5(0,1,1)
                        ¸.¸
                        y            ¸ *  . ` ,
    |           *_________ *4(1,0,1)
@@ -876,7 +876,6 @@ namespace Dune
       subsizes[0][0][2]=9;
       subsizes[0][0][1]=5;
 
-      // there are two kind of faces on prism (triangular and rectangular)
       // face indices according to that given in
       //http://hal.iwr.uni-heidelberg.de/dune/doc/appl/refelements.html
 
@@ -938,8 +937,9 @@ namespace Dune
           pos[sizes[0]-1][0][k]+=(pos[j][3][k])/(sizes[3]);
       }
 
+      // subentity indices - in agreement with UG description
+      // see ug-cvs/gm/elements.c
 
-      // subentity indices
       // node indices on element
       for(int i=0; i<subsizes[0][0][3]; ++i)
         subentityindex[0][0][i][3]=i;
@@ -949,59 +949,63 @@ namespace Dune
       // face indices on element
       for(int i=0; i<subsizes[0][0][1]; ++i)
         subentityindex[0][0][i][1]=i;
+
       // node indices on face 0
-      for(int i=0; i<subsizes[0][1][3]; ++i)
-        subentityindex[0][1][i][3]=i;
+      subentityindex[0][1][0][3]=0;
+      subentityindex[0][1][1][3]=2;
+      subentityindex[0][1][2][3]=1;
       // node indices on face 1
       subentityindex[1][1][0][3]=0;
       subentityindex[1][1][1][3]=1;
-      subentityindex[1][1][2][3]=3;
-      subentityindex[1][1][3][3]=4;
+      subentityindex[1][1][2][3]=4;
+      subentityindex[1][1][3][3]=3;
       // node indices on face 2
       subentityindex[2][1][0][3]=1;
       subentityindex[2][1][1][3]=2;
-      subentityindex[2][1][2][3]=4;
-      subentityindex[2][1][3][3]=5;
+      subentityindex[2][1][2][3]=5;
+      subentityindex[2][1][3][3]=4;
       // node indices on face 3
-      subentityindex[3][1][0][3]=0;
-      subentityindex[3][1][1][3]=1;
+      subentityindex[3][1][0][3]=2;
+      subentityindex[3][1][1][3]=0;
       subentityindex[3][1][2][3]=3;
       subentityindex[3][1][3][3]=5;
       // node indices on face 4
       for(int i=0; i<subsizes[4][1][3]; ++i)
         subentityindex[4][1][i][3]=i+3;
+
       // edge indices on face 0
-      subentityindex[0][1][0][2]=0;
+      subentityindex[0][1][0][2]=2;
       subentityindex[0][1][1][2]=1;
-      subentityindex[0][1][2][2]=2;
+      subentityindex[0][1][2][2]=0;
       // edge indices on face 1
       subentityindex[1][1][0][2]=0;
-      subentityindex[1][1][1][2]=3;
-      subentityindex[1][1][2][2]=4;
-      subentityindex[1][1][3][2]=5;
+      subentityindex[1][1][1][2]=4;
+      subentityindex[1][1][2][2]=6;
+      subentityindex[1][1][3][2]=3;
       // edge indices on face 2
-      subentityindex[2][1][0][2]=2;
-      subentityindex[2][1][1][2]=4;
-      subentityindex[2][1][2][2]=6;
-      subentityindex[2][1][3][2]=7;
+      subentityindex[2][1][0][2]=1;
+      subentityindex[2][1][1][2]=5;
+      subentityindex[2][1][2][2]=7;
+      subentityindex[2][1][3][2]=4;
       // edge indices on face 3
-      subentityindex[3][1][0][2]=1;
+      subentityindex[3][1][0][2]=2;
       subentityindex[3][1][1][2]=3;
-      subentityindex[3][1][2][2]=6;
-      subentityindex[3][1][3][2]=8;
+      subentityindex[3][1][2][2]=8;
+      subentityindex[3][1][3][2]=5;
       // edge indices on face 4
-      subentityindex[4][1][0][2]=5;
-      subentityindex[4][1][1][2]=8;
-      subentityindex[4][1][2][2]=7;
+      subentityindex[4][1][0][2]=6;
+      subentityindex[4][1][1][2]=7;
+      subentityindex[4][1][2][2]=8;
+
       // node indices on edge 0
       subentityindex[0][2][0][3]=0;
       subentityindex[0][2][1][3]=1;
       // node indices on edge 1
-      subentityindex[1][2][0][3]=0;
+      subentityindex[1][2][0][3]=1;
       subentityindex[1][2][1][3]=2;
       // node indices on edge 2
-      subentityindex[2][2][0][3]=1;
-      subentityindex[2][2][1][3]=2;
+      subentityindex[2][2][0][3]=2;
+      subentityindex[2][2][1][3]=0;
       // node indices on edge 3
       subentityindex[3][2][0][3]=0;
       subentityindex[3][2][1][3]=3;
@@ -1009,17 +1013,17 @@ namespace Dune
       subentityindex[4][2][0][3]=1;
       subentityindex[4][2][1][3]=4;
       // node indices on edge 5
-      subentityindex[5][2][0][3]=3;
-      subentityindex[5][2][1][3]=4;
+      subentityindex[5][2][0][3]=2;
+      subentityindex[5][2][1][3]=5;
       // node indices on edge 6
-      subentityindex[6][2][0][3]=2;
-      subentityindex[6][2][1][3]=5;
+      subentityindex[6][2][0][3]=3;
+      subentityindex[6][2][1][3]=4;
       // node indices on edge 7
       subentityindex[7][2][0][3]=4;
       subentityindex[7][2][1][3]=5;
       // node indices on edge 8
-      subentityindex[8][2][0][3]=3;
-      subentityindex[8][2][1][3]=5;
+      subentityindex[8][2][0][3]=5;
+      subentityindex[8][2][1][3]=3;
       //
 
       //position of faces and edges
@@ -1035,24 +1039,25 @@ namespace Dune
         pos[3][1][j]=(pos[0][3][j]+pos[2][3][j]+pos[3][3][j]+pos[5][3][j])/4.0;
         //face 4 (nodes 3,4,5)
         pos[4][1][j]=(pos[3][3][j]+pos[4][3][j]+pos[5][3][j])/3.0;
+
         //edge 0 (nodes 0,1)
         pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
-        //edge 1 (nodes 0,2)
-        pos[1][2][j]=(pos[0][3][j]+pos[2][3][j])/2.0;
-        //edge 2 (nodes 1,2)
-        pos[2][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+        //edge 1 (nodes 1,2)
+        pos[1][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+        //edge 2 (nodes 2,0)
+        pos[2][2][j]=(pos[2][3][j]+pos[0][3][j])/2.0;
         //edge 3 (nodes 0,3)
         pos[3][2][j]=(pos[0][3][j]+pos[3][3][j])/2.0;
         //edge 4 (nodes 1,4)
         pos[4][2][j]=(pos[1][3][j]+pos[4][3][j])/2.0;
-        //edge 5 (nodes 3,4)
-        pos[5][2][j]=(pos[3][3][j]+pos[4][3][j])/2.0;
-        //edge 6 (nodes 2,5)
-        pos[6][2][j]=(pos[2][3][j]+pos[5][3][j])/2.0;
+        //edge 5 (nodes 2,5)
+        pos[5][2][j]=(pos[2][3][j]+pos[5][3][j])/2.0;
+        //edge 6 (nodes 3,4)
+        pos[6][2][j]=(pos[3][3][j]+pos[4][3][j])/2.0;
         //edge 7 (nodes 4,5)
         pos[7][2][j]=(pos[4][3][j]+pos[5][3][j])/2.0;
-        //edge 8 (nodes 3,5)
-        pos[8][2][j]=(pos[3][3][j]+pos[5][3][j])/2.0;
+        //edge 8 (nodes 5,3)
+        pos[8][2][j]=(pos[5][3][j]+pos[3][3][j])/2.0;
 
       }
 
@@ -1186,7 +1191,6 @@ namespace Dune
       subsizes[0][0][2]=8;
       subsizes[0][0][1]=5;
 
-      // there are two kind of faces on pyramid (triangular and rectangular)
       // face indices according to that given in
       //http://hal.iwr.uni-heidelberg.de/dune/doc/appl/refelements.html
 
@@ -1256,8 +1260,9 @@ namespace Dune
           pos[sizes[0]-1][0][k]+=(pos[j][3][k])/(sizes[3]);
       }
 
+      // subentity indices - in agreement with UG description
+      // see ug-cvs/gm/elements.c
 
-      // subentity indices
       // node indices on element
       for(int i=0; i<subsizes[0][0][3]; ++i)
         subentityindex[0][0][i][3]=i;
@@ -1267,66 +1272,63 @@ namespace Dune
       // face indices on element
       for(int i=0; i<subsizes[0][0][1]; ++i)
         subentityindex[0][0][i][1]=i;
+
       // node indices on face 0
-      for(int i=0; i<subsizes[0][1][3]; ++i)
-        subentityindex[0][1][i][3]=i;
+      subentityindex[0][1][0][3]=0;
+      subentityindex[0][1][1][3]=3;
+      subentityindex[0][1][2][3]=2;
+      subentityindex[0][1][3][3]=1;
       // node indices on face 1
       subentityindex[1][1][0][3]=0;
       subentityindex[1][1][1][3]=1;
       subentityindex[1][1][2][3]=4;
-
       // node indices on face 2
       subentityindex[2][1][0][3]=1;
       subentityindex[2][1][1][3]=2;
       subentityindex[2][1][2][3]=4;
-
       // node indices on face 3
       subentityindex[3][1][0][3]=2;
       subentityindex[3][1][1][3]=3;
       subentityindex[3][1][2][3]=4;
-
       // node indices on face 4
       subentityindex[4][1][0][3]=3;
       subentityindex[4][1][1][3]=0;
       subentityindex[4][1][2][3]=4;
 
       // edge indices on face 0
-      subentityindex[0][1][0][2]=0;
-      subentityindex[0][1][1][2]=1;
-      subentityindex[0][1][2][2]=2;
-      subentityindex[0][1][3][2]=3;
+      subentityindex[0][1][0][2]=3;
+      subentityindex[0][1][1][2]=2;
+      subentityindex[0][1][2][2]=1;
+      subentityindex[0][1][3][2]=0;
       // edge indices on face 1
       subentityindex[1][1][0][2]=0;
-      subentityindex[1][1][1][2]=4;
-      subentityindex[1][1][2][2]=5;
-
+      subentityindex[1][1][1][2]=5;
+      subentityindex[1][1][2][2]=4;
       // edge indices on face 2
-      subentityindex[2][1][0][2]=2;
-      subentityindex[2][1][1][2]=5;
-      subentityindex[2][1][2][2]=6;
-
+      subentityindex[2][1][0][2]=1;
+      subentityindex[2][1][1][2]=6;
+      subentityindex[2][1][2][2]=5;
       // edge indices on face 3
-      subentityindex[3][1][0][2]=3;
-      subentityindex[3][1][1][2]=6;
-      subentityindex[3][1][2][2]=7;
-
+      subentityindex[3][1][0][2]=2;
+      subentityindex[3][1][1][2]=7;
+      subentityindex[3][1][2][2]=6;
       // edge indices on face 4
-      subentityindex[4][1][0][2]=1;
-      subentityindex[4][1][1][2]=7;
-      subentityindex[4][1][2][2]=4;
+      subentityindex[4][1][0][2]=3;
+      subentityindex[4][1][1][2]=4;
+      subentityindex[4][1][2][2]=7;
 
       // node indices on edge 0
       subentityindex[0][2][0][3]=0;
       subentityindex[0][2][1][3]=1;
       // node indices on edge 1
-      subentityindex[1][2][0][3]=0;
-      subentityindex[1][2][1][3]=3;
+      subentityindex[1][2][0][3]=1;
+      subentityindex[1][2][1][3]=2;
       // node indices on edge 2
-      subentityindex[2][2][0][3]=1;
-      subentityindex[2][2][1][3]=2;
+      subentityindex[2][2][0][3]=2;
+      subentityindex[2][2][1][3]=3;
       // node indices on edge 3
       subentityindex[3][2][0][3]=3;
-      subentityindex[3][2][1][3]=2;
+      subentityindex[3][2][1][3]=0;
       // node indices on edge 4
       subentityindex[4][2][0][3]=0;
       subentityindex[4][2][1][3]=4;
@@ -1357,12 +1359,12 @@ namespace Dune
 
         //edge 0 (nodes 0,1)
         pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
-        //edge 1 (nodes 0,3)
-        pos[1][2][j]=(pos[0][3][j]+pos[3][3][j])/2.0;
-        //edge 2 (nodes 1,2)
-        pos[2][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
-        //edge 3 (nodes 2,3)
-        pos[3][2][j]=(pos[2][3][j]+pos[3][3][j])/2.0;
+        //edge 1 (nodes 1,2)
+        pos[1][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+        //edge 2 (nodes 2,3)
+        pos[2][2][j]=(pos[2][3][j]+pos[3][3][j])/2.0;
+        //edge 3 (nodes 3,0)
+        pos[3][2][j]=(pos[3][3][j]+pos[0][3][j])/2.0;
         //edge 4 (nodes 0,4)
         pos[4][2][j]=(pos[0][3][j]+pos[4][3][j])/2.0;
         //edge 5 (nodes 1,4)
