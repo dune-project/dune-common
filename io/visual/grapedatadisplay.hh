@@ -29,7 +29,7 @@ namespace Dune
 
   public:
 
-    typedef typename GridType::Traits::template codim<0>::LevelIterator LevelIterator;
+    typedef typename GridType::Traits::template Codim<0>::LevelIterator LevelIterator;
     typedef DiscFuncType DiscreteFunctionType;
 
   public:
