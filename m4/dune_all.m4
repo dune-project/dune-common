@@ -53,7 +53,7 @@ dnl check all components
   AC_REQUIRE([DUNE_PATH_AMIRAMESH])
   AC_REQUIRE([DUNE_MPI])
   AC_REQUIRE([DUNE_PATH_PARMETIS])
-  AC_REQUIRE([DUNE_PATH_ALU3DGRID])
+  AC_REQUIRE([DUNE_PATH_ALUGRID])
 
   if test x$HAVE_DUNE != x1 ; then
     AC_MSG_ERROR([Can't work without the DUNE-library. Maybe you have to supply your DUNE-directory as --with-dune=dir])
@@ -75,7 +75,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "-----------------------------"
   echo  
   echo "Alberta..........: $with_alberta"
-  echo "ALU3d-Grid.......: $with_alu3dgrid"
+  echo "ALUGrid..........: $with_alugrid"
   echo "AmiraMesh........: $with_amiramesh"
   echo "BLAS-lib.........: $with_blas"
   echo "Grape............: $with_grape"
