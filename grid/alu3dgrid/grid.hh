@@ -62,7 +62,7 @@ namespace Dune {
      \brief [<em> provides \ref Dune::Grid </em>]
      \brief 3D grid with support for hexahedrons and tetrahedrons.
      @ingroup GridInterface
-     The ALUGrid implements the Dune GridInterface for 3d tetrahedral
+     The ALU3dGrid implements the Dune GridInterface for 3d tetrahedral
      meshes. This grid can be locally adapted and used in parallel
      computations using dynamcic load balancing.
 
