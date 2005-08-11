@@ -73,6 +73,8 @@ namespace Dune
       he->eindex = en.globalIndex();
       he->level  = en.level();
 
+      //std::cout << en.globalIndex() << "\n";
+
       // if not true, only the macro level is drawn
       he->has_children = 1;
 
@@ -333,9 +335,8 @@ namespace Dune
   // check inside
   template<class GridType>
   inline int GrapeGridDisplay<GridType>::
-  check_inside(DUNE_ELEM * he, const double * w)
+  checkWhetherInside(DUNE_ELEM * he, const double * w)
   {
-    MyDisplayType * disp = (MyDisplayType *) he->display;
     void *iter = he->actElement;
     if(iter == he->liter)
     {
@@ -343,20 +344,20 @@ namespace Dune
       {
         typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
-        return disp[0].checkInside(*(it[0]),w);
+        return checkInside(*(it[0]),w);
       }
       else
       {
         typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
-        return disp[0].checkInside(*(it[0]),w);
+        return checkInside(*(it[0]),w);
       }
     }
     else if(iter == he->hiter)
     {
       typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
-      return disp[0].checkInside(*(it[0]),w);
+      return checkInside(*(it[0]),w);
     }
     else
     {
@@ -388,9 +389,8 @@ namespace Dune
 
   template<class GridType>
   inline void GrapeGridDisplay<GridType>::
-  ctow (DUNE_ELEM * he, const double * c, double * w)
+  local2world (DUNE_ELEM * he, const double * c, double * w)
   {
-    MyDisplayType * disp = (MyDisplayType *) he->display;
     void *iter = he->actElement;
     if(iter == he->liter)
     {
@@ -398,14 +398,14 @@ namespace Dune
       {
         typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
-        disp[0].local_to_world(*(it[0]),c,w);
+        local_to_world(*(it[0]),c,w);
         return;
       }
       else
       {
         typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
-        disp[0].local_to_world(*(it[0]),c,w);
+        local_to_world(*(it[0]),c,w);
         return;
       }
     }
@@ -413,7 +413,7 @@ namespace Dune
     {
       typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
-      disp[0].local_to_world(*(it[0]),c,w);
+      local_to_world(*(it[0]),c,w);
       return;
     }
     else
@@ -441,13 +441,11 @@ namespace Dune
 
     return (en.geometry().checkInside(localVec_) == true) ? -1 : 0;
   }
-
   // world to local
   template<class GridType>
   inline int GrapeGridDisplay<GridType>::
-  wtoc(DUNE_ELEM * he, const double * w, double * c)
+  world2local(DUNE_ELEM * he, const double * w, double * c)
   {
-    MyDisplayType * disp = (MyDisplayType *) he->display;
     void *iter = he->actElement;
     if(iter == he->liter)
     {
@@ -455,20 +453,20 @@ namespace Dune
       {
         typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
-        return disp[0].world_to_local(*(it[0]),w,c);
+        return world_to_local(*(it[0]),w,c);
       }
       else
       {
         typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
-        return disp[0].world_to_local(*(it[0]),w,c);
+        return world_to_local(*(it[0]),w,c);
       }
     }
     else if(iter == he->hiter)
     {
       typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
-      return disp[0].world_to_local(*(it[0]),w,c);
+      return world_to_local(*(it[0]),w,c);
     }
     else
     {
@@ -476,6 +474,33 @@ namespace Dune
       abort();
       return 0;
     }
+  }
+
+  // check inside
+  template<class GridType>
+  inline int GrapeGridDisplay<GridType>::
+  check_inside(DUNE_ELEM * he, const double * w)
+  {
+    MyDisplayType * disp = (MyDisplayType *) he->display;
+    return disp[0].checkWhetherInside(he,w);
+  }
+  // local to world
+  template<class GridType>
+  inline void GrapeGridDisplay<GridType>::
+  ctow (DUNE_ELEM * he, const double * c, double * w)
+  {
+    MyDisplayType * disp = (MyDisplayType *) he->display;
+    disp[0].local2world(he,c,w);
+    return ;
+  }
+
+  // world to local
+  template<class GridType>
+  inline int GrapeGridDisplay<GridType>::
+  wtoc(DUNE_ELEM * he, const double * w, double * c)
+  {
+    MyDisplayType * disp = (MyDisplayType *) he->display;
+    return disp[0].world2local(he,w,c);
   }
 
   template<class GridType>
