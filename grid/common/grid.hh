@@ -170,6 +170,9 @@ namespace Dune {
   // G R I D
   //************************************************************************
 
+  //! Grid interface class
+  //! This class should actually be called GridInterface since it defines the
+  //! basic interface for all grid classes
   template< int dim, int dimworld, class ct, class GridImp>
   class Grid {
   public:
