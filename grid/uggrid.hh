@@ -105,12 +105,14 @@ namespace Dune {
      This is the implementation of the grid interface
      using the UG grid management system.  UG provides conforming grids
      in two and three space dimensions.  The grids can be mixed, i.e.
-     2d grids can contain triangles and quadrilaterals and 3d grid can
+     2d grids can contain triangles and quadrilaterals and 3d grids can
      contain tetrahedra and hexahedra and also pyramids and prisms.
      The grid refinement rules are very flexible.  Local adaptive red/green
      refinement is the default, but a special method in the UGGrid class
      allows you to directly access a number of anisotropic refinements rules.
-     Last but not least, the UG grid manager is completely parallelized.
+     Last but not least, the UG grid manager is completely parallelized,
+     and you can use boundaries parametrized by either analytical expressions
+     or high-resolution piecewise linear surfaces.
 
      To use this module you need the UG library.  You can obtain it at
      http://cox.iwr.uni-heidelberg.de/~ug .  Unfortunately, the version
@@ -122,12 +124,12 @@ namespace Dune {
      UG is built using the standard GNU autotools.  After unpacking
      the tarball, please type
      \verbatim
-      ./configure --prefix=my_ug_install_dir CC=g++-3.4
+      ./configure --prefix=my_ug_install_dir --enable-dune CC=g++
      \endverbatim
      Note that you need to force the build system to compile UG
-     as C++, which is a non-default behaviour.  Also, make sure
-     that you're compiling it with a compiler that's binary compatible
-     to the one you use for DUNE.
+     as C++, which is a non-default behaviour.  If you want to use
+     UGGrid to work in parallel on a multi-processor machine add
+     the option --enable-parallel.
 
      After that it's simply
      \verbatim
@@ -136,21 +138,16 @@ namespace Dune {
      \endverbatim
      and you're done.
 
-     After compiling UG you must tell %Dune where to find UG, and which
-     grid dimension to use:
+     After compiling UG you must tell %Dune where to find UG:
      \verbatim
-     ./autogen.sh [OPTIONS] --with-ug=PATH_TO_UG --with-problem-dim=DIM --with-world-dim=DIMWORLD
+     ./configure [OPTIONS] --with-ug=PATH_TO_UG
      \endverbatim
+     configures the %Dune library to include the UGGrid implementation.
 
-     As UG only supports 2d-grids in a 2d-world and 3d-grids in a 3d-world,
-     whatever you choose for DIM and DIMWORLD in the line above must be equal
-     and either 2 or 3.  The two dimension-related arguments must both be
-     there because they actually refer to all external grid implementations
-     that may require it, and there are some that do not necessarily pose
-     restrictions as strict as UG does.
-
-     In your DUNE application, you can only instantiate UGGrid<2,2> or
-     UGGrid<3,3>, depending on what you chose above.
+     In your %Dune application, you can now instantiate objects of the
+     type UGGrid<2,2> or UGGrid<3,3>.  You can have more than one, if
+     you choose.  We don't really know yet what happens if you mix
+     2d and 3d, though.
 
      Please send any questions, suggestions, or bug reports to
      sander@math.fu-berlin.de
