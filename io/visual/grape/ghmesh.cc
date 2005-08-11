@@ -519,6 +519,15 @@ inline void f_real(HELEMENT *el, int ind, double G_CONST *coord,
   return;
 }
 
+/* function displaying the level of the element */
+inline void f_level(HELEMENT *el, int ind, double G_CONST *coord,
+                    double *val, void *function_data)
+{
+  assert(el);
+  val[0] = (double) el->level;
+  return;
+}
+
 /***************************************************************************/
 inline void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
 {
@@ -591,6 +600,72 @@ inline void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
   return;
 }
 
+/***************************************************************************/
+/* generates the function to display the level of an element */
+inline void grapeAddLevelFunction(GRAPEMESH *grape_mesh)
+{
+  F_DATA *f_data = NULL;
+  char * name = NULL;
+
+  if (!grape_mesh)
+  {
+    fprintf(stderr,"ERROR: no grape_mesh in grapeInitScalarData! file = %s, line = %d \n",__FILE__,__LINE__);
+    exit(1);
+    return;
+  }
+
+  DUNE_FUNC *dfunc = (DUNE_FUNC *) malloc(sizeof(DUNE_FUNC));
+  assert( dfunc );
+
+  dfunc->all = NULL;
+  dfunc->func_real = NULL;
+
+  if (!f_data)
+  {
+    f_data = (F_DATA *) malloc(sizeof(F_DATA));
+    assert( f_data != NULL );
+
+    f_data->next = NULL;
+    f_data->last = NULL;
+
+    /* little hack to cover a grape bug */
+    name = (char *) malloc(10*sizeof(char));
+    assert (name);
+    sprintf(name,"level");
+    dfunc->name = name;
+
+    printf("generate data for discrete function '%s'!\n",name);
+
+    f_data->name = name;
+    f_data->dimension_of_value = 1;
+    f_data->continuous_data    = 0;
+
+    f_data->f                   = f_level;
+    f_data->f_el_info           = f_real_el_info;
+
+    f_data->function_data = (void *) dfunc;
+
+    f_data->get_bounds      = f_bounds;
+    f_data->get_vertex_estimate   = grape_get_vertex_estimate;
+    f_data->get_element_estimate  = grape_get_element_estimate;
+    f_data->threshold     = 0.0;
+#if GRAPE_DIM == 3
+    f_data->geometry_threshold     = 0.0;
+#endif
+    f_data->hp_threshold    = 0.0;
+    f_data->hp_maxlevel     = grape_mesh->max_level;
+
+    grape_mesh = (GRAPEMESH *) GRAPE(grape_mesh,"add-function") (f_data);
+  }
+  else if (grape_mesh->f_data != (GENMESH_FDATA *)f_data)
+  {
+    printf("select f_data for \n");
+    grape_mesh->f_data = (GENMESH_FDATA *)f_data;
+  }
+
+  return;
+}
+
 
 /*****************************************************************************
 ******************************************************************************
@@ -649,6 +724,7 @@ inline HMESH * get_partition_number (int * partition)
   DUNE_DAT * dunedata = (DUNE_DAT *) hmesh->user_data;
   assert(dunedata != 0);
   *partition = dunedata->partition;
+
   END_METHOD(hmesh);
 }
 
@@ -733,6 +809,8 @@ inline void * hmesh(int (* const f_leaf) (DUNE_ELEM *), int (* const n_leaf) (DU
   mesh->set_time = NULL;
   mesh->get_time = NULL;
   mesh->f_data   = NULL;
+
+  grapeAddLevelFunction(mesh);
 
   if(fe)
   {
