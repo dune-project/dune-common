@@ -51,6 +51,9 @@ namespace Dune
       GrapeInterface_two_two::grape_add_remove_methods();
     }
 
+    inline static void setThread(int t)
+    {}
+
     inline static void handleMesh (void *hmesh)
     {
       GrapeInterface_two_two::handleMesh(hmesh);
@@ -135,6 +138,11 @@ namespace Dune
       GrapeInterface_three_three::grape_add_remove_methods();
       //if((!leafButton) || (!maxlevelButton))
       //GrapeInterface_two_two::setupLeafButton(mgr,tsc,1);
+    }
+
+    inline static void setThread(int t)
+    {
+      GrapeInterface_three_three::setThread(t);
     }
 
     inline static void handleMesh (void *hmesh)

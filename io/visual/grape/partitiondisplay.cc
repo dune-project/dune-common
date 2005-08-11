@@ -139,6 +139,10 @@ inline static void get_graphicdevice()
   text         = dev->text;
 }
 
+static void setThread( int t )
+{
+  thread = t;
+}
 
 inline void initColorBarDisp()
 {
