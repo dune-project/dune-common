@@ -6,6 +6,7 @@
 //- System includes
 
 //- Dune includes
+#include <dune/common/stdstreams.hh>
 
 //- Local includes
 #include "alu3dinclude.hh"
@@ -47,7 +48,7 @@ namespace Dune {
     {
       assert(cd == dim);
       const ALU3dGridEntity<0,dim,const GridType> & en = (grid_.template getRealEntity<0>(ep));
-      return en.template getSubIndex<cd>(i);
+      return en.template subIndex<cd>(i);
     }
 
     //! return size of indexset, i.e. maxindex+1
@@ -101,7 +102,7 @@ namespace Dune {
     {
       assert( cd == dim );
       assert( hset_.size(cd) < codimMultiplier );
-      return codimStart_[cd] + hset_.subIndex(ep,i);
+      return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
     }
 
   private:
@@ -150,7 +151,7 @@ namespace Dune {
     {
       assert( cd == dim );
       assert( hset_.size(cd) < codimMultiplier );
-      return codimStart_[cd] + hset_.subIndex(ep,i);
+      return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
     }
 
   private:
