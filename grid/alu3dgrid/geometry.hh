@@ -65,9 +65,9 @@ namespace Dune {
     //! build geometry out of different ALU3dGrid Geometrys
     //! ItemType are HElementType, HFaceType, HEdgeType and VertexType
     template <class ItemType>
-    bool buildGeom(const ItemType & item)
+    bool buildGeom(const ItemType & item, int twist = 0)
     {
-      return this->realGeometry.buildGeom(item);
+      return this->realGeometry.buildGeom(item, twist);
     }
 
     bool buildGeom(const ALU3DSPACE HFaceType& item, int twist) {
@@ -159,9 +159,8 @@ namespace Dune {
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry for out of given ALU3dGridElement
-    bool buildGeom(const IMPLElementType & item);
+    bool buildGeom(const IMPLElementType & item, int twist);
     bool buildGeom(const ALU3DSPACE HFaceType & item, int twist);
-    //bool buildGeom(int twist, int faceIdx);
     bool buildGeom(const FaceCoordinatesType& coords);
     bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist);
     bool buildGeom(const ALU3DSPACE VertexType & item, int twist);
@@ -267,7 +266,7 @@ namespace Dune {
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry out of a given ALU3dGridElement
-    bool buildGeom(const IMPLElementType & item);
+    bool buildGeom(const IMPLElementType & item, int twist);
     bool buildGeom(const ALU3DSPACE HFaceType & item, int twist);
     bool buildGeom(const FaceCoordinatesType& coords);
     bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist);

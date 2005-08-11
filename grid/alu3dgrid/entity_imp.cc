@@ -446,6 +446,7 @@ namespace Dune {
   template<int cc>
   inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
   {
+    assert(false); // this method is to be removed soon
 
     assert(cc == dim);
     assert(item_ != 0);
@@ -493,6 +494,48 @@ namespace Dune {
     }
   };
 
+  // * Unfinished piece of work: to make entity<2> work, one needs to do the
+  // following:
+  // 1. Implement direct access to the edges on the ALUGrid side
+  //    (like item->myvertex(i) one needs item->myhedge1(i))
+  // 2. Implement a transformation from the Dune edge index to the
+  //    corresponding ALU edge index
+  // 3. Implement calculateTwist (by comparing pointers of the adjacent
+  //    vertices obtained once through item->myhedge1 and the corresponding
+  //    item->myvertex as specified by the reference element
+  /*
+     template <class GridImp, int dim>
+     struct SubEntites<GridImp, dim, 2>
+     {
+     typedef typename ALU3dGridEntity<0, dim, GridImp>::template Codim<2>::EntitypPointer ReturnType;
+     typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType ALUElementType;
+     typedef typename SelectType<GridImp::elementType == tetra,
+                                ReferenceSimplex<double, 3>,
+                                ReferenceCube<double, 3> >::Type ReferenceElementType;
+
+     static ReturnType entity(const GridImp& grid,
+                             const ALUElememtType& item,
+                             int i) {
+      assert(false);
+      int ALUIndex = ElementTopo::dune2aluEdge(i);
+      int twist = calculateTwist();
+
+      return ReturnType(grid,
+                       iitem->myhedge1(ALUIndex)),
+                        twist);
+     }
+
+     private:
+     static std::pair<int, int> findEdge() { return std::make_pair(0,0); }
+     static int calculateTwist() { return 0; }
+
+     static ReferenceElementType refElem_;
+     }
+
+     template <class GridImp, int dim>
+     typename SubEntities<GridImp, dim, 2>::ReferenceElementType
+     SubEntities<GridImp, dim, 2>::refElem_;
+   */
   // specialisation for edges
   template <class GridImp, int dim>
   struct SubEntities<GridImp,dim,2>

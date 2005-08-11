@@ -33,12 +33,6 @@ namespace Dune {
   template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
 
-  // helper structs from entity_imp.cc
-  //template <class GridImp, int dim, int cd>
-  //struct SubEntities;
-  //template <class IMPLElemType, ALU3dGridElementType type, int codim>
-  //struct IndexWrapper;
-
   //**********************************************************************
   //
   // --ALU3dGridEntity
