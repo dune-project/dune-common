@@ -446,7 +446,7 @@ namespace Dune {
   template<int cc>
   inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
   {
-    assert(false); // this method is to be removed soon
+    //assert(false); // this method is to be removed soon
 
     assert(cc == dim);
     assert(item_ != 0);

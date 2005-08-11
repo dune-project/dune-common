@@ -719,13 +719,9 @@ namespace Dune {
     myGrid().duneRestore(filename.c_str());
 
     {
-      typedef std::ostringstream StreamType;
-      StreamType eName;
-
-      eName << filename;
-      eName << ".extra";
-      const char * extraName = eName.str().c_str();
-      std::ifstream in (extraName);
+      std::string extraName (filename);
+      extraName += ".extra";
+      std::ifstream in (extraName.c_str());
       if(in)
       {
         in.precision (16);
