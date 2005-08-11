@@ -43,8 +43,14 @@ namespace Dune
     //! if discretefunction is NULL, then only the grid is displayed
     inline void dataDisplay(DiscFuncType &func);
 
-    //!
+    //! add discrete function to display
     inline void addData(DiscFuncType &func, const char * name , double time );
+
+    // retrun whether we have data or not
+    bool hasData () { return vecFdata_.size() > 0; }
+
+    // return vector for copying in combined display
+    std::vector < DUNE_FDATA * > & getFdataVec () { return vecFdata_; }
 
   private:
     inline void createQuadrature();
@@ -79,10 +85,12 @@ namespace Dune
     template <class EntityType, class LocalFuncType>
     inline void evalVector (EntityType &en, DiscFuncType & func,LocalFuncType &lf,
                             int comp , int localNum, double * val);
-
+  public:
     inline void evalCoord (DUNE_ELEM *he, DUNE_FDATA *df,
                            const double *coord, double * val);
     inline void evalDof (DUNE_ELEM *he, DUNE_FDATA *df, int localNum, double * val);
+
+  protected:
 
     inline static void func_real (DUNE_ELEM *he , DUNE_FDATA * fe,int ind,
                                   const double *coord, double *val);

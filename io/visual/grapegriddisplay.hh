@@ -19,6 +19,8 @@ namespace Dune
     typedef typename GrapeInterface<dim,dimworld>::DUNE_ELEM DUNE_ELEM;
 
   public:
+    typedef GridType MyGridType;
+
     typedef typename GridType::Traits::template Codim<0>::LevelIterator LevelIteratorType ;
     typedef typename GridType::Traits::template Codim<0>::LeafIterator LeafIteratorType ;
     //typedef typename GridType::template LeafIteratorDef<Interior_Partition>::LeafIteratorType LeafIteratorType ;
@@ -58,6 +60,9 @@ namespace Dune
     //! if discretefunction is NULL, then only the grid is displayed
     inline void display();
 
+    //! return rank of this display, for visualisation of parallel grid
+    int myRank () const { return myRank_; }
+
     //! return pointer to Grape Hmesh
     inline void * getHmesh();
 
@@ -65,6 +70,8 @@ namespace Dune
 
     //! return reference to Dune Grid
     inline GridType& getGrid();
+
+    bool hasData () { return false; }
 
     // internal vec for local to global methods
     FieldVector<double,dimworld> globalVec_;
@@ -74,7 +81,7 @@ namespace Dune
     // generate hmesh
     inline void * setupHmesh();
 
-  protected:
+  public:
     //****************************************************************
     //
     // --GrapeGridDisplay, Some Subroutines needed for display with GRAPE
@@ -104,6 +111,15 @@ namespace Dune
     inline static int next_child (DUNE_ELEM * he) ;
 
     inline static void * copy_iterator (const void * i) ;
+
+    // local to world
+    inline void local2world (DUNE_ELEM * he, const double * c, double * w);
+
+    // world to local
+    inline int world2local (DUNE_ELEM * he, const double * w, double * c);
+
+    // check inside reference element
+    inline int checkWhetherInside (DUNE_ELEM * he, const double * w);
 
     // local to world
     inline static void ctow (DUNE_ELEM * he, const double * c, double * w);
