@@ -11,9 +11,12 @@ namespace Dune
 
   template<class GridType>
   inline GrapeGridDisplay<GridType>::
-  GrapeGridDisplay(GridType &grid, const int myrank ) : grid_(grid) , myRank_(myrank) ,
-                                                        myIt_(0), myEndIt_ (0) , myLeafIt_(0) , myLeafEndIt_ (0) ,
-                                                        hmesh_ (0)
+  GrapeGridDisplay(GridType &grid, const int myrank ) :
+    grid_(grid)
+    , leafset_(grid.leafIndexSet())
+    , myRank_(myrank)
+    , myIt_(0), myEndIt_ (0) , myLeafIt_(0) , myLeafEndIt_ (0) ,
+    hmesh_ (0)
   {
     GrapeInterface<dim,dimworld>::init();
     if(!hmesh_) hmesh_ = setupHmesh();
@@ -21,9 +24,12 @@ namespace Dune
 
   template<class GridType>
   inline GrapeGridDisplay<GridType>::
-  GrapeGridDisplay(GridType &grid ) : grid_(grid) , myRank_(-1) ,
-                                      myIt_(0), myEndIt_ (0) , myLeafIt_(0) , myLeafEndIt_ (0) ,
-                                      hmesh_ (0)
+  GrapeGridDisplay(GridType &grid ) :
+    grid_(grid)
+    , leafset_(grid.leafIndexSet())
+    , myRank_(-1) ,
+    myIt_(0), myEndIt_ (0) , myLeafIt_(0) , myLeafEndIt_ (0) ,
+    hmesh_ (0)
   {
     GrapeInterface<dim,dimworld>::init();
     if(!hmesh_) hmesh_ = setupHmesh();
@@ -69,11 +75,10 @@ namespace Dune
     {
       const DuneElement &geometry = en.geometry();
 
-      //he->eindex = en.index();
-      he->eindex = en.globalIndex();
+      he->eindex = leafset_.index(en);
       he->level  = en.level();
 
-      //std::cout << en.globalIndex() << "\n";
+      //std::cout << he->eindex << "\n";
 
       // if not true, only the macro level is drawn
       he->has_children = 1;
@@ -93,9 +98,9 @@ namespace Dune
         }
       } // end set all vertex coordinates
 
-      for(int i = 0; i< en.template count<DIM>(); i++)
+      for(int i = 0; i< en.template count<dim>(); i++)
       {
-        he->vindex[i] = en.template subIndex<DIM>(i);
+        he->vindex[i] = leafset_. template subIndex<dim> (en,i);
       }
 
       {
@@ -543,6 +548,23 @@ namespace Dune
   }
 
   template<class GridType>
+  inline int GrapeGridDisplay<GridType>::
+  fst_child (DUNE_ELEM * he)
+  {
+    MyDisplayType * disp = (MyDisplayType *) he->display;
+    return disp[0].first_child(he);
+  }
+
+
+  template<class GridType>
+  inline int GrapeGridDisplay<GridType>::
+  nxt_child (DUNE_ELEM * he)
+  {
+    MyDisplayType * disp = (MyDisplayType *) he->display;
+    return disp[0].next_child(he);
+  }
+
+  template<class GridType>
   inline void GrapeGridDisplay<GridType>::display()
   {
     /* call handle mesh in g_hmesh.c */
@@ -573,8 +595,8 @@ namespace Dune
   template<class GridType>
   inline void * GrapeGridDisplay<GridType>::setupHmesh()
   {
-    int noe, nov;
-    int maxlevel;
+    int noe = 0, nov = 0;
+    int maxlevel = 0;
 
     // default set all coordinates to zero
     for(int i=0; i<MAX_EL_DOF; i++)
@@ -591,7 +613,7 @@ namespace Dune
     hel_.actElement = NULL;
 
     /* return hmesh with no data */
-    return GrapeInterface<dim,dimworld>::hmesh(fst_leaf,nxt_leaf,first_mac,next_mac,first_child,next_child,
+    return GrapeInterface<dim,dimworld>::hmesh(fst_leaf,nxt_leaf,first_mac,next_mac,fst_child,nxt_child,
                                                NULL,check_inside,wtoc,ctow,NULL,noe,nov,maxlevel,myRank_,&hel_,NULL);
 
   }
