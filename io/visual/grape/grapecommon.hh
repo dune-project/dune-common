@@ -8,6 +8,8 @@ static BUTTON * leafButton=0;
 /* global variables for maxlevel use */
 static BUTTON * maxlevelButton=0;
 
+static TIMESCENE * globalTsc = 0;
+
 /* info about data on one mesh */
 typedef struct datainfo DATAINFO;
 struct datainfo

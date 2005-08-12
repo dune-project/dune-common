@@ -93,6 +93,7 @@ extern void addDataToHmesh(void  *hmesh, DUNE_FDATA * fe,
                            void (* const func_real) (DUNE_ELEM *, DUNE_FDATA*, int ind, const double *, double *)  );
 /* setup TimeScene Tree  */
 extern void addHmeshToTimeScene(void * timescene, double time, void  *hmesh , int proc);
+extern void addHmeshToGlobalTimeScene(double time, void  *hmesh , int proc);
 extern void tsc_timebar(void *timescene, double t_start, double t_end);
 
 #endif

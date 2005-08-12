@@ -41,7 +41,6 @@ inline void setupLeafButton(MANAGER *mgr, void *sc, int yesTimeScene)
   maxlevelButton->on_off = OFF;
 }
 
-
 inline void timeSceneInit(INFO *info, int n_info, int procs, int time_bar)
 {
   int n,p;
@@ -50,7 +49,6 @@ inline void timeSceneInit(INFO *info, int n_info, int procs, int time_bar)
   Dune :: __MaxPartition = numProcs;
 
   printf("Warning: set proc to 1\n");
-  numProcs = 1;
 
   for (n = 0; n < MAXIMUM(1, n_info); n++)
   {
@@ -63,26 +61,71 @@ inline void timeSceneInit(INFO *info, int n_info, int procs, int time_bar)
 
   for (n = 0; n < MAXIMUM(1, n_info); n++)
   {
-    TIMESCENE * tsc = (TIMESCENE *) info[n].tsc;
-    // > 0 because tsc for proc 0 already exists
-    for (p = numProcs-1; p > 0; p--)
     {
-      TIMESCENE * newSc = NULL;
-      printf("add timescene for proc %d \n",p);
-      assert(tsc);
-      char * newName = (char *) malloc(strlen(info[n].name) + 5 * sizeof(char));
-      assert(newName);
-      sprintf(newName,"%s_%d",info[n].name,p);
-      newSc = (TIMESCENE *)GRAPE(TimeScene,"new-instance") (newName);
-      assert(newSc);
+      TIMESCENE * tsc = (TIMESCENE *) info[n].tsc;
+      // > 0 because tsc for proc 0 already exists
+      for (p = numProcs-1; p > 0; p--)
+      {
+        TIMESCENE * newSc = NULL;
+        printf("add timescene for proc %d \n",p);
+        assert(tsc);
+        char * newName = (char *) malloc(strlen(info[n].name) + 5 * sizeof(char));
+        assert(newName);
+        sprintf(newName,"%s_%d",info[n].name,p);
+        newSc = (TIMESCENE *)GRAPE(TimeScene,"new-instance") (newName);
+        assert(newSc);
 
-      newSc->sync = 1;
-      newSc->next_scene = tsc->next_scene;
-      tsc->next_scene = (SCENE *) newSc;
+        newSc->sync = 1;
+        newSc->next_scene = tsc->next_scene;
+        tsc->next_scene = (SCENE *) newSc;
+      }
     }
+
   }
 
+  {
+    TIMESCENE * newSc = NULL;
+    printf("add timescene for proc combined object\n");
+    char * newName = (char *) malloc(12 * sizeof(char));
+    assert(newName);
+    sprintf(newName,"combo obj");
+    newSc = (TIMESCENE *)GRAPE(TimeScene,"new-instance") (newName);
+    assert(newSc);
+
+    newSc->sync = 1;
+    newSc->next_scene = NULL;
+    globalTsc = newSc;
+  }
   return;
+}
+
+/* add scene with combined object at the end of scene tree */
+inline SCENE * combine_scenes_send ()
+{
+  SCENE* sc = (SCENE*) START_METHOD (G_INSTANCE);
+  TIMESCENE * newSc = NULL;
+  MANAGER * mgr = NULL;
+  ALERT( sc, "combine-scenes: No hmesh!", END_METHOD(NULL));
+
+  newSc = (TIMESCENE *) GRAPE(TimeScene,"new-instance") ("combined Scene");
+  assert(newSc);
+
+  while(sc)
+  {
+    if(sc->next_scene)
+      sc = sc->next_scene;
+    else
+      break;
+  }
+
+  mgr = (MANAGER *)GRAPE(Manager,"get-stdmgr") ();
+  assert(mgr);
+  assert(globalTsc);
+
+  sc->next_scene = (SCENE *) globalTsc;
+  GRAPE(mgr, "goto-instance") (globalTsc);
+
+  END_METHOD(sc);
 }
 
 /* call handle for a bunch of timescenes */
@@ -106,6 +149,10 @@ inline void displayTimeScene(INFO * info, int numberOfProcs )
     GrapeInterface_three_three::grape_add_remove_methods();
     GrapeInterface_three_three::initPartitionDisp(numberOfProcs-1);
 
+    /* add combine methods to send method of Scene and TimeScene */
+    GRAPE(Scene,"add-method") ("combine-secnes-send",combine_scenes_send);
+    GRAPE(TimeScene,"add-method") ("combine-secnes-send",combine_scenes_send);
+
     mgr = (MANAGER *)GRAPE(Manager,"get-stdmgr") ();
 
     if((!leafButton) || (!maxlevelButton))
@@ -114,6 +161,7 @@ inline void displayTimeScene(INFO * info, int numberOfProcs )
     GRAPE(mgr,"handle") (tsc);
   }
 }
+
 
 #undef MINIMUM
 #undef MAXIMUM

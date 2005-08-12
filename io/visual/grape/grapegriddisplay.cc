@@ -152,8 +152,12 @@ namespace Dune
     int levelOI = he->level_of_interest;
     if(levelOI < 0) levelOI = grid_.maxlevel();
 
-    //myLeafIt_    = new LeafIteratorType ( grid_.leafbegin<Interior_Partition> (levelOI, myRank_) );
-    //myLeafEndIt_ = new LeafIteratorType ( grid_.leafend  <Interior_Partition> (levelOI, myRank_) );
+    //LeafIteratorType it    = grid_.template leafbegin<0,Interior_Partition> (levelOI);
+    //LeafIteratorType endit = grid_.template leafend  <0,Interior_Partition> (levelOI);
+
+    //myLeafIt_    = new LeafIteratorType ( it );
+    //myLeafEndIt_ = new LeafIteratorType ( endit );
+
     myLeafIt_    = new LeafIteratorType ( grid_.leafbegin (levelOI) );
     myLeafEndIt_ = new LeafIteratorType ( grid_.leafend   (levelOI) );
 
@@ -194,6 +198,7 @@ namespace Dune
     // rufe default CopyConstructor auf
     //myIt_ = new LevelIteratorType(grid_.template lbegin<0> (0, myRank_) );
     //myEndIt_ = new LevelIteratorType(grid_.template lend<0>(0, myRank_) );
+
     myIt_ = new LevelIteratorType(grid_.template lbegin<0> (levelOI) );
     myEndIt_ = new LevelIteratorType(grid_.template lend<0>(levelOI) );
 

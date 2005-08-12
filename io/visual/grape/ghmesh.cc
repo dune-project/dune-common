@@ -601,11 +601,15 @@ inline void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
 }
 
 /***************************************************************************/
+/* function info for level display */
+/* the variables are only needed once, therefore static */
+static char * level_name = "level";
+static DUNE_FUNC level_func = {level_name,NULL,NULL};
+
 /* generates the function to display the level of an element */
 inline void grapeAddLevelFunction(GRAPEMESH *grape_mesh)
 {
   F_DATA *f_data = NULL;
-  char * name = NULL;
 
   if (!grape_mesh)
   {
@@ -613,12 +617,6 @@ inline void grapeAddLevelFunction(GRAPEMESH *grape_mesh)
     exit(1);
     return;
   }
-
-  DUNE_FUNC *dfunc = (DUNE_FUNC *) malloc(sizeof(DUNE_FUNC));
-  assert( dfunc );
-
-  dfunc->all = NULL;
-  dfunc->func_real = NULL;
 
   if (!f_data)
   {
@@ -628,22 +626,16 @@ inline void grapeAddLevelFunction(GRAPEMESH *grape_mesh)
     f_data->next = NULL;
     f_data->last = NULL;
 
-    /* little hack to cover a grape bug */
-    name = (char *) malloc(10*sizeof(char));
-    assert (name);
-    sprintf(name,"level");
-    dfunc->name = name;
+    printf("generate data for discrete function '%s'!\n",level_name);
 
-    printf("generate data for discrete function '%s'!\n",name);
-
-    f_data->name = name;
+    f_data->name = level_name;
     f_data->dimension_of_value = 1;
     f_data->continuous_data    = 0;
 
     f_data->f                   = f_level;
     f_data->f_el_info           = f_real_el_info;
 
-    f_data->function_data = (void *) dfunc;
+    f_data->function_data = (void *) &level_func;
 
     f_data->get_bounds      = f_bounds;
     f_data->get_vertex_estimate   = grape_get_vertex_estimate;
@@ -913,6 +905,25 @@ inline void addHmeshToTimeScene(void * timescene, double time, void  *hmesh, int
     tsc = (TIMESCENE *) tsc->next_scene;
   }
   assert(tsc);
+
+  if(tsc->dynamic)
+  {
+    tsc->dynamic = (G_SCENE_OBJECT *)GRAPE(tsc->dynamic,"put") (mesh, mesh, time);
+  }
+  else
+    tsc->dynamic = (G_SCENE_OBJECT *)GRAPE(TimeStep,"put") (mesh, mesh, time);
+
+  return;
+}
+
+/*
+ * setup TimeScene Tree  */
+inline void addHmeshToGlobalTimeScene(double time, void  *hmesh, int proc)
+{
+  TIMESCENE *tsc = globalTsc;
+  GRAPEMESH *mesh = (GRAPEMESH *) hmesh;
+  assert(tsc  != NULL);
+  assert(mesh != NULL);
 
   if(tsc->dynamic)
   {
