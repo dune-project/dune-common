@@ -76,10 +76,13 @@ namespace Dune {
   {
     switch (mydim)
     {
+    case 0 : return vertex;
     case 1 : return line;
     case 2 : return quadrilateral;
     case 3 : return hexahedron;
-    default : return unknown;
+
+    default :
+      DUNE_THROW(NotImplemented, "GeometryType for mydim " << mydim << " not known");
     }
   }
 
