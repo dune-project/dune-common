@@ -110,7 +110,7 @@ namespace Dune {
     case GhostEntity :
       return "ghost";
     default :
-      return "unknown";
+      DUNE_THROW(NotImplemented, "name of unknown partition type requested");
     }
   }
 
@@ -118,16 +118,29 @@ namespace Dune {
     switch(type) {
     case vertex :
       return "vertex";
+    case line :
+      return "line";
+    case triangle :
+      return "triangle";
+    case quadrilateral :
+      return "quadrilateral";
+    case tetrahedron :
+      return "tetrahedron";
     case pyramid :
       return "pyramid";
     case prism :
       return "prism";
+    case hexahedron :
+      return "hexahedron";
     case simplex :
       return "simplex";
     case cube :
       return "cube";
-    default :
+    case unknown :
       return "unknown";
+
+    default :
+      DUNE_THROW(NotImplemented, "name of unknown geometry requested");
     }
   }
 
