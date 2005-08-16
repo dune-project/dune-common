@@ -340,10 +340,103 @@ namespace Dune {
   };
 
 
+  /*********************************
+   * Quadrature rules for Simplices
+   ***********************************/
 
-  /***********************************************************
-  * Gauss quadrature for Simplices/ triangle
-  ***********************************************************/
+  //--specialization for simplex DIM==1
+  //--it use cube quadrature rule for DIM==1
+  template<typename ct, int dim>
+  class SimplexQuadratureRule;
+
+  template<typename ct>
+  class SimplexQuadratureRule<ct,1> : public QuadratureRule<ct,1>
+  {
+  public:
+    enum {dim=1};
+    enum {highest_order=GaussPoints::highest_order};
+    typedef ct CoordType;
+    typedef SimplexQuadratureRule value_type;
+    SimplexQuadratureRule(int p)
+    {
+
+
+      // find the right Gauss Rule from given order
+      int m=0;
+      for (int i=0; i<=GaussPoints::MAXP; i++)
+        if (GaussPointsSingleton::gp.order(i)>=p)
+        {
+          m = i;
+          break;
+        }
+      if (m==0) DUNE_THROW(NotImplemented, "order not implemented");
+      delivered_order = GaussPointsSingleton::gp.order(m);
+
+      // fill in all the gauss points
+      n = power(m,dim);
+      for (int i=0; i<n; i++)
+      {
+        // compute multidimensional coordinates of Gauss point
+        int x[dim];
+        int z = i;
+        for (int k=0; k<dim; ++k)
+        {
+          x[k] = z%m;
+          z = z/m;
+        }
+
+        // compute coordinates and weight
+        double weight = 1.0;
+        FieldVector<ct, dim> local;
+        for (int k=0; k<dim; k++)
+        {
+          local[k] = GaussPointsSingleton::gp.point(m,x[k]);
+          weight *= GaussPointsSingleton::gp.weight(m,x[k]);
+        }
+
+        // put in container
+        push_back(QuadraturePoint<ct,dim>(local,weight));
+      }
+    }
+
+
+
+    //! return order
+    int order () const
+    {
+      return delivered_order;
+    }
+
+    //! return type of element
+    GeometryType type () const
+    {
+      return line;
+    }
+
+    //! appear as your own container
+    const SimplexQuadratureRule<ct,2>& getelement (GeometryType type, int p)
+    {
+      return *this;
+    }
+    ~SimplexQuadratureRule(){}
+
+
+  private:
+    int delivered_order;
+    int n; // integration points
+    int power (int y,int d)
+    {
+      int m=1;
+      for (int i=0; i<d; ++i) m*=y;
+      return m;
+    }
+
+  };
+
+
+  /************************************************
+   * Quadrature points for Simplices/ triangle
+   *************************************************/
 
   //!
   template<int dim>
@@ -357,7 +450,7 @@ namespace Dune {
     enum { MAXP=7};
     enum { highest_order=5 };
 
-    //! initialize Gauss points on the interval for all orders
+    //! initialize quadrature points on the interval for all orders
     SimplexQuadraturePoints ()
     {
       int m = 0;
@@ -582,7 +675,7 @@ namespace Dune {
     enum { MAXP=8};
     enum { highest_order=3 };
 
-    //! initialize Gauss points on the interval for all orders
+    //! initialize quadrature points on the interval for all orders
     SimplexQuadraturePoints()
     {
       int m = 0;
@@ -768,9 +861,9 @@ namespace Dune {
 
 
 
-  /***********************************************************
-  * quadrature for Prism
-  ***********************************************************/
+  /***********************************
+   * quadrature for Prism
+   **********************************/
 
   //!
   template<int dim>
@@ -783,7 +876,7 @@ namespace Dune {
     enum { MAXP=6};
     enum { highest_order=2 };
 
-    //! initialize Gauss points on the interval for all orders
+    //! initialize quadrature points on the interval for all orders
     PrismQuadraturePoints ()
     {
       int m = 0;
@@ -970,7 +1063,7 @@ namespace Dune {
     enum { MAXP=8};
     enum { highest_order=2 };
 
-    //! initialize Gauss points on the interval for all orders
+    //! initialize quadrature points on the interval for all orders
     PyramidQuadraturePoints()
     {
       int m = 0;
@@ -1304,11 +1397,152 @@ namespace Dune {
 
   };
 
+  /*-----------------------------------
+     Specialization for 1D simplex
+     if instantiated 1D simplex,
+     it use ID cube quadrature rule
+   * General container and singletons
+     --------------------------------*/
 
-  /**********************************************
-   * The general container and the singleton
-     specialization for 3D
-   *********************************************/
+  //! A container for all quadrature rules
+  template<typename ct>
+  class QuadratureRuleContainer<ct,1>
+  {
+    enum { dim=1 };
+  public:
+    typedef QuadratureRule<ct,dim> value_type;
+
+    //! make rules for all element types up to given order
+    QuadratureRuleContainer (int pmax)
+    {
+      // initialize index counter for rules in the array
+      int index=0;
+      int cubeindex=0;
+
+      ////////////////////////
+      // the cube rules
+      ////////////////////////
+
+      // allocate all rules up to requested order
+      for (int m=1; m<=GaussPoints::MAXP; m++)
+      {
+        int p = GaussPointsSingleton::gp.order(m);           // order of rule with m points
+        if (p<=pmax)
+        {
+          QuadratureRule<ct,dim>* pointer = new SimplexQuadratureRule<ct,dim>(p);
+          rules.push_back(pointer);
+          if (m==1)
+            for (int i=0; i<=GaussPoints::highest_order; i++)
+              cube_order_to_index[i] = index;
+          else
+            for (int i=0; i<=GaussPoints::highest_order; i++)
+              if (rules[cube_order_to_index[i]]->order()<i)
+                cube_order_to_index[i] = index;
+
+          ++index;
+          cubeindex=index;
+        }
+        else break;
+      }
+
+      // check if order can be achieved
+
+      cube_maxorder = rules[cubeindex-1]->order();
+      if (cube_maxorder<pmax)
+        std::cout << "Warning: Quadrature rule order " << pmax
+                  << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
+
+    }
+
+
+    //! select the appropriate rule
+    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
+    {
+      if ( (type==cube) || (type==line) ||(type==simplex) )
+      {
+
+        if (p>=1 && p<=cube_maxorder)
+          return *(rules[cube_order_to_index[p]]);
+      }
+
+
+      DUNE_THROW(NotImplemented, "order not available");
+    }
+
+    //! ConstIterator class for sequential access
+    class const_iterator
+    {
+    public:
+      //! construct from stl iterator
+      const_iterator (const typename std::vector<QuadratureRule<ct,dim>*>::const_iterator& _i) : i(_i)
+      {       }
+
+      //! prefix increment
+      const_iterator& operator++()
+      {
+        ++i;
+        return *this;
+      }
+
+      //! prefix decrement
+      const_iterator& operator--()
+      {
+        --i;
+        return *this;
+      }
+
+      //! equality
+      bool operator== (const const_iterator& it) const
+      {
+        return i==it.i;
+      }
+
+      //! inequality
+      bool operator!= (const const_iterator& it) const
+      {
+        return i!=it.i;
+      }
+
+      //! dereferencing
+      const QuadratureRule<ct,dim>& operator* () const
+      {
+        return **i;
+      }
+
+      //! arrow
+      const QuadratureRule<ct,dim>* operator-> () const
+      {
+        return *i;
+      }
+
+    private:
+      typename std::vector<QuadratureRule<ct,dim>*>::const_iterator i;
+    };
+
+    const_iterator begin ()
+    {
+      return const_iterator(rules.begin());
+    }
+
+    const_iterator end ()
+    {
+      return const_iterator(rules.end());
+    }
+
+  private:
+    // the vector of all rules
+    std::vector<QuadratureRule<ct,dim>*> rules;
+
+    // mapping for cube rules
+    int cube_maxorder;
+    int cube_order_to_index[GaussPoints::highest_order+1];
+  };
+
+
+  /*-------------------------------------
+     specialization for 3D-pyramids/prisms
+     The general container and the singleton
+      --------------------------------------*/
 
   //! A container for all quadrature rules
   template<typename ct>
@@ -1482,14 +1716,6 @@ namespace Dune {
         if(p>=1 && p<=pyramid_maxorder)
           return *(rules[pyramid_order_to_index[p]]);
       }
-
-
-
-      //   else  if(type==tetrahedron || (type==simplex && dim==3))
-      //            {
-      //              if(p>=1 && p<=tetrahedron_maxorder)
-      //                return *(rules[tetrahedron_order_to_index[p]]);
-      //            }
 
       DUNE_THROW(NotImplemented, "order not available");
     }
