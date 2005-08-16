@@ -365,9 +365,11 @@ namespace Dune {
   template <class IMPLElemType, ALU3dGridElementType type>
   struct IndexWrapper<IMPLElemType, type, 3>
   {
+    typedef ElementTopologyMapping<type> Topo;
+
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
-      return elem.myvertex(i)->getIndex();
+      return elem.myvertex(Topo::dune2aluVertex(i))->getIndex();
     }
   };
 
@@ -375,19 +377,22 @@ namespace Dune {
   template <class IMPLElemType>
   struct IndexWrapper<IMPLElemType, tetra, 1>
   {
+    typedef ElementTopologyMapping<tetra> Topo;
+
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
-      return elem.myhface3(i)->getIndex();
+      return elem.myhface3(Topo::dune2aluFace(i))->getIndex();
     }
   };
 
   template <class IMPLElemType>
   struct IndexWrapper<IMPLElemType, hexa, 1>
   {
+    typedef ElementTopologyMapping<hexa> Topo;
+
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
-      // * wrong: should use ElementTopology to map to ALU Indices and back
-      return elem.myhface4(i)->getIndex();
+      return elem.myhface4(Topo::dune2aluFace(i))->getIndex();
     }
   };
 
@@ -428,7 +433,6 @@ namespace Dune {
   struct IndexWrapper<IMPLElemType, tetra, 0>
   {
     static inline int subIndex(const IMPLElemType &elem, int i) {
-      assert(false);
       return i;
     }
   };
