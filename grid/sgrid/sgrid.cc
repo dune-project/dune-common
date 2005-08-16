@@ -74,16 +74,7 @@ namespace Dune {
   template<int mydim, int cdim, class GridImp>
   inline GeometryType SGeometry<mydim,cdim,GridImp>::type () const
   {
-    switch (mydim)
-    {
-    case 0 : return vertex;
-    case 1 : return line;
-    case 2 : return quadrilateral;
-    case 3 : return hexahedron;
-
-    default :
-      DUNE_THROW(NotImplemented, "GeometryType for mydim " << mydim << " not known");
-    }
+    return (mydim==0) ? vertex : cube;
   }
 
   template<int mydim, int cdim, class GridImp>
