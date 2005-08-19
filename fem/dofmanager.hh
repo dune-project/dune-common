@@ -1,13 +1,14 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_DOFMANAGER_HH__
-#define __DUNE_DOFMANAGER_HH__
+#ifndef DUNE_DOFMANAGER_HH
+#define DUNE_DOFMANAGER_HH
 
-#include <assert.h>
+#include <cassert>
 
 #include <dune/common/dlist.hh>
 #include <dune/common/stdstreams.hh>
 #include <dune/common/exceptions.hh>
+#include <dune/common/genericiterator.hh>
 
 #include <dune/fem/common/dofmapperinterface.hh>
 
@@ -155,6 +156,9 @@ namespace Dune {
   template <class T, class AllocatorType = DefaultDofAllocator<T> >
   class DofArray
   {
+  private:
+    typedef DofArray<T, AllocatorType> ThisType;
+
     // size of array
     int size_;
 
@@ -164,6 +168,12 @@ namespace Dune {
     T * vec_;
 
   public:
+    //! DofIterator
+    typedef GenericIterator<ThisType, T> DofIteratorType;
+
+    //! Const DofIterator
+    typedef GenericIterator<const ThisType, const T> ConstDofIteratorType;
+
     //! create array of length size
     DofArray(int size)
       : size_(size) , memSize_(size) , vec_(0)
@@ -172,9 +182,24 @@ namespace Dune {
     }
 
     //! Destructor
-    ~DofArray()
-    {
+    ~DofArray() {
       if( vec_ ) AllocatorType :: free ( vec_ );
+    }
+
+    DofIteratorType begin() {
+      return DofIteratorType(*this, 0);
+    }
+
+    ConstDofIteratorType begin() const {
+      return ConstDofIteratorType(*this, 0);
+    }
+
+    DofIteratorType end() {
+      return DofIteratorType(*this, size_);
+    }
+
+    ConstDofIteratorType end() const {
+      return ConstDofIteratorType(*this, size_);
     }
 
     //! return number of enties of array
@@ -923,7 +948,7 @@ namespace Dune {
     bool read(const char *filename, int timestep);
     bool write_xdr( const char * filename, int timestep);
     bool read_xdr( const char * filename, int timestep);
-  };
+  }; // end class DofManager
 
   //***************************************************************************
   //
