@@ -1,6 +1,19 @@
-dnl Available from the GNU Autoconf Macro Archive at:
-dnl http://www.gnu.org/software/ac-archive/htmldoc/ax_check_gl.html
+dnl @synopsis AX_CHECK_GL
 dnl
+dnl Check for an OpenGL implementation. If GL is found, the required
+dnl compiler and linker flags are included in the output variables
+dnl "GL_CFLAGS" and "GL_LIBS", respectively. This macro adds the
+dnl configure option "--with-apple-opengl-framework", which users can
+dnl use to indicate that Apple's OpenGL framework should be used on Mac
+dnl OS X. If Apple's OpenGL framework is used, the symbol
+dnl "HAVE_APPLE_OPENGL_FRAMEWORK" is defined. If no GL implementation
+dnl is found, "no_gl" is set to "yes".
+dnl
+dnl @category InstalledPackages
+dnl @author Braden McDaniel <braden@endoframe.com>
+dnl @version 2004-11-15
+dnl @license AllPermissive
+
 AC_DEFUN([AX_CHECK_GL],
 [AC_REQUIRE([AC_PATH_X])dnl
 AC_REQUIRE([ACX_PTHREAD])dnl
