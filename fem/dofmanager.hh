@@ -3,8 +3,12 @@
 #ifndef DUNE_DOFMANAGER_HH
 #define DUNE_DOFMANAGER_HH
 
+//- System includes
 #include <cassert>
+#include <vector>
+#include <string>
 
+//- Dune includes
 #include <dune/common/dlist.hh>
 #include <dune/common/stdstreams.hh>
 #include <dune/common/exceptions.hh>
@@ -266,8 +270,10 @@ namespace Dune {
         return ;
       }
 
-      int nMemSize = (int) (nsize * 0.1);
-      nMemSize += nsize;
+      // nsize is the minimum needed size of the vector
+      // we double this size to reserve some memory and minimize
+      // reallocations
+      int nMemSize = 2 * nsize;
       vec_ = AllocatorType :: realloc (vec_,size_,nMemSize);
 
       size_ = nsize;
@@ -380,12 +386,10 @@ namespace Dune {
       return &indexSet_ == &iset;
     }
 
-    /*
-       void apply ( EntityType & en )
-       {
-       indexSet_.insertNewIndex ( en );
-       }
-     */
+    void apply ( EntityType & en )
+    {
+      indexSet_.insertNewIndex ( en );
+    }
 
     virtual void read_xdr(const char * filename, int timestep)
     {
@@ -412,6 +416,7 @@ namespace Dune {
   // MemObject
   //
   //****************************************************************
+  // interface to store for DofManager
   class MemObjectInterface
   {
   public:
@@ -453,11 +458,11 @@ namespace Dune {
     // index set object, holding the index set
     IndexSetObjectInterface & indexObject_;
 
-    // Array which belongs to discrete function
-    DofArrayType & array_;
+    // Array which the dofs are stored in
+    DofArrayType array_;
 
     // name of mem object, i.e. name of discrete function
-    const char * name_;
+    std::string name_;
 
     CheckMemObjectResize < MemObjectType > checkResize_;
     ResizeMemoryObjects  < MemObjectType > resizeMemObj_;
@@ -465,23 +470,26 @@ namespace Dune {
   public:
     // Constructor of MemObject, only to call from DofManager
     MemObject ( MapperType & mapper, IndexSetObjectInterface & iobj,
-                DofArrayType & array, const char * name )
-      : mapper_ (mapper) , indexObject_(iobj) , array_( array ), name_ (name) ,
+                std::string name )
+      : mapper_ (mapper) , indexObject_(iobj) , array_( mapper_.size() ), name_ (name) ,
         checkResize_(*this) , resizeMemObj_(*this) {}
 
     //! returns name of this vector
-    const char * name () const { return name_; }
+    const char * name () const { return name_.c_str(); }
 
     //! if grid changed, then calulate new size of dofset
     int newSize () const { return mapper_.newSize(); }
 
+    //! return size of underlying array
     int size () const { return array_.size(); }
 
+    //! return true if array needs resize
     bool resizeNeeded () const
     {
       return (size() < newSize());
     }
 
+    //! return number of dofs on one element
     int elementMemory () const
     {
       return mapper_.numberOfDofs();
@@ -523,17 +531,20 @@ namespace Dune {
       return indexObject_;
     }
 
-    // return object that checks for resize
+    //! return object that checks for resize
     CheckMemObjectResize < MemObjectType > & checkResizeObj ()
     {
       return checkResize_;
     }
 
-    // return object that make the resize
+    //! return object that makes the resize
     ResizeMemoryObjects < MemObjectType > & resizeMemObject()
     {
       return resizeMemObj_;
     }
+
+    //! return reference to array for DiscreteFunction
+    DofArrayType & getArray() { return array_; }
   };
 
   template <class IndexSetType, class EntityType>
@@ -756,12 +767,12 @@ namespace Dune {
     //! we know our DofStorage which is the actual DofArray
     template <class DofStorageType, class IndexSetType, class MapperType >
     inline MemObject<MapperType,DofStorageType> &
-    addDofSet(DofStorageType & ds, const GridType &grid, IndexSetType &iset,
-              MapperType & mapper, const char * name );
+    addDofSet(const DofStorageType * ds, const GridType &grid, IndexSetType &iset,
+              MapperType & mapper, const std::string name );
 
     //! remove MemObject, is called from DiscreteFucntionSpace at sign out of
     //! DiscreteFunction
-    bool removeDofSet (MemObjectInterface & obj)
+    bool removeDofSet (const MemObjectInterface & obj)
     {
       ListIteratorType it    = memList_.begin();
       ListIteratorType endit = memList_.end();
@@ -944,10 +955,10 @@ namespace Dune {
     //********************************************************
     // read-write Interface for index set
     //********************************************************
-    bool write(const GrapeIOFileFormatType ftype, const char *filename, int timestep);
-    bool read(const char *filename, int timestep);
-    bool write_xdr( const char * filename, int timestep);
-    bool read_xdr( const char * filename, int timestep);
+    bool write(const GrapeIOFileFormatType ftype, const std::string filename, int timestep);
+    bool read(const std::string filename, int timestep);
+    bool write_xdr(const std::string filename, int timestep);
+    bool read_xdr( const std::string filename, int timestep);
   }; // end class DofManager
 
   //***************************************************************************
@@ -1046,12 +1057,14 @@ namespace Dune {
   template <class DofStorageType, class IndexSetType, class MapperType >
   inline MemObject<MapperType,DofStorageType> &
   DofManager<GridType,DataCollectorType>::
-  addDofSet(DofStorageType & ds, const GridType &grid, IndexSetType &iset,
-            MapperType & mapper, const char * name )
+  addDofSet(const DofStorageType * ds, const GridType &grid, IndexSetType &iset,
+            MapperType & mapper, const std::string name )
   {
     if(&grid_ != &grid)
       DUNE_THROW(DofManError,"DofManager can only be used for one grid! \n");
     dverb << "Adding '" << name << "' to DofManager! \n";
+
+    assert( name.c_str() != 0);
 
     IndexSetInterface & set = iset;
     typedef IndexSetObject< IndexSetType,
@@ -1075,7 +1088,7 @@ namespace Dune {
       DUNE_THROW(DofManError,"No IndexSet for DofSet! \n");
 
     typedef MemObject<MapperType,DofStorageType> MemObjectType;
-    MemObjectType * obj = new MemObjectType ( mapper, *indexSet , ds , name );
+    MemObjectType * obj = new MemObjectType ( mapper, *indexSet , name );
 
     MemObjectInterface * saveObj = obj;
     memList_.insert_after ( memList_.rbegin() , saveObj );
@@ -1092,23 +1105,23 @@ namespace Dune {
 
   template <class GridType, class DataCollectorType>
   inline bool DofManager<GridType,DataCollectorType>::
-  write(const GrapeIOFileFormatType ftype, const char *filename, int timestep)
+  write(const GrapeIOFileFormatType ftype, const std::string filename, int timestep)
   {
     assert(ftype == xdr);
     return write_xdr(filename,timestep);
   }
   template <class GridType, class DataCollectorType>
   inline bool DofManager<GridType,DataCollectorType>::
-  read(const char * filename , int timestep)
+  read(const std::string filename , int timestep)
   {
     return read_xdr(filename,timestep);
   }
 
   template <class GridType, class DataCollectorType>
   inline bool DofManager<GridType,DataCollectorType>::
-  write_xdr(const char * filename , int timestep)
+  write_xdr(const std::string filename , int timestep)
   {
-    assert( filename );
+    //assert( filename );
 
     int count = 0;
     IndexListIteratorType endit = indexList_.end();
@@ -1128,9 +1141,9 @@ namespace Dune {
 
   template <class GridType, class DataCollectorType>
   inline bool DofManager<GridType,DataCollectorType>::
-  read_xdr(const char * filename , int timestep)
+  read_xdr(const std::string filename , int timestep)
   {
-    assert( filename );
+    //assert( filename );
 
     int count = 0;
     IndexListIteratorType endit = indexList_.end();
