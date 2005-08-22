@@ -13,28 +13,29 @@ namespace Dune
   DFAdapt(DiscreteFunctionSpaceType& f) :
     DiscreteFunctionDefaultType ( f )
     , name_ ("no name")
-    , dofVec_ ( f.size() )
     , memObj_ ( f.signIn( const_cast <DFAdapt< DiscreteFunctionSpaceType > &> (*this) ) )
+    , dofVec_ ( memObj_.getArray() )
     , localFunc_ ( f , dofVec_ )
   {}
 
   // Constructor makeing discrete function
   template<class DiscreteFunctionSpaceType >
   inline DFAdapt< DiscreteFunctionSpaceType >::
-  DFAdapt(const char * name, DiscreteFunctionSpaceType & f)
+  DFAdapt(std::string name, DiscreteFunctionSpaceType & f)
     : DiscreteFunctionDefaultType ( f )
-      , name_ (name)
-      , dofVec_ ( f.size() )
+      , name_ ((name.length() > 0) ? name : "no name")
       , memObj_ ( f.signIn( const_cast <DFAdapt< DiscreteFunctionSpaceType > &> (*this) ) )
+      , dofVec_ ( memObj_.getArray() )
       , localFunc_ ( f , dofVec_ )
   {}
 
   template<class DiscreteFunctionSpaceType >
   inline DFAdapt< DiscreteFunctionSpaceType >::
   DFAdapt(const DFAdapt <DiscreteFunctionSpaceType> & df ) :
-    DiscreteFunctionDefaultType ( df.functionSpace_ ) , name_ ("copy")
-    , dofVec_ ( df.functionSpace_.size() )
+    DiscreteFunctionDefaultType ( df.functionSpace_ )
+    , name_ ("copy of "+ df.name())
     , memObj_ ( df.functionSpace_.signIn( const_cast <DFAdapt< DiscreteFunctionSpaceType > &> (*this) ))
+    , dofVec_ ( memObj_.getArray() )
     , localFunc_ ( df.localFunc_ )
   {
     // copy values of array
@@ -99,24 +100,21 @@ namespace Dune
   DFAdapt< DiscreteFunctionSpaceType >::
   newLocalFunction ( )
   {
-    LocalFunctionAdapt<DiscreteFunctionSpaceType> tmp ( this->functionSpace_ , dofVec_ );
-    return tmp;
+    return LocalFunctionAdapt<DiscreteFunctionSpaceType> ( this->functionSpace_ , dofVec_ );
   }
 
   template<class DiscreteFunctionSpaceType >
   inline typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
   DFAdapt< DiscreteFunctionSpaceType >::dbegin ( )
   {
-    DofIteratorType tmp ( dofVec_ , 0 );
-    return tmp;
+    return DofIteratorType ( dofVec_ , 0 );
   }
 
   template<class DiscreteFunctionSpaceType >
   inline typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
   DFAdapt< DiscreteFunctionSpaceType >::dend ()
   {
-    DofIteratorType tmp ( dofVec_ , dofVec_.size() );
-    return tmp;
+    return DofIteratorType ( dofVec_ , dofVec_.size() );
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -124,8 +122,7 @@ namespace Dune
   DFAdapt< DiscreteFunctionSpaceType >::dbegin ( ) const
   {
     DofIteratorType tmp ( dofVec_ , 0 );
-    ConstDofIteratorType tmp2(tmp);
-    return tmp2;
+    return ConstDofIteratorType(tmp);
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -133,15 +130,14 @@ namespace Dune
   DFAdapt< DiscreteFunctionSpaceType >::dend () const
   {
     DofIteratorType tmp ( dofVec_ , dofVec_.size() );
-    ConstDofIteratorType tmp2(tmp);
-    return tmp2;
+    return ConstDofIteratorType (tmp);
   }
   //**************************************************************************
   //  Read and Write Methods
   //**************************************************************************
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  write_xdr( const std::basic_string<char> fn )
+  write_xdr( const std::string fn )
   {
     FILE  *file;
     XDR xdrs;
@@ -164,7 +160,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  read_xdr( const std::basic_string<char> fn )
+  read_xdr( const std::string fn )
   {
     FILE   *file;
     XDR xdrs;
@@ -188,7 +184,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  write_ascii( const std::basic_string<char> fn )
+  write_ascii( const std::string fn )
   {
     std::fstream outfile( fn.c_str() , std::ios::out );
     if (!outfile)
@@ -216,7 +212,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  read_ascii( const std::basic_string<char> fn )
+  read_ascii( const std::string fn )
   {
     FILE *infile=0;
     infile = fopen( fn.c_str(), "r" );
@@ -238,7 +234,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  write_pgm( const std::basic_string<char> fn )
+  write_pgm( const std::string fn )
   {
     std::ofstream out( fn.c_str() );
 
@@ -264,7 +260,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType >
   inline bool DFAdapt< DiscreteFunctionSpaceType >::
-  read_pgm( const std::basic_string<char> fn )
+  read_pgm( const std::string fn )
   {
     FILE *in;
     int v;
