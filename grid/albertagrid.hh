@@ -1450,13 +1450,18 @@ namespace Dune
 
     const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
 
-    const LevelIndexSetType & levelIndexSet (int level= 0) const
+    const LevelIndexSetType & levelIndexSet (int level = 0) const
     {
       if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSetType (*this,level);
       return *(levelIndexVec_[level]);
     }
 
     const LeafIndexSetType & leafIndexSet () const {
+      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
+      return *leafIndexSet_;
+    }
+
+    LeafIndexSetType & leafIndexSet () {
       if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
       return *leafIndexSet_;
     }
@@ -1512,6 +1517,8 @@ namespace Dune
 
     // return true if element is neihter interior nor ghost
     bool isNoElement( const ALBERTA MACRO_EL * mel) const;
+
+    const std::vector < GeometryType > geomTypes () const { return geomTypes_; }
 
   private:
     Array<int> ghostFlag_; // store ghost information
@@ -1577,10 +1584,10 @@ namespace Dune
     void thirdNeigh(const int ichild, const ALBERTA EL_INFO *elinfo_old,
                     ALBERTA EL_INFO *elinfo, const bool leafLevel) const;
 
+  private:
     // needed for VertexIterator, mark on which element a vertex is treated
     AlbertaMarkerVector * vertexMarker_;
 
-  private:
     //***********************************************************************
     //  MemoryManagement for Entitys and Geometrys
     //**********************************************************************
@@ -1680,6 +1687,8 @@ namespace Dune
     // is generated, when accessed
     mutable LeafIndexSetType * leafIndexSet_;
 
+    std::vector < GeometryType > geomTypes_;
+
   }; // end class AlbertaGrid
 
   template <class GridType, int dim> struct MarkEdges;
@@ -1704,10 +1713,13 @@ namespace Dune
     friend class MarkEdges<GridType,3>;
     friend class MarkEdges<const GridType,3>;
 
-  public:
+
+    // only  AlbertaGrid is allowed to create this class
     AlbertaGridHierarchicIndexSet(const GridType & grid , const int (& s)[numCodim])
       : grid_( grid ), size_(s) {}
+  public:
 
+    //! return index of entity
     template <class EntityType>
     int index (const EntityType & ep) const
     {
@@ -1716,6 +1728,7 @@ namespace Dune
       return getIndex(en.getElInfo()->el, en.getFEVnum(),Int2Type<dim-cd>());
     }
 
+    //! return subIndex of given enitiy's sub entity with codim=cd and number i
     template <int cd>
     int subIndex (const EntityCodim0Type & en, int i) const
     {
@@ -1725,10 +1738,17 @@ namespace Dune
                       ,i,Int2Type<dim-cd>());
     }
 
+    //! return size of set
     int size (int codim) const
     {
       assert(size_[codim] >= 0);
       return size_[codim];
+    }
+
+    //! return geometry types this set has indices for
+    const std::vector< GeometryType > geomTypes() const
+    {
+      return grid_.geomTypes();
     }
 
   private:
