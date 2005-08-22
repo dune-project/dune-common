@@ -30,6 +30,7 @@ namespace Dune {
 #else
       ,  myRank_(-1)
 #endif
+      , geomTypes_ (numberOfGeomTypes)
       , hIndexSet_ (*this)
       , globalIdSet_(*this), localIdSet_(*this)
       , levelIndexVec_(MAXL) , leafIndexSet_(0)
@@ -39,6 +40,7 @@ namespace Dune {
       checkMacroGrid ( elType , macroTriangFilename );
     }
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
+    geomTypes_[0] = (elType == tetra) ? simplex : cube;
 
     mygrid_ = new ALU3DSPACE GitterImplType (macroTriangFilename
 #ifdef _ALU3DGRID_PARALLEL_
@@ -71,11 +73,13 @@ namespace Dune {
     : mygrid_ (0) , maxlevel_(0)
       , coarsenMarked_(0) , refineMarked_(0)
       , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
+      , geomTypes_ (numberOfGeomTypes)
       , hIndexSet_ (*this)
       , globalIdSet_(*this), localIdSet_(*this)
       , levelIndexVec_(MAXL) , leafIndexSet_(0)
   {
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
+    geomTypes_[0] = (elType == tetra) ? simplex : cube;
   }
 #else
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -83,12 +87,14 @@ namespace Dune {
     : mygrid_ (0) , maxlevel_(0)
       , coarsenMarked_(0) , refineMarked_(0)
       , myRank_(myrank)
+      , geomTypes_ (numberOfGeomTypes)
       , hIndexSet_ (*this)
       , globalIdSet_ (*this)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL) , leafIndexSet_(0)
   {
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
+    geomTypes_[0] = (elType == tetra) ? simplex : cube;
   }
 #endif
 
@@ -97,11 +103,13 @@ namespace Dune {
     : mygrid_ (0) , maxlevel_(0)
       , coarsenMarked_(0) , refineMarked_(0)
       , myRank_(-1)
+      , geomTypes_ (numberOfGeomTypes)
       , hIndexSet_(*this)
       , globalIdSet_ (*this)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL) , leafIndexSet_(0)
   {
+    geomTypes_[0] = (elType == tetra) ? simplex : cube;
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
     DUNE_THROW(GridError,"Do not use copy constructor of ALU3dGrid! \n");
   }
@@ -247,27 +255,25 @@ namespace Dune {
 
   // leaf methods
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  template <int codim, PartitionIteratorType pitype>
-  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+  template <int cd, PartitionIteratorType pitype>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator
   ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const
   {
     assert( level >= 0 );
-    return ALU3dGridLeafIterator<codim, pitype, const MyType> ((*this),
-                                                               level,
-                                                               false,
+    return ALU3dGridLeafIterator<cd, pitype, const MyType> ((*this),level, false,
 #ifdef _ALU3DGRID_PARALLEL_
-                                                               mpAccess_.nlinks(),
+                                                            mpAccess_.nlinks()
 #else
-                                                               1
+                                                            1
 #endif
-                                                               );
+                                                            );
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  template <int codim>
-  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::LeafIterator
+  template <int cd>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::LeafIterator
   ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const {
-    return leafbegin<codim, All_Partition>(level);
+    return leafbegin<cd, All_Partition>(level);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -278,20 +284,20 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  template <int codim, PartitionIteratorType pitype>
-  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+  template <int cd, PartitionIteratorType pitype>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator
   ALU3dGrid<dim, dimworld, elType>::leafend(int level) const
   {
     assert( level >= 0 );
-    return ALU3dGridLeafIterator<codim, pitype, const MyType> ((*this),
-                                                               level,
-                                                               true,
+    return ALU3dGridLeafIterator<cd, pitype, const MyType> ((*this),
+                                                            level,
+                                                            true,
 #ifdef _ALU3DGRID_PARALLEL_
-                                                               mpAccess_.nlinks(),
+                                                            mpAccess_.nlinks()
 #else
-                                                               1
+                                                            1
 #endif
-                                                               );
+                                                            );
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -663,9 +669,141 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline bool ALU3dGrid<dim, dimworld, elType>::
+  writeGrid_Ascii(const std::string filename, alu3d_ctype time ) const
+  {
+    ALU3DSPACE GitterImplType & mygrd =
+      const_cast<ALU3dGrid<dim, dimworld, elType> &> (*this).myGrid();
+    std::fstream file ( filename.c_str() , std::ios::out);
+    if(file)
+    {
+      typedef typename ALU3dImplTraits<elType> :: BNDFaceType BNDFaceType;
+      typedef typename ALU3dImplTraits<elType> :: IMPLElementType IMPLElementType;
+      typedef typename ALU3dImplTraits<elType> :: HasFaceType HasFaceType;
+
+      file << "!" << elType2Name( elType ) << endl;
+      {
+        ALU3DSPACE LeafIterator < ALU3DSPACE VertexType > vx (mygrd) ;
+        file << endl;
+
+        // write coordinates of the vertices
+        int vxsize = vx->size();
+        file << vxsize << endl;
+        Array < double[3] > vxvec ( vxsize );
+
+        for( vx->first(); !vx->done() ; vx->next() )
+        {
+          const double (&p)[3] = vx->item().Point();
+          int vxidx = vx->item().getIndex();
+          double (&v)[3] = vxvec[vxidx];
+          for(int i=0; i<3; i++) v[i] = p[i];
+        }
+
+        for(int i=0; i<vxsize; i++)
+        {
+          file << vxvec[i][0] << " " << vxvec[i][1] << " " << vxvec[i][2] << endl;
+        }
+      }
+
+      file << endl;
+      // write element vertices
+      {
+        const int novx = (elType == tetra) ? 4 : 8;
+        ALU3DSPACE LeafIterator < ALU3DSPACE HElementType > el (mygrd) ;
+        file << el->size() << endl;
+        for( el->first(); !el->done() ; el->next() )
+        {
+          IMPLElementType & item = static_cast<IMPLElementType &> (el->item());
+          for(int i=0; i<novx; i++)
+          {
+            const int vxnum = item.myvertex(i)->getIndex();
+            file << vxnum << " ";
+          }
+          file << endl;
+        }
+      }
+
+      // write boundary faces
+      {
+        file << endl;
+        const int nofaces  = (elType == tetra) ? 4 : 6;
+        int bndfaces = 0;
+        ALU3DSPACE LeafIterator < ALU3DSPACE HElementType > el (mygrd) ;
+        for( el->first(); !el->done() ; el->next() )
+        {
+          IMPLElementType & item = static_cast<IMPLElementType &> (el->item());
+          for(int i=0; i<nofaces; i++)
+          {
+            std::pair < HasFaceType * , int > nbpair = item.myneighbour(i);
+            if(nbpair.first->isboundary())
+            {
+              bndfaces++;
+            }
+          }
+        }
+        file << bndfaces << endl;
+      }
+      // write boundary faces
+      {
+        const int bndvxnum = (elType == tetra) ? 3 : 4;
+        const int nofaces  = (elType == tetra) ? 4 : 6;
+        ALU3DSPACE LeafIterator < ALU3DSPACE HElementType > el (mygrd) ;
+        for( el->first(); !el->done() ; el->next() )
+        {
+          IMPLElementType & item = static_cast<IMPLElementType &> (el->item());
+          for(int i=0; i<nofaces; i++)
+          {
+            std::pair < HasFaceType * , int > nbpair = item.myneighbour(i);
+            if(nbpair.first->isboundary())
+            {
+              BNDFaceType * face = static_cast<BNDFaceType *> (nbpair.first);
+              file << -(face->bndtype()) << " " << bndvxnum << " ";
+              for(int j=0; j<bndvxnum; j++)
+              {
+                int vxnum = face->myvertex(0,j)->getIndex();
+                file << vxnum << " ";
+              }
+              file << endl;
+            }
+          }
+        }
+      }
+
+      {
+        ALU3DSPACE LeafIterator < ALU3DSPACE VertexType > vx (mygrd) ;
+        file << endl;
+
+        // write coordinates of the vertices
+        int vxnum = 0;
+        for( vx->first(); !vx->done() ; vx->next() )
+        {
+          file << vxnum << " -1" << endl;
+          vxnum++;
+        }
+      }
+    }
+    return true;
+  }
+
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   template <GrapeIOFileFormatType ftype>
   inline bool ALU3dGrid<dim, dimworld, elType>::
   writeGrid(const std::string filename, alu3d_ctype time ) const
+  {
+    switch(ftype)
+    {
+    case xdr  : return writeGrid_Xdr(filename,time);
+    case ascii : return writeGrid_Ascii(filename,time);
+    default : derr << "Wrong file type in writeGrid method~ \n";
+    }
+    return false;
+  }
+
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline bool ALU3dGrid<dim, dimworld, elType>::
+  writeGrid_Xdr(const std::string filename, alu3d_ctype time ) const
   {
     ALU3DSPACE GitterImplType & mygrd = const_cast<ALU3dGrid<dim, dimworld, elType> &> (*this).myGrid();
     mygrd.duneBackup(filename.c_str());
