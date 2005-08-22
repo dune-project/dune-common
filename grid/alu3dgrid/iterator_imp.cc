@@ -213,18 +213,20 @@ namespace Dune {
     if(connector_->ghostBoundary())
     {
       BNDFaceType * ghost = const_cast<BNDFaceType *>(&connector_->boundaryFace());
-      if( connector_->boundaryFace().level () != connector_->boundaryFace().ghostLevel() )
+
+      // if nonconformity occurs then go up one level
+      if( ghost->level () != ghost->ghostLevel() )
         ghost = static_cast<BNDFaceType *>(ghost->up());
 
-      this->entity_->setGhost(const_cast<BNDFaceType &>(connector_->boundaryFace()) );
-      return EntityPointer(this->grid_, ghost); // * is this possible
+      // set bnd face as ghost
+      this->entity_->setGhost(* ghost );
     }
     else
 #endif
     {
       this->entity_->setElement(const_cast<GEOElementType&>(connector_->outerEntity()));
     }
-    return EntityPointer(this->grid_, connector_->outerEntity());
+    return EntityPointer(this->grid_, *(this->entity_));
   }
 
   template<class GridImp>
@@ -579,27 +581,44 @@ namespace Dune {
 #ifdef _ALU3DGRID_PARALLEL_
       if(pitype == Ghost_Partition)
       {
-        std::cout << "Erstelle GhostIterator \n";
+        if( codim != 0 )
+        {
+          derr << "ERROR: GhostLeafIterator runs only with codimension 0 !\n";
+          assert( codim == 0);
+          abort();
+        }
+
+        assert( (true) ? (std::cout << "Erstelle Ghost Partition Iterator! \n",1) : 0);
         typedef ALU3DSPACE ALU3dGridLeafIteratorWrapper<0,Ghost_Partition> GhostIterator;
         IterInterface * it = new GhostIterator ( this->grid_, level_, nlinks );
         iter_.store( it );
       }
       else if(pitype == All_Partition)
       {
-        std::cout << "Erstelle All Partition Iterator! \n";
-        typedef ALU3DSPACE ALU3dGridLeafIteratorWrapper<0,All_Partition> AllIterator;
-        IterInterface * it = new AllIterator ( this->grid_, level_, nlinks );
+        if( codim != 0 )
+        {
+          derr << "ERROR: AllLeafIterator runs only with codimension 0 !\n";
+          assert( codim == 0);
+          abort();
+        }
+        //std::cout << "Erstelle All Partition Iterator! \n";
+        //typedef ALU3DSPACE ALU3dGridLeafIteratorWrapper<0,All_Partition> AllIterator;
+        //IterInterface * it = new AllIterator ( this->grid_, level_, nlinks );
+        //iter_.store( it );
+        assert( (true) ? (std::cout << "Erstelle All Partition Iterator! \n",1) : 0);
+        IteratorType * it = new IteratorType ( this->grid_ , level_, nlinks );
         iter_.store( it );
       }
       else
 #endif
       {
-        IteratorType * it = new IteratorType ( this->grid_ , level_ );
+        // create interior iterator
+        IteratorType * it = new IteratorType ( this->grid_ , level_, nlinks );
         iter_.store( it );
       }
 
       (*iter_).first();
-      if(!(*iter_).done()) // else iterator empty
+      if((!(*iter_).done()) && grid.global_size(0) > 0) // else iterator empty
       {
         assert((*iter_).size() > 0);
         index_=0;
