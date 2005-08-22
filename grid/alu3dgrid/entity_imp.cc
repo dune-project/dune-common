@@ -236,56 +236,40 @@ namespace Dune {
 
   template<int dim, class GridImp>
   inline void
-  ALU3dGridEntity<0,dim,GridImp> :: setGhost(ALU3DSPACE HElementType & element)
-  {
-    {
-      item_= static_cast<IMPLElementType *> (&element);
-      isGhost_ = true;
-      ghost_ = 0;
-      builtgeometry_=false;
-      index_   = -1;
-      level_   = (*item_).level();
-      glIndex_ = (*item_).getIndex();
-
-      // check wether ghost is leaf or not, ghost leaf means
-      // that this is the ghost that we want in the leaf iterator
-      // not necessarily is real leaf element
-      // see Intersection Iterator, same story
-      if(!(*item_).down()) isLeaf_ = true;
-      else
-      {
-        if(item_->down()->ghostLevel() == level_) isLeaf_ = true;
-        else isLeaf_ = false;
-      }
-    }
-  }
-
-  template<int dim, class GridImp>
-  inline void
   ALU3dGridEntity<0,dim,GridImp> :: setGhost(ALU3DSPACE HBndSegType & ghost)
   {
-    //if(ghost_) if(glIndex_ == ghost.getIndex()) return;
-
+#ifdef __USE_INTERNAL_FACES__
+    // use internal faces as ghost
     typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
     item_    = 0;
     ghost_   = static_cast<PLLBndFaceType *> (&ghost);
-    isGhost_ = true;
-    index_   = -1;
     glIndex_ = ghost_->getIndex();
     level_   = ghost_->level();
+#else
+    // use element as ghost
+    typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
+    item_    = static_cast<IMPLElementType *> (ghost.getGhost());
+    assert(item_);
+    ghost_   = 0;
+    glIndex_ = item_->getIndex();
+    level_   = item_->level();
+#endif
+    isGhost_ = true;
+    index_   = -1;
     builtgeometry_ = false;
 
+    PLLBndFaceType * dwn =  static_cast<PLLBndFaceType *> (ghost.down());
+    if ( ! dwn ) isLeaf_ = true;
+    else
+    {
+      assert( ghost.level() == level_ );
+      if(dwn->ghostLevel() == level_) isLeaf_ = true;
+      else isLeaf_ = false;
+    }
     // check wether ghost is leaf or not, ghost leaf means
     // that this is the ghost that we want in the leaf iterator
     // not necessarily is real leaf element
     // see Intersection Iterator, same story
-    PLLBndFaceType * dwn =  static_cast<PLLBndFaceType *> (ghost_->down());
-    if ( ! dwn ) isLeaf_ = true;
-    else
-    {
-      if(dwn->ghostLevel() == level_) isLeaf_ = true;
-      else isLeaf_ = false;
-    }
   }
 
   template<int dim, class GridImp>
@@ -728,13 +712,13 @@ namespace Dune {
 
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
-  ALU3dGridEntityPointer(const GridImp & grid, const BNDFaceType &ghost)
+  ALU3dGridEntityPointer(const GridImp & grid, const ALU3dGridMakeableEntity<codim,dim,GridImp> & e)
     : grid_(grid)
-      , entity_ ( grid_.template getNewEntity<codim> ( ghost.level() ) )
+      , entity_ ( grid_.template getNewEntity<codim> ( e.level() ) )
       , done_ (false)
   {
     assert( entity_ );
-    (*entity_).setGhost( const_cast<BNDFaceType &>(ghost) );
+    (*entity_).setEntity( e );
   }
 
   template<int codim, class GridImp >

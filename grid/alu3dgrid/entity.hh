@@ -66,12 +66,6 @@ namespace Dune {
       this->realEntity.setElement(item, twist);
     }
 
-    // set element as ghost
-    void setGhost(ALU3DSPACE HElementType &ghost)
-    {
-      this->realEntity.setGhost(ghost);
-    }
-
     //! set original element pointer to fake entity
     void setGhost(ALU3DSPACE HBndSegType &ghost)
     {
@@ -346,12 +340,6 @@ namespace Dune {
      */
     void setElement(ALU3DSPACE HElementType &element, int twist);
 
-    /*! private methods, but public because of datahandle and template
-        arguments of these methods
-        set original element pointer to fake entity
-     */
-    void setGhost(ALU3DSPACE HElementType &ghost);
-
     //! set original element pointer to fake entity
     void setGhost(ALU3DSPACE HBndSegType  &ghost);
 
@@ -437,7 +425,7 @@ namespace Dune {
                            int twist = 0);
 
     //! Constructor for EntityPointer that points to a ghost
-    ALU3dGridEntityPointer(const GridImp& grid, const BNDFaceType& ghost);
+    ALU3dGridEntityPointer(const GridImp & grid, const ALU3dGridMakeableEntity<cd,dim,GridImp> & e );
 
     //! Constructor for EntityPointer init of Level- and LeafIterator
     ALU3dGridEntityPointer(const GridImp & grid, int level , bool done);
