@@ -3,6 +3,13 @@
 #ifndef DUNE_COMBINEDGRAPEDISPLAY_HH
 #define DUNE_COMBINEDGRAPEDISPLAY_HH
 
+//- System includes
+#include <list>
+#include <vector>
+
+//- Dune includes
+
+//- Local includes
 #include "grapedatadisplay.hh"
 
 namespace Dune
