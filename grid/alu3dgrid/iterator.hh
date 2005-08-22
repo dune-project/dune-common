@@ -347,6 +347,11 @@ namespace ALUGridSpace {
     IteratorType & outer () { return wo_; }
   };
 
+  //****************************
+  //
+  //  --GhostIterator
+  //
+  //****************************
   template <>
   class ALU3dGridLeafIteratorWrapper<0,Dune::Ghost_Partition>
     : public IteratorWrapperInterface< LeafValType >
