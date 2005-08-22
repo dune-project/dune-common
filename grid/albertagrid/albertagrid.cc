@@ -297,8 +297,12 @@ namespace Dune
     static bool calcElMatrix(const FieldMatrix<albertCtype,mydim+1,cdim> & coord,
                              FieldMatrix<albertCtype,matdim,matdim> & elMat)
     {
-      char text [1024];
-      sprintf(text,"AlbertaGridGeometry<%d,%d>::calcElMatrix: No default implementation",mydim,cdim);
+      std::string text;
+      text += "AlbertaGridGeometry<";
+      char fake[128];
+      sprintf(fake,"%d",mydim);
+      text += fake; text += ",";
+      sprintf(fake,"%d",cdim); text += ">::calcElMatrix: No default implementation!";
       DUNE_THROW(AlbertaError, text);
       return false;
     }
@@ -2929,6 +2933,7 @@ namespace Dune
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexVec_(MAXL)
     , leafIndexSet_ (0)
+    , geomTypes_(1)
   {
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) levelIndexVec_[i] = 0;
     vertexMarker_ = new AlbertaMarkerVector ();
@@ -2936,6 +2941,9 @@ namespace Dune
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++) dofvecs_.elNumbers[i] = 0;
     dofvecs_.elNewCheck = 0;
     dofvecs_.owner      = 0;
+
+    // we only have simplices
+    geomTypes_[0] = simplex;
   }
 
   template < int dim, int dimworld >
@@ -2943,6 +2951,9 @@ namespace Dune
   {
     ALBERTA AlbertHelp::getDofVecs(&dofvecs_);
     ALBERTA AlbertHelp::setDofVec ( dofvecs_.owner, -1 );
+
+    // we only have simplices
+    geomTypes_[0] = simplex;
 
     // dont delete dofs on higher levels
     mesh_->preserve_coarse_dofs = 1;
@@ -2967,6 +2978,7 @@ namespace Dune
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexVec_(MAXL)
     , leafIndexSet_ (0)
+    , geomTypes_(1)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
@@ -3013,6 +3025,7 @@ namespace Dune
     , hIndexSet_(*this,maxHierIndex_)
     , levelIndexVec_(MAXL)
     , leafIndexSet_ (0)
+    , geomTypes_(1)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
