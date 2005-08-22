@@ -67,7 +67,7 @@ namespace Dune {
     //! Constructor make Discrete Function
     DFAdapt(DiscreteFunctionSpaceType& f);
 
-    DFAdapt (const char * name, DiscreteFunctionSpaceType & f ) ;
+    DFAdapt (std::string name, DiscreteFunctionSpaceType & f ) ;
 
     //! Constructor make Discrete Function
     DFAdapt (const DFAdapt <DiscreteFunctionSpaceType> & df);
@@ -136,46 +136,48 @@ namespace Dune {
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
-    bool write_xdr( const std::basic_string<char> filename );
+    bool write_xdr( const std::string filename );
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
-    bool read_xdr( const std::basic_string<char> filename );
+    bool read_xdr( const std::string filename );
 
     //! write function data to file filename|timestep in ascii Format
-    bool write_ascii(const std::basic_string<char> filename);
+    bool write_ascii(const std::string filename);
 
     //! read function data from file filename|timestep in ascii Format
-    bool read_ascii(const std::basic_string<char> filename);
+    bool read_ascii(const std::string filename);
 
     //! write function data in pgm fromat file
-    bool write_pgm(const std::basic_string<char> filename );
+    bool write_pgm(const std::string filename );
 
     //! read function data from pgm fromat file
-    bool read_pgm(const std::basic_string<char> filename);
+    bool read_pgm(const std::string filename);
 
     //! return name of this discrete function
-    const char * name () const { return name_; }
+    const char * name () const { return name_.c_str(); }
 
     //! return to MemObject which holds the memory of this discrete fucntion
-    MemObjectType & memObj() { return memObj_; }
+    const MemObjectType & memObj() const { return memObj_; }
 
-    DofArrayType & getStorage () { return dofVec_; }
+    const DofArrayType * getStorageType () const { return 0; }
 
   private:
-    // name of this func
-    const char * name_;
-
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
-    //! array containing the dof of this function, see dofmanager.hh
-    DofArrayType dofVec_;
+    // name of this func
+    std::string name_;
 
     // MemObject that manages the memory for the dofs of this function
     MemObjectType & memObj_;
 
+    //! array containing the dof of this function, see dofmanager.hh
+    //! the array is stored within the mem object
+    DofArrayType & dofVec_;
+
     //! hold one object for addLocal and setLocal and so on
     LocalFunctionType localFunc_;
+
   }; // end class DFAdapt
 
 
