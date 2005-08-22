@@ -341,12 +341,19 @@ namespace Dune {
 
       return haveToCopy;
     }
+
     //! return subIndex of given entity
     template <int cd, class EntityType>
     int subIndex (const EntityType & en, int i) const
     {
       assert(cd == dim);
       return en.template subIndex<cd>(i);
+    }
+
+    //! returns vector with geometry tpyes this index set has indices for
+    const std::vector <GeometryType > & geomTypes () const
+    {
+      return hIndexSet_.geomTypes();
     }
 
 
