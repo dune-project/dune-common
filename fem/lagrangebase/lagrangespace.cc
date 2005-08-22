@@ -180,14 +180,14 @@ namespace Dune {
   {
     // only for gcc to pass type DofType
     assert(mapper_ != 0);
-    return dm_.addDofSet( df.getStorage() , this->grid_ , indexSet_ , *mapper_, df.name() );
+    return dm_.addDofSet( df.getStorageType() , this->grid_ , indexSet_ , *mapper_ , df.name() );
   }
 
   template< class FunctionSpaceT, class GridType, class IndexSetType , int polOrd, class DofManagerType >
   template< class DiscFuncType>
   inline bool
   LagrangeDiscreteFunctionSpace<FunctionSpaceT,GridType,IndexSetType,polOrd,DofManagerType>::
-  signOut (DiscFuncType & df) const
+  signOut (const DiscFuncType & df) const
   {
     return dm_.removeDofSet( df.memObj() );
   }
