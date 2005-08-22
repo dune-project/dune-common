@@ -1518,7 +1518,7 @@ namespace Dune
     // return true if element is neihter interior nor ghost
     bool isNoElement( const ALBERTA MACRO_EL * mel) const;
 
-    const std::vector < GeometryType > geomTypes () const { return geomTypes_; }
+    const std::vector < GeometryType > & geomTypes () const { return geomTypes_; }
 
   private:
     Array<int> ghostFlag_; // store ghost information
@@ -1746,7 +1746,7 @@ namespace Dune
     }
 
     //! return geometry types this set has indices for
-    const std::vector< GeometryType > geomTypes() const
+    const std::vector< GeometryType > & geomTypes() const
     {
       return grid_.geomTypes();
     }
