@@ -626,8 +626,6 @@ inline void grapeAddLevelFunction(GRAPEMESH *grape_mesh)
     f_data->next = NULL;
     f_data->last = NULL;
 
-    printf("generate data for discrete function '%s'!\n",level_name);
-
     f_data->name = level_name;
     f_data->dimension_of_value = 1;
     f_data->continuous_data    = 0;
@@ -726,6 +724,7 @@ inline HMESH * get_partition_number (int * partition)
 **  Die Hautroutine zum Initialisieren und Aufrufen eines HMESH"      **
 **                      **
 **  --setupHmesh
+**  --hmesh
 **
 ******************************************************************************
 *****************************************************************************/
@@ -1065,6 +1064,7 @@ inline static GRAPEMESH *grape_mesh_interpol(GRAPEMESH *mesh1, GRAPEMESH *mesh2,
         sf = sf->next;
     }
   }
+
   /* copy current function selections to newMesh */
   self = (GRAPEMESH *) GRAPE(self, "copy-function-selector") (newMesh);
 
