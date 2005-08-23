@@ -155,10 +155,12 @@ AC_CONFIG_FILES([Makefile
          fem/common/Makefile
          fem/dgspace/Makefile
          fem/discfuncarray/Makefile
+         fem/discretefunction/Makefile
          fem/feop/Makefile
          fem/lagrangebase/Makefile
          fem/norms/Makefile
          fem/operator/Makefile
+         fem/space/Makefile
          fem/transfer/Makefile
          grid/Makefile
          grid/albertagrid/Makefile
