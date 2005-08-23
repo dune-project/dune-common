@@ -37,10 +37,10 @@ CPPFLAGS="$CPPFLAGS -I$PSURFACE_INCLUDE_PATH"
 AC_LANG_PUSH([C++])
 
 # check for header
-AC_CHECK_HEADER([parametrization/AmiraParamAccess.h], 
+AC_CHECK_HEADER([psurface.h], 
    [PSURFACE_CPPFLAGS="-I$PSURFACE_INCLUDE_PATH"
 	HAVE_PSURFACE="1"],
-  AC_MSG_WARN([AmiraParamAccess.h not found in $PSURFACE_INCLUDE_PATH/parametrization]))
+  AC_MSG_WARN([psurface.h not found in $PSURFACE_INCLUDE_PATH]))
 
 CPPFLAGS="$PSURFACE_CPPFLAGS"
 
@@ -53,10 +53,10 @@ fi
 
 # if header is found...
 if test x$HAVE_PSURFACE = x1 ; then
-   LIBS="$LIBS -lparam $AMIRAMESH_LDFLAGS $AMIRAMESH_LIBS"
+   LIBS="$LIBS -lpsurface $AMIRAMESH_LDFLAGS $AMIRAMESH_LIBS"
 
-   AC_LINK_IFELSE(AC_LANG_PROGRAM([#include "parametrization/AmiraParamAccess.h"], [AmiraLoadMesh("label", "filename");]),
-	[PSURFACE_LIBS="-lparam"
+   AC_LINK_IFELSE(AC_LANG_PROGRAM([#include "psurface.h"], [AmiraLoadMesh("label", "filename");]),
+	[PSURFACE_LIBS="-lpsurface"
          PSURFACE_LDFLAGS="-L$PSURFACE_LIB_PATH"
          LIBS="$LIBS $PSURFACE_LIBS"],
 	[HAVE_PSURFACE="0"
