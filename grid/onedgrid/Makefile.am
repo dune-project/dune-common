@@ -7,6 +7,7 @@ libonedgrid_la_SOURCES = onedgrid.cc
 onedgriddir = $(includedir)/dune/grid/onedgrid/
 onedgrid_HEADERS = onedgridentity.cc onedgridboundent.hh \
    onedgridgeometry.hh onedgridentity.hh onedgridhieriterator.hh \
-   onedgridleveliterator.hh onedintersectionit.hh onedgridentitypointer.hh
+   onedgridleveliterator.hh onedintersectionit.hh onedgridentitypointer.hh \
+   onedgridindexsets.hh onedgridleafiterator.hh
 
 include $(top_srcdir)/am/global-rules
