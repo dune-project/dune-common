@@ -142,6 +142,8 @@ namespace Dune {
     //! return type of this fucntion space
     DFSpaceIdentifier type () const;
 
+    bool continuous() const { return true; }
+
     //! returns polynomial order
     int polynomOrder() const { return polynomialOrder; }
 
