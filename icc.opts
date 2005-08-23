@@ -5,13 +5,18 @@
 
 # name of compiler binaries
 COMP="icc"
-CXXCOMP="icc"
+CXXCOMP="icpc"
 
 # flags set in any case
-FLAGS=""
+FLAGS="-wn2 -DHAVE_ICC -D__interface=myinterface"
+LDFLAGS="-static"
 
 # additional flags for debugging
 DEBUGFLAGS="-O0 -g"
+#DEBUGFLAGS="-O3 -DNDEBUG"
 
 # additional flags for optimization
-OPTIMFLAGS="-O3"
+OPTIMFLAGS="-O3 -Ob2 -unroll"
+#OPTIMFLAGS="-O3 -Ob2 -unroll -DNDEBUG"
+
+

@@ -96,8 +96,6 @@ namespace Dune {
 
     // Lagrange 1 , to be revised in this matter
     /** \todo Please doc me! */
-    enum { numOfDiffBase_ = 20 };
-    /** \todo Please doc me! */
     enum { DimRange = FunctionSpaceType::DimRange };
 
     /** \todo Please doc me! */
@@ -136,13 +134,14 @@ namespace Dune {
     //! Desctructor
     virtual ~LagrangeDiscreteFunctionSpace ();
 
+    //! continuous
+    bool continuous() const { return true; }
+
     //! return max number of baseset that holds this space
-    int maxNumberBase () const;
+    //int maxNumberBase () const;
 
     //! return type of this fucntion space
     DFSpaceIdentifier type () const;
-
-    bool continuous() const { return true; }
 
     //! returns polynomial order
     int polynomOrder() const { return polynomialOrder; }
@@ -166,6 +165,7 @@ namespace Dune {
     bool evaluateLocal ( int baseFunc, EntityType &en, QuadratureType &quad,
                          int quadPoint, RangeType & ret) const;
 
+
     //! get dimension of value
     int dimensionOfValue () const;
 
@@ -184,28 +184,27 @@ namespace Dune {
 
     //! sign out to dofmanager, dofmanager frees the memory
     template <class DiscFuncType>
-    bool signOut (const DiscFuncType & df) const;
+    bool signOut ( DiscFuncType & df) const;
 
   protected:
     // create functions space with basefunction set for given level
-    void makeFunctionSpace ();
+    void makeFunctionSpace (GridPartType& gridPart);
 
     //! get the right BaseFunctionSet for a given Entity
     template <class EntityType>
-    BaseFunctionSetType* setBaseFuncSetPointer ( EntityType &en );
+    BaseFunctionSetType* setBaseFuncSetPointer(EntityType &en,
+                                               IndexSetType& iset);
 
     //! make base function set depending on GeometryType and polynomial order
     template <GeometryType ElType, int pO >
-    BaseFunctionSetType* makeBaseSet ();
+    BaseFunctionSetType* makeBaseSet (IndexSetType& iset);
 
-    // max number of basesets
-    int maxNumBase_;
-
-    //! the corresponding vector of base function sets
-    //! length is different element types
-    FieldVector<BaseFunctionSetType*, numOfDiffBase_ > baseFuncSet_;
 
   protected:
+    //! the corresponding vector of base function sets
+    //! length is different element types
+    FieldVector<BaseFunctionSetType*, GeometryIdentifier::numTypes> baseFuncSet_;
+
     //! DofManager manages the memory
     mutable DofManagerType & dm_;
 
