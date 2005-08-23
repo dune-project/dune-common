@@ -6,16 +6,16 @@
 <h1>Writing Tests for Dune</h1>
 
 <p>
-Inspired by the pricipales of
+Inspired by the principles of
 <a href="http://www.extremeprogramming.org/rules/testfirst.html">
 Extreme Programming</a> every developer is encouraged to write test
-cases when ever he encounters a bug, or even better write a test
+cases whenever he encounters a bug, or even better write a test
 before adding new functionality to Dune</p>
 
-<h2>Integrating Tests into the Buildsystem</h2>
+<h2>Integrating Tests into the build system</h2>
 
 <p>
-The automake Buildsystem offers an easy way to add tests. We decided
+The automake build system offers an easy way to add tests. We decided
 to put all tests belonging to one module into a subdirectory
 <tt>test</tt> (i.e. all test for <tt>dune/common</tt> belong into
 <tt>dune/commom/test</tt>). In this directory one lists the tests
@@ -35,18 +35,18 @@ mustfail_SOURCES = mustfail.cc
 ...
 </pre>
 
-<h2>Writing Compiletime Tests</h2>
+<h2>Writing compile-time Tests</h2>
 
 <p>
 As described by Bjarne Stroustrup himself
 (<a href="http://www.research.att.com/~bs/bs_faq2.html#constraints">
-C++ Style and Technique FAQ</a>), there are ways to write compiletime
+C++ Style and Technique FAQ</a>), there are ways to write compile time
 tests in C++ that ensure that a certain part of the code is compiled,
 but will never be executed. This kind of checks is heavily used in the
 tests of the grid interface in <tt>dune/grid/test/gridcheck.cc</tt>.
 </p>
 <p>
-Currently the buildsystem does not support compiletime test that must
+Currently the build system does not support compile time test that must
 	  fail.
 </p>
 
