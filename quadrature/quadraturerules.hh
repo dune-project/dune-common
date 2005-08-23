@@ -1285,13 +1285,13 @@ namespace Dune {
 
       cube_maxorder = rules[cubeindex-1]->order();
       if (cube_maxorder<pmax)
-        std::cout << "Warning: Quadrature rule order " << pmax
-                  << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
+        dverb << "Warning: Quadrature rule order " << pmax
+              << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
 
       simplex_maxorder = rules[simpindex-1]->order();
       if(simplex_maxorder<pmax)
-        std::cout<<"Warning: Quadrature rule order " << pmax
-                 << " requested for simplex-" << dim<<"D"<<"  but only " << simplex_maxorder << " available" << std::endl;
+        dverb << "Warning: Quadrature rule order " << pmax
+              << " requested for simplex-" << dim <<"D"<<" but only " << simplex_maxorder << " available" << std::endl;
 
     }
 
@@ -1449,8 +1449,8 @@ namespace Dune {
 
       cube_maxorder = rules[cubeindex-1]->order();
       if (cube_maxorder<pmax)
-        std::cout << "Warning: Quadrature rule order " << pmax
-                  << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
+        dverb << "Warning: Quadrature rule order " << pmax
+              << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
 
     }
 
@@ -1666,23 +1666,23 @@ namespace Dune {
 
       cube_maxorder = rules[cubeindex-1]->order();
       if (cube_maxorder<pmax)
-        std::cout << "Warning: Quadrature rule order " << pmax
-                  << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
+        dverb << "Warning: Quadrature rule order " << pmax
+              << " requested for cubes but only " << cube_maxorder << " available" << std::endl;
 
       simplex_maxorder = rules[simpindex-1]->order();
       if(simplex_maxorder<pmax)
-        std::cout<<"Warning: Quadrature rule order " << pmax
-                 << " requested for simplex-" << dim<<"D"<<"  but only " << simplex_maxorder << " available" << std::endl;
+        dverb << "Warning: Quadrature rule order " << pmax
+              << " requested for simplex-" << (int)dim <<"D"<<" but only " << simplex_maxorder << " available" << std::endl;
 
       prism_maxorder = rules[prisindex-1]->order();
       if(prism_maxorder<pmax)
-        std::cout<<"Warning: Quadrature rule order " << pmax
-                 << " requested for prism" <<"  but only " << prism_maxorder << " available" << std::endl;
+        dverb << "Warning: Quadrature rule order " << pmax
+              << " requested for prism" <<" but only " << prism_maxorder << " available" << std::endl;
       pyramid_maxorder = rules[pyrindex-1]->order();
 
       if(pyramid_maxorder<pmax)
-        std::cout<<"Warning: Quadrature rule order " << pmax
-                 << " requested for pyramid" <<"  but only " << pyramid_maxorder << " available" << std::endl;
+        dverb << "Warning: Quadrature rule order " << pmax
+              << " requested for pyramid" <<" but only " << pyramid_maxorder << " available" << std::endl;
     }
 
 
