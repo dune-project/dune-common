@@ -6,6 +6,7 @@
 #include <vector>
 #include "dune/common/fvector.hh"
 #include "dune/common/exceptions.hh"
+#include "dune/common/stdstreams.hh"
 #include "dune/grid/common/grid.hh"
 
 namespace Dune {
