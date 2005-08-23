@@ -180,16 +180,24 @@ namespace Dune
 
 
   template <class GridType, class DiscFuncType>
-  template <class EntityType, class LocalFuncType>
+  template <class EntityType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
-  evalDof (EntityType &en, DiscFuncType &func , LocalFuncType &lf,
-           int comp , int localNum, double * val)
+  evalDof (EntityType &en, DUNE_FDATA *df , int localNum, double * val)
   {
+    //typedef typename GridType::Traits::template Codim<0>::Entity EntityType;
+
+    assert( df->discFunc );
+    DiscFuncType & func = *((DiscFuncType *)  ( df->discFunc));
+
+    assert( df->lf );
+    typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
+    LocalFuncType & lf = *((LocalFuncType *) (df->lf));
+
     enum { dim = EntityType::dimension };
-    if(&func)
     {
+      int comp = df->component;
       func.localFunction ( en , lf );
-      int dimVal = func.getFunctionSpace().dimensionOfValue();
+      int dimVal = df->dimVal;
       switch (dimVal)
       {
       case 1 :
@@ -205,9 +213,13 @@ namespace Dune
       }
       default :
       {
-        std::cerr << "ERROR: No evalMethod for data set! file = " << __FILE__ << ", line = " << __LINE__ << "\n";
-        abort();
+        evalVector(en,func,lf,comp,localNum,val);
+        return;
       }
+        //{
+        //  std::cerr << "ERROR: No evalMethod for data set! file = " << __FILE__ << ", line = " << __LINE__ << "\n";
+        //  abort();
+        //}
 
       }
       return;
@@ -220,12 +232,6 @@ namespace Dune
   {
     enum { dim = GridType::dimension };
     enum { dimRange = DiscFuncType::FunctionSpaceType::DimRange };
-    typedef typename GridType::Traits::template Codim<0>::Entity EntityType;
-    DiscFuncType *func = (DiscFuncType *)  ( df->discFunc);
-
-    typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
-    LocalFuncType *lf = (LocalFuncType *) (df->lf);
-
     void *iter = he->actElement;
     if(iter == he->liter)
     {
@@ -233,14 +239,14 @@ namespace Dune
       {
         typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
-        evalDof( *it[0],*func,*lf,df->component,localNum,val);
+        evalDof( *it[0],df,localNum,val);
         return;
       }
       else
       {
         typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
-        evalDof(*it[0],*func,*lf,df->component,localNum,val);
+        evalDof(*it[0],df,localNum,val);
         return;
       }
     }
@@ -248,7 +254,7 @@ namespace Dune
     {
       typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
-      evalDof(*it[0],*func,*lf,df->component,localNum,val);
+      evalDof(*it[0],df,localNum,val);
       return;
     }
     else
@@ -291,7 +297,7 @@ namespace Dune
 
   template<class GridType, class DiscFuncType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
-  addData(DiscFuncType &func , const char *name , double time )
+  addData(DiscFuncType &func , const char *name , double time , bool vector )
   {
     typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
 
@@ -302,6 +308,8 @@ namespace Dune
     if(!already)
     {
       int num = (int) DiscFuncType::FunctionSpace::DimRange;
+      if(vector) num = 1;
+
       vecFdata_.resize(size+num);
       for(int n=size; n < size+num; n++)
       {
@@ -310,8 +318,10 @@ namespace Dune
         vecFdata_[n]->mynum = n;
         vecFdata_[n]->name = name;
         vecFdata_[n]->allLevels = 0;
+
         vecFdata_[n]->discFunc = (void *) &func;
         vecFdata_[n]->dimVal   = func.getFunctionSpace().dimensionOfValue();
+        if(vector) vecFdata_[n]->dimVal = DiscFuncType::FunctionSpace::DimRange;
         vecFdata_[n]->lf = (void *) new LocalFuncType ( func.newLocalFunction() );
         vecFdata_[n]->polyOrd = func.getFunctionSpace().polynomOrder();
         vecFdata_[n]->continuous = (func.getFunctionSpace().continuous() == true ) ? 1 : 0;
