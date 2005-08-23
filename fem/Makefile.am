@@ -1,5 +1,3 @@
-# $Id$
-
 SUBDIRS = common dgspace discfuncarray feop lagrangebase norms \
   operator transfer space discretefunction
 
