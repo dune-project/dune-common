@@ -44,7 +44,7 @@ namespace Dune
     inline void dataDisplay(DiscFuncType &func);
 
     //! add discrete function to display
-    inline void addData(DiscFuncType &func, const char * name , double time );
+    inline void addData(DiscFuncType &func, const char * name , double time , bool vector );
 
     // retrun whether we have data or not
     bool hasData () { return vecFdata_.size() > 0; }
@@ -73,9 +73,8 @@ namespace Dune
                            int comp, const double *coord, double * val);
 
     // for the data visualization
-    template <class EntityType, class LocalFuncType>
-    inline void evalDof (EntityType &en, DiscFuncType &func,LocalFuncType &lf,
-                         int comp , int localNum, double * val);
+    template <class EntityType>
+    inline void evalDof (EntityType &en, DUNE_FDATA * , int localNum, double * val);
     // for the data visualization
     template <class EntityType, class LocalFuncType>
     inline void evalScalar (EntityType &en, DiscFuncType & func, LocalFuncType &lf,
