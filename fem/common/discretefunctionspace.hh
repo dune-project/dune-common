@@ -15,6 +15,83 @@ namespace Dune {
       @{
    */
 
+  class GeometryIdentifier {
+  public:
+    enum { numTypes = 9 };
+    enum IdentiferType { Vertex = 0, Line, Triangle, Quadrilateral,
+                         Tetrahedron, Hexahedron, Pyramid, Prism, Unknown };
+  public:
+    GeometryIdentifier(IdentifierType idType) :
+      identifier_(idType) {}
+
+    GeometryIdentifier(int dimension, GeometryType geoType) :
+      identifier_(GeometryIdentifier::fromGeo(dimension, geoType)) {}
+
+    operator GeometryType() const {
+      return GeometryIdentifier::toGeo(identifier_);
+    }
+    operator IdentifierType() const { return identifier_; }
+
+    static GeometryType toGeo(IdentifierType id) {
+      switch(id) {
+      case Vertex :
+        return vertex;
+      case Line :
+        return unknown;
+      case Triangle :
+      case Tetrahedron :
+        return simplex;
+      case Quadrilateral :
+      case Hexahedron :
+        return cube;
+      case Pyramid :
+        return pyramid;
+      case Prism :
+        return prism;
+      default :
+        return unknown;
+      }
+    }
+
+    static IdentifierType fromGeo(int dimension, GeometryType geo) {
+      switch(geo) {
+      case vertex :
+        return Vertex;
+      case simplex :
+        switch(dimension) {
+        case 1 :
+          return Line;
+        case 2 :
+          return Triangle;
+        case 3 :
+          return Tetrahedron;
+        default :
+          return Unknown;
+        }
+      case cube :
+        switch(dimension) {
+        case 1 :
+          return Line;
+        case 2 :
+          return Quadrilateral;
+        case 3 :
+          return Hexahedron;
+        default :
+          return Unknown;
+        }
+      case pyramid :
+        return Pyramid;
+      case prism :
+        return Prism;
+      default :
+        return Unknown;
+      }
+    }
+
+  private:
+    IdentifierType identifier_;
+  };
+
   enum DFSpaceIdentifier {  LagrangeSpace_id , DGSpace_id , RaviartThomasSpace_id, PerLagrangeSpace_id };
 
 

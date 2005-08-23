@@ -82,6 +82,11 @@ namespace Dune {
     DiscreteFunctionInterface (const DiscreteFunctionSpaceType& f)
       : FunctionType ( f ) {}
 
+    //! Continuous data?
+    bool continuous() const {
+      return asImp().continuous();
+    }
+
     //! the implementation of an iterator to iterate efficient
     //! over all dofs of a discrete function
     DofIteratorType dbegin ()
