@@ -50,14 +50,9 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  [HAVE_UG="0"]
       )
 
-      # use global dimension
-      if test "$with_problem_dim" != "$with_world_dim" ; then
-	  AC_MSG_ERROR([problem-dimension and world-dimension have to be the same for UG!])
-      fi
-      UG_DIM="$with_problem_dim"
-      # The same as UG_CPPFLAGS, but without the dimensionality parameter
-      UG_NODIM_CPPFLAGS="${UG_CPPFLAGS}"
-      UG_CPPFLAGS="${UG_CPPFLAGS} -D_${UG_DIM}"
+      # For the time being: only check for the 2d-libs of UG, even though later
+      # we assume that 2d and 3d libs are present.
+      UG_DIM="2"
 
       AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
@@ -91,7 +86,6 @@ AC_DEFUN([DUNE_PATH_UG],[
 	      [int i = UG${UG_DIM}d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
-               UG_NODIM_CPPFLAGS="$UG_NODIM_CPPFLAGS -DModelP"
 	       HAVE_UG="1"
 	       AC_MSG_RESULT(yes)
               ],
@@ -115,10 +109,8 @@ AC_DEFUN([DUNE_PATH_UG],[
           # The libs necessary to instantiate UGGrid<3,3>
           # TODO: We tacitly assume that we can link to 3d-UG, even though we've
           #       only checked for the existence of the 2d-libs.
-          # TODO: Not working for the parallel UG
 	  AC_SUBST(UG_LIBS3, "-lug3 -ldomS3 -lgg3 -ldevS")
 	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
-          AC_SUBST(UG_NODIM_CPPFLAGS, $UG_NODIM_CPPFLAGS)
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
     # add to global list
