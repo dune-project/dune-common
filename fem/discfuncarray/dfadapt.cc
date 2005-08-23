@@ -33,7 +33,7 @@ namespace Dune
   inline DFAdapt< DiscreteFunctionSpaceType >::
   DFAdapt(const DFAdapt <DiscreteFunctionSpaceType> & df ) :
     DiscreteFunctionDefaultType ( df.functionSpace_ )
-    , name_ ("copy of "+ df.name())
+    , name_ (std::string("copy of ") + df.name())
     , memObj_ ( df.functionSpace_.signIn( const_cast <DFAdapt< DiscreteFunctionSpaceType > &> (*this) ))
     , dofVec_ ( memObj_.getArray() )
     , localFunc_ ( df.localFunc_ )

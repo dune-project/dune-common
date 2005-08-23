@@ -182,7 +182,7 @@ namespace Dune {
 
     //! sign out to dofmanager, dofmanager frees the memory
     template <class DiscFuncType>
-    bool signOut (DiscFuncType & df) const;
+    bool signOut (const DiscFuncType & df) const;
 
   protected:
     // create functions space with basefunction set for given level
