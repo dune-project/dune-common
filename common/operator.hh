@@ -33,15 +33,16 @@ namespace Dune
     typedef DFieldType DomainFieldType;
     typedef RFieldType RangeFieldType;
 
-    //! apply operator, used by mapping
-    void apply ( const DomainType & arg, RangeType & dest ) const
-    {
-      std::cerr << "Operator::apply is called! \n";
-      abort();
-    }
+    virtual void operator() (const DomainType& arg, RangeType& dest) const = 0;
 
   private:
-
+    //! Helper function for Mapping
+    //! With this function, a combined mapping can choose the right application
+    //! operator (i.e. the one from Mapping itself, or from Function/Operator)
+    //! \note: Do not override this definition
+    virtual void apply (const DomainType& arg, RangeType& dest) const {
+      operator()(arg, dest);
+    }
   }; // end class Operator
 
   /** @} end documentation group */

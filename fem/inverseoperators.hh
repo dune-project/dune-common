@@ -32,7 +32,8 @@ namespace Dune {
         maxIter_ (maxIter ) , _verbose ( verbose ) {}
 
     /** \todo Please doc me! */
-    void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
+    virtual void operator()(const DiscreteFunctionType& arg,
+                            DiscreteFunctionType& dest ) const
     {
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::RangeField Field;
@@ -132,7 +133,8 @@ namespace Dune {
     }
 
     /** \todo Please doc me! */
-    void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
+    virtual void operator() (const DiscreteFunctionType& arg,
+                             DiscreteFunctionType& dest ) const
     {
       typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::RangeField Field;
@@ -192,12 +194,6 @@ namespace Dune {
       if(_verbose > 0)
         std::cerr << "\n";
       op_.finalizeGlobal();
-    }
-
-    /** \todo Please doc me! */
-    void operator () ( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
-    {
-      this->apply(arg,dest);
     }
 
   private:

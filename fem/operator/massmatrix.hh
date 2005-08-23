@@ -5,6 +5,8 @@
 
 #include <dune/fem/feoperator.hh>
 #include <dune/fem/feop/spmatrix.hh>
+#include <dune/istl/bcrsmatrix.hh>
+#include <dune/istl/matrixindexset.hh>
 
 #include <dune/quadrature/quadraturerules.hh>
 
@@ -52,7 +54,7 @@ namespace Dune {
     SparseRowMatrix<double>* newEmptyMatrix( ) const {
       return new SparseRowMatrix<double>( this->functionSpace_.size () ,
                                           this->functionSpace_.size () ,
-                                          10);
+                                          30);
     }
 
     //! ???
@@ -99,9 +101,9 @@ namespace Dune {
       static FieldVector<double, dim> tmp(1.0);
       const double vol = entity.geometry().integrationElement(tmp);
 
-      static RangeType v[4];
+      static RangeType v[30];
       // Check magic constant. Otherwise program will fail in loop below
-      assert(matSize <= 4);
+      assert(matSize <= 30);
 
       for(i=0; i<matSize; i++)
         for (j=0; j<=i; j++ )
@@ -128,6 +130,10 @@ namespace Dune {
         for (j=matSize; j>i; j--)
           mat[j][i] = mat[i][j];
 
+      // * for debugging only
+      //      for (int i = 0; i < matSize; ++i) {
+      //assert(mat[i][i] > 0.0039 && mat[i][i] < 0.004);
+      //}
     }
 
   protected:
@@ -240,7 +246,7 @@ namespace Dune {
 
       LevelIterator it = grid->template lbegin<0>( grid->maxlevel() );
       LevelIterator endit = grid->template lend<0> ( grid->maxlevel() );
-      enum {maxnumOfBaseFct = 10};
+      enum {maxnumOfBaseFct = 30};
 
       Matrix<MatrixBlock> mat;
 

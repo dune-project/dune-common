@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_FASTBASE_HH__
-#define __DUNE_FASTBASE_HH__
+#ifndef DUNE_FASTBASE_HH
+#define DUNE_FASTBASE_HH
 
 #include "basefunctions.hh"
 
@@ -19,6 +19,15 @@ namespace Dune {
 
      @{
    */
+  template <class FunctionSpaceImp>
+  class FastBaseFunctionSet;
+
+  template <class FunctionSpaceImp>
+  struct FastBaseFunctionSetTraits {
+    typedef FunctionSpaceImp DiscreteFunctionSpaceType;
+    typedef FastBaseFunctionSet<DiscreteFunctionSpaceType> BaseFunctionSetType;
+
+  };
 
   //*************************************************************************
   //
@@ -39,14 +48,15 @@ namespace Dune {
   //
   //*************************************************************************
   template<class FunctionSpaceType>
-  class FastBaseFunctionSet
-    : public BaseFunctionSetDefault <FunctionSpaceType, FastBaseFunctionSet<FunctionSpaceType> >
+  class FastBaseFunctionSet :
+    public BaseFunctionSetDefault<FastBaseFunctionSetTraits<FunctionSpaceType> >
   {
-    typedef typename FunctionSpaceType::Domain Domain;
-    typedef typename FunctionSpaceType::Range Range;
+    typedef typename FunctionSpaceType::DomainType DomainType;
+    typedef typename FunctionSpaceType::RangeType RangeType;
     enum { DimDomain = FunctionSpaceType::DimDomain };
     enum { DimRange  = FunctionSpaceType::DimRange  };
   public:
+    typedef FastBaseFunctionSetTraits<BaseFunctionSetType> Traits;
 
     //! the BaseFunctionInterface type
     typedef BaseFunctionInterface < FunctionSpaceType > BaseFunctionInterfaceType;
@@ -69,16 +79,18 @@ namespace Dune {
     //! evaluate base function baseFunct with the given diffVariable and a
     //! point x and range phi
     template <int diffOrd>
-    void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable,
-                    const Domain & x,  Range & phi ) const;
+    void evaluate ( int baseFunct,
+                    const FieldVector<deriType, diffOrd> &diffVariable,
+                    const DomainType & x,  RangeType & phi ) const;
 
     //! evaluate base fucntion baseFunct at a given quadrature point
     //! the identifier of the quadrature is stored to check , whether the
     //! qaudrature has changed an the values at the quadrature have to be
     //! calulated again
     template <int diffOrd, class QuadratureType>
-    void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable,
-                    QuadratureType & quad, int quadPoint, Range & phi ) const;
+    void evaluate ( int baseFunct,
+                    const FieldVector<deriType, diffOrd> &diffVariable,
+                    QuadratureType & quad, int quadPoint, RangeType & phi) const;
 
     //! get a reference of the base function baseFunct
     //! this is the same concept for all basis, we have a number of
@@ -126,7 +138,7 @@ namespace Dune {
     };
 
     //! vector holding the cached evaluation of the base functions
-    std::vector< std::vector< Range > > vecEvaluate_;
+    std::vector< std::vector< RangeType > > vecEvaluate_;
 
     //! for which waudrature are we holding precalculated values ;
     IdentifierType evaluateQuad_[ numDiffOrd ];

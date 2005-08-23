@@ -93,7 +93,7 @@ namespace Dune {
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
+      typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
       const GridType &grid = functionSpace_.getGrid();
@@ -101,7 +101,8 @@ namespace Dune {
       {
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
         LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
-        enum {maxnumOfBaseFct = 10};
+        enum {maxnumOfBaseFct = 30};
+        if (!matrix_) matrix_ = newEmptyMatrix();
 
         FieldMatrix<double,maxnumOfBaseFct,maxnumOfBaseFct> mat;
 
@@ -128,8 +129,8 @@ namespace Dune {
 #if 0
       {
         // eliminate the Dirichlet rows and columns
-        typedef typename GridType::template codim<0>::Entity EntityType;
-        typedef typename GridType::template codim<0>::IntersectionIterator NeighIt;
+        typedef typename GridType::template Codim<0>::Entity EntityType;
+        typedef typename GridType::template Codim<0>::IntersectionIterator NeighIt;
         typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
 
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
@@ -201,7 +202,7 @@ namespace Dune {
     {
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template codim<0>::LevelIterator LevelIterator;
+      typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
       const GridType &grid = functionSpace_.getGrid();
@@ -274,7 +275,8 @@ namespace Dune {
     }
 
     //! ???
-    void apply( const DiscFunctionType &arg, DiscFunctionType &dest) const
+    virtual void operator()( const DiscFunctionType &arg,
+                             DiscFunctionType &dest) const
     {
       if ( opMode_ == ASSEMBLED )
       {
@@ -350,7 +352,7 @@ namespace Dune {
 
       const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
       int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
-      enum {maxnumOfBaseFct = 10};
+      enum {maxnumOfBaseFct = 30};
 
       FieldMatrix<double,maxnumOfBaseFct,maxnumOfBaseFct> mat;
 
@@ -421,8 +423,10 @@ namespace Dune {
 
           BoundaryEntityType & bEl = nit.boundaryEntity();
 
-          if( functionSpace_.boundaryType( bEl.id() ) == Dirichlet )
+          //if( functionSpace_.boundaryType( bEl.id() ) == Dirichlet )
+          if (true)
           {
+            assert(false);     // * temporary hack
             int neigh = nit.number_in_self();
 
             if(en.geometry().type() == triangle)

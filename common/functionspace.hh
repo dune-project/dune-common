@@ -18,24 +18,24 @@ namespace Dune {
   /** \brief An arbitrary function space
       Base class for specific function spaces.
    */
-  template< typename DomainFieldType, typename RangeFieldType, int n, int m >
+  template< typename DomainFieldImp, typename RangeFieldImp, int n, int m >
   class FunctionSpace : public DynamicType {
   public:
 
     /** Intrinsic type used for values in the domain field (usually a double) */
-    typedef DomainFieldType DomainField;
+    typedef DomainFieldImp DomainFieldType;
     /** Intrinsic type used for values in the range field (usually a double) */
-    typedef RangeFieldType RangeField;
+    typedef RangeFieldImp RangeFieldType;
 
     /** \todo Please doc me! */
-    typedef FieldMatrix <RangeField, m, n> JacobianRange;
+    typedef FieldMatrix <RangeFieldImp, m, n> JacobianRangeType;
     /** \todo Please doc me! */
-    typedef FieldVector<FieldMatrix< RangeField, n, n>, m> HessianRange ;
+    typedef FieldVector<FieldMatrix<RangeFieldImp, n, n>, m> HessianRangeType;
 
     /** Type of domain vector (using type of domain field) */
-    typedef FieldVector<DomainField, n> Domain;
+    typedef FieldVector<DomainFieldImp, n> DomainType;
     /** Type of range vector (using type of range field) */
-    typedef FieldVector<RangeField, m> Range;
+    typedef FieldVector<RangeFieldImp, m> RangeType;
 
     /** Remember the dimensions of the domain and range field */
     enum { DimDomain = n, DimRange = m};

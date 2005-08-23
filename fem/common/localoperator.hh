@@ -189,6 +189,10 @@ namespace Dune
     : public ObjPointerStorage
   {
   public:
+    //! The type of the operators exported
+    typedef A FirstOperatorType;
+    typedef B SecondOperatorType;
+
     //! Constructor for combinations storing the two operators
     CombinedLocalOperator ( A & a, B & b , bool printMsg = false )
       : _a ( a ) , _b ( b ) , printMSG_ ( printMsg )

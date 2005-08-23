@@ -29,13 +29,9 @@ namespace Dune {
   template<class DiscreteFunctionSpaceType >
   class DiscFuncArray
     : public DiscreteFunctionDefault < DiscreteFunctionSpaceType,
-          DofIteratorArray <typename DiscreteFunctionSpaceType::RangeField>,
-          LocalFunctionArray <DiscreteFunctionSpaceType>,
           DiscFuncArray <DiscreteFunctionSpaceType> >
   {
-    typedef DiscreteFunctionDefault < DiscreteFunctionSpaceType,
-        DofIteratorArray <typename DiscreteFunctionSpaceType::RangeField>,
-        LocalFunctionArray <DiscreteFunctionSpaceType>,
+    typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType,
         DiscFuncArray <DiscreteFunctionSpaceType > >
     DiscreteFunctionDefaultType;
 

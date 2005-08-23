@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_DISCRETE_FUNCTION_CC__
-#define __DUNE_DISCRETE_FUNCTION_CC__
+#ifndef DUNE_DISCRETEFUNCTION_CC
+#define DUNE_DISCRETEFUNCTION_CC
 
 #include <fstream>
 #include <dune/io/file/asciiparser.hh>
@@ -9,29 +9,23 @@
 namespace Dune
 {
 
-
   //************************************************************
   //  Default Implementations
   //************************************************************
   // scalarProductDofs
-  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
-      class LocalFunctionImp, class DiscreteFunctionImp >
-  inline typename DiscreteFunctionSpaceType::RangeField
-  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-      DofIteratorImp , LocalFunctionImp,DiscreteFunctionImp >::
-  scalarProductDofs( const DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-                         DofIteratorImp ,LocalFunctionImp, DiscreteFunctionImp > &g ) const
+  template <class DiscreteFunctionTraits>
+  inline typename DiscreteFunctionTraits::DiscreteFunctionSpaceType::RangeFieldType
+  DiscreteFunctionDefault<DiscreteFunctionTraits>::
+  scalarProductDofs(const DiscreteFunctionType& g) const
   {
-    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
-    typedef ConstDofIteratorDefault<DofIteratorImp> ConstDofIter;
-
+    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
     RangeFieldType skp = 0.;
 
-    ConstDofIter endit = this->dend ();
-    ConstDofIter git =  g.dbegin ();
+    ConstDofIteratorType endit = this->dend ();
+    ConstDofIteratorType git =  g.dbegin ();
 
     // multiply
-    for(ConstDofIter it = this->dbegin(); it != endit; ++it,++git)
+    for(ConstDofIteratorType it = this->dbegin(); it != endit; ++it,++git)
     {
       skp += (*it) * (*git);
     }
@@ -40,75 +34,25 @@ namespace Dune
   }
 
 
-  // assign on maxlevel
-  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
-      class LocalFunctionImp, class DiscreteFunctionImp >
-  inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
-  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-      DofIteratorImp , LocalFunctionImp, DiscreteFunctionImp >::
-  assign( const Vector< typename DiscreteFunctionSpaceType::RangeField > & g )
-  {
-    typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-        DofIteratorImp , LocalFunctionImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
-
-    const DiscreteFunctionDefaultType &gc =
-      static_cast<const DiscreteFunctionDefaultType &> ( g );
-
-    DofIteratorImp it = this->dbegin();
-    DofIteratorImp endit = this->dend ();
-    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
-
-    for(; it != endit; ++it, ++git)
-      *it = *git;
-
-    return *this;
-  }
-
-
-  // operator =
-  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
-      class LocalFunctionImp, class DiscreteFunctionImp >
-  inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
-  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-      DofIteratorImp , LocalFunctionImp,DiscreteFunctionImp >::
-  operator = ( const Vector< typename DiscreteFunctionSpaceType::RangeField > & g )
-  {
-    typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-        DofIteratorImp , LocalFunctionImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
-
-    const DiscreteFunctionDefaultType &gc =
-      static_cast<const DiscreteFunctionDefaultType &> ( g );
-
-    DofIteratorImp endit = this->dend ();
-    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
-
-    for(DofIteratorImp it = this->dbegin(); it != endit; ++it,++git )
-    {
-      *it = *git;
-    }
-    return *this;
-  }
-
   // operator +=
   /** \todo This operator can add a discretefunction defined on all levels to another
    * one defined only on one level.  We should somehow issue a warning in this case.
    */
-  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
-      class LocalFunctionImp, class DiscreteFunctionImp >
-  inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
-  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-      DofIteratorImp , LocalFunctionImp,DiscreteFunctionImp >::
-  operator += ( const Vector< typename DiscreteFunctionSpaceType::RangeField > & g )
+  template<class DiscreteFunctionTraits>
+  DiscreteFunctionDefault<DiscreteFunctionTraits >&
+  DiscreteFunctionDefault<DiscreteFunctionTraits >::
+  operator += (const MappingType& g)
   {
-    typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-        DofIteratorImp , LocalFunctionImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
+    typedef DiscreteFunctionDefault<
+        DiscreteFunctionTraits
+        > DiscreteFunctionDefaultType;
 
     const DiscreteFunctionDefaultType &gc =
       static_cast<const DiscreteFunctionDefaultType &> ( g );
 
-    DofIteratorImp endit = this->dend ();
-    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
-    for(DofIteratorImp it = this->dbegin(); it != endit; ++it, ++git)
+    DofIteratorType endit = this->dend ();
+    ConstDofIteratorType git = gc.dbegin ();
+    for(DofIteratorType it = this->dbegin(); it != endit; ++it, ++git)
     {
       *it += *git;
     }
@@ -117,51 +61,46 @@ namespace Dune
 
 
   // operator -=
-  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
-      class LocalFunctionImp, class DiscreteFunctionImp >
-  inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
-  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-      DofIteratorImp , LocalFunctionImp,DiscreteFunctionImp >::
-  operator -= ( const Vector< typename DiscreteFunctionSpaceType::RangeField > & g )
+  template<class DiscreteFunctionTraits>
+  DiscreteFunctionDefault<DiscreteFunctionTraits> &
+  DiscreteFunctionDefault<DiscreteFunctionTraits >::
+  operator -= ( const MappingType& g )
   {
-    typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-        DofIteratorImp , LocalFunctionImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
+    typedef DiscreteFunctionDefault<
+        DiscreteFunctionTraits
+        > DiscreteFunctionDefaultType;
 
     // cast to class discrete functions
     const DiscreteFunctionDefaultType &gc =
       static_cast<const DiscreteFunctionDefaultType &> ( g );
 
-    DofIteratorImp endit = this->dend ();
-    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
-    for(DofIteratorImp it = this->dbegin(); it != endit; ++it, ++git)
+    DofIteratorType endit = this->dend ();
+    ConstDofIteratorType git = gc.dbegin ();
+    for(DofIteratorType it = this->dbegin(); it != endit; ++it, ++git)
     {
       *it -= *git;
     }
-    return *this;
+    return asImp();
   }
 
   // operator *=
-  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
-      class LocalFunctionImp, class DiscreteFunctionImp >
-  inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
-  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-      DofIteratorImp , LocalFunctionImp,DiscreteFunctionImp >::
-  operator *= ( const typename DiscreteFunctionSpaceType::RangeField & scalar )
+  template<class DiscreteFunctionTraits >
+  inline DiscreteFunctionDefault<DiscreteFunctionTraits>&
+  DiscreteFunctionDefault<DiscreteFunctionTraits >::
+  operator*=(const typename DiscreteFunctionSpaceType::RangeFieldType & scalar)
   {
-    DofIteratorImp endit = this->dend ();
-    for(DofIteratorImp it = this->dbegin(); it != endit; ++it)
+    DofIteratorType endit = this->dend ();
+    for(DofIteratorType it = this->dbegin(); it != endit; ++it)
       *it *= scalar;
 
     return *this;
   }
 
   // operator /=
-  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
-      class LocalFunctionImp, class DiscreteFunctionImp >
-  inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
-  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-      DofIteratorImp , LocalFunctionImp,DiscreteFunctionImp >::
-  operator /= ( const typename DiscreteFunctionSpaceType::RangeField & scalar )
+  template<class DiscreteFunctionTraits>
+  inline DiscreteFunctionDefault<DiscreteFunctionTraits > &
+  DiscreteFunctionDefault<DiscreteFunctionTraits >::
+  operator/=(const typename DiscreteFunctionSpaceType::RangeFieldType & scalar)
   {
     (*this) *= (1./scalar);
     return *this;
@@ -169,28 +108,26 @@ namespace Dune
 
 
   // add
-  template<class DiscreteFunctionSpaceType, class DofIteratorImp,
-      class LocalFunctionImp, class DiscreteFunctionImp >
-  inline Vector< typename DiscreteFunctionSpaceType::RangeField > &
-  DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-      DofIteratorImp , LocalFunctionImp,DiscreteFunctionImp >::
-  add ( const Vector< typename DiscreteFunctionSpaceType::RangeField > & g ,
-        typename DiscreteFunctionSpaceType::RangeField scalar )
+  template<class DiscreteFunctionTraits >
+  typename DiscreteFunctionTraits::DiscreteFunctionType&
+  DiscreteFunctionDefault<DiscreteFunctionTraits >::
+  add(const DiscreteFunctionType& g, RangeFieldType scalar)
   {
-    typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType ,
-        DofIteratorImp , LocalFunctionImp, DiscreteFunctionImp > DiscreteFunctionDefaultType;
+    typedef DiscreteFunctionDefault<
+        DiscreteFunctionTraits
+        > DiscreteFunctionDefaultType;
 
     const DiscreteFunctionDefaultType &gc =
       static_cast<const DiscreteFunctionDefaultType &> ( g );
     // we would need const_iterators.....
 
-    DofIteratorImp endit = this->dend ();
-    ConstDofIteratorDefault<DofIteratorImp> git = gc.dbegin ();
-    for(DofIteratorImp it = this->dbegin(); it != endit; ++it, ++git)
+    DofIteratorType endit = this->dend ();
+    ConstDofIteratorType git = gc.dbegin ();
+    for(DofIteratorType it = this->dbegin(); it != endit; ++it, ++git)
     {
       *it += (*git) * scalar;
     }
-    return *this;
+    return asImp();
   }
 
 } // end namespace Dune

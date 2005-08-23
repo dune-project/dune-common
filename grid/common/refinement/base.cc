@@ -83,7 +83,7 @@ namespace Dune {
      @par Member Structs:
 
      <dl>
-     <dt>template<int codimension> struct @ref codim</dt>
+     <dt>template<int codimension> struct @ref Codim</dt>
      <dd>codimension template containing the SubEntityIterator</dd>
      </dl>
    */
@@ -95,12 +95,12 @@ namespace Dune {
 #ifdef DOXYGEN
     enum { dimension /*!< Know your own dimension */ };
 
-    /*! @brief The codim struct inherited from the @ref Refinement implementation
+    /*! @brief The Codim struct inherited from the @ref Refinement implementation
 
-       @param codimension There is a different struct codim for each codimension
+       @param codimension There is a different struct Codim for each codimension
      */
     template<int codimension>
-    struct codim
+    struct Codim
     {
       /*! @brief The SubEntityIterator for each codim
 
@@ -111,9 +111,9 @@ namespace Dune {
     };
 
     //! The VertexIterator of the Refinement
-    typedef codim<dimension>::SubEntityIterator VertexIterator;
+    typedef Codim<dimension>::SubEntityIterator VertexIterator;
     //! The ElementIterator of the Refinement
-    typedef codim<0>::SubEntityIterator ElementIterator;
+    typedef Codim<0>::SubEntityIterator ElementIterator;
 
     /*! @brief The CoordVector of the Refinement
 
@@ -144,7 +144,7 @@ namespace Dune {
 
     using RefinementImp::dimension;
 
-    using RefinementImp::codim;
+    using RefinementImp::Codim;
 
     using RefinementImp::VertexIterator;
     using RefinementImp::CoordVector;

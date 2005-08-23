@@ -77,7 +77,7 @@ evaluate(int numberInSelf,
 
 template <class FunctionSpaceType>
 template <class QuadratureType>
-const std::vector<FunctionSpaceType::Range>&
+const std::vector<typename FunctionSpaceType::Range>&
 CachingBaseFunctionSet<FunctionSpaceType >::
 values(int baseFunct, const QuadratureType& quad) const {
   ConstRangeMapIterator it = vals_.find(quad.getIdentifier());
@@ -94,7 +94,7 @@ values(int baseFunct, const QuadratureType& quad) const {
 
 template <class FunctionSpaceType>
 template <class QuadratureType>
-const std::vector<FunctionSpaceType::JacobianRange>&
+const std::vector<typename FunctionSpaceType::JacobianRange>&
 CachingBaseFunctionSet<FunctionSpaceType >::
 gradients(int baseFunct, const QuadratureType& quad) const {
   ConstJacobianMapIterator it = grads_.find(quad.getIdentifier());
@@ -111,7 +111,7 @@ gradients(int baseFunct, const QuadratureType& quad) const {
 
 template <class FunctionSpaceType>
 template <class QuadratureType>
-const std::vector<FunctionSpaceType::Range>&
+const std::vector<typename FunctionSpaceType::Range>&
 CachingBaseFunctionSet<FunctionSpaceType>::
 faces(int faceIdx, int baseFct, const QuadratureType& quad) const {
   ConstFaceMapIterator it = faces_.find(quad.getIdentifier());
@@ -208,7 +208,7 @@ registerQuadrature(const QuadratureType &quad, const EntityType& en) const {
 
 
 template <class FunctionSpaceType>
-const FunctionSpaceType::Range
+const typename FunctionSpaceType::Range
 CachingBaseFunctionSet<FunctionSpaceType>::
 extractGradientComp(const JacobianRange& jr, int idx) const {
   Range result;

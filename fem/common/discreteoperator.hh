@@ -63,20 +63,33 @@ namespace Dune {
        called are deleted too.
      */
     template <class LocalOperatorType>
-    DiscreteOperatorImp<  CombinedLocalOperator < LocalOperatorImp , LocalOperatorType> ,
-        DFDomainType, DFRangeType >  &
-    operator + (DiscreteOperatorImp < LocalOperatorType, DFDomainType , DFRangeType > &op )
+    DiscreteOperatorImp<
+        CombinedLocalOperator < LocalOperatorImp , LocalOperatorType> ,
+        DFDomainType,
+        DFRangeType >  &
+    operator + (DiscreteOperatorImp <
+                    LocalOperatorType,
+                    DFDomainType ,
+                    DFRangeType > &op )
     {
       if(asImp().printInfo())
         std::cout << "DiscreteOperatorDefault::operator + called! \n";
 
-      typedef DiscreteOperatorImp < LocalOperatorType , DFDomainType, DFRangeType> CopyType;
-      typedef CombinedLocalOperator < LocalOperatorImp , LocalOperatorType > COType;
+      typedef DiscreteOperatorImp <
+          LocalOperatorType ,
+          DFDomainType,
+          DFRangeType> CopyType;
+      typedef CombinedLocalOperator <
+          LocalOperatorImp ,
+          LocalOperatorType > COType;
 
       COType *locOp =
-        new COType ( asImp().getLocalOp() , op.getLocalOp () , asImp().printInfo() );
+        new COType(asImp().getLocalOp(), op.getLocalOp (), asImp().printInfo());
 
-      typedef DiscreteOperatorImp <COType, DFDomainType, DFRangeType > OPType;
+      typedef DiscreteOperatorImp <
+          COType,
+          DFDomainType,
+          DFRangeType > OPType;
 
       OPType *discrOp = new OPType (op, *locOp );
 

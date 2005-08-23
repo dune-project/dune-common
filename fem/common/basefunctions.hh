@@ -40,20 +40,22 @@ namespace Dune {
   //! by typedefs in FunctionSpaceType which is the template parameter of
   //! BaseFunctionInterface.
   //*************************************************************************
-  template<class FunctionSpaceType>
+  template<class FunctionSpaceImp>
   class BaseFunctionInterface
-    : public Mapping< typename FunctionSpaceType::DomainField,
-          typename FunctionSpaceType::RangeField,
-          typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range >
+    : public Mapping< typename FunctionSpaceImp::DomainFieldType,
+          typename FunctionSpaceImp::RangeFieldType,
+          typename FunctionSpaceImp::DomainType,
+          typename FunctionSpaceImp::RangeType >
   {
 
   public:
-    typedef typename FunctionSpaceType::Domain Domain;
-    typedef typename FunctionSpaceType::Range Range;
-    enum { DimDomain = FunctionSpaceType::DimDomain };
-    enum { DimRange  = FunctionSpaceType::DimRange  };
+    typedef FunctionSpaceImp DiscreteFunctionSpaceType;
+    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
+    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
+    enum { DimDomain = DiscreteFunctionSpaceType::DimDomain };
+    enum { DimRange  = DiscreteFunctionSpaceType::DimRange  };
 
-    BaseFunctionInterface (const FunctionSpaceType & f ) : functionSpace_ (f) {} ;
+    BaseFunctionInterface () {} ;
 
     //! evaluate the function at Domain x, and store the value in Range Phi
     //! diffVariable stores information about which gradient is to be
@@ -63,19 +65,18 @@ namespace Dune {
     //! differentiation order
     //! \param x The local coordinate in the reference element
     virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
-                            const Domain & , Range &) const {};
+                            const DomainType & , RangeType &) const = 0;
 
     //! diffVariable contain the component of the gradient which is delivered.
     //! for example gradient of the basefunction x component ==>
     //! diffVariable(0) == 0, y component ==> diffVariable(0) == 1 ...
     virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
-                            const Domain & , Range &) const {};
+                            const DomainType & , RangeType &) const = 0;
 
     virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
-                            const Domain & , Range &) const {};
+                            const DomainType & , RangeType &) const = 0;
 
   private:
-    const FunctionSpaceType & functionSpace_;
 
   };
 
@@ -110,21 +111,22 @@ namespace Dune {
   //! This method brings us flexebility and effeciency.
   //!
   //****************************************************************************
-  template<class FunctionSpaceType, class BaseFunctionSetImp>
+  template<class BaseFunctionSetTraits>
   class BaseFunctionSetInterface
   {
   public:
+    typedef typename BaseFunctionSetTraits::DiscreteFunctionSpaceType DiscreteFunctionSpaceType;
+    typedef typename BaseFunctionSetTraits::BaseFunctionSetType BaseFunctionSetType;
+    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
+    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
+    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
+    typedef typename DiscreteFunctionSpaceType::HessianRangeType HessianRangeType;
 
-    typedef typename FunctionSpaceType::Domain Domain ;
-    typedef typename FunctionSpaceType::Range Range ;
-    typedef typename FunctionSpaceType::JacobianRange JacobianRange;
-    typedef typename FunctionSpaceType::HessianRange HessianRange;
-
-    enum { DimDomain = FunctionSpaceType::DimDomain };
-    enum { DimRange  = FunctionSpaceType::DimRange  };
+    enum { DimDomain = DiscreteFunctionSpaceType::DimDomain };
+    enum { DimRange  = DiscreteFunctionSpaceType::DimRange  };
 
     //typedef  Quadrature < FunctionSpaceType > QuadratureType ;
-    typedef  BaseFunctionInterface < FunctionSpaceType > BaseFunctionType;
+    typedef  BaseFunctionInterface<DiscreteFunctionSpaceType> BaseFunctionType;
 
     // to be declared in derived extension class:
     // void gradient ( int baseFunct, Domain & x,  GradientRange & phi ) ;
@@ -138,7 +140,7 @@ namespace Dune {
     /*** Begin Interface ***/
 
     //! \todo Please doc me!
-    BaseFunctionSetInterface ( FunctionSpaceType & f ) : funcSpace_ ( f ) {};
+    BaseFunctionSetInterface ()  {};
 
     //! \todo Please doc me!
     int getNumberOfBaseFunctions () const {
@@ -147,33 +149,40 @@ namespace Dune {
 
     //! \todo Please doc me!
     template <int diffOrd>
-    void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, const
-                    Domain & x, Range & phi ) const {
+    void evaluate (int baseFunct,
+                   const FieldVector<deriType, diffOrd> &diffVariable,
+                   const DomainType & x, RangeType & phi ) const {
       std::cout << "BaseFunctionSetInterface::evaluate \n";
       asImp().evaluate( baseFunct, diffVariable, x, phi );
     }
 
     //! \todo Please doc me!
     template <int diffOrd, class QuadratureType >
-    void evaluate ( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, QuadratureType & quad, int quadPoint, Range & phi ) const {
+    void evaluate (int baseFunct,
+                   const FieldVector<deriType, diffOrd> &diffVariable,
+                   QuadratureType & quad,
+                   int quadPoint, RangeType & phi ) const {
       asImp().evaluate( baseFunct, diffVariable, quad, quadPoint, phi );
     }
   protected:
 
-    //! \todo Please doc me!
-    const BaseFunctionInterface<FunctionSpaceType> &getBaseFunction( int baseFunct ) const {
+    //! This function should not be here at all!
+    const BaseFunctionInterface<DiscreteFunctionSpaceType> &getBaseFunction( int baseFunct ) const {
       std::cout << "Interface getBaseFunction \n";
       return asImp().getBaseFunction( baseFunct );
     }
 
 
   private:
-    FunctionSpaceType & funcSpace_;
 
     //! Barton-Nackman trick
-    BaseFunctionSetImp &asImp() { return static_cast<BaseFunctionSetImp&>(*this); }
-    const BaseFunctionSetImp &asImp() const
-    { return static_cast<const BaseFunctionSetImp&>(*this); }
+    BaseFunctionSetType &asImp() {
+      return static_cast<BaseFunctionSetType&>(*this);
+    }
+
+    const BaseFunctionSetType &asImp() const {
+      return static_cast<const BaseFunctionSetType&>(*this);
+    }
 
   };
 
@@ -186,28 +195,30 @@ namespace Dune {
   //! implementation class, but not has to.
   //!
   //*************************************************************************
-  template<class FunctionSpaceType, class BaseFunctionSetImp>
+  template<class BaseFunctionSetTraits>
   class BaseFunctionSetDefault
-    : public BaseFunctionSetInterface < FunctionSpaceType , BaseFunctionSetImp>
+    : public BaseFunctionSetInterface <BaseFunctionSetTraits>
   {
   public:
-    typedef typename FunctionSpaceType::JacobianRange JacobianRange;
-    enum { dimRow = JacobianRange::rows };
-    enum { dimCol = JacobianRange::cols };
+    typedef typename BaseFunctionSetTraits::BaseFunctionSetType BaseFunctionSetType;
+    typedef typename BaseFunctionSetTraits::DiscreteFunctionSpaceType DiscreteFunctionSpaceType;
+    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
+    enum { dimRow = JacobianRangeType::rows };
+    enum { dimCol = JacobianRangeType::cols };
 
-    typedef typename FunctionSpaceType::Domain Domain ;
-    typedef typename FunctionSpaceType::Range Range ;
-    typedef typename FunctionSpaceType::HessianRange HessianRange;
+    typedef typename DiscreteFunctionSpaceType::DomainType DomainType ;
+    typedef typename DiscreteFunctionSpaceType::RangeType RangeType ;
+    typedef typename DiscreteFunctionSpaceType::HessianRangeType HessianRangeType;
     //! set the default diffVar Types
-    BaseFunctionSetDefault ( FunctionSpaceType & f ) :
-      BaseFunctionSetInterface < FunctionSpaceType , BaseFunctionSetImp> (f)
+    BaseFunctionSetDefault () :
+      BaseFunctionSetInterface<BaseFunctionSetTraits> ()
     {
       for(int i=0; i<dimCol; i++)
         jacobianDiffVar_[i] = i;
     };
 
     //! default evaluate using the evaluate interface
-    void eval ( int baseFunct, const Domain & x, Range & phi ) const
+    void eval ( int baseFunct, const DomainType & x, RangeType & phi ) const
     {
       asImp().evaluate(baseFunct, diffVariable_ , x , phi);
       return;
@@ -215,14 +226,14 @@ namespace Dune {
 
     //! default implementation for evaluation
     template <class QuadratureType>
-    void eval ( int baseFunct, QuadratureType & quad, int quadPoint, Range & phi ) const
+    void eval ( int baseFunct, QuadratureType & quad, int quadPoint, RangeType & phi ) const
     {
       asImp().evaluate( baseFunct, diffVariable_ , quad, quadPoint, phi );
       return;
     }
 
     //! default evaluate using the evaluate interface
-    void jacobian ( int baseFunct, const Domain & x, JacobianRange & phi ) const
+    void jacobian(int baseFunct, const DomainType & x, JacobianRangeType & phi) const
     {
       for(int i=0; i<dimCol; i++)
       {
@@ -235,7 +246,7 @@ namespace Dune {
     //! default implementation of evaluation the gradient
     template <class QuadratureType>
     void jacobian ( int baseFunct, QuadratureType & quad,
-                    int quadPoint, JacobianRange & phi ) const
+                    int quadPoint, JacobianRangeType & phi ) const
     {
       for(int i=0; i<dimCol; i++)
       {
@@ -249,15 +260,15 @@ namespace Dune {
     //! just diffVariable for evaluation of the functions
     const FieldVector<deriType, 0> diffVariable_;
 
-    //! temporary Range vec
-    mutable Range tmp_;
+    //! temporary RangeType vec
+    mutable RangeType tmp_;
 
     FieldVector<deriType, 1> jacobianDiffVar_[dimCol];
 
     //! Barton-Nackman trick
-    BaseFunctionSetImp &asImp() { return static_cast<BaseFunctionSetImp&>(*this); }
-    const BaseFunctionSetImp &asImp() const
-    { return static_cast<const BaseFunctionSetImp&>(*this); }
+    BaseFunctionSetType &asImp() { return static_cast<BaseFunctionSetType&>(*this); }
+    const BaseFunctionSetType &asImp() const
+    { return static_cast<const BaseFunctionSetType&>(*this); }
 
   };
   /** @} end documentation group */

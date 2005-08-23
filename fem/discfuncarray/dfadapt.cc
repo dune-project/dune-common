@@ -107,30 +107,38 @@ namespace Dune
   inline typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
   DFAdapt< DiscreteFunctionSpaceType >::dbegin ( )
   {
-    return DofIteratorType ( dofVec_ , 0 );
+    //DofIteratorType tmp ( dofVec_ , 0 );
+    //return tmp;
+    return dofVec_.begin();
   }
 
   template<class DiscreteFunctionSpaceType >
   inline typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
   DFAdapt< DiscreteFunctionSpaceType >::dend ()
   {
-    return DofIteratorType ( dofVec_ , dofVec_.size() );
+    //DofIteratorType tmp ( dofVec_ , dofVec_.size() );
+    //return tmp;
+    return dofVec_.end();
   }
 
   template<class DiscreteFunctionSpaceType >
   inline typename DFAdapt<DiscreteFunctionSpaceType>::ConstDofIteratorType
   DFAdapt< DiscreteFunctionSpaceType >::dbegin ( ) const
   {
-    DofIteratorType tmp ( dofVec_ , 0 );
-    return ConstDofIteratorType(tmp);
+    //DofIteratorType tmp ( dofVec_ , 0 );
+    //ConstDofIteratorType tmp2(tmp);
+    //return tmp2;
+    return dofVec_.begin();
   }
 
   template<class DiscreteFunctionSpaceType >
   inline typename DFAdapt<DiscreteFunctionSpaceType>::ConstDofIteratorType
   DFAdapt< DiscreteFunctionSpaceType >::dend () const
   {
-    DofIteratorType tmp ( dofVec_ , dofVec_.size() );
-    return ConstDofIteratorType (tmp);
+    //DofIteratorType tmp ( dofVec_ , dofVec_.size() );
+    //ConstDofIteratorType tmp2(tmp);
+    //return tmp2;
+    return dofVec_.end();
   }
   //**************************************************************************
   //  Read and Write Methods
@@ -342,8 +350,8 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   template<class EntityType>
   inline void DFAdapt< DiscreteFunctionSpaceType >::
-  substractLocal( EntityType &en ,
-                  const DFAdapt<DiscreteFunctionSpaceType> &g)
+  subtractLocal( EntityType &en ,
+                 const DFAdapt<DiscreteFunctionSpaceType> &g)
   {
     localFunction( en , localFunc_ );
 
@@ -392,7 +400,6 @@ namespace Dune
   inline const typename LocalFunctionAdapt < DiscreteFunctionSpaceType >::RangeFieldType &
   LocalFunctionAdapt < DiscreteFunctionSpaceType >::operator [] (int num) const
   {
-    std::cout << "LFAdadpt::operator[]: " << num << " of " << numberOfDofs() << std::endl;
     return (* (values_[num]));
   }
 
@@ -406,27 +413,31 @@ namespace Dune
   // hier noch evaluate mit Quadrature Regel einbauen
   template<class DiscreteFunctionSpaceType > template <class EntityType>
   inline void LocalFunctionAdapt < DiscreteFunctionSpaceType >::
-  evaluate (EntityType &en, const DomainType & x, RangeType & ret) const
+  evaluate (EntityType &en, const DomainType & x, RangeType & ret) const {
+    ret = 0.0;
+    xtmp_ = en.geometry().local(x);
+    evaluateLocal(en, xtmp_, ret);
+  }
+
+  template<class DiscreteFunctionSpaceType > template <class EntityType>
+  inline void LocalFunctionAdapt < DiscreteFunctionSpaceType >::
+  evaluateLocal (EntityType &en, const DomainType & x, RangeType & ret) const
   {
-    if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
+    //  if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
+    // {
+    ret = 0.0;
+    for(int i=0; i<numOfDifferentDofs_; i++)
     {
-      ret = 0.0;
-      xtmp_ = en.geometry().local(x);
-      for(int i=0; i<numOfDifferentDofs_; i++)
-      {
-        bool eval = fSpace_.evaluateLocal(i,en,xtmp_,tmp_);
-        if(eval)
-        {
-          for(int l=0; l<dimrange; l++)
-            ret[l] += (* (values_[i])) * tmp_[l];
-        }
-      }
-    }
-    else
-    {
+      fSpace_.evaluateLocal(i,en,x,tmp_);
       for(int l=0; l<dimrange; l++)
-        ret[l] = (* (values_[ l ]));
+        ret[l] += (* (values_[i])) * tmp_[l];
     }
+    //}
+    //else
+    //{
+    //for(int l=0; l<dimrange; l++)
+    // ret[l] = (* (values_[ l ]));
+    //}
   }
 
   // hier noch evaluate mit Quadrature Regel einbauen
@@ -462,27 +473,60 @@ namespace Dune
   jacobian (EntityType &en, QuadratureType &quad, int quadPoint, JacobianRangeType & ret) const
   {
     enum { dim = EntityType::dimension };
-    const FieldMatrix<RangeFieldType,dim,dim> & inv = en.geometry().jacobianInverse(quad.point(quadPoint));
+    const FieldMatrix<RangeFieldType,dim,dim> & inv
+      = en.geometry().jacobianInverse(quad.point(quadPoint));
 
-    if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
-    {
-      ret = 0.0;
-      JacobianRangeType tmp(0.0);
-      for(int i=0; i<numOfDifferentDofs_; i++)
-      {
-        tmpGrad_[0] = 0.0;
-        this->fSpace_.getBaseFunctionSet(en).jacobian(i,quad,quadPoint,tmp);
-        inv.umv(tmp[0],tmpGrad_[0]);
+    //if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
+    //{
+    ret = 0.0;
+    JacobianRangeType tmp(0.0);
+    for(int i=0; i<numOfDifferentDofs_; i++) {
+      this->fSpace_.getBaseFunctionSet(en).jacobian(i,quad,quadPoint,tmp);
 
-        tmpGrad_[0] *= (* (values_[i]));
+      for (int l = 0; l < dimrange; ++l) {
+        tmpGrad_[l] = 0.0;
+        inv.umv(tmp[l],tmpGrad_[l]);
+        tmpGrad_[l] *= (* (values_[i]));
 
-        ret[0] += tmpGrad_[0];
+        ret[l] += tmpGrad_[l];
       }
     }
-    else
-    {
-      ret = 0.0;
+    //}
+    //else
+    // {
+    //ret = 0.0;
+    //}
+  }
+
+  template<class DiscreteFunctionSpaceType > template <class EntityType>
+  inline void LocalFunctionAdapt<DiscreteFunctionSpaceType>::
+  jacobianLocal(EntityType& en, const DomainType& x,
+                JacobianRangeType& ret) const
+  {
+    // * only for dimrange = 1 so far
+    enum { dim = EntityType::dimension };
+    ret *= 0.0;
+
+    for (int i = 0; i < numOfDifferentDofs_; ++i) {
+      tmpGrad_ *= 0.0;
+      this->fSpace_.getBaseFunctionSet(en).jacobian(i, x, tmpGrad_);
+
+      tmpGrad_[0] *= *(values_[i]);
+      //ret[0] += tmpGrad_[0];
+      en.geometry().jacobianInverse(xtmp_).umtv(tmpGrad_[0], ret[0]);
+
     }
+  }
+
+  template<class DiscreteFunctionSpaceType > template <class EntityType>
+  inline void LocalFunctionAdapt<DiscreteFunctionSpaceType>::
+  jacobian(EntityType& en, const DomainType& x, JacobianRangeType& ret) const {
+    // only for dimrange == 1 so far
+    ret *= 0.0;
+    xtmp_ = en.geometry().local(x);
+    JacobianRangeType tmp(0.0);
+    jacobianLocal(en, xtmp_, ret);
+    //en.geometry().jacobianInverse(xtmp_).umtv(tmp[0], ret[0]);
   }
 
   template<class DiscreteFunctionSpaceType > template <class EntityType>

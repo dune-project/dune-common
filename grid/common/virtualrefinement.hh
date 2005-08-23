@@ -87,11 +87,11 @@
    class VirtualRefinement
    {
    public:
-    template<int codimension>
-    struct codim {
+    template<int Codimension>
+    struct Codim {
       class SubEntityIterator;
     };
-    typedef VertexIterator; // These are aliases for codim<codim>::SubEntityIterator
+    typedef VertexIterator; // These are aliases for Codim<codim>::SubEntityIterator
     typedef ElementIterator;
 
     typedef IndexVector; // This is a std::vector
@@ -292,11 +292,11 @@ namespace Dune {
   {
   public:
     template<int codimension>
-    struct codim;
+    struct Codim;
     //! The VertexIterator of the VirtualRefinement.
-    typedef typename codim<dimension>::SubEntityIterator VertexIterator;
+    typedef typename Codim<dimension>::SubEntityIterator VertexIterator;
     //! The ElementIterator of the VirtualRefinement
-    typedef typename codim<0>::SubEntityIterator ElementIterator;
+    typedef typename Codim<0>::SubEntityIterator ElementIterator;
 
     /*! @brief The CoordVector of the VirtualRefinement
 
@@ -342,7 +342,7 @@ namespace Dune {
   //! codim database of VirtualRefinement
   template<int dimension, class CoordType>
   template<int codimension>
-  struct VirtualRefinement<dimension, CoordType>::codim
+  struct VirtualRefinement<dimension, CoordType>::Codim
   {
     class SubEntityIterator;
   };

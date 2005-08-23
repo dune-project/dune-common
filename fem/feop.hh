@@ -75,12 +75,11 @@ namespace Dune {
       matrix_ = 0;
     };
 
-    //! \todo Please doc me!
-    virtual void initLevel ( int level ) const
-    {};
+
 
     //! \todo Please doc me!
-    void apply( const DiscFunctionType &arg, DiscFunctionType &dest) const
+    virtual void operator()(const DiscFunctionType &arg,
+                            DiscFunctionType &dest) const
     {
       assert( opMode_ == ASSEMBLED );
 

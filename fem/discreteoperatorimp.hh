@@ -46,7 +46,7 @@ namespace Dune {
   class DiscreteOperator
     : public DiscreteOperatorDefault < LocalOperatorImp , DFDomainType, DFRangeType , DiscreteOperator >
   {
-    typedef typename DFDomainType::FunctionSpaceType::RangeField RangeFieldType;
+    typedef typename DFDomainType::FunctionSpaceType::RangeFieldType RangeFieldType;
 
     typedef typename DFDomainType::DomainType DomainType;
     typedef typename DFDomainType::RangeType RangeType;
@@ -105,34 +105,42 @@ namespace Dune {
       }
 
       // useful typedefs
-      typedef typename DFDomainType::FunctionSpace FunctionSpaceType;
+      typedef typename DFDomainType::DiscreteFunctionSpaceType FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
+      typedef typename FunctionSpaceType::IteratorType IteratorType;
       // the corresponding grid
       const FunctionSpaceType & functionSpace_= dest.getFunctionSpace();
-      const GridType &grid = functionSpace_.getGrid();
+      // * Old code
+      /*
+         const GridType &grid = functionSpace_.getGrid();
 
-      if(leaf_)
-      {
-        //std::cout << "using  Leaf! \n";
-        typedef typename GridType::template Codim<0>::LeafIterator LeafIterator;
+         if(leaf_)
+         {
+         //std::cout << "using  Leaf! \n";
+         typedef typename GridType::template Codim<0>::LeafIterator LeafIterator;
 
-        this->level_ = grid.maxlevel();
+         this->level_ = grid.maxlevel();
 
-        // make run through grid
-        LeafIterator it     = grid.template leafbegin<0> ();
-        LeafIterator endit  = grid.template leafend<0>   ();
-        applyOnGrid( it, endit , arg, dest );
-      }
-      else
-      {
-        typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
+         // make run through grid
+         LeafIterator it     = grid.template leafbegin<0> ();
+         LeafIterator endit  = grid.template leafend<0>   ();
+         applyOnGrid( it, endit , arg, dest );
+         }
+         else
+         {
+         typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
 
 
-        // make run through grid
-        LevelIterator it    = grid.template lbegin<0>( this->level_ );
-        LevelIterator endit = grid.template lend<0>  ( this->level_ );
-        applyOnGrid( it, endit , arg, dest );
-      }
+         // make run through grid
+         LevelIterator it    = grid.template lbegin<0>( this->level_ );
+         LevelIterator endit = grid.template lend<0>  ( this->level_ );
+         applyOnGrid( it, endit , arg, dest );
+         }
+       */
+      // * New code (isn't that somewhat nicer?)
+      IteratorType it = functionSpace_.begin();
+      IteratorType endit = functionSpace_.end();
+      applyOnGrid(it, endit, arg, dest);
 
       finalize( arg, dest );
     }

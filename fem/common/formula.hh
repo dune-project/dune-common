@@ -13,13 +13,13 @@ namespace Dune {
   class FormulaInterface : public Cloneable {
   public:
     //- Typedefs
-    typedef typename FunctionSpaceImp::Domain Domain;
-    typedef typename FunctionSpaceImp::Range Range;
-    typedef typename FunctionSpaceImp::RangeField RangeType;
+    typedef typename FunctionSpaceImp::DomainType DomainType;
+    typedef typename FunctionSpaceImp::RangeType RangeType;
+    typedef typename FunctionSpaceImp::RangeFieldType RangeFieldType;
 
     //- Methods
-    virtual void operator() (const Domain& x,
-                             Range& result,
+    virtual void operator() (const DomainType& x,
+                             RangeType& result,
                              double t = 0.0) const = 0;
 
   }; // end class FormulaInterface
@@ -29,14 +29,14 @@ namespace Dune {
   class Constant : public FormulaInterface<FunctionSpaceImp> {
     typedef FormulaInterface<FunctionSpaceImp> BaseType;
   public:
-    typedef typename BaseType::Range Range;
-    typedef typename BaseType::Domain Domain;
+    typedef typename BaseType::RangeType RangeType;
+    typedef typename BaseType::DomainType DomainType;
 
     //! Constructor with scalar value
-    explicit Constant(typename BaseType::RangeType c = 0.0) : c_(c) {}
+    explicit Constant(typename BaseType::RangeFieldType c = 0.0) : c_(c) {}
 
     //! Constructor with vector value
-    explicit Constant(typename BaseType::Range c) : c_(c) {}
+    explicit Constant(typename BaseType::RangeType c) : c_(c) {}
 
     //! Copy constructor
     Constant(const Constant<FunctionSpaceImp>& other) :
@@ -45,22 +45,22 @@ namespace Dune {
     //! Assignment operator
     Constant& operator= (const Constant<FunctionSpaceImp>& other) {
       if (this != &other) {
-        for (int i = 0; i < Range::size; ++i) {
+        for (int i = 0; i < RangeType::size; ++i) {
           c_[i] = other.c_[i];
         }
       }
       return *this;
     }
 
-    virtual void operator() (const Domain& x,
-                             Range& result,
+    virtual void operator() (const DomainType& x,
+                             RangeType& result,
                              double t = 0.0) const {
       result = c_;
     }
 
     virtual Constant* clone() const { return new Constant(c_); }
   private:
-    typename BaseType::Range c_;
+    typename BaseType::RangeType c_;
   };
 
 } // end namespace Dune

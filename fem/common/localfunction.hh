@@ -31,10 +31,10 @@ namespace Dune {
   {
   public:
     //! this are the types for the derived classes
-    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
-    typedef typename DiscreteFunctionSpaceType::Domain DomainType;
-    typedef typename DiscreteFunctionSpaceType::Range RangeType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRange JacobianRangeType;
+    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
+    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
+    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
 
     //! access to dof number num, all dofs of the local function
     RangeFieldType& operator [] (int num)
@@ -42,26 +42,43 @@ namespace Dune {
       return asImp().operator [] ( num );
     }
 
+    //! access to dof number num, all dofs of the local function
+    const RangeFieldType& operator [] (int num) const
+    {
+      return asImp().operator [] ( num );
+    }
+
     //! return the number of local dof of this local function
-    int numberOfDofs ()
+    int numberOfDofs () const
     {
       return asImp().numberOfDofs ();
     };
 
     //! evaluate the local function on x and return ret
     template <class EntityType>
-    void evaluate (EntityType &en, const DomainType & x, RangeType & ret)
+    void evaluateLocal(EntityType& en,
+                       const DomainType& x,
+                       RangeType & ret)
     {
-      asImp().evaluate(en,x,ret);
+      asImp().evaluateLocal(en,x,ret);
+    }
+
+    template <class EntityType>
+    void jacobianLocal(EntityType& en,
+                       const DomainType& x,
+                       JacobianRangeType& ret)
+    {
+      asImp().jacobianLocal(en,x,ret);
     }
 
   private:
     //! Barton-Nackman trick
-    LocalFunctionImp & asImp()
+    LocalFunctionImp& asImp()
     {
       return static_cast<LocalFunctionImp&>(*this);
     }
-    const LocalFunctionImp &asImp() const
+
+    const LocalFunctionImp& asImp() const
     {
       return static_cast<const LocalFunctionImp&>(*this);
     }
@@ -81,96 +98,41 @@ namespace Dune {
                                    DiscreteFunctionSpaceType , LocalFunctionImp >
   {
   public:
-    // notin'
-  }; // end LocalFunctionDefault
+    //! these are the types for the derived classes
+    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
+    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
+    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
 
-  //------------------------------------------------------------------------
-
-  //**************************************************************************
-  //
-  //  --LocalFunctionIteratorInterface
-  //
-  //! Interface for iterators to iterate over all local functions of one
-  //! discrete function.
-  //!
-  //**************************************************************************
-  template < class LocalFunctionImp , class LocalFunctionIteratorImp>
-  class LocalFunctionIteratorInterface
-  {
   public:
-    //! know the object typ for iteration
-    typedef LocalFunctionImp LocalFunctionType;
+    //! Constructor
+    LocalFunctionDefault() : xLoc_(0.0) {}
 
-    //! return reference to local function
-    LocalFunctionType & operator *()
+    //! evaluate the local function on x and return ret
+    template <class EntityType>
+    void evaluate(EntityType& en,
+                  const DomainType& x,
+                  RangeType & ret)
     {
-      return asImp().operator *();
-    };
-
-    //! return pointer to local function
-    LocalFunctionType * operator ->()
-    {
-      return asImp().operator ->();
-    };
-
-    //! go next local function
-    LocalFunctionIteratorImp& operator++ ()
-    {
-      return asImp(). operator ++ ();
-    };
-
-    //! go next i steps
-    LocalFunctionIteratorImp& operator++ (int i)
-    {
-      return asImp().operator ++ ( i );
-    };
-
-    //! compare with other iterators
-    bool operator == (const LocalFunctionIteratorImp & I ) const
-    {
-      return asImp().operator == (I);
+      ret = 0.0;
+      xLoc_ = en.geometry().local(x);
+      evaluateLocal(en,xLoc_,ret);
     }
 
-    //! compare with other iterators
-    bool operator != (const LocalFunctionIteratorImp & I ) const
+    template <class EntityType>
+    void jacobian(EntityType& en,
+                  const DomainType& x,
+                  JacobianRangeType& ret)
     {
-      return asImp().operator != (I);
-    }
-
-    //! \todo Please doc me!
-    int index () const
-    {
-      return asImp().index();
+      ret = 0.0;
+      xLoc_ = en.geometry().local(x);
+      jacobian(en,xLoc_,ret);
     }
 
   private:
-    //! Barton-Nackman trick
-    LocalFunctionIteratorImp & asImp()
-    {
-      return static_cast<LocalFunctionIteratorImp&>(*this);
-    }
-    const LocalFunctionIteratorImp &asImp() const
-    {
-      return static_cast<const LocalFunctionIteratorImp&>(*this);
-    }
-  }; // end class LocalFunctionIteratorInterface
+    mutable DomainType xLoc_;
 
-
-  //*************************************************************************
-  //
-  //  --LocalFunctionIteratorDefault
-  //
-  //! Defaultimplementation. At the moment there is no default
-  //! implementation.
-  //
-  //*************************************************************************
-  template < class LocalFunctionImp, class LocalFunctionIteratorImp >
-  class LocalFunctionIteratorDefault
-    : public LocalFunctionIteratorInterface < LocalFunctionImp , LocalFunctionIteratorImp >
-  {
-  public:
-    // notin'
-  }; // end class LocalFunctionIteratorDefault
+  }; // end LocalFunctionDefault
 
 } // end namespace Dune
 

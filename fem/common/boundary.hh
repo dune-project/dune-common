@@ -25,9 +25,9 @@ namespace Dune {
     enum Type { Dirichlet, Neumann };
 
     //! Domain type
-    typedef typename FunctionSpaceT::Domain DomainType;
+    typedef typename FunctionSpaceT::DomainType DomainType;
     //! Range type
-    typedef typename FunctionSpaceT::Range RangeType;
+    typedef typename FunctionSpaceT::RangeType RangeType;
 
     //- Constructors and destructors
     virtual ~BoundaryInterface() {}
@@ -79,8 +79,8 @@ namespace Dune {
     typedef FormulaT FormulaType;
     typedef typename BoundaryInterface<FunctionSpaceT>::Type Type;
     typedef FunctionBoundary<FunctionSpaceT, FormulaT> BoundaryType;
-    typedef typename FunctionSpaceT::Domain DomainType;
-    typedef typename FunctionSpaceT::Range RangeType;
+    typedef typename FunctionSpaceT::DomainType DomainType;
+    typedef typename FunctionSpaceT::RangeType RangeType;
 
     //- Constructors and destructors
     //! Constructor

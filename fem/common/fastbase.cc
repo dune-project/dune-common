@@ -7,7 +7,7 @@
 template <class FunctionSpaceType>
 FastBaseFunctionSet<FunctionSpaceType >::
 FastBaseFunctionSet( FunctionSpaceType & fuspace, int numOfBaseFct )
-  : BaseFunctionSetDefault <FunctionSpaceType,FastBaseFunctionSet <FunctionSpaceType > > ( fuspace ),
+  : BaseFunctionSetDefault <FastBaseFunctionSetTraits<FunctionSpaceType> > (),
     vecEvaluate_( numDiffOrd ) {
   for(int i=0; i<numDiffOrd; i++)
     evaluateQuad_[i] = DynamicType::undefined;
@@ -21,15 +21,17 @@ FastBaseFunctionSet( FunctionSpaceType & fuspace, int numOfBaseFct )
 
 template <class FunctionSpaceType> template <int diffOrd>
 void FastBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, const Domain & x,  Range & phi ) const
+evaluate( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, const DomainType & x,  RangeType & phi ) const
 {
   getBaseFunction( baseFunct ).evaluate( diffVariable, x, phi );
 }
 
 template <class FunctionSpaceType> template <int diffOrd, class QuadratureType>
 void FastBaseFunctionSet<FunctionSpaceType >::
-evaluate( int baseFunct, const FieldVector<deriType, diffOrd> &diffVariable, QuadratureType & quad,
-          int quadPoint, Range & phi ) const
+evaluate( int baseFunct,
+          const FieldVector<deriType, diffOrd> &diffVariable,
+          QuadratureType & quad,
+          int quadPoint, RangeType & phi ) const
 {
   // check if cache is for the used quadrature
   if ( quad.getIdentifier() != evaluateQuad_[ diffOrd ] )

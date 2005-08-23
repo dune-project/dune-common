@@ -25,39 +25,41 @@ namespace Dune {
   /** \brief Class representing a function
    * \todo Please doc me!
    */
-  template< class FunctionSpaceType, class FunctionImp>
-  class Function : public Mapping < typename FunctionSpaceType::DomainField,
-                       typename FunctionSpaceType::RangeField , typename FunctionSpaceType::Domain, typename FunctionSpaceType::Range > {
+  template< class FunctionSpaceImp, class FunctionImp>
+  class Function :
+    public Mapping < typename FunctionSpaceImp::DomainFieldType,
+        typename FunctionSpaceImp::RangeFieldType ,
+        typename FunctionSpaceImp::DomainType,
+        typename FunctionSpaceImp::RangeType > {
 
   public:
+    typedef FunctionSpaceImp FunctionSpaceType;
     //! ???
-    typedef typename FunctionSpaceType::Domain Domain ;
+    typedef typename FunctionSpaceType::DomainType DomainType ;
     //! ???
-    typedef typename FunctionSpaceType::Range Range ;
+    typedef typename FunctionSpaceType::RangeType RangeType ;
     //! ???
-    typedef typename FunctionSpaceType::JacobianRange JacobianRange;
+    typedef typename FunctionSpaceType::JacobianRangeType JacobianRangeType;
     //! ???
-    typedef typename FunctionSpaceType::HessianRange HessianRange;
-    //! ???
-    typedef FunctionSpaceType FunctionSpace;
+    typedef typename FunctionSpaceType::HessianRangeType HessianRangeType;
 
     //! Constructor
     Function (const FunctionSpaceType & f) : functionSpace_ (f) {} ;
 
     //! application operator
-    virtual void operator()(const Domain & arg, Range & dest) const {
+    virtual void operator()(const DomainType & arg, RangeType & dest) const {
       eval(arg,dest);
     }
 
     //! evaluate Function
-    void eval(const Domain & arg, Range & dest) const {
+    void eval(const DomainType & arg, RangeType & dest) const {
       asImp().eval(arg, dest);
     }
 
     //! evaluate function and derivatives
     template <int derivation>
     void evaluate  ( const FieldVector<deriType, derivation> &diffVariable,
-                     const Domain& arg, Range & dest) const {
+                     const DomainType& arg, RangeType & dest) const {
       asImp().evaluate(diffVariable, arg, dest);
     }
 
@@ -75,7 +77,14 @@ namespace Dune {
 
     //! The related function space
     const FunctionSpaceType & functionSpace_;
-
+  private:
+    //! Helper function for Mapping
+    //! With this function, a combined mapping can choose the right application
+    //! operator (i.e. the one from Mapping itself, or from Function/Operator)
+    //! \note: Do not override this definition
+    virtual void apply (const DomainType& arg, RangeType& dest) const {
+      operator()(arg, dest);
+    }
   };
 
   /** @} end documentation group */

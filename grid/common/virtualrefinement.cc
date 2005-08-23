@@ -80,7 +80,7 @@ namespace Dune {
   class VirtualRefinementSubEntityIteratorSpecial<dimension, CoordType, dimension>
   {
   public:
-    typedef typename VirtualRefinement<dimension, CoordType>::template codim<dimension>::SubEntityIterator Common;
+    typedef typename VirtualRefinement<dimension, CoordType>::template Codim<dimension>::SubEntityIterator Common;
     typedef VirtualRefinement<dimension, CoordType> Refinement;
     typedef typename Refinement::CoordVector CoordVector;
 
@@ -102,7 +102,7 @@ namespace Dune {
   {
   public:
     typedef VirtualRefinement<dimension, CoordType> Refinement;
-    typedef typename Refinement::template codim<0>::SubEntityIterator Common;
+    typedef typename Refinement::template Codim<0>::SubEntityIterator Common;
     typedef typename Refinement::IndexVector IndexVector;
 
     IndexVector vertexIndices() const;
@@ -120,12 +120,12 @@ namespace Dune {
 
   template<int dimension, class CoordType>
   template<int codimension>
-  class VirtualRefinement<dimension, CoordType>::codim<codimension>::SubEntityIterator
-    : public ForwardIteratorFacade<typename VirtualRefinement<dimension, CoordType>::template codim<codimension>::SubEntityIterator, int>,
+  class VirtualRefinement<dimension, CoordType>::Codim<codimension>::SubEntityIterator
+    : public ForwardIteratorFacade<typename VirtualRefinement<dimension, CoordType>::template Codim<codimension>::SubEntityIterator, int>,
       public VirtualRefinementSubEntityIteratorSpecial<dimension, CoordType, codimension>
   {
   public:
-    typedef typename VirtualRefinement<dimension, CoordType>::template codim<codimension>::SubEntityIterator This;
+    typedef typename VirtualRefinement<dimension, CoordType>::template Codim<codimension>::SubEntityIterator This;
     typedef typename VirtualRefinement<dimension, CoordType>::template SubEntityIteratorBack<codimension> IteratorBack;
 
     SubEntityIterator(IteratorBack *backend);
@@ -145,21 +145,21 @@ namespace Dune {
 
   template<int dimension, class CoordType>
   template<int codimension>
-  VirtualRefinement<dimension, CoordType>::codim<codimension>::SubEntityIterator::
+  VirtualRefinement<dimension, CoordType>::Codim<codimension>::SubEntityIterator::
   SubEntityIterator(IteratorBack *backend_)
     : backend(backend_)
   {}
 
   template<int dimension, class CoordType>
   template<int codimension>
-  VirtualRefinement<dimension, CoordType>::codim<codimension>::SubEntityIterator::
+  VirtualRefinement<dimension, CoordType>::Codim<codimension>::SubEntityIterator::
   SubEntityIterator(const This &other)
     : backend(other.backend->clone())
   {}
 
   template<int dimension, class CoordType>
   template<int codimension>
-  VirtualRefinement<dimension, CoordType>::codim<codimension>::SubEntityIterator::
+  VirtualRefinement<dimension, CoordType>::Codim<codimension>::SubEntityIterator::
   ~SubEntityIterator()
   {
     delete backend;
@@ -167,8 +167,8 @@ namespace Dune {
 
   template<int dimension, class CoordType>
   template<int codimension>
-  typename VirtualRefinement<dimension, CoordType>::template codim<codimension>::SubEntityIterator &
-  VirtualRefinement<dimension, CoordType>::codim<codimension>::SubEntityIterator::
+  typename VirtualRefinement<dimension, CoordType>::template Codim<codimension>::SubEntityIterator &
+  VirtualRefinement<dimension, CoordType>::Codim<codimension>::SubEntityIterator::
   operator=(const This &other)
   {
     delete backend;
@@ -178,14 +178,14 @@ namespace Dune {
   template<int dimension, class CoordType>
   template<int codimension>
   bool
-  VirtualRefinement<dimension, CoordType>::codim<codimension>::SubEntityIterator::
+  VirtualRefinement<dimension, CoordType>::Codim<codimension>::SubEntityIterator::
   equals(const This &other) const
   { return *backend == *(other.backend); }
 
   template<int dimension, class CoordType>
   template<int codimension>
   void
-  VirtualRefinement<dimension, CoordType>::codim<codimension>::SubEntityIterator::
+  VirtualRefinement<dimension, CoordType>::Codim<codimension>::SubEntityIterator::
   increment()
   {
     ++*backend;
@@ -194,7 +194,7 @@ namespace Dune {
   template<int dimension, class CoordType>
   template<int codimension>
   int
-  VirtualRefinement<dimension, CoordType>::codim<codimension>::SubEntityIterator::
+  VirtualRefinement<dimension, CoordType>::Codim<codimension>::SubEntityIterator::
   index() const
   { return backend->index(); }
 
@@ -423,7 +423,7 @@ namespace Dune {
     : public VirtualRefinementImpSubEntityIteratorBackSpecial<geometryType, CoordType, coerceTo, codimension>
   {
   public:
-    typedef typename Refinement::template codim<codimension>::SubEntityIterator BackendIterator;
+    typedef typename Refinement::template Codim<codimension>::SubEntityIterator BackendIterator;
     typedef typename VirtualRefinementImp<geometryType, CoordType, coerceTo>::template SubEntityIteratorBack<codimension> This;
     typedef typename VirtualRefinement::template SubEntityIteratorBack<codimension> Base;
     enum { dimension = Refinement::dimension };
