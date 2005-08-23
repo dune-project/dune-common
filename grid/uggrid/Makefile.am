@@ -9,10 +9,6 @@ libuggrid_la_SOURCES  = uggrid.cc
 libuggrid_la_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS)
 libuggrid_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS2) $(UG_LIBS3)
 
-#libuggrid3_la_SOURCES  = uggrid.cc
-#libuggrid3_la_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS) -D_3
-#libuggrid3_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS3)
-
 endif
 
 uggriddir = $(includedir)/dune/grid/uggrid/
@@ -25,10 +21,11 @@ uggrid_HEADERS = uggridentity.cc uggridgeometry.cc \
 
 # tricks like undefAllMacros.pl don't have to be shipped, have they?
 # Oliver Sander: It depends. undefAllMacros.pl creates the file ug_undefs.hh
-# which depends on the current version of UG and on whether you're compiling
-# with ModelP or without.  Distributing a ug_undefs.hh is the easiest way,
-# but it actually ignores the difference between sequential and parallel UG.
-# This may lead to spurious UG macros bleeding into Dune.
+# which contains an #undef line for each macro encountered in the UG
+# headers which DUNE includes.  This should be redone every time UG
+# changes, and currently I do it and then check in the new ug_undefs.hh.
+# An alternative would be to have the DUNE-build system call undefAllMacros
+# for the UG it is configured with.  Then it needed to be shipped.
 
 
 include $(top_srcdir)/am/global-rules
