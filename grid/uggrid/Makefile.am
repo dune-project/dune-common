@@ -2,7 +2,7 @@
 
 if UG
 
-noinst_LTLIBRARIES = libuggrid.la# libuggrid3.la
+noinst_LTLIBRARIES = libuggrid.la
 
 # The two libs are compiled from the same source, but with different options
 libuggrid_la_SOURCES  = uggrid.cc
