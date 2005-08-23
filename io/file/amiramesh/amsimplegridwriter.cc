@@ -60,7 +60,7 @@ void Dune::AmiraMeshWriter<Dune::SimpleGrid<3,3>, double>::write(const Dune::Sim
   fprintf(fp, "# Data section follows\n");
   fprintf(fp, "@1\n");
 
-  //     SimpleGrid<3,3>::template codim<0>::LevelIterator iter = grid.lbegin<0>(maxlevel);
+  //     SimpleGrid<3,3>::template Codim<0>::LevelIterator iter = grid.lbegin<0>(maxlevel);
 
   //     for (; iter!= grid.lend<0>(maxlevel); ++iter) {
   //         fprintf(fp, "%f\n", iter->index(), *iter);

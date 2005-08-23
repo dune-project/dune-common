@@ -172,8 +172,8 @@ namespace Dune {
   {
     {
       typedef typename DiscreteFunctionType::FunctionSpaceType DiscreteFunctionSpaceType;
-      typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
-      typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+      typedef typename DiscreteFunctionSpaceType::DomainFieldType DomainFieldType;
+      typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
 
       enum { n = DiscreteFunctionSpaceType::DimDomain };
       enum { m = DiscreteFunctionSpaceType::DimRange };
@@ -212,8 +212,8 @@ namespace Dune {
   readData(DiscreteFunctionType & df, const GrapeIOStringType& filename, int timestep)
   {
     typedef typename DiscreteFunctionType::FunctionSpaceType DiscreteFunctionSpaceType;
-    typedef typename DiscreteFunctionSpaceType::DomainField DomainFieldType;
-    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::DomainFieldType DomainFieldType;
+    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
 
     enum { tn = DiscreteFunctionSpaceType::DimDomain };
     enum { tm = DiscreteFunctionSpaceType::DimRange };
