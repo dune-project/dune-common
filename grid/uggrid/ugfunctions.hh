@@ -172,8 +172,7 @@ namespace Dune {
     }
 
     static int GetSons(const UG2d::element* element, UG2d::element* sonList[MAX_SONS]) {
-      /** \todo Remove the const_cast */
-      return UG2d::GetSons(const_cast<UG2d::element*>(element), sonList);
+      return UG2d::GetSons(element, sonList);
     }
 
     //! Encapsulates the GRID_ATTR macro
