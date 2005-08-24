@@ -347,13 +347,7 @@ namespace Dune {
     template <class EntityType>
     int mapToGlobal (EntityType &en, int localNum ) const
     {
-#ifndef NDEBUG
-      int idx = indexSet_.template index<0> (en,localNum);
-      assert( idx >=0 );
-      return idx;
-#else
       return indexSet_.template index<0> (en,localNum);
-#endif
     }
 
     //! for dof manager, to check whether it has to copy dof or not
