@@ -55,9 +55,9 @@ namespace Dune {
     public GridPartInterface<GridPartTraits> {
   public:
     //! Grid implementation
-    typedef GridPartTraits::GridType GridType;
+    typedef typename GridPartTraits::GridType GridType;
     //! Index set implementation
-    typedef GridPartTraits::IndexSetType IndexSetType;
+    typedef typename GridPartTraits::IndexSetType IndexSetType;
 
   public:
     //! Constructor
