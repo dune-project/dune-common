@@ -55,7 +55,9 @@ namespace Dune {
     typedef typename FunctionSpaceType::RangeType RangeType;
     enum { DimDomain = FunctionSpaceType::DimDomain };
     enum { DimRange  = FunctionSpaceType::DimRange  };
+
   public:
+    typedef FastBaseFunctionSetTraits<FunctionSpaceType> BaseFunctionSetType;
     typedef FastBaseFunctionSetTraits<BaseFunctionSetType> Traits;
 
     //! the BaseFunctionInterface type
