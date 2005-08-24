@@ -6,7 +6,7 @@ noinst_LTLIBRARIES = libuggrid.la
 
 # The two libs are compiled from the same source, but with different options
 libuggrid_la_SOURCES  = uggrid.cc
-libuggrid_la_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS)
+libuggrid_la_CXXFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS)
 libuggrid_la_LIBADD   = $(UG_LDFLAGS) $(UG_LIBS2) $(UG_LIBS3)
 
 endif
