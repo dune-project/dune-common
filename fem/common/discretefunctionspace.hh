@@ -140,7 +140,7 @@ namespace Dune {
     }
 
     //! return the corresponding Grid
-    const GridType& grid () { return asImp().grid() }
+    const GridType& grid () { return asImp().grid(); }
 
     //! return number of degrees of freedom for specified grid
     //! which can also be the leaflevel and furthermore
