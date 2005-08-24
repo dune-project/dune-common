@@ -376,10 +376,10 @@ namespace Dune {
 
   // global refine
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline bool ALU3dGrid<dim, dimworld, elType>::globalRefine(int anzahl)
+  inline bool ALU3dGrid<dim, dimworld, elType>::globalRefine(int numberOfRefines)
   {
     bool ref = false;
-    for (; anzahl>0; anzahl--)
+    for (int count = numberOfRefines; count>0; count--)
     {
       LeafIteratorType endit  = leafend   ( maxlevel() );
       for(LeafIteratorType it = leafbegin ( maxlevel() ); it != endit; ++it)
@@ -391,6 +391,7 @@ namespace Dune {
     }
 
     // important that loadbalance is called on each processor
+    // so dont put any if statements arround here
     this->loadBalance();
 
     return ref;
@@ -428,9 +429,8 @@ namespace Dune {
 #endif
     if(ref)
     {
-      //maxlevel_++;
-      calcMaxlevel();               // calculate new maxlevel
-      calcExtras();                   // reset size and things
+      // calcs maxlevel and other extras
+      updateStatus();
     }
     return ref;
   }
