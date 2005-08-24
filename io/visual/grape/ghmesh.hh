@@ -52,17 +52,19 @@ typedef struct dune_fdata
   /* are all Levels occupied? */
   int allLevels;
 
-  /* dimension of value */
+  /* dimension of value, i.e. the length of the vector  */
   int dimVal;
+
+  /* index of current component */
+  /* for scalar this vec has length 1 and contains the component number */
+  /* for vector this contains the number of each component */
+  int * comp;
 
   /* polynonial order of basis functions */
   int polyOrd;
 
   /* continuous or not */
   int continuous;
-
-  /* index of current component */
-  int component;
 
   /* max number of components */
   int compName;

@@ -33,6 +33,27 @@ namespace Dune
       quad_ = new QuadType ( *it );
   }
 
+  template <class GridType, class DiscFuncType>
+  inline GrapeDataDisplay<GridType,DiscFuncType>::~GrapeDataDisplay()
+  {
+    typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIter;
+    if(quad_) delete quad_;
+    for(unsigned int i=0 ; i<vecFdata_.size(); i++)
+    {
+      typedef typename DiscFuncType :: LocalFunctionType LFType;
+      DUNE_FDATA * fd = vecFdata_[i];
+      if( fd )
+      {
+        LFType * lf = (LFType * ) fd->lf;
+        if ( lf ) delete lf;
+        int * comps = fd->comp;
+        delete [] comps;
+        delete fd;
+        vecFdata_[i] = 0;
+      }
+    }
+  }
+
   //*******************************************************************
   //
   //  Routines for evaluation of the data
@@ -121,9 +142,10 @@ namespace Dune
   template <class EntityType, class LocalFuncType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
   evalVector (EntityType &en, DiscFuncType & func, LocalFuncType &lf,
-              int comp , int localNum, double * val)
+              const int * comp, int vlength , int localNum, double * val)
   {
     enum { dim = EntityType::dimension };
+    assert( comp );
     // dimval == dimension here
     // in that case we have only one dof that has to be returned for all
     // corners , kind of hack, but works for the moment
@@ -131,7 +153,10 @@ namespace Dune
     {
       assert(quad_);
       lf.evaluate(en,(*quad_),0,tmp_);
-      for(int i=0; i<dim; i++) val[i] = tmp_[i];
+      for(int i=0; i<vlength; i++)
+      {
+        val[i] = tmp_[comp[i]];
+      }
       return;
     }
     else
@@ -146,7 +171,7 @@ namespace Dune
   template <class EntityType, class LocalFuncType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
   evalScalar (EntityType &en, DiscFuncType & func, LocalFuncType &lf,
-              int comp , int localNum, double * val)
+              const int * comp , int localNum, double * val)
   {
     // dimval == 1 here
     enum { numberOfComp = DiscFuncType::FunctionSpaceType::DimRange };
@@ -155,13 +180,13 @@ namespace Dune
     // corners , kind of hack, but works for the moment
     if(func.getFunctionSpace().polynomOrder() == 0)
     {
-      val[0] = lf[comp];
+      val[0] = lf[comp[0]];
       return;
     }
     else
     {
       // for linear data
-      int num = ( localNum * numberOfComp ) + comp;
+      int num = ( localNum * numberOfComp ) + comp[0];
 
       switch ( en.geometry().type())
       {
@@ -200,7 +225,7 @@ namespace Dune
 
     enum { dim = EntityType::dimension };
     {
-      int comp = df->component;
+      const int * comp = df->comp;
       func.localFunction ( en , lf );
       int dimVal = df->dimVal;
       switch (dimVal)
@@ -213,12 +238,12 @@ namespace Dune
 
       case dim :
       {
-        evalVector(en,func,lf,comp,localNum,val);
+        evalVector(en,func,lf,df->comp,dimVal,localNum,val);
         return;
       }
       default :
       {
-        evalVector(en,func,lf,comp,localNum,val);
+        evalVector(en,func,lf,df->comp,dimVal,localNum,val);
         return;
       }
         //{
@@ -293,7 +318,7 @@ namespace Dune
   inline void GrapeDataDisplay<GridType,DiscFuncType>::dataDisplay(DiscFuncType &func)
   {
     /* add function data */
-    this->addData(func,"myFunc",0.0);
+    this->addData(func,"myFunc",0.0,false);
     /* display mesh */
     GrapeInterface<dim,dimworld>::handleMesh ( this->hmesh_ );
     return ;
@@ -302,9 +327,23 @@ namespace Dune
 
   template<class GridType, class DiscFuncType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
-  addData(DiscFuncType &func , const char *name , double time , bool vector )
+  addData(DiscFuncType &func , const char * name , double time , bool vector)
+  {
+    int comp[dim];
+    for(int i=0; i<dim; i++) comp[i] = i;
+    DATAINFO dinf = { name , name , 0 , (vector) ? dim : 1 , &comp };
+    addData(func,&dinf,time);
+  }
+
+  template<class GridType, class DiscFuncType>
+  inline void GrapeDataDisplay<GridType,DiscFuncType>::
+  addData(DiscFuncType &func , const DATAINFO * dinf, double time )
   {
     typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
+    assert(dinf);
+    const char * name = dinf->name;
+    assert( dinf->dimVal > 0);
+    bool vector = (dinf->dimVal > 1) ? true : false;
 
     bool already=false;
     int size = vecFdata_.size();
@@ -325,14 +364,25 @@ namespace Dune
         vecFdata_[n]->allLevels = 0;
 
         vecFdata_[n]->discFunc = (void *) &func;
-        vecFdata_[n]->dimVal   = 1;
-        if(vector) vecFdata_[n]->dimVal = DiscFuncType::FunctionSpaceType::DimRange;
         vecFdata_[n]->lf = (void *) new LocalFuncType ( func.newLocalFunction() );
         vecFdata_[n]->polyOrd = func.getFunctionSpace().polynomOrder();
         vecFdata_[n]->continuous = (func.getFunctionSpace().continuous() == true ) ? 1 : 0;
-        vecFdata_[n]->component = n-size;
-        vecFdata_[n]->compName = n-size;
+        if(vecFdata_[n]->polyOrd == 0) vecFdata_[n]->continuous = 0;
 
+        int dimVal = dinf->dimVal;
+        int * comp = new int [dimVal];
+        vecFdata_[n]->comp = comp;
+        if(vector)
+        {
+          for(int j=0; j<dimVal; j++) comp[j] = dinf->comp[j];
+          vecFdata_[n]->compName = -1;
+        }
+        else
+        {
+          dinf->comp[0] = n-size;
+          vecFdata_[n]->compName = n-size;
+        }
+        vecFdata_[n]->dimVal = dimVal;
         GrapeInterface<dim,dimworld>::addDataToHmesh(this->hmesh_,vecFdata_[n],&func_real);
       }
     }

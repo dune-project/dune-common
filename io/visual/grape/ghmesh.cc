@@ -486,7 +486,7 @@ inline void printfFdata(DUNE_FUNC *df)
 {
   DUNE_FDATA *fem = df->all;
   printf("Dune Func %p | Dune Fdata %p \n",df,fem);
-  printf("comp %d      | DiscFunc   %p \n",fem->component,fem->discFunc);
+  printf("comp %d      | DiscFunc   %p \n",fem->comp[0],fem->discFunc);
   printf("-------------------------------------------\n");
 }
 inline void printDuneFunc(DUNE_FDATA *df)
@@ -494,7 +494,7 @@ inline void printDuneFunc(DUNE_FDATA *df)
   printf("DUNE_FDATA %p \n",df);
   printf("discFunc %p \n",df->discFunc);
   printf("lf       %p \n",df->lf);
-  printf("comp     %d \n",df->component);
+  printf("comp     %d \n",df->comp[0]);
 }
 
 
@@ -560,7 +560,11 @@ inline void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
       length += 5;
       name = (char *) malloc(length*sizeof(char));
       assert (name);
-      sprintf(name,"%s [%d]",vecName,compName);
+      if(compName < 0)
+        sprintf(name,"%s",vecName);
+      else
+        sprintf(name,"%s [%d]",vecName,compName);
+
       printf("generate data for discrete function '%s'!\n",name);
 
       f_data->name = name;

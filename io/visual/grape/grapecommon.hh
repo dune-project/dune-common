@@ -14,9 +14,12 @@ static TIMESCENE * globalTsc = 0;
 typedef struct datainfo DATAINFO;
 struct datainfo
 {
-  int vector;     /*  0: REAL 1: REAL_D */
-  const char  *name;
+  const char * name;
+  const char * base_name;
   DATAINFO *next;
+
+  int dimVal; /* length of vector (dimVal = 1 --> scalar, otherwise vector  */
+  int * comp; /* number of each component */
 };
 
 /* info about one mesh */
