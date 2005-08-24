@@ -29,9 +29,7 @@ namespace Dune {
       class DataCollectorImp = DataCollectorInterface<GridType> >
   class DofManager;
 
-  template <class GridType,
-      class DataCollectorType = DataCollectorInterface<GridType> >
-  class DofManagerFactory;
+  template <class DofManagerImp> class DofManagerFactory;
 
   // forward declaration
 
@@ -453,10 +451,7 @@ namespace Dune {
     typedef MemObject < MapperType , DofArrayType> MemObjectType;
 
     // the dof set stores number of dofs on entity for each codim
-    MapperType & mapper_;
-
-    // index set object, holding the index set
-    IndexSetObjectInterface & indexObject_;
+    const MapperType & mapper_;
 
     // Array which the dofs are stored in
     DofArrayType array_;
@@ -469,9 +464,8 @@ namespace Dune {
 
   public:
     // Constructor of MemObject, only to call from DofManager
-    MemObject ( MapperType & mapper, IndexSetObjectInterface & iobj,
-                std::string name )
-      : mapper_ (mapper) , indexObject_(iobj) , array_( mapper_.size() ), name_ (name) ,
+    MemObject ( const MapperType & mapper, std::string name )
+      : mapper_ (mapper) , array_( mapper_.size() ), name_ (name) ,
         checkResize_(*this) , resizeMemObj_(*this) {}
 
     //! returns name of this vector
@@ -510,7 +504,7 @@ namespace Dune {
     //! copy the dof from the rear section of the vector to the holes
     void dofCompress ()
     {
-      indexObject_.compress();
+      //indexObject_.compress();
 
       for(int i=0; i<mapper_.oldSize(); i++)
       {
@@ -523,12 +517,6 @@ namespace Dune {
 
       // store new size, which is should be smaller then actual size
       array_.realloc ( newSize() );
-    }
-
-    //! return IndexSetObject for comparison with newly added functions
-    IndexSetObjectInterface & getIndexSetObject()
-    {
-      return indexObject_;
     }
 
     //! return object that checks for resize
@@ -683,12 +671,16 @@ namespace Dune {
      created. The default value for the IndexSet is the DefaultIndexSet class
      which is mostly a wrapper for the grid indices.
    */
-  template <class GridType , class DataCollectorImp >
+  template <class GridImp , class DataCollectorImp >
   class DofManager
   {
+  public:
+    //! type of Grid this DofManager belongs to
+    typedef GridImp GridType;
 
+  private:
     typedef DofManager<GridType,DataCollectorImp> MyType;
-    friend class DofManagerFactory<GridType,DataCollectorImp>;
+    friend class DofManagerFactory<MyType>;
   public:
     typedef DataCollectorImp DataCollectorType;
     // all things for one discrete function are put together in a MemObject
@@ -765,10 +757,9 @@ namespace Dune {
     //! add dofset to dof manager
     //! this method should be called at signIn of DiscreteFucntion, and there
     //! we know our DofStorage which is the actual DofArray
-    template <class DofStorageType, class IndexSetType, class MapperType >
+    template <class DofStorageType, class MapperType >
     inline MemObject<MapperType,DofStorageType> &
-    addDofSet(const DofStorageType * ds, const GridType &grid, IndexSetType &iset,
-              MapperType & mapper, const std::string name );
+    addDofSet(const DofStorageType * ds, const GridType &grid, MapperType & mapper, const std::string name );
 
     //! remove MemObject, is called from DiscreteFucntionSpace at sign out of
     //! DiscreteFunction
@@ -873,29 +864,31 @@ namespace Dune {
       }
     }
 
-    void unsetIndexSets ()
-    {
-      IndexListIteratorType endit = indexList_.end();
-      for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
-      {
-        // reset compressed so the next time compress of index set is called
-        (*it)->unsetCompressed();
-      }
-    }
-
   public:
+    //! compress all data that is hold by this dofmanager
     void dofCompress()
     {
-      unsetIndexSets ();
-
-      ListIteratorType it    = memList_.begin();
-      ListIteratorType endit = memList_.end();
-
-      for( ; it != endit ; ++it)
+      // compress indexsets first
       {
-        // if correponding index was not compressed yet, yhis is called in
-        // the MemObject dofCompress, if index has not changes, nothing happens
-        (*it)->dofCompress () ;
+        IndexListIteratorType endit = indexList_.end();
+        for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+        {
+          // reset compressed so the next time compress of index set is called
+          (*it)->compress();
+        }
+      }
+
+      // compress all data now
+      {
+        ListIteratorType it    = memList_.begin();
+        ListIteratorType endit = memList_.end();
+
+        for( ; it != endit ; ++it)
+        {
+          // if correponding index was not compressed yet, yhis is called in
+          // the MemObject dofCompress, if index has not changes, nothing happens
+          (*it)->dofCompress () ;
+        }
       }
     }
 
@@ -1054,10 +1047,11 @@ namespace Dune {
 
 
   template <class GridType, class DataCollectorType>
-  template <class DofStorageType, class IndexSetType, class MapperType >
+  //template <class DofStorageType, class IndexSetType, class MapperType >
+  template <class DofStorageType, class MapperType >
   inline MemObject<MapperType,DofStorageType> &
   DofManager<GridType,DataCollectorType>::
-  addDofSet(const DofStorageType * ds, const GridType &grid, IndexSetType &iset,
+  addDofSet(const DofStorageType * ds, const GridType &grid, //, IndexSetType &iset,
             MapperType & mapper, const std::string name )
   {
     if(&grid_ != &grid)
@@ -1066,29 +1060,32 @@ namespace Dune {
 
     assert( name.c_str() != 0);
 
-    IndexSetInterface & set = iset;
-    typedef IndexSetObject< IndexSetType,
-        typename GridType::template Codim<0>::Entity > IndexSetObjectType;
+    /*
+       IndexSetInterface & set = iset;
+       typedef IndexSetObject< IndexSetType,
+          typename GridType::template Codim<0>::Entity > IndexSetObjectType;
 
-    IndexSetObjectType * indexSet = 0;
+       IndexSetObjectType * indexSet = 0;
 
-    IndexListIteratorType endit = indexList_.end();
-    for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
-    {
-      if( (* (*it)) == set )
-      {
+       IndexListIteratorType endit = indexList_.end();
+       for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+       {
+       if( (* (*it)) == set )
+       {
         indexSet = static_cast<IndexSetObjectType *> ((*it));
         break;
-      }
-    }
+       }
+       }
 
-    // index was added when functions space is created, should be here
-    assert( indexSet );
-    if( !indexSet )
-      DUNE_THROW(DofManError,"No IndexSet for DofSet! \n");
+       // index was added when functions space is created, should be here
+       assert( indexSet );
+       if( !indexSet )
+       DUNE_THROW(DofManError,"No IndexSet for DofSet! \n");
+     */
 
     typedef MemObject<MapperType,DofStorageType> MemObjectType;
-    MemObjectType * obj = new MemObjectType ( mapper, *indexSet , name );
+    //MemObjectType * obj = new MemObjectType ( mapper, *indexSet , name );
+    MemObjectType * obj = new MemObjectType ( mapper, name );
 
     MemObjectInterface * saveObj = obj;
     memList_.insert_after ( memList_.rbegin() , saveObj );
@@ -1174,10 +1171,11 @@ namespace Dune {
   //! DofManagerFactory guarantees that only one instance of a dofmanager
   //! per grid is generated. If getDofManager is called with a grid for which
   //! already a mamager exists, then the reference to this manager is returned.
-  template <class GridType, class DataCollectorType>
+  template <class DofManagerImp>
   class DofManagerFactory
   {
-    typedef DofManager<GridType,DataCollectorType> DofManagerType;
+    typedef DofManagerImp DofManagerType;
+    typedef typename DofManagerType :: GridType GridType;
     typedef DoubleLinkedList < std::pair < const GridType * , DofManagerType * > > ListType;
     typedef typename ListType::Iterator ListIteratorType;
 
@@ -1225,9 +1223,9 @@ namespace Dune {
   };
 
   //! singelton
-  template <class GridType, class DataCollectorType>
-  DoubleLinkedList < std::pair < const GridType * , DofManager<GridType,DataCollectorType> * > >
-  DofManagerFactory<GridType,DataCollectorType>::gridList_;
+  template <class DofManagerImp>
+  DoubleLinkedList < std::pair < const typename DofManagerImp :: GridType * , DofManagerImp * > >
+  DofManagerFactory<DofManagerImp>::gridList_;
 
 } // end namespace Dune
 
