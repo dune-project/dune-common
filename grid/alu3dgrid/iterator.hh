@@ -587,7 +587,7 @@ namespace ALUGridSpace {
 
     int done ()
     {
-      if( useInterior_) return 0;
+      if(useInterior_) return 0;
       return ghosts_.done();
     }
 
@@ -599,10 +599,8 @@ namespace ALUGridSpace {
         return ghosts_.item();
     }
   };
-
 #endif
-
-  typedef LeafIterator < GitterType::helement_STI > BSLeafIteratorMaxLevel;
+  typedef PureElementLeafIterator < GitterType::helement_STI > BSLeafIteratorMaxLevel;
 
 } //end namespace ALU3dGrid
 
