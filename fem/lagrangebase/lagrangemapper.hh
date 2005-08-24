@@ -81,7 +81,7 @@ namespace Dune {
     }
 
     //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num)
+    bool indexNew (int num) const
     {
       //int check = (int) (num / dimrange);
       //return indexSet_.indexNew(num,2);
@@ -177,7 +177,7 @@ namespace Dune {
     }
 
     //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num)
+    bool indexNew (int num) const
     {
       //int check = (int) (num / dimrange);
       //return indexSet_.indexNew(num,2);
@@ -261,7 +261,7 @@ namespace Dune {
     }
 
     //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num)
+    bool indexNew (int num) const
     {
       // all numbers of one entity are maped to the one number of the set
       const int newn = static_cast<int> (num/dimrange);
