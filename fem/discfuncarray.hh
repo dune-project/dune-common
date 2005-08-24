@@ -15,8 +15,20 @@
 
 namespace Dune {
 
+  template <class DiscreteFunctionSpaceType > class DiscFuncArray;
   template <class DiscreteFunctionSpaceType > class LocalFunctionArray;
-  template < class DofType >                  class DofIteratorArray;
+  template <class DofType>                    class DofIteratorArray;
+
+
+  template <class DiscreteFunctionSpaceImp>
+  struct DiscFuncArrayTraits {
+    typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
+    typedef DiscFuncArray<DiscreteFunctionSpaceImp> DiscreteFunctionType;
+    typedef LocalFunctionArray<DiscreteFunctionSpaceImp> LocalFunctionType;
+    typedef DofIteratorArray<typename DiscreteFunctionSpaceImp::RangeFieldType> DofIteratorType;
+    typedef ConstDofIteratorDefault<DofIteratorType> ConstDofIteratorType;
+  };
+
 
   //**********************************************************************
   //
@@ -28,26 +40,22 @@ namespace Dune {
   //**********************************************************************
   template<class DiscreteFunctionSpaceType >
   class DiscFuncArray
-    : public DiscreteFunctionDefault < DiscreteFunctionSpaceType,
-          DiscFuncArray <DiscreteFunctionSpaceType> >
+    : public DiscreteFunctionDefault <DiscFuncArrayTraits<DiscreteFunctionSpaceType> >
   {
-    typedef DiscreteFunctionDefault<DiscreteFunctionSpaceType,
-        DiscFuncArray <DiscreteFunctionSpaceType > >
+    typedef DiscreteFunctionDefault<DiscFuncArrayTraits <DiscreteFunctionSpaceType > >
     DiscreteFunctionDefaultType;
-
 
     enum { myId_ = 0};
   public:
 
     //! Type of the range field
-    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
 
     /** \brief For ISTL-compatibility */
     typedef FieldVector<RangeFieldType,1> block_type;
 
     //! Type of the grid
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
-
 
     //! the MyType
     typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscreteFunctionType;
@@ -56,11 +64,14 @@ namespace Dune {
     typedef LocalFunctionArray<DiscreteFunctionSpaceType> LocalFunctionType;
 
     //! the dof iterator type of this function
-    typedef DofIteratorArray <typename DiscreteFunctionSpaceType::RangeField> DofIteratorType;
+    typedef DofIteratorArray <typename DiscreteFunctionSpaceType::RangeFieldType> DofIteratorType;
     typedef ConstDofIteratorDefault<DofIteratorType> ConstDofIteratorType;
 
     //! The associated discrete function space
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
+
+    //! our traits, like DofIterator etc.
+    typedef DiscFuncArrayTraits <DiscreteFunctionSpaceType > Traits;
 
     //! Constructor makes Discrete Function
     DiscFuncArray ( const DiscreteFunctionSpaceType & f ) ;
@@ -205,10 +216,10 @@ namespace Dune {
     typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscFuncType;
 
     enum { dimrange = DiscreteFunctionSpaceType::DimRange };
-    typedef typename DiscreteFunctionSpaceType::Domain DomainType;
-    typedef typename DiscreteFunctionSpaceType::Range RangeType;
-    typedef typename DiscreteFunctionSpaceType::RangeField RangeFieldType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRange JacobianRangeType;
+    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
+    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
+    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
 
     friend class DiscFuncArray <DiscreteFunctionSpaceType>;
   public:
