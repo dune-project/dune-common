@@ -314,11 +314,6 @@ namespace Dune {
     template <GrapeIOFileFormatType ftype>
     bool readGrid( const std::string filename, alu3d_ctype & time );
 
-    //! return pointer to org ALU3dGrid
-    //! private method, but otherwise we have to friend class all possible
-    //! types of LevelIterator ==> later
-    ALU3DSPACE GitterImplType & myGrid();
-
     //! return my rank (only parallel)
     int myRank () const { return myRank_; }
 
@@ -348,6 +343,12 @@ namespace Dune {
     {
       return geomTypes_;
     }
+
+    //! return reference to org ALU3dGrid
+    //! private method, but otherwise we have to friend class all possible
+    //! types of LevelIterator ==> later
+    ALU3DSPACE GitterImplType & myGrid();
+    const ALU3DSPACE GitterImplType & myGrid() const;
 
   private:
     //! Copy constructor should not be used
