@@ -18,8 +18,8 @@ namespace Dune
   {
     typedef GrapeDataDisplay < GridType , DiscFuncType > MyDisplayType;
     typedef typename DiscFuncType::FunctionSpaceType FunctionSpaceType;
-    typedef typename FunctionSpaceType::Domain DomainType;
-    typedef typename FunctionSpaceType::Range RangeType;
+    typedef typename FunctionSpaceType::DomainType DomainType;
+    typedef typename FunctionSpaceType::RangeType RangeType;
 
     enum { dim = GridType::dimension };
     enum { dimworld = GridType::dimensionworld };
@@ -59,8 +59,8 @@ namespace Dune
     // std::vector sucks
     std::vector < DUNE_FDATA * > vecFdata_;
 
-    typedef FixedOrderQuad < typename FunctionSpaceType::RangeField ,
-        typename FunctionSpaceType::Domain , 1 > QuadType;
+    typedef FixedOrderQuad < typename FunctionSpaceType::RangeFieldType ,
+        typename FunctionSpaceType::DomainType , 1 > QuadType;
     QuadType * quad_;
 
 
@@ -68,9 +68,8 @@ namespace Dune
     DomainType domTmp_;
 
     // for the data visualization
-    template <class EntityType, class LocalFuncType>
-    inline void evalCoord (EntityType &en, DiscFuncType &func, LocalFuncType &lf,
-                           int comp, const double *coord, double * val);
+    template <class EntityType>
+    inline void evalCoord (EntityType &en, DUNE_FDATA *, const double *coord, double * val);
 
     // for the data visualization
     template <class EntityType>
