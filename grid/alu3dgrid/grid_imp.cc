@@ -59,7 +59,7 @@ namespace Dune {
 
 #endif
 
-    mygrid_->printsize();
+    myGrid().printsize();
 
 
     postAdapt();
@@ -148,9 +148,8 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline void ALU3dGrid<dim, dimworld, elType>::calcMaxlevel()
   {
-    assert(mygrid_);
     maxlevel_ = 0;
-    ALU3DSPACE BSLeafIteratorMaxLevel w (*mygrid_) ;
+    ALU3DSPACE BSLeafIteratorMaxLevel w (myGrid()) ;
     for (w->first () ; ! w->done () ; w->next ())
     {
       if(w->item().level() > maxlevel_ ) maxlevel_ = w->item().level();
@@ -175,6 +174,7 @@ namespace Dune {
     // return actual size of hierarchical index set
     // this is always up to date
     // maxIndex is the largest index used + 1
+    assert( mygrid_ );
     return (*mygrid_).indexManager(codim).getMaxIndex();
   }
 
@@ -216,6 +216,14 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline ALU3DSPACE GitterImplType & ALU3dGrid<dim, dimworld, elType>::myGrid()
   {
+    assert( mygrid_ );
+    return *mygrid_;
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline const ALU3DSPACE GitterImplType & ALU3dGrid<dim, dimworld, elType>::myGrid() const
+  {
+    assert( mygrid_ );
     return *mygrid_;
   }
 
