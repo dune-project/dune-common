@@ -19,8 +19,6 @@ namespace Dune {
   template <class DofType, class DofArrayType>  class DofIteratorAdapt;
   template <class DiscreteFunctionSpaceImp> class DFAdapt;
 
-  //! defined in dofmanager.hh
-
   template <class DiscreteFunctionSpaceImp>
   struct DFAdaptTraits {
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
@@ -78,6 +76,9 @@ namespace Dune {
 
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
     typedef DFAdaptTraits<DiscreteFunctionSpaceType> Traits;
+
+    /** \brief For ISTL-compatibility */
+    typedef FieldVector<DofType,1> block_type;
 
     //! Constructor make Discrete Function
     DFAdapt(DiscreteFunctionSpaceType& f);
