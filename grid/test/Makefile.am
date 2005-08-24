@@ -79,7 +79,7 @@ test_alu3dgrid_LDADD = $(ALU3DGRID_LDFLAGS) $(ALU3DGRID_LIBS)
 
 # libdune contains both libug2 and libug3, always test both dimensions
 test_ug_SOURCES = test-ug.cc
-test_ug_CXXFLAGS = $(AM_CPPFLAGS) $(UG_NODIM_CPPFLAGS) $(AMIRAMESH_CPPFLAGS) -DWITH_INDEX_SETS
+test_ug_CXXFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS) -DWITH_INDEX_SETS
 test_ug_LDADD = $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS)
 
 ## distribution tarball
