@@ -50,12 +50,6 @@ namespace Dune {
 
   public:
 
-    /** \brief Return reference element corresponding to this element.
-     */
-    static const Dune::Geometry<0,1,GridImp,Dune::OneDGridGeometry>& refelem () {
-      std::cout << "Calling unimplemented method OneDGridGeometry::refelem()" << std::endl;
-    }
-
     //! return the element type identifier (vertex)
     GeometryType type () const {return vertex;}
 
@@ -94,12 +88,6 @@ namespace Dune {
 
   public:
 
-
-    /** \brief Return reference element corresponding to this element.
-     */
-    static const Dune::Geometry<mydim,mydim,GridImp,Dune::OneDGridGeometry>& refelem () {
-      DUNE_THROW(NotImplemented, "Calling unimplemented method OneDGridGeometry::refelem()");
-    }
 
     /** \brief Return the element type identifier
      *
