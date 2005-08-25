@@ -148,19 +148,12 @@ inline static HELEMENT2D * triangle_neighbour(HELEMENT2D *el, int np, int flag,
                                               double * coord, double * xyz, MESH_ELEMENT_FLAGS p) {
 
   printf(" neighbour nicht implementiert \n");
-
   return el ;
-
 }
 
 inline int triangle_boundary(HELEMENT2D * el, int np) {
-
-  printf(" boundary  \n");
-
   return ((DUNE_ELEM *)el->user_data)->bnd[np] ;
-
 }
-
 
 /***********************************************************************
 *

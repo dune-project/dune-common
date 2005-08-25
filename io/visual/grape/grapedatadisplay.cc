@@ -315,10 +315,10 @@ namespace Dune
   }
 
   template<class GridType, class DiscFuncType>
-  inline void GrapeDataDisplay<GridType,DiscFuncType>::dataDisplay(DiscFuncType &func)
+  inline void GrapeDataDisplay<GridType,DiscFuncType>::dataDisplay(DiscFuncType &func, bool vector)
   {
     /* add function data */
-    this->addData(func,"myFunc",0.0,false);
+    this->addData(func,"myFunc",0.0,vector);
     /* display mesh */
     GrapeInterface<dim,dimworld>::handleMesh ( this->hmesh_ );
     return ;
@@ -331,7 +331,7 @@ namespace Dune
   {
     int comp[dim];
     for(int i=0; i<dim; i++) comp[i] = i;
-    DATAINFO dinf = { name , name , 0 , (vector) ? dim : 1 , &comp };
+    DATAINFO dinf = { name , name , 0 , (vector) ? dim : 1 , (int *) &comp };
     addData(func,&dinf,time);
   }
 
