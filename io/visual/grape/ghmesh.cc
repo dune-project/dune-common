@@ -1243,12 +1243,14 @@ inline int switchMethods(GENMESHnD *actHmesh)
 
   /* check if data on all Levels or not */
   fd = actHmesh->f_data;
-  if(fd)
-  {
-    if(( !((DUNE_FDATA *) fd->function_data)->allLevels)
-       && (leafButton->on_off == OFF))
-      printf("Warning: Only data on leaf level, use LeafIterator! \n");
-  }
+  /*
+     if(fd)
+     {
+     if(( !((DUNE_FDATA *) fd->function_data)->allLevels)
+         && (leafButton->on_off == OFF))
+       printf("Warning: Only data on leaf level, use LeafIterator! \n");
+     }
+   */
 
   // this marks the state before
   if(leafButton->on_off == OFF) // off means it is going to be on
