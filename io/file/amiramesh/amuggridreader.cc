@@ -629,52 +629,59 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
     const int* thisElem = elemData + (i* ((isTetraGrid) ? 4 : 8));
 
     if (isTetraGrid) {
+
       int numberOfCorners = 4;
-      int cornerIDs[numberOfCorners];
+      std::vector<unsigned int> cornerIDs(numberOfCorners);
 
       for (int j=0; j<numberOfCorners; j++)
         cornerIDs[j] = isBoundaryNode[elemData[numberOfCorners*i+j]-1];
 
-      if (UG3d::InsertElementFromIDs(grid.multigrid_->grids[0], numberOfCorners, cornerIDs, NULL) == NULL)
-        DUNE_THROW(IOError, "Inserting element failed");
+      grid.insertElement(simplex, cornerIDs);
 
     } else {
 
       // Prism
       if (thisElem[1]==thisElem[2] && thisElem[5]==thisElem[6]) {
 
-        int cornerIDs[6] = {isBoundaryNode[thisElem[0]-1],
-                            isBoundaryNode[thisElem[1]-1],
-                            isBoundaryNode[thisElem[3]-1],
-                            isBoundaryNode[thisElem[4]-1],
-                            isBoundaryNode[thisElem[5]-1],
-                            isBoundaryNode[thisElem[7]-1]};
+        std::vector<unsigned int> cornerIDs(6);
 
-        if (UG3d::InsertElementFromIDs(grid.multigrid_->grids[0], 6, cornerIDs, NULL) == NULL)
-          DUNE_THROW(IOError, "Inserting element failed");
+        cornerIDs[0] = isBoundaryNode[thisElem[0]-1];
+        cornerIDs[1] = isBoundaryNode[thisElem[1]-1];
+        cornerIDs[2] = isBoundaryNode[thisElem[3]-1];
+        cornerIDs[3] = isBoundaryNode[thisElem[4]-1];
+        cornerIDs[4] = isBoundaryNode[thisElem[5]-1];
+        cornerIDs[5] = isBoundaryNode[thisElem[7]-1];
+
+        grid.insertElement(prism, cornerIDs);
 
       } else if (thisElem[2]==thisElem[3] && thisElem[6]==thisElem[7]) {
 
-        int cornerIDs[6] = {isBoundaryNode[thisElem[0]-1],
-                            isBoundaryNode[thisElem[1]-1],
-                            isBoundaryNode[thisElem[2]-1],
-                            isBoundaryNode[thisElem[4]-1],
-                            isBoundaryNode[thisElem[5]-1],
-                            isBoundaryNode[thisElem[6]-1]};
+        std::vector<unsigned int> cornerIDs(6);
 
-        if (UG3d::InsertElementFromIDs(grid.multigrid_->grids[0], 6, cornerIDs, NULL) == NULL)
-          DUNE_THROW(IOError, "Inserting element failed");
+        cornerIDs[0] = isBoundaryNode[thisElem[0]-1];
+        cornerIDs[1] = isBoundaryNode[thisElem[1]-1];
+        cornerIDs[2] = isBoundaryNode[thisElem[2]-1];
+        cornerIDs[3] = isBoundaryNode[thisElem[4]-1];
+        cornerIDs[4] = isBoundaryNode[thisElem[5]-1];
+        cornerIDs[5] = isBoundaryNode[thisElem[6]-1];
+
+        grid.insertElement(prism, cornerIDs);
 
       } else {
 
         int numberOfCorners = 8;
-        int cornerIDs[numberOfCorners];
+        std::vector<unsigned int> cornerIDs(numberOfCorners);
 
-        for (int j=0; j<numberOfCorners; j++)
-          cornerIDs[j] = isBoundaryNode[elemData[numberOfCorners*i+j]-1];
+        cornerIDs[0] = isBoundaryNode[elemData[numberOfCorners*i+0]-1];
+        cornerIDs[1] = isBoundaryNode[elemData[numberOfCorners*i+1]-1];
+        cornerIDs[2] = isBoundaryNode[elemData[numberOfCorners*i+3]-1];
+        cornerIDs[3] = isBoundaryNode[elemData[numberOfCorners*i+2]-1];
+        cornerIDs[4] = isBoundaryNode[elemData[numberOfCorners*i+4]-1];
+        cornerIDs[5] = isBoundaryNode[elemData[numberOfCorners*i+5]-1];
+        cornerIDs[6] = isBoundaryNode[elemData[numberOfCorners*i+7]-1];
+        cornerIDs[7] = isBoundaryNode[elemData[numberOfCorners*i+6]-1];
 
-        if (UG3d::InsertElementFromIDs(grid.multigrid_->grids[0], numberOfCorners, cornerIDs, NULL) == NULL)
-          DUNE_THROW(IOError, "Inserting element failed");
+        grid.insertElement(cube, cornerIDs);
 
       }
 
@@ -1344,19 +1351,18 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
     if (containsOnlyTriangles ||
         (elemData[3*i+2] == elemData[3*i+3])) {
 
-      int cornerIDs[3];
+      std::vector<unsigned int> cornerIDs(3);
 
       /* only triangles */
       cornerIDs[0] = isBoundaryNode[elemData[3*i]-1];
       cornerIDs[1] = isBoundaryNode[elemData[3*i+1]-1];
       cornerIDs[2] = isBoundaryNode[elemData[3*i+2]-1];
 
-      if (InsertElementFromIDs(grid.multigrid_->grids[0], 3,cornerIDs, NULL) == NULL)
-        DUNE_THROW(IOError, "2d AmiraMesh reader: Inserting an element failed");
+      grid.insertElement(simplex, cornerIDs);
 
     } else {
 
-      int cornerIDs[4];
+      std::vector<unsigned int> cornerIDs(4);
 
       /* only quadrilaterals */
       cornerIDs[0] = isBoundaryNode[elemData[4*i]-1];
@@ -1364,8 +1370,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
       cornerIDs[2] = isBoundaryNode[elemData[4*i+2]-1];
       cornerIDs[3] = isBoundaryNode[elemData[4*i+3]-1];
 
-      if (InsertElementFromIDs(grid.multigrid_->grids[0], 4, cornerIDs, NULL) == NULL)
-        DUNE_THROW(IOError, "2d AmiraMesh reader: Inserting an element failed");
+      grid.insertElement(cube, cornerIDs);
 
     }
 
