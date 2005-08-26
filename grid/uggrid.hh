@@ -356,11 +356,20 @@ namespace Dune {
     // End of Interface Methods
     // **********************************************************
 
-    /** \brief Start the coarse grid creation process */
+    /** \brief Start the coarse grid creation process
+        \todo This method should delete the grid!
+     */
     void createbegin();
 
     /** \brief End the coarse grid creation process */
     void createend();
+
+    /** \brief Insert an element into the coarse grid
+        \param type The GeometryType of the new element
+        \param vertices The vertices of the new element, using the DUNE numbering
+     */
+    void insertElement(GeometryType type,
+                       const std::vector<unsigned int>& vertices);
 
     /** \brief Adapt the grid without constructing the green closure
 

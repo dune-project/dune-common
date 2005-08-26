@@ -852,6 +852,74 @@ void Dune::UGGrid < dim, dimworld >::createend()
 
 }
 
+template <int dim, int dimworld>
+void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
+                                                const std::vector<unsigned int>& vertices)
+{
+  int vertices_C_style[vertices.size()];
+  for (size_t i=0; i<vertices.size(); i++)
+    vertices_C_style[i] = vertices[i];
+
+  if (dim==2) {
+    switch (type) {
+    case simplex :
+      // Everything alright
+      if (vertices.size() != 3)
+        DUNE_THROW(GridError, "You have requested to enter a triangle, but you"
+                   << " have provided " << vertices.size() << " vertices!");
+      break;
+
+    case cube :
+      if (vertices.size() != 4)
+        DUNE_THROW(GridError, "You have requested to enter a quadrilateral, but you"
+                   << " have provided " << vertices.size() << " vertices!");
+
+      // DUNE and UG numberings differ --> reorder the vertices
+      vertices_C_style[2] = vertices[3];
+      vertices_C_style[3] = vertices[2];
+      break;
+    default :
+      DUNE_THROW(GridError, "You cannot insert a " << type << " into a UGGrid<2,2>!");
+    }
+  } else {
+    switch (type) {
+    case simplex :
+      if (vertices.size() != 4)
+        DUNE_THROW(GridError, "You have requested to enter a tetrahedron, but you"
+                   << " have provided " << vertices.size() << " vertices!");
+      break;
+    case pyramid :
+      if (vertices.size() != 5)
+        DUNE_THROW(GridError, "You have requested to enter a pyramid, but you"
+                   << " have provided " << vertices.size() << " vertices!");
+      break;
+    case prism :
+      if (vertices.size() != 6)
+        DUNE_THROW(GridError, "You have requested to enter a prism, but you"
+                   << " have provided " << vertices.size() << " vertices!");
+      break;
+
+    case cube :
+      if (vertices.size() != 8)
+        DUNE_THROW(GridError, "You have requested to enter a hexahedron, but you"
+                   << " have provided " << vertices.size() << " vertices!");
+
+      // DUNE and UG numberings differ --> reorder the vertices
+      vertices_C_style[2] = vertices[3];
+      vertices_C_style[3] = vertices[2];
+      vertices_C_style[6] = vertices[7];
+      vertices_C_style[7] = vertices[6];
+      break;
+    default :
+      DUNE_THROW(GridError, "You cannot insert a " << type << " into a UGGrid<3,3>!");
+
+    }
+  }
+
+  if (InsertElementFromIDs(multigrid_->grids[0], vertices.size(), vertices_C_style, NULL)==NULL)
+    DUNE_THROW(GridError, "Inserting " << type << " into UGGrid failed!");
+
+}
 
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::setIndices()
