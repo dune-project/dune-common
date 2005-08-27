@@ -14,9 +14,10 @@ namespace Dune {
   inline LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::
   LagrangeDiscreteFunctionSpace (GridPartType & g, DofManagerType & dm) :
     DefaultType(id),
-    baseFuncSet_(0),
+    baseFuncSet_(GeometryIdentifier::numTypes,0),
     dm_(dm),
-    grid_(g)
+    grid_(g),
+    mapper_(0)
   {
     makeFunctionSpace(g);
   }
@@ -32,8 +33,6 @@ namespace Dune {
 
     dm_.addIndexSet( gridPart.grid() , gridPart.indexSet() );
 
-    mapper_ = 0;
-
     //std::cout << "Constructor of LagrangeDiscreteFunctionSpace! \n";
 
     // search the macro grid for diffrent element types
@@ -45,7 +44,11 @@ namespace Dune {
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
       if(baseFuncSet_[id] == 0 )
+      {
+        assert( id < (int) baseFuncSet_.size() );
+        assert( id >= 0);
         baseFuncSet_[id] = setBaseFuncSetPointer(*it, gridPart.indexSet());
+      }
     }
 
     // for empty functions space which can happen for BSGrid
@@ -59,7 +62,7 @@ namespace Dune {
   inline LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::
   ~LagrangeDiscreteFunctionSpace ()
   {
-    for(unsigned int i=0; i<baseFuncSet_.dim(); i++)
+    for(unsigned int i=0; i<baseFuncSet_.size(); i++)
       if (baseFuncSet_[i] != 0)
         delete baseFuncSet_[i];
 
@@ -86,6 +89,8 @@ namespace Dune {
   {
     GeometryType geo =  en.geometry().type();
     int dimension = static_cast<int>(EntityType::mydimension);
+    assert(GeometryIdentifier::fromGeo(dimension, geo) < (int) baseFuncSet_.size());
+    assert(GeometryIdentifier::fromGeo(dimension, geo) >= 0);
     return *baseFuncSet_[GeometryIdentifier::fromGeo(dimension, geo)];
   }
 
