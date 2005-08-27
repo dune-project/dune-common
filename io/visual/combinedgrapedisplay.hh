@@ -21,8 +21,8 @@ namespace Dune
     typedef CombinedGrapeDisplay < DisplayType > MyDisplayType;
 
     typedef typename DisplayType :: MyGridType GridType;
-    enum { dim      = 3 }; //GridType :: dimension }
-    enum { dimworld = 3 }; //GridType :: dimensionworld };
+    enum { dim      = GridType :: dimension };
+    enum { dimworld = GridType :: dimensionworld };
 
     // defined in griddisplay.hh
     typedef typename GrapeInterface<dim,dimworld>::DUNE_ELEM DUNE_ELEM;
