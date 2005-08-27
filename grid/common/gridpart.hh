@@ -10,10 +10,12 @@
 namespace Dune {
 
   // Forward declarations
-  template <class GridImp>
+  template <class GridImp, PartitionIteratorType pitype>
   class LevelGridPartTraits;
-  template <class GridImp>
+  template <class GridImp, PartitionIteratorType pitype>
   class LeafGridPartTraits;
+  template <class GridImp,class IndexSetImp, PartitionIteratorType pitype>
+  struct DefaultGridPartTraits;
 
   //! \brief Interface for the GridPart classes
   //! A GridPart class allows to access only a specific subset of a grid's
@@ -81,13 +83,13 @@ namespace Dune {
   };
 
   //! \brief Selects a specific level of a grid
-  template <class GridImp>
+  template <class GridImp, PartitionIteratorType pitype = Interior_Partition>
   class LevelGridPart :
-    public GridPartDefault<LevelGridPartTraits<GridImp> > {
+    public GridPartDefault<LevelGridPartTraits<GridImp,pitype> > {
   public:
     //- Public typedefs and enums
     //! Corresponding type definitions
-    typedef LevelGridPartTraits<GridImp> Traits;
+    typedef LevelGridPartTraits<GridImp,pitype> Traits;
     //! Grid implementation
     typedef typename Traits::GridType GridType;
     //! Level index set that corresponds to the grid
@@ -108,13 +110,13 @@ namespace Dune {
     //! Returns first iterator on a given level
     template <int cd>
     typename Traits::template Codim<cd>::IteratorType begin() const {
-      return this->grid().template lbegin<cd>(level_);
+      return this->grid().template lbegin<cd,pitype>(level_);
     }
 
     //! Returns end iterator on a given level
     template <int cd>
     typename Traits::template Codim<cd>::IteratorType end() const {
-      return this->grid().template lend<cd>(level_);
+      return this->grid().template lend<cd,pitype>(level_);
     }
 
     //! Level which this GridPart belongs to
@@ -125,26 +127,26 @@ namespace Dune {
   };
 
   //! Type definitions for the LevelGridPart class
-  template <class GridImp>
+  template <class GridImp, PartitionIteratorType pitype>
   struct LevelGridPartTraits {
     typedef GridImp GridType;
-    typedef LevelGridPart<GridImp> GridPartType;
+    typedef LevelGridPart<GridImp,pitype> GridPartType;
     typedef typename GridImp::LevelIndexSetType IndexSetType;
 
     template <int cd>
     struct Codim {
-      typedef typename GridImp::template Codim<cd>::LevelIterator IteratorType;
+      typedef typename GridImp::template Codim<cd>::template Partition<pitype>::LevelIterator IteratorType;
     };
   };
 
   //! \brief Selects the leaf level of a grid
-  template <class GridImp>
+  template <class GridImp, PartitionIteratorType pitype = Interior_Partition>
   class LeafGridPart :
-    public GridPartDefault<LeafGridPartTraits<GridImp> > {
+    public GridPartDefault<LeafGridPartTraits<GridImp,pitype> > {
   public:
     //- Public typedefs and enums
     //! Type definitions
-    typedef LeafGridPartTraits<GridImp> Traits;
+    typedef LeafGridPartTraits<GridImp,pitype> Traits;
     //! Grid implementation type
     typedef typename Traits::GridType GridType;
     //! The leaf index set of the grid implementation
@@ -164,28 +166,80 @@ namespace Dune {
     //! Begin iterator on the leaf level
     template <int cd>
     typename Traits::template Codim<cd>::IteratorType begin() const {
-      return this->grid().template leafbegin<cd>();
+      return this->grid().template leafbegin<cd,pitype>();
     }
 
     //! End iterator on the leaf level
     template <int cd>
     typename Traits::template Codim<cd>::IteratorType end() const {
-      return this->grid().template leafend<cd>();
+      return this->grid().template leafend<cd,pitype>();
     }
   };
 
   //! Type definitions for the LeafGridPart class
-  template <class GridImp>
+  template <class GridImp,PartitionIteratorType pitype>
   struct LeafGridPartTraits {
     typedef GridImp GridType;
-    typedef LeafGridPart<GridImp> GridPartType;
+    typedef LeafGridPart<GridImp,pitype> GridPartType;
     typedef typename GridImp::LeafIndexSetType IndexSetType;
 
     template <int cd>
     struct Codim {
-      typedef typename GridImp::template Codim<cd>::LeafIterator IteratorType;
+      typedef typename GridImp::template Codim<cd>::template Partition<pitype>::LeafIterator IteratorType;
     };
   };
+
+  //! quich hack, to be revised by me
+  //! \brief Selects the leaf level of a grid
+  template <class GridImp, class IndexSetImp , PartitionIteratorType pitype = Interior_Partition>
+  class DefaultGridPart :
+    public GridPartDefault<DefaultGridPartTraits<GridImp,IndexSetImp,pitype> > {
+  public:
+    //- Public typedefs and enums
+    //! Type definitions
+    typedef DefaultGridPartTraits<GridImp,IndexSetImp,pitype> Traits;
+    //! Grid implementation type
+    typedef typename Traits::GridType GridType;
+    //! The leaf index set of the grid implementation
+    typedef typename Traits::IndexSetType IndexSetType;
+
+    //! Struct providing types of the leaf iterators on codimension cd
+    template <int cd>
+    struct Codim {
+      typedef typename Traits::template Codim<cd>::IteratorType IteratorType;
+    };
+  public:
+    //- Public methods
+    //! Constructor
+    DefaultGridPart(GridType& grid, IndexSetType & iset ) :
+      GridPartDefault<Traits>(grid, iset) {}
+
+    //! Begin iterator on the leaf level
+    template <int cd>
+    typename Traits::template Codim<cd>::IteratorType begin() const {
+      return this->grid().template leafbegin<cd,pitype>();
+    }
+
+    //! End iterator on the leaf level
+    template <int cd>
+    typename Traits::template Codim<cd>::IteratorType end() const {
+      return this->grid().template leafend<cd,pitype>();
+    }
+  };
+
+  //! Type definitions for the LeafGridPart class
+  template <class GridImp,class IndexSetImp, PartitionIteratorType pitype>
+  struct DefaultGridPartTraits {
+    typedef GridImp GridType;
+    typedef DefaultGridPart<GridImp,IndexSetImp,pitype> GridPartType;
+    typedef IndexSetImp IndexSetType;
+
+    template <int cd>
+    struct Codim {
+      typedef typename GridImp::template Codim<cd>::template Partition<pitype>::LeafIterator IteratorType;
+    };
+  };
+
 
 } // end namespace Dune
 
