@@ -39,8 +39,11 @@ namespace Dune {
     //! set index as maxIndex
     inline void setMaxIndex(T index) { maxIndex_ = index; }
 
-    //! set index as maxIndex
+    //! return maxIndex which is also the
     inline int getMaxIndex() const { return maxIndex_;  }
+
+    //! return maxIndex which is also the
+    inline int size() const { return getMaxIndex(); }
 
     //! restore index from stack or create new index
     inline T getIndex ();
