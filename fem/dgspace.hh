@@ -39,7 +39,7 @@ namespace Dune {
     DofManagerType & dm_;
 
     // corresponding IndexSet, here LevelIndexSet
-    typedef typename DofManagerType::IndexSetType IndexSetType;
+    typedef typename GridType :: LeafIndexSetType IndexSetType;
 
     enum { DimRange = FunctionSpaceType::DimRange };
 
@@ -65,7 +65,7 @@ namespace Dune {
     DGDiscreteFunctionSpace ( GridType & g , int level ) :
       DiscreteFunctionSpaceType (g, DGFSpaceId, level),
       dm_ ( DofManagerFactoryType::getDofManager(g) ), base_(*this, polOrd),
-      mapper_(dm_.indexSet(), base_.getNumberOfBaseFunctions(), level)
+      mapper_(g.leafIndexSet(), base_.getNumberOfBaseFunctions(), level)
     {}
 
     /** \todo Please doc me! */
