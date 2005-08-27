@@ -83,22 +83,27 @@ namespace Dune {
   {
     // busines as usual
 
-    template <class EntityType,class IndexSetType, int enCodim, int codim>
+    template <class EntityType, class IndexSetType , int enCodim, int codim >
     struct IndexWrapper
     {
       static inline int index (EntityType & en , const IndexSetType & set ,
                                const IndexArray<int> & leafIndex, int num )
       {
-        // this index set works only for codim = 0 at the moment
-        assert(codim == 0);
+        return set.index(en);
+      }
+    };
 
-        //assert( en.isLeaf () );
-
+    template <class EntityType, class IndexSetType>
+    struct IndexWrapper<EntityType,IndexSetType,0,0>
+    {
+      static inline int index (EntityType & en , const IndexSetType & set ,
+                               const IndexArray<int> & leafIndex, int num )
+      {
         // check if we have index for given entity
-        //assert(leafIndex[ set.index(en) ] >= 0);
-        //assert( (leafIndex[ set.index(en) ] < 0) ? (std::cout << set.index(en) << " idx, part = " << en.partitionType() << " on p = " << __MyRank__ << "\n",0 ): 1);
+        assert( en.isLeaf () );
+
+        // assert if index was not set yet
         assert( leafIndex[ set.index(en) ] >= 0 );
-        //if(leafIndex[ set.index(en) ] < 0) return 0;
         return leafIndex[ set.index(en) ];
       }
     };
@@ -163,9 +168,9 @@ namespace Dune {
 
   public:
     enum { ncodim = GridType::dimension + 1 };
-    AdaptiveLeafIndexSet ( GridType & grid ) : DefaultGridIndexSetBase <GridType> (grid) ,
-                                               nextFreeIndex_ (0), actSize_(0), marked_(false), markAllU_ (false)
-                                               , factor_(2) , hIndexSet_( grid.hierarchicIndexSet() )
+    AdaptiveLeafIndexSet (const GridType & grid) : DefaultGridIndexSetBase <GridType> (grid) ,
+                                                   nextFreeIndex_ (0), actSize_(0), marked_(false), markAllU_ (false)
+                                                   , factor_(2) , hIndexSet_( grid.hierarchicIndexSet() )
     {
       resizeVectors();
 
@@ -376,11 +381,8 @@ namespace Dune {
         return nextFreeIndex_;
       }
 
-      if(codim == dim)
-        return this->grid_.global_size(codim);
-
-      assert(false);
-      return 0;
+      assert( (codim > 0) || (codim < dim+1));
+      return hIndexSet_.size(codim);
     }
 
     //! return global index
@@ -390,9 +392,6 @@ namespace Dune {
     {
       return IndexWrapper<EntityType,HIndexSetType,EntityType::codimension,codim>::
              index(en,hIndexSet_,leafIndex_,num);
-      //std::cout << "return index \n";
-      //assert( codim == 0 );
-      //return leafIndex_[ hIndexSet_.index(en) ];
     }
 
     //! return global index
@@ -400,10 +399,13 @@ namespace Dune {
     template <class EntityType>
     int index (EntityType & en) const
     {
-      assert( EntityType::codimension == 0 );
-      assert( en.isLeaf() );
-      assert( leafIndex_[ hIndexSet_.index(en) ] >= 0 );
-      return leafIndex_[ hIndexSet_.index(en) ];
+      enum { codim = EntityType::codimension };
+      return IndexWrapper<EntityType,HIndexSetType,codim,codim>::index(en,hIndexSet_,leafIndex_,0);
+
+      //assert( EntityType::codimension == 0 );
+      //assert( en.isLeaf() );
+      //assert( leafIndex_[ hIndexSet_.index(en) ] >= 0 );
+      //return leafIndex_[ hIndexSet_.index(en) ];
     }
 
     //! return size of grid entities per level and codim
