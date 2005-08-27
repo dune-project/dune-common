@@ -102,7 +102,7 @@ namespace Dune {
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
         LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
         enum {maxnumOfBaseFct = 30};
-        if (!matrix_) matrix_ = newEmptyMatrix();
+        if (!matrix_) matrix_ = this->newEmptyMatrix();
 
         FieldMatrix<double,maxnumOfBaseFct,maxnumOfBaseFct> mat;
 
