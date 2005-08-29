@@ -18,7 +18,7 @@ namespace Dune {
   {
     //friend class OneDGridIntersectionIterator<dim,dimworld>;
   public:
-    typedef typename GridImp::template codim<0>::Geometry Geometry;
+    typedef typename GridImp::template Codim<0>::Geometry Geometry;
 
     OneDGridBoundaryEntity () : _neigh(-1), geom_()
     {}

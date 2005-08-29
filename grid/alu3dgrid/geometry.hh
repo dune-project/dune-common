@@ -46,7 +46,7 @@ namespace Dune {
   class ALU3dGridMakeableGeometry : public Geometry<mydim, coorddim,
                                         GridImp, ALU3dGridGeometry>
   {
-    typedef Geometry<mydim, coorddim, GridImp, ALU3dGridGeometry> GeometryType;
+    typedef Geometry<mydim, coorddim, GridImp, ALU3dGridGeometry> InterfaceGeometryType;
     typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
 
     friend class ALU3dGridIntersectionIterator<GridImp>;
@@ -57,10 +57,10 @@ namespace Dune {
         3> FaceCoordinatesType;
 
     ALU3dGridMakeableGeometry() :
-      GeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>()) {}
+      InterfaceGeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>()) {}
 
     ALU3dGridMakeableGeometry(GridImp & grid , int level ) :
-      GeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>()) {}
+      InterfaceGeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>()) {}
 
     //! build geometry out of different ALU3dGrid Geometrys
     //! ItemType are HElementType, HFaceType, HEdgeType and VertexType

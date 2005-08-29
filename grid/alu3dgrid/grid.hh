@@ -124,18 +124,18 @@ namespace Dune {
     typedef ALU3DSPACE ObjectStream ObjectStreamType;
 
     //! Type of the hierarchic index set
-    typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSetType;
+    typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSet;
 
     //! Type of the global id set
-    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSetType;
+    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSet;
 
     //! Type of the local id set
-    typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSetType;
+    typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSet;
 
     //! Type of the level index set
-    typedef DefaultLevelIndexSet<MyType>           LevelIndexSetType;
+    typedef DefaultLevelIndexSet<MyType>           LevelIndexSet;
     //! Type of the leaf index set
-    typedef AdaptiveLeafIndexSet<MyType>           LeafIndexSetType;
+    typedef AdaptiveLeafIndexSet<MyType>           LeafIndexSet;
 
     //! maximal number of levels
     enum { MAXL = 64 };

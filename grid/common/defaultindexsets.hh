@@ -351,7 +351,7 @@ namespace Dune {
     enum { dim = GridType :: dimension };
     enum { numCodim = dim + 1 };
 
-    typedef typename GridType :: HierarchicIndexSetType HierarchicIndexSetType;
+    typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
 
     typedef DefaultLevelIndexSet<GridType> MyType;
 

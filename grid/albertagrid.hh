@@ -1274,9 +1274,9 @@ namespace Dune
 
     typedef typename Traits::template Codim<0>::LeafIterator LeafIterator;
 
-    typedef AlbertaGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSetType;
-    typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetType;
-    typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetType;
+    typedef AlbertaGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSet;
+    typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSet;
+    typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSet;
 
     typedef AlbertaGridGlobalIdSet<dim,dimworld> GlobalIdSetType;
     typedef AlbertaGridGlobalIdSet<dim,dimworld> LocalIdSetType;
@@ -1454,16 +1454,16 @@ namespace Dune
     //! transform grid N = scalar * x + trans
     void setNewCoords(const FieldVector<albertCtype, dimworld> & trans, const albertCtype scalar);
 
-    const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
+    const HierarchicIndexSet & hierarchicIndexSet () const { return hIndexSet_; }
 
-    const LevelIndexSetType & levelIndexSet (int level = 0) const
+    const LevelIndexSet & levelIndexSet (int level= 0) const
     {
-      if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSetType (*this,level);
+      if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSet (*this,level);
       return *(levelIndexVec_[level]);
     }
 
-    const LeafIndexSetType & leafIndexSet () const {
-      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
+    const LeafIndexSet & leafIndexSet () const {
+      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet (*this);
       return *leafIndexSet_;
     }
 
@@ -1698,11 +1698,11 @@ namespace Dune
 
     // the level index set, is generated from the HierarchicIndexSet
     // is generated, when accessed
-    mutable std::vector < LevelIndexSetType * > levelIndexVec_;
+    mutable std::vector < LevelIndexSet * > levelIndexVec_;
 
     // the leaf index set, is generated from the HierarchicIndexSet
     // is generated, when accessed
-    mutable LeafIndexSetType * leafIndexSet_;
+    mutable LeafIndexSet* leafIndexSet_;
 
     const std::vector < GeometryType > geomTypes_;
 

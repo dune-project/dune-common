@@ -75,7 +75,7 @@ namespace Dune {
   class ALU3dGridGlobalIdSet
   {
     typedef ALU3dGrid<dim,dimworld,elType> GridType;
-    typedef typename GridType :: HierarchicIndexSetType HierarchicIndexSetType;
+    typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
 
     // this means that only up to 300000000 entities are allowed
     enum { codimMultiplier = 300000000 };
@@ -125,7 +125,7 @@ namespace Dune {
   class ALU3dGridLocalIdSet
   {
     typedef ALU3dGrid<dim,dimworld,elType> GridType;
-    typedef typename GridType :: HierarchicIndexSetType HierarchicIndexSetType;
+    typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
 
     // this means that only up to 300000000 entities are allowed
     enum { codimMultiplier = 300000000 };

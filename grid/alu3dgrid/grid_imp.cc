@@ -179,31 +179,31 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline const typename ALU3dGrid<dim, dimworld, elType>::LeafIndexSetType &
+  inline const typename ALU3dGrid<dim, dimworld, elType>::LeafIndexSet &
   ALU3dGrid<dim, dimworld, elType>::leafIndexSet() const
   {
-    if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType ( *this );
+    if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet ( *this );
     return *leafIndexSet_;
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline typename ALU3dGrid<dim, dimworld, elType>::LeafIndexSetType &
+  inline typename ALU3dGrid<dim, dimworld, elType>::LeafIndexSet &
   ALU3dGrid<dim, dimworld, elType>::leafIndexSet()
   {
-    if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType ( *this );
+    if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet ( *this );
     return *leafIndexSet_;
   }
 
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline const typename ALU3dGrid<dim, dimworld, elType>::LevelIndexSetType &
+  inline const typename ALU3dGrid<dim, dimworld, elType>::LevelIndexSet &
   ALU3dGrid<dim, dimworld, elType>::levelIndexSet( int level ) const
   {
     if( (level < 0) && (level >= MAXL) )
       DUNE_THROW(GridError,"Only " << MAXL << "levels allowed for this grid!\n");
 
     if( levelIndexVec_[level] == 0 )
-      levelIndexVec_[level] = new LevelIndexSetType ( *this , level );
+      levelIndexVec_[level] = new LevelIndexSet ( *this , level );
     return *(levelIndexVec_[level]);
   }
 
@@ -424,7 +424,7 @@ namespace Dune {
       EntityImp s ( *this, this->maxlevel() );
 
       ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>,
-          EntityImp, LeafIndexSetType, LeafIndexSetType >
+          EntityImp, LeafIndexSet, LeafIndexSet >
       rp(*this,f,s, *leafIndexSet_  ,*leafIndexSet_);
 
       ref = myGrid().duneAdapt(rp); // adapt grid
