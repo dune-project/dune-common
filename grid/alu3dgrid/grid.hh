@@ -249,22 +249,22 @@ namespace Dune {
     int global_size (int cd) const ;
 
     //! get global id set of grid
-    const GlobalIdSetType & globalIdSet () const { return globalIdSet_; }
+    const GlobalIdSet & globalIdSet () const { return globalIdSet_; }
 
     //! get global id set of grid
-    const LocalIdSetType & localIdSet () const { return localIdSet_; }
+    const LocalIdSet & localIdSet () const { return localIdSet_; }
 
     //! get hierarchic index set of the grid
-    const HierarchicIndexSetType & hierarchicIndexSet () const { return hIndexSet_; }
+    const HierarchicIndexSet & hierarchicIndexSet () const { return hIndexSet_; }
 
     //! get leaf index set of the grid
-    const LeafIndexSetType & leafIndexSet () const;
+    const LeafIndexSet & leafIndexSet () const;
 
     //! get leaf index set of the grid
-    LeafIndexSetType & leafIndexSet ();
+    LeafIndexSet & leafIndexSet ();
 
     //! get level index set of the grid
-    const LevelIndexSetType & levelIndexSet (int level) const;
+    const LevelIndexSet & levelIndexSet (int level) const;
 
     //! calculate load of each proc and repartition if neccessary
     bool loadBalance ();
