@@ -1,263 +1,295 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __SGRID_CC__
-#define __SGRID_CC__
+#ifndef DUNE_SGRID_CC
+#define DUNE_SGRID_CC
+
+#include <algorithm>
+#include <iostream>
+#include <assert.h>
+
+#include <dune/common/stdstreams.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
 
-#include <assert.h>
 
   //************************************************************************
-  // SElement
+  // SGeometry
 
-  // singleton holding reference elements
-  template<int dim>
-  struct SReferenceElement {
-    static SElement<dim,dim> refelem;
-  };
-
-  // initialize static variable with bool constructor (which makes reference elements)
-  template<int dim>
-  SElement<dim,dim> SReferenceElement<dim>::refelem(true);
-
-
-  // members for SElementBase
-  template<int dim, int dimworld>
-  inline SElementBase<dim,dimworld>::SElementBase ()
+#if 0
+  // members for SGeometry, general case dim!=0
+  template<int mydim, int cdim, class GridImp>
+  inline SGeometry<mydim,cdim,GridImp>::SGeometry (bool b)
   {
     builtinverse = false;
-  }
+    if (!b) return;
 
-  template<int dim, int dimworld>
-  inline SElement<dim,dim>& SElementBase<dim,dimworld>::refelem ()
+    // copy arguments
+    s = 0.0;
+    for (int j=0; j<cdim; j++) {
+      // make unit vectors
+      A[j]   = FieldVector<sgrid_ctype, cdim>(0.0);
+      A[j][j] = 1.0;
+    }
+
+    // make corners
+    for (int i=0; i<(1<<mydim); i++)     // there are 2^d corners
+    {
+      // use binary representation of corner number to assign corner coordinates
+      int mask = 1;
+      c[i] = s;
+      for (int k=0; k<cdim; k++)
+      {
+        if (i&mask) c[i] = c[i]+A[k];
+        mask = mask<<1;
+      }
+    }
+  }
+#endif
+
+  template<int mydim, int cdim, class GridImp>
+  inline void SGeometry<mydim,cdim,GridImp>::make(FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As)
   {
-    return SReferenceElement<dim,dim>::refelem;
+    // clear jacobian
+    builtinverse = false;
+
+    // copy arguments
+    s = __As[mydim];
+    for (int j=0; j<mydim; j++) A[j] = __As[j];
+
+    // make corners
+    for (int i=0; i<(1<<mydim); i++)     // there are 2^d corners
+    {
+      // use binary representation of corner number to assign corner coordinates
+      int mask = 1;
+      c[i] = s;
+      for (int k=0; k<cdim; k++)
+      {
+        if (i&mask) c[i] = c[i]+A[k];
+        mask = mask<<1;
+      }
+    }
   }
 
-  template<int dim, int dimworld>
-  inline int SElementBase<dim,dimworld>::corners ()
+  template<int mydim, int cdim, class GridImp>
+  inline GeometryType SGeometry<mydim,cdim,GridImp>::type () const
   {
-    return 1<<dim;
+    return (mydim==0) ? vertex : cube;
   }
 
-  template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype>& SElementBase<dim,dimworld>::operator[] (int i)
+  template<int mydim, int cdim, class GridImp>
+  inline int SGeometry<mydim,cdim,GridImp>::corners () const
+  {
+    return 1<<mydim;
+  }
+
+  template<int mydim, int cdim, class GridImp>
+  inline const FieldVector<sgrid_ctype, cdim>& SGeometry<mydim,cdim,GridImp>::operator[] (int i) const
   {
     return c[i];
   }
 
-  template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype> SElementBase<dim,dimworld>::global (const Vec<dim,sgrid_ctype>& local)
+  template<int mydim, int cdim, class GridImp>
+  inline FieldVector<sgrid_ctype, cdim> SGeometry<mydim,cdim,GridImp>::global (const FieldVector<sgrid_ctype, mydim>& local) const
   {
-    return s+(A*local);
+    FieldVector<sgrid_ctype, cdim> global = s;
+    // global += A * local
+    A.umv(local,global);
+    return global; // s+(A*local);
   }
 
-  template<int dim, int dimworld>
-  inline Vec<dim,sgrid_ctype> SElementBase<dim,dimworld>::local (const Vec<dimworld,sgrid_ctype>& global)
+  template<int mydim, int cdim, class GridImp>
+  inline FieldVector<sgrid_ctype, mydim> SGeometry<mydim,cdim,GridImp>::local (const FieldVector<sgrid_ctype, cdim>& global) const
   {
-    Vec<dim,sgrid_ctype> l;     // result
-    Vec<dimworld,sgrid_ctype> rhs = global-s;
-    for (int k=0; k<dim; k++)
-      l(k) = (rhs*A(k)) / (A(k)*A(k));
+    FieldVector<sgrid_ctype, mydim> l;     // result
+    FieldVector<sgrid_ctype, cdim> rhs = global-s;
+    for (int k=0; k<mydim; k++)
+      l[k] = (rhs*A[k]) / (A[k]*A[k]);
     return l;
   }
 
-  template<int dim, int dimworld>
-  inline sgrid_ctype SElementBase<dim,dimworld>::integration_element (const Vec<dim,sgrid_ctype>& local)
+  template<int mydim, int cdim, class GridImp>
+  inline bool SGeometry<mydim,cdim,GridImp>::checkInside (const FieldVector<sgrid_ctype, mydim>& local) const
+  {
+    // check wether they are in the reference element
+    for(int i=0; i<mydim; i++)
+    {
+      if((local[i] < 0.0) || (local[i] > 1.0 ))
+        return false;
+    }
+    return true;
+  }
+
+  template<int mydim, int cdim, class GridImp>
+  inline sgrid_ctype SGeometry<mydim,cdim,GridImp>::integrationElement (const FieldVector<sgrid_ctype, mydim>& local) const
   {
     sgrid_ctype s = 1.0;
-    for (int j=0; j<dim; j++) s *= A(j).norm1();
+    for (int j=0; j<mydim; j++) s *= A[j].one_norm();
+
     return s;
   }
 
-  template<int dim, int dimworld>
-  inline Mat<dim,dim>& SElementBase<dim,dimworld>::Jacobian_inverse (const Vec<dim,sgrid_ctype>& local)
+  template<int mydim, int cdim, class GridImp>
+  inline const FieldMatrix<sgrid_ctype,mydim,mydim>& SGeometry<mydim,cdim,GridImp>::jacobianInverse (const FieldVector<sgrid_ctype, mydim>& local) const
   {
-    assert(dim==dimworld);
-
-    Jinv = A;
+    for (int i=0; i<mydim; ++i)
+      for (int j=0; j<mydim; ++j)
+        Jinv[j][i] = A[j][i];
+    for (int i=0; i<mydim; i++) Jinv[i][i] = 1.0/Jinv[i][i];
     if (!builtinverse)
     {
-      for (int i=0; i<dim; i++) Jinv(i,i) = 1.0/Jinv(i,i);
       builtinverse = true;
     }
     return Jinv;
   }
 
-  template<int dim, int dimworld>
-  inline void SElementBase<dim,dimworld>::print (std::ostream& ss, int indent)
+  template<int mydim, int cdim, class GridImp>
+  inline void SGeometry<mydim,cdim,GridImp>::print (std::ostream& ss, int indent) const
   {
-    for (int k=0; k<indent; k++) ss << " ";ss << "SElementBase<" << dim << "," << dimworld << ">" << endl;
-    for (int k=0; k<indent; k++) ss << " ";ss << "{" << endl;
-    for (int k=0; k<indent+2; k++) ss << " ";ss << "Position: " << s << endl;
-    for (int j=0; j<dim; j++)
+    for (int k=0; k<indent; k++) ss << " ";ss << "SGeometry<" << mydim << "," << cdim << ">" << std::endl;
+    for (int k=0; k<indent; k++) ss << " ";ss << "{" << std::endl;
+    for (int k=0; k<indent+2; k++) ss << " ";ss << "Position: " << s << std::endl;
+    for (int j=0; j<mydim; j++)
     {
       for (int k=0; k<indent+2; k++) ss << " ";
-      ss << "direction " << j << "  " << A(j) << endl;
+      ss << "direction " << j << "  " << A(j) << std::endl;
     }
-    for (int j=0; j<1<<dim; j++)
+    for (int j=0; j<1<<mydim; j++)
     {
       for (int k=0; k<indent+2; k++) ss << " ";
-      ss << "corner " << j << "  " << c[j] << endl;
+      ss << "corner " << j << "  " << c[j] << std::endl;
     }
     if (builtinverse)
     {
       for (int k=0; k<indent+2; k++) ss << " ";ss << "Jinv ";
       Jinv.print(ss,indent+2);
     }
-    for (int k=0; k<indent+2; k++) ss << " ";ss << "builtinverse " << builtinverse << endl;
+    for (int k=0; k<indent+2; k++) ss << " ";ss << "builtinverse " << builtinverse << std::endl;
     for (int k=0; k<indent; k++) ss << " ";ss << "}";
   }
 
-  // members for SElement, must use specialization
-
-  // reference element constructor, dim>0
-  template<int dim, int dimworld>
-  inline SElement<dim,dimworld>::SElement (bool b)
-  {
-    if (!b) return;
-
-    // copy arguments
-    s = 0.0;
-    for (int j=0; j<dim; j++) A(j) = Vec<dimworld,sgrid_ctype>(j);     // make unit vectors
-
-    // make corners
-    for (int i=0; i<(1<<dim); i++)     // there are 2^d corners
-    {
-      // use binary representation of corner number to assign corner coordinates
-      c[i] = s;
-      for (int k=0; k<dim; k++)
-        if (i&(1<<k)) c[i] = c[i]+A(k);
-    }
-  }
-
-  template<int dimworld>
-  inline SElement<0,dimworld>::SElement (bool b)
+#if 0
+  // special case dim=0
+  template<int cdim, class GridImp>
+  inline SGeometry<0,cdim,GridImp>::SGeometry (bool b)
   {
     if (!b) return;
     s = 0.0;
   }
+#endif
 
-  template<int dim, int dimworld>
-  inline void SElement<dim,dimworld>::make (Mat<dimworld,dim+1,sgrid_ctype>& As)
+  template<int cdim, class GridImp>
+  inline void SGeometry<0,cdim,GridImp>::make (FieldMatrix<sgrid_ctype,1,cdim>& __As)
   {
-    // clear jacobian
-    builtinverse = false;
-
-    // copy arguments
-    s = As(dim);
-    for (int j=0; j<dim; j++) A(j) = As(j);
-
-    // make corners
-    for (int i=0; i<(1<<dim); i++)     // there are 2^d corners
-    {
-      // use binary representation of corner number to assign corner coordinates
-      int mask=1;
-      c[i] = s;
-      for (int k=0; k<dim; k++)
-      {
-        if (i&mask) c[i] = c[i]+A(k);
-        mask = mask<<1;
-      }
-    }
+    s = __As[0];
   }
 
-  template<int dimworld>
-  inline void SElement<0,dimworld>::make (Mat<dimworld,1,sgrid_ctype>& As)
-  {
-    s = As(0);
-  }
-
-  // type
-  template<int dim, int dimworld>
-  inline ElementType SElement<dim,dimworld>::type ()
-  {
-    switch (dim)
-    {
-    case 1 : return line;
-    case 2 : return quadrilateral;
-    case 3 : return hexahedron;
-    default : return unknown;
-    }
-  }
-
-  template<int dimworld>
-  inline ElementType SElement<0,dimworld>::type ()
+  template<int cdim, class GridImp>
+  inline GeometryType SGeometry<0,cdim,GridImp>::type () const
   {
     return vertex;
   }
 
-  template<int dimworld>
-  inline int SElement<0,dimworld>::corners ()
+  template<int cdim, class GridImp>
+  inline int SGeometry<0,cdim,GridImp>::corners () const
   {
     return 1;
   }
 
-  template<int dimworld>
-  inline Vec<dimworld,sgrid_ctype>& SElement<0,dimworld>::operator[] (int i)
+  template<int cdim, class GridImp>
+  inline const FieldVector<sgrid_ctype, cdim>& SGeometry<0,cdim,GridImp>::operator[] (int i) const
   {
     return s;
   }
 
-  template<int dimworld>
-  inline void SElement<0,dimworld>::print (std::ostream& ss, int indent)
+  template<int cdim, class GridImp>
+  inline void SGeometry<0,cdim,GridImp>::print (std::ostream& ss, int indent) const
   {
     for (int i=0; i<indent; i++) ss << " ";
-    ss << "SElement<0," << dimworld << "> at position " << s;
+    ss << "SGeometry<0," << cdim << "> at position " << s;
   }
 
   //************************************************************************
   // inline methods for SEntityBase
 
   template<int n>
-  static inline Tupel<int,n>& coarsen (Tupel<int,n>& in)
+  static inline FixedArray<int,n>& coarsen (FixedArray<int,n>& in)
   {
     for (int i=0; i<n; i++) in[i] = in[i]/2;
     return in;
   }
 
-  template<int codim, int dim, int dimworld>
-  inline SEntityBase<codim,dim,dimworld>::SEntityBase (SGrid<dim,dimworld>& _grid, int _l, int _id) : grid(_grid),geo(true)
+  template<int codim, int dim, class GridImp>
+  inline SEntityBase<codim,dim,GridImp>::SEntityBase (GridImp* _grid, int _l, int _id)
   {
+    grid = _grid;
     l = _l;
     id = _id;
-    z = _grid.z(_l,_id,codim);
+    z = grid->z(_l,_id,codim);
     builtgeometry = false;
   }
 
-  template<int codim, int dim, int dimworld>
-  inline void SEntityBase<codim,dim,dimworld>::make (int _l, int _id)
+  template<int codim, int dim, class GridImp>
+  inline SEntityBase<codim,dim,GridImp>::SEntityBase ()
   {
-    l = _l;
-    id = _id;
-    z = grid.z(_l,_id,codim);
     builtgeometry = false;
   }
 
-  template<int codim, int dim, int dimworld>
-  inline int SEntityBase<codim,dim,dimworld>::level ()
+  template<int codim, int dim, class GridImp>
+  inline void SEntityBase<codim,dim,GridImp>::make (GridImp* _grid, int _l, int _id)
+  {
+    grid = _grid;
+    l = _l;
+    id = _id;
+    z = grid->z(_l,_id,codim);
+    builtgeometry = false;
+  }
+
+  template<int codim, int dim, class GridImp>
+  inline void SEntityBase<codim,dim,GridImp>::make (int _l, int _id)
+  {
+    l = _l;
+    id = _id;
+    z = grid->z(_l,_id,codim);
+    builtgeometry = false;
+  }
+
+  template<int codim, int dim, class GridImp>
+  inline int SEntityBase<codim,dim,GridImp>::level () const
   {
     return l;
   }
+  //                std::cout << i->index() << " " ;
+  //                for (int z=0; z<N; ++z) std::cout << "["<<j[z]<<","<<A[z]<<"] ";
+  //                std::cout << std::endl;
 
-  template<int codim, int dim, int dimworld>
-  inline int SEntityBase<codim,dim,dimworld>::index ()
+  template<int codim, int dim, class GridImp>
+  inline int SEntityBase<codim,dim,GridImp>::index () const
   {
     return id;
   }
 
-  template<int codim, int dim, int dimworld>
-  inline SElement<dim-codim,dimworld>& SEntityBase<codim,dim,dimworld>::geometry ()
+  template<int codim, int dim, class GridImp>
+  inline int SEntityBase<codim,dim,GridImp>::globalIndex () const
+  {
+    int ind = 0;
+    for(int i=0; i<this->l; i++)
+      ind += this->grid->size(i,codim);
+    return ind+this->index();
+  }
+
+  template<int codim, int dim, class GridImp>
+  inline const typename GridImp::template Codim<codim>::Geometry& SEntityBase<codim,dim,GridImp>::geometry () const
   {
     if (builtgeometry) return geo;
 
     // find dim-codim direction vectors and reference point
-    Mat<dimworld,dim-codim+1,sgrid_ctype> As;
+    FieldMatrix<sgrid_ctype,dim-codim+1,dimworld> __As;
 
     // count number of direction vectors found
     int dir=0;
-    Vec<dim,sgrid_ctype> p1,p2;
-    Tupel<int,dim> t=z;
+    FieldVector<sgrid_ctype, dim> p1,p2;
+    FixedArray<int,dim> t=z;
 
     // check all directions
     for (int i=0; i<dim; i++)
@@ -265,11 +297,11 @@ namespace Dune {
       {
         // coordinate i is odd => gives one direction vector
         t[i] += 1;                 // direction i => even
-        p2 = grid.pos(l,t);
+        p2 = grid->pos(l,t);
         t[i] -= 2;                 // direction i => even
-        p1 = grid.pos(l,t);
+        p1 = grid->pos(l,t);
         t[i] += 1;                 // revert t to original state
-        As(dir) = p2-p1;
+        __As[dir] = p2-p1;
         dir++;
       }
 
@@ -277,12 +309,11 @@ namespace Dune {
     for (int i=0; i<dim; i++)
       if (t[i]%2==1)
         t[i] -= 1;
-    As(dir) =grid.pos(l,t);     // all components of t are even
+    __As[dir] =grid->pos(l,t);     // all components of t are even
 
     // make element
-    geo.make(As);
+    geo.make(__As);
     builtgeometry = true;
-
     // return result
     return geo;
   }
@@ -298,50 +329,94 @@ namespace Dune {
 
   // initialize static variable with bool constructor (which makes reference elements)
   template<int dim>
-  CubeMapper<dim> SUnitCubeMapper<dim>::mapper(Tupel<int,dim>(1));
+  CubeMapper<dim> SUnitCubeMapper<dim>::mapper(FixedArray<int,dim>(1));
 
 
   // codim 0
-  template<int dim, int dimworld> template<int cc>
-  inline int SEntity<0,dim,dimworld>::count ()
+  template<int dim, class GridImp> template<int cc>
+  inline int SEntity<0,dim,GridImp>::count () const
   {
     return SUnitCubeMapper<dim>::mapper.elements(cc);
   }
 
+  // subentity compressed index
+  template<int dim, class GridImp> template<int cc>
+  inline int SEntity<0,dim,GridImp>::subCompressedIndex (int i) const
+  {
+    int cindex;
+    if(cc == 0) // the vertex case
+    {
+      // find expanded coordinates of entity in reference cube
+      // has components in {0,1,2}
+      // the grid hold the memory because its faster
+      FixedArray<int,dim>& zref = this->grid->zrefStatic;
+      FixedArray<int,dim>& zentity = this->grid->zentityStatic;
 
-  template<int dim, int dimworld> template<int cc>
-  inline SLevelIterator<cc,dim,dimworld> SEntity<0,dim,dimworld>::entity (int i)
+      zref = SUnitCubeMapper<dim>::mapper.z(i,dim);
+      for (int i=0; i<dim; i++) zentity[i] = this->z[i] + zref[i] - 1;
+      cindex = this->grid->n(this->l,zentity);
+    }
+    else
+    {
+      cindex = entity<cc>(i)->index();
+    }
+    return cindex;
+  }
+
+  template<int dim, class GridImp> template<int cc>
+  inline typename SEntity<0,dim,GridImp>::template Codim<cc>::EntityPointer SEntity<0,dim,GridImp>::entity (int i) const
   {
     // find expanded coordinates of entity in reference cube
     // has components in {0,1,2}
-    Tupel<int,dim> zref = SUnitCubeMapper<dim>::mapper.z(i,cc);
+    FixedArray<int,dim> zref = SUnitCubeMapper<dim>::mapper.z(i,cc);
 
     // compute expanded coordinates of entity in global coordinates
-    Tupel<int,dim> zentity;
-    for (int i=0; i<dim; i++) zentity[i] = z[i] + zref[i] - 1;
+    FixedArray<int,dim> zentity;
+    for (int i=0; i<dim; i++) zentity[i] = this->z[i] + zref[i] - 1;
 
     // make Iterator
-    return SLevelIterator<cc,dim,dimworld>(grid,l,grid.n(l,zentity));
+    return SLevelIterator<cc,All_Partition,const GridImp>(this->grid,this->l,(this->grid)->n(this->l,zentity));
   }
 
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>::NeighborIterator SEntity<0,dim,dimworld>::nbegin ()
+  // default implementation uses entity method
+  template<int dim, class GridImp> template<int cc>
+  inline int SEntity<0,dim,GridImp>::subIndex (int i) const
   {
-    return NeighborIterator(grid,*this,0);
+    if(cc == dim) // the vertex case
+    {
+      // find expanded coordinates of entity in reference cube
+      // has components in {0,1,2}
+      // the grid hold the memory because its faster
+      FixedArray<int,dim> &zref = this->grid->zrefStatic;
+      FixedArray<int,dim> &zentity = this->grid->zentityStatic;
+
+      zref = SUnitCubeMapper<dim>::mapper.z(i,dim);
+      for (int i=0; i<dim; i++) zentity[i] = this->z[i] + zref[i] - 1;
+      return this->grid->n(this->l,zentity);
+    }
+    else
+    {
+      return entity<cc>(i)->index();
+    }
   }
 
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>::NeighborIterator SEntity<0,dim,dimworld>::nend ()
+  template<int dim, class GridImp>
+  inline typename SEntity<0,dim,GridImp>::IntersectionIterator SEntity<0,dim,GridImp>::ibegin () const
   {
-    return NeighborIterator(grid,*this,count<1>());
+    return IntersectionIterator(SIntersectionIterator<GridImp>(this->grid,this,0));
   }
 
+  template<int dim, class GridImp>
+  inline typename SEntity<0,dim,GridImp>::IntersectionIterator SEntity<0,dim,GridImp>::iend () const
+  {
+    return IntersectionIterator(SIntersectionIterator<GridImp>(this->grid,this,count<1>()));
+  }
 
-  template<int dim, int dimworld>
-  inline void SEntity<0,dim,dimworld>::make_father ()
+  template<int dim, class GridImp>
+  inline void SEntity<0,dim,GridImp>::make_father () const
   {
     // check level
-    if (l<=0)
+    if (this->l<=0)
     {
       father_id = 0;
       built_father = true;
@@ -349,80 +424,82 @@ namespace Dune {
     }
 
     // reduced coordinates from expanded coordinates
-    Tupel<int,dim> zz = grid.compress(l,z);
+    FixedArray<int,dim> zz = this->grid->compress(this->l,this->z);
 
     // look for odd coordinates
-    Vec<dim,sgrid_ctype> delta;
+    FieldVector<sgrid_ctype, dim> delta;
     for (int i=0; i<dim; i++)
       if (zz[i]%2)
       {
         // component i is odd
         zz[i] -= 1;
         zz[i] /= 2;
-        delta(i) = 1.0;
+        delta[i] = 1.0;
       }
       else
       {
         // component i is even
         zz[i] /= 2;
-        delta(i) = 0.0;
+        delta[i] = 0.0;
       }
 
     // zz is now the reduced coordinate of the father, compute id
-    int partition = grid.partition(l,z);
-    father_id = grid.n(l-1,grid.expand(l-1,zz,partition));
+    int partition = this->grid->partition(this->l,this->z);
+    father_id = this->grid->n((this->l)-1,this->grid->expand((this->l)-1,zz,partition));
 
     // now make a subcube of size 1/2 in each direction
-    Mat<dim,dim+1,sgrid_ctype> As;
-    Vec<dim,sgrid_ctype> v;
+    FieldMatrix<sgrid_ctype,dim+1,dimworld> __As;
+    FieldVector<sgrid_ctype, dim> v;
     for (int i=0; i<dim; i++)
     {
-      v = 0.0; v(i) = 0.5;
-      As(i) = v;
+      v = 0.0; v[i] = 0.5;
+      __As[i] = v;
     }
-    for (int i=0; i<dim; i++) v(i) = 0.5*delta(i);
-    As(dim) =v;
-    in_father_local.make(As);     // build geometry
+    for (int i=0; i<dim; i++) v[i] = 0.5*delta[i];
+    __As[dim] =v;
+    in_father_local.make(__As);     // build geometry
 
     built_father = true;
   }
 
-  template<int dim, int dimworld>
-  inline SLevelIterator<0,dim,dimworld> SEntity<0,dim,dimworld>::father ()
+  template<int dim, class GridImp>
+  inline typename SEntity<0,dim,GridImp>::EntityPointer SEntity<0,dim,GridImp>::father () const
   {
     if (!built_father) make_father();
-    if (l>0)
-      return SLevelIterator<0,dim,dimworld>(grid,l-1,father_id);
+    if (this->l>0)
+      return SLevelIterator<0,All_Partition,const GridImp>((this->grid),(this->l)-1,father_id);
     else
-      return SLevelIterator<0,dim,dimworld>(grid,l,id);
+      return SLevelIterator<0,All_Partition,const GridImp>((this->grid),this->l,this->id);
   }
 
-  template<int dim, int dimworld>
-  inline SElement<dim,dim>& SEntity<0,dim,dimworld>::father_relative_local ()
+  template<int dim, class GridImp>
+  inline
+  const typename GridImp::template Codim<0>::Geometry&
+  SEntity<0,dim,GridImp>::geometryInFather () const
   {
     if (!built_father) make_father();
     return in_father_local;
   }
 
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>::HierarchicIterator SEntity<0,dim,dimworld>::hbegin (int maxlevel)
+  template<int dim, class GridImp>
+  inline typename SEntity<0,dim,GridImp>::HierarchicIterator SEntity<0,dim,GridImp>::hbegin (int maxlevel) const
   {
-    return SEntity<0,dim,dimworld>::HierarchicIterator(grid,*this,maxlevel,false);
+    return HierarchicIterator(SHierarchicIterator<GridImp>(this->grid,*this,maxlevel,false));
   }
 
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>::HierarchicIterator SEntity<0,dim,dimworld>::hend (int maxlevel)
+  template<int dim, class GridImp>
+  inline typename SEntity<0,dim,GridImp>::HierarchicIterator SEntity<0,dim,GridImp>::hend (int maxlevel) const
   {
-    return SEntity<0,dim,dimworld>::HierarchicIterator(grid,*this,maxlevel,true);
+    return HierarchicIterator(SHierarchicIterator<GridImp>(this->grid,*this,maxlevel,true));
   }
 
 
   // codim dim
-  template<int dim, int dimworld>
-  inline void SEntity<dim,dim,dimworld>::make_father ()
+  template<int dim, class GridImp>
+  inline void SEntity<dim,dim,GridImp>::make_father () const
   {
     // check level
-    if (l<=0)
+    if (this->l<=0)
     {
       father_id = 0;
       built_father = true;
@@ -432,15 +509,15 @@ namespace Dune {
     // reduced coordinates from expanded coordinates
     // reduced coordinates of a fine grid vertex can be interpreted as
     // expanded coordinates on the next coarser level !
-    Tupel<int,dim> zz = grid.compress(l,z);
+    FixedArray<int,dim> zz = this->grid->compress(this->l,this->z);
 
     // to find father, make all coordinates odd
-    Vec<dim,sgrid_ctype> delta;
+    FieldVector<sgrid_ctype, dim> delta;
     for (int i=0; i<dim; i++)
       if (zz[i]%2)
       {
         // component i is odd
-        delta(i) = 0.0;
+        delta[i] = 0.0;
       }
       else
       {
@@ -448,37 +525,37 @@ namespace Dune {
         if (zz[i]>0)
         {
           zz[i] -= 1;                       // now it is odd and >= 1
-          delta(i) = 0.5;
+          delta[i] = 0.5;
         }
         else
         {
           zz[i] += 1;                       // now it is odd and >= 1
-          delta(i) = -0.5;
+          delta[i] = -0.5;
         }
       }
 
     // zz is now an expanded coordinate on the coarse grid
-    father_id = grid.n(l-1,zz);
+    father_id = this->grid->n((this->l)-1,zz);
 
     // compute the local coordinates in father
     in_father_local = 0.5;
-    for (int i=0; i<dim; i++) in_father_local(i) += delta(i);
+    for (int i=0; i<dim; i++) in_father_local[i] += delta[i];
 
     built_father = true;
   }
 
-  template<int dim, int dimworld>
-  inline SLevelIterator<0,dim,dimworld> SEntity<dim,dim,dimworld>::father ()
+  template<int dim, class GridImp>
+  inline typename SEntity<dim,dim,GridImp>::EntityPointer SEntity<dim,dim,GridImp>::ownersFather () const
   {
     if (!built_father) make_father();
-    if (l>0)
-      return SLevelIterator<0,dim,dimworld>(grid,l-1,father_id);
+    if (this->l>0)
+      return EntityPointer(SLevelIterator<0,All_Partition,GridImp>((this->grid),(this->l)-1,father_id));
     else
-      return SLevelIterator<0,dim,dimworld>(grid,l,id);
+      return EntityPointer(SLevelIterator<0,All_Partition,GridImp>((this->grid),this->l,this->id));
   }
 
-  template<int dim, int dimworld>
-  inline Vec<dim,sgrid_ctype>& SEntity<dim,dim,dimworld>::local ()
+  template<int dim, class GridImp>
+  inline FieldVector<sgrid_ctype, dim>& SEntity<dim,dim,GridImp>::positionInOwnersFather () const
   {
     if (!built_father) make_father();
     return in_father_local;
@@ -487,198 +564,187 @@ namespace Dune {
   //************************************************************************
   // inline methods for HierarchicIterator
 
-  template<int dim, int dimworld>
-  inline void SEntity<0,dim,dimworld>::HierarchicIterator::push_sons (int level, int fatherid)
+  template<class GridImp>
+  inline void SHierarchicIterator<GridImp>::push_sons (int level, int fatherid)
   {
     // check level
     if (level+1>maxlevel) return;     // nothing to do
 
     // compute reduced coordinates of element
-    Tupel<int,dim> z = grid.z(level,fatherid,0);      // expanded coordinates from id
-    Tupel<int,dim> zred = grid.compress(level,z);     // reduced coordinates from expaned coordinates
+    FixedArray<int,dim> z =
+      this->grid->z(level,fatherid,0);      // expanded coordinates from id
+    FixedArray<int,dim> zred =
+      this->grid->compress(level,z);     // reduced coordinates from expaned coordinates
 
     // refine to first son
     for (int i=0; i<dim; i++) zred[i] = 2*zred[i];
 
     // generate all \f$2^{dim}\f$ sons
-    int partition = grid.partition(level,z);
+    int partition = this->grid->partition(level,z);
     for (int b=0; b<(1<<dim); b++)
     {
-      Tupel<int,dim> zz = zred;
+      FixedArray<int,dim> zz = zred;
       for (int i=0; i<dim; i++)
         if (b&(1<<i)) zz[i] += 1;
       // zz is reduced coordinate of a son on level level+1
-      int sonid = grid.n(level+1,grid.expand(level+1,zz,partition));
+      int sonid = this->grid->n(level+1,this->grid->expand(level+1,zz,partition));
 
       // push son on stack
-      stack.push_front(StackElem(level+1,sonid));
+      SHierarchicStackElem son(level+1,sonid);
+      //stack.push(StackElem(level+1,sonid));
+      stack.push(son);
     }
   }
 
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>::HierarchicIterator::HierarchicIterator (SGrid<dim,dimworld>& _grid,
-                                                                          SEntity<0,dim,dimworld>& _e, int _maxlevel, bool makeend) :
-    grid(_grid),e(_e)
+  template<class GridImp>
+  inline SHierarchicIterator<GridImp>::SHierarchicIterator (GridImp* _grid,
+                                                            const SEntity<0,GridImp::dimension,GridImp>& _e,
+                                                            int _maxlevel, bool makeend) :
+    Dune::SEntityPointer<0,GridImp>(_grid,_e.level(),_e.index())
   {
-    // without sons, we are done (i.e. this is te end iterator, having original element in it)
+    // without sons, we are done
+    // (the end iterator is equal to the calling iterator)
     if (makeend) return;
 
     // remember element where begin has been called
-    orig_l = e.l;
-    orig_id = e.id;
+    orig_l = this->e.level();
+    orig_id = this->e.index();
 
     // push original element on stack
-    stack.push_front(StackElem(orig_l,orig_id));
+    SHierarchicStackElem originalElement(orig_l, orig_id);
+    stack.push(originalElement);
 
     // compute maxlevel
-    maxlevel = MIN(_maxlevel,grid.maxlevel());
+    maxlevel = std::min(_maxlevel,this->grid->maxlevel());
 
     // ok, push all the sons as well
-    push_sons(e.l,e.id);
+    push_sons(this->e.level(),this->e.index());
 
     // and pop the first son
-    operator++();
+    increment();
   }
 
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>::HierarchicIterator& SEntity<0,dim,dimworld>::HierarchicIterator::operator++ ()
+  template<class GridImp>
+  inline void SHierarchicIterator<GridImp>::increment ()
   {
     // check empty stack
-    if (stack.isempty()) return *this;
+    if (stack.empty()) return;
 
     // OK, lets pop
-    StackElem newe = stack.pop_front();
-    e.make(newe.l,newe.id);     // here is our new element
+    SHierarchicStackElem newe = stack.pop();
+    this->l = newe.l;
+    this->id = newe.id;
+    this->e.make(this->l,this->id);     // here is our new element
 
     // push all sons of this element if it is not the original element
     if (newe.l!=orig_l || newe.id!=orig_id)
       push_sons(newe.l,newe.id);
-
-    return *this;
   }
-
-  template<int dim, int dimworld>
-  inline bool SEntity<0,dim,dimworld>::HierarchicIterator::operator== (const SEntity<0,dim,dimworld>::HierarchicIterator& i) const
-  {
-    return !operator!=(i);
-  }
-
-  template<int dim, int dimworld>
-  inline bool SEntity<0,dim,dimworld>::HierarchicIterator::operator!= (const SEntity<0,dim,dimworld>::HierarchicIterator& i) const
-  {
-    return (stack.size()!=i.stack.size()) || (e.id!=i.e.id) || (e.l!=i.e.l) ;
-  }
-
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>& SEntity<0,dim,dimworld>::HierarchicIterator::operator* ()
-  {
-    return e;
-  }
-
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>* SEntity<0,dim,dimworld>::HierarchicIterator::operator-> ()
-  {
-    return &e;
-  }
-
 
   //************************************************************************
-  // inline methods for NeighborIterator
+  // inline methods for IntersectionIterator
 
-  template<int dim, int dimworld>
-  inline void SEntity<0,dim,dimworld>::NeighborIterator::make (int _count)
+  template<class GridImp>
+  inline void SIntersectionIterator<GridImp>::make (int _count) const
   {
     // reset cache flags
     built_intersections = false;
+    valid_nb = false;
     valid_count = false;
 
     // start with given neighbor
     count = _count;
 
     // check if count is valid
-    if (count<0 || count>=self.count<1>()) return;     // done, this is end iterator
+    if (count<0 || count>=self.e.template count<1>())
+    {
+      ne.id = -1;
+      return;     // done, this is end iterator
+    }
     valid_count = true;
 
     // and compute compressed coordinates of neighbor
-    Tupel<int,dim> zrednb = zred;
+    FixedArray<int,dim> zrednb = zred;
     if (count%2)
       zrednb[count/2] += 1;           // odd
     else
       zrednb[count/2] -= 1;           // even
 
-    // while we are at it, compute normal direction
-    normal = 0.0;
-    if (count%2)
-      normal(count/2) =  1.0;           // odd
-    else
-      normal(count/2) = -1.0;           // even
-
     // now check if neighbor exists
-    is_on_boundary = !grid.exists(self.level(),zrednb);
-    if (is_on_boundary) return;     // ok, done it
+    is_on_boundary = !ne.grid->exists(self.l,zrednb);
+    if (is_on_boundary)
+    {
+      ne.id = -1;
+      return;     // ok, done it
+    }
 
     // now neighbor is in the grid and must be initialized.
     // First compute its id
-    int nbid = grid.n(self.level(),grid.expand(self.level(),zrednb,partition));
+    ne.id = ne.grid->n(self.l,
+                       ne.grid->expand(self.l,zrednb,partition));
 
-    // and make it
-    e.make(self.level(),nbid);
+    //        ne.id = id;
+    //        ne.l = l;
+    ne.e.make(ne.l,ne.id);
   }
 
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>::NeighborIterator::NeighborIterator
-    (SGrid<dim,dimworld>& _grid, SEntity<0,dim,dimworld>& _self, int _count)
-    : grid(_grid), self(_self), e(_grid,_self.level(), _self.id), is_self_local(false), is_global(false),
-      is_nb_local(false)
+  template<class GridImp>
+  inline SIntersectionIterator<GridImp>::SIntersectionIterator
+    (GridImp* _grid, const SEntity<0,dim,GridImp>* _self, int _count) :
+    self(*_self), ne(self),
+    //    grid(_grid), l(_self->l), id(_self->id),
+    partition(_grid->partition(ne.l,_self->z)),
+    zred(_grid->compress(ne.l,_self->z))
   {
-    // compute own compressed coordinates once
-    zred = grid.compress(self.level(),self.z);
-    partition = grid.partition(self.level,self.z);
-
     // make neighbor
     make(_count);
   }
 
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>::NeighborIterator& SEntity<0,dim,dimworld>::NeighborIterator::operator++ ()
+  template<class GridImp>
+  inline bool SIntersectionIterator<GridImp>::equals (const SIntersectionIterator<GridImp>& i) const
+  {
+    return (self.id==i.self.id)&&(self.l==i.self.l)&&(count==i.count);
+  }
+
+  template<class GridImp>
+  inline int SIntersectionIterator<GridImp>::level () const
+  {
+    return ne.l;
+  }
+
+  template<class GridImp>
+  inline typename SIntersectionIterator<GridImp>::EntityPointer SIntersectionIterator<GridImp>::inside () const
+  {
+    return self;
+  }
+
+  template<class GridImp>
+  inline typename SIntersectionIterator<GridImp>::EntityPointer SIntersectionIterator<GridImp>::outside () const
+  {
+    return ne;
+  }
+
+  template<class GridImp>
+  inline void SIntersectionIterator<GridImp>::increment ()
   {
     count++;
     make(count);
-    return *this;
   }
 
-  template<int dim, int dimworld>
-  inline bool SEntity<0,dim,dimworld>::NeighborIterator::operator== (const SEntity<0,dim,dimworld>::NeighborIterator& i) const
-  {
-    return (count==i.count)&&(&self==&(i.self));
-  }
-
-  template<int dim, int dimworld>
-  inline bool SEntity<0,dim,dimworld>::NeighborIterator::operator!= (const SEntity<0,dim,dimworld>::NeighborIterator& i) const
-  {
-    return (count!=i.count)||(&self!=&(i.self));
-  }
-
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>& SEntity<0,dim,dimworld>::NeighborIterator::operator* ()
-  {
-    return e;
-  }
-
-  template<int dim, int dimworld>
-  inline SEntity<0,dim,dimworld>* SEntity<0,dim,dimworld>::NeighborIterator::operator-> ()
-  {
-    return &e;
-  }
-
-  template<int dim, int dimworld>
-  inline bool SEntity<0,dim,dimworld>::NeighborIterator::boundary ()
+  template<class GridImp>
+  inline bool SIntersectionIterator<GridImp>::boundary () const
   {
     return is_on_boundary;
   }
 
-  template<int dim, int dimworld>
-  inline void SEntity<0,dim,dimworld>::NeighborIterator::makeintersections ()
+  template<class GridImp>
+  inline bool SIntersectionIterator<GridImp>::neighbor () const
+  {
+    return (!is_on_boundary);
+  }
+
+  template<class GridImp>
+  inline void SIntersectionIterator<GridImp>::makeintersections () const
   {
     if (built_intersections) return;     // already done
     if (!valid_count) return;     // nothing to do
@@ -688,48 +754,48 @@ namespace Dune {
     int c = count%2;
 
     // compute expanded coordinates of entity
-    Tupel<int,dim> z1 = self.z;
+    FixedArray<int,dim> z1 = self.e->z;
     if (c==1)
       z1[dir] += 1;           // odd
     else
       z1[dir] -= 1;           // even
 
     // z1 is even in direction dir, all others must be odd because it is codim 1
-    Mat<dim,dim,sgrid_ctype> As;
-    Vec<dim,sgrid_ctype> p1,p2;
+    FieldMatrix<sgrid_ctype,dim,dim> __As;
+    FieldVector<sgrid_ctype, dim> p1,p2;
     int t;
 
     // local coordinates in self
     p1 = 0.0;
-    p1(dir) = c;        // all points have p[dir]=c in entity
-    As(dim-1) = p1;     // position vector
+    p1[dir] = c;        // all points have p[dir]=c in entity
+    __As[dim-1] = p1;     // position vector
     t = 0;
     for (int i=0; i<dim; ++i)     // this loop makes dim-1 direction vectors
       if (i!=dir)
       {
         // each i!=dir gives one direction vector
         p2 = p1;
-        p2(i) = 1.0;
-        As(t) = p2-p1;                 // a direction vector
+        p2[i] = 1.0;
+        __As[t] = p2-p1;                 // a direction vector
         ++t;
       }
-    is_self_local.make(As);     // build geometry
+    is_self_local.make(__As);     // build geometry
 
     // local coordinates in neighbor
     p1 = 0.0;
-    p1(dir) = 1-c;        // all points have p[dir]=1-c in entity
-    As(dim-1) = p1;       // position vector
+    p1[dir] = 1-c;        // all points have p[dir]=1-c in entity
+    __As[dim-1] = p1;       // position vector
     t = 0;
     for (int i=0; i<dim; ++i)     // this loop makes dim-1 direction vectors
       if (i!=dir)
       {
         // each i!=dir gives one direction vector
         p2 = p1;
-        p2(i) = 1.0;
-        As(t) = p2-p1;                 // a direction vector
+        p2[i] = 1.0;
+        __As[t] = p2-p1;                 // a direction vector
         ++t;
       }
-    is_nb_local.make(As);     // build geometry
+    is_nb_local.make(__As);     // build geometry
 
     // global coordinates
     t = 0;
@@ -738,120 +804,95 @@ namespace Dune {
       {
         // each i!=dir gives one direction vector
         z1[i] += 1;                 // direction i => even
-        p2 = grid.pos(self.level(),z1);
+        p2 = ne.grid->pos(self->level(),z1);
         z1[i] -= 2;                 // direction i => even
-        p1 = grid.pos(self.level(),z1);
+        p1 = ne.grid->pos(self->level(),z1);
         z1[i] += 1;                 // revert t to original state
-        As(t) = p2-p1;
+        __As[t] = p2-p1;
         ++t;
       }
     for (int i=0; i<dim; i++)
       if (i!=dir)
         z1[i] -= 1;
-    As(t) =grid.pos(self.level(),z1);
-    is_global.make(As);     // build geometry
+    __As[t] = ne.grid->pos(self->level(),z1);
+    is_global.make(__As);     // build geometry
 
     built_intersections = true;
   }
 
-  template<int dim, int dimworld>
-  inline SElement<dim-1,dim>& SEntity<0,dim,dimworld>::NeighborIterator::intersection_self_local ()
+  template<class GridImp>
+  inline typename SIntersectionIterator<GridImp>::LocalGeometry& SIntersectionIterator<GridImp>::intersectionSelfLocal () const
   {
     makeintersections();
     return is_self_local;
   }
 
-  template<int dim, int dimworld>
-  inline SElement<dim-1,dimworld>& SEntity<0,dim,dimworld>::NeighborIterator::intersection_self_global ()
-  {
-    makeintersections();
-    return is_global;
-  }
-
-  template<int dim, int dimworld>
-  inline SElement<dim-1,dim>& SEntity<0,dim,dimworld>::NeighborIterator::intersection_neighbor_local ()
+  template<class GridImp>
+  inline typename SIntersectionIterator<GridImp>::LocalGeometry& SIntersectionIterator<GridImp>::intersectionNeighborLocal () const
   {
     makeintersections();
     return is_nb_local;
   }
 
-  template<int dim, int dimworld>
-  inline SElement<dim-1,dimworld>& SEntity<0,dim,dimworld>::NeighborIterator::intersection_neighbor_global ()
+  template<class GridImp>
+  inline typename SIntersectionIterator<GridImp>::Geometry& SIntersectionIterator<GridImp>::intersectionGlobal () const
   {
     makeintersections();
     return is_global;
   }
 
-  template<int dim, int dimworld>
-  inline int SEntity<0,dim,dimworld>::NeighborIterator::number_in_self ()
+  template<class GridImp>
+  inline int SIntersectionIterator<GridImp>::numberInSelf () const
   {
     return count;
   }
 
-  template<int dim, int dimworld>
-  inline int SEntity<0,dim,dimworld>::NeighborIterator::number_in_neighbor ()
+  template<class GridImp>
+  inline int SIntersectionIterator<GridImp>::numberInNeighbor () const
   {
     return (count/2)*2 + (1-count%2);
   }
 
-  template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype>&
-  SEntity<0,dim,dimworld>::NeighborIterator::unit_outer_normal (Vec<dim-1,sgrid_ctype>& local)
+  template<class GridImp>
+  inline FieldVector<typename GridImp::ctype, GridImp::dimensionworld>
+  SIntersectionIterator<GridImp>::unitOuterNormal (const FieldVector<typename GridImp::ctype, GridImp::dimension-1>& local) const
   {
+    // while we are at it, compute normal direction
+    FieldVector<sgrid_ctype, dimworld> normal(0.0);
+    if (count%2)
+      normal[count/2] =  1.0; // odd
+    else
+      normal[count/2] = -1.0; // even
+
     return normal;
   }
-
-  template<int dim, int dimworld>
-  inline Vec<dimworld,sgrid_ctype>&
-  SEntity<0,dim,dimworld>::NeighborIterator::unit_outer_normal ()
-  {
-    return normal;
-  }
-
   //************************************************************************
   // inline methods for SLevelIterator
 
-  template<int codim, int dim, int dimworld>
-  inline SLevelIterator<codim,dim,dimworld>::SLevelIterator (SGrid<dim,dimworld>& _grid, int _l, int _id) : grid(_grid),e(_grid,_l,_id)
+  template<int codim, PartitionIteratorType pitype, class GridImp>
+  inline void SLevelIterator<codim,pitype,GridImp>::increment ()
   {
-    l = _l;
-    id = _id;
+    this->id++;
+    this->e.make(this->l,this->id);
   }
 
-  template<int codim, int dim, int dimworld>
-  inline SLevelIterator<codim,dim,dimworld>& SLevelIterator<codim,dim,dimworld>::operator++ ()
+  //************************************************************************
+  // inline methods for SEntityPointer
+
+  template<int codim, class GridImp>
+  inline bool SEntityPointer<codim,GridImp>::equals (const SEntityPointer<codim,GridImp>& i) const
   {
-    id++;
-    e.make(l,id);
-    return *this;
+    return (id==i.id)&&(l==i.l)&&(grid==i.grid);
   }
 
-  template<int codim, int dim, int dimworld>
-  inline bool SLevelIterator<codim,dim,dimworld>::operator== (const SLevelIterator<codim,dim,dimworld>& i) const
-  {
-    return (id==i.id)&&(l==i.l)&&(&grid==&i.grid);
-  }
-
-  template<int codim, int dim, int dimworld>
-  inline bool SLevelIterator<codim,dim,dimworld>::operator!= (const SLevelIterator<codim,dim,dimworld>& i) const
-  {
-    return (id!=i.id)||(l!=i.l)||(&grid!=&i.grid);
-  }
-
-  template<int codim, int dim, int dimworld>
-  inline SEntity<codim,dim,dimworld>& SLevelIterator<codim,dim,dimworld>::operator* ()
+  template<int codim, class GridImp>
+  inline typename SEntityPointer<codim,GridImp>::Entity& SEntityPointer<codim,GridImp>::dereference () const
   {
     return e;
   }
 
-  template<int codim, int dim, int dimworld>
-  inline SEntity<codim,dim,dimworld>* SLevelIterator<codim,dim,dimworld>::operator-> ()
-  {
-    return &e;
-  }
-
-  template<int codim, int dim, int dimworld>
-  inline int SLevelIterator<codim,dim,dimworld>::level ()
+  template<int codim, class GridImp>
+  inline int SEntityPointer<codim,GridImp>::level () const
   {
     return l;
   }
@@ -859,105 +900,180 @@ namespace Dune {
 
   //************************************************************************
   // inline methods for SGrid
-
   template<int dim, int dimworld>
-  inline SGrid<dim,dimworld>::SGrid (Tupel<int,dim> N_, Tupel<sgrid_ctype,dim> H_, int L_)
+  inline void SGrid<dim,dimworld>::makeSGrid (const int* N_,
+                                              const sgrid_ctype* L_, const sgrid_ctype* H_)
   {
-    L = L_;
-    H = H_;
+    IsTrue< dimworld <= std::numeric_limits<int>::digits >::yes();
+
+    L = 1;
+    for (int i=0; i<dim; i++) low[i] = L_[i];
+    for (int i=0; i<dim; i++) H[i] = H_[i];
+    for (int i=0; i<dim; i++) N[0][i] = N_[i];
 
     // define coarse mesh
-    N[0] = N_;
     mapper[0].make(N[0]);
+    for (int i=0; i<dim; i++)
+      h[0][i] = (H[i]-low[i])/((sgrid_ctype)N[0][i]);
 
-    // refine the mesh
-    for (int l=1; l<L; l++)
-    {
-      for (int i=0; i<dim; i++) N[l][i] = 2*N[l-1][i];
-      mapper[l].make(N[l]);
-    }
-
-    // compute mesh size
-    for (int l=0; l<L; l++)
-    {
-      for (int i=0; i<dim; i++) h[l](i) = H[i]/((sgrid_ctype)N[l][i]);
-    }
-
-    cout << "Making SGrid with " << L << " level(s)." << endl;
-    for (int l=0; l<L; l++)
-      mapper[l].print(cout,0);
+    dinfo << "level=" << L-1 << " size=(" << N[L-1][0];
+    for (int i=1; i<dim; i++) dinfo << "," <<  N[L-1][i];
+    dinfo << ")" << std::endl;
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::maxlevel ()
+  inline SGrid<dim,dimworld>::SGrid (const int* N_, const sgrid_ctype* H_)
+  {
+    IsTrue< dimworld <= std::numeric_limits<int>::digits >::yes();
+
+    sgrid_ctype L_[dim];
+    for (int i=0; i<dim; i++)
+      L_[i] = 0;
+
+    makeSGrid(N_,L_, H_);
+  }
+
+  template<int dim, int dimworld>
+  inline SGrid<dim,dimworld>::SGrid (const int* N_, const sgrid_ctype* L_, const sgrid_ctype* H_)
+  {
+    IsTrue< dimworld <= std::numeric_limits<int>::digits >::yes();
+
+    makeSGrid(N_, L_, H_);
+  }
+
+  template<int dim, int dimworld>
+  inline SGrid<dim,dimworld>::SGrid ()
+  {
+    int N_[dim];
+    sgrid_ctype L_[dim];
+    sgrid_ctype H_[dim];
+
+    for(int i = 0; i < dim; ++i) {
+      N_[i] = 1;
+      L_[i] = 0.0;
+      H_[i] = 1.0;
+    }
+
+    makeSGrid(N_, L_, H_);
+  }
+
+  template<int dim, int dimworld>
+  inline void SGrid<dim,dimworld>::globalRefine (int refCount)
+  {
+    for(int ref=0; ref<refCount; ref++)
+    {
+
+      // refine the mesh
+      for (int i=0; i<dim; i++) N[L][i] = 2*N[L-1][i];
+      mapper[L].make(N[L]);
+
+      // compute mesh size
+      for (int i=0; i<dim; i++)
+        h[L][i] = (H[i]-low[i])/((sgrid_ctype)N[L][i]);
+      L++;
+
+      std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
+      for (int i=1; i<dim; i++) std::cout << "," <<  N[L-1][i];
+      std::cout << ")" << std::endl;
+    }
+  }
+
+  template<int dim, int dimworld>
+  inline int SGrid<dim,dimworld>::maxlevel () const
   {
     return L-1;
   }
 
-  template <int dim, int dimworld> template <int codim>
-  inline SLevelIterator<codim,dim,dimworld> SGrid<dim,dimworld>::lbegin (int level)
+  template <int dim, int dimworld> template <int cd, PartitionIteratorType pitype>
+  inline typename SGrid<dim,dimworld>::Traits::template Codim<cd>::template Partition<pitype>::LevelIterator
+  SGrid<dim,dimworld>::lbegin (int level) const
   {
-    return SLevelIterator<codim,dim,dimworld>(*this,level,0);
+    return SLevelIterator<cd,pitype,const SGrid<dim,dimworld> > (this,level,0);
   }
 
-  template <int dim, int dimworld> template <int codim>
-  inline SLevelIterator<codim,dim,dimworld> SGrid<dim,dimworld>::lend (int level)
+  template <int dim, int dimworld> template <int cd, PartitionIteratorType pitype>
+  inline typename SGrid<dim,dimworld>::Traits::template Codim<cd>::template Partition<pitype>::LevelIterator
+  SGrid<dim,dimworld>::lend (int level) const
   {
-    return SLevelIterator<codim,dim,dimworld>(*this,level,size(level,codim));
+    return SLevelIterator<cd,pitype,const SGrid<dim,dimworld> > (this,level,size(level,cd));
+  }
+
+  template <int dim, int dimworld> template <int cd, PartitionIteratorType pitype>
+  inline typename SGrid<dim,dimworld>::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator
+  SGrid<dim,dimworld>::leafbegin () const
+  {
+    return SLevelIterator<cd,pitype,const SGrid<dim,dimworld> > (this,maxlevel(),0);
+  }
+
+  template <int dim, int dimworld> template <int cd, PartitionIteratorType pitype>
+  inline typename SGrid<dim,dimworld>::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator
+  SGrid<dim,dimworld>::leafend () const
+  {
+    return SLevelIterator<cd,pitype,const SGrid<dim,dimworld> > (this,maxlevel(),size(maxlevel(),cd));
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::size (int level, int codim)
+  inline int SGrid<dim,dimworld>::size (int level, int codim) const
   {
     return mapper[level].elements(codim);
   }
 
   template<int dim, int dimworld>
-  inline Vec<dim,sgrid_ctype> SGrid<dim,dimworld>::pos (int level, Tupel<int,dim>& z)
+  inline int SGrid<dim,dimworld>::global_size (int codim) const
   {
-    Vec<dim,sgrid_ctype> x;
-    for (int k=0; k<dim; k++) x(k) = (z[k]*h[level](k))*0.5;
+    int gSize = 0;
+    for(int i=0; i <= this->maxlevel(); i++)
+      gSize += this->size(i,codim);
+    return gSize;
+  }
+
+  template<int dim, int dimworld>
+  inline FieldVector<sgrid_ctype, dim> SGrid<dim,dimworld>::pos (int level, FixedArray<int,dim>& z) const
+  {
+    FieldVector<sgrid_ctype, dim> x;
+    for (int k=0; k<dim; k++)
+      x[k] = (z[k]*h[level][k])*0.5 + low[k];
     return x;
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::codim (int level, Tupel<int,dim>& z)
+  inline int SGrid<dim,dimworld>::calc_codim (int level, const FixedArray<int,dim>& z) const
   {
     return mapper[level].codim(z);
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::n (int level, Tupel<int,dim> z)
+  inline int SGrid<dim,dimworld>::n (int level, const FixedArray<int,dim> z) const
   {
     return mapper[level].n(z);
   }
 
   template<int dim, int dimworld>
-  inline Tupel<int,dim> SGrid<dim,dimworld>::z (int level, int i, int codim)
+  inline FixedArray<int,dim> SGrid<dim,dimworld>::z (int level, int i, int codim) const
   {
     return mapper[level].z(i,codim);
   }
 
   template<int dim, int dimworld>
-  inline Tupel<int,dim> SGrid<dim,dimworld>::compress (int level, Tupel<int,dim>& z)
+  inline FixedArray<int,dim> SGrid<dim,dimworld>::compress (int level, const FixedArray<int,dim>& z) const
   {
     return mapper[level].compress(z);
   }
 
   template<int dim, int dimworld>
-  inline Tupel<int,dim> SGrid<dim,dimworld>::expand (int level, Tupel<int,dim>& r, int b)
+  inline FixedArray<int,dim> SGrid<dim,dimworld>::expand (int level, const FixedArray<int,dim>& r, int b) const
   {
     return mapper[level].expand(r,b);
   }
 
   template<int dim, int dimworld>
-  inline int SGrid<dim,dimworld>::partition (int level, Tupel<int,dim>& z)
+  inline int SGrid<dim,dimworld>::partition (int level, const FixedArray<int,dim>& z) const
   {
     return mapper[level].partition(z);
   }
 
   template<int dim, int dimworld>
-  inline bool SGrid<dim,dimworld>::exists (int level, Tupel<int,dim>& zred)
+  inline bool SGrid<dim,dimworld>::exists (int level, const FixedArray<int,dim>& zred) const
   {
     for (int i=0; i<dim; i++)
     {
