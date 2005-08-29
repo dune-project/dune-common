@@ -181,7 +181,6 @@ namespace Dune {
       markAllU_ = false;
     }
 
-
     //! Destructor
     virtual ~AdaptiveLeafIndexSet () {};
 
@@ -410,6 +409,11 @@ namespace Dune {
       //assert( en.isLeaf() );
       //assert( leafIndex_[ hIndexSet_.index(en) ] >= 0 );
       //return leafIndex_[ hIndexSet_.index(en) ];
+    }
+
+    template <class EntityType, int cd>
+    int subIndex(EntityType& en, int num)  {
+      return IndexWrapper<EntityType, cd>::index(en, hIndexSet_, leafIndex_, num);
     }
 
     //! return size of grid entities per level and codim
