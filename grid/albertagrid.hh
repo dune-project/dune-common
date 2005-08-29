@@ -1278,8 +1278,8 @@ namespace Dune
     typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSet;
     typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSet;
 
-    typedef AlbertaGridGlobalIdSet<dim,dimworld> GlobalIdSetType;
-    typedef AlbertaGridGlobalIdSet<dim,dimworld> LocalIdSetType;
+    typedef AlbertaGridGlobalIdSet<dim,dimworld> GlobalIdSet;
+    typedef AlbertaGridGlobalIdSet<dim,dimworld> LocalIdSet;
 
     typedef ObjectStream ObjectStreamType;
     //typedef AlbertaObjectStream ObjectStreamType;
@@ -1467,16 +1467,16 @@ namespace Dune
       return *leafIndexSet_;
     }
 
-    LeafIndexSetType & leafIndexSet () {
-      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetType (*this);
+    LeafIndexSet & leafIndexSet () {
+      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet (*this);
       return *leafIndexSet_;
     }
 
-    const GlobalIdSetType & globalIdSet () const {
+    const GlobalIdSet & globalIdSet () const {
       return globalIdSet_;
     }
 
-    const LocalIdSetType & localIdSet () const {
+    const LocalIdSet & localIdSet () const {
       return globalIdSet_;
     }
 
@@ -1694,7 +1694,7 @@ namespace Dune
     AlbertaGridHierarchicIndexSet<dim,dimworld> hIndexSet_;
 
     // the id set of this grid
-    GlobalIdSetType globalIdSet_;
+    GlobalIdSet globalIdSet_;
 
     // the level index set, is generated from the HierarchicIndexSet
     // is generated, when accessed

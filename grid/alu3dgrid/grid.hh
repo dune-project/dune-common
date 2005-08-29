@@ -386,19 +386,19 @@ namespace Dune {
     std::vector<GeometryType> geomTypes_;
 
     // our hierarchic index set
-    HierarchicIndexSetType hIndexSet_;
+    HierarchicIndexSet hIndexSet_;
 
     // out global id set
-    GlobalIdSetType globalIdSet_;
+    GlobalIdSet globalIdSet_;
 
     // out global id set
-    LocalIdSetType localIdSet_;
+    LocalIdSet localIdSet_;
 
     // the level index set ( default type )
-    mutable std::vector < LevelIndexSetType * > levelIndexVec_;
+    mutable std::vector < LevelIndexSet * > levelIndexVec_;
 
     // the leaf index set
-    mutable LeafIndexSetType * leafIndexSet_;
+    mutable LeafIndexSet * leafIndexSet_;
 
     // the entity codim 0
     typedef ALU3dGridMakeableEntity<0,dim,const MyType> EntityImp;
