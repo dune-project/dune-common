@@ -17,6 +17,9 @@ namespace Dune {
     //! Default constructor
     IterationStep() {}
 
+    /** \brief Destructor */
+    virtual ~IterationStep() {}
+
     //! Constructor being given linear operator, solution and right hand side
     IterationStep(const OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
       mat_ = &mat;
@@ -25,7 +28,7 @@ namespace Dune {
     }
 
     //! Set linear operator, solution and right hand side
-    void setProblem(const OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
+    virtual void setProblem(const OperatorType& mat, DiscFuncType& x, DiscFuncType& rhs) {
       x_   = &x;
       rhs_ = &rhs;
       mat_ = &mat;
