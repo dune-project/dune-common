@@ -139,10 +139,16 @@ namespace Dune {
       return asImp().getBaseFunctionSet( en );
     }
 
-    //! return the corresponding Grid
-    const GridType& grid () { return asImp().grid(); }
+    //! Is space continuous?
+    bool continuous() const { return asImp().continuous(); }
 
-    //! return number of degrees of freedom for specified grid
+    //! Return the corresponding Grid (const version)
+    const GridType& grid() const { return asImp().grid() }
+
+    //! Return the corresponding Grid (const version)
+    GridType& grid() { return asImp().grid() }
+
+    //! Return number of degrees of freedom for specified grid
     //! which can also be the leaflevel and furthermore
     //! this depends also on the base function set
     int size () const { return asImp().size(); }

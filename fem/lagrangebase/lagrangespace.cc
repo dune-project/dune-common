@@ -34,7 +34,6 @@ namespace Dune {
     dm_.addIndexSet( gridPart.grid() , gridPart.indexSet() );
 
     //std::cout << "Constructor of LagrangeDiscreteFunctionSpace! \n";
-
     // search the macro grid for diffrent element types
     typedef typename GridType::template Codim<0>::LevelIterator LevelIteratorType;
     IteratorType endit  = gridPart.template end<0>();
@@ -44,11 +43,7 @@ namespace Dune {
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
       if(baseFuncSet_[id] == 0 )
-      {
-        assert( id < (int) baseFuncSet_.size() );
-        assert( id >= 0);
         baseFuncSet_[id] = setBaseFuncSetPointer(*it, gridPart.indexSet());
-      }
     }
 
     // for empty functions space which can happen for BSGrid
@@ -87,11 +82,14 @@ namespace Dune {
   LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::
   getBaseFunctionSet (EntityType &en) const
   {
+
     GeometryType geo =  en.geometry().type();
     int dimension = static_cast<int>(EntityType::mydimension);
     assert(GeometryIdentifier::fromGeo(dimension, geo) < (int) baseFuncSet_.size());
     assert(GeometryIdentifier::fromGeo(dimension, geo) >= 0);
     return *baseFuncSet_[GeometryIdentifier::fromGeo(dimension, geo)];
+
+
   }
 
   template <
@@ -118,7 +116,6 @@ namespace Dune {
     baseSet.eval( baseFunc , quad, quadPoint , ret);
     return (polOrd != 0);
   }
-
 
   template <
       class FunctionSpaceImp, class GridPartImp, int polOrd, class DofManagerImp
@@ -149,6 +146,7 @@ namespace Dune {
   {
     // only for gcc to pass type DofType
     assert(mapper_ != 0);
+
     return dm_.addDofSet( df.getStorageType() , grid_.grid() , *mapper_, df.name() );
   }
 

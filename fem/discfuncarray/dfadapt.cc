@@ -88,6 +88,14 @@ namespace Dune
   //  Interface Methods
   //*************************************************************************
   template<class DiscreteFunctionSpaceType > template <class EntityType>
+  inline LocalFunctionAdapt<DiscreteFunctionSpaceType>
+  DFAdapt< DiscreteFunctionSpaceType >::localFunction(EntityType& en) {
+    return LocalFunctionAdapt<DiscreteFunctionSpaceType> (this->functionSpace_,
+                                                          dofVec_,
+                                                          en);
+  }
+
+  template<class DiscreteFunctionSpaceType > template <class EntityType>
   inline void
   DFAdapt< DiscreteFunctionSpaceType >::
   localFunction ( const EntityType &en , LocalFunctionAdapt < DiscreteFunctionSpaceType > &lf )
@@ -384,6 +392,7 @@ namespace Dune
                       DofArrayType & dofVec )
     : fSpace_ ( f ), dofVec_ ( dofVec )
       , uniform_(true), init_(false) {}
+
 
   template<class DiscreteFunctionSpaceType >
   inline LocalFunctionAdapt < DiscreteFunctionSpaceType >::~LocalFunctionAdapt()

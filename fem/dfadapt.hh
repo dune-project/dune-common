@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_DFADAPT_HH__
-#define __DUNE_DFADAPT_HH__
+#ifndef DUNE_DFADAPT_HH
+#define DUNE_DFADAPT_HH
 
 #include "dune/common/array.hh"
 #include "common/discretefunction.hh"
@@ -14,6 +14,7 @@
 #include <rpc/xdr.h>
 
 namespace Dune {
+
 
   template <class DiscreteFunctionSpaceImp>    class LocalFunctionAdapt;
   template <class DofType, class DofArrayType>  class DofIteratorAdapt;
@@ -80,6 +81,8 @@ namespace Dune {
     /** \brief For ISTL-compatibility */
     typedef FieldVector<DofType,1> block_type;
 
+  public:
+
     //! Constructor make Discrete Function
     DFAdapt(DiscreteFunctionSpaceType& f);
 
@@ -99,6 +102,9 @@ namespace Dune {
     // ***********  Interface  *************************
     //! return object of type LocalFunctionType
     LocalFunctionAdapt<DiscreteFunctionSpaceType> newLocalFunction ( );
+
+    template <class EntityType>
+    LocalFunctionAdapt<DiscreteFunctionSpaceType> localFunction(EntityType& en);
 
     //! update LocalFunction to given Entity en
     template <class EntityType>
