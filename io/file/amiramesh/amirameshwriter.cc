@@ -33,8 +33,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   int noOfNodes = leafIndexSet.size(dim, vertex);
   /** \todo This sucks.  I want a size method that gives me the number of
       all element types */
-  int noOfElem  = 0;  //grid.size(level, 0);
-  for (int i=0; i<leafIndexSet.geomtypes().size(); i++)
+  int noOfElem  = 0;
+  for (unsigned int i=0; i<leafIndexSet.geomtypes().size(); i++)
     noOfElem += leafIndexSet.size(0, leafIndexSet.geomtypes()[i]);
 
   // create amiramesh object
