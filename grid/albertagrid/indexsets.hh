@@ -173,7 +173,7 @@ namespace Dune {
   class AlbertaGridGlobalIdSet
   {
     typedef AlbertaGrid<dim,dimworld> GridType;
-    typedef typename GridType :: HierarchicIndexSetType HierarchicIndexSetType;
+    typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
 
     // this means that only up to 300000000 entities are allowed
     enum { codimMultiplier = 300000000 };
