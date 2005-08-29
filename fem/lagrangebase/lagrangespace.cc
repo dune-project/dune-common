@@ -22,6 +22,19 @@ namespace Dune {
     makeFunctionSpace(g);
   }
 
+  template <
+      class FunctionSpaceImp, class GridPartImp, int polOrd, class DofManagerImp
+      >
+  inline LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::
+  LagrangeDiscreteFunctionSpace (GridPartType & g) :
+    DefaultType(id),
+    baseFuncSet_(GeometryIdentifier::numTypes,0),
+    dm_(DofManagerFactoryType::getDofManager(g.grid())),
+    grid_(g),
+    mapper_(0)
+  {
+    makeFunctionSpace(g);
+  }
 
   template <
       class FunctionSpaceImp, class GridPartImp, int polOrd, class DofManagerImp
