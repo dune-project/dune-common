@@ -12,7 +12,7 @@
 namespace Dune {
 
   /**
-     @defgroup Grid
+     @defgroup Grid Grid
 
      The Dune Grid module defines a general interface to a hierarchical
      finite element mesh.  The interface is independent of dimension and

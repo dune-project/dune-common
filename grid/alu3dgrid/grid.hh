@@ -66,7 +66,7 @@ namespace Dune {
      meshes. This grid can be locally adapted and used in parallel
      computations using dynamcic load balancing.
 
-     @note @{
+     @note
      Adaptive parallel grid supporting dynamic load balancing, written
      mainly by Bernard Schupp. This grid supports hexahedrons and tetrahedrons.
 
@@ -75,7 +75,6 @@ namespace Dune {
      Two tools are available for partitioning :
      \li Metis ( version 4.0 and higher, see http://www-users.cs.umn.edu/~karypis/metis/metis/ )
      \li Party Lib ( version 1.1 and higher, see http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html)
-     @}
 
    */
   template <int dim, int dimworld, ALU3dGridElementType elType>
