@@ -214,6 +214,9 @@ namespace Dune {
     //! on the top level of the underlying grid
     RangeFieldType scalarProductDofs(const DiscreteFunctionType& g) const;
 
+    //! Assignment
+    virtual DiscreteFunctionDefaultType& assign(const MappingType& g);
+
     //! Addition of g to discrete function
     virtual DiscreteFunctionDefaultType& operator+=(const MappingType& g);
 

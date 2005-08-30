@@ -145,7 +145,7 @@ namespace Dune {
     //! Return the corresponding Grid (const version)
     const GridType& grid() const { return asImp().grid(); }
 
-    //! Return the corresponding Grid (const version)
+    //! Return the corresponding Grid
     GridType& grid() { return asImp().grid(); }
 
     //! Return number of degrees of freedom for specified grid

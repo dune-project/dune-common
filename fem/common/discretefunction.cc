@@ -33,6 +33,27 @@ namespace Dune
     return skp;
   }
 
+  // operator=
+  template<class DiscreteFunctionTraits>
+  DiscreteFunctionDefault<DiscreteFunctionTraits >&
+  DiscreteFunctionDefault<DiscreteFunctionTraits >::
+  assign(const MappingType& g)
+  {
+    typedef DiscreteFunctionDefault<
+        DiscreteFunctionTraits
+        > DiscreteFunctionDefaultType;
+
+    const DiscreteFunctionDefaultType &gc =
+      static_cast<const DiscreteFunctionDefaultType &> ( g );
+
+    DofIteratorType endit = this->dend ();
+    ConstDofIteratorType git = gc.dbegin ();
+    for (DofIteratorType it = this->dbegin(); it != endit; ++it, ++git) {
+      *it = *git;
+    }
+    return *this;
+  }
+
 
   // operator +=
   /** \todo This operator can add a discretefunction defined on all levels to another
