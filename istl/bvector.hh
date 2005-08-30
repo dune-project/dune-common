@@ -774,7 +774,7 @@ namespace Dune {
     template<class V>
     bool includesindexset (const V& y)
     {
-      typename V::Iterator e=y.end();
+      typename V::ConstIterator e=y.end();
       for (size_type i=0; i<this->n; i++)
         if (y.find((this->j)[i])==e)
           return false;
