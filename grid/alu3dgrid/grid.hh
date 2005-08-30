@@ -266,6 +266,9 @@ namespace Dune {
     //! get level index set of the grid
     const LevelIndexSet & levelIndexSet (int level) const;
 
+    //! get level index set of the grid
+    LevelIndexSet & levelIndexSet (int level);
+
     //! calculate load of each proc and repartition if neccessary
     bool loadBalance ();
 

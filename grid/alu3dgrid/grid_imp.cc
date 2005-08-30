@@ -208,6 +208,18 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline typename ALU3dGrid<dim, dimworld, elType>::LevelIndexSet &
+  ALU3dGrid<dim, dimworld, elType>::levelIndexSet( int level )
+  {
+    if( (level < 0) && (level >= MAXL) )
+      DUNE_THROW(GridError,"Only " << MAXL << "levels allowed for this grid!\n");
+
+    if( levelIndexVec_[level] == 0 )
+      levelIndexVec_[level] = new LevelIndexSet ( *this , level );
+    return *(levelIndexVec_[level]);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   inline int ALU3dGrid<dim, dimworld, elType>::maxlevel() const
   {
     return maxlevel_;
