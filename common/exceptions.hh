@@ -1,9 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-/** \file
-    \brief A few common exception classes
- */
-
 // $Id$
 
 #ifndef DUNE_EXCEPTIONS_HH
@@ -65,6 +61,7 @@ namespace Dune {
    */
 
   /*! \file
+     \brief A few common exception classes
 
      This file defines a common framework for generating exception
      subclasses and to throw them in a simple manner
