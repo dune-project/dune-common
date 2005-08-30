@@ -63,7 +63,7 @@ namespace Dune {
 
   public:
     //! Constructor
-    GridPartDefault(GridType& grid, IndexSetType& iset) :
+    GridPartDefault(GridType& grid, const IndexSetType& iset) :
       GridPartInterface<GridPartTraits>(),
       grid_(grid),
       iset_(iset) {}
@@ -74,12 +74,11 @@ namespace Dune {
     const GridType& grid() const { return grid_; }
 
     //! Returns reference to index set of the underlying grid
-    IndexSetType& indexSet() { return iset_; }
     const IndexSetType& indexSet() const { return iset_; }
 
   private:
     GridType& grid_; // needs to modifyable, so that one can mark
-    IndexSetType& iset_;
+    const IndexSetType& iset_;
   };
 
   //! \brief Selects a specific level of a grid

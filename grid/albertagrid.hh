@@ -1428,6 +1428,12 @@ namespace Dune
     //! clean up some markers
     bool postAdapt();
 
+    template <class DofManagerType>
+    bool loadBalance (DofManagerType & dm) { return false; }
+
+    template <class DofManagerType>
+    bool communicate (DofManagerType & dm) { return false; }
+
     /** \brief return type of grid, here AlbertaGrid_Id. */
     GridIdentifier type () const { return AlbertaGrid_Id; };
 
@@ -1463,11 +1469,6 @@ namespace Dune
     }
 
     const LeafIndexSet & leafIndexSet () const {
-      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet (*this);
-      return *leafIndexSet_;
-    }
-
-    LeafIndexSet & leafIndexSet () {
       if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet (*this);
       return *leafIndexSet_;
     }

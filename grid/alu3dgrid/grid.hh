@@ -260,14 +260,8 @@ namespace Dune {
     //! get leaf index set of the grid
     const LeafIndexSet & leafIndexSet () const;
 
-    //! get leaf index set of the grid
-    LeafIndexSet & leafIndexSet ();
-
     //! get level index set of the grid
     const LevelIndexSet & levelIndexSet (int level) const;
-
-    //! get level index set of the grid
-    LevelIndexSet & levelIndexSet (int level);
 
     //! calculate load of each proc and repartition if neccessary
     bool loadBalance ();
