@@ -172,6 +172,9 @@ namespace Dune {
     //! get dimension of value
     int dimensionOfValue () const;
 
+    //! Return grid
+    GridType& grid() { return grid_.grid(); }
+    const GridType& grid() const { return grid_.grid(); }
 
     //! number of unknows for this function space
     int size () const;
@@ -196,11 +199,11 @@ namespace Dune {
     //! get the right BaseFunctionSet for a given Entity
     template <class EntityType>
     BaseFunctionSetType* setBaseFuncSetPointer(EntityType &en,
-                                               IndexSetType& iset);
+                                               const IndexSetType& iset);
 
     //! make base function set depending on GeometryType and polynomial order
     template <GeometryType ElType, int pO >
-    BaseFunctionSetType* makeBaseSet (IndexSetType& iset);
+    BaseFunctionSetType* makeBaseSet (const IndexSetType& iset);
 
   protected:
     //! the corresponding vector of base function sets
