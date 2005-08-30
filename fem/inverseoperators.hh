@@ -35,8 +35,8 @@ namespace Dune {
     virtual void operator()(const DiscreteFunctionType& arg,
                             DiscreteFunctionType& dest ) const
     {
-      typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
-      typedef typename FunctionSpaceType::RangeField Field;
+      typedef typename DiscreteFunctionType::DiscreteFunctionSpaceType FunctionSpaceType;
+      typedef typename FunctionSpaceType::RangeFieldType Field;
 
       int count = 0;
       Field spa=0, spn, q, quad;
@@ -47,10 +47,10 @@ namespace Dune {
 
       op_( dest, h );
 
-      r.assign( h );
+      r.assign(h);
       r -= arg;
 
-      p.assign( arg );
+      p.assign(arg);
       p -= h;
 
       spn = r.scalarProductDofs( r );
@@ -136,8 +136,8 @@ namespace Dune {
     virtual void operator() (const DiscreteFunctionType& arg,
                              DiscreteFunctionType& dest ) const
     {
-      typedef typename DiscreteFunctionType::FunctionSpace FunctionSpaceType;
-      typedef typename FunctionSpaceType::RangeField Field;
+      typedef typename DiscreteFunctionType::DiscreteFunctionSpaceType FunctionSpaceType;
+      typedef typename FunctionSpaceType::RangeFieldType Field;
 
       int count = 0;
       Field spa=0, spn, q, quad;
@@ -154,10 +154,10 @@ namespace Dune {
 
       op_( dest, h );
 
-      r.assign( h );
+      r.assign(h) ;
       r -= arg;
 
-      p.assign( arg );
+      p.assign(arg);
       p -= h;
 
       spn = r.scalarProductDofs( r );
