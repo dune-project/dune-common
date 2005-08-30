@@ -286,22 +286,22 @@ namespace Dune {
     }
 
 
-    const GlobalIdSet& globalidset() const
+    const GlobalIdSet& globalIdSet() const
     {
       return idSet_;
     }
 
-    const LocalIdSet& localidset() const
+    const LocalIdSet& localIdSet() const
     {
       return idSet_;
     }
 
-    const LevelIndexSet& levelindexset(int level) const
+    const LevelIndexSet& levelIndexSet(int level) const
     {
       return levelIndexSets_[level];
     }
 
-    const LeafIndexSet& leafindexset() const
+    const LeafIndexSet& leafIndexSet() const
     {
       return leafIndexSet_;
     }

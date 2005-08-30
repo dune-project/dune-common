@@ -43,7 +43,7 @@ namespace Dune {
     }
 
     /** \brief Deliver all geometry types used in this grid */
-    const std::vector<GeometryType>& geomtypes () const
+    const std::vector<GeometryType>& geomTypes () const
     {
       return myTypes_;
     }
@@ -170,7 +170,7 @@ namespace Dune {
     }
 
     /** deliver all geometry types used in this grid */
-    const std::vector<GeometryType>& geomtypes () const
+    const std::vector<GeometryType>& geomTypes () const
     {
       return myTypes_;
     }
