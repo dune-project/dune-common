@@ -456,7 +456,7 @@ struct GridInterface
     // Instantiate all methods of LocalIdSet
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.localIdset().template id<0>(*g.template lbegin<0>(0));
+    g.localIdSet().template id<0>(*g.template lbegin<0>(0));
 
     // Instantiate all methods of GlobalIdSet
     /** \todo Test for subindex is missing, because I don't know yet
