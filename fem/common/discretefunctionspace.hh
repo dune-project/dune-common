@@ -143,10 +143,10 @@ namespace Dune {
     bool continuous() const { return asImp().continuous(); }
 
     //! Return the corresponding Grid (const version)
-    const GridType& grid() const { return asImp().grid() }
+    const GridType& grid() const { return asImp().grid(); }
 
     //! Return the corresponding Grid (const version)
-    GridType& grid() { return asImp().grid() }
+    GridType& grid() { return asImp().grid(); }
 
     //! Return number of degrees of freedom for specified grid
     //! which can also be the leaflevel and furthermore
