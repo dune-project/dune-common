@@ -10,63 +10,107 @@
 #include <dune/fem/common/discretefunctionspace.hh>
 #include <dune/fem/common/basefunctions.hh>
 #include <dune/fem/common/dofmapperinterface.hh>
+#include <dune/common/misc.hh>
 
 namespace Dune {
 
+  // Note: the methods component and contained dof do actually the same
+  // in the Mapper and in the BaseFunctionSet. It would be a good idea to
+  // factor them out in a common class (private inheritance? BaseFunctionSet
+  // provides them for the mapper?
+
+  //! Indicates how the dofs shall be stored in the discrete functions
+  //! Point based means that all dofs belonging to one local degree in a
+  //! contained spaced are stored consecutively, whereas in the variable based
+  //! approach all dofs belonging to one subspace are stored consecutively
+  enum DofStoragePolicy { PointBased, VariableBased };
+
   // Forward declarations
-  template <class DiscreteFunctionSpaceImp, int N>
-  class CombinedSpaceange;
-  template <class DiscreteFunctionSpaceImp, int N>
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  class CombinedSpace;
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   class CombinedMapper;
-  //template <class BaseFunctionImp, int N>
-  //class CombinedBaseFunction;
-  template <class BaseFunctionSetImp, int N>
+  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
   class CombinedBaseFunctionSet;
 
-  template <class DiscreteFunctionSpaceImp, int N>
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   struct CombinedSpaceTraits {
   private:
     typedef DiscreteFunctionSpaceImp ContainedDiscreteFunctionSpaceType;
-    typedef ContainedDiscreteFunctionSpaceType::MapperType ContainedMapperType;
-    typedef typename ContainedDiscreteFunctionSpaceType::Traits ContainedTraits;
-    typedef typename ContainedTraits::FunctionSpaceType ContainedFunctionSpaceType;
-    typedef typename ContainedTraits::BaseFunctionSetType ContainedBaseFunctionSetType;
+    //   typedef ContainedDiscreteFunctionSpaceType::MapperType ContainedMapperType;
+    typedef typename ContainedDiscreteFunctionSpaceType::Traits
+    ContainedTraits;
+    typedef typename ContainedTraits::FunctionSpaceType
+    ContainedFunctionSpaceType;
+    typedef typename ContainedTraits::BaseFunctionSetType
+    ContainedBaseFunctionSetType;
 
-    enum { ContainedDimRange = ContainedFunctionSpace::DimRange,
-           ContainedDimDomain = ContainedFunctionSpace::DimDomain };
+    enum { ContainedDimRange = ContainedFunctionSpaceType::DimRange,
+           ContainedDimDomain = ContainedFunctionSpaceType::DimDomain };
   public:
-    typedef typename ContainedFunctionSpace::DomainFieldType DomainFieldType;
-    typedef typename ContainedFunctionSpace::RangeFieldType RangeFieldType;
+    typedef typename ContainedFunctionSpaceType::DomainFieldType
+    DomainFieldType;
+    typedef typename ContainedFunctionSpaceType::RangeFieldType
+    RangeFieldType;
 
     // * Require contained space to have dimRange == 1? (ie to be scalar)
     typedef FunctionSpace<
         DomainFieldType, RangeFieldType,
         ContainedDimDomain, ContainedDimRange*N
         > FunctionSpaceType;
+
+    typedef typename FunctionSpaceType::RangeType RangeType;
+    typedef typename FunctionSpaceType::DomainType DomainType;
+    typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
+    typedef typename FunctionSpaceType::DomainFieldType DomainFieldType;
+
     typedef CombinedSpace<
-        DiscreteFunctionSpaceImp, N
+        DiscreteFunctionSpaceImp, N, policy
         > DiscreteFunctionSpaceType;
+
     typedef typename ContainedTraits::GridType GridType;
     typedef typename ContainedTraits::IteratorType IteratorType;
-    typedef CombinedBaseFunctionSet<ContainedBaseFunctionSetType, N> BaseFunctionSetType;
+    typedef CombinedBaseFunctionSet<
+        ContainedBaseFunctionSetType, N, policy
+        > BaseFunctionSetType;
+
+    friend class DiscreteFunctionSpaceType;
   };
 
-  template <class DiscreteFunctionSpaceImp, int N>
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   class CombinedSpace :
     public DiscreteFunctionSpaceDefault<
-        CombinedSpaceTraits<DiscreteFunctionSpaceImp, N>
+        CombinedSpaceTraits<DiscreteFunctionSpaceImp, N, policy>
         >
   {
+  private:
+    //- Private typedefs
+    typedef CombinedMapper<DiscreteFunctionSpaceImp, N, policy> MapperType;
+    typedef DiscreteFunctionSpaceDefault<
+        CombinedSpaceTraits<DiscreteFunctionSpaceImp, N, policy>
+        > BaseType;
   public:
     //- Public typedefs and enums
-    typedef CombinedSpaceTraits<DiscreteFunctionSpaceImp, N> Traits;
+    typedef CombinedSpace<DiscreteFunctionSpaceImp, N, policy> ThisType;
+    typedef CombinedSpaceTraits<DiscreteFunctionSpaceImp, N, policy> Traits;
     typedef DiscreteFunctionSpaceImp ContainedDiscreteFunctionSpaceType;
 
     typedef typename Traits::IteratorType IteratorType;
 
+    typedef typename Traits::RangeType RangeType;
+    typedef typename Traits::DomainType DomainType;
+    typedef typename Traits::RangeFieldType RangeFieldType;
+    typedef typename Traits::DomainFieldType DomainFieldType;
   public:
     //- Public methods
+    //! constructor
     CombinedSpace(ContainedDiscreteFunctionSpaceType& spc);
+
+    //! destructor
+    ~CombinedSpace();
+
+    //! continuous?
+    bool continuous() const { return spc_.continous(); }
 
     //! begin iterator
     IteratorType begin() const { return spc_.begin(); }
@@ -80,113 +124,89 @@ namespace Dune {
     //! map a local dof number to a global one
     template <class EntityType>
     int mapToGlobal(EntityType& en, int local) const {
-      mapper_.mapToGlobal(en, localNum);
+      mapper_.mapToGlobal(en, local);
     }
 
     template <class EntityType>
-    const BaseFunctionSetType& getBaseFunctionSet(EntityType& en) const {
-      // * More to come
-      return ? ?;
+    const BaseFunctionSetType& getBaseFunctionSet(EntityType& en) const
+    {
+      GeometryType geo = en.geometry().type();
+      int dimension = static_cast<int>(EntityType::mydimension);
+      return *baseSetVec_[GeometryIdentifier::fromGeo(dimension, geo)];
     }
 
     GridType& grid() { return spc_.grid(); }
+    const GridType& grid() const { return spc_.grid(); }
+
+
+    template <class DiscFuncType>
+    typename DiscFuncType::MemObjectType &
+    signIn(DiscFuncType & df) const { return spc_.signIn(df); }
+
+    //! sign out to dofmanager, dofmanager frees the memory
+    template <class DiscFuncType>
+    bool signOut ( DiscFuncType & df) const { return spc_.signOut(df); }
+
   private:
     //- Private typedefs
 
   private:
     //- Private methods
+    CombinedSpace(const ThisType& other);
 
   private:
     //- Member data
-    DiscreteFunctionSpaceType& spc_;
+    ContainedDiscreteFunctionSpaceType& spc_;
 
     MapperType mapper_;
     std::vector<BaseFunctionSetType*> baseSetVec_;
 
   }; // end class CombinedSpace
 
-  /* Probably not needed
-     template <class BaseFunctionImp, int N>
-     class CombinedBaseFunction :
-     public BaseFunctionInterface<
-     CombinedSpace<typename BaseFunctionImp::FunctionSpaceType, N>
-     >
-     {
-     public:
-     //- Typedefs and enums
-     typedef CombinedSpace<typename BaseFunctionImp::FunctionSpaceType, N> DisreteFunctionSpaceType;
-     typedef BaseFunctionImp ContainedBaseFunctionType;
-     typedef ... DomainType;
-     typedef ... RangeType;
-
-     public:
-     //- Public methods
-     CombinedBaseFunction(const ContainedBaseFunctionType& bf) :
-      containedBaseFunction_(bf) {}
-
-     //! evaluate the function at DomainType x, and store the value in Range Phi
-     //! diffVariable stores information about which gradient is to be
-     //! evaluated. In the derived classes the evaluate method are template
-     //! methods with template parameter "length of Vec".
-     //! Though the evaluate Methods can be spezialized for each
-     //! differentiation order
-     //! \param x The local coordinate in the reference element
-     virtual void evaluate ( const FieldVector<deriType, 0> &diffVariable,
-                          const DomainType& x, RangeType& result);
-
-     //! diffVariable contain the component of the gradient which is delivered.
-     //! for example gradient of the basefunction x component ==>
-     //! diffVariable(0) == 0, y component ==> diffVariable(0) == 1 ...
-     virtual void evaluate ( const FieldVector<deriType, 1> &diffVariable,
-                          const DomainType& x, RangeType& result) const;
-
-     virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
-                          const DomainType& x, RangeType& result) const;
-
-     private:
-     //- Private typedefs
-     typedef ... ContainedRangeType;
-
-     private:
-     //- Private methods
-     void expand(const ContainedRangeType& arg, RangeType& result) const;
-
-     private:
-     //- Data members
-     const ContainedBaseFunctionType& containedBaseFunction_;
-     };
-   */
-
-  template <class BaseFunctionSetImp, int N>
+  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
   struct CombinedBaseFunctionSetTraits {
   private:
-    typedef typename BaseFunctionSetImp::DiscreteFunctionSpaceType ContainedFunctionSpaceType;
+    typedef typename BaseFunctionSetImp::DiscreteFunctionSpaceType
+    ContainedFunctionSpaceType;
   public:
-    typedef CombinedBaseFunctionSet<BaseFunctionSetImp, N> BaseFunctionSetType;
-    typedef CombinedSpace<ContainedFunctionSpaceType, N> DiscreteFunctionSpaceType;
+    typedef CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>
+    BaseFunctionSetType;
+
+    typedef CombinedSpace<ContainedFunctionSpaceType, N, policy>
+    DiscreteFunctionSpaceType;
+
     typedef DiscreteFunctionSpaceType::RangeType RangeType;
     typedef DiscreteFunctionSpaceType::DomainType DomainType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
-    typedef typename DiscreteFunctionSpaceType::HessianRangeType HessianRangeType;
+    typedef typename DiscreteFunctionSpaceType::JacobianRangeType
+    JacobianRangeType;
+
+    typedef typename DiscreteFunctionSpaceType::HessianRangeType
+    HessianRangeType;
 
     enum { DimDomain = DiscreteFunctionSpaceType::DimDomain };
     enum { DimRange  = DiscreteFunctionSpaceType::DimRange  };
   };
 
-  template <class BaseFunctionSetImp, int N>
+  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
   class CombinedBaseFunctionSet :
     public BaseFunctionSetDefault<
-        CombinedBaseFunctionSetTraits<BaseFunctionSetImp, int N>
+        CombinedBaseFunctionSetTraits<BaseFunctionSetImp, N, policy>
         >
   {
   private:
     //- Private typedefs
     typedef BaseFunctionSetImp ContainedBaseFunctionSetType;
     typedef ContainedBaseFunctionSetType::RangeType ContainedRangeType;
+
   public:
     //- Typedefs and enums
-    typedef CombinedBaseFunctionSetTraits<BaseFunctionSetImp, N> Traits;
+    enum { numComponents = N };
+    typedef CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy> ThisType;
+
+    typedef CombinedBaseFunctionSetTraits<BaseFunctionSetImp, N, policy> Traits;
     typedef typename Traits::DiscreteFunctionSpaceType DiscreteFunctionSpaceType;
+    typedef typename Traits::RangeType RangeType;
+    typedef typename Traits::DomainType DomainType;
 
   public:
     //- Public methods
@@ -209,37 +229,72 @@ namespace Dune {
                    const FieldVector<deriType, diffOrd> &diffVariable,
                    QuadratureType & quad,
                    int quadPoint, RangeType & phi ) const;
+
   private:
     //- Private methods
-    void expand(const ContainedRangeType& arg, RangeType& dest) const ;
+    CombinedBaseFunctionSet(const ThisType& other);
+
+    int containedDof(int combinedDofNum) const;
+    int component(int combinedDofNum) const;
+    void expand(int baseFunct,
+                const ContainedRangeType& arg,
+                RangeType& dest) const;
 
   private:
     //- Data members
-    mutable ContainedRangeType containtedResult_;
+    mutable ContainedRangeType containedResult_;
     const ContainedBaseFunctionSetType& baseFunctionSet_;
-  };
+  }; // end class CombinedBaseFunctionSet
 
-  template <class DiscreteFunctionSpaceImp, int N>
-  class CombinedMapper :
-    public DofMapperDefault<CombinedMapper<DiscreteFunctionSpaceImp, int N> >
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  class CombinedMapper : public DofMapperDefault<
+                             CombinedMapper<DiscreteFunctionSpaceImp, N, policy>
+                             >
   {
   public:
     //- Typedefs and enums
+    enum { numComponents = N };
+    typedef CombinedMapper<DiscreteFunctionSpaceImp, N, policy> ThisType;
+
+    typedef typename CombinedSpaceTraits<DiscreteFunctionSpaceImp, N, policy> SpaceTraits;
+    typedef DiscreteFunctionSpaceImp ContainedDiscreteFunctionSpaceType;
 
   public:
     //- Public methods
+    CombinedMapper(const ContainedDiscreteFunctionSpaceType& spc) :
+      spc_(spc)
+    {}
+
+    int size() const;
+
+    template <class EntityType>
+    int mapToGlobal(EntityType& en, int localNum) const;
 
   private:
     //- Private methods
+    CombinedMapper(const ThisType& other);
+
+    template <class EntityType>
+    int mapToGlobal(EntityType& en, int localNum, Int2Type<PointBased>) const;
+
+    template <class EntityType>
+    int mapToGlobal(EntityType& en, int localNum, Int2Type<VariableBased>) const;
+
+    int containedDof(int combinedDofNum) const;
+    int component(int combinedDofNum) const;
 
   private:
     //- Data members
+    const ContainedDiscreteFunctionSpaceType& spc_;
 
-  };
-
-  // include implementation
-  #include "combinedspace.cc"
+    //int numBaseLoc_;
+  }; // end class CombinedMapper
 
 } // end namespace Dune
+
+// include implementation
+#include "combinedspace.cc"
+
+
 
 #endif
