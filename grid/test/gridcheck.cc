@@ -437,31 +437,31 @@ struct GridInterface
     typedef typename Grid::LocalIdSet LocalIdSet;
     typedef typename Grid::GlobalIdSet GlobalIdSet;
 
-    g.levelindexset(0);
+    g.levelIndexSet(0);
 
     // Instantiate all methods of LevelIndexSet
-    g.levelindexset(0).template index<0>(*g.template lbegin<0>(0));
+    g.levelIndexSet(0).template index<0>(*g.template lbegin<0>(0));
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.levelindexset(0).size(0, Dune::simplex);
-    g.levelindexset(0).geomtypes();
+    g.levelIndexSet(0).size(0, Dune::simplex);
+    g.levelIndexSet(0).geomTypes();
 
     // Instantiate all methods of LeafIndexSet
-    g.leafindexset().template index<0>(*g.template lbegin<0>(0));
+    g.leafIndexSet().template index<0>(*g.template lbegin<0>(0));
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.leafindexset().size(0, Dune::simplex);
-    g.leafindexset().geomtypes();
+    g.leafIndexSet().size(0, Dune::simplex);
+    g.leafIndexSet().geomTypes();
 
     // Instantiate all methods of LocalIdSet
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.localidset().template id<0>(*g.template lbegin<0>(0));
+    g.localIdset().template id<0>(*g.template lbegin<0>(0));
 
     // Instantiate all methods of GlobalIdSet
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.globalidset().template id<0>(*g.template lbegin<0>(0));
+    g.globalIdSet().template id<0>(*g.template lbegin<0>(0));
 
 #endif
 
