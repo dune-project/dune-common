@@ -150,29 +150,40 @@ namespace Dune {
     return mapper_->mapToGlobal ( en , localNum );
   }
 
+  /*
+     template <
+     class FunctionSpaceImp, class GridPartImp, int polOrd, class DofManagerImp
+     >
+     template< class DiscFuncType >
+     inline typename DiscFuncType :: MemObjectType &
+     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::
+     signIn (DiscFuncType & df) const
+     {
+     // only for gcc to pass type DofType
+     assert(mapper_ != 0);
+
+     return dm_.addDofSet( df.getStorageType() , *mapper_, df.name() );
+     }
+
+     template <
+     class FunctionSpaceImp, class GridPartImp, int polOrd, class DofManagerImp
+     >
+     template< class DiscFuncType>
+     inline bool
+     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::
+     signOut (DiscFuncType & df) const
+     {
+     return dm_.removeDofSet( df.memObj() );
+     }
+   */
+
   template <
       class FunctionSpaceImp, class GridPartImp, int polOrd, class DofManagerImp
       >
-  template< class DiscFuncType >
-  inline typename DiscFuncType :: MemObjectType &
-  LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::
-  signIn (DiscFuncType & df) const
-  {
-    // only for gcc to pass type DofType
-    assert(mapper_ != 0);
-
-    return dm_.addDofSet( df.getStorageType() , grid_.grid() , *mapper_, df.name() );
-  }
-
-  template <
-      class FunctionSpaceImp, class GridPartImp, int polOrd, class DofManagerImp
-      >
-  template< class DiscFuncType>
-  inline bool
-  LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::
-  signOut (DiscFuncType & df) const
-  {
-    return dm_.removeDofSet( df.memObj() );
+  const LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::MapperType&
+  LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp>::mapper() const {
+    assert(mapper_);
+    return *mapper_;
   }
 
   template <
@@ -238,9 +249,9 @@ namespace Dune {
 
     BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
 
-    mapper_ = new LagrangeMapperType (const_cast<IndexSetType&>(iset),
-                                      baseFuncSet->getNumberOfBaseFunctions(),
-                                      0);
+    mapper_ = new MapperType (const_cast<IndexSetType&>(iset),
+                              baseFuncSet->getNumberOfBaseFunctions(),
+                              0);
 
     return baseFuncSet;
   }
