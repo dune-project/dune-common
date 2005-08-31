@@ -1,6 +1,5 @@
-// NOTE: The current revision of this file was left untouched when the DUNE source files were reindented!
-// NOTE: It contained invalid syntax that could not be processed by uncrustify.
-
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_ADAPTIVEFUNCTIONIMP_HH
 #define DUNE_ADAPTIVEFUNCTIONIMP_HH
 
@@ -11,53 +10,75 @@
 
 namespace Dune {
 
-  template <class DiscreteFunctionSpaceImp>
+  //- Forward declarations
+  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  class AdaptiveDiscreteFunction;
+  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  class AdaptiveLocalFunction;
+  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  class AdaptiveDiscreteFunctionTraits;
+  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  class AdaptiveLocalFunctionTraits;
+
+
+  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
   class AdaptiveFunctionImplementation {
   private:
-    typedef AdaptiveDiscreteFunctionTraits<DiscreteFunctionSpaceImp> Traits;
+    typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
+    typedef DofManagerImp DofManagerType;
+
+    typedef AdaptiveDiscreteFunctionTraits<
+        DiscreteFunctionSpaceImp, DofManagerImp> Traits;
     typedef typename Traits::DofIteratorType DofIteratorType;
     typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
-    typedef typename Traits::LocalFunctionType LocalFunctionType
+    typedef typename Traits::LocalFunctionType LocalFunctionType;
 
     typedef typename DiscreteFunctionSpaceImp::Traits SpaceTraits;
     typedef typename SpaceTraits::RangeFieldType RangeFieldType;
 
-    typedef DofArray<RangeFieldType> DofStorageType;
+    typedef typename Traits::DofIteratorType DofIteratorType;
+    typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
+    typedef typename Traits::MapperType MapperType;
+
+    typedef typename Traits::DofStorageType DofStorageType;
+    typedef typename Traits::MemObjectType MemObjectType;
   public:
-    AdaptiveFunctionImplementation(
+    std::string name() const;
 
     DofIteratorType dbegin();
     DofIteratorType dend();
     ConstDofIteratorType dbegin() const;
     ConstDofIteratorType dend() const;
-    
+
     LocalFunctionType newLocalFunction();
     template <class EntityType>
     void localFunction(const EntityType& en, LocalFunctionType& lf);
-  
-    //! write data of discrete function to file filename|timestep 
-    //! with xdr methods 
-    bool write_xdr(const std::string& filename);
 
-    //! write data of discrete function to file filename|timestep 
-    //! with xdr methods 
-    bool read_xdr(const std::string& filename);
-    
+    //! write data of discrete function to file filename|timestep
+    //! with xdr methods
+    bool write_xdr(std::string filename);
+
+    //! write data of discrete function to file filename|timestep
+    //! with xdr methods
+    bool read_xdr(std::string filename);
+
     //! write function data to file filename|timestep in ascii Format
-    bool write_ascii(const std::string& filename);
-    
+    bool write_ascii(std::string filename);
+
     //! read function data from file filename|timestep in ascii Format
-    bool read_ascii(const std::string& filename);
+    bool read_ascii(std::string filename);
 
   protected:
-    AdaptiveFunctionImplementation(std::string name);
+    AdaptiveFunctionImplementation(std::string name,
+                                   const DiscreteFunctionSpaceType& spc);
     ~AdaptiveFunctionImplementation();
 
-    DiscreteFunctionSpaceType& spc_;
+    const DiscreteFunctionSpaceType& spc_;
+    std::string name_;
+    DofManagerType& dm_;
     MemObjectType& memObj_;
     DofStorageType& dofVec_;
-    std::string name_;
-  }; // end class AdaptiveFunctionImplementation
+  };  // end class AdaptiveFunctionImplementation
 
 } // end namespace Dune
 
