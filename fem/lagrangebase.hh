@@ -11,6 +11,11 @@
 #include "dofmanager.hh"
 //#include "dgspace/dgmapper.hh"
 
+// * Note: the dofmanager could be removed from the space altogether now.
+// (Maybe this wouldn't be a clever move, though. In my view of a perfect Dune,
+// there would be one DofManager per space and the DiscreteFunctions wouldn't
+// need to fiddle with the DofMapper anymore...
+
 namespace Dune {
 
   // Forfard declarations
@@ -60,11 +65,11 @@ namespace Dune {
             polOrd, DofManagerImp>
     >
   {
+  public:
     typedef DofManagerImp DofManagerType;
 
     typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
 
-  public:
     typedef typename GridPartImp::GridType GridType;
 
     /** \todo Please doc me! */
@@ -98,16 +103,19 @@ namespace Dune {
     enum { DimRange = FunctionSpaceType::DimRange };
 
     /** \todo Please doc me! */
-    typedef LagrangeMapper<IndexSetType,polOrd,DimRange> LagrangeMapperType;
+    typedef LagrangeMapper<IndexSetType,polOrd,DimRange> MapperType;
+
 
     /** \todo Please doc me! */
-    //typedef typename DofManagerType::MemObjectType MemObjectType;
-    template <class DofStorageType>
-    struct DofTraits
-    {
-      typedef typename DofManagerType:: template Traits< LagrangeMapperType ,
-          DofStorageType > ::  MemObjectType MemObjectType;
-    };
+    /*
+       //typedef typename DofManagerType::MemObjectType MemObjectType;
+       template <class DofStorageType>
+       struct DofTraits
+       {
+       typedef typename DofManagerType:: template Traits< MapperType ,
+                                                        DofStorageType > ::  MemObjectType MemObjectType;
+       };
+     */
 
     /** \todo Please doc me! */
     typedef typename FunctionSpaceType::DomainType DomainType;
@@ -176,6 +184,9 @@ namespace Dune {
     GridType& grid() { return grid_.grid(); }
     const GridType& grid() const { return grid_.grid(); }
 
+    //! level
+    int level() const { return grid_.level(); }
+
     //! number of unknows for this function space
     int size () const;
 
@@ -183,14 +194,19 @@ namespace Dune {
     template <class EntityType>
     int mapToGlobal ( EntityType &en, int localNum ) const;
 
-    //! sign in to dofmanager, return is the memory
-    template <class DiscFuncType>
-    typename DiscFuncType :: MemObjectType &
-    signIn (DiscFuncType & df) const;
+    /*
+       //! sign in to dofmanager, return is the memory
+       template <class DiscFuncType>
+       typename DiscFuncType :: MemObjectType &
+       signIn (DiscFuncType & df) const;
 
-    //! sign out to dofmanager, dofmanager frees the memory
-    template <class DiscFuncType>
-    bool signOut ( DiscFuncType & df) const;
+       //! sign out to dofmanager, dofmanager frees the memory
+       template <class DiscFuncType>
+       bool signOut ( DiscFuncType & df) const;
+     */
+
+    //! Return the dof mapper of the space
+    const MapperType& mapper() const;
 
   protected:
     // create functions space with basefunction set for given level
@@ -217,7 +233,7 @@ namespace Dune {
     mutable GridPartType& grid_;
   private:
     //! the corresponding LagrangeMapper
-    LagrangeMapperType *mapper_;
+    MapperType *mapper_;
 
   }; // end class LagrangeDiscreteFunctionSpace
 
