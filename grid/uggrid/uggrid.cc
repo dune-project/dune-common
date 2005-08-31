@@ -548,6 +548,9 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
       // The following two lines do the transformation
       const int renumbering[6] = {4, 2, 1, 3, 0, 5};
       elementSide = renumbering[elementSide];
+    } else {      // Quadrilateral
+      const int renumbering[4] = {3, 1, 0, 2};
+      elementSide = renumbering[elementSide];
     }
     break;
 
@@ -658,6 +661,9 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
 
       if (dim==3) {        // hexahedron
         const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+        side = renumbering[side];
+      } else {        // Quadrilateral
+        const int renumbering[4] = {2, 1, 3, 0};
         side = renumbering[side];
       }
       break;
