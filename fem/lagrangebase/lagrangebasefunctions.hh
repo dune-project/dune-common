@@ -72,8 +72,8 @@ namespace Dune {
     RangeFieldType factor[2];
 
   public:
-    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
-      : BaseFunctionInterface<FunctionSpaceType> (f)
+    LagrangeBaseFunction ( int baseNum  )
+      : BaseFunctionInterface<FunctionSpaceType> ()
     {
       if(baseNum == 0)
       { // 1 - x
@@ -143,8 +143,8 @@ namespace Dune {
 
   public:
     //! \todo Please doc me!
-    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
-      : BaseFunctionInterface<FunctionSpaceType> (f)
+    LagrangeBaseFunction (int baseNum)
+      : BaseFunctionInterface<FunctionSpaceType> ()
     {
       baseNum_ = baseNum;
       if(baseNum == 0)
@@ -209,8 +209,8 @@ namespace Dune {
   public:
 
     //! \todo Please doc me!
-    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum  )
-      : BaseFunctionInterface<FunctionSpaceType> (f)
+    LagrangeBaseFunction ( int baseNum  )
+      : BaseFunctionInterface<FunctionSpaceType> ()
     {
       for(int i=1; i<4; i++) // x,y,z
         if(baseNum == i)
@@ -275,8 +275,8 @@ namespace Dune {
   public:
 
     //! Constructor making base function number baseNum
-    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
-      : BaseFunctionInterface<FunctionSpaceType>(f)
+    LagrangeBaseFunction ( int baseNum )
+      : BaseFunctionInterface<FunctionSpaceType>()
     {
       assert((baseNum >= 0) || (baseNum < 4));
       // looks complicated but works
@@ -364,8 +364,8 @@ namespace Dune {
   public:
 
     //! Constructor making base function number baseNum
-    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
-      : BaseFunctionInterface<FunctionSpaceType>(f)
+    LagrangeBaseFunction ( int baseNum )
+      : BaseFunctionInterface<FunctionSpaceType>()
     {
       assert((baseNum >= 0) || (baseNum < 5));
 
@@ -483,8 +483,8 @@ namespace Dune {
   public:
 
     //! Constructor making base function number baseNum
-    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
-      : BaseFunctionInterface<FunctionSpaceType>(f)
+    LagrangeBaseFunction (  int baseNum )
+      : BaseFunctionInterface<FunctionSpaceType>()
     {
       assert((baseNum >= 0) || (baseNum < 6));
 
@@ -615,8 +615,8 @@ namespace Dune {
   public:
 
     //! Constructor making base function number baseNum
-    LagrangeBaseFunction ( FunctionSpaceType & f , int baseNum )
-      : BaseFunctionInterface<FunctionSpaceType>(f)
+    LagrangeBaseFunction ( int baseNum )
+      : BaseFunctionInterface<FunctionSpaceType>()
     {
       assert((baseNum >= 0) || (baseNum < 8));
       // looks complicated but works
