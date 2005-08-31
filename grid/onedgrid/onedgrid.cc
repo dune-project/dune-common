@@ -12,42 +12,42 @@
 // ///////////////////////////////////////////////////////////////
 namespace Dune {
 
-  template <int codim>
+  template <int codim, Dune::PartitionType pitype>
   struct OneDGridLevelIteratorFactory {};
 
-  template <>
-  struct OneDGridLevelIteratorFactory<1>
+  template <PartitionType pitype>
+  struct OneDGridLevelIteratorFactory<1, pitype>
   {
-    static Dune::OneDGridLevelIterator<1,Dune::All_Partition, const Dune::OneDGrid<1,1> >
+    static Dune::OneDGridLevelIterator<1, pitype, const Dune::OneDGrid<1,1> >
     lbegin(const Dune::OneDGrid<1,1> * g, int level);
   };
 
-  template <>
-  struct OneDGridLevelIteratorFactory<0>
+  template <Dune::PartitiionType pitype>
+  struct OneDGridLevelIteratorFactory<0, pitype>
   {
-    static Dune::OneDGridLevelIterator<0,Dune::All_Partition, const Dune::OneDGrid<1,1> >
+    static Dune::OneDGridLevelIterator<0, pitype, const Dune::OneDGrid<1,1> >
     lbegin(const Dune::OneDGrid<1,1> * g, int level);
   };
 
 }
 
-inline Dune::OneDGridLevelIterator<1,Dune::All_Partition, const Dune::OneDGrid<1,1> >
+inline Dune::OneDGridLevelIterator<1, pitype, const Dune::OneDGrid<1,1> >
 Dune::OneDGridLevelIteratorFactory<1>::lbegin (const OneDGrid<1,1> * g, int level)
 {
   if (level<0 || level>g->maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<1,All_Partition, const Dune::OneDGrid<1,1> > it(g->vertices[level].begin);
+  OneDGridLevelIterator<1,pitype, const Dune::OneDGrid<1,1> > it(g->vertices[level].begin);
   return it;
 }
 
-inline Dune::OneDGridLevelIterator<0,Dune::All_Partition, const Dune::OneDGrid<1,1> >
+inline Dune::OneDGridLevelIterator<0,pitype, const Dune::OneDGrid<1,1> >
 Dune::OneDGridLevelIteratorFactory<0>::lbegin (const OneDGrid<1,1> * g, int level)
 {
   if (level<0 || level>g->maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<0,All_Partition, const Dune::OneDGrid<1,1> > it(g->elements[level].begin);
+  OneDGridLevelIterator<0,pitype, const Dune::OneDGrid<1,1> > it(g->elements[level].begin);
   return it;
 }
 
@@ -165,39 +165,39 @@ Dune::OneDGrid<dim,dimworld>::~OneDGrid()
 }
 
 template <int dim, int dimworld>
-template <int codim>
-typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LevelIterator
+template <int codim, Dune::PartitionType pitype>
+typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::template Partition<pitype>::LevelIterator
 Dune::OneDGrid<dim,dimworld>::lbegin(int level) const
 {
-  return OneDGridLevelIteratorFactory<codim>::lbegin(this, level);
+  return OneDGridLevelIteratorFactory<codim, pitype>::lbegin(this, level);
 }
 
 template <int dim, int dimworld>
-template <int codim>
-typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LevelIterator
+template <int codim, Dune::PartitionType pitype>
+typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::template Partition<pitype>::LevelIterator
 Dune::OneDGrid<dim,dimworld>::lend(int level) const
 {
   if (level<0 || level>maxlevel())
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  OneDGridLevelIterator<codim,All_Partition, const Dune::OneDGrid<dim,dimworld> > it(0);
+  OneDGridLevelIterator<codim,pitype, const Dune::OneDGrid<dim,dimworld> > it(0);
   return it;
 }
 
 template <int dim, int dimworld>
-template <int codim>
-typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LeafIterator
+template <int codim, Dune::PartitionType pitype>
+typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
 Dune::OneDGrid<dim,dimworld>::leafbegin() const
 {
-  return OneDGridLeafIterator<codim,All_Partition,const OneDGrid<dim,dimworld> >(*this);
+  return OneDGridLeafIterator<codim,pitype,const OneDGrid<dim,dimworld> >(*this);
 }
 
 template <int dim, int dimworld>
-template <int codim>
-typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LeafIterator
+template <int codim, Dune::PartitionType pitype>
+typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
 Dune::OneDGrid<dim,dimworld>::leafend() const
 {
-  return OneDGridLeafIterator<codim,All_Partition, const Dune::OneDGrid<dim,dimworld> >();
+  return OneDGridLeafIterator<codim,pitype, const Dune::OneDGrid<dim,dimworld> >();
 }
 
 template <int dim, int dimworld>

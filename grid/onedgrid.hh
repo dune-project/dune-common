@@ -235,20 +235,20 @@ namespace Dune {
     int maxlevel() const {return vertices.size()-1;}
 
     //! Iterator to first entity of given codim on level
-    template<int codim>
-    typename Traits::template Codim<codim>::LevelIterator lbegin (int level) const;
+    template<int codim, PartitionIteratorType pitype = All_Partition>
+    typename Traits::template Codim<codim>::template Partition<pitype>::LevelIterator lbegin (int level) const;
 
     //! one past the end on this level
-    template<int codim>
-    typename Traits::template Codim<codim>::LevelIterator lend (int level) const;
+    template<int codim, PartitionIteratorType pitype = All_Partition>
+    typename Traits::template Codim<codim>::template Partition<pitype>::LevelIterator lend (int level) const;
 
     //! Iterator to first entity of given codim on leaf level
-    template<int codim>
-    typename Traits::template Codim<codim>::LeafIterator leafbegin () const;
+    template<int codim, PartitionIteratorType pitype = All_Partition>
+    typename Traits::template Codim<codim>::template Partition<pitype>::LeafIterator leafbegin () const;
 
     //! one past the end on leaf level
-    template<int codim>
-    typename Traits::template Codim<codim>::LeafIterator leafend () const;
+    template<int codim, PartitionIteratorType pitype = All_Partition>
+    typename Traits::template Codim<codim>::template Partition<pitype>::LeafIterator leafend () const;
 
     /** \brief Number of grid entities per level and codim
      */
