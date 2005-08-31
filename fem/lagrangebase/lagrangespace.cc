@@ -40,8 +40,10 @@ namespace Dune {
   {
     // add index set to list of indexset of dofmanager
 
-    dm_.addIndexSet(gridPart.grid(),
-                    const_cast<typename GridPartType::IndexSetType&>(gridPart.indexSet()));
+    // * Hack!!!
+    //dm_.addIndexSet(gridPart.grid(),
+    //                const_cast<typename GridPartType::IndexSetType&>(gridPart.indexSet()));
+
 
     //std::cout << "Constructor of LagrangeDiscreteFunctionSpace! \n";
     // search the macro grid for diffrent element types
@@ -156,7 +158,7 @@ namespace Dune {
    */
 
   template <class FunctionSpaceImp, class GridPartImp, int polOrd>
-  const LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::MapperType&
+  const typename LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::MapperType&
   LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::mapper() const {
     assert(mapper_);
     return *mapper_;
