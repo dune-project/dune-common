@@ -19,26 +19,16 @@
 namespace Dune {
 
   // Forfard declarations
-  template <
-      class FunctionSpaceImp,
-      class GridPartImp,
-      int polOrd,
-      class DofManagerImp
-      >
+  template <class FunctionSpaceImp, class GridPartImp, int polOrd>
   class LagrangeDiscreteFunctionSpace;
 
-  template <
-      class FunctionSpaceImp,
-      class GridPartImp,
-      int polOrd,
-      class DofManagerImp
-      >
+  template <class FunctionSpaceImp,class GridPartImp, int polOrd>
   struct LagrangeDiscreteFunctionSpaceTraits {
     typedef FunctionSpaceImp FunctionSpaceType;
     typedef GridPartImp GridPartType;
-    typedef DofManagerImp DofManagerType;
+    //typedef DofManagerImp DofManagerType;
     typedef LagrangeDiscreteFunctionSpace<
-        FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp
+        FunctionSpaceImp, GridPartImp, polOrd
         > DiscreteFunctionSpaceType;
     typedef FastBaseFunctionSet<DiscreteFunctionSpaceType> BaseFunctionSetType;
 
@@ -56,29 +46,27 @@ namespace Dune {
   //! and map from local to global dof number
   //
   //****************************************************************
-  template<class FunctionSpaceImp, class GridPartImp, int polOrd,
-      class DofManagerImp = DofManager<typename GridPartImp::GridType> >
+  template<class FunctionSpaceImp, class GridPartImp, int polOrd>
   class LagrangeDiscreteFunctionSpace :
     public DiscreteFunctionSpaceDefault
     <
         LagrangeDiscreteFunctionSpaceTraits<FunctionSpaceImp, GridPartImp,
-            polOrd, DofManagerImp>
+            polOrd>
     >
   {
   public:
-    typedef DofManagerImp DofManagerType;
-
-    typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
+    //typedef DofManagerImp DofManagerType;
+    //typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
 
     typedef typename GridPartImp::GridType GridType;
 
     /** \todo Please doc me! */
     typedef LagrangeDiscreteFunctionSpace<
-        FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp
+        FunctionSpaceImp, GridPartImp, polOrd
         > LagrangeDiscreteFunctionSpaceType;
 
     typedef LagrangeDiscreteFunctionSpaceTraits<
-        FunctionSpaceImp, GridPartImp, polOrd, DofManagerImp
+        FunctionSpaceImp, GridPartImp, polOrd
         > Traits;
 
     /** \todo Please doc me! */
@@ -136,7 +124,7 @@ namespace Dune {
 
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
-    LagrangeDiscreteFunctionSpace(GridPartType & g, DofManagerType & dm);
+    //LagrangeDiscreteFunctionSpace(GridPartType & g, DofManagerType & dm);
 
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
@@ -227,7 +215,7 @@ namespace Dune {
     std::vector < BaseFunctionSetType * > baseFuncSet_;
 
     //! DofManager manages the memory
-    mutable DofManagerType & dm_;
+    //mutable DofManagerType & dm_;
 
     //! the index set, used by the mapper for mapping between grid and space
     mutable GridPartType& grid_;
