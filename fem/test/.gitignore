@@ -1,0 +1,13 @@
+Makefile
+Makefile.in
+.deps
+.libs
+test-fem-alberta
+test-fem-alu3dgrid
+test-fem-sgrid
+test-fem-oned
+test-fem-ug
+test-fem-yaspgrid
+semantic.cache
+*.gcda
+*.gcno
