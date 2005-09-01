@@ -91,11 +91,6 @@ namespace Dune {
       return asImp().name();
     }
 
-    //! Continuous data
-    bool continuous() const {
-      return asImp().continuous();
-    }
-
     //! the implementation of an iterator to iterate efficient
     //! over all dofs of a discrete function
     DofIteratorType dbegin ()
@@ -210,6 +205,17 @@ namespace Dune {
     DiscreteFunctionDefault (const DiscreteFunctionSpaceType & f ) :
       DiscreteFunctionInterfaceType ( f ) {}
 
+    //! Continuous data
+    bool continuous() const {
+      return this->functionSpace_.continuous();
+    }
+
+    //! Set all elements to zero
+    void clear();
+
+    //! daxpy operation
+    void addScaled(const DiscreteFunctionType& g, const RangeFieldType& c);
+
     //! Evaluate a scalar product of the dofs of two DiscreteFunctions
     //! on the top level of the underlying grid
     RangeFieldType scalarProductDofs(const DiscreteFunctionType& g) const;
@@ -234,6 +240,20 @@ namespace Dune {
     //! add scalar * g to discrete function
     DiscreteFunctionType&
     add(const DiscreteFunctionType &g , RangeFieldType scalar );
+
+    //! evaluate Function (which just dies because there is no meaningful implementation)
+    void eval(const DomainType & arg, RangeType & dest) const {
+      // Die a horrible death! Never call that one...
+      assert(false);
+    }
+
+    //! evaluate function and derivatives (just dies)
+    template <int derivation>
+    void evaluate  ( const FieldVector<deriType, derivation> &diffVariable,
+                     const DomainType& arg, RangeType & dest) const {
+      // Die a horrible death! Never call that one...
+      assert(false);
+    }
 
   private:
     // Barton-Nackman trick

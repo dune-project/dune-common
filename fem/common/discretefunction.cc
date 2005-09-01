@@ -12,6 +12,24 @@ namespace Dune
   //************************************************************
   //  Default Implementations
   //************************************************************
+  template <class DiscreteFunctionTraits>
+  void DiscreteFunctionDefault<DiscreteFunctionTraits>::clear() {
+    DofIteratorType endit = this->dend();
+    for (DofIteratorType it = this->dbegin(); it != endit; ++it) {
+      *it = 0.0;
+    }
+  }
+
+  template <class DiscreteFunctionTraits>
+  void DiscreteFunctionDefault<DiscreteFunctionTraits>::
+  addScaled(const DiscreteFunctionType& g, const RangeFieldType& c) {
+    DofIteratorType endit = this->dend();
+    ConstDofIteratorType oit = g.dbegin();
+    for (DofIteratorType it = this->dbegin(); it != endit; ++it, ++oit) {
+      *it += *oit*c;
+    }
+  }
+
   // scalarProductDofs
   template <class DiscreteFunctionTraits>
   inline typename DiscreteFunctionTraits::DiscreteFunctionSpaceType::RangeFieldType
