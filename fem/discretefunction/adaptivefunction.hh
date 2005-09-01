@@ -211,8 +211,8 @@ namespace Dune {
 
     mutable std::vector<RangeFieldType*> values_;
 
-    mutable RangeType& tmp_;
-    mutable JacobianRangeType& tmpGrad_;
+    mutable RangeType tmp_;
+    mutable JacobianRangeType tmpGrad_;
   }; // end class AdaptiveLocalFunction
 
   //- Specialisations
