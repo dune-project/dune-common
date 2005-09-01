@@ -1,5 +1,7 @@
 # $Id$
 
+SUBDIRS = test
+
 femspacedir =  $(includedir)/dune/fem/space
 femspace_HEADERS = combinedspace.hh
 

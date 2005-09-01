@@ -25,6 +25,26 @@ namespace Dune {
   //! approach all dofs belonging to one subspace are stored consecutively
   enum DofStoragePolicy { PointBased, VariableBased };
 
+  /* just an idea... the pointbased specialisation would need additional information
+     template <DofStoragePolicy p, int N>
+     struct DofStorageUtility {
+     static int containedDof(int num);
+     static int component(int num);
+     };
+
+     template <int N>
+     struct DofStorageUtility<PointBased> {
+     static int containedDof(int num) { return num/N; }
+     static int component(int num) { return num/N; }
+     };
+
+     template <int N>
+     struct DofStorageUtility<VariableBased> {
+     static int containedDof(int num) { return num/N; }
+     static int component(int num) { return num/N; }
+     };
+   */
+
   // Forward declarations
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   class CombinedSpace;
@@ -33,6 +53,7 @@ namespace Dune {
   template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
   class CombinedBaseFunctionSet;
 
+  //! Traits class for CombinedSpace
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   struct CombinedSpaceTraits {
   private:
@@ -54,6 +75,7 @@ namespace Dune {
     RangeFieldType;
 
     // * Require contained space to have dimRange == 1? (ie to be scalar)
+    // * yes, we do
     typedef FunctionSpace<
         DomainFieldType, RangeFieldType,
         ContainedDimDomain, ContainedDimRange*N
@@ -73,10 +95,12 @@ namespace Dune {
     typedef CombinedBaseFunctionSet<
         ContainedBaseFunctionSetType, N, policy
         > BaseFunctionSetType;
+    typedef CombinedMapper<DiscreteFunctionSpaceImp, N, policy> MapperType;
 
     friend class DiscreteFunctionSpaceType;
   };
 
+  //! Class to combine N scalar spaces
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   class CombinedSpace :
     public DiscreteFunctionSpaceDefault<
@@ -85,7 +109,6 @@ namespace Dune {
   {
   private:
     //- Private typedefs
-    typedef CombinedMapper<DiscreteFunctionSpaceImp, N, policy> MapperType;
     typedef DiscreteFunctionSpaceDefault<
         CombinedSpaceTraits<DiscreteFunctionSpaceImp, N, policy>
         > BaseType;
@@ -101,6 +124,9 @@ namespace Dune {
     typedef typename Traits::DomainType DomainType;
     typedef typename Traits::RangeFieldType RangeFieldType;
     typedef typename Traits::DomainFieldType DomainFieldType;
+
+    typedef typename Traits::BaseFunctionSetType BaseFunctionSetType;
+    typedef typename Traits::MapperType MapperType;
   public:
     //- Public methods
     //! constructor
@@ -109,8 +135,14 @@ namespace Dune {
     //! destructor
     ~CombinedSpace();
 
+    //! type
+    int type() const { return spaceId_; }
+
     //! continuous?
     bool continuous() const { return spc_.continous(); }
+
+    //! polynom order
+    int polynomOrder() const { return spc_.polynomOrder(); }
 
     //! begin iterator
     IteratorType begin() const { return spc_.begin(); }
@@ -127,6 +159,7 @@ namespace Dune {
       mapper_.mapToGlobal(en, local);
     }
 
+    //! access to base function set
     template <class EntityType>
     const BaseFunctionSetType& getBaseFunctionSet(EntityType& en) const
     {
@@ -135,18 +168,14 @@ namespace Dune {
       return *baseSetVec_[GeometryIdentifier::fromGeo(dimension, geo)];
     }
 
+    //! access to grid
     GridType& grid() { return spc_.grid(); }
+
+    //! access to grid (const version)
     const GridType& grid() const { return spc_.grid(); }
 
-
-    template <class DiscFuncType>
-    typename DiscFuncType::MemObjectType &
-    signIn(DiscFuncType & df) const { return spc_.signIn(df); }
-
-    //! sign out to dofmanager, dofmanager frees the memory
-    template <class DiscFuncType>
-    bool signOut ( DiscFuncType & df) const { return spc_.signOut(df); }
-
+    //! access to mapper
+    const MapperType& mapper() const { return mapper_; }
   private:
     //- Private typedefs
 
@@ -161,8 +190,10 @@ namespace Dune {
     MapperType mapper_;
     std::vector<BaseFunctionSetType*> baseSetVec_;
 
+    static const int spaceId_;
   }; // end class CombinedSpace
 
+  //! Traits class for CombinedBaseFunctionSet
   template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
   struct CombinedBaseFunctionSetTraits {
   private:
@@ -187,6 +218,8 @@ namespace Dune {
     enum { DimRange  = DiscreteFunctionSpaceType::DimRange  };
   };
 
+  //! Wrapper class for base function sets. This class is used within
+  //! CombinedSpace
   template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
   class CombinedBaseFunctionSet :
     public BaseFunctionSetDefault<
@@ -210,20 +243,27 @@ namespace Dune {
 
   public:
     //- Public methods
+    //! Constructor
     CombinedBaseFunctionSet(const ContainedBaseFunctionSetType& bfSet) :
       containedResult_(0.0),
       baseFunctionSet_(bfSet)
     {}
 
+    //! Number of base functions
+    //! The number of base functions equals the total number of degrees of
+    //! freedom (dof), since the dofs are considered to be scalar and the
+    //! combined base functions to be vector valued
     int getNumberOfBaseFunctions() const {
       return baseFunctionSet_.getNumberOfBaseFunctions()*N;
     }
 
+    //! evaluate base function
     template <int diffOrd>
     void evaluate (int baseFunct,
                    const FieldVector<deriType, diffOrd> &diffVariable,
                    const DomainType & x, RangeType & phi ) const;
 
+    //! evaluate base function at quadrature point
     template <int diffOrd, class QuadratureType >
     void evaluate (int baseFunct,
                    const FieldVector<deriType, diffOrd> &diffVariable,
@@ -246,6 +286,8 @@ namespace Dune {
     const ContainedBaseFunctionSetType& baseFunctionSet_;
   }; // end class CombinedBaseFunctionSet
 
+  //! Wrapper class for mappers. This class is to be used in conjunction with
+  //! the CombinedSpace
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   class CombinedMapper : public DofMapperDefault<
                              CombinedMapper<DiscreteFunctionSpaceImp, N, policy>
@@ -258,17 +300,61 @@ namespace Dune {
 
     typedef typename CombinedSpaceTraits<DiscreteFunctionSpaceImp, N, policy> SpaceTraits;
     typedef DiscreteFunctionSpaceImp ContainedDiscreteFunctionSpaceType;
-
+    typedef typename DiscreteFunctionSpaceImp::MapperType ContainedMapperType;
   public:
     //- Public methods
-    CombinedMapper(const ContainedDiscreteFunctionSpaceType& spc) :
-      spc_(spc)
+    //! Constructor
+    CombinedMapper(const ContainedDiscreteFunctionSpaceType& spc,
+                   const ContainedMapperType& mapper) :
+      spc_(spc),
+      mapper_(mapper)
     {}
 
+    //! Total number of degrees of freedom
     int size() const;
 
+    //! Map a local degree of freedom on an entity to a global one
     template <class EntityType>
     int mapToGlobal(EntityType& en, int localNum) const;
+
+    //- Method inherited from mapper interface
+    //! if grid has changed determine new size
+    //! (to be called once per timestep, therefore virtual )
+    int newSize() const { return mapper_.newSize()*N; }
+
+    //! old size
+    int oldSize() const { return mapper_.oldSize()*N; }
+
+    //! calc new insertion points for dof of different codim
+    //! (to be called once per timestep, therefore virtual )
+    void calcInsertPoints () { const_cast<ContainedMapperType&>(mapper_).calcInsertPoints(); }
+
+    //! return max number of local dofs per entity
+    int numberOfDofs () const { return mapper_.numberOfDofs()*N; }
+
+    //! returns true if index is new ( for dof compress )
+    bool indexNew (int num) const {
+      //assert(false); // do I need to translate that into num of mapper?
+      return mapper_.indexNew(containedDof(num));
+    }
+
+    //! return old index in dof array of given index ( for dof compress )
+    int oldIndex (int num) const {
+      assert(false); // gets a bit more complicated here...
+      return -1;
+    }
+
+    //! return new index in dof array
+    int newIndex (int num) const {
+      assert(false);
+      return -1;
+    }
+
+    //! return estimate for size that is addtional needed for restriction
+    //! of data
+    int additionalSizeEstimate() const {
+      return mapper_.additionalSizeEstimate()*N;
+    }
 
   private:
     //- Private methods
@@ -276,18 +362,29 @@ namespace Dune {
 
     template <class EntityType>
     int mapToGlobal(EntityType& en, int localNum, Int2Type<PointBased>) const;
-
     template <class EntityType>
     int mapToGlobal(EntityType& en, int localNum, Int2Type<VariableBased>) const;
 
+    /*
+       int newIndex(int num, Int2Type<PointBased>) const;
+       int newIndex(int num, Int2Type<VariableBased>) const;
+
+       int oldIndex(int num, Int2Type<PointBased>) const;
+       int oldIndex(int num, Int2Type<VariableBased>) const;
+
+       // calculates the global index for the contained mapper out of a global index of the combined mapper
+       int containedIndex(int globalIndex, Int2Type<PointBased>) const;
+       int containedIndex(int globalIndex, Int2Type<VariableBased>) const;
+     */
+    // determines the local index (index on a given entity) for the contained mapper
     int containedDof(int combinedDofNum) const;
+    // determines which index in the range vector this local index belongs to
     int component(int combinedDofNum) const;
 
   private:
     //- Data members
     const ContainedDiscreteFunctionSpaceType& spc_;
-
-    //int numBaseLoc_;
+    const ContainedMapperType& mapper_;
   }; // end class CombinedMapper
 
 } // end namespace Dune
