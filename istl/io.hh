@@ -215,13 +215,13 @@ namespace Dune {
        new_mat = spconvert(load('filename'));
      \endverbatim
    */
-  template <class BlockType>
-  void writeMatrixToMatlab(const BCRSMatrix<BlockType>& matrix, const std::string& filename)
+  template <class K, int BlockRowSize, int BlockColSize>
+  void writeMatrixToMatlab(const BCRSMatrix<FieldMatrix<K,BlockRowSize,BlockColSize> >& matrix,
+                           const std::string& filename)
   {
     FILE* fp = fopen(filename.c_str(), "w");
-    int blocksize = 3;
 
-    typedef typename BCRSMatrix<BlockType>::row_type RowType;
+    typedef typename BCRSMatrix<FieldMatrix<K,BlockRowSize,BlockColSize> >::row_type RowType;
 
     // Loop over all matrix rows
     for (int rowIdx=0; rowIdx<matrix.N(); rowIdx++) {
@@ -236,13 +236,13 @@ namespace Dune {
       // Loop over all columns in this row
       for (; cIt!=cEndIt; ++cIt) {
 
-        for (int i=0; i<blocksize; i++) {
+        for (int i=0; i<BlockRowSize; i++) {
 
-          for (int j=0; j<blocksize; j++) {
+          for (int j=0; j<BlockColSize; j++) {
 
             //+1 for Matlab numbering
-            fprintf(fp, "%d %d %g\n", rowIdx*blocksize + i + 1,
-                    cIt.index()*blocksize + j + 1, (*cIt)[i][j]);
+            fprintf(fp, "%d %d %g\n", rowIdx*BlockRowSize + i + 1,
+                    cIt.index()*BlockColSize + j + 1, (*cIt)[i][j]);
 
           }
 
