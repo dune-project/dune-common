@@ -261,7 +261,7 @@ namespace Dune {
     //! The number of base functions equals the total number of degrees of
     //! freedom (dof), since the dofs are considered to be scalar and the
     //! combined base functions to be vector valued
-    int NumberOfBaseFunctions() const {
+    int getNumberOfBaseFunctions() const {
       return baseFunctionSet_.getNumberOfBaseFunctions()*N;
     }
 
