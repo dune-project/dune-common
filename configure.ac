@@ -162,6 +162,7 @@ AC_CONFIG_FILES([Makefile
          fem/operator/Makefile
          fem/space/Makefile
          fem/transfer/Makefile
+         fem/test/Makefile
          grid/Makefile
          grid/albertagrid/Makefile
          grid/alu3dgrid/Makefile
