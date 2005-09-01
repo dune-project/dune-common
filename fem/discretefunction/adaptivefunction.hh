@@ -37,6 +37,7 @@ namespace Dune {
     typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
     typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
     typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
+    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
     typedef typename DiscreteFunctionSpaceType::MapperType MapperType;
 
     typedef DofArray<DofType> DofStorageType;
@@ -66,7 +67,9 @@ namespace Dune {
   public:
     //- Typedefs and enums
     typedef MyTraits Traits;
+    typedef Imp ImplementationType;
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
+
 
     typedef typename Traits::LocalFunctionType LocalFunctionType;
     typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
@@ -99,6 +102,8 @@ namespace Dune {
     using Imp::read_xdr;
     using Imp::write_ascii;
     using Imp::read_ascii;
+    using Imp::write_pgm;
+    using Imp::read_pgm;
   }; // end class AdaptiveDiscreteFunction
 
   // Note: could use Traits class for Barton-Nackman instead
@@ -108,22 +113,27 @@ namespace Dune {
         DiscreteFunctionSpaceImp,
         AdaptiveLocalFunction<DiscreteFunctionSpaceImp, DofManagerImp> >
   {
-    friend class AdaptiveDiscreteFunction<DiscreteFunctionSpaceImp, DofManagerImp>;
+    friend class AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp, DofManagerImp>;
+
   public:
     //- Public typedefs and enums
-    typedef AdaptiveLocalFunction<DiscreteFunctionSpaceImp, DofManagerImp> ThisType;
+    typedef AdaptiveLocalFunction<
+        DiscreteFunctionSpaceImp, DofManagerImp> ThisType;
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
-    typedef AdaptiveDiscreteFunction<DiscreteFunctionSpaceImp, DofManagerImp> DiscreteFunctionSpaceType;
+    typedef AdaptiveDiscreteFunction<
+        DiscreteFunctionSpaceImp, DofManagerImp> DiscreteFunctionType;
+    typedef AdaptiveDiscreteFunctionTraits<
+        DiscreteFunctionSpaceType, DofManagerImp> Traits;
 
-    //! these are the types for the derived classes
-    typedef typename DiscreteFunctionSpaceType::FunctionSpaceType FunctionSpaceType;
-    typedef typename DiscreteFunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
-    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
-    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
-    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
+    typedef typename Traits::FunctionSpaceType FunctionSpaceType;
+    typedef typename Traits::BaseFunctionSetType BaseFunctionSetType;
+    typedef typename Traits::RangeFieldType RangeFieldType;
+    typedef typename Traits::DomainType DomainType;
+    typedef typename Traits::RangeType RangeType;
+    typedef typename Traits::JacobianRangeType JacobianRangeType;
     typedef RangeFieldType DofType;
-    typedef typename DiscreteFunctionSpaceType::DofStorageType DofStorageType;
+
+    typedef typename Traits::DofStorageType DofStorageType;
 
     enum { dimRange = DiscreteFunctionSpaceType::DimRange };
 
@@ -151,12 +161,25 @@ namespace Dune {
     template <class EntityType>
     void evaluateLocal(EntityType& en,
                        const DomainType& x,
-                       RangeType & ret);
+                       RangeType & ret) const;
+
+    template <class EntityType, class QuadratureType>
+    void evaluate(EntityType& en,
+                  QuadratureType& quad,
+                  int quadPoint,
+                  RangeType& ret) const;
 
     template <class EntityType>
     void jacobianLocal(EntityType& en,
                        const DomainType& x,
-                       JacobianRangeType& ret);
+                       JacobianRangeType& ret) const;
+
+    template <class EntityType, class QuadratureType>
+    void jacobian(EntityType& en,
+                  QuadratureType& quad,
+                  int quadPoint,
+                  JacobianRangeType& ret) const;
+
   private:
     //- Forbidden methods
     //! Copy constructor
@@ -218,19 +241,28 @@ namespace Dune {
      using Imp::read_xdr;
      using Imp::write_ascii;
      using Imp::read_ascii;
-
+     using Imp::write_pgm;
+     using Imp::read_pgm;
      //- Additional methods
 
      private:
      }; // end class AdaptiveDiscreteFunction (specialised for CombinedSpace)
    */
-  template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p, class DofManagerImp>
-  class AdaptiveLocalFunction<CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp >
+  template <
+      class ContainedFunctionSpaceImp, int N,
+      DofStoragePolicy p, class DofManagerImp
+      >
+  class AdaptiveLocalFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>
     : public LocalFunctionDefault<
           CombinedSpace<ContainedFunctionSpaceImp, N, p>,
-          AdaptiveLocalFunction<CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>
+          AdaptiveLocalFunction<CombinedSpace<ContainedFunctionSpaceImp, N, p>,
+              DofManagerImp>
           >
   {
+    friend class AdaptiveFunctionImplementation<
+        CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>;
+
   public:
     //- Public typedefs and enums
     typedef CombinedSpace<
@@ -244,15 +276,19 @@ namespace Dune {
 
 
     //! these are the types for the derived classes
-    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
-    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
-    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
+    typedef typename Traits::RangeFieldType RangeFieldType;
+    typedef typename Traits::DomainType DomainType;
+    typedef typename Traits::RangeType RangeType;
+    typedef typename Traits::JacobianRangeType JacobianRangeType;
     typedef typename Traits::DofType DofType;
 
+    typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
     typedef typename Traits::DofStorageType DofStorageType;
 
     typedef FieldVector<DofType, dimRange> DofVectorType;
+
+    friend class AdaptiveDiscreteFunction<
+        CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>;
   public:
     //- Public methods
     //- Constructors and destructors
@@ -280,24 +316,24 @@ namespace Dune {
     template <class EntityType>
     void evaluateLocal(EntityType& en,
                        const DomainType& x,
-                       RangeType & ret);
+                       RangeType & ret) const;
 
     template <class EntityType, class QuadratureType>
-    void evaluateLocal(EntityType& en,
-                       QuadratureType& quad,
-                       int quadPoint,
-                       RangeType & ret);
+    void evaluate(EntityType& en,
+                  QuadratureType& quad,
+                  int quadPoint,
+                  RangeType & ret) const;
 
     template <class EntityType>
     void jacobianLocal(EntityType& en,
                        const DomainType& x,
-                       JacobianRangeType& ret);
+                       JacobianRangeType& ret) const;
 
     template <class EntityType, class QuadratureType>
-    void jacobianLocal(EntityType& en,
-                       QuadratureType& quad,
-                       int quadPoint,
-                       JacobianRangeType& ret);
+    void jacobian(EntityType& en,
+                  QuadratureType& quad,
+                  int quadPoint,
+                  JacobianRangeType& ret) const;
 
     //- Additional methods for specialisation
     void assign(const DofVectorType& dofs);
@@ -305,15 +341,23 @@ namespace Dune {
     int numberOfBaseFunctions() const;
 
   private:
+    //- Private methods
+    template <class EntityType>
+    void init(EntityType& en);
+
+  private:
+    //- Member data
     const DiscreteFunctionSpaceType& spc_;
     DofStorageType& dofVec_;
 
     mutable std::vector<RangeFieldType *> values_;
 
-    mutable RangeType& tmp_;
-    mutable JacobianRangeType& tmpGrad_;
+    mutable RangeType tmp_;
+    mutable JacobianRangeType tmpGrad_;
   }; // end class AdaptiveLocalFunction (specialised for CombinedSpace)
 
 } // end namespace Dune
+
+#include "adaptivefunction.cc"
 
 #endif

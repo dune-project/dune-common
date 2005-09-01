@@ -68,6 +68,12 @@ namespace Dune {
     //! read function data from file filename|timestep in ascii Format
     bool read_ascii(std::string filename);
 
+    //! write function data in pgm fromat file
+    bool write_pgm(std::string filename);
+
+    //! read function data from pgm fromat file
+    bool read_pgm(std::string filename);
+
   protected:
     AdaptiveFunctionImplementation(std::string name,
                                    const DiscreteFunctionSpaceType& spc);
