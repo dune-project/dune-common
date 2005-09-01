@@ -17,14 +17,14 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     DUNE_THROW(IOError, "You can only write grids as AmiraMesh if dim==dimworld==2"
                << " or dim==dimworld==3.");
 
-  typename GridType::LeafIndexSet leafIndexSet = grid.leafindexset();
+  typename GridType::LeafIndexSet leafIndexSet = grid.leafIndexSet();
 
   // Find out whether the grid contains only tetrahedra.  If yes, then
   // it is written in TetraGrid format.  If not, it is written in
   // hexagrid format.
   bool containsOnlySimplices =
-    (leafIndexSet.geomtypes().size()==1)
-    && (leafIndexSet.geomtypes()[0] == simplex);
+    (leafIndexSet.geomTypes().size()==1)
+    && (leafIndexSet.geomTypes()[0] == simplex);
 
   int maxVerticesPerElement = (dim==3)
                               ? ((containsOnlySimplices) ? 4 : 8)
@@ -34,8 +34,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   /** \todo This sucks.  I want a size method that gives me the number of
       all element types */
   int noOfElem  = 0;
-  for (unsigned int i=0; i<leafIndexSet.geomtypes().size(); i++)
-    noOfElem += leafIndexSet.size(0, leafIndexSet.geomtypes()[i]);
+  for (unsigned int i=0; i<leafIndexSet.geomTypes().size(); i++)
+    noOfElem += leafIndexSet.size(0, leafIndexSet.geomTypes()[i]);
 
   // create amiramesh object
   AmiraMesh am;
