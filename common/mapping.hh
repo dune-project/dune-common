@@ -22,7 +22,12 @@ namespace Dune {
       the range vector space.
       It can also be used to construct linear combinations of mappings.
 
-      Note: Range has to have Vector structure as well.
+      This two-sided character has the following consequence: when you address
+      an object of type mapping or any of its descendants through a reference
+      or pointer of type Mapping, the linear combination defined for that mapping
+      is evaluated. On the other hand, if you address through a reference of the
+      type of any of its descendants (notably Operator and Function), you'll
+      get the functionality specific for that type.
    */
   template<typename DFieldType,typename RFieldType, class DType, class RType>
   class Mapping //: public Vector < RFieldType >
