@@ -8,11 +8,13 @@ namespace Dune {
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   CombinedSpace<DiscreteFunctionSpaceImp, N, policy>::
   CombinedSpace(ContainedDiscreteFunctionSpaceType& spc) :
-    BaseType(0),
+    BaseType(spaceId_),
     spc_(spc),
     mapper_(spc, spc.mapper()),
     baseSetVec_(GeometryIdentifier::numTypes, 0)
   {
+    std::cout << "Size: " << baseSetVec_.size() << std::endl;
+
     // initialise your basefunction set with all Geometry types found in mesh
     IteratorType endit = spc.end();
     for (IteratorType it = spc.begin(); it != endit; ++it) {
@@ -21,6 +23,8 @@ namespace Dune {
         static_cast<int>(IteratorType::Entity::mydimension);
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
+
+      assert(id >= 0 && id < GeometryIdentifier::numTypes);
       if (baseSetVec_[id] == 0) {
         baseSetVec_[id] = new BaseFunctionSetType(spc.getBaseFunctionSet(*it));
       }

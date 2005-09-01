@@ -27,6 +27,8 @@ namespace Dune {
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
     typedef DofManagerImp DofManagerType;
 
+    typedef AdaptiveFunctionImplementation<
+        DiscreteFunctionSpaceImp, DofManagerImp> ThisType;
     typedef AdaptiveDiscreteFunctionTraits<
         DiscreteFunctionSpaceImp, DofManagerImp> Traits;
     typedef typename Traits::DofIteratorType DofIteratorType;
@@ -75,10 +77,14 @@ namespace Dune {
     bool read_pgm(std::string filename);
 
   protected:
+    const DiscreteFunctionSpaceType& space() const { return spc_; }
+
     AdaptiveFunctionImplementation(std::string name,
                                    const DiscreteFunctionSpaceType& spc);
+    AdaptiveFunctionImplementation(const ThisType& other);
     ~AdaptiveFunctionImplementation();
 
+  private:
     const DiscreteFunctionSpaceType& spc_;
     std::string name_;
     DofManagerType& dm_;

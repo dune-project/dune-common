@@ -78,26 +78,18 @@ namespace Dune {
     typedef typename ContainedFunctionSpaceType::JacobianRangeType
     ContainedJacobianRangeType;
 
-    // * Require contained space to have dimRange == 1? (ie to be scalar)
-    // * yes, we do
-    typedef FunctionSpace<
-        DomainFieldType, RangeFieldType,
-        ContainedDimDomain, ContainedDimRange*N
-        > FunctionSpaceType;
+    typedef CombinedSpace<
+        DiscreteFunctionSpaceImp, N, policy> DiscreteFunctionSpaceType;
+    typedef FunctionSpace<DomainFieldType, RangeFieldType, ContainedDimDomain,
+        ContainedDimRange*N> FunctionSpaceType;
     typedef CombinedBaseFunctionSet<
-        ContainedBaseFunctionSetType, N, policy
-        > BaseFunctionSetType;
+        ContainedBaseFunctionSetType, N, policy> BaseFunctionSetType;
     typedef CombinedMapper<DiscreteFunctionSpaceImp, N, policy> MapperType;
-
 
     typedef typename FunctionSpaceType::RangeType RangeType;
     typedef typename FunctionSpaceType::DomainType DomainType;
     typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
     typedef typename FunctionSpaceType::DomainFieldType DomainFieldType;
-
-    typedef CombinedSpace<
-        DiscreteFunctionSpaceImp, N, policy
-        > DiscreteFunctionSpaceType;
 
     typedef typename ContainedTraits::GridType GridType;
     typedef typename ContainedTraits::IteratorType IteratorType;
@@ -135,6 +127,8 @@ namespace Dune {
 
     typedef typename Traits::BaseFunctionSetType BaseFunctionSetType;
     typedef typename Traits::MapperType MapperType;
+
+    CompileTimeChecker<(Traits::ContainedDimRange == 1)> use_CombinedSpace_only_with_scalar_spaces;
   public:
     //- Public methods
     //! constructor
@@ -173,6 +167,8 @@ namespace Dune {
     {
       GeometryType geo = en.geometry().type();
       int dimension = static_cast<int>(EntityType::mydimension);
+
+      assert(baseSetVec_[GeometryIdentifier::fromGeo(dimension, geo)]);
       return *baseSetVec_[GeometryIdentifier::fromGeo(dimension, geo)];
     }
 
@@ -265,7 +261,7 @@ namespace Dune {
     //! The number of base functions equals the total number of degrees of
     //! freedom (dof), since the dofs are considered to be scalar and the
     //! combined base functions to be vector valued
-    int getNumberOfBaseFunctions() const {
+    int NumberOfBaseFunctions() const {
       return baseFunctionSet_.getNumberOfBaseFunctions()*N;
     }
 

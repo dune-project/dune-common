@@ -87,10 +87,18 @@ namespace Dune {
     typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
   public:
     //- Public methods
+    //! Constructor
     AdaptiveDiscreteFunction(std::string name,
                              const DiscreteFunctionSpaceType& spc) :
       BaseType(spc),
       Imp(name, spc)
+    {}
+
+    //! Copy constructor
+    //! The copy constructor copies the dofs
+    AdaptiveDiscreteFunction(const MyType& other) :
+      BaseType(other.space()),
+      Imp(other)
     {}
 
     using Imp::name;
@@ -104,6 +112,8 @@ namespace Dune {
     using Imp::read_ascii;
     using Imp::write_pgm;
     using Imp::read_pgm;
+  private:
+    //- Forbidden members
   }; // end class AdaptiveDiscreteFunction
 
   // Note: could use Traits class for Barton-Nackman instead
@@ -149,6 +159,9 @@ namespace Dune {
     AdaptiveLocalFunction(const DiscreteFunctionSpaceType& spc,
                           DofStorageType& dofVec);
 
+    //! Copy constructor
+    AdaptiveLocalFunction(const ThisType& other);
+
     //! Destructor
     ~AdaptiveLocalFunction();
 
@@ -187,7 +200,6 @@ namespace Dune {
   private:
     //- Forbidden methods
     //! Copy constructor
-    AdaptiveLocalFunction(const ThisType& other);
     ThisType& operator=(const ThisType& other);
 
     template <class EntityType>

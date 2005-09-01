@@ -14,13 +14,17 @@ namespace Dune {
     dofVec_(memObj_.getArray())
   {}
 
-
   template <class DiscreteFunctionSpaceImp, class DofManagerImp>
-  std::string
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp, DofManagerImp>::
-  name() const
+  AdaptiveFunctionImplementation(const ThisType& other) :
+    spc_(other.spc_),
+    name_(std::string("copy of")+other.name_),
+    dm_(other.dm_),
+    memObj_(dm_.addDofSet(&dofVec_, other.spc_.mapper(), name_)),
+    dofVec_(memObj_.getArray())
   {
-    return name_;
+    // copy values
+    dofVec_ = other.dofVec_;
   }
 
   template <class DiscreteFunctionSpaceImp, class DofManagerImp>
@@ -30,6 +34,14 @@ namespace Dune {
     bool removed = dm_.removeDofSet(memObj_);
 
     assert(removed);
+  }
+
+  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  std::string
+  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp, DofManagerImp>::
+  name() const
+  {
+    return name_;
   }
 
   template <class DiscreteFunctionSpaceImp, class DofManagerImp>

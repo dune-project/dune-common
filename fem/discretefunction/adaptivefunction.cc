@@ -16,8 +16,15 @@ namespace Dune {
                         DofStorageType& dofVec) :
     spc_(spc),
     dofVec_(dofVec),
-    values_(),
-    init_(false)
+    values_()
+  {}
+
+  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  AdaptiveLocalFunction<DiscreteFunctionSpaceImp, DofManagerImp>::
+  AdaptiveLocalFunction(const ThisType& other) :
+    spc_(other.spc_),
+    dofVec_(other.dofVec_),
+    values_()
   {}
 
   template <class DiscreteFunctionSpaceImp, class DofManagerImp>
@@ -146,7 +153,7 @@ namespace Dune {
   AdaptiveLocalFunction(const ThisType& other) :
     spc_(other.spc_),
     dofVec_(other.dofVec_),
-    values_(other.values_),
+    values_(),
     cTmp_(0.0),
     cTmpGrad_(0.0),
     tmp_(0.0),
