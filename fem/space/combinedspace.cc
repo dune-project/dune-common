@@ -89,6 +89,28 @@ namespace Dune {
     dest[component(baseFunct)] = arg[0];
   }
 
+  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
+  void CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  evaluateContained(int baseFunct,
+                    const DomainType& x,
+                    ContainedRangeType& phi) const
+  {
+    assert(baseFunct >= 0 &&
+           baseFunct < baseFunctionSet_.getNumberOfBaseFunctions());
+    baseFunctionSet_.eval(baseFunct, x, phi);
+  }
+
+  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
+  void CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  jacobianContained(int baseFunct,
+                    const DomainType& x,
+                    ContainedJacobianRangeType& phi) const
+  {
+    assert(baseFunct >= 0 &&
+           baseFunct < baseFunctionSet_.getNumberOfBaseFunctions());
+    baseFunctionSet_.jacobian(baseFunct, x, phi);
+  }
+
   //- CombinedMapper
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::size() const

@@ -133,11 +133,11 @@ namespace Dune {
     spc_(spc),
     dofVec_(dofVec),
     values_(),
+    cTmp_(0.0),
+    cTmpGrad_(0.0),
     tmp_(0.0),
     tmpGrad_(0.0)
   {}
-
-  // * more to come
 
   template <class ContainedFunctionSpaceImp, int N,
       DofStoragePolicy p, class DofManagerImp>
@@ -146,13 +146,12 @@ namespace Dune {
   AdaptiveLocalFunction(const ThisType& other) :
     spc_(other.spc_),
     dofVec_(other.dofVec_),
-    values_(),
+    values_(other.values_),
+    cTmp_(0.0),
+    cTmpGrad_(0.0),
     tmp_(0.0),
     tmpGrad_(0.0)
-  {
-    assert(false);
-    // * check correctness of copy first
-  }
+  {}
 
   template <class ContainedFunctionSpaceImp, int N,
       DofStoragePolicy p, class DofManagerImp>
@@ -168,7 +167,7 @@ namespace Dune {
       CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
   operator[] (int num)
   {
-    return *values_[num];
+    return *values_[num/N][num%N];
   }
 
   template <class ContainedFunctionSpaceImp, int N,
@@ -179,15 +178,16 @@ namespace Dune {
       CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
   operator[] (int num) const
   {
-    return *values_[num];
+    return *values_[num/N][num%N];
   }
 
   template <class ContainedFunctionSpaceImp, int N,
       DofStoragePolicy p, class DofManagerImp>
   int AdaptiveLocalFunction<
       CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
-  numberOfDofs() const {
-    return values_.size();
+  numberOfDofs() const
+  {
+    return values_.size()*N;
   }
 
   template <class ContainedFunctionSpaceImp, int N,
@@ -197,9 +197,19 @@ namespace Dune {
       CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
   evaluateLocal(EntityType& en,
                 const DomainType& x,
-                RangeType& ret) const
+                RangeType& result) const
   {
-    assert(false);
+    const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
+    result *= 0.0;
+
+    assert(values_.size() == bSet.numContainedFunctions());
+    for (int i = 0; i < values_.size(); ++i) {
+      // Assumption: scalar contained base functions
+      bSet.evaluateContained(i, x, cTmp_);
+      for (int j = 0; j < N; ++j) {
+        result[j] += cTmp_[0]*(*values_[i][j]);
+      }
+    }
   }
 
   template <class ContainedFunctionSpaceImp, int N,
@@ -222,9 +232,24 @@ namespace Dune {
       CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
   jacobianLocal(EntityType& en,
                 const DomainType& x,
-                JacobianRangeType& ret) const
+                JacobianRangeType& result) const
   {
-    assert(false); // * more to come (optimised version)
+    enum { dim = EntityType::dimension };
+    result *= 0.0;
+
+    const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
+
+    for (int i = 0; i < bSet.numContainedFunctions(); ++i) {
+      cTmpGrad_ *= 0.0;
+      bSet.jacobianContained(i, x, cTmpGrad_);
+
+      for (int j = 0; j < N; ++j) {
+        // Assumption: ContainedDimRange == 1
+        tmpGrad_[j] = (*values_[i][j])*cTmpGrad_[0];
+      }
+      en.geometry().jacobianInverse(x).umtv(tmpGrad_, result);
+    }
+
   }
 
   template <class ContainedFunctionSpaceImp, int N,
@@ -244,15 +269,20 @@ namespace Dune {
       DofStoragePolicy p, class DofManagerImp>
   void AdaptiveLocalFunction<
       CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
-  assign(const DofVectorType& dofs) {
-    // * more to come
+  assign(int dofNum, const DofVectorType& dofs) {
+    for (int i = 0; i < N; ++i) {
+      // Assumption: the local ordering is point based
+      *values_[dofNum][i] = dofs[i];
+    }
   }
 
   template <class ContainedFunctionSpaceImp, int N,
       DofStoragePolicy p, class DofManagerImp>
   int AdaptiveLocalFunction<
       CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
-  numberOfBaseFunctions() const {}
+  numberOfBaseFunctions() const {
+    return values_.size();
+  }
 
   template <class ContainedFunctionSpaceImp, int N,
       DofStoragePolicy p, class DofManagerImp>
@@ -261,12 +291,14 @@ namespace Dune {
       CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
   init(EntityType& en) {
     int numOfDof =
-      spc_.getBaseFunctionSet(en).getNumberOfBaseFunctions();
+      spc_.getBaseFunctionSet(en).numContainedFunctions();
     values_.resize(numOfDof);
 
     for (int i = 0; i < numOfDof; ++i) {
-      values_[i] = &(this->dofVec_[spc_.mapToGlobal(en, i)]);
-    }
+      for (int j = 0; j < N; ++j) {
+        values_[i][j] = &(dofVec_[spc_.mapToGlobal(en, i*N+j)]);
+      } // end for j
+    } // end for i
 
   }
 
