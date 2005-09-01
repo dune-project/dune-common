@@ -83,6 +83,17 @@ namespace Dune {
         return Pyramid;
       case prism :
         return Prism;
+      // * old types (to be removed later)
+      case line :
+        return Line;
+      case triangle :
+        return Triangle;
+      case quadrilateral :
+        return Quadrilateral;
+      case tetrahedron :
+        return Tetrahedron;
+      case hexahedron :
+        return Hexahedron;
       default :
         return Unknown;
       }
