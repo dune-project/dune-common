@@ -14,6 +14,19 @@ namespace Dune {
     dofVec_(memObj_.getArray())
   {}
 
+  /*
+     template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+     AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp, DofManagerImp>::
+     AdaptiveFunctionImplementation(std::string name,
+                                 const DiscreteFunctionSpaceType& spc,
+                                 MemObjectType& memObject) :
+     spc_(spc),
+     name_(name),
+     dm_(DofManagerFactory<DofManagerType>::getDofManager(spc.grid())),
+     memObj_(memObject),
+     dofVec_(memObject.getArray())
+     {}
+   */
   template <class DiscreteFunctionSpaceImp, class DofManagerImp>
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp, DofManagerImp>::
   AdaptiveFunctionImplementation(const ThisType& other) :
@@ -32,7 +45,6 @@ namespace Dune {
   ~AdaptiveFunctionImplementation()
   {
     bool removed = dm_.removeDofSet(memObj_);
-
     assert(removed);
   }
 
@@ -81,7 +93,8 @@ namespace Dune {
   }
 
   template <class DiscreteFunctionSpaceImp, class DofManagerImp>
-  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp, DofManagerImp>::LocalFunctionType
+  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp, DofManagerImp>::
+  LocalFunctionType
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp, DofManagerImp>::
   newLocalFunction()
   {

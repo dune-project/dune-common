@@ -31,16 +31,15 @@ namespace Dune {
         DiscreteFunctionSpaceImp, DofManagerImp> ThisType;
     typedef AdaptiveDiscreteFunctionTraits<
         DiscreteFunctionSpaceImp, DofManagerImp> Traits;
+
     typedef typename Traits::DofIteratorType DofIteratorType;
     typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
     typedef typename Traits::LocalFunctionType LocalFunctionType;
+    typedef typename Traits::MapperType MapperType;
 
     typedef typename DiscreteFunctionSpaceImp::Traits SpaceTraits;
     typedef typename SpaceTraits::RangeFieldType RangeFieldType;
 
-    typedef typename Traits::DofIteratorType DofIteratorType;
-    typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
-    typedef typename Traits::MapperType MapperType;
 
     typedef typename Traits::DofStorageType DofStorageType;
     typedef typename Traits::MemObjectType MemObjectType;
@@ -78,9 +77,13 @@ namespace Dune {
 
   protected:
     const DiscreteFunctionSpaceType& space() const { return spc_; }
+    MemObjectType& memObject() { return memObj_; }
 
     AdaptiveFunctionImplementation(std::string name,
                                    const DiscreteFunctionSpaceType& spc);
+    AdaptiveFunctionImplementation(std::string name,
+                                   const DiscreteFunctionSpaceType& spc,
+                                   MemObjectType& memObject);
     AdaptiveFunctionImplementation(const ThisType& other);
     ~AdaptiveFunctionImplementation();
 
@@ -90,7 +93,7 @@ namespace Dune {
     DofManagerType& dm_;
     MemObjectType& memObj_;
     DofStorageType& dofVec_;
-  };  // end class AdaptiveFunctionImplementation
+  }; // end class AdaptiveFunctionImplementation
 
 } // end namespace Dune
 

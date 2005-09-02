@@ -55,6 +55,9 @@ namespace Dune {
     private AdaptiveFunctionImplementation<
         DiscreteFunctionSpaceImp, DofManagerImp>
   {
+  public:
+    //- friends
+
   private:
     typedef AdaptiveDiscreteFunction<
         DiscreteFunctionSpaceImp, DofManagerImp> MyType;
@@ -69,7 +72,6 @@ namespace Dune {
     typedef MyTraits Traits;
     typedef Imp ImplementationType;
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
-
 
     typedef typename Traits::LocalFunctionType LocalFunctionType;
     typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
@@ -92,6 +94,14 @@ namespace Dune {
                              const DiscreteFunctionSpaceType& spc) :
       BaseType(spc),
       Imp(name, spc)
+    {}
+
+    //! Constructor for SubDiscreteFunctions
+    AdaptiveDiscreteFunction(std::string name,
+                             const DiscreteFunctionSpaceType& spc,
+                             MemObjectType& memObject) :
+      BaseType(spc),
+      Imp(name, spc, memObject)
     {}
 
     //! Copy constructor
@@ -216,37 +226,66 @@ namespace Dune {
   }; // end class AdaptiveLocalFunction
 
   //- Specialisations
-  /* Do that later
-
-     template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
-     class AdaptiveDiscreteFunction<CombinedSpace<ContainedFunctionSpaceImp, N, p> > :
-     public DiscreteFunctionDefault<
-     AdaptiveDiscreteFunctionTraits<CombinedSpace<ContainedFunctionSpaceImp, N, p> >
-     >,
-     private AdaptiveFunctionImplementation<CombinedSpace<ContainedFunctionSpaceImp, N, p> >
+  /*
+     template <class ContainedFunctionSpaceImp, int N,
+            DofStoragePolicy p, class DofManagerImp>
+     class AdaptiveDiscreteFunction<
+     CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp> :
+     public DiscreteFunctionDefault<AdaptiveDiscreteFunctionTraits<CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp > >,
+     private AdaptiveFunctionImplementation<CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>
      {
      private:
-     typedef CombinedSpace<ContainedFunctionSpaceImp, N, p> DiscreteFunctionSpaceImp;
-     typedef AdaptiveDiscretFunction<DiscreteFunctionSpaceImp> MyType;
-     typedef AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp> Imp;
-     typedef AdaptiveDiscreteFunctionTraits<DiscreteFunctionSpaceImp> MyTraits;
+     typedef CombinedSpace<
+      ContainedFunctionSpaceImp, N, p> DiscreteFunctionSpaceImp;
+     typedef AdaptiveDiscreteFunction<
+      DiscreteFunctionSpaceImp, DofManagerImp> MyType;
+     typedef AdaptiveFunctionImplementation<
+      DiscreteFunctionSpaceImp, DofManagerImp> Imp;
+     typedef AdaptiveDiscreteFunctionTraits<
+      DiscreteFunctionSpaceImp, DofManagerImp> MyTraits;
      typedef DiscreteFunctionDefault<MyTraits> BaseType;
 
      public:
      //- Typedefs and enums
      typedef MyTraits Traits;
+     typedef Imp ImplementationType;
      typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
 
      typedef typename Traits::LocalFunctionType LocalFunctionType;
      typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
 
+     typedef typename Traits::DofType DofType;
+     typedef typename Traits::RangeFieldType RangeFieldType;
+     typedef typename Traits::RangeType RangeType;
+     typedef typename Traits::DomainType DomainType;
+     typedef typename Traits::MapperType MapperType;
+
+     typedef typename Traits::DofStorageType DofStorageType;
+     typedef typename Traits::MemObjectType MemObjectType;
+
+     //- Additional typedefs
+     typedef SubSpace<> SubSpaceType;
+     typedef AdaptiveDiscreteFunction<
+      SubSpaceType, DofManagerImp> SubDiscreteFunctionType;
+
      public:
      //- Public methods
-     AdaptiveDiscreteFunction(const DiscreteFunctionSpaceType& spc,
-                             std::string name = "no name") :
+     //! Constructor
+     AdaptiveDiscreteFunction(std::string name,
+                             const DiscreteFunctionSpaceType& spc) :
       BaseType(spc),
-      Imp(name)
+      Imp(name, spc),
+      subSpaces_(0)
      {}
+
+     //! Copy constructor
+     AdaptiveDiscreteFunction(const MyType& other) :
+      BaseType(other.space()),
+      Imp(other),
+      subSpaces(0) // Don't copy them
+     {}
+
+     ~AdaptiveDiscreteFunction();
 
      using Imp::name;
      using Imp::dbegin;
@@ -259,11 +298,18 @@ namespace Dune {
      using Imp::read_ascii;
      using Imp::write_pgm;
      using Imp::read_pgm;
+
      //- Additional methods
+     SubDiscreteFunctionType subFunction(int component);
+
+     int numComponents() const { return N; }
 
      private:
+     std::vector<SubSpaceType*> subSpaces_;
      }; // end class AdaptiveDiscreteFunction (specialised for CombinedSpace)
    */
+
+  //- class AdaptiveLocalFunction (specialised)
   template <
       class ContainedFunctionSpaceImp, int N,
       DofStoragePolicy p, class DofManagerImp
