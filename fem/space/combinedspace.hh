@@ -26,13 +26,17 @@ namespace Dune {
   enum DofStoragePolicy { PointBased, VariableBased };
 
 
+  //! Utility class that helps in the transformation between dofs in the
+  //! combined space and its enclosed spaces
   template <DofStoragePolicy p>
-  class DofStorageUtility {
+  class DofConversionUtility {
   public:
-    DofStorageUtility(int size);
+    DofConversionUtility(int size);
+
+    void newSize(int size);
 
     int component(int combinedIndex) const;
-    int enclosedDof(int combinedIndex) const;
+    int containedDof(int combinedIndex) const;
 
     int combinedDof(int enclosedIndex, int component) const;
   private:
@@ -40,11 +44,13 @@ namespace Dune {
   };
 
   template <>
-  class DofStorageUtility<PointBased> {
+  class DofConversionUtility<PointBased> {
   public:
-    DofStorageUtility(int numComponents) :
+    DofConversionUtility(int numComponents) :
       numComponents_(numComponents)
     {}
+
+    void newSize(int size) {} // just do nothing
 
     int component(int combinedIndex) const {
       return combinedIndex%numComponents_;
@@ -62,13 +68,13 @@ namespace Dune {
   };
 
   template <>
-  class DofStorageUtility<PointBased> {
+  class DofConversionUtility<VariableBased> {
   public:
-    DofStorageUtility(int numComponents) :
+    DofConversionUtility(int size) :
       size_(size)
     {}
 
-    void setSize(int size) { size_ = size; }
+    void newSize(int size) { size_ = size; }
 
     int component(int combinedIndex) const {
       return combinedIndex/size_;
@@ -272,7 +278,8 @@ namespace Dune {
     //! Constructor
     CombinedBaseFunctionSet(const ContainedBaseFunctionSetType& bfSet) :
       containedResult_(0.0),
-      baseFunctionSet_(bfSet)
+      baseFunctionSet_(bfSet),
+      util_(N)
     {}
 
     //! Number of base functions
@@ -316,8 +323,8 @@ namespace Dune {
     //- Private methods
     CombinedBaseFunctionSet(const ThisType& other);
 
-    int containedDof(int combinedDofNum) const;
-    int component(int combinedDofNum) const;
+    //int containedDof(int combinedDofNum) const;
+    //int component(int combinedDofNum) const;
     void expand(int baseFunct,
                 const ContainedRangeType& arg,
                 RangeType& dest) const;
@@ -326,6 +333,7 @@ namespace Dune {
     //- Data members
     mutable ContainedRangeType containedResult_;
     const ContainedBaseFunctionSetType& baseFunctionSet_;
+    const DofConversionUtility<PointBased> util_;
   }; // end class CombinedBaseFunctionSet
 
   //! Wrapper class for mappers. This class is to be used in conjunction with
@@ -349,7 +357,9 @@ namespace Dune {
     CombinedMapper(const ContainedDiscreteFunctionSpaceType& spc,
                    const ContainedMapperType& mapper) :
       spc_(spc),
-      mapper_(mapper)
+      mapper_(mapper),
+      utilLocal_(N),
+      utilGlobal_(chooseSize(N, spc.size(), Int2Type<policy>()))
     {}
 
     //! Total number of degrees of freedom
@@ -369,28 +379,26 @@ namespace Dune {
 
     //! calc new insertion points for dof of different codim
     //! (to be called once per timestep, therefore virtual )
-    void calcInsertPoints () { const_cast<ContainedMapperType&>(mapper_).calcInsertPoints(); }
+    void calcInsertPoints () {
+      const_cast<ContainedMapperType&>(mapper_).calcInsertPoints();
+      // * is this right here?
+      utilGlobal_.newSize(mapper_.size());
+    }
 
     //! return max number of local dofs per entity
     int numberOfDofs () const { return mapper_.numberOfDofs()*N; }
 
     //! returns true if index is new ( for dof compress )
     bool indexNew (int num) const {
-      //assert(false); // do I need to translate that into num of mapper?
-      return mapper_.indexNew(containedDof(num));
+      assert(false); // * check correctness first: do I correctly map between combinedMapper and containedMapper indices with utilGlobal
+      return mapper_.indexNew(utilGlobal_.containedDof(num));
     }
 
     //! return old index in dof array of given index ( for dof compress )
-    int oldIndex (int num) const {
-      assert(false); // gets a bit more complicated here...
-      return -1;
-    }
+    int oldIndex (int num) const;
 
     //! return new index in dof array
-    int newIndex (int num) const {
-      assert(false);
-      return -1;
-    }
+    int newIndex (int num) const;
 
     //! return estimate for size that is addtional needed for restriction
     //! of data
@@ -402,31 +410,23 @@ namespace Dune {
     //- Private methods
     CombinedMapper(const ThisType& other);
 
-    template <class EntityType>
-    int mapToGlobal(EntityType& en, int localNum, Int2Type<PointBased>) const;
-    template <class EntityType>
-    int mapToGlobal(EntityType& en, int localNum, Int2Type<VariableBased>) const;
+    static int chooseSize(int pointBased, int variableBased,
+                          Int2Type<PointBased>) {
+      return pointBased;
+    }
 
-    /*
-       int newIndex(int num, Int2Type<PointBased>) const;
-       int newIndex(int num, Int2Type<VariableBased>) const;
-
-       int oldIndex(int num, Int2Type<PointBased>) const;
-       int oldIndex(int num, Int2Type<VariableBased>) const;
-
-       // calculates the global index for the contained mapper out of a global index of the combined mapper
-       int containedIndex(int globalIndex, Int2Type<PointBased>) const;
-       int containedIndex(int globalIndex, Int2Type<VariableBased>) const;
-     */
-    // determines the local index (index on a given entity) for the contained mapper
-    int containedDof(int combinedDofNum) const;
-    // determines which index in the range vector this local index belongs to
-    int component(int combinedDofNum) const;
+    static int chooseSize(int pointBased, int variableBased,
+                          Int2Type<VariableBased>) {
+      return variableBased;
+    }
 
   private:
     //- Data members
     const ContainedDiscreteFunctionSpaceType& spc_;
     const ContainedMapperType& mapper_;
+
+    const DofConversionUtility<PointBased> utilLocal_;
+    DofConversionUtility<policy> utilGlobal_;
   }; // end class CombinedMapper
 
 } // end namespace Dune

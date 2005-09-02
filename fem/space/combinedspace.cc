@@ -50,7 +50,7 @@ namespace Dune {
            const FieldVector<deriType, diffOrd> &diffVariable,
            const DomainType & x, RangeType & phi) const
   {
-    baseFunctionSet_.evaluate(containedDof(baseFunct),
+    baseFunctionSet_.evaluate(util_.containedDof(baseFunct),
                               diffVariable, x, containedResult_);
     expand(baseFunct, containedResult_, phi);
   }
@@ -63,24 +63,26 @@ namespace Dune {
            QuadratureType & quad,
            int quadPoint, RangeType & phi) const
   {
-    baseFunctionSet_.evaluate(containedDof(baseFunct), diffVariable,
+    baseFunctionSet_.evaluate(util_.containedDof(baseFunct), diffVariable,
                               quad, quadPoint, containedResult_);
     expand(baseFunct, containedResult_, phi);
   }
 
-  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-  inline int CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
-  containedDof(int combinedBaseNumber) const
-  {
-    return combinedBaseNumber/N;
-  }
+  /*
+     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+     inline int CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
+     containedDof(int combinedBaseNumber) const
+     {
+     return combinedBaseNumber/N;
+     }
 
-  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-  inline int CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
-  component(int combinedBaseNumber) const
-  {
-    return combinedBaseNumber%N;
-  }
+     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+     inline int CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
+     component(int combinedBaseNumber) const
+     {
+     return combinedBaseNumber%N;
+     }
+   */
 
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   void CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
@@ -88,7 +90,7 @@ namespace Dune {
   {
     dest = 0.0;
     assert(arg.dim() == 1); // only DimRange == 1 allowed
-    dest[component(baseFunct)] = arg[0];
+    dest[util_.component(baseFunct)] = arg[0];
   }
 
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
@@ -125,102 +127,42 @@ namespace Dune {
   int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
   mapToGlobal(EntityType& en, int localNum) const
   {
-    return mapToGlobal(en, localNum, Int2Type<policy>());
+    const int component = utilLocal_.component(localNum);
+    const int containedLocal = utilLocal_.containedDof(localNum);
+
+    const int containedGlobal = spc_.mapToGlobal(en, containedLocal);
+
+    return utilGlobal_.combinedDof(containedGlobal, component);
   }
 
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-  template <class EntityType>
   int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-  mapToGlobal(EntityType& en, int localNum, Int2Type<PointBased>) const
+  newIndex(int num) const
   {
-    const int offset = spc_.mapToGlobal(en, containedDof(localNum))*N;
-    const int local = component(localNum);
-    return offset + local;
+    DofConversionUtility<policy>
+    tmpUtilGlobal(chooseSize(N, mapper_.newSize(), Int2Type<policy>()));
+
+    const int component = tmpUtilGlobal.component(num);
+    const int contained = tmpUtilGlobal.containedDof(num);
+
+    const int containedNew = mapper_.newIndex(contained);
+
+    return tmpUtilGlobal.combinedDof(containedNew, component);
   }
 
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-  template <class EntityType>
   int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-  mapToGlobal(EntityType& en, int localNum, Int2Type<VariableBased>) const
+  oldIndex(int num) const
   {
-    const int offset = component(localNum)*spc_.size();
-    const int local = spc_.mapToGlobal(en, containedDof(localNum));
-    return offset + local;
+    DofConversionUtility<policy>
+    tmpUtilGlobal(chooseSize(N, mapper_.oldSize(), Int2Type<policy>()));
+
+    const int component = tmpUtilGlobal.component(num);
+    const int contained = tmpUtilGlobal.containedDof(num);
+
+    const int containedNew = mapper_.oldIndex(contained);
+
+    return tmpUtilGlobal.combinedDof(containedNew, component);
   }
 
-  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-  inline int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-  containedDof(int localNum) const
-  {
-    return localNum/N;
-    //return localNum%numBaseLoc_; old version for variable based base function expansion
-  }
-
-  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-  inline int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-  component(int localNum) const
-  {
-    return localNum%N;
-    //return localNum/numBaseLoc_; old version for variable based base function expansion
-  }
-
-  /*
-     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-     int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-     newIndex(int num) const {
-     return newIndex(num, Int2Type<policy>());
-     }
-
-     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-     int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-     newIndex(int num, Int2Type<PointBased>) const {
-     ...
-     }
-
-     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-     int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-     newIndex(int num, Int2Type<VariableBased>) const {
-     ...
-     }
-
-     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-     int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-     oldIndex(int num) const {
-     return oldIndex(num, Int2Type<policy>());
-     }
-
-     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-     int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-     oldIndex(int num, Int2Type<PointBased>) const {
-     int localNum =
-      containedIndex(num, mapper_.oldSize(), Int2Type<VariableBased());
-     int component = localNum%N;
-     int oldLocalIndex = mapper_oldIndex(localNum);
-
-     return oldLocalIndex*N + component;
-     }
-
-     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-     int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-     oldIndex(int num, Int2Type<VariableBased>) const {
-     int localNum =
-      containedIndex(num, mapper_.oldSize(), Int2Type<VariableBased>());
-     int component = num/mapper_.oldSize();
-
-     int oldLocalIndex = mapper_.oldIndex(localNum);
-     return component*mapper_.oldSize() + oldLocalIndex;
-     }
-
-     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-     inline int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-     containedIndex(int num, int containedSize, Int2Type<PointBased>) const {
-     return num/N;
-     }
-
-     template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
-     inline int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::
-     containedIndex(int num, int containedSize, Int2Type<VariableBased>) const {
-     return num%containedSize;
-     }
-   */
 } // end namespace Dune
