@@ -25,25 +25,65 @@ namespace Dune {
   //! approach all dofs belonging to one subspace are stored consecutively
   enum DofStoragePolicy { PointBased, VariableBased };
 
-  /* just an idea... the pointbased specialisation would need additional information
-     template <DofStoragePolicy p, int N>
-     struct DofStorageUtility {
-     static int containedDof(int num);
-     static int component(int num);
-     };
 
-     template <int N>
-     struct DofStorageUtility<PointBased> {
-     static int containedDof(int num) { return num/N; }
-     static int component(int num) { return num/N; }
-     };
+  template <DofStoragePolicy p>
+  class DofStorageUtility {
+  public:
+    DofStorageUtility(int size);
 
-     template <int N>
-     struct DofStorageUtility<VariableBased> {
-     static int containedDof(int num) { return num/N; }
-     static int component(int num) { return num/N; }
-     };
-   */
+    int component(int combinedIndex) const;
+    int enclosedDof(int combinedIndex) const;
+
+    int combinedDof(int enclosedIndex, int component) const;
+  private:
+    int size_;
+  };
+
+  template <>
+  class DofStorageUtility<PointBased> {
+  public:
+    DofStorageUtility(int numComponents) :
+      numComponents_(numComponents)
+    {}
+
+    int component(int combinedIndex) const {
+      return combinedIndex%numComponents_;
+    }
+    int containedDof(int combinedIndex) const {
+      return combinedIndex/numComponents_;
+    }
+
+    int combinedDof(int containedIndex, int component) const {
+      return containedIndex*N + component;
+    }
+
+  private:
+    const int numComponents_;
+  };
+
+  template <>
+  class DofStorageUtility<PointBased> {
+  public:
+    DofStorageUtility(int numComponents) :
+      size_(size)
+    {}
+
+    void setSize(int size) { size_ = size; }
+
+    int component(int combinedIndex) const {
+      return combinedIndex/size_;
+    }
+    int containedDof(int combinedIndex) const {
+      return combinedIndex%size_;
+    }
+
+    int combinedDof(int containedIndex, int component) const {
+      return containedIndex + component*size_;
+    }
+
+  private:
+    int size_;
+  };
 
   // Forward declarations
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
@@ -165,7 +205,7 @@ namespace Dune {
     //! map a local dof number to a global one
     template <class EntityType>
     int mapToGlobal(EntityType& en, int local) const {
-      mapper_.mapToGlobal(en, local);
+      return mapper_.mapToGlobal(en, local);
     }
 
     //! access to base function set
@@ -258,7 +298,7 @@ namespace Dune {
 
     //- Additional methods
     int numContainedFunctions() const {
-      return baseFunctionSet_.getNumberOfBaseFunctions()*N;
+      return baseFunctionSet_.getNumberOfBaseFunctions();
     }
 
     //! evaluate base function
