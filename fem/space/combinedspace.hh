@@ -58,13 +58,14 @@ namespace Dune {
   struct CombinedSpaceTraits {
   private:
     typedef DiscreteFunctionSpaceImp ContainedDiscreteFunctionSpaceType;
-    //   typedef ContainedDiscreteFunctionSpaceType::MapperType ContainedMapperType;
+
     typedef typename ContainedDiscreteFunctionSpaceType::Traits
-    ContainedTraits;
-    typedef typename ContainedTraits::FunctionSpaceType
+    ContainedSpaceTraits;
+    typedef typename ContainedSpaceTraits::FunctionSpaceType
     ContainedFunctionSpaceType;
-    typedef typename ContainedTraits::BaseFunctionSetType
+    typedef typename ContainedSpaceTraits::BaseFunctionSetType
     ContainedBaseFunctionSetType;
+    typedef typename ContainedSpaceTraits::MapperType ContainedMapperType;
 
     enum { ContainedDimRange = ContainedFunctionSpaceType::DimRange,
            ContainedDimDomain = ContainedFunctionSpaceType::DimDomain };
@@ -80,21 +81,27 @@ namespace Dune {
 
     typedef CombinedSpace<
         DiscreteFunctionSpaceImp, N, policy> DiscreteFunctionSpaceType;
-    typedef FunctionSpace<DomainFieldType, RangeFieldType, ContainedDimDomain,
-        ContainedDimRange*N> FunctionSpaceType;
+    typedef FunctionSpace<
+        DomainFieldType, RangeFieldType,
+        ContainedDimDomain, ContainedDimRange*N> FunctionSpaceType;
     typedef CombinedBaseFunctionSet<
-        ContainedBaseFunctionSetType, N, policy> BaseFunctionSetType;
+        DiscreteFunctionSpaceImp, N, policy> BaseFunctionSetType;
     typedef CombinedMapper<DiscreteFunctionSpaceImp, N, policy> MapperType;
 
     typedef typename FunctionSpaceType::RangeType RangeType;
     typedef typename FunctionSpaceType::DomainType DomainType;
-    typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
-    typedef typename FunctionSpaceType::DomainFieldType DomainFieldType;
+    typedef typename FunctionSpaceType::JacobianRangeType JacobianRangeType;
 
-    typedef typename ContainedTraits::GridType GridType;
-    typedef typename ContainedTraits::IteratorType IteratorType;
+    typedef typename ContainedSpaceTraits::GridType GridType;
+    typedef typename ContainedSpaceTraits::IteratorType IteratorType;
 
+    enum { DimRange = FunctionSpaceType::DimRange,
+           DimDomain = FunctionSpaceType::DimDomain };
+  public:
+    //- Friends
     friend class DiscreteFunctionSpaceType;
+    friend class BaseFunctionSetType;
+    friend class MapperType;
   };
 
   //! Class to combine N scalar spaces
@@ -197,54 +204,25 @@ namespace Dune {
     static const int spaceId_;
   }; // end class CombinedSpace
 
-  //! Traits class for CombinedBaseFunctionSet
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
-  struct CombinedBaseFunctionSetTraits {
-  private:
-    typedef typename BaseFunctionSetImp::DiscreteFunctionSpaceType
-    ContainedFunctionSpaceType;
-  public:
-    typedef CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>
-    BaseFunctionSetType;
-
-    typedef CombinedSpace<ContainedFunctionSpaceType, N, policy>
-    DiscreteFunctionSpaceType;
-
-    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
-    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRangeType
-    JacobianRangeType;
-    typedef typename DiscreteFunctionSpaceType::HessianRangeType
-    HessianRangeType;
-    typedef typename DiscreteFunctionSpaceType::ContainedRangeType
-    ContainedRangeType;
-    typedef typename DiscreteFunctionSpaceType::ContainedJacobianRangeType
-    ContainedJacobianRangeType;
-
-    enum { DimDomain = DiscreteFunctionSpaceType::DimDomain };
-    enum { DimRange  = DiscreteFunctionSpaceType::DimRange  };
-  };
-
   //! Wrapper class for base function sets. This class is used within
   //! CombinedSpace
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   class CombinedBaseFunctionSet :
     public BaseFunctionSetDefault<
-        CombinedBaseFunctionSetTraits<BaseFunctionSetImp, N, policy>
+        CombinedSpaceTraits<DiscreteFunctionSpaceImp, N, policy>
         >
   {
-  private:
-    //- Private typedefs
-    typedef BaseFunctionSetImp ContainedBaseFunctionSetType;
-    typedef ContainedBaseFunctionSetType::RangeType ContainedRangeType;
-
   public:
     //- Typedefs and enums
     enum { numComponents = N };
-    typedef CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy> ThisType;
+    typedef CombinedBaseFunctionSet<
+        DiscreteFunctionSpaceImp, N, policy> ThisType;
+    typedef CombinedSpaceTraits<
+        DiscreteFunctionSpaceImp, N, policy> Traits;
 
-    typedef CombinedBaseFunctionSetTraits<BaseFunctionSetImp, N, policy> Traits;
-    typedef typename Traits::DiscreteFunctionSpaceType DiscreteFunctionSpaceType;
+    typedef typename Traits::DiscreteFunctionSpaceType
+    DiscreteFunctionSpaceType;
+    typedef typename Traits::ContainedBaseFunctionSetType ContainedBaseFunctionSetType;
     typedef typename Traits::RangeType RangeType;
     typedef typename Traits::DomainType DomainType;
     typedef typename Traits::ContainedRangeType ContainedRangeType;

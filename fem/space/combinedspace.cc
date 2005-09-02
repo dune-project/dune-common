@@ -43,9 +43,9 @@ namespace Dune {
   }
 
   //- CombinedBaseFunctionSet
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   template <int diffOrd>
-  void CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  void CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
   evaluate(int baseFunct,
            const FieldVector<deriType, diffOrd> &diffVariable,
            const DomainType & x, RangeType & phi) const
@@ -55,9 +55,9 @@ namespace Dune {
     expand(baseFunct, containedResult_, phi);
   }
 
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   template <int diffOrd, class QuadratureType>
-  void CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  void CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
   evaluate(int baseFunct,
            const FieldVector<deriType, diffOrd> &diffVariable,
            QuadratureType & quad,
@@ -68,24 +68,24 @@ namespace Dune {
     expand(baseFunct, containedResult_, phi);
   }
 
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
-  inline int CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  inline int CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
   containedDof(int combinedBaseNumber) const
   {
     //return global%N;
     return combinedBaseNumber/N;
   }
 
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
-  inline int CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  inline int CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
   component(int combinedBaseNumber) const
   {
     //return global%N;
     return combinedBaseNumber%N;
   }
 
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
-  void CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  void CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
   expand(int baseFunct, const ContainedRangeType& arg, RangeType& dest) const
   {
     dest = 0.0;
@@ -93,8 +93,8 @@ namespace Dune {
     dest[component(baseFunct)] = arg[0];
   }
 
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
-  void CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  void CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
   evaluateContained(int baseFunct,
                     const DomainType& x,
                     ContainedRangeType& phi) const
@@ -104,8 +104,8 @@ namespace Dune {
     baseFunctionSet_.eval(baseFunct, x, phi);
   }
 
-  template <class BaseFunctionSetImp, int N, DofStoragePolicy policy>
-  void CombinedBaseFunctionSet<BaseFunctionSetImp, N, policy>::
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  void CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
   jacobianContained(int baseFunct,
                     const DomainType& x,
                     ContainedJacobianRangeType& phi) const
