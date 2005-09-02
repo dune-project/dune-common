@@ -7,36 +7,36 @@ namespace Dune {
   // nothing here, everything in adaptivefunction.hh
 
   //- AdaptiveDiscreteFunction (specialisation)
-  /*
-     template <class ContainedFunctionSpaceImp, int N,
-            DofStoragePolicy p, class DofManagerImp>
-     AdaptiveDiscreteFunction<
-     CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
-     ~AdaptiveDiscreteFunction()
-     {
-     for (int i = 0; i < subSpaces_.size(); ++i) {
+
+  template <class ContainedFunctionSpaceImp, int N,
+      DofStoragePolicy p, class DofManagerImp>
+  AdaptiveDiscreteFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
+  ~AdaptiveDiscreteFunction()
+  {
+    for (int i = 0; i < subSpaces_.size(); ++i) {
       delete subSpaces_[i];
       subSpaces_[i] = 0;
-     }
-     }
+    }
+  }
 
-     template <class ContainedFunctionSpaceImp, int N,
-            DofStoragePolicy p, class DofManagerImp>
-     AdaptiveDiscreteFunction<
-     CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
-     SubDiscreteFunctionType
-     AdaptiveDiscreteFunction<
-     CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
-     subFunction(int component)
-     {
-     SubSpaceType* subSpace = new SubSpaceType(this->space(), component);
-     subSpaces_.push_back(subSpace);
+  template <class ContainedFunctionSpaceImp, int N,
+      DofStoragePolicy p, class DofManagerImp>
+  AdaptiveDiscreteFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
+  SubDiscreteFunctionType
+  AdaptiveDiscreteFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>::
+  subFunction(int component)
+  {
+    SubSpaceType* subSpace = new SubSpaceType(this->space(), component);
+    subSpaces_.push_back(subSpace);
 
-     return SubDiscreteFunctionType(std::string("Subfunction of ") + name(),
-     *subSpace,
+    return SubDiscreteFunctionType(std::string("Subfunction of ") + name(),
+                                   *subSpace,
                                    this->memObject());
-     }
-   */
+  }
+
 
   //- AdaptiveLocalFunction
   template <class DiscreteFunctionSpaceImp, class DofManagerImp>

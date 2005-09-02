@@ -10,6 +10,7 @@
 #include <dune/fem/common/discretefunction.hh>
 #include <dune/fem/common/localfunction.hh>
 #include <dune/fem/space/combinedspace.hh>
+//#include <dune/fem/space/subspace.hh>
 
 //- Local includes
 #include "adaptiveimp.hh"
@@ -226,88 +227,90 @@ namespace Dune {
   }; // end class AdaptiveLocalFunction
 
   //- Specialisations
-  /*
-     template <class ContainedFunctionSpaceImp, int N,
-            DofStoragePolicy p, class DofManagerImp>
-     class AdaptiveDiscreteFunction<
-     CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp> :
-     public DiscreteFunctionDefault<AdaptiveDiscreteFunctionTraits<CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp > >,
-     private AdaptiveFunctionImplementation<CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>
-     {
-     private:
-     typedef CombinedSpace<
-      ContainedFunctionSpaceImp, N, p> DiscreteFunctionSpaceImp;
-     typedef AdaptiveDiscreteFunction<
-      DiscreteFunctionSpaceImp, DofManagerImp> MyType;
-     typedef AdaptiveFunctionImplementation<
-      DiscreteFunctionSpaceImp, DofManagerImp> Imp;
-     typedef AdaptiveDiscreteFunctionTraits<
-      DiscreteFunctionSpaceImp, DofManagerImp> MyTraits;
-     typedef DiscreteFunctionDefault<MyTraits> BaseType;
+  template <class ContainedFunctionSpaceImp, int N,
+      DofStoragePolicy p, class DofManagerImp>
+  class AdaptiveDiscreteFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp> :
+    public DiscreteFunctionDefault<AdaptiveDiscreteFunctionTraits<CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp > >,
+    private AdaptiveFunctionImplementation<CombinedSpace<ContainedFunctionSpaceImp, N, p>, DofManagerImp>
+  {
+  private:
+    typedef CombinedSpace<
+        ContainedFunctionSpaceImp, N, p> DiscreteFunctionSpaceImp;
+    typedef AdaptiveDiscreteFunction<
+        DiscreteFunctionSpaceImp, DofManagerImp> MyType;
+    typedef AdaptiveFunctionImplementation<
+        DiscreteFunctionSpaceImp, DofManagerImp> Imp;
+    typedef AdaptiveDiscreteFunctionTraits<
+        DiscreteFunctionSpaceImp, DofManagerImp> MyTraits;
+    typedef DiscreteFunctionDefault<MyTraits> BaseType;
 
-     public:
-     //- Typedefs and enums
-     typedef MyTraits Traits;
-     typedef Imp ImplementationType;
-     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
+  public:
+    //- Typedefs and enums
+    typedef MyTraits Traits;
+    typedef Imp ImplementationType;
+    typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
 
-     typedef typename Traits::LocalFunctionType LocalFunctionType;
-     typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
+    typedef typename Traits::LocalFunctionType LocalFunctionType;
+    typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
 
-     typedef typename Traits::DofType DofType;
-     typedef typename Traits::RangeFieldType RangeFieldType;
-     typedef typename Traits::RangeType RangeType;
-     typedef typename Traits::DomainType DomainType;
-     typedef typename Traits::MapperType MapperType;
+    typedef typename Traits::DofType DofType;
+    typedef typename Traits::RangeFieldType RangeFieldType;
+    typedef typename Traits::RangeType RangeType;
+    typedef typename Traits::DomainType DomainType;
+    typedef typename Traits::MapperType MapperType;
 
-     typedef typename Traits::DofStorageType DofStorageType;
-     typedef typename Traits::MemObjectType MemObjectType;
+    typedef typename Traits::DofStorageType DofStorageType;
+    typedef typename Traits::MemObjectType MemObjectType;
 
-     //- Additional typedefs
-     typedef SubSpace<> SubSpaceType;
-     typedef AdaptiveDiscreteFunction<
-      SubSpaceType, DofManagerImp> SubDiscreteFunctionType;
+    typedef typename Traits::DofIteratorType DofIteratorType;
+    typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
 
-     public:
-     //- Public methods
-     //! Constructor
-     AdaptiveDiscreteFunction(std::string name,
+    //- Additional typedefs
+    //typedef SubSpace<DiscreteFunctionSpaceType> SubSpaceType;
+    typedef DiscreteFunctionSpaceType SubSpaceType;
+    typedef AdaptiveDiscreteFunction<
+        SubSpaceType, DofManagerImp> SubDiscreteFunctionType;
+
+  public:
+    //- Public methods
+    //! Constructor
+    AdaptiveDiscreteFunction(std::string name,
                              const DiscreteFunctionSpaceType& spc) :
       BaseType(spc),
       Imp(name, spc),
       subSpaces_(0)
-     {}
+    {}
 
-     //! Copy constructor
-     AdaptiveDiscreteFunction(const MyType& other) :
+    //! Copy constructor
+    AdaptiveDiscreteFunction(const MyType& other) :
       BaseType(other.space()),
       Imp(other),
-      subSpaces(0) // Don't copy them
-     {}
+      subSpaces_(0) // Don't copy them
+    {}
 
-     ~AdaptiveDiscreteFunction();
+    ~AdaptiveDiscreteFunction();
 
-     using Imp::name;
-     using Imp::dbegin;
-     using Imp::dend;
-     using Imp::newLocalFunction;
-     using Imp::localFunction;
-     using Imp::write_xdr;
-     using Imp::read_xdr;
-     using Imp::write_ascii;
-     using Imp::read_ascii;
-     using Imp::write_pgm;
-     using Imp::read_pgm;
+    using Imp::name;
+    using Imp::dbegin;
+    using Imp::dend;
+    using Imp::newLocalFunction;
+    using Imp::localFunction;
+    using Imp::write_xdr;
+    using Imp::read_xdr;
+    using Imp::write_ascii;
+    using Imp::read_ascii;
+    using Imp::write_pgm;
+    using Imp::read_pgm;
 
-     //- Additional methods
-     SubDiscreteFunctionType subFunction(int component);
+    //- Additional methods
+    SubDiscreteFunctionType subFunction(int component);
 
-     int numComponents() const { return N; }
+    int numComponents() const { return N; }
 
-     private:
-     std::vector<SubSpaceType*> subSpaces_;
-     }; // end class AdaptiveDiscreteFunction (specialised for CombinedSpace)
-   */
+  private:
+    std::vector<SubSpaceType*> subSpaces_;
+  }; // end class AdaptiveDiscreteFunction (specialised for CombinedSpace)
 
   //- class AdaptiveLocalFunction (specialised)
   template <
