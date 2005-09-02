@@ -12,6 +12,14 @@
 
 namespace Dune {
 
+  //- Forward declarations
+  template <class CombinedSpaceImp>
+  class SubSpace;
+  template <class CombinedSpaceImp>
+  class SubBaseFunctionSet;
+  template <class CombinedSpaceImp>
+  class SubMapper;
+
   template <class CombinedSpaceImp>
   struct SubSpaceTraits {
   private:
@@ -25,9 +33,10 @@ namespace Dune {
     typedef typename CombinedTraits::BaseFunctionSetType CombinedBaseFunctionSetType;
     typedef typename CombinedTraits::MapperType CombinedMapperType;
 
-    enum { CombinedDimRange = CombinedTraits::DimRange; }
+    enum { CombinedDimRange = CombinedTraits::DimRange };
 
   public:
+    // Assumption: only scalar contained function spaces
     enum { DimDomain = CombinedTraits::DimDomain,
            DimRange = 1 };
 
@@ -45,6 +54,7 @@ namespace Dune {
 
     typedef typename CombinedTraits::GridType GridType;
     typedef typename CombinedTraits::IteratorType IteratorType;
+    typedef typename CombinedTraits::DofConversionType DofConversionType;
 
   public:
     //- Friends
@@ -136,7 +146,7 @@ namespace Dune {
   };
 
   // Idea: wrap contained base function set, since this is exactly what you
-  // need here (except for when you go for ranges...)
+  // need here (except for when you go for ranges of subfunctions...)
   template <class CombinedSpaceImp>
   class SubBaseFunctionSet :
     public BaseFunctionSetDefault<SubSpaceTraits<CombinedSpaceImp> >
@@ -159,8 +169,11 @@ namespace Dune {
     typedef int deriType;
   public:
     //- Public methods
-    SubBaseFunctionSet(const CombinedBaseFunctionSetType& bSet) :
-      bSet_(bSet)
+    SubBaseFunctionSet(const CombinedBaseFunctionSetType& bSet,
+                       int component) :
+      bSet_(bSet),
+      component_(component),
+      tmp_(0.0)
     {}
 
     int getNumberOfBaseFunctions() const {
@@ -184,7 +197,9 @@ namespace Dune {
   private:
     //- Data members
     const CombinedBaseFunctionSetType& bSet_;
-    int component_;
+    const int component_;
+
+    mutable CombinedRangeType tmp_;
   };
 
   template <class CombinedSpaceImp>
@@ -199,16 +214,21 @@ namespace Dune {
     typedef SubSpaceTraits<CombinedSpaceType> Traits;
 
     typedef typename Traits::CombinedMapperType CombinedMapperType;
+    typedef typename Traits::DofConversionType DofConversionType;
 
   public:
     //- Public methods
     SubMapper(const CombinedSpaceType& spc,
-              const CombinedMapperType& mapper,
+              const ContainedMapperType& mapper,
               int component) :
       spc_(spc),
       mapper_(mapper),
-      component_(component)
+      component_(component),
+      utilGlobal_(policy == PointBased() ?
+                  spc.numComponents() :
+                  spc.size()/spc.numComponents())
     {}
+
     //! Total number of degrees of freedom
     int size() const;
 
@@ -267,9 +287,11 @@ namespace Dune {
 
   private:
     //- Data members
-    CombinedSpaceType& spc_;
-    CombinedMapperType& mapper_;
-    int component_;
+    const CombinedSpaceType& spc_;
+    const ContainedMapperType& mapper_;
+    const int component_;
+
+    DofConversionType utilGlobal_;
   };
 } // end namespace Dune
 

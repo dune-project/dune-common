@@ -10,6 +10,7 @@
 #include <dune/fem/common/discretefunctionspace.hh>
 #include <dune/fem/common/basefunctions.hh>
 #include <dune/fem/common/dofmapperinterface.hh>
+#include <dune/fem/space/subspace.hh>
 #include <dune/common/misc.hh>
 
 namespace Dune {
@@ -141,6 +142,8 @@ namespace Dune {
     typedef typename ContainedSpaceTraits::GridType GridType;
     typedef typename ContainedSpaceTraits::IteratorType IteratorType;
 
+    typedef DofConversionUtility<policy> DofConversionType;
+
     enum { DimRange = FunctionSpaceType::DimRange,
            DimDomain = FunctionSpaceType::DimDomain };
   public:
@@ -180,6 +183,8 @@ namespace Dune {
 
     typedef typename Traits::BaseFunctionSetType BaseFunctionSetType;
     typedef typename Traits::MapperType MapperType;
+
+    typedef typename Traits::DofConversionType DofConversionType;
 
     CompileTimeChecker<(Traits::ContainedDimRange == 1)> use_CombinedSpace_only_with_scalar_spaces;
   public:
@@ -233,12 +238,27 @@ namespace Dune {
 
     //! access to mapper
     const MapperType& mapper() const { return mapper_; }
+
+    //- Additional methods
+    //! number of components
+    int numComponents() const { return N; }
+
+    //! policy of this space
+    DofStoragePolicy policy() const { return policy; }
   private:
     //- Private typedefs
+    typedef typename Traits::ContainedMapperType ContainedMapperType;
+
+    //- Friend
+    friend class SubSpace<ThisType>;
 
   private:
     //- Private methods
     CombinedSpace(const ThisType& other);
+
+    const ContainedMapperType& containedMapper() const {
+      return mapper_.containedMapper();
+    }
 
   private:
     //- Member data
@@ -344,6 +364,10 @@ namespace Dune {
                              >
   {
   public:
+    //- Friends
+    friend class CombinedSpace<DiscreteFunctionSpaceImp, N, policy>;
+
+  public:
     //- Typedefs and enums
     enum { numComponents = N };
     typedef CombinedMapper<DiscreteFunctionSpaceImp, N, policy> ThisType;
@@ -359,7 +383,7 @@ namespace Dune {
       spc_(spc),
       mapper_(mapper),
       utilLocal_(N),
-      utilGlobal_(chooseSize(N, spc.size(), Int2Type<policy>()))
+      utilGlobal_(policy == PointBased ? N : spc.size())
     {}
 
     //! Total number of degrees of freedom
@@ -409,6 +433,10 @@ namespace Dune {
   private:
     //- Private methods
     CombinedMapper(const ThisType& other);
+
+    const ContainedMapperType& containedMapper() const {
+      return mapper_;
+    }
 
     static int chooseSize(int pointBased, int variableBased,
                           Int2Type<PointBased>) {

@@ -13,40 +13,65 @@ namespace Dune {
     mapper_(spc, spc.mapper(), component),
     component_(component)
   {
-    assert(false);
-    // * more to come here
+    // initialise your basefunction set with all Geometry types found in mesh
+    IteratorType endit = spc.end();
+    for (IteratorType it = spc.begin(); it != endit; ++it) {
+      GeometryType geo = it->geometry().type();
+      const int dimension =
+        static_cast<int>(IteratorType::Entity::mydimension);
+      GeometryIdentifier::IdentifierType id =
+        GeometryIdentifier::fromGeo(dimension, geo);
+
+      assert(id >= 0 && id < GeometryIdentifier::numTypes);
+      if (baseSetVec_[id] == 0) {
+        baseSetVec_[id] =
+          new BaseFunctionSetType(spc.getBaseFunctionSet(*it), component);
+      }
+    } // end for
   }
 
   //- class SubBaseFunctionSet
   template <class CombinedSpaceImp>
   template <int diffOrd>
-  void SubMapper<CombinedSpaceImp>::
+  void SubBaseFunctionSet<CombinedSpaceImp>::
   evaluate (int baseFunct,
-            const FieldVector<deriType, diffOrd> &diffVariable,
-            const DomainType & x, RangeType & phi ) const;
+            const FieldVector<deriType, diffOrd>& diffVariable,
+            const DomainType& x, RangeType& phi ) const
+  {
+    // Assumption: dimRange == 1
+    bSet_.evaluate(baseFunct, diffVariable, x, tmp_);
+    phi[0] = tmp_[component_];
+  }
 
   //! evaluate base function at quadrature point
+  template <class CombinedSpaceImp>
   template <int diffOrd, class QuadratureType >
-  void SubMapper<CombinedSpaceImp>::
+  void SubBaseFunctionSet<CombinedSpaceImp>::
   evaluate (int baseFunct,
             const FieldVector<deriType, diffOrd> &diffVariable,
             QuadratureType & quad,
-            int quadPoint, RangeType & phi ) const;
+            int quadPoint, RangeType & phi ) const
+  {
+    // Assumption: dimRange == 1
+    bSet_.evaluate(baseFunct, diffVariable, quad, quadPoint, tmp_);
+    phi[0] = tmp_[component_];
+  }
 
   //- class SubMapper
   template <class CombinedSpaceImp>
   int SubMapper<CombinedSpaceImp>::size() const
   {
-    assert(false);
-    // *more to come
+    return mapper_.size();
   }
 
   template <class CombinedSpaceImp>
   template <class EntityType>
   SubMapper<CombinedSpaceImp>::mapToGlobal(EntityType& en, int localNum) const
   {
-    assert(false);
-    // *more to come
+    const int containedGlobal = mapper_.mapToGlobal(en, localNum);
+
+    utilGlobal_.newSize(mapper_.size()); // ok, since pointbased specialisation does nothing for newSize
+    return utilGlobal_.combinedDof(containedGlobal, component_);
   }
 
 
