@@ -54,7 +54,7 @@ namespace Dune {
     }
 
     int combinedDof(int containedIndex, int component) const {
-      return containedIndex*N + component;
+      return containedIndex*numComponents_ + component;
     }
 
   private:
