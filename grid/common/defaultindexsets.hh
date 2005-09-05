@@ -3,6 +3,7 @@
 #ifndef __DUNE_DEFAULTINDEXSETS_HH__
 #define __DUNE_DEFAULTINDEXSETS_HH__
 
+#include <vector>
 #include <dune/common/misc.hh>
 #include <dune/common/array.hh>
 #include <dune/grid/common/grid.hh>
