@@ -40,11 +40,12 @@ namespace Dune {
     typedef typename DiscreteFunctionSpaceImp::Traits SpaceTraits;
     typedef typename SpaceTraits::RangeFieldType RangeFieldType;
 
-
     typedef typename Traits::DofStorageType DofStorageType;
     typedef typename Traits::MemObjectType MemObjectType;
+
   public:
     std::string name() const;
+    int size() const;
 
     DofIteratorType dbegin();
     DofIteratorType dend();
@@ -77,13 +78,13 @@ namespace Dune {
 
   protected:
     const DiscreteFunctionSpaceType& space() const { return spc_; }
-    MemObjectType& memObject() { return memObj_; }
+    DofStorageType& dofStorage() { return dofVec_; }
 
     AdaptiveFunctionImplementation(std::string name,
                                    const DiscreteFunctionSpaceType& spc);
     AdaptiveFunctionImplementation(std::string name,
                                    const DiscreteFunctionSpaceType& spc,
-                                   MemObjectType& memObject);
+                                   DofStorageType& dofVec);
     AdaptiveFunctionImplementation(const ThisType& other);
     ~AdaptiveFunctionImplementation();
 
@@ -91,7 +92,7 @@ namespace Dune {
     const DiscreteFunctionSpaceType& spc_;
     std::string name_;
     DofManagerType& dm_;
-    MemObjectType& memObj_;
+    MemObjectType* memObj_; // might be NULL (for SubSpaces)
     DofStorageType& dofVec_;
   }; // end class AdaptiveFunctionImplementation
 

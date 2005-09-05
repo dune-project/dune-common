@@ -9,9 +9,11 @@ namespace Dune {
   template <class CombinedSpaceImp>
   SubSpace<CombinedSpaceImp>::SubSpace(const CombinedSpaceType& spc,
                                        int component) :
+    BaseType(type()),
     spc_(spc),
-    mapper_(spc, spc.mapper(), component),
-    component_(component)
+    mapper_(spc, spc.mapper().containedMapper(), component),
+    component_(component),
+    baseSetVec_(GeometryIdentifier::numTypes, 0)
   {
     // initialise your basefunction set with all Geometry types found in mesh
     IteratorType endit = spc.end();

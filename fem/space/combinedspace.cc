@@ -13,8 +13,6 @@ namespace Dune {
     mapper_(spc, spc.mapper()),
     baseSetVec_(GeometryIdentifier::numTypes, 0)
   {
-    std::cout << "Size: " << baseSetVec_.size() << std::endl;
-
     // initialise your basefunction set with all Geometry types found in mesh
     IteratorType endit = spc.end();
     for (IteratorType it = spc.begin(); it != endit; ++it) {

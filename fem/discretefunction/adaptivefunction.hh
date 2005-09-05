@@ -123,9 +123,9 @@ namespace Dune {
     //! This constructor is only called internally
     AdaptiveDiscreteFunction(std::string name,
                              const DiscreteFunctionSpaceType& spc,
-                             MemObjectType& memObject) :
+                             DofStorageType& dofVec) :
       BaseType(spc),
-      Imp(name, spc, memObject)
+      Imp(name, spc, dofVec)
     {}
 
     //! Copy constructor
@@ -136,6 +136,7 @@ namespace Dune {
     {}
 
     using Imp::name;
+    using Imp::size;
     using Imp::dbegin;
     using Imp::dend;
     using Imp::newLocalFunction;
@@ -312,8 +313,7 @@ namespace Dune {
     typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
 
     //- Additional typedefs
-    //typedef SubSpace<DiscreteFunctionSpaceType> SubSpaceType;
-    typedef DiscreteFunctionSpaceType SubSpaceType;
+    typedef SubSpace<DiscreteFunctionSpaceType> SubSpaceType;
     typedef AdaptiveDiscreteFunction<
         SubSpaceType, DofManagerImp> SubDiscreteFunctionType;
 
@@ -327,6 +327,15 @@ namespace Dune {
       subSpaces_(0)
     {}
 
+    //! Constructor
+    AdaptiveDiscreteFunction(std::string name,
+                             const DiscreteFunctionSpaceType& spc,
+                             DofStorageType& dofVec) :
+      BaseType(spc),
+      Imp(name, spc, memObj),
+      subSpaces_(0)
+    {}
+
     //! Copy constructor
     AdaptiveDiscreteFunction(const MyType& other) :
       BaseType(other.space()),
@@ -337,6 +346,7 @@ namespace Dune {
     ~AdaptiveDiscreteFunction();
 
     using Imp::name;
+    using Imp::size;
     using Imp::dbegin;
     using Imp::dend;
     using Imp::newLocalFunction;
