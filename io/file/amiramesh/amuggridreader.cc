@@ -45,58 +45,6 @@ static int SegmentDescriptionByAmira(void *data, double *param, double *result)
 }
 #endif // #define HAVE_PSURFACE
 
-/** This method implements a linear function in order to be able to
- *  work with straight line boundaries.
- *  We interpret data as a DOUBLE* to the world coordinates of the
- *  three endpoints.
- *
- * \todo This should actually be replaced by using LinearSegments
- * instead of BoundarySegments.  But LinearSegments are buggy in UG.
- */
-static int linearSegmentDescription3d(void *data, double *param, double *result)
-{
-  Dune::FieldVector<double, 3> a,b,c,d;
-  a[0] = ((double*)data)[0];
-  a[1] = ((double*)data)[1];
-  a[2] = ((double*)data)[2];
-  b[0] = ((double*)data)[3];
-  b[1] = ((double*)data)[4];
-  b[2] = ((double*)data)[5];
-  c[0] = ((double*)data)[6];
-  c[1] = ((double*)data)[7];
-  c[2] = ((double*)data)[8];
-  d[0] = ((double*)data)[9];
-  d[1] = ((double*)data)[10];
-  d[2] = ((double*)data)[11];
-
-  // linear interpolation
-  for (int i=0; i<3; i++)
-    result[i] = a[i] + param[0]*(b[i]-a[i]) + param[1]*(d[i]-a[i])
-                + param[0]*param[1]*(a[i]+c[i]-b[i]-d[i]);
-
-  return 0;
-}
-
-// The same thing for triangles
-static int linearSegmentDescription3d_tri(void *data, double *param, double *result)
-{
-  Dune::FieldVector<double, 3> a,b,c;
-  a[0] = ((double*)data)[0];
-  a[1] = ((double*)data)[1];
-  a[2] = ((double*)data)[2];
-  b[0] = ((double*)data)[3];
-  b[1] = ((double*)data)[4];
-  b[2] = ((double*)data)[5];
-  c[0] = ((double*)data)[6];
-  c[1] = ((double*)data)[7];
-  c[2] = ((double*)data)[8];
-
-  // linear interpolation
-  for (int i=0; i<3; i++)
-    result[i] = a[i] + param[0]*(b[i]-a[i]) + param[1]*(c[i]-b[i]);
-
-  return 0;
-}
 
 /** \todo This is quadratic --> very slow */
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::detectBoundarySegments(int* elemData,
@@ -374,20 +322,10 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
 
   for(int i = 0; i < nBndSegments; i++) {
 
-    char segmentName[20];
-
-    // bordering subdomains
-    int left = 1;
-    int right = 2;
-
     point[0] = isBoundaryNode[faceList[i][0]];
     point[1] = isBoundaryNode[faceList[i][1]];
     point[2] = isBoundaryNode[faceList[i][2]];
 
-    if(sprintf(segmentName, "Segment %d", i) < 0)
-      DUNE_THROW(IOError, "createDomain: sprintf returned error value");
-
-    /* left = innerRegion, right = outerRegion */
     ((double*)grid.extra_boundary_data_)[9*i+0] = am_node_coordinates_float[3*faceList[i][0] + 0];
     ((double*)grid.extra_boundary_data_)[9*i+1] = am_node_coordinates_float[3*faceList[i][0] + 1];
     ((double*)grid.extra_boundary_data_)[9*i+2] = am_node_coordinates_float[3*faceList[i][0] + 2];
@@ -398,38 +336,14 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
     ((double*)grid.extra_boundary_data_)[9*i+7] = am_node_coordinates_float[3*faceList[i][2] + 1];
     ((double*)grid.extra_boundary_data_)[9*i+8] = am_node_coordinates_float[3*faceList[i][2] + 2];
 
-#if 1
-    double alpha[2] = {0, 0};
-    double beta[2]  = {1, 1};
+    std::vector<int> vertices(3);
+    vertices[0] = point[0];
+    vertices[1] = point[1];
+    vertices[2] = point[2];
+    grid.insertLinearSegment(i,
+                             vertices,
+                             ((double*)grid.extra_boundary_data_)+9*i);
 
-    if (UG3d::CreateBoundarySegment(segmentName,
-                                    left,             /*id of left subdomain */
-                                    right,            /*id of right subdomain*/
-                                    i,                /*id of segment*/
-                                    UG3d::NON_PERIODIC,
-                                    1,              // resolution, needed for UG graphics
-                                    point,
-                                    alpha, beta,
-                                    linearSegmentDescription3d_tri,
-                                    ((double*)grid.extra_boundary_data_)+9*i
-                                    )==NULL)
-      DUNE_THROW(IOError, "Error calling CreateBoundarySegment");;
-
-#else
-    // It would be a lot smarter to use this way of describing
-    // boundary segments.  But as of yet, UG crashes when using
-    // linear segments.
-    double paramCoords[3][2] = {{0,0}, {1,0}, {0,1}};
-    if (UG3d::CreateLinearSegment(segmentName,
-                                  left,             /*id of left subdomain */
-                                  right,            /*id of right subdomain*/
-                                  i,                /*id of segment*/
-                                  4,                // Number of corners
-                                  point,
-                                  paramCoords
-                                  )==NULL)
-      DUNE_THROW(IOError, "Error calling CreateLinearSegment");
-#endif
   }
 
   std::cout << nBndSegments << " segments created!" << std::endl;
@@ -823,7 +737,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
 {
   const int DIMWORLD = 3;
 
-  int point[4] = {-1, -1, -1, -1};
   double midPoint[3] = {0,0,0};
   double radius = 1;
 
@@ -889,9 +802,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
   if (!newDomain)
     DUNE_THROW(IOError, "createHexaDomain: UG3d::CreateDomain returned NULL");
 
-  /* Alle weiteren Aufrufe von 'CreateBoundarySegment' beziehen sich jetzt auf das eben
-     erzeugte Gebiet */
-
   /*
      Die Koordinaten der Eckknoten werden als user data an das jeweilige
      Segment weitergereicht.
@@ -905,72 +815,40 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
 
   for(int i = 0; i < numTriangles+numQuads; i++) {
 
-    char segmentName[20];
-
-    if(sprintf(segmentName, "Segment %d", i) < 0)
-      DUNE_THROW(IOError, "createHexaDomain: sprintf returned error value");
-
-    // bordering subdomains
-    int left = 1;
-    int right = 2;
-
     if (faceList[i][3]!=-1) {
 
       // change around ordering
-      point[0] = isBoundaryNode[faceList[i][3]];
-      point[1] = isBoundaryNode[faceList[i][2]];
-      point[2] = isBoundaryNode[faceList[i][1]];
-      point[3] = isBoundaryNode[faceList[i][0]];
+      std::vector<int> vertices(4);
+      vertices[0] = isBoundaryNode[faceList[i][3]];
+      vertices[1] = isBoundaryNode[faceList[i][2]];
+      vertices[2] = isBoundaryNode[faceList[i][1]];
+      vertices[3] = isBoundaryNode[faceList[i][0]];
 
       for (int j=0; j<4; j++)
         for (int k=0; k<3; k++)
           boundaryCoords[3*j+k] = am_node_coordinates_float[DIMWORLD*faceList[i][3-j] + k];
 
-      double alpha[2] = {0, 0};
-      double beta[2]  = {1, 1};
-
-      if (UG3d::CreateBoundarySegment(segmentName,
-                                      left,               /*id of left subdomain */
-                                      right,              /*id of right subdomain*/
-                                      i,                  /*id of segment*/
-                                      UG3d::NON_PERIODIC,
-                                      1,                // resolution, used by the UG graphics system
-                                      point,
-                                      alpha, beta,
-                                      linearSegmentDescription3d,
-                                      boundaryCoords
-                                      )==NULL)
-        DUNE_THROW(IOError, "createHexaDomain: UG3d::CreateBoundarySegment returned NULL");
+      grid.insertLinearSegment(i,
+                               vertices,
+                               boundaryCoords);
 
       boundaryCoords += 12;
 
     } else {
 
-      point[0] = isBoundaryNode[faceList[i][0]];
-      point[1] = isBoundaryNode[faceList[i][1]];
-      point[2] = isBoundaryNode[faceList[i][2]];
-      point[3] = -1;
+      std::vector<int> vertices(3);
+      vertices[0] = isBoundaryNode[faceList[i][0]];
+      vertices[1] = isBoundaryNode[faceList[i][1]];
+      vertices[2] = isBoundaryNode[faceList[i][2]];
 
       /* left = innerRegion, right = outerRegion */
       for (int j=0; j<3; j++)
         for (int k=0; k<3; k++)
           boundaryCoords[3*j+k]  = am_node_coordinates_float[DIMWORLD*faceList[i][j] + k];
 
-      double alpha[2] = {0, 0};
-      double beta[2]  = {1, 1};
-
-      if (UG3d::CreateBoundarySegment(segmentName,
-                                      left,               /*id of left subdomain */
-                                      right,              /*id of right subdomain*/
-                                      i,                  /*id of segment*/
-                                      UG3d::NON_PERIODIC,
-                                      1,                // resolution, used by the UG graphics system
-                                      point,
-                                      alpha, beta,
-                                      linearSegmentDescription3d_tri,
-                                      boundaryCoords
-                                      )==NULL)
-        DUNE_THROW(IOError, "createHexaDomain: UG3d::CreateBoundarySegment returned NULL");
+      grid.insertLinearSegment(i,
+                               vertices,
+                               boundaryCoords);
 
       boundaryCoords += 9;
     }
@@ -988,26 +866,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& gr
 /*                                                                               */
 /*********************************************************************************/
 /*********************************************************************************/
-
-/** This method implements a linear function in order to be able to
- *  work with straight line boundaries.
- *  We interpret data as a DOUBLE* to the world coordinates of the
- *  two endpoints.
- */
-static int linearSegmentDescription2d(void *data, double *param, double *result)
-{
-  double a[2], b[2];
-  a[0] = ((double*)data)[0];
-  a[1] = ((double*)data)[1];
-  b[0] = ((double*)data)[2];
-  b[1] = ((double*)data)[3];
-
-  // linear interpolation
-  result[0] = a[0] + (*param)*(b[0]-a[0]);
-  result[1] = a[1] + (*param)*(b[1]-a[1]);
-
-  return 0;
-}
 
 /** \todo This is quadratic --> very slow */
 void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::detectBoundarySegments(int* elemData,
@@ -1089,8 +947,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::createDomain(UGGrid<2,2>& grid,
                                                              const std::string& filename)
 {
 
-  int i;
-
   std::cout << "Loading 2D Amira domain " << filename << std::endl;
 
   ///////////////////////////////////////////////////////
@@ -1156,7 +1012,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::createDomain(UGGrid<2,2>& grid,
   }
 
   int noOfBNodes = 0;
-  for (i=0; i<noOfNodes; i++) {
+  for (int i=0; i<noOfNodes; i++) {
     if (isBoundaryNode[i] != -1)
       noOfBNodes++;
   }
@@ -1176,13 +1032,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::createDomain(UGGrid<2,2>& grid,
     DUNE_THROW(IOError, "2d AmiraMesh reader: calling UG2d::CreateDomain failed!");
   }
 
-  /* Alle weiteren Aufrufe von 'CreateBoundarySegment' beziehen sich jetzt auf das eben
-     erzeugte Gebiet */
-
-  // alpha und beta spannen den  Parameterbereich auf
-  double alpha = 0.0;
-  double beta  = 1.0;
-
   /* Koordinate der Endpunkte der Randsegmente herstellen, wird als user data an das jeweilige
      Segment weitergereicht, um eine Parametrisierungsfunktion definieren zu können. */
   grid.extra_boundary_data_ = ::malloc(4*noOfBSegments*sizeof(double));
@@ -1192,20 +1041,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::createDomain(UGGrid<2,2>& grid,
     DUNE_THROW(IOError, "2d AmiraMesh reader: malloc for extra_boundary_data_ failed!");
   }
 
-  for(i = 0; i < noOfBSegments; i++)
-  {
-    char segmentName[20];
-
-    // Every boundary segment has a name
-    if(sprintf(segmentName, "BS %d", i) < 0) {
-      delete am;
-      DUNE_THROW(IOError, "2d AmiraMesh reader: sprintf returned error code!");
-    }
-
-    /* left = innerRegion, right = outerRegion */
-    int left = 1;
-    int right = 2;
-
+  for(int i = 0; i < noOfBSegments; i++) {
 
     const FieldVector<int, 2>& thisEdge = boundary_segments[i];
 
@@ -1214,26 +1050,13 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::createDomain(UGGrid<2,2>& grid,
     ((double*)grid.extra_boundary_data_)[4*i+2] = am_node_coordinates[2*thisEdge[1]];
     ((double*)grid.extra_boundary_data_)[4*i+3] = am_node_coordinates[2*thisEdge[1]+1];
 
-    int renumNode[2];
-    renumNode[0] = isBoundaryNode[thisEdge[0]];
-    renumNode[1] = isBoundaryNode[thisEdge[1]];
+    std::vector<int> vertices(2);
+    vertices[0] = isBoundaryNode[thisEdge[0]];
+    vertices[1] = isBoundaryNode[thisEdge[1]];
 
-    if (UG2d::CreateBoundarySegment(segmentName,
-                                    left,           /*id of left subdomain */
-                                    right,          /*id of right subdomain*/
-                                    i,              /*id of segment*/
-                                    UG2d::NON_PERIODIC,
-                                    1,             // Resolution, only for the UG graphics
-                                    renumNode,
-                                    &alpha,
-                                    &beta,
-                                    linearSegmentDescription2d,
-                                    (double*)grid.extra_boundary_data_ + 4*i
-                                    )==NULL) {
-      delete am;
-      DUNE_THROW(IOError, "2d AmiraMesh reader:  calling UG2d::CreateBoundarySegment failed!");
-    }
-
+    grid.insertLinearSegment(i,
+                             vertices,
+                             ((double*)grid.extra_boundary_data_)+4*i);
 
   }
 
