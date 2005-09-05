@@ -174,7 +174,7 @@ namespace Dune {
     {
       enum { codim = EntityType::dimension };
       // get global vertex number
-      return indexSet_.template index<codim> (en,localNum);
+      return indexSet_.template subindex<codim> (en,localNum);
     }
 
     //! for dof manager, to check whether it has to copy dof or not
