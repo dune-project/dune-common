@@ -123,7 +123,7 @@ namespace Dune {
     }
 
     //! Level which this GridPart belongs to
-    int level() const { return level; }
+    int level() const { return level_; }
 
   private:
     const int level_;
