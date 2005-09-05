@@ -39,7 +39,7 @@ namespace Dune {
   template <class GridImp, class DefaultImp>
   struct GridObjectStreamOrDefault {
     GridObjectStreamOrDefaultHelper<
-        Conversion<GridImp, HasObjectStream::exists>,
+        Conversion<GridImp, HasObjectStream>::exists,
         GridImp,
         DefaultImp>::ObjectStreamType ObjectStreamType;
   };
