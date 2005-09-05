@@ -31,7 +31,7 @@ namespace Dune {
   //! Helper template (explicit specialisation if GridImp doesn't export an
   //! object stream -> DefaultImplementation is exported)
   template <class GridImp, class DefaultImp>
-  struct GridObjectStreamOrDefaultHelper {
+  struct GridObjectStreamOrDefaultHelper<false, GridImp, DefaultImp> {
     typedef DefaultImp ObjectStreamType;
   };
 
