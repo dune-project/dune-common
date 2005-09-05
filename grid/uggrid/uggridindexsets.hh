@@ -7,18 +7,23 @@
     \brief The index and id sets for the UGGrid class
  */
 
+//#include <dune/grid/common/defaultindexsets.hh>
 #include <vector>
+
 
 namespace Dune {
 
   template<int dim>
-  class UGGridLevelIndexSet
+  class UGGridLevelIndexSet /*: public DefaultGridIndexSetBase < UGGrid<dim,dim> >*/
   {
     typedef UGGrid<dim,dim> GridImp;
 
     friend class UGGrid<dim,dim>;
 
   public:
+
+    /** \todo Temporary */
+    enum {ncodim = dim+1};
 
     /** \brief Default constructor
 
@@ -42,6 +47,12 @@ namespace Dune {
     int subindex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid_->template getRealEntity<0>(e).template subIndex<cc>(i);
+    }
+
+
+    //! get number of entities of given codim, type and on this level
+    int size (int codim) const {
+      return grid_->size(level_, codim);
     }
 
     //! get number of entities of given codim, type and on this level
@@ -72,6 +83,32 @@ namespace Dune {
     {
       return myTypes_;
     }
+#if 1
+    /** \todo Dummy method to please the fem stuff */
+    int oldIndex(int elNum) const {
+      DUNE_THROW(NotImplemented, "oldIndex");
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int oldIndex(int elNum, int codim) const {
+      DUNE_THROW(NotImplemented, "oldIndex");
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int newIndex(int elNum) const {
+      DUNE_THROW(NotImplemented, "oldIndex");
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int newIndex(int elNum, int codim) const {
+      DUNE_THROW(NotImplemented, "oldIndex");
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int additionalSizeEstimate() const {
+      DUNE_THROW(NotImplemented, "additionalSizeEstimate");
+    }
+#endif
 
   private:
 
