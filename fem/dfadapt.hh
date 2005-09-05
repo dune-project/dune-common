@@ -15,7 +15,6 @@
 
 namespace Dune {
 
-
   template <class DiscreteFunctionSpaceImp>    class LocalFunctionAdapt;
   template <class DofType, class DofArrayType>  class DofIteratorAdapt;
   template <class DiscreteFunctionSpaceImp> class DFAdapt;
@@ -23,6 +22,7 @@ namespace Dune {
   template <class DiscreteFunctionSpaceImp>
   struct DFAdaptTraits {
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
+
     typedef DFAdapt<DiscreteFunctionSpaceImp> DiscreteFunctionType;
     typedef LocalFunctionAdapt<DiscreteFunctionSpaceImp> LocalFunctionType;
     typedef typename DofArray<
@@ -43,7 +43,9 @@ namespace Dune {
   //**********************************************************************
   template<class DiscreteFunctionSpaceType>
   class DFAdapt
-    : public DiscreteFunctionDefault<DFAdaptTraits<DiscreteFunctionSpaceType> >
+    : public DiscreteFunctionDefault<
+          DFAdaptTraits<DiscreteFunctionSpaceType>
+          >
   {
   public:
     typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
@@ -54,26 +56,24 @@ namespace Dune {
         DFAdaptTraits<DiscreteFunctionSpaceType>
         > DiscreteFunctionDefaultType;
 
+    typedef typename DiscreteFunctionSpaceType::GridType GridType;
+
+    typedef DofManager<GridType> DofManagerType;
+    typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
+
     enum { myId_ = 0};
 
   public:
+    typedef typename DiscreteFunctionSpaceType::MapperType MapperType;
     typedef typename DiscreteFunctionSpaceType::RangeFieldType DofType;
-    //typedef DofIteratorAdapt<typename DiscreteFunctionSpaceType::RangeField,
-    //        DofArrayType > DofIteratorType;
-    //typedef ConstDofIteratorDefault<DofIteratorType> ConstDofIteratorType;
-    typedef typename DofArray<
-        typename DiscreteFunctionSpaceType::RangeFieldType
-        >::DofIteratorType DofIteratorType;
-    typedef typename DofArray<
-        typename DiscreteFunctionSpaceType::RangeFieldType
-        >::ConstDofIteratorType ConstDofIteratorType;
+    typedef typename DofArrayType::DofIteratorType DofIteratorType;
+    typedef typename DofArrayType::ConstDofIteratorType ConstDofIteratorType;
 
-    typedef DofArray<DofType> DofStorageType;
-    typedef typename DiscreteFunctionSpaceType:: template DofTraits
-    < DofArray<DofType> >::MemObjectType MemObjectType;
+    typedef DofArrayType DofStorageType;
+    typedef MemObjectInterface MemObjectInterfaceType;
 
     typedef DFAdapt <DiscreteFunctionSpaceType> DiscreteFunctionType;
-    typedef LocalFunctionAdapt < DiscreteFunctionSpaceType > LocalFunctionType;
+    typedef LocalFunctionAdapt < DiscreteFunctionSpaceType> LocalFunctionType;
 
     typedef DiscreteFunctionSpaceType FunctionSpaceType;
     typedef DFAdaptTraits<DiscreteFunctionSpaceType> Traits;
@@ -158,26 +158,29 @@ namespace Dune {
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
-    bool write_xdr( const std::string filename );
+    bool write_xdr(std::string filename);
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
-    bool read_xdr( const std::string filename );
+    bool read_xdr(std::string filename);
 
     //! write function data to file filename|timestep in ascii Format
-    bool write_ascii(const std::string filename);
+    bool write_ascii(std::string filename);
 
     //! read function data from file filename|timestep in ascii Format
-    bool read_ascii(const std::string filename);
+    bool read_ascii(std::string filename);
 
     //! write function data in pgm fromat file
-    bool write_pgm(const std::string filename );
+    bool write_pgm(std::string filename);
 
     //! read function data from pgm fromat file
-    bool read_pgm(const std::string filename);
+    bool read_pgm(std::string filename);
 
     //! return name of this discrete function
-    const char * name () const { return name_.c_str(); }
+    std::string name () const { return name_; }
+
+    //! return siz fo this discrete function
+    int size() const { return dofVec_.size(); }
 
     //! return to MemObject which holds the memory of this discrete fucntion
     const MemObjectType & memObj() const { return memObj_; }
@@ -185,13 +188,14 @@ namespace Dune {
     const DofArrayType * getStorageType () const { return 0; }
 
   private:
-    typedef typename DiscreteFunctionSpaceType::GridType GridType;
-
     // name of this func
     std::string name_;
 
+    // DofManager
+    DofManager<GridType>& dm_;
+
     // MemObject that manages the memory for the dofs of this function
-    MemObjectType & memObj_;
+    std::pair<MemObjectInterface*, DofStorageType*> memPair_;
 
     //! array containing the dof of this function, see dofmanager.hh
     //! the array is stored within the mem object
@@ -210,14 +214,14 @@ namespace Dune {
   //! Implementation of the local functions
   //
   //**************************************************************************
-  template < class DiscreteFunctionSpaceType >
+  template < class DiscreteFunctionSpaceType>
   class LocalFunctionAdapt
     : public LocalFunctionDefault <DiscreteFunctionSpaceType ,
-          LocalFunctionAdapt < DiscreteFunctionSpaceType >  >
+          LocalFunctionAdapt <DiscreteFunctionSpaceType>  >
   {
     typedef typename DiscreteFunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
-    typedef LocalFunctionAdapt < DiscreteFunctionSpaceType > MyType;
-    typedef DFAdapt <DiscreteFunctionSpaceType> DiscFuncType;
+    typedef LocalFunctionAdapt<DiscreteFunctionSpaceType> MyType;
+    typedef DFAdapt<DiscreteFunctionSpaceType> DiscFuncType;
 
     enum { dimrange = DiscreteFunctionSpaceType::DimRange };
 
