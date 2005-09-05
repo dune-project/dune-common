@@ -21,17 +21,17 @@ namespace Dune {
   public:
 
     //! ???
-    typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
+    typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
     //! ???
     typedef typename FunctionSpaceType::GridType GridType;
     //! ???
     typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
     //! ???
-    typedef typename FunctionSpaceType::Range RangeVecType;
+    typedef typename FunctionSpaceType::RangeType RangeVecType;
     //! ???
-    typedef typename FunctionSpaceType::JacobianRange JacobianRange;
+    typedef typename FunctionSpaceType::JacobianRangeType JacobianRange;
     //! ???
-    typedef typename FunctionSpaceType::Domain DomainVecType;
+    typedef typename FunctionSpaceType::DomainType DomainVecType;
 
 
     //! return entry i,j of the local matrix
@@ -91,12 +91,12 @@ namespace Dune {
     //! ???
     void assemble ( ) const
     {
-      typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
+      typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
       typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
-      const GridType &grid = functionSpace_.getGrid();
+      const GridType &grid = functionSpace_.grid();
 
       {
         LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
@@ -200,17 +200,17 @@ namespace Dune {
     //! \todo Please doc me!
     void multiplyOnTheFly( const DiscFunctionType &arg, DiscFunctionType &dest ) const
     {
-      typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
+      typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
       typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
-      const GridType &grid = functionSpace_.getGrid();
+      const GridType &grid = functionSpace_.grid();
 
       typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
-      typedef typename FunctionSpaceType::Range RangeVecType;
-      typedef typename FunctionSpaceType::JacobianRange JacobianRange;
-      typedef typename FunctionSpaceType::Domain DomainVecType;
+      typedef typename FunctionSpaceType::RangeType RangeVecType;
+      typedef typename FunctionSpaceType::JacobianRangeType JacobianRange;
+      typedef typename FunctionSpaceType::DomainType DomainVecType;
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
       typedef typename DiscFunctionType::ConstDofIteratorType ConstDofIteratorType;

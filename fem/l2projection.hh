@@ -26,7 +26,7 @@ namespace Dune
     template <int polOrd, class FunctionType>
     void project (FunctionType &f, DiscreteFunctionType &discFunc)
     {
-      const typename DiscreteFunctionType::FunctionSpace
+      const typename DiscreteFunctionType::FunctionSpaceType
       & functionSpace_= discFunc.getFunctionSpace();
 
       int level = functionSpace_.level();
@@ -38,15 +38,15 @@ namespace Dune
       typedef typename DiscreteFunctionType::LocalFunctionType LocalFuncType;
 
 
-      const GridType & grid = functionSpace_.getGrid();
+      const GridType & grid = functionSpace_.grid();
 
-      typename FunctionSpaceType::Range ret (0.0);
-      typename FunctionSpaceType::Range phi (0.0);
+      typename FunctionSpaceType::RangeType ret (0.0);
+      typename FunctionSpaceType::RangeType phi (0.0);
 
       LevelIterator it = grid.template lbegin<0> ( level );
       LevelIterator endit = grid.template lend<0> ( level );
-      FixedOrderQuad <typename FunctionSpaceType::RangeField,
-          typename FunctionSpaceType::Domain , polOrd > quad ( *it );
+      FixedOrderQuad <typename FunctionSpaceType::RangeFieldType,
+          typename FunctionSpaceType::DomainType , polOrd > quad ( *it );
 
       LocalFuncType lf = discFunc.newLocalFunction();
 

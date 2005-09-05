@@ -15,8 +15,8 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
     DUNE_THROW(Exception, "The two function spaces don't belong to consecutive levels!");
 
   typedef typename FunctionSpaceType::GridType GridType;
-  const GridType& grid = coarseFSpace.getGrid();
-  if (&grid != &(fineFSpace.getGrid()))
+  const GridType& grid = coarseFSpace.grid();
+  if (&grid != &(fineFSpace.grid()))
     DUNE_THROW(Exception, "The two function spaces don't belong to the same grid!");
 
 
@@ -75,7 +75,7 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
           FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
 
           // Evaluate coarse grid base function
-          typename FunctionSpaceType::Range value;
+          typename FunctionSpaceType::RangeType value;
           FieldVector<int, 0> diffVariable;
           coarseBaseSet.evaluate(i, diffVariable, local, value);
 
@@ -133,7 +133,7 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
           FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
 
           // Evaluate coarse grid base function
-          typename FunctionSpaceType::Range value;
+          typename FunctionSpaceType::RangeType value;
           FieldVector<int, 0> diffVariable;
           coarseBaseSet.evaluate(i, diffVariable, local, value);
 
