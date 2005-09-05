@@ -3,6 +3,8 @@
 #ifndef DUNE_INTERFACES_HH
 #define DUNE_INTERFACES_HH
 
+#include "typetraits.hh"
+
 namespace Dune {
 
   //! An interface class for cloneable objects
@@ -18,6 +20,29 @@ namespace Dune {
 
   //! Tagging interface to indicate that Grid provides typedef ObjectStreamType
   struct HasObjectStream {};
+
+  //! Helper template (implicit specialisation if GridImp exports an object
+  //! stream
+  template <bool hasStream, class GridImp, class DefaultImp>
+  struct GridObjectStreamOrDefaultHelper {
+    typedef typename GridImp::ObjectStreamType ObjectStreamType;
+  };
+
+  //! Helper template (explicit specialisation if GridImp doesn't export an
+  //! object stream -> DefaultImplementation is exported)
+  template <class GridImp, class DefaultImp>
+  struct GridObjectStreamOrDefaultHelper {
+    typedef DefaultImp ObjectStreamType;
+  };
+
+  //! Template to choose right Object stream type for a given class
+  template <class GridImp, class DefaultImp>
+  struct GridObjectStreamOrDefault {
+    GridObjectStreamOrDefaultHelper<
+        Conversion<GridImp, HasObjectStream::exists>,
+        GridImp,
+        DefaultImp>::ObjectStreamType ObjectStreamType;
+  };
 
 } // end namespace Dune
 
