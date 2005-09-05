@@ -30,6 +30,8 @@ namespace Dune {
 
     typedef UG3d::UserProcPtr UserProcPtr;
 
+    typedef UG3d::BndSegFuncPtr BndSegFuncPtr;
+
     enum {GM_REFINE_NOT_CLOSED = UG3d::GM_REFINE_NOT_CLOSED};
 
     enum {GM_COPY_ALL = UG3d::GM_COPY_ALL};
@@ -401,6 +403,25 @@ namespace Dune {
       return UG3d::CreateFormatCmd(argc, argv);
     }
 
+    /** \todo Remove the const_casts */
+    static void* CreateBoundarySegment(const char *name, int left, int right,
+                                       int index, int res,
+                                       int *point,
+                                       const double *alpha, const double *beta,
+                                       UG3d::BndSegFuncPtr boundarySegmentFunction,
+                                       void *userData) {
+      return UG3d::CreateBoundarySegment(const_cast<char*>(name),            // internal name of the boundary segment
+                                         left,                      //  id of left subdomain
+                                         right,                      //  id of right subdomain
+                                         index,                  // Index of the segment
+                                         UG3d::NON_PERIODIC,     // I don't know what this means
+                                         res,                      // Resolution, only for the UG graphics
+                                         point,
+                                         const_cast<double*>(alpha),
+                                         const_cast<double*>(beta),
+                                         boundarySegmentFunction,
+                                         userData);
+    }
   };
 
   // Specializations for dimworld==3

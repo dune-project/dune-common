@@ -33,6 +33,8 @@ namespace Dune {
 
     typedef UG2d::UserProcPtr UserProcPtr;
 
+    typedef UG2d::BndSegFuncPtr BndSegFuncPtr;
+
     enum {GM_REFINE_NOT_CLOSED = UG2d::GM_REFINE_NOT_CLOSED};
 
     enum {GM_COPY_ALL = UG2d::GM_COPY_ALL};
@@ -397,6 +399,26 @@ namespace Dune {
 
     static int CreateFormatCmd(int argc, char** argv) {
       return UG2d::CreateFormatCmd(argc, argv);
+    }
+
+    /** \todo Remove the const_casts */
+    static void* CreateBoundarySegment(const char *name, int left, int right,
+                                       int index, int res,
+                                       int *point,
+                                       const double *alpha, const double *beta,
+                                       UG2d::BndSegFuncPtr boundarySegmentFunction,
+                                       void *userData) {
+      return UG2d::CreateBoundarySegment(const_cast<char*>(name),            // internal name of the boundary segment
+                                         left,                      //  id of left subdomain
+                                         right,                      //  id of right subdomain
+                                         index,                  // Index of the segment
+                                         UG2d::NON_PERIODIC,     // I don't know what this means
+                                         res,                      // Resolution, only for the UG graphics
+                                         point,
+                                         const_cast<double*>(alpha),
+                                         const_cast<double*>(beta),
+                                         boundarySegmentFunction,
+                                         userData);
     }
 
   };

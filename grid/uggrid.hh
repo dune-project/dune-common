@@ -364,6 +364,16 @@ namespace Dune {
     /** \brief End the coarse grid creation process */
     void createend();
 
+    /** \brief Preliminary method to insert a linear boundary segment into a UG coarse grid
+        \param index The index number of the segment
+        \param vertices The vertices of the segment
+        \param userData Pointer handed over to the segment implementation method.
+        To be removed quickly!
+     */
+    void insertLinearSegment(int index,
+                             const std::vector<int> vertices,
+                             void* userData);
+
     /** \brief Insert an element into the coarse grid
         \param type The GeometryType of the new element
         \param vertices The vertices of the new element, using the DUNE numbering
