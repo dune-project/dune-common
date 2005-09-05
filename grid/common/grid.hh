@@ -3,6 +3,10 @@
 #ifndef DUNE_GRID_HH
 #define DUNE_GRID_HH
 
+/** \file
+    \brief Different resources needed by all grid implementations
+ */
+
 #include <string>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
