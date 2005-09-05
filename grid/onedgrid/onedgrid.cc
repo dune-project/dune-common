@@ -54,7 +54,8 @@ Dune::OneDGridLevelIteratorFactory<0>::lbegin (const OneDGrid<1,1> * g, int leve
 
 template <int dim, int dimworld>
 Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, double rightBoundary)
-  : leafIndexSet_(*this),
+  : refinementType_(LOCAL),
+    leafIndexSet_(*this),
     idSet_(*this)
 {
   typedef const OneDGrid<dim,dimworld> GridImp;
@@ -91,7 +92,8 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, dou
 
 template <int dim, int dimworld>
 Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
-  : leafIndexSet_(*this),
+  : refinementType_(LOCAL),
+    leafIndexSet_(*this),
     idSet_(*this)
 {
   typedef const OneDGrid<dim,dimworld> GridImp;
