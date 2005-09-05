@@ -11,26 +11,23 @@
 namespace Dune {
 
   //- Forward declarations
-  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  template <class DiscreteFunctionSpaceImp>
   class AdaptiveDiscreteFunction;
-  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  template <class DiscreteFunctionSpaceImp>
   class AdaptiveLocalFunction;
-  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  template <class DiscreteFunctionSpaceImp>
   class AdaptiveDiscreteFunctionTraits;
-  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  template <class DiscreteFunctionSpaceImp>
   class AdaptiveLocalFunctionTraits;
 
 
-  template <class DiscreteFunctionSpaceImp, class DofManagerImp>
+  template <class DiscreteFunctionSpaceImp>
   class AdaptiveFunctionImplementation {
   private:
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
-    typedef DofManagerImp DofManagerType;
 
-    typedef AdaptiveFunctionImplementation<
-        DiscreteFunctionSpaceImp, DofManagerImp> ThisType;
-    typedef AdaptiveDiscreteFunctionTraits<
-        DiscreteFunctionSpaceImp, DofManagerImp> Traits;
+    typedef AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp> ThisType;
+    typedef AdaptiveDiscreteFunctionTraits<DiscreteFunctionSpaceImp> Traits;
 
     typedef typename Traits::DofIteratorType DofIteratorType;
     typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
@@ -41,7 +38,8 @@ namespace Dune {
     typedef typename SpaceTraits::RangeFieldType RangeFieldType;
 
     typedef typename Traits::DofStorageType DofStorageType;
-    typedef typename Traits::MemObjectType MemObjectType;
+    typedef typename Traits::GridType GridType;
+    typedef DofManager<GridType> DofManagerType;
 
   public:
     std::string name() const;
@@ -92,7 +90,7 @@ namespace Dune {
     const DiscreteFunctionSpaceType& spc_;
     std::string name_;
     DofManagerType& dm_;
-    MemObjectType* memObj_; // might be NULL (for SubSpaces)
+    std::pair<MemObjectInterface*, DofStorageType*> memPair_;
     DofStorageType& dofVec_;
   }; // end class AdaptiveFunctionImplementation
 
