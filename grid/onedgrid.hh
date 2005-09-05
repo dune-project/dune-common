@@ -383,11 +383,6 @@ namespace Dune {
 
     OneDGridIdSet<OneDGrid<dim,dimworld> > idSet_;
 
-#if 0
-    GlobalIdSet globalIdSet_;
-
-    LocalIdSet localIdSet_;
-#endif
   }; // end Class OneDGrid
 
   namespace Capabilities
