@@ -13,6 +13,7 @@
 
 // Dune includes
 #include <dune/common/misc.hh>
+#include <dune/common/interfaces.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/array.hh>
@@ -259,7 +260,7 @@ namespace Dune
     //! is true if Jinv_ and volume_ is calced
     mutable bool builtinverse_;
     enum { matdim = (mydim > 0) ? mydim : 1 };
-    mutable FieldMatrix<albertCtype,matdim,matdim> Jinv_; //!< storage for inverse of jacobian
+    mutable FieldMatrix<albertCtype,matdim,matdim> Jinv_;  //!< storage for inverse of jacobian
 
     //! is true if elMat_ was calced
     mutable bool builtElMat_;
@@ -646,7 +647,7 @@ namespace Dune
 
     //! the cuurent geometry
     mutable GeometryImp geo_;
-    mutable bool builtgeometry_; //!< true if geometry has been constructed
+    mutable bool builtgeometry_;  //!< true if geometry has been constructed
 
   }; // end of AlbertaGridEntity codim = 0
 
@@ -1223,16 +1224,17 @@ namespace Dune
      which dimension to use and which dimension your world should have, i.e:
 
      <tt> ./autogen.sh [OPTIONS]
-        --with-alberta=PATH_TO_ALBERTA and
-        --with-problem-dim=DIM --with-world-dim=DIMWORLD
+     --with-alberta=PATH_TO_ALBERTA and
+     --with-problem-dim=DIM --with-world-dim=DIMWORLD
      </tt>
 
      Now you must use the AlbertaGrid with DIM and DIMWORLD, otherwise
      unpredictable results may occur.
    */
   template <int dim, int dimworld>
-  class AlbertaGrid
-    : public GridDefault <dim,dimworld,albertCtype, AlbertaGrid<dim,dimworld> >
+  class AlbertaGrid :
+    public GridDefault <dim,dimworld,albertCtype, AlbertaGrid<dim,dimworld> >,
+    public HasObjectStream
   {
     friend class AlbertaGridEntity <0,dim,const AlbertaGrid<dim,dimworld> >;
     //friend class AlbertaGridEntity <1,dim,dimworld>;
