@@ -38,7 +38,7 @@ namespace Dune {
   //! Template to choose right Object stream type for a given class
   template <class GridImp, class DefaultImp>
   struct GridObjectStreamOrDefault {
-    GridObjectStreamOrDefaultHelper<
+    typedef typename GridObjectStreamOrDefaultHelper<
         Conversion<GridImp, HasObjectStream>::exists,
         GridImp,
         DefaultImp>::ObjectStreamType ObjectStreamType;
