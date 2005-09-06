@@ -1169,7 +1169,6 @@ namespace Dune
   class AlbertaGridLeafIterator :
     public AlbertaGridTreeIterator<codim, pitype, GridImp>,
     public LeafIteratorDefault<codim, pitype, GridImp, AlbertaGridLeafIterator>
-    //public LeafIteratorDefault <GridImp,AlbertaGridLeafIterator>
   {
   public:
     typedef typename GridImp::template Codim<codim>::Entity Entity;
