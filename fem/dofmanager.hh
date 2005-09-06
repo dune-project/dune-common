@@ -27,8 +27,7 @@
 namespace Dune {
 
   // forward declaration
-  template <class GridType>
-  class DofManager;
+  template <class GridType> class DofManager;
 
   template <class DofManagerImp> class DofManagerFactory;
 
@@ -692,9 +691,7 @@ namespace Dune {
   public:
     typedef typename GridObjectStreamOrDefault<GridType, DummyObjectStream>::ObjectStreamType ObjectStreamType;
 
-    typedef DataCollector<
-        GridType,
-        DataCollectorInterface<GridType, ObjectStreamType> > DataCollectorType;
+    typedef DataCollectorInterface< GridType , ObjectStreamType > DataCollectorType;
 
     // all things for one discrete function are put together in a MemObject
     typedef MemPointerType MemoryPointerType;
@@ -1083,7 +1080,7 @@ namespace Dune {
     // the same for the resize call
     resizeMemObjs_ += (*obj).resizeMemObject();
 
-    return std::pair<MemObjectInterface*, DofStorageType*>(obj, &obj.getArray());
+    return std::pair<MemObjectInterface*, DofStorageType*>(obj, & (obj->getArray()) );
     //return *obj;
   }
 
