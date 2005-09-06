@@ -106,6 +106,10 @@ namespace Dune {
     //**********************************************************
   public:
     static const ALU3dGridElementType elementType = elType;
+    typedef ALU3DSPACE ObjectStream ObjectStreamType;
+
+    friend class Conversion< ALU3dGrid<dim,dimworld,elementType> , HasObjectStream > ;
+    friend class Conversion< const ALU3dGrid<dim,dimworld,elementType> , HasObjectStream > ;
 
     typedef GridTraits<dim,dimworld, MyType ,
         ALU3dGridGeometry,ALU3dGridEntity,
@@ -123,7 +127,6 @@ namespace Dune {
 
     typedef ALU3dGridHierarchicIterator<MyType> HierarchicIteratorImp;
 
-    typedef ALU3DSPACE ObjectStream ObjectStreamType;
 
     //! Type of the hierarchic index set
     typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSet;
@@ -248,7 +251,10 @@ namespace Dune {
     int size (int level, int cd) const;
 
     //! number of grid entities on all levels for given codim
-    int global_size (int cd) const ;
+    int global_size (int cd) const DUNE_DEPRECATED;
+
+    //! number of grid entities in the entire grid for given codim
+    int hierSetSize (int cd) const;
 
     //! get global id set of grid
     const GlobalIdSet & globalIdSet () const { return globalIdSet_; }

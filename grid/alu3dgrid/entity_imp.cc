@@ -437,11 +437,24 @@ namespace Dune {
     //assert(false); // this method is to be removed soon
 
     assert(cc == dim);
+    dwarn << "Test this shit in: " << __FILE__ << " line: " <<  __LINE__ << "\n";
     assert(item_ != 0);
     typedef typename  ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElType;
     return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_ ,i);
   }
-  //******** end method subIndex *************
+
+  template<int dim, class GridImp>
+  template<int cc>
+  inline int ALU3dGridEntity<0,dim,GridImp> :: getSubIndex (int i) const
+  {
+    assert(cc == dim);
+    dwarn << "Test this shit in: " << __FILE__ << " line: " <<  __LINE__ << "\n";
+    assert(item_ != 0);
+    typedef typename  ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElType;
+    return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_ ,i);
+  }
+
+  //******** end method count *************
   template<int dim, class GridImp>
   template<int cc>
   inline int ALU3dGridEntity<0,dim,GridImp> :: count () const
@@ -533,7 +546,7 @@ namespace Dune {
             const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item,
             int i)
     {
-      DUNE_THROW(NotImplemented, "Access to edges not implemented in ALU3dGrid");
+      //DUNE_THROW(NotImplemented, "Access to edges not implemented in ALU3dGrid");
       dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
 
       int dummyTwist = 0;
