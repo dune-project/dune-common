@@ -47,16 +47,15 @@ namespace Dune {
     template <int cd>
     int subIndex (const EntityCodim0Type & ep, int i) const
     {
-      assert(cd == dim);
       const ALU3dGridEntity<0,dim,const GridType> & en = (grid_.template getRealEntity<0>(ep));
-      return en.template subIndex<cd>(i);
+      return en.template getSubIndex<cd>(i);
     }
 
     //! return size of indexset, i.e. maxindex+1
     int size ( int codim ) const
     {
-      // return maxIndex of hierarchic index set
-      return grid_.global_size(codim);
+      // return size of hierarchic index set
+      return grid_.hierSetSize(codim);
     }
 
     //! deliver all geometry types used in this grid
@@ -109,7 +108,7 @@ namespace Dune {
     {
       assert( cd == dim );
       assert( hset_.size(cd) < codimMultiplier );
-      return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
+      return codimStart_[cd] + hset_.template getSubIndex<cd>(ep,i);
     }
 
   private:
@@ -158,7 +157,7 @@ namespace Dune {
     {
       assert( cd == dim );
       assert( hset_.size(cd) < codimMultiplier );
-      return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
+      return codimStart_[cd] + hset_.template getSubIndex<cd>(ep,i);
     }
 
   private:
