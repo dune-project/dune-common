@@ -1099,7 +1099,6 @@ template Dune::UGGrid<2,2>::Traits::Codim<2>::LevelIterator Dune::UGGrid<2,2>::l
 
 template Dune::UGGrid<2,2>::Traits::Codim<0>::Partition<Dune::Interior_Partition>::LevelIterator
 Dune::UGGrid<2,2>::lbegin<0,Dune::Interior_Partition>(int level) const;
-#if 1
 template Dune::UGGrid<2,2>::Traits::Codim<0>::Partition<Dune::InteriorBorder_Partition>::LevelIterator
 Dune::UGGrid<2,2>::lbegin<0,Dune::InteriorBorder_Partition>(int level) const;
 template Dune::UGGrid<2,2>::Traits::Codim<0>::Partition<Dune::Overlap_Partition>::LevelIterator
@@ -1110,7 +1109,6 @@ template Dune::UGGrid<2,2>::Traits::Codim<0>::Partition<Dune::All_Partition>::Le
 Dune::UGGrid<2,2>::lbegin<0,Dune::All_Partition>(int level) const;
 template Dune::UGGrid<2,2>::Traits::Codim<0>::Partition<Dune::Ghost_Partition>::LevelIterator
 Dune::UGGrid<2,2>::lbegin<0,Dune::Ghost_Partition>(int level) const;
-#endif
 
 template Dune::UGGrid<2,2>::Traits::Codim<0>::Partition<Dune::Interior_Partition>::LevelIterator
 Dune::UGGrid<2,2>::lend<0,Dune::Interior_Partition>(int level) const;
@@ -1125,7 +1123,6 @@ Dune::UGGrid<2,2>::lend<0,Dune::All_Partition>(int level) const;
 template Dune::UGGrid<2,2>::Traits::Codim<0>::Partition<Dune::Ghost_Partition>::LevelIterator
 Dune::UGGrid<2,2>::lend<0,Dune::Ghost_Partition>(int level) const;
 
-#if 0
 template Dune::UGGrid<3,3>::Traits::Codim<0>::Partition<Dune::Interior_Partition>::LevelIterator
 Dune::UGGrid<3,3>::lbegin<0,Dune::Interior_Partition>(int level) const;
 template Dune::UGGrid<3,3>::Traits::Codim<0>::Partition<Dune::InteriorBorder_Partition>::LevelIterator
@@ -1151,4 +1148,3 @@ template Dune::UGGrid<3,3>::Traits::Codim<0>::Partition<Dune::All_Partition>::Le
 Dune::UGGrid<3,3>::lend<0,Dune::All_Partition>(int level) const;
 template Dune::UGGrid<3,3>::Traits::Codim<0>::Partition<Dune::Ghost_Partition>::LevelIterator
 Dune::UGGrid<3,3>::lend<0,Dune::Ghost_Partition>(int level) const;
-#endif
