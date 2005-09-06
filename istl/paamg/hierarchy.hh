@@ -554,10 +554,10 @@ namespace Dune
       GalerkinProduct productBuilder;
 
       for(Iterator level = matrices_.finest(), coarsest=matrices_.coarsest(); level!=coarsest; ++amap) {
-        Matrix& fine = level->matrix();
+        const Matrix& fine = level->matrix();
         ++level;
-        Matrix& coarse = level->matrix();
-        productBuilder.calculate(fine, *(*amap), coarse);
+        //Matrix& coarse(level->matrix());
+        productBuilder.calculate(fine, *(*amap), const_cast<Matrix&>(level->matrix()));
 
       }
     }

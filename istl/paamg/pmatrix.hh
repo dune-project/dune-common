@@ -40,16 +40,15 @@ namespace Dune
        * @brief Get the locally stored matrix.
        * @return The locally stored matrix.
        */
-      const Matrix& matrix()
+      const Matrix& matrix() const
       {
         return *matrix_;
       }
-
       /**
        * @brief Get the index set that maps global indices to matrix rows.
        *  @return The index set.
        */
-      const IndexSet& indexSet()
+      const IndexSet& indexSet() const
       {
         return *indices_;
       }
@@ -58,7 +57,7 @@ namespace Dune
        * @brief Get the information about remote indices also present locally.
        * @return The remote index information.
        */
-      const RemoteIndices& remoteIndices()
+      const RemoteIndices& remoteIndices() const
       {
         return *rIndices_;
       }
