@@ -1069,6 +1069,7 @@ namespace Dune
   {
     assert( element_ && elInfo_ );
     assert( element_ == elInfo_->el );
+
     // if no child exists, then this element is leaf element
     return (element_->child[0] == 0);
   }
@@ -1979,6 +1980,7 @@ namespace Dune
   inline void AlbertaGridTreeIterator<codim,pitype,GridImp>::
   makeIterator()
   {
+    assert(false);
     level_ = 0;
     enLevel_ = 0;
     vertex_ = 0;
@@ -2002,10 +2004,9 @@ namespace Dune
       , edge_ (0)
       , vertex_ (0)
       , vertexMarker_(0)
+      , okReturn_(false)
       , leafIt_(leafIt) , proc_(proc)
-  {
-    makeIterator();
-  }
+  {}
 
   // Make LevelIterator with point to element from previous iterations
   template<int codim, PartitionIteratorType pitype, class GridImp>
@@ -2015,20 +2016,22 @@ namespace Dune
       , level_   (org.level_)
       , enLevel_ (org.enLevel_)
       , virtualEntity_(*(this->entity_))
-      , manageStack_ ()
-      //, manageStack_ ( org.manageStack_ )
+      //, manageStack_ ()
+      , manageStack_ ( org.manageStack_ )
       , face_(org.face_)
       , edge_ (org.edge_)
       , vertex_ ( org.vertex_)
       , vertexMarker_(org.vertexMarker_)
-      , leafIt_(org.leafIt_) , proc_(org.proc_)
+      , okReturn_ (org.okReturn_ )
+      , leafIt_(org.leafIt_)
+      , proc_(org.proc_)
   {
     if(vertexMarker_)
     {
-      // if vertexMarker is not NULL then we have a real iterator
-      manageStack_.makeItNew(true);
       ALBERTA TRAVERSE_STACK * stack = manageStack_.getStack();
-      ALBERTA copyTraverseStack( stack , org.manageStack_.getStack() );
+      // if vertexMarker is not NULL then we have a real iterator
+      //manageStack_.makeItNew(true);
+      //ALBERTA copyTraverseStack( stack , org.manageStack_.getStack() );
 
       virtualEntity_.setTraverseStack( stack );
       /// get the actual used enInfo
@@ -2039,9 +2042,6 @@ namespace Dune
 
       assert( this->grid_.hierarchicIndexSet().index ( virtualEntity_ )
               == this->grid_.hierarchicIndexSet().index ( org.virtualEntity_ ) );
-
-      // virtualEntity_.setTraverseStack(manageStack_.getStack());
-      // virtualEntity_.setEntity( *(org.entity_) );
     }
   }
 
@@ -2055,12 +2055,14 @@ namespace Dune
       , enLevel_(level)
       , virtualEntity_(*(this->entity_))
       , face_ ( face ) ,  edge_ ( edge ), vertex_ ( vertex )
+      , okReturn_ (false)
       , leafIt_(false) ,  proc_(-1)
       , vertexMarker_(0)
       , vertex_ (0)
       , face_(0)
       , edge_ (0)
   {
+    abort();
     assert(stack);
     virtualEntity_.setTraverseStack(stack);
 
@@ -2084,6 +2086,7 @@ namespace Dune
       , edge_ (0)
       , vertex_ (0)
       , vertexMarker_(0)
+      , okReturn_ (false)
       , leafIt_(leafIt), proc_(proc)
   {
     ALBERTA MESH * mesh = this->grid_.getMesh();
@@ -2099,6 +2102,7 @@ namespace Dune
 
       // get traverse_stack
       manageStack_.makeItNew(true);
+      // ALBERTA printTraverseStack ( manageStack_.getStack() );
 
       virtualEntity_.setTraverseStack(manageStack_.getStack());
 
@@ -2315,8 +2319,6 @@ namespace Dune
     {
       // overloaded traverse_leaf_el_level, is not implemened in ALBERTA yet
       elinfo = traverseElLevel(stack);
-
-      //std::cout << elinfo << " elf | leaf " << leafIt_ << "\n";
 
       // if leafIt_ == false go to elements only on desired level
       if((elinfo) && (!leafIt_))
@@ -3839,11 +3841,10 @@ namespace Dune
   inline bool AlbertaGrid < dim, dimworld >::
   writeGridXdr (const std::basic_string<char> filename, albertCtype time ) const
   {
-    std::ostringstream ownerfile;
+    std::string ownerfile(filename);
     if(filename.size() > 0)
     {
-      ownerfile << filename;
-      ownerfile << "_own";
+      ownerfile += "_own";
     }
     else
       DUNE_THROW(AlbertaIOError, "no filename given in writeGridXdr ");
@@ -3851,10 +3852,11 @@ namespace Dune
     // strore element numbering to file
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
     {
-      std::ostringstream elnumfile;
-      elnumfile << filename;
-      elnumfile << "_num_c" << i;
-      ALBERTA write_dof_int_vec_xdr(dofvecs_.elNumbers[i],elnumfile.str().c_str());
+      std::string elnumfile(filename);
+      elnumfile += "_num_c";
+      char tmpchar[16]; sprintf(tmpchar,"%d",i);
+      elnumfile += tmpchar;
+      ALBERTA write_dof_int_vec_xdr(dofvecs_.elNumbers[i],elnumfile.c_str());
     }
 
     if(myRank() >= 0)
@@ -3862,50 +3864,52 @@ namespace Dune
       int val = -1;
       int entry = ALBERTA AlbertHelp::saveMyProcNum(dofvecs_.owner,myRank(),val);
 
-      ALBERTA write_dof_int_vec_xdr(dofvecs_.owner,ownerfile.str().c_str());
+      ALBERTA write_dof_int_vec_xdr(dofvecs_.owner,ownerfile.c_str());
 
       // set old value of owner vec
       dofvecs_.owner->vec[entry] = val;
     }
 
-    // use write_mesh_xdr, but works not correctly
-    return static_cast<bool> (ALBERTA write_mesh_xdr (mesh_ , filename.c_str(), time) );
+    const char * fn = filename.c_str();
+    int flag = ALBERTA write_mesh_xdr (mesh_ , fn , time);
+    return (flag == 1) ? true : false;
   }
 
   template < int dim, int dimworld >
   inline bool AlbertaGrid < dim, dimworld >::
   readGridXdr (const std::basic_string<char> filename, albertCtype & time )
   {
-    // use read_mesh_xdr, but works not correctly
-    mesh_ = (ALBERTA read_mesh_xdr (filename.c_str(), &time , ALBERTA AlbertHelp::initLeafData ,
+    const char * fn = filename.c_str();
+    mesh_ = (ALBERTA read_mesh_xdr (fn , &time , ALBERTA AlbertHelp::initLeafData ,
                                     ALBERTA AlbertHelp::initBoundary) );
+
     if (mesh_ == 0)
       DUNE_THROW(AlbertaIOError, "could not open grid file " << filename);
 
     // read element numbering from file
-    std::ostringstream ownerfile;
+    std::string ownerfile (filename);
     if(filename.size() > 0)
     {
-      ownerfile << filename;
-      ownerfile << "_own";
+      ownerfile += "_own";
     }
     else
       return false;
 
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
     {
-      std::ostringstream elnumfile;
-      elnumfile << filename;
-      elnumfile << "_num_c" << i;
-      std::cout << elnumfile.str() << " filename " << "\n";
-      dofvecs_.elNumbers[i] = ALBERTA read_dof_int_vec_xdr(elnumfile.str().c_str(), mesh_ , 0 );
+      std::string elnumfile( filename );
+      char tmpchar[16]; sprintf(tmpchar,"%d",i);
+      elnumfile += "_num_c"; elnumfile += tmpchar;
+      const char * elnumfn = elnumfile.c_str();
+      dofvecs_.elNumbers[i] = ALBERTA read_dof_int_vec_xdr(elnumfn, mesh_ , 0 );
     }
 
     // if owner file exists, read it
     {
-      dofvecs_.owner = 0;
+      //dofvecs_.owner = 0;
+
       FILE * file=0;
-      const char * ownfile = ownerfile.str().c_str();
+      const char * ownfile = ownerfile.c_str();
 
       file = fopen(ownfile,"r");
       if(file)
@@ -3930,6 +3934,8 @@ namespace Dune
       int maxIdx = ALBERTA AlbertHelp::calcMaxIndex( dofvecs_.elNumbers[i] );
       indexStack_[i].setMaxIndex(maxIdx);
     }
+
+    leafIndexSet();
 
     return true;
   }
