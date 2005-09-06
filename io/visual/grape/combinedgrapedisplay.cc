@@ -331,7 +331,7 @@ namespace Dune
     enditer_ = dispList_.end();
     for(grditer_ = dispList_.begin(); grditer_ != enditer_; ++grditer_)
     {
-      GridType & grid = (*grditer_)->getGrid();
+      const GridType & grid = (*grditer_)->getGrid();
       maxlevel = std::max( maxlevel, grid.maxlevel());
       noe += grid.leafIndexSet().size(0);
       nov += grid.leafIndexSet().size(dim);

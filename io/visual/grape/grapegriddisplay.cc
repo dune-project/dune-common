@@ -11,7 +11,7 @@ namespace Dune
 
   template<class GridType>
   inline GrapeGridDisplay<GridType>::
-  GrapeGridDisplay(GridType &grid, const int myrank ) :
+  GrapeGridDisplay(const GridType &grid, const int myrank ) :
     grid_(grid)
     , leafset_(grid.leafIndexSet())
     , myRank_(myrank)
@@ -24,7 +24,7 @@ namespace Dune
 
   template<class GridType>
   inline GrapeGridDisplay<GridType>::
-  GrapeGridDisplay(GridType &grid ) :
+  GrapeGridDisplay(const GridType &grid ) :
     grid_(grid)
     , leafset_(grid.leafIndexSet())
     , myRank_(-1) ,
@@ -75,10 +75,9 @@ namespace Dune
     {
       const DuneElement &geometry = en.geometry();
 
-      he->eindex = leafset_.index(en);
+      if( en.isLeaf() ) he->eindex = leafset_.index(en);
+      else he->eindex = -1;
       he->level  = en.level();
-
-      //std::cout << he->eindex << "\n";
 
       // if not true, only the macro level is drawn
       he->has_children = 1;
@@ -101,7 +100,6 @@ namespace Dune
       for(int i = 0; i< en.template count<dim>(); i++)
       {
         he->vindex[i] = leafset_. template subIndex<dim> (en,i);
-        //std::cout << he->vindex[i] << " Vertex is \n";
       }
 
       {
@@ -602,7 +600,7 @@ namespace Dune
   }
 
   template<class GridType>
-  inline GridType & GrapeGridDisplay<GridType>::getGrid()
+  inline const GridType & GrapeGridDisplay<GridType>::getGrid() const
   {
     return grid_;
   }
@@ -616,7 +614,9 @@ namespace Dune
     // default set all coordinates to zero
     for(int i=0; i<MAX_EL_DOF; i++)
       for(int j=0; j<3; j++)
+      {
         hel_.vpointer[i][j] = 0.0;
+      }
 
     maxlevel = grid_.maxlevel();
     noe = leafset_.size(0);
