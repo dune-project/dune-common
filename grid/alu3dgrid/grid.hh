@@ -83,9 +83,8 @@ namespace Dune {
     public GridDefault<dim, dimworld, alu3d_ctype, ALU3dGrid<dim,dimworld, elType> >,
     public HasObjectStream
   {
-    //CompileTimeChecker<dim      == 3>   ALU3dGrid_only_implemented_for_3dp;
-    //CompileTimeChecker<dimworld == 3>   ALU3dGrid_only_implemented_for_3dw;
-    //CompileTimeChecker< (eltype == ALU3DSPACE tetra_t) || (eltype == ALU3DSPACE hexa_t ) > ALU3dGrid_only_implemented_for_tetra_or_hexa;
+    CompileTimeChecker<(dim      == 3)> ALU3dGrid_only_implemented_for_3dp;
+    CompileTimeChecker<(dimworld == 3)> ALU3dGrid_only_implemented_for_3dw;
 
     typedef ALU3dGrid<dim,dimworld,elType> MyType;
     friend class ALU3dGridEntity <0,dim,MyType>;
