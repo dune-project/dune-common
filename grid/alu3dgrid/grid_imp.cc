@@ -179,6 +179,14 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline int ALU3dGrid<dim, dimworld, elType>::hierSetSize(int codim) const
+  {
+    // return actual size of hierarchical index set
+    assert( mygrid_ );
+    return (*mygrid_).indexManager(codim).getMaxIndex();
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   inline const typename ALU3dGrid<dim, dimworld, elType>::LeafIndexSet &
   ALU3dGrid<dim, dimworld, elType>::leafIndexSet() const
   {
