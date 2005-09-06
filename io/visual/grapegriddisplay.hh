@@ -28,7 +28,7 @@ namespace Dune
     //typedef typename GridType::Traits::template Codim<0>::template Partition<Interior_Partition>:: LeafIterator LeafIteratorType;
   protected:
     //! the grid we want to display
-    GridType &grid_;
+    const GridType &grid_;
 
     //! leaf index set of the grid
     const LeafIndexSetType & leafset_;
@@ -53,10 +53,10 @@ namespace Dune
 
   public:
     //! Constructor, make a GrapeGridDisplay for given grid
-    inline GrapeGridDisplay(GridType &grid, const int myrank );
+    inline GrapeGridDisplay(const GridType &grid, const int myrank );
 
     //! Constructor, make a GrapeGridDisplay for given grid
-    inline GrapeGridDisplay(GridType &grid);
+    inline GrapeGridDisplay(const GridType &grid);
 
     //! Destructor for GrapeGridDisplay
     inline ~GrapeGridDisplay();
@@ -74,7 +74,7 @@ namespace Dune
     inline void addMyMeshToTimeScene(void * timescene, double time, int proc);
 
     //! return reference to Dune Grid
-    inline GridType& getGrid();
+    inline const GridType& getGrid() const ;
 
     bool hasData () { return false; }
 
