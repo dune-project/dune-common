@@ -67,7 +67,7 @@ namespace Dune {
 
   public:
     //! Constructor
-    GridPartDefault(GridType& grid, const IndexSetType& iset) :
+    GridPartDefault(const GridType& grid, const IndexSetType& iset) :
       GridPartInterface<GridPartTraits>(),
       grid_(grid),
       iset_(iset) {}
@@ -104,7 +104,7 @@ namespace Dune {
   public:
     //- Public methods
     //! Constructor
-    LevelGridPart(GridType& grid, int level) :
+    LevelGridPart(const GridType& grid, int level) :
       GridPartDefault<Traits>(grid, grid.levelIndexSet(level)),
       level_(level) {}
 
@@ -161,7 +161,7 @@ namespace Dune {
   public:
     //- Public methods
     //! Constructor
-    LeafGridPart(GridType& grid) :
+    LeafGridPart(const GridType& grid) :
       GridPartDefault<Traits>(grid, grid.leafIndexSet()) {}
 
     //! Begin iterator on the leaf level
@@ -215,7 +215,7 @@ namespace Dune {
   public:
     //- Public methods
     //! Constructor
-    DefaultGridPart(GridType& grid, IndexSetType & iset ) :
+    DefaultGridPart(const GridType& grid, const IndexSetType & iset ) :
       GridPartDefault<Traits>(grid, iset) {}
 
     //! Begin iterator on the leaf level
