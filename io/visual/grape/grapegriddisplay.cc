@@ -178,8 +178,8 @@ namespace Dune
     //myLeafIt_    = new LeafIteratorType ( it );
     //myLeafEndIt_ = new LeafIteratorType ( endit );
 
-    myLeafIt_    = new LeafIteratorType ( grid_.template leafbegin<0,Interior_Partition> (levelOI) );
-    myLeafEndIt_ = new LeafIteratorType ( grid_.template leafend  <0,Interior_Partition> (levelOI) );
+    myLeafIt_    = new LeafIteratorType ( grid_.template leafbegin<0, All_Partition> (levelOI) );
+    myLeafEndIt_ = new LeafIteratorType ( grid_.template leafend  <0, All_Partition> (levelOI) );
 
     if(myLeafIt_[0] == myLeafEndIt_[0])
     {
