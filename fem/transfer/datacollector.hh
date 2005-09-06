@@ -3,9 +3,11 @@
 #ifndef DUNE_DATACOLLECTOR_HH
 #define DUNE_DATACOLLECTOR_HH
 
+//-System includes
 #include <vector>
+
+//-Dune includes
 #include <dune/fem/common/objpointer.hh>
-#include <dune/fem/dofmanager.hh>
 
 namespace Dune {
 
@@ -22,6 +24,9 @@ namespace Dune {
      prolongLocal) is given by the implementation (see below ) and
      has to be the same for all local operators you want to combine
    */
+
+  // forward declareation of DofManager
+  template <class GridImp> class DofManager;
 
   template <class LocalOp, class ParamType> class LocalInlinePlus;
 
