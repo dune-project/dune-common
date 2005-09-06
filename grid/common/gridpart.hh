@@ -73,15 +73,13 @@ namespace Dune {
       iset_(iset) {}
 
     //! Returns reference to the underlying grid
-    //! \note Can't be const in order to allow for marking of entities
-    GridType& grid() { return grid_; }
     const GridType& grid() const { return grid_; }
 
     //! Returns reference to index set of the underlying grid
     const IndexSetType& indexSet() const { return iset_; }
 
   private:
-    GridType& grid_; // needs to modifyable, so that one can mark
+    const GridType& grid_;
     const IndexSetType& iset_;
   };
 
