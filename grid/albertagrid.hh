@@ -364,13 +364,13 @@ namespace Dune
 
     //! index is unique and consecutive per level and codim
     //! used for access to degrees of freedom
-    int index () const;
+    int index () const DUNE_DEPRECATED;
 
     //! index of the boundary which is associated with the entity, 0 for inner entities
     int boundaryId () const ;
 
     //! return the global unique index in grid
-    int globalIndex() const ;
+    int globalIndex() const DUNE_DEPRECATED;
 
     AlbertaGridEntity(const GridImp &grid, int level,
                       ALBERTA TRAVERSE_STACK * travStack);
@@ -511,10 +511,10 @@ namespace Dune
     int level () const;
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedo
-    int index () const;
+    int index () const DUNE_DEPRECATED;
 
     //! return the global unique index in grid , same as el_index
-    int globalIndex() const ;
+    int globalIndex() const DUNE_DEPRECATED;
 
     //! index of the boundary which is associated with the entity, 0 for inner entities
     int boundaryId () const;
@@ -530,7 +530,7 @@ namespace Dune
 
     //! return index of sub entity with codim = cc and local number i
     //! i.e. return global number of vertex i
-    template<int cc> int subIndex (int i) const;
+    template<int cc> int subIndex (int i) const DUNE_DEPRECATED;
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
@@ -1261,6 +1261,9 @@ namespace Dune
     friend class AlbertaMarkerVector;
     friend class AlbertaGridHierarchicIndexSet<dim,dimworld>;
 
+    friend class Conversion< AlbertaGrid<dim,dimworld> , HasObjectStream > ;
+    friend class Conversion< const AlbertaGrid<dim,dimworld> , HasObjectStream > ;
+
     //**********************************************************
     // The Interface Methods
     //**********************************************************
@@ -1284,7 +1287,6 @@ namespace Dune
     typedef AlbertaGridGlobalIdSet<dim,dimworld> LocalIdSet;
 
     typedef ObjectStream ObjectStreamType;
-    //typedef AlbertaObjectStream ObjectStreamType;
 
     //! we always have dim+1 codimensions
     enum { numCodim = dim+1 };
@@ -1538,6 +1540,9 @@ namespace Dune
     const std::vector < GeometryType > & geomTypes () const { return geomTypes_; }
 
   private:
+    //! copy Constructor is private so that grid cannot be copied
+    AlbertaGrid(const AlbertaGrid<dim,dimworld> & copy );
+
     Array<int> ghostFlag_; // store ghost information
 
     // initialize of some members
