@@ -96,9 +96,9 @@ namespace Dune
     //! The level of this entity
     int level () const { return realEntity.level(); }
     //! Unique and consecutive index per level and codim
-    int index () const { return realEntity.index(); }
+    int index () const DUNE_DEPRECATED { return realEntity.index(); }
     //! The global unique index
-    int globalIndex () const { return realEntity.globalIndex(); }
+    int globalIndex () const DUNE_DEPRECATED { return realEntity.globalIndex(); }
     //! Return partition type attribute
     PartitionType partitionType () const { return realEntity.partitionType(); }
     /**
@@ -230,9 +230,9 @@ namespace Dune
     //! Level of this entity
     int level () const { return realEntity.level(); }
     //! Unique and consecutive index per level and codim
-    int index () const { return realEntity.index(); }
+    int index () const DUNE_DEPRECATED { return realEntity.index(); }
     //! Global unique index per grid
-    int globalIndex () const { return realEntity.globalIndex(); }
+    int globalIndex () const DUNE_DEPRECATED { return realEntity.globalIndex(); }
     //! Partition type attribute
     PartitionType partitionType () const { return realEntity.partitionType(); }
     /** \brief Id of the boundary which is associated with
@@ -439,9 +439,9 @@ namespace Dune
     //! Level of this entity
     int level () const { return realEntity.level(); }
     //! Unique and consecutive index per level and codim
-    int index () const { return realEntity.index(); }
+    int index () const DUNE_DEPRECATED { return realEntity.index(); }
     //! Global unique index per grid
-    int globalIndex () const { return realEntity.globalIndex(); }
+    int globalIndex () const DUNE_DEPRECATED { return realEntity.globalIndex(); }
     //! Partition type attribute
     PartitionType partitionType () const { return realEntity.partitionType(); }
     /** \brief Id of the boundary which is associated with
