@@ -182,11 +182,6 @@ namespace Dune {
     //! return siz fo this discrete function
     int size() const { return dofVec_.size(); }
 
-    //! return to MemObject which holds the memory of this discrete fucntion
-    const MemObjectType & memObj() const { return memObj_; }
-
-    const DofArrayType * getStorageType () const { return 0; }
-
   private:
     // name of this func
     std::string name_;
