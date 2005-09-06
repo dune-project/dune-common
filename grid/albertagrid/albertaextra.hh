@@ -158,7 +158,12 @@ static inline void initTraverseStack(TRAVERSE_STACK *stack);
 
 inline static TRAVERSE_STACK *getTraverseStack(void)
 {
-  return get_traverse_stack();
+  TRAVERSE_STACK * stack = get_traverse_stack();
+  // if we use copyTraverseStack we should only create stacks with
+  // stack_size > 0 otherwise we get errors in TreeIterator
+  //if(stack->stack_size <= 0) enlargeTraverseStack( stack );
+  //std::cout << stack << " stack \n";
+  return stack;
 }
 
 inline static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack)
@@ -207,6 +212,8 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 inline void copyTraverseStack( TRAVERSE_STACK* stack, TRAVERSE_STACK* org )
 {
   int used = stack->stack_size;
+  // we have problems to copy stack of length 0
+  assert( used > 0 );
 
   if(stack->elinfo_stack) MEM_FREE(stack->elinfo_stack,used, EL_INFO);
   if(stack->info_stack) MEM_FREE(stack->info_stack,used, U_CHAR );
