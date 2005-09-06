@@ -24,17 +24,26 @@ namespace Dune {
 
   template <class FunctionSpaceImp,class GridPartImp, int polOrd>
   struct LagrangeDiscreteFunctionSpaceTraits {
+
     typedef FunctionSpaceImp FunctionSpaceType;
     typedef GridPartImp GridPartType;
-    //typedef DofManagerImp DofManagerType;
-    typedef LagrangeDiscreteFunctionSpace<
-        FunctionSpaceImp, GridPartImp, polOrd
-        > DiscreteFunctionSpaceType;
-    typedef FastBaseFunctionSet<DiscreteFunctionSpaceType> BaseFunctionSetType;
 
     typedef typename GridPartType::GridType GridType;
     typedef typename GridPartType::IndexSetType IndexSetType;
     typedef typename GridPartType::template Codim<0>::IteratorType IteratorType;
+    enum { DimRange = FunctionSpaceType::DimRange };
+
+    typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
+    typedef typename FunctionSpaceType::DomainFieldType DomainFieldType;
+    typedef typename FunctionSpaceType::RangeType RangeType;
+    typedef typename FunctionSpaceType::DomainType DomainType;
+    typedef typename FunctionSpaceType::JacobianRangeType JacobianRangeType;
+
+    //typedef DofManagerImp DofManagerType;
+    typedef LagrangeDiscreteFunctionSpace<
+        FunctionSpaceImp, GridPartImp, polOrd> DiscreteFunctionSpaceType;
+    typedef FastBaseFunctionSet<DiscreteFunctionSpaceType> BaseFunctionSetType;
+    typedef LagrangeMapper<IndexSetType,polOrd,DimRange> MapperType;
   };
 
   //****************************************************************
@@ -124,10 +133,6 @@ namespace Dune {
 
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
-    //LagrangeDiscreteFunctionSpace(GridPartType & g, DofManagerType & dm);
-
-    //! Constructor generating for each different element type of the grid a
-    //! LagrangeBaseSet with polOrd
     LagrangeDiscreteFunctionSpace(GridPartType & g);
 
     //! Desctructor
@@ -169,7 +174,6 @@ namespace Dune {
     int dimensionOfValue () const;
 
     //! Return grid
-    GridType& grid() { return grid_.grid(); }
     const GridType& grid() const { return grid_.grid(); }
 
     //! level
@@ -218,7 +222,7 @@ namespace Dune {
     //mutable DofManagerType & dm_;
 
     //! the index set, used by the mapper for mapping between grid and space
-    mutable GridPartType& grid_;
+    GridPartType& grid_;
   private:
     //! the corresponding LagrangeMapper
     MapperType *mapper_;
