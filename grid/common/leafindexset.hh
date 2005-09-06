@@ -3,6 +3,7 @@
 #ifndef __DUNE_LEAFINDEXSET_HH__
 #define __DUNE_LEAFINDEXSET_HH__
 
+#include <dune/common/misc.hh>
 #include <dune/common/array.hh>
 #include <dune/grid/common/defaultindexsets.hh>
 
@@ -78,9 +79,19 @@ namespace Dune {
 
      Future work. Index set for each codim.
    */
+
+  //template <int codim> struct InitializeCodim;
+  //static bool codimInitialized[4] = { false , false, false, false };
+  class CodimLeafIndexSet;
+
   template <class GridType>
   class AdaptiveLeafIndexSet : public DefaultGridIndexSetBase <GridType>
   {
+  public:
+    enum { ncodim = GridType::dimension + 1 };
+
+  private:
+
     // busines as usual
 
     template <class EntityType, class IndexSetType , int enCodim, int codim >
@@ -128,32 +139,62 @@ namespace Dune {
         return en.template subIndex<3> (num);
       }
     };
+
     //******************************************************************
+    //  partial specialisation for the insertion of all sub entity indices
+    //******************************************************************
+    template <class HSetImp, class CodimLeafSet, class EntityType, int codim>
+    struct PartialSpec
+    {
+      CompileTimeChecker< (codim > 1) ? true : false> check;
+      static inline void iterateCodims (const HSetImp & hIndexSet ,
+                                        CodimLeafSet (&cls)[ncodim], const EntityType & en , bool (&cdUsed)[ncodim])
+      {
+        CodimLeafSet & lset = cls[codim];
+        if(cdUsed[codim])
+        {
+          for(int i=0; i<en.template count<codim> (); i++)
+          {
+            lset.insert( hIndexSet. template subIndex<codim> (en,i) );
+          }
+        }
+
+        PartialSpec<HSetImp,CodimLeafSet,EntityType,codim-1> ::
+        iterateCodims (hIndexSet, cls, en , cdUsed );
+      }
+    };
+
+    template <class HSetImp, class CodimLeafSet, class EntityType>
+    struct PartialSpec<HSetImp,CodimLeafSet,EntityType,1>
+    {
+      static inline void iterateCodims (const HSetImp & hIndexSet ,
+                                        CodimLeafSet (&cls)[ncodim], const EntityType & en , bool (&cdUsed)[ncodim])
+      {
+        enum { codim = 1 };
+        CodimLeafSet & lset = cls[codim];
+        if(cdUsed[codim])
+        {
+          for(int i=0; i<en.template count<codim> (); i++)
+          {
+            lset.insert( hIndexSet. template subIndex<codim> (en,i) );
+          }
+        }
+      }
+    };
 
     // my type, to be revised
     enum { myType = 2 };
 
-    enum INDEXSTATE { NEW, USED, UNUSED };
+    CodimLeafIndexSet codimLeafSet_[ncodim];
+
+    typedef typename GridType :: HierarchicIndexSet HIndexSetType;
+    typedef typename GridType :: template Codim<0> :: Entity EntityCodim0Type;
+    const HIndexSetType & hIndexSet_;
 
     enum { dim = GridType :: dimension };
 
-    // the mapping of the global to leaf index
-    IndexArray<int> leafIndex_;
-
-    // old indices
-    IndexArray<int> oldLeafIndex_;
-
-    // stack for holes
-    IndexArray<int> holes_;
-
-    // the state of each index
-    IndexArray<INDEXSTATE> state_;
-
-    // next index to give away
-    int nextFreeIndex_;
-
-    // actual size of index set
-    int actSize_;
+    // flag for codim is in use or not
+    bool codimUsed_ [ncodim];
 
     // true if all entities that we use are marked as USED
     bool marked_;
@@ -161,24 +202,24 @@ namespace Dune {
     // true if the used entities were marked by grid walkthrough
     bool markAllU_;
 
-    const int factor_;
-
-    typedef typename GridType :: HierarchicIndexSet HIndexSetType;
-    const HIndexSetType & hIndexSet_;
+    bool higherCodims_;
 
   public:
-    enum { ncodim = GridType::dimension + 1 };
     //! Constructor
-    AdaptiveLeafIndexSet (const GridType & grid) : DefaultGridIndexSetBase <GridType> (grid) ,
-                                                   nextFreeIndex_ (0), actSize_(0), marked_(false), markAllU_ (false)
-                                                   , factor_(2) , hIndexSet_( grid.hierarchicIndexSet() )
+    AdaptiveLeafIndexSet (const GridType & grid)
+      : DefaultGridIndexSetBase <GridType> (grid) ,
+        hIndexSet_( grid.hierarchicIndexSet() ) ,
+        marked_ (false) , markAllU_ (false) , higherCodims_ (false)
     {
+      for(int i=0; i<ncodim; i++) codimUsed_[i] = true;
+      for(int i=0; i<ncodim; i++) codimLeafSet_[i].setCodim( i );
       resizeVectors();
 
       // give all entities that lie below the old entities new numbers
       markAllUsed ();
       //resize();
       markAllU_ = false;
+      for(int i=1; i<ncodim; i++) codimUsed_[i] = false;
     }
 
     //! Destructor
@@ -213,33 +254,12 @@ namespace Dune {
 
     //! Unregister entity which will be removed from the grid
     void removeOldIndex (const typename GridType::template Codim<0>::Entity & en )
-    {
-      //std::cout << "remove old Entity = " << en.globalIndex() << "\n";
-      // here we have to add the support of higher codims
-      state_[ hIndexSet_.index(en) ] = UNUSED;
-    }
+    {}
 
-    //! \TODO Please doc me
-    // reallocate the vector for new size
+    //! reallocate the vector for new size
     void resizeVectors()
     {
-      if(leafIndex_.size() < this->grid_.global_size(0))
-      {
-        //std::cout << "Resize with max = " << this->grid_.global_size(0) << "\n";
-        int oldSize = leafIndex_.size();
-
-        leafIndex_.realloc(this->grid_.global_size(0), factor_ );
-        state_.realloc(this->grid_.global_size(0), factor_ );
-
-        // here we dont need to copy
-        oldLeafIndex_.realloc(this->grid_.global_size(0), factor_ );
-
-        for(int i=oldSize; i<leafIndex_.size(); i++)
-        {
-          leafIndex_[i] = -1;
-          state_[i] = UNUSED;
-        }
-      }
+      for(int i=0; i<ncodim; i++) codimLeafSet_[i].resize( hIndexSet_.size(i) );
     }
 
     //! if grid has changed, resize index vectors, and create
@@ -256,7 +276,368 @@ namespace Dune {
     //! for dof manager, to check whether it has to copy dof or not
     bool indexNew (int num, int codim) const
     {
-      if(codim > 0) return false;
+      return codimLeafSet_[codim].indexNew(num);
+    }
+
+    //! make to index numbers consecutive
+    //! return true, if at least one hole was closed
+    bool compress ()
+    {
+      // if not marked, mark which indices are still used
+      if( (!marked_) && markAllU_ ) markAllUsed();
+
+      // true if a least one dof must be copied
+      bool haveToCopy = false;
+
+      haveToCopy = (codimLeafSet_[0].compress()) ? true : haveToCopy;
+      if(higherCodims_)
+      {
+        for(int i=1; i<ncodim; i++)
+          haveToCopy = (codimLeafSet_[i].compress()) ? true : haveToCopy;
+      }
+
+      // next turn mark again
+      marked_   = false;
+      markAllU_ = false;
+
+      return haveToCopy;
+    }
+
+    //! return subIndex of given entity
+    template <int cd, class EntityType>
+    int subIndex (const EntityType & en, int i) const
+    {
+      assert(cd == dim);
+      return en.template subIndex<cd>(i);
+    }
+
+    //! returns vector with geometry tpyes this index set has indices for
+    const std::vector <GeometryType > & geomTypes () const
+    {
+      return hIndexSet_.geomTypes();
+    }
+
+    // memorise index
+    void insert (const EntityCodim0Type & en)
+    {
+      codimLeafSet_[0].insert ( hIndexSet_.index(en) );
+      if(higherCodims_)
+      {
+        PartialSpec<HIndexSetType,CodimLeafIndexSet,EntityCodim0Type,ncodim-1> ::
+        iterateCodims ( hIndexSet_, codimLeafSet_, en , codimUsed_ );
+      }
+    }
+
+    int additionalSizeEstimate () const
+    {
+      int addSize = 0;
+      for(int i=0; i<ncodim; i++) addSize += codimLeafSet_[i].additionalSizeEstimate();
+      return addSize;
+    }
+
+    //! return size of grid entities per level and codim
+    int size ( int codim ) const
+    {
+      return codimLeafSet_[codim].size();
+    }
+
+    //! return global index
+    //! for dof mapper
+    template <int codim, class EntityType>
+    int index (EntityType & en, int num) const
+    {
+      //return IndexWrapper<EntityType,HIndexSetType,EntityType::codimension,codim>::
+      //          index(en,hIndexSet_,codimLeafSet_,num);
+      return codimLeafSet_[0].index( hIndexSet_.index( en ) );
+    }
+
+    //! return global index
+    //! for dof mapper
+    template <class EntityType>
+    int index (EntityType & en) const
+    {
+      enum { codim = EntityType::codimension };
+      assert ( codimLeafSet_[codim].index( hIndexSet_.index(en) ) >= 0 );
+      return codimLeafSet_[codim].index( hIndexSet_.index(en) );
+    }
+
+    //! return size of grid entities per level and codim
+    //! for dof mapper
+    int oldSize ( int codim ) const
+    {
+      return codimLeafSet_[codim].oldSize();
+    }
+
+    //! return old index, for dof manager only
+    int oldIndex (int num, int codim ) const
+    {
+      return codimLeafSet_[codim].oldIndex(num);
+    }
+
+    //! return new index, for dof manager only returns index
+    int newIndex (int num , int codim ) const
+    {
+      return codimLeafSet_[codim].newIndex(num);
+    }
+
+  private:
+    // insert index if entities lies below used entity, return
+    // false if not , otherwise return true
+    bool insertNewIndex (const EntityCodim0Type & en, bool isLeaf , bool canInsert )
+    {
+      // if entity isLeaf then we insert index
+      if(isLeaf)
+      {
+        this->insert (en );
+        return true;
+      }
+
+      // which is the case if we havent reached a entity which has
+      // already a number
+      if(!canInsert)
+      {
+        // from now on, indices can be inserted
+        if( codimLeafSet_[0].index( hIndexSet_.index (en ) ) >= 0 )
+        {
+          return true;
+        }
+
+        // we have to go deeper
+        return false;
+      }
+      else
+      {
+        this->insert ( en );
+        // set unused here, because index is only needed for prolongation
+      }
+
+      return true;
+    }
+
+    //! mark indices that are still used and give new indices to
+    //! elements that need one
+    void markAllUsed ()
+    {
+      typedef typename GridType:: template Codim<0> :: LeafIterator LeafIteratorType;
+      // walk over leaf level on locate all needed entities
+
+      LeafIteratorType endit  = this->grid_.template leafend<0>   ( this->grid_.maxlevel());
+      for(LeafIteratorType it = this->grid_.template leafbegin<0> ( this->grid_.maxlevel());
+          it != endit ; ++it )
+      {
+        this->insert( *it );
+      }
+
+      marked_ = true;
+    }
+
+    //! give all entities that lie below the old entities new numbers
+    //! here we need the hierarchic iterator because for example for some
+    //! grid more the one level of new elements can be created during adaption
+    //! there for we start to give new number for all elements below the old
+    //! element
+    void markAllBelowOld ()
+    {
+      typedef typename GridType::template Codim<0>::LevelIterator LevelIteratorType;
+
+      int maxlevel = this->grid_.maxlevel();
+
+      for(int i=0; i<ncodim; i++)
+      {
+        if(codimUsed_[i])
+        {
+          codimLeafSet_[i].set2Unused();
+        }
+      }
+
+      for(int level = 0; level<=maxlevel; level++)
+      {
+        LevelIteratorType levelend    = this->grid_.template lend  <0> (level);
+        for(LevelIteratorType levelit = this->grid_.template lbegin<0> (level);
+            levelit != levelend; ++levelit )
+        {
+          typedef typename GridType::template Codim<0>::
+          Entity::HierarchicIterator HierarchicIteratorType;
+
+          // if we have index all entities below need new numbers
+          bool areNew = false;
+
+          // check whether we can insert or not
+          areNew = insertNewIndex ( *levelit , levelit->isLeaf() , areNew );
+
+          HierarchicIteratorType endit  = levelit->hend   ( level + 1 );
+          for(HierarchicIteratorType it = levelit->hbegin ( level + 1 ); it != endit ; ++it )
+          {
+            // areNew == true, then index is inserted
+            areNew = insertNewIndex  ( *it , it->isLeaf() , areNew );
+          }
+
+        } // end grid walk trough
+      } // end for all levels
+
+      // means on compress we have to mark the leaf level
+      marked_ = false;
+      markAllU_ = true;
+    }
+
+    // print interal data, for debugging only
+    // print if only done, if DEBUG_LEAFINDEXSET is defined
+    void print (const char * msg, bool oldtoo = false ) const;
+
+  public:
+
+    // write indexset to xdr file
+    bool write_xdr(const std::basic_string<char> filename, int timestep)
+    {
+      FILE  *file;
+      XDR xdrs;
+      const char *path = "";
+
+      std::basic_string<char> fnstr = genFilename(path,filename, timestep);
+      const char * fn = fnstr.c_str();
+      file = fopen(fn, "wb");
+      if (!file)
+      {
+        std::cerr << "\aERROR in AdaptiveLeafIndexSet::write_xdr(..): couldnot open " << filename << std::endl;
+        std::cerr.flush();
+        return false;
+      }
+
+      xdrstdio_create(&xdrs, file, XDR_ENCODE);
+      int type = myType;
+      xdr_int ( &xdrs, &type );
+      if(type != myType)
+      {
+        std::cerr << "\nERROR: AdaptiveLeafIndexSet: wrong type choosen! \n\n";
+        assert(type == myType);
+      }
+
+      for(int i=0; i<ncodim; i++) codimLeafSet_[i].processXdr(&xdrs);
+
+      xdr_destroy(&xdrs);
+      fclose(file);
+      return true;
+    }
+
+    //! read index set from given xdr file
+    bool read_xdr(const std::basic_string<char> filename , int timestep)
+    {
+      FILE   *file;
+      XDR xdrs;
+      const char *path = "";
+
+      std::basic_string<char> fnstr = genFilename(path,filename, timestep);
+      const char * fn = fnstr.c_str();
+      std::cout << "Reading <" << fn << "> \n";
+      file = fopen(fn, "rb");
+      if(!file)
+      {
+        std::cerr <<"\aERROR in AdaptiveLeafIndexSet::read_xdr(..): couldnot open <%s>!\n" << filename << std::endl;
+        std::cerr.flush();
+        return(false);
+      }
+
+      // read xdr
+      xdrstdio_create(&xdrs, file, XDR_DECODE);
+
+      int type = myType;
+      xdr_int ( &xdrs, &type );
+      if(type != myType)
+      {
+        std::cerr << "\nERROR: AdaptiveLeafIndexSet: wrong type choosen! \n\n";
+        assert(type == myType);
+      }
+      for(int i=0; i<ncodim; i++) codimLeafSet_[i].processXdr(&xdrs);
+
+      xdr_destroy(&xdrs);
+      fclose(file);
+      return true;
+    }
+
+  }; // end of class AdaptiveLeafIndexSet
+
+  //***********************************************************************
+  //
+  //  Index Set for one codimension
+  //  --CodimLeafIndexSet
+  //
+  //***********************************************************************
+  class CodimLeafIndexSet
+  {
+  private:
+    // my type, to be revised
+    enum { myType = 2 };
+
+    enum INDEXSTATE { NEW, USED, UNUSED };
+
+    // the mapping of the global to leaf index
+    IndexArray<int> leafIndex_;
+
+    // old indices
+    IndexArray<int> oldLeafIndex_;
+
+    // stack for holes
+    IndexArray<int> holes_;
+
+    // the state of each index
+    IndexArray<INDEXSTATE> state_;
+
+    // next index to give away
+    int nextFreeIndex_;
+
+    int actSize_;
+
+    const int factor_;
+
+    int myCodim_;
+
+  public:
+    //! Constructor
+    CodimLeafIndexSet () : nextFreeIndex_ (0), actSize_(0),
+                           factor_(2) , myCodim_(-1)
+    {}
+
+    void setCodim (int codim)
+    {
+      myCodim_ = codim;
+    }
+
+    //! Unregister entity which will be removed from the grid
+    void removeOldIndex (int num)
+    {
+      state_[ num ] = UNUSED;
+    }
+
+    //! reallocate the vector for new size
+    void resize ( int newSize )
+    {
+      if(leafIndex_.size() < newSize )
+      {
+        //std::cout << "Resize with max = " << hIndexSet_.size(myCodim_) << "\n";
+        int oldSize = leafIndex_.size();
+
+        leafIndex_.realloc( newSize , factor_ );
+        state_.realloc( newSize , factor_ );
+
+        // here we dont need to copy
+        oldLeafIndex_.realloc(newSize, factor_ );
+
+        for(int i=oldSize; i<leafIndex_.size(); i++)
+        {
+          leafIndex_[i] = -1;
+          state_[i] = UNUSED;
+        }
+      }
+    }
+
+    void set2Unused()
+    {
+      for(int i=0; i<state_.size(); i++) state_[i] = UNUSED;
+    }
+
+    //! for dof manager, to check whether it has to copy dof or not
+    bool indexNew (int num) const
+    {
       assert((num >= 0) && (num < state_.size()));
       return state_[num] == NEW;
     }
@@ -265,15 +646,12 @@ namespace Dune {
     //! return true, if at least one hole was closed
     bool compress ()
     {
-      // true if a least one dof must be copied
-      bool haveToCopy = false;
-
       const int sizeOfVecs = state_.size();
       if( holes_.size() < sizeOfVecs )
         holes_.resize( state_.size() );
 
-      // if not marked, mark which indices are still used
-      if( (!marked_) && markAllU_ ) actSize_ = markAllUsed(); // returns actual size of leaf level
+      // true if a least one dof must be copied
+      bool haveToCopy = false;
 
       // mark holes
       int actHole = 0;
@@ -342,134 +720,42 @@ namespace Dune {
 
       // the next index that can be given away is equal to size
       nextFreeIndex_ = actSize_;
-
-      // next turn mark again
-      marked_ = false;
-      markAllU_ = false;
-
       return haveToCopy;
-    }
-
-    //! return subIndex of given entity
-    template <int cd, class EntityType>
-    int subIndex (const EntityType & en, int i) const
-    {
-      assert(cd == dim);
-      return en.template subIndex<cd>(i);
-    }
-
-    //! returns vector with geometry tpyes this index set has indices for
-    const std::vector <GeometryType > & geomTypes () const
-    {
-      return hIndexSet_.geomTypes();
-    }
-
-
-    // memorise index
-    template <class EntityType>
-    void insert (EntityType & en)
-    {
-      this->insert ( hIndexSet_.index(en) );
     }
 
     //! return how much extra memory is needed for restriction
     int additionalSizeEstimate () const { return nextFreeIndex_; }
 
     //! return size of grid entities per level and codim
-    int size ( int codim ) const
+    int size () const
     {
-      // this index set works only for codim = 0 at the moment
-      if(codim == 0)
-      {
-        return nextFreeIndex_;
-      }
-
-      assert( (codim > 0) || (codim < dim+1));
-      return hIndexSet_.size(codim);
+      return nextFreeIndex_;
     }
 
-    //! return global index
-    //! for dof mapper
-    template <int codim, class EntityType>
-    int index (EntityType & en, int num) const
+    //! return leaf index for given hierarchic number
+    int index ( int num ) const
     {
-      return IndexWrapper<EntityType,HIndexSetType,EntityType::codimension,codim>::
-             index(en,hIndexSet_,leafIndex_,num);
-    }
-
-    //! return global index
-    //! for dof mapper
-    template <class EntityType>
-    int index (EntityType & en) const
-    {
-      enum { codim = EntityType::codimension };
-      return IndexWrapper<EntityType,HIndexSetType,codim,codim>::index(en,hIndexSet_,leafIndex_,0);
-
-      //assert( EntityType::codimension == 0 );
-      //assert( en.isLeaf() );
-      //assert( leafIndex_[ hIndexSet_.index(en) ] >= 0 );
-      //return leafIndex_[ hIndexSet_.index(en) ];
+      // assert if index was not set yet
+      return leafIndex_ [ num ];
     }
 
     //! return size of grid entities per level and codim
     //! for dof mapper
-    int oldSize ( int codim ) const
+    int oldSize () const
     {
-      if(codim > 0) return this->grid_.global_size(codim);
-      // this index set works only for codim = 0 at the moment
       return state_.size();
     }
 
     //! return old index, for dof manager only
-    int oldIndex (int elNum, int codim ) const
+    int oldIndex (int elNum ) const
     {
-      if(codim>0) return elNum;
       return oldLeafIndex_[elNum];
     }
 
     //! return new index, for dof manager only returns index
-    int newIndex (int elNum , int codim ) const
+    int newIndex (int elNum) const
     {
-      if(codim>0) return elNum;
       return leafIndex_[elNum];
-    }
-
-  private:
-    // insert index if entities lies below used entity, return
-    // false if not , otherwise return true
-    template <class EntityType>
-    bool insertNewIndex (const EntityType & en, bool isLeaf , bool canInsert )
-    {
-      // if entity isLeaf then we insert index
-      if(isLeaf)
-      {
-        // count leaf entities
-        actSize_++;
-        this->insert ( en );
-        return true;
-      }
-
-      // which is the case if we havent reached a entity which has
-      // already a number
-      if(!canInsert)
-      {
-        // from now on, indices can be inserted
-        if(leafIndex_[ hIndexSet_.index(en) ] >= 0)
-        {
-          return true;
-        }
-
-        // we have to go deeper
-        return false;
-      }
-      else
-      {
-        this->insert ( en );
-        // set unused here, because index is only needed for prolongation
-        state_[ hIndexSet_.index(en) ] = UNUSED;
-      }
-
-      return true;
     }
 
     // insert element and create index for element number
@@ -484,141 +770,9 @@ namespace Dune {
       state_[num] = USED;
     }
 
-    //! mark indices that are still used and give new indices to
-    //! elements that need one
-    int markAllUsed ()
-    {
-      for(int i=0; i<state_.size(); i++) state_[i] = UNUSED;
-
-      int nSize = 0;
-
-      typedef typename GridType::LeafIterator LeafIteratorType;
-      // walk over leaf level on locate all needed entities
-      {
-        LeafIteratorType endit  = this->grid_.template leafend<0>   ( this->grid_.maxlevel());
-        for(LeafIteratorType it = this->grid_.template leafbegin<0> ( this->grid_.maxlevel()); it != endit ; ++it )
-        {
-          this->insert( *it );
-          nSize++;
-        }
-      }
-
-      marked_ = true;
-      return nSize;
-    }
-
-    //! give all entities that lie below the old entities new numbers
-    void markAllBelowOld ()
-    {
-      typedef typename GridType::template Codim<0>::LevelIterator LevelIteratorType;
-
-      int maxlevel = this->grid_.maxlevel();
-
-      for(int i=0; i<state_.size(); i++) state_[i] = UNUSED;
-
-      // actSize is increased be insertNewIndex
-      actSize_ = 0;
-
-      for(int level = 0; level<=maxlevel; level++)
-      {
-        LevelIteratorType levelend    = this->grid_.template lend  <0> (level);
-        for(LevelIteratorType levelit = this->grid_.template lbegin<0> (level);
-            levelit != levelend; ++levelit )
-        {
-          typedef typename GridType::template Codim<0>::
-          Entity::HierarchicIterator HierarchicIteratorType;
-
-          // if we have index all entities below need new numbers
-          bool areNew = false;
-
-          // check whether we can insert or not
-          areNew = insertNewIndex ( *levelit , levelit->isLeaf() , areNew );
-
-          HierarchicIteratorType endit  = levelit->hend   ( level + 1 );
-          for(HierarchicIteratorType it = levelit->hbegin ( level + 1 ); it != endit ; ++it )
-          {
-            // areNew == true, then index is inserted
-            areNew = insertNewIndex  ( *it , it->isLeaf() , areNew );
-          }
-
-        } // end grid walk trough
-      } // end for all levels
-
-      // means on compress we have to mark the leaf level
-      marked_ = false;
-      markAllU_ = true;
-    }
-
-    // print interal data, for debugging only
-    // print if only done, if DEBUG_LEAFINDEXSET is defined
-    void print (const char * msg, bool oldtoo = false ) const;
-
-  public:
-
-    // write indexset to xdr file
-    bool write_xdr(const std::basic_string<char> filename, int timestep)
-    {
-      FILE  *file;
-      XDR xdrs;
-      const char *path = "";
-
-      std::basic_string<char> fnstr = genFilename(path,filename, timestep);
-      const char * fn = fnstr.c_str();
-      file = fopen(fn, "wb");
-      if (!file)
-      {
-        std::cerr << "\aERROR in AdaptiveLeafIndexSet::write_xdr(..): couldnot open " << filename << std::endl;
-        std::cerr.flush();
-        return false;
-      }
-
-      xdrstdio_create(&xdrs, file, XDR_ENCODE);
-      this->processXdr(&xdrs);
-
-      xdr_destroy(&xdrs);
-      fclose(file);
-      return true;
-    }
-
-    //! read index set from given xdr file
-    bool read_xdr(const std::basic_string<char> filename , int timestep)
-    {
-      FILE   *file;
-      XDR xdrs;
-      const char *path = "";
-
-      std::basic_string<char> fnstr = genFilename(path,filename, timestep);
-      const char * fn = fnstr.c_str();
-      std::cout << "Reading <" << fn << "> \n";
-      file = fopen(fn, "rb");
-      if(!file)
-      {
-        std::cerr <<"\aERROR in AdaptiveLeafIndexSet::read_xdr(..): couldnot open <%s>!\n" << filename << std::endl;
-        std::cerr.flush();
-        return(false);
-      }
-
-      // read xdr
-      xdrstdio_create(&xdrs, file, XDR_DECODE);
-      this->processXdr(&xdrs);
-
-      xdr_destroy(&xdrs);
-      fclose(file);
-      return true;
-    }
-
-  private:
     // read/write from/to xdr stream
     bool processXdr(XDR *xdrs)
     {
-      int type = myType;
-      xdr_int ( xdrs, &type );
-      if(type != myType)
-      {
-        std::cerr << "\nERROR: AdaptiveLeafIndexSet: wrong type choosen! \n\n";
-        assert(type == myType);
-      }
-
       xdr_int ( xdrs, &nextFreeIndex_ );
       xdr_int ( xdrs, &actSize_ );
       leafIndex_.processXdr(xdrs);
@@ -752,7 +906,7 @@ namespace Dune {
 
     std::cout << "Real Size " << nextFreeIndex_ << "\n";
     std::cout << "ActSize   " << actSize << "\n";
-    std::cout << "Grid global Size " << this->grid_.global_size(0) << "\n";
+    std::cout << "Grid global Size " << hIndexSet_.size(myCodim_) << "\n";
 
     std::cout << msg;
     return ;
@@ -785,6 +939,36 @@ namespace Dune {
       _b.prolongLocal(father,son,initialize);
     }
   };
+
+  /*
+     template <int codim>
+     struct CallInitMethod
+     {
+     template <class IndexSetImp>
+     CallInitMethod ( IndexSetImp & iset)
+     {
+      iset.initialize(codim);
+     }
+     };
+
+     template <> struct InitializeCodim<0>
+     {
+     template <class IndexSet>
+     InitializeCodim (IndexSet &iset)
+     {
+     }
+     };
+
+     template <int codim>
+     struct InitializeCodim
+     {
+     template <class IndexSet>
+     InitializeCodim (IndexSet &iset)
+     {
+      static CallInitMethod<codim> a(iset);
+     }
+     };
+   */
 
 } // end namespace Dune
 

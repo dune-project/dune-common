@@ -176,78 +176,85 @@ namespace Dune {
     //! which is not allowed, but needed badly, :) the bob-trick
     //
     //! default implementation returns index of given entity
-    template <class EntityType,int enCodim, int codim>
+    template <class IndexSetType, class EntityType,int enCodim, int codim>
     struct IndexWrapper
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
       {
-        return en.index();
+        return set.index(en);
       }
     };
 
     // if codim and enCodim are equal, then return index
-    template <class EntityType, int codim>
-    struct IndexWrapper<EntityType,codim,codim>
+    template <class IndexSetType, class EntityType, int codim>
+    struct IndexWrapper<IndexSetType,EntityType,codim,codim>
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
       {
-        return en.index();
+        return set.index(en);
       }
     };
 
     // return number of vertex num
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,3>
+    template <class IndexSetType, class EntityType>
+    struct IndexWrapper<IndexSetType,EntityType,0,3>
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
       {
-        return en.template subIndex<3> (num);
+        return set.template subIndex<3> (en,num);
       }
     };
 
     // return number of vertex num for dim == 2
     // return number of edge num for dim == 3
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,2>
+    template <class IndexSetType, class EntityType>
+    struct IndexWrapper<IndexSetType,EntityType,0,2>
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
       {
-        return en.template subIndex<2> (num);
+        return set.template subIndex<2> (en,num);
       }
     };
 
     // return number of vertex for dim == 1
     // return number of edge num for dim == 2
     // return number of face num for dim == 3
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,1>
+    template <class IndexSetType, class EntityType>
+    struct IndexWrapper<IndexSetType,EntityType,0,1>
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
       {
-        return en.template subIndex<1> (num);
+        return set.template subIndex<1> (en,num);
       }
     };
 
-    //! level of this index set
-    const int level_;
+    typedef typename GridType :: LevelIndexSet LevelIndexSetType;
+    const LevelIndexSetType & set_;
 
   public:
     enum { ncodim = GridType::dimension + 1 };
-    DefaultGridIndexSet (const GridType & grid , const int level ) : DefaultGridIndexSetBase <GridType> (grid) , level_(level) {}
+
+    //! Constructor getting grid and level for Index Set
+    DefaultGridIndexSet (const GridType & grid , const int level )
+      : DefaultGridIndexSetBase <GridType> (grid) , set_(grid.levelIndexSet(level)) {}
+
+    //! Constructor choosing the grid's maxlevel as given level
+    DefaultGridIndexSet (const GridType & grid )
+      : DefaultGridIndexSetBase <GridType> (grid) , set_(grid.levelIndexSet(grid.maxlevel())) {}
 
     //! return size of grid entities per level and codim
     int size ( int codim ) const
     {
-      return this->grid_.size(level_,codim);
+      return set_.size(codim);
     }
 
     //! return index of entity with codim codim belonging to entity en which
     //! could have a bigger codim (for example return num of vertex num of an
     //! element en
     template <int codim, class EntityType>
-    int index (EntityType & en, int num) const
+    int index (const EntityType & en, int num) const
     {
-      return IndexWrapper<EntityType,EntityType::codimension,codim>::index(en,num);
+      return IndexWrapper<LevelIndexSetType,EntityType,EntityType::codimension,codim>::index(set_,en,num);
     }
 
     int type() const { return myType; }
@@ -260,56 +267,75 @@ namespace Dune {
     // my type, to be revised
     enum { myType = 0 };
 
-    template <class EntityType,int enCodim, int codim>
+    template <class IndexSetType, class EntityType,int enCodim, int codim>
     struct IndexWrapper
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
       {
-        return en.globalIndex();
+        return set.index(en);
       }
     };
 
-    template <class EntityType, int codim>
-    struct IndexWrapper<EntityType,codim,codim>
+    // if codim and enCodim are equal, then return index
+    template <class IndexSetType, class EntityType, int codim>
+    struct IndexWrapper<IndexSetType,EntityType,codim,codim>
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
       {
-        return en.globalIndex();
+        return set.index(en);
       }
     };
 
-    //! if codim > codim of entity use subIndex
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,2>
+    // return number of vertex num
+    template <class IndexSetType, class EntityType>
+    struct IndexWrapper<IndexSetType,EntityType,0,3>
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
       {
-        return en.template subIndex<2> (num);
+        return set.template subIndex<3> (en,num);
       }
     };
 
-    template <class EntityType>
-    struct IndexWrapper<EntityType,0,3>
+    // return number of vertex num for dim == 2
+    // return number of edge num for dim == 3
+    template <class IndexSetType, class EntityType>
+    struct IndexWrapper<IndexSetType,EntityType,0,2>
     {
-      static inline int index (EntityType & en , int num )
+      static inline int index (const IndexSetType & set, EntityType & en , int num )
       {
-        return en.template subIndex<3> (num);
+        return set.template subIndex<2> (en,num);
       }
     };
+
+    // return number of vertex for dim == 1
+    // return number of edge num for dim == 2
+    // return number of face num for dim == 3
+    template <class IndexSetType, class EntityType>
+    struct IndexWrapper<IndexSetType,EntityType,0,1>
+    {
+      static inline int index (const IndexSetType & set, const EntityType & en , int num )
+      {
+        return set.template subIndex<1> (en,num);
+      }
+    };
+
+    typedef typename GridType :: HierarchicIndexSet HSetType;
+    const HSetType & set_;
 
   public:
     enum { ncodim = GridType::dimension + 1 };
-    DefaultGridIndexSet ( const GridType & grid , const int level =-1 ) : DefaultGridIndexSetBase <GridType> (grid) {}
+    DefaultGridIndexSet ( const GridType & grid , const int level =-1 )
+      : DefaultGridIndexSetBase <GridType> (grid) , set_(grid.hierarchicIndexSet()) {}
 
     int size ( int codim ) const
     {
-      return this->grid_.global_size(codim);
+      return set_.size(codim);
     }
 
     template <int codim, class EntityType>
-    int index (EntityType & en, int num) const
+    int index (const EntityType & en, int num) const
     {
-      return IndexWrapper<EntityType,EntityType::codimension,codim>::index(en,num);
+      return IndexWrapper<HSetType,EntityType,EntityType::codimension,codim>::index(set_,en,num);
     }
 
     int type() const { return myType; }
