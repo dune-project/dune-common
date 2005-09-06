@@ -103,10 +103,41 @@ inline static void swapHexahedron( double ** vertex, DUNE_ELEM * el)
 **                      **
 ******************************************************************************
 *****************************************************************************/
+inline static DUNE_ELEM * getNewDuneElem ()
+{
+  DUNE_ELEM * elem = (DUNE_ELEM *) malloc(sizeof(DUNE_ELEM));
+  assert(elem);
+
+  elem->type = gr_unknown;
+
+  for(int i=0 ; i<MAX_EL_FACE; i++) elem->bnd[i] = -1;
+  elem->eindex = -1;
+  elem->level = -1;
+  elem->level_of_interest = -1;;
+  elem->has_children = 0;;
+
+  elem->mesh = 0;
+  elem->isLeafIterator = 1;;
+
+  for(int i=0; i<MAX_EL_DOF; i++)
+  {
+    elem->vindex [i] = -i;
+    for(int j=0; j<3; j++)
+    {
+      elem->vpointer[i][j] = 0.0;
+    }
+  }
+  elem->display = NULL;
+  elem->liter = NULL;
+  elem->hiter = NULL;
+  elem->actElement = NULL;
+  return elem;
+}
+
 inline static HELEMENT *get_stackentry()
 {
   STACKENTRY *stel;
-  DUNE_ELEM * elem;
+  DUNE_ELEM * elem = 0;
 
   if ( stackfree)
   {
@@ -116,7 +147,8 @@ inline static HELEMENT *get_stackentry()
   else
   {
     stel = (STACKENTRY *)malloc(sizeof(STACKENTRY));
-    elem = (DUNE_ELEM *)malloc(sizeof(DUNE_ELEM));
+    elem = getNewDuneElem ();
+    assert( elem );
     ((HELEMENT *)stel)->user_data = (void *)elem;
   }
   return( (HELEMENT *)stel);
@@ -180,7 +212,7 @@ inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
 {
   int i ;
   HELEMENT * el = get_stackentry();
-  static double * vertex[MAX_EL_DOF];
+  static double * vertex[MAX_EL_DOF] = { 0,0,0,0,0,0,0,0 };
   DUNE_ELEM * elem = (DUNE_ELEM *) el->user_data;
 
   assert(mesh);
@@ -209,11 +241,12 @@ inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
   }
 
   el->level = 0;
-
   el->mesh  = (GENMESHnD *)mesh ;
 
   for(i = 0 ; i < MAX_EL_DOF; i++)
+  {
     vertex[i] = (double *)elem->vpointer[i];
+  }
 
   el->vertex = (double G_CONST*G_CONST*)vertex;
 
@@ -290,7 +323,7 @@ inline static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
 {
   HELEMENT * el;
   DUNE_ELEM * elem;
-  static double  * vertex [MAX_EL_DOF];
+  static double  * vertex [MAX_EL_DOF] = {0,0,0,0,0,0,0,0};
   int i , actlevel = ael->level;
 
   if ( actlevel < ((HMESH *)ael->mesh)->level_of_interest )
