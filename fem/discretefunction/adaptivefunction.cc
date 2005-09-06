@@ -6,35 +6,6 @@ namespace Dune {
   //- AdaptiveDiscreteFunction
   // nothing here, everything in adaptivefunction.hh
 
-  //- AdaptiveDiscreteFunction (specialisation)
-
-  template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
-  AdaptiveDiscreteFunction<
-      CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
-  ~AdaptiveDiscreteFunction()
-  {
-    for (int i = 0; i < subSpaces_.size(); ++i) {
-      delete subSpaces_[i];
-      subSpaces_[i] = 0;
-    }
-  }
-
-  template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
-  AdaptiveDiscreteFunction<
-      CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
-  SubDiscreteFunctionType
-  AdaptiveDiscreteFunction<
-      CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
-  subFunction(int component)
-  {
-    SubSpaceType* subSpace = new SubSpaceType(this->space(), component);
-    subSpaces_.push_back(subSpace);
-
-
-    return SubDiscreteFunctionType(std::string("Subfunction of ") + name(),
-                                   *subSpace,
-                                   this->dofStorage());
-  }
 
   //- AdaptiveLocalFunction
   template <class DiscreteFunctionSpaceImp>
@@ -161,6 +132,34 @@ namespace Dune {
     for (int i = 0; i < numOfDof; ++i) {
       values_[i] = &(this->dofVec_[spc_.mapToGlobal(en, i)]);
     }
+  }
+  //- AdaptiveDiscreteFunction (specialisation)
+  template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
+  AdaptiveDiscreteFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
+  ~AdaptiveDiscreteFunction()
+  {
+    for (int i = 0; i < subSpaces_.size(); ++i) {
+      delete subSpaces_[i];
+      subSpaces_[i] = 0;
+    }
+  }
+
+  template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
+  AdaptiveDiscreteFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
+  SubDiscreteFunctionType
+  AdaptiveDiscreteFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
+  subFunction(int component)
+  {
+    SubSpaceType* subSpace = new SubSpaceType(this->space(), component);
+    subSpaces_.push_back(subSpace);
+
+
+    return SubDiscreteFunctionType(std::string("Subfunction of ") + name(),
+                                   *subSpace,
+                                   this->dofStorage());
   }
 
   //- AdaptiveLocalFunction (Specialisation for CombinedSpace)
