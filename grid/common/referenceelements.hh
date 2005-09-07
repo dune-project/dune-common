@@ -18,14 +18,43 @@
  */
 namespace Dune
 {
-  /** @addtogroup Common
+  /**
+   * @defgroup GridReferenceElements Reference Elements
+   * @ingroup Grid
+   * @brief Classes describing the geometry of the reference elements.
+   *
+   * Every entity of a grid is obtained by a mapping from the some reference element. The topology
+     of the reference elements needs only to be described once. The reference element describes
+     how an entity is built up hierarchically from entities of lower codimension and what the types of these
+     lower-dimensional entities are.
+
+         Here is a graphical representation of the reference elements:
+
+         \image html line.png "One-dimensional reference element. For d=1 the simplex and cube are identical."
+         \image html triangle.png "Two-dimensional reference simplex (a.k.a. triangle)."
+         \image html tetrahedron.png "Three-dimensional reference simplex (a.k.a. tetrahedron)."
+         \image html quadrilateral.png "Two-dimensional reference cube (a.k.a. quadrilateral)."
+         \image html hexahedron.png "Three-dimensional reference cube (a.k.a. hexahedron)."
+         \image html prism.png "Prism reference element."
+         \image html pyramid.png "Pyramid reference element."
+
+         Note that the cube reference elements are available for any dimension.
+
+   */
+  /**
+   * @addtogroup GridReferenceElements
    *
    * @{
    */
-  /**
-   * @brief Definition of reference elements for all types and dims
+
+  /** @file
+   * @author Peter Bastian
+   * @brief Provides the different reference elements
    *
    */
+
+
+
 
   /***********************************************************
   * Interface for reference elements
