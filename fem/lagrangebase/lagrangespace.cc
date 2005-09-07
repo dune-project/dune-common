@@ -91,8 +91,10 @@ namespace Dune {
 
     GeometryType geo =  en.geometry().type();
     int dimension = static_cast<int>(EntityType::mydimension);
-    assert(GeometryIdentifier::fromGeo(dimension, geo) < (int) baseFuncSet_.size());
+    assert(GeometryIdentifier::fromGeo(dimension,geo)<(int) baseFuncSet_.size());
     assert(GeometryIdentifier::fromGeo(dimension, geo) >= 0);
+
+    assert(baseFuncSet_[GeometryIdentifier::fromGeo(dimension, geo)]);
     return *baseFuncSet_[GeometryIdentifier::fromGeo(dimension, geo)];
 
 
@@ -224,7 +226,7 @@ namespace Dune {
     BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
 
     mapper_ = new MapperType (const_cast<IndexSetType&>(iset),
-                              baseFuncSet->getNumberOfBaseFunctions(),
+                              baseFuncSet->numBaseFunctions(),
                               0);
 
     return baseFuncSet;

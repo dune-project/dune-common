@@ -125,9 +125,6 @@ namespace Dune {
       return *baseSetVec_[GeometryIdentifier::fromGeo(dimension, geo)];
     }
 
-    //! access to grid
-    GridType& grid() { return spc_.grid(); }
-
     //! access to grid (const version)
     const GridType& grid() const { return spc_.grid(); }
 
@@ -180,9 +177,15 @@ namespace Dune {
       tmp_(0.0)
     {}
 
-    int getNumberOfBaseFunctions() const {
+    int getNumberOfBaseFunctions() const DUNE_DEPRECATED {
       assert(bSet_.getNumberOfBaseFunctions()%CombinedDimRange == 0);
       return bSet_.getNumberOfBaseFunctions()/CombinedDimRange;
+    }
+
+    //! Number of base functions
+    int numBaseFunctions() const {
+      assert(bSet_.numBaseFunctions()%CombinedDimRange == 0);
+      return bSet_.numBaseFunctions()/CombinedDimRange;
     }
 
     //! evaluate base function
@@ -260,7 +263,12 @@ namespace Dune {
     }
 
     //! return max number of local dofs per entity
-    int numberOfDofs () const {
+    int numberOfDofs () const DUNE_DEPRECATED {
+      assert(false); // should never get here
+    }
+
+    //! return max number of local dofs per entity
+    int numDofs () const DUNE_DEPRECATED {
       assert(false); // should never get here
     }
 

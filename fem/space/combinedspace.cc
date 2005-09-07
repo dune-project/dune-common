@@ -98,7 +98,7 @@ namespace Dune {
                     ContainedRangeType& phi) const
   {
     assert(baseFunct >= 0 &&
-           baseFunct < baseFunctionSet_.getNumberOfBaseFunctions());
+           baseFunct < baseFunctionSet_.numBaseFunctions());
     baseFunctionSet_.eval(baseFunct, x, phi);
   }
 
@@ -109,7 +109,7 @@ namespace Dune {
                     ContainedJacobianRangeType& phi) const
   {
     assert(baseFunct >= 0 &&
-           baseFunct < baseFunctionSet_.getNumberOfBaseFunctions());
+           baseFunct < baseFunctionSet_.numBaseFunctions());
     baseFunctionSet_.jacobian(baseFunct, x, phi);
   }
 

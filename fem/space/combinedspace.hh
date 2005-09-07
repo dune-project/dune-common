@@ -236,9 +236,6 @@ namespace Dune {
     }
 
     //! access to grid
-    GridType& grid() { return spc_.grid(); }
-
-    //! access to grid (const version)
     const GridType& grid() const { return spc_.grid(); }
 
     //! access to mapper
@@ -311,8 +308,16 @@ namespace Dune {
     //! The number of base functions equals the total number of degrees of
     //! freedom (dof), since the dofs are considered to be scalar and the
     //! combined base functions to be vector valued
-    int getNumberOfBaseFunctions() const {
+    int getNumberOfBaseFunctions() const DUNE_DEPRECATED {
       return baseFunctionSet_.getNumberOfBaseFunctions()*N;
+    }
+
+    //! Number of base functions
+    //! The number of base functions equals the total number of degrees of
+    //! freedom (dof), since the dofs are considered to be scalar and the
+    //! combined base functions to be vector valued
+    int numBaseFunctions() const {
+      return baseFunctionSet_.numBaseFunctions()*N;
     }
 
     //! evaluate base function
@@ -330,7 +335,7 @@ namespace Dune {
 
     //- Additional methods
     int numContainedFunctions() const {
-      return baseFunctionSet_.getNumberOfBaseFunctions();
+      return baseFunctionSet_.numBaseFunctions();
     }
 
     //! evaluate base function
@@ -416,7 +421,10 @@ namespace Dune {
     }
 
     //! return max number of local dofs per entity
-    int numberOfDofs () const { return mapper_.numberOfDofs()*N; }
+    int numberOfDofs () const DUNE_DEPRECATED { return mapper_.numberOfDofs()*N; }
+
+    //! return max number of local dofs per entity
+    int numDofs () const { return mapper_.numDofs()*N; }
 
     //! returns true if index is new ( for dof compress )
     bool indexNew (int num) const {
