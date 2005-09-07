@@ -1190,8 +1190,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
       /* only quadrilaterals */
       cornerIDs[0] = isBoundaryNode[elemData[4*i]-1];
       cornerIDs[1] = isBoundaryNode[elemData[4*i+1]-1];
-      cornerIDs[2] = isBoundaryNode[elemData[4*i+2]-1];
-      cornerIDs[3] = isBoundaryNode[elemData[4*i+3]-1];
+      cornerIDs[2] = isBoundaryNode[elemData[4*i+3]-1];
+      cornerIDs[3] = isBoundaryNode[elemData[4*i+2]-1];
 
       grid.insertElement(cube, cornerIDs);
 
