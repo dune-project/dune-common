@@ -102,25 +102,23 @@ namespace Dune {
 
 using namespace Dune;
 
-/** This method implements a linear function in order to be able to
- *  work with straight line boundaries.
- *  We interpret data as a DOUBLE* to the world coordinates of the
- *  two endpoints.
- */
-static int linearSegmentDescription2d(void *data, double *param, double *result)
+class LinearSegment2d : public BoundarySegment<2>
 {
-  double a[2], b[2];
-  a[0] = ((double*)data)[0];
-  a[1] = ((double*)data)[1];
-  b[0] = ((double*)data)[2];
-  b[1] = ((double*)data)[3];
+public:
+  LinearSegment2d(const FieldVector<double,2>& a, const FieldVector<double,2>& b)
+    : a_(a), b_(b)
+  {}
 
-  // linear interpolation
-  result[0] = a[0] + (*param)*(b[0]-a[0]);
-  result[1] = a[1] + (*param)*(b[1]-a[1]);
+  virtual FieldVector<double, 2> operator()(const FieldVector<double,1>& local) const {
+    /** \todo Rewrite this with expression templates */
+    FieldVector<double, 2> result;
+    result[0] = a_[0] + local[0]*(b_[0]-a_[0]);
+    result[1] = a_[1] + local[0]*(b_[1]-a_[1]);
+    return result;
+  }
 
-  return 0;
-}
+  FieldVector<double, 2> a_, b_;
+};
 
 /** This method implements a linear function in order to be able to
  *  work with straight line boundaries.
@@ -171,6 +169,31 @@ static int linearSegmentDescription3d_tri(void *data, double *param, double *res
   // linear interpolation
   for (int i=0; i<3; i++)
     result[i] = a[i] + param[0]*(b[i]-a[i]) + param[1]*(c[i]-b[i]);
+
+  return 0;
+}
+
+static int boundarySegmentWrapper2d(void *data, double *param, double *result)
+{
+  const BoundarySegment<2>* boundarySegment = static_cast<const BoundarySegment<2>*>(data);
+
+  FieldVector<double, 2> global = (*boundarySegment)(*((FieldVector<double,1>*)param));
+
+  result[0] = global[0];
+  result[1] = global[1];
+
+  return 0;
+}
+
+static int boundarySegmentWrapper3d(void *data, double *param, double *result)
+{
+  const BoundarySegment<3>* boundarySegment = static_cast<const BoundarySegment<3>*>(data);
+
+  FieldVector<double, 3> global = (*boundarySegment)(*((FieldVector<double,2>*)param));
+
+  result[0] = global[0];
+  result[1] = global[1];
+  result[2] = global[2];
 
   return 0;
 }
@@ -289,6 +312,9 @@ inline Dune::UGGrid < dim, dimworld >::~UGGrid()
   if (extra_boundary_data_)
     free(extra_boundary_data_);
 
+  for (unsigned int i=0; i<boundarySegments_.size(); i++)
+    delete boundarySegments_[i];
+
   if (multigrid_) {
     // Set UG's currBVP variable to the BVP corresponding to this
     // grid.  This is necessary if we have more than one UGGrid in use.
@@ -321,7 +347,9 @@ inline Dune::UGGrid < dim, dimworld >::~UGGrid()
 template < int dim, int dimworld >
 inline int Dune::UGGrid < dim, dimworld >::maxlevel() const
 {
-  assert(multigrid_);
+  if (!multigrid_)
+    DUNE_THROW(GridError, "The grid has not been properly initialized!");
+
   return multigrid_->topLevel;
 }
 
@@ -332,7 +360,9 @@ template<int codim>
 typename Dune::UGGrid<dim,dimworld>::Traits::template Codim<codim>::LevelIterator
 Dune::UGGrid<dim, dimworld>::lbegin (int level) const
 {
-  assert(multigrid_);
+  if (!multigrid_)
+    DUNE_THROW(GridError, "The grid has not been properly initialized!");
+
   typename UGTypes<dim>::GridType* theGrid = multigrid_->grids[level];
 
   if (!theGrid)
@@ -346,7 +376,9 @@ template<int codim, Dune::PartitionIteratorType PiType>
 inline typename Dune::UGGrid<dim,dimworld>::Traits::template Codim<codim>::template Partition<PiType>::LevelIterator
 Dune::UGGrid<dim, dimworld>::lbegin (int level) const
 {
-  assert(multigrid_);
+  if (!multigrid_)
+    DUNE_THROW(GridError, "The grid has not been properly initialized!");
+
   typename UGTypes<dim>::GridType* theGrid = multigrid_->grids[level];
 
   if (!theGrid)
@@ -961,8 +993,19 @@ void Dune::UGGrid<dim, dimworld>::insertLinearSegment(int index,
       boundarySegmentFunction = &linearSegmentDescription3d_tri;
     else
       boundarySegmentFunction = &linearSegmentDescription3d;
-  } else
-    boundarySegmentFunction = &linearSegmentDescription2d;
+  } else {
+    //boundarySegmentFunction = &linearSegmentDescription2d;
+    boundarySegmentFunction = boundarySegmentWrapper2d;
+    FieldVector<double,2> a,b;
+    a[0] = ((double*)userData)[0];
+    a[1] = ((double*)userData)[1];
+    b[0] = ((double*)userData)[2];
+    b[1] = ((double*)userData)[3];
+    // Cast to a type which may be wrong, just to make the code compile.
+    // But this code only gets executed when the cast is correct anyways.
+    boundarySegments_.push_back((BoundarySegment<dimworld>*) new LinearSegment2d(a,b));
+    userData = const_cast<BoundarySegment<dimworld>*>(boundarySegments_.back());
+  }
 
   // Actually create the segment
   if (UG_NS<dim>::CreateBoundarySegment(segmentName,            // internal name of the boundary segment
@@ -994,6 +1037,53 @@ void Dune::UGGrid<dim, dimworld>::insertLinearSegment(int index,
     DUNE_THROW(IOError, "Error calling CreateLinearSegment");
 
 #endif
+
+}
+
+template <int dim, int dimworld>
+void Dune::UGGrid<dim, dimworld>::insertBoundarySegment(int index,
+                                                        const std::vector<int> vertices,
+                                                        const BoundarySegment<dimworld>* boundarySegment)
+{
+  /** \todo Make sure this is the current multigrid, so that CreateBoundarySegment
+      really inserts boundary segments into this grid.*/
+
+  // Copy the vertices into a C-style array
+  /** \todo Due to some UG weirdness, in 3d, CreateBoundarySegment always expects
+      this array to have four entries, even if only a triangular segment is
+      inserted.  If not, undefined values are will be introduced. */
+  int vertices_c_style[4] = {-1, -1, -1, -1};
+  for (unsigned int i=0; i<vertices.size(); i++)
+    vertices_c_style[i] = vertices[i];
+
+  // Append boundary segment class to the boundary segment class list, so we can
+  // delete them all in the constructor
+  boundarySegments_.push_back(boundarySegment);
+
+  // Create dummy parameter ranges
+  const double alpha[2] = {0, 0};
+  const double beta[2]  = {1, 1};
+
+  // Create some boundary segment name
+  char segmentName[20];
+  if(sprintf(segmentName, "BS %d", index) < 0)
+    DUNE_THROW(GridError, "sprintf returned error code!");
+
+  // Actually create the segment
+  if (UG_NS<dim>::CreateBoundarySegment(segmentName,            // internal name of the boundary segment
+                                        1,                      //  id of left subdomain
+                                        2,                      //  id of right subdomain
+                                        index,                  // Index of the segment
+                                        1,                      // Resolution, only for the UG graphics
+                                        vertices_c_style,
+                                        alpha,
+                                        beta,
+                                        (dim==2)
+                                        ? boundarySegmentWrapper2d
+                                        : boundarySegmentWrapper3d,
+                                        const_cast<BoundarySegment<dimworld>*>(boundarySegment))==NULL) {
+    DUNE_THROW(GridError, "Calling UG" << dim << "d::CreateBoundarySegment failed!");
+  }
 
 }
 

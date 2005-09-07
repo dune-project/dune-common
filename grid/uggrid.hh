@@ -9,6 +9,7 @@
 
 #include <dune/common/capabilities.hh>
 #include <dune/grid/common/grid.hh>
+#include <dune/grid/common/boundarysegment.hh>
 #include <dune/common/misc.hh>
 
 /* The following lines including the necessary UG headers are somewhat
@@ -374,6 +375,14 @@ namespace Dune {
                              const std::vector<int> vertices,
                              void* userData);
 
+    /** \brief Method to insert an arbitrarily shaped boundary segment into a coarse grid
+        \param boundarySegment Class implementing the geometry of the boundary segment.
+        The grid object takes control of this object and deallocates it when destructing itself.
+     */
+    void insertBoundarySegment(int index,
+                               const std::vector<int> vertices,
+                               const BoundarySegment<dimworld>* boundarySegment);
+
     /** \brief Insert an element into the coarse grid
         \param type The GeometryType of the new element
         \param vertices The vertices of the new element, using the DUNE numbering
@@ -439,9 +448,12 @@ namespace Dune {
   public:
     // I need this to store some information that gets passed
     // to the boundary description
+    /** \deprecated */
     void* extra_boundary_data_;
 
   private:
+    /** \brief The classes implementing the geometry of the boundary segments */
+    std::vector<const BoundarySegment<dimworld>*> boundarySegments_;
 
     // Access to entity implementations through the interface wrappers
     template <int cd>
