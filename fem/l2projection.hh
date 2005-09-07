@@ -3,7 +3,7 @@
 #ifndef DUNE_L2_PROJECTION_HH
 #define DUNE_L2_PROJECTION_HH
 
-#include <dune/quadrature/fixedorder.hh>
+#include <dune/quadrature/quadraturerules.hh>
 
 
 namespace Dune
@@ -39,14 +39,16 @@ namespace Dune
 
 
       const GridType & grid = functionSpace_.grid();
+      const int dim = GridType::dimension;
 
       typename FunctionSpaceType::RangeType ret (0.0);
       typename FunctionSpaceType::RangeType phi (0.0);
 
       LevelIterator it = grid.template lbegin<0> ( level );
       LevelIterator endit = grid.template lend<0> ( level );
-      FixedOrderQuad <typename FunctionSpaceType::RangeFieldType,
-          typename FunctionSpaceType::DomainType , polOrd > quad ( *it );
+
+      // Get quadrature rule
+      const QuadratureRule<double, dim>& quad = QuadratureRules<double, dim>::rule(it->geometry().type(), polOrd);
 
       LocalFuncType lf = discFunc.newLocalFunction();
 
@@ -59,12 +61,12 @@ namespace Dune
 
         for(int i=0; i<lf.numberOfDofs(); i++)
         {
-          for(int qP = 0; qP < quad.nop(); qP++)
+          for(int qP = 0; qP < quad.size(); qP++)
           {
-            double det = (*it).geometry().integrationElement(quad.point(qP));
-            f.evaluate((*it).geometry().global( quad.point(qP) ), ret);
-            set.eval(i,quad,qP,phi);
-            lf[i] += det * quad.weight(qP) * (ret * phi);
+            double det = (*it).geometry().integrationElement(quad[qP].position());
+            f.evaluate((*it).geometry().global( quad[qP].position() ), ret);
+            set.eval(i,quad[qP].position(),phi);
+            lf[i] += det * quad[qP].weight() * (ret * phi);
           }
         }
       }
