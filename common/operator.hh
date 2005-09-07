@@ -33,6 +33,7 @@ namespace Dune
     typedef DFieldType DomainFieldType;
     typedef RFieldType RangeFieldType;
 
+    //! Application operator
     virtual void operator() (const DomainType& arg, RangeType& dest) const = 0;
 
   private:
