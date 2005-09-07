@@ -38,7 +38,7 @@ namespace Dune {
   AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
   operator[] (int num)
   {
-    assert(num >= 0 && num < numberOfDofs());
+    assert(num >= 0 && num < numDofs());
     return (* (values_[num]));
   }
 
@@ -48,7 +48,7 @@ namespace Dune {
   AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
   operator[] (int num) const
   {
-    assert(num >= 0 && num < numberOfDofs());
+    assert(num >= 0 && num < numDofs());
     return (* (values_[num]));
   }
 
@@ -60,14 +60,22 @@ namespace Dune {
   }
 
   template <class DiscreteFunctionSpaceImp>
+  int AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
+  numDofs() const
+  {
+    return values_.size();
+  }
+
+  template <class DiscreteFunctionSpaceImp>
   template <class EntityType>
   void AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
   evaluateLocal(EntityType& en, const DomainType& x, RangeType& ret) const
   {
+    assert(en.geometry().checkInside(x));
     ret *= 0.0;
     const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
 
-    for (int i = 0; i < bSet.getNumberOfBaseFunctions(); ++i) {
+    for (int i = 0; i < bSet.numBaseFunctions(); ++i) {
       bSet.eval(i, x, tmp_);
       for (int l = 0; l < dimRange; ++l) {
         ret[l] += (*values_[i]) * tmp_[l];
@@ -98,7 +106,7 @@ namespace Dune {
     ret *= 0.0;
     const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
 
-    for (int i = 0; i < bSet.getNumberOfBaseFunctions(); ++i) {
+    for (int i = 0; i < bSet.numBaseFunctions(); ++i) {
       tmpGrad_ *= 0.0;
       bSet.jacobian(i, x, tmpGrad_);
 
@@ -126,7 +134,7 @@ namespace Dune {
   init(EntityType& en)
   {
     int numOfDof =
-      spc_.getBaseFunctionSet(en).getNumberOfBaseFunctions();
+      spc_.getBaseFunctionSet(en).numBaseFunctions();
     values_.resize(numOfDof);
 
     for (int i = 0; i < numOfDof; ++i) {
@@ -163,7 +171,6 @@ namespace Dune {
   }
 
   //- AdaptiveLocalFunction (Specialisation for CombinedSpace)
-
   template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
   AdaptiveLocalFunction<
       CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
@@ -173,9 +180,9 @@ namespace Dune {
     dofVec_(dofVec),
     values_(),
     cTmp_(0.0),
-    cTmpGrad_(0.0),
-    tmp_(0.0),
-    tmpGrad_(0.0)
+    cTmpGradRef_(0.0),
+    cTmpGradReal_(0.0),
+    tmp_(0.0)
   {}
 
   template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
@@ -186,9 +193,9 @@ namespace Dune {
     dofVec_(other.dofVec_),
     values_(),
     cTmp_(0.0),
-    cTmpGrad_(0.0),
-    tmp_(0.0),
-    tmpGrad_(0.0)
+    cTmpGradRef_(0.0),
+    cTmpGradReal_(0.0),
+    tmp_(0.0)
   {}
 
   template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
@@ -203,6 +210,7 @@ namespace Dune {
       CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
   operator[] (int num)
   {
+    assert(num >= 0 && num < numDofs());
     return *values_[num/N][num%N];
   }
 
@@ -213,6 +221,7 @@ namespace Dune {
       CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
   operator[] (int num) const
   {
+    assert(num >= 0 && num < numDofs());
     return *values_[num/N][num%N];
   }
 
@@ -225,6 +234,14 @@ namespace Dune {
   }
 
   template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
+  int AdaptiveLocalFunction<
+      CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
+  numDofs() const
+  {
+    return values_.size()*N;
+  }
+
+  template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
   template <class EntityType>
   void AdaptiveLocalFunction<
       CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
@@ -232,6 +249,8 @@ namespace Dune {
                 const DomainType& x,
                 RangeType& result) const
   {
+    assert(en.geometry().checkInside(x));
+
     const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
     result *= 0.0;
 
@@ -266,19 +285,23 @@ namespace Dune {
                 JacobianRangeType& result) const
   {
     enum { dim = EntityType::dimension };
+    typedef FieldMatrix<DofType, RangeType::size, RangeType::size> JacobianInverseType;
     result *= 0.0;
 
     const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
+    const JacobianInverseType& jInv = en.geometry().jacobianInverse(x);
 
     for (int i = 0; i < bSet.numContainedFunctions(); ++i) {
-      cTmpGrad_ *= 0.0;
-      bSet.jacobianContained(i, x, cTmpGrad_);
+      //cTmpGradRef_ *= 0.0;
+      cTmpGradReal_ *= 0.0;
+      bSet.jacobianContained(i, x, cTmpGradRef_);
+      jInv.umtv(cTmpGradRef_[0], cTmpGradReal_[0]);
 
       for (int j = 0; j < N; ++j) {
         // Assumption: ContainedDimRange == 1
-        tmpGrad_[j] = (*values_[i][j])*cTmpGrad_[0];
+        //cTmpGrad_[0] *= *values_[i][j];
+        result[j].axpy(*values_[i][j], cTmpGradReal_[0]);
       }
-      en.geometry().jacobianInverse(x).umtv(tmpGrad_, result);
     }
 
   }

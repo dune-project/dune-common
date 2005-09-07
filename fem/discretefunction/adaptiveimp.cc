@@ -22,7 +22,7 @@ namespace Dune {
     spc_(spc),
     name_(name),
     dm_(DofManagerFactory<DofManagerType>::getDofManager(spc.grid())),
-    memObj_(std::pair<MemObjectInterface*, DofStorageType*>(0, 0)),
+    memPair_(std::pair<MemObjectInterface*, DofStorageType*>(0, 0)),
     dofVec_(dofVec)
   {}
 
