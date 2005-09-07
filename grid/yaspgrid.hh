@@ -2107,22 +2107,22 @@ namespace Dune {
     typedef YaspGlobalIdSet<YaspGrid<dim,dimworld> > GlobalIdSet;
     typedef YaspGlobalIdSet<YaspGrid<dim,dimworld> > LocalIdSet;
 
-    const GlobalIdSet& globalidset()
+    const GlobalIdSet& globalidset() const
     {
       return globalidset;
     }
 
-    const LocalIdSet& localidset()
+    const LocalIdSet& localidset() const
     {
       return theglobalidset;
     }
 
-    const LevelIndexSet& levelindexset(int level)
+    const LevelIndexSet& levelindexset(int level) const
     {
       return *(indexsets[level]);
     }
 
-    const LeafIndexSet& leafindexset()
+    const LeafIndexSet& leafindexset() const
     {
       return *(indexsets[maxlevel()]);
     }
