@@ -107,6 +107,7 @@ namespace Dune {
 
       matrix.endindices();
 
+      /** \todo This copying could be omitted if there was a resize method for BCRSMatrix */
       m = matrix;
     }
 
