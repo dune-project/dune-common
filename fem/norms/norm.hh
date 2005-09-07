@@ -11,6 +11,9 @@ namespace Dune {
 
   public:
 
+    /** \brief Destructor, doing nothing */
+    virtual ~Norm() {}
+
     //! Compute the norm
     virtual double compute(const DiscFuncType& f) = 0;
 
