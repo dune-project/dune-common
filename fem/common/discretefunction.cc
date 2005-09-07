@@ -23,6 +23,7 @@ namespace Dune
   template <class DiscreteFunctionTraits>
   void DiscreteFunctionDefault<DiscreteFunctionTraits>::
   addScaled(const DiscreteFunctionType& g, const RangeFieldType& c) {
+    assert(this->size() == g.size());
     DofIteratorType endit = this->dend();
     ConstDofIteratorType oit = g.dbegin();
     for (DofIteratorType it = this->dbegin(); it != endit; ++it, ++oit) {
@@ -37,6 +38,8 @@ namespace Dune
   scalarProductDofs(const DiscreteFunctionType& g) const
   {
     typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
+    assert(this->size() == g.size());
+
     RangeFieldType skp = 0.;
 
     ConstDofIteratorType endit = this->dend ();
@@ -64,6 +67,8 @@ namespace Dune
     const DiscreteFunctionDefaultType &gc =
       static_cast<const DiscreteFunctionDefaultType &> ( g );
 
+    assert(this->size() == gc.size());
+
     DofIteratorType endit = this->dend ();
     ConstDofIteratorType git = gc.dbegin ();
     for (DofIteratorType it = this->dbegin(); it != endit; ++it, ++git) {
@@ -89,6 +94,8 @@ namespace Dune
     const DiscreteFunctionDefaultType &gc =
       static_cast<const DiscreteFunctionDefaultType &> ( g );
 
+    assert(this->size() == gc.size());
+
     DofIteratorType endit = this->dend ();
     ConstDofIteratorType git = gc.dbegin ();
     for(DofIteratorType it = this->dbegin(); it != endit; ++it, ++git)
@@ -112,6 +119,8 @@ namespace Dune
     // cast to class discrete functions
     const DiscreteFunctionDefaultType &gc =
       static_cast<const DiscreteFunctionDefaultType &> ( g );
+
+    assert(this->size() == gc.size());
 
     DofIteratorType endit = this->dend ();
     ConstDofIteratorType git = gc.dbegin ();
@@ -158,7 +167,8 @@ namespace Dune
 
     const DiscreteFunctionDefaultType &gc =
       static_cast<const DiscreteFunctionDefaultType &> ( g );
-    // we would need const_iterators.....
+
+    assert(this->size() == gc.size());
 
     DofIteratorType endit = this->dend ();
     ConstDofIteratorType git = gc.dbegin ();

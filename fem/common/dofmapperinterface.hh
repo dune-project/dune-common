@@ -35,7 +35,10 @@ namespace Dune {
     virtual void calcInsertPoints () = 0;
 
     //! return max number of local dofs per entity
-    virtual int numberOfDofs () const =0;
+    virtual int numberOfDofs () const DUNE_DEPRECATED = 0;
+
+    //! return max number of local dofs per entity
+    virtual int numDofs () const = 0;
 
     //! returns true if index is new ( for dof compress )
     virtual bool indexNew (int num) const = 0;
@@ -88,7 +91,15 @@ namespace Dune {
     }
 
     //! default implementation if not overlaoded
-    virtual int numberOfDofs () const
+    virtual int numberOfDofs () const DUNE_DEPRECATED
+    {
+      // overload this method in derived class
+      assert(false);
+      return -1;
+    }
+
+    //! default implementation if not overlaoded
+    virtual int numDofs () const
     {
       // overload this method in derived class
       assert(false);

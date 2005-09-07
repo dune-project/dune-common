@@ -79,7 +79,7 @@ evaluateInit( const QuadratureType &quad )
       for(int j=0; j<diffOrd; j++)
         diffVariable[j] = i % DimDomain;
 
-    for ( int baseFunc = 0; baseFunc < this->getNumberOfBaseFunctions(); baseFunc++ )
+    for ( int baseFunc = 0; baseFunc < this->numBaseFunctions(); baseFunc++ )
     {
       for ( int quadPt = 0; quadPt < quad.nop(); quadPt++ )
       {

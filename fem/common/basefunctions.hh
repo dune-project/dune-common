@@ -20,9 +20,6 @@ namespace Dune {
      @{
    */
 
-
-
-
   // just to make it easy to change
   typedef int deriType;
 
@@ -128,36 +125,32 @@ namespace Dune {
     //typedef  Quadrature < FunctionSpaceType > QuadratureType ;
     typedef  BaseFunctionInterface<DiscreteFunctionSpaceType> BaseFunctionType;
 
-    // to be declared in derived extension class:
-    // void gradient ( int baseFunct, Domain & x,  GradientRange & phi ) ;
-    //   void gradient ( int baseFunct, QuadratureType & quad, int quadPoint, GradientRange & phi ) ;
-
-    // void hessian ( int baseFunct, Domain & x,  HessianRange & phi ) ;
-    // void hessian ( int baseFunct, QuadratureType & quad, int quadPoint, HessianRange & phi ) ;
-    // Range baseIntegral( int baseFunct1, int diffOrder1, int diffVariable1,
-    //         int baseFunct2, int diffOrder2, int diffVariable2 );
-
-    /*** Begin Interface ***/
+  public:
 
     //! \todo Please doc me!
     BaseFunctionSetInterface ()  {};
 
     //! \todo Please doc me!
-    int getNumberOfBaseFunctions () const {
+    int getNumberOfBaseFunctions () const DUNE_DEPRECATED {
       return asImp().getNumberOfBaseFunctions();
     };
+
+    //! Number of base functions
+    int numBaseFunctions() const {
+      // stay on the safe side and call the deprecated version for now
+      return asImp().numBaseFunctions();
+    }
 
     //! \todo Please doc me!
     template <int diffOrd>
     void evaluate (int baseFunct,
                    const FieldVector<deriType, diffOrd> &diffVariable,
                    const DomainType & x, RangeType & phi ) const {
-      std::cout << "BaseFunctionSetInterface::evaluate \n";
       asImp().evaluate( baseFunct, diffVariable, x, phi );
     }
 
     //! \todo Please doc me!
-    template <int diffOrd, class QuadratureType >
+    template <int diffOrd, class QuadratureType>
     void evaluate (int baseFunct,
                    const FieldVector<deriType, diffOrd> &diffVariable,
                    QuadratureType & quad,
@@ -196,8 +189,8 @@ namespace Dune {
   //!
   //*************************************************************************
   template<class BaseFunctionSetTraits>
-  class BaseFunctionSetDefault
-    : public BaseFunctionSetInterface <BaseFunctionSetTraits>
+  class BaseFunctionSetDefault  :
+    public BaseFunctionSetInterface <BaseFunctionSetTraits>
   {
   public:
     typedef typename BaseFunctionSetTraits::BaseFunctionSetType BaseFunctionSetType;
@@ -218,7 +211,7 @@ namespace Dune {
     };
 
     //! default evaluate using the evaluate interface
-    void eval ( int baseFunct, const DomainType & x, RangeType & phi ) const
+    void eval( int baseFunct, const DomainType & x, RangeType & phi ) const
     {
       asImp().evaluate(baseFunct, diffVariable_ , x , phi);
       return;
@@ -226,7 +219,7 @@ namespace Dune {
 
     //! default implementation for evaluation
     template <class QuadratureType>
-    void eval ( int baseFunct, QuadratureType & quad, int quadPoint, RangeType & phi ) const
+    void eval( int baseFunct, QuadratureType & quad, int quadPoint, RangeType & phi ) const
     {
       asImp().evaluate( baseFunct, diffVariable_ , quad, quadPoint, phi );
       return;

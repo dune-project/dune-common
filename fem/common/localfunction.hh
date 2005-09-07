@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_LOCALFUNCTION_HH__
-#define __DUNE_LOCALFUNCTION_HH__
+#ifndef DUNE_LOCALFUNCTION_HH
+#define DUNE_LOCALFUNCTION_HH
 
 namespace Dune {
 
@@ -49,12 +49,28 @@ namespace Dune {
     }
 
     //! return the number of local dof of this local function
-    int numberOfDofs () const
+    //! use numDofs instead
+    int numberOfDofs () const DUNE_DEPRECATED
     {
       return asImp().numberOfDofs ();
-    };
+    }
 
-    //! evaluate the local function on x and return ret
+    //! return the number of local dof of this local function
+    int numDofs() const
+    {
+      return asImp().numDofs();
+    }
+
+    //! evaluate local function. is replaced by evaluateLocal (evaluateLocal
+    //! stands for local (reference element) coordinate x, whereas evaluateGlobal
+    //! gets an x in physical (real world) coordinates
+    template <class EntityType>
+    void evaluate (EntityType &en, const DomainType & x, RangeType & ret) DUNE_DEPRECATED
+    {
+      asImp().evaluate(en,x,ret);
+    }
+
+    //! evaluate the local function on reference element coordinate x
     template <class EntityType>
     void evaluateLocal(EntityType& en,
                        const DomainType& x,
@@ -63,6 +79,7 @@ namespace Dune {
       asImp().evaluateLocal(en,x,ret);
     }
 
+    //! evaluate jacobian on reference element coordinate x
     template <class EntityType>
     void jacobianLocal(EntityType& en,
                        const DomainType& x,
@@ -108,25 +125,46 @@ namespace Dune {
     //! Constructor
     LocalFunctionDefault() : xLoc_(0.0) {}
 
-    //! evaluate the local function on x and return ret
+    //! evaluate the local function on real world coordinate x and return ret
     template <class EntityType>
-    void evaluate(EntityType& en,
-                  const DomainType& x,
-                  RangeType & ret)
+    void evaluateGlobal(EntityType& en,
+                        const DomainType& x,
+                        RangeType& ret)
     {
       ret = 0.0;
       xLoc_ = en.geometry().local(x);
       evaluateLocal(en,xLoc_,ret);
     }
 
+    //! Evaluation using a quadrature
+    template <class EntityType, class QuadratureType>
+    void evaluate(EntityType& en,
+                  QuadratureType& quad,
+                  int quadPoint,
+                  RangeType& ret)
+    {
+      evaluateLocal(en, quad.point(quadPoint), ret);
+    }
+
+    //! jacobian of the local function using real world coordinate x
     template <class EntityType>
-    void jacobian(EntityType& en,
-                  const DomainType& x,
-                  JacobianRangeType& ret)
+    void jacobianGlobal(EntityType& en,
+                        const DomainType& x,
+                        JacobianRangeType& ret)
     {
       ret = 0.0;
       xLoc_ = en.geometry().local(x);
-      jacobian(en,xLoc_,ret);
+      jacobianLocal(en,xLoc_,ret);
+    }
+
+    //! Evaluation of jacobian using a quadrature
+    template <class EntityType, class QuadratureType>
+    void jacobian(EntityType& en,
+                  QuadratureType& quad,
+                  int quadPoint,
+                  JacobianRangeType& ret)
+    {
+      jacobianLocal(en, quad.point(quadPoint), ret);
     }
 
   private:
