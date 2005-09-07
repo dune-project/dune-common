@@ -52,7 +52,6 @@ namespace Dune {
 
     typedef typename DiscreteFunctionTraits::DiscreteFunctionSpaceType DiscreteFunctionSpaceType;
 
-    typedef typename DiscreteFunctionTraits::DiscreteFunctionType DiscreteFunctionType;
     //! Domain vector
     typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
     //! Range vector
