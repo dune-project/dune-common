@@ -185,6 +185,19 @@ namespace Dune {
         //		return (p+i)!=(it.p+it.i);
         return (i)!=(it.i);
       }
+      //! equality
+      bool operator== (const ConstIterator& it) const
+      {
+        //		return (p+i)==(it.p+it.i);
+        return (i)==(it.i);
+      }
+
+      //! inequality
+      bool operator!= (const ConstIterator& it) const
+      {
+        //		return (p+i)!=(it.p+it.i);
+        return (i)!=(it.i);
+      }
 
       //! less than
       bool operator< (const Iterator& it) const
