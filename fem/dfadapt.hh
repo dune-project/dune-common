@@ -182,6 +182,11 @@ namespace Dune {
     //! return siz fo this discrete function
     int size() const { return dofVec_.size(); }
 
+    //! return pointer to internal array for use of BLAS routines
+    DofType * leakPointer () { return dofVec_.leakPointer();  };
+    //! return pointer to internal array for use of BLAS routines
+    const DofType * leakPointer () const { return dofVec_.leakPointer(); };
+
   private:
     // name of this func
     std::string name_;
