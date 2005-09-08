@@ -13,87 +13,10 @@
 #include <dune/fem/space/subspace.hh>
 #include <dune/common/misc.hh>
 
+//- Local includes
+#include "dofstorage.hh"
+
 namespace Dune {
-
-  // Note: the methods component and contained dof do actually the same
-  // in the Mapper and in the BaseFunctionSet. It would be a good idea to
-  // factor them out in a common class (private inheritance? BaseFunctionSet
-  // provides them for the mapper?
-
-  //! Indicates how the dofs shall be stored in the discrete functions
-  //! Point based means that all dofs belonging to one local degree in a
-  //! contained spaced are stored consecutively, whereas in the variable based
-  //! approach all dofs belonging to one subspace are stored consecutively
-  enum DofStoragePolicy { PointBased, VariableBased };
-
-  //! Utility class that helps in the transformation between dofs in the
-  //! combined space and its enclosed spaces
-  template <DofStoragePolicy p>
-  class DofConversionUtility {
-  public:
-    DofConversionUtility(int size);
-
-    void newSize(int size);
-
-    int component(int combinedIndex) const;
-    int containedDof(int combinedIndex) const;
-
-    int combinedDof(int enclosedIndex, int component) const;
-  private:
-    int size_;
-  };
-
-  template <>
-  class DofConversionUtility<PointBased> {
-  public:
-    DofConversionUtility(int numComponents) :
-      numComponents_(numComponents)
-    {}
-
-    static DofStoragePolicy policy() { return PointBased; }
-
-    void newSize(int size) {} // just do nothing
-
-    int component(int combinedIndex) const {
-      return combinedIndex%numComponents_;
-    }
-    int containedDof(int combinedIndex) const {
-      return combinedIndex/numComponents_;
-    }
-
-    int combinedDof(int containedIndex, int component) const {
-      return containedIndex*numComponents_ + component;
-    }
-
-  private:
-    const int numComponents_;
-  };
-
-  template <>
-  class DofConversionUtility<VariableBased> {
-  public:
-    DofConversionUtility(int size) :
-      size_(size)
-    {}
-
-    static DofStoragePolicy policy() { return VariableBased; }
-
-    void newSize(int size) { size_ = size; }
-
-    int component(int combinedIndex) const {
-      return combinedIndex/size_;
-    }
-    int containedDof(int combinedIndex) const {
-      return combinedIndex%size_;
-    }
-
-    int combinedDof(int containedIndex, int component) const {
-      return containedIndex + component*size_;
-    }
-
-  private:
-    int size_;
-  };
 
   // Forward declarations
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
@@ -115,11 +38,12 @@ namespace Dune {
     ContainedFunctionSpaceType;
     typedef typename ContainedSpaceTraits::BaseFunctionSetType
     ContainedBaseFunctionSetType;
-    typedef typename ContainedSpaceTraits::MapperType ContainedMapperType;
 
     enum { ContainedDimRange = ContainedFunctionSpaceType::DimRange,
            ContainedDimDomain = ContainedFunctionSpaceType::DimDomain };
   public:
+    typedef typename ContainedSpaceTraits::MapperType ContainedMapperType;
+
     typedef typename ContainedFunctionSpaceType::DomainFieldType
     DomainFieldType;
     typedef typename ContainedFunctionSpaceType::RangeFieldType
@@ -151,9 +75,9 @@ namespace Dune {
            DimDomain = FunctionSpaceType::DimDomain };
   public:
     //- Friends
-    friend class DiscreteFunctionSpaceType;
-    friend class BaseFunctionSetType;
-    friend class MapperType;
+    friend class CombinedSpace<DiscreteFunctionSpaceImp, N, policy>;
+    friend class CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>;
+    friend class CombinedMapper<DiscreteFunctionSpaceImp, N, policy>;
   };
 
   //! Class to combine N scalar spaces
@@ -246,7 +170,7 @@ namespace Dune {
     int numComponents() const { return N; }
 
     //! policy of this space
-    DofStoragePolicy policy() const { return DofConversionType::policy(); }
+    DofStoragePolicy myPolicy() const { return DofConversionType::policy(); }
   private:
     //- Private typedefs
     typedef typename Traits::ContainedMapperType ContainedMapperType;
@@ -383,7 +307,8 @@ namespace Dune {
     enum { numComponents = N };
     typedef CombinedMapper<DiscreteFunctionSpaceImp, N, policy> ThisType;
 
-    typedef typename CombinedSpaceTraits<DiscreteFunctionSpaceImp, N, policy> SpaceTraits;
+    typedef CombinedSpaceTraits<
+        DiscreteFunctionSpaceImp, N, policy> SpaceTraits;
     typedef DiscreteFunctionSpaceImp ContainedDiscreteFunctionSpaceType;
     typedef typename DiscreteFunctionSpaceImp::MapperType ContainedMapperType;
   public:

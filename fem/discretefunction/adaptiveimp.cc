@@ -65,7 +65,7 @@ namespace Dune {
   }
 
   template <class DiscreteFunctionSpaceImp>
-  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
+  typename AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   DofIteratorType
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   dbegin()
@@ -74,7 +74,7 @@ namespace Dune {
   }
 
   template <class DiscreteFunctionSpaceImp>
-  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
+  typename AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   DofIteratorType
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   dend()
@@ -83,7 +83,7 @@ namespace Dune {
   }
 
   template <class DiscreteFunctionSpaceImp>
-  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
+  typename AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   ConstDofIteratorType
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   dbegin() const
@@ -92,7 +92,7 @@ namespace Dune {
   }
 
   template <class DiscreteFunctionSpaceImp>
-  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
+  typename AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   ConstDofIteratorType
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   dend() const
@@ -101,7 +101,7 @@ namespace Dune {
   }
 
   template <class DiscreteFunctionSpaceImp>
-  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
+  typename AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   LocalFunctionType
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   newLocalFunction()

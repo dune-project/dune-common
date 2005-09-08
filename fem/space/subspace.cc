@@ -24,7 +24,7 @@ namespace Dune {
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
 
-      assert(id >= 0 && id < GeometryIdentifier::numTypes);
+      assert(id >= 0 && id < static_cast<int>(GeometryIdentifier::numTypes));
       if (baseSetVec_[id] == 0) {
         baseSetVec_[id] =
           new BaseFunctionSetType(spc.getBaseFunctionSet(*it), component);
@@ -68,7 +68,8 @@ namespace Dune {
 
   template <class CombinedSpaceImp>
   template <class EntityType>
-  SubMapper<CombinedSpaceImp>::mapToGlobal(EntityType& en, int localNum) const
+  int SubMapper<CombinedSpaceImp>::
+  mapToGlobal(EntityType& en, int localNum) const
   {
     const int containedGlobal = mapper_.mapToGlobal(en, localNum);
 

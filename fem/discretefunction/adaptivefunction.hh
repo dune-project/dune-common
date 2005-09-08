@@ -328,7 +328,7 @@ namespace Dune {
                              const DiscreteFunctionSpaceType& spc,
                              DofStorageType& dofVec) :
       BaseType(spc),
-      Imp(name, spc, memObj),
+      Imp(name, spc, dofVec),
       subSpaces_(0)
     {}
 

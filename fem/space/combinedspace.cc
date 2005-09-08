@@ -22,7 +22,7 @@ namespace Dune {
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
 
-      assert(id >= 0 && id < GeometryIdentifier::numTypes);
+      assert(id >= 0 && id < static_cast<int>(GeometryIdentifier::numTypes));
       if (baseSetVec_[id] == 0) {
         baseSetVec_[id] = new BaseFunctionSetType(spc.getBaseFunctionSet(*it));
       }
@@ -34,7 +34,7 @@ namespace Dune {
   CombinedSpace<DiscreteFunctionSpaceImp, N, policy>::
   ~CombinedSpace()
   {
-    for (int i = 0; i < baseSetVec_.size(); ++i) {
+    for (unsigned int i = 0; i < baseSetVec_.size(); ++i) {
       delete baseSetVec_[i];
       baseSetVec_[i] = 0;
     }

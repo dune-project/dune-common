@@ -50,7 +50,7 @@ namespace Dune {
 
     //! return the number of local dof of this local function
     //! use numDofs instead
-    int numberOfDofs () const DUNE_DEPRECATED
+    int numberOfDofs () const
     {
       return asImp().numberOfDofs ();
     }
@@ -65,7 +65,7 @@ namespace Dune {
     //! stands for local (reference element) coordinate x, whereas evaluateGlobal
     //! gets an x in physical (real world) coordinates
     template <class EntityType>
-    void evaluate (EntityType &en, const DomainType & x, RangeType & ret) DUNE_DEPRECATED
+    void evaluate (EntityType &en, const DomainType & x, RangeType & ret)
     {
       asImp().evaluate(en,x,ret);
     }
