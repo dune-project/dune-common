@@ -21,21 +21,18 @@ namespace Dune {
      The Dune Grid module defines a general interface to a hierarchical
      finite element mesh.  The interface is independent of dimension and
      element type (GeometryType).
-     @{@}
    */
 
   /**
      @defgroup GridInterface Grid Application API
      @ingroup Grid
      \brief Interfaces needed when working with a \ref Grid "Dune::Grid"
-     @{@}
    */
 
   /**
      @defgroup GridDevel Grid Developer API
      @ingroup Grid
      \brief Interfaces needed to implement a new \ref Grid "Dune::Grid"
-     @{@}
    */
 
   /**
