@@ -38,19 +38,37 @@ namespace Dune {
     template <class EntityType>
     BaryCenterQuad ( EntityType &en )
     {
-      switch(en.geometry().type())
-      {
-      case line :          { makeQuadrature<line> (); break; }
-      case quadrilateral : { makeQuadrature<quadrilateral> (); break; }
-      case hexahedron :    { makeQuadrature<hexahedron> (); break; }
-      case triangle :      { makeQuadrature<triangle> (); break; }
-      case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown GeometryType in BaryCenterQuad::makeQuadrature()\n"; abort();  break; }
-      }
+      switchTheType( en.geometry().type());
     };
 
     //! Constructor build the vec with the points and weights
     BaryCenterQuad ( GeometryType eltype )
+    {
+      switchTheType( eltype );
+    }
+
+    //! Constructor build the vec with the points and weights
+    void switchTheType ( GeometryType eltype )
+    {
+      GeometryType t = eltype;
+      if(eltype == simplex)
+      {
+        if(dim == 1) t = line;
+        if(dim == 2) t = triangle;
+        if(dim == 3) t = tetrahedron;
+      }
+      if(eltype == cube)
+      {
+        if(dim == 1) t = line;
+        if(dim == 2) t = quadrilateral;
+        if(dim == 3) t = hexahedron;
+      }
+      makeTheQuad(t);
+    };
+
+
+    //! Constructor build the vec with the points and weights
+    void makeTheQuad ( GeometryType eltype )
     {
       switch(eltype)
       {
