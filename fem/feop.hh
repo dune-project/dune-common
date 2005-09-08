@@ -8,9 +8,9 @@
 #include <dune/fem/common/localoperator.hh>
 #include <dune/fem/feop/spmatrix.hh>
 
-namespace Dune {
+#include <dune/grid/common/referenceelements.hh>
 
-  static const int edge[4][2] = { {0,2}, {1,3} , {0,1} , {2,3}};
+namespace Dune {
 
   /** @defgroup FEOpInterface FEOpInterface
       @ingroup DiscreteOperator
@@ -34,7 +34,7 @@ namespace Dune {
 
   protected:
     // Barton-Nackman
-    FEOpImp &asImp( ) { return static_cast<FEOpImp&>( *this ); }
+    FEOpImp &asImp() { return static_cast<FEOpImp&>( *this ); }
 
     const FEOpImp &asImp( ) const { return static_cast<const FEOpImp&>( *this ); }
   };
@@ -43,22 +43,25 @@ namespace Dune {
   /** @} end documentation group */
 
   //! \todo Please doc me!
-  template <class DiscFunctionType, class FEOpImp>
+  template <class DiscFunctionType, class MatrixImp, class FEOpImp>
   class FEOp : public FEOpInterface<DiscFunctionType,FEOpImp> ,
                public LocalOperatorDefault <DiscFunctionType,DiscFunctionType, typename
                    DiscFunctionType::RangeFieldType , FEOpImp  >
   {
 
-    typedef SparseRowMatrix<double> MatrixType;
 
   public:
+    typedef MatrixImp MatrixType;
+
     enum OpMode { ON_THE_FLY, ASSEMBLED };
 
-    //! \todo Please doc me!
+    enum { maxnumOfBaseFct = 100 };
+
+    //! \todo Please doc me! HAHA Constructor, what else
     FEOp( const typename DiscFunctionType::FunctionSpaceType &fuspace,
           OpMode opMode = ASSEMBLED, bool leaf = true ) :
       functionSpace_( fuspace ),  matrix_ (0), matrix_assembled_( false ),
-      arg_ ( NULL ), dest_ (NULL) , opMode_(opMode), leaf_(leaf)  {};
+      arg_ ( NULL ), dest_ (NULL) , opMode_(opMode) , leaf_ (leaf) {};
 
     //! \todo Please doc me!
     ~FEOp( ) {
@@ -66,6 +69,27 @@ namespace Dune {
     };
 
   public:
+    //! print matrix to standart out
+    void print () const
+    {
+      if(!this->matrix_assembled_) this->assemble();
+      this->matrix_->print(std::cout);
+    }
+
+    //! return reference to Matrix for oem solvers
+    MatrixType & myMatrix() const
+    {
+      //assert(matrix_assembled_ == true);
+      if ( !this->matrix_assembled_ )
+      {
+        if(!this->matrix_)
+          this->matrix_ = this->newEmptyMatrix( );
+        this->assemble();
+      }
+      return (*this->matrix_);
+    }
+
+
     //! methods for global application of the operator
     void initialize(){
       //std::cout << "Matrix reinitialized!" << std::endl ;
@@ -76,16 +100,14 @@ namespace Dune {
     };
 
 
-
     //! \todo Please doc me!
     virtual void operator()(const DiscFunctionType &arg,
                             DiscFunctionType &dest) const
     {
-      assert( opMode_ == ASSEMBLED );
+      assert( this->opMode_ == ASSEMBLED );
 
       if ( !matrix_assembled_ )
       {
-        matrix_ = this->newEmptyMatrix( );
         assemble();
       }
 
@@ -96,7 +118,7 @@ namespace Dune {
   public:
     //! isLeaf returns true if Leafiterator should be used, else false is returned
     bool isLeaf (){
-      return (leaf_);
+      return leaf_;
     };
 
     //! store argument and destination
@@ -111,14 +133,14 @@ namespace Dune {
     //! set argument and dest to NULL
     void finalizeGlobal()
     {
-      arg_  = NULL; dest_ = NULL;
+      arg_ = NULL; dest_ = NULL;
     };
 
     //! makes local multiply on the fly
     template <class EntityType>
     void applyLocal ( EntityType &en ) const
     {
-      DiscFunctionType & arg  = const_cast<DiscFunctionType &> (*arg_);
+      const DiscFunctionType & arg  = (*arg_);
       DiscFunctionType & dest = (*dest_);
 
       typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
@@ -129,21 +151,20 @@ namespace Dune {
 
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
-      const GridType &grid = functionSpace_.getGrid();
-
-      typedef typename FunctionSpaceType::Range RangeVecType;
+      typedef typename FunctionSpaceType::RangeType RangeVecType;
       typedef typename FunctionSpaceType::JacobianRange JacobianRange;
-      typedef typename FunctionSpaceType::Domain DomainVecType;
+      typedef typename FunctionSpaceType::DomainType DomainVecType;
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
-      int level = grid.maxlevel();
+      typedef typename DiscFunctionType::ConstDofIteratorType ConstDofIteratorType;
 
       DofIteratorType dest_it = dest.dbegin();
-      DofIteratorType arg_it = arg.dbegin();
+      ConstDofIteratorType arg_it = arg.dbegin();
 
       const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( en );
       int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
-      enum {maxnumOfBaseFct = 10};
+
+      assert( numOfBaseFct <= maxnumOfBaseFct );
 
       FieldMatrix<double, maxnumOfBaseFct, maxnumOfBaseFct> mat;
 
@@ -194,81 +215,64 @@ namespace Dune {
       typedef typename EntityType::IntersectionIterator NeighIt;
       typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
 
-      const GridType &grid = functionSpace_.getGrid();
-
-      DiscFunctionType & arg  = const_cast<DiscFunctionType &> (*arg_);
+      const DiscFunctionType & arg  = (*arg_);
       DiscFunctionType & dest = (*dest_);
 
       typedef typename DiscFunctionType::DofIteratorType DofIteratorType;
-      int level = grid.maxlevel();
+      typedef typename DiscFunctionType::ConstDofIteratorType ConstDofIteratorType;
 
       DofIteratorType dest_it = dest.dbegin();
-      DofIteratorType arg_it = arg.dbegin();
+      ConstDofIteratorType arg_it = arg.dbegin();
 
-      NeighIt nit = en.ibegin();
+      const GeometryType t = en.geometry().type();
+
       NeighIt endnit = en.iend();
-
-      //std::cout << "bin in finalize bei Element "<< en.index() << std::endl;
-      for( ; nit != endnit ; ++nit) {
-
+      for(NeighIt nit = en.ibegin(); nit != endnit ; ++nit)
+      {
         if(nit.boundary())
         {
-          const BoundaryEntityType & bEl = nit.boundaryEntity();
+          int face = nit.numberInSelf();
+          enum { dim = EntityType :: dimension };
+          typedef typename EntityType :: ctype coordType;
 
-          if( functionSpace_.boundaryType( bEl.id() ) == Dirichlet )
+          const int faceCodim = 1;
+
+          if( (t == simplex) || (t == triangle) || (t == tetrahedron ) )
           {
-            int neigh = nit.numberInSelf();
-
-            if(en.geometry().type() == triangle)
+            const BoundaryEntityType & bEl = nit.boundaryEntity();
+            if( bEl.id() != 0 )
             {
-              int numDof = 3;
-              //std::cout << "Dreieck erkannt "<< en.index() << std::endl;
-
-              for(int i=1; i<numDof; i++)
+              static ReferenceSimplex< coordType, dim > refElem;
+              int novx = refElem.size( face, faceCodim , dim );
+              assert( novx == dim );
+              for(int j=0; j<novx ; j++)
               {
-                // funktioniert nur fuer Dreiecke
-                // hier muss noch gearbeitet werden. Wie kommt man von den
-                // Intersections zu den localen Dof Nummern?
-                int col = functionSpace_.mapToGlobal(en,(neigh+i)%numDof);
-                // unitRow unitCol for boundary
-                //matrix_->kroneckerKill(col,col);
-                dest_it[col] = arg_it[col];
-              }
-            }
-            if(en.geometry().type() == tetrahedron)
-            {
-              int numDof = 4;
-              for(int i=1; i<numDof; i++)
-              {
-                // funktioniert nur fuer Dreiecke
-                // hier muss noch gearbeitet werden. Wie kommt man von den
-                // Intersections zu den localen Dof Nummern?
-                int col = functionSpace_.mapToGlobal(en,(neigh+i)%numDof);
-                // unitRow unitCol for boundary
-                //matrix_->kroneckerKill(col,col);
-                dest_it[col] = arg_it[col];
-
-              }
-            }
-            if(en.geometry().type() == quadrilateral)
-            {
-              for(int i=0; i<2; i++)
-              {
-                // funktioniert nur fuer Dreiecke
-                // hier muss noch gearbeitet werden. Wie kommt man von den
-                // Intersections zu den localen Dof Nummern?
-                int col = functionSpace_.mapToGlobal(en,edge[neigh][i]);
-                // unitRow unitCol for boundary
-                //matrix_->kroneckerKill(col,col);
+                // get all local numbers located on the face
+                int vx  = refElem.subentity(face, faceCodim , j , dim );
+                // get global dof numbers of this vertices
+                int col = functionSpace_.mapToGlobal( en, vx);
+                // set solution on dirichlet bnd
                 dest_it[col] = arg_it[col];
               }
             }
           }
+          if((t == quadrilateral) || (t == cube) || (t == hexahedron))
+          {
+            static ReferenceCube< coordType, dim > refElem;
+            int novx = refElem.size( face, faceCodim , dim );
+            for(int j=0; j<novx ; j++)
+            {
+              // get all local numbers located on the face
+              int vx  = refElem.subentity(face, faceCodim , j , dim );
+              // get global dof numbers of this vertices
+              int col = functionSpace_.mapToGlobal( en, vx );
+              // set solution on dirichlet bnd
+              dest_it[col] = arg_it[col];
+            }
+          }
         }
-
       }
-
-    }; // end finalizeLocal
+    } // end finalizeLocal
 
   protected:
     //! the corresponding function_space
@@ -297,54 +301,33 @@ namespace Dune {
     //! \todo Please doc me!
     void assemble ( ) const
     {
-      typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
+      if(!this->matrix_) matrix_ = this->newEmptyMatrix( );
+
+      typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
-      typedef typename GridType::template Codim<0>::LeafIterator LeafIterator;
-
-
-      const GridType &grid = functionSpace_.getGrid();
-
-
-      std::cout << "Assemble Matrix!" << std::endl ;
+      typedef typename FunctionSpaceType::IteratorType IteratorType;
 
       {
-        enum {maxnumOfBaseFct = 10};
-
         FieldMatrix<double, maxnumOfBaseFct, maxnumOfBaseFct> mat;
 
-        if (leaf_) {
-          LeafIterator it = grid.leafbegin( grid.maxlevel() );
-          LeafIterator endit = grid.leafend ( grid.maxlevel() );
+        IteratorType it    = functionSpace_.begin();
+        IteratorType endit = functionSpace_.end();
 
-          assembleOnGrid(it, endit, mat);
+        assembleOnGrid(it, endit, mat);
+      }
 
-
-          LeafIterator it2 = grid.leafbegin( grid.maxlevel() );
-          LeafIterator endit2 = grid.leafend ( grid.maxlevel() );
-
-          bndCorrectOnGrid(it2, endit2);
-        }
-        else{
-          LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
-          LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
-
-          assembleOnGrid(it, endit, mat);
-
-
-          LeafIterator it2 = grid.leafbegin( grid.maxlevel() );
-          LeafIterator endit2 = grid.leafend ( grid.maxlevel() );
-
-          bndCorrectOnGrid(it2, endit2);
-        }
+      {
+        IteratorType it    = functionSpace_.begin();
+        IteratorType endit = functionSpace_.end();
+        bndCorrectOnGrid(it, endit);
       }
 
       matrix_assembled_ = true;
     };
 
     //! \todo Please doc me!
-    template <class GridIteratorType, class MatrixImp>
-    void assembleOnGrid ( GridIteratorType &it, GridIteratorType &endit, MatrixImp &mat) const
+    template <class GridIteratorType, class LocalMatrixImp>
+    void assembleOnGrid ( GridIteratorType &it, GridIteratorType &endit, LocalMatrixImp &mat) const
     {
       typedef typename DiscFunctionType::FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
@@ -373,9 +356,8 @@ namespace Dune {
     template <class GridIteratorType>
     void bndCorrectOnGrid ( GridIteratorType &it, GridIteratorType &endit) const
     {
-
       // eliminate the Dirichlet rows and columns
-      typedef typename DiscFunctionType::FunctionSpace FunctionSpaceType;
+      typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
       typedef typename FunctionSpaceType::GridType GridType;
       typedef typename GridType::template Codim<0>::Entity EntityType;
       typedef typename EntityType::IntersectionIterator NeighIt;
@@ -383,68 +365,66 @@ namespace Dune {
 
       for( ; it != endit; ++it )
       {
-        NeighIt nit = it->ibegin();
-        NeighIt endnit = it->iend();
-        for( ; nit != endnit ; ++nit)
-        {
+        const EntityType & en = *it;
 
+        const GeometryType t = en.geometry().type();
+        NeighIt endnit = en.iend();
+        for(NeighIt nit = en.ibegin(); nit != endnit ; ++nit)
+        {
           if(nit.boundary())
           {
-            const BoundaryEntityType & bEl = nit.boundaryEntity();
+            const int faceCodim = 1;
+            int face = nit.numberInSelf();
+            enum { dim = EntityType :: dimension };
+            typedef typename EntityType :: ctype coordType;
 
-            if( functionSpace_.boundaryType (bEl.id()) == Dirichlet )
+            if( (t == simplex) || (t == triangle) || (t == tetrahedron ) )
             {
-              int neigh = nit.numberInSelf();
+              const BoundaryEntityType & bEl = nit.boundaryEntity();
+              if( bEl.id() != 0 )
+              {
+                static ReferenceSimplex< coordType, dim > refElem;
+                int novx = refElem.size( face, faceCodim , dim );
+                assert( novx == dim );
+                for(int j=0; j<novx ; j++)
+                {
+                  // get all local numbers located on the face
+                  int vx  = refElem.subentity(face, faceCodim , j , dim );
+                  // get global dof numbers of this vertices
+                  int col = functionSpace_.mapToGlobal( en, vx);
+                  // set solution on dirichlet bnd
 
-              if((*it).geometry().type() == triangle)
-              {
-                int numDof = 3;
-                for(int i=1; i<numDof; i++)
-                {
-                  // funktioniert nur fuer Dreiecke
-                  // hier muss noch gearbeitet werden. Wie kommt man von den
-                  // Intersections zu den localen Dof Nummern?
-                  int col = functionSpace_.mapToGlobal(*it,(neigh+i)%numDof);
-                  // unitRow unitCol for boundary
-                  matrix_->kroneckerKill(col,col);
-                }
-              }
-              if((*it).geometry().type() == tetrahedron)
-              {
-                int numDof = 4;
-                for(int i=1; i<numDof; i++)
-                {
-                  // funktioniert nur fuer Dreiecke
-                  // hier muss noch gearbeitet werden. Wie kommt man von den
-                  // Intersections zu den localen Dof Nummern?
-                  int col = functionSpace_.mapToGlobal(*it,(neigh+i)%numDof);
-                  // unitRow unitCol for boundary
-                  matrix_->kroneckerKill(col,col);
-                }
-              }
-              if((*it).geometry().type() == quadrilateral)
-              {
-                for(int i=0; i<2; i++)
-                {
-                  // funktioniert nur fuer Dreiecke
-                  // hier muss noch gearbeitet werden. Wie kommt man von den
-                  // Intersections zu den localen Dof Nummern?
-                  int col = functionSpace_.mapToGlobal(*it,edge[neigh][i]);
                   // unitRow unitCol for boundary
                   matrix_->kroneckerKill(col,col);
                 }
               }
             }
-          }
+            if((t == quadrilateral) || (t == cube) || (t == hexahedron))
+            {
+              static ReferenceCube< coordType, dim > refElem;
+              int novx = refElem.size( face, faceCodim , dim );
+              for(int j=0; j<novx ; j++)
+              {
+                // get all local numbers located on the face
+                int vx  = refElem.subentity(face, faceCodim , j , dim );
+                // get global dof numbers of this vertices
+                int col = functionSpace_.mapToGlobal( en, vx);
 
+                // unitRow unitCol for boundary
+                matrix_->kroneckerKill(col,col);
+              }
+            }
+          }
         }
       }
     };
 
   private:
-
+    // operator mode
     OpMode opMode_;
 
+    // true if LeafIterator is used, deprecated because the Iterator now
+    // comes from the space
     bool leaf_;
   };
 
