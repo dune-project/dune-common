@@ -26,7 +26,7 @@ namespace Dune {
   class ALU3dGridHierarchicIndexSet
   {
     typedef ALU3dGrid<dim,dimworld,elType> GridType;
-    enum { numCodim = 4 };
+    enum { numCodim = dim+1 }; // i.e. 4
 
     ALU3dGridHierarchicIndexSet(const GridType & grid) : grid_(grid)
     {}
