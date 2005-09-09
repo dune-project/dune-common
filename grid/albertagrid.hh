@@ -1246,7 +1246,7 @@ namespace Dune
       };
 
       typedef IndexSet<GridImp,LevelIndexSetImp> LevelIndexSet;
-      typedef IndexSet<GridImp,LeafIndexSetImp> LeafIndexSet;
+      typedef LeafIndexSetImp LeafIndexSet;
       typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
       typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
     };
@@ -1350,8 +1350,8 @@ namespace Dune
     typedef typename Traits::template Codim<0>::LeafIterator LeafIterator;
 
     typedef AlbertaGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSet;
-    typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSet;
-    typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSet;
+    typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetImp;
+    typedef typename Traits :: LeafIndexSet LeafIndexSet;
 
     typedef AlbertaGridGlobalIdSet<dim,dimworld> GlobalIdSet;
     typedef AlbertaGridGlobalIdSet<dim,dimworld> LocalIdSet;
@@ -1536,13 +1536,13 @@ namespace Dune
 
     const HierarchicIndexSet & hierarchicIndexSet () const { return hIndexSet_; }
 
-    const LevelIndexSet & levelIndexSet (int level= 0) const
+    const typename Traits :: LevelIndexSet & levelIndexSet (int level= 0) const
     {
-      if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSet (*this,level);
+      if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSetImp (*this,level);
       return *(levelIndexVec_[level]);
     }
 
-    const LeafIndexSet & leafIndexSet () const {
+    const typename Traits :: LeafIndexSet & leafIndexSet () const {
       if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet (*this);
       return *leafIndexSet_;
     }
@@ -1780,7 +1780,7 @@ namespace Dune
 
     // the level index set, is generated from the HierarchicIndexSet
     // is generated, when accessed
-    mutable std::vector < LevelIndexSet * > levelIndexVec_;
+    mutable std::vector < LevelIndexSetImp * > levelIndexVec_;
 
     // the leaf index set, is generated from the HierarchicIndexSet
     // is generated, when accessed
