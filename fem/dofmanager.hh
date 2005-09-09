@@ -739,7 +739,6 @@ namespace Dune {
     int chunkSize_;
 
   public:
-    typedef typename GridType :: LeafIndexSet LeafIndexSetType;
     typedef IndexSetRestrictProlong< MyType , LocalIndexSetObjectsType > IndexSetRestrictProlongType;
   private:
     IndexSetRestrictProlongType indexRPop_;
