@@ -57,7 +57,7 @@ namespace Dune
             \return An index in the range 0 ... Max number of entities in set - 1.
      */
     template<int cc>
-    int index (const typename GridImp::Traits::template Codim<cc>::Entity& e) const
+    int index (const typename GridImp::template Codim<cc>::Entity& e) const
     {
       return asImp().template index<cc>(e);
     }
@@ -69,7 +69,7 @@ namespace Dune
        \return An index in the range 0 ... Max number of entities in set - 1.
      */
     template<int cc>
-    int subindex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    int subindex (const typename GridImp::template Codim<0>::Entity& e, int i) const
     {
       return asImp().template subindex<cc>(e,i);
     }
@@ -124,14 +124,14 @@ namespace Dune
 
     //! get id of an entity
     template<int cc>
-    IdType id (const typename GridImp::Traits::template Codim<cc>::Entity& e) const
+    IdType id (const typename GridImp::template Codim<cc>::Entity& e) const
     {
       return asImp().template id<cc>(e);
     }
 
     //! get id of subentity
     template<int cc>
-    IdType subid (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    IdType subid (const typename GridImp::template Codim<0>::Entity& e, int i) const
     {
       return asImp().template subid<cc>(e,i);
     }

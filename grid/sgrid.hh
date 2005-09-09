@@ -3,14 +3,16 @@
 #ifndef DUNE_SGRID_HH
 #define DUNE_SGRID_HH
 
+#include <limits>
+#include <vector>
+
 #include <dune/common/fmatrix.hh>
 #include "../common/stack.hh"
 #include "../common/capabilities.hh"
 #include "common/grid.hh"
 #include "sgrid/numbering.hh"
 #include "../common/bigunsignedint.hh"
-
-#include <limits>
+#include "common/indexidset.hh"
 
 /*! \file sgrid.hh
    This file documents the DUNE grid interface. We use the special implementation for
@@ -315,6 +317,9 @@ namespace Dune {
   private:
     typedef sgrid_persistentindextype PersistentIndexType;
 
+    friend class GridImp::LevelIndexSetType; // needs access to the private index methods
+    friend class GridImp::GlobalIdSetType; // needs access to the private index methods
+
     //! globally unique, persistent index
     PersistentIndexType persistentIndex () const
     {
@@ -462,6 +467,9 @@ namespace Dune {
   private:
     typedef sgrid_persistentindextype PersistentIndexType;
 
+    friend class GridImp::LevelIndexSetType; // needs access to the private index methods
+    friend class GridImp::GlobalIdSetType; // needs access to the private index methods
+
     //! globally unique, persistent index
     PersistentIndexType persistentIndex () const
     {
@@ -551,6 +559,9 @@ namespace Dune {
 
   private:
     typedef sgrid_persistentindextype PersistentIndexType;
+
+    friend class GridImp::LevelIndexSetType; // needs access to the private index methods
+    friend class GridImp::GlobalIdSetType; // needs access to the private index methods
 
     //! globally unique, persistent index
     PersistentIndexType persistentIndex () const
@@ -801,6 +812,95 @@ namespace Dune {
       Dune::SEntityPointer<codim,GridImp>(_grid,_l,_id) {}
   };
 
+
+  //========================================================================
+  /*!
+     \brief implementation of index set
+
+   */
+  //========================================================================
+
+  template<class GridImp>
+  class SGridLevelIndexSet : public IndexSet<GridImp,SGridLevelIndexSet<GridImp> >
+  {
+  public:
+    //! constructor stores reference to a grid and level
+    SGridLevelIndexSet (const GridImp& g, int l) : grid(g), level(l)
+    {
+      mytypes.push_back(cube);   // contains a single element type;
+    }
+
+    //! get index of an entity
+    template<int cd>
+    int index (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    {
+      return grid.template getRealEntity<cd>(e).compressedIndex();
+    }
+
+    //! get index of subentity of a codim 0 entity
+    template<int cc>
+    int subindex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    {
+      return grid.template getRealEntity<0>(e).template subCompressedIndex<cc>(i);
+    }
+
+    //! get number of entities of given codim, type and level (the level is known to the object)
+    int size (int codim, GeometryType type) const
+    {
+      return grid.size(level,codim);
+    }
+
+    //! deliver all geometry types used in this grid
+    const std::vector<GeometryType>& geomtypes () const
+    {
+      return mytypes;
+    }
+
+  private:
+    const GridImp& grid;
+    int level;
+    std::vector<GeometryType> mytypes;
+  };
+
+
+  //========================================================================
+  /*!
+     \brief persistent, globally unique Ids
+
+   */
+  //========================================================================
+
+  template<class GridImp>
+  class SGridGlobalIdSet : public IdSet<GridImp,SGridGlobalIdSet<GridImp>,int>
+  {
+  public:
+    //! define the type used for persisitent indices
+    typedef sgrid_persistentindextype IdType;
+
+    //! constructor stores reference to a grid
+    SGridGlobalIdSet (const GridImp& g) : grid(g) {}
+
+    //! get id of an entity
+    template<int cd>
+    IdType id (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    {
+      return grid.template getRealEntity<cd>(e).persistentIndex();
+    }
+
+    //! get id of subentity
+    template<int cc>
+    IdType subid (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    {
+      return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
+    }
+
+  private:
+    const GridImp& grid;
+  };
+
+
+
+
   //************************************************************************
   /**
      \brief [<em> provides \ref Dune::Grid </em>]
@@ -851,17 +951,34 @@ namespace Dune {
      All information is provided to allocate degrees of freedom in appropriate vector
      data structures (which are not part of this module).
    */
+
   template<int dim, int dimworld>
-  class SGrid : public GridDefault <dim,dimworld,sgrid_ctype,SGrid<dim,dimworld> >
+  struct SGridFamily
   {
-  public:
     typedef GridTraits<dim,dimworld,Dune::SGrid<dim,dimworld>,
         SGeometry,SEntity,SBoundaryEntity,
         SEntityPointer,SLevelIterator,
         SIntersectionIterator,SHierarchicIterator,
-        SLevelIterator> Traits;
+        SLevelIterator,
+        SGridLevelIndexSet<SGrid<dim,dimworld> >,
+        SGridLevelIndexSet<SGrid<dim,dimworld> >,
+        SGridGlobalIdSet<SGrid<dim,dimworld> >,
+        sgrid_persistentindextype,
+        SGridGlobalIdSet<SGrid<dim,dimworld> >,
+        sgrid_persistentindextype > Traits;
+  };
 
+  template<int dim, int dimworld>
+  class SGrid : public GridDefault <dim,dimworld,sgrid_ctype,SGridFamily<dim,dimworld> >
+  {
+  public:
     typedef sgrid_persistentindextype PersistentIndexType;
+
+    // need for friend declarations in entity
+    typedef SGridLevelIndexSet<SGrid<dim,dimworld> > LevelIndexSetType;
+    typedef SGridGlobalIdSet<SGrid<dim,dimworld> > GlobalIdSetType;
+
+    typedef typename SGridFamily<dim,dimworld>::Traits Traits;
 
     //! maximum number of levels allowed
     enum { MAXL=32 };
@@ -1053,13 +1170,48 @@ namespace Dune {
     //! given reduced coordinates of an element, determine if element is in the grid
     bool exists (int level, const FixedArray<int,dim>& zred) const;
 
+
+    // The new index sets from DDM 11.07.2005
+    const typename Traits::GlobalIdSet& globalidset() const
+    {
+      return theglobalidset;
+    }
+
+    const typename Traits::LocalIdSet& localidset() const
+    {
+      return theglobalidset;
+    }
+
+    const typename Traits::LevelIndexSet& levelindexset(int level) const
+    {
+      return *(indexsets[level]);
+    }
+
+    const typename Traits::LeafIndexSet& leafindexset() const
+    {
+      return *(indexsets[maxlevel()]);
+    }
+
   private:
 
-    template<int codim>
-    SEntity<codim,dim,const SGrid<dim,dimworld> >& getRealEntity(typename Traits::template Codim<codim>::Entity& e );
+    std::vector<SGridLevelIndexSet<SGrid<dim,dimworld> >*> indexsets;
+    SGridGlobalIdSet<SGrid<dim,dimworld> > theglobalidset;
+
+    // Index classes need access to the real entity
+    friend class Dune::SGridLevelIndexSet<Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SGridGlobalIdSet<Dune::SGrid<dim,dimworld> >;
 
     template<int codim>
-    const SEntity<codim,dim,const SGrid<dim,dimworld> >& getRealEntity(const typename Traits::template Codim<codim>::Entity& e ) const;
+    SEntity<codim,dim,const SGrid<dim,dimworld> >& getRealEntity(typename Traits::template Codim<codim>::Entity& e )
+    {
+      return e.realEntity;
+    }
+
+    template<int codim>
+    const SEntity<codim,dim,const SGrid<dim,dimworld> >& getRealEntity(const typename Traits::template Codim<codim>::Entity& e ) const
+    {
+      return e.realEntity;
+    }
 
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
