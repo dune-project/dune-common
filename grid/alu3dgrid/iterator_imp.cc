@@ -572,7 +572,7 @@ namespace Dune {
   inline ALU3dGridLeafIterator<codim, pitype, GridImp> ::
   ALU3dGridLeafIterator(const GridImp &grid, int level,
                         bool end, const int nlinks)
-    : ALU3dGridEntityPointer <0,GridImp> ( grid,level,end)
+    : ALU3dGridEntityPointer <codim,GridImp> ( grid,level,end)
       , index_(-1)
       , level_(level)
   {
@@ -623,12 +623,14 @@ namespace Dune {
         assert((*iter_).size() > 0);
         index_=0;
         myEntity().reset( level_ );
-        ALU3DSPACE LeafValType & item = (*iter_).item();
+        val_t & item = (*iter_).item();
         //myEntity().setElement( (*iter_).item());
         if( item.first )
           myEntity().setElement( * item.first );
+#ifdef _ALU3DGRID_PARALLEL_
         else
           myEntity().setGhost( * item.second );
+#endif
       }
     }
     else
@@ -638,7 +640,7 @@ namespace Dune {
   template<int cdim, PartitionIteratorType pitype, class GridImp>
   inline ALU3dGridLeafIterator<cdim, pitype, GridImp> ::
   ALU3dGridLeafIterator(const ALU3dGridLeafIterator<cdim, pitype, GridImp> &org)
-    : ALU3dGridEntityPointer <0,GridImp> ( org.grid_,org.level_,(org.index_ < 0) ? true : false )
+    : ALU3dGridEntityPointer <cdim,GridImp> ( org.grid_,org.level_,(org.index_ < 0) ? true : false )
       , index_(org.index_)
       , level_(org.level_)
       , iter_ ( org.iter_ )
@@ -646,11 +648,13 @@ namespace Dune {
     if(index_ >= 0)
     {
       myEntity().reset( level_ );
-      ALU3DSPACE LeafValType & item = (*iter_).item();
+      val_t & item = (*iter_).item();
       if( item.first )
         myEntity().setElement( * item.first );
+#ifdef _ALU3DGRID_PARALLEL_
       else
         myEntity().setGhost( * item.second );
+#endif
       //myEntity().setElement( iter_->item() );
     }
   }
@@ -671,12 +675,14 @@ namespace Dune {
       return ;
     }
 
-    ALU3DSPACE LeafValType & item = (*iter_).item();
+    val_t & item = (*iter_).item();
     //myEntity().setElement( (*iter_).item());
     if( item.first )
       myEntity().setElement( * item.first );
+#ifdef _ALU3DGRID_PARALLEL_
     else
       myEntity().setGhost( * item.second );
+#endif
     return ;
   }
 
