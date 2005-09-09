@@ -7,27 +7,11 @@
 
 namespace Dune {
 
-  // Constructor
-  /*
-     template <class FunctionSpaceImp, class GridPartImp, int polOrd>
-     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-     LagrangeDiscreteFunctionSpace (GridPartType & g, DofManagerType & dm) :
-      DefaultType(id),
-      baseFuncSet_(GeometryIdentifier::numTypes,0),
-      dm_(dm),
-      grid_(g),
-      mapper_(0)
-     {
-     makeFunctionSpace(g);
-     }
-   */
-
   template <class FunctionSpaceImp, class GridPartImp, int polOrd>
   inline LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
   LagrangeDiscreteFunctionSpace (GridPartType & g) :
     DefaultType(id),
     baseFuncSet_(GeometryIdentifier::numTypes,0),
-    //dm_(DofManagerFactoryType::getDofManager(g.grid())),
     grid_(g),
     mapper_(0)
   {
@@ -39,19 +23,18 @@ namespace Dune {
   makeFunctionSpace (GridPartType& gridPart)
   {
     // add index set to list of indexset of dofmanager
-
-    // * Hack!!!
-    //dm_.addIndexSet(gridPart.grid(),
-    //                const_cast<typename GridPartType::IndexSetType&>(gridPart.indexSet()));
-
+    typedef DofManager<GridType> DofManagerType;
+    typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
+    DofManagerType & dm = DofManagerFactoryType::getDofManager(gridPart.grid());
+    dm.addIndexSet(gridPart.grid(), const_cast<typename GridPartType::IndexSetType&>(gridPart.indexSet()));
 
     //std::cout << "Constructor of LagrangeDiscreteFunctionSpace! \n";
     // search the macro grid for diffrent element types
-    typedef typename GridType::template Codim<0>::LevelIterator LevelIteratorType;
+    typedef typename GridType :: template Codim<0> :: Entity EntityType;
     IteratorType endit  = gridPart.template end<0>();
     for(IteratorType it = gridPart.template begin<0>(); it != endit; ++it) {
       GeometryType geo = (*it).geometry().type(); // Hack
-      int dimension = static_cast<int>(LevelIteratorType::Entity::mydimension);
+      int dimension = static_cast<int>( EntityType::mydimension);
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
       if(baseFuncSet_[id] == 0 )
@@ -226,8 +209,7 @@ namespace Dune {
     BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
 
     mapper_ = new MapperType (const_cast<IndexSetType&>(iset),
-                              baseFuncSet->numBaseFunctions(),
-                              0);
+                              baseFuncSet->numBaseFunctions());
 
     return baseFuncSet;
   }
