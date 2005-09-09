@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_ALBERTAGRID_HH__
-#define __DUNE_ALBERTAGRID_HH__
+#ifndef DUNE_ALBERTAGRID_HH
+#define DUNE_ALBERTAGRID_HH
 #include <iostream>
 #include <fstream>
 
@@ -1539,9 +1539,13 @@ namespace Dune
     const std::vector < GeometryType > & geomTypes () const { return geomTypes_; }
 
   private:
-    //! copy Constructor is private so that grid cannot be copied
-    AlbertaGrid(const AlbertaGrid<dim,dimworld> & copy );
+    friend class Conversion<AlbertaGrid<dim, dimworld>, HasObjectStream>;
+    friend class Conversion<const AlbertaGrid<dim, dimworld>, HasObjectStream>;
 
+    AlbertaGrid(const MyType& other);
+    MyType& operator=(const MyType& other);
+
+  private:
     Array<int> ghostFlag_; // store ghost information
 
     // initialize of some members
