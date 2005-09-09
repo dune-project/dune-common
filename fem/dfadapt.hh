@@ -247,7 +247,10 @@ namespace Dune {
     const RangeFieldType & operator [] (int num) const;
 
     //! return number of degrees of freedom
-    int numberOfDofs () const;
+    int numberOfDofs () const DUNE_DEPRECATED;
+
+    //! return number of degrees of freedom
+    int numDofs () const;
 
     //! sum over all local base functions
     template <class EntityType>
