@@ -265,7 +265,8 @@ namespace Dune
   template <int mydim, int cdim, class GridImp>
   inline GeometryType AlbertaGridGeometry<mydim,cdim,GridImp>::type() const
   {
-    return AlbertaGridGeomType<mydim>::type();
+    //return AlbertaGridGeomType<mydim>::type ();
+    return simplex;
   }
 
   template <int mydim, int cdim, class GridImp>
@@ -1980,7 +1981,6 @@ namespace Dune
   inline void AlbertaGridTreeIterator<codim,pitype,GridImp>::
   makeIterator()
   {
-    assert(false);
     level_ = 0;
     enLevel_ = 0;
     vertex_ = 0;
@@ -2016,8 +2016,8 @@ namespace Dune
       , level_   (org.level_)
       , enLevel_ (org.enLevel_)
       , virtualEntity_(*(this->entity_))
-      //, manageStack_ ()
-      , manageStack_ ( org.manageStack_ )
+      , manageStack_ ()
+      //, manageStack_ ( org.manageStack_ )
       , face_(org.face_)
       , edge_ (org.edge_)
       , vertex_ ( org.vertex_)
@@ -2028,10 +2028,10 @@ namespace Dune
   {
     if(vertexMarker_)
     {
-      ALBERTA TRAVERSE_STACK * stack = manageStack_.getStack();
       // if vertexMarker is not NULL then we have a real iterator
-      //manageStack_.makeItNew(true);
-      //ALBERTA copyTraverseStack( stack , org.manageStack_.getStack() );
+      manageStack_.makeItNew(true);
+      ALBERTA TRAVERSE_STACK * stack = manageStack_.getStack();
+      ALBERTA copyTraverseStack( stack , org.manageStack_.getStack() );
 
       virtualEntity_.setTraverseStack( stack );
       /// get the actual used enInfo
