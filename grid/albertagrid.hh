@@ -1197,6 +1197,77 @@ namespace Dune
   //
   //**********************************************************************
 
+  template <int dim, int dimworld>
+  struct AlbertaGridFamily
+  {
+    typedef AlbertaGrid<dim,dimworld> GridImp;
+
+    typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetImp;
+    typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetImp;
+
+    typedef AlbertaGridGlobalIdSet<dim,dimworld> GlobalIdSetImp;
+    typedef AlbertaGridGlobalIdSet<dim,dimworld> LocalIdSetImp;
+
+    struct Traits
+    {
+      typedef GridImp Grid;
+
+      typedef Dune::IntersectionIterator<const GridImp, AlbertaGridIntersectionIterator> IntersectionIterator;
+
+      typedef Dune::HierarchicIterator<const GridImp, AlbertaGridHierarchicIterator> HierarchicIterator;
+
+      typedef Dune::BoundaryEntity<const GridImp, AlbertaGridBoundaryEntity> BoundaryEntity;
+
+      typedef int GlobalIdType;
+      typedef int LocalIdType;
+
+      template <int cd>
+      struct Codim
+      {
+        // IMPORTANT: Codim<codim>::Geometry == Geometry<dim-codim,dimw>
+        typedef Dune::Geometry<dim-cd, dimworld, const GridImp, AlbertaGridGeometry> Geometry;
+        typedef Dune::Geometry<dim-cd, dim, const GridImp, AlbertaGridGeometry> LocalGeometry;
+        // we could - if needed - introduce an other struct for dimglobal of Geometry
+        typedef Dune::Entity<cd, dim, const GridImp, AlbertaGridEntity> Entity;
+
+        typedef Dune::LevelIterator<cd,All_Partition,const GridImp,AlbertaGridLevelIterator> LevelIterator;
+
+        typedef Dune::LeafIterator<cd,All_Partition,const GridImp,AlbertaGridLeafIterator> LeafIterator;
+
+        typedef Dune::EntityPointer<const GridImp,AlbertaGridEntityPointer<cd,const GridImp> > EntityPointer;
+
+        template <PartitionIteratorType pitype>
+        struct Partition
+        {
+          typedef Dune::LevelIterator<cd,pitype,const GridImp,AlbertaGridLevelIterator> LevelIterator;
+          typedef Dune::LeafIterator<cd,pitype,const GridImp,AlbertaGridLeafIterator> LeafIterator;
+        };
+
+      };
+
+      typedef IndexSet<GridImp,LevelIndexSetImp> LevelIndexSet;
+      typedef IndexSet<GridImp,LeafIndexSetImp> LeafIndexSet;
+      typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
+      typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
+    };
+
+    /*
+       typedef GridTraits<dim,dimworld,Dune::AlbertaGrid<dim,dimworld> ,
+                       AlbertaGridGeometry,AlbertaGridEntity,
+                       AlbertaGridBoundaryEntity,
+                       AlbertaGridEntityPointer,
+                       AlbertaGridLevelIterator,
+                       AlbertaGridIntersectionIterator,
+                       AlbertaGridHierarchicIterator,
+                       AlbertaGridLeafIterator,
+                       LevelIndexSet,
+                       LeafIndexSet,
+                       GlobalIdSet, int,
+                       LocalIdSet, int
+                         >  Traits;
+     */
+  };
+
   /**
      \class AlbertaGrid
 
@@ -1232,7 +1303,7 @@ namespace Dune
    */
   template <int dim, int dimworld>
   class AlbertaGrid :
-    public GridDefault <dim,dimworld,albertCtype, AlbertaGrid<dim,dimworld> >,
+    public GridDefault <dim,dimworld,albertCtype, AlbertaGridFamily<dim,dimworld> >,
     public HasObjectStream
   {
     friend class AlbertaGridEntity <0,dim,const AlbertaGrid<dim,dimworld> >;
@@ -1267,14 +1338,17 @@ namespace Dune
     // The Interface Methods
     //**********************************************************
   public:
-    typedef GridTraits<dim,dimworld,Dune::AlbertaGrid<dim,dimworld> ,
-        AlbertaGridGeometry,AlbertaGridEntity,
-        AlbertaGridBoundaryEntity,
-        AlbertaGridEntityPointer,
-        AlbertaGridLevelIterator,
-        AlbertaGridIntersectionIterator,
-        AlbertaGridHierarchicIterator,
-        AlbertaGridLeafIterator>  Traits;
+    /*
+       typedef GridTraits<dim,dimworld,Dune::AlbertaGrid<dim,dimworld> ,
+                       AlbertaGridGeometry,AlbertaGridEntity,
+                       AlbertaGridBoundaryEntity,
+                       AlbertaGridEntityPointer,
+                       AlbertaGridLevelIterator,
+                       AlbertaGridIntersectionIterator,
+                       AlbertaGridHierarchicIterator,
+                       AlbertaGridLeafIterator>  Traits;
+     */
+    typedef typename AlbertaGridFamily<dim,dimworld> :: Traits Traits;
 
     typedef typename Traits::template Codim<0>::LeafIterator LeafIterator;
 
