@@ -148,7 +148,7 @@ namespace Dune {
       for ( int i = 0; i < diffOrd; i++ )
         n = diffVariable[i] + i * DimDomain;
 
-      return numQuadPoints*(getNumberOfBaseFunctions()*n + baseFunct) + quadPt;
+      return numQuadPoints*(numBaseFunctions()*n + baseFunct) + quadPt;
     };
 
     //! vector holding the cached evaluation of the base functions
