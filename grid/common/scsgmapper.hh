@@ -142,7 +142,7 @@ namespace Dune
        @param grid A reference to a grid.
      */
     LeafSingleCodimSingleGeomTypeMapper (const G& grid)
-      : SingleCodimSingleGeomTypeMapper<G,typename G::Traits::LeafIndexSet,c>(grid,grid.leafindexset())
+      : SingleCodimSingleGeomTypeMapper<G,typename G::Traits::LeafIndexSet,c>(grid,grid.leafIndexSet())
     {}
   };
 
@@ -167,7 +167,7 @@ namespace Dune
        @param level A valid level of the grid.
      */
     LevelSingleCodimSingleGeomTypeMapper (const G& grid, int level)
-      : SingleCodimSingleGeomTypeMapper<G,typename G::Traits::LevelIndexSet,c>(grid,grid.levelindexset(level))
+      : SingleCodimSingleGeomTypeMapper<G,typename G::Traits::LevelIndexSet,c>(grid,grid.levelIndexSet(level))
     {}
   };
 

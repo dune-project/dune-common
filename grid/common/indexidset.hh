@@ -69,9 +69,9 @@ namespace Dune
        \return An index in the range 0 ... Max number of entities in set - 1.
      */
     template<int cc>
-    int subindex (const typename GridImp::template Codim<0>::Entity& e, int i) const
+    int subIndex (const typename GridImp::template Codim<0>::Entity& e, int i) const
     {
-      return asImp().template subindex<cc>(e,i);
+      return asImp().template subIndex<cc>(e,i);
     }
 
     /** @brief Return total number of entities of given codim and type in this index set.
@@ -90,9 +90,9 @@ namespace Dune
 
        \return reference to vector of geometry types.
      */
-    const std::vector<GeometryType>& geomtypes () const
+    const std::vector<GeometryType>& geomTypes () const
     {
-      return asImp().geomtypes();
+      return asImp().geomTypes();
     }
 
   private:

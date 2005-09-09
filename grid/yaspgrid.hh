@@ -1668,7 +1668,7 @@ namespace Dune {
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<GeometryType>& geomtypes () const
+    const std::vector<GeometryType>& geomTypes () const
     {
       return mytypes;
     }
@@ -1707,7 +1707,7 @@ namespace Dune {
 
     //! get index of subentity of a codim 0 entity
     template<int cc>
-    int subindex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    int subIndex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid.template getRealEntity<0>(e).template subCompressedIndex<cc>(i);
     }
@@ -1719,7 +1719,7 @@ namespace Dune {
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<GeometryType>& geomtypes () const
+    const std::vector<GeometryType>& geomTypes () const
     {
       return mytypes;
     }
@@ -2123,22 +2123,22 @@ namespace Dune {
     }
 
     // The new index sets from DDM 11.07.2005
-    const typename Traits::GlobalIdSet& globalidset() const
+    const typename Traits::GlobalIdSet& globalIdSet() const
     {
       return theglobalidset;
     }
 
-    const typename Traits::LocalIdSet& localidset() const
+    const typename Traits::LocalIdSet& localIdSet() const
     {
       return theglobalidset;
     }
 
-    const typename Traits::LevelIndexSet& levelindexset(int level) const
+    const typename Traits::LevelIndexSet& levelIndexSet(int level) const
     {
       return *(indexsets[level]);
     }
 
-    const typename Traits::LeafIndexSet& leafindexset() const
+    const typename Traits::LeafIndexSet& leafIndexSet() const
     {
       return *(indexsets[maxlevel()]);
     }
