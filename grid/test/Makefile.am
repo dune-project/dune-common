@@ -59,17 +59,18 @@ AM_CXXFLAGS = $(COVERAGE) $(DUNE_EXTRA_CHECKS)
 #
 
 test_sgrid_SOURCES = test-sgrid.cc
+test_sgrid_CXXFLAGS = -DWITH_INDEX_SETS
 
 test_oned_SOURCES = test-oned.cc
 test_oned_CXXFLAGS = -DWITH_INDEX_SETS
 
 test_yaspgrid_SOURCES = test-yaspgrid.cc
-test_yaspgrid_CXXFLAGS = $(AM_CPPFLAGS) $(MPI_CPPFLAGS)
+test_yaspgrid_CXXFLAGS = $(AM_CPPFLAGS) $(MPI_CPPFLAGS) -DWITH_INDEX_SETS
 test_yaspgrid_LDADD = $(MPI_LDFLAGS) $(MPI_LIBS)
 
 # this implicitly checks the autoconf-test as well...
 test_alberta_SOURCES = test-alberta.cc
-test_alberta_CXXFLAGS = $(ALBERTA_CPPFLAGS) $(AM_CPPFLAGS)
+test_alberta_CXXFLAGS = $(ALBERTA_CPPFLAGS) $(AM_CPPFLAGS) -DWITH_INDEX_SETS
 test_alberta_LDADD = $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS)
 
 # files for alu3dgrid

@@ -115,7 +115,7 @@ void DoEntityInterfaceCheck (Entity &e)
 
   // methods on each entity
   e.level();
-  e.index();
+  //  e.index();
   e.partitionType();
   e.geometry();
 
@@ -432,10 +432,10 @@ struct GridInterface
 
     // Check for index sets
 #ifdef WITH_INDEX_SETS
-    typedef typename Grid::LevelIndexSet LevelIndexSet;
-    typedef typename Grid::LeafIndexSet LeafIndexSet;
-    typedef typename Grid::LocalIdSet LocalIdSet;
-    typedef typename Grid::GlobalIdSet GlobalIdSet;
+    typedef typename Grid::template Codim<0>::LevelIndexSet LevelIndexSet;
+    typedef typename Grid::template Codim<0>::LeafIndexSet LeafIndexSet;
+    typedef typename Grid::template Codim<0>::LocalIdSet LocalIdSet;
+    typedef typename Grid::template Codim<0>::GlobalIdSet GlobalIdSet;
 
     g.levelIndexSet(0);
 
@@ -582,6 +582,7 @@ void assertNeighbor (Grid &g)
   LevelIterator e = g.template lbegin<0>(0);
   const LevelIterator eend = g.template lend<0>(0);
   LevelIterator next = e; ++next;
+#ifndef WITH_INDEX_SETS
   if (next != eend)
   {
     for (; e != eend; ++e)
@@ -607,6 +608,38 @@ void assertNeighbor (Grid &g)
       }
     }
   }
+#else
+  typedef typename Grid::template Codim<0>::LevelIndexSet LevelIndexSet;
+  const LevelIndexSet & levelindex = g.levelIndexSet(0);
+  if (next != eend)
+  {
+    for (; e != eend; ++e)
+    {
+      IntersectionIterator endit = e->iend();
+      IntersectionIterator it = e->ibegin();
+      assert(levelindex.template index<0>(*e) >= 0);
+      assert(it != endit);
+      for(; it != endit; ++it)
+      {
+        assert(levelindex.template index<0>(*(it.inside())) ==
+               levelindex.template index<0>(*e));
+        if (it.neighbor())
+        {
+          assert(levelindex.template index<0>(*(it.outside())) >= 0);
+          assert(levelindex.template index<0>(*(it.outside())) !=
+                 levelindex.template index<0>(*e));
+          LevelIterator n = g.template lbegin<0>(it.level());
+          LevelIterator nend = g.template lend<0>(it.level());
+          while (n != it.outside() && n != nend) {
+            assert(levelindex.template index<0>(*(it.outside())) !=
+                   levelindex.template index<0>(*n));
+            ++n;
+          }
+        }
+      }
+    }
+  }
+#endif
 }
 
 /*
