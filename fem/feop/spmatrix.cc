@@ -199,6 +199,24 @@ namespace Dune
   }
 
   template <class T>
+  void SparseRowMatrix<T>::remove(int row, int col)
+  {
+    int whichCol = colIndex(row,col);
+    if(whichCol < 0)
+    {
+      DUNE_THROW(RangeError,
+                 "Error in SparseRowMatrix::set: Entry ("
+                 << row << ", " << col << ") "
+                 << "could neither be found nor newly allocated!");
+    }
+    else
+    {
+      values_[row*nz_ + whichCol] = 0.0;
+      col_[row*nz_ + whichCol] = -1;
+    }
+  }
+
+  template <class T>
   void SparseRowMatrix<T>::add(int row, int col, const T& val)
   {
     if (std::numeric_limits<T>::has_quiet_NaN &&
@@ -260,6 +278,23 @@ namespace Dune
 
     for(int row=0; row<dim_[0]; row++) {
 
+      T& sum = ret[row];
+      sum = 0.0;
+      for(int col=0; col<nz_; col++)
+      {
+        int thisCol = row*nz_ + col;
+        int realCol = col_[ thisCol ];
+        if ( realCol < 0 ) continue;
+        sum += values_[thisCol] * x[ realCol ];
+      }
+    }
+  }
+
+  template <class T> template <class CArrayType>
+  void SparseRowMatrix<T>::multOEM(const CArrayType * x, CArrayType * ret) const
+  {
+    for(int row=0; row<dim_[0]; row++)
+    {
       T& sum = ret[row];
       sum = 0.0;
       for(int col=0; col<nz_; col++)
@@ -456,10 +491,8 @@ namespace Dune
   void SparseRowMatrix<T>::unitCol(int col)
   {
     for(int i=0; i<dim_[0]; i++)
-      if (i != col)
-        set(i,col,0.0);
-      else
-        set(col,col,1.0);
+      if (i != col) remove(i,col);
+      else set(col,col,1.0);
   }
 
 #ifdef HAVE_SUPERLU

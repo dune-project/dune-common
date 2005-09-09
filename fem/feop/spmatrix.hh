@@ -154,6 +154,9 @@ namespace Dune
     //! Set matrix entry
     void set(int row, int col, const T& val);
 
+    //! remove matrix entry
+    void remove(int row, int col);
+
     //! Add to matrix entry
     void add(int row, int col, const T& val);
 
@@ -170,9 +173,19 @@ namespace Dune
      *
      * This method works on arrays and expects the template
      * parameter type to have an index operator.
+     * This methods expects that the array supports a method resize.
      */
     template <class VECtype>
     void mult(VECtype &ret, const VECtype& x) const;
+
+    /** \brief Multiply with a vector
+     *
+     * This method works on arrays and expects the template
+     * parameter type to have an index operator, i.e. C arrays.
+     * This method is use with BLAS routines.
+     */
+    template <class CArrayType>
+    void multOEM(const CArrayType * x, CArrayType * ret) const;
 
     //! Multiply with a SimpleVector
     SimpleVector<T> operator*(const SimpleVector<T>& v) const;
