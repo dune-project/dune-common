@@ -140,8 +140,8 @@ namespace Dune {
         // make run through grid
         for(int l=0; l<grid_.maxlevel(); l++)
         {
-          LevelIterator endit = grid_.template lend<0>   ( l );
-          for(LevelIterator it    = grid_.template lbegin<0> ( l );
+          LevelIterator endit  = grid_.template lend<0>   ( l );
+          for(LevelIterator it = grid_.template lbegin<0> ( l );
               it != endit; ++it )
           {
             hierarchicRestrict( *it , tmpop );
@@ -306,9 +306,8 @@ namespace Dune {
     void calcFatherChildWeight (EntityType &father, EntityType &son) const
     {
       // volume of son / volume of father
-      const_cast<RangeFieldType &> (weight_) =
-        son.geometry().integrationElement(quad_.point(0))/
-        father.geometry().integrationElement(quad_.point(0));
+      weight_ = son.geometry().integrationElement(quad_.point(0)) /
+                father.geometry().integrationElement(quad_.point(0));
     }
 
     //! the weight can also be seted
@@ -332,14 +331,14 @@ namespace Dune {
 
       if(initialize)
       {
-        for(int i=0; i<vati_.numberOfDofs(); i++)
+        for(int i=0; i<vati_.numDofs(); i++)
         {
           vati_[i] = weight_ * sohn_[i];
         }
       }
       else
       {
-        for(int i=0; i<vati_.numberOfDofs(); i++)
+        for(int i=0; i<vati_.numDofs(); i++)
         {
           vati_[i] += weight_ * sohn_[i];
         }
@@ -354,7 +353,7 @@ namespace Dune {
 
       df_.localFunction( father, vati_ );
       df_.localFunction( son   , sohn_ );
-      for(int i=0; i<vati_.numberOfDofs(); i++)
+      for(int i=0; i<vati_.numDofs(); i++)
       {
         sohn_[i] = vati_[i];
       }
