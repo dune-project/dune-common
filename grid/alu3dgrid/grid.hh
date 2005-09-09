@@ -118,7 +118,7 @@ namespace Dune {
       };
 
       typedef IndexSet<GridImp,LevelIndexSetImp> LevelIndexSet;
-      typedef IndexSet<GridImp,LeafIndexSetImp> LeafIndexSet;
+      typedef LeafIndexSetImp LeafIndexSet;
       typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
       typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
 
@@ -204,9 +204,9 @@ namespace Dune {
     typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSet;
 
     //! Type of the level index set
-    typedef DefaultLevelIndexSet<MyType>           LevelIndexSet;
+    typedef DefaultLevelIndexSet<MyType>           LevelIndexSetImp;
     //! Type of the leaf index set
-    typedef AdaptiveLeafIndexSet<MyType>           LeafIndexSet;
+    typedef AdaptiveLeafIndexSet<MyType>           LeafIndexSetImp;
 
     typedef typename ALU3dGridFamily < dim , dimworld , elType > :: Traits Traits;
 
@@ -342,10 +342,10 @@ namespace Dune {
     const HierarchicIndexSet & hierarchicIndexSet () const { return hIndexSet_; }
 
     //! get leaf index set of the grid
-    const LeafIndexSet & leafIndexSet () const;
+    const typename Traits :: LeafIndexSet & leafIndexSet () const;
 
     //! get level index set of the grid
-    const LevelIndexSet & levelIndexSet (int level) const;
+    const typename Traits :: LevelIndexSet & levelIndexSet (int level) const;
 
     //! calculate load of each proc and repartition if neccessary
     bool loadBalance ();
@@ -476,10 +476,10 @@ namespace Dune {
     LocalIdSet localIdSet_;
 
     // the level index set ( default type )
-    mutable std::vector < LevelIndexSet * > levelIndexVec_;
+    mutable std::vector < LevelIndexSetImp * > levelIndexVec_;
 
     // the leaf index set
-    mutable LeafIndexSet * leafIndexSet_;
+    mutable LeafIndexSetImp * leafIndexSet_;
 
     // the entity codim 0
     typedef ALU3dGridMakeableEntity<0,dim,const MyType> EntityImp;
