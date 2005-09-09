@@ -369,7 +369,7 @@ namespace Dune {
     }
 
     //! return size of grid entities per level and codim
-    int size ( int codim ) const
+    int size ( int codim , GeometryType type = unknown ) const
     {
       if(codim == 0) return codimLeafSet_[codim].size();
       return hIndexSet_.size(codim);
