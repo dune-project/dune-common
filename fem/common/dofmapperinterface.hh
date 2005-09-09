@@ -10,57 +10,19 @@ namespace Dune {
      @{
    */
 
-
-  //************************************************************************
+  //***********************************************************************
   //
   //  --MapperInterface
   //
   //! Interface for calculating the size of a function space for a grid on a
   //! specified level.
   //! Furthermore the local to global mapping of dof number is done.
-  //
-  //************************************************************************
-  class DofMapperInterface
-  {
-  public:
-    /** \brief Virtual destructor */
-    virtual ~DofMapperInterface() {}
-
-    //! if grid has changed determine new size
-    //! (to be called once per timestep, therefore virtual )
-    virtual int newSize() const = 0;
-
-    //! calc new insertion points for dof of different codim
-    //! (to be called once per timestep, therefore virtual )
-    virtual void calcInsertPoints () = 0;
-
-    //! return max number of local dofs per entity
-    virtual int numberOfDofs () const DUNE_DEPRECATED = 0;
-
-    //! return max number of local dofs per entity
-    virtual int numDofs () const = 0;
-
-    //! returns true if index is new ( for dof compress )
-    virtual bool indexNew (int num) const = 0;
-
-    //! return old index in dof array of given index ( for dof compress )
-    virtual int oldIndex (int num) const = 0;
-
-    //! return new index in dof array
-    virtual int newIndex (int num) const = 0;
-
-    /*! return estimate for size that is addtional needed
-        for restriction of data */
-    virtual int additionalSizeEstimate() const = 0;
-  };
-
-  //***********************************************************************
-  //
-  //!  Provide default implementation of DofMapperInterface
+  //! Also during grid adaptation this mapper knows about old and new indices
+  //! of entities.
   //
   //***********************************************************************
   template <class DofMapperImp>
-  class DofMapperDefault : public DofMapperInterface
+  class DofMapperInterface
   {
   public:
     //! return number of dofs for special function space and grid on
@@ -77,61 +39,46 @@ namespace Dune {
       return asImp().mapToGlobal( en , localNum );
     };
 
-    //! default implementation if not overlaoded
-    virtual int newSize() const
+    //! return new size of space, i.e. after adaptation
+    int newSize() const
     {
-      return asImp().size();
+      return asImp().newSize();
     }
 
-    //! default implementation if not overlaoded
-    virtual void calcInsertPoints ()
+    //! return number of dofs on element
+    int numberOfDofs () const DUNE_DEPRECATED
     {
-      // overload this method in derived class
-      assert(false);
+      return asImp().numberOfDofs();
     }
 
-    //! default implementation if not overlaoded
-    virtual int numberOfDofs () const DUNE_DEPRECATED
+    //! return number of dofs on element
+    int numDofs () const
     {
-      // overload this method in derived class
-      assert(false);
-      return -1;
-    }
-
-    //! default implementation if not overlaoded
-    virtual int numDofs () const
-    {
-      // overload this method in derived class
-      assert(false);
-      return -1;
+      return asImp().numDofs();
     }
 
     //! returns true if index is new ( for dof compress )
-    virtual bool indexNew (int num) const
+    bool indexNew (int num) const
     {
-      assert(false);
-      return false;
+      return asImp().indexNew(num);
     }
 
     //! return old index in dof array of given index ( for dof compress )
-    virtual int oldIndex (int num) const
+    int oldIndex (int num) const
     {
-      assert(false);
-      return -1;
+      return asImp().oldIndex();
     }
 
-    // return new index in dof array
-    virtual int newIndex (int num) const
+    // return new index in dof array of given index ( for dof compress )
+    int newIndex (int num) const
     {
-      assert(false);
-      return -1;
+      return asImp().newIndex();
     }
 
     // return estimate for size additional need for restriction of data
-    virtual int additionalSizeEstimate() const
+    int additionalSizeEstimate() const
     {
-      assert(false);
-      return -1;
+      return asImp().additionalSizeEstimate();
     }
 
   private:
@@ -141,6 +88,17 @@ namespace Dune {
     const DofMapperImp &asImp() const { return static_cast<const DofMapperImp &>(*this); };
   };
 
+  //! Default implementation for DofMappers, empty at this moment
+  template <class DofMapperImp>
+  class DofMapperDefault : public DofMapperInterface<DofMapperImp>
+  {
+    //! nothing here at the moment
+  private:
+    //! Barton-Nackman trick
+    DofMapperImp &asImp()  { return static_cast<DofMapperImp &>(*this); };
+    //! Barton-Nackman trick
+    const DofMapperImp &asImp() const { return static_cast<const DofMapperImp &>(*this); };
+  };
   /** @} end documentation group */
 
 } // end namespace Dune
