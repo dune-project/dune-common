@@ -1331,9 +1331,6 @@ namespace Dune
     friend class AlbertaMarkerVector;
     friend class AlbertaGridHierarchicIndexSet<dim,dimworld>;
 
-    friend class Conversion< AlbertaGrid<dim,dimworld> , HasObjectStream > ;
-    friend class Conversion< const AlbertaGrid<dim,dimworld> , HasObjectStream > ;
-
     //**********************************************************
     // The Interface Methods
     //**********************************************************
