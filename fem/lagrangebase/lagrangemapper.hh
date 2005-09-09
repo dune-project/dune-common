@@ -22,7 +22,6 @@ namespace Dune {
     enum { numCodims = IndexSetImp::ncodim };
 
     int numberOfDofs_;
-    int level_;
     const IndexSetImp & indexSet_;
 
     int insertionPoint_ [numCodims];
@@ -35,9 +34,11 @@ namespace Dune {
     typedef IndexSetImp IndexSetType;
 
     //! Constructor
-    LagrangeMapper (IndexSetType & is, int numLocalDofs , int level )
-      : numberOfDofs_ (numLocalDofs) , level_(level) , indexSet_ (is)
+    LagrangeMapper (const IndexSetType & is, int numLocalDofs )
+      : numberOfDofs_ (numLocalDofs) , indexSet_ (is)
     {
+      // this is not ready yet
+      assert(false);
       codimOfDof_.resize(numberOfDofs_);
       numInCodim_.resize(numberOfDofs_);
 
@@ -84,33 +85,45 @@ namespace Dune {
     //! for dof manager, to check whether it has to copy dof or not
     bool indexNew (int num) const
     {
-      //int check = (int) (num / dimrange);
-      //return indexSet_.indexNew(num,2);
-      return false;
+      return (num != oldIndex(num));
     }
 
     //! return old index, for dof manager only
     int oldIndex (int elNum) const
     {
-      int check = (int) (elNum / dimrange);
-      int rest  = elNum % dimrange;
-      return (indexSet_.oldIndex(elNum,2) * dimrange) + rest;
+      for(int i=0; i<numCodims; i++)
+      {
+        if(dofCodim_[i] > 0)
+        {
+          // corresponding number of set is newn
+          const int newn = static_cast<int> (elNum / dimrange);
+          // local number of dof is local
+          const int local = (elNum % dimrange);
+          int idx = dimrange * indexSet_.newIndex(newn,i) + local;
+          if(elNum == idx) return idx;
+        }
+      }
+
+      assert(false);
+      return -1;
     }
 
     //! return new index, for dof manager only
+    //! which is elNum
     int newIndex (int elNum) const
     {
-      int check = (int) (elNum / dimrange);
-      int rest  = elNum % dimrange;
-      return (indexSet_.newIndex(elNum,2) * dimrange) + rest;
+      return elNum;
     }
 
-    //! return size of grid entities per level and codim
-    //! for dof mapper
+    //! return old size of function space
     int oldSize () const
     {
-      // this index set works only for codim = 0 at the moment
-      return indexSet_.oldSize(2);
+      int s = 0;
+      for(int i=0; i<numCodims; i++)
+      {
+        if(dofCodim_[i]) s += indexSet_.oldSize(i);
+      }
+      return dimrange * s;
     }
 
     // is called once and calcs the insertion points too
@@ -118,8 +131,6 @@ namespace Dune {
     {
       return indexSet_.additionalSizeEstimate();
     }
-
-    void calcInsertPoints () {};
 
     int numberOfDofs () const DUNE_DEPRECATED
     {
@@ -135,13 +146,6 @@ namespace Dune {
     {
       return this->size();
     }
-
-    int elementDofs () const
-    {
-      int sum = 0;
-      for(int i = 0; i<numCodims; i++) sum += dofCodim_[i];
-      return sum;
-    }
   };
 
 
@@ -152,24 +156,24 @@ namespace Dune {
     : public DofMapperDefault < LagrangeMapper <IndexSetImp,1,dimrange> >
   {
     enum { numCodims = IndexSetImp::ncodim };
+    enum { myCodim   = IndexSetImp::ncodim - 1 };
     int numLocalDofs_;
-    int level_;
 
-    IndexSetImp & indexSet_;
-
+    const IndexSetImp & indexSet_;
+    //const IndexSetWrapper<IndexSetImp> indexSet_;
   public:
     typedef IndexSetImp IndexSetType;
 
     //! Constructor
-    LagrangeMapper ( IndexSetType & is, int numLocalDofs , int level )
-      : numLocalDofs_ (numLocalDofs) , level_(level) , indexSet_ (is) {}
+    LagrangeMapper (const IndexSetType & is, int numLocalDofs )
+      : numLocalDofs_ (numLocalDofs) , indexSet_ (is) {}
 
     virtual ~LagrangeMapper () {}
 
     //! return size, i.e. size of functions space == number of vertices
     int size () const
     {
-      return (indexSet_.size( numCodims - 1 ));
+      return (indexSet_.size( myCodim ));
     }
 
     //! map Entity an local Dof number to global Dof number
@@ -179,35 +183,32 @@ namespace Dune {
     {
       enum { codim = EntityType::dimension };
       // get global vertex number
-      return indexSet_.template subIndex<codim> (en,localNum);
+      return indexSet_.template index<codim> (en,localNum);
     }
 
     //! for dof manager, to check whether it has to copy dof or not
     bool indexNew (int num) const
     {
-      //int check = (int) (num / dimrange);
-      //return indexSet_.indexNew(num,2);
-      return false;
+      return indexSet_.indexNew(num, myCodim );
     }
 
     //! return old index, for dof manager only
     int oldIndex (int elNum) const
     {
-      return indexSet_.oldIndex(elNum, numCodims - 1 );
+      return indexSet_.oldIndex(elNum, myCodim );
     }
 
     //! return new index, for dof manager only
     int newIndex (int elNum) const
     {
-      return indexSet_.newIndex(elNum, numCodims - 1 );
+      return indexSet_.newIndex(elNum, myCodim );
     }
 
-    //! return size of grid entities per level and codim
-    //! for dof mapper
+    //! return old size of functions space
     int oldSize () const
     {
       // this index set works only for codim = 0 at the moment
-      return indexSet_.oldSize(numCodims - 1);
+      return indexSet_.oldSize( myCodim );
     }
 
     // is called once and calcs the insertion points too
@@ -242,21 +243,15 @@ namespace Dune {
     enum { numCodims = IndexSetImp::ncodim };
 
     int numberOfDofs_;
-    IndexSetImp & indexSet_;
-
-    // level of function space
-    int level_;
+    const IndexSetImp & indexSet_;
 
   public:
     typedef IndexSetImp IndexSetType;
 
-    LagrangeMapper ( IndexSetType  & is , int numDofs , int level)
-      : numberOfDofs_ (numDofs) , indexSet_ (is) , level_(level) {
+    LagrangeMapper ( const IndexSetType  & is , int numDofs )
+      : numberOfDofs_ (numDofs) , indexSet_ (is) {
       assert(numberOfDofs_ == dimrange);
     }
-
-    // we have virtual function ==> virtual destructor
-    virtual ~LagrangeMapper () {}
 
     //! return size of function space, here number of elements
     int size () const
@@ -281,6 +276,7 @@ namespace Dune {
     }
 
     //! return old index, for dof manager only
+    //! this is the mapping from gobal to old leaf index
     int oldIndex (int num) const
     {
       // corresponding number of set is newn
@@ -291,8 +287,10 @@ namespace Dune {
     }
 
     //! return new index, for dof manager only
+    //! this is the mapping from global to leaf index
     int newIndex (int num) const
     {
+
       // corresponding number of set is newn
       const int newn = static_cast<int> (num / dimrange);
       // local number of dof is local
@@ -300,8 +298,7 @@ namespace Dune {
       return (dimrange * indexSet_.newIndex(newn,0)) + local;
     }
 
-    //! return size of grid entities per level and codim
-    //! for dof mapper
+    //! return old size of functions space
     int oldSize () const
     {
       // this index set works only for codim = 0 at the moment
@@ -328,13 +325,8 @@ namespace Dune {
 
     int numDofs () const
     {
+      assert( numberOfDofs_ == dimrange );
       return numberOfDofs_;
-    }
-
-    //! calc the new insertion points
-    void calcInsertPoints ()
-    {
-      // insertion point is 0
     }
   };
 
@@ -342,14 +334,12 @@ namespace Dune {
   class LagrangeMapper<IndexSetImp,0,1>
     : public DofMapperDefault < LagrangeMapper <IndexSetImp,0,1> >
   {
-    IndexSetImp & indexSet_;
-    // level of function space
-    int level_;
+    // corresp. index set
+    const IndexSetImp & indexSet_;
   public:
     typedef IndexSetImp IndexSetType;
 
-    LagrangeMapper ( IndexSetType  & is , int numDofs , int level)
-      : indexSet_ (is) , level_(level) {}
+    LagrangeMapper ( const IndexSetType  & is , int numDofs ) : indexSet_ (is) {}
 
     // we have virtual function ==> virtual destructor
     virtual ~LagrangeMapper () {}
@@ -415,12 +405,6 @@ namespace Dune {
     int numDofs () const
     {
       return 1;
-    }
-
-    //! calc the new insertion points
-    void calcInsertPoints ()
-    {
-      // insertion point is 0
     }
   };
 
