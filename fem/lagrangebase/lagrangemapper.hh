@@ -225,7 +225,7 @@ namespace Dune {
       return numLocalDofs_;
     }
 
-    int numDofs () const DUNE_DEPRECATED
+    int numDofs () const
     {
       return numLocalDofs_;
     }
