@@ -53,7 +53,11 @@ namespace Dune {
   //! Provides access to base function set for different element
   //! type in one grid and size of functionspace
   //! and map from local to global dof number
-  //
+  //! NOTE: This space can only be used with a special set of index sets.
+  //! If you want to use the Lagrangespace with an index set only
+  //! supportting the index set interface, then use the IndexSetWrapper
+  //! class which will add the needed functionalty.
+  //!
   //****************************************************************
   template<class FunctionSpaceImp, class GridPartImp, int polOrd>
   class LagrangeDiscreteFunctionSpace :
@@ -86,10 +90,13 @@ namespace Dune {
     /** \todo Please doc me! */
     typedef typename Traits::IndexSetType IndexSetType;
 
+    /** \todo Please doc me! */
     typedef typename Traits::GridPartType GridPartType;
 
+    /** \todo Please doc me! */
     typedef typename Traits::IteratorType IteratorType;
 
+    /** \todo Please doc me! */
     typedef typename Traits::FunctionSpaceType FunctionSpaceType;
 
     //! id is neighbor of the beast
@@ -102,25 +109,15 @@ namespace Dune {
     /** \todo Please doc me! */
     typedef LagrangeMapper<IndexSetType,polOrd,DimRange> MapperType;
 
-
-    /** \todo Please doc me! */
-    /*
-       //typedef typename DofManagerType::MemObjectType MemObjectType;
-       template <class DofStorageType>
-       struct DofTraits
-       {
-       typedef typename DofManagerType:: template Traits< MapperType ,
-                                                        DofStorageType > ::  MemObjectType MemObjectType;
-       };
-     */
-
     /** \todo Please doc me! */
     typedef typename FunctionSpaceType::DomainType DomainType;
     /** \todo Please doc me! */
     typedef typename FunctionSpaceType::RangeType RangeType;
     /** \todo Please doc me! */
     typedef typename FunctionSpaceType::RangeFieldType DofType;
+    /** \todo Please doc me! */
     typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
+    /** \todo Please doc me! */
     typedef typename FunctionSpaceType::DomainFieldType DomainFieldType;
 
     //! dimension of value
@@ -140,9 +137,6 @@ namespace Dune {
 
     //! continuous
     bool continuous() const { return true; }
-
-    //! return max number of baseset that holds this space
-    //int maxNumberBase () const;
 
     //! return type of this fucntion space
     DFSpaceIdentifier type () const;
