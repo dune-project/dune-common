@@ -47,9 +47,15 @@ namespace Dune {
   template <class GridImp>
   class ALU3dGridFaceGeometryInfo;
   template<int dim, int dimworld, ALU3dGridElementType elType>
+  class ALU3dGridGlobalIdSet;
+  template<int dim, int dimworld, ALU3dGridElementType elType>
+  class ALU3dGridLocalIdSet;
+  template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGridHierarchicIndexSet;
   template <class EntityImp>
   class ALUMemoryProvider;
+  template<int dim, int dimworld, ALU3dGridElementType elType>
+  class ALU3dGrid;
 
 
   //**********************************************************************
@@ -58,6 +64,83 @@ namespace Dune {
   // --Grid
   //
   //**********************************************************************
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  struct ALU3dGridFamily
+  {
+    //! Type of the global id set
+    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSetImp;
+
+    //! Type of the local id set
+    typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSetImp;
+
+    //! Type of the level index set
+    typedef DefaultLevelIndexSet<ALU3dGrid < dim, dimworld, elType > >  LevelIndexSetImp;
+    //! Type of the leaf index set
+    typedef AdaptiveLeafIndexSet<ALU3dGrid < dim, dimworld, elType > >  LeafIndexSetImp;
+
+    typedef int GlobalIdType;
+    typedef int LocalIdType;
+
+    typedef ALU3dGrid<dim,dimworld,elType> GridImp;
+
+    struct Traits
+    {
+      typedef ALU3dGrid<dim,dimworld,elType> Grid;
+
+      typedef Dune::IntersectionIterator<const GridImp, ALU3dGridIntersectionIterator> IntersectionIterator;
+
+      typedef Dune::HierarchicIterator<const GridImp, ALU3dGridHierarchicIterator> HierarchicIterator;
+
+      typedef Dune::BoundaryEntity<const GridImp, ALU3dGridBoundaryEntity> BoundaryEntity;
+
+      template <int cd>
+      struct Codim
+      {
+        // IMPORTANT: Codim<codim>::Geometry == Geometry<dim-codim,dimw>
+        typedef Dune::Geometry<dim-cd, dimworld, const GridImp, ALU3dGridGeometry> Geometry;
+        typedef Dune::Geometry<dim-cd, dim, const GridImp, ALU3dGridGeometry> LocalGeometry;
+        // we could - if needed - introduce an other struct for dimglobal of Geometry
+        typedef Dune::Entity<cd, dim, const GridImp, ALU3dGridEntity> Entity;
+
+        typedef Dune::LevelIterator<cd,All_Partition,const GridImp,ALU3dGridLevelIterator> LevelIterator;
+
+        typedef Dune::LeafIterator<cd,All_Partition,const GridImp,ALU3dGridLeafIterator> LeafIterator;
+
+        typedef Dune::EntityPointer<const GridImp,ALU3dGridEntityPointer<cd,const GridImp> > EntityPointer;
+
+        template <PartitionIteratorType pitype>
+        struct Partition
+        {
+          typedef Dune::LevelIterator<cd,pitype,const GridImp,ALU3dGridLevelIterator> LevelIterator;
+          typedef Dune::LeafIterator<cd,pitype,const GridImp,ALU3dGridLeafIterator> LeafIterator;
+        };
+
+      };
+
+      typedef IndexSet<GridImp,LevelIndexSetImp> LevelIndexSet;
+      typedef IndexSet<GridImp,LeafIndexSetImp> LeafIndexSet;
+      typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
+      typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
+
+    };
+    /*
+        typedef GridTraits<dim,dimworld,
+                     ALU3dGrid < dim, dimworld, elType > ,
+                     ALU3dGridGeometry,ALU3dGridEntity,
+                     ALU3dGridBoundaryEntity,
+                     ALU3dGridEntityPointer,
+                     ALU3dGridLevelIterator,
+                     ALU3dGridIntersectionIterator,
+                     ALU3dGridHierarchicIterator,
+                     ALU3dGridLeafIterator,
+                     LevelIndexSetImp,
+                     LeafIndexSetImp,
+                     GlobalIdSetImp, typename GlobalIdSetImp::IdType,
+                     LocalIdSetImp,  typename LocalIdSetImp ::IdType
+                       > Traits;
+     */
+  };
+
 
   /**
      \brief [<em> provides \ref Dune::Grid </em>]
@@ -80,13 +163,14 @@ namespace Dune {
    */
   template <int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid :
-    public GridDefault<dim, dimworld, alu3d_ctype, ALU3dGrid<dim,dimworld, elType> >,
+    public GridDefault<dim, dimworld, alu3d_ctype, ALU3dGridFamily <dim,dimworld,elType> >,
     public HasObjectStream
   {
     CompileTimeChecker<(dim      == 3)> ALU3dGrid_only_implemented_for_3dp;
     CompileTimeChecker<(dimworld == 3)> ALU3dGrid_only_implemented_for_3dw;
 
     typedef ALU3dGrid<dim,dimworld,elType> MyType;
+
     friend class ALU3dGridEntity <0,dim,MyType>;
     friend class ALU3dGridEntity <0,dim,const MyType>;
     friend class ALU3dGridIntersectionIterator<MyType>;
@@ -110,23 +194,6 @@ namespace Dune {
     friend class Conversion< ALU3dGrid<dim,dimworld,elementType> , HasObjectStream > ;
     friend class Conversion< const ALU3dGrid<dim,dimworld,elementType> , HasObjectStream > ;
 
-    typedef GridTraits<dim,dimworld, MyType ,
-        ALU3dGridGeometry,ALU3dGridEntity,
-        ALU3dGridBoundaryEntity,
-        ALU3dGridEntityPointer,
-        ALU3dGridLevelIterator,
-        ALU3dGridIntersectionIterator,
-        ALU3dGridHierarchicIterator,
-        ALU3dGridLeafIterator> Traits;
-
-    //! a standard leaf iterator
-    typedef ALU3dGridLeafIterator<0, All_Partition, MyType> LeafIteratorImp;
-    typedef typename Traits::template Codim<0>::LeafIterator LeafIteratorType;
-    typedef typename Traits::template Codim<0>::LeafIterator LeafIterator;
-
-    typedef ALU3dGridHierarchicIterator<MyType> HierarchicIteratorImp;
-
-
     //! Type of the hierarchic index set
     typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSet;
 
@@ -140,6 +207,16 @@ namespace Dune {
     typedef DefaultLevelIndexSet<MyType>           LevelIndexSet;
     //! Type of the leaf index set
     typedef AdaptiveLeafIndexSet<MyType>           LeafIndexSet;
+
+    typedef typename ALU3dGridFamily < dim , dimworld , elType > :: Traits Traits;
+
+    //! a standard leaf iterator
+    typedef ALU3dGridLeafIterator<0, All_Partition, MyType> LeafIteratorImp;
+    typedef typename Traits::template Codim<0>::LeafIterator LeafIteratorType;
+    typedef typename Traits::template Codim<0>::LeafIterator LeafIterator;
+
+    typedef ALU3dGridHierarchicIterator<MyType> HierarchicIteratorImp;
+
 
     //! maximal number of levels
     enum { MAXL = 64 };
@@ -491,7 +568,6 @@ namespace Dune {
   } // end namespace Capabilities
 
 } // end namespace Dune
-
 
 #include "grid_imp.cc"
 
