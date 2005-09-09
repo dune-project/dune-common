@@ -39,7 +39,6 @@ namespace Dune {
     typedef typename FunctionSpaceType::DomainType DomainType;
     typedef typename FunctionSpaceType::JacobianRangeType JacobianRangeType;
 
-    //typedef DofManagerImp DofManagerType;
     typedef LagrangeDiscreteFunctionSpace<
         FunctionSpaceImp, GridPartImp, polOrd> DiscreteFunctionSpaceType;
     typedef FastBaseFunctionSet<DiscreteFunctionSpaceType> BaseFunctionSetType;
@@ -68,9 +67,7 @@ namespace Dune {
     >
   {
   public:
-    //typedef DofManagerImp DofManagerType;
-    //typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
-
+    //! my Grid's  type
     typedef typename GridPartImp::GridType GridType;
 
     /** \todo Please doc me! */
@@ -78,6 +75,7 @@ namespace Dune {
         FunctionSpaceImp, GridPartImp, polOrd
         > LagrangeDiscreteFunctionSpaceType;
 
+    //! my Traits
     typedef LagrangeDiscreteFunctionSpaceTraits<
         FunctionSpaceImp, GridPartImp, polOrd
         > Traits;
@@ -136,7 +134,7 @@ namespace Dune {
     virtual ~LagrangeDiscreteFunctionSpace ();
 
     //! continuous
-    bool continuous() const { return true; }
+    bool continuous() const { return (polOrd == 0) ? false : true; }
 
     //! return type of this fucntion space
     DFSpaceIdentifier type () const;
