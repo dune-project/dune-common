@@ -5,6 +5,7 @@
 
 //-System includes
 #include <vector>
+#include <utility>
 
 //-Dune includes
 #include <dune/fem/common/objpointer.hh>
@@ -105,6 +106,7 @@ namespace Dune {
     //! for all pointer to local operators call the func pointer
     void apply ( ParamType & p ) const
     {
+      //assert( vec_.size() > 0 );
       for(unsigned int i=0; i<vec_.size(); i++)
       {
         // vec_[i].second contains the pointer to the function that makes the
@@ -142,8 +144,6 @@ namespace Dune {
     template <class OpType>
     MyType & operator = (const OpType & op)
     {
-      //std::cout << "operator = of Lint \n";
-      vec_.resize(0);
       AddToWrapper<OpType>::addToList(vec_,op);
       return *this;
     }
@@ -524,7 +524,7 @@ namespace Dune {
       else
       {
         dm_.insertNewIndex( en );
-        dm_.resizeMem ( mxlvl * 10 );
+        dm_.reserveMemory ( mxlvl * 10 );
       }
       ldc_.apply( p );
       {
@@ -604,7 +604,7 @@ namespace Dune {
       if(leaf_ && (!en.isLeaf())) return;
 
       df_.localFunction( en ,  lf_ );
-      for(int l=0; l<lf_.numberOfDofs(); l++)
+      for(int l=0; l<lf_.numDofs(); l++)
       {
         (*p.first).writeObject( lf_[l] );
       }
@@ -655,7 +655,7 @@ namespace Dune {
       if(leaf_ && (!en.isLeaf())) return;
 
       df_.localFunction( en , lf_ );
-      for(int l=0; l<lf_.numberOfDofs(); l++)
+      for(int l=0; l<lf_.numDofs(); l++)
       {
         (*(p.first)).readObject( lf_[l] );
       }
