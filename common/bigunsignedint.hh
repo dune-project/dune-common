@@ -116,7 +116,7 @@ namespace Dune
     // assume unsigned int is 32 bits
     digit[0] = (x&bitmask);
     if (n>1) digit[1] = (x>>bits)&bitmask;
-    for (int i=2; i<n; i++) digit[i]=0;
+    for (unsigned int i=2; i<n; i++) digit[i]=0;
   }
 
   // print
@@ -126,8 +126,8 @@ namespace Dune
     bool leading=false;
 
     // print from left to right
-    for (int i=n-1; i>=0; i--)
-      for (int d=hexdigits-1; d>=0; d--)
+    for (unsigned int i=n-1; i>=0; i--)
+      for (unsigned int d=hexdigits-1; d>=0; d--)
       {
         // extract one hex digit
         int current = (digit[i]>>(d*4))&0xF;
@@ -158,7 +158,7 @@ namespace Dune
     bigunsignedint<k> result;
     int overflow=0;
 
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
     {
       int sum = ((int)digit[i]) + ((int)x.digit[i]) + overflow;
       result.digit[i] = sum&bitmask;
@@ -173,7 +173,7 @@ namespace Dune
     bigunsignedint<k> result;
     int overflow=0;
 
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
     {
       int diff = ((int)digit[i]) - (((int)x.digit[i]) + overflow);
       if (diff>=0)
@@ -192,11 +192,11 @@ namespace Dune
   {
     bigunsignedint<2*k> finalproduct(0);
 
-    for (int m=0; m<n; m++)     // digit in right factor
+    for (unsigned int m=0; m<n; m++)     // digit in right factor
     {
       bigunsignedint<2*k> singleproduct(0);
       unsigned int overflow(0);
-      for (int i=0; i<n; i++)
+      for (unsigned int i=0; i<n; i++)
       {
         unsigned int digitproduct = ((unsigned int)digit[i])*((unsigned int)x.digit[m])+overflow;
         singleproduct.digit[i+m] = (unsigned short) (digitproduct&bitmask);
@@ -206,7 +206,7 @@ namespace Dune
     }
 
     bigunsignedint<k> result;
-    for (int i=0; i<n; i++) result.digit[i] = finalproduct.digit[i];
+    for (unsigned int i=0; i<n; i++) result.digit[i] = finalproduct.digit[i];
     return result;
   }
 
@@ -215,7 +215,7 @@ namespace Dune
   {
     int overflow=1;
 
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
     {
       int sum = ((int)digit[i]) + overflow;
       digit[i] = sum&bitmask;
@@ -261,7 +261,7 @@ namespace Dune
   inline bigunsignedint<k> bigunsignedint<k>::operator& (const bigunsignedint<k>& x) const
   {
     bigunsignedint<k> result;
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
       result.digit[i] = digit[i]&x.digit[i];
     return result;
   }
@@ -270,7 +270,7 @@ namespace Dune
   inline bigunsignedint<k> bigunsignedint<k>::operator^ (const bigunsignedint<k>& x) const
   {
     bigunsignedint<k> result;
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
       result.digit[i] = digit[i]^x.digit[i];
     return result;
   }
@@ -279,7 +279,7 @@ namespace Dune
   inline bigunsignedint<k> bigunsignedint<k>::operator| (const bigunsignedint<k>& x) const
   {
     bigunsignedint<k> result;
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
       result.digit[i] = digit[i]|x.digit[i];
     return result;
   }
@@ -288,7 +288,7 @@ namespace Dune
   inline bigunsignedint<k> bigunsignedint<k>::operator~ () const
   {
     bigunsignedint<k> result;
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
       result.digit[i] = ~digit[i];
     return result;
   }
@@ -300,12 +300,12 @@ namespace Dune
 
     // multiples of bits
     int j=shift/bits;
-    for (int i=n-1-j; i>=0; i--)
+    for (unsigned int i=n-1-j; i>=0; i--)
       result.digit[i+j] = digit[i];
 
     // remainder
     j=shift%bits;
-    for (int i=n-1; i>=0; i--)
+    for (unsigned int i=n-1; i>=0; i--)
     {
       unsigned int temp = result.digit[i];
       temp = temp<<j;
@@ -325,12 +325,12 @@ namespace Dune
 
     // multiples of bits
     int j=shift/bits;
-    for (int i=0; i<n-j; i++)
+    for (unsigned int i=0; i<n-j; i++)
       result.digit[i] = digit[i+j];
 
     // remainder
     j=shift%bits;
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
     {
       unsigned int temp = result.digit[i];
       temp = temp<<(bits-j);
@@ -345,7 +345,7 @@ namespace Dune
   template <int k>
   inline bool bigunsignedint<k>::operator!= (const bigunsignedint<k>& x) const
   {
-    for (int i=0; i<n; i++)
+    for (unsigned int i=0; i<n; i++)
       if (digit[i]!=x.digit[i]) return true;
     return false;
   }
@@ -359,7 +359,7 @@ namespace Dune
   template <int k>
   inline bool bigunsignedint<k>::operator< (const bigunsignedint<k>& x) const
   {
-    for (int i=n-1; i>=0; i--)
+    for (unsigned int i=n-1; i>=0; i--)
       if (digit[i]<x.digit[i]) return true;
       else if (digit[i]>x.digit[i]) return false;
     return false;
@@ -368,7 +368,7 @@ namespace Dune
   template <int k>
   inline bool bigunsignedint<k>::operator<= (const bigunsignedint<k>& x) const
   {
-    for (int i=n-1; i>=0; i--)
+    for (unsigned int i=n-1; i>=0; i--)
       if (digit[i]<x.digit[i]) return true;
       else if (digit[i]>x.digit[i]) return false;
     return true;
