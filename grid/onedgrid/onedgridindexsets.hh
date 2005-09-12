@@ -15,6 +15,9 @@ namespace Dune {
   class OneDGridLevelIndexSet
   {
   public:
+    /** \todo Temporary, to make the dune/fem stuff compile */
+    enum {ncodim = GridImp::dimension+1};
+
     /** \brief Default constructor
 
        Unfortunately we can't force the user to init grid_ and level_, because
@@ -52,6 +55,31 @@ namespace Dune {
     const std::vector<GeometryType>& geomTypes () const
     {
       return myTypes_;
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int oldIndex(int elNum) const {
+      DUNE_THROW(NotImplemented, "oldIndex");
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int oldIndex(int elNum, int codim) const {
+      DUNE_THROW(NotImplemented, "oldIndex");
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int newIndex(int elNum) const {
+      DUNE_THROW(NotImplemented, "oldIndex");
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int newIndex(int elNum, int codim) const {
+      DUNE_THROW(NotImplemented, "oldIndex");
+    }
+
+    /** \todo Dummy method to please the fem stuff */
+    int additionalSizeEstimate() const {
+      DUNE_THROW(NotImplemented, "additionalSizeEstimate");
     }
 
 #if 0
