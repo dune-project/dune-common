@@ -242,6 +242,14 @@ namespace Dune {
     template<int codim>
     typename Traits::template Codim<codim>::LevelIterator lend (int level) const;
 
+    //! Iterator to first entity of given codim on level
+    template<int codim, PartitionIteratorType PiType>
+    typename Traits::template Codim<codim>::template Partition<PiType>::LevelIterator lbegin (int level) const;
+
+    //! one past the end on this level
+    template<int codim, PartitionIteratorType PiType>
+    typename Traits::template Codim<codim>::template Partition<PiType>::LevelIterator lend (int level) const;
+
     //! Iterator to first entity of given codim on leaf level
     template<int codim>
     typename Traits::template Codim<codim>::LeafIterator leafbegin () const;
@@ -249,6 +257,18 @@ namespace Dune {
     //! one past the end on leaf level
     template<int codim>
     typename Traits::template Codim<codim>::LeafIterator leafend () const;
+
+    //! Iterator to first entity of given codim on level
+    template<int codim, PartitionIteratorType PiType>
+    typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafbegin() const {
+      DUNE_THROW(NotImplemented, "Parallel leafbegin");
+    }
+
+    //! one past the end on this level
+    template<int codim, PartitionIteratorType PiType>
+    typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafend() const {
+      DUNE_THROW(NotImplemented, "Parallel leafend");
+    }
 
     /** \brief Number of grid entities per level and codim
      */
