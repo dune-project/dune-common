@@ -10,7 +10,7 @@ noinst_LTLIBRARIES = libfileio.la
 
 if AMIRAMESH
 if UG
-#  AMIRALIB = amiramesh/libugamiramesh.la
+  AMIRALIB = amiramesh/libugamiramesh.la
 endif
 endif
 
