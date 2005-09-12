@@ -286,26 +286,32 @@ namespace Dune {
       return 0;
     }
 
+    /** \brief Access to the GlobalIdSet */
     const GlobalIdSet& globalIdSet() const
     {
       return globalIdSet_;
     }
 
+    /** \brief Access to the LocalIdSet */
     const LocalIdSet& localIdSet() const
     {
       return localIdSet_;
     }
 
+    /** \brief Access to the LevelIndexSets */
     const LevelIndexSet& levelIndexSet(int level) const
     {
       return levelIndexSets_[level];
     }
 
+    /** \brief Access to the LeafIndexSet */
     const LeafIndexSet& leafIndexSet() const
     {
       return leafIndexSet_;
     }
 
+    /** @name Grid Refinement Methods */
+    /*@{*/
 
     /** \brief Mark entity for refinement
      *
@@ -328,6 +334,7 @@ namespace Dune {
 
     /** \brief Clean up refinement markers */
     void postAdapt();
+    /*@}*/
 
     /** \brief Please doc me! */
     GridIdentifier type () const { return UGGrid_Id; };
@@ -357,6 +364,9 @@ namespace Dune {
     // End of Interface Methods
     // **********************************************************
 
+    /** @name Coarse Grid Creation Methods */
+    /*@{*/
+
     /** \brief Start the coarse grid creation process
         \todo This method should delete the grid!
      */
@@ -365,22 +375,25 @@ namespace Dune {
     /** \brief End the coarse grid creation process */
     void createend();
 
+    /** \brief Calls a few interal methods to properly set up a UG grid */
+    void makeNewUGMultigrid();
+
+    /** \brief Create a UG domain, i.e. a description of the grid boundary */
+    void createDomain(int numNodes, int numSegments);
+
     /** \brief Preliminary method to insert a linear boundary segment into a UG coarse grid
-        \param index The index number of the segment
-        \param vertices The vertices of the segment
-        \param userData Pointer handed over to the segment implementation method.
-        To be removed quickly!
+        \param vertices The indices of the vertices of the segment
+        \param coordinates The coordinates of the vertices of the segment
      */
-    void insertLinearSegment(int index,
-                             const std::vector<int> vertices,
-                             void* userData);
+    void insertLinearSegment(const std::vector<int>& vertices,
+                             const std::vector<FieldVector<double,dimworld> >& coordinates);
 
     /** \brief Method to insert an arbitrarily shaped boundary segment into a coarse grid
+        \param vertices The indices of the vertices of the segment
         \param boundarySegment Class implementing the geometry of the boundary segment.
         The grid object takes control of this object and deallocates it when destructing itself.
      */
-    void insertBoundarySegment(int index,
-                               const std::vector<int> vertices,
+    void insertBoundarySegment(const std::vector<int> vertices,
                                const BoundarySegment<dimworld>* boundarySegment);
 
     /** \brief Insert an element into the coarse grid
@@ -389,6 +402,8 @@ namespace Dune {
      */
     void insertElement(GeometryType type,
                        const std::vector<unsigned int>& vertices);
+
+    /*@}*/
 
     /** \brief Adapt the grid without constructing the green closure
 
@@ -430,26 +445,14 @@ namespace Dune {
         DUNE_THROW(GridError, "UG" << dim << "d::Collapse() returned error code!");
     }
 
-    /** \brief Read access to the UG-internal grid name */
-    const std::string& name() const {return name_;}
-
-    /** \brief Calls a few interal methods to properly set up a UG grid */
-    void makeNewUGMultigrid();
-
     /** \brief Does uniform refinement
      *
      * \param n Number of uniform refinement steps
      */
     void globalRefine(int n);
 
-    // UG multigrid, which contains the data
+    /** \brief UG multigrid, which contains the actual grid hierarchy structure */
     typename UGTypes<dimworld>::MultiGridType* multigrid_;
-
-  public:
-    // I need this to store some information that gets passed
-    // to the boundary description
-    /** \deprecated */
-    void* extra_boundary_data_;
 
   private:
     /** \brief The classes implementing the geometry of the boundary segments */
@@ -496,6 +499,9 @@ namespace Dune {
 
     //!
     bool omitGreenClosure_;
+
+    /** \brief A counter for producing a consecutive index for the boundary segments */
+    int boundarySegmentCounter_;
 
     /** \brief Number of UGGrids currently in use.
      *

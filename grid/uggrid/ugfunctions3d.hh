@@ -404,6 +404,12 @@ namespace Dune {
     }
 
     /** \todo Remove the const_casts */
+    static void* CreateDomain(const char* name, const double* midPoint, double radius,
+                              int segments, int corners, int convex) {
+      return UG3d::CreateDomain(name, const_cast<double*>(midPoint), radius, segments, corners, convex);
+    }
+
+    /** \todo Remove the const_casts */
     static void* CreateBoundarySegment(const char *name, int left, int right,
                                        int index, int res,
                                        int *point,

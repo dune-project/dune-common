@@ -83,7 +83,7 @@ namespace Dune {
     {
       return myTypes_;
     }
-#if 1
+
     /** \todo Dummy method to please the fem stuff */
     int oldIndex(int elNum) const {
       DUNE_THROW(NotImplemented, "oldIndex");
@@ -108,7 +108,6 @@ namespace Dune {
     int additionalSizeEstimate() const {
       DUNE_THROW(NotImplemented, "additionalSizeEstimate");
     }
-#endif
 
   private:
 
