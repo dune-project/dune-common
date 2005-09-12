@@ -23,7 +23,7 @@ namespace Dune
 
     typedef typename GridType::Traits::template Codim<0>::LevelIterator LevelIteratorType ;
     typedef typename GridType::Traits::template Codim<0>::LeafIterator LeafIteratorType ;
-    typedef typename GridType::LeafIndexSet LeafIndexSetType;
+    typedef typename GridType::Traits::LeafIndexSet LeafIndexSetType;
 
     //typedef typename GridType::Traits::template Codim<0>::template Partition<Interior_Partition>:: LeafIterator LeafIteratorType;
   protected:
