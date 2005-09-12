@@ -318,18 +318,19 @@ namespace Dune {
   };
 
 
-  template<int dim>
+  //template<int dim>
+  template <class GridImp>
   class UGGridGlobalIdSet
   {
 
-    typedef UGGrid<dim,dim> GridImp;
+    //typedef UGGrid<dim,dim> GridImp;
 
-    friend class UGGrid<dim,dim>;
+    //friend class UGGrid<GridImp::dimension,GridImp::dimensionworld>;
 
+  public:
     //! constructor stores reference to a grid
     UGGridGlobalIdSet (const GridImp& g) : grid_(g) {}
 
-  public:
     //! define the type used for persistent indices
     typedef unsigned int GlobalIdType;
 
@@ -347,7 +348,7 @@ namespace Dune {
       return grid_.template getRealEntity<0>(e).template subGlobalId<cc>(i);
     }
 
-  private:
+    //private:
 
     /** \todo Should be private */
     void update() {}
