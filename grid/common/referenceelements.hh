@@ -626,15 +626,17 @@ namespace Dune
         // edge indices on element
         for(int i=0; i<subsizes[0][0][1]; ++i)
           subentityindex[0][0][i][1]=i;
+
         // node indices on edge 0
         subentityindex[0][1][0][2]=1;
         subentityindex[0][1][1][2]=2;
         // node indices on edge 1
-        subentityindex[1][1][0][2]=0;
-        subentityindex[1][1][1][2]=2;
+        subentityindex[1][1][0][2]=2;
+        subentityindex[1][1][1][2]=0;
         // node indices on edge 2
         subentityindex[2][1][0][2]=0;
         subentityindex[2][1][1][2]=1;
+
         for(int j=0; j<dim; ++j)
         {
           //edge 0 (nodes 1,2)
@@ -675,22 +677,26 @@ namespace Dune
         for(int i=0; i<subsizes[0][0][1]; ++i)
           subentityindex[0][0][i][1]=i;
 
+        // node numbering- normal pointing outward
+        // reference triangle in dune has a counter-clockwise
+        // numbering. so each triangle face in tetrahedron numbered same way
+
         // node indices on face 0
         subentityindex[0][1][0][3]=1;
         subentityindex[0][1][1][3]=2;
         subentityindex[0][1][2][3]=3;
         // node indices on face 1
-        subentityindex[1][1][0][3]=2;
-        subentityindex[1][1][1][3]=0;
-        subentityindex[1][1][2][3]=3;
+        subentityindex[1][1][0][3]=0;
+        subentityindex[1][1][1][3]=3;
+        subentityindex[1][1][2][3]=2;
         // node indices on face 2
         subentityindex[2][1][0][3]=0;
         subentityindex[2][1][1][3]=1;
         subentityindex[2][1][2][3]=3;
         // node indices on face 3
         subentityindex[3][1][0][3]=0;
-        subentityindex[3][1][1][3]=1;
-        subentityindex[3][1][2][3]=2;
+        subentityindex[3][1][1][3]=2;
+        subentityindex[3][1][2][3]=1;
 
         // edge indices on face 0
         subentityindex[0][1][0][2]=0;
