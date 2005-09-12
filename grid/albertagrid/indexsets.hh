@@ -170,9 +170,11 @@ namespace Dune {
 
   //! hierarchic index set of AlbertaGrid
   template <int dim, int dimworld>
-  class AlbertaGridGlobalIdSet
+  class AlbertaGridIdSet :
+    public IdSet < AlbertaGrid<dim,dimworld> ,
+        AlbertaGridIdSet<dim,dimworld> , int >
   {
-    typedef AlbertaGrid<dim,dimworld> GridType;
+    typedef const AlbertaGrid<dim,dimworld> GridType;
     typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
 
     // this means that only up to 300000000 entities are allowed
@@ -180,7 +182,7 @@ namespace Dune {
     typedef typename GridType::Traits::template Codim<0>::Entity EntityCodim0Type;
 
     //! create id set, only allowed for AlbertaGrid
-    AlbertaGridGlobalIdSet(const GridType & grid) : hset_(grid.hierarchicIndexSet())
+    AlbertaGridIdSet(const GridType & grid) : hset_(grid.hierarchicIndexSet())
     {
       derr << "WARNING: AlbertaGridGlobalIdSet not ready for parallel compuations right now! \n";
       for(int i=0; i<dim+1; i++)
@@ -199,6 +201,15 @@ namespace Dune {
       enum { cd = EntityType :: codimension };
       assert( hset_.size(cd) < codimMultiplier );
       return codimStart_[cd] + hset_.index(ep);
+    }
+
+    //! return global id of given entity
+    template <int codim>
+    int id (const typename GridType::template Codim<codim>::Entity& ep) const
+    {
+      //enum { cd = EntityType :: codimension };
+      assert( hset_.size(codim) < codimMultiplier );
+      return codimStart_[codim] + hset_.index(ep);
     }
 
     //! return subId of given entity

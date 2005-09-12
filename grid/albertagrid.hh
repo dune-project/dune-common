@@ -1205,8 +1205,8 @@ namespace Dune
     typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetImp;
     typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetImp;
 
-    typedef AlbertaGridGlobalIdSet<dim,dimworld> GlobalIdSetImp;
-    typedef AlbertaGridGlobalIdSet<dim,dimworld> LocalIdSetImp;
+    typedef AlbertaGridIdSet<dim,dimworld> IdSetImp;
+    typedef int IdType;
 
     struct Traits
     {
@@ -1218,8 +1218,8 @@ namespace Dune
 
       typedef Dune::BoundaryEntity<const GridImp, AlbertaGridBoundaryEntity> BoundaryEntity;
 
-      typedef int GlobalIdType;
-      typedef int LocalIdType;
+      typedef IdType GlobalIdType;
+      typedef IdType LocalIdType;
 
       template <int cd>
       struct Codim
@@ -1247,25 +1247,9 @@ namespace Dune
 
       typedef IndexSet<GridImp,LevelIndexSetImp> LevelIndexSet;
       typedef LeafIndexSetImp LeafIndexSet;
-      typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
-      typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
+      typedef IdSet<GridImp,IdSetImp,IdType> GlobalIdSet;
+      typedef IdSet<GridImp,IdSetImp,IdType> LocalIdSet;
     };
-
-    /*
-       typedef GridTraits<dim,dimworld,Dune::AlbertaGrid<dim,dimworld> ,
-                       AlbertaGridGeometry,AlbertaGridEntity,
-                       AlbertaGridBoundaryEntity,
-                       AlbertaGridEntityPointer,
-                       AlbertaGridLevelIterator,
-                       AlbertaGridIntersectionIterator,
-                       AlbertaGridHierarchicIterator,
-                       AlbertaGridLeafIterator,
-                       LevelIndexSet,
-                       LeafIndexSet,
-                       GlobalIdSet, int,
-                       LocalIdSet, int
-                         >  Traits;
-     */
   };
 
   /**
@@ -1353,8 +1337,9 @@ namespace Dune
     typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetImp;
     typedef typename Traits :: LeafIndexSet LeafIndexSet;
 
-    typedef AlbertaGridGlobalIdSet<dim,dimworld> GlobalIdSet;
-    typedef AlbertaGridGlobalIdSet<dim,dimworld> LocalIdSet;
+    typedef AlbertaGridIdSet<dim,dimworld> IdSetImp;
+    typedef typename Traits :: GlobalIdSet GlobalIdSet;
+    typedef typename Traits :: LocalIdSet LocalIdSet;
 
     typedef ObjectStream ObjectStreamType;
 
@@ -1776,7 +1761,7 @@ namespace Dune
     AlbertaGridHierarchicIndexSet<dim,dimworld> hIndexSet_;
 
     // the id set of this grid
-    GlobalIdSet globalIdSet_;
+    IdSetImp globalIdSet_;
 
     // the level index set, is generated from the HierarchicIndexSet
     // is generated, when accessed
