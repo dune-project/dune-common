@@ -72,9 +72,10 @@ namespace Dune {
 
     friend class UGGrid<dim, dim>;
 
-    template <int dim_>
+    template <class GridImp_>
     friend class UGGridLevelIndexSet;
-    template <int dim_>
+
+    template <class GridImp_>
     friend class UGGridLeafIndexSet;
 
     typedef typename GridImp::ctype UGCtype;

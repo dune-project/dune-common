@@ -13,12 +13,13 @@
 
 namespace Dune {
 
-  template<int dim>
-  class UGGridLevelIndexSet /*: public DefaultGridIndexSetBase < UGGrid<dim,dim> >*/
+  template<class GridImp>
+  class UGGridLevelIndexSet : public IndexSet<GridImp,UGGridLevelIndexSet<GridImp> >
   {
-    typedef UGGrid<dim,dim> GridImp;
+    //typedef UGGrid<dim,dim> GridImp;
 
-    friend class UGGrid<dim,dim>;
+    //friend class UGGrid<dim,dim>;
+    enum {dim = GridImp::dimension};
 
   public:
 
@@ -109,7 +110,7 @@ namespace Dune {
       DUNE_THROW(NotImplemented, "additionalSizeEstimate");
     }
 
-  private:
+    //private:
 
     void update(const GridImp& grid, int level) {
 
@@ -185,18 +186,18 @@ namespace Dune {
     std::vector<GeometryType> myTypes_;
   };
 
-  template<int dim>
-  class UGGridLeafIndexSet
+  template<class GridImp>
+  class UGGridLeafIndexSet : public IndexSet<GridImp,UGGridLeafIndexSet<GridImp> >
   {
-    typedef UGGrid<dim,dim> GridImp;
+  public:
+    //friend class UGGrid<dim,dim>;
 
-    friend class UGGrid<dim,dim>;
+    enum {dim = GridImp::dimension};
 
     //! constructor stores reference to a grid and level
     UGGridLeafIndexSet (const GridImp& g) : grid_(g)
     {}
 
-  public:
 
     //! get index of an entity
     template<int cd>
@@ -245,7 +246,7 @@ namespace Dune {
       return myTypes_;
     }
 
-  private:
+    //private:
 
     void update() {
 
@@ -320,7 +321,7 @@ namespace Dune {
 
   //template<int dim>
   template <class GridImp>
-  class UGGridGlobalIdSet
+  class UGGridGlobalIdSet : public IdSet<GridImp,UGGridGlobalIdSet<GridImp>,unsigned int>
   {
 
     //typedef UGGrid<dim,dim> GridImp;
@@ -357,13 +358,11 @@ namespace Dune {
   };
 
 
-  template<int dim>
-  class UGGridLocalIdSet
+  template<class GridImp>
+  class UGGridLocalIdSet : public IdSet<GridImp,UGGridLocalIdSet<GridImp>,unsigned int>
   {
-
-    typedef UGGrid<dim,dim> GridImp;
-
-    friend class UGGrid<dim,dim>;
+  public:
+    //friend class UGGrid<dim,dim>;
 
     //! constructor stores reference to a grid
     UGGridLocalIdSet (const GridImp& g) : grid_(g) {}
@@ -386,7 +385,7 @@ namespace Dune {
       return grid_.template getRealEntity<0>(e).template subLocalId<cc>(i);
     }
 
-  private:
+    //private:
 
     /** \todo Should be private */
     void update() {}

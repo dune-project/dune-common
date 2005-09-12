@@ -12,7 +12,7 @@
 namespace Dune {
 
   template<class GridImp>
-  class OneDGridLevelIndexSet
+  class OneDGridLevelIndexSet : public IndexSet<GridImp,OneDGridLevelIndexSet<GridImp> >
   {
   public:
     /** \todo Temporary, to make the dune/fem stuff compile */
@@ -155,7 +155,7 @@ namespace Dune {
   };
 
   template<class GridImp>
-  class OneDGridLeafIndexSet
+  class OneDGridLeafIndexSet : public IndexSet<GridImp,OneDGridLeafIndexSet<GridImp> >
   {
   public:
     //! constructor stores reference to a grid and level
@@ -286,7 +286,7 @@ namespace Dune {
 
 
   template<class GridImp>
-  class OneDGridIdSet
+  class OneDGridIdSet : public IdSet<GridImp,OneDGridIdSet<GridImp>,unsigned int>
   {
   public:
     //! define the type used for persistent indices

@@ -103,11 +103,11 @@ namespace Dune {
         UGGridIntersectionIterator,
         UGGridHierarchicIterator,
         UGGridLeafIterator,
-        UGGridLevelIndexSet<dim>,
-        UGGridLeafIndexSet<dim>,
+        UGGridLevelIndexSet< UGGrid<dim,dimworld> >,
+        UGGridLeafIndexSet< UGGrid<dim,dimworld> >,
         UGGridGlobalIdSet< UGGrid<dim,dimworld> >,
         unsigned int,
-        UGGridLocalIdSet<dim>,
+        UGGridLocalIdSet< UGGrid<dim,dimworld> >,
         unsigned int> Traits;
   };
 
@@ -183,10 +183,10 @@ namespace Dune {
     friend class UGGridHierarchicIterator<UGGrid<dim,dimworld> >;
     friend class UGGridIntersectionIterator<UGGrid<dim,dimworld> >;
 
-    friend class UGGridLevelIndexSet<dim>;
-    friend class UGGridLeafIndexSet<dim>;
-    friend class UGGridGlobalIdSet< UGGrid<dim,dimworld> >;
-    friend class UGGridLocalIdSet<dim>;
+    friend class UGGridLevelIndexSet<UGGrid<dim,dimworld> >;
+    friend class UGGridLeafIndexSet<UGGrid<dim,dimworld> >;
+    friend class UGGridGlobalIdSet<UGGrid<dim,dimworld> >;
+    friend class UGGridLocalIdSet<UGGrid<dim,dimworld> >;
 
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
@@ -509,13 +509,13 @@ namespace Dune {
     std::string name_;
 
     // Our set of level indices
-    std::vector<typename Traits::LevelIndexSet> levelIndexSets_;
+    std::vector<UGGridLevelIndexSet<UGGrid<dim,dimworld> > > levelIndexSets_;
 
-    typename Traits::LeafIndexSet leafIndexSet_;
+    UGGridLeafIndexSet<UGGrid<dim,dimworld> > leafIndexSet_;
 
-    typename Traits::GlobalIdSet globalIdSet_;
+    UGGridGlobalIdSet<UGGrid<dim,dimworld> > globalIdSet_;
 
-    typename Traits::LocalIdSet localIdSet_;
+    UGGridLocalIdSet<UGGrid<dim,dimworld> > localIdSet_;
 
     //! Marks whether the UG environment heap size is taken from
     //! an existing defaults file or whether the values from
