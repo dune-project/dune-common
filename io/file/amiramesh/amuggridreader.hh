@@ -63,12 +63,10 @@ namespace Dune {
   protected:
 
     static void createDomain(UGGrid<3,3>& grid,
-                             const std::string& domainName,
                              const std::string& filename,
                              std::vector<int>& isBoundaryNode);
 
     static void createDomain(UGGrid<3,3>& grid,
-                             const std::string& domainName,
                              AmiraMesh* am,
                              std::vector<int>& isBoundaryNode);
 
@@ -109,10 +107,6 @@ namespace Dune {
                      const std::string& filename);
 
   protected:
-    static void createDomain(UGGrid<2,2>& grid,
-                             const std::string& domainName,
-                             const std::string& filename);
-
     static void detectBoundarySegments(int* elemData,
                                        int numElems,
                                        std::vector<FieldVector<int, 2> >& face_list,
