@@ -64,6 +64,249 @@ namespace Dune {
 
   };
 
+  //***********************************************************************
+  //
+  //  Index Set for one codimension
+  //  --CodimLeafIndexSet
+  //
+  //***********************************************************************
+  class CodimLeafIndexSet
+  {
+  private:
+    enum INDEXSTATE { NEW, USED, UNUSED };
+
+    // the mapping of the global to leaf index
+    IndexArray<int> leafIndex_;
+
+    // old indices
+    IndexArray<int> oldLeafIndex_;
+
+    // stack for holes
+    IndexArray<int> holes_;
+
+    // the state of each index
+    IndexArray<INDEXSTATE> state_;
+
+    // next index to give away
+    int nextFreeIndex_;
+
+    int actSize_;
+
+    const int factor_;
+
+    int myCodim_;
+
+  public:
+    //! Constructor
+    CodimLeafIndexSet () : nextFreeIndex_ (0), actSize_(0),
+                           factor_(2) , myCodim_(-1)
+    {}
+
+    // set codim, because we can't use constructor
+    void setCodim (int codim)
+    {
+      myCodim_ = codim;
+    }
+
+    //! reallocate the vector for new size
+    void resize ( int newSize )
+    {
+      if(leafIndex_.size() < newSize )
+      {
+        //std::cout << "Resize with max = " << hIndexSet_.size(myCodim_) << "\n";
+        int oldSize = leafIndex_.size();
+
+        leafIndex_.realloc( newSize , factor_ );
+        state_.realloc( newSize , factor_ );
+
+        // here we dont need to copy
+        oldLeafIndex_.realloc(newSize, factor_ );
+
+        for(int i=oldSize; i<leafIndex_.size(); i++)
+        {
+          leafIndex_[i] = -1;
+          state_[i] = UNUSED;
+        }
+      }
+    }
+
+    void set2Unused()
+    {
+      for(int i=0; i<state_.size(); i++) state_[i] = UNUSED;
+    }
+
+    //! for dof manager, to check whether it has to copy dof or not
+    bool indexNew (int num) const
+    {
+      assert((num >= 0) && (num < state_.size()));
+      return state_[num] == NEW;
+    }
+
+    //! make to index numbers consecutive
+    //! return true, if at least one hole was closed
+    bool compress ()
+    {
+      const int sizeOfVecs = state_.size();
+      if( holes_.size() < sizeOfVecs )
+        holes_.resize( state_.size() );
+
+      // true if a least one dof must be copied
+      bool haveToCopy = false;
+
+      // mark holes
+      int actHole = 0;
+      int newActSize = 0;
+      for(int i=0; i<sizeOfVecs; i++)
+      {
+        if(leafIndex_[i] >= 0)
+        {
+          // create vector with all holes
+          if((state_[i] == UNUSED) && (leafIndex_[i] >= 0))
+          {
+            holes_[actHole] = leafIndex_[i];
+            actHole++;
+          }
+          // count the size of the leaf indices
+          newActSize++;
+        }
+      }
+
+      assert( newActSize >= actHole );
+      // the new size is the actual size minus the holes
+      actSize_ = newActSize - actHole;
+
+      // copy index, for copying in dof manager
+      oldLeafIndex_ = leafIndex_;
+
+      //std::cout << "Number of holes = " << actHole << "\n";
+
+      // close holes
+      //
+      // NOTE: here the holes closing should be done in
+      // the opposite way. future work.
+      for(int i=0; i<leafIndex_.size(); i++)
+      {
+        // a index that is used but larger then actual size
+        // has to move to a hole
+        if(state_[i] != UNUSED)
+        {
+          // if used index lies behind size, then index has to move
+          // to one of the holes
+          if(leafIndex_[i] >= actSize_)
+          {
+            // serach next hole that is smaler than actual size
+            actHole--;
+            // if actHole < 0 then error, because we have index larger then
+            // actual size
+            assert(actHole >= 0);
+            while ( holes_[actHole] >= actSize_ )
+            {
+              actHole--;
+              if(actHole < 0) break;
+            }
+
+            assert(actHole >= 0);
+            leafIndex_[i] = holes_[actHole];
+
+            // means that dof manager has to copy the mem
+            state_[i] = NEW;
+            haveToCopy = true;
+          }
+        }
+        else
+        {
+          // all unsed indices are reset to -1
+          leafIndex_[i] = -1;
+        }
+      }
+
+      // the next index that can be given away is equal to size
+      nextFreeIndex_ = actSize_;
+      return haveToCopy;
+    }
+
+    //! return how much extra memory is needed for restriction
+    int additionalSizeEstimate () const { return nextFreeIndex_; }
+
+    //! return size of grid entities per level and codim
+    int size () const
+    {
+      return nextFreeIndex_;
+    }
+
+    //! return size of grid entities per level and codim
+    int realSize () const
+    {
+      return leafIndex_.size();
+    }
+
+    //! return leaf index for given hierarchic number
+    int index ( int num ) const
+    {
+      // assert if index was not set yet
+      return leafIndex_ [ num ];
+    }
+
+    //! return state of index for given hierarchic number
+    int state ( int num ) const
+    {
+      // assert if index was not set yet
+      return state_ [ num ];
+    }
+
+    //! return size of grid entities per level and codim
+    //! for dof mapper
+    int oldSize () const
+    {
+      return state_.size();
+    }
+
+    //! return old index, for dof manager only
+    int oldIndex (int elNum ) const
+    {
+      return oldLeafIndex_[elNum];
+    }
+
+    //! return new index, for dof manager only returns index
+    int newIndex (int elNum) const
+    {
+      return leafIndex_[elNum];
+    }
+
+    // insert element and create index for element number
+    void insert (int num )
+    {
+      assert(num < leafIndex_.size() );
+      if(leafIndex_[num] < 0)
+      {
+        leafIndex_[num] = nextFreeIndex_;
+        nextFreeIndex_++;
+      }
+      state_[num] = USED;
+    }
+
+    // read/write from/to xdr stream
+    bool processXdr(XDR *xdrs)
+    {
+      xdr_int ( xdrs, &nextFreeIndex_ );
+      xdr_int ( xdrs, &actSize_ );
+      leafIndex_.processXdr(xdrs);
+      state_.processXdr(xdrs);
+      return true;
+    }
+
+    // insert element and create index for element number
+    void remove (int num )
+    {
+      //std::cout << "Remove Element " << num << "\n";
+      assert(num < leafIndex_.size() );
+      state_[num] = UNUSED;
+    }
+
+    void print (const char * msg, bool oldtoo = false ) const;
+
+  }; // end of class AdaptiveLeafIndexSet
+
   //******************************************************************
   //
   // Indexset that provides consecutive indicies for the leaf level
@@ -80,9 +323,6 @@ namespace Dune {
      Future work. Index set for each codim.
    */
 
-  //template <int codim> struct InitializeCodim;
-  //static bool codimInitialized[4] = { false , false, false, false };
-  class CodimLeafIndexSet;
 
   template <class GridType>
   class AdaptiveLeafIndexSet :
@@ -614,249 +854,6 @@ namespace Dune {
       print("read Index set ");
       return true;
     }
-
-  }; // end of class AdaptiveLeafIndexSet
-
-  //***********************************************************************
-  //
-  //  Index Set for one codimension
-  //  --CodimLeafIndexSet
-  //
-  //***********************************************************************
-  class CodimLeafIndexSet
-  {
-  private:
-    enum INDEXSTATE { NEW, USED, UNUSED };
-
-    // the mapping of the global to leaf index
-    IndexArray<int> leafIndex_;
-
-    // old indices
-    IndexArray<int> oldLeafIndex_;
-
-    // stack for holes
-    IndexArray<int> holes_;
-
-    // the state of each index
-    IndexArray<INDEXSTATE> state_;
-
-    // next index to give away
-    int nextFreeIndex_;
-
-    int actSize_;
-
-    const int factor_;
-
-    int myCodim_;
-
-  public:
-    //! Constructor
-    CodimLeafIndexSet () : nextFreeIndex_ (0), actSize_(0),
-                           factor_(2) , myCodim_(-1)
-    {}
-
-    // set codim, because we can't use constructor
-    void setCodim (int codim)
-    {
-      myCodim_ = codim;
-    }
-
-    //! reallocate the vector for new size
-    void resize ( int newSize )
-    {
-      if(leafIndex_.size() < newSize )
-      {
-        //std::cout << "Resize with max = " << hIndexSet_.size(myCodim_) << "\n";
-        int oldSize = leafIndex_.size();
-
-        leafIndex_.realloc( newSize , factor_ );
-        state_.realloc( newSize , factor_ );
-
-        // here we dont need to copy
-        oldLeafIndex_.realloc(newSize, factor_ );
-
-        for(int i=oldSize; i<leafIndex_.size(); i++)
-        {
-          leafIndex_[i] = -1;
-          state_[i] = UNUSED;
-        }
-      }
-    }
-
-    void set2Unused()
-    {
-      for(int i=0; i<state_.size(); i++) state_[i] = UNUSED;
-    }
-
-    //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num) const
-    {
-      assert((num >= 0) && (num < state_.size()));
-      return state_[num] == NEW;
-    }
-
-    //! make to index numbers consecutive
-    //! return true, if at least one hole was closed
-    bool compress ()
-    {
-      const int sizeOfVecs = state_.size();
-      if( holes_.size() < sizeOfVecs )
-        holes_.resize( state_.size() );
-
-      // true if a least one dof must be copied
-      bool haveToCopy = false;
-
-      // mark holes
-      int actHole = 0;
-      int newActSize = 0;
-      for(int i=0; i<sizeOfVecs; i++)
-      {
-        if(leafIndex_[i] >= 0)
-        {
-          // create vector with all holes
-          if((state_[i] == UNUSED) && (leafIndex_[i] >= 0))
-          {
-            holes_[actHole] = leafIndex_[i];
-            actHole++;
-          }
-          // count the size of the leaf indices
-          newActSize++;
-        }
-      }
-
-      assert( newActSize >= actHole );
-      // the new size is the actual size minus the holes
-      actSize_ = newActSize - actHole;
-
-      // copy index, for copying in dof manager
-      oldLeafIndex_ = leafIndex_;
-
-      //std::cout << "Number of holes = " << actHole << "\n";
-
-      // close holes
-      //
-      // NOTE: here the holes closing should be done in
-      // the opposite way. future work.
-      for(int i=0; i<leafIndex_.size(); i++)
-      {
-        // a index that is used but larger then actual size
-        // has to move to a hole
-        if(state_[i] != UNUSED)
-        {
-          // if used index lies behind size, then index has to move
-          // to one of the holes
-          if(leafIndex_[i] >= actSize_)
-          {
-            // serach next hole that is smaler than actual size
-            actHole--;
-            // if actHole < 0 then error, because we have index larger then
-            // actual size
-            assert(actHole >= 0);
-            while ( holes_[actHole] >= actSize_ )
-            {
-              actHole--;
-              if(actHole < 0) break;
-            }
-
-            assert(actHole >= 0);
-            leafIndex_[i] = holes_[actHole];
-
-            // means that dof manager has to copy the mem
-            state_[i] = NEW;
-            haveToCopy = true;
-          }
-        }
-        else
-        {
-          // all unsed indices are reset to -1
-          leafIndex_[i] = -1;
-        }
-      }
-
-      // the next index that can be given away is equal to size
-      nextFreeIndex_ = actSize_;
-      return haveToCopy;
-    }
-
-    //! return how much extra memory is needed for restriction
-    int additionalSizeEstimate () const { return nextFreeIndex_; }
-
-    //! return size of grid entities per level and codim
-    int size () const
-    {
-      return nextFreeIndex_;
-    }
-
-    //! return size of grid entities per level and codim
-    int realSize () const
-    {
-      return leafIndex_.size();
-    }
-
-    //! return leaf index for given hierarchic number
-    int index ( int num ) const
-    {
-      // assert if index was not set yet
-      return leafIndex_ [ num ];
-    }
-
-    //! return state of index for given hierarchic number
-    int state ( int num ) const
-    {
-      // assert if index was not set yet
-      return state_ [ num ];
-    }
-
-    //! return size of grid entities per level and codim
-    //! for dof mapper
-    int oldSize () const
-    {
-      return state_.size();
-    }
-
-    //! return old index, for dof manager only
-    int oldIndex (int elNum ) const
-    {
-      return oldLeafIndex_[elNum];
-    }
-
-    //! return new index, for dof manager only returns index
-    int newIndex (int elNum) const
-    {
-      return leafIndex_[elNum];
-    }
-
-    // insert element and create index for element number
-    void insert (int num )
-    {
-      assert(num < leafIndex_.size() );
-      if(leafIndex_[num] < 0)
-      {
-        leafIndex_[num] = nextFreeIndex_;
-        nextFreeIndex_++;
-      }
-      state_[num] = USED;
-    }
-
-    // read/write from/to xdr stream
-    bool processXdr(XDR *xdrs)
-    {
-      xdr_int ( xdrs, &nextFreeIndex_ );
-      xdr_int ( xdrs, &actSize_ );
-      leafIndex_.processXdr(xdrs);
-      state_.processXdr(xdrs);
-      return true;
-    }
-
-    // insert element and create index for element number
-    void remove (int num )
-    {
-      //std::cout << "Remove Element " << num << "\n";
-      assert(num < leafIndex_.size() );
-      state_[num] = UNUSED;
-    }
-
-    void print (const char * msg, bool oldtoo = false ) const;
 
   }; // end of class AdaptiveLeafIndexSet
 
