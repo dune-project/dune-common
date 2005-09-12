@@ -871,7 +871,8 @@ namespace Dune {
   //========================================================================
 
   template<class GridImp>
-  class SGridGlobalIdSet : public IdSet<GridImp,SGridGlobalIdSet<GridImp>,int>
+  class SGridGlobalIdSet :
+    public IdSet<GridImp,SGridGlobalIdSet<GridImp>, sgrid_persistentindextype>
   {
   public:
     //! define the type used for persisitent indices
