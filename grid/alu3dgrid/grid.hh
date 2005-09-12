@@ -194,21 +194,29 @@ namespace Dune {
     friend class Conversion< ALU3dGrid<dim,dimworld,elementType> , HasObjectStream > ;
     friend class Conversion< const ALU3dGrid<dim,dimworld,elementType> , HasObjectStream > ;
 
+    //! my Traits class
+    typedef typename ALU3dGridFamily < dim , dimworld , elType > :: Traits Traits;
+
     //! Type of the hierarchic index set
     typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSet;
 
     //! Type of the global id set
-    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSet;
+    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSetImp;
 
     //! Type of the local id set
-    typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSet;
+    typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSetImp;
+
+    //! Type of the global id set
+    typedef typename Traits :: GlobalIdSet GlobalIdSet;
+
+    //! Type of the local id set
+    typedef typename Traits :: LocalIdSet LocalIdSet;
 
     //! Type of the level index set
     typedef DefaultLevelIndexSet<MyType>           LevelIndexSetImp;
     //! Type of the leaf index set
     typedef AdaptiveLeafIndexSet<MyType>           LeafIndexSetImp;
 
-    typedef typename ALU3dGridFamily < dim , dimworld , elType > :: Traits Traits;
 
     //! a standard leaf iterator
     typedef ALU3dGridLeafIterator<0, All_Partition, MyType> LeafIteratorImp;
@@ -470,10 +478,10 @@ namespace Dune {
     HierarchicIndexSet hIndexSet_;
 
     // out global id set
-    GlobalIdSet globalIdSet_;
+    GlobalIdSetImp globalIdSet_;
 
     // out global id set
-    LocalIdSet localIdSet_;
+    LocalIdSetImp localIdSet_;
 
     // the level index set ( default type )
     mutable std::vector < LevelIndexSetImp * > levelIndexVec_;
