@@ -64,7 +64,7 @@ namespace Dune {
     }
 
     //! return size of set
-    int size (int codim) const
+    int size (int codim, GeometryType type = simplex ) const
     {
       return grid_.global_size(codim);
     }

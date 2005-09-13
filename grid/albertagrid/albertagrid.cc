@@ -3753,7 +3753,7 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
-    return this->levelIndexSet(level).size(codim);
+    return this->levelIndexSet(level).size(codim,simplex);
   }
 
   template < int dim, int dimworld >
