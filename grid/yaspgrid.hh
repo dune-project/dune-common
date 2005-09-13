@@ -749,6 +749,9 @@ namespace Dune {
         if (coord[k]>=_g.cell_global().size(k)) coord[k] -= _g.cell_global().size(k);
       }
 
+      if (cc==0)
+        return persistentIndex();
+
       if (cc==dim)
       {
         // transform to vertex coordinates
@@ -852,6 +855,9 @@ namespace Dune {
       iTupel coord;
       for (int k=0; k<dim; ++k)
         coord[k] = _it.coord(k)-_g.cell_overlap().origin(k);
+
+      if (cc==0)
+        return compressedIndex();
 
       if (cc==dim)   // vertices
       {
