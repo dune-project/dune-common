@@ -52,7 +52,7 @@ AM_LDFLAGS = $(top_builddir)/lib/libdune.la
 DUNE_EXTRA_CHECKS =  -DDUNE_ISTL_WITH_CHECKING -DDUNE_DEVEL_MODE
 # output coverage
 #COVERAGE = -fprofile-arcs -ftest-coverage
-AM_CXXFLAGS = $(COVERAGE) $(DUNE_EXTRA_CHECKS)
+AM_CPPFLAGS = $(COVERAGE) $(DUNE_EXTRA_CHECKS)
 
 #
 ## define the programs

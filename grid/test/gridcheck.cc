@@ -431,7 +431,6 @@ struct GridInterface
     LeafInterface< Grid, Dune::Capabilities::hasLeafIterator<Grid>::v >();
 
     // Check for index sets
-#ifdef WITH_INDEX_SETS
     typedef typename Grid::template Codim<0>::LevelIndexSet LevelIndexSet;
     typedef typename Grid::template Codim<0>::LeafIndexSet LeafIndexSet;
     typedef typename Grid::template Codim<0>::LocalIdSet LocalIdSet;
@@ -440,14 +439,14 @@ struct GridInterface
     g.levelIndexSet(0);
 
     // Instantiate all methods of LevelIndexSet
-    g.levelIndexSet(0).template index<0>(*g.template lbegin<0>(0));
+    g.levelIndexSet(0).index(*g.template lbegin<0>(0));
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
     g.levelIndexSet(0).size(0, Dune::simplex);
     g.levelIndexSet(0).geomTypes();
 
     // Instantiate all methods of LeafIndexSet
-    g.leafIndexSet().template index<0>(*g.template lbegin<0>(0));
+    g.leafIndexSet().index(*g.template lbegin<0>(0));
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
     g.leafIndexSet().size(0, Dune::simplex);
@@ -456,14 +455,12 @@ struct GridInterface
     // Instantiate all methods of LocalIdSet
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.localIdSet().template id<0>(*g.template lbegin<0>(0));
+    g.localIdSet().id(*g.template lbegin<0>(0));
 
     // Instantiate all methods of GlobalIdSet
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.globalIdSet().template id<0>(*g.template lbegin<0>(0));
-
-#endif
+    g.globalIdSet().id(*g.template lbegin<0>(0));
 
     // recursively check entity-interface
     // ... we only allow grids with codim 0 zero entites
@@ -491,29 +488,26 @@ struct GridInterface
 template <int cd, class Grid, class Entity, bool doCheck>
 struct subIndexCheck
 {
-  subIndexCheck (const Entity & e)
+  subIndexCheck (const Grid & g, const Entity & e)
   {
     const int imax = e.template count<cd>();
     for (int i=0; i<imax; ++i)
     {
-#ifndef WITH_INDEX_SETS
-      if( (e.template entity<cd>(i)->index() != e.template subIndex<cd>(i)) &&
-          (e.template entity<cd>(i)->globalIndex() != e.template subIndex<cd>(i)) )
-        DUNE_THROW(CheckError, "e.template entity<cd>(i)->index() == e.template subIndex<cd>(i) && "<<
-                   "e.template entity<cd>(i)->globalIndex() != e.template subIndex<cd>(i) failed!");
-#else
-#warning subIndexCheck for index sets not implemented yet!
-#endif
+      if( g.levelIndexSet(e.level()).index( *(e.template entity<cd>(i)) )
+          != g.levelIndexSet(e.level()).template subIndex<cd>(e,i) )
+        DUNE_THROW(CheckError,
+                   "g.levelIndexSet.index( *(e.template entity<cd>(i)) ) "
+                   "== g.levelIndexSet.template subIndex<cd>(e,i) failed");
     }
     subIndexCheck<cd-1,Grid,Entity,
-        Dune::Capabilities::hasEntity<Grid,cd-1>::v> sick(e);
+        Dune::Capabilities::hasEntity<Grid,cd-1>::v> sick(g,e);
   }
 };
 // end recursion of subIndexCheck
 template <class Grid, class Entity, bool doCheck>
 struct subIndexCheck<-1, Grid, Entity, doCheck>
 {
-  subIndexCheck (const Entity & e)
+  subIndexCheck (const Grid & g, const Entity & e)
   {
     return;
   }
@@ -522,16 +516,16 @@ struct subIndexCheck<-1, Grid, Entity, doCheck>
 template <int cd, class Grid, class Entity>
 struct subIndexCheck<cd, Grid, Entity, false>
 {
-  subIndexCheck (const Entity & e)
+  subIndexCheck (const Grid & g, const Entity & e)
   {
     subIndexCheck<cd-1,Grid,Entity,
-        Dune::Capabilities::hasEntity<Grid,cd-1>::v> sick(e);
+        Dune::Capabilities::hasEntity<Grid,cd-1>::v> sick(g,e);
   }
 };
 template <class Grid, class Entity>
 struct subIndexCheck<-1, Grid, Entity, false>
 {
-  subIndexCheck (const Entity & e)
+  subIndexCheck (const Grid & g, const Entity & e)
   {
     return;
   }
@@ -550,8 +544,15 @@ void zeroEntityConsistency (Grid &g)
   for (; it!=endit; ++it)
   {
     // Entity::entity<0>(0) == Entity
-    //    assert( it->template entity<0>(0)->index() == it->index() );
-    //    assert( it->template entity<0>(0)->level() == it->level() );
+    assert( g.levelIndexSet(g.maxlevel()).index( *(it->template entity<0>(0)) )
+            == g.levelIndexSet(g.maxlevel()).index( *it ) );
+    assert( g.leafIndexSet().index( *(it->template entity<0>(0)) )
+            == g.leafIndexSet().index( *it ) );
+    assert( g.globalIdSet().id( *(it->template entity<0>(0)) )
+            == g.globalIdSet().id( *it ) );
+    assert( g.localIdSet().id( *(it->template entity<0>(0)) )
+            == g.localIdSet().id( *it ) );
+    assert( it->template entity<0>(0)->level() == it->level() );
     // Entity::count<dim>() == Entity::geometry().corners();
     assert( it->template count<Grid::dimension>() == it->geometry().corners() );
     // Entity::geometry()[c] == Entity::entity<dim>.geometry()[0];
@@ -567,7 +568,7 @@ void zeroEntityConsistency (Grid &g)
       }
     }
     // Entity::entity<cd>(i).index() == Entity::subIndex(i)
-    subIndexCheck<Grid::dimension, Grid, Entity, true> sick(*it);
+    subIndexCheck<Grid::dimension, Grid, Entity, true> sick(g,*it);
   }
 }
 
@@ -582,33 +583,6 @@ void assertNeighbor (Grid &g)
   LevelIterator e = g.template lbegin<0>(0);
   const LevelIterator eend = g.template lend<0>(0);
   LevelIterator next = e; ++next;
-#ifndef WITH_INDEX_SETS
-  if (next != eend)
-  {
-    for (; e != eend; ++e)
-    {
-      IntersectionIterator endit = e->iend();
-      IntersectionIterator it = e->ibegin();
-      assert(e->index() >= 0);
-      assert(it != endit);
-      for(; it != endit; ++it)
-      {
-        assert(it.inside()->index() == e->index());
-        if (it.neighbor())
-        {
-          assert(it.outside()->index() >= 0);
-          assert(it.outside()->index() != e->index());
-          LevelIterator n = g.template lbegin<0>(it.level());
-          LevelIterator nend = g.template lend<0>(it.level());
-          while (n != it.outside() && n != nend) {
-            assert(it.outside()->index() != n->index());
-            ++n;
-          }
-        }
-      }
-    }
-  }
-#else
   typedef typename Grid::template Codim<0>::LevelIndexSet LevelIndexSet;
   const LevelIndexSet & levelindex = g.levelIndexSet(0);
   if (next != eend)
@@ -617,29 +591,28 @@ void assertNeighbor (Grid &g)
     {
       IntersectionIterator endit = e->iend();
       IntersectionIterator it = e->ibegin();
-      assert(levelindex.template index<0>(*e) >= 0);
+      assert(levelindex.index(*e) >= 0);
       assert(it != endit);
       for(; it != endit; ++it)
       {
-        assert(levelindex.template index<0>(*(it.inside())) ==
-               levelindex.template index<0>(*e));
+        assert(levelindex.index(*(it.inside())) ==
+               levelindex.index(*e));
         if (it.neighbor())
         {
-          assert(levelindex.template index<0>(*(it.outside())) >= 0);
-          assert(levelindex.template index<0>(*(it.outside())) !=
-                 levelindex.template index<0>(*e));
+          assert(levelindex.index(*(it.outside())) >= 0);
+          assert(levelindex.index(*(it.outside())) !=
+                 levelindex.index(*e));
           LevelIterator n = g.template lbegin<0>(it.level());
           LevelIterator nend = g.template lend<0>(it.level());
           while (n != it.outside() && n != nend) {
-            assert(levelindex.template index<0>(*(it.outside())) !=
-                   levelindex.template index<0>(*n));
+            assert(levelindex.index(*(it.outside())) !=
+                   levelindex.index(*n));
             ++n;
           }
         }
       }
     }
   }
-#endif
 }
 
 /*

@@ -62,6 +62,14 @@ namespace Dune
       return asImp().template index<cc>(e);
     }
 
+    //! get index of an entity
+    template<class EntityType>
+    int index (const EntityType& e) const
+    {
+      enum { cc = EntityType::codimension };
+      return asImp().template index<cc>(e);
+    }
+
     /** @brief Map subentity of codim 0 entity to index.
 
        \param e Reference to codim 0 entity.
@@ -123,13 +131,21 @@ namespace Dune
     typedef IdTypeImp IdType;
 
     //! get id of an entity
+    template<class EntityType>
+    IdType id (const EntityType& e) const
+    {
+      enum { cc = EntityType::codimension };
+      return asImp().template id<cc>(e);
+    }
+
+    //! get id of an entity of codim cc
     template<int cc>
     IdType id (const typename GridImp::template Codim<cc>::Entity& e) const
     {
       return asImp().template id<cc>(e);
     }
 
-    //! get id of subentity
+    //! get id of subentity i of codim cc
     template<int cc>
     IdType subid (const typename GridImp::template Codim<0>::Entity& e, int i) const
     {
