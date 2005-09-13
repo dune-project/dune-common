@@ -586,7 +586,7 @@ namespace Dune {
       if (cc==1) return 2*dim;
       if (cc==dim-1) return dim*(1<<(dim-1));
       if (cc==0) return 1;
-      DUNE_THROW(GridError, "codim not (yet) implemented");
+      DUNE_THROW(GridError, "codim " << cc << " (dim=" << dim << ") not (yet) implemented");
     }
 
     /*! Intra-element access to subentities of codimension cc > codim.
@@ -610,7 +610,7 @@ namespace Dune {
       {
         return YaspLevelIterator<cc,All_Partition,GridImp>(_g,_it);
       }
-      DUNE_THROW(GridError, "codim not (yet) implemented");
+      DUNE_THROW(GridError, "codim " << cc << " (dim=" << dim << ") not (yet) implemented");
     }
 
     //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
@@ -841,7 +841,7 @@ namespace Dune {
         return index|(modifier<<52);
       }
 
-      DUNE_THROW(GridError, "codim not (yet) implemented");
+      DUNE_THROW(GridError, "codim " << cc << " (dim=" << dim << ") not (yet) implemented");
     }
 
     //! subentity compressed index
@@ -935,7 +935,7 @@ namespace Dune {
         return index;
       }
 
-      DUNE_THROW(GridError, "codim not (yet) implemented");
+      DUNE_THROW(GridError, "codim " << cc << " (dim=" << dim << ") not (yet) implemented");
     }
 
 
