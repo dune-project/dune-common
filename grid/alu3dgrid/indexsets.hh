@@ -52,7 +52,8 @@ namespace Dune {
     }
 
     //! return size of indexset, i.e. maxindex+1
-    int size ( int codim ) const
+    //! type is now used in this method
+    int size ( int codim , GeometryType type = unknown ) const
     {
       // return size of hierarchic index set
       return grid_.hierSetSize(codim);
