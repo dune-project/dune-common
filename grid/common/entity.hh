@@ -330,8 +330,9 @@ namespace Dune
        This does the same as <code>entity<cc>(i).index()</code>, but it is
        usually a lot faster.
      */
-    template <int cc> int subIndex ( int i ) const DUNE_DEPRECATED
+    template <int cc> int subIndex ( int i ) const
     {
+      this->index(); // Just to force a deprecated warning
       return realEntity.subIndex<cc>(i);
     }
 
@@ -752,8 +753,9 @@ namespace Dune
      * Default implementation for access to subIndex via interface method entity
      * default is to return the index of the sub entity, is very slow, but works
      */
-    template <int cc> int subIndex ( int i ) const DUNE_DEPRECATED
+    template <int cc> int subIndex ( int i ) const
     {
+      this->index(); // Just to force a deprecated warning
       return (asImp().template entity<cc>(i))->index();
     }
 
