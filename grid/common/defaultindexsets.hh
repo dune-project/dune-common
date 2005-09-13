@@ -569,11 +569,11 @@ namespace Dune {
     }
 
     //! return LevelIndex of given entity
-    template<int cc>
-    int index (const typename GridImp::template Codim<cc>::Entity& e) const
+    template<int cd>
+    int index (const typename GridImp::template Codim<cc>::Entity& en) const
     {
       assert( level_ == en.level() );
-      return levelIndex_[cc][ hIndexSet_.index(e) ];
+      return levelIndex_[cd][ hIndexSet_.index(en) ];
     }
 
     //! return subIndex (LevelIndex) for a given Entity of codim = 0 and a
