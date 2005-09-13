@@ -92,24 +92,20 @@ namespace Dune {
     void assemble ( ) const
     {
       typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
-      typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
-
-      const GridType &grid = functionSpace_.grid();
+      typedef typename FunctionSpaceType::IteratorType IteratorType;
 
       {
-        LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
-        LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
+        IteratorType endit = functionSpace_.end();
         enum {maxnumOfBaseFct = 30};
         if (!matrix_) matrix_ = this->newEmptyMatrix();
 
         FieldMatrix<double,maxnumOfBaseFct,maxnumOfBaseFct> mat;
 
-        for( ; it != endit; ++it )
+        for(IteratorType it= functionSpace_.begin(); it != endit; ++it )
         {
           const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( *it );
-          const int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
+          const int numOfBaseFct = baseSet.numBaseFunctions();
 
           // setup matrix
           getLocalMatrix( *it, numOfBaseFct, mat);
@@ -125,75 +121,6 @@ namespace Dune {
           }
         }
       }
-
-#if 0
-      {
-        // eliminate the Dirichlet rows and columns
-        typedef typename GridType::template Codim<0>::Entity EntityType;
-        typedef typename GridType::template Codim<0>::IntersectionIterator NeighIt;
-        typedef typename NeighIt::BoundaryEntity BoundaryEntityType;
-
-        LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
-        LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
-        for( ; it != endit; ++it )
-        {
-          NeighIt endnit = it->iend();
-          for(NeighIt nit = it->ibegin() ; nit != endnit ; ++nit)
-          {
-
-            if(nit.boundary())
-            {
-              BoundaryEntityType & bEl = nit.boundaryEntity();
-
-              if( functionSpace_.boundaryType( bEl.id() ) == Dirichlet )
-              {
-                int neigh = nit.number_in_self();
-
-                if((*it).geometry().type() == triangle)
-                {
-                  int numDof = 3;
-                  for(int i=1; i<numDof; i++)
-                  {
-                    // funktioniert nur fuer Dreiecke
-                    // hier muss noch gearbeitet werden. Wie kommt man von den
-                    // Intersections zu den localen Dof Nummern?
-                    int col = functionSpace_.mapToGlobal(*it,(neigh+i)%numDof);
-                    // unitRow unitCol for boundary
-                    matrix_->kroneckerKill(col,col);
-                  }
-                }
-                if((*it).geometry().type() == tetrahedron)
-                {
-                  int numDof = 4;
-                  for(int i=1; i<numDof; i++)
-                  {
-                    // funktioniert nur fuer Dreiecke
-                    // hier muss noch gearbeitet werden. Wie kommt man von den
-                    // Intersections zu den localen Dof Nummern?
-                    int col = functionSpace_.mapToGlobal(*it,(neigh+i)%numDof);
-                    // unitRow unitCol for boundary
-                    matrix_->kroneckerKill(col,col);
-                  }
-                }
-                if((*it).geometry().type() == quadrilateral)
-                {
-                  for(int i=0; i<2; i++)
-                  {
-                    // funktioniert nur fuer Dreiecke
-                    // hier muss noch gearbeitet werden. Wie kommt man von den
-                    // Intersections zu den localen Dof Nummern?
-                    int col = functionSpace_.mapToGlobal(*it,edge[neigh][i]);
-                    // unitRow unitCol for boundary
-                    matrix_->kroneckerKill(col,col);
-                  }
-                }
-              }
-            }
-
-          }
-        }
-      }
-#endif
       matrix_assembled_ = true;
     }
 
@@ -201,11 +128,8 @@ namespace Dune {
     void multiplyOnTheFly( const DiscFunctionType &arg, DiscFunctionType &dest ) const
     {
       typedef typename DiscFunctionType::FunctionSpaceType FunctionSpaceType;
-      typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
+      typedef typename FunctionSpaceType::IteratorType IteratorType;
       typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
-
-      const GridType &grid = functionSpace_.grid();
 
       typedef typename DiscFunctionType::LocalFunctionType LocalFunctionType;
       typedef typename FunctionSpaceType::RangeType RangeVecType;
@@ -220,14 +144,13 @@ namespace Dune {
 
       dest.clear();
 
-      LevelIterator it = grid.template lbegin<0>( grid.maxlevel() );
-      LevelIterator endit = grid.template lend<0> ( grid.maxlevel() );
-      for( ; it != endit; ++it )
+      IteratorType endit  = functionSpace_.end();
+      for(IteratorType it = functionSpace_.begin(); it != endit; ++it )
       {
         //prepare( *it );
 
         const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( *it );
-        int numOfBaseFct = baseSet.getNumberOfBaseFunctions();
+        int numOfBaseFct = baseSet.numBaseFunctions();
 
         for(int i=0; i<numOfBaseFct; i++)
         {
