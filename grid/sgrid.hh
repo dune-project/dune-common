@@ -577,6 +577,12 @@ namespace Dune {
       return persistentIndex();
     }
 
+    //! consecutive, codim-wise, level-wise index
+    int compressedIndex () const
+    {
+      return SEntityBase<dim,dim,GridImp>::index();
+    }
+
     mutable bool built_father;
     mutable int father_id;
     mutable FieldVector<sgrid_ctype, dim> in_father_local;
