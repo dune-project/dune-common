@@ -16,15 +16,9 @@ namespace Dune {
   template<class GridImp>
   class UGGridLevelIndexSet : public IndexSet<GridImp,UGGridLevelIndexSet<GridImp> >
   {
-    //typedef UGGrid<dim,dim> GridImp;
-
-    //friend class UGGrid<dim,dim>;
     enum {dim = GridImp::dimension};
 
   public:
-
-    /** \todo Temporary */
-    enum {ncodim = dim+1};
 
     /** \brief Default constructor
 
@@ -83,31 +77,6 @@ namespace Dune {
     const std::vector<GeometryType>& geomTypes () const
     {
       return myTypes_;
-    }
-
-    /** \todo Dummy method to please the fem stuff */
-    int oldIndex(int elNum) const {
-      DUNE_THROW(NotImplemented, "oldIndex");
-    }
-
-    /** \todo Dummy method to please the fem stuff */
-    int oldIndex(int elNum, int codim) const {
-      DUNE_THROW(NotImplemented, "oldIndex");
-    }
-
-    /** \todo Dummy method to please the fem stuff */
-    int newIndex(int elNum) const {
-      DUNE_THROW(NotImplemented, "oldIndex");
-    }
-
-    /** \todo Dummy method to please the fem stuff */
-    int newIndex(int elNum, int codim) const {
-      DUNE_THROW(NotImplemented, "oldIndex");
-    }
-
-    /** \todo Dummy method to please the fem stuff */
-    int additionalSizeEstimate() const {
-      DUNE_THROW(NotImplemented, "additionalSizeEstimate");
     }
 
     //private:
@@ -323,10 +292,6 @@ namespace Dune {
   template <class GridImp>
   class UGGridGlobalIdSet : public IdSet<GridImp,UGGridGlobalIdSet<GridImp>,unsigned int>
   {
-
-    //typedef UGGrid<dim,dim> GridImp;
-
-    //friend class UGGrid<GridImp::dimension,GridImp::dimensionworld>;
 
   public:
     //! constructor stores reference to a grid
