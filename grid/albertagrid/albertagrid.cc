@@ -3120,6 +3120,10 @@ namespace Dune
   inline typename AlbertaGrid<dim,dimworld>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
   {
+    if((dim == codim) || ((dim == 3) && (codim == 2)) )
+    {
+      if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
+    }
     return AlbertaGridLeafIterator<codim, pitype, const MyType> (*this,vertexMarker_,level,proc);
   }
 
