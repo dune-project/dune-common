@@ -17,7 +17,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     DUNE_THROW(IOError, "You can only write grids as AmiraMesh if dim==dimworld==2"
                << " or dim==dimworld==3.");
 
-  typename GridType::Traits::LeafIndexSet leafIndexSet = grid.leafIndexSet();
+  const typename GridType::Traits::LeafIndexSet& leafIndexSet = grid.leafIndexSet();
 
   // Find out whether the grid contains only tetrahedra.  If yes, then
   // it is written in TetraGrid format.  If not, it is written in
