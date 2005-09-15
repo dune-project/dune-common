@@ -859,119 +859,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::detectBoundarySegments(int* elem
 
 }
 
-
-
-/****************************************************************************/
-/****************************************************************************/
-/*                             domain definitions                           */
-/****************************************************************************/
-/****************************************************************************/
-#if 0
-void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::createDomain(UGGrid<2,2>& grid,
-                                                             const std::string& filename)
-{
-
-  dverb << "Loading 2D Amira domain " << filename << std::endl;
-
-  // /////////////////////////////////////////////////////
-  // Load the AmiraMesh file
-  // /////////////////////////////////////////////////////
-  /** \todo Use an auto_ptr here */
-  AmiraMesh* am = AmiraMesh::read(filename.c_str());
-
-  if(!am)
-    DUNE_THROW(IOError, "AmiraMeshReader<UGGrid<2,2> >::createDomain: Can't open input file");
-
-  // Determine whether grid contains only triangles
-  bool containsOnlyTriangles = am->findData("Triangles", HxINT32, 3, "Nodes");
-
-  // get the different data fields
-  AmiraMesh::Data* am_coordinateData =  am->findData("Nodes", HxFLOAT, 2, "Coordinates");
-  if (!am_coordinateData)
-    DUNE_THROW(IOError, "2D AmiraMesh loader: field 'Nodes' not found!");
-
-  float* am_node_coordinates = (float*) am_coordinateData->dataPtr();
-
-  // Get the element list
-  int*  elemData = 0;
-
-  if (containsOnlyTriangles) {
-    AmiraMesh::Data* triangleData = am->findData("Triangles", HxINT32, 3, "Nodes");
-    if (triangleData)
-      elemData         = (int*)triangleData->dataPtr();
-    else
-      DUNE_THROW(IOError, "2D AmiraMesh loader: field 'Triangles' not found!");
-
-  } else {
-    AmiraMesh::Data* elementData = am->findData("Quadrilaterals", HxINT32, 4, "Nodes");
-    if (elementData) {
-      elemData = (int*)elementData->dataPtr();
-    } else
-      DUNE_THROW(IOError, "2D AmiraMesh loader: field 'Quadrilaterals' not found!");
-  }
-
-
-  int noOfNodes = am->nElements("Nodes");
-  int noOfElem  = am->nElements("Triangles");
-
-  std::cout << "AmiraMesh contains " << noOfNodes << " nodes and "
-            << noOfElem << " elements\n";
-
-  // Extract boundary segments
-  std::vector<FieldVector<int, 2> > boundary_segments;
-  detectBoundarySegments(elemData, noOfElem, boundary_segments, containsOnlyTriangles);
-  if (boundary_segments.size() == 0) {
-    delete am;
-    DUNE_THROW(IOError, "2d AmiraMesh reader: couldn't extract any boundary segments!");
-  }
-
-  int noOfBSegments = boundary_segments.size();
-
-  dverb << noOfBSegments << " Boundary segments found!" << std::endl;
-
-  // extract boundary nodes
-  std::vector<int> isBoundaryNode;
-  detectBoundaryNodes(boundary_segments, noOfNodes, isBoundaryNode);
-  if (isBoundaryNode.size() == 0) {
-    delete am;
-    DUNE_THROW(IOError, "2d AmiraMesh reader: couldn't extract any boundary nodes!");
-  }
-
-  int noOfBNodes = 0;
-  for (int i=0; i<noOfNodes; i++) {
-    if (isBoundaryNode[i] != -1)
-      noOfBNodes++;
-  }
-
-  dverb << noOfBNodes << " boundary nodes found!" << std::endl;
-
-  grid.createDomain(noOfBNodes, noOfBSegments);
-
-  for(int i=0; i<noOfBSegments; i++) {
-
-    const FieldVector<int, 2>& thisEdge = boundary_segments[i];
-
-    std::vector<FieldVector<double,2> > coordinates(2);
-    coordinates[0][0] = am_node_coordinates[2*thisEdge[0]];
-    coordinates[0][1] = am_node_coordinates[2*thisEdge[0]+1];
-    coordinates[1][0] = am_node_coordinates[2*thisEdge[1]];
-    coordinates[1][1] = am_node_coordinates[2*thisEdge[1]+1];
-
-    std::vector<int> vertices(2);
-    vertices[0] = isBoundaryNode[thisEdge[0]];
-    vertices[1] = isBoundaryNode[thisEdge[1]];
-
-    grid.insertLinearSegment(vertices, coordinates);
-
-  }
-
-
-  /* That's it!*/
-
-  delete am;
-}
-#endif
-
 /** \todo Extend this such that it also reads double vertex positions */
 void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
                                                      const std::string& filename)
@@ -1027,7 +914,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
 
   int noOfNodes = am->nElements("Nodes");
-  int noOfElem  = am->nElements("Triangles");
+  int noOfElem  = (containsOnlyTriangles) ? am->nElements("Triangles") : am->nElements("Quadrilaterals");
 
   std::cout << "AmiraMesh contains " << noOfNodes << " nodes and "
             << noOfElem << " elements\n";
@@ -1135,8 +1022,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   noOfCreatedElem = 0;
   for (int i=0; i < noOfElem; i++) {
 
-    if (containsOnlyTriangles ||
-        (elemData[3*i+2] == elemData[3*i+3])) {
+    if (containsOnlyTriangles) {
 
       std::vector<unsigned int> cornerIDs(3);
 
@@ -1149,15 +1035,30 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
 
     } else {
 
-      std::vector<unsigned int> cornerIDs(4);
+      if (elemData[4*i+2]==elemData[4*i+3]) {
+        // Triangle within a quadrilateral grid file
+        std::vector<unsigned int> cornerIDs(3);
 
-      /* only quadrilaterals */
-      cornerIDs[0] = isBoundaryNode[elemData[4*i]-1];
-      cornerIDs[1] = isBoundaryNode[elemData[4*i+1]-1];
-      cornerIDs[2] = isBoundaryNode[elemData[4*i+3]-1];
-      cornerIDs[3] = isBoundaryNode[elemData[4*i+2]-1];
+        /* only quadrilaterals */
+        cornerIDs[0] = isBoundaryNode[elemData[4*i]-1];
+        cornerIDs[1] = isBoundaryNode[elemData[4*i+1]-1];
+        cornerIDs[2] = isBoundaryNode[elemData[4*i+2]-1];
 
-      grid.insertElement(cube, cornerIDs);
+        grid.insertElement(simplex, cornerIDs);
+
+      } else {
+
+        std::vector<unsigned int> cornerIDs(4);
+
+        /* only quadrilaterals */
+        cornerIDs[0] = isBoundaryNode[elemData[4*i]-1];
+        cornerIDs[1] = isBoundaryNode[elemData[4*i+1]-1];
+        cornerIDs[2] = isBoundaryNode[elemData[4*i+3]-1];
+        cornerIDs[3] = isBoundaryNode[elemData[4*i+2]-1];
+
+        grid.insertElement(cube, cornerIDs);
+
+      }
 
     }
 
