@@ -392,6 +392,9 @@ namespace Dune {
 
   private:
 
+    /** \brief Update all indices and ids */
+    void setIndices();
+
     template <int cd>
     OneDGridEntity<cd,dim,const OneDGrid>& getRealEntity(typename Traits::template Codim<cd>::Entity& entity) {
       return entity.realEntity;
