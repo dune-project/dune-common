@@ -188,7 +188,7 @@ namespace Dune
       // for linear data
       int num = ( localNum * numberOfComp ) + comp[0];
 
-      switch ( en.geometry().type())
+      switch ( geomTypeConvert( en.geometry().type(), dim ) )
       {
       // check for quadrilaterals and hexahedrons
       case quadrilateral :

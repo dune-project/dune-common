@@ -97,6 +97,7 @@ namespace Dune
         }
       } // end set all vertex coordinates
 
+      // store vertex numbers
       for(int i = 0; i< en.template count<dim>(); i++)
       {
         he->vindex[i] = leafset_. template subIndex<dim> (en,i);
