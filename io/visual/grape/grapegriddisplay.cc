@@ -170,14 +170,10 @@ namespace Dune
     int levelOI = he->level_of_interest;
     if(levelOI < 0) levelOI = grid_.maxlevel();
 
-    //LeafIteratorType it    = grid_.template leafbegin<0,Interior_Partition> (levelOI);
-    //LeafIteratorType endit = grid_.template leafend  <0,Interior_Partition> (levelOI);
-
-    //myLeafIt_    = new LeafIteratorType ( it );
-    //myLeafEndIt_ = new LeafIteratorType ( endit );
-
-    myLeafIt_    = new LeafIteratorType ( grid_.template leafbegin<0, All_Partition> (levelOI) );
-    myLeafEndIt_ = new LeafIteratorType ( grid_.template leafend  <0, All_Partition> (levelOI) );
+    //myLeafIt_    = new LeafIteratorType ( grid_.template leafbegin<0, All_Partition> (levelOI) );
+    //myLeafEndIt_ = new LeafIteratorType ( grid_.template leafend  <0, All_Partition> (levelOI) );
+    myLeafIt_    = new LeafIteratorType ( grid_.template leafbegin<0, All_Partition> () );
+    myLeafEndIt_ = new LeafIteratorType ( grid_.template leafend  <0, All_Partition> () );
 
     if(myLeafIt_[0] == myLeafEndIt_[0])
     {
@@ -619,8 +615,12 @@ namespace Dune
       }
 
     maxlevel = grid_.maxlevel();
-    noe = leafset_.size(0);
-    nov = leafset_.size(dim);
+
+    for(unsigned int i=0; i<leafset_.geomTypes().size(); i++)
+    {
+      noe += leafset_.size(0,leafset_.geomTypes()[i]);
+      nov += leafset_.size(dim,leafset_.geomTypes()[i]);
+    }
 
     hel_.display = (void *) this;
     hel_.liter = NULL;
