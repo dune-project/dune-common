@@ -253,6 +253,9 @@ inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
   helementUpdate(elem,el);
   ((STACKENTRY *)el)->hmax = calc_hmax(el);
 
+  // reset element description
+  el->descr = 0;
+
   /********************************************************/
   /*   dim == 3 */
 #if GRAPE_DIM == 2
@@ -291,6 +294,9 @@ inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
   }
 #endif
   /***************************************************************/
+  // is this assertion is thrown then something with the geometry types is
+  // wrong
+  assert( el->descr != 0 );
 
   return(el);
 }
@@ -355,6 +361,8 @@ inline static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
       el->parent    = ael;
       ((STACKENTRY *)el)->hmax = ((STACKENTRY *)ael)->hmax *0.5;
 
+      el->descr = 0;
+
 #if GRAPE_DIM == 2
       /*************************************************/
       /* dim == 2 */
@@ -393,6 +401,9 @@ inline static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
       }
 #endif
       /****************************************************/
+      // is this assertion is thrown then something with the geometry types is
+      // wrong
+      assert( el->descr != 0 );
       return(el);
     }
     else
