@@ -83,7 +83,7 @@ namespace Dune
       he->has_children = 1;
 
       // know the type
-      he->type = geometry.type();
+      he->type = geomTypeConvert( geometry.type() , dim );
 
       {
         // set the vertex coordinates
