@@ -90,7 +90,7 @@ namespace Dune
     : g(grid), is(indexset)
   {
     // check that grid has only a single geometry type
-    if (is.geomtypes().size() != 1)
+    if (is.geomTypes().size() != 1)
       DUNE_THROW(GridError, "mapper treats only a single codim and a single geometry type");
   }
 
@@ -113,7 +113,7 @@ namespace Dune
   template <typename G, typename IS, int c>
   int SingleCodimSingleGeomTypeMapper<G,IS,c>::size () const
   {
-    return is.size(c,is.geomtypes()[0]);
+    return is.size(c,is.geomTypes()[0]);
   }
 
 
