@@ -144,10 +144,12 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
 {
   assert(i>=0 && i<count<cc>());
 
-  if (cc!=dim)
-    DUNE_THROW(GridError, "UGGrid::subIndex isn't implemented for cc != dim");
-
-  return UG_NS<dim>::levelIndex(UG_NS<dim>::Corner(target_,renumberVertex(i)));
+  if (cc==dim)
+    return UG_NS<dim>::levelIndex(UG_NS<dim>::Corner(target_,renumberVertex(i)));
+  else if (cc==0)
+    return UG_NS<dim>::levelIndex(target_);
+  else
+    DUNE_THROW(GridError, "UGGrid<" << dim << "," << dim << ">::subIndex isn't implemented for cc==" << cc );
 }
 
 template <int dim, class GridImp>
@@ -184,10 +186,12 @@ inline int UGGridEntity<0, dim, GridImp>::subLocalId(int i) const
 {
   assert(i>=0 && i<count<cc>());
 
-  if (cc!=dim)
-    DUNE_THROW(GridError, "UGGrid::subLocalId isn't implemented for cc != dim");
-
-  return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,renumberVertex(i)));
+  if (cc==dim)
+    return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,renumberVertex(i)));
+  else if (cc==0)
+    return UG_NS<dim>::id(target_);
+  else
+    DUNE_THROW(GridError, "UGGrid<" << dim << "," << dim << ">::subLocalId isn't implemented for cc==" << cc );
 }
 
 
@@ -198,11 +202,16 @@ UGGridEntity<0,dim,GridImp>::entity ( int i ) const
 {
   assert(i>=0 && i<count<cc>());
 
-  if (cc!=dim)
-    DUNE_THROW(GridError, "UGGrid::entity isn't implemented for cc != dim");
-
-  typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,renumberVertex(i));
-  return UGGridLevelIterator<cc,All_Partition,GridImp>(subEntity, level_);
+  if (cc==dim) {
+    typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,renumberVertex(i));
+    return UGGridLevelIterator<cc,All_Partition,GridImp>(subEntity, level_);
+  } else if (cc==0) {
+    // The following cast is here to make the code compile for all cc.
+    // When it gets actually called, cc==0, and the cast is nonexisting.
+    typename TargetType<cc,dim>::T* myself = (typename TargetType<cc,dim>::T*)target_;
+    return UGGridLevelIterator<cc,All_Partition,GridImp>(myself, level_);
+  } else
+    DUNE_THROW(GridError, "UGGrid<" << dim << "," << dim << ">::entity isn't implemented for cc==" << cc );
 }
 
 template<int dim, class GridImp>
