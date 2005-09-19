@@ -115,7 +115,6 @@ void DoEntityInterfaceCheck (Entity &e)
 
   // methods on each entity
   e.level();
-  //  e.index();
   e.partitionType();
   e.geometry();
 
@@ -596,30 +595,30 @@ void assertNeighbor (Grid &g)
   LevelIterator e = g.template lbegin<0>(0);
   const LevelIterator eend = g.template lend<0>(0);
   LevelIterator next = e; ++next;
-  typedef typename Grid::template Codim<0>::LevelIndexSet LevelIndexSet;
-  const LevelIndexSet & levelindex = g.levelIndexSet(0);
+  typedef typename Grid::template Codim<0>::GlobalIdSet GlobalIdSet;
+  const GlobalIdSet & globalid = g.globalIdSet();
   if (next != eend)
   {
     for (; e != eend; ++e)
     {
       IntersectionIterator endit = e->iend();
       IntersectionIterator it = e->ibegin();
-      assert(levelindex.index(*e) >= 0);
+      assert(globalid.id(*e) >= 0);
       assert(it != endit);
       for(; it != endit; ++it)
       {
-        assert(levelindex.index(*(it.inside())) ==
-               levelindex.index(*e));
+        assert(globalid.id(*(it.inside())) ==
+               globalid.id(*e));
         if (it.neighbor())
         {
-          assert(levelindex.index(*(it.outside())) >= 0);
-          assert(levelindex.index(*(it.outside())) !=
-                 levelindex.index(*e));
+          assert(globalid.id(*(it.outside())) >= 0);
+          assert(globalid.id(*(it.outside())) !=
+                 globalid.id(*e));
           LevelIterator n = g.template lbegin<0>(it.level());
           LevelIterator nend = g.template lend<0>(it.level());
           while (n != it.outside() && n != nend) {
-            assert(levelindex.index(*(it.outside())) !=
-                   levelindex.index(*n));
+            assert(globalid.id(*(it.outside())) !=
+                   globalid.id(*n));
             ++n;
           }
         }
