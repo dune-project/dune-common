@@ -99,8 +99,6 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
     leafIndexSet_(*this),
     idSet_(*this)
 {
-  typedef const OneDGrid<dim,dimworld> GridImp;
-
   // Init grid hierarchy
   vertices.resize(1);
   elements.resize(1);
@@ -292,14 +290,16 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
   // for the return value:  true if the grid was changed
   bool changedGrid = false;
 
-#if 0
   // remove all elements that have been marked for coarsening
   for (int i=1; i<=maxlevel(); i++) {
 
-    for (eIt = elements[i].begin(); eIt!=NULL; eIt = eIt->succ_) {
+    for (eIt = elements[i].begin; eIt!=NULL; eIt = eIt->succ_) {
 
+      if (eIt->adaptationState == COARSEN)
+        DUNE_THROW(NotImplemented, "Coarsening is not implemented for OneDGrid");
+#if 0
       if (eIt->adaptationState == COARSEN
-          && eIt->hasChildren()) {
+          && !eIt->isLeaf()) {
 
         OneDEntityImp<1>* leftElement = eIt->pred_;
 
@@ -328,11 +328,11 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         changedGrid = true;
 
       }
-
+#endif
     }
 
   }
-#endif
+
   // /////////////////////////////////////////////////////////////////////////
   //  Check if one of the elements on the toplevel is marked for refinement
   //  In that case add another level
@@ -346,7 +346,7 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
 
   if (toplevelRefinement) {
     List<OneDEntityImp<0> > newVertices;
-    List<OneDEntityImp<1> >  newElements;
+    List<OneDEntityImp<1> > newElements;
     vertices.push_back(newVertices);
     elements.push_back(newElements);
   }
@@ -375,12 +375,16 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         if (leftUpperVertex==NULL)
           leftUpperVertex = new OneDEntityImp<0>(i+1, eIt->vertex_[0]->pos_);
 
+        eIt->vertex_[0]->son_ = leftUpperVertex;
+
         // Does the right vertex exist on the next-higher level?
         // If no create it
         OneDEntityImp<0>* rightUpperVertex = getRightUpperVertex(eIt);
 
         if (rightUpperVertex==NULL)
           rightUpperVertex = new OneDEntityImp<0>(i+1, eIt->vertex_[1]->pos_);
+
+        eIt->vertex_[1]->son_ = rightUpperVertex;
 
         // Create center vertex
         double a = eIt->vertex_[0]->pos_[0];
@@ -485,12 +489,16 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
           if (leftUpperVertex==NULL)
             leftUpperVertex = new OneDEntityImp<0>(i+1, eIt->vertex_[0]->pos_);
 
+          eIt->vertex_[0]->son_ = leftUpperVertex;
+
           // Does the right vertex exist on the next-higher level?
           // If no create it
           OneDEntityImp<0>* rightUpperVertex = getRightUpperVertex(eIt);
 
           if (rightUpperVertex==NULL)
             rightUpperVertex = new OneDEntityImp<0>(i+1, eIt->vertex_[1]->pos_);
+
+          eIt->vertex_[1]->son_ = rightUpperVertex;
 
           // //////////////////////////////////////
           // Insert new vertices into vertex list

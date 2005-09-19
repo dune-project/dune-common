@@ -20,14 +20,14 @@ namespace Dune {
   {
   public:
 
-    OneDEntityImp(int level, double pos) : pos_(pos), level_(level), pred_(NULL), succ_(NULL)
+    OneDEntityImp(int level, double pos) : pos_(pos), level_(level), son_(NULL), pred_(NULL), succ_(NULL)
     {}
 
-    OneDEntityImp(int level, const FieldVector<double, 1>& pos) : pos_(pos), level_(level), pred_(NULL), succ_(NULL)
+    OneDEntityImp(int level, const FieldVector<double, 1>& pos) : pos_(pos), level_(level), son_(NULL), pred_(NULL), succ_(NULL)
     {}
     //private:
     bool isLeaf() const {
-      DUNE_THROW(NotImplemented, "isLeaf for vertices");
+      return son_==NULL;
     }
 
     FieldVector<double, 1> pos_;
@@ -41,6 +41,9 @@ namespace Dune {
 
     //! level
     int level_;
+
+    //! Son vertex on the next finer grid
+    OneDEntityImp<0>* son_;
 
     //!
     OneDEntityImp<0>* pred_;
