@@ -723,7 +723,7 @@ namespace Dune {
         }
         return x;
       }
-      int N() const { iN; };
+      int N() const { return iN; };
       const ParentBlockType & parent;
     private:
       mutable int* M;
@@ -750,7 +750,7 @@ namespace Dune {
         }
         return x;
       }
-      int N() const { iN; };
+      int N() const { return iN; };
     private:
       const Mat & A;
       const Vec & v;
@@ -869,6 +869,58 @@ namespace Dune {
 #define OP -
 #define ExpressionOpExpression ExpressionMinExpression
 #include "exprtmpl/exprexpr.inc"
+
+#define NORM one_norm
+#define NORM_CODE \
+  { \
+    typename FieldType<A>::type val=0; \
+    Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
+    ++INDENT; \
+    for (int i=0; i<a.N(); ++i) { val += one_norm(a[i]); } \
+    --INDENT; \
+    return val; \
+  }
+#define VAL_CODE { return a; }
+#include "exprtmpl/norm.inc"
+
+#define NORM two_norm2
+#define NORM_CODE \
+  { \
+    typename FieldType<A>::type val=0; \
+    Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
+    ++INDENT; \
+    for (int i=0; i<a.N(); ++i) { val += two_norm2(a[i]); } \
+    --INDENT; \
+    return val; \
+  }
+#define VAL_CODE { return a*a; }
+#include "exprtmpl/norm.inc"
+
+  template <class A>
+  typename FieldType<A>::type
+  two_norm (const ExprTmpl::Expression<A> & a)
+  {
+    return sqrt(two_norm2(a));
+  }
+
+  template <class A>
+  typename FieldType<A>::type
+  two_norm (const ExprTmpl::Vector<A> & a)
+  {
+    return sqrt(two_norm2(a));
+  }
+
+#define NORM infinity_norm
+#define NORM_CODE { \
+    typename FieldType<A>::type val=0; \
+    Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
+    ++INDENT; \
+    for (int i=0; i<a.N(); ++i) { val = std::max(val,infinity_norm(a[i])); } \
+    --INDENT; \
+    return val; \
+}
+#define VAL_CODE { return a; }
+#include "exprtmpl/norm.inc"
 
 } // namespace Dune
 

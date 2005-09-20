@@ -84,23 +84,27 @@ void test_blockblockvector()
 
   Dune::Timer stopwatch;
   stopwatch.reset();
-  for (int i=0; i<100; i++) bbv *= 2;
+  for (int i=0; i<10; i++) bbv *= 2;
   std::cout << "Time bbv*2: " << stopwatch.elapsed() << std::endl;
 #ifndef NOPRINT
-  Dune::FlatIterator<BBV> fit(bbv.begin());
-  Dune::FlatIterator<BBV> fend(bbv.end());
-  int index = 0;
-  for(; fit!=fend; ++fit)
-  {
-    BBV::field_type x;
-    x = *fit;
-    std::cout << index << "\t" << x << std::endl;
-    index++;
-  }
+  //   Dune::FlatIterator<BBV> fit(bbv.begin());
+  //   Dune::FlatIterator<BBV> fend(bbv.end());
+  //   int index = 0;
+  //   for(;fit!=fend;++fit)
+  //   {
+  //     BBV::field_type x;
+  //     x = *fit;
+  //     std::cout << index << "\t" << x << std::endl;
+  //     index++;
+  //   }
   printvector (std::cout, bv1, "bv1", "r");
   printvector (std::cout, bv2, "bv1", "r");
   printvector (std::cout, bbv, "bbv", "r");
 #endif
+  std::cout << "infinity_norm(bbv)=" << infinity_norm(bbv) << std::endl;
+  std::cout << "two_norm(bbv)=" << two_norm(bbv) << std::endl;
+  std::cout << "two_norm2(bbv)=" << two_norm2(bbv) << std::endl;
+  std::cout << "one_norm(bbv)=" << one_norm(bbv) << std::endl;
 }
 
 // namespace Dune {
@@ -257,14 +261,14 @@ void test_matrix()
 #endif
 
 #ifndef NOPRINT
-  int rowIndex[]={1};
-  FlatColIterator<const Matrix> it(A[2].begin(),rowIndex);
-  for (int i=0; i<5; i++)
-  {
-    std::cout << *it << " ";
-    ++it;
-  }
-  std::cout << std::endl;
+  //   int rowIndex[]={1};
+  //   FlatColIterator<const Matrix> it(A[2].begin(),rowIndex);
+  //   for (int i=0; i<5; i++)
+  //   {
+  //     std::cout << *it << " ";
+  //     ++it;
+  //   }
+  //   std::cout << std::endl;
 #endif
   std::cout << std::endl;
 }
@@ -276,7 +280,7 @@ int main()
   {
     //      test_fvector();
     //      test_blockvector();
-    //      test_blockblockvector();
+    test_blockblockvector();
     test_matrix<2,3,3,4>();
 #ifdef NOPRINT
     test_matrix<3,6,400000,500000>();

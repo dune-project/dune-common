@@ -91,9 +91,9 @@ int main ()
   std::cout << "Old Version\n";
 #endif
 
-  //   timing_vector<1,1000000>();
-  //   timing_vector<10,100000>();
-  //   timing_vector<100,10000>();
+  timing_vector<1,1000000>();
+  timing_vector<10,100000>();
+  timing_vector<100,10000>();
 
   //   timing_matrix<150,150,500,4000>();
   //   timing_matrix<150,150,1000,2000>();
