@@ -46,10 +46,23 @@ namespace Dune
      A %Dune grid type.
      \par IndexSetImp
      An implementation of the index set interface.
+     \par IndexSetTypes
+     A class providing the types returned by the methods of IndexSet.
    */
-  template<class GridImp, class IndexSetImp>
+  template<class GridImp, class IndexSetImp, class IndexSetTypes>
   class IndexSet {
   public:
+    /** @brief Define types needed to iterate over the entities in the index set
+     */
+    template <int cd>
+    struct Codim
+    {
+      template <PartitionIteratorType pitype>
+      struct Partition
+      {
+        typedef typename IndexSetTypes::template Codim<cd>::template Partition<pitype>::Iterator Iterator;
+      };
+    };
 
     /** @brief Map entity to index.
 
@@ -62,7 +75,12 @@ namespace Dune
       return asImp().template index<cc>(e);
     }
 
-    //! get index of an entity
+    /** @brief Map entity to index.
+
+            \param e Reference to codim cc entity. Since
+           entity knows its codimension, automatic extraction is possible.
+            \return An index in the range 0 ... Max number of entities in set - 1.
+     */
     template<class EntityType>
     int index (const EntityType& e) const
     {
@@ -98,9 +116,25 @@ namespace Dune
 
        \return reference to vector of geometry types.
      */
-    const std::vector<GeometryType>& geomTypes () const
+    const std::vector<GeometryType>& geomTypes (int codim) const
     {
-      return asImp().geomTypes();
+      return asImp().geomTypes(codim);
+    }
+
+    /** @brief Iterator to first entity of given codimension and partition type.
+     */
+    template<int cd, PartitionIteratorType pitype>
+    typename Codim<cd>::template Partition<pitype>::Iterator begin () const
+    {
+      return asImp().begin<cd,pitype>();
+    }
+
+    /** @brief Iterator to one past the last entity of given codim for partition type
+     */
+    template<int cd, PartitionIteratorType pitype>
+    typename Codim<cd>::template Partition<pitype>::Iterator end () const
+    {
+      return asImp().end<cd,pitype>();
     }
 
   private:
@@ -120,8 +154,10 @@ namespace Dune
 
      \par GridImp
      A %Dune grid type.
-     \par IndexSetImp
-     An implementation of the index set interface.
+     \par IdSetImp
+     An implementation of the id set interface.
+     \par IdTypeImp
+     The type used for the ids (which is returned by functions returning an id).
    */
   template<class GridImp, class IdSetImp, class IdTypeImp>
   class IdSet

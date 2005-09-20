@@ -826,10 +826,27 @@ namespace Dune {
    */
   //========================================================================
 
-  template<class GridImp>
-  class SGridLevelIndexSet : public IndexSet<GridImp,SGridLevelIndexSet<GridImp> >
+  template <class GridImp>
+  struct SGridLevelIndexSetTypes
   {
+    //! The types
+    template<int cd>
+    struct Codim
+    {
+      template<PartitionIteratorType pitype>
+      struct Partition
+      {
+        typedef typename GridImp::Traits::template Codim<cd>::template Partition<pitype>::LevelIterator Iterator;
+      };
+    };
+  };
+
+  template<class GridImp>
+  class SGridLevelIndexSet : public IndexSet<GridImp,SGridLevelIndexSet<GridImp>,SGridLevelIndexSetTypes<GridImp> >
+  {
+    typedef IndexSet<GridImp,SGridLevelIndexSet<GridImp>,SGridLevelIndexSetTypes<GridImp> > Base;
   public:
+
     //! constructor stores reference to a grid and level
     SGridLevelIndexSet (const GridImp& g, int l) : grid(g), level(l)
     {
@@ -857,9 +874,23 @@ namespace Dune {
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<GeometryType>& geomTypes () const
+    const std::vector<GeometryType>& geomTypes (int codim) const
     {
       return mytypes;
+    }
+
+    //! one past the end on this level
+    template<int cd, PartitionIteratorType pitype>
+    typename Base::template Codim<cd>::template Partition<pitype>::Iterator begin () const
+    {
+      return grid.lbegin<cd,pitype>(level);
+    }
+
+    //! Iterator to one past the last entity of given codim on level for partition type
+    template<int cd, PartitionIteratorType pitype>
+    typename Base::template Codim<cd>::template Partition<pitype>::Iterator end () const
+    {
+      return grid.lend<cd,pitype>(level);
     }
 
   private:
@@ -968,7 +999,9 @@ namespace Dune {
         SIntersectionIterator,SHierarchicIterator,
         SLevelIterator,
         SGridLevelIndexSet<SGrid<dim,dimworld> >,
+        SGridLevelIndexSetTypes<SGrid<dim,dimworld> >,
         SGridLevelIndexSet<SGrid<dim,dimworld> >,
+        SGridLevelIndexSetTypes<SGrid<dim,dimworld> >,
         SGridGlobalIdSet<SGrid<dim,dimworld> >,
         sgrid_persistentindextype,
         SGridGlobalIdSet<SGrid<dim,dimworld> >,
