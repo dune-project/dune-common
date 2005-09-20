@@ -113,13 +113,13 @@ namespace Dune
 
     /** @brief Map entity to array index.
 
-            \param e Reference to codim cc entity, where cc is the template parameter of the function.
+            \param e Reference to codim cc entity. The codim is extracted from the entity.
             \return An index in the range 0 ... Max number of entities in set - 1.
      */
-    template<int cc>     // this is necessary for multiple codim mappers
-    int map (const typename G::Traits::template Codim<cc>::Entity& e) const
+    template<class EntityType>     // this is necessary for multiple codim mappers
+    int map (const EntityType& e) const
     {
-      return asImp().template map<cc>(e);
+      return asImp().map(e);
     }
 
     /** @brief Map subentity of codim 0 entity to array index.
