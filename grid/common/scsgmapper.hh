@@ -22,7 +22,7 @@ namespace Dune
    * @{
    */
 
-  /** @brief Implementation base class for a single codim and single geometry type mapper.
+  /** @brief Implementation class for a single codim and single geometry type mapper.
    *
    * In this implementation of a mapper the entity set used as domain for the map consists
    * of the entities of a given codimension c for all entities in the given index set. The index
@@ -56,8 +56,8 @@ namespace Dune
             \param e Reference to codim cc entity, where cc is the template parameter of the function.
             \return An index in the range 0 ... Max number of entities in set - 1.
      */
-    template<int cc>     // this is necessary for multiple codim mappers
-    int map (const typename G::Traits::template Codim<cc>::Entity& e) const;
+    template<class EntityType>
+    int map (const EntityType& e) const;
 
     /** @brief Map subentity of codim 0 entity to array index.
 
@@ -65,7 +65,7 @@ namespace Dune
        \param i Number of codim cc subentity of e, where cc is the template parameter of the function.
        \return An index in the range 0 ... Max number of entities in set - 1.
      */
-    template<int cc>     // this is now the subentity's codim
+    template<int cc>
     int submap (const typename G::Traits::template Codim<0>::Entity& e, int i) const;
 
     /** @brief Return total number of entities in the entity set managed by the mapper.
@@ -90,14 +90,15 @@ namespace Dune
     : g(grid), is(indexset)
   {
     // check that grid has only a single geometry type
-    if (is.geomTypes().size() != 1)
+    if (is.geomTypes(c).size() != 1)
       DUNE_THROW(GridError, "mapper treats only a single codim and a single geometry type");
   }
 
   template <typename G, typename IS, int c>
-  template<int cc>
-  int SingleCodimSingleGeomTypeMapper<G,IS,c>::map (const typename G::Traits::template Codim<cc>::Entity& e) const
+  template<class EntityType>
+  int SingleCodimSingleGeomTypeMapper<G,IS,c>::map (const EntityType& e) const
   {
+    enum { cc = EntityType::codimension };
     IsTrue< cc == c >::yes();
     return is.template index<cc>(e);
   }
@@ -107,13 +108,13 @@ namespace Dune
   int SingleCodimSingleGeomTypeMapper<G,IS,c>::submap (const typename G::Traits::template Codim<0>::Entity& e, int i) const
   {
     IsTrue< cc == c >::yes();
-    return is.template subindex<cc>(e,i);
+    return is.template subIndex<cc>(e,i);
   }
 
   template <typename G, typename IS, int c>
   int SingleCodimSingleGeomTypeMapper<G,IS,c>::size () const
   {
-    return is.size(c,is.geomTypes()[0]);
+    return is.size(c,is.geomTypes(c)[0]);
   }
 
 
