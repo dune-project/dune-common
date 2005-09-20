@@ -31,53 +31,6 @@ namespace Dune
   ***********************************************************/
 
 
-  /*
-
-     see the reference elements:
-
-     linear triangular
-
-     y
-   | 2(0,1)
-   | |\
-   | | \
-   | |  \
-   | |   \
-   | |    \
-   | |_ _ _\
-   |  0(0,0)  1(1,0)
-   ||_ _ _ _ _ _ _ _
-     x
-
-     shapefns:
-
-     s0=1-x-y
-     s1=x
-     s2=y
-     ---------------------
-     linear tetrahedron
-
-     3 (0,0,1)
-     ¸¸
-   | *¸
-   | \ *¸
-   |  \  *¸
-   |   \  .' 2 (0,1,0)
-   |    .' |
-   |  .' \ |
-   ||.'_ _ \|
-
-     0       1
-     (0,0,0,)  (1,0,0)
-
-     s0=1-x-y-z
-     s1=x
-     s2=y
-     s3=z
-
-   */
-
-
 
   /***********************************************************
   * P0 shape functions for the simplex
@@ -682,14 +635,14 @@ namespace Dune
 
   private:
     int number,coeff,ent,cod;
-    ResultType a[2], b[2], c[2],aa[2][2], bb[2][2], cc[2][2];
+    ResultType a[2], b[2], c[2],aa[2][2], bb[2][2];
     FieldVector<CoordType,2> pos;
 
   };
 
 
   //specialization 2D
-  //-----------------------------------------------------------------
+  //-------------------------------------------------
   template<typename C, typename T, int d, typename S>
   class P2SimplexShapeFunctionSet;
 
@@ -699,7 +652,7 @@ namespace Dune
   {
 
   public:
-    enum {dim=2}; // dim=2 or 3
+    enum {dim=2};
     enum {comps=1};
     enum {m=6};
 
@@ -753,7 +706,6 @@ namespace Dune
   };
 
   //! These are P2 shape functions in the simplex without virtual functions
-
   // specialization for triangle
   template<typename C, typename T, int d>
   class P2SimplexShapeFunctionSetContainer;
@@ -782,108 +734,521 @@ namespace Dune
     value_type p2simplex;
   };
 
+  /*  specialization for 3D
+      A class for piecewise quadratic shape functions in a simplex geometry for tetrahedron
+      Evaluation is done at the quadrature points
+   */
+  template<typename C, typename T, int dim>
+  class P2SimplexShapeFunction;
+
+  template<typename C, typename T>
+  class P2SimplexShapeFunction<C,T,3>
+  {
+  public:
+    enum {dim=3};
+    enum {comps=1};
+    enum {m=10}; // no of basis functions=10
+
+    typedef C CoordType;
+    typedef T ResultType;
+    typedef P2SimplexShapeFunction ImplementationType;
 
 
-  // /*  specialization for 3D
-  //     A class for piecewise quadratic shape functions in a simplex geometry for triangles
-  //     Evaluation is done at the quadrature points
-  //  */
-  // template<typename C, typename T, int dim>
-  // class P2SimplexShapeFunction;
+    P2SimplexShapeFunction(int i,int en,int co)
+    {
+      number=i;
+      ent = en;
+      cod = co;
 
-  //  template<typename C, typename T>
-  //  class P2SimplexShapeFunction<C,T,3>;
+      switch(i)
+      {
+      case 0 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.0;
+        pos[1]=0.0;
+        pos[2]=0.0;
+        //--
+        coeff=2;
+        a[0]=1.0;
+        a[1]=0.5;
+        b[0]=-1.0;
+        b[1]=-1.0;
+        b[2]=-1.0;
+        c[0]=-1.0;
+        c[1]=-1.0;
+        c[2]=-1.0;
+        //x derivative
+        aa[0][0]=-3.0;
+        bb[0][0]=4.0;
+        bb[1][0]=4.0;
+        bb[2][0]=4.0;
+        //y derivative
+        aa[0][1]=-3.0;
+        bb[0][1]=4.0;
+        bb[1][1]=4.0;
+        bb[2][1]=4.0;
+        // z derivative
+        aa[0][2]=-3.0;
+        bb[0][2]=4.0;
+        bb[1][2]=4.0;
+        bb[2][2]=4.0;
+        break;
+      case 1 :
+        //--interpolation point associated with shape fn
+        pos[0]=1.0;
+        pos[1]=0.0;
+        pos[2]=0.0;
+        //--
+        coeff=2;
+        a[0]=0.0;
+        a[1]=-0.5;
+        b[0]=1.0;
+        b[1]=0.0;
+        b[2]=0.0;
+        c[0]=1.0;
+        c[1]=0.0;
+        c[2]=0.0;
+        //x derivative
+        aa[0][0]=-1.0;
+        bb[0][0]=4.0;
+        bb[1][0]=0.0;
+        bb[2][0]=0.0;
+        //y derivative
+        aa[0][1]=0.0;
+        bb[0][1]=0.0;
+        bb[1][1]=0.0;
+        bb[2][1]=0.0;
+        // z derivative
+        aa[0][2]=0.0;
+        bb[0][2]=0.0;
+        bb[1][2]=0.0;
+        bb[2][2]=0.0;
+        break;
+      case 2 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.0;
+        pos[1]=1.0;
+        pos[2]=0.0;
+        //--
+        coeff=2;
+        a[0]=0.0;
+        a[1]=-0.5;
+        b[0]=0.0;
+        b[1]=1.0;
+        b[2]=0.0;
+        c[0]=0.0;
+        c[1]=1.0;
+        c[2]=0.0;
+        //x derivative
+        aa[0][0]=0.0;
+        bb[0][0]=0.0;
+        bb[1][0]=0.0;
+        bb[2][0]=0.0;
+        //y derivative
+        aa[0][1]=-1.0;
+        bb[0][1]=0.0;
+        bb[1][1]=4.0;
+        bb[2][1]=0.0;
+        // z derivative
+        aa[0][2]=0.0;
+        bb[0][2]=0.0;
+        bb[1][2]=0.0;
+        bb[2][2]=0.0;
+      case 3 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.0;
+        pos[1]=0.0;
+        pos[2]=1.0;
+        //--
+        coeff=2;
+        a[0]=0.0;
+        a[1]=-0.5;
+        b[0]=0.0;
+        b[1]=0.0;
+        b[2]=1.0;
+        c[0]=0.0;
+        c[1]=0.0;
+        c[2]=1.0;
+        //x derivative
+        aa[0][0]=0.0;
+        bb[0][0]=0.0;
+        bb[1][0]=0.0;
+        bb[2][0]=0.0;
+        //y derivative
+        aa[0][1]=0.0;
+        bb[0][1]=0.0;
+        bb[1][1]=0.0;
+        bb[2][1]=0.0;
+        // z derivative
+        aa[0][2]=-1.0;
+        bb[0][2]=0.0;
+        bb[1][2]=0.0;
+        bb[2][2]=4.0;
+        break;
+      case 4 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.5;
+        pos[1]=0.0;
+        pos[2]=0.0;
+        //--
+        coeff=4;
+        a[0]=0.0;
+        a[1]=1.0;
+        b[0]=1.0;
+        b[1]=0.0;
+        b[2]=0.0;
+        c[0]=-1.0;
+        c[1]=-1.0;
+        c[2]=-1.0;
+        //x derivative
+        aa[0][0]=4.0;
+        bb[0][0]=-8.0;
+        bb[1][0]=-4.0;
+        bb[2][0]=-4.0;
+        //y derivative
+        aa[0][1]=0.0;
+        bb[0][1]=-4.0;
+        bb[1][1]=0.0;
+        bb[2][1]=0.0;
+        // z derivative
+        aa[0][2]=0.0;
+        bb[0][2]=-4.0;
+        bb[1][2]=0.0;
+        bb[2][2]=0.0;
+        break;
+      case 5 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.5;
+        pos[1]=0.5;
+        pos[2]=0.0;
+        //--
+        coeff=4;
+        a[0]=0.0;
+        a[1]=0.0;
+        b[0]=1.0;
+        b[1]=0.0;
+        b[2]=0.0;
+        c[0]=0.0;
+        c[1]=1.0;
+        c[2]=0.0;
+        //x derivative
+        aa[0][0]=0.0;
+        bb[0][0]=0.0;
+        bb[1][0]=4.0;
+        bb[2][0]=0.0;
+        //y derivative
+        aa[0][1]=0.0;
+        bb[0][1]=4.0;
+        bb[1][1]=0.0;
+        bb[2][1]=0.0;
+        // z derivative
+        aa[0][2]=0.0;
+        bb[0][2]=0.0;
+        bb[1][2]=0.0;
+        bb[2][2]=0.0;
+        break;
+      case 6 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.0;
+        pos[1]=0.5;
+        pos[2]=0.0;
+        //--
+        coeff=4;
+        a[0]=0.0;
+        a[1]=1.0;
+        b[0]=1.0;
+        b[1]=1.0;
+        b[2]=0.0;
+        c[0]=-1.0;
+        c[1]=-1.0;
+        c[2]=-1.0;
+        //x derivative
+        aa[0][0]=0.0;
+        bb[0][0]=0.0;
+        bb[1][0]=-4.0;
+        bb[2][0]=0.0;
+        //y derivative
+        aa[0][1]=4.0;
+        bb[0][1]=-4.0;
+        bb[1][1]=-8.0;
+        bb[2][1]=-4.0;
+        // z derivative
+        aa[0][2]=0.0;
+        bb[0][2]=0.0;
+        bb[1][2]=-4.0;
+        bb[2][2]=0.0;
+        break;
+      case 7 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.0;
+        pos[1]=0.0;
+        pos[2]=0.5;
+        //--
+        coeff=4;
+        a[0]=0.0;
+        a[1]=1.0;
+        b[0]=0.0;
+        b[1]=0.0;
+        b[2]=1.0;
+        c[0]=-1.0;
+        c[1]=-1.0;
+        c[2]=-1.0;
+        //x derivative
+        aa[0][0]=0.0;
+        bb[0][0]=0.0;
+        bb[1][0]=0.0;
+        bb[2][0]=-4.0;
+        //y derivative
+        aa[0][1]=0.0;
+        bb[0][1]=0.0;
+        bb[1][1]=0.0;
+        bb[2][1]=-4.0;
+        // z derivative
+        aa[0][2]=4.0;
+        bb[0][2]=-4.0;
+        bb[1][2]=-4.0;
+        bb[2][2]=-8.0;
+        break;
+      case 8 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.5;
+        pos[1]=0.0;
+        pos[2]=0.5;
+        //--
+        coeff=4;
+        a[0]=0.0;
+        a[1]=0.0;
+        b[0]=1.0;
+        b[1]=0.0;
+        b[2]=0.0;
+        c[0]=0.0;
+        c[1]=0.0;
+        c[2]=1.0;
+        //x derivative
+        aa[0][0]=0.0;
+        bb[0][0]=0.0;
+        bb[1][0]=0.0;
+        bb[2][0]=4.0;
+        //y derivative
+        aa[0][1]=0.0;
+        bb[0][1]=0.0;
+        bb[1][1]=0.0;
+        bb[2][1]=0.0;
+        // z derivative
+        aa[0][2]=0.0;
+        bb[0][2]=4.0;
+        bb[1][2]=0.0;
+        bb[2][2]=0.0;
+        break;
+      case 9 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.0;
+        pos[1]=0.5;
+        pos[2]=0.5;
+        //--
+        coeff=4;
+        a[0]=0.0;
+        a[1]=0.0;
+        b[0]=0.0;
+        b[1]=1.0;
+        b[2]=0.0;
+        c[0]=0.0;
+        c[1]=0.0;
+        c[2]=1.0;
+        //x derivative
+        aa[0][0]=0.0;
+        bb[0][0]=0.0;
+        bb[1][0]=0.0;
+        bb[2][0]=0.0;
+        //y derivative
+        aa[0][1]=0.0;
+        bb[0][1]=0.0;
+        bb[1][1]=0.0;
+        bb[2][1]=4.0;
+        // z derivative
+        aa[0][2]=0.0;
+        bb[0][2]=0.0;
+        bb[1][2]=4.0;
+        bb[2][2]=0.0;
+        break;
+      default :
+        std::cout<<"wrong no of shape fns? check out please"<<'\n';
+        break;
+      }
+    }
 
-  // {
 
-  // public:
+    // default constructor
+    P2SimplexShapeFunction()
+    {}
 
-  //   enum {dim=3};
-  //   enum{comps=1};
-  //   enum {m=9}; // no of basis functions=9
+    //! evaluate shape function in local coordinates
+    ResultType evaluateFunction (int comp, const FieldVector<CoordType,3>& x) const
+    {
 
-  //   typedef C CoordType;
-  //   typedef T ResultType;
-  //   typedef P2SimplexShapeFunction ImplementationType;
+      ResultType phi1=a[0];
+      ResultType phi2=a[1];
 
-  //   P2SimplexShapeFunction()
-  //     {
-
-  //     }
-
-  //  //! evaluate shape function in local coordinates
-  //   ResultType evaluateFunction (int comp, const FieldVector<CoordType,3>& x) const
-  //   {
-
-  //     ResultType phi1=a[0];
-  //     ResultType phi2=a[1];
-
-  //     for (int j=0;j<dim;++j)
-  //       {
-  //    phi1 +=b[j]*x[j];
-  //    phi2 +=c[j]*x[j];
-  //       }
-  //     ResultType phi=coeff1*phi1*phi2;
-  //     return phi;
-  //   }
+      for (int j=0; j<3; ++j)
+      {
+        phi1 +=b[j]*x[j];
+        phi2 +=c[j]*x[j];
+      }
+      ResultType phi=coeff*phi1*phi2;
+      return phi;
+    }
 
 
-  //   ResultType evaluateDerivative (int comp, int dir, const FieldVector<CoordType,3>& x) const
+    ResultType evaluateDerivative (int comp, int dir, const FieldVector<CoordType,3>& x) const
 
-  //   {
+    {
 
-  //     ResultType deriv1=aa[0];
-  //     ResultType deriv2=aa[1];
-  //     for (int j=0;j<dim;++j)
-  //       {
-  //    deriv1 +=bb[j]*x[j];
-  //    deriv2 +=cc[j]*x[j];
-  //       }
+      ResultType deriv=aa[0][dir];
 
-  //     ResultType deriv = coeff2*deriv1*deriv2;
-  //     return dd[dir]*deriv;
-  //   }
+      for (int j=0; j<3; ++j)
+      {
+        deriv +=bb[j][dir]*x[j];
+      }
 
+      return deriv;
+
+    }
 
 
-  //   //! consecutive number of associated dof within element
-  //   int localindex (int comp) const
-  //   {
-  //     return number;
-  //   }
+    //! consecutive number of associated dof within element
+    int localindex (int comp) const
+    {
+      return number;
+    }
 
-  //   //! codim of associated dof
-  //   int codim () const
-  //   {
-  //     return cod;
-  //   }
+    //! codim of associated dof
+    int codim () const
+    {
+      return cod;
+    }
 
-  //   //! entity (of codim) of associated dof
-  //   int entity () const
-  //   {
-  //     return ent;
-  //   }
+    //! entity (of codim) of associated dof
+    int entity () const
+    {
+      return ent;
+    }
 
-  //   //! consecutive number of dof within entity
-  //   int entityindex () const
-  //   {
-  //     return 0;
-  //   }
+    //! consecutive number of dof within entity
+    int entityindex () const
+    {
+      return 0;
+    }
 
-  //   //! interpolation point associated with shape function
-  //   const FieldVector<CoordType,dim>& position () const
-  //   {
-  //     return pos;
-  //   }
+    //! interpolation point associated with shape function
+    const FieldVector<CoordType,dim>& position () const
+    {
+      return pos;
+    }
 
-  // private:
-  //   int number, coeff1, ent, cod, count0, count1, count;
-  //   int id[dim];
-  //   ResultType a[dim], b[dim], c[dim];
-  //   //FieldVector<CoordType,d> pos;
+  private:
 
-  // };
+    int number,coeff,ent,cod;
+    ResultType a[2], b[3], c[3],aa[3][3], bb[3][3];
+    FieldVector<CoordType,3> pos;
 
-  /** @} */
+
+  };
+
+
+  //specialization 3D
+  //-----------------------
+  template<typename C, typename T, int d, typename S>
+  class P2SimplexShapeFunctionSet;
+
+  template<typename C, typename T,typename S>
+  class P2SimplexShapeFunctionSet<C,T,3,S>
+
+  {
+
+  public:
+    enum {dim=3};
+    enum {comps=1};
+    enum {m=10};
+
+    typedef C CoordType;
+    typedef T ResultType;
+    typedef S value_type;
+    typedef typename S::ImplementationType Imp; // Imp is either S or derived from S
+    //! make a shape fn object
+    P2SimplexShapeFunctionSet()
+    {
+      ReferenceSimplex<C,3> tetrahed;
+      int j=0;
+      for (int c=3; c>=1; --c)
+        for(int e=0; e<tetrahed.size(c); ++e)
+        {
+          sf[j] = Imp(j,e,c);
+          j++;
+        }
+    }
+
+
+    //! return total number of shape functions
+    int size () const
+    {
+      return m;
+    }
+    //! total number of shape functions associated with entity in codim
+    int size (int entity, int codim) const
+    {
+      return 1;
+    }
+    //! random access to shape functions
+    const value_type& operator[] (int i) const
+    {
+      return sf[i]; // ok derived class reference goes for base class reference
+    }
+
+    //! return order
+    int order () const
+    {
+      return 2;
+    }
+
+    //! return type of element
+    GeometryType type () const
+    {
+      return tetrahedron;
+    }
+  private:
+    S sf[m];
+  };
+
+
+  //! These are P2 shape functions in the simplex without virtual functions
+
+  // specialization for tetrahedron
+  template<typename C, typename T, int d>
+  class P2SimplexShapeFunctionSetContainer;
+
+  template<typename C,typename T>
+  class P2SimplexShapeFunctionSetContainer<C,T,3>
+  {
+
+  public:
+
+    enum {dim=3};
+    enum {comps=1};
+    enum {maxsize=10};
+
+    // exported types
+    typedef C CoordType;
+    typedef T ResultType;
+    typedef P2SimplexShapeFunctionSet<C,T,dim,P2SimplexShapeFunction<C,T,dim> > value_type;
+
+    const value_type& operator() (GeometryType type, int order) const
+    {
+      if((type==simplex) || (type==tetrahedron) ) return p2simplex;
+      DUNE_THROW(NotImplemented,"type not yet implemented");
+    }
+  private:
+    value_type p2simplex;
+  };
+
 }
 #endif
