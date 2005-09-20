@@ -363,6 +363,7 @@ WARN_LOGFILE           =
 
 INPUT                  = mainpage \
                          ../../grid \
+                         ../../disc \
                          ../../fem \
                          ../../common \
                          ../../quadrature \
