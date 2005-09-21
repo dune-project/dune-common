@@ -127,7 +127,7 @@ namespace Dune {
       arg_  = &Arg.argument();
       dest_ = &Dest.destination();
       assert(arg_ != NULL); assert(dest_ != NULL);
-      dest_.clear();
+      dest_->clear();
     };
 
     //! set argument and dest to NULL
