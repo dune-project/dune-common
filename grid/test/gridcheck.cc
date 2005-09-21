@@ -442,14 +442,16 @@ struct GridInterface
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
     g.levelIndexSet(0).size(0, Dune::simplex);
-    g.levelIndexSet(0).geomTypes();
+    for (int codim = 0; codim < Grid::dimension; codim++)
+      g.levelIndexSet(0).geomTypes(codim);
 
     // Instantiate all methods of LeafIndexSet
     g.leafIndexSet().index(*g.template lbegin<0>(0));
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
     g.leafIndexSet().size(0, Dune::simplex);
-    g.leafIndexSet().geomTypes();
+    for (int codim = 0; codim < Grid::dimension; codim++)
+      g.leafIndexSet().geomTypes(codim);
 
     // Instantiate all methods of LocalIdSet
     /** \todo Test for subindex is missing, because I don't know yet
