@@ -1026,6 +1026,9 @@ namespace Dune {
     //! define type used for coordinates in grid module
     typedef sgrid_ctype ctype;
 
+    //! return GridIdentifierType of Grid, i.e. SGrid_Id or AlbertGrid_Id ...
+    GridIdentifier type() const { return SGrid_Id; };
+
     /*! Return maximum level defined in this grid. Levels are numbered
           0 ... maxlevel with 0 the coarsest level.   */
     int maxlevel() const;
