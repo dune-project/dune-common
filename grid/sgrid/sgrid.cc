@@ -973,9 +973,9 @@ namespace Dune {
         h[L][i] = (H[i]-low[i])/((sgrid_ctype)N[L][i]);
       L++;
 
-      std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
-      for (int i=1; i<dim; i++) std::cout << "," <<  N[L-1][i];
-      std::cout << ")" << std::endl;
+      //     std::cout << "level=" << L-1 << " size=(" << N[L-1][0];
+      //     for (int i=1; i<dim; i++) std::cout << "," <<  N[L-1][i];
+      //     std::cout << ")" << std::endl;
 
       indexsets.push_back( new SGridLevelIndexSet<SGrid<dim,dimworld> >(*this,maxlevel()) );
     }
