@@ -699,39 +699,40 @@ namespace Dune
         subentityindex[3][1][2][3]=1;
 
         // edge indices on face 0
-        subentityindex[0][1][0][2]=0;
-        subentityindex[0][1][1][2]=1;
-        subentityindex[0][1][2][2]=2;
+        subentityindex[0][1][0][2]=5;
+        subentityindex[0][1][1][2]=4;
+        subentityindex[0][1][2][2]=1;
         // edge indices on face 1
-        subentityindex[1][1][0][2]=3;
+        subentityindex[1][1][0][2]=5;
         subentityindex[1][1][1][2]=2;
-        subentityindex[1][1][2][2]=4;
+        subentityindex[1][1][2][2]=3;
         // edge indices on face 2
-        subentityindex[2][1][0][2]=5;
-        subentityindex[2][1][1][2]=4;
-        subentityindex[2][1][2][2]=1;
+        subentityindex[2][1][0][2]=4;
+        subentityindex[2][1][1][2]=3;
+        subentityindex[2][1][2][2]=0;
         // edge indices on face 3
-        subentityindex[3][1][0][2]=5;
-        subentityindex[3][1][1][2]=3;
-        subentityindex[3][1][2][2]=0;
+        subentityindex[3][1][0][2]=1;
+        subentityindex[3][1][1][2]=0;
+        subentityindex[3][1][2][2]=2;
+
         // node indices on edge 0
-        subentityindex[0][2][0][3]=1;
-        subentityindex[0][2][1][3]=2;
+        subentityindex[0][2][0][3]=0;
+        subentityindex[0][2][1][3]=1;
         // node indices on edge 1
         subentityindex[1][2][0][3]=1;
-        subentityindex[1][2][1][3]=3;
+        subentityindex[1][2][1][3]=2;
         // node indices on edge 2
-        subentityindex[2][2][0][3]=2;
-        subentityindex[2][2][1][3]=3;
+        subentityindex[2][2][0][3]=0;
+        subentityindex[2][2][1][3]=2;
         // node indices on edge 3
         subentityindex[3][2][0][3]=0;
-        subentityindex[3][2][1][3]=2;
+        subentityindex[3][2][1][3]=3;
         // node indices on edge 4
-        subentityindex[4][2][0][3]=0;
+        subentityindex[4][2][0][3]=1;
         subentityindex[4][2][1][3]=3;
         // node indices on edge 5
-        subentityindex[5][2][0][3]=0;
-        subentityindex[5][2][1][3]=1;
+        subentityindex[5][2][0][3]=2;
+        subentityindex[5][2][1][3]=3;
 
         for(int j=0; j<dim; ++j)
         {
@@ -745,18 +746,18 @@ namespace Dune
           //face 3 (nodes 0,1,2)
           pos[3][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[2][3][j])/3.0;
 
-          //edge 0 (nodes 1,2)
-          pos[0][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
-          //edge 1 (nodes 1,3)
-          pos[1][2][j]=(pos[1][3][j]+pos[3][3][j])/2.0;
-          //edge 2 (nodes 2,3)
-          pos[2][2][j]=(pos[2][3][j]+pos[3][3][j])/2.0;
-          //edge 3 (nodes 0,2)
-          pos[3][2][j]=(pos[0][3][j]+pos[2][3][j])/2.0;
-          //edge 4 (nodes 0,3)
-          pos[4][2][j]=(pos[0][3][j]+pos[3][3][j])/2.0;
-          //edge 5 (nodes 0,1)
-          pos[5][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
+          //edge 0 (nodes 0,1)
+          pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
+          //edge 1 (nodes 1,2)
+          pos[1][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+          //edge 2 (nodes 0,2)
+          pos[2][2][j]=(pos[0][3][j]+pos[2][3][j])/2.0;
+          //edge 3 (nodes 0,3)
+          pos[3][2][j]=(pos[0][3][j]+pos[3][3][j])/2.0;
+          //edge 4 (nodes 1,3)
+          pos[4][2][j]=(pos[1][3][j]+pos[3][3][j])/2.0;
+          //edge 5 (nodes 2,3)
+          pos[5][2][j]=(pos[2][3][j]+pos[3][3][j])/2.0;
         }
       }
       else
