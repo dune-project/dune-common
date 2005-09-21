@@ -23,7 +23,8 @@ namespace Dune {
     OneDEntityImp(int level, double pos) : pos_(pos), level_(level), son_(NULL), pred_(NULL), succ_(NULL)
     {}
 
-    OneDEntityImp(int level, const FieldVector<double, 1>& pos) : pos_(pos), level_(level), son_(NULL), pred_(NULL), succ_(NULL)
+    OneDEntityImp(int level, const FieldVector<double, 1>& pos, unsigned int id)
+      : pos_(pos), id_(id), level_(level), son_(NULL), pred_(NULL), succ_(NULL)
     {}
     //private:
     bool isLeaf() const {
@@ -59,7 +60,7 @@ namespace Dune {
   {
   public:
 
-    OneDEntityImp(int level) : level_(level), pred_(NULL), succ_(NULL)
+    OneDEntityImp(int level, unsigned int id) : id_(id), level_(level), pred_(NULL), succ_(NULL)
     {
       sons_[0] = sons_[1] = NULL;
     }
