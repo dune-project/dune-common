@@ -1245,7 +1245,7 @@ namespace Dune
 
       };
 
-      typedef IndexSet<GridImp,LevelIndexSetImp> LevelIndexSet;
+      typedef IndexSet<GridImp,LevelIndexSetImp,DefaultLevelIteratorTypes<GridImp> > LevelIndexSet;
       typedef LeafIndexSetImp LeafIndexSet;
       typedef IdSet<GridImp,IdSetImp,IdType> GlobalIdSet;
       typedef IdSet<GridImp,IdSetImp,IdType> LocalIdSet;
@@ -1592,7 +1592,7 @@ namespace Dune
     // return true if element is neihter interior nor ghost
     bool isNoElement( const ALBERTA MACRO_EL * mel) const;
 
-    const std::vector < GeometryType > & geomTypes () const { return geomTypes_; }
+    const std::vector < GeometryType > & geomTypes (int codim) const { return geomTypes_; }
 
   private:
     friend class Conversion<AlbertaGrid<dim, dimworld>, HasObjectStream>;

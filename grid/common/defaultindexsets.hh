@@ -209,7 +209,7 @@ namespace Dune {
     int size ( int codim ) const
     {
       int s = 0;
-      const std::vector< GeometryType > & types = set_.geomTypes();
+      const std::vector< GeometryType > & types = set_.geomTypes(codim);
       for(unsigned int i=0; i<types.size(); i++)
         s += set_.size(codim,types[i]);
       return s;
@@ -230,9 +230,9 @@ namespace Dune {
     }
 
     //! wrap geomTypes method of set
-    const std::vector< GeometryType > & geomTypes () const
+    const std::vector< GeometryType > & geomTypes (int codim) const
     {
-      return set_.geomTypes();
+      return set_.geomTypes(codim);
     }
 
     //! return index
@@ -355,7 +355,7 @@ namespace Dune {
     int size ( int codim ) const
     {
       int s = 0;
-      const std::vector< GeometryType > & types = set_.geomTypes();
+      const std::vector< GeometryType > & types = set_.geomTypes(codim);
       for(unsigned int i=0; i<types.size(); i++)
         s += set_.size(codim,types[i]);
       return s;
@@ -385,9 +385,9 @@ namespace Dune {
     }
 
     //! wrap geomTypes method of set
-    const std::vector< GeometryType > & geomTypes () const
+    const std::vector< GeometryType > & geomTypes (int codim) const
     {
-      return set_.geomTypes();
+      return set_.geomTypes(codim);
     }
 
     //! return type of index set (for input/output)
@@ -476,7 +476,7 @@ namespace Dune {
     int size ( int codim ) const
     {
       int s = 0;
-      const std::vector< GeometryType > & types = set_.geomTypes();
+      const std::vector< GeometryType > & types = set_.geomTypes(codim);
       for(unsigned int i=0; i<types.size(); i++)
         s += set_.size(codim,types[i]);
       return s;
@@ -505,9 +505,9 @@ namespace Dune {
     }
 
     //! wrap geomTypes method of set
-    const std::vector< GeometryType > & geomTypes () const
+    const std::vector< GeometryType > & geomTypes (int codim) const
     {
-      return set_.geomTypes();
+      return set_.geomTypes(codim);
     }
 
     //! return type (for Grape In/Output)
@@ -541,13 +541,31 @@ namespace Dune {
     }
   };
 
+
+  template <class GridImp>
+  struct DefaultLevelIteratorTypes
+  {
+    //! The types
+    template<int cd>
+    struct Codim
+    {
+      template<PartitionIteratorType pitype>
+      struct Partition
+      {
+        typedef typename GridImp::Traits::template Codim<cd>::template Partition<pitype>::LevelIterator Iterator;
+      };
+    };
+  };
+
   /*! \brief
      DefaultLevelIndexSet creates a LevelIndexSet for a Grid by using its
      HierarchicIndexSet
    */
   template <class GridImp>
   class DefaultLevelIndexSet :
-    public IndexSet< GridImp, DefaultLevelIndexSet <GridImp> >
+    public IndexSet< GridImp,
+        DefaultLevelIndexSet <GridImp>,
+        DefaultLevelIteratorTypes<GridImp> >
 
   {
     typedef GridImp GridType;
@@ -631,9 +649,9 @@ namespace Dune {
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<GeometryType>& geomTypes () const
+    const std::vector<GeometryType>& geomTypes (int codim) const
     {
-      return grid_.geomTypes();
+      return grid_.geomTypes(codim);
     }
 
   private:

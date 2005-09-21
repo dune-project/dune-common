@@ -617,10 +617,10 @@ namespace Dune
 
     maxlevel = grid_.maxlevel();
 
-    for(unsigned int i=0; i<leafset_.geomTypes().size(); i++)
+    for(unsigned int i=0; i<leafset_.geomTypes(0).size(); i++)
     {
-      noe += leafset_.size(0,leafset_.geomTypes()[i]);
-      nov += leafset_.size(dim,leafset_.geomTypes()[i]);
+      noe += leafset_.size(0,leafset_.geomTypes(0)[i]);
+      nov += leafset_.size(dim,leafset_.geomTypes(dim)[i]);
     }
 
     hel_.display = (void *) this;
