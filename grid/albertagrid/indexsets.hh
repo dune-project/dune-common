@@ -70,9 +70,10 @@ namespace Dune {
     }
 
     //! return geometry types this set has indices for
-    const std::vector< GeometryType > & geomTypes() const
+    const std::vector< GeometryType > & geomTypes(int codim) const
     {
-      return grid_.geomTypes();
+      // returns all simplex
+      return grid_.geomTypes(codim);
     }
 
   private:
