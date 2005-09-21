@@ -276,6 +276,17 @@ namespace Dune {
     //! number of leaf entities per codim in this process
     int size (int codim) const
     {
+      if (codim==0)
+      {
+        if (dim==2) return size(codim,simplex)+size(codim,cube);
+        if (dim==3) return size(codim,simplex)+size(codim,cube)+size(codim,pyramid)+size(codim,prism);
+      }
+      if (codim==dim)
+      {
+        if (dim==2) return size(codim,simplex);
+        if (dim==3) return size(codim,simplex);
+      }
+
       DUNE_THROW(NotImplemented, "not implemented");
       return 0;
     }
@@ -283,15 +294,17 @@ namespace Dune {
     //! number of entities per level, codim and geometry type in this process
     int size (int level, int codim, GeometryType type) const
     {
-      DUNE_THROW(NotImplemented, "not implemented");
-      return 0;
+      return this->levelIndexSet(level).size(codim,type);
+      //DUNE_THROW(NotImplemented, "not implemented");
+      //return 0;
     }
 
     //! number of leaf entities per codim and geometry type in this process
     int size (int codim, GeometryType type) const
     {
-      DUNE_THROW(NotImplemented, "not implemented");
-      return 0;
+      return this->leafIndexSet().size(codim,type);
+      //DUNE_THROW(NotImplemented, "not implemented");
+      //return 0;
     }
 
     /** \brief Access to the GlobalIdSet */
