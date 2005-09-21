@@ -60,9 +60,9 @@ namespace Dune {
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<GeometryType>& geomTypes () const
+    const std::vector<GeometryType>& geomTypes (int codim) const
     {
-      return grid_.geomTypes();
+      return grid_.geomTypes(codim);
     }
 
   private:
