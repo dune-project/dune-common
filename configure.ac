@@ -150,7 +150,13 @@ echo
 AC_CONFIG_FILES([Makefile
 	 bin/Makefile
 	 common/Makefile
-         common/test/Makefile
+	 common/test/Makefile
+	 disc/Makefile
+	 disc/functions/Makefile
+	 disc/groundwater/Makefile
+	 disc/operators/Makefile
+	 disc/shapefunctions/Makefile
+	 disc/shapefunctions/lagrange/Makefile
          fem/Makefile
          fem/common/Makefile
          fem/dgspace/Makefile
