@@ -230,7 +230,7 @@ namespace Dune {
       return grid_.template getRealEntity<0>(e).template subLeafIndex<cc>(i);
     }
 
-    //! get number of entities of given codim, type and level (the level is known to the object)
+    //! get number of entities of given codim and type
     int size (int codim, GeometryType type) const
     {
       if (codim==dim) {
