@@ -187,6 +187,7 @@ struct ZeroEntityMethodCheck<Grid, 0, true>
     e.template count<0>();
     e.template entity<0>(0);
     e.template subIndex<0>(0);
+
   }
   ZeroEntityMethodCheck ()
   {
@@ -217,6 +218,50 @@ struct ZeroEntityMethodCheck<Grid, 0, false>
     c = check;
   }
   void (*c)(Entity &e);
+};
+
+// IntersectionIterator interface check
+template <class Grid>
+struct IntersectionIteratorInterface
+{
+  typedef typename Grid::template Codim<0>::IntersectionIterator IntersectionIterator;
+  enum { dim = Grid::dimension };
+  typedef typename Grid::ctype ct;
+
+  static void check (IntersectionIterator &i)
+  {
+    // increment / equality / ...
+    IntersectionIterator j = i;
+    j++;
+    i == j;
+    i != j;
+
+    // state
+    i.boundary();
+    i.neighbor();
+
+    // neighbouring elements
+    i.inside();
+    i.outside();
+
+    // geometry
+    i.intersectionSelfLocal();
+    i.intersectionNeighborLocal();
+    i.intersectionGlobal();
+
+    i.numberInSelf();
+    i.numberInNeighbor();
+
+    Dune::FieldVector<ct, dim-1> v(0);
+    i.outerNormal(v);
+    i.integrationOuterNormal(v);
+    i.unitOuterNormal(v);
+  }
+  IntersectionIteratorInterface ()
+  {
+    c = check;
+  }
+  void (*c)(IntersectionIterator&);
 };
 
 // check codim-entity and pass on to codim + 1
@@ -290,6 +335,7 @@ struct EntityInterface<Grid, 0, dim, true>
     // intersection iterator
     e.ibegin();
     e.iend();
+    IntersectionIteratorInterface<Grid>(e.ibegin());
 
     // hierarchic iterator
     e.hbegin(0);
@@ -594,6 +640,9 @@ void assertNeighbor (Grid &g)
 {
   typedef typename Grid::template Codim<0>::LevelIterator LevelIterator;
   typedef typename Grid::template Codim<0>::IntersectionIterator IntersectionIterator;
+  enum { dim = Grid::dimension };
+  typedef typename Grid::ctype ct;
+
   LevelIterator e = g.template lbegin<0>(0);
   const LevelIterator eend = g.template lend<0>(0);
   LevelIterator next = e; ++next;
@@ -605,12 +654,31 @@ void assertNeighbor (Grid &g)
     {
       IntersectionIterator endit = e->iend();
       IntersectionIterator it = e->ibegin();
+      // state
+      it.boundary();
+      it.neighbor();
+      // check id
       assert(globalid.id(*e) >= 0);
       assert(it != endit);
+      // for all intersections
       for(; it != endit; ++it)
       {
+        // check id
         assert(globalid.id(*(it.inside())) ==
                globalid.id(*e));
+        // geometry
+        it.intersectionSelfLocal();
+        it.intersectionNeighborLocal();
+        it.intersectionGlobal();
+        // numbering
+        it.numberInSelf();
+        it.numberInNeighbor();
+        // normal vectors
+        Dune::FieldVector<ct, dim-1> v(0);
+        it.outerNormal(v);
+        it.integrationOuterNormal(v);
+        it.unitOuterNormal(v);
+        // search neighbouring cell
         if (it.neighbor())
         {
           assert(globalid.id(*(it.outside())) >= 0);
