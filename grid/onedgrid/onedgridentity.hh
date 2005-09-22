@@ -285,7 +285,7 @@ namespace Dune {
     int subIndex (int i) const {
       assert(i==0 || i==1);
       assert(cc==0 || cc==1);
-      return entity<cc>(i)->index();
+      return target_->vertex_[i]->levelIndex_;
     }
 
     /** \brief Provide access to sub entity i of given codimension. Entities
