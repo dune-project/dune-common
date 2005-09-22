@@ -311,7 +311,7 @@ namespace Dune
       temp = temp<<j;
       result.digit[i] = (unsigned short) (temp&bitmask);
       temp = temp>>bits;
-      if (i+1<n)
+      if (i+1<(int)n)
         result.digit[i+1] = result.digit[i+1]|temp;
     }
 
