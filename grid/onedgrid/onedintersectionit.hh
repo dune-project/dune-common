@@ -155,10 +155,10 @@ namespace Dune {
 
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    FieldVector<OneDCType, dimworld>& unitOuterNormal (const FieldVector<OneDCType, dim-1>& local);
+    FieldVector<OneDCType, dimworld>& unitOuterNormal (const FieldVector<OneDCType, dim-1>& local) const;
 
     //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<OneDCType, dimworld>& unitOuterNormal ();
+    FieldVector<OneDCType, dimworld>& unitOuterNormal () const;
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
@@ -202,7 +202,7 @@ namespace Dune {
     OneDEntityImp<1>* center_;
 
     //! vector storing the outer normal
-    FieldVector<OneDCType, dimworld> outerNormal_;
+    mutable FieldVector<OneDCType, dimworld> outerNormal_;
 
 #if 0
     //! pointer to element holding the self_local and self_global information.
