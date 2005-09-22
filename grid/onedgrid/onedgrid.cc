@@ -10,6 +10,7 @@
 //    specialization of member templates
 //
 // ///////////////////////////////////////////////////////////////
+
 namespace Dune {
 
   template <int codim>
@@ -18,41 +19,31 @@ namespace Dune {
   template <>
   struct OneDGridLevelIteratorFactory<1>
   {
-    template <PartitionIteratorType PiType>
+    template <Dune::PartitionIteratorType PiType>
     static Dune::OneDGridLevelIterator<1,PiType, const Dune::OneDGrid<1,1> >
-    lbegin(const Dune::OneDGrid<1,1> * g, int level);
+    lbegin(const Dune::OneDGrid<1,1> * g, int level) {
+      if (level<0 || level>g->maxlevel())
+        DUNE_THROW(Dune::GridError, "LevelIterator in nonexisting level " << level << " requested!");
+
+      return Dune::OneDGridLevelIterator<1,Dune::All_Partition, const Dune::OneDGrid<1,1> >(g->vertices[level].begin);
+    }
+
   };
 
   template <>
   struct OneDGridLevelIteratorFactory<0>
   {
-    template <PartitionIteratorType PiType>
+    template <Dune::PartitionIteratorType PiType>
     static Dune::OneDGridLevelIterator<0,PiType, const Dune::OneDGrid<1,1> >
-    lbegin(const Dune::OneDGrid<1,1> * g, int level);
+    lbegin(const Dune::OneDGrid<1,1> * g, int level) {
+      if (level<0 || level>g->maxlevel())
+        DUNE_THROW(Dune::GridError, "LevelIterator in nonexisting level " << level << " requested!");
+
+      return Dune::OneDGridLevelIterator<0,PiType, const Dune::OneDGrid<1,1> >(g->elements[level].begin);
+    }
+
   };
 
-}
-
-template <Dune::PartitionIteratorType PiType>
-inline Dune::OneDGridLevelIterator<1,PiType, const Dune::OneDGrid<1,1> >
-Dune::OneDGridLevelIteratorFactory<1>::lbegin (const OneDGrid<1,1> * g, int level)
-{
-  if (level<0 || level>g->maxlevel())
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  OneDGridLevelIterator<1,All_Partition, const Dune::OneDGrid<1,1> > it(g->vertices[level].begin);
-  return it;
-}
-
-template <Dune::PartitionIteratorType PiType>
-inline Dune::OneDGridLevelIterator<0,PiType, const Dune::OneDGrid<1,1> >
-Dune::OneDGridLevelIteratorFactory<0>::lbegin (const OneDGrid<1,1> * g, int level)
-{
-  if (level<0 || level>g->maxlevel())
-    DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
-
-  OneDGridLevelIterator<0,PiType, const Dune::OneDGrid<1,1> > it(g->elements[level].begin);
-  return it;
 }
 
 
