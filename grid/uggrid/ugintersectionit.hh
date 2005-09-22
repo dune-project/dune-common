@@ -101,18 +101,18 @@ namespace Dune {
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    LocalGeometry& intersectionSelfLocal () const;
+    const LocalGeometry& intersectionSelfLocal () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    Geometry& intersectionGlobal () const;
+    const Geometry& intersectionGlobal () const;
 
     //! local number of codim 1 entity in self where intersection is contained in
     int numberInSelf () const;
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    LocalGeometry& intersectionNeighborLocal () const;
+    const LocalGeometry& intersectionNeighborLocal () const;
 
     //! local number of codim 1 entity in neighbor where intersection is contained
     int numberInNeighbor () const;
@@ -131,7 +131,7 @@ namespace Dune {
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
-    UGGridGeometry<dim-1,dim,GridImp> fakeNeigh_;
+    UGMakeableGeometry<dim-1,dim,GridImp> fakeNeigh_;
 
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
