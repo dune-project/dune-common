@@ -144,14 +144,14 @@ inline int UGGridIntersectionIterator<GridImp>::
 numberInNeighbor () const
 {
   DUNE_THROW(NotImplemented, "The renumbering is missing!");
-  const typename TargetType<0,GridImp::dimensionworld>::T* other = UG_NS<dimworld>::NbElem(center_, neighborCount_);
+  typename TargetType<0,GridImp::dimensionworld>::T* other = UG_NS<dimworld>::NbElem(center_, neighborCount_);
 
   /** \bug The whole renumbering is missing */
   const int nSides = UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(other);
 
   int i;
-  for (i=0; i<Sides_Of_Elem(other); i++)
-    if (NbElem(other,i) == center_)
+  for (i=0; i<UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(other); i++)
+    if (UG_NS<GridImp::dimensionworld>::NbElem(other,i) == center_)
       break;
 
   return (i+nSides-1)%nSides;
