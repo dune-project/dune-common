@@ -1243,7 +1243,8 @@ namespace Dune {
     // Index classes need access to the real entity
     friend class Dune::SGridLevelIndexSet<Dune::SGrid<dim,dimworld> >;
     friend class Dune::SGridGlobalIdSet<Dune::SGrid<dim,dimworld> >;
-
+    friend class Dune::SIntersectionIterator<const Dune::SGrid<dim,dimworld> >;
+#if 1
     template<int codim>
     SEntity<codim,dim,const SGrid<dim,dimworld> >& getRealEntity(typename Traits::template Codim<codim>::Entity& e )
     {
@@ -1255,7 +1256,7 @@ namespace Dune {
     {
       return e.realEntity;
     }
-
+#endif
     template<int codim_, int dim_, class GridImp_, template<int,int,class> class EntityImp_>
     friend class Entity;
 
