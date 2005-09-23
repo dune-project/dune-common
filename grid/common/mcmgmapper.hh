@@ -65,8 +65,17 @@ namespace Dune
         for (int i=0; i<is.geomTypes(c).size(); i++)
           if (layout.contains(c,is.geomTypes(c)[i]))
           {
-            offset[c][is.geomTypes(c)[i]] = n;
-            n += is.size(c,is.geomTypes(c)[i]);
+            if (c<G::dimension-1)
+            {
+              offset[c][is.geomTypes(c)[i]] = n;
+              n += is.size(c,is.geomTypes(c)[i]);
+            }
+            else
+            {
+              offset[c][cube] = n;
+              offset[c][simplex] = n;
+              n += is.size(c,is.geomTypes(c)[i]);
+            }
           }
     }
 
