@@ -43,17 +43,21 @@ namespace Dune
     // level information
     for (int level=0; level<=grid.maxlevel(); level++)
     {
-      std::cout << prefix << "level " << level
-                << ": elements=" << grid.size(level,0)
-                << " vertices=" << grid.size(level,dim)
-                << std::endl;
+      std::cout << prefix << "level " << level;
+      for (int cd=0; cd<=dim; cd++)
+      {
+        std::cout << " codim[" << cd << "]=" << grid.size(level,cd);
+      }
+      std::cout << std::endl;
     }
 
     // leaf information
-    std::cout << prefix << "leaf:"
-              << " elements=" << grid.size(0)
-              << " vertices=" << grid.size(dim)
-              << std::endl;
+    std::cout << prefix << "leaf   ";
+    for (int cd=0; cd<=dim; cd++)
+    {
+      std::cout << " codim[" << cd << "]=" << grid.size(cd);
+    }
+    std::cout << std::endl;
 
     return;
   }
@@ -105,6 +109,21 @@ namespace Dune
                 << ")"
                 << " first=(" << it->geometry()[0] << ")"
                 << std::endl;
+
+      std::cout << prefix << "codim " << dim << " subindex";
+      for (int i=0; i<it->template count<dim>(); i++)
+      {
+        std::cout << " " << i << ":" << grid.levelIndexSet(level).template subIndex<dim>(*it,i);
+      }
+      std::cout << std::endl;
+
+      std::cout << prefix << "codim " << dim-1 << " subindex";
+      for (int i=0; i<it->template count<dim-1>(); i++)
+      {
+        std::cout << " " << i << ":" << grid.levelIndexSet(level).template subIndex<dim-1>(*it,i);
+      }
+      std::cout << std::endl;
+
     }
 
     return;
@@ -157,6 +176,21 @@ namespace Dune
                 << ")"
                 << " first=(" << it->geometry()[0] << ")"
                 << std::endl;
+
+      std::cout << prefix << "codim " << dim << " subindex";
+      for (int i=0; i<it->template count<dim>(); i++)
+      {
+        std::cout << " " << i << ":" << grid.leafIndexSet().template subIndex<dim>(*it,i);
+      }
+      std::cout << std::endl;
+
+      std::cout << prefix << "codim " << dim-1 << " subindex";
+      for (int i=0; i<it->template count<dim-1>(); i++)
+      {
+        std::cout << " " << i << ":" << grid.leafIndexSet().template subIndex<dim-1>(*it,i);
+      }
+      std::cout << std::endl;
+
     }
 
     return;
