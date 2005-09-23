@@ -282,10 +282,28 @@ inline void Dune::UGGrid < dim, dimworld >::init(unsigned int heapSize, unsigned
 
   if (numOfUGGrids==0) {
 
-    char* nfarg = "newformat DuneFormat";
-    if (UG_NS<dim>::CreateFormatCmd(1, &nfarg))
-      DUNE_THROW(GridError, "UG" << dim << "d::CreateFormat() returned and error code!");
+    if (dim==2)
+    {
+      char* nfarg = "newformat DuneFormat";
+      if (UG_NS<dim>::CreateFormatCmd(1, &nfarg))
+        DUNE_THROW(GridError, "UG" << dim << "d::CreateFormat() returned and error code!");
+    }
+    if (dim==3)
+    {
+      char* newArgs[2];
+      for (int i=0; i<2; i++)
+        newArgs[i] = (char*)::malloc(50*sizeof(char));
 
+      sprintf(newArgs[0], "newformat DuneFormat" );
+      sprintf(newArgs[1], "V s1 : vt 1" );             // generates side vectors in 3D
+
+      if (UG_NS<dim>::CreateFormatCmd(2, newArgs))
+        DUNE_THROW(GridError, "UG" << dim << "d::CreateFormat() returned and error code!");
+
+      for (int i=0; i<2; i++)
+        free(newArgs[i]);
+
+    }
   }
 
   numOfUGGrids++;
@@ -394,16 +412,28 @@ template < int dim, int dimworld >
 inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
 {
 #ifndef ModelP
-  switch (codim) {
-  case 0 :
-    return multigrid_->grids[level]->nElem[0];
-  case dim :
-    return multigrid_->grids[level]->nNode[0];
-  default :
-    DUNE_THROW(GridError, "UGGrid<" << dim << ", " << dimworld
-                                    << ">::size(int level, int codim) is only implemented"
-                                    << " for codim==0 and codim==dim!");
+  if(codim == 0)
+  {
+    return this->levelIndexSet(level).size(0,simplex)+this->levelIndexSet(level).size(0,cube)
+           +this->levelIndexSet(level).size(0,pyramid)+this->levelIndexSet(level).size(0,prism);
+  } else
+  if(codim == dim)
+  {
+    return this->levelIndexSet(level).size(dim,cube);
   }
+  if (codim == dim-1)
+  {
+    return this->levelIndexSet(level).size(dim-1,cube);
+  }
+#if (dim==3)
+  if (codim == 1)
+  {
+    return this->levelIndexSet(level).size(1,cube)+this->levelIndexSet(level).size(1,simplex);
+  }
+#endif
+  DUNE_THROW(GridError, "UGGrid<" << dim << ", " << dimworld
+                                  << ">::size(int level, int codim) is only implemented"
+                                  << " for codim==0 and codim==dim!");
 #else
 
   int numberOfElements = 0;
