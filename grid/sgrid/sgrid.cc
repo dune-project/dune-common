@@ -255,21 +255,6 @@ namespace Dune {
   }
 
   template<int codim, int dim, class GridImp>
-  inline int SEntityBase<codim,dim,GridImp>::level () const
-  {
-    return l;
-  }
-  //                std::cout << i->index() << " " ;
-  //                for (int z=0; z<N; ++z) std::cout << "["<<j[z]<<","<<A[z]<<"] ";
-  //                std::cout << std::endl;
-
-  template<int codim, int dim, class GridImp>
-  inline int SEntityBase<codim,dim,GridImp>::index () const
-  {
-    return id;
-  }
-
-  template<int codim, int dim, class GridImp>
   inline int SEntityBase<codim,dim,GridImp>::globalIndex () const
   {
     int ind = 0;
@@ -357,7 +342,7 @@ namespace Dune {
     }
     else
     {
-      return entity<cc>(i)->index();
+      return this->grid->template getRealEntity<cc>(*entity<cc>(i)).compressedIndex();
     }
   }
 
@@ -606,7 +591,7 @@ namespace Dune {
 
     // remember element where begin has been called
     orig_l = this->e.level();
-    orig_id = this->e.index();
+    orig_id = _grid->template getRealEntity<0>(this->e).index();
 
     // push original element on stack
     SHierarchicStackElem originalElement(orig_l, orig_id);
@@ -616,7 +601,7 @@ namespace Dune {
     maxlevel = std::min(_maxlevel,this->grid->maxlevel());
 
     // ok, push all the sons as well
-    push_sons(this->e.level(),this->e.index());
+    push_sons(orig_l,orig_id);
 
     // and pop the first son
     increment();

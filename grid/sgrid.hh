@@ -248,11 +248,19 @@ namespace Dune {
   public:
     typedef typename GridImp::template Codim<codim>::Geometry Geometry;
     typedef SMakeableGeometry<dim-codim, dimworld, const GridImp> MakeableGeometry;
+    typedef sgrid_persistentindextype PersistentIndexType;
+
     //! level of this element
-    int level () const;
+    int level () const
+    {
+      return l;
+    }
 
     //! index is unique and consecutive per level and codim used for access to degrees of freedom
-    int index () const;
+    int index () const
+    {
+      return compressedIndex();
+    }
 
     //! global index is calculated from the index and grid size
     int globalIndex() const;
@@ -268,14 +276,28 @@ namespace Dune {
     //! Reinitialization
     void make (int _l, int _id);
 
+    //! globally unique, persistent index
+    PersistentIndexType persistentIndex () const
+    {
+      PersistentIndexType number1(compressedIndex());
+      PersistentIndexType number2((level()<<4)+codim);
+      return number1|(number2<<52);
+    }
+
+    //! consecutive, codim-wise, level-wise index
+    int compressedIndex () const
+    {
+      return id;
+    }
+
   protected:
     // this is how we implement our elements
-    GridImp* grid;      //!< grid containes mapper, geometry, etc.
-    int l;                          //!< level where element is on
-    int id;                         //!< my consecutive id
-    FixedArray<int,dim> z;               //!< my coordinate, number of even components = codim
+    GridImp* grid;       //!< grid containes mapper, geometry, etc.
+    int l;               //!< level where element is on
+    int id;              //!< my consecutive id
+    FixedArray<int,dim> z; //!< my coordinate, number of even components = codim
     mutable MakeableGeometry geo; //!< geometry, is only built on demand
-    mutable bool builtgeometry;             //!< true if geometry has been constructed
+    mutable bool builtgeometry; //!< true if geometry has been constructed
   };
 
 
@@ -296,7 +318,6 @@ namespace Dune {
     typedef typename GridImp::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename GridImp::template Codim<0>::HierarchicIterator HierarchicIterator;
 
-
     // disambiguate member functions with the same name in both bases
     //! level of this element
     int level () const {return SEntityBase<codim,dim,GridImp>::level();}
@@ -313,26 +334,6 @@ namespace Dune {
     // specific to SEntity
     //! constructor
     SEntity (GridImp* _grid, int _l, int _id) : SEntityBase<codim,dim,GridImp>::SEntityBase(_grid,_l,_id) {};
-
-  private:
-    typedef sgrid_persistentindextype PersistentIndexType;
-
-    friend class GridImp::LevelIndexSetType; // needs access to the private index methods
-    friend class GridImp::GlobalIdSetType; // needs access to the private index methods
-
-    //! globally unique, persistent index
-    PersistentIndexType persistentIndex () const
-    {
-      PersistentIndexType number1(SEntityBase<codim,dim,GridImp>::index());
-      PersistentIndexType number2((SEntityBase<codim,dim,GridImp>::level()<<4)+codim);
-      return number1|(number2<<52);
-    }
-
-    //! consecutive, codim-wise, level-wise index
-    int compressedIndex () const
-    {
-      return SEntityBase<codim,dim,GridImp>::index();
-    }
   };
 
   /*!
@@ -369,6 +370,7 @@ namespace Dune {
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
     typedef typename GridImp::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename GridImp::template Codim<0>::HierarchicIterator HierarchicIterator;
+    typedef sgrid_persistentindextype PersistentIndexType;
 
     //! make HierarchicIterator a friend
     friend class SHierarchicIterator<GridImp>;
@@ -398,6 +400,19 @@ namespace Dune {
 
     //! return global index of entity<cc> number i
     template <int cc> int subIndex ( int i ) const;
+
+    //! subentity compressed index
+    template<int cc>
+    int subCompressedIndex (int i) const; // is implemented in sgrid/sgrid.cc !
+
+    //! subentity persistent index
+    template<int cc>
+    PersistentIndexType subPersistentIndex (int i) const
+    {
+      PersistentIndexType number1(this->template subCompressedIndex<cc>(i));
+      PersistentIndexType number2((SEntityBase<0,dim,GridImp>::level()<<4)+cc);
+      return number1|(number2<<52);
+    }
 
     /*! Intra-level access to intersections with neighboring elements.
        A neighbor is an entity of codimension 0
@@ -465,39 +480,6 @@ namespace Dune {
     }
 
   private:
-    typedef sgrid_persistentindextype PersistentIndexType;
-
-    friend class GridImp::LevelIndexSetType; // needs access to the private index methods
-    friend class GridImp::GlobalIdSetType; // needs access to the private index methods
-
-    //! globally unique, persistent index
-    PersistentIndexType persistentIndex () const
-    {
-      PersistentIndexType number1(SEntityBase<0,dim,GridImp>::index());
-      PersistentIndexType number2((SEntityBase<0,dim,GridImp>::level()<<4));
-      return number1|(number2<<52);
-    }
-
-    //! consecutive, codim-wise, level-wise index
-    int compressedIndex () const
-    {
-      return SEntityBase<0,dim,GridImp>::index();
-    }
-
-    //! subentity compressed index
-    template<int cc>
-    int subCompressedIndex (int i) const; // is implemented in sgrid/sgrid.cc !
-
-    //! subentity persistent index
-    template<int cc>
-    PersistentIndexType subPersistentIndex (int i) const
-    {
-      PersistentIndexType number1(this->template subCompressedIndex<cc>(i));
-      PersistentIndexType number2((SEntityBase<0,dim,GridImp>::level()<<4)+cc);
-      return number1|(number2<<52);
-    }
-
-
 
     mutable bool built_father;
     mutable int father_id;
@@ -558,31 +540,6 @@ namespace Dune {
     }
 
   private:
-    typedef sgrid_persistentindextype PersistentIndexType;
-
-    friend class GridImp::LevelIndexSetType; // needs access to the private index methods
-    friend class GridImp::GlobalIdSetType; // needs access to the private index methods
-
-    //! globally unique, persistent index
-    PersistentIndexType persistentIndex () const
-    {
-      PersistentIndexType number1(SEntityBase<dim,dim,GridImp>::index());
-      PersistentIndexType number2((SEntityBase<dim,dim,GridImp>::level()<<4)+dim);
-      return number1|(number2<<52);
-    }
-
-    //! globally unique, persistent leaf index (only valid on leaves and copies)
-    PersistentIndexType persistentLeafIndex () const
-    {
-      return persistentIndex();
-    }
-
-    //! consecutive, codim-wise, level-wise index
-    int compressedIndex () const
-    {
-      return SEntityBase<dim,dim,GridImp>::index();
-    }
-
     mutable bool built_father;
     mutable int father_id;
     mutable FieldVector<sgrid_ctype, dim> in_father_local;
@@ -1243,7 +1200,15 @@ namespace Dune {
     // Index classes need access to the real entity
     friend class Dune::SGridLevelIndexSet<Dune::SGrid<dim,dimworld> >;
     friend class Dune::SGridGlobalIdSet<Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SIntersectionIterator<Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SHierarchicIterator<Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SEntity<0,dim,Dune::SGrid<dim,dimworld> >;
+
+    friend class Dune::SGridLevelIndexSet<const Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SGridGlobalIdSet<const Dune::SGrid<dim,dimworld> >;
     friend class Dune::SIntersectionIterator<const Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SHierarchicIterator<const Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SEntity<0,dim,const Dune::SGrid<dim,dimworld> >;
 #if 1
     template<int codim>
     SEntity<codim,dim,const SGrid<dim,dimworld> >& getRealEntity(typename Traits::template Codim<codim>::Entity& e )
@@ -1274,8 +1239,6 @@ namespace Dune {
     mutable CubeMapper<dim> mapper[MAXL]; // a mapper for each level
 
     // faster implemantation od subIndex
-    friend class SEntity<0,dim,SGrid<dim,dimworld> >;
-    friend class SEntity<0,dim,const SGrid<dim,dimworld> >;
     mutable FixedArray <int,dim> zrefStatic;   // for subIndex of SEntity
     mutable FixedArray <int,dim> zentityStatic; // for subIndex of SEntity
   };
