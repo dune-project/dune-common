@@ -188,6 +188,15 @@ namespace Dune {
       return outerNormal();
     }
 
+    //! return unit outer normal, this should be dependent on
+    //! local coordinates for higher order boundary
+    //! the normal is scaled with the integration element
+    const FieldVector<OneDCType, dimworld>& integrationOuterNormal (const FieldVector<OneDCType, dim-1>& local) const
+    {
+      static FieldVector<OneDCType, dimworld> n(0);
+      return n;
+    }
+
     //! return unit outer normal, if you know it is constant use this function instead
     const FieldVector<OneDCType, dimworld>& outerNormal () const {
       outerNormal_[0] = (neighbor_==0) ? -1 : 1;
