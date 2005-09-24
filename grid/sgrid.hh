@@ -840,14 +840,14 @@ namespace Dune {
     template<int cd, PartitionIteratorType pitype>
     typename Base::template Codim<cd>::template Partition<pitype>::Iterator begin () const
     {
-      return grid.lbegin<cd,pitype>(level);
+      return grid.template lbegin<cd,pitype>(level);
     }
 
     //! Iterator to one past the last entity of given codim on level for partition type
     template<int cd, PartitionIteratorType pitype>
     typename Base::template Codim<cd>::template Partition<pitype>::Iterator end () const
     {
-      return grid.lend<cd,pitype>(level);
+      return grid.template lend<cd,pitype>(level);
     }
 
   private:
