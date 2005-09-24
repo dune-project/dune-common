@@ -1893,11 +1893,19 @@ namespace Dune {
     //! refine the grid refCount times. What about overlap?
     void globalRefine (int refCount)
     {
-      bool b=false;
-      if (refCount>0) b=true;
-      MultiYGrid<dim,ctype>::refine(b);
-      setsizes();
-      indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,maxlevel()) );
+      bool b=true;
+      for (int k=0; k<refCount; k++)
+      {
+        MultiYGrid<dim,ctype>::refine(b);
+        setsizes();
+        indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,maxlevel()) );
+      }
+    }
+
+    // set options for refinement
+    void refineOptions (bool b)
+    {
+      keep_ovlp=b;
     }
 
     //! refine the grid refCount times. What about overlap?
@@ -2310,6 +2318,7 @@ namespace Dune {
     }
 
     int sizes[MAXL][dim+1]; // total number of entities per level and codim
+    bool keep_ovlp;
   };
 
   namespace Capabilities
