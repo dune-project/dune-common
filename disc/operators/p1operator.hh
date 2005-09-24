@@ -63,7 +63,7 @@ namespace Dune
     {
       for (int i=0; i<refelem.size(c); i++)
       {
-        int index = allmapper.template submap<c>(e,i,0);
+        int index = allmapper.template submap<c>(e,i);
         if (!visited[index])
         {
           int corners = refelem.size(i,c,n);
@@ -73,6 +73,8 @@ namespace Dune
             int beta = vertexmapper.template submap<n>(e,refelem.subentity(i,c,corners-1-j,n));
             A.addindex(alpha,beta);
             A.addindex(beta,alpha);
+            //                            std::cout << "adding (" << alpha << "," << beta << ")" << std::endl;
+            //                            std::cout << "adding (" << beta << "," << alpha << ")" << std::endl;
           }
           visited[index] = true;
         }
@@ -108,6 +110,8 @@ namespace Dune
         int beta = vertexmapper.template submap<n>(e,refelem.subentity(0,0,corners-1-j,n));
         A.addindex(alpha,beta);
         A.addindex(beta,alpha);
+        //                                std::cout << "adding (" << alpha << "," << beta << ")" << std::endl;
+        //                                std::cout << "adding (" << beta << "," << alpha << ")" << std::endl;
       }
       return;
     }
@@ -216,6 +220,8 @@ namespace Dune
 
       // clear the flags for the next round
       for (int i=0; i<allmapper.size(); i++) visited[i] = false;
+      std::cout << "allmapper has size " << allmapper.size() << std::endl;
+      std::cout << "vertexmapper has size " << vertexmapper.size() << std::endl;
 
       // handle each leaf element and insert the nonzeros
       eendit = is.template end<0,All_Partition>();
@@ -224,16 +230,18 @@ namespace Dune
         Dune::GeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
-
+        //                std::cout << "ELEM " << GeometryName(gt) << std::endl;
         // vertices, c=n
         for (int i=0; i<refelem.size(n); i++)
         {
           int index = allmapper.template submap<n>(*it,i);
+          //                      std::cout << "vertex allindex " << index << std::endl;
           if (!visited[index])
           {
             int alpha = vertexmapper.template submap<n>(*it,i);
             A.addindex(alpha,alpha);
             visited[index] = true;
+            //                            std::cout << "adding (" << alpha << "," << alpha << ")" << std::endl;
           }
         }
 
@@ -241,6 +249,7 @@ namespace Dune
         for (int i=0; i<refelem.size(n-1); i++)
         {
           int index = allmapper.template submap<n-1>(*it,i);
+          //                      std::cout << "edge allindex " << index << std::endl;
           if (!visited[index])
           {
             int alpha = vertexmapper.template submap<n>(*it,refelem.subentity(i,n-1,0,n));
@@ -248,6 +257,8 @@ namespace Dune
             A.addindex(alpha,beta);
             A.addindex(beta,alpha);
             visited[index] = true;
+            //                            std::cout << "adding (" << alpha << "," << beta << ")" << std::endl;
+            //                            std::cout << "adding (" << beta << "," << alpha << ")" << std::endl;
           }
         }
 
@@ -258,6 +269,8 @@ namespace Dune
 
       // now the matrix is ready for use
       A.endindices();
+
+      std::cout << "matrix initialized" << std::endl;
     }
 
     //! return const reference to coefficient vector
