@@ -235,6 +235,7 @@ struct IntersectionIteratorInterface
     j++;
     i == j;
     i != j;
+    j = i;
 
     // state
     i.boundary();
@@ -821,17 +822,28 @@ void iteratorEquals (Grid &g)
   EntityPointer e1 = l1;
   EntityPointer e2 = h2;
 
-  l1 == l2;
-  i1 == i2;
-  L1 == L2;
-  h1 == h2;
-  e1 == e2;
-  e1 == l2;
-  e2 == h2;
-  e1 == L1;
-  l2 == e1;
-  l2 == L2;
-  i1.inside() == h2;
+  // assign
+  l1 = l2;
+  L1 = L2;
+  h1 = h2;
+  i1 = i2;
+  e1 = e2;
+
+  // equals
+  #define TestEquals(i) { \
+    i == e2; \
+    i == l2; \
+    i == h2; \
+    i == L2; \
+    i == i2.inside(); \
+    i == i2.outside(); \
+}
+  TestEquals(e1);
+  TestEquals(l1);
+  TestEquals(h1);
+  TestEquals(L1);
+  TestEquals(i1.inside());
+  TestEquals(i1.outside());
 }
 
 template <class Grid>
