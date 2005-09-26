@@ -583,6 +583,16 @@ namespace Dune {
           break;
         }
         break;
+      case simplex :
+        switch(coerceTo) {
+        case tetrahedron :
+          return VirtualRefinementImp<tetrahedron, CoordType, tetrahedron>::instance();
+        case simplex :
+          return VirtualRefinementImp<tetrahedron, CoordType, tetrahedron>::instance();
+        default :
+          break;
+        }
+        break;
       case hexahedron :
         switch(coerceTo) {
         case tetrahedron :

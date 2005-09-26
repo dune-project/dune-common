@@ -60,7 +60,7 @@ namespace Dune {
   namespace RefinementImp {
 
     /*! @brief This namespace contains the @ref Refinement implementation
-               for hypercubes (quadrilaterals, hexahedrons, etc.).
+       for hypercubes (quadrilaterals, hexahedrons, etc.).
 
        See @ref HCubeRefinement.
      */
@@ -75,13 +75,13 @@ namespace Dune {
 
       /*! @brief @ref Refinement implementation for hypercubes
 
-         @param dimension_ Dimension of the refined hypercube
-         @param CoordType  Coordinate type of the refined hypercube
+          @param dimension_ Dimension of the refined hypercube
+          @param CoordType  Coordinate type of the refined hypercube
 
-         We use @ref RefinementGrid as backend to do all the work.
+          We use @ref RefinementGrid as backend to do all the work.
 
-         The interface is the same as for @ref Dune::Refinement (apart
-         from the template parameters).
+          The interface is the same as for @ref Dune::Refinement (apart
+          from the template parameters).
        */
       template<int dimension_, class CoordType>
       class RefinementImp
@@ -178,13 +178,13 @@ namespace Dune {
 
       /*! @brief Backend grid for hypercube refinement
 
-         @param dimension Dimension of the refined hypercube
+          @param dimension Dimension of the refined hypercube
 
-         This grid is used as backend by @ref RefinementImp.  It simply
-         wraps an SGrid to make it a singleton.  We have to use SGrids
-         default CoordType here instead of the one from the refined
-         hypercube, because I know of no way to set the CoordType used
-         by SGrid.
+          This grid is used as backend by @ref RefinementImp.  It simply
+          wraps an SGrid to make it a singleton.  We have to use SGrids
+          default CoordType here instead of the one from the refined
+          hypercube, because I know of no way to set the CoordType used
+          by SGrid.
        */
       template<int dimension>
       class RefinementGrid : public SGrid<dimension, dimension>
@@ -206,7 +206,7 @@ namespace Dune {
       };
 
       /*!
-         This simply wraps the globalRefine() method of SGrid.
+                This simply wraps the globalRefine() method of SGrid.
        */
       template<int dimension>
       void RefinementGrid<dimension>::refineTo(int level /*! The refinement level to enforce */)
@@ -217,7 +217,7 @@ namespace Dune {
 
 
       /*!
-         Return the singleton instance of the RefinementGrid.  Create it if neccessary.
+                Return the singleton instance of the RefinementGrid.  Create it if neccessary.
        */
       template<int dimension>
       RefinementGrid<dimension> &
@@ -243,13 +243,13 @@ namespace Dune {
 #ifdef DOXYGEN
       /*! @brief SubEntityIterator base class for hypercube refinement
 
-         @param dimension   Dimension of the refined element
-         @param CoordType   Coordinate type of the refined element
-         @param codimension Codimension of the iterator
+          @param dimension   Dimension of the refined element
+          @param CoordType   Coordinate type of the refined element
+          @param codimension Codimension of the iterator
 
-         This is the base class for SubEntityIterators.  We have to use
-         this construct because RefinementImp<...>::codim<...> cannot
-         be specialized without first specializing RefinementImp.
+          This is the base class for SubEntityIterators.  We have to use
+          this construct because RefinementImp<...>::codim<...> cannot
+          be specialized without first specializing RefinementImp.
        */
       template<int dimension, class CoordType, int codimension>
       class RefinementSubEntityIteratorSpecial {};
@@ -304,9 +304,12 @@ namespace Dune {
         assert(nIndices == static_cast<const Common*>(this)->backend->template count<dimension>());
         IndexVector vec;
         for(int i = 0; i < nIndices; ++i)
-          vec[i] = static_cast<const Common*>(this)->backend->template subIndex<dimension>(nIndices - i - 1);
+          //		  vec[i] = static_cast<const Common*>(this)->backend->template subIndex<dimension>(nIndices - i - 1);
+          vec[i] = RefinementGrid<dimension>::instance().levelIndexSet(static_cast<const Common*>(this)->backend->level()).template subIndex<dimension>(*(static_cast<const Common*>(this)->backend),nIndices - i - 1);
         return vec;
       }
+
+
 
       // common
 
@@ -362,7 +365,10 @@ namespace Dune {
       int
       RefinementImp<dimension, CoordType>::Codim<codimension>::SubEntityIterator::
       index() const
-      { return backend->index(); }
+      { return RefinementGrid<dimension>::instance().levelIndexSet(backend->level()).index(*backend); }
+      //      { return backend->index(); }
+
+
 
       template<int dimension, class CoordType>
       template<int codimension>
