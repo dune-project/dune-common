@@ -45,8 +45,8 @@ gcdlcdtest_SOURCES = gcdlcdtest.cc
 
 # bin_PROGRAMS = exprtmpl timing_old timing_xpr
 exprtmpl_SOURCES = exprtmpl.cc
-exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DNOPRINT
-# -DDUNE_ISTL_WITH_CHECKING
+exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DDUNE_ISTL_WITH_CHECKING
+# -DNOPRINT
 
 timing_old_SOURCES = timing.cc
 timing_xpr_SOURCES = timing.cc
