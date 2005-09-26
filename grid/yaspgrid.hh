@@ -1368,20 +1368,47 @@ namespace Dune {
         _normal(it._normal)
     {}
 
+    //! copy constructor
+    YaspIntersectionIterator & operator = (const YaspIntersectionIterator& it)
+    {
+      /* Assert same Iterator Context */
+      if (! _selfp.equals(it._selfp))
+        DUNE_THROW(GridError, "assignment of YaspIntersectionIterator "
+                   << "with different inside Entity");
+
+      /* Copy baseclass */
+      YaspEntityPointer<0,GridImp>::operator=(it);
+
+      /* Assign current position */
+      _count = it._count;
+      _dir = it._dir;
+      _face = it._face;
+      _pos_self_local = it._pos_self_local;
+      _pos_nb_local = it._pos_nb_local;
+      _pos_world = it._pos_world;
+      _ext_local = it._ext_local;
+      _normal = it._normal;
+    }
+
   private:
+    /* current position */
     int _count;                           //!< valid neighbor count in 0 .. 2*dim-1
     int _dir;                             //!< count/2
     int _face;                            //!< count%2
+    /* neighbouring Entity/Poiner (get automatically updated) */
     const YaspEntityPointer<0,GridImp> _selfp; //!< entitypointer to myself
     const YaspEntity<0,dim,GridImp>&
     _myself;                              //!< reference to myself
+    /* precalculated data for current position */
     FieldVector<ctype, dim> _pos_self_local; //!< center of face in own local coordinates
     FieldVector<ctype, dim> _pos_nb_local; //!< center of face in neighbors local coordinates
     FieldVector<ctype, dimworld>_pos_world;   //!< center of face in world coordinates
     FieldVector<ctype, dim> _ext_local;   //!< extension of face in local coordinates
+    /* geometry objects (get automatically updated) */
     SpecialLocalGeometry _is_self_local;  //!< intersection in own local coordinates
     SpecialLocalGeometry _is_nb_local;    //!< intersection in neighbors local coordinates
     SpecialGeometry _is_global;           //!< intersection in global coordinates
+    /* normal vector */
     FieldVector<ctype, dimworld> _normal; //!< for returning outer normal
   };
 

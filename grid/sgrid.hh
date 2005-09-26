@@ -696,14 +696,29 @@ namespace Dune {
     //! constructor
     SIntersectionIterator (GridImp* _grid, const SEntity<0,dim,GridImp >* _self, int _count);
 
+    //! assignment operator
+    SIntersectionIterator& operator = (const SIntersectionIterator& it)
+    {
+      /* Assert same Iterator Context */
+      if (! self.equals(it.self))
+        DUNE_THROW(GridError, "assignment of SIntersectionIterator "
+                   << "with different inside Entity");
+      if (partition != it.partition)
+        DUNE_THROW(GridError, "assignment of SIntersectionIterator "
+                   << "with different partition");
+      // (zred == it.zred) if (self == it.self)
+
+      /* Assign current position and update ne */
+      ne = it.ne;
+      count = it.count;
+      make(count);
+    }
+
   private:
     void make (int _count) const;               //!< reinitialze iterator with given neighbor
     void makeintersections () const;            //!< compute intersections
     const SEntityPointer<0,GridImp> self;       //!< EntityPointer for myself
     mutable SEntityPointer<0,GridImp> ne;       //!< EntityPointer for neighbor
-    //  GridImp* grid;                                //!< my grid
-    //  int l;                                        //!< level where element is on
-    //  mutable int id;                               //!< my consecutive id
     const int partition;                        //!< partition number of self, needed for coordinate expansion
     const FixedArray<int,dim> zred;               //!< reduced coordinates of myself, allows easy computation of neighbors
     mutable int count;                            //!< number of neighbor
