@@ -458,7 +458,15 @@ struct GridInterface
 
     // check for member functions
     g.maxlevel();
+    // number of grid entities of a given codim on a given level
     g.size(0,0);
+    // number of leaf entities per codim in this process
+    g.size(0);
+    // number of entities per level, codim and geometry type in this process
+    g.size(0, 0, Dune::cube);
+    // number of leaf entities per codim and geometry type in this process
+    g.size(0, Dune::cube);
+
     g.overlapSize(0,0);
     g.ghostSize(0,0);
 
@@ -531,7 +539,9 @@ struct GridInterface
   void (*c)(Grid&);
 };
 
-// check Entity::geometry()[c] == Entity::entity<dim>.geometry()[0] for codim=cd
+// check
+// Entity::geometry()[c] == Entity::entity<dim>.geometry()[0]
+// for codim=cd
 template <int cd, class Grid, class Entity, bool doCheck>
 struct subIndexCheck
 {
