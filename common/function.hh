@@ -14,7 +14,7 @@ namespace Dune {
    */
 
   /** @defgroup Function Function
-     \ingroup FunctionCommon
+     @ingroup FunctionCommon
 
      @{
    */
@@ -22,8 +22,17 @@ namespace Dune {
 
   typedef int deriType;
 
-  /** \brief Class representing a function
+  /** @brief Class representing a function
    * \todo Please doc me!
+   */
+
+
+  /*!  Abstract class representing a function
+
+      Template parameters are:
+      -  FunctionSpaceImp      type of the function space where the function
+                               belongs to.
+      -  FunctionImp           type of the implemented function
    */
   template< class FunctionSpaceImp, class FunctionImp>
   class Function :
