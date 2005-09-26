@@ -243,6 +243,16 @@ namespace Dune {
       return theElement->ge.levelIndex;
     }
 
+    //! Gets the level index of a UG sidevector
+    static int& levelIndex(UGVectorType<3>::T* theVector) {
+      return reinterpret_cast<int&>(theVector->index);
+    }
+
+    //! Gets the level index of a UG sidevector
+    static const int& levelIndex(const UGVectorType<3>::T* theVector) {
+      return reinterpret_cast<const int&>(theVector->index);
+    }
+
     //! Gets the level index of a UG edge
     static int& levelIndex(TargetType<2,3>::T* theEdge) {
       return theEdge->levelIndex;
@@ -275,6 +285,16 @@ namespace Dune {
     //! Gets the leaf index of a UG element
     static const int& leafIndex(const TargetType<0,3>::T* theElement) {
       return theElement->ge.leafIndex;
+    }
+
+    //! Gets the level index of a UG sidevector
+    static int& leafIndex(UGVectorType<3>::T* theVector) {
+      return reinterpret_cast<int &>(theVector->skip);
+    }
+
+    //! Gets the level index of a UG sidevector
+    static const int& leafIndex(const UGVectorType<3>::T* theVector) {
+      return reinterpret_cast<const int &>(theVector->skip);
     }
 
     //! Gets the leaf index of a UG edge
@@ -351,6 +371,14 @@ namespace Dune {
     //! get edge from node i to node j (in UG's numbering !
     static TargetType<2,3>::T* GetEdge (TargetType<3,3>::T* nodei, TargetType<3,3>::T* nodej) {
       return UG3d::GetEdge(nodei,nodej);
+    }
+
+    //! access side vector from element
+    static UGVectorType<3>::T* SideVector (TargetType<0,3>::T* theElement, int i)
+    {
+      using UG3d::VECTOR;
+      using UG3d::svector_offset;
+      return SVECTOR(theElement,i);
     }
 
     //! \todo Please doc me!

@@ -65,7 +65,7 @@ inline const typename UGGridIntersectionIterator<GridImp>::LocalGeometry&
 UGGridIntersectionIterator<GridImp>::
 intersectionSelfLocal() const
 {
-  DUNE_THROW(NotImplemented, "intersection_self_local()");
+  //    DUNE_THROW(NotImplemented, "intersection_self_local()");
   return fakeNeigh_;
 }
 

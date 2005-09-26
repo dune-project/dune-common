@@ -70,13 +70,15 @@ namespace Dune {
         return numVertices_;
       if (codim==dim-1)
         return numEdges_;
+      if (codim==1)
+        return numTriFaces_+numQuadFaces_;
+      DUNE_THROW(NotImplemented, "wrong codim!");
     }
 
     //! get number of entities of given codim, type and on this level
     int size (int codim, GeometryType type) const
     {
       if (codim==0) {
-
         switch (type) {
         case simplex :
           return numSimplices_;
@@ -89,12 +91,24 @@ namespace Dune {
         default :
           return 0;
         }
-      } else if (codim==dim) {
+      }
+      if (codim==dim) {
         return numVertices_;
-      } else if (codim==dim-1) {
+      }
+      if (codim==dim-1) {
         return numEdges_;
-      } else
-        DUNE_THROW(NotImplemented, "Not yet implemented for this codim!");
+      }
+      if (codim==1) {
+        switch (type) {
+        case simplex :
+          return numTriFaces_;
+        case cube :
+          return numQuadFaces_;
+        default :
+          return 0;
+        }
+      }
+      DUNE_THROW(NotImplemented, "Wrong codim!");
     }
 
     /** \brief Deliver all geometry types used in this grid */
@@ -132,6 +146,30 @@ namespace Dune {
         return i;
     }
 
+    int renumberFace(GeometryType gt, int i) const
+    {
+
+      if (gt==cube) {
+
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+        return renumbering[i];
+      }
+      if (gt==simplex) {
+
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        const int renumbering[4] = {1, 2, 0, 3};
+        return renumbering[i];
+      }
+      return i;
+    }
+
     void update(const GridImp& grid, int level) {
 
       // Commit the index set to a specific level of a specific grid
@@ -146,19 +184,25 @@ namespace Dune {
       typename GridImp::Traits::template Codim<0>::LevelIterator eEndIt = grid_->template lend<0>(level_);
 
       for (; eIt!=eEndIt; ++eIt) {
+        typename TargetType<0,dim>::T* target_ = grid_->template getRealEntity<0>(*eIt).target_;
         // codim dim-1
         for (int i=0; i<eIt->template count<dim-1>(); i++)
         {
           GeometryType gt = eIt->geometry().type();
-          typename TargetType<0,dim>::T* target_ = grid_->template getRealEntity<0>(*eIt).target_;
           int a=ReferenceElements<double,dim>::general(gt).subentity(i,dim-1,0,dim);
           int b=ReferenceElements<double,dim>::general(gt).subentity(i,dim-1,1,dim);
           int& index = UG_NS<dim>::levelIndex(UG_NS<dim>::GetEdge(UG_NS<dim>::Corner(target_,renumberVertex(gt,a)),UG_NS<dim>::Corner(target_,renumberVertex(gt,b))));
           index = -1;
         }
         // codim 1 (faces): todo
-#if (dim==3)
-#endif
+        if (dim==3)
+          for (int i=0; i<eIt->template count<1>(); i++)
+          {
+            GeometryType gt = eIt->geometry().type();
+            int& index = UG_NS<dim>::levelIndex(UG_NS<dim>::SideVector(target_,renumberFace(gt,i)));
+            index = -1;
+          }
+
       }
 
       // ///////////////////////////////
@@ -169,6 +213,8 @@ namespace Dune {
       numPrisms_    = 0;
       numCubes_     = 0;
       numEdges_     = 0;
+      numTriFaces_  = 0;
+      numQuadFaces_ = 0;
 
       eIt    = grid_->template lbegin<0>(level_);
       eEndIt = grid_->template lend<0>(level_);
@@ -194,11 +240,12 @@ namespace Dune {
                                                           << ", which should never occur in a UGGrid!");
         }
 
+        typename TargetType<0,dim>::T* target_ = grid_->template getRealEntity<0>(*eIt).target_;
+
         // codim dim-1 (edges)
         for (int i=0; i<eIt->template count<dim-1>(); i++)
         {
           GeometryType gt = eIt->geometry().type();
-          typename TargetType<0,dim>::T* target_ = grid_->template getRealEntity<0>(*eIt).target_;
           int a=ReferenceElements<double,dim>::general(gt).subentity(i,dim-1,0,dim);
           int b=ReferenceElements<double,dim>::general(gt).subentity(i,dim-1,1,dim);
           int& index = UG_NS<dim>::levelIndex(UG_NS<dim>::GetEdge(UG_NS<dim>::Corner(target_,renumberVertex(gt,a)),UG_NS<dim>::Corner(target_,renumberVertex(gt,b))));
@@ -206,9 +253,24 @@ namespace Dune {
         }
 
         // codim 1 (faces): todo
-#if (dim==3)
-#endif
-
+        if (dim==3)
+          for (int i=0; i<eIt->template count<1>(); i++)
+          {
+            GeometryType gt = eIt->geometry().type();
+            int& index = UG_NS<dim>::levelIndex(UG_NS<dim>::SideVector(target_,renumberFace(gt,i)));
+            if (index<0)                       // not visited yet
+              switch (ReferenceElements<double,dim>::general(gt).type(i,1))
+              {
+              case simplex :
+                index = numTriFaces_++;
+                break;
+              case cube :
+                index = numQuadFaces_++;
+                break;
+              default :
+                DUNE_THROW(GridError, "wrong geometry type in face");
+              }
+          }
       }
 
       // Update the list of geometry types present
@@ -224,6 +286,15 @@ namespace Dune {
 
       myTypes_[dim-1].resize(0);
       myTypes_[dim-1].push_back(cube);
+
+      if (dim==3)
+      {
+        myTypes_[1].resize(0);
+        if (numTriFaces_ > 0)
+          myTypes_[1].push_back(simplex);
+        if (numQuadFaces_ > 0)
+          myTypes_[1].push_back(cube);
+      }
 
       // //////////////////////////////
       //   Init the vertex indices
@@ -249,10 +320,8 @@ namespace Dune {
     int numCubes_;
     int numVertices_;
     int numEdges_;
-#if (dim==3)
     int numTriFaces_;
     int numQuadFaces_;
-#endif
 
     std::vector<GeometryType> myTypes_[dim+1];
   };
@@ -305,7 +374,6 @@ namespace Dune {
     int size (int codim, GeometryType type) const
     {
       if (codim==0) {
-
         switch (type) {
         case simplex :
           return numSimplices_;
@@ -318,12 +386,24 @@ namespace Dune {
         default :
           return 0;
         }
-      } else if (codim==dim) {
+      }
+      if (codim==dim) {
         return numVertices_;
-      } else if (codim==dim-1) {
+      }
+      if (codim==dim-1) {
         return numEdges_;
-      } else
-        DUNE_THROW(NotImplemented, "UGGridLeafIndexSet::size(codim,type) for codim neither 0 nor dim");
+      }
+      if (codim==1) {
+        switch (type) {
+        case simplex :
+          return numTriFaces_;
+        case cube :
+          return numQuadFaces_;
+        default :
+          return 0;
+        }
+      }
+      DUNE_THROW(NotImplemented, "Wrong codim!");
     }
 
     /** deliver all geometry types used in this grid */
@@ -361,6 +441,29 @@ namespace Dune {
         return i;
     }
 
+    int renumberFace(GeometryType gt, int i) const
+    {
+
+      if (gt==cube) {
+
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+        return renumbering[i];
+      }
+      if (gt==simplex) {
+
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        const int renumbering[4] = {1, 2, 0, 3};
+        return renumbering[i];
+      }
+      return i;
+    }
     void update() {
 
       // ///////////////////////////////////////////////////////////
@@ -376,19 +479,24 @@ namespace Dune {
 
       for (; eIt!=eEndIt; ++eIt)
       {
+        typename TargetType<0,dim>::T* target_ = grid_.template getRealEntity<0>(*eIt).target_;
         // codim dim-1
         for (int i=0; i<eIt->template count<dim-1>(); i++)
         {
           GeometryType gt = eIt->geometry().type();
-          typename TargetType<0,dim>::T* target_ = grid_.template getRealEntity<0>(*eIt).target_;
           int a=ReferenceElements<double,dim>::general(gt).subentity(i,dim-1,0,dim);
           int b=ReferenceElements<double,dim>::general(gt).subentity(i,dim-1,1,dim);
           int& index = UG_NS<dim>::leafIndex(UG_NS<dim>::GetEdge(UG_NS<dim>::Corner(target_,renumberVertex(gt,a)),UG_NS<dim>::Corner(target_,renumberVertex(gt,b))));
           index = -1;
         }
         // codim 1 (faces): todo
-#if (dim==3)
-#endif
+        if (dim==3)
+          for (int i=0; i<eIt->template count<1>(); i++)
+          {
+            GeometryType gt = eIt->geometry().type();
+            int& index = UG_NS<dim>::leafIndex(UG_NS<dim>::SideVector(target_,renumberFace(gt,i)));
+            index = -1;
+          }
       }
       // ///////////////////////////////
       //   Init the element indices
@@ -398,6 +506,8 @@ namespace Dune {
       numPrisms_    = 0;
       numCubes_     = 0;
       numEdges_     = 0;
+      numTriFaces_  = 0;
+      numQuadFaces_ = 0;
 
       eIt    = grid_.template leafbegin<0>();
       eEndIt = grid_.template leafend<0>();
@@ -422,11 +532,12 @@ namespace Dune {
                                                           << ", which should never occur in a UGGrid!");
         }
 
+        typename TargetType<0,dim>::T* target_ = grid_.template getRealEntity<0>(*eIt).target_;
+
         // codim dim-1 (edges)
         for (int i=0; i<eIt->template count<dim-1>(); i++)
         {
           GeometryType gt = eIt->geometry().type();
-          typename TargetType<0,dim>::T* target_ = grid_.template getRealEntity<0>(*eIt).target_;
           int a=ReferenceElements<double,dim>::general(gt).subentity(i,dim-1,0,dim);
           int b=ReferenceElements<double,dim>::general(gt).subentity(i,dim-1,1,dim);
           int& index = UG_NS<dim>::leafIndex(UG_NS<dim>::GetEdge(UG_NS<dim>::Corner(target_,renumberVertex(gt,a)),UG_NS<dim>::Corner(target_,renumberVertex(gt,b))));
@@ -434,8 +545,24 @@ namespace Dune {
         }
 
         // codim 1 (faces): todo
-#if (dim==3)
-#endif
+        if (dim==3)
+          for (int i=0; i<eIt->template count<1>(); i++)
+          {
+            GeometryType gt = eIt->geometry().type();
+            int& index = UG_NS<dim>::leafIndex(UG_NS<dim>::SideVector(target_,renumberFace(gt,i)));
+            if (index<0)                       // not visited yet
+              switch (ReferenceElements<double,dim>::general(gt).type(i,1))
+              {
+              case simplex :
+                index = numTriFaces_++;
+                break;
+              case cube :
+                index = numQuadFaces_++;
+                break;
+              default :
+                DUNE_THROW(GridError, "wrong geometry type in face");
+              }
+          }
 
       }
 
@@ -452,6 +579,15 @@ namespace Dune {
 
       myTypes_[dim-1].resize(0);
       myTypes_[dim-1].push_back(cube);
+
+      if (dim==3)
+      {
+        myTypes_[1].resize(0);
+        if (numTriFaces_ > 0)
+          myTypes_[1].push_back(simplex);
+        if (numQuadFaces_ > 0)
+          myTypes_[1].push_back(cube);
+      }
 
       // //////////////////////////////
       //   Init the vertex indices
@@ -478,10 +614,8 @@ namespace Dune {
     int numCubes_;
     int numVertices_;
     int numEdges_;
-#if (dim==3)
     int numTriFaces_;
     int numQuadFaces_;
-#endif
 
     std::vector<GeometryType> myTypes_[dim+1];
   };

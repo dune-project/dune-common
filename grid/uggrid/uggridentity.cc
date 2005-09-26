@@ -140,6 +140,30 @@ inline int UGGridEntity<0, dim, GridImp>::renumberVertex(int i) const {
 
 }
 template <int dim, class GridImp>
+inline int UGGridEntity<0, dim, GridImp>::renumberFace(int i) const {
+
+  if (geometry().type()==cube) {
+
+    // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+    // The following two lines do the transformation
+    // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+    // following code works for 2d and 3d.
+    const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+    return renumbering[i];
+
+  }
+  if (geometry().type()==simplex) {
+
+    // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+    // The following two lines do the transformation
+    // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+    // following code works for 2d and 3d.
+    const int renumbering[4] = {1, 2, 0, 3};
+    return renumbering[i];
+  }
+  return i;
+}
+template <int dim, class GridImp>
 template <int cc>
 inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
 {
@@ -155,9 +179,10 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
     int b=ReferenceElements<double,dim>::general(geometry().type()).subentity(i,dim-1,1,dim);
     return UG_NS<dim>::levelIndex(UG_NS<dim>::GetEdge(UG_NS<dim>::Corner(target_,renumberVertex(a)),UG_NS<dim>::Corner(target_,renumberVertex(b))));
   }
-#if (dim==3)
-  // something for faces here
-#endif
+  if (cc==1)
+  {
+    return UG_NS<dim>::levelIndex(UG_NS<dim>::SideVector(target_,renumberFace(i)));
+  }
 
   DUNE_THROW(GridError, "UGGrid<" << dim << "," << dim << ">::subIndex isn't implemented for cc==" << cc );
 }
@@ -178,9 +203,10 @@ inline int UGGridEntity<0, dim, GridImp>::subLeafIndex(int i) const
     int b=ReferenceElements<double,dim>::general(geometry().type()).subentity(i,dim-1,1,dim);
     return UG_NS<dim>::leafIndex(UG_NS<dim>::GetEdge(UG_NS<dim>::Corner(target_,renumberVertex(a)),UG_NS<dim>::Corner(target_,renumberVertex(b))));
   }
-#if (dim==3)
-  // something for faces here
-#endif
+  if (cc==1)
+  {
+    return UG_NS<dim>::leafIndex(UG_NS<dim>::SideVector(target_,renumberFace(i)));
+  }
 
   DUNE_THROW(GridError, "UGGrid<" << dim << "," << dim << ">::subLeafIndex isn't implemented for cc==" << cc );
 }

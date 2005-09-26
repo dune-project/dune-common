@@ -289,12 +289,10 @@ namespace Dune {
       {
         return size(codim,cube);
       }
-#if (dim==3)
       if (codim==1)
       {
         return size(1,cube)+size(1,simplex);
       }
-#endif
 
       std::cout << "dim=" << dim << " codim=" << codim << std::endl;
       DUNE_THROW(NotImplemented, "not implemented");

@@ -199,7 +199,7 @@ namespace Dune {
 
     /** \brief Default constructor */
     UGGridGeometry()
-    {}
+    {elementType_=simplex;}
 
     //! return the element type identifier (triangle or quadrilateral)
     GeometryType type () const {return elementType_;}

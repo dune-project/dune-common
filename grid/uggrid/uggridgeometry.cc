@@ -96,7 +96,6 @@ struct UGGridGeometryPositionAccess<2,2>
 template< int mydim, int coorddim, class GridImp>
 inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
 {
-
   switch (mydim)
   {
   case 0 : return vertex;
