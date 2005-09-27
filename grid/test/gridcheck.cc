@@ -15,6 +15,7 @@
 #include "../../common/helpertemplates.hh"
 #include "../../common/exceptions.hh"
 #include "../../common/stdstreams.hh"
+#include "../common/referenceelements.hh"
 
 #include <limits>
 
@@ -663,6 +664,9 @@ void assertNeighbor (Grid &g)
   {
     for (; e != eend; ++e)
     {
+      // flag vector for elements faces
+      std::vector<bool> visited(e->template count<1>(), false);
+      // loop over intersections
       IntersectionIterator endit = e->iend();
       IntersectionIterator it = e->ibegin();
       // state
@@ -674,6 +678,8 @@ void assertNeighbor (Grid &g)
       // for all intersections
       for(; it != endit; ++it)
       {
+        // mark visited face
+        visited[it.numberInSelf()] = true;
         // check id
         assert(globalid.id(*(it.inside())) ==
                globalid.id(*e));
@@ -704,6 +710,8 @@ void assertNeighbor (Grid &g)
           }
         }
       }
+      // check that all faces were visited
+      for (int i=0; i<visited.size(); i++) assert(visited[i] == true);
     }
   }
 }
