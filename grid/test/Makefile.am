@@ -76,7 +76,7 @@ test_alberta_LDADD = $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS)
 # files for alu3dgrid
 test_alu3dgrid_SOURCES = test-alu3dgrid.cc
 test_alu3dgrid_CXXFLAGS = $(ALU3DGRID_CPPFLAGS) $(AM_CPPFLAGS)
-test_alu3dgrid_LDADD = $(ALU3DGRID_LDFLAGS) $(ALU3DGRID_LIBS)
+test_alu3dgrid_LDADD = $(ALUGRID_LDFLAGS) $(ALUGRID_LIBS)
 
 # libdune contains both libug2 and libug3, always test both dimensions
 test_ug_SOURCES = test-ug.cc
