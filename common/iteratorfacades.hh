@@ -157,7 +157,7 @@ namespace Dune
      * </pre>
      *
      * For an elaborate explanation see the STL Documentation
-     * @link http://www.sgi.com/tech/stl/iterator_traits.html
+     * @link http://www.sgi.com/tech/stl/iterator_traits.html @endlink
      */
     typedef T DerivedType;
 
@@ -289,7 +289,7 @@ namespace Dune
      * </pre>
      *
      * For an elaborate explanation see the STL Documentation
-     * @link http://www.sgi.com/tech/stl/iterator_traits.html
+     * @link http://www.sgi.com/tech/stl/iterator_traits.html @endlink
      */
     typedef T DerivedType;
 
@@ -443,7 +443,7 @@ namespace Dune
      * </pre>
      *
      * For an elaborate explanation see the STL Documentation
-     * @link http://www.sgi.com/tech/stl/iterator_traits.html
+     * @link http://www.sgi.com/tech/stl/iterator_traits.html @endlink
      */
     typedef T DerivedType;
 

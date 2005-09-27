@@ -1371,7 +1371,7 @@ namespace Dune
        */
       typedef typename G::EdgeProperties EdgeProperties;
       /**
-       * @brief The vertex descriptor.
+       * @brief The edge descriptor.
        */
       typedef typename G::EdgeDescriptor Edge;
 
@@ -1391,7 +1391,7 @@ namespace Dune
 
       /**
        * @brief Get the properties associated to a vertex.
-       * @param vertex The vertex whose Properties we want.
+       * @param edge The edge whose Properties we want.
        */
       EdgeProperties& operator[](const Edge& edge) const
       {

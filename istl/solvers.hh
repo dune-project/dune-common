@@ -139,7 +139,7 @@ namespace Dune {
 
     /** \brief Set up loop solver
 
-       \tparam P The preconditioner type
+       \param P The preconditioner type
 
        \param prec A preconditioner object
        \param maxit Maximum number of iterations
