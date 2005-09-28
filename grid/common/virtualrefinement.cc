@@ -535,6 +535,16 @@ namespace Dune {
           break;
         }
         break;
+      case simplex :
+        switch(coerceTo) {
+        case triangle :
+          return VirtualRefinementImp<triangle, CoordType, triangle>::instance();
+        case simplex :
+          return VirtualRefinementImp<triangle, CoordType, triangle>::instance();
+        default :
+          break;
+        }
+        break;
       case cube :
         switch(coerceTo) {
         case triangle :
