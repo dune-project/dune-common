@@ -98,8 +98,8 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
 {
   switch (mydim)
   {
-  case 0 : return vertex;
-  case 1 : return simplex;
+  case 0 : return cube;
+  case 1 : return cube;
   case 2 :
 
     switch (UG_NS<coorddim>::Tag(target_)) {
