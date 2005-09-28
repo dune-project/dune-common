@@ -102,11 +102,13 @@ namespace Dune {
     }
 
     int leafIndex() const {
-      return target_->myvertex->iv.id;
+      return UG_NS<dim>::leafIndex(target_);
+      //       return target_->myvertex->iv.id;
     }
 
     unsigned int localId() const {
-      return target_->id;
+      return UG_NS<dim>::id(target_);
+      // return target_->id;
     }
 
     unsigned int globalId() const {
@@ -307,7 +309,7 @@ namespace Dune {
     //! Reference to one past the last neighbor
     UGGridIntersectionIterator<GridImp> iend () const;
 
-    //! returns true if Entity has children
+    //! returns true if Entity has NO children
     bool isLeaf() const {
       return UG_NS<dim>::isLeaf(target_);
     }
