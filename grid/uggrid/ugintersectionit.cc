@@ -1,9 +1,31 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 template<class GridImp>
+inline typename TargetType<0,GridImp::dimensionworld>::T* UGGridIntersectionIterator< GridImp >::getNeighbor () const
+{
+  // if we have a neighbor on this level, then return it
+  if (UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_)!=NULL)
+    return UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_);
+
+  // now go down the stack of copies to find a lower level leaf neighbor
+  typename TargetType<0,GridImp::dimensionworld>::T* father_ = UG_NS<GridImp::dimensionworld>::EFather(center_);
+  while (father_!=0)
+  {
+    if (UG_NS<GridImp::dimensionworld>::nSons(father_)!=1) break;       // father must be a copy
+    if (UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)!=NULL)       // check existence of neighbor
+      if (UG_NS<GridImp::dimension>::isLeaf(UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)))           // check leafness
+        return UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_);
+    father_ = UG_NS<GridImp::dimensionworld>::EFather(father_);
+  }
+
+  // nothing found, return 0 (might be a processor boundary
+  return NULL;
+}
+
+template<class GridImp>
 inline bool UGGridIntersectionIterator< GridImp >::neighbor() const
 {
-  return UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_) != NULL;
+  return getNeighbor() != NULL;
 }
 
 template<class GridImp>
@@ -26,6 +48,7 @@ UGGridIntersectionIterator <GridImp>::outerNormal (const FieldVector<UGCtype, Gr
 
     // Get the first three vertices of this side.  Since quadrilateral faces
     // are plane in UG, the normal doesn't depend on the fourth vertex
+    // \todo PB: There is nothing that prevents us to use non-polanar quad faces ...
     const UGCtype* aPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
     const UGCtype* bPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
     const UGCtype* cPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
@@ -65,8 +88,26 @@ inline const typename UGGridIntersectionIterator<GridImp>::LocalGeometry&
 UGGridIntersectionIterator<GridImp>::
 intersectionSelfLocal() const
 {
-  //    DUNE_THROW(NotImplemented, "intersection_self_local()");
-  return fakeNeigh_;
+  int numCornersOfSide = UG_NS<GridImp::dimension>::Corners_Of_Side(center_, neighborCount_);
+
+  selfLocal_.setNumberOfCorners(numCornersOfSide);
+
+  for (int i=0; i<numCornersOfSide; i++)
+  {
+    // get number of corner in UG's numbering system
+    int cornerIdx = UG_NS<GridImp::dimension>::Corner_Of_Side(center_, neighborCount_, i);
+
+    // we need a temporary to be filled
+    FieldVector<UGCtype, dim> tmp;
+
+    // get the corners local coordinates
+    UG_NS<GridImp::dimension>::getCornerLocal(center_,neighborCount_,tmp);
+
+    // and poke them into the Geometry
+    selfLocal_.setCoords(i,tmp);
+  }
+
+  return selfLocal_;
 }
 
 template< class GridImp>
@@ -100,59 +141,148 @@ inline const typename UGGridIntersectionIterator<GridImp>::LocalGeometry&
 UGGridIntersectionIterator<GridImp>::
 intersectionNeighborLocal() const
 {
-  DUNE_THROW(NotImplemented, "intersection_neighbor_local()");
-  return fakeNeigh_;
+  typename TargetType<0,GridImp::dimensionworld>::T* other,self;
+
+  // if we have a neighbor on this level, then return it
+  if (UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_)!=NULL)
+  {
+    other = UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_);
+    self = center_;
+  }
+  else
+  {
+    // now go down the stack of copies to find a lower level leaf neighbor
+    typename TargetType<0,GridImp::dimensionworld>::T* father_ = UG_NS<GridImp::dimensionworld>::EFather(center_);
+    while (father_!=0)
+    {
+      if (UG_NS<GridImp::dimensionworld>::nSons(father_)!=1)
+        DUNE_THROW(GridError,"no neighbor found");
+      if (UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)!=NULL)             // check existence of neighbor
+        if (UG_NS<GridImp::dimension>::isLeaf(UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)))
+        {
+          other = UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_);
+          self = father_;
+          break;
+        }
+      // try father
+      father_ = UG_NS<GridImp::dimensionworld>::EFather(father_);
+    }
+    if (father_==0)
+      DUNE_THROW(GridError,"no neighbor found");
+  }
+
+  // we have other and self
+  const int nSides = UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(other);
+  int otherCount;
+  for (otherCount=0; otherCount<nSides; otherCount++)
+    if (UG_NS<GridImp::dimensionworld>::NbElem(other,otherCount) == self)
+      break;
+
+  // now otherCount is the number of the face in other (in UG's numbering system)
+  // go on and get the local coordinates
+  int numCornersOfSide = UG_NS<GridImp::dimension>::Corners_Of_Side(other,otherCount);
+  neighLocal_.setNumberOfCorners(numCornersOfSide);
+
+  for (int i=0; i<numCornersOfSide; i++)
+  {
+    // get number of corner in UG's numbering system
+    int cornerIdx = UG_NS<GridImp::dimension>::Corner_Of_Side(other,otherCount,i);
+
+    // we need a temporary to be filled
+    FieldVector<UGCtype, dim> tmp;
+
+    // get the corners local coordinates
+    UG_NS<GridImp::dimension>::getCornerLocal(other,otherCount,tmp);
+
+    // and poke them into the Geometry
+    neighLocal_.setCoords(i,tmp);
+  }
+
+  return neighLocal_;
 }
+
 
 template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
-numberInSelf ()  const
+renumberFaceUGToDune (int nSides, int i)  const
 {
-  const int nSides = UG_NS<dimworld>::Sides_Of_Elem(center_);
-
   if (nSides==6) {   // Hexahedron
     // Dune numbers the faces of a hexahedron differently than UG.
     // The following two lines do the transformation
     const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-    return renumbering[neighborCount_];
+    return renumbering[i];
 
   } else if (nSides==4 && GridImp::dimension==3) {   // Tetrahedron
     // Dune numbers the faces of a tetrahedron differently than UG.
     // The following two lines do the transformation
     const int renumbering[4] = {3, 0, 1, 2};
-    return renumbering[neighborCount_];
+    return renumbering[i];
 
   } else if (nSides==4 && GridImp::dimension==2) {   // Quadrilateral
     // Dune numbers the faces of a quadrilateral differently than UG.
     // The following two lines do the transformation
     const int renumbering[4] = {2, 1, 3, 0};
-    return renumbering[neighborCount_];
+    return renumbering[i];
 
   } else if (nSides==3) {   // Triangle
     // Dune numbers the faces of a triangle differently from UG.
     // The following two lines do the transformation
     const int renumbering[3] = {2, 0, 1};
-    return renumbering[neighborCount_];
+    return renumbering[i];
 
   } else
-    return neighborCount_;
+    return i;
+}
 
+
+template< class GridImp>
+inline int UGGridIntersectionIterator<GridImp>::
+numberInSelf ()  const
+{
+  return renumberFaceUGToDune(UG_NS<dimworld>::Sides_Of_Elem(center_),neighborCount_);
 }
 
 template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
 numberInNeighbor () const
 {
-  DUNE_THROW(NotImplemented, "The renumbering is missing!");
-  typename TargetType<0,GridImp::dimensionworld>::T* other = UG_NS<dimworld>::NbElem(center_, neighborCount_);
+  typename TargetType<0,GridImp::dimensionworld>::T* other,self;
 
-  /** \bug The whole renumbering is missing */
+  // if we have a neighbor on this level, then return it
+  if (UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_)!=NULL)
+  {
+    other = UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_);
+    self = center_;
+  }
+  else
+  {
+    // now go down the stack of copies to find a lower level leaf neighbor
+    typename TargetType<0,GridImp::dimensionworld>::T* father_ = UG_NS<GridImp::dimensionworld>::EFather(center_);
+    while (father_!=0)
+    {
+      if (UG_NS<GridImp::dimensionworld>::nSons(father_)!=1)
+        DUNE_THROW(GridError,"no neighbor found");
+      if (UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)!=NULL)             // check existence of neighbor
+        if (UG_NS<GridImp::dimension>::isLeaf(UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)))
+        {
+          other = UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_);
+          self = father_;
+          break;
+        }
+      // try father
+      father_ = UG_NS<GridImp::dimensionworld>::EFather(father_);
+    }
+    if (father_==0)
+      DUNE_THROW(GridError,"no neighbor found");
+  }
+
+  // we have other and self
   const int nSides = UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(other);
-
   int i;
-  for (i=0; i<UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(other); i++)
-    if (UG_NS<GridImp::dimensionworld>::NbElem(other,i) == center_)
+  for (i=0; i<nSides; i++)
+    if (UG_NS<GridImp::dimensionworld>::NbElem(other,i) == self)
       break;
 
-  return (i+nSides-1)%nSides;
+  // now we have to renumber the side i
+  return renumberFaceUGToDune(nSides,i);
 }

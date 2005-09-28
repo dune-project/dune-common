@@ -16,7 +16,7 @@ namespace Dune {
   /** \brief Iterator over all element neighbors
    * \ingroup UGGrid
      Mesh entities of codimension 0 ("elements") allow to visit all neighbors, where
-     a neighbor is an entity of codimension 0 which has a common entity of codimension
+     a neighbor is an entity of codimension 0 which has a common entity of codimension 1
      These neighbors are accessed via a IntersectionIterator. This allows the implement
      non-matching meshes. The number of neigbors may be different from the number
      of an element!
@@ -81,7 +81,9 @@ namespace Dune {
     //! (that is the neighboring Entity)
     EntityPointer outside() const {
       UGGridEntityPointer<0,GridImp> other;
-      other.setToTarget(UG_NS<dimworld>::NbElem(center_, neighborCount_), this->level());
+      typename TargetType<0,GridImp::dimensionworld>::T* otherelem = getNeighbor();
+      if (otherelem==0) DUNE_THROW(GridError,"no neighbor found in outside()");
+      other.setToTarget(otherelem,UG_NS<GridImp::dimensionworld>::myLevel(otherelem));
       return other;
     }
 
@@ -126,12 +128,19 @@ namespace Dune {
     //  private methods
     //**********************************************************
 
+    //! get neighbor on same or lower level or 0
+    typename TargetType<0,GridImp::dimensionworld>::T* getNeighbor () const;
+
+    //! renumbering of faces from UG to Dune
+    int renumberFaceUGToDune (int nSides, int i) const;
+
     //! vector storing the outer normal
     mutable FieldVector<UGCtype, dimworld> outerNormal_;
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
-    UGMakeableGeometry<dim-1,dim,GridImp> fakeNeigh_;
+    mutable UGMakeableGeometry<dim-1,dim,GridImp> selfLocal_;
+    mutable UGMakeableGeometry<dim-1,dim,GridImp> neighLocal_;
 
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
@@ -146,7 +155,7 @@ namespace Dune {
     //! The level we're on
     int level_;
 
-    //! count on which neighbor we are lookin' at
+    //! count on which neighbor we are lookin' at. Note that this is interpreted in UG's ordering!
     int neighborCount_;
 
 
