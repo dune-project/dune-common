@@ -208,7 +208,7 @@ namespace Dune {
     template<class T>
     static void  getCornerLocal (const TargetType<0,3>::T* theElement, int corner, FieldVector<T, 3>& local)
     {
-      using UG2d::element_descriptors;
+      using UG3d::element_descriptors;
       local[0] = LOCAL_COORD_OF_TAG(TAG(theElement),corner)[0];
       local[1] = LOCAL_COORD_OF_TAG(TAG(theElement),corner)[1];
       local[2] = LOCAL_COORD_OF_TAG(TAG(theElement),corner)[2];
