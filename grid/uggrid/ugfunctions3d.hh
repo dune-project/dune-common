@@ -173,6 +173,11 @@ namespace Dune {
       return UG3d::ReadCW(element, UG3d::NSONS_CE);
     }
 
+    static int myLevel (TargetType<0,3>::T* theElement) {
+      using UG3d::ELEMENT;
+      return LEVEL(theElement);
+    }
+
     static int GetSons(const UG3d::element* element, UG3d::element* sonList[MAX_SONS]) {
       return UG3d::GetSons(element, sonList);
     }
@@ -197,6 +202,16 @@ namespace Dune {
     static unsigned int Tag(const TargetType<3,3>::T* theNode) {
       DUNE_THROW(GridError, "Called method Tag() for a vertex.  This should never happen!");
       return 0;
+    }
+
+    //! get corner in local coordinates, corner number in UG's numbering system
+    template<class T>
+    static void  getCornerLocal (const TargetType<0,3>::T* theElement, int corner, FieldVector<T, 3>& local)
+    {
+      using UG2d::element_descriptors;
+      local[0] = LOCAL_COORD_OF_TAG(TAG(theElement),corner)[0];
+      local[1] = LOCAL_COORD_OF_TAG(TAG(theElement),corner)[1];
+      local[2] = LOCAL_COORD_OF_TAG(TAG(theElement),corner)[2];
     }
 
     //! Next element in the UG element lists
