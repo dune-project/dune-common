@@ -93,9 +93,10 @@ namespace Dune {
   inline FieldVector<sgrid_ctype, cdim> SGeometry<mydim,cdim,GridImp>::global (const FieldVector<sgrid_ctype, mydim>& local) const
   {
     FieldVector<sgrid_ctype, cdim> global = s;
-    // global += A * local
-    A.umv(local,global);
-    return global; // s+(A*local);
+    // global += A^t * local
+    A.umtv(local,global);
+
+    return global;
   }
 
   template<int mydim, int cdim, class GridImp>
