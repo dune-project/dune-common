@@ -47,6 +47,13 @@ namespace Dune {
     void setNumberOfCorners(int n) {
       this->realGeometry.setNumberOfCorners(n);
     }
+
+    // UG doesn't actually have Subfaces.  Therefore, this method should never be
+    // called.  It is only here to calm the compiler
+    void setToTarget(void* target) {
+      DUNE_THROW(NotImplemented, "You have called UGMakeableGeometry<2,3>::setToTarget");
+    }
+
   };
 
   template<class GridImp>
@@ -208,8 +215,18 @@ namespace Dune {
     int corners () const {return (elementType_==simplex) ? 3 : 4;}
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<UGCtype, 3>& operator[] (int i) const {
-      return coord_[i];
+    const FieldVector<UGCtype, 3>& operator[] (int i) const
+    {
+      if (elementType_==cube) {
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        // It also works in both directions UG->DUNE, DUNE->UG !
+        const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+        return coord_[renumbering[i]];
+      } else
+        return coord_[i];
     }
 
     //! maps a local coordinate within reference element to
@@ -287,6 +304,7 @@ namespace Dune {
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<UGCtype, 2>& operator[] (int i) const {
+      // 1D -> 2D, nothing to renumber
       return coord_[i];
     }
 
@@ -303,8 +321,7 @@ namespace Dune {
     //! Returns true if the point is in the current element
     /** \todo Not implemented yet! */
     bool checkInside(const FieldVector<UGCtype, 1>& local) const {
-      DUNE_THROW(GridError, "UGGridGeometry<1,2>::checkInside() not implemented yet!");
-      return true;
+      return local[0]>=0 && local[0]<=1;
     }
 
     // A(l)
