@@ -146,20 +146,38 @@ namespace Dune
     // all elements (better codim 0 entities) on a grid level
     // Note the use of the typename and template keywords.
     typedef typename G::Traits::template Codim<0>::LeafIterator LeafIterator;
+    typedef typename G::Traits::template Codim<dim>::LeafIterator VLeafIterator;
 
     // print info about the leaf grid
     std::cout << prefix << "leaf"
               << " dim=" << dim
               << " geomTypes=(";
     bool first=true;
-    for (int i=0; i<grid.leafIndexSet().geomTypes(0).size(); i++)
+    for (int c=0; c<=dim; c++)
     {
-      if (!first) std::cout << ",";
-      std::cout << GeometryName(grid.leafIndexSet().geomTypes(0)[i])
-                << "=" << grid.leafIndexSet().size(0,grid.leafIndexSet().geomTypes(0)[i]);
-      first=false;
+      for (int i=0; i<grid.leafIndexSet().geomTypes(c).size(); i++)
+      {
+        if (!first) std::cout << ",";
+        std::cout << GeometryName(grid.leafIndexSet().geomTypes(c)[i])
+                  << "[" << c << "]"
+                  << "=" << grid.leafIndexSet().size(c,grid.leafIndexSet().geomTypes(c)[i]);
+        first=false;
+      }
     }
     std::cout << ")" << std::endl;
+
+    // print info about nodes in leaf grid
+    VLeafIterator veendit = grid.template leafend<dim>();
+    for (VLeafIterator it = grid.template leafbegin<dim>(); it!=veendit; ++it)
+    {
+      std::cout << prefix << "level=" << it->level()
+                << " " << GeometryName(it->geometry().type()) << "[" << dim << "]"
+                << " index=" << grid.leafIndexSet().index(*it)
+                << " gid=" << grid.globalIdSet().template id<dim>(*it)
+                << " partition=" << PartitionName(it->partitionType())
+                << " pos=(" << it->geometry()[0] << ")"
+                << std::endl;
+    }
 
     // print info about each element in leaf grid
     LeafIterator eendit = grid.template leafend<0>();
