@@ -694,6 +694,15 @@ namespace Dune
     //! make empty entity pointer (to be revised)
     AlbertaGridEntityPointer(const AlbertaGridEntityPointerType & org);
 
+    //! assignment operator
+    AlbertaGridEntityPointer& operator= (const AlbertaGridEntityPointer& org)
+    {
+      if (grid_!=org.grid_)
+        DUNE_THROW(GridError,"entity pointer assignment with different grids");
+      (*entity_).setEntity( *(org.entity_) );
+      done_ = org.done_;
+    }
+
     //! Destructor
     ~AlbertaGridEntityPointer();
 
@@ -1451,6 +1460,24 @@ namespace Dune
      * counting the entities on each level, you know.
      */
     int size (int level, int codim) const;
+
+    //! number of leaf entities per codim in this process
+    int size (int codim) const
+    {
+      return size(codim,simplex);
+    }
+
+    //! number of entities per level, codim and geometry type in this process
+    int size (int level, int codim, GeometryType type) const
+    {
+      return this->levelIndexSet(level).size(codim,type);
+    }
+
+    //! number of leaf entities per codim and geometry type in this process
+    int size (int codim, GeometryType type) const
+    {
+      return this->leafIndexSet().size(codim,type);
+    }
 
     /** \brief ghostSize is zero for this grid  */
     int ghostSize (int level, int codim) const { return 0; }
