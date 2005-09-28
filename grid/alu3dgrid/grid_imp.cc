@@ -131,7 +131,7 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline int ALU3dGrid<dim, dimworld, elType>::size(int level, int codim) const
   {
-    return levelIndexSet(level).size(codim,this->geomTypes()[0]);
+    return levelIndexSet(level).size(codim,this->geomTypes(codim)[0]);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>

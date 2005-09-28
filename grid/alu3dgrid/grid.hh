@@ -334,6 +334,24 @@ namespace Dune {
     //! number of grid entities per level and codim
     int size (int level, int cd) const;
 
+    //! number of leaf entities per codim in this process
+    int size (int codim) const
+    {
+      return size(codim,simplex);
+    }
+
+    //! number of entities per level, codim and geometry type in this process
+    int size (int level, int codim, GeometryType type) const
+    {
+      return this->levelIndexSet(level).size(codim,type);
+    }
+
+    //! number of leaf entities per codim and geometry type in this process
+    int size (int codim, GeometryType type) const
+    {
+      return this->leafIndexSet().size(codim,type);
+    }
+
     //! number of grid entities on all levels for given codim
     int global_size (int cd) const DUNE_DEPRECATED;
 
