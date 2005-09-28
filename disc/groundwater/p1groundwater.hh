@@ -69,7 +69,7 @@ namespace Dune
 
   public:
     //! Constructor
-    LagrangeFEMForGroundwaterEquation (const GroundwaterEquationParameters<G,RT>& params)
+    LagrangeFEMForGroundwaterEquation (const GroundwaterEquationParameters<G,RT>& params, bool procBoundaryAsDirichlet_=true)
       : problem(params)
     {
       for (int i=0; i<n; i++)
@@ -79,6 +79,7 @@ namespace Dune
         for (int j=0; j<n; j++) A[i][j] = 0;
       }
       currentsize = 0;
+      procBoundaryAsDirichlet = procBoundaryAsDirichlet_;
     }
 
 
@@ -154,11 +155,16 @@ namespace Dune
       IntersectionIterator endit = e.iend();
       for (IntersectionIterator it = e.ibegin(); it!=endit; ++it)
       {
-        if (it.neighbor()) continue;           // we are neither at exterior or process boundary
+        // if we have a neighbor then we assume there is no boundary
+        // (it might still be an interior boundary ... )
+        if (it.neighbor()) continue;
+
+        // determine boundary condition type for this face, initialize with processor boundary
         typename GroundwaterEquationParameters<G,RT>::BC bctypeface = GroundwaterEquationParameters<G,RT>::process;
+
+        // handle face on exterior boundary
         if (it.boundary())
         {
-          // the iterator is placed on part of the domain boundary
           Dune::GeometryType gtface = it.intersectionSelfLocal().type();
           double refvolumeface = Dune::ReferenceElements<DT,n-1>::general(gtface).volume();
           for (int g=0; g<Dune::QuadratureRules<DT,n-1>::rule(gtface,p).size(); ++g)
@@ -175,10 +181,16 @@ namespace Dune
               if (bctype[i]==GroundwaterEquationParameters<G,RT>::neumann)
                 b[i] -= J*sfs[i].evaluateFunction(0,local)*weightface*refvolumeface*detjacface;
           }
-          if (bctypeface==GroundwaterEquationParameters<G,RT>::neumann) continue;                 // was a neumann face
+          if (bctypeface==GroundwaterEquationParameters<G,RT>::neumann) continue;                 // was a neumann face, go to next face
         }
-        // it neither boundary nor is there a neighbor -> process boundary handled as homogeneous dirichlet boundary
-        // check for each basis function whether it is on this face
+
+        // If we are here, then its either an exterior boundary face with Dirichlet condition
+        // or a processor boundary (i.e. neither boundary() nor neighbor() was true)
+        // How processor boundaries are handled depends on the processor boundary mode
+        if (bctypeface==GroundwaterEquationParameters<G,RT>::process && procBoundaryAsDirichlet==false)
+          continue;               // then it acts like homogeneous Neumann
+
+        // now handle exterior or interior Dirichlet boundary
         for (int i=0; i<sfs.size(); i++)           // loop over test function number
         {
           if (sfs[i].codim()==0) continue;                 // skip interior dof
@@ -288,6 +300,7 @@ namespace Dune
     RT A[SIZE][SIZE];
     RT b[SIZE];
     typename GroundwaterEquationParameters<G,RT>::BC bctype[SIZE];
+    bool procBoundaryAsDirichlet;
   };
 
 
@@ -305,8 +318,9 @@ namespace Dune
     typedef typename MatrixType::ColIterator coliterator;
 
   public:
-    P1GroundwaterOperator (const G& g, const GroundwaterEquationParameters<G,RT>& params, const IS& indexset)
-      : AssembledP1FEOperator<G,RT,IS>(g,indexset), loc(params)
+    P1GroundwaterOperator (const G& g, const GroundwaterEquationParameters<G,RT>& params,
+                           const IS& indexset, bool procBoundaryAsDirichlet=true)
+      : AssembledP1FEOperator<G,RT,IS>(g,indexset), loc(params,procBoundaryAsDirichlet)
     {       }
 
     //! assemble operator, rhs and Dirichlet boundary conditions
@@ -391,8 +405,9 @@ namespace Dune
   class LeafP1GroundwaterOperator : public P1GroundwaterOperator<G,RT,typename G::Traits::LeafIndexSet>
   {
   public:
-    LeafP1GroundwaterOperator (const G& grid, const GroundwaterEquationParameters<G,RT>& params)
-      : P1GroundwaterOperator<G,RT,typename G::Traits::LeafIndexSet>(grid,params,grid.leafIndexSet())
+    LeafP1GroundwaterOperator (const G& grid, const GroundwaterEquationParameters<G,RT>& params,
+                               bool procBoundaryAsDirichlet=true)
+      : P1GroundwaterOperator<G,RT,typename G::Traits::LeafIndexSet>(grid,params,grid.leafIndexSet(),procBoundaryAsDirichlet)
     {}
   };
 
@@ -401,8 +416,9 @@ namespace Dune
   class LevelP1GroundwaterOperator : public P1GroundwaterOperator<G,RT,typename G::Traits::LevelIndexSet>
   {
   public:
-    LevelP1GroundwaterOperator (const G& grid, int level, const GroundwaterEquationParameters<G,RT>& params)
-      : P1GroundwaterOperator<G,RT,typename G::Traits::LevelIndexSet>(grid,params,grid.levelIndexSet(level))
+    LevelP1GroundwaterOperator (const G& grid, int level,
+                                const GroundwaterEquationParameters<G,RT>& params, bool procBoundaryAsDirichlet=true)
+      : P1GroundwaterOperator<G,RT,typename G::Traits::LevelIndexSet>(grid,params,grid.levelIndexSet(level),procBoundaryAsDirichlet)
     {}
   };
 
