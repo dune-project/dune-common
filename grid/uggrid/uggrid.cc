@@ -622,8 +622,8 @@ void Dune::UGGrid < dim, dimworld >::globalRefine(int n)
   for (int i=0; i<n; i++) {
 
     // mark all entities for grid refinement
-    typename Traits::template Codim<0>::LevelIterator iIt    = lbegin<0>(maxlevel());
-    typename Traits::template Codim<0>::LevelIterator iEndIt = lend<0>(maxlevel());
+    typename Traits::template Codim<0>::LeafIterator iIt    = leafbegin<0>();
+    typename Traits::template Codim<0>::LeafIterator iEndIt = leafend<0>();
 
     for (; iIt!=iEndIt; ++iIt)
       mark(1, iIt);
