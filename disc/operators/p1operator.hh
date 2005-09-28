@@ -224,7 +224,7 @@ namespace Dune
       std::cout << "vertexmapper has size " << vertexmapper.size() << std::endl;
 
       // handle each leaf element and insert the nonzeros
-      eendit = is.template end<0,All_Partition>();
+      //	  eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
         Dune::GeometryType gt = it->geometry().type();
