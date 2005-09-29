@@ -45,7 +45,7 @@ namespace Dune {
     //! of the underlying function spaces
     virtual void adapt () const
     {
-      std::cout << "called AdaptMapping::adapt()" << std::endl;
+      //std::cout << "called AdaptMapping::adapt()" << std::endl;
       if(am_) am_->adapt();
       else
       {
@@ -328,6 +328,7 @@ namespace Dune {
 
       df_.localFunction( father, vati_ );
       df_.localFunction( son   , sohn_ );
+
 
       if(initialize)
       {
