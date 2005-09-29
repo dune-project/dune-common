@@ -9,8 +9,6 @@
 #include <assert.h>
 #include <algorithm>
 
-#include <config.h>
-
 // Dune includes
 #include <dune/common/misc.hh>
 #include <dune/common/interfaces.hh>

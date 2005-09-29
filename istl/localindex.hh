@@ -5,7 +5,6 @@
 #ifndef DUNE_ISTL_LOCALINDEX_HH
 #define DUNE_ISTL_LOCALINDEX_HH
 
-#include "config.h"
 #include <cstddef>
 
 namespace Dune

@@ -3,8 +3,6 @@
 #ifndef __MPITRAITS_HH__
 #define __MPITRAITS_HH__
 
-#include "config.h"
-
 #ifdef HAVE_MPI
 #include "mpi.h"
 #endif

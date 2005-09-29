@@ -5,7 +5,6 @@
 #ifndef DUNE_PLOCALINDEX_HH
 #define DUNE_PLOCALINDEX_HH
 
-#include "config.h"
 #include "localindex.hh"
 #include "mpitraits.hh"
 

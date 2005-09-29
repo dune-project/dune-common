@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <cassert>
-#include <config.h>
 #include "iteratorfacades.hh"
 #include <ostream>
 

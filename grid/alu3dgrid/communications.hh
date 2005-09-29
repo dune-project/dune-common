@@ -6,11 +6,8 @@
 // use this define to control if Albert should use the found MPI
 
 #ifdef _BSGRID_PARALLEL_
-#ifdef HAVE_CONFIG_H
-#include <config.h>
 #if HAVE_MPI
 #include <mpi.h>
-#endif
 #endif
 #endif
 

@@ -5,11 +5,8 @@
 
 // use this define to control if Albert should use the found MPI
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
 #if defined(HAVE_MPI) && defined(ALBERT_USES_MPI)
 #include <mpi.h>
-#endif
 #endif
 
 #include <dune/common/dlist.hh>
