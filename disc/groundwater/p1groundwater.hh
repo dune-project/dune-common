@@ -352,13 +352,13 @@ namespace Dune
         for (int i=0; i<sfs.size(); i++)           // loop over rows
         {
           if (sfs[i].codim()!=n) DUNE_THROW(MathError,"expected codim=dim");
-          int alpha = this->vertexmapper.template submap<n>(*it,sfs[i].entity());
+          int alpha = this->vertexmapper.template map<n>(*it,sfs[i].entity());
 
           // accumulate matrix
           for (int j=0; j<sfs.size(); j++)
           {
             if (sfs[j].codim()!=n) DUNE_THROW(MathError,"expected codim=dim");
-            int beta = this->vertexmapper.template submap<n>(*it,sfs[j].entity());
+            int beta = this->vertexmapper.template map<n>(*it,sfs[j].entity());
             this->A[alpha][beta] += loc.mat(i,j);
           }
 

@@ -136,7 +136,7 @@ namespace Dune
       RT value=0;
       Dune::GeometryType gt = e.geometry().type();     // extract type of element
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
-        value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi)*coeff[mapper.template submap<n>(e,i)];
+        value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi)*coeff[mapper.template map<n>(e,i)];
       return value;
     }
 
@@ -177,7 +177,7 @@ namespace Dune
       Dune::GeometryType gt = e.geometry().type();     // extract type of element
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
         value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateDerivative(0,dir,xi)
-                 *coeff[mapper.template submap<n>(e,i)];
+                 *coeff[mapper.template map<n>(e,i)];
       return value;
     }
 
@@ -200,13 +200,13 @@ namespace Dune
       {
         Dune::GeometryType gt = it->geometry().type();
         for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
-          if (!visited[mapper.template submap<n>(*it,i)])
+          if (!visited[mapper.template map<n>(*it,i)])
           {
-            coeff[mapper.template submap<n>(*it,i)][0] =
+            coeff[mapper.template map<n>(*it,i)][0] =
               u.evallocal(0,*it,Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position());
-            visited[mapper.template submap<n>(*it,i)] = true;
+            visited[mapper.template map<n>(*it,i)] = true;
             //                          std::cout << "evaluated " << it->geometry().global(Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position())
-            //                                            << " value " << coeff[mapper.template submap<n>(*it,i)][0]
+            //                                            << " value " << coeff[mapper.template map<n>(*it,i)][0]
             //                                            << std::endl;
           }
       }
