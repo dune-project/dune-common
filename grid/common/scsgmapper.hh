@@ -66,7 +66,7 @@ namespace Dune
        \return An index in the range 0 ... Max number of entities in set - 1.
      */
     template<int cc>
-    int submap (const typename G::Traits::template Codim<0>::Entity& e, int i) const;
+    int map (const typename G::Traits::template Codim<0>::Entity& e, int i) const;
 
     /** @brief Return total number of entities in the entity set managed by the mapper.
 
@@ -77,6 +77,17 @@ namespace Dune
        \return Size of the entity set.
      */
     int size () const;
+
+    /** @brief Returns true if the entity is contained in the index set
+     */
+    template<class EntityType>
+    bool contains (const EntityType& e) const;
+
+    /** @brief Returns true if the entity is contained in the index set
+     */
+    template<int cc>     // this is now the subentity's codim
+    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i) const;
+
 
   private:
     const G& g;
@@ -105,7 +116,7 @@ namespace Dune
 
   template <typename G, typename IS, int c>
   template<int cc>
-  int SingleCodimSingleGeomTypeMapper<G,IS,c>::submap (const typename G::Traits::template Codim<0>::Entity& e, int i) const
+  int SingleCodimSingleGeomTypeMapper<G,IS,c>::map (const typename G::Traits::template Codim<0>::Entity& e, int i) const
   {
     IsTrue< cc == c >::yes();
     return is.template subIndex<cc>(e,i);
@@ -117,6 +128,19 @@ namespace Dune
     return is.size(c,is.geomTypes(c)[0]);
   }
 
+  template <typename G, typename IS, int c>
+  template<class EntityType>
+  bool SingleCodimSingleGeomTypeMapper<G,IS,c>::contains (const EntityType& e) const
+  {
+    return true;
+  }
+
+  template <typename G, typename IS, int c>
+  template<int cc>
+  bool SingleCodimSingleGeomTypeMapper<G,IS,c>::contains (const typename G::Traits::template Codim<0>::Entity& e, int i) const
+  {
+    return true;
+  }
 
   /**
    * @addtogroup Mapper

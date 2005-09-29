@@ -38,8 +38,9 @@ namespace Dune
    *    A Dune grid type.
    * \par IS
    *    LeafIndexSet or LevelIndexSet type of the given grid.
-   * \par c
-   *    A valid codimension.
+   * \par Layout
+   *    A class template with a method contains, that returns true for all codims and geometry
+   *    types that are in the map.
    */
   template <typename G, typename IS, template<int> class Layout>
   class MultipleCodimMultipleGeomTypeMapper : Mapper<G,MultipleCodimMultipleGeomTypeMapper<G,IS,Layout> > {
@@ -88,7 +89,7 @@ namespace Dune
     int map (const EntityType& e) const
     {
       enum { cc = EntityType::codimension };
-      return is.index(e) + offset[cc][e.geometry().type()];
+      return is.index(e) + offset[cc].find(e.geometry().type())->second;
     }
 
 
@@ -99,11 +100,11 @@ namespace Dune
        \return An index in the range 0 ... Max number of entities in set - 1.
      */
     template<int cc>
-    int submap (const typename G::Traits::template Codim<0>::Entity& e, int i) const
+    int map (const typename G::Traits::template Codim<0>::Entity& e, int i) const
     {
 
       GeometryType gt=ReferenceElements<double,G::dimension>::general(e.geometry().type()).type(i,cc);
-      return is.template subIndex<cc>(e,i) + offset[cc][gt];
+      return is.template subIndex<cc>(e,i) + offset[cc].find(gt)->second;
     }
 
     /** @brief Return total number of entities in the entity set managed by the mapper.
@@ -119,27 +120,44 @@ namespace Dune
       return n;
     }
 
+    /** @brief Returns true if the entity is contained in the index set
+     */
+    template<class EntityType>
+    bool contains (const EntityType& e) const
+    {
+      return true;
+    }
+
+    /** @brief Returns true if the entity is contained in the index set
+     */
+    template<int cc>     // this is now the subentity's codim
+    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i) const
+    {
+      return true;
+    }
+
+
   private:
     int n;     // number of data elements required
     const G& g;
     const IS& is;
-    mutable std::map<GeometryType,int> offset[G::dimension+1];     // for each codim provide a map with all geometry types
+    std::map<GeometryType,int> offset[G::dimension+1];     // for each codim provide a map with all geometry types
   };
 
 
 
 
-  /** @brief Single codim and single geometry type mapper for leaf entities.
+  /** @brief Multiple codim and multiple geometry type mapper for leaf entities.
 
-     This mapper uses all leaf entities of a certain codimension as its entity set. It is
-     assumed (and checked) that the given grid contains only entities of a single geometry type.
+     This mapper uses all leaf entities of a certain codimension as its entity set.
 
      Template parameters are:
 
      \par G
      A Dune grid type.
-     \par c
-     A valid codimension.
+     \par Layout
+     A class template with a method contains, that returns true for all codims and geometry
+     types that are in the map.
    */
   template <typename G, template<int> class Layout>
   class LeafMultipleCodimMultipleGeomTypeMapper
@@ -154,20 +172,20 @@ namespace Dune
     {}
   };
 
-  /** @brief Single codim and single geometry type mapper for entities of one level.
+  /** @brief Multiple codim and multiple geometry type mapper for entities of one level.
 
 
-     This mapper uses all entities of a certain codimension on a given level as its entity set. It is
-     assumed (and checked) that the given grid contains only entities of a single geometry type.
+     This mapper uses all entities of a certain codimension on a given level as its entity set.
 
      Template parameters are:
 
      \par G
      A Dune grid type.
-     \par c
-     A valid codimension.
+     \par Layout
+     A class template with a method contains, that returns true for all codims and geometry
+     types that are in the map.
    */
-  template <typename G, int c, template<int> class Layout>
+  template <typename G, template<int> class Layout>
   class LevelMultipleCodimMultipleGeomTypeMapper
     : public MultipleCodimMultipleGeomTypeMapper<G,typename G::Traits::LevelIndexSet,Layout> {
   public:
