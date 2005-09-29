@@ -854,10 +854,10 @@ namespace Dune
   // --AlbertaGridIntersectionIterator
   // --IntersectionIterator
   /*!
-     Mesh entities of codimension 0 ("elements") allow to visit all neighbors, wh
-     a neighbor is an entity of codimension 0 which has a common entity of codimens
-     These neighbors are accessed via a IntersectionIterator. This allows the implement
-     non-matching meshes. The number of neigbors may be different from the number o
+     Mesh entities of codimension 0 ("elements") allow to visit all neighbors, where
+     a neighbor is an entity of codimension 0 which has a common entity of codimension 1
+     These neighbors are accessed via a IntersectionIterator. This allows the implementation of
+     non-matching meshes. The number of neigbors may be different from the number of faces
      of an element!
    */
   template<class GridImp>
