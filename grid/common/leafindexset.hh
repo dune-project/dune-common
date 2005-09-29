@@ -322,7 +322,7 @@ namespace Dune {
 
     void print (const char * msg, bool oldtoo = false ) const;
 
-  }; // end of class AdaptiveLeafIndexSet
+  }; // end of class
 
   //******************************************************************
   //
@@ -331,9 +331,9 @@ namespace Dune {
   //
   //******************************************************************
   /*!
-     This index set generates and consecutive leaf index out of the unique
+     This index set generates a consecutive leaf index out of the unique
      global index of each entity. This index set can be used instead of the
-     default grid index sets an can be generated for each grid implementation.
+     default grid index sets and can be generated for each grid implementation.
 
      Note that only codim = 0 is working at the moment.
 
