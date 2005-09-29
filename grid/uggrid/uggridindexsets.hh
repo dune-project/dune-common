@@ -746,7 +746,7 @@ namespace Dune {
 
   public:
     //! define the type used for persistent local ids
-    typedef uint LocalIdType;
+    typedef unsigned int LocalIdType;
 
     //! get id of an entity
     template<int cd>

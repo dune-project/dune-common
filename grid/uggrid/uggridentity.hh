@@ -103,19 +103,17 @@ namespace Dune {
 
     int leafIndex() const {
       return UG_NS<dim>::leafIndex(target_);
-      //       return target_->myvertex->iv.id;
     }
 
     unsigned int localId() const {
       return UG_NS<dim>::id(target_);
-      // return target_->id;
     }
 
     unsigned int globalId() const {
 #ifdef ModelP
       return target_->ddd.gid;
 #else
-      return target_->id;
+      return UG_NS<dim>::id(target_);
 #endif
     }
 
@@ -286,12 +284,12 @@ namespace Dune {
     /** \brief Return global id of sub entity with codim = cc and local number i
      */
     template<int cc>
-    int subGlobalId (int i) const;
+    unsigned int subGlobalId (int i) const;
 
     /** \brief Return local id of sub entity with codim = cc and local number i
      */
     template<int cc>
-    int subLocalId (int i) const;
+    unsigned int subLocalId (int i) const;
 
 
     /** \brief Provide access to sub entity i of given codimension. Entities

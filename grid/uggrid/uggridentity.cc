@@ -213,23 +213,34 @@ inline int UGGridEntity<0, dim, GridImp>::subLeafIndex(int i) const
 
 template <int dim, class GridImp>
 template <int cc>
-inline int UGGridEntity<0, dim, GridImp>::subGlobalId(int i) const
+inline unsigned int UGGridEntity<0, dim, GridImp>::subGlobalId(int i) const
 {
   assert(i>=0 && i<count<cc>());
 
-  if (cc!=dim)
-    DUNE_THROW(GridError, "UGGrid::subGlobalId isn't implemented for cc != dim");
-
+  if (cc==0)
+  {
 #ifdef ModelP
-  return UG_NS<dim>::Corner(target_,renumberVertex(i))->ddd.gid;
+    return target_->ddd.gid;
 #else
-  return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,renumberVertex(i)));
+    return UG_NS<dim>::id(target_);
 #endif
+  }
+  if (cc==dim)
+  {
+#ifdef ModelP
+    return UG_NS<dim>::Corner(target_,renumberVertex(i))->ddd.gid;
+#else
+    return UG_NS<dim>::id(UG_NS<dim>::Corner(target_,renumberVertex(i)));
+#endif
+  }
+
+  DUNE_THROW(GridError, "UGGrid<" << dim << "," << dim << ">::subGlobalId isn't implemented for cc==" << cc );
+  return 0;
 }
 
 template <int dim, class GridImp>
 template <int cc>
-inline int UGGridEntity<0, dim, GridImp>::subLocalId(int i) const
+inline unsigned int UGGridEntity<0, dim, GridImp>::subLocalId(int i) const
 {
   assert(i>=0 && i<count<cc>());
 

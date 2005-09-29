@@ -323,33 +323,26 @@ namespace Dune {
 
     //! Gets the leaf index of a UG node
     static int& leafIndex(TargetType<2,2>::T* theNode) {
-      return theNode->myvertex->iv.id;
+      return theNode->myvertex->iv.leafIndex;
     }
 
     //! Gets the leaf index of a UG node
     static const int& leafIndex(const TargetType<2,2>::T* theNode) {
-      return theNode->myvertex->iv.id;
+      return theNode->myvertex->iv.leafIndex;
     }
 
+    // /////////////////////////////////////////////
+    //   IDs
+    // /////////////////////////////////////////////
 
     //! Gets the index of a UG element
-    static int& id(TargetType<0,2>::T* theElement) {
-      return theElement->ge.id;
-    }
-
-    //! Gets the index of a UG element
-    static const int& id(const TargetType<0,2>::T* theElement) {
+    static unsigned int id(const TargetType<0,2>::T* theElement) {
       return theElement->ge.id;
     }
 
     //! Gets the index of a UG node
-    static int& id(TargetType<2,2>::T* theNode) {
-      return theNode->id;
-    }
-
-    //! Gets the index of a UG node
-    static const int& id(const TargetType<2,2>::T* theNode) {
-      return theNode->id;
+    static unsigned int id(const TargetType<2,2>::T* theNode) {
+      return theNode->myvertex->iv.id | 0x80000000;
     }
 
     //! \todo Please doc me!
