@@ -333,8 +333,8 @@ namespace Dune
     {
       const GridType & grid = (*grditer_)->getGrid();
       maxlevel = std::max( maxlevel, grid.maxlevel());
-      noe += grid.leafIndexSet().size(0);
-      nov += grid.leafIndexSet().size(dim);
+      noe += grid.leafIndexSet().size(0,unknown);
+      nov += grid.leafIndexSet().size(dim,unknown);
     }
 
     hel_.display = (void *) this;
