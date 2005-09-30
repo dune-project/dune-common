@@ -6,7 +6,7 @@
 
    Instantiate Alberta-Grid and feed it to the generic femcheck()
 
-   Note: Albert needs the defines DIM and DIM_OF_WORLD on the
+   Note: Albert needs the defines DUNE_PROBLEM_DIM and DUNE_WORLD_DUNE_PROBLEM_DIM on the
    commandline anyway thus we can use them to select the correct class
 
  */
@@ -22,15 +22,18 @@ int main () {
   try {
     /* use grid-file appropriate for dimensions */
     std::ostringstream filename;
-    filename << "alberta-testgrid-" << DIM << "-" << DIM_OF_WORLD << ".al";
+    filename << "alberta-testgrid-" << DUNE_PROBLEM_DIM
+             << "-" << DUNE_WORLD_DUNE_PROBLEM_DIM << ".al";
 
-    std::cout << std::endl << "AlbertaGrid<" << DIM << "," << DIM_OF_WORLD
+    std::cout << std::endl << "AlbertaGrid<" << DUNE_PROBLEM_DIM
+              << "," << DUNE_WORLD_DUNE_PROBLEM_DIM
               << "> with grid file: " << filename.str()
               << std::endl << std::endl;
 
     // extra-environment to check destruction
     {
-      Dune::AlbertaGrid<DIM,DIM_OF_WORLD> grid(filename.str().c_str());
+      Dune::AlbertaGrid<DUNE_PROBLEM_DIM,DUNE_WORLD_DUNE_PROBLEM_DIM>
+      grid(filename.str().c_str());
       for(int i=0; i<3; i++)
       {
         grid.globalRefine(1);
