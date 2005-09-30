@@ -11,7 +11,7 @@ inline typename TargetType<0,GridImp::dimensionworld>::T* UGGridIntersectionIter
   typename TargetType<0,GridImp::dimensionworld>::T* father_ = UG_NS<GridImp::dimensionworld>::EFather(center_);
   while (father_!=0)
   {
-    if (UG_NS<GridImp::dimensionworld>::nSons(father_)!=1) break;       // father must be a copy
+    if (!UG_NS<GridImp::dimensionworld>::hasCopy(father_)) break;       // father must be a copy
     if (UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)!=NULL)       // check existence of neighbor
       if (UG_NS<GridImp::dimension>::isLeaf(UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)))           // check leafness
         return UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_);
@@ -155,7 +155,7 @@ intersectionNeighborLocal() const
     typename TargetType<0,GridImp::dimensionworld>::T* father_ = UG_NS<GridImp::dimensionworld>::EFather(center_);
     while (father_!=0)
     {
-      if (UG_NS<GridImp::dimensionworld>::nSons(father_)!=1)
+      if (!UG_NS<GridImp::dimensionworld>::hasCopy(father_))
         DUNE_THROW(GridError,"no neighbor found");
       if (UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)!=NULL)             // check existence of neighbor
         if (UG_NS<GridImp::dimension>::isLeaf(UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)))
@@ -260,7 +260,7 @@ numberInNeighbor () const
     typename TargetType<0,GridImp::dimensionworld>::T* father_ = UG_NS<GridImp::dimensionworld>::EFather(center_);
     while (father_!=0)
     {
-      if (UG_NS<GridImp::dimensionworld>::nSons(father_)!=1)
+      if (!UG_NS<GridImp::dimensionworld>::hasCopy(father_))
         DUNE_THROW(GridError,"no neighbor found");
       if (UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)!=NULL)             // check existence of neighbor
         if (UG_NS<GridImp::dimension>::isLeaf(UG_NS<GridImp::dimension>::NbElem(father_, neighborCount_)))
