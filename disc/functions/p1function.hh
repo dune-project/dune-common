@@ -42,6 +42,9 @@ namespace Dune
    *
    */
 
+  // forward declaration
+  template<class G, class RT> class P1FEFunctionManager;
+
 
   //! class for P1 finite element functions on a grid
   /*! This class implements the interface of a DifferentiableGridFunction
@@ -65,7 +68,7 @@ namespace Dune
     enum {n=G::dimension,m=1};
 
     //! get entity from the grid
-    typedef typename G::Traits::template Codim<0>::Entity Entity;
+    typedef typename G::template Codim<0>::Entity Entity;
 
     //! Parameter for mapper class
     template<int dim>
@@ -254,6 +257,13 @@ namespace Dune
       return (*coeff);
     }
 
+    /** empty method to maintain symmetry
+            For vertex data nothing is required in preAdapt but for other
+       finite element functions this method is necessary.
+     */
+    void preAdapt ()
+    {}
+
     /** @brief Initiate update process
 
         Call this method after the grid has been adapted. The representation is
@@ -262,10 +272,19 @@ namespace Dune
             The old representation (with respect to the old grid) can still be accessed if
        it has been saved. It is deleted in endUpdate().
      */
-    void beginUpdate ()
+    void postAdapt (P1FEFunctionManager<G,RT>& manager)
     {
-      oldcoeff = coeff;                   // save the current representation
-      mapper_.update();                   // allow mapper to recompute its internal sizes
+      typedef typename G::template Codim<n>::LeafIterator VLeafIterator;
+      typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
+
+      // \todo check that function is only called for data with respect to leafs
+      // save the current representation
+      oldcoeff = coeff;
+
+      // allow mapper to recompute its internal sizes
+      mapper_.update();
+
+      // allocate data with new size (while keeping the old data ...)
       try {
         coeff = new RepresentationType(mapper_.size());         // allocate new representation
       }
@@ -274,29 +293,51 @@ namespace Dune
         throw;         // rethrow exception
       }
       std::cout << "P1 FE function enlarged to " << mapper_.size() << " components" << std::endl;
-    }
 
-    /** @brief update function after mesh adaptation
+      // now loop over the NEW mesh to copy the data that was already in the OLD mesh
+      VLeafIterator veendit = grid_.template leafend<n>();
+      for (VLeafIterator it = grid_.template leafbegin<n>(); it!=veendit; ++it)
+      {
+        // lookup in mapper
+        int i;
+        if (manager.savedMap().contains(*it,i))
+        {
+          // the vertex existed already in the old mesh, copy data
+          (*coeff)[mapper_.map(*it)] = (*oldcoeff)[manager.oldIndex()[i]];
+        }
+      }
 
-        Note thate this method only
-     */
-    void endUpdate ()
-    {
+      // now loop the second time to interpolate the new coefficients
+      for (VLeafIterator it = grid_.template leafbegin<n>(); it!=veendit; ++it)
+      {
+        // lookup in mapper
+        int i;
+        if (!manager.savedMap().contains(*it,i))
+        {
+          EEntityPointer father=it->ownersFather();
+          FieldVector<DT,n> pos=it->positionInOwnersFather();
+          GeometryType gt = father->geometry().type();
+          RT value=0;
+          for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
+          {
+            // lookup subid
+            int index;
+            if (manager.savedMap().template contains<n>(*father,i,index))
+            {
+              // the vertex existed already in the old mesh, copy data
+              value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,pos)
+                       *(*oldcoeff)[manager.oldIndex()[index]];
+            }
+            else
+              DUNE_THROW(GridError,"vertex at father element not found");
+          }
+          (*coeff)[mapper_.map(*it)] = value;
+        }
+      }
+
       // now really delete old representation
       if (oldcoeff!=0) delete oldcoeff;
       oldcoeff = 0;
-    }
-
-    //! export a reference to the mapper, this is needed in adaptivity
-    const MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout>& mapper ()
-    {
-      return mapper_;
-    }
-
-    //! export a reference to the grid, this is needed in adaptivity
-    const G& grid ()
-    {
-      return grid_;
     }
 
   private:
@@ -320,11 +361,11 @@ namespace Dune
   /** \brief P1 finite element function on the leaf grid
    */
   template<class G, class RT>
-  class LeafP1FEFunction : public P1FEFunction<G,RT,typename G::Traits::LeafIndexSet>
+  class LeafP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet>
   {
   public:
     LeafP1FEFunction (const G& grid)
-      : P1FEFunction<G,RT,typename G::Traits::LeafIndexSet>(grid,grid.leafIndexSet())
+      : P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet>(grid,grid.leafIndexSet())
     {}
   };
 
@@ -332,11 +373,11 @@ namespace Dune
   /** \brief P1 finite element function on a given level grid
    */
   template<class G, class RT>
-  class LevelP1FEFunction : public P1FEFunction<G,RT,typename G::Traits::LevelIndexSet>
+  class LevelP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet>
   {
   public:
     LevelP1FEFunction (const G& grid, int level)
-      : P1FEFunction<G,RT,typename G::Traits::LevelIndexSet>(grid,grid.levelIndexSet(level))
+      : P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet>(grid,grid.levelIndexSet(level))
     {}
   };
 
@@ -360,33 +401,22 @@ namespace Dune
     typedef typename std::list<FuncType*>::iterator ListIteratorType;
     typedef typename G::template Codim<dim>::LeafIterator VLeafIterator;
     typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
+
+    template<int dim>
+    struct P1Layout
+    {
+      bool contains (int codim, Dune::GeometryType gt)
+      {
+        if (codim==dim) return true;
+        return false;
+      }
+    };
+
   public:
 
     //! manages nothing
-    P1FEFunctionManager (const G& g) : savedmap(g)
+    P1FEFunctionManager (const G& g) : grid(g), savedmap(g), mapper(g,g.leafIndexSet())
     {       }
-
-    //! manage one function to start with
-    P1FEFunctionManager (FuncType& f) : savedmap(f.grid())
-    {
-      flist.push_back(&f);
-    }
-
-    //! add a function to the list of managed functions
-    void enlist (FuncType& f)
-    {
-      if (flist.empty())
-        flist.push_back(&f);
-      else
-      {
-        FuncType* first = *(flist.begin());
-        if (&(f.grid()) != &(first->grid()))
-          DUNE_THROW(GridError, "tried to register functions on different grids");
-        if (f.mapper().size() != first->mapper().size())
-          DUNE_THROW(GridError, "tried to register functions with different sizes");
-        flist.push_back(&f);
-      }
-    }
 
     /** \brief Prepare finite element function for mesh adaptation
 
@@ -400,21 +430,16 @@ namespace Dune
      */
     void preAdapt ()
     {
-      // check if any functions are registered
-      if (flist.empty()) return;
-
-      // now allocate a vector to store the old indices, the size is known from the mapper
-      FuncType& first = *(*(flist.begin()));
-      oldindex.resize(first.mapper().size());
+      // allocate index array to correct size (this possible for vertex data)
+      oldindex.resize(mapper.size());
 
       // and allocate the universal mapper to acces the old indices
-      const G& grid = first.grid();
       savedmap.clear();     //should be empty already
 
       // now loop over all vertices and copy the index provided by the mapper
       VLeafIterator veendit = grid.template leafend<dim>();
       for (VLeafIterator it = grid.template leafbegin<dim>(); it!=veendit; ++it)
-        oldindex[savedmap.map(*it)] = first.mapper().map(*it);
+        oldindex[savedmap.map(*it)] = mapper.map(*it);
     }
 
 
@@ -425,71 +450,31 @@ namespace Dune
      */
     void postAdapt ()
     {
-      // now we have to copy the data for each finite element function
-      for (ListIteratorType lit=flist.begin(); lit!=flist.end(); ++lit)
-      {
-        // get the players
-        FuncType& f = *(*lit);
-        RepresentationType& oldcoeff = *f;
-        const G& grid = f.grid();
-
-        // update f to the new f but keep old coefficient vector
-        f.beginUpdate();
-
-        // now loop over the NEW mesh to copy the data that was already in the OLD mesh
-        VLeafIterator veendit = grid.template leafend<dim>();
-        for (VLeafIterator it = grid.template leafbegin<dim>(); it!=veendit; ++it)
-        {
-          // lookup in mapper
-          int i;
-          if (savedmap.contains(*it,i))
-          {
-            // the vertex existed already in the old mesh, copy data
-            (*f)[f.mapper().map(*it)] = oldcoeff[oldindex[i]];
-          }
-        }
-
-        // now loop the second time to interpolate the new coefficients
-        for (VLeafIterator it = grid.template leafbegin<dim>(); it!=veendit; ++it)
-        {
-          continue;
-          // lookup in mapper
-          int i;
-          if (!savedmap.contains(*it,i))
-          {
-            EEntityPointer father=it->ownersFather();
-            FieldVector<DT,dim> pos=it->positionInOwnersFather();
-            GeometryType gt = father->geometry().type();
-            RT value=0;
-            for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,dim>::general(gt,1).size(); ++i)
-            {
-              // lookup subid
-              int index;
-              if (savedmap.template contains<dim>(*father,i,index))
-              {
-                // the vertex existed already in the old mesh, copy data
-                value += Dune::LagrangeShapeFunctions<DT,RT,dim>::general(gt,1)[i].evaluateFunction(0,pos)
-                         *oldcoeff[oldindex[index]];
-              }
-              else
-                DUNE_THROW(GridError,"vertex at father element not found");
-            }
-            (*f)[f.mapper().map(*it)] = value;
-          }
-        }
-
-        // finish update process, delete old coefficient vector
-        f.endUpdate();
-      }
+      // update mapper to the new grid
+      mapper.update();
 
       // delete the temporary data
       savedmap.clear();
       oldindex.clear();
     }
 
+    const GlobalUniversalMapper<G>& savedMap ()
+    {
+      return savedmap;
+    }
 
+    const std::vector<int>& oldIndex ()
+    {
+      return oldindex;
+    }
 
   private:
+    // we need a mapper
+    MultipleCodimMultipleGeomTypeMapper<G,typename G::template Codim<0>::LeafIndexSet,P1Layout> mapper;
+
+    // store a reference to the grid that is managed
+    const G& grid;
+
     // maintain a list of registered functions
     ListType flist;
 
