@@ -46,7 +46,11 @@ namespace Dune {
 
     enum {COARSEN_CE = UG3d::COARSEN_CE};
 
+    enum {REFINECLASS_CE = UG2d::REFINECLASS_CE};
+
     enum {RED = UG3d::RED};
+
+    enum {YELLOW_CLASS = UG2d::YELLOW_CLASS};
 
     enum {COARSE = UG3d::COARSE};
 
@@ -118,6 +122,13 @@ namespace Dune {
       return UG3d::UG_GlobalToLocal(n, cornerCoords, EvalPoint, localCoord);
     }
 
+    //! return true if element has an exact copy on the next level
+    static bool hasCopy (TargetType<0,3>::T* theElement) {
+      using UG3d::ELEMENT;
+      using UG3d::control_entries;
+      return REFINECLASS(theElement) == YELLOW_CLASS;
+    }
+
     //! \todo Please doc me!
     static int Sides_Of_Elem(TargetType<0,3>::T* theElement) {
       using UG3d::element_descriptors;
@@ -176,6 +187,23 @@ namespace Dune {
     static int myLevel (TargetType<0,3>::T* theElement) {
       using UG3d::ELEMENT;
       return LEVEL(theElement);
+    }
+
+    static int myLevel (TargetType<3,3>::T* theNode) {
+      using UG3d::NODE;
+      return LEVEL(theNode);
+    }
+
+    //! get father element of vertex
+    static TargetType<0,3>::T* NFather(TargetType<3,3>::T* theNode) {
+      return theNode->myvertex->iv.father;
+    }
+
+    //! get father element of vertex
+    static void PositionInFather(TargetType<3,3>::T* theNode, FieldVector<double, 3>& local) {
+      local[0] = theNode->myvertex->iv.xi[0];
+      local[1] = theNode->myvertex->iv.xi[1];
+      local[2] = theNode->myvertex->iv.xi[2];
     }
 
     static int GetSons(const UG3d::element* element, UG3d::element* sonList[MAX_SONS]) {
