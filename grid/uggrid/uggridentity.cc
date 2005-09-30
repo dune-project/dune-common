@@ -369,3 +369,10 @@ UGGridEntity < 0, dim, GridImp>::father() const
   it.setToTarget(UG_NS<dim>::EFather(target_));
   return it;
 }
+
+template<int dim, class GridImp>
+inline UGGridGeometry<dim,dim,GridImp>& UGGridEntity < 0, dim, GridImp>::father_relative_local()
+{
+  DUNE_THROW(GridError,"father_relative_local not implemented");
+  return fatherReLocal_;
+}
