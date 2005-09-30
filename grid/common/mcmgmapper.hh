@@ -55,29 +55,7 @@ namespace Dune
     MultipleCodimMultipleGeomTypeMapper (const G& grid, const IS& indexset)
       : g(grid), is(indexset)
     {
-      // get layout object;
-      Layout<G::dimension> layout;
-
-      n=0;     // zero data elements
-
-      // Compute offsets for the different geometry types.
-      // Note that mapper becomes invalid when the grid is modified.
-      for (int c=0; c<=G::dimension; c++)
-        for (int i=0; i<is.geomTypes(c).size(); i++)
-          if (layout.contains(c,is.geomTypes(c)[i]))
-          {
-            if (c<G::dimension-1)
-            {
-              offset[c][is.geomTypes(c)[i]] = n;
-              n += is.size(c,is.geomTypes(c)[i]);
-            }
-            else
-            {
-              offset[c][cube] = n;
-              offset[c][simplex] = n;
-              n += is.size(c,is.geomTypes(c)[i]);
-            }
-          }
+      update();
     }
 
     /** @brief Map entity to array index.
@@ -121,21 +99,63 @@ namespace Dune
     }
 
     /** @brief Returns true if the entity is contained in the index set
+
+       \param e Reference to entity
+       \param result integer reference where corresponding index is  stored if true
+       \return true if entity is in entity set of the mapper
      */
     template<class EntityType>
-    bool contains (const EntityType& e) const
+    bool contains (const EntityType& e, int& result) const
     {
+      result = map(e);
       return true;
     }
 
     /** @brief Returns true if the entity is contained in the index set
+
+       \param e Reference to codim 0 entity
+       \param i subentity number
+       \param result integer reference where corresponding index is  stored if true
+       \return true if entity is in entity set of the mapper
      */
     template<int cc>     // this is now the subentity's codim
-    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i) const
+    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i, int& result) const
     {
+      result = this->template map<cc>(e,i);
       return true;
     }
 
+
+    /** @brief Recalculates map after mesh adaptation
+     */
+    void update ()
+    {
+      // get layout object;
+      Layout<G::dimension> layout;
+
+      n=0;     // zero data elements
+      for (int c=0; c<=G::dimension; c++)
+        offset[c].clear();         // clear all maps
+
+      // Compute offsets for the different geometry types.
+      // Note that mapper becomes invalid when the grid is modified.
+      for (int c=0; c<=G::dimension; c++)
+        for (int i=0; i<is.geomTypes(c).size(); i++)
+          if (layout.contains(c,is.geomTypes(c)[i]))
+          {
+            if (c<G::dimension-1)
+            {
+              offset[c][is.geomTypes(c)[i]] = n;
+              n += is.size(c,is.geomTypes(c)[i]);
+            }
+            else
+            {
+              offset[c][cube] = n;
+              offset[c][simplex] = n;
+              n += is.size(c,is.geomTypes(c)[i]);
+            }
+          }
+    }
 
   private:
     int n;     // number of data elements required

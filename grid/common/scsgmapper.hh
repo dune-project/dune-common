@@ -79,15 +79,29 @@ namespace Dune
     int size () const;
 
     /** @brief Returns true if the entity is contained in the index set
+
+       \param e Reference to entity
+       \param result integer reference where corresponding index is  stored if true
+       \return true if entity is in entity set of the mapper
      */
     template<class EntityType>
-    bool contains (const EntityType& e) const;
+    bool contains (const EntityType& e, int& result) const;
 
     /** @brief Returns true if the entity is contained in the index set
+
+       \param e Reference to codim 0 entity
+       \param i subentity number
+       \param result integer reference where corresponding index is  stored if true
+       \return true if entity is in entity set of the mapper
      */
     template<int cc>     // this is now the subentity's codim
-    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i) const;
+    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i, int& result) const;
 
+    /** @brief Recalculates map after mesh adaptation
+     */
+    void update ()
+    {     // nothing to do here
+    }
 
   private:
     const G& g;
@@ -130,15 +144,17 @@ namespace Dune
 
   template <typename G, typename IS, int c>
   template<class EntityType>
-  bool SingleCodimSingleGeomTypeMapper<G,IS,c>::contains (const EntityType& e) const
+  bool SingleCodimSingleGeomTypeMapper<G,IS,c>::contains (const EntityType& e, int& result) const
   {
+    result = map(e);
     return true;
   }
 
   template <typename G, typename IS, int c>
   template<int cc>
-  bool SingleCodimSingleGeomTypeMapper<G,IS,c>::contains (const typename G::Traits::template Codim<0>::Entity& e, int i) const
+  bool SingleCodimSingleGeomTypeMapper<G,IS,c>::contains (const typename G::Traits::template Codim<0>::Entity& e, int i, int& result) const
   {
+    result = this->template map<cc>(e,i);
     return true;
   }
 

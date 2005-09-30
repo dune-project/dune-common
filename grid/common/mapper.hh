@@ -149,19 +149,35 @@ namespace Dune
 
 
     /** @brief Returns true if the entity is contained in the index set
+
+       \param e Reference to entity
+       \param result integer reference where corresponding index is  stored if true
+       \return true if entity is in entity set of the mapper
      */
     template<class EntityType>
-    bool contains (const EntityType& e) const
+    bool contains (const EntityType& e, int& result) const
     {
-      return asImp().contains(e);
+      return asImp().contains(e,result );
     }
 
     /** @brief Returns true if the entity is contained in the index set
+
+       \param e Reference to codim 0 entity
+       \param i subentity number
+       \param result integer reference where corresponding index is  stored if true
+       \return true if entity is in entity set of the mapper
      */
     template<int cc>     // this is now the subentity's codim
-    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i) const
+    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i, int& result) const
     {
-      return asImp().template contains<cc>(e,i);
+      return asImp().template contains<cc>(e,i,result);
+    }
+
+    /** @brief Recalculates map after mesh adaptation
+     */
+    void update ()
+    {
+      asImp().update();
     }
 
   private:

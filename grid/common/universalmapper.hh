@@ -96,23 +96,57 @@ namespace Dune
     }
 
     /** @brief Returns true if the entity is contained in the index set
+
+       \param e Reference to entity
+       \param result integer reference where corresponding index is  stored if true
+       \return true if entity is in entity set of the mapper
      */
     template<class EntityType>
-    bool contains (const EntityType& e) const
+    bool contains (const EntityType& e, int& result) const
     {
       IdType id = ids.id(e);                                 // get id
       typename std::map<IdType,int>::iterator it = index.find(id);    // look up in map
-      return it!=index.end();
+      if (it!=index.end())
+      {
+        result = it->second;
+        return true;
+      }
+      else
+        return false;
     }
 
     /** @brief Returns true if the entity is contained in the index set
+
+       \param e Reference to codim 0 entity
+       \param i subentity number
+       \param result integer reference where corresponding index is  stored if true
+       \return true if entity is in entity set of the mapper
      */
     template<int cc>     // this is now the subentity's codim
-    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i) const
+    bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i, int& result) const
     {
       IdType id = ids.template subid<cc>(e,i);               // get id
       typename std::map<IdType,int>::iterator it = index.find(id);    // look up in map
-      return it!=index.end();
+      if (it!=index.end())
+      {
+        result = it->second;
+        return true;
+      }
+      else
+        return false;
+    }
+
+    /** @brief Recalculates map after mesh adaptation
+     */
+    void update ()
+    {     // nothing to do here
+    }
+
+    // clear the mapper
+    void clear ()
+    {
+      index.clear();
+      n = 0;
     }
 
   private:
