@@ -127,6 +127,6 @@ void testCoarsenIndices()
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
-  testCoarsenIndices<3,1>();
+  testCoarsenIndices<10,2>();
   MPI_Finalize();
 }
