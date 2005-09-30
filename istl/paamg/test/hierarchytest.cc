@@ -16,11 +16,15 @@ int main(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
 
   IndexSet indices;
-  typedef Dune::FieldMatrix<double,BS,BS> Block;
-  typedef Dune::BCRSMatrix<Block> BCRSMat;
+  typedef Dune::FieldMatrix<double,BS,BS> MatrixBlock;
+  typedef Dune::BCRSMatrix<MatrixBlock> BCRSMat;
+  typedef Dune::FieldVector<double,BS> VectorBlock;
+  typedef Dune::BlockVector<VectorBlock> Vector;
+
   int n;
 
   BCRSMat mat = setupAnisotropic2d<N,BS>(indices, &n);
+  Vector b(indices.size());
 
   RemoteIndices remoteIndices(indices,indices,MPI_COMM_WORLD);
   remoteIndices.rebuild<false>();
@@ -31,10 +35,12 @@ int main(int argc, char** argv)
 
   typedef Dune::EnumItem<GridFlag,overlap> OverlapFlags;
   typedef Dune::Amg::MatrixHierarchy<BCRSMat,IndexSet,OverlapFlags> Hierarchy;
+  typedef Dune::Amg::Hierarchy<Vector> VHierarchy;
 
   interface.build(remoteIndices, Dune::NegateSet<OverlapFlags>(), OverlapFlags());
 
   Hierarchy hierarchy(mat, indices, remoteIndices, interface);
+  VHierarchy vh(b);
 
   typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
   Criterion;
@@ -42,7 +48,12 @@ int main(int argc, char** argv)
   Criterion criterion(10,4);
 
   hierarchy.build(criterion);
+  hierarchy.coarsenVector(vh);
 
+  std::cout<<"=== Vector hierarchy has "<<vh.levels()<<" levels! ==="<<std::endl;
+
+  //typedef typename Hierarchy::ConstIterator Iterator;
+  //for(Iterator level = matrices_.finest(), coarsest=matrices_.coarsest(); level!=coarsest; ++amap){
   hierarchy.recalculateGalerkin();
 
 
