@@ -5,6 +5,7 @@
 #ifndef __DUNE_P1FUNCTION_HH__
 #define __DUNE_P1FUNCTION_HH__
 
+#include <new>
 #include <iostream>
 #include <vector>
 #include "common/fvector.hh"
@@ -73,11 +74,23 @@ namespace Dune
   public:
     typedef BlockVector<FieldVector<RT,1> > RepresentationType;
 
-    // make a vector for the grid
+    //! allocate a vector with the data
     P1FEFunction (const G& g,  const IS& indexset) : grid(g), is(indexset), mapper(g,indexset)
     {
-      coeff.resize(mapper.size());
+      try {
+        coeff = new RepresentationType(mapper.size());
+      }
+      catch (std::bad_alloc) {
+        std::cerr << "not enough memory in P1FEFunction" << std::endl;
+        throw;         // rethrow exception
+      }
       std::cout << "making FE function with " << mapper.size() << " components" << std::endl;
+    }
+
+    //! deallocate the vector
+    ~P1FEFunction ()
+    {
+      delete coeff;
     }
 
     //! evaluate single component comp at global point x
@@ -136,7 +149,7 @@ namespace Dune
       RT value=0;
       Dune::GeometryType gt = e.geometry().type();     // extract type of element
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
-        value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi)*coeff[mapper.template map<n>(e,i)];
+        value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi)*(*coeff)[mapper.template map<n>(e,i)];
       return value;
     }
 
@@ -177,7 +190,7 @@ namespace Dune
       Dune::GeometryType gt = e.geometry().type();     // extract type of element
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
         value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateDerivative(0,dir,xi)
-                 *coeff[mapper.template map<n>(e,i)];
+                 *(*coeff)[mapper.template map<n>(e,i)];
       return value;
     }
 
@@ -202,11 +215,11 @@ namespace Dune
         for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
           if (!visited[mapper.template map<n>(*it,i)])
           {
-            coeff[mapper.template map<n>(*it,i)][0] =
+            (*coeff)[mapper.template map<n>(*it,i)][0] =
               u.evallocal(0,*it,Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position());
             visited[mapper.template map<n>(*it,i)] = true;
             //                          std::cout << "evaluated " << it->geometry().global(Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position())
-            //                                            << " value " << coeff[mapper.template map<n>(*it,i)][0]
+            //                                            << " value " << (*coeff)[mapper.template map<n>(*it,i)][0]
             //                                            << std::endl;
           }
       }
@@ -219,7 +232,7 @@ namespace Dune
      */
     const RepresentationType& operator* () const
     {
-      return coeff;
+      return (*coeff);
     }
 
     //! return reference to coefficient vector
@@ -229,7 +242,7 @@ namespace Dune
      */
     RepresentationType& operator* ()
     {
-      return coeff;
+      return (*coeff);
     }
 
   private:
@@ -243,7 +256,7 @@ namespace Dune
     MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout> mapper;
 
     // and a vector
-    RepresentationType coeff;            // the coefficient vector
+    RepresentationType* coeff;            // pointer to the coefficient vector, dynamically allocated!
   };
 
 
