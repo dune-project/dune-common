@@ -7,6 +7,7 @@
 #include "aggregates.hh"
 #include <dune/common/poolallocator.hh>
 #include <set>
+#include "mpi.h"
 
 namespace Dune
 {
@@ -533,7 +534,10 @@ namespace Dune
       //typedef D::ConstIterator DirichletIterator;
       //DirichletIterator endborder = dirichlet.end();
 
-      std::cerr <<"Process borders should be dirichlet borders"<<std::endl;
+      int procs;
+      MPI_Comm_size(MPI_COMM_WORLD, &procs);
+      if(procs > 1)
+        std::cerr <<"Process borders should be set to dirichlet borders"<<std::endl;
 
     }
 

@@ -2,7 +2,7 @@
 
 #if MPI
   MPITESTS = graphtest
-  TESTPROGS = galerkintest hierarchytest
+  TESTPROGS = galerkintest hierarchytest amgtest
   TESTRUNS = run-galerkin run-hierarchy
 #endif
 
@@ -26,4 +26,7 @@ hierarchytest_SOURCES = hierarchytest.cc anisotropic.hh
 hierarchytest_CXXFLAGS = $(MPI_CPPFLAGS)
 hierarchytest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
+amgtest_SOURCES = amgtest.cc
+amgtest_CXXFLAGS = $(MPI_CPPFLAGS)
+amgtest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 include $(top_srcdir)/am/global-rules

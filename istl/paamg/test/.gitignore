@@ -6,3 +6,4 @@ semantic.cache
 graphtest
 galerkintest
 hierarchytest
+amgtest

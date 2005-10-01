@@ -4,6 +4,8 @@
 
 #include "mpi.h"
 #include <dune/istl/paamg/hierarchy.hh>
+#include <dune/istl/paamg/smoother.hh>
+#include <dune/istl/preconditioners.hh>
 #include "anisotropic.hh"
 int main(int argc, char** argv)
 {
@@ -50,8 +52,18 @@ int main(int argc, char** argv)
   hierarchy.build(criterion);
   hierarchy.coarsenVector(vh);
 
+  typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
+  Dune::Amg::SmootherTraits<Smoother>::Arguments smootherArgs;
+
+  Smoother smoother(mat, 1, 1.0);
+
+  Dune::Amg::Hierarchy<Smoother> sh(smoother);
+
+  hierarchy.coarsenSmoother(sh,smootherArgs);
+
   std::cout<<"=== Vector hierarchy has "<<vh.levels()<<" levels! ==="<<std::endl;
 
+  std::cout<<"=== Smoother hierarchy has "<<sh.levels()<<" levels! ==="<<std::endl;
   //typedef typename Hierarchy::ConstIterator Iterator;
   //for(Iterator level = matrices_.finest(), coarsest=matrices_.coarsest(); level!=coarsest; ++amap){
   hierarchy.recalculateGalerkin();
