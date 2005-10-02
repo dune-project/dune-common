@@ -711,7 +711,7 @@ void assertNeighbor (Grid &g)
         }
       }
       // check that all faces were visited
-      for (int i=0; i<visited.size(); i++) assert(visited[i] == true);
+      for (size_t i=0; i<visited.size(); i++) assert(visited[i] == true);
     }
   }
 }
