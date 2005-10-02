@@ -28,20 +28,20 @@ namespace Dune
       typedef V1 Vertex;
       typedef V2 Vector;
 
-      void prolongate(const AggregatesMap<Vertex>& aggregates, const Vector & coarse, Vector fine,
-                      typename Vector::field_type damp) const;
-      void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector fine) const;
+      static void prolongate(const AggregatesMap<Vertex>& aggregates, const Vector & coarse, Vector fine,
+                             typename Vector::field_type damp);
+      static void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector fine);
     };
 
     template<class V1, class V2>
     void Transfer<V1,V2>::prolongate(const AggregatesMap<Vertex>& aggregates, const Vector& coarse,
-                                     Vector fine, typename Vector::field_type damp) const
+                                     Vector fine, typename Vector::field_type damp)
     {
       DUNE_THROW(NotImplemented, "There is no secialization available for this type of vector!");
     }
     template<class V1, class V2>
     void Transfer<V1,V2>::restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse,
-                                    const Vector fine) const
+                                    const Vector fine)
     {
       DUNE_THROW(NotImplemented, "There is no secialization available for this type of vector!");
     }
@@ -52,36 +52,36 @@ namespace Dune
     public:
       typedef V Vertex;
       typedef BlockVector<B> Vector;
-      void prolongate(const AggregatesMap<Vertex>& aggregates, const Vector & coarse, Vector fine,
-                      typename Vector::field_type damp) const;
+      static void prolongate(const AggregatesMap<Vertex>& aggregates, const Vector & coarse, Vector fine,
+                             typename Vector::field_type damp);
 
-      void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector fine) const;
+      static void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector fine);
     };
 
     template<class V, class B>
-    void Transfer<V,BlockVector<B> >::prolongate(const AggregatesMap<Vertex>& aggregates,
-                                                 const Vector& coarse, Vector fine,
-                                                 typename Vector::field_type damp) const
+    inline void Transfer<V,BlockVector<B> >::prolongate(const AggregatesMap<Vertex>& aggregates,
+                                                        const Vector& coarse, Vector fine,
+                                                        typename Vector::field_type damp)
     {
       typedef typename Vector::iterator Iterator;
 
       Iterator end = fine.end();
 
       for(Iterator block=fine.begin(); block != end; ++block) {
-        block = coarse[aggregates[block.index()]];
-        block *= damp;
+        *block = coarse[aggregates[block.index()]];
+        *block *= damp;
       }
     }
 
     template<class V, class B>
-    void Transfer<V,BlockVector<B> >::restrict (const AggregatesMap<Vertex>& aggregates,
-                                                Vector& coarse,
-                                                const Vector fine) const
+    inline void Transfer<V,BlockVector<B> >::restrict (const AggregatesMap<Vertex>& aggregates,
+                                                       Vector& coarse,
+                                                       const Vector fine)
     {
       // Set coarse vector to zero
       coarse=0;
 
-      typedef typename Vector::iterator Iterator;
+      typedef typename Vector::const_iterator Iterator;
       Iterator end = fine.end();
       for(Iterator block=fine.begin(); block != end; ++block)
         coarse[aggregates[block.index()]] += *block;

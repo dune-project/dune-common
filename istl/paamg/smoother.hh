@@ -3,6 +3,7 @@
 #ifndef DUNE_AMGSMOOTHER_HH
 #define DUNE_AMGSMOOTHER_HH
 
+#include <iostream>
 #include <dune/istl/paamg/construction.hh>
 #include <dune/istl/preconditioners.hh>
 namespace Dune
@@ -24,13 +25,13 @@ namespace Dune
     /**
      * @brief The default class for the smoother arguments.
      */
-    template<class M>
+    template<class T>
     struct DefaultSmootherArgs
     {
       /**
        * @brief The type of matrix the smoother is for.
        */
-      typedef M Matrix;
+      typedef typename T::matrix_type Matrix;
 
       /**
        * @brief The numbe of iterations to perform.
@@ -40,7 +41,7 @@ namespace Dune
       /**
        * @brief The relaxation factor to use.
        */
-      typename M::field_type relaxationFactor;
+      typename Matrix::field_type relaxationFactor;
 
       /**
        * @brief Default constructor.
@@ -76,7 +77,9 @@ namespace Dune
     public:
       void setMatrix(const Matrix& matrix)
       {
+        std::cout<<"Setting matrix "<<&matrix<<" size="<<matrix.N()<<std::endl;
         matrix_=&matrix;
+        std::cout<<"Matrix "<<matrix_<<" size="<<matrix_->N()<<std::endl;
       }
 
       void setArgs(const DefaultSmootherArgs<T>& args)

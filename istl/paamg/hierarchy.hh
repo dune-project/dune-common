@@ -297,7 +297,11 @@ namespace Dune
       typedef A Allocator;
       /** @brief The type of the aggregates map we use. */
       typedef AggregatesMap<typename MatrixGraph<M>::VertexDescriptor> AggregatesMap;
+      /** @brief The type of the parallel matrix hierarchy. */
+      typedef Hierarchy<ParallelMatrix,Allocator> ParallelMatrixHierarchy;
 
+      /** @brief The type of the aggregates maps list. */
+      typedef std::list<AggregatesMap*,Allocator> AggregatesMapList;
       /**
        * @brief Constructor
        * @param fineMatrix The matrix to coarsen.
@@ -324,8 +328,8 @@ namespace Dune
       template<class V, class TA>
       void coarsenVector(Hierarchy<BlockVector<V,TA> >& hierarchy) const;
 
-      template<class S>
-      void coarsenSmoother(Hierarchy<S>& smoothers,
+      template<class S, class TA>
+      void coarsenSmoother(Hierarchy<S,TA>& smoothers,
                            const typename SmootherTraits<S>::Arguments& args) const;
 
       /**
@@ -340,15 +344,16 @@ namespace Dune
        */
       bool isBuilt() const;
 
+      const ParallelMatrixHierarchy& matrices() const;
+
+      const AggregatesMapList& aggregatesMaps() const;
+
     private:
       typedef typename ConstructionTraits<ParallelMatrix>::Arguments MatrixArgs;
-      /** @brief The type of the aggregates maps list. */
-      typedef std::list<AggregatesMap*,Allocator> AggregatesMapList;
       /** @brief The list of aggregates maps. */
-      AggregatesMapList aggregatesMaps;
-      typedef Hierarchy<ParallelMatrix,Allocator> MMatrixHierarchy;
+      AggregatesMapList aggregatesMaps_;
       /** @brief The hierarchy of parallel matrices. */
-      MMatrixHierarchy matrices_;
+      ParallelMatrixHierarchy matrices_;
       typedef Hierarchy<Interface,Allocator> InterfaceHierarchy;
       /** @brief The hierarchy of interfaces. */
       InterfaceHierarchy interfaces_;
@@ -361,7 +366,7 @@ namespace Dune
 
       template<class T>
       bool coarsenTargetReached(const T& crit,
-                                const typename MMatrixHierarchy::Iterator& matrix);
+                                const typename ParallelMatrixHierarchy::Iterator& matrix);
     };
 
     template<class T>
@@ -428,7 +433,7 @@ namespace Dune
     template<typename T>
     inline bool
     MatrixHierarchy<M,IS,O,A>::coarsenTargetReached(const T& crit,
-                                                    const typename MMatrixHierarchy::Iterator& matrix)
+                                                    const typename ParallelMatrixHierarchy::Iterator& matrix)
     {
       int nodes = matrix->matrix().N();
       int totalNodes;
@@ -444,7 +449,7 @@ namespace Dune
     {
       GalerkinProduct productBuilder;
       int procs;
-      typedef typename MMatrixHierarchy::Iterator MatIterator;
+      typedef typename ParallelMatrixHierarchy::Iterator MatIterator;
       typedef typename InterfaceHierarchy::Iterator InterfaceIterator;
       typedef typename CommunicatorHierarchy::Iterator CommIterator;
 
@@ -479,7 +484,7 @@ namespace Dune
         PropertiesGraph pg(sg, IdentityMap(), sg.getEdgeIndexMap());
         AggregatesMap* aggregatesMap=new AggregatesMap(pg.maxVertex());
 
-        aggregatesMaps.push_back(aggregatesMap);
+        aggregatesMaps_.push_back(aggregatesMap);
 
         int noAggregates = aggregatesMap->buildAggregates(mlevel->matrix(), pg, criterion);
 
@@ -536,16 +541,31 @@ namespace Dune
         matrices_.addCoarser(MatrixArgs(*coarseMatrix, *coarseIndices, *coarseRemote));
       }
       built_=true;
-
+      AggregatesMap* aggregatesMap=new AggregatesMap(0);
+      aggregatesMaps_.push_back(aggregatesMap);
     }
 
+    template<class M, class IS, class R, class I>
+    const typename MatrixHierarchy<M,IS,R,I>::ParallelMatrixHierarchy&
+    MatrixHierarchy<M,IS,R,I>::matrices() const
+    {
+      return matrices_;
+    }
+
+
+    template<class M, class IS, class R, class I>
+    const typename MatrixHierarchy<M,IS,R,I>::AggregatesMapList&
+    MatrixHierarchy<M,IS,R,I>::aggregatesMaps() const
+    {
+      return aggregatesMaps_;
+    }
     template<class M, class IS, class R, class I>
     MatrixHierarchy<M,IS,R,I>::~MatrixHierarchy()
     {
       typedef typename AggregatesMapList::reverse_iterator AggregatesMapIterator;
-      typedef typename MMatrixHierarchy::Iterator Iterator;
+      typedef typename ParallelMatrixHierarchy::Iterator Iterator;
 
-      AggregatesMapIterator amap = aggregatesMaps.rbegin();
+      AggregatesMapIterator amap = aggregatesMaps_.rbegin();
 
       for(Iterator level=matrices_.coarsest(), finest=matrices_.finest(); level != finest;  --level, ++amap) {
         delete *amap;
@@ -567,7 +587,7 @@ namespace Dune
     void MatrixHierarchy<M,IS,R,I>::coarsenVector(Hierarchy<BlockVector<V,TA> >& hierarchy) const
     {
       assert(hierarchy.levels()==1);
-      typedef typename MMatrixHierarchy::ConstIterator Iterator;
+      typedef typename ParallelMatrixHierarchy::ConstIterator Iterator;
       Iterator coarsest = matrices_.coarsest();
       int level=0;
       std::cout<<"Level "<<level<<" has "<<matrices_.finest()->matrix().N()<<" unknows!"<<std::endl;
@@ -581,16 +601,18 @@ namespace Dune
     }
 
     template<class M, class IS, class R, class I>
-    template<class S>
-    void MatrixHierarchy<M,IS,R,I>::coarsenSmoother(Hierarchy<S>& smoothers,
+    template<class S, class TA>
+    void MatrixHierarchy<M,IS,R,I>::coarsenSmoother(Hierarchy<S,TA>& smoothers,
                                                     const typename SmootherTraits<S>::Arguments& sargs) const
     {
-      assert(smoothers.levels()==1);
-      typedef typename MMatrixHierarchy::ConstIterator Iterator;
+      assert(smoothers.levels()==0);
+      typedef typename ParallelMatrixHierarchy::ConstIterator Iterator;
       typename ConstructionTraits<S>::Arguments cargs;
       cargs.setArgs(sargs);
       Iterator coarsest = matrices_.coarsest();
+      int level=0;
       for(Iterator matrix = matrices_.finest(); matrix != coarsest; ++matrix) {
+        std::cout<<"level "<<level++<<" "<<&matrix->matrix();
         cargs.setMatrix(matrix->matrix());
         smoothers.addCoarser(cargs);
       }
@@ -600,9 +622,9 @@ namespace Dune
     void MatrixHierarchy<M,IS,R,I>::recalculateGalerkin()
     {
       typedef typename AggregatesMapList::iterator AggregatesMapIterator;
-      typedef typename MMatrixHierarchy::Iterator Iterator;
+      typedef typename ParallelMatrixHierarchy::Iterator Iterator;
 
-      AggregatesMapIterator amap = aggregatesMaps.begin();
+      AggregatesMapIterator amap = aggregatesMaps_.begin();
       GalerkinProduct productBuilder;
 
       for(Iterator level = matrices_.finest(), coarsest=matrices_.coarsest(); level!=coarsest; ++amap) {

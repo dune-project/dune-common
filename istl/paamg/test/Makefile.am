@@ -3,7 +3,7 @@
 #if MPI
   MPITESTS = graphtest
   TESTPROGS = galerkintest hierarchytest amgtest
-  TESTRUNS = run-galerkin run-hierarchy
+  TESTRUNS = run-galerkin run-hierarchy run-amg
 #endif
 
 NORMALTESTS = $(MPITESTS)
