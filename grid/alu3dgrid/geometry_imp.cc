@@ -241,43 +241,45 @@ namespace Dune {
     return true;
   }
 
+  /*
+     template <GeometryType eltype , int dim> struct ALU3dGridElType {
+     static inline GeometryType type () { return unknown; }
+     };
+     template <> struct ALU3dGridElType<tetrahedron,3> {
+     static inline GeometryType type () { return tetrahedron; }
+     };
+     template <> struct ALU3dGridElType<tetrahedron,2> {
+     static inline GeometryType type () { return triangle; }
+     };
+     template <GeometryType eltype> struct ALU3dGridElType<eltype,1> {
+     static inline GeometryType type () { return line; }
+     };
+     template <GeometryType eltype> struct ALU3dGridElType<eltype,0> {
+     static inline GeometryType type () { return vertex; }
+     };
+     template <> struct ALU3dGridElType<hexahedron,3> {
+     static inline GeometryType type () { return hexahedron; }
+     };
+     template <> struct ALU3dGridElType<hexahedron,2> {
+     static inline GeometryType type () { return quadrilateral; }
+     };
+   */
 
-  template <GeometryType eltype , int dim> struct ALU3dGridElType {
-    static inline GeometryType type () { return unknown; }
-  };
-  template <> struct ALU3dGridElType<tetrahedron,3> {
-    static inline GeometryType type () { return tetrahedron; }
-  };
-  template <> struct ALU3dGridElType<tetrahedron,2> {
-    static inline GeometryType type () { return triangle; }
-  };
-  template <GeometryType eltype> struct ALU3dGridElType<eltype,1> {
-    static inline GeometryType type () { return line; }
-  };
-  template <GeometryType eltype> struct ALU3dGridElType<eltype,0> {
-    static inline GeometryType type () { return vertex; }
-  };
-  template <> struct ALU3dGridElType<hexahedron,3> {
-    static inline GeometryType type () { return hexahedron; }
-  };
-  template <> struct ALU3dGridElType<hexahedron,2> {
-    static inline GeometryType type () { return quadrilateral; }
-  };
 
+  /* Comment in for adaptation to new GeometryType */
+  template <int mydim, int cdim>
+  inline GeometryType
+  ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> > ::type () const {
+    return simplex;
+  }
 
-  /* Comment in for adaptation to new GeometryType
-     template <int mydim, int cdim>
-     inline GeometryType
-     ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> > ::type () const {
-     return simplex;
-     }
+  template <int mydim, int cdim>
+  inline GeometryType
+  ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, hexa> > ::type () const {
+    return cube;
+  }
 
-     template <int mydim, int cdim>
-     inline GeometryType
-     ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, hexa> > ::type () const {
-     return cube;
-     }
-
+  /*
      template <>
      inline GeometryType
      ALU3dGridGeometry<0, 3, const ALU3dGrid<3, 3, tetra> > ::type () const {
@@ -291,11 +293,13 @@ namespace Dune {
      }
    */
 
-  template<int mydim, int cdim>
-  inline GeometryType ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> > ::type () const
-  {
-    return ALU3dGridElType<tetrahedron,mydim>::type();
-  }
+  /*
+     template<int mydim, int cdim>
+     inline GeometryType ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> > ::type () const
+     {
+     return ALU3dGridElType<tetrahedron,mydim>::type();
+     }
+   */
 
 
   template<int mydim, int cdim>
@@ -459,12 +463,13 @@ namespace Dune {
     delete biMap_;
   }
 
-
-  template<int mydim, int cdim>
-  inline GeometryType
-  ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::type() const {
-    return ALU3dGridElType<hexahedron, mydim>::type();
-  }
+  /*
+     template<int mydim, int cdim>
+     inline GeometryType
+     ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::type() const {
+     return ALU3dGridElType<hexahedron, mydim>::type();
+     }
+   */
 
 
   template <int mydim, int cdim>
