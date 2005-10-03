@@ -2985,7 +2985,7 @@ namespace Dune
 
     if(makeNew)
     {
-      mesh_ = ALBERTA get_mesh("AlbertaGrid", ALBERTA AlbertHelp::initDofAdmin,
+      mesh_ = ALBERTA get_mesh("AlbertaGrid", ALBERTA AlbertHelp::initDofAdmin<dim>,
                                ALBERTA AlbertHelp::initLeafData);
       ALBERTA read_macro(mesh_, MacroTriangFilename, ALBERTA AlbertHelp::initBoundary);
 
@@ -3049,7 +3049,7 @@ namespace Dune
     if(mesh_)
     {
       // because of bug in Alberta 1.2 , here until bug fixed
-      RC_LIST_EL * rclist = ALBERTA get_rc_list(mesh_);
+      ALBERTA RC_LIST_EL * rclist = ALBERTA get_rc_list(mesh_);
       rclist = 0;
     }
 #endif
@@ -3610,7 +3610,7 @@ namespace Dune
     ALBERTA AlbertHelp::setElOwnerNew(mesh_, dofvecs_.owner);
 
     // remove global pointer in elmem.cc
-    ALBERTA AlbertHelp::removeIndexManager_elmem_cc();
+    ALBERTA AlbertHelp::removeIndexManager_elmem_cc(AlbertHelp::numOfElNumVec);
 
     return refined;
   }
@@ -3654,7 +3654,7 @@ namespace Dune
        ALBERTA AlbertHelp::setElOwnerNew(mesh_, dofvecs_.owner);
 
        // remove global pointer in elmem.cc
-       ALBERTA AlbertHelp::removeIndexManager_elmem_cc();
+       ALBERTA AlbertHelp::removeIndexManager_elmem_cc(AlbertHelp::numOfElNumVec);
      */
     return refined;
   }
@@ -3935,7 +3935,7 @@ namespace Dune
   {
     removeMesh(); // delete all objects
 
-    mesh_ = ALBERTA get_mesh("AlbertaGrid", ALBERTA AlbertHelp::initDofAdmin,
+    mesh_ = ALBERTA get_mesh("AlbertaGrid", ALBERTA AlbertHelp::initDofAdmin<dim>,
                              ALBERTA AlbertHelp::initLeafData);
     ALBERTA read_macro(mesh_, filename.c_str(), ALBERTA AlbertHelp::initBoundary);
 

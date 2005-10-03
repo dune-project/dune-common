@@ -41,6 +41,7 @@ namespace Dune {
     // only  AlbertaGrid is allowed to create this class
     AlbertaGridHierarchicIndexSet(const GridType & grid) : grid_( grid ) {}
   public:
+    enum { ncodim = numCodim };
 
     //! return index of entity
     template <class EntityType>
@@ -114,9 +115,9 @@ namespace Dune {
       const ALBERTA DOF_ADMIN * elAdmin_ = dofvecs.elNumbers[cd]->fe_space->admin;
       // see Albert Doc. , should stay the same
 
-      nv_ [cd] = elAdmin_->n0_dof    [ALBERTA AlbertHelp::AlbertaDofType<cd>::type];
+      nv_ [cd] = elAdmin_->n0_dof    [ALBERTA AlbertHelp::AlbertaDofType<dim,cd>::type];
       assert( nv_ [cd] == 0);
-      dof_[cd] = elAdmin_->mesh->node[ALBERTA AlbertHelp::AlbertaDofType<cd>::type];
+      dof_[cd] = elAdmin_->mesh->node[ALBERTA AlbertHelp::AlbertaDofType<dim,cd>::type];
     }
 
     // codim = 0 means we get from dim-cd = dim

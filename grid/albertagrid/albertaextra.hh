@@ -737,25 +737,27 @@ namespace AlbertHelp
   }
 
   // initialize dofAdmin for vertex and element numbering
-  inline void initDofAdmin(MESH *mesh)
+  // and a given dim
+  template <int dim>
+  static inline void initDofAdmin(MESH *mesh)
   {
-    int edof[DIM+1]; // add one dof at element for element numbering
-    int vdof[DIM+1]; // add at each vertex one dof for vertex numbering
-    int fdof[DIM+1]; // add at each face one dof for face numbering
-    int edgedof[DIM+1]; // add at each edge one dof for edge numbering
+    int edof[dim+1]; // add one dof at element for element numbering
+    int vdof[dim+1]; // add at each vertex one dof for vertex numbering
+    int fdof[dim+1]; // add at each face one dof for face numbering
+    int edgedof[dim+1]; // add at each edge one dof for edge numbering
 
-    for(int i=0; i<DIM+1; i++)
+    for(int i=0; i<dim+1; i++)
     {
       vdof[i] = 0; fdof[i]    = 0;
       edof[i] = 0; edgedof[i] = 0;
     }
 
     vdof[0] = 1;
-#if DIM == 3
-    edgedof[1] = 1; // edge dof only in 3d
-#endif
-    fdof[DIM-1] = 1; // means edges in 2d and faces in 3d
-    edof[DIM] = 1;
+
+    if(dim == 3) edgedof[1] = 1; // edge dof only in 3d
+
+    fdof[dim-1] = 1; // means edges in 2d and faces in 3d
+    edof[dim] = 1;
 
     get_fe_space(mesh, "vertex_dofs", vdof, 0);
 
@@ -768,8 +770,8 @@ namespace AlbertHelp
 
       // the element numbers, ie. codim = 0
       elNumbers[0] = get_dof_int_vec("element_numbers",eSpace);
-      elNumbers[0]->refine_interpol = &RefineNumbering<0>::refineNumbers;
-      elNumbers[0]->coarse_restrict = &RefineNumbering<0>::coarseNumbers;
+      elNumbers[0]->refine_interpol = &RefineNumbering<dim,0>::refineNumbers;
+      elNumbers[0]->coarse_restrict = &RefineNumbering<dim,0>::coarseNumbers;
 
       elNewCheck = get_dof_int_vec("el_new_check",eSpace);
       elNewCheck->refine_interpol = &refineElNewCheck;
@@ -788,38 +790,21 @@ namespace AlbertHelp
 
       // the face numbers, i.e. codim = 1
       elNumbers[1] = get_dof_int_vec("face_numbers",eSpace);
-      elNumbers[1]->refine_interpol = &RefineNumbering<1>::refineNumbers;
-      elNumbers[1]->coarse_restrict = &RefineNumbering<1>::coarseNumbers;
+      elNumbers[1]->refine_interpol = &RefineNumbering<dim,1>::refineNumbers;
+      elNumbers[1]->coarse_restrict = &RefineNumbering<dim,1>::coarseNumbers;
     }
 
-#if DIM == 3
+    if(dim == 3)
     {
       // the edge number space , i.e. codim == 2
       const FE_SPACE * eSpace = get_fe_space(mesh, "edge_dofs", edgedof, 0);
 
       // the edge numbers, i.e. codim = 2
       elNumbers[2] = get_dof_int_vec("edge_numbers",eSpace);
-      elNumbers[2]->refine_interpol = &RefineNumbering<2>::refineNumbers;
-      elNumbers[2]->coarse_restrict = &RefineNumbering<2>::coarseNumbers;
-    }
-#endif
-
-    return;
-  }
-
-  // initialize dofAdmin only for vertex numbering
-  inline void emptyDofAdmin(MESH *mesh)
-  {
-    int vdof[DIM+1]; // add at each vertex one dof for vertex numbering
-
-    for(int i=0; i<DIM+1; i++)
-    {
-      vdof[i] = 0;
+      elNumbers[2]->refine_interpol = &RefineNumbering<dim,2>::refineNumbers;
+      elNumbers[2]->coarse_restrict = &RefineNumbering<dim,2>::coarseNumbers;
     }
 
-    vdof[0] = 1;
-
-    get_fe_space(mesh, "vertex_dofs", vdof, 0);
     return;
   }
 
