@@ -48,6 +48,7 @@ exprtmpl_SOURCES = exprtmpl.cc
 exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DDUNE_ISTL_WITH_CHECKING
 # -DNOPRINT
 
+dist_noinst_DATA = timing.cc
 timing_old_SOURCES = timing.cc
 timing_xpr_SOURCES = timing.cc
 timing_xpr_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -g
