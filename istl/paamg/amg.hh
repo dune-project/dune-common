@@ -202,19 +202,25 @@ namespace Dune
         ++lhs;
         ++update;
         ++defect;
-        ++smoother;
         ++matrix;
-        ++aggregates;
         ++level;
         *lhs=0;
+
+        if(matrix != matrices_->matrices().coarsest()) {
+          ++smoother;
+          ++aggregates;
+        }
 
         // next level
         mgc(smoother, matrix, aggregates, lhs, update, rhs, defect);
 
+        if(matrix != matrices_->matrices().coarsest()) {
+          --smoother;
+          --aggregates;
+        }
         --level;
         //prolongate (coarse x is the new update)
         --matrix;
-        --aggregates;
         --update;
         Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range>
         ::prolongate(*(*aggregates), *update, *lhs, 0.8);
@@ -222,7 +228,6 @@ namespace Dune
         --lhs;
         --rhs;
         --defect;
-        --smoother;
 
         // postsmoothing
         for(std::size_t i=0; i < steps_; ++i) {
