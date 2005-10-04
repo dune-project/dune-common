@@ -24,15 +24,16 @@ namespace Dune
       /** @brief The type of the matrix. */
       typedef M Matrix;
       /** @brief The type of the index set. */
-      typedef IS IndexSet;
+      typedef IS ParallelIndexSet;
       /** @brief The type of the remote indices. */
       typedef RI RemoteIndices;
 
-      ParallelMatrix(const Matrix& matrix, const IndexSet& indexSet,
+      ParallelMatrix(const Matrix& matrix, const ParallelIndexSet& indexSet,
                      const RemoteIndices& rindices)
         : matrix_(&matrix), indices_(&indexSet), rIndices_(&rindices)
       {
-        IsTrue<SameType<IndexSet,typename RemoteIndices::IndexSet>::value>::yes();
+        IsTrue<SameType<ParallelIndexSet,
+                typename RemoteIndices::ParallelIndexSet>::value>::yes();
       }
 
 
@@ -48,7 +49,7 @@ namespace Dune
        * @brief Get the index set that maps global indices to matrix rows.
        *  @return The index set.
        */
-      const IndexSet& indexSet() const
+      const ParallelIndexSet& indexSet() const
       {
         return *indices_;
       }
@@ -66,7 +67,7 @@ namespace Dune
       /** @brief The local part of the matrix. */
       const Matrix* matrix_;
       /** @brief The index set. */
-      const IndexSet* indices_;
+      const ParallelIndexSet* indices_;
       /** @brief Remote index information. */
       const RemoteIndices* rIndices_;
     };

@@ -18,7 +18,7 @@ namespace Dune
    */
   /**
    * @file
-   * @brief Provides classes for use as the local index in IndexSet for distributed computing.
+   * @brief Provides classes for use as the local index in ParallelIndexSet for distributed computing.
    * @author Markus Blatt
    */
 

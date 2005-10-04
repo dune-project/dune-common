@@ -34,12 +34,12 @@ namespace Dune
     /**
      * @brief Type of the index set.
      */
-    typedef T IndexSet;
+    typedef T ParallelIndexSet;
 
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef RemoteIndices<IndexSet> RemoteIndices;
+    typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
     /**
      * @brief The type of the global index.
@@ -216,12 +216,12 @@ namespace Dune
     /**
      * @brief Type of the index set.
      */
-    typedef T IndexSet;
+    typedef T ParallelIndexSet;
 
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef RemoteIndices<IndexSet> RemoteIndices;
+    typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
 
     /**
@@ -338,7 +338,7 @@ namespace Dune
   {
     // Allocate the memory for the data type construction.
     typedef typename RemoteIndices::RemoteIndexMap::const_iterator const_iterator;
-    typedef typename RemoteIndices::IndexSet::const_iterator LocalIterator;
+    typedef typename RemoteIndices::ParallelIndexSet::const_iterator LocalIterator;
 
     const const_iterator end=remoteIndices.end();
 

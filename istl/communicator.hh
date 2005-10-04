@@ -121,12 +121,12 @@ namespace Dune
     /**
      * @brief Type of the index set.
      */
-    typedef T IndexSet;
+    typedef T ParallelIndexSet;
 
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef RemoteIndices<IndexSet> RemoteIndices;
+    typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
     /**
      * @brief The type of the global index.
@@ -146,7 +146,7 @@ namespace Dune
     /**
      * @brief  The type of the index set we use.
      */
-    typedef typename RemoteIndices::IndexSet IndexSet;
+    typedef typename RemoteIndices::ParallelIndexSet ParallelIndexSet;
 
     /**
      * @brief Creates a new DatatypeCommunicator.

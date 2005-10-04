@@ -40,17 +40,17 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef IndexSet<TG,TL,N> IndexSet;
+    typedef ParallelIndexSet<TG,TL,N> ParallelIndexSet;
 
-    //typedef typename IndexSet::const_iterator IndexSetIterator;
+    //typedef typename ParallelIndexSet::const_iterator ParallelIndexSetIterator;
 
-    typedef ConstArrayListIterator<IndexPair<TG,TL>, N, std::allocator<Dune::IndexPair<TG,TL> > > IndexSetIterator;
+    typedef ConstArrayListIterator<IndexPair<TG,TL>, N, std::allocator<Dune::IndexPair<TG,TL> > > ParallelIndexSetIterator;
     /**
      * @brief Constructor.
      * @param iter The iterator over the index set.
      * @param end The iterator over the index set positioned at the end.
      */
-    SelectionIterator(const IndexSetIterator& iter, const IndexSetIterator& end)
+    SelectionIterator(const ParallelIndexSetIterator& iter, const ParallelIndexSetIterator& end)
       : iter_(iter), end_(end)
     {
       // Step to the first valid entry
@@ -83,8 +83,8 @@ namespace Dune
     }
 
   private:
-    IndexSetIterator iter_;
-    const IndexSetIterator end_;
+    ParallelIndexSetIterator iter_;
+    const ParallelIndexSetIterator end_;
   };
 
 
@@ -121,7 +121,7 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef IndexSet<GlobalIndex,LocalIndex,N> IndexSet;
+    typedef ParallelIndexSet<GlobalIndex,LocalIndex,N> ParallelIndexSet;
 
     /**
      * @brief The type of the iterator of the selected indices.
@@ -137,19 +137,19 @@ namespace Dune
       : indexSet_()
     {}
 
-    UncachedSelection(const IndexSet& indexset)
+    UncachedSelection(const ParallelIndexSet& indexset)
       : indexSet_(&indexset)
     {}
     /**
      * @brief Set the index set of the selection.
      * @param indexset The index set to use.
      */
-    void setIndexSet(const IndexSet& indexset);
+    void setIndexSet(const ParallelIndexSet& indexset);
 
     /**
      * @brief Get the index set we are a selection for.
      */
-    //const IndexSet& indexSet() const;
+    //const ParallelIndexSet& indexSet() const;
 
     /**
      * @brief Get an iterator over the selected indices.
@@ -165,7 +165,7 @@ namespace Dune
 
 
   private:
-    const IndexSet* indexSet_;
+    const ParallelIndexSet* indexSet_;
 
   };
 
@@ -204,7 +204,7 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef IndexSet<GlobalIndex,LocalIndex,N> IndexSet;
+    typedef ParallelIndexSet<GlobalIndex,LocalIndex,N> ParallelIndexSet;
 
     /**
      * @brief The type of the iterator of the selected indices.
@@ -220,7 +220,7 @@ namespace Dune
       : selected_()
     {}
 
-    Selection(const IndexSet& indexset)
+    Selection(const ParallelIndexSet& indexset)
       : selected_(), size_(0), built_(false)
     {
       setIndexSet(indexset);
@@ -232,7 +232,7 @@ namespace Dune
      * @brief Set the index set of the selection.
      * @param indexset The index set to use.
      */
-    void setIndexSet(const IndexSet& indexset);
+    void setIndexSet(const ParallelIndexSet& indexset);
 
     /**
      * @brief Free allocated memory.
@@ -265,13 +265,13 @@ namespace Dune
   };
 
   template<typename TS, typename TG, typename TL, int N>
-  inline void Selection<TS,TG,TL,N>::setIndexSet(const IndexSet& indexset)
+  inline void Selection<TS,TG,TL,N>::setIndexSet(const ParallelIndexSet& indexset)
   {
     if(built_)
       free();
 
     // Count the number of entries the selection has to hold
-    typedef typename IndexSet::const_iterator const_iterator;
+    typedef typename ParallelIndexSet::const_iterator const_iterator;
     const const_iterator end = indexset.end();
     int entries = 0;
 
@@ -332,7 +332,7 @@ namespace Dune
                                          indexSet_->end());
   }
   template<typename TS, typename TG, typename TL, int N>
-  void UncachedSelection<TS,TG,TL,N>::setIndexSet(const IndexSet& indexset)
+  void UncachedSelection<TS,TG,TL,N>::setIndexSet(const ParallelIndexSet& indexset)
   {
     indexSet_ = &indexset;
   }

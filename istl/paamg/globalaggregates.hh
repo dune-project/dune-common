@@ -15,18 +15,18 @@ namespace Dune
     struct GlobalAggregatesMap
     {
     public:
-      typedef TI IndexSet;
+      typedef TI ParallelIndexSet;
 
-      typedef typename IndexSet::GlobalIndex GlobalIndex;
+      typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
 
-      typedef typename IndexSet::GlobalIndex IndexedType;
+      typedef typename ParallelIndexSet::GlobalIndex IndexedType;
 
-      typedef typename IndexSet::LocalIndex LocalIndex;
+      typedef typename ParallelIndexSet::LocalIndex LocalIndex;
 
       typedef T Vertex;
 
       GlobalAggregatesMap(AggregatesMap<Vertex>& aggregates,
-                          IndexSet& indexset)
+                          ParallelIndexSet& indexset)
         : aggregates_(aggregates), indexset_(indexset)
       {}
 
@@ -45,14 +45,14 @@ namespace Dune
 
     private:
       AggregatesMap<Vertex>& aggregates_;
-      GlobalLookupIndexSet<IndexSet> indexset_;
+      GlobalLookupIndexSet<ParallelIndexSet> indexset_;
     };
 
     template<typename T, typename TI>
     struct AggregatesGatherScatter
     {
-      typedef TI IndexSet;
-      typedef typename IndexSet::GlobalIndex GlobalIndex;
+      typedef TI ParallelIndexSet;
+      typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
 
       static const GlobalIndex& gather(const GlobalAggregatesMap<T,TI>& ga, size_t i)
       {

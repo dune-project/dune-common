@@ -117,11 +117,11 @@ void testIndices(MPI_Comm comm)
   // distributed indexset
   //  typedef ParallelLocalIndex<GridFlags> LocalIndexType;
 
-  typedef Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags>,45> IndexSet;
+  typedef Dune::ParallelIndexSet<int,Dune::ParallelLocalIndex<GridFlags>,45> ParallelIndexSet;
 
-  IndexSet distIndexSet;
+  ParallelIndexSet distIndexSet;
   // global indexset
-  IndexSet globalIndexSet;
+  ParallelIndexSet globalIndexSet;
 
   // Set up the indexsets.
   int start = std::max(rank*nx-1,0);
@@ -167,14 +167,14 @@ void testIndices(MPI_Comm comm)
   }else
     globalArray=new Array(0);
 
-  typedef Dune::RemoteIndices<IndexSet> RemoteIndices;
+  typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
 
   RemoteIndices accuIndices(distIndexSet, globalIndexSet,  comm);
   RemoteIndices overlapIndices(distIndexSet, distIndexSet, comm);
   accuIndices.rebuild<true>();
   overlapIndices.rebuild<false>();
 
-  Dune::DatatypeCommunicator<IndexSet> accumulator, overlapExchanger;
+  Dune::DatatypeCommunicator<ParallelIndexSet> accumulator, overlapExchanger;
 
   Dune::EnumItem<GridFlags,owner> sourceFlags;
   Dune::Combine<Dune::EnumItem<GridFlags,overlap>,Dune::EnumItem<GridFlags,owner>,GridFlags> destFlags;
@@ -219,7 +219,7 @@ void testIndices(MPI_Comm comm)
 
 
 template<int NX, int NY, typename TG, typename TA>
-void setupDistributed(Array& distArray, Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA> >& distIndexSet,
+void setupDistributed(Array& distArray, Dune::ParallelIndexSet<TG,Dune::ParallelLocalIndex<TA> >& distIndexSet,
                       int rank, int procs)
 {
   // The local grid
@@ -274,7 +274,7 @@ void setupDistributed(Array& distArray, Dune::IndexSet<TG,Dune::ParallelLocalInd
 }
 
 template<int NX,int NY, typename TG, typename TA>
-void setupGlobal(Array& globalArray, Dune::IndexSet<TG,Dune::ParallelLocalIndex<TA> >& globalIndexSet)
+void setupGlobal(Array& globalArray, Dune::ParallelIndexSet<TG,Dune::ParallelLocalIndex<TA> >& globalIndexSet)
 {
   // build global indexset on first process
   globalIndexSet.beginResize();
@@ -304,11 +304,11 @@ void testIndicesBuffered(MPI_Comm comm)
   MPI_Comm_size(comm, &procs);
   MPI_Comm_rank(comm, &rank);
 
-  typedef Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags> >IndexSet;
+  typedef Dune::ParallelIndexSet<int,Dune::ParallelLocalIndex<GridFlags> > ParallelIndexSet;
 
-  IndexSet distIndexSet;
+  ParallelIndexSet distIndexSet;
   // global indexset
-  IndexSet globalIndexSet;
+  ParallelIndexSet globalIndexSet;
 
   Array distArray;
   Array globalArray;
@@ -320,7 +320,7 @@ void testIndicesBuffered(MPI_Comm comm)
     setupGlobal<Nx,Ny>(globalArray, globalIndexSet);
   }
 
-  typedef Dune::RemoteIndices<IndexSet> RemoteIndices;
+  typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
 
   RemoteIndices accuIndices(distIndexSet, globalIndexSet, comm);
 
@@ -330,8 +330,8 @@ void testIndicesBuffered(MPI_Comm comm)
   RemoteIndices overlapIndices(distIndexSet, distIndexSet, comm);
   overlapIndices.rebuild<false>();
 
-  Dune::Interface<IndexSet> accuInterface;
-  Dune::Interface<IndexSet>  overlapInterface;
+  Dune::Interface<ParallelIndexSet> accuInterface;
+  Dune::Interface<ParallelIndexSet>  overlapInterface;
   Dune::EnumItem<GridFlags,owner> sourceFlags;
   Dune::Combine<Dune::EnumItem<GridFlags,overlap>,Dune::EnumItem<GridFlags,owner>,GridFlags> destFlags;
   //    Dune::Bool2Type<true> flag;
@@ -344,7 +344,7 @@ void testIndicesBuffered(MPI_Comm comm)
 
   //accuInterface.print();
 
-  Dune::BufferedCommunicator<IndexSet> accumulator, overlapExchanger;
+  Dune::BufferedCommunicator<ParallelIndexSet> accumulator, overlapExchanger;
 
   accumulator.build<Array>(accuInterface);
 
@@ -400,10 +400,10 @@ void testRedistributeIndices(MPI_Comm comm)
   int nx = Nx/procs;
   // distributed indexset
 
-  typedef IndexSet<int,ParallelLocalIndex<GridFlags> > IndexSet;
-  IndexSet sendIndexSet;
+  typedef ParallelIndexSet<int,ParallelLocalIndex<GridFlags> > ParallelIndexSet;
+  ParallelIndexSet sendIndexSet;
   // global indexset
-  IndexSet receiveIndexSet;
+  ParallelIndexSet receiveIndexSet;
 
   Array array, redistributedArray;
 
@@ -461,7 +461,7 @@ void testRedistributeIndices(MPI_Comm comm)
 
 
   std::cout<< rank<<": distributed and global index set!"<<std::endl<<std::flush;
-  typedef RemoteIndices<IndexSet> RemoteIndices;
+  typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
   RemoteIndices redistributeIndices(sendIndexSet,
                                     receiveIndexSet, comm);
@@ -470,7 +470,7 @@ void testRedistributeIndices(MPI_Comm comm)
   redistributeIndices.rebuild<true>();
   overlapIndices.rebuild<false>();
 
-  DatatypeCommunicator<IndexSet> redistribute, overlapComm;
+  DatatypeCommunicator<ParallelIndexSet> redistribute, overlapComm;
   EnumItem<GridFlags,owner> fowner;
   EnumItem<GridFlags,overlap> foverlap;
 
@@ -505,10 +505,10 @@ void testRedistributeIndicesBuffered(MPI_Comm comm)
   int nx = Nx/procs;
   // distributed indexset
 
-  typedef IndexSet<int,ParallelLocalIndex<GridFlags> > IndexSet;
-  IndexSet sendIndexSet;
+  typedef ParallelIndexSet<int,ParallelLocalIndex<GridFlags> > ParallelIndexSet;
+  ParallelIndexSet sendIndexSet;
   // global indexset
-  IndexSet receiveIndexSet;
+  ParallelIndexSet receiveIndexSet;
 
   Array array, redistributedArray;
 
@@ -569,7 +569,7 @@ void testRedistributeIndicesBuffered(MPI_Comm comm)
 
   std::cout<< rank<<": distributed and global index set!"<<std::endl<<std::flush;
 
-  typedef RemoteIndices<IndexSet> RemoteIndices;
+  typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
   RemoteIndices redistributeIndices(sendIndexSet,
                                     receiveIndexSet, comm);
   RemoteIndices overlapIndices(receiveIndexSet, receiveIndexSet, comm);
@@ -577,15 +577,15 @@ void testRedistributeIndicesBuffered(MPI_Comm comm)
   overlapIndices.rebuild<false>();
   redistributeIndices.rebuild<true>();
 
-  Interface<IndexSet> redistributeInterface, overlapInterface;
+  Interface<ParallelIndexSet> redistributeInterface, overlapInterface;
   EnumItem<GridFlags,owner> fowner;
   EnumItem<GridFlags,overlap> foverlap;
 
   redistributeInterface.build(redistributeIndices, fowner, fowner);
   overlapInterface.build(overlapIndices, fowner, foverlap);
 
-  BufferedCommunicator<IndexSet> redistribute;
-  BufferedCommunicator<IndexSet> overlapComm;
+  BufferedCommunicator<ParallelIndexSet> redistribute;
+  BufferedCommunicator<ParallelIndexSet> overlapComm;
 
   redistribute.build(array, redistributedArray, redistributeInterface);
   overlapComm.build<Array>(overlapInterface);

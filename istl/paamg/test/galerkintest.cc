@@ -25,7 +25,7 @@ void testCoarsenIndices()
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
 
-  IndexSet indices;
+  ParallelIndexSet indices;
   typedef Dune::FieldMatrix<double,BS,BS> Block;
   typedef Dune::BCRSMatrix<Block> BCRSMat;
   int n;
@@ -46,7 +46,7 @@ void testCoarsenIndices()
   MatrixGraph mg(mat);
   std::vector<bool> excluded(mat.N());
 
-  typedef IndexSet::iterator IndexIterator;
+  typedef ParallelIndexSet::iterator IndexIterator;
   IndexIterator iend = indices.end();
   typename std::vector<bool>::iterator iter=excluded.begin();
 
@@ -62,18 +62,18 @@ void testCoarsenIndices()
 
   aggregatesMap.buildAggregates(mat, pg, Criterion());
 
-  IndexSet coarseIndices;
+  ParallelIndexSet coarseIndices;
   RemoteIndices coarseRemote(coarseIndices,coarseIndices, MPI_COMM_WORLD);
 
   typename Dune::PropertyMapTypeSelector<Dune::Amg::VertexVisitedTag,PropertiesGraph>::Type visitedMap = Dune::get(Dune::Amg::VertexVisitedTag(), pg);
 
-  Dune::Amg::IndicesCoarsener<Dune::EnumItem<GridFlag,overlap>,IndexSet>::coarsen(indices,
-                                                                                  remoteIndices,
-                                                                                  pg,
-                                                                                  visitedMap,
-                                                                                  aggregatesMap,
-                                                                                  coarseIndices,
-                                                                                  coarseRemote);
+  Dune::Amg::IndicesCoarsener<Dune::EnumItem<GridFlag,overlap>,ParallelIndexSet>::coarsen(indices,
+                                                                                          remoteIndices,
+                                                                                          pg,
+                                                                                          visitedMap,
+                                                                                          aggregatesMap,
+                                                                                          coarseIndices,
+                                                                                          coarseRemote);
   std::cout << rank <<": coarse indices: " <<coarseIndices << std::endl;
   std::cout << rank <<": coarse remote indices:"<<coarseRemote <<std::endl;
 
@@ -82,7 +82,7 @@ void testCoarsenIndices()
   interface.build(remoteIndices, Dune::EnumItem<GridFlag,owner>(), Dune::EnumItem<GridFlag, overlap>());
   Communicator communicator;
 
-  typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
+  typedef Dune::Amg::GlobalAggregatesMap<Vertex,ParallelIndexSet> GlobalMap;
 
   GlobalMap gmap(aggregatesMap,coarseIndices);
 
@@ -90,7 +90,7 @@ void testCoarsenIndices()
 
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
 
-  communicator.template forward<Dune::Amg::AggregatesGatherScatter<typename MatrixGraph::VertexDescriptor,IndexSet> >(gmap);
+  communicator.template forward<Dune::Amg::AggregatesGatherScatter<typename MatrixGraph::VertexDescriptor,ParallelIndexSet> >(gmap);
 
   std::cout<<"Communicated: ";
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);

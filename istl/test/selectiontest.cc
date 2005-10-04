@@ -47,7 +47,7 @@ void test()
   // Process configuration
   const int ALSIZE=55;
 
-  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags>,ALSIZE> distIndexSet;
+  Dune::ParallelIndexSet<int,Dune::ParallelLocalIndex<GridFlags>,ALSIZE> distIndexSet;
 
   distIndexSet.beginResize();
 

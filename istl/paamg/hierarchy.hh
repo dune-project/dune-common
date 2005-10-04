@@ -282,15 +282,15 @@ namespace Dune
       /** @brief The type of the matrix. */
       typedef M Matrix;
       /** @brief The type of the index set. */
-      typedef IS IndexSet;
+      typedef IS ParallelIndexSet;
       /** @brief The type of the remote indices. */
-      typedef RemoteIndices<IndexSet> RemoteIndices;
+      typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
       /** @brief The type of the Interface. */
-      typedef Interface<IndexSet> Interface;
+      typedef Interface<ParallelIndexSet> Interface;
       /** @brief The type of the Communicator. */
-      typedef BufferedCommunicator<IndexSet> Communicator;
+      typedef BufferedCommunicator<ParallelIndexSet> Communicator;
       /** @brief The type of the parallel matrix. */
-      typedef ParallelMatrix<Matrix,IndexSet,RemoteIndices> ParallelMatrix;
+      typedef ParallelMatrix<Matrix,ParallelIndexSet,RemoteIndices> ParallelMatrix;
       /** @brief The flags identifying the overlap attributes */
       typedef O OverlapFlags;
       /** @brief The allocator to use. */
@@ -309,7 +309,7 @@ namespace Dune
        * @param remoteIndices Information about the remote indices.
        */
       MatrixHierarchy(const Matrix& fineMatrix,
-                      const IndexSet& indexSet,
+                      const ParallelIndexSet& indexSet,
                       const RemoteIndices& remoteIndices,
                       Interface& interface);
 
@@ -422,7 +422,7 @@ namespace Dune
 
     template<class M, class IS, class O, class A>
     MatrixHierarchy<M,IS,O,A>::MatrixHierarchy(const Matrix& fineMatrix,
-                                               const IndexSet& indexSet,
+                                               const ParallelIndexSet& indexSet,
                                                const RemoteIndices& remoteIndices,
                                                Interface& interface)
       : matrices_(*new ParallelMatrix(fineMatrix,indexSet,remoteIndices)),
@@ -473,7 +473,7 @@ namespace Dune
 
         MatrixGraph mg(mlevel->matrix());
         std::vector<bool> excluded(mlevel->matrix().N());
-        typedef typename IndexSet::const_iterator IndexIterator;
+        typedef typename ParallelIndexSet::const_iterator IndexIterator;
         IndexIterator iend = mlevel->indexSet().end();
         typename std::vector<bool>::iterator iter=excluded.begin();
 
@@ -493,20 +493,20 @@ namespace Dune
           throw "Not implemented!";
         }
 
-        IndexSet*      coarseIndices = new IndexSet();
+        ParallelIndexSet*      coarseIndices = new ParallelIndexSet();
         RemoteIndices* coarseRemote = new RemoteIndices(*coarseIndices, *coarseIndices,
                                                         mlevel->remoteIndices().communicator());
 
         typename PropertyMapTypeSelector<VertexVisitedTag,PropertiesGraph>::Type visitedMap =
           get(VertexVisitedTag(), pg);
 
-        IndicesCoarsener<OverlapFlags,IndexSet>::coarsen(mlevel->indexSet(),
-                                                         mlevel->remoteIndices(),
-                                                         pg,
-                                                         visitedMap,
-                                                         *aggregatesMap,
-                                                         *coarseIndices,
-                                                         *coarseRemote);
+        IndicesCoarsener<OverlapFlags,ParallelIndexSet>::coarsen(mlevel->indexSet(),
+                                                                 mlevel->remoteIndices(),
+                                                                 pg,
+                                                                 visitedMap,
+                                                                 *aggregatesMap,
+                                                                 *coarseIndices,
+                                                                 *coarseRemote);
 
         const void* args;
         communicators_.addCoarser(args);
@@ -514,11 +514,11 @@ namespace Dune
         interfaces_.addCoarser(args);
         ++iflevel;
         iflevel->build(*coarseRemote, NegateSet<OverlapFlags>(), OverlapFlags());
-        typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
+        typedef Dune::Amg::GlobalAggregatesMap<Vertex,ParallelIndexSet> GlobalMap;
         GlobalMap gmap(*aggregatesMap, *coarseIndices);
 
         commlevel->build<GlobalMap>(*iflevel);
-        commlevel->template forward<Dune::Amg::AggregatesGatherScatter<Vertex,IndexSet> >(gmap);
+        commlevel->template forward<Dune::Amg::AggregatesGatherScatter<Vertex,ParallelIndexSet> >(gmap);
 
         commlevel->free();
 

@@ -150,9 +150,9 @@ namespace Dune
 
   /**
    * @brief The states the index set can be in.
-   * @see IndexSet::state_
+   * @see ParallelIndexSet::state_
    */
-  enum IndexSetState
+  enum ParallelIndexSetState
   {
     /**
      * @brief The default mode.
@@ -189,9 +189,9 @@ namespace Dune
    * and non persistent while the global id might not be consecutive but definitely is persistent.
    */
   template<typename TG, typename TL, int N=100>
-  class IndexSet
+  class ParallelIndexSet
   {
-    friend class GlobalLookupIndexSet<IndexSet<TG,TL,N> >;
+    friend class GlobalLookupIndexSet<ParallelIndexSet<TG,TL,N> >;
 
   public:
     /**
@@ -230,9 +230,9 @@ namespace Dune
     {
       typedef typename ArrayList<IndexPair<GlobalIndex,LocalIndex>,N>::iterator
       Father;
-      friend class IndexSet<GlobalIndex,LocalIndex,N>;
+      friend class ParallelIndexSet<GlobalIndex,LocalIndex,N>;
     public:
-      iterator(IndexSet<TG,TL,N>& indexSet, const Father& father)
+      iterator(ParallelIndexSet<TG,TL,N>& indexSet, const Father& father)
         : Father(father), indexSet_(&indexSet)
       {}
 
@@ -265,7 +265,7 @@ namespace Dune
       }
 
       /** @brief The index set we are an iterator of. */
-      IndexSet<TG,TL,N>* indexSet_;
+      ParallelIndexSet<TG,TL,N>* indexSet_;
 
     };
 
@@ -279,18 +279,18 @@ namespace Dune
     /**
      * @brief Constructor.
      */
-    IndexSet();
+    ParallelIndexSet();
 
     /**
      * @brief Get the state the index set is in.
      * @return The state of the index set.
      */
-    inline const IndexSetState& state();
+    inline const ParallelIndexSetState& state();
 
     /**
      * @brief Indicate that the index set is to be resized.
      * @exception InvalidState If index set was not in
-     * IndexSetState::GROUND mode.
+     * ParallelIndexSetState::GROUND mode.
      */
     void beginResize() throw(InvalidIndexSetState);
 
@@ -300,7 +300,7 @@ namespace Dune
      * The local index is created by the default constructor.
      * @param global The globally unique id of the index.
      * @exception InvalidState If index set is not in
-     * IndexSetState::RESIZE mode.
+     * ParallelIndexSetState::RESIZE mode.
      */
     inline void add(const GlobalIndex& global) throw(InvalidIndexSetState);
 
@@ -310,7 +310,7 @@ namespace Dune
      * @param global The globally unique id of the index.
      * @param local The local index.
      * @exception InvalidState If index set is not in
-     * IndexSetState::RESIZE mode.
+     * ParallelIndexSetState::RESIZE mode.
      */
     inline void add(const GlobalIndex& global, const LocalIndex& local)
     throw(InvalidIndexSetState);
@@ -320,7 +320,7 @@ namespace Dune
      *
      * The index will be deleted during endResize().
      * @param position An iterator at the position we want to delete.
-     * @exception InvalidState If index set is not in IndexSetState::RESIZE mode.
+     * @exception InvalidState If index set is not in ParallelIndexSetState::RESIZE mode.
      */
     inline void markAsDeleted(const iterator& position)
     throw(InvalidIndexSetState);
@@ -334,7 +334,7 @@ namespace Dune
      * if and
      * only if \f$g_i < g_j\f$ for arbitrary \f$i \neq j\f$.
      * @exception InvalidState If index set was not in
-     * IndexSetState::RESIZE mode.
+     * ParallelIndexSetState::RESIZE mode.
      */
     void endResize() throw(InvalidIndexSetState);
 
@@ -418,7 +418,7 @@ namespace Dune
     /** @brief The new indices for the RESIZE state. */
     ArrayList<IndexPair<GlobalIndex,LocalIndex>,N> newIndices_;
     /** @brief The state of the index set. */
-    IndexSetState state_;
+    ParallelIndexSetState state_;
     /** @brief Number to keep track of the number of resizes. */
     int seqNo_;
     /** @brief Whether entries were deleted in resize mode. */
@@ -437,7 +437,7 @@ namespace Dune
    * @param pair The index set to print.
    */
   template<class TG, class TL, int N>
-  std::ostream& operator<<(std::ostream& os, const IndexSet<TG,TL,N>& indexSet);
+  std::ostream& operator<<(std::ostream& os, const ParallelIndexSet<TG,TL,N>& indexSet);
 
   /**
    * @brief Decorates an index set with the possibility to find a global index
@@ -451,29 +451,29 @@ namespace Dune
     /**
      * @brief The type of the index set.
      */
-    typedef I IndexSet;
+    typedef I ParallelIndexSet;
 
     /**
      * @brief The type of the local index.
      */
-    typedef typename IndexSet::LocalIndex LocalIndex;
+    typedef typename ParallelIndexSet::LocalIndex LocalIndex;
 
     /**
      * @brief The type of the global index.
      */
-    typedef typename IndexSet::GlobalIndex GlobalIndex;
+    typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
 
     /**
      * @brief The iterator over the index pairs.
      */
-    typedef typename IndexSet::const_iterator const_iterator;
+    typedef typename ParallelIndexSet::const_iterator const_iterator;
 
     /**
      * @brief Constructor.
      * @param indexset The index set we want to be able to lookup the corresponding
      * global index of a local index.
      */
-    GlobalLookupIndexSet(const IndexSet& indexset);
+    GlobalLookupIndexSet(const ParallelIndexSet& indexset);
 
     /**
      * @brief Destructor.
@@ -532,7 +532,7 @@ namespace Dune
     /**
      * @brief The index set we lookup in.
      */
-    const IndexSet& indexSet_;
+    const ParallelIndexSet& indexSet_;
   };
 
 
@@ -544,9 +544,9 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline std::ostream& operator<<(std::ostream& os, const IndexSet<TG,TL,N>& indexSet)
+  inline std::ostream& operator<<(std::ostream& os, const ParallelIndexSet<TG,TL,N>& indexSet)
   {
-    typedef typename IndexSet<TG,TL,N>::const_iterator Iterator;
+    typedef typename ParallelIndexSet<TG,TL,N>::const_iterator Iterator;
     Iterator end = indexSet.end();
     os<<"{";
     for(Iterator index = indexSet.begin(); index != end; ++index)
@@ -625,12 +625,12 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  IndexSet<TG,TL,N>::IndexSet()
+  ParallelIndexSet<TG,TL,N>::ParallelIndexSet()
     : state_(GROUND), seqNo_(0)
   {}
 
   template<class TG, class TL, int N>
-  void IndexSet<TG,TL,N>::beginResize() throw(InvalidIndexSetState)
+  void ParallelIndexSet<TG,TL,N>::beginResize() throw(InvalidIndexSetState)
   {
 
     // Checks in unproductive code
@@ -646,7 +646,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline void IndexSet<TG,TL,N>::add(const GlobalIndex& global)
+  inline void ParallelIndexSet<TG,TL,N>::add(const GlobalIndex& global)
   throw(InvalidIndexSetState)
   {
     // Checks in unproductive code
@@ -659,7 +659,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline void IndexSet<TG,TL,N>::add(const TG& global, const TL& local)
+  inline void ParallelIndexSet<TG,TL,N>::add(const TG& global, const TL& local)
   throw(InvalidIndexSetState)
   {
     // Checks in unproductive code
@@ -672,7 +672,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline void IndexSet<TG,TL,N>::markAsDeleted(const iterator& global)
+  inline void ParallelIndexSet<TG,TL,N>::markAsDeleted(const iterator& global)
   throw(InvalidIndexSetState){
     // Checks in unproductive code
 #ifndef NDEBUG
@@ -686,7 +686,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  void IndexSet<TG,TL,N>::endResize() throw(InvalidIndexSetState){
+  void ParallelIndexSet<TG,TL,N>::endResize() throw(InvalidIndexSetState){
     // Checks in unproductive code
 #ifndef NDEBUG
     if(state_ != RESIZE)
@@ -702,7 +702,7 @@ namespace Dune
 
 
   template<class TG, class TL, int N>
-  inline void IndexSet<TG,TL,N>::merge(){
+  inline void ParallelIndexSet<TG,TL,N>::merge(){
     if(localIndices_.size()==0)
     {
       localIndices_=newIndices_;
@@ -761,7 +761,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline const IndexPair<TG,TL>&
-  IndexSet<TG,TL,N>::operator[](const TG& global) const
+  ParallelIndexSet<TG,TL,N>::operator[](const TG& global) const
   {
     // perform a binary search
     int low=0, high=localIndices_.size()-1, probe=-1;
@@ -788,7 +788,7 @@ namespace Dune
 
 
   template<class TG, class TL, int N>
-  inline IndexPair<TG,TL>& IndexSet<TG,TL,N>::operator[](const TG& global)
+  inline IndexPair<TG,TL>& ParallelIndexSet<TG,TL,N>::operator[](const TG& global)
   {
     // perform a binary search
     int low=0, high=localIndices_.size()-1, probe=-1;
@@ -814,37 +814,37 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline typename IndexSet<TG,TL,N>::iterator
-  IndexSet<TG,TL,N>::begin()
+  inline typename ParallelIndexSet<TG,TL,N>::iterator
+  ParallelIndexSet<TG,TL,N>::begin()
   {
     return iterator(*this, localIndices_.begin());
   }
 
 
   template<class TG, class TL, int N>
-  inline typename IndexSet<TG,TL,N>::iterator
-  IndexSet<TG,TL,N>::end()
+  inline typename ParallelIndexSet<TG,TL,N>::iterator
+  ParallelIndexSet<TG,TL,N>::end()
   {
     return iterator(*this,localIndices_.end());
   }
 
   template<class TG, class TL, int N>
-  inline typename IndexSet<TG,TL,N>::const_iterator
-  IndexSet<TG,TL,N>::begin() const
+  inline typename ParallelIndexSet<TG,TL,N>::const_iterator
+  ParallelIndexSet<TG,TL,N>::begin() const
   {
     return localIndices_.begin();
   }
 
 
   template<class TG, class TL, int N>
-  inline typename IndexSet<TG,TL,N>::const_iterator
-  IndexSet<TG,TL,N>::end() const
+  inline typename ParallelIndexSet<TG,TL,N>::const_iterator
+  ParallelIndexSet<TG,TL,N>::end() const
   {
     return localIndices_.end();
   }
 
   template<class TG, class TL, int N>
-  void IndexSet<TG,TL,N>::renumberLocal(){
+  void ParallelIndexSet<TG,TL,N>::renumberLocal(){
 #ifndef NDEBUG
     if(state_==RESIZE)
       DUNE_THROW(InvalidIndexSetState, "IndexSet has to be in "
@@ -860,13 +860,13 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  inline int IndexSet<TG,TL,N>::seqNo() const
+  inline int ParallelIndexSet<TG,TL,N>::seqNo() const
   {
     return seqNo_;
   }
 
   template<class TG, class TL, int N>
-  inline size_t IndexSet<TG,TL,N>::size() const
+  inline size_t ParallelIndexSet<TG,TL,N>::size() const
   {
     return localIndices_.size();
   }

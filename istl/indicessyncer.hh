@@ -36,16 +36,16 @@ namespace Dune
   public:
 
     /** @brief The type of the index set. */
-    typedef T IndexSet;
+    typedef T ParallelIndexSet;
 
-    typedef typename IndexSet::GlobalIndex GlobalIndex;
+    typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
 
-    typedef typename IndexSet::LocalIndex::Attribute Attribute;
+    typedef typename ParallelIndexSet::LocalIndex::Attribute Attribute;
 
     /**
      * @brief Type of the remote indices.
      */
-    typedef RemoteIndices<IndexSet> RemoteIndices;
+    typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
     /**
      * @brief Constructor.
@@ -56,7 +56,7 @@ namespace Dune
      * of the locally present indices.
      * @param remoteIndices The remoteIndices.
      */
-    IndicesSyncer(IndexSet& indexSet,
+    IndicesSyncer(ParallelIndexSet& indexSet,
                   RemoteIndices& remoteIndices);
 
     /**
@@ -84,7 +84,7 @@ namespace Dune
   private:
 
     /** @brief The set of locally present indices.*/
-    IndexSet& indexSet_;
+    ParallelIndexSet& indexSet_;
 
     /** @brief The remote indices. */
     RemoteIndices& remoteIndices_;
@@ -428,7 +428,7 @@ namespace Dune
   }
 
   template<typename T>
-  IndicesSyncer<T>::IndicesSyncer(IndexSet& indexSet,
+  IndicesSyncer<T>::IndicesSyncer(ParallelIndexSet& indexSet,
                                   RemoteIndices& remoteIndices)
     : indexSet_(indexSet), remoteIndices_(remoteIndices)
   {
@@ -536,7 +536,7 @@ namespace Dune
   template<typename T>
   void IndicesSyncer<T>::calculateMessageSizes()
   {
-    typedef typename IndexSet::const_iterator IndexIterator;
+    typedef typename ParallelIndexSet::const_iterator IndexIterator;
     typedef CollectiveIterator<T> CollectiveIterator;
 
     IndexIterator iEnd = indexSet_.end();
@@ -729,7 +729,7 @@ namespace Dune
   template<typename T>
   void IndicesSyncer<T>::packAndSend(int destination)
   {
-    typedef typename IndexSet::const_iterator IndexIterator;
+    typedef typename ParallelIndexSet::const_iterator IndexIterator;
     typedef typename RemoteIndexList::const_iterator RemoteIndexIterator;
     typedef typename GlobalIndexList::const_iterator GlobalIterator;
     typedef typename BoolList::const_iterator BoolIterator;
@@ -856,7 +856,7 @@ namespace Dune
   template<typename T1>
   void IndicesSyncer<T>::recvAndUnpack(int source, T1& numberer)
   {
-    typedef typename IndexSet::const_iterator IndexIterator;
+    typedef typename ParallelIndexSet::const_iterator IndexIterator;
     typedef typename RemoteIndexList::iterator RemoteIndexIterator;
     typedef typename GlobalIndexList::iterator GlobalIndexIterator;
 

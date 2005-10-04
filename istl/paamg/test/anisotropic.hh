@@ -9,13 +9,13 @@
 enum GridFlag { owner, overlap   };
 
 typedef Dune::ParallelLocalIndex<GridFlag> LocalIndex;
-typedef Dune::IndexSet<int,LocalIndex,101> IndexSet;
-typedef Dune::RemoteIndices<IndexSet> RemoteIndices;
-typedef Dune::Interface<IndexSet> Interface;
-typedef Dune::BufferedCommunicator<IndexSet> Communicator;
+typedef Dune::ParallelIndexSet<int,LocalIndex,101> ParallelIndexSet;
+typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
+typedef Dune::Interface<ParallelIndexSet> Interface;
+typedef Dune::BufferedCommunicator<ParallelIndexSet> Communicator;
 
 template<int N, class M>
-void setupPattern(M& mat, IndexSet& indices, int overlapStart, int overlapEnd,
+void setupPattern(M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
                   int start, int end)
 {
   int n = overlapEnd - overlapStart;
@@ -116,7 +116,7 @@ void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end)
 }
 
 template<int N, int BS>
-Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(IndexSet& indices, int *nout)
+Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(ParallelIndexSet& indices, int *nout)
 {
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);

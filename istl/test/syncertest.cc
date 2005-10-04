@@ -225,8 +225,8 @@ int testIndicesSyncer()
   // distributed indexset
   //  typedef ParallelLocalIndex<GridFlags> LocalIndexType;
 
-  typedef Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags> > IndexSet;
-  IndexSet indexSet, changedIndexSet;
+  typedef Dune::ParallelIndexSet<int,Dune::ParallelLocalIndex<GridFlags> > ParallelIndexSet;
+  ParallelIndexSet indexSet, changedIndexSet;
 
   // Set up the indexsets.
   int start = std::max(rank*nx-1,0);
@@ -252,8 +252,8 @@ int testIndicesSyncer()
   indexSet.endResize();
   changedIndexSet.endResize();
 
-  Dune::RemoteIndices<IndexSet> remoteIndices(indexSet, indexSet, MPI_COMM_WORLD);
-  Dune::RemoteIndices<IndexSet> changedRemoteIndices(changedIndexSet, changedIndexSet, MPI_COMM_WORLD);
+  Dune::RemoteIndices<ParallelIndexSet> remoteIndices(indexSet, indexSet, MPI_COMM_WORLD);
+  Dune::RemoteIndices<ParallelIndexSet> changedRemoteIndices(changedIndexSet, changedIndexSet, MPI_COMM_WORLD);
 
   remoteIndices.rebuild<false>();
   changedRemoteIndices.rebuild<false>();
@@ -270,7 +270,7 @@ int testIndicesSyncer()
   deleteOverlapEntries(changedIndexSet, changedRemoteIndices);
   std::cout<<"Changed:   "<<changedIndexSet<<std::endl<<changedRemoteIndices<<std::endl;
 
-  Dune::IndicesSyncer<IndexSet> syncer(changedIndexSet, changedRemoteIndices);
+  Dune::IndicesSyncer<ParallelIndexSet> syncer(changedIndexSet, changedRemoteIndices);
   //  return 0;
 
   std::cout<<"Syncing!"<<std::endl;

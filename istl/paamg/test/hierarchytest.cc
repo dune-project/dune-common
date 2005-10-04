@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
 
-  IndexSet indices;
+  ParallelIndexSet indices;
   typedef Dune::FieldMatrix<double,BS,BS> MatrixBlock;
   typedef Dune::BCRSMatrix<MatrixBlock> BCRSMat;
   typedef Dune::FieldVector<double,BS> VectorBlock;
@@ -31,12 +31,12 @@ int main(int argc, char** argv)
   RemoteIndices remoteIndices(indices,indices,MPI_COMM_WORLD);
   remoteIndices.rebuild<false>();
 
-  typedef Dune::Interface<IndexSet> Interface;
+  typedef Dune::Interface<ParallelIndexSet> Interface;
 
   Interface interface;
 
   typedef Dune::EnumItem<GridFlag,overlap> OverlapFlags;
-  typedef Dune::Amg::MatrixHierarchy<BCRSMat,IndexSet,OverlapFlags> Hierarchy;
+  typedef Dune::Amg::MatrixHierarchy<BCRSMat,ParallelIndexSet,OverlapFlags> Hierarchy;
   typedef Dune::Amg::Hierarchy<Vector> VHierarchy;
 
   interface.build(remoteIndices, Dune::NegateSet<OverlapFlags>(), OverlapFlags());
