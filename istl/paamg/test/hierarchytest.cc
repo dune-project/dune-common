@@ -55,9 +55,7 @@ int main(int argc, char** argv)
   typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
   Dune::Amg::SmootherTraits<Smoother>::Arguments smootherArgs;
 
-  Smoother smoother(mat, 1, 1.0);
-
-  Dune::Amg::Hierarchy<Smoother> sh(smoother);
+  Dune::Amg::Hierarchy<Smoother> sh;
 
   hierarchy.coarsenSmoother(sh,smootherArgs);
 
