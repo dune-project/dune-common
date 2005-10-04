@@ -8,9 +8,9 @@ sourcescheck: sourcescheck-recursive
 
 sourcescheck-am:
 	@(for f in $(sourcescheck_LIST); do echo $$f; done) | \
-	 grep [hc][hc]$$ | sort | uniq > header_CHECK.install
+	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.install
 	@ls | \
-	 grep [hc][hc]$$ | sort | uniq > header_CHECK.present
+	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.present
 	@RESULT=0; \
 	if diff header_CHECK.* | grep ^[\<\>] -q; then \
 		echo "==== WARNING ===="; \
