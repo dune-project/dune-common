@@ -2166,10 +2166,11 @@ namespace Dune
     if(edge_ >= 6) // in 3d only 6 Edges
     {
       elInfo = goNextElInfo(stack, elInfo);
+      if(!elInfo) return 0; // if no more Edges, return
       edge_ = 0;
     }
 
-    if(!elInfo) return 0; // if no more Edges, return
+    assert(elInfo);
 
     // go next, if Vertex is not treated on this Element
     if(vertexMarker_->edgeNotOnElement(elInfo->el,
@@ -2873,6 +2874,7 @@ namespace Dune
 #if DIM == 3
       Array<int> & edgevec = edgevec_[level];
       if(edgevec.size() < edg) edgevec.resize( edg + vxBufferSize_ );
+      for(int i=0; i<edgevec.size(); i++) edgevec[i] = -1;
 #endif
 
       for(int i=0; i<vec.size(); i++) vec[i] = -1;
@@ -2882,18 +2884,20 @@ namespace Dune
       LevelIteratorType endit = grid.template lend<0> (level);
       for(LevelIteratorType it = grid.template lbegin<0> (level); it != endit; ++it)
       {
+        const ALBERTA EL * el =
+          (grid.template getRealEntity<0> (*it)).getElInfo()->el;
+
         int elindex = grid.hierarchicIndexSet().index(*it);
         for(int local=0; local<dim+1; local++)
         {
-          int num = (grid.template getRealEntity<0> (*it)).getElInfo()->el->dof[local][0]; // vertex num
+          int num = el->dof[local][0]; // vertex num
           if( vec[num] == -1 ) vec[num] = elindex;
         }
 
 #if DIM == 3
         // mark edges for this element
         MarkEdges<GridType,dim>::mark(grid,edgevec,
-                                      (grid.template getRealEntity<0> (*it)).getElInfo()->el,
-                                      (grid.template getRealEntity<0> (*it)).template count<2> (), elindex );
+                                      el,(grid.template getRealEntity<0> (*it)).template count<2> (), elindex );
 #endif
       }
       // remember the number of entity on level and codim = 0
@@ -3239,6 +3243,7 @@ namespace Dune
   inline bool AlbertaGrid < dim, dimworld >::postAdapt()
   {
     isMarked_ = false;
+    //if(leafIndexSet_) leafIndexSet_.compress();
     return wasChanged_;
   }
 
@@ -3583,7 +3588,7 @@ namespace Dune
     return false;
   }
 
-
+  // --adapt
   template < int dim, int dimworld >
   inline bool AlbertaGrid < dim, dimworld >::adapt()
   {
@@ -3804,6 +3809,7 @@ namespace Dune
       if(levelIndexVec_[i]) (*levelIndexVec_[i]).calcNewIndex();
 
     if( leafIndexSet_ ) (*leafIndexSet_).resize();
+    if( leafIndexSet_ ) (*leafIndexSet_).compress();
 
     // we have a new grid
     wasChanged_ = true;
