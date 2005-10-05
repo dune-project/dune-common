@@ -212,12 +212,6 @@ namespace Dune
     //! no interface method
     void print (std::ostream& ss, int indent) const;
 
-    //! check if A * xref_i + P_2 == x_i
-    bool checkMapping (int loc) const;
-
-    //! check if A^-1 * x_i - A^-1 * P_2 == xref_i
-    bool checkInverseMapping (int loc) const ;
-
   private:
     // calculate Matrix for Mapping from reference element to actual element
     void calcElMatrix () const;
