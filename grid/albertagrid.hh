@@ -1614,6 +1614,7 @@ namespace Dune
     // return true if element is neihter interior nor ghost
     bool isNoElement( const ALBERTA MACRO_EL * mel) const;
 
+    //! returns geometry type vector for codimension
     const std::vector < GeometryType > & geomTypes (int codim) const { return geomTypes_; }
 
   private:
@@ -1689,7 +1690,10 @@ namespace Dune
 
   private:
     // needed for VertexIterator, mark on which element a vertex is treated
-    AlbertaMarkerVector * vertexMarker_;
+    AlbertaMarkerVector * vertexMarkerLevel_;
+
+    // needed for VertexIterator, mark on which element a vertex is treated
+    AlbertaMarkerVector * vertexMarkerLeaf_;
 
     //***********************************************************************
     //  MemoryManagement for Entitys and Geometrys
@@ -1810,13 +1814,16 @@ namespace Dune
     enum { MAXL = 64 };
     enum { vxBufferSize_ = 10000 };
   public:
-    AlbertaMarkerVector () : up2Date_(false) {} ;
+    AlbertaMarkerVector (bool meLevel) : up2Date_(false), meLevel_(meLevel) {} ;
 
     bool notOnThisElement(ALBERTA EL * el, int elIndex, int level , int vertex);
     bool edgeNotOnElement(ALBERTA EL * el, int elIndex, int level , int edgenum);
 
     template <class GridType>
     void markNewVertices(GridType &grid);
+
+    template <class GridType>
+    void markNewLeafVertices(GridType &grid);
 
     bool up2Date () const { return up2Date_; }
     void unsetUp2Date () { up2Date_ = false; }
@@ -1832,6 +1839,7 @@ namespace Dune
 
     // true is vertex marker is up to date
     bool up2Date_;
+    bool meLevel_;
   };
 
   namespace Capabilities
