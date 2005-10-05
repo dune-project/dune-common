@@ -30,10 +30,10 @@ int main(int argc, char **argv)
 
   // The index set we use to identify the local indices with the globally
   // unique ones
-  typedef Dune::IndexSet<GlobalIndex,LocalIndex,100> IndexSet;
+  typedef Dune::ParallelIndexSet<GlobalIndex,LocalIndex,100> ParallelIndexSet;
 
   // The index set
-  IndexSet indexSet;
+  ParallelIndexSet indexSet;
 
   build(indexSet);
 

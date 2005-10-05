@@ -15,10 +15,10 @@
  * @param indexSet The index set to reverse.
  */
 template<typename TG, typename TL, int N>
-void reverseLocalIndex(Dune::IndexSet<TG,TL,N>& indexSet)
+void reverseLocalIndex(Dune::ParallelIndexSet<TG,TL,N>& indexSet)
 {
   // reverse the local indices
-  typedef typename Dune::IndexSet<TG,TL,N>::iterator iterator;
+  typedef typename Dune::ParallelIndexSet<TG,TL,N>::iterator iterator;
 
   iterator end = indexSet.end();
   size_t maxLocal = 0;

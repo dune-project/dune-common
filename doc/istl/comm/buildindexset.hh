@@ -22,7 +22,7 @@ typedef Dune::ParallelLocalIndex<Flag> LocalIndex;
  * @param indexSet The index set to build.
  */
 template<class TG, int N>
-void build(Dune::IndexSet<TG,LocalIndex,N>& indexSet)
+void build(Dune::ParallelIndexSet<TG,LocalIndex,N>& indexSet)
 {
   //
   // The number of processes
