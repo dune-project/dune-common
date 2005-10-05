@@ -307,10 +307,8 @@ namespace Dune
       // A = ( P1 - P0  , P2 - P0 )
       for (int i=0; i<mydim; i++)
       {
-        //elMat[i][0] = coord[1][i] - coord[0][i];
-        //elMat[i][1] = coord[2][i] - coord[0][i];
-        elMat[0][i] = coord[1][i] - coord[0][i];
-        elMat[1][i] = coord[2][i] - coord[0][i];
+        elMat[i][0] = coord[1][i] - coord[0][i];
+        elMat[i][1] = coord[2][i] - coord[0][i];
       }
       return true;
     }
@@ -472,7 +470,13 @@ namespace Dune
 
     // Jinv = A^-1
     assert( builtElMat_ == true );
-    elDet_ = std::abs( FMatrixHelp::invertMatrix(elMat_,Jinv_) );
+    FieldMatrix< double , mydim , mydim > tmp;
+    //elDet_ = std::abs( FMatrixHelp::invertMatrix(elMat_,Jinv_) );
+    elDet_ = std::abs( FMatrixHelp::invertMatrix(elMat_,tmp) );
+
+    for(int i=0; i<mydim; i++)
+      for(int j=0 ; j<mydim ; j++)
+        Jinv_[i][j] = tmp[j][i];
 
     assert(elDet_ > 1.0E-25);
     calcedDet_ = true;
