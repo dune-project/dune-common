@@ -471,6 +471,7 @@ namespace Dune {
     mutable bool higherCodims_;
 
   public:
+
     //! Constructor
     AdaptiveLeafIndexSet (const GridType & grid)
       : DefaultGridIndexSetBase <GridType> (grid) ,
@@ -486,6 +487,19 @@ namespace Dune {
       // give all entities that lie below the old entities new numbers
       markAllUsed ();
     }
+
+    template<int cd, PartitionIteratorType pitype>
+    typename LeafIteratorTypes<GridType>::template Codim<cd>::template Partition<pitype>::Iterator end () const
+    {
+      return this->grid_.template leafend<cd,pitype> ();
+    }
+
+    template<int cd, PartitionIteratorType pitype>
+    typename LeafIteratorTypes<GridType>::template Codim<cd>::template Partition<pitype>::Iterator begin () const
+    {
+      return this->grid_.template leafbegin<cd,pitype> ();
+    }
+
 
     //! Destructor
     virtual ~AdaptiveLeafIndexSet () {};
@@ -649,8 +663,9 @@ namespace Dune {
     int index (const EntityType & en) const
     {
       enum { codim = EntityType::codimension };
-      assert(codimLeafSet_[codim].index( hIndexSet_.index(en) ) >= 0 );
-      return codimLeafSet_[codim].index( hIndexSet_.index(en) );
+      //assert(codimLeafSet_[codim].index( hIndexSet_.index(en) ) >= 0 );
+      if (codim == 0) return codimLeafSet_[codim].index( hIndexSet_.index(en) );
+      return hIndexSet_.index(en);
     }
 
     //! return size of grid entities per level and codim
