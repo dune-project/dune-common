@@ -1474,12 +1474,14 @@ namespace Dune
     //! number of entities per level, codim and geometry type in this process
     int size (int level, int codim, GeometryType type) const
     {
+      if( type != simplex) return 0;
       return this->levelIndexSet(level).size(codim,type);
     }
 
     //! number of leaf entities per codim and geometry type in this process
     int size (int codim, GeometryType type) const
     {
+      if( type != simplex) return 0;
       return this->leafIndexSet().size(codim,type);
     }
 
