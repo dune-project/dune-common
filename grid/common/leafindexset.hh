@@ -415,7 +415,9 @@ namespace Dune {
       static inline void iterateCodims (const HSetImp & hIndexSet ,
                                         CodimLeafSet (&cls)[ncodim], const EntityType & en , bool (&cdUsed)[ncodim])
       {
+        //std::cout << "insert for codim = " << codim << "\n";
         CodimLeafSet & lset = cls[codim];
+        cdUsed[codim] = true;
         if(cdUsed[codim])
         {
           for(int i=0; i<en.template count<codim> (); i++)
@@ -436,6 +438,8 @@ namespace Dune {
                                         CodimLeafSet (&cls)[ncodim], const EntityType & en , bool (&cdUsed)[ncodim])
       {
         enum { codim = 1 };
+        //std::cout << "insert for codim = " << codim << "\n";
+        cdUsed[codim] = true;
         CodimLeafSet & lset = cls[codim];
         if(cdUsed[codim])
         {
@@ -476,10 +480,10 @@ namespace Dune {
     AdaptiveLeafIndexSet (const GridType & grid)
       : DefaultGridIndexSetBase <GridType> (grid) ,
         hIndexSet_( grid.hierarchicIndexSet() ) ,
-        marked_ (false) , markAllU_ (false) , higherCodims_ (false)
+        marked_ (false) , markAllU_ (false) , higherCodims_ (true)
     {
       codimUsed_[0] = true;
-      for(int i=1; i<ncodim; i++) codimUsed_[i] = false;
+      for(int i=1; i<ncodim; i++) codimUsed_[i] = true;
       for(int i=0; i<ncodim; i++) codimLeafSet_[i].setCodim( i );
 
       resizeVectors();
@@ -551,7 +555,11 @@ namespace Dune {
       {
         for(int i=1; i<ncodim; i++)
         {
-          if(codimUsed_[i]) codimLeafSet_[i].resize( hIndexSet_.size(i) );
+          if(codimUsed_[i])
+          {
+            //std::cout << "resize codim " << i << "\n";
+            codimLeafSet_[i].resize( hIndexSet_.size(i) );
+          }
         }
       }
     }
@@ -584,6 +592,7 @@ namespace Dune {
       bool haveToCopy = codimLeafSet_[0].compress();
       if(higherCodims_)
       {
+        //std::cout << "Set up higher codims\n";
         for(int i=1; i<ncodim; i++)
           haveToCopy = (codimLeafSet_[i].compress()) ? true : haveToCopy;
       }
@@ -613,12 +622,13 @@ namespace Dune {
     }
 
     //! memorise index
+    // --insert
     void insert (const EntityCodim0Type & en)
     {
       codimLeafSet_[0].insert ( hIndexSet_.index(en) );
       if(higherCodims_)
       {
-        PartialSpec<HIndexSetType,CodimLeafIndexSet,EntityCodim0Type,ncodim-1> ::
+        PartialSpec<HIndexSetType,CodimLeafIndexSet,EntityCodim0Type,dim> ::
         iterateCodims ( hIndexSet_, codimLeafSet_, en , codimUsed_ );
       }
     }
@@ -626,7 +636,7 @@ namespace Dune {
     //! set indices to unsed
     void remove (const EntityCodim0Type & en)
     {
-      std::cout << "Remove el = "<< hIndexSet_.index(en) << "\n";
+      //std::cout << "Remove el = "<< hIndexSet_.index(en) << "\n";
       codimLeafSet_[0].remove ( hIndexSet_.index(en) );
       /*
          if(higherCodims_)
