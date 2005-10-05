@@ -470,13 +470,7 @@ namespace Dune
 
     // Jinv = A^-1
     assert( builtElMat_ == true );
-    FieldMatrix< double , mydim , mydim > tmp;
-    //elDet_ = std::abs( FMatrixHelp::invertMatrix(elMat_,Jinv_) );
-    elDet_ = std::abs( FMatrixHelp::invertMatrix(elMat_,tmp) );
-
-    for(int i=0; i<mydim; i++)
-      for(int j=0 ; j<mydim ; j++)
-        Jinv_[i][j] = tmp[j][i];
+    elDet_ = std::abs( FMatrixHelp::invertMatrix_retTransposed(elMat_,Jinv_) );
 
     assert(elDet_ > 1.0E-25);
     calcedDet_ = true;
