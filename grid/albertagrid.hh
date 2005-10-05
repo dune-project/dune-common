@@ -378,6 +378,9 @@ namespace Dune
 
     AlbertaGridEntity(const GridImp &grid, int level);
 
+    //! return partition type of this entity ( see grid.hh )
+    PartitionType partitionType() const;
+
     //! geometry of this entity
     const Geometry & geometry () const;
 
