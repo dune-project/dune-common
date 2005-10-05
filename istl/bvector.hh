@@ -312,6 +312,25 @@ namespace Dune {
      */
     void reserve(size_type capacity)
     {
+      this->template reserve<true>(capacity);
+    }
+
+    /**
+     * @brief Reserve space.
+     * After calling this method the vector can hold up to
+     * capacity values. If the specified capacity is smaller
+     * than the current capacity and bigger than the current size
+     * space will be freed.
+     *
+     * If the template parameter copyOldValues is true the values will
+     * be copied. If it is false the old values are lost.
+     *
+     * @param capacity The maximum number of elements the vector
+     * needs to hold.
+     */
+    template<bool copyOldValues>
+    void reserve(size_type capacity)
+    {
       if(capacity >= block_vector_unmanaged<B,A>::N() && capacity != capacity_) {
         // save the old data
         B* pold = this->p;
@@ -319,12 +338,15 @@ namespace Dune {
         if(capacity>0) {
           // create new array with capacity
           this->p = A::template malloc<B>(this->n);
-          // copy the old values
-          B* to = this->p;
-          B* from = pold;
 
-          for(size_type i=0; i < block_vector_unmanaged<B,A>::N(); ++i, ++from, ++to)
-            *to = *from;
+          if(copyOldValues) {
+            // copy the old values
+            B* to = this->p;
+            B* from = pold;
+
+            for(size_type i=0; i < block_vector_unmanaged<B,A>::N(); ++i, ++from, ++to)
+              *to = *from;
+          }
         }else{
           this->p = 0;
           capacity_ = 0;
@@ -354,13 +376,32 @@ namespace Dune {
      * After calling this method ::N() will return size
      * If the capacity of the vector is smaller than the specified
      * size then reserve(size) will be called.
+     * The values will be copied if the capacity changes.
      * @param size The new size of the vector
      */
     void resize(size_type size)
     {
+      this->template resize<true>(size);
+    }
+
+
+    /**
+     * @brief Resize the vector.
+     * After calling this method ::N() will return size
+     * If the capacity of the vector is smaller than the specified
+     * size then reserve(size) will be called.
+     *
+     * If the template parameter copyOldValues is true the values
+     * will be copied if the capacity changes.  If it is false
+     * the old values are lost.
+     * @param size The new size of the vector
+     */
+    template<bool copyOldValues>
+    void resize(size_type size)
+    {
       if(size > block_vector_unmanaged<B,A>::N())
         if(capacity_ < size)
-          reserve(size);
+          this->template reserve<copyOldValues>(size);
 
       if(size >=0)
         this->n=size;
