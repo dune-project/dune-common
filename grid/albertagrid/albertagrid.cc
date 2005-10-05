@@ -307,8 +307,10 @@ namespace Dune
       // A = ( P1 - P0  , P2 - P0 )
       for (int i=0; i<mydim; i++)
       {
-        elMat[i][0] = coord[1][i] - coord[0][i];
-        elMat[i][1] = coord[2][i] - coord[0][i];
+        //elMat[i][0] = coord[1][i] - coord[0][i];
+        //elMat[i][1] = coord[2][i] - coord[0][i];
+        elMat[0][i] = coord[1][i] - coord[0][i];
+        elMat[1][i] = coord[2][i] - coord[0][i];
       }
       return true;
     }
