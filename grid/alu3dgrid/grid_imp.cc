@@ -30,7 +30,7 @@ namespace Dune {
 #else
       ,  myRank_(-1)
 #endif
-      , geomTypes_ (numberOfGeomTypes)
+      , geomTypes_(1,(elType == tetra) ? simplex : cube)
       , hIndexSet_ (*this)
       , globalIdSet_(*this), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
@@ -39,7 +39,6 @@ namespace Dune {
     {
       checkMacroGrid ( elType , macroTriangFilename );
     }
-    geomTypes_[0] = (elType == tetra) ? simplex : cube;
 
     mygrid_ = new ALU3DSPACE GitterImplType (macroTriangFilename
 #ifdef _ALU3DGRID_PARALLEL_
@@ -72,27 +71,23 @@ namespace Dune {
     : mygrid_ (0) , maxlevel_(0)
       , coarsenMarked_(0) , refineMarked_(0)
       , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
-      , geomTypes_ (numberOfGeomTypes)
+      , geomTypes_(1,(elType == tetra) ? simplex : cube)
       , hIndexSet_ (*this)
       , globalIdSet_(*this), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
-  {
-    geomTypes_[0] = (elType == tetra) ? simplex : cube;
-  }
+  {}
 #else
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline ALU3dGrid<dim, dimworld, elType>::ALU3dGrid(int myrank)
     : mygrid_ (0) , maxlevel_(0)
       , coarsenMarked_(0) , refineMarked_(0)
       , myRank_(myrank)
-      , geomTypes_ (numberOfGeomTypes)
+      , geomTypes_(1,(elType == tetra) ? simplex : cube)
       , hIndexSet_ (*this)
       , globalIdSet_ (*this)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
-  {
-    geomTypes_[0] = (elType == tetra) ? simplex : cube;
-  }
+  {}
 #endif
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -100,13 +95,12 @@ namespace Dune {
     : mygrid_ (0) , maxlevel_(0)
       , coarsenMarked_(0) , refineMarked_(0)
       , myRank_(-1)
-      , geomTypes_ (numberOfGeomTypes)
+      , geomTypes_(1,(elType == tetra) ? simplex : cube)
       , hIndexSet_(*this)
       , globalIdSet_ (*this)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
   {
-    geomTypes_[0] = (elType == tetra) ? simplex : cube;
     DUNE_THROW(GridError,"Do not use copy constructor of ALU3dGrid! \n");
   }
 
