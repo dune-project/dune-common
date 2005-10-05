@@ -424,7 +424,7 @@ namespace Dune
     for(int i=0; i<dim; i++)
       globalCoord_[i] = global[i] - coord_[0][i];
 
-    FMatrixHelp::multAssign(Jinv_,globalCoord_,localCoord_);
+    FMatrixHelp::multAssignTransposed(Jinv_,globalCoord_,localCoord_);
 
     return localCoord_;
   }
