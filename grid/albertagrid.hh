@@ -1466,24 +1466,13 @@ namespace Dune
     int size (int level, int codim) const;
 
     //! number of leaf entities per codim in this process
-    int size (int codim) const
-    {
-      return size(codim,simplex);
-    }
+    int size (int codim) const;
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const
-    {
-      if( type != simplex) return 0;
-      return this->levelIndexSet(level).size(codim,type);
-    }
+    int size (int level, int codim, GeometryType type) const;
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const
-    {
-      if( type != simplex) return 0;
-      return this->leafIndexSet().size(codim,type);
-    }
+    int size (int codim, GeometryType type) const;
 
     /** \brief ghostSize is zero for this grid  */
     int ghostSize (int level, int codim) const { return 0; }

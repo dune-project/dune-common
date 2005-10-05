@@ -3758,6 +3758,27 @@ namespace Dune
   }
 
   template < int dim, int dimworld >
+  inline int AlbertaGrid < dim, dimworld >::size (int level, int codim, GeometryType type) const
+  {
+    if( type != simplex) return 0;
+    return this->size(level,codim);
+
+  }
+
+  template < int dim, int dimworld >
+  inline int AlbertaGrid < dim, dimworld >::size (int codim, GeometryType type) const
+  {
+    if( type != simplex) return 0;
+    return this->size(codim);
+  }
+
+  template < int dim, int dimworld >
+  inline int AlbertaGrid < dim, dimworld >::size (int codim) const
+  {
+    return this->size(codim,simplex);
+  }
+
+  template < int dim, int dimworld >
   inline void AlbertaGrid < dim, dimworld >::arrangeDofVec()
   {
     hIndexSet_.updatePointers(dofvecs_);
