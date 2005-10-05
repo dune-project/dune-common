@@ -28,10 +28,15 @@ namespace Dune {
   // Abstract operator interface
   //=====================================================================
 
-  /*! Abstract base class defining an operator \f$ A : X\to Y\f$. The
+
+  /*!
+     @brief A linear operator.
+     Abstract base class defining a linear operator \f$ A : X\to Y\f$,
+     i.e. \f$ A(\alpha x) = \alpha A(x) \f$ and
+      \f$ A(x+y) = A(x)+A(y)\f$ hold. The
      simplest solvers just need the application  \f$ A(x)\f$ of
-     the operator. The operator might even be nonlinear (but is not in
-     our application here).
+     the operator.
+
 
         - enables on the fly computation through operator concept. If explicit
         representation of the operator is required use AssembledLinearOperator
@@ -41,36 +46,20 @@ namespace Dune {
         derived class
    */
   template<class X, class Y>
-  class Operator {
+  class LinearOperator {
   public:
-    //! export types, they come from the derived class
+    //! The type of the domain of the operator.
     typedef X domain_type;
+    //! The type of the range of the operator.
     typedef Y range_type;
+    //! The field type of the operator.
     typedef typename X::field_type field_type;
 
     /*! \brief apply operator to x:  \f$ y = A(x) \f$
-       The input vector is consistent and the output must also be
+          The input vector is consistent and the output must also be
        consistent on the interior+border partition.
      */
     virtual void apply (const X& x, Y& y) const = 0;
-
-    //! every abstract base class has a virtual destructor
-    virtual ~Operator () {}
-  };
-
-
-  /*! This type ensures that the operator \f$ A \f$ is a
-      linear operator, i.e. \f$ A(\alpha x) = \alpha A(x) \f$ and
-      \f$ A(x+y) = A(x)+A(y)\f$. The additional interface function
-      reflects this fact.
-   */
-  template<class X, class Y>
-  class LinearOperator : public Operator<X,Y> {
-  public:
-    //! export types, they come from the derived class
-    typedef X domain_type;
-    typedef Y range_type;
-    typedef typename X::field_type field_type;
 
     //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
     virtual void applyscaleadd (field_type alpha, const X& x, Y& y) const = 0;
