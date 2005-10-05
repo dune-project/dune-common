@@ -3168,6 +3168,10 @@ namespace Dune
   inline typename AlbertaGrid<dim,dimworld>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
   {
+    if((dim == codim) || ((dim == 3) && (codim == 2)) )
+    {
+      if( ! (*vertexMarker_).up2Date() ) vertexMarker_->markNewVertices(*this);
+    }
     return AlbertaGridLeafIterator<0, All_Partition, const MyType> (*this,vertexMarker_,level,proc);
   }
 
