@@ -262,21 +262,112 @@ namespace Dune {
     //===== constructors and such
 
     //! makes empty vector
-    BlockVector () : block_vector_unmanaged<B,A>()
-    {       }
+    BlockVector () : block_vector_unmanaged<B,A>(),
+                     capacity_(0)
+    {
+      this->n = 0;
+    }
 
     //! make vector with _n components
     BlockVector (size_type _n)
     {
       this->n = _n;
-      if (this->n>0)
-        this->p = A::template malloc<B>(this->n);
+      capacity_ = _n;
+      if (capacity_>0)
+        this->p = A::template malloc<B>(capacity_);
       else
       {
-        this->n = 0;
         this->p = 0;
+        this->n = 0;
+        capacity_ = 0;
       }
     }
+
+    BlockVector (size_type _n, size_type capacity)
+    {
+      this->n = _n;
+      if(this->n > capacity)
+        capacity_ = _n;
+      else
+        capacity_ = capacity;
+
+      if (capacity_>0)
+        this->p = A::template malloc<B>(capacity_);
+      else
+      {
+        this->p = 0;
+        this->n = 0;
+        capacity_ = 0;
+      }
+    }
+
+    /**
+     * @brief Reserve space.
+     * After calling this method the vector can hold up to
+     * capacity values. If the specified capacity is smaller
+     * than the current capacity and bigger than the current size
+     * space will be freed.
+     * @param capacity The maximum number of elements the vector
+     * needs to hold.
+     */
+    void reserve(size_type capacity)
+    {
+      if(capacity >= block_vector_unmanaged<B,A>::N() && capacity != capacity_) {
+        // save the old data
+        B* pold = this->p;
+
+        if(capacity>0) {
+          // create new array with capacity
+          this->p = A::template malloc<B>(this->n);
+          // copy the old values
+          B* to = this->p;
+          B* from = pold;
+
+          for(size_type i=0; i < block_vector_unmanaged<B,A>::N(); ++i, ++from, ++to)
+            *to = *from;
+        }else{
+          this->p = 0;
+          capacity_ = 0;
+        }
+
+        if(capacity_ > 0)
+          // free old data
+          A::template free<B>(pold);
+
+        capacity_ = capacity;
+      }
+    }
+
+    /**
+     * @brief Get the capacity of the vector.
+     *
+     * I. e. the maximum number of elements the vector can hold.
+     * @return The capacity of the vector.
+     */
+    size_type capacity() const
+    {
+      return capacity_;
+    }
+
+    /**
+     * @brief Resize the vector.
+     * After calling this method ::N() will return size
+     * If the capacity of the vector is smaller than the specified
+     * size then reserve(size) will be called.
+     * @param size The new size of the vector
+     */
+    void resize(size_type size)
+    {
+      if(size > block_vector_unmanaged<B,A>::N())
+        if(capacity_ < size)
+          reserve(size);
+
+      if(size >=0)
+        this->n=size;
+    }
+
+
+
 
 #ifdef DUNE_EXPRESSIONTEMPLATES
     //! random access to blocks
@@ -334,8 +425,10 @@ namespace Dune {
     {
       // allocate memory with same size as a
       this->n = a.n;
-      if (this->n>0)
-        this->p = A::template malloc<B>(this->n);
+      capacity_ = a.capacity_;
+
+      if (capacity_>0)
+        this->p = A::template malloc<B>(capacity_);
       else
       {
         this->n = 0;
@@ -354,8 +447,10 @@ namespace Dune {
 
       // allocate memory with same size as a
       this->n = a.n;
-      if (this->n>0)
-        this->p = A::template malloc<B>(this->n);
+      capacity_ = a.capacity_;
+
+      if (capacity>0)
+        this->p = A::template malloc<B>(capacity);
       else
       {
         this->n = 0;
@@ -370,23 +465,7 @@ namespace Dune {
     //! free dynamic memory
     ~BlockVector ()
     {
-      if (this->n>0) A::template free<B>(this->p);
-    }
-
-    //! reallocate vector to given size, any data is lost
-    void resize (size_type _n)
-    {
-      if (this->n==_n) return;
-
-      if (this->n>0) A::template free<B>(this->p);
-      this->n = _n;
-      if (this->n>0)
-        this->p = A::template malloc<B>(this->n);
-      else
-      {
-        this->n = 0;
-        this->p = 0;
-      }
+      if (capacity_>0) A::template free<B>(this->p);
     }
 
     //! assignment
@@ -396,18 +475,19 @@ namespace Dune {
       if (&a!=this)     // check if this and a are different objects
       {
         // adjust size of vector
-        if (this->n!=a.n)           // check if size is different
+        if (capacity_!=a.capacity_)           // check if size is different
         {
-          if (this->n>0) A::template free<B>(this->p);                 // delete old memory
-          this->n = a.n;
-          if (this->n>0)
-            this->p = A::template malloc<B>(this->n);
+          if (capacity_>0) A::template free<B>(this->p);                 // delete old memory
+          capacity_ = a.capacity_;
+          if (capacity_>0)
+            this->p = A::template malloc<B>(capacity_);
           else
           {
-            this->n = 0;
             this->p = 0;
+            capacity_ = 0;
           }
         }
+        this->n = a.n;
         // copy data
         for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
       }
@@ -429,6 +509,8 @@ namespace Dune {
       (static_cast<block_vector_unmanaged<B,A>&>(*this)) = k;
       return *this;
     }
+  protected:
+    size_type capacity_;
   };
 
   //! Send BlockVector to an output stream

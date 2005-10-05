@@ -7,7 +7,7 @@ if MPI
 endif
 
 # which tests where program to build and run are equal
-NORMALTESTS = indexsettest $(SELECTPROG)
+NORMALTESTS = bvectortest indexsettest $(SELECTPROG)
 
 # list of tests to run (indicestest is special case)
 TESTS = $(NORMALTESTS) $(INDEXRUN)
@@ -16,6 +16,8 @@ TESTS = $(NORMALTESTS) $(INDEXRUN)
 check_PROGRAMS = $(NORMALTESTS) $(INDEXPROG)
 
 # define the programs
+
+bvectortest_SOURCES = bvectortest.cc
 
 indicestest_SOURCES = indicestest.cc
 

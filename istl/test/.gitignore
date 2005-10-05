@@ -7,4 +7,5 @@ indicestest
 selectiontest
 indexsettest
 syncertest
+bvectortest
 gmon.out
