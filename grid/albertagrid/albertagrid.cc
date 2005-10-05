@@ -468,8 +468,9 @@ namespace Dune
     // calc A and stores it in elMat_
     calcElMatrix();
 
-    // Jinv = A^-1
+    // Jinv = A^-1^T
     assert( builtElMat_ == true );
+    // here the transposed jacobian inverse is calculated
     elDet_ = std::abs( FMatrixHelp::invertMatrix_retTransposed(elMat_,Jinv_) );
 
     assert(elDet_ > 1.0E-25);
