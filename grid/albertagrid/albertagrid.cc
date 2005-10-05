@@ -3760,7 +3760,7 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim, GeometryType type) const
   {
-    if( type != simplex) return 0;
+    if( type != simplex ) return 0;
     return this->size(level,codim);
 
   }
@@ -3768,7 +3768,7 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int codim, GeometryType type) const
   {
-    if( type != simplex) return 0;
+    if( type != simplex ) return 0;
     return this->size(codim);
   }
 
@@ -3829,8 +3829,9 @@ namespace Dune
     for(unsigned int i=0; i<levelIndexVec_.size(); i++)
       if(levelIndexVec_[i]) (*levelIndexVec_[i]).calcNewIndex();
 
-    if( leafIndexSet_ ) (*leafIndexSet_).resize();
-    if( leafIndexSet_ ) (*leafIndexSet_).compress();
+    if( leafIndexSet_ ) delete leafIndexSet_;
+    //if( leafIndexSet_ ) (*leafIndexSet_).resize();
+    //if( leafIndexSet_ ) (*leafIndexSet_).compress();
 
     // we have a new grid
     wasChanged_ = true;
