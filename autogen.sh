@@ -110,4 +110,4 @@ export CPP="$COMP -E"
 export CFLAGS="$COMPFLAGS"
 export CXXFLAGS="$COMPFLAGS"
 
-eval ./configure $DEFAULTCONFOPT $CONFOPT
+#eval ./configure $DEFAULTCONFOPT $CONFOPT
