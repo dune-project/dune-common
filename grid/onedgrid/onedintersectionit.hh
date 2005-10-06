@@ -146,12 +146,11 @@ namespace Dune {
     //! ask for level of entity
     int level () const {return center_->level_;}
 
-#if 0
     //! return information about the Boundary
-    OneDGridBoundaryEntity<GridImp> & boundaryEntity () {
-      return boundaryEntity_;
+    int boundaryEntity () {
+#warning please implement a course grid boundary segment id
+      return 0;
     }
-#endif
 
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
@@ -221,11 +220,6 @@ namespace Dune {
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
     OneDGridGeometry<dim-1,dimworld> neighGlob_;
-#endif
-
-#if 0
-    //! BoundaryEntity
-    OneDGridBoundaryEntity<GridImp> boundaryEntity_;
 #endif
 
     //! count on which neighbor we are lookin' at

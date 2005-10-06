@@ -159,6 +159,10 @@ Dune::OneDGrid<dim,dimworld>::~OneDGrid()
 
   }
 
+  // Delete levelIndexSets
+  for (unsigned int i=0; i<=levelIndexSets_.size(); i++)
+    if (levelIndexSets_[i])
+      delete levelIndexSets_[i];
 }
 
 template <int dim, int dimworld>
@@ -550,10 +554,13 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
 template < int dim, int dimworld >
 void Dune::OneDGrid < dim, dimworld >::setIndices()
 {
-  levelIndexSets_.resize(maxlevel()+1);
+  for (int i=levelIndexSets_.size(); i<maxlevel()+1; i++)
+    levelIndexSets_.push_back(0);
+  //    levelIndexSets_.resize(maxlevel()+1);
 
   for (int i=0; i<=maxlevel(); i++)
-    levelIndexSets_[i].update(*this, i);
+    if (levelIndexSets_[i])
+      levelIndexSets_[i]->update(*this, i);
 
   leafIndexSet_.update();
 
