@@ -803,41 +803,4 @@ namespace Dune {
     return (*entity_).level();
   }
 
-
-  //************************************************************************
-  //
-  //  --ALU3dGridBoundaryEntity
-  //  --BoundaryEntity
-  //
-  //************************************************************************
-  template <class GridImp>
-  inline ALU3dGridBoundaryEntity<GridImp>::ALU3dGridBoundaryEntity () :
-    _geom () , _id(-1) {}
-
-  template <class GridImp>
-  inline int ALU3dGridBoundaryEntity<GridImp>::id () const
-  {
-    return _id;
-  }
-
-  template <class GridImp>
-  inline bool ALU3dGridBoundaryEntity<GridImp>::hasGeometry () const
-  {
-    return false;
-  }
-
-  template <class GridImp>
-  inline const typename ALU3dGridBoundaryEntity<GridImp>::Geometry &
-  ALU3dGridBoundaryEntity<GridImp>::geometry () const
-  {
-    assert(hasGeometry());
-    return _geom;
-  }
-
-  template <class GridImp>
-  inline void ALU3dGridBoundaryEntity<GridImp>::setId ( int id )
-  {
-    _id = id;
-  }
-
 } // end namespace Dune

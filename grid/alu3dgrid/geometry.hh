@@ -110,7 +110,6 @@ namespace Dune {
     public GeometryDefault<mydim, cdim, const ALU3dGrid<3, 3, tetra>,
         ALU3dGridGeometry> {
     typedef const ALU3dGrid<3, 3, tetra> GridImp;
-    friend class ALU3dGridBoundaryEntity<GridImp>;
 
     typedef typename ALU3dImplTraits<tetra>::IMPLElementType IMPLElementType;
     typedef typename ALU3dImplTraits<tetra>::PLLBndFaceType PLLBndFaceType;
@@ -153,7 +152,7 @@ namespace Dune {
     alu3d_ctype integrationElement (const FieldVector<alu3d_ctype, mydim>& local) const;
 
     //! can only be called for dim=dimworld!
-    const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverse (const FieldVector<alu3d_ctype, cdim>& local) const;
+    const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, cdim>& local) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
@@ -180,8 +179,8 @@ namespace Dune {
     //! and a local vertex index
     int faceIndex(int faceIdx, int vtxIdx) const;
 
-    // generate Jacobian Inverse and calculate integration_element
-    void buildJacobianInverse() const;
+    // generate transposed Jacobian Inverse and calculate integration_element
+    void buildJacobianInverseTransposed() const;
 
     // calculates the element matrix for calculation of the jacobian inverse
     void calcElMatrix () const;
@@ -212,7 +211,6 @@ namespace Dune {
     public GeometryDefault<mydim, cdim, const ALU3dGrid<3, 3, hexa>,
         ALU3dGridGeometry> {
     typedef const ALU3dGrid<3, 3, hexa> GridImp;
-    friend class ALU3dGridBoundaryEntity<GridImp>;
     friend class ALU3dGridIntersectionIterator<GridImp>;
 
     typedef typename ALU3dImplTraits<hexa>::IMPLElementType IMPLElementType;
@@ -260,7 +258,7 @@ namespace Dune {
 
     //! can only be called for dim=dimworld! (Trivially true, since there is no
     //! other specialization...)
-    const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverse (const FieldVector<alu3d_ctype, cdim>& local) const;
+    const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, cdim>& local) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public

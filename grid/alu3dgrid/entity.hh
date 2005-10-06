@@ -23,8 +23,6 @@ namespace Dune {
   template<int mydim, int coorddim, class GridImp>
   class ALU3dGridGeometry;
   template<class GridImp>
-  class ALU3dGridBoundaryEntity;
-  template<class GridImp>
   class ALU3dGridHierarchicIterator;
   template<class GridImp>
   class ALU3dGridIntersectionIterator;
@@ -465,64 +463,6 @@ namespace Dune {
     //! flag for end iterators
     bool done_;
   };
-
-
-  //*******************************************************************
-  //
-  //  --ALU3dGridBoundaryEntity
-  //  --BoundaryEntity
-  //
-  //*******************************************************************
-  template<class GridImp>
-  class ALU3dGridMakeableBoundaryEntity :
-    public GridImp::template Codim<0>::BoundaryEntity
-  {
-  public:
-    ALU3dGridMakeableBoundaryEntity () :
-      GridImp::template Codim<0>::BoundaryEntity (ALU3dGridBoundaryEntity<GridImp>()) {};
-
-    ALU3dGridMakeableBoundaryEntity (GridImp & grid, int level ) :
-      GridImp::template Codim<0>::BoundaryEntity (ALU3dGridBoundaryEntity<GridImp>()) {};
-
-    // set boundary Id, done by IntersectionIterator
-    void setId ( int id )
-    {
-      this->realBoundaryEntity.setId(id);
-    }
-  };
-
-  /** BoundaryEntity of the ALU3dGrid module */
-  template<class GridImp>
-  class ALU3dGridBoundaryEntity
-    : public BoundaryEntityDefault <GridImp,ALU3dGridBoundaryEntity>
-  {
-    enum {dim = GridImp::dimension };
-    friend class ALU3dGridIntersectionIterator<GridImp>;
-    friend class ALU3dGridIntersectionIterator<const GridImp>;
-  public:
-    typedef typename GridImp::template Codim<0>::Geometry Geometry;
-    typedef ALU3dGridMakeableGeometry<dim,dim,GridImp> GeometryImp;
-
-    //! Constructor
-    ALU3dGridBoundaryEntity ();
-
-    /*! \brief return identifier of boundary segment which is an
-        abitrary integer not zero */
-    int id () const ;
-
-    //! return true if geometry of ghost cells was filled
-    bool hasGeometry () const ;
-
-    //! return geometry of the ghost cell
-    const Geometry & geometry () const ;
-
-    void setId ( int id ) ;
-
-  private:
-    mutable GeometryImp _geom;
-    int _id;
-  };
-
 
 } // end namespace Dune
 

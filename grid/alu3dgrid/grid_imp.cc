@@ -219,7 +219,7 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline int ALU3dGrid<dim, dimworld, elType>::maxlevel() const
+  inline int ALU3dGrid<dim, dimworld, elType>::maxLevel() const
   {
     return maxlevel_;
   }
@@ -400,8 +400,8 @@ namespace Dune {
     bool ref = false;
     for (int count = numberOfRefines; count>0; count--)
     {
-      LeafIteratorType endit  = leafend   ( maxlevel() );
-      for(LeafIteratorType it = leafbegin ( maxlevel() ); it != endit; ++it)
+      LeafIteratorType endit  = leafend   ( maxLevel() );
+      for(LeafIteratorType it = leafbegin ( maxLevel() ); it != endit; ++it)
       {
         this->mark(1, (*it) );
       }
@@ -431,8 +431,8 @@ namespace Dune {
     bool ref = false;
     if(leafIndexSet_)
     {
-      EntityImp f ( *this, this->maxlevel() );
-      EntityImp s ( *this, this->maxlevel() );
+      EntityImp f ( *this, this->maxLevel() );
+      EntityImp s ( *this, this->maxLevel() );
 
       ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>,
           EntityImp, LeafIndexSet, LeafIndexSet >
@@ -463,8 +463,8 @@ namespace Dune {
   {
     assert( ((verbose) ? (dverb << "ALU3dGrid :: adapt() new method called!\n", 1) : 1 ) );
 
-    EntityImp f ( *this, this->maxlevel() );
-    EntityImp s ( *this, this->maxlevel() );
+    EntityImp f ( *this, this->maxLevel() );
+    EntityImp s ( *this, this->maxLevel() );
 
     /*
        if(leafIndexSet_)
@@ -494,7 +494,7 @@ namespace Dune {
     bool ref = myGrid().duneAdapt(rp); // adapt grid
 
     // if new maxlevel was claculated
-    if(rp.maxlevel() >= 0) maxlevel_ = rp.maxlevel();
+    if(rp.maxLevel() >= 0) maxlevel_ = rp.maxLevel();
     assert( ((verbose) ? (dverb << "maxlevel = " << maxlevel_ << "!\n", 1) : 1 ) );
 
     if(ref)
@@ -632,9 +632,9 @@ namespace Dune {
   inline bool ALU3dGrid<dim, dimworld, elType>::loadBalance(DataCollectorType & dc)
   {
 #ifdef _ALU3DGRID_PARALLEL_
-    EntityImp en     ( *this, this->maxlevel() );
-    EntityImp father ( *this, this->maxlevel() );
-    EntityImp son    ( *this, this->maxlevel() );
+    EntityImp en     ( *this, this->maxLevel() );
+    EntityImp father ( *this, this->maxLevel() );
+    EntityImp son    ( *this, this->maxLevel() );
 
     if(leafIndexSet_)
     {
@@ -677,7 +677,7 @@ namespace Dune {
   inline bool ALU3dGrid<dim, dimworld, elType>::communicate(DataCollectorType & dc)
   {
 #ifdef _ALU3DGRID_PARALLEL_
-    EntityImp en ( *this, this->maxlevel() );
+    EntityImp en ( *this, this->maxLevel() );
 
     ALU3DSPACE GatherScatterExchange < ALU3dGrid<dim, dimworld, elType> , EntityImp ,
         DataCollectorType > gs(*this,en,dc);

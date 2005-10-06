@@ -74,7 +74,6 @@ namespace Dune
   template<int cd, class GridImp> class AlbertaGridEntityPointer;
 
   template <int mydim, int cdim, class GridImp> class AlbertaGridGeometry;
-  template<class GridImp>         class AlbertaGridBoundaryEntity;
   template<class GridImp>         class AlbertaGridHierarchicIterator;
   template<class GridImp>         class AlbertaGridIntersectionIterator;
   template<int dim, int dimworld> class AlbertaGrid;
@@ -136,7 +135,6 @@ namespace Dune
   class AlbertaGridGeometry :
     public GeometryDefault<mydim,cdim,GridImp,AlbertaGridGeometry>
   {
-    friend class AlbertaGridBoundaryEntity<GridImp>;
 
     //! know dimension of barycentric coordinates
     enum { dimbary=mydim+1};
@@ -790,63 +788,6 @@ namespace Dune
   };
 
 
-  //********************************************************************
-  //
-  //  --BoundaryEntity
-  //
-  //********************************************************************
-  template<class GridImp>
-  class AlbertaGridMakeableBoundaryEntity :
-    public GridImp::template Codim<0>::BoundaryEntity
-  {
-  public:
-    AlbertaGridMakeableBoundaryEntity () :
-      GridImp::template Codim<0>::BoundaryEntity
-        (AlbertaGridBoundaryEntity<GridImp>()) {};
-    // set elInfo
-    void setElInfo(ALBERTA EL_INFO * elInfo, int nb)
-    {
-      this->realBoundaryEntity.setElInfo(elInfo,nb);
-    }
-  };
-
-  /** Boundary Entity of AlbertaGrid. See Interface for description of methods. */
-  template <class GridImp>
-  class AlbertaGridBoundaryEntity :
-    public BoundaryEntityDefault <GridImp,AlbertaGridBoundaryEntity>
-  {
-    friend class AlbertaGridIntersectionIterator<GridImp>;
-    friend class AlbertaGridMakeableBoundaryEntity<GridImp>;
-    typedef AlbertaGridMakeableGeometry<GridImp::dimension,GridImp::dimensionworld,GridImp> GeometryImp;
-  public:
-    typedef typename GridImp:: template Codim<0>:: Geometry Geometry;
-
-    //! Constructor
-    AlbertaGridBoundaryEntity ();
-
-    //! return identifier of boundary segment, number
-    int id () const;
-
-    //! return true if geometry of ghost cells was filled
-    bool hasGeometry () const ;
-
-    //! return geometry of the ghost cell
-    const Geometry & geometry () const;
-
-  private:
-    // set elInfo
-    void setElInfo(ALBERTA EL_INFO * elInfo, int nb);
-
-    // ghost cell
-    mutable GeometryImp _geom;
-
-    // cooresponding el_info
-    ALBERTA EL_INFO * _elInfo;
-
-    int _neigh;
-  };
-
-
   //**********************************************************************
   //
   // --AlbertaGridIntersectionIterator
@@ -869,8 +810,6 @@ namespace Dune
     friend class AlbertaGridEntity<0,dim,GridImp>;
   public:
     typedef typename GridImp::template Codim<0>::Entity Entity;
-    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
-    typedef AlbertaGridMakeableBoundaryEntity<GridImp> MakeableBndEntityType;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     typedef AlbertaGridMakeableEntity<0,dim,GridImp> EntityImp;
@@ -921,7 +860,7 @@ namespace Dune
     bool neighbor () const;
 
     //! return information about the Boundary
-    BoundaryEntity & boundaryEntity () const;
+    int boundaryId () const;
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
@@ -1001,7 +940,6 @@ namespace Dune
     //mutable typename GridImp::EntityProvider::ObjectEntity                *manageObj_;
     //mutable typename GridImp::IntersectionSelfProvider::ObjectEntity      *manageInterEl_;
     //mutable typename GridImp::IntersectionNeighProvider::ObjectEntity     *manageNeighEl_;
-    //mutable typename GridImp::IntersectionBoundaryProvider::ObjectEntity  *manageBndEntity_;
 
     //! pointer to element holding the self_local and self_global information.
     //! This element is created on demand.
@@ -1010,9 +948,6 @@ namespace Dune
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
     mutable LocalGeometryImp *neighGlob_;
-
-    //! BoundaryEntity
-    mutable MakeableBndEntityType * boundaryEntity_;
 
     //! EL_INFO th store the information of the neighbor if needed
     mutable ALBERTA EL_INFO * neighElInfo_;
@@ -1223,8 +1158,6 @@ namespace Dune
 
       typedef Dune::HierarchicIterator<const GridImp, AlbertaGridHierarchicIterator> HierarchicIterator;
 
-      typedef Dune::BoundaryEntity<const GridImp, AlbertaGridBoundaryEntity> BoundaryEntity;
-
       typedef IdType GlobalIdType;
       typedef IdType LocalIdType;
 
@@ -1329,7 +1262,6 @@ namespace Dune
     /*
        typedef GridTraits<dim,dimworld,Dune::AlbertaGrid<dim,dimworld> ,
                        AlbertaGridGeometry,AlbertaGridEntity,
-                       AlbertaGridBoundaryEntity,
                        AlbertaGridEntityPointer,
                        AlbertaGridLevelIterator,
                        AlbertaGridIntersectionIterator,
@@ -1705,18 +1637,15 @@ namespace Dune
     //**********************************************************************
     typedef AlbertaGridMakeableEntity<0,dim,const MyType>            EntityImp;
     typedef AlbertaGridMakeableGeometry<dim-1,dimworld,const MyType> GeometryImp;
-    typedef AlbertaGridMakeableBoundaryEntity<const MyType> BoundaryImp;
 
   public:
     typedef AGMemoryProvider< EntityImp > EntityProvider;
     typedef AGMemoryProvider< GeometryImp > IntersectionSelfProvider;
     typedef AGMemoryProvider< GeometryImp > IntersectionNeighProvider;
-    typedef AGMemoryProvider< BoundaryImp > IntersectionBoundaryProvider;
 
     mutable EntityProvider entityProvider_;
     mutable IntersectionSelfProvider interSelfProvider_;
     mutable IntersectionNeighProvider interNeighProvider_;
-    mutable IntersectionBoundaryProvider interBndProvider_;
 
     template <int codim>
     AlbertaGridMakeableEntity<codim,dim,const MyType> * getNewEntity (int level ) const

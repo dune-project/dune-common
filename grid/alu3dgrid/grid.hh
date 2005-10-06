@@ -33,10 +33,6 @@ namespace Dune {
   template<int mydim, int coorddim, class GridImp>
   class ALU3dGridGeometry;
   template<class GridImp>
-  class ALU3dGridBoundaryEntity;
-  template<class GridImp>
-  class ALU3dGridMakeableBoundaryEntity;
-  template<class GridImp>
   class ALU3dGridHierarchicIterator;
   template<class GridImp>
   class ALU3dGridIntersectionIterator;
@@ -90,8 +86,6 @@ namespace Dune {
       typedef Dune::IntersectionIterator<const GridImp, ALU3dGridIntersectionIterator> IntersectionIterator;
 
       typedef Dune::HierarchicIterator<const GridImp, ALU3dGridHierarchicIterator> HierarchicIterator;
-
-      typedef Dune::BoundaryEntity<const GridImp, ALU3dGridBoundaryEntity> BoundaryEntity;
 
       template <int cd>
       struct Codim
@@ -237,8 +231,8 @@ namespace Dune {
     GridIdentifier type  () const;
 
     //! Return maximum level defined in this grid. Levels are numbered
-    //! 0 ... maxlevel with 0 the coarsest level.
-    int maxlevel() const;
+    //! 0 ... maxLevel with 0 the coarsest level.
+    int maxLevel() const;
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
@@ -486,12 +480,6 @@ namespace Dune {
     typedef ALU3dGridMakeableGeometry<dim-1,dimworld,const MyType> LGeometryImp;
     typedef ALUMemoryProvider< LGeometryImp > GeometryProvider;
 
-    typedef ALU3dGridMakeableBoundaryEntity<const MyType> BndGeometryImp;
-    typedef ALUMemoryProvider< BndGeometryImp > BndProvider;
-
-    //typedef ALU3dGridMakeableEntity<3,dim,const MyType> VertexImp;
-    //typedef ALU3DSPACE MemoryProvider< VertexImp > VertexProvider;
-
     template <int codim>
     ALU3dGridMakeableEntity<codim,dim,const MyType> * getNewEntity ( int level ) const;
 
@@ -500,7 +488,6 @@ namespace Dune {
 
     mutable GeometryProvider geometryProvider_;
     mutable EntityProvider entityProvider_;
-    mutable BndProvider bndProvider_;
     //mutable VertexProvider vertexProvider_;
   }; // end class ALU3dGrid
 

@@ -30,7 +30,6 @@ namespace Dune {
     intersectionSelfLocal_(0),
     intersectionNeighborLocal_(0),
     item_(0),
-    bndEntity_(0),
     nFaces_(el ? el->nFaces() : 0),
     walkLevel_(wLevel),
     index_(0),
@@ -44,8 +43,7 @@ namespace Dune {
         this->grid_.geometryProvider_.getNewObjectEntity(this->grid_,walkLevel_);
       intersectionNeighborLocal_ =
         this->grid_.geometryProvider_.getNewObjectEntity(this->grid_,walkLevel_);
-      bndEntity_ =
-        this->grid_.bndProvider_.getNewObjectEntity( this->grid_ , walkLevel_ );
+
       first(*el,wLevel);
     } else {
       this->done();
@@ -94,7 +92,6 @@ namespace Dune {
     intersectionSelfLocal_(0),
     intersectionNeighborLocal_(0),
     item_(org.item_),
-    bndEntity_(0), // this is only set if this is not an end iterator
     nFaces_(org.nFaces_),
     walkLevel_(org.walkLevel_),
     generatedGlobalGeometry_(false),
@@ -115,10 +112,6 @@ namespace Dune {
       intersectionNeighborLocal_ =
         org.intersectionNeighborLocal_ ?
         this->grid_.geometryProvider_.getNewObjectEntity(this->grid_, walkLevel_)
-        : 0;
-      bndEntity_ =
-        (org.bndEntity_) ?
-        this->grid_.bndProvider_.getNewObjectEntity( this->grid_ , walkLevel_ )
         : 0;
 
     } else {
@@ -142,11 +135,6 @@ namespace Dune {
     if (intersectionNeighborLocal_) {
       this->grid_.geometryProvider_.freeObjectEntity(intersectionNeighborLocal_);
       intersectionNeighborLocal_ = 0;
-    }
-
-    if(bndEntity_) {
-      this->grid_.bndProvider_.freeObjectEntity( bndEntity_ );
-      bndEntity_ = 0;
     }
 
     if (geoProvider_) {
@@ -314,15 +302,11 @@ namespace Dune {
   }
 
   template<class GridImp>
-  inline const typename ALU3dGridIntersectionIterator<GridImp>::BoundaryEntity &
-  ALU3dGridIntersectionIterator<GridImp>::boundaryEntity () const
+  inline int
+  ALU3dGridIntersectionIterator<GridImp>::boundaryId () const
   {
-    assert(boundary());
-    assert(item_); // make sure that this is not an end iterator
-    const BNDFaceType& bnd = connector_->boundaryFace();
-    int id = bnd.bndtype(); // ids are positive
-    bndEntity_->setId( -id );
-    return *bndEntity_;
+    assert(item_);
+    return (boundary() ? connector_->boundaryFace().bndtype() : 0);
   }
 
   template <class GridImp>
@@ -592,6 +576,7 @@ namespace Dune {
         typedef ALU3DSPACE ALU3dGridLeafIteratorWrapper<0,Ghost_Partition> GhostIterator;
         IterInterface * it = new GhostIterator ( this->grid_, level_, nlinks );
         iter_.store( it );
+
       }
       else if(pitype == All_Partition)
       {
@@ -606,8 +591,10 @@ namespace Dune {
         //IterInterface * it = new AllIterator ( this->grid_, level_, nlinks );
         //iter_.store( it );
         assert( (true) ? (std::cout << "Erstelle All Partition Iterator! \n",1) : 0);
+
         IteratorType * it = new IteratorType ( this->grid_ , level_, nlinks );
         iter_.store( it );
+
       }
       else
 #endif
@@ -615,6 +602,7 @@ namespace Dune {
         // create interior iterator
         IteratorType * it = new IteratorType ( this->grid_ , level_, nlinks );
         iter_.store( it );
+
       }
 
       (*iter_).first();

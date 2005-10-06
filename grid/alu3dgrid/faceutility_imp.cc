@@ -40,7 +40,7 @@ namespace Dune {
         // and ghostBoundary
         ghostBoundary_  = true;
 
-        // this dosen't count as outer boundary
+        // this doesn't count as outer boundary
         outerBoundary_ = false;
       }
     }
@@ -304,7 +304,7 @@ namespace Dune {
     int localDuneIndex =
       ElementTopo::alu2duneFaceVertex(ElementTopo::dune2aluFace(duneFaceIndex),
                                       localALUIndex);
-    return refElem_.subentity(duneFaceIndex, 1, localDuneIndex, 3);
+    return refElem_.subEntity(duneFaceIndex, 1, localDuneIndex, 3);
   }
 
   template <ALU3dGridElementType type>
