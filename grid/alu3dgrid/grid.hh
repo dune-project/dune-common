@@ -121,24 +121,7 @@ namespace Dune {
       typedef LeafIndexSetImp LeafIndexSet;
       typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
       typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
-
     };
-    /*
-        typedef GridTraits<dim,dimworld,
-                     ALU3dGrid < dim, dimworld, elType > ,
-                     ALU3dGridGeometry,ALU3dGridEntity,
-                     ALU3dGridBoundaryEntity,
-                     ALU3dGridEntityPointer,
-                     ALU3dGridLevelIterator,
-                     ALU3dGridIntersectionIterator,
-                     ALU3dGridHierarchicIterator,
-                     ALU3dGridLeafIterator,
-                     LevelIndexSetImp,
-                     LeafIndexSetImp,
-                     GlobalIdSetImp, typename GlobalIdSetImp::IdType,
-                     LocalIdSetImp,  typename LocalIdSetImp ::IdType
-                       > Traits;
-     */
   };
 
 
@@ -335,22 +318,13 @@ namespace Dune {
     int size (int level, int cd) const;
 
     //! number of leaf entities per codim in this process
-    int size (int codim) const
-    {
-      return size(codim,simplex);
-    }
+    int size (int codim) const;
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const
-    {
-      return this->levelIndexSet(level).size(codim,type);
-    }
+    int size (int level, int codim, GeometryType type) const;
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const
-    {
-      return this->leafIndexSet().size(codim,type);
-    }
+    int size (int codim, GeometryType type) const;
 
     //! number of grid entities on all levels for given codim
     int global_size (int cd) const DUNE_DEPRECATED;
@@ -399,6 +373,7 @@ namespace Dune {
        return true if a least one entity was refined */
     bool adapt ( );
 
+    //! adapt with DofManager
     template <class DofManagerType, class RestrictProlongOperatorType>
     bool adapt (DofManagerType &, RestrictProlongOperatorType &, bool verbose=false );
 

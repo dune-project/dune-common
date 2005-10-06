@@ -129,6 +129,28 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline int ALU3dGrid<dim, dimworld, elType>::size(int level, int codim, GeometryType type) const
+  {
+    int mytype = (elType == tetra) ? simplex : cube;
+    if(type != mytype) return 0;
+    return size(level,codim);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline int ALU3dGrid<dim, dimworld, elType>::size(int codim) const
+  {
+    return leafIndexSet().size(codim);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline int ALU3dGrid<dim, dimworld, elType>::size(int codim, GeometryType type) const
+  {
+    int mytype = (elType == tetra) ? simplex : cube;
+    if(type != mytype) return 0;
+    return size(codim);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   inline void ALU3dGrid<dim, dimworld, elType>::updateStatus()
   {
     calcMaxlevel();
