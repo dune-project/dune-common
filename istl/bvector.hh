@@ -301,23 +301,9 @@ namespace Dune {
       }
     }
 
-    /**
-     * @brief Reserve space. Values will be copied if data is reallocated.
-     *
-     * After calling this method the vector can hold up to
-     * capacity values. If the specified capacity is smaller
-     * than the current capacity and bigger than the current size
-     * space will be freed.
-     * @param capacity The maximum number of elements the vector
-     * needs to hold.
-     */
-    void reserve(size_type capacity)
-    {
-      this->template reserve<true>(capacity);
-    }
 
     /**
-     * @brief Reserve space without copying if template parameter is false.
+     * @brief Reserve space.
      *
      * After calling this method the vector can hold up to
      * capacity values. If the specified capacity is smaller
@@ -329,9 +315,10 @@ namespace Dune {
      *
      * @param capacity The maximum number of elements the vector
      * needs to hold.
+     * @param copyOldValues If false no object will be copied and the data might be
+     * lost.
      */
-    template<bool copyOldValues>
-    void reserve(size_type capacity)
+    void reserve(size_type capacity, bool copyOldValues=true)
     {
       if(capacity >= block_vector_unmanaged<B,A>::N() && capacity != capacity_) {
         // save the old data
@@ -339,7 +326,7 @@ namespace Dune {
 
         if(capacity>0) {
           // create new array with capacity
-          this->p = A::template malloc<B>(this->n);
+          this->p = A::template malloc<B>(capacity);
 
           if(copyOldValues) {
             // copy the old values
@@ -348,15 +335,17 @@ namespace Dune {
 
             for(size_type i=0; i < block_vector_unmanaged<B,A>::N(); ++i, ++from, ++to)
               *to = *from;
+
+            if(capacity_ > 0)
+              // free old data
+              A::template free<B>(pold);
           }
         }else{
-          this->p = 0;
+          if(capacity_ > 0)
+            // free old data
+            this->p = 0;
           capacity_ = 0;
         }
-
-        if(capacity_ > 0)
-          // free old data
-          A::template free<B>(pold);
 
         capacity_ = capacity;
       }
@@ -374,22 +363,7 @@ namespace Dune {
     }
 
     /**
-     * @brief Resize the vector.  Values will be copied if data is reallocated.
-     *
-     * After calling this method ::N() will return size
-     * If the capacity of the vector is smaller than the specified
-     * size then reserve(size) will be called.
-     * The values will be copied if the capacity changes.
-     * @param size The new size of the vector
-     */
-    void resize(size_type size)
-    {
-      this->template resize<true>(size);
-    }
-
-
-    /**
-     * @brief Resize the vector without copying if template parameter is false.
+     * @brief Resize the vector.
      *
      * After calling this method ::N() will return size
      * If the capacity of the vector is smaller than the specified
@@ -398,14 +372,15 @@ namespace Dune {
      * If the template parameter copyOldValues is true the values
      * will be copied if the capacity changes.  If it is false
      * the old values are lost.
-     * @param size The new size of the vector
+     * @param size The new size of the vector.
+     * @param copyOldValues If false no object will be copied and the data might be
+     * lost.
      */
-    template<bool copyOldValues>
-    void resize(size_type size)
+    void resize(size_type size, bool copyOldValues=true)
     {
       if(size > block_vector_unmanaged<B,A>::N())
         if(capacity_ < size)
-          this->template reserve<copyOldValues>(size);
+          this->reserve(size, copyOldValues);
 
       if(size >=0)
         this->n=size;
@@ -534,7 +509,8 @@ namespace Dune {
         }
         this->n = a.n;
         // copy data
-        for (size_type i=0; i<this->n; i++) this->p[i]=a.p[i];
+        for (size_type i=0; i<this->n; i++)
+          this->p[i]=a.p[i];
       }
       return *this;
     }
