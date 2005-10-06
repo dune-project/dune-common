@@ -29,7 +29,6 @@ namespace Dune
   public:
     typedef typename GridImp::template Codim<0>::Entity Entity;
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
-    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     //! know your own dimension
@@ -60,15 +59,19 @@ namespace Dune
       return tmp;
     }
 
-    //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
+    //! return true if intersection is with boundary
     bool boundary () const
     {
       return this->realIterator.boundary();
     }
-    const BoundaryEntity & boundaryEntity () const
+
+    //! identifier for boundary segment from macro grid
+    //! (attach your boundary condition as needed)
+    int boundaryId () const
     {
-      return this->realIterator.boundaryEntity();
+      return this->realIterator.boundaryId();
     }
+
     //! return true if intersection is with neighbor on this level.
     bool neighbor () const
     {
@@ -202,7 +205,6 @@ namespace Dune
   public:
     typedef typename GridImp::template Codim<0>::Entity Entity;
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
-    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     //! know your own dimension
@@ -223,9 +225,15 @@ namespace Dune
     {
       return asImp().boundary();
     }
-    const BoundaryEntity & boundaryEntity () const
+
+    //! identifier for boundary segment from macro grid
+    //! (attach your boundary condition as needed)
+    int boundaryId () const
     {
-      return asImp().boundaryEntity();
+      //    assert(& IntersectionIteratorInterface<GridImp, IntersectionIteratorImp>::boundaryId
+      //     !=
+      //       & IntersectionIteratorImp<GridImp>::boundaryId);
+      return asImp().boundaryId();
     }
 
     //! return true if intersection is with another element (might be on a lower level).
@@ -236,17 +244,23 @@ namespace Dune
 
     //! return EntityPointer to the Entity on the inside of this intersection
     //! (that is the Entity where we started this Iterator)
-    //   EntityPointer inside() const
-    //     {
-    //       return asImp().inside();
-    //     }
+    EntityPointer inside() const
+    {
+      //   assert(& IntersectionIteratorInterface<GridImp, IntersectionIteratorImp>::inside
+      //            !=
+      //            & IntersectionIteratorImp<GridImp>::inside);
+      return asImp().inside();
+    }
 
     //! return EntityPointer to the Entity on the outside of this intersection
     //! (that is the neighboring Entity)
-    //   EntityPointer outside() const
-    //     {
-    //       return asImp().outside();
-    //     }
+    EntityPointer outside() const
+    {
+      //     assert(& IntersectionIteratorInterface<GridImp, IntersectionIteratorImp>::outside
+      //            !=
+      //            & IntersectionIteratorImp<GridImp>::outside);
+      return asImp().outside();
+    }
 
     /*! return an outer normal (length not necessarily 1)
 

@@ -7,6 +7,8 @@
     \brief Wrapper and interface classes for element geometries
  */
 
+#include <cassert>
+
 #include <dune/common/fmatrix.hh>
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/exceptions.hh>
@@ -161,10 +163,10 @@ namespace Dune
        \f$g^g_\alpha\f$, tranform them into local coordinates
        \f$g^l_\alpha\f$ and use them as columns of the matrix.
      */
-    const FieldMatrix<ct,mydim,mydim>& jacobianInverse (const FieldVector<ct, mydim>& local) const
+    const FieldMatrix<ct,mydim,mydim>& jacobianInverseTransposed (const FieldVector<ct, mydim>& local) const
     {
       IsTrue< ( mydim == cdim ) >::yes();
-      return realGeometry.jacobianInverse(local);
+      return realGeometry.jacobianInverseTransposed(local);
     }
 
     //! copy constructor from GeometryImp
@@ -338,9 +340,11 @@ namespace Dune
     }
 
     //! can only be called for dim=dimworld!
-    const FieldMatrix<ct,cdim,cdim>& jacobianInverse (const FieldVector<ct, mydim>& local) const
+    const FieldMatrix<ct,cdim,cdim>& jacobianInverseTransposed (const FieldVector<ct, mydim>& local) const
     {
-      return asImp().jacobianInverse(local);
+      // assert(&GeometryInterface<mydim, cdim, GridImp, GeometryImp>::jacobianInverseTransposed !=
+      //       &GeometryImp<mydim,cdim,GridImp>::jacobianInverseTransposed);
+      return asImp().jacobianInverseTransposed(local);
     }
 
   private:

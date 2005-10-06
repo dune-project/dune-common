@@ -451,11 +451,14 @@ namespace Dune
     //! Geometry of this entity
     const Geometry& geometry () const { return realEntity.geometry(); }
 
-    /** \todo Please doc me! */
+    /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
+       This can speed up on-the-fly interpolation for linear conforming elements
+       Possibly this is sufficient for all applications we want on-the-fly.
+     */
     EntityPointer ownersFather () const { return realEntity.ownersFather(); }
 
     //! This entity's position in local coordinates of the owners father
-    FieldVector<ct, dim>& positionInOwnersFather () const { return realEntity.positionInOwnersFather(); }
+    const FieldVector<ct, dim>& positionInOwnersFather () const { return realEntity.positionInOwnersFather(); }
 
     //! Copy constructor from EntityImp
     explicit Entity(const EntityImp<dim,dim,GridImp> & e) : realEntity(e) {};
@@ -526,7 +529,7 @@ namespace Dune
 
   //********************************************************************
   /**
-     @brief Interface Definition for EntityImp (Vertices [cd=dim])
+     @brief Interface Definition for EntityImp (Elements [cd=0])
 
      @note
      this specialization has an extended interface compared to the general case
@@ -692,13 +695,13 @@ namespace Dune
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    EntityPointer father () const
+    EntityPointer ownersFather () const
     {
       return asImp().father();
     }
 
-    //! local coordinates within father
-    FieldVector<ct, dim>& local () const { return asImp().local(); }
+    //! This entity's position in local coordinates of the owners father
+    const FieldVector<ct, dim>& positionInOwnersFather () const { return asImp().positionInOwnersFather(); }
 
   private:
     //!  Barton-Nackman trick

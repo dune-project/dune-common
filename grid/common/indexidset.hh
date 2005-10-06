@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_INDEXIDSET_HH__
-#define __DUNE_INDEXIDSET_HH__
+#ifndef DUNE_INDEXIDSET_HH
+#define DUNE_INDEXIDSET_HH
 
 #include <iostream>
 #include <vector>
@@ -137,7 +137,15 @@ namespace Dune
       return asImp().end<cd,pitype>();
     }
 
+    //! Default constructor
+    IndexSet() {}
+
   private:
+    //! Forbid the copy constructor
+    IndexSet(const IndexSet&);
+    //! Forbid the assignment operator
+    IndexSet& operator=(const IndexSet&);
+
     //!  Barton-Nackman trick
     IndexSetImp& asImp () {return static_cast<IndexSetImp &> (*this);}
     //!  Barton-Nackman trick
@@ -183,12 +191,20 @@ namespace Dune
 
     //! get id of subentity i of codim cc
     template<int cc>
-    IdType subid (const typename GridImp::template Codim<0>::Entity& e, int i) const
+    IdType subId (const typename GridImp::template Codim<0>::Entity& e, int i) const
     {
-      return asImp().template subid<cc>(e,i);
+      return asImp().template subId<cc>(e,i);
     }
 
+    //! Default constructor
+    IdSet() {}
+
   private:
+    //! Forbid the copy constructor
+    IdSet(const IdSet&);
+    //! Forbid the assignment operator
+    IdSet& operator=(const IdSet&);
+
     //!  Barton-Nackman trick
     IdSetImp& asImp () {return static_cast<IdSetImp &> (*this);}
     //!  Barton-Nackman trick
