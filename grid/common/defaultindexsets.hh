@@ -654,6 +654,25 @@ namespace Dune {
       return grid_.geomTypes(codim);
     }
 
+
+    /** @brief Iterator to first entity of given codimension and partition type.
+     */
+    template<int cd, PartitionIteratorType pitype>
+    typename DefaultLevelIteratorTypes<GridImp>::template Codim<cd>::
+    template Partition<pitype>::Iterator begin (int level) const
+    {
+      return this->grid_.template lbegin<cd,pitype> (level);
+    }
+
+    /** @brief Iterator to one past the last entity of given codim for partition type
+     */
+    template<int cd, PartitionIteratorType pitype>
+    typename DefaultLevelIteratorTypes<GridImp>::template Codim<cd>::
+    template Partition<pitype>::Iterator end (int level) const
+    {
+      return this->grid_.template lend<cd,pitype> (level);
+    }
+
   private:
     // grid this level set belongs to
     const GridType & grid_;

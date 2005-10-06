@@ -522,18 +522,20 @@ namespace Dune {
       markAllUsed ();
     }
 
-    /** @brief Iterator to first entity of given codimension and partition type.
+    /** @brief Iterator to one past the last entity of given codim for partition type
      */
     template<int cd, PartitionIteratorType pitype>
-    typename LeafIteratorTypes<GridType>::template Codim<cd>::template Partition<pitype>::Iterator end () const
+    typename LeafIteratorTypes<GridType>::template Codim<cd>::
+    template Partition<pitype>::Iterator end () const
     {
       return this->grid_.template leafend<cd,pitype> ();
     }
 
-    /** @brief Iterator to one past the last entity of given codim for partition type
+    /** @brief Iterator to first entity of given codimension and partition type.
      */
     template<int cd, PartitionIteratorType pitype>
-    typename LeafIteratorTypes<GridType>::template Codim<cd>::template Partition<pitype>::Iterator begin () const
+    typename LeafIteratorTypes<GridType>::template Codim<cd>::
+    template Partition<pitype>::Iterator begin () const
     {
       return this->grid_.template leafbegin<cd,pitype> ();
     }
