@@ -14,6 +14,7 @@ namespace Dune
   GrapeGridDisplay(const GridType &grid, const int myrank ) :
     grid_(grid)
     , leafset_(grid.leafIndexSet())
+    , lid_(grid.localIdSet())
     , myRank_(myrank)
     , myIt_(0), myEndIt_ (0) , myLeafIt_(0) , myLeafEndIt_ (0) ,
     hmesh_ (0)
@@ -27,6 +28,7 @@ namespace Dune
   GrapeGridDisplay(const GridType &grid ) :
     grid_(grid)
     , leafset_(grid.leafIndexSet())
+    , lid_(grid.localIdSet())
     , myRank_(-1) ,
     myIt_(0), myEndIt_ (0) , myLeafIt_(0) , myLeafEndIt_ (0) ,
     hmesh_ (0)
@@ -75,7 +77,7 @@ namespace Dune
     {
       const DuneElement &geometry = en.geometry();
 
-      if( en.isLeaf() ) he->eindex = leafset_.index(en);
+      if( en.isLeaf() ) he->eindex = lid_.id(en);
       else he->eindex = -1;
       he->level  = en.level();
 
@@ -169,7 +171,7 @@ namespace Dune
     // myIt ist Zeiger auf LevelIteratorType, definiert innerhalb der Klasse
     // rufe default CopyConstructor auf
     int levelOI = he->level_of_interest;
-    if(levelOI < 0) levelOI = grid_.maxlevel();
+    if(levelOI < 0) levelOI = grid_.maxLevel();
 
     //myLeafIt_    = new LeafIteratorType ( grid_.template leafbegin<0, All_Partition> (levelOI) );
     //myLeafEndIt_ = new LeafIteratorType ( grid_.template leafend  <0, All_Partition> (levelOI) );
@@ -209,7 +211,7 @@ namespace Dune
     if(myEndIt_) delete myEndIt_;
 
     int levelOI = he->level_of_interest;
-    if(levelOI < 0) levelOI = grid_.maxlevel();
+    if(levelOI < 0) levelOI = grid_.maxLevel();
 
     // myIt ist Zeiger auf LevelIteratorType, definiert innerhalb der Klasse
     // rufe default CopyConstructor auf
@@ -615,7 +617,7 @@ namespace Dune
         hel_.vpointer[i][j] = 0.0;
       }
 
-    maxlevel = grid_.maxlevel();
+    maxlevel = grid_.maxLevel();
 
     for(unsigned int i=0; i<leafset_.geomTypes(0).size(); i++)
     {
