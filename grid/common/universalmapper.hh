@@ -75,7 +75,7 @@ namespace Dune
     template<int cc>
     int map (const typename G::Traits::template Codim<0>::Entity& e, int i) const
     {
-      IdType id = ids.template subid<cc>(e,i);               // get id
+      IdType id = ids.template subId<cc>(e,i);               // get id
       typename std::map<IdType,int>::iterator it = index.find(id);    // look up in map
       if (it!=index.end()) return it->second;                // return index if found
       index[id] = n++;                                       // put next index in map
@@ -125,7 +125,7 @@ namespace Dune
     template<int cc>     // this is now the subentity's codim
     bool contains (const typename G::Traits::template Codim<0>::Entity& e, int i, int& result) const
     {
-      IdType id = ids.template subid<cc>(e,i);               // get id
+      IdType id = ids.template subId<cc>(e,i);               // get id
       typename std::map<IdType,int>::iterator it = index.find(id);    // look up in map
       if (it!=index.end())
       {
