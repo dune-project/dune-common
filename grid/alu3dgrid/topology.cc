@@ -114,5 +114,20 @@ namespace Dune {
   const int FaceTopologyMapping<hexa>::
   alu2duneVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 2, 3, 1};
 
+  template <>
+  const int FaceTopologyMapping<tetra>::
+  dune2aluEdge_[EntityCount<tetra>::numEdgesPerFace] = {1, 2, 0};
+
+  template <>
+  const int FaceTopologyMapping<hexa>::
+  dune2aluEdge_[EntityCount<hexa>::numEdgesPerFace] = {0, 2, 3, 1};
+
+  template <>
+  const int FaceTopologyMapping<tetra>::
+  alu2duneEdge_[EntityCount<tetra>::numEdgesPerFace] = {2, 0, 1};
+
+  template <>
+  const int FaceTopologyMapping<hexa>::
+  alu2duneEdge_[EntityCount<hexa>::numEdgesPerFace] = {0, 3, 1, 2};
 
 } // end namespace Dune

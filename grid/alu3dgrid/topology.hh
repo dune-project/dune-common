@@ -15,6 +15,7 @@ namespace Dune {
     enum {numFaces = 4};
     enum {numVertices = 4};
     enum {numVerticesPerFace = 3};
+    enum {numEdgesPerFace = 3};
   };
 
   template <>
@@ -22,6 +23,7 @@ namespace Dune {
     enum {numFaces = 6};
     enum {numVertices = 8};
     enum {numVerticesPerFace = 4};
+    enum {numEdgesPerFace = 4};
   };
 
 
@@ -104,6 +106,9 @@ namespace Dune {
   private:
     const static int dune2aluVertex_[EntityCount<type>::numVerticesPerFace];
     const static int alu2duneVertex_[EntityCount<type>::numVerticesPerFace];
+
+    const static int dune2aluEdge_[EntityCount<type>::numEdgesPerFace];
+    const static int alu2duneEdge_[EntityCount<type>::numEdgesPerFace];
   };
 
   inline const ALU3dImplTraits<tetra>::GEOFaceType*
