@@ -223,15 +223,6 @@ namespace Dune {
       return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
     }
 
-    //! return subId of given entity
-    template <int cd>
-    int subid (const EntityCodim0Type & ep, int i) const
-    {
-      assert( cd == dim );
-      assert( hset_.size(cd) < codimMultiplier );
-      return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
-    }
-
   private:
     // our Grid
     const HierarchicIndexSetType & hset_;
