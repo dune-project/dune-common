@@ -41,7 +41,7 @@ namespace Dune
               << ")" << std::endl;
 
     // level information
-    for (int level=0; level<=grid.maxlevel(); level++)
+    for (int level=0; level<=grid.maxLevel(); level++)
     {
       std::cout << prefix << "level " << level;
       for (int cd=0; cd<=dim; cd++)

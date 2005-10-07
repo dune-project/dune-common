@@ -810,7 +810,7 @@ namespace Dune {
     {
       typedef typename GridType::template Codim<0>::LevelIterator LevelIteratorType;
 
-      int maxlevel = this->grid_.maxlevel();
+      int maxlevel = this->grid_.maxLevel();
 
       for(int i=0; i<ncodim; i++)
       {

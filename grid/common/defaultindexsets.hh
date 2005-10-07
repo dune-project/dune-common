@@ -343,7 +343,7 @@ namespace Dune {
 
     //! Constructor choosing the grid's maxlevel as given level
     DefaultGridIndexSet (const GridType & grid )
-      : DefaultGridIndexSetBase <GridType> (grid) , set_(grid.levelIndexSet(grid.maxlevel())) {}
+      : DefaultGridIndexSetBase <GridType> (grid) , set_(grid.levelIndexSet(grid.maxLevel())) {}
 
     //! return size of grid entities per level and codim
     int size ( int codim , GeometryType type ) const
