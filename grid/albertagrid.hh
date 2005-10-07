@@ -110,6 +110,13 @@ namespace Dune
     }
 
     // just a wrapper call
+    template <class GeometryType>
+    bool builtLocalGeom(const GeometryType & geo, ALBERTA EL_INFO *elInfo, int face )
+    {
+      return this->realGeometry.builtLocalGeom(geo,elInfo,face);
+    }
+
+    // just a wrapper call
     void initGeom()
     {
       this->realGeometry.initGeom();
@@ -191,9 +198,9 @@ namespace Dune
 
     //! can only be called for dim=dimworld!
     //! Note that if both methods are called on the same element, then
-    //! call jacobianInverse first because integration element is calculated
-    //! during calculation of the jacobianInverse
-    const FieldMatrix<albertCtype,mydim,mydim>& jacobianInverse (const FieldVector<albertCtype, cdim>& global) const;
+    //! call jacobianInverseTransposed first because integration element is calculated
+    //! during calculation of the transposed of the jacobianInverse
+    const FieldMatrix<albertCtype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<albertCtype, cdim>& global) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
@@ -201,6 +208,9 @@ namespace Dune
     //! generate the geometry for the ALBERTA EL_INFO
     //! no interface method
     bool builtGeom(ALBERTA EL_INFO *elInfo, int face, int edge, int vertex);
+
+    template <class GeometryType>
+    bool builtLocalGeom(const GeometryType & geo , ALBERTA EL_INFO *elInfo, int face);
     // init geometry with zeros
     //! no interface method
     void initGeom();
@@ -208,14 +218,14 @@ namespace Dune
 
     //! print internal data
     //! no interface method
-    void print (std::ostream& ss, int indent) const;
+    void print (std::ostream& ss) const;
 
   private:
     // calculate Matrix for Mapping from reference element to actual element
     void calcElMatrix () const;
 
-    //! built the jacobian inverse and store the volume
-    void buildJacobianInverse () const;
+    //! build the transposed of the jacobian inverse and store the volume
+    void buildJacobianInverseTransposed () const;
 
     // template method for map the vertices of EL_INFO to the actual
     // coords with face_,edge_ and vertex_ , needes for operator []
@@ -379,7 +389,7 @@ namespace Dune
     EntityPointer ownersFather () const;
 
     //! my position in local coordinates of the owners father
-    FieldVector<albertCtype, dim>& positionInOwnersFather () const;
+    const FieldVector<albertCtype, dim>& positionInOwnersFather () const;
 
     //***********************************************
     //  End of Interface methods
@@ -690,14 +700,11 @@ namespace Dune
     //! make empty entity pointer (to be revised)
     AlbertaGridEntityPointer(const AlbertaGridEntityPointerType & org);
 
+    //! make empty entity pointer (to be revised)
+    AlbertaGridEntityPointer(const GridImp & , const EntityImp & en);
+
     //! assignment operator
-    AlbertaGridEntityPointer& operator= (const AlbertaGridEntityPointer& org)
-    {
-      if (grid_!=org.grid_)
-        DUNE_THROW(GridError,"entity pointer assignment with different grids");
-      (*entity_).setEntity( *(org.entity_) );
-      done_ = org.done_;
-    }
+    AlbertaGridEntityPointer& operator= (const AlbertaGridEntityPointer& org);
 
     //! Destructor
     ~AlbertaGridEntityPointer();
@@ -759,6 +766,9 @@ namespace Dune
 
     //! the default Constructor
     AlbertaGridHierarchicIterator(const AlbertaGridHierarchicIterator<GridImp> &org);
+
+    //! the default Constructor
+    AlbertaGridHierarchicIterator<GridImp> & operator = (const AlbertaGridHierarchicIterator<GridImp> &org);
 
     //! increment
     void increment();
@@ -866,15 +876,15 @@ namespace Dune
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    LocalGeometry& intersectionSelfLocal () const;
+    const LocalGeometry& intersectionSelfLocal () const;
     /*! intersection of codimension 1 of this neighbor with element where iteration started.
        Here returned element is in LOCAL coordinates of neighbor
      */
-    LocalGeometry& intersectionNeighborLocal () const;
+    const LocalGeometry& intersectionNeighborLocal () const;
     /*! intersection of codimension 1 of this neighbor with element where iteration started.
        Here returned element is in GLOBAL coordinates of the element where iteration started.
      */
-    Geometry& intersectionGlobal () const;
+    const Geometry& intersectionGlobal () const;
 
     //! local number of codim 1 entity in self where intersection is contained in
     int numberInSelf () const;
@@ -941,9 +951,13 @@ namespace Dune
     //mutable typename GridImp::IntersectionSelfProvider::ObjectEntity      *manageInterEl_;
     //mutable typename GridImp::IntersectionNeighProvider::ObjectEntity     *manageNeighEl_;
 
-    //! pointer to element holding the self_local and self_global information.
+    //! pointer to element holding the intersectionNeighbourLocal information.
     //! This element is created on demand.
     mutable LocalGeometryImp *fakeNeigh_;
+
+    //! pointer to element holding the intersectionSelfLocal information.
+    //! This element is created on demand.
+    mutable LocalGeometryImp *fakeSelf_;
 
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
@@ -989,6 +1003,9 @@ namespace Dune
 
     //! Constructor making end iterator
     AlbertaGridTreeIterator(const AlbertaGridTreeIterator<cd,pitype,GridImp> & org );
+
+    //! Constructor making end iterator
+    AlbertaGridTreeIterator<cd,pitype,GridImp> & operator = (const AlbertaGridTreeIterator<cd,pitype,GridImp> & org );
 
     //! Constructor making end iterator
     AlbertaGridTreeIterator(const GridImp & grid, int
@@ -1311,8 +1328,8 @@ namespace Dune
     ~AlbertaGrid();
 
     //! Return maximum level defined in this grid. Levels are numbered
-    //! 0 ... maxlevel with 0 the coarsest level.
-    int maxlevel() const;
+    //! 0 ... maxLevel with 0 the coarsest level.
+    int maxLevel() const;
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
