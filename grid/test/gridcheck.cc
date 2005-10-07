@@ -249,15 +249,15 @@ struct IntersectionIteratorInterface
 
     // neighbouring elements
     i.inside();
-    i.outside();
+    if(i.neighbor()) i.outside();
 
     // geometry
     i.intersectionSelfLocal();
-    i.intersectionNeighborLocal();
+    if(i.neighbor()) i.intersectionNeighborLocal();
     i.intersectionGlobal();
 
     i.numberInSelf();
-    i.numberInNeighbor();
+    if(i.neigbor()) i.numberInNeighbor();
 
     Dune::FieldVector<ct, dim-1> v(0);
     i.outerNormal(v);
@@ -690,13 +690,24 @@ void assertNeighbor (Grid &g)
         // check id
         assert(globalid.id(*(it.inside())) ==
                globalid.id(*e));
+
+        // numbering
+        int num = it.numberInSelf();
+        assert( num >= 0 && num < e->template count<1> () );
+
+        if(it.neighbor())
+        {
+          // geometry
+          it.intersectionNeighborLocal();
+          // numbering
+          num = it.numberInNeighbor();
+          assert( num >= 0 && num < it.outside()->template count<1> () );
+        }
+
         // geometry
         it.intersectionSelfLocal();
-        it.intersectionNeighborLocal();
         it.intersectionGlobal();
-        // numbering
-        it.numberInSelf();
-        it.numberInNeighbor();
+
         // normal vectors
         Dune::FieldVector<ct, dim-1> v(0);
         it.outerNormal(v);
@@ -710,6 +721,7 @@ void assertNeighbor (Grid &g)
                  globalid.id(*e));
           LevelIterator n = g.template lbegin<0>(it.level());
           LevelIterator nend = g.template lend<0>(it.level());
+
           while (n != it.outside() && n != nend) {
             assert(globalid.id(*(it.outside())) !=
                    globalid.id(*n));
