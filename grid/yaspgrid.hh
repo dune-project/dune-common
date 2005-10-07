@@ -50,7 +50,6 @@ namespace Dune {
   template<int codim, PartitionIteratorType pitype, class GridImp> class YaspLevelIterator;
   template<class GridImp>            class YaspIntersectionIterator;
   template<class GridImp>            class YaspHierarchicIterator;
-  template<class GridImp>            class YaspBoundaryEntity;
   template<class GridImp>            class YaspLevelIndexSet;
   template<class GridImp>            class YaspGlobalIdSet;
 
@@ -60,7 +59,7 @@ namespace Dune {
   template<int dim>
   class YaspFatherRelativeLocalElement {
   public:
-    static FieldVector<yaspgrid_ctype, dim> midpoint;  // data neded for the refelem below
+    static FieldVector<yaspgrid_ctype, dim> midpoint; // data neded for the refelem below
     static FieldVector<yaspgrid_ctype, dim> extension; // data needed for the refelem below
     static YaspGeometry<dim,dim> element;
     static YaspGeometry<dim,dim>& getson (int i)
@@ -333,7 +332,7 @@ namespace Dune {
     }
 
     //! can only be called for mydim=cdim!
-    FieldMatrix<ctype,mydim,mydim>& jacobianInverse (const FieldVector<ctype, mydim>& local) const
+    FieldMatrix<ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<ctype, mydim>& local) const
     {
       for (int i=0; i<mydim; ++i)
       {
@@ -650,6 +649,7 @@ namespace Dune {
           son += (1<<k);
 
       // access to one of the 2**dim predefined elements
+#warning geometryInFather not implemented
       DUNE_THROW(NotImplemented," geometryInFather");
 #if 0
       return YaspFatherRelativeLocalElement<dim>::getson(son);
@@ -1109,21 +1109,6 @@ namespace Dune {
 
   //========================================================================
   /*!
-     YaspBoundaryEntity is not yet implemented
-   */
-  //========================================================================
-
-  template <class GridImp>
-  class YaspBoundaryEntity
-    : public BoundaryEntityDefault <GridImp,YaspBoundaryEntity>
-  {
-  public:
-  private:
-  };
-
-
-  //========================================================================
-  /*!
      YaspIntersectionIterator enables iteration over intersection with
      neighboring codim 0 entities.
    */
@@ -1144,7 +1129,6 @@ namespace Dune {
     typedef typename SubYGrid<dim,ctype>::TransformingSubIterator TSI;
     typedef typename GridImp::template Codim<0>::Entity Entity;
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
-    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     typedef YaspSpecialEntity<0,dim,GridImp> SpecialEntity;
@@ -1233,16 +1217,6 @@ namespace Dune {
           return false;
       }
       return true;
-#if 0
-      // The transforming iterator can be safely moved beyond the boundary.
-      // So we only have to compare against the cell_global grid
-      if (this->_it.coord(_dir)>=_myself.gridlevel().cell_overlap().min(_dir)
-          &&
-          this->_it.coord(_dir)<=_myself.gridlevel().cell_overlap().max(_dir))
-        return true;
-      else
-        return false;
-#endif
     }
 
     //! return EntityPointer to the Entity on the inside of this intersection
@@ -1257,6 +1231,17 @@ namespace Dune {
     EntityPointer outside() const
     {
       return *this;
+    }
+
+    //! identifier for boundary segment from macro grid
+    //! (attach your boundary condition as needed)
+    int boundaryId() const
+    {
+      if (this->_it.coord(_dir)<_myself.gridlevel().cell_global().min(_dir))
+        return 2 * _dir;
+      if (this->_it.coord(_dir)>_myself.gridlevel().cell_global().max(_dir))
+        return 2 * _dir + 1;
+      return 0;
     }
 
     //! return unit outer normal, this should be dependent on local coordinates for higher order boundary
@@ -1821,7 +1806,7 @@ namespace Dune {
 
     //! get id of subentity
     template<int cc>
-    IdType subid (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    IdType subId (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
     }
@@ -1853,7 +1838,7 @@ namespace Dune {
   struct YaspGridFamily
   {
     typedef GridTraits<dim,dimworld,Dune::YaspGrid<dim,dimworld>,
-        YaspGeometry,YaspEntity,YaspBoundaryEntity,
+        YaspGeometry,YaspEntity,
         YaspEntityPointer,YaspLevelIterator,
         YaspIntersectionIterator,YaspHierarchicIterator,
         YaspLevelIterator,
@@ -1915,7 +1900,7 @@ namespace Dune {
     /*! Return maximum level defined in this grid. Levels are numbered
           0 ... maxlevel with 0 the coarsest level.
      */
-    int maxlevel() const {return MultiYGrid<dim,ctype>::maxlevel();} // delegate
+    int maxLevel() const {return MultiYGrid<dim,ctype>::maxlevel();} // delegate
 
     //! refine the grid refCount times. What about overlap?
     void globalRefine (int refCount)
@@ -1925,7 +1910,7 @@ namespace Dune {
       {
         MultiYGrid<dim,ctype>::refine(b);
         setsizes();
-        indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,maxlevel()) );
+        indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,maxLevel()) );
       }
     }
 
@@ -1940,7 +1925,7 @@ namespace Dune {
     {
       MultiYGrid<dim,ctype>::refine(b);
       setsizes();
-      indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,maxlevel()) );
+      indexsets.push_back( new YaspLevelIndexSet<YaspGrid<dim,dimworld> >(*this,maxLevel()) );
     }
 
     //! one past the end on this level
@@ -1975,28 +1960,28 @@ namespace Dune {
     template<int cd, PartitionIteratorType pitype>
     typename Traits::template Codim<cd>::template Partition<pitype>::LeafIterator leafbegin () const
     {
-      return levelbegin<cd,pitype>(maxlevel());
+      return levelbegin<cd,pitype>(maxLevel());
     };
 
     //! return LeafIterator which points behind the last entity in maxLevel
     template<int cd, PartitionIteratorType pitype>
     typename Traits::template Codim<cd>::template Partition<pitype>::LeafIterator leafend () const
     {
-      return levelend<cd,pitype>(maxlevel());
+      return levelend<cd,pitype>(maxLevel());
     }
 
     //! return LeafIterator which points to the first entity in maxLevel
     template<int cd>
     typename Traits::template Codim<cd>::template Partition<All_Partition>::LeafIterator leafbegin () const
     {
-      return levelbegin<cd,All_Partition>(maxlevel());
+      return levelbegin<cd,All_Partition>(maxLevel());
     };
 
     //! return LeafIterator which points behind the last entity in maxLevel
     template<int cd>
     typename Traits::template Codim<cd>::template Partition<All_Partition>::LeafIterator leafend () const
     {
-      return levelend<cd,All_Partition>(maxlevel());
+      return levelend<cd,All_Partition>(maxLevel());
     }
 
     //! return size (= distance in graph) of overlap region
@@ -2021,7 +2006,7 @@ namespace Dune {
     //! number of leaf entities per codim in this process
     int size (int codim) const
     {
-      return sizes[maxlevel()][codim];
+      return sizes[maxLevel()][codim];
     }
 
     //! number of entities per level, codim and geometry type in this process
@@ -2052,7 +2037,7 @@ namespace Dune {
     //! number of leaf entities per codim and geometry type in this process
     int size (int codim, GeometryType type) const
     {
-      return size(maxlevel(),codim,type);
+      return size(maxLevel(),codim,type);
     }
 
     /*! The communication interface
@@ -2214,7 +2199,7 @@ namespace Dune {
 
     const typename Traits::LeafIndexSet& leafIndexSet() const
     {
-      return *(indexsets[maxlevel()]);
+      return *(indexsets[maxLevel()]);
     }
 
   private:
@@ -2294,7 +2279,7 @@ namespace Dune {
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
+      if (level<0 || level>maxLevel()) DUNE_THROW(RangeError, "level out of range");
       if (cd==0)   // the elements
       {
         if (pitype<=InteriorBorder_Partition)
@@ -2322,7 +2307,7 @@ namespace Dune {
     {
       IsTrue< ( cd == dim || cd == 0 ) >::yes();
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      if (level<0 || level>maxlevel()) DUNE_THROW(RangeError, "level out of range");
+      if (level<0 || level>maxLevel()) DUNE_THROW(RangeError, "level out of range");
       if (cd==0)   // the elements
       {
         if (pitype<=InteriorBorder_Partition)
