@@ -46,8 +46,8 @@ namespace Dune
           int corners = refelem.size(i,c,n);
           for (int j=0; j<corners/2; j++)                 // uses fact that diagonals are (0,corners-1), (1,corners-2) ...
           {
-            int alpha = vertexmapper.template map<n>(e,refelem.subentity(i,c,j,n));
-            int beta = vertexmapper.template map<n>(e,refelem.subentity(i,c,corners-1-j,n));
+            int alpha = vertexmapper.template map<n>(e,refelem.subEntity(i,c,j,n));
+            int beta = vertexmapper.template map<n>(e,refelem.subEntity(i,c,corners-1-j,n));
             A.incrementrowsize(alpha);
             A.incrementrowsize(beta);
           }
@@ -69,8 +69,8 @@ namespace Dune
           int corners = refelem.size(i,c,n);
           for (int j=0; j<corners/2; j++)                 // uses fact that diagonals are (0,corners-1), (1,corners-2) ...
           {
-            int alpha = vertexmapper.template map<n>(e,refelem.subentity(i,c,j,n));
-            int beta = vertexmapper.template map<n>(e,refelem.subentity(i,c,corners-1-j,n));
+            int alpha = vertexmapper.template map<n>(e,refelem.subEntity(i,c,j,n));
+            int beta = vertexmapper.template map<n>(e,refelem.subEntity(i,c,corners-1-j,n));
             A.addindex(alpha,beta);
             A.addindex(beta,alpha);
             //                            std::cout << "adding (" << alpha << "," << beta << ")" << std::endl;
@@ -92,8 +92,8 @@ namespace Dune
       int corners = refelem.size(n);
       for (int j=0; j<corners/2; j++)     // uses fact that diagonals are (0,corners-1), (1,corners-2) ...
       {
-        int alpha = vertexmapper.template map<n>(e,refelem.subentity(0,0,j,n));
-        int beta = vertexmapper.template map<n>(e,refelem.subentity(0,0,corners-1-j,n));
+        int alpha = vertexmapper.template map<n>(e,refelem.subEntity(0,0,j,n));
+        int beta = vertexmapper.template map<n>(e,refelem.subEntity(0,0,corners-1-j,n));
         A.incrementrowsize(alpha);
         A.incrementrowsize(beta);
       }
@@ -106,8 +106,8 @@ namespace Dune
       int corners = refelem.size(n);
       for (int j=0; j<corners/2; j++)     // uses fact that diagonals are (0,corners-1), (1,corners-2) ...
       {
-        int alpha = vertexmapper.template map<n>(e,refelem.subentity(0,0,j,n));
-        int beta = vertexmapper.template map<n>(e,refelem.subentity(0,0,corners-1-j,n));
+        int alpha = vertexmapper.template map<n>(e,refelem.subEntity(0,0,j,n));
+        int beta = vertexmapper.template map<n>(e,refelem.subEntity(0,0,corners-1-j,n));
         A.addindex(alpha,beta);
         A.addindex(beta,alpha);
         //                                std::cout << "adding (" << alpha << "," << beta << ")" << std::endl;
@@ -200,8 +200,8 @@ namespace Dune
         for (int i=0; i<refelem.size(n-1); i++)
         {
           int index = allmapper.template map<n-1>(*it,i);
-          int alpha = vertexmapper.template map<n>(*it,refelem.subentity(i,n-1,0,n));
-          int beta = vertexmapper.template map<n>(*it,refelem.subentity(i,n-1,1,n));
+          int alpha = vertexmapper.template map<n>(*it,refelem.subEntity(i,n-1,0,n));
+          int beta = vertexmapper.template map<n>(*it,refelem.subEntity(i,n-1,1,n));
           if (!visited[index])
           {
             A.incrementrowsize(alpha);
@@ -252,8 +252,8 @@ namespace Dune
           //                      std::cout << "edge allindex " << index << std::endl;
           if (!visited[index])
           {
-            int alpha = vertexmapper.template map<n>(*it,refelem.subentity(i,n-1,0,n));
-            int beta = vertexmapper.template map<n>(*it,refelem.subentity(i,n-1,1,n));
+            int alpha = vertexmapper.template map<n>(*it,refelem.subEntity(i,n-1,0,n));
+            int beta = vertexmapper.template map<n>(*it,refelem.subEntity(i,n-1,1,n));
             A.addindex(alpha,beta);
             A.addindex(beta,alpha);
             visited[index] = true;

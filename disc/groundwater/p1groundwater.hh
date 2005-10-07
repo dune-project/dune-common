@@ -215,7 +215,7 @@ namespace Dune
           }
           // handle subentities of this face
           for (int j=0; j<ReferenceElements<DT,n>::general(gt).size(it.numberInSelf(),1,sfs[i].codim()); j++)
-            if (sfs[i].entity()==ReferenceElements<DT,n>::general(gt).subentity(it.numberInSelf(),1,j,sfs[i].codim()))
+            if (sfs[i].entity()==ReferenceElements<DT,n>::general(gt).subEntity(it.numberInSelf(),1,j,sfs[i].codim()))
             {
               if (bctype[i]<bctypeface)
               {
