@@ -13,7 +13,10 @@ namespace Dune {
               @{
    */
 
-  /** The default allocator for the sparse matrix vector classes:
+  /**
+      \brief Default allocator for ISTL.
+
+     The default allocator for the sparse matrix vector classes:
 
       - uses malloc and free
       - member templates for type safety to the outside
