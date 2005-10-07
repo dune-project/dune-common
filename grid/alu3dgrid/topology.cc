@@ -15,6 +15,24 @@ namespace Dune {
 
   template <>
   const int ElementTopologyMapping<tetra>::
+  dune2aluEdge_[EntityCount<tetra>::numEdges] = {3, 2, 4, 5, 0, 1};
+
+  template <>
+  const int ElementTopologyMapping<hexa>::
+  dune2aluEdge_[EntityCount<hexa>::numEdges] = {10, 9, 7, 8, 1, 3,
+                                                6, 4, 0, 2, 7, 5};
+
+  template <>
+  const int ElementTopologyMapping<tetra>::
+  alu2duneEdge_[EntityCount<tetra>::numEdges] = {4, 5, 1, 0, 2, 3};
+
+  template <>
+  const int ElementTopologyMapping<hexa>::
+  alu2duneEdge_[EntityCount<hexa>::numEdges] = {8, 4, 9, 5, 7, 11,
+                                                6, 10, 3, 1, 0, 2};
+
+  template <>
+  const int ElementTopologyMapping<tetra>::
   alu2duneFace_[EntityCount<tetra>::numFaces] = {0, 1, 2, 3};
 
   template <>

@@ -14,6 +14,7 @@ namespace Dune {
   struct EntityCount<tetra> {
     enum {numFaces = 4};
     enum {numVertices = 4};
+    enum {numEdges = 6};
     enum {numVerticesPerFace = 3};
     enum {numEdgesPerFace = 3};
   };
@@ -22,6 +23,7 @@ namespace Dune {
   struct EntityCount<hexa> {
     enum {numFaces = 6};
     enum {numVertices = 8};
+    enum {numEdges = 12};
     enum {numVerticesPerFace = 4};
     enum {numEdgesPerFace = 4};
   };
@@ -34,6 +36,7 @@ namespace Dune {
   {
     enum { numFaces = EntityCount<type>::numFaces };
     enum { numVertices = EntityCount<type>::numVertices };
+    enum { numEdges = EntityCount<type>::numEdges };
     enum { numVerticesPerFace = EntityCount<type>::numVerticesPerFace };
 
   public:
@@ -41,6 +44,11 @@ namespace Dune {
     static int dune2aluFace(int index);
     //! Maps face index from ALU3dGrid onto Dune reference element
     static int alu2duneFace(int index);
+
+    //! Maps edge index from Dune onto ALU3dGrid reference element
+    static int dune2aluEdge(int index);
+    //! Maps edge index from ALU3dGrid onto Dune reference element
+    static int alu2duneEdge(int index);
 
     //! Maps vertex index from Dune onto ALU3dGrid reference element
     static int dune2aluVertex(int index);
@@ -65,6 +73,9 @@ namespace Dune {
   private:
     const static int dune2aluFace_[numFaces];
     const static int alu2duneFace_[numFaces];
+
+    const static int dune2aluEdge_[numEdges];
+    const static int alu2duneEdge_[numEdges];
 
     const static int dune2aluVertex_[numVertices];
     const static int alu2duneVertex_[numVertices];
@@ -99,7 +110,10 @@ namespace Dune {
     //! \param twist twist of the face in consideration
     //! \return local Dune vertex index on reference element face
     static int alu2duneVertex(int index, int twist);
-
+    //! Maps edge index from Dune onto ALU3dGrid reference face
+    static int dune2aluEdge(int index);
+    //! Maps edge index from ALU3dGrid onto Dune reference face
+    static int alu2duneEdge(int index);
     //  private:
     static int twist(int index, int faceTwist);
     static int invTwist(int index, int faceTwist);
@@ -135,6 +149,18 @@ namespace Dune {
   int ElementTopologyMapping<type>::alu2duneFace(int index) {
     assert(index >= 0 && index < numFaces);
     return alu2duneFace_[index];
+  }
+
+  template <ALU3dGridElementType type>
+  int ElementTopologyMapping<type>::dune2aluEdge(int index) {
+    assert(index >= 0 && index < numEdges);
+    return dune2aluEdge_[index];
+  }
+
+  template <ALU3dGridElementType type>
+  int ElementTopologyMapping<type>::alu2duneEdge(int index) {
+    assert(index >= 0 && index < numEdges);
+    return alu2duneEdge_[index];
   }
 
   template <ALU3dGridElementType type>
@@ -188,6 +214,18 @@ namespace Dune {
   int FaceTopologyMapping<type>::alu2duneVertex(int index, int twist) {
     assert(index >= 0 && index < EntityCount<type>::numVerticesPerFace);
     return alu2duneVertex_[invTwist(index, twist)];
+  }
+
+  template <ALU3dGridElementType type>
+  int FaceTopologyMapping<type>::alu2duneEdge(int index) {
+    assert(index >= 0 && index < EntityCount<type>::numEdgesPerFace);
+    return alu2duneEdge_[index];
+  }
+
+  template <ALU3dGridElementType type>
+  int FaceTopologyMapping<type>::dune2aluEdge(int index) {
+    assert(index >= 0 && index < EntityCount<type>::numEdgesPerFace);
+    return dune2aluEdge_[index];
   }
 
 } // end namespace Dune
