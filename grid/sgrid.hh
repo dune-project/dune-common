@@ -523,7 +523,7 @@ namespace Dune {
     EntityPointer ownersFather () const;
 
     //! local coordinates within father
-    FieldVector<sgrid_ctype, dim>& positionInOwnersFather () const;
+    const FieldVector<sgrid_ctype, dim>& positionInOwnersFather () const;
 
     // members specific to SEntity
     //! constructor
