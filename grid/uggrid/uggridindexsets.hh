@@ -508,7 +508,7 @@ namespace Dune {
       // //////////////////////////////////////////////////////
 
       // first loop : clear indices
-      for (int level_=grid_.maxlevel(); level_>=0; level_--)
+      for (int level_=grid_.maxLevel(); level_>=0; level_--)
       {
         typename GridImp::Traits::template Codim<0>::LevelIterator eIt    = grid_.template lbegin<0>(level_);
         typename GridImp::Traits::template Codim<0>::LevelIterator eEndIt = grid_.template lend<0>(level_);
@@ -545,7 +545,7 @@ namespace Dune {
       numQuadFaces_ = 0;
 
       // second loop : set indices
-      for (int level_=grid_.maxlevel(); level_>=0; level_--)
+      for (int level_=grid_.maxLevel(); level_>=0; level_--)
       {
         typename GridImp::Traits::template Codim<0>::LevelIterator eIt    = grid_.template lbegin<0>(level_);
         typename GridImp::Traits::template Codim<0>::LevelIterator eEndIt = grid_.template lend<0>(level_);

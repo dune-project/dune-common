@@ -61,7 +61,7 @@ namespace Dune {
       this->virtualEntity_.setToTarget(UG_NS<GridImp::dimension>::succ(this->virtualEntity_.getTarget()));
 
       // If beyond the end of this level set to first of next level
-      if (!this->virtualEntity_.getTarget() && this->level() < grid_->maxlevel()) {
+      if (!this->virtualEntity_.getTarget() && this->level() < grid_->maxLevel()) {
 
         if (pitype==All_Partition || pitype==Ghost_Partition)
           setToTarget(UG_NS<dim>::PFirstNode(grid_->multigrid_->grids[this->level()+1]), this->level()+1);
@@ -128,7 +128,7 @@ namespace Dune {
       this->virtualEntity_.setToTarget(UG_NS<GridImp::dimension>::succ(this->virtualEntity_.getTarget()));
 
       // If beyond the end of this level set to first of next level
-      if (!this->virtualEntity_.getTarget() && this->level() < grid_->maxlevel()) {
+      if (!this->virtualEntity_.getTarget() && this->level() < grid_->maxLevel()) {
 
         if (pitype==All_Partition || pitype==Ghost_Partition)
           setToTarget(UG_NS<dim>::PFirstElement(grid_->multigrid_->grids[this->level()+1]), this->level()+1);
