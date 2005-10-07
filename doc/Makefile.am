@@ -3,7 +3,7 @@
 SUBDIRS = devel appl doxygen layout istl
 
 if BUILD_DOCS
- PAGES = index.html buildsystem.html view-concept.html
+ PAGES = index.html buildsystem.html view-concept.html installation-notes.html
 endif
 
 all: $(PAGES)
