@@ -6,7 +6,8 @@
   TESTRUNS = run-galerkin run-hierarchy run-amg
 #endif
 
-NORMALTESTS = $(MPITESTS)
+NORMALTESTS = transfertest $(MPITESTS)
+
 # which tests to run
 TESTS = $(NORMALTESTS) $(TESTRUNS)
 
@@ -16,6 +17,8 @@ check_PROGRAMS = $(TESTPROGS) $(NORMALTESTS)
 # define the programs
 
 graphtest_SOURCES = graphtest.cc
+
+transfertest_SOURCES = transfertest.cc
 
 galerkintest_SOURCES = galerkintest.cc anisotropic.hh
 galerkintest_CXXFLAGS = $(MPI_CPPFLAGS)
@@ -29,4 +32,5 @@ hierarchytest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 amgtest_SOURCES = amgtest.cc
 amgtest_CXXFLAGS = $(MPI_CPPFLAGS)
 amgtest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+
 include $(top_srcdir)/am/global-rules
