@@ -118,7 +118,7 @@ namespace Dune
       {
         const Dune::FieldVector<DT,n>& local = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].position();           // pos of integration point
         Dune::FieldVector<DT,n> global = e.geometry().global(local);                                            // ip in global coordinates
-        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverse(local);                             // eval jacobian inverse
+        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverseTransposed(local);                             // eval jacobian inverse
         const Dune::FieldMatrix<DT,n,n>& K = problem.K(global,e,local);                                         // eval diffusion tensor
         double weight = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].weight();                                    // weight of quadrature point
         DT detjac = e.geometry().integrationElement(local);                                                     // determinant of jacobian
@@ -374,7 +374,7 @@ namespace Dune
         facebctype = GroundwaterEquationParameters<G,RT>::process;
 
         // compute coefficients of flux evaluation in self
-        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverse(local);           // eval jacobian inverse at face center
+        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverseTransposed(local);           // eval jacobian inverse at face center
         const Dune::FieldMatrix<DT,n,n>& K = problem.K(center,e,local);                       // eval diffusion tensor at face center
         for (int i=0; i<sfs.size(); i++)
         {
@@ -397,7 +397,7 @@ namespace Dune
         int numberInNeighbor = it.numberInNeighbor();
         const Dune::FieldVector<DT,n-1>& nbfacelocal = Dune::ReferenceElements<DT,n-1>::general(nbgtface).position(0,0);
         FieldVector<DT,n> nblocal = it.intersectionNeighborLocal().global(nbfacelocal);
-        const Dune::FieldMatrix<DT,n,n>& nbjac = it.outside()->geometry().jacobianInverse(nblocal);
+        const Dune::FieldMatrix<DT,n,n>& nbjac = it.outside()->geometry().jacobianInverseTransposed(nblocal);
         const Dune::FieldMatrix<DT,n,n>& nbK = problem.K(nbcenter,*(it.outside()),nblocal);
         for (int i=0; i<nbsfs.size(); i++)
         {
@@ -424,7 +424,7 @@ namespace Dune
         facefluxN[0] = problem.J(global,e,local);
 
         // compute coefficients of flux evaluation in self
-        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverse(local);           // eval jacobian inverse at face center
+        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverseTransposed(local);           // eval jacobian inverse at face center
         const Dune::FieldMatrix<DT,n,n>& K = problem.K(center,e,local);                       // eval diffusion tensor at face center
         for (int i=0; i<sfs.size(); i++)
         {
