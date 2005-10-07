@@ -316,7 +316,7 @@ namespace Dune {
      * @param capacity The maximum number of elements the vector
      * needs to hold.
      * @param copyOldValues If false no object will be copied and the data might be
-     * lost.
+     * lost. Default value is true.
      */
     void reserve(size_type capacity, bool copyOldValues=true)
     {
@@ -469,12 +469,13 @@ namespace Dune {
       this->n = a.n;
       capacity_ = a.capacity_;
 
-      if (capacity>0)
-        this->p = A::template malloc<B>(capacity);
+      if (capacity_>0)
+        this->p = A::template malloc<B>(capacity_);
       else
       {
         this->n = 0;
         this->p = 0;
+        capacity_ = 0;
       }
 
       // and copy elements
