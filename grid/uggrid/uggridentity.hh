@@ -156,7 +156,7 @@ namespace Dune {
        This can speed up on-the-fly interpolation for linear conforming elements
        Possibly this is sufficient for all applications we want on-the-fly.
      */
-    FieldVector<UGCtype, dim>& positionInOwnersFather() const
+    const FieldVector<UGCtype, dim>& positionInOwnersFather() const
     {
       if (UG_NS<dim>::NFather(target_)!=0)
         if (UG_NS<dim>::myLevel(UG_NS<dim>::NFather(target_)) == this->level()-1)
@@ -288,7 +288,7 @@ namespace Dune {
     //! Geometry of this entity
     const Geometry& geometry () const;
 
-    /** \brief Return the number of subentities of codimension cc.
+    /** \brief Return the number of subEntities of codimension cc.
      */
     template<int cc>
     int count () const;

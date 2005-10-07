@@ -163,7 +163,7 @@ namespace Dune {
     UGCtype integrationElement (const FieldVector<UGCtype, mydim>& local) const;
 
     //! The Jacobian matrix of the mapping from the reference element to this element
-    const FieldMatrix<UGCtype, mydim,mydim>& jacobianInverse (const FieldVector<UGCtype, mydim>& local) const;
+    const FieldMatrix<UGCtype, mydim,mydim>& jacobianInverseTransposed (const FieldVector<UGCtype, mydim>& local) const;
 
 
   private:
@@ -248,7 +248,7 @@ namespace Dune {
     UGCtype integrationElement (const FieldVector<UGCtype, 2>& local) const;
 
     //! can only be called for dim=dimworld!
-    const FieldMatrix<UGCtype,2,2>& jacobianInverse (const FieldVector<UGCtype, 2>& local) const;
+    const FieldMatrix<UGCtype,2,2>& jacobianInverseTransposed (const FieldVector<UGCtype, 2>& local) const;
 
   private:
 
@@ -328,7 +328,7 @@ namespace Dune {
     UGCtype integrationElement (const FieldVector<UGCtype, 1>& local) const;
 
     //! can only be called for dim=dimworld!
-    const FieldMatrix<UGCtype,1,1>& jacobianInverse (const FieldVector<UGCtype, 1>& local) const;
+    const FieldMatrix<UGCtype,1,1>& jacobianInverseTransposed (const FieldVector<UGCtype, 1>& local) const;
 
   private:
 

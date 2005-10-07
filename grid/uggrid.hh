@@ -82,7 +82,6 @@
 #include "uggrid/uggridgeometry.hh"
 #include "uggrid/uggridentity.hh"
 #include "uggrid/uggridentitypointer.hh"
-#include "uggrid/uggridboundent.hh"
 #include "uggrid/ugintersectionit.hh"
 #include "uggrid/uggridleveliterator.hh"
 #include "uggrid/uggridleafiterator.hh"
@@ -97,7 +96,6 @@ namespace Dune {
     typedef GridTraits<dim,dimworld,Dune::UGGrid<dim,dimworld>,
         UGGridGeometry,
         UGGridEntity,
-        UGGridBoundaryEntity,
         UGGridEntityPointer,
         UGGridLevelIterator,
         UGGridIntersectionIterator,
@@ -227,7 +225,7 @@ namespace Dune {
 
     //! Return maximum level defined in this grid. Levels are numbered
     //! 0 ... maxlevel with 0 the coarsest level.
-    int maxlevel() const;
+    int maxLevel() const;
 
     //! Iterator to first entity of given codim on level
     template<int codim>
@@ -331,7 +329,7 @@ namespace Dune {
     //const LevelIndexSet& levelIndexSet(int level) const
     const typename Traits::LevelIndexSet& levelIndexSet(int level) const
     {
-      return levelIndexSets_[level];
+      return * levelIndexSets_[level];
     }
 
     /** \brief Access to the LeafIndexSet */

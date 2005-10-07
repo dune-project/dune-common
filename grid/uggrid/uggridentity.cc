@@ -175,8 +175,8 @@ inline int UGGridEntity<0, dim, GridImp>::subIndex(int i) const
     return UG_NS<dim>::levelIndex(target_);
   if (cc==dim-1)
   {
-    int a=ReferenceElements<double,dim>::general(geometry().type()).subentity(i,dim-1,0,dim);
-    int b=ReferenceElements<double,dim>::general(geometry().type()).subentity(i,dim-1,1,dim);
+    int a=ReferenceElements<double,dim>::general(geometry().type()).subEntity(i,dim-1,0,dim);
+    int b=ReferenceElements<double,dim>::general(geometry().type()).subEntity(i,dim-1,1,dim);
     return UG_NS<dim>::levelIndex(UG_NS<dim>::GetEdge(UG_NS<dim>::Corner(target_,renumberVertex(a)),UG_NS<dim>::Corner(target_,renumberVertex(b))));
   }
   if (cc==1)
@@ -199,8 +199,8 @@ inline int UGGridEntity<0, dim, GridImp>::subLeafIndex(int i) const
     return UG_NS<dim>::leafIndex(target_);
   if (cc==dim-1)
   {
-    int a=ReferenceElements<double,dim>::general(geometry().type()).subentity(i,dim-1,0,dim);
-    int b=ReferenceElements<double,dim>::general(geometry().type()).subentity(i,dim-1,1,dim);
+    int a=ReferenceElements<double,dim>::general(geometry().type()).subEntity(i,dim-1,0,dim);
+    int b=ReferenceElements<double,dim>::general(geometry().type()).subEntity(i,dim-1,1,dim);
     return UG_NS<dim>::leafIndex(UG_NS<dim>::GetEdge(UG_NS<dim>::Corner(target_,renumberVertex(a)),UG_NS<dim>::Corner(target_,renumberVertex(b))));
   }
   if (cc==1)

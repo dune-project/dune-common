@@ -38,7 +38,6 @@ namespace Dune {
   public:
 
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
-    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     typedef typename GridImp::template Codim<0>::Entity Entity;
@@ -95,8 +94,9 @@ namespace Dune {
     bool neighbor () const;
 
     //! return information about the Boundary
-    const BoundaryEntity& boundaryEntity () const {
-      return boundaryEntity_;
+    int boundaryId () const {
+#warning please implement a course grid boundary segment id
+      return 0;
     }
 
     //! intersection of codimension 1 of this neighbor with element where
@@ -145,9 +145,6 @@ namespace Dune {
     //! pointer to element holding the neighbor_global and neighbor_local
     //! information. This element is created on demand.
     mutable UGMakeableGeometry<dim-1,dimworld,GridImp> neighGlob_;
-
-    //! BoundaryEntity
-    UGGridBoundaryEntity<GridImp> boundaryEntity_;
 
     //! This points to the same UG element as center_ does
     typename TargetType<0,GridImp::dimensionworld>::T* center_;

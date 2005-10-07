@@ -347,10 +347,14 @@ inline Dune::UGGrid < dim, dimworld >::~UGGrid()
 
   }
 
+  // Delete levelIndexSets
+  for (unsigned int i=0; i<=levelIndexSets_.size(); i++)
+    if (levelIndexSets_[i])
+      delete levelIndexSets_[i];
 };
 
 template < int dim, int dimworld >
-inline int Dune::UGGrid < dim, dimworld >::maxlevel() const
+inline int Dune::UGGrid < dim, dimworld >::maxLevel() const
 {
   if (!multigrid_)
     DUNE_THROW(GridError, "The grid has not been properly initialized!");
@@ -1205,10 +1209,13 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::setIndices()
 {
-  levelIndexSets_.resize(maxlevel()+1);
+  for (int i=levelIndexSets_.size(); i<maxlevel()+1; i++)
+    levelIndexSets_.push_back(0);
+  //    levelIndexSets_.resize(maxlevel()+1);
 
   for (int i=0; i<=maxlevel(); i++)
-    levelIndexSets_[i].update(*this, i);
+    if (levelIndexSets_[i])
+      levelIndexSets_[i]->update(*this, i);
 
   leafIndexSet_.update();
 

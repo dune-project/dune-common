@@ -299,7 +299,7 @@ template< int mydim, int coorddim, class GridImp>
 inline typename GridImp::ctype UGGridGeometry<mydim,coorddim,GridImp>::
 integrationElement (const FieldVector<typename GridImp::ctype, mydim>& local) const
 {
-  return std::abs(1/jacobianInverse(local).determinant());
+  return std::abs(1/jacobianInverseTransposed(local).determinant());
 }
 
 template <class GridImp>
@@ -331,7 +331,7 @@ integrationElement (const FieldVector<typename GridImp::ctype, 2>& local) const
 
 template< int mydim, int coorddim, class GridImp>
 inline const FieldMatrix<typename GridImp::ctype, mydim,mydim>& UGGridGeometry<mydim,coorddim, GridImp>::
-jacobianInverse (const FieldVector<typename GridImp::ctype, mydim>& local) const
+jacobianInverseTransposed (const FieldVector<typename GridImp::ctype, mydim>& local) const
 {
   // coorddim*coorddim is an upper bound for the number of vertices
   UGCtype* cornerCoords[coorddim*coorddim];
