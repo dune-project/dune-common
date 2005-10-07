@@ -141,12 +141,21 @@ public:
     assert( (!owner_) ? (std::cerr << "\nERROR:The feature of copying iterators is not supported by AlbertaGrid at the moment! \n\n", 0) : 1);
     return stack_;
   }
-private:
+
+  //private:
   //! if copy is made than one more Reference exists
   ManageTravStack & operator = (const ManageTravStack & copy)
   {
     // do not use this method
-    assert(false);
+    if(copy.stack_ != 0)
+    {
+      stack_ = copy.stack_;
+      refCount_ = copy.refCount_;
+      (*refCount_)++;
+      copy.owner_ = false;
+      owner_ = true;
+    }
+    //assert(false);
     return (*this);
   }
 };
