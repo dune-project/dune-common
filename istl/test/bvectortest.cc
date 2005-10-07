@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#include <iostream>
 #include <dune/istl/bvector.hh>
 #include <dune/common/fvector.hh>
 
@@ -66,7 +65,6 @@ int testVector()
   assert(v2.capacity()==z1.capacity());
 
   for(int i=1; i < v2.N(); ++i) {
-    std::cout<<i<<std::endl;
     assert(z1[i] == v2[i]);
   }
 
