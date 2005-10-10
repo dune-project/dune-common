@@ -5,6 +5,12 @@
 
 <h1>Documentation</h1>
 
+<h2>Documentation of the DUNE installation</h2>
+
+<ul>
+<li><a href="installation-notes.html">Installation Notes</a></li>
+</ul>
+
 <h2>Documentation for application writers</h2>
 
 <ul>

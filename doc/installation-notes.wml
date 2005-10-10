@@ -3,7 +3,7 @@
 
 #use wml::layout::default title="DUNE - Installation Notes"
 
-<h1>Installation Notes<h1>
+<h1>Installation Notes</h1>
 
 <h2>Grids with Dune support</h2>
 <p>
@@ -11,9 +11,9 @@ The following external grids support the DUNE Grid interface:
 <p>
 <table>
 <tbody>
-<tr><td>ALBERTA</td><td>1.2</td><td><a href="http://www.mathematik.uni-freiburg.de/IAM/ALBERTA">http://www.mathematik.uni-freiburg.de/IAM/ALBERTA</a></td></tr>
-<tr><td>ALUGrid</td><td>0.11</td><td><a href=""></a></td></tr>
-<tr><td>UG (non-free licence)</td><td></td><td><a href=" http://cox.iwr.uni-heidelberg.de/~ug"> http://cox.iwr.uni-heidelberg.de/~ug</a></td></tr>
+<tr><td>ALBERTA</td><td>1.2</td><td><a href="http://www.alberta-fem.de/">http://www.alberta-fem.de/</a></td></tr>
+<tr><td>ALUGrid</td><td>0.11</td><td><a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/</a></td></tr>
+<tr><td>UG (non-free licence)</td><td></td><td><a href=" http://cox.iwr.uni-heidelberg.de/~ug/"> http://cox.iwr.uni-heidelberg.de/~ug/</a></td></tr>
 </tbody>
 </table>
 <p>
@@ -27,12 +27,11 @@ available.
 <p>
 The following packages are mandatory to compile ALBERTA:
 </p>
-<table>
-<tbody>
-<tr><td>Fortran 77</td><td> compiler</td></tr>
-<tr><td>OpenGL</td><td>  A free implementation is available from 
-        <a href="http://www.mesa3d.org/">http://www.mesa3d.org/</a></td></tr>
-<tr><td>BLAS</td><td>    "Basic Linear Algebra Subprograms"<br />
+<dl>
+<dt>Fortran 77</dt><dd>compiler, e.&nbsp;g. g77</dd>
+<dt>OpenGL</dt><dd>  A free implementation is available from 
+        <a href="http://www.mesa3d.org/">http://www.mesa3d.org/</a></dd>
+<dt>BLAS</dt><dd><p>&quot;Basic Linear Algebra Subprograms&quot;</p>
 <p>
         This often comes as a package with Linux (for Debian sarge it
         is called atlas3 and has to be installed together with the
@@ -40,8 +39,8 @@ The following packages are mandatory to compile ALBERTA:
 </p><p>
 	If it does not come with your distribution you can get it from 
 	http://math-atlas.sourceforge.net
-</p></td></tr>
-</tbody></table>
+</p></dd>
+</dl>
 <p>
 For optional packages see the README file of ALBERTA
 </p>
@@ -65,12 +64,12 @@ Unfortunately the commercial <a href="http://www.amiravis.com">Amiramesh</a>
 <li>Download at least version 1.2 of ALBERTA from the ALBERTA homepage
   <a href="http://www.alberta-fem.de">http://www.alberta-fem.de</a> </li>
 
-<li>Unpack it in adirectory
+<li><p>Unpack it in adirectory</p>
 	   <kbd>tar xzf alberta-1.2.tar.gz</kbd>
-    and move to that directory
+    <p>and move to that directory</p>
 	<kbd>cd alberta-1.2</kbd>
 </li>
-<li>Configure ALBERTA, e. g.
+<li><p>Configure ALBERTA, e. g.</p>
     <kbd>   ./configure --prefix=/directory/to/install/alberta/to \
        --with-blas-name=blas-3 --disable-shared \
        CXX=g++-3.4 CC=gcc-3.4 CXXCOMP=g++-3.4 COMP=gcc-3.4
@@ -87,32 +86,31 @@ Unfortunately the commercial <a href="http://www.amiravis.com">Amiramesh</a>
     compiler and linker to use. These have to be the same compilers
     and linkers  you will use  to compile DUNE!!
 </p>
-    For more information and additional options see
+   <p> For more information and additional options see</p>
     <kbd>./configure --help</kbd>
-</p></li>
+</li>
 
-<li>Compile ALBERTA with <kbd>make</kbd></li>
+<li><p>Compile ALBERTA with</p> <kbd>make</kbd></li>
 
-<li> Install ALBERTA with <kbd>make install</kbd></li>
+<li> <p>Install ALBERTA with</p> <kbd>make install</kbd></li>
 </ol>
 
-</h3>ALUGrid</h3>
+<h3>ALUGrid</h3>
 <ol>
-<li>Download at least version 0.11 of ALUGrid from the ALUGrid homepage
-  <a href=""></a>.</li>
-<li>Unpack it in adirectory
+<li>Download at least version 0.11 of ALUGrid from the <a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">ALUGrid homepage</a>.</li>
+<li><p>Unpack it in adirectory</p>
 	   <kbd>tar xzf aALUGrid-0.11.tar.gz</kbd>
-    and move to that directory
+    <p>and move to that directory</p>
 <kbd>
 	cd ALUGrid-0,11
 </kbd></li>
 
-<li>Configure ALUGrid, e. g.
+<li><p>Configure ALUGrid, e. g.</p>
     <kbd>
        ./configure --prefix=/directory/to/install/ALUGrid/to \
        CXX=g++-3.4 CC=gcc-3.4 CXXCOMP=g++-3.4 COMP=gcc-3.4
 </kbd>
-       for the sequential use of ALUGrid.
+       <p>for the sequential use of ALUGrid.</p>
 <p>
     With --prefix the absolute path of the directory we install to has
     to be given.
@@ -137,23 +135,23 @@ Unfortunately the commercial <a href="http://www.amiravis.com">Amiramesh</a>
 </p>
 <p>
     E. g. for lam-mpi:
+</p>
    <kbd> /configure --prefix=/directory/to/install/ALUGrid/to \
        CXX=g++-3.4 CC=gcc-3.4 CXXCOMP=g++-3.4 COMP=gcc-3.4 \
        CPPFLAGS="-I/usr/lib/lam/include -pthread" \
        LDFLAGS="-L/usr/lib/lam/lib -llammpio -llammpi++ -llamf77mpi \
     -lmpi -llam -lutil -ldl" </kbd>
-</p><p>
+<p>
     For more information and additional options see
-    <kbd>./configure --help</kbd>
-</p>
+    </p><kbd>./configure --help</kbd>
 </li>
-<li>Compile ALUGrid with <kbd>make</kbd></li>
-<li>Install ALUGrid with <kbd>make install</kbd></li>
+<li><p>Compile ALUGrid with</p> <kbd>make</kbd></li>
+<li><p>Install ALUGrid with</p> <kbd>make install</kbd></li>
 </ol>
 <h3>UG</h3>
 
 <ol>
-<li>Somehow get UG ;-)
+<li><p>Somehow get UG ;-)</p>
 <p>
 You can obtain it at http://cox.iwr.uni-heidelberg.de/~ug. 
 Unfortunately, the version of UG available for download (3.8 at the
@@ -161,7 +159,7 @@ time of writing) is not new enough to be compatible with DUNE. Please
 write to one of the contact addresses given on the page mentioned
 above and ask for a more recent version of UG.
 </p>
-<li>Install Amiramesh
+<li><p>Install Amiramesh</p>
 <p>
 Simply unpack amiramesh and you are done:
 </p><kbd>
@@ -170,7 +168,7 @@ tar xjf amiramesh.tar.bz2
 </li>
 <li>Move into the ug source tree.</li>
 
-<li> Compile UG using configure, e. g.
+<li><p>Compile UG using configure, e. g.</p>
 <kbd>
     ./autogen.sh  --prefix=/home/mblatt/dune/ug_install \
    --enable-dune COMP=g++-3.4 CXXCOMP=g++-3.4 CXX=g++-3.4 CC=g++-3.4
@@ -190,39 +188,40 @@ tar xjf amiramesh.tar.bz2
     the C compiler and linker !!!
 </p></li>
 
-<li> Compile UG <kbd>with make</kbd></li>
+<li> <p>Compile UG with</p><kbd> make</kbd></li>
 
-<li>Install UG with <kbd>make install</kbd></li>
+<li><p>Install UG with</p> <kbd>make install</kbd></li>
 </ol>
 
 <h2>Compilation and Installation of DUNE</h2>
 <ol>
 <li>Download DUNE:
 <ul><li>
-    Download via CVS
+   <p> Download via CVS</p>
 <p>
     Use
+</p>
 <kbd>
     cvs -z3 -d \
     :pserver:anonymous@hal.iwr.uni-heidelberg.de:/var/lib/cvs-public \
     checkout dune
-</kbd></p><li>
+</kbd></li>
 <li>
-    Download via HTML
+    <p>Download via HTML</p>
 <p>
     View the CVS-version of DUNE, the DUNE-Tutorial or the
     DUNE-Applications. There is also an option to get the full source as a
     tarball at the bottom of the page. However, those tarballs are not
     like a final release will be, the instructions in README.CVS still
     apply. 
-</p></li><ul></li>
+</p></li></ul></li>
 <li>Configure Dune with all available grids
 <ul><li>
-    If you are using the cvs version first build the configure
-    script via
+    <p>If you are using the cvs version first build the configure
+    script via</p>
     <kbd>./autogen.sh</kbd></li>
 
-    <li> Configure DUNE, e. g via
+    <li><p>Configure DUNE, e. g via</p>
     <kbd>
     ./configure  --with-ug=/ug/install/path \
     --with-amiramesh=/amiramesh/install/path \
@@ -241,7 +240,7 @@ tar xjf amiramesh.tar.bz2
     compiler and linker to use.
 </p></li>
 
-<li>Compile DUNE with <kbd>make</kbd></li>
+<li><p>Compile DUNE with</p><kbd>make</kbd></li>
 
-<li>Install DUNE with <kbd>make install</kbd></li>
+<li><p>Install DUNE with</p> <kbd>make install</kbd></li>
 </ol>
