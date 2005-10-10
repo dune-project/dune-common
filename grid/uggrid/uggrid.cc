@@ -599,7 +599,7 @@ bool Dune::UGGrid < dim, dimworld >::adapt()
 template <int dim, int dimworld>
 void Dune::UGGrid <dim, dimworld>::postAdapt()
 {
-  for (int i=0; i<=maxlevel(); i++) {
+  for (int i=0; i<=maxLevel(); i++) {
 
     typename Traits::template Codim<0>::LevelIterator eIt    = lbegin<0>(i);
     typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(i);
@@ -820,7 +820,7 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
 }
 
 template < int dim, int dimworld >
-void Dune::UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth, int maxlevel, int minelement)
+void Dune::UGGrid < dim, dimworld >::loadBalance(int strategy, int minlevel, int depth, int maxLevel, int minelement)
 {
   /** \todo Test for valid arguments */
   std::string argStrings[4];
@@ -1209,11 +1209,11 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::setIndices()
 {
-  for (int i=levelIndexSets_.size(); i<maxlevel()+1; i++)
+  for (int i=levelIndexSets_.size(); i<maxLevel()+1; i++)
     levelIndexSets_.push_back(0);
-  //    levelIndexSets_.resize(maxlevel()+1);
+  //    levelIndexSets_.resize(maxLevel()+1);
 
-  for (int i=0; i<=maxlevel(); i++)
+  for (int i=0; i<=maxLevel(); i++)
     if (levelIndexSets_[i])
       levelIndexSets_[i]->update(*this, i);
 
