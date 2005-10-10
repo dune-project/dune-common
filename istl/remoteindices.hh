@@ -258,7 +258,7 @@ namespace Dune {
      * Sometimes the user knows in advance which indices will be present
      * on other processors, too. Then he can set them up using this modifier.
      *
-     * @warn Use with care. If the remote index list is inconsistent
+     * @warning Use with care. If the remote index list is inconsistent
      * after the modification the communication might result in a dead lock!
      */
     template<bool mode, bool send>
