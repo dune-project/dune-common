@@ -24,75 +24,12 @@ namespace Dune
   // --Geometry
   //
   //****************************************************************
-
-  //****************************************************************
-  //
-  //  specialization of mapVertices
-  //
-  //****************************************************************
-  template <int md, int cd>
-  struct MapVertices
-  {
-    static int mapVertices (int i, int face, int edge, int vertex)
-    {
-      return i;
-    }
-  };
-
-  // faces in 2d
-  // which vertices belong to which face
-  static const int localTriangleFaceNumber [3][2] = { {1,2} , {2,0} , {0,1} };
-  template <>
-  struct MapVertices<1,2>
-  {
-    static int mapVertices (int i, int face, int edge, int vertex)
-    {
-      return localTriangleFaceNumber[face][i];
-    }
-  };
-
-  // faces in 3d
-  template <>
-  struct MapVertices<2,3>
-  {
-    static int mapVertices (int i, int face, int edge, int vertex)
-    {
-      return ALBERTA AlbertHelp::localTetraFaceNumber[face][i];
-    }
-  };
-
-  // edges in 3d
-  // local numbers of vertices belonging to one edge
-  static const int localEdgeNumber [6][2] =
-  {
-    {1,2} , {2,0} , {0,1} , // first three vertices like in 2d for faces(edges)
-    {0,3} , {1,3} , {2,3} // then all with the last vertex
-  };
-  template <>
-  struct MapVertices<1,3>
-  {
-    static int mapVertices (int i, int face, int edge, int vertex)
-    {
-      return localEdgeNumber[edge][i];
-    }
-  };
-
-  // vertices in 2d and 3d
-  template <int cd>
-  struct MapVertices<0,cd>
-  {
-    static int mapVertices (int i, int face, int edge, int vertex)
-    {
-      return vertex;
-    }
-  };
-
   // default, do nothing
   template <int mydim, int cdim, class GridImp>
   inline int AlbertaGridGeometry<mydim,cdim,GridImp>::mapVertices (int i) const
   {
     // there is a specialisation for each combination of mydim and coorddim
-    return MapVertices<mydim,cdim>::mapVertices(i,face_,edge_,vertex_);
+    return ALBERTA AlbertHelp :: MapVertices<mydim,cdim>::mapVertices(i,face_,edge_,vertex_);
   }
 
   template <int mydim, int cdim, class GridImp>
@@ -164,8 +101,8 @@ namespace Dune
       for(int i=0; i<mydim+1; i++)
       {
         const ALBERTA REAL_D & elcoord = elInfo_->coord[mapVertices(i)];
-        for(int j=0; j<cdim; j++)
-          coord_[i][j] = elcoord[j];
+        // copy coordinates
+        for(int j=0; j<cdim; j++) coord_[i][j] = elcoord[j];
       }
       // geometry built
       return true;
@@ -1032,7 +969,6 @@ namespace Dune
   {
     const Entity en (*this);
     return grid_.hierarchicIndexSet().template subIndex<cc> (en,i);
-    //return grid_.levelIndexSet(en.level()).template subIndex<cc> (en,i);
   }
 
   template <class GridImp, int dim, int cd> struct SubEntity;
@@ -1068,9 +1004,9 @@ namespace Dune
     enum { dim = 3 };
     typedef typename AlbertaGridEntity <0,dim,GridImp>::template Codim<2>::EntityPointer EntityPointerType;
     static EntityPointerType entity(GridImp & grid, ALBERTA TRAVERSE_STACK * stack,
-                                    int level, ALBERTA EL_INFO * elInfo, int i )
+                                    int level, ALBERTA EL_INFO * elInfo, int edge )
     {
-      return AlbertaGridEntityPointer<2,GridImp> (grid, stack , level ,elInfo, 0,i,0);
+      return AlbertaGridEntityPointer<2,GridImp> (grid, stack , level ,elInfo, 0, edge ,0);
     }
   };
 
@@ -1792,7 +1728,7 @@ namespace Dune
 #endif
 
     // neighborCount_ is the local face number
-    const int * localFaces = ALBERTA AlbertHelp::localTetraFaceNumber[neighborCount_];
+    const int * localFaces = ALBERTA AlbertHelp::localAlbertaFaceNumber[neighborCount_];
     for(int i=0; i<dim; i++)
     {
       tmpV_[i] = coord[localFaces[1]][i] - coord[localFaces[0]][i];

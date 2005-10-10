@@ -81,7 +81,7 @@ namespace Dune {
     // out grid
     const GridType & grid_;
     // constains the mapping from dune to alberta numbers
-    const AlbertaGridReferenceTopology<dim> refTopo_;
+    const ALBERTA AlbertHelp :: AlbertaGridReferenceTopology<dim> refTopo_;
     // the vectors containing the numbers
     const int * elNumVec_[numVecs];
 

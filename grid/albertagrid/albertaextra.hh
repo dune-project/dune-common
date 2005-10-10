@@ -393,23 +393,6 @@ namespace AlbertHelp
     return fatherInfo;
   }
 
-  //****************************************************************
-  //
-  //  Albert reference element local numbering for 3D
-  //
-  //****************************************************************
-  // see Albert Doc page 12 for reference element
-  // if we lokk from outside, then face numbering must be clockwise
-  static const int tetraFace_0[3] = {3,2,1};
-  static const int tetraFace_1[3] = {2,3,0};
-  static const int tetraFace_2[3] = {0,3,1};
-  static const int tetraFace_3[3] = {0,1,2};
-
-  static const int tetraFace[4][3] = { {3,2,1}, {2,3,0} , {0,3,1} , {0,1,2} };
-
-  static const int * localTetraFaceNumber[4] = {tetraFace_0, tetraFace_1,
-                                                tetraFace_2 , tetraFace_3 };
-
   //**************************************************************************
   //  calc Maxlevel of AlbertGrid and remember on wich level an element lives
   //**************************************************************************
