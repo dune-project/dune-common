@@ -817,14 +817,34 @@ namespace AlbertHelp
     return;
   }
 
+  static std::stack < BOUNDARY * > * Alberta_tmpBndStack = 0;
+
+  void initBndStack( std::stack < BOUNDARY * > * bndStack )
+  {
+    Alberta_tmpBndStack = bndStack;
+  }
+  void removeBndStack ()
+  {
+    Alberta_tmpBndStack = 0;
+  }
+
   // initialize boundary for mesh
   inline const BOUNDARY *initBoundary(MESH * Spmesh, int bound)
   {
-    BOUNDARY *b = (BOUNDARY *) malloc(sizeof(BOUNDARY));
+    BOUNDARY *b = (BOUNDARY *) new BOUNDARY ();
     assert(b != 0);
 
+    assert(Alberta_tmpBndStack);
+    Alberta_tmpBndStack->push( b );
+
     // bound is of type signed char which goes from -127 to 128
-    assert((bound > -128) && (bound < 129));
+    if((bound < -127) && (bound > 128))
+    {
+      std::cerr << "Got boundary id = " << bound << "\n";
+      std::cerr << "Wrong boundary id: range is only from -127 to 128 !\n";
+      std::cerr << "Correct your macro grid file!\n";
+      abort();
+    }
 
     b->param_bound = 0;
     b->bound = bound;
