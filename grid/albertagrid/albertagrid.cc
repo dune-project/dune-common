@@ -1261,7 +1261,6 @@ namespace Dune
     done_ = ( org.done_ );
     //if( done_ ) this->done();
     (*entity_).setEntity( *(org.entity_) );
-
     return *this;
   }
 
@@ -1294,14 +1293,15 @@ namespace Dune
   {
     ALBERTA EL * e1 = (*entity_).getElement();
     ALBERTA EL * e2 = (*(i.entity_)).getElement();
-    //std::cout << e1 << " " << e2 << " element pointer \n";
-    //std::cout << done_ << " " << i.done_ << " element done \n";
-    //return ((e1 == e2 ) && (done_ == i.done_));
+
+    // if both have elements return equality of them
     if( e1 && e2 ) return ( e1 == e2 );
-    if( done_ || i.done_ ) {
-      //std::cout << "equals via done\n";
+
+    if( done_ || i.done_ )
+    {
       return done_ == i.done_;
     }
+
     assert( e1 );
     assert( e2 );
     return ( e1 == e2 );
@@ -1321,9 +1321,6 @@ namespace Dune
     assert(entity_);
     return (*entity_).level();
   }
-
-
-
 
   //***************************************************************
   //
@@ -1428,7 +1425,6 @@ namespace Dune
       virtualEntity_.setEntity( org.virtualEntity_ );
     else
       this->done();
-
     return *this;
   }
 
@@ -1879,7 +1875,10 @@ namespace Dune
   template< class GridImp >
   inline void AlbertaGridIntersectionIterator<GridImp>::setupVirtEn() const
   {
+    // if this assertion fails then outside was called without checking
+    // neighbor first
     assert(neighbor());
+
     assert( neighborCount_ < dim+1 );
     // set the neighbor element as element
     neighElInfo_->el = elInfo_->neigh[neighborCount_];
@@ -2070,7 +2069,7 @@ namespace Dune
   template<int codim, PartitionIteratorType pitype, class GridImp>
   inline AlbertaGridTreeIterator<codim,pitype,GridImp>::
   AlbertaGridTreeIterator(const GridImp & grid,
-                          AlbertaMarkerVector * vertexMark,
+                          const AlbertaMarkerVector * vertexMark,
                           int travLevel, int proc, bool leafIt)
     : AlbertaGridEntityPointer<codim,GridImp> (grid,travLevel,false)
       , level_ (travLevel) , enLevel_(travLevel)
@@ -2142,10 +2141,10 @@ namespace Dune
     {
       elInfo = goNextElInfo(stack, elInfo);
       face_ = 0;
+      if(!elInfo) return 0; // if no more Faces, return
     }
 
-    if(!elInfo)
-      return elInfo; // if no more Faces, return
+    assert(elInfo);
 
     if( (elInfo->neigh[face_]) &&
         (this->grid_.getElementNumber(elInfo->el) > this->grid_.getElementNumber(elInfo->neigh[face_])))
@@ -2167,15 +2166,15 @@ namespace Dune
     if(edge_ >= 6) // in 3d only 6 Edges
     {
       elInfo = goNextElInfo(stack, elInfo);
-      if(!elInfo) return 0; // if no more Edges, return
       edge_ = 0;
+      if(!elInfo) return 0; // if no more Edges, return
     }
 
     assert(elInfo);
 
     // go next, if Vertex is not treated on this Element
     if(vertexMarker_->edgeNotOnElement(elInfo->el,
-                                       this->grid_.getElementNumber(elInfo->el),(leafIt_) ? 0 : level_ ,
+                                       this->grid_.getElementNumber(elInfo->el),
                                        this->grid_.getEdgeNumber(elInfo->el,edge_)))
     {
       elInfo = goNextEdge(stack,elInfo);
@@ -2195,13 +2194,14 @@ namespace Dune
     {
       elInfo = goNextElInfo(stack, elInfo);
       vertex_ = 0;
+      if(!elInfo) return 0; // if no more Vertices, return
     }
 
-    if(!elInfo) return 0; // if no more Vertices, return
+    assert(elInfo);
 
     // go next, if Vertex is not treated on this Element
     if(vertexMarker_->notOnThisElement(elInfo->el,
-                                       this->grid_.getElementNumber(elInfo->el),(leafIt_) ? 0 : level_,
+                                       this->grid_.getElementNumber(elInfo->el),
                                        this->grid_.getVertexNumber(elInfo->el,vertex_)))
     {
       elInfo = goNextVertex(stack,elInfo);
@@ -2209,16 +2209,6 @@ namespace Dune
 
     return elInfo;
   }
-
-  /*
-     template<int codim, PartitionIteratorType pitype, class GridImp>
-     inline typename AlbertaGridTreeIterator<codim,pitype,GridImp>::Entity &
-     AlbertaGridTreeIterator<codim,pitype,GridImp>::dereference () const
-     {
-     assert(virtualEntity_.getElInfo() != 0);
-     return virtualEntity_;
-     }
-   */
 
   template<int codim, PartitionIteratorType pitype, class GridImp>
   inline ALBERTA EL_INFO * AlbertaGridTreeIterator<codim,pitype,GridImp>::
@@ -2230,7 +2220,7 @@ namespace Dune
     if (!stack)
     {
       ALBERTA_ERROR("no traverse stack\n");
-      return(nil);
+      return 0;
     }
 
     stack->traverse_mesh      = mesh;
@@ -2823,15 +2813,15 @@ namespace Dune
   //
   //*********************************************************************
   inline bool AlbertaMarkerVector::
-  notOnThisElement(ALBERTA EL * el, int elIndex, int level, int vertex)
+  notOnThisElement(ALBERTA EL * el, int elIndex, int vertex) const
   {
-    return (vec_[level][ vertex ] != elIndex);
+    return (vec_[ vertex ] != elIndex);
   }
 
   inline bool AlbertaMarkerVector::
-  edgeNotOnElement(ALBERTA EL * el, int elIndex, int level, int edgenum)
+  edgeNotOnElement(ALBERTA EL * el, int elIndex, int edgenum) const
   {
-    return (edgevec_[level][ edgenum ] != elIndex);
+    return (edgevec_[ edgenum ] != elIndex);
   }
 
   template <class GridType, int dim>
@@ -2857,24 +2847,27 @@ namespace Dune
   };
 
   template <class GridType>
-  inline void AlbertaMarkerVector::markNewVertices(GridType &grid)
+  inline void AlbertaMarkerVector::markNewVertices(GridType &grid, int level)
   {
     assert( meLevel_ == true );
     enum { dim      = GridType::dimension };
     enum { dimworld = GridType::dimensionworld };
 
-    int nvx = grid.hierarchicIndexSet().size(dim);
+    typedef typename GridType :: HierarchicIndexSet HIndexSet;
+
+    const HIndexSet & hset = grid.hierarchicIndexSet();
+    int nvx = hset.size(dim);
 #if DIM == 3
-    int edg = grid.hierarchicIndexSet().size(dim-1);
+    int edg = hset.size(dim-1);
 #endif
 
-    for(int level=0; level <= grid.maxLevel(); level++)
+    //for(int level=0; level <= grid.maxLevel(); level++)
     {
-      Array<int> & vec     = vec_[level];
-      if(vec.size()     < nvx) vec.resize( nvx + vxBufferSize_ );
+      Array<int> & vec     = vec_;
+      if(vec.size() < nvx) vec.resize( nvx + vxBufferSize_ );
 
 #if DIM == 3
-      Array<int> & edgevec = edgevec_[level];
+      Array<int> & edgevec = edgevec_;
       if(edgevec.size() < edg) edgevec.resize( edg + vxBufferSize_ );
       for(int i=0; i<edgevec.size(); i++) edgevec[i] = -1;
 #endif
@@ -2889,23 +2882,25 @@ namespace Dune
         const ALBERTA EL * el =
           (grid.template getRealEntity<0> (*it)).getElInfo()->el;
 
-        int elindex = grid.hierarchicIndexSet().index(*it);
+        int elindex = hset.index(*it);
         for(int local=0; local<dim+1; local++)
         {
-          int num = el->dof[local][0]; // vertex num
+          int num = grid.getVertexNumber(el,local); // vertex num
           if( vec[num] == -1 ) vec[num] = elindex;
         }
 
 #if DIM == 3
         // mark edges for this element
-        MarkEdges<GridType,dim>::mark(grid,edgevec,
-                                      el,(grid.template getRealEntity<0> (*it)).template count<2> (), elindex );
+        MarkEdges<GridType,dim>::mark(grid,edgevec, el,
+                                      (grid.template getRealEntity<0> (*it)).template count<2> (), elindex );
 #endif
       }
       // remember the number of entity on level and codim = 0
     }
     up2Date_ = true;
   }
+
+  // mark vertices and edges using leaf iterator
   template <class GridType>
   inline void AlbertaMarkerVector::markNewLeafVertices(GridType &grid)
   {
@@ -2918,13 +2913,13 @@ namespace Dune
     int edg = grid.hierarchicIndexSet().size(dim-1);
 #endif
 
-    int level=0;
     {
-      Array<int> & vec     = vec_[level];
-      if(vec.size()     < nvx) vec.resize( nvx + vxBufferSize_ );
+      Array<int> & vec = vec_;
+      if(vec.size() < nvx) vec.resize( nvx + vxBufferSize_ );
 
+      // the edge marking is only needed in 3d
 #if DIM == 3
-      Array<int> & edgevec = edgevec_[level];
+      Array<int> & edgevec = edgevec_;
       if(edgevec.size() < edg) edgevec.resize( edg + vxBufferSize_ );
       for(int i=0; i<edgevec.size(); i++) edgevec[i] = -1;
 #endif
@@ -2952,21 +2947,19 @@ namespace Dune
                                       el,(grid.template getRealEntity<0> (*it)).template count<2> (), elindex );
 #endif
       }
-      // remember the number of entity on level and codim = 0
+      // remember the number of entity on leaf level and codim = 0
     }
     up2Date_ = true;
   }
 
-  inline void AlbertaMarkerVector::print()
+  inline void AlbertaMarkerVector::print() const
   {
-    for(int l=0; l<MAXL; l++)
     {
-      if(vec_[l].size() > 0)
+      if(vec_.size() > 0)
       {
-        Array<int> & vec = vec_[l];
-        printf("\nEntries %d \n",vec.size());
-        for(int i=0; i<vec.size(); i++)
-          printf("Vx %d visited on Element %d \n",i,vec[i]);
+        printf("\nEntries %d \n",vec_.size());
+        for(int i=0; i<vec_.size(); i++)
+          printf("Vx %d visited on Element %d \n",i,vec_[i]);
       }
     }
   }
@@ -2981,6 +2974,7 @@ namespace Dune
   inline AlbertaGrid < dim, dimworld >::AlbertaGrid() :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
+    , vertexMarkerLeaf_(false) // creates LeafMarkerVector
     , nv_ (dim+1) , dof_ (0) , myRank_ (0)
     , hIndexSet_(*this)
     , globalIdSet_(*this)
@@ -2988,10 +2982,6 @@ namespace Dune
     , leafIndexSet_ (0)
     , geomTypes_(1,simplex)
   {
-    // true created Level Marker
-    vertexMarkerLevel_ = new AlbertaMarkerVector (true);
-    vertexMarkerLeaf_  = new AlbertaMarkerVector (false);
-
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++) dofvecs_.elNumbers[i] = 0;
     dofvecs_.elNewCheck = 0;
     dofvecs_.owner      = 0;
@@ -3023,6 +3013,7 @@ namespace Dune
   inline AlbertaGrid < dim, dimworld >::AlbertaGrid(const char *MacroTriangFilename) :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
+    , vertexMarkerLeaf_(false) // creates LeafMarkerVector
     , nv_ (dim+1) , dof_ (0) , myRank_ (-1)
     , hIndexSet_(*this)
     , globalIdSet_( *this )
@@ -3045,15 +3036,15 @@ namespace Dune
       file.close();
     }
 
-    vertexMarkerLevel_ = new AlbertaMarkerVector (true);
-    vertexMarkerLeaf_  = new AlbertaMarkerVector (false);
     ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
 
     if(makeNew)
     {
+      ALBERTA AlbertHelp :: initBndStack( &bndStack_ );
       mesh_ = ALBERTA get_mesh("AlbertaGrid", ALBERTA AlbertHelp::initDofAdmin<dim>,
                                ALBERTA AlbertHelp::initLeafData);
       ALBERTA read_macro(mesh_, MacroTriangFilename, ALBERTA AlbertHelp::initBoundary);
+      ALBERTA AlbertHelp :: removeBndStack ();
 
       initGrid(0);
     }
@@ -3070,6 +3061,7 @@ namespace Dune
   AlbertaGrid(AlbertaGrid<dim,dimworld> & oldGrid, int proc) :
     mesh_ (0), maxlevel_ (0) , wasChanged_ (false)
     , isMarked_ (false)
+    , vertexMarkerLeaf_(false) // creates LeafMarkerVector
     , nv_ (dim+1) , dof_ (0), myRank_ (proc)
     , hIndexSet_(*this)
     , globalIdSet_( *this )
@@ -3080,11 +3072,8 @@ namespace Dune
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
 
-    ALBERTA MESH * oldMesh = oldGrid.getMesh();
-
-    vertexMarkerLevel_ = new AlbertaMarkerVector (true);
-    vertexMarkerLeaf_  = new AlbertaMarkerVector (false);
-    ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
+    //ALBERTA MESH * oldMesh = oldGrid.getMesh();
+    //ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
 
     DUNE_THROW(AlbertaError,"To be revised!");
   }
@@ -3104,9 +3093,6 @@ namespace Dune
 
     if(leafIndexSet_) delete leafIndexSet_;
 
-    if(vertexMarkerLevel_) delete vertexMarkerLevel_;
-    if(vertexMarkerLeaf_ ) delete vertexMarkerLeaf_;
-
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++)
       if(dofvecs_.elNumbers[i]) ALBERTA free_dof_int_vec(dofvecs_.elNumbers[i]);
 
@@ -3122,6 +3108,15 @@ namespace Dune
     }
 #endif
     if(mesh_) ALBERTA free_mesh(mesh_);
+
+    // delete all created boundary structures
+    while ( !bndStack_.empty() )
+    {
+      ALBERTA BOUNDARY * obj = bndStack_.top();
+      //std::cout << "Delete obj with bound = " << (int) obj->bound << "\n";
+      bndStack_.pop();
+      if( obj ) delete obj;
+    }
   }
 
   // Desctructor
@@ -3138,9 +3133,10 @@ namespace Dune
   {
     if((dim == codim) || ((dim == 3) && (codim == 2)) )
     {
-      if( ! (*vertexMarkerLevel_).up2Date() ) vertexMarkerLevel_->markNewVertices(*this);
+      if( ! (vertexMarkerLevel_[level].up2Date() ) )
+        vertexMarkerLevel_[level].markNewVertices(*this,level);
     }
-    return AlbertaGridLevelIterator<codim,pitype,const MyType> (*this,vertexMarkerLevel_,level,proc);
+    return AlbertaGridLevelIterator<codim,pitype,const MyType> (*this,&vertexMarkerLevel_[level],level,proc);
   }
 
   template < int dim, int dimworld > template<int codim, PartitionIteratorType pitype>
@@ -3156,9 +3152,10 @@ namespace Dune
   {
     if((dim == codim) || ((dim == 3) && (codim == 2)) )
     {
-      if( ! (*vertexMarkerLevel_).up2Date() ) vertexMarkerLevel_->markNewVertices(*this);
+      if( ! (vertexMarkerLevel_[level].up2Date()) )
+        vertexMarkerLevel_[level].markNewVertices(*this,level);
     }
-    return AlbertaGridLevelIterator<codim,All_Partition,const MyType> (*this,vertexMarkerLevel_,level,proc);
+    return AlbertaGridLevelIterator<codim,All_Partition,const MyType> (*this,&vertexMarkerLevel_[level],level,proc);
   }
 
   template < int dim, int dimworld > template<int codim>
@@ -3175,9 +3172,9 @@ namespace Dune
   {
     if((dim == codim) || ((dim == 3) && (codim == 2)) )
     {
-      if( ! (*vertexMarkerLeaf_).up2Date() ) vertexMarkerLeaf_->markNewLeafVertices(*this);
+      if( ! (vertexMarkerLeaf_.up2Date()) ) vertexMarkerLeaf_.markNewLeafVertices(*this);
     }
-    return AlbertaGridLeafIterator<codim, pitype, const MyType> (*this,vertexMarkerLeaf_,level,proc);
+    return AlbertaGridLeafIterator<codim, pitype, const MyType> (*this,&vertexMarkerLeaf_,level,proc);
   }
 
   template < int dim, int dimworld >
@@ -3236,7 +3233,7 @@ namespace Dune
   inline typename AlbertaGrid<dim,dimworld>::LeafIterator
   AlbertaGrid < dim, dimworld >::leafbegin (int level, int proc ) const
   {
-    return AlbertaGridLeafIterator<0, All_Partition, const MyType> (*this,vertexMarkerLeaf_,level,proc);
+    return AlbertaGridLeafIterator<0, All_Partition, const MyType> (*this,&vertexMarkerLeaf_,level,proc);
   }
 
   template < int dim, int dimworld >
@@ -3735,7 +3732,7 @@ namespace Dune
   }
 
   template < int dim, int dimworld >
-  inline bool AlbertaGrid < dim, dimworld >::checkElNew (ALBERTA EL *el) const
+  inline bool AlbertaGrid < dim, dimworld >::checkElNew (const ALBERTA EL *el) const
   {
     // if element is new then entry in dofVec is 1
     return (elNewVec_[el->dof[dof_][nv_]] > 0);
@@ -3851,13 +3848,13 @@ namespace Dune
 
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::getElementNumber ( ALBERTA EL * el ) const
+  inline int AlbertaGrid < dim, dimworld >::getElementNumber ( const ALBERTA EL * el ) const
   {
     return hIndexSet_.getIndex(el,0,Int2Type<dim>());
   };
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::getEdgeNumber ( ALBERTA EL * el , int i ) const
+  inline int AlbertaGrid < dim, dimworld >::getEdgeNumber ( const ALBERTA EL * el , int i ) const
   {
     assert(dim == 3);
     // codim of edges is 2 therefore dim-2
@@ -3865,7 +3862,7 @@ namespace Dune
   };
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::getVertexNumber ( ALBERTA EL * el , int vx ) const
+  inline int AlbertaGrid < dim, dimworld >::getVertexNumber ( const ALBERTA EL * el , int vx ) const
   {
     return hIndexSet_.getIndex(el,vx,Int2Type<0>());
   };
@@ -3880,8 +3877,11 @@ namespace Dune
     maxlevel_ = ALBERTA AlbertHelp::calcMaxLevel(mesh_);
 
     // unset up2Dat status, if lbegin is called then this status is updated
-    vertexMarkerLevel_->unsetUp2Date();
-    vertexMarkerLeaf_->unsetUp2Date();
+    for(int l=0; l<maxlevel_; l++)
+      vertexMarkerLevel_[l].unsetUp2Date();
+
+    // unset up2Dat status, if leafbegin is called then this status is updated
+    vertexMarkerLeaf_.unsetUp2Date();
 
     // if levelIndexSet exists, then update now
     for(unsigned int i=0; i<levelIndexVec_.size(); i++)
@@ -3961,8 +3961,11 @@ namespace Dune
   readGridXdr (const std::basic_string<char> filename, albertCtype & time )
   {
     const char * fn = filename.c_str();
+
+    ALBERTA AlbertHelp :: initBndStack( &bndStack_ );
     mesh_ = (ALBERTA read_mesh_xdr (fn , &time , ALBERTA AlbertHelp::initLeafData ,
                                     ALBERTA AlbertHelp::initBoundary) );
+    ALBERTA AlbertHelp :: removeBndStack ();
 
     if (mesh_ == 0)
       DUNE_THROW(AlbertaIOError, "could not open grid file " << filename);
@@ -4029,13 +4032,20 @@ namespace Dune
 
     mesh_ = ALBERTA get_mesh("AlbertaGrid", ALBERTA AlbertHelp::initDofAdmin<dim>,
                              ALBERTA AlbertHelp::initLeafData);
+
+    ALBERTA AlbertHelp :: initBndStack( &bndStack_ );
     ALBERTA read_macro(mesh_, filename.c_str(), ALBERTA AlbertHelp::initBoundary);
+    ALBERTA AlbertHelp :: removeBndStack ();
 
     if( !readParameter(filename,"Time",time) )
       time = 0.0;
 
-    vertexMarkerLevel_ = new AlbertaMarkerVector (true);  assert(vertexMarkerLevel_);
-    vertexMarkerLeaf_  = new AlbertaMarkerVector (false); assert(vertexMarkerLeaf_);
+    // unset up2Dat status, if lbegin is called then this status is updated
+    for(int l=0; l<MAXL; l++) vertexMarkerLevel_[l].unsetUp2Date();
+
+    // unset up2Dat status, if leafbegin is called then this status is updated
+    vertexMarkerLeaf_.unsetUp2Date();
+
     ALBERTA AlbertHelp::initIndexManager_elmem_cc(indexStack_);
 
     initGrid(myRank_);
