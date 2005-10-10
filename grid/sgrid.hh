@@ -198,43 +198,6 @@ namespace Dune {
     void make (FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As) { this->realGeometry.make(__As); }
   };
 
-  template <class GridImp>
-  class SBoundaryEntity
-    : public BoundaryEntityDefault <GridImp,SBoundaryEntity>
-  {
-    enum { dim = GridImp::dimension };
-    enum { dimworld = GridImp::dimensionworld };
-  public:
-    typedef typename GridImp::template Codim<0>::Geometry Geometry;
-
-    SBoundaryEntity() : elem_(SGeometry<dim,dimworld,const GridImp>()) {}
-
-    SBoundaryEntity(const SBoundaryEntity & rhs) :
-      outerPoint_(rhs.outerPoint_),
-      elem_(SGeometry<dim,dimworld,const GridImp>())
-    {};
-
-    SBoundaryEntity & operator= (const SBoundaryEntity & b)
-    {
-      outerPoint_ = b.outerPoint_;
-    }
-
-    //! return id of boundary segment
-    int id () const { return -1; }
-
-    //! return true if ghost cell was calced
-    bool hasGeometry () const { return false; };
-
-    //! return outer ghost cell
-    Geometry & geometry() const { return elem_; };
-
-    //! return outer barycenter of ghost cell
-    FieldVector<sgrid_ctype, dimworld> & outerPoint () { return outerPoint_; };
-  private:
-    FieldVector<sgrid_ctype, dimworld> outerPoint_;
-    Geometry elem_;
-  };
-
   //************************************************************************
   /*! SEntityBase contains the part of SEntity that can be defined
      without specialization. This is the base for all SEntity classes with dim>0.
@@ -636,7 +599,6 @@ namespace Dune {
   public:
     typedef typename GridImp::template Codim<0>::Entity Entity;
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
-    typedef typename GridImp::template Codim<0>::BoundaryEntity BoundaryEntity;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     //! know your own dimension
@@ -664,7 +626,10 @@ namespace Dune {
 
     //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
     bool boundary () const;
-    const BoundaryEntity & boundaryEntity () const { return boundaryEntity_; };
+    int boundaryId () const {
+#warning please implement a course grid boundary segment id
+      return 0;
+    };
     //! return true if neighbor on this level exists
     bool neighbor () const;
 
@@ -729,7 +694,6 @@ namespace Dune {
     mutable SMakeableGeometry<dim-1,dim,const GridImp> is_self_local;    //!< intersection in own local coordinates
     mutable SMakeableGeometry<dim-1,dimworld,const GridImp> is_global;   //!< intersection in global coordinates, map consistent with is_self_local
     mutable SMakeableGeometry<dim-1,dim,const GridImp> is_nb_local;      //!< intersection in neighbors local coordinates
-    const SBoundaryEntity<GridImp> boundaryEntity_; //!< BoundaryEntity , to be annihilated
   };
 
   //************************************************************************
@@ -966,7 +930,7 @@ namespace Dune {
   struct SGridFamily
   {
     typedef GridTraits<dim,dimworld,Dune::SGrid<dim,dimworld>,
-        SGeometry,SEntity,SBoundaryEntity,
+        SGeometry,SEntity,
         SEntityPointer,SLevelIterator,
         SIntersectionIterator,SHierarchicIterator,
         SLevelIterator,
