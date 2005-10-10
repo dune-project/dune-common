@@ -1261,6 +1261,8 @@ namespace Dune
     done_ = ( org.done_ );
     //if( done_ ) this->done();
     (*entity_).setEntity( *(org.entity_) );
+
+    return *this;
   }
 
   template<int codim, class GridImp >
@@ -1426,6 +1428,8 @@ namespace Dune
       virtualEntity_.setEntity( org.virtualEntity_ );
     else
       this->done();
+
+    return *this;
   }
 
   template< class GridImp >
@@ -1655,6 +1659,8 @@ namespace Dune
     if(fakeSelf_)
       this->grid_.interSelfProvider_.freeObjectEntity(fakeSelf_);
     fakeSelf_ = 0;
+
+    return *this;
   }
 
   template< class GridImp >
@@ -2028,6 +2034,8 @@ namespace Dune
       assert( this->grid_.hierarchicIndexSet().index ( virtualEntity_ )
               == this->grid_.hierarchicIndexSet().index ( org.virtualEntity_ ) );
     }
+
+    return *this;
   }
 
   // Make LevelIterator with point to element from previous iterations
