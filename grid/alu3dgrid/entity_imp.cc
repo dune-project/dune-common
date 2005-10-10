@@ -396,7 +396,7 @@ namespace Dune {
     // return subIndex of given edge
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
-      // get hedge1 correspong to dune reference element and return number
+      // get hedge1 corresponding to dune reference element and return number
       return elem.myhedge1( Topo::dune2aluEdge(i) )->getIndex();
     }
   };
@@ -405,15 +405,11 @@ namespace Dune {
   template <class IMPLElemType>
   struct IndexWrapper<IMPLElemType, hexa, 2>
   {
+    typedef ElementTopologyMapping<hexa> Topo;
+
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
-      dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
-
-      assert(false); // just copied from tetra specialisation, definitely wrong
-      if(i<3)
-        return elem.myhface4(0)->myhedge1(i)->getIndex();
-      else
-        return elem.myhface4(i-2)->myhedge1(i-3)->getIndex();
+      return elem.myhedge1( Topo::dune2aluEdge(i) )->getIndex();
     }
   };
 

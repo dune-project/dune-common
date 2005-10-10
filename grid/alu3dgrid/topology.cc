@@ -20,8 +20,8 @@ namespace Dune {
 
   template <>
   const int ElementTopologyMapping<hexa>::
-  dune2aluEdge_[EntityCount<hexa>::numEdges] = {10, 9, 7, 8, 1, 3,
-                                                6, 4, 0, 2, 7, 5};
+  dune2aluEdge_[EntityCount<hexa>::numEdges] = {7, 2, 6, 4, 5, 0,
+                                                11, 8, 1, 3, 9, 10};
 
   template <>
   const int ElementTopologyMapping<tetra>::
@@ -29,8 +29,8 @@ namespace Dune {
 
   template <>
   const int ElementTopologyMapping<hexa>::
-  alu2duneEdge_[EntityCount<hexa>::numEdges] = {8, 4, 9, 5, 7, 11,
-                                                6, 10, 3, 1, 0, 2};
+  alu2duneEdge_[EntityCount<hexa>::numEdges] = {5, 8, 1, 9, 3, 4,
+                                                2, 0, 7, 10, 11, 6};
 
   template <>
   const int ElementTopologyMapping<tetra>::
