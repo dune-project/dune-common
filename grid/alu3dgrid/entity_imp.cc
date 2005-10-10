@@ -391,15 +391,13 @@ namespace Dune {
   template <class IMPLElemType>
   struct IndexWrapper<IMPLElemType, tetra, 2>
   {
+    typedef ElementTopologyMapping<tetra> Topo;
+
+    // return subIndex of given edge
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
-      dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
-      if(i<3)
-        return elem.myhface3(0)->myhedge1(i)->getIndex();
-      else
-        // * should probably be:
-        // elem.myhface3(i-2)->myhedge1(0)->getIndex()
-        return elem.myhface3(i-2)->myhedge1(i-3)->getIndex();
+      // get hedge1 correspong to dune reference element and return number
+      return elem.myhedge1( Topo::dune2aluEdge(i) )->getIndex();
     }
   };
 
@@ -437,14 +435,12 @@ namespace Dune {
     }
   };
 
+  // this method os deprecated
   template<int dim, class GridImp>
   template<int cc>
   inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
   {
-    //assert(false); // this method is to be removed soon
-
-    //assert(cc == dim);
-    dwarn << "Test this shit in: " << __FILE__ << " line: " <<  __LINE__ << "\n";
+    dwarn << "This method is deprecated: " << __FILE__ << " line: " <<  __LINE__ << "\n";
     assert(item_ != 0);
     typedef typename  ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElType;
     return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_ ,i);
@@ -454,8 +450,6 @@ namespace Dune {
   template<int cc>
   inline int ALU3dGridEntity<0,dim,GridImp> :: getSubIndex (int i) const
   {
-    //assert(cc == dim);
-    dwarn << "Test this shit in: " << __FILE__ << " line: " <<  __LINE__ << "\n";
     assert(item_ != 0);
     typedef typename  ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElType;
     return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_ ,i);
