@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_MAPPER2_HH__
-#define __DUNE_MAPPER2_HH__
+#ifndef DUNE_MAPPER2_HH
+#define DUNE_MAPPER2_HH
 
 #include <iostream>
 #include <dune/common/exceptions.hh>

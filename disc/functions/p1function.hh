@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_P1FUNCTION_HH__
-#define __DUNE_P1FUNCTION_HH__
+#ifndef DUNE_P1FUNCTION_HH
+#define DUNE_P1FUNCTION_HH
 
 //C++ includes
 #include <new>

@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_CAPABILITIES_HH__
-#define __DUNE_CAPABILITIES_HH__
+#ifndef DUNE_CAPABILITIES_HH
+#define DUNE_CAPABILITIES_HH
 
 namespace Dune
 {
@@ -56,4 +56,4 @@ namespace Dune
 
 }
 
-#endif // __DUNE_CAPABILITIES_HH__
+#endif // DUNE_CAPABILITIES_HH

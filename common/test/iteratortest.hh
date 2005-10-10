@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_ITERATORTEST_HH__
-#define __DUNE_ITERATORTEST_HH__
+#ifndef DUNE_ITERATORTEST_HH
+#define DUNE_ITERATORTEST_HH
 #include <iostream>
 #include <algorithm>
 

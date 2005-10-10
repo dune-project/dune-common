@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_SIMPLEXSHAPEFUNCTIONS_HH__
-#define __DUNE_SIMPLEXSHAPEFUNCTIONS_HH__
+#ifndef DUNE_SIMPLEXSHAPEFUNCTIONS_HH
+#define DUNE_SIMPLEXSHAPEFUNCTIONS_HH
 
 #include <iostream>
 #include "common/fvector.hh"

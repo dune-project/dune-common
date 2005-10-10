@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_ITERATORFACADETEST_HH__
-#define __DUNE_ITERATORFACADETEST_HH__
+#ifndef DUNE_ITERATORFACADETEST_HH
+#define DUNE_ITERATORFACADETEST_HH
 #include <dune/common/iteratorfacades.hh>
 #include <dune/common/genericiterator.hh>
 #include <dune/common/typetraits.hh>

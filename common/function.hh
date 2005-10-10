@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_FUNCTION_HH__
-#define __DUNE_FUNCTION_HH__
+#ifndef DUNE_FUNCTION_HH
+#define DUNE_FUNCTION_HH
 
 #include <dune/common/mapping.hh>
 #include <dune/common/fvector.hh>

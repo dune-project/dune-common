@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_DISCRETEOPERATORIMP_HH__
-#define __DUNE_DISCRETEOPERATORIMP_HH__
+#ifndef DUNE_DISCRETEOPERATORIMP_HH
+#define DUNE_DISCRETEOPERATORIMP_HH
 
 #include <dune/fem/common/discreteoperator.hh>
 #include <dune/fem/common/localoperator.hh>

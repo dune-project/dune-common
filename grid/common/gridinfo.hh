@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_GRIDINFO_HH__
-#define __DUNE_GRIDINFO_HH__
+#ifndef DUNE_GRIDINFO_HH
+#define DUNE_GRIDINFO_HH
 
 #include <iostream>
 #include <common/exceptions.hh>

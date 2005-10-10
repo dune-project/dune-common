@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_SPMATRIX_HH
-#define __DUNE_SPMATRIX_HH
+#ifndef DUNE_SPMATRIX_HH
+#define DUNE_SPMATRIX_HH
 
 #ifdef HAVE_SUPERLU
 #include <dsp_defs.h>

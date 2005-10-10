@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE__DGSPACE_HH__
-#define __DUNE__DGSPACE_HH__
+#ifndef DUNE__DGSPACE_HH
+#define DUNE__DGSPACE_HH
 
 #include <dune/grid/common/grid.hh>
 

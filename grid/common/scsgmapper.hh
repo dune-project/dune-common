@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_SCSGMAPPER_HH__
-#define __DUNE_SCSGMAPPER_HH__
+#ifndef DUNE_SCSGMAPPER_HH
+#define DUNE_SCSGMAPPER_HH
 
 #include <iostream>
 #include "mapper.hh"

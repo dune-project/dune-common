@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_MCMGMAPPER_HH__
-#define __DUNE_MCMGMAPPER_HH__
+#ifndef DUNE_MCMGMAPPER_HH
+#define DUNE_MCMGMAPPER_HH
 
 #include <iostream>
 #include <map>

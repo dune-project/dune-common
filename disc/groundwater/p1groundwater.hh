@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef __DUNE_P1GROUNDWATER_HH__
-#define __DUNE_P1GROUNDWATER_HH__
+#ifndef DUNE_P1GROUNDWATER_HH
+#define DUNE_P1GROUNDWATER_HH
 
 #include <iostream>
 #include <iomanip>
