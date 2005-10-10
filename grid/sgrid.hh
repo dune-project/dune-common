@@ -119,7 +119,7 @@ namespace Dune {
     sgrid_ctype integrationElement (const FieldVector<sgrid_ctype, mydim>& local) const;
 
     //! can only be called for dim=dimworld!
-    const FieldMatrix<sgrid_ctype,mydim,mydim>& jacobianInverse (const FieldVector<sgrid_ctype, mydim>& local) const;
+    const FieldMatrix<sgrid_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<sgrid_ctype, mydim>& local) const;
 
     //! print internal data
     void print (std::ostream& ss, int indent) const;
@@ -393,7 +393,7 @@ namespace Dune {
     //! return true if the entity is leaf
     bool isLeaf () const
     {
-      return ( this->grid->maxlevel() == level() );
+      return ( this->grid->maxLevel() == level() );
     }
 
     /*! Location of this element relative to the reference element element of the father.
@@ -407,14 +407,14 @@ namespace Dune {
      */
     const Geometry& geometryInFather () const;
 
-    /*! Inter-level access to son elements on higher levels<=maxlevel.
+    /*! Inter-level access to son elements on higher levels<=maxLevel.
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
      */
-    HierarchicIterator hbegin (int maxlevel) const;
+    HierarchicIterator hbegin (int maxLevel) const;
 
     //! Returns iterator to one past the last son
-    HierarchicIterator hend (int maxlevel) const;
+    HierarchicIterator hend (int maxLevel) const;
 
     // members specific to SEntity
     //! constructor
@@ -561,13 +561,13 @@ namespace Dune {
        the iteration will stop when both iterators have the same id AND the
        stack is empty
      */
-    SHierarchicIterator (GridImp* _grid, const SEntity<0,GridImp::dimension,GridImp>& _e, int _maxlevel, bool makeend);
+    SHierarchicIterator (GridImp* _grid, const SEntity<0,GridImp::dimension,GridImp>& _e, int _maxLevel, bool makeend);
 
     //   const SHierarchicIterator<GridImp>&
     //   operator = (const SHierarchicIterator<GridImp>& i)
     //     {
     //       static_cast<SEntityPointer<0,GridImp>&>(*this) = i;
-    //       maxlevel = i.maxlevel;
+    //       maxLevel = i.maxLevel;
     //       orig_l = i.orig_l;
     //       orig_id = i.orig_id;
     //       stack = i.stack;
@@ -575,7 +575,7 @@ namespace Dune {
     //     }
 
   private:
-    int maxlevel;              //!< maximum level of elements to be processed
+    int maxLevel;              //!< maximum level of elements to be processed
     int orig_l, orig_id;       //!< element where begin was called (the root of the tree to be processed)
 
     FiniteStack<SHierarchicStackElem,GridImp::MAXL> stack;    //!< stack holding elements to be processed
@@ -677,6 +677,8 @@ namespace Dune {
       ne = it.ne;
       count = it.count;
       make(count);
+
+      return *this;
     }
 
   private:
@@ -966,8 +968,8 @@ namespace Dune {
     GridIdentifier type() const { return SGrid_Id; };
 
     /*! Return maximum level defined in this grid. Levels are numbered
-          0 ... maxlevel with 0 the coarsest level.   */
-    int maxlevel() const;
+          0 ... maxLevel with 0 the coarsest level.   */
+    int maxLevel() const;
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
@@ -1037,7 +1039,7 @@ namespace Dune {
     //! number of leaf entities per codim in this process
     int size (int codim) const
     {
-      return size(maxlevel(),codim);
+      return size(maxLevel(),codim);
     }
 
     //! number of entities per level, codim and geometry type in this process
@@ -1068,7 +1070,7 @@ namespace Dune {
     //! number of leaf entities per codim and geometry type in this process
     int size (int codim, GeometryType type) const
     {
-      return size(maxlevel(),codim,type);
+      return size(maxLevel(),codim,type);
     }
 
 
@@ -1168,7 +1170,7 @@ namespace Dune {
 
     const typename Traits::LeafIndexSet& leafIndexSet() const
     {
-      return *(indexsets[maxlevel()]);
+      return *(indexsets[maxLevel()]);
     }
 
   private:
