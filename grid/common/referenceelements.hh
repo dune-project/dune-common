@@ -19,11 +19,11 @@
 namespace Dune
 {
   /**
-   * @defgroup GridReferenceElements Reference Elements
-   * @ingroup Grid
-   * @brief Classes describing the geometry of the reference elements.
-   *
-   * Every entity of a grid is obtained by a mapping from the some reference element. The topology
+     @defgroup GridReferenceElements Reference Elements
+     @ingroup Grid
+     @brief Classes describing the geometry of the reference elements.
+
+     Every entity of a grid is obtained by a mapping from the some reference element. The topology
      of the reference elements needs only to be described once. The reference element describes
      how an entity is built up hierarchically from entities of lower codimension and what the types of these
      lower-dimensional entities are.
@@ -39,22 +39,11 @@ namespace Dune
          \image html pyramid.png "Pyramid reference element."
 
          Note that the cube reference elements are available for any dimension.
-
    */
   /**
-   * @addtogroup GridReferenceElements
-   *
-   * @{
+      @addtogroup GridReferenceElements
+      @{
    */
-
-  /** @file
-   * @author Peter Bastian
-   * @brief Provides the different reference elements
-   *
-   */
-
-
-
 
   /***********************************************************
   * Interface for reference elements

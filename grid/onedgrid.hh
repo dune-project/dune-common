@@ -183,7 +183,7 @@ namespace Dune {
   /**
      \brief [<em> provides \ref Dune::Grid </em>]
      Onedimensional adaptive grid
-     \ingroup GridInterface
+     \ingroup GridImplementations
 
      This implementation of the grid interface provides one-dimensional
      grids only.  No matter what the values of dim and dimworld may be,

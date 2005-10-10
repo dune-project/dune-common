@@ -1262,7 +1262,7 @@ namespace Dune
      \brief Provides the simplicial meshes of the finite element tool box
      \brief ALBERTA (http://www.alberta-fem.de/)
      \brief written by Kunibert Siebert and Alfred Schmidt.
-     \ingroup GridInterface
+     \ingroup GridImplementations
 
      This is one implementation of the grid interface using the
      the finite elemente tool box ALBERTA ( ALBERTA was written

@@ -33,7 +33,8 @@ namespace Dune
         }
      \enddot
 
-     @note @{
+     @{
+     @note
      There a three versions of Dune::Entity. Two of them are
      template specializations:
      \li Dune::Entity<cd,dim,GridImp,EntityImp> (general version)
