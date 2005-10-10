@@ -64,7 +64,7 @@ Unfortunately the commercial <a href="http://www.amiravis.com">Amiramesh</a>
 <li>Download at least version 1.2 of ALBERTA from the ALBERTA homepage
   <a href="http://www.alberta-fem.de">http://www.alberta-fem.de</a> </li>
 
-<li><p>Unpack it in adirectory</p>
+<li><p>Unpack it in a directory</p>
 	   <kbd>tar xzf alberta-1.2.tar.gz</kbd>
     <p>and move to that directory</p>
 	<kbd>cd alberta-1.2</kbd>
@@ -98,7 +98,7 @@ Unfortunately the commercial <a href="http://www.amiravis.com">Amiramesh</a>
 <h3>ALUGrid</h3>
 <ol>
 <li>Download at least version 0.11 of ALUGrid from the <a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">ALUGrid homepage</a>.</li>
-<li><p>Unpack it in adirectory</p>
+<li><p>Unpack it in a directory</p>
 	   <kbd>tar xzf aALUGrid-0.11.tar.gz</kbd>
     <p>and move to that directory</p>
 <kbd>
