@@ -13,6 +13,7 @@ namespace Dune {
   const int ElementTopologyMapping<hexa>::
   dune2aluFace_[EntityCount<hexa>::numFaces] = {4, 2, 5, 3, 0, 1};
 
+  // see gitter_geo.cc in the ALUGrid code for this mapping
   template <>
   const int ElementTopologyMapping<tetra>::
   dune2aluEdge_[EntityCount<tetra>::numEdges] = {0, 3 , 1 , 2 , 4, 5};
