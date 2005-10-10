@@ -40,8 +40,6 @@ typedef Dune::IndexStack<int,10000> IndexManagerType;
 // some extra functions for handling the Albert Mesh
 #include "albertagrid/albertaextra.hh"
 
-//#define DUNE_THROW(E, m) assert(false)
-
 namespace Dune {
   // own exception classes
   class AlbertaError   : public Exception {};
@@ -65,9 +63,6 @@ namespace Dune
   // i.e. double or float
   typedef ALBERTA REAL albertCtype;
 
-  // forward declarations
-  class AlbertaMarkerVector;
-
   template<int codim, int dim, class GridImp> class AlbertaGridEntity;
   template<int codim, PartitionIteratorType pitype, class GridImp> class AlbertaGridTreeIterator;
   template<int codim, PartitionIteratorType pitype, class GridImp> class AlbertaGridLeafIterator;
@@ -78,6 +73,56 @@ namespace Dune
   template<class GridImp>         class AlbertaGridIntersectionIterator;
   template<int dim, int dimworld> class AlbertaGrid;
   template<int dim, int dimworld> class AlbertaGridHierarchicIndexSet;
+
+  //! Class to mark the Vertices on the leaf level
+  //! to visit every vertex only once
+  //! for the LevelIterator codim == dim
+  class AlbertaMarkerVector
+  {
+    friend class AlbertaGrid<2,2>;
+    friend class AlbertaGrid<2,3>;
+    friend class AlbertaGrid<3,3>;
+
+    enum { vxBufferSize_ = 10000 };
+  public:
+    //! create AlbertaMarkerVector for Level or Leaf Iterator, true == LevelIterator
+    //! the vectors stored inside are empty first
+    AlbertaMarkerVector (bool meLevel=true) : up2Date_(false), meLevel_(meLevel) {} ;
+
+    //! return true if vertex is not watched on this element
+    bool notOnThisElement(ALBERTA EL * el, int elIndex, int vertex) const;
+
+    //! return true if edge is not watched on this element
+    bool edgeNotOnElement(ALBERTA EL * el, int elIndex, int edgenum) const;
+
+    //! mark vertices for LevelIterator and given level
+    template <class GridType>
+    void markNewVertices(GridType &grid, int level);
+
+    //! mark vertices for LeafIterator , uses leaf level
+    template <class GridType>
+    void markNewLeafVertices(GridType &grid);
+
+    //! return true if marking is up to date
+    bool up2Date () const { return up2Date_; }
+
+    //! unset up2date flag
+    void unsetUp2Date () { up2Date_ = false; }
+
+    //! print for debugin' only
+    void print() const;
+
+  private:
+    // built in array to mark on which element a vertex is reached
+    Array<int> vec_;
+    Array<int> edgevec_;
+    // number of vertices
+    int numVertex_;
+
+    // true is vertex marker is up to date
+    bool up2Date_;
+    bool meLevel_;
+  };
 
   //**********************************************************************
   //
@@ -1022,7 +1067,7 @@ namespace Dune
 
     //! Constructor making begin iterator
     AlbertaGridTreeIterator(const GridImp & grid,
-                            AlbertaMarkerVector * vec,
+                            const AlbertaMarkerVector * vec,
                             int travLevel,
                             int proc,
                             bool leafIt=false);
@@ -1076,7 +1121,7 @@ namespace Dune
     int vertex_;
 
     // knows on which element a point is viewed
-    AlbertaMarkerVector * vertexMarker_;
+    const AlbertaMarkerVector * vertexMarker_;
 
     // variable for operator++
     bool okReturn_;
@@ -1107,7 +1152,7 @@ namespace Dune
 
     //! Constructor making begin iterator
     AlbertaGridLevelIterator(const GridImp & grid,
-                             AlbertaMarkerVector * vec, int level, int proc) :
+                             const AlbertaMarkerVector * vec, int level, int proc) :
       AlbertaGridTreeIterator<cd,pitype,GridImp> (grid,vec,level,proc)
     {}
 
@@ -1139,7 +1184,7 @@ namespace Dune
 
     //! Constructor making begin iterator
     AlbertaGridLeafIterator(const GridImp & grid,
-                            AlbertaMarkerVector * vec, int level, int proc) :
+                            const AlbertaMarkerVector * vec, int level, int proc) :
       AlbertaGridTreeIterator<codim, pitype, GridImp> (grid,vec,level,proc,true)
     {}
 
@@ -1644,10 +1689,10 @@ namespace Dune
 
   private:
     // needed for VertexIterator, mark on which element a vertex is treated
-    AlbertaMarkerVector * vertexMarkerLevel_;
+    mutable AlbertaMarkerVector vertexMarkerLeaf_;
 
     // needed for VertexIterator, mark on which element a vertex is treated
-    AlbertaMarkerVector * vertexMarkerLeaf_;
+    mutable AlbertaMarkerVector vertexMarkerLevel_[MAXL];
 
     //***********************************************************************
     //  MemoryManagement for Entitys and Geometrys
@@ -1701,16 +1746,16 @@ namespace Dune
 
   public:
     // return true if el is new
-    bool checkElNew ( ALBERTA EL * el ) const;
+    bool checkElNew ( const ALBERTA EL * el ) const;
 
     // read global element number from elNumbers_
-    int getElementNumber ( ALBERTA EL * el ) const;
+    int getElementNumber ( const ALBERTA EL * el ) const;
 
     // read global element number from elNumbers_
-    int getEdgeNumber ( ALBERTA EL * el, int edge ) const;
+    int getEdgeNumber ( const ALBERTA EL * el, int edge ) const;
 
     // read global element number from elNumbers_
-    int getVertexNumber ( ALBERTA EL * el, int vx ) const;
+    int getVertexNumber ( const ALBERTA EL * el, int vx ) const;
 
     //********************************************************************
     //  organisation of the parallelisation
@@ -1751,58 +1796,10 @@ namespace Dune
     //! stores geometry types of this grid
     const std::vector < GeometryType > geomTypes_;
 
+    // stack for storing BOUNDARY objects created during mesh creation
+    std::stack < BOUNDARY * > bndStack_;
   }; // end class AlbertaGrid
 
-
-  // Class to mark the Vertices on the leaf level
-  // to visit every vertex only once
-  // for the LevelIterator codim == dim
-  class AlbertaMarkerVector
-  {
-    friend class AlbertaGrid<2,2>;
-    friend class AlbertaGrid<2,3>;
-    friend class AlbertaGrid<3,3>;
-
-    enum { MAXL = 64 };
-    enum { vxBufferSize_ = 10000 };
-  public:
-    //! create AlbertaMarkerVector for Level or Leaf Iterator, true == LevelIterator
-    AlbertaMarkerVector (bool meLevel) : up2Date_(false), meLevel_(meLevel) {} ;
-
-    //! return true if vertex is not watched on this element
-    bool notOnThisElement(ALBERTA EL * el, int elIndex, int level , int vertex);
-
-    //! return true if edge is not watched on this element
-    bool edgeNotOnElement(ALBERTA EL * el, int elIndex, int level , int edgenum);
-
-    //! mark vertices for LevelIterator
-    template <class GridType>
-    void markNewVertices(GridType &grid);
-
-    //! mark vertices for LeafIterator
-    template <class GridType>
-    void markNewLeafVertices(GridType &grid);
-
-    //! return true if marking is up to date
-    bool up2Date () const { return up2Date_; }
-
-    //! unset up2date flag
-    void unsetUp2Date () { up2Date_ = false; }
-
-    //! print for debugin' only
-    void print();
-
-  private:
-    // built in array to mark on which element a vertex is reached
-    Array<int> vec_[MAXL];
-    Array<int> edgevec_[MAXL];
-    // number of vertices
-    int numVertex_;
-
-    // true is vertex marker is up to date
-    bool up2Date_;
-    bool meLevel_;
-  };
 
   namespace Capabilities
   {
