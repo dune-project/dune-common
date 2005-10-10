@@ -160,9 +160,39 @@ public:
   }
 };
 
-//static TRAVERSE_STACK *freeStack = 0;
-static int stackCount=0;
+template <int dim>
+class AlbertaGridReferenceTopology
+{
+  const int (&edgemap_)[6];
+  int em_[6];
+public:
+  //! create reference topology
+  AlbertaGridReferenceTopology() : edgemap_ (em_)
+  {
+    // the edgemap
+    const int edgemap[6] = {0, 3 , 1 , 2 , 4, 5};
+    for(int i=0; i<6; i++) em_[i] = edgemap[i];
+  }
 
+  //! dune to alberta edge mapping
+  //! this is the id
+  int dune2albertaVertex( int i ) const
+  {
+    return i;
+  }
+
+  //! dune to alberta edge mapping
+  int dune2albertaEdge( int i ) const
+  {
+    assert( i >= 0 );
+    assert( i < 6 );
+    return edgemap_[i];
+  }
+};
+
+//***********************************************************
+// Traverse Stacks
+//***********************************************************
 static inline void initTraverseStack(TRAVERSE_STACK *stack);
 
 inline static TRAVERSE_STACK *getTraverseStack(void)
@@ -255,34 +285,6 @@ inline void copyTraverseStack( TRAVERSE_STACK* stack, TRAVERSE_STACK* org )
   memcpy(stack->save_elinfo_stack,org->save_elinfo_stack,used * sizeof(EL_INFO));
   memcpy(stack->save_info_stack  ,org->save_info_stack,  used * sizeof(U_CHAR));
 
-  /*
-     copy->traverse_mesh = org->traverse_mesh;
-     copy->traverse_level = org->traverse_level;
-     copy->traverse_fill_flag = org->traverse_fill_flag;
-     copy->traverse_mel = org->traverse_mel;
-
-     memcpy(copy->elinfo_stack     ,org->elinfo_stack,     used * sizeof(EL_INFO));
-     memcpy(copy->info_stack       ,org->info_stack,       used * sizeof(U_CHAR));
-     memcpy(copy->save_elinfo_stack,org->save_elinfo_stack,used * sizeof(EL_INFO));
-     memcpy(copy->save_info_stack  ,org->save_info_stack,  used * sizeof(U_CHAR));
-
-     while (copy->stack_size < org->stack_size)
-     {
-     enlargeTraverseStack(copy);
-     }
-
-     int used = org->stack_used;
-     copy->stack_used = used;
-
-     memcpy(copy->elinfo_stack     ,org->elinfo_stack,     used * sizeof(EL_INFO));
-     memcpy(copy->info_stack       ,org->info_stack,       used * sizeof(U_CHAR));
-     memcpy(copy->save_elinfo_stack,org->save_elinfo_stack,used * sizeof(EL_INFO));
-     memcpy(copy->save_info_stack  ,org->save_info_stack,  used * sizeof(U_CHAR));
-
-     copy->save_stack_used = org->save_stack_used;
-     copy->el_count = used;
-   */
-
   return;
 }
 
@@ -331,7 +333,7 @@ inline void printTraverseStack(TRAVERSE_STACK *stack)
 {
   FUNCNAME("printTraverseStack");
   MSG("****************************************************\n");
-  MSG("current stack %8X | size %d, Count = %d \n", stack,stack->stack_size,stackCount);
+  MSG("current stack %8X | size %d \n", stack,stack->stack_size);
   MSG("traverse_level %d \n",stack->traverse_level);
   MSG("traverse_mesh  %8X \n",stack->traverse_mesh);
   MSG("elinfo_stack      = %8X\n",stack->elinfo_stack);
