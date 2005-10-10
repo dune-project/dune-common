@@ -39,7 +39,12 @@ namespace Dune {
     friend class MarkEdges<const GridType,3>;
 
     // only  AlbertaGrid is allowed to create this class
-    AlbertaGridHierarchicIndexSet(const GridType & grid) : grid_( grid ) {}
+    AlbertaGridHierarchicIndexSet(const GridType & grid) : grid_( grid )
+    {
+      // the edgemap
+      const int edgemap[6] = {0, 3 , 1 , 2 , 4, 5};
+      for(int i=0; i<6; i++) edgemap_[i] = edgemap[i];
+    }
   public:
     enum { ncodim = numCodim };
 
@@ -48,7 +53,7 @@ namespace Dune {
     int index (const EntityType & ep) const
     {
       enum { cd = EntityType :: codimension };
-      //std::cout << "codim = "<< cd << "\n";
+      // get real entity
       const AlbertaGridEntity<cd,dim,const GridType> & en = (grid_.template getRealEntity<cd>(ep));
       return getIndex(en.getElInfo()->el, en.getFEVnum(),Int2Type<dim-cd>());
     }
@@ -81,6 +86,10 @@ namespace Dune {
     const GridType & grid_;
     const int * elNumVec_[numVecs];
 
+    // stores edge mapping from Dune edge number to real Alberta edge number
+    int edgemap_[6];
+
+    // stores offset of dof numbers on given elements
     int nv_[numVecs];
     int dof_[numVecs];
 
@@ -97,16 +106,6 @@ namespace Dune {
       if(numVecs > 1) setDofIdentifier<1> (dofvecs);
       if(numVecs > 2) setDofIdentifier<2> (dofvecs);
       if(numVecs > 3) setDofIdentifier<3> (dofvecs);
-
-      /*
-         for(int m=0; m<numVecs; m++)
-         {
-         std::cout << "Size of cd["<<m<<"] = " << size(m) << "\n";
-         for(int i=0; i<size(m); i++)
-          std::cout << elNumVec_[ m ] [i] << " number \n";
-         }
-         std::cout << "Done setting Pointers of vecs\n";
-       */
     }
 
     template <int cd>
@@ -122,6 +121,7 @@ namespace Dune {
 
     // codim = 0 means we get from dim-cd = dim
     // this is the method for the element numbers
+    // --element
     int getIndex ( const ALBERTA EL * el, int i , Int2Type<dim> fake ) const
     {
       enum { cd = 0 };
@@ -132,6 +132,7 @@ namespace Dune {
     enum { cd1 = (dim == 2) ? 1 : 2 };
     // method for face numbers
     // codim = 0 means we get from dim-cd = dim
+    // --face
     int getIndex ( const ALBERTA EL * el, int i , Int2Type<cd1> fake ) const
     {
       enum { cd = 1 };
@@ -145,16 +146,21 @@ namespace Dune {
     enum { cd2 = (dim > 2) ? 1 : 6 };
     // codim = 0 means we get from dim-cd = dim
     // this method we have only in 3d, for edges
+    // --edges
     int getIndex ( const ALBERTA EL * el, int i , Int2Type<cd2> fake ) const
     {
       enum { cd = 2 };
       assert(el);
+
       // dof_[cd] marks the insertion point form which this dofs start
-      // then i is the i-th dof
-      return elNumVec_[cd][ el->dof[ dof_[cd] + i ][ nv_[cd] ] ];
+      // then i is the i-th dof, here we addionally have to use the edge
+      // mapping
+      return elNumVec_[cd][ el->dof[ dof_[cd] + edgemap_[i] ][ nv_[cd] ] ];
     }
 
     // codim = dim  means we get from dim-cd = 0
+    // return index of vertices
+    // --vertex
     int getIndex ( const ALBERTA EL * el, int i , Int2Type<0> fake ) const
     {
       assert(el);
