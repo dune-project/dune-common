@@ -194,6 +194,9 @@ namespace Dune {
     //! Type of the leaf index set
     typedef AdaptiveLeafIndexSet<MyType>           LeafIndexSetImp;
 
+    typedef typename SelectType<elType == tetra,
+        ReferenceSimplex<alu3d_ctype, dim>,
+        ReferenceCube   <alu3d_ctype, dim> >::Type ReferenceElementType;
 
     //! a standard leaf iterator
     typedef ALU3dGridLeafIterator<0, All_Partition, MyType> LeafIteratorImp;
@@ -423,6 +426,7 @@ namespace Dune {
     ALU3DSPACE GitterImplType & myGrid();
     const ALU3DSPACE GitterImplType & myGrid() const;
 
+    const ReferenceElementType & referenceElement() const { return referenceElement_; }
   private:
     //! Copy constructor should not be used
     ALU3dGrid( const MyType & g );
@@ -489,6 +493,10 @@ namespace Dune {
     mutable GeometryProvider geometryProvider_;
     mutable EntityProvider entityProvider_;
     //mutable VertexProvider vertexProvider_;
+
+    // the reference element
+    ReferenceElementType referenceElement_;
+
   }; // end class ALU3dGrid
 
   template <class GridImp, int codim>
