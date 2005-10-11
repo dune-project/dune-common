@@ -19,19 +19,21 @@ namespace Dune {
   const int ElementTopologyMapping<tetra>::
   dune2aluEdge_[EntityCount<tetra>::numEdges] = {0, 3 , 1 , 2 , 4, 5};
 
+  // maps edges in the ALUGrid reference hexa to edges in the Dune Hexa
   template <>
   const int ElementTopologyMapping<hexa>::
-  dune2aluEdge_[EntityCount<hexa>::numEdges] = {7, 2, 6, 4, 5, 0,
-                                                11, 8, 1, 3, 9, 10};
+  dune2aluEdge_[EntityCount<hexa>::numEdges] = {2, 4, 7, 6, 1, 3,
+                                                9, 10, 0, 5, 8, 11};
 
   template <>
   const int ElementTopologyMapping<tetra>::
   alu2duneEdge_[EntityCount<tetra>::numEdges] = {0, 2, 3, 1 , 4, 5} ;
 
+  // inverse mapping of the above dune2aluEdge for hexas
   template <>
   const int ElementTopologyMapping<hexa>::
-  alu2duneEdge_[EntityCount<hexa>::numEdges] = {5, 8, 1, 9, 3, 4,
-                                                2, 0, 7, 10, 11, 6};
+  alu2duneEdge_[EntityCount<hexa>::numEdges] = {8, 4, 0, 5, 1, 9,
+                                                3, 2, 10, 6, 7, 11};
 
   template <>
   const int ElementTopologyMapping<tetra>::
@@ -135,7 +137,6 @@ namespace Dune {
   const int FaceTopologyMapping<hexa>::
   //dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 3, 1, 2};
   dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 1, 3, 2};
-  //dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 1, 3, 2};
 
   // alu traingle face are oriented just the other way then dune faces
   // therefor vertex 1 and 2 are swaped
