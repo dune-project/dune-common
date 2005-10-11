@@ -281,6 +281,10 @@ namespace Dune {
     //! i.e. return global number of vertex i
     template<int cc> int subIndex (int i) const DUNE_DEPRECATED;
 
+    //! return index of sub entity with codim = cc and local number i
+    //! i.e. return global number of vertex i
+    template<int cc> int getSubIndex (int i) const;
+
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
     template <int cc>
@@ -360,10 +364,6 @@ namespace Dune {
 
     //! index is unique within the grid hierachie and per codim
     int getIndex () const;
-
-    //! return index of sub entity with codim = cc and local number i
-    //! i.e. return global number of vertex i
-    template<int cc> int getSubIndex (int i) const;
 
     // corresponding grid
     const GridImp  & grid_;
