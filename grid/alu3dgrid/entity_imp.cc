@@ -3,6 +3,7 @@
 #include "geometry.hh"
 #include "grid.hh"
 #include <dune/common/exceptions.hh>
+#include <dune/grid/common/referenceelements.hh>
 
 namespace Dune {
 
@@ -372,7 +373,8 @@ namespace Dune {
 
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
-      return elem.myhface3(Topo::dune2aluFace(i))->getIndex();
+      return (getFace(elem,i))->getIndex();
+      //return elem.myhface3(Topo::dune2aluFace(i))->getIndex();
     }
   };
 
@@ -466,8 +468,11 @@ namespace Dune {
   template <class GridImp, int dim>
   struct SubEntities<GridImp, dim, 0>
   {
+    typedef ALU3dGridEntity<0,dim,GridImp> EntityType;
+
     static typename ALU3dGridEntity<0,dim,GridImp>::template Codim<0>::EntityPointer
     entity (const GridImp & grid,
+            const EntityType & en,
             const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item,
             int i) {
       return ALU3dGridEntityPointer<0, GridImp>(grid, item, 0);
@@ -479,84 +484,57 @@ namespace Dune {
   struct SubEntities<GridImp,dim,1>
   {
     typedef ElementTopologyMapping<GridImp::elementType> Topo;
+    typedef ALU3dGridEntity<0,dim,GridImp> EntityType;
+    typedef typename GridImp :: ReferenceElementType ReferenceElementType;
 
     static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<1>:: EntityPointer
     entity (const GridImp& grid,
+            const EntityType & en,
             const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item,
-            int i)
+            int face)
     {
       return
-        ALU3dGridEntityPointer<1,GridImp>(grid,
-                                          *(getFace(item, i)),
-                                          item.twist(Topo::dune2aluFace(i)));
+        ALU3dGridEntityPointer<1,GridImp>
+          (grid,
+          *(getFace(item, face)),    // getFace already constains dune2aluFace
+          item.twist(Topo::dune2aluFace(face)));
     }
   };
 
-  // * Unfinished piece of work: to make entity<2> work, one needs to do the
-  // following:
-  // 1. Implement direct access to the edges on the ALUGrid side
-  //    (like item->myvertex(i) one needs item->myhedge1(i))
-  // 2. Implement a transformation from the Dune edge index to the
-  //    corresponding ALU edge index
-  // 3. Implement calculateTwist (by comparing pointers of the adjacent
-  //    vertices obtained once through item->myhedge1 and the corresponding
-  //    item->myvertex as specified by the reference element
-  /*
-     template <class GridImp, int dim>
-     struct SubEntites<GridImp, dim, 2>
-     {
-     typedef typename ALU3dGridEntity<0, dim, GridImp>::template Codim<2>::EntitypPointer ReturnType;
-     typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType ALUElementType;
-     typedef typename SelectType<GridImp::elementType == tetra,
-                                ReferenceSimplex<double, 3>,
-                                ReferenceCube<double, 3> >::Type ReferenceElementType;
-
-     static ReturnType entity(const GridImp& grid,
-                             const ALUElememtType& item,
-                             int i) {
-      assert(false);
-      int ALUIndex = ElementTopo::dune2aluEdge(i);
-      int twist = calculateTwist();
-
-      return ReturnType(grid,
-                       iitem->myhedge1(ALUIndex)),
-                        twist);
-     }
-
-     private:
-     static std::pair<int, int> findEdge() { return std::make_pair(0,0); }
-     static int calculateTwist() { return 0; }
-
-     static ReferenceElementType refElem_;
-     }
-
-     template <class GridImp, int dim>
-     typename SubEntities<GridImp, dim, 2>::ReferenceElementType
-     SubEntities<GridImp, dim, 2>::refElem_;
-   */
   // specialisation for edges
   template <class GridImp, int dim>
   struct SubEntities<GridImp,dim,2>
   {
+    typedef ElementTopologyMapping<GridImp::elementType> Topo;
+    typedef ALU3dGridEntity<0,dim,GridImp> EntityType;
+    typedef typename GridImp::ctype coordType;
+
+    typedef typename GridImp :: ReferenceElementType ReferenceElementType;
+
     static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<2>:: EntityPointer
     entity (const GridImp & grid,
+            const EntityType & en,
             const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item,
             int i)
     {
-      //DUNE_THROW(NotImplemented, "Access to edges not implemented in ALU3dGrid");
-      dwarn << "method not tested yet. ! in:" << __FILE__ << " line:" << __LINE__ << "\n";
+      // get reference element
+      const ReferenceElementType & refElem = grid.referenceElement();
 
-      int dummyTwist = 0;
-      if(i<3)
-      {
-        // return ALU3dGridEntityPointer<2,GridImp> (grid, (*(item.myhface3(0)->myhedge1(i))) );
-        return ALU3dGridEntityPointer<2,GridImp> (grid, *(getFace(item, 0)->myhedge1(i)), dummyTwist);
-      }
-      else
-      {
-        //return ALU3dGridEntityPointer<2,GridImp> (grid, (*(item.myhface3(i-2)->myhedge1(i-3))) );
-        return ALU3dGridEntityPointer<2,GridImp> (grid, *(getFace(item, i-2)->myhedge1(i-3)), dummyTwist );
-      }
+      // get first local vertex number of edge i
+      int l0 = refElem.subEntity(i,2,0,dim);
+
+      // get number of first vertex on edge
+      int v0 = en.template getSubIndex<dim> (l0);
+
+      const typename ALU3dImplTraits<GridImp::elementType>::GEOEdgeType &
+      edge = *(item.myhedge1(Topo::dune2aluEdge(i)));
+
+      int vx0 = edge.myvertex(0)->getIndex();
+
+      int twst = 0;
+      // check whether vertex number are equal, otherwise twist is 1
+      if( v0 != vx0 ) twst = 1;
+      return ALU3dGridEntityPointer<2,GridImp> (grid, edge, twst );
     }
   };
 
@@ -565,15 +543,16 @@ namespace Dune {
   struct SubEntities<GridImp,dim,3>
   {
     typedef ElementTopologyMapping<GridImp::elementType> Topo;
+    typedef ALU3dGridEntity<0,dim,GridImp> EntityType;
 
     static typename ALU3dGridEntity<0,dim,GridImp> :: template Codim<3>:: EntityPointer
     entity (const GridImp & grid,
+            const EntityType & en,
             const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item,
             int i)
     {
       return ALU3dGridEntityPointer<3,GridImp>
-               (grid,
-               *item.myvertex(Topo::dune2aluVertex(i)), 0);
+               (grid, *item.myvertex(Topo::dune2aluVertex(i)), 0);
     }
   };
 
@@ -582,7 +561,7 @@ namespace Dune {
   inline typename ALU3dGridEntity<0,dim,GridImp>::template Codim<cc>:: EntityPointer
   ALU3dGridEntity<0,dim,GridImp> :: entity (int i) const
   {
-    return SubEntities<GridImp,dim,cc>::entity(grid_,*item_,i);
+    return SubEntities<GridImp,dim,cc>::entity(grid_,*this,*item_,i);
   }
 
   //**** end method entity *********
