@@ -35,11 +35,6 @@ namespace Dune {
       , globalIdSet_(*this), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
   {
-    if( myRank_ <= 0 )
-    {
-      checkMacroGrid ( elType , macroTriangFilename );
-    }
-
     mygrid_ = new ALU3DSPACE GitterImplType (macroTriangFilename
 #ifdef _ALU3DGRID_PARALLEL_
                                              , mpAccess_
@@ -56,9 +51,10 @@ namespace Dune {
     dverb << "************************************************\n";
 
 #endif
+    this->checkMacroGrid ();
 
+    // print size of grid
     myGrid().printsize();
-
 
     postAdapt();
     calcExtras();
@@ -924,6 +920,22 @@ namespace Dune {
     return ALU3dGridEntityFactory<MyType,cd>::freeEntity(entityProvider_, e);
   }
 
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  inline void ALU3dGrid<dim, dimworld, elType>::checkMacroGrid()
+  {
+    ALU3DSPACE BSLeafIteratorMaxLevel w ( myGrid() ) ;
+    for (w->first () ; ! w->done () ; w->next ())
+    {
+      ALU3dGridElementType type = (ALU3dGridElementType) w->item().type();
+      if( type != elType )
+      {
+        derr << "\nERROR: " << elType2Name(elType) << " Grid tries to read a ";
+        derr << elType2Name(type) << " macro grid file! \n\n";
+        assert(type == elType);
+        abort();
+      }
+    }
+  }
 
   inline const char * elType2Name( ALU3dGridElementType elType )
   {
@@ -935,34 +947,4 @@ namespace Dune {
     default     : return "Error";
     }
   }
-
-  inline bool checkMacroGrid ( ALU3dGridElementType elType , const std::string filename )
-  {
-    std::fstream file (filename.c_str(),std::ios::in);
-    if( file )
-    {
-      std::string str;
-      file >> str;
-
-      std::string cmp ("!");
-      cmp += elType2Name( elType );
-
-      if (str != cmp)
-      {
-        derr << "ALU3DGrid<" << elType2Name(elType) << "> tries to read MacroGridFile with < " << str
-             << " >. Identifier should be < " << cmp << " >!\n";
-        //abort();
-      }
-
-      file.close();
-      return true;
-    }
-    else
-    {
-      derr << "Couldn't open macro grid file < " << filename << " > !\n";
-      abort();
-    }
-    return false;
-  }
-
 } // end namespace Dune
