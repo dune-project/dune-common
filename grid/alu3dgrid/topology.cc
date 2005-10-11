@@ -135,7 +135,6 @@ namespace Dune {
 
   template <>
   const int FaceTopologyMapping<hexa>::
-  //dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 3, 1, 2};
   dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 1, 3, 2};
 
   // alu traingle face are oriented just the other way then dune faces
@@ -146,7 +145,7 @@ namespace Dune {
 
   template <>
   const int FaceTopologyMapping<hexa>::
-  alu2duneVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 2, 3, 1};
+  alu2duneVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 1, 3, 2};
 
   template <>
   const int FaceTopologyMapping<tetra>::
