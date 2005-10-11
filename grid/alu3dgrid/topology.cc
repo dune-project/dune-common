@@ -59,9 +59,9 @@ namespace Dune {
   template <>
   const int ElementTopologyMapping<tetra>::
   dune2aluFaceVertex_[numFaces][numVerticesPerFace] = {{0, 2, 1},
-                                                       {1, 0, 2},
                                                        {0, 2, 1},
-                                                       {0, 1, 2}};
+                                                       {0, 2, 1},
+                                                       {0, 2, 1}};
 
   template <>
   const int ElementTopologyMapping<hexa>::
@@ -75,9 +75,9 @@ namespace Dune {
   template <>
   const int ElementTopologyMapping<tetra>::
   alu2duneFaceVertex_[numFaces][numVerticesPerFace] = {{0, 2, 1},
-                                                       {1, 0, 2},
                                                        {0, 2, 1},
-                                                       {0, 1, 2}};
+                                                       {0, 2, 1},
+                                                       {0, 2, 1}};
 
   template <>
   const int ElementTopologyMapping<hexa>::
@@ -117,17 +117,21 @@ namespace Dune {
            (9 - index + faceTwist)%4 : (4 + index - faceTwist)%4;
   }
 
+  // alu traingle face are oriented just the other way then dune faces
+  // therefor vertex 1 and 2 are swaped
   template <>
   const int FaceTopologyMapping<tetra>::
-  dune2aluVertex_[EntityCount<tetra>::numVerticesPerFace] = {0, 1, 2};
+  dune2aluVertex_[EntityCount<tetra>::numVerticesPerFace] = {0, 2, 1};
 
   template <>
   const int FaceTopologyMapping<hexa>::
   dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 3, 1, 2};
 
+  // alu traingle face are oriented just the other way then dune faces
+  // therefor vertex 1 and 2 are swaped
   template <>
   const int FaceTopologyMapping<tetra>::
-  alu2duneVertex_[EntityCount<tetra>::numVerticesPerFace] = {0, 1, 2};
+  alu2duneVertex_[EntityCount<tetra>::numVerticesPerFace] = {0, 2, 1};
 
   template <>
   const int FaceTopologyMapping<hexa>::
