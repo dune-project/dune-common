@@ -8,10 +8,27 @@
 //- Dune includes
 #include <dune/common/stdstreams.hh>
 #include <dune/grid/common/grid.hh>
+#include <dune/grid/common/indexidset.hh>
 
 //- Local includes
 
 namespace Dune {
+
+  //! HierarchicIndexSet uses LeafIterator tpyes for all codims and partition types
+  template <class GridImp>
+  struct AlbertaGridHierarchicIteratorTypes
+  {
+    //! The types of the iterator
+    template<int cd>
+    struct Codim
+    {
+      template<PartitionIteratorType pitype>
+      struct Partition
+      {
+        typedef typename GridImp::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator Iterator;
+      };
+    };
+  };
 
   // Forward declarations
   template <int dim, int dimworld> class AlbertaGrid;
@@ -19,19 +36,16 @@ namespace Dune {
   template <class GridType, int dim> struct MarkEdges;
 
   template <int dim, int dimworld>
-  class AlbertaGridHierarchicIndexSet
+  class AlbertaGridHierarchicIndexSet :
+    public IndexSet<AlbertaGrid<dim,dimworld>,
+        AlbertaGridHierarchicIndexSet<dim,dimworld>,
+        AlbertaGridHierarchicIteratorTypes<AlbertaGrid<dim,dimworld> > >
+
   {
     typedef AlbertaGrid<dim,dimworld> GridType;
     typedef typename GridType :: Traits :: template Codim<0>::Entity EntityCodim0Type;
     enum { numVecs  = AlbertHelp::numOfElNumVec };
     enum { numCodim = dim + 1 };
-
-    template <int cd>
-    struct Codim
-    {
-      typedef AlbertaGridEntity<cd,dim,const GridType> RealEntityType;
-      typedef typename Dune::Entity<cd,dim,const GridType,AlbertaGridEntity> EntityType;
-    };
 
     // all classes that are allowed to call private functions
     friend class AlbertaGrid<dim,dimworld>;
@@ -57,9 +71,6 @@ namespace Dune {
     template <int cd>
     int subIndex (const EntityCodim0Type & en, int i) const
     {
-      //std::cout << "get Subindex for cd = " << cd << "\n";
-      // doesn't work otherwise, but stalls gridcheck
-      // assert(cd == dim);
       return getIndex((grid_.template getRealEntity<0>(en)).getElInfo()->el
                       ,i,Int2Type<dim-cd>());
     }
@@ -75,6 +86,24 @@ namespace Dune {
     {
       // returns all simplex
       return grid_.geomTypes(codim);
+    }
+
+    /** @brief Iterator to one past the last entity of given codim for partition type
+     */
+    template<int cd, PartitionIteratorType pitype>
+    typename AlbertaGridHierarchicIteratorTypes<GridType>::template Codim<cd>::
+    template Partition<pitype>::Iterator end () const
+    {
+      return grid_.template leafend<cd,pitype> ();
+    }
+
+    /** @brief Iterator to first entity of given codimension and partition type.
+     */
+    template<int cd, PartitionIteratorType pitype>
+    typename AlbertaGridHierarchicIteratorTypes<GridType>::template Codim<cd>::
+    template Partition<pitype>::Iterator begin () const
+    {
+      return grid_.template leafbegin<cd,pitype> ();
     }
 
   private:
