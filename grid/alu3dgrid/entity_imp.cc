@@ -244,6 +244,7 @@ namespace Dune {
        }
        std::cout << std::endl;
      */
+
   }
 
   template<int dim, class GridImp>
@@ -521,19 +522,20 @@ namespace Dune {
       const ReferenceElementType & refElem = grid.referenceElement();
 
       // get first local vertex number of edge i
-      int l0 = refElem.subEntity(i,2,0,dim);
+      int localNum = refElem.subEntity(i,2,0,dim);
 
       // get number of first vertex on edge
-      int v0 = en.template getSubIndex<dim> (l0);
+      int v = en.template getSubIndex<dim> (localNum);
 
+      // get the hedge object
       const typename ALU3dImplTraits<GridImp::elementType>::GEOEdgeType &
       edge = *(item.myhedge1(Topo::dune2aluEdge(i)));
 
-      int vx0 = edge.myvertex(0)->getIndex();
+      int vx = edge.myvertex(0)->getIndex();
 
-      int twst = 0;
       // check whether vertex number are equal, otherwise twist is 1
-      if( v0 != vx0 ) twst = 1;
+      int twst = (v != vx) ? 1 : 0;
+
       return ALU3dGridEntityPointer<2,GridImp> (grid, edge, twst );
     }
   };
