@@ -65,13 +65,13 @@ namespace Dune {
     //! build geometry out of different ALU3dGrid Geometrys
     //! ItemType are HElementType, HFaceType, HEdgeType and VertexType
     template <class ItemType>
-    bool buildGeom(const ItemType & item, int twist = 0)
+    bool buildGeom(const ItemType & item, int twist = 0, int face = -1 )
     {
-      return this->realGeometry.buildGeom(item, twist);
+      return this->realGeometry.buildGeom(item, twist,face);
     }
 
-    bool buildGeom(const ALU3DSPACE HFaceType& item, int twist) {
-      return this->realGeometry.buildGeom(item, twist);
+    bool buildGeom(const ALU3DSPACE HFaceType& item, int twist, int face = -1 ) {
+      return this->realGeometry.buildGeom(item, twist, face );
     }
 
     bool buildGeom(const FaceCoordinatesType& coords) {
@@ -158,11 +158,11 @@ namespace Dune {
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry for out of given ALU3dGridElement
-    bool buildGeom(const IMPLElementType & item, int twist);
-    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist);
+    bool buildGeom(const IMPLElementType & item, int twist , int);
+    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int face );
     bool buildGeom(const FaceCoordinatesType& coords);
-    bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist);
-    bool buildGeom(const ALU3DSPACE VertexType & item, int twist);
+    bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int );
+    bool buildGeom(const ALU3DSPACE VertexType & item, int twist, int);
 
     //! build ghost out of internal boundary segment
     bool buildGhost(const PLLBndFaceType & ghost);
@@ -264,11 +264,11 @@ namespace Dune {
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry out of a given ALU3dGridElement
-    bool buildGeom(const IMPLElementType & item, int twist);
-    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist);
+    bool buildGeom(const IMPLElementType & item, int twist, int);
+    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int faceNum);
     bool buildGeom(const FaceCoordinatesType& coords);
-    bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist);
-    bool buildGeom(const ALU3DSPACE VertexType & item, int twist);
+    bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int);
+    bool buildGeom(const ALU3DSPACE VertexType & item, int twist, int);
 
     //! build ghost out of internal boundary segment
     bool buildGhost(const PLLBndFaceType & ghost);

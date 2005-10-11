@@ -59,9 +59,9 @@ namespace Dune {
     //! set element as normal entity
     //! ItemTypes are HElementType, HFaceType, HEdgeType and VertexType
     template <class ItemType>
-    void setElement(ItemType & item, int twist = 0)
+    void setElement(ItemType & item, int twist = 0, int face = -1)
     {
-      this->realEntity.setElement(item, twist);
+      this->realEntity.setElement(item, twist,face);
     }
 
     //! set original element pointer to fake entity
@@ -150,7 +150,7 @@ namespace Dune {
     FieldVector<alu3d_ctype, dim>& positionInOwnersFather () const;
 
     // set element as normal entity
-    void setElement(const BSElementType & item, int twist);
+    void setElement(const BSElementType & item, int twist, int face = -1);
     void setElement(const ALU3DSPACE HElementType & el, const ALU3DSPACE VertexType & vx);
 
     //! reset item pointer to NULL
@@ -174,6 +174,7 @@ namespace Dune {
     int level_; //! level of entity
     int gIndex_; //! hierarchic index
     int twist_; //! twist of the underlying ALU element (with regard to the element that asked for it)
+    int face_; //! for face, know on which face we are
 
     // corresponding ALU3dGridElement
     const BSIMPLElementType * item_;
@@ -343,7 +344,7 @@ namespace Dune {
     /*! private methods, but public because of datahandle and template
         arguments of these methods
      */
-    void setElement(ALU3DSPACE HElementType &element, int twist);
+    void setElement(ALU3DSPACE HElementType &element, int , int );
 
     //! set original element pointer to fake entity
     void setGhost(ALU3DSPACE HBndSegType  &ghost);
@@ -427,7 +428,9 @@ namespace Dune {
     //! Constructor for EntityPointer that points to an element
     ALU3dGridEntityPointer(const GridImp & grid,
                            const MyHElementType & item,
-                           int twist = 0);
+                           int twist = 0,
+                           int face  = -1
+                           );
 
     //! Constructor for EntityPointer that points to a ghost
     ALU3dGridEntityPointer(const GridImp & grid, const ALU3dGridMakeableEntity<cd,dim,GridImp> & e );

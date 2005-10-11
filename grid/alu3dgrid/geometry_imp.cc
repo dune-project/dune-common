@@ -96,7 +96,7 @@ namespace Dune {
 
   template <>
   inline bool ALU3dGridGeometry<3,3, const ALU3dGrid<3,3,tetra> > ::
-  buildGeom(const IMPLElementType & item, int)
+  buildGeom(const IMPLElementType & item, int, int)
   {
     enum { dim = 3 };
     enum { dimworld = 3};
@@ -153,7 +153,7 @@ namespace Dune {
 
   template <>
   inline bool ALU3dGridGeometry<2,3, const ALU3dGrid<3,3,tetra> > ::
-  buildGeom(const ALU3DSPACE HFaceType & item, int twist)
+  buildGeom(const ALU3DSPACE HFaceType & item, int twist, int)
   {
     enum { dim = 2 };
     enum { dimworld = 3};
@@ -196,7 +196,7 @@ namespace Dune {
 
   template <> // for edges
   inline bool ALU3dGridGeometry<1,3, const ALU3dGrid<3,3,tetra> > ::
-  buildGeom(const ALU3DSPACE HEdgeType & item, int twist)
+  buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int)
   {
     enum { dim = 1 };
     enum { dimworld = 3};
@@ -219,7 +219,7 @@ namespace Dune {
 
   template <> // for Vertices ,i.e. Points (note that twist is a dummy parameter here, needed for consistency)
   inline bool ALU3dGridGeometry<0,3, const ALU3dGrid<3,3,tetra> > ::
-  buildGeom(const ALU3DSPACE VertexType & item, int)
+  buildGeom(const ALU3DSPACE VertexType & item, int, int)
   {
     enum { dim = 0 };
     enum { dimworld = 3};
@@ -567,7 +567,7 @@ namespace Dune {
   template <>
   inline bool
   ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::
-  buildGeom(const IMPLElementType& item, int) {
+  buildGeom(const IMPLElementType& item, int , int ) {
     enum { dim = 3 };
     enum { dimworld = 3 };
 
@@ -647,19 +647,55 @@ namespace Dune {
   template <>
   inline bool
   ALU3dGridGeometry<2,3, const ALU3dGrid<3, 3, hexa> > ::
-  buildGeom(const ALU3DSPACE HFaceType & item, int twist) {
+  buildGeom(const ALU3DSPACE HFaceType & item, int twist, int faceNum ) {
     enum { dim = 2 };
     enum { dimworld = 3 };
 
     const GEOFaceType& face = static_cast<const GEOFaceType&> (item);
-    for (int i = 0; i < 4; ++i) {
+
+    /*
+       for (int i = 0; i < 4; ++i)
+       {
+       FieldVector<double,3> vx;
+       const double (&p)[3] =face.myvertex(i)->Point();
+       for(int j=0; j<3 ;j++) vx[j] = p[j];
+       std::cout << "FaceVx " << i << " = [" << vx << "]\n";
+       }
+     */
+
+    //std::cout << " check face number " << faceNum << " \n";
+    /*
+       for(int k=0; k<8; k++)
+       {
+       int testvx = ElementTopo::dune2aluVertex(k);
+       int check = ElementTopo::alu2duneVertex(testvx);
+       assert( check == k );
+       }
+
+       for(int k=0; k<6; k++)
+       {
+       int testvx = ElementTopo::dune2aluFace(k);
+       int check = ElementTopo::alu2duneFace(testvx);
+       assert( check == k );
+       }
+     */
+
+    for (int i = 0; i < 4; ++i)
+    {
       // Transform Dune index to ALU index and apply twist
-      int localALUIndex = FaceTopo::dune2aluVertex(i);
+      int localALUIndex = ElementTopo::dune2aluFaceVertex(faceNum,i);
+
+      //int check = ElementTopo::alu2duneFaceVertex(faceNum,localALUIndex);
+      //assert( check == i );
+      //int localALUIndex = FaceTopo::dune2aluVertex(i);
       int rotatedALUIndex = FaceTopo::twist(localALUIndex, twist);
+
+      //std::cout << "twist["<<localALUIndex<<"] = " << twist <<" " << FaceTopo::twist(localALUIndex, twist) << "\n";
 
       const double (&p)[3] =
         face.myvertex(rotatedALUIndex)->Point();
-      for (int j = 0; j < dimworld; ++j) {
+      for (int j = 0; j < dimworld; ++j)
+      {
         coord_[i][j] = p[j];
       }
     }
@@ -692,7 +728,7 @@ namespace Dune {
   template <> // for edges
   inline bool
   ALU3dGridGeometry<1,3, const ALU3dGrid<3, 3, hexa> >::
-  buildGeom(const ALU3DSPACE HEdgeType & item, int twist) {
+  buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int) {
     enum { dim = 1 };
     enum { dimworld = 3 };
 
@@ -710,7 +746,7 @@ namespace Dune {
   template <> // for Vertices ,i.e. Points
   inline bool
   ALU3dGridGeometry<0,3, const ALU3dGrid<3,3,hexa> >::
-  buildGeom(const ALU3DSPACE VertexType & item, int twist) {
+  buildGeom(const ALU3DSPACE VertexType & item, int twist, int) {
     enum { dim = 0 };
     enum { dimworld = 3};
 
