@@ -590,7 +590,9 @@ namespace Dune {
     template<int cd>
     int index (const typename GridImp::template Codim<cd>::Entity& en) const
     {
-      assert( level_ == en.level() );
+      // this must not be true for vertices
+      assert( level_ == en.level() || (cd == dim) );
+      assert( levelIndex_[cd][ hIndexSet_.index(en) ] >= 0 );
       return levelIndex_[cd][ hIndexSet_.index(en) ];
     }
 
@@ -599,7 +601,9 @@ namespace Dune {
     template <int cd>
     int subIndex (const typename GridType::template Codim<0>::Entity & en, int i) const
     {
-      assert( level_ == en.level() );
+      // this must not be true for vertices
+      assert( level_ == en.level() || (cd == dim) );
+      assert(levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ] >= 0 );
       return levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ];
     }
 
@@ -629,16 +633,17 @@ namespace Dune {
     void calcLevelIndexForCodim ()
     {
       int nEntities = hIndexSet_.size(cd);
+
       Array<int> & levIndex = levelIndex_[cd];
       // resize memory if necessary
       if(nEntities > levIndex.size())
         makeNewSize(levIndex, nEntities);
 
       // walk grid and store index
-      typedef typename GridType::Traits::template Codim<cd>::LevelIterator LevelIterator;
+      typedef typename DefaultLevelIteratorTypes<GridImp>:: template Codim<cd>::template Partition<All_Partition> :: Iterator LevelIterator;
       int num = 0;
-      LevelIterator endit  = grid_.template lend< cd >   (level_);
-      for(LevelIterator it = grid_.template lbegin< cd > (level_); it != endit; ++it)
+      LevelIterator endit  = this->template end  < cd , All_Partition > ();
+      for(LevelIterator it = this->template begin< cd , All_Partition > (); it != endit; ++it)
       {
         int no = hIndexSet_.index(*it);
         levIndex[no] = num;
@@ -659,30 +664,22 @@ namespace Dune {
      */
     template<int cd, PartitionIteratorType pitype>
     typename DefaultLevelIteratorTypes<GridImp>::template Codim<cd>::
-    template Partition<pitype>::Iterator begin (int level) const
+    template Partition<pitype>::Iterator begin () const
     {
-      return this->grid_.template lbegin<cd,pitype> (level);
+      return this->grid_.template lbegin<cd,pitype> (level_);
     }
 
     /** @brief Iterator to one past the last entity of given codim for partition type
      */
     template<int cd, PartitionIteratorType pitype>
     typename DefaultLevelIteratorTypes<GridImp>::template Codim<cd>::
-    template Partition<pitype>::Iterator end (int level) const
+    template Partition<pitype>::Iterator end () const
     {
-      return this->grid_.template lend<cd,pitype> (level);
+      return this->grid_.template lend<cd,pitype> (level_);
     }
 
   private:
-    // grid this level set belongs to
-    const GridType & grid_;
-
-    // the level for which this index set is created
-    const int level_;
-
-    // the grids HierarchicIndexSet
-    const HierarchicIndexSetType & hIndexSet_;
-
+    // resize vectors of index set
     void makeNewSize(Array<int> &a, int newNumberOfEntries)
     {
       if(newNumberOfEntries > a.size())
@@ -692,12 +689,31 @@ namespace Dune {
       for(int i=0; i<a.size(); i++) a[i] = -1;
     }
 
+    // method prints indices of given codim, for debugging
+    void print (int codim)
+    {
+      for(int i=0; i<levelIndex_[codim].size(); i++)
+      {
+        std::cout << "levelind[" << i << "] = " << levelIndex_[codim][i] << "\n";
+      }
+    }
+
+    // grid this level set belongs to
+    const GridType & grid_;
+
+    // the level for which this index set is created
+    const int level_;
+
+    // the grids HierarchicIndexSet
+    const HierarchicIndexSetType & hIndexSet_;
+
     // number of entitys of each level an codim
     Array<int> size_;
 
     //*********************************************************
     // Methods for mapping the hierarchic Index to index on Level
     Array<int> levelIndex_[numCodim];
+
   };
 
 } // end namespace Dune
