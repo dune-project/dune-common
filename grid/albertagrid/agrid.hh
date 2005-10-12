@@ -1357,7 +1357,7 @@ namespace Dune
     //! if levInd == true the the element number of first macro element is
     //! set to 1 so hasLevelIndex_ can be identified we grid is read from
     //! file
-    AlbertaGrid(const char* macroTriangFilename);
+    AlbertaGrid(const std::string macroTriangFilename);
 
     //! Constructor which reads an Albert Macro Triang file
     //! or given GridFile , proc is the number of domain ,
