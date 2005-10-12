@@ -220,10 +220,10 @@ namespace Dune {
     //! Constructor which reads an ALU3dGrid Macro Triang file
     //! or given GridFile
 #ifdef _ALU3DGRID_PARALLEL_
-    ALU3dGrid(const char* macroTriangFilename , MPI_Comm mpiComm);
+    ALU3dGrid(const std::string macroTriangFilename , MPI_Comm mpiComm);
     ALU3dGrid(MPI_Comm mpiComm);
 #else
-    ALU3dGrid(const char* macroTriangFilename );
+    ALU3dGrid(const std::string macroTriangFilename );
     //! empty Constructor
     ALU3dGrid(int myrank = -1);
 #endif

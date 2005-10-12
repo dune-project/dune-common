@@ -18,7 +18,7 @@ namespace Dune {
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline ALU3dGrid<dim, dimworld, elType>::
-  ALU3dGrid(const char* macroTriangFilename
+  ALU3dGrid(const std::string macroTriangFilename
 #ifdef _ALU3DGRID_PARALLEL_
             , MPI_Comm mpiComm
 #endif
@@ -35,7 +35,7 @@ namespace Dune {
       , globalIdSet_(*this), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
   {
-    mygrid_ = new ALU3DSPACE GitterImplType (macroTriangFilename
+    mygrid_ = new ALU3DSPACE GitterImplType (macroTriangFilename.c_str()
 #ifdef _ALU3DGRID_PARALLEL_
                                              , mpAccess_
 #endif
