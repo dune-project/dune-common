@@ -365,10 +365,6 @@ namespace Dune {
 
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
-      //int realvx = Topo::dune2aluVertex(i);
-      //int idx = elem.myvertex( realvx )->getIndex();
-      //std::cout << "For vx = " << realvx << " get " << idx << "\n";
-      //return idx;
       return elem.myvertex( Topo::dune2aluVertex(i) )->getIndex();
     }
   };
@@ -377,8 +373,6 @@ namespace Dune {
   template <class IMPLElemType, ALU3dGridElementType type>
   struct IndexWrapper<IMPLElemType, type , 1>
   {
-    typedef ElementTopologyMapping<tetra> Topo;
-
     static inline int subIndex(const IMPLElemType &elem, int i)
     {
       // is specialised for each element type and uses
@@ -388,10 +382,10 @@ namespace Dune {
   };
 
   // specialisation for edges
-  template <class IMPLElemType>
-  struct IndexWrapper<IMPLElemType, tetra, 2>
+  template <class IMPLElemType, ALU3dGridElementType type>
+  struct IndexWrapper<IMPLElemType, type, 2>
   {
-    typedef ElementTopologyMapping<tetra> Topo;
+    typedef ElementTopologyMapping<type> Topo;
 
     // return subIndex of given edge
     static inline int subIndex(const IMPLElemType &elem, int i)
@@ -401,32 +395,13 @@ namespace Dune {
     }
   };
 
-  // specialisation for faces
-  template <class IMPLElemType>
-  struct IndexWrapper<IMPLElemType, hexa, 2>
-  {
-    typedef ElementTopologyMapping<hexa> Topo;
-
-    static inline int subIndex(const IMPLElemType &elem, int i)
-    {
-      return elem.myhedge1( Topo::dune2aluEdge(i) )->getIndex();
-    }
-  };
-
   // specialisation for elements
-  template <class IMPLElemType>
-  struct IndexWrapper<IMPLElemType, tetra, 0>
+  template <class IMPLElemType, ALU3dGridElementType type>
+  struct IndexWrapper<IMPLElemType, type, 0>
   {
     static inline int subIndex(const IMPLElemType &elem, int i) {
-      return i;
-    }
-  };
-
-  template <class IMPLElemType>
-  struct IndexWrapper<IMPLElemType, hexa, 0>
-  {
-    static inline int subIndex(const IMPLElemType &elem, int i) {
-      return i;
+      // just return the elements index
+      return elem.getIndex();
     }
   };
 
@@ -447,7 +422,7 @@ namespace Dune {
   {
     assert(item_ != 0);
     typedef typename  ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElType;
-    return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_ ,i);
+    return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_, i);
   }
 
   //******** end method count *************
