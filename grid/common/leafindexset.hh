@@ -540,7 +540,6 @@ namespace Dune {
       return this->grid_.template leafbegin<cd,pitype> ();
     }
 
-
     //! Destructor
     virtual ~AdaptiveLeafIndexSet () {};
 
@@ -563,8 +562,9 @@ namespace Dune {
       removeOldIndex( father );
     }
 
-    //!
+    //! insert new index to set
     void insertNewIndex (const typename GridType::template Codim<0>::Entity & en )  {
+
       // here we have to add the support of higher codims
       resizeVectors();
 
