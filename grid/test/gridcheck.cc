@@ -17,6 +17,8 @@
 #include "../../common/stdstreams.hh"
 #include "../common/referenceelements.hh"
 
+#include "checkindexset.cc"
+
 #include <limits>
 
 // machine epsilon is multiplied by this factor
@@ -912,6 +914,8 @@ void gridcheck (Grid &g)
   assertNeighbor(g);
   assertNeighbor(cg);
 #else
+
 #warning assertNeighbor disabled for AluGrid
 #endif
+  Dune::checkIndexSet (g,g.leafIndexSet(), Dune::dvverb);
 };
