@@ -10,7 +10,7 @@
 ## Page layout
 
 #use wml::layout::header
-#use wml::layout::naviagtion
+#use wml::layout::navigation
 
 <body>
   <dump BASIC_BODY>
