@@ -918,4 +918,7 @@ void gridcheck (Grid &g)
 #warning assertNeighbor disabled for AluGrid
 #endif
   Dune::checkIndexSet (g,g.leafIndexSet(), Dune::dvverb);
+  for(int lvl = 0; lvl <= g.maxLevel () ; lvl ++ )
+    Dune::checkIndexSet (g,g.levelIndexSet(lvl), Dune::dvverb);
+
 };
