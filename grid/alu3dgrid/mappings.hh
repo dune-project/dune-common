@@ -4,6 +4,7 @@
 #define DUNE_ALU3DGRIDMAPPINGS_HH
 
 // System includes
+#include <limits>
 
 // Dune includes
 #include <dune/common/fvector.hh>
@@ -13,6 +14,8 @@
 #include "alu3dinclude.hh"
 
 namespace Dune {
+
+  static const alu3d_ctype ALUnumericEpsilon = 10.0 * std::numeric_limits< alu3d_ctype >::epsilon();
 
   //! A trilinear mapping from the Dune reference hexahedron into the physical
   //! space (same as in mapp_cube_3d.h, but for a different reference hexahedron)
