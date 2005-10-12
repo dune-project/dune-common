@@ -1,168 +1,5 @@
 /* $Id$ */
 
-body,td {
-       font-size: 90%;
-}
-td, dl { 
-	font-family: Geneva, Arial, Helvetica, sans-serif;
-}
-caption { font-weight: bold }
-
-body {
-  padding: 0px;
-  margin: 0px;
-  background-color: #ffffff;
-}
-
-div.header { 
-  margin: 0px;  
-  width: 100%;
-  height: 40px;
-
-  padding: 0pt;
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-indent: 20px;
-
-  background: url("../../pics/dune-header.png") no-repeat;
-  background-color: #c8d5ff;
-  border-bottom: 1px solid #5974b5;
-
-  font-family: sans-serif;
-  font-weight: bold;
-  font-size: 36px;
-  text-align: left;
-  color: #e88e3f;
-}
-div.header a,
-div.header a:visited,
-div.header a:active,
-div.header a:hover,
-div.header a:link {
-  color: #e88e3f;
-  text-decoration: none;  
-  background: none;
-}
-
-div.subheader:before{
-  content: "Distributed and Unified Numerics Environment";
-}
-div.subheader {
-  padding: 0px;
-  margin: 5px;
-  margin-left: 20px;
-  width: auto;
-
-  background: none;
-
-  font-family: sans-serif;
-  font-weight: bold;
-  font-size: 16px;
-  text-align: left;
-  color: #e88e3f; 
-}
-
-a:link { 
-  color: #5974b5;
-}
-
-a:visited { 
-  color: #5974b5;
-}
-
-a:hover { 
-  color: #5974b5;
-  background-color: #c8d5ff;
-}
-
-a:active { 
-  color: #5974b5;
-  background-color: #c8d5ff;
-}
-
-div.navigation { 
-  z-index: 5;
-  float: left;
-  margin: 0px;
-  margin-left: 10px;
-  margin-bottom: 5px;
-  width: 20%;
-  border-top: 1px solid #000000;
-  border-left: 1px solid #000000;
-  border-right: 1px solid #000000;
-  border-bottom: 1px solid #000000;
-  padding: 4px;
-  font-size: small;
-  font-family: sans-serif;
-/*  font-weight: bold; */
-}
-
-div.navigation a { 
-  padding: 5px;
-  display: block;
-  text-decoration: none;  
-}
-
-div.navigation a:link,
-div.navigation a:visited
-{ 
-  margin: 0pt;    
-  text-decoration: none;
-  border-top: 1px solid #ffffff;
-  border-left: 1px solid #ffffff;
-  border-right: 1px solid #ffffff;
-  border-bottom: 1px solid #ffffff;
-}
-div.navigation a:hover,
-div.navigation a:active
-{ 
-  margin: 0pt;   
-  background-color: #c8d5ff;
-  color: #5974b5;
-  text-decoration: none;
-  border-top: 1px solid #5974b5;
-  border-left: 1px solid #5974b5;
-  border-right: 1px solid #5974b5;
-  border-bottom: 1px solid #5974b5;
-}
-
-div.main { 
-  position: static;
-  margin: 0pt;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-bottom: 5px;
-  width: auto;
-  border-top: 1px solid #000000;
-  border-left: 1px solid #000000;
-  border-right: 1px solid #000000;
-  border-bottom: 1px solid #000000;
-  padding: 5px;
-}
-
-div.foot {
-  display: block;
-  width: 100%;
-  margin: 0px;
-  padding: 0px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  bottom: 0px;  
-  font-size: xx-small;
-  font-family: sans-serif;
-  text-align: center;
-}
-
-div.foot p {
-  margin: 0px;
-  padding: 0px;
-}
-
-div.foot img { 
-  border: 0;
-  margin-top: 5px;
-}
-
 div.nav { 
   padding: 5px;
   margin: 0pt;    
@@ -179,33 +16,45 @@ div.nav {
   color: black;
 }
 
-h1 {
+div.doxygen h1 {
   font-family: sans-serif;
   font-weight: bold;
   text-align: left;
   text-align: center;
   font-size: 160%;
+  border: none;
+  color: black;
+  background-color: white;
 }
 
-h2 { 
+div.doxygen h2 { 
   font-family: sans-serif;
   font-weight: bold;
   text-align: left;
   font-size: 130%;
+  border: none;
+  color: black;
+  background-color: white;
 }
 
-h3 { 
+div.doxygen h3 { 
   font-family: sans-serif;
   font-weight: bold;
   text-align: left;
   font-size: 110%;
+  border: none;
+  color: black;
+  background-color: white;
 }
 
-h4 { 
+div.doxygen h4 { 
   font-family: sans-serif;
   font-weight: bold;
   text-align: left;
   font-size: 110%;
+  border: none;
+  color: black;
+  background-color: white;
 }
 caption { font-weight: bold }
 
@@ -243,7 +92,11 @@ a.codeRef:visited { font-weight: normal; color: #5974b5}
   -- Quick Index --
 */
 div.qindex {
-	font-family: Geneva, Arial, Helvetica, sans-serif;
+/*	font-family: Geneva, Arial, Helvetica, sans-serif; */
+  font-size: small;
+  font-family: sans-serif;
+  font-weight: bold; 
+	
 	width: 100%;
 /*    background-color: #c8d5ff; */
 	border-bottom: 1px solid black;
@@ -281,7 +134,7 @@ a.qindexHL {
 */
 .mdescLeft {
        padding: 0px 8px 4px 8px;
-	font-size: 80%;
+/*	font-size: 80%; */
 	font-style: italic;
 	background-color: #FAFAFA;
 	border-top: 1px none #E0E0E0;
@@ -292,7 +145,7 @@ a.qindexHL {
 }
 .mdescRight {
        padding: 0px 8px 4px 8px;
-	font-size: 80%;
+/*	font-size: 80%; */
 	font-style: italic;
 	background-color: #FAFAFA;
 	border-top: 1px none #E0E0E0;
@@ -317,7 +170,7 @@ a.qindexHL {
 	border-bottom-style: none;
 	border-left-style: none;
 	background-color: #FAFAFA;
-	font-size: 80%;
+/*	font-size: 80%; */
 }
 .memItemRight {
 	padding: 1px 8px 0px 8px;
@@ -335,7 +188,7 @@ a.qindexHL {
 	border-bottom-style: none;
 	border-left-style: none;
 	background-color: #FAFAFA;
-	font-size: 80%;
+/*	font-size: 80%; */
 }
 .memTemplItemLeft {
 	padding: 1px 0px 0px 8px;
@@ -353,7 +206,7 @@ a.qindexHL {
 	border-bottom-style: none;
 	border-left-style: none;
 	background-color: #FAFAFA;
-	font-size: 80%;
+/*	font-size: 80%; */
 }
 .memTemplItemRight {
 	padding: 1px 8px 0px 8px;
@@ -371,7 +224,7 @@ a.qindexHL {
 	border-bottom-style: none;
 	border-left-style: none;
 	background-color: #FAFAFA;
-	font-size: 80%;
+/*	font-size: 80%; */
 }
 .memTemplParams {
 	padding: 1px 0px 0px 8px;
@@ -390,7 +243,7 @@ a.qindexHL {
 	border-left-style: none;
     color: #606060;
 	background-color: #FAFAFA;
-	font-size: 80%;
+/*	font-size: 80%; */
 }
 /*
   Copy Paste from doxygen.css
@@ -403,7 +256,7 @@ a.qindexHL {
 .mdPrefix {
     background-color: #F4F4FB;
     color: #606060;
-	font-size: 80%;
+/*	font-size: 80%; */
 }
 .mdname1 { 
     background-color: #F4F4FB; 
@@ -490,3 +343,7 @@ span.charliteral   { color: #008080 }
 code { 
     font-size: 120%;
 }
+
+/* tables and lists */
+ul { font-size: small; }
+table { font-size: small; }

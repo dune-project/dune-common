@@ -5,7 +5,7 @@ EXTRA_DIST = Doxyfile Doxydep \
   doxy-footer.html doxy-header.html dune-doxy.css mainpage
 
 if BUILD_DOCS
-  WHAT = doxygen-tag
+  WHAT = doxy-header.html doxygen-tag
 endif
 
 all: $(WHAT)
@@ -32,6 +32,8 @@ FORCE:
 include $(top_srcdir)/am/webstuff
 
 clean-local:
-	rm -rf html latex doxygen-tag *~
+	rm -rf html latex *~
+
+CLEANFILES = $(WHAT)
 
 include $(top_srcdir)/am/global-rules

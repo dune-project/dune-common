@@ -362,10 +362,11 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = mainpage \
+					     modules \
                          ../../grid \
                          ../../disc \
-                         ../../fem \
                          ../../common \
+                         ../../fem \
                          ../../quadrature \
                          ../../solver \
                          ../../istl \
