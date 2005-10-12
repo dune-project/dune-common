@@ -707,6 +707,8 @@ namespace Dune
       }
     }
 
+    delete[] buffer_;
+
     // No need for the iterator tuples any more
     iteratorsMap_.clear();
 

@@ -505,6 +505,9 @@ namespace Dune
       setupSparsityPattern(connected, fineGraph, visitedMap, fineIndices, aggregates,
                            *coarseMatrix, overlap, overlapVertices);
 
+      delete[] overlapVertices;
+      delete[] overlapStart_;
+
       //calculate(fine, aggregates, *coarse, overlap);
 
       return coarseMatrix;
