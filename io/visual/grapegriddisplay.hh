@@ -23,6 +23,7 @@ namespace Dune
 
     typedef typename GridType::Traits::template Codim<0>::LevelIterator LevelIteratorType ;
     typedef typename GridType::Traits::template Codim<0>::LeafIterator LeafIteratorType ;
+    typedef typename GridType::Traits::LocalIdSet LocalIdSetType;
     typedef typename GridType::Traits::LeafIndexSet LeafIndexSetType;
 
     //typedef typename GridType::Traits::template Codim<0>::template Partition<Interior_Partition>:: LeafIterator LeafIteratorType;
@@ -32,6 +33,9 @@ namespace Dune
 
     //! leaf index set of the grid
     const LeafIndexSetType & leafset_;
+
+    //! leaf index set of the grid
+    const LocalIdSetType & lid_;
 
     //! my process number
     const int myRank_;
