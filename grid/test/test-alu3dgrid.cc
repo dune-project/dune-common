@@ -10,9 +10,6 @@
 
 #include "gridcheck.cc"
 
-//#define DIM 3
-//#define DIM_OF_WORLD 3
-
 using namespace Dune;
 
 int main () {
@@ -24,20 +21,24 @@ int main () {
     // extra-environment to check destruction
     {
       factorEpsilon = 500.0;
+      // be careful, each global refine create 8 x maxlevel elements
+      int mxl = 2;
       {
         ALU3dGrid<3,3,hexa>
-        grid_hexa(filename_hexa.c_str());
+        grid_hexa(filename_hexa);
 
-        for(int i=0; i<3; i++) {
+        gridcheck(grid_hexa);
+        for(int i=0; i<mxl; i++) {
           grid_hexa.globalRefine(1);
           gridcheck(grid_hexa);
         }
       }
       {
         ALU3dGrid<3,3,tetra>
-        grid_tetra(filename_tetra.c_str());
+        grid_tetra(filename_tetra);
 
-        for(int i=0; i<3; i++) {
+        gridcheck(grid_tetra);
+        for(int i=0; i<mxl; i++) {
           grid_tetra.globalRefine(1);
           gridcheck(grid_tetra);
         }
