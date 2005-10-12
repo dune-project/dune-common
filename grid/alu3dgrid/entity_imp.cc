@@ -730,7 +730,8 @@ namespace Dune {
   inline bool ALU3dGridEntityPointer<codim,GridImp>::
   equals (const ALU3dGridEntityPointer<codim,GridImp>& i) const
   {
-    return (((*entity_).equals(*(i.entity_))) && (done_ == i.done_));
+    // check equality of underlying items
+    return (*entity_).equals(*(i.entity_));
   }
 
   template<int codim, class GridImp >
