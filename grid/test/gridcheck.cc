@@ -664,7 +664,13 @@ void assertNeighbor (Grid &g)
 
   LevelIterator e = g.template lbegin<0>(0);
   const LevelIterator eend = g.template lend<0>(0);
-  LevelIterator next = e; ++next;
+#ifndef ALUWORKAROUND
+  // very useful code, indeed
+  LevelIterator next = e;
+#else
+  LevelIterator next = g.template lbegin<0>(0);
+#endif
+  ++next;
   typedef typename Grid::template Codim<0>::GlobalIdSet GlobalIdSet;
   const GlobalIdSet & globalid = g.globalIdSet();
   if (next != eend)
@@ -721,10 +727,12 @@ void assertNeighbor (Grid &g)
           assert(globalid.id(*(it.outside())) >= 0);
           assert(globalid.id(*(it.outside())) !=
                  globalid.id(*e));
-          LevelIterator n = g.template lbegin<0>(it.level());
-          LevelIterator nend = g.template lend<0>(it.level());
 
-          while (n != it.outside() && n != nend) {
+          LevelIterator n    = g.template lbegin<0>(it.level());
+          LevelIterator nend = g.template lend<0>  (it.level());
+
+          while (n != it.outside() && n != nend)
+          {
             assert(globalid.id(*(it.outside())) !=
                    globalid.id(*n));
             ++n;
@@ -742,14 +750,26 @@ void assertNeighbor (Grid &g)
  */
 template <class Grid, class It>
 struct _callMark {
+#ifndef ALUWORKAROUND
   static void mark (Grid & g, It it) { g.mark(1,it); };
+#else
+  static void mark (Grid & g, It & it) { g.mark(1,it); };
+#endif
 };
 template <class Grid, class It>
 struct _callMark<const Grid, It> {
+#ifndef ALUWORKAROUND
   static void mark (const Grid & g, It it) { };
+#else
+  static void mark (const Grid & g, It & it) { };
+#endif
 };
 template <class Grid, class It>
+#ifndef ALUWORKAROUND
 void callMark(Grid & g, It it)
+#else
+void callMark(Grid & g, It & it)
+#endif
 {
   assert (it->isLeaf());
   _callMark<Grid,It>::mark(g,it);
@@ -803,6 +823,10 @@ void iterate(Grid &g)
     callMark(g, ept);
     HierarchicIterator hit = ept->hbegin(99);
     HierarchicIterator hend = ept->hend(99);
+    if (hit != hend) callMark(g, hit);
+#else
+    HierarchicIterator hit  = it->hbegin(99);
+    HierarchicIterator hend = it->hend(99);
     if (hit != hend) callMark(g, hit);
 #endif
   }
@@ -910,13 +934,11 @@ void gridcheck (Grid &g)
   iterate(cg);
   zeroEntityConsistency(g);
   zeroEntityConsistency(cg);
-#ifndef ALUWORKAROUND
   assertNeighbor(g);
   assertNeighbor(cg);
-#else
 
-#warning assertNeighbor disabled for AluGrid
-#endif
+  // note that for some grid this might fail
+  // then un comment this test
   Dune::checkIndexSet (g,g.leafIndexSet(), Dune::dvverb);
   for(int lvl = 0; lvl <= g.maxLevel () ; lvl ++ )
     Dune::checkIndexSet (g,g.levelIndexSet(lvl), Dune::dvverb);
