@@ -58,7 +58,7 @@ namespace Dune {
 
     postAdapt();
     calcExtras();
-    std::cout << "Constructor of Grid finished!\n";
+    std::cout << "Created ALU3dGrid from macro grid file '" << macroTriangFilename << "'\n";
   }
 
 #ifdef _ALU3DGRID_PARALLEL_
@@ -146,6 +146,7 @@ namespace Dune {
     return size(codim);
   }
 
+  // calc all necessary things that might have changed
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline void ALU3dGrid<dim, dimworld, elType>::updateStatus()
   {
@@ -423,25 +424,29 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline bool ALU3dGrid<dim, dimworld, elType>::adapt()
   {
-#ifdef _ALU3DGRID_PARALLEL_
     bool ref = false;
     if(leafIndexSet_)
     {
       EntityImp f ( *this, this->maxLevel() );
       EntityImp s ( *this, this->maxLevel() );
 
+      typedef typename Traits :: LeafIndexSet LeafIndexSetType;
+
       ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>,
-          EntityImp, LeafIndexSet, LeafIndexSet >
+          EntityImp, LeafIndexSetType, LeafIndexSetType >
       rp(*this,f,s, *leafIndexSet_  ,*leafIndexSet_);
 
       ref = myGrid().duneAdapt(rp); // adapt grid
-      leafIndexSet_->compress();
+      //leafIndexSet_->compress();
     }
     else
+    {
+#ifdef _ALU3DGRID_PARALLEL_
       ref = myGrid().dAdapt(); // adapt grid
 #else
-    bool ref = myGrid().adapt(); // adapt grid
+      ref = myGrid().adapt(); // adapt grid
 #endif
+    }
     if(ref)
     {
       // calcs maxlevel and other extras
@@ -462,16 +467,14 @@ namespace Dune {
     EntityImp f ( *this, this->maxLevel() );
     EntityImp s ( *this, this->maxLevel() );
 
-    /*
-       if(leafIndexSet_)
-       {
-        if( ! dm.checkIndexSetExists( *leafIndexSet_ ))
-          {
-            std::cout << "Add LeafIndexSet to DofManager! \n";
-            dm.addIndexSet( *this , *leafIndexSet_ );
-          }
-       }
-     */
+    if(leafIndexSet_)
+    {
+      if( ! dm.checkIndexSetExists( *leafIndexSet_ ))
+      {
+        std::cout << "Add LeafIndexSet to DofManager! \n";
+        dm.addIndexSet( *this , *leafIndexSet_ );
+      }
+    }
 
     typedef typename DofManagerType :: IndexSetRestrictProlongType IndexSetRPType;
     typedef CombinedAdaptProlongRestrict < IndexSetRPType,RestrictProlongOperatorType > COType;
@@ -495,8 +498,7 @@ namespace Dune {
 
     if(ref)
     {
-      calcMaxlevel();
-      calcExtras();   // reset size and things
+      updateStatus();
     }
 
     // check whether we have balance
@@ -561,6 +563,8 @@ namespace Dune {
       }
     }
 #endif
+    // compress leaf index set
+    if( leafIndexSet_ ) (*leafIndexSet_).compress();
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType> template <class T>
@@ -614,8 +618,9 @@ namespace Dune {
     if(changed)
     {
       dverb << "Grid was balanced on p = " << myRank() << std::endl;
-      calcMaxlevel();                 // calculate new maxlevel
-      calcExtras();                   // reset size and things
+      // calculate new maxlevel
+      // reset size and things
+      updateStatus();
     }
     return changed;
 #else
@@ -656,8 +661,9 @@ namespace Dune {
     if(changed)
     {
       dverb << "Grid was balanced on p = " << myRank() << std::endl;
-      calcMaxlevel();               // calculate new maxlevel
-      calcExtras();                 // reset size and things
+      // calculate new maxlevel
+      // reset size and things
+      updateStatus();
     }
 
     // checken, ob wir das hier wirklich brauchen
@@ -890,8 +896,9 @@ namespace Dune {
       }
     }
 
-    calcMaxlevel();  // calculate new maxlevel
-    calcExtras();    // calculate indices
+    // calculate new maxlevel
+    // calculate indices
+    updateStatus();
 
     return true;
   }
