@@ -9,6 +9,7 @@
 #include <dune/istl/paamg/transfer.hh>
 #include <dune/istl/paamg/hierarchy.hh>
 #include <dune/istl/solvers.hh>
+#include <dune/istl/scalarproducts.hh>
 namespace Dune
 {
   namespace Amg
@@ -97,6 +98,7 @@ namespace Dune
       /** @brief The number of pre and postsmoothing steps. */
       std::size_t steps_;
       std::size_t level;
+      SeqScalarProduct<X> ssp;
     };
 
     template<class M, class X, class Y, class CS, class S, class A>
@@ -105,9 +107,11 @@ namespace Dune
                            std::size_t gamma, std::size_t smoothingSteps)
       : matrices_(&matrices), smootherArgs_(smootherArgs),
         smoothers_(), solver_(&coarseSolver), gamma_(gamma),
-        steps_(smoothingSteps)
+        steps_(smoothingSteps), ssp()
     {
       assert(matrices_->isBuilt());
+      //printMatrix(matrices_->finest());
+
       // build the necessary smoother hierarchies
       matrices_->coarsenSmoother(smoothers_, smootherArgs_);
 
@@ -140,16 +144,14 @@ namespace Dune
 
       smoother->pre(*lhs,*rhs);
 
-      for(++smoother, ++lhs, ++rhs; smoother != coarsest; ++smoother, ++lhs, ++rhs)
-        smoother->pre(*lhs,*rhs);
+      if(smoother != coarsest)
+        for(++smoother, ++lhs, ++rhs; smoother != coarsest; ++smoother, ++lhs, ++rhs)
+          smoother->pre(*lhs,*rhs);
     }
 
     template<class M, class X, class Y, class CS, class S, class A>
     void AMG<M,X,Y,CS,S,A>::apply(X& v, const Y& d)
     {
-      *(lhs_->finest())=v;
-      *(rhs_->finest())=d;
-
       typename Hierarchy<Smoother,A>::Iterator smoother = smoothers_.finest();
       typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator matrix = matrices_->matrices().finest();
       typename MatrixHierarchy::AggregatesMapList::const_iterator aggregates = matrices_->aggregatesMaps().begin();
@@ -158,8 +160,25 @@ namespace Dune
       typename Hierarchy<Range,A>::Iterator rhs = rhs_->finest();
       typename Hierarchy<Range,A>::Iterator defect = defect_->finest();
 
+      *lhs = v;
+
+      //std::cout<<"Initial update :"<<*lhs<<std::endl;
+      *rhs = d;
+
+      *defect = d;
+      matrix->matrix().mmv(v, *defect);
+      //std::cout<<"Defect before = "<<ssp.norm(*defect)<<std::endl;
+
       level=0;
       mgc(smoother, matrix, aggregates, lhs, update, rhs, defect);
+      v=*lhs;
+      *defect = *rhs;
+      matrix->matrix().mmv(v, *defect);
+      //std::cout<<"Defect after"<<ssp.norm(*defect)<<std::endl;
+      *defect = d;
+      matrix->matrix().mmv(v, *defect);
+      //std::cout<<"Real defect="<<ssp.norm(*defect)<<std::endl;
+      //std::cout<<"Update: "<<v<<std::endl;
     }
 
     template<class M, class X, class Y, class CS, class S, class A>
@@ -174,29 +193,23 @@ namespace Dune
         // Solve directly
         InverseOperatorResult res;
         solver_->apply(*lhs, *rhs, res);
+
       }else{
+
         // presmoothing
         for(std::size_t i=0; i < steps_; ++i) {
-          // calculate defect
-          *defect = *rhs;
-          matrix->matrix().mmv(*lhs, *defect);
-
-          // smooth
-          smoother->apply(*update, *rhs);
-
-          //add correction
-          *lhs += *update;
+          smoother->apply(*lhs, *rhs);
         }
 
         // calculate defect
         *defect = *rhs;
-        matrix->matrix().mmv(*lhs, *defect);
+        matrix->matrix().mmv(static_cast<const Domain&>(*lhs), *defect);
 
         //restrict defect to coarse level right hand side.
         ++rhs;
 
         Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range>
-        ::restrict (*(*aggregates), *rhs, *defect);
+        ::restrict (*(*aggregates), *rhs, static_cast<const Range&>(*defect));
 
         // prepare coarse system
         ++lhs;
@@ -223,24 +236,18 @@ namespace Dune
         --matrix;
         --update;
         Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range>
-        ::prolongate(*(*aggregates), *update, *lhs, 0.8);
+        ::prolongate(*(*aggregates), static_cast<const Domain&>(*lhs), *update, 1.0);
 
         --lhs;
         --rhs;
         --defect;
 
+        // add correction
+        *lhs += *update;
+
         // postsmoothing
         for(std::size_t i=0; i < steps_; ++i) {
-
-          // calculate defect
-          *defect = *rhs;
-          matrix->matrix().mmv(*lhs, *defect);
-
-          // smooth
-          smoother->apply(*update, *defect);
-
-          //add correction
-          *lhs += *update;
+          smoother->apply(*lhs, *rhs);
         }
       }
     }
@@ -258,8 +265,9 @@ namespace Dune
 
       smoother->post(*lhs);
 
-      for(++smoother; smoother != coarsest; ++smoother, ++lhs)
-        smoother->post(*lhs);
+      if(smoother != coarsest)
+        for(++smoother; smoother != coarsest; ++smoother, ++lhs)
+          smoother->post(*lhs);
 
       delete &(*update_->finest());
       delete update_;

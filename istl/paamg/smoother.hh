@@ -107,6 +107,22 @@ namespace Dune
       }
 
     };
+
+    /**
+     * @brief Policy for the construction of the SeqJac smoother
+     */
+    template<class M, class X, class Y>
+    struct ConstructionTraits<SeqJac<M,X,Y> >
+    {
+      typedef DefaultConstructionArgs<SeqJac<M,X,Y> > Arguments;
+
+      static inline SeqJac<M,X,Y>* construct(Arguments& args)
+      {
+        return new SeqJac<M,X,Y>(*(args.matrix_), args.args_->iterations,
+                                 args.args_->relaxationFactor);
+      }
+
+    };
   } // namespace Amg
 } // namespace Dune
 
