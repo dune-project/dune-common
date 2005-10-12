@@ -426,7 +426,6 @@ namespace Dune {
   struct IndexWrapper<IMPLElemType, hexa, 0>
   {
     static inline int subIndex(const IMPLElemType &elem, int i) {
-      assert(false);
       return i;
     }
   };
