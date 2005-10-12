@@ -11,6 +11,7 @@ endif
 all: $(WHAT)
 
 # setting like in dune-web
+BASEDIR=../..
 CURDIR=doc/doxygen
 EXTRAINSTALL = html/*.html html/*.css html/*.png doxygen.log
 
