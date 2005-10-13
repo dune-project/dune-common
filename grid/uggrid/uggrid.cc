@@ -348,7 +348,7 @@ inline Dune::UGGrid < dim, dimworld >::~UGGrid()
   }
 
   // Delete levelIndexSets
-  for (unsigned int i=0; i<=levelIndexSets_.size(); i++)
+  for (unsigned int i=0; i<levelIndexSets_.size(); i++)
     if (levelIndexSets_[i])
       delete levelIndexSets_[i];
 };
@@ -1209,8 +1209,11 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::setIndices()
 {
-  for (int i=levelIndexSets_.size(); i<maxLevel()+1; i++)
-    levelIndexSets_.push_back(0);
+  for (int i=levelIndexSets_.size(); i<=maxLevel(); i++)
+  {
+    UGGridLevelIndexSet<UGGrid<dim,dimworld> >* p = new UGGridLevelIndexSet<UGGrid<dim,dimworld> >();
+    levelIndexSets_.push_back(p);
+  }
   //    levelIndexSets_.resize(maxLevel()+1);
 
   for (int i=0; i<=maxLevel(); i++)
