@@ -121,6 +121,8 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline int ALU3dGrid<dim, dimworld, elType>::size(int level, int codim) const
   {
+    // if we dont have this level return 0
+    if( (level > maxlevel_) || (level < 0) ) return 0;
     return levelIndexSet(level).size(codim,this->geomTypes(codim)[0]);
   }
 
@@ -152,6 +154,8 @@ namespace Dune {
   {
     calcMaxlevel();
     calcExtras();
+
+    //myGrid().printsize();
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -207,8 +211,9 @@ namespace Dune {
   inline const typename ALU3dGrid<dim, dimworld, elType>::Traits :: LevelIndexSet &
   ALU3dGrid<dim, dimworld, elType>::levelIndexSet( int level ) const
   {
-    if( (level < 0) && (level >= MAXL) )
-      DUNE_THROW(GridError,"Only " << MAXL << "levels allowed for this grid!\n");
+    // check if level fits in vector
+    assert( level >= 0 );
+    assert( level < (int) levelIndexVec_.size() );
 
     if( levelIndexVec_[level] == 0 )
       levelIndexVec_[level] = new LevelIndexSetImp ( *this , level );
@@ -241,6 +246,9 @@ namespace Dune {
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<pitype>::LevelIterator
   ALU3dGrid<dim, dimworld, elType>::lbegin(int level) const {
     assert( level >= 0 );
+    // if we dont have this level return empty iterator
+    if(level > maxlevel_) return this->template lend<cd,pitype> (level);
+
     return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,level);
   }
 
@@ -257,8 +265,7 @@ namespace Dune {
   template <int cd>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<All_Partition>::LevelIterator
   ALU3dGrid<dim, dimworld, elType>::lbegin(int level) const {
-    assert( level >= 0 );
-    return ALU3dGridLevelIterator<cd,All_Partition,const MyType> (*this,level);
+    return this->template lbegin<cd,All_Partition>(level);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -266,7 +273,7 @@ namespace Dune {
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<All_Partition>::LevelIterator
   ALU3dGrid<dim, dimworld, elType>::lend(int level) const {
     assert( level >= 0 );
-    return ALU3dGridLevelIterator<cd,All_Partition,const MyType> (*this,level,true);
+    return this->template lend<cd,All_Partition>(level);
   }
 
   // leaf methods
@@ -501,6 +508,8 @@ namespace Dune {
       updateStatus();
     }
 
+    myGrid().printsize();
+
     // check whether we have balance
     loadBalance(dm);
     dm.dofCompress();
@@ -529,7 +538,8 @@ namespace Dune {
         w->item ().resetRefinedTag();
 
         // note, resetRefinementRequest sets the request to coarsen
-        w->item ().resetRefinementRequest();
+        //
+        //w->item ().resetRefinementRequest();
       }
     }
     //#ifdef _ALU3DGRID_PARALLEL_
@@ -559,7 +569,7 @@ namespace Dune {
         w->item ().resetRefinedTag();
 
         // note, resetRefinementRequest sets the request to coarsen
-        w->item ().resetRefinementRequest();
+        //w->item ().resetRefinementRequest();
       }
     }
 #endif
