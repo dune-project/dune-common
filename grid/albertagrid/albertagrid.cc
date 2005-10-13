@@ -651,6 +651,16 @@ namespace Dune
   }
 
   template<int codim, int dim, class GridImp>
+  inline bool AlbertaGridEntity<codim,dim,GridImp>::
+  equals (const AlbertaGridEntity<codim,dim,GridImp> & i) const
+  {
+    const ALBERTA EL * e2 = i.getElement();
+    // if both element null then they are equal
+    if( (!e2) && (!element_) ) return true;
+    return ((element_ == e2) && (getFEVnum() == i.getFEVnum()));
+  }
+
+  template<int codim, int dim, class GridImp>
   inline ALBERTA EL_INFO* AlbertaGridEntity<codim,dim,GridImp>::
   getElInfo() const
   {
@@ -804,7 +814,6 @@ namespace Dune
   inline int AlbertaGridEntity<codim,dim,GridImp>::
   globalIndex() const
   {
-    //assert(codim == dim);
     const Entity en (*this);
     return grid_.hierarchicIndexSet().index(en);
   }
@@ -927,6 +936,14 @@ namespace Dune
     elInfo_  = 0;
     element_ = 0;
     builtgeometry_ = false;
+  }
+
+  template<int dim, class GridImp>
+  inline bool AlbertaGridEntity<0,dim,GridImp>::
+  equals (const AlbertaGridEntity<0,dim,GridImp> & i) const
+  {
+    // compare element pointer which are unique
+    return (element_ == i.getElement());
   }
 
   template<int dim, class GridImp>
@@ -1078,16 +1095,15 @@ namespace Dune
 
   template<int dim, class GridImp>
   inline void AlbertaGridEntity <0,dim,GridImp>::
-  setElInfo(ALBERTA EL_INFO * elInfo, int face, int edge, int vertex )
+  setElInfo(ALBERTA EL_INFO * elInfo, int , int , int )
   {
-    // in this case the face, edge and vertex information is not used,
-    // because we are in the element case
+    // just set elInfo and element
     elInfo_ = elInfo;
     if(elInfo_)
       element_ = elInfo_->el;
     else
       element_ = 0;
-    builtgeometry_ = geo_.builtGeom(elInfo_,face,edge,vertex);
+    builtgeometry_ = false;
   }
 
   template<int dim, class GridImp>
@@ -1103,6 +1119,10 @@ namespace Dune
   inline const typename AlbertaGridEntity <0,dim,GridImp>::Geometry &
   AlbertaGridEntity <0,dim,GridImp>::geometry() const
   {
+    assert( elInfo_ && element_ );
+    // geometry is only build on demand
+    if(!builtgeometry_) builtgeometry_ = geo_.builtGeom(elInfo_,0,0,0);
+
     assert(builtgeometry_ == true);
     return geo_;
   }
@@ -1174,7 +1194,6 @@ namespace Dune
       , entity_ ( grid_.template getNewEntity<codim> (level) )
       , done_ (end)
   {
-    //std::cout << "EntityPointer done == " << done_ << std::endl;
     if(done_) this->done();
   }
 
@@ -1195,7 +1214,6 @@ namespace Dune
   {
     assert( & grid_ == & org.grid_ );
     done_ = ( org.done_ );
-    //if( done_ ) this->done();
     (*entity_).setEntity( *(org.entity_) );
     return *this;
   }
@@ -1227,20 +1245,8 @@ namespace Dune
   inline bool AlbertaGridEntityPointer<codim,GridImp>::
   equals (const AlbertaGridEntityPointer<codim,GridImp>& i) const
   {
-    ALBERTA EL * e1 = (*entity_).getElement();
-    ALBERTA EL * e2 = (*(i.entity_)).getElement();
-
-    // if both have elements return equality of them
-    if( e1 && e2 ) return ( e1 == e2 );
-
-    if( done_ || i.done_ )
-    {
-      return done_ == i.done_;
-    }
-
-    assert( e1 );
-    assert( e2 );
-    return ( e1 == e2 );
+    // comprae entities
+    return ((*entity_).equals( *i.entity_) );
   }
 
   template<int codim, class GridImp >
@@ -1594,6 +1600,20 @@ namespace Dune
 
     return *this;
   }
+
+
+  template< class GridImp >
+  inline bool AlbertaGridIntersectionIterator<GridImp>::
+  equals (const AlbertaGridIntersectionIterator<GridImp> & i) const
+  {
+    const ALBERTA EL * e1 = (virtualEntity_).getElement();
+    const ALBERTA EL * e2 = (i.virtualEntity_).getElement();
+
+    return
+      ( (e1 == e2) // check equality of entities which can be both zero
+        && (this->done_ == i.done_)); /// and then also check done status
+  }
+
 
   template< class GridImp >
   inline void AlbertaGridIntersectionIterator<GridImp>::increment()
@@ -2002,6 +2022,8 @@ namespace Dune
     }
   }
 
+
+
   template<int codim, PartitionIteratorType pitype, class GridImp>
   inline AlbertaGridTreeIterator<codim,pitype,GridImp>::
   AlbertaGridTreeIterator(const GridImp & grid,
@@ -2075,20 +2097,37 @@ namespace Dune
     face_++;
     if(face_ >= (dim+1)) // dim+1 Faces
     {
+      // we have checked all faces on this element,
+      // therefore go to next element
       elInfo = goNextElInfo(stack, elInfo);
       face_ = 0;
-      if(!elInfo) return 0; // if no more Faces, return
+      if(!elInfo) return 0; // if no more Faces, return 0 which leads to end
     }
 
+    // check elInfo pointer before we start anything
     assert(elInfo);
 
-    if( (elInfo->neigh[face_]) &&
-        (this->grid_.getElementNumber(elInfo->el) > this->grid_.getElementNumber(elInfo->neigh[face_])))
+    const ALBERTA EL * neighbour = (elInfo->neigh[face_]);
+    if( neighbour )
     {
-      // if reachedFace before, go next
-      elInfo = goNextFace(stack,elInfo);
-    }
+      // get element
+      const ALBERTA EL * el = elInfo->el;
+      assert( el );
 
+      // if true we must go to next face
+      bool goWeida = this->grid_.getElementNumber( el ) > this->grid_.getElementNumber( neighbour ) ;
+
+      // additional check for level iterators
+      if(goWeida && !leafIt_)
+      {
+        // if we should go weida then only go
+        // if neighbours are on the same level
+        goWeida = ( this->grid_.getLevelOfElement( el ) == this->grid_.getLevelOfElement( neighbour ) );
+      }
+
+      // the face was reached before therefore go to next face
+      if(goWeida) elInfo = goNextFace(stack,elInfo);
+    }
     return elInfo;
   }
 
@@ -3070,6 +3109,10 @@ namespace Dune
   inline typename AlbertaGrid<dim, dimworld>::Traits::template Codim<codim>::template Partition<pitype>::LevelIterator
   AlbertaGrid < dim, dimworld >::lbegin (int level, int proc) const
   {
+    // if we dont have this level return empty iterator
+    if((level > maxlevel_) || (level < 0) )
+      return this->template lend<codim,pitype> (level);
+
     if((dim == codim) || ((dim == 3) && (codim == 2)) )
     {
       if( ! (vertexMarkerLevel_[level].up2Date() ) )
@@ -3089,6 +3132,10 @@ namespace Dune
   inline typename AlbertaGrid<dim, dimworld>::Traits::template Codim<codim>::template Partition<All_Partition>::LevelIterator
   AlbertaGrid < dim, dimworld >::lbegin (int level, int proc) const
   {
+    // if we dont have this level return empty iterator
+    if((level > maxlevel_) || (level < 0) )
+      return this->template lend<codim, All_Partition > (level);
+
     if((dim == codim) || ((dim == 3) && (codim == 2)) )
     {
       if( ! (vertexMarkerLevel_[level].up2Date()) )
@@ -3223,6 +3270,8 @@ namespace Dune
       this->adapt();
       this->postAdapt();
     }
+
+    //std::cout << "Grid was global refined !\n";
     return wasChanged_;
   }
 
@@ -3236,7 +3285,7 @@ namespace Dune
   inline bool AlbertaGrid < dim, dimworld >::postAdapt()
   {
     isMarked_ = false;
-    //if(leafIndexSet_) leafIndexSet_.compress();
+    if(leafIndexSet_) leafIndexSet_->compress();
     return wasChanged_;
   }
 
@@ -3591,7 +3640,9 @@ namespace Dune
 
     // set global pointer to index manager in elmem.cc
     ALBERTA AlbertHelp::initIndexManager_elmem_cc( indexStack_ );
-    ALBERTA AlbertHelp::clearDofVec ( dofvecs_.elNewCheck );
+
+    // set all values of elNewCheck positive which means old
+    ALBERTA AlbertHelp::set2positive ( dofvecs_.elNewCheck );
 
     flag = ALBERTA AlbertRefine ( mesh_ );
     refined = (flag == 0) ? false : true;
@@ -3625,42 +3676,11 @@ namespace Dune
   inline bool AlbertaGrid < dim, dimworld >::
   adapt(DofManagerType &, RestrictProlongOperatorType &, bool verbose)
   {
-    unsigned char flag;
     bool refined = false;
     wasChanged_ = false;
 
     std::cerr << "Method adapt 2 not implemented! in: " << __FILE__ << " line: " << __LINE__ << "\n";
     abort();
-    /*
-
-       // set global pointer to index manager in elmem.cc
-       ALBERTA AlbertHelp::initIndexManager_elmem_cc( indexStack_ );
-       ALBERTA AlbertHelp::clearDofVec ( dofvecs_.elNewCheck );
-
-       flag = ALBERTA AlbertRefine ( mesh_ );
-       refined = (flag == 0) ? false : true;
-
-       if(isMarked_) // true if a least on element is marked for coarseing
-       flag = ALBERTA AlbertCoarsen( mesh_ );
-
-       if(!refined)
-       {
-       wasChanged_ = (flag == 0) ? false : true;
-       }
-       else
-       wasChanged_ = true;
-
-       if(wasChanged_)
-       {
-       calcExtras();
-       isMarked_ = false;
-       }
-
-       ALBERTA AlbertHelp::setElOwnerNew(mesh_, dofvecs_.owner);
-
-       // remove global pointer in elmem.cc
-       ALBERTA AlbertHelp::removeIndexManager_elmem_cc(AlbertHelp::numOfElNumVec);
-     */
     return refined;
   }
 
@@ -3674,7 +3694,7 @@ namespace Dune
   inline bool AlbertaGrid < dim, dimworld >::checkElNew (const ALBERTA EL *el) const
   {
     // if element is new then entry in dofVec is 1
-    return (elNewVec_[el->dof[dof_][nv_]] > 0);
+    return (elNewVec_[el->dof[dof_][nv_]] < 0);
   }
 
   template < int dim, int dimworld >
@@ -3747,6 +3767,7 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
+    if( (level > maxlevel_) || (level < 0) ) return 0;
     return this->levelIndexSet(level).size(codim,simplex);
   }
 
@@ -3787,17 +3808,34 @@ namespace Dune
 
 
   template < int dim, int dimworld >
+  inline int AlbertaGrid < dim, dimworld >::getLevelOfElement (const ALBERTA EL *el) const
+  {
+    assert( el );
+    // return the elements level which is the absolute value of the entry
+    return std::abs( elNewVec_ [el->dof[dof_][nv_]] );
+  }
+
+  template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::getElementNumber ( const ALBERTA EL * el ) const
   {
     return hIndexSet_.getIndex(el,0,Int2Type<dim>());
   };
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::getEdgeNumber ( const ALBERTA EL * el , int i ) const
+  inline int AlbertaGrid < dim, dimworld >::getFaceNumber ( const ALBERTA EL * el , int face ) const
+  {
+    // codim of faces is 2 therefore dim-1
+    assert( face >= 0 );
+    assert( face < dim+1 );
+    return hIndexSet_.getIndex(el,face,Int2Type<dim-1>());
+  };
+
+  template < int dim, int dimworld >
+  inline int AlbertaGrid < dim, dimworld >::getEdgeNumber ( const ALBERTA EL * el , int edge ) const
   {
     assert(dim == 3);
     // codim of edges is 2 therefore dim-2
-    return hIndexSet_.getIndex(el,i,Int2Type<dim-2>());
+    return hIndexSet_.getIndex(el,edge,Int2Type<dim-2>());
   };
 
   template < int dim, int dimworld >
@@ -3812,11 +3850,15 @@ namespace Dune
     // store pointer to numbering vectors and so on
     arrangeDofVec ();
 
-    // determine new maxlevel and mark neighbours
-    maxlevel_ = ALBERTA AlbertHelp::calcMaxLevel(mesh_);
+    // determine new maxlevel
+    maxlevel_ = ALBERTA AlbertHelp::calcMaxAbsoluteValueOfVector( dofvecs_.elNewCheck );
+#ifndef NDEBUG
+    int mlvl = ALBERTA AlbertHelp::calcMaxLevel(mesh_);
+    assert( mlvl == maxlevel_ );
+#endif
 
     // unset up2Dat status, if lbegin is called then this status is updated
-    for(int l=0; l<maxlevel_; l++)
+    for(int l=0; l<maxlevel_+1; l++)
       vertexMarkerLevel_[l].unsetUp2Date();
 
     // unset up2Dat status, if leafbegin is called then this status is updated
@@ -3827,7 +3869,9 @@ namespace Dune
       if(levelIndexVec_[i]) (*levelIndexVec_[i]).calcNewIndex();
 
     if( leafIndexSet_ ) (*leafIndexSet_).resize();
-    if( leafIndexSet_ ) (*leafIndexSet_).compress();
+
+    // this is done in postAdapt
+    //if( leafIndexSet_ ) (*leafIndexSet_).compress();
 
     // we have a new grid
     wasChanged_ = true;

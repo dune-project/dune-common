@@ -569,11 +569,19 @@ namespace AlbertHelp
 
     for(int i=0; i<ref; i++)
     {
-      EL * el = list[i].el;
+      const EL * el = list[i].el;
+
+      // get level of father which is the absolute value
+      // if value is < 0 then this just means that element
+      // was refined
+      int level = std::abs( vec[el->dof[k][nv]] ) + 1;
       for(int ch=0; ch<2; ch++)
       {
-        // set new entry to 1, 0 means old element
-        vec[el->child[ch]->dof[k][nv]] = 1;
+        // set new to negative level of the element
+        // which then can be used to check whether an element is new on not
+        // also this vector stores the level of the element which is needed
+        // for the face iterator
+        vec[el->child[ch]->dof[k][nv]] = -level;
       }
     }
   }
@@ -613,6 +621,24 @@ namespace AlbertHelp
     int * vec=0;
     GET_DOF_VEC(vec,drv);
     FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = 0 );
+  }
+
+  // calculate max absolute value of given vector
+  inline int calcMaxAbsoluteValueOfVector ( const DOF_INT_VEC * drv )
+  {
+    const int * vec = 0;
+    int maxi = 0;
+    GET_DOF_VEC(vec,drv);
+    FOR_ALL_DOFS(drv->fe_space->admin, maxi = std::max( maxi , std::abs(vec[dof]) ) );
+    return maxi;
+  }
+
+  // set all values of vector to its positive value
+  inline static void set2positive ( DOF_INT_VEC * drv )
+  {
+    int * vec=0;
+    GET_DOF_VEC(vec,drv);
+    FOR_ALL_DOFS(drv->fe_space->admin, vec[dof] = std::abs( vec[dof] ) );
   }
 
   // clear Dof Vec
