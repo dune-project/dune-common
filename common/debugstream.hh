@@ -12,15 +12,6 @@
 
 namespace Dune {
 
-  /*! \file
-
-     This file implements the class DebugStream to support output in a
-     variety of debug levels. Additionally, template parameters control
-     if the output operation is really performed so that unused debug
-     levels can be deactivated
-
-   */
-
   /*! \defgroup DebugOut Debug output
      \ingroup Common
 
@@ -102,11 +93,30 @@ namespace Dune {
      \endcode
 
    */
+  /**
+     \addtogroup DebugOut
+     \{
+   */
+  /*! \file
 
-  //! type for debug levels. Only positive values allowed
+     This file implements the class DebugStream to support output in a
+     variety of debug levels. Additionally, template parameters control
+     if the output operation is really performed so that unused debug
+     levels can be deactivated
+
+   */
+
+
+  /*! \brief Type for debug levels.
+
+     Only positive values allowed
+   */
   typedef unsigned int DebugLevel;
 
   /*!
+
+     \brief Greater or equal template test.
+
      value is false if current is below the threshold, true otherwise
 
      This is the default struct to control the activation policy of
@@ -117,7 +127,10 @@ namespace Dune {
     static const bool value = (current >= threshold);
   };
 
-  /*! data component value is true if template parameter is non-zero
+  /*!
+     \brief Test if debug level equals zero.
+
+     data component value is true if template parameter is non-zero
 
      this template is used to implement the common_bits template
    */
@@ -131,7 +144,7 @@ namespace Dune {
     static const bool value = false;
   };
 
-  /*! activate if current and mask have common bits switched on
+  /*! \brief activate if current and mask have common bits switched on.
 
      This template implements an alternative strategy to activate or
      deactivate a DebugStream. Keep in mind to number your streams as
@@ -143,7 +156,7 @@ namespace Dune {
   };
 
 
-  //! standard exception for the debugstream
+  //! \brief standard exception for the debugstream
   class DebugStreamError : public IOError {};
 
   class StreamWrap {
@@ -153,25 +166,25 @@ namespace Dune {
     StreamWrap *next;
   };
 
-  //! Intermediate class to implement tie-operation of DebugStream
+  //! \brief Intermediate class to implement tie-operation of DebugStream
   class DebugStreamState {
     // !!! should be protected somehow but that won't be easy
   public:
-    //! current output stream and link to possibly pushed old output streams
+    //! \brief current output stream and link to possibly pushed old output streams
     StreamWrap* current;
 
-    //! flag to switch output during runtime
+    //! \brief flag to switch output during runtime
     bool _active;
 
-    //! are we tied to another DebugStream?
+    //! \brief are we tied to another DebugStream?
     bool _tied;
 
-    //! how many streams are tied to this state
+    //! \brief how many streams are tied to this state
     unsigned int _tied_streams;
   };
 
   /*!
-     generic class to implement debug output streams
+     \brief Generic class to implement debug output streams
 
      The main function of a DebugStream is to provide output in a
      standard ostream fashion that is fully deactivated if the level of
@@ -190,7 +203,7 @@ namespace Dune {
       template<DebugLevel, DebugLevel> class activator = greater_or_equal>
   class DebugStream : public DebugStreamState {
   public:
-    /*! create a DebugStream and set initial output stream
+    /*! \brief Create a DebugStream and set initial output stream
 
        during runtime another stream can be attach()ed, however the
        initial stream may not be detach()ed.
@@ -210,7 +223,7 @@ namespace Dune {
       _tied_streams = 0;
     };
 
-    /*! create a DebugStream and directly tie to another DebugStream
+    /*! \brief Create a DebugStream and directly tie to another DebugStream
 
        The fallback is used if a DebugStream constructed via this method
        is untie()ed later. Otherwise the stream would be broken afterwards.
@@ -232,7 +245,7 @@ namespace Dune {
       tiedstate->_tied_streams++;
     };
 
-    /*! destroy stream
+    /*! \brief Destroy stream.
 
        if other streams still tie() to this stream an exception will be
        thrown. Otherwise the child streams would certainly break on the
@@ -257,7 +270,7 @@ namespace Dune {
       };
     };
 
-    //! generic types are passed on to current output stream
+    //! \brief Generic types are passed on to current output stream
     template <class T>
     DebugStream& operator<<(const T data) {
       // remove the following code if stream wasn't compiled active
@@ -274,8 +287,9 @@ namespace Dune {
       return *this;
     }
 
-    //! explicit specialization so that enums can be printed
-    /** Operators for built-in types follow special
+    /*! \brief explicit specialization so that enums can be printed
+
+       Operators for built-in types follow special
        rules (§11.2.3) so that enums won't fit into the generic
        method above. With an existing operator<< for int however
        the enum will be automatically casted.
@@ -295,7 +309,7 @@ namespace Dune {
       return *this;
     }
 
-    //! pass on manipulators to underlying output stream
+    //! \brief pass on manipulators to underlying output stream
     DebugStream& operator<<(std::ostream& (*f)(std::ostream&)) {
       if (activator<thislevel, dlevel>::value) {
         if (! _tied) {
@@ -310,7 +324,7 @@ namespace Dune {
       return *this;
     };
 
-    //! set activation flag and store old value
+    //! \brief set activation flag and store old value
     void push(bool b) {
       // are we at all active?
       if (activator<thislevel,alevel>::value) {
@@ -322,7 +336,7 @@ namespace Dune {
       };
     };
 
-    //! restore previously set activation flag
+    //! \brief restore previously set activation flag
     void pop() throw(DebugStreamError) {
       if (_actstack.empty())
         DUNE_THROW(DebugStreamError, "No previous activation setting!");
@@ -331,7 +345,7 @@ namespace Dune {
       _actstack.pop();
     };
 
-    /*! reports if this stream will produce output
+    /*! \brief reports if this stream will produce output
 
        a DebugStream that is deactivated because of its level will always
        return false, otherwise the state of the internal activation is
@@ -341,7 +355,10 @@ namespace Dune {
       return activator<thislevel, dlevel>::value && _active;
     };
 
-    //! set output to a different stream. Old stream data is stored
+    /*! \brief set output to a different stream.
+
+       Old stream data is stored
+     */
     void attach(std::ostream& stream) {
       if (_tied)
         DUNE_THROW(DebugStreamError, "Cannot attach to a tied stream!");
@@ -351,7 +368,7 @@ namespace Dune {
       current = newcurr;
     };
 
-    //! detach current output stream and restore to previous stream
+    //! \brief detach current output stream and restore to previous stream
     void detach() throw(DebugStreamError) {
       if (current->next == 0)
         DUNE_THROW(DebugStreamError, "Cannot detach initial stream!");
@@ -363,6 +380,7 @@ namespace Dune {
       delete old;
     };
 
+    // \brief Tie a stream to this one.
     void tie(DebugStreamState& to) throw(DebugStreamError) {
       if (to._tied)
         DUNE_THROW(DebugStreamError, "Cannot tie to an already tied stream!");
@@ -376,6 +394,7 @@ namespace Dune {
       tiedstate->_tied_streams++;
     };
 
+    //! \brief Untie stream
     void untie() throw(DebugStreamError) {
       if(! _tied)
         DUNE_THROW(DebugStreamError, "Cannot untie, stream is not tied!");
@@ -386,13 +405,17 @@ namespace Dune {
     };
 
   private:
-    //! pointer to data of stream we're tied to
+    //! \brief pointer to data of stream we're tied to
     DebugStreamState* tiedstate;
 
-    /*! store old activation settings so that the outside code doesn't
-       need to remeber */
+    /*! \brief Activation state history.
+
+       store old activation settings so that the outside code doesn't
+       need to remember */
     std::stack<bool> _actstack;
   };
+
+  /** /} */
 }
 
 
