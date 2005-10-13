@@ -1550,27 +1550,16 @@ namespace Dune
     const HierarchicIndexSet & hierarchicIndexSet () const { return hIndexSet_; }
 
     //! return level index set for given level
-    const typename Traits :: LevelIndexSet & levelIndexSet (int level= 0) const
-    {
-      if(!levelIndexVec_[level]) levelIndexVec_[level] = new LevelIndexSetImp (*this,level);
-      return *(levelIndexVec_[level]);
-    }
+    const typename Traits :: LevelIndexSet & levelIndexSet (int level) const;
 
     //! return leaf index set
-    const typename Traits :: LeafIndexSet & leafIndexSet () const {
-      if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet (*this);
-      return *leafIndexSet_;
-    }
+    const typename Traits :: LeafIndexSet & leafIndexSet () const;
 
     //! return global IdSet
-    const GlobalIdSet & globalIdSet () const {
-      return globalIdSet_;
-    }
+    const GlobalIdSet & globalIdSet () const { return globalIdSet_; }
 
     //! return local IdSet
-    const LocalIdSet & localIdSet () const {
-      return globalIdSet_;
-    }
+    const LocalIdSet & localIdSet () const { return globalIdSet_; }
 
     //! access to mesh pointer, needed by some methods
     ALBERTA MESH* getMesh () const { return mesh_; };
@@ -1781,10 +1770,10 @@ namespace Dune
     //********************************************************************
 
     // set owner of element, for partioning
-    bool setOwner ( ALBERTA EL * el , int proc );
+    bool setOwner ( const ALBERTA EL * el , int proc );
 
     // return the processor number of element
-    int getOwner ( ALBERTA EL * el ) const;
+    int getOwner ( const ALBERTA EL * el ) const;
 
     // PartitionType (InteriorEntity , BorderEntity, GhostEntity )
     PartitionType partitionType ( ALBERTA EL_INFO * elinfo) const;
