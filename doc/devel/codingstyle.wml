@@ -22,7 +22,8 @@ So here they are...
             Names for variables should only consist of letters and digits.
             The first letter should be a lower case one.  If your variable
             names consists of several words, then the first letter of each
-            new word should be capital.
+            new word should be capital. As we decided on the only
+			exception are the <tt>begin</tt> and <tt>end</tt> methods.
           </li>
           <li> <b>Private Data Variables:</b>
             Names of private data variables end with an underscore.
