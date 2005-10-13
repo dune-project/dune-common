@@ -5,7 +5,7 @@ EXTRA_DIST = Doxyfile Doxydep \
   doxy-footer.html doxy-header.html dune-doxy.css mainpage
 
 if BUILD_DOCS
-  WHAT = doxy-header.html doxygen-tag
+  WHAT = bestpractice.html doxy-header.html doxygen-tag
 endif
 
 all: $(WHAT)

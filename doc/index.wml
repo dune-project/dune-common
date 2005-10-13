@@ -25,6 +25,7 @@ with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
 
 <ul>
 <li><a href="devel/codingstyle.html">Coding Style</a></li>
+<li><a href="doxygen/bestpractice.html">Best Practice for Doxygen</a></li>
 <li><a href="devel/ugreader.html">Howto write
 	  file readers for the UGGrid</a></li>
 <li><a href="buildsystem.html">Understanding the build system</a>
