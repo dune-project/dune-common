@@ -623,7 +623,7 @@ namespace Dune {
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
     {
-      for (int i=0; i<n; i++) p[i] = t;
+      for (size_type i=0; i<n; i++) p[i] = t;
     }
 
     //===== assignment from scalar
@@ -942,7 +942,7 @@ namespace Dune {
     typedef K block_type;
 
     //! The type for the index access and size operations.
-    typedef int size_type;
+    typedef std::size_t size_type;
 
     //! We are at the leaf of the block recursion
     enum {blocklevel = 1};

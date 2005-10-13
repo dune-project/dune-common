@@ -1017,7 +1017,7 @@ namespace Dune {
     typedef K block_type;
 
     //! The type used for index access and size operations
-    typedef int size_type;
+    typedef std::size_t size_type;
 
     //! We are at the leaf of the block recursion
     enum {
