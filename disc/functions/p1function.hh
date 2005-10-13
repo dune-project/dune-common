@@ -275,6 +275,7 @@ namespace Dune
     void postAdapt (P1FEFunctionManager<G,RT>& manager)
     {
       typedef typename G::template Codim<n>::LeafIterator VLeafIterator;
+      typedef typename G::template Codim<n>::LevelIterator VLevelIterator;
       typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
 
       // \todo check that function is only called for data with respect to leafs
@@ -308,30 +309,27 @@ namespace Dune
       }
 
       // now loop the second time to interpolate the new coefficients
-      for (VLeafIterator it = grid_.template leafbegin<n>(); it!=veendit; ++it)
+      for (int level=1; level<=grid_.maxLevel(); ++level)
       {
-        // lookup in mapper
-        int i;
-        if (!manager.savedMap().contains(*it,i))
+        VLevelIterator vlendit = grid_.template lend<n>(level);
+        for (VLevelIterator it = grid_.template lbegin<n>(level); it!=vlendit; ++it)
         {
-          EEntityPointer father=it->ownersFather();
-          FieldVector<DT,n> pos=it->positionInOwnersFather();
-          GeometryType gt = father->geometry().type();
-          RT value=0;
-          for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
+          // lookup in mapper
+          int k;
+          if (!manager.savedMap().contains(*it,k))
           {
-            // lookup subid
-            int index;
-            if (manager.savedMap().template contains<n>(*father,i,index))
+            EEntityPointer father=it->ownersFather();
+            FieldVector<DT,n> pos=it->positionInOwnersFather();
+            GeometryType gt = father->geometry().type();
+            RT value=0;
+            for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
             {
-              // the vertex existed already in the old mesh, copy data
+              // lookup subid
               value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,pos)
-                       *(*oldcoeff)[manager.oldIndex()[index]];
+                       *(*coeff)[mapper_.template map<n>(*father,i)];
             }
-            else
-              DUNE_THROW(GridError,"vertex at father element not found");
+            (*coeff)[mapper_.map(*it)] = value;
           }
-          (*coeff)[mapper_.map(*it)] = value;
         }
       }
 
