@@ -481,8 +481,8 @@ namespace Dune {
     void inlineData (ObjectStreamType & str, EntityType & en) const
     {
       //std::cout << "DataCollector Inline data\n";
-      str.writeObject( grid_.maxlevel() );
-      goDown(str,en,grid_.maxlevel());
+      str.writeObject( grid_.maxLevel() );
+      goDown(str,en,grid_.maxLevel());
     }
 
     //! read all data of all entities blowe this Entity from the stream
@@ -491,7 +491,7 @@ namespace Dune {
       //std::cout << "DataCollector xtract data\n";
       int mxlvl = 0;
       str.readObject( mxlvl );
-      mxlvl = std::max( mxlvl , grid_.maxlevel() );
+      mxlvl = std::max( mxlvl , grid_.maxLevel() );
 
       // dont needed anymore, because here the grid was
       // adapted before

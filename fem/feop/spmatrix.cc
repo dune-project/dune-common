@@ -388,7 +388,7 @@ namespace Dune
   void SparseRowMatrix<T>::apply_t(const DiscFuncType &f, DiscFuncType &ret) const
   {
     typedef typename DiscFuncType::DofIteratorType DofIteratorType;
-    int level = f.getFunctionSpace().getGrid().maxlevel();
+    int level = f.getFunctionSpace().getGrid().maxLevel();
 
     //! we assume that the dimension of the functionspace of f is the same as
     //! the size of the matrix

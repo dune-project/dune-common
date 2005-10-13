@@ -141,11 +141,9 @@ namespace Dune {
         //std::cout << "using  Leaf! \n";
         typedef typename GridType::template Codim<0>::LeafIterator LeafIterator;
 
-        this->level_ = grid.maxlevel();
-
         // make run through grid
-        LeafIterator it     = grid.leafbegin ( this->level_ );
-        LeafIterator endit  = grid.leafend   ( this->level_ );
+        LeafIterator it     = grid.leafbegin ();
+        LeafIterator endit  = grid.leafend   ();
         applyOnGrid( it, endit , arg, dest );
       }
       else

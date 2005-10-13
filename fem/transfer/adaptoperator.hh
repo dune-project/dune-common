@@ -138,7 +138,7 @@ namespace Dune {
         typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
 
         // make run through grid
-        for(int l=0; l<grid_.maxlevel(); l++)
+        for(int l=0; l<grid_.maxLevel(); l++)
         {
           LevelIterator endit  = grid_.template lend<0>   ( l );
           for(LevelIterator it = grid_.template lbegin<0> ( l );
@@ -217,8 +217,8 @@ namespace Dune {
     {
       typedef typename EntityType::HierarchicIterator HierarchicIterator;
       //typedef typename GridType::template Codim<EntityType::codimension>::EntityPointer;
-      HierarchicIterator it    = en.hbegin( grid_.maxlevel() );
-      HierarchicIterator endit = en.hend  ( grid_.maxlevel() );
+      HierarchicIterator it    = en.hbegin( grid_.maxLevel() );
+      HierarchicIterator endit = en.hend  ( grid_.maxLevel() );
 
       bool initialize = true;
 
