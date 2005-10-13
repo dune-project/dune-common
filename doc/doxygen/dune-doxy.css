@@ -347,3 +347,12 @@ code {
 /* tables and lists */
 ul { font-size: small; }
 table { font-size: small; }
+table.imagelist {
+  margin: 0px auto 0px auto;
+  border: none;
+}
+table.imagelist td {
+  border: none;
+  padding-left: 5px;
+  padding-right: 5px;  
+}
