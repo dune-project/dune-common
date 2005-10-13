@@ -16,7 +16,7 @@
 <ul>
 <li><a href="doxygen/">The class documentation</a> (generated 
 with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
-<li><a href="appl/refelements.html">The Reference Elements</a></li>
+<li><a href="doxygen/group__GridReferenceElements.html">The Reference Elements</a></li>
 <li>The <a href="view-concept.html">view concept</a> is the
       fundamental idea of the grid interface</li>
 </ul>

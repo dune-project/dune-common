@@ -29,14 +29,29 @@ namespace Dune
      lower-dimensional entities are.
 
          Here is a graphical representation of the reference elements:
-
-         \image html line.png "One-dimensional reference element. For d=1 the simplex and cube are identical."
-         \image html triangle.png "Two-dimensional reference simplex (a.k.a. triangle)."
-         \image html tetrahedron.png "Three-dimensional reference simplex (a.k.a. tetrahedron)."
-         \image html quadrilateral.png "Two-dimensional reference cube (a.k.a. quadrilateral)."
-         \image html hexahedron.png "Three-dimensional reference cube (a.k.a. hexahedron)."
-         \image html prism.png "Prism reference element."
-         \image html pyramid.png "Pyramid reference element."
+     -# <b>One-dimensional reference element. For d=1 the simplex and cube are identical</b>
+       \image html line.png
+     -# <b>Two-dimensional reference simplex (a.k.a. triangle)</b>
+           \image html triangle.png
+     -# <b>Three-dimensional reference simplex (a.k.a. tetrahedron)</b>
+           \image html tetrahedron.png
+     -# <b>Two-dimensional reference cube (a.k.a. quadrilateral)</b>
+           \image html quadrilateral.png
+     -# <b>Three-dimensional reference cube (a.k.a. hexahedron)</b>
+       <table class="imagelist"><tr>
+       <td>\image html hexahedron.png "Face Numbering"</td>
+           <td>\image html hexahedron_edges.png "Edge Numbering"</td>
+       </tr></table>
+     -# <b>Prism reference element</b>
+       <table class="imagelist"><tr>
+           <td>\image html prism.png "Face Numbering"</td>
+           <td>\image html prism_edges.png "Edge Numbering"</td>
+       </tr></table>
+     -# <b>Pyramid reference element</b>
+       <table class="imagelist"><tr>
+           <td>\image html pyramid.png "Face Numbering"</td>
+           <td>\image html pyramid_edges.png "Edge Numbering"</td>
+       </tr></table>
 
          Note that the cube reference elements are available for any dimension.
    */
