@@ -23,16 +23,16 @@ int main () {
     /* use grid-file appropriate for dimensions */
     std::ostringstream filename;
     filename << "alberta-testgrid-" << DUNE_PROBLEM_DIM
-             << "-" << DUNE_WORLD_DUNE_PROBLEM_DIM << ".al";
+             << "-" << DUNE_WORLD_DIM << ".al";
 
     std::cout << std::endl << "AlbertaGrid<" << DUNE_PROBLEM_DIM
-              << "," << DUNE_WORLD_DUNE_PROBLEM_DIM
+              << "," << DUNE_WORLD_DIM
               << "> with grid file: " << filename.str()
               << std::endl << std::endl;
 
     // extra-environment to check destruction
     {
-      Dune::AlbertaGrid<DUNE_PROBLEM_DIM,DUNE_WORLD_DUNE_PROBLEM_DIM>
+      Dune::AlbertaGrid<DUNE_PROBLEM_DIM,DUNE_WORLD_DIM>
       grid(filename.str().c_str());
       for(int i=0; i<3; i++)
       {
