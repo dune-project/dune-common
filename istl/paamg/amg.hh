@@ -73,7 +73,6 @@ namespace Dune
                typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator& matrix,
                typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
                typename Hierarchy<Domain,A>::Iterator& lhs,
-               typename Hierarchy<Domain,A>::Iterator& update,
                typename Hierarchy<Range,A>::Iterator& rhs,
                typename Hierarchy<Range,A>::Iterator& defect);
 
@@ -91,8 +90,6 @@ namespace Dune
       Hierarchy<Range,A>* defect_;
       /** @brief The left approximate solution of our problem. */
       Hierarchy<Domain,A>* lhs_;
-      /** @brief The  vectors to store the update in. */
-      Hierarchy<Domain,A>* update_;
       /** @brief Gamma, 1 for V-cycle and 2 for W-cycle. */
       std::size_t gamma_;
       /** @brief The number of pre and postsmoothing steps. */
@@ -126,12 +123,9 @@ namespace Dune
       defect_ = new Hierarchy<Range,A>(*copy);
       copy = new X(x);
       lhs_ = new Hierarchy<Domain,A>(*copy);
-      copy = new X(x);
-      update_ = new Hierarchy<Domain,A>(*copy);
       matrices_->coarsenVector(*rhs_);
       matrices_->coarsenVector(*defect_);
       matrices_->coarsenVector(*lhs_);
-      matrices_->coarsenVector(*update_);
 
       // Preprocess all smoothers
       typedef typename Hierarchy<Smoother,A>::Iterator Iterator;
@@ -156,29 +150,15 @@ namespace Dune
       typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator matrix = matrices_->matrices().finest();
       typename MatrixHierarchy::AggregatesMapList::const_iterator aggregates = matrices_->aggregatesMaps().begin();
       typename Hierarchy<Domain,A>::Iterator lhs = lhs_->finest();
-      typename Hierarchy<Domain,A>::Iterator update = update_->finest();
       typename Hierarchy<Range,A>::Iterator rhs = rhs_->finest();
       typename Hierarchy<Range,A>::Iterator defect = defect_->finest();
 
       *lhs = v;
-
-      //std::cout<<"Initial update :"<<*lhs<<std::endl;
       *rhs = d;
 
-      *defect = d;
-      matrix->matrix().mmv(v, *defect);
-      //std::cout<<"Defect before = "<<ssp.norm(*defect)<<std::endl;
-
       level=0;
-      mgc(smoother, matrix, aggregates, lhs, update, rhs, defect);
+      mgc(smoother, matrix, aggregates, lhs, rhs, defect);
       v=*lhs;
-      *defect = *rhs;
-      matrix->matrix().mmv(v, *defect);
-      //std::cout<<"Defect after"<<ssp.norm(*defect)<<std::endl;
-      *defect = d;
-      matrix->matrix().mmv(v, *defect);
-      //std::cout<<"Real defect="<<ssp.norm(*defect)<<std::endl;
-      //std::cout<<"Update: "<<v<<std::endl;
     }
 
     template<class M, class X, class Y, class CS, class S, class A>
@@ -186,7 +166,6 @@ namespace Dune
                                 typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator& matrix,
                                 typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
                                 typename Hierarchy<Domain,A>::Iterator& lhs,
-                                typename Hierarchy<Domain,A>::Iterator& update,
                                 typename Hierarchy<Range,A>::Iterator& rhs,
                                 typename Hierarchy<Range,A>::Iterator& defect){
       if(matrix == matrices_->matrices().coarsest()) {
@@ -213,7 +192,6 @@ namespace Dune
 
         // prepare coarse system
         ++lhs;
-        ++update;
         ++defect;
         ++matrix;
         ++level;
@@ -225,25 +203,22 @@ namespace Dune
         }
 
         // next level
-        mgc(smoother, matrix, aggregates, lhs, update, rhs, defect);
+        mgc(smoother, matrix, aggregates, lhs, rhs, defect);
 
         if(matrix != matrices_->matrices().coarsest()) {
           --smoother;
           --aggregates;
         }
         --level;
-        //prolongate (coarse x is the new update)
+        //prolongate and add the correction (update is in coarse left hand side)
         --matrix;
-        --update;
-        Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range>
-        ::prolongate(*(*aggregates), static_cast<const Domain&>(*lhs), *update, 1.0);
 
-        --lhs;
+        typename Hierarchy<Domain,A>::Iterator coarseLhs = lhs--;
+        Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range>
+        ::prolongate(*(*aggregates), static_cast<const Domain&>(*coarseLhs), *lhs, 1.0);
+
         --rhs;
         --defect;
-
-        // add correction
-        *lhs += *update;
 
         // postsmoothing
         for(std::size_t i=0; i < steps_; ++i) {
@@ -269,8 +244,6 @@ namespace Dune
         for(++smoother; smoother != coarsest; ++smoother, ++lhs)
           smoother->post(*lhs);
 
-      delete &(*update_->finest());
-      delete update_;
       delete &(*lhs_->finest());
       delete lhs_;
       delete &(*defect_->finest());

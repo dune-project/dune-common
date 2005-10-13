@@ -68,7 +68,7 @@ namespace Dune
       Iterator end = fine.end();
 
       for(Iterator block=fine.begin(); block != end; ++block) {
-        *block = coarse[aggregates[block.index()]];
+        *block += coarse[aggregates[block.index()]];
         //*block *= damp;
       }
     }
