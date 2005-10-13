@@ -34,7 +34,9 @@ int main () {
     {
       factorEpsilon = 500.0;
       Dune::AlbertaGrid<DUNE_PROBLEM_DIM,DUNE_WORLD_DIM>
-      grid(filename.str().c_str());
+      grid(filename.str());
+
+      gridcheck(grid); // check macro grid
       for(int i=0; i<3; i++)
       {
         grid.globalRefine(1);
