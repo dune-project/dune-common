@@ -59,7 +59,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	  AC_CHECK_LIB(metis, [metis_partgraphkway],[
 		  PARMETIS_LIBS=" -lmetis"
 		  PARMETIS_LDFLAGS="-L$PARMETIS_LIB_PATH"
-		  LIBS="$LIBS $PARMETIS_LIBS"],[
+		  LIBS="$LIBS -lmetis"],[
 		  HAVE_PARMETIS="0"
 		  AC_MSG_WARN(libmetis not found!)])
       fi
@@ -68,7 +68,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	  AC_CHECK_LIB(parmetis, [parmetis_v3_partkway],[
 		  PARMETIS_LIBS="-lparmetis -lmetis $MPILIBS $MPI_LDFLAGS"
 		  PARMETIS_LDFLAGS="$MPI_LDFLAGS -L$PARMETIS_LIB_PATH"
-		  LIBS="$LIBS $PARMETIS_LIBS"],[
+		  HAVE_PARMETIS="1"],[
 		  HAVE_PARMETIS="0"
 		  AC_MSG_WARN(libparmetis not found!)])
       fi
