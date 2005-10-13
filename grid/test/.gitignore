@@ -2,6 +2,7 @@ Makefile
 Makefile.in
 .deps
 .libs
+test-alu3dgrid
 test-alberta
 test-sgrid
 test-oned
