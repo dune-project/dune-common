@@ -91,7 +91,6 @@ namespace Dune {
 
      Dune::dwarn.attach(mylog);
      \endcode
-
    */
   /**
      \addtogroup DebugOut
