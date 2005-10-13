@@ -1,7 +1,7 @@
 # $Id$
 
 if BUILD_DOCS
- PAGES = refelements.html
+ PAGES =
 endif
 
 SUBDIRS = refelements
