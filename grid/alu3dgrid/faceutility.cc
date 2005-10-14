@@ -50,17 +50,11 @@ namespace Dune {
   ALU3dGridGeometricFaceInfo<tetra>::
   buildSurfaceMapping(const GEOFaceType & face) const
   {
-    // NOTE: points are fliped
-    // flip coordinates here, otherwise normal doesn't point outside
-    const double (& p0)[3] = face.myvertex(0)->Point();
-    const double (& p1)[3] = face.myvertex(1)->Point();
-    const double (& p2)[3] = face.myvertex(2)->Point();
-
-    // this is the original ALUGrid LinearSurfaceMapping, see mapp_tetra_3d.*
-    // in ALUGrid code
-    return new ALU3DSPACE LinearSurfaceMapping(p0,
-                                               p1,
-                                               p2);
+    // this is the original ALUGrid LinearSurfaceMapping,
+    // see mapp_tetra_3d.* in ALUGrid code
+    return new ALU3DSPACE LinearSurfaceMapping(face.myvertex(0)->Point(),
+                                               face.myvertex(1)->Point(),
+                                               face.myvertex(2)->Point());
   }
 
   template <>
@@ -83,14 +77,13 @@ namespace Dune {
                                       coords[3]);
      */
 
-    const double (&p0)[3] = face.myvertex(0)->Point();
-    const double (&p1)[3] = face.myvertex(1)->Point();
-    const double (&p2)[3] = face.myvertex(2)->Point();
-    const double (&p3)[3] = face.myvertex(3)->Point();
-
-    // this is the new implementation using FieldVector
-    // see mappings.hh
-    return new BilinearSurfaceMappingType(p0, p1 , p2 , p3 );
+    // this is the original ALUGrid LinearSurfaceMapping,
+    // see mapp_cube_3d.* in ALUGrid code
+    // typedef of BilinearSurfaceMappingType see above
+    return new BilinearSurfaceMappingType(face.myvertex(0)->Point(),
+                                          face.myvertex(1)->Point(),
+                                          face.myvertex(2)->Point(),
+                                          face.myvertex(3)->Point());
   }
 
   template <>
