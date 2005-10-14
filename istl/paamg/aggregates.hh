@@ -1723,8 +1723,6 @@ namespace Dune
         if(seed == Stack::NullEntry)
           // No more unaggregated vertices. We are finished!
           break;
-        else
-          std::cout<<"seed="<<seed<<" ";
 
         // Debugging output
         if(c.debugLevel()==1 && (noAggregates+1)%10000 == 0)
