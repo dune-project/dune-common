@@ -501,6 +501,7 @@ namespace Dune {
     : ALU3dGridEntityPointer<codim,GridImp> ( grid ,level,end)
       , index_(-1)
       , level_(level)
+      , isCopy_ (false)
   {
     if(!end)
     {
@@ -527,7 +528,11 @@ namespace Dune {
       , index_( org.index_ )
       , level_( org.level_ )
       , iter_ ( org.iter_ )
+      , isCopy_(true)
   {
+    // dont copy a copy of a copy of a copy of a copy
+    assert( ! org.isCopy_ );
+
     if(index_ >= 0)
     {
       myEntity().reset( level_ );
@@ -567,6 +572,7 @@ namespace Dune {
     : ALU3dGridEntityPointer <codim,GridImp> ( grid,level,end)
       , index_(-1)
       , level_(level)
+      , isCopy_ (false)
   {
     if(!end)
     {
@@ -625,12 +631,16 @@ namespace Dune {
           myEntity().setElement( * item.first );
 #ifdef _ALU3DGRID_PARALLEL_
         else
+        {
           myEntity().setGhost( * item.second );
+        }
 #endif
       }
     }
     else
+    {
       this->done();
+    }
   }
 
   template<int cdim, PartitionIteratorType pitype, class GridImp>
@@ -640,17 +650,25 @@ namespace Dune {
       , index_(org.index_)
       , level_(org.level_)
       , iter_ ( org.iter_ )
+      , isCopy_ (true)
   {
+    // dont copy a copy of a copy of a copy of a copy
+    assert( ! org.isCopy_ );
+
     if(index_ >= 0)
     {
       myEntity().reset( level_ );
-      val_t & item = (*iter_).item();
-      if( item.first )
-        myEntity().setElement( * item.first );
+
+      if( (*iter_).size() > 0)
+      {
+        val_t & item = (*iter_).item();
+        if( item.first )
+          myEntity().setElement( * item.first );
 #ifdef _ALU3DGRID_PARALLEL_
-      else
-        myEntity().setGhost( * item.second );
+        else
+          myEntity().setGhost( * item.second );
 #endif
+      }
       //myEntity().setElement( iter_->item() );
     }
   }

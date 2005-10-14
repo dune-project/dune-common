@@ -141,11 +141,9 @@ namespace Dune {
   inline typename ALU3dGridEntity<cd,dim,GridImp>::EntityPointer
   ALU3dGridEntity<cd,dim,GridImp>:: ownersFather() const
   {
-    assert(cd == dim);
-    assert(father_);
-
-    ALU3dGridLevelIterator<cd,All_Partition,const GridImp> vati(grid_,(*father_));
-    return vati;
+    assert(cd == dim); // this method only exists for codim == dim
+    assert(father_); // pointer to HElement father
+    return ALU3dGridEntityPointer<0,GridImp> (grid_,(*father_));
   }
 
   template<int cd, int dim, class GridImp>

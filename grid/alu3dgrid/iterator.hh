@@ -90,7 +90,10 @@ namespace ALUGridSpace {
     void next ()    { it_->next();  }
     void first()    { it_->first(); }
     int done ()     { return it_->done(); }
-    val_t & item () { return it_->item(); }
+    val_t & item () {
+      assert( ! done () );
+      return it_->item();
+    }
   };
 
   // the face level iterator
@@ -112,7 +115,10 @@ namespace ALUGridSpace {
     void next ()    { it_->next();  }
     void first()    { it_->first(); }
     int done ()     { return it_->done(); }
-    val_t & item () { return it_->item(); }
+    val_t & item () {
+      assert( ! done () );
+      return it_->item();
+    }
   };
 
   // the edge level iterator
@@ -133,7 +139,10 @@ namespace ALUGridSpace {
     void next ()    { it_->next();  }
     void first()    { it_->first(); }
     int done ()     { return it_->done(); }
-    val_t & item () { return it_->item(); }
+    val_t & item () {
+      assert( ! done () );
+      return it_->item();
+    }
   };
 
   // the vertex level iterator, little bit different to the others
@@ -175,7 +184,10 @@ namespace ALUGridSpace {
 
     void first()    { it_->first(); }
     int done () const { return it_->done(); }
-    val_t & item () { return it_->item(); }
+    val_t & item () {
+      assert( ! done () );
+      return it_->item();
+    }
   };
 
   template <class val_t>
@@ -234,6 +246,7 @@ namespace ALUGridSpace {
     int done ()     { return it_.done(); }
     val_t & item ()
     {
+      assert( ! done () );
       elem_.first  = & it_.item();
       return elem_;
     }
@@ -266,6 +279,7 @@ namespace ALUGridSpace {
     int done ()     { return it_.done(); }
     val_t & item ()
     {
+      assert( ! done () );
       elem_.first  = & it_.item();
       return elem_;
     }
@@ -326,6 +340,7 @@ namespace ALUGridSpace {
     int done ()     { return it_->done(); }
     val_t & item ()
     {
+      assert( ! done () );
       elem_.first  = & it_->item();
       return elem_;
     }
@@ -866,6 +881,9 @@ namespace Dune {
     void increment ();
 
   private:
+    //! do not allow assigment
+    ALU3dGridLevelIterator<cd, pitype, GridImp> & operator = (const ALU3dGridLevelIterator<cd, pitype, GridImp> & org)  { return *this; }
+
     //! return reference to EntityPointers entity_
     EntityImp & myEntity () { return (*(this->entity_)); }
 
@@ -878,6 +896,9 @@ namespace Dune {
     // the wrapper for the original iterator of the ALU3dGrid
     typedef typename ALU3DSPACE ALU3dGridLevelIteratorWrapper<cd> IteratorType;
     ALUGridSpace::AutoPointer< IteratorType > iter_;
+
+    // true if iterator is already a copy
+    bool isCopy_;
   };
 
   //********************************************************************
@@ -915,6 +936,9 @@ namespace Dune {
     void increment ();
 
   private:
+    //! do not allow assigment
+    ALU3dGridLeafIterator<cdim, pitype, GridImp> & operator = (const ALU3dGridLeafIterator<cdim, pitype, GridImp> & org)  { return *this; }
+
     //! return reference to EntityPointers entity_
     EntityImp & myEntity () { return (*(this->entity_)); }
 
@@ -931,6 +955,9 @@ namespace Dune {
     typedef typename ALU3DSPACE IteratorElType<cdim>::val_t val_t;
     typedef ALU3DSPACE IteratorWrapperInterface<val_t> IterInterface;
     ALU3DSPACE AutoPointer < IterInterface > iter_;
+
+    // true if iterator is already a copy
+    bool isCopy_;
   };
 
   // - HierarchicIteraor

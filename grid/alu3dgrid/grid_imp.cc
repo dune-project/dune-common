@@ -58,7 +58,7 @@ namespace Dune {
 
     postAdapt();
     calcExtras();
-    std::cout << "Created ALU3dGrid from macro grid file '" << macroTriangFilename << "'\n";
+    std::cout << "Created ALU3dGrid from macro grid file '" << macroTriangFilename << "'. \n\n";
   }
 
 #ifdef _ALU3DGRID_PARALLEL_
@@ -276,11 +276,16 @@ namespace Dune {
     return this->template lend<cd,All_Partition>(level);
   }
 
-  // leaf methods
+  //***********************************************************
+  //
+  // leaf methods , first all begin methods
+  //
+  //***********************************************************
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int cd, PartitionIteratorType pitype>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator
-  ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const
+  ALU3dGrid<dim, dimworld, elType>::
+  createLeafIteratorBegin(int level) const
   {
     assert( level >= 0 );
     return ALU3dGridLeafIterator<cd, pitype, const MyType> ((*this),level, false,
@@ -293,23 +298,61 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
+  template <int cd, PartitionIteratorType pitype>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator
+  ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const
+  {
+    return createLeafIteratorBegin<cd, pitype> (level) ;
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int cd>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::LeafIterator
-  ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const {
-    return leafbegin<cd, All_Partition>(level);
+  ALU3dGrid<dim, dimworld, elType>::
+  leafbegin(int level) const {
+    return createLeafIteratorBegin<cd, All_Partition> (level) ;
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int codim, PartitionIteratorType pitype>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
-  ALU3dGrid<dim, dimworld, elType>::leafbegin() const {
-    return leafbegin<codim, pitype>(maxlevel_);
+  ALU3dGrid<dim, dimworld, elType>::
+  leafbegin() const {
+    return createLeafIteratorBegin<codim, pitype> (maxlevel_) ;
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
+  template <int codim>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::LeafIterator
+  ALU3dGrid<dim, dimworld, elType>::
+  leafbegin() const {
+    return createLeafIteratorBegin<codim, All_Partition> (maxlevel_) ;
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  ALU3dGrid<dim, dimworld, elType>::
+  leafbegin(int level) const {
+    return createLeafIteratorBegin<0, All_Partition> (level) ;
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
+  typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
+  ALU3dGrid<dim, dimworld, elType>::
+  leafbegin() const {
+    return createLeafIteratorBegin<0, All_Partition> (maxlevel_) ;
+  }
+
+  //****************************************************************
+  //
+  // all leaf end methods
+  //
+  //****************************************************************
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int cd, PartitionIteratorType pitype>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator
-  ALU3dGrid<dim, dimworld, elType>::leafend(int level) const
+  ALU3dGrid<dim, dimworld, elType>::
+  createLeafIteratorEnd(int level) const
   {
     assert( level >= 0 );
     return ALU3dGridLeafIterator<cd, pitype, const MyType> ((*this),
@@ -324,56 +367,47 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
+  template <int codim, PartitionIteratorType pitype>
+  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
+  ALU3dGrid<dim, dimworld, elType>::leafend(int level) const
+  {
+    return createLeafIteratorEnd <codim, pitype> (level);
+  }
+
+  template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int codim>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::LeafIterator
   ALU3dGrid<dim, dimworld, elType>::leafend(int level) const {
-    return leafend<codim, All_Partition>(level);
+    return createLeafIteratorEnd <codim, All_Partition> (level);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int codim, PartitionIteratorType pitype>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::template Partition<pitype>::LeafIterator
   ALU3dGrid<dim, dimworld, elType>::leafend() const {
-    return leafend<codim, pitype>(maxlevel_);
-  }
-
-  template <int dim, int dimworld, ALU3dGridElementType elType>
-  template <int codim>
-  inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::LeafIterator
-  ALU3dGrid<dim, dimworld, elType>::leafbegin() const {
-    return leafbegin<codim, All_Partition>(maxlevel_);
+    return createLeafIteratorEnd <codim, pitype> (maxlevel_);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int codim>
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<codim>::LeafIterator
   ALU3dGrid<dim, dimworld, elType>::leafend() const {
-    return leafend<codim, All_Partition>(maxlevel_);
-  }
-
-  template <int dim, int dimworld, ALU3dGridElementType elType>
-  typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
-  ALU3dGrid<dim, dimworld, elType>::leafbegin(int level) const {
-    return leafbegin<0, All_Partition>(level);
+    return createLeafIteratorEnd <codim, All_Partition> (maxlevel_);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafend(int level) const {
-    return leafend<0, All_Partition>(level);
-  }
-
-  template <int dim, int dimworld, ALU3dGridElementType elType>
-  typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
-  ALU3dGrid<dim, dimworld, elType>::leafbegin() const {
-    return leafbegin<0, All_Partition>(maxlevel_);
+    return createLeafIteratorEnd <0, All_Partition> (level);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   typename ALU3dGrid<dim, dimworld, elType>::LeafIteratorType
   ALU3dGrid<dim, dimworld, elType>::leafend() const {
-    return leafend<0, All_Partition>(maxlevel_);
+    return createLeafIteratorEnd <0,All_Partition> (maxlevel_);
   }
+
+  //*****************************************************************
 
   // global refine
   template <int dim, int dimworld, ALU3dGridElementType elType>
