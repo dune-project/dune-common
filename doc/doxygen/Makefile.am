@@ -13,7 +13,7 @@ all: $(WHAT)
 # setting like in dune-web
 BASEDIR=../..
 CURDIR=doc/doxygen
-EXTRAINSTALL = html/*.html html/*.css html/*.png doxygen.log
+EXTRAINSTALL = html/*.html html/*.css html/*.png html/*.gif doxygen.log
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
