@@ -463,7 +463,7 @@ namespace Dune {
   ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::
   checkInside(const FieldVector<alu3d_ctype, mydim>& local) const {
     bool result = true;
-    for (int i = 1; i < mydim; ++i) {
+    for (int i = 0; i < mydim; i++ ) {
       result &= (local[i] >= 0.0 && local[i] <= 1.0);
     }
     return result;
