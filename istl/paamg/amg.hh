@@ -242,7 +242,7 @@ namespace Dune
       Iterator smoother = smoothers_.finest();
       DIterator lhs = lhs_->finest();
 
-      if(lhs!= lhs->coarsest)
+      if(lhs!= lhs_->coarsest())
         smoother->post(*lhs);
 
       if(smoother != coarsest)
