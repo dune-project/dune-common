@@ -137,6 +137,13 @@ namespace Dune
     typedef T1 Type1;
 
     /**
+     * @brief The type of the (non-existent) second field is Nil.
+     * This typedef is useful in template metaprogramming, since it allows
+     * you to specialise for Nil instead of Pair<T, Nil>
+     */
+    typedef Nil Type2;
+
+    /**
      * @brief Constructor.
      * @param t1 The values for the first field.
      * @param t2 The value for the second field.
