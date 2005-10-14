@@ -17,15 +17,6 @@
 #include "dune/common/timer.hh"
 #include "dune/common/helpertemplates.hh"
 
-/** \file
-
-   \brief   Define general, extensible interface for inverse operators.
-
-        Implementation here covers only inversion of linear operators,
-        but the implementation might be used for nonlinear operators
-    as well.
- */
-
 namespace Dune {
 
   /** @addtogroup ISTL
@@ -33,11 +24,21 @@ namespace Dune {
    */
 
 
-  /** \brief Statistics about the application of an inverse operator
+  /** \file
 
-     The return value of an application of the inverse
+     \brief   Define general, extensible interface for inverse operators.
+
+     Implementation here covers only inversion of linear operators,
+     but the implementation might be used for nonlinear operators
+     as well.
+   */
+
+  /**
+      \brief Statistics about the application of an inverse operator
+
+      The return value of an application of the inverse
       operator delivers some important information about
-          the iteration.
+      the iteration.
    */
   struct InverseOperatorResult
   {
@@ -75,33 +76,53 @@ namespace Dune {
 
 
   //=====================================================================
-  /*! An InverseOperator computes the solution of \f$ A(x)=b\f$ where
-      \f$ A : X \to Y \f$ is an operator.
-      Note that the solver "knows" which operator
-      to invert and which preconditioner to apply (if any). The
-      user is only interested in inverting the operator.
-          InverseOperator might be a Newton scheme, a Krylov subspace method,
-      or a direct solver or just anything.
+  /*!
+     \brief Abstract base class for all solvers.
+
+     An InverseOperator computes the solution of \f$ A(x)=b\f$ where
+     \f$ A : X \to Y \f$ is an operator.
+     Note that the solver "knows" which operator
+     to invert and which preconditioner to apply (if any). The
+     user is only interested in inverting the operator.
+     InverseOperator might be a Newton scheme, a Krylov subspace method,
+     or a direct solver or just anything.
    */
-  //=====================================================================
   template<class X, class Y>
   class InverseOperator {
   public:
-    //! export types, usually they come from the derived class
+    //! \brief Type of the domain of the operator we are the inverse of.
     typedef X domain_type;
 
-    /** \todo Please doc me! */
+    //! \brief Type of the range of the operator we are the inverse of.
     typedef Y range_type;
-    /** \todo Please doc me! */
+
+    /** \brief The field type of the operator. */
     typedef typename X::field_type field_type;
 
-    //! apply inverse operator, Note: right hand side b may be overwritten!
+    /**
+        \brief Apply inverse operator,
+
+        \warning Note: right hand side b may be overwritten!
+
+        \param x The left hand side to store the result in.
+        \param b The right hand side
+        \param r Object to store the statistics about applying the operator.
+     */
     virtual void apply (X& x, Y& b, InverseOperatorResult& r) = 0;
 
-    //! apply inverse operator, with given convergence criteria, right hand side b may be overwritten!
+    /*!
+       \brief apply inverse operator, with given convergence criteria.
+
+       \warning Right hand side b may be overwritten!
+
+       \param x The left hand side to store the result in.
+       \param b The right hand side
+       \param reduction The minimum defect reduction to achieve.
+       \param r Object to store the statistics about applying the operator.
+     */
     virtual void apply (X& x, Y& b, double reduction, InverseOperatorResult& r) = 0;
 
-    //! the usual thing
+    //! \brief Destructor
     virtual ~InverseOperator () {}
   };
 
@@ -110,24 +131,43 @@ namespace Dune {
   // Implementation of this interface
   //=====================================================================
 
-  /*! Implements a preconditioned loop.
+  /*!
+     \brief Preconditioned loop solver.
 
-          Verbose levels are:
-          <ul>
-          <li> 0 : print nothing </li>
-          <li> 1 : print initial and final defect and statistics </li>
-          <li> 2 : print line for each iteration </li>
-          </ul>
+     Implements a preconditioned loop.
+     Unsing this class every Preconditioner can be turned
+     into a solver. The solver will apply one preconditioner
+     step in each iteration loop.
    */
   template<class X>
   class LoopSolver : public InverseOperator<X,X> {
   public:
-    //! export types, usually they come from the derived class
+    //! \brief The domain type of the operator we are the inverse for.
     typedef X domain_type;
+    //! \brief The range type of the operator we are the inverse for.
     typedef X range_type;
+    //! \brief The field type of the operator we are the inverse for.
     typedef typename X::field_type field_type;
 
-    //! set up Loop solver
+    /*!
+       \brief Set up Loop solver.
+
+       \param op The operator we solve.
+       \param prec The preconditioner to apply in each iteration of the loop.
+       Has to inherit from Preconditioner.
+       \param reduction The relative defect reduction to achieve when applying
+       the operator.
+       \param maxit The maximum number of iteration steps allowed when applying
+       the operator.
+       \param verbose The verbosity level.
+
+       Verbose levels are:
+       <ul>
+       <li> 0 : print nothing </li>
+       <li> 1 : print initial and final defect and statistics </li>
+       <li> 2 : print line for each iteration </li>
+       </ul>
+     */
     template<class L, class P>
     LoopSolver (L& op, P& prec,
                 double reduction, int maxit, int verbose) :
@@ -137,13 +177,25 @@ namespace Dune {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
     }
 
-    /** \brief Set up loop solver
+    /**
+        \brief Set up loop solver
 
-       \param P The preconditioner type
+        \param op The operator we solve.
+        \param sp The scalar product to use, e. g. SeqScalarproduct.
+        \param prec The preconditioner to apply in each iteration of the loop.
+        Has to inherit from Preconditioner.
+        \param reduction The relative defect reduction to achieve when applying
+        the operator.
+        \param maxit The maximum number of iteration steps allowed when applying
+        the operator.
+        \pram verbose The verbosity level.
 
-       \param prec A preconditioner object
-       \param maxit Maximum number of iterations
-       \param verbose Verbosity level
+        Verbose levels are:
+        <ul>
+        <li> 0 : print nothing </li>
+        <li> 1 : print initial and final defect and statistics </li>
+        <li> 2 : print line for each iteration </li>
+        </ul>
      */
     template<class L, class S, class P>
     LoopSolver (L& op, S& sp, P& prec,
@@ -155,7 +207,7 @@ namespace Dune {
     }
 
 
-    //! apply inverse operator
+    //! \copydoc InverseOperator::apply(X&,Y&,InverseOperatorResult&)
     virtual void apply (X& x, X& b, InverseOperatorResult& r)
     {
       // clear solver statistics
@@ -221,7 +273,7 @@ namespace Dune {
         printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
     }
 
-    //! apply inverse operator, with given reduction factor
+    //! \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
     virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& r)
     {
       _reduction = reduction;
@@ -244,12 +296,18 @@ namespace Dune {
   template<class X>
   class GradientSolver : public InverseOperator<X,X> {
   public:
-    //! export types, usually they come from the derived class
+    //! \brief The domain type of the operator we are the inverse for.
     typedef X domain_type;
+    //! \brief The range type of the operator we are the inverse for.
     typedef X range_type;
+    //! \brief The field type of the operator we are the inverse for.
     typedef typename X::field_type field_type;
 
-    //! set up Loop solver
+    /*!
+       \brief Set up solver.
+
+       \copydoc LoopSolver::LoopSolver(L&,P&,double,int,int)
+     */
     template<class L, class P>
     GradientSolver (L& op, P& prec,
                     double reduction, int maxit, int verbose) :
@@ -258,6 +316,11 @@ namespace Dune {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
       IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
     }
+    /*!
+       \brief Set up solver.
+
+       \copydoc LoopSolver::LoopSolver(L&,S&,P&,double,int,int)
+     */
     template<class L, class S, class P>
     GradientSolver (L& op, S& sp, P& prec,
                     double reduction, int maxit, int verbose) :
@@ -267,60 +330,68 @@ namespace Dune {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
     }
 
-    //! apply inverse operator
+    /*!
+       \brief Apply inverse operator.
+
+       \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
+     */
     virtual void apply (X& x, X& b, InverseOperatorResult& r)
     {
-      r.clear();                      // clear solver statistics
-      Timer watch;                    // start a timer
-      _prec.pre(x,b);                 // prepare preconditioner
-      _op.applyscaleadd(-1,x,b);      // overwrite b with defect
+      r.clear();                  // clear solver statistics
+      Timer watch;                // start a timer
+      _prec.pre(x,b);             // prepare preconditioner
+      _op.applyscaleadd(-1,x,b);  // overwrite b with defect
 
-      X p(x);                         // create local vectors
+      X p(x);                     // create local vectors
       X q(b);
 
-      double def0 = _sp.norm(b);    // compute norm
+      double def0 = _sp.norm(b); // compute norm
 
-      if (_verbose>0)                 // printing
+      if (_verbose>0)             // printing
       {
         printf("=== GradientSolver\n");
         if (_verbose>1) printf(" Iter       Defect         Rate\n");
         if (_verbose>1) printf("%5d %12.4E\n",0,def0);
       }
 
-      int i=1; double def=def0;       // loop variables
+      int i=1; double def=def0;   // loop variables
       field_type lambda;
       for ( ; i<=_maxit; i++ )
       {
-        p = 0;                                // clear correction
-        _prec.apply(p,b);                     // apply preconditioner
-        _op.apply(p,q);                       // q=Ap
-        lambda = _sp.dot(p,b)/_sp.dot(q,p);          // minimization
-        x.axpy(lambda,p);                     // update solution
-        b.axpy(-lambda,q);                    // update defect
+        p = 0;                        // clear correction
+        _prec.apply(p,b);             // apply preconditioner
+        _op.apply(p,q);               // q=Ap
+        lambda = _sp.dot(p,b)/_sp.dot(q,p);  // minimization
+        x.axpy(lambda,p);             // update solution
+        b.axpy(-lambda,q);            // update defect
 
-        double defnew=_sp.norm(b);          // comp defect norm
-        if (_verbose>1)                       // print
+        double defnew=_sp.norm(b);  // comp defect norm
+        if (_verbose>1)               // print
           printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
-        def = defnew;                         // update norm
-        if (def<def0*_reduction || def<1E-30)              // convergence check
+        def = defnew;                 // update norm
+        if (def<def0*_reduction || def<1E-30)      // convergence check
         {
           r.converged  = true;
           break;
         }
       }
 
-      if (_verbose==1)                    // printing for non verbose
+      if (_verbose==1)                // printing for non verbose
         printf("%5d %12.4E\n",i,def);
-      _prec.post(x);                      // postprocess preconditioner
-      r.iterations = i;                   // fill statistics
+      _prec.post(x);                  // postprocess preconditioner
+      r.iterations = i;               // fill statistics
       r.reduction = def/def0;
       r.conv_rate  = pow(r.reduction,1.0/i);
       r.elapsed = watch.elapsed();
-      if (_verbose>0)                     // final print
+      if (_verbose>0)                 // final print
         printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
     }
 
-    //! apply inverse operator, with given reduction factor
+    /*!
+       \brief Apply inverse operator with given reduction factor.
+
+       \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
+     */
     virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& r)
     {
       _reduction = reduction;
@@ -339,16 +410,22 @@ namespace Dune {
 
 
 
-  //! conjugate gradient method
+  //! \brief conjugate gradient method
   template<class X>
   class CGSolver : public InverseOperator<X,X> {
   public:
-    //! export types, usually they come from the derived class
+    //! \brief The domain type of the operator we are the inverse for.
     typedef X domain_type;
+    //! \brief The range type of the operator we are the inverse for.
     typedef X range_type;
+    //! \brief The field type of the operator we are the inverse for.
     typedef typename X::field_type field_type;
 
-    //! set up Loop solver
+    /*!
+       \brief Set up conjugate gradient solver.
+
+       \copydoc LoopSolver::LoopSolver(L&,P&,double,int,int)
+     */
     template<class L, class P>
     CGSolver (L& op, P& prec, double reduction, int maxit, int verbose) :
       ssp(), _op(op), _prec(prec), _sp(ssp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
@@ -356,6 +433,11 @@ namespace Dune {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
       IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
     }
+    /*!
+       \brief Set up conjugate gradient solver.
+
+       \copydoc LoopSolver::LoopSolver(L&,S&,P&,double,int,int)
+     */
     template<class L, class S, class P>
     CGSolver (L& op, S& sp, P& prec, double reduction, int maxit, int verbose) :
       _op(op), _sp(sp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
@@ -364,7 +446,11 @@ namespace Dune {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
     }
 
-    //! Apply inverse operator
+    /*!
+       \brief Apply inverse operator.
+
+       \copydoc InverseOperator::apply(X&,Y&,InverseOperatorResult&)
+     */
     virtual void apply (X& x, X& b, InverseOperatorResult& r)
     {
       r.clear();                      // clear solver statistics
@@ -431,7 +517,11 @@ namespace Dune {
         printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
     }
 
-    //! apply inverse operator, with given reduction factor
+    /*!
+       \brief Apply inverse operator with given reduction factor.
+
+       \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
+     */
     virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& r)
     {
       _reduction = reduction;
@@ -450,16 +540,22 @@ namespace Dune {
 
 
   // Ronald Kriemanns BiCG-STAB implementation from Sumo
-  //! Bi-conjugate Gradient Stabilized (BiCG-STAB)
+  //! \brief Bi-conjugate Gradient Stabilized (BiCG-STAB)
   template<class X>
   class BiCGSTABSolver : public InverseOperator<X,X> {
   public:
-    //! export types, usually they come from the derived class
+    //! \brief The domain type of the operator we are the inverse for.
     typedef X domain_type;
+    //! \brief The range type of the operator we are the inverse for.
     typedef X range_type;
+    //! \brief The field type of the operator we are the inverse for.
     typedef typename X::field_type field_type;
 
-    //! set up Loop solver
+    /*!
+       \brief Set up solver.
+
+       \copydoc LoopSolver::LoopSolver(L&,P&,double,int,int);
+     */
     template<class L, class P>
     BiCGSTABSolver (L& op, P& prec,
                     double reduction, int maxit, int verbose) :
@@ -468,6 +564,11 @@ namespace Dune {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
       IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
     }
+    /*!
+       \brief Set up solver.
+
+       \copydoc LoopSolver::LoopSolver(L&,S&,P&,double,int,int);
+     */
     template<class L, class S, class P>
     BiCGSTABSolver (L& op, S& sp, P& prec,
                     double reduction, int maxit, int verbose) :
@@ -477,7 +578,11 @@ namespace Dune {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
     }
 
-    //! apply inverse operator
+    /*!
+       \brief Apply inverse operator.
+
+       \copydoc InverseOperator::apply(X&,Y&,InverseOperatorResult&)
+     */
     virtual void apply (X& x, X& b, InverseOperatorResult& res)
     {
       const double EPSILON=1e-40;
@@ -667,7 +772,11 @@ namespace Dune {
         printf("=== rate=%g, T=%g, TIT=%g\n",res.conv_rate,res.elapsed,res.elapsed/it);
     }
 
-    //! apply inverse operator, with given reduction factor
+    /*!
+       \brief Apply inverse operator with given reduction factor.
+
+       \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult)
+     */
     virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& r)
     {
       _reduction = reduction;

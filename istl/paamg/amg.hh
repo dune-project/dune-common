@@ -114,6 +114,7 @@ namespace Dune
 
     }
 
+    /** \copydoc Preconditioner::pre */
     template<class M, class X, class Y, class CS, class S, class A>
     void AMG<M,X,Y,CS,S,A>::pre(X& x, Y& b)
     {
@@ -143,6 +144,7 @@ namespace Dune
           smoother->pre(*lhs,*rhs);
     }
 
+    /** \copydoc Preconditioner::apply */
     template<class M, class X, class Y, class CS, class S, class A>
     void AMG<M,X,Y,CS,S,A>::apply(X& v, const Y& d)
     {
@@ -227,6 +229,7 @@ namespace Dune
       }
     }
 
+    /** \copydoc Preconditioner::post */
     template<class M, class X, class Y, class CS, class S, class A>
     void AMG<M,X,Y,CS,S,A>::post(X& x)
     {
