@@ -9,6 +9,7 @@
 
 <enter STYLESHEETS>
   <link rel="stylesheet" type="text/css" href="./dune-doxy.css">
+  <link rel="stylesheet" type="text/css" href="./tabs.css">
 <leave>
 
 <div class="main">
