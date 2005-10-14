@@ -11,8 +11,9 @@
 #include "topology.hh"
 
 namespace Dune {
-  // * Note: reconsider lazy evaluation of coordinates
 
+
+  // * Note: reconsider lazy evaluation of coordinates
 
   //- class ALU3dGridFaceInfo
   /* \brief Stores face and adjoining elements of the underlying ALU3dGrid
@@ -112,7 +113,7 @@ namespace Dune {
     typedef typename SelectType<
         SameType<Int2Type<tetra>,Int2Type<type> >::value,
         ALU3DSPACE LinearSurfaceMapping,
-        BilinearSurfaceMapping
+        ALU3DSPACE BilinearSurfaceMapping
         >::Type SurfaceMappingType;
 
     typedef typename SelectType<
@@ -139,6 +140,7 @@ namespace Dune {
         numVerticesPerFace,
         dimworld> CoordinateType;
 
+    typedef typename ALU3dGridFaceInfo<type>::GEOFaceType GEOFaceType;
   public:
     typedef ALU3dGridFaceInfo<type> ConnectorType;
 
@@ -172,7 +174,11 @@ namespace Dune {
     void referenceElementCoordinatesUnrefined(SideIdentifier side,
                                               CoordinateType& result) const;
 
+    // old method , copies values for tetra twice
     SurfaceMappingType* buildSurfaceMapping(const CoordinateType& coords) const;
+
+    // get face and doesnt copy values twice
+    SurfaceMappingType* buildSurfaceMapping(const GEOFaceType & face) const;
 
     NormalType calculateNormal(const SurfaceMappingType& mapping,
                                const FieldVector<alu3d_ctype, 2>& local) const;
@@ -196,7 +202,30 @@ namespace Dune {
 
     static ReferenceElementType refElem_;
     static ReferenceFaceType refFace_;
+
+  private:
+    // convert FieldVectors to alu3dtypes
+    // only used for calculating the normals because the method of the
+    // mapping classes want double (&)[3] and we have FieldVectors which store an
+    // double [3] this is why we can cast here
+    // plz say notin' Adrian
+    template <int dim>
+    alu3d_ctype (& fieldVector2alu3d_ctype ( FieldVector <alu3d_ctype,dim> & val ) const )[dim]
+    {
+      return ((alu3d_ctype (&)[dim])(*( &(val[0])) ));
+    }
+
+    // convert const FieldVectors to const alu3dtypes
+    template <int dim>
+    const alu3d_ctype (& fieldVector2alu3d_ctype ( const FieldVector <alu3d_ctype,dim> & val ) const )[dim]
+    {
+      return ((const alu3d_ctype (&)[dim])(*( &(val[0])) ) );
+    }
+
+
   };
+
+
 
 } // end namespace Dune
 

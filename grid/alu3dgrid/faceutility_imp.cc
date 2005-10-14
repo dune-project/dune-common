@@ -220,16 +220,22 @@ namespace Dune {
   FieldVector<alu3d_ctype, 3>
   ALU3dGridGeometricFaceInfo<type>::
   outerNormal(const FieldVector<alu3d_ctype, 2>& local) const {
+
     // construct a mapping (either a linear or a bilinear one)
     if (!mappingGlobal_) {
-      CoordinateType coords;
-      for (int i = 0; i < numVerticesPerFace; ++i) {
-        const double (&p)[3] =
-          connector_.face().myvertex(FaceTopo::dune2aluVertex(i))->Point();
-        convert2FieldVector(p, coords[i] );
-      } // end for
 
-      mappingGlobal_ = buildSurfaceMapping(coords);
+      /*
+         CoordinateType coords;
+         for (int i = 0; i < numVerticesPerFace; ++i) {
+         const double (&p)[3] =
+          connector_.face().myvertex(FaceTopo::dune2aluVertex(i))->Point();
+         convert2FieldVector(p, coords[i] );
+         } // end for
+
+         mappingGlobal_ = buildSurfaceMapping(coords);
+       */
+
+      mappingGlobal_ = buildSurfaceMapping(connector_.face());
     } // end if
 
     // calculate the normal

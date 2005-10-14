@@ -4,6 +4,11 @@
 #include "faceutility.hh"
 
 namespace Dune {
+
+  // just for simplicity
+  //typedef BilinearSurfaceMapping BilinearSurfaceMappingType;
+  typedef ALU3DSPACE BilinearSurfaceMapping BilinearSurfaceMappingType;
+
   //- class ALU3dGridGeometricFaceInfo
   template <>
   ALU3DSPACE LinearSurfaceMapping*
@@ -19,13 +24,73 @@ namespace Dune {
   }
 
   template <>
-  BilinearSurfaceMapping*
+  BilinearSurfaceMappingType*
   ALU3dGridGeometricFaceInfo<hexa>::
   buildSurfaceMapping(const CoordinateType& coords) const {
-    return new BilinearSurfaceMapping(coords[0],
+    /*
+       return new BilinearSurfaceMappingType(coords[0],
                                       coords[1],
                                       coords[2],
                                       coords[3]);
+     */
+    alu3d_ctype tmp[4][3];
+    convert2CArray(coords[0], tmp[0]);
+    convert2CArray(coords[1], tmp[1]);
+    convert2CArray(coords[2], tmp[2]);
+    convert2CArray(coords[3], tmp[3]);
+    return new BilinearSurfaceMappingType(tmp[0],
+                                          tmp[1],
+                                          tmp[2],
+                                          tmp[3]);
+  }
+
+  // new methods
+  template <>
+  ALU3DSPACE LinearSurfaceMapping*
+  ALU3dGridGeometricFaceInfo<tetra>::
+  buildSurfaceMapping(const GEOFaceType & face) const
+  {
+    // NOTE: points are fliped
+    // flip coordinates here, otherwise normal doesn't point outside
+    const double (& p0)[3] = face.myvertex(0)->Point();
+    const double (& p1)[3] = face.myvertex(1)->Point();
+    const double (& p2)[3] = face.myvertex(2)->Point();
+
+    // this is the original ALUGrid LinearSurfaceMapping, see mapp_tetra_3d.*
+    // in ALUGrid code
+    return new ALU3DSPACE LinearSurfaceMapping(p0,
+                                               p1,
+                                               p2);
+  }
+
+  template <>
+  BilinearSurfaceMappingType*
+  ALU3dGridGeometricFaceInfo<hexa>::
+  buildSurfaceMapping(const GEOFaceType & face) const
+  {
+    /*
+       CoordinateType coords;
+       for (int i = 0; i < numVerticesPerFace; ++i) {
+       const double (&p)[3] = face.myvertex(FaceTopo::dune2aluVertex(i))->Point();
+       convert2FieldVector(p, coords[i] );
+       } // end for
+
+       // this is the new implementation using FieldVector
+       // see mappings.hh
+       return new BilinearSurfaceMappingType(coords[0],
+                                      coords[1],
+                                      coords[2],
+                                      coords[3]);
+     */
+
+    const double (&p0)[3] = face.myvertex(0)->Point();
+    const double (&p1)[3] = face.myvertex(1)->Point();
+    const double (&p2)[3] = face.myvertex(2)->Point();
+    const double (&p3)[3] = face.myvertex(3)->Point();
+
+    // this is the new implementation using FieldVector
+    // see mappings.hh
+    return new BilinearSurfaceMappingType(p0, p1 , p2 , p3 );
   }
 
   template <>
@@ -35,11 +100,13 @@ namespace Dune {
                   const FieldVector<alu3d_ctype, 2>& local) const {
     enum { dimworld = 3 };
 
-    alu3d_ctype normal[dimworld];
-    mapping.normal(normal);
+    //alu3d_ctype normal[dimworld];
+    //mapping.normal(normal);
 
     NormalType result;
-    convert2FieldVector(normal, result);
+    //convert2FieldVector(normal, result);
+
+    mapping.normal( fieldVector2alu3d_ctype ( result ) );
 
     return result;
   }
@@ -48,9 +115,17 @@ namespace Dune {
   ALU3dGridGeometricFaceInfo<hexa>::NormalType
   ALU3dGridGeometricFaceInfo<hexa>::
   calculateNormal(const SurfaceMappingType& mapping,
-                  const FieldVector<alu3d_ctype, 2>& local) const {
+                  const FieldVector<alu3d_ctype, 2>& local) const
+  {
+    // the type save way
+    //const double localTmp[2] = { local[0] , local [1] };
+    //alu3d_ctype normal[dimworld];
+    //mapping.normal(localTmp,normal);
+    //convert2FieldVector(normal, result);
+
     NormalType result;
-    mapping.normal(local, result);
+    mapping.normal( fieldVector2alu3d_ctype ( local ) ,
+                    fieldVector2alu3d_ctype ( result ) );
     return result;
   }
 
