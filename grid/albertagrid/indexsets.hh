@@ -217,7 +217,6 @@ namespace Dune {
     //! create id set, only allowed for AlbertaGrid
     AlbertaGridIdSet(const GridType & grid) : hset_(grid.hierarchicIndexSet())
     {
-      derr << "WARNING: AlbertaGridGlobalIdSet not ready for parallel computations right now! \n";
       for(int i=0; i<dim+1; i++)
         codimStart_[i] = i*codimMultiplier;
     }

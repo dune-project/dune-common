@@ -451,8 +451,8 @@ namespace Dune
     //! return element for equaltiy in EntityPointer
     ALBERTA EL *getElement () const;
 
-    //! set elInfo and Element to nil
-    void removeElInfo() { elInfo_ = 0; element_ = 0 ; }
+    //! set elInfo and Element and builtgeometry to zero
+    void removeElInfo();
 
     //! return the current face/edge or vertex number
     //! no interface method
@@ -664,7 +664,7 @@ namespace Dune
     ALBERTA EL *getElement () const;
 
     //! set elInfo and Element to nil
-    void removeElInfo() { elInfo_ = 0; element_ = 0;}
+    void removeElInfo();
 
     //! equality of entities
     bool equals ( const AlbertaGridEntity<0,dim,GridImp> & i) const;
