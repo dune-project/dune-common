@@ -137,7 +137,9 @@ namespace Dune
       RIterator rhs = rhs_->finest();
       DIterator lhs = lhs_->finest();
 
-      smoother->pre(*lhs,*rhs);
+      if(rhs!=rhs_->coarsest())
+        // No smoothers!
+        smoother->pre(*lhs,*rhs);
 
       if(smoother != coarsest)
         for(++smoother, ++lhs, ++rhs; smoother != coarsest; ++smoother, ++lhs, ++rhs)
