@@ -55,6 +55,10 @@ namespace Dune {
   };
 
   //! A bilinear surface mapping
+  // NOTE: this class is different to the BilinearSurfaceMapping in
+  // ALUGrid, for example the reference elements differ
+  // here we have [0,1]^2 and in ALUGrid its [-1,1]^2
+  // also the point numbering is different
   class BilinearSurfaceMapping {
     typedef FieldVector<double, 3> coord3_t;
     typedef FieldVector<double, 2> coord2_t;
