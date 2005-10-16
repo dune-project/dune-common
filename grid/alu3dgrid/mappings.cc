@@ -104,6 +104,11 @@ namespace Dune {
        //                   -----------------------
        //         (1,0,0) = P_0   (0.5,0.5,0)    P_1 = (0,1,0)
        //                         = (P_0 + P_1)/
+       //
+       //  NOTE: the strange numbering of the childs is due to the swap
+       //  of the vertex number form ALUGrid to Dune reference triangles faces
+       //  This means that in ALUGrid child 1 and 2 are swaped compared to
+       //  this example here.
      */
 
     // this mapping map from the points (P_0,P_1,P_2) to the
