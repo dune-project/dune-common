@@ -5,6 +5,7 @@
 namespace Dune {
   const double TrilinearMapping :: _epsilon = 1.0e-8 ;
 
+
   NonConformingFaceMapping<tetra>::
   NonConformingFaceMapping(RefinementRuleType rule,
                            int nChild) :
@@ -71,36 +72,126 @@ namespace Dune {
 
   void NonConformingFaceMapping<tetra>::
   child2parentIso4(const CoordinateType& childCoordinates,
-                   CoordinateType& parentCoordinates) const {
+                   CoordinateType& parentCoordinates) const
+  {
+    /*
+       // The ordering of the coordinates are according to a Dune reference triangle
+       //
+       //  NOTE: all coordinates are barycentric (with respect to (P_0, P_1, P_2)
+       //
+       //                  P_2 = (0,0,1)
+       //                   |\
+       //                   | \
+       //                   |  \      each sub triangle is numbered as used below
+       //                   |   \     local numbering is count clockwise
+       //                   |    \    starting with the lower left vertex
+       //                   |     \   (i.e. child 0 consits of  { P_0, (P_0+P_1)/2 , (P_0+P_2)/2 }  )
+       //                   |      \
+       //                   |   1   \
+       //                   |        \
+       //                   |         \
+       //      (0.5,0,0.5)  |----------\  (0,0.5,0.5) = (P_1 + P_2)/2
+       //   = (P_0 + P_2)/2 |\         |\
+       //                   | \        | \
+       //                   |  \   3   |  \
+       //                   |   \      |   \
+       //                   |    \     |    \
+       //                   |     \    |     \
+       //                   |      \   |      \
+       //                   |  0    \  |   2   \
+       //                   |        \ |        \
+       //                   |         \|         \
+       //                   -----------------------
+       //         (1,0,0) = P_0   (0.5,0.5,0)    P_1 = (0,1,0)
+       //                         = (P_0 + P_1)/
+     */
+
+    // this mapping map from the points (P_0,P_1,P_2) to the
+    // 4 sub triangles from the picture above
+    //
+    // TODO: this mapping is static, so store it in an map
     switch(nChild_) {
     case 0 :
+      // (1,0,0) --> (1,0,0)
+      // (0,1,0) --> (0.5,0,5,0)
+      // (0,0,1) --> (0.5,0,0.5)
       parentCoordinates[0] =
         1.0 - 0.5*childCoordinates[1] - 0.5*childCoordinates[2];
-      parentCoordinates[1] = 0,5*childCoordinates[1];
+
+      // this rocks , best bug ever
+      //parentCoordinates[1] = 0,5*childCoordinates[1];
+
+      parentCoordinates[1] = 0.5*childCoordinates[1];
       parentCoordinates[2] = 0.5*childCoordinates[2];
       break;
-    case 1 :
-      parentCoordinates[0] = 0.5*childCoordinates[0];
-      parentCoordinates[1] =
-        1.0 - 0.5*childCoordinates[0] - 0.5*childCoordinates[2];
-      parentCoordinates[2] = 0.5*childCoordinates[2];
-      break;
-    case 2 :
+    case 1 : // swaped case 1 and case 2
+      // (1,0,0) --> (0.5,0,0.5)
+      // (0,1,0) --> (0,0,5,0)
+      // (0,0,1) --> (0,0,1)
       parentCoordinates[0] = 0.5*childCoordinates[0];
       parentCoordinates[1] = 0.5*childCoordinates[1];
       parentCoordinates[2] =
         1.0 - 0.5*childCoordinates[0] - 0.5*childCoordinates[1];
       break;
+    case 2 :
+      // (1,0,0) --> (0.5,0,5,0)
+      // (0,1,0) --> (0,1,0)
+      // (0,0,1) --> (0.5,0.5,0)
+      parentCoordinates[0] = 0.5*childCoordinates[0];
+      parentCoordinates[1] =
+        1.0 - 0.5*childCoordinates[0] - 0.5*childCoordinates[2];
+      parentCoordinates[2] = 0.5*childCoordinates[2];
+      break;
     case 3 :
-      parentCoordinates[0] = 0.5 - 0.5*childCoordinates[0];
-      parentCoordinates[1] = 0.5 - 0.5*childCoordinates[1];
-      parentCoordinates[2] = 0.5 - 0.5*childCoordinates[2];
+      // (1,0,0) --> (0.5,0,0.5)
+      // (0,1,0) --> (0.5,0.5,0)
+      // (0,0,1) --> (0,0.5,0.5)
+      // here swaped all to the next position
+      parentCoordinates[1] = 0.5 - 0.5*childCoordinates[0];
+      parentCoordinates[2] = 0.5 - 0.5*childCoordinates[1];
+      parentCoordinates[0] = 0.5 - 0.5*childCoordinates[2];
       break;
     default :
       DUNE_THROW(RangeError, "Only 4 children on a tetrahedron face (val = "
                  << nChild_ << ")");
 
     } // end switch
+
+    /*
+       switch(nChild_) {
+       case 0:
+       parentCoordinates[0] =
+        1.0 - 0.5*childCoordinates[1] - 0.5*childCoordinates[2];
+       // this rocks , best bug ever
+       //parentCoordinates[1] = 0,5*childCoordinates[1];
+
+       parentCoordinates[1] = 0.5*childCoordinates[1];
+       parentCoordinates[2] = 0.5*childCoordinates[2];
+       break;
+       case 1:
+       parentCoordinates[0] = 0.5*childCoordinates[0];
+       parentCoordinates[1] =
+        1.0 - 0.5*childCoordinates[0] - 0.5*childCoordinates[2];
+       parentCoordinates[2] = 0.5*childCoordinates[2];
+       break;
+       case 2:
+       parentCoordinates[0] = 0.5*childCoordinates[0];
+       parentCoordinates[1] = 0.5*childCoordinates[1];
+       parentCoordinates[2] =
+        1.0 - 0.5*childCoordinates[0] - 0.5*childCoordinates[1];
+       break;
+       case 3:
+       parentCoordinates[0] = 0.5 - 0.5*childCoordinates[0];
+       parentCoordinates[1] = 0.5 - 0.5*childCoordinates[1];
+       parentCoordinates[2] = 0.5 - 0.5*childCoordinates[2];
+       break;
+       default:
+       DUNE_THROW(RangeError, "Only 4 children on a tetrahedron face (val = "
+                 << nChild_ << ")");
+
+       } // end switch
+     */
+    std::cout << " parentCoords = " << parentCoordinates << " for child = "<< nChild_ << " \n";
   }
 
   //- Specialisation for hexa
@@ -144,6 +235,25 @@ namespace Dune {
                    CoordinateType& parentCoordinates) const {
 
     // The ordering of the coordinates are according to a Dune reference elemen
+    //
+    //
+    //   (0,1)                   (1,1)
+    //    -------------------------
+    //    |           |           |     childs within the reference
+    //    |           |           |     quadrilateral of Dune
+    //    |    1      |     2     |
+    //    |           |           |
+    //    |           |           |
+    //    |-----------|-----------|
+    //    |           |           |
+    //    |           |           |
+    //    |    0      |     3     |
+    //    |           |           |
+    //    |           |           |
+    //    -------------------------
+    //  (0,0)                    (1,0)
+    //
+    //
     switch(nChild_) {
     case 0 :
       parentCoordinates[0] = 0.5*childCoordinates[0];
