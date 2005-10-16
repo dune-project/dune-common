@@ -113,7 +113,7 @@ namespace Dune {
     typedef typename SelectType<
         SameType<Int2Type<tetra>,Int2Type<type> >::value,
         ALU3DSPACE LinearSurfaceMapping,
-        ALU3DSPACE BilinearSurfaceMapping
+        BilinearSurfaceMapping
         >::Type SurfaceMappingType;
 
     typedef typename SelectType<
