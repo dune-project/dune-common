@@ -128,14 +128,21 @@ namespace Dune {
   }
 
   // alu traingle face are oriented just the other way then dune faces
-  // therefor vertex 1 and 2 are swaped
+  // therefor vertex 1 and 2 are swaped because
+  // ALUGrid tetra face are oriented just the other way compared to Dune
+  // tetra faces, see also gitter_geo.cc of the ALUGrid code
   template <>
   const int FaceTopologyMapping<tetra>::
   dune2aluVertex_[EntityCount<tetra>::numVerticesPerFace] = {0, 2, 1};
 
+
+  // the mapping of vertices in the reference quad
+  // this is used for hexa face during intersection iterator build
+  // and to calculate the intersectionSelfLocal and
+  // intersectionSelfNeighbor geometries.
   template <>
   const int FaceTopologyMapping<hexa>::
-  dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 1, 3, 2};
+  dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 3, 1, 2};
 
   // alu traingle face are oriented just the other way then dune faces
   // therefor vertex 1 and 2 are swaped
@@ -145,7 +152,7 @@ namespace Dune {
 
   template <>
   const int FaceTopologyMapping<hexa>::
-  alu2duneVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 1, 3, 2};
+  alu2duneVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 2, 3, 1};
 
   template <>
   const int FaceTopologyMapping<tetra>::
