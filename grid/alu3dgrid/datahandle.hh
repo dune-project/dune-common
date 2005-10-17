@@ -257,7 +257,7 @@ namespace ALUGridSpace {
       return 0;
     }
 
-    int maxlevel () const { return maxlevel_; }
+    int maxLevel () const { return maxlevel_; }
   };
 
 
