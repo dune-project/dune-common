@@ -144,8 +144,8 @@ namespace Dune {
   const int FaceTopologyMapping<hexa>::
   dune2aluVertex_[EntityCount<hexa>::numVerticesPerFace] = {0, 3, 1, 2};
 
-  // alu traingle face are oriented just the other way then dune faces
-  // therefor vertex 1 and 2 are swaped
+  // alu triangle face are oriented just the other way then dune faces
+  // therefore vertex 1 and 2 are swaped
   template <>
   const int FaceTopologyMapping<tetra>::
   alu2duneVertex_[EntityCount<tetra>::numVerticesPerFace] = {0, 2, 1};
