@@ -3055,7 +3055,7 @@ namespace Dune
       GrapeDataIO < AlbertaGrid <dim,dimworld> > dataIO;
       dataIO.readGrid ( *this, MacroTriangFilename,time,0);
     }
-    std::cout << "AlbertaGrid<"<<dim<<","<<dimworld<<"> created from macro grid file '" << macroTriangFilename << "'. \n";
+    std::cout << "AlbertaGrid<"<<dim<<","<<dimworld<<"> created from macro grid file '" << macroTriangFilename << "'. \n\n";
   }
 
   template < int dim, int dimworld >
