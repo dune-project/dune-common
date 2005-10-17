@@ -542,8 +542,6 @@ namespace Dune {
       updateStatus();
     }
 
-    myGrid().printsize();
-
     // check whether we have balance
     loadBalance(dm);
     dm.dofCompress();
