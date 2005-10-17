@@ -161,48 +161,6 @@ namespace Dune {
                  << nChild_ << ")");
 
     } // end switch
-
-    /*
-       switch(nChild_) {
-       case 0:
-       parentCoordinates[0] =
-        1.0 - 0.5*childCoordinates[1] - 0.5*childCoordinates[2];
-       // this rocks , best bug ever
-       //parentCoordinates[1] = 0,5*childCoordinates[1];
-
-       parentCoordinates[1] = 0.5*childCoordinates[1];
-       parentCoordinates[2] = 0.5*childCoordinates[2];
-       break;
-       case 1:
-       parentCoordinates[0] = 0.5*childCoordinates[0];
-       parentCoordinates[1] =
-        1.0 - 0.5*childCoordinates[0] - 0.5*childCoordinates[2];
-       parentCoordinates[2] = 0.5*childCoordinates[2];
-       break;
-       case 2:
-       parentCoordinates[0] = 0.5*childCoordinates[0];
-       parentCoordinates[1] = 0.5*childCoordinates[1];
-       parentCoordinates[2] =
-        1.0 - 0.5*childCoordinates[0] - 0.5*childCoordinates[1];
-       break;
-       case 3:
-       // (1,0,0) --> (0.5,0,0.5)
-       // (0,1,0) --> (0.5,0.5,0)
-       // (0,0,1) --> (0,0.5,0.5)
-       //parentCoordinates[0] = 0.5 - 0.5*childCoordinates[0];
-       //parentCoordinates[1] = 0.5 - 0.5*childCoordinates[1];
-       //parentCoordinates[2] = 0.5 - 0.5*childCoordinates[2];
-       parentCoordinates[2] = 0.5 - 0.5*childCoordinates[0];
-       parentCoordinates[0] = 0.5 - 0.5*childCoordinates[1];
-       parentCoordinates[1] = 0.5 - 0.5*childCoordinates[2];
-       break;
-       default:
-       DUNE_THROW(RangeError, "Only 4 children on a tetrahedron face (val = "
-                 << nChild_ << ")");
-
-       } // end switch
-     */
-    //std::cout << " parentCoords = " << parentCoordinates << " for child = "<< nChild_ << " \n";
   }
 
   //- Specialisation for hexa
