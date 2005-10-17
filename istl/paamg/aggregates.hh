@@ -327,49 +327,14 @@ namespace Dune
       /**
        * @brief Breadth first search within an aggregate
        *
-       * @param start The vertex where the search should start
-       * from. This does not need to belong to the aggregate.
-       * @param aggregate The aggregate id.
-       * @param graph The matrix graph to perform the search on.
-       */
-      template<class G>
-      int breadthFirstSearch(const VertexDescriptor& start,
-                             const AggregateDescriptor& aggregate,
-                             G& graph) const;
-
-      /**
-       * @brief Breadth first search within an aggregate
-       *
-       * @param start The vertex where the search should start
-       * from. This does not need to belong to the aggregate.
-       * @param aggregate The aggregate id.
-       * @param graph The matrix graph to perform the search on.
-       * @param visitedMap a map for marking the vertices as visited.
-       */
-      template<class G, class VM>
-      int breadthFirstSearch(const VertexDescriptor& start,
-                             const AggregateDescriptor& aggregate,
-                             G& graph, VM& visitedMap) const;
-      /**
-       * @brief Breadth first search within an aggregate
-       *
-       * @param start The vertex where the search should start
-       * from. This does not need to belong to the aggregate.
-       * @param aggregate The aggregate id.
-       * @param graph The matrix graph to perform the search on.
-       *
-         template<class G, class F1, class F2>
-         int breadthFirstSearch(const VertexDescriptor& start, AggregateDescriptor aggregate,
-                             G& graph, F1& aggregateVisitor, F2& nongAggregateVisitor) const;
-       */
-      /**
-       * @brief Breadth first search within an aggregate
-       *
        * The template parameters: <br />
-       * L A container type providing push_back(Vertex), and
-       * pop_front() in case remove is true<br />
-       * remove If true the entries in the visited list
-       * will be removed.
+       * <dl>
+       * <dt>reset</dt><dd>If true the visited flags of the vertices
+       *  will be reset after
+       * the search</dd>
+       * <dt>G</dt><dd>The type of the graph we perform the search on.</dd>
+       * <td>F</dt><dd>
+       * </dl>
        * @param start The vertex where the search should start
        * from. This does not need to belong to the aggregate.
        * @param aggregate The aggregate id.
@@ -390,10 +355,12 @@ namespace Dune
        * @brief Breadth first search within an aggregate
        *
        * The template parameters: <br />
-       * L A container type providing push_back(Vertex), and
-       * pop_front() in case remove is true<br />
-       * remove If true the entries in the visited list
-       * will be removed.
+       * <dl><dt>L</dt><dd>A container type providing push_back(Vertex), and
+       * pop_front() in case remove is true</dd>
+       * <dt>remove</dt><dd> If true the entries in the visited list
+       * will be removed.</dd>
+       * <dt>reset</dt><dd>If true the visited flag will be reset after
+       * the search</dd></dl>
        * @param start The vertex where the search should start
        * from. This does not need to belong to the aggregate.
        * @param aggregate The aggregate id.
@@ -1094,7 +1061,6 @@ namespace Dune
     template<class G>
     void Aggregate<G>::reconstruct(const Vertex& vertex)
     {
-      assert(!graph_[vertex].excluded());
       vertices_.push_back(vertex);
       typedef typename VertexList::const_iterator iterator;
       iterator begin = vertices_.begin();
@@ -1201,31 +1167,6 @@ namespace Dune
     AggregatesMap<V>::operator[](const VertexDescriptor& v) const
     {
       return aggregates_[v];
-    }
-
-
-    template<class V>
-    template<class G>
-    inline int AggregatesMap<V>::breadthFirstSearch(const V& start,
-                                                    const AggregateDescriptor& aggregate,
-                                                    G& graph) const
-    {
-      typename PropertyMapTypeSelector<VertexVisitedTag,G>::Type visitedMap = get(VertexVisitedTag(), graph);
-
-      return breadthFirstSearch(start, aggregate, graph,
-                                visitedMap);
-    }
-
-    template<class V>
-    template<class G, class VM>
-    inline int AggregatesMap<V>::breadthFirstSearch(const V& start,
-                                                    const AggregateDescriptor& aggregate,
-                                                    G& graph, VM& visitedMap) const
-    {
-      VertexList vlist;
-      DummyEdgeVisitor dummy;
-      return breadthFirstSearch<true,true>(start, aggregate, graph, vlist, dummy, dummy,
-                                           visitedMap);
     }
 
     template<class V>
@@ -1508,7 +1449,10 @@ namespace Dune
     template<class G>
     int Aggregator<G>::distance(const Vertex& vertex, const AggregatesMap<Vertex>& aggregates)
     {
-      return aggregates.breadthFirstSearch(vertex, aggregate_->id(), *graph_);
+      typename PropertyMapTypeSelector<VertexVisitedTag,G>::Type visitedMap = get(VertexVisitedTag(), *graph_);
+      typename AggregatesMap<Vertex>::VertexList vlist;
+      typename AggregatesMap<Vertex>::DummyEdgeVisitor dummy;
+      return aggregates.template breadthFirstSearch<true,true>(vertex, aggregate_->id(), *graph_, vlist, dummy, dummy, visitedMap);
     }
 
     template<class G>
@@ -1782,22 +1726,29 @@ namespace Dune
           if(!graph.getVertexProperties(seed).isolated()) {
             Vertex mergedNeighbour = mergeNeighbour(seed, aggregates);
 
-            if(mergedNeighbour != AggregatesMap<Vertex>::UNAGGREGATED)
+            if(mergedNeighbour != AggregatesMap<Vertex>::UNAGGREGATED) {
               aggregates[seed] = aggregates[mergedNeighbour];
-            else{
-              oneAggregates++;
-              conAggregates++;
+              /* // Reconstruct aggregate. Needed for markFront
+                 this->template breadthFirstSearch<
+                 visitAggregateNeighbours(seed, aggregates[seed], aggregates,)
+                 if(aggregate_->size()==2)
+                 // Was a one node aggregate formerly
+                 --oneAggregates;
+               */
+            }else{
+              ++oneAggregates;
+              ++conAggregates;
             }
 
           }else{
-            oneAggregates++;
-            isoAggregates++;
+            ++oneAggregates;
+            ++isoAggregates;
           }
         else{
           if(graph.getVertexProperties(seed).isolated())
-            isoAggregates++;
+            ++isoAggregates;
           else
-            conAggregates++;
+            ++conAggregates;
         }
         unmarkFront();
         markFront(aggregates);
@@ -1806,7 +1757,8 @@ namespace Dune
       }
 
       Dune::dinfo<<"connected aggregates: "<<conAggregates;
-      Dune::dinfo<<" isolated aggregates: "<<isoAggregates<<std::endl;
+      Dune::dinfo<<" isolated aggregates: "<<isoAggregates;
+      Dune::dinfo<<" one node aggregates: "<<oneAggregates<<std::endl;
 
       delete aggregate_;
       return conAggregates+isoAggregates;
