@@ -3,6 +3,9 @@
 #ifndef DUNE_LAGRANGEBASEFUNCTIONS_HH
 #define DUNE_LAGRANGEBASEFUNCTIONS_HH
 
+// - System includes
+#include <vector>
+
 #include <dune/common/array.hh>
 #include <dune/grid/common/grid.hh>
 
@@ -761,15 +764,17 @@ namespace Dune {
     //! InterfaceImplementation
     LagrangeFastBaseFunctionSet( FunctionSpaceType &fuSpace )
       :  FastBaseFunctionSet<FunctionSpaceType >
-          ( fuSpace, numOfBaseFct )
+          ( fuSpace, numOfBaseFct ) , baseFuncList_(numOfBaseFct,0)
     {
       int numOfDifferentFuncs = (int) numOfBaseFct / dimrange;
       for(int i=0; i<numOfDifferentFuncs; i++)
       {
         for(int k=0; k<dimrange; k++)
         {
-          baseFuncList_[i*dimrange + k] = new LagrangeBaseFunctionType ( i ) ;
-          this->setBaseFunctionPointer ( i*dimrange + k , baseFuncList_[i*dimrange + k] );
+          //baseFuncList_[ i*dimrange + k ] = new LagrangeBaseFunctionType ( i ) ;
+          size_t idx = i*dimrange + k;
+          baseFuncList_[ idx ] = new LagrangeBaseFunctionType ( i ) ;
+          this->setBaseFunctionPointer ( idx , baseFuncList_[ idx ] );
         }
       }
       this->setNumOfDiffFct ( numOfDifferentFuncs );
@@ -779,7 +784,7 @@ namespace Dune {
     ~LagrangeFastBaseFunctionSet( )
     {
       for(int i=0; i<numOfBaseFct; i++)
-        delete baseFuncList_(i);
+        if( baseFuncList_[i] ) delete baseFuncList_[i];
     };
 
     //! return number of base function for this base function set
@@ -793,7 +798,7 @@ namespace Dune {
     }
   private:
     //! Vector with all base functions corresponding to the base function set
-    FieldVector <LagrangeBaseFunctionType*, numOfBaseFct> baseFuncList_;
+    std::vector < LagrangeBaseFunctionType* > baseFuncList_;
   };
 
 } // end namespace Dune
