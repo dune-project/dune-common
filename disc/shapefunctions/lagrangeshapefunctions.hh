@@ -221,7 +221,7 @@ namespace Dune
 
   //! This are Lagrange shape functions for any element type and order (in the future ... )
   template<typename C, typename T, int d>
-  class LagrangeShapeFunctionSetContainer : public ShapeFunctionSetContainer<C,T,d,1,Power_m_p<2,d>::power >
+  class LagrangeShapeFunctionSetContainer : public ShapeFunctionSetContainer<C,T,d,1,Power_m_p<3,d>::power >
   {
   public:
     // compile time sizes
