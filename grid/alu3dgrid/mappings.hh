@@ -24,15 +24,7 @@ namespace Dune {
     typedef FieldMatrix<double, 3, 3> mat_t;
     static const double _epsilon ;
 
-    const coord_t& p0;
-    const coord_t& p1;
-    const coord_t& p2;
-    const coord_t& p3;
-    const coord_t& p4;
-    const coord_t& p5;
-    const coord_t& p6;
-    const coord_t& p7;
-
+    // the internal mapping
     double a [8][3] ;
     mat_t Df;
     mat_t Dfi;
@@ -60,22 +52,33 @@ namespace Dune {
   // here we have [0,1]^2 and in ALUGrid its [-1,1]^2
   // also the point numbering is different
   class BilinearSurfaceMapping {
+    // our coordinate types
     typedef FieldVector<double, 3> coord3_t;
     typedef FieldVector<double, 2> coord2_t;
-    const coord3_t& _p0;
-    const coord3_t& _p1;
-    const coord3_t& _p2;
-    const coord3_t& _p3;
+
+    // type of coordinate vectors from elements
+    typedef double double3_t[3];
+
     double _b [4][3] ;
     double _n [3][3] ;
   public:
+    //! Constructor getting FieldVectors
     BilinearSurfaceMapping (const coord3_t&, const coord3_t&,
                             const coord3_t&, const coord3_t&) ;
+    //! Constructor for double[3]
+    BilinearSurfaceMapping (const double3_t &, const double3_t &,
+                            const double3_t &, const double3_t &) ;
     BilinearSurfaceMapping (const BilinearSurfaceMapping &) ;
     ~BilinearSurfaceMapping () {}
     void map2world(const coord2_t&, coord3_t&) const ;
     void map2world(double x, double y, coord3_t&) const ;
     void normal(const coord2_t&, coord3_t&) const ;
+
+  private:
+    // builds _b and _n, called from the constructors
+    template <class vector_t>
+    void buildMapping (const vector_t & , const vector_t & ,
+                       const vector_t & , const vector_t & );
   } ;
 
   //! General form of non-conforming face mapping

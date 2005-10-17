@@ -5,11 +5,11 @@ namespace Dune {
 
   //- Trilinear mapping (from alu3dmappings.hh)
   inline TrilinearMapping ::
-  TrilinearMapping (const coord_t& x0, const coord_t& x1,
-                    const coord_t& x2, const coord_t& x3,
-                    const coord_t& x4, const coord_t& x5,
-                    const coord_t& x6, const coord_t& x7)
-    : p0(x0), p1(x1), p2(x2), p3(x3), p4(x4), p5(x5), p6(x6), p7(x7) {
+  TrilinearMapping (const coord_t& p0, const coord_t& p1,
+                    const coord_t& p2, const coord_t& p3,
+                    const coord_t& p4, const coord_t& p5,
+                    const coord_t& p6, const coord_t& p7)
+  {
     a [0][0] = p0 [0] ;
     a [0][1] = p0 [1] ;
     a [0][2] = p0 [2] ;
@@ -38,8 +38,7 @@ namespace Dune {
   }
 
   inline TrilinearMapping :: TrilinearMapping (const TrilinearMapping & map)
-    : p0(map.p0), p1(map.p1), p2(map.p2), p3(map.p3),
-      p4(map.p4), p5(map.p5), p6(map.p6), p7(map.p7) {
+  {
     for (int i = 0 ; i < 8 ; i ++)
       for (int j = 0 ; j < 3 ; j ++)
         a [i][j] = map.a [i][j] ;
@@ -147,10 +146,29 @@ namespace Dune {
   }
 
   //- Bilinear surface mapping
+  // Constructor for FieldVectors
   inline BilinearSurfaceMapping ::
   BilinearSurfaceMapping (const coord3_t& x0, const coord3_t& x1,
                           const coord3_t& x2, const coord3_t& x3)
-    : _p0 (x0), _p1 (x1), _p2 (x2), _p3 (x3) {
+  {
+    buildMapping(x0,x1,x2,x3);
+  }
+
+  // Constructor for double[3]
+  inline BilinearSurfaceMapping ::
+  BilinearSurfaceMapping (const double3_t & x0, const double3_t & x1,
+                          const double3_t & x2, const double3_t & x3)
+  {
+    buildMapping(x0,x1,x2,x3);
+  }
+
+  // the real constructor, this can be called fro FieldVectors
+  // and double[3], we dont have to convert one type
+  template <class vector_t>
+  inline void BilinearSurfaceMapping ::
+  buildMapping  (const vector_t & _p0, const vector_t & _p1,
+                 const vector_t & _p2, const vector_t & _p3)
+  {
     _b [0][0] = _p0 [0] ;
     _b [0][1] = _p0 [1] ;
     _b [0][2] = _p0 [2] ;
@@ -177,7 +195,8 @@ namespace Dune {
 
   inline BilinearSurfaceMapping ::
   BilinearSurfaceMapping (const BilinearSurfaceMapping & m)
-    : _p0(m._p0), _p1(m._p1), _p2(m._p2), _p3(m._p3) {
+  {
+    //: _p0(m._p0), _p1(m._p1), _p2(m._p2), _p3(m._p3) {
     {for (int i = 0 ; i < 4 ; i ++)
        for (int j = 0 ; j < 3 ; j ++ )
          _b [i][j] = m._b [i][j] ;}
