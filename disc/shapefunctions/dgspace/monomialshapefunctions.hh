@@ -11,6 +11,8 @@
 #include "dune/grid/common/grid.hh"
 #include "dune/grid/common/referenceelements.hh"
 
+#include "dune/disc/shapefunctions/shapefunctions.hh"
+
 namespace Dune
 {
   enum { MonomialShapeFunctionDefaultMaxOrder = 5 };
