@@ -1,320 +1,234 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __DUNE_MONOMIALSHAPEFUNCTIONS_HH__
-#define __DUNE_MONOMIALSHAPEFUNCTIONS_HH__
+#ifndef DUNE_MONOMIALSHAPEFUNCTIONS_HH
+#define DUNE_MONOMIALSHAPEFUNCTIONS_HH
 
 #include <iostream>
 #include "common/fvector.hh"
+#include "common/simplevector.hh"
 #include "common/exceptions.hh"
 #include "common/misc.hh"
 #include "dune/grid/common/grid.hh"
 #include "dune/grid/common/referenceelements.hh"
 
-#include "shapefunctions.hh"
-
 namespace Dune
 {
+  enum { MonomialShapeFunctionDefaultMaxOrder = 5 };
 
-  //multivariate monomials of the form x^m.y^n
-  // monomial order/total degree  == p ; p <= (m+n)
+  template<typename C,typename T, int dim>
+  class MonomialShapeFunction;
+  template<typename C,typename T, int dim>
+  class MonomialShapeFunctionSet;
+  template<typename C,typename T, int dim, int maxOrder=MonomialShapeFunctionDefaultMaxOrder>
+  class MonomialShapeFunctionSetContainer;
 
-  template<typename C,typename T, int d>
-  class MonomialShapeFunction : public ShapeFunction<C,T,d,1>
+  /*
+     \class MonomialShapeFunction
+     \brief multivariate monomials of the form x^a.y^b
+     monomial order/total degree == p ; p <= (a+b)
+   */
+  template<typename C,typename T>
+  class MonomialShapeFunction<C,T,2> : public ShapeFunction<C,T,2,1>
   {
   public:
-
-    enum { comps=1 };
-
-
+    enum { dim=2 /*< Dimension of the ShapeFunction */ };
     typedef C CoordType;
     typedef T ResultType;
+
+    /*
+       Create the n-th MonomialShapeFunction of the ShapeFunctionSet of
+       the given order.
+
+       \param n this is the n-th shape functions in the set
+       \param a exponent a of x^a
+       \param b exponent b of y^b
+     */
+    MonomialShapeFunction(int n, int a, int b) :
+      n_(n), a_(a), b_(b) {}
+
+    //! \copydoc ShapeFunction::evaluateFunction
+    virtual ResultType
+    evaluateFunction (int, const FieldVector<CoordType,dim>& x) const
+    {
+      ResultType phi;
+      // phi= x^(alpha-beta) * y^beta
+      phi = power(x[0],a_)*(power(x[1],b_));
+      return phi;
+    }
+
+    //! \copydoc ShapeFunction::evaluateDerivative
+    virtual ResultType
+    evaluateDerivative(int, int dir, const FieldVector<CoordType,dim>& x) const
+    {
+      ResultType dphi;
+      if(dir==0)
+        // dphi/dx= (alpha-beta) * x^(alpha-beta-1) * y^beta
+        dphi = a_ * power(x[0],a_-1) * power(x[1],b_);
+      else
+        // dphi/dy=  x^(alpha-beta) * beta * y^(beta-1)
+        dphi = power(x[0],a_) * b_ * power(x[1],b_-1);
+      return dphi;
+    }
+
+    //! \copydoc ShapeFunction::localindex
+    virtual int localindex (int comp) const { return n_; };
+
+    //! \copydoc ShapeFunction::codim()
+    virtual int codim () const { return 0; };
+
+    //! \copydoc ShapeFunction::entity()
+    virtual int entity () const { return 0; };
+
+    //! \copydoc ShapeFunction::entityindex()
+    virtual int entityindex () const { return 0; };
+
+    //! pretty print this shape function
+    void print (std::ostream& s) const
+    {
+      if (a_ > 0 && b_ > 0) {
+        s << "x^" << a_
+          << "y^" << b_;
+      }
+      if (a_ == 0 && b_ > 0) {
+        s << "y^" << b_;
+      }
+      if (a_ > 0 && b_ == 0) {
+        s << "x^" << a_;
+      }
+      if (a_ == 0 && b_ == 0) {
+        s << 1;
+      }
+    };
+  private:
+    /** this is the n-th shape functions in the set */
+    int n_;
+    /** exponent of x^a */
+    int a_;
+    /** exponent of y^b */
+    int b_;
+    /** calculate the power x^p */
+    ResultType power(CoordType x, int p) const {
+      if (p <= 0)
+        return 1.0;
+      return x*power(x, p-1);
+    }
   };
 
-
-  template<typename C,typename T, int d, int polOrder>
-  class MonomialShapeFunctionSet : public ShapeFunctionSet<C,T,d,1>
+  template<typename C,typename T>
+  class MonomialShapeFunctionSet<C, T, 2> : public ShapeFunctionSet<C, T, 2, 1>
   {
   public:
-
-    enum { comps=1 };
-    enum {m=(polOrder+1)*(polOrder+2)/2};
-
+    enum { dim=2 /*< Dimension of the ShapeFunctionSet */ };
     typedef C CoordType;
     typedef T ResultType;
-    typedef MonomialShapeFunction<CoordType,ResultType,polOrder> value_type;
-    //access to i'th monomialshapefun
-    virtual const value_type& operator[] (int i) const=0;
+    typedef MonomialShapeFunction<C,T,2> ShapeFunction;
 
-  };
-
-
-  template<typename Imp>
-  class MonomialShapeFunctionWrapper :
-    public MonomialShapeFunction<typename Imp::CoordType, typename Imp::ResultType, Imp::dim>,
-    private Imp
-  {
-
-  public:
-    enum {polOrder=Imp::polOrder};
-    enum { dim=Imp::dim };
-    enum { comps=1 };
-
-    typedef typename Imp::CoordType CoordType;
-    typedef typename Imp::ResultType ResultType;
-    typedef Imp ImplementationType;
-    //! assignment from implementation type (this class has no data)
-    MonomialShapeFunctionWrapper& operator= (const Imp& imp)
+    MonomialShapeFunctionSet(int order) :
+      order_(order), n_((order+1)*(order+2)/2), shapeFunctions(n_)
     {
-      Imp::operator=(imp);
-      return *this;
-    }
-    virtual ResultType evaluateFunction (int i, int comp, const FieldVector<CoordType,dim>& x) const
-    {
-      return Imp::evaluateFunction(i,comp, x);
-    }
-    //! evaluate derivative of component comp in direction dir at point x
-    virtual ResultType evaluateDerivative (int i, int comp, int dir, const FieldVector<CoordType,dim>& x) const
-    {
-      return Imp::evaluateDerivative(i,comp,dir,x);
-    }
-
-    //! consecutive number of associated dof within element
-    virtual int localindex (int comp) const
-    {
-      //return Imp::localindex(comp);
-      return;
-    }
-
-    //! codim of associated dof
-    virtual int codim () const
-    {
-      //return Imp::codim();
-      return;
-    }
-
-    //! entity (of codim) of associated dof
-    virtual int entity () const
-    {
-      //return Imp::entity();
-      return;
-    }
-
-    //! consecutive number of dof within entity
-    virtual int entityindex () const
-    {
-      //return Imp::entityindex();
-      return;
-    }
-
-    //! interpolation point associated with shape function
-    virtual const FieldVector<CoordType,dim>& position () const
-    {
-      //return Imp::position();
-      return;
-    }
-
-
-  };
-
-  template<typename Imp>
-  class MonomialShapeFunctionSetWrapper :
-    public MonomialShapeFunctionSet<typename Imp::CoordType,typename Imp::ResultType, Imp::dim, Imp::polOrder>,
-    private Imp
-  {
-  public:
-    enum { dim=Imp::dim };
-    enum { comps=1 };
-    enum {polOrder=Imp::polOrder};
-    typedef typename Imp::CoordType CoordType;
-    typedef typename Imp::ResultType ResultType;
-    typedef Imp ImplementationType;
-    typedef MonomialShapeFunction<CoordType,ResultType,polOrder> value_type;
-    //! return total number of shape functions
-    virtual int size () const
-    {
-      return Imp::size();
-    }
-
-    //! total number of shape functions associated with entity in codim
-    virtual int size (int entity, int codim) const
-    {
-      //return Imp::size(entity,codim);
-      return;
-    }
-
-
-    //! random access to i'th ShapeFunction
-    virtual const value_type& operator[] (int i) const
-    {
-      return Imp::operator[](i);
-    }
-
-    //! return order
-    virtual int order () const
-    {
-      return Imp::order();
-    }
-
-    //! return type of element
-    virtual GeometryType type () const
-    {
-      return Imp::type();
-    }
-
-  };
-
-
-  template<typename C,typename T, int d, int polOrder>
-  class MonomialBaseFunction
-  {
-  public:
-
-    enum {m=(polOrder+1)*(polOrder+2)/2};
-
-    typedef C CoordType;
-    typedef T ResultType;
-    typedef MonomialBaseFunction ImplementationType;
-    MonomialBaseFunction(int ordr)
-    {
-      number = ordr;
+      shapeFunctions = 0;
       int i = 0;
-      for (int alpha=0; alpha<=ordr; alpha++)
+      for (int alpha=0; alpha<=order_; alpha++)
       {
         for (int beta=0; beta<=alpha; beta++)
         {
           //  x^(alpha-beta) * y^beta
-          exponent[i][0] = alpha-beta; //
-          exponent[i][1] = beta; //
+          shapeFunctions[i] =
+            new ShapeFunction(i, alpha-beta, beta);
           i++;
         }
       }
     }
 
-
-    //! evaluate shape function in local coordinates
-    // sfn is 0 to (noBaseFnt-1)
-    ResultType evaluateFunction (int sfn, const FieldVector<CoordType,2>& x) const
+    virtual ~MonomialShapeFunctionSet()
     {
-      //phi= x^(alpha-beta) * y^beta
-      ResultType phi;
-      phi = power(x[0],exponent[sfn][0])*(power(x[1],exponent[sfn][1]));
-      return phi;
+      for (int i=0; i < n_; i++)
+      {
+        if (shapeFunctions[i]) delete shapeFunctions[i];
+      }
     }
 
-    ResultType evaluateDerivative(int sfn,int dir, const FieldVector<CoordType,2>& x) const
-
+    //! \copydoc ShapeFunctionSet::size()
+    virtual int size() const
     {
-      //dphi/dx= (alpha-beta) * x^(alpha-beta-1) * y^beta
-      //dphi/dy=  x^(alpha-beta) * beta * y^(beta-1)
-      ResultType dphi;
-      if(dir==0)
-        dphi=exponent[sfn][0] * power(x[0],exponent[sfn][0]-1) *power(x[1],exponent[sfn][1]);
-      else
-        dphi=power(x[0],exponent[sfn][0]) *exponent[sfn][1] * power(x[1],exponent[sfn][1]-1);
-      return dphi;
+      return n_;
     }
-    MonomialBaseFunction()
-    {}
+
+    //! \copydoc ShapeFunctionSet::size(int, int)
+    virtual int size (int entity, int codim) const
+    {
+      if (codim == 0) return n_;
+      return 0;
+    };
+
+    //! \copydoc ShapeFunctionSet::operator[](int i)
+    virtual const ShapeFunction& operator[](int i) const
+    {
+      return *shapeFunctions[i];
+    }
+
+    //! \copydoc ShapeFunctionSet::order()
+    virtual int order() const
+    {
+      return order_;
+    }
+
+    //! \copydoc ShapeFunctionSet::type()
+    virtual GeometryType type () const
+    {
+      //! throw an exception... we dont' have a special geometry
+#warning what to do here?
+      DUNE_THROW(MathError, "monomial shape function don't have a geometry type");
+    };
+
   private:
-    int number, exponent[m][2];
-
-    CoordType power(CoordType xx, int p) const {
-      if (p <= 0)
-        return 1.0;
-      return xx*power(xx, p-1);
-    }
+    /** order of the ShapeFunctionSet */
+    const int order_;
+    /** total number of shapefunctions in this set */
+    const int n_;
+    /** vector which holds the shape functions */
+    SimpleVector< ShapeFunction* > shapeFunctions;
   };
 
-
-  template<typename C, typename T,int d, typename S, int polOrder>
-  class MonomialBaseFunctionSet
+  template<typename C,typename T, int maxOrder>
+  class MonomialShapeFunctionSetContainer<C,T,2,maxOrder> :
+    public ShapeFunctionSetContainer<C,T,2,1,(maxOrder+1)*(maxOrder+2)/2>
   {
   public:
-    enum {m=(polOrder+1)*(polOrder+2)/2};
+    enum { d=2 };
+    enum { maxsize=(maxOrder+1)*(maxOrder+2)/2 };
     typedef C CoordType;
     typedef T ResultType;
-    typedef S value_type;
-    typedef typename S::ImplementationType Imp;
-    MonomialBaseFunctionSet()
+    typedef MonomialShapeFunctionSet<C,T,d> ShapeFunctionSet;
 
+    MonomialShapeFunctionSetContainer() :
+      shapeFunctionSets(maxsize)
     {
-      for(int i=0; i<m; ++i)
-        sf[i]=Imp(i);
-
+      for (int order=0; order<=maxOrder; order++)
+      {
+        shapeFunctionSets[order] =
+          new ShapeFunctionSet(order);
+      }
     }
 
-    //total no of monomial shape functions
-    int size() const
-
+    virtual ~MonomialShapeFunctionSetContainer()
     {
-      return m;
+      for (int i=0; i < maxOrder; i++)
+      {
+        if (shapeFunctionSets[i]) delete shapeFunctionSets[i];
+      }
     }
-
-    //random access to shape functions
-    const value_type& operator[](int i) const
+    //! \copydoc ShapeFunctionSetContainer::operator()
+    virtual const ShapeFunctionSet& operator() (GeometryType type, int order) const
     {
-      return sf[i];
-    }
-    int order() const
-    {
-      return polOrder;
-    }
-
-  private:
-    S sf;
-
-  };
-
-  template<typename C,typename T, int d,int polOrder>
-  class MonomialBaseFunctionSetContainer
-
-  {
-  public:
-    // now only 2D
-    enum {maxsize=(polOrder+1)*(polOrder+2)/2};
-    typedef C CoordType;
-    typedef T ResultType;
-
-    typedef MonomialBaseFunctionSet<C,T,d,MonomialBaseFunction<C,T,d,polOrder>,polOrder > value_type;
-    const value_type& operator()(GeometryType gtype,int order) const
-    {
-      if ( (gtype==line) || (gtype==triangle) || (gtype==quadrilateral))
-        return monombfn;
-      DUNE_THROW(NotImplemented,"monomialshapefn only support 2D now");
+      assert(order <= maxOrder);
+      return *shapeFunctionSets[order];
     }
   private:
-    value_type monombfn;
+    /** vector which holds the shape functions */
+    SimpleVector< ShapeFunctionSet* > shapeFunctionSets;
   };
-
-  // general container for monomialshape functions of any order and any element type
-
-  template<typename C,typename T, int d, int polOrder>
-  class MonomialShapeFunctionSetContainer;
-
-  template<typename C,typename T,int polOrder>
-  class MonomialShapeFunctionSetContainer<C,T,2,polOrder> : public ShapeFunctionSetContainer<C,T,2,1,(polOrder+1)*(polOrder+2)/2 >
-  {
-  public:
-    // only support 2D now
-    enum {maxsize=(polOrder+1)*(polOrder+2)/2};
-    typedef C CoordType;
-    typedef T ResultType;
-
-    typedef MonomialShapeFunctionSet<C,T,2,polOrder> value_type;
-    const value_type& operator()(GeometryType gtype,int order) const
-    {
-      if ( (gtype==line) || (gtype==triangle) || (gtype==quadrilateral))
-        return wrappedmonombfn;
-      DUNE_THROW(NotImplemented,"monomialshapefn only support 2D Elements now");
-    }
-  private:
-    typedef MonomialShapeFunctionWrapper<MonomialBaseFunction<C,T,2,polOrder> > WrappedMonomialBaseFunction;
-    typedef MonomialBaseFunctionSet<C,T,2,WrappedMonomialBaseFunction,polOrder> MonomialWrappedBaseFunctionSet;
-    typedef MonomialShapeFunctionSetWrapper<MonomialWrappedBaseFunctionSet> WrappedMonomialBaseFunctionSet;
-    WrappedMonomialBaseFunctionSet wrappedmonombfn;
-  };
-
 
 } //end of namespace
 
-#endif
+#endif // DUNE_MONOMIALSHAPEFUNCTIONS_HH
