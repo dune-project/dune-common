@@ -6,7 +6,7 @@
 
 
 #include <bitset>
-#include <iostream>
+#include <ostream>
 
 #include "graph.hh"
 #include "properties.hh"

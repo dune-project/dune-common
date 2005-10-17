@@ -6,6 +6,7 @@
 
 #include "graph.hh"
 #include "properties.hh"
+#include <dune/common/stdstreams.hh>
 #include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
 #include <set>
@@ -1543,7 +1544,7 @@ namespace Dune
     inline bool Aggregator<G>::admissible(const Vertex& vertex, int aggregate, const AggregatesMap<Vertex>& aggregates) const
     {
       // Todo
-      std::cerr<<" Admissible not yet implemented!"<<std::endl;
+      Dune::dverb<<" Admissible not yet implemented!"<<std::endl;
 
       return true;
     }
@@ -1725,8 +1726,8 @@ namespace Dune
           break;
 
         // Debugging output
-        if(c.debugLevel()==1 && (noAggregates+1)%10000 == 0)
-          std::cout<<"c";
+        if((noAggregates+1)%10000 == 0)
+          Dune::dverb<<"c";
 
         aggregate_->seed(seed);
 
@@ -1798,17 +1799,14 @@ namespace Dune
           else
             conAggregates++;
         }
-        std::cout<<"size"<<aggregate_->size()<<" ";
         unmarkFront();
         markFront(aggregates);
         seedFromFront(stack_, graph.getVertexProperties(seed).isolated());
         unmarkFront();
       }
 
-      if(c.debugLevel()>2) {
-        std::cout<<"connected aggregates: "<<conAggregates;
-        std::cout<<" isolated aggregates: "<<isoAggregates<<std::endl;
-      }
+      Dune::dinfo<<"connected aggregates: "<<conAggregates;
+      Dune::dinfo<<" isolated aggregates: "<<isoAggregates<<std::endl;
 
       delete aggregate_;
       return conAggregates+isoAggregates;
@@ -1823,8 +1821,8 @@ namespace Dune
       int count=0;
       for(Iterator vertex=front_.begin(); vertex != end; ++vertex,++count)
         stack_.push(*vertex);
-      if(count==0)
-        std::cerr<< " no vertices pushed!"<<std::endl;
+      if(MINIMAL_DEBUG_LEVEL>=4)
+        Dune::dwarn<< " no vertices pushed!"<<std::endl;
     }
 
     template<class G>
@@ -1838,7 +1836,7 @@ namespace Dune
     template<class G>
     Aggregator<G>::Stack::~Stack()
     {
-      std::cout << "Max stack size was "<<maxSize_<<" filled="<<filled_<<std::endl;
+      Dune::dvverb << "Max stack size was "<<maxSize_<<" filled="<<filled_<<std::endl;
       delete[] vals_;
     }
 
