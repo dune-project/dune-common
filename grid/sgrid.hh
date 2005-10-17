@@ -28,7 +28,9 @@ namespace Dune {
   typedef double sgrid_ctype;
 
   // globally define the persistent index type
-  typedef bigunsignedint<64> sgrid_persistentindextype;
+  const int sgrid_dim_bits = 24;   // bits for encoding each dimension
+  const int sgrid_level_bits = 6;  // bits for encoding level number
+  const int sgrid_codim_bits = 4;  // bits for encoding codimension
 
   //************************************************************************
   // forward declaration of templates
@@ -211,7 +213,7 @@ namespace Dune {
   public:
     typedef typename GridImp::template Codim<codim>::Geometry Geometry;
     typedef SMakeableGeometry<dim-codim, dimworld, const GridImp> MakeableGeometry;
-    typedef sgrid_persistentindextype PersistentIndexType;
+    typedef typename GridImp::PersistentIndexType PersistentIndexType;
 
     //! level of this element
     int level () const
@@ -242,15 +244,84 @@ namespace Dune {
     //! globally unique, persistent index
     PersistentIndexType persistentIndex () const
     {
-      PersistentIndexType number1(compressedIndex());
-      PersistentIndexType number2((level()<<4)+codim);
-      return number1|(number2<<52);
+      if (codim!=dim)
+      {
+        // encode codim, this would actually not be necessary because z is unique in codim
+        PersistentIndexType id(codim);
+
+        // encode level
+        id = id << sgrid_level_bits;
+        id = id+l;
+
+        // encode coordinates
+        for (int i=dim-1; i>=0; i--)
+        {
+          id = id << sgrid_dim_bits;
+          id = id+z[i];
+        }
+
+        return id;
+      }
+      else
+      {
+        // determine min number of trailing zeroes
+        // consider that z is on the doubled grid !
+        int trailing = 1000;
+        for (int i=0; i<dim; i++)
+        {
+          // count trailing zeros
+          int zeros = 0;
+          for (int j=0; j<l; j++)
+            if (z[i]&(1<<(j+1)))
+              break;
+            else
+              zeros++;
+          trailing = std::min(trailing,zeros);
+        }
+
+        // determine the level of this vertex
+        int level = l-trailing;
+
+        // encode codim
+        PersistentIndexType id(dim);
+
+        // encode level
+        id = id << sgrid_level_bits;
+        id = id+level;
+
+        // encode coordinates
+        for (int i=dim-1; i>=0; i--)
+        {
+          id = id << sgrid_dim_bits;
+          id = id+(z[i]>>trailing);
+        }
+
+        return id;
+      }
     }
 
     //! consecutive, codim-wise, level-wise index
     int compressedIndex () const
     {
       return id;
+    }
+
+    //! consecutive, codim-wise, level-wise index
+    int compressedLeafIndex () const
+    {
+      // codim != dim -> there are no copies of entities
+      // maxlevel -> ids are fine
+      if (codim<dim || l==grid->maxLevel())
+        return id;
+
+      // this is a vertex which is not on the finest level
+      // move coordinates up to maxlevel (multiply by 2 for each level
+      FixedArray<int,dim> coord;
+      for (int k=0; k<dim; k++)
+        coord[k] = z[k]*(1<<(grid->maxLevel()-l));
+
+      // compute number with respect to maxLevel
+      return grid->n(grid->maxLevel(),coord);
     }
 
   protected:
@@ -333,7 +404,7 @@ namespace Dune {
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
     typedef typename GridImp::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename GridImp::template Codim<0>::HierarchicIterator HierarchicIterator;
-    typedef sgrid_persistentindextype PersistentIndexType;
+    typedef typename GridImp::PersistentIndexType PersistentIndexType;
 
     //! make HierarchicIterator a friend
     friend class SHierarchicIterator<GridImp>;
@@ -366,15 +437,26 @@ namespace Dune {
 
     //! subentity compressed index
     template<int cc>
-    int subCompressedIndex (int i) const; // is implemented in sgrid/sgrid.cc !
+    int subCompressedIndex (int i) const
+    {
+      if (cc==0) return this->compressedIndex();
+      return this->grid->template getRealEntity<cc>(*entity<cc>(i)).compressedIndex();
+    }
+
+    //! subentity compressed index
+    template<int cc>
+    int subCompressedLeafIndex (int i) const
+    {
+      if (cc==0) return this->compressedLeafIndex();
+      return this->grid->template getRealEntity<cc>(*entity<cc>(i)).compressedLeafIndex();
+    }
 
     //! subentity persistent index
     template<int cc>
     PersistentIndexType subPersistentIndex (int i) const
     {
-      PersistentIndexType number1(this->template subCompressedIndex<cc>(i));
-      PersistentIndexType number2((SEntityBase<0,dim,GridImp>::level()<<4)+cc);
-      return number1|(number2<<52);
+      if (cc==0) return this->persistentIndex();
+      return this->grid->template getRealEntity<cc>(*entity<cc>(i)).persistentIndex();
     }
 
     /*! Intra-level access to intersections with neighboring elements.
@@ -837,6 +919,80 @@ namespace Dune {
     std::vector<GeometryType> mytypes;
   };
 
+  // Leaf Index Set
+
+  template <class GridImp>
+  struct SGridLeafIndexSetTypes
+  {
+    //! The types
+    template<int cd>
+    struct Codim
+    {
+      template<PartitionIteratorType pitype>
+      struct Partition
+      {
+        typedef typename GridImp::Traits::template Codim<cd>::template Partition<pitype>::LevelIterator Iterator;
+      };
+    };
+  };
+
+  template<class GridImp>
+  class SGridLeafIndexSet : public IndexSet<GridImp,SGridLeafIndexSet<GridImp>,SGridLeafIndexSetTypes<GridImp> >
+  {
+    typedef IndexSet<GridImp,SGridLeafIndexSet<GridImp>,SGridLeafIndexSetTypes<GridImp> > Base;
+  public:
+
+    //! constructor stores reference to a grid and level
+    SGridLeafIndexSet (const GridImp& g) : grid(g)
+    {
+      mytypes.push_back(cube);   // contains a single element type;
+    }
+
+    //! get index of an entity
+    template<int cd>
+    int index (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    {
+      return grid.template getRealEntity<cd>(e).compressedLeafIndex();
+    }
+
+    //! get index of subentity of a codim 0 entity
+    template<int cc>
+    int subIndex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    {
+      return grid.template getRealEntity<0>(e).template subCompressedLeafIndex<cc>(i);
+    }
+
+    //! get number of entities of given codim, type and level (the level is known to the object)
+    int size (int codim, GeometryType type) const
+    {
+      return grid.size(grid.maxLevel(),codim);
+    }
+
+    //! deliver all geometry types used in this grid
+    const std::vector<GeometryType>& geomTypes (int codim) const
+    {
+      return mytypes;
+    }
+
+    //! one past the end on this level
+    template<int cd, PartitionIteratorType pitype>
+    typename Base::template Codim<cd>::template Partition<pitype>::Iterator begin () const
+    {
+      return grid.template lbegin<cd,pitype>(grid.maxLevel());
+    }
+
+    //! Iterator to one past the last entity of given codim on level for partition type
+    template<int cd, PartitionIteratorType pitype>
+    typename Base::template Codim<cd>::template Partition<pitype>::Iterator end () const
+    {
+      return grid.template lend<cd,pitype>(grid.maxLevel());
+    }
+
+  private:
+    const GridImp& grid;
+    std::vector<GeometryType> mytypes;
+  };
+
 
   //========================================================================
   /*!
@@ -847,11 +1003,11 @@ namespace Dune {
 
   template<class GridImp>
   class SGridGlobalIdSet :
-    public IdSet<GridImp,SGridGlobalIdSet<GridImp>, sgrid_persistentindextype>
+    public IdSet<GridImp,SGridGlobalIdSet<GridImp>, typename GridImp::PersistentIndexType>
   {
   public:
     //! define the type used for persisitent indices
-    typedef sgrid_persistentindextype IdType;
+    typedef typename GridImp::PersistentIndexType IdType;
 
     //! constructor stores reference to a grid
     SGridGlobalIdSet (const GridImp& g) : grid(g) {}
@@ -938,22 +1094,23 @@ namespace Dune {
         SLevelIterator,
         SGridLevelIndexSet<SGrid<dim,dimworld> >,
         SGridLevelIndexSetTypes<SGrid<dim,dimworld> >,
-        SGridLevelIndexSet<SGrid<dim,dimworld> >,
-        SGridLevelIndexSetTypes<SGrid<dim,dimworld> >,
+        SGridLeafIndexSet<SGrid<dim,dimworld> >,
+        SGridLeafIndexSetTypes<SGrid<dim,dimworld> >,
         SGridGlobalIdSet<SGrid<dim,dimworld> >,
-        sgrid_persistentindextype,
+        bigunsignedint<dim*sgrid_dim_bits+sgrid_level_bits+sgrid_codim_bits>,
         SGridGlobalIdSet<SGrid<dim,dimworld> >,
-        sgrid_persistentindextype > Traits;
+        bigunsignedint<dim*sgrid_dim_bits+sgrid_level_bits+sgrid_codim_bits> > Traits;
   };
 
   template<int dim, int dimworld>
   class SGrid : public GridDefault <dim,dimworld,sgrid_ctype,SGridFamily<dim,dimworld> >
   {
   public:
-    typedef sgrid_persistentindextype PersistentIndexType;
+    typedef bigunsignedint<dim*sgrid_dim_bits+sgrid_level_bits+sgrid_codim_bits> PersistentIndexType;
 
     // need for friend declarations in entity
     typedef SGridLevelIndexSet<SGrid<dim,dimworld> > LevelIndexSetType;
+    typedef SGridLeafIndexSet<SGrid<dim,dimworld> > LeafIndexSetType;
     typedef SGridGlobalIdSet<SGrid<dim,dimworld> > GlobalIdSetType;
 
     typedef typename SGridFamily<dim,dimworld>::Traits Traits;
@@ -1173,27 +1330,31 @@ namespace Dune {
 
     const typename Traits::LevelIndexSet& levelIndexSet(int level) const
     {
+      assert(level>=0 && level<=maxLevel());
       return *(indexsets[level]);
     }
 
     const typename Traits::LeafIndexSet& leafIndexSet() const
     {
-      return *(indexsets[maxLevel()]);
+      return theleafindexset;
     }
 
   private:
 
     std::vector<SGridLevelIndexSet<SGrid<dim,dimworld> >*> indexsets;
+    SGridLeafIndexSet<SGrid<dim,dimworld> > theleafindexset;
     SGridGlobalIdSet<SGrid<dim,dimworld> > theglobalidset;
 
     // Index classes need access to the real entity
     friend class Dune::SGridLevelIndexSet<Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SGridLeafIndexSet<Dune::SGrid<dim,dimworld> >;
     friend class Dune::SGridGlobalIdSet<Dune::SGrid<dim,dimworld> >;
     friend class Dune::SIntersectionIterator<Dune::SGrid<dim,dimworld> >;
     friend class Dune::SHierarchicIterator<Dune::SGrid<dim,dimworld> >;
     friend class Dune::SEntity<0,dim,Dune::SGrid<dim,dimworld> >;
 
     friend class Dune::SGridLevelIndexSet<const Dune::SGrid<dim,dimworld> >;
+    friend class Dune::SGridLeafIndexSet<const Dune::SGrid<dim,dimworld> >;
     friend class Dune::SGridGlobalIdSet<const Dune::SGrid<dim,dimworld> >;
     friend class Dune::SIntersectionIterator<const Dune::SGrid<dim,dimworld> >;
     friend class Dune::SHierarchicIterator<const Dune::SGrid<dim,dimworld> >;
