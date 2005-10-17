@@ -1821,7 +1821,7 @@ namespace Dune
       int count=0;
       for(Iterator vertex=front_.begin(); vertex != end; ++vertex,++count)
         stack_.push(*vertex);
-      if(MINIMAL_DEBUG_LEVEL>=4)
+      if(MINIMAL_DEBUG_LEVEL>3 && count==0)
         Dune::dwarn<< " no vertices pushed!"<<std::endl;
     }
 
