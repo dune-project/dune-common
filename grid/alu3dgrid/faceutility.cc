@@ -50,19 +50,15 @@ namespace Dune {
   ALU3dGridGeometricFaceInfo<hexa>::
   buildSurfaceMapping(const GEOFaceType & face) const
   {
-    // this is dangerous
-    CoordinateType coords;
-    for (int i = 0; i < numVerticesPerFace; ++i) {
-      const double (&p)[3] = face.myvertex(FaceTopo::dune2aluVertex(i))->Point();
-      convert2FieldVector(p, coords[i] );
-    } // end for
-
     // this is the new implementation using FieldVector
     // see mappings.hh
-    return new BilinearSurfaceMappingType(coords[0],
-                                          coords[1],
-                                          coords[2],
-                                          coords[3]);
+    // we have to swap the vertices, because
+    // local face numbering in Dune is different to ALUGrid (see topology.cc)
+    return new BilinearSurfaceMappingType(
+             face.myvertex( FaceTopo::dune2aluVertex(0) )->Point(),
+             face.myvertex( FaceTopo::dune2aluVertex(1) )->Point(),
+             face.myvertex( FaceTopo::dune2aluVertex(2) )->Point(),
+             face.myvertex( FaceTopo::dune2aluVertex(3) )->Point() );
   }
 
   template <>
@@ -111,9 +107,6 @@ namespace Dune {
     // temporary variables
     LocalCoordinateType parentLocal;
 
-    //alu3d_ctype parLocalArray[numComponents];
-    //alu3d_ctype resultArray[numComponents];
-
     // do the mappings
     for (int i = 0; i < numCorners; ++i)
     {
@@ -132,11 +125,6 @@ namespace Dune {
       referenceElementMapping->map2world(
         fieldVector2alu3d_ctype ( parentLocal ) ,
         fieldVector2alu3d_ctype ( result[i]   ) );
-
-      //convert2CArray(parentLocal, parLocalArray);
-
-      //referenceElementMapping->map2world(parLocalArray, resultArray);
-      //convert2FieldVector(resultArray, result[i]);
     }
 
   }
