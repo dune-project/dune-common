@@ -707,6 +707,7 @@ namespace Dune {
 
     typedef std::list<IndexSetObjectInterface * > IndexListType;
     typedef typename IndexListType::iterator IndexListIteratorType;
+    typedef typename IndexListType::const_iterator ConstIndexListIteratorType;
 
     // list with MemObjects, for each DiscreteFunction we have one MemObject
     ListType memList_;
@@ -1051,8 +1052,8 @@ namespace Dune {
   inline bool DofManager<GridType>::
   checkIndexSetExists (const IndexSetType &iset) const
   {
-    IndexListIteratorType endit  = indexList_.end();
-    for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
+    ConstIndexListIteratorType endit  = indexList_.end();
+    for(ConstIndexListIteratorType it = indexList_.begin(); it != endit; ++it)
     {
       if( (*it)->address() == &iset )
       {
