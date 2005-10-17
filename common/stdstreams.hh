@@ -63,8 +63,17 @@ namespace Dune {
    */
   static const DebugLevel MINIMAL_DEBUG_LEVEL = 4;
 
-  /** @brief Type of very verbose debug stream. */
-  typedef DebugStream<1, MINIMAL_DEBUG_LEVEL> DVVerbType;
+  /**
+   * @brief The level of the very verbose debug stream.
+   * @see dvverb
+   */
+  static const DebugLevel VERY_VERBOSE_DEBUG_LEVEL = 1;
+
+  /**
+      @brief Type of very verbose debug stream.
+      @see dvverb
+   */
+  typedef DebugStream<VERY_VERBOSE_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DVVerbType;
 
   /*!
      \brief stream for very verbose output.
@@ -76,13 +85,32 @@ namespace Dune {
    */
   extern DVVerbType dvverb;
 
-  /** @brief Type of more verbose debug stream.*/
-  typedef DebugStream<2, MINIMAL_DEBUG_LEVEL> DVerbType;
-  /** @brief Singleton of more verbose debug stream. */
+  /**
+   * @brief The level of the verbose debug stream.
+   * @see dvverb
+   */
+  static const DebugLevel VERBOSE_DEBUG_LEVEL = 2;
+
+  /**
+      @brief Type of more verbose debug stream.
+      @see dverb
+   */
+  typedef DebugStream<VERBOSE_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DVerbType;
+
+  /** @brief Singleton of verbose debug stream. */
   extern DVerbType dverb;
 
-  /** @brief Type of debug stream with info level.*/
-  typedef DebugStream<3, MINIMAL_DEBUG_LEVEL> DInfoType;
+  /**
+   * @brief The level of the informative debug stream.
+   * @see dinfo
+   */
+  static const DebugLevel INFO_DEBUG_LEVEL = 3;
+
+  /**
+      @brief Type of debug stream with info level.
+      @see dinfo
+   */
+  typedef DebugStream<INFO_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DInfoType;
 
   /**
       @brief Stream for informative output.
@@ -92,19 +120,34 @@ namespace Dune {
    */
   extern DInfoType dinfo;
 
-  /** @brief Type of debug stream with warn level.*/
-  typedef DebugStream<4, MINIMAL_DEBUG_LEVEL> DWarnType;
+  /**
+   * @brief The level of the debug stream for warnings.
+   * @see dwarn
+   */
+  static const DebugLevel WARN_DEBUG_LEVEL = 4;
+
+  /**
+      @brief Type of debug stream with warn level.
+      @see dwarn
+   */
+  typedef DebugStream<WARN_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DWarnType;
 
   /** @brief Stream for warnings indicating problems. */
   extern DWarnType dwarn;
 
+  /**
+   * @brief The level of the debug stream for fatal errors.
+   * @see dgrave
+   */
+  static const DebugLevel GRAVE_DEBUG_LEVEL = 5;
+
   /** @brief Type of debug stream for fatal errors.*/
-  typedef DebugStream<5, MINIMAL_DEBUG_LEVEL> DGraveType;
+  typedef DebugStream<GRAVE_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DGraveType;
 
   /**  @brief Stream for warnings indicating fatal errors.*/
   extern DGraveType dgrave;
 
-  /** @brief The type of the stream used for error messaged. */
+  /** @brief The type of the stream used for error messages. */
   typedef DebugStream<1> DErrType;
 
   /*!
