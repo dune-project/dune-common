@@ -335,7 +335,7 @@ namespace Dune
       unsigned int temp = result.digit[i];
       temp = temp<<(bits-j);
       result.digit[i] = (unsigned short) ((temp&compbitmask)>>bits);
-      if (i-1>=0)
+      if (i>0)
         result.digit[i-1] = result.digit[i-1] | (temp&bitmask);
     }
 

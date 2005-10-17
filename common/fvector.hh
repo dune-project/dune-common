@@ -663,7 +663,7 @@ namespace Dune {
     K& operator[] (size_type i)
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(MathError,"index out of range");
+      if (i>=n) DUNE_THROW(MathError,"index out of range");
 #endif
       return p[i];
     }
@@ -672,7 +672,7 @@ namespace Dune {
     const K& operator[] (size_type i) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(MathError,"index out of range");
+      if (i>=n) DUNE_THROW(MathError,"index out of range");
 #endif
       return p[i];
     }
