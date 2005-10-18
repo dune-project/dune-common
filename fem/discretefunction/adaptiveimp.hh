@@ -23,15 +23,19 @@ namespace Dune {
 
   template <class DiscreteFunctionSpaceImp>
   class AdaptiveFunctionImplementation {
-  private:
+  public:
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
 
-    typedef AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp> ThisType;
     typedef AdaptiveDiscreteFunctionTraits<DiscreteFunctionSpaceImp> Traits;
+  private:
+    typedef AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp> ThisType;
 
     typedef typename Traits::DofIteratorType DofIteratorType;
     typedef typename Traits::ConstDofIteratorType ConstDofIteratorType;
+  public:
+    typedef typename Traits::LocalFunctionImp LocalFunctionImp;
     typedef typename Traits::LocalFunctionType LocalFunctionType;
+  private:
     typedef typename Traits::MapperType MapperType;
 
     typedef typename DiscreteFunctionSpaceImp::Traits SpaceTraits;
@@ -50,9 +54,14 @@ namespace Dune {
     ConstDofIteratorType dbegin() const;
     ConstDofIteratorType dend() const;
 
-    LocalFunctionType newLocalFunction();
+    LocalFunctionType newLocalFunction() DUNE_DEPRECATED;
+
+    //! update local function to given entity
     template <class EntityType>
-    void localFunction(const EntityType& en, LocalFunctionType& lf);
+    void localFunction(const EntityType& en, LocalFunctionType& lf) DUNE_DEPRECATED;
+
+    template <class EntityType>
+    LocalFunctionType localFunction(const EntityType& en);
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
@@ -74,6 +83,7 @@ namespace Dune {
     //! read function data from pgm fromat file
     bool read_pgm(std::string filename);
 
+    LocalFunctionImp * newLocalFunctionObject ();
   protected:
     const DiscreteFunctionSpaceType& space() const { return spc_; }
     DofStorageType& dofStorage() { return dofVec_; }
@@ -85,6 +95,7 @@ namespace Dune {
                                    DofStorageType& dofVec);
     AdaptiveFunctionImplementation(const ThisType& other);
     ~AdaptiveFunctionImplementation();
+
 
   private:
     const DiscreteFunctionSpaceType& spc_;
