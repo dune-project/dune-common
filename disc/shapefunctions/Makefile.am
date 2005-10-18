@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = lagrange
+SUBDIRS = lagrange dgspace
 
 disc_shapefunctionsdir = $(includedir)/disc/shapefunctions
 disc_shapefunctions_HEADERS = lagrangeshapefunctions.hh shapefunctions.hh

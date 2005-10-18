@@ -167,6 +167,7 @@ AC_CONFIG_FILES([Makefile
 	 disc/groundwater/Makefile
 	 disc/operators/Makefile
 	 disc/shapefunctions/Makefile
+	 disc/shapefunctions/dgspace/Makefile
 	 disc/shapefunctions/lagrange/Makefile
          fem/Makefile
          fem/common/Makefile
