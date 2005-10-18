@@ -68,6 +68,14 @@ namespace Dune {
   template <class DiscreteFunctionSpaceImp>
   template <class EntityType>
   void AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
+  evaluate(EntityType& en, const DomainType& x, RangeType& ret) const
+  {
+    evaluateLocal( en, en.geometry().local(x), ret);
+  }
+
+  template <class DiscreteFunctionSpaceImp>
+  template <class EntityType>
+  void AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
   evaluateLocal(EntityType& en, const DomainType& x, RangeType& ret) const
   {
     assert(en.geometry().checkInside(x));
@@ -130,7 +138,7 @@ namespace Dune {
   template <class DiscreteFunctionSpaceImp>
   template <class EntityType>
   void AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
-  init(EntityType& en)
+  init(const EntityType& en)
   {
     int numOfDof =
       spc_.getBaseFunctionSet(en).numBaseFunctions();
@@ -234,6 +242,14 @@ namespace Dune {
   template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
   template <class EntityType>
   void AdaptiveLocalFunction<CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
+  evaluate(EntityType& en, const DomainType& x, RangeType& ret) const
+  {
+    evaluateLocal( en, en.geometry().local(x), ret);
+  }
+
+  template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
+  template <class EntityType>
+  void AdaptiveLocalFunction<CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
   evaluateLocal(EntityType& en,
                 const DomainType& x,
                 RangeType& result) const
@@ -322,7 +338,7 @@ namespace Dune {
   template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
   template <class EntityType>
   void AdaptiveLocalFunction<CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
-  init(EntityType& en) {
+  init(const EntityType& en) {
     int numOfDof =
       spc_.getBaseFunctionSet(en).numContainedFunctions();
     values_.resize(numOfDof);
