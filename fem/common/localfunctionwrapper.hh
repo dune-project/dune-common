@@ -111,7 +111,7 @@ namespace Dune {
     LocalFunctionWrapper ( const EntityType & en , DiscreteFunctionImp & df )
       : storage_( df.localFunctionStorage() ),
         lf_( storage_.getObject() ),
-        refCount_(new int (0))
+        refCount_(new int (1))
     {
       // init real local function with entity
       lf_.init(en);
@@ -121,7 +121,7 @@ namespace Dune {
     LocalFunctionWrapper ( DiscreteFunctionImp & df )
       : storage_( df.localFunctionStorage() ) ,
         lf_( storage_.getObject() ),
-        refCount_(new int (0)) DUNE_DEPRECATED
+        refCount_(new int (1))
     {}
 
     //! Copy constructor
@@ -195,8 +195,9 @@ namespace Dune {
     }
 
     //! update local function for given Entity
+    //! deprecated method
     template <class EntityType >
-    void init ( const EntityType &en ) const DUNE_DEPRECATED
+    void init ( const EntityType &en ) const
     {
       lf_.init(en);
     }
