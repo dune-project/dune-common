@@ -156,10 +156,11 @@ namespace Dune
     }
 
     // just a wrapper call
-    template <class GeometryType>
-    bool builtLocalGeom(const GeometryType & geo, ALBERTA EL_INFO *elInfo, int face )
+    template <class GeometryType, class LocalGeomType >
+    bool builtLocalGeom(const GeometryType & geo, const LocalGeomType &lg,
+                        ALBERTA EL_INFO *elInfo, int face )
     {
-      return this->realGeometry.builtLocalGeom(geo,elInfo,face);
+      return this->realGeometry.builtLocalGeom(geo,lg,elInfo,face);
     }
 
     // just a wrapper call
@@ -255,8 +256,9 @@ namespace Dune
     //! no interface method
     bool builtGeom(ALBERTA EL_INFO *elInfo, int face, int edge, int vertex);
 
-    template <class GeometryType>
-    bool builtLocalGeom(const GeometryType & geo , ALBERTA EL_INFO *elInfo, int face);
+    template <class GeometryType, class LocalGeomType >
+    bool builtLocalGeom(const GeometryType & geo , const LocalGeomType & lg,
+                        ALBERTA EL_INFO *elInfo, int face);
     // init geometry with zeros
     //! no interface method
     void initGeom();

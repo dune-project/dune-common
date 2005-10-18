@@ -173,9 +173,10 @@ namespace Dune
 
   // built Geometry
   template <int mydim, int cdim, class GridImp>
-  template <class GeometryType>
+  template <class GeometryType, class LocalGeometryType >
   inline bool AlbertaGridGeometry<mydim,cdim,GridImp>::
-  builtLocalGeom(const GeometryType &geo,  ALBERTA EL_INFO *elInfo,int face)
+  builtLocalGeom(const GeometryType &geo, const LocalGeometryType & localGeom,
+                 ALBERTA EL_INFO *elInfo,int face)
   {
     elInfo_ = elInfo;
     face_ = face;
@@ -188,19 +189,14 @@ namespace Dune
 
     if(elInfo_)
     {
+      // just map the point of the global intersection to the local
+      // coordinates , this is the default procedure
+      // for simplices this is not so bad
       for(int i=0; i<mydim+1; i++)
       {
-        const ALBERTA REAL_D & elcoord = elInfo_->coord[mapVertices(i)];
-        FieldVector<albertCtype,cdim> tmp;
-        for(int j=0; j<cdim; j++) tmp[j] = elcoord[j];
-        coord_[i] = geo.local(tmp);
+        coord_[i] = geo.local( localGeom[i] );
       }
 
-      for(int i=0; i<mydim; i++)
-      {
-        if( ! geo.checkInside( coord_[i] ) )
-          std::cout << coord_[i] << "\n";
-      }
       // geometry built
       return true;
     }
@@ -1794,7 +1790,8 @@ namespace Dune
     if(!fakeSelf_)
       fakeSelf_ = this->grid_.interSelfProvider_.getNewObjectEntity();
 
-    fakeSelf_->builtLocalGeom(inside()->geometry(),elInfo_,neighborCount_);
+    fakeSelf_->builtLocalGeom(inside()->geometry(),intersectionGlobal(),
+                              elInfo_,neighborCount_);
     return (*fakeSelf_);
   }
 
@@ -1806,7 +1803,9 @@ namespace Dune
     if(!fakeNeigh_)
       fakeNeigh_ = this->grid_.interSelfProvider_.getNewObjectEntity();
 
-    if(fakeNeigh_->builtLocalGeom(outside()->geometry(),neighElInfo_,neighborCount_))
+    if(fakeNeigh_->builtLocalGeom(outside()->geometry(),intersectionGlobal(),
+                                  neighElInfo_,neighborCount_)
+       )
       return (*fakeNeigh_);
     else
     {
