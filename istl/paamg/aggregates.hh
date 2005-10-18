@@ -213,8 +213,8 @@ namespace Dune
       /** @brief The matrix we work on. */
       const Matrix* matrix_;
       /** @brief The current max value.*/
-      double maxValue_;
-      /** @brief The funktor for calculating the norm. */
+      typename Matrix::field_type maxValue_;
+      /** @brief The functor for calculating the norm. */
       Norm norm_;
       /** @brief index of the currently evaluated row. */
       int row_;
@@ -1017,7 +1017,7 @@ namespace Dune
     template<class M, class N>
     inline void SymmetricDependency<M,N>::initRow(const Row& row, int index)
     {
-      maxValue_ = - std::numeric_limits<double>::max();
+      maxValue_ = std::min(- std::numeric_limits<typename Matrix::field_type>::max(), std::numeric_limits<typename Matrix::field_type>::min());
       row_ = index;
       diagonal_ = norm_(matrix_->operator[](row_)[row_]);
     }
