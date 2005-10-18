@@ -371,8 +371,11 @@ UGGridEntity < 0, dim, GridImp>::father() const
 }
 
 template<int dim, class GridImp>
-inline UGGridGeometry<dim,dim,GridImp>& UGGridEntity < 0, dim, GridImp>::father_relative_local()
+inline const typename UGGridEntity<0,dim,GridImp>::Geometry& UGGridEntity < 0, dim, GridImp>::geometryInFather () const
 {
-  DUNE_THROW(GridError,"father_relative_local not implemented");
-  return fatherReLocal_;
+  // we need to have a father element
+  assert(UG_NS<dim>::EFather(target_)!=0);
+
+  DUNE_THROW(GridError,"geometryInFather not implemented");
+  return fathergeo_;
 }

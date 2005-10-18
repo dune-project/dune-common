@@ -338,16 +338,16 @@ namespace Dune {
     //! Assumes that meshes are nested.
     UGGridLevelIterator<0,All_Partition,GridImp> father () const;
 
-    /*! Location of this element relative to the reference element
-       of the father. This is sufficient to interpolate all
-       dofs in conforming case. Nonconforming may require access to
-       neighbors of father and computations with local coordinates.
-       On the fly case is somewhat inefficient since dofs  are visited
-       several times. If we store interpolation matrices, this is tolerable.
-       We assume that on-the-fly implementation of numerical algorithms
-       is only done for simple discretizations. Assumes that meshes are nested.
+    /*! Location of this element relative to the reference element element of the father.
+       This is sufficient to interpolate all dofs in conforming case.
+       Nonconforming may require access to neighbors of father and
+       computations with local coordinates.
+       On the fly case is somewhat inefficient since dofs  are visited several times.
+       If we store interpolation matrices, this is tolerable. We assume that on-the-fly
+       implementation of numerical algorithms is only done for simple discretizations.
+       Assumes that meshes are nested.
      */
-    UGGridGeometry<dim,dim,GridImp>& father_relative_local();
+    const Geometry& geometryInFather () const;
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.
@@ -377,12 +377,14 @@ namespace Dune {
     //! the current geometry
     UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
 
+    //! the current geometry
+    UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> fathergeo_;
+
     //! the level of the entity
     int level_;
 
     typename TargetType<0,dim>::T* target_;
 
-    UGGridGeometry <dim,dim,GridImp> fatherReLocal_;
 
   }; // end of UGGridEntity codim = 0
 
