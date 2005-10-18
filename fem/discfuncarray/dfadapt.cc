@@ -51,14 +51,6 @@ namespace Dune {
   ~DFAdapt()
   {
     dm_.removeDofSet(*memPair_.first);
-    /*
-       bool removed = this->functionSpace_.signOut(const_cast<DFAdapt< DiscreteFunctionSpaceType> &> (*this)  );
-       if(!removed)
-       {
-       std::cerr << "ERROR: removal of DF '" << name_ << "' failed! in " << __FILE__ << " " << __LINE__ << "\n";
-       abort();
-       }
-     */
   }
 
 
@@ -95,36 +87,41 @@ namespace Dune {
   //*************************************************************************
   template<class DiscreteFunctionSpaceType>
   template <class EntityType>
-  inline LocalFunctionAdapt<DiscreteFunctionSpaceType>
-  DFAdapt< DiscreteFunctionSpaceType>::localFunction(EntityType& en) {
-    return LocalFunctionAdapt<DiscreteFunctionSpaceType> (this->functionSpace_,
-                                                          dofVec_,
-                                                          en);
+  inline typename DFAdapt< DiscreteFunctionSpaceType>:: LocalFunctionType
+  DFAdapt< DiscreteFunctionSpaceType>::localFunction(const EntityType& en)
+  {
+    return LocalFunctionType (en,*this);
   }
 
   template<class DiscreteFunctionSpaceType>
   template <class EntityType>
   inline void
   DFAdapt< DiscreteFunctionSpaceType>::
-  localFunction ( const EntityType &en , LocalFunctionAdapt < DiscreteFunctionSpaceType> &lf )
+  localFunction ( const EntityType &en , LocalFunctionType &lf )
   {
     lf.init ( en );
   }
 
   template<class DiscreteFunctionSpaceType>
-  inline LocalFunctionAdapt<DiscreteFunctionSpaceType>
+  inline LocalFunctionAdapt<DiscreteFunctionSpaceType> *
   DFAdapt< DiscreteFunctionSpaceType>::
-  newLocalFunction ( )
+  newLocalFunctionObject ( )
   {
-    return LocalFunctionAdapt<DiscreteFunctionSpaceType> ( this->functionSpace_ , dofVec_ );
+    return new LocalFunctionAdapt<DiscreteFunctionSpaceType> ( this->functionSpace_ , dofVec_ );
+  }
+
+  template<class DiscreteFunctionSpaceType>
+  inline typename DFAdapt< DiscreteFunctionSpaceType>:: LocalFunctionType
+  DFAdapt< DiscreteFunctionSpaceType>::
+  newLocalFunction ()
+  {
+    return LocalFunctionType (*this);
   }
 
   template<class DiscreteFunctionSpaceType>
   inline typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
   DFAdapt< DiscreteFunctionSpaceType>::dbegin ( )
   {
-    //DofIteratorType tmp ( dofVec_ , 0 );
-    //return tmp;
     return dofVec_.begin();
   }
 
@@ -132,8 +129,6 @@ namespace Dune {
   inline typename DFAdapt<DiscreteFunctionSpaceType>::DofIteratorType
   DFAdapt< DiscreteFunctionSpaceType>::dend ()
   {
-    //DofIteratorType tmp ( dofVec_ , dofVec_.size() );
-    //return tmp;
     return dofVec_.end();
   }
 
@@ -141,9 +136,6 @@ namespace Dune {
   inline typename DFAdapt<DiscreteFunctionSpaceType>::ConstDofIteratorType
   DFAdapt< DiscreteFunctionSpaceType>::dbegin ( ) const
   {
-    //DofIteratorType tmp ( dofVec_ , 0 );
-    //ConstDofIteratorType tmp2(tmp);
-    //return tmp2;
     return dofVec_.begin();
   }
 
@@ -151,9 +143,6 @@ namespace Dune {
   inline typename DFAdapt<DiscreteFunctionSpaceType>::ConstDofIteratorType
   DFAdapt< DiscreteFunctionSpaceType>::dend () const
   {
-    //DofIteratorType tmp ( dofVec_ , dofVec_.size() );
-    //ConstDofIteratorType tmp2(tmp);
-    //return tmp2;
     return dofVec_.end();
   }
   //**************************************************************************
@@ -557,7 +546,7 @@ namespace Dune {
 
   template<class DiscreteFunctionSpaceType>
   template <class EntityType>
-  inline bool LocalFunctionAdapt < DiscreteFunctionSpaceType>::
+  inline void LocalFunctionAdapt < DiscreteFunctionSpaceType>::
   init (const EntityType &en ) const
   {
     if(!uniform_ || !init_)
@@ -575,7 +564,8 @@ namespace Dune {
 
     for(int i=0; i<numOfDof_; i++)
       values_ [i] = &(this->dofVec_[ fSpace_.mapToGlobal ( en , i) ]);
-    return true;
+
+    return;
   }
 
 } // end namespace
