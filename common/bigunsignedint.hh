@@ -33,7 +33,7 @@ namespace Dune
     enum { n=k/16+(k%16!=0), bits=16, hexdigits=4, bitmask=0xFFFF, compbitmask=0xFFFF0000,
            overflowmask=0x1 };
 
-    //! Construct as zero
+    //! Construct uninitialized
     bigunsignedint ();
 
     //! Construct from unsigned int
