@@ -15,6 +15,27 @@
 
 namespace Dune
 {
+
+  /**
+     \brief calculates the size of a MonomialShapeFunctionSet
+   */
+  template <int dim, int order>
+  struct MonomialShapeFunctionSetSize
+  {
+    enum
+    {
+      maxSize =
+        MonomialShapeFunctionSetSize<dim-1,order>::maxSize
+        * (order+dim) / dim
+    };
+  };
+
+  template <int order>
+  struct MonomialShapeFunctionSetSize<1,order>
+  {
+    enum { maxSize = order + 1 };
+  };
+
   enum { MonomialShapeFunctionDefaultMaxOrder = 5 };
 
   template<typename C,typename T, int dim>
@@ -24,16 +45,16 @@ namespace Dune
   template<typename C,typename T, int dim, int maxOrder=MonomialShapeFunctionDefaultMaxOrder>
   class MonomialShapeFunctionSetContainer;
 
-  /*
+  /**
      \class MonomialShapeFunction
      \brief multivariate monomials of the form x^a.y^b
      monomial order/total degree == p ; p <= (a+b)
    */
-  template<typename C,typename T>
-  class MonomialShapeFunction<C,T,2> : public ShapeFunction<C,T,2,1>
+  template<typename C,typename T, int d>
+  class MonomialShapeFunction : public ShapeFunction<C,T,d,1>
   {
   public:
-    enum { dim=2 /*< Dimension of the ShapeFunction */ };
+    enum { dim=d /*!< Dimension of the ShapeFunction */ };
     typedef C CoordType;
     typedef T ResultType;
 
@@ -42,19 +63,23 @@ namespace Dune
        the given order.
 
        \param n this is the n-th shape functions in the set
-       \param a exponent a of x^a
-       \param b exponent b of y^b
+       \param exp exponent a,b of x^a * y^b
      */
-    MonomialShapeFunction(int n, int a, int b) :
-      n_(n), a_(a), b_(b) {}
+    MonomialShapeFunction(int n, const FieldVector<int, dim> & exp) :
+      n_(n), exp_(exp) {}
 
     //! \copydoc ShapeFunction::evaluateFunction
     virtual ResultType
     evaluateFunction (int, const FieldVector<CoordType,dim>& x) const
     {
-      ResultType phi;
+      ResultType phi = 1.0;
       // phi= x^(alpha-beta) * y^beta
-      phi = power(x[0],a_)*(power(x[1],b_));
+      // The compiler should be able to eliminate this loop
+      for (int c=0; c<dim; c++)
+      {
+        phi *= power(x[c],exp_[c]);
+      }
+      //        phi = power(x[0],exp_[0])*(power(x[1],exp_[1]));
       return phi;
     }
 
@@ -62,13 +87,19 @@ namespace Dune
     virtual ResultType
     evaluateDerivative(int, int dir, const FieldVector<CoordType,dim>& x) const
     {
-      ResultType dphi;
-      if(dir==0)
-        // dphi/dx= (alpha-beta) * x^(alpha-beta-1) * y^beta
-        dphi = a_ * power(x[0],a_-1) * power(x[1],b_);
-      else
-        // dphi/dy=  x^(alpha-beta) * beta * y^(beta-1)
-        dphi = power(x[0],a_) * b_ * power(x[1],b_-1);
+      ResultType dphi = 1.0;
+      // The compiler should be able to eliminate this loop
+      for (int c=0; c<dim; c++)
+      {
+        dphi *= power(x[c],exp_[c]);
+      }
+      dphi *= exp_[dir] / x[dir];
+      //         if(dir==0)
+      //           // dphi/dx= (alpha-beta) * x^(alpha-beta-1) * y^beta
+      //           dphi = exp_[0] * power(x[0],exp_[0]-1) * power(x[1],exp_[1]);
+      //         else
+      //           // dphi/dy=  x^(alpha-beta) * beta * y^(beta-1)
+      //           dphi = power(x[0],exp_[0]) * exp_[1] * power(x[1],exp_[1]-1);
       return dphi;
     }
 
@@ -87,27 +118,25 @@ namespace Dune
     //! pretty print this shape function
     void print (std::ostream& s) const
     {
-      if (a_ > 0 && b_ > 0) {
-        s << "x^" << a_
-          << "y^" << b_;
+      static const char names[] = { 'x', 'y', 'z', 'u', 'v', 'w', 'q', 'r', 's' };
+      assert( dim < 9 ); /* avoid buffer overrun un names */;
+      int exp_sum = 0;
+      for (int c=0; c<dim; c++)
+      {
+        if (exp_[c] > 0) {
+          s << names[c] << "^" << exp_[c] << " ";
+        }
+        exp_sum *= exp_[c];
       }
-      if (a_ == 0 && b_ > 0) {
-        s << "y^" << b_;
-      }
-      if (a_ > 0 && b_ == 0) {
-        s << "x^" << a_;
-      }
-      if (a_ == 0 && b_ == 0) {
+      if (exp_sum == 0) {
         s << 1;
       }
     };
   private:
     /** this is the n-th shape functions in the set */
     int n_;
-    /** exponent of x^a */
-    int a_;
-    /** exponent of y^b */
-    int b_;
+    /** exponents a,b of x^a * y^b */
+    FieldVector<int, dim> exp_;
     /** calculate the power x^p */
     ResultType power(CoordType x, int p) const {
       if (p <= 0)
@@ -120,7 +149,7 @@ namespace Dune
   class MonomialShapeFunctionSet<C, T, 2> : public ShapeFunctionSet<C, T, 2, 1>
   {
   public:
-    enum { dim=2 /*< Dimension of the ShapeFunctionSet */ };
+    enum { dim=2 /*!< Dimension of the ShapeFunctionSet */ };
     typedef C CoordType;
     typedef T ResultType;
     typedef MonomialShapeFunction<C,T,2> ShapeFunction;
@@ -130,13 +159,16 @@ namespace Dune
     {
       shapeFunctions = 0;
       int i = 0;
+      FieldVector<int, dim> exp;
       for (int alpha=0; alpha<=order_; alpha++)
       {
         for (int beta=0; beta<=alpha; beta++)
         {
           //  x^(alpha-beta) * y^beta
+          exp[0] = alpha-beta;
+          exp[1] = beta;
           shapeFunctions[i] =
-            new ShapeFunction(i, alpha-beta, beta);
+            new ShapeFunction(i, exp);
           i++;
         }
       }
@@ -192,16 +224,16 @@ namespace Dune
     SimpleVector< ShapeFunction* > shapeFunctions;
   };
 
-  template<typename C,typename T, int maxOrder>
-  class MonomialShapeFunctionSetContainer<C,T,2,maxOrder> :
-    public ShapeFunctionSetContainer<C,T,2,1,(maxOrder+1)*(maxOrder+2)/2>
+  template<typename C,typename T, int d, int maxOrder>
+  class MonomialShapeFunctionSetContainer :
+    public ShapeFunctionSetContainer<C,T,d,1,MonomialShapeFunctionSetSize<d,maxOrder>::maxSize >
   {
   public:
-    enum { d=2 };
-    enum { maxsize=(maxOrder+1)*(maxOrder+2)/2 };
+    enum { dim = d /*!< Dimension of the ShapeFunctionSetContainer */ };
+    enum { maxsize = MonomialShapeFunctionSetSize<d,maxOrder>::maxSize };
     typedef C CoordType;
     typedef T ResultType;
-    typedef MonomialShapeFunctionSet<C,T,d> ShapeFunctionSet;
+    typedef MonomialShapeFunctionSet<C,T,dim> ShapeFunctionSet;
 
     MonomialShapeFunctionSetContainer() :
       shapeFunctionSets(maxsize)
