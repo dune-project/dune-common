@@ -101,7 +101,7 @@ intersectionSelfLocal() const
     FieldVector<UGCtype, dim> tmp;
 
     // get the corners local coordinates
-    UG_NS<GridImp::dimension>::getCornerLocal(center_,neighborCount_,tmp);
+    UG_NS<GridImp::dimension>::getCornerLocal(center_,cornerIdx,tmp);
 
     // and poke them into the Geometry
     selfLocal_.setCoords(i,tmp);
@@ -141,7 +141,7 @@ inline const typename UGGridIntersectionIterator<GridImp>::LocalGeometry&
 UGGridIntersectionIterator<GridImp>::
 intersectionNeighborLocal() const
 {
-  typename TargetType<0,GridImp::dimensionworld>::T* other,self;
+  typename TargetType<0,GridImp::dimensionworld>::T *other,*self;
 
   // if we have a neighbor on this level, then return it
   if (UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_)!=NULL)
@@ -192,7 +192,7 @@ intersectionNeighborLocal() const
     FieldVector<UGCtype, dim> tmp;
 
     // get the corners local coordinates
-    UG_NS<GridImp::dimension>::getCornerLocal(other,otherCount,tmp);
+    UG_NS<GridImp::dimension>::getCornerLocal(other,cornerIdx,tmp);
 
     // and poke them into the Geometry
     neighLocal_.setCoords(i,tmp);
@@ -246,7 +246,7 @@ template< class GridImp>
 inline int UGGridIntersectionIterator<GridImp>::
 numberInNeighbor () const
 {
-  typename TargetType<0,GridImp::dimensionworld>::T* other,self;
+  typename TargetType<0,GridImp::dimensionworld>::T *other,*self;
 
   // if we have a neighbor on this level, then return it
   if (UG_NS<GridImp::dimension>::NbElem(center_, neighborCount_)!=NULL)
