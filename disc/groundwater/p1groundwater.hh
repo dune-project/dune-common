@@ -103,6 +103,10 @@ namespace Dune
       double refvolume = Dune::ReferenceElements<DT,n>::general(gt).volume();
       currentsize = sfs.size();
 
+      //          std::cout << "Entity:" << std::endl;
+      //          for (int i=0; i<e.template count<n>(); i++)
+      //                std::cout << "corner i=" << i << " pos=" << e.geometry()[i] << std::endl;
+
       // clear assemble data
       for (int i=0; i<sfs.size(); i++)
       {
@@ -113,13 +117,13 @@ namespace Dune
       }
 
       // Loop over all quadrature points and assemble matrix and right hand side
-      int p=2*k;
+      int p=1;
       for (int g=0; g<Dune::QuadratureRules<DT,n>::rule(gt,p).size(); ++g)     // run through all quadrature points
       {
         const Dune::FieldVector<DT,n>& local = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].position();           // pos of integration point
         Dune::FieldVector<DT,n> global = e.geometry().global(local);                                            // ip in global coordinates
-        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverseTransposed(local);                             // eval jacobian inverse
-        const Dune::FieldMatrix<DT,n,n>& K = problem.K(global,e,local);                                         // eval diffusion tensor
+        const Dune::FieldMatrix<DT,n,n> jac = e.geometry().jacobianInverseTransposed(local);                             // eval jacobian inverse
+        const Dune::FieldMatrix<DT,n,n> K = problem.K(global,e,local);                                         // eval diffusion tensor
         double weight = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].weight();                                    // weight of quadrature point
         DT detjac = e.geometry().integrationElement(local);                                                     // determinant of jacobian
         RT q = problem.q(global,e,local);           // source term
@@ -174,13 +178,32 @@ namespace Dune
             FieldVector<DT,n> local = it.intersectionSelfLocal().global(facelocal);
             FieldVector<DT,n> global = it.intersectionGlobal().global(facelocal);
             bctypeface = problem.bctype(global,e,local);                       // eval bctype
+
+            //                            std::cout << "=== Boundary found"
+            //                                                  << " facenumber=" << it.numberInSelf()
+            //                                                  << " quadpoint=" << g
+            //                                                  << " facelocal=" << facelocal
+            //                                                  << " local=" << local
+            //                                                  << " global=" << global
+            //                                                  << std::endl;
+
             if (bctypeface!=GroundwaterEquationParameters<G,RT>::neumann) break;
+
             RT J = problem.J(global,e,local);
             double weightface = Dune::QuadratureRules<DT,n-1>::rule(gtface,p)[g].weight();
             DT detjacface = it.intersectionGlobal().integrationElement(facelocal);
             for (int i=0; i<sfs.size(); i++)                       // loop over test function number
               if (bctype[i]==GroundwaterEquationParameters<G,RT>::neumann)
+              {
                 b[i] -= J*sfs[i].evaluateFunction(0,local)*weightface*refvolumeface*detjacface;
+                //                                              std::cout << "Neumann BC found, accumulating"
+                //                                                                << -J*sfs[i].evaluateFunction(0,local)*weightface*refvolumeface*detjacface
+                //                                                                << std::endl;
+                //                                              std::cout << "J=" << J << " shapef=" << sfs[i].evaluateFunction(0,local)
+                //                                                                << " weight=" << weightface
+                //                                                                << " refvolume=" << refvolumeface
+                //                                                                << " detjac=" << detjacface << std::endl;
+              }
           }
           if (bctypeface==GroundwaterEquationParameters<G,RT>::neumann) continue;                 // was a neumann face, go to next face
         }
@@ -305,7 +328,7 @@ namespace Dune
         @param[out]  elementpart    element part of error estimator
 
      */
-    void estimate (const Entity& e, DT& elementpart)
+    void estimate (const Entity& e, RT& elementpart)
     {
       // extract some important parameters
       Dune::GeometryType gt = e.geometry().type();
@@ -316,9 +339,9 @@ namespace Dune
 
       // integral over right hand side, div(K grad u_h) = 0 for P1 elements
       int p=3;
-      DT volume = e.geometry().integrationElement(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
-      DT h_K = pow(volume,1.0/((double)n));
-      DT integralq = 0;
+      RT volume = e.geometry().integrationElement(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
+      RT h_K = pow(volume,1.0/((double)n));
+      RT integralq = 0;
       for (int g=0; g<Dune::QuadratureRules<DT,n>::rule(gt,p).size(); ++g)     // run through all quadrature points
       {
         const Dune::FieldVector<DT,n>& local = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].position();           // pos of integration point
@@ -345,7 +368,7 @@ namespace Dune
             @param[out]  facebctype if bctype is neumann then facefluxN[0] contains neumann value
      */
     void estimate (const Entity& e, const IntersectionIterator& it,
-                   RT facefluxK[], RT facefluxN[], DT& facefactor, typename GroundwaterEquationParameters<G,RT>::BC& facebctype)
+                   RT facefluxK[], RT facefluxN[], RT& facefactor, typename GroundwaterEquationParameters<G,RT>::BC& facebctype)
     {
       // extract some important parameters
       Dune::GeometryType gt = e.geometry().type();
@@ -374,8 +397,8 @@ namespace Dune
         facebctype = GroundwaterEquationParameters<G,RT>::process;
 
         // compute coefficients of flux evaluation in self
-        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverseTransposed(local);           // eval jacobian inverse at face center
-        const Dune::FieldMatrix<DT,n,n>& K = problem.K(center,e,local);                       // eval diffusion tensor at face center
+        const Dune::FieldMatrix<DT,n,n> jac = e.geometry().jacobianInverseTransposed(local);           // eval jacobian inverse at face center
+        const Dune::FieldMatrix<DT,n,n> K = problem.K(center,e,local);                       // eval diffusion tensor at face center
         for (int i=0; i<sfs.size(); i++)
         {
           Dune::FieldVector<DT,n> temp;
@@ -397,8 +420,8 @@ namespace Dune
         int numberInNeighbor = it.numberInNeighbor();
         const Dune::FieldVector<DT,n-1>& nbfacelocal = Dune::ReferenceElements<DT,n-1>::general(nbgtface).position(0,0);
         FieldVector<DT,n> nblocal = it.intersectionNeighborLocal().global(nbfacelocal);
-        const Dune::FieldMatrix<DT,n,n>& nbjac = it.outside()->geometry().jacobianInverseTransposed(nblocal);
-        const Dune::FieldMatrix<DT,n,n>& nbK = problem.K(nbcenter,*(it.outside()),nblocal);
+        const Dune::FieldMatrix<DT,n,n> nbjac = it.outside()->geometry().jacobianInverseTransposed(nblocal);
+        const Dune::FieldMatrix<DT,n,n> nbK = problem.K(nbcenter,*(it.outside()),nblocal);
         for (int i=0; i<nbsfs.size(); i++)
         {
           Dune::FieldVector<DT,n> temp;
@@ -424,8 +447,8 @@ namespace Dune
         facefluxN[0] = problem.J(global,e,local);
 
         // compute coefficients of flux evaluation in self
-        const Dune::FieldMatrix<DT,n,n>& jac = e.geometry().jacobianInverseTransposed(local);           // eval jacobian inverse at face center
-        const Dune::FieldMatrix<DT,n,n>& K = problem.K(center,e,local);                       // eval diffusion tensor at face center
+        const Dune::FieldMatrix<DT,n,n> jac = e.geometry().jacobianInverseTransposed(local);           // eval jacobian inverse at face center
+        const Dune::FieldMatrix<DT,n,n> K = problem.K(center,e,local);                       // eval diffusion tensor at face center
         for (int i=0; i<sfs.size(); i++)
         {
           Dune::FieldVector<DT,n> temp;
@@ -472,8 +495,7 @@ namespace Dune
     {       }
 
     //! assemble operator, rhs and Dirichlet boundary conditions
-    template<class FEFunc>
-    void assemble (FEFunc& u, FEFunc& f)
+    void assemble (P1FEFunction<G,RT,IS>& u, P1FEFunction<G,RT,IS>& f)
     {
       // clear global stiffness matrix and right hand side
       this->A = 0;
@@ -546,32 +568,92 @@ namespace Dune
 
     /** \brief evaluate error estimator
      */
-    template<class P1FEFunc, class P0FEFunc>
-    void estimate (const P1FEFunc& u, P0FEFunc& eta)
+    void estimate (const P1FEFunction<G,RT,IS>& u, P0FEFunction<G,RT,IS>& eta2)
     {
-      // clear vector with elementwise error estimates
-      *eta = 0;
+      // clear estimator values
+      *eta2 = 0;
 
       // run over all leaf elements
       Iterator eendit = this->is.template end<0,All_Partition>();
       for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
+        // in case someone calls it with a level index set
+        assert(it->isLeaf());
+
         // get access to shape functions for P1 elements
         Dune::GeometryType gt = it->geometry().type();
         const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
         sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
 
         // evaluate element part of estimator
-        DT elementpart;
+        RT elementpart;
         loc.estimate(*it,elementpart);
+        (*eta2)[eta2.mapper().map(*it)] += elementpart;
 
         // loop over all neighbors
         IntersectionIterator iendit = it->iend();
         for (IntersectionIterator iit = it->ibegin(); iit!=iendit; ++iit)
         {
-          // if we have a neighbor then we assume there is no boundary
-          // (it might still be an interior boundary ... )
-          if (it.neighbor()) continue;
+          // handle face with neighbor
+          if (iit.neighbor())
+          {
+            // if neighbor is not leaf then it is evaluated on the neighbor
+            if (!iit.outside()->isLeaf())
+              continue;
+
+            // check if face is handled from other side
+            if (iit.outside()->level()==it->level() && eta2.mapper().map(*it)<eta2.mapper().map(*(iit.outside())))
+              continue;
+
+            // evaluate coefficients for this face
+            RT facefluxK[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+            RT facefluxN[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+            RT facefactor;
+            typename GroundwaterEquationParameters<G,RT>::BC facebctype;
+            loc.estimate(*it,iit,facefluxK,facefluxN,facefactor,facebctype);
+
+            // compute contribution of myself
+            RT self=0;
+            for (int i=0; i<it->template count<n>(); i++)
+              self += facefluxK[i]*(*u)[u.mapper().template map<n>(*it,i)];
+
+            // compute contribution of nb
+            RT nb=0;
+            for (int i=0; i<iit.outside()->template count<n>(); i++)
+              nb += facefluxN[i]*(*u)[u.mapper().template map<n>(*(iit.outside()),i)];
+
+
+            // accumulate contribution to both elements
+            (*eta2)[eta2.mapper().map(*it)] += 0.5*facefactor*(self-nb)*(self-nb);
+            (*eta2)[eta2.mapper().map(*(iit.outside()))] += 0.5*facefactor*(self-nb)*(self-nb);
+
+            continue;
+          }
+
+          // handle face on boundary
+          if (iit.boundary())
+          {
+            // evaluate coefficients for this face
+            RT facefluxK[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+            RT facefluxN[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+            RT facefactor;
+            typename GroundwaterEquationParameters<G,RT>::BC facebctype;
+            loc.estimate(*it,iit,facefluxK,facefluxN,facefactor,facebctype);
+
+            // check bc type
+            if (facebctype!=GroundwaterEquationParameters<G,RT>::neumann)
+              continue;
+
+            // compute contribution of myself
+            RT self=0;
+            for (int i=0; i<it->template count<n>(); i++)
+              self += facefluxK[i]*(*u)[u.mapper().template map<n>(*it,i)];
+
+            // accumulate contribution
+            (*eta2)[eta2.mapper().map(*it)] += facefactor*(facefluxN[0]-self)*(facefluxN[0]-self);
+
+            continue;
+          }
         }
 
       }

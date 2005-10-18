@@ -57,7 +57,7 @@ namespace Dune
         the coefficient vector.
    */
   template<class G, class RT, typename IS>
-  class P0FEFunction : virtual public ElementwiseCInfinityFunction<G,RT,1>,
+  class P0FEFunction : virtual public GridFunction<G,RT,1>,
                        virtual public L2Function<typename G::ctype,RT,G::dimension,1>
   {
     //! get domain field type from the grid
@@ -212,6 +212,13 @@ namespace Dune
     void postAdapt ()
     {
       DUNE_THROW(NotImplemented, "postAdapt()");
+    }
+
+    /** @brief export the mapper for external use
+     */
+    const MultipleCodimMultipleGeomTypeMapper<G,IS,P0Layout>& mapper () const
+    {
+      return mapper_;
     }
 
   private:

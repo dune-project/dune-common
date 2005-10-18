@@ -25,6 +25,7 @@
 
 // same directory includes
 #include "functions.hh"
+#include "p0function.hh"
 
 /**
  * @file
@@ -237,6 +238,29 @@ namespace Dune
       }
     }
 
+    void interpolate (const P0FEFunction<G,RT,IS>& u)
+    {
+      typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
+      std::vector<char> counter(mapper_.size());
+      for (int i=0; i<mapper_.size(); i++) counter[i] = 0;
+
+      for (int i=0; i<counter.size(); i++)
+        (*coeff)[i] = 0;
+      Iterator eendit = is.template end<0,All_Partition>();
+      for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        Dune::GeometryType gt = it->geometry().type();
+        for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
+        {
+          (*coeff)[mapper_.template map<n>(*it,i)][0] +=
+            u.evallocal(0,*it,Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position());
+          counter[mapper_.template map<n>(*it,i)] += 1;
+        }
+      }
+      for (int i=0; i<counter.size(); i++)
+        (*coeff)[i] = (*coeff)[i] / counter[i];
+    }
+
     //! return const reference to coefficient vector
     /*! Dereferencing a finite element function returns the
        coefficient representation of the finite element function.
@@ -303,6 +327,11 @@ namespace Dune
         int i;
         if (manager.savedMap().contains(*it,i))
         {
+          //                      std::cout << " found vertex=" << it->geometry()[0]
+          //                                            << " at i=" << i
+          //                                            << " oldindex=" << manager.oldIndex()[i]
+          //                                            << " newindex=" << mapper_.map(*it)
+          //                                            << std::endl;
           // the vertex existed already in the old mesh, copy data
           (*coeff)[mapper_.map(*it)] = (*oldcoeff)[manager.oldIndex()[i]];
         }
@@ -321,13 +350,21 @@ namespace Dune
             EEntityPointer father=it->ownersFather();
             FieldVector<DT,n> pos=it->positionInOwnersFather();
             GeometryType gt = father->geometry().type();
+            //                            std::cout << "trying to interpolate vertex at " << it->geometry()[0]
+            //                                                  << " level=" << level
+            //                                                  << " posinfather=" << pos << std::endl;
             RT value=0;
             for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
             {
               // lookup subid
               value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,pos)
                        *(*coeff)[mapper_.template map<n>(*father,i)];
+              //                                          std::cout << "  corner=" << i
+              //                                                                << " cpos=" << father->geometry()[i]
+              //                                                                << " u=" << (*coeff)[mapper_.template map<n>(*father,i)]
+              //                                                                << std::endl;
             }
+            //                            std::cout << "index=" << mapper_.map(*it) << " value=" << value << std::endl;
             (*coeff)[mapper_.map(*it)] = value;
           }
         }
@@ -336,6 +373,14 @@ namespace Dune
       // now really delete old representation
       if (oldcoeff!=0) delete oldcoeff;
       oldcoeff = 0;
+
+    }
+
+    /** @brief export the mapper for external use
+     */
+    const MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout>& mapper () const
+    {
+      return mapper_;
     }
 
   private:
@@ -414,19 +459,6 @@ namespace Dune
 
     //! manages nothing
     P1FEFunctionManager (const G& g) : grid(g), savedmap(g), mapper(g,g.leafIndexSet())
-    {       }
-
-    /** \brief Prepare finite element function for mesh adaptation
-
-        This method has to be called before adapting the grid. It stores information
-            with respect to the global ID set of the grid.
-
-            P1 is special in the sense that the data does not have to be processed before
-       adaptation. Only the vertex data has to be saved. Processing is done after adaptation
-            when the interpolation of the data in new vertices is required. Note that element-wise
-       data does require processing before adaptation but nothing after adaptation.
-     */
-    void preAdapt ()
     {
       // allocate index array to correct size (this possible for vertex data)
       oldindex.resize(mapper.size());
@@ -437,23 +469,9 @@ namespace Dune
       // now loop over all vertices and copy the index provided by the mapper
       VLeafIterator veendit = grid.template leafend<dim>();
       for (VLeafIterator it = grid.template leafbegin<dim>(); it!=veendit; ++it)
+      {
         oldindex[savedmap.map(*it)] = mapper.map(*it);
-    }
-
-
-    /** \brief Adapt the finite element function to the new mesh
-
-        This method must be called after the mesh has been modified. It has be called
-       whenever preAdapt has been called.
-     */
-    void postAdapt ()
-    {
-      // update mapper to the new grid
-      mapper.update();
-
-      // delete the temporary data
-      savedmap.clear();
-      oldindex.clear();
+      }
     }
 
     const GlobalUniversalMapper<G>& savedMap ()
