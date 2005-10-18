@@ -299,7 +299,9 @@ namespace Dune
     void postAdapt (P1FEFunctionManager<G,RT>& manager)
     {
       typedef typename G::template Codim<n>::LeafIterator VLeafIterator;
+      typedef typename G::template Codim<0>::LeafIterator ELeafIterator;
       typedef typename G::template Codim<n>::LevelIterator VLevelIterator;
+      typedef typename G::template Codim<0>::LevelIterator ELevelIterator;
       typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
 
       // \todo check that function is only called for data with respect to leafs
@@ -319,6 +321,10 @@ namespace Dune
       }
       std::cout << "P1 FE function enlarged to " << mapper_.size() << " components" << std::endl;
 
+      // vector of flags to store which vertex has been handled already
+      std::vector<bool> visited(mapper_.size());
+      for (int i=0; i<mapper_.size(); i++) visited[i] = false;
+
       // now loop over the NEW mesh to copy the data that was already in the OLD mesh
       VLeafIterator veendit = grid_.template leafend<n>();
       for (VLeafIterator it = grid_.template leafbegin<n>(); it!=veendit; ++it)
@@ -334,46 +340,47 @@ namespace Dune
           //                                            << std::endl;
           // the vertex existed already in the old mesh, copy data
           (*coeff)[mapper_.map(*it)] = (*oldcoeff)[manager.oldIndex()[i]];
+          // ... and mark as visited
+          visited[mapper_.map(*it)] = true;
         }
       }
 
       // now loop the second time to interpolate the new coefficients
+      // new implementation using interpolation on codim 0
       for (int level=1; level<=grid_.maxLevel(); ++level)
       {
-        VLevelIterator vlendit = grid_.template lend<n>(level);
-        for (VLevelIterator it = grid_.template lbegin<n>(level); it!=vlendit; ++it)
+        ELevelIterator elendit = grid_.template lend<0>(level);
+        for (ELevelIterator it = grid_.template lbegin<0>(level); it!=elendit; ++it)
         {
-          // lookup in mapper
-          int k;
-          if (!manager.savedMap().contains(*it,k))
-          {
-            EEntityPointer father=it->ownersFather();
-            FieldVector<DT,n> pos=it->positionInOwnersFather();
-            GeometryType gt = father->geometry().type();
-            //                            std::cout << "trying to interpolate vertex at " << it->geometry()[0]
-            //                                                  << " level=" << level
-            //                                                  << " posinfather=" << pos << std::endl;
-            RT value=0;
-            for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
+          GeometryType gte = it->geometry().type();
+          for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gte,1).size(); ++i)
+            if (!visited[mapper_.template map<n>(*it,i)])
             {
-              // lookup subid
-              value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,pos)
-                       *(*coeff)[mapper_.template map<n>(*father,i)];
-              //                                          std::cout << "  corner=" << i
-              //                                                                << " cpos=" << father->geometry()[i]
-              //                                                                << " u=" << (*coeff)[mapper_.template map<n>(*father,i)]
-              //                                                                << std::endl;
+              // OK, this is a new vertex
+              EEntityPointer father=it->father();                           // the father element
+              GeometryType gtf = father->geometry().type();                           // fathers type
+              const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gte,1)[i].position();
+              FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                           // map corner to father element
+              RT value=0;
+              for (int j=0; j<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++j)
+              {
+                value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1)[j].evaluateFunction(0,pos)
+                         *(*coeff)[mapper_.template map<n>(*father,j)];
+                //                                        std::cout << "  corner=" << i
+                //                                                              << " cpos=" << father->geometry()[i]
+                //                                                              << " u=" << (*coeff)[mapper_.template map<n>(*father,i)]
+                //                                                              << std::endl;
+              }
+              //                                  std::cout << "index=" << mapper_.map(*it) << " value=" << value << std::endl;
+              (*coeff)[mapper_.template map<n>(*it,i)] = value;
+              visited[mapper_.template map<n>(*it,i)] = true;
             }
-            //                            std::cout << "index=" << mapper_.map(*it) << " value=" << value << std::endl;
-            (*coeff)[mapper_.map(*it)] = value;
-          }
         }
       }
 
       // now really delete old representation
       if (oldcoeff!=0) delete oldcoeff;
       oldcoeff = 0;
-
     }
 
     /** @brief export the mapper for external use
