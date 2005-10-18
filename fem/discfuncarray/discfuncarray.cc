@@ -12,7 +12,6 @@ namespace Dune
   DiscFuncArray(const DiscreteFunctionSpaceType & f)
     : DiscreteFunctionDefaultType ( f )
       , name_ ( "no name" )
-      , freeLocalFunc_ (0)
       , localFunc_ ( f , dofVec_ )
   {
     getMemory();
@@ -24,7 +23,6 @@ namespace Dune
   DiscFuncArray(const char * name, const DiscreteFunctionSpaceType & f )
     : DiscreteFunctionDefaultType ( f )
       , name_ ( name )
-      , freeLocalFunc_ (0)
       , localFunc_ ( f , dofVec_ )
   {
     getMemory();
@@ -33,12 +31,12 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   DiscFuncArray(const DiscFuncArray <DiscreteFunctionSpaceType> & df ) :
-    DiscreteFunctionDefaultType ( df.functionSpace_ ) , localFunc_ ( df.localFunc_ )
+    DiscreteFunctionDefaultType ( df.functionSpace_ )
+    , localFunc_ ( df.localFunc_ )
   {
     name_ = df.name_;
     built_ = df.built_;
 
-    freeLocalFunc_ = 0;
     dofVec_ = df.dofVec_;
   }
 
@@ -56,9 +54,7 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline DiscFuncArray< DiscreteFunctionSpaceType >::
   ~DiscFuncArray()
-  {
-    if(freeLocalFunc_) delete freeLocalFunc_;
-  }
+  {}
 
 
   template<class DiscreteFunctionSpaceType >
@@ -91,46 +87,33 @@ namespace Dune
   template<class DiscreteFunctionSpaceType > template <class EntityType>
   inline void
   DiscFuncArray< DiscreteFunctionSpaceType >::
-  localFunction ( const EntityType &en , LocalFunctionArray < DiscreteFunctionSpaceType > &lf )
+  localFunction ( const EntityType &en , LocalFunctionType &lf )
   {
     lf.init ( en );
   }
 
+  template<class DiscreteFunctionSpaceType > template <class EntityType>
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType >:: LocalFunctionType
+  DiscFuncArray< DiscreteFunctionSpaceType >:: localFunction ( const EntityType &en )
+  {
+    return LocalFunctionType (en,*this);
+  }
+
   template<class DiscreteFunctionSpaceType >
-  inline LocalFunctionArray<DiscreteFunctionSpaceType>
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType >:: LocalFunctionImp *
   DiscFuncArray< DiscreteFunctionSpaceType >::
-  newLocalFunction ()
-  {
-    LocalFunctionArray<DiscreteFunctionSpaceType> tmp ( this->functionSpace_ , dofVec_ );
-    return tmp;
-  }
+  newLocalFunctionObject ()
 
-#if 0
-  template<class DiscreteFunctionSpaceType >
-  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType *
-  DiscFuncArray< DiscreteFunctionSpaceType >::getLocalFunction ()
   {
-    if(!freeLocalFunc_)
-    {
-      LocalFunctionType *lf = new LocalFunctionType (functionSpace_,dofVec_);
-      return lf;
-    }
-    else
-    {
-      LocalFunctionType *lf = freeLocalFunc_;
-      freeLocalFunc_ = lf->getNext();
-      return lf;
-    }
+    return new LocalFunctionArray<DiscreteFunctionSpaceType> ( this->functionSpace_ , dofVec_ );
   }
 
   template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::
-  freeLocalFunction ( typename DiscFuncArray<DiscreteFunctionSpaceType>::LocalFunctionType *lf)
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType >:: LocalFunctionType
+  DiscFuncArray< DiscreteFunctionSpaceType >:: newLocalFunction ()
   {
-    lf->setNext(freeLocalFunc_);
-    freeLocalFunc_ = lf;
+    return LocalFunctionType (*this);
   }
-#endif
 
   template<class DiscreteFunctionSpaceType >
   inline typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
@@ -417,14 +400,12 @@ namespace Dune
   inline LocalFunctionArray < DiscreteFunctionSpaceType >::
   LocalFunctionArray( const DiscreteFunctionSpaceType &f ,
                       Array < RangeFieldType > & dofVec )
-    : fSpace_ ( f ), dofVec_ ( dofVec )  , next_ (0)
+    : fSpace_ ( f ), dofVec_ ( dofVec )
       , uniform_(true), init_(false) {}
 
   template<class DiscreteFunctionSpaceType >
   inline LocalFunctionArray < DiscreteFunctionSpaceType >::~LocalFunctionArray()
-  {
-    if(next_) delete next_;
-  }
+  {}
 
   template<class DiscreteFunctionSpaceType >
   inline typename LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
@@ -443,6 +424,13 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline int LocalFunctionArray < DiscreteFunctionSpaceType >::
   numberOfDofs () const
+  {
+    return numOfDof_;
+  }
+
+  template<class DiscreteFunctionSpaceType >
+  inline int LocalFunctionArray < DiscreteFunctionSpaceType >::
+  numDofs () const
   {
     return numOfDof_;
   }
@@ -496,28 +484,14 @@ namespace Dune
     }
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline LocalFunctionArray < DiscreteFunctionSpaceType > *
-  LocalFunctionArray < DiscreteFunctionSpaceType >::getNext () const
-  {
-    return next_;
-  }
-
-  template<class DiscreteFunctionSpaceType >
-  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
-  setNext (LocalFunctionArray < DiscreteFunctionSpaceType > *n)
-  {
-    next_ = n;
-  }
-
   template<class DiscreteFunctionSpaceType > template <class EntityType>
-  inline bool LocalFunctionArray < DiscreteFunctionSpaceType >::
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
   init (const EntityType &en ) const
   {
     if(!uniform_ || !init_)
     {
       numOfDof_ =
-        fSpace_.getBaseFunctionSet(en).getNumberOfBaseFunctions();
+        fSpace_.getBaseFunctionSet(en).numBaseFunctions();
       numOfDifferentDofs_ =
         fSpace_.getBaseFunctionSet(en).getNumberOfDiffBaseFuncs();
 
@@ -529,7 +503,7 @@ namespace Dune
 
     for(int i=0; i<numOfDof_; i++)
       values_ [i] = &(dofVec_[fSpace_.mapToGlobal ( en , i)]);
-    return true;
+    return ;
   }
 
   //**********************************************************************
