@@ -51,37 +51,6 @@ namespace Dune {
   template<class GridImp>            class YaspGlobalIdSet;
 
   //========================================================================
-  // The reference elements
-#if 0
-  template<int dim>
-  class YaspFatherRelativeLocalElement {
-  public:
-    static FieldVector<yaspgrid_ctype, dim> midpoint; // data neded for the refelem below
-    static FieldVector<yaspgrid_ctype, dim> extension; // data needed for the refelem below
-    static YaspGeometry<dim,dim> element;
-    static YaspGeometry<dim,dim>& getson (int i)
-    {
-      for (int k=0; k<dim; k++)
-        if (i&(1<<k))
-          midpoint[k] = 0.75;
-        else
-          midpoint[k] = 0.25;
-      return element;
-    }
-  };
-
-  // initialize static variable with bool constructor (which makes reference elements)
-  template<int dim>
-  YaspGeometry<dim,dim> YaspFatherRelativeLocalElement<dim>::element(YaspFatherRelativeLocalElement<dim>::midpoint,
-                                                                     YaspFatherRelativeLocalElement<dim>::extension);
-  template<int dim>
-  FieldVector<yaspgrid_ctype, dim> YaspFatherRelativeLocalElement<dim>::midpoint(0.25);
-
-  template<int dim>
-  FieldVector<yaspgrid_ctype, dim> YaspFatherRelativeLocalElement<dim>::extension(0.5);
-
-#endif
-  //========================================================================
   /*!
      YaspGeometry realizes the concept of the geometric part of a mesh entity.
 
@@ -132,6 +101,36 @@ namespace Dune {
       Geometry<0, cdim, GridImp, YaspGeometry>(YaspGeometry<0, cdim, GridImp>(false))
     {};
   };
+
+  //========================================================================
+  // The transformation describing the refinement rule
+
+  template<int dim>
+  class YaspFatherRelativeLocalElement {
+  public:
+    static FieldVector<yaspgrid_ctype, dim> midpoint; // data neded for the refelem below
+    static FieldVector<yaspgrid_ctype, dim> extension; // data needed for the refelem below
+    static YaspSpecialGeometry<dim,dim,YaspGrid<dim,dim> > geo;
+    static YaspSpecialGeometry<dim,dim,YaspGrid<dim,dim> >& getson (int i)
+    {
+      for (int k=0; k<dim; k++)
+        if (i&(1<<k))
+          midpoint[k] = 0.75;
+        else
+          midpoint[k] = 0.25;
+      return geo;
+    }
+  };
+
+  // initialize static variable with bool constructor (which makes reference elements)
+  template<int dim>
+  YaspSpecialGeometry<dim,dim,YaspGrid<dim,dim> > YaspFatherRelativeLocalElement<dim>::geo(YaspFatherRelativeLocalElement<dim>::midpoint,
+                                                                                           YaspFatherRelativeLocalElement<dim>::extension);
+  template<int dim>
+  FieldVector<yaspgrid_ctype, dim> YaspFatherRelativeLocalElement<dim>::midpoint(0.25);
+
+  template<int dim>
+  FieldVector<yaspgrid_ctype, dim> YaspFatherRelativeLocalElement<dim>::extension(0.5);
 
   //! The general version implements dimworld==dimworld. If this is not the case an error is thrown
   template<int mydim,int cdim, class GridImp>
@@ -645,12 +644,8 @@ namespace Dune {
         if (_it.coord(k)%2)
           son += (1<<k);
 
-      // access to one of the 2**dim predefined elements
-#warning geometryInFather not implemented
-      DUNE_THROW(NotImplemented," geometryInFather");
-#if 0
+      // configure one of the 2^dim transformations
       return YaspFatherRelativeLocalElement<dim>::getson(son);
-#endif
     }
 
     const TSI& transformingsubiterator () const
