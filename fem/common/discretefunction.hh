@@ -10,6 +10,7 @@
 #include <dune/common/functionspace.hh>
 #include "discretefunctionspace.hh"
 #include "dofiterator.hh"
+#include "localfunctionwrapper.hh"
 
 namespace Dune {
 
@@ -196,17 +197,23 @@ namespace Dune {
 
     //! Type of the local function
     typedef typename DiscreteFunctionTraits::LocalFunctionType LocalFunctionType;
+
+    //! Type of the local function implementation
+    typedef typename DiscreteFunctionTraits::LocalFunctionImp LocalFunctionImp;
     //! Type of the dof iterator
     typedef typename DiscreteFunctionTraits::DofIteratorType DofIteratorType;
 
     //! Type of the const dof iterator
     typedef typename DiscreteFunctionTraits::ConstDofIteratorType ConstDofIteratorType;
 
+    typedef LocalFunctionStorage < DiscreteFunctionDefaultType > LocalFunctionStorageType;
+    friend class LocalFunctionStorage < DiscreteFunctionDefaultType >;
+    friend class LocalFunctionWrapper < DiscreteFunctionType >;
   public:
     //- Methods
     //! pass the function space to the interface class
     DiscreteFunctionDefault (const DiscreteFunctionSpaceType & f ) :
-      DiscreteFunctionInterfaceType ( f ) {}
+      DiscreteFunctionInterfaceType ( f ) , lfStorage_ (*this) {}
 
     //! Continuous data
     bool continuous() const {
@@ -257,6 +264,21 @@ namespace Dune {
       // Die a horrible death! Never call that one...
       assert(false);
     }
+
+  protected:
+    //this methods are used by the LocalFunctionStorage class
+
+    //! return pointer to local function implementation
+    LocalFunctionImp * newLocalFunctionObject ()
+    {
+      return asImp().newLocalFunctionObject ();
+    }
+
+    //! return reference for local function storage
+    LocalFunctionStorageType & localFunctionStorage() { return lfStorage_; }
+
+    // the local function storage stack
+    LocalFunctionStorageType lfStorage_;
 
   private:
     // Barton-Nackman trick
