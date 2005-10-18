@@ -105,13 +105,13 @@ namespace Dune {
   //========================================================================
   // The transformation describing the refinement rule
 
-  template<int dim>
+  template<int dim, class GridImp>
   class YaspFatherRelativeLocalElement {
   public:
     static FieldVector<yaspgrid_ctype, dim> midpoint; // data neded for the refelem below
     static FieldVector<yaspgrid_ctype, dim> extension; // data needed for the refelem below
-    static YaspSpecialGeometry<dim,dim,YaspGrid<dim,dim> > geo;
-    static YaspSpecialGeometry<dim,dim,YaspGrid<dim,dim> >& getson (int i)
+    static YaspSpecialGeometry<dim,dim,GridImp> geo;
+    static YaspSpecialGeometry<dim,dim,GridImp>& getson (int i)
     {
       for (int k=0; k<dim; k++)
         if (i&(1<<k))
@@ -123,14 +123,15 @@ namespace Dune {
   };
 
   // initialize static variable with bool constructor (which makes reference elements)
-  template<int dim>
-  YaspSpecialGeometry<dim,dim,YaspGrid<dim,dim> > YaspFatherRelativeLocalElement<dim>::geo(YaspFatherRelativeLocalElement<dim>::midpoint,
-                                                                                           YaspFatherRelativeLocalElement<dim>::extension);
-  template<int dim>
-  FieldVector<yaspgrid_ctype, dim> YaspFatherRelativeLocalElement<dim>::midpoint(0.25);
+  template<int dim, class GridImp>
+  YaspSpecialGeometry<dim,dim,GridImp>
+  YaspFatherRelativeLocalElement<dim,GridImp>::geo(YaspFatherRelativeLocalElement<dim,GridImp>::midpoint,
+                                                   YaspFatherRelativeLocalElement<dim,GridImp>::extension);
+  template<int dim, class GridImp>
+  FieldVector<yaspgrid_ctype,dim> YaspFatherRelativeLocalElement<dim,GridImp>::midpoint(0.25);
 
-  template<int dim>
-  FieldVector<yaspgrid_ctype, dim> YaspFatherRelativeLocalElement<dim>::extension(0.5);
+  template<int dim, class GridImp>
+  FieldVector<yaspgrid_ctype,dim> YaspFatherRelativeLocalElement<dim,GridImp>::extension(0.5);
 
   //! The general version implements dimworld==dimworld. If this is not the case an error is thrown
   template<int mydim,int cdim, class GridImp>
@@ -636,7 +637,7 @@ namespace Dune {
           implementation of numerical algorithms is only done for simple discretizations.
           Assumes that meshes are nested.
      */
-    Geometry& geometryInFather () const
+    const Geometry& geometryInFather () const
     {
       // determine which son we are
       int son = 0;
@@ -645,7 +646,7 @@ namespace Dune {
           son += (1<<k);
 
       // configure one of the 2^dim transformations
-      return YaspFatherRelativeLocalElement<dim>::getson(son);
+      return YaspFatherRelativeLocalElement<dim,GridImp>::getson(son);
     }
 
     const TSI& transformingsubiterator () const
