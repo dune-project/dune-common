@@ -32,75 +32,8 @@ namespace Dune
    * A class for piecewise constant shape functions in a prism
    * Evaluation is done at the centroid(Centre of gravity) of the prism
    */
-
-  template<typename C, typename T, int d>
-  class P0PrismShapeFunction
-  {
-  public:
-
-    // compile time sizes
-    enum { dim=d };        // maps from R^d
-    enum { comps=1 };          // to R^1
-
-    enum { m=1 };     // total number of basis functions
-
-    // export types
-    typedef C CoordType;
-    typedef T ResultType;
-    typedef P0PrismShapeFunction ImplementationType;
-
-    //! make a shape function object
-    P0PrismShapeFunction ()
-    {  }
-
-    //! evaluate shape function in local coordinates
-    ResultType evaluateFunction (int comp, const FieldVector<CoordType,d>& x) const
-    {
-      return 1;
-    }
-
-    //! evaluate gradient in local coordinates
-    ResultType evaluateDerivative (int comp, int dir, const FieldVector<CoordType,d>& x) const
-    {
-      return 0;
-    }
-
-    //! consecutive number of associated dof within element
-    int localindex (int comp) const
-    {
-      return 0;
-    }
-
-    //! codim of associated dof
-    int codim () const
-    {
-      return 0;
-    }
-
-    //! entity (of codim) of associated dof
-    int entity () const
-    {
-      return 0;
-    }
-
-    //! consecutive number of dof within entity
-    int entityindex () const
-    {
-      return 0;
-    }
-
-    //! interpolation point associated with shape function
-    const FieldVector<CoordType,dim>& position () const
-    {
-      return pos;
-    }
-
-  private:
-    FieldVector<CoordType,d> pos;
-  };
-
   template<typename C,typename T>
-  class P0PrismShapeFunction<C,T,3>
+  class P0PrismShapeFunction
   {
   public:
 
@@ -187,79 +120,8 @@ namespace Dune
         derrivative of the form:( aa[0][dir] + bb[0][dir]*x + bb[1][dir]*y + bb[2][dir]*z)
         dir=0 for x, dir=1 for y, dir=2 for z
    */
-
-  template<typename C, typename T, int d>
-  class P1PrismShapeFunction
-  {
-  public:
-
-    // compile time sizes
-    enum { dim=d };        // maps from R^d
-    enum { comps=1 };          // to R^1
-
-    enum { m=1 };     // total number of basis functions
-
-    // export types
-    typedef C CoordType;
-    typedef T ResultType;
-    typedef P1PrismShapeFunction ImplementationType;
-
-    //! make a shape function object
-    P1PrismShapeFunction (int i)
-    { }
-
-    //! must be defaultconstructible
-    P1PrismShapeFunction ()
-    {}
-
-    //! evaluate shape function in local coordinates
-    ResultType evaluateFunction (int comp, const FieldVector<CoordType,d>& x) const
-    {
-      return 1;
-    }
-
-    //! evaluate gradient in local coordinates
-    ResultType evaluateDerivative (int comp, int dir, const FieldVector<CoordType,d>& x) const
-    {
-      return 0;
-    }
-
-    //! consecutive number of associated dof within element
-    int localindex (int comp) const
-    {
-      return 0;
-    }
-
-    //! codim of associated dof
-    int codim () const
-    {
-      return 0;
-    }
-
-    //! entity (of codim) of associated dof
-    int entity () const
-    {
-      return 0;
-    }
-
-    //! consecutive number of dof within entity
-    int entityindex () const
-    {
-      return 0;
-    }
-
-    //! interpolation point associated with shape function
-    const FieldVector<CoordType,dim>& position () const
-    {
-      return pos;
-    }
-
-  private:
-    FieldVector<CoordType,d> pos;
-  };
-
   template<typename C,typename T>
-  class P1PrismShapeFunction<C,T,3>
+  class P1PrismShapeFunction
   {
   public:
 
@@ -542,13 +404,13 @@ namespace Dune
 
 
 
-  template<typename C, typename T, int d, typename S>
+  template<typename C, typename T, typename S>
   class P0PrismShapeFunctionSet
   {
   public:
 
     // compile time sizes
-    enum { dim=d };        // maps from R^d
+    enum { dim=3 };        // maps from R^d
     enum { comps=1 };          // to R^1
 
     enum { m=1 };     // total number of basis functions
@@ -601,13 +463,13 @@ namespace Dune
 
 
 
-  template<typename C, typename T, int d, typename S>
+  template<typename C, typename T, typename S>
   class P1PrismShapeFunctionSet
   {
   public:
 
     // compile time sizes
-    enum { dim=d };        // maps from R^d
+    enum { dim=3 };        // maps from R^d
     enum { comps=1 };          // to R^1
 
     enum { m=6 };     // total number of basis functions
@@ -661,19 +523,19 @@ namespace Dune
 
 
   //! P0 shape functions in the prism without virtual functions
-  template<typename C, typename T, int d>
+  template<typename C, typename T>
   class P0PrismShapeFunctionSetContainer
   {
   public:
     // compile time sizes
-    enum { dim=d };
+    enum { dim=3 };
     enum { comps=1 };
     enum { maxsize=1 };
 
     // exported types
     typedef C CoordType;
     typedef T ResultType;
-    typedef P0PrismShapeFunctionSet<C,T,d,P0PrismShapeFunction<C,T,d> > value_type;
+    typedef P0PrismShapeFunctionSet<C,T,P0PrismShapeFunction<C,T> > value_type;
 
     const value_type& operator() (GeometryType type, int order) const
     {
@@ -686,19 +548,19 @@ namespace Dune
   };
 
   //! P1 shape functions in the prism without virtual functions
-  template<typename C, typename T, int d>
+  template<typename C, typename T>
   class P1PrismShapeFunctionSetContainer
   {
   public:
     // compile time sizes
-    enum { dim=d };
+    enum { dim=3 };
     enum { comps=1 };
     enum { maxsize=6 };
 
     // exported types
     typedef C CoordType;
     typedef T ResultType;
-    typedef P1PrismShapeFunctionSet<C,T,d,P1PrismShapeFunction<C,T,d> > value_type;
+    typedef P1PrismShapeFunctionSet<C,T,P1PrismShapeFunction<C,T> > value_type;
 
     const value_type& operator() (GeometryType type, int order) const
     {
