@@ -93,6 +93,13 @@ struct UGGridGeometryPositionAccess<2,2>
 };
 
 
+///////////////////////////////////////////////////////////////////////
+//
+// General implementation of UGGridGeometry mydim-> coorddim
+//
+///////////////////////////////////////////////////////////////////////
+
+
 template< int mydim, int coorddim, class GridImp>
 inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
 {
@@ -141,14 +148,76 @@ inline int UGGridGeometry<mydim,coorddim,GridImp>::corners() const
 }
 
 
-///////////////////////////////////////////////////////////////////////
-
 template<int mydim, int coorddim, class GridImp>
 inline const FieldVector<typename GridImp::ctype, coorddim>& UGGridGeometry<mydim,coorddim,GridImp>::
 operator [](int i) const
 {
-  UGGridGeometryPositionAccess<mydim,coorddim>::get(target_, i, coord_[i]);
+  if (mode_==element_mode)
+    UGGridGeometryPositionAccess<mydim,coorddim>::get(target_, i, coord_[i]);
+
   return coord_[i];
+}
+
+template< int mydim, int coorddim, class GridImp>
+inline FieldVector<typename GridImp::ctype, coorddim> UGGridGeometry<mydim,coorddim,GridImp>::
+global(const FieldVector<UGCtype, mydim>& local) const
+{
+  FieldVector<UGCtype, coorddim> globalCoord;
+
+  if (mode_==element_mode)
+  {
+    // coorddim*coorddim is an upper bound for the number of vertices
+    UGCtype* cornerCoords[coorddim*coorddim];
+    UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
+
+    // Actually do the computation
+    UG_NS<coorddim>::Local_To_Global(corners(), cornerCoords, local, globalCoord);
+  }
+  else
+  {
+    UG_NS<coorddim>::Local_To_Global(corners(), cornerpointers_, local, globalCoord);
+  }
+
+  return globalCoord;
+}
+
+
+// Maps a global coordinate within the element to a
+// local coordinate in its reference element
+template< int mydim, int coorddim, class GridImp>
+inline FieldVector<typename GridImp::ctype, mydim> UGGridGeometry<mydim,coorddim, GridImp>::
+local (const FieldVector<typename GridImp::ctype, coorddim>& global) const
+{
+  FieldVector<UGCtype, mydim> result;
+  UGCtype localCoords[mydim];
+
+  // Copy input ADT into C-style array
+  UGCtype global_c[coorddim];
+  for (int i=0; i<coorddim; i++)
+    global_c[i] = global[i];
+
+  if (mode_==element_mode)
+  {
+    // coorddim*coorddim is an upper bound for the number of vertices
+    UGCtype* cornerCoords[coorddim*coorddim];
+    UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
+
+    // Actually do the computation
+    /** \todo Why is this const_cast necessary? */
+    UG_NS<coorddim>::GlobalToLocal(corners(), const_cast<const double**>(cornerCoords), global_c, localCoords);
+  }
+  else
+  {
+    // Actually do the computation
+    /** \todo Why is this const_cast necessary? */
+    UG_NS<coorddim>::GlobalToLocal(corners(), const_cast<const double**>(cornerpointers_), global_c, localCoords);
+  }
+
+  // Copy result into array
+  for (int i=0; i<mydim; i++)
+    result[i] = localCoords[i];
+
+  return result;
 }
 
 template<int mydim, int coorddim, class GridImp>
@@ -201,21 +270,48 @@ checkInside(const FieldVector<UGCtype, mydim> &loc) const
 
 }
 
+
 template< int mydim, int coorddim, class GridImp>
-inline FieldVector<typename GridImp::ctype, coorddim> UGGridGeometry<mydim,coorddim,GridImp>::
-global(const FieldVector<UGCtype, mydim>& local) const
+inline typename GridImp::ctype UGGridGeometry<mydim,coorddim,GridImp>::
+integrationElement (const FieldVector<typename GridImp::ctype, mydim>& local) const
 {
-  FieldVector<UGCtype, coorddim> globalCoord;
-
-  // coorddim*coorddim is an upper bound for the number of vertices
-  UGCtype* cornerCoords[coorddim*coorddim];
-  UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
-
-  // Actually do the computation
-  UG_NS<coorddim>::Local_To_Global(corners(), cornerCoords, local, globalCoord);
-
-  return globalCoord;
+  return std::abs(1/jacobianInverseTransposed(local).determinant());
 }
+
+
+template< int mydim, int coorddim, class GridImp>
+inline const FieldMatrix<typename GridImp::ctype, mydim,mydim>& UGGridGeometry<mydim,coorddim, GridImp>::
+jacobianInverseTransposed (const FieldVector<typename GridImp::ctype, mydim>& local) const
+{
+  if (mode_==element_mode)
+  {
+    // coorddim*coorddim is an upper bound for the number of vertices
+    // compile array of pointers to corner coordinates
+    UGCtype* cornerCoords[coorddim*coorddim];
+    UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
+
+    // compute the transformation onto the reference element (or vice versa?)
+    UG_NS<coorddim>::Transformation(corners(), cornerCoords, local, jac_inverse_);
+  }
+  else
+  {
+    // compute the transformation onto the reference element (or vice versa?)
+    UG_NS<coorddim>::Transformation(corners(), cornerpointers_, local, jac_inverse_);
+  }
+
+  return jac_inverse_;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////
+//
+// The specializations 1->2, 2->3
+// (only methods that are not yet defined in header file
+//
+///////////////////////////////////////////////////////////////////////
+
+
 
 // Specialization for dim==1, coorddim==2.  This is necessary
 // because we specialized the whole class
@@ -264,44 +360,6 @@ global(const FieldVector<typename GridImp::ctype, 2>& local) const
 
 }
 
-
-// Maps a global coordinate within the element to a
-// local coordinate in its reference element
-template< int mydim, int coorddim, class GridImp>
-inline FieldVector<typename GridImp::ctype, mydim> UGGridGeometry<mydim,coorddim, GridImp>::
-local (const FieldVector<typename GridImp::ctype, coorddim>& global) const
-{
-  FieldVector<UGCtype, mydim> result;
-  UGCtype localCoords[mydim];
-
-  // Copy input ADT into C-style array
-  UGCtype global_c[coorddim];
-  for (int i=0; i<coorddim; i++)
-    global_c[i] = global[i];
-
-  // coorddim*coorddim is an upper bound for the number of vertices
-  UGCtype* cornerCoords[coorddim*coorddim];
-  UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
-
-  // Actually do the computation
-  /** \todo Why is this const_cast necessary? */
-  UG_NS<coorddim>::GlobalToLocal(corners(), const_cast<const double**>(cornerCoords), global_c, localCoords);
-
-  // Copy result into array
-  for (int i=0; i<mydim; i++)
-    result[i] = localCoords[i];
-
-  return result;
-}
-
-
-template< int mydim, int coorddim, class GridImp>
-inline typename GridImp::ctype UGGridGeometry<mydim,coorddim,GridImp>::
-integrationElement (const FieldVector<typename GridImp::ctype, mydim>& local) const
-{
-  return std::abs(1/jacobianInverseTransposed(local).determinant());
-}
-
 template <class GridImp>
 inline typename GridImp::ctype UGGridGeometry<1,2,GridImp>::
 integrationElement (const FieldVector<typename GridImp::ctype, 1>& local) const
@@ -327,17 +385,4 @@ integrationElement (const FieldVector<typename GridImp::ctype, 2>& local) const
 #undef V3_VECTOR_PRODUCT
 
   return normal.two_norm();
-}
-
-template< int mydim, int coorddim, class GridImp>
-inline const FieldMatrix<typename GridImp::ctype, mydim,mydim>& UGGridGeometry<mydim,coorddim, GridImp>::
-jacobianInverseTransposed (const FieldVector<typename GridImp::ctype, mydim>& local) const
-{
-  // coorddim*coorddim is an upper bound for the number of vertices
-  UGCtype* cornerCoords[coorddim*coorddim];
-  UG_NS<coorddim>::Corner_Coordinates(target_, cornerCoords);
-
-  // compute the transformation onto the reference element (or vice versa?)
-  UG_NS<coorddim>::Transformation(corners(), cornerCoords, local, jac_inverse_);
-  return jac_inverse_;
 }
