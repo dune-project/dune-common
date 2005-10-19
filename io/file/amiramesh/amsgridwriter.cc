@@ -32,7 +32,7 @@ void Dune::AmiraMeshWriter<Dune::SGrid<3,3> >::write(const Dune::SGrid<3,3>& gri
 {
   printf("This is the AmiraMesh writer for SGrid<3,3>!\n");
 
-  int maxlevel = grid.maxlevel();
+  int maxlevel = grid.maxLevel();
 
   // determine current time
   time_t time_val = time(NULL);
@@ -106,7 +106,7 @@ write(const Dune::SGrid<2,2>& grid,
 {
   std::cout << "This is the AmiraMesh writer for SGrid<2,2>!" << std::endl;
 
-  int maxlevel = grid.maxlevel();
+  int maxlevel = grid.maxLevel();
 
   // determine current time
   time_t time_val = time(NULL);

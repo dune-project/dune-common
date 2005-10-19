@@ -23,8 +23,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   // it is written in TetraGrid format.  If not, it is written in
   // hexagrid format.
   bool containsOnlySimplices =
-    (leafIndexSet.geomTypes().size()==1)
-    && (leafIndexSet.geomTypes()[0] == simplex);
+    (leafIndexSet.geomTypes(0).size()==1)
+    && (leafIndexSet.geomTypes(0)[0] == simplex);
 
   int maxVerticesPerElement = (dim==3)
                               ? ((containsOnlySimplices) ? 4 : 8)
@@ -34,8 +34,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   /** \todo This sucks.  I want a size method that gives me the number of
       all element types */
   int noOfElem  = 0;
-  for (unsigned int i=0; i<leafIndexSet.geomTypes().size(); i++)
-    noOfElem += leafIndexSet.size(0, leafIndexSet.geomTypes()[i]);
+  for (unsigned int i=0; i<leafIndexSet.geomTypes(0).size(); i++)
+    noOfElem += leafIndexSet.size(0, leafIndexSet.geomTypes(0)[i]);
 
   // create amiramesh object
   AmiraMesh am;
@@ -58,7 +58,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   for (; vertex!=endvertex; ++vertex) {
 
-    int index = leafIndexSet.template index<dim>(*vertex);
+    int index = leafIndexSet.index (*vertex);
     const FieldVector<double, dim>& coords = vertex->geometry()[0];
 
     // Copy coordinates
@@ -109,7 +109,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
       for (int i=0; eIt!=eEndIt; ++eIt, i++) {
 
         for (int j=0; j<4; j++)
-          dPtr[i*4+j] = leafIndexSet.template subIndex<3>(*eIt,j)+1;
+          //dPtr[i*4+j] = leafIndexSet.template subIndex<3>(*eIt,j)+1;
+          dPtr[i*4+j] = leafIndexSet.template subIndex<dim>(*eIt,j)+1;
 
       }
 
@@ -122,14 +123,16 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
           const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
           for (int j=0; j<8; j++)
-            dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, hexaReordering[j])+1;
+            //dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, hexaReordering[j])+1;
+            dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, hexaReordering[j])+1;
           break;
         }
 
         case prism : {
           const int prismReordering[8] = {0, 1, 1, 2, 3, 4, 4, 5};
           for (int j=0; j<8; j++)
-            dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, prismReordering[j])+1;
+            //dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, prismReordering[j])+1;
+            dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, prismReordering[j])+1;
 
           break;
         }
@@ -137,7 +140,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
         case pyramid : {
           const int pyramidReordering[8] = {0, 1, 2, 3, 4, 4, 4, 4};
           for (int j=0; j<8; j++)
-            dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, pyramidReordering[j])+1;
+            //dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, pyramidReordering[j])+1;
+            dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, pyramidReordering[j])+1;
 
           break;
         }
@@ -146,7 +150,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
           const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
           for (int j=0; j<8; j++)
-            dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, tetraReordering[j])+1;
+            //dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, tetraReordering[j])+1;
+            dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, tetraReordering[j])+1;
 
           break;
         }
@@ -475,7 +480,7 @@ void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const GridType& grid,
                                                        const VectorType& f,
                                                        const std::string& filename)
 {
-  int level = grid.maxlevel();
+  int level = grid.maxLevel();
 
   // Find out whether the grid contains only tetrahedra.  If yes, then
   // it is written in TetraGrid format.  If not, it is written in
