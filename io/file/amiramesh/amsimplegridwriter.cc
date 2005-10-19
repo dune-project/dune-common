@@ -31,7 +31,7 @@ void Dune::AmiraMeshWriter<Dune::SimpleGrid<3,3>, double>::write(const Dune::Sim
 {
   printf("This is the AmiraMesh writer for SimpleGrid<3,3>!\n");
 
-  int maxlevel = grid.maxlevel();
+  int maxlevel = grid.maxLevel();
   const levelinfo<3>* li = grid.get_levelinfo(maxlevel);
 
   // determine current time

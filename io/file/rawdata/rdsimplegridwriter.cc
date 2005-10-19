@@ -30,7 +30,7 @@ void Dune::RawDataWriter<Dune::SimpleGrid<3,3>, T>::write(const Dune::SimpleGrid
 {
   printf("This is the rawdata writer for SimpleGrid<3,3>!\n");
 
-  int maxlevel = grid.maxlevel();
+  int maxlevel = grid.maxLevel();
   const levelinfo<3>* li = grid.get_levelinfo(maxlevel);
 
 
