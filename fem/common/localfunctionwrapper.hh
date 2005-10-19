@@ -18,11 +18,11 @@ namespace Dune {
     typedef DiscreteFunctionImp DiscreteFunctionType;
     typedef typename DiscreteFunctionImp ::  LocalFunctionImp LocalFunctionImp;
     std::stack < LocalFunctionImp * > lfStack_;
-    DiscreteFunctionType & df_;
+    const DiscreteFunctionType & df_;
 
   public:
     //! constructor
-    LocalFunctionStorage (DiscreteFunctionType & df) : df_(df) {}
+    LocalFunctionStorage (const DiscreteFunctionType & df) : df_(df) {}
 
     //! delete all objects on stack
     ~LocalFunctionStorage ()
@@ -59,8 +59,8 @@ namespace Dune {
 
   private:
     //! prohibited methods
-    LocalFunctionStorage ( const MyType & c) : df_(c.df_) {};
-    MyType & operator = ( const MyType & c ) { return *this; }
+    LocalFunctionStorage ( const MyType & c); // : df_(c.df_) {};
+    MyType & operator = ( const MyType & c ); // { return *this; }
   };
 
   template < class DFTraits > class DiscreteFunctionDefault;
@@ -76,7 +76,7 @@ namespace Dune {
   class LocalFunctionWrapper
     : public LocalFunctionDefault <
           typename DiscreteFunctionImp :: DiscreteFunctionSpaceType,
-          LocalFunctionWrapper < DiscreteFunctionImp  > >
+          LocalFunctionWrapper < DiscreteFunctionImp > >
   {
   public:
     typedef typename DiscreteFunctionImp :: LocalFunctionImp LocalFunctionImp;
@@ -112,7 +112,7 @@ namespace Dune {
   public:
     //! Constructor initializing the underlying local function
     template < class EntityType >
-    LocalFunctionWrapper (const EntityType & en , DiscreteFunctionImp & df) :
+    LocalFunctionWrapper(const EntityType & en, const DiscreteFunctionImp & df) :
       storage_( df.localFunctionStorage() ),
       lf_( storage_->getObject() ),
       refCount_(new int (1))
@@ -122,7 +122,7 @@ namespace Dune {
     }
 
     //! Constructor creating empty local function
-    LocalFunctionWrapper ( DiscreteFunctionImp & df )
+    LocalFunctionWrapper (const DiscreteFunctionImp & df)
       : storage_( df.localFunctionStorage() ) ,
         lf_( storage_->getObject() ),
         refCount_(new int (1))
@@ -139,7 +139,8 @@ namespace Dune {
 
     //! Destructor , push local function to stack if there are no other
     //! to it references
-    ~LocalFunctionWrapper () {
+    ~LocalFunctionWrapper ()
+    {
       assert(*refCount_ > 0);
       --(*refCount_);
       if (*refCount_ == 0) {
@@ -150,7 +151,6 @@ namespace Dune {
 
     //! Assignment operator
     LocalFunctionWrapper& operator=(const LocalFunctionWrapper& org) {
-      //assert(storage_ == org.storage_); // only assign local functions belonging to the same discrete function ! why not! perfectly safe to do it!
       if (this != &org) {
         --(*refCount_);
         if (*refCount_ == 0) {

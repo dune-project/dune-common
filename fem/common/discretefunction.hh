@@ -269,16 +269,17 @@ namespace Dune {
     //this methods are used by the LocalFunctionStorage class
 
     //! return pointer to local function implementation
-    LocalFunctionImp* newLocalFunctionObject ()
-    {
-      return asImp().newLocalFunctionObject ();
+    LocalFunctionImp* newLocalFunctionObject() const {
+      return asImp().newLocalFunctionObject();
     }
 
     //! return reference for local function storage
-    LocalFunctionStorageType* localFunctionStorage() { return &lfStorage_; }
+    LocalFunctionStorageType* localFunctionStorage() const {
+      return &lfStorage_;
+    }
 
     // the local function storage stack
-    LocalFunctionStorageType lfStorage_;
+    mutable LocalFunctionStorageType lfStorage_;
 
   private:
     // Barton-Nackman trick
