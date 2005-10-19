@@ -6,6 +6,9 @@ if MPI
   INDEXRUN = run-indices run-syncer
 endif
 
+# link against libcommon to utilize dune stdstreams
+AM_LDFLAGS = $(top_builddir)/common/libcommon.la
+
 # which tests where program to build and run are equal
 NORMALTESTS = bvectortest indexsettest $(SELECTPROG)
 

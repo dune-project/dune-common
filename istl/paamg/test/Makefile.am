@@ -6,6 +6,9 @@
   TESTRUNS = run-galerkin run-hierarchy run-amg
 #endif
 
+# link against libcommon to utilize dune stdstreams
+AM_LDFLAGS = $(top_builddir)/common/libcommon.la
+
 NORMALTESTS = transfertest $(MPITESTS)
 
 # which tests to run
