@@ -83,7 +83,7 @@ namespace Dune {
     //! read function data from pgm fromat file
     bool read_pgm(std::string filename);
 
-    LocalFunctionImp * newLocalFunctionObject ();
+    LocalFunctionImp * newLocalFunctionObject () const;
   protected:
     const DiscreteFunctionSpaceType& space() const { return spc_; }
     DofStorageType& dofStorage() { return dofVec_; }

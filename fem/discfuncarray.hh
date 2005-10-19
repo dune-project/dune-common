@@ -204,7 +204,7 @@ namespace Dune {
 
   private:
     //! return object pointer of type LocalFunctionImp
-    LocalFunctionImp * newLocalFunctionObject ();
+    LocalFunctionImp * newLocalFunctionObject () const;
 
     // get memory for discrete function
     void getMemory();

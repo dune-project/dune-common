@@ -119,7 +119,8 @@ namespace Dune {
 
       for (int l = 0; l < dimRange; ++l) {
         tmpGrad_[l] *= *values_[i];
-        en.geometry().jacobianInverse(x).umtv(tmpGrad_[l], ret[l]);
+        // * umtv or umv?
+        en.geometry().jacobianInverseTransposed(x).umtv(tmpGrad_[l], ret[l]);
       }
     }
   }
@@ -292,7 +293,8 @@ namespace Dune {
     result *= 0.0;
 
     const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
-    const JacobianInverseType& jInv = en.geometry().jacobianInverse(x);
+    const JacobianInverseType& jInv =
+      en.geometry().jacobianInverseTransposed(x);
 
     for (int i = 0; i < bSet.numContainedFunctions(); ++i) {
       //cTmpGradRef_ *= 0.0;

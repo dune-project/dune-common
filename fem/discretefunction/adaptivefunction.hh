@@ -171,13 +171,12 @@ namespace Dune {
         AdaptiveLocalFunction<DiscreteFunctionSpaceImp > >
   {
   public:
-    friend class AdaptiveFunctionImplementation<
-        DiscreteFunctionSpaceImp >;
-    friend class LocalFunctionWrapper < AdaptiveDiscreteFunction< DiscreteFunctionSpaceImp > > ;
+    friend class AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>;
+    friend class LocalFunctionWrapper<
+        AdaptiveDiscreteFunction< DiscreteFunctionSpaceImp > > ;
 
   private:
-    typedef AdaptiveLocalFunction<
-        DiscreteFunctionSpaceImp > ThisType;
+    typedef AdaptiveLocalFunction<DiscreteFunctionSpaceImp> ThisType;
   public:
     //- Public typedefs and enums
     //! The discrete function space this local function belongs to
@@ -330,8 +329,7 @@ namespace Dune {
 
     //- Additional typedefs
     typedef SubSpace<DiscreteFunctionSpaceType> SubSpaceType;
-    typedef AdaptiveDiscreteFunction<
-        SubSpaceType > SubDiscreteFunctionType;
+    typedef AdaptiveDiscreteFunction<SubSpaceType> SubDiscreteFunctionType;
 
   public:
     //- Public methods

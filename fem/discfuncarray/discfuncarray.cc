@@ -102,7 +102,7 @@ namespace Dune
   template<class DiscreteFunctionSpaceType >
   inline typename DiscFuncArray< DiscreteFunctionSpaceType >:: LocalFunctionImp *
   DiscFuncArray< DiscreteFunctionSpaceType >::
-  newLocalFunctionObject ()
+  newLocalFunctionObject () const
 
   {
     return new LocalFunctionArray<DiscreteFunctionSpaceType> ( this->functionSpace_ , dofVec_ );
