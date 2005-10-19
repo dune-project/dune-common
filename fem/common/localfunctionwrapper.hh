@@ -99,6 +99,7 @@ namespace Dune {
 
     typedef typename DiscreteFunctionDefaultType :: LocalFunctionStorageType LFStorage;
 
+  private:
     // local function storage stack
     LFStorage* storage_;
 
@@ -139,6 +140,7 @@ namespace Dune {
     //! Destructor , push local function to stack if there are no other
     //! to it references
     ~LocalFunctionWrapper () {
+      assert(*refCount_ > 0);
       --(*refCount_);
       if (*refCount_ == 0) {
         storage_->freeObject ( lf_ );
@@ -159,6 +161,7 @@ namespace Dune {
         storage_ = org.storage_;
         lf_ = org.lf_;
         refCount_ = org.refCount_;
+        ++(*refCount_);
       }
       return *this;
     }
