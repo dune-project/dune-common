@@ -89,9 +89,11 @@ namespace Dune
       // The compiler should be able to eliminate this loop
       for (int c=0; c<dim; c++)
       {
-        dphi *= power(x[c],exp_[c]);
+        if (c==dir)
+          dphi *= exp_[c] * power(x[c],exp_[c]-1);
+        else
+          dphi *= power(x[c],exp_[c]);
       }
-      dphi *= exp_[dir] / x[dir];
       return dphi;
     }
 
