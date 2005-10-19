@@ -7,6 +7,7 @@
 #include "mpi.h"
 #include "indexset.hh"
 #include "remoteindices.hh"
+#include <dune/common/stdstreams.hh>
 #include <dune/common/tuples.hh>
 #include <dune/common/sllist.hh>
 #include <cassert>
@@ -38,8 +39,10 @@ namespace Dune
     /** @brief The type of the index set. */
     typedef T ParallelIndexSet;
 
+    /** @brief Type of the global index used in the index set. */
     typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
 
+    /** @brief Type of the attribute used in the index set. */
     typedef typename ParallelIndexSet::LocalIndex::Attribute Attribute;
 
     /**
@@ -556,15 +559,15 @@ namespace Dune
         ++knownRemote;
 
       if(knownRemote>0) {
-        std::cout<<rank_<<": publishing "<<knownRemote<<" for index "<<index->global()<< " for processes ";
+        Dune::dinfo<<rank_<<": publishing "<<knownRemote<<" for index "<<index->global()<< " for processes ";
 
         // Update MessageInformation
         for(ValidIterator valid = collIter.begin(); valid != end; ++valid) {
           ++(infoSend_[valid.process()].publish);
           (infoSend_[valid.process()].pairs) += knownRemote;
-          std::cout<<valid.process()<<" ";
+          Dune::dinfo<<valid.process()<<" ";
         }
-        std::cout<<std::endl;
+        Dune::dinfo<<std::endl;
       }
     }
 
@@ -690,12 +693,12 @@ namespace Dune
 
     indexSet_.beginResize();
 
-    std::cout<<rank_<<": neighbours=";
+    Dune::dinfo<<rank_<<": No of neighbours=";
 
     for(i = 0; i<noOldNeighbours; ++i)
-      std::cout<<oldNeighbours[i]<<" ";
+      Dune::dinfo<<oldNeighbours[i]<<" ";
 
-    std::cout<<std::endl;
+    Dune::dinfo<<std::endl;
 
     for(i = 0; i<noOldNeighbours; ++i) {
       if(oldNeighbours[i] < rank_) {
@@ -775,7 +778,7 @@ namespace Dune
         // We do not need to send any indices
         continue;
 
-      std::cout<<rank_<<": sending "<<indices<<" for index "<<index->global()<<" to "<<destination<<std::endl;
+      Dune::dverb<<rank_<<": sending "<<indices<<" for index "<<index->global()<<" to "<<destination<<std::endl;
 
       pairs+=indices;
       assert(pairs <= infoSend_[destination].pairs);
@@ -813,7 +816,7 @@ namespace Dune
 
     resetIteratorsMap();
 
-    std::cout << rank_<<": Sending message to "<<destination<<std::endl;
+    Dune::dverb << rank_<<": Sending message to "<<destination<<std::endl;
 
     MPI_Send(buffer_, bpos, MPI_PACKED, destination, 111, remoteIndices_.communicator());
   }
@@ -822,13 +825,13 @@ namespace Dune
   inline void IndicesSyncer<T>::insertIntoRemoteIndexList(int process, const GlobalIndex& global,
                                                           char attribute)
   {
-    std::cout<<"Inserting from "<<process<<" "<<global<<" "<<attribute<<std::endl;
+    Dune::dvverb<<"Inserting from "<<process<<" "<<global<<" "<<attribute<<std::endl;
 
     // There might be cases where there no remote indices for that process yet
     typename IteratorsMap::iterator found = iteratorsMap_.find(process);
 
     if( found == iteratorsMap_.end() ) {
-      std::cout<<"Discovered new neighbour "<<process<<std::endl;
+      Dune::dverb<<"Discovered new neighbour "<<process<<std::endl;
       RemoteIndexList* rlist = new RemoteIndexList();
       remoteIndices_.remoteIndices_.insert(std::make_pair(process,std::make_pair(rlist,rlist)));
       Iterators iterators = Iterators(*rlist, globalMap_[process], oldMap_[process]);
@@ -869,7 +872,7 @@ namespace Dune
 
     assert(checkReset());
 
-    std::cout<<rank_<<": Waiting for message from "<< source<<std::endl;
+    Dune::dvverb<<rank_<<": Waiting for message from "<< source<<std::endl;
 
     // Receive the data
     MPI_Status status;
