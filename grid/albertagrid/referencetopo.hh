@@ -19,7 +19,7 @@ namespace AlbertHelp {
   // edges in 3d
   // local numbers of vertices belonging to one edge
   // according to Alberta reference element which is for edges different to
-  // the Dune reference simplex in 3d
+  // the Dune reference simplex in 3d ,see Alberta doc page 105
   static const int localEdgeNumber [6][2] =
   {
     {0,1} , {0,2} , {0,3} , // first three vertices like in 2d for faces(edges)
