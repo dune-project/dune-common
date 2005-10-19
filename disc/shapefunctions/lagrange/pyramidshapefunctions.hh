@@ -302,7 +302,7 @@ namespace Dune
         std::cout<<"wrong no of shape fns in Pyramid?"<<'\n';
         break;
       }
-      0;
+      return phi;
 
     }
 
