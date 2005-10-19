@@ -374,8 +374,87 @@ template<int dim, class GridImp>
 inline const typename UGGridEntity<0,dim,GridImp>::Geometry& UGGridEntity < 0, dim, GridImp>::geometryInFather () const
 {
   // we need to have a father element
-  assert(UG_NS<dim>::EFather(target_)!=0);
+  typename TargetType<0,dim>::T* fatherelement = UG_NS<dim>::EFather(target_);
+  assert(fatherelement!=0);
+  fathergeo_.coordmode(); // put in the new mode
+  fathergeo_.setToTarget(fatherelement);
 
-  DUNE_THROW(GridError,"geometryInFather not implemented");
+  // The task is to find out the positions of the vertices of this element
+  // in the local coordinate system of the father.
+
+  // loop through all corner nodes
+  for (int i=0; i<UG_NS<dim>::Corners_Of_Elem(target_); i++)
+  {
+    // get corner node pointer
+    typename TargetType<dim,dim>::T* fnode = UG_NS<dim>::Corner(target_,i);
+
+    // case I : new node on that level and father is the vertex father
+    if (UG_NS<dim>::NFather(fnode)==fatherelement)
+    {
+      // yes, then get the position in local coordinates
+      FieldVector<UGCtype, dim> tmp;
+      UG_NS<dim>::PositionInFather(fnode,tmp);
+
+      // and poke them into the Geometry
+      fathergeo_.setCoords(i,tmp);
+
+      // continue with next corner
+      continue;
+    }
+
+    // case II : this is a copy of a coarse grid node
+    typename TargetType<dim,dim>::T* cnode = UG_NS<dim>::NodeNodeFather(fnode);
+    if (cnode!=0)
+    {
+      // identify node in the father element
+      int cornerIdx = -1;
+      for (int j=0; j<UG_NS<dim>::Corners_Of_Elem(fatherelement); j++)
+        if (UG_NS<dim>::Corner(fatherelement,j)==cnode)
+        {
+          cornerIdx = j;
+          break;
+        }
+
+      // if node cannot be found something is wrong
+      if (cornerIdx==-1)
+        DUNE_THROW(GridError,"geometryInFather not implemented");
+
+      // we need a temporary to be filled
+      FieldVector<UGCtype, dim> tmp;
+
+      // get the corners local coordinates
+      UG_NS<dim>::getCornerLocal(fatherelement,cornerIdx,tmp);
+
+      // and poke them into the Geometry
+      fathergeo_.setCoords(i,tmp);
+
+      // continue with next corner
+      continue;
+    }
+
+    // case III : general case uses global to local
+    // there could be a case IV with nodes on edges but we ignore that for now
+    FieldVector<UGCtype,dim> global;
+    UG_NS<dim>::NodePositionGlobal(fnode,global);
+    UGCtype global_c[dim];
+    for (int k=0; k<dim; k++) global_c[k] = global[k];
+
+    // fill array of pointers to corners of father in global coordinates
+    UGCtype* cornerCoords[dim*dim];
+    UG_NS<dim>::Corner_Coordinates(fatherelement,cornerCoords);
+
+    // Actually do the computation
+    /** \todo Why is this const_cast necessary? */
+    UGCtype localCoords[dim];
+    if (UG_NS<dim>::GlobalToLocal(UG_NS<dim>::Corners_Of_Elem(fatherelement),
+                                  const_cast<const double**>(cornerCoords), global_c, localCoords)!=0)
+      DUNE_THROW(GridError,"global to local failed in geometryInFather");
+
+    // and poke them into the Geometry
+    FieldVector<UGCtype,dim> tmp;
+    for (int k=0; k<dim; k++) tmp[k] = localCoords[k];
+    fathergeo_.setCoords(i,tmp);
+  }
+
   return fathergeo_;
 }

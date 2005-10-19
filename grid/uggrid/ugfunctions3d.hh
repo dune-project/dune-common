@@ -199,11 +199,29 @@ namespace Dune {
       return theNode->myvertex->iv.father;
     }
 
+    //! get father node of vertex
+    static TargetType<3,3>::T* NodeNodeFather(TargetType<3,3>::T* theNode) {
+      using UG3d::NDOBJ;
+      if (theNode->father==0)
+        return 0;         // no father at all
+      if (OBJT(theNode->father)==NDOBJ)
+        return (UG3d::node*) theNode->father;
+      else
+        return 0;         // may be edge or element
+    }
+
     //! get father element of vertex
     static void PositionInFather(TargetType<3,3>::T* theNode, FieldVector<double, 3>& local) {
       local[0] = theNode->myvertex->iv.xi[0];
       local[1] = theNode->myvertex->iv.xi[1];
       local[2] = theNode->myvertex->iv.xi[2];
+    }
+
+    //! get father element of vertex
+    static void NodePositionGlobal(TargetType<3,3>::T* theNode, FieldVector<double, 3>& global) {
+      global[0] = theNode->myvertex->iv.x[0];
+      global[1] = theNode->myvertex->iv.x[1];
+      global[2] = theNode->myvertex->iv.x[2];
     }
 
     static int GetSons(const UG3d::element* element, UG3d::element* sonList[MAX_SONS]) {

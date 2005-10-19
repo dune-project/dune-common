@@ -32,6 +32,11 @@ namespace Dune {
     void setCoords (int n, const FieldVector<UGCtype, coorddim>& pos) {
       this->realGeometry.setCoords(n,pos);
     }
+
+    void coordmode ()
+    {
+      this->realGeometry.coordmode();
+    }
   };
 
   template<class GridImp>
@@ -125,8 +130,8 @@ namespace Dune {
       mode_ = element_mode;
     }
 
-    //! constructor for coord_mode
-    UGGridGeometry (bool fake)
+    //! put object in coord_mode
+    void coordmode ()
     {
       // set the mode
       mode_ = coord_mode;
@@ -202,6 +207,8 @@ namespace Dune {
     //! \brief set a corner
     void setCoords (int i, const FieldVector<UGCtype,coorddim>& pos)
     {
+      if (mode_!=coord_mode)
+        DUNE_THROW(GridError,"mode must be coord_mode!");
       coord_[i] = pos;
     }
 

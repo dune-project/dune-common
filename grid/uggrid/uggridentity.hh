@@ -223,6 +223,8 @@ namespace Dune {
     // Either UG3d::ELEMENT or UG2d:ELEMENT
     typedef typename TargetType<0,dim>::T UGElementType;
 
+    typedef typename GridImp::ctype UGCtype;
+
   public:
 
     typedef typename GridImp::template Codim<0>::Geometry Geometry;
@@ -377,8 +379,8 @@ namespace Dune {
     //! the current geometry
     UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
 
-    //! the current geometry
-    UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> fathergeo_;
+    //! geometry for mapping into father's reference element
+    mutable UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> fathergeo_;
 
     //! the level of the entity
     int level_;

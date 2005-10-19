@@ -415,10 +415,27 @@ namespace Dune {
       return theNode->myvertex->iv.father;
     }
 
+    //! get father node of vertex
+    static TargetType<2,2>::T* NodeNodeFather(TargetType<2,2>::T* theNode) {
+      using UG2d::NDOBJ;
+      if (theNode->father==0)
+        return 0;         // no father at all
+      if (OBJT(theNode->father)==NDOBJ)
+        return (UG2d::node*) theNode->father;
+      else
+        return 0;         // may be edge or element
+    }
+
     //! get father element of vertex
     static void PositionInFather(TargetType<2,2>::T* theNode, FieldVector<double, 2>& local) {
       local[0] = theNode->myvertex->iv.xi[0];
       local[1] = theNode->myvertex->iv.xi[1];
+    }
+
+    //! get father element of vertex
+    static void NodePositionGlobal(TargetType<2,2>::T* theNode, FieldVector<double, 2>& global) {
+      global[0] = theNode->myvertex->iv.x[0];
+      global[1] = theNode->myvertex->iv.x[1];
     }
 
     static unsigned int ReadCW(void* obj, int ce) {
