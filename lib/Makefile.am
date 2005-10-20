@@ -4,7 +4,8 @@
 lib_LTLIBRARIES = libdune.la
 
 # this library collects from all dune top-level directories
-SUBLIBS = ../common/libcommon.la ../grid/libgrid.la ../io/libio.la
+SUBLIBS = ../common/libcommon.la ../grid/libgrid.la ../io/libio.la \
+          ../quadrature/libquadrature.la
 
 # use the correct selection
 libdune_la_SOURCES =
