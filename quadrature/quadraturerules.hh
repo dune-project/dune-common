@@ -254,9 +254,6 @@ namespace Dune {
     static GaussPoints gp;
   };
 
-  // initialize static variable; constructor initializes the array
-  GaussPoints GaussPointsSingleton::gp;
-
   //! A cube quadrature rule for a fixed order is a container of cube quadrature points
   template<typename ct, int dim>
   class CubeQuadratureRule : public QuadratureRule<ct,dim>
@@ -583,8 +580,6 @@ namespace Dune {
     static SimplexQuadraturePoints<2> sqp;
   };
 
-  SimplexQuadraturePoints<2> SimplexQuadraturePointsSingleton<2>::sqp;
-
 
   template<typename ct, int dim>
   class SimplexQuadratureRule;
@@ -788,9 +783,6 @@ namespace Dune {
     static SimplexQuadraturePoints<3> sqp;
   };
 
-  SimplexQuadraturePoints<3> SimplexQuadraturePointsSingleton<3>::sqp;
-
-
 
   template<typename ct, int dim>
   class SimplexQuadratureRule;
@@ -989,8 +981,6 @@ namespace Dune {
     static PrismQuadraturePoints<3> prqp;
   };
 
-  PrismQuadraturePoints<3> PrismQuadraturePointsSingleton<3>::prqp;
-
   template<typename ct, int dim>
   class PrismQuadratureRule;
 
@@ -1151,8 +1141,6 @@ namespace Dune {
   struct PyramidQuadraturePointsSingleton<3> {
     static PyramidQuadraturePoints<3> pyqp;
   };
-
-  PyramidQuadraturePoints<3> PyramidQuadraturePointsSingleton<3>::pyqp;
 
   template<typename ct, int dim>
   class PyramidQuadratureRule;
@@ -1798,19 +1786,11 @@ namespace Dune {
 
   };
 
-
-
-
   // singleton holding a quadrature rule container
   template<typename ctype, int dim>
   struct QuadratureRules {
     static QuadratureRuleContainer<ctype,dim> rule;
   };
-
-  template<typename ctype, int dim>
-  QuadratureRuleContainer<ctype,dim> QuadratureRules<ctype,dim>::rule(19);
-
-
 
 } // end namespace
 
