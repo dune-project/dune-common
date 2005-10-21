@@ -600,7 +600,6 @@ namespace Dune {
       : DefaultGridIndexSetBase <GridType> (grid) ,
         hIndexSet_( grid.hierarchicIndexSet() ) ,
         marked_ (false) , markAllU_ (false) , higherCodims_ (false)
-        //marked_ (false) , markAllU_ (false) , higherCodims_ (true)
     {
       // codim 0 is used by default
       codimUsed_[0] = true;
@@ -620,7 +619,6 @@ namespace Dune {
 
     //! return type of index set, for GrapeDataIO
     int type () const { return myType; }
-
 
     //****************************************************************
     //
