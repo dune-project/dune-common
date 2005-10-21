@@ -1094,7 +1094,28 @@ namespace Dune {
       case 5 :
         m=7;
         break;
-      default : m=7;
+      case 6 :
+        m=12;
+        break;
+      case 7 :
+        m=12;
+        break;
+      case 8 :
+        m=16;
+        break;
+      case 9 :
+        m=19;
+        break;
+      case 10 :
+        m=25;
+        break;
+      case 11 :
+        m=28;
+        break;
+      case 12 :
+        m=33;
+        break;
+      default : m=33;
       }
       delivered_order = SimplexQuadraturePointsSingleton<2>::sqp.order(m);
       FieldVector<ct, d> local;
