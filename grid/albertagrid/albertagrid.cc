@@ -242,6 +242,13 @@ namespace Dune
   inline FieldVector<albertCtype, cdim>& AlbertaGridGeometry<mydim,cdim,GridImp>::
   getCoordVec (int i)
   {
+    assert( i >= 0 );
+    assert( i < mydim+1 );
+
+    // if global, or jacobianInverse is called then
+    // matrix has to be calculated again , because coord might have changed
+    builtElMat_ = false;
+
     return coord_[i];
   }
 
