@@ -301,8 +301,11 @@ namespace Dune
       /** @brief The type of the parallel matrix hierarchy. */
       typedef Hierarchy<ParallelMatrix,Allocator> ParallelMatrixHierarchy;
 
+      /** @brief Allocator for pointers. */
+      typedef typename Allocator::template rebind<AggregatesMap*>::other AAllocator;
+
       /** @brief The type of the aggregates maps list. */
-      typedef std::list<AggregatesMap*,Allocator> AggregatesMapList;
+      typedef std::list<AggregatesMap*,AAllocator> AggregatesMapList;
       /**
        * @brief Constructor
        * @param fineMatrix The matrix to coarsen.
