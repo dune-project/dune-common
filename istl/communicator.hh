@@ -144,11 +144,6 @@ namespace Dune
     typedef typename RemoteIndices::LocalIndex LocalIndex;
 
     /**
-     * @brief  The type of the index set we use.
-     */
-    typedef typename RemoteIndices::ParallelIndexSet ParallelIndexSet;
-
-    /**
      * @brief Creates a new DatatypeCommunicator.
      * @param remote The remote index set to use.
      */
