@@ -120,7 +120,7 @@ namespace Dune {
       for (int l = 0; l < dimRange; ++l) {
         tmpGrad_[l] *= *values_[i];
         // * umtv or umv?
-        en.geometry().jacobianInverseTransposed(x).umtv(tmpGrad_[l], ret[l]);
+        en.geometry().jacobianInverseTransposed(x).umv(tmpGrad_[l], ret[l]);
       }
     }
   }
@@ -300,7 +300,7 @@ namespace Dune {
       //cTmpGradRef_ *= 0.0;
       cTmpGradReal_ *= 0.0;
       bSet.jacobianContained(i, x, cTmpGradRef_);
-      jInv.umtv(cTmpGradRef_[0], cTmpGradReal_[0]);
+      jInv.umv(cTmpGradRef_[0], cTmpGradReal_[0]);
 
       for (int j = 0; j < N; ++j) {
         // Assumption: ContainedDimRange == 1

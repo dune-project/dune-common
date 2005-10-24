@@ -313,6 +313,7 @@ namespace Dune {
     typedef Imp ImplementationType;
     typedef DiscreteFunctionSpaceImp DiscreteFunctionSpaceType;
 
+    typedef typename Traits::LocalFunctionImp LocalFunctionImp;
     typedef typename Traits::LocalFunctionType LocalFunctionType;
     typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
 
@@ -399,7 +400,9 @@ namespace Dune {
     //- Friends
     friend class AdaptiveFunctionImplementation<
         CombinedSpace<ContainedFunctionSpaceImp, N, p> >;
-
+    friend class LocalFunctionWrapper<
+        AdaptiveDiscreteFunction<
+            CombinedSpace<ContainedFunctionSpaceImp, N, p> > >;
   public:
     //- Public typedefs and enums
     typedef CombinedSpace<
