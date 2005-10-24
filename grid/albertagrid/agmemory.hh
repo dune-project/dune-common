@@ -41,7 +41,7 @@ namespace Dune
 
     //! i.e. return pointer to Entity
     template <class GridType>
-    ObjectType * getNewObjectEntity(const GridType &grid, int level);
+    ObjectType * getNewObjectEntity(const GridType &grid, int level, bool leafIt);
 
     //! free, move element to stack, returns NULL
     void freeObjectEntity (ObjectType * obj);
@@ -60,36 +60,20 @@ namespace Dune
   template <class Object> template <class GridType>
   inline typename AGMemoryProvider<Object>::ObjectType *
   AGMemoryProvider<Object>::getNewObjectEntity
-    (const GridType &grid, int level )
+    (const GridType &grid, int level , bool leafIt )
   {
     if( objStack_.empty() )
     {
-      return ( new Object (grid,level) );
+      return ( new Object (grid,level,leafIt) );
     }
     else
     {
       ObjectType * obj = objStack_.top();
       objStack_.pop();
+      obj->setNewLevel(level,leafIt);
       return obj;
     }
   }
-
-  /*
-     template <class Object> template <class GridType>
-     inline Object * AGMemoryProvider<Object>::getNewObjectEntity(int l)
-     {
-     if( objStack_.empty() )
-     {
-      return ( new Object () );
-     }
-     else
-     {
-      ObjectType * obj = objStack_.top();
-      objStack_.pop();
-      return obj;
-     }
-     }
-   */
 
   template <class Object>
   inline AGMemoryProvider<Object>::~AGMemoryProvider()
