@@ -65,12 +65,12 @@ namespace Dune {
     //! build geometry out of different ALU3dGrid Geometrys
     //! ItemType are HElementType, HFaceType, HEdgeType and VertexType
     template <class ItemType>
-    bool buildGeom(const ItemType & item, int twist = 0, int face = -1 )
+    bool buildGeom(const ItemType & item, int twist = 0 , int face = -1 )
     {
       return this->realGeometry.buildGeom(item, twist,face);
     }
 
-    bool buildGeom(const ALU3DSPACE HFaceType& item, int twist, int face = -1 ) {
+    bool buildGeom(const ALU3DSPACE HFaceType& item, int twist, int face ) {
       return this->realGeometry.buildGeom(item, twist, face );
     }
 
@@ -84,18 +84,18 @@ namespace Dune {
       return this->realGeometry.buildGhost(ghost);
     }
 
+    //! build geometry of local coordinates relative to father
+    template <class GeometryType>
+    bool buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom)
+    {
+      return this->realGeometry.buildGeomInFather(fatherGeom,myGeom);
+    }
+
     // print real entity for debugging
     void print (std::ostream& ss) const
     {
       this->realGeometry.print(ss);
     }
-
-    // for changing the coordinates of one element
-    FieldVector<alu3d_ctype, coorddim> & getCoordVec (int i)
-    {
-      return this->realGeometry.getCoordVec(i);
-    }
-
   };
 
   //! ALU3dGridGeometry
@@ -167,12 +167,13 @@ namespace Dune {
     //! build ghost out of internal boundary segment
     bool buildGhost(const PLLBndFaceType & ghost);
 
+    //! build geometry of local coordinates relative to father
+    template <class GeometryType>
+    bool buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom);
+
     //! print internal data
     //! no interface method
     void print (std::ostream& ss) const;
-
-    // for changing the coordinates of one element
-    FieldVector<alu3d_ctype, cdim> & getCoordVec (int i);
 
   private:
     //! calculates the vertex index in the reference element out of a face index
@@ -273,14 +274,22 @@ namespace Dune {
     //! build ghost out of internal boundary segment
     bool buildGhost(const PLLBndFaceType & ghost);
 
+    //! build geometry of local coordinates relative to father
+    template <class GeometryType>
+    bool buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom);
+
     //! print internal data
     //! no interface method
     void print (std::ostream& ss) const;
 
-    // for changing the coordinates of one element
-    FieldVector<alu3d_ctype, cdim> & getCoordVec (int i);
 
   private:
+    // create triMap from coordinates
+    void buildMapping();
+
+    // delete triMap
+    void removeMapping();
+
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, Power_m_p<2,mydim>::power, cdim> coord_;
     //mutable FieldVector<alu3d_ctype, mydim> tmp1_;

@@ -134,6 +134,7 @@ namespace Dune {
   inline const typename ALU3dGridEntity<cd,dim,GridImp>::Geometry &
   ALU3dGridEntity<cd,dim,GridImp>:: geometry() const
   {
+    assert( (cd == 1) ? (face_ >= 0) : 1 );
     if(!builtgeometry_) builtgeometry_ = geo_.buildGeom(*item_, twist_, face_ );
     return geo_;
   }
@@ -330,12 +331,10 @@ namespace Dune {
   inline const typename ALU3dGridEntity<0,dim,GridImp>::Geometry &
   ALU3dGridEntity<0,dim,GridImp> :: geometryInFather () const
   {
-    const Geometry & vati   = (*this->father()).geometry();
-    const Geometry & myself = this->geometry();
+    const typename GridImp::template Codim<0> ::
+    EntityPointer ep = father();
 
-    for(int i=0; i<vati.corners(); i++)
-      geoInFather_.getCoordVec(i) = vati.local( myself[i] );
-
+    geoInFather_.buildGeomInFather( (*ep).geometry() , geometry() );
     return geoInFather_;
   }
 
@@ -684,6 +683,7 @@ namespace Dune {
       , done_ (false)
   {
     assert( entity_ );
+    if( codim == 1 ) assert( face >= 0 );
     (*entity_).setElement( const_cast<MyHElementType &> (item), twist , face );
   }
 
