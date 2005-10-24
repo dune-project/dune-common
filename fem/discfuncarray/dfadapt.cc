@@ -487,7 +487,7 @@ namespace Dune {
   {
     enum { dim = EntityType::dimension };
     const FieldMatrix<RangeFieldType,dim,dim> & inv
-      = en.geometry().jacobianInverse(quad.point(quadPoint));
+      = en.geometry().jacobianInverseTransposed(quad.point(quadPoint));
 
     //if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
     //{
@@ -527,7 +527,7 @@ namespace Dune {
 
       tmpGrad_[0] *= *(values_[i]);
       //ret[0] += tmpGrad_[0];
-      en.geometry().jacobianInverse(xtmp_).umtv(tmpGrad_[0], ret[0]);
+      en.geometry().jacobianInverseTransposed(xtmp_).umv(tmpGrad_[0], ret[0]);
 
     }
   }
