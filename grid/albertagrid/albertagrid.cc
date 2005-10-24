@@ -1213,7 +1213,7 @@ namespace Dune
                            int level,  ALBERTA EL_INFO *elInfo,int face,int edge,int vertex)
     : grid_(grid)
       , isLeaf_ (true)
-      , entity_ ( grid_.template getNewEntity<codim> ( level ), isLeaf_ )
+      , entity_ ( grid_.template getNewEntity<codim> ( level , isLeaf_ ))
   {
     assert( entity_ );
     (*entity_).setElInfo(elInfo,face,edge,vertex);
@@ -1985,9 +1985,10 @@ namespace Dune
     //******************************************
     //  setup for 3d
     //******************************************
+    assert( dim == 3 );
 
     // the face might be twisted when look from different elements
-    int facemap[dim]   = {0,1,2};
+    int facemap[3]   = {0,1,2};
     bool rightOriented = calculateOrientation( elInfo_ , neighElInfo_ , neighborCount_ , facemap );
 
     // TODO check infulence of orientation
@@ -2011,6 +2012,7 @@ namespace Dune
 #endif
 
 #if DIM == 2
+    assert( dim == 2 );
     //*****************************************
     //  setup for 2d
     //*****************************************
