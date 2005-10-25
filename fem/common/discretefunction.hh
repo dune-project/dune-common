@@ -131,7 +131,7 @@ namespace Dune {
 
     //! Set local function to an entity
     template<class EntityType>
-    void localFunction(const EntityType& en, LocalFunctionType& lf) {
+    void localFunction(const EntityType& en, LocalFunctionType& lf) const {
       asImp().localFunction(en, lf);
     }
 

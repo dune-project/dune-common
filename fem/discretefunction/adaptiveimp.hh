@@ -56,12 +56,14 @@ namespace Dune {
 
     LocalFunctionType newLocalFunction() DUNE_DEPRECATED;
 
+
+
     //! update local function to given entity
     template <class EntityType>
     void localFunction(const EntityType& en, LocalFunctionType& lf) DUNE_DEPRECATED;
 
     template <class EntityType>
-    LocalFunctionType localFunction(const EntityType& en);
+    LocalFunctionType localFunction(const EntityType& en) const;
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods

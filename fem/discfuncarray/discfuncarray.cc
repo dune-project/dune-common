@@ -94,7 +94,7 @@ namespace Dune
 
   template<class DiscreteFunctionSpaceType > template <class EntityType>
   inline typename DiscFuncArray< DiscreteFunctionSpaceType >:: LocalFunctionType
-  DiscFuncArray< DiscreteFunctionSpaceType >:: localFunction ( const EntityType &en )
+  DiscFuncArray< DiscreteFunctionSpaceType >:: localFunction ( const EntityType &en ) const
   {
     return LocalFunctionType (en,*this);
   }
