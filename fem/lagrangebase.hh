@@ -168,6 +168,9 @@ namespace Dune {
     //! Return grid
     const GridType& grid() const { return grid_.grid(); }
 
+    //! Return index set
+    const IndexSetType& indexSet() const { return grid_.indexSet(); }
+
     //! level
     int level() const { return grid_.level(); }
 
