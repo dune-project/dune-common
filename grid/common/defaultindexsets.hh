@@ -591,7 +591,8 @@ namespace Dune {
     int index (const typename GridImp::template Codim<cd>::Entity& en) const
     {
       // this must not be true for vertices
-      assert( level_ == en.level() || (cd == dim) );
+      // therefore only check other codims
+      assert( (cd == dim) ? (1) : (level_ == en.level() ));
       assert( levelIndex_[cd][ hIndexSet_.index(en) ] >= 0 );
       return levelIndex_[cd][ hIndexSet_.index(en) ];
     }
@@ -602,7 +603,8 @@ namespace Dune {
     int subIndex (const typename GridType::template Codim<0>::Entity & en, int i) const
     {
       // this must not be true for vertices
-      assert( level_ == en.level() || (cd == dim) );
+      // therefore only check other codims
+      assert( (cd == dim) ? (1) : (level_ == en.level() ));
       assert(levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ] >= 0 );
       return levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ];
     }

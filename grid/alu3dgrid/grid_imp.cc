@@ -478,7 +478,6 @@ namespace Dune {
       rp(*this,f,s, *leafIndexSet_  ,*leafIndexSet_);
 
       ref = myGrid().duneAdapt(rp); // adapt grid
-      //leafIndexSet_->compress();
     }
     else
     {
