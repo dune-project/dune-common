@@ -34,12 +34,12 @@ namespace Dune {
   template <ALU3dGridElementType type>
   class ElementTopologyMapping
   {
+  public:
     enum { numFaces = EntityCount<type>::numFaces };
     enum { numVertices = EntityCount<type>::numVertices };
     enum { numEdges = EntityCount<type>::numEdges };
     enum { numVerticesPerFace = EntityCount<type>::numVerticesPerFace };
 
-  public:
     //! Maps face index from Dune onto ALU3dGrid reference element
     static int dune2aluFace(int index);
     //! Maps face index from ALU3dGrid onto Dune reference element
