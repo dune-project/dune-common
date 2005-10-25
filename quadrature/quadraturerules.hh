@@ -1919,7 +1919,7 @@ namespace Dune {
         int p = GaussPointsSingleton::gp.order(m);           // order of rule with m points
         if (p<=pmax)
         {
-          QuadratureRule<ct,dim>* pointer = new SimplexQuadratureRule<ct,dim>(p);
+          QuadratureRule<ct,dim>* pointer = new CubeQuadratureRule<ct,dim>(p);
           rules.push_back(pointer);
           if (m==1)
             for (int i=0; i<=GaussPoints::highest_order; i++)
