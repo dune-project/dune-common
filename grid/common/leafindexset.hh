@@ -184,15 +184,18 @@ namespace Dune {
         if(leafIndex_[i] >= 0)
         {
           // create vector with all holes
-          if((state_[i] == UNUSED) && (leafIndex_[i] >= 0))
+          if(state_[i] == UNUSED)
           {
             holes_[actHole] = leafIndex_[i];
             actHole++;
           }
+
           // count the size of the leaf indices
           newActSize++;
         }
       }
+
+      //std::cout << "size of set = " << newActSize << " for codim = " << myCodim_ << "\n";
 
       assert( newActSize >= actHole );
       // the new size is the actual size minus the holes
@@ -201,7 +204,7 @@ namespace Dune {
       // copy index, for copying in dof manager
       oldLeafIndex_ = leafIndex_;
 
-      //std::cout << "Number of holes = " << actHole << "\n";
+      //std::cout << "Number of holes = " << actHole << " for codim = " << myCodim_ << "\n";
 
       // close holes
       //
@@ -323,6 +326,8 @@ namespace Dune {
     {
       //std::cout << "Remove Element " << num << "\n";
       assert(num < leafIndex_.size() );
+      //if( myCodim_ == 0 )
+      //  std::cout << "removing " << num << "\n";
       state_[num] = UNUSED;
     }
 
@@ -501,7 +506,9 @@ namespace Dune {
     template <class HSetImp, class CodimLeafSet, class EntityType, int codim>
     struct PartialSpec
     {
+      // only for higher codims
       CompileTimeChecker< (codim > 1) ? true : false> check;
+
       static inline void iterateCodims (const HSetImp & hIndexSet ,
                                         CodimLeafSet (&cls)[ncodim], const EntityType & en , bool (&cdUsed)[ncodim])
       {
@@ -708,6 +715,8 @@ namespace Dune {
     template <class EntityType>
     void restrictLocal ( EntityType &father, EntityType &son, bool initialize )
     {
+      // important, first remove old, because
+      // on father indices might be used aswell
       removeOldIndex( son );
       insertNewIndex( father );
     }
@@ -716,8 +725,10 @@ namespace Dune {
     template <class EntityType>
     void prolongLocal ( EntityType &father, EntityType &son, bool initialize )
     {
-      insertNewIndex( son );
+      // important, first remove old, because
+      // on children indices might be used aswell
       removeOldIndex( father );
+      insertNewIndex( son );
     }
 
     //! insert new index to set
@@ -733,8 +744,8 @@ namespace Dune {
     //! Unregister entity which will be removed from the grid
     void removeOldIndex (const typename GridType::template Codim<0>::Entity & en )
     {
-      //std::cout << "Remvoe Index of el = " << hIndexSet_.index(en) << "\n";
-      codimLeafSet_[0].remove ( hIndexSet_.index(en) );
+      this->remove( en );
+      marked_ = true;
     }
 
     //! reallocate the vector for new size
@@ -762,7 +773,8 @@ namespace Dune {
       resizeVectors();
 
       // give all entities that lie below the old entities new numbers
-      markAllBelowOld ();
+      //markAllBelowOld ();
+      markAllUsed ();
     }
 
     //! for dof manager, to check whether it has to copy dof or not
@@ -777,13 +789,12 @@ namespace Dune {
     bool compress ()
     {
       // if not marked, mark which indices are still used
-      if( (!marked_) && markAllU_ ) markAllUsed();
+      if( ((!marked_) && markAllU_) || higherCodims_ ) markAllUsed();
 
       // true if a least one dof must be copied
       bool haveToCopy = codimLeafSet_[0].compress();
       if(higherCodims_)
       {
-        //std::cout << "Set up higher codims\n";
         for(int i=1; i<ncodim; i++)
           haveToCopy = (codimLeafSet_[i].compress()) ? true : haveToCopy;
       }
@@ -807,14 +818,21 @@ namespace Dune {
       }
     }
 
-    //! set indices to unsed
+    //! set indices to unsed so that they are cleaned on compress
+    // --remove
     void remove (const EntityCodim0Type & en)
     {
-      codimLeafSet_[0].remove ( hIndexSet_.index(en) );
-      if(higherCodims_)
+      // if state is NEW or USED the index of all entities is removed
+      //std::cout << codimLeafSet_[0].state( hIndexSet_.index(en) ) << " state for en = " << hIndexSet_.index(en) << "\n";
+      //std::cout << codimLeafSet_[0].index( hIndexSet_.index(en) ) << " leaf index \n";
+      if( codimLeafSet_[0].state( hIndexSet_.index(en) ) != UNUSED )
       {
-        PartialSpec<HIndexSetType,CodimLeafIndexSet,EntityCodim0Type,ncodim-1> ::
-        removeCodims ( hIndexSet_, codimLeafSet_, en , codimUsed_ );
+        codimLeafSet_[0].remove ( hIndexSet_.index(en) );
+        if(higherCodims_)
+        {
+          PartialSpec<HIndexSetType,CodimLeafIndexSet,EntityCodim0Type,dim> ::
+          removeCodims ( hIndexSet_, codimLeafSet_, en , codimUsed_ );
+        }
       }
     }
 
@@ -895,6 +913,10 @@ namespace Dune {
     //! elements that need one
     void markAllUsed ()
     {
+      // unset all indices
+      for(int i=0; i<ncodim; i++)
+        if(codimUsed_[i]) codimLeafSet_[i].set2Unused();
+
       typedef typename GridType:: template Codim<0> :: LeafIterator LeafIteratorType;
       // walk over leaf level on locate all needed entities
       LeafIteratorType endit  = this->grid_.template leafend<0>   ();
@@ -1102,6 +1124,7 @@ namespace Dune {
 
     void removeOldIndex (const typename GridType::template codim<0>::Entity & en )
     {
+      std::cout << "Remove old index \n";
       leafIndexSet_.removeOldIndex(en);
     }
 
