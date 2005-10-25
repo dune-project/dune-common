@@ -284,11 +284,8 @@ namespace Dune {
 
 
   private:
-    // create triMap from coordinates
+    // create triMap from coordinates , deletes old mapping
     void buildMapping();
-
-    // delete triMap
-    void removeMapping();
 
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, Power_m_p<2,mydim>::power, cdim> coord_;

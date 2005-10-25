@@ -525,21 +525,9 @@ namespace Dune {
   {
     assert( mydim == 3 );
     assert( cdim  == 3 );
-    assert( triMap_ == 0 );
+    if(triMap_) delete triMap_;
     triMap_ = new TrilinearMapping(coord_[0], coord_[1], coord_[2], coord_[3],
                                    coord_[4], coord_[5], coord_[6], coord_[7]);
-  }
-
-  template <int mydim, int cdim>
-  inline void
-  ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::
-  removeMapping()
-  {
-    if(triMap_)
-    {
-      delete triMap_;
-      triMap_ = 0;
-    }
   }
 
   // built Geometry
@@ -549,12 +537,11 @@ namespace Dune {
   ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::
   buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom)
   {
-    removeMapping();
-
     // compute the local coordinates in father refelem
     for(int i=0; i < myGeom.corners() ; i++)
       coord_[i] = fatherGeom.local( myGeom[i] );
 
+    // delete old mapping and creats new mapping
     buildMapping();
     return true;
   }
@@ -573,8 +560,8 @@ namespace Dune {
         coord_[i][j] = p[j];
       }
     }
-    // delete old mapping
-    removeMapping();
+
+    // delete old mapping and creats new mapping
     buildMapping();
     return true;
   }
