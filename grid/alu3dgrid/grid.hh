@@ -4,6 +4,7 @@
 #define DUNE_ALU3DGRIDGRID_HH
 
 //- System includes
+#include <vector>
 
 //- Dune includes
 #include <dune/io/file/grapedataio.hh>
@@ -54,6 +55,31 @@ namespace Dune {
   template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
 
+  //! contains list of vertices of one level
+  class ALU3dGridVertexList
+  {
+  public:
+    // level vertex iterator list
+    typedef std::vector < ALU3DSPACE VertexType * > VertexListType;
+    typedef VertexListType :: iterator IteratorType;
+
+    ALU3dGridVertexList () : up2Date_(false) {}
+
+    size_t size () const { return vertexList_.size(); }
+
+    bool up2Date () const { return up2Date_;  }
+    void unsetUp2Date ()  { up2Date_ = false; }
+
+    // make grid walkthrough and calc global size
+    template <class GridType>
+    void setupVxList (const GridType & grid, int level);
+
+    IteratorType begin () { return vertexList_.begin(); }
+    IteratorType end   () { return vertexList_.end(); }
+  private:
+    bool up2Date_;
+    VertexListType vertexList_;
+  };
 
   //**********************************************************************
   //
@@ -512,6 +538,8 @@ namespace Dune {
     // the reference element
     ReferenceElementType referenceElement_;
 
+    typedef ALU3dGridVertexList VertexListType;
+    mutable VertexListType vertexList_[MAXL];
   }; // end class ALU3dGrid
 
   template <class GridImp, int codim>

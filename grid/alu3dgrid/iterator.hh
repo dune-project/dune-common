@@ -66,6 +66,8 @@ namespace ALUGridSpace {
     typedef GitterType::Geometric::VertexGeo ElementType;
   };
 
+  typedef Dune :: ALU3dGridVertexList VertexListType;
+
   //*********************************************************
   //  LevelIterator Wrapper
   //*********************************************************
@@ -83,7 +85,8 @@ namespace ALUGridSpace {
   public:
     typedef IteratorType :: val_t val_t;
     template <class GridImp>
-    ALU3dGridLevelIteratorWrapper (const GridImp & grid, int level )
+    ALU3dGridLevelIteratorWrapper (const GridImp & grid,
+                                   const VertexListType & , int level )
       : it_(const_cast<GridImp &> (grid).myGrid() , level ) {}
 
     int size  ()    { return it_->size(); }
@@ -108,7 +111,8 @@ namespace ALUGridSpace {
   public:
     typedef IteratorType :: val_t val_t;
     template <class GridImp>
-    ALU3dGridLevelIteratorWrapper (const GridImp & grid, int level )
+    ALU3dGridLevelIteratorWrapper (const GridImp & grid,
+                                   const VertexListType & , int level )
       : it_(const_cast<GridImp &> (grid).myGrid() , level ) {}
 
     int size  ()    { return it_->size(); }
@@ -132,14 +136,16 @@ namespace ALUGridSpace {
   public:
     typedef IteratorType :: val_t val_t;
     template <class GridImp>
-    ALU3dGridLevelIteratorWrapper (const GridImp & grid, int level )
+    ALU3dGridLevelIteratorWrapper (const GridImp & grid,
+                                   const VertexListType & , int level )
       : it_(const_cast<GridImp &> (grid).myGrid() , level ) {}
 
     int size  ()    { return it_->size(); }
     void next ()    { it_->next();  }
     void first()    { it_->first(); }
     int done ()     { return it_->done(); }
-    val_t & item () {
+    val_t & item ()
+    {
       assert( ! done () );
       return it_->item();
     }
@@ -151,42 +157,46 @@ namespace ALUGridSpace {
   template <>
   class ALU3dGridLevelIteratorWrapper<3>
   {
-    typedef LeafIterator < GitterType::vertex_STI > IteratorType;
+    typedef VertexListType :: IteratorType IteratorType;
 
-    // the underlying iterator
+    VertexListType & vxList_;
+
     IteratorType it_;
+    IteratorType endit_;
 
-    // level to walk
-    const int level_;
   public:
-    typedef IteratorType :: val_t val_t;
+    typedef GitterType :: vertex_STI val_t;
     template <class GridImp>
-    ALU3dGridLevelIteratorWrapper (const GridImp & grid, int level )
-      : it_(const_cast<GridImp &> (grid).myGrid()),
-        level_(level)  {}
+    ALU3dGridLevelIteratorWrapper (const GridImp & grid,
+                                   VertexListType & vxList , int level )
+      : vxList_ (vxList) ,
+        it_    ( vxList_.begin() ) ,
+        endit_ ( vxList_.end()   ) {}
 
     // returns size of leaf iterator, wrong here, return leaf size
-    int size  ()  { return it_->size(); }
+    int size  ()  { return vxList_.size(); }
 
     //! if level of item is larger then walk level, go next
     void next ()
     {
-      it_->next();
-      if(it_->done()) return ;
-      // go to next vertex with level <= level_
-      while ( it_->item().level() > level_ )
+      if( done () ) return ;
+      ++it_;
+      if( done () ) return ;
+      while ( (*it_) == 0 )
       {
-        this->next();
-        if(it_->done()) return ;
+        ++it_;
+        if ( done () ) return;
       }
+
       return ;
     }
 
-    void first()    { it_->first(); }
-    int done () const { return it_->done(); }
-    val_t & item () {
+    void first()    {}
+    int done () const { return (it_ == endit_); }
+    val_t & item ()
+    {
       assert( ! done () );
-      return it_->item();
+      return * (*it_) ;
     }
   };
 
@@ -867,14 +877,18 @@ namespace Dune {
 
   public:
     typedef typename GridImp::template Codim<cd>::Entity Entity;
+    typedef ALU3DSPACE VertexListType VertexListType;
 
     typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
 
     //! typedef of my type
     typedef ALU3dGridLevelIterator<cd,pitype,GridImp> ALU3dGridLevelIteratorType;
 
-    //! Constructor
-    ALU3dGridLevelIterator(const GridImp & grid, int level , bool end=false);
+    //! Constructor for begin iterator
+    ALU3dGridLevelIterator(const GridImp & grid, VertexListType & vxList, int level);
+
+    //! Constructor for end iterator
+    ALU3dGridLevelIterator(const GridImp & grid, int level);
 
     //! Constructor
     ALU3dGridLevelIterator(const ALU3dGridLevelIterator<cd,pitype,GridImp> & org);

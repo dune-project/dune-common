@@ -11,6 +11,41 @@
 
 namespace Dune {
 
+
+  template <class GridType >
+  inline void ALU3dGridVertexList ::
+  setupVxList(const GridType & grid, int level)
+  {
+    // iterates over grid elements of given level and adds all vertices to
+    // given list
+    enum { codim = 3 };
+
+    VertexListType & vxList = vertexList_;
+
+    unsigned int vxsize = grid.hierarchicIndexSet().size(codim);
+    if( vxList.size() < vxsize ) vxList.resize(vxsize);
+    for(unsigned int i=0; i<vxsize; i++) vxList[i] = 0;
+
+    const ALU3dGridElementType elType = GridType:: elementType;
+    typedef ALU3DSPACE LevelIterator < ALU3DSPACE HElementType > IteratorType;
+    typedef typename ALU3dImplTraits<elType> :: IMPLElementType IMPLElementType;
+    typedef ALU3DSPACE VertexType VertexType;
+    enum { nVx = ElementTopologyMapping < elType > :: numVertices };
+
+    IteratorType it (const_cast<GridType &> (grid).myGrid(),level);
+    for( it->first(); !it->done() ; it->next())
+    {
+      IMPLElementType & elem = static_cast<IMPLElementType &> (it->item());
+      for(int i=0; i<nVx; i++)
+      {
+        VertexType * vx = elem.myvertex(i);
+        vxList[vx->getIndex()] = vx;
+      }
+    }
+  }
+
+
+
   //--Grid
   //template <int dim, int dimworld, ALU3dGridElementType elType>
   //const ALU3dGridElementType
@@ -177,6 +212,8 @@ namespace Dune {
       if(levelIndexVec_[i]) (*(levelIndexVec_[i])).calcNewIndex();
     }
 
+    for(unsigned int i=0; i<MAXL; i++) vertexList_[i].unsetUp2Date();
+
     coarsenMarked_ = 0;
     refineMarked_  = 0;
   }
@@ -240,6 +277,7 @@ namespace Dune {
     return *mygrid_;
   }
 
+
   // lbegin methods
   template <int dim, int dimworld, ALU3dGridElementType elType>
   template <int cd, PartitionIteratorType pitype>
@@ -248,8 +286,13 @@ namespace Dune {
     assert( level >= 0 );
     // if we dont have this level return empty iterator
     if(level > maxlevel_) return this->template lend<cd,pitype> (level);
-
-    return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,level);
+    VertexListType & vxList = vertexList_[level];
+    if(cd == 3)
+    {
+      // if vertex list is not up2date, update it
+      if(!vxList.up2Date()) vxList.setupVxList(*this,level);
+    }
+    return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,vxList,level);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -257,7 +300,7 @@ namespace Dune {
   inline typename ALU3dGrid<dim, dimworld, elType>::Traits::template Codim<cd>::template Partition<pitype>::LevelIterator
   ALU3dGrid<dim, dimworld, elType>::lend(int level) const {
     assert( level >= 0 );
-    return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,level,true);
+    return ALU3dGridLevelIterator<cd,pitype,const MyType> (*this,level);
   }
 
   // lbegin methods
@@ -995,4 +1038,5 @@ namespace Dune {
     default     : return "Error";
     }
   }
+
 } // end namespace Dune
