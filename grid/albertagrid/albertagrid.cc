@@ -1685,12 +1685,14 @@ namespace Dune
       return ;
     }
 
-    // check whether neighbor has same level
-    if( (this->neighbor()) && (!this->leafIt()) )
-    {
-      // if levels are not equal go next
-      if( !neighborHasSameLevel () ) increment ();
-    }
+    /*
+       // check whether neighbor has same level
+       if( (this->neighbor()) && (!this->leafIt()) )
+       {
+       // if levels are not equal go next
+       if( !neighborHasSameLevel () ) increment ();
+       }
+     */
 
     return ;
   }
@@ -1709,6 +1711,8 @@ namespace Dune
       std::memcpy(neighElInfo_,elInfo_,sizeof(ALBERTA EL_INFO));
 
       setupVirtEn();
+
+      assert( (this->leafIt() ) ? (1) : (elInfo_->level == neighElInfo_->level) );
     }
     return AlbertaGridEntityPointer<0, GridImp>( this->grid_ , virtualEntity_ );
   }
@@ -1908,53 +1912,107 @@ namespace Dune
            this->grid_.getLevelOfElement( neighEl );
   }
 
-  // setup neighbor element with the information of elInfo_
-  template< class GridImp >
-  inline bool AlbertaGridIntersectionIterator<GridImp>::
-  calculateOrientation (const ALBERTA EL_INFO * elf,
-                        const ALBERTA EL_INFO * neigh, int nb,
-                        int (&twist)[3] ) const
+  //*****************************************
+  //  setup for 2d
+  //*****************************************
+  template <class GridImp, int dimworld , int dim >
+  struct SetupVirtualNeighbour
   {
-#if DIM == 3
-    int myvx[3];
-    int neighvx[3];
-    int vx = elf->opp_vertex[nb];
-
-    const int * vxmap = ALBERTA AlbertHelp :: localAlbertaFaceNumber[vx];
-    const int * nbmap = ALBERTA AlbertHelp :: localAlbertaFaceNumber[nb];
-
-    bool allRight = true;
-    for(int i=0; i<dim; i++)
+    static void setupNeighInfo(GridImp & grid, const ALBERTA EL_INFO * elInfo,
+                               const int vx, const int nb, ALBERTA EL_INFO * neighInfo)
     {
-      myvx[i]    = this->grid_.getVertexNumber(elf->el  , nbmap[i] );
-      neighvx[i] = this->grid_.getVertexNumber(neigh->el, vxmap[i] );
-      if( myvx[i] != neighvx[i] ) allRight = false;
-    }
 
+      // vx is the face number in the neighbour
+      const int (& neighmap)[dim] = ALBERTA AlbertHelp :: localTriangleFaceNumber[vx];
+      // neighborCount is the face number in the actual element
+      const int (& selfmap) [dim] = ALBERTA AlbertHelp :: localTriangleFaceNumber[nb];
 
-    // note: if the vertices are equalm then the face in the neighbor
-    // is not oriented right, because all face are oriented math. pos when
-    // one looks from the outside of the element.
-    // if the vertices are the same, the face in the neighbor is therefore
-    // wrong oriented
-    if( !allRight )
-    {
+      // copy the two edge vertices
       for(int i=0; i<dim; i++)
       {
-        if(myvx[i] != neighvx[i])
+        const ALBERTA REAL_D & coord = elInfo->coord[ selfmap[i] ];
+        // here the twist is simple, just swap the vertices, and do this by hand
+        ALBERTA REAL_D & newcoord    = neighInfo->coord[ neighmap[(dim-1) - i] ];
+        for(int j=0; j<dimworld; j++) newcoord[j] = coord[j];
+      }
+      //****************************************
+    }
+  };
+
+  //******************************************
+  //  setup for 3d
+  //******************************************
+#if DIM == 3
+  template <class GridImp, int dimworld >
+  struct SetupVirtualNeighbour<GridImp,dimworld,3>
+  {
+    static void setupNeighInfo(GridImp & grid, const ALBERTA EL_INFO * elInfo,
+                               const int vx, const int nb, ALBERTA EL_INFO * neighInfo)
+    {
+      enum { dim = 3 };
+      // the face might be twisted when look from different elements
+      // default is no, and then rthe orientation is -1
+      int facemap[dim]   = {0,1,2};
+      bool rightOriented = false;
+      {
+        int myvx[dim];
+        int neighvx[dim];
+
+        const int * vxmap = ALBERTA AlbertHelp :: localAlbertaFaceNumber[vx];
+        const int * nbmap = ALBERTA AlbertHelp :: localAlbertaFaceNumber[nb];
+
+        bool allRight = true;
+        for(int i=0; i<dim; i++)
         {
-          for(int k=1; k<dim; k++)
+          myvx[i]    = grid.getVertexNumber(elInfo->el   , nbmap[i] );
+          neighvx[i] = grid.getVertexNumber(neighInfo->el, vxmap[i] );
+          if( myvx[i] != neighvx[i] ) allRight = false;
+        }
+
+        // note: if the vertices are equalm then the face in the neighbor
+        // is not oriented right, because all face are oriented math. pos when
+        // one looks from the outside of the element.
+        // if the vertices are the same, the face in the neighbor is therefore
+        // wrong oriented
+        if( !allRight )
+        {
+          for(int i=0; i<dim; i++)
           {
-            int newvx = (i+k) % dim;
-            if( myvx[i] == neighvx[newvx] ) twist[i] = newvx;
+            if(myvx[i] != neighvx[i])
+            {
+              for(int k=1; k<dim; k++)
+              {
+                int newvx = (i+k) % dim;
+                if( myvx[i] == neighvx[newvx] ) facemap[i] = newvx;
+              }
+            }
           }
+          rightOriented = true;
         }
       }
-      return true;
+
+
+      // TODO check infulence of orientation
+      // is used when calculation the outerNormal
+      neighInfo->orientation = ( rightOriented ) ? elInfo->orientation : -elInfo->orientation;
+
+      // vx is the face number in the neighbour
+      const int * neighmap = ALBERTA AlbertHelp :: localAlbertaFaceNumber[vx];
+      // neighborCount is the face number in the actual element
+      const int * selfmap  = ALBERTA AlbertHelp :: localAlbertaFaceNumber[nb];
+
+      // copy the three face vertices
+      for(int i=0; i<dim; i++)
+      {
+        const ALBERTA REAL_D & coord = elInfo->coord[selfmap[i]];
+        // here consider possible twist
+        ALBERTA REAL_D & newcoord    = neighInfo->coord[ neighmap[ facemap[i] ] ];
+        for(int j=0; j<dimworld; j++) newcoord[j] = coord[j];
+      }
+      //****************************************
     }
+  };
 #endif
-    return false;
-  }
 
   // setup neighbor element with the information of elInfo_
   template< class GridImp >
@@ -1978,65 +2036,12 @@ namespace Dune
       for(int j=0; j<dimworld; j++) newcoord[j] = coord[j];
     }
 
-    // TODO here: specialisation for each dim, that we don't have to use
-    // DIM anymore
-
-#if DIM == 3
-    //******************************************
-    //  setup for 3d
-    //******************************************
-    assert( dim == 3 );
-
-    // the face might be twisted when look from different elements
-    int facemap[3]   = {0,1,2};
-    bool rightOriented = calculateOrientation( elInfo_ , neighElInfo_ , neighborCount_ , facemap );
-
-    // TODO check infulence of orientation
-    // is used when calculation the outerNormal
-    neighElInfo_->orientation = ( rightOriented ) ? elInfo_->orientation : -elInfo_->orientation;
-
-    // vx is the face number in the neighbour
-    const int * neighmap = ALBERTA AlbertHelp :: localAlbertaFaceNumber[vx];
-    // neighborCount is the face number in the actual element
-    const int * selfmap  = ALBERTA AlbertHelp :: localAlbertaFaceNumber[neighborCount_];
-
-    // copy the three face vertices
-    for(int i=0; i<dim; i++)
-    {
-      const ALBERTA REAL_D & coord = elInfo_->coord[selfmap[i]];
-      // here consider possible twist
-      ALBERTA REAL_D & newcoord    = neighElInfo_->coord[neighmap[ facemap[i] ]];
-      for(int j=0; j<dimworld; j++) newcoord[j] = coord[j];
-    }
-    //****************************************
-#endif
-
-#if DIM == 2
-    assert( dim == 2 );
-    //*****************************************
-    //  setup for 2d
-    //*****************************************
-    // vx is the face number in the neighbour
-    const int (& neighmap)[dim] = ALBERTA AlbertHelp :: localTriangleFaceNumber[vx];
-    // neighborCount is the face number in the actual element
-    const int (& selfmap) [dim] = ALBERTA AlbertHelp :: localTriangleFaceNumber[neighborCount_];
-
-    // copy the two edge vertices
-    for(int i=0; i<dim; i++)
-    {
-      const ALBERTA REAL_D & coord = elInfo_->coord[ selfmap[i] ];
-      // here the twist is simple, just swap the vertices, and do this by hand
-      ALBERTA REAL_D & newcoord    = neighElInfo_->coord[ neighmap[(dim-1) - i] ];
-      for(int j=0; j<dimworld; j++) newcoord[j] = coord[j];
-    }
-    //****************************************
-#endif
-
-#if DIM < 2 || DIM > 3
-#error "Wrong dimension choosen! \n"
-#endif
+    // setup coordinates of neighbour elInfo
+    SetupVirtualNeighbour<GridImp,dimworld,dim>::
+    setupNeighInfo(this->grid_,elInfo_,vx,neighborCount_,neighElInfo_);
 
     virtualEntity_.setElInfo(neighElInfo_);
+    virtualEntity_.setLevel (this->grid_.getLevelOfElement(neighElInfo_->el));
     builtNeigh_ = true;
   }
   // end IntersectionIterator
@@ -2076,7 +2081,7 @@ namespace Dune
     level_ = 0;
     enLevel_ = 0;
     vertex_ = 0;
-    face_ = 0;
+    face_ = -1; // see goFirstElement for explanation
     edge_ = 0;
     vertexMarker_ = 0;
 
@@ -2092,7 +2097,7 @@ namespace Dune
       , level_   (travLevel)
       , enLevel_ (travLevel)
       , virtualEntity_(*(this->entity_))
-      , face_(0)
+      , face_(-1) // see goFirstElement for explanation
       , edge_ (0)
       , vertex_ (0)
       , vertexMarker_(0)
@@ -2188,7 +2193,7 @@ namespace Dune
       ,  proc_(-1)
       , vertexMarker_(0)
       , vertex_ (0)
-      , face_(0)
+      , face_(-1) // see goFirstElement for explanation
       , edge_ (0)
   {
     abort();
@@ -2213,7 +2218,7 @@ namespace Dune
     : AlbertaGridEntityPointer<codim,GridImp> (grid,travLevel,leafIt,false)
       , level_ (travLevel) , enLevel_(travLevel)
       , virtualEntity_(*(this->entity_))
-      , face_(0)
+      , face_(-1) // see goFirstElement for explanation
       , edge_ (0)
       , vertex_ (0)
       , vertexMarker_(0)
@@ -2297,14 +2302,16 @@ namespace Dune
       assert( el );
 
       // if true we must go to next face
-      bool goWeida = this->grid_.getElementNumber( el ) > this->grid_.getElementNumber( neighbour ) ;
+      // when element number is small then go next because now the face is
+      // reached on the element with the largest number
+      bool goWeida = this->grid_.getElementNumber( el ) < this->grid_.getElementNumber( neighbour ) ;
 
       // additional check for level iterators
       if(goWeida && ! this->leafIt() )
       {
         // if we should go weida then only go
         // if neighbours are on the same level
-        goWeida = ( this->grid_.getLevelOfElement( el ) == this->grid_.getLevelOfElement( neighbour ) );
+        goWeida = (this->grid_.getLevelOfElement( neighbour ) == level_);
       }
 
       // the face was reached before therefore go to next face
@@ -2401,7 +2408,12 @@ namespace Dune
     stack->stack_used   = 0;
     stack->el_count     = 0;
 
-    // go to first enInfo, therefore goNextElInfo for all codims
+    // if iterate over face we have to go the normal way, because
+    // is not preset that the first face lies on the first element
+    // therefore face_ == -1 at the start
+    if(codim == 1) return goNextFace(stack, goNextElInfo(stack,0) );
+
+    // go to first enInfo, therefore goNextElInfo for codim 0, 2, dim
     return(goNextElInfo(stack,0));
   }
 
@@ -2984,7 +2996,7 @@ namespace Dune
   template <class GridType, int dim>
   struct MarkEdges
   {
-    inline static void mark(GridType & grid , Array<int> & vec, const ALBERTA EL * el, int count, int elindex)
+    inline static void mark(GridType & grid , Array<int> & vec, const ALBERTA EL * el, int elindex)
     {}
   };
 
@@ -2992,9 +3004,10 @@ namespace Dune
   template <class GridType>
   struct MarkEdges<GridType,3>
   {
-    inline static void mark(GridType & grid , Array<int> & vec, const ALBERTA EL * el, int count, int elindex)
+    inline static void mark(GridType & grid , Array<int> & vec, const ALBERTA EL * el, int elindex)
     {
-      for(int i=0; i<count; i++)
+      // in 3d 6 edges
+      for(int i=0; i<6; i++)
       {
         // the 1 is the difference between dim=3 and codim=2
         int num = grid.hierarchicIndexSet().getIndex(el ,i, Int2Type<1>() );
@@ -3018,18 +3031,16 @@ namespace Dune
     int edg = hset.size(dim-1);
 #endif
 
-    //for(int level=0; level <= grid.maxLevel(); level++)
     {
       Array<int> & vec     = vec_;
       if(vec.size() < nvx) vec.resize( nvx + vxBufferSize_ );
+      for(int i=0; i<vec.size(); i++) vec[i] = -1;
 
 #if DIM == 3
       Array<int> & edgevec = edgevec_;
       if(edgevec.size() < edg) edgevec.resize( edg + vxBufferSize_ );
       for(int i=0; i<edgevec.size(); i++) edgevec[i] = -1;
 #endif
-
-      for(int i=0; i<vec.size(); i++) vec[i] = -1;
 
       //typedef AlbertaGridMakeableEntity<0,dim,const GridType> MakeableEntityImp;
       typedef typename GridType::template Codim<0>::LevelIterator LevelIteratorType;
@@ -3039,7 +3050,7 @@ namespace Dune
         const ALBERTA EL * el =
           (grid.template getRealEntity<0> (*it)).getElInfo()->el;
 
-        int elindex = hset.index(*it);
+        int elindex = grid.getElementNumber(el);
         for(int local=0; local<dim+1; local++)
         {
           int num = grid.getVertexNumber(el,local); // vertex num
@@ -3048,8 +3059,8 @@ namespace Dune
 
 #if DIM == 3
         // mark edges for this element
-        MarkEdges<GridType,dim>::mark(grid,edgevec, el,
-                                      (grid.template getRealEntity<0> (*it)).template count<2> (), elindex );
+        // in 3d 6 edges
+        MarkEdges<GridType,dim>::mark(grid,edgevec, el,elindex );
 #endif
       }
       // remember the number of entity on level and codim = 0
@@ -3100,8 +3111,7 @@ namespace Dune
 
 #if DIM == 3
         // mark edges for this element
-        MarkEdges<GridType,dim>::mark(grid,edgevec,
-                                      el,(grid.template getRealEntity<0> (*it)).template count<2> (), elindex );
+        MarkEdges<GridType,dim>::mark(grid,edgevec,el,elindex);
 #endif
       }
       // remember the number of entity on leaf level and codim = 0
@@ -4111,8 +4121,7 @@ namespace Dune
 #endif
 
     // unset up2Dat status, if lbegin is called then this status is updated
-    for(int l=0; l<maxlevel_+1; l++)
-      vertexMarkerLevel_[l].unsetUp2Date();
+    for(int l=0; l<MAXL; l++) vertexMarkerLevel_[l].unsetUp2Date();
 
     // unset up2Dat status, if leafbegin is called then this status is updated
     vertexMarkerLeaf_.unsetUp2Date();
