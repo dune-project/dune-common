@@ -66,7 +66,7 @@ namespace Dune {
       {
         if( cd == codim )
         {
-          return sc.template countLeafElements<codim> ();
+          return sc.template countLeafEntities<codim> ();
         }
         else
           return CountLeafEntities < SzCacheType, codim-1> :: count (sc,cd);
@@ -81,7 +81,7 @@ namespace Dune {
       {
         enum { codim = 0 };
         assert( cd == codim );
-        return sc.template countLeafElements<codim> ();
+        return sc.template countLeafEntities<codim> ();
       }
     };
 
