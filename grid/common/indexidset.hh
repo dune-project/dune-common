@@ -112,6 +112,20 @@ namespace Dune
       return asImp().size(codim,type);
     }
 
+    /** @brief Return total number of entities of given codim as a sum
+     * for all geometry types in this index set.
+     *  \param codim A valid codimension
+     */
+    int size (int codim) const
+    {
+      int s=0;
+      const std::vector<GeometryType>& geomTs = geomTypes(codim);
+      for (unsigned int i=0; i<geomTs.size(); i++)
+        s += size(codim,geomTs[i]);
+
+      return s;
+    }
+
     /** @brief Return vector with all geometry types of entities in domain of index map.
 
        \return reference to vector of geometry types.
