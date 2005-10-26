@@ -99,19 +99,6 @@ namespace Dune {
   }
 
   template<int cd, int dim, class GridImp>
-  inline int ALU3dGridEntity<cd,dim,GridImp> :: index () const
-  {
-    const Entity en (*this);
-    return grid_.levelIndexSet(en.level()).index(en);
-  }
-
-  template<int cd, int dim, class GridImp>
-  inline int ALU3dGridEntity<cd,dim,GridImp> :: globalIndex () const
-  {
-    return gIndex_;
-  }
-
-  template<int cd, int dim, class GridImp>
   inline int ALU3dGridEntity<cd,dim,GridImp> :: getIndex () const
   {
     return gIndex_;
@@ -339,19 +326,6 @@ namespace Dune {
   }
 
   template<int dim, class GridImp>
-  inline int ALU3dGridEntity<0,dim,GridImp> :: index() const
-  {
-    const Entity en (*this);
-    return grid_.levelIndexSet(en.level()).index(en);
-  }
-
-  template<int dim, class GridImp>
-  inline int ALU3dGridEntity<0,dim,GridImp> :: globalIndex() const
-  {
-    return glIndex_;
-  }
-
-  template<int dim, class GridImp>
   inline int ALU3dGridEntity<0,dim,GridImp> :: getIndex() const
   {
     return glIndex_;
@@ -409,17 +383,6 @@ namespace Dune {
       return elem.getIndex();
     }
   };
-
-  // this method os deprecated
-  template<int dim, class GridImp>
-  template<int cc>
-  inline int ALU3dGridEntity<0,dim,GridImp> :: subIndex (int i) const
-  {
-    dwarn << "This method is deprecated: " << __FILE__ << " line: " <<  __LINE__ << "\n";
-    assert(item_ != 0);
-    typedef typename  ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElType;
-    return IndexWrapper<IMPLElType,GridImp::elementType,cc>::subIndex ( *item_ ,i);
-  }
 
   template<int dim, class GridImp>
   template<int cc>

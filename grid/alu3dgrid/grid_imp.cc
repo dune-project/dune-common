@@ -69,6 +69,7 @@ namespace Dune {
       , hIndexSet_ (*this)
       , globalIdSet_(*this), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
+      , sizeCache_ (0)
   {
     mygrid_ = new ALU3DSPACE GitterImplType (macroTriangFilename.c_str()
 #ifdef _ALU3DGRID_PARALLEL_
@@ -106,6 +107,7 @@ namespace Dune {
       , hIndexSet_ (*this)
       , globalIdSet_(*this), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
+      , sizeCache_ (0)
   {}
 #else
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -131,6 +133,7 @@ namespace Dune {
       , globalIdSet_ (*this)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
+      , sizeCache_ (0)
   {
     DUNE_THROW(GridError,"Do not use copy constructor of ALU3dGrid! \n");
   }
@@ -150,6 +153,7 @@ namespace Dune {
       if(levelIndexVec_[i]) delete levelIndexVec_[i];
     }
     if(leafIndexSet_) delete leafIndexSet_;
+    if(sizeCache_) delete sizeCache_;sizeCache_ = 0;
     if(mygrid_) delete mygrid_;
   }
 
@@ -158,7 +162,13 @@ namespace Dune {
   {
     // if we dont have this level return 0
     if( (level > maxlevel_) || (level < 0) ) return 0;
-    return levelIndexSet(level).size(codim,this->geomTypes(codim)[0]);
+
+    assert( codim >= 0);
+    assert( codim < dim+1 );
+
+    assert( levelIndexSet(level).size(codim,this->geomTypes(codim)[0]) ==
+            sizeCache_->size(level,codim) );
+    return sizeCache_->size(level,codim);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -172,7 +182,10 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline int ALU3dGrid<dim, dimworld, elType>::size(int codim) const
   {
-    return leafIndexSet().size(codim);
+    assert( codim >= 0 );
+    assert( codim < dim +1 );
+    assert( leafIndexSet().size(codim) == sizeCache_->size(codim) );
+    return sizeCache_->size(codim);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -189,8 +202,6 @@ namespace Dune {
   {
     calcMaxlevel();
     calcExtras();
-
-    //myGrid().printsize();
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -213,6 +224,9 @@ namespace Dune {
     }
 
     for(unsigned int i=0; i<MAXL; i++) vertexList_[i].unsetUp2Date();
+
+    if(sizeCache_) delete sizeCache_;
+    sizeCache_ = new SizeCacheType (*this,true);
 
     coarsenMarked_ = 0;
     refineMarked_  = 0;
