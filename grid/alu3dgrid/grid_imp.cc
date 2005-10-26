@@ -166,8 +166,8 @@ namespace Dune {
     assert( codim >= 0);
     assert( codim < dim+1 );
 
-    assert( levelIndexSet(level).size(codim,this->geomTypes(codim)[0]) ==
-            sizeCache_->size(level,codim) );
+    //assert( levelIndexSet(level).size(codim,this->geomTypes(codim)[0]) ==
+    //   sizeCache_->size(level,codim) );
     return sizeCache_->size(level,codim);
   }
 
@@ -492,6 +492,8 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline bool ALU3dGrid<dim, dimworld, elType>::globalRefine(int numberOfRefines)
   {
+    assert( (numberOfRefines + maxLevel()) < MAXL );
+
     bool ref = false;
     for (int count = numberOfRefines; count>0; count--)
     {
