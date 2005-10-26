@@ -7,7 +7,7 @@ common_HEADERS = virtualrefinement.cc  \
   leafindexset.hh leafiterator.hh leveliterator.hh refinement.hh \
   virtualrefinement.hh referenceelements.hh gridpart.hh \
   boundarysegment.hh gridinfo.hh indexidset.hh mapper.hh \
-  mcmgmapper.hh scsgmapper.hh universalmapper.hh
+  mcmgmapper.hh scsgmapper.hh universalmapper.hh sizecache.hh
 
 SUBDIRS = refinement
 

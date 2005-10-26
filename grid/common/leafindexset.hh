@@ -280,6 +280,12 @@ namespace Dune {
       return state_ [ num ];
     }
 
+    //! return state of index for given hierarchic number
+    bool exsits ( int num ) const
+    {
+      return (state(num) != UNUSED);
+    }
+
     //! return size of grid entities per level and codim
     //! for dof mapper
     int oldSize () const
@@ -810,11 +816,14 @@ namespace Dune {
     // --insert
     void insert (const EntityCodim0Type & en)
     {
-      codimLeafSet_[0].insert ( hIndexSet_.index(en) );
-      if(higherCodims_)
+      if( !codimLeafSet_[0].exsits( hIndexSet_.index(en) ) )
       {
-        PartialSpec<HIndexSetType,CodimLeafIndexSet,EntityCodim0Type,dim> ::
-        iterateCodims ( hIndexSet_, codimLeafSet_, en , codimUsed_ );
+        codimLeafSet_[0].insert ( hIndexSet_.index(en) );
+        if(higherCodims_)
+        {
+          PartialSpec<HIndexSetType,CodimLeafIndexSet,EntityCodim0Type,dim> ::
+          iterateCodims ( hIndexSet_, codimLeafSet_, en , codimUsed_ );
+        }
       }
     }
 
@@ -825,7 +834,7 @@ namespace Dune {
       // if state is NEW or USED the index of all entities is removed
       //std::cout << codimLeafSet_[0].state( hIndexSet_.index(en) ) << " state for en = " << hIndexSet_.index(en) << "\n";
       //std::cout << codimLeafSet_[0].index( hIndexSet_.index(en) ) << " leaf index \n";
-      if( codimLeafSet_[0].state( hIndexSet_.index(en) ) != UNUSED )
+      if( codimLeafSet_[0].exsits( hIndexSet_.index(en) ) )
       {
         codimLeafSet_[0].remove ( hIndexSet_.index(en) );
         if(higherCodims_)
