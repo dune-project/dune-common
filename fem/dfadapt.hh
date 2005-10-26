@@ -217,7 +217,7 @@ namespace Dune {
     DofArrayType & dofVec_;
 
     // one local function
-    LocalFunctionImp localFunc_;
+    LocalFunctionType localFunc_;
 
   }; // end class DFAdapt
 
@@ -295,6 +295,7 @@ namespace Dune {
     void init ( const EntityType &en ) const;
 
     //! Forbidden! Would wreak havoc
+    LocalFunctionAdapt(const LocalFunctionAdapt&);
     MyType& operator= (const MyType& other);
 
     //! needed once
@@ -314,7 +315,7 @@ namespace Dune {
     mutable int numOfDifferentDofs_;
 
     //! the corresponding function space which provides the base function set
-    const DiscreteFunctionSpaceType &fSpace_;
+    const DiscreteFunctionSpaceType& fSpace_;
 
     //! Array holding pointers to the local dofs
     mutable Array < RangeFieldType * > values_;

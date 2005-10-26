@@ -27,7 +27,8 @@ namespace Dune {
     dm_(DofManagerFactoryType::getDofManager(f.grid())),
     memPair_(dm_.addDofSet(&dofVec_, f.mapper(), name_)),
     dofVec_ ( *memPair_.second ),
-    localFunc_ ( f , dofVec_ )
+    localFunc_(*this)
+    //localFunc_ ( f , dofVec_ )
   {}
 
   template<class DiscreteFunctionSpaceType>
@@ -311,11 +312,11 @@ namespace Dune {
   addScaledLocal( EntityType &en ,
                   const DFAdapt<DiscreteFunctionSpaceType> &g, const RangeFieldType &scalar )
   {
-    localFunction( en , localFunc_ );
+    localFunc_ = localFunction( en );
 
     DFAdapt<DiscreteFunctionSpaceType> &G =
       const_cast<DFAdapt<DiscreteFunctionSpaceType> &> (g);
-    G.localFunction(en,G.localFunc_);
+    G.localFunc_ = G.localFunction(en);
 
     int length = localFunc_.numDofs();
     if(scalar == 1.)
@@ -341,11 +342,11 @@ namespace Dune {
   addLocal( EntityType &en ,
             const DFAdapt<DiscreteFunctionSpaceType> &g)
   {
-    localFunction( en , localFunc_ );
+    localFunc_ = localFunction( en );
 
     DFAdapt<DiscreteFunctionSpaceType> &G =
       const_cast<DFAdapt<DiscreteFunctionSpaceType> &> (g);
-    G.localFunction(en,G.localFunc_);
+    G.localFunc_ = G.localFunction(en);
 
     int length = localFunc_.numDofs();
     for(int i=0; i<length; i++)
@@ -358,11 +359,11 @@ namespace Dune {
   subtractLocal( EntityType &en ,
                  const DFAdapt<DiscreteFunctionSpaceType> &g)
   {
-    localFunction( en , localFunc_ );
+    localFunc_ = localFunction( en );
 
     DFAdapt<DiscreteFunctionSpaceType> &G =
       const_cast<DFAdapt<DiscreteFunctionSpaceType> &> (g);
-    G.localFunction(en,G.localFunc_);
+    G.localFunc_ = G.localFunction(en);
 
     int length = localFunc_.numDofs();
     for(int i=0; i<length; i++)
@@ -374,7 +375,7 @@ namespace Dune {
   inline void DFAdapt< DiscreteFunctionSpaceType>::
   setLocal( EntityType &en , const RangeFieldType & scalar )
   {
-    localFunction( en , localFunc_ );
+    localFunc_ = localFunction( en );
     int length = localFunc_.numDofs();
     for(int i=0; i<length; i++)
       localFunc_[i] = scalar;
@@ -386,9 +387,18 @@ namespace Dune {
   template<class DiscreteFunctionSpaceType>
   inline LocalFunctionAdapt < DiscreteFunctionSpaceType>::
   LocalFunctionAdapt( const DiscreteFunctionSpaceType &f ,
-                      DofArrayType & dofVec )
-    : fSpace_ ( f ), dofVec_ ( dofVec )
-      , uniform_(true), init_(false) {}
+                      DofArrayType & dofVec ) :
+    tmp_(0.0),
+    xtmp_(0.0),
+    tmpGrad_(0.0),
+    numOfDof_(-1),
+    numOfDifferentDofs_(-1),
+    fSpace_ ( f ),
+    values_ (),
+    dofVec_ ( dofVec ),
+    uniform_(true),
+    init_(false)
+  {}
 
 
   template<class DiscreteFunctionSpaceType>
