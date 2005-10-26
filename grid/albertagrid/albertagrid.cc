@@ -2229,6 +2229,19 @@ namespace Dune
 
     if( mesh && ((travLevel >= 0) && (travLevel <= this->grid_.maxLevel())) )
     {
+      if( !this->leafIt() )
+      {
+        // when iterate over faces levelwise , then check level, because
+        // this doesn't work yet, because of the fill_elinfo method, which
+        // sets wrong neighbours
+        if(GridImp::dimension == 3)
+        {
+          if(codim == 1)
+            if((travLevel != 0) && (travLevel != grid.maxLevel()))
+              DUNE_THROW(AlbertaError,"Not implemented correct, therefore disabled!");
+        }
+      }
+
       vertexMarker_ = vertexMark;
 
       ALBERTA FLAGS travFlags = FILL_ANY; //FILL_COORDS | FILL_NEIGH;
@@ -3148,6 +3161,7 @@ namespace Dune
     , levelIndexVec_(MAXL,0)
     , leafIndexSet_ (0)
     , geomTypes_(1,simplex)
+    , sizeCache_ (0)
   {
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++) dofvecs_.elNumbers[i] = 0;
     dofvecs_.elNewCheck = 0;
@@ -3187,6 +3201,7 @@ namespace Dune
     , levelIndexVec_(MAXL,0)
     , leafIndexSet_ (0)
     , geomTypes_(1,simplex)
+    , sizeCache_ (0)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
@@ -3239,6 +3254,7 @@ namespace Dune
     , levelIndexVec_(MAXL,0)
     , leafIndexSet_ (0)
     , geomTypes_(1,simplex)
+    , sizeCache_ (0)
   {
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
@@ -3997,10 +4013,8 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::global_size (int codim) const
   {
-    if(codim == dim)
-      return mesh_->n_vertices;
-    // at this moment only for codim=0 and codim=dim
-    //assert((codim == dim) || (codim == 0));
+    if(codim == dim) return mesh_->n_vertices;
+    // for higher codims we have the index stack
     return indexStack_[codim].size();
   }
 
@@ -4008,7 +4022,9 @@ namespace Dune
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
     if( (level > maxlevel_) || (level < 0) ) return 0;
-    return this->levelIndexSet(level).size(codim,simplex);
+    assert( this->levelIndexSet(level).size(codim,simplex) == sizeCache_->size(level,codim) );
+    assert( sizeCache_ );
+    return sizeCache_->size(level,codim);
   }
 
   template < int dim, int dimworld >
@@ -4016,7 +4032,6 @@ namespace Dune
   {
     if( type != simplex ) return 0;
     return this->size(level,codim);
-
   }
 
   template < int dim, int dimworld >
@@ -4029,7 +4044,9 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int codim) const
   {
-    return this->leafIndexSet().size(codim,simplex);
+    assert( this->leafIndexSet().size(codim,simplex) == sizeCache_->size(codim) );
+    assert( sizeCache_ );
+    return sizeCache_->size(codim);
   }
 
   template < int dim, int dimworld >
@@ -4134,6 +4151,9 @@ namespace Dune
 
     // this is done in postAdapt
     //if( leafIndexSet_ ) (*leafIndexSet_).compress();
+
+    if(sizeCache_) delete sizeCache_;
+    sizeCache_ = new SizeCacheType (*this,true);
 
     // we have a new grid
     wasChanged_ = true;

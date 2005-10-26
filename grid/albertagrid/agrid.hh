@@ -21,6 +21,7 @@
 #include <dune/common/capabilities.hh>
 #include <dune/common/stdstreams.hh>
 #include <dune/grid/common/grid.hh>
+#include <dune/grid/common/sizecache.hh>
 
 #include <dune/common/exceptions.hh>
 
@@ -1846,6 +1847,9 @@ namespace Dune
 
     // stack for storing BOUNDARY objects created during mesh creation
     std::stack < BOUNDARY * > bndStack_;
+
+    typedef SingleTypeSizeCache<MyType,simplex> SizeCacheType;
+    SizeCacheType * sizeCache_;
   }; // end class AlbertaGrid
 
 
