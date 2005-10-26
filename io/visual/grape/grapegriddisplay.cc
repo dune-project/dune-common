@@ -77,7 +77,8 @@ namespace Dune
     {
       const DuneElement &geometry = en.geometry();
 
-      if( en.isLeaf() ) he->eindex = lid_.id(en);
+      //if( en.isLeaf() ) he->eindex = lid_.id(en);
+      if( en.isLeaf() ) he->eindex = leafset_.index(en);
       else he->eindex = -1;
       he->level  = en.level();
 

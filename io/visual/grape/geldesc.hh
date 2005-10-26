@@ -146,7 +146,6 @@ static VINHERIT vinherit_point_2    = {2,pindex_point_2,pweight_point_2};
 inline static HELEMENT2D * triangle_neighbour(HELEMENT2D *el, int np, int flag,
 
                                               double * coord, double * xyz, MESH_ELEMENT_FLAGS p) {
-
   printf(" neighbour nicht implementiert \n");
   return el ;
 }
