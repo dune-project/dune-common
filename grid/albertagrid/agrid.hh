@@ -441,15 +441,8 @@ namespace Dune
     //! level of this element
     int level () const;
 
-    //! index is unique and consecutive per level and codim
-    //! used for access to degrees of freedom
-    int index () const DUNE_DEPRECATED;
-
     //! index of the boundary which is associated with the entity, 0 for inner entities
     int boundaryId () const ;
-
-    //! return the global unique index in grid
-    int globalIndex() const DUNE_DEPRECATED;
 
     AlbertaGridEntity(const GridImp &grid, int level,
                       ALBERTA TRAVERSE_STACK * travStack);
@@ -599,12 +592,6 @@ namespace Dune
     //! level of this element
     int level () const;
 
-    //! index is unique and consecutive per level and codim used for access to degrees of freedo
-    int index () const DUNE_DEPRECATED;
-
-    //! return the global unique index in grid , same as el_index
-    int globalIndex() const DUNE_DEPRECATED;
-
     //! index of the boundary which is associated with the entity, 0 for inner entities
     int boundaryId () const;
 
@@ -616,10 +603,6 @@ namespace Dune
      */
     //!< Default codim 1 Faces and codim == dim Vertices
     template<int cc> int count () const;
-
-    //! return index of sub entity with codim = cc and local number i
-    //! i.e. return global number of vertex i
-    template<int cc> int subIndex (int i) const DUNE_DEPRECATED;
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
