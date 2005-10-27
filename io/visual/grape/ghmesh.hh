@@ -47,7 +47,7 @@ typedef struct dune_fdata
   const void *discFunc;
 
   /* pointer to local function */
-  const void *lf;
+  //const void *lf;
 
   /* are all Levels occupied? */
   int allLevels;

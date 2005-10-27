@@ -44,8 +44,8 @@ namespace Dune
       DUNE_FDATA * fd = vecFdata_[i];
       if( fd )
       {
-        LFType * lf = (LFType * ) fd->lf;
-        if ( lf ) delete lf;
+        //LFType * lf = (LFType * ) fd->lf;
+        //if ( lf ) delete lf;
         int * comps = fd->comp;
         delete [] comps;
         delete fd;
@@ -70,17 +70,12 @@ namespace Dune
     assert( df->discFunc );
     DiscFuncType & func = *((DiscFuncType *)  ( df->discFunc));
 
-    assert( df->lf );
     typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
-    LocalFuncType & lf = *((LocalFuncType *) (df->lf));
 
-    //int comp = df->component;
-    func.localFunction ( en , lf );
     int dimVal = df->dimVal;
-
     if(coord)
     {
-      func.localFunction ( en , lf );
+      LocalFuncType lf = func.localFunction( en );
 
       for(int i=0; i<dim; i++) domTmp_[i] = coord[i];
 
@@ -219,14 +214,14 @@ namespace Dune
 
     DiscFuncType & func = *((DiscFuncType *)  ( df->discFunc));
 
-    assert( df->lf );
     typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
-    LocalFuncType & lf = *((LocalFuncType *) (df->lf));
 
     enum { dim = EntityType::dimension };
     {
       const int * comp = df->comp;
-      func.localFunction ( en , lf );
+
+      LocalFuncType lf = func.localFunction( en );
+
       int dimVal = df->dimVal;
       switch (dimVal)
       {
@@ -359,7 +354,7 @@ namespace Dune
         vecFdata_[n]->allLevels = 0;
 
         vecFdata_[n]->discFunc = (void *) &func;
-        vecFdata_[n]->lf = (void *) new LocalFuncType ( func.newLocalFunction() );
+        //vecFdata_[n]->lf = (void *) new LocalFuncType ( func.newLocalFunction() );
         vecFdata_[n]->polyOrd = func.getFunctionSpace().polynomOrder();
         vecFdata_[n]->continuous = (func.getFunctionSpace().continuous() == true ) ? 1 : 0;
         if(vecFdata_[n]->polyOrd == 0) vecFdata_[n]->continuous = 0;

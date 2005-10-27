@@ -537,7 +537,7 @@ inline void printDuneFunc(DUNE_FDATA *df)
 {
   printf("DUNE_FDATA %p \n",df);
   printf("discFunc %p \n",df->discFunc);
-  printf("lf       %p \n",df->lf);
+  //printf("lf       %p \n",df->lf);
   printf("comp     %d \n",df->comp[0]);
 }
 
