@@ -298,7 +298,7 @@ namespace Dune {
   public:
     //! Constructor
     RestProlOperatorFV ( DiscreteFunctionType & df , GeometryType eltype ) : df_ (df) ,
-                                                                             vati_ ( df_.newLocalFunction() ) , sohn_ ( df_.newLocalFunction() ) , quad_(eltype) , weight_(-1.0)
+                                                                             quad_(eltype) , weight_(-1.0)
     {}
 
     //! calculates the weight, i.e. (volume son)/(volume father)
@@ -326,8 +326,8 @@ namespace Dune {
       // if weight < 0.0 , weight has not been calculated
       assert(weight_ > 0.0);
 
-      df_.localFunction( father, vati_ );
-      df_.localFunction( son   , sohn_ );
+      LocalFunctionType vati_ =df_.localFunction( father);
+      LocalFunctionType sohn_ =df_.localFunction( son   );
 
 
       if(initialize)
@@ -352,8 +352,8 @@ namespace Dune {
     {
       //assert( son.state() == REFINED );
 
-      df_.localFunction( father, vati_ );
-      df_.localFunction( son   , sohn_ );
+      LocalFunctionType vati_ = df_.localFunction( father);
+      LocalFunctionType sohn_ = df_.localFunction( son   );
       for(int i=0; i<vati_.numDofs(); i++)
       {
         sohn_[i] = vati_[i];
@@ -362,9 +362,6 @@ namespace Dune {
 
   private:
     mutable DiscreteFunctionType & df_;
-
-    mutable LocalFunctionType vati_;
-    mutable LocalFunctionType sohn_;
 
     const BaryQuadType quad_;
     mutable RangeFieldType weight_;
