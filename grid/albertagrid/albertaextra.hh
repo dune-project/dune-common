@@ -398,7 +398,6 @@ namespace AlbertHelp
   //**************************************************************************
 
   static int Albert_MaxLevel_help=-1;
-  //static int Albert_GlobalIndex_help=-1;
 
   // function for mesh_traverse, is called on every element
   inline static void calcmxl (const EL_INFO * elf)
@@ -408,7 +407,7 @@ namespace AlbertHelp
   }
 
   // remember on which level an element realy lives
-  inline int calcMaxLevel ( MESH * mesh )
+  inline int calcMaxLevel ( MESH * mesh , DOF_INT_VEC * levelVec )
   {
     Albert_MaxLevel_help = -1;
 
@@ -1173,6 +1172,37 @@ namespace AlbertHelp
     // see ALBERTA Doc page 72, traverse over all hierarchical elements
     mesh_traverse(mesh,-1, CALL_EVERY_EL_PREORDER|FILL_NEIGH,setElOwner);
     elOwner = 0;
+    return ;
+  }
+
+  // function for mesh_traverse, is called on every element
+  inline static void storeLevelOfElement(const EL_INFO * elf)
+  {
+    const DOF_ADMIN * admin = elNewCheck->fe_space->admin;
+    const int nv = admin->n0_dof[CENTER];
+    const int k  = admin->mesh->node[CENTER];
+    int *vec = 0;
+    const EL * el   = elf->el;
+
+    int level = elf->level;
+    if( level <= 0 ) return;
+
+    assert(el);
+    GET_DOF_VEC(vec,elNewCheck);
+
+    vec[el->dof[k][nv]] = level;
+    return ;
+  }
+
+  // remember on which level an element realy lives
+  inline void restoreElNewCheck( MESH * mesh, DOF_INT_VEC * elNChk )
+  {
+    elNewCheck = elNChk;
+    assert(elNewCheck != 0);
+
+    // see ALBERTA Doc page 72, traverse over all hierarchical elements
+    mesh_traverse(mesh,-1,CALL_EVERY_EL_PREORDER|FILL_NEIGH,storeLevelOfElement);
+    elNewCheck = 0;
     return ;
   }
 
