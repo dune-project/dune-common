@@ -5,6 +5,7 @@
 #define DUNE_AMG_AMG_HH
 
 #include <memory>
+#include <dune/common/exceptions.hh>
 #include <dune/istl/paamg/smoother.hh>
 #include <dune/istl/paamg/transfer.hh>
 #include <dune/istl/paamg/hierarchy.hh>
@@ -175,7 +176,8 @@ namespace Dune
         // Solve directly
         InverseOperatorResult res;
         solver_->apply(*lhs, *rhs, res);
-
+        if(!res.converged)
+          DUNE_THROW(MathError, "Coarse solver did not converge");
       }else{
 
         // presmoothing
@@ -218,7 +220,7 @@ namespace Dune
 
         typename Hierarchy<Domain,A>::Iterator coarseLhs = lhs--;
         Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range>
-        ::prolongate(*(*aggregates), static_cast<const Domain&>(*coarseLhs), *lhs, 1.0);
+        ::prolongate(*(*aggregates), *coarseLhs, *lhs, 1.6);
 
         --rhs;
         --defect;
