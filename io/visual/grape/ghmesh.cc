@@ -872,6 +872,21 @@ inline void * hmesh(int (* const f_leaf) (DUNE_ELEM *), int (* const n_leaf) (DU
   return ((void *) mesh);
 }
 
+static inline void addProjectUIF()
+{
+  static int firstCall = 1;
+
+  // only call this once otherwise
+  // grape cannot be runed twice with the same program
+  if(firstCall)
+  {
+    char p_name[32];
+    sprintf(p_name,"uif-m%d",GRAPE_DIM);
+    g_project_add(p_name);
+    firstCall = 0;
+  }
+}
+
 /* forward declaration */
 static void grape_add_remove_methods(void);
 
@@ -883,9 +898,7 @@ inline void handleMesh(void *hmesh)
   MANAGER * mgr = (MANAGER *)GRAPE(Manager,"get-stdmgr") ();
   SCENE  *sc = (SCENE *)GRAPE(Scene,"new-instance") ("dune hmesh");
 
-  char p_name[32];
-  sprintf(p_name,"uif-m%d",GRAPE_DIM);
-  g_project_add(p_name);
+  addProjectUIF();
 
   if(!mesh->f_data)
   {
