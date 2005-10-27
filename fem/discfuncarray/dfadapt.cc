@@ -15,7 +15,8 @@ namespace Dune {
     dm_(DofManagerFactoryType::getDofManager(f.grid())),
     memPair_(dm_.addDofSet(&dofVec_, f.mapper(), name_)),
     dofVec_ ( *memPair_.second ),
-    localFunc_ ( f , dofVec_ )
+    localFunc_(*this)
+    //localFunc_ ( f , dofVec_ )
   {}
 
   // Constructor making discrete function
@@ -39,7 +40,8 @@ namespace Dune {
     dm_(df.dm_),
     memPair_(dm_.addDofSet(&dofVec_, df.functionSpace_.mapper(), name_)),
     dofVec_ ( *memPair_.second ),
-    localFunc_ ( df.localFunc_ )
+    localFunc_(*this)
+    //localFunc_ ( df.localFunc_ )
   {
     // copy values of array
     dofVec_ = df.dofVec_;
