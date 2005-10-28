@@ -149,8 +149,8 @@ namespace Dune {
     //! return empty local function
     LocalFunctionType newLocalFunction () DUNE_DEPRECATED { return LocalFunctionType(*this); }
     //! return local function for given entity
-    template <class EntityType>
-    LocalFunctionType localFunction (const EntityType &en) { return LocalFunctionType(en,*this); }
+    //template <class EntityType>
+    //LocalFunctionType localFunction (const EntityType &en) { return LocalFunctionType(en,*this); }
     using Imp::localFunction;
     using Imp::write_xdr;
     using Imp::read_xdr;
@@ -275,7 +275,7 @@ namespace Dune {
 
   private:
     //- Forbidden methods
-    //! Copy constructor
+    //! assignment operator
     ThisType& operator=(const ThisType& other);
 
     template <class EntityType>
@@ -289,6 +289,8 @@ namespace Dune {
 
     mutable RangeType tmp_;
     mutable JacobianRangeType tmpGrad_;
+
+    mutable bool init_;
   }; // end class AdaptiveLocalFunction
 
   //- Specialisations

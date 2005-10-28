@@ -16,7 +16,8 @@ namespace Dune {
     dofVec_(dofVec),
     values_(),
     tmp_(0.0),
-    tmpGrad_(0.0)
+    tmpGrad_(0.0),
+    init_(false)
   {}
 
   template <class DiscreteFunctionSpaceImp>
@@ -26,7 +27,8 @@ namespace Dune {
     dofVec_(other.dofVec_),
     values_(),
     tmp_(0.0),
-    tmpGrad_(0.0)
+    tmpGrad_(0.0),
+    init_(false)
   {}
 
   template <class DiscreteFunctionSpaceImp>
@@ -38,6 +40,7 @@ namespace Dune {
   AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
   operator[] (int num)
   {
+    assert(init_);
     assert(num >= 0 && num < numDofs());
     return (* (values_[num]));
   }
@@ -47,6 +50,7 @@ namespace Dune {
   AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
   operator[] (int num) const
   {
+    assert(init_);
     assert(num >= 0 && num < numDofs());
     return (* (values_[num]));
   }
@@ -78,6 +82,7 @@ namespace Dune {
   void AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::
   evaluateLocal(EntityType& en, const DomainType& x, RangeType& ret) const
   {
+    assert(init_);
     assert(en.geometry().checkInside(x));
     ret *= 0.0;
     const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
@@ -108,6 +113,7 @@ namespace Dune {
                 const DomainType& x,
                 JacobianRangeType& ret) const
   {
+    assert(init_);
     enum { dim = EntityType::dimension };
 
     ret *= 0.0;
@@ -148,6 +154,8 @@ namespace Dune {
     for (int i = 0; i < numOfDof; ++i) {
       values_[i] = &(this->dofVec_[spc_.mapToGlobal(en, i)]);
     }
+
+    init_ = true;
   }
   //- AdaptiveDiscreteFunction (specialisation)
   template <class ContainedFunctionSpaceImp, int N, DofStoragePolicy p>
