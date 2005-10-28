@@ -99,6 +99,10 @@ namespace Dune
     //! not equal
     bool operator!= (const bigunsignedint<k>& x) const;
 
+
+    //! export to other types
+    operator unsigned int () const;
+
     friend class bigunsignedint<k/2>;
   private:
     unsigned short digit[n];
@@ -117,6 +121,13 @@ namespace Dune
     digit[0] = (x&bitmask);
     if (n>1) digit[1] = (x>>bits)&bitmask;
     for (unsigned int i=2; i<n; i++) digit[i]=0;
+  }
+
+  // export
+  template<int k>
+  inline bigunsignedint<k>::operator unsigned int () const
+  {
+    return (digit[1]<<bits)+digit[0];
   }
 
   // print
