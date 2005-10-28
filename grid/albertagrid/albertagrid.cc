@@ -2199,8 +2199,10 @@ namespace Dune
         if(GridImp::dimension == 3)
         {
           if(codim == 1)
+          {
             if((travLevel != 0) && (travLevel != grid.maxLevel()))
-              DUNE_THROW(AlbertaError,"Not implemented correct, therefore disabled!");
+              derr << "WARNING: Face Iterator not implemented correctly, when grid was refined not uniformly!";
+          }
         }
       }
 
