@@ -66,17 +66,27 @@ namespace Dune {
     //! Constructor
     FastBaseFunctionSet (FunctionSpaceType & fuspace , int numOfBaseFct);
 
-    //! return the number of base fucntions for this BaseFunctionSet
-    int getNumberOfBaseFunctions () const DUNE_DEPRECATED
-    {
-      return baseFunctionList_.size();
-    };
+    //! Destructor
+    virtual ~FastBaseFunctionSet() {
+      for (unsigned int i = 0; i < baseFunctionList_.size(); ++i) {
+        delete baseFunctionList_[i];
+        baseFunctionList_[i] = 0;
+      }
+      baseFunctionList_.resize(0);
+    }
+    /*
+       //! return the number of base fucntions for this BaseFunctionSet
+       int getNumberOfBaseFunctions () const DUNE_DEPRECATED
+       {
+       return baseFunctionList_.size();
+       };
 
-    //! return the number of base fucntions for this BaseFunctionSet
-    int getNumberOfDiffBaseFuncs () const DUNE_DEPRECATED
-    {
-      return numOfDiffFct_;
-    };
+       //! return the number of base fucntions for this BaseFunctionSet
+       int getNumberOfDiffBaseFuncs () const DUNE_DEPRECATED
+       {
+       return numOfDiffFct_;
+       };
+     */
 
     //! return the number of base fucntions for this BaseFunctionSet
     int numBaseFunctions () const

@@ -52,7 +52,9 @@ namespace Dune {
     enum { DimDomain = DiscreteFunctionSpaceType::DimDomain };
     enum { DimRange  = DiscreteFunctionSpaceType::DimRange  };
 
-    BaseFunctionInterface () {} ;
+    BaseFunctionInterface () {}
+
+    virtual ~BaseFunctionInterface() {}
 
     //! evaluate the function at Domain x, and store the value in Range Phi
     //! diffVariable stores information about which gradient is to be
@@ -72,8 +74,6 @@ namespace Dune {
 
     virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const DomainType & , RangeType &) const = 0;
-
-  private:
 
   };
 
@@ -128,12 +128,16 @@ namespace Dune {
   public:
 
     //! \todo Please doc me!
-    BaseFunctionSetInterface ()  {};
+    BaseFunctionSetInterface () {}
 
-    //! \todo Please doc me!
-    int getNumberOfBaseFunctions () const DUNE_DEPRECATED {
-      return asImp().getNumberOfBaseFunctions();
-    };
+    virtual ~BaseFunctionSetInterface() {}
+
+    /*
+       //! \todo Please doc me!
+       int getNumberOfBaseFunctions () const DUNE_DEPRECATED {
+       return asImp().getNumberOfBaseFunctions();
+       };
+     */
 
     //! Number of base functions
     int numBaseFunctions() const {
@@ -209,6 +213,8 @@ namespace Dune {
       for(int i=0; i<dimCol; i++)
         jacobianDiffVar_[i] = i;
     };
+
+    virtual ~BaseFunctionSetDefault() {}
 
     //! default evaluate using the evaluate interface
     void eval( int baseFunct, const DomainType & x, RangeType & phi ) const
