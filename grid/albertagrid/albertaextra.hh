@@ -244,6 +244,8 @@ inline void copyTraverseStack( TRAVERSE_STACK* stack, TRAVERSE_STACK* org )
     }
   }
 
+  used = stack->stack_size;
+
   stack->info_stack        = 0;
   stack->info_stack        = MEM_ALLOC(stack->stack_size, U_CHAR);
   stack->save_elinfo_stack = 0;
