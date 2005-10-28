@@ -34,7 +34,10 @@ namespace Dune
      -# <b>Two-dimensional reference simplex (a.k.a. triangle)</b>
            \image html triangle.png
      -# <b>Three-dimensional reference simplex (a.k.a. tetrahedron)</b>
-           \image html tetrahedron.png
+       <table class="imagelist"><tr>
+           <td>\image html tetrahedron.png "Face Numbering"</td>
+           <td>\image html tetrahedron_edges.png "Edge Numbering"</td>
+       </tr></table>
      -# <b>Two-dimensional reference cube (a.k.a. quadrilateral)</b>
            \image html quadrilateral.png
      -# <b>Three-dimensional reference cube (a.k.a. hexahedron)</b>
