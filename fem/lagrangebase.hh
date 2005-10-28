@@ -67,7 +67,7 @@ namespace Dune {
     >
   {
   public:
-    //! my Grid's  type
+    //! my Grid's type
     typedef typename GridPartImp::GridType GridType;
 
     /** \todo Please doc me! */
@@ -181,17 +181,6 @@ namespace Dune {
     template <class EntityType>
     int mapToGlobal ( EntityType &en, int localNum ) const;
 
-    /*
-       //! sign in to dofmanager, return is the memory
-       template <class DiscFuncType>
-       typename DiscFuncType :: MemObjectType &
-       signIn (DiscFuncType & df) const;
-
-       //! sign out to dofmanager, dofmanager frees the memory
-       template <class DiscFuncType>
-       bool signOut ( DiscFuncType & df) const;
-     */
-
     //! Return the dof mapper of the space
     const MapperType& mapper() const;
 
@@ -212,9 +201,6 @@ namespace Dune {
     //! the corresponding vector of base function sets
     //! length is different element types
     std::vector < BaseFunctionSetType * > baseFuncSet_;
-
-    //! DofManager manages the memory
-    //mutable DofManagerType & dm_;
 
     //! the index set, used by the mapper for mapping between grid and space
     GridPartType& grid_;
