@@ -369,7 +369,7 @@ namespace Dune
         }
         else
         {
-          dinf->comp[0] = n-size;
+          comp[0] = n-size;
           vecFdata_[n]->compName = n-size;
         }
         vecFdata_[n]->dimVal = dimVal;
