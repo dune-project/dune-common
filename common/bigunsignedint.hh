@@ -36,6 +36,9 @@ namespace Dune
     //! Construct uninitialized
     bigunsignedint ();
 
+    //! Construct from signed int
+    bigunsignedint (int x);
+
     //! Construct from unsigned int
     bigunsignedint (unsigned int x);
 
@@ -101,18 +104,28 @@ namespace Dune
 
 
     //! export to other types
-    operator unsigned int () const;
+    //	operator unsigned int () const;
+    unsigned int touint() const;
 
     friend class bigunsignedint<k/2>;
   private:
     unsigned short digit[n];
   } ;
 
-
   // Constructors
   template<int k>
   bigunsignedint<k>::bigunsignedint ()
   {  }
+
+  template<int k>
+  bigunsignedint<k>::bigunsignedint (int y)
+  {
+    unsigned int x = std::abs(y);
+    // assume unsigned int is 32 bits
+    digit[0] = (x&bitmask);
+    if (n>1) digit[1] = (x>>bits)&bitmask;
+    for (unsigned int i=2; i<n; i++) digit[i]=0;
+  }
 
   template<int k>
   bigunsignedint<k>::bigunsignedint (unsigned int x)
@@ -125,7 +138,7 @@ namespace Dune
 
   // export
   template<int k>
-  inline bigunsignedint<k>::operator unsigned int () const
+  inline unsigned int bigunsignedint<k>::touint () const
   {
     return (digit[1]<<bits)+digit[0];
   }
