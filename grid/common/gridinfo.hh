@@ -35,7 +35,7 @@ namespace Dune
     const int dimworld = G::dimensionworld;
 
     // grid type and dimension
-    std::cout << prefix << "===> " << transformToGridName(grid.type())
+    std::cout << prefix << "=> " << transformToGridName(grid.type())
               << "(dim=" << dim
               << ",dimworld=" << dimworld
               << ")" << std::endl;

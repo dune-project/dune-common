@@ -716,14 +716,14 @@ namespace Dune {
 
       // encode level
       id = id << yaspgrid_level_bits;
-      id = id+_g.level();
+      id = id+PersistentIndexType(_g.level());
 
 
       // encode coordinates
       for (int i=dim-1; i>=0; i--)
       {
         id = id << yaspgrid_dim_bits;
-        id = id+coord[i];
+        id = id+PersistentIndexType(coord[i]);
       }
 
       return id;
@@ -786,13 +786,13 @@ namespace Dune {
 
         // encode level
         id = id << yaspgrid_level_bits;
-        id = id+level;
+        id = id+PersistentIndexType(level);
 
         // encode coordinates
         for (int i=dim-1; i>=0; i--)
         {
           id = id << yaspgrid_dim_bits;
-          id = id+(coord[i]>>trailing);
+          id = id+PersistentIndexType(coord[i]>>trailing);
         }
 
         return id;
@@ -818,13 +818,13 @@ namespace Dune {
 
         // encode level
         id = id << yaspgrid_level_bits;
-        id = id+_g.level();
+        id = id+PersistentIndexType(_g.level());
 
         // encode coordinates
         for (int i=dim-1; i>=0; i--)
         {
           id = id << yaspgrid_dim_bits;
-          id = id+coord[i];
+          id = id+PersistentIndexType(coord[i]);
         }
 
         return id;
@@ -855,13 +855,13 @@ namespace Dune {
 
         // encode level
         id = id << yaspgrid_level_bits;
-        id = id+_g.level();
+        id = id+PersistentIndexType(_g.level());
 
         // encode coordinates
         for (int i=dim-1; i>=0; i--)
         {
           id = id << yaspgrid_dim_bits;
-          id = id+coord[i];
+          id = id+PersistentIndexType(coord[i]);
         }
 
         return id;
@@ -1231,13 +1231,13 @@ namespace Dune {
 
       // encode level
       id = id << yaspgrid_level_bits;
-      id = id+level;
+      id = id+PersistentIndexType(level);
 
       // encode coordinates
       for (int i=dim-1; i>=0; i--)
       {
         id = id << yaspgrid_dim_bits;
-        id = id+(coord[i]>>trailing);
+        id = id+PersistentIndexType(coord[i]>>trailing);
       }
 
       return id;

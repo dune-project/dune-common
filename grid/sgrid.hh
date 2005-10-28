@@ -251,13 +251,13 @@ namespace Dune {
 
         // encode level
         id = id << sgrid_level_bits;
-        id = id+l;
+        id = id+PersistentIndexType(l);
 
         // encode coordinates
         for (int i=dim-1; i>=0; i--)
         {
           id = id << sgrid_dim_bits;
-          id = id+z[i];
+          id = id+PersistentIndexType(z[i]);
         }
 
         return id;
@@ -287,13 +287,13 @@ namespace Dune {
 
         // encode level
         id = id << sgrid_level_bits;
-        id = id+level;
+        id = id+PersistentIndexType(level);
 
         // encode coordinates
         for (int i=dim-1; i>=0; i--)
         {
           id = id << sgrid_dim_bits;
-          id = id+(z[i]>>trailing);
+          id = id+PersistentIndexType(z[i]>>trailing);
         }
 
         return id;
