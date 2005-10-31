@@ -116,8 +116,7 @@ namespace Dune {
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   localFunction(const EntityType& en) const
   {
-    typedef AdaptiveDiscreteFunction<DiscreteFunctionSpaceImp> ImplType;
-    return LocalFunctionType(en, static_cast<ImplType&>(*this));
+    return LocalFunctionType(en, this->interface());
   }
 
   template <class DiscreteFunctionSpaceImp>
