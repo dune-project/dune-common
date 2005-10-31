@@ -28,13 +28,13 @@ namespace Dune
       typedef V1 Vertex;
       typedef V2 Vector;
 
-      static void prolongate(const AggregatesMap<Vertex>& aggregates, const Vector & coarse, Vector& fine,
+      static void prolongate(const AggregatesMap<Vertex>& aggregates, Vector& coarse, Vector& fine,
                              typename Vector::field_type damp);
       static void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector & fine);
     };
 
     template<class V1, class V2>
-    void Transfer<V1,V2>::prolongate(const AggregatesMap<Vertex>& aggregates, const Vector& coarse,
+    void Transfer<V1,V2>::prolongate(const AggregatesMap<Vertex>& aggregates, Vector& coarse,
                                      Vector& fine, typename Vector::field_type damp)
     {
       DUNE_THROW(NotImplemented, "There is no secialization available for this type of vector!");
@@ -52,7 +52,7 @@ namespace Dune
     public:
       typedef V Vertex;
       typedef BlockVector<B> Vector;
-      static void prolongate(const AggregatesMap<Vertex>& aggregates, const Vector & coarse, Vector& fine,
+      static void prolongate(const AggregatesMap<Vertex>& aggregates, Vector& coarse, Vector& fine,
                              typename Vector::field_type damp);
 
       static void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector & fine);
@@ -60,16 +60,17 @@ namespace Dune
 
     template<class V, class B>
     inline void Transfer<V,BlockVector<B> >::prolongate(const AggregatesMap<Vertex>& aggregates,
-                                                        const Vector& coarse, Vector& fine,
+                                                        Vector& coarse, Vector& fine,
                                                         typename Vector::field_type damp)
     {
       typedef typename Vector::iterator Iterator;
 
       Iterator end = fine.end();
 
+      coarse *= damp;
+
       for(Iterator block=fine.begin(); block != end; ++block) {
         *block += coarse[aggregates[block.index()]];
-        //*block *= damp;
       }
     }
 
