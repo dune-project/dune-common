@@ -910,7 +910,7 @@ namespace Dune {
 
   template<int dim, int dimworld>
   inline SGrid<dim,dimworld>::SGrid ()
-    : theglobalidset(*this), theleafindexset(*this)
+    : theleafindexset(*this), theglobalidset(*this)
   {
     int N_[dim];
     sgrid_ctype L_[dim];
