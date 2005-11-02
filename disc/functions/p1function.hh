@@ -192,13 +192,14 @@ namespace Dune
     virtual RT derivativelocal (int comp, const Dune::FieldVector<int,n>& d,
                                 const Entity& e, const Dune::FieldVector<DT,n>& xi) const
     {
-      int dir;
+      int dir=-1;
       int order=0;
       for (int i=0; i<n; i++)
       {
         order += d[i];
         if (d[i]>0) dir=i;
       }
+      assert(dir != -1);
       if (order!=1) DUNE_THROW(GridError,"can only evaluate one derivative");
 
       RT value=0;
