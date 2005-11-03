@@ -5,7 +5,6 @@
 
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/typetraits.hh>
-#include "hierarchy.hh"
 
 namespace Dune
 {
@@ -13,7 +12,7 @@ namespace Dune
   {
 
     /**
-     * @brief Matrix together with information about the distrubution
+     * @brief Matrix together with information about the distribution
      * between the processes.
      *
      */
