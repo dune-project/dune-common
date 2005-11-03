@@ -126,23 +126,25 @@ namespace Dune
   {
     typedef typename G::ctype DT;
     enum {n=G::dimension};
-    typedef typename G::Traits::template Codim<0>::Entity Entity;
+    typedef typename G::template Codim<0>::Entity Entity;
     typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
+    typedef typename G::template Codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
 
     // a function to compute the number of nonzeros
     // does not work for prisms and pyramids yet ?!
-    int nnz (const G& g)
+    int nnz (const IS& is)
     {
       int s = 0;
-      s += g.size(n);       // vertices
+      s += is.size(n);       // vertices
       //	  std::cout << "nnz vertices " << g.size(n) << std::endl;
 
-      s += 2*g.size(n-1);     // edges
+      s += 2*is.size(n-1);     // edges
       //	  std::cout << "nnz edges " << g.size(n-1) << std::endl;
 
       for (int c=0; c<n-1; c++)
       {
-        s += 2*g.size(c,cube)*(1<<(n-c-1));
+        s += 2*is.size(c,cube)*(1<<(n-c-1));
         //		  std::cout << "nnz cubes codim " << c << " is " << g.size(c,cube) << std::endl;
       }
 
@@ -175,10 +177,11 @@ namespace Dune
     // export type used to store the matrix
     typedef BCRSMatrix<FieldMatrix<RT,1,1> > RepresentationType;
 
-    AssembledP1FEOperator (const G& g, const IS& indexset) : grid(g),is(indexset),A(g.size(n),g.size(n),nnz(g),RepresentationType::random),
-                                                             vertexmapper(g,indexset),allmapper(g,indexset)
+    AssembledP1FEOperator (const G& g, const IS& indexset)
+      : grid(g),is(indexset),A(g.size(n),g.size(n),nnz(indexset),RepresentationType::random),
+        vertexmapper(g,indexset),allmapper(g,indexset)
     {
-      std::cout << "making " << g.size(n) << "x" << g.size(n) << " matrix with " << nnz(g) << " nonzeros" << std::endl;
+      std::cout << "making " << g.size(n) << "x" << g.size(n) << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
       // set size of all rows to zero
       for (int i=0; i<g.size(n); i++)
         A.setrowsize(i,0);
@@ -187,7 +190,16 @@ namespace Dune
       std::vector<bool> visited(allmapper.size());
       for (int i=0; i<allmapper.size(); i++) visited[i] = false;
 
-      // handle each element and compute row sizes
+      // resize the S vector needed for detecting hanging nodes
+      std::vector<unsigned char> S(vertexmapper.size());
+      hanging.resize(vertexmapper.size());
+      for (int i=0; i<vertexmapper.size(); i++)
+      {
+        S[i] = 100;           // the number of levels never exceeds 100 ...
+        hanging[i] = false;
+      }
+
+      // LOOP I : handle each element and compute row sizes
       Iterator eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
@@ -207,6 +219,7 @@ namespace Dune
             //				  printf("increment row %04d\n",alpha);
             //				  std::cout << "increment row " << alpha << std::endl;
           }
+          if (S[alpha]>it->level()) S[alpha] = it->level();                 // compute minimum
         }
 
         // edges for all element types, c=n-1
@@ -240,7 +253,7 @@ namespace Dune
       std::cout << "allmapper has size " << allmapper.size() << std::endl;
       std::cout << "vertexmapper has size " << vertexmapper.size() << std::endl;
 
-      // handle each leaf element and insert the nonzeros
+      // LOOP II : handle each leaf element and insert the nonzeros
       //	  eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
@@ -285,12 +298,34 @@ namespace Dune
         // for codim n-2 to 0 we need a template metaprogram
         if (gt==Dune::cube)
           P1FEOperator_meta<n,n-2>::addindicescube(*it,vertexmapper,allmapper,refelem,A,visited);
+
+        // detect hanging nodes
+        IntersectionIterator endiit = it->iend();
+        for (IntersectionIterator iit = it->ibegin(); iit!=endiit; ++iit)
+          if (iit.neighbor())
+          {
+            // check if neighbor is on lower level
+            const EEntityPointer outside = iit.outside();
+            if (it->level()<=outside->level()) continue;
+
+            // loop over all vertices of this face
+            for (int j=0; j<refelem.size(iit.numberInSelf(),1,n); j++)
+            {
+              int alpha = vertexmapper.template map<n>(*it,refelem.subEntity(iit.numberInSelf(),1,j,n));
+              if (S[alpha]==it->level()) hanging[alpha] = true;
+            }
+          }
       }
 
       // now the matrix is ready for use
       A.endindices();
 
-      std::cout << "matrix initialized" << std::endl;
+      // count hanging nodes
+      int hangingnodes = 0;
+      for (int i=0; i<vertexmapper.size(); i++)
+        if (hanging[i]) hangingnodes++;
+
+      std::cout << "matrix initialized: " << hangingnodes << " hanging nodes detected" << std::endl;
     }
 
     //! return const reference to coefficient vector
@@ -311,6 +346,7 @@ namespace Dune
     RepresentationType A;
     MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout> vertexmapper;
     MultipleCodimMultipleGeomTypeMapper<G,IS,AllLayout> allmapper;
+    std::vector<bool> hanging;
   };
 
 
