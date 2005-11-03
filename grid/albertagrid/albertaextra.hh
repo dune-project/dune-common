@@ -220,7 +220,7 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
 
 inline void copyTraverseStack( TRAVERSE_STACK* stack, TRAVERSE_STACK* org )
 {
-  int used = stack->stack_size;
+  const int & used = stack->stack_size;
   // we have problems to copy stack of length 0
   assert( used > 0 );
 
@@ -229,29 +229,32 @@ inline void copyTraverseStack( TRAVERSE_STACK* stack, TRAVERSE_STACK* org )
   if(stack->save_elinfo_stack) MEM_FREE(stack->save_elinfo_stack,used,EL_INFO );
   if(stack->save_info_stack) MEM_FREE(stack->save_info_stack,used,U_CHAR);
 
+  // NOTE: at this point also the used value changes
+  // because stack->stack_size is changed
   memcpy( stack, org, sizeof(TRAVERSE_STACK));
 
   stack->elinfo_stack = 0;
-  stack->elinfo_stack = MEM_ALLOC(stack->stack_size, EL_INFO);
+  stack->elinfo_stack = MEM_ALLOC(used, EL_INFO);
 
   // here we have to copy all EL_INFOs seperately, the normal way does not
   // work, unfortunately
-  if (stack->stack_size > 0)
+  if (used > 0)
   {
-    for (int i=0; i<stack->stack_size; i++)
+    for (int i=0; i<used; i++)
     {
       memcpy(&(stack->elinfo_stack[i]),&(org->elinfo_stack[i]),sizeof(EL_INFO));
     }
   }
 
-  used = stack->stack_size;
+  assert( used == org->stack_size );
 
+  // the pointer have to be created new
   stack->info_stack        = 0;
-  stack->info_stack        = MEM_ALLOC(stack->stack_size, U_CHAR);
+  stack->info_stack        = MEM_ALLOC(used, U_CHAR);
   stack->save_elinfo_stack = 0;
-  stack->save_elinfo_stack = MEM_ALLOC(stack->stack_size, EL_INFO);
+  stack->save_elinfo_stack = MEM_ALLOC(used, EL_INFO);
   stack->save_info_stack   = 0;
-  stack->save_info_stack   = MEM_ALLOC(stack->stack_size, U_CHAR);
+  stack->save_info_stack   = MEM_ALLOC(used, U_CHAR);
 
   memcpy(stack->elinfo_stack     ,org->elinfo_stack,     used * sizeof(EL_INFO));
   memcpy(stack->info_stack       ,org->info_stack,       used * sizeof(U_CHAR));

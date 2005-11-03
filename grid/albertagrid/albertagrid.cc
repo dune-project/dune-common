@@ -2201,7 +2201,7 @@ namespace Dune
           if(codim == 1)
           {
             if((travLevel != 0) && (travLevel != grid.maxLevel()))
-              derr << "WARNING: Face Iterator not implemented correctly, when grid was refined not uniformly!";
+              derr << "WARNING: Face Iterator in 3d for levels in between not implemented correctly, when grid was refined not uniformly!\n";
           }
         }
       }
