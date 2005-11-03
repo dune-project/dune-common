@@ -117,9 +117,10 @@ void testCoarsenIndices()
   VisitedMap2 visitedMap2(visitedIterator, Dune::IdentityMap());
 
   BCRSMat* coarseMat = productBuilder.build(mat, mg, visitedMap2, indices,
-                                            aggregatesMap,
+                                            aggregatesMap, coarseIndices.size(),
                                             Dune::EnumItem<GridFlag,overlap>());
   productBuilder.calculate(mat, aggregatesMap, *coarseMat);
+  Dune::printmatrix(std::cout,mat,"fine","row",9,1);
   Dune::printmatrix(std::cout,*coarseMat,"coarse","row",9,1);
 }
 
@@ -127,6 +128,6 @@ void testCoarsenIndices()
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
-  testCoarsenIndices<10,2>();
+  testCoarsenIndices<5,1>();
   MPI_Finalize();
 }

@@ -461,6 +461,8 @@ namespace Dune
       class EdgeIndexMap
       {
       public:
+        typedef ReadablePropertyMapTag Category;
+
         EdgeIndexMap(const EdgeDescriptor& firstEdge)
           : firstEdge_(firstEdge)
         {}
@@ -934,6 +936,9 @@ namespace Dune
       VertexPropertiesGraph(Graph& graph, const VertexMap vmap=VertexMap());
 
     private:
+      VertexPropertiesGraph(const VertexPropertiesGraph&)
+      {}
+
       /** @brief The graph the properties are attached to. */
       Graph& graph_;
       /** @brief The vertex map. */
@@ -1291,6 +1296,8 @@ namespace Dune
                       const EdgeMap& emap=EdgeMap());
 
     private:
+      PropertiesGraph(const PropertiesGraph&);
+
       /** @brief The graph the properties are attached to. */
       Graph& graph_;
       /** @brief The vertex properties. */

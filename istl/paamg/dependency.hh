@@ -217,6 +217,9 @@ namespace Dune
             PropertyGraphVertexPropertyMap<G,i> >
     {
     public:
+
+      typedef ReadWritePropertyMapTag Category;
+
       enum {
         /** @brief the index to access in the bitset. */
         index = i

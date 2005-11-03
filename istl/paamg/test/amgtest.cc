@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include "config.h"
 #include "anisotropic.hh"
+#include <dune/common/timer.hh>
 #include <dune/istl/paamg/amg.hh>
 #include <dune/istl/indexset.hh>
 
@@ -9,7 +10,7 @@ int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
 
-  const int BS=1, N=8;
+  const int BS=1, N=1000;
 
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -48,27 +49,44 @@ int main(int argc, char** argv)
   typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
   Criterion;
 
-  Criterion criterion(10,4);
+  Dune::Timer watch;
+  watch.reset();
+  Criterion criterion(1,100);
+  criterion.setMaxDistance(3);
 
   hierarchy.build(criterion);
-  hierarchy.coarsenVector(vh);
+  std::cout<<"Building hierarchy took "<<watch.elapsed()<<" seconds"<<std::endl;
+  /*
+     hierarchy.coarsenVector(vh);
 
-  typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
-  typedef Dune::Amg::SmootherTraits<Smoother>::Arguments SmootherArgs;
-  SmootherArgs smootherArgs;
+     typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
+     typedef Dune::Amg::SmootherTraits<Smoother>::Arguments SmootherArgs;
+     SmootherArgs smootherArgs;
 
-  Dune::MatrixAdapter<BCRSMat,Vector,Vector> op(hierarchy.matrices().coarsest()->matrix());
-  Dune::SeqSSOR<BCRSMat,Vector,Vector> ssor(hierarchy.matrices().coarsest()->matrix(),1,1.0);
-  typedef Dune::LoopSolver<Vector> Solver;
-  Solver solver(op,ssor,1E-6,8000,2);
-  Dune::SeqScalarProduct<Vector> sp;
-  typedef Dune::Amg::AMG<MHierarchy,Vector,Vector,Solver,Smoother> AMG;
+     Dune::MatrixAdapter<BCRSMat,Vector,Vector> op(hierarchy.matrices().coarsest()->matrix());
+     Dune::SeqSSOR<BCRSMat,Vector,Vector> cssor(hierarchy.matrices().coarsest()->matrix(),1,1.0);
+     Dune::SeqSSOR<BCRSMat,Vector,Vector> ssor(hierarchy.matrices().finest()->matrix(),1,1.0);
+     typedef Dune::LoopSolver<Vector> CoarseSolver;
+     CoarseSolver csolver(op,cssor,1E-12,8000,0);
+     Dune::SeqScalarProduct<Vector> sp;
+     typedef Dune::Amg::AMG<MHierarchy,Vector,Vector,CoarseSolver,Smoother> AMG;
 
-  AMG amg(hierarchy, solver, smootherArgs, 1, 1);
+     AMG amg(hierarchy, csolver, smootherArgs, 1, 1);
+     typedef Dune::MatrixAdapter<BCRSMat,Vector,Vector> Operator;
+     Operator fop(hierarchy.matrices().finest()->matrix());
+     Dune::CGSolver<Vector> amgCG(fop,amg,10e-8,8000,2);
+     Dune::CGSolver<Vector> cg(fop,ssor,10e-8,8000,2);
 
-  amg.pre(x, b);
-  amg.apply(x,b);
-  amg.post(x);
+     watch.reset();
+     Dune::InverseOperatorResult r;
+     amgCG.apply(x,b,r);
 
+     std::cout<<"AMG solving took "<<watch.elapsed()<<" seconds"<<std::endl;
+
+     watch.reset();
+     cg.apply(x,b,r);
+
+     std::cout<<"CG solving took "<<watch.elapsed()<<" seconds"<<std::endl;
+   */
   MPI_Finalize();
 }

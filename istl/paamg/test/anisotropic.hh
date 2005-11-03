@@ -107,7 +107,7 @@ void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end)
       for(ColIterator j = (*i).begin(); j != endi; ++j)
         if(j.index() == i.index())
           *j=dval;
-        else if(j.index()+1==i.index() || i.index()+1==j.index())
+        else if(j.index()+1==i.index() || j.index()-1==i.index())
           *j=beps;
         else
           *j=bmone;

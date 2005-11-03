@@ -6,6 +6,7 @@
 
 #include "graph.hh"
 #include "properties.hh"
+#include <dune/common/timer.hh>
 #include <dune/common/stdstreams.hh>
 #include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
@@ -45,8 +46,8 @@ namespace Dune
        * @brief Constructor.
        */
       AggregationCriterion()
-        : maxDistance_(2), minAggregateSize_(4), maxAggregateSize_(8),
-          connectivity_(27), debugLevel_(3)
+        : maxDistance_(2), minAggregateSize_(4), maxAggregateSize_(6),
+          connectivity_(10), debugLevel_(3)
       {}
 
 
@@ -689,7 +690,7 @@ namespace Dune
        * (by its method operator()(ConstEdgeIterator edge)
        */
       template<class V>
-      void visitAggregateNeighbours(const Vertex& vertex, int aggregate,
+      void visitAggregateNeighbours(const Vertex& vertex, const AggregateDescriptor& aggregate,
                                     const AggregatesMap<Vertex>& aggregates,
                                     V& visitor) const;
 
@@ -712,7 +713,7 @@ namespace Dune
          * @param  aggregate The id of the aggregate to visit.
          * @param visitor The visitor.
          */
-        AggregateVisitor(const AggregatesMap<Vertex>& aggregates, int aggregate,
+        AggregateVisitor(const AggregatesMap<Vertex>& aggregates, const AggregateDescriptor& aggregate,
                          Visitor& visitor);
 
         /**
@@ -729,7 +730,7 @@ namespace Dune
         /** @brief The aggregate id we want to visit. */
         AggregateDescriptor aggregate_;
         /** @brief The visitor to use on the aggregate. */
-        Visitor& visitor_;
+        Visitor* visitor_;
       };
 
       /**
@@ -799,7 +800,7 @@ namespace Dune
        * @return The number of one way connections from the vertex to
        * the aggregate.
        */
-      int twoWayConnections(const Vertex&, int aggregate,
+      int twoWayConnections(const Vertex&, const AggregateDescriptor& aggregate,
                             const AggregatesMap<Vertex>& aggregates) const;
 
       /**
@@ -822,7 +823,7 @@ namespace Dune
        * @return The number of one way connections from the vertex to
        * the aggregate.
        */
-      int oneWayConnections(const Vertex&, int aggregate,
+      int oneWayConnections(const Vertex&, const AggregateDescriptor& aggregate,
                             const AggregatesMap<Vertex>& aggregates) const;
 
       /**
@@ -943,6 +944,7 @@ namespace Dune
        */
       int unusedNeighbours(const Vertex& vertex, const AggregatesMap<Vertex>& aggregates) const;
 
+      void neighbours(const Vertex& vertex, const AggregatesMap<Vertex>& aggregates, int* unusedNeighbours, int* aggregateNeighbours) const;
       /**
        * @brief Counts the number of neighbours belonging to an aggregate.
        *
@@ -959,7 +961,7 @@ namespace Dune
        * the vertex depends on and the number of
        * neighbours of the aggregate the vertex influences.
        */
-      int aggregateNeighbours(const Vertex& vertex, int aggregate, const AggregatesMap<Vertex>& aggregates) const;
+      int aggregateNeighbours(const Vertex& vertex, const AggregateDescriptor& aggregate, const AggregatesMap<Vertex>& aggregates) const;
 
       /**
        * @brief Checks wether a vertex is admisible to be added to an aggregate.
@@ -968,7 +970,7 @@ namespace Dune
        * @param aggregate The id of the aggregate.
        * @param aggregates The mapping of the vertices onto aggregates.
        */
-      bool admissible(const Vertex& vertex, int aggregate, const AggregatesMap<Vertex>& aggregates) const;
+      bool admissible(const Vertex& vertex, const AggregateDescriptor& aggregate, const AggregatesMap<Vertex>& aggregates) const;
 
       /**
        * @brief Push the neighbours of the current aggregate on the stack.
@@ -1191,15 +1193,15 @@ namespace Dune
                                              F2& nonAggregateVisitor,
                                              VM& visitedMap) const
     {
-      typedef typename L::const_iterator iterator;
+      typedef typename L::const_iterator ListIterator;
       int visitedSpheres = 0;
 
       visited.push_back(start);
       assert(!get(visitedMap, start));
       put(visitedMap, start, true);
 
-      iterator current = visited.begin();
-      iterator end = visited.end();
+      ListIterator current = visited.begin();
+      ListIterator end = visited.end();
       int i=0, size=visited.size();
 
       // visit the neighbours of all vertices of the
@@ -1207,11 +1209,11 @@ namespace Dune
       while(current != end) {
 
         for(; i<size; ++current, ++i) {
-          typedef typename G::ConstEdgeIterator iterator;
-          const iterator end = graph.endEdges(*current);
+          typedef typename G::ConstEdgeIterator EdgeIterator;
+          const EdgeIterator endEdge = graph.endEdges(*current);
 
-          for(iterator edge = graph.beginEdges(*current);
-              edge != end; ++edge) {
+          for(EdgeIterator edge = graph.beginEdges(*current);
+              edge != endEdge; ++edge) {
 
             if(aggregates_[edge.target()]==aggregate) {
               if(!get(visitedMap, edge.target())) {
@@ -1313,8 +1315,8 @@ namespace Dune
     template<class G>
     template<class V>
     inline Aggregator<G>::AggregateVisitor<V>::AggregateVisitor(const AggregatesMap<Vertex>& aggregates,
-                                                                int aggregate, V& visitor)
-      : aggregates_(aggregates), aggregate_(aggregate), visitor_(visitor)
+                                                                const AggregateDescriptor& aggregate, V& visitor)
+      : aggregates_(aggregates), aggregate_(aggregate), visitor_(&visitor)
     {}
 
     template<class G>
@@ -1322,13 +1324,13 @@ namespace Dune
     inline void Aggregator<G>::AggregateVisitor<V>::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
       if(aggregates_[edge.target()]==aggregate_)
-        visitor_(edge);
+        visitor_->operator()(edge);
     }
 
     template<class G>
     template<class V>
     inline void Aggregator<G>::visitAggregateNeighbours(const Vertex& vertex,
-                                                        int aggregate,
+                                                        const AggregateDescriptor& aggregate,
                                                         const AggregatesMap<Vertex>& aggregates,
                                                         V& visitor) const
     {
@@ -1368,7 +1370,7 @@ namespace Dune
     }
 
     template<class G>
-    int Aggregator<G>::twoWayConnections(const Vertex& vertex, int aggregate,
+    int Aggregator<G>::twoWayConnections(const Vertex& vertex, const AggregateDescriptor& aggregate,
                                          const AggregatesMap<Vertex>& aggregates) const
     {
       TwoWayCounter counter;
@@ -1377,7 +1379,7 @@ namespace Dune
     }
 
     template<class G>
-    int Aggregator<G>::oneWayConnections(const Vertex& vertex, int aggregate,
+    int Aggregator<G>::oneWayConnections(const Vertex& vertex, const AggregateDescriptor& aggregate,
                                          const AggregatesMap<Vertex>& aggregates) const
     {
       OneWayCounter counter;
@@ -1439,7 +1441,7 @@ namespace Dune
     }
 
     template<class G>
-    int Aggregator<G>::aggregateNeighbours(const Vertex& vertex, int aggregate, const AggregatesMap<Vertex>& aggregates) const
+    int Aggregator<G>::aggregateNeighbours(const Vertex& vertex, const AggregateDescriptor& aggregate, const AggregatesMap<Vertex>& aggregates) const
     {
       DependencyCounter counter(aggregates);
       visitAggregateNeighbours(vertex, aggregate, aggregates, counter);
@@ -1449,10 +1451,55 @@ namespace Dune
     template<class G>
     int Aggregator<G>::distance(const Vertex& vertex, const AggregatesMap<Vertex>& aggregates)
     {
+
       typename PropertyMapTypeSelector<VertexVisitedTag,G>::Type visitedMap = get(VertexVisitedTag(), *graph_);
+
       typename AggregatesMap<Vertex>::VertexList vlist;
       typename AggregatesMap<Vertex>::DummyEdgeVisitor dummy;
       return aggregates.template breadthFirstSearch<true,true>(vertex, aggregate_->id(), *graph_, vlist, dummy, dummy, visitedMap);
+
+      Vertex aggregate=aggregate_->id();
+      std::vector<Vertex> visited(100, -1);
+      int visitedsize = 1;
+      int visitedSpheres = 0;
+      visited[0]=vertex;
+      typedef typename std::vector<Vertex>::iterator Iterator;
+      Iterator first = visited.begin();
+      Iterator last = visited.begin();
+      last += visitedsize;
+
+      while( last != first && visitedSpheres <=1000) {
+        for(; first!=last; ++first) {
+          typedef typename G::ConstEdgeIterator EdgeIterator;
+          const EdgeIterator edgeEnd = graph_->endEdges(*first);
+
+          for(EdgeIterator edge = graph_->beginEdges(*first);
+              edge != edgeEnd; ++edge) {
+
+            if(aggregates[edge.target()]==aggregate) {
+              if(!get(visitedMap, edge.target())) {
+                assert(!get(visitedMap, edge.target()));
+                put(visitedMap, edge.target(), true);
+                assert(visitedsize<=100);
+                visited[visitedsize++]=edge.target();
+              }
+            }
+          }
+        }
+
+        last = visited.begin();
+        last += visitedsize;
+
+        if(first != last)
+          visitedSpheres++;
+      }
+
+      last = visited.begin()+visitedsize;
+
+      for(first = visited.begin(); first != last; ++first)
+        put(visitedMap, *first, false);
+
+      return visitedSpheres;
     }
 
     template<class G>
@@ -1485,7 +1532,7 @@ namespace Dune
     }
 
     template<class G>
-    inline bool Aggregator<G>::admissible(const Vertex& vertex, int aggregate, const AggregatesMap<Vertex>& aggregates) const
+    inline bool Aggregator<G>::admissible(const Vertex& vertex, const AggregateDescriptor& aggregate, const AggregatesMap<Vertex>& aggregates) const
     {
       // Todo
       Dune::dverb<<" Admissible not yet implemented!"<<std::endl;
@@ -1561,9 +1608,6 @@ namespace Dune
           if(graph_->getVertexProperties(*vertex).isolated())
             continue;
 
-          if(c.maxDistance() < distance(*vertex, aggregates))
-            continue;  // Distance too far
-
           int twoWayCons = twoWayConnections(*vertex, aggregate_->id(), aggregates);
 
           /* The case of two way connections. */
@@ -1575,18 +1619,24 @@ namespace Dune
 
               if(neighbours > maxNeighbours) {
                 maxNeighbours = neighbours;
-                candidate = *vertex;
+                if(aggregate_->size() < c.maxDistance() ||
+                   c.maxDistance() >= distance(*vertex, aggregates))
+                  candidate = *vertex;
               }
             }else if( con > maxCon) {
               maxCon = con;
               maxNeighbours = noFrontNeighbours(*vertex);
-              candidate = *vertex;
+              if(aggregate_->size() < c.maxDistance() ||
+                 c.maxDistance() >= distance(*vertex, aggregates))
+                candidate = *vertex;
             }
           }else if(twoWayCons > maxTwoCons) {
             maxTwoCons = twoWayCons;
             maxCon = connectivity(*vertex, aggregates);
             maxNeighbours = noFrontNeighbours(*vertex);
-            candidate = *vertex;
+            if(aggregate_->size() < c.maxDistance() ||
+               c.maxDistance() >= distance(*vertex, aggregates))
+              candidate = *vertex;
 
             // two way connections preceed
             maxOneCons = std::numeric_limits<int>::max();
@@ -1612,18 +1662,24 @@ namespace Dune
 
               if(neighbours > maxNeighbours) {
                 maxNeighbours = neighbours;
-                candidate = *vertex;
+                if(aggregate_->size() < c.maxDistance() ||
+                   c.maxDistance() >= distance(*vertex, aggregates))
+                  candidate = *vertex;
               }
             }else if( con > maxCon) {
               maxCon = con;
               maxNeighbours = noFrontNeighbours(*vertex);
-              candidate = *vertex;
+              if(aggregate_->size() < c.maxDistance() ||
+                 c.maxDistance() >= distance(*vertex, aggregates))
+                candidate = *vertex;
             }
           }else if(oneWayCons > maxOneCons) {
             maxOneCons = oneWayCons;
             maxCon = connectivity(*vertex, aggregates);
             maxNeighbours = noFrontNeighbours(*vertex);
-            candidate = *vertex;
+            if(aggregate_->size() < c.maxDistance() ||
+               c.maxDistance() >= distance(*vertex, aggregates))
+              candidate = *vertex;
           }
         }
 
@@ -1657,8 +1713,12 @@ namespace Dune
       // Allocate the mapping to aggregate.
       size_ = graph.maxVertex();
 
+      Timer watch;
+      watch.reset();
+
       buildDependency(graph, m, c);
 
+      dinfo<<"Build dependency took "<< watch.elapsed()<<" senconds."<<std::endl;
       int noAggregates, conAggregates, isoAggregates, oneAggregates;
       noAggregates = conAggregates = isoAggregates = oneAggregates = 0;
 
@@ -1700,9 +1760,6 @@ namespace Dune
             if(graph.getVertexProperties(*vertex).isolated())
               continue; // No isolated nodes here
 
-            if(distance(*vertex, aggregates) > c.maxDistance())
-              continue; // Distance too far
-
             if(twoWayConnections( *vertex, aggregate_->id(), aggregates) == 0 &&
                (oneWayConnections( *vertex, aggregate_->id(), aggregates) == 0 ||
                 !admissible( *vertex, aggregate_->id(), aggregates) ))
@@ -1711,6 +1768,9 @@ namespace Dune
             if(aggregateNeighbours(*vertex, aggregate_->id(), aggregates) <= unusedNeighbours(*vertex, aggregates))
               continue;
 
+            if(aggregate_->size() + 1 > c.maxDistance())
+              if(distance(*vertex, aggregates) > c.maxDistance())
+                continue; // Distance too far
             candidate = *vertex;
             break;
           }
@@ -1773,7 +1833,7 @@ namespace Dune
       int count=0;
       for(Iterator vertex=front_.begin(); vertex != end; ++vertex,++count)
         stack_.push(*vertex);
-      if(MINIMAL_DEBUG_LEVEL<=3 && count==0)
+      if(MINIMAL_DEBUG_LEVEL<=2 && count==0)
         Dune::dwarn<< " no vertices pushed!"<<std::endl;
     }
 
