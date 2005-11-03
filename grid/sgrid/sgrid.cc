@@ -886,7 +886,7 @@ namespace Dune {
 
   template<int dim, int dimworld>
   inline SGrid<dim,dimworld>::SGrid (const int* N_, const sgrid_ctype* H_)
-    : theglobalidset(*this), theleafindexset(*this)
+    : theleafindexset(*this), theglobalidset(*this)
   {
     IsTrue< dimworld <= std::numeric_limits<int>::digits >::yes();
 
@@ -900,7 +900,7 @@ namespace Dune {
 
   template<int dim, int dimworld>
   inline SGrid<dim,dimworld>::SGrid (const int* N_, const sgrid_ctype* L_, const sgrid_ctype* H_)
-    : theglobalidset(*this), theleafindexset(*this)
+    : theleafindexset(*this), theglobalidset(*this)
   {
     IsTrue< dimworld <= std::numeric_limits<int>::digits >::yes();
 
