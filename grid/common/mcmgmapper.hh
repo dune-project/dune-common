@@ -140,7 +140,7 @@ namespace Dune
       // Compute offsets for the different geometry types.
       // Note that mapper becomes invalid when the grid is modified.
       for (int c=0; c<=G::dimension; c++)
-        for (int i=0; i<is.geomTypes(c).size(); i++)
+        for (size_t i=0; i<is.geomTypes(c).size(); i++)
           if (layout.contains(c,is.geomTypes(c)[i]))
           {
             if (c<G::dimension-1)
