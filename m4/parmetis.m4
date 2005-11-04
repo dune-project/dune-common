@@ -16,23 +16,27 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   ac_save_LIBS="$LIBS"
   
   ## do nothing if --without-parmetis is used
-  if test x"$MPI_LDFLAGS" != x""  && test x$with_parmetis != x && test x$with_parmetis != xno ; then
+  if test x"$MPI_LDFLAGS" != x"" && test x"$with_parmetis" != x"no" ; then
       
-      if test x$with_parmetis == xyes ; then
+      if test x"$with_parmetis" == x"yes" ; then
 	  AC_MSG_ERROR([You have to provide a directory --with-parmetis=PATH])
       fi
       
-      if test -d $with_parmetis; then
-          # expand tilde / other stuff
-          PARMETISROOT=`cd $with_parmetis && pwd`
-      else
-	  AC_MSG_ERROR([directory $with_parmetis does not exist!])
+      if test x"$with_parmetis" == x"yes"; then
+	  # defaultpath
+	  PARMETIS_LIB_PATH="/usr/lib/"
+	  PARMETIS_INCLUDEPATH="/usr/include/"
+      else 
+	  if test -d $with_parmetis; then
+              # expand tilde / other stuff
+	      PARMETISROOT=`cd $with_parmetis && pwd`
+	      PARMETIS_LIB_PATH="$PARMETISROOT/"
+	      PARMETIS_INCLUDE_PATH="$PARMETISROOT/"
+	  else
+	      AC_MSG_ERROR([directory $with_parmetis does not exist!])
+	  fi
       fi
-      
-      # intermediate variables
-      PARMETIS_LIB_PATH="$PARMETISROOT/"
-      PARMETIS_INCLUDE_PATH="$PARMETISROOT/"
-      
+            
       PARMETIS_LDFLAGS="-L$PARMETIS_LIB_PATH $MPI_LDFLAGS"
 
       # set variables so that tests can use them
