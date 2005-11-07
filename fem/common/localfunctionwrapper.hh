@@ -17,7 +17,11 @@ namespace Dune {
     typedef LocalFunctionStorage < DiscreteFunctionImp > MyType;
     typedef DiscreteFunctionImp DiscreteFunctionType;
     typedef typename DiscreteFunctionImp ::  LocalFunctionImp LocalFunctionImp;
-    std::stack < LocalFunctionImp * > lfStack_;
+
+  public:
+    typedef typename std::pair < LocalFunctionImp * , int * > StackStorageType;
+  private:
+    std::stack < StackStorageType * > lfStack_;
     const DiscreteFunctionType & df_;
 
   public:
@@ -29,32 +33,36 @@ namespace Dune {
     {
       while ( !lfStack_.empty() )
       {
-        LocalFunctionImp* lf = lfStack_.top();
+        StackStorageType * obj = lfStack_.top();
         lfStack_.pop();
-        //std::cout << "Deleting " << lf << "\n";
-        if( lf ) delete lf;
+        if(obj)
+        {
+          if( obj->first  ) delete obj->first;
+          if( obj->second ) delete obj->second;
+          delete obj;
+        }
       }
     }
 
     //! get local function object
-    LocalFunctionImp* getObject ()
+    StackStorageType * getObject ()
     {
       if( lfStack_.empty() )
       {
-        return df_.newLocalFunctionObject();
+        return new StackStorageType ( df_.newLocalFunctionObject(), new int (1) );
       }
       else
       {
-        LocalFunctionImp* lf = lfStack_.top();
+        StackStorageType * obj = lfStack_.top();
         lfStack_.pop();
-        return lf;
+        return obj;
       }
     }
 
     //! push local function to stack
-    void freeObject ( LocalFunctionImp* lf )
+    void freeObject ( StackStorageType * obj)
     {
-      lfStack_.push(lf);
+      lfStack_.push(obj);
     }
 
   private:
@@ -100,107 +108,101 @@ namespace Dune {
     typedef typename DiscreteFunctionDefaultType :: LocalFunctionStorageType LFStorage;
 
   private:
+
     // local function storage stack
     LFStorage* storage_;
 
+    typedef typename LFStorage :: StackStorageType StackStorageType;
     // real local function implementation
-    LocalFunctionImp* lf_;
+    StackStorageType * obj_;
 
-    // reference counter
-    int* refCount_;
+    // pointer to local function
+    LocalFunctionImp * lf_;
 
   public:
     //! Constructor initializing the underlying local function
     template < class EntityType >
-    LocalFunctionWrapper(const EntityType & en, const DiscreteFunctionImp & df) :
-      storage_( df.localFunctionStorage() ),
-      lf_( storage_->getObject() ),
-      refCount_(new int (1))
+    LocalFunctionWrapper(const EntityType & en, const DiscreteFunctionImp & df)
+      : storage_( df.localFunctionStorage() )
+        , obj_ ( storage_->getObject() )
+        , lf_( obj_->first )
     {
       // init real local function with entity
-      lf_->init(en);
+      localFunc().init( en );
     }
 
     //! Constructor creating empty local function
     LocalFunctionWrapper (const DiscreteFunctionImp & df)
-      : storage_( df.localFunctionStorage() ) ,
-        lf_( storage_->getObject() ),
-        refCount_(new int (1))
+      : storage_( df.localFunctionStorage() )
+        , obj_( storage_->getObject() )
+        , lf_( obj_->first )
     {}
 
     //! Copy constructor
-    LocalFunctionWrapper(const LocalFunctionWrapper& org) :
-      storage_(org.storage_),
-      lf_(org.lf_),
-      refCount_(org.refCount_)
+    LocalFunctionWrapper(const LocalFunctionWrapper& org)
+      : storage_(org.storage_)
+        , obj_( org.obj_)
+        , lf_( obj_->first )
     {
-      ++(*refCount_);
+      ++(*(obj_->second));
     }
 
     //! Destructor , push local function to stack if there are no other
     //! to it references
     ~LocalFunctionWrapper ()
     {
-      assert(*refCount_ > 0);
-      --(*refCount_);
-      if (*refCount_ == 0) {
-        storage_->freeObject ( lf_ );
-        delete refCount_;
-      }
+      removeObj();
     }
 
     //! Assignment operator
-    LocalFunctionWrapper& operator=(const LocalFunctionWrapper& org) {
+    LocalFunctionWrapper& operator=(const LocalFunctionWrapper& org)
+    {
       if (this != &org) {
-        --(*refCount_);
-        if (*refCount_ == 0) {
-          storage_->freeObject(lf_);
-          delete refCount_;
-        }
+        removeObj();
 
         storage_ = org.storage_;
-        lf_ = org.lf_;
-        refCount_ = org.refCount_;
-        ++(*refCount_);
+        obj_ = org.obj_;
+        lf_  = obj_->first;
+        ++(*(obj_->second));
       }
       return *this;
     }
 
     //! access to dof number num, all dofs of the dof entity
-    RangeFieldType & operator [] (int num) { return (*lf_)[num]; }
+    RangeFieldType & operator [] (int num) { return localFunc()[num]; }
 
     //! access to dof number num, all dofs of the dof entity
-    const RangeFieldType & operator [] (int num) const { return (*lf_)[num]; }
+    const RangeFieldType & operator [] (int num) const { return localFunc()[num]; }
 
     //! return number of degrees of freedom
-    int numDofs () const { return lf_->numDofs(); }
+    int numDofs () const { return localFunc().numDofs(); }
 
     //! sum over all local base functions
     template <class EntityType>
     void evaluate (EntityType &en, const DomainType & x, RangeType & ret) const
     {
-      lf_->evaluate( en , x , ret );
+      localFunc().evaluate( en , x , ret );
     }
 
     //! sum over all local base functions but local
     template <class EntityType>
     void evaluateLocal(EntityType &en, const DomainType & x, RangeType & ret) const
     {
-      lf_->evaluateLocal( en , x , ret );
+      localFunc().evaluateLocal( en , x , ret );
     }
 
     //! sum over all local base functions evaluated on given quadrature point
     template <class EntityType, class QuadratureType>
     void evaluate (EntityType &en, QuadratureType &quad, int quadPoint , RangeType & ret) const
     {
-      lf_->evaluate( en , quad, quadPoint , ret );
+      localFunc().evaluate( en , quad, quadPoint , ret );
     }
 
     //! sum over all local base functions evaluated on given quadrature point
     template <class EntityType, class QuadratureType>
     void jacobian (EntityType &en, QuadratureType &quad, int quadPoint , JacobianRangeType & ret) const
     {
-      lf_->jacobian( en, quad, quadPoint, ret );
+      localFunc().jacobian( en, quad, quadPoint, ret );
     }
 
     //! sum over all local base functions evaluated on given quadrature
@@ -208,14 +210,14 @@ namespace Dune {
     template <class EntityType>
     void jacobianLocal(EntityType& en, const DomainType& x, JacobianRangeType& ret) const
     {
-      lf_->jacobianLocal( en, x , ret );
+      localFunc().jacobianLocal( en, x , ret );
     }
 
     //! sum over all local base functions evaluated on given point x
     template <class EntityType>
     void jacobian(EntityType& en, const DomainType& x, JacobianRangeType& ret) const
     {
-      lf_->jacobian( en, x, ret);
+      localFunc().jacobian( en, x, ret);
     }
 
     //! update local function for given Entity
@@ -223,9 +225,26 @@ namespace Dune {
     template <class EntityType >
     void init ( const EntityType &en ) const
     {
-      lf_->init(en);
+      localFunc().init(en);
     }
 
+  private:
+    LocalFunctionImp & localFunc() { return *lf_; }
+    const LocalFunctionImp & localFunc() const { return *lf_; }
+
+    //! method remove the obj by using the storage
+    void removeObj ()
+    {
+      int & refCount = *(obj_->second);
+      assert( refCount > 0);
+      // the second counter is left at a value of 1, so we dont have to
+      // initialize when getting the object again
+      if( refCount == 1) {
+        storage_->freeObject ( obj_ );
+      }
+      else
+        --refCount;
+    }
   }; // end LocalFunctionWrapper
 
 } // end namespace Dune
