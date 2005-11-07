@@ -17,6 +17,52 @@ namespace Dune
    *
    * @{
    */
+
+  /**
+   * @brief Just an empty class
+   */
+  struct Empty {};
+
+  /**
+   * @brief General type traits class to check whether type is reference or
+   * pointer type
+   */
+  template <typename T>
+  class TypeTraits
+  {
+  private:
+    template <class U>
+    struct PointerTraits {
+      enum { result = false };
+      typedef Empty PointeeType;
+    };
+
+    template <class U>
+    struct PointerTraits<U*> {
+      enum { result = true };
+      typedef U PointeeType;
+    };
+
+    template <class U> struct ReferenceTraits
+    {
+      enum { result = false };
+      typedef U ReferredType;
+    };
+
+    template <class U> struct ReferenceTraits<U&>
+    {
+      enum { result = true };
+      typedef U ReferredType;
+    };
+
+  public:
+    enum { isPointer = PointerTraits<T>::result };
+    typedef typename PointerTraits<T>::PointeeType PointeeType;
+
+    enum { isReference = ReferenceTraits<T>::result };
+    typedef typename ReferenceTraits<T>::ReferredType ReferredType;
+  };
+
   /**
    * @brief Determines wether a type is const or volatile and provides the
    * unqualified types.
