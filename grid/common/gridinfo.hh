@@ -41,15 +41,15 @@ namespace Dune
               << ")" << std::endl;
 
     // level information
-    for (int level=0; level<=grid.maxLevel(); level++)
-    {
-      std::cout << prefix << "level " << level;
-      for (int cd=0; cd<=dim; cd++)
-      {
-        std::cout << " codim[" << cd << "]=" << grid.size(level,cd);
-      }
-      std::cout << std::endl;
-    }
+    //  for (int level=0; level<=grid.maxLevel(); level++)
+    //    {
+    //          std::cout << prefix << "level " << level;
+    //          for (int cd=0; cd<=dim; cd++)
+    //            {
+    //                  std::cout << " codim[" << cd << "]=" << grid.size(level,cd);
+    //            }
+    //          std::cout << std::endl;
+    //    }
 
     // leaf information
     std::cout << prefix << "leaf   ";
