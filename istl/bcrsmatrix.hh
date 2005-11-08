@@ -926,12 +926,18 @@ namespace Dune {
         DUNE_THROW(ISTLError,"matrix already built up");
 
       // check if there are undefined indices
-      for (size_type k=0; k<nnz; k++)
-        if (j[k]<0 || j[k]>=m)
-        {
-          std::cout << "j[" << k << "]=" << j[k] << std::endl;
-          DUNE_THROW(ISTLError,"undefined index detected");
-        }
+      RowIterator endi=end();
+      for (RowIterator i=begin(); i!=endi; ++i)
+      {
+        ColIterator endj = (*i).end();
+        for (ColIterator j=(*i).begin(); j!=endj; ++j)
+          if (j.index()<0 || j.index()>=m)
+          {
+            std::cout << "j[" << j.offset() << "]=" << j.index() << std::endl;
+            DUNE_THROW(ISTLError,"undefined index detected");
+          }
+      }
+
       // if not, set matrix to ready
       ready = true;
     }
