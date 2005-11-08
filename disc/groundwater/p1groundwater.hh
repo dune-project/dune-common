@@ -5,6 +5,7 @@
 #ifndef DUNE_P1GROUNDWATER_HH
 #define DUNE_P1GROUNDWATER_HH
 
+#include <map>
 #include <iostream>
 #include <iomanip>
 
@@ -297,7 +298,7 @@ namespace Dune
     /*! Access elements of the local stiffness matrix. Elements are
        undefined without prior call to the assemble method.
      */
-    RT mat (int i, int j) const
+    RT& mat (int i, int j)
     {
       return A[i][j];
     }
@@ -306,7 +307,7 @@ namespace Dune
     /*! Access elements of the right hand side vector. Elements are
        undefined without prior call to the assemble method.
      */
-    RT rhs (int i) const
+    RT& rhs (int i)
     {
       return b[i];
     }
@@ -490,6 +491,7 @@ namespace Dune
     typedef typename G::template Codim<0>::Entity Entity;
     typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
     typedef typename G::template Codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename G::template Codim<0>::HierarchicIterator HierarchicIterator;
     typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
     typedef typename P1FEFunction<G,RT,IS>::RepresentationType VectorType;
     typedef typename AssembledP1FEOperator<G,RT,IS>::RepresentationType MatrixType;
@@ -513,6 +515,17 @@ namespace Dune
       std::vector<unsigned char> essential(this->vertexmapper.size());
       for (int i=0; i<essential.size(); i++) essential[i] = GroundwaterEquationParameters<G,RT>::neumann;
 
+      // allocate flag vector to note hanging nodes whose row has been assembled
+      std::vector<unsigned char> treated(this->vertexmapper.size());
+      for (int i=0; i<treated.size(); i++) treated[i] = false;
+
+      // hanging node stuff
+      RT alpha[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize][Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+
+      // local to global id mapping (do not ask vertex mapper repeatedly
+      int l2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+      int fl2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+
       // run over all leaf elements
       Iterator eendit = this->is.template end<0,All_Partition>();
       for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
@@ -522,34 +535,200 @@ namespace Dune
         const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
         sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
 
+        // get local to global id map
+        for (int k=0; k<sfs.size(); k++)
+        {
+          if (sfs[k].codim()!=n) DUNE_THROW(MathError,"expected codim==dim");
+          int alpha = this->vertexmapper.template map<n>(*it,sfs[k].entity());
+          l2g[k] = alpha;
+        }
+
         // build local stiffness matrix for P1 elements
         // inludes rhs and boundary condition information
         loc.assemble(*it,1);           // assemble local stiffness matrix
 
-        // accumulate local matrix into global matrix
-        for (int i=0; i<sfs.size(); i++)           // loop over rows
+        // assemble constraints in hanging nodes
+        // as a by-product determine the interpolation factors WITH RESPECT TO NODES OF FATHER
+        bool hasHangingNodes = false;
+        for (int k=0; k<sfs.size(); k++)           // loop over rows, i.e. test functions
         {
-          if (sfs[i].codim()!=n) DUNE_THROW(MathError,"expected codim=dim");
-          int alpha = this->vertexmapper.template map<n>(*it,sfs[i].entity());
+          // process only hanging nodes
+          if (!this->hanging[l2g[k]]) continue;
+          hasHangingNodes = true;
+
+          // determine position of hanging node in father
+          EEntityPointer father=it->father();                 // the father element
+          GeometryType gtf = father->geometry().type();                 // fathers type
+          assert(gtf==gt);                 // in hanging node refinement the element type is preserved
+          const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[k].position();
+          FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                 // map corner to father element
+
+          // evaluate interpolation factors and local to global mapping for father
+          for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++i)
+          {
+            alpha[i][k] = Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1)[i].evaluateFunction(0,pos);
+            fl2g[i] = this->vertexmapper.template map<n>(*father,i);
+          }
+
+          // assemble the constraint row once
+          if (!treated[l2g[k]])
+          {
+            bool throwflag=false;
+            int cnt=0;
+            for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++i)
+              if (std::abs(alpha[i][k])>1E-4)
+              {
+                if (this->hanging[fl2g[i]])
+                {
+                  std::cout << "X i=" << father->geometry()[i]
+                            << " k=" << it->geometry()[k]
+                            << " alpha=" << alpha[i][k]
+                            << " cnt=" << ++cnt
+                            << std::endl;
+                  throwflag = true;
+                }
+                this->A[l2g[k]][fl2g[i]] = -alpha[i][k];
+              }
+            if (false)
+              DUNE_THROW(GridError,"hanging node interpolated from hanging node");
+            this->A[l2g[k]][l2g[k]] = 1;
+            (*f)[l2g[k]] = 0;
+            treated[l2g[k]] = true;
+          }
+        }
+
+        // accumulate local matrix into global matrix for non-hanging nodes
+        for (int i=0; i<sfs.size(); i++)           // loop over rows, i.e. test functions
+        {
+          // process only non-hanging nodes
+          if (this->hanging[l2g[i]]) continue;
 
           // accumulate matrix
           for (int j=0; j<sfs.size(); j++)
           {
-            if (sfs[j].codim()!=n) DUNE_THROW(MathError,"expected codim=dim");
-            int beta = this->vertexmapper.template map<n>(*it,sfs[j].entity());
-            this->A[alpha][beta] += loc.mat(i,j);
+            // process only non-hanging nodes
+            if (this->hanging[l2g[j]]) continue;
+
+            // the standard entry
+            this->A[l2g[i]][l2g[j]] += loc.mat(i,j);
           }
 
           // accumulate essential boundary condition
-          if (loc.bc(i)>essential[alpha])
+          if (loc.bc(i)>essential[l2g[i]])
           {
-            essential[alpha] = loc.bc(i);
-            (*f)[alpha] = loc.rhs(i);
+            essential[l2g[i]] = loc.bc(i);
+            (*f)[l2g[i]] = loc.rhs(i);
           }
 
           // accumulate rhs
-          if (essential[alpha]==GroundwaterEquationParameters<G,RT>::neumann)
-            (*f)[alpha] += loc.rhs(i);
+          if (essential[l2g[i]]==GroundwaterEquationParameters<G,RT>::neumann)
+            (*f)[l2g[i]] += loc.rhs(i);
+        }
+
+        // add corrections for hanging nodes
+        if (hasHangingNodes)
+        {
+          // a map that inverts l2g
+          std::map<int,int> g2l;
+          for (int i=0; i<sfs.size(); i++)
+            g2l[l2g[i]] = i;
+
+          // a map that inverts fl2g
+          std::map<int,int> fg2l;
+          for (int i=0; i<sfs.size(); i++)
+            fg2l[fl2g[i]] = i;
+
+          EEntityPointer father=it->father();                 // DEBUG
+
+          // loop over nodes (rows) in father, assume father has same geometry type
+          for (int i=0; i<sfs.size(); ++i)
+          {
+            // corrections to matrix
+            // loop over all nodes (columns) in father, assume father has same geometry type
+            for (int j=0; j<sfs.size(); ++j)
+            {
+              // loop over hanging nodes
+              for (int k=0; k<sfs.size(); k++)
+              {
+                // process only hanging nodes
+                if (!this->hanging[l2g[k]]) continue;
+
+                // first term, with i a coarse vertex
+                if ( std::abs(alpha[j][k])>1E-4 && g2l.find(fl2g[i])!=g2l.end() )
+                {
+                  //                                                      std::cout << "term 1a"
+                  //                                                                            << " i=" << father->geometry()[i]
+                  //                                                                            << " j=" << father->geometry()[j]
+                  //                                                                            << " k=" << it->geometry()[k]
+                  //                                                                            << std::endl;
+                  this->A[fl2g[i]][fl2g[j]] += alpha[j][k]*loc.mat(g2l[fl2g[i]],k);
+                }
+
+                // first term, with i a fine non-hanging vertex
+                if ( std::abs(alpha[j][k])>1E-4 && fg2l.find(l2g[i])==fg2l.end() && !this->hanging[l2g[i]])
+                {
+                  //                                                      std::cout << "term 1b"
+                  //                                                                            << " i=" << it->geometry()[i]
+                  //                                                                            << " j=" << father->geometry()[j]
+                  //                                                                            << " k=" << it->geometry()[k]
+                  //                                                                            << " gi=" << l2g[i] << " gj=" << fl2g[j]
+                  //                                                                            << std::endl;
+                  this->A[l2g[i]][fl2g[j]] += alpha[j][k]*loc.mat(i,k);
+                }
+
+                // second term, with j a coarse vertex
+                if ( std::abs(alpha[i][k])>1E-4 && g2l.find(fl2g[j])!=g2l.end() )
+                {
+                  //                                                      std::cout << "term 2a"
+                  //                                                                            << " i=" << father->geometry()[i]
+                  //                                                                            << " j=" << father->geometry()[j]
+                  //                                                                            << " k=" << it->geometry()[k]
+                  //                                                                            << std::endl;
+                  this->A[fl2g[i]][fl2g[j]] += alpha[i][k]*loc.mat(k,g2l[fl2g[j]]);
+                }
+
+                // second term, with j a fine non-hanging vertex
+                if ( std::abs(alpha[i][k])>1E-4 && fg2l.find(l2g[j])==fg2l.end() && !this->hanging[l2g[j]])
+                {
+                  //                                                      std::cout << "term 2b"
+                  //                                                                            << " i=" << father->geometry()[i]
+                  //                                                                            << " j=" << it->geometry()[j]
+                  //                                                                            << " k=" << it->geometry()[k]
+                  //                                                                            << std::endl;
+                  this->A[fl2g[i]][l2g[j]] += alpha[i][k]*loc.mat(k,j);
+                }
+
+                // third term, loop over hanging nodes
+                for (int l=0; l<sfs.size(); l++)
+                {
+                  // process only hanging nodes
+                  if (!this->hanging[l2g[l]]) continue;
+
+                  if ( std::abs(alpha[i][k])>1E-4 && std::abs(alpha[j][l])>1E-4 )
+                  {
+                    //                                                            std::cout << "term 3"
+                    //                                                                                  << " i=" << father->geometry()[i]
+                    //                                                                                  << " j=" << father->geometry()[j]
+                    //                                                                                  << " k=" << it->geometry()[k]
+                    //                                                                                  << " l=" << it->geometry()[l]
+                    //                                                                                  << std::endl;
+                    this->A[fl2g[i]][fl2g[j]] += alpha[i][k]*alpha[j][l]*loc.mat(k,l);
+                  }
+                }
+              }
+            }
+
+            // corrections to rhs
+            if (essential[fl2g[i]]==GroundwaterEquationParameters<G,RT>::neumann)
+              for (int k=0; k<sfs.size(); k++)
+              {
+                // process only hanging nodes
+                if (!this->hanging[l2g[k]]) continue;
+
+                if ( std::abs(alpha[i][k])>1E-4 && loc.bc(k)==GroundwaterEquationParameters<G,RT>::neumann )
+                  (*f)[fl2g[i]] += alpha[i][k]*loc.rhs(k);
+              }
+          }
         }
       }
 
@@ -558,7 +737,7 @@ namespace Dune
       rowiterator endi=this->A.end();
       for (rowiterator i=this->A.begin(); i!=endi; ++i)
       {
-        if (essential[i.index()]!=GroundwaterEquationParameters<G,RT>::neumann)
+        if (!this->hanging[i.index()] && essential[i.index()]!=GroundwaterEquationParameters<G,RT>::neumann)
         {
           coliterator endj=(*i).end();
           for (coliterator j=(*i).begin(); j!=endj; ++j)
@@ -675,7 +854,83 @@ namespace Dune
       }
     }
 
+    void preMark ()
+    {
+      marked.resize(this->vertexmapper.size());
+      for (int i=0; i<marked.size(); i++) marked[i] = false;
+      return;
+    }
+
+    void postMark (G& g)
+    {
+      // run over all leaf elements
+      Iterator eendit = this->is.template end<0,All_Partition>();
+      for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        // get access to shape functions for P1 elements
+        Dune::GeometryType gt = it->geometry().type();
+        if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) continue;
+
+        const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+        sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
+
+        // count nodes with mark
+        int count=0;
+        for (int k=0; k<sfs.size(); k++)
+        {
+          int alpha = this->vertexmapper.template map<n>(*it,sfs[k].entity());
+          if (marked[alpha]) count++;
+        }
+
+        // refine if a marked edge exists
+        if (count>1) {
+          std::cout << "extra mark" << std::endl;
+          g.mark(1,it);
+        }
+      }
+
+      marked.clear();
+      return;
+    }
+
+    void mark (G& g, EEntityPointer& it)
+    {
+      // refine this element
+      g.mark(1,it);
+
+      // check geom type, exit if not simplex
+      Dune::GeometryType gt = it->geometry().type();
+      if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) return;
+      assert(it->isLeaf());
+
+      // determine if element has hanging nodes
+      bool hasHangingNodes = false;
+      const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+      sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
+      for (int k=0; k<sfs.size(); k++)     // loop over rows, i.e. test functions
+        if (this->hanging[this->vertexmapper.template map<n>(*it,sfs[k].entity())])
+        {
+          hasHangingNodes = true;
+          break;
+        }
+
+      // if no hanging nodes we are done
+      if (!hasHangingNodes) return;
+
+      // mark all corners of father
+      EEntityPointer father=it->father();
+      for (int k=0; k<sfs.size(); k++)     // same geometry type ...
+      {
+        int alpha=this->vertexmapper.template map<n>(*father,k);
+        marked[alpha] = true;
+      }
+
+      return;
+    }
+
+
   private:
+    std::vector<bool> marked;
     LagrangeFEMForGroundwaterEquation<G,RT> loc;
   };
 

@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <vector>
+#include <set>
+#include <map>
 #include <stdio.h>
 #include <stdlib.h>
 #include "common/fvector.hh"
@@ -33,12 +35,30 @@ namespace Dune
    *
    */
 
+  struct P1FEOperatorLink
+  {
+    int first,second;
+    P1FEOperatorLink (int a, int b) : first(a),second(b) {}
+    bool operator< (const P1FEOperatorLink& x) const
+    {
+      if (first<x.first) return true;
+      if (first==x.first && second<x.second) return true;
+      return false;
+    }
+    bool operator== (const P1FEOperatorLink& x) const
+    {
+      if (first==x.first && second==x.second) return true;
+      return false;
+    }
+  };
+
   // template meta program for inserting indices
   template<int n, int c>
   struct P1FEOperator_meta {
     template<class Entity, class VMapper, class AMapper, class Refelem, class Matrix>
     static void addrowscube (const Entity& e, const VMapper& vertexmapper, const AMapper& allmapper,
-                             const Refelem& refelem, Matrix& A, std::vector<bool>& visited)
+                             const Refelem& refelem, Matrix& A, std::vector<bool>& visited,
+                             int hangingnodes, std::set<P1FEOperatorLink>& links)
     {
       for (int i=0; i<refelem.size(c); i++)     // loop over subentities of codim c of e
       {
@@ -52,11 +72,18 @@ namespace Dune
             int beta = vertexmapper.template map<n>(e,refelem.subEntity(i,c,corners-1-j,n));
             A.incrementrowsize(alpha);
             A.incrementrowsize(beta);
+            if (hangingnodes>0)                       // delete standard links
+            {
+              links.erase(P1FEOperatorLink(alpha,beta));
+              links.erase(P1FEOperatorLink(beta,alpha));
+            }
+            //                            printf("increment row %04d\n",alpha);
+            //                            printf("increment row %04d\n",beta);
           }
           visited[index] = true;
         }
       }
-      P1FEOperator_meta<n,c-1>::addrowscube(e,vertexmapper,allmapper,refelem,A,visited);
+      P1FEOperator_meta<n,c-1>::addrowscube(e,vertexmapper,allmapper,refelem,A,visited,hangingnodes,links);
       return;
     }
     template<class Entity, class VMapper, class AMapper, class Refelem, class Matrix>
@@ -75,8 +102,8 @@ namespace Dune
             int beta = vertexmapper.template map<n>(e,refelem.subEntity(i,c,corners-1-j,n));
             A.addindex(alpha,beta);
             A.addindex(beta,alpha);
-            //                            std::cout << "adding (" << alpha << "," << beta << ")" << std::endl;
-            //                            std::cout << "adding (" << beta << "," << alpha << ")" << std::endl;
+            //                            printf("adding (%04d,%04d) index=%04d\n",alpha,beta,index);
+            //                            printf("adding (%04d,%04d) index=%04d\n",beta,alpha,index);
           }
           visited[index] = true;
         }
@@ -89,7 +116,8 @@ namespace Dune
   struct P1FEOperator_meta<n,0> {
     template<class Entity, class VMapper, class AMapper, class Refelem, class Matrix>
     static void addrowscube (const Entity& e, const VMapper& vertexmapper, const AMapper& allmapper,
-                             const Refelem& refelem, Matrix& A, std::vector<bool>& visited)
+                             const Refelem& refelem, Matrix& A, std::vector<bool>& visited,
+                             int hangingnodes, std::set<P1FEOperatorLink>& links)
     {
       int corners = refelem.size(n);
       for (int j=0; j<corners/2; j++)     // uses fact that diagonals are (0,corners-1), (1,corners-2) ...
@@ -98,6 +126,13 @@ namespace Dune
         int beta = vertexmapper.template map<n>(e,refelem.subEntity(0,0,corners-1-j,n));
         A.incrementrowsize(alpha);
         A.incrementrowsize(beta);
+        if (hangingnodes>0)           // delete standard links
+        {
+          links.erase(P1FEOperatorLink(alpha,beta));
+          links.erase(P1FEOperatorLink(beta,alpha));
+        }
+        //                printf("increment row %04d\n",alpha);
+        //                printf("increment row %04d\n",beta);
       }
       return;
     }
@@ -112,8 +147,8 @@ namespace Dune
         int beta = vertexmapper.template map<n>(e,refelem.subEntity(0,0,corners-1-j,n));
         A.addindex(alpha,beta);
         A.addindex(beta,alpha);
-        //                                std::cout << "adding (" << alpha << "," << beta << ")" << std::endl;
-        //                                std::cout << "adding (" << beta << "," << alpha << ")" << std::endl;
+        //                printf("adding (%04d,%04d)\n",alpha,beta);
+        //                printf("adding (%04d,%04d)\n",beta,alpha);
       }
       return;
     }
@@ -148,6 +183,9 @@ namespace Dune
         //		  std::cout << "nnz cubes codim " << c << " is " << g.size(c,cube) << std::endl;
       }
 
+      // hanging node correction
+      s += links.size();
+
       return s;
     }
 
@@ -172,16 +210,138 @@ namespace Dune
       }
     };
 
+    // extra initialization function
+    // 1) determine hanging nodes as described in the paper
+    // 2) generate a set with additional links
+    //    The standard links are deleted later on
+    bool init (const G& g, const IS& indexset)
+    {
+      std::cout << "calling init" << std::endl;
+
+      // resize the S vector needed for detecting hanging nodes
+      hanging.resize(vertexmapper.size());
+      std::vector<unsigned char> S(vertexmapper.size());
+      for (int i=0; i<vertexmapper.size(); i++)
+      {
+        S[i] = 100;           // the number of levels never exceeds 100 ...
+        hanging[i] = false;
+      }
+
+      // LOOP 1 : Prepare hanging node detection
+      Iterator eendit = indexset.template end<0,All_Partition>();
+      for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        Dune::GeometryType gt = it->geometry().type();
+        const typename Dune::ReferenceElementContainer<DT,n>::value_type&
+        refelem = ReferenceElements<DT,n>::general(gt);
+
+        // compute S value in vertex
+        for (int i=0; i<refelem.size(n); i++)
+        {
+          int alpha = vertexmapper.template map<n>(*it,i);
+          if (S[alpha]>it->level()) S[alpha] = it->level();                 // compute minimum
+        }
+      }
+
+      // LOOP 2 : second stage of detecting hanging nodes
+      for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        Dune::GeometryType gt = it->geometry().type();
+        const typename Dune::ReferenceElementContainer<DT,n>::value_type&
+        refelem = ReferenceElements<DT,n>::general(gt);
+
+        // detect hanging nodes
+        IntersectionIterator endiit = it->iend();
+        for (IntersectionIterator iit = it->ibegin(); iit!=endiit; ++iit)
+          if (iit.neighbor())
+          {
+            // check if neighbor is on lower level
+            const EEntityPointer outside = iit.outside();
+            if (it->level()<=outside->level()) continue;
+
+            // loop over all vertices of this face
+            for (int j=0; j<refelem.size(iit.numberInSelf(),1,n); j++)
+            {
+              int alpha = vertexmapper.template map<n>(*it,refelem.subEntity(iit.numberInSelf(),1,j,n));
+              if (S[alpha]==it->level())
+                hanging[alpha] = true;
+            }
+          }
+      }
+
+      // local to global maps
+      int l2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+      int fl2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+
+      // LOOP 3 : determine additional links due to hanging nodes
+      for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        Dune::GeometryType gt = it->geometry().type();
+        const typename Dune::ReferenceElementContainer<DT,n>::value_type&
+        refelem = ReferenceElements<DT,n>::general(gt);
+
+        // build local to global map
+        bool hasHangingNodes = false;           // flag set to true if this element has hanging nodes
+        for (int i=0; i<refelem.size(n); i++)
+        {
+          l2g[i] = vertexmapper.template map<n>(*it,i);
+          if (hanging[l2g[i]]) hasHangingNodes=true;
+        }
+        if (!hasHangingNodes) continue;
+
+        // handle father element if hanging nodes were detected
+        // get father element
+        const EEntityPointer father = it->father();
+
+        // build local to global map for father
+        for (int i=0; i<refelem.size(n); i++)
+          fl2g[i] = vertexmapper.template map<n>(*father,i);
+
+        // a map that inverts l2g
+        std::map<int,int> g2l;
+        for (int i=0; i<refelem.size(n); i++)
+          g2l[l2g[i]] = i;
+
+        // connect all fine nodes to all coarse nodes
+        for (int i=0; i<refelem.size(n); i++)           // nodes in *it
+          for (int j=0; j<refelem.size(n); j++)               // nodes in *father
+            if (g2l.find(fl2g[j])==g2l.end())
+            {
+              links.insert(P1FEOperatorLink(l2g[i],fl2g[j]));
+              links.insert(P1FEOperatorLink(fl2g[j],l2g[i]));
+              //                                  std::cout << "link" << " gi=" << l2g[i] << " gj=" << fl2g[j] << std::endl;
+              //                                  std::cout << "link" << " gi=" << fl2g[j] << " gj=" << l2g[i] << std::endl;
+            }
+      }
+
+      // Note: links contains now also connections that are standard.
+      // So below we have throw out these connections again!
+
+      // count hanging nodes, can be used whether grid has hanging nodes at all
+      hangingnodes = 0;
+      for (int i=0; i<vertexmapper.size(); i++)
+        if (hanging[i]) hangingnodes++;
+      std::cout << "hanging nodes=" << hangingnodes
+                << " links=" << links.size()
+                << std::endl;
+
+      return true;
+    }
 
   public:
     // export type used to store the matrix
     typedef BCRSMatrix<FieldMatrix<RT,1,1> > RepresentationType;
 
     AssembledP1FEOperator (const G& g, const IS& indexset)
-      : grid(g),is(indexset),A(g.size(n),g.size(n),nnz(indexset),RepresentationType::random),
-        vertexmapper(g,indexset),allmapper(g,indexset)
+      : grid(g),is(indexset),vertexmapper(g,indexset),allmapper(g,indexset),links(),
+        initialized(init(g,indexset)),A(g.size(n),g.size(n),nnz(indexset),RepresentationType::random)
+
     {
+      // be verbose
       std::cout << "making " << g.size(n) << "x" << g.size(n) << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
+      std::cout << "allmapper has size " << allmapper.size() << std::endl;
+      std::cout << "vertexmapper has size " << vertexmapper.size() << std::endl;
+
       // set size of all rows to zero
       for (int i=0; i<g.size(n); i++)
         A.setrowsize(i,0);
@@ -190,16 +350,7 @@ namespace Dune
       std::vector<bool> visited(allmapper.size());
       for (int i=0; i<allmapper.size(); i++) visited[i] = false;
 
-      // resize the S vector needed for detecting hanging nodes
-      std::vector<unsigned char> S(vertexmapper.size());
-      hanging.resize(vertexmapper.size());
-      for (int i=0; i<vertexmapper.size(); i++)
-      {
-        S[i] = 100;           // the number of levels never exceeds 100 ...
-        hanging[i] = false;
-      }
-
-      // LOOP I : handle each element and compute row sizes
+      // LOOP 4 : Compute row sizes
       Iterator eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
@@ -216,10 +367,8 @@ namespace Dune
           {
             A.incrementrowsize(alpha);
             visited[index] = true;
-            //				  printf("increment row %04d\n",alpha);
-            //				  std::cout << "increment row " << alpha << std::endl;
+            //                            printf("increment row %04d\n",alpha);
           }
-          if (S[alpha]>it->level()) S[alpha] = it->level();                 // compute minimum
         }
 
         // edges for all element types, c=n-1
@@ -233,46 +382,51 @@ namespace Dune
             A.incrementrowsize(alpha);
             A.incrementrowsize(beta);
             visited[index] = true;
-            //				  printf("increment row %04d\n",alpha);
-            //				  printf("increment row %04d\n",beta);
-            //				  std::cout << "increment row " << alpha << std::endl;
-            //				  std::cout << "increment row " << beta << std::endl;
+            if (hangingnodes>0)                       // delete standard links
+            {
+              links.erase(P1FEOperatorLink(alpha,beta));
+              links.erase(P1FEOperatorLink(beta,alpha));
+            }
+            //                            printf("increment row %04d\n",alpha);
+            //                            printf("increment row %04d\n",beta);
           }
         }
 
         // for codim n-2 to 0 we need a template metaprogram
         if (gt==Dune::cube)
-          P1FEOperator_meta<n,n-2>::addrowscube(*it,vertexmapper,allmapper,refelem,A,visited);
+          P1FEOperator_meta<n,n-2>::addrowscube(*it,vertexmapper,allmapper,refelem,A,visited,hangingnodes,links);
       }
+
+      // additional links due to hanging nodes
+      std::cout << "now links=" << links.size() << std::endl;
+      for (typename std::set<P1FEOperatorLink>::iterator i=links.begin(); i!=links.end(); ++i)
+        A.incrementrowsize(i->first);
 
       // now the row sizes have been set
       A.endrowsizes();
 
-      // clear the flags for the next round
+      // clear the flags for the next round, actually that is not necessary because addindex takes care of this
       for (int i=0; i<allmapper.size(); i++) visited[i] = false;
-      std::cout << "allmapper has size " << allmapper.size() << std::endl;
-      std::cout << "vertexmapper has size " << vertexmapper.size() << std::endl;
 
-      // LOOP II : handle each leaf element and insert the nonzeros
-      //	  eendit = is.template end<0,All_Partition>();
+      // LOOP 5 : insert the nonzeros
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
         Dune::GeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
         //                std::cout << "ELEM " << GeometryName(gt) << std::endl;
+
         // vertices, c=n
         for (int i=0; i<refelem.size(n); i++)
         {
           int index = allmapper.template map<n>(*it,i);
+          int alpha = vertexmapper.template map<n>(*it,i);
           //                      std::cout << "vertex allindex " << index << std::endl;
           if (!visited[index])
           {
-            int alpha = vertexmapper.template map<n>(*it,i);
             A.addindex(alpha,alpha);
             visited[index] = true;
-            //				  printf("adding (%04d,%04d) index=%04d\n",alpha,alpha,index);
-            //				  std::cout << "adding (" << alpha << "," << alpha << ")" << std::endl;
+            //                            printf("adding (%04d,%04d) index=%04d\n",alpha,alpha,index);
           }
         }
 
@@ -288,44 +442,27 @@ namespace Dune
             A.addindex(alpha,beta);
             A.addindex(beta,alpha);
             visited[index] = true;
-            //				  printf("adding (%04d,%04d) index=%04d\n",alpha,beta,index);
-            //				  printf("adding (%04d,%04d) index=%04d\n",beta,alpha,index);
-            //                            std::cout << "adding (" << alpha << "," << beta << ")" << std::endl;
-            //                            std::cout << "adding (" << beta << "," << alpha << ")" << std::endl;
+            //                            printf("adding (%04d,%04d) index=%04d\n",alpha,beta,index);
+            //                            printf("adding (%04d,%04d) index=%04d\n",beta,alpha,index);
           }
         }
 
         // for codim n-2 to 0 we need a template metaprogram
         if (gt==Dune::cube)
           P1FEOperator_meta<n,n-2>::addindicescube(*it,vertexmapper,allmapper,refelem,A,visited);
-
-        // detect hanging nodes
-        IntersectionIterator endiit = it->iend();
-        for (IntersectionIterator iit = it->ibegin(); iit!=endiit; ++iit)
-          if (iit.neighbor())
-          {
-            // check if neighbor is on lower level
-            const EEntityPointer outside = iit.outside();
-            if (it->level()<=outside->level()) continue;
-
-            // loop over all vertices of this face
-            for (int j=0; j<refelem.size(iit.numberInSelf(),1,n); j++)
-            {
-              int alpha = vertexmapper.template map<n>(*it,refelem.subEntity(iit.numberInSelf(),1,j,n));
-              if (S[alpha]==it->level()) hanging[alpha] = true;
-            }
-          }
       }
+
+      // additional links due to hanging nodes
+      for (typename std::set<P1FEOperatorLink>::iterator i=links.begin(); i!=links.end(); ++i)
+        A.addindex(i->first,i->second);
 
       // now the matrix is ready for use
       A.endindices();
 
-      // count hanging nodes
-      int hangingnodes = 0;
-      for (int i=0; i<vertexmapper.size(); i++)
-        if (hanging[i]) hangingnodes++;
+      // delete additional links
+      links.clear();
 
-      std::cout << "matrix initialized: " << hangingnodes << " hanging nodes detected" << std::endl;
+      std::cout << "matrix initialized" << std::endl;
     }
 
     //! return const reference to coefficient vector
@@ -343,10 +480,13 @@ namespace Dune
   protected:
     const G& grid;
     const IS& is;
-    RepresentationType A;
     MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout> vertexmapper;
     MultipleCodimMultipleGeomTypeMapper<G,IS,AllLayout> allmapper;
     std::vector<bool> hanging;
+    std::set<P1FEOperatorLink> links;
+    int hangingnodes;
+    bool initialized;
+    RepresentationType A;
   };
 
 
