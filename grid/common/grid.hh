@@ -463,7 +463,7 @@ namespace Dune {
       template<class> class HierarchicIteratorImp,
       template<int,PartitionIteratorType,class> class LeafIteratorImp,
       class LevelIndexSetImp, class LevelIndexSetTypes, class LeafIndexSetImp, class LeafIndexSetTypes,
-      class GlobalIdSetImp, class GlobalIdType, class LocalIdSetImp, class LocalIdType>
+      class GlobalIdSetImp, class GIDType, class LocalIdSetImp, class LIDType>
   struct GridTraits
   {
     typedef GridImp Grid;
@@ -498,15 +498,15 @@ namespace Dune {
 
     typedef IndexSet<GridImp,LevelIndexSetImp,LevelIndexSetTypes> LevelIndexSet;
     typedef IndexSet<GridImp,LeafIndexSetImp,LeafIndexSetTypes> LeafIndexSet;
-    typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
-    typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
+    typedef IdSet<GridImp,GlobalIdSetImp,GIDType> GlobalIdSet;
+    typedef IdSet<GridImp,LocalIdSetImp,LIDType> LocalIdSet;
   };
 
   /*! \internal
         Used for grid I/O
    */
   enum GridIdentifier { SGrid_Id, AlbertaGrid_Id , SimpleGrid_Id, UGGrid_Id,
-                        YaspGrid_Id , ALU3dGrid_Id, OneDGrid_Id};
+                        YaspGrid_Id , ALU3dGrid_Id, OneDGrid_Id };
 
   //! provide names for the different grid types
   inline std::string transformToGridName(GridIdentifier type)
