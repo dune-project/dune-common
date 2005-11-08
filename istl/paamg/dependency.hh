@@ -125,7 +125,7 @@ namespace Dune
       friend std::ostream& operator<<(std::ostream& os, const VertexProperties& props);
 
     private:
-      enum { ISOLATED, VISITED, FRONT, EXCLUDED, SIZE };
+      enum { ISOLATED, VISITED, FRONT, /* EXCLUDED, */ SIZE };
 
       /** @brief The attribute flags. */
       std::bitset<SIZE> flags_;
@@ -440,22 +440,22 @@ namespace Dune
     {
       flags_.reset(FRONT);
     }
+    /*
+       inline void VertexProperties::setExcluded()
+       {
+       flags_.set(EXCLUDED);
+       }
 
-    inline void VertexProperties::setExcluded()
-    {
-      flags_.set(EXCLUDED);
-    }
+       inline bool VertexProperties::excluded() const
+       {
+       return  flags_.test(EXCLUDED);
+       }
 
-    inline bool VertexProperties::excluded() const
-    {
-      return flags_.test(EXCLUDED);
-    }
-
-    inline void VertexProperties::resetExcluded()
-    {
-      flags_.reset(EXCLUDED);
-    }
-
+       inline void VertexProperties::resetExcluded()
+       {
+       flags_.reset(EXCLUDED);
+       }
+     */
     inline void VertexProperties::reset()
     {
       flags_=0;
