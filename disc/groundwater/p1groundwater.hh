@@ -589,10 +589,11 @@ namespace Dune
                 }
                 this->A[l2g[k]][fl2g[i]] = 0;                                 //-alpha[i][k]; TEST ...
               }
-            if (false)
+            if (throwflag)
               DUNE_THROW(GridError,"hanging node interpolated from hanging node");
             this->A[l2g[k]][l2g[k]] = 1;
             (*f)[l2g[k]] = 0;
+            (*u)[l2g[k]] = 0;
             treated[l2g[k]] = true;
           }
         }
@@ -908,12 +909,13 @@ namespace Dune
     void postMark (G& g)
     {
       // run over all leaf elements
+      int extra=0;
       Iterator eendit = this->is.template end<0,All_Partition>();
       for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
         // get access to shape functions for P1 elements
         Dune::GeometryType gt = it->geometry().type();
-        if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) continue;
+        //		  if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) continue;
 
         const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
         sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
@@ -928,11 +930,12 @@ namespace Dune
 
         // refine if a marked edge exists
         if (count>1) {
-          std::cout << "extra mark" << std::endl;
+          extra++;
           g.mark(1,it);
         }
       }
 
+      std::cout << "placed " << extra << " extra marks" << std::endl;
       marked.clear();
       return;
     }
@@ -944,7 +947,7 @@ namespace Dune
 
       // check geom type, exit if not simplex
       Dune::GeometryType gt = it->geometry().type();
-      if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) return;
+      //if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) return;
       assert(it->isLeaf());
 
       // determine if element has hanging nodes
