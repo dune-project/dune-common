@@ -695,6 +695,7 @@ namespace Dune {
 
     typedef ALU3dImplTraits<GridImp::elementType> ImplTraits;
     typedef typename ImplTraits::GEOElementType GEOElementType;
+    typedef typename ImplTraits::IMPLElementType IMPLElementType;
     typedef typename ImplTraits::GEOFaceType GEOFaceType;
     typedef typename ImplTraits::NeighbourPairType NeighbourPairType;
     typedef typename ImplTraits::PLLBndFaceType PLLBndFaceType;
@@ -702,6 +703,12 @@ namespace Dune {
 
     typedef ALU3dGridFaceInfo<GridImp::elementType> FaceInfoType;
     typedef typename std::auto_ptr<FaceInfoType> FaceInfoPointer;
+
+    typedef typename SelectType<
+        SameType<Int2Type<tetra>, Int2Type<GridImp::elementType> >::value,
+        ALU3dGridGeometricFaceInfoTetra,
+        ALU3dGridGeometricFaceInfoHexa
+        >::Type GeometryInfoType;
 
     typedef ALU3dGridGeometricFaceInfo<GridImp::elementType> GeometryInfoType;
     typedef ElementTopologyMapping<GridImp::elementType> ElementTopo;
@@ -713,6 +720,7 @@ namespace Dune {
     enum { numVertices = EntityCount<GridImp::elementType>::numVertices };
 
     friend class ALU3dGridEntity<0,dim,GridImp>;
+    friend class IntersectionIteratorWrapper<GridImp>;
 
   public:
     typedef typename GridImp::template Codim<0>::Entity Entity;
@@ -730,20 +738,19 @@ namespace Dune {
                                   ALU3DSPACE HElementType *el,
                                   int wLevel,bool end=false);
 
+    ALU3dGridIntersectionIterator(const GridImp & grid,int wLevel);
+
     //! The copy constructor
     ALU3dGridIntersectionIterator(const ALU3dGridIntersectionIterator<GridImp> & org);
 
-    //! The Destructor
-    ~ALU3dGridIntersectionIterator();
+    //! assignment of iterators
+    void assign(const ALU3dGridIntersectionIterator<GridImp> & org);
 
     //! The copy constructor
     bool equals (const ALU3dGridIntersectionIterator<GridImp> & i) const;
 
     //! increment iterator
     void increment ();
-
-    //! equality
-    //bool equals(const ALU3dGridIntersectionIterator<GridImp> & i) const;
 
     //! access neighbor
     EntityPointer outside() const;
@@ -777,6 +784,9 @@ namespace Dune {
     //!  in
     int numberInSelf () const;
 
+    //! access neighbor
+    Entity & neighEntity() const;
+
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
@@ -788,17 +798,20 @@ namespace Dune {
 
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    NormalType unitOuterNormal (const FieldVector<alu3d_ctype, dim-1>& local) const ;
+    NormalType & unitOuterNormal (const FieldVector<alu3d_ctype, dim-1>& local) const ;
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    NormalType outerNormal (const FieldVector<alu3d_ctype, dim-1>& local) const;
+    NormalType & outerNormal (const FieldVector<alu3d_ctype, dim-1>& local) const;
 
     //! return outer normal, this should be dependent on local
     //! coordinates for higher order boundary
-    NormalType integrationOuterNormal (const FieldVector<alu3d_ctype, dim-1>& local) const;
+    NormalType & integrationOuterNormal (const FieldVector<alu3d_ctype, dim-1>& local) const;
 
   private:
+    // set interator to end iterator
+    void done () ;
+
     void outputElementInfo() const;
 
     void outputFaceInfo() const;
@@ -812,15 +825,17 @@ namespace Dune {
     NormalType convert2FV(const alu3d_ctype (&p)[3]) const;
 
     // reset IntersectionIterator to first neighbour
-    void first(ALU3DSPACE HElementType & elem, int wLevel);
+    void setFirstItem(ALU3DSPACE HElementType & elem, int wLevel);
+
+    // reset IntersectionIterator to first neighbour
+    template <class EntityType>
+    void first(const EntityType & en, int wLevel);
 
     // set new face
     void setNewFace(const GEOFaceType& newFace);
 
     // is there a refined element at the outer side of the face which needs to be considered when incrementing the iterator?
     bool canGoDown(const GEOFaceType& nextFace) const;
-
-    void initGeometryProvider() const;
 
     void buildLocalGeometries() const;
 
@@ -835,22 +850,28 @@ namespace Dune {
 
     //! structure containing the topological and geometrical information about
     //! the face which the iterator points to
-    mutable FaceInfoPointer connector_;
-    mutable GeometryInfoType* geoProvider_; // need to initialise
+    mutable FaceInfoType connector_;
+    mutable GeometryInfoType geoProvider_; // need to initialise
 
-    mutable GeometryImp* intersectionGlobal_;
-    mutable GeometryImp* intersectionSelfLocal_;
-    mutable GeometryImp* intersectionNeighborLocal_;
+    mutable GeometryImp intersectionGlobal_;
+    mutable GeometryImp intersectionSelfLocal_;
+    mutable GeometryImp intersectionNeighborLocal_;
 
     //! current element from which we started the intersection iterator
-    mutable GEOElementType* item_;
+    mutable IMPLElementType* item_;
 
-    const int nFaces_;
-    const int walkLevel_;
+    mutable int nFaces_;
+    mutable int walkLevel_;
     mutable int index_;
 
     mutable bool generatedGlobalGeometry_;
     mutable bool generatedLocalGeometries_;
+
+    // unit outer normal
+    mutable NormalType unitOuterNormal_;
+
+    // true if end iterator
+    bool done_;
   };
 
 
