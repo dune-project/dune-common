@@ -48,6 +48,11 @@ namespace Dune
   public:
 
     /**
+     * @brief The size type.
+     */
+    typedef typename A::size_type size_type;
+
+    /**
      * @brief The type we store.
      */
     typedef T MemberType;
@@ -674,7 +679,9 @@ namespace Dune
   {
     assert(current);
 
+#ifndef NDEBUG
     bool changeTail = (current == tail_);
+#endif
 
     // Save old next element
     Element* tmp = current->next_;
