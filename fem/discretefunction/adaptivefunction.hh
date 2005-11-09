@@ -436,8 +436,6 @@ namespace Dune {
     typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
     typedef typename Traits::DofStorageType DofStorageType;
 
-    typedef FieldVector<DofType, dimRange> DofVectorType;
-
   public:
     //- Public methods
     //- Constructors and destructors
@@ -462,29 +460,35 @@ namespace Dune {
     //- Methods
     int numberOfDofs() const DUNE_DEPRECATED;
 
+    //! Number of degrees of freedom
     int numDofs() const;
 
+    //! Evaluation
     template <class EntityType>
     void evaluate(EntityType& en,
                   const DomainType& x,
                   RangeType & ret) const;
 
+    //! Evaluation
     template <class EntityType>
     void evaluateLocal(EntityType& en,
                        const DomainType& x,
                        RangeType & ret) const;
 
+    //! Evaluation
     template <class EntityType, class QuadratureType>
     void evaluate(EntityType& en,
                   QuadratureType& quad,
                   int quadPoint,
                   RangeType & ret) const;
 
+    //! Evaluation
     template <class EntityType>
     void jacobianLocal(EntityType& en,
                        const DomainType& x,
                        JacobianRangeType& ret) const;
 
+    //! Evaluation
     template <class EntityType, class QuadratureType>
     void jacobian(EntityType& en,
                   QuadratureType& quad,
@@ -492,9 +496,11 @@ namespace Dune {
                   JacobianRangeType& ret) const;
 
     //- Additional methods for specialisation
-    void assign(int dofNum, const DofVectorType& dofs);
+    //! Assign a vector of dofs
+    void assign(int dofNum, const RangeType& dofs);
 
-    int numberOfBaseFunctions() const;
+    //! Number of contained scalar base functions
+    int numDifferentBaseFunctions() const;
 
   private:
     //- Private methods

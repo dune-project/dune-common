@@ -67,8 +67,8 @@ namespace Dune {
     enum { myId_ = 0};
 
   public:
-    typedef typename DiscreteFunctionSpaceType::MapperType MapperType;
-    typedef typename DiscreteFunctionSpaceType::RangeFieldType DofType;
+    typedef typename DiscreteFunctionSpaceType::Traits::MapperType MapperType;
+    typedef typename DiscreteFunctionSpaceType::Traits::RangeFieldType DofType;
     typedef typename DofArrayType::DofIteratorType DofIteratorType;
     typedef typename DofArrayType::ConstDofIteratorType ConstDofIteratorType;
 
@@ -243,10 +243,10 @@ namespace Dune {
     enum { dimrange = DiscreteFunctionSpaceType::DimRange };
 
     friend class DFAdapt <DiscreteFunctionSpaceType>;
-    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
-    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
-    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
+    typedef typename DiscreteFunctionSpaceType::Traits::RangeFieldType RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::Traits::DomainType DomainType;
+    typedef typename DiscreteFunctionSpaceType::Traits::RangeType RangeType;
+    typedef typename DiscreteFunctionSpaceType::Traits::JacobianRangeType JacobianRangeType;
 
     typedef typename DiscFuncType::DofArrayType DofArrayType;
   public:
@@ -288,6 +288,8 @@ namespace Dune {
 
     template <class EntityType>
     void jacobian(EntityType& en, const DomainType& x, JacobianRangeType& ret) const;
+
+    void assign(int numDof, const RangeType& dofs);
 
   protected:
     //! update local function for given Entity
