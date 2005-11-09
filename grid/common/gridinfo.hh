@@ -59,6 +59,24 @@ namespace Dune
     }
     std::cout << std::endl;
 
+    std::cout << prefix << "leaf"
+              << " dim=" << dim
+              << " geomTypes=(";
+    bool first=true;
+    for (int c=0; c<=dim; c++)
+    {
+      for (int i=0; i<grid.leafIndexSet().geomTypes(c).size(); i++)
+      {
+        if (!first) std::cout << ",";
+        std::cout << grid.leafIndexSet().geomTypes(c)[i]
+                  << "[" << c << "]"
+                  << "=" << grid.leafIndexSet().size(c,grid.leafIndexSet().geomTypes(c)[i]);
+        first=false;
+      }
+    }
+    std::cout << ")" << std::endl;
+
+
     return;
   }
 
