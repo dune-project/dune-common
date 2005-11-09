@@ -6,6 +6,51 @@
 #include <stack>
 
 namespace Dune {
+
+  //! organize the memory management for entitys used by the NeighborIterator
+  template <class Object>
+  class ALUFastMemoryProvider
+  {
+    static std::stack < Object * > objStack_;
+    typedef ALUFastMemoryProvider < Object > MyType;
+    typedef Object ObjectType;
+
+  public:
+    void * operator new (size_t s);
+    void operator delete (void *obj, size_t s);
+  };
+
+  template <class Object>
+  std::stack< Object * > ALUFastMemoryProvider< Object > :: objStack_;
+
+  template <class Object>
+  inline void *
+  ALUFastMemoryProvider<Object> :: operator new (size_t s)
+  {
+    assert( s == sizeof(ObjectType) );
+    if( objStack_.empty() )
+    {
+      void * obj = std::malloc( sizeof(ObjectType) );
+      assert( obj );
+      return obj;
+    }
+    else
+    {
+      ObjectType * obj = objStack_.top();
+      objStack_.pop();
+      return ((void  *) obj);
+    }
+  }
+
+  template <class Object>
+  inline void
+  ALUFastMemoryProvider<Object> :: operator delete (void *ptr, size_t s)
+  {
+    assert( s == sizeof(ObjectType) );
+    objStack_.push( (ObjectType *) ptr );
+  }
+
+
   //! organize the memory management for entitys used by the NeighborIterator
   template <class Object>
   class ALUMemoryProvider
@@ -25,10 +70,13 @@ namespace Dune {
 
     //! i.e. return pointer to Entity
     template <class GridType>
-    ObjectType * getNewObjectEntity(const GridType &grid, int level);
+    ObjectType * getObject(const GridType &grid, int level);
+
+    //! i.e. return pointer to Entity
+    ObjectType * getObjectCopy(const ObjectType & org);
 
     //! free, move element to stack, returns NULL
-    void freeObjectEntity (ObjectType * obj);
+    void freeObject (ObjectType * obj);
 
   private:
     //! do not copy pointers
@@ -43,12 +91,29 @@ namespace Dune {
   //************************************************************************
   template <class Object> template <class GridType>
   inline typename ALUMemoryProvider<Object>::ObjectType *
-  ALUMemoryProvider<Object>::getNewObjectEntity
+  ALUMemoryProvider<Object>::getObject
     (const GridType &grid, int level )
   {
     if( objStack_.empty() )
     {
       return ( new Object (grid,level) );
+    }
+    else
+    {
+      ObjectType * obj = objStack_.top();
+      objStack_.pop();
+      return obj;
+    }
+  }
+
+  template <class Object>
+  inline typename ALUMemoryProvider<Object>::ObjectType *
+  ALUMemoryProvider<Object>::getObjectCopy
+    (const ObjectType & org )
+  {
+    if( objStack_.empty() )
+    {
+      return ( new Object (org) );
     }
     else
     {
@@ -70,7 +135,7 @@ namespace Dune {
   }
 
   template <class Object>
-  inline void ALUMemoryProvider<Object>::freeObjectEntity(Object * obj)
+  inline void ALUMemoryProvider<Object>::freeObject(Object * obj)
   {
     objStack_.push( obj );
   }
