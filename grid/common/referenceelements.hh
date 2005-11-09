@@ -889,7 +889,25 @@ namespace Dune
     //! type of (i,c)
     GeometryType type (int i, int c) const
     {
-      return prism;
+      switch (c)
+      {
+      case 3 : return cube;
+      case 2 : return cube;
+      case 0 : return prism;
+      case 1 :
+        switch (i)
+        {
+        case 0 : return simplex;
+        case 1 : return cube;
+        case 2 : return cube;
+        case 3 : return cube;
+        case 4 : return simplex;
+        default :
+          DUNE_THROW(RangeError, "i argument out of range");
+        }
+      default :
+        DUNE_THROW(RangeError, "codim argument out of range");
+      }
     }
 
     //! volume of the reference prism
@@ -1203,7 +1221,25 @@ namespace Dune
     //! type of (i,c)
     GeometryType type (int i, int c) const
     {
-      return pyramid;
+      switch (c)
+      {
+      case 3 : return cube;
+      case 2 : return cube;
+      case 0 : return pyramid;
+      case 1 :
+        switch (i)
+        {
+        case 0 : return cube;
+        case 1 : return simplex;
+        case 2 : return simplex;
+        case 3 : return simplex;
+        case 4 : return simplex;
+        default :
+          DUNE_THROW(RangeError, "i argument out of range");
+        }
+      default :
+        DUNE_THROW(RangeError, "codim argument out of range");
+      }
     }
 
     //! volume of the reference pyramid
