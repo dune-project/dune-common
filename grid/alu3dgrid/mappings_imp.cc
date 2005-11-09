@@ -148,6 +148,16 @@ namespace Dune {
   //- Bilinear surface mapping
   // Constructor for FieldVectors
   inline BilinearSurfaceMapping ::
+  BilinearSurfaceMapping (double x)
+  {
+    double p[3] = {x,x,x};
+    //initialize with zero
+    buildMapping(p,p,p,p);
+  }
+
+  //- Bilinear surface mapping
+  // Constructor for FieldVectors
+  inline BilinearSurfaceMapping ::
   BilinearSurfaceMapping (const coord3_t& x0, const coord3_t& x1,
                           const coord3_t& x2, const coord3_t& x3)
   {
@@ -196,7 +206,6 @@ namespace Dune {
   inline BilinearSurfaceMapping ::
   BilinearSurfaceMapping (const BilinearSurfaceMapping & m)
   {
-    //: _p0(m._p0), _p1(m._p1), _p2(m._p2), _p3(m._p3) {
     {for (int i = 0 ; i < 4 ; i ++)
        for (int j = 0 ; j < 3 ; j ++ )
          _b [i][j] = m._b [i][j] ;}

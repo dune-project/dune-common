@@ -62,6 +62,9 @@ namespace Dune {
     double _b [4][3] ;
     double _n [3][3] ;
   public:
+    //! Constructor creating empty mapping with double , i.e. zero
+    BilinearSurfaceMapping (double);
+
     //! Constructor getting FieldVectors
     BilinearSurfaceMapping (const coord3_t&, const coord3_t&,
                             const coord3_t&, const coord3_t&) ;
@@ -70,11 +73,11 @@ namespace Dune {
                             const double3_t &, const double3_t &) ;
     BilinearSurfaceMapping (const BilinearSurfaceMapping &) ;
     ~BilinearSurfaceMapping () {}
+
     void map2world(const coord2_t&, coord3_t&) const ;
     void map2world(double x, double y, coord3_t&) const ;
     void normal(const coord2_t&, coord3_t&) const ;
 
-  private:
     // builds _b and _n, called from the constructors
     template <class vector_t>
     void buildMapping (const vector_t & , const vector_t & ,
