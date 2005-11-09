@@ -7,6 +7,7 @@
 
 // Dune includes
 #include "../common/entity.hh"
+#include "../common/intersectioniteratorwrapper.hh"
 
 // Local includes
 #include "alu3dinclude.hh"
@@ -216,6 +217,7 @@ namespace Dune {
 
     friend class ALU3dGrid < dim , dimworld, GridImp::elementType>;
     friend class ALU3dGridIntersectionIterator < GridImp >;
+    friend class ALU3dGridIntersectionIterator < const GridImp >;
     friend class ALU3dGridHierarchicIterator   < const GridImp >;
     friend class ALU3dGridHierarchicIterator   < GridImp >;
     friend class ALU3dGridLevelIterator <0,All_Partition,GridImp>;
@@ -237,7 +239,9 @@ namespace Dune {
 
   public:
     typedef typename GridImp::template Codim<0>::Geometry Geometry;
-    typedef  ALU3dGridMakeableGeometry<dim,dimworld,GridImp> GeometryImp;
+    typedef ALU3dGridMakeableGeometry<dim,dimworld,GridImp> GeometryImp;
+    typedef ALU3dGridIntersectionIterator<GridImp> IntersectionIteratorImp;
+    typedef IntersectionIteratorWrapper<GridImp> ALU3dGridIntersectionIteratorType;
 
     typedef typename GridImp::template Codim<0>::Entity Entity;
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
@@ -275,10 +279,10 @@ namespace Dune {
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
        is provided using iterators. This allows meshes to be nonmatching. Returns iterator
        referencing the first neighbor. */
-    ALU3dGridIntersectionIterator<GridImp> ibegin () const;
+    ALU3dGridIntersectionIteratorType ibegin () const;
 
     //! Reference to one past the last intersection with neighbor
-    ALU3dGridIntersectionIterator<GridImp> iend () const;
+    ALU3dGridIntersectionIteratorType iend () const;
 
     //! returns true if Entity is leaf (i.e. has no children)
     bool isLeaf () const;
@@ -346,6 +350,7 @@ namespace Dune {
 
   private:
     typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
+    IMPLElementType & getItem () const { return *item_; }
 
     //! index is unique within the grid hierachie and per codim
     int getIndex () const;
@@ -354,7 +359,7 @@ namespace Dune {
     const GridImp  & grid_;
 
     // the current element of grid
-    IMPLElementType *item_;
+    mutable IMPLElementType *item_;
 
     // the current ghost, if element is ghost
     PLLBndFaceType * ghost_;
@@ -420,7 +425,7 @@ namespace Dune {
     ALU3dGridEntityPointer(const GridImp & grid, const ALU3dGridMakeableEntity<cd,dim,GridImp> & e );
 
     //! Constructor for EntityPointer init of Level- and LeafIterator
-    ALU3dGridEntityPointer(const GridImp & grid, int level , bool done);
+    ALU3dGridEntityPointer(const GridImp & grid, int level );
 
     //! make empty entity pointer (to be revised)
     ALU3dGridEntityPointer(const ALU3dGridEntityPointerType & org);
@@ -446,9 +451,6 @@ namespace Dune {
 
     // entity that this EntityPointer points to
     EntityImp * entity_;
-
-    //! flag for end iterators
-    bool done_;
   };
 
 } // end namespace Dune
