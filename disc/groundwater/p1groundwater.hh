@@ -587,7 +587,7 @@ namespace Dune
                             << std::endl;
                   throwflag = true;
                 }
-                this->A[l2g[k]][fl2g[i]] = -alpha[i][k];
+                this->A[l2g[k]][fl2g[i]] = 0;                                 //-alpha[i][k]; TEST ...
               }
             if (false)
               DUNE_THROW(GridError,"hanging node interpolated from hanging node");
@@ -752,6 +752,50 @@ namespace Dune
       // print it
       //	  printmatrix(std::cout,this->A,"global stiffness matrix","row",9,1);
     }
+
+    //! assemble operator, rhs and Dirichlet boundary conditions
+    void interpolateHangingNodes (P1FEFunction<G,RT,IS>& u)
+    {
+      // allocate flag vector to note hanging nodes whose row has been assembled
+      std::vector<unsigned char> treated(this->vertexmapper.size());
+      for (int i=0; i<treated.size(); i++) treated[i] = false;
+
+      // run over all leaf elements
+      Iterator eendit = this->is.template end<0,All_Partition>();
+      for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        // get access to shape functions for P1 elements
+        Dune::GeometryType gt = it->geometry().type();
+        const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+        sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
+
+        // determine the interpolation factors WITH RESPECT TO NODES OF FATHER
+        for (int k=0; k<sfs.size(); k++)           // loop over rows, i.e. test functions
+        {
+          int alpha = this->vertexmapper.template map<n>(*it,sfs[k].entity());
+          if (this->hanging[alpha] && !treated[alpha])
+          {
+            // determine position of hanging node in father
+            EEntityPointer father=it->father();                       // the father element
+            GeometryType gtf = father->geometry().type();                       // fathers type
+            assert(gtf==gt);                       // in hanging node refinement the element type is preserved
+            const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[k].position();
+            FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                       // map corner to father element
+
+            // evaluate interpolation factors and local to global mapping for father
+            RT value=0;
+            for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++i)
+            {
+              int beta = this->vertexmapper.template map<n>(*father,i);
+              value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1)[i].evaluateFunction(0,pos)*(*u)[beta];
+            }
+            (*u)[alpha] = value;
+            treated[alpha] = true;
+          }
+        }
+      }
+    }
+
 
     /** \brief evaluate error estimator
      */
