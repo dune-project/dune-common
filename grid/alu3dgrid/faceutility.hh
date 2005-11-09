@@ -38,6 +38,10 @@ namespace Dune {
 #endif
 
   public:
+    //! constructor creating empty face info
+    ALU3dGridFaceInfo();
+    void updateFaceInfo(const GEOFaceType& face, int innerTwist);
+
     //- constructors and destructors
     //! Construct a connector from a face and the twist seen from the inner
     //! element
@@ -104,8 +108,8 @@ namespace Dune {
   //! Helper class which provides geometric face information for the
   //! ALU3dGridIntersectionIterator
   template <ALU3dGridElementType type>
-  class ALU3dGridGeometricFaceInfo {
-  private:
+  class ALU3dGridGeometricFaceInfoBase {
+  public:
     //- private typedefs
     typedef ElementTopologyMapping<type> ElementTopo;
     typedef FaceTopologyMapping<type> FaceTopo;
@@ -145,20 +149,22 @@ namespace Dune {
     typedef ALU3dGridFaceInfo<type> ConnectorType;
 
     //- constructors and destructors
-    ALU3dGridGeometricFaceInfo(const ConnectorType& ctor);
-    ALU3dGridGeometricFaceInfo(const ALU3dGridGeometricFaceInfo& orig);
-    ~ALU3dGridGeometricFaceInfo();
+    ALU3dGridGeometricFaceInfoBase(const ConnectorType& ctor);
+    ALU3dGridGeometricFaceInfoBase(const ALU3dGridGeometricFaceInfoBase<type> & orig);
+
+    //! reset status of faceGeomInfo
+    void resetFaceGeom();
 
     //- functions
     const CoordinateType& intersectionGlobal() const;
     const CoordinateType& intersectionSelfLocal() const;
     const CoordinateType& intersectionNeighborLocal() const;
 
-    NormalType outerNormal(const FieldVector<alu3d_ctype, 2>& local) const;
+    //NormalType & outerNormal(const FieldVector<alu3d_ctype, 2>& local) const;
 
   private:
     //- forbidden methods
-    const ALU3dGridGeometricFaceInfo<type>& operator=(const ALU3dGridGeometricFaceInfo<type>&);
+    const ALU3dGridGeometricFaceInfoBase<type>& operator=(const ALU3dGridGeometricFaceInfoBase<type>&);
 
   private:
     //- private methods
@@ -180,19 +186,14 @@ namespace Dune {
     // get face and doesnt copy values twice
     SurfaceMappingType* buildSurfaceMapping(const GEOFaceType & face) const;
 
-    NormalType calculateNormal(const SurfaceMappingType& mapping,
-                               const FieldVector<alu3d_ctype, 2>& local) const;
-
     void convert2CArray(const FieldVector<alu3d_ctype, 3>& in,
                         alu3d_ctype (&out)[3]) const;
     void convert2FieldVector(const alu3d_ctype (&in)[3],
                              FieldVector<alu3d_ctype, 3>& out) const;
-
-  private:
+  protected:
     //- private data
     const ConnectorType& connector_;
 
-    mutable SurfaceMappingType* mappingGlobal_; // needed for calculation of normal
     mutable bool generatedGlobal_;
     mutable bool generatedLocal_;
 
@@ -221,11 +222,82 @@ namespace Dune {
     {
       return ((const alu3d_ctype (&)[dim])(*( &(val[0])) ) );
     }
-
-
   };
 
+  //! Helper class which provides geometric face information for the
+  //! ALU3dGridIntersectionIterator
+  class ALU3dGridGeometricFaceInfoTetra : public ALU3dGridGeometricFaceInfoBase<tetra>
+  {
+  public:
+    //- public typedefs
+    typedef FieldVector<alu3d_ctype, 3> NormalType;
+    typedef FieldMatrix<alu3d_ctype,
+        numVerticesPerFace,
+        dimworld> CoordinateType;
 
+    typedef ALU3dGridFaceInfo<tetra>::GEOFaceType GEOFaceType;
+  public:
+    typedef ALU3dGridFaceInfo<tetra> ConnectorType;
+
+    //- constructors and destructors
+    ALU3dGridGeometricFaceInfoTetra(const ConnectorType& ctor);
+    ALU3dGridGeometricFaceInfoTetra(const ALU3dGridGeometricFaceInfoTetra & orig);
+
+    NormalType & outerNormal(const FieldVector<alu3d_ctype, 2>& local) const;
+
+    //! reset status of faceGeomInfo
+    void resetFaceGeom();
+
+  private:
+    //- forbidden methods
+    const ALU3dGridGeometricFaceInfoTetra & operator=(const ALU3dGridGeometricFaceInfoTetra &);
+
+  private:
+    //- private data
+    mutable NormalType outerNormal_;
+
+    // false if surface mapping needs a update
+    mutable bool normalUp2Date_;
+  };
+
+  //! Helper class which provides geometric face information for the
+  //! ALU3dGridIntersectionIterator
+  class ALU3dGridGeometricFaceInfoHexa : public ALU3dGridGeometricFaceInfoBase<hexa>
+  {
+  public:
+    //- public typedefs
+    typedef FieldVector<alu3d_ctype, 3> NormalType;
+    typedef FieldMatrix<alu3d_ctype,
+        numVerticesPerFace,
+        dimworld> CoordinateType;
+
+    typedef ALU3dGridFaceInfo<hexa>::GEOFaceType GEOFaceType;
+    typedef BilinearSurfaceMapping SurfaceMappingType;
+  public:
+    typedef ALU3dGridFaceInfo<hexa> ConnectorType;
+
+    //- constructors and destructors
+    ALU3dGridGeometricFaceInfoHexa(const ConnectorType& ctor);
+    ALU3dGridGeometricFaceInfoHexa(const ALU3dGridGeometricFaceInfoHexa & orig);
+
+    NormalType & outerNormal(const FieldVector<alu3d_ctype, 2>& local) const;
+
+    //! reset status of faceGeomInfo
+    void resetFaceGeom();
+
+  private:
+    //- forbidden methods
+    const ALU3dGridGeometricFaceInfoHexa & operator=(const ALU3dGridGeometricFaceInfoHexa &);
+
+  private:
+    //- private data
+    mutable NormalType outerNormal_;
+
+    // surface mapping for calculating the outer normal
+    mutable SurfaceMappingType mappingGlobal_;
+    // false if surface mapping needs a update
+    mutable bool mappingGlobalUp2Date_;
+  };
 
 } // end namespace Dune
 

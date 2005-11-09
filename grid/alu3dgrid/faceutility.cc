@@ -6,25 +6,23 @@
 namespace Dune {
 
   // just for simplicity
-  //typedef BilinearSurfaceMapping BilinearSurfaceMappingType;
-  //typedef ALU3DSPACE BilinearSurfaceMapping BilinearSurfaceMappingType;
   typedef BilinearSurfaceMapping BilinearSurfaceMappingType;
 
-  //- class ALU3dGridGeometricFaceInfo
+  //- class ALU3dGridGeometricFaceInfoBase
   template <>
   ALU3DSPACE LinearSurfaceMapping*
-  ALU3dGridGeometricFaceInfo<tetra>::
+  ALU3dGridGeometricFaceInfoBase<tetra>::
   buildSurfaceMapping(const CoordinateType& coords) const {
 
     return new ALU3DSPACE LinearSurfaceMapping(
-             fieldVector2alu3d_ctype ( coords[0] ),
-             fieldVector2alu3d_ctype ( coords[1] ),
-             fieldVector2alu3d_ctype ( coords[2] ) );
+             fieldVector2alu3d_ctype(coords[0]) ,
+             fieldVector2alu3d_ctype(coords[1]) ,
+             fieldVector2alu3d_ctype(coords[2]) );
   }
 
   template <>
   BilinearSurfaceMappingType*
-  ALU3dGridGeometricFaceInfo<hexa>::
+  ALU3dGridGeometricFaceInfoBase<hexa>::
   buildSurfaceMapping(const CoordinateType& coords) const {
     return new BilinearSurfaceMappingType(coords[0],
                                           coords[1],
@@ -35,7 +33,7 @@ namespace Dune {
   // new methods
   template <>
   ALU3DSPACE LinearSurfaceMapping*
-  ALU3dGridGeometricFaceInfo<tetra>::
+  ALU3dGridGeometricFaceInfoBase<tetra>::
   buildSurfaceMapping(const GEOFaceType & face) const
   {
     // this is the original ALUGrid LinearSurfaceMapping,
@@ -47,7 +45,7 @@ namespace Dune {
 
   template <>
   BilinearSurfaceMappingType*
-  ALU3dGridGeometricFaceInfo<hexa>::
+  ALU3dGridGeometricFaceInfoBase<hexa>::
   buildSurfaceMapping(const GEOFaceType & face) const
   {
     // this is the new implementation using FieldVector
@@ -62,29 +60,7 @@ namespace Dune {
   }
 
   template <>
-  ALU3dGridGeometricFaceInfo<tetra>::NormalType
-  ALU3dGridGeometricFaceInfo<tetra>::
-  calculateNormal(const SurfaceMappingType& mapping,
-                  const FieldVector<alu3d_ctype, 2>& local) const
-  {
-    NormalType result;
-    mapping.normal( fieldVector2alu3d_ctype ( result ) );
-    return result;
-  }
-
-  template <>
-  ALU3dGridGeometricFaceInfo<hexa>::NormalType
-  ALU3dGridGeometricFaceInfo<hexa>::
-  calculateNormal(const SurfaceMappingType& mapping,
-                  const FieldVector<alu3d_ctype, 2>& local) const
-  {
-    NormalType result;
-    mapping.normal(local,result);
-    return result;
-  }
-
-  template <>
-  void ALU3dGridGeometricFaceInfo<tetra>::
+  void ALU3dGridGeometricFaceInfoBase<tetra>::
   referenceElementCoordinatesUnrefined(SideIdentifier side,
                                        CoordinateType& result) const {
     enum { numCorners = 3 };
@@ -123,14 +99,14 @@ namespace Dune {
 
       faceMapper.child2parent(childLocalBary, parentLocal);
       referenceElementMapping->map2world(
-        fieldVector2alu3d_ctype ( parentLocal ) ,
-        fieldVector2alu3d_ctype ( result[i]   ) );
+        fieldVector2alu3d_ctype(parentLocal),
+        fieldVector2alu3d_ctype(result[i]) );
     }
 
   }
 
   template <>
-  void ALU3dGridGeometricFaceInfo<hexa>::
+  void ALU3dGridGeometricFaceInfoBase<hexa>::
   referenceElementCoordinatesUnrefined(SideIdentifier side,
                                        CoordinateType& result) const {
     enum { numCorners = 4 };

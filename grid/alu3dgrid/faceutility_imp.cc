@@ -1,18 +1,36 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+#ifndef DUNE_FACEUTILITY_IMP_HH
+#define DUNE_FACEUTILITY_IMP_HH
+
 namespace Dune {
 
+
   template <ALU3dGridElementType type>
-  ALU3dGridFaceInfo<type>::ALU3dGridFaceInfo(const GEOFaceType& face,
-                                             int innerTwist) :
-    face_(&face),
+  ALU3dGridFaceInfo<type>::ALU3dGridFaceInfo() :
+    face_(0),
     innerElement_(0),
     outerElement_(0),
     innerFaceNumber_(-1),
     outerFaceNumber_(-1),
     outerBoundary_  ( false ),
     ghostBoundary_  ( false )
+  {}
+
+  // points face from inner element away?
+  template <ALU3dGridElementType type>
+  void
+  ALU3dGridFaceInfo<type>::updateFaceInfo(const GEOFaceType& face,
+                                          int innerTwist)
   {
+    face_ = &face;
+    innerElement_ = 0;
+    outerElement_ = 0;
+    innerFaceNumber_ = -1;
+    outerFaceNumber_ = -1;
+    outerBoundary_   = false;
+    ghostBoundary_   = false;
+
     // points face from inner element away?
     if (innerTwist < 0) {
       innerElement_ = face.nb.rear().first;
@@ -46,6 +64,14 @@ namespace Dune {
     }
 #endif
     assert(innerTwist == innerEntity().twist(innerFaceNumber_));
+  }
+
+  // points face from inner element away?
+  template <ALU3dGridElementType type>
+  ALU3dGridFaceInfo<type>::ALU3dGridFaceInfo(const GEOFaceType& face,
+                                             int innerTwist)
+  {
+    updateFaceInfo(face,innerTwist);
   }
 
   template <ALU3dGridElementType type>
@@ -151,18 +177,17 @@ namespace Dune {
 
   //- class ALU3dGridFaceGeometryCoordinates
   template <ALU3dGridElementType type>
-  typename ALU3dGridGeometricFaceInfo<type>::ReferenceElementType
-  ALU3dGridGeometricFaceInfo<type>::refElem_;
+  typename ALU3dGridGeometricFaceInfoBase<type>::ReferenceElementType
+  ALU3dGridGeometricFaceInfoBase<type>::refElem_;
 
   template <ALU3dGridElementType type>
-  typename ALU3dGridGeometricFaceInfo<type>::ReferenceFaceType
-  ALU3dGridGeometricFaceInfo<type>::refFace_;
+  typename ALU3dGridGeometricFaceInfoBase<type>::ReferenceFaceType
+  ALU3dGridGeometricFaceInfoBase<type>::refFace_;
 
   template <ALU3dGridElementType type>
-  ALU3dGridGeometricFaceInfo<type>::
-  ALU3dGridGeometricFaceInfo(const ConnectorType& connector) :
+  ALU3dGridGeometricFaceInfoBase<type>::
+  ALU3dGridGeometricFaceInfoBase(const ConnectorType& connector) :
     connector_(connector),
-    mappingGlobal_(0),
     generatedGlobal_(false),
     generatedLocal_(false),
     coordsGlobal_(-1.0), // dummy value
@@ -171,10 +196,18 @@ namespace Dune {
   {}
 
   template <ALU3dGridElementType type>
-  ALU3dGridGeometricFaceInfo<type>::
-  ALU3dGridGeometricFaceInfo(const ALU3dGridGeometricFaceInfo<type>& orig) :
+  void
+  ALU3dGridGeometricFaceInfoBase<type>::
+  resetFaceGeom()
+  {
+    generatedGlobal_      = false;
+    generatedLocal_       = false;
+  }
+
+  template <ALU3dGridElementType type>
+  ALU3dGridGeometricFaceInfoBase<type>::
+  ALU3dGridGeometricFaceInfoBase(const ALU3dGridGeometricFaceInfoBase<type>& orig) :
     connector_(orig.connector_),
-    mappingGlobal_(orig.mappingGlobal_),
     generatedGlobal_(orig.generatedGlobal_),
     generatedLocal_(orig.generatedLocal_),
     coordsGlobal_(orig.coordsGlobal_),
@@ -183,62 +216,134 @@ namespace Dune {
   {}
 
   template <ALU3dGridElementType type>
-  ALU3dGridGeometricFaceInfo<type>::
-  ~ALU3dGridGeometricFaceInfo() {
-    if (mappingGlobal_) {
-      delete mappingGlobal_;
-      mappingGlobal_ = 0;
-    }
-  }
-
-  template <ALU3dGridElementType type>
-  const typename ALU3dGridGeometricFaceInfo<type>::CoordinateType&
-  ALU3dGridGeometricFaceInfo<type>::intersectionGlobal() const {
+  const typename ALU3dGridGeometricFaceInfoBase<type>::CoordinateType&
+  ALU3dGridGeometricFaceInfoBase<type>::intersectionGlobal() const {
     generateGlobalGeometry();
     assert(generatedGlobal_);
     return coordsGlobal_;
   }
 
   template <ALU3dGridElementType type>
-  const typename ALU3dGridGeometricFaceInfo<type>::CoordinateType&
-  ALU3dGridGeometricFaceInfo<type>::intersectionSelfLocal() const {
+  const typename ALU3dGridGeometricFaceInfoBase<type>::CoordinateType&
+  ALU3dGridGeometricFaceInfoBase<type>::intersectionSelfLocal() const {
     generateLocalGeometries();
     assert(generatedLocal_);
     return coordsSelfLocal_;
   }
 
   template <ALU3dGridElementType type>
-  const typename ALU3dGridGeometricFaceInfo<type>::CoordinateType&
-  ALU3dGridGeometricFaceInfo<type>::intersectionNeighborLocal() const {
+  const typename ALU3dGridGeometricFaceInfoBase<type>::CoordinateType&
+  ALU3dGridGeometricFaceInfoBase<type>::intersectionNeighborLocal() const {
     assert(!connector_.outerBoundary());
     generateLocalGeometries();
     assert(generatedLocal_);
     return coordsNeighborLocal_;
   }
 
-  template <ALU3dGridElementType type>
-  FieldVector<alu3d_ctype, 3>
-  ALU3dGridGeometricFaceInfo<type>::
-  outerNormal(const FieldVector<alu3d_ctype, 2>& local) const {
 
-    // construct a mapping (either a linear or a bilinear one)
-    if (!mappingGlobal_) {
-      mappingGlobal_ = buildSurfaceMapping(connector_.face());
-    } // end if
+  //sepcialisation for tetra and hexa
+  ALU3dGridGeometricFaceInfoTetra::
+  ALU3dGridGeometricFaceInfoTetra(const ConnectorType& connector)
+    : ALU3dGridGeometricFaceInfoBase<tetra>(connector)
+      , normalUp2Date_(false)
+  {}
+
+  void ALU3dGridGeometricFaceInfoTetra::
+  resetFaceGeom()
+  {
+    ALU3dGridGeometricFaceInfoBase<tetra>::resetFaceGeom();
+    normalUp2Date_ = false;
+  }
+
+  ALU3dGridGeometricFaceInfoTetra::
+  ALU3dGridGeometricFaceInfoTetra(const ALU3dGridGeometricFaceInfoTetra& orig)
+    : ALU3dGridGeometricFaceInfoBase<tetra>(orig)
+      , normalUp2Date_(orig.normalUp2Date_)
+  {}
+
+  FieldVector<alu3d_ctype, 3> &
+  ALU3dGridGeometricFaceInfoTetra::
+  outerNormal(const FieldVector<alu3d_ctype, 2>& local) const
+  {
+    // if geomInfo was not reseted then normal is still correct
+    if(!normalUp2Date_)
+    {
+      // calculate the normal
+      const GEOFaceType & face = this->connector_.face();
+      const double (&_p0)[3] = face.myvertex(0)->Point();
+      const double (&_p1)[3] = face.myvertex(1)->Point();
+      const double (&_p2)[3] = face.myvertex(2)->Point();
+
+      // see mapp_tetra_3d.h for this piece of code
+      outerNormal_[0] = -0.5 * ((_p1[1]-_p0[1]) *(_p2[2]-_p1[2]) - (_p2[1]-_p1[1]) *(_p1[2]-_p0[2]));
+      outerNormal_[1] = -0.5 * ((_p1[2]-_p0[2]) *(_p2[0]-_p1[0]) - (_p2[2]-_p1[2]) *(_p1[0]-_p0[0]));
+      outerNormal_[2] = -0.5 * ((_p1[0]-_p0[0]) *(_p2[1]-_p1[1]) - (_p2[0]-_p1[0]) *(_p1[1]-_p0[1]));
+
+      // change sign if face normal points into inner element
+      if (this->connector_.innerTwist() < 0) {
+        outerNormal_ *= -1.0;
+      } // end if
+      normalUp2Date_ = true;
+    } // end if mapp ...
+
+    return outerNormal_;
+  }
+
+  //-sepcialisation for and hexa
+  ALU3dGridGeometricFaceInfoHexa::
+  ALU3dGridGeometricFaceInfoHexa(const ConnectorType& connector)
+    : ALU3dGridGeometricFaceInfoBase<hexa>(connector)
+      , mappingGlobal_(0.0)
+      , mappingGlobalUp2Date_(false)
+  {}
+
+  void ALU3dGridGeometricFaceInfoHexa::
+  resetFaceGeom()
+  {
+    ALU3dGridGeometricFaceInfoBase<hexa>::resetFaceGeom();
+    mappingGlobalUp2Date_ = false;
+  }
+
+  ALU3dGridGeometricFaceInfoHexa::
+  ALU3dGridGeometricFaceInfoHexa(const ALU3dGridGeometricFaceInfoHexa& orig)
+    : ALU3dGridGeometricFaceInfoBase<hexa>(orig)
+      , mappingGlobal_(orig.mappingGlobal_)
+      , mappingGlobalUp2Date_(orig.mappingGlobalUp2Date_)
+  {}
+
+  FieldVector<alu3d_ctype, 3> &
+  ALU3dGridGeometricFaceInfoHexa::
+  outerNormal(const FieldVector<alu3d_ctype, 2>& local) const
+  {
+    // update surface mapping
+    if(!mappingGlobalUp2Date_)
+    {
+      const GEOFaceType & face = connector_.face();
+      // update mapping to actual face
+      mappingGlobal_.buildMapping(
+        face.myvertex( FaceTopo::dune2aluVertex(0) )->Point(),
+        face.myvertex( FaceTopo::dune2aluVertex(1) )->Point(),
+        face.myvertex( FaceTopo::dune2aluVertex(2) )->Point(),
+        face.myvertex( FaceTopo::dune2aluVertex(3) )->Point()
+        );
+      mappingGlobalUp2Date_ = true;
+    }
 
     // calculate the normal
-    NormalType result = calculateNormal(*mappingGlobal_, local);
+    // has to be calculated every time normal called, because
+    // depends on local
+    mappingGlobal_.normal(local,outerNormal_);
 
     // change sign if face normal points into inner element
     if (connector_.innerTwist() < 0) {
-      result *= -1.0;
+      outerNormal_ *= -1.0;
     } // end if
 
-    return result;
+    return outerNormal_;
   }
 
   template <ALU3dGridElementType type>
-  inline void ALU3dGridGeometricFaceInfo<type>::
+  inline void ALU3dGridGeometricFaceInfoBase<type>::
   generateGlobalGeometry() const
   {
     if (!generatedGlobal_) {
@@ -255,7 +360,7 @@ namespace Dune {
   }
 
   template <ALU3dGridElementType type>
-  inline void ALU3dGridGeometricFaceInfo<type>::
+  inline void ALU3dGridGeometricFaceInfoBase<type>::
   generateLocalGeometries() const
   {
     if (!generatedLocal_) {
@@ -288,7 +393,7 @@ namespace Dune {
   }
 
   template <ALU3dGridElementType type>
-  int ALU3dGridGeometricFaceInfo<type>::
+  int ALU3dGridGeometricFaceInfoBase<type>::
   globalVertexIndex(int duneFaceIndex,
                     int faceTwist,
                     int duneFaceVertexIndex) const {
@@ -305,7 +410,7 @@ namespace Dune {
   }
 
   template <ALU3dGridElementType type>
-  void ALU3dGridGeometricFaceInfo<type>::
+  void ALU3dGridGeometricFaceInfoBase<type>::
   referenceElementCoordinatesRefined(SideIdentifier side,
                                      CoordinateType& result) const
   {
@@ -326,7 +431,7 @@ namespace Dune {
   }
 
   template <ALU3dGridElementType type>
-  void ALU3dGridGeometricFaceInfo<type>::
+  void ALU3dGridGeometricFaceInfoBase<type>::
   convert2CArray(const FieldVector<alu3d_ctype, 3>& in,
                  alu3d_ctype (&out)[3]) const {
     out[0] = in[0];
@@ -335,7 +440,7 @@ namespace Dune {
   }
 
   template <ALU3dGridElementType type>
-  void ALU3dGridGeometricFaceInfo<type>::
+  void ALU3dGridGeometricFaceInfoBase<type>::
   convert2FieldVector(const alu3d_ctype (&in)[3],
                       FieldVector<alu3d_ctype, 3>& out) const {
     out[0] = in[0];
@@ -344,3 +449,4 @@ namespace Dune {
   }
 
 } //end namespace Dune
+#endif
