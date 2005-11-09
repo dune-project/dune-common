@@ -226,16 +226,17 @@ int testVertex()
   flags.resetVisited();
 
   ret+=testVertexReset(flags);
+  /*
+     flags.setExcluded();
 
-  flags.setExcluded();
-
-  if(!flags.excluded()) {
-    std::cerr<<"Excluded flag should be set after setExcluded!"<<__FILE__ ":"<<__LINE__
+     if(!flags.excluded()){
+     std::cerr<<"Excluded flag should be set after setExcluded!"<<__FILE__":"<<__LINE__
              <<std::endl;
-    ret++;
-  }
+     ret++;
+     }
 
-  flags.resetExcluded();
+     flags.resetExcluded();
+   */
   ret+=testVertexReset(flags);
 
   return ret;

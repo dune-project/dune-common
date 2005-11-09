@@ -62,7 +62,7 @@ namespace Dune
        * it takes to travel from one node to the other without leaving the aggregate.
        * @return The maximum distance allowed.
        */
-      int maxDistance() const { return maxDistance_;}
+      std::size_t maxDistance() const { return maxDistance_;}
 
       /**
        * @brief Set the maximal distance allowed between to nodes in a aggregate.
@@ -72,13 +72,13 @@ namespace Dune
        * The default value is 2.
        * @param distance The maximum distance allowed.
        */
-      void setMaxDistance(int distance) { maxDistance_ = distance;}
+      void setMaxDistance(std::size_t distance) { maxDistance_ = distance;}
 
       /**
        * @brief Get the minimum number of nodes a aggregate has to consist of.
        * @return The minimum number of nodes.
        */
-      int minAggregateSize() const { return minAggregateSize_;}
+      std::size_t minAggregateSize() const { return minAggregateSize_;}
 
       /**
        * @brief Set the minimum number of nodes a aggregate has to consist of.
@@ -86,13 +86,13 @@ namespace Dune
        * the default value is 4.
        * @return The minimum number of nodes.
        */
-      void setMinAggregateSize(int size){ minAggregateSize_=size;}
+      void setMinAggregateSize(std::size_t size){ minAggregateSize_=size;}
 
       /**
        * @brief Get the maximum number of nodes a aggregate is allowed to have.
        * @return The maximum number of nodes.
        */
-      int maxAggregateSize() const { return maxAggregateSize_;}
+      std::size_t maxAggregateSize() const { return maxAggregateSize_;}
 
       /**
        * @brief Set the maximum number of nodes a aggregate is allowed to have.
@@ -100,7 +100,7 @@ namespace Dune
        * The default values is 6.
        * @param size The maximum number of nodes.
        */
-      void setMaxAggregateSize(int size){ maxAggregateSize_ = size;}
+      void setMaxAggregateSize(std::size_t size){ maxAggregateSize_ = size;}
 
       /**
        * @brief Get the maximum number of connections a aggregate is allowed to have.
@@ -109,7 +109,7 @@ namespace Dune
        *
        * @return The maximum number of connections a aggregate is allowed to have.
        */
-      int maxConnectivity() const { return connectivity_;}
+      std::size_t maxConnectivity() const { return connectivity_;}
 
       /**
        * @brief Set the maximum number of connections a aggregate is allowed to have.
@@ -118,7 +118,7 @@ namespace Dune
        *
        * @param connectivity The maximum number of connections a aggregate is allowed to have.
        */
-      void setMaxConnectivity(int connectivity){ connectivity_ = connectivity;}
+      void setMaxConnectivity(std::size_t connectivity){ connectivity_ = connectivity;}
 
       /**
        * @brief Set the debugging level.
@@ -142,7 +142,8 @@ namespace Dune
 
 
     private:
-      int maxDistance_, minAggregateSize_, maxAggregateSize_, connectivity_, debugLevel_;
+      std::size_t maxDistance_, minAggregateSize_, maxAggregateSize_, connectivity_;
+      int debugLevel_;
     };
 
     class DependencyParameters
@@ -525,7 +526,7 @@ namespace Dune
       /**
        * @brief Get the size of the aggregate.
        */
-      int size();
+      typename VertexList::size_type size();
 
       /**
        * @brief Get the id identifying the aggregate.
@@ -1199,7 +1200,8 @@ namespace Dune
     }
 
     template<class G>
-    inline int Aggregate<G>::size()
+    inline typename Aggregate<G>::VertexList::size_type
+    Aggregate<G>::size()
     {
       return vertices_.size();
     }
@@ -1266,7 +1268,7 @@ namespace Dune
       aggregates_ = new AggregateDescriptor[noVertices];
       noVertices_ = noVertices;
 
-      for(int i=0; i < noVertices; i++)
+      for(std::size_t i=0; i < noVertices; i++)
         aggregates_[i]=UNAGGREGATED;
     }
 

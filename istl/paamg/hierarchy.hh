@@ -634,7 +634,7 @@ namespace Dune
       typename ConstructionTraits<S>::Arguments cargs;
       cargs.setArgs(sargs);
       Iterator coarsest = matrices_.coarsest();
-      int level=0;
+
       for(Iterator matrix = matrices_.finest(); matrix != coarsest; ++matrix) {
         cargs.setMatrix(matrix->matrix());
         smoothers.addCoarser(cargs);

@@ -31,14 +31,14 @@ namespace Dune
 
     private:
       template<class T, class TT1, class TT2>
-      void apply(Pair<TT1,TT2>& pair, const T& t)
+      inline void apply(Pair<TT1,TT2>& pair, const T& t)
       {
         pair.first() (t);
         apply(pair.second(), t);
       }
 
       template<class T, class TT1>
-      void apply(Pair<TT1,Nil>& pair, const T& t)
+      inline void apply(Pair<TT1,Nil>& pair, const T& t)
       {
         pair.first() (t);
       }
