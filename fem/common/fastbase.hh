@@ -74,19 +74,6 @@ namespace Dune {
       }
       baseFunctionList_.resize(0);
     }
-    /*
-       //! return the number of base fucntions for this BaseFunctionSet
-       int getNumberOfBaseFunctions () const DUNE_DEPRECATED
-       {
-       return baseFunctionList_.size();
-       };
-
-       //! return the number of base fucntions for this BaseFunctionSet
-       int getNumberOfDiffBaseFuncs () const DUNE_DEPRECATED
-       {
-       return numOfDiffFct_;
-       };
-     */
 
     //! return the number of base fucntions for this BaseFunctionSet
     int numBaseFunctions () const
@@ -146,7 +133,7 @@ namespace Dune {
     int numOfDiffFct_;
 
     //! vector which holds the base function pointers
-    std::vector< BaseFunctionInterfaceType *  > baseFunctionList_ ;
+    std::vector<BaseFunctionInterfaceType *> baseFunctionList_ ;
 
     //! method to navigate through the vector vecEvaluate, which holds
     //! precalculated values
