@@ -10,7 +10,7 @@ endif
 AM_LDFLAGS = $(top_builddir)/common/libcommon.la
 
 # which tests where program to build and run are equal
-NORMALTESTS = bvectortest indexsettest $(SELECTPROG)
+NORMALTESTS = matrixutilstest bvectortest indexsettest $(SELECTPROG)
 
 # list of tests to run (indicestest is special case)
 TESTS = $(NORMALTESTS) $(INDEXRUN)
@@ -23,6 +23,8 @@ check_PROGRAMS = $(NORMALTESTS) $(INDEXPROG)
 bvectortest_SOURCES = bvectortest.cc
 
 indicestest_SOURCES = indicestest.cc
+
+matrixutilstest_SOURCES = matrixutilstest.cc
 
 indicestest_CXXFLAGS = $(MPI_CPPFLAGS)
 indicestest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
