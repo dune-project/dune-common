@@ -132,17 +132,16 @@ namespace Dune {
 
     virtual ~BaseFunctionSetInterface() {}
 
-    /*
-       //! \todo Please doc me!
-       int getNumberOfBaseFunctions () const DUNE_DEPRECATED {
-       return asImp().getNumberOfBaseFunctions();
-       };
-     */
-
     //! Number of base functions
     int numBaseFunctions() const {
       // stay on the safe side and call the deprecated version for now
       return asImp().numBaseFunctions();
+    }
+
+    //! Number of really differing (scalar) base functions in the case of a
+    //! vectorial problem
+    int numDifferentBaseFunctions() const {
+      return asImp().numDifferentBaseFunctions();
     }
 
     //! \todo Please doc me!
@@ -206,6 +205,9 @@ namespace Dune {
     typedef typename DiscreteFunctionSpaceType::DomainType DomainType ;
     typedef typename DiscreteFunctionSpaceType::RangeType RangeType ;
     typedef typename DiscreteFunctionSpaceType::HessianRangeType HessianRangeType;
+    typedef typename DiscreteFunctionSpaceType::RangeFieldType DofType;
+    typedef std::vector<DofType> DofVectorType;
+  public:
     //! set the default diffVar Types
     BaseFunctionSetDefault () :
       BaseFunctionSetInterface<BaseFunctionSetTraits> ()
@@ -216,8 +218,15 @@ namespace Dune {
 
     virtual ~BaseFunctionSetDefault() {}
 
+    //! By default, assume that the number of different base functions are the
+    //! same as the overall number of base functions
+    int numDifferentBaseFunctions() const
+    {
+      return this->numBaseFunctions();
+    }
+
     //! default evaluate using the evaluate interface
-    void eval( int baseFunct, const DomainType & x, RangeType & phi ) const
+    void eval(int baseFunct, const DomainType & x, RangeType & phi) const
     {
       asImp().evaluate(baseFunct, diffVariable_ , x , phi);
       return;
@@ -225,10 +234,25 @@ namespace Dune {
 
     //! default implementation for evaluation
     template <class QuadratureType>
-    void eval( int baseFunct, QuadratureType & quad, int quadPoint, RangeType & phi ) const
+    void eval(int baseFunct, QuadratureType & quad, int quadPoint, RangeType & phi) const
     {
       asImp().evaluate( baseFunct, diffVariable_ , quad, quadPoint, phi );
       return;
+    }
+
+    //! default implementation for scalar evaluation
+    void evaluateScalar(int baseFunct, const DomainType& x, DofType& phi) const
+    {
+      asImp().evaluate(baseFunct, diffVariable_, x, tmp_);
+      phi = tmp_[0];
+    }
+
+    //! default implementation for scalar evaluation
+    template <class QuadratureType>
+    void evaluateScalar(int baseFunct, QuadratureType& quad, int quadPoint, DofType& phi) const
+    {
+      asImp().evaluate(baseFunct, diffVariable_, quad, quadPoint, tmp_);
+      phi = tmp_[0];
     }
 
     //! default evaluate using the evaluate interface
@@ -252,6 +276,55 @@ namespace Dune {
         asImp().evaluate( baseFunct, jacobianDiffVar_[i] , quad, quadPoint, tmp_ );
         for(int j=0; j<dimRow; j++)
           phi[j][i] = tmp_[j];
+      }
+    }
+
+    // * add methods for quadrature type as well
+    void evaluateSingle(int baseFunct,
+                        const DomainType& xLocal,
+                        const RangeType& factor,
+                        DofType& result) const
+    {
+      RangeType phi(0.);
+      eval(baseFunct, xLocal, phi);
+      result = phi*factor;
+    }
+
+    void evaluateSet(const DomainType& xLocal,
+                     const RangeType& factor,
+                     DofVectorType& result) const
+    {
+      result.resize(this->numBaseFunctions());
+      DofType tmp;
+      for (size_t i = 0; i < this->numBaseFunctions(); ++i) {
+        evaluateSingle(i, xLocal, factor, tmp);
+        result[i] = tmp;
+      }
+    }
+
+    void evaluateGradientSingle(int baseFunct,
+                                const DomainType& xLocal,
+                                const JacobianRangeType& factor,
+                                DofType& result) const
+    {
+      JacobianRangeType gradPhi(0.);
+      jacobian(baseFunct, xLocal, gradPhi);
+
+      result = 0;
+      for (int i = 0; i < DiscreteFunctionSpaceType::dimDomain; ++i) {
+        result += gradPhi[i]*factor[i];
+      }
+    }
+
+    void evaluateGradientSet(const DomainType& xLocal,
+                             const JacobianRangeType& factor,
+                             DofVectorType& result) const
+    {
+      result.resize(this->numBaseFunctions());
+      DofType tmp;
+      for (size_t i = 0; i < this->numBaseFunctions(); ++i) {
+        evaluateGradientSingle(i, xLocal, factor, tmp);
+        result[i] = tmp;
       }
     }
 
