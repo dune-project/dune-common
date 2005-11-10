@@ -148,12 +148,14 @@ namespace Dune
         template<class C1>
         EdgeIteratorT(const EdgeIteratorT<C1>& other);
 
+        typedef typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value && C::mutableMatrix,
+            typename M::block_type, const typename M::block_type>::Type
+        WeightType;
+
         /**
          * @brief Access the edge weight
          */
-        typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value && C::mutableMatrix,
-            typename M::block_type, const typename M::block_type>::Type&
-        weight() const;
+        WeightType& weight() const;
 
         /** @brief preincrement operator. */
         EdgeIteratorT<C>& operator++();
@@ -257,10 +259,11 @@ namespace Dune
         /** @brief Equality operator. */
         bool operator==(const VertexIteratorT<MutableContainer>& other) const;
 
+        typedef typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value && C::mutableMatrix,
+            typename M::block_type, const typename M::block_type>::Type
+        WeightType;
         /** @brief Access the weight of the vertex. */
-        typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value  && C::mutableMatrix,
-            typename M::block_type, const typename M::block_type>::Type&
-        weight() const;
+        WeightType& weight() const;
 
         /**
          * @brief Get the descriptor of the current vertex.
@@ -1523,8 +1526,7 @@ namespace Dune
 
     template<class M>
     template<class C>
-    inline typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value && C::mutableMatrix,
-        typename M::block_type, const typename M::block_type>::Type&
+    inline typename MatrixGraph<M>::template EdgeIteratorT<C>::WeightType&
     MatrixGraph<M>::EdgeIteratorT<C>::weight() const
     {
       return *block_;
@@ -1660,8 +1662,7 @@ namespace Dune
 
     template<class M>
     template<class C>
-    inline typename SelectType<SameType<C, typename RemoveConst<C>::Type>::value && C::mutableMatrix,
-        typename M::block_type, const typename M::block_type>::Type&
+    inline typename MatrixGraph<M>::template VertexIteratorT<C>::WeightType&
     MatrixGraph<M>::VertexIteratorT<C>::weight() const
     {
       return graph_->matrix()[current_][current_];
