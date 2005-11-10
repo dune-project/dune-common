@@ -57,6 +57,7 @@ namespace Dune {
     typedef typename FunctionSpaceType::JacobianRangeType JacobianRangeType;
 
     typedef typename CombinedTraits::GridType GridType;
+    typedef typename CombinedTraits::IndexSetType IndexSetType;
     typedef typename CombinedTraits::IteratorType IteratorType;
     typedef typename CombinedTraits::DofConversionType DofConversionType;
 

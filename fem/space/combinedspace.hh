@@ -263,20 +263,19 @@ namespace Dune {
 
     //- Additional methods
     //! Number of distinct (scalar) base functions
-    int numContainedFunctions() const {
+    int numDifferentBaseFunctions() const {
       return baseFunctionSet_.numBaseFunctions();
     }
 
     //! evaluate base function
-    void evaluateContained(int baseFunct,
-                           const DomainType& x,
-                           ContainedRangeType& phi) const;
+    void evaluateScalar(int baseFunct,
+                        const DomainType& x,
+                        ContainedRangeType& phi) const;
 
     //! evaluate base function at quadrature point
-    void jacobianContained (int baseFunct,
-                            const DomainType& x,
-                            ContainedJacobianRangeType& phi) const;
-
+    void jacobianScalar(int baseFunct,
+                        const DomainType& x,
+                        ContainedJacobianRangeType& phi) const;
 
   private:
     //- Private methods

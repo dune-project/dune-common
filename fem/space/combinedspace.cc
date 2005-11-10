@@ -93,9 +93,9 @@ namespace Dune {
 
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   void CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
-  evaluateContained(int baseFunct,
-                    const DomainType& x,
-                    ContainedRangeType& phi) const
+  evaluateScalar(int baseFunct,
+                 const DomainType& x,
+                 ContainedRangeType& phi) const
   {
     assert(baseFunct >= 0 &&
            baseFunct < baseFunctionSet_.numBaseFunctions());
@@ -104,9 +104,9 @@ namespace Dune {
 
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   void CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
-  jacobianContained(int baseFunct,
-                    const DomainType& x,
-                    ContainedJacobianRangeType& phi) const
+  jacobianScalar(int baseFunct,
+                 const DomainType& x,
+                 ContainedJacobianRangeType& phi) const
   {
     assert(baseFunct >= 0 &&
            baseFunct < baseFunctionSet_.numBaseFunctions());
