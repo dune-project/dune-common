@@ -508,6 +508,10 @@ namespace Dune {
     void init(const EntityType& en);
 
   private:
+    //- Typedefs
+    typedef typename FieldVector<DofType*, N>::size_type SizeType;
+
+  private:
     //- Member data
     const DiscreteFunctionSpaceType& spc_;
     DofStorageType& dofVec_;
