@@ -4,6 +4,7 @@
 #define DUNE_FASTBASE_HH
 
 #include "basefunctions.hh"
+#include <dune/fem/space/dofstorage.hh>
 
 namespace Dune {
 
@@ -56,6 +57,8 @@ namespace Dune {
     enum { DimDomain = FunctionSpaceType::DimDomain };
     enum { DimRange  = FunctionSpaceType::DimRange  };
 
+    typedef BaseFunctionSetDefault<
+        FastBaseFunctionSetTraits<FunctionSpaceType> > BaseType;
   public:
     typedef FastBaseFunctionSetTraits<FunctionSpaceType> BaseFunctionSetType;
     typedef FastBaseFunctionSetTraits<BaseFunctionSetType> Traits;
@@ -64,7 +67,9 @@ namespace Dune {
     typedef BaseFunctionInterface < FunctionSpaceType > BaseFunctionInterfaceType;
 
     //! Constructor
-    FastBaseFunctionSet (FunctionSpaceType & fuspace , int numOfBaseFct);
+    FastBaseFunctionSet(FunctionSpaceType& fuspace,
+                        int numOfBaseFct,
+                        bool trulyVectorial = true);
 
     //! Destructor
     virtual ~FastBaseFunctionSet() {
@@ -115,6 +120,25 @@ namespace Dune {
     //! maximun number of different differentiation order
     enum { numDiffOrd = 3 };
 
+    // * add methods for quadrature type as well
+    void evaluateSingle(int baseFunct,
+                        const DomainType& xLocal,
+                        const RangeType& factor,
+                        DofType& result) const;
+
+    void evaluateSet(const DomainType& xLocal,
+                     const RangeType& factor,
+                     DofVectorType& result) const;
+
+    void evaluateGradientSingle(int baseFunct,
+                                const DomainType& xLocal,
+                                const JacobianRangeType& factor,
+                                DofType& result) const;
+
+    void evaluateGradientSet(const DomainType& xLocal,
+                             const JacobianRangeType& factor,
+                             DofVectorType& result) const;
+
   protected:
     //! set method for storage of the base function pointers
     void setBaseFunctionPointer( int baseFunc, BaseFunctionInterfaceType * func)
@@ -135,6 +159,8 @@ namespace Dune {
     //! vector which holds the base function pointers
     std::vector<BaseFunctionInterfaceType *> baseFunctionList_ ;
 
+    bool trulyVectorial_;
+  private:
     //! method to navigate through the vector vecEvaluate, which holds
     //! precalculated values
     template <int diffOrd>
@@ -157,6 +183,24 @@ namespace Dune {
     //! init the vecEvaluate vector
     template <int diffOrd, class QuadratureType >
     void evaluateInit ( const QuadratureType & quad ) ;
+
+    void evaluateSingleOptim(int baseFunct,
+                             const DomainType& xLocal,
+                             const RangeType& factor,
+                             DofType& result) const;
+
+    void evaluateSetOptim(const DomainType& xLocal,
+                          const RangeType& factor,
+                          DofVectorType& result) const;
+
+    void evaluateGradientSingleOptim(int baseFunct,
+                                     const DomainType& xLocal,
+                                     const JacobianRangeType& factor,
+                                     DofType& result) const;
+
+    void evaluateGradientSetOptim(const DomainType& xLocal,
+                                  const JacobianRangeType& factor,
+                                  DofVectorType& result) const;
 
   }; // end class FastBaseFunctionSet
 
