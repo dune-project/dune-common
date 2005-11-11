@@ -166,7 +166,7 @@ namespace Dune {
     {
       s << " ";                   // space in front of each entry
       s.width(width);             // set width for each entry anew
-      s << static_cast<const K&>(A);                   // yeah, the number !
+      s << static_cast<K>(A);                   // yeah, the number !
     }
   }
 
