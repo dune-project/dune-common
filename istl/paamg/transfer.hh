@@ -70,7 +70,9 @@ namespace Dune
       coarse *= damp;
 
       for(Iterator block=fine.begin(); block != end; ++block) {
-        *block += coarse[aggregates[block.index()]];
+        const Vertex& vertex = aggregates[block.index()];
+        if(vertex != AggregatesMap<Vertex>::ISOLATED)
+          *block += coarse[aggregates[block.index()]];
       }
     }
 
@@ -84,8 +86,11 @@ namespace Dune
 
       typedef typename Vector::const_iterator Iterator;
       Iterator end = fine.end();
-      for(Iterator block=fine.begin(); block != end; ++block)
-        coarse[aggregates[block.index()]] += *block;
+      for(Iterator block=fine.begin(); block != end; ++block) {
+        const Vertex& vertex = aggregates[block.index()];
+        if(vertex != AggregatesMap<Vertex>::ISOLATED)
+          coarse[vertex] += *block;
+      }
     }
     /** @} */
   } // namspace Amg

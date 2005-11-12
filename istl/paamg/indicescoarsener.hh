@@ -179,6 +179,7 @@ namespace Dune
 
       coarseIndices.beginResize();
 
+#ifdef ISTL_WITH_CHECKING
       bool visited = false;
       for(Iterator index = fineIndices.begin(); index != end; ++index)
         if(fineGraph.getVertexProperties(index->local()).visited()) {
@@ -188,25 +189,27 @@ namespace Dune
 
       if(visited)
         throw visited;
+#endif
 
       // Setup the coarse index set and renumber the aggregate consecutively
       // ascending from zero according to the minimum global index belonging
       // to the aggregate
       for(Iterator index = fineIndices.begin(); index != end; ++index) {
-        if(!ExcludedAttributes::contains(index->local().attribute()) && !fineGraph.getVertexProperties(index->local()).visited()) {
-          renumberer.reset();
-          renumberer.attribute(index->local().attribute());
-          renumberer.isPublic(index->local().isPublic());
+        if(aggregates[index->local()]!=AggregatesMap<typename Graph::VertexDescriptor>::ISOLATED)
+          if(!ExcludedAttributes::contains(index->local().attribute()) && !fineGraph.getVertexProperties(index->local()).visited()) {
+            renumberer.reset();
+            renumberer.attribute(index->local().attribute());
+            renumberer.isPublic(index->local().isPublic());
 
-          // Reconstruct aggregate and mark vertices as visited
-          aggregates.template breadthFirstSearch<false>(index->local(), aggregates[index->local()],
-                                                        fineGraph, renumberer, visitedMap);
-          aggregates[index->local()] = renumberer;
-          coarseIndices.add(index->global(),
-                            LocalIndex(renumberer, renumberer.attribute(),
-                                       renumberer.isPublic()));
-          ++renumberer;
-        }
+            // Reconstruct aggregate and mark vertices as visited
+            aggregates.template breadthFirstSearch<false>(index->local(), aggregates[index->local()],
+                                                          fineGraph, renumberer, visitedMap);
+            aggregates[index->local()] = renumberer;
+            coarseIndices.add(index->global(),
+                              LocalIndex(renumberer, renumberer.attribute(),
+                                         renumberer.isPublic()));
+            ++renumberer;
+          }
       }
 
       coarseIndices.endResize();

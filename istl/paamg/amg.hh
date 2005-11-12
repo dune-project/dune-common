@@ -50,7 +50,7 @@ namespace Dune
       };
 
       /**
-       * @brief Constructor.
+       * @brief Construct a new amg with a specific coarse solver.
        * @param matrix The matrix we precondition for.
        * @param solverArgs The arguments needed for the construction of the
        * direct solver to use at the coarsest level.
