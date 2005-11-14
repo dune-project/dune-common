@@ -79,23 +79,6 @@ int switchMethods( GENMESHnD *actHmesh);
 /* add Button which can switch between LevelIteration and LeafIteration */
 //void setupLeafButton(MANAGER *mgr, void *sc, int yesTimeScene);
 
-/***************************************************************************/
-inline static void swapQuadrilateral( double ** vertex, double (* vp)[3])
-{
-  vertex[2] = vp[3];
-  vertex[3] = vp[2];
-}
-
-#if GRAPE_DIM == 3
-inline static void swapHexahedron( double ** vertex, DUNE_ELEM * el)
-{
-  swapQuadrilateral(vertex,el->vpointer);
-
-  vertex[6] = el->vpointer[7];
-  vertex[7] = el->vpointer[6];
-}
-#endif
-
 /*****************************************************************************
 ******************************************************************************
 **                      **
@@ -164,7 +147,7 @@ inline static void free_stackentry(HELEMENT *stel)
 
 inline static void gFreeElement(ELEMENT *el)
 {
-  if (el)
+  if(el)
   {
     free_stackentry((HELEMENT *)el);
   }
@@ -199,20 +182,40 @@ inline static double calc_hmax(HELEMENT *el)
 **
 ******************************************************************************
 *****************************************************************************/
+// update helement pointers
 inline static void helementUpdate( DUNE_ELEM *elem, HELEMENT *grapeEl )
 {
+  assert( elem->type >= 2 );
+  assert( elem->type <  8 );
+
+  // local pointer to vertices
+  static double  * vertex [MAX_EL_DOF] = {0,0,0,0,0,0,0,0};
+
+  // get apropriate vx map
+  const int * dune2GrapeVxMap = dune2GrapeVertex[elem->type];
+
+  // set vpointer of given DUNE_ELEM to HElement
+  // by using the dune to grape refelement mapping
+  for(int i = 0 ; i < MAX_EL_DOF; i++)
+    vertex[i] = (double *)elem->vpointer[dune2GrapeVxMap[i]];
+
+  // set pointers
+  grapeEl->vertex = (double G_CONST*G_CONST*)vertex;
+
   grapeEl->vindex       = elem->vindex ;
   grapeEl->eindex       = elem->eindex ;
   grapeEl->level        = elem->level;
   grapeEl->has_children = elem->has_children;
   grapeEl->user_data    = (void *)elem ;
+
+  // select appropriate element description
+  grapeEl->descr = elementDescriptions[elem->type];
+  return ;
 }
 
 inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
 {
-  int i ;
   HELEMENT * el = get_stackentry();
-  static double * vertex[MAX_EL_DOF] = { 0,0,0,0,0,0,0,0 };
   DUNE_ELEM * elem = (DUNE_ELEM *) el->user_data;
 
   assert(mesh);
@@ -243,56 +246,12 @@ inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
   el->level = 0;
   el->mesh  = (GENMESHnD *)mesh ;
 
-  for(i = 0 ; i < MAX_EL_DOF; i++)
-  {
-    vertex[i] = (double *)elem->vpointer[i];
-  }
-
-  el->vertex = (double G_CONST*G_CONST*)vertex;
-
   helementUpdate(elem,el);
   ((STACKENTRY *)el)->hmax = calc_hmax(el);
 
-  // reset element description
-  el->descr = 0;
+  el->vinh    = NULL ;
+  ((STACKENTRY *)el)->ref_flag   = -1;
 
-  /********************************************************/
-  /*   dim == 3 */
-#if GRAPE_DIM == 2
-  if (elem->type == gr_triangle)
-  {
-    el->descr           = (ELEMENT_DESCRIPTION *)&triangle_description ;
-    el->vinh    = NULL ;
-    ((STACKENTRY *)el)->ref_flag   = -1;
-  }
-  else if (elem->type == gr_quadrilateral)
-  {
-    swapQuadrilateral( vertex, elem->vpointer);
-
-    el->descr           = (ELEMENT_DESCRIPTION *)&quadrilateral_description ;
-    el->vinh    = NULL ;
-    ((STACKENTRY *)el)->ref_flag   = -1;
-  }
-#endif
-
-  /********************************************************/
-  /*   dim == 3 */
-#if GRAPE_DIM==3
-  if (elem->type == gr_tetrahedron)
-  {
-    el->descr           = (ELEMENT_DESCRIPTION *) &tetra_description ;
-    el->vinh    = NULL ;
-    ((STACKENTRY *)el)->ref_flag   = -1;
-  }
-  else if (elem->type == gr_hexahedron)
-  {
-    swapHexahedron(vertex,elem);
-
-    el->descr   = (ELEMENT_DESCRIPTION *)&cube_description ;
-    el->vinh    = NULL ;
-    ((STACKENTRY *)el)->ref_flag   = -1;
-  }
-#endif
   /***************************************************************/
   // is this assertion is thrown then something with the geometry types is
   // wrong
@@ -305,15 +264,15 @@ inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
 inline static HELEMENT * next_macro(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
 {
   int mflag=0;
+
   assert(el) ;
 
   el->present = (MESH_ELEMENT_FLAGS) (hefAll & ! hefVinh);
   mflag = (*(((struct dune_dat *)(el->mesh->user_data))->next_macro))((DUNE_ELEM *)el->user_data);
   if(mflag)
   {
-    helementUpdate(((DUNE_ELEM *)el->user_data),el);
+    helementUpdate( ((DUNE_ELEM *)el->user_data) , el);
     ((STACKENTRY *)el)->hmax = calc_hmax(el);
-
     return(el) ;
   }
   else
@@ -329,8 +288,7 @@ inline static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
 {
   HELEMENT * el;
   DUNE_ELEM * elem;
-  static double  * vertex [MAX_EL_DOF] = {0,0,0,0,0,0,0,0};
-  int i , actlevel = ael->level;
+  int actlevel = ael->level;
 
   if ( actlevel < ((HMESH *)ael->mesh)->level_of_interest )
   {
@@ -349,57 +307,15 @@ inline static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
     /* call the dune method */
     if((*(((struct dune_dat *)(ael->mesh->user_data))->first_child))(elem))
     {
-      el->level =  actlevel+1;
-      el->mesh              = ael->mesh ;
-
-      for(i = 0 ; i < MAX_EL_DOF; i++)
-        vertex[i] = (double *)elem->vpointer[i];
-
-      el->vertex = (double G_CONST*G_CONST*)vertex;
+      el->level = actlevel+1;
+      el->mesh  = ael->mesh ;
 
       helementUpdate(elem,el);
       el->parent    = ael;
       ((STACKENTRY *)el)->hmax = ((STACKENTRY *)ael)->hmax *0.5;
 
-      el->descr = 0;
-
-#if GRAPE_DIM == 2
-      /*************************************************/
-      /* dim == 2 */
-      if (elem->type == gr_triangle)
-      {
-        el->descr = (ELEMENT_DESCRIPTION *)&triangle_description ;
-        el->vinh  = NULL ;
-        ((STACKENTRY *)el)->ref_flag   = -1;
-      }
-      else if (elem->type == gr_quadrilateral)
-      {
-        /* change point 2 and 3 because grape is different compared to dune */
-        swapQuadrilateral( vertex, elem->vpointer);
-
-        el->descr = (ELEMENT_DESCRIPTION *)&quadrilateral_description ;
-        el->vinh    = NULL ;
-        ((STACKENTRY *)el)->ref_flag   = -1;
-      }
-#endif
-      /*************************************************/
-      /* dim == 3 */
-#if GRAPE_DIM == 3
-      if (elem->type == gr_tetrahedron)
-      {
-        el->descr   = (ELEMENT_DESCRIPTION *)&tetra_description ;
-        el->vinh    = NULL ;
-        ((STACKENTRY *)el)->ref_flag   = -1;
-      }
-      else if (elem->type == gr_hexahedron)
-      {
-        swapHexahedron(vertex,elem);
-
-        el->descr   = (ELEMENT_DESCRIPTION *)&cube_description ;
-        el->vinh    = NULL ;
-        ((STACKENTRY *)el)->ref_flag   = -1;
-      }
-#endif
+      el->vinh  = NULL ;
+      ((STACKENTRY *)el)->ref_flag   = -1;
       /****************************************************/
       // is this assertion is thrown then something with the geometry types is
       // wrong
@@ -420,11 +336,13 @@ inline static HELEMENT * next_child(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
   assert(el) ;
   el->present = (MESH_ELEMENT_FLAGS) (hefAll & !hefVinh);
 
-  if((*(((struct dune_dat *)(el->mesh->user_data))->next_child))((DUNE_ELEM *)el->user_data)) {
+  if((*(((struct dune_dat *)(el->mesh->user_data))->next_child))((DUNE_ELEM *)el->user_data))
+  {
+    DUNE_ELEM * elem = ((DUNE_ELEM *)el->user_data);
     ((STACKENTRY *)el)->ref_flag++;
-    helementUpdate(((DUNE_ELEM *)el->user_data),el);
+    helementUpdate(elem,el);
 
-    if  (((DUNE_ELEM *)el->user_data)->type == 3)
+    if(elem->type == 3) // triangle ????
     {
       el->vinh = NULL;
     }
