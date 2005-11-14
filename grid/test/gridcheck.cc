@@ -234,13 +234,11 @@ struct IntersectionIteratorInterface
   static void check (IntersectionIterator &i)
   {
     // increment / equality / ...
-#ifndef ALUWORKAROUND
     IntersectionIterator j = i;
     j++;
     i == j;
     i != j;
     j = i;
-#endif
 
     // state
     i.boundary();
@@ -664,12 +662,7 @@ void assertNeighbor (Grid &g)
 
   LevelIterator e = g.template lbegin<0>(0);
   const LevelIterator eend = g.template lend<0>(0);
-#ifndef ALUWORKAROUND
-  // very useful code, indeed
   LevelIterator next = e;
-#else
-  LevelIterator next = g.template lbegin<0>(0);
-#endif
   ++next;
   typedef typename Grid::template Codim<0>::GlobalIdSet GlobalIdSet;
   const GlobalIdSet & globalid = g.globalIdSet();
@@ -750,26 +743,14 @@ void assertNeighbor (Grid &g)
  */
 template <class Grid, class It>
 struct _callMark {
-#ifndef ALUWORKAROUND
-  static void mark (Grid & g, It it) { g.mark(1,it); };
-#else
-  static void mark (Grid & g, It & it) { g.mark(1,it); };
-#endif
+  static void mark (Grid & g, const It & it) { g.mark(1,it); };
 };
 template <class Grid, class It>
 struct _callMark<const Grid, It> {
-#ifndef ALUWORKAROUND
-  static void mark (const Grid & g, It it) { };
-#else
-  static void mark (const Grid & g, It & it) { };
-#endif
+  static void mark (const Grid & g, const It & it) { };
 };
 template <class Grid, class It>
-#ifndef ALUWORKAROUND
-void callMark(Grid & g, It it)
-#else
-void callMark(Grid & g, It & it)
-#endif
+void callMark(Grid & g, const It & it)
 {
   assert (it->isLeaf());
   _callMark<Grid,It>::mark(g,it);
@@ -791,16 +772,12 @@ void iterate(Grid &g)
 
   for (; it != endit; ++it)
   {
-#ifndef ALUWORKAROUND
     LevelIterator l1 = it;
     LevelIterator l2 = l1++;
     assert(l2 == it);
     assert(l1 != it);
     l2++;
     assert(l1 == l2);
-#else
-#warning Disabled assignment test for AluGrid
-#endif
     result = it->geometry().local(it->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
     if(error >= factorEpsilon * std::numeric_limits<typename Grid::ctype>::epsilon())
@@ -818,17 +795,11 @@ void iterate(Grid &g)
 
     // Mark is only defined for leaf entities
     callMark(g, it);
-#ifndef ALUWORKAROUND
     EntityPointer ept = it;
     callMark(g, ept);
     HierarchicIterator hit = ept->hbegin(99);
     HierarchicIterator hend = ept->hend(99);
     if (hit != hend) callMark(g, hit);
-#else
-    HierarchicIterator hit  = it->hbegin(99);
-    HierarchicIterator hend = it->hend(99);
-    if (hit != hend) callMark(g, hit);
-#endif
   }
 
   typedef typename Grid::template Codim<0>::LeafIterator LeafIterator;
@@ -838,14 +809,13 @@ void iterate(Grid &g)
     DUNE_THROW(CheckError, "leafbegin() == leafend()");
   for (; lit != lend; ++lit)
   {
-#ifndef ALUWORKAROUND
     LeafIterator l1 = lit;
     LeafIterator l2 = l1++;
     assert(l2 == lit);
     assert(l1 != lit);
     l2++;
     assert(l1 == l2);
-#endif
+
     result = lit->geometry().local(lit->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
     if(error >= factorEpsilon * std::numeric_limits<typename Grid::ctype>::epsilon())
@@ -881,22 +851,15 @@ void iteratorEquals (Grid &g)
   HierarchicIterator h2 = l2->hbegin(99);
   IntersectionIterator i1 = l1->ibegin();
   IntersectionIterator i2 = l2->ibegin();
-#ifndef ALUWORKAROUND
   EntityPointer e1 = l1;
   EntityPointer e2 = h2;
-#else
-  EntityPointer e1 = g.template leafbegin<0>();
-  EntityPointer e2 = g.template lbegin<0>(0);
-#endif
 
-#ifndef ALUWORKAROUND
   // assign
   l1 = l2;
   L1 = L2;
   h1 = h2;
   i1 = i2;
   e1 = e2;
-#endif
 
   // equals
   #define TestEquals(i) { \
