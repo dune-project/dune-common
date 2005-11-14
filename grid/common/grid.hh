@@ -190,9 +190,20 @@ namespace Dune {
   // G R I D
   //************************************************************************
 
-  //! Grid interface class
-  //! This class should actually be called GridInterface since it defines the
-  //! basic interface for all grid classes
+  /**
+     \brief Grid interface class
+
+     This class should actually be called GridInterface since it defines the
+     basic interface for all grid classes
+
+     template parameters:
+   * <tt>dim</tt> precifies the dimesion of the grid.
+   * <tt>dimworld</tt> precifies the dimesion of the world, this can be
+       different from dim, if the grid is defined on a manifold .
+   * <tt>ct</tt> field type of the world vector space.
+   * <tt>GridFamily</tt> trait class providing all information
+       associated with the grid implementation.
+   */
   template< int dim, int dimworld, class ct, class GridFamily>
   class Grid {
     typedef typename GridFamily::Traits::Grid GridImp;
