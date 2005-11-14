@@ -76,9 +76,6 @@ namespace Dune {
       assert( count == (unsigned int)lset.size(dim,vertex) );
     }
 
-    ReferenceElementWrapper< ReferenceSimplex< coordType, dim > > refSimplex;
-    ReferenceElementWrapper< ReferenceCube   < coordType, dim > > refCube;
-
     {
       // choose the right reference element
       Iterator refend = lset.template end  <0,All_Partition>();
@@ -87,27 +84,20 @@ namespace Dune {
 
       GeometryType type = refit->geometry().type();
 
+      const ReferenceElement< coordType, dim > & refElem =
+        ReferenceElements< coordType, dim >::general(type);
+
+      // print dune reference element
+      sout << "Dune reference element provides: \n";
+      for(int i=0; i<refElem.size(codim); i++)
       {
-        ReferenceElement< coordType, dim > * refEl = 0;
-        if(type == simplex) refEl = &refSimplex;
-        if(type == cube) refEl = &refCube;
-        // if this assertion is thrown then geometry type is wrong
-        assert( refEl );
-
-        const ReferenceElement< coordType, dim > & refElem = *refEl;
-
-        // print dune reference element
-        sout << "Dune reference element provides: \n";
-        for(int i=0; i<refElem.size(codim); i++)
+        sout << i << " subEntity [";
+        int s = refElem.size(i,codim,dim);
+        for(int j=0; j<s; j++)
         {
-          sout << i << " subEntity [";
-          int s = refElem.size(i,codim,dim);
-          for(int j=0; j<s; j++)
-          {
-            sout << refElem.subEntity(i , codim , j , dim );
-            if(j == s-1) sout << "]\n";
-            else sout << ",";
-          }
+          sout << refElem.subEntity(i , codim , j , dim );
+          if(j == s-1) sout << "]\n";
+          else sout << ",";
         }
       }
     }
@@ -118,13 +108,10 @@ namespace Dune {
           it != endit; ++it)
       {
         GeometryType type = it->geometry().type();
-        ReferenceElement< coordType, dim > * refEl = 0;
-        if(type == simplex) refEl = &refSimplex;
-        if(type == cube) refEl = &refCube;
-        // if this assertion is thrown then geometry type is wrong
-        assert( refEl );
 
-        const ReferenceElement< coordType, dim > & refElem = *refEl;
+        const ReferenceElement< coordType, dim > & refElem =
+          ReferenceElements< coordType, dim >::general(type);
+
         sout << "****************************************\n";
         sout << "Element = " << lset.index(*it) << " on level " << it->level () << "\n";
         sout << "Vertices      = [";
