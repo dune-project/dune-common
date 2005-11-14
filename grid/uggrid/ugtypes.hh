@@ -33,13 +33,7 @@ namespace UG3d {
 namespace Dune {
 
   template <int dim>
-  class UGTypes
-  {
-  public:
-    typedef void MultiGridType;
-
-    typedef void DomainType;
-  };
+  class UGTypes {};
 
   template <>
   class UGTypes<2>
@@ -71,12 +65,7 @@ namespace Dune {
   /*****************************************************************/
 
   template <int dim>
-  class UGVectorType
-  {
-  public:
-    typedef void T;
-
-  };
+  class UGVectorType {};
 
   template <>
   class UGVectorType<3>
