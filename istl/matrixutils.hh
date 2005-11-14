@@ -8,6 +8,15 @@
 
 namespace Dune
 {
+  /** @addtogroup ISTL
+   *
+   * @{
+   */
+  /**
+   * @file
+   * @brief Some handy generic functions for ISTL matrices.
+   * @author Markus Blatt
+   */
   template<int i>
   struct NonZeroCounter
   {
@@ -29,29 +38,7 @@ namespace Dune
       return nonZeros;
     }
   };
-  /*
-     template<>
-     struct NonZeroCounter<1>
-     {
-     template<class M>
-     static typename M::size_type count(const M& matrix)
-     {
-      typedef typename M::ConstRowIterator RowIterator;
 
-      RowIterator endRow = matrix.end();
-      typename M::size_type nonzeros = 0;
-
-      for(RowIterator row = matrix.begin(); row != endRow; ++row){
-        typedef typename RowIterator::ConstIterator Entry;
-        Entry endEntry = row->begin();
-        for(Entry entry = row->begin(); entry != endEntry; ++entry){
-          nonzeros += NonZeroCounter<i-1>::count(*entry);
-        }
-      }
-      return nonZeros;
-     }
-     };
-   */
   template<>
   struct NonZeroCounter<1>
   {
@@ -78,6 +65,11 @@ namespace Dune
   {
     return NonZeroCounter<M::blocklevel>::count(matrix);
   }
+  /*
+     template<class M>
+     struct ProcessOnFieldsOfMatrix
+   */
 
+  /** @} */
 }
 #endif
