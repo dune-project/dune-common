@@ -98,7 +98,7 @@ namespace Dune
         std::cerr << "not enough memory in P1FEFunction" << std::endl;
         throw;         // rethrow exception
       }
-      std::cout << "making FE function with " << mapper_.size() << " components" << std::endl;
+      dverb << "making FE function with " << mapper_.size() << " components" << std::endl;
     }
 
     //! deallocate the vector
