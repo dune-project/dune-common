@@ -132,26 +132,6 @@ namespace Dune
     }
   }
 
-  //! convert new geometry types to old ones
-  //! hack at this monment
-  static inline GeometryType  geomTypeConvert ( GeometryType type , int dim )
-  {
-    GeometryType t = type;
-    if(t == simplex)
-    {
-      if(dim == 1) t = line;
-      if(dim == 2) t = triangle;
-      if(dim == 3) t = tetrahedron;
-    }
-    if(t == cube)
-    {
-      if(dim == 1) t = line;
-      if(dim == 2) t = quadrilateral;
-      if(dim == 3) t = hexahedron;
-    }
-    return t;
-  }
-
 } // end namespace Dune
 
 #include "grape/grapedatadisplay.cc"

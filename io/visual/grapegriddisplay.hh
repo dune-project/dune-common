@@ -170,6 +170,54 @@ namespace Dune
   }; // end class GrapeGridDisplay
 
 
+  /**************************************************************************/
+  /*  element types, see dune/grid/common/grid.hh */
+  enum GRAPE_ElementType
+  {g_vertex=0,  g_line=1,  g_triangle=2,  g_quadrilateral=3,g_tetrahedron=4,
+   g_pyramid=5, g_prism=6, g_hexahedron=7,g_iso_triangle=8, g_iso_quadrilateral=9,
+   g_unknown=127};
+
+
+  //! convert new geometry types to old ones
+  //! hack at this monment
+  static inline GeometryType  geomTypeConvert ( GeometryType type , int dim )
+  {
+    GeometryType t = type;
+    if(t == simplex)
+    {
+      if(dim == 1) t = line;
+      if(dim == 2) t = triangle;
+      if(dim == 3) t = tetrahedron;
+    }
+    if(t == cube)
+    {
+      if(dim == 1) t = line;
+      if(dim == 2) t = quadrilateral;
+      if(dim == 3) t = hexahedron;
+    }
+    return t;
+  }
+
+  //! convert new geometry types to old ones
+  //! hack at this monment
+  static inline GRAPE_ElementType convertToGrapeType ( GeometryType type , int dim )
+  {
+    GeometryType t = geomTypeConvert(type,dim);
+    switch(t)
+    {
+    case vertex :        return g_vertex;
+    case line :          return g_line;
+    case triangle :      return g_triangle;
+    case quadrilateral : return g_quadrilateral;
+    case tetrahedron :   return g_tetrahedron;
+    case pyramid :       return g_pyramid;
+    case prism :         return g_prism;
+    case hexahedron :    return g_hexahedron;
+    }
+    return g_unknown;
+  }
+
+
 } // end namespace Dune
 
 
