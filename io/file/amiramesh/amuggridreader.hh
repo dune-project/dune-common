@@ -78,14 +78,6 @@ namespace Dune {
                                  AmiraMesh* am,
                                  std::vector<int>& isBoundaryNode);
 
-    static void detectBoundarySegments(int* elemData,
-                                       int noOfElem,
-                                       std::vector<FieldVector<int, 4> >& face_list);
-
-    static void detectBoundarySegments(int* elemData,
-                                       int noOfElem,
-                                       std::vector<FieldVector<int, 3> >& face_list);
-
   };
 
 
@@ -105,12 +97,6 @@ namespace Dune {
     /** \brief Read a grid */
     static void read(UGGrid<2,2>& grid,
                      const std::string& filename);
-
-  protected:
-    static void detectBoundarySegments(int* elemData,
-                                       int numElems,
-                                       std::vector<FieldVector<int, 2> >& face_list,
-                                       bool containsOnlyTriangles);
 
   };
 
