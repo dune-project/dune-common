@@ -33,7 +33,7 @@ typedef F_HEL_INFO2D F_EL_INFO;
 #endif
 
 /**************************************************************************/
-/*  element types, see dune/grid/common/grid.hh */
+/*  element types, see dune/grid/common/grid.hh and grapegriddisplay.hh */
 enum GR_ElementType
 {gr_vertex=0,gr_line=1, gr_triangle=2, gr_quadrilateral=3,gr_tetrahedron=4,
  gr_pyramid=5, gr_prism=6, gr_hexahedron=7,gr_iso_triangle=8, gr_iso_quadrilateral=9,
@@ -240,29 +240,22 @@ static G_CONST double *quadrilateral_local_coordinate_system[4] = {quadrilateral
 
 static HELEMENT3D_DESCRIPTION tetra_description;
 
-/* vertex indices of the polygons for a tetrahedron           */
+/* vertex indices of the polygons (faces) for a tetrahedron           */
 static int t_v0_e[3] = {1,3,2},   t_v1_e[3] = {0,2,3};
 static int t_v2_e[3] = {0,3,1},   t_v3_e[3] = {0,1,2};
+
 /* polygon adjacencies  for a tetrahedron                     */
 static int t_p0_e[3] = {2,1,3},   t_p1_e[3] = {3,0,2};
 static int t_p2_e[3] = {1,0,3},   t_p3_e[3] = {2,0,1};
+
 /* local coordinates of the vertices for a tetrahedron        */
 static double t_c0[4] = {1.,0.,0.,0.}, t_c1[4] = {0.,1.,0.,0.};
 static double t_c2[4] = {0.,0.,1.,0.}, t_c3[4] = {0.,0.,0.,1.};
 
-static int tetra_polygon_length[4] =  {3, 3, 3, 3};
-static G_CONST int    *tetra_vertex_e[4] =       {t_v0_e,t_v1_e,t_v2_e,t_v3_e};
+static int tetra_polygon_length[4]          = {3, 3, 3, 3};
+static G_CONST int    *tetra_vertex_e[4]       = {t_v0_e,t_v1_e,t_v2_e,t_v3_e};
 static G_CONST int    *tetra_next_polygon_e[4] = {t_p0_e,t_p1_e,t_p2_e,t_p3_e};
 static G_CONST double *tetra_local_coordinate_system[4] =  {t_c0,t_c1,t_c2,t_c3};
-
-/*static ELEMENT3D_DESCRIPTION tetra_description_even =
-   {
-   5, 4 , 4 , tetra_polygon_length, tetra_vertex_e, tetra_next_polygon_e,
-   4, tetra_local_coordinate_system, 1,
-   tetra_world2coord, tetra_coord2world, tetra_check_inside,
-   tetra_neighbour,  tetra_boundary
-   };
- */
 
 #if 0
 /* vertex indices of the polygons for a tetrahedron           */
@@ -281,7 +274,7 @@ static int    *tetra_next_polygon_o[4] = {t_p0_o,t_p1_o,t_p2_o,t_p3_o};
    5, 4 , 4 , tetra_polygon_length, tetra_vertex_o, tetra_next_polygon_o,
    4, tetra_local_coordinate_system, 1,
    tetra_world2coord, tetra_coord2world, tetra_check_inside,
-   tetra_neighbour,  tetra_boundary
+   dummy_neighbour,  wrap_boundary
    };
  */
 
@@ -294,17 +287,16 @@ static int    *tetra_next_polygon_o[4] = {t_p0_o,t_p1_o,t_p2_o,t_p3_o};
 ******************************************************************************
 *****************************************************************************/
 
-inline static HELEMENT3D * tetra_neighbour(HELEMENT3D *el, int np, int flag,
+inline static HELEMENT3D * dummy_neighbour(HELEMENT3D *el, int np, int flag,
 
                                            double * coord, double * xyz, MESH_ELEMENT_FLAGS p) {
 
   printf(" neighbour nicht implementiert \n");
-
   return el ;
 
 }
 
-inline static int tetra_boundary(HELEMENT3D * el, int np)
+inline static int wrap_boundary(HELEMENT3D * el, int np)
 {
   return ((DUNE_ELEM *)el->user_data)->bnd[np] ;
 }
@@ -352,13 +344,77 @@ static HELEMENT3D_DESCRIPTION cube_description;
 static VEC3 cc1={0.,0.,0.},cc2={1.,0.,0.},cc3={1.,1.,0.},cc4={0.,1.,0.},
             cc5={0.,0.,1.},cc6={1.,0.,1.},cc7={1.,1.,1.},cc8={0.,1.,1.};
 static G_CONST double *cube_local_coordinate_system[8] = {cc1,cc2,cc3,cc4,cc5,cc6,cc7,cc8};
+// how many polygons on which face
 static int cube_polygon_length[6] = {4,4,4,4,4,4};
+// vertices of the faces
 static int cv1[4]={0,3,2,1},cv2[4]={4,5,6,7},cv3[4]={0,1,5,4},
            cv4[4]={1,2,6,5},cv5[4]={2,3,7,6},cv6[4]={0,4,7,3};
 static G_CONST int *cube_polygon_vertex[6] = {cv1,cv2,cv3,cv4,cv5,cv6};
 static int cn1[4]={5,4,3,2},cn2[4]={2,3,4,5},cn3[4]={0,3,1,5},
            cn4[4]={0,4,1,2},cn5[4]={0,5,1,3},cn6[4]={2,1,4,0};
 static G_CONST int *cube_polygon_neighbour[6] = {cn1,cn2,cn3,cn4,cn5,cn6};
+
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************
+*  HELEMENT3D_DESCRIPTION for Pyramids             *
+*****************************************************************************/
+static HELEMENT3D_DESCRIPTION pyra_description;
+
+static VEC3 pyc1={0.,0.,0.},pyc2={1.,0.,0.},pyc3={1.,1.,0.},
+            pyc4={0.,1.,0.},pyc5={0.,0.,1.};
+static G_CONST double *pyra_local_coordinate_system[5] = {pyc1,pyc2,pyc3,pyc4,pyc5};
+
+#if 0
+static int pyra_polygon_length[5] = {3,3,3,3,4};
+static int pyv5[4]={0,1,2,3},pyv2[3]={0,4,1},pyv3[3]={1,4,2},
+           pyv4[3]={2,4,3}  ,pyv1[3]={0,3,4};
+static G_CONST int *pyra_polygon_vertex[5] = {pyv1,pyv2,pyv3,pyv4,pyv5};
+static int pyn1[4]={-1,-1,-1,-1},pyn2[3]={-1,-1,-1},pyn3[3]={-1,-1,-1},
+           pyn4[3]={-1,-1,-1}  ,pyn5[3]={-1,-1,-1};
+#endif
+#if 1
+static int pyra_polygon_length[5] = {4,3,3,3,3};
+static int pyv1[4]={0,1,2,3},pyv2[3]={0,4,1},pyv3[3]={1,4,2},
+           pyv4[3]={2,4,3}  ,pyv5[3]={0,3,4};
+static G_CONST int *pyra_polygon_vertex[5] = {pyv1,pyv2,pyv3,pyv4,pyv5};
+
+static int pyn1[4]={5,4,3,2},pyn2[3]={0,2,4},pyn3[3]={0,3,1},
+           pyn4[3]={0,4,2}  ,pyn5[3]={0,1,3};
+#endif
+static G_CONST int *pyra_polygon_neighbour[5] = {pyn1,pyn2,pyn3,pyn4,pyn5};
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************
+*  HELEMENT3D_DESCRIPTION for Prism             *
+*****************************************************************************/
+static HELEMENT3D_DESCRIPTION prism_description;
+
+static VEC3 prc1={0.,0.,0.},prc2={1.,0.,0.},prc3={0.,1.,0.},
+            prc4={0.,0.,1.},prc5={1.,0.,1.},prc6={0.,1.,1.};
+static G_CONST double *prism_local_coordinate_system[6] = {prc1,prc2,prc3,prc4,prc5,prc6};
+
+// how many polygons on which face
+static int prism_polygon_length[5] = {3,4,4,4,3};
+
+// vertices of the faces
+static int prv1[3]={0,1,2},  prv2[4]={0,1,4,3},prv3[4]={1,2,5,4},
+           prv4[4]={2,0,3,5},prv5[3]={3,4,5};
+
+static G_CONST int *prism_polygon_vertex[5] = {prv1,prv2,prv3,prv4,prv5};
+
+static int prn1[4]={5,4,3,2},prn2[4]={2,3,4,5},prn3[4]={0,3,1,5},
+           prn4[4]={0,4,1,2},prn5[4]={0,5,1,3},prn6[4]={2,1,4,0};
+static G_CONST int *prism_polygon_neighbour[6] = {prn1,prn2,prn3,prn4,prn5,prn6};
 
 /*  Standard description                */
 /****************************************************************************/
@@ -507,7 +563,7 @@ inline void setupReferenceElements()
 
   tetra_description.dindex             = 4;   // index of description
   tetra_description.number_of_vertices = 4;
-  tetra_description.number_of_polygons = 4;
+  tetra_description.number_of_polygons = 4;   // i.e. number of faces
   tetra_description.polygon_length = tetra_polygon_length;
   tetra_description.polygon_vertex  = tetra_vertex_e;
   tetra_description.polygon_neighbour  = tetra_next_polygon_e;
@@ -517,19 +573,57 @@ inline void setupReferenceElements()
   tetra_description.world_to_coord     = world2coord_3d;
   tetra_description.coord_to_world     = coord2world_3d;
   tetra_description.check_inside       = el_check_inside_3d;
-  tetra_description.neighbour          = tetra_neighbour;
-  tetra_description.boundary           = tetra_boundary;
+  tetra_description.neighbour          = dummy_neighbour;
+  tetra_description.boundary           = wrap_boundary;
   tetra_description.get_boundary_vertex_estimate = NULL;
-  tetra_description.get_boundary_face_estimate = NULL;
-  tetra_description.coord_of_parent = NULL;
+  tetra_description.get_boundary_face_estimate   = NULL;
+  tetra_description.coord_of_parent              = NULL;
 
+  /* pyramid */
+  pyra_description.dindex             = 5;   // index of description , see element type
+  pyra_description.number_of_vertices = 5;
+  pyra_description.number_of_polygons = 5;   // i.e. number of faces
+  pyra_description.polygon_length     = pyra_polygon_length;
+  pyra_description.polygon_vertex     = pyra_polygon_vertex;
+  pyra_description.polygon_neighbour  = pyra_polygon_neighbour;
+  pyra_description.dimension_of_coord = 3;   // GRAPE_DIM
+  pyra_description.coord              = pyra_local_coordinate_system;
+  pyra_description.parametric_degree  = 1;
+  pyra_description.world_to_coord     = world2coord_3d;
+  pyra_description.coord_to_world     = coord2world_3d;
+  pyra_description.check_inside       = el_check_inside_3d;
+  pyra_description.neighbour          = dummy_neighbour;
+  pyra_description.boundary           = wrap_boundary;
+  pyra_description.get_boundary_vertex_estimate = NULL;
+  pyra_description.get_boundary_face_estimate   = NULL;
+  pyra_description.coord_of_parent              = NULL;
+
+
+  /* prism */
+  prism_description.dindex             = 6;   // index of description
+  prism_description.number_of_vertices = 6;
+  prism_description.number_of_polygons = 5;   // i.e. number of faces
+  prism_description.polygon_length     = prism_polygon_length;
+  prism_description.polygon_vertex     = prism_polygon_vertex;
+  prism_description.polygon_neighbour  = prism_polygon_neighbour;
+  prism_description.dimension_of_coord = 3;   // GRAPE_DIM
+  prism_description.coord              = prism_local_coordinate_system;
+  prism_description.parametric_degree  = 1;
+  prism_description.world_to_coord     = world2coord_3d;
+  prism_description.coord_to_world     = coord2world_3d;
+  prism_description.check_inside       = el_check_inside_3d;
+  prism_description.neighbour          = dummy_neighbour;
+  prism_description.boundary           = wrap_boundary;
+  prism_description.get_boundary_vertex_estimate = NULL;
+  prism_description.get_boundary_face_estimate   = NULL;
+  prism_description.coord_of_parent              = NULL;
 
   /* Hexahedrons */
   cube_description.dindex             = 7;   // index of description
   cube_description.number_of_vertices = 8;
-  cube_description.number_of_polygons = 6;
-  cube_description.polygon_length = cube_polygon_length;
-  cube_description.polygon_vertex  = cube_polygon_vertex;
+  cube_description.number_of_polygons = 6;   // i.e. number of faces
+  cube_description.polygon_length     = cube_polygon_length;
+  cube_description.polygon_vertex     = cube_polygon_vertex;
   cube_description.polygon_neighbour  = cube_polygon_neighbour;
   cube_description.dimension_of_coord = 3;   // GRAPE_DIM
   cube_description.coord              = cube_local_coordinate_system;
@@ -537,11 +631,12 @@ inline void setupReferenceElements()
   cube_description.world_to_coord     = world2coord_3d;
   cube_description.coord_to_world     = coord2world_3d;
   cube_description.check_inside       = el_check_inside_3d;
-  cube_description.neighbour          = tetra_neighbour;
-  cube_description.boundary           = tetra_boundary;
+  cube_description.neighbour          = dummy_neighbour;
+  cube_description.boundary           = wrap_boundary;
   cube_description.get_boundary_vertex_estimate = NULL;
   cube_description.get_boundary_face_estimate = NULL;
   cube_description.coord_of_parent = NULL;
+
 
   /* inheritance rules */
   inheritance_rule_in_child_0[0] = vinherit_point_0_in_child_0;
@@ -552,5 +647,37 @@ inline void setupReferenceElements()
   inheritance_rule_in_child_1[1] = vinherit_point_1_in_child_1;
   inheritance_rule_in_child_1[2] = vinherit_point_2;
 }
+
+//vector holding the descriptions enumerated after it's index
+static ELEMENT_DESCRIPTION * elementDescriptions[8] = {
+  0,0,
+  (ELEMENT_DESCRIPTION *)&triangle_description,
+  (ELEMENT_DESCRIPTION *)&quadrilateral_description,
+  (ELEMENT_DESCRIPTION *)&tetra_description,
+  (ELEMENT_DESCRIPTION *)&pyra_description,
+  (ELEMENT_DESCRIPTION *)&prism_description,
+  (ELEMENT_DESCRIPTION *)&cube_description
+};
+
+// the mapping of the reference elements
+static int dune2GrapeDefaultMap[MAX_EL_DOF] = {0,1,2,3,4,5,6,7};
+static int * dune2GrapeTriangle      = dune2GrapeDefaultMap;
+static int * dune2GrapeTetrahedron   = dune2GrapeDefaultMap;
+static int * dune2GrapePyramid       = dune2GrapeDefaultMap;
+static int * dune2GrapePrism         = dune2GrapeDefaultMap;
+
+// for quads the vertices 2,3 are swaped
+static int dune2GrapeQuadrilateral[MAX_EL_DOF] = {0,1,3,2,4,5,6,7};
+// for hexas the vertices 2,3 and 6,7 are swaped
+static int dune2GrapeHexahedron[MAX_EL_DOF] = {0,1,3,2,4,5,7,6};
+
+// mapping from dune to grape
+static int * dune2GrapeVertex[8] = { 0 , 0 ,
+                                     dune2GrapeTriangle ,
+                                     dune2GrapeQuadrilateral ,
+                                     dune2GrapeTetrahedron,
+                                     dune2GrapePyramid ,
+                                     dune2GrapePrism ,
+                                     dune2GrapeHexahedron};
 
 #endif
