@@ -42,8 +42,8 @@ namespace Dune {
     typedef typename IndexSetType :: template Codim<0>::template Partition<All_Partition> :: Iterator Iterator;
     typedef typename GridType :: ctype coordType;
 
-    typedef std::map < int , std::pair<int,int> > edgemapType;
-    std::map < int , std::vector<int> > edges;
+    typedef std::map < int , std::pair<int,int> > subEntitymapType;
+    std::map < int , std::vector<int> > subEntities;
     std::map < std::vector<int> , int > vertices;
 
     std::map < int , FieldVector<coordType,dim> > vertexCoordsMap;
@@ -156,17 +156,35 @@ namespace Dune {
         }
 
         // check all subEntities of codimension  codim
-        for(int edge = 0; edge< it->template count<codim>(); edge++)
+        if(it->template count<codim>() != refElem.size(0,0,codim))
+        {
+          std::cerr << "entity index = " << lset.index(*it)
+                    << ", type = " << GeometryName(type)
+                    << std::endl
+                    << "codim = " << codim
+                    << std::endl
+                    << "count<codim>() = " << it->template count<codim>()
+                    << std::endl
+                    << "refElem.size(codim) = " << refElem.size(0,0,codim)
+                    << std::endl;
+          DUNE_THROW(GridError,
+                     "wrong number of subEntities of codim " << codim);
+        }
+        for(int subEntity = 0; subEntity < refElem.size(0,0,codim); subEntity++)
         {
           {
-            int numSubEntities = refElem.size(edge,codim,dim);
+            int numSubEntities = refElem.size(subEntity,codim,dim);
+            // every entity have at least one vertex
+            assert( numSubEntities > 0 );
+
             // create vectors of number of vertices on sub entity
             std::vector<int> local (numSubEntities,-1);
             std::vector<int> global(numSubEntities,-1);
 
             for(int j=0 ; j<numSubEntities; j++ )
-              local[j] = refElem.subEntity(edge , codim , j , dim );
+              local[j] = refElem.subEntity(subEntity , codim , j , dim );
 
+            sout << numSubEntities << " Vertices on subEntity<codim=" << codim << ">\n";
             sout << "check suben [";
             for(int j=0 ; j<numSubEntities-1; j++ )
               sout << local[j] <<  ", ";
@@ -177,18 +195,16 @@ namespace Dune {
               global[j] = lset.template subIndex<dim> (*it, local[j]);
             }
 
-            int globedge = lset.template subIndex<codim>(*it,edge);
-            assert( globedge >= 0 );
-            sout << "local subentity " << edge << " consider subentity with global index " << globedge << " on en = " << lset.index(*it) << "\n";
-            if(numSubEntities > 0)
+            int globalSubEntity = lset.template subIndex<codim>(*it,subEntity);
+            assert( globalSubEntity >= 0 );
+            sout << "local subentity " << subEntity << " consider subentity with global index " << globalSubEntity << " on en = " << lset.index(*it) << "\n";
+
+            sout << "Found global numbers of entity [ ";
+            for(int j=0 ; j<numSubEntities; j++ )
             {
-              sout << "Found global numbers of entity [ ";
-              for(int j=0 ; j<numSubEntities; j++ )
-              {
-                sout << global[j] << " ";
-              }
-              sout << "]\n";
+              sout << global[j] << " ";
             }
+            sout << "]\n";
 
             for(int j=0; j<numSubEntities; j++)
             {
@@ -203,14 +219,14 @@ namespace Dune {
                   FieldVector<coordType,dim> vxcheck ( vertexCoordsMap[global[j]] );
                   if( ! compareVec( vxcheck, vx ) )
                   {
-                    sout << "map global vertex [" << global[j] << "] vx " << vxcheck << " is not " << vx << "\n";
+                    std::cerr << "map global vertex [" << global[j] << "] vx " << vxcheck << " is not " << vx << "\n";
                     assert( compareVec( vxcheck, vx ) );
                   }
                 }
               }
 
               typedef typename GridType :: template Codim<codim> :: EntityPointer SubEnPointerType;
-              SubEnPointerType subenp = it->template entity<codim> (edge);
+              SubEnPointerType subenp = it->template entity<codim> (subEntity);
 
               FieldVector<coordType,dim> vx ( subenp->geometry()[j]);
               if(vertexCoordsMap.find(global[j]) != vertexCoordsMap.end())
@@ -218,7 +234,7 @@ namespace Dune {
                 FieldVector<coordType,dim> vxcheck ( vertexCoordsMap[global[j]] );
                 if( ! compareVec( vxcheck, vx ) )
                 {
-                  sout << "map global vertex [" << global[j] << "] vx " << vxcheck << " is not " << vx << "\n";
+                  std::cerr << "map global vertex [" << global[j] << "] vx " << vxcheck << " is not " << vx << "\n";
                   assert( compareVec( vxcheck, vx ) );
                 }
               }
@@ -229,44 +245,42 @@ namespace Dune {
             // the smallest entry is the first entry
             std::sort( global.begin(), global.end() );
 
-            if(numSubEntities > 0)
+            // check whether vertex key is already stored in map
+            if(vertices.find(global) == vertices.end())
             {
-              // check whether vertex key is already stored in map
-              if(vertices.find(global) == vertices.end())
-              {
-                vertices[global] = globedge;
-              }
-              else
-              {
-                int otheredge = vertices[global];
-                assert( globedge == otheredge );
-              }
+              vertices[global] = globalSubEntity;
+            }
+            else
+            {
+              int otherSubEntity = vertices[global];
+              // ??? WTF ???
+              assert( globalSubEntity == otherSubEntity );
+            }
 
-              // check whether edge is already stored in map
-              if(edges.find(globedge) == edges.end() )
+            // check whether subEntity is already stored in map
+            if(subEntities.find(globalSubEntity) == subEntities.end() )
+            {
+              subEntities[globalSubEntity] = global;
+            }
+            else
+            {
+              std::vector<int> globalcheck = subEntities[globalSubEntity];
+              if(! (global == globalcheck ))
               {
-                edges[globedge] = global;
-              }
-              else
-              {
-                std::vector<int> globalcheck = edges[globedge];
-                if(! (global == globalcheck ))
+                std::cerr << "For subEntity " << globalSubEntity << "\n";
+                std::cerr << "Got ";
+                for(int j=0 ; j<numSubEntities; j++ )
                 {
-                  sout << "For edge " << globedge << "\n";
-                  sout << "Got ";
-                  for(int j=0 ; j<numSubEntities; j++ )
-                  {
-                    sout << global[j] << " ";
-                  }
-                  sout << "\n";
-                  sout << "Found ";
-                  for(int j=0 ; j<numSubEntities; j++ )
-                  {
-                    sout << globalcheck [j] << " ";
-                  }
-                  sout << "\n";
-                  assert( global == globalcheck );
+                  std::cerr << global[j] << " ";
                 }
+                std::cerr << "\n";
+                std::cerr << "Found ";
+                for(int j=0 ; j<numSubEntities; j++ )
+                {
+                  std::cerr << globalcheck [j] << " ";
+                }
+                std::cerr << "\n";
+                DUNE_THROW(Dune::GridError, "global != globalcheck");
               }
             }
           }
