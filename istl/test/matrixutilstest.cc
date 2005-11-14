@@ -4,66 +4,7 @@
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/stdstreams.hh>
-
-template<int N, class B>
-void setupSparsityPattern(Dune::BCRSMatrix<B>& A)
-{
-  for (typename Dune::BCRSMatrix<B>::CreateIterator i = A.createbegin(); i != A.createend(); ++i) {
-    int x = i.index()%N; // x coordinate in the 2d field
-    int y = i.index()/N;  // y coordinate in the 2d field
-
-    if(y>0)
-      // insert lower neighbour
-      i.insert(i.index()-N);
-    if(x>0)
-      // insert left neighbour
-      i.insert(i.index()-1);
-
-    // insert diagonal value
-    i.insert(i.index());
-
-    if(x<N-1)
-      //insert right neighbour
-      i.insert(i.index()+1);
-    if(y<N-1)
-      // insert upper neighbour
-      i.insert(i.index()+N);
-  }
-}
-
-template<int N, class B>
-void setupLaplacian(Dune::BCRSMatrix<B>& A)
-{
-  setupSparsityPattern<N>(A);
-
-  B diagonal = 0, bone=0, beps=0;
-  for(typename B::RowIterator b = diagonal.begin(); b !=  diagonal.end(); ++b)
-    b->operator[](b.index())=4;
-
-
-  for(typename B::RowIterator b=bone.begin(); b !=  bone.end(); ++b)
-    b->operator[](b.index())=-1.0;
-
-
-  for (typename Dune::BCRSMatrix<B>::RowIterator i = A.begin(); i != A.end(); ++i) {
-    int x = i.index()%N; // x coordinate in the 2d field
-    int y = i.index()/N;  // y coordinate in the 2d field
-
-    i->operator[](i.index())=diagonal;
-
-    if(y>0)
-      i->operator[](i.index()-N)=bone;
-
-    if(y<N-1)
-      i->operator[](i.index()+N)=bone;
-
-    if(x>0)
-      i->operator[](i.index()-1)=bone;
-
-    if(x < N-1)
-      i->operator[](i.index()+1)=bone;
-  }
-}
+#include "laplacian.hh"
 
 int main(int argc, char** argv)
 {
@@ -81,7 +22,7 @@ int main(int argc, char** argv)
   typedef Dune::BCRSMatrix<Dune::FieldMatrix<double,1,1> > BMatrix;
 
   BMatrix laplace(N*N,N*N, N*N*5, BMatrix::row_wise);
-  setupLaplacian<N>(laplace);
+  setupLaplacian2d<N>(laplace);
 
   if(N*N*5-4*2-(N-2)*4!=countNonZeros(laplace)) {
     ++ret;

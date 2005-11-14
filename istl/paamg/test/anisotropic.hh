@@ -16,20 +16,20 @@ typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
 typedef Dune::Interface<ParallelIndexSet> Interface;
 typedef Dune::BufferedCommunicator<ParallelIndexSet> Communicator;
 
-template<int N, class M>
-void setupPattern(M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
+template<class M>
+void setupPattern(int N, M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
                   int start, int end);
 
-template<int N, class M>
-void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end);
+template<class M>
+void fillValues(int N, M& mat, int overlapStart, int overlapEnd, int start, int end);
 
 
-template<int N, int BS>
-Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(ParallelIndexSet& indices, int *nout);
+template<int BS>
+Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(int N, ParallelIndexSet& indices, int *nout, double eps=1.0);
 
 
-template<int N, class M>
-void setupPattern(M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
+template<class M>
+void setupPattern(int N, M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
                   int start, int end)
 {
   int n = overlapEnd - overlapStart;
@@ -43,7 +43,7 @@ void setupPattern(M& mat, ParallelIndexSet& indices, int overlapStart, int overl
       GridFlag flag = owner;
       bool isPublic = false;
 
-      if(i<start || i>= end)
+      if((i<start && i > 0) || (i>= end && i < N-1))
         flag=overlap;
 
       if(i<start+1 || i>= end-1)
@@ -76,11 +76,10 @@ void setupPattern(M& mat, ParallelIndexSet& indices, int overlapStart, int overl
   indices.endResize();
 }
 
-template<int N, class M>
-void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end)
+template<class M>
+void fillValues(int N, M& mat, int overlapStart, int overlapEnd, int start, int end, double eps)
 {
   typedef typename M::block_type Block;
-  double eps=.01;
   Block dval = 0, bone=0, bmone=0, beps=0;
 
   for(typename Block::RowIterator b = dval.begin(); b !=  dval.end(); ++b)
@@ -106,7 +105,7 @@ void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end)
 
     ColIterator endi = (*i).end();
 
-    if(x<start || x >= end) {
+    if(x<start || x >= end || x==0 || x==N-1 || y==0 || y==N-1) {
       // overlap node is dirichlet border
       ColIterator j = (*i).begin();
 
@@ -129,8 +128,8 @@ void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end)
   }
 }
 
-template<int N, int BS>
-Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(ParallelIndexSet& indices, int *nout)
+template<int BS>
+Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(int N, ParallelIndexSet& indices, int *nout, double eps)
 {
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -172,8 +171,8 @@ Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(ParallelIn
 
   BCRSMat mat(noKnown*N, noKnown*N, noKnown*N*5, BCRSMat::row_wise);
 
-  setupPattern<N>(mat, indices, overlapStart, overlapEnd, start, end);
-  fillValues<N>(mat, overlapStart, overlapEnd, start, end);
+  setupPattern(N, mat, indices, overlapStart, overlapEnd, start, end);
+  fillValues(N, mat, overlapStart, overlapEnd, start, end, eps);
 
   //  Dune::printmatrix(std::cout,mat,"aniso 2d","row",9,1);
 

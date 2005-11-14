@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
   int n;
 
-  BCRSMat mat = setupAnisotropic2d<N,BS>(indices, &n);
+  BCRSMat mat = setupAnisotropic2d<BS>(N, indices, &n);
   Vector b(indices.size());
 
   RemoteIndices remoteIndices(indices,indices,MPI_COMM_WORLD);

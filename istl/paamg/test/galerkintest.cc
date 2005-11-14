@@ -30,7 +30,7 @@ void testCoarsenIndices()
   typedef Dune::BCRSMatrix<Block> BCRSMat;
   int n;
 
-  BCRSMat mat = setupAnisotropic2d<N,BS>(indices, &n);
+  BCRSMat mat = setupAnisotropic2d<BS>(N, indices, &n);
 
   RemoteIndices remoteIndices(indices,indices,MPI_COMM_WORLD);
   remoteIndices.rebuild<false>();
@@ -128,6 +128,6 @@ void testCoarsenIndices()
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
-  testCoarsenIndices<5,1>();
+  testCoarsenIndices<4,1>();
   MPI_Finalize();
 }
