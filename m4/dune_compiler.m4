@@ -31,7 +31,7 @@ cat >conftest.cc <<_ACEOF
   #endif
 #endif
 #ifndef CXX_SUPPORTED
-  #error Your compiler is not officially supprted by dune
+  #error Your compiler is not officially supported by dune
 #endif
 int main() { 
   printf(CXX_SUPPORTED);
