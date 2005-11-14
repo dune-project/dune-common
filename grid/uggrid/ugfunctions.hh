@@ -514,6 +514,11 @@ namespace Dune {
     }
 
     /** \todo Remove the const_casts */
+    static void* InsertInnerNode(UG2d::grid* grid, const double* pos) {
+      return UG2d::InsertInnerNode(grid, const_cast<double*>(pos));
+    }
+
+    /** \todo Remove the const_casts */
     static void* CreateBoundarySegment(const char *name, int left, int right,
                                        int index, int res,
                                        int *point,

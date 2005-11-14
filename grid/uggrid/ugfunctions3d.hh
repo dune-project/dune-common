@@ -518,6 +518,11 @@ namespace Dune {
     }
 
     /** \todo Remove the const_casts */
+    static void* InsertInnerNode(UG3d::grid* grid, const double* pos) {
+      return UG3d::InsertInnerNode(grid, const_cast<double*>(pos));
+    }
+
+    /** \todo Remove the const_casts */
     static void* CreateBoundarySegment(const char *name, int left, int right,
                                        int index, int res,
                                        int *point,
