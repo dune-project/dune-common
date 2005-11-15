@@ -321,7 +321,7 @@ namespace Dune
         bb[2][2]=0.0;
         break;
       default :
-        std::cout<<"wrong no of shape fns in Prism?"<<'\n';
+        DUNE_THROW(RangeError, "wrong no of shape fns in Prism?");
         break;
       }
     }

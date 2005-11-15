@@ -562,7 +562,7 @@ namespace Dune
         bb[1][1]=0;
         break;
       default :
-        std::cout<<"wrong no of shape fns? check simplexshapefunctins.hh"<<'\n';
+        DUNE_THROW(RangeError, "wrong no of shape fns? check simplexshapefunctins.hh");
         break;
       }
     }
@@ -1073,7 +1073,7 @@ namespace Dune
         bb[2][2]=0.0;
         break;
       default :
-        std::cout<<"wrong no of shape fns? check out please"<<'\n';
+        DUNE_THROW(RangeError, "wrong no of shape fns? check out please");
         break;
       }
     }
