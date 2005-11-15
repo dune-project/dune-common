@@ -10,7 +10,7 @@ void Dune::TruncatedMGTransfer<DiscFuncType>::prolong(const DiscFuncType& f, Dis
     DUNE_THROW(Dune::Exception, "Number of entries in the coarse grid vector is not equal "
                << "to the number of columns of the prolongation matrix!");
 
-  if (this->matrix_.N()*blocksize != critical.size())
+  if (((unsigned int)this->matrix_.N()*blocksize) != critical.size())
     DUNE_THROW(Dune::Exception, "Number of entries in the critical is not equal "
                << "to the number of rows of the prolongation matrix!");
 
@@ -65,7 +65,8 @@ void Dune::TruncatedMGTransfer<DiscFuncType>::restrict (const DiscFuncType & f, 
     DUNE_THROW(Dune::Exception, "Fine grid vector has " << f.size() << " entries "
                                                         << "but the interpolation matrix has " << this->matrix_.N() << " rows!");
 
-  if (this->matrix_.N()*blocksize != critical.size())
+
+  if (((unsigned int)this->matrix_.N()*blocksize) != critical.size())
     DUNE_THROW(Dune::Exception, "Number of entries in the critical is not equal "
                << "to the number of rows of the prolongation matrix!");
 
@@ -117,7 +118,7 @@ galerkinRestrict(const OperatorType& fineMat, OperatorType& coarseMat,
                  const Dune::BitField& critical) const
 {
 
-  if (recompute_ != NULL && recompute_->size() != this->matrix_.M())
+  if (recompute_ != NULL && recompute_->size() != (unsigned int)this->matrix_.M())
     DUNE_THROW(Exception, "The size of the recompute_-bitfield doesn't match the "
                << "size of the coarse grid space!");
 
