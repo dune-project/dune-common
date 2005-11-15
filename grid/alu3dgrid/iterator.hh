@@ -11,6 +11,7 @@
 // Local includes
 #include "alu3dinclude.hh"
 #include "topology.hh"
+#include "faceutility.hh"
 #include "myautoptr.hh"
 
 // using directives
