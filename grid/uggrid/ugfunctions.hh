@@ -513,9 +513,8 @@ namespace Dune {
       return UG2d::CreateDomain(name, const_cast<double*>(midPoint), radius, segments, corners, convex);
     }
 
-    /** \todo Remove the const_casts */
     static void* InsertInnerNode(UG2d::grid* grid, const double* pos) {
-      return UG2d::InsertInnerNode(grid, const_cast<double*>(pos));
+      return UG2d::InsertInnerNode(grid, pos);
     }
 
     /** \todo Remove the const_casts */
@@ -525,15 +524,15 @@ namespace Dune {
                                        const double *alpha, const double *beta,
                                        UG2d::BndSegFuncPtr boundarySegmentFunction,
                                        void *userData) {
-      return UG2d::CreateBoundarySegment(const_cast<char*>(name),            // internal name of the boundary segment
+      return UG2d::CreateBoundarySegment(name,            // internal name of the boundary segment
                                          left,                      //  id of left subdomain
                                          right,                      //  id of right subdomain
                                          index,                  // Index of the segment
                                          UG2d::NON_PERIODIC,     // I don't know what this means
                                          res,                      // Resolution, only for the UG graphics
                                          point,
-                                         const_cast<double*>(alpha),
-                                         const_cast<double*>(beta),
+                                         alpha,
+                                         beta,
                                          boundarySegmentFunction,
                                          userData);
     }
