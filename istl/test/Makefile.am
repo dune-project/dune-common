@@ -24,7 +24,7 @@ bvectortest_SOURCES = bvectortest.cc
 
 indicestest_SOURCES = indicestest.cc
 
-matrixutilstest_SOURCES = matrixutilstest.cc
+matrixutilstest_SOURCES = matrixutilstest.cc laplacian.hh
 
 indicestest_CXXFLAGS = $(MPI_CPPFLAGS)
 indicestest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
