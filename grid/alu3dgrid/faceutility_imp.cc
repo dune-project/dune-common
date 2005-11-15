@@ -177,11 +177,11 @@ namespace Dune {
 
   //- class ALU3dGridFaceGeometryCoordinates
   template <ALU3dGridElementType type>
-  inline typename ALU3dGridGeometricFaceInfoBase<type>::ReferenceElementType
+  typename ALU3dGridGeometricFaceInfoBase<type>::ReferenceElementType
   ALU3dGridGeometricFaceInfoBase<type>::refElem_;
 
   template <ALU3dGridElementType type>
-  inline typename ALU3dGridGeometricFaceInfoBase<type>::ReferenceFaceType
+  typename ALU3dGridGeometricFaceInfoBase<type>::ReferenceFaceType
   ALU3dGridGeometricFaceInfoBase<type>::refFace_;
 
   template <ALU3dGridElementType type>
