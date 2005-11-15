@@ -507,17 +507,15 @@ namespace Dune {
       return UG2d::CreateFormatCmd(argc, argv);
     }
 
-    /** \todo Remove the const_casts */
     static void* CreateDomain(const char* name, const double* midPoint, double radius,
                               int segments, int corners, int convex) {
-      return UG2d::CreateDomain(name, const_cast<double*>(midPoint), radius, segments, corners, convex);
+      return UG2d::CreateDomain(name, midPoint, radius, segments, corners, convex);
     }
 
     static void* InsertInnerNode(UG2d::grid* grid, const double* pos) {
       return UG2d::InsertInnerNode(grid, pos);
     }
 
-    /** \todo Remove the const_casts */
     static void* CreateBoundarySegment(const char *name, int left, int right,
                                        int index, int res,
                                        int *point,
