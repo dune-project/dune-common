@@ -48,6 +48,9 @@ namespace Dune {
     void setup(const FunctionSpaceType& coarseFSpace,
                const FunctionSpaceType& fineFSpace);
 
+    template <class GridType>
+    void setup(const GridType& grid, int cL, int fL);
+
     /** \brief Restrict a function from the fine onto the coarse grid
      */
     virtual void restrict (const DiscFuncType & f, DiscFuncType &t) const;

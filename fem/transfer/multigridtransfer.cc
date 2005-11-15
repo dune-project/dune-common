@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include <dune/common/fvector.hh>
 #include <dune/istl/matrixindexset.hh>
+#include <dune/disc/shapefunctions/lagrangeshapefunctions.hh>
 
 template<class DiscFuncType>
 template<class FunctionSpaceType>
@@ -161,8 +162,155 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
 
   matrix_ = mat;
 
-  //     printmatrix(std::cout, matrix_, "transfer", "row", 10, 3);
-  //     exit(0);
+}
+
+template<class DiscFuncType>
+template<class GridType>
+void Dune::MultiGridTransfer<DiscFuncType>::setup(const GridType& grid, int cL, int fL)
+{
+  if (fL != cL+1)
+    DUNE_THROW(Exception, "The two function spaces don't belong to consecutive levels!");
+
+  const int dim = GridType::dimension;
+
+  int rows = grid.size(fL, dim);
+  int cols = grid.size(cL, dim);
+
+  // Make identity matrix
+  MatrixBlock identity(0);
+  for (int i=0; i<blocksize; i++)
+    identity[i][i] = 1;
+
+  //
+  OperatorType mat(rows, cols, OperatorType::random);
+
+  mat = 0;
+
+  typedef typename GridType::template Codim<0>::LevelIterator ElementIterator;
+
+  ElementIterator cIt    = grid.template lbegin<0>(cL);
+  ElementIterator cEndIt = grid.template lend<0>(cL);
+
+
+  // ///////////////////////////////////////////
+  // Determine the indices present in the matrix
+  // /////////////////////////////////////////////////
+  MatrixIndexSet indices(rows, cols);
+
+  for (; cIt != cEndIt; ++cIt) {
+
+    const LagrangeShapeFunctionSet<double, double, dim>& coarseBaseSet
+      = Dune::LagrangeShapeFunctions<double, double, dim>::general(cIt->geometry().type(), 1);
+    const int numCoarseBaseFct = coarseBaseSet.size();
+
+    typedef typename GridType::template Codim<0>::Entity EntityType;
+    typedef typename EntityType::HierarchicIterator HierarchicIterator;
+
+    HierarchicIterator fIt    = cIt->hbegin(fL);
+    HierarchicIterator fEndIt = cIt->hend(fL);
+
+    for (; fIt != fEndIt; ++fIt) {
+
+      if (fIt->level()==cIt->level())
+        continue;
+
+      const LagrangeShapeFunctionSet<double, double, dim>& fineBaseSet
+        = Dune::LagrangeShapeFunctions<double, double, dim>::general(fIt->geometry().type(), 1);
+      const int numFineBaseFct = fineBaseSet.size();
+
+      for (int i=0; i<numCoarseBaseFct; i++) {
+
+        int globalCoarse = cIt->template subIndex<dim>(i);
+
+        for (int j=0; j<numFineBaseFct; j++) {
+
+          int globalFine = fIt->template subIndex<dim>(j);
+
+          FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
+
+          // Evaluate coarse grid base function
+          double value = coarseBaseSet[i].evaluateFunction(0, local);
+
+          if (value > 0.001)
+            indices.add(globalFine, globalCoarse);
+
+        }
+
+
+      }
+
+    }
+
+  }
+
+  indices.exportIdx(mat);
+
+  // /////////////////////////////////////////////
+  // Compute the matrix
+  // /////////////////////////////////////////////
+  cIt    = grid.template lbegin<0>(cL);
+  for (; cIt != cEndIt; ++cIt) {
+
+    const LagrangeShapeFunctionSet<double, double, dim>& coarseBaseSet
+      = Dune::LagrangeShapeFunctions<double, double, dim>::general(cIt->geometry().type(), 1);
+    const int numCoarseBaseFct = coarseBaseSet.size();
+
+    typedef typename GridType::template Codim<0>::Entity EntityType;
+    typedef typename EntityType::HierarchicIterator HierarchicIterator;
+
+    HierarchicIterator fIt    = cIt->hbegin(fL);
+    HierarchicIterator fEndIt = cIt->hend(fL);
+
+    for (; fIt != fEndIt; ++fIt) {
+
+      if (fIt->level()==cIt->level())
+        continue;
+
+      const LagrangeShapeFunctionSet<double, double, dim>& fineBaseSet
+        = Dune::LagrangeShapeFunctions<double, double, dim>::general(fIt->geometry().type(), 1);
+      const int numFineBaseFct = fineBaseSet.size();
+
+      for (int i=0; i<numCoarseBaseFct; i++) {
+
+        int globalCoarse = cIt->template subIndex<dim>(i);
+
+        for (int j=0; j<numFineBaseFct; j++) {
+
+          //int globalFine = fineFSpace.mapToGlobal(*fIt, j);
+          int globalFine = fIt->template subIndex<dim>(j);
+
+          // Evaluate coarse grid base function at the location of the fine grid dof
+
+          // first determine local fine grid dof position
+          FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
+
+          // Evaluate coarse grid base function
+          double value = coarseBaseSet[i].evaluateFunction(0, local);
+
+          // The following conditional is a hack:  evaluating the coarse
+          // grid base function will often return 0.  However, we don't
+          // want explicit zero entries in our prolongation matrix.  Since
+          // the whole code works for P1-elements only anyways, we know
+          // that value can only be 0, 0.5, or 1.  Thus testing for nonzero
+          // by testing > 0.001 is safe.
+          if (value > 0.001) {
+            MatrixBlock matValue = identity;
+            matValue *= value;
+
+            mat[globalFine][globalCoarse] = matValue;
+          }
+
+        }
+
+
+      }
+
+    }
+
+  }
+
+  matrix_ = mat;
+
 }
 
 // Multiply the vector f from the right to the prolongation matrix
