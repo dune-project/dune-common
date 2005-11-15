@@ -22,7 +22,7 @@ int main(int argc, char** argv)
   typedef Dune::BCRSMatrix<Dune::FieldMatrix<double,1,1> > BMatrix;
 
   BMatrix laplace(N*N,N*N, N*N*5, BMatrix::row_wise);
-  setupLaplacian2d<N>(laplace);
+  setupLaplacian<N>(laplace);
 
   if(N*N*5-4*2-(N-2)*4!=countNonZeros(laplace)) {
     ++ret;
