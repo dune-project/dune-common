@@ -1258,9 +1258,11 @@ namespace Dune
     template<class G>
     inline void Aggregate<G>::seed(const Vertex& vertex)
     {
+      dverb<<"Connected cleared"<<std::endl;
       connected_.clear();
       vertices_.clear();
       connected_.insert(vertex);
+      dverb << " Inserting "<<vertex<<" size="<<connected_.size();
       id_ = vertex;
       maxSphere_=0;
       add(vertex, 0);
@@ -1277,9 +1279,12 @@ namespace Dune
 
       typedef typename MatrixGraph::ConstEdgeIterator iterator;
       const iterator end = graph_.endEdges(vertex);
-      for(iterator edge = graph_.beginEdges(vertex); edge != end; ++edge)
+      for(iterator edge = graph_.beginEdges(vertex); edge != end; ++edge) {
+        dverb << " Inserting "<<aggregates_[edge.target()];
         connected_.insert(aggregates_[edge.target()]);
-
+        dverb <<" size="<<connected_.size();
+      }
+      dverb <<std::endl;
     }
     template<class G>
     inline void Aggregate<G>::clear()
@@ -1617,7 +1622,8 @@ namespace Dune
     template<class G>
     inline void Aggregator<G>::ConnectivityCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
-      if(connected_.find(aggregates_[edge.target()]) != connected_.end() || aggregates_[edge.target()]==AggregatesMap<Vertex>::UNAGGREGATED)
+      if(connected_.find(aggregates_[edge.target()]) == connected_.end() || aggregates_[edge.target()]==AggregatesMap<Vertex>::UNAGGREGATED)
+        // Would be a new connection
         Counter::increment();
       else{
         Counter::increment();
