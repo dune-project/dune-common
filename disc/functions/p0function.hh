@@ -43,7 +43,7 @@ namespace Dune
    */
 
   // forward declaration
-  template<class G, class RT> class P0FEFunctionManager;
+  //  template<class G, class RT> class P0FEFunctionManager;
 
 
   //! class for P0 finite element functions on a grid
@@ -56,15 +56,15 @@ namespace Dune
         from a C0GridFunction via Lagrange interpolation. Dereferencing delivers
         the coefficient vector.
    */
-  template<class G, class RT, typename IS>
-  class P0FEFunction : virtual public GridFunction<G,RT,1>,
-                       virtual public L2Function<typename G::ctype,RT,G::dimension,1>
+  template<class G, class RT, typename IS, int m=1>
+  class P0FEFunction : virtual public GridFunction<G,RT,m>,
+                       virtual public L2Function<typename G::ctype,RT,G::dimension,m>
   {
     //! get domain field type from the grid
     typedef typename G::ctype DT;
 
     //! get domain dimension from the grid
-    enum {n=G::dimension,m=1};
+    enum {n=G::dimension};
 
     //! get entity from the grid
     typedef typename G::template Codim<0>::Entity Entity;
@@ -79,6 +79,9 @@ namespace Dune
         return false;
       }
     };
+
+    //! make copy constructor private
+    P0FEFunction (const P0FEFunction&);
 
   public:
     typedef BlockVector<FieldVector<RT,1> > RepresentationType;
@@ -136,7 +139,7 @@ namespace Dune
      */
     virtual RT evallocal (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const
     {
-      return (*coeff)[mapper_.map(e)];
+      return (*coeff)[mapper_.map(e)][comp];
     }
 
     //! evaluate all components  in the entity e at local coordinates xi
@@ -148,7 +151,8 @@ namespace Dune
     virtual void evalalllocal (const Entity& e, const Dune::FieldVector<DT,G::dimension>& xi,
                                Dune::FieldVector<RT,m>& y) const
     {
-      y[0] = evallocal(0,e,xi);
+      for (int c=0; c<m; c++)
+        y[c] = (*coeff)[mapper_.map(e)][c];
     }
 
 
@@ -159,7 +163,7 @@ namespace Dune
 
        @param[in]  u    a continuous grid function
      */
-    void interpolate (const C0GridFunction<G,RT,1>& u)
+    void interpolate (const C0GridFunction<G,RT,m>& u)
     {
       typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
 
@@ -167,8 +171,9 @@ namespace Dune
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
         Dune::GeometryType gt = it->geometry().type();
-        (*coeff)[mapper_.map(*it)][0] =
-          u.evallocal(0,*it,Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
+        for (int c=0; c<m; c++)
+          (*coeff)[mapper_.map(*it)][c] =
+            u.evallocal(c,*it,Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
       }
     }
 
@@ -241,24 +246,24 @@ namespace Dune
 
   /** \brief P0 finite element function on the leaf grid
    */
-  template<class G, class RT>
-  class LeafP0FEFunction : public P0FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet>
+  template<class G, class RT, int m=1>
+  class LeafP0FEFunction : public P0FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>
   {
   public:
     LeafP0FEFunction (const G& grid)
-      : P0FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet>(grid,grid.leafIndexSet())
+      : P0FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet())
     {}
   };
 
 
   /** \brief P0 finite element function on a given level grid
    */
-  template<class G, class RT>
-  class LevelP0FEFunction : public P0FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet>
+  template<class G, class RT, int m=1>
+  class LevelP0FEFunction : public P0FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>
   {
   public:
     LevelP0FEFunction (const G& grid, int level)
-      : P0FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet>(grid,grid.levelIndexSet(level))
+      : P0FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level))
     {}
   };
 

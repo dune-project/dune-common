@@ -57,16 +57,16 @@ namespace Dune
         from a C0GridFunction via Lagrange interpolation. Dereferencing delivers
         the coefficient vector.
    */
-  template<class G, class RT, typename IS>
-  class P1FEFunction : virtual public ElementwiseCInfinityFunction<G,RT,1>,
-                       virtual public H1Function<typename G::ctype,RT,G::dimension,1>,
-                       virtual public C0GridFunction<G,RT,1>
+  template<class G, class RT, typename IS, int m=1>
+  class P1FEFunction : virtual public ElementwiseCInfinityFunction<G,RT,m>,
+                       virtual public H1Function<typename G::ctype,RT,G::dimension,m>,
+                       virtual public C0GridFunction<G,RT,m>
   {
     //! get domain field type from the grid
     typedef typename G::ctype DT;
 
     //! get domain dimension from the grid
-    enum {n=G::dimension,m=1};
+    enum {n=G::dimension};
 
     //! get entity from the grid
     typedef typename G::template Codim<0>::Entity Entity;
@@ -82,10 +82,12 @@ namespace Dune
       }
     };
 
-    //! make copy construtor private
+    //! make copy constructor private
     P1FEFunction (const P1FEFunction&);
+
   public:
-    typedef BlockVector<FieldVector<RT,1> > RepresentationType;
+    typedef FieldVector<RT,m> BlockType;
+    typedef BlockVector<BlockType> RepresentationType;
 
     //! allocate a vector with the data
     P1FEFunction (const G& g,  const IS& indexset) : grid_(g), is(indexset), mapper_(g,indexset)
@@ -164,7 +166,7 @@ namespace Dune
       RT value=0;
       Dune::GeometryType gt = e.geometry().type();     // extract type of element
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
-        value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi)*(*coeff)[mapper_.template map<n>(e,i)];
+        value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi)*(*coeff)[mapper_.template map<n>(e,i)][comp];
       return value;
     }
 
@@ -177,7 +179,14 @@ namespace Dune
     virtual void evalalllocal (const Entity& e, const Dune::FieldVector<DT,G::dimension>& xi,
                                Dune::FieldVector<RT,m>& y) const
     {
-      y[0] = evallocal(0,e,xi);
+      Dune::GeometryType gt = e.geometry().type();     // extract type of element
+      for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
+      {
+        RT basefuncvalue=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi);
+        int index = mapper_.template map<n>(e,i);
+        for (int c=0; c<m; c++)
+          y[c] += basefuncvalue * (*coeff)[index][c];
+      }
     }
 
     //! evaluate derivative in local coordinates
@@ -206,7 +215,7 @@ namespace Dune
       Dune::GeometryType gt = e.geometry().type();     // extract type of element
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
         value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateDerivative(0,dir,xi)
-                 *(*coeff)[mapper_.template map<n>(e,i)];
+                 *(*coeff)[mapper_.template map<n>(e,i)][comp];
       return value;
     }
 
@@ -218,7 +227,7 @@ namespace Dune
 
        @param[in]  u    a continuous grid function
      */
-    void interpolate (const C0GridFunction<G,RT,1>& u)
+    void interpolate (const C0GridFunction<G,RT,m>& u)
     {
       typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
       std::vector<bool> visited(mapper_.size());
@@ -231,17 +240,15 @@ namespace Dune
         for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
           if (!visited[mapper_.template map<n>(*it,i)])
           {
-            (*coeff)[mapper_.template map<n>(*it,i)][0] =
-              u.evallocal(0,*it,Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position());
+            for (int c=0; c<m; c++)
+              (*coeff)[mapper_.template map<n>(*it,i)][c] =
+                u.evallocal(c,*it,Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position());
             visited[mapper_.template map<n>(*it,i)] = true;
-            //                          std::cout << "evaluated " << it->geometry().global(Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position())
-            //                                            << " value " << (*coeff)[mapper_.template map<n>(*it,i)][0]
-            //                                            << std::endl;
           }
       }
     }
 
-    void interpolate (const P0FEFunction<G,RT,IS>& u)
+    void interpolate (const P0FEFunction<G,RT,IS,m>& u)
     {
       typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
       std::vector<char> counter(mapper_.size());
@@ -255,13 +262,15 @@ namespace Dune
         Dune::GeometryType gt = it->geometry().type();
         for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
         {
-          (*coeff)[mapper_.template map<n>(*it,i)][0] +=
-            u.evallocal(0,*it,Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position());
+          for (int c=0; c<m; c++)
+            (*coeff)[mapper_.template map<n>(*it,i)][c] +=
+              u.evallocal(c,*it,Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].position());
           counter[mapper_.template map<n>(*it,i)] += 1;
         }
       }
       for (int i=0; i<counter.size(); i++)
-        (*coeff)[i] = (*coeff)[i] / counter[i];
+        for (int c=0; c<m; c++)
+          (*coeff)[i][c] = (*coeff)[i][c] / counter[i];
     }
 
     //! return const reference to coefficient vector
@@ -342,7 +351,8 @@ namespace Dune
           //                                            << " newindex=" << mapper_.map(*it)
           //                                            << std::endl;
           // the vertex existed already in the old mesh, copy data
-          (*coeff)[mapper_.map(*it)] = (*oldcoeff)[manager.oldIndex()[i]];
+          for (int c=0; c<m; c++)
+            (*coeff)[mapper_.map(*it)][c] = (*oldcoeff)[manager.oldIndex()[i]][c];
           // ... and mark as visited
           visited[mapper_.map(*it)] = true;
         }
@@ -357,27 +367,30 @@ namespace Dune
         {
           GeometryType gte = it->geometry().type();
           for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gte,1).size(); ++i)
-            if (!visited[mapper_.template map<n>(*it,i)])
+          {
+            int index = mapper_.template map<n>(*it,i);
+            if (!visited[index])
             {
               // OK, this is a new vertex
-              EEntityPointer father=it->father();                           // the father element
-              GeometryType gtf = father->geometry().type();                           // fathers type
+              EEntityPointer father=it->father();                             // the father element
+              GeometryType gtf = father->geometry().type();                             // fathers type
               const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gte,1)[i].position();
-              FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                           // map corner to father element
+              FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                             // map corner to father element
               RT value=0;
               for (int j=0; j<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++j)
               {
-                value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1)[j].evaluateFunction(0,pos)
-                         *(*coeff)[mapper_.template map<n>(*father,j)];
+                RT basefuncvalue = Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1)[j].evaluateFunction(0,pos);
+                for (int c=0; c<m; c++)
+                  (*coeff)[index][c] += basefuncvalue * (*coeff)[mapper_.template map<n>(*father,j)][c];
                 //                                        std::cout << "  corner=" << i
                 //                                                              << " cpos=" << father->geometry()[i]
                 //                                                              << " u=" << (*coeff)[mapper_.template map<n>(*father,i)]
                 //                                                              << std::endl;
               }
               //                                  std::cout << "index=" << mapper_.map(*it) << " value=" << value << std::endl;
-              (*coeff)[mapper_.template map<n>(*it,i)] = value;
-              visited[mapper_.template map<n>(*it,i)] = true;
+              visited[index] = true;
             }
+          }
         }
       }
 
@@ -413,24 +426,24 @@ namespace Dune
 
   /** \brief P1 finite element function on the leaf grid
    */
-  template<class G, class RT>
-  class LeafP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet>
+  template<class G, class RT, int m=1>
+  class LeafP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>
   {
   public:
     LeafP1FEFunction (const G& grid)
-      : P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet>(grid,grid.leafIndexSet())
+      : P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet())
     {}
   };
 
 
   /** \brief P1 finite element function on a given level grid
    */
-  template<class G, class RT>
-  class LevelP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet>
+  template<class G, class RT, int m=1>
+  class LevelP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>
   {
   public:
     LevelP1FEFunction (const G& grid, int level)
-      : P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet>(grid,grid.levelIndexSet(level))
+      : P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level))
     {}
   };
 

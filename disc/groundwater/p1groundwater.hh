@@ -484,7 +484,7 @@ namespace Dune
 
   //! The global stiffness matrix
   template<class G, class RT, class IS>
-  class P1GroundwaterOperator : public AssembledP1FEOperator<G,RT,IS>
+  class P1GroundwaterOperator : public AssembledP1FEOperator<G,RT,IS,1>
   {
     typedef typename G::ctype DT;
     enum {n=G::dimension};
@@ -493,19 +493,19 @@ namespace Dune
     typedef typename G::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename G::template Codim<0>::HierarchicIterator HierarchicIterator;
     typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
-    typedef typename P1FEFunction<G,RT,IS>::RepresentationType VectorType;
-    typedef typename AssembledP1FEOperator<G,RT,IS>::RepresentationType MatrixType;
+    typedef typename P1FEFunction<G,RT,IS,1>::RepresentationType VectorType;
+    typedef typename AssembledP1FEOperator<G,RT,IS,1>::RepresentationType MatrixType;
     typedef typename MatrixType::RowIterator rowiterator;
     typedef typename MatrixType::ColIterator coliterator;
 
   public:
     P1GroundwaterOperator (const G& g, const GroundwaterEquationParameters<G,RT>& params,
                            const IS& indexset, bool procBoundaryAsDirichlet=true)
-      : AssembledP1FEOperator<G,RT,IS>(g,indexset), loc(params,procBoundaryAsDirichlet)
+      : AssembledP1FEOperator<G,RT,IS,1>(g,indexset), loc(params,procBoundaryAsDirichlet)
     {       }
 
     //! assemble operator, rhs and Dirichlet boundary conditions
-    void assemble (P1FEFunction<G,RT,IS>& u, P1FEFunction<G,RT,IS>& f)
+    void assemble (P1FEFunction<G,RT,IS,1>& u, P1FEFunction<G,RT,IS,1>& f)
     {
       // clear global stiffness matrix and right hand side
       this->A = 0;
@@ -755,7 +755,7 @@ namespace Dune
     }
 
     //! assemble operator, rhs and Dirichlet boundary conditions
-    void interpolateHangingNodes (P1FEFunction<G,RT,IS>& u)
+    void interpolateHangingNodes (P1FEFunction<G,RT,IS,1>& u)
     {
       // allocate flag vector to note hanging nodes whose row has been assembled
       std::vector<unsigned char> treated(this->vertexmapper.size());
@@ -800,7 +800,7 @@ namespace Dune
 
     /** \brief evaluate error estimator
      */
-    void estimate (const P1FEFunction<G,RT,IS>& u, P0FEFunction<G,RT,IS>& eta2)
+    void estimate (const P1FEFunction<G,RT,IS,1>& u, P0FEFunction<G,RT,IS,1>& eta2)
     {
       // clear estimator values
       *eta2 = 0;

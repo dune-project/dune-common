@@ -320,7 +320,7 @@ namespace Dune
 
 
   //! a class for mapping a P1 function to a P1 function
-  template<class G, class RT, class IS>
+  template<class G, class RT, class IS, int m=1>
   class AssembledP1FEOperator
   {
     typedef typename G::ctype DT;
@@ -494,7 +494,8 @@ namespace Dune
 
   public:
     // export type used to store the matrix
-    typedef BCRSMatrix<FieldMatrix<RT,1,1> > RepresentationType;
+    typedef FieldMatrix<RT,m,m> BlockType;
+    typedef BCRSMatrix<BlockType> RepresentationType;
 
     AssembledP1FEOperator (const G& g, const IS& indexset)
       : grid(g),is(indexset),vertexmapper(g,indexset),allmapper(g,indexset),links(),
@@ -654,22 +655,22 @@ namespace Dune
   };
 
 
-  template<class G, class RT>
-  class LeafAssembledP1FEOperator : public AssembledP1FEOperator<G,RT,typename G::Traits::LeafIndexSet>
+  template<class G, class RT, int m=1>
+  class LeafAssembledP1FEOperator : public AssembledP1FEOperator<G,RT,typename G::Traits::LeafIndexSet,m>
   {
   public:
     LeafAssembledP1FEOperator (const G& grid)
-      : AssembledP1FEOperator<G,RT,typename G::Traits::LeafIndexSet>(grid,grid.leafIndexSet())
+      : AssembledP1FEOperator<G,RT,typename G::Traits::LeafIndexSet,m>(grid,grid.leafIndexSet())
     {}
   };
 
 
-  template<class G, class RT>
-  class LevelAssembledP1FEOperator : public AssembledP1FEOperator<G,RT,typename G::Traits::LevelIndexSet>
+  template<class G, class RT, int m=1>
+  class LevelAssembledP1FEOperator : public AssembledP1FEOperator<G,RT,typename G::Traits::LevelIndexSet,m>
   {
   public:
     LevelAssembledP1FEOperator (const G& grid, int level)
-      : AssembledP1FEOperator<G,RT,typename G::Traits::LevelIndexSet>(grid,grid.levelIndexSet(level))
+      : AssembledP1FEOperator<G,RT,typename G::Traits::LevelIndexSet,m>(grid,grid.levelIndexSet(level))
     {}
   };
 
