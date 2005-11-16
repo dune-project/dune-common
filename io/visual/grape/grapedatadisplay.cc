@@ -1,5 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+
+#include "geldesc.hh"
+
 namespace Dune
 {
 
@@ -44,10 +47,8 @@ namespace Dune
       DUNE_FDATA * fd = vecFdata_[i];
       if( fd )
       {
-        //LFType * lf = (LFType * ) fd->lf;
-        //if ( lf ) delete lf;
         int * comps = fd->comp;
-        delete [] comps;
+        if( comps ) delete [] comps;
         delete fd;
         vecFdata_[i] = 0;
       }
@@ -79,8 +80,9 @@ namespace Dune
 
       for(int i=0; i<dim; i++) domTmp_[i] = coord[i];
 
-      // evaluate local function on point coord == domTmp
-      lf.evaluate( en , domTmp_ , tmp_);
+      // evaluate local function on local (on reference element)
+      // point == domTmp
+      lf.evaluateLocal( en , domTmp_ , tmp_);
 
       for(int i=0; i<dimVal; i++) val[i] = tmp_[i];
       return;
@@ -101,6 +103,7 @@ namespace Dune
     enum { dim = GridType::dimension };
 
     void *iter = he->actElement;
+    // cast pointer back to the iterator we have
     if(iter == he->liter)
     {
       if(he->isLeafIterator)
@@ -178,27 +181,20 @@ namespace Dune
       val[0] = lf[comp[0]];
       return;
     }
-    else
+    else if(func.getFunctionSpace().polynomOrder() == 1)
     {
       // for linear data
+      // needs to be implemented more efficiently
       int num = ( localNum * numberOfComp ) + comp[0];
-
-      switch ( geomTypeConvert( en.geometry().type(), dim ) )
-      {
-      // check for quadrilaterals and hexahedrons
-      case quadrilateral :
-      {
-        val[0] = lf[mapElType<quadrilateral>(num)]; break;
-      }
-      case hexahedron   :
-      { val[0] = lf[mapElType<hexahedron>(num)]; break; }
-      default :
-      {
-        // i.e. triangles, tetrahedron and so on
-        val[0] = lf[num];
-        break;
-      }
-      }
+      int geomType = convertToGrapeType ( en.geometry().type() , dim );
+      // see grapegrid.display.hh and geldesc.hh for definitions
+      int renum = mapDune2GrapeVertex(geomType,num);
+      val[0] = lf[renum];
+    }
+    else
+    {
+      std::cerr << "ERROR: GrapeDataDisplay::evalScalar not implemented for higher polynom degrees! in:" << __FILE__ << " line: " << __LINE__ << std::endl;
+      abort();
     }
     return;
   }
@@ -219,6 +215,7 @@ namespace Dune
     enum { dim = EntityType::dimension };
     {
       const int * comp = df->comp;
+      assert( comp );
 
       LocalFuncType lf = func.localFunction( en );
 
@@ -233,11 +230,12 @@ namespace Dune
 
       case dim :
       {
-        //evalVector(en,func,lf,df->comp,dimVal,localNum,val);
+        evalVector(en,func,lf,df->comp,dimVal,localNum,val);
         return;
       }
       default :
       {
+        assert(false);
         //evalVector(en,func,lf,df->comp,dimVal,localNum,val);
         return;
       }
