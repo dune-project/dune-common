@@ -190,14 +190,8 @@ inline static void helementUpdate( DUNE_ELEM *elem, HELEMENT *grapeEl )
 
   // local pointer to vertices
   static double  * vertex [MAX_EL_DOF] = {0,0,0,0,0,0,0,0};
-
-  // get apropriate vx map
-  const int * dune2GrapeVxMap = dune2GrapeVertex[elem->type];
-
-  // set vpointer of given DUNE_ELEM to HElement
-  // by using the dune to grape refelement mapping
   for(int i = 0 ; i < MAX_EL_DOF; i++)
-    vertex[i] = (double *)elem->vpointer[dune2GrapeVxMap[i]];
+    vertex[i] = (double *)elem->vpointer[i];
 
   // set pointers
   grapeEl->vertex = (double G_CONST*G_CONST*)vertex;
