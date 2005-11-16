@@ -103,14 +103,16 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 #      AC_LANG_POP([C++])
       
       # pre-set variable for summary
-      with_parmetis="no"
+      #with_parmetis="no"
       
       # did it work?
+      AC_MSG_CHECKING(ParMETIS in $with_parmetis)
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_SUBST(PARMETIS_LDFLAGS, $PARMETIS_LDFLAGS)
 	  AC_SUBST(PARMETIS_LIBS, $PARMETIS_LIBS)
 	  AC_SUBST(PARMETIS_CPPFLAGS, $PARMETIS_CPPFLAGS)
 	  AC_DEFINE(HAVE_PARMETIS, 1, [Define to 1 if PARMETIS is found])
+	  AC_MSG_RESULT(ok)
 	  
     # add to global list
 	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $PARMETIS_LDFLAGS"
@@ -119,6 +121,8 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	  
     # re-set variable correctly
 	  with_parmetis="yes"
+      else
+	  AC_MSG_RESULT(failed)
       fi 
       
   # end of "no --without-parmetis"

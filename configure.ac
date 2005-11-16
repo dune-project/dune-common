@@ -97,6 +97,9 @@ DUNE_MPI
 # check for ALUGrid (needs MPI to build parallel version)
 DUNE_PATH_ALUGRID
 
+# check for Metis
+IMMDX_LIB_METIS(,AC_MSG_WARN([METIS not found]))
+
 # check for ParMETIS
 DUNE_PATH_PARMETIS
 
