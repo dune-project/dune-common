@@ -3,17 +3,22 @@
 #ifndef DUNE_BLOCK_DIAGONAL_MATRIX_HH
 #define DUNE_BLOCK_DIAGONAL_MATRIX_HH
 
-#include <dune/istl/bvector.hh>
+#include <dune/istl/bcrsmatrix.hh>
 
 /** \file
+    \author Oliver Sander
     \brief Implementation of the BDMatrix class
  */
 
 namespace Dune {
 
-  /** \brief A block-diagonal matrix */
+  /** \brief A block-diagonal matrix
+
+     \todo It would be safer and more efficient to have a real implementation of
+     a block-diagonal matrix and not just subclassing from BCRSMatrix.  But that's
+     quite a lot of work for that little advantage.*/
   template <class B, class A=ISTLAllocator>
-  class BDMatrix
+  class BDMatrix : public BCRSMatrix<B,A>
   {
   public:
 
@@ -29,58 +34,64 @@ namespace Dune {
     typedef A allocator_type;
 
     //! implement row_type with compressed vector
-    //typedef CompressedBlockVectorWindow<B,A> row_type;
+    //typedef BCRSMatrix<B,A>::row_type row_type;
+
+    //! The type for the index access and the size
+    typedef typename A::size_type size_type;
 
     //! increment block level counter
     enum {blocklevel = B::blocklevel+1};
 
+    /** \brief Default constructor */
+    BDMatrix() : BCRSMatrix<B,A>() {}
 
-    /** \brief Change the size of the matrix */
-    void resize(int n) {data_.resize(n);}
+    explicit BDMatrix(int size)
+      : BCRSMatrix<B,A>(size, size, BCRSMatrix<B,A>::random) {
 
-    /** \brief Number of rows of the matrix */
-    int N() const {return data_.size();}
+      for (int i=0; i<size; i++)
+        this->BCRSMatrix<B,A>::setrowsize(i, 1);
 
-    /** \brief Number of columns of the matrix */
-    int M() const {return data_.size();}
+      this->BCRSMatrix<B,A>::endrowsizes();
 
-    /** \brief Get the i-th diagonal element */
-    B& operator[](int i) {return data_[i];}
+      for (int i=0; i<size; i++)
+        this->BCRSMatrix<B,A>::addindex(i, i);
 
-    /** \brief Get the i-th diagonal element */
-    const B& operator[](int i) const {return data_[i];}
+      this->BCRSMatrix<B,A>::endindices();
 
-    /** \brief y += Ax */
-    template <class X, class Y>
-    void umv(const X& x, Y& y) const {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
-#endif
-      for (int i=0; i<data_.size(); i++)
-        data_[i].umv(x[i], y[i]);
     }
 
-    /** \brief y -= Ax */
-    template <class X, class Y>
-    void mmv(const X& x, Y& y) const {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(ISTLError,"index out of range");
-      if (y.N()!=N()) DUNE_THROW(ISTLError,"index out of range");
-#endif
-      for (int i=0; i<data_.size(); i++)
-        data_[i].mmv(x[i], y[i]);
+    //! assignment
+    BDMatrix& operator= (const BDMatrix& other) {
+      this->BCRSMatrix<B,A>::operator=(other);
+      return *this;
+    }
+
+    //! assignment from scalar
+    BDMatrix& operator= (const field_type& k) {
+      this->BCRSMatrix<B,A>::operator=(k);
+      return *this;
     }
 
     /** \brief Inverts the matrix */
     void invert() {
-      for (int i=0; i<data_.size(); i++)
-        data_[i].invert();
+      for (int i=0; i<this->N(); i++)
+        (*this)[i][i].invert();
     }
 
   private:
 
-    BlockVector<B> data_;
+    // ////////////////////////////////////////////////////////////////////////////
+    //   The following methods from the base class should now actually be called
+    // ////////////////////////////////////////////////////////////////////////////
+
+    // createbegin and createend should be in there, too, but I can't get it to compile
+    //     BCRSMatrix<B,A>::CreateIterator createbegin () {}
+    //     BCRSMatrix<B,A>::CreateIterator createend () {}
+    void setrowsize (size_type i, size_type s) {}
+    void incrementrowsize (size_type i) {}
+    void endrowsizes () {}
+    void addindex (size_type row, size_type col) {}
+    void endindices () {}
   };
 
 
