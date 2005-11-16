@@ -396,9 +396,217 @@ namespace Dune
   * P2 shape functions for the simplex
   ***********************************************************/
   /*!
-   * A class for piecewise quadratic shape functions in a simplex geometry(triangle/tetrehedron).
+   * A class for piecewise quadratic shape functions in a simplex geometry(lines/triangle/tetrehedron).
    * Evaluation is done at the quadrature points
    */
+
+  /*  specialization for 1D
+      polynomials of the form coeff[0]*x^2 + coeff[1]*x + coeff[2]
+   */
+
+
+  template<typename C, typename T, int dim>
+  class P2SimplexShapeFunction;
+
+  template<typename C, typename T>
+  class P2SimplexShapeFunction<C,T,1>
+
+  {
+  public:
+    enum {dim=1};
+    enum {comps=1};
+    enum {m=3};
+    typedef C CoordType;
+    typedef T ResultType;
+    typedef P2SimplexShapeFunction ImplementationType;
+    P2SimplexShapeFunction(int i,int en,int co)
+    {
+      number=i;
+      ent = en;
+      cod = co;
+      switch(i)
+      {
+      case 0 :
+        //--interpolation point associated with shape fn
+        pos[0]=0.0;
+        coeff[0] = 2;
+        coeff[0] = -3;
+        coeff[0] = 1;
+        break;
+      case 1 :
+
+        pos[0]=0.5;
+        coeff[0] = 2;
+        coeff[0] = -1;
+        coeff[0] = 0;
+        break;
+      case 2 :
+        pos[0]=1.0;
+        coeff[0] = -4;
+        coeff[0] = 4;
+        coeff[0] = 0;
+        break;
+      }
+
+    }
+
+    P2SimplexShapeFunction()
+    {}
+
+    //! evaluate shape function in local coordinates
+    ResultType evaluateFunction (int comp, const FieldVector<CoordType,1>& x) const
+    {
+
+      ResultType phi=coeff[2];
+      phi+=coeff[0]*x[0]*x[0];
+      phi+=coeff[1]*x[0];
+      return phi;
+    }
+
+    ResultType evaluateDerivative (int comp, int dir, const FieldVector<CoordType,1>& x) const
+
+    {
+      assert(dir=0);
+      ResultType deriv=2*coeff[0] * x[0] + coeff[1];
+      return deriv;
+    }
+
+
+    //! consecutive number of associated dof within element
+    int localindex (int comp) const
+    {
+      return number;
+    }
+
+    //! codim of associated dof
+    int codim () const
+    {
+      return cod;
+    }
+
+    //! entity (of codim) of associated dof
+    int entity () const
+    {
+      return ent;
+    }
+
+    //! consecutive number of dof within entity
+    int entityindex () const
+    {
+      return 0;
+    }
+
+    //! interpolation point associated with shape function
+    const FieldVector<CoordType,1>& position () const
+    {
+      return pos;
+    }
+
+  private:
+    int number,coeff[3],ent,cod;
+
+    FieldVector<CoordType,1> pos;
+
+  };
+
+
+
+  //specialization 1D
+  //-------------------------------------------------
+  template<typename C, typename T, int d, typename S>
+  class P2SimplexShapeFunctionSet;
+
+  template<typename C, typename T,typename S>
+  class P2SimplexShapeFunctionSet<C,T,1,S>
+
+  {
+
+  public:
+    enum {dim=1};
+    enum {comps=1};
+    enum {m=3};
+
+    typedef C CoordType;
+    typedef T ResultType;
+    typedef S value_type;
+    typedef typename S::ImplementationType Imp; // Imp is either S or derived from S
+    //! make a shape fn object
+    P2SimplexShapeFunctionSet()
+    {
+      ReferenceSimplex<C,1> simpline;
+      int j=0;
+      for (int c=2; c>=0; --c)
+        for(int e=0; e<simpline.size(c); ++e)
+        {
+          sf[j] = Imp(j,e,c);
+          j++;
+        }
+    }
+
+
+    //! return total number of shape functions
+    int size () const
+    {
+      return m;
+    }
+    //! total number of shape functions associated with entity in codim
+    int size (int entity, int codim) const
+    {
+      return 1;
+    }
+    //! random access to shape functions
+    const value_type& operator[] (int i) const
+    {
+      return sf[i]; // ok derived class reference goes for base class reference
+    }
+
+    //! return order
+    int order () const
+    {
+      return 2;
+    }
+
+    //! return type of element
+    GeometryType type () const
+    {
+      return line;
+    }
+  private:
+    S sf[m];
+  };
+
+  //! These are P2 shape functions in the simplex without virtual functions
+  // specialization for line
+  template<typename C, typename T, int d>
+  class P2SimplexShapeFunctionSetContainer;
+
+  template<typename C,typename T>
+  class P2SimplexShapeFunctionSetContainer<C,T,1>
+  {
+
+  public:
+
+    enum {dim=1};
+    enum {comps=1};
+    enum {maxsize=3};
+
+    // exported types
+    typedef C CoordType;
+    typedef T ResultType;
+    typedef P2SimplexShapeFunctionSet<C,T,dim,P2SimplexShapeFunction<C,T,dim> > value_type;
+
+    const value_type& operator() (GeometryType type, int order) const
+    {
+      if((type==simplex) || (type==line) ) return p2simplex;
+      DUNE_THROW(NotImplemented,"type not yet implemented");
+    }
+  private:
+    value_type p2simplex;
+  };
+
+
+
+
 
   /*  specialization for 2D
       A class for piecewise quadratic shape functions in a simplex geometry for triangles
