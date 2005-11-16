@@ -110,12 +110,12 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 		#
 		#
 		if test x = x"$METIS_LIB" ; then
-			ifelse([$2],,[AC_MSG_ERROR(Failed to find valid METIS library)],[$2])
+			ifelse([$2],,[AC_MSG_WARN(Failed to find valid METIS library)],[$2])
 			:
 		else
+			# tell automake
+			AM_CONDITIONAL(METIS, test x$HAVE_METIS = x1)
 			ifelse([$1],,[AC_DEFINE(HAVE_METIS,1,[Define if you have METIS library])],[$1])
 			:
 		fi
-		# tell automake
-		AM_CONDITIONAL(METIS, test x$HAVE_METIS = x1)
 	])dnl IMMDX_LIB_METIS
