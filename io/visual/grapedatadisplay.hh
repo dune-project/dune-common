@@ -99,39 +99,6 @@ namespace Dune
                                   const double *coord, double *val);
   };
 
-  //! default, do nothing
-  template <GeometryType elType>
-  inline int mapElType(int localNum)
-  {
-    return localNum;
-  }
-
-  //! specialization for quadrilaterals
-  template <>
-  inline int mapElType<quadrilateral>(int localNum)
-  {
-    switch(localNum)
-    {
-    case 2 :  return 3;
-    case 3 :  return 2;
-    default : return localNum;
-    }
-  }
-
-  //! specialization for hexahedrons
-  template <>
-  inline int mapElType<hexahedron>(int localNum)
-  {
-    switch(localNum)
-    {
-    case 2 :  return 3;
-    case 3 :  return 2;
-    case 6 :  return 7;
-    case 7 :  return 6;
-    default : return localNum;
-    }
-  }
-
 } // end namespace Dune
 
 #include "grape/grapedatadisplay.cc"

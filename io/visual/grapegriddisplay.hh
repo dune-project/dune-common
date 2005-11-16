@@ -171,52 +171,57 @@ namespace Dune
 
 
   /**************************************************************************/
-  /*  element types, see dune/grid/common/grid.hh */
+  //  element types, see dune/grid/common/grid.hh
+  // and also geldesc.hh for GR_ElementTypes
   enum GRAPE_ElementType
-  {g_vertex=0,  g_line=1,  g_triangle=2,  g_quadrilateral=3,g_tetrahedron=4,
-   g_pyramid=5, g_prism=6, g_hexahedron=7,g_iso_triangle=8, g_iso_quadrilateral=9,
-   g_unknown=127};
+  {  g_vertex         = GrapeInterface_three_three::gr_vertex
+     ,  g_line           = GrapeInterface_three_three::gr_line
+     ,  g_triangle       = GrapeInterface_three_three::gr_triangle
+     ,  g_quadrilateral  = GrapeInterface_three_three::gr_quadrilateral
+     ,  g_tetrahedron    = GrapeInterface_three_three::gr_tetrahedron
+     ,  g_pyramid        = GrapeInterface_three_three::gr_pyramid
+     ,  g_prism          = GrapeInterface_three_three::gr_prism
+     ,  g_hexahedron     = GrapeInterface_three_three::gr_hexahedron
+     ,  g_iso_triangle   = GrapeInterface_three_three::gr_iso_triangle
+     ,  g_iso_quadrilateral  = GrapeInterface_three_three::gr_iso_quadrilateral
+     ,  g_unknown            = GrapeInterface_three_three::gr_unknown};
 
-
-  //! convert new geometry types to old ones
-  //! hack at this monment
-  static inline GeometryType  geomTypeConvert ( GeometryType type , int dim )
-  {
-    GeometryType t = type;
-    if(t == simplex)
-    {
-      if(dim == 1) t = line;
-      if(dim == 2) t = triangle;
-      if(dim == 3) t = tetrahedron;
-    }
-    if(t == cube)
-    {
-      if(dim == 1) t = line;
-      if(dim == 2) t = quadrilateral;
-      if(dim == 3) t = hexahedron;
-    }
-    return t;
-  }
-
-  //! convert new geometry types to old ones
-  //! hack at this monment
+  //! convert dune geometry types to grape geometry types with numbers
   static inline GRAPE_ElementType convertToGrapeType ( GeometryType type , int dim )
   {
-    GeometryType t = geomTypeConvert(type,dim);
-    switch(t)
+    switch(type)
     {
-    case vertex :        return g_vertex;
-    case line :          return g_line;
-    case triangle :      return g_triangle;
-    case quadrilateral : return g_quadrilateral;
-    case tetrahedron :   return g_tetrahedron;
-    case pyramid :       return g_pyramid;
-    case prism :         return g_prism;
-    case hexahedron :    return g_hexahedron;
+    case simplex :
+    {
+      if(dim == 1) return g_line;
+      if(dim == 2) return g_triangle;
+      if(dim == 3) return g_tetrahedron;
+    }
+    case cube :
+    {
+      if(dim == 1) return g_line;
+      if(dim == 2) return g_quadrilateral;
+      if(dim == 3) return g_hexahedron;
+    }
+    case pyramid :  return g_pyramid;
+    case prism :    return g_prism;
+    default :
+    {
+      std::cerr << "No requested conversion for GeometryType " << type << "!\n";
+    }
     }
     return g_unknown;
   }
 
+  // see geldesc.hh for definition of this mapping
+  // this is the same for all namespaces (two_two , and two_three, ...)
+  static const int * const * vxMap = GrapeInterface_three_three::dune2GrapeVertex;
+  static inline int mapDune2GrapeVertex( int geomType , int vx )
+  {
+    assert( geomType >= 2 );
+    assert( geomType <  8 ); // at the moment only defined from 2 to 7
+    return vxMap[geomType][vx];
+  }
 
 } // end namespace Dune
 
