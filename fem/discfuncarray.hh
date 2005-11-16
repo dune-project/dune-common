@@ -219,7 +219,7 @@ namespace Dune {
     LocalFunctionImp localFunc_;
 
     //! the dofs stored in an array
-    Array < RangeFieldType > dofVec_;
+    mutable Array < RangeFieldType > dofVec_;
   }; // end class DiscFuncArray
 
 
@@ -270,9 +270,21 @@ namespace Dune {
     template <class EntityType>
     void evaluate (EntityType &en, const DomainType & x, RangeType & ret) const ;
 
+    template <class EntityType>
+    void evaluateLocal(EntityType &en, const DomainType & x, RangeType & ret) const ;
     //! sum over all local base functions evaluated on given quadrature point
     template <class EntityType, class QuadratureType>
     void evaluate (EntityType &en, QuadratureType &quad, int quadPoint , RangeType & ret) const;
+
+    //! sum over all local base functions evaluated on given quadrature point
+    template <class EntityType, class QuadratureType>
+    void jacobian (EntityType &en, QuadratureType &quad, int quadPoint , JacobianRangeType & ret) const;
+
+    template <class EntityType>
+    void jacobianLocal(EntityType& en, const DomainType& x, JacobianRangeType& ret) const ;
+
+    template <class EntityType>
+    void jacobian(EntityType& en, const DomainType& x, JacobianRangeType& ret) const;
 
   protected:
     //! update local function for given Entity
@@ -286,7 +298,14 @@ namespace Dune {
     Array < RangeFieldType > & dofVec_;
 
     //! Array holding pointers to the local dofs
-    mutable Array < RangeFieldType * > values_;
+    mutable Array < RangeFieldType * > values_ ;
+
+    //! needed once
+    mutable RangeType tmp_;
+    mutable DomainType xtmp_;
+
+    //! needed once
+    mutable JacobianRangeType tmpGrad_;
 
     //! diffVar for evaluate, is empty
     const DiffVariable<0>::Type diffVar;
