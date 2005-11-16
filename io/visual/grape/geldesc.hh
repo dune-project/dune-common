@@ -660,24 +660,24 @@ static ELEMENT_DESCRIPTION * elementDescriptions[8] = {
 };
 
 // the mapping of the reference elements
-static int dune2GrapeDefaultMap[MAX_EL_DOF] = {0,1,2,3,4,5,6,7};
-static int * dune2GrapeTriangle      = dune2GrapeDefaultMap;
-static int * dune2GrapeTetrahedron   = dune2GrapeDefaultMap;
-static int * dune2GrapePyramid       = dune2GrapeDefaultMap;
-static int * dune2GrapePrism         = dune2GrapeDefaultMap;
+static const int dune2GrapeDefaultMap[MAX_EL_DOF] = {0,1,2,3,4,5,6,7};
+static const int * dune2GrapeTriangle      = dune2GrapeDefaultMap;
+static const int * dune2GrapeTetrahedron   = dune2GrapeDefaultMap;
+static const int * dune2GrapePyramid       = dune2GrapeDefaultMap;
+static const int * dune2GrapePrism         = dune2GrapeDefaultMap;
 
 // for quads the vertices 2,3 are swaped
-static int dune2GrapeQuadrilateral[MAX_EL_DOF] = {0,1,3,2,4,5,6,7};
+static const int dune2GrapeQuadrilateral[MAX_EL_DOF] = {0,1,3,2,4,5,6,7};
 // for hexas the vertices 2,3 and 6,7 are swaped
-static int dune2GrapeHexahedron[MAX_EL_DOF] = {0,1,3,2,4,5,7,6};
+static const int dune2GrapeHexahedron[MAX_EL_DOF] = {0,1,3,2,4,5,7,6};
 
 // mapping from dune to grape
-static int * dune2GrapeVertex[8] = { 0 , 0 ,
-                                     dune2GrapeTriangle ,
-                                     dune2GrapeQuadrilateral ,
-                                     dune2GrapeTetrahedron,
-                                     dune2GrapePyramid ,
-                                     dune2GrapePrism ,
-                                     dune2GrapeHexahedron};
+static const int * dune2GrapeVertex[8] = { 0 , 0 ,
+                                           dune2GrapeTriangle ,
+                                           dune2GrapeQuadrilateral ,
+                                           dune2GrapeTetrahedron,
+                                           dune2GrapePyramid ,
+                                           dune2GrapePrism ,
+                                           dune2GrapeHexahedron};
 
 #endif
