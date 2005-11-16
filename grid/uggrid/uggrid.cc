@@ -1218,6 +1218,16 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
 }
 
 template < int dim, int dimworld >
+void Dune::UGGrid < dim, dimworld >::setPosition(typename Traits::template Codim<dim>::EntityPointer& e,
+                                                 const FieldVector<double, dimworld>& pos)
+{
+  typename TargetType<dim,dim>::T* target = getRealEntity<dim>(*e).target_;
+
+  for (int i=0; i<dimworld; i++)
+    target->myvertex->iv.x[i] = pos[i];
+}
+
+template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::setIndices()
 {
   for (int i=levelIndexSets_.size(); i<=maxLevel(); i++)
