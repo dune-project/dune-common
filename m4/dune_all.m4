@@ -83,6 +83,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "HDF5.............: $with_hdf5"
   echo "FiberHDF5........: $with_f5"
   echo "MPI..............: $with_mpi"
+  echo "METIS............: $with_metis"
   echo "ParMETIS.........: $with_parmetis"
   echo "OpenGL...........: $with_opengl"
   echo "UG...............: $with_ug"
