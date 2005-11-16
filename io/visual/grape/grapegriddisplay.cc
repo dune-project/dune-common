@@ -85,7 +85,8 @@ namespace Dune
       he->has_children = 1;
 
       // know the type
-      he->type = convertToGrapeType ( geometry.type() , dim );
+      int geomType = convertToGrapeType ( geometry.type() , dim );
+      he->type = geomType;
 
       {
         // set the vertex coordinates
@@ -94,7 +95,9 @@ namespace Dune
         {
           for(int j = 0; j < Entity::dimensionworld ; j++)
           {
-            vpointer[i][j] = geometry[i][j] ;
+            // here the mapping from dune to grape elements is done
+            // it's only different for quads and hexas
+            vpointer[i][j] = geometry[ mapDune2GrapeVertex(geomType,i) ][j] ;
           }
         }
       } // end set all vertex coordinates
