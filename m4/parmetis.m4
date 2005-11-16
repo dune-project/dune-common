@@ -3,12 +3,50 @@
 # searches for ParMetis headers and libs
 
 AC_DEFUN([DUNE_PATH_PARMETIS],[
+  AC_MSG_CHECKING(for METIS library)
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
   AC_REQUIRE([DUNE_MPI])
 
-  AC_ARG_WITH(parmetis,
-    AC_HELP_STRING([--with-parmetis=PATH],[directory with ParMETIS inside]))
+  #
+  # USer hints ...
+  #
+  AC_ARG_VAR([PARMETIS], [ParMETIS library location])
+  AC_ARG_WITH([parmetis],
+    [AC_HELP_STRING([--with-parmetis],[user defined path to ParMETIS library])],
+    [
+	if test -n "$PARMETIS" ; then
+	    AC_MSG_RESULT(yes)
+	    with_parmetis=$PARMETIS
+	elif test "$withval" != no ; then
+	    AC_MSG_RESULT(yes)
+	    with_parmetis=$withval
+	else
+	    AC_MSG_RESULT(no)
+	fi
+	],
+    [
+	if test -n "$PARMETIS" ; then
+	    with_parmetis=$PARMETIS
+	    AC_MSG_RESULT(yes)
+	else
+	    with_parmetis=/usr/
+	    include_path=include
+	    lib_path=lib
+	    if test ! -f "$with_parmetis/$include_path/parmetis.h" ; then
+		with_parmetis=/usr/local/
+		if test ! -f "$with_metis/$include_path/parmetis.h" ; then
+		    with_parmetis=""
+		    AC_MSG_RESULT(failed)
+		else
+		    AC_MSG_RESULT(yes)
+		fi
+	    else
+		AC_MSG_RESULT(yes)
+	    fi
+	fi
+	])
+  
 
   # store old values
   ac_save_LDFLAGS="$LDFLAGS"
@@ -17,26 +55,11 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   
   ## do nothing if --without-parmetis is used
   if test x"$MPI_LDFLAGS" != x"" && test x"$with_parmetis" != x"no" ; then
-      
-      if test x"$with_parmetis" == x"yes" ; then
-	  AC_MSG_ERROR([You have to provide a directory --with-parmetis=PATH])
-      fi
-      
-      if test x"$with_parmetis" == x"yes"; then
-	  # defaultpath
-	  PARMETIS_LIB_PATH="/usr/lib/"
-	  PARMETIS_INCLUDEPATH="/usr/include/"
-      else 
-	  if test -d $with_parmetis; then
-              # expand tilde / other stuff
-	      PARMETISROOT=`cd $with_parmetis && pwd`
-	      PARMETIS_LIB_PATH="$PARMETISROOT/"
-	      PARMETIS_INCLUDE_PATH="$PARMETISROOT/"
-	  else
-	      AC_MSG_ERROR([directory $with_parmetis does not exist!])
-	  fi
-      fi
-            
+          
+      # defaultpath
+      PARMETIS_LIB_PATH="$with_parmetis$lib_path"
+      PARMETIS_INCLUDE_PATH="$with_parmetis$lib_path"
+                  
       PARMETIS_LDFLAGS="-L$PARMETIS_LIB_PATH $MPI_LDFLAGS"
 
       # set variables so that tests can use them
@@ -65,7 +88,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 		  PARMETIS_LDFLAGS="-L$PARMETIS_LIB_PATH"
 		  LIBS="$LIBS -lmetis"],[
 		  HAVE_PARMETIS="0"
-		  AC_MSG_WARN(libmetis not found!)])
+		  AC_MSG_WARN(libparmetis not found!)])
       fi
 
       if test x$HAVE_PARMETIS = x1 ; then
