@@ -105,7 +105,7 @@ namespace Dune
   newLocalFunctionObject () const
 
   {
-    return new LocalFunctionArray<DiscreteFunctionSpaceType> ( this->functionSpace_ , dofVec_ );
+    return new LocalFunctionImp ( this->functionSpace_ , dofVec_ );
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -435,27 +435,32 @@ namespace Dune
     return numOfDof_;
   }
 
-  template<class DiscreteFunctionSpaceType > template <class EntityType>
+  template<class DiscreteFunctionSpaceType> template <class EntityType>
   inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
   evaluate (EntityType &en, const DomainType & x, RangeType & ret) const
   {
-    //if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
-    // {
     ret = 0.0;
-    DomainType xtmp_ = en.geometry().local(x);
-    for(int i=0; i<numOfDifferentDofs_; i++)
+    xtmp_ = en.geometry().local(x);
+    evaluateLocal(en, xtmp_, ret);
+  }
+
+  template<class DiscreteFunctionSpaceType> template <class EntityType>
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType>::
+  evaluateLocal (EntityType &en, const DomainType & x, RangeType & ret) const
+  {
+    enum { dimRange = DiscreteFunctionSpaceType::DimRange };
+    assert(init_);
+    assert(en.geometry().checkInside(x));
+    ret *= 0.0;
+    const BaseFunctionSetType& bSet = fSpace_.getBaseFunctionSet(en);
+
+    for (int i = 0; i < bSet.numBaseFunctions(); ++i)
     {
-      RangeType tmp_;
-      fSpace_.evaluateLocal(i,en,xtmp_,tmp_);
-      for(int l=0; l<dimrange; l++)
-        ret[l] += (* (values_[i])) * tmp_[l];
+      bSet.eval(i, x, tmp_);
+      for (int l = 0; l < dimRange; ++l) {
+        ret[l] += (*values_[i]) * tmp_[l];
+      }
     }
-    //  }
-    // else
-    //  {
-    //    for(int l=0; l<dimrange; l++)
-    //      ret[l] = *(values_[l]) ;
-    //  }
   }
 
   template<class DiscreteFunctionSpaceType >
@@ -463,24 +468,50 @@ namespace Dune
   inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
   evaluate (EntityType &en, QuadratureType &quad, int quadPoint, RangeType & ret) const
   {
-    if(numOfDifferentDofs_ > 1) // i.e. polynom order > 0
-    {
-      ret = 0.0;
-      for(int i=0; i<numOfDifferentDofs_; i++)
-      {
-        RangeType tmp_;
-        bool eval = fSpace_.evaluateLocal(i,en,quad,quadPoint,tmp_);
-        if(eval)
-        {
-          for(int l=0; l<dimrange; l++)
-            ret[l] += (* (values_[i])) * tmp_[l];
-        }
+    evaluateLocal(en, quad.point(quadPoint), ret);
+  }
+
+  template<class DiscreteFunctionSpaceType>
+  template <class EntityType, class QuadratureType>
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType>::
+  jacobian (EntityType &en, QuadratureType &quad, int quadPoint, JacobianRangeType & ret) const
+  {
+    jacobianLocal(en, quad.point(quadPoint), ret);
+  }
+
+  template<class DiscreteFunctionSpaceType>
+  template <class EntityType>
+  inline void LocalFunctionArray<DiscreteFunctionSpaceType>::
+  jacobian(EntityType& en, const DomainType& x,
+           JacobianRangeType& ret) const
+  {
+    ret *= 0.0;
+    xtmp_ = en.geometry().local(x);
+    jacobianLocal(en, xtmp_, ret);
+  }
+
+  template<class DiscreteFunctionSpaceType>
+  template <class EntityType>
+  inline void LocalFunctionArray<DiscreteFunctionSpaceType>::
+  jacobianLocal(EntityType& en, const DomainType& x,
+                JacobianRangeType& ret) const
+  {
+    assert(init_);
+    enum { dim = EntityType::dimension };
+    enum { dimRange = DiscreteFunctionSpaceType::DimRange };
+
+    ret *= 0.0;
+    const BaseFunctionSetType& bSet = fSpace_.getBaseFunctionSet(en);
+
+    for (int i = 0; i < bSet.numBaseFunctions(); ++i) {
+      tmpGrad_ *= 0.0;
+      bSet.jacobian(i, x, tmpGrad_);
+
+      for (int l = 0; l < dimRange; ++l) {
+        tmpGrad_[l] *= (*values_)[i];
+        // * umtv or umv?
+        en.geometry().jacobianInverseTransposed(x).umv(tmpGrad_[l], ret[l]);
       }
-    }
-    else
-    {
-      for(int l=0; l<dimrange; l++)
-        ret[l] = (* (values_[ l ]));
     }
   }
 
@@ -493,7 +524,7 @@ namespace Dune
       numOfDof_ =
         fSpace_.getBaseFunctionSet(en).numBaseFunctions();
       numOfDifferentDofs_ =
-        fSpace_.getBaseFunctionSet(en).getNumberOfDiffBaseFuncs();
+        fSpace_.getBaseFunctionSet(en).numDifferentBaseFunctions();
 
       if(numOfDof_ > values_.size())
         values_.resize( numOfDof_ );
