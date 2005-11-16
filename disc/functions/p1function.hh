@@ -270,7 +270,7 @@ namespace Dune
       }
       for (int i=0; i<counter.size(); i++)
         for (int c=0; c<m; c++)
-          (*coeff)[i][c] = (*coeff)[i][c] / counter[i];
+          (*coeff)[i][c] /= counter[i];
     }
 
     //! return const reference to coefficient vector
@@ -376,7 +376,8 @@ namespace Dune
               GeometryType gtf = father->geometry().type();                             // fathers type
               const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gte,1)[i].position();
               FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                             // map corner to father element
-              RT value=0;
+              for (int c=0; c<m; c++)
+                (*coeff)[index][c] = 0;
               for (int j=0; j<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++j)
               {
                 RT basefuncvalue = Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1)[j].evaluateFunction(0,pos);
