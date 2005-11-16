@@ -17,8 +17,8 @@
 #include "anisotropic.hh"
 //#include<dune/istl/paamg/aggregates.hh>
 
-template<int N, int BS>
-void testCoarsenIndices()
+template<int BS>
+void testCoarsenIndices(int N)
 {
 
   int procs, rank;
@@ -61,6 +61,8 @@ void testCoarsenIndices()
   std::cout << "fine remote: "<<remoteIndices << std::endl;
 
   aggregatesMap.buildAggregates(mat, pg, Criterion());
+
+  Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
 
   ParallelIndexSet coarseIndices;
   RemoteIndices coarseRemote(coarseIndices,coarseIndices, MPI_COMM_WORLD);
@@ -120,14 +122,20 @@ void testCoarsenIndices()
                                             aggregatesMap, coarseIndices.size(),
                                             Dune::EnumItem<GridFlag,overlap>());
   productBuilder.calculate(mat, aggregatesMap, *coarseMat);
-  Dune::printmatrix(std::cout,mat,"fine","row",9,1);
-  Dune::printmatrix(std::cout,*coarseMat,"coarse","row",9,1);
+  if(N<5) {
+    Dune::printmatrix(std::cout,mat,"fine","row",9,1);
+    Dune::printmatrix(std::cout,*coarseMat,"coarse","row",9,1);
+  }
 }
 
 
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
-  testCoarsenIndices<4,1>();
+  int N=5;
+
+  if(argc>1)
+    N = atoi(argv[1]);
+  testCoarsenIndices<1>(N);
   MPI_Finalize();
 }
