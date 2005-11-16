@@ -5,6 +5,7 @@
 
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/bitfield.hh>
 
 // for backward compatibility
 #include <dune/fem/feop/spmatrix.hh>
@@ -48,6 +49,13 @@ namespace Dune {
     void setup(const FunctionSpaceType& coarseFSpace,
                const FunctionSpaceType& fineFSpace);
 
+    /** \brief Sets up the operator between two P1 spaces
+     *
+     * Does not use any of the Freiburg fem stuff
+     * \param grid The grid
+     * \param cL The coarse grid level
+     * \param fL The fine grid level
+     */
     template <class GridType>
     void setup(const GridType& grid, int cL, int fL);
 
