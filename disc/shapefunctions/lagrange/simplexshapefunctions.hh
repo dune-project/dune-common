@@ -445,7 +445,7 @@ namespace Dune
     typedef C CoordType;
     typedef T ResultType;
     typedef S value_type;
-    typedef typename S::ImplementationType Imp; // Imp is either S or derived from S
+    typedef typename S::ImplementationType Imp;
     //! make a shape fn object
     P2SimplexShapeFunctionSet()
     {
@@ -518,10 +518,6 @@ namespace Dune
   private:
     value_type p2simplex;
   };
-
-
-
-
 
   /*  specialization for 2D
       A class for piecewise quadratic shape functions in a simplex geometry for triangles
