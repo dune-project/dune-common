@@ -121,10 +121,9 @@ namespace Dune {
     //! dimension of value
     enum { dimVal = 1 };
 
+  public:
     //! remember polynomial order
     enum { polynomialOrder =  polOrd };
-
-  public:
 
     //! Constructor generating for each different element type of the grid a
     //! LagrangeBaseSet with polOrd
