@@ -29,7 +29,19 @@ namespace Dune {
     memPair_(dm_.addDofSet(&dofVec_, f.mapper(), name_)),
     dofVec_ ( *memPair_.second ),
     localFunc_(*this)
-    //localFunc_ ( f , dofVec_ )
+  {}
+
+  // Constructor making discrete function
+  template<class DiscreteFunctionSpaceType>
+  template <class VectorPointerType>
+  inline DFAdapt< DiscreteFunctionSpaceType>::
+  DFAdapt(std::string name, DiscreteFunctionSpaceType & f, VectorPointerType * vector ) :
+    DiscreteFunctionDefaultType ( f ),
+    name_ ((name.length() > 0) ? name : "no name"),
+    dm_(DofManagerFactoryType::getDofManager(f.grid())),
+    memPair_(dm_.addDummyDofSet(&dofVec_, f.mapper(), name_, vector )),
+    dofVec_ ( *memPair_.second ),
+    localFunc_(*this)
   {}
 
   template<class DiscreteFunctionSpaceType>
@@ -41,7 +53,6 @@ namespace Dune {
     memPair_(dm_.addDofSet(&dofVec_, df.functionSpace_.mapper(), name_)),
     dofVec_ ( *memPair_.second ),
     localFunc_(*this)
-    //localFunc_ ( df.localFunc_ )
   {
     // copy values of array
     dofVec_ = df.dofVec_;

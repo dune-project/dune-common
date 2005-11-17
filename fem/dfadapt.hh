@@ -96,7 +96,15 @@ namespace Dune {
     //! Constructor make Discrete Function
     DFAdapt(DiscreteFunctionSpaceType& f);
 
+    //! Constructor creating discrete functions with name name
+    //! for given functions space f
     DFAdapt (std::string name, DiscreteFunctionSpaceType & f ) ;
+
+    //! Constructor creating discrete functions with name name
+    //! for given functions space f and using given double * as vector
+    //! VectorPointerType should be of the underlying array pointer type
+    template <class VectorPointerType>
+    DFAdapt (std::string name, DiscreteFunctionSpaceType & f , VectorPointerType * vec ) ;
 
     //! Constructor make Discrete Function
     DFAdapt (const DFAdapt <DiscreteFunctionSpaceType> & df);
