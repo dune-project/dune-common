@@ -410,7 +410,7 @@ namespace Dune
 
   template<typename C, typename T>
   class P2SimplexShapeFunction<C,T,1>
-
+    : public P2CubeShapeFunction<C,T,1>
   {
   public:
     enum {dim=1};
@@ -420,96 +420,12 @@ namespace Dune
     typedef T ResultType;
     typedef P2SimplexShapeFunction ImplementationType;
     P2SimplexShapeFunction(int i,int en,int co)
-    {
-      number=i;
-      ent = en;
-      cod = co;
-      switch(i)
-      {
-      case 0 :
-        //--interpolation point associated with shape fn
-        pos[0]=0.0;
-        coeff[0] = 2;
-        coeff[0] = -3;
-        coeff[0] = 1;
-        break;
-      case 1 :
-
-        pos[0]=0.5;
-        coeff[0] = 2;
-        coeff[0] = -1;
-        coeff[0] = 0;
-        break;
-      case 2 :
-        pos[0]=1.0;
-        coeff[0] = -4;
-        coeff[0] = 4;
-        coeff[0] = 0;
-        break;
-      }
-
-    }
+      : P2CubeShapeFunction<C,T,1>(i,en,co,FieldVector<int,1>(i))
+    {}
 
     P2SimplexShapeFunction()
     {}
-
-    //! evaluate shape function in local coordinates
-    ResultType evaluateFunction (int comp, const FieldVector<CoordType,1>& x) const
-    {
-
-      ResultType phi=coeff[2];
-      phi+=coeff[0]*x[0]*x[0];
-      phi+=coeff[1]*x[0];
-      return phi;
-    }
-
-    ResultType evaluateDerivative (int comp, int dir, const FieldVector<CoordType,1>& x) const
-
-    {
-      assert(dir=0);
-      ResultType deriv=2*coeff[0] * x[0] + coeff[1];
-      return deriv;
-    }
-
-
-    //! consecutive number of associated dof within element
-    int localindex (int comp) const
-    {
-      return number;
-    }
-
-    //! codim of associated dof
-    int codim () const
-    {
-      return cod;
-    }
-
-    //! entity (of codim) of associated dof
-    int entity () const
-    {
-      return ent;
-    }
-
-    //! consecutive number of dof within entity
-    int entityindex () const
-    {
-      return 0;
-    }
-
-    //! interpolation point associated with shape function
-    const FieldVector<CoordType,1>& position () const
-    {
-      return pos;
-    }
-
-  private:
-    int number,coeff[3],ent,cod;
-
-    FieldVector<CoordType,1> pos;
-
   };
-
-
 
   //specialization 1D
   //-------------------------------------------------
@@ -542,7 +458,6 @@ namespace Dune
           j++;
         }
     }
-
 
     //! return total number of shape functions
     int size () const
