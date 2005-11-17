@@ -158,9 +158,6 @@ namespace Dune {
     using Imp::newLocalFunctionObject;
     //! return empty local function
     LocalFunctionType newLocalFunction () DUNE_DEPRECATED { return LocalFunctionType(*this); }
-    //! return local function for given entity
-    //template <class EntityType>
-    //LocalFunctionType localFunction (const EntityType &en) { return LocalFunctionType(en,*this); }
     using Imp::localFunction;
     using Imp::write_xdr;
     using Imp::read_xdr;
@@ -168,6 +165,8 @@ namespace Dune {
     using Imp::read_ascii;
     using Imp::write_pgm;
     using Imp::read_pgm;
+
+    using Imp::leakPointer;
   private:
     //- Forbidden members
 
@@ -391,6 +390,8 @@ namespace Dune {
     using Imp::read_ascii;
     using Imp::write_pgm;
     using Imp::read_pgm;
+
+    using Imp::leakPointer;
 
     //- Additional methods
     SubDiscreteFunctionType subFunction(int component);

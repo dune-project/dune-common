@@ -46,6 +46,8 @@ namespace Dune {
     typedef DofManager<GridType> DofManagerType;
 
     typedef typename Traits::DiscreteFunctionType LeafType;
+
+    typedef typename Traits::DofType DofType;
   public:
     std::string name() const;
     int size() const;
@@ -84,7 +86,13 @@ namespace Dune {
     //! read function data from pgm fromat file
     bool read_pgm(std::string filename);
 
+    //! return pointer to local function implementation
     LocalFunctionImp * newLocalFunctionObject () const;
+
+    //! return pointer to underlying array
+    DofType       * leakPointer ()       { return dofVec_.leakPointer(); }
+    //! return pointer to underlying array
+    const DofType * leakPointer () const { return dofVec_.leakPointer(); }
   protected:
     const DiscreteFunctionSpaceType& space() const { return spc_; }
     DofStorageType& dofStorage() { return dofVec_; }
