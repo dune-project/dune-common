@@ -1995,24 +1995,6 @@ namespace Dune {
   };
 
 
-  //************************************************************************
-  /*!
-     \brief [<em> provides \ref Dune::Grid </em>]
-     \brief Provides a distributed structured cube mesh.
-     \ingroup GridImplementations
-
-     YaspGrid stands for yet another structured parallel grid.
-     It will implement the dune grid interface for structured grids with codim 0
-     and dim, with arbitrary overlap, parallel features with two overlap
-     models, periodic boundaries and fast a implementation allowing on-the-fly computations.
-
-     \par History:
-     \li started on July 31, 2004 by PB based on abstractions developed in summer 2003
-
-     \note The only class intended for public use is \ref Dune::YaspGrid
-     itself. All other classes are of no use for an application writer.
-   */
-
   template<int dim, int dimworld>
   struct YaspGridFamily
   {
@@ -2032,6 +2014,23 @@ namespace Dune {
     Traits;
   };
 
+  //************************************************************************
+  /*!
+     \brief [<em> provides \ref Dune::Grid </em>]
+     \brief Provides a distributed structured cube mesh.
+     \ingroup GridImplementations
+
+     YaspGrid stands for yet another structured parallel grid.
+     It will implement the dune grid interface for structured grids with codim 0
+     and dim, with arbitrary overlap, parallel features with two overlap
+     models, periodic boundaries and fast a implementation allowing on-the-fly computations.
+
+     \par History:
+     \li started on July 31, 2004 by PB based on abstractions developed in summer 2003
+
+     \note The only class intended for public use is \ref Dune::YaspGrid
+     itself. All other classes are of no use for an application writer.
+   */
   template<int dim, int dimworld>
   class YaspGrid :
     public GridDefault<dim,dimworld,yaspgrid_ctype,YaspGridFamily<dim,dimworld> >,
