@@ -218,8 +218,9 @@ namespace Dune
   static const int * const * vxMap = GrapeInterface_three_three::dune2GrapeVertex;
   static inline int mapDune2GrapeVertex( int geomType , int vx )
   {
-    assert( geomType >= 2 );
-    assert( geomType <  8 ); // at the moment only defined from 2 to 7
+    enum { usedTypes = GrapeInterface_three_three::numberOfUsedGrapeElementTypes };
+    assert( geomType >= 0 );
+    assert( geomType <  usedTypes ); // at the moment only defined from 2 to 7
     return vxMap[geomType][vx];
   }
 

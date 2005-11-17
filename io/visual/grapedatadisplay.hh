@@ -3,12 +3,17 @@
 #ifndef DUNE_GRAPE_DATA_DISPLAY_HH
 #define DUNE_GRAPE_DATA_DISPLAY_HH
 
+//- system includes
+#include <vector>
+
+//- local includes
 #include "grapegriddisplay.hh"
-#include <dune/quadrature/fixedorder.hh>
 
 namespace Dune
 {
 
+  template <typename ctype, int dim, int dimworld, int polOrd>
+  class GrapeLagrangePoints;
   /*!
      GrapeDataDisplay
    */
@@ -24,6 +29,8 @@ namespace Dune
     enum { dim = GridType::dimension };
     enum { dimworld = GridType::dimensionworld };
 
+    typedef typename GridType :: ctype ctype;
+
     typedef typename GrapeInterface<dim,dimworld>::DUNE_ELEM DUNE_ELEM;
     typedef typename GrapeInterface<dim,dimworld>::DUNE_FDATA DUNE_FDATA;
 
@@ -31,6 +38,8 @@ namespace Dune
 
     typedef typename GridType::Traits::template Codim<0>::LevelIterator LevelIterator;
     typedef DiscFuncType DiscreteFunctionType;
+
+    enum { polynomialOrder = FunctionSpaceType::polynomialOrder };
 
   public:
     //! Constructor, make a GrapeDataDisplay for given grid and myRank = -1
@@ -58,15 +67,12 @@ namespace Dune
     std::vector < DUNE_FDATA * > & getFdataVec () { return vecFdata_; }
 
   private:
-    inline void createQuadrature();
-
     //! hold the diffrent datas on this mesh
     // std::vector sucks
     std::vector < DUNE_FDATA * > vecFdata_;
 
-    typedef FixedOrderQuad < typename FunctionSpaceType::RangeFieldType ,
-        typename FunctionSpaceType::DomainType , 1 > QuadType;
-    QuadType * quad_;
+    // store lagrange points for evaluation
+    GrapeLagrangePoints<ctype,dim,dimworld,polynomialOrder> lagrangePoints_;
 
     // tmp variables
     RangeType tmp_;
@@ -78,15 +84,15 @@ namespace Dune
 
     // for the data visualization
     template <class EntityType>
-    inline void evalDof (EntityType &en, DUNE_FDATA * , int localNum, double * val);
+    inline void evalDof (EntityType &en, int geomType, DUNE_FDATA * , int localNum, double * val);
     // for the data visualization
     template <class EntityType, class LocalFuncType>
-    inline void evalScalar (EntityType &en, DiscFuncType & func, LocalFuncType &lf,
+    inline void evalScalar (EntityType &en, int geomType, DiscFuncType & func, LocalFuncType &lf,
                             const int * comp , int localNum, double * val);
 
     // for the data visualization
     template <class EntityType, class LocalFuncType>
-    inline void evalVector (EntityType &en, DiscFuncType & func,LocalFuncType &lf,
+    inline void evalVector (EntityType &en, int geomType, DiscFuncType & func,LocalFuncType &lf,
                             const int * comp, int vend, int localNum, double * val);
   public:
     inline void evalCoord (DUNE_ELEM *he, DUNE_FDATA *df,
@@ -97,6 +103,64 @@ namespace Dune
 
     inline static void func_real (DUNE_ELEM *he , DUNE_FDATA * fe,int ind,
                                   const double *coord, double *val);
+  };
+
+  template <typename ctype, int dim, int dimworld, int polOrd>
+  class GrapeLagrangePoints
+  {
+    enum { maxPoints = 20 };
+    enum { numberOfTypes = (dim == 2) ? 2 : 6 };
+
+    std::vector < FieldMatrix<ctype,maxPoints,dim> > points_;
+  public:
+    //! create lagrange points for given polyOrder and dim,dimworld
+    GrapeLagrangePoints ()
+    {
+      for(int type=0; type<numberOfTypes; type++)
+      {
+        FieldMatrix<ctype,maxPoints,dim> coords(0.0);
+        int nvx = numberOfVertices(type);
+
+        for(int i=0; i<nvx; i++)
+        {
+          const double * p = getCoordinate(type,i);
+          for(int j=0; j<dimworld; j++)
+          {
+            assert( p );
+            coords[i][j] = p[j];
+          }
+        }
+        points_.push_back( coords );
+      }
+    }
+
+    //! return lagrange point with localNum
+    //! for given element type and polyOrder
+    const FieldVector<ctype,dim> &
+    getPoint (int geomType, int polyOrder , int localNum ) const
+    {
+      assert( polOrd == polyOrder );
+      assert( geomType >= 0 );
+      assert( geomType < numberOfTypes );
+      return points_[geomType][localNum];
+    }
+
+  private:
+    int numberOfVertices( int type )
+    {
+      if(type < 2)
+        return GrapeInterface_two_two::getElementDescription(type)->number_of_vertices;
+      else
+        return GrapeInterface_three_three::getElementDescription(type)->number_of_vertices;
+    }
+
+    const double * getCoordinate( int type, int i )
+    {
+      if(type < 2)
+        return GrapeInterface_two_two::getElementDescription(type)->coord[i];
+      else
+        return GrapeInterface_three_three::getElementDescription(type)->coord[i];
+    }
   };
 
 } // end namespace Dune
