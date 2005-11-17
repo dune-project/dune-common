@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <set>
 
 #include <dune/common/exceptions.hh>
 
@@ -22,6 +23,7 @@ void ConfigParser::parseFile(string file)
     DUNE_THROW(IOError, "Could open configuration file " << file);
 
   string prefix;
+  set<string> keysInFile;
   while(!in.eof())
   {
     string line;
@@ -30,7 +32,11 @@ void ConfigParser::parseFile(string file)
     if (line[0] == '#')
     {}
     else if ((line[0] == '[')and (line[line.length()-1] == ']'))
+    {
       prefix = trim(line.substr(1, line.length()-2)) + ".";
+      if (prefix == ".")
+        prefix = "";
+    }
     else
     {
       string::size_type mid = line.find("=");
@@ -38,8 +44,13 @@ void ConfigParser::parseFile(string file)
       {
         string key = prefix+trim(line.substr(0, mid));
         string value = trim(line.substr(mid+1));
-
-        (*this)[key] = value;
+        if (keysInFile.count(key) != 0)
+          DUNE_THROW(Exception, "Key '" << key << "' appears twice in file '" << file << "' !");
+        else
+        {
+          (*this)[key] = value;
+          keysInFile.insert(key);
+        }
       }
     }
   }
