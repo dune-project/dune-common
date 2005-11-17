@@ -148,7 +148,7 @@ namespace Dune {
     void setBaseFunctionPointer( int baseFunc, BaseFunctionInterfaceType * func)
     {
       baseFunctionList_[baseFunc] = func;
-    };
+    }
 
     //! \todo Please doc me!
     void setNumOfDiffFct ( int num )
@@ -171,6 +171,7 @@ namespace Dune {
 
     bool trulyVectorial_;
 
+    DofConversionUtility<PointBased> util_;
   private:
     //! method to navigate through the vector vecEvaluate, which holds
     //! precalculated values
@@ -194,18 +195,11 @@ namespace Dune {
                              const RangeType& factor,
                              DofType& result) const;
 
-    void evaluateSetOptim(const DomainType& xLocal,
-                          const RangeType& factor,
-                          DofVectorType& result) const;
-
     void evaluateGradientSingleOptim(int baseFunct,
                                      const DomainType& xLocal,
                                      const JacobianRangeType& factor,
                                      DofType& result) const;
 
-    void evaluateGradientSetOptim(const DomainType& xLocal,
-                                  const JacobianRangeType& factor,
-                                  DofVectorType& result) const;
 
   }; // end class FastBaseFunctionSet
 
