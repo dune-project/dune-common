@@ -12,13 +12,14 @@ namespace Dune
   //
   //****************************************************************
   template <class GridType, class DiscFuncType>
-  inline GrapeDataDisplay<GridType,DiscFuncType>::GrapeDataDisplay (GridType &grid) :
+  inline GrapeDataDisplay<GridType,DiscFuncType>::
+  GrapeDataDisplay (const GridType &grid) :
     GrapeGridDisplay < GridType > (grid) , vecFdata_ (0)
   {}
 
   template <class GridType, class DiscFuncType>
   inline GrapeDataDisplay<GridType,DiscFuncType>::
-  GrapeDataDisplay (GridType &grid, const int myrank ) :
+  GrapeDataDisplay (const GridType &grid, const int myrank ) :
     GrapeGridDisplay < GridType > (grid,myrank) , vecFdata_ (0)
   {}
 
@@ -282,7 +283,8 @@ namespace Dune
   }
 
   template<class GridType, class DiscFuncType>
-  inline void GrapeDataDisplay<GridType,DiscFuncType>::dataDisplay(DiscFuncType &func, bool vector)
+  inline void GrapeDataDisplay<GridType,DiscFuncType>::
+  dataDisplay(DiscFuncType &func, bool vector)
   {
     /* add function data */
     this->addData(func,"myFunc",0.0,vector);
@@ -300,6 +302,19 @@ namespace Dune
     for(int i=0; i<dim; i++) comp[i] = i;
     DATAINFO dinf = { name , name , 0 , (vector) ? dim : 1 , (int *) &comp };
     addData(func,&dinf,time);
+  }
+
+  template<class GridType, class DiscFuncType>
+  template<class VectorPointerType>
+  inline void GrapeDataDisplay<GridType,DiscFuncType>::
+  displayVector(const VectorPointerType * vector)
+  {
+    typedef typename FunctionSpaceType :: Traits :: GridPartType GridPartType;
+    GridPartType part (this->grid_, this->leafset_ );
+    FunctionSpaceType space ( part );
+
+    DiscFuncType func ( "my data" , space , vector );
+    dataDisplay(func,false);
   }
 
   template<class GridType, class DiscFuncType>
