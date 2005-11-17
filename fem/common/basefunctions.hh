@@ -46,11 +46,13 @@ namespace Dune {
   {
 
   public:
-    typedef FunctionSpaceImp DiscreteFunctionSpaceType;
-    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
-    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
-    enum { DimDomain = DiscreteFunctionSpaceType::DimDomain };
-    enum { DimRange  = DiscreteFunctionSpaceType::DimRange  };
+    typedef FunctionSpaceImp FunctionSpaceType;
+    typedef typename FunctionSpaceType::DomainType DomainType;
+    typedef typename FunctionSpaceType::RangeType RangeType;
+    typedef typename FunctionSpaceType::DomainFieldType DomainFieldType;
+    typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
+    enum { DimDomain = FunctionSpaceType::DimDomain };
+    enum { DimRange  = FunctionSpaceType::DimRange  };
 
     BaseFunctionInterface () {}
 
@@ -112,18 +114,18 @@ namespace Dune {
   class BaseFunctionSetInterface
   {
   public:
-    typedef typename BaseFunctionSetTraits::DiscreteFunctionSpaceType DiscreteFunctionSpaceType;
+    typedef typename BaseFunctionSetTraits::FunctionSpaceType FunctionSpaceType;
     typedef typename BaseFunctionSetTraits::BaseFunctionSetType BaseFunctionSetType;
-    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
-    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
-    typedef typename DiscreteFunctionSpaceType::HessianRangeType HessianRangeType;
+    typedef typename FunctionSpaceType::DomainType DomainType;
+    typedef typename FunctionSpaceType::RangeType RangeType;
+    typedef typename FunctionSpaceType::JacobianRangeType JacobianRangeType;
+    typedef typename FunctionSpaceType::HessianRangeType HessianRangeType;
 
-    enum { DimDomain = DiscreteFunctionSpaceType::DimDomain };
-    enum { DimRange  = DiscreteFunctionSpaceType::DimRange  };
+    enum { DimDomain = FunctionSpaceType::DimDomain };
+    enum { DimRange  = FunctionSpaceType::DimRange  };
 
     //typedef  Quadrature < FunctionSpaceType > QuadratureType ;
-    typedef  BaseFunctionInterface<DiscreteFunctionSpaceType> BaseFunctionType;
+    typedef BaseFunctionInterface<FunctionSpaceType> BaseFunctionType;
 
   public:
 
@@ -140,7 +142,8 @@ namespace Dune {
 
     //! Number of really differing (scalar) base functions in the case of a
     //! vectorial problem
-    int numDifferentBaseFunctions() const {
+    int numDifferentBaseFunctions() const DUNE_DEPRECATED
+    {
       return asImp().numDifferentBaseFunctions();
     }
 
@@ -163,7 +166,9 @@ namespace Dune {
   protected:
 
     //! This function should not be here at all!
-    const BaseFunctionInterface<DiscreteFunctionSpaceType> &getBaseFunction( int baseFunct ) const {
+    const BaseFunctionInterface<FunctionSpaceType>&
+    getBaseFunction( int baseFunct ) const DUNE_DEPRECATED
+    {
       std::cout << "Interface getBaseFunction \n";
       return asImp().getBaseFunction( baseFunct );
     }
@@ -197,15 +202,15 @@ namespace Dune {
   {
   public:
     typedef typename BaseFunctionSetTraits::BaseFunctionSetType BaseFunctionSetType;
-    typedef typename BaseFunctionSetTraits::DiscreteFunctionSpaceType DiscreteFunctionSpaceType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
+    typedef typename BaseFunctionSetTraits::FunctionSpaceType FunctionSpaceType;
+    typedef typename FunctionSpaceType::JacobianRangeType JacobianRangeType;
     enum { dimRow = JacobianRangeType::rows };
     enum { dimCol = JacobianRangeType::cols };
 
-    typedef typename DiscreteFunctionSpaceType::DomainType DomainType ;
-    typedef typename DiscreteFunctionSpaceType::RangeType RangeType ;
-    typedef typename DiscreteFunctionSpaceType::HessianRangeType HessianRangeType;
-    typedef typename DiscreteFunctionSpaceType::RangeFieldType DofType;
+    typedef typename FunctionSpaceType::DomainType DomainType ;
+    typedef typename FunctionSpaceType::RangeType RangeType ;
+    typedef typename FunctionSpaceType::HessianRangeType HessianRangeType;
+    typedef typename FunctionSpaceType::RangeFieldType DofType;
     typedef std::vector<DofType> DofVectorType;
   public:
     //! set the default diffVar Types
@@ -220,7 +225,7 @@ namespace Dune {
 
     //! By default, assume that the number of different base functions are the
     //! same as the overall number of base functions
-    int numDifferentBaseFunctions() const
+    int numDifferentBaseFunctions() const DUNE_DEPRECATED
     {
       return this->numBaseFunctions();
     }
@@ -238,21 +243,6 @@ namespace Dune {
     {
       asImp().evaluate( baseFunct, diffVariable_ , quad, quadPoint, phi );
       return;
-    }
-
-    //! default implementation for scalar evaluation
-    void evaluateScalar(int baseFunct, const DomainType& x, DofType& phi) const
-    {
-      asImp().evaluate(baseFunct, diffVariable_, x, tmp_);
-      phi = tmp_[0];
-    }
-
-    //! default implementation for scalar evaluation
-    template <class QuadratureType>
-    void evaluateScalar(int baseFunct, QuadratureType& quad, int quadPoint, DofType& phi) const
-    {
-      asImp().evaluate(baseFunct, diffVariable_, quad, quadPoint, tmp_);
-      phi = tmp_[0];
     }
 
     //! default evaluate using the evaluate interface
@@ -280,52 +270,27 @@ namespace Dune {
     }
 
     // * add methods for quadrature type as well
-    void evaluateSingle(int baseFunct,
-                        const DomainType& xLocal,
-                        const RangeType& factor,
-                        DofType& result) const
+    DofType evaluateSingle(int baseFunct,
+                           const DomainType& xLocal,
+                           const RangeType& factor) const
     {
       RangeType phi(0.);
       eval(baseFunct, xLocal, phi);
-      result = phi*factor;
+      return phi*factor;
     }
 
-    void evaluateSet(const DomainType& xLocal,
-                     const RangeType& factor,
-                     DofVectorType& result) const
-    {
-      result.resize(this->numBaseFunctions());
-      DofType tmp;
-      for (size_t i = 0; i < this->numBaseFunctions(); ++i) {
-        evaluateSingle(i, xLocal, factor, tmp);
-        result[i] = tmp;
-      }
-    }
-
-    void evaluateGradientSingle(int baseFunct,
-                                const DomainType& xLocal,
-                                const JacobianRangeType& factor,
-                                DofType& result) const
+    DofType evaluateGradientSingle(int baseFunct,
+                                   const DomainType& xLocal,
+                                   const JacobianRangeType& factor) const
     {
       JacobianRangeType gradPhi(0.);
       jacobian(baseFunct, xLocal, gradPhi);
 
-      result = 0;
-      for (int i = 0; i < DiscreteFunctionSpaceType::dimDomain; ++i) {
+      DofType result = 0;
+      for (int i = 0; i < FunctionSpaceType::DimDomain; ++i) {
         result += gradPhi[i]*factor[i];
       }
-    }
-
-    void evaluateGradientSet(const DomainType& xLocal,
-                             const JacobianRangeType& factor,
-                             DofVectorType& result) const
-    {
-      result.resize(this->numBaseFunctions());
-      DofType tmp;
-      for (size_t i = 0; i < this->numBaseFunctions(); ++i) {
-        evaluateGradientSingle(i, xLocal, factor, tmp);
-        result[i] = tmp;
-      }
+      return result;
     }
 
   private:
