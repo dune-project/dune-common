@@ -180,6 +180,7 @@ namespace Dune
                                Dune::FieldVector<RT,m>& y) const
     {
       Dune::GeometryType gt = e.geometry().type();     // extract type of element
+      y = 0;
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
       {
         RT basefuncvalue=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi);
