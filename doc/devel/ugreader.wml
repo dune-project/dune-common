@@ -103,8 +103,8 @@ This methods must compute the world coordinates from the local ones on the
 boundary segment.  Give these classes to your grid by calling
 </p>
 <pre>
-grid.insertBoundarySegment(const std::vector&lt; int &gt; vertices, 
-                           const BoundarySegment&lt; dimworld &gt; *boundarySegment);
+grid.insertBoundarySegment(const std::vector&lt;int&gt;& vertices, 
+                           const BoundarySegment&lt;dimworld&gt; *boundarySegment);
 </pre>
     
 <p>
@@ -112,18 +112,7 @@ Control over the allocated objects is taken from you, and the grid object
 will take care of their destruction.
 </p>
 
-<h2> 4) Intermediate Initialization Work </h2>
-
-<p>
-At this point you have to let UG do a little initialization
-work on its own.  Trigger this by calling
-</p>
-
-<pre>
-grid.makeNewUGMultigrid();
-</pre>
-
-<h2> 5)  Enter the Inner Vertices </h2>
+<h2> 4)  Enter the Inner Vertices </h2>
 
 <p>
 Now you have to enter the grid vertices.  As UG has already
@@ -135,19 +124,14 @@ your elements accordingly.
 </p>
 
 <p>
-Create an inner vertex by writing its coordinates into a
-<tt> double vertexPosition[2] </tt>  (resp. <tt>3</tt>)
-and calling
-
-<pre>
-UG3d::InsertInnerNode(grid.multigrid_-&gt;grids[0], vertexPosition);
-</pre>
-
-<p>
-This will return NULL upon failure.
+Create an inner vertex by calling
 </p>
 
-<h2> 6) Enter the elements </h2>
+<pre>
+grid.insertVertex(const FieldVector&lt;double,dimworld&gt;& position);
+</pre>
+
+<h2> 5) Enter the elements </h2>
 
 <p>
 For each element call
@@ -171,7 +155,7 @@ The parameters are
 The numbering of the vertices of each element is expected to follow the DUNE conventions.
 Refer to the page on reference elements for the details.
 
-<h2> 7) Finish construction </h2>
+<h2> 6) Finish construction </h2>
 
 <p>
 To finish off the construction of the UGGrid object call
@@ -184,8 +168,9 @@ grid.createend();
 <h2> Loading a Grid on a Parallel Machine </h2>
 <p>
 If you're working on a parallel machine, and you want to set up a
-parallel grid, proceed as described on the master process.  All
-other processes should omit the steps 5 and 6.
+parallel grid, proceed as described on all processes.  This will
+create the grid on the master process and set up UG correctly on all
+other process.  Call loadBalance to actually distribute the grid.
 </p>
 
 <p>

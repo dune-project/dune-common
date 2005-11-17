@@ -468,41 +468,8 @@ inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
 
 
 template < int dim, int dimworld >
-void Dune::UGGrid < dim, dimworld >::makeNewUGMultigrid()
-{
-  //configure @PROBLEM $d @DOMAIN;
-  std::string configureArgs[2] = {"configure " + name_ + "_Problem", "d " + name_ + "_Domain"};
-  const char* configureArgs_c[2] = {configureArgs[0].c_str(), configureArgs[1].c_str()};
-
-  if (UG_NS<dim>::ConfigureCommand(2, configureArgs_c))
-    DUNE_THROW(GridError, "Calling UG" << dim << "d::ConfigureCommand failed!");
-
-  //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
-  char* newArgs[4];
-  for (int i=0; i<4; i++)
-    newArgs[i] = (char*)::malloc(50*sizeof(char));
-
-  sprintf(newArgs[0], "new %s", name_.c_str());
-
-  sprintf(newArgs[1], "b %s_Problem", name_.c_str());
-  sprintf(newArgs[2], "f DuneFormat");
-  sprintf(newArgs[3], "h %dM", heapsize);
-
-  if (UG_NS<dim>::NewCommand(4, newArgs))
-    DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
-
-  for (int i=0; i<4; i++)
-    free(newArgs[i]);
-
-  // Get a direct pointer to the newly created multigrid
-  multigrid_ = UG_NS<dim>::GetMultigrid(name_.c_str());
-  if (!multigrid_)
-    DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
-}
-
-template < int dim, int dimworld >
 bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
-                                          typename Traits::template Codim<0>::EntityPointer & e )
+                                          const typename Traits::template Codim<0>::EntityPointer & e )
 {
   // No refinement requested
   if (refCount==0)
@@ -535,7 +502,7 @@ bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
 }
 
 template < int dim, int dimworld >
-bool Dune::UGGrid < dim, dimworld >::mark(typename Traits::template Codim<0>::EntityPointer & e,
+bool Dune::UGGrid < dim, dimworld >::mark(const typename Traits::template Codim<0>::EntityPointer & e,
                                           typename UG_NS<dim>::RefinementRule rule
                                           )
 {
@@ -948,13 +915,88 @@ void Dune::UGGrid < dim, dimworld >::createbegin()
 {
   // Boundary segment counting starts from zero again
   boundarySegmentCounter_ = 0;
+
+  elementTypes_.resize(0);
+  elementVertices_.resize(0);
+  vertexPositions_.resize(0);
 }
 
 
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::createend()
 {
+  // ///////////////////////////////////////////
+  //   Call configureCommand and newCommand
+  // ///////////////////////////////////////////
+
+  //configure @PROBLEM $d @DOMAIN;
+  std::string configureArgs[2] = {"configure " + name_ + "_Problem", "d " + name_ + "_Domain"};
+  const char* configureArgs_c[2] = {configureArgs[0].c_str(), configureArgs[1].c_str()};
+
+  if (UG_NS<dim>::ConfigureCommand(2, configureArgs_c))
+    DUNE_THROW(GridError, "Calling UG" << dim << "d::ConfigureCommand failed!");
+
+  //new @PROBLEM $b @PROBLEM $f @FORMAT $h @HEAP;
+  char* newArgs[4];
+  for (int i=0; i<4; i++)
+    newArgs[i] = (char*)::malloc(50*sizeof(char));
+
+  sprintf(newArgs[0], "new %s", name_.c_str());
+
+  sprintf(newArgs[1], "b %s_Problem", name_.c_str());
+  sprintf(newArgs[2], "f DuneFormat");
+  sprintf(newArgs[3], "h %dM", heapsize);
+
+  if (UG_NS<dim>::NewCommand(4, newArgs))
+    DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
+
+  for (int i=0; i<4; i++)
+    free(newArgs[i]);
+
+  // Get a direct pointer to the newly created multigrid
+  multigrid_ = UG_NS<dim>::GetMultigrid(name_.c_str());
+  if (!multigrid_)
+    DUNE_THROW(GridError, "UGGrid::makeNewMultigrid failed!");
+
+  // ///////////////////////////////////////////////////////////////
+  // If we are in a parallel setting and we are _not_ the master
+  // process we can stop here.
+  // ///////////////////////////////////////////////////////////////
+  if (PPIF::me!=0)
+    return;
+
+  // ////////////////////////////////////////////////
+  //   Actually insert the interior vertices
+  // ////////////////////////////////////////////////
+  for (size_t i=0; i<vertexPositions_.size(); i++)
+    if (UG_NS<dim>::InsertInnerNode(multigrid_->grids[0], &((vertexPositions_[i])[0])) == NULL)
+      DUNE_THROW(GridError, "Inserting a vertex into UGGrid failed!");
+
+  vertexPositions_.resize(0);
+
+  // ////////////////////////////////////////////////
+  //   Actually insert all the elements
+  // ////////////////////////////////////////////////
+
+  int idx = 0;
+  for (size_t i=0; i<elementTypes_.size(); i++) {
+
+    int vertices_C_style[elementTypes_[i]];
+    for (size_t j=0; j<elementTypes_[i]; j++)
+      vertices_C_style[j] = elementVertices_[idx++];
+
+    if (InsertElementFromIDs(multigrid_->grids[0], elementTypes_[i], vertices_C_style, NULL)==NULL)
+      DUNE_THROW(GridError, "Inserting element into UGGrid failed!");
+
+  }
+
+  // Not needed any more
+  elementTypes_.resize(0);
+  elementVertices_.resize(0);
+
+  // /////////////////////////////////////////
   // set the subdomainIDs
+  // /////////////////////////////////////////
   typename TargetType<0,dim>::T* theElement;
   for (theElement=multigrid_->grids[0]->elements[0]; theElement!=NULL; theElement=theElement->ge.succ)
     UG_NS<dim>::SetSubdomain(theElement, 1);
@@ -1144,17 +1186,21 @@ void Dune::UGGrid<dim, dimworld>::insertBoundarySegment(const std::vector<int> v
 template <int dim, int dimworld>
 void Dune::UGGrid<dim, dimworld>::insertVertex(const FieldVector<double,dimworld>& pos)
 {
-  if (UG_NS<dim>::InsertInnerNode(multigrid_->grids[0], &pos[0]) == NULL)
-    DUNE_THROW(GridError, "Inserting a vertex into UGGrid failed!");
+  vertexPositions_.push_back(pos);
 }
 
 template <int dim, int dimworld>
 void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
                                                 const std::vector<unsigned int>& vertices)
 {
-  int vertices_C_style[vertices.size()];
-  for (size_t i=0; i<vertices.size(); i++)
-    vertices_C_style[i] = vertices[i];
+  //     int vertices_C_style[vertices.size()];
+  //     for (size_t i=0; i<vertices.size(); i++)
+  //         vertices_C_style[i] = vertices[i];
+  int newIdx = elementVertices_.size();
+
+  elementTypes_.push_back(vertices.size());
+  for (int i=0; i<vertices.size(); i++)
+    elementVertices_.push_back(vertices[i]);
 
   if (dim==2) {
     switch (type) {
@@ -1171,8 +1217,10 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
                    << " have provided " << vertices.size() << " vertices!");
 
       // DUNE and UG numberings differ --> reorder the vertices
-      vertices_C_style[2] = vertices[3];
-      vertices_C_style[3] = vertices[2];
+      //             vertices_C_style[2] = vertices[3];
+      //             vertices_C_style[3] = vertices[2];
+      elementVertices_[newIdx+2] = vertices[3];
+      elementVertices_[newIdx+3] = vertices[2];
       break;
     default :
       DUNE_THROW(GridError, "You cannot insert a " << type << " into a UGGrid<2,2>!");
@@ -1201,19 +1249,20 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
                    << " have provided " << vertices.size() << " vertices!");
 
       // DUNE and UG numberings differ --> reorder the vertices
-      vertices_C_style[2] = vertices[3];
-      vertices_C_style[3] = vertices[2];
-      vertices_C_style[6] = vertices[7];
-      vertices_C_style[7] = vertices[6];
+      //             vertices_C_style[2] = vertices[3];
+      //             vertices_C_style[3] = vertices[2];
+      //             vertices_C_style[6] = vertices[7];
+      //             vertices_C_style[7] = vertices[6];
+      elementVertices_[newIdx+2] = vertices[3];
+      elementVertices_[newIdx+3] = vertices[2];
+      elementVertices_[newIdx+6] = vertices[7];
+      elementVertices_[newIdx+7] = vertices[6];
       break;
     default :
       DUNE_THROW(GridError, "You cannot insert a " << type << " into a UGGrid<3,3>!");
 
     }
   }
-
-  if (InsertElementFromIDs(multigrid_->grids[0], vertices.size(), vertices_C_style, NULL)==NULL)
-    DUNE_THROW(GridError, "Inserting " << type << " into UGGrid failed!");
 
 }
 

@@ -350,11 +350,12 @@ namespace Dune {
      * <li> false, if nothing changed </li>
      * </ul>
      */
-    bool mark(int refCount, typename Traits::template Codim<0>::EntityPointer & e );
+    bool mark(int refCount, const typename Traits::template Codim<0>::EntityPointer & e );
 
     /** \brief Mark method accepting a UG refinement rule
      */
-    bool mark(typename Traits::template Codim<0>::EntityPointer & e, typename UG_NS<dim>::RefinementRule rule);
+    bool mark(const typename Traits::template Codim<0>::EntityPointer & e,
+              typename UG_NS<dim>::RefinementRule rule);
 
     //! Triggers the grid refinement process
     bool adapt();
@@ -401,9 +402,6 @@ namespace Dune {
 
     /** \brief End the coarse grid creation process */
     void createend();
-
-    /** \brief Calls a few interal methods to properly set up a UG grid */
-    void makeNewUGMultigrid();
 
     /** \brief Create a UG domain, i.e. a description of the grid boundary */
     void createDomain(int numNodes, int numSegments);
@@ -538,6 +536,17 @@ namespace Dune {
 
     /** \brief A counter for producing a consecutive index for the boundary segments */
     int boundarySegmentCounter_;
+
+    /** \brief While inserting the elements this array records the number of
+        vertices of each element. */
+    std::vector<unsigned char> elementTypes_;
+
+    /** \brief While inserting the elements this array records the vertices
+        of the elements. */
+    std::vector<unsigned int> elementVertices_;
+
+    /** \brief Buffer the vertices until createend() is called */
+    std::vector<FieldVector<double, dimworld> > vertexPositions_;
 
     /** \todo Can be removed once CreateDomain() is removed from the interface */
   public:
