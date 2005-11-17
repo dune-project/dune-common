@@ -241,11 +241,15 @@ namespace Dune {
       typedef typename GridFamily::Traits::LocalIdSet LocalIdSet;
     };
 
-    //! A grid exports its dimension
-    enum { dimension=dim };
+    enum {
+      //! \brief The dimension of the grid
+      dimension=dim
+    };
 
-    //! A grid knowns the dimension of the world
-    enum { dimensionworld=dimworld };
+    enum {
+      //! \brief The dimension of the world the grid lives in.
+      dimensionworld=dimworld
+    };
 
     //! Define type used for coordinates in grid module
     typedef ct ctype;
