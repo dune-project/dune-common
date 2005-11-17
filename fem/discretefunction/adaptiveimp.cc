@@ -14,6 +14,21 @@ namespace Dune {
     dofVec_(*memPair_.second)
   {}
 
+  // create discrete function with vector
+  template <class DiscreteFunctionSpaceImp>
+  template <class VectorPointerType>
+  AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
+  AdaptiveFunctionImplementation(std::string name,
+                                 const DiscreteFunctionSpaceType& spc,
+                                 VectorPointerType * vector
+                                 ) :
+    spc_(spc),
+    name_(name),
+    dm_(DofManagerFactory<DofManagerType>::getDofManager(spc.grid())),
+    memPair_(dm_.addDummyDofSet(&dofVec_, spc.mapper(), name_, vector )),
+    dofVec_(*memPair_.second)
+  {}
+
   template <class DiscreteFunctionSpaceImp>
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   AdaptiveFunctionImplementation(std::string name,

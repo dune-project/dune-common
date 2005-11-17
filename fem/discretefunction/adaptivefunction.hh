@@ -126,6 +126,15 @@ namespace Dune {
       Imp(name, spc)
     {}
 
+    //! Constructor
+    template <class VectorPointerType>
+    AdaptiveDiscreteFunction(std::string name,
+                             const DiscreteFunctionSpaceType& spc,
+                             VectorPointerType * vector) :
+      BaseType(spc),
+      Imp(name, spc, vector)
+    {}
+
     //! Constructor for SubDiscreteFunctions
     //! This constructor is only called internally
     AdaptiveDiscreteFunction(std::string name,

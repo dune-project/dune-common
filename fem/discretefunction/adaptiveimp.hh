@@ -91,6 +91,13 @@ namespace Dune {
 
     AdaptiveFunctionImplementation(std::string name,
                                    const DiscreteFunctionSpaceType& spc);
+
+    // Constructor getting vector from outside
+    template <class VectorPointerType>
+    AdaptiveFunctionImplementation(std::string name,
+                                   const DiscreteFunctionSpaceType& spc,
+                                   VectorPointerType * vector);
+
     AdaptiveFunctionImplementation(std::string name,
                                    const DiscreteFunctionSpaceType& spc,
                                    DofStorageType& dofVec);
