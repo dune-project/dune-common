@@ -986,6 +986,13 @@ namespace Dune
   template <class GridImp, int dim, int cc> struct AlbertaGridCount {
     static int count () { return dim+1; }
   };
+
+  // specialisation for codim 0
+  template <class GridImp, int dim> struct AlbertaGridCount<GridImp,dim,0> {
+    static int count () { return 1; }
+  };
+
+  // specialisation for edges in 3d
   template <class GridImp> struct AlbertaGridCount<GridImp,3,2> {
     static int count () { return 6; }
   };
@@ -3805,7 +3812,7 @@ namespace Dune
 
   template<int dim, int dimworld>
   inline bool AlbertaGrid < dim, dimworld >::
-  mark( int refCount , typename Traits::template Codim<0>::EntityPointer & ep ) const
+  mark( int refCount , const typename Traits::template Codim<0>::EntityPointer & ep ) const
   {
     return this->mark(refCount,*ep);
   }

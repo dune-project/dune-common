@@ -1522,7 +1522,7 @@ namespace Dune
      *  happens if element is again marked for coarsen, refinement always
      *  counts more then coarsening
      *  mark returns true if element was marked, otherwise false */
-    bool mark( int refCount , typename Traits::template Codim<0>::EntityPointer & en ) const;
+    bool mark( int refCount , const typename Traits::template Codim<0>::EntityPointer & en ) const;
     bool mark( int refCount , const typename Traits::template Codim<0>::Entity & en ) const;
 
     //! uses the interface, mark on entity and refineLocal
