@@ -46,12 +46,6 @@ namespace Dune {
     }
 
     //! return number of dofs on element
-    int numberOfDofs () const DUNE_DEPRECATED
-    {
-      return asImp().numberOfDofs();
-    }
-
-    //! return number of dofs on element
     int numDofs () const
     {
       return asImp().numDofs();
