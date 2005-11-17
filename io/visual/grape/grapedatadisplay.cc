@@ -13,34 +13,19 @@ namespace Dune
   //****************************************************************
   template <class GridType, class DiscFuncType>
   inline GrapeDataDisplay<GridType,DiscFuncType>::GrapeDataDisplay (GridType &grid) :
-    GrapeGridDisplay < GridType > (grid) , vecFdata_ (0) , quad_ (0)
-  {
-    createQuadrature();
-  }
+    GrapeGridDisplay < GridType > (grid) , vecFdata_ (0)
+  {}
 
   template <class GridType, class DiscFuncType>
   inline GrapeDataDisplay<GridType,DiscFuncType>::
   GrapeDataDisplay (GridType &grid, const int myrank ) :
-    GrapeGridDisplay < GridType > (grid,myrank) , vecFdata_ (0) , quad_ (0)
-  {
-    createQuadrature();
-  }
-
-  template <class GridType, class DiscFuncType>
-  inline void GrapeDataDisplay<GridType,DiscFuncType>::createQuadrature ()
-  {
-    typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIter;
-    LevIter it    = this->grid_.template lbegin<0> (0);
-    LevIter endit = this->grid_.template lend<0> (0);
-    if(it != endit)
-      quad_ = new QuadType ( *it );
-  }
+    GrapeGridDisplay < GridType > (grid,myrank) , vecFdata_ (0)
+  {}
 
   template <class GridType, class DiscFuncType>
   inline GrapeDataDisplay<GridType,DiscFuncType>::~GrapeDataDisplay()
   {
     typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIter;
-    if(quad_) delete quad_;
     for(unsigned int i=0 ; i<vecFdata_.size(); i++)
     {
       typedef typename DiscFuncType :: LocalFunctionType LFType;
@@ -69,21 +54,23 @@ namespace Dune
 
     assert( df );
     assert( df->discFunc );
-    DiscFuncType & func = *((DiscFuncType *)  ( df->discFunc));
+    DiscFuncType & func = *((DiscFuncType *) ( df->discFunc));
 
     typedef typename DiscFuncType::LocalFunctionType LocalFuncType;
 
-    int dimVal = df->dimVal;
     if(coord)
     {
+      // get local function
       LocalFuncType lf = func.localFunction( en );
 
+      // convert double to FieldVector
       for(int i=0; i<dim; i++) domTmp_[i] = coord[i];
 
       // evaluate local function on local (on reference element)
       // point == domTmp
       lf.evaluateLocal( en , domTmp_ , tmp_);
 
+      int dimVal = df->dimVal;
       for(int i=0; i<dimVal; i++) val[i] = tmp_[i];
       return;
     }
@@ -94,7 +81,6 @@ namespace Dune
       return;
     }
   }
-
 
   template<class GridType, class DiscFuncType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
@@ -139,7 +125,7 @@ namespace Dune
   template <class GridType, class DiscFuncType>
   template <class EntityType, class LocalFuncType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
-  evalVector (EntityType &en, DiscFuncType & func, LocalFuncType &lf,
+  evalVector (EntityType &en, int geomType, DiscFuncType & func, LocalFuncType &lf,
               const int * comp, int vlength , int localNum, double * val)
   {
     enum { dim = EntityType::dimension };
@@ -149,8 +135,12 @@ namespace Dune
     // corners , kind of hack, but works for the moment
     if(func.getFunctionSpace().polynomOrder() == 0)
     {
-      assert(quad_);
-      lf.evaluate(en,(*quad_),0,tmp_);
+      const FieldVector<ctype,dim> & localPoint =
+        lagrangePoints_.getPoint(geomType,1,localNum);
+
+      // evaluate local function on local lagrange point
+      lf.evaluateLocal(en,localPoint,tmp_);
+
       for(int i=0; i<vlength; i++)
       {
         val[i] = tmp_[comp[i]];
@@ -165,45 +155,30 @@ namespace Dune
     return;
   }
 
+  // evaluate scalar functions, means val has length 1
   template <class GridType, class DiscFuncType>
   template <class EntityType, class LocalFuncType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
-  evalScalar (EntityType &en, DiscFuncType & func, LocalFuncType &lf,
-              const int * comp , int localNum, double * val)
+  evalScalar (EntityType &en, int geomType, DiscFuncType & func, LocalFuncType &lf,
+              const int * comp, int localNum, double * val)
   {
-    // dimval == 1 here
     enum { numberOfComp = DiscFuncType::FunctionSpaceType::DimRange };
+    const FieldVector<ctype,dim> & localPoint =
+      lagrangePoints_.getPoint(geomType,polynomialOrder,localNum);
 
-    // in that case we have only one dof that has to be returned for all
-    // corners , kind of hack, but works for the moment
-    if(func.getFunctionSpace().polynomOrder() == 0)
-    {
-      val[0] = lf[comp[0]];
-      return;
-    }
-    else if(func.getFunctionSpace().polynomOrder() == 1)
-    {
-      // for linear data
-      // needs to be implemented more efficiently
-      int num = ( localNum * numberOfComp ) + comp[0];
-      int geomType = convertToGrapeType ( en.geometry().type() , dim );
-      // see grapegrid.display.hh and geldesc.hh for definitions
-      int renum = mapDune2GrapeVertex(geomType,num);
-      val[0] = lf[renum];
-    }
-    else
-    {
-      std::cerr << "ERROR: GrapeDataDisplay::evalScalar not implemented for higher polynom degrees! in:" << __FILE__ << " line: " << __LINE__ << std::endl;
-      abort();
-    }
+    // evaluate local function on local lagrange point
+    lf.evaluateLocal(en,localPoint,tmp_);
+
+    // dimval == 1 here
+    // 0 because we only have one value (dimVal == 1)
+    val[0] = tmp_[comp[0]];
     return;
   }
-
 
   template <class GridType, class DiscFuncType>
   template <class EntityType>
   inline void GrapeDataDisplay<GridType,DiscFuncType>::
-  evalDof (EntityType &en, DUNE_FDATA *df , int localNum, double * val)
+  evalDof (EntityType &en, int geomType, DUNE_FDATA *df , int localNum, double * val)
   {
     assert( df );
     assert( df->discFunc );
@@ -224,13 +199,13 @@ namespace Dune
       {
       case 1 :
       {
-        evalScalar(en,func,lf,comp,localNum,val);
+        evalScalar(en,geomType, func,lf,comp,localNum,val);
         return;
       }
 
       case dim :
       {
-        evalVector(en,func,lf,df->comp,dimVal,localNum,val);
+        evalVector(en,geomType,func,lf,df->comp,dimVal,localNum,val);
         return;
       }
       default :
@@ -251,20 +226,21 @@ namespace Dune
     enum { dim = GridType::dimension };
     enum { dimRange = DiscFuncType::FunctionSpaceType::DimRange };
     void *iter = he->actElement;
+    int geomType = he->type;
     if(iter == he->liter)
     {
       if(he->isLeafIterator == 1)
       {
         typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
         LeafIt *it = (LeafIt *) he->liter;
-        evalDof( *it[0],df,localNum,val);
+        evalDof( *it[0],geomType,df,localNum,val);
         return;
       }
       else
       {
         typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
         LevIt *it = (LevIt *) he->liter;
-        evalDof(*it[0],df,localNum,val);
+        evalDof(*it[0],geomType,df,localNum,val);
         return;
       }
     }
@@ -272,7 +248,7 @@ namespace Dune
     {
       typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
       HierIt *it = (HierIt *) he->hiter;
-      evalDof(*it[0],df,localNum,val);
+      evalDof(*it[0],geomType,df,localNum,val);
       return;
     }
     else
@@ -295,10 +271,13 @@ namespace Dune
   {
     MyDisplayType * disp = (MyDisplayType *) he->display;
     if(coord)
+    {
       disp[0].evalCoord(he,fe,coord,val);
+    }
     else
+    {
       disp[0].evalDof(he,fe,ind,val);
-
+    }
     return;
   }
 
@@ -352,7 +331,6 @@ namespace Dune
         vecFdata_[n]->allLevels = 0;
 
         vecFdata_[n]->discFunc = (void *) &func;
-        //vecFdata_[n]->lf = (void *) new LocalFuncType ( func.newLocalFunction() );
         vecFdata_[n]->polyOrd = func.getFunctionSpace().polynomOrder();
         vecFdata_[n]->continuous = (func.getFunctionSpace().continuous() == true ) ? 1 : 0;
         if(vecFdata_[n]->polyOrd == 0) vecFdata_[n]->continuous = 0;
