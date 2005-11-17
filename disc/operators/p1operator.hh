@@ -380,8 +380,6 @@ namespace Dune
     //    The standard links are deleted later on
     bool init (const G& g, const IS& indexset)
     {
-      std::cout << "calling init" << std::endl;
-
       // resize the S vector needed for detecting hanging nodes
       hanging.resize(vertexmapper.size());
       std::vector<unsigned char> S(vertexmapper.size());
