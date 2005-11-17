@@ -185,9 +185,6 @@ inline static double calc_hmax(HELEMENT *el)
 // update helement pointers
 inline static void helementUpdate( DUNE_ELEM *elem, HELEMENT *grapeEl )
 {
-  assert( elem->type >= 2 );
-  assert( elem->type <  8 );
-
   // local pointer to vertices
   static double  * vertex [MAX_EL_DOF] = {0,0,0,0,0,0,0,0};
   for(int i = 0 ; i < MAX_EL_DOF; i++)
@@ -203,7 +200,7 @@ inline static void helementUpdate( DUNE_ELEM *elem, HELEMENT *grapeEl )
   grapeEl->user_data    = (void *)elem ;
 
   // select appropriate element description
-  grapeEl->descr = elementDescriptions[elem->type];
+  grapeEl->descr = (ELEMENT_DESCRIPTION *) getElementDescription(elem->type);
   return ;
 }
 
@@ -428,10 +425,13 @@ inline double grape_get_element_estimate(HELEMENT *el, void *function_data)
 }
 
 /***************************************************************************/
-inline void f_real_el_info(HELEMENT *el, F_EL_INFO *f_el_info,
-                           void *function_data)
+inline void dune_function_info(HELEMENT *el, F_EL_INFO *f_el_info,
+                               void *function_data)
 {
+  // at the moment f_el_info only contains polynomial_degree
+  assert( function_data );
   f_el_info->polynomial_degree = ((DUNE_FDATA *) function_data)->polyOrd;
+  //std::cout << f_el_info->polynomial_degree << " poly order " << "\n";
   return;
 }
 
@@ -452,7 +452,6 @@ inline void printDuneFunc(DUNE_FDATA *df)
   //printf("lf       %p \n",df->lf);
   printf("comp     %d \n",df->comp[0]);
 }
-
 
 inline void f_real(HELEMENT *el, int ind, double G_CONST *coord,
                    double *val, void *function_data)
@@ -499,7 +498,7 @@ inline void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
     return;
   }
 
-  if (dfunc)
+  if(dfunc)
   {
     if (!f_data)
     {
@@ -530,7 +529,7 @@ inline void grapeInitScalarData(GRAPEMESH *grape_mesh, DUNE_FUNC * dfunc)
       f_data->continuous_data = dfunc->all->continuous;
 
       f_data->f                   = f_real;
-      f_data->f_el_info           = f_real_el_info;
+      f_data->f_el_info           = dune_function_info;
 
       f_data->function_data = (void *) dfunc;
 
@@ -591,7 +590,7 @@ inline void grapeAddLevelFunction(GRAPEMESH *grape_mesh)
     f_data->continuous_data    = 0;
 
     f_data->f                   = f_level;
-    f_data->f_el_info           = f_real_el_info;
+    f_data->f_el_info           = dune_function_info;
 
     f_data->function_data = (void *) &level_func;
 
