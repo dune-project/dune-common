@@ -141,6 +141,12 @@ namespace Dune {
   };
 
 
+  template <class A, class B>
+  A * convertToValueType (B * b)
+  {
+    return const_cast<A *> (b);
+  }
+
   /*!
      DofArray is the array that a discrete functions sees. If a discrete
      function is created, then it is signed in by the function space and the
@@ -164,7 +170,13 @@ namespace Dune {
     // pointer to mem
     T * vec_;
 
+    // true if this class allocated the vector
+    bool myProperty_;
+
   public:
+    //! definition conforming to STL
+    typedef T value_type;
+
     //! DofIterator
     typedef GenericIterator<ThisType, T> DofIteratorType;
 
@@ -173,14 +185,25 @@ namespace Dune {
 
     //! create array of length size
     DofArray(int size)
-      : size_(size) , memSize_(size) , vec_(0)
+      : size_(size) , memSize_(size) , vec_(0) , myProperty_ (true)
     {
       vec_ = AllocatorType :: malloc (size_);
+      assert( vec_ );
+    }
+
+    //! create array with given memory vector aof length size
+    //! vector must be of the type of T
+    //! only const may be casted away
+    template <class VectorPointerType>
+    DofArray(int size, VectorPointerType * vector )
+      : size_(size) , memSize_(size) , vec_(const_cast<T *>(vector)) , myProperty_ (false)
+    {
+      assert( vec_ );
     }
 
     //! Destructor
     ~DofArray() {
-      if( vec_ ) AllocatorType :: free ( vec_ );
+      if( vec_ && myProperty_ ) AllocatorType :: free ( vec_ );
     }
 
     DofIteratorType begin() {
@@ -265,6 +288,14 @@ namespace Dune {
 
     void realloc ( int nsize )
     {
+      assert(myProperty_);
+
+      if(!myProperty_)
+      {
+        std::cerr << "DofArray::realloc : I can't realloc, because I'm not the owner of the memory! \n";
+        return;
+      }
+
       assert(nsize >= 0);
       if(nsize <= memSize_)
       {
@@ -549,6 +580,102 @@ namespace Dune {
     DofArrayType & getArray() { return array_; }
   };
 
+
+  /*!
+   * Same as MemObject but doing nothing, because the memory comes from
+   * outside. This is for using packages like LAPACK and other with discrete
+   * functions.
+   */
+  template <class MapperType , class DofArrayType, class VectorPointerType>
+  class DummyMemObject : public MemObjectInterface
+  {
+  private:
+    typedef DummyMemObject < MapperType , DofArrayType, VectorPointerType > MemObjectType;
+
+    // the dof set stores number of dofs on entity for each codim
+    const MapperType & mapper_;
+
+    // Array which the dofs are stored in
+    DofArrayType array_;
+
+    // name of mem object, i.e. name of discrete function
+    std::string name_;
+
+    // vector represented by array
+    VectorPointerType * vector_;
+
+    CheckMemObjectResize < MemObjectType > checkResize_;
+    ResizeMemoryObjects  < MemObjectType > resizeMemObj_;
+
+  public:
+    // Constructor of MemObject, only to call from DofManager
+    DummyMemObject ( const MapperType & mapper,
+                     std::string name , VectorPointerType * vector )
+      : mapper_ (mapper) , array_( mapper_.size() , vector ), name_ (name)
+        , vector_ (vector) , checkResize_(*this) , resizeMemObj_(*this)
+    {
+      assert( vector_ );
+    }
+
+    //! returns name of this vector
+    const char * name () const { return name_.c_str(); }
+
+    //! if grid changed, then calulate new size of dofset
+    int newSize () const { return mapper_.newSize(); }
+
+    //! return size of underlying array
+    int size () const { return array_.size(); }
+
+    //! return true if array needs resize
+    bool resizeNeeded () const
+    {
+      assert( (size() != newSize()) ?
+              (std::cerr << "WARNING: DummyMemObject's vector is not up to date! \n" , 0) : 1);
+      return false;
+    }
+
+    //! return number of dofs on one element
+    int elementMemory () const
+    {
+      return mapper_.numDofs();
+    }
+
+    //! return number of entities
+    int additionalSizeEstimate () const
+    {
+      return mapper_.additionalSizeEstimate();
+    }
+
+    //! reallocate the memory with the new size
+    void realloc ( int nSize )
+    {
+      assert( (size() != newSize()) ?
+              (std::cerr << "WARNING: DummyMemObject's may not resize vectors! \n" , 1) : 1);
+    }
+
+    //! copy the dof from the rear section of the vector to the holes
+    void dofCompress ()
+    {
+      assert( (size() != newSize()) ?
+              (std::cerr << "WARNING: DummyMemObject's may not compress vectors! \n" , 1) : 1);
+    }
+
+    //! return object that checks for resize
+    CheckMemObjectResize < MemObjectType > & checkResizeObj ()
+    {
+      return checkResize_;
+    }
+
+    //! return object that makes the resize
+    ResizeMemoryObjects < MemObjectType > & resizeMemObject()
+    {
+      return resizeMemObj_;
+    }
+
+    //! return reference to array for DiscreteFunction
+    DofArrayType & getArray() { return array_; }
+  };
+
   template <class IndexSetType, class EntityType>
   class RemoveIndicesFromSet
     : public LocalInlinePlus < RemoveIndicesFromSet<IndexSetType,EntityType> , EntityType >
@@ -775,15 +902,22 @@ namespace Dune {
     std::pair<MemObjectInterface*, DofStorageType*>
     addDofSet(const DofStorageType* ds, const MapperType& mapper, std::string name);
 
+    //! add dofset to dof manager
+    //! this method should be called at signIn of DiscreteFucntion, and there
+    //! we know our DofStorage which is the actual DofArray
+    template <class DofStorageType, class MapperType , class VectorPointerType >
+    std::pair<MemObjectInterface*, DofStorageType*>
+    addDummyDofSet(const DofStorageType* ds, const MapperType& mapper, std::string name, VectorPointerType * vec );
+
     //! remove MemObject, is called from DiscreteFucntionSpace at sign out of
     //! DiscreteFunction
     bool removeDofSet (const MemObjectInterface & obj)
     {
-      ListIteratorType it    = memList_.begin();
-      ListIteratorType endit = memList_.end();
-
       bool removed = false;
-      for( ; it != endit ; ++it)
+
+      ListIteratorType endit = memList_.end();
+      for( ListIteratorType it = memList_.begin();
+           it != endit ; ++it)
       {
         if(*it == &obj)
         {
@@ -1066,7 +1200,6 @@ namespace Dune {
 
   template <class GridType>
   template <class DofStorageType, class MapperType >
-  //inline MemObject<MapperType,DofStorageType> &
   std::pair<MemObjectInterface*, DofStorageType*>
   DofManager<GridType>::
   addDofSet(const DofStorageType * ds, const MapperType & mapper, std::string name)
@@ -1084,6 +1217,24 @@ namespace Dune {
     // the same for the resize call
     resizeMemObjs_ += (*obj).resizeMemObject();
 
+    return std::pair<
+        MemObjectInterface*, DofStorageType*>(obj, & (obj->getArray()) );
+  }
+
+  template <class GridType>
+  template <class DofStorageType, class MapperType , class VectorPointerType >
+  std::pair<MemObjectInterface*, DofStorageType*>
+  DofManager<GridType>::
+  addDummyDofSet(const DofStorageType * ds, const MapperType & mapper, std::string name, VectorPointerType * vector )
+  {
+    assert( name.c_str() != 0);
+    dverb << "Adding '" << name << "' to DofManager! \n";
+
+    typedef DummyMemObject<MapperType,DofStorageType,VectorPointerType> MemObjectType;
+    MemObjectType * obj = new MemObjectType ( mapper, name , vector );
+    memList_.push_back( obj );
+
+    // obj is not inserted in resize lists because mem is coming from outside
     return std::pair<
         MemObjectInterface*, DofStorageType*>(obj, & (obj->getArray()) );
   }
