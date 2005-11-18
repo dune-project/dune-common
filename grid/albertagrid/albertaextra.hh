@@ -22,6 +22,23 @@ namespace Albert {
 #define getDofVec( vec, drv ) \
   (assert(drv != 0); (vec = (drv)->vec); assert(vec != 0));
 
+//! recompute setting of neighbours, because macro_el_info of ALBERTA does
+//! that wrong for the Dune context.
+inline void computeNeigh(const MACRO_EL *mel, EL_INFO *elinfo, int neigh)
+{
+  // set right neighbour element
+  elinfo->neigh[neigh]      = mel->neigh[neigh]->el;
+  // get vertex of opposite coord
+  int oppvx = mel->opp_vertex[neigh];
+  elinfo->opp_vertex[neigh] = oppvx;
+
+  // copy to opp_coord
+  REAL_D *coord  = elinfo->opp_coord;
+  const REAL * const * neighcoord  = mel->neigh[neigh]->coord;
+  std::memcpy(coord[neigh],neighcoord[oppvx],sizeof(REAL_D));
+}
+
+//! if level iterator is used macro_el_info does not the right thing
 inline void fillMacroInfo(TRAVERSE_STACK *stack,
                           const MACRO_EL *mel, EL_INFO *elinfo, int level)
 {
@@ -36,8 +53,7 @@ inline void fillMacroInfo(TRAVERSE_STACK *stack,
     {
       if(mel->neigh[i])
       {
-        elinfo->neigh[i]      = mel->neigh[i]->el;
-        elinfo->opp_vertex[i] = mel->opp_vertex[i];
+        computeNeigh(mel,elinfo,i);
       }
       else
       {
