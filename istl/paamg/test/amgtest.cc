@@ -63,7 +63,7 @@ int main(int argc, char** argv)
   Criterion;
 
   watch.reset();
-  Criterion criterion(15,10);
+  Criterion criterion(15,1200);
   criterion.setMaxDistance(2);
 
   hierarchy.build(criterion);
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
   typedef Dune::LoopSolver<Vector> CoarseSolver;
   CoarseSolver csolver(op,cssor,1E-12,8000,0);
   Dune::SeqScalarProduct<Vector> sp;
-  typedef Dune::Amg::AMG<MHierarchy,Vector,Vector,CoarseSolver,Smoother> AMG;
+  typedef Dune::Amg::AMG<MHierarchy,Vector,Smoother> AMG;
 
   AMG amg(hierarchy, csolver, smootherArgs, 1, 1);
 

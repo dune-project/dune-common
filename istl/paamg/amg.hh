@@ -26,8 +26,8 @@ namespace Dune
      * @author Markus Blatt
      * @brief The AMG preconditioner.
      */
-    template<class M, class X, class Y, class CS, class S, class A=std::allocator<X> >
-    class AMG : public Preconditioner<X,Y>
+    template<class M, class X, class S, class A=std::allocator<X> >
+    class AMG : public Preconditioner<X,X>
     {
     public:
       /** @brief The matrix type. */
@@ -35,9 +35,9 @@ namespace Dune
       /** @brief The domain type. */
       typedef X Domain;
       /** @brief The range type. */
-      typedef Y Range;
+      typedef X Range;
       /** @brief the type of the coarse solver. */
-      typedef CS CoarseSolver;
+      typedef InverseOperator<X,X> CoarseSolver;
       /** @brief The type of the smoother. */
       typedef S Smoother;
 
@@ -99,10 +99,10 @@ namespace Dune
       SeqScalarProduct<X> ssp;
     };
 
-    template<class M, class X, class Y, class CS, class S, class A>
-    AMG<M,X,Y,CS,S,A>::AMG(const MatrixHierarchy& matrices, CoarseSolver& coarseSolver,
-                           const SmootherArgs& smootherArgs,
-                           std::size_t gamma, std::size_t smoothingSteps)
+    template<class M, class X, class S, class A>
+    AMG<M,X,S,A>::AMG(const MatrixHierarchy& matrices, CoarseSolver& coarseSolver,
+                      const SmootherArgs& smootherArgs,
+                      std::size_t gamma, std::size_t smoothingSteps)
       : matrices_(&matrices), smootherArgs_(smootherArgs),
         smoothers_(), solver_(&coarseSolver), gamma_(gamma),
         steps_(smoothingSteps), ssp()
@@ -116,15 +116,15 @@ namespace Dune
     }
 
     /** \copydoc Preconditioner::pre */
-    template<class M, class X, class Y, class CS, class S, class A>
-    void AMG<M,X,Y,CS,S,A>::pre(X& x, Y& b)
+    template<class M, class X, class S, class A>
+    void AMG<M,X,S,A>::pre(Domain& x, Range& b)
     {
-      Y* copy = new Y(b);
+      Range* copy = new Range(b);
       rhs_ = new Hierarchy<Range,A>(*copy);
-      copy = new Y(b);
+      copy = new Range(b);
       defect_ = new Hierarchy<Range,A>(*copy);
-      copy = new X(x);
-      lhs_ = new Hierarchy<Domain,A>(*copy);
+      Domain* dcopy = new Domain(x);
+      lhs_ = new Hierarchy<Domain,A>(*dcopy);
       matrices_->coarsenVector(*rhs_);
       matrices_->coarsenVector(*defect_);
       matrices_->coarsenVector(*lhs_);
@@ -147,8 +147,8 @@ namespace Dune
     }
 
     /** \copydoc Preconditioner::apply */
-    template<class M, class X, class Y, class CS, class S, class A>
-    void AMG<M,X,Y,CS,S,A>::apply(X& v, const Y& d)
+    template<class M, class X, class S, class A>
+    void AMG<M,X,S,A>::apply(Domain& v, const Range& d)
     {
       typename Hierarchy<Smoother,A>::Iterator smoother = smoothers_.finest();
       typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator matrix = matrices_->matrices().finest();
@@ -165,13 +165,13 @@ namespace Dune
       v=*lhs;
     }
 
-    template<class M, class X, class Y, class CS, class S, class A>
-    void AMG<M,X,Y,CS,S,A>::mgc(typename Hierarchy<Smoother,A>::Iterator& smoother,
-                                typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator& matrix,
-                                typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
-                                typename Hierarchy<Domain,A>::Iterator& lhs,
-                                typename Hierarchy<Range,A>::Iterator& rhs,
-                                typename Hierarchy<Range,A>::Iterator& defect){
+    template<class M, class X, class S, class A>
+    void AMG<M,X,S,A>::mgc(typename Hierarchy<Smoother,A>::Iterator& smoother,
+                           typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator& matrix,
+                           typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
+                           typename Hierarchy<Domain,A>::Iterator& lhs,
+                           typename Hierarchy<Range,A>::Iterator& rhs,
+                           typename Hierarchy<Range,A>::Iterator& defect){
       if(matrix == matrices_->matrices().coarsest()) {
         // Solve directly
         InverseOperatorResult res;
@@ -233,8 +233,8 @@ namespace Dune
     }
 
     /** \copydoc Preconditioner::post */
-    template<class M, class X, class Y, class CS, class S, class A>
-    void AMG<M,X,Y,CS,S,A>::post(X& x)
+    template<class M, class X, class S, class A>
+    void AMG<M,X,S,A>::post(Domain& x)
     {
       // Postprocess all smoothers
       typedef typename Hierarchy<Smoother,A>::Iterator Iterator;
