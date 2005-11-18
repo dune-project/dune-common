@@ -223,16 +223,10 @@ namespace Dune {
       localFunc().jacobian( en, x, ret);
     }
 
-    //! assign a vector of dofs
-    void assign(int dofNum, const RangeType& dofs)
-    {
-      localFunc().assign(dofNum, dofs);
-    }
-
     //! update local function for given Entity
     //! deprecated method
     template <class EntityType >
-    void init ( const EntityType &en ) const
+    void init ( const EntityType &en )
     {
       localFunc().init(en);
     }
