@@ -3514,7 +3514,14 @@ namespace Dune
   inline bool AlbertaGrid < dim, dimworld >::postAdapt()
   {
     isMarked_ = false;
-    if(leafIndexSet_) leafIndexSet_->compress();
+    if(leafIndexSet_)
+    {
+      leafIndexSet_->compress();
+      // the number of leaf elements is store in mesh
+      // check that they are the same
+      assert( mesh_->n_elements == leafIndexSet_->size(0) );
+    }
+
     return wasChanged_;
   }
 
@@ -4522,7 +4529,7 @@ namespace Dune
     {
       // allow to go down on neighbour more than once
       // if the following condition is satisfied
-      const bool leafLevel = ((el->child[0] == 0) && (elinfo->level < actLevel));
+      const bool leafLevel = ((el->child[0] == 0) || (elinfo->level < actLevel));
       firstNeigh (ichild,elinfo_old,elinfo,leafLevel);
       secondNeigh(ichild,elinfo_old,elinfo,leafLevel);
       thirdNeigh (ichild,elinfo_old,elinfo,leafLevel);
