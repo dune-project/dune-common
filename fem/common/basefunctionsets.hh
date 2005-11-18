@@ -141,7 +141,9 @@ namespace Dune {
                            const DomainType& xLocal,
                            const RangeType& factor) const;
 
+    template <class Entity>
     DofType evaluateGradientSingle(int baseFunct,
+                                   Entity& en,
                                    const DomainType& xLocal,
                                    const JacobianRangeType& factor) const;
 

@@ -78,14 +78,22 @@ namespace Dune {
   }
 
   template <class FunctionSpaceImp>
+  template <class Entity>
   typename VectorialBaseFunctionSet<FunctionSpaceImp>::DofType
   VectorialBaseFunctionSet<FunctionSpaceImp>::
   evaluateGradientSingle(int baseFunct,
+                         Entity& en,
                          const DomainType& xLocal,
                          const JacobianRangeType& factor) const
   {
+    DomainType gradScaled(0.);
+
     this->jacobian(util_.containedDof(baseFunct), xLocal, jTmp_);
-    return jTmp_[util_.component(baseFunct)]*factor[0];
+    en.geometry().jacobianInverseTransposed(xLocal).
+    umv(jTmp_[0], gradScaled);
+    //! is this right?
+    //return facotr[util_.component(baseFunct)]*jTmp[0];
+    return gradScaled*factor[util_.component(baseFunct)];
   }
 
 } // end namespace Dune
