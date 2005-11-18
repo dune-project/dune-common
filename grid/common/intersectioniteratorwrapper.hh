@@ -3,12 +3,15 @@
 #ifndef DUNE_INTERSECTIONITERATORWRAPPER_HH
 #define DUNE_INTERSECTIONITERATORWRAPPER_HH
 
+#include "intersectioniterator.hh"
+
 namespace Dune {
 
   //! \brief Class that wraps IntersectionIteratorImp of a grid adn gets it's
   //! internal object from a object stack hold by the grid
   template <class GridImp>
   class IntersectionIteratorWrapper
+    : public IntersectionIteratorDefault<GridImp,IntersectionIteratorWrapper>
   {
     enum { dim = GridImp :: dimension };
     enum { dimworld = GridImp :: dimensionworld };
@@ -60,13 +63,13 @@ namespace Dune {
       it().assign(org.it_);
     }
 
-    //! The Destructor
+    //! The Destructor puts internal object back to stack
     ~IntersectionIteratorWrapper()
     {
       storage_.freeObject( &it_ );
     }
 
-    //! The copy constructor
+    //! the equality method
     bool equals (const ThisType & i) const { return it().equals(i.it()); }
 
     //! increment iterator
