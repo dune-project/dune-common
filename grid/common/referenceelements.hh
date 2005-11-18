@@ -636,9 +636,11 @@ namespace Dune
         subsizes[0][0][2]=3;
         subsizes[0][0][1]=3;
         // triangle  has 2 vertices on each  edge
-        for (int k=0; k<3; ++k)
+        for (int k=0; k<3; ++k) {
           subsizes[k][1][2]=2;
-
+          // triangle  has 1 edge on each edge ;-)
+          subsizes[k][1][1]=1;
+        }
         // subentity indices
         // node indices on element
         for(int i=0; i<subsizes[0][0][2]; ++i)
@@ -683,9 +685,15 @@ namespace Dune
         //  tetrahedron has 3 edges on each triang. face
         for(int i=0; i<subsizes[0][0][1]; ++i)
           subsizes[i][1][2]=3;
+        //  tetrahedron has 1 face on each triang. face!
+        for(int i=0; i<subsizes[0][0][1]; ++i)
+          subsizes[i][1][1]=1;
         //  tetrahedron has 3 vertices on each edge
         for (int k=0; k<subsizes[0][0][2]; ++k)
           subsizes[k][2][3]=2;
+        //  tetrahedron has 1 edge on each edge!
+        for (int k=0; k<subsizes[0][0][2]; ++k)
+          subsizes[k][2][2]=1;
         // subentity indices
         // node indices on element
         for(int i=0; i<subsizes[0][0][3]; ++i)
@@ -959,6 +967,9 @@ namespace Dune
       // face indices according to that given in
       //http://hal.iwr.uni-heidelberg.de/dune/doc/appl/refelements.html
 
+      // prism has one face on each face!
+      for(int ii=0; ii<5; ++ii)
+        subsizes[ii][1][1]=1;
       //  prism has 3 vertices on bott triang. face
       subsizes[0][1][3]=3;
       //  prism has 4 vertices on front,right and left  rectang. faces
@@ -967,6 +978,7 @@ namespace Dune
       subsizes[3][1][3]=4;
       //  prism has 3 vertices on top triang. face
       subsizes[4][1][3]=3;
+
       // prism has 3 edges on a bott triang. face
       subsizes[0][1][2]=3;
       // prism has 4 edges on  front,right and left rec. faces
@@ -976,8 +988,12 @@ namespace Dune
       // prism has 3 edges on a top triang. face
       subsizes[4][1][2]=3;
       // prism has 2 vertices on each  edge
-      for (int k=0; k<9; ++k)
+      // also 1 edge on each edge
+      for (int k=0; k<9; ++k) {
         subsizes[k][2][3]=2;
+        subsizes[k][2][2]=1;
+      }
+
       //------------------------------------------
 
       // positions of vertex with local index "i", there are 6 vertices
@@ -1294,7 +1310,9 @@ namespace Dune
 
       // a pyramid itself has one pyramid ;)
       subsizes[0][0][0]=1;
-
+      // pyramid has one face on each face!
+      for(int ii=0; ii<5; ++ii)
+        subsizes[ii][1][1]=1;
       // face indices according to that given in
       //http://hal.iwr.uni-heidelberg.de/dune/doc/appl/refelements.html
 
@@ -1313,8 +1331,11 @@ namespace Dune
         subsizes[i][1][2]=3;
 
       // pyramid has 2 vertices on each  edge
-      for (int k=0; k<8; ++k)
+      for (int k=0; k<8; ++k) {
         subsizes[k][2][3]=2;
+        //also one edge on each edge!!
+        subsizes[k][2][2]=1;
+      }
       //------------------------------------------
 
       // positions of vertex with local index "i", there are 5 vertices
