@@ -18,6 +18,28 @@
 
 #include "gridcheck.cc"
 
+template <class GridType >
+void markOne ( GridType & grid , int num , int ref )
+{
+  typedef typename GridType::LeafIterator LeafIterator;
+
+  LeafIterator it    = grid.template leafbegin<0> ();
+  LeafIterator endit = grid.template leafend  <0> ();
+
+  int count = 0;
+  for( ; it != endit ; ++it )
+  {
+    if(num == count) grid.mark( ref, *it );
+    count++;
+  }
+
+  grid.preAdapt();
+  grid.adapt();
+  grid.postAdapt();
+}
+
+
+
 int main () {
   try {
     /* use grid-file appropriate for dimensions */
@@ -32,14 +54,19 @@ int main () {
 
     // extra-environment to check destruction
     {
-      factorEpsilon = 500.0;
+      factorEpsilon = 5e2;
       Dune::AlbertaGrid<DUNE_PROBLEM_DIM,DUNE_WORLD_DIM>
       grid(filename.str());
 
       gridcheck(grid); // check macro grid
-      for(int i=0; i<3; i++)
+      for(int i=0; i<2; i++)
       {
         grid.globalRefine(1);
+        gridcheck(grid);
+      }
+      for(int i=0; i<2; i++)
+      {
+        markOne(grid,0,DUNE_PROBLEM_DIM);
         gridcheck(grid);
       }
     };
