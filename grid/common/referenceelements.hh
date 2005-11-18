@@ -227,9 +227,14 @@ namespace Dune
               subsizes[i][j][k] = 1;
             else
               subsizes[i][j][k] = 0;
+      for (int i=0; i<MAXE; ++i)
+        for (int j=0; j<=dim; ++j)
+          hierarchy[i][j][0][j] = i;
       FieldVector<int,dim> direction;
       for (int c=dim; c>=0; --c)
         generate(0,c,direction);
+
+
     }
 
     //! number of entities of codim c
@@ -517,6 +522,9 @@ namespace Dune
               subsizes[i][j][k] = 1;
             else
               subsizes[i][j][k] = 0;
+      for (int i=0; i<MAXE; ++i)
+        for (int j=0; j<=dim; ++j)
+          subentityindex[i][j][0][j] = i;
 
       for (int c=dim; c>=0; --c)
         entity_details (c);
@@ -558,11 +566,8 @@ namespace Dune
 
     double volume () const
     {
-      double vol=1.0;
-      for(int i=1; i<=dim; ++i)
-        vol*=(1.0/i);
-      return vol;
-
+      if (dim==2) return 0.5;
+      return 1.0/6.0;
     }
     //! position of entity (i,c)
     //   const FieldVector<int,dim>& iposition (int i, int c) const
@@ -882,6 +887,9 @@ namespace Dune
               subsizes[i][j][k] = 1;
             else
               subsizes[i][j][k] = 0;
+      for (int i=0; i<MAXE; ++i)
+        for (int j=0; j<=dim; ++j)
+          subentityindex[i][j][0][j] = i;
 
       for (int c=3; c>=0; --c)
         prism_entities (c);
@@ -1228,6 +1236,9 @@ namespace Dune
               subsizes[i][j][k] = 1;
             else
               subsizes[i][j][k] = 0;
+      for (int i=0; i<MAXE; ++i)
+        for (int j=0; j<=dim; ++j)
+          subentityindex[i][j][0][j] = i;
 
       for (int c=3; c>=0; --c)
         pyramid_entities (c);
