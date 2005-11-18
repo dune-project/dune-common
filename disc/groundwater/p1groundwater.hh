@@ -929,7 +929,7 @@ namespace Dune
         }
 
         // refine if a marked edge exists
-        if (count>1) {
+        if (count>0) {
           extra++;
           g.mark(1,it);
         }
