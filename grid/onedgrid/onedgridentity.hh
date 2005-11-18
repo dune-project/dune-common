@@ -284,8 +284,19 @@ namespace Dune {
     template<int cc>
     int subIndex (int i) const {
       assert(i==0 || i==1);
-      assert(cc==0 || cc==1);
-      return target_->vertex_[i]->levelIndex_;
+      return (cc==0)
+             ? target_->levelIndex_
+             : target_->vertex_[i]->levelIndex_;
+    }
+
+    /** \brief Return leaf index of sub entity with codim = cc and local number i
+     */
+    template<int cc>
+    int subLeafIndex (int i) const {
+      assert(i==0 || i==1);
+      return (cc==0)
+             ? target_->leafIndex_
+             : target_->vertex_[i]->leafIndex_;
     }
 
     /** \brief Provide access to sub entity i of given codimension. Entities

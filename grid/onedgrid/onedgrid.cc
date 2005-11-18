@@ -25,7 +25,7 @@ namespace Dune {
       if (level<0 || level>g->maxlevel())
         DUNE_THROW(Dune::GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-      return Dune::OneDGridLevelIterator<1,Dune::All_Partition, const Dune::OneDGrid<1,1> >(g->vertices[level].begin);
+      return Dune::OneDGridLevelIterator<1,PiType, const Dune::OneDGrid<1,1> >(g->vertices[level].begin);
     }
 
   };
@@ -585,7 +585,7 @@ void Dune::OneDGrid<dim,dimworld>::globalRefine(int refCount)
 
 template <int dim, int dimworld>
 bool Dune::OneDGrid < dim, dimworld >::mark(int refCount,
-                                            typename Traits::template Codim<0>::EntityPointer & e )
+                                            const typename Traits::template Codim<0>::EntityPointer & e )
 {
   if (refCount < 0)
     getRealEntity<0>(*e).target_->adaptationState = COARSEN;
@@ -636,6 +636,32 @@ Dune::OneDGrid<1,1>::lend<0,Dune::All_Partition>(int level) const;
 template Dune::OneDGrid<1,1>::Traits::Codim<0>::Partition<Dune::Ghost_Partition>::LevelIterator
 Dune::OneDGrid<1,1>::lend<0,Dune::Ghost_Partition>(int level) const;
 
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Interior_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lbegin<1,Dune::Interior_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::InteriorBorder_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lbegin<1,Dune::InteriorBorder_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Overlap_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lbegin<1,Dune::Overlap_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::OverlapFront_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lbegin<1,Dune::OverlapFront_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::All_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lbegin<1,Dune::All_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Ghost_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lbegin<1,Dune::Ghost_Partition>(int level) const;
+
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Interior_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lend<1,Dune::Interior_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::InteriorBorder_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lend<1,Dune::InteriorBorder_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Overlap_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lend<1,Dune::Overlap_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::OverlapFront_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lend<1,Dune::OverlapFront_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::All_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lend<1,Dune::All_Partition>(int level) const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Ghost_Partition>::LevelIterator
+Dune::OneDGrid<1,1>::lend<1,Dune::Ghost_Partition>(int level) const;
+
 template Dune::OneDGrid<1,1>::Traits::Codim<0>::LeafIterator Dune::OneDGrid<1,1>::leafbegin<0>() const;
 template Dune::OneDGrid<1,1>::Traits::Codim<1>::LeafIterator Dune::OneDGrid<1,1>::leafbegin<1>() const;
 
@@ -667,3 +693,29 @@ template Dune::OneDGrid<1,1>::Traits::Codim<0>::Partition<Dune::All_Partition>::
 Dune::OneDGrid<1,1>::leafend<0,Dune::All_Partition>() const;
 template Dune::OneDGrid<1,1>::Traits::Codim<0>::Partition<Dune::Ghost_Partition>::LeafIterator
 Dune::OneDGrid<1,1>::leafend<0,Dune::Ghost_Partition>() const;
+
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Interior_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafbegin<1,Dune::Interior_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::InteriorBorder_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafbegin<1,Dune::InteriorBorder_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Overlap_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafbegin<1,Dune::Overlap_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::OverlapFront_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafbegin<1,Dune::OverlapFront_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::All_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafbegin<1,Dune::All_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Ghost_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafbegin<1,Dune::Ghost_Partition>() const;
+
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Interior_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafend<1,Dune::Interior_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::InteriorBorder_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafend<1,Dune::InteriorBorder_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Overlap_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafend<1,Dune::Overlap_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::OverlapFront_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafend<1,Dune::OverlapFront_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::All_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafend<1,Dune::All_Partition>() const;
+template Dune::OneDGrid<1,1>::Traits::Codim<1>::Partition<Dune::Ghost_Partition>::LeafIterator
+Dune::OneDGrid<1,1>::leafend<1,Dune::Ghost_Partition>() const;

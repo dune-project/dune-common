@@ -148,43 +148,42 @@ namespace Dune {
 
     //! return information about the Boundary
     int boundaryId () const {
-#warning please implement a course grid boundary segment id
+#warning please implement a coarse grid boundary segment id
       return 0;
     }
-
-    //! return unit outer normal, this should be dependent on local
-    //! coordinates for higher order boundary
-    FieldVector<OneDCType, dimworld>& unitOuterNormal (const FieldVector<OneDCType, dim-1>& local) const;
-
-    //! return unit outer normal, if you know it is constant use this function instead
-    FieldVector<OneDCType, dimworld>& unitOuterNormal () const;
 
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    LocalGeometry& intersectionSelfLocal () const;
-
-    //! intersection of codimension 1 of this neighbor with element where iteration started.
-    //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    Geometry& intersectionGlobal () const;
-
-    //! local number of codim 1 entity in self where intersection is contained in
-    int numberInSelf () const {return neighbor_;}
+    LocalGeometry& intersectionSelfLocal () const {
+      DUNE_THROW(NotImplemented, "Will be implemented on demand!");
+    }
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    LocalGeometry& intersectionNeighborLocal () const;
+    LocalGeometry& intersectionNeighborLocal () const {
+      DUNE_THROW(NotImplemented, "Will be implemented on demand!");
+    }
+
+    //! intersection of codimension 1 of this neighbor with element where iteration started.
+    //! Here returned element is in GLOBAL coordinates of the element where iteration started.
+    Geometry& intersectionGlobal () const {
+      DUNE_THROW(NotImplemented, "Will be implemented on demand!");
+    }
+
+    //! local number of codim 1 entity in self where intersection is contained in
+    int numberInSelf () const {return neighbor_;}
 
     //! local number of codim 1 entity in neighbor where intersection is contained
     int numberInNeighbor () const {
       DUNE_THROW(NotImplemented, "number_in_neighbor");
     }
 
-    //! return outer normal, this should be dependent on local
-    //! coordinates for higher order boundary
+    //! return outer normal
     const FieldVector<OneDCType, dimworld>& outerNormal (const FieldVector<OneDCType, dim-1>& local) const {
-      return outerNormal();
+      outerNormal_[0] = (neighbor_==0) ? -1 : 1;
+      return outerNormal_;
     }
 
     //! return unit outer normal, this should be dependent on
@@ -192,12 +191,12 @@ namespace Dune {
     //! the normal is scaled with the integration element
     const FieldVector<OneDCType, dimworld>& integrationOuterNormal (const FieldVector<OneDCType, dim-1>& local) const
     {
-      static FieldVector<OneDCType, dimworld> n(0);
-      return n;
+      outerNormal_[0] = (neighbor_==0) ? -1 : 1;
+      return outerNormal_;
     }
 
-    //! return unit outer normal, if you know it is constant use this function instead
-    const FieldVector<OneDCType, dimworld>& outerNormal () const {
+    //! return unit outer normal
+    const FieldVector<OneDCType, dimworld>& unitOuterNormal (const FieldVector<OneDCType, dim-1>& local) const {
       outerNormal_[0] = (neighbor_==0) ? -1 : 1;
       return outerNormal_;
     }
@@ -211,16 +210,6 @@ namespace Dune {
 
     //! vector storing the outer normal
     mutable FieldVector<OneDCType, dimworld> outerNormal_;
-
-#if 0
-    //! pointer to element holding the self_local and self_global information.
-    //! This element is created on demand.
-    OneDGridGeometry<dim-1,dim> fakeNeigh_;
-
-    //! pointer to element holding the neighbor_global and neighbor_local
-    //! information. This element is created on demand.
-    OneDGridGeometry<dim-1,dimworld> neighGlob_;
-#endif
 
     //! count on which neighbor we are lookin' at
     int neighbor_;
