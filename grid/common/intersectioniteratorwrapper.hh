@@ -63,6 +63,13 @@ namespace Dune {
       it().assign(org.it_);
     }
 
+    //! the f*cking assignment operator
+    ThisType & operator = (const ThisType & org)
+    {
+      it().assign(org.it_);
+      return *this;
+    }
+
     //! The Destructor puts internal object back to stack
     ~IntersectionIteratorWrapper()
     {
@@ -136,6 +143,9 @@ namespace Dune {
     {
       return it().integrationOuterNormal(local);
     }
+
+    //! return level of iterator
+    int level () const { return it().level(); }
 
   private:
     //! returns reference to underlying intersection iterator implementation
