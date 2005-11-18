@@ -438,8 +438,13 @@ namespace Dune {
     //! no interface method, but has to be public
     void updateStatus ();
 
-    bool mark( int refCount , typename Traits::template Codim<0>::EntityPointer & ep );
+    //! mark entities for refinement or coarsening, refCount < 0 will mark
+    //! the entity for one coarsen step and refCount > 0 will mark for one
+    //! refinement, one refinement will create 8 children per element
+    bool mark( int refCount , const typename Traits::template Codim<0>::EntityPointer & ep );
+  private:
     bool mark( int refCount , const typename Traits::template Codim<0>::Entity & en );
+  public:
 
     template <int cd>
     ALU3dGridEntity<cd,dim,const MyType >&

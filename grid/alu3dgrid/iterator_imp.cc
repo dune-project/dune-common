@@ -479,6 +479,13 @@ namespace Dune {
     return result;
   }
 
+  template <class GridImp>
+  inline int
+  ALU3dGridIntersectionIterator<GridImp>::
+  level() const {
+    assert( item_ );
+    return item_->level();
+  }
 
   /*************************************************************************
   #       ######  #    #  ######  #          #     #####  ######  #####
@@ -497,7 +504,7 @@ namespace Dune {
     : ALU3dGridEntityPointer<codim,GridImp> (grid,level)
       , index_(-1)
       , level_(level)
-      , isCopy_ (false)
+      , isCopy_ (0)
   {
     IteratorType * it = new IteratorType ( this->grid_ , vxList , level_ );
     iter_.store( it );
@@ -519,7 +526,7 @@ namespace Dune {
     : ALU3dGridEntityPointer<codim,GridImp> (grid ,level)
       , index_(-1)
       , level_(level)
-      , isCopy_ (false)
+      , isCopy_ (0)
   {
     this->done();
   }
@@ -531,10 +538,10 @@ namespace Dune {
       , index_( org.index_ )
       , level_( org.level_ )
       , iter_ ( org.iter_ )
-      , isCopy_(true)
+      , isCopy_(org.isCopy_+1)
   {
-    // dont copy a copy of a copy of a copy of a copy
-    assert( ! org.isCopy_ );
+    // don't copy a copy of a copy of a copy of a copy
+    assert( org.isCopy_ < 3 );
 
     if(index_ >= 0)
     {
@@ -575,7 +582,7 @@ namespace Dune {
     : ALU3dGridEntityPointer <codim,GridImp> ( grid,level)
       , index_(-1)
       , level_(level)
-      , isCopy_ (false)
+      , isCopy_ (0)
   {
     if(!end)
     {
@@ -653,10 +660,10 @@ namespace Dune {
       , index_(org.index_)
       , level_(org.level_)
       , iter_ ( org.iter_ )
-      , isCopy_ (true)
+      , isCopy_ (org.isCopy_+1)
   {
     // dont copy a copy of a copy of a copy of a copy
-    assert( ! org.isCopy_ );
+    assert( org.isCopy_  < 3 );
 
     if(index_ >= 0)
     {

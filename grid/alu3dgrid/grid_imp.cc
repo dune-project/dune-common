@@ -469,7 +469,7 @@ namespace Dune {
   // global refine
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline bool ALU3dGrid<dim,dimworld, elType>::
-  mark(int ref, typename Traits::template Codim<0>::EntityPointer & ep )
+  mark(int ref, const typename Traits::template Codim<0>::EntityPointer & ep )
   {
     return this->mark(ref,*ep);
   }
