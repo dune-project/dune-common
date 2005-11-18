@@ -103,7 +103,6 @@ namespace Dune {
     typedef typename FunctionSpaceType::JacobianRangeType JacobianRangeType;
 
     typedef typename FunctionSpaceType::RangeFieldType DofType;
-    typedef typename BaseType::DofVectorType DofVectorType;
 
   public:
     VectorialBaseFunctionSet(const FactoryType& factory) :
