@@ -214,9 +214,17 @@ namespace Dune
 
       RT value=0;
       Dune::GeometryType gt = e.geometry().type();     // extract type of element
-      for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
-        value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateDerivative(0,dir,xi)
-                 *(*coeff)[mapper_.template map<n>(e,i)][comp];
+      const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+      sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
+      Dune::FieldMatrix<DT,n,n> jac = e.geometry().jacobianInverseTransposed(xi);
+      for (int i=0; i<sfs.size(); ++i)
+      {
+        Dune::FieldVector<DT,n> grad(0),temp;
+        for (int l=0; l<n; l++)
+          temp[l] = sfs[i].evaluateDerivative(0,l,xi);
+        jac.umv(temp,grad);           // transform gradient to global ooordinates
+        value += grad[dir] * (*coeff)[mapper_.template map<n>(e,i)][comp];
+      }
       return value;
     }
 
