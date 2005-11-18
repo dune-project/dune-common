@@ -66,7 +66,7 @@ namespace Dune {
       this->virtualEntity_.setToTarget(this->virtualEntity_.target()->succ_);
 
       // If beyond the end of this level set to first of next level
-      if (!this->virtualEntity_.target() && oldLevel < grid_->maxlevel()) {
+      if (!this->virtualEntity_.target() && oldLevel < grid_->maxLevel()) {
 
         if (pitype==All_Partition || pitype==Ghost_Partition)
           this->virtualEntity_.setToTarget(grid_->vertices[oldLevel+1].begin);
@@ -140,7 +140,7 @@ namespace Dune {
       this->virtualEntity_.setToTarget(this->virtualEntity_.target()->succ_);
 
       // If beyond the end of this level set to first of next level
-      if (!this->virtualEntity_.target() && oldLevel < grid_->maxlevel()) {
+      if (!this->virtualEntity_.target() && oldLevel < grid_->maxLevel()) {
 
         if (pitype==All_Partition || pitype==Ghost_Partition)
           this->virtualEntity_.setToTarget(grid_->elements[oldLevel+1].begin);

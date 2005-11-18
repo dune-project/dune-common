@@ -238,7 +238,7 @@ namespace Dune {
 
        Levels are numbered 0 ... maxlevel with 0 the coarsest level.
      */
-    int maxlevel() const {return vertices.size()-1;}
+    int maxLevel() const {return vertices.size()-1;}
 
     //! Iterator to first entity of given codim on level
     template<int codim>
