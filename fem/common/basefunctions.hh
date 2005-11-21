@@ -293,11 +293,11 @@ namespace Dune {
                                    const JacobianRangeType& factor) const
     {
       JacobianRangeType gradPhi(0.);
-      DomainType gradScaled(0.);
       jacobian(baseFunct, xLocal, gradPhi);
 
       DofType result = 0;
-      for (int i = 0; i < FunctionSpaceType::DimDomain; ++i) {
+      for (int i = 0; i < FunctionSpaceType::DimRange; ++i) {
+        DomainType gradScaled(0.);
         en.geometry().jacobianInverseTransposed(xLocal).
         umv(gradPhi[i], gradScaled);
         result += gradScaled*factor[i];
