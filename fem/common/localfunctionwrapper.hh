@@ -11,31 +11,32 @@
 namespace Dune {
 
   //! Stores pointers of local functions in a stack
-  template <class DiscreteFunctionImp >
+  template <class DiscreteFunctionImp>
   class LocalFunctionStorage
   {
   private:
-    typedef LocalFunctionStorage < DiscreteFunctionImp > MyType;
+    typedef LocalFunctionStorage<DiscreteFunctionImp> MyType;
     typedef DiscreteFunctionImp DiscreteFunctionType;
-    typedef typename DiscreteFunctionImp ::  LocalFunctionImp LocalFunctionImp;
+    typedef typename DiscreteFunctionImp::LocalFunctionImp LocalFunctionImp;
 
   public:
-    typedef typename std::pair < LocalFunctionImp * , int * > StackStorageType;
+    typedef typename std::pair<LocalFunctionImp*, int*> StackStorageType;
   private:
     std::stack < StackStorageType , std::vector<StackStorageType> > lfStack_;
     const DiscreteFunctionType & df_;
 
     StackStorageType obj_;
+    int numIssuedFunctions_;
 
   public:
     //! constructor
     LocalFunctionStorage (const DiscreteFunctionType & df)
-      : df_(df) , obj_(0,0), count_(0) {}
+      : df_(df) , obj_(0,0), numIssuedFunctions_(0) {}
 
     //! delete all objects on stack
     ~LocalFunctionStorage ()
     {
-      assert(count_ == 0);
+      assert(numIssuedFunctions_ == 0);
 
       while ( !lfStack_.empty() )
       {
@@ -49,9 +50,9 @@ namespace Dune {
     }
 
     //! get local function object
-    StackStorageType & getObject ()
+    StackStorageType& getObject ()
     {
-      ++count_;
+      ++numIssuedFunctions_;
 
       if( lfStack_.empty() )
       {
@@ -69,9 +70,9 @@ namespace Dune {
     }
 
     //! push local function to stack
-    void freeObject ( StackStorageType & obj)
+    void freeObject (StackStorageType & obj)
     {
-      --count_;
+      --numIssuedFunctions_;
       lfStack_.push(obj);
     }
 
@@ -79,8 +80,6 @@ namespace Dune {
     //! prohibited methods
     LocalFunctionStorage ( const MyType & c); // : df_(c.df_) {};
     MyType & operator = ( const MyType & c ); // { return *this; }
-
-    int count_;
   };
 
   template < class DFTraits > class DiscreteFunctionDefault;
@@ -93,14 +92,14 @@ namespace Dune {
   //! Manages the getting and deleting of local function pointers and
   //! acts like a local functions
   template < class DiscreteFunctionImp >
-  class LocalFunctionWrapper
-    : public LocalFunctionDefault <
-          typename DiscreteFunctionImp :: DiscreteFunctionSpaceType,
-          LocalFunctionWrapper < DiscreteFunctionImp > >
+  class LocalFunctionWrapper :
+    public LocalFunctionDefault <
+        typename DiscreteFunctionImp::DiscreteFunctionSpaceType,
+        LocalFunctionWrapper < DiscreteFunctionImp > >
   {
   public:
-    typedef typename DiscreteFunctionImp :: LocalFunctionImp LocalFunctionImp;
-    typedef typename DiscreteFunctionImp :: DiscreteFunctionSpaceType
+    typedef typename DiscreteFunctionImp::LocalFunctionImp LocalFunctionImp;
+    typedef typename DiscreteFunctionImp::DiscreteFunctionSpaceType
     DiscreteFunctionSpaceType;
 
     typedef DiscreteFunctionImp DiscreteFunctionType;
@@ -117,12 +116,12 @@ namespace Dune {
     typedef DiscreteFunctionDefault< typename DiscreteFunctionImp::Traits >
     DiscreteFunctionDefaultType;
 
-    typedef typename DiscreteFunctionDefaultType :: LocalFunctionStorageType LFStorage;
+    typedef typename DiscreteFunctionDefaultType::LocalFunctionStorageType LFStorage;
 
   private:
 
     // local function storage stack
-    LFStorage* storage_;
+    LFStorage& storage_;
 
     // type of stack entry
     typedef typename LFStorage :: StackStorageType StackStorageType;
@@ -132,13 +131,13 @@ namespace Dune {
 
   public:
     //! empty Constructor
-    LocalFunctionWrapper() : storage_(0) , obj_ (0,0) {}
+    //LocalFunctionWrapper() : storage_(0) , obj_ (0,0) {}
 
     //! Constructor initializing the underlying local function
     template < class EntityType >
     LocalFunctionWrapper(const EntityType & en, const DiscreteFunctionImp & df)
       : storage_( df.localFunctionStorage() )
-        , obj_ ( storage_->getObject() )
+        , obj_ ( storage_.getObject() )
     {
       // init real local function with entity
       localFunc().init( en );
@@ -147,7 +146,7 @@ namespace Dune {
     //! Constructor creating empty local function
     LocalFunctionWrapper (const DiscreteFunctionImp & df)
       : storage_( df.localFunctionStorage() )
-        , obj_( storage_->getObject() )
+        , obj_( storage_.getObject() )
     {}
 
     //! Copy constructor
@@ -155,6 +154,7 @@ namespace Dune {
       : storage_(org.storage_)
         , obj_( org.obj_ )
     {
+      assert(*obj_.second == 1);
       ++(*(obj_.second));
     }
 
@@ -165,20 +165,6 @@ namespace Dune {
       removeObj();
     }
 
-  private:
-    //! Assignment operator
-    LocalFunctionWrapper& operator=(const LocalFunctionWrapper& org)
-    {
-      if (this != &org) {
-        removeObj();
-
-        storage_ = org.storage_;
-        obj_ = org.obj_;
-        ++(*(obj_.second));
-      }
-      return *this;
-    }
-  public:
     //! access to dof number num, all dofs of the dof entity
     RangeFieldType & operator [] (int num) { return localFunc()[num]; }
 
@@ -240,6 +226,9 @@ namespace Dune {
     }
 
   private:
+    LocalFunctionWrapper& operator=(const LocalFunctionWrapper);
+
+  private:
     LocalFunctionImp & localFunc()
     {
       assert( obj_.first );
@@ -260,7 +249,7 @@ namespace Dune {
         // the second counter is left at a value of 1, so we dont have to
         // initialize when getting the object again
         if( (*(obj_.second)) == 1) {
-          storage_->freeObject ( obj_ );
+          storage_.freeObject ( obj_ );
         }
         else
           --(*(obj_.second));
