@@ -304,7 +304,6 @@ namespace Dune {
         assert(nIndices == static_cast<const Common*>(this)->backend->template count<dimension>());
         IndexVector vec;
         for(int i = 0; i < nIndices; ++i)
-          //		  vec[i] = static_cast<const Common*>(this)->backend->template subIndex<dimension>(nIndices - i - 1);
           vec[i] = RefinementGrid<dimension>::instance().levelIndexSet(static_cast<const Common*>(this)->backend->level()).template subIndex<dimension>(*(static_cast<const Common*>(this)->backend),nIndices - i - 1);
         return vec;
       }

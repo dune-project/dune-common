@@ -125,7 +125,7 @@ void DoEntityInterfaceCheck (Entity &e)
   GeometryInterface<typename Entity::Geometry, Entity::codimension, Entity::dimension>();
 }
 
-// recursive check of codim-0-entity methods count(), entity(), subIndex()
+// recursive check of codim-0-entity methods count(), entity()
 template <class Grid, int cd, bool hasEntity>
 struct ZeroEntityMethodCheck
 {
@@ -139,7 +139,6 @@ struct ZeroEntityMethodCheck
 
     e.template count<cd>();
     e.template entity<cd>(0);
-    e.template subIndex<cd>(0);
 
     // recursively check on
     ZeroEntityMethodCheck<Grid, cd - 1,
@@ -189,7 +188,6 @@ struct ZeroEntityMethodCheck<Grid, 0, true>
 
     e.template count<0>();
     e.template entity<0>(0);
-    e.template subIndex<0>(0);
 
   }
   ZeroEntityMethodCheck ()
@@ -214,7 +212,6 @@ struct ZeroEntityMethodCheck<Grid, 0, false>
 
     e.template count<0>();
     e.template entity<0>(0);
-    e.template subIndex<0>(0);
   }
   ZeroEntityMethodCheck ()
   {
@@ -546,6 +543,7 @@ struct GridInterface
   void (*c)(Grid&);
 };
 
+#if 0
 // check
 // Entity::geometry()[c] == Entity::entity<dim>.geometry()[0]
 // for codim=cd
@@ -607,6 +605,7 @@ struct subIndexCheck<-1, Grid, Entity, false>
     return;
   }
 };
+#endif
 
 // name says all
 template <class Grid>
@@ -644,8 +643,9 @@ void zeroEntityConsistency (Grid &g)
                    c1 << " - " << c2 << " || = " << (c2-c1).two_norm() << " [ with i = " << c << " ]");
       }
     }
-    // Entity::entity<cd>(i).index() == Entity::subIndex(i)
+#if 0
     subIndexCheck<Grid::dimension, Grid, Entity, true> sick(g,*it);
+#endif
   }
 }
 

@@ -326,18 +326,6 @@ namespace Dune
     }
 
     /**
-       \brief The index of the i-th subentity of codimension <tt>cc</tt>
-
-       This does the same as <code>entity<cc>(i).index()</code>, but it is
-       usually a lot faster.
-     */
-    template <int cc> int subIndex ( int i ) const
-    {
-      this->index(); // Just to force a deprecated warning
-      return realEntity.subIndex<cc>(i);
-    }
-
-    /**
        \brief The boundaryId of the i-th subentity of codimension <tt>cc</tt>
 
        This does the same as <code>entity<cc>(i).boundaryId()</code>, but it is
@@ -752,23 +740,12 @@ namespace Dune
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   public:
-    /** \brief Default implementation for access to subIndex
-     *
-     * Default implementation for access to subIndex via interface method entity
-     * default is to return the index of the sub entity, is very slow, but works
-     */
-    template <int cc> int subIndex ( int i ) const
-    {
-      this->index(); // Just to force a deprecated warning
-      return (asImp().template entity<cc>(i))->index();
-    }
 
     /** \brief Default implementation for access to boundaryId of sub entities
      *
      * Default implementation for access to boundaryId via interface method
      * entity<codim>.boundaryId(), default is very slow, but works, can be
-     * overloaded be the actual grid implementation, works the same way as
-     * subIndex
+     * overloaded be the actual grid implementation.
      */
     template <int cc> int subBoundaryId  ( int i ) const
     {

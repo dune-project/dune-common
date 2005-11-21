@@ -341,28 +341,6 @@ namespace Dune {
     return SLevelIterator<cc,All_Partition,const GridImp>(this->grid,this->l,(this->grid)->n(this->l,zentity));
   }
 
-  // default implementation uses entity method
-  template<int dim, class GridImp> template<int cc>
-  inline int SEntity<0,dim,GridImp>::subIndex (int i) const
-  {
-    if(cc == dim) // the vertex case
-    {
-      // find expanded coordinates of entity in reference cube
-      // has components in {0,1,2}
-      // the grid hold the memory because its faster
-      FixedArray<int,dim> &zref = this->grid->zrefStatic;
-      FixedArray<int,dim> &zentity = this->grid->zentityStatic;
-
-      zref = SUnitCubeMapper<dim>::mapper.z(i,dim);
-      for (int i=0; i<dim; i++) zentity[i] = this->z[i] + zref[i] - 1;
-      return this->grid->n(this->l,zentity);
-    }
-    else
-    {
-      return entity<cc>(i)->index();
-    }
-  }
-
   template<int dim, class GridImp>
   inline typename SEntity<0,dim,GridImp>::IntersectionIterator SEntity<0,dim,GridImp>::ibegin () const
   {
