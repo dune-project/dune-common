@@ -125,23 +125,15 @@ namespace Dune {
     enum { numDiffOrd = 3 };
 
     // * add methods for quadrature type as well
-    void evaluateSingle(int baseFunct,
-                        const DomainType& xLocal,
-                        const RangeType& factor,
-                        DofType& result) const;
+    DofType evaluateSingle(int baseFunct,
+                           const DomainType& xLocal,
+                           const RangeType& factor) const;
 
-    void evaluateSet(const DomainType& xLocal,
-                     const RangeType& factor,
-                     DofVectorType& result) const;
-
-    void evaluateGradientSingle(int baseFunct,
-                                const DomainType& xLocal,
-                                const JacobianRangeType& factor,
-                                DofType& result) const;
-
-    void evaluateGradientSet(const DomainType& xLocal,
-                             const JacobianRangeType& factor,
-                             DofVectorType& result) const;
+    template <class Entity>
+    DofType evaluateGradientSingle(int baseFunct,
+                                   Entity& en,
+                                   const DomainType& xLocal,
+                                   const JacobianRangeType& factor) const;
 
   protected:
     //! set method for storage of the base function pointers
@@ -190,15 +182,15 @@ namespace Dune {
     template <int diffOrd, class QuadratureType >
     void evaluateInit ( const QuadratureType & quad ) ;
 
-    void evaluateSingleOptim(int baseFunct,
-                             const DomainType& xLocal,
-                             const RangeType& factor,
-                             DofType& result) const;
+    DofType evaluateSingleOptim(int baseFunct,
+                                const DomainType& xLocal,
+                                const RangeType& factor) const;
 
-    void evaluateGradientSingleOptim(int baseFunct,
-                                     const DomainType& xLocal,
-                                     const JacobianRangeType& factor,
-                                     DofType& result) const;
+    template <class Entity>
+    DofType evaluateGradientSingleOptim(int baseFunct,
+                                        Entity& en,
+                                        const DomainType& xLocal,
+                                        const JacobianRangeType& factor) const;
 
 
   }; // end class FastBaseFunctionSet
