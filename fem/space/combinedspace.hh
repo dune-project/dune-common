@@ -220,9 +220,12 @@ namespace Dune {
     DiscreteFunctionSpaceType;
     typedef typename Traits::ContainedBaseFunctionSetType ContainedBaseFunctionSetType;
     typedef typename Traits::RangeType RangeType;
+    typedef typename Traits::JacobianRangeType JacobianRangeType;
     typedef typename Traits::DomainType DomainType;
     typedef typename Traits::ContainedRangeType ContainedRangeType;
     typedef typename Traits::ContainedJacobianRangeType ContainedJacobianRangeType;
+
+    typedef typename Traits::RangeFieldType DofType;
   public:
     //- Public methods
     //! Constructor
@@ -276,6 +279,16 @@ namespace Dune {
     void jacobianScalar(int baseFunct,
                         const DomainType& x,
                         ContainedJacobianRangeType& phi) const;
+
+    DofType evaluateSingle(int baseFunct,
+                           const DomainType& xLocal,
+                           const RangeType& factor) const;
+
+    template <class Entity>
+    DofType evaluateGradientSingle(int baseFunct,
+                                   Entity& en,
+                                   const DomainType& xLocal,
+                                   const JacobianRangeType& factor) const;
 
   private:
     //- Private methods

@@ -113,6 +113,47 @@ namespace Dune {
     baseFunctionSet_.jacobian(baseFunct, x, phi);
   }
 
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  typename CombinedBaseFunctionSet<DiscreteFunctionSpaceImp,N,policy>::DofType
+  CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
+  evaluateSingle(int baseFunct,
+                 const DomainType& xLocal,
+                 const RangeType& factor) const
+  {
+    assert(baseFunct >= 0 &&
+           baseFunct < baseFunctionSet_.numBaseFunctions()*N);
+
+    ContainedRangeType phi(0.);
+    baseFunctionSet_.eval(util_.containedDof(baseFunct), xLocal, phi);
+    return factor[util_.component(baseFunct)]*phi[0];
+  }
+
+  template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
+  template <class Entity>
+  typename
+  CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::DofType
+  CombinedBaseFunctionSet<DiscreteFunctionSpaceImp, N, policy>::
+  evaluateGradientSingle(int baseFunct,
+                         Entity& en,
+                         const DomainType& xLocal,
+                         const JacobianRangeType& factor) const
+  {
+    assert(baseFunct >= 0 &&
+           baseFunct < baseFunctionSet_.numBaseFunctions()*N);
+
+    //baseFunctionSet_.jacobian(baseFunct, x, phi);
+    DomainType gradScaled(0.);
+    ContainedJacobianRangeType phi(0.);
+
+    baseFunctionSet_.jacobian(util_.containedDof(baseFunct), xLocal, phi);
+    en.geometry().jacobianInverseTransposed(xLocal).
+    umv(phi[0], gradScaled);
+    //! is this right?
+    //return factor[util_.component(baseFunct)]*jTmp[0];
+    return gradScaled*factor[util_.component(baseFunct)];
+  }
+
+
   //- CombinedMapper
   template <class DiscreteFunctionSpaceImp, int N, DofStoragePolicy policy>
   int CombinedMapper<DiscreteFunctionSpaceImp, N, policy>::size() const
