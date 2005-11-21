@@ -160,7 +160,7 @@ Dune::OneDGrid<dim,dimworld>::~OneDGrid()
   }
 
   // Delete levelIndexSets
-  for (unsigned int i=0; i<=levelIndexSets_.size(); i++)
+  for (unsigned int i=0; i<levelIndexSets_.size(); i++)
     if (levelIndexSets_[i])
       delete levelIndexSets_[i];
 }
