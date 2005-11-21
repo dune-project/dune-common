@@ -92,7 +92,7 @@ namespace Dune {
     en.geometry().jacobianInverseTransposed(xLocal).
     umv(jTmp_[0], gradScaled);
     //! is this right?
-    //return facotr[util_.component(baseFunct)]*jTmp[0];
+    //return factor[util_.component(baseFunct)]*jTmp[0];
     return gradScaled*factor[util_.component(baseFunct)];
   }
 
