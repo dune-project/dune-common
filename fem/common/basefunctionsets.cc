@@ -73,7 +73,8 @@ namespace Dune {
                  const DomainType& xLocal,
                  const RangeType& factor) const
   {
-    this->eval(util_.containedDof(baseFunct), xLocal, tmp_);
+    baseFunctions_[util_.containedDof(baseFunct)]->
+    evaluate(diffVar0_, xLocal, tmp_);
     return factor[util_.component(baseFunct)]*tmp_[0];
   }
 
@@ -88,11 +89,15 @@ namespace Dune {
   {
     DomainType gradScaled(0.);
 
-    this->jacobian(util_.containedDof(baseFunct), xLocal, jTmp_);
+    for (int i = 0; i < FunctionSpaceImp::DimDomain; ++i) {
+      diffVar1_[0] = i;
+      baseFunctions_[util_.containedDof(baseFunct)]->
+      evaluate(diffVar1_, xLocal, tmp_);
+      jTmp_[i] = tmp_[0];
+    }
+
     en.geometry().jacobianInverseTransposed(xLocal).
-    umv(jTmp_[0], gradScaled);
-    //! is this right?
-    //return factor[util_.component(baseFunct)]*jTmp[0];
+    umv(jTmp_, gradScaled);
     return gradScaled*factor[util_.component(baseFunct)];
   }
 
