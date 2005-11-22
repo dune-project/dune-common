@@ -243,7 +243,7 @@ namespace Dune {
 
       if ( gridsize != (int)entityfound.size() )
       {
-        derr << "WARNING: gridsize = "<< gridsize << " entities | map of entites = "
+        derr << "WARNING: gridsize = "<< gridsize << " entities | map of entities = "
              << entityfound.size() << " for codim " << codim << std::endl;
       }
       // gridsize should be at least the size of found entities
@@ -415,7 +415,7 @@ namespace Dune {
     static void checkIndexSet( const GridType &grid ,
                                const IndexSetType & iset, OutputStreamImp & sout , bool levelIndex )
     {
-      derr << "WARNING: entities for codim " << codim << " are not working for some reason!" << std::endl;
+      derr << "WARNING: entities for codim " << codim << " are not being tested!" << std::endl;
       CheckIndexSet<GridType,IndexSetType,OutputStreamImp,
           codim-1, Dune::Capabilities::hasEntity<GridType, codim-1>::v > ::
       checkIndexSet( grid, iset, sout , levelIndex );
