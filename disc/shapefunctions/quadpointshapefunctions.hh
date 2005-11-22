@@ -380,34 +380,61 @@ namespace Dune
     int cacheSize;
   public:
 
-    struct Id {
-      const ShapeFunctionSet<C,T,d,N> * p_fset;
-      const QuadratureRule<C,dq> * p_quad;
-      size_t h_geom;
-      Id() :
-        p_fset(0), p_quad(0), h_geom(0) {};
-      Id(const ShapeFunctionSet<C,T,d,N> & _fset,
-         const QuadratureRule<C,dq> & _quad) :
-        p_fset(&_fset), p_quad(&_quad), h_geom(0) {};
-      template<class G>
-      Id(const ShapeFunctionSet<C,T,d,N> & _fset,
-         const QuadratureRule<C,dq> & _quad,
-         const G & _geom) :
-        p_fset(&_fset), p_quad(&_quad), h_geom(0)
+    class Id {
+    public:
+      int operator== (const Id & id) const
       {
-        const char * data = reinterpret_cast<const char *>(&_geom);
-        h_geom = QuadPointHash::Fnv_hash<>::hash(data, sizeof(_geom));
+        if (typeid(*this) == typeid(id))
+        {
+          return id.equals(*this);
+        }
+        return false;
       };
-      bool operator== (const Id & id) const
+      virtual int equals(const Id & id) const = 0;
+      virtual std::size_t hash() const = 0;
+    };
+
+    class BasicId : public Id {
+      const void * p_fset;
+      const void * p_quad;
+    public:
+      BasicId(const ShapeFunctionSet<C,T,d,N> & fset,
+              const QuadratureRule<C,dq> & quad) :
+        p_fset(&fset), p_quad(&quad) {};
+      virtual int equals(const Id & _id) const
       {
+        const BasicId & id = dynamic_cast<const BasicId&>(_id);
         return (p_fset == id.p_fset
-                && p_quad == id.p_quad
-                && h_geom == id.h_geom);
+                && p_quad == id.p_quad);
       }
-      std::size_t hash() const
+      virtual std::size_t hash() const
       {
         const char * data = reinterpret_cast<const char *>(this);
-        return QuadPointHash::Fnv_hash<>::hash(data, sizeof(Id));
+        return QuadPointHash::Fnv_hash<>::hash(data, sizeof(*this));
+      }
+    };
+
+    template<class Geometry>
+    class GeometryId : public Id {
+      const void * p_fset;
+      const void * p_quad;
+      const Geometry geom;
+    public:
+      GeometryId(const ShapeFunctionSet<C,T,d,N> & fset,
+                 const QuadratureRule<C,dq> & quad,
+                 const Geometry & g) :
+        p_fset(&fset), p_quad(&quad), geom(g) {};
+      virtual int equals(const Id & _id) const
+      {
+        const GeometryId & id = dynamic_cast<const GeometryId&>(_id);
+        return (p_fset == id.p_fset
+                && p_quad == id.p_quad
+                && geom == id.geom);
+      }
+      virtual std::size_t hash() const
+      {
+        const char * data = reinterpret_cast<const char *>(this);
+        return QuadPointHash::Fnv_hash<>::hash(data, sizeof(*this));
       }
     };
 
@@ -420,15 +447,21 @@ namespace Dune
     typedef T ResultType;
     typedef QuadratureRuleShapeFunctionSet<C,T,d,dq,N>
     QuadratureRuleShapeFunctionSet;
-    typedef std::pair<Id,QuadratureRuleShapeFunctionSet*> CacheEntry;
+    typedef std::pair<Id*,QuadratureRuleShapeFunctionSet*> CacheEntry;
     typedef std::vector<CacheEntry> Cache;
 
+    //! default Constructor
     QuadratureRuleShapeFunctionSetCache() :
       hit(0), miss(0), cacheSize(163), cache(cacheSize)
     {
       initCache();
     };
 
+    /*!
+       @brief Create a QuadratureRuleShapeFunctionSetCache with sz cache lines.
+
+       It is recommend the you use a prime number of cache lines.
+     */
     QuadratureRuleShapeFunctionSetCache(int sz) :
       hit(0), miss(0), cacheSize(sz), cache(cacheSize)
     {
@@ -441,20 +474,23 @@ namespace Dune
     {
       const QuadratureRule<C,dq> & quad =
         QuadratureRules<C,dq>::rule(fset.type(), order);
-      Id id(fset,quad);
+      Id * id = new BasicId(fset,quad);
 
-      int hash = (id.hash() + 31) % cacheSize;
+      int hash = (id->hash() + 31) % cacheSize;
       assert(hash < cacheSize);
 
       CacheEntry & entry = cache[hash];
-      if (entry.second != 0 && entry.first == id)
+      if (entry.first != 0 && (*entry.first) == (*id))
       {
+        assert(entry.second != 0);
         hit++;
         return *(entry.second);
       }
       else
       {
         miss++;
+        if (entry.first != 0)
+          delete entry.first;
         if (entry.second != 0)
           delete entry.second;
         entry.first = id;
@@ -469,20 +505,23 @@ namespace Dune
     operator() (const ShapeFunctionSet<C,T,d,N> & fset,
                 const QuadratureRule<C,dq> & quad)
     {
-      Id id(fset, quad);
+      Id * id = new BasicId(fset, quad);
 
-      int hash = (id.hash() + 31) % cacheSize;
+      int hash = (id->hash() + 31) % cacheSize;
       assert(hash < cacheSize);
 
       CacheEntry & entry = cache[hash];
-      if (entry.second != 0 && entry.first == id)
+      if (entry.first != 0 && (*entry.first) == (*id))
       {
+        assert(entry.second != 0);
         hit++;
         return *(entry.second);
       }
       else
       {
         miss++;
+        if (entry.first != 0)
+          delete entry.first;
         if (entry.second != 0)
           delete entry.second;
         entry.first = id;
@@ -499,25 +538,29 @@ namespace Dune
                 const QuadratureRule<C,dq> & quad,
                 const G & geom)
     {
-      Id id(fset, quad, geom);
+      Id * id = new GeometryId<G>(fset, quad, geom);
 
-      int hash = (id.hash() + 31) % cacheSize;
+      int hash = 0;  //(id->hash() + 31) % cacheSize;
       assert(hash < cacheSize);
 
       CacheEntry & entry = cache[hash];
-      if (entry.second != 0 && entry.first == id)
+      if (entry.first != 0 && (*entry.first) == (*id))
       {
+        assert(entry.second != 0);
         hit++;
         return *(entry.second);
       }
       else
       {
         miss++;
+        if (entry.first != 0)
+          delete entry.first;
         if (entry.second != 0)
           delete entry.second;
         entry.first = id;
-        entry.second = new QuadratureRuleShapeFunctionSet(fset, quad, geom);
-        return *(entry.second);
+        cache[hash].second =
+          new QuadratureRuleShapeFunctionSet(fset, quad, geom);
+        return *(cache[hash].second);
       }
     }
 
@@ -538,11 +581,10 @@ namespace Dune
     {
       typename Cache::iterator it=cache.begin();
       typename Cache::iterator endit=cache.end();
-      Id id;
       int c=0;
       for (; it!=endit; ++it)
       {
-        it->first = id;
+        it->first = 0;
         it->second = 0;
         c++;
       }
