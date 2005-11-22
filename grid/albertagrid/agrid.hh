@@ -1523,8 +1523,11 @@ namespace Dune
      *  counts more then coarsening
      *  mark returns true if element was marked, otherwise false */
     bool mark( int refCount , const typename Traits::template Codim<0>::EntityPointer & en ) const;
+
+  private:
     bool mark( int refCount , const typename Traits::template Codim<0>::Entity & en ) const;
 
+  public:
     //! uses the interface, mark on entity and refineLocal
     bool globalRefine(int refCount);
 

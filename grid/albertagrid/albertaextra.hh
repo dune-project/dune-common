@@ -45,6 +45,9 @@ inline void fillMacroInfo(TRAVERSE_STACK *stack,
   /* Alberta version */
   fill_macro_info(stack->traverse_mesh,mel,elinfo);
 
+#if DIM == 2
+  // only works for dim 2 at the moment
+  // because there we have a different fill_elinfo method
   // quick solution, the method fill_macro_info has to be rewritten
   // not now, dont have the time
   if(level == elinfo->level)
@@ -62,6 +65,7 @@ inline void fillMacroInfo(TRAVERSE_STACK *stack,
       }
     }
   }
+#endif
 }
 
 
@@ -234,7 +238,7 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
   return;
 }
 
-inline void copyTraverseStack( TRAVERSE_STACK* stack, TRAVERSE_STACK* org )
+inline void copyTraverseStack( TRAVERSE_STACK* stack, const TRAVERSE_STACK* org )
 {
   const int & used = stack->stack_size;
   // we have problems to copy stack of length 0

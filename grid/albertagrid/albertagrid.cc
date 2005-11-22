@@ -4529,7 +4529,9 @@ namespace Dune
     {
       // allow to go down on neighbour more than once
       // if the following condition is satisfied
-      const bool leafLevel = ((el->child[0] == 0) || (elinfo->level < actLevel));
+      //const bool leafLevel = ((el->child[0] == 0) || (elinfo->level < actLevel));
+      const bool leafLevel = (leaf) ? true : ((el->child[0] == 0) && (elinfo->level < actLevel));
+
       firstNeigh (ichild,elinfo_old,elinfo,leafLevel);
       secondNeigh(ichild,elinfo_old,elinfo,leafLevel);
       thirdNeigh (ichild,elinfo_old,elinfo,leafLevel);
@@ -4566,7 +4568,7 @@ namespace Dune
     enum { dim = 3 };
     enum { dimworld = 3 };
 
-#if 1
+#if 0
     ALBERTA fill_elinfo(ichild,elinfo_old,elinfo);
 #else
     static S_CHAR child_orientation[3][2] = {{1,1}, {1,-1}, {1,-1}};
@@ -4824,7 +4826,7 @@ namespace Dune
         }
         else
         {
-          neigh[i] = nil;
+          neigh[i] = 0;
         }
       } /* end for i */
 
