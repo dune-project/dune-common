@@ -126,8 +126,6 @@ namespace Dune {
       }
     }
 
-    // * override other functions as well!!!!
-
     int numBaseFunctions() const;
 
     template <int diffOrd>
@@ -141,6 +139,13 @@ namespace Dune {
                   const FieldVector<deriType, diffOrd> &diffVariable,
                   QuadratureType & quad,
                   int quadPoint, RangeType & phi ) const;
+
+    void jacobian(int baseFunct, const DomainType& xLocal,
+                  JacobianRangeType& gradPhi) const;
+
+    template <class QuadratureImp>
+    void jacobian(int baseFunct, QuadratureImp& quad, int quadPoint,
+                  JacobianRangeType& gradPhi) const;
 
     // * add those methods with quadratures as well
     DofType evaluateSingle(int baseFunct,

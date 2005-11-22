@@ -67,6 +67,37 @@ namespace Dune {
   }
 
   template <class FunctionSpaceImp>
+  void VectorialBaseFunctionSet<FunctionSpaceImp>::
+  jacobian(int baseFunct, const DomainType& xLocal,
+           JacobianRangeType& gradPhi) const
+  {
+    gradPhi *= 0.;
+
+    for (int i = 0; i < FunctionSpaceImp::DimDomain; ++i) {
+      diffVar1_[0] = i;
+      baseFunctions_[util_.containedDof(baseFunct)]->
+      evaluate(diffVar1_, xLocal, tmp_);
+      gradPhi[util_.component(baseFunct)][i] = tmp_[0];
+    }
+  }
+
+  template <class FunctionSpaceImp>
+  template <class QuadratureImp>
+  void VectorialBaseFunctionSet<FunctionSpaceImp>::
+  jacobian(int baseFunct, QuadratureImp& quad, int quadPoint,
+           JacobianRangeType& gradPhi) const
+  {
+    gradPhi *= 0.;
+
+    for (int i = 0; i < FunctionSpaceImp::DimDomain; ++i) {
+      diffVar1_[0] = i;
+      baseFunctions_[util_.containedDof(baseFunct)]->
+      evaluate(diffVar1_, quad.point(quadPoint), tmp_);
+      gradPhi[util_.component(baseFunct)][i] = tmp_[0];
+    }
+  }
+
+  template <class FunctionSpaceImp>
   typename VectorialBaseFunctionSet<FunctionSpaceImp>::DofType
   VectorialBaseFunctionSet<FunctionSpaceImp>::
   evaluateSingle(int baseFunct,
