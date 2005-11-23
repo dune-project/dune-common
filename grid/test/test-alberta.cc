@@ -29,7 +29,7 @@ void markOne ( GridType & grid , int num , int ref )
   int count = 0;
   for( ; it != endit ; ++it )
   {
-    if(num == count) grid.mark( ref, *it );
+    if(num == count) grid.mark( ref, it );
     count++;
   }
 
