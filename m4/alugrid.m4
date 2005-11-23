@@ -33,7 +33,7 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
   # set variables so that tests can use them
   REM_CPPFLAGS=$CPPFLAGS
 
-  LDFLAGS="$LDFLAGS -static -L$ALUGRID_LIB_PATH"
+  LDFLAGS="$LDFLAGS -L$ALUGRID_LIB_PATH"
   ALU3D_INC_FLAG="-I$ALUGRID_INCLUDE_PATH -I$ALUGRID_INCLUDE_PATH/serial -I$ALUGRID_INCLUDE_PATH/duneinterface"
   CPPFLAGS="$CPPFLAGS $ALU3D_INC_FLAG"
 
