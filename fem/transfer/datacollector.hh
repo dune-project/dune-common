@@ -9,6 +9,7 @@
 
 //-Dune includes
 #include <dune/fem/common/objpointer.hh>
+#include <dune/common/interfaces.hh>
 
 namespace Dune {
 
@@ -181,13 +182,13 @@ namespace Dune {
   public:
     class EOFException {} ;
     template <class T>
-    void readObject (T &) {}
-    void readObject (int) {}
-    void readObject (double) {}
+    void readObject (T &) { assert(false); }
+    void readObject (int) { assert(false); }
+    void readObject (double) { assert(false); }
     template <class T>
-    void writeObject (T &) {};
-    void writeObject (int) {} ;
-    void writeObject (double) {};
+    void writeObject (T &) { assert(false); };
+    void writeObject (int) { assert(false); } ;
+    void writeObject (double) { assert(false); };
   };
 
   /*! Combination of different DataCollectors
@@ -359,12 +360,13 @@ namespace Dune {
    */
   template <class GridType, class LocalDataCollectImp>
   class DataCollector
-    : public DataCollectorInterface<GridType, typename GridType::ObjectStreamType>
+    : public DataCollectorInterface<GridType,
+          typename GridObjectStreamOrDefault<GridType, DummyObjectStream > :: ObjectStreamType >
       , public ObjPointerStorage
   {
+    typedef typename GridObjectStreamOrDefault<GridType, DummyObjectStream > :: ObjectStreamType ObjectStreamType;
     typedef typename GridType::template Codim<0>::Entity EntityType;
     typedef DataCollector<EntityType,LocalDataCollectImp> MyType;
-    typedef typename GridType::ObjectStreamType ObjectStreamType;
     typedef DofManager<GridType> DofManagerType;
 
     typedef typename std::pair < ObjectStreamType * , const EntityType * > ParamType;
@@ -571,11 +573,13 @@ namespace Dune {
   template <class DiscreteFunctionType>
   class DataInliner :
     public LocalInlinePlus < DataInliner< DiscreteFunctionType > ,
-        typename std::pair < typename DiscreteFunctionType::FunctionSpaceType::GridType::ObjectStreamType * ,
+        typename std::pair <
+            typename GridObjectStreamOrDefault<typename DiscreteFunctionType::FunctionSpaceType::GridType, DummyObjectStream > :: ObjectStreamType * ,
             const typename DiscreteFunctionType::FunctionSpaceType::GridType::template Codim<0>::Entity * > >
   {
+    typedef typename GridObjectStreamOrDefault<typename DiscreteFunctionType::FunctionSpaceType::GridType, DummyObjectStream > :: ObjectStreamType ObjectStreamType;
     typedef LocalInlinePlus < DataInliner< DiscreteFunctionType > ,
-        typename std::pair < typename  DiscreteFunctionType::FunctionSpaceType::GridType::ObjectStreamType * ,
+        typename std::pair < ObjectStreamType * ,
             const typename  DiscreteFunctionType::FunctionSpaceType::GridType::template Codim<0>::Entity * > >  ChefType;
   public:
     typedef typename DiscreteFunctionType::FunctionSpaceType::GridType::ObjectStreamType ObjectStreamType;
@@ -621,11 +625,13 @@ namespace Dune {
   template <class DiscreteFunctionType>
   class DataXtractor :
     public LocalInlinePlus < DataXtractor< DiscreteFunctionType > ,
-        typename std::pair < typename DiscreteFunctionType::FunctionSpaceType::GridType::ObjectStreamType * ,
+        typename std::pair <
+            typename GridObjectStreamOrDefault<typename DiscreteFunctionType::FunctionSpaceType::GridType, DummyObjectStream > :: ObjectStreamType * ,
             const typename DiscreteFunctionType::FunctionSpaceType::GridType::template Codim<0>::Entity * > >
   {
+    typedef typename GridObjectStreamOrDefault<typename DiscreteFunctionType::FunctionSpaceType::GridType, DummyObjectStream > :: ObjectStreamType ObjectStreamType;
     typedef LocalInlinePlus < DataInliner< DiscreteFunctionType > ,
-        typename std::pair < typename  DiscreteFunctionType::FunctionSpaceType::GridType::ObjectStreamType * ,
+        typename std::pair < ObjectStreamType * ,
             const typename  DiscreteFunctionType::FunctionSpaceType::GridType::template Codim<0>::Entity * > >  ChefType;
   public:
     typedef typename DiscreteFunctionType::FunctionSpaceType::GridType::ObjectStreamType ObjectStreamType;
