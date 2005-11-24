@@ -8,7 +8,7 @@
  */
 
 #include "ugtypes.hh"
-#include "grid/common/referenceelements.hh"
+#include <dune/grid/common/referenceelements.hh>
 
 
 namespace Dune {
