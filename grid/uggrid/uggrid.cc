@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include "config.h"
 #include <dune/grid/uggrid.hh>
+#include "boundaryextractor.hh"
 
 /** \todo Remove the following two includes once getAllSubfaces... is gone */
 #include <dune/common/tuples.hh>
@@ -916,6 +917,7 @@ void Dune::UGGrid < dim, dimworld >::createbegin()
   // Boundary segment counting starts from zero again
   boundarySegmentCounter_ = 0;
 
+  boundarySegments_.resize(0);
   elementTypes_.resize(0);
   elementVertices_.resize(0);
   vertexPositions_.resize(0);
@@ -925,6 +927,61 @@ void Dune::UGGrid < dim, dimworld >::createbegin()
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::createend()
 {
+
+  // ///////////////////////////////////////////
+  //   Extract grid boundary segments
+  // ///////////////////////////////////////////
+  std::vector<FieldVector<int,2*dim-2> > boundarySegments;
+  BoundaryExtractor::detectBoundarySegments(elementTypes_, elementVertices_, boundarySegments);
+  if (boundarySegments.size() == 0)
+    DUNE_THROW(GridError, "Couldn't extract grid boundary.");
+
+  std::vector<int> isBoundaryNode;
+  BoundaryExtractor::detectBoundaryNodes(boundarySegments, elementVertices_.size(), isBoundaryNode);
+
+  dverb << boundarySegments.size() << " boundary segments were found!" << std::endl;
+
+  // Count number of nodes on the boundary
+  int noOfBNodes = 0;
+  for (int i=0; i<elementVertices_.size(); i++) {
+    if (isBoundaryNode[i] != -1)
+      noOfBNodes++;
+  }
+
+  // ///////////////////////////////////////////
+  //   Create the domain data structure
+  // ///////////////////////////////////////////
+  int noOfBSegments = boundarySegments.size();
+  createDomain(noOfBNodes, noOfBSegments);
+
+  // ///////////////////////////////////////////
+  //   Insert the boundary segments
+  // ///////////////////////////////////////////
+
+  if (boundarySegments_.size() == 0) {
+
+    for(int i=0; i<noOfBSegments; i++) {
+
+      const FieldVector<int, 2*dim-2>& thisSegment = boundarySegments[i];
+
+      int numVertices = (dim==2) ? 2 : ((thisSegment[3] == -1) ? 3 : 4);
+
+      std::vector<FieldVector<double,dimworld> > coordinates(numVertices);
+      std::vector<int> vertices(numVertices);
+
+      for (int j=0; j<numVertices; j++) {
+        coordinates[j] = vertexPositions_[thisSegment[j]];
+        vertices[j]    = isBoundaryNode[thisSegment[j]];
+      }
+
+      insertLinearSegment(vertices, coordinates);
+
+    }
+
+  } else {
+    DUNE_THROW(NotImplemented, "Parametrized boundaries");
+  }
+
   // ///////////////////////////////////////////
   //   Call configureCommand and newCommand
   // ///////////////////////////////////////////
@@ -968,9 +1025,15 @@ void Dune::UGGrid < dim, dimworld >::createend()
   // ////////////////////////////////////////////////
   //   Actually insert the interior vertices
   // ////////////////////////////////////////////////
-  for (size_t i=0; i<vertexPositions_.size(); i++)
+  int nodeCounter = noOfBNodes;
+  for (size_t i=0; i<vertexPositions_.size(); i++) {
+    if (isBoundaryNode[i] != -1)
+      continue;
     if (UG_NS<dim>::InsertInnerNode(multigrid_->grids[0], &((vertexPositions_[i])[0])) == NULL)
       DUNE_THROW(GridError, "Inserting a vertex into UGGrid failed!");
+
+    isBoundaryNode[i] = nodeCounter++;
+  }
 
   vertexPositions_.resize(0);
 
@@ -983,7 +1046,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
 
     int vertices_C_style[elementTypes_[i]];
     for (size_t j=0; j<elementTypes_[i]; j++)
-      vertices_C_style[j] = elementVertices_[idx++];
+      vertices_C_style[j] = isBoundaryNode[elementVertices_[idx++]];
 
     if (InsertElementFromIDs(multigrid_->grids[0], elementTypes_[i], vertices_C_style, NULL)==NULL)
       DUNE_THROW(GridError, "Inserting element into UGGrid failed!");
@@ -1030,9 +1093,6 @@ void Dune::UGGrid<dim, dimworld>::createDomain(int numNodes, int numSegments)
 {
   std::string domainName = name_ + "_Domain";
   const double midPoint[2] = {0, 0};
-
-  // Hack: save number of nodes on the grid boundary for use in insertVertex()
-  numNodesOnBoundary_ = numNodes;
 
   if (UG_NS<dim>::CreateDomain(domainName.c_str(),     // The domain name
                                midPoint,               // Midpoint of a circle enclosing the grid, only needed for the UG graphics
@@ -1193,9 +1253,6 @@ template <int dim, int dimworld>
 void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
                                                 const std::vector<unsigned int>& vertices)
 {
-  //     int vertices_C_style[vertices.size()];
-  //     for (size_t i=0; i<vertices.size(); i++)
-  //         vertices_C_style[i] = vertices[i];
   int newIdx = elementVertices_.size();
 
   elementTypes_.push_back(vertices.size());
@@ -1217,8 +1274,6 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
                    << " have provided " << vertices.size() << " vertices!");
 
       // DUNE and UG numberings differ --> reorder the vertices
-      //             vertices_C_style[2] = vertices[3];
-      //             vertices_C_style[3] = vertices[2];
       elementVertices_[newIdx+2] = vertices[3];
       elementVertices_[newIdx+3] = vertices[2];
       break;
@@ -1249,10 +1304,6 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
                    << " have provided " << vertices.size() << " vertices!");
 
       // DUNE and UG numberings differ --> reorder the vertices
-      //             vertices_C_style[2] = vertices[3];
-      //             vertices_C_style[3] = vertices[2];
-      //             vertices_C_style[6] = vertices[7];
-      //             vertices_C_style[7] = vertices[6];
       elementVertices_[newIdx+2] = vertices[3];
       elementVertices_[newIdx+3] = vertices[2];
       elementVertices_[newIdx+6] = vertices[7];

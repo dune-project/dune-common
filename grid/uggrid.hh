@@ -549,11 +549,6 @@ namespace Dune {
     /** \brief Buffer the vertices until createend() is called */
     std::vector<FieldVector<double, dimworld> > vertexPositions_;
 
-    /** \todo Can be removed once CreateDomain() is removed from the interface */
-  public:
-    int numNodesOnBoundary_;
-  private:
-
     /** \brief Number of UGGrids currently in use.
      *
      * This counts the number of UGGrids currently instantiated.  All

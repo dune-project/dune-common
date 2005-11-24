@@ -3,6 +3,11 @@
 #ifndef DUNE_BOUNDARY_EXTRACTOR_HH
 #define DUNE_BOUNDARY_EXTRACTOR_HH
 
+/** \file
+    \brief Contains a helper class for the creation of UGGrid objects
+    \author Oliver Sander
+ */
+
 #include <vector>
 #include <dune/common/fvector.hh>
 
@@ -13,18 +18,12 @@ namespace Dune {
 
   public:
 
-    static void detectBoundarySegments(int* elemData,
-                                       int numElems,
-                                       std::vector<FieldVector<int, 2> >& faceList,
-                                       bool containsOnlyTriangles);
+    static void detectBoundarySegments(std::vector<unsigned char> elementTypes,
+                                       std::vector<unsigned int> elementVertices,
+                                       std::vector<FieldVector<int, 2> >& boundarySegments);
 
-    /** \todo Remove this once UGGrid controls this class */
-    static void detectBoundarySegments(int* elemData,
-                                       int numTetras,
-                                       std::vector<FieldVector<int, 3> >& faceList);
-
-    static void detectBoundarySegments(int* elemData,
-                                       int numHexas,
+    static void detectBoundarySegments(std::vector<unsigned char> elementTypes,
+                                       std::vector<unsigned int> elementVertices,
                                        std::vector<FieldVector<int, 4> >& faceList);
 
     template <int NumVertices>
