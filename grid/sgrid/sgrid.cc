@@ -16,37 +16,6 @@ namespace Dune {
   //************************************************************************
   // SGeometry
 
-#if 0
-  // members for SGeometry, general case dim!=0
-  template<int mydim, int cdim, class GridImp>
-  inline SGeometry<mydim,cdim,GridImp>::SGeometry (bool b)
-  {
-    builtinverse = false;
-    if (!b) return;
-
-    // copy arguments
-    s = 0.0;
-    for (int j=0; j<cdim; j++) {
-      // make unit vectors
-      A[j]   = FieldVector<sgrid_ctype, cdim>(0.0);
-      A[j][j] = 1.0;
-    }
-
-    // make corners
-    for (int i=0; i<(1<<mydim); i++)     // there are 2^d corners
-    {
-      // use binary representation of corner number to assign corner coordinates
-      int mask = 1;
-      c[i] = s;
-      for (int k=0; k<cdim; k++)
-      {
-        if (i&mask) c[i] = c[i]+A[k];
-        mask = mask<<1;
-      }
-    }
-  }
-#endif
-
   template<int mydim, int cdim, class GridImp>
   inline void SGeometry<mydim,cdim,GridImp>::make(FieldMatrix<sgrid_ctype,mydim+1,cdim>& __As)
   {
@@ -168,16 +137,6 @@ namespace Dune {
     for (int k=0; k<indent+2; k++) ss << " ";ss << "builtinverse " << builtinverse << std::endl;
     for (int k=0; k<indent; k++) ss << " ";ss << "}";
   }
-
-#if 0
-  // special case dim=0
-  template<int cdim, class GridImp>
-  inline SGeometry<0,cdim,GridImp>::SGeometry (bool b)
-  {
-    if (!b) return;
-    s = 0.0;
-  }
-#endif
 
   template<int cdim, class GridImp>
   inline void SGeometry<0,cdim,GridImp>::make (FieldMatrix<sgrid_ctype,1,cdim>& __As)
@@ -538,34 +497,6 @@ namespace Dune {
   }
 
   template<class GridImp>
-  inline SHierarchicIterator<GridImp>::SHierarchicIterator (GridImp* _grid,
-                                                            const SEntity<0,GridImp::dimension,GridImp>& _e,
-                                                            int _maxLevel, bool makeend) :
-    Dune::SEntityPointer<0,GridImp>(_grid,_e.level(),_e.index())
-  {
-    // without sons, we are done
-    // (the end iterator is equal to the calling iterator)
-    if (makeend) return;
-
-    // remember element where begin has been called
-    orig_l = this->e.level();
-    orig_id = _grid->template getRealEntity<0>(this->e).index();
-
-    // push original element on stack
-    SHierarchicStackElem originalElement(orig_l, orig_id);
-    stack.push(originalElement);
-
-    // compute maxLevel
-    maxLevel = std::min(_maxLevel,this->grid->maxLevel());
-
-    // ok, push all the sons as well
-    push_sons(orig_l,orig_id);
-
-    // and pop the first son
-    increment();
-  }
-
-  template<class GridImp>
   inline void SHierarchicIterator<GridImp>::increment ()
   {
     // check empty stack
@@ -794,19 +725,6 @@ namespace Dune {
     return (count/2)*2 + (1-count%2);
   }
 
-  template<class GridImp>
-  inline FieldVector<typename GridImp::ctype, GridImp::dimensionworld>
-  SIntersectionIterator<GridImp>::unitOuterNormal (const FieldVector<typename GridImp::ctype, GridImp::dimension-1>& local) const
-  {
-    // while we are at it, compute normal direction
-    FieldVector<sgrid_ctype, dimworld> normal(0.0);
-    if (count%2)
-      normal[count/2] =  1.0; // odd
-    else
-      normal[count/2] = -1.0; // even
-
-    return normal;
-  }
   //************************************************************************
   // inline methods for SLevelIterator
 

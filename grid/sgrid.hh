@@ -640,7 +640,33 @@ namespace Dune {
        the iteration will stop when both iterators have the same id AND the
        stack is empty
      */
-    SHierarchicIterator (GridImp* _grid, const SEntity<0,GridImp::dimension,GridImp>& _e, int _maxLevel, bool makeend);
+    SHierarchicIterator (GridImp* _grid,
+                         const Dune::SEntity<0,GridImp::dimension,GridImp>& _e,
+                         int _maxLevel, bool makeend) :
+      Dune::SEntityPointer<0,GridImp>(_grid,_e.level(),_e.index())
+    {
+      // without sons, we are done
+      // (the end iterator is equal to the calling iterator)
+      if (makeend) return;
+
+      // remember element where begin has been called
+      orig_l = this->e.level();
+      orig_id = _grid->template getRealEntity<0>(this->e).index();
+
+      // push original element on stack
+      SHierarchicStackElem originalElement(orig_l, orig_id);
+      stack.push(originalElement);
+
+      // compute maxLevel
+      maxLevel = std::min(_maxLevel,this->grid->maxLevel());
+
+      // ok, push all the sons as well
+      push_sons(orig_l,orig_id);
+
+      // and pop the first son
+      increment();
+    }
+
 
     //   const SHierarchicIterator<GridImp>&
     //   operator = (const SHierarchicIterator<GridImp>& i)
@@ -718,7 +744,17 @@ namespace Dune {
       return unitOuterNormal(local);
     }
     //! return unit outer normal
-    FieldVector<ctype, GridImp::dimensionworld> unitOuterNormal (const FieldVector<ctype, GridImp::dimension-1>& local) const;
+    FieldVector<ctype, GridImp::dimensionworld> unitOuterNormal (const FieldVector<ctype, GridImp::dimension-1>& local) const
+    {
+      // while we are at it, compute normal direction
+      FieldVector<sgrid_ctype, dimworld> normal(0.0);
+      if (count%2)
+        normal[count/2] =  1.0; // odd
+      else
+        normal[count/2] = -1.0; // even
+
+      return normal;
+    }
 
     /*! intersection of codimension 1 of this neighbor with element where iteration started.
        Here returned element is in LOCAL coordinates of the element where iteration started.
