@@ -349,7 +349,7 @@ namespace Dune
   /* \brief Output operator
    */
   template <class T>
-  std::ostream& operator<< (std::ostream& s, Array<T>& a)
+  std::ostream& operator<< (std::ostream& s, const Array<T>& a)
   {
     s << "array " << a.size() << " elements = [" << std::endl;
     for (int i=0; i<a.size(); i++)
