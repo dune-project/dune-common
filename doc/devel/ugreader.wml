@@ -36,56 +36,52 @@ grid.createbegin();
 </pre>
     This will set up the internal grid creation process.
 
-<h2> 2) Create a Domain </h2>
+<h2> 2)  Enter the Vertices </h2>
+
 <p>
-      Next, you have to create a 'Domain'.  In UG-speak, this is the
-      description of the <i>boundary</i> of your computational domain.  In
-      2D it consists of vertices and edges, in 3d of vertices and
-      triangles and/or quadrilaterals.  Call the method
+Now you have to enter the grid vertices.  Create a vertex by calling
 </p>
 
 <pre>
-grid.createDomain(int numberOfNodes, int numberOfSegments);
+grid.insertVertex(const FieldVector&lt;double,dimworld&gt;& position);
+</pre>
+
+<h2> 3) Enter the elements </h2>
+
+<p>
+For each element call
+</p>
+
+<pre>
+grid.insertElement(Dune::GeometryType type, const std::vector&lt;int&gt;& vertices);
 </pre>  	
 
 <p>
-With the two parameters, you tell the grid the number of nodes and segments
-of the <i>boundary</i> of the grid.  Currently, the UGGrid is not able to
-extract this information from the set of vertices and elements.  This will
-change eventually, though.
+The parameters are
 </p>
 
-<h2> 3) Build the Domain </h2>
+<ul>
+      <li> <b>type</b> - The element type.  UG supports the types <i>simplex</i> and
+        <i>cube</i> in 2d, and <i>simplex, cube, prism</i>, and <i>pyramid</i> in 3d.
+      <li> <b>vertices</b> - The Ids of the vertices of this element.</li>
+</ul>
 
 <p>
-Next you have to fill in the boundary segments.  For each boundary segment you 
-have two options.
-</p>
+The numbering of the vertices of each element is expected to follow the DUNE conventions.
+Refer to the page on reference elements for the details.
+
+<h2> 4) Parametrized Domains </h2>
 
 <p>
-The first possibility is to have affine boundary segments.  That means that
-in 2d, a boundary segment is simply a line between two vertices, and in
-3d it's a flat triangle or quadrilateral.  If this is your choice, enter
-such a segment by calling
-</p>
-
-<pre>
-grid.insertLinearSegment(const std::vector&lt; int&gt; &vertices, 
-                         const std::vector&lt; FieldVector&lt; double, dimworld &gt; &gt; &coordinates);
-</pre>
-
-<p>
-The vector <i>vertices</i> must contain the indices of the vertices the current
-boundary segment connects.  Indices are counted starting from 0.  The
-argument <i>coordinates</i> must contain the corresponding coordinates.
-For the time being, these are not extracted from the overall vertex list.
+UGGrid supports parametrized domains.  That means that you can provide a
+smooth description of your grid boundary.  The actual grid will always
+be piecewise linear; however, as you refine, the grid will approach your
+prescribed boundary.  You don't have to do this.  If your
+coarse grid boundary describes your domain well read on at Section 5.
 </p>
 
 <p>
-The second possibility is to have curved boundary segments.  This means that
-the coarse grid is still bounded by a polygon, however, as the grid gets refined,
-the finer grids approximate the curved boundary.  
-In order to create such boundary segments, for each segment you have to write
+In order to create curved boundary segments, for each segment you have to write
 a class which implements the correct geometry.  These classes are then handed
 over to the UGGrid object.  Boundary segment implementations must be derived
 from
@@ -112,49 +108,6 @@ Control over the allocated objects is taken from you, and the grid object
 will take care of their destruction.
 </p>
 
-<h2> 4)  Enter the Inner Vertices </h2>
-
-<p>
-Now you have to enter the grid vertices.  As UG has already
-created the boundary vertices all you need to do is enter the
-remaining ones.  Note that if your input file doesn't contain
-the vertices in an boundary -- interior order you are
-implicitly reordering your vertices and you'll have to adjust
-your elements accordingly.
-</p>
-
-<p>
-Create an inner vertex by calling
-</p>
-
-<pre>
-grid.insertVertex(const FieldVector&lt;double,dimworld&gt;& position);
-</pre>
-
-<h2> 5) Enter the elements </h2>
-
-<p>
-For each element call
-</p>
-
-<pre>
-grid.insertElement(Dune::GeometryType type, const std::vector&lt;int&gt;& vertices);
-</pre>  	
-
-<p>
-The parameters are
-</p>
-
-<ul>
-      <li> <b>type</b> - The element type.  UG supports the types <i>simplex</i> and
-        <i>cube</i> in 2d, and <i>simplex, cube, prism</i>, and <i>pyramid</i> in 3d.
-      <li> <b>vertices</b> - The Ids of the vertices of this element.</li>
-</ul>
-
-<p>
-The numbering of the vertices of each element is expected to follow the DUNE conventions.
-Refer to the page on reference elements for the details.
-
 <h2> 6) Finish construction </h2>
 
 <p>
@@ -171,6 +124,14 @@ If you're working on a parallel machine, and you want to set up a
 parallel grid, proceed as described on all processes.  This will
 create the grid on the master process and set up UG correctly on all
 other process.  Call loadBalance to actually distribute the grid.
+</p>
+
+<p>
+<b>WARNING:</b> UG internally requests that all boundary vertices be
+inserted before the inner ones.  That means that if your input grid
+doesn't comply with this, it will have its vertices reordered be
+createend().  So don't be surprised if you just read a grid and write
+it back to disc to find your vertex numberings changed.
 </p>
 
 <p>
