@@ -63,20 +63,16 @@ namespace Dune {
   protected:
 
     static void createDomain(UGGrid<3,3>& grid,
-                             const std::string& filename,
-                             std::vector<int>& isBoundaryNode);
+                             const std::string& filename);
 
     static void createDomain(UGGrid<3,3>& grid,
-                             AmiraMesh* am,
-                             std::vector<int>& isBoundaryNode);
+                             AmiraMesh* am);
 
     static void buildGrid(UGGrid<3,3>& grid,
-                          AmiraMesh* am,
-                          std::vector<int>& isBoundaryNode);
+                          AmiraMesh* am);
 
     static void createHexaDomain(UGGrid<3,3>& grid,
-                                 AmiraMesh* am,
-                                 std::vector<int>& isBoundaryNode);
+                                 AmiraMesh* am);
 
   };
 
