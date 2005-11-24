@@ -173,10 +173,7 @@ namespace Dune {
       if(restr || ref)
         dm_.dofCompress();
 
-#ifdef _ALU3DGRID_PARALLEL_
-      grid_.loadBalance( dm_ );
-      grid_.communicate( dm_ );
-#endif
+      // here the communicate and load-balancing should be called
 
       // do cleanup
       grid_.postAdapt();
@@ -216,14 +213,14 @@ namespace Dune {
     void hierarchicProlong ( EntityType &en, ProlongOperatorType & prolop ) const
     {
       typedef typename EntityType::HierarchicIterator HierarchicIterator;
-      //typedef typename GridType::template Codim<EntityType::codimension>::EntityPointer;
-      HierarchicIterator it    = en.hbegin( grid_.maxLevel() );
-      HierarchicIterator endit = en.hend  ( grid_.maxLevel() );
 
       bool initialize = true;
 
-      for( ; it != endit; ++it)
+      HierarchicIterator endit  = en.hend  ( grid_.maxLevel() );
+      for(HierarchicIterator it = en.hbegin( grid_.maxLevel() ) ;
+          it != endit; ++it)
       {
+        assert( !en.isLeaf() );
         if((*it).state() == REFINED)
         {
           prolop.prolongLocal( *(it->father()), *it , initialize );
