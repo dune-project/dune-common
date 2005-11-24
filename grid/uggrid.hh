@@ -102,13 +102,13 @@ namespace Dune {
         UGGridIntersectionIterator,
         UGGridHierarchicIterator,
         UGGridLeafIterator,
-        UGGridLevelIndexSet< UGGrid<dim,dimworld> >,
-        UGGridLevelIndexSetTypes< UGGrid<dim,dimworld> >,
-        UGGridLeafIndexSet< UGGrid<dim,dimworld> >,
-        UGGridLeafIndexSetTypes< UGGrid<dim,dimworld> >,
-        UGGridGlobalIdSet< UGGrid<dim,dimworld> >,
+        UGGridLevelIndexSet< const UGGrid<dim,dimworld> >,
+        UGGridLevelIndexSetTypes< const UGGrid<dim,dimworld> >,
+        UGGridLeafIndexSet< const UGGrid<dim,dimworld> >,
+        UGGridLeafIndexSetTypes< const UGGrid<dim,dimworld> >,
+        UGGridGlobalIdSet< const UGGrid<dim,dimworld> >,
         unsigned int,
-        UGGridLocalIdSet< UGGrid<dim,dimworld> >,
+        UGGridLocalIdSet< const UGGrid<dim,dimworld> >,
         unsigned int> Traits;
   };
 
@@ -179,15 +179,15 @@ namespace Dune {
   class UGGrid : public GridDefault  <dim, dimworld, double, UGGridFamily<dim,dimworld> >
   {
 
-    friend class UGGridEntity <0,dim,UGGrid<dim,dimworld> >;
-    friend class UGGridEntity <dim,dim,UGGrid<dim,dimworld> >;
-    friend class UGGridHierarchicIterator<UGGrid<dim,dimworld> >;
-    friend class UGGridIntersectionIterator<UGGrid<dim,dimworld> >;
+    friend class UGGridEntity <0,dim,const UGGrid<dim,dimworld> >;
+    friend class UGGridEntity <dim,dim,const UGGrid<dim,dimworld> >;
+    friend class UGGridHierarchicIterator<const UGGrid<dim,dimworld> >;
+    friend class UGGridIntersectionIterator<const UGGrid<dim,dimworld> >;
 
-    friend class UGGridLevelIndexSet<UGGrid<dim,dimworld> >;
-    friend class UGGridLeafIndexSet<UGGrid<dim,dimworld> >;
-    friend class UGGridGlobalIdSet<UGGrid<dim,dimworld> >;
-    friend class UGGridLocalIdSet<UGGrid<dim,dimworld> >;
+    friend class UGGridLevelIndexSet<const UGGrid<dim,dimworld> >;
+    friend class UGGridLeafIndexSet<const UGGrid<dim,dimworld> >;
+    friend class UGGridGlobalIdSet<const UGGrid<dim,dimworld> >;
+    friend class UGGridLocalIdSet<const UGGrid<dim,dimworld> >;
 
     template <int codim_, PartitionIteratorType PiType_, class GridImp_>
     friend class UGGridLeafIterator;
@@ -516,13 +516,13 @@ namespace Dune {
     std::string name_;
 
     // Our set of level indices
-    std::vector<UGGridLevelIndexSet<UGGrid<dim,dimworld> >*> levelIndexSets_;
+    std::vector<UGGridLevelIndexSet<const UGGrid<dim,dimworld> >*> levelIndexSets_;
 
-    UGGridLeafIndexSet<UGGrid<dim,dimworld> > leafIndexSet_;
+    UGGridLeafIndexSet<const UGGrid<dim,dimworld> > leafIndexSet_;
 
-    UGGridGlobalIdSet<UGGrid<dim,dimworld> > globalIdSet_;
+    UGGridGlobalIdSet<const UGGrid<dim,dimworld> > globalIdSet_;
 
-    UGGridLocalIdSet<UGGrid<dim,dimworld> > localIdSet_;
+    UGGridLocalIdSet<const UGGrid<dim,dimworld> > localIdSet_;
 
     //! Marks whether the UG environment heap size is taken from
     //! an existing defaults file or whether the values from

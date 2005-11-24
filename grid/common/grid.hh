@@ -512,10 +512,10 @@ namespace Dune {
 
     };
 
-    typedef IndexSet<GridImp,LevelIndexSetImp,LevelIndexSetTypes> LevelIndexSet;
-    typedef IndexSet<GridImp,LeafIndexSetImp,LeafIndexSetTypes> LeafIndexSet;
-    typedef IdSet<GridImp,GlobalIdSetImp,GIDType> GlobalIdSet;
-    typedef IdSet<GridImp,LocalIdSetImp,LIDType> LocalIdSet;
+    typedef IndexSet<const GridImp,LevelIndexSetImp,LevelIndexSetTypes> LevelIndexSet;
+    typedef IndexSet<const GridImp,LeafIndexSetImp,LeafIndexSetTypes> LeafIndexSet;
+    typedef IdSet<const GridImp,GlobalIdSetImp,GIDType> GlobalIdSet;
+    typedef IdSet<const GridImp,LocalIdSetImp,LIDType> LocalIdSet;
   };
 
   /*! \internal

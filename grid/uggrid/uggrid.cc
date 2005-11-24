@@ -1281,7 +1281,7 @@ void Dune::UGGrid < dim, dimworld >::setIndices()
 {
   for (int i=levelIndexSets_.size(); i<=maxLevel(); i++)
   {
-    UGGridLevelIndexSet<UGGrid<dim,dimworld> >* p = new UGGridLevelIndexSet<UGGrid<dim,dimworld> >();
+    UGGridLevelIndexSet<const UGGrid<dim,dimworld> >* p = new UGGridLevelIndexSet<const UGGrid<dim,dimworld> >();
     levelIndexSets_.push_back(p);
   }
   //    levelIndexSets_.resize(maxLevel()+1);
