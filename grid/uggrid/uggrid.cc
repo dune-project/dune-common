@@ -952,7 +952,16 @@ void Dune::UGGrid < dim, dimworld >::createend()
   //   Create the domain data structure
   // ///////////////////////////////////////////
   int noOfBSegments = boundarySegments.size();
-  createDomain(noOfBNodes, noOfBSegments);
+  std::string domainName = name_ + "_Domain";
+  const double midPoint[2] = {0, 0};
+
+  if (UG_NS<dim>::CreateDomain(domainName.c_str(),     // The domain name
+                               midPoint,               // Midpoint of a circle enclosing the grid, only needed for the UG graphics
+                               1,                      // Radius of the enclosing circle
+                               noOfBSegments,
+                               noOfBNodes,
+                               false) == NULL)                 // The domain is not convex
+    DUNE_THROW(GridError, "Calling UG" << dim << "d::CreateDomain failed!");
 
   // ///////////////////////////////////////////
   //   Insert the boundary segments
@@ -1085,22 +1094,6 @@ void Dune::UGGrid < dim, dimworld >::createend()
 
   for (; eIt!=eEndIt; ++eIt)
     UG_NS<dim>::WriteCW(getRealEntity<0>(*eIt).target_, UG_NS<dim>::NEWEL_CE, 0);
-
-}
-
-template <int dim, int dimworld>
-void Dune::UGGrid<dim, dimworld>::createDomain(int numNodes, int numSegments)
-{
-  std::string domainName = name_ + "_Domain";
-  const double midPoint[2] = {0, 0};
-
-  if (UG_NS<dim>::CreateDomain(domainName.c_str(),     // The domain name
-                               midPoint,               // Midpoint of a circle enclosing the grid, only needed for the UG graphics
-                               1,                      // Radius of the enclosing circle
-                               numSegments,
-                               numNodes,
-                               false) == NULL)                 // The domain is not convex
-    DUNE_THROW(GridError, "Calling UG" << dim << "d::CreateDomain failed!");
 
 }
 

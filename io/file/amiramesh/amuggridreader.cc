@@ -87,7 +87,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
   if(noOfNodes <= 0)
     DUNE_THROW(IOError, "No nodes found");
 
-  grid.createDomain(noOfNodes, noOfSegments);
+  //grid.createDomain(noOfNodes, noOfSegments);
 
   static int boundaryNumber = 0;
 

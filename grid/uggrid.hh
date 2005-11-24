@@ -404,9 +404,6 @@ namespace Dune {
     /** \brief End the coarse grid creation process */
     void createend();
 
-    /** \brief Create a UG domain, i.e. a description of the grid boundary */
-    void createDomain(int numNodes, int numSegments);
-
     /** \brief Preliminary method to insert a linear boundary segment into a UG coarse grid
         \param vertices The indices of the vertices of the segment
         \param coordinates The coordinates of the vertices of the segment
