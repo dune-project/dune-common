@@ -38,15 +38,15 @@ namespace Dune
   protected:
     GeometryImp<mydim,cdim,GridImp> realGeometry;
   public:
-    //! know dimension
-    enum { dimension=GridImp::dimension };
-    //! know dimension of geometry
-    enum { mydimension=mydim };
-    //! know dimension of embedding coordsystem
-    enum { coorddimension=cdim };
+    //! @brief export grid dimension
+    enum { dimension=GridImp::dimension /*!< grid dimension */ };
+    //! @brief export geometry dimension
+    enum { mydimension=mydim /*!< geometry dimension */ };
+    //! @brief export coordinate dimension
+    enum { coorddimension=cdim /*!< dimension of embedding coordsystem */ };
 
-    //! know dimension of world
-    enum { dimensionworld=GridImp::dimensionworld };
+    //! @brief export dimension of world
+    enum { dimensionworld=GridImp::dimensionworld /*!< dimension of world */ };
     //! define type used for coordinates in grid module
     typedef ct ctype;
     //! the Reference Geometry
