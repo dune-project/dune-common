@@ -505,7 +505,7 @@ namespace Dune
   class ReferenceSimplex
   {
   public:
-    enum {MAXE = ((dim+1)<<1)-(dim+1)+2*((dim-1)>>1)}; // 1D=2; 2D=3; in 3D: 6 edges for a tetrahedron
+    enum {MAXE = (((dim+1)<<1)-(dim+1))+(2*((dim-1)>>1))}; // 1D=2; 2D=3; in 3D: 6 edges for a tetrahedron
     enum {d=dim};
 
 
@@ -629,168 +629,192 @@ namespace Dune
       if(dim==1) // line
       {
         // node indices on element
-        for(int i=0; i<subsizes[0][0][3]; ++i)
-          subentityindex[0][0][i][3]=i;
+        for(int i=0; i<subsizes[0][0][dim]; ++i)
+          subentityindex[0][0][i][dim]=i;
       }
-      else if(dim==2) // triangle
+      if(dim==2)  // triangle
       {
-        sizes[1]=3;   // edge
+        sizes[dim-1]=3;           // edge
 
         // hard coding the number of subentities
         // triangle has 3 vertices, 3 edges
-        subsizes[0][0][2]=3;
-        subsizes[0][0][1]=3;
+        subsizes[0][0][dim]=3;
+        subsizes[0][0][dim-1]=3;
         // triangle  has 2 vertices on each  edge
         for (int k=0; k<3; ++k) {
-          subsizes[k][1][2]=2;
+          subsizes[k][1][dim]=2;
           // triangle  has 1 edge on each edge ;-)
           subsizes[k][1][1]=1;
         }
         // subentity indices
         // node indices on element
-        for(int i=0; i<subsizes[0][0][2]; ++i)
-          subentityindex[0][0][i][2]=i;
+        for(int i=0; i<subsizes[0][0][dim]; ++i)
+          subentityindex[0][0][i][dim]=i;
         // edge indices on element
-        for(int i=0; i<subsizes[0][0][1]; ++i)
+        for(int i=0; i<subsizes[0][0][dim-1]; ++i)
           subentityindex[0][0][i][1]=i;
 
         // node indices on edge 0
-        subentityindex[0][1][0][2]=1;
-        subentityindex[0][1][1][2]=2;
+        subentityindex[0][1][0][dim]=1;
+        subentityindex[0][1][1][dim]=2;
         // node indices on edge 1
-        subentityindex[1][1][0][2]=2;
-        subentityindex[1][1][1][2]=0;
+        subentityindex[1][1][0][dim]=2;
+        subentityindex[1][1][1][dim]=0;
         // node indices on edge 2
-        subentityindex[2][1][0][2]=0;
-        subentityindex[2][1][1][2]=1;
+        // 2 = (subsizes[0][0][dim-1])-1  work around icc warning
+        subentityindex[(subsizes[0][0][dim-1])-1][dim-1][0][dim]=0;
+        subentityindex[(subsizes[0][0][dim-1])-1][dim-1][1][dim]=1;
 
         for(int j=0; j<dim; ++j)
         {
+
           //edge 0 (nodes 1,2)
-          pos[0][1][j]=(pos[1][2][j]+pos[2][2][j])/2.0;
+          // 2 = (subsizes[0][0][dim])-1 work around icc warning
+          pos[0][1][j]=(pos[1][dim][j]+pos[(subsizes[0][0][dim])-1][dim][j])/2.0;
           //edge 1 (nodes 0,2)
-          pos[1][1][j]=(pos[0][2][j]+pos[2][2][j])/2.0;
+          pos[1][1][j]=(pos[0][dim][j]+pos[(subsizes[0][0][dim])-1][dim][j])/2.0;
           //edge 2 (nodes 0,1)
-          pos[2][1][j]=(pos[0][2][j]+pos[1][2][j])/2.0;
+          pos[(subsizes[0][0][dim-1])-1][1][j]=(pos[0][dim][j]+pos[1][2][j])/2.0;
+
+          // //edge 0 (nodes 1,2)
+          //               pos[0][1][j]=(pos[1][dim][j]+pos[2][dim][j])/2.0;
+          //               //edge 1 (nodes 0,2)
+          //               pos[1][1][j]=(pos[0][dim][j]+pos[2][dim][j])/2.0;
+          //               //edge 2 (nodes 0,1)
+          //               pos[(subsizes[0][0][dim-1])-1][1][j]=(pos[0][dim][j]+pos[1][2][j])/2.0;
         }
       }
-      else if(dim==3) // tetrahedron
+      if(dim==3) // tetrahedron
       {
         sizes[1]=4;   // face
-        sizes[2]=6;   // edge
+        sizes[dim-1]=6;   // edge
 
         // hard coding the number of subentities
         // tetrahedron has 4 vertices, 6 edges and 4 facese on element
-        subsizes[0][0][3]=4;
-        subsizes[0][0][2]=6;
+        subsizes[0][0][dim]=4;
+        subsizes[0][0][dim-1]=6;
         subsizes[0][0][1]=4;
         //  tetrahedron has 3 vertices on each triang. face
         for(int i=0; i<subsizes[0][0][1]; ++i)
-          subsizes[i][1][3]=3;
+          subsizes[i][1][dim]=3;
         //  tetrahedron has 3 edges on each triang. face
         for(int i=0; i<subsizes[0][0][1]; ++i)
-          subsizes[i][1][2]=3;
+          subsizes[i][1][dim-1]=3;
         //  tetrahedron has 1 face on each triang. face!
         for(int i=0; i<subsizes[0][0][1]; ++i)
           subsizes[i][1][1]=1;
-        //  tetrahedron has 3 vertices on each edge
-        for (int k=0; k<subsizes[0][0][2]; ++k)
-          subsizes[k][2][3]=2;
+        //  tetrahedron has 2 vertices on each edge
+        for (int k=0; k<subsizes[0][0][dim]; ++k)
+          subsizes[k][dim-1][dim]=2;
         //  tetrahedron has 1 edge on each edge!
-        for (int k=0; k<subsizes[0][0][2]; ++k)
-          subsizes[k][2][2]=1;
+        for (int k=0; k<subsizes[0][0][dim-1]; ++k)
+          subsizes[k][dim-1][dim-1]=1;
         // subentity indices
         // node indices on element
-        for(int i=0; i<subsizes[0][0][3]; ++i)
-          subentityindex[0][0][i][3]=i;
+        for(int i=0; i<subsizes[0][0][dim]; ++i)
+          subentityindex[0][0][i][dim]=i;
         // edge indices on element
-        for(int i=0; i<subsizes[0][0][2]; ++i)
-          subentityindex[0][0][i][2]=i;
+        for(int i=0; i<subsizes[0][0][dim-1]; ++i)
+          subentityindex[0][0][i][dim-1]=i;
         // face indices on element
         for(int i=0; i<subsizes[0][0][1]; ++i)
           subentityindex[0][0][i][1]=i;
 
         // node numbering- normal pointing outward
         // reference triangle in dune has a counter-clockwise
-        // numbering. so each triangle face in tetrahedron numbered same way
-
+        // numbering. so  nodes on each triangle face in tetrahedron numbered same way
+        int faceindx;
+        int edgeindx;
         // node indices on face 0
-        subentityindex[0][1][0][3]=1;
-        subentityindex[0][1][1][3]=2;
-        subentityindex[0][1][2][3]=3;
+        subentityindex[0][1][0][dim]=1;
+        subentityindex[0][1][1][dim]=2;
+        subentityindex[0][1][(subsizes[0][1][dim]-1)][dim]=3;
         // node indices on face 1
-        subentityindex[1][1][0][3]=0;
-        subentityindex[1][1][1][3]=3;
-        subentityindex[1][1][2][3]=2;
+        subentityindex[1][1][0][dim]=0;
+        subentityindex[1][1][1][dim]=3;
+        subentityindex[1][1][(subsizes[1][1][dim]-1)][dim]=2;
         // node indices on face 2
-        subentityindex[2][1][0][3]=0;
-        subentityindex[2][1][1][3]=1;
-        subentityindex[2][1][2][3]=3;
+        faceindx= subsizes[0][0][1]-2;
+        subentityindex[faceindx][1][0][dim]=0;
+        subentityindex[faceindx][1][1][dim]=1;
+        subentityindex[faceindx][1][(subsizes[faceindx][1][dim]-1)][dim]=3;
         // node indices on face 3
-        subentityindex[3][1][0][3]=0;
-        subentityindex[3][1][1][3]=2;
-        subentityindex[3][1][2][3]=1;
+        faceindx= subsizes[0][0][1]-1;
+        subentityindex[faceindx][1][0][dim]=0;
+        subentityindex[faceindx][1][1][dim]=2;
+        subentityindex[faceindx][1][(subsizes[faceindx][1][dim]-1)][dim]=1;
 
         // edge indices on face 0
-        subentityindex[0][1][0][2]=5;
-        subentityindex[0][1][1][2]=4;
-        subentityindex[0][1][2][2]=1;
+        subentityindex[0][1][0][dim-1]=5;
+        subentityindex[0][1][1][dim-1]=4;
+
+        edgeindx=subsizes[0][1][dim-1]-1;
+        subentityindex[0][1][edgeindx][dim-1]=1;
         // edge indices on face 1
-        subentityindex[1][1][0][2]=5;
-        subentityindex[1][1][1][2]=2;
-        subentityindex[1][1][2][2]=3;
+        subentityindex[1][1][0][dim-1]=5;
+        subentityindex[1][1][1][dim-1]=2;
+
+        edgeindx=subsizes[1][1][dim-1]-1;
+        subentityindex[1][1][edgeindx][dim-1]=3;
         // edge indices on face 2
-        subentityindex[2][1][0][2]=4;
-        subentityindex[2][1][1][2]=3;
-        subentityindex[2][1][2][2]=0;
+        faceindx= subsizes[0][0][1]-2;
+        subentityindex[faceindx][1][0][dim-1]=4;
+        subentityindex[faceindx][1][1][dim-1]=3;
+
+        edgeindx=subsizes[faceindx][1][dim-1]-1;
+        subentityindex[faceindx][1][edgeindx][dim-1]=0;
         // edge indices on face 3
-        subentityindex[3][1][0][2]=1;
-        subentityindex[3][1][1][2]=0;
-        subentityindex[3][1][2][2]=2;
+        faceindx= subsizes[0][0][1]-1;
+        subentityindex[faceindx][1][0][dim-1]=1;
+        subentityindex[faceindx][1][1][dim-1]=0;
+
+        edgeindx=subsizes[faceindx][1][dim-1]-1;
+        subentityindex[faceindx][1][edgeindx][dim-1]=2;
 
         // node indices on edge 0
-        subentityindex[0][2][0][3]=0;
-        subentityindex[0][2][1][3]=1;
+        subentityindex[0][dim-1][0][dim]=0;
+        subentityindex[0][dim-1][1][dim]=1;
         // node indices on edge 1
-        subentityindex[1][2][0][3]=1;
-        subentityindex[1][2][1][3]=2;
+        subentityindex[1][dim-1][0][dim]=1;
+        subentityindex[1][dim-1][1][dim]=2;
         // node indices on edge 2
-        subentityindex[2][2][0][3]=0;
-        subentityindex[2][2][1][3]=2;
+
+        subentityindex[(subsizes[0][0][dim-1]-4)][dim-1][0][dim]=0;
+        subentityindex[(subsizes[0][0][dim-1]-4)][dim-1][1][dim]=2;
         // node indices on edge 3
-        subentityindex[3][2][0][3]=0;
-        subentityindex[3][2][1][3]=3;
+        subentityindex[(subsizes[0][0][dim-1]-3)][dim-1][0][dim]=0;
+        subentityindex[(subsizes[0][0][dim-1]-3)][dim-1][1][dim]=3;
         // node indices on edge 4
-        subentityindex[4][2][0][3]=1;
-        subentityindex[4][2][1][3]=3;
+        subentityindex[(subsizes[0][0][dim-1]-2)][dim-1][0][dim]=1;
+        subentityindex[(subsizes[0][0][dim-1]-2)][dim-1][1][dim]=3;
         // node indices on edge 5
-        subentityindex[5][2][0][3]=2;
-        subentityindex[5][2][1][3]=3;
+        subentityindex[(subsizes[0][0][dim-1]-1)][dim-1][0][dim]=2;
+        subentityindex[(subsizes[0][0][dim-1]-1)][dim-1][1][dim]=3;
 
         for(int j=0; j<dim; ++j)
         {
 
           //face 0 (nodes 1,2,3)
-          pos[0][1][j]=(pos[1][3][j]+pos[2][3][j]+pos[3][3][j])/3.0;
+          pos[0][1][j]=(pos[1][dim][j]+pos[2][dim][j]+pos[3][dim][j])/3.0;
           //face 1 (nodes 0,2,3)
-          pos[1][1][j]=(pos[0][3][j]+pos[2][3][j]+pos[3][3][j])/3.0;
+          pos[1][1][j]=(pos[0][dim][j]+pos[2][dim][j]+pos[3][dim][j])/3.0;
           //face 2 (nodes 0,1,3)
-          pos[2][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[3][3][j])/3.0;
+          pos[2][1][j]=(pos[0][dim][j]+pos[1][dim][j]+pos[3][dim][j])/3.0;
           //face 3 (nodes 0,1,2)
-          pos[3][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[2][3][j])/3.0;
+          pos[3][1][j]=(pos[0][dim][j]+pos[1][dim][j]+pos[2][dim][j])/3.0;
 
           //edge 0 (nodes 0,1)
-          pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
+          pos[0][2][j]=(pos[0][dim][j]+pos[1][dim][j])/2.0;
           //edge 1 (nodes 1,2)
-          pos[1][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+          pos[1][2][j]=(pos[1][dim][j]+pos[2][dim][j])/2.0;
           //edge 2 (nodes 0,2)
-          pos[2][2][j]=(pos[0][3][j]+pos[2][3][j])/2.0;
+          pos[2][2][j]=(pos[0][dim][j]+pos[2][dim][j])/2.0;
           //edge 3 (nodes 0,3)
-          pos[3][2][j]=(pos[0][3][j]+pos[3][3][j])/2.0;
+          pos[3][2][j]=(pos[0][dim][j]+pos[3][dim][j])/2.0;
           //edge 4 (nodes 1,3)
-          pos[4][2][j]=(pos[1][3][j]+pos[3][3][j])/2.0;
+          pos[4][2][j]=(pos[1][dim][j]+pos[3][dim][j])/2.0;
           //edge 5 (nodes 2,3)
-          pos[5][2][j]=(pos[2][3][j]+pos[3][3][j])/2.0;
+          pos[5][2][j]=(pos[2][dim][j]+pos[3][dim][j])/2.0;
         }
       }
       else
@@ -803,12 +827,11 @@ namespace Dune
     int sizes[dim+1];
     int subsizes[MAXE][dim+1][dim+1];
     int subentityindex[MAXE][dim+1][MAXE][dim+1];
-    int edgeindex[dim+1][dim+1];
-    int faceindex[dim+1][dim+1][dim+1];
-    int fnindex[dim+1][dim];
-    int enindex[dim+1][dim];
-    int ceindex[MAXE][dim];
-    FieldVector<ctype,dim> pos[MAXE][dim+1];
+    // int sizes[4];
+    //     int subsizes[6][4][4];
+    //     int subentityindex[6][4][6][4];
+
+    FieldVector<ctype,dim> pos[6][4];
   };
 
 
