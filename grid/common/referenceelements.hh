@@ -632,7 +632,7 @@ namespace Dune
         for(int i=0; i<subsizes[0][0][dim]; ++i)
           subentityindex[0][0][i][dim]=i;
       }
-      if(dim==2)  // triangle
+      else if(dim==2)     // triangle
       {
         sizes[dim-1]=3;           // edge
 
@@ -684,7 +684,7 @@ namespace Dune
           //               pos[(subsizes[0][0][dim-1])-1][1][j]=(pos[0][dim][j]+pos[1][2][j])/2.0;
         }
       }
-      if(dim==3) // tetrahedron
+      else if(dim==3) // tetrahedron
       {
         sizes[1]=4;   // face
         sizes[dim-1]=6;   // edge
@@ -827,11 +827,8 @@ namespace Dune
     int sizes[dim+1];
     int subsizes[MAXE][dim+1][dim+1];
     int subentityindex[MAXE][dim+1][MAXE][dim+1];
-    // int sizes[4];
-    //     int subsizes[6][4][4];
-    //     int subentityindex[6][4][6][4];
+    FieldVector<ctype,dim> pos[MAXE][dim+1];
 
-    FieldVector<ctype,dim> pos[6][4];
   };
 
 
