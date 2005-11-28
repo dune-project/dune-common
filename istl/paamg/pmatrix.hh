@@ -1,11 +1,11 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUME_AMGPMATRIX_HH
-#define DUNE_AMGPMATRIX_HH
+#ifndef DUNE_AMG_PMATRIX_HH
+#define DUNE_AMG_PMATRIX_HH
 
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/typetraits.hh>
-
+#include <dune/istl/remoteindices.hh>
 namespace Dune
 {
   namespace Amg
@@ -16,16 +16,22 @@ namespace Dune
      * between the processes.
      *
      */
-    template<class M, class IS, class RI>
+    template<class M, class IS>
     class ParallelMatrix
     {
     public:
       /** @brief The type of the matrix. */
       typedef M Matrix;
+      /**
+       * @brief The type of the matrix.
+       *
+       * For use as an ISTL Operator.
+       */
+      typedef M matrix_type;
       /** @brief The type of the index set. */
       typedef IS ParallelIndexSet;
       /** @brief The type of the remote indices. */
-      typedef RI RemoteIndices;
+      typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
       ParallelMatrix(const Matrix& matrix, const ParallelIndexSet& indexSet,
                      const RemoteIndices& rindices)
@@ -40,7 +46,7 @@ namespace Dune
        * @brief Get the locally stored matrix.
        * @return The locally stored matrix.
        */
-      const Matrix& matrix() const
+      const Matrix& getmat() const
       {
         return *matrix_;
       }
@@ -71,14 +77,14 @@ namespace Dune
       const RemoteIndices* rIndices_;
     };
 
-    template<class M, class IS, class RI>
+    template<class M, class IS>
     struct ParallelMatrixArgs
     {
       M& matrix;
       IS& indexSet;
-      RI& remoteIndices;
+      RemoteIndices<IS>& remoteIndices;
 
-      ParallelMatrixArgs(M& m, IS& is, RI& ri)
+      ParallelMatrixArgs(M& m, IS& is, RemoteIndices<IS>& ri)
         : matrix(m), indexSet(is), remoteIndices(ri)
       {}
     };
@@ -86,16 +92,16 @@ namespace Dune
     template<class T>
     class ConstructionTraits;
 
-    template<class M, class IS, class RI>
-    class ConstructionTraits<ParallelMatrix<M,IS,RI> >
+    template<class M, class IS>
+    class ConstructionTraits<ParallelMatrix<M,IS> >
     {
     public:
-      typedef const ParallelMatrixArgs<M,IS,RI> Arguments;
+      typedef const ParallelMatrixArgs<M,IS> Arguments;
 
-      static inline ParallelMatrix<M,IS,RI>* construct(Arguments& args)
+      static inline ParallelMatrix<M,IS>* construct(Arguments& args)
       {
-        return new ParallelMatrix<M,IS,RI>(args.matrix, args.indexSet,
-                                           args.remoteIndices);
+        return new ParallelMatrix<M,IS>(args.matrix, args.indexSet,
+                                        args.remoteIndices);
       }
     };
   } // end namespace Amg

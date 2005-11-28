@@ -10,6 +10,8 @@
 #include "aggregates.hh"
 #include "graph.hh"
 #include "galerkin.hh"
+#include "renumberer.hh"
+#include "graphcreator.hh"
 #include <dune/common/stdstreams.hh>
 #include <dune/common/timer.hh>
 #include <dune/istl/bvector.hh>
@@ -277,7 +279,7 @@ namespace Dune
      * Namely a hierarchy of matrices, index sets, remote indices,
      * interfaces and communicators.
      */
-    template<class M, class IS, class O, class A=std::allocator<M> >
+    template<class M, class IS, class A=std::allocator<M> >
     class MatrixHierarchy
     {
     public:
@@ -292,9 +294,7 @@ namespace Dune
       /** @brief The type of the Communicator. */
       typedef BufferedCommunicator<ParallelIndexSet> Communicator;
       /** @brief The type of the parallel matrix. */
-      typedef ParallelMatrix<Matrix,ParallelIndexSet,RemoteIndices> ParallelMatrix;
-      /** @brief The flags identifying the overlap attributes */
-      typedef O OverlapFlags;
+      typedef ParallelMatrix<Matrix,ParallelIndexSet> ParallelMatrix;
       /** @brief The allocator to use. */
       typedef A Allocator;
       /** @brief The type of the aggregates map we use. */
@@ -325,7 +325,7 @@ namespace Dune
        *
        * @brief criterion The criterion describing the aggregation process.
        */
-      template<typename T>
+      template<typename O, typename T>
       void build(const T& criterion);
 
       void recalculateGalerkin();
@@ -425,22 +425,22 @@ namespace Dune
     };
 
 
-    template<class M, class IS, class O, class A>
-    MatrixHierarchy<M,IS,O,A>::MatrixHierarchy(const Matrix& fineMatrix,
-                                               const ParallelIndexSet& indexSet,
-                                               const RemoteIndices& remoteIndices,
-                                               Interface& interface)
+    template<class M, class IS, class A>
+    MatrixHierarchy<M,IS,A>::MatrixHierarchy(const Matrix& fineMatrix,
+                                             const ParallelIndexSet& indexSet,
+                                             const RemoteIndices& remoteIndices,
+                                             Interface& interface)
       : matrices_(*new ParallelMatrix(fineMatrix,indexSet,remoteIndices)),
         interfaces_(interface), communicators_(*(new Communicator())), built_(false)
     {}
 
-    template<class M, class IS, class O, class A>
+    template<class M, class IS, class A>
     template<typename T>
     inline bool
-    MatrixHierarchy<M,IS,O,A>::coarsenTargetReached(const T& crit,
-                                                    const typename ParallelMatrixHierarchy::Iterator& matrix)
+    MatrixHierarchy<M,IS,A>::coarsenTargetReached(const T& crit,
+                                                  const typename ParallelMatrixHierarchy::Iterator& matrix)
     {
-      int nodes = matrix->matrix().N();
+      int nodes = matrix->getmat().N();
       int totalNodes;
 
       MPI_Allreduce(&nodes, &totalNodes, 1, MPI_INT, MPI_SUM, matrix->remoteIndices().communicator());
@@ -448,10 +448,11 @@ namespace Dune
       return totalNodes < crit.coarsenTarget();
     }
 
-    template<class M, class IS, class O, class A>
-    template<typename T>
-    void MatrixHierarchy<M,IS,O,A>::build(const T& criterion)
+    template<class M, class IS, class A>
+    template<typename O, typename T>
+    void MatrixHierarchy<M,IS,A>::build(const T& criterion)
     {
+      typedef O OverlapFlags;
       GalerkinProduct productBuilder;
       int procs;
       typedef typename ParallelMatrixHierarchy::Iterator MatIterator;
@@ -467,37 +468,33 @@ namespace Dune
 
       for(; level < criterion.maxLevel(); ++level, ++mlevel) {
 
-        dinfo<<"Level "<<level<<" has "<<mlevel->matrix().N()<<" unknows!"<<std::endl;
+        dinfo<<"Level "<<level<<" has "<<mlevel->getmat().N()<<" unknows!"<<std::endl;
 
 
         if(coarsenTargetReached(criterion, mlevel))
           // No further coarsening needed
           break;
 
-        typedef MatrixGraph<const M> MatrixGraph;
-        typedef SubGraph<MatrixGraph,std::vector<bool> > SubGraph;
-        typedef PropertiesGraph<SubGraph,VertexProperties,EdgeProperties,
-            IdentityMap,typename SubGraph::EdgeIndexMap> PropertiesGraph;
+        typedef typename PropertiesGraphCreator<ParallelMatrix>::PropertiesGraph
+        PropertiesGraph;
+        typedef typename PropertiesGraphCreator<ParallelMatrix>::MatrixGraph
+        MatrixGraph;
+        typedef typename PropertiesGraphCreator<ParallelMatrix>::GraphTuple
+        GraphTuple;
+
         typedef typename PropertiesGraph::VertexDescriptor Vertex;
 
-        MatrixGraph mg(mlevel->matrix());
-        std::vector<bool> excluded(mlevel->matrix().N());
-        typedef typename ParallelIndexSet::const_iterator IndexIterator;
-        IndexIterator iend = mlevel->indexSet().end();
-        typename std::vector<bool>::iterator iter=excluded.begin();
+        std::vector<bool> excluded(mlevel->getmat().N());
 
-        for(IndexIterator index = mlevel->indexSet().begin(); index != iend; ++index, ++iter)
-          *iter = (OverlapFlags::contains(index->local().attribute()));
+        GraphTuple graphs = PropertiesGraphCreator<ParallelMatrix>::create(*mlevel, excluded, OverlapFlags());
 
-        SubGraph sg(mg, excluded);
-        PropertiesGraph pg(sg, IdentityMap(), sg.getEdgeIndexMap());
-        AggregatesMap* aggregatesMap=new AggregatesMap(pg.maxVertex());
+        AggregatesMap* aggregatesMap=new AggregatesMap(Element<1>::get(graphs)->maxVertex());
 
         aggregatesMaps_.push_back(aggregatesMap);
 
         Timer watch;
         watch.reset();
-        int noAggregates = aggregatesMap->buildAggregates(mlevel->matrix(), pg, criterion);
+        int noAggregates = aggregatesMap->buildAggregates(mlevel->getmat(), *(Element<1>::get(graphs)), criterion);
 
         if(noAggregates < criterion.coarsenTarget() && procs>1) {
           DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
@@ -509,16 +506,22 @@ namespace Dune
                                                         mlevel->remoteIndices().communicator());
 
         typename PropertyMapTypeSelector<VertexVisitedTag,PropertiesGraph>::Type visitedMap =
-          get(VertexVisitedTag(), pg);
+          get(VertexVisitedTag(), *(Element<1>::get(graphs)));
 
         watch.reset();
-        IndicesCoarsener<OverlapFlags,ParallelIndexSet>::coarsen(mlevel->indexSet(),
-                                                                 mlevel->remoteIndices(),
-                                                                 pg,
-                                                                 visitedMap,
-                                                                 *aggregatesMap,
-                                                                 *coarseIndices,
-                                                                 *coarseRemote);
+        if(mlevel->indexSet().size()>0)
+          IndicesCoarsener<OverlapFlags,ParallelIndexSet>::coarsen(mlevel->indexSet(),
+                                                                   mlevel->remoteIndices(),
+                                                                   *(Element<1>::get(graphs)),
+                                                                   visitedMap,
+                                                                   *aggregatesMap,
+                                                                   *coarseIndices,
+                                                                   *coarseRemote);
+        else{
+          renumberAggregates(*(Element<1>::get(graphs)), mlevel->getmat().begin(), mlevel->getmat().end(), visitedMap, *aggregatesMap);
+          coarseRemote->template rebuild<false>();
+        }
+
         dinfo<<" Coarsening of index sets took "<<watch.elapsed()<<" seconds."<<std::endl;
 
         watch.reset();
@@ -549,12 +552,18 @@ namespace Dune
 
         VisitedMap2 visitedMap2(visited.begin(), Dune::IdentityMap());
 
-        Matrix* coarseMatrix = productBuilder.build(mlevel->matrix(), mg, visitedMap2,
-                                                    mlevel->indexSet(),
-                                                    *aggregatesMap,
-                                                    coarseIndices->size(),
-                                                    OverlapFlags());
-        productBuilder.calculate(mlevel->matrix(), *aggregatesMap, *coarseMatrix);
+        Matrix* coarseMatrix;
+
+        if(mlevel->indexSet().size()==0)
+          coarseMatrix = productBuilder.build(mlevel->getmat(), *(Element<0>::get(graphs)), visitedMap2,
+                                              *aggregatesMap);
+        else
+          coarseMatrix = productBuilder.build(mlevel->getmat(), *(Element<0>::get(graphs)), visitedMap2,
+                                              mlevel->indexSet(),
+                                              *aggregatesMap,
+                                              coarseIndices->size(),
+                                              OverlapFlags());
+        productBuilder.calculate(mlevel->getmat(), *aggregatesMap, *coarseMatrix);
 
         dinfo<<"Calculation of Galerkin product took "<<watch.elapsed()<<" seconds."<<std::endl;
 
@@ -565,25 +574,25 @@ namespace Dune
       aggregatesMaps_.push_back(aggregatesMap);
 
       if(level==criterion.maxLevel())
-        dinfo<<"Level "<<level<<" has "<<mlevel->matrix().N()<<" unknows!"<<std::endl;
+        dinfo<<"Level "<<level<<" has "<<mlevel->getmat().N()<<" unknows!"<<std::endl;
     }
 
-    template<class M, class IS, class R, class I>
-    const typename MatrixHierarchy<M,IS,R,I>::ParallelMatrixHierarchy&
-    MatrixHierarchy<M,IS,R,I>::matrices() const
+    template<class M, class IS, class A>
+    const typename MatrixHierarchy<M,IS,A>::ParallelMatrixHierarchy&
+    MatrixHierarchy<M,IS,A>::matrices() const
     {
       return matrices_;
     }
 
 
-    template<class M, class IS, class R, class I>
-    const typename MatrixHierarchy<M,IS,R,I>::AggregatesMapList&
-    MatrixHierarchy<M,IS,R,I>::aggregatesMaps() const
+    template<class M, class IS, class A>
+    const typename MatrixHierarchy<M,IS,A>::AggregatesMapList&
+    MatrixHierarchy<M,IS,A>::aggregatesMaps() const
     {
       return aggregatesMaps_;
     }
-    template<class M, class IS, class R, class I>
-    MatrixHierarchy<M,IS,R,I>::~MatrixHierarchy()
+    template<class M, class IS, class A>
+    MatrixHierarchy<M,IS,A>::~MatrixHierarchy()
     {
       typedef typename AggregatesMapList::reverse_iterator AggregatesMapIterator;
       typedef typename ParallelMatrixHierarchy::Iterator Iterator;
@@ -597,37 +606,37 @@ namespace Dune
            ParallelMatrix& mat = level.getRedistributed();
            delete &mat.remoteIndices();
            delete &mat.indexSet();
-           delete &mat.matrix();
+           delete &mat.getmat();
            }
          */
         delete &level->remoteIndices();
         delete &level->indexSet();
-        delete &level->matrix();
+        delete &level->getmat();
       }
     }
 
-    template<class M, class IS, class R, class I>
+    template<class M, class IS, class A>
     template<class V, class TA>
-    void MatrixHierarchy<M,IS,R,I>::coarsenVector(Hierarchy<BlockVector<V,TA> >& hierarchy) const
+    void MatrixHierarchy<M,IS,A>::coarsenVector(Hierarchy<BlockVector<V,TA> >& hierarchy) const
     {
       assert(hierarchy.levels()==1);
       typedef typename ParallelMatrixHierarchy::ConstIterator Iterator;
       Iterator coarsest = matrices_.coarsest();
       int level=0;
-      Dune::dverb<<"Level "<<level<<" has "<<matrices_.finest()->matrix().N()<<" unknows!"<<std::endl;
+      Dune::dverb<<"Level "<<level<<" has "<<matrices_.finest()->getmat().N()<<" unknows!"<<std::endl;
 
       for(Iterator matrix = matrices_.finest(); matrix != coarsest;) {
         ++matrix;
         ++level;
-        Dune::dverb<<"Level "<<level<<" has "<<matrix->matrix().N()<<" unknows!"<<std::endl;
-        hierarchy.addCoarser(matrix->matrix().N());
+        Dune::dverb<<"Level "<<level<<" has "<<matrix->getmat().N()<<" unknows!"<<std::endl;
+        hierarchy.addCoarser(matrix->getmat().N());
       }
     }
 
-    template<class M, class IS, class R, class I>
+    template<class M, class IS, class A>
     template<class S, class TA>
-    void MatrixHierarchy<M,IS,R,I>::coarsenSmoother(Hierarchy<S,TA>& smoothers,
-                                                    const typename SmootherTraits<S>::Arguments& sargs) const
+    void MatrixHierarchy<M,IS,A>::coarsenSmoother(Hierarchy<S,TA>& smoothers,
+                                                  const typename SmootherTraits<S>::Arguments& sargs) const
     {
       assert(smoothers.levels()==0);
       typedef typename ParallelMatrixHierarchy::ConstIterator Iterator;
@@ -636,13 +645,13 @@ namespace Dune
       Iterator coarsest = matrices_.coarsest();
 
       for(Iterator matrix = matrices_.finest(); matrix != coarsest; ++matrix) {
-        cargs.setMatrix(matrix->matrix());
+        cargs.setMatrix(matrix->getmat());
         smoothers.addCoarser(cargs);
       }
     }
 
-    template<class M, class IS, class R, class I>
-    void MatrixHierarchy<M,IS,R,I>::recalculateGalerkin()
+    template<class M, class IS, class A>
+    void MatrixHierarchy<M,IS,A>::recalculateGalerkin()
     {
       typedef typename AggregatesMapList::iterator AggregatesMapIterator;
       typedef typename ParallelMatrixHierarchy::Iterator Iterator;
@@ -651,22 +660,22 @@ namespace Dune
       GalerkinProduct productBuilder;
 
       for(Iterator level = matrices_.finest(), coarsest=matrices_.coarsest(); level!=coarsest; ++amap) {
-        const Matrix& fine = level->matrix();
+        const Matrix& fine = level->getmat();
         ++level;
-        //Matrix& coarse(level->matrix());
-        productBuilder.calculate(fine, *(*amap), const_cast<Matrix&>(level->matrix()));
+        //Matrix& coarse(level->getmat());
+        productBuilder.calculate(fine, *(*amap), const_cast<Matrix&>(level->getmat()));
 
       }
     }
 
-    template<class M, class IS, class R, class I>
-    int MatrixHierarchy<M,IS,R,I>::levels() const
+    template<class M, class IS, class A>
+    int MatrixHierarchy<M,IS,A>::levels() const
     {
       return matrices_.levels();
     }
 
-    template<class M, class IS, class R, class I>
-    bool MatrixHierarchy<M,IS,R,I>::isBuilt() const
+    template<class M, class IS, class A>
+    bool MatrixHierarchy<M,IS,A>::isBuilt() const
     {
       return built_;
     }

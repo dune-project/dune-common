@@ -1330,7 +1330,7 @@ namespace Dune
     const V AggregatesMap<V>::UNAGGREGATED = std::numeric_limits<V>::max();
 
     template<class V>
-    const V AggregatesMap<V>::ISOLATED = -1;
+    const V AggregatesMap<V>::ISOLATED = std::numeric_limits<V>::max()-1;
 
     template<class V>
     AggregatesMap<V>::AggregatesMap()
@@ -1993,7 +1993,7 @@ namespace Dune
 
       buildDependency(graph, m, c);
 
-      dinfo<<"Build dependency took "<< watch.elapsed()<<" senconds."<<std::endl;
+      dinfo<<"Build dependency took "<< watch.elapsed()<<" seconds."<<std::endl;
       int noAggregates, conAggregates, isoAggregates, oneAggregates;
       noAggregates = conAggregates = isoAggregates = oneAggregates = 0;
 

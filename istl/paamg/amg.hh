@@ -31,6 +31,8 @@ namespace Dune
     {
     public:
       /** @brief The matrix type. */
+      typedef typename M::Matrix Matrix;
+      /** @brief The matrix type. */
       typedef M MatrixHierarchy;
       /** @brief The domain type. */
       typedef X Domain;
@@ -49,6 +51,8 @@ namespace Dune
         category = SolverCategory::sequential
       };
 
+      enum GridFlag { owner, overlap};
+
       /**
        * @brief Construct a new amg with a specific coarse solver.
        * @param matrix The matrix we precondition for.
@@ -61,6 +65,13 @@ namespace Dune
       AMG(const MatrixHierarchy& matrices, CoarseSolver& coarseSolver,
           const SmootherArgs& smootherArgs, std::size_t gamma,
           std::size_t smoothingSteps);
+
+      template<class C>
+      AMG(const Matrix& finematrix, const C& criterion,
+          const SmootherArgs& smootherArgs=SmootherArgs(), std::size_t gamma=1,
+          std::size_t smoothingSteps=2);
+
+      ~AMG();
 
       void pre(Domain& x, Range& b);
 
@@ -76,6 +87,8 @@ namespace Dune
                typename Hierarchy<Domain,A>::Iterator& lhs,
                typename Hierarchy<Range,A>::Iterator& rhs,
                typename Hierarchy<Range,A>::Iterator& defect);
+
+      //      void setupIndices(typename Matrix::ParallelIndexSet& indices, const Matrix& matrix);
 
       /**  @brief The matrix we solve. */
       const MatrixHierarchy* matrices_;
@@ -96,7 +109,11 @@ namespace Dune
       /** @brief The number of pre and postsmoothing steps. */
       std::size_t steps_;
       std::size_t level;
-      SeqScalarProduct<X> ssp;
+      bool buildHierarchy_;
+
+      typedef MatrixAdapter<Matrix,Domain,Range> MatrixAdapter;
+      MatrixAdapter *coarseOperator_;
+      Smoother *coarseSmoother_;
     };
 
     template<class M, class X, class S, class A>
@@ -105,7 +122,7 @@ namespace Dune
                       std::size_t gamma, std::size_t smoothingSteps)
       : matrices_(&matrices), smootherArgs_(smootherArgs),
         smoothers_(), solver_(&coarseSolver), gamma_(gamma),
-        steps_(smoothingSteps), ssp()
+        steps_(smoothingSteps), buildHierarchy_(false)
     {
       assert(matrices_->isBuilt());
       //printMatrix(matrices_->finest());
@@ -113,6 +130,62 @@ namespace Dune
       // build the necessary smoother hierarchies
       matrices_->coarsenSmoother(smoothers_, smootherArgs_);
 
+    }
+    /*
+       template<class M, class X, class S, class A>
+       void AMG<M,X,S,A>::setupIndices(typename Matrix::ParallelIndexSet& indices, const Matrix& matrix)
+       {
+       typename typename Matrix::ParallelIndexSet::LocalIndex LocalIndex;
+       typedef typename Matrix::ConstIterator Iterator;
+
+       indices.beginResize();
+       Iterator end = matrix.end();
+       for(Iterator row = matrix.begin(); row!=end; ++row){
+        indices.add(row.index(), LocalIndex(row.index(), owner, false));
+       }
+       indices.endResize();
+       }
+     */
+    template<class M, class X, class S, class A>
+    template<class C>
+    AMG<M,X,S,A>::AMG(const Matrix& matrix,
+                      const C& criterion,
+                      const SmootherArgs& smootherArgs,
+                      std::size_t gamma, std::size_t smoothingSteps)
+      : smootherArgs_(smootherArgs),
+        smoothers_(), gamma_(gamma),
+        steps_(smoothingSteps), buildHierarchy_(true)
+    {
+
+      typedef typename MatrixHierarchy::ParallelIndexSet ParallelIndexSet;
+      typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
+      typedef Interface<ParallelIndexSet> Interface;
+
+      ParallelIndexSet* indices = new ParallelIndexSet();
+      RemoteIndices* remoteIndices = new RemoteIndices(*indices,*indices,MPI_COMM_WORLD);
+      remoteIndices->template rebuild<false>();
+
+      Interface* interface = new Interface();
+      interface->build(*remoteIndices, Dune::NegateSet<EmptySet<int> >(),EmptySet<int>());
+
+      MatrixHierarchy* matrices = new MatrixHierarchy(matrix, *indices, *remoteIndices, *interface);
+
+      matrices->template build<EmptySet<int> >(criterion);
+
+      matrices_ = matrices;
+      // build the necessary smoother hierarchies
+      matrices_->coarsenSmoother(smoothers_, smootherArgs_);
+
+    }
+
+    template<class M, class X, class S, class A>
+    AMG<M,X,S,A>::~AMG()
+    {
+      if(buildHierarchy_) {
+        delete &(matrices_->matrices().finest()->remoteIndices());
+        delete &(matrices_->matrices().finest()->indexSet());
+        delete matrices_;
+      }
     }
 
     /** \copydoc Preconditioner::pre */
@@ -144,6 +217,20 @@ namespace Dune
       if(smoother != coarsest)
         for(++smoother, ++lhs, ++rhs; smoother != coarsest; ++smoother, ++lhs, ++rhs)
           smoother->pre(*lhs,*rhs);
+
+      if(buildHierarchy_) {
+        // Create the coarse Solver
+        SmootherArgs sargs(smootherArgs_);
+        sargs.iterations = 1;
+
+        typename ConstructionTraits<Smoother>::Arguments cargs;
+        cargs.setArgs(sargs);
+        cargs.setMatrix(matrices_->matrices().coarsest()->getmat());
+
+        coarseSmoother_ = ConstructionTraits<Smoother>::construct(cargs);
+        coarseOperator_ = new MatrixAdapter(matrices_->matrices().coarsest()->getmat());
+        solver_ = new CGSolver<X>(*coarseOperator_, *coarseSmoother_, 1E-12, 10000, 0);
+      }
     }
 
     /** \copydoc Preconditioner::apply */
@@ -187,7 +274,7 @@ namespace Dune
 
         // calculate defect
         *defect = *rhs;
-        matrix->matrix().mmv(static_cast<const Domain&>(*lhs), *defect);
+        matrix->getmat().mmv(static_cast<const Domain&>(*lhs), *defect);
 
         //restrict defect to coarse level right hand side.
         ++rhs;
@@ -236,6 +323,12 @@ namespace Dune
     template<class M, class X, class S, class A>
     void AMG<M,X,S,A>::post(Domain& x)
     {
+      if(buildHierarchy_) {
+        delete solver_;
+        delete coarseSmoother_;
+        delete coarseOperator_;
+      }
+
       // Postprocess all smoothers
       typedef typename Hierarchy<Smoother,A>::Iterator Iterator;
       typedef typename Hierarchy<Range,A>::Iterator RIterator;

@@ -12,9 +12,15 @@ int main(int argc, char** argv)
 
   const int BS=1;
   int N=250;
+  int coarsenTarget=1200;
 
   if(argc>1)
     N = atoi(argv[1]);
+
+  if(argc>2)
+    coarsenTarget = atoi(argv[2]);
+
+  std::cout<<"N="<<N<<" coarsenTarget="<<coarsenTarget<<std::endl;
 
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -30,71 +36,49 @@ int main(int argc, char** argv)
 
   BCRSMat mat = setupAnisotropic2d<BS>(N, indices, &n, 1);
 
-  /*
-     if(N<20)
-      Dune::printmatrix(std::cout, mat, "A", "row");
-   */
+
+  if(N<5)
+    Dune::printmatrix(std::cout, mat, "A", "row");
+
 
   Vector b(indices.size()), x(indices.size());
 
   b=0;
   x=100;
-  Dune::MatrixAdapter<BCRSMat,Vector,Vector> fop(mat);
 
   Dune::Timer watch;
 
-  RemoteIndices remoteIndices(indices,indices,MPI_COMM_WORLD);
-  remoteIndices.rebuild<false>();
-
-  typedef Dune::Interface<ParallelIndexSet> Interface;
-
-  Interface interface;
-
-  typedef Dune::EnumItem<GridFlag,overlap> OverlapFlags;
-  typedef Dune::Amg::MatrixHierarchy<BCRSMat,ParallelIndexSet,OverlapFlags> MHierarchy;
-  typedef Dune::Amg::Hierarchy<Vector> VHierarchy;
-
-  interface.build(remoteIndices, Dune::NegateSet<OverlapFlags>(), OverlapFlags());
-
-  MHierarchy hierarchy(mat, indices, remoteIndices, interface);
-  VHierarchy vh(b);
-
-  typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
-  Criterion;
-
   watch.reset();
-  Criterion criterion(15,1200);
-  criterion.setMaxDistance(2);
 
-  hierarchy.build(criterion);
+  //hierarchy.build<OverlapFlags>(criterion);
 
   double buildtime = watch.elapsed();
   std::cout<<"Building hierarchy took "<<buildtime<<" seconds"<<std::endl;
 
 
-  if(N<20)
-    Dune::printmatrix(std::cout, hierarchy.matrices().coarsest()->matrix(), "A", "row");
+  if(N<6)
+    Dune::printmatrix(std::cout, mat, "A", "row");
 
+  Dune::MatrixAdapter<BCRSMat,Vector,Vector> fop(mat);
 
-  hierarchy.coarsenVector(vh);
-
+  typedef Dune::Amg::MatrixHierarchy<BCRSMat,ParallelIndexSet> MHierarchy;
+  typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
+  Criterion;
   typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
   typedef Dune::Amg::SmootherTraits<Smoother>::Arguments SmootherArgs;
+
   SmootherArgs smootherArgs;
 
   smootherArgs.iterations = 2;
 
-  Dune::MatrixAdapter<BCRSMat,Vector,Vector> op(hierarchy.matrices().coarsest()->matrix());
-  Dune::SeqSSOR<BCRSMat,Vector,Vector> cssor(hierarchy.matrices().coarsest()->matrix(),1,1.0);
 
-  Dune::SeqSSOR<BCRSMat,Vector,Vector> ssor(hierarchy.matrices().finest()->matrix(),1,1.0);
+  Criterion criterion(15,coarsenTarget);
+  criterion.setMaxDistance(2);
 
-  typedef Dune::LoopSolver<Vector> CoarseSolver;
-  CoarseSolver csolver(op,cssor,1E-12,8000,0);
   Dune::SeqScalarProduct<Vector> sp;
   typedef Dune::Amg::AMG<MHierarchy,Vector,Smoother> AMG;
 
-  AMG amg(hierarchy, csolver, smootherArgs, 1, 1);
+  AMG amg(fop.getmat(), criterion, smootherArgs, 1, 1);
 
   Dune::CGSolver<Vector> amgCG(fop,amg,10e-8,80,2);
 
