@@ -412,7 +412,7 @@ namespace Dune {
     }
 
     //! appear as your own container
-    const SimplexQuadratureRule<ct,2>& getelement (GeometryType type, int p)
+    const SimplexQuadratureRule<ct,dim>& getelement (GeometryType type, int p)
     {
       return *this;
     }
