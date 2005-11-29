@@ -51,13 +51,16 @@ There are no mandatory packages for ALUGrid.
 </p><p>
 For optional packages see the README file of ALUGRID.
 </p>
-<h3>UG</h3>
+<h3>UGGrid</h3>
 <p>
-Unfortunately the commercial <a href="http://www.amiravis.com">Amiramesh</a>
-(commercial licence) (http://www.amiravis.com) is needed.
+Currently, the only way to create a UGGrid object is to load it from
+a file in the AmiraMesh format.  Therefore, if you want to use UGGrids,
+you'll need the <a href="http://www.amiravis.com">AmiraMesh</a> library
+in addition to the UG library.  It should be free, however, it is not
+available for download.  You'll have to inquire via email.
 </p>
 
-<h2>Compilation and Installation of the Prerequisite Grids</h2>
+<h2>Compilation and Installation of the External Grids</h2>
 
 <h3>ALBERTA</h3>
 <ol>
@@ -148,29 +151,32 @@ Unfortunately the commercial <a href="http://www.amiravis.com">Amiramesh</a>
 <li><p>Compile ALUGrid with</p> <kbd>make</kbd></li>
 <li><p>Install ALUGrid with</p> <kbd>make install</kbd></li>
 </ol>
-<h3>UG</h3>
+<h3>UGGrid</h3>
 
 <ol>
-<li><p>Somehow get UG ;-)</p>
+<li>
 <p>
-You can obtain it at http://cox.iwr.uni-heidelberg.de/~ug. 
-Unfortunately, the version of UG available for download (3.8 at the
+Get the UG library.  You can obtain it at 
+<a href="http://www.alberta-fem.de">http://cox.iwr.uni-heidelberg.de/~ug</a>. 
+Unfortunately, the version of UG available for download there (3.8 at the
 time of writing) is not new enough to be compatible with DUNE. Please
-write to one of the contact addresses given on the page mentioned
-above and ask for a more recent version of UG.
+write to one of the contact addresses given on the page
+and ask for a more recent version of UG.
 </p>
-<li><p>Install Amiramesh</p>
+<li><p>Install AmiraMesh</p>
 <p>
 Simply unpack amiramesh and you are done:
 </p><kbd>
-tar xjf amiramesh.tar.bz2
+tar xvf libamiramesh.tar
+cd libamiramesh/src
+make
 </kbd>
 </li>
 <li>Move into the ug source tree.</li>
 
-<li><p>Compile UG using configure, e. g.</p>
+<li><p>Build the UG Make System</p>
 <kbd>
-    ./autogen.sh  --prefix=/home/mblatt/dune/ug_install \
+    ./autogen.sh  --prefix=my_favourite_ug_installation_path \
    --enable-dune COMP=g++-3.4 CXXCOMP=g++-3.4 CXX=g++-3.4 CC=g++-3.4
 </kbd>
 <p>
@@ -181,8 +187,8 @@ tar xjf amiramesh.tar.bz2
     Dune.
 </p><p>
     With the variable COMP, CC and CXXCOMP, CXX we tell configure the C and C++
-    compiler and linker to use. These have to be the same C++-compiler
-    and linkers you will use  to compile DUNE!!
+    compiler and linker to use.  Don't forget that the compiler has to
+    be binary-compatible with the one you're using for dune.
 </p><p>
     !!! NOTE !!! Even CC and COMP have to be set to the C++ and not
     the C compiler and linker !!!
