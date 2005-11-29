@@ -1,18 +1,16 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+#ifndef DUNE_AMIRAMESH_UGGRID_READER_HH
+#define DUNE_AMIRAMESH_UGGRID_READER_HH
+
 /**
    \file
    \brief Specialization of the AmiraMesh reader for UGGrid<3,3> and UGGrid<2,2>
  */
 
-#ifndef DUNE_AMIRAMESH_UGGRID_READER_HH
-#define DUNE_AMIRAMESH_UGGRID_READER_HH
-
 
 #include <dune/grid/uggrid.hh>
 #include <dune/io/file/amirameshreader.hh>
-
-#include <vector>
 
 
 class AmiraMesh;
@@ -20,11 +18,6 @@ class AmiraMesh;
 namespace Dune {
 
   /** \brief Read a 3d coarse grid from an AmiraMesh file into a UGGrid
-
-     \warning UG internally requires that the coarse grid vertices are ordered
-     such that the vertex list contains first all boundary vertices and the
-     all interior vertices.  If the input data file is not already set up this
-     way, the reader will reorder your vertices!
    */
   template<>
   class AmiraMeshReader<UGGrid<3,3> > {
@@ -37,7 +30,7 @@ namespace Dune {
 
     /** \brief Read a grid with a parametrized boundary
 
-       UGGrid supports grid where each grid boundary segment carries a
+       UGGrid supports grids where each grid boundary segment carries a
        function describing the true shape of the boundary segment.
        This information will the be considered when refining the grid.
 
@@ -49,8 +42,8 @@ namespace Dune {
        file format can be read by this routine to be used with a UGGrid.
 
        \attention This is a somewhat experimental feature.  To use it, you
-       have to compile DUNE with HAVE_PARAMETRIZATION defined, and link to
-       a special library.  Ask Oliver sander@math.fu-berlin.de for help.
+       have to have the psurface library and build Dune with --with-psurface.
+       Ask Oliver sander@math.fu-berlin.de for help.
 
        \param grid The grid to be read into
        \param gridFilename The AmiraMesh file containing the grid
@@ -65,14 +58,8 @@ namespace Dune {
     static void createDomain(UGGrid<3,3>& grid,
                              const std::string& filename);
 
-    static void createDomain(UGGrid<3,3>& grid,
-                             AmiraMesh* am);
-
     static void buildGrid(UGGrid<3,3>& grid,
                           AmiraMesh* am);
-
-    static void createHexaDomain(UGGrid<3,3>& grid,
-                                 AmiraMesh* am);
 
   };
 

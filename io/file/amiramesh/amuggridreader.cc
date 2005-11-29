@@ -113,34 +113,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
 }
 
 
-// Create the domain by extracting the boundary of the given grid
-void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
-                                                             AmiraMesh* am)
-{
-  float* am_node_coordinates_float = NULL;
-  double* am_node_coordinates_double = NULL;
-
-  // get the different data fields
-  AmiraMesh::Data* am_coordinateData =  am->findData("Nodes", HxFLOAT, 3, "Coordinates");
-  if (am_coordinateData)
-    am_node_coordinates_float = (float*) am_coordinateData->dataPtr();
-  else {
-    am_coordinateData =  am->findData("Nodes", HxDOUBLE, 3, "Coordinates");
-    if (am_coordinateData)
-      am_node_coordinates_double = (double*) am_coordinateData->dataPtr();
-    else {
-      delete am;
-      DUNE_THROW(IOError, "No vertex coordinates found in the file!");
-    }
-  }
-
-  AmiraMesh::Data* tetrahedronData = am->findData("Tetrahedra", HxINT32, 4, "Nodes");
-  int*  elemData         = (int*)tetrahedronData->dataPtr();
-  int noOfElem = am->nElements("Tetrahedra");
-
-}
-
-
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
                                                      const std::string& filename,
                                                      const std::string& domainFilename)
@@ -168,7 +140,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
     // Load a domain from an AmiraMesh hexagrid file
     std::cout << "Hexahedral grids with a parametrized boundary are not supported!" << std::endl;
     std::cout << "I will therefore ignore the boundary parametrization." << std::endl;
-    createHexaDomain(grid, am);
 
   } else {
 
@@ -195,22 +166,9 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   // Load the AmiraMesh file
   // /////////////////////////////////////////////////////
   AmiraMesh* am = AmiraMesh::read(filename.c_str());
-  //std::vector<int> isBoundaryNode;
 
   if(!am)
     DUNE_THROW(IOError, "read: Could not open AmiraMesh file " << filename);
-
-  if (am->findData("Hexahedra", HxINT32, 8, "Nodes")) {
-
-    // Create a domain from an AmiraMesh hexagrid file
-    createHexaDomain(grid, am);
-
-  } else {
-
-    // Create a domain from an AmiraMesh tetragrid file
-    createDomain(grid, am);
-
-  }
 
   buildGrid(grid, am);
 
@@ -382,40 +340,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
   delete am;
 
   grid.createend();
-
-}
-
-
-
-/*****************************************************************/
-/* Read the UGGrid from an AmiraMesh Hexagrid file               */
-/*****************************************************************/
-
-
-void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createHexaDomain(UGGrid<3,3>& grid,
-                                                                 AmiraMesh* am)
-{
-  const int DIMWORLD = 3;
-
-  // get the different data fields
-  float* am_node_coordinates_float = NULL;
-  double* am_node_coordinates_double = NULL;
-
-  AmiraMesh::Data* am_coordinateData =  am->findData("Nodes", HxFLOAT, 3, "Coordinates");
-  if (am_coordinateData)
-    am_node_coordinates_float = (float*) am_coordinateData->dataPtr();
-  else {
-    am_coordinateData =  am->findData("Nodes", HxDOUBLE, 3, "Coordinates");
-    if (am_coordinateData)
-      am_node_coordinates_double = (double*) am_coordinateData->dataPtr();
-    else
-      DUNE_THROW(IOError, "No vertex coordinates found in the file!");
-
-  }
-
-  AmiraMesh::Data* hexahedronData = am->findData("Hexahedra", HxINT32, 8, "Nodes");
-  int*  elemData         = (int*)hexahedronData->dataPtr();
-  int noOfElem = am->nElements("Hexahedra");
 
 }
 
