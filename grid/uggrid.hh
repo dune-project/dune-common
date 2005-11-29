@@ -490,6 +490,9 @@ namespace Dune {
     /** \brief The classes implementing the geometry of the boundary segments */
     std::vector<const BoundarySegment<dimworld>*> boundarySegments_;
 
+    /** \brief Buffer for the vertices of each explicitly given boundary segment */
+    std::vector<FixedArray<unsigned int, dim*2-2> > boundarySegmentVertices_;
+
     // Access to entity implementations through the interface wrappers
     template <int cd>
     UGGridEntity<cd,dim,const UGGrid>& getRealEntity(typename Traits::template Codim<cd>::Entity& entity) {
@@ -532,7 +535,8 @@ namespace Dune {
     //!
     bool omitGreenClosure_;
 
-    /** \brief A counter for producing a consecutive index for the boundary segments */
+    /** \brief A counter for producing a consecutive index for the boundary segments
+       \todo obsolete */
     int boundarySegmentCounter_;
 
     /** \brief While inserting the elements this array records the number of

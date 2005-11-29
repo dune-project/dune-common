@@ -918,6 +918,7 @@ void Dune::UGGrid < dim, dimworld >::createbegin()
   boundarySegmentCounter_ = 0;
 
   boundarySegments_.resize(0);
+  boundarySegmentVertices_.resize(0);
   elementTypes_.resize(0);
   elementVertices_.resize(0);
   vertexPositions_.resize(0);
@@ -937,13 +938,13 @@ void Dune::UGGrid < dim, dimworld >::createend()
     DUNE_THROW(GridError, "Couldn't extract grid boundary.");
 
   std::vector<int> isBoundaryNode;
-  BoundaryExtractor::detectBoundaryNodes(boundarySegments, elementVertices_.size(), isBoundaryNode);
+  BoundaryExtractor::detectBoundaryNodes(boundarySegments, vertexPositions_.size(), isBoundaryNode);
 
   dverb << boundarySegments.size() << " boundary segments were found!" << std::endl;
 
   // Count number of nodes on the boundary
   int noOfBNodes = 0;
-  for (int i=0; i<elementVertices_.size(); i++) {
+  for (int i=0; i<isBoundaryNode.size(); i++) {
     if (isBoundaryNode[i] != -1)
       noOfBNodes++;
   }
@@ -988,7 +989,46 @@ void Dune::UGGrid < dim, dimworld >::createend()
     }
 
   } else {
-    DUNE_THROW(NotImplemented, "Parametrized boundaries");
+
+    if (noOfBSegments != boundarySegments_.size())
+      DUNE_THROW(GridError, "Please provide a complete list of boundary segments"
+                 << " when using parametrized boundaries");
+    for (int i=0; i<noOfBSegments; i++) {
+
+      /** \todo Due to some UG weirdness, in 3d, CreateBoundarySegment always expects
+          this array to have four entries, even if only a triangular segment is
+          inserted.  If not, undefined values are will be introduced. */
+      int vertices_c_style[dim*2-2];
+      for (int j=0; j<dim*2-2; j++)
+        vertices_c_style[j] = boundarySegmentVertices_[i][j];
+
+      // Create dummy parameter ranges
+      const double alpha[2] = {0, 0};
+      const double beta[2]  = {1, 1};
+
+      // Create some boundary segment name
+      char segmentName[20];
+      if(sprintf(segmentName, "BS %d", i) < 0)
+        DUNE_THROW(GridError, "sprintf returned error code!");
+
+      // Actually create the segment
+      if (UG_NS<dim>::CreateBoundarySegment(segmentName,                       // internal name of the boundary segment
+                                            1,                                 //  id of left subdomain
+                                            2,                                 //  id of right subdomain
+                                            i,           // Index of the segment
+                                            1,                          // Resolution, only for the UG graphics
+                                            vertices_c_style,
+                                            alpha,
+                                            beta,
+                                            (dim==2)
+                                            ? boundarySegmentWrapper2d
+                                            : boundarySegmentWrapper3d,
+                                            const_cast<BoundarySegment<dimworld>*>(boundarySegments_[i]))==NULL) {
+        DUNE_THROW(GridError, "Calling UG" << dim << "d::CreateBoundarySegment failed!");
+      }
+
+    }
+
   }
 
   // ///////////////////////////////////////////
@@ -1192,45 +1232,15 @@ template <int dim, int dimworld>
 void Dune::UGGrid<dim, dimworld>::insertBoundarySegment(const std::vector<int> vertices,
                                                         const BoundarySegment<dimworld>* boundarySegment)
 {
-  /** \todo Make sure this is the current multigrid, so that CreateBoundarySegment
-      really inserts boundary segments into this grid.*/
+  FixedArray<unsigned int, dim*2-2> segmentVertices = -1;
+  for (size_t i=0; i<vertices.size(); i++)
+    segmentVertices[i] = vertices[i];
 
-  // Copy the vertices into a C-style array
-  /** \todo Due to some UG weirdness, in 3d, CreateBoundarySegment always expects
-      this array to have four entries, even if only a triangular segment is
-      inserted.  If not, undefined values are will be introduced. */
-  int vertices_c_style[4] = {-1, -1, -1, -1};
-  for (unsigned int i=0; i<vertices.size(); i++)
-    vertices_c_style[i] = vertices[i];
+  boundarySegmentVertices_.push_back(segmentVertices);
 
   // Append boundary segment class to the boundary segment class list, so we can
-  // delete them all in the constructor
+  // delete them all in the destructor
   boundarySegments_.push_back(boundarySegment);
-
-  // Create dummy parameter ranges
-  const double alpha[2] = {0, 0};
-  const double beta[2]  = {1, 1};
-
-  // Create some boundary segment name
-  char segmentName[20];
-  if(sprintf(segmentName, "BS %d", boundarySegmentCounter_) < 0)
-    DUNE_THROW(GridError, "sprintf returned error code!");
-
-  // Actually create the segment
-  if (UG_NS<dim>::CreateBoundarySegment(segmentName,                   // internal name of the boundary segment
-                                        1,                             //  id of left subdomain
-                                        2,                             //  id of right subdomain
-                                        boundarySegmentCounter_,       // Index of the segment
-                                        1,                      // Resolution, only for the UG graphics
-                                        vertices_c_style,
-                                        alpha,
-                                        beta,
-                                        (dim==2)
-                                        ? boundarySegmentWrapper2d
-                                        : boundarySegmentWrapper3d,
-                                        const_cast<BoundarySegment<dimworld>*>(boundarySegment))==NULL) {
-    DUNE_THROW(GridError, "Calling UG" << dim << "d::CreateBoundarySegment failed!");
-  }
 
   boundarySegmentCounter_++;
 
