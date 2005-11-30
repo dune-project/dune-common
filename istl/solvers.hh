@@ -458,8 +458,8 @@ namespace Dune {
       _prec.pre(x,b);                 // prepare preconditioner
       _op.applyscaleadd(-1,x,b);      // overwrite b with defect
 
-      X p(x);                         // create local vectors
-      X q(b);
+      X p(x.size());                  // the search direction
+      X q(x.size());                  // a temporary vector
 
       double def0 = _sp.norm(b);    // compute norm
       if (def0<1E-30)        // convergence check
@@ -481,20 +481,27 @@ namespace Dune {
         if (_verbose>1) printf("%5d %12.4E\n",0,def0);
       }
 
-      int i=1; double def=def0;       // loop variables
-      field_type rho,rholast,lambda;
+      // some local variables
+      double def=def0;       // loop variables
+      field_type rho,rholast,lambda,alpha,beta;
+
+      // determine initial search direction
+      p = 0;                              // clear correction
+      _prec.apply(p,b);                   // apply preconditioner
+      rholast = _sp.dot(p,b);             // orthogonalization
+
+      // the loop
+      int i=1;
       for ( ; i<=_maxit; i++ )
       {
-        p = 0;                                // clear correction
-        _prec.apply(p,b);                     // apply preconditioner
-        rho = _sp.dot(p,b);                 // orthogonalization
-        if (i>1) p.axpy(rho/rholast,q);
-        rholast = rho;                        // remember rho for recurrence
+        // minimize in given search direction p
         _op.apply(p,q);                       // q=Ap
-        lambda = rho/_sp.dot(q,p);          // minimization
+        alpha = _sp.dot(q,p);                 // scalar product
+        lambda = rholast/alpha;               // minimization
         x.axpy(lambda,p);                     // update solution
         b.axpy(-lambda,q);                    // update defect
-        q=p;                                  // remember search direction
+
+        // convergence test
         double defnew=_sp.norm(b);          // comp defect norm
         if (_verbose>1)                       // print
           printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
@@ -504,6 +511,15 @@ namespace Dune {
           r.converged  = true;
           break;
         }
+
+        // determine new search direction
+        q = 0;                                // clear correction
+        _prec.apply(q,b);                     // apply preconditioner
+        rho = _sp.dot(q,b);                   // orthogonalization
+        beta = rho/rholast;                   // scaling factor
+        p *= beta;                            // scale old search direction
+        p += q;                               // orthogonalization with correction
+        rholast = rho;                        // remember rho for recurrence
       }
 
       if (_verbose==1)                    // printing for non verbose
