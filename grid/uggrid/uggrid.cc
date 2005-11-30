@@ -944,7 +944,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
 
   // Count number of nodes on the boundary
   int noOfBNodes = 0;
-  for (int i=0; i<isBoundaryNode.size(); i++) {
+  for (unsigned int i=0; i<isBoundaryNode.size(); i++) {
     if (isBoundaryNode[i] != -1)
       noOfBNodes++;
   }
@@ -952,7 +952,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
   // ///////////////////////////////////////////
   //   Create the domain data structure
   // ///////////////////////////////////////////
-  int noOfBSegments = boundarySegments.size();
+  unsigned int noOfBSegments = boundarySegments.size();
   std::string domainName = name_ + "_Domain";
   const double midPoint[2] = {0, 0};
 
@@ -970,7 +970,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
 
   if (boundarySegments_.size() == 0) {
 
-    for(int i=0; i<noOfBSegments; i++) {
+    for(unsigned int i=0; i<noOfBSegments; i++) {
 
       const FieldVector<int, 2*dim-2>& thisSegment = boundarySegments[i];
 
@@ -993,7 +993,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
     if (noOfBSegments != boundarySegments_.size())
       DUNE_THROW(GridError, "Please provide a complete list of boundary segments"
                  << " when using parametrized boundaries");
-    for (int i=0; i<noOfBSegments; i++) {
+    for (unsigned int i=0; i<noOfBSegments; i++) {
 
       /** \todo Due to some UG weirdness, in 3d, CreateBoundarySegment always expects
           this array to have four entries, even if only a triangular segment is
@@ -1259,7 +1259,7 @@ void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
   int newIdx = elementVertices_.size();
 
   elementTypes_.push_back(vertices.size());
-  for (int i=0; i<vertices.size(); i++)
+  for (unsigned int i=0; i<vertices.size(); i++)
     elementVertices_.push_back(vertices[i]);
 
   if (dim==2) {
