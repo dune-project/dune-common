@@ -470,7 +470,15 @@ inline void f_real(HELEMENT *el, int ind, double G_CONST *coord,
   assert(fem != NULL);
   assert(fem->discFunc != NULL);
 
-  df->func_real(elem,fem,ind,coord,val);
+  if(coord)
+  {
+    fem->evalCoord(elem,fem,coord,val);
+  }
+  else
+  {
+    fem->evalDof(elem,fem,ind,val);
+  }
+
   return;
 }
 
