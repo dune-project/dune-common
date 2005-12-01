@@ -14,13 +14,24 @@ namespace Dune
   CombinedGrapeDisplay() : disp_(0) , hmesh_ (0)
   {
     GrapeInterface<dim,dimworld>::init();
-    //if(!hmesh_) hmesh_ = setupHmesh();
   }
 
   template<class DisplayType>
   inline CombinedGrapeDisplay<DisplayType>::
   ~CombinedGrapeDisplay()
-  {}
+  {
+    for(unsigned int i=0 ; i<vecFdata_.size(); i++)
+    {
+      DUNE_FDATA * fd = vecFdata_[i];
+      if( fd )
+      {
+        int * comps = fd->comp;
+        if( comps ) delete [] comps;
+        delete fd;
+        vecFdata_[i] = 0;
+      }
+    }
+  }
 
 
   //****************************************************************
@@ -266,7 +277,7 @@ namespace Dune
   {
     assert( disp_ );
     std::vector < DUNE_FDATA * > & vec = disp_->getFdataVec();
-    disp_->evalCoord(he,vec[df->mynum],coord,val);
+    vec[df->mynum]->evalCoord(he,vec[df->mynum],coord,val);
     return ;
   }
 
@@ -276,7 +287,27 @@ namespace Dune
   {
     assert( disp_ );
     std::vector < DUNE_FDATA * > & vec = disp_->getFdataVec();
-    disp_->evalDof(he,vec[df->mynum],localNum,val);
+    vec[df->mynum]->evalDof(he,vec[df->mynum],localNum,val);
+    return ;
+  }
+
+  template<class DisplayType>
+  inline void CombinedGrapeDisplay<DisplayType>::
+  evalCoordWrap (DUNE_ELEM *he, DUNE_FDATA *df, const double *coord, double * val)
+  {
+    MyDisplayType * disp = (MyDisplayType *) he->display;
+    assert( disp );
+    disp->evalCoord(he,df,coord,val);
+    return ;
+  }
+
+  template<class DisplayType>
+  inline void CombinedGrapeDisplay<DisplayType>::
+  evalDofWrap (DUNE_ELEM *he, DUNE_FDATA *df,int localNum, double * val)
+  {
+    MyDisplayType * disp = (MyDisplayType *) he->display;
+    assert( disp );
+    disp->evalDof(he,df,localNum,val);
     return ;
   }
 
@@ -285,10 +316,9 @@ namespace Dune
   func_real (DUNE_ELEM *he , DUNE_FDATA * fe,int ind, const double *coord, double *val )
   {
     MyDisplayType * disp = (MyDisplayType *) he->display;
-    if(coord)
-      disp[0].evalCoord(he,fe,coord,val);
-    else
-      disp[0].evalDof(he,fe,ind,val);
+    // this methtod is to be removed
+    assert(false);
+    abort();
     return;
   }
 
@@ -299,14 +329,29 @@ namespace Dune
     if(!hmesh_) hmesh_ = setupHmesh();
     if(disp.hasData())
     {
+      // get functions data vector of given display
       std::vector < DUNE_FDATA * > & vec = disp.getFdataVec();
-      if(vec.size() != vecFdata_.size())
+
+      // only copy functions for the first partition, because
+      // all functions should be the same on every partition
+      if(vec.size() > vecFdata_.size())
       {
-        // copy information
-        vecFdata_ = vec;
+        vecFdata_.resize( vec.size() );
 
         for(unsigned int n = 0; n < vecFdata_.size(); n++)
         {
+          vecFdata_[n] = new DUNE_FDATA () ;
+          assert( vecFdata_[n] );
+
+          std::memcpy(vecFdata_[n],vec[n],sizeof(DUNE_FDATA));
+
+          // we only need the two new functions for evaluation
+          vecFdata_[n]->evalCoord = this->evalCoordWrap;
+          vecFdata_[n]->evalDof = this->evalDofWrap;
+
+          // not needed here
+          vecFdata_[n]->comp = 0;
+
           // add function data to hmesh
           GrapeInterface<dim,dimworld>::addDataToHmesh(hmesh_,vecFdata_[n],&func_real);
         }
