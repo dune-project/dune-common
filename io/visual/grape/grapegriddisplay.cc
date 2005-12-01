@@ -14,6 +14,7 @@ namespace Dune
   GrapeGridDisplay(const GridType &grid, const int myrank ) :
     grid_(grid)
     , leafset_(grid.leafIndexSet())
+    // , leafset_(grid.hierarchicIndexSet())
     , lid_(grid.localIdSet())
     , myRank_(myrank)
     , myIt_(0), myEndIt_ (0) , myLeafIt_(0) , myLeafEndIt_ (0) ,
@@ -28,6 +29,7 @@ namespace Dune
   GrapeGridDisplay(const GridType &grid ) :
     grid_(grid)
     , leafset_(grid.leafIndexSet())
+    //, leafset_(grid.hierarchicIndexSet())
     , lid_(grid.localIdSet())
     , myRank_(-1) ,
     myIt_(0), myEndIt_ (0) , myLeafIt_(0) , myLeafEndIt_ (0) ,
@@ -109,10 +111,11 @@ namespace Dune
       }
 
       {
+        // reset the boundary information
+        for(int i=0; i < MAX_EL_FACE; i++) he->bnd[i] = -1;
+
         IntersectionIterator endnit = en.iend();
         IntersectionIterator nit    = en.ibegin();
-
-        int facecount = 0;
 
         // value < zero otherwise first test fails
         int lastElNum = -1;
@@ -120,17 +123,13 @@ namespace Dune
         // check all faces for boundary or not
         while ( nit != endnit )
         {
-          assert( facecount >= 0 );
-          assert( facecount < MAX_EL_FACE );
-
           int num = nit.numberInSelf();
           assert( num >= 0 );
           assert( num < MAX_EL_FACE );
 
           if(num != lastElNum)
           {
-            he->bnd[num] = ( nit.boundary() ) ? -1 : 0;
-            facecount++ ;
+            he->bnd[num] = ( nit.boundary() ) ? nit.boundaryId() : 0;
             lastElNum = num;
           }
           ++nit;
