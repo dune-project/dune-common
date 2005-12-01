@@ -23,13 +23,54 @@ namespace Dune
      GrapeDataDisplay
    */
 
-  template<class GridType, class DiscFuncType>
+  template <class GridType, class DiscreteFunctionType>
+  struct EvalDiscreteFunctions
+  {
+    typedef typename GridType :: template Codim<0> :: Entity EntityType;
+    enum { dim = GridType::dimension };
+    enum { dimworld = GridType::dimensionworld };
+
+    typedef typename GridType :: ctype ctype;
+
+    typedef typename DiscreteFunctionType :: LocalFunctionType LocalFunctionType;
+    typedef typename DiscreteFunctionType :: FunctionSpaceType FunctionSpaceType;
+
+    typedef typename FunctionSpaceType :: RangeType RangeType;
+    typedef typename FunctionSpaceType :: DomainType DomainType;
+
+    typedef typename GrapeInterface<dim,dimworld>::DUNE_ELEM DUNE_ELEM;
+    typedef typename GrapeInterface<dim,dimworld>::DUNE_FDATA DUNE_FDATA;
+
+    // for the data visualization
+    inline static void evalCoordNow (EntityType &en, DUNE_FDATA *fdata, const double *coord, double * val);
+
+    // for the data visualization
+    inline static void evalDofNow (EntityType &en, int geomType, DUNE_FDATA *fdata , int localNum, double * val);
+
+    inline static void evalCoord (DUNE_ELEM *he, DUNE_FDATA *df,
+                                  const double *coord, double * val);
+
+    inline static void evalDof (DUNE_ELEM *he, DUNE_FDATA *df, int localNum, double * val);
+
+    // for the data visualization
+    inline static void evalScalar (EntityType &en, int geomType,
+                                   DiscreteFunctionType & func, LocalFunctionType &lf,
+                                   const int * comp , int localNum, double * val);
+
+    // for the data visualization
+    inline static void evalVector (EntityType &en, int geomType,
+                                   DiscreteFunctionType & func, LocalFunctionType &lf,
+                                   const int * comp, int vend, int localNum, double * val);
+  };
+
+
+  template<class GridType>
   class GrapeDataDisplay : public GrapeGridDisplay < GridType >
   {
-    typedef GrapeDataDisplay < GridType , DiscFuncType > MyDisplayType;
-    typedef typename DiscFuncType::FunctionSpaceType FunctionSpaceType;
-    typedef typename FunctionSpaceType::DomainType DomainType;
-    typedef typename FunctionSpaceType::RangeType RangeType;
+    typedef GrapeDataDisplay < GridType > MyDisplayType;
+    //typedef typename DiscFuncType::FunctionSpaceType FunctionSpaceType;
+    //typedef typename FunctionSpaceType::DomainType DomainType;
+    //typedef typename FunctionSpaceType::RangeType RangeType;
 
     enum { dim = GridType::dimension };
     enum { dimworld = GridType::dimensionworld };
@@ -42,9 +83,9 @@ namespace Dune
   public:
 
     typedef typename GridType::Traits::template Codim<0>::LevelIterator LevelIterator;
-    typedef DiscFuncType DiscreteFunctionType;
-
-    enum { polynomialOrder = FunctionSpaceType::polynomialOrder };
+    //typedef DiscFuncType DiscreteFunctionType;
+    //enum { polynomialOrder = FunctionSpaceType::polynomialOrder };
+    enum { polynomialOrder = 1 };
 
   public:
     //! Constructor, make a GrapeDataDisplay for given grid and myRank = -1
@@ -57,6 +98,7 @@ namespace Dune
 
     //! Calls the display of the grid and draws the discrete function
     //! if discretefunction is NULL, then only the grid is displayed
+    template <class DiscFuncType>
     inline void dataDisplay(DiscFuncType &func, bool vector = false);
 
     //! Calls the display of the grid and draws the discrete function
@@ -65,9 +107,11 @@ namespace Dune
     inline void displayVector(const VectorPointerType * vector);
 
     //! add discrete function to display
+    template <class DiscFuncType>
     inline void addData(DiscFuncType &func, const DATAINFO * , double time );
 
     //! add discrete function to display
+    template <class DiscFuncType>
     inline void addData(DiscFuncType &func, const char * name , double time , bool vector = false );
 
     // retrun whether we have data or not
@@ -84,31 +128,11 @@ namespace Dune
     // store lagrange points for evaluation
     GrapeLagrangePoints<ctype,dim,dimworld,polynomialOrder> lagrangePoints_;
 
-    // tmp variables
-    RangeType tmp_;
-    DomainType domTmp_;
+    typedef typename GridType :: template Codim<0> :: Entity EntityCodim0Type;
+    typedef void evalCoord_t (EntityCodim0Type &, DUNE_FDATA *, const double *, double * );
+    typedef void evalDof_t (EntityCodim0Type &,int , DUNE_FDATA * , int , double * );
 
-    // for the data visualization
-    template <class EntityType>
-    inline void evalCoord (EntityType &en, DUNE_FDATA *, const double *coord, double * val);
-
-    // for the data visualization
-    template <class EntityType>
-    inline void evalDof (EntityType &en, int geomType, DUNE_FDATA * , int localNum, double * val);
-    // for the data visualization
-    template <class EntityType, class LocalFuncType>
-    inline void evalScalar (EntityType &en, int geomType, DiscFuncType & func, LocalFuncType &lf,
-                            const int * comp , int localNum, double * val);
-
-    // for the data visualization
-    template <class EntityType, class LocalFuncType>
-    inline void evalVector (EntityType &en, int geomType, DiscFuncType & func,LocalFuncType &lf,
-                            const int * comp, int vend, int localNum, double * val);
   public:
-    inline void evalCoord (DUNE_ELEM *he, DUNE_FDATA *df,
-                           const double *coord, double * val);
-    inline void evalDof (DUNE_ELEM *he, DUNE_FDATA *df, int localNum, double * val);
-
   protected:
 
     inline static void func_real (DUNE_ELEM *he , DUNE_FDATA * fe,int ind,
@@ -173,27 +197,29 @@ namespace Dune
     }
   };
 
-  template <int polOrd>
-  struct GrapeVectorDisplay
-  {
-    template <class GridType, class VectorPointerType>
-    static void
-    display(const GridType & grid, const VectorPointerType * vector )
-    {
+  /*
+     template <int polOrd>
+     struct GrapeVectorDisplay
+     {
+     template <class GridType, class VectorPointerType>
+     static void
+     display(const GridType & grid, const VectorPointerType * vector )
+     {
       enum { dim = GridType :: dimension };
       typedef FunctionSpace <VectorPointerType ,
-          VectorPointerType, dim, 1 >  FuncSpaceType;
+        VectorPointerType, dim, 1 >  FuncSpaceType;
 
       typedef typename GridType :: Traits:: LeafIndexSet LeafSet;
       typedef DefaultGridPart<GridType,LeafSet> GridPartType;
       typedef LagrangeDiscreteFunctionSpace
-      < FuncSpaceType , GridPartType , polOrd > FunctionSpaceType;
+        < FuncSpaceType , GridPartType , polOrd > FunctionSpaceType;
       typedef DFAdapt< FunctionSpaceType > DiscreteFunctionType;
 
       GrapeDataDisplay < GridType , DiscreteFunctionType > disp(grid);
       disp.displayVector( vector );
-    }
-  };
+     }
+     };
+   */
 
 } // end namespace Dune
 
