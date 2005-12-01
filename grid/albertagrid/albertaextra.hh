@@ -825,11 +825,11 @@ namespace AlbertHelp
 
   static std::stack < BOUNDARY * > * Alberta_tmpBndStack = 0;
 
-  void initBndStack( std::stack < BOUNDARY * > * bndStack )
+  inline static void initBndStack( std::stack < BOUNDARY * > * bndStack )
   {
     Alberta_tmpBndStack = bndStack;
   }
-  void removeBndStack ()
+  inline static void removeBndStack ()
   {
     Alberta_tmpBndStack = 0;
   }
