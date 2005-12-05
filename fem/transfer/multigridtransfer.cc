@@ -173,6 +173,9 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const GridType& grid, int cL, 
 
   const int dim = GridType::dimension;
 
+  const typename GridType::Traits::LevelIndexSet& coarseIndexSet = grid.levelIndexSet(cL);
+  const typename GridType::Traits::LevelIndexSet& fineIndexSet   = grid.levelIndexSet(fL);
+
   int rows = grid.size(fL, dim);
   int cols = grid.size(cL, dim);
 
@@ -220,11 +223,13 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const GridType& grid, int cL, 
 
       for (int i=0; i<numCoarseBaseFct; i++) {
 
-        int globalCoarse = cIt->template subIndex<dim>(i);
+        //int globalCoarse = cIt->template subIndex<dim>(i);
+        int globalCoarse = coarseIndexSet.template subIndex<dim>(*cIt,i);
 
         for (int j=0; j<numFineBaseFct; j++) {
 
-          int globalFine = fIt->template subIndex<dim>(j);
+          //int globalFine = fIt->template subIndex<dim>(j);
+          int globalFine = fineIndexSet.template subIndex<dim>(*fIt,j);
 
           FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
 
@@ -272,12 +277,13 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const GridType& grid, int cL, 
 
       for (int i=0; i<numCoarseBaseFct; i++) {
 
-        int globalCoarse = cIt->template subIndex<dim>(i);
+        //int globalCoarse = cIt->template subIndex<dim>(i);
+        int globalCoarse = coarseIndexSet.template subIndex<dim>(*cIt,i);
 
         for (int j=0; j<numFineBaseFct; j++) {
 
-          //int globalFine = fineFSpace.mapToGlobal(*fIt, j);
-          int globalFine = fIt->template subIndex<dim>(j);
+          //int globalFine = fIt->template subIndex<dim>(j);
+          int globalFine = fineIndexSet.template subIndex<dim>(*fIt,j);
 
           // Evaluate coarse grid base function at the location of the fine grid dof
 
