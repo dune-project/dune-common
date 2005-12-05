@@ -368,23 +368,34 @@ namespace Dune {
   public:
     //friend class UGGrid<dim,dim>;
 
-    enum {dim = GridImp::dimension};
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
+    enum {dim = RemoveConst<GridImp>::Type::dimension};
 
     //! constructor stores reference to a grid and level
     UGGridLeafIndexSet (const GridImp& g) : grid_(g)
     {}
 
-
     //! get index of an entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cd>
-    int index (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    int index (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
       return grid_.template getRealEntity<cd>(e).leafIndex();
     }
 
     //! get index of subEntity of a codim 0 entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    int subIndex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    int subIndex (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid_.template getRealEntity<0>(e).template subLeafIndex<cc>(i);
     }
@@ -715,15 +726,23 @@ namespace Dune {
     typedef unsigned int GlobalIdType;
 
     //! get id of an entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cd>
-    GlobalIdType id (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    GlobalIdType id (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
       return grid_.template getRealEntity<cd>(e).globalId();
     }
 
     //! get id of subEntity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    GlobalIdType subid (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    GlobalIdType subid (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid_.template getRealEntity<0>(e).template subGlobalId<cc>(i);
     }
@@ -751,15 +770,23 @@ namespace Dune {
     typedef unsigned int LocalIdType;
 
     //! get id of an entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cd>
-    LocalIdType id (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    LocalIdType id (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
       return grid_.template getRealEntity<cd>(e).localId();
     }
 
     //! get id of subEntity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    LocalIdType subid (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    LocalIdType subid (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid_.template getRealEntity<0>(e).template subLocalId<cc>(i);
     }

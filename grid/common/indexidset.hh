@@ -69,8 +69,13 @@ namespace Dune
             \param e Reference to codim cc entity, where cc is the template parameter of the function.
             \return An index in the range 0 ... Max number of entities in set - 1.
      */
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    int index (const typename GridImp::template Codim<cc>::Entity& e) const
+    int index (const typename RemoveConst<GridImp>::Type::
+               Traits::template Codim<cc>::Entity& e) const
     {
       return asImp().template index<cc>(e);
     }
@@ -94,8 +99,13 @@ namespace Dune
        \param i Number of codim cc subentity of e, where cc is the template parameter of the function.
        \return An index in the range 0 ... Max number of entities in set - 1.
      */
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    int subIndex (const typename GridImp::template Codim<0>::Entity& e, int i) const
+    int subIndex (const typename RemoveConst<GridImp>::Type::
+                  Traits::template Codim<0>::Entity& e, int i) const
     {
       return asImp().template subIndex<cc>(e,i);
     }
@@ -197,15 +207,25 @@ namespace Dune
     }
 
     //! get id of an entity of codim cc
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    IdType id (const typename GridImp::template Codim<cc>::Entity& e) const
+    IdType id (const typename RemoveConst<GridImp>::Type::
+               Traits::template Codim<cc>::Entity& e) const
     {
       return asImp().template id<cc>(e);
     }
 
     //! get id of subentity i of codim cc
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    IdType subId (const typename GridImp::template Codim<0>::Entity& e, int i) const
+    IdType subId (const typename RemoveConst<GridImp>::Type::
+                  Traits::template Codim<0>::Entity& e, int i) const
     {
       return asImp().template subId<cc>(e,i);
     }

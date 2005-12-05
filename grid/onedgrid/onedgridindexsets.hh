@@ -149,15 +149,23 @@ namespace Dune {
     {}
 
     //! get index of an entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cd>
-    int index (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    int index (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
       return grid_.template getRealEntity<cd>(e).leafIndex();
     }
 
     //! get index of subentity of a codim 0 entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    int subIndex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    int subIndex (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid_.template getRealEntity<0>(e).template subLeafIndex<cc>(i);
     }
@@ -263,15 +271,23 @@ namespace Dune {
     OneDGridIdSet (const GridImp& g) : grid_(g) {}
 
     //! get id of an entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cd>
-    GlobalIdType id (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    GlobalIdType id (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
       return grid_.template getRealEntity<cd>(e).globalId();
     }
 
     //! get id of subentity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    GlobalIdType subid (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    GlobalIdType subid (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       DUNE_THROW(NotImplemented, "UGGridGlobalIdSet::subid");
       //return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);

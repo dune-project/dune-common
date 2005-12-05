@@ -25,7 +25,11 @@ namespace Dune {
       template<PartitionIteratorType pitype>
       struct Partition
       {
-        typedef typename GridImp::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator Iterator;
+        /*
+           We use the RemoveConst to extract the Type from the mutable class,
+           because the const class is not instatiated yet.
+         */
+        typedef typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator Iterator;
       };
     };
   };
@@ -43,7 +47,11 @@ namespace Dune {
 
   {
     typedef AlbertaGrid<dim,dimworld> GridType;
-    typedef typename GridType :: Traits :: template Codim<0>::Entity EntityCodim0Type;
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
+    typedef typename RemoveConst<GridType>::Type::Traits::template Codim<0>::Entity EntityCodim0Type;
     enum { numVecs  = AlbertHelp::numOfElNumVec };
     enum { numCodim = dim + 1 };
 
@@ -212,7 +220,11 @@ namespace Dune {
 
     // this means that only up to 300000000 entities are allowed
     enum { codimMultiplier = 300000000 };
-    typedef typename GridType::Traits::template Codim<0>::Entity EntityCodim0Type;
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
+    typedef typename RemoveConst<GridType>::Type::Traits::template Codim<0>::Entity EntityCodim0Type;
 
     //! create id set, only allowed for AlbertaGrid
     AlbertaGridIdSet(const GridType & grid) : hset_(grid.hierarchicIndexSet())

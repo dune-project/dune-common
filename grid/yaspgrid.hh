@@ -1917,16 +1917,24 @@ namespace Dune {
     }
 
     //! get index of an entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cd>
-    int index (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    int index (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
       assert(cd==0 || cd==GridImp::dimension);
       return grid.template getRealEntity<cd>(e).compressedLeafIndex();
     }
 
     //! get index of subentity of a codim 0 entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    int subIndex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    int subIndex (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid.template getRealEntity<0>(e).template subCompressedLeafIndex<cc>(i);
     }
@@ -1973,25 +1981,38 @@ namespace Dune {
   //========================================================================
 
   template<class GridImp>
-  class YaspGlobalIdSet : public IdSet<GridImp,YaspGlobalIdSet<GridImp>,typename GridImp::PersistentIndexType >
+  class YaspGlobalIdSet : public IdSet<GridImp,YaspGlobalIdSet<GridImp>,
+                              typename RemoveConst<GridImp>::Type::PersistentIndexType >
+                          /*
+                             We used the RemoveConst to extract the Type from the mutable class,
+                             because the const class is not instatiated yet.
+                           */
   {
   public:
     //! define the type used for persisitent indices
-    typedef typename GridImp::PersistentIndexType IdType;
+    typedef typename RemoveConst<GridImp>::Type::PersistentIndexType IdType;
 
     //! constructor stores reference to a grid
     YaspGlobalIdSet (const GridImp& g) : grid(g) {}
 
     //! get id of an entity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cd>
-    IdType id (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
+    IdType id (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
       return grid.template getRealEntity<cd>(e).persistentIndex();
     }
 
     //! get id of subentity
+    /*
+       We use the RemoveConst to extract the Type from the mutable class,
+       because the const class is not instatiated yet.
+     */
     template<int cc>
-    IdType subId (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
+    IdType subId (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
     }
