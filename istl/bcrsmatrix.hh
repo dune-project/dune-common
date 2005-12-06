@@ -1206,13 +1206,13 @@ namespace Dune {
 
     //===== sizes
 
-    //! number of blocks in row direction
+    //! number of rows (counted in blocks)
     size_type N () const
     {
       return n;
     }
 
-    //! number of blocks in column direction
+    //! number of columns (counted in blocks)
     size_type M () const
     {
       return m;
