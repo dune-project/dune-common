@@ -1,6 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 #include "config.h"
+
+#include <set>
+
 #include <dune/grid/uggrid.hh>
 #include "boundaryextractor.hh"
 
@@ -933,6 +936,9 @@ void Dune::UGGrid < dim, dimworld >::createend()
   //   Extract grid boundary segments
   // ///////////////////////////////////////////
   std::vector<FieldVector<int,2*dim-2> > boundarySegments;
+  std::set<FieldVector<int,2*dim-2>, CompareBoundarySegments<dim> > testBoundarySegments;
+  typedef typename std::vector<FieldVector<int,2*dim-2> >::iterator SetIterator;
+
   BoundaryExtractor::detectBoundarySegments(elementTypes_, elementVertices_, boundarySegments);
   if (boundarySegments.size() == 0)
     DUNE_THROW(GridError, "Couldn't extract grid boundary.");
@@ -970,9 +976,10 @@ void Dune::UGGrid < dim, dimworld >::createend()
 
   if (boundarySegments_.size() == 0) {
 
-    for(unsigned int i=0; i<noOfBSegments; i++) {
+    SetIterator it = boundarySegments.begin();
+    for (; it != boundarySegments.end(); ++it) {
 
-      const FieldVector<int, 2*dim-2>& thisSegment = boundarySegments[i];
+      const FieldVector<int, 2*dim-2>& thisSegment = *it;
 
       int numVertices = (dim==2) ? 2 : ((thisSegment[3] == -1) ? 3 : 4);
 
