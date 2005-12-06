@@ -287,7 +287,7 @@ namespace Dune {
        because the const class is not instatiated yet.
      */
     template<int cc>
-    GlobalIdType subid (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
+    GlobalIdType subId (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       DUNE_THROW(NotImplemented, "UGGridGlobalIdSet::subid");
       //return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);

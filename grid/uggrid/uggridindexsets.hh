@@ -742,7 +742,7 @@ namespace Dune {
        because the const class is not instatiated yet.
      */
     template<int cc>
-    GlobalIdType subid (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
+    GlobalIdType subId (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid_.template getRealEntity<0>(e).template subGlobalId<cc>(i);
     }
@@ -786,7 +786,7 @@ namespace Dune {
        because the const class is not instatiated yet.
      */
     template<int cc>
-    LocalIdType subid (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
+    LocalIdType subId (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
       return grid_.template getRealEntity<0>(e).template subLocalId<cc>(i);
     }
