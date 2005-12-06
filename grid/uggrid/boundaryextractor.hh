@@ -4,34 +4,16 @@
 #define DUNE_BOUNDARY_EXTRACTOR_HH
 
 /** \file
-    \brief Contains a helper class for the creation of UGGrid objects
+    \brief Contains helper classes for the creation of UGGrid objects
     \author Oliver Sander
  */
 
 #include <vector>
+#include <set>
 #include <dune/common/fvector.hh>
 
 
 namespace Dune {
-
-  class BoundaryExtractor {
-
-  public:
-
-    static void detectBoundarySegments(std::vector<unsigned char> elementTypes,
-                                       std::vector<unsigned int> elementVertices,
-                                       std::vector<FieldVector<int, 2> >& boundarySegments);
-
-    static void detectBoundarySegments(std::vector<unsigned char> elementTypes,
-                                       std::vector<unsigned int> elementVertices,
-                                       std::vector<FieldVector<int, 4> >& faceList);
-
-    template <int NumVertices>
-    static int detectBoundaryNodes(const std::vector<FieldVector<int, NumVertices> >& faceList,
-                                   int noOfNodes,
-                                   std::vector<int>& isBoundaryNode);
-
-  };
 
   /** \brief Function object comparing two boundary segments
 
@@ -96,18 +78,6 @@ namespace Dune {
       FieldVector<int,4> sorted2 = s2;
 
       // ////////////////////////////////////////////////////////////////////////////
-      //  The boundary extraction algorithm marks triangular segments by letting the
-      //  last two entries be equal.  But this comparison algorithm relies on all
-      //  four entries being different.  So for here we mark triangles by letting
-      //  the last entry be -1.
-      // ////////////////////////////////////////////////////////////////////////////
-
-      if (sorted1[2]==sorted1[3])
-        sorted1[3] = -1;
-      if (sorted2[2]==sorted2[3])
-        sorted2[3] = -1;
-
-      // ////////////////////////////////////////////////////////////////////////////
       // Sort the two arrays to get rid of cyclic permutations in mirror symmetry
       // ////////////////////////////////////////////////////////////////////////////
 
@@ -148,6 +118,29 @@ namespace Dune {
 
   };
 
+
+
+  class BoundaryExtractor {
+
+    typedef std::set<FieldVector<int,2>, CompareBoundarySegments<2> >::iterator SetIterator2d;
+    typedef std::set<FieldVector<int,4>, CompareBoundarySegments<3> >::iterator SetIterator3d;
+
+  public:
+
+    static void detectBoundarySegments(const std::vector<unsigned char>& elementTypes,
+                                       const std::vector<unsigned int>& elementVertices,
+                                       std::set<FieldVector<int, 2>, CompareBoundarySegments<2> >& boundarySegments);
+
+    static void detectBoundarySegments(const std::vector<unsigned char>& elementTypes,
+                                       const std::vector<unsigned int>& elementVertices,
+                                       std::set<FieldVector<int, 4>, CompareBoundarySegments<3> >& boundarySegments);
+
+    template <int NumVertices>
+    static int detectBoundaryNodes(const std::set<FieldVector<int, NumVertices>, CompareBoundarySegments<(NumVertices+2)/2> >& boundarySegments,
+                                   int noOfNodes,
+                                   std::vector<int>& isBoundaryNode);
+
+  };
 
 }
 

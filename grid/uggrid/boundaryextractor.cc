@@ -6,11 +6,9 @@
 
 #include "boundaryextractor.hh"
 
-
-/** \todo This is quadratic --> very slow */
-void Dune::BoundaryExtractor::detectBoundarySegments(std::vector<unsigned char> elementTypes,
-                                                     std::vector<unsigned int> elementVertices,
-                                                     std::vector<FieldVector<int, 2> >& boundarySegments)
+void Dune::BoundaryExtractor::detectBoundarySegments(const std::vector<unsigned char>& elementTypes,
+                                                     const std::vector<unsigned int>& elementVertices,
+                                                     std::set<FieldVector<int, 2>, CompareBoundarySegments<2> >& boundarySegments)
 {
   // The vertices that form the edges of a triangle -- in UG numbering
   static const int triIdx[][2] = {
@@ -22,7 +20,7 @@ void Dune::BoundaryExtractor::detectBoundarySegments(std::vector<unsigned char> 
     {0,1},{1,2},{2,3},{2,0}
   };
 
-  boundarySegments.resize(0);
+  boundarySegments.clear();
   unsigned int currentBase = 0;
 
   for (size_t i=0; i<elementTypes.size(); i++) {
@@ -42,32 +40,10 @@ void Dune::BoundaryExtractor::detectBoundarySegments(std::vector<unsigned char> 
 
       // Check if new face exists already in the list
       // (then it is no boundary face)
-      size_t j;
-      for (j=0; j<boundarySegments.size(); j++) {
+      std::pair<std::set<FieldVector<int, 2>, CompareBoundarySegments<2> >::iterator,bool> status = boundarySegments.insert(v);
+      if (!status.second)         //  Not inserted because already existing
+        boundarySegments.erase(status.first);
 
-        const FieldVector<int, 2>& o = boundarySegments[j];
-        if ( (v[0]==o[0] && v[1]==o[1]) ||
-             (v[0]==o[1] && v[1]==o[0]) ) {
-
-          // Testing
-          CompareBoundarySegments<2> foo;
-          assert(!foo(v,o) && !foo(o,v));
-          break;
-        }
-
-      }
-
-      if (j<boundarySegments.size()) {
-        // face has been found
-        boundarySegments[j] = boundarySegments.back();
-        boundarySegments.pop_back();
-
-      } else {
-
-        // Insert k-th face of i-th element into face list
-        boundarySegments.push_back(v);
-
-      }
     }
 
     currentBase += verticesPerElement;
@@ -77,9 +53,9 @@ void Dune::BoundaryExtractor::detectBoundarySegments(std::vector<unsigned char> 
 }
 
 /** \todo This is quadratic --> very slow */
-void Dune::BoundaryExtractor::detectBoundarySegments(std::vector<unsigned char> elementTypes,
-                                                     std::vector<unsigned int> elementVertices,
-                                                     std::vector<FieldVector<int, 4> >& faceList)
+void Dune::BoundaryExtractor::detectBoundarySegments(const std::vector<unsigned char>& elementTypes,
+                                                     const std::vector<unsigned int>& elementVertices,
+                                                     std::set<FieldVector<int, 4>, CompareBoundarySegments<3> >& boundarySegments)
 {
   int numElements = elementTypes.size();
 
@@ -107,7 +83,7 @@ void Dune::BoundaryExtractor::detectBoundarySegments(std::vector<unsigned char> 
   // Number of faces for tetrahedra, pyramids, prisms, hexahedra
   // The zeros are just fill-in.
   static const int numFaces[9] = {0,0,0,0,4,5,5,0,6};
-  faceList.resize(0);
+  boundarySegments.clear();
 
   // An index into the list of element vertices pointing to the current element
   int currentElement = 0;
@@ -140,91 +116,26 @@ void Dune::BoundaryExtractor::detectBoundarySegments(std::vector<unsigned char> 
       }
 
       // Check whether the faces is degenerated to a triangle
+      if (v[2]==v[3])
+        v[3] = -1;
 
       // Check if new face exists already in the list
       // (then it is no boundary face)
-      int j;
-      for (j=0; j<faceList.size(); j++) {
 
-        const FieldVector<int, 4>& o = faceList[j];
-        if ( v[2]==v[3] && o[2]==o[3] )
-          if ((v[0]==o[0] && v[1]==o[1] && v[2]==o[2]) ||
-              (v[0]==o[0] && v[1]==o[2] && v[2]==o[1]) ||
-              (v[0]==o[1] && v[1]==o[0] && v[2]==o[2]) ||
-              (v[0]==o[1] && v[1]==o[2] && v[2]==o[0]) ||
-              (v[0]==o[2] && v[1]==o[0] && v[2]==o[1]) ||
-              (v[0]==o[2] && v[1]==o[1] && v[2]==o[0]) ) {
-            // Testing
-            CompareBoundarySegments<3> foo;
-            assert(!foo(v,o) && !foo(o,v));
-            break;
-          }
-        if ( (v[0]==o[0] && v[1]==o[1] && v[2]==o[2] && v[3]==o[3]) ||
-             (v[0]==o[0] && v[1]==o[1] && v[2]==o[3] && v[3]==o[2]) ||
-             (v[0]==o[0] && v[1]==o[2] && v[2]==o[1] && v[3]==o[3]) ||
-             (v[0]==o[0] && v[1]==o[2] && v[2]==o[3] && v[3]==o[1]) ||
-             (v[0]==o[0] && v[1]==o[3] && v[2]==o[1] && v[3]==o[2]) ||
-             (v[0]==o[0] && v[1]==o[3] && v[2]==o[2] && v[3]==o[1]) ||
+      std::pair<std::set<FieldVector<int, 4>, CompareBoundarySegments<3> >::iterator,bool> status = boundarySegments.insert(v);
+      if (!status.second)         //  Not inserted because already existing
+        boundarySegments.erase(status.first);
 
-             (v[0]==o[1] && v[1]==o[0] && v[2]==o[2] && v[3]==o[3]) ||
-             (v[0]==o[1] && v[1]==o[0] && v[2]==o[3] && v[3]==o[2]) ||
-             (v[0]==o[1] && v[1]==o[2] && v[2]==o[0] && v[3]==o[3]) ||
-             (v[0]==o[1] && v[1]==o[2] && v[2]==o[3] && v[3]==o[0]) ||
-             (v[0]==o[1] && v[1]==o[3] && v[2]==o[0] && v[3]==o[2]) ||
-             (v[0]==o[1] && v[1]==o[3] && v[2]==o[2] && v[3]==o[0]) ||
-
-             (v[0]==o[2] && v[1]==o[0] && v[2]==o[1] && v[3]==o[3]) ||
-             (v[0]==o[2] && v[1]==o[0] && v[2]==o[3] && v[3]==o[1]) ||
-             (v[0]==o[2] && v[1]==o[1] && v[2]==o[0] && v[3]==o[3]) ||
-             (v[0]==o[2] && v[1]==o[1] && v[2]==o[3] && v[3]==o[0]) ||
-             (v[0]==o[2] && v[1]==o[3] && v[2]==o[0] && v[3]==o[1]) ||
-             (v[0]==o[2] && v[1]==o[3] && v[2]==o[1] && v[3]==o[0]) ||
-
-             (v[0]==o[3] && v[1]==o[0] && v[2]==o[1] && v[3]==o[2]) ||
-             (v[0]==o[3] && v[1]==o[0] && v[2]==o[2] && v[3]==o[1]) ||
-             (v[0]==o[3] && v[1]==o[1] && v[2]==o[0] && v[3]==o[2]) ||
-             (v[0]==o[3] && v[1]==o[1] && v[2]==o[2] && v[3]==o[0]) ||
-             (v[0]==o[3] && v[1]==o[2] && v[2]==o[0] && v[3]==o[1]) ||
-             (v[0]==o[3] && v[1]==o[2] && v[2]==o[1] && v[3]==o[0]) ) {
-
-          // Testing
-          CompareBoundarySegments<3> foo;
-          assert(!foo(v,o) && !foo(o,v));
-          break;
-        }
-      }
-
-
-
-      if (j<faceList.size()) {
-        // face has been found
-        faceList[j] = faceList.back();
-        faceList.pop_back();
-
-      } else {
-        // Insert k-th face of i-th element into face list
-        faceList.push_back(v);
-      }
     }
 
     currentElement += elementTypes[i];
 
   }
 
-  // Rearranging faceList entries that represent triangles
-  // They can be recognized by containing an index twice
-
-  for (unsigned int i=0; i<faceList.size(); i++) {
-
-    if (faceList[i][2] == faceList[i][3])
-      faceList[i][3] = -1;
-
-  }
-
 }
 
 template<int NUM_VERTICES>
-int Dune::BoundaryExtractor::detectBoundaryNodes(const std::vector< Dune::FieldVector<int, NUM_VERTICES> >& faceList,
+int Dune::BoundaryExtractor::detectBoundaryNodes(const std::set< Dune::FieldVector<int, NUM_VERTICES>, CompareBoundarySegments<(NUM_VERTICES+2)/2> >& boundarySegments,
                                                  int noOfNodes,
                                                  std::vector<int>& isBoundaryNode)
 {
@@ -235,11 +146,13 @@ int Dune::BoundaryExtractor::detectBoundaryNodes(const std::vector< Dune::FieldV
   for (int i=0; i<noOfNodes; i++)
     isBoundaryNode[i] = -1;
 
-  for (unsigned int i=0; i<faceList.size(); i++) {
+  typename std::set< Dune::FieldVector<int, NUM_VERTICES>, CompareBoundarySegments<(NUM_VERTICES+2)/2> >::iterator it = boundarySegments.begin();
+
+  for (; it!=boundarySegments.end(); ++it) {
 
     for (int j=0; j<NUM_VERTICES; j++)
-      if (faceList[i][j]!=-1 && isBoundaryNode[faceList[i][j]] == -1)
-        isBoundaryNode[faceList[i][j]] = 1;
+      if ((*it)[j]!=-1 && isBoundaryNode[(*it)[j]] == -1)
+        isBoundaryNode[(*it)[j]] = 1;
 
   }
 
@@ -257,10 +170,10 @@ int Dune::BoundaryExtractor::detectBoundaryNodes(const std::vector< Dune::FieldV
 //   can have in 2d and 3d, respectively.
 // //////////////////////////////////////////////////////////////////////////////
 
-template int Dune::BoundaryExtractor::detectBoundaryNodes<2>(const std::vector<FieldVector<int, 2> >& faceList,
+template int Dune::BoundaryExtractor::detectBoundaryNodes<2>(const std::set<FieldVector<int, 2>, CompareBoundarySegments<2> >& boundarySegments,
                                                              int noOfNodes,
                                                              std::vector<int>& isBoundaryNode);
 
-template int Dune::BoundaryExtractor::detectBoundaryNodes<4>(const std::vector<FieldVector<int, 4> >& faceList,
+template int Dune::BoundaryExtractor::detectBoundaryNodes<4>(const std::set<FieldVector<int, 4>, CompareBoundarySegments<3> >& boundarySegments,
                                                              int noOfNodes,
                                                              std::vector<int>& isBoundaryNode);

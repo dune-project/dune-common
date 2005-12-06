@@ -935,9 +935,8 @@ void Dune::UGGrid < dim, dimworld >::createend()
   // ///////////////////////////////////////////
   //   Extract grid boundary segments
   // ///////////////////////////////////////////
-  std::vector<FieldVector<int,2*dim-2> > boundarySegments;
-  std::set<FieldVector<int,2*dim-2>, CompareBoundarySegments<dim> > testBoundarySegments;
-  typedef typename std::vector<FieldVector<int,2*dim-2> >::iterator SetIterator;
+  std::set<FieldVector<int,2*dim-2>, CompareBoundarySegments<dim> > boundarySegments;
+  typedef typename std::set<FieldVector<int,2*dim-2>, CompareBoundarySegments<dim> >::iterator SetIterator;
 
   BoundaryExtractor::detectBoundarySegments(elementTypes_, elementVertices_, boundarySegments);
   if (boundarySegments.size() == 0)
