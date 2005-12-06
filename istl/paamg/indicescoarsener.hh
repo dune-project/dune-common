@@ -24,7 +24,7 @@ namespace Dune
      * and remote indices on the coarse level.
      */
 
-    template<typename E,typename T>
+    template<typename T, typename E>
     class IndicesCoarsener
     {
     public:
@@ -34,9 +34,11 @@ namespace Dune
       typedef E ExcludedAttributes;
 
       /**
-       * @brief The type of the index set.
+       * @brief The type of the parallel information.
        */
-      typedef T ParallelIndexSet;
+      typedef T ParallelInformation;
+
+      typedef typename ParallelInformation::IndexSet ParallelIndexSet;
 
       /**
        * @brief The type of the global index.
@@ -56,16 +58,15 @@ namespace Dune
       /**
        * @brief The type of the remote indices.
        */
-      typedef RemoteIndices<T> RemoteIndices;
+      typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
       template<typename Graph, typename VM>
-      static void coarsen(const ParallelIndexSet& fineIndices,
-                          const RemoteIndices& fineRemote,
-                          Graph& fineGraph,
-                          VM& visitedMap,
-                          AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
-                          ParallelIndexSet& coarseIndices,
-                          RemoteIndices& coarseRemote);
+      static typename Graph::VertexDescriptor
+      coarsen(const ParallelInformation& fineInfo,
+              Graph& fineGraph,
+              VM& visitedMap,
+              AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
+              ParallelInformation& coarseInfo);
 
     private:
       template<typename G>
@@ -119,9 +120,7 @@ namespace Dune
       private:
         bool isPublic_;
         Attribute attribute_;
-
       };
-
 
       template<typename Graph, typename VM>
       static void buildCoarseIndexSet(const ParallelIndexSet& fineIndices,
@@ -140,24 +139,46 @@ namespace Dune
 
     };
 
-    template<typename E,typename T>
+    /**
+     * @brief Coarsen Indices in the sequential case.
+     *
+     * Nothing to be coarsened here. Just renumber the aggregates
+     * consecutively
+     */
+    template<typename E>
+    class IndicesCoarsener<SequentialInformation,E>
+    {
+    public:
+      template<typename Graph, typename VM>
+      static typename Graph::VertexDescriptor
+      coarsen(const SequentialInformation& fineInfo,
+              Graph& fineGraph,
+              VM& visitedMap,
+              AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
+              SequentialInformation& coarseInfo);
+    };
+
+    template<typename T, typename E>
     template<typename Graph, typename VM>
-    void IndicesCoarsener<E,T>::coarsen(const ParallelIndexSet& fineIndices,
-                                        const RemoteIndices& fineRemote,
-                                        Graph& fineGraph,
-                                        VM& visitedMap,
-                                        AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
-                                        ParallelIndexSet& coarseIndices,
-                                        RemoteIndices& coarseRemote)
+    inline typename Graph::VertexDescriptor
+    IndicesCoarsener<T,E>::coarsen(const ParallelInformation& fineInfo,
+                                   Graph& fineGraph,
+                                   VM& visitedMap,
+                                   AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
+                                   ParallelInformation& coarseInfo)
     {
       ParallelAggregateRenumberer<Graph> renumberer(aggregates);
-      buildCoarseIndexSet(fineIndices, fineGraph, visitedMap, aggregates, coarseIndices, renumberer);
-      buildCoarseRemoteIndices(fineRemote, aggregates, coarseIndices, coarseRemote, renumberer);
+      buildCoarseIndexSet(fineInfo.indexSet(), fineGraph, visitedMap, aggregates,
+                          coarseInfo.indexSet(), renumberer);
+      buildCoarseRemoteIndices(fineInfo.remoteIndices(), aggregates, coarseInfo.indexSet(),
+                               coarseInfo.remoteIndices(), renumberer);
+
+      return renumberer;
     }
 
-    template<typename E,typename T>
+    template<typename T, typename E>
     template<typename Graph, typename VM>
-    void IndicesCoarsener<E,T>::buildCoarseIndexSet(const ParallelIndexSet& fineIndices,
+    void IndicesCoarsener<T,E>::buildCoarseIndexSet(const ParallelIndexSet& fineIndices,
                                                     Graph& fineGraph,
                                                     VM& visitedMap,
                                                     AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
@@ -217,9 +238,9 @@ namespace Dune
         put(visitedMap, *vertex, false);
     }
 
-    template<typename E, typename T>
+    template<typename T, typename E>
     template<typename Graph>
-    void IndicesCoarsener<E,T>::buildCoarseRemoteIndices(const RemoteIndices& fineRemote,
+    void IndicesCoarsener<T,E>::buildCoarseRemoteIndices(const RemoteIndices& fineRemote,
                                                          const AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
                                                          ParallelIndexSet& coarseIndices,
                                                          RemoteIndices& coarseRemote,
@@ -255,7 +276,7 @@ namespace Dune
         }
 
         // Build remote index list
-        typedef RemoteIndexListModifier<T,false> Modifier;
+        typedef RemoteIndexListModifier<ParallelIndexSet,false> Modifier;
         typedef typename RemoteIndices::RemoteIndex RemoteIndex;
         typedef typename ParallelIndexSet::const_iterator IndexIterator;
 
@@ -280,6 +301,36 @@ namespace Dune
 
     }
 
+    template<typename E>
+    template<typename Graph, typename VM>
+    typename Graph::VertexDescriptor
+    IndicesCoarsener<SequentialInformation,E>::coarsen(const SequentialInformation& fineInfo,
+                                                       Graph& fineGraph,
+                                                       VM& visitedMap,
+                                                       AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
+                                                       SequentialInformation& coarseInfo)
+    {
+      typedef typename Graph::VertexDescriptor Vertex;
+      AggregateRenumberer<Graph> renumberer(aggregates);
+      typedef typename Graph::VertexIterator Iterator;
+
+      for(Iterator vertex=fineGraph.begin(), endVertex=fineGraph.end();
+          vertex != endVertex; ++vertex)
+        if(aggregates[*vertex]!=AggregatesMap<Vertex>::ISOLATED &&
+           !get(visitedMap, *vertex)) {
+
+          aggregates.template breadthFirstSearch<false>(*vertex, aggregates[*vertex],
+                                                        fineGraph, renumberer, visitedMap);
+          aggregates[*vertex] = renumberer;
+          ++renumberer;
+        }
+
+      for(Iterator vertex=fineGraph.begin(), endVertex=fineGraph.end();
+          vertex != endVertex; ++vertex)
+        put(visitedMap, *vertex, false);
+
+      return renumberer;
+    }
 
   } //namespace Amg
 } // namespace Dune

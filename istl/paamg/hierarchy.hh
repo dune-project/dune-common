@@ -279,44 +279,46 @@ namespace Dune
      * Namely a hierarchy of matrices, index sets, remote indices,
      * interfaces and communicators.
      */
-    template<class M, class IS, class A=std::allocator<M> >
+    template<class M, class PI, class A=std::allocator<M> >
     class MatrixHierarchy
     {
     public:
+      /** @brief The type of the matrix operator. */
+      typedef M MatrixOperator;
+
       /** @brief The type of the matrix. */
-      typedef M Matrix;
+      typedef typename MatrixOperator::matrix_type Matrix;
+
       /** @brief The type of the index set. */
-      typedef IS ParallelIndexSet;
-      /** @brief The type of the remote indices. */
-      typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
-      /** @brief The type of the Interface. */
-      typedef Interface<ParallelIndexSet> Interface;
-      /** @brief The type of the Communicator. */
-      typedef BufferedCommunicator<ParallelIndexSet> Communicator;
-      /** @brief The type of the parallel matrix. */
-      typedef ParallelMatrix<Matrix,ParallelIndexSet> ParallelMatrix;
+      typedef PI ParallelInformation;
+
       /** @brief The allocator to use. */
       typedef A Allocator;
+
       /** @brief The type of the aggregates map we use. */
-      typedef AggregatesMap<typename MatrixGraph<M>::VertexDescriptor> AggregatesMap;
+      typedef AggregatesMap<typename MatrixGraph<Matrix>::VertexDescriptor> AggregatesMap;
+
       /** @brief The type of the parallel matrix hierarchy. */
-      typedef Hierarchy<ParallelMatrix,Allocator> ParallelMatrixHierarchy;
+      typedef Hierarchy<MatrixOperator,Allocator> ParallelMatrixHierarchy;
+
+      /** @brief The type of the parallel informarion hierarchy. */
+      typedef Hierarchy<ParallelInformation,Allocator> ParallelInformationHierarchy;
 
       /** @brief Allocator for pointers. */
       typedef typename Allocator::template rebind<AggregatesMap*>::other AAllocator;
 
       /** @brief The type of the aggregates maps list. */
       typedef std::list<AggregatesMap*,AAllocator> AggregatesMapList;
+
       /**
        * @brief Constructor
        * @param fineMatrix The matrix to coarsen.
        * @param indexSet The index set mapping the global indices to matrix rows.
        * @param remoteIndices Information about the remote indices.
        */
-      MatrixHierarchy(const Matrix& fineMatrix,
-                      const ParallelIndexSet& indexSet,
-                      const RemoteIndices& remoteIndices,
-                      Interface& interface);
+      MatrixHierarchy(const MatrixOperator& fineMatrix,
+                      const ParallelInformation& pinfo=ParallelInformation());
+
 
       ~MatrixHierarchy();
 
@@ -351,27 +353,26 @@ namespace Dune
 
       const ParallelMatrixHierarchy& matrices() const;
 
+      const ParallelInformationHierarchy& parallelInformation() const;
+
       const AggregatesMapList& aggregatesMaps() const;
 
     private:
-      typedef typename ConstructionTraits<ParallelMatrix>::Arguments MatrixArgs;
+      typedef typename ConstructionTraits<MatrixOperator>::Arguments MatrixArgs;
       /** @brief The list of aggregates maps. */
       AggregatesMapList aggregatesMaps_;
       /** @brief The hierarchy of parallel matrices. */
       ParallelMatrixHierarchy matrices_;
-      typedef Hierarchy<Interface,Allocator> InterfaceHierarchy;
-      /** @brief The hierarchy of interfaces. */
-      InterfaceHierarchy interfaces_;
-      typedef Hierarchy<Communicator,Allocator> CommunicatorHierarchy;
-      /** @brief The hierarchy of communicators. */
-      CommunicatorHierarchy communicators_;
+      /** @brief The hierarchy of the parallel information. */
+      ParallelInformationHierarchy parallelInformation_;
 
-      /** @brief Whether the hierarchy wis built. */
+      /** @brief Whether the hierarchy was built. */
       bool built_;
 
       template<class T>
       bool coarsenTargetReached(const T& crit,
-                                const typename ParallelMatrixHierarchy::Iterator& matrix);
+                                const typename ParallelMatrixHierarchy::Iterator& matrix,
+                                const ParallelInformation& info);
     };
 
     template<class T>
@@ -426,24 +427,25 @@ namespace Dune
 
 
     template<class M, class IS, class A>
-    MatrixHierarchy<M,IS,A>::MatrixHierarchy(const Matrix& fineMatrix,
-                                             const ParallelIndexSet& indexSet,
-                                             const RemoteIndices& remoteIndices,
-                                             Interface& interface)
-      : matrices_(*new ParallelMatrix(fineMatrix,indexSet,remoteIndices)),
-        interfaces_(interface), communicators_(*(new Communicator())), built_(false)
-    {}
+    MatrixHierarchy<M,IS,A>::MatrixHierarchy(const MatrixOperator& fineOperator,
+                                             const ParallelInformation& pinfo)
+      : matrices_(const_cast<MatrixOperator&>(fineOperator)),
+        parallelInformation_(const_cast<ParallelInformation&>(pinfo))
+    {
+      IsTrue<static_cast<int>(MatrixOperator::category) == static_cast<int>(SolverCategory::sequential) ||
+          static_cast<int>(MatrixOperator::category) == static_cast<int>(SolverCategory::overlapping)>::yes();
+      IsTrue<static_cast<int>(MatrixOperator::category) == static_cast<int>(ParallelInformation::category)>::yes();
+    }
 
     template<class M, class IS, class A>
     template<typename T>
     inline bool
     MatrixHierarchy<M,IS,A>::coarsenTargetReached(const T& crit,
-                                                  const typename ParallelMatrixHierarchy::Iterator& matrix)
+                                                  const typename ParallelMatrixHierarchy::Iterator& matrix,
+                                                  const ParallelInformation& info)
     {
       int nodes = matrix->getmat().N();
-      int totalNodes;
-
-      MPI_Allreduce(&nodes, &totalNodes, 1, MPI_INT, MPI_SUM, matrix->remoteIndices().communicator());
+      int totalNodes = info.globalSum(nodes);
 
       return totalNodes < crit.coarsenTarget();
     }
@@ -453,40 +455,39 @@ namespace Dune
     void MatrixHierarchy<M,IS,A>::build(const T& criterion)
     {
       typedef O OverlapFlags;
-      GalerkinProduct productBuilder;
-      int procs;
       typedef typename ParallelMatrixHierarchy::Iterator MatIterator;
-      typedef typename InterfaceHierarchy::Iterator InterfaceIterator;
-      typedef typename CommunicatorHierarchy::Iterator CommIterator;
+      typedef typename ParallelInformationHierarchy::Iterator PInfoIterator;
 
+      GalerkinProduct productBuilder;
       MatIterator mlevel = matrices_.finest();
-      InterfaceIterator iflevel = interfaces_.finest();
-      CommIterator commlevel = communicators_.finest();
+      PInfoIterator infoLevel = parallelInformation_.finest();
 
-      MPI_Comm_size(mlevel->remoteIndices().communicator(), &procs);
-      int level=0;
+
+      int procs;
+      int level = 0;
+
+
+      infoLevel->processes(&procs);
 
       for(; level < criterion.maxLevel(); ++level, ++mlevel) {
 
         dinfo<<"Level "<<level<<" has "<<mlevel->getmat().N()<<" unknows!"<<std::endl;
 
 
-        if(coarsenTargetReached(criterion, mlevel))
+        if(coarsenTargetReached(criterion, mlevel, *infoLevel))
           // No further coarsening needed
           break;
 
-        typedef typename PropertiesGraphCreator<ParallelMatrix>::PropertiesGraph
-        PropertiesGraph;
-        typedef typename PropertiesGraphCreator<ParallelMatrix>::MatrixGraph
-        MatrixGraph;
-        typedef typename PropertiesGraphCreator<ParallelMatrix>::GraphTuple
-        GraphTuple;
+        typedef PropertiesGraphCreator<MatrixOperator> GraphCreator;
+        typedef typename GraphCreator::PropertiesGraph PropertiesGraph;
+        typedef typename GraphCreator::MatrixGraph MatrixGraph;
+        typedef typename GraphCreator::GraphTuple GraphTuple;
 
         typedef typename PropertiesGraph::VertexDescriptor Vertex;
 
         std::vector<bool> excluded(mlevel->getmat().N());
 
-        GraphTuple graphs = PropertiesGraphCreator<ParallelMatrix>::create(*mlevel, excluded, OverlapFlags());
+        GraphTuple graphs = GraphCreator::create(*mlevel, excluded, *infoLevel, OverlapFlags());
 
         AggregatesMap* aggregatesMap=new AggregatesMap(Element<1>::get(graphs)->maxVertex());
 
@@ -501,43 +502,31 @@ namespace Dune
         }
         dinfo << "Building aggregates took "<<watch.elapsed()<<" seconds."<<std::endl;
 
-        ParallelIndexSet*      coarseIndices = new ParallelIndexSet();
-        RemoteIndices* coarseRemote = new RemoteIndices(*coarseIndices, *coarseIndices,
-                                                        mlevel->remoteIndices().communicator());
+        ParallelInformation* coarseInfo = new ParallelInformation(infoLevel->communicator());
 
         typename PropertyMapTypeSelector<VertexVisitedTag,PropertiesGraph>::Type visitedMap =
           get(VertexVisitedTag(), *(Element<1>::get(graphs)));
 
         watch.reset();
-        if(mlevel->indexSet().size()>0)
-          IndicesCoarsener<OverlapFlags,ParallelIndexSet>::coarsen(mlevel->indexSet(),
-                                                                   mlevel->remoteIndices(),
-                                                                   *(Element<1>::get(graphs)),
-                                                                   visitedMap,
-                                                                   *aggregatesMap,
-                                                                   *coarseIndices,
-                                                                   *coarseRemote);
-        else{
-          renumberAggregates(*(Element<1>::get(graphs)), mlevel->getmat().begin(), mlevel->getmat().end(), visitedMap, *aggregatesMap);
-          coarseRemote->template rebuild<false>();
-        }
+        int aggregates = IndicesCoarsener<ParallelInformation,OverlapFlags>
+                         ::coarsen(*infoLevel,
+                                   *(Element<1>::get(graphs)),
+                                   visitedMap,
+                                   *aggregatesMap,
+                                   *coarseInfo);
+
+        parallelInformation_.addCoarser(*coarseInfo);
+
+        PInfoIterator fineInfo = infoLevel;
+
+        ++infoLevel;
 
         dinfo<<" Coarsening of index sets took "<<watch.elapsed()<<" seconds."<<std::endl;
 
         watch.reset();
-        const void* args;
-        communicators_.addCoarser(args);
-        ++commlevel;
-        interfaces_.addCoarser(args);
-        ++iflevel;
-        iflevel->build(*coarseRemote, NegateSet<OverlapFlags>(), OverlapFlags());
-        typedef Dune::Amg::GlobalAggregatesMap<Vertex,ParallelIndexSet> GlobalMap;
-        GlobalMap gmap(*aggregatesMap, *coarseIndices);
 
-        commlevel->build<GlobalMap>(*iflevel);
-        commlevel->template forward<Dune::Amg::AggregatesGatherScatter<Vertex,ParallelIndexSet> >(gmap);
-
-        commlevel->free();
+        AggregatesPublisher<Vertex,OverlapFlags,ParallelInformation>::publish(*aggregatesMap,
+                                                                              *infoLevel);
 
         dinfo<<"Communicating global aggregate numbers took "<<watch.elapsed()<<" seconds."<<std::endl;
 
@@ -552,22 +541,18 @@ namespace Dune
 
         VisitedMap2 visitedMap2(visited.begin(), Dune::IdentityMap());
 
-        Matrix* coarseMatrix;
+        typename MatrixOperator::matrix_type* coarseMatrix;
 
-        if(mlevel->indexSet().size()==0)
-          coarseMatrix = productBuilder.build(mlevel->getmat(), *(Element<0>::get(graphs)), visitedMap2,
-                                              *aggregatesMap);
-        else
-          coarseMatrix = productBuilder.build(mlevel->getmat(), *(Element<0>::get(graphs)), visitedMap2,
-                                              mlevel->indexSet(),
-                                              *aggregatesMap,
-                                              coarseIndices->size(),
-                                              OverlapFlags());
+        coarseMatrix = productBuilder.build(mlevel->getmat(), *(Element<0>::get(graphs)), visitedMap2,
+                                            *fineInfo,
+                                            *aggregatesMap,
+                                            aggregates,
+                                            OverlapFlags());
         productBuilder.calculate(mlevel->getmat(), *aggregatesMap, *coarseMatrix);
 
         dinfo<<"Calculation of Galerkin product took "<<watch.elapsed()<<" seconds."<<std::endl;
 
-        matrices_.addCoarser(MatrixArgs(*coarseMatrix, *coarseIndices, *coarseRemote));
+        matrices_.addCoarser(MatrixArgs(*coarseMatrix, *infoLevel));
       }
       built_=true;
       AggregatesMap* aggregatesMap=new AggregatesMap(0);
@@ -596,22 +581,15 @@ namespace Dune
     {
       typedef typename AggregatesMapList::reverse_iterator AggregatesMapIterator;
       typedef typename ParallelMatrixHierarchy::Iterator Iterator;
+      typedef typename ParallelInformationHierarchy::Iterator InfoIterator;
 
       AggregatesMapIterator amap = aggregatesMaps_.rbegin();
+      InfoIterator info = parallelInformation_.finest();
 
-      for(Iterator level=matrices_.coarsest(), finest=matrices_.finest(); level != finest;  --level, ++amap) {
+      for(Iterator level=matrices_.coarsest(), finest=matrices_.finest(); level != finest;  --level, --info, ++amap) {
         delete *amap;
-        /*
-           if(level.isRedistributed()){
-           ParallelMatrix& mat = level.getRedistributed();
-           delete &mat.remoteIndices();
-           delete &mat.indexSet();
-           delete &mat.getmat();
-           }
-         */
-        delete &level->remoteIndices();
-        delete &level->indexSet();
         delete &level->getmat();
+        delete &(*info);
       }
     }
 

@@ -5,7 +5,10 @@
 
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/istl/remoteindices.hh>
+#include <dune/istl/solvercategory.hh>
+#include <dune/istl/operators.hh>
+#include "pinfo.hh"
+
 namespace Dune
 {
   namespace Amg
@@ -16,8 +19,8 @@ namespace Dune
      * between the processes.
      *
      */
-    template<class M, class IS>
-    class ParallelMatrix
+    template<class M, class IS, class X, class Y>
+    class ParallelMatrix : public AssembledLinearOperator<M,X,Y>
     {
     public:
       /** @brief The type of the matrix. */
@@ -29,17 +32,15 @@ namespace Dune
        */
       typedef M matrix_type;
       /** @brief The type of the index set. */
-      typedef IS ParallelIndexSet;
-      /** @brief The type of the remote indices. */
-      typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
+      typedef ParallelInformation<IS> ParallelInformation;
 
-      ParallelMatrix(const Matrix& matrix, const ParallelIndexSet& indexSet,
-                     const RemoteIndices& rindices)
-        : matrix_(&matrix), indices_(&indexSet), rIndices_(&rindices)
-      {
-        IsTrue<SameType<ParallelIndexSet,
-                typename RemoteIndices::ParallelIndexSet>::value>::yes();
-      }
+      enum {
+        category = SolverCategory::overlapping
+      };
+
+      ParallelMatrix(const Matrix& matrix, const ParallelInformation& info)
+        : matrix_(&matrix), info_(&info)
+      {}
 
 
       /**
@@ -54,54 +55,50 @@ namespace Dune
        * @brief Get the index set that maps global indices to matrix rows.
        *  @return The index set.
        */
-      const ParallelIndexSet& indexSet() const
+      const ParallelInformation& info() const
       {
-        return *indices_;
+        return *info_;
       }
 
-      /**
-       * @brief Get the information about remote indices also present locally.
-       * @return The remote index information.
-       */
-      const RemoteIndices& remoteIndices() const
+      void apply(const X& x, Y&) const
       {
-        return *rIndices_;
+        DUNE_THROW(NotImplemented, "Markus was too lazy to implement this.");
       }
 
+      void applyscaleadd(typename X::field_type a, const X& x, Y&) const
+      {
+        DUNE_THROW(NotImplemented, "Markus was too lazy to implement this.");
+      }
     private:
       /** @brief The local part of the matrix. */
       const Matrix* matrix_;
       /** @brief The index set. */
-      const ParallelIndexSet* indices_;
-      /** @brief Remote index information. */
-      const RemoteIndices* rIndices_;
+      const ParallelInformation* info_;
     };
 
     template<class M, class IS>
     struct ParallelMatrixArgs
     {
       M& matrix;
-      IS& indexSet;
-      RemoteIndices<IS>& remoteIndices;
+      ParallelInformation<IS>& info;
 
-      ParallelMatrixArgs(M& m, IS& is, RemoteIndices<IS>& ri)
-        : matrix(m), indexSet(is), remoteIndices(ri)
+      ParallelMatrixArgs(M& m, ParallelInformation<IS>& i)
+        : matrix(m), info(i)
       {}
     };
 
     template<class T>
     class ConstructionTraits;
 
-    template<class M, class IS>
-    class ConstructionTraits<ParallelMatrix<M,IS> >
+    template<class M, class IS, class X, class Y>
+    class ConstructionTraits<ParallelMatrix<M,IS,X,Y> >
     {
     public:
       typedef const ParallelMatrixArgs<M,IS> Arguments;
 
-      static inline ParallelMatrix<M,IS>* construct(Arguments& args)
+      static inline ParallelMatrix<M,IS,X,Y>* construct(Arguments& args)
       {
-        return new ParallelMatrix<M,IS>(args.matrix, args.indexSet,
-                                        args.remoteIndices);
+        return new ParallelMatrix<M,IS,X,Y>(args.matrix, args.info);
       }
     };
   } // end namespace Amg

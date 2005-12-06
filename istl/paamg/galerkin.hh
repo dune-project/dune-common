@@ -5,6 +5,7 @@
 #define DUNE_GALERKIN_HH
 
 #include "aggregates.hh"
+#include "pinfo.hh"
 #include <dune/common/poolallocator.hh>
 #include <dune/common/enumset.hh>
 #include <set>
@@ -33,26 +34,41 @@ namespace Dune
        * @param fine The matrix on the fine level.
        * @param fineGraph The graph of the fine matrix.
        * @param visitedMap Map for marking vertices as visited.
-       * @param fineIndices The indices on the fine level.
+       * @param pinfo Parallel information about the fine level.
        * @param aggregates The mapping of the fine level unknowns  onto aggregates.
        * @param size The number of columns and rows of the coarse matrix.
        */
       template<class M, class G, class V, class I, class Set>
-      M* build(const M& fine, G& fineGraph, V& visitedMap, const I& fineIndices,
+      M* build(const M& fine, G& fineGraph, V& visitedMap, const I& pinfo,
                const AggregatesMap<typename G::VertexDescriptor>& aggregates,
                const typename M::size_type& size,
                const Set& overlap);
-
+      /**
+       * @brief Calculates the coarse matrix via a Galerkin product.
+       * @param fine The matrix on the fine level.
+       * @param fineGraph The graph of the fine matrix.
+       * @param visitedMap Map for marking vertices as visited.
+       * @param pinfo Parallel information about the fine level.
+       * @param aggregates The mapping of the fine level unknowns  onto aggregates.
+       * @param size The number of columns and rows of the coarse matrix.
+       */
+      template<class M, class G, class V, class Set>
+      M* build(const M& fine, G& fineGraph, V& visitedMap,
+               const SequentialInformation& pinfo,
+               const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+               const typename M::size_type& size,
+               const Set& overlap);
       /**
        * @brief Calculates the coarse matrix via a Galerkin product.
        * @param fine The matrix on the fine level.
        * @param fineGraph The graph of the fine matrix.
        * @param aggregates The mapping of the fine level unknowns  onto aggregates.
        * @param size The number of columns and rows of the coarse matrix.
-       */
-      template<class M, class G, class V>
-      M* build(const M& fine, G& fineGraph, V& visitedMap,
+       *
+         template<class M, class G, class V>
+         M* build(const M& fine, G& fineGraph, V& visitedMap,
                const AggregatesMap<typename G::VertexDescriptor>& aggregates);
+       */
       /**
        * @brief Calculate the galerkin product.
        * @param fine The fine matrix.
@@ -563,7 +579,7 @@ namespace Dune
 
     template<class M, class G, class V, class I, class Set>
     M* GalerkinProduct::build(const M& fine, G& fineGraph, V& visitedMap,
-                              const I& fineIndices,
+                              const I& pinfo,
                               const AggregatesMap<typename G::VertexDescriptor>& aggregates,
                               const typename M::size_type& size,
                               const Set& overlap)
@@ -571,19 +587,12 @@ namespace Dune
 
       typedef OverlapVertex<typename G::VertexDescriptor> OverlapVertex;
       std::set<typename G::VertexDescriptor> connected;
+      const typename I::IndexSet& fineIndices = pinfo.indexSet();
+
       const OverlapVertex* overlapVertices = buildOverlapVertices(fineGraph,
                                                                   fineIndices,
                                                                   aggregates,
                                                                   overlap);
-      /*
-         std::pair<int,int> res = countNonZeros(connected,
-                                             fineGraph,
-                                             visitedMap,
-                                             fineIndices,
-                                             aggregates,
-                                             overlap,
-                                             overlapVertices);
-       */
       M* coarseMatrix = new M(size, size, M::row_wise);
 
       setupSparsityPattern(connected, fineGraph, visitedMap, fineIndices.begin(), fineIndices.end(), aggregates,
@@ -597,28 +606,46 @@ namespace Dune
       return coarseMatrix;
     }
 
-    template<class M, class G, class V>
+    template<class M, class G, class V, class Set>
     M* GalerkinProduct::build(const M& fine, G& fineGraph, V& visitedMap,
-                              const AggregatesMap<typename G::VertexDescriptor>& aggregates)
+                              const SequentialInformation& pinfo,
+                              const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+                              const typename M::size_type& size,
+                              const Set& overlap)
     {
-      typedef std::set<typename G::VertexDescriptor> Set;
-      typedef RowToIndex<M> RowToIndex;
-      typedef OverlapVertex<typename G::VertexDescriptor> OverlapVertex;
+      std::set<typename G::VertexDescriptor> connected;
 
-      Set connected;
-      NonZeroCounter<M> nonZeros;
-      examineConnectivity(connected, fineGraph, visitedMap, RowToIndex(fine.begin()), RowToIndex(fine.end()), aggregates, EmptySet<int>(),
-                          static_cast<OverlapVertex*>(0),
-                          nonZeros);
-      const std::pair<int,int>& size = nonZeros.getUnknownsNonZeros();
+      M* coarseMatrix = new M(size, size, M::row_wise);
 
-      M* coarseMatrix = new M(size.first, size.first, size.second, M::row_wise);
-
-      setupSparsityPattern(connected, fineGraph, visitedMap, RowToIndex(fine.begin()),
-                           RowToIndex(fine.end()), aggregates, *coarseMatrix, NonOverlap());
-
+      setupSparsityPattern(connected, fineGraph, visitedMap, RowToIndex<M>(fine.begin()),
+                           RowToIndex<M>(fine.end()), aggregates, *coarseMatrix, NonOverlap());
       return coarseMatrix;
     }
+
+    /*
+       template<class M, class G, class V>
+       M* GalerkinProduct::build(const M& fine, G& fineGraph, V& visitedMap,
+                              const AggregatesMap<typename G::VertexDescriptor>& aggregates)
+       {
+       typedef std::set<typename G::VertexDescriptor> Set;
+       typedef RowToIndex<M> RowToIndex;
+       typedef OverlapVertex<typename G::VertexDescriptor> OverlapVertex;
+
+       Set connected;
+       NonZeroCounter<M> nonZeros;
+       examineConnectivity(connected, fineGraph, visitedMap, RowToIndex(fine.begin()), RowToIndex(fine.end()), aggregates, EmptySet<int>(),
+                          static_cast<OverlapVertex*>(0),
+                          nonZeros);
+       const std::pair<int,int>& size = nonZeros.getUnknownsNonZeros();
+
+       M* coarseMatrix = new M(size.first, size.first, size.second, M::row_wise);
+
+       setupSparsityPattern(connected, fineGraph, visitedMap, RowToIndex(fine.begin()),
+                           RowToIndex(fine.end()), aggregates, *coarseMatrix, NonOverlap());
+
+       return coarseMatrix;
+       }
+     */
 
     template<class M, class V>
     void GalerkinProduct::calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse)

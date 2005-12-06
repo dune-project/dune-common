@@ -1702,57 +1702,6 @@ namespace Dune
       DistanceCalculator distanceCalculator(distanceSpheres_);
       visitAggregateNeighbours(vertex, aggregate_->id(), aggregates, distanceCalculator);
       return std::max(distanceCalculator.value()+1, aggregate_->maxSphere());
-
-
-      typename PropertyMapTypeSelector<VertexVisitedTag,G>::Type visitedMap = get(VertexVisitedTag(), *graph_);
-
-      typename AggregatesMap<Vertex>::VertexList vlist;
-      typename AggregatesMap<Vertex>::DummyEdgeVisitor dummy;
-      return aggregates.template breadthFirstSearch<true,true>(vertex, aggregate_->id(), *graph_, vlist, dummy, dummy, visitedMap);
-
-      Vertex aggregate=aggregate_->id();
-      std::vector<Vertex> visited(100, -1);
-      int visitedsize = 1;
-      int visitedSpheres = 0;
-      visited[0]=vertex;
-      typedef typename std::vector<Vertex>::iterator Iterator;
-      Iterator first = visited.begin();
-      Iterator last = visited.begin();
-      last += visitedsize;
-
-      while( last != first && visitedSpheres <=1000) {
-        for(; first!=last; ++first) {
-          typedef typename G::ConstEdgeIterator EdgeIterator;
-          const EdgeIterator edgeEnd = graph_->endEdges(*first);
-
-          for(EdgeIterator edge = graph_->beginEdges(*first);
-              edge != edgeEnd; ++edge) {
-
-            if(aggregates[edge.target()]==aggregate) {
-              if(!get(visitedMap, edge.target())) {
-                assert(!get(visitedMap, edge.target()));
-                put(visitedMap, edge.target(), true);
-                assert(visitedsize<=100);
-                visited[visitedsize++]=edge.target();
-              }
-            }
-          }
-        }
-
-        last = visited.begin();
-        last += visitedsize;
-
-        if(first != last)
-          visitedSpheres++;
-      }
-
-      last = visited.begin()+visitedsize;
-
-      for(first = visited.begin(); first != last; ++first)
-        put(visitedMap, *first, false);
-
-      return visitedSpheres;
-
     }
 
     template<class G>

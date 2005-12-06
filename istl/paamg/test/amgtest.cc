@@ -4,6 +4,7 @@
 #include "anisotropic.hh"
 #include <dune/common/timer.hh>
 #include <dune/istl/paamg/amg.hh>
+#include <dune/istl/paamg/pinfo.hh>
 #include <dune/istl/indexset.hh>
 
 int main(int argc, char** argv)
@@ -31,7 +32,7 @@ int main(int argc, char** argv)
   typedef Dune::BCRSMatrix<MatrixBlock> BCRSMat;
   typedef Dune::FieldVector<double,BS> VectorBlock;
   typedef Dune::BlockVector<VectorBlock> Vector;
-
+  typedef Dune::MatrixAdapter<BCRSMat,Vector,Vector> Operator;
   int n;
 
   BCRSMat mat = setupAnisotropic2d<BS>(N, indices, &n, 1);
@@ -46,22 +47,16 @@ int main(int argc, char** argv)
   b=0;
   x=100;
 
-  Dune::Timer watch;
-
-  watch.reset();
-
-  //hierarchy.build<OverlapFlags>(criterion);
-
-  double buildtime = watch.elapsed();
-  std::cout<<"Building hierarchy took "<<buildtime<<" seconds"<<std::endl;
-
-
   if(N<6)
     Dune::printmatrix(std::cout, mat, "A", "row");
 
-  Dune::MatrixAdapter<BCRSMat,Vector,Vector> fop(mat);
 
-  typedef Dune::Amg::MatrixHierarchy<BCRSMat,ParallelIndexSet> MHierarchy;
+  Dune::Timer watch;
+
+  watch.reset();
+  Operator fop(mat);
+
+  typedef Dune::Amg::MatrixHierarchy<Operator,Dune::Amg::SequentialInformation> MHierarchy;
   typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
   Criterion;
   typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
@@ -76,16 +71,16 @@ int main(int argc, char** argv)
   criterion.setMaxDistance(2);
 
   Dune::SeqScalarProduct<Vector> sp;
-  typedef Dune::Amg::AMG<MHierarchy,Vector,Smoother> AMG;
+  typedef Dune::Amg::AMG<Operator,Vector,Smoother> AMG;
 
-  AMG amg(fop.getmat(), criterion, smootherArgs, 1, 1);
+  AMG amg(fop, criterion, smootherArgs, 1, 1);
+
+
+  double buildtime = watch.elapsed();
+
+  std::cout<<"Building hierarchy took "<<buildtime<<" seconds"<<std::endl;
 
   Dune::CGSolver<Vector> amgCG(fop,amg,10e-8,80,2);
-
-  /*
-     Dune::SeqSSOR<BCRSMat,Vector,Vector> fssor(mat,1,1.0);
-     Dune::CGSolver<Vector> cg(fop,fssor,10e-8,8,2);
-   */
   watch.reset();
   Dune::InverseOperatorResult r;
   amgCG.apply(x,b,r);

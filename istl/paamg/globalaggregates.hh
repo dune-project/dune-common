@@ -26,7 +26,7 @@ namespace Dune
       typedef T Vertex;
 
       GlobalAggregatesMap(AggregatesMap<Vertex>& aggregates,
-                          ParallelIndexSet& indexset)
+                          const ParallelIndexSet& indexset)
         : aggregates_(aggregates), indexset_(indexset)
       {}
 
@@ -64,6 +64,39 @@ namespace Dune
         ga.put(global, i);
       }
     };
+
+    template<typename T, typename O, typename I>
+    struct AggregatesPublisher
+    {
+      typedef T Vertex;
+      typedef O OverlapFlags;
+      typedef I ParallelInformation;
+      typedef typename ParallelInformation::IndexSet IndexSet;
+
+      static void publish(AggregatesMap<Vertex>& aggregates,
+                          ParallelInformation& pinfo)
+      {
+        typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
+        GlobalMap gmap(aggregates, pinfo.indexSet());
+        pinfo.template buildInterface<OverlapFlags>();
+        pinfo.template buildCommunicator<GlobalMap>(gmap, gmap);
+        pinfo.template communicateForward<AggregatesGatherScatter<Vertex,IndexSet> >(gmap, gmap);
+        pinfo.freeCommunicator();
+      }
+
+    };
+
+    template<typename T, typename O>
+    struct AggregatesPublisher<T,O,SequentialInformation>
+    {
+      typedef T Vertex;
+      typedef SequentialInformation ParallelInformation;
+
+      static void publish(AggregatesMap<Vertex>& aggregates,
+                          ParallelInformation& pinfo)
+      {}
+    };
+
   } // end Amg namespace
 
 

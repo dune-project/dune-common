@@ -26,14 +26,17 @@ namespace Dune
      * @author Markus Blatt
      * @brief The AMG preconditioner.
      */
-    template<class M, class X, class S, class A=std::allocator<X> >
+    template<class M, class X, class S, class PI=SequentialInformation,
+        class A=std::allocator<X> >
     class AMG : public Preconditioner<X,X>
     {
     public:
+      /** @brief The matrix operator type. */
+      typedef M Matrix;
+      /** @brief The type of the parallel information */
+      typedef PI ParallelInformation;
       /** @brief The matrix type. */
-      typedef typename M::Matrix Matrix;
-      /** @brief The matrix type. */
-      typedef M MatrixHierarchy;
+      typedef MatrixHierarchy<M, ParallelInformation, A> MatrixHierarchy;
       /** @brief The domain type. */
       typedef X Domain;
       /** @brief The range type. */
@@ -111,15 +114,15 @@ namespace Dune
       std::size_t level;
       bool buildHierarchy_;
 
-      typedef MatrixAdapter<Matrix,Domain,Range> MatrixAdapter;
+      typedef MatrixAdapter<typename Matrix::matrix_type,Domain,Range> MatrixAdapter;
       MatrixAdapter *coarseOperator_;
       Smoother *coarseSmoother_;
     };
 
-    template<class M, class X, class S, class A>
-    AMG<M,X,S,A>::AMG(const MatrixHierarchy& matrices, CoarseSolver& coarseSolver,
-                      const SmootherArgs& smootherArgs,
-                      std::size_t gamma, std::size_t smoothingSteps)
+    template<class M, class X, class S, class P, class A>
+    AMG<M,X,S,P,A>::AMG(const MatrixHierarchy& matrices, CoarseSolver& coarseSolver,
+                        const SmootherArgs& smootherArgs,
+                        std::size_t gamma, std::size_t smoothingSteps)
       : matrices_(&matrices), smootherArgs_(smootherArgs),
         smoothers_(), solver_(&coarseSolver), gamma_(gamma),
         steps_(smoothingSteps), buildHierarchy_(false)
@@ -132,8 +135,8 @@ namespace Dune
 
     }
     /*
-       template<class M, class X, class S, class A>
-       void AMG<M,X,S,A>::setupIndices(typename Matrix::ParallelIndexSet& indices, const Matrix& matrix)
+       template<class M, class X, class S, class P, class A>
+       void AMG<M,X,S,P,A>::setupIndices(typename Matrix::ParallelIndexSet& indices, const Matrix& matrix)
        {
        typename typename Matrix::ParallelIndexSet::LocalIndex LocalIndex;
        typedef typename Matrix::ConstIterator Iterator;
@@ -146,29 +149,19 @@ namespace Dune
        indices.endResize();
        }
      */
-    template<class M, class X, class S, class A>
+    template<class M, class X, class S, class P, class A>
     template<class C>
-    AMG<M,X,S,A>::AMG(const Matrix& matrix,
-                      const C& criterion,
-                      const SmootherArgs& smootherArgs,
-                      std::size_t gamma, std::size_t smoothingSteps)
+    AMG<M,X,S,P,A>::AMG(const Matrix& matrix,
+                        const C& criterion,
+                        const SmootherArgs& smootherArgs,
+                        std::size_t gamma, std::size_t smoothingSteps)
       : smootherArgs_(smootherArgs),
         smoothers_(), gamma_(gamma),
         steps_(smoothingSteps), buildHierarchy_(true)
     {
+      IsTrue<static_cast<int>(M::category)==static_cast<int>(SolverCategory::sequential)>::yes();
 
-      typedef typename MatrixHierarchy::ParallelIndexSet ParallelIndexSet;
-      typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
-      typedef Interface<ParallelIndexSet> Interface;
-
-      ParallelIndexSet* indices = new ParallelIndexSet();
-      RemoteIndices* remoteIndices = new RemoteIndices(*indices,*indices,MPI_COMM_WORLD);
-      remoteIndices->template rebuild<false>();
-
-      Interface* interface = new Interface();
-      interface->build(*remoteIndices, Dune::NegateSet<EmptySet<int> >(),EmptySet<int>());
-
-      MatrixHierarchy* matrices = new MatrixHierarchy(matrix, *indices, *remoteIndices, *interface);
+      MatrixHierarchy* matrices = new MatrixHierarchy(const_cast<Matrix&>(matrix));
 
       matrices->template build<EmptySet<int> >(criterion);
 
@@ -178,19 +171,17 @@ namespace Dune
 
     }
 
-    template<class M, class X, class S, class A>
-    AMG<M,X,S,A>::~AMG()
+    template<class M, class X, class S, class P, class A>
+    AMG<M,X,S,P,A>::~AMG()
     {
       if(buildHierarchy_) {
-        delete &(matrices_->matrices().finest()->remoteIndices());
-        delete &(matrices_->matrices().finest()->indexSet());
         delete matrices_;
       }
     }
 
     /** \copydoc Preconditioner::pre */
-    template<class M, class X, class S, class A>
-    void AMG<M,X,S,A>::pre(Domain& x, Range& b)
+    template<class M, class X, class S, class P, class A>
+    void AMG<M,X,S,P,A>::pre(Domain& x, Range& b)
     {
       Range* copy = new Range(b);
       rhs_ = new Hierarchy<Range,A>(*copy);
@@ -234,8 +225,8 @@ namespace Dune
     }
 
     /** \copydoc Preconditioner::apply */
-    template<class M, class X, class S, class A>
-    void AMG<M,X,S,A>::apply(Domain& v, const Range& d)
+    template<class M, class X, class S, class P, class A>
+    void AMG<M,X,S,P,A>::apply(Domain& v, const Range& d)
     {
       typename Hierarchy<Smoother,A>::Iterator smoother = smoothers_.finest();
       typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator matrix = matrices_->matrices().finest();
@@ -252,13 +243,13 @@ namespace Dune
       v=*lhs;
     }
 
-    template<class M, class X, class S, class A>
-    void AMG<M,X,S,A>::mgc(typename Hierarchy<Smoother,A>::Iterator& smoother,
-                           typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator& matrix,
-                           typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
-                           typename Hierarchy<Domain,A>::Iterator& lhs,
-                           typename Hierarchy<Range,A>::Iterator& rhs,
-                           typename Hierarchy<Range,A>::Iterator& defect){
+    template<class M, class X, class S, class P, class A>
+    void AMG<M,X,S,P,A>::mgc(typename Hierarchy<Smoother,A>::Iterator& smoother,
+                             typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator& matrix,
+                             typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
+                             typename Hierarchy<Domain,A>::Iterator& lhs,
+                             typename Hierarchy<Range,A>::Iterator& rhs,
+                             typename Hierarchy<Range,A>::Iterator& defect){
       if(matrix == matrices_->matrices().coarsest()) {
         // Solve directly
         InverseOperatorResult res;
@@ -320,8 +311,8 @@ namespace Dune
     }
 
     /** \copydoc Preconditioner::post */
-    template<class M, class X, class S, class A>
-    void AMG<M,X,S,A>::post(Domain& x)
+    template<class M, class X, class S, class P, class A>
+    void AMG<M,X,S,P,A>::post(Domain& x)
     {
       if(buildHierarchy_) {
         delete solver_;

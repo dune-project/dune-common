@@ -17,18 +17,19 @@ int main(int argc, char** argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
 
-  ParallelIndexSet indices;
+  typedef Dune::Amg::ParallelInformation<ParallelIndexSet> ParallelInformation;
   typedef Dune::FieldMatrix<double,BS,BS> MatrixBlock;
   typedef Dune::BCRSMatrix<MatrixBlock> BCRSMat;
   typedef Dune::FieldVector<double,BS> VectorBlock;
   typedef Dune::BlockVector<VectorBlock> Vector;
 
   int n;
-
+  ParallelInformation pinfo(MPI_COMM_WORLD);
+  ParallelIndexSet& indices = pinfo.indexSet();
+  RemoteIndices& remoteIndices = pinfo.remoteIndices();
   BCRSMat mat = setupAnisotropic2d<BS>(N, indices, &n);
   Vector b(indices.size());
 
-  RemoteIndices remoteIndices(indices,indices,MPI_COMM_WORLD);
   remoteIndices.rebuild<false>();
 
   typedef Dune::Interface<ParallelIndexSet> Interface;
@@ -36,12 +37,13 @@ int main(int argc, char** argv)
   Interface interface;
 
   typedef Dune::EnumItem<GridFlag,overlap> OverlapFlags;
-  typedef Dune::Amg::MatrixHierarchy<BCRSMat,ParallelIndexSet> Hierarchy;
+  typedef Dune::Amg::ParallelMatrix<BCRSMat,ParallelIndexSet,Vector,Vector> Operator;
+  typedef Dune::Amg::MatrixHierarchy<Operator,ParallelInformation> Hierarchy;
   typedef Dune::Amg::Hierarchy<Vector> VHierarchy;
 
   interface.build(remoteIndices, Dune::NegateSet<OverlapFlags>(), OverlapFlags());
-
-  Hierarchy hierarchy(mat, indices, remoteIndices, interface);
+  Operator op(mat, pinfo);
+  Hierarchy hierarchy(op, pinfo);
   VHierarchy vh(b);
 
   typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
