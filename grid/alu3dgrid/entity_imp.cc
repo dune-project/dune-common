@@ -99,6 +99,16 @@ namespace Dune {
   }
 
   template<int cd, int dim, class GridImp>
+  inline void ALU3dGridEntity<cd,dim,GridImp> ::
+  setGhost(const ALU3DSPACE HBndSegType &ghost)
+  {
+    // this method only exists, that we don't have to pecialise the
+    // Iterators for each codim, this method should not be called otherwise
+    // error
+    DUNE_THROW(GridError,"This method should not be called!");
+  }
+
+  template<int cd, int dim, class GridImp>
   inline int ALU3dGridEntity<cd,dim,GridImp> :: getIndex () const
   {
     return gIndex_;
@@ -541,10 +551,11 @@ namespace Dune {
   {
     assert(item_ != 0);
 
-    // one cannot call ibegin on a ghost entity
-    assert(isGhost_ == false);
-    //return ALU3dGridIntersectionIteratorType (grid_,item_,walkLevel_);
-    return ALU3dGridIntersectionIteratorType (grid_,*this,walkLevel_, false);
+    // NOTE: normaly here false should be given, which means that we create a non
+    // end iterator, but isGhost_ is normaly false. If isGhost_ is true,
+    // an end iterator is created,
+    // because on ghosts we dont run itersection iterators
+    return ALU3dGridIntersectionIteratorType (grid_,*this,walkLevel_, isGhost_ );
   }
 
   template<int dim, class GridImp>
@@ -552,11 +563,7 @@ namespace Dune {
   ALU3dGridEntity<0,dim,GridImp> :: iend () const
   {
     assert(item_ != 0);
-
-    // one cannot call iend on a ghost entity
-    assert(isGhost_ == false);
     return ALU3dGridIntersectionIteratorType (grid_, *this ,walkLevel_,true);
-    //return ALU3dGridIntersectionIteratorType (grid_, 0 ,walkLevel_,true);
   }
 
   template<int dim, class GridImp>

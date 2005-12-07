@@ -184,7 +184,7 @@ namespace Dune {
   {
     assert( codim >= 0 );
     assert( codim < dim +1 );
-    assert( leafIndexSet().size(codim) == sizeCache_->size(codim) );
+    //assert( leafIndexSet().size(codim) == sizeCache_->size(codim) );
     return sizeCache_->size(codim);
   }
 
@@ -643,7 +643,8 @@ namespace Dune {
       for(int l=0; l<= fakeLevel; l++)
       {
         {
-          ALU3DSPACE ALU3dGridLevelIteratorWrapper<0> w ( *this, l ) ;
+          VertexListType & vxList = vertexList_[l];
+          ALU3DSPACE ALU3dGridLevelIteratorWrapper<0> w ( *this,vxList,l ) ;
           for (w.first () ; ! w.done () ; w.next ())
           {
             if(w.item().level() > maxlevel_ ) maxlevel_ = w.item().level();
@@ -717,7 +718,7 @@ namespace Dune {
     bool changed = myGrid().duneLoadBalance();
     if(changed)
     {
-      dverb << "Grid was balanced on p = " << myRank() << std::endl;
+      std::cout << "Grid was balanced on p = " << myRank() << std::endl;
       // calculate new maxlevel
       // reset size and things
       updateStatus();
@@ -730,7 +731,8 @@ namespace Dune {
 
   // adapt grid
   template <int dim, int dimworld, ALU3dGridElementType elType> template <class DataCollectorType>
-  inline bool ALU3dGrid<dim, dimworld, elType>::loadBalance(DataCollectorType & dc)
+  inline bool ALU3dGrid<dim, dimworld, elType>::
+  loadBalance(DataCollectorType & dc)
   {
 #ifdef _ALU3DGRID_PARALLEL_
     EntityImp en     ( *this, this->maxLevel() );
@@ -756,7 +758,7 @@ namespace Dune {
 
     bool changed = myGrid().duneLoadBalance(gs,idxop);
     int memSize = std::max( idxop.newElements(), defaultChunk );
-    dc.resizeMem( memSize );
+    dc.reserveMemory ( memSize );
 
     if(changed)
     {

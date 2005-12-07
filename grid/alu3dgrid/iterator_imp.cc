@@ -586,48 +586,9 @@ namespace Dune {
   {
     if(!end)
     {
-#ifdef _ALU3DGRID_PARALLEL_
-      if(pitype == Ghost_Partition)
-      {
-        if( codim != 0 )
-        {
-          derr << "ERROR: GhostLeafIterator runs only with codimension 0 !\n";
-          assert( codim == 0);
-          abort();
-        }
-
-        assert( (true) ? (std::cout << "Erstelle Ghost Partition Iterator! \n",1) : 0);
-        typedef ALU3DSPACE ALU3dGridLeafIteratorWrapper<0,Ghost_Partition> GhostIterator;
-        IterInterface * it = new GhostIterator ( this->grid_, level_, nlinks );
-        iter_.store( it );
-
-      }
-      else if(pitype == All_Partition)
-      {
-        if( codim != 0 )
-        {
-          derr << "ERROR: AllLeafIterator runs only with codimension 0 !\n";
-          assert( codim == 0);
-          abort();
-        }
-        //std::cout << "Erstelle All Partition Iterator! \n";
-        //typedef ALU3DSPACE ALU3dGridLeafIteratorWrapper<0,All_Partition> AllIterator;
-        //IterInterface * it = new AllIterator ( this->grid_, level_, nlinks );
-        //iter_.store( it );
-        assert( (true) ? (std::cout << "Erstelle All Partition Iterator! \n",1) : 0);
-
-        IteratorType * it = new IteratorType ( this->grid_ , level_, nlinks );
-        iter_.store( it );
-
-      }
-      else
-#endif
-      {
-        // create interior iterator
-        IteratorType * it = new IteratorType ( this->grid_ , level_, nlinks );
-        iter_.store( it );
-
-      }
+      // create interior iterator
+      IteratorType * it = new IteratorType ( this->grid_ , level_, nlinks );
+      iter_.store( it );
 
       (*iter_).first();
       if((!(*iter_).done()) && grid.hierSetSize(0) > 0) // else iterator empty
