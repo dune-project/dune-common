@@ -20,11 +20,18 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
     AC_MSG_ERROR([You have to provide a directory --with-alugrid=PATH])
   fi
 
-  if test -d $with_alugrid; then
-    # expand tilde / other stuff
-    ALUGRIDROOT=`cd $with_alugrid && pwd`
-  else
-    AC_MSG_ERROR([Path $with_alugrid supplied for --with-alugrid does not exist!])
+  # is --with-alugrid=bla used?
+  if test "x$with_alugrid" != x ; then
+	if ! test -d $with_alugrid; then
+        AC_MSG_WARN([Alugrid directory $with_alugrid does not exist])
+	else
+        # expand tilde / other stuff
+		ALUGRIDROOT=`cd $with_alugrid && pwd`
+	fi
+  fi
+  if test "x$ALUGRIDROOT" = x; then
+    # use some default value...
+    ALUGRIDROOT="/usr/local/alugrid"
   fi
 
   ALUGRID_LIB_PATH="$ALUGRIDROOT/lib"
