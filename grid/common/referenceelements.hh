@@ -16,8 +16,38 @@
  * @brief  Definition of reference elements for all types and dims
  * @author Peter Bastian
  */
+
 namespace Dune
 {
+  namespace {
+    template <class RT, int codim>
+    FieldVector<typename RT::CoordType, RT::d>
+    mapGlobal(const RT& refElem,
+              const FieldVector<typename RT::CoordType, RT::d-codim>& l,
+              int i, int cdim)
+    {
+      typedef typename RT::CoordType CoordType;
+      const int dim = RT::d;
+
+      assert(cdim == codim);
+      static FieldMatrix<CoordType, dim-codim, dim> mat;
+
+      int zeroLocalIdx = refElem.subEntity(i, cdim, 0, dim);
+      FieldVector<CoordType, dim> result =
+        refElem.position(zeroLocalIdx, dim);
+      for (int j = 0; j < dim-cdim; ++j) {
+        int indexLocal = refElem.subEntity(i, cdim, j+1, dim);
+        mat[j] = refElem.position(indexLocal, dim) - result;
+      }
+
+      mat.umtv(l, result);
+
+      return result;
+    }
+
+  } // end unnamed namespace
+
+
   /**
      @defgroup GridReferenceElements Reference Elements
      @ingroup Grid
@@ -91,6 +121,13 @@ namespace Dune
     //! position of entity (i,c)
     virtual const FieldVector<ctype,dim>& position (int i, int c) const = 0;
 
+    //! maps local coordinate on subentity i of codim cdim onto reference element coordinates
+    template <int codim>
+    FieldVector<ctype, dim> global(const FieldVector<ctype, dim-codim>& local, int i, int cdim) const
+    {
+      return mapGlobal<ReferenceElement<ctype, dim>, codim>(*this, local, i, cdim);
+    }
+
     //! type of (i,c)
     virtual GeometryType type (int i, int c) const = 0;
 
@@ -138,6 +175,14 @@ namespace Dune
     const FieldVector<CoordType,d>& position (int i, int c) const
     {
       return Imp::position(i,c);
+    }
+
+    //! maps local coordinate on subentity i of codim cdim onto reference element coordinates
+    template <int codim>
+    FieldVector<CoordType, d> global(const FieldVector<CoordType, d-codim>& l,
+                                     int i, int cdim) const
+    {
+      return Imp::global(l, i, cdim);
     }
 
     //! type of (i,c)
@@ -259,6 +304,13 @@ namespace Dune
     const FieldVector<ctype,dim>& position (int i, int c) const
     {
       return pos[i][c];
+    }
+
+    //! maps local coordinate on subentity i of codim cdim onto reference element coordinates
+    template <int codim>
+    FieldVector<ctype, dim> global(const FieldVector<ctype, dim-codim>& local, int i, int cdim) const
+    {
+      return mapGlobal<ReferenceCube<ctype, dim>, codim>(*this, local, i, cdim);
     }
 
     //! type of (i,c)
@@ -553,6 +605,13 @@ namespace Dune
     const FieldVector<ctype,dim>& position (int i, int c) const
     {
       return pos[i][c];
+    }
+
+    //! maps local coordinate on subentity i of codim cdim onto reference element coordinates
+    template <int codim>
+    FieldVector<ctype, dim> global(const FieldVector<ctype, dim-codim>& local, int i, int cdim) const
+    {
+      return mapGlobal<ReferenceSimplex<ctype, dim>, codim>(*this, local, i, cdim);
     }
 
     //! type of (i,c)
@@ -938,6 +997,14 @@ namespace Dune
     {
       return pos[i][c];
     }
+
+    //! maps local coordinate on subentity i of codim cdim onto reference element coordinates
+    template <int codim>
+    FieldVector<ctype, dim> global(const FieldVector<ctype, dim-codim>& local, int i, int cdim) const
+    {
+      return mapGlobal<ReferencePrism<ctype, dim>, codim>(*this, local, i, cdim);
+    }
+
     //! type of (i,c)
     GeometryType type (int i, int c) const
     {
@@ -1287,6 +1354,14 @@ namespace Dune
     {
       return pos[i][c];
     }
+
+    //! maps local coordinate on subentity i of codim cdim onto reference element coordinates
+    template <int codim>
+    FieldVector<ctype, dim> global(const FieldVector<ctype, dim-codim>& local, int i, int cdim) const
+    {
+      return mapGlobal<ReferencePyramid<ctype, dim>, codim>(*this, local, i, cdim);
+    }
+
     //! type of (i,c)
     GeometryType type (int i, int c) const
     {
