@@ -72,8 +72,17 @@ namespace Dune {
     }
 
     //! return size of indexset, i.e. maxindex+1
-    //! type is now used in this method
-    int size ( int codim , GeometryType type = unknown ) const
+    //! for given type, if type is not exisiting within grid 0 is returned
+    int size ( int codim , GeometryType type ) const
+    {
+      assert( grid_.geomTypes(codim).size() == 1 );
+      if( type != grid_.geomTypes(codim)[0] ) return 0;
+      // return size of hierarchic index set
+      return grid_.hierSetSize(codim);
+    }
+
+    //! return size of indexset, i.e. maxindex+1
+    int size ( int codim ) const
     {
       // return size of hierarchic index set
       return grid_.hierSetSize(codim);
