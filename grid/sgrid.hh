@@ -731,8 +731,9 @@ namespace Dune {
 
     //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
     bool boundary () const;
+
     int boundaryId () const {
-#warning please implement a course grid boundary segment id
+      DUNE_THROW(NotImplemented, "Coarse grid boundary segment id");
       return 0;
     };
     //! return true if neighbor on this level exists
@@ -1176,7 +1177,7 @@ namespace Dune {
     //! define type used for coordinates in grid module
     typedef sgrid_ctype ctype;
 
-    //! return GridIdentifierType of Grid, i.e. SGrid_Id or AlbertGrid_Id ...
+    //! return GridIdentifierType of Grid, in this case SGrid_Id
     GridIdentifier type() const { return SGrid_Id; };
 
     /*! Return maximum level defined in this grid. Levels are numbered
