@@ -37,7 +37,10 @@ namespace Dune {
       case Vertex :
         return vertex;
       case Line :
-        return unknown;
+      {
+        //lines are simplices, more than cubes ;)
+        return simplex;
+      }
       case Triangle :
       case Tetrahedron :
         return simplex;
@@ -49,7 +52,12 @@ namespace Dune {
       case Prism :
         return prism;
       default :
-        return unknown;
+      {
+        assert(false);
+        abort();
+        // vertex is the new unknown ;)
+        return vertex;
+      }
       }
     }
 
