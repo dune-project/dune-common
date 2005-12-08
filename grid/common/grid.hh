@@ -53,7 +53,7 @@ namespace Dune {
 
   enum GeometryType {vertex,line, triangle, quadrilateral, tetrahedron,
                      pyramid, prism, hexahedron,
-                     simplex, cube, unknown};
+                     simplex, cube};
 
   enum AdaptationState {
     NONE ,   //!< notin' to do and notin' was done
@@ -142,8 +142,6 @@ namespace Dune {
       return "simplex";
     case cube :
       return "cube";
-    case unknown :
-      return "unknown";
 
     default :
       DUNE_THROW(NotImplemented, "name of unknown geometry requested");
