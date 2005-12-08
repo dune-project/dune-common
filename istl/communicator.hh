@@ -836,7 +836,6 @@ namespace Dune
   {
     remoteIndices_ = &remoteIndices;
     free();
-    assert(remoteIndices.isBuilt());
     createDataTypes<T1,T2,V,false>(source,destination, receiveData);
     createDataTypes<T1,T2,V,true>(source,destination, sendData);
     createRequests<V,true>(sendData, receiveData);

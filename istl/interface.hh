@@ -455,7 +455,6 @@ namespace Dune
     remoteIndices_=&remoteIndices;
 
     assert(interfaces_.empty());
-    assert(remoteIndices.isBuilt());
 
     // Build the send interface
     InformationBuilder<true> sendInformation(interfaces_);
