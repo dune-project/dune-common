@@ -34,13 +34,18 @@ namespace Dune
       typedef Tuple<MatrixGraph*,PropertiesGraph*> GraphTuple;
 
       template<class OF, class T>
-      static GraphTuple create(const M& matrix, T& excluded,
+      static GraphTuple create(const MatrixGraph& matrix, T& excluded,
                                const SequentialInformation& pinfo,
                                const OF&)
       {
         MatrixGraph* mg = new MatrixGraph(matrix.getmat());
         PropertiesGraph* pg = new PropertiesGraph(*mg, IdentityMap(), IdentityMap());
         return GraphTuple(mg,pg);
+      }
+
+      static void free(GraphTuple& graphs)
+      {
+        delete Element<1>::get(graphs);
       }
 
     };
@@ -78,6 +83,12 @@ namespace Dune
         SubGraph* sg= new SubGraph(*mg, excluded);
         PropertiesGraph* pg = new PropertiesGraph(*sg, IdentityMap(), sg->getEdgeIndexMap());
         return GraphTuple(mg,pg,sg);
+      }
+
+      static void free(GraphTuple& graphs)
+      {
+        delete Element<2>::get(graphs);
+        delete Element<1>::get(graphs);
       }
     };
 

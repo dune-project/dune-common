@@ -515,6 +515,8 @@ namespace Dune
                                    *aggregatesMap,
                                    *coarseInfo);
 
+        GraphCreator::free(graphs);
+
         parallelInformation_.addCoarser(*coarseInfo);
 
         PInfoIterator fineInfo = infoLevel;
@@ -548,6 +550,8 @@ namespace Dune
                                             *aggregatesMap,
                                             aggregates,
                                             OverlapFlags());
+
+        delete Element<0>::get(graphs);
         productBuilder.calculate(mlevel->getmat(), *aggregatesMap, *coarseMatrix);
 
         dinfo<<"Calculation of Galerkin product took "<<watch.elapsed()<<" seconds."<<std::endl;
@@ -584,13 +588,16 @@ namespace Dune
       typedef typename ParallelInformationHierarchy::Iterator InfoIterator;
 
       AggregatesMapIterator amap = aggregatesMaps_.rbegin();
-      InfoIterator info = parallelInformation_.finest();
-
+      InfoIterator info = parallelInformation_.coarsest();
+      int i=0;
       for(Iterator level=matrices_.coarsest(), finest=matrices_.finest(); level != finest;  --level, --info, ++amap) {
+        std::cout<<"Freeing level "<<i++<<std::endl;
+        (*amap)->free();
         delete *amap;
         delete &level->getmat();
-        delete &(*info);
       }
+      delete *amap;
+      delete &(*info);
     }
 
     template<class M, class IS, class A>
