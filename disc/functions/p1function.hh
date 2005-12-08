@@ -15,6 +15,7 @@
 // Dune includes
 #include "dune/common/fvector.hh"
 #include "dune/common/exceptions.hh"
+#include "dune/common/stdstreams.hh"
 #include "dune/grid/common/grid.hh"
 #include "dune/grid/common/mcmgmapper.hh"
 #include "dune/grid/common/universalmapper.hh"
