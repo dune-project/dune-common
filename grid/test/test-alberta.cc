@@ -21,13 +21,12 @@
 template <class GridType >
 void markOne ( GridType & grid , int num , int ref )
 {
-  typedef typename GridType::LeafIterator LeafIterator;
-
-  LeafIterator it    = grid.template leafbegin<0> ();
-  LeafIterator endit = grid.template leafend  <0> ();
+  typedef typename GridType::template Codim<0> :: LeafIterator LeafIterator;
 
   int count = 0;
-  for( ; it != endit ; ++it )
+
+  LeafIterator endit = grid.template leafend  <0> ();
+  for(LeafIterator it = grid.template leafbegin<0> (); it != endit ; ++it )
   {
     if(num == count) grid.mark( ref, it );
     count++;
