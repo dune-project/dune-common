@@ -34,7 +34,7 @@ namespace Dune
       typedef Tuple<MatrixGraph*,PropertiesGraph*> GraphTuple;
 
       template<class OF, class T>
-      static GraphTuple create(const MatrixGraph& matrix, T& excluded,
+      static GraphTuple create(const M& matrix, T& excluded,
                                const SequentialInformation& pinfo,
                                const OF&)
       {
