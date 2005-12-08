@@ -62,13 +62,14 @@ namespace Dune {
       DUNE_THROW(GridError,
                  "wrong number of subEntities of codim " << codim);
     }
+
     for(int subEntity = 0; subEntity < refElem.size(0,0,codim); subEntity++)
     {
       typedef std::pair < int , GeometryType > SubEntityKeyType;
       {
         int numSubEntities = refElem.size(subEntity,codim,dim);
         // every entity have at least one vertex
-        //assert( numSubEntities > 0 );
+        assert( numSubEntities > 0 );
 
         // create vectors of number of vertices on sub entity
         std::vector<int> local (numSubEntities,-1);
@@ -248,8 +249,9 @@ namespace Dune {
         derr << "WARNING: gridsize = "<< gridsize << " entities | map of entities = "
              << entityfound.size() << " for codim " << codim << std::endl;
       }
+
       // gridsize should be at least the size of found entities
-      assert( gridsize <= (int) entityfound.size() );
+      //assert( gridsize <= (int) entityfound.size() );
     }
 
 
@@ -310,9 +312,9 @@ namespace Dune {
         for(int j=0; j<s; j++)
         {
           sout << refElem.subEntity(i , codim , j , dim );
-          if(j == s-1) sout << "]\n";
-          else sout << ",";
+          if(j != s-1) sout << ",";
         }
+        sout << "]\n";
       }
     }
 
