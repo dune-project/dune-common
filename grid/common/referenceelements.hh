@@ -762,12 +762,17 @@ namespace Dune
         //  tetrahedron has 1 face on each triang. face!
         for(int i=0; i<subsizes[0][0][1]; ++i)
           subsizes[i][1][1]=1;
+
         //  tetrahedron has 2 vertices on each edge
-        for (int k=0; k<subsizes[0][0][dim]; ++k)
+        //  we have 6 edges, an we know that
+        for (int k=0; k<6; ++k)
           subsizes[k][dim-1][dim]=2;
+
         //  tetrahedron has 1 edge on each edge!
-        for (int k=0; k<subsizes[0][0][dim-1]; ++k)
+        //  we have 6 edges, an we know that
+        for (int k=0; k<6; ++k)
           subsizes[k][dim-1][dim-1]=1;
+
         // subentity indices
         // node indices on element
         for(int i=0; i<subsizes[0][0][dim]; ++i)
