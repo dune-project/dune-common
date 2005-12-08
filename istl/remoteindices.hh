@@ -1230,7 +1230,7 @@ namespace Dune {
 
   template<typename T, bool mode>
   RemoteIndexListModifier<T,mode>::RemoteIndexListModifier(const RemoteIndexListModifier<T,mode>& other)
-    : remoteIndices_(other.remoteIndices), rList_(other.rList_), indexSet_(other.indexSet_),
+    : rList_(other.rList_), indexSet_(other.indexSet_),
       glist_(other.glist_), iter_(other.iter_), giter_(other.giter_), end_(other.end_),
       first_(other.first_), last_(other.last_)
   {}
