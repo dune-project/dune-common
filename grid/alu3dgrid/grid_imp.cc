@@ -148,13 +148,10 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline ALU3dGrid<dim, dimworld, elType>::~ALU3dGrid()
   {
-    for(unsigned int i=0; i<levelIndexVec_.size(); i++)
-    {
-      if(levelIndexVec_[i]) delete levelIndexVec_[i];
-    }
-    if(leafIndexSet_) delete leafIndexSet_;
-    if(sizeCache_) delete sizeCache_;sizeCache_ = 0;
-    if(mygrid_) delete mygrid_;
+    for(unsigned int i=0; i<levelIndexVec_.size(); i++) delete levelIndexVec_[i];
+    delete leafIndexSet_; leafIndexSet_ = 0;
+    delete sizeCache_; sizeCache_ = 0;
+    delete mygrid_; mygrid_ = 0;
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>

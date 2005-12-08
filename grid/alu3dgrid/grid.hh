@@ -529,15 +529,6 @@ namespace Dune {
     typedef ALU3dGridMakeableEntity<0,dim,const MyType> EntityImp;
     typedef ALUMemoryProvider< EntityImp > EntityProvider;
 
-  public:
-    typedef ALU3dGridIntersectionIterator<const MyType>
-    IntersectionIteratorImp;
-    typedef ALUMemoryProvider< IntersectionIteratorImp > IntersectionIteratorProviderType;
-  private:
-    friend class IntersectionIteratorWrapper< const MyType > ;
-    IntersectionIteratorProviderType & intersetionIteratorProvider() const { return interItProvider_; }
-    mutable IntersectionIteratorProviderType interItProvider_;
-
     template <int codim>
     ALU3dGridMakeableEntity<codim,dim,const MyType> * getNewEntity ( int level ) const;
 
@@ -555,6 +546,17 @@ namespace Dune {
     // the type of our size cache
     typedef SingleTypeSizeCache<MyType, (elType == tetra) ? simplex : cube> SizeCacheType;
     SizeCacheType * sizeCache_;
+
+    // new intersection iterator is a wrapper which get itersectioniteratoimp as pointers
+  public:
+    typedef ALU3dGridIntersectionIterator<const MyType>
+    IntersectionIteratorImp;
+    typedef ALUMemoryProvider< IntersectionIteratorImp > IntersectionIteratorProviderType;
+  private:
+    friend class IntersectionIteratorWrapper< const MyType > ;
+    // return reference to intersectioniterator storage
+    IntersectionIteratorProviderType & intersetionIteratorProvider() const { return interItProvider_; }
+    mutable IntersectionIteratorProviderType interItProvider_;
   }; // end class ALU3dGrid
 
   template <class GridImp, int codim>

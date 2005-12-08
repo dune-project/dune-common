@@ -130,7 +130,7 @@ namespace Dune {
     {
       ObjectType * obj = objStack_.top();
       objStack_.pop();
-      if( obj ) delete obj;
+      delete obj;
     }
   }
 
