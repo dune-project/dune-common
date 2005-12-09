@@ -745,7 +745,7 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (!includesindexset(y)) DUNE_THROW(ISTLError,"index set mismatch");
 #endif
-      for (size_type i=0; i<this->n; ++i) (this->p)[i] += y[(this->j)[i]];
+      for (size_type i=0; i<y.n; ++i) this->operator[](y.j[i]) += y.p[i];
       return *this;
     }
 
@@ -756,7 +756,7 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (!includesindexset(y)) DUNE_THROW(ISTLError,"index set mismatch");
 #endif
-      for (size_type i=0; i<this->n; ++i) (this->p)[i] -= y[(this->j)[i]];
+      for (size_type i=0; i<y.n; ++i) this->operator[](y.j[i]) -= y.p[i];
       return *this;
     }
 
@@ -767,7 +767,7 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
       if (!includesindexset(y)) DUNE_THROW(ISTLError,"index set mismatch");
 #endif
-      for (size_type i=0; i<this->n; ++i) (this->p)[i].axpy(a,y[(this->j)[i]]);
+      for (size_type i=0; i<y.n; ++i) (this->operator[](y.j[i])).axpy(a,y.p[i]);
       return *this;
     }
 
@@ -792,7 +792,8 @@ namespace Dune {
     field_type operator* (const compressed_block_vector_unmanaged& y) const
     {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (!includesindexset(y)) DUNE_THROW(ISTLError,"index set mismatch");
+      if (!includesindexset(y) || !y.includesindexset(*this) )
+        DUNE_THROW(ISTLError,"index set mismatch");
 #endif
       field_type sum=0;
       for (size_type i=0; i<this->n; ++i)
@@ -878,9 +879,9 @@ namespace Dune {
     template<class V>
     bool includesindexset (const V& y)
     {
-      typename V::ConstIterator e=y.end();
-      for (size_type i=0; i<this->n; i++)
-        if (y.find((this->j)[i])==e)
+      typename V::ConstIterator e=this->end();
+      for (size_type i=0; i<y.n; i++)
+        if (find(y.j[i])==e)
           return false;
       return true;
     }
