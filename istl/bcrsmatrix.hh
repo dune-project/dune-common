@@ -991,6 +991,45 @@ namespace Dune {
     }
 
 
+    /*! \brief Add the entries of another matrix to this one.
+     *
+     * \param b The matrix to add to this one. Its sparsity pattern
+     * has to be subset of the sparsity pattern of this matrix.
+     */
+    BCRSMatrix& operator+= (const BCRSMatrix& b)
+    {
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if(N()!=b.N() || M() != b.M())
+        DUNE_THROW(RangeError, "Matrix sizes do not match!");
+#endif
+      RowIterator endi=end();
+      ConstRowIterator j=b.begin();
+      for (RowIterator i=begin(); i!=endi; ++i, ++j) {
+        i->operator+=(*j);
+      }
+
+      return *this;
+    }
+
+    /*! \brief Substract the entries of another matrix to this one.
+     *
+     * \param b The matrix to add to this one. Its sparsity pattern
+     * has to be subset of the sparsity pattern of this matrix.
+     */
+    BCRSMatrix& operator-= (const BCRSMatrix& b)
+    {
+#ifdef DUNE_ISTL_WITH_CHECKING
+      if(N()!=b.N() || M() != b.M())
+        DUNE_THROW(RangeError, "Matrix sizes do not match!");
+#endif
+      RowIterator endi=end();
+      ConstRowIterator j=b.begin();
+      for (RowIterator i=begin(); i!=endi; ++i, ++j) {
+        i->operator-=(*j);
+      }
+
+      return *this;
+    }
     //===== linear maps
 
     //! y += A x
