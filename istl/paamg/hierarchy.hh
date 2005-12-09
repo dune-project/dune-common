@@ -597,7 +597,6 @@ namespace Dune
         delete &level->getmat();
       }
       delete *amap;
-      delete &(*info);
     }
 
     template<class M, class IS, class A>
@@ -690,7 +689,7 @@ namespace Dune
         Element* current = coarsest_;
         coarsest_ = coarsest_->finer_;
         if(current != nonAllocated_) {
-          current->element_->~T();
+          delete current->element_;
         }
         allocator_.deallocate(current, 1);
         //coarsest_->coarser_ = 0;
