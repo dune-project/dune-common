@@ -169,8 +169,8 @@ namespace Dune {
 
      In your %Dune application, you can now instantiate objects of the
      type UGGrid<2,2> or UGGrid<3,3>.  You can have more than one, if
-     you choose.  We don't really know yet what happens if you mix
-     2d and 3d, though.
+     you choose.  However, it is currently not possible to mix 2d and 3d
+     UGGrids.
 
      Please send any questions, suggestions, or bug reports to
      sander@math.fu-berlin.de
