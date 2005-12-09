@@ -87,7 +87,7 @@ namespace Dune
   /**
    * @brief A set combining two other sets.
    */
-  template<class TI1, class TI2, typename TA>
+  template<class TI1, class TI2, typename TA=typename TI1::Type>
   class Combine
   {
   public:
