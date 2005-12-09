@@ -29,17 +29,18 @@ namespace Dune {
 
   /**
    * @brief A class setting up standard communication for a two-valued
-     attribute set with owner/copy semantics.
+     attribute set with owner/overlap/copy semantics.
    */
 
-  // set up communication from known distribution with owner/copy semantics
-  template <class GlobalIdType, class LocalIdType, int ownerattribute, int copyattribute>
-  class OwnerCopyCommunication
+
+  // set up communication from known distribution with owner/overlap/copy semantics
+  template <class GlobalIdType, class LocalIdType, int ownerattribute, int overlapattribute, int copyattribute>
+  class OwnerOverlapCopyCommunication
   {
     // used types
     typedef tripel<GlobalIdType,LocalIdType,int> IndexTripel;
     typedef tripel<int,GlobalIdType,int> RemoteIndexTripel;
-    enum AttributeSet { owner=ownerattribute, copy=copyattribute };
+    enum AttributeSet { owner=ownerattribute, overlap=overlapattribute, copy=copyattribute };
     typedef ParallelLocalIndex<AttributeSet> LI;
     typedef ParallelIndexSet<GlobalIdType,LI,512> PIS;
     typedef RemoteIndices<PIS> RI;
@@ -50,7 +51,7 @@ namespace Dune {
 
     // gather/scatter callback for communcation
     template<typename T>
-    struct ForwardGatherScatter
+    struct CopyGatherScatter
     {
       typedef typename T::value_type V;
 
@@ -64,26 +65,128 @@ namespace Dune {
         a[i] = v;
       }
     };
+    template<typename T>
+    struct AddGatherScatter
+    {
+      typedef typename T::value_type V;
+
+      static V gather(const T& a, int i)
+      {
+        return a[i];
+      }
+
+      static void scatter(T& a, V v, int i)
+      {
+        a[i] += v;
+      }
+    };
+
+    void buildOwnerOverlapToAllInterface ()
+    {
+      if (OwnerOverlapToAllInterfaceBuilt)
+        OwnerOverlapToAllInterface.free();
+      typedef Combine<EnumItem<AttributeSet,owner>,EnumItem<AttributeSet,overlap>,AttributeSet> OwnerOverlapSet;
+      typedef Combine<OwnerOverlapSet,EnumItem<AttributeSet,copy>,AttributeSet> AllSet;
+      OwnerOverlapSet sourceFlags;
+      AllSet destFlags;
+      OwnerOverlapToAllInterface.build(ri,sourceFlags,destFlags);
+      OwnerOverlapToAllInterfaceBuilt = true;
+    }
+
+    void buildOwnerToAllInterface ()
+    {
+      if (OwnerToAllInterfaceBuilt)
+        OwnerToAllInterface.free();
+      typedef EnumItem<AttributeSet,owner> OwnerSet;
+      typedef Combine<EnumItem<AttributeSet,owner>,EnumItem<AttributeSet,overlap>,AttributeSet> OwnerOverlapSet;
+      typedef Combine<OwnerOverlapSet,EnumItem<AttributeSet,copy>,AttributeSet> AllSet;
+      OwnerOverlapSet sourceFlags;
+      AllSet destFlags;
+      OwnerToAllInterface.build(ri,sourceFlags,destFlags);
+      OwnerToAllInterfaceBuilt = true;
+    }
 
   public:
 
-    // send owner value to
     template<class T>
-    void ownerToCopy (T& source, T& dest)
+    void copyOwnerToAll (const T& source, T& dest)
     {
-      BC o2c;
-      o2c.template build<T>(cif);
-      o2c.template forward<ForwardGatherScatter<T> >(source,dest);
-      o2c.free();
+      if (!OwnerToAllInterfaceBuilt)
+        buildOwnerToAllInterface ();
+      BC communicator;
+      communicator.template build<T>(OwnerToAllInterface);
+      communicator.template forward<CopyGatherScatter<T> >(source,dest);
+      communicator.free();
     }
+
+    template<class T>
+    void addOwnerOverlapToAll (const T& source, T& dest)
+    {
+      if (!OwnerOverlapToAllInterfaceBuilt)
+        buildOwnerOverlapToAllInterface ();
+      BC communicator;
+      communicator.template build<T>(OwnerOverlapToAllInterface);
+      communicator.template forward<AddGatherScatter<T> >(source,dest);
+      communicator.free();
+    }
+
+    template<class T1, class T2>
+    void dot (const T1& x, const T1& y, T2& result)
+    {
+      // set up mask vector
+      if (mask.size()!=x.size())
+      {
+        mask.resize(x.size());
+        for (int i=0; i<mask.size(); i++) mask[i] = 1;
+        for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
+          if (i->local().attribute()==copy)
+            mask[i->local().local()] = 0;
+      }
+      result = 0;
+      for (int i=0; i<mask.size(); i++)
+        result += x[i].operator*(y[i])*mask[i];
+      int procs;
+      MPI_Comm_size(comm,&procs);
+      if (procs==1) return;
+      double res;     // assumes that result is double \todo: template magick to treat complex<...>
+      MPI_Allreduce(&result,&res,1,MPI_DOUBLE,MPI_SUM,comm);
+      return;
+    }
+
+    template<class T1>
+    double norm (const T1& x)
+    {
+      // set up mask vector
+      if (mask.size()!=x.size())
+      {
+        mask.resize(x.size());
+        for (int i=0; i<mask.size(); i++) mask[i] = 1;
+        for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
+          if (i->local().attribute()==copy)
+            mask[i->local().local()] = 0;
+      }
+      double result = 0;
+      for (int i=0; i<mask.size(); i++)
+        result += x[i].two_norm()*mask[i];
+      int procs;
+      MPI_Comm_size(comm,&procs);
+      if (procs==1) return result;
+      double res;
+      MPI_Allreduce(&result,&res,1,MPI_DOUBLE,MPI_SUM,comm);
+      return res;
+    }
+
 
     // Constructor
     // containers of IndexTripel and RemoteIndexTripel sorted appropriately
+    // size is the size
     template<class C1, class C2>
-    OwnerCopyCommunication (C1& ownindices, C2& othersindices, MPI_Comm comm)
+    OwnerOverlapCopyCommunication (C1& ownindices, C2& othersindices, MPI_Comm comm_)
+      : OwnerToAllInterfaceBuilt(false),OwnerOverlapToAllInterfaceBuilt(false)
     {
       // Process configuration
       int procs, rank;
+      comm = comm_;
       MPI_Comm_size(comm, &procs);
       MPI_Comm_rank(comm, &rank);
 
@@ -93,6 +196,8 @@ namespace Dune {
       {
         if (i->third==owner)
           pis.add(i->first,LI(i->second,owner,true));
+        if (i->third==overlap)
+          pis.add(i->first,LI(i->second,overlap,true));
         if (i->third==copy)
           pis.add(i->first,LI(i->second,copy,true));
         std::cout << rank << ": adding index " << i->first << " " << i->second << " " << i->third << std::endl;
@@ -122,34 +227,37 @@ namespace Dune {
           while (pi->global()!=i->second && pi!=pis.end())
             ++pi;
           if (pi==pis.end())
-            DUNE_THROW(ISTLError,"OwnerOverlapCommunication: global index not in index set");
+            DUNE_THROW(ISTLError,"OwnerOverlapCopyCommunication: global index not in index set");
 
           // insert entry
           std::cout << rank << ": adding remote index " << i->first << " " << i->second << " " << i->third << std::endl;
           if (i->third==owner)
             modifier.insert(RX(owner,&(*pi)));
+          if (i->third==overlap)
+            modifier.insert(RX(overlap,&(*pi)));
           if (i->third==copy)
             modifier.insert(RX(copy,&(*pi)));
         }
       }
-
-      // now set up a communication interface
-      EnumItem<AttributeSet,owner> sourceFlags;
-      EnumItem<AttributeSet,copy> destFlags;
-      cif.build(ri,sourceFlags,destFlags);
     }
 
     // destructor: free memory in some objects
-    ~OwnerCopyCommunication ()
+    ~OwnerOverlapCopyCommunication ()
     {
       ri.free();
-      cif.free();
+      if (OwnerToAllInterfaceBuilt) OwnerToAllInterface.free();
+      if (OwnerOverlapToAllInterfaceBuilt) OwnerOverlapToAllInterface.free();
     }
 
   private:
-    PIS pis;      // parallel index set
-    RI ri;        // remote indices
-    IF cif;       // interface
+    MPI_Comm comm;
+    PIS pis;
+    RI ri;
+    IF OwnerToAllInterface;
+    bool OwnerToAllInterfaceBuilt;
+    IF OwnerOverlapToAllInterface;
+    bool OwnerOverlapToAllInterfaceBuilt;
+    std::vector<double> mask;
   };
 
 
