@@ -350,8 +350,8 @@ namespace Dune
     for(const_iterator process=remoteIndices.begin(); process != end; ++process) {
       // Messure the number of indices send to the remote process first
       int size=0;
-      LocalIterator localIndex = send ? remoteIndices.source_.begin() : remoteIndices.target_.begin();
-      const LocalIterator localEnd = send ?  remoteIndices.source_.end() : remoteIndices.target_.end();
+      LocalIterator localIndex = send ? remoteIndices.source_->begin() : remoteIndices.target_->begin();
+      const LocalIterator localEnd = send ?  remoteIndices.source_->end() : remoteIndices.target_->end();
       typedef typename RemoteIndices::RemoteIndexList::const_iterator RemoteIterator;
       const RemoteIterator remoteEnd = send ? process->second.first->end() :
                                        process->second.second->end();
@@ -380,8 +380,8 @@ namespace Dune
     // compare the local and remote indices and set up the types
 
     CollectiveIterator<T> remote = remoteIndices.template iterator<send>();
-    LocalIterator localIndex = send ? remoteIndices.source_.begin() : remoteIndices.target_.begin();
-    const LocalIterator localEnd = send ?  remoteIndices.source_.end() : remoteIndices.target_.end();
+    LocalIterator localIndex = send ? remoteIndices.source_->begin() : remoteIndices.target_->begin();
+    const LocalIterator localEnd = send ?  remoteIndices.source_->end() : remoteIndices.target_->end();
 
     while(localIndex!=localEnd && !remote.empty()) {
       if( send ? sourceFlags.contains(localIndex->local().attribute()) :

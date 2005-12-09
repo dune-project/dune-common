@@ -221,6 +221,22 @@ namespace Dune {
     inline RemoteIndices(const ParallelIndexSet& source, const ParallelIndexSet& destination,
                          const MPI_Comm& comm);
 
+    RemoteIndices();
+
+    /**
+     * @brief Set the the index sets and communicator we work with.
+     *
+     * @warning All remote indices already setup will be deleted!
+     *
+     * @param comm The communicator to use.
+     * @param source The indexset which represents the global to
+     * local mapping at the source of the communication
+     * @param to The indexset to which the communication which represents the global to
+     * local mapping at the destination of the communication.
+     * May be the same as the source indexset.
+     */
+    void setIndexSets(const ParallelIndexSet& source, const ParallelIndexSet& destination,
+                      const MPI_Comm& comm);
     /**
      * @brief Destructor.
      */
@@ -295,13 +311,13 @@ namespace Dune {
 
   private:
     /** @brief Index set used at the source of the communication. */
-    const ParallelIndexSet& source_;
+    const ParallelIndexSet* source_;
 
     /** @brief Index set used at the destination of the communication. */
-    const ParallelIndexSet& target_;
+    const ParallelIndexSet* target_;
 
     /** @brief The communicator to use.*/
-    const MPI_Comm& comm_;
+    MPI_Comm comm_;
 
     /** @brief The communicator tag to use. */
     const static int commTag_=333;
@@ -769,9 +785,27 @@ namespace Dune {
   inline RemoteIndices<T>::RemoteIndices(const ParallelIndexSet& source,
                                          const ParallelIndexSet& destination,
                                          const MPI_Comm& comm)
-    : source_(source), target_(destination), comm_(comm),
+    : source_(&source), target_(&destination), comm_(comm),
       sourceSeqNo_(-1), destSeqNo_(-1), publicIgnored(false), firstBuild(true)
   {}
+
+  template<typename T>
+  RemoteIndices<T>::RemoteIndices()
+    : source_(0), target_(0), sourceSeqNo_(-1),
+      destSeqNo_(-1), publicIgnored(false), firstBuild(true)
+  {}
+
+  template<class T>
+  void RemoteIndices<T>::setIndexSets(const ParallelIndexSet& source,
+                                      const ParallelIndexSet& destination,
+                                      const MPI_Comm& comm)
+  {
+    free();
+    source_ = &source;
+    target_ = &destination;
+    comm_ = comm;
+    firstBuild = true;
+  }
 
   template<typename T>
   RemoteIndices<T>::~RemoteIndices()
@@ -838,12 +872,12 @@ namespace Dune {
     int sourcePublish, destPublish;
 
     // Do we need to send two index sets?
-    char sendTwo = (&source_ != &target_);
+    char sendTwo = (source_ != target_);
 
-    sourcePublish = (ignorePublic) ? source_.size() : noPublic(source_);
+    sourcePublish = (ignorePublic) ? source_->size() : noPublic(*source_);
 
     if(sendTwo)
-      destPublish = (ignorePublic) ? target_.size() : noPublic(target_);
+      destPublish = (ignorePublic) ? target_->size() : noPublic(*target_);
     else
       // we only need to send one set of indices
       destPublish = 0;
@@ -914,11 +948,11 @@ namespace Dune {
         //		 <<", destPublish="<<destPublish<<std::endl;
 
         // Now pack the source indices and setup the destination pairs
-        packEntries<ignorePublic>(sourcePairs, source_, p_out, type,
+        packEntries<ignorePublic>(sourcePairs, *source_, p_out, type,
                                   bufferSize, &position, sourcePublish);
         // If necessary send the dest indices and setup the source pairs
         if(sendTwo)
-          packEntries<ignorePublic>(destPairs, target_, p_out, type,
+          packEntries<ignorePublic>(destPairs, *target_, p_out, type,
                                     bufferSize, &position, destPublish);
 
         //std::cout<<rank<<": Publishing "<<sourcePublish<<" source and "
@@ -1153,8 +1187,8 @@ namespace Dune {
 
       buildRemote<ignorePublic>();
 
-      sourceSeqNo_ = source_.seqNo();
-      destSeqNo_ = target_.seqNo();
+      sourceSeqNo_ = source_->seqNo();
+      destSeqNo_ = target_->seqNo();
       firstBuild=false;
       publicIgnored=ignorePublic;
     }
@@ -1165,7 +1199,7 @@ namespace Dune {
   template<typename T>
   inline bool RemoteIndices<T>::isSynced() const
   {
-    return sourceSeqNo_==source_.seqNo() && destSeqNo_ ==target_.seqNo();
+    return sourceSeqNo_==source_->seqNo() && destSeqNo_ ==target_->seqNo();
   }
 
   template<typename T>
@@ -1175,7 +1209,7 @@ namespace Dune {
     typename RemoteIndexMap::iterator found = remoteIndices_.find(process);
 
     if(found == remoteIndices_.end())
-      if(&source_ != &target_)
+      if(source_ != target_)
         remoteIndices_.insert(std::make_pair(process,
                                              std::make_pair(new RemoteIndexList(),
                                                             new RemoteIndexList())));
@@ -1190,9 +1224,9 @@ namespace Dune {
     firstBuild = false;
 
     if(send)
-      return RemoteIndexListModifier<T,mode>(source_, *(found->second.first));
+      return RemoteIndexListModifier<T,mode>(*source_, *(found->second.first));
     else
-      return RemoteIndexListModifier<T,mode>(target_, *(found->second.second));
+      return RemoteIndexListModifier<T,mode>(*target_, *(found->second.second));
   }
 
   template<typename T>

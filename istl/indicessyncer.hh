@@ -437,8 +437,8 @@ namespace Dune
     : indexSet_(indexSet), remoteIndices_(remoteIndices)
   {
     // index sets must match.
-    assert(&(remoteIndices.source_) == &(remoteIndices.target_));
-    assert(&(remoteIndices.source_) == &indexSet);
+    assert(remoteIndices.source_ == remoteIndices.target_);
+    assert(remoteIndices.source_ == &indexSet);
     MPI_Comm_rank(remoteIndices_.communicator(), &rank_);
   }
 
