@@ -10,6 +10,8 @@
 #include <map>
 #include <set>
 
+#include "math.h"
+
 #include "mpi.h"
 
 #include "dune/common/tripel.hh"
@@ -81,7 +83,7 @@ namespace Dune {
       }
     };
 
-    void buildOwnerOverlapToAllInterface ()
+    void buildOwnerOverlapToAllInterface () const
     {
       if (OwnerOverlapToAllInterfaceBuilt)
         OwnerOverlapToAllInterface.free();
@@ -93,7 +95,7 @@ namespace Dune {
       OwnerOverlapToAllInterfaceBuilt = true;
     }
 
-    void buildOwnerToAllInterface ()
+    void buildOwnerToAllInterface () const
     {
       if (OwnerToAllInterfaceBuilt)
         OwnerToAllInterface.free();
@@ -109,7 +111,7 @@ namespace Dune {
   public:
 
     template<class T>
-    void copyOwnerToAll (const T& source, T& dest)
+    void copyOwnerToAll (const T& source, T& dest) const
     {
       if (!OwnerToAllInterfaceBuilt)
         buildOwnerToAllInterface ();
@@ -120,7 +122,7 @@ namespace Dune {
     }
 
     template<class T>
-    void addOwnerOverlapToAll (const T& source, T& dest)
+    void addOwnerOverlapToAll (const T& source, T& dest) const
     {
       if (!OwnerOverlapToAllInterfaceBuilt)
         buildOwnerOverlapToAllInterface ();
@@ -131,7 +133,7 @@ namespace Dune {
     }
 
     template<class T1, class T2>
-    void dot (const T1& x, const T1& y, T2& result)
+    void dot (const T1& x, const T1& y, T2& result) const
     {
       // set up mask vector
       if (mask.size()!=x.size())
@@ -139,41 +141,57 @@ namespace Dune {
         mask.resize(x.size());
         for (int i=0; i<mask.size(); i++) mask[i] = 1;
         for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
-          if (i->local().attribute()==copy)
+          if (i->local().attribute()!=owner)
             mask[i->local().local()] = 0;
       }
       result = 0;
-      for (int i=0; i<mask.size(); i++)
+      for (int i=0; i<x.size(); i++)
         result += x[i].operator*(y[i])*mask[i];
       int procs;
       MPI_Comm_size(comm,&procs);
       if (procs==1) return;
       double res;     // assumes that result is double \todo: template magick to treat complex<...>
       MPI_Allreduce(&result,&res,1,MPI_DOUBLE,MPI_SUM,comm);
+      result = res;
       return;
     }
 
     template<class T1>
-    double norm (const T1& x)
+    double norm (const T1& x) const
     {
+      int rank;
+      MPI_Comm_rank(comm,&rank);
+
       // set up mask vector
       if (mask.size()!=x.size())
       {
         mask.resize(x.size());
         for (int i=0; i<mask.size(); i++) mask[i] = 1;
         for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
-          if (i->local().attribute()==copy)
+          if (i->local().attribute()!=owner)
             mask[i->local().local()] = 0;
       }
       double result = 0;
-      for (int i=0; i<mask.size(); i++)
-        result += x[i].two_norm()*mask[i];
+      for (int i=0; i<x.size(); i++)
+      {
+        result += x[i].two_norm2()*mask[i];
+        //                if (mask[i]==1)
+        //                      std::cout << rank << ": " << "index=" << i << " value=" << x[i].two_norm2() << std::endl;
+      }
       int procs;
       MPI_Comm_size(comm,&procs);
-      if (procs==1) return result;
+      if (procs==1) return sqrt(result);
       double res;
       MPI_Allreduce(&result,&res,1,MPI_DOUBLE,MPI_SUM,comm);
-      return res;
+      return sqrt(res);
+    }
+
+    template<class T1>
+    void project (T1& x) const
+    {
+      for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
+        if (i->local().attribute()==copy)
+          x[i->local().local()] = 0;
     }
 
 
@@ -200,12 +218,12 @@ namespace Dune {
           pis.add(i->first,LI(i->second,overlap,true));
         if (i->third==copy)
           pis.add(i->first,LI(i->second,copy,true));
-        std::cout << rank << ": adding index " << i->first << " " << i->second << " " << i->third << std::endl;
+        //                std::cout << rank << ": adding index " << i->first << " " << i->second << " " << i->third << std::endl;
       }
       pis.endResize();
 
       // build remote indices WITHOUT communication
-      std::cout << rank << ": build remote indices" << std::endl;
+      //          std::cout << rank << ": build remote indices" << std::endl;
       ri.setIndexSets(pis,pis,comm);
       if (othersindices.size()>0)
       {
@@ -230,7 +248,7 @@ namespace Dune {
             DUNE_THROW(ISTLError,"OwnerOverlapCopyCommunication: global index not in index set");
 
           // insert entry
-          std::cout << rank << ": adding remote index " << i->first << " " << i->second << " " << i->third << std::endl;
+          //                      std::cout << rank << ": adding remote index " << i->first << " " << i->second << " " << i->third << std::endl;
           if (i->third==owner)
             modifier.insert(RX(owner,&(*pi)));
           if (i->third==overlap)
@@ -253,11 +271,11 @@ namespace Dune {
     MPI_Comm comm;
     PIS pis;
     RI ri;
-    IF OwnerToAllInterface;
-    bool OwnerToAllInterfaceBuilt;
-    IF OwnerOverlapToAllInterface;
-    bool OwnerOverlapToAllInterfaceBuilt;
-    std::vector<double> mask;
+    mutable IF OwnerToAllInterface;
+    mutable bool OwnerToAllInterfaceBuilt;
+    mutable IF OwnerOverlapToAllInterface;
+    mutable bool OwnerOverlapToAllInterfaceBuilt;
+    mutable std::vector<double> mask;
   };
 
 
