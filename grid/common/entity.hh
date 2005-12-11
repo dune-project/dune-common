@@ -530,11 +530,22 @@ namespace Dune
   {
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
+
+    template <int cc>
+    struct Codim
+    {
+      typedef typename GridImp::template Codim<cc>::EntityPointer EntityPointer;
+    };
+
   public:
 
+    //! tpye of Geometry
     typedef typename GridImp::template Codim<0>::Geometry Geometry;
-    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
+    //! type of IntersectionIterator
     typedef typename GridImp::template Codim<0>::IntersectionIterator IntersectionIterator;
+    //! type of father
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
+    //! type of HierarchicIterator
     typedef typename GridImp::template Codim<0>::HierarchicIterator HierarchicIterator;
 
     //! know your own codimension
@@ -569,9 +580,9 @@ namespace Dune
     /*! Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
      */
-    template<int cc> EntityPointer entity (int i) const
+    template<int cc> typename Codim<cc>::EntityPointer entity (int i) const
     {
-      return asImp().entity<cc>(i);
+      return asImp().template entity<cc>(i);
     }
 
     /*! Intra-level access to intersections with neighboring elements.
@@ -653,8 +664,11 @@ namespace Dune
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   public:
+    //! type of geometry
     typedef typename GridImp::template Codim<dim>::Geometry Geometry;
-    typedef typename GridImp::template Codim<dim>::EntityPointer EntityPointer;
+
+    //! type of owners father
+    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
 
     //! know your own codimension
     enum { codimension=dim };
