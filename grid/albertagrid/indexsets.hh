@@ -215,7 +215,7 @@ namespace Dune {
     public IdSet < AlbertaGrid<dim,dimworld> ,
         AlbertaGridIdSet<dim,dimworld> , int >
   {
-    typedef const AlbertaGrid<dim,dimworld> GridType;
+    typedef AlbertaGrid<dim,dimworld> GridType;
     typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
 
     // this means that only up to 300000000 entities are allowed
