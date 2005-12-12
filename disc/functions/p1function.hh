@@ -11,10 +11,12 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <set>
 
 // Dune includes
 #include "dune/common/fvector.hh"
 #include "dune/common/exceptions.hh"
+#include "dune/common/tripel.hh"
 #include "dune/common/stdstreams.hh"
 #include "dune/grid/common/grid.hh"
 #include "dune/grid/common/mcmgmapper.hh"
@@ -22,6 +24,7 @@
 #include "dune/istl/bvector.hh"
 #include "dune/istl/operators.hh"
 #include "dune/istl/bcrsmatrix.hh"
+#include "dune/istl/ownercopy.hh"
 #include "dune/disc/shapefunctions/lagrangeshapefunctions.hh"
 
 // same directory includes
@@ -43,6 +46,370 @@ namespace Dune
    * @brief defines a class for piecewise linear finite element functions
    *
    */
+
+
+  //! compute 1-overlap on non-overlapping grid
+  template<class G, class IS, class VM>
+  class P1ExtendOverlap {
+
+    // types
+    typedef typename G::ctype DT;
+    enum {n=G::dimension};
+    typedef typename G::template Codim<0>::Entity Entity;
+    typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
+    typedef typename IS::template Codim<n>::template Partition<All_Partition>::Iterator VIterator;
+    typedef typename G::template Codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
+    typedef typename G::Traits::GlobalIdSet IDS;
+    typedef typename IDS::IdType IdType;
+    typedef std::set<IdType> GIDSet;
+    typedef std::pair<IdType,int> Pair;
+    typedef std::set<int> ProcSet;
+
+    // A DataHandle class to exchange border rows
+    class IdExchange {
+    public:
+      //! export type of data for message buffer
+      typedef Pair DataType;
+
+      //! returns true if data for this codim should be communicated
+      bool contains (int dim, int codim) const
+      {
+        return (codim==dim);
+      }
+
+      //! returns true if size per entity of given dim and codim is a constant
+      bool fixedsize (int dim, int codim) const
+      {
+        return false;
+      }
+
+      /*! how many objects of type DataType have to be sent for a given entity
+
+         Note: Only the sender side needs to know this size.
+       */
+      template<class EntityType>
+      size_t size (EntityType& e) const
+      {
+        return myids[vertexmapper.map(e)].size();
+      }
+
+      //! pack data from user to message buffer
+      template<class MessageBuffer, class EntityType>
+      void gather (MessageBuffer& buff, const EntityType& e) const
+      {
+        int alpha=vertexmapper.map(e);
+        GIDSet& thisset = myids[alpha];
+        for (typename GIDSet::iterator i=thisset.begin(); i!=thisset.end(); ++i)
+        {
+          buff.write(Pair(*i,grid.rank()));               // I have these global ids
+          owner[*i] = grid.rank();
+        }
+        myprocs[alpha].insert(grid.rank());
+      }
+
+      /*! unpack data from message buffer to user
+
+         n is the number of objects sent by the sender
+       */
+      template<class MessageBuffer, class EntityType>
+      void scatter (MessageBuffer& buff, const EntityType& e, size_t n)
+      {
+        int alpha=vertexmapper.map(e);
+        GIDSet& thisset = myids[alpha];
+        int source;
+        for (int i=0; i<n; i++)
+        {
+          Pair x;
+          buff.read(x);
+          thisset.insert(x.first);
+          source=x.second;
+          if (owner.find(x.first)==owner.end())
+            owner[x.first] = source;
+          else
+            owner[x.first] = std::min(owner[x.first],source);
+        }
+        myprocs[alpha].insert(source);
+      }
+
+      //! constructor
+      IdExchange (const G& g, const VM& vm, std::map<int,GIDSet>& ids, std::map<int,ProcSet>& procs,
+                  std::map<IdType,int>& o)
+        : grid(g), vertexmapper(vm), myids(ids), myprocs(procs), owner(o)
+      {}
+
+    private:
+      const G& grid;
+      const VM& vertexmapper;
+      std::map<int,GIDSet>& myids;
+      std::map<int,ProcSet>& myprocs;
+      std::map<IdType,int>& owner;
+    };
+
+    // A DataHandle class to exchange border rows
+    class BorderLinksExchange {
+    public:
+      //! export type of data for message buffer
+      typedef IdType DataType;
+
+      //! returns true if data for this codim should be communicated
+      bool contains (int dim, int codim) const
+      {
+        return (codim==dim);
+      }
+
+      //! returns true if size per entity of given dim and codim is a constant
+      bool fixedsize (int dim, int codim) const
+      {
+        return false;
+      }
+
+      /*! how many objects of type DataType have to be sent for a given entity
+
+         Note: Only the sender side needs to know this size.
+       */
+      template<class EntityType>
+      size_t size (EntityType& e) const
+      {
+        return borderlinks[vertexmapper.map(e)].size();
+      }
+
+      //! pack data from user to message buffer
+      template<class MessageBuffer, class EntityType>
+      void gather (MessageBuffer& buff, const EntityType& e) const
+      {
+        GIDSet& myset = borderlinks[vertexmapper.map(e)];
+        for (typename GIDSet::iterator i=myset.begin(); i!=myset.end(); ++i)
+          buff.write(*i);
+      }
+
+      /*! unpack data from message buffer to user
+
+         n is the number of objects sent by the sender
+       */
+      template<class MessageBuffer, class EntityType>
+      void scatter (MessageBuffer& buff, const EntityType& e, size_t n)
+      {
+        GIDSet& myset = borderlinks[vertexmapper.map(e)];
+        for (int i=0; i<n; i++)
+        {
+          DataType x;
+          buff.read(x);
+          myset.insert(x);
+        }
+      }
+
+      //! constructor
+      BorderLinksExchange (const G& g, std::map<int,GIDSet>& bl, const VM& vm)
+        : grid(g), borderlinks(bl), vertexmapper(vm)
+      {}
+
+    private:
+      const G& grid;
+      std::map<int,GIDSet>& borderlinks;
+      const VM& vertexmapper;
+    };
+
+  public:
+
+    enum Attributes {slave=0, master=1, overlap=2};
+    typedef OwnerOverlapCopyCommunication<IdType,int,master,overlap,slave> CommunicationType;
+
+    //! construct ISTL communication object
+    CommunicationType* getComObject (const G& grid, const IS& indexset, const VM& vertexmapper)
+    {
+      // build a map of sets where each local index is assigned
+      // a set of global ids which are neighbors of this vertex
+      // At the same time assign to each local index to a set of processors
+      // and at the same time determine the owner of the gid
+      std::map<int,GIDSet> myids;
+      std::map<int,ProcSet> myprocs;
+      std::map<IdType,int> owner;
+      Iterator eendit = indexset.template end<0,All_Partition>();
+      for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        Dune::GeometryType gt = it->geometry().type();
+        const typename Dune::ReferenceElementContainer<DT,n>::value_type&
+        refelem = ReferenceElements<DT,n>::general(gt);
+
+        if (it->partitionType()==InteriorEntity)
+          for (int i=0; i<refelem.size(n); i++)
+          {
+            bool onboundary=false;
+            if (it->template entity<n>(i)->partitionType()==BorderEntity)
+            {
+              onboundary = true;
+              int alpha = vertexmapper.template map<n>(*it,i);
+              GIDSet& thisset = myids[alpha];
+              for (int j=0; j<refelem.size(n); j++)
+              {
+                IdType beta = grid.globalIdSet().template subId<n>(*it,j);
+                thisset.insert(beta);
+              }
+            }
+          }
+      }
+      IdExchange datahandle(grid,vertexmapper,myids,myprocs,owner);
+      grid.template communicate<IdExchange>(datahandle,InteriorBorder_InteriorBorder_Interface,ForwardCommunication);
+
+      // build map from global id to local index
+      std::map<IdType,int> gid2index;
+      for (typename std::map<int,GIDSet>::iterator i=myids.begin(); i!=myids.end(); ++i)
+        for (typename GIDSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
+          gid2index[*j] = -1;         // indicates "not assigned yet"
+      VIterator vendit = indexset.template end<n,All_Partition>();
+      for (VIterator it = indexset.template begin<n,All_Partition>(); it!=indexset.template end<n,All_Partition>(); ++it)
+      {
+        IdType beta = grid.globalIdSet().id(*it);
+        if (gid2index.find(beta)!=gid2index.end())
+        {
+          int alpha = vertexmapper.map(*it);
+          gid2index[beta] = alpha;                 // assign existing local index
+        }
+      }
+      int extraDOFs = 0;
+      for (typename std::map<IdType,int>::iterator i=gid2index.begin(); i!=gid2index.end(); ++i)
+        if (i->second==-1)
+        {
+          i->second = vertexmapper.size()+extraDOFs;               // assign new local index
+          extraDOFs++;
+        }
+
+      // build a set of all neighboring processors
+      ProcSet neighbors;
+      for (typename std::map<int,ProcSet>::iterator i=myprocs.begin(); i!=myprocs.end(); ++i)
+        for (typename ProcSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
+          if (*j!=grid.rank())
+            neighbors.insert(*j);
+
+      // now all the necessary information is in place
+
+      // application: for all neighbors build a list of global ids
+      for (typename ProcSet::iterator p=neighbors.begin(); p!=neighbors.end(); ++p)
+      {
+        GIDSet remote;
+        for (typename std::map<int,ProcSet>::iterator i=myprocs.begin(); i!=myprocs.end(); ++i)
+          if ((i->second).find(*p)!=(i->second).end())
+          {
+            GIDSet& thisset = myids[i->first];
+            for (typename GIDSet::iterator j=thisset.begin(); j!=thisset.end(); ++j)
+              remote.insert(*j);
+          }
+      }
+
+
+      // do the general interface
+      std::set< tripel<IdType,int,int> > ownindices;
+      for (typename std::map<int,GIDSet>::iterator i=myids.begin(); i!=myids.end(); ++i)
+        for (typename GIDSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
+        {
+          int a=slave;
+          if (owner[*j]==grid.rank()) a=master;
+          ownindices.insert(tripel<IdType,int,int>(*j,gid2index[*j],a));
+        }
+      std::set< tripel<int,IdType,int> > remoteindices;
+      for (typename std::map<int,ProcSet>::iterator i=myprocs.begin(); i!=myprocs.end(); ++i)
+      {
+        GIDSet& thisset = myids[i->first];
+        for (typename GIDSet::iterator j=thisset.begin(); j!=thisset.end(); ++j)
+          for (typename ProcSet::iterator p=(i->second).begin(); p!=(i->second).end(); ++p)
+          {
+            int a=slave;
+            if (owner[*j]==(*p)) a=master;
+            if (*p!=grid.rank()) remoteindices.insert(tripel<int,IdType,int>(*p,*j,a));
+          }
+      }
+
+      // clear what is not needed anymore to save memory
+      myids.clear();
+      gid2index.clear();
+      myprocs.clear();
+      owner.clear();
+      neighbors.clear();
+
+      // test the new class
+      CommunicationType* p = new CommunicationType(ownindices,remoteindices,grid.comm());
+
+      return p;
+    }
+
+
+    //! fill data structures needed for extension
+    void extend (const G& grid, const IS& indexset, const VM& vertexmapper,
+                 std::map<int,GIDSet>& borderlinks, int& extraDOFs, std::map<IdType,int>& gid2index)
+    {
+      // initialize output parameters
+      borderlinks.clear();
+      extraDOFs = 0;
+      gid2index.clear();
+
+      // build local borderlinks from mesh
+      Iterator eendit = indexset.template end<0,All_Partition>();
+      for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        Dune::GeometryType gt = it->geometry().type();
+        const typename Dune::ReferenceElementContainer<DT,n>::value_type&
+        refelem = ReferenceElements<DT,n>::general(gt);
+
+        // generate set of neighbors in global ids for border vertices
+        if (it->partitionType()==InteriorEntity)
+          for (int i=0; i<refelem.size(n); i++)
+            if (it->template entity<n>(i)->partitionType()==BorderEntity)
+            {
+              int alpha = vertexmapper.template map<n>(*it,i);
+              GIDSet& myset = borderlinks[alpha];
+              for (int j=0; j<refelem.size(n); j++)
+                if (i!=j)
+                {
+                  IdType beta = grid.globalIdSet().template subId<n>(*it,j);
+                  myset.insert(beta);
+                  //                                              std::cout << g.rank() << ": "
+                  //                                                                    << "borderlink " << alpha
+                  //                                                                    << " " << vertexmapper.template map<n>(*it,j)
+                  //                                                                    << " " << beta
+                  //                                                                    << std::endl;
+                }
+            }
+      }
+
+      // exchange neighbor info for border vertices
+      BorderLinksExchange datahandle(grid,borderlinks,vertexmapper);
+      grid.template communicate<BorderLinksExchange>(datahandle,
+                                                     InteriorBorder_InteriorBorder_Interface,
+                                                     ForwardCommunication);
+
+      // initialize inverse map with ids we have
+      for (typename std::map<int,GIDSet>::iterator i=borderlinks.begin(); i!=borderlinks.end(); ++i)
+        for (typename GIDSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
+          gid2index[*j] = -1;
+
+      // check with ids we already have in the grid to find out extra vertices
+      VIterator vendit = indexset.template end<n,All_Partition>();
+      for (VIterator it = indexset.template begin<n,All_Partition>(); it!=indexset.template end<n,All_Partition>(); ++it)
+      {
+        IdType beta = grid.globalIdSet().id(*it);
+        if (gid2index.find(beta)!=gid2index.end())
+        {
+          int alpha = vertexmapper.map(*it);
+          gid2index[beta] = alpha;
+        }
+      }
+
+      // assign index to extra DOFs
+      extraDOFs = 0;
+      for (typename std::map<IdType,int>::iterator i=gid2index.begin(); i!=gid2index.end(); ++i)
+        if (i->second==-1)
+        {
+          i->second = vertexmapper.size()+extraDOFs;
+          extraDOFs++;
+        }
+
+      //                  for (typename std::map<int,GIDSet>::iterator i=borderlinks.begin(); i!=borderlinks.end(); ++i)
+      //                        for (typename GIDSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
+      //                          std::cout << grid.rank() << ": " << "comm borderlink " << i->first
+      //                                                << " " << gid2index[*j] << " " << *j << std::endl;
+    }
+  };
 
   // forward declaration
   template<class G, class RT> class P1FEFunctionManager;
@@ -86,22 +453,52 @@ namespace Dune
     //! make copy constructor private
     P1FEFunction (const P1FEFunction&);
 
+    // types
+    typedef typename G::Traits::GlobalIdSet IDS;
+    typedef typename IDS::IdType IdType;
+    typedef std::set<IdType> GIDSet;
+
   public:
     typedef FieldVector<RT,m> BlockType;
     typedef BlockVector<BlockType> RepresentationType;
+    typedef MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout> VM;
+    typedef typename P1ExtendOverlap<G,IS,VM>::CommunicationType CommunicationType;
 
-    //! allocate a vector with the data
-    P1FEFunction (const G& g,  const IS& indexset) : grid_(g), is(indexset), mapper_(g,indexset)
+    //! allocate data
+    P1FEFunction (const G& g,  const IS& indexset, bool extendoverlap=false)
+      : grid_(g), is(indexset), mapper_(g,indexset)
     {
+      // check if overlap extension is possible
+      if (extendoverlap && g.overlapSize(0)>0)
+        DUNE_THROW(GridError,"P1FEFunction: extending overlap requires nonoverlapping grid");
+
+      // no extra DOFs so far
+      extraDOFs = 0;
+      extendOverlap = extendoverlap;
+
+      // overlap extension
+      if (extendoverlap)
+      {
+        // set of neighbors in global ids for border vertices
+        std::map<int,GIDSet> borderlinks;
+        std::map<IdType,int> gid2index;
+
+        // compute extension
+        P1ExtendOverlap<G,IS,VM> extender;
+        extender.extend(g,indexset,mapper_,borderlinks,extraDOFs,gid2index);
+      }
+
+      // allocate the vector
       oldcoeff = 0;
       try {
-        coeff = new RepresentationType(mapper_.size());
+        coeff = new RepresentationType(mapper_.size()+extraDOFs);
       }
       catch (std::bad_alloc) {
         std::cerr << "not enough memory in P1FEFunction" << std::endl;
         throw;         // rethrow exception
       }
-      dverb << "making FE function with " << mapper_.size() << " components" << std::endl;
+      dverb << "making FE function with " << mapper_.size()+extraDOFs << " components"
+            << "(" << extraDOFs << " extra degrees of freedom)" << std::endl;
     }
 
     //! deallocate the vector
@@ -109,6 +506,7 @@ namespace Dune
     {
       delete coeff;
       if (oldcoeff!=0) delete oldcoeff;
+      if (comobj!=0) delete comobj;
     }
 
     //! evaluate single component comp at global point x
@@ -264,7 +662,7 @@ namespace Dune
       std::vector<char> counter(mapper_.size());
       for (int i=0; i<mapper_.size(); i++) counter[i] = 0;
 
-      for (int i=0; i<counter.size(); i++)
+      for (int i=0; i<(*coeff).size(); i++)
         (*coeff)[i] = 0;
       Iterator eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
@@ -300,8 +698,24 @@ namespace Dune
      */
     RepresentationType& operator* ()
     {
+      // get communication object. \todo: make this as an option
+      // because it may be unnecessary for overlapping methods that do communication
+      // on the grid
+      if (comobj==0)
+      {
+        P1ExtendOverlap<G,IS,VM> extender;
+        comobj = extender.getComObject(grid_,is,mapper_);
+      }
       return (*coeff);
     }
+
+
+    //! deliver communication object
+    const CommunicationType& comm () const
+    {
+      return (*comobj);
+    }
+
 
     /** empty method to maintain symmetry
             For vertex data nothing is required in preAdapt but for other
@@ -333,9 +747,28 @@ namespace Dune
       // allow mapper to recompute its internal sizes
       mapper_.update();
 
+      // overlap extension, recompute extra DOFs
+      if (extendOverlap)
+      {
+        // set of neighbors in global ids for border vertices
+        std::map<int,GIDSet> borderlinks;
+        std::map<IdType,int> gid2index;
+        extraDOFs = 0;
+
+        // compute extension
+        P1ExtendOverlap<G,IS,VM> extender;
+        extender.extend(grid_,is,mapper_,borderlinks,extraDOFs,gid2index);
+      }
+
+      // get communication object. \todo: make this as an option
+      // because it may be unnecessary for overlapping methods that do communication
+      // on the grid
+      if (comobj!=0) delete comobj;
+      comobj = 0;
+
       // allocate data with new size (while keeping the old data ...)
       try {
-        coeff = new RepresentationType(mapper_.size());         // allocate new representation
+        coeff = new RepresentationType(mapper_.size()+extraDOFs);         // allocate new representation
       }
       catch (std::bad_alloc) {
         std::cerr << "not enough memory in P1FEFunction update" << std::endl;
@@ -412,7 +845,7 @@ namespace Dune
 
     /** @brief export the mapper for external use
      */
-    const MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout>& mapper () const
+    const VM& mapper () const
     {
       return mapper_;
     }
@@ -425,13 +858,20 @@ namespace Dune
     const IS& is;
 
     // we need a mapper
-    MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout> mapper_;
+    VM mapper_;
+
+    // extra DOFs from extending nonoverlapping to overlapping grid
+    int extraDOFs;
+    bool extendOverlap;
 
     // and a dynamically allocated vector
     RepresentationType* coeff;
 
     // saved pointer in update phase
     RepresentationType* oldcoeff;
+
+    // the mysterious communication object
+    CommunicationType* comobj;
   };
 
 
@@ -441,8 +881,8 @@ namespace Dune
   class LeafP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>
   {
   public:
-    LeafP1FEFunction (const G& grid)
-      : P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet())
+    LeafP1FEFunction (const G& grid, bool extendoverlap=false)
+      : P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet(),extendoverlap)
     {}
   };
 
@@ -453,8 +893,8 @@ namespace Dune
   class LevelP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>
   {
   public:
-    LevelP1FEFunction (const G& grid, int level)
-      : P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level))
+    LevelP1FEFunction (const G& grid, int level, bool extendoverlap=false)
+      : P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level),extendoverlap)
     {}
   };
 
