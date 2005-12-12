@@ -8,6 +8,9 @@
 #include <map>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <vector>
+#include <sstream>
 
 #include "common/fvector.hh"
 #include "common/fmatrix.hh"
@@ -119,7 +122,8 @@ namespace Dune
       }
 
       // Loop over all quadrature points and assemble matrix and right hand side
-      int p=1;
+      int p=2;
+      if (gt==simplex) p=1;
       if (k>1) p=2*(k-1);
       for (int g=0; g<Dune::QuadratureRules<DT,n>::rule(gt,p).size(); ++g)     // run through all quadrature points
       {
@@ -490,23 +494,99 @@ namespace Dune
     enum {n=G::dimension};
     typedef typename G::template Codim<0>::Entity Entity;
     typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
+    typedef typename IS::template Codim<n>::template Partition<All_Partition>::Iterator VIterator;
     typedef typename G::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename G::template Codim<0>::HierarchicIterator HierarchicIterator;
     typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
     typedef typename P1FEFunction<G,RT,IS,1>::RepresentationType VectorType;
+    typedef typename VectorType::block_type BlockType;
     typedef typename AssembledP1FEOperator<G,RT,IS,1>::RepresentationType MatrixType;
     typedef typename MatrixType::RowIterator rowiterator;
     typedef typename MatrixType::ColIterator coliterator;
+    typedef typename AssembledP1FEOperator<G,RT,IS,1>::VM VM;
+
+
+    // A DataHandle class to exchange border rows
+    class AccumulateBCFlags {
+    public:
+      //! export type of data for message buffer
+      typedef std::pair<unsigned char,BlockType> DataType;     // BC flags are stored in a char per vertex
+
+      //! returns true if data for this codim should be communicated
+      bool contains (int dim, int codim) const
+      {
+        return (codim==dim);
+      }
+
+      //! returns true if size per entity of given dim and codim is a constant
+      bool fixedsize (int dim, int codim) const
+      {
+        return true;
+      }
+
+      /*! how many objects of type DataType have to be sent for a given entity
+
+         Note: Only the sender side needs to know this size.
+       */
+      template<class EntityType>
+      size_t size (EntityType& e) const
+      {
+        return 1;
+      }
+
+      //! pack data from user to message buffer
+      template<class MessageBuffer, class EntityType>
+      void gather (MessageBuffer& buff, const EntityType& e) const
+      {
+        int alpha = vertexmapper.map(e);
+        buff.write(DataType(essential[alpha],f[alpha]));
+      }
+
+      /*! unpack data from message buffer to user
+
+         n is the number of objects sent by the sender
+       */
+      template<class MessageBuffer, class EntityType>
+      void scatter (MessageBuffer& buff, const EntityType& e, size_t n)
+      {
+        DataType x;
+        buff.read(x);
+        int alpha = vertexmapper.map(e);
+        if (x.first>essential[alpha])
+        {
+          essential[alpha] = x.first;
+          f[alpha] = x.second;
+        }
+      }
+
+      //! constructor
+      AccumulateBCFlags (const G& g, const VM& vm, std::vector<unsigned char>& e, VectorType& _f)
+        : grid(g), vertexmapper(vm), essential(e), f(_f)
+      {}
+
+    private:
+      const G& grid;
+      std::vector<unsigned char>& essential;
+      const VM& vertexmapper;
+      VectorType& f;
+    };
+
+
 
   public:
     P1GroundwaterOperator (const G& g, const GroundwaterEquationParameters<G,RT>& params,
-                           const IS& indexset, bool procBoundaryAsDirichlet=true)
-      : AssembledP1FEOperator<G,RT,IS,1>(g,indexset), loc(params,procBoundaryAsDirichlet)
+                           const IS& indexset, bool extendoverlap=false)
+      : AssembledP1FEOperator<G,RT,IS,1>(g,indexset,extendoverlap),
+        procBoundaryAsDirichlet(g.overlapSize(0)>0), loc(params,g.overlapSize(0)>0)
     {       }
 
     //! assemble operator, rhs and Dirichlet boundary conditions
     void assemble (P1FEFunction<G,RT,IS,1>& u, P1FEFunction<G,RT,IS,1>& f)
     {
+      // check size
+      if ((*u).N()!=this->A.M() || (*f).N()!=this->A.N())
+        DUNE_THROW(MathError,"P1GroundwaterOperator::assemble(): size mismatch");
+
       // clear global stiffness matrix and right hand side
       this->A = 0;
       *f = 0;
@@ -530,6 +610,10 @@ namespace Dune
       Iterator eendit = this->is.template end<0,All_Partition>();
       for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
+        // parallelization
+        if (this->extendOverlap && it->partitionType()!=InteriorEntity)
+          continue;
+
         // get access to shape functions for P1 elements
         Dune::GeometryType gt = it->geometry().type();
         const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
@@ -733,11 +817,63 @@ namespace Dune
         }
       }
 
+      //          std::ostringstream os2;
+      //          os2 << this->grid.rank() << ": before";
+      //          printmatrix(std::cout,this->A,"global stiffness matrix",os2.str(),9,1);
+
+
+      // \todo: Dirichlet boundary condition detection needs communication for
+      // nonoverlapping grids !
+
+      // accumulate matrix entries
+      if (this->extendOverlap)
+        this->sumEntries();
+
+      // send around boundary conditions
+      if (this->extendOverlap)
+      {
+        AccumulateBCFlags datahandle(this->grid,this->vertexmapper,essential,*f);
+        this->grid.template communicate<AccumulateBCFlags>(datahandle,InteriorBorder_InteriorBorder_Interface,ForwardCommunication);
+        // on a nonvoerlapping grid we have the correct BC at all interior and border vertices
+      }
+      // what about the overlapping case ?
+
+      // muck up ghost vertices
+      VIterator vendit = this->is.template end<n,All_Partition>();
+      for (VIterator it = this->is.template begin<n,All_Partition>(); it!=vendit; ++it)
+        if (it->partitionType()==GhostEntity)
+        {
+          // index of this vertex
+          int i=this->vertexmapper.map(*it);
+
+          // muck up row
+          coliterator endj=this->A[i].end();
+          for (coliterator j=this->A[i].begin(); j!=endj; ++j)
+            if (j.index()==i)
+              (*j) = 1;
+            else
+              (*j) = 0;
+          (*f)[i] = 0;
+        }
 
       // put in essential boundary conditions
       rowiterator endi=this->A.end();
       for (rowiterator i=this->A.begin(); i!=endi; ++i)
       {
+        // muck up rows for extra
+        if (i.index()>=this->vertexmapper.size())
+        {
+          coliterator endj=(*i).end();
+          for (coliterator j=(*i).begin(); j!=endj; ++j)
+            if (j.index()==i.index())
+              (*j) = 1;
+            else
+              (*j) = 0;
+          (*f)[i.index()] = 0;
+          continue;
+        }
+
+        // vector entries in the grid (how to detect ghost nodes ?
         if (!this->hanging[i.index()] && essential[i.index()]!=GroundwaterEquationParameters<G,RT>::neumann)
         {
           coliterator endj=(*i).end();
@@ -750,8 +886,12 @@ namespace Dune
         }
       }
 
+      u.comm().copyOwnerToAll(*u,*u);     // make dirichlet values consistent in copies
+
       // print it
-      //	  printmatrix(std::cout,this->A,"global stiffness matrix","row",9,1);
+      //          std::ostringstream os;
+      //          os << this->grid.rank() << ": after";
+      //          printmatrix(std::cout,this->A,"global stiffness matrix",os.str(),9,1);
     }
 
     //! assemble operator, rhs and Dirichlet boundary conditions
@@ -978,6 +1118,7 @@ namespace Dune
 
   private:
     std::vector<bool> marked;
+    bool procBoundaryAsDirichlet;
     LagrangeFEMForGroundwaterEquation<G,RT> loc;
   };
 
@@ -986,9 +1127,8 @@ namespace Dune
   class LeafP1GroundwaterOperator : public P1GroundwaterOperator<G,RT,typename G::Traits::LeafIndexSet>
   {
   public:
-    LeafP1GroundwaterOperator (const G& grid, const GroundwaterEquationParameters<G,RT>& params,
-                               bool procBoundaryAsDirichlet=true)
-      : P1GroundwaterOperator<G,RT,typename G::Traits::LeafIndexSet>(grid,params,grid.leafIndexSet(),procBoundaryAsDirichlet)
+    LeafP1GroundwaterOperator (const G& grid, const GroundwaterEquationParameters<G,RT>& params, bool extendoverlap=false)
+      : P1GroundwaterOperator<G,RT,typename G::Traits::LeafIndexSet>(grid,params,grid.leafIndexSet(),extendoverlap)
     {}
   };
 
@@ -997,9 +1137,8 @@ namespace Dune
   class LevelP1GroundwaterOperator : public P1GroundwaterOperator<G,RT,typename G::Traits::LevelIndexSet>
   {
   public:
-    LevelP1GroundwaterOperator (const G& grid, int level,
-                                const GroundwaterEquationParameters<G,RT>& params, bool procBoundaryAsDirichlet=true)
-      : P1GroundwaterOperator<G,RT,typename G::Traits::LevelIndexSet>(grid,params,grid.levelIndexSet(level),procBoundaryAsDirichlet)
+    LevelP1GroundwaterOperator (const G& grid, int level, const GroundwaterEquationParameters<G,RT>& params, bool extendoverlap=false)
+      : P1GroundwaterOperator<G,RT,typename G::Traits::LevelIndexSet>(grid,params,grid.levelIndexSet(level),extendoverlap)
     {}
   };
 
