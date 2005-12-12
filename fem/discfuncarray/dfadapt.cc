@@ -405,7 +405,6 @@ namespace Dune {
     xtmp_(0.0),
     tmpGrad_(0.0),
     numOfDof_(-1),
-    numOfDifferentDofs_(-1),
     fSpace_ ( f ),
     values_ (),
     dofVec_ ( dofVec ),
@@ -423,7 +422,7 @@ namespace Dune {
   LocalFunctionAdapt < DiscreteFunctionSpaceType>::operator [] (int num)
   {
     // check that storage (dofVec_) and mapper are in sync:
-    assert(dofVec_.size() == fSpace_.mapper().size());
+    assert(dofVec_.size() >= fSpace_.size());
     return (* (values_[num]));
   }
 
@@ -432,7 +431,7 @@ namespace Dune {
   LocalFunctionAdapt < DiscreteFunctionSpaceType>::operator [] (int num) const
   {
     // check that storage (dofVec_) and mapper are in sync:
-    assert(dofVec_.size() == fSpace_.mapper().size());
+    assert(dofVec_.size() >= fSpace_.size());
     return (* (values_[num]));
   }
 
@@ -539,8 +538,6 @@ namespace Dune {
     {
       numOfDof_ =
         fSpace_.getBaseFunctionSet(en).numBaseFunctions();
-      numOfDifferentDofs_ =
-        fSpace_.getBaseFunctionSet(en).numDifferentBaseFunctions();
 
       if(numOfDof_ > this->values_.size())
         this->values_.resize( numOfDof_ );
@@ -558,7 +555,6 @@ namespace Dune {
   inline void LocalFunctionAdapt < DiscreteFunctionSpaceType>::
   assign(int numDof, const RangeType& dofs)
   {
-    assert(numDof < numOfDifferentDofs_);
     assert(false); // untested and most probably wrong
     for (size_t i = 0; i < dimrange; ++i) {
       *(values_[numDof + dimrange*i]) = dofs[i];

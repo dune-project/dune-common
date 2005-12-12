@@ -321,9 +321,6 @@ namespace Dune {
     //! number of all dofs
     mutable int numOfDof_;
 
-    //! for example number of corners for linear elements
-    mutable int numOfDifferentDofs_;
-
     //! the corresponding function space which provides the base function set
     const DiscreteFunctionSpaceType& fSpace_;
 
