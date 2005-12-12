@@ -450,7 +450,7 @@ namespace Dune {
       typedef typename X::block_type xblock;
       bblock rhs;
 
-      X v(x);     // allocate with same size
+      X v(x.size());     // allocate with same size
 
       rowiterator endi=A.end();
       for (rowiterator i=A.begin(); i!=endi; ++i)
