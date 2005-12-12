@@ -871,7 +871,7 @@ namespace Dune
     RepresentationType* oldcoeff;
 
     // the mysterious communication object
-    CommunicationType* comobj;
+    mutable CommunicationType* comobj;
   };
 
 
