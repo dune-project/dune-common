@@ -60,14 +60,16 @@ namespace Dune {
     {
       y = 0;
       _A_.umv(x,y);     // result is consistent on interior+border
-      communication.project(y);
+      communication.project(y);     // we want this here to avoid it before the preconditioner
+                                    // since there d is const!
     }
 
     //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
     virtual void applyscaleadd (field_type alpha, const X& x, Y& y) const
     {
       _A_.usmv(alpha,x,y);     // result is consistent on interior+border
-      communication.project(y);
+      communication.project(y);     // we want this here to avoid it before the preconditioner
+                                    // since there d is const!
     }
 
     //! get matrix via *
@@ -192,6 +194,74 @@ namespace Dune {
     int _n;
     //! \brief The relaxation factor to use
     field_type _w;
+    //! \brief the communication object
+    const C& communication;
+  };
+
+
+
+  template<class X, class Y, class C>
+  class BlockPreconditioner : public Preconditioner<X,Y> {
+  public:
+    //! \brief The domain type of the preconditioner.
+    typedef X domain_type;
+    //! \brief The range type of the preconditioner.
+    typedef Y range_type;
+    //! \brief The field type of the preconditioner.
+    typedef typename X::field_type field_type;
+
+    // define the category
+    enum {
+      //! \brief The category the precondtioner is part of.
+      category=SolverCategory::overlapping
+    };
+
+    /*! \brief Constructor.
+
+       constructor gets all parameters to operate the prec.
+       \param A The matrix to operate on.
+       \param n The number of iterations to perform.
+       \param w The relaxation factor.
+     */
+    BlockPreconditioner (Preconditioner<X,Y>& p, const C& c)
+      : preconditioner(p), communication(c)
+    {   }
+
+    /*!
+       \brief Prepare the preconditioner.
+
+       \copydoc Preconditioner::pre(X&,Y&)
+     */
+    virtual void pre (X& x, Y& b)
+    {
+      preconditioner.pre(x,b);
+    }
+
+    /*!
+       \brief Apply the precondtioner
+
+       \copydoc Preconditioner::apply(X&,Y&)
+     */
+    virtual void apply (X& v, const Y& d)
+    {
+      preconditioner.apply(v,d);
+      communication.copyOwnerToAll(v,v);
+    }
+
+    /*!
+       \brief Clean up.
+
+       \copydoc Preconditioner::post(X&)
+     */
+    virtual void post (X& x)
+    {
+      preconditioner.post(x);
+    }
+
+  private:
+    //! \brief a sequential preconditioner
+    Preconditioner<X,Y>& preconditioner;
+
     //! \brief the communication object
     const C& communication;
   };
