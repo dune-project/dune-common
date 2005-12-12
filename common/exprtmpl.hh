@@ -43,7 +43,7 @@ struct Indent
 
 extern Indent INDENT;
 
-std::ostream & operator << (std::ostream & s, const Indent & i)
+inline std::ostream & operator << (std::ostream & s, const Indent & i)
 {
   for (int n = 0; n < i.i; n++) s << " ";
   return s;

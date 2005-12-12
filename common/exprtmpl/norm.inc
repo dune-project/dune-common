@@ -25,19 +25,19 @@ NORM (const ExprTmpl::Vector<A> & a)
   NORM_CODE
 }
 
-double
+inline double
 NORM (const double & a)
 {
   VAL_CODE
 }
 
-float
+inline float
 NORM (const float & a)
 {
   VAL_CODE
 }
 
-int
+inline int
 NORM (const int & a)
 {
   VAL_CODE
