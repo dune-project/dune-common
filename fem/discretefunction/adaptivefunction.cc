@@ -43,7 +43,7 @@ namespace Dune {
     assert(init_);
     assert(num >= 0 && num < numDofs());
     // check that storage (dofVec_) and mapper are in sync:
-    assert(dofVec_.size() == spc_.mapper().size());
+    assert(dofVec_.size() >= spc_.size());
     return (* (values_[num]));
   }
 
@@ -55,7 +55,8 @@ namespace Dune {
     assert(init_);
     assert(num >= 0 && num < numDofs());
     // check that storage (dofVec_) and mapper are in sync:
-    assert(dofVec_.size() == spc_.mapper().size());
+    if( dofVec_.size() != spc_.size() )
+      assert(dofVec_.size() >= spc_.size());
     return (* (values_[num]));
   }
 
@@ -91,7 +92,8 @@ namespace Dune {
     ret *= 0.0;
     const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
 
-    for (int i = 0; i < bSet.numBaseFunctions(); ++i) {
+    for (int i = 0; i < bSet.numBaseFunctions(); ++i)
+    {
       bSet.eval(i, x, tmp_);
       for (int l = 0; l < dimRange; ++l) {
         ret[l] += (*values_[i]) * tmp_[l];

@@ -59,7 +59,10 @@ namespace Dune {
   ~AdaptiveFunctionImplementation()
   {
     if (memPair_.first) {
-      bool removed = dm_.removeDofSet(*memPair_.first);
+#ifndef NDEBUG
+      bool removed =
+#endif
+      dm_.removeDofSet(*memPair_.first);
       assert(removed);
     }
   }
