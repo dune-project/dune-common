@@ -519,6 +519,30 @@ namespace Dune {
     {
       DUNE_THROW(GridError, "YaspEntity not implemented");
     }
+
+    // IndexSets needs access to the private index methods
+    friend class Dune::YaspLevelIndexSet<GridImp>;
+    friend class Dune::YaspLeafIndexSet<GridImp>;
+    friend class Dune::YaspGlobalIdSet<GridImp>;
+    typedef typename GridImp::PersistentIndexType PersistentIndexType;
+
+    //! globally unique, persistent index
+    PersistentIndexType persistentIndex () const
+    {
+      DUNE_THROW(GridError, "YaspEntity not implemented");
+    }
+
+    //! consecutive, codim-wise, level-wise index
+    int compressedIndex () const
+    {
+      DUNE_THROW(GridError, "YaspEntity not implemented");
+    }
+
+    //! consecutive, codim-wise, level-wise index
+    int compressedLeafIndex () const
+    {
+      DUNE_THROW(GridError, "YaspEntity not implemented");
+    }
   };
 
 
@@ -2230,8 +2254,21 @@ namespace Dune {
       return g.overlap();
     }
 
+    //! return size (= distance in graph) of overlap region
+    int overlapSize (int codim) const
+    {
+      YGLI g = MultiYGrid<dim,ctype>::begin(maxLevel());
+      return g.overlap();
+    }
+
     //! return size (= distance in graph) of ghost region
     int ghostSize (int level, int codim) const
+    {
+      return 0;
+    }
+
+    //! return size (= distance in graph) of ghost region
+    int ghostSize (int codim) const
     {
       return 0;
     }
@@ -2683,6 +2720,17 @@ namespace Dune {
     const typename Traits::LeafIndexSet& leafIndexSet() const
     {
       return theleafindexset;
+    }
+
+
+    int rank () const
+    {
+      return MultiYGrid<dim,ctype>::torus().rank();
+    }
+
+    MPI_Comm comm () const
+    {
+      return MultiYGrid<dim,ctype>::torus().comm();
     }
 
   private:
