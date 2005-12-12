@@ -213,10 +213,10 @@ namespace Dune {
         return ex[i];
       }
       int N() const { return ex.N(); }
-      double one_norm() const { return one_norm(ex); }
-      double two_norm() const { return two_norm(ex); }
-      double two_norm2() const { return two_norm2(ex); }
-      double infinity_norm() const { return two_norm(ex); }
+      double one_norm() const { return one_norm(*this); }
+      double two_norm() const { return two_norm(*this); }
+      double two_norm2() const { return two_norm2(*this); }
+      double infinity_norm() const { return two_norm(*this); }
     private:
       Ex ex;
     };
@@ -234,10 +234,10 @@ namespace Dune {
       int N() const {
         return asImp().N();
       }
-      double one_norm() const { return one_norm(ex); }
-      double two_norm() const { return two_norm(ex); }
-      double two_norm2() const { return two_norm2(ex); }
-      double infinity_norm() const { return two_norm(ex); }
+      double one_norm() const { return one_norm(*this); }
+      double two_norm() const { return two_norm(*this); }
+      double two_norm2() const { return two_norm2(*this); }
+      double infinity_norm() const { return two_norm(*this); }
       block_type & operator[] (int i) {
         return asImp()[i];
       }
@@ -346,10 +346,10 @@ namespace Dune {
         return BlockExprImp(v[i]);
       }
       int N() const { return v.N(); };
-      double one_norm() const { return one_norm(ex); }
-      double two_norm() const { return two_norm(ex); }
-      double two_norm2() const { return two_norm2(ex); }
-      double infinity_norm() const { return two_norm(ex); }
+      double one_norm() const { return one_norm(*this); }
+      double two_norm() const { return two_norm(*this); }
+      double two_norm2() const { return two_norm2(*this); }
+      double infinity_norm() const { return two_norm(*this); }
     private:
       const Vector<V> & v;
     };
