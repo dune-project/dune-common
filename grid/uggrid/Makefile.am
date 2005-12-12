@@ -13,7 +13,7 @@ endif
 uggriddir = $(includedir)/dune/grid/uggrid/
 uggrid_HEADERS = uggridentity.cc uggridgeometry.cc \
   uggridentitypointer.hh uggridhieriterator.cc ugintersectionit.cc \
-  ugfunctions.hh uggridboundent.hh uggridentity.hh uggridgeometry.hh \
+  ugfunctions.hh uggridentity.hh uggridgeometry.hh \
   uggridhieriterator.hh uggridleveliterator.hh ugincludes.hh \
   ugintersectionit.hh ugtypes.hh ug_undefs.hh uggridindexsets.hh \
   ugfunctions3d.hh uggridleafiterator.hh
