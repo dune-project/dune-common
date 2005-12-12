@@ -55,7 +55,7 @@ namespace Dune {
     template<typename T>
     struct CopyGatherScatter
     {
-      typedef typename T::value_type V;
+      typedef typename CommPolicy<T>::IndexedType V;
 
       static V gather(const T& a, int i)
       {
@@ -70,7 +70,7 @@ namespace Dune {
     template<typename T>
     struct AddGatherScatter
     {
-      typedef typename T::value_type V;
+      typedef typename CommPolicy<T>::IndexedType V;
 
       static V gather(const T& a, int i)
       {
