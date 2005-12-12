@@ -17,7 +17,7 @@ void Dune::BoundaryExtractor::detectBoundarySegments(const std::vector<unsigned 
 
   // The vertices that form the edges of a quadrilateral -- in UG numbering
   static const int quadIdx[][2] = {
-    {0,1},{1,2},{2,3},{2,0}
+    {0,1},{1,2},{2,3},{3,0}
   };
 
   boundarySegments.clear();
