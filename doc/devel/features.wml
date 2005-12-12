@@ -1,0 +1,67 @@
+# -*- html -*-
+# $Id$
+
+#use wml::layout::default title="DUNE - Features"
+
+<h1>DUNE Features</h1>
+
+<p>
+The following list gives a short overview over the main features of DUNE
+and refers you to more detailed documentation.
+</p>
+
+    <ul>
+      <li> <b> Grid Implementation: </b>
+        <p>
+          So far six grid implementations are available through the DUNE grid interface.
+          Each is geared towards a different purpose.
+        </p>
+        <ul>
+          <li> <b>SGrid:</b> A structured grid in n space dimensions</li>
+          <li> <b>YaspGrid:</b> A structured parallel grid in n space dimensions</li>
+          <li> <b>UGGrid:</b> The grid manager of the UG toolbox</li>
+          <li> <b>AlbertaGrid:</b> The grid manager of the Alberta toolbox</li>
+          <li> <b>OneDGrid:</b> A sequential locally adaptive grid in one space dimension</li>
+          <li> <b>Alu3dGrid:</b> 3d nonconforming grid</li>
+        </ul>
+      </li>
+    <br>
+    <li> <b> Linear Algebra </b>
+      <p>
+        DUNE contains ISTL (the Iterative Solver Template Library) for powerful
+        linear algebra.  The main features are:
+      <ul>
+        <li> Abstractions for block matrices and block vectors </li>
+        <li> Block structure arbitrarily nestable </li>
+        <li> High performance through generic programming </li>
+        <li> Expression templates for BLAS1 routines </li>
+        <li> Several standard solvers </li>
+      </ul>
+    </li>
+    <br>
+    <li> <b> Quadrature Formulas </b>
+      <ul>
+        <li> Quadrature rules for all common element types </li>
+        <li> Rules for hypercubes up to order 19, for simplices up to order 12 </li>
+        <li> Easy access </li>
+      </ul>
+    </li>
+    <br>
+    <li> <b> Shape Functions </b>
+      <ul>
+        <li> Lagrangrian shape functions of up to second order </li>
+        <li> Monomial shape functions of arbitrary order for Discontinous Galerkin methods </li>
+        <li> Orthonormal shape functions of up to eigth order </li>
+      </ul>
+    </li>
+    <br>
+    <li> <b> Input/Output </b>
+      <ul>
+        <li> Visualization using GRAPE </li>
+        <li> Output in Data Explorer format </li>
+        <li> Reading and writing in the AmiraMesh format </li>
+        <li> Subsampling of high-order functions </li>
+      </ul>
+    </li>
+    <!-- Enforcement -->
+  </ul>
