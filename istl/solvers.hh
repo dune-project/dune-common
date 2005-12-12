@@ -496,7 +496,7 @@ namespace Dune {
       {
         // minimize in given search direction p
         _op.apply(p,q);                       // q=Ap
-        alpha = _sp.dot(q,p);                 // scalar product
+        alpha = _sp.dot(p,q);                 // scalar product
         lambda = rholast/alpha;               // minimization
         x.axpy(lambda,p);                     // update solution
         b.axpy(-lambda,q);                    // update defect
