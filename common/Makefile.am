@@ -5,7 +5,7 @@ SUBDIRS = . test
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
 
-libcommon_la_SOURCES = stdstreams.cc configparser.cc
+libcommon_la_SOURCES = stdstreams.cc configparser.cc exprtmpl.cc
 
 AM_CPPFLAGS = -I$(top_srcdir)/..
 
