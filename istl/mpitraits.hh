@@ -58,6 +58,39 @@ namespace Dune
 
 #undef ComposeMPITraits
 
+  template<class K, int n> class FieldVector;
+
+  template<class K, int n>
+  struct MPITraits<FieldVector<K,n> >
+  {
+    static MPI_Datatype* datatype;
+    static MPI_Datatype* vectortype;
+
+    static inline MPI_Datatype getType()
+    {
+      if(datatype==0) {
+        vectortype = new MPI_Datatype();
+        MPI_Type_contiguous(n, MPITraits<K>::getType(), vectortype);
+        datatype = new MPI_Datatype();
+        FieldVector<K,n> fvector;
+        MPI_Aint base;
+        MPI_Aint displ;
+        MPI_Address(&fvector, &base);
+        MPI_Address(&(fvector[0]), &displ);
+        displ -= base;
+        int length[1]={1};
+
+
+        MPI_Type_struct(1, length, &displ, vectortype, datatype);
+      }
+      return datatype;
+    }
+
+  };
+
+  template<class K, int n>
+  MPI_Datatype* MPITraits<FieldVector<K,n> >::datatype = 0;
+
   /** @} */
 }
 

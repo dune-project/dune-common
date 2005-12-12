@@ -1,9 +1,9 @@
 # $Id$
 
 if MPI
-  INDEXPROG = indicestest syncertest
+  INDEXPROG = indicestest syncertest vectorcommtest
   SELECTPROG = selectiontest
-  INDEXRUN = run-indices run-syncer
+  INDEXRUN = run-indices run-syncer run-vectorcommtest
 endif
 
 # link against libcommon to utilize dune stdstreams
@@ -40,5 +40,10 @@ syncertest_SOURCES = syncertest.cc
 
 syncertest_CXXFLAGS = $(MPI_CPPFLAGS)
 syncertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+
+vectorcommtest_SOURCES = vectorcommtest.cc
+
+vectorcommtest_CXXFLAGS = $(MPI_CPPFLAGS)
+vectorcommtest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
 include $(top_srcdir)/am/global-rules

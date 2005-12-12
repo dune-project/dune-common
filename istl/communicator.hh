@@ -95,6 +95,23 @@ namespace Dune
     static int getSize(const V&, int index);
   };
 
+  template<class K, int n> class FieldVector;
+
+  template<class B, class A> class BlockVector;
+
+  template<class K, class A, int n>
+  struct CommPolicy<BlockVector<FieldVector<K, n>, A> >
+  {
+    typedef BlockVector<FieldVector<K, n>, A> Type;
+
+    typedef typename Type::field_type IndexedType;
+
+    typedef SizeOne IndexedTypeFlag;
+
+    static const void* getAddress(const Type& v, int i);
+
+    static int getSize(const Type& v, int i);
+  };
 
   /**
    * @brief Error thrown if there was a problem with the communication.
@@ -811,6 +828,17 @@ namespace Dune
     return 1;
   }
 
+  template<class K, class A, int n>
+  inline const void* CommPolicy<BlockVector<FieldVector<K, n>, A> >::getAddress(const Type& v, int index)
+  {
+    return &(v[index]);
+  }
+
+  template<class K, class A, int n>
+  inline int CommPolicy<BlockVector<FieldVector<K, n>, A> >::getSize(const Type& v, int index)
+  {
+    return 1;
+  }
 
   template<typename T>
   DatatypeCommunicator<T>::DatatypeCommunicator()

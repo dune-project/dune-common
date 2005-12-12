@@ -23,7 +23,7 @@ class Array
   friend std::ostream& operator<<(std::ostream& os, const Array& a);
 public:
   typedef double value_type;
-  Array() : size_(0), vals_(0)
+  Array() : vals_(0), size_(0)
   {}
 
   Array(int size) : size_(size)
