@@ -174,6 +174,8 @@ namespace Dune {
         dm_.dofCompress();
 
       // here the communicate and load-balancing should be called
+      //grid_.loadBalance(dm_);
+      //grid_.communicate(dm_);
 
       // do cleanup
       grid_.postAdapt();

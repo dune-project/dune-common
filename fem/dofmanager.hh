@@ -968,7 +968,7 @@ namespace Dune {
     void reserveMemory (int nsize)
     {
       // remember the chunksize
-      chunkSize_ = nsize;
+      chunkSize_ = std::max(nsize,100);
       assert( chunkSize_ > 0 );
       resizeMemObjs_.apply ( chunkSize_ );
     }
