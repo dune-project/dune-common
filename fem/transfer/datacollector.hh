@@ -582,7 +582,6 @@ namespace Dune {
         typename std::pair < ObjectStreamType * ,
             const typename  DiscreteFunctionType::FunctionSpaceType::GridType::template Codim<0>::Entity * > >  ChefType;
   public:
-    typedef typename DiscreteFunctionType::FunctionSpaceType::GridType::ObjectStreamType ObjectStreamType;
     typedef typename DiscreteFunctionType::FunctionSpaceType::GridType::template Codim<0>::Entity EntityType;
     typedef typename ChefType::Traits::ParamType ParamType;
 
@@ -634,7 +633,6 @@ namespace Dune {
         typename std::pair < ObjectStreamType * ,
             const typename  DiscreteFunctionType::FunctionSpaceType::GridType::template Codim<0>::Entity * > >  ChefType;
   public:
-    typedef typename DiscreteFunctionType::FunctionSpaceType::GridType::ObjectStreamType ObjectStreamType;
     typedef typename DiscreteFunctionType::FunctionSpaceType::GridType::template Codim<0>::Entity EntityType;
     typedef typename ChefType::Traits::ParamType ParamType;
 
