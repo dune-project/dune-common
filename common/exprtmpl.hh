@@ -214,10 +214,12 @@ namespace Dune {
         return ex[i];
       }
       int N() const { return ex.N(); }
-      double one_norm() const { return one_norm(*this); }
-      double two_norm() const { return two_norm(*this); }
-      double two_norm2() const { return two_norm2(*this); }
-      double infinity_norm() const { return two_norm(*this); }
+      double one_norm() const { return eval_one_norm(*this); }
+      double one_norm_real() const { return eval_one_norm_real(*this); }
+      double two_norm() const { return sqrt(eval_two_norm2(*this)); }
+      double two_norm2() const { return eval_two_norm2(*this); }
+      double infinity_norm() const { return eval_infinity_norm(*this); }
+      double infinity_norm_real() const { return eval_infinity_norm_real(*this); }
     private:
       Ex ex;
     };
@@ -235,10 +237,12 @@ namespace Dune {
       int N() const {
         return asImp().N();
       }
-      double one_norm() const { return one_norm(*this); }
-      double two_norm() const { return two_norm(*this); }
-      double two_norm2() const { return two_norm2(*this); }
-      double infinity_norm() const { return two_norm(*this); }
+      double one_norm() const { return eval_one_norm(*this); }
+      double one_norm_real() const { return eval_one_norm_real(*this); }
+      double two_norm() const { return sqrt(eval_two_norm2(*this)); }
+      double two_norm2() const { return eval_two_norm2(*this); }
+      double infinity_norm() const { return eval_infinity_norm(*this); }
+      double infinity_norm_real() const { return eval_infinity_norm_real(*this); }
       block_type & operator[] (int i) {
         return asImp()[i];
       }
@@ -347,10 +351,12 @@ namespace Dune {
         return BlockExprImp(v[i]);
       }
       int N() const { return v.N(); };
-      double one_norm() const { return one_norm(*this); }
-      double two_norm() const { return two_norm(*this); }
-      double two_norm2() const { return two_norm2(*this); }
-      double infinity_norm() const { return two_norm(*this); }
+      double one_norm() const { return eval_one_norm(*this); }
+      double one_norm_real() const { return eval_one_norm_real(*this); }
+      double two_norm() const { return sqrt(eval_two_norm2(*this)); }
+      double two_norm2() const { return eval_two_norm2(*this); }
+      double infinity_norm() const { return eval_infinity_norm(*this); }
+      double infinity_norm_real() const { return eval_infinity_norm_real(*this); }
     private:
       const Vector<V> & v;
     };
@@ -883,57 +889,146 @@ namespace Dune {
 #define ExpressionOpExpression ExpressionMinExpression
 #include "exprtmpl/exprexpr.inc"
 
-#define NORM one_norm
+  /* one norm (sum over absolute values of entries) */
+
+#define NORM eval_one_norm
 #define NORM_CODE \
   { \
     typename FieldType<A>::type val=0; \
     Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
     ++INDENT; \
-    for (int i=0; i<a.N(); ++i) { val += one_norm(a[i]); } \
+    for (int i=0; i<a.N(); ++i) { val += eval_one_norm(a[i]); } \
     --INDENT; \
     return val; \
   }
-#define VAL_CODE { return a; }
+#define VAL_CODE { return std::abs(a); }
 #include "exprtmpl/norm.inc"
 
-#define NORM two_norm2
+  template<class K>
+  inline K eval_one_norm (const std::complex<K>& c)
+  {
+    sqrt(c.real()*c.real() + c.imag()*c.imag());
+  }
+
+  template <class A>
+  typename FieldType<A>::type
+  one_norm (const A & a)
+  {
+    return eval_one_norm(a);
+  }
+
+  /* simplified one norm (uses Manhattan norm for complex values) */
+
+#define NORM eval_one_norm_real
 #define NORM_CODE \
   { \
     typename FieldType<A>::type val=0; \
     Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
     ++INDENT; \
-    for (int i=0; i<a.N(); ++i) { val += two_norm2(a[i]); } \
+    for (int i=0; i<a.N(); ++i) { val += eval_one_norm_real(a[i]); } \
+    --INDENT; \
+    return val; \
+  }
+#define VAL_CODE { return std::abs(a); }
+#include "exprtmpl/norm.inc"
+
+  template<class K>
+  inline K eval_one_norm_real (const std::complex<K>& c)
+  {
+    return eval_one_norm_real(c.real()) + eval_one_norm_real(c.imag());
+  }
+
+  template <class A>
+  typename FieldType<A>::type
+  one_norm_real (const A & a)
+  {
+    return eval_one_norm_real(a);
+  }
+
+  /* two norm sqrt(sum over squared values of entries) */
+
+  template <class A>
+  typename FieldType<A>::type
+  two_norm (const A & a)
+  {
+    return sqrt(eval_two_norm2(a));
+  }
+
+  /* sqare of two norm (sum over squared values of entries), need for block recursion */
+
+#define NORM eval_two_norm2
+#define NORM_CODE \
+  { \
+    typename FieldType<A>::type val=0; \
+    Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
+    ++INDENT; \
+    for (int i=0; i<a.N(); ++i) { val += eval_two_norm2(a[i]); } \
     --INDENT; \
     return val; \
   }
 #define VAL_CODE { return a*a; }
 #include "exprtmpl/norm.inc"
 
-  template <class A>
-  typename FieldType<A>::type
-  two_norm (const ExprTmpl::Expression<A> & a)
+  template<class K>
+  inline K eval_two_norm2 (const std::complex<K>& c)
   {
-    return sqrt(two_norm2(a));
+    return c.real()*c.real() + c.imag()*c.imag();
   }
 
   template <class A>
   typename FieldType<A>::type
-  two_norm (const ExprTmpl::Vector<A> & a)
+  two_norm2 (const A & a)
   {
-    return sqrt(two_norm2(a));
+    return eval_two_norm2(a);
   }
 
-#define NORM infinity_norm
+  /* infinity norm (maximum of absolute values of entries) */
+
+#define NORM eval_infinity_norm
 #define NORM_CODE { \
     typename FieldType<A>::type val=0; \
     Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
     ++INDENT; \
-    for (int i=0; i<a.N(); ++i) { val = std::max(val,infinity_norm(a[i])); } \
+    for (int i=0; i<a.N(); ++i) { val = std::max(val,eval_infinity_norm(a[i])); } \
     --INDENT; \
     return val; \
 }
 #define VAL_CODE { return a; }
 #include "exprtmpl/norm.inc"
+
+  template <class A>
+  typename FieldType<A>::type
+  infinity_norm (const A & a)
+  {
+    return eval_infinity_norm(a);
+  }
+
+  /* simplified infinity norm (uses Manhattan norm for complex values) */
+
+#define NORM eval_infinity_norm_real
+#define NORM_CODE { \
+    typename FieldType<A>::type val=0; \
+    Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
+    ++INDENT; \
+    for (int i=0; i<a.N(); ++i) { val = std::max(val,eval_infinity_norm(a[i])); } \
+    --INDENT; \
+    return val; \
+}
+#define VAL_CODE { return std::abs(a); }
+#include "exprtmpl/norm.inc"
+
+  template<class K>
+  inline K eval_infinity_norm_real (const std::complex<K>& c)
+  {
+    return eval_one_norm_real(c.real()) + eval_one_norm_real(c.imag());
+  }
+
+  template <class A>
+  typename FieldType<A>::type
+  infinity_norm_real (const A & a)
+  {
+    return eval_infinity_norm(a);
+  }
 
 } // namespace Dune
 

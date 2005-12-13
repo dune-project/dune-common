@@ -25,6 +25,32 @@ NORM (const ExprTmpl::Vector<A> & a)
   NORM_CODE
 }
 
+/*
+template <class A>
+double
+ExprTmpl::Expression<A>::NORM () const
+{
+  const ExprTmpl::Expression<A> & a = *this;
+  NORM_CODE
+}
+
+template <class A>
+double
+ExprTmpl::Vector<A>::NORM () const
+{
+  const ExprTmpl::Vector<A> & a = *this;
+  NORM_CODE
+}
+
+template <class A>
+double
+ExprTmpl::ConstRef<A>::NORM () const
+{
+  const ExprTmpl::ConstRef<A> & a = *this;
+  NORM_CODE
+}
+*/
+
 inline double
 NORM (const double & a)
 {
