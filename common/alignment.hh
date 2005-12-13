@@ -37,9 +37,13 @@ namespace Dune
     char padding2[N2];
   };
 
-#define ALIGNMENT_MODULO(a, b)   ((a) % (b) == 0 ? (b) : (a) % (b))
+#define ALIGNMENT_MODULO(a, b)   (a % b == 0 ? \
+                                  static_cast<std::size_t>(b) : \
+                                  static_cast<std::size_t>(a % b))
 #define ALIGNMENT_MIN(a, b)      (static_cast<std::size_t>(a) <   \
-                                  static_cast<std::size_t>(b) ? (a) : (b))
+                                  static_cast<std::size_t>(b) ? \
+                                  static_cast<std::size_t>(a) : \
+                                  static_cast<std::size_t>(b))
   template <class T, std::size_t N>
   struct AlignmentTester
   {
