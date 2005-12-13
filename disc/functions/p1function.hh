@@ -118,7 +118,7 @@ namespace Dune
         int alpha=vertexmapper.map(e);
         GIDSet& thisset = myids[alpha];
         int source;
-        for (int i=0; i<n; i++)
+        for (size_t i=0; i<n; i++)
         {
           Pair x;
           buff.read(x);
@@ -191,7 +191,7 @@ namespace Dune
       void scatter (MessageBuffer& buff, const EntityType& e, size_t n)
       {
         GIDSet& myset = borderlinks[vertexmapper.map(e)];
-        for (int i=0; i<n; i++)
+        for (size_t i=0; i<n; i++)
         {
           DataType x;
           buff.read(x);
@@ -466,7 +466,7 @@ namespace Dune
 
     //! allocate data
     P1FEFunction (const G& g,  const IS& indexset, bool extendoverlap=false)
-      : grid_(g), is(indexset), mapper_(g,indexset), comobj(0), oldcoeff(0)
+      : grid_(g), is(indexset), mapper_(g,indexset), oldcoeff(0), comobj(0)
     {
       // check if overlap extension is possible
       if (extendoverlap && g.overlapSize(0)>0)
