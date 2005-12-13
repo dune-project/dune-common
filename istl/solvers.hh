@@ -200,7 +200,7 @@ namespace Dune {
     template<class L, class S, class P>
     LoopSolver (L& op, S& sp, P& prec,
                 double reduction, int maxit, int verbose) :
-      _op(op), _sp(sp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+      _op(op), _prec(prec), _sp(sp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
       IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
@@ -440,7 +440,7 @@ namespace Dune {
      */
     template<class L, class S, class P>
     CGSolver (L& op, S& sp, P& prec, double reduction, int maxit, int verbose) :
-      _op(op), _sp(sp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+      _op(op), _prec(prec), _sp(sp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
       IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
