@@ -11,7 +11,9 @@
 #include <deque>
 
 // C includes
+#if HAVE_MPI
 #include <mpi.h>
+#endif
 #include <string.h>
 
 // local includes
@@ -1009,7 +1011,11 @@ namespace Dune {
       int rank;          // process to send to / receive from
       void *buffer;      // buffer to send / receive
       int size;          // size of buffer
+#if HAVE_MPI
       MPI_Request request;     // used by MPI to handle request
+#else
+      int request;
+#endif
       int flag;          // used by MPI
     };
 
@@ -1019,12 +1025,20 @@ namespace Dune {
     {  }
 
     //! make partitioner from communicator and coarse mesh size
+#if HAVE_MPI
     Torus (MPI_Comm comm, int tag, iTupel size)
+#else
+    Torus (int tag, iTupel size)
+#endif
     {
       // MPI stuff
+#if HAVE_MPI
       _comm = comm;
       MPI_Comm_size(comm,&_procs);
       MPI_Comm_rank(comm,&_rank);
+#else
+      _procs=1; _rank=0;
+#endif
       _tag = tag;
 
       // determine dimensions
@@ -1078,10 +1092,12 @@ namespace Dune {
     }
 
     //! return MPI communicator
+#if HAVE_MPI
     MPI_Comm comm () const
     {
       return _comm;
     }
+#endif
 
     //! return tag used by torus
     int tag () const
@@ -1356,6 +1372,7 @@ namespace Dune {
       _localsendrequests.clear();
       _localrecvrequests.clear();
 
+#if HAVE_MPI
       // handle foreign requests
       int sends=0;
       int recvs=0;
@@ -1409,6 +1426,7 @@ namespace Dune {
       // clear request buffers
       _sendrequests.clear();
       _recvrequests.clear();
+#endif
     }
 
     //! global sum
@@ -1417,8 +1435,10 @@ namespace Dune {
       double res;
 
       if (_procs==1) return x;
+#if HAVE_MPI
       MPI_Allreduce(&x,&res,1,MPI_DOUBLE,MPI_SUM,_comm);
       return res;
+#endif
     }
 
     //! global max
@@ -1427,8 +1447,10 @@ namespace Dune {
       double res;
 
       if (_procs==1) return x;
+#if HAVE_MPI
       MPI_Allreduce(&x,&res,1,MPI_DOUBLE,MPI_MAX,_comm);
       return res;
+#endif
     }
 
     //! global min
@@ -1437,8 +1459,10 @@ namespace Dune {
       double res;
 
       if (_procs==1) return x;
+#if HAVE_MPI
       MPI_Allreduce(&x,&res,1,MPI_DOUBLE,MPI_MIN,_comm);
       return res;
+#endif
     }
 
 
@@ -1549,7 +1573,9 @@ namespace Dune {
 
     }
 
+#if HAVE_MPI
     MPI_Comm _comm;
+#endif
     int _rank;
     int _procs;
     iTupel _dims;
@@ -1630,6 +1656,7 @@ namespace Dune {
     enum { tag = 17 };
 
     //! constructor making a grid
+#if HAVE_MPI
     MultiYGrid (MPI_Comm comm, fTupel L, iTupel s, bTupel periodic, int overlap)
       : _torus(comm,tag,s)     // torus gets s to compute procs/direction
     {
@@ -1656,6 +1683,31 @@ namespace Dune {
       //                                                                          << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
       //      print(std::cout);
     }
+#else
+    MultiYGrid (fTupel L, iTupel s, bTupel periodic, int overlap)
+      : _torus(tag,s)     // torus gets s to compute procs/direction
+    {
+      // store parameters
+      _LL = L;
+      _s = s;
+      _periodic = periodic;
+      _overlap = overlap;
+
+      // coarse cell interior  grid obtained through partitioning of global grid
+      iTupel o = iTupel(0);
+      iTupel o_interior(o);
+      iTupel s_interior(s);
+
+      // add level
+      _maxlevel = 0;
+      _levels[_maxlevel] = makelevel(L,s,periodic,o_interior,s_interior,overlap);
+      // output
+      //          if (_torus.rank()==0) std::cout << "MultiYGrid<" << d // changed dinfo to cout
+      //                                                                          << ">: coarse grid with size " << s
+      //                                                                          << " imbalance=" << (imbal-1)*100 << "%" << std::endl;
+      //      print(std::cout);
+    }
+#endif
 
     //! do a global mesh refinement; true: keep overlap in absolute size; false: keep overlap in mesh cells
     void refine (bool keep_overlap)

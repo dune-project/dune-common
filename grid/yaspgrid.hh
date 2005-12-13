@@ -15,6 +15,7 @@
 #include "../common/bigunsignedint.hh"
 #include "../common/array.hh"
 #include "../common/typetraits.hh"
+#include "../common/collectivecommunication.hh"
 #include "common/indexidset.hh"
 
 /*! \file yaspgrid.hh
@@ -2144,10 +2145,17 @@ namespace Dune {
        @param periodic tells if direction is periodic or not
        @param size of overlap on coarsest grid (same in all directions)
      */
+#if HAVE_MPI
     YaspGrid (MPI_Comm comm, Dune::FieldVector<ctype, dim> L,
               Dune::FieldVector<int, dim> s,
-              Dune::FieldVector<bool, dim> periodic, int overlap) :
-      MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap), theleafindexset(*this), theglobalidset(*this)
+              Dune::FieldVector<bool, dim> periodic, int overlap)
+      : MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap), ccobj(comm), theleafindexset(*this), theglobalidset(*this)
+#else
+    YaspGrid (Dune::FieldVector<ctype, dim> L,
+              Dune::FieldVector<int, dim> s,
+              Dune::FieldVector<bool, dim> periodic, int overlap)
+      : MultiYGrid<dim,ctype>(L,s,periodic,overlap), theleafindexset(*this), theglobalidset(*this)
+#endif
     {
       setsizes();
       indexsets.push_back( new YaspLevelIndexSet<const YaspGrid<dim,dimworld> >(*this,0) );
@@ -2327,6 +2335,7 @@ namespace Dune {
        in the intersection of two processors. P has two methods gather and scatter that implement
        the protocol. Therefore P is called the "protocol class".
      */
+#if HAVE_MPI
     template<class T, template<class> class P, int codim>
     void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level) const
     {
@@ -2441,7 +2450,7 @@ namespace Dune {
         delete[] buf;
       }
     }
-
+#endif
 
     /*! The new communication interface
 
@@ -2699,7 +2708,6 @@ namespace Dune {
       }
     }
 
-
     // The new index sets from DDM 11.07.2005
     const typename Traits::GlobalIdSet& globalIdSet() const
     {
@@ -2727,12 +2735,25 @@ namespace Dune {
       return MultiYGrid<dim,ctype>::torus().rank();
     }
 
-    MPI_Comm comm () const
+#if HAVE_MPI
+    const CollectiveCommunication<MPI_Comm>& comm () const
     {
-      return MultiYGrid<dim,ctype>::torus().comm();
+      return ccobj;
     }
+#else
+    const CollectiveCommunication<int>& comm () const
+    {
+      return ccobj;
+    }
+#endif
 
   private:
+
+#if HAVE_MPI
+    CollectiveCommunication<MPI_Comm> ccobj;
+#else
+    CollectiveCommunication<int> ccobj;
+#endif
 
     std::vector<YaspLevelIndexSet<const YaspGrid<dim,dimworld> >*> indexsets;
     YaspLeafIndexSet<const YaspGrid<dim,dimworld> > theleafindexset;
