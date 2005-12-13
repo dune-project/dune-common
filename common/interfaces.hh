@@ -16,6 +16,11 @@ namespace Dune {
        delete the resulting pointer.
      */
     virtual Cloneable* clone() const = 0;
+
+    /** \brief Destructor */
+    virtual ~Cloneable()
+    {}
+
   };
 
   //! Tagging interface to indicate that Grid provides typedef ObjectStreamType
