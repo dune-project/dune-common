@@ -120,6 +120,20 @@ namespace Dune
   {};
 
   /**
+   * @brief GatherScatter default implementation that just copies data.
+   */
+  template<class T>
+  struct CopyGatherScatter
+  {
+    typedef typename CommPolicy<T>::IndexedType IndexedType;
+
+    const IndexedType& gather(const T& vec, int i);
+
+    void scatter(T& vec, const IndexedType& v, int i);
+
+  };
+
+  /**
    * @brief An utility class for communicating distributed data structures via MPI datatypes.
    *
    * This communicator creates special MPI datatypes that address the non contiguous elements
@@ -840,6 +854,20 @@ namespace Dune
     return 1;
   }
 
+
+  template<class T>
+  inline const typename CopyGatherScatter<T>::IndexedType& CopyGatherScatter<T>::gather(const T & vec, int i)
+  {
+    return vec[i];
+
+  }
+
+  template<class T>
+  inline void CopyGatherScatter<T>::scatter(T& vec, const IndexedType& v, int i)
+  {
+    vec[i]=v;
+
+  }
   template<typename T>
   DatatypeCommunicator<T>::DatatypeCommunicator()
     : remoteIndices_(0), created_(false)

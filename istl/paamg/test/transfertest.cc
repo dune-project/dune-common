@@ -4,6 +4,7 @@
 #include <dune/istl/bvector.hh>
 #include <dune/common/fvector.hh>
 #include <dune/istl/paamg/aggregates.hh>
+#include <dune/istl/paamg/pinfo.hh>
 #include <dune/istl/paamg/transfer.hh>
 
 template<class Vertex>
@@ -32,8 +33,12 @@ int main()
 
   Vector c(aggregates);
   b=100;
-  Dune::Amg::Transfer<int,Vector>::restrict (amap, c, b);
+  typedef Dune::Amg::SequentialInformation SequentialInformation;
 
-  Dune::Amg::Transfer<int,Vector>::prolongate(amap, c, b, 1);
+  SequentialInformation info;
+
+  Dune::Amg::Transfer<int,Vector,SequentialInformation>::restrict (amap, c, b, info);
+
+  Dune::Amg::Transfer<int,Vector,SequentialInformation>::prolongate(amap, c, b, 1);
   return 0;
 }

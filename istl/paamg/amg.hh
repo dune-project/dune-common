@@ -37,6 +37,9 @@ namespace Dune
       typedef PI ParallelInformation;
       /** @brief The matrix type. */
       typedef MatrixHierarchy<M, ParallelInformation, A> MatrixHierarchy;
+
+      typedef typename MatrixHierarchy::ParallelInformationHierarchy ParallelInformationHierarchy;
+
       /** @brief The domain type. */
       typedef X Domain;
       /** @brief The range type. */
@@ -86,6 +89,7 @@ namespace Dune
       /** @brief Multigrid cycle on a level. */
       void mgc(typename Hierarchy<Smoother,A>::Iterator& smoother,
                typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator& matrix,
+               typename ParallelInformationHierarchy::Iterator& pinfo,
                typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
                typename Hierarchy<Domain,A>::Iterator& lhs,
                typename Hierarchy<Range,A>::Iterator& rhs,
@@ -230,6 +234,7 @@ namespace Dune
     {
       typename Hierarchy<Smoother,A>::Iterator smoother = smoothers_.finest();
       typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator matrix = matrices_->matrices().finest();
+      typename ParallelInformationHierarchy::Iterator pinfo = matrices_->parallelInformation().finest();
       typename MatrixHierarchy::AggregatesMapList::const_iterator aggregates = matrices_->aggregatesMaps().begin();
       typename Hierarchy<Domain,A>::Iterator lhs = lhs_->finest();
       typename Hierarchy<Range,A>::Iterator rhs = rhs_->finest();
@@ -239,13 +244,14 @@ namespace Dune
       *rhs = d;
 
       level=0;
-      mgc(smoother, matrix, aggregates, lhs, rhs, defect);
+      mgc(smoother, matrix, pinfo, aggregates, lhs, rhs, defect);
       v=*lhs;
     }
 
     template<class M, class X, class S, class P, class A>
     void AMG<M,X,S,P,A>::mgc(typename Hierarchy<Smoother,A>::Iterator& smoother,
                              typename MatrixHierarchy::ParallelMatrixHierarchy::ConstIterator& matrix,
+                             typename ParallelInformationHierarchy::Iterator& pinfo,
                              typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
                              typename Hierarchy<Domain,A>::Iterator& lhs,
                              typename Hierarchy<Range,A>::Iterator& rhs,
@@ -269,9 +275,10 @@ namespace Dune
 
         //restrict defect to coarse level right hand side.
         ++rhs;
+        ++pinfo;
 
-        Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range>
-        ::restrict (*(*aggregates), *rhs, static_cast<const Range&>(*defect));
+        Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
+        ::restrict (*(*aggregates), *rhs, static_cast<const Range&>(*defect), *pinfo);
 
         // prepare coarse system
         ++lhs;
@@ -286,7 +293,7 @@ namespace Dune
         }
 
         // next level
-        mgc(smoother, matrix, aggregates, lhs, rhs, defect);
+        mgc(smoother, matrix, pinfo, aggregates, lhs, rhs, defect);
 
         if(matrix != matrices_->matrices().coarsest()) {
           --smoother;
@@ -295,9 +302,10 @@ namespace Dune
         --level;
         //prolongate and add the correction (update is in coarse left hand side)
         --matrix;
+        --pinfo;
 
         typename Hierarchy<Domain,A>::Iterator coarseLhs = lhs--;
-        Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range>
+        Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
         ::prolongate(*(*aggregates), *coarseLhs, *lhs, 1.6);
 
         --rhs;

@@ -573,6 +573,12 @@ namespace Dune
       return matrices_;
     }
 
+    template<class M, class IS, class A>
+    const typename MatrixHierarchy<M,IS,A>::ParallelInformationHierarchy&
+    MatrixHierarchy<M,IS,A>::parallelInformation() const
+    {
+      return parallelInformation_;
+    }
 
     template<class M, class IS, class A>
     const typename MatrixHierarchy<M,IS,A>::AggregatesMapList&

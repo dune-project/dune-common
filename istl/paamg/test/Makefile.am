@@ -22,6 +22,8 @@ check_PROGRAMS = $(TESTPROGS) $(NORMALTESTS)
 graphtest_SOURCES = graphtest.cc
 
 transfertest_SOURCES = transfertest.cc
+transfertest_CXXFLAGS = $(MPI_CPPFLAGS)
+transfertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
 galerkintest_SOURCES = galerkintest.cc anisotropic.hh
 galerkintest_CXXFLAGS = $(MPI_CPPFLAGS)
