@@ -604,7 +604,7 @@ namespace Dune
       void scatter (MessageBuffer& buff, const EntityType& e, size_t n)
       {
         int i=vertexmapper.map(e);
-        for (int k=0; k<n; k++)
+        for (size_t k=0; k<n; k++)
         {
           MatEntry m;
           buff.read(m);
