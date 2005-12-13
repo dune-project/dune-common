@@ -486,6 +486,9 @@ namespace Dune
     //! know your own dimension
     enum { dimension=dim };
 
+    /** \brief Know dimension of the entity */
+    enum { mydimension=dim-cd };
+
     //! know your own dimension of world
     enum { dimensionworld=dimworld };
 
@@ -531,13 +534,12 @@ namespace Dune
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
 
+  public:
     template <int cc>
     struct Codim
     {
       typedef typename GridImp::template Codim<cc>::EntityPointer EntityPointer;
     };
-
-  public:
 
     //! tpye of Geometry
     typedef typename GridImp::template Codim<0>::Geometry Geometry;
@@ -553,6 +555,9 @@ namespace Dune
 
     //! know your own dimension
     enum { dimension=dim };
+
+    /** \brief Know dimension of the entity */
+    enum { mydimension=dim };
 
     //! know your own dimension of world
     enum { dimensionworld=dimworld };
@@ -676,6 +681,9 @@ namespace Dune
     //! know your own dimension
     enum { dimension=dim };
 
+    /** \brief Know dimension of the entity */
+    enum { mydimension=0 };
+
     //! know your own dimension of world
     enum { dimensionworld=dimworld };
 
@@ -730,6 +738,23 @@ namespace Dune
   {
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
+
+  public:
+    //! know your own codimension
+    enum { codimension=cd };
+
+    //! know your own dimension
+    enum { dimension=dim };
+
+    /** \brief Know dimension of the entity */
+    enum { mydimension=dim-cd };
+
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef ct ctype;
+
   private:
     //!  Barton-Nackman trick
     EntityImp<cd,dim,GridImp>& asImp () { return static_cast<EntityImp<cd,dim,GridImp>&>(*this); }
@@ -754,6 +779,20 @@ namespace Dune
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   public:
+    //! know your own codimension
+    enum { codimension=0 };
+
+    //! know your own dimension
+    enum { dimension=dim };
+
+    /** \brief Know dimension of the entity */
+    enum { mydimension=dim };
+
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef ct ctype;
 
     /** \brief Default implementation for access to boundaryId of sub entities
      *
@@ -795,6 +834,21 @@ namespace Dune
   {
     enum { dimworld = GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
+  public:
+    //! know your own codimension
+    enum { codimension=dim };
+
+    //! know your own dimension
+    enum { dimension=dim };
+
+    /** \brief Know dimension of the entity */
+    enum { mydimension=0 };
+
+    //! know your own dimension of world
+    enum { dimensionworld=dimworld };
+
+    //! define type used for coordinates in grid module
+    typedef ct ctype;
   private:
     //  Barton-Nackman trick
     EntityImp<dim,dim,GridImp>& asImp () {return static_cast<EntityImp<dim,dim,GridImp>&>(*this);}
