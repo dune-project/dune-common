@@ -368,6 +368,14 @@ namespace Dune {
     /** \brief Please doc me! */
     GridIdentifier type () const { return UGGrid_Id; };
 
+    unsigned int overlapSize(int codim) const {
+      return 0;
+    }
+
+    unsigned int ghostSize(int codim) const {
+      return (codim==0) ? 1 : 0;
+    }
+
     /** \brief Distributes this grid over the available nodes in a distributed machine
      *
        \param minlevel The coarsest grid level that gets distributed
@@ -388,6 +396,18 @@ namespace Dune {
      */
     template<class T, template<class> class P, int codim>
     void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level);
+
+    /*! The new communication interface
+
+       communicate objects for all codims on a given level
+     */
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir, int level) const
+    {}
+
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
+    {}
 
     // **********************************************************
     // End of Interface Methods
