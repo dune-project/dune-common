@@ -2478,7 +2478,6 @@ namespace Dune {
 
       // access to grid level
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
-      int me = MultiYGrid<dim,ctype>::torus().rank();
 
       // find send/recv lists or throw error
       const std::deque<IS>* sendlist;
