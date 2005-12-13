@@ -43,7 +43,7 @@ settest_SOURCES=settest.cc
 
 gcdlcdtest_SOURCES = gcdlcdtest.cc
 
-bin_PROGRAMS = exprtmpl timing_old timing_xpr timing_flt
+# bin_PROGRAMS = exprtmpl timing_old timing_xpr timing_flt
 exprtmpl_SOURCES = exprtmpl.cc
 exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DDUNE_ISTL_WITH_CHECKING -g
 # -DNOPRINT
