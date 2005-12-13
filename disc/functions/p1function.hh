@@ -212,11 +212,14 @@ namespace Dune
 
   public:
 
-    enum Attributes {slave=0, master=1, overlap=2};
-    typedef OwnerOverlapCopyCommunication<IdType,int,master,overlap,slave> CommunicationType;
+    enum Attributes {slave=OwnerOverlapCopyAttributeSet::copy,
+                     master=OwnerOverlapCopyAttributeSet::owner,
+                     overlap=OwnerOverlapCopyAttributeSet::overlap};
 
-    //! construct ISTL communication object
-    CommunicationType* getComObject (const G& grid, const IS& indexset, const VM& vertexmapper)
+    typedef IndexInfoFromGrid<IdType,int> P1IndexInfoFromGrid;
+
+    //! fill data structure with information needed by ISTL
+    void fillIndexInfoFromGrid (const G& grid, const IS& indexset, const VM& vertexmapper, P1IndexInfoFromGrid& info)
     {
       // build a map of sets where each local index is assigned
       // a set of global ids which are neighbors of this vertex
@@ -298,14 +301,14 @@ namespace Dune
       }
 
 
-      // do the general interface
+      // fill the info object
       std::set< tripel<IdType,int,int> > ownindices;
       for (typename std::map<int,GIDSet>::iterator i=myids.begin(); i!=myids.end(); ++i)
         for (typename GIDSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
         {
           int a=slave;
           if (owner[*j]==grid.rank()) a=master;
-          ownindices.insert(tripel<IdType,int,int>(*j,gid2index[*j],a));
+          info.addLocalIndex(tripel<IdType,int,int>(*j,gid2index[*j],a));
         }
       std::set< tripel<int,IdType,int> > remoteindices;
       for (typename std::map<int,ProcSet>::iterator i=myprocs.begin(); i!=myprocs.end(); ++i)
@@ -316,7 +319,7 @@ namespace Dune
           {
             int a=slave;
             if (owner[*j]==(*p)) a=master;
-            if (*p!=grid.rank()) remoteindices.insert(tripel<int,IdType,int>(*p,*j,a));
+            if (*p!=grid.rank()) info.addRemoteIndex(tripel<int,IdType,int>(*p,*j,a));
           }
       }
 
@@ -327,10 +330,7 @@ namespace Dune
       owner.clear();
       neighbors.clear();
 
-      // test the new class
-      CommunicationType* p = new CommunicationType(ownindices,remoteindices,grid.comm());
-
-      return p;
+      return;
     }
 
 
@@ -462,11 +462,11 @@ namespace Dune
     typedef FieldVector<RT,m> BlockType;
     typedef BlockVector<BlockType> RepresentationType;
     typedef MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout> VM;
-    typedef typename P1ExtendOverlap<G,IS,VM>::CommunicationType CommunicationType;
+    typedef typename P1ExtendOverlap<G,IS,VM>::P1IndexInfoFromGrid P1IndexInfoFromGrid;
 
     //! allocate data
     P1FEFunction (const G& g,  const IS& indexset, bool extendoverlap=false)
-      : grid_(g), is(indexset), mapper_(g,indexset), oldcoeff(0), comobj(0)
+      : grid_(g), is(indexset), mapper_(g,indexset), oldcoeff(0)
     {
       // check if overlap extension is possible
       if (extendoverlap && g.overlapSize(0)>0)
@@ -506,7 +506,6 @@ namespace Dune
     {
       delete coeff;
       if (oldcoeff!=0) delete oldcoeff;
-      if (comobj!=0) delete comobj;
     }
 
     //! evaluate single component comp at global point x
@@ -703,17 +702,10 @@ namespace Dune
 
 
     //! deliver communication object
-    const CommunicationType& comm () const
+    void fillIndexInfoFromGrid (P1IndexInfoFromGrid& info)
     {
-      // get communication object. \todo: make this as an option
-      // because it may be unnecessary for overlapping methods that do communication
-      // on the grid
-      if (comobj==0)
-      {
-        P1ExtendOverlap<G,IS,VM> extender;
-        comobj = extender.getComObject(grid_,is,mapper_);
-      }
-      return (*comobj);
+      P1ExtendOverlap<G,IS,VM> extender;
+      extender.fillIndexInfoFromGrid(grid_,is,mapper_,info);
     }
 
 
@@ -759,12 +751,6 @@ namespace Dune
         P1ExtendOverlap<G,IS,VM> extender;
         extender.extend(grid_,is,mapper_,borderlinks,extraDOFs,gid2index);
       }
-
-      // get communication object. \todo: make this as an option
-      // because it may be unnecessary for overlapping methods that do communication
-      // on the grid
-      if (comobj!=0) delete comobj;
-      comobj = 0;
 
       // allocate data with new size (while keeping the old data ...)
       try {
@@ -869,9 +855,6 @@ namespace Dune
 
     // saved pointer in update phase
     RepresentationType* oldcoeff;
-
-    // the mysterious communication object
-    mutable CommunicationType* comobj;
   };
 
 

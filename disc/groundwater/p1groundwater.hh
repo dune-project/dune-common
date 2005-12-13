@@ -104,7 +104,6 @@ namespace Dune
       // extract some important parameters
       Dune::GeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,k);
-      double refvolume = Dune::ReferenceElements<DT,n>::general(gt).volume();
       currentsize = sfs.size();
 
       //          std::cout << "Entity:" << std::endl;
@@ -133,7 +132,7 @@ namespace Dune
         double weight = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].weight();                                    // weight of quadrature point
         DT detjac = e.geometry().integrationElement(local);                                                     // determinant of jacobian
         RT q = problem.q(global,e,local);           // source term
-        RT factor = weight*refvolume*detjac;
+        RT factor = weight*detjac;
 
         // evaluate gradients at Gauss points
         Dune::FieldVector<DT,n> grad[SIZE], temp, gv;
@@ -177,7 +176,6 @@ namespace Dune
         if (it.boundary())
         {
           Dune::GeometryType gtface = it.intersectionSelfLocal().type();
-          double refvolumeface = Dune::ReferenceElements<DT,n-1>::general(gtface).volume();
           for (size_t g=0; g<Dune::QuadratureRules<DT,n-1>::rule(gtface,p).size(); ++g)
           {
             const Dune::FieldVector<DT,n-1>& facelocal = Dune::QuadratureRules<DT,n-1>::rule(gtface,p)[g].position();
@@ -201,13 +199,12 @@ namespace Dune
             for (int i=0; i<sfs.size(); i++)                       // loop over test function number
               if (bctype[i]==GroundwaterEquationParameters<G,RT>::neumann)
               {
-                b[i] -= J*sfs[i].evaluateFunction(0,local)*weightface*refvolumeface*detjacface;
+                b[i] -= J*sfs[i].evaluateFunction(0,local)*weightface*detjacface;
                 //                                              std::cout << "Neumann BC found, accumulating"
-                //                                                                << -J*sfs[i].evaluateFunction(0,local)*weightface*refvolumeface*detjacface
+                //                                                                << -J*sfs[i].evaluateFunction(0,local)*weightface*detjacface
                 //                                                                << std::endl;
                 //                                              std::cout << "J=" << J << " shapef=" << sfs[i].evaluateFunction(0,local)
                 //                                                                << " weight=" << weightface
-                //                                                                << " refvolume=" << refvolumeface
                 //                                                                << " detjac=" << detjacface << std::endl;
               }
           }
@@ -340,7 +337,6 @@ namespace Dune
       Dune::GeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
       DT Zero = 0;
-      double refvolume = Dune::ReferenceElements<DT,n>::general(gt).volume();
       Dune::FieldVector<DT,n> center = e.geometry().global(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
 
       // integral over right hand side, div(K grad u_h) = 0 for P1 elements
@@ -355,7 +351,7 @@ namespace Dune
         double weight = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].weight();                                    // weight of quadrature point
         DT detjac = e.geometry().integrationElement(local);                                                     // determinant of jacobian
         RT q = problem.q(global,e,local);           // source term
-        integralq += q*q*weight*refvolume*detjac;
+        integralq += q*q*weight*detjac;
       }
       integralq *= h_K*h_K;     // scaling by h_K^2
       elementpart = integralq;
@@ -382,12 +378,10 @@ namespace Dune
       GeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
       DT Zero = 0;
-      double refvolume = Dune::ReferenceElements<DT,n>::general(gt).volume();
       Dune::FieldVector<DT,n> center = e.geometry().global(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
 
       // the edge term
       GeometryType gtface = it.intersectionSelfLocal().type();
-      double refvolumeface = Dune::ReferenceElements<DT,n-1>::general(gtface).volume();
       int numberInSelf = it.numberInSelf();
       const Dune::FieldVector<DT,n-1>& facelocal = Dune::ReferenceElements<DT,n-1>::general(gtface).position(0,0);
       FieldVector<DT,n> local = it.intersectionSelfLocal().global(facelocal);
@@ -434,7 +428,6 @@ namespace Dune
         FieldVector<DT,n> nbcenter = outside->geometry().global(ReferenceElements<DT,n>::general(nbgt).position(0,0));
         const typename LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& nbsfs=LagrangeShapeFunctions<DT,RT,n>::general(nbgt,1);
         GeometryType nbgtface = it.intersectionNeighborLocal().type();
-        double nbrefvolumeface = ReferenceElements<DT,n-1>::general(nbgtface).volume();
         int numberInNeighbor = it.numberInNeighbor();
         const FieldVector<DT,n-1>& nbfacelocal = ReferenceElements<DT,n-1>::general(nbgtface).position(0,0);
         FieldVector<DT,n> nblocal = it.intersectionNeighborLocal().global(nbfacelocal);
@@ -578,6 +571,7 @@ namespace Dune
       : AssembledP1FEOperator<G,RT,IS,1>(g,indexset,extendoverlap),
         procBoundaryAsDirichlet(g.overlapSize(0)>0), loc(params,g.overlapSize(0)>0)
     {       }
+
 
     //! assemble operator, rhs and Dirichlet boundary conditions
     void assemble (P1FEFunction<G,RT,IS,1>& u, P1FEFunction<G,RT,IS,1>& f)
@@ -886,8 +880,6 @@ namespace Dune
           (*u)[i.index()] = (*f)[i.index()];
         }
       }
-
-      u.comm().copyOwnerToAll(*u,*u);     // make dirichlet values consistent in copies
 
       // print it
       //          std::ostringstream os;
