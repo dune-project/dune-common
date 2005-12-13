@@ -276,11 +276,11 @@ void test_matrix()
   std::cout << std::endl;
 }
 
-int test_norm()
+void test_norm()
 {
   Dune::FieldVector<double,3> a,b;
-
-  double c = (a-b).two_norm();
+  double c;
+  c = (a-b).two_norm();
 }
 
 int main()

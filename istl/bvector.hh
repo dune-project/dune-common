@@ -138,7 +138,7 @@ namespace Dune {
 
 
     //===== norms
-
+#ifndef DUNE_EXPRESSIONTEMPLATES
     //! one norm (sum over absolute values of entries)
     double one_norm () const
     {
@@ -186,7 +186,7 @@ namespace Dune {
       for (size_type i=0; i<this->n; ++i) max = std::max(max,(*this)[i].infinity_norm_real());
       return max;
     }
-
+#endif
 
     //===== sizes
 
