@@ -25,6 +25,7 @@
 #include "solvers.hh"
 #include "preconditioners.hh"
 #include "scalarproducts.hh"
+#include "owneroverlapcopy.hh"
 
 namespace Dune {
 
