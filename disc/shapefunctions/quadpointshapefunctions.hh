@@ -540,7 +540,7 @@ namespace Dune
     {
       Id * id = new GeometryId<G>(fset, quad, geom);
 
-      int hash = 0;  //(id->hash() + 31) % cacheSize;
+      int hash = (id->hash() + 31) % cacheSize;
       assert(hash < cacheSize);
 
       CacheEntry & entry = cache[hash];
