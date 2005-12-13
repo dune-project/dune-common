@@ -8,10 +8,6 @@
 #include <dune/istl/io.hh>
 #include <dune/common/iteratorfacades.hh>
 
-#ifdef DUNE_EXPRESSIONTEMPLATES
-Indent INDENT;
-#endif
-
 template<int bs, int sz>
 void timing_vector()
 {
@@ -20,18 +16,34 @@ void timing_vector()
   typedef Dune::BlockVector<VB> BV;
   typedef Dune::BlockVector<BV> BBV;
   BV bv1(sz), bv2(sz);
+  BV bv3(sz), bv4(sz);
   bv1 = 1;
   bv2 = 0;
   bv2[1][0]=1;
   bv2[1][1]=2;
 
+  bv3 = 0;
+  bv4 = 0;
+
   BBV bbv(2);
   bbv[0].resize(bv1.N());
   bbv[1].resize(bv2.N());
 
+  BBV bbv2(2);
+#warning deep copy is broken!
+  /* bbv2 = bbv2; */
+  bbv2[0] = bv3;
+  bbv2[1] = bv4;
+  //  bbv2 = 0;
+
   Dune::Timer stopwatch;
   stopwatch.reset();
-  for (int i=0; i<100; i++) bbv *= 2;
+  for (int i=0; i<100; i++)
+#ifdef DUNE_EXPRESSIONTEMPLATES
+    bbv2 = bbv2 + 2 * bbv;
+#else
+    bbv2.axpy(2,bbv);
+#endif
   std::cout << "Time [bbv*=2] " << stopwatch.elapsed() << std::endl;
 }
 
@@ -93,11 +105,13 @@ int main ()
 
   timing_vector<1,1000000>();
   timing_vector<10,100000>();
+  timing_vector<40,25000>();
   timing_vector<100,10000>();
+  timing_vector<400,2500>();
 
   //   timing_matrix<150,150,500,4000>();
   //   timing_matrix<150,150,1000,2000>();
-  timing_matrix<1,18,400000,500000>();
+  //  timing_matrix<1,18,400000,500000>();
   //   timing_matrix<6,3,400000,500000>();
   //   timing_matrix<3,6,400000,500000>();
   //   timing_matrix<18,1,400000,500000>();
