@@ -82,7 +82,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     if (containsOnlySimplices)
       element_loc = new AmiraMesh::Location("Triangles", noOfElem);
     else
-      element_loc = new AmiraMesh::Location("Quadrangles", noOfElem);
+      element_loc = new AmiraMesh::Location("Quadrilaterals", noOfElem);
 
   }
 
@@ -212,20 +212,14 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     DUNE_THROW(IOError, "You can only write grids as AmiraMesh if dim==dimworld==2"
                << " or dim==dimworld==3.");
 
+  const typename GridType::Traits::LevelIndexSet& levelIndexSet = grid.levelIndexSet(level);
+
   // Find out whether the grid contains only tetrahedra.  If yes, then
   // it is written in TetraGrid format.  If not, it is written in
   // hexagrid format.
-  bool containsOnlySimplices = true;
-
-  ElementIterator eIt    = grid.template lbegin<0>(level);
-  ElementIterator eEndIt = grid.template lend<0>(level);
-
-  for (; eIt!=eEndIt; ++eIt) {
-    if (eIt->geometry().type() != simplex) {
-      containsOnlySimplices = false;
-      break;
-    }
-  }
+  bool containsOnlySimplices =
+    (levelIndexSet.geomTypes(0).size()==1)
+    && (levelIndexSet.geomTypes(0)[0] == simplex);
 
   int maxVerticesPerElement = (dim==3)
                               ? ((containsOnlySimplices) ? 4 : 8)
@@ -233,8 +227,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   int noOfNodes = grid.size(level, dim);
   int noOfElem  = grid.size(level, 0);
-
-  int i;
 
   // create amiramesh object
   AmiraMesh am;
@@ -252,16 +244,15 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   am.insert(geo_node_data);
 
   typedef typename GridType::template Codim<dim>::LevelIterator VertexIterator;
+  typedef typename GridType::template Codim<0>::LevelIterator ElementIterator;
+
   VertexIterator vertex    = grid.template lbegin<dim>(level);
   VertexIterator endvertex = grid.template lend<dim>(level);
 
   for (; vertex!=endvertex; ++vertex) {
 
-#ifndef UGGRID_WITH_INDEX_SETS
-    int index = vertex->index();
-#else
-    int index = grid.levelIndexSet().index(*vertex);
-#endif
+    int index = levelIndexSet.index(*vertex);
+
     const FieldVector<double, dim>& coords = vertex->geometry()[0];
 
     // Copy coordinates
@@ -285,7 +276,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     if (containsOnlySimplices)
       element_loc = new AmiraMesh::Location("Triangles", noOfElem);
     else
-      element_loc = new AmiraMesh::Location("Quadrangles", noOfElem);
+      element_loc = new AmiraMesh::Location("Quadrilaterals", noOfElem);
 
   }
 
@@ -297,7 +288,8 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   int *dPtr = (int*)element_data->dataPtr();
 
-  eIt    = grid.template lbegin<0>(level);
+  ElementIterator eIt    = grid.template lbegin<0>(level);
+  ElementIterator eEndIt = grid.template lend<0>(level);
 
   if (dim==3) {
 
@@ -307,41 +299,31 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
     if (containsOnlySimplices) {
 
-      for (i=0; eIt!=eEndIt; ++eIt, i++) {
+      for (int i=0; eIt!=eEndIt; ++eIt, i++) {
 
         for (int j=0; j<4; j++)
-#ifndef UGGRID_WITH_INDEX_SETS
-          dPtr[i*4+j] = eIt->template subIndex<3>(j)+1;
-#else
-          dPtr[i*4+j] = grid.levelIndexSet().template subIndex<3>(*eIt,j)+1;
-#endif
+          dPtr[i*4+j] = levelIndexSet.template subIndex<dim>(*eIt,j)+1;
+
       }
 
     } else {
 
-      for (i=0; eIt!=eEndIt; ++eIt, i++) {
+      for (int i=0; eIt!=eEndIt; ++eIt, i++) {
         switch (eIt->geometry().type()) {
 
         case cube : {        // Hexahedron
 
           const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
           for (int j=0; j<8; j++)
-#ifndef UGGRID_WITH_INDEX_SETS
-            dPtr[8*i + j] = eIt->template subIndex<3>(hexaReordering[j])+1;
-#else
-            dPtr[8*i + j] = grid.levelIndexSet().template subIndex<3>(*eIt, hexaReordering[j])+1;
-#endif
+            dPtr[8*i + j] = levelIndexSet.template subIndex<dim>(*eIt, hexaReordering[j])+1;
+
           break;
         }
 
         case prism : {
           const int prismReordering[8] = {0, 1, 1, 2, 3, 4, 4, 5};
           for (int j=0; j<8; j++)
-#ifndef UGGRID_WITH_INDEX_SETS
-            dPtr[8*i + j] = eIt->template subIndex<3>(prismReordering[j])+1;
-#else
-            dPtr[8*i + j] = grid.levelIndexSet().template subIndex<3>(*eIt, prismReordering[j])+1;
-#endif
+            dPtr[8*i + j] = levelIndexSet.template subIndex<dim>(*eIt, prismReordering[j])+1;
 
           break;
         }
@@ -349,11 +331,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
         case pyramid : {
           const int pyramidReordering[8] = {0, 1, 2, 3, 4, 4, 4, 4};
           for (int j=0; j<8; j++)
-#ifndef UGGRID_WITH_INDEX_SETS
-            dPtr[8*i + j] = eIt->template subIndex<3>(pyramidReordering[j])+1;
-#else
-            dPtr[8*i + j] = grid.levelIndexSet().template subIndex<3>(*eIt, pyramidReordering[j])+1;
-#endif
+            dPtr[8*i + j] = levelIndexSet.template subIndex<dim>(*eIt, pyramidReordering[j])+1;
 
           break;
         }
@@ -362,11 +340,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
           const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
           for (int j=0; j<8; j++)
-#ifndef UGGRID_WITH_INDEX_SETS
-            dPtr[8*i + j] = eIt->template subIndex<3>(tetraReordering[j])+1;
-#else
-            dPtr[8*i + j] = grid.levelIndexSet().template subIndex<3>(*eIt, tetraReordering[j])+1;
-#endif
+            dPtr[8*i + j] = levelIndexSet.template subIndex<dim>(*eIt, tetraReordering[j])+1;
 
           break;
         }
@@ -385,17 +359,13 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     typename GridType::template Codim<0>::LevelIterator element2   = grid.template lbegin<0>(level);
     typename GridType::template Codim<0>::LevelIterator endelement = grid.template lend<0>(level);
 
-    for (i=0; element2!=endelement; ++element2, i++) {
+    for (int i=0; element2!=endelement; ++element2, i++) {
       switch (element2->geometry().type()) {
 
       default :
 
         for (int j=0; j<element2->geometry().corners(); j++)
-#ifndef UGGRID_WITH_INDEX_SETS
-          dPtr[i*maxVerticesPerElement+j] = element2->template subIndex<dim>(j)+1;
-#else
-          dPtr[i*maxVerticesPerElement+j] = grid.levelIndexSet().template subIndex<dim>(*element2, j)+1;
-#endif
+          dPtr[i*maxVerticesPerElement+j] = levelIndexSet.template subIndex<dim>(*element2, j)+1;
 
         // If the element has less than 8 vertices use the last value
         // to fill up the remaining slots
@@ -411,10 +381,11 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   AmiraMesh::Data* element_materials = new AmiraMesh::Data("Materials", element_loc, McPrimType::mc_uint8, 1);
   am.insert(element_materials);
 
-  for(i=0; i<noOfElem; i++)
+  for(int i=0; i<noOfElem; i++)
     ((unsigned char*)element_materials->dataPtr())[i] = 0;
 
   // Actually write the file
+  // The '1' means: as Ascii file
   if(!am.write(filename.c_str(), 1))
     DUNE_THROW(IOError, "Writing geometry file failed!");
 
