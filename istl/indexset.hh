@@ -472,8 +472,9 @@ namespace Dune
      * @brief Constructor.
      * @param indexset The index set we want to be able to lookup the corresponding
      * global index of a local index.
+     * @param size The number of indices present.
      */
-    GlobalLookupIndexSet(const ParallelIndexSet& indexset);
+    GlobalLookupIndexSet(const ParallelIndexSet& indexset, std::size_t size);
 
     /**
      * @brief Destructor.
@@ -495,7 +496,7 @@ namespace Dune
     /**
      * @brief Get the index pair corresponding to a local index.
      */
-    inline const IndexPair<GlobalIndex,LocalIndex>&
+    inline const IndexPair<GlobalIndex,LocalIndex>*
     pair(const std::size_t& local) const;
 
     /**
@@ -525,14 +526,20 @@ namespace Dune
     inline size_t size() const;
   private:
     /**
-     * @brief Array with the positions of the corresponding index pair of the index set.
-     */
-    std::size_t* index_;
-
-    /**
      * @brief The index set we lookup in.
      */
     const ParallelIndexSet& indexSet_;
+
+    /**
+     * @brief The number of indices.
+     */
+    std::size_t size_;
+
+    /**
+     * @brief Array with the positions of the corresponding index pair of the index set.
+     */
+    std::vector<IndexPair<typename I::GlobalIndex, typename I::LocalIndex>*> indices_;
+
   };
 
 
@@ -872,28 +879,27 @@ namespace Dune
   }
 
   template<class I>
-  GlobalLookupIndexSet<I>::GlobalLookupIndexSet(const I& indexset)
-    : indexSet_(indexset)
+  GlobalLookupIndexSet<I>::GlobalLookupIndexSet(const I& indexset,
+                                                std::size_t size)
+    : indexSet_(indexset), size_(size),
+      indices_(size_, static_cast<const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>*>(0))
   {
-    index_ = new std::size_t[indexSet_.size()];
     const_iterator end_ = indexSet_.end();
     size_t i=0;
     for(const_iterator pair = indexSet_.begin(); pair!=end_; ++pair, ++i)
-      index_[pair->local()] = i;
+      indices_[pair->local()] = &(*pair);
   }
 
   template<class I>
   GlobalLookupIndexSet<I>::~GlobalLookupIndexSet()
-  {
-    delete[] index_;
-  }
+  {}
 
 
   template<class I>
-  inline const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>&
+  inline const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>*
   GlobalLookupIndexSet<I>::pair(const std::size_t& local) const
   {
-    return indexSet_.localIndices_[index_[local]];
+    return indices_[local];
   }
 
   template<class I>
@@ -918,7 +924,7 @@ namespace Dune
   template<class I>
   inline size_t GlobalLookupIndexSet<I>::size() const
   {
-    return indexSet_.size();
+    return size_;
   }
 
   template<class I>

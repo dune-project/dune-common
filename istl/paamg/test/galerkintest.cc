@@ -88,7 +88,7 @@ void testCoarsenIndices(int N)
 
   typedef Dune::Amg::GlobalAggregatesMap<Vertex,ParallelIndexSet> GlobalMap;
 
-  GlobalMap gmap(aggregatesMap,coarseIndices);
+  GlobalMap gmap(aggregatesMap,coarseIndices, mat.N());
 
   communicator.build<GlobalMap>(interface);
 
