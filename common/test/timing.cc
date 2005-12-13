@@ -38,12 +38,25 @@ void timing_vector()
 
   Dune::Timer stopwatch;
   stopwatch.reset();
-  for (int i=0; i<100; i++)
+  for (int i=0; i<10; i++)
+  {
 #ifdef DUNE_EXPRESSIONTEMPLATES
-    bbv2 = bbv2 + 2 * bbv;
+#ifdef DUNE_FLATIT
+    Dune::FlatIterator<BBV> it1 = bbv.begin();
+    Dune::FlatIterator<BBV> it2 = bbv2.begin();
+    Dune::FlatIterator<BBV> end = bbv.end();
+    for (; it1 != end; ++it1)
+    {
+      (*it2) = 2*(*it2) + (*it1);
+      ++ it2;
+    }
+#else
+    bbv2 = 2*bbv2 + bbv;
+#endif
 #else
     bbv2.axpy(2,bbv);
 #endif
+  }
   std::cout << "Time [bbv*=2] " << stopwatch.elapsed() << std::endl;
 }
 

@@ -268,7 +268,9 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
         assert(N() == x.N());
 #endif
+#ifdef DUNE_VVERBOSE
         Dune::dvverb << INDENT << "Assign Vector from Expression\n";
+#endif
         ++INDENT;
         for (int i=0; i<N(); ++i) { asImp()[i] = x[i]; }
         --INDENT;
@@ -279,7 +281,9 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
         assert(N() == v.N());
 #endif
+#ifdef DUNE_VVERBOSE
         Dune::dvverb << INDENT << "Assign Vector from Vector\n";
+#endif
         ++INDENT;
         for (int i=0; i<N(); ++i) { asImp()[i] = v[i]; }
         --INDENT;
@@ -287,7 +291,9 @@ namespace Dune {
       }
       /*
          I& assignFrom(const Vector<block_type> & x) {
+         #ifdef DUNE_VVERBOSE
          Dune::dvverb << INDENT << "Assign Vector block_type\n";
+         #endif
          ++INDENT;
          for (int i=0; i < asImp().N(); i++) asImp()[i] = x;
          --INDENT;
@@ -295,7 +301,9 @@ namespace Dune {
          }
        */
       I& assignFrom(field_type x) {
+#ifdef DUNE_VVERBOSE
         Dune::dvverb << INDENT << "Assign Vector from field_type\n";
+#endif
         ++INDENT;
         for (int i=0; i<N(); ++i) { asImp()[i] = x; }
         --INDENT;
@@ -348,7 +356,9 @@ namespace Dune {
       typedef typename ExpressionImp<BlockExpr>::type BlockExprImp;
       ConstRef (const Vector<V> & _v) : v(_v) {}
       BlockExpr operator[] (int i) const {
+#ifdef DUNE_VVERBOSE
         Dune::dvverb << INDENT << "ConstRef->dereference " << v[i] << std::endl;
+#endif
         return BlockExprImp(v[i]);
       }
       int N() const { return v.N(); };

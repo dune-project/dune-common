@@ -43,14 +43,16 @@ settest_SOURCES=settest.cc
 
 gcdlcdtest_SOURCES = gcdlcdtest.cc
 
-# bin_PROGRAMS = exprtmpl timing_old timing_xpr
+bin_PROGRAMS = exprtmpl timing_old timing_xpr timing_flt
 exprtmpl_SOURCES = exprtmpl.cc
-exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DDUNE_ISTL_WITH_CHECKING
+exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DDUNE_ISTL_WITH_CHECKING -g
 # -DNOPRINT
 
 dist_noinst_DATA = timing.cc
 timing_old_SOURCES = timing.cc
 timing_xpr_SOURCES = timing.cc
-timing_xpr_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -g
+timing_xpr_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -g -finline-limit=1200
+timing_flt_SOURCES = timing.cc
+timing_flt_CXXFLAGS = -DDUNE_FLATIT -g
 
 include $(top_srcdir)/am/global-rules

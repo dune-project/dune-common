@@ -17,6 +17,8 @@
 
 namespace Dune {
 
+#ifndef DUNE_EXPRESSIONTEMPLATES
+
   /** @defgroup DenseMatVec Dense Matrix and Vector Template Library
       @ingroup Common
           @{
@@ -148,6 +150,8 @@ namespace Dune {
     }
   };
 
+#endif
+
   // template meta program for operator==
   template<int I>
   struct fvmeta_equality {
@@ -165,6 +169,8 @@ namespace Dune {
       return x[0] == y[0];
     }
   };
+
+#ifndef DUNE_EXPRESSIONTEMPLATES
 
   // template meta program for axpy
   template<int I>
@@ -329,6 +335,8 @@ namespace Dune {
       return fvmeta_absreal(x[0]);
     }
   };
+
+#endif
 
   //! Iterator class for sequential access to FieldVector and FieldMatrix
   template<class C, class T>
@@ -620,6 +628,7 @@ namespace Dune {
     //! Constructor making uninitialized vector
     FieldVector() {}
 
+#ifndef DUNE_EXPRESSIONTEMPLATES
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
     {
@@ -634,25 +643,49 @@ namespace Dune {
       return *this;
     }
 
-#ifdef DUNE_EXPRESSIONTEMPLATES
+#else
+    //! Constructor making vector with identical coordinates
+    explicit FieldVector (const K& t)
+    {
+#ifdef DUNE_VVERBOSE
+      Dune::dvverb << INDENT << "FieldVector Copy Constructor Scalar\n";
+#endif
+      assignFrom(t);
+    }
+    //! Assignment operator for scalar
+    FieldVector& operator= (const K& k)
+    {
+#ifdef DUNE_VVERBOSE
+      Dune::dvverb << INDENT << "FieldVector Assignment Operator Scalar\n";
+#endif
+      return assignFrom(k);
+    }
     template <class E>
     FieldVector (Dune::ExprTmpl::Expression<E> op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "FieldVector Copy Constructor Expression\n";
+#endif
       assignFrom(op);
     }
     template <class V>
     FieldVector (const Dune::ExprTmpl::Vector<V> & op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "FieldVector Copy Operator Vector\n";
+#endif
       assignFrom(op);
     }
     template <class E>
     FieldVector&  operator = (Dune::ExprTmpl::Expression<E> op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "FieldVector Assignment Operator Expression\n";
+#endif
       return assignFrom(op);
     }
     template <class V>
     FieldVector& operator = (const Dune::ExprTmpl::Vector<V> & op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "FieldVector Assignment Operator Vector\n";
+#endif
       return assignFrom(op);
     }
 #endif
@@ -753,6 +786,7 @@ namespace Dune {
         return ConstIterator(*this,n);
     }
 
+#ifndef DUNE_EXPRESSIONTEMPLATES
     //===== vector space arithmetic
 
     //! vector space addition
@@ -769,7 +803,6 @@ namespace Dune {
       return *this;
     }
 
-#ifndef DUNE_EXPRESSIONTEMPLATES
     //! Binary vector addition
     FieldVector<K, size> operator+ (const FieldVector<K, size>& b) const
     {
@@ -783,7 +816,6 @@ namespace Dune {
       FieldVector<K, size> z = *this;
       return (z-=b);
     }
-#endif
 
     //! vector space add scalar to all comps
     FieldVector& operator+= (const K& k)
@@ -813,6 +845,8 @@ namespace Dune {
       return *this;
     }
 
+#endif
+
     //! Binary vector comparison
     bool operator== (const FieldVector& y) const
     {
@@ -822,11 +856,15 @@ namespace Dune {
     //! vector space axpy operation
     FieldVector& axpy (const K& a, const FieldVector& y)
     {
+#ifndef DUNE_EXPRESSIONTEMPLATES
       fvmeta_axpy<n-1>::axpy(*this,a,y);
+#else
+      *this = (*this)*a + y;
+#endif
       return *this;
     }
 
-
+#ifndef DUNE_EXPRESSIONTEMPLATES
     //===== Euclidean scalar product
 
     //! scalar product
@@ -873,7 +911,7 @@ namespace Dune {
     {
       return fvmeta_infinity_norm_real<n-1>::infinity_norm_real(*this);
     }
-
+#endif
 
     //===== sizes
 
@@ -975,22 +1013,30 @@ namespace Dune {
 #ifdef DUNE_EXPRESSIONTEMPLATES
     template <class E>
     FieldVector (Dune::ExprTmpl::Expression<E> op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "FieldVector<1> Copy Constructor Expression\n";
+#endif
       assignFrom(op);
     }
     template <class V>
     FieldVector (const Dune::ExprTmpl::Vector<V> & op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "FieldVector<1> Copy Operator Vector\n";
+#endif
       assignFrom(op);
     }
     template <class E>
     FieldVector&  operator = (Dune::ExprTmpl::Expression<E> op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "FieldVector<1> Assignment Operator Expression\n";
+#endif
       return assignFrom(op);
     }
     template <class V>
     FieldVector& operator = (const Dune::ExprTmpl::Vector<V> & op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "FieldVector<1> Assignment Operator Vector\n";
+#endif
       return assignFrom(op);
     }
 #endif
