@@ -450,7 +450,7 @@ namespace Dune {
           capacity_ = 0;
         }
       }
-      this->n = op.n;
+      this->n = op.N();
       assignFrom(op);
     }
     template <class V>
@@ -470,7 +470,7 @@ namespace Dune {
           capacity_ = 0;
         }
       }
-      this->n = op.n;
+      this->n = op.N();
       assignFrom(op);
     }
     BlockVector& operator = (const BlockVector& a) {
@@ -516,7 +516,7 @@ namespace Dune {
           capacity_ = 0;
         }
       }
-      this->n = op.n;
+      this->n = op.N();
       return assignFrom(op);
     }
     template <class V>
@@ -536,7 +536,7 @@ namespace Dune {
           capacity_ = 0;
         }
       }
-      this->n = op.n;
+      this->n = op.N();
       return assignFrom(op);
     }
 #endif
