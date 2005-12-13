@@ -16,7 +16,6 @@
 AC_DEFUN([DUNE_PATH_GRAPE],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
-
   AC_REQUIRE([DUNE_PATH_OPENGL])
 
   AC_ARG_WITH(grape,
@@ -90,6 +89,7 @@ fi
 if test x$HAVE_GRAPE = x1 ; then
   with_grape="yes"
 else
+  AC_MSG_WARN([X libs,includes not found, skipping Grape test !!!])
   with_grape="no"
 fi
 
