@@ -33,9 +33,10 @@ namespace Dune
 
       inline const GlobalIndex& operator[](std::size_t index) const
       {
-        const Vertex& aggregate = aggregates_[index]->lcoal().local();
-        const Dune::IndexPair<GlobalIndex,LocalIndex >& pair = indexset_.pair(aggregate);
-        return pair.global();
+        const Vertex& aggregate = aggregates_[index];
+        const Dune::IndexPair<GlobalIndex,LocalIndex >* pair = indexset_.pair(aggregate);
+        assert(pair!=0);
+        return pair->global();
       }
 
       inline void put(const GlobalIndex& global, size_t i)
