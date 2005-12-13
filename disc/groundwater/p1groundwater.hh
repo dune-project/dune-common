@@ -104,7 +104,6 @@ namespace Dune
       // extract some important parameters
       Dune::GeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,k);
-      DT Zero = 0;
       double refvolume = Dune::ReferenceElements<DT,n>::general(gt).volume();
       currentsize = sfs.size();
 
@@ -125,7 +124,7 @@ namespace Dune
       int p=2;
       if (gt==simplex) p=1;
       if (k>1) p=2*(k-1);
-      for (int g=0; g<Dune::QuadratureRules<DT,n>::rule(gt,p).size(); ++g)     // run through all quadrature points
+      for (size_t g=0; g<Dune::QuadratureRules<DT,n>::rule(gt,p).size(); ++g)     // run through all quadrature points
       {
         const Dune::FieldVector<DT,n>& local = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].position();           // pos of integration point
         Dune::FieldVector<DT,n> global = e.geometry().global(local);                                            // ip in global coordinates
@@ -179,7 +178,7 @@ namespace Dune
         {
           Dune::GeometryType gtface = it.intersectionSelfLocal().type();
           double refvolumeface = Dune::ReferenceElements<DT,n-1>::general(gtface).volume();
-          for (int g=0; g<Dune::QuadratureRules<DT,n-1>::rule(gtface,p).size(); ++g)
+          for (size_t g=0; g<Dune::QuadratureRules<DT,n-1>::rule(gtface,p).size(); ++g)
           {
             const Dune::FieldVector<DT,n-1>& facelocal = Dune::QuadratureRules<DT,n-1>::rule(gtface,p)[g].position();
             FieldVector<DT,n> local = it.intersectionSelfLocal().global(facelocal);
@@ -561,7 +560,7 @@ namespace Dune
 
       //! constructor
       AccumulateBCFlags (const G& g, const VM& vm, std::vector<unsigned char>& e, VectorType& _f)
-        : grid(g), vertexmapper(vm), essential(e), f(_f)
+        : grid(g), essential(e), vertexmapper(vm), f(_f)
       {}
 
     private:
@@ -593,11 +592,13 @@ namespace Dune
 
       // allocate flag vector to hold flags for essential boundary conditions
       std::vector<unsigned char> essential(this->vertexmapper.size());
-      for (int i=0; i<essential.size(); i++) essential[i] = GroundwaterEquationParameters<G,RT>::neumann;
+      for (std::vector<unsigned char>::size_type
+           i=0; i<essential.size(); i++) essential[i] = GroundwaterEquationParameters<G,RT>::neumann;
 
       // allocate flag vector to note hanging nodes whose row has been assembled
       std::vector<unsigned char> treated(this->vertexmapper.size());
-      for (int i=0; i<treated.size(); i++) treated[i] = false;
+      for (std::vector<unsigned char>::size_type
+           i=0; i<treated.size(); i++) treated[i] = false;
 
       // hanging node stuff
       RT alpha[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize][Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
