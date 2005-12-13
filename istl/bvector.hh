@@ -432,7 +432,6 @@ namespace Dune {
         // copy data
         assignFrom(a);
       }
-      return *this;
     }
     template <class V>
     BlockVector (Dune::ExprTmpl::Expression<V> op) {
