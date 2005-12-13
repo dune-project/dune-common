@@ -12,7 +12,11 @@
 
 #include "math.h"
 
-#include "mpi.h"
+// MPI header
+#if HAVE_MPI
+#include <mpi.h>
+#endif
+
 
 #include "dune/common/tripel.hh"
 #include <dune/common/enumset.hh>
@@ -34,15 +38,71 @@ namespace Dune {
      attribute set with owner/overlap/copy semantics.
    */
 
+  class OwnerOverlapCopyAttributeSet
+  {
+    enum AttributeSet { owner=1, overlap=2, copy=0 };
+  };
+
+  template <class GlobalIdType, class LocalIdType>
+  class IndexInfoFromGrid
+  {
+  public:
+    typedef tripel<GlobalIdType,LocalIdType,int> IndexTripel;
+    typedef tripel<int,GlobalIdType,int> RemoteIndexTripel;
+
+    void addLocalIndex (const IndexTripel& x)
+    {
+      if (x.third!=OwnerOverlapCopyAttributeSet::owner &&
+          x.third!=OwnerOverlapCopyAttributeSet::overlap &&
+          x.third!=OwnerOverlapCopyAttributeSet::copy)
+        DUNE_THROW(ISTLError,"OwnerOverlapCopyCommunication: global index not in index set");
+      localindices.insert(x);
+    }
+    void addRemoteIndex (const RemoteIndexTripel& x)
+    {
+      if (x.third!=OwnerOverlapCopyAttributeSet::owner &&
+          x.third!=OwnerOverlapCopyAttributeSet::overlap &&
+          x.third!=OwnerOverlapCopyAttributeSet::copy)
+        DUNE_THROW(ISTLError,"OwnerOverlapCopyCommunication: global index not in index set");
+      remoteindices.insert(x);
+    }
+
+    const std::set<IndexTripel>& localIndices () const
+    {
+      return localindices;
+    }
+
+    const std::set<RemoteIndexTripel>& remoteIndices () const
+    {
+      return remoteindices;
+    }
+
+    void clear ()
+    {
+      localindices.clear();
+      remoteindices.clear();
+    }
+
+  private:
+    std::set<IndexTripel> localindices;
+    std::set<RemoteIndexTripel> remoteindices;
+  };
+
+
+#if HAVE_MPI
 
   // set up communication from known distribution with owner/overlap/copy semantics
-  template <class GlobalIdType, class LocalIdType, int ownerattribute, int overlapattribute, int copyattribute>
+  template <class GlobalIdType, class LocalIdType>
   class OwnerOverlapCopyCommunication
   {
     // used types
-    typedef tripel<GlobalIdType,LocalIdType,int> IndexTripel;
-    typedef tripel<int,GlobalIdType,int> RemoteIndexTripel;
-    enum AttributeSet { owner=ownerattribute, overlap=overlapattribute, copy=copyattribute };
+    typedef typename IndexInfoFromGrid<GlobalIdType,LocalIdType>::IndexTripel IndexTripel;
+    typedef typename IndexInfoFromGrid<GlobalIdType,LocalIdType>::RemoteIndexTripel RemoteIndexTripel;
+    typedef typename std::set<IndexTripel>::const_iterator localindex_iterator;
+    typedef typename std::set<RemoteIndexTripel>::const_iterator remoteindex_iterator;
+    enum AttributeSet { owner=OwnerOverlapCopyAttributeSet::owner,
+                        overlap=OwnerOverlapCopyAttributeSet::overlap,
+                        copy=OwnerOverlapCopyAttributeSet::copy };
     typedef ParallelLocalIndex<AttributeSet> LI;
     typedef ParallelIndexSet<GlobalIdType,LI,512> PIS;
     typedef RemoteIndices<PIS> RI;
@@ -198,8 +258,7 @@ namespace Dune {
     // Constructor
     // containers of IndexTripel and RemoteIndexTripel sorted appropriately
     // size is the size
-    template<class C1, class C2>
-    OwnerOverlapCopyCommunication (C1& ownindices, C2& othersindices, MPI_Comm comm_)
+    OwnerOverlapCopyCommunication (const IndexInfoFromGrid<GlobalIdType,LocalIdType>& indexinfo, MPI_Comm comm_)
       : OwnerToAllInterfaceBuilt(false),OwnerOverlapToAllInterfaceBuilt(false)
     {
       // Process configuration
@@ -210,7 +269,7 @@ namespace Dune {
 
       // set up an ISTL index set
       pis.beginResize();
-      for (typename C1::iterator i=ownindices.begin(); i!=ownindices.end(); ++i)
+      for (localindex_iterator i=indexinfo.localIndices().begin(); i!=indexinfo.localIndices().end(); ++i)
       {
         if (i->third==owner)
           pis.add(i->first,LI(i->second,owner,true));
@@ -225,13 +284,13 @@ namespace Dune {
       // build remote indices WITHOUT communication
       //          std::cout << rank << ": build remote indices" << std::endl;
       ri.setIndexSets(pis,pis,comm);
-      if (othersindices.size()>0)
+      if (indexinfo.remoteIndices().size()>0)
       {
-        typename C2::iterator i=othersindices.begin();
+        remoteindex_iterator i=indexinfo.remoteIndices().begin();
         int p = i->first;
         RILM modifier = ri.template getModifier<false,true>(p);
         typename PIS::const_iterator pi=pis.begin();
-        for ( ; i!=othersindices.end(); ++i)
+        for ( ; i!=indexinfo.remoteIndices().end(); ++i)
         {
           // handle processor change
           if (p!=i->first)
@@ -278,7 +337,7 @@ namespace Dune {
     mutable std::vector<double> mask;
   };
 
-
+#endif
 
 
   /** @} end documentation */

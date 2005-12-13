@@ -164,7 +164,10 @@ namespace Dune {
 
        \copydoc Preconditioner::pre(X&,Y&)
      */
-    virtual void pre (X& x, Y& b) {}
+    virtual void pre (X& x, Y& b)
+    {
+      communication.copyOwnerToAll(x,x);     // make dirichlet values consistent
+    }
 
     /*!
        \brief Apply the precondtioner
@@ -234,6 +237,7 @@ namespace Dune {
      */
     virtual void pre (X& x, Y& b)
     {
+      communication.copyOwnerToAll(x,x);     // make dirichlet values consistent
       preconditioner.pre(x,b);
     }
 
