@@ -5,7 +5,6 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/timer.hh>
 #include <dune/istl/bvector.hh>
-#include <dune/istl/io.hh>
 #include <dune/common/iteratorfacades.hh>
 
 template<int bs, int sz>
@@ -42,24 +41,21 @@ void timing_vector()
   {
 #ifdef DUNE_EXPRESSIONTEMPLATES
 #ifdef DUNE_FLATIT
-    Dune::FlatIterator<BBV> it1 = bbv.begin();
-    Dune::FlatIterator<BBV> it2 = bbv2.begin();
-    Dune::FlatIterator<BBV> end = bbv.end();
-    for (; it1 != end; ++it1)
-    {
-      (*it2) = 2*(*it2) + (*it1);
-      ++ it2;
-    }
+    for (int a=0; a<2; a++)
+      for (int b=0; b<sz; b++)
+        for (int c=0; c<bs; c++)
+          bbv2[a][b][c] += 2*bbv[a][b][c];
 #else
-    bbv2 = 2*bbv2 + bbv;
+    bbv2 += 2*bbv;
 #endif
 #else
     bbv2.axpy(2,bbv);
 #endif
   }
-  std::cout << "Time [bbv*=2] " << stopwatch.elapsed() << std::endl;
+  std::cout << "Time [bbv2.axpy(2,bbv)] " << stopwatch.elapsed() << std::endl;
 }
 
+#if 0
 //template<int BlockSize, int N, int M>
 template<int BN, int BM, int N, int M>
 void timing_matrix()
@@ -107,16 +103,22 @@ void timing_matrix()
 
   std::cout << std::endl;
 }
+#endif
 
 int main ()
 {
 #ifdef DUNE_EXPRESSIONTEMPLATES
-  std::cout << "Expression Templates\n";
+#ifdef DUNE_FLATIT
+  std::cout << "Handwritten loops\n";
 #else
-  std::cout << "Old Version\n";
+  std::cout << "Expression Templates\n";
+#endif
+#else
+  std::cout << "Template Meta Program\n";
 #endif
 
   timing_vector<1,1000000>();
+  timing_vector<2,500000>();
   timing_vector<10,100000>();
   timing_vector<40,25000>();
   timing_vector<100,10000>();
