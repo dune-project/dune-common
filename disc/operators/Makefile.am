@@ -1,6 +1,6 @@
 # $Id$
 
 disc_operatorsdir = $(includedir)/disc/operators
-disc_operators_HEADERS = p1operator.hh
+disc_operators_HEADERS = p1operator.hh boundaryconditions.hh
 
 include $(top_srcdir)/am/global-rules
