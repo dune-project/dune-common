@@ -8,11 +8,12 @@
 #include <iostream>
 #include <iomanip>
 
-#include "common/fvector.hh"
-#include "common/fmatrix.hh"
-#include "common/exceptions.hh"
-#include "grid/common/grid.hh"
-#include "grid/common/referenceelements.hh"
+#include "dune/common/fvector.hh"
+#include "dune/common/fmatrix.hh"
+#include "dune/common/exceptions.hh"
+#include "dune/grid/common/grid.hh"
+#include "dune/grid/common/referenceelements.hh"
+#include "dune/disc/operators/boundaryconditions.hh"
 
 /**
  * @file
@@ -52,9 +53,6 @@ namespace Dune
     typedef typename G::Traits::template Codim<0>::Entity Entity;
 
   public:
-    //! enums for the boundary condition types
-    enum BC {neumann=1, process=2, dirichlet=3};
-
     //! evaluate diffusion tensor
     /*! Evaluate the diffusion tensor at given location
        @param[in]  x    position in global coordinates
@@ -80,8 +78,8 @@ namespace Dune
        @param[in]  x    position in global coordinates
        \return     boundary condition type given by enum in this class
      */
-    virtual BC bctype (const FieldVector<DT,n>& x, const Entity& e,
-                       const FieldVector<DT,n>& xi) const = 0;
+    virtual BoundaryConditions::Flags bctype (const FieldVector<DT,n>& x, const Entity& e,
+                                              const FieldVector<DT,n>& xi) const = 0;
 
     //! evaluate Dirichlet boundary condition at given position
     /*! evaluate Dirichlet boundary condition at given position

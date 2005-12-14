@@ -20,6 +20,7 @@
 #include "dune/istl/operators.hh"
 #include "dune/istl/bcrsmatrix.hh"
 #include "disc/functions/p1function.hh" // for parallel extender class
+#include "boundaryconditions.hh"
 
 /**
  * @file
@@ -323,9 +324,16 @@ namespace Dune
 
 
 
-  //! a class for mapping a P1 function to a P1 function
+  /*! @brief A class for mapping a P1 function to a P1 function
+
+     This class sets up a compressed row storage matrix with connectivity for P1 elements.
+     It includes hanging nodes and is able to extend the matrix pattern arising
+     from non-overlapping grids to minimum overlap.
+
+     This class does not fill any entries into the matrix.
+   */
   template<class G, class RT, class IS, int m=1>
-  class AssembledP1FEOperator
+  class P1FEOperatorBase
   {
   public:
     // export type used to store the matrix
@@ -400,7 +408,7 @@ namespace Dune
     {
       // parallel stuff we need to know
       if (extendoverlap && g.overlapSize(0)>0)
-        DUNE_THROW(GridError,"AssembledP1FEOperator: extending overlap requires nonoverlapping grid");
+        DUNE_THROW(GridError,"P1FEOperatorBase: extending overlap requires nonoverlapping grid");
       extendOverlap = extendoverlap;
       extraDOFs = 0;
 
@@ -633,7 +641,7 @@ namespace Dune
 
   public:
 
-    AssembledP1FEOperator (const G& g, const IS& indexset, bool extendoverlap=false)
+    P1FEOperatorBase (const G& g, const IS& indexset, bool extendoverlap=false)
       : grid(g),is(indexset),vertexmapper(g,indexset),allmapper(g,indexset),links(),
         initialized(init(g,indexset,extendoverlap)),A(size(),size(),nnz(indexset),RepresentationType::random)
 
@@ -813,22 +821,589 @@ namespace Dune
   };
 
 
-  template<class G, class RT, int m=1>
-  class LeafAssembledP1FEOperator : public AssembledP1FEOperator<G,RT,typename G::Traits::LeafIndexSet,m>
+
+
+  /*! @brief Extends P1FEOperatorBase by a generic methods to assemble global stiffness matrix from local stiffness matrices
+   */
+  template<class G, class RT, class IS, class T>
+  class P1FEOperatorAssembler : public P1FEOperatorBase<G,RT,IS,T::m>
+  {
+    typedef typename G::ctype DT;
+    enum {n=G::dimension};
+    enum {m=T::m};
+    typedef typename G::template Codim<0>::Entity Entity;
+    typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
+    typedef typename IS::template Codim<n>::template Partition<All_Partition>::Iterator VIterator;
+    typedef typename G::template Codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename G::template Codim<0>::HierarchicIterator HierarchicIterator;
+    typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
+    typedef typename P1FEFunction<G,RT,IS,1>::RepresentationType VectorType;
+    typedef typename VectorType::block_type VBlockType;
+    typedef typename P1FEOperatorBase<G,RT,IS,1>::RepresentationType MatrixType;
+    typedef typename MatrixType::block_type MBlockType;
+    typedef typename MatrixType::RowIterator rowiterator;
+    typedef typename MatrixType::ColIterator coliterator;
+    typedef typename P1FEOperatorBase<G,RT,IS,1>::VM VM;
+    typedef FixedArray<BoundaryConditions::Flags,m> BCBlockType;         // componentwise boundary conditions
+
+
+    // A DataHandle class to exchange border rows
+    class AccumulateBCFlags {
+    public:
+      //! export type of data for message buffer
+      typedef std::pair<BCBlockType,VBlockType> DataType;     // BC flags are stored in a char per vertex
+
+      //! returns true if data for this codim should be communicated
+      bool contains (int dim, int codim) const
+      {
+        return (codim==dim);
+      }
+
+      //! returns true if size per entity of given dim and codim is a constant
+      bool fixedsize (int dim, int codim) const
+      {
+        return true;
+      }
+
+      /*! how many objects of type DataType have to be sent for a given entity
+
+         Note: Only the sender side needs to know this size.
+       */
+      template<class EntityType>
+      size_t size (EntityType& e) const
+      {
+        return 1;
+      }
+
+      //! pack data from user to message buffer
+      template<class MessageBuffer, class EntityType>
+      void gather (MessageBuffer& buff, const EntityType& e) const
+      {
+        int alpha = vertexmapper.map(e);
+        buff.write(DataType(essential[alpha],f[alpha]));
+      }
+
+      /*! unpack data from message buffer to user
+
+         n is the number of objects sent by the sender
+       */
+      template<class MessageBuffer, class EntityType>
+      void scatter (MessageBuffer& buff, const EntityType& e, size_t n)
+      {
+        DataType x;
+        buff.read(x);
+        int alpha = vertexmapper.map(e);
+        for (int i=0; i<m; i++)
+          if (x.first[i]>essential[alpha][i])
+          {
+            essential[alpha][i] = x.first[i];
+            f[alpha][i] = x.second[i];
+          }
+      }
+
+      //! constructor
+      AccumulateBCFlags (const G& g, const VM& vm, std::vector<BCBlockType>& e, VectorType& _f)
+        : grid(g), essential(e), vertexmapper(vm), f(_f)
+      {}
+
+    private:
+      const G& grid;
+      std::vector<BCBlockType>& essential;
+      const VM& vertexmapper;
+      VectorType& f;
+    };
+
+
+
+  public:
+    P1FEOperatorAssembler (const G& g, const IS& indexset, T& _loc, bool extendoverlap=false)
+      : P1FEOperatorBase<G,RT,IS,1>(g,indexset,extendoverlap), loc(_loc)
+    {       }
+
+
+    //! assemble operator, rhs and Dirichlet boundary conditions
+    void assemble (P1FEFunction<G,RT,IS,1>& u, P1FEFunction<G,RT,IS,1>& f)
+    {
+      // check size
+      if ((*u).N()!=this->A.M() || (*f).N()!=this->A.N())
+        DUNE_THROW(MathError,"P1FEOperatorAssembler::assemble(): size mismatch");
+
+      // clear global stiffness matrix and right hand side
+      this->A = 0;
+      *f = 0;
+
+      // allocate flag vector to hold flags for essential boundary conditions
+      std::vector<BCBlockType> essential(this->vertexmapper.size());
+      for (typename std::vector<BCBlockType>::size_type i=0; i<essential.size(); i++)
+        essential[i] = BoundaryConditions::neumann;
+
+      // allocate flag vector to note hanging nodes whose row has been assembled
+      std::vector<unsigned char> treated(this->vertexmapper.size());
+      for (std::vector<unsigned char>::size_type
+           i=0; i<treated.size(); i++) treated[i] = false;
+
+      // hanging node stuff
+      RT alpha[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize][Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+
+      // local to global id mapping (do not ask vertex mapper repeatedly
+      int l2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+      int fl2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+
+      // run over all leaf elements
+      Iterator eendit = this->is.template end<0,All_Partition>();
+      for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        // parallelization
+        if (it->partitionType()==GhostEntity)
+          continue;
+
+        // get access to shape functions for P1 elements
+        Dune::GeometryType gt = it->geometry().type();
+        const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+        sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
+
+        // get local to global id map
+        for (int k=0; k<sfs.size(); k++)
+        {
+          if (sfs[k].codim()!=n) DUNE_THROW(MathError,"expected codim==dim");
+          int alpha = this->vertexmapper.template map<n>(*it,sfs[k].entity());
+          l2g[k] = alpha;
+        }
+
+        // build local stiffness matrix for P1 elements
+        // inludes rhs and boundary condition information
+        loc.assemble(*it);           // assemble local stiffness matrix
+
+        // assemble constraints in hanging nodes
+        // as a by-product determine the interpolation factors WITH RESPECT TO NODES OF FATHER
+        bool hasHangingNodes = false;
+        for (int k=0; k<sfs.size(); k++)           // loop over rows, i.e. test functions
+        {
+          // process only hanging nodes
+          if (!this->hanging[l2g[k]]) continue;
+          hasHangingNodes = true;
+
+          // determine position of hanging node in father
+          EEntityPointer father=it->father();                 // the father element
+          GeometryType gtf = father->geometry().type();                 // fathers type
+          assert(gtf==gt);                 // in hanging node refinement the element type is preserved
+          const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[k].position();
+          FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                 // map corner to father element
+
+          // evaluate interpolation factors and local to global mapping for father
+          for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++i)
+          {
+            alpha[i][k] = Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1)[i].evaluateFunction(0,pos);
+            fl2g[i] = this->vertexmapper.template map<n>(*father,i);
+          }
+
+          // assemble the constraint row once
+          if (!treated[l2g[k]])
+          {
+            bool throwflag=false;
+            int cnt=0;
+            for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++i)
+              if (std::abs(alpha[i][k])>1E-4)
+              {
+                if (this->hanging[fl2g[i]])
+                {
+                  std::cout << "X i=" << father->geometry()[i]
+                            << " k=" << it->geometry()[k]
+                            << " alpha=" << alpha[i][k]
+                            << " cnt=" << ++cnt
+                            << std::endl;
+                  throwflag = true;
+                }
+                this->A[l2g[k]][fl2g[i]] = 0;                                 // Note: Interpolation is done a posteriori
+              }
+            if (throwflag)
+              DUNE_THROW(GridError,"hanging node interpolated from hanging node");
+            for (int comp=0; comp<m; comp++)
+              this->A[l2g[k]][l2g[k]][comp][comp] = 1;
+            (*f)[l2g[k]] = 0;
+            (*u)[l2g[k]] = 0;
+            treated[l2g[k]] = true;
+          }
+        }
+
+        // accumulate local matrix into global matrix for non-hanging nodes
+        for (int i=0; i<sfs.size(); i++)           // loop over rows, i.e. test functions
+        {
+          // process only non-hanging nodes
+          if (this->hanging[l2g[i]]) continue;
+
+          // accumulate matrix
+          for (int j=0; j<sfs.size(); j++)
+          {
+            // process only non-hanging nodes
+            if (this->hanging[l2g[j]]) continue;
+
+            // the standard entry
+            this->A[l2g[i]][l2g[j]] += loc.mat(i,j);
+          }
+
+          // essential boundary condition and rhs
+          for (int comp=0; comp<m; comp++)
+          {
+            if (loc.bc(i)[comp]>essential[l2g[i]][comp])
+            {
+              essential[l2g[i]][comp] = loc.bc(i)[comp];
+              (*f)[l2g[i]][comp] = loc.rhs(i)[comp];
+            }
+            if (essential[l2g[i]][comp]==BoundaryConditions::neumann)
+              (*f)[l2g[i]][comp] += loc.rhs(i)[comp];
+          }
+        }
+
+        // add corrections for hanging nodes
+        if (hasHangingNodes)
+        {
+          // a map that inverts l2g
+          std::map<int,int> g2l;
+          for (int i=0; i<sfs.size(); i++)
+            g2l[l2g[i]] = i;
+
+          // a map that inverts fl2g
+          std::map<int,int> fg2l;
+          for (int i=0; i<sfs.size(); i++)
+            fg2l[fl2g[i]] = i;
+
+          EEntityPointer father=it->father();                 // DEBUG
+
+          // loop over nodes (rows) in father, assume father has same geometry type
+          for (int i=0; i<sfs.size(); ++i)
+          {
+            // corrections to matrix
+            // loop over all nodes (columns) in father, assume father has same geometry type
+            for (int j=0; j<sfs.size(); ++j)
+            {
+              // loop over hanging nodes
+              for (int k=0; k<sfs.size(); k++)
+              {
+                // process only hanging nodes
+                if (!this->hanging[l2g[k]]) continue;
+
+                // first term, with i a coarse vertex
+                if ( std::abs(alpha[j][k])>1E-4 && g2l.find(fl2g[i])!=g2l.end() )
+                {
+                  //                                                      std::cout << "term 1a"
+                  //                                                                            << " i=" << father->geometry()[i]
+                  //                                                                            << " j=" << father->geometry()[j]
+                  //                                                                            << " k=" << it->geometry()[k]
+                  //                                                                            << std::endl;
+                  accumulate(this->A[fl2g[i]][fl2g[j]],alpha[j][k],loc.mat(g2l[fl2g[i]],k));
+                }
+
+                // first term, with i a fine non-hanging vertex
+                if ( std::abs(alpha[j][k])>1E-4 && fg2l.find(l2g[i])==fg2l.end() && !this->hanging[l2g[i]])
+                {
+                  //                                                      std::cout << "term 1b"
+                  //                                                                            << " i=" << it->geometry()[i]
+                  //                                                                            << " j=" << father->geometry()[j]
+                  //                                                                            << " k=" << it->geometry()[k]
+                  //                                                                            << " gi=" << l2g[i] << " gj=" << fl2g[j]
+                  //                                                                            << std::endl;
+                  accumulate(this->A[l2g[i]][fl2g[j]],alpha[j][k],loc.mat(i,k));
+                }
+
+                // second term, with j a coarse vertex
+                if ( std::abs(alpha[i][k])>1E-4 && g2l.find(fl2g[j])!=g2l.end() )
+                {
+                  //                                                      std::cout << "term 2a"
+                  //                                                                            << " i=" << father->geometry()[i]
+                  //                                                                            << " j=" << father->geometry()[j]
+                  //                                                                            << " k=" << it->geometry()[k]
+                  //                                                                            << std::endl;
+                  accumulate(this->A[fl2g[i]][fl2g[j]],alpha[i][k],loc.mat(k,g2l[fl2g[j]]));
+                }
+
+                // second term, with j a fine non-hanging vertex
+                if ( std::abs(alpha[i][k])>1E-4 && fg2l.find(l2g[j])==fg2l.end() && !this->hanging[l2g[j]])
+                {
+                  //                                                      std::cout << "term 2b"
+                  //                                                                            << " i=" << father->geometry()[i]
+                  //                                                                            << " j=" << it->geometry()[j]
+                  //                                                                            << " k=" << it->geometry()[k]
+                  //                                                                            << std::endl;
+                  accumulate(this->A[fl2g[i]][l2g[j]],alpha[i][k],loc.mat(k,j));
+                }
+
+                // third term, loop over hanging nodes
+                for (int l=0; l<sfs.size(); l++)
+                {
+                  // process only hanging nodes
+                  if (!this->hanging[l2g[l]]) continue;
+
+                  if ( std::abs(alpha[i][k])>1E-4 && std::abs(alpha[j][l])>1E-4 )
+                  {
+                    //                                                            std::cout << "term 3"
+                    //                                                                                  << " i=" << father->geometry()[i]
+                    //                                                                                  << " j=" << father->geometry()[j]
+                    //                                                                                  << " k=" << it->geometry()[k]
+                    //                                                                                  << " l=" << it->geometry()[l]
+                    //                                                                                  << std::endl;
+                    accumulate(this->A[fl2g[i]][fl2g[j]],alpha[i][k]*alpha[j][l],loc.mat(k,l));
+                  }
+                }
+              }
+            }
+
+            // corrections to rhs
+            for (int comp=0; comp<m; comp++)
+              if (essential[fl2g[i]][comp]==BoundaryConditions::neumann)
+                for (int k=0; k<sfs.size(); k++)
+                {
+                  // process only hanging nodes
+                  if (!this->hanging[l2g[k]]) continue;
+
+                  if ( std::abs(alpha[i][k])>1E-4 && loc.bc(k)[comp]==BoundaryConditions::neumann )
+                    (*f)[fl2g[i]][comp] += alpha[i][k]*loc.rhs(k)[comp];
+                }
+          }
+        }
+      }
+
+      //          std::ostringstream os2;
+      //          os2 << this->grid.rank() << ": before";
+      //          printmatrix(std::cout,this->A,"global stiffness matrix",os2.str(),9,1);
+
+
+      // accumulate matrix entries, should do also for systems ...
+      if (this->extendOverlap)
+        this->sumEntries();
+
+      // send around boundary conditions
+      if (this->extendOverlap)
+      {
+        AccumulateBCFlags datahandle(this->grid,this->vertexmapper,essential,*f);
+        this->grid.template communicate<AccumulateBCFlags>(datahandle,InteriorBorder_InteriorBorder_Interface,ForwardCommunication);
+        // on a nonvoerlapping grid we have the correct BC at all interior and border vertices
+      }
+      // what about the overlapping case ?
+
+      // muck up ghost vertices
+      VIterator vendit = this->is.template end<n,All_Partition>();
+      for (VIterator it = this->is.template begin<n,All_Partition>(); it!=vendit; ++it)
+        if (it->partitionType()==GhostEntity)
+        {
+          // index of this vertex
+          int i=this->vertexmapper.map(*it);
+
+          // muck up row
+          coliterator endj=this->A[i].end();
+          for (coliterator j=this->A[i].begin(); j!=endj; ++j)
+          {
+            (*j) = 0;
+            if (j.index()==i)
+              for (int comp=0; comp<m; comp++)
+                (*j)[comp][comp] = 1;
+          }
+          (*f)[i] = 0;
+        }
+
+      // put in essential boundary conditions
+      rowiterator endi=this->A.end();
+      for (rowiterator i=this->A.begin(); i!=endi; ++i)
+      {
+        // muck up extra rows
+        if (i.index()>=this->vertexmapper.size())
+        {
+          coliterator endj=(*i).end();
+          for (coliterator j=(*i).begin(); j!=endj; ++j)
+          {
+            (*j) = 0;
+            if (j.index()==i.index())
+              for (int comp=0; comp<m; comp++)
+                (*j)[comp][comp] = 1;
+          }
+          (*f)[i.index()] = 0;
+          continue;
+        }
+
+        // insert dirichlet ans processor boundary conditions
+        if (!this->hanging[i.index()])
+        {
+          for (int icomp=0; icomp<m; icomp++)
+            if (essential[i.index()][icomp]!=BoundaryConditions::neumann)
+            {
+              coliterator endj=(*i).end();
+              for (coliterator j=(*i).begin(); j!=endj; ++j)
+                if (j.index()==i.index())
+                {
+                  for (int jcomp=0; jcomp<m; jcomp++)
+                    if (icomp==jcomp)
+                      (*j)[icomp][jcomp] = 1;
+                    else
+                      (*j)[icomp][jcomp] = 0;
+                }
+                else
+                {
+                  for (int jcomp=0; jcomp<m; jcomp++)
+                    (*j)[icomp][jcomp] = 0;
+                }
+              (*u)[i.index()][icomp] = (*f)[i.index()][icomp];
+            }
+        }
+      }
+
+      // print it
+      //          std::ostringstream os;
+      //          os << this->grid.rank() << ": after";
+      //          printmatrix(std::cout,this->A,"global stiffness matrix",os.str(),9,1);
+    }
+
+    //! assemble operator, rhs and Dirichlet boundary conditions
+    void interpolateHangingNodes (P1FEFunction<G,RT,IS,1>& u)
+    {
+      // allocate flag vector to note hanging nodes whose row has been assembled
+      std::vector<unsigned char> treated(this->vertexmapper.size());
+      for (int i=0; i<treated.size(); i++) treated[i] = false;
+
+      // run over all leaf elements
+      Iterator eendit = this->is.template end<0,All_Partition>();
+      for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        // get access to shape functions for P1 elements
+        Dune::GeometryType gt = it->geometry().type();
+        const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+        sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
+
+        // determine the interpolation factors WITH RESPECT TO NODES OF FATHER
+        for (int k=0; k<sfs.size(); k++)           // loop over rows, i.e. test functions
+        {
+          int alpha = this->vertexmapper.template map<n>(*it,sfs[k].entity());
+          if (this->hanging[alpha] && !treated[alpha])
+          {
+            // determine position of hanging node in father
+            EEntityPointer father=it->father();                       // the father element
+            GeometryType gtf = father->geometry().type();                       // fathers type
+            assert(gtf==gt);                       // in hanging node refinement the element type is preserved
+            const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[k].position();
+            FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                       // map corner to father element
+
+            // evaluate interpolation factors and local to global mapping for father
+            VBlockType value; value=0;
+            for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1).size(); ++i)
+            {
+              int beta = this->vertexmapper.template map<n>(*father,i);
+              value.axpy(Dune::LagrangeShapeFunctions<DT,RT,n>::general(gtf,1)[i].evaluateFunction(0,pos),(*u)[beta]);
+            }
+            (*u)[alpha] = value;
+            treated[alpha] = true;
+          }
+        }
+      }
+    }
+
+    void preMark ()
+    {
+      marked.resize(this->vertexmapper.size());
+      for (int i=0; i<marked.size(); i++) marked[i] = false;
+      return;
+    }
+
+    void postMark (G& g)
+    {
+      // run over all leaf elements
+      int extra=0;
+      Iterator eendit = this->is.template end<0,All_Partition>();
+      for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
+      {
+        // get access to shape functions for P1 elements
+        Dune::GeometryType gt = it->geometry().type();
+        //		  if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) continue;
+
+        const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+        sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
+
+        // count nodes with mark
+        int count=0;
+        for (int k=0; k<sfs.size(); k++)
+        {
+          int alpha = this->vertexmapper.template map<n>(*it,sfs[k].entity());
+          if (marked[alpha]) count++;
+        }
+
+        // refine if a marked edge exists
+        if (count>0) {
+          extra++;
+          g.mark(1,it);
+        }
+      }
+
+      std::cout << "placed " << extra << " extra marks" << std::endl;
+      marked.clear();
+      return;
+    }
+
+    void mark (G& g, EEntityPointer& it)
+    {
+      // refine this element
+      g.mark(1,it);
+
+      // check geom type, exit if not simplex
+      Dune::GeometryType gt = it->geometry().type();
+      //if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) return;
+      assert(it->isLeaf());
+
+      // determine if element has hanging nodes
+      bool hasHangingNodes = false;
+      const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+      sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
+      for (int k=0; k<sfs.size(); k++)     // loop over rows, i.e. test functions
+        if (this->hanging[this->vertexmapper.template map<n>(*it,sfs[k].entity())])
+        {
+          hasHangingNodes = true;
+          break;
+        }
+
+      // if no hanging nodes we are done
+      if (!hasHangingNodes) return;
+
+      // mark all corners of father
+      EEntityPointer father=it->father();
+      for (int k=0; k<sfs.size(); k++)     // same geometry type ...
+      {
+        int alpha=this->vertexmapper.template map<n>(*father,k);
+        marked[alpha] = true;
+      }
+
+      return;
+    }
+
+
+  private:
+    std::vector<bool> marked;
+    T& loc;
+
+    template<class M, class K>
+    void accumulate (M& A, const K& alpha, const M& B)
+    {
+      for (int i=0; i<A.N(); i++)
+        for (int j=0; j<A.M(); j++)
+          A[i][j] += alpha*B[i][j];
+    }
+  };
+
+
+  //! Leafwise assembler
+  template<class G, class RT, class T>
+  class LeafP1FEOperatorAssembler : public P1FEOperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,T>
   {
   public:
-    LeafAssembledP1FEOperator (const G& grid, bool extendoverlap=false)
-      : AssembledP1FEOperator<G,RT,typename G::Traits::LeafIndexSet,m>(grid,grid.leafIndexSet(),extendoverlap)
+    LeafP1FEOperatorAssembler (const G& grid, T& lstiff, bool extendoverlap=false)
+      : P1FEOperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,T>(grid,grid.leafIndexSet(),lstiff,extendoverlap)
     {}
   };
 
 
-  template<class G, class RT, int m=1>
-  class LevelAssembledP1FEOperator : public AssembledP1FEOperator<G,RT,typename G::Traits::LevelIndexSet,m>
+  //! Levelwise assembler
+  template<class G, class RT, class T>
+  class LevelP1FEOperatorAssembler : public P1FEOperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,T>
   {
   public:
-    LevelAssembledP1FEOperator (const G& grid, int level, bool extendoverlap=false)
-      : AssembledP1FEOperator<G,RT,typename G::Traits::LevelIndexSet,m>(grid,grid.levelIndexSet(level),extendoverlap)
+    LevelP1FEOperatorAssembler (const G& grid, int level, T& lstiff, bool extendoverlap=false)
+      : P1FEOperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,T>(grid,grid.levelIndexSet(level),lstiff,extendoverlap)
     {}
   };
 
