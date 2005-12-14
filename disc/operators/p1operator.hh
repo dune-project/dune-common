@@ -647,11 +647,11 @@ namespace Dune
 
     {
       // be verbose
-      std::cout << g.rank() << ": " << "vector size = " << vertexmapper.size() << " + " << extraDOFs << std::endl;
-      std::cout << g.rank() << ": " << "making " << size() << "x" << size() << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
-      std::cout << g.rank() << ": " << "allmapper has size " << allmapper.size() << std::endl;
-      std::cout << g.rank() << ": " << "vertexmapper has size " << vertexmapper.size() << std::endl;
-      std::cout << g.rank() << ": " << "hanging nodes=" << hangingnodes << " links=" << links.size() << std::endl;
+      std::cout << g.comm().rank() << ": " << "vector size = " << vertexmapper.size() << " + " << extraDOFs << std::endl;
+      std::cout << g.comm().rank() << ": " << "making " << size() << "x" << size() << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
+      std::cout << g.comm().rank() << ": " << "allmapper has size " << allmapper.size() << std::endl;
+      std::cout << g.comm().rank() << ": " << "vertexmapper has size " << vertexmapper.size() << std::endl;
+      std::cout << g.comm().rank() << ": " << "hanging nodes=" << hangingnodes << " links=" << links.size() << std::endl;
 
       // set size of all rows to zero
       for (int i=0; i<g.size(n); i++)
@@ -709,7 +709,7 @@ namespace Dune
       }
 
       // additional links due to hanging nodes
-      std::cout << g.rank() << ": " << "now links=" << links.size() << std::endl;
+      std::cout << g.comm().rank() << ": " << "now links=" << links.size() << std::endl;
       for (typename std::set<P1FEOperatorLink>::iterator i=links.begin(); i!=links.end(); ++i)
         A.incrementrowsize(i->first);
 
@@ -773,7 +773,7 @@ namespace Dune
       // delete additional links
       links.clear();
 
-      std::cout << grid.rank() << ": " << "matrix initialized" << std::endl;
+      std::cout << grid.comm().rank() << ": " << "matrix initialized" << std::endl;
     }
 
     //! return const reference to coefficient vector
@@ -1164,7 +1164,7 @@ namespace Dune
       }
 
       //          std::ostringstream os2;
-      //          os2 << this->grid.rank() << ": before";
+      //          os2 << this->grid.comm().rank() << ": before";
       //          printmatrix(std::cout,this->A,"global stiffness matrix",os2.str(),9,1);
 
 
@@ -1248,7 +1248,7 @@ namespace Dune
 
       // print it
       //          std::ostringstream os;
-      //          os << this->grid.rank() << ": after";
+      //          os << this->grid.comm().rank() << ": after";
       //          printmatrix(std::cout,this->A,"global stiffness matrix",os.str(),9,1);
     }
 
