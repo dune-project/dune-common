@@ -26,6 +26,14 @@ private:
   const field_type lambda;
 };
 
+// Scalar op FieldVector<K,1>
+template <class K>
+K operator OP (const Expression< ConstRef< FieldVector<K,1> > > & a,
+               const K & lambda)
+{
+  return a[0] OP lambda;
+}
+
 // Vector op Scalar
 template <class A>
 Expression< ExpressionOpScalar<ConstRef<A> > >
@@ -108,6 +116,14 @@ private:
   const field_type lambda;
 };
 
+// Scalar op FieldVector<K,1>
+template <class K>
+K operator OP (const K & lambda,
+               const Expression< ConstRef< FieldVector<K,1> > > & a)
+{
+  return lambda OP a[0];
+}
+
 // Scalar op Vector
 template <class A>
 Expression< ScalarOpExpression<ConstRef<A> > >
@@ -128,13 +144,6 @@ operator OP (const typename FieldType<A>::type & lambda, const Expression<A> & a
 }
 
 // TypeTraits
-/*
-template<class K, int N>
-struct BlockExpression< ExprTmpl::ScalarOpExpression< ExprTmpl::ConstRef< FieldVector<K,N> > > >
-{
-  typedef K type;
-};
-*/
 template <class Ex>
 struct BlockExpression< ExprTmpl::ScalarOpExpression<Ex> >
 {

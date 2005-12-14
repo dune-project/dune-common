@@ -47,6 +47,14 @@ operator OP (const Expression<A> & a, const Vector<B> & b)
   return Expression< ExpressionOpExpression<A, ConstRef<B> > >(ex);
 }
 
+// Expression op FieldVector<K,1>
+template <class A, class K>
+K operator OP (const Expression<A> & a,
+               const Expression< ConstRef< FieldVector<K,1> > >& b)
+{
+  return a OP b[0];
+}
+
 // Vector op Expression
 template <class A, class B>
 Expression< ExpressionOpExpression< ConstRef<A>, B> >
@@ -55,6 +63,14 @@ operator OP (const Vector<A> & a, const Expression<B> & b)
   ConstRef<A> ra(a);
   ExpressionOpExpression< ConstRef<A>, B> ex(ra, b);
   return Expression< ExpressionOpExpression<ConstRef<A>, B> >(ex);
+}
+
+// FieldVector<K,1> op Expression
+template <class K, class B>
+K operator OP (const Expression< ConstRef< FieldVector<K,1> > > & a,
+               const Expression<B> & b)
+{
+  return a[0] OP b;
 }
 
 // Vector op Vector
@@ -66,6 +82,14 @@ operator OP (const Vector<V> & a, const Vector<V> & b)
   ConstRef<V> rb(b);
   ExpressionOpExpression< ConstRef<V>, ConstRef<V> > ex(ra, rb);
   return Expression< ExpressionOpExpression< ConstRef<V>, ConstRef<V> > >(ex);
+}
+
+// FieldVector<K,1> op FieldVector<K,1>
+template <class K>
+K operator OP (const Expression< ConstRef< FieldVector<K,1> > > & a,
+               const Expression< ConstRef< FieldVector<K,1> > > & b)
+{
+  return a[0] OP b[0];
 }
 
 // TypeTraits
