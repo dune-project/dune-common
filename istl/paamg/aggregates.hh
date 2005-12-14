@@ -1415,7 +1415,6 @@ namespace Dune
       int visitedSpheres = 0;
 
       visited.push_back(start);
-      assert(!get(visitedMap, start));
       put(visitedMap, start, true);
 
       ListIterator current = visited.begin();
@@ -1435,7 +1434,6 @@ namespace Dune
 
             if(aggregates_[edge.target()]==aggregate) {
               if(!get(visitedMap, edge.target())) {
-                assert(!get(visitedMap, edge.target()));
                 put(visitedMap, edge.target(), true);
                 visited.push_back(edge.target());
                 aggregateVisitor(edge);

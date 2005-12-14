@@ -26,9 +26,8 @@ namespace Dune
       typedef T Vertex;
 
       GlobalAggregatesMap(AggregatesMap<Vertex>& aggregates,
-                          const ParallelIndexSet& indexset,
-                          std::size_t size)
-        : aggregates_(aggregates), indexset_(indexset, size)
+                          const GlobalLookupIndexSet<ParallelIndexSet>& indexset)
+        : aggregates_(aggregates), indexset_(indexset)
       {}
 
       inline const GlobalIndex& operator[](std::size_t index) const
@@ -47,7 +46,7 @@ namespace Dune
 
     private:
       AggregatesMap<Vertex>& aggregates_;
-      GlobalLookupIndexSet<ParallelIndexSet> indexset_;
+      const GlobalLookupIndexSet<ParallelIndexSet>& indexset_;
     };
 
     template<typename T, typename TI>
@@ -103,7 +102,8 @@ namespace Dune
                           std::size_t size)
       {
         typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
-        GlobalMap gmap(aggregates, pinfo.indexSet(), size);
+        pinfo.buildGlobalLookup(size);
+        GlobalMap gmap(aggregates, pinfo.globalLookup());
         pinfo.template buildInterface<OverlapFlags>();
         pinfo.template buildCommunicator<GlobalMap>(gmap, gmap);
         pinfo.template communicateForward<AggregatesGatherScatter<Vertex,IndexSet> >(gmap, gmap);

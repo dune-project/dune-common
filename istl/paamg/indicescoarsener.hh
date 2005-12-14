@@ -62,7 +62,7 @@ namespace Dune
 
       template<typename Graph, typename VM>
       static typename Graph::VertexDescriptor
-      coarsen(const ParallelInformation& fineInfo,
+      coarsen(ParallelInformation& fineInfo,
               Graph& fineGraph,
               VM& visitedMap,
               AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
@@ -123,7 +123,7 @@ namespace Dune
       };
 
       template<typename Graph, typename VM>
-      static void buildCoarseIndexSet(const ParallelIndexSet& fineIndices,
+      static void buildCoarseIndexSet(const ParallelInformation& pinfo,
                                       Graph& fineGraph,
                                       VM& visitedMap,
                                       AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
@@ -161,14 +161,15 @@ namespace Dune
     template<typename T, typename E>
     template<typename Graph, typename VM>
     inline typename Graph::VertexDescriptor
-    IndicesCoarsener<T,E>::coarsen(const ParallelInformation& fineInfo,
+    IndicesCoarsener<T,E>::coarsen(ParallelInformation& fineInfo,
                                    Graph& fineGraph,
                                    VM& visitedMap,
                                    AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
                                    ParallelInformation& coarseInfo)
     {
       ParallelAggregateRenumberer<Graph> renumberer(aggregates);
-      buildCoarseIndexSet(fineInfo.indexSet(), fineGraph, visitedMap, aggregates,
+      fineInfo.buildGlobalLookup(fineGraph.noVertices());
+      buildCoarseIndexSet(fineInfo, fineGraph, visitedMap, aggregates,
                           coarseInfo.indexSet(), renumberer);
       buildCoarseRemoteIndices(fineInfo.remoteIndices(), aggregates, coarseInfo.indexSet(),
                                coarseInfo.remoteIndices(), renumberer);
@@ -178,60 +179,58 @@ namespace Dune
 
     template<typename T, typename E>
     template<typename Graph, typename VM>
-    void IndicesCoarsener<T,E>::buildCoarseIndexSet(const ParallelIndexSet& fineIndices,
+    void IndicesCoarsener<T,E>::buildCoarseIndexSet(const ParallelInformation& pinfo,
                                                     Graph& fineGraph,
                                                     VM& visitedMap,
                                                     AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
                                                     ParallelIndexSet& coarseIndices,
                                                     ParallelAggregateRenumberer<Graph>& renumberer)
     {
-      typedef typename ParallelIndexSet::const_iterator Iterator;
       typedef typename Graph::VertexDescriptor Vertex;
+      typedef typename Graph::ConstVertexIterator Iterator;
+      typedef typename ParallelInformation::GlobalLookupIndexSet GlobalLookup;
 
-      Iterator end = fineIndices.end();
+      Iterator end = fineGraph.end();
+      const GlobalLookup& lookup = pinfo.globalLookup();
 
       coarseIndices.beginResize();
-
-#ifdef ISTL_WITH_CHECKING
-      bool visited = false;
-      for(Iterator index = fineIndices.begin(); index != end; ++index)
-        if(get(visitedMap, index->local())) {
-          std::cerr<<*index<<" is visited!"<<std::endl;
-          visited=true;
-        }
-
-      if(visited)
-        throw visited;
-#endif
 
       // Setup the coarse index set and renumber the aggregate consecutively
       // ascending from zero according to the minimum global index belonging
       // to the aggregate
-      for(Iterator index = fineIndices.begin(); index != end; ++index) {
-        if(aggregates[index->local()]!=AggregatesMap<typename Graph::VertexDescriptor>::ISOLATED)
-          if(!ExcludedAttributes::contains(index->local().attribute()) && !get(visitedMap, index->local())) {
-            renumberer.reset();
-            renumberer.attribute(index->local().attribute());
-            renumberer.isPublic(index->local().isPublic());
+      for(Iterator index = fineGraph.begin(); index != end; ++index) {
+        if(aggregates[*index]!=AggregatesMap<typename Graph::VertexDescriptor>::ISOLATED)
+          if(!get(visitedMap, *index)) {
 
-            // Reconstruct aggregate and mark vertices as visited
-            aggregates.template breadthFirstSearch<false>(index->local(), aggregates[index->local()],
-                                                          fineGraph, renumberer, visitedMap);
-            aggregates[index->local()] = renumberer;
-            coarseIndices.add(index->global(),
-                              LocalIndex(renumberer, renumberer.attribute(),
-                                         renumberer.isPublic()));
-            ++renumberer;
+            typedef typename GlobalLookup::IndexPair IndexPair;
+            const IndexPair* pair= lookup.pair(*index);
+
+            renumberer.reset();
+            if(pair==0) {
+              // Reconstruct aggregate and mark vertices as visited
+              aggregates.template breadthFirstSearch<false>(*index, aggregates[*index],
+                                                            fineGraph, renumberer, visitedMap);
+            }
+            else if(!ExcludedAttributes::contains(pair->local().attribute())) {
+              renumberer.attribute(pair->local().attribute());
+              renumberer.isPublic(pair->local().isPublic());
+
+              // Reconstruct aggregate and mark vertices as visited
+              aggregates.template breadthFirstSearch<false>(*index, aggregates[*index],
+                                                            fineGraph, renumberer, visitedMap);
+              coarseIndices.add(pair->global(),
+                                LocalIndex(renumberer, renumberer.attribute(),
+                                           renumberer.isPublic()));
+            }
+
+            aggregates[*index] = renumberer;
           }
       }
 
       coarseIndices.endResize();
 
       // Reset the visited flags
-      typedef typename Graph::ConstVertexIterator VertexIterator;
-      VertexIterator vend = fineGraph.end();
-
-      for(VertexIterator vertex=fineGraph.begin(); vertex != vend; ++vertex)
+      for(Iterator vertex=fineGraph.begin(); vertex != end; ++vertex)
         put(visitedMap, *vertex, false);
     }
 

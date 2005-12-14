@@ -468,6 +468,8 @@ namespace Dune
      */
     typedef typename ParallelIndexSet::const_iterator const_iterator;
 
+    typedef IndexPair<typename I::GlobalIndex, typename I::LocalIndex> IndexPair;
+
     /**
      * @brief Constructor.
      * @param indexset The index set we want to be able to lookup the corresponding
@@ -490,13 +492,13 @@ namespace Dune
      * @return The pair of indices for the id.
      * @exception NoSuchEntry Thrown if the global id is not known.
      */
-    inline const IndexPair<GlobalIndex,LocalIndex>&
+    inline const IndexPair&
     operator[](const GlobalIndex& global) const;
 
     /**
      * @brief Get the index pair corresponding to a local index.
      */
-    inline const IndexPair<GlobalIndex,LocalIndex>*
+    inline const IndexPair*
     pair(const std::size_t& local) const;
 
     /**
@@ -538,7 +540,7 @@ namespace Dune
     /**
      * @brief Array with the positions of the corresponding index pair of the index set.
      */
-    std::vector<const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>*> indices_;
+    std::vector<const IndexPair*> indices_;
 
   };
 
@@ -882,7 +884,7 @@ namespace Dune
   GlobalLookupIndexSet<I>::GlobalLookupIndexSet(const I& indexset,
                                                 std::size_t size)
     : indexSet_(indexset), size_(size),
-      indices_(size_, static_cast<const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>*>(0))
+      indices_(size_, static_cast<const IndexPair*>(0))
   {
     const_iterator end_ = indexSet_.end();
     size_t i=0;

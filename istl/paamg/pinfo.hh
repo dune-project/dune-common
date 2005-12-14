@@ -29,6 +29,7 @@ namespace Dune
       typedef RemoteIndices<IndexSet> RemoteIndices;
       typedef Interface<IndexSet> Interface;
       typedef BufferedCommunicator<IndexSet>Communicator;
+      typedef GlobalLookupIndexSet<IndexSet> GlobalLookupIndexSet;
       typedef MPI_Comm MPICommunicator;
 
       enum {
@@ -74,11 +75,19 @@ namespace Dune
       Interface& interface();
 
       const Interface& interface() const;
+
+      void buildGlobalLookup(std::size_t);
+
+      void freeGlobalLookup();
+
+      const GlobalLookupIndexSet& globalLookup() const;
+
     private:
       IndexSet* indexSet_;
       RemoteIndices* remoteIndices_;
       Interface* interface_;
       Communicator* communicator_;
+      GlobalLookupIndexSet* globalLookup_;
     };
 
 #endif
@@ -123,7 +132,8 @@ namespace Dune
     ParallelInformation<T>::ParallelInformation(const MPI_Comm& comm)
       : indexSet_(new IndexSet()),
         remoteIndices_(new RemoteIndices(*indexSet_, *indexSet_, comm)),
-        interface_(new Interface()), communicator_(new Communicator())
+        interface_(new Interface()), communicator_(new Communicator()),
+        globalLookup_(0)
     {}
 
     template<class T>
@@ -231,7 +241,28 @@ namespace Dune
 
     template<class T>
     const typename ParallelInformation<T>::Interface& ParallelInformation<T>::interface() const {
-      return interface_;
+      return *interface_;
+    }
+
+    template<class T>
+    void ParallelInformation<T>::buildGlobalLookup(std::size_t size)
+    {
+      globalLookup_ = new GlobalLookupIndexSet(*indexSet_, size);
+    }
+
+    template<class T>
+    void ParallelInformation<T>::freeGlobalLookup()
+    {
+      delete globalLookup_;
+      globalLookup_=0;
+    }
+
+    template<class T>
+    const typename ParallelInformation<T>::GlobalLookupIndexSet&
+    ParallelInformation<T>::globalLookup() const
+    {
+      assert(globalLookup_ != 0);
+      return *globalLookup_;
     }
 
 #endif
