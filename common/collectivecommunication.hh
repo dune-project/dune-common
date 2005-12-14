@@ -22,8 +22,7 @@ namespace Dune
   class CollectiveCommunication
   {
   public:
-    CollectiveCommunication (const C& c)
-      : communicator(c)
+    CollectiveCommunication ()
     {}
 
     int rank ()
@@ -84,8 +83,24 @@ namespace Dune
       return 0;
     }
 
-  private:
-    C communicator;
+    int barrier () const
+    {
+      return 0;
+    }
+
+    template<typename T>
+    int broadcast (T* inout, int len, int root) const
+    {
+      return 0;
+    }
+
+    template<typename T>
+    int gather (T* in, T* out, int len, int root) const     // note out must have same size as in
+    {
+      for (int i=0; i<len; i++)
+        out[i] = in[i];
+      return 0;
+    }
   };
 
 
@@ -528,19 +543,18 @@ namespace Dune
   public:
     CollectiveCommunication (const MPI_Comm& c)
       : communicator(c)
-    {}
-
-    int rank ()
     {
-      int me;
       MPI_Comm_rank(communicator,&me);
+      MPI_Comm_size(communicator,&procs);
+    }
+
+    int rank () const
+    {
       return me;
     }
 
-    int size ()
+    int size () const
     {
-      int procs;
-      MPI_Comm_size(communicator,&procs);
       return procs;
     }
 
@@ -612,13 +626,37 @@ namespace Dune
                            GenericMax_MPI_Op<T>::get(),communicator);
     }
 
-    operator MPI_Comm ()
+    int barrier () const
+    {
+      return MPI_Barrier(communicator);
+    }
+
+    //! send array from process with rank root to all others
+    template<typename T>
+    int broadcast (T* inout, int len, int root) const
+    {
+      return MPI_Bcast(inout,len,Generic_MPI_Datatype<T>::get(),root,communicator);
+    }
+
+    //! receive array of values from each processor in root
+    template<typename T>
+    int gather (T* in, T* out, int len, int root) const     // note out must have space for P*len elements
+    {
+      return MPI_Gather(in,len,Generic_MPI_Datatype<T>::get(),
+                        out,len,Generic_MPI_Datatype<T>::get(),
+                        root,communicator);
+    }
+
+
+    operator MPI_Comm () const
     {
       return communicator;
     }
 
   private:
     MPI_Comm communicator;
+    int me;
+    int procs;
   };
 #endif
 
