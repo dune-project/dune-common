@@ -917,9 +917,9 @@ void Dune::UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, Co
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::createbegin()
 {
-  // Boundary segment counting starts from zero again
-  boundarySegmentCounter_ = 0;
-
+  // //////////////////////////////////////////////////////////
+  //   Clear all buffers used during coarse grid creation
+  // //////////////////////////////////////////////////////////
   boundarySegments_.resize(0);
   boundarySegmentVertices_.resize(0);
   elementTypes_.resize(0);
@@ -976,7 +976,9 @@ void Dune::UGGrid < dim, dimworld >::createend()
   if (boundarySegments_.size() == 0) {
 
     SetIterator it = boundarySegments.begin();
-    for (; it != boundarySegments.end(); ++it) {
+    unsigned int segmentIndex = 0;
+
+    for (; it != boundarySegments.end(); ++it, ++segmentIndex) {
 
       const FieldVector<int, 2*dim-2>& thisSegment = *it;
 
@@ -990,7 +992,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
         vertices[j]    = isBoundaryNode[thisSegment[j]];
       }
 
-      insertLinearSegment(vertices, coordinates);
+      insertLinearSegment(vertices, coordinates, segmentIndex);
 
     }
 
@@ -1146,7 +1148,8 @@ void Dune::UGGrid < dim, dimworld >::createend()
 template <int dim, int dimworld>
 void Dune::UGGrid<dim, dimworld>::
 insertLinearSegment(const std::vector<int>& vertices,
-                    const std::vector<FieldVector<double,dimworld> >& coordinates)
+                    const std::vector<FieldVector<double,dimworld> >& coordinates,
+                    unsigned int segmentIndex)
 {
   /** \todo Make sure this is the current multigrid, so that CreateBoundarySegment
       really inserts boundary segments into this grid.*/
@@ -1165,7 +1168,7 @@ insertLinearSegment(const std::vector<int>& vertices,
 
   // Create some boundary segment name
   char segmentName[20];
-  if(sprintf(segmentName, "BS %d", boundarySegmentCounter_) < 0)
+  if(sprintf(segmentName, "BS %d", segmentIndex) < 0)
     DUNE_THROW(GridError, "sprintf returned error code!");
 
   // Choose the method which implements the shape of the boundary segment
@@ -1203,7 +1206,7 @@ insertLinearSegment(const std::vector<int>& vertices,
   if (UG_NS<dim>::CreateBoundarySegment(segmentName,            // internal name of the boundary segment
                                         1,                      //  id of left subdomain
                                         2,                      //  id of right subdomain
-                                        boundarySegmentCounter_,    // Index of the segment
+                                        segmentIndex,           // Index of the segment
                                         1,                      // Resolution, only for the UG graphics
                                         vertices_c_style,       // Vertex indeces
                                         alpha,                  // The local coordinates range
@@ -1212,8 +1215,6 @@ insertLinearSegment(const std::vector<int>& vertices,
                                         const_cast<BoundarySegment<dimworld>*>(boundarySegments_.back()))==NULL) {
     DUNE_THROW(GridError, "Calling UG" << dim << "d::CreateBoundarySegment failed!");
   }
-
-  boundarySegmentCounter_++;
 
 #if 0
   // It would be a lot smarter to use this way of describing
@@ -1247,8 +1248,6 @@ void Dune::UGGrid<dim, dimworld>::insertBoundarySegment(const std::vector<int> v
   // Append boundary segment class to the boundary segment class list, so we can
   // delete them all in the destructor
   boundarySegments_.push_back(boundarySegment);
-
-  boundarySegmentCounter_++;
 
 }
 

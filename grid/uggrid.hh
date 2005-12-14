@@ -526,7 +526,8 @@ namespace Dune {
         \param coordinates The coordinates of the vertices of the segment
      */
     void insertLinearSegment(const std::vector<int>& vertices,
-                             const std::vector<FieldVector<double,dimworld> >& coordinates);
+                             const std::vector<FieldVector<double,dimworld> >& coordinates,
+                             unsigned int segmentIndex);
 
     // Recomputes entity indices after the grid was changed
     void setIndices();
@@ -554,10 +555,6 @@ namespace Dune {
 
     //!
     bool omitGreenClosure_;
-
-    /** \brief A counter for producing a consecutive index for the boundary segments
-       \todo obsolete */
-    int boundarySegmentCounter_;
 
     /** \brief While inserting the elements this array records the number of
         vertices of each element. */
