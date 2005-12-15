@@ -20,6 +20,7 @@
 #include <dune/common/array.hh>
 #include <dune/common/capabilities.hh>
 #include <dune/common/stdstreams.hh>
+#include <dune/common/collectivecommunication.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/sizecache.hh>
 
@@ -1545,6 +1546,32 @@ namespace Dune
     /** \brief overlapSize is zero for this grid  */
     int overlapSize (int level, int codim) const { return 0; }
 
+    /** \brief ghostSize is zero for this grid  */
+    int ghostSize (int codim) const { return 0; }
+
+    /** \brief overlapSize is zero for this grid  */
+    int overlapSize (int codim) const { return 0; }
+
+    /** dummy communicate */
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir, int level) const
+    {}
+
+    /** dummy communicate */
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
+    {}
+
+    /** dummy collective communication */
+    const CollectiveCommunication<AlbertaGrid>& comm () const
+    {
+      return ccobj;
+    }
+
+  private:
+    CollectiveCommunication<AlbertaGrid> ccobj;
+
+  public:
     //***************************************************************
     //  Interface for Adaptation
     //***************************************************************
