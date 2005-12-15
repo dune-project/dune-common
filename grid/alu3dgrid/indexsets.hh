@@ -168,7 +168,7 @@ namespace Dune {
     {
       assert( cd == dim );
       assert( hset_.size(cd) < codimMultiplier );
-      return codimStart_[cd] + hset_.template getSubIndex<cd>(ep,i);
+      return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
     }
 
   private:

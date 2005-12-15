@@ -10,6 +10,7 @@
 #include <dune/io/file/grapedataio.hh>
 #include <dune/common/capabilities.hh>
 #include <dune/common/interfaces.hh>
+#include <dune/common/collectivecommunication.hh>
 
 #include "../common/grid.hh"
 #include "../common/referenceelements.hh"
@@ -393,6 +394,40 @@ namespace Dune {
     //! calculate load of each proc and repartition if neccessary
     template <class DofManagerType>
     bool communicate (DofManagerType & dm);
+
+
+    /** \brief ghostSize is zero for this grid  */
+    int ghostSize (int level, int codim) const { return 0; }
+
+    /** \brief overlapSize is zero for this grid  */
+    int overlapSize (int level, int codim) const { return 0; }
+
+    /** \brief ghostSize is zero for this grid  */
+    int ghostSize (int codim) const { return 0; }
+
+    /** \brief overlapSize is zero for this grid  */
+    int overlapSize (int codim) const { return 0; }
+
+    /** dummy communicate */
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir, int level) const
+    {}
+
+    /** dummy communicate */
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
+    {}
+
+    /** dummy collective communication */
+    const CollectiveCommunication<ALU3dGrid>& comm () const
+    {
+      return ccobj;
+    }
+
+  private:
+    CollectiveCommunication<ALU3dGrid> ccobj;
+
+  public:
 
     template <class T> T globalMin (T val) const ;
     template <class T> T globalMax (T val) const ;
