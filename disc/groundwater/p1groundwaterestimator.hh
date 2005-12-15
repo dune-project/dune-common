@@ -223,8 +223,6 @@ namespace Dune
     typedef typename G::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename G::template Codim<0>::HierarchicIterator HierarchicIterator;
     typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
-    typedef typename P1FEFunction<G,RT,IS,1>::RepresentationType VectorType;
-    typedef typename VectorType::block_type BlockType;
 
   public:
     GroundwaterEstimator (const G& grid, const GroundwaterEquationParameters<G,RT>& params)
@@ -233,7 +231,7 @@ namespace Dune
 
     /** \brief evaluate error estimator
      */
-    void estimate (const P1FEFunction<G,RT,IS,1>& u, P0FEFunction<G,RT,IS,1>& eta2)
+    void estimate (const LeafP1Function<G,RT,1>& u, LeafP0Function<G,RT,1>& eta2)
     {
       // clear estimator values
       *eta2 = 0;

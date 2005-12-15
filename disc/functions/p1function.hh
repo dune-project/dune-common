@@ -47,9 +47,45 @@ namespace Dune
    *
    */
 
+  template<class G>
+  class LeafCommunicate
+  {
+  public:
+    LeafCommunicate (const G& g)
+      : grid(g)
+    {}
+
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
+    {
+      grid.template communicate<DataHandle>(data,iftype,dir);
+    }
+
+  private:
+    const G& grid;
+  };
+
+  template<class G>
+  class LevelCommunicate
+  {
+  public:
+    LevelCommunicate (const G& g, int l)
+      : grid(g), level(l)
+    {}
+
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
+    {
+      grid.template communicate<DataHandle>(data,iftype,dir,level);
+    }
+
+  private:
+    const G& grid;
+    int level;
+  };
 
   //! compute 1-overlap on non-overlapping grid
-  template<class G, class IS, class VM>
+  template<class G, class IS, class VM, class LC>
   class P1ExtendOverlap {
 
     // types
@@ -102,10 +138,10 @@ namespace Dune
         GIDSet& thisset = myids[alpha];
         for (typename GIDSet::iterator i=thisset.begin(); i!=thisset.end(); ++i)
         {
-          buff.write(Pair(*i,grid.rank()));               // I have these global ids
-          owner[*i] = grid.rank();
+          buff.write(Pair(*i,grid.comm().rank()));               // I have these global ids
+          owner[*i] = grid.comm().rank();
         }
-        myprocs[alpha].insert(grid.rank());
+        myprocs[alpha].insert(grid.comm().rank());
       }
 
       /*! unpack data from message buffer to user
@@ -253,7 +289,7 @@ namespace Dune
           }
       }
       IdExchange datahandle(grid,vertexmapper,myids,myprocs,owner);
-      grid.template communicate<IdExchange>(datahandle,InteriorBorder_InteriorBorder_Interface,ForwardCommunication);
+      lc.template communicate<IdExchange>(datahandle,InteriorBorder_InteriorBorder_Interface,ForwardCommunication);
 
       // build map from global id to local index
       std::map<IdType,int> gid2index;
@@ -282,7 +318,7 @@ namespace Dune
       ProcSet neighbors;
       for (typename std::map<int,ProcSet>::iterator i=myprocs.begin(); i!=myprocs.end(); ++i)
         for (typename ProcSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
-          if (*j!=grid.rank())
+          if (*j!=grid.comm().rank())
             neighbors.insert(*j);
 
       // now all the necessary information is in place
@@ -307,7 +343,7 @@ namespace Dune
         for (typename GIDSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
         {
           int a=slave;
-          if (owner[*j]==grid.rank()) a=master;
+          if (owner[*j]==grid.comm().rank()) a=master;
           info.addLocalIndex(tripel<IdType,int,int>(*j,gid2index[*j],a));
         }
       std::set< tripel<int,IdType,int> > remoteindices;
@@ -319,7 +355,7 @@ namespace Dune
           {
             int a=slave;
             if (owner[*j]==(*p)) a=master;
-            if (*p!=grid.rank()) info.addRemoteIndex(tripel<int,IdType,int>(*p,*j,a));
+            if (*p!=grid.comm().rank()) info.addRemoteIndex(tripel<int,IdType,int>(*p,*j,a));
           }
       }
 
@@ -363,7 +399,7 @@ namespace Dune
                 {
                   IdType beta = grid.globalIdSet().template subId<n>(*it,j);
                   myset.insert(beta);
-                  //                                              std::cout << g.rank() << ": "
+                  //                                              std::cout << g.comm().rank() << ": "
                   //                                                                    << "borderlink " << alpha
                   //                                                                    << " " << vertexmapper.template map<n>(*it,j)
                   //                                                                    << " " << beta
@@ -374,9 +410,9 @@ namespace Dune
 
       // exchange neighbor info for border vertices
       BorderLinksExchange datahandle(grid,borderlinks,vertexmapper);
-      grid.template communicate<BorderLinksExchange>(datahandle,
-                                                     InteriorBorder_InteriorBorder_Interface,
-                                                     ForwardCommunication);
+      lc.template communicate<BorderLinksExchange>(datahandle,
+                                                   InteriorBorder_InteriorBorder_Interface,
+                                                   ForwardCommunication);
 
       // initialize inverse map with ids we have
       for (typename std::map<int,GIDSet>::iterator i=borderlinks.begin(); i!=borderlinks.end(); ++i)
@@ -406,13 +442,20 @@ namespace Dune
 
       //                  for (typename std::map<int,GIDSet>::iterator i=borderlinks.begin(); i!=borderlinks.end(); ++i)
       //                        for (typename GIDSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
-      //                          std::cout << grid.rank() << ": " << "comm borderlink " << i->first
+      //                          std::cout << grid.comm().rank() << ": " << "comm borderlink " << i->first
       //                                                << " " << gid2index[*j] << " " << *j << std::endl;
     }
+
+    P1ExtendOverlap (LC lcomm)
+      : lc(lcomm)
+    {}
+
+  private:
+    LC lc;
   };
 
   // forward declaration
-  template<class G, class RT> class P1FEFunctionManager;
+  template<class G, class RT> class P1FunctionManager;
 
 
   //! class for P1 finite element functions on a grid
@@ -425,10 +468,10 @@ namespace Dune
         from a C0GridFunction via Lagrange interpolation. Dereferencing delivers
         the coefficient vector.
    */
-  template<class G, class RT, typename IS, int m=1>
-  class P1FEFunction : virtual public ElementwiseCInfinityFunction<G,RT,m>,
-                       virtual public H1Function<typename G::ctype,RT,G::dimension,m>,
-                       virtual public C0GridFunction<G,RT,m>
+  template<class G, class RT, typename IS, class LC, int m=1>
+  class P1Function : virtual public ElementwiseCInfinityFunction<G,RT,m>,
+                     virtual public H1Function<typename G::ctype,RT,G::dimension,m>,
+                     virtual public C0GridFunction<G,RT,m>
   {
     //! get domain field type from the grid
     typedef typename G::ctype DT;
@@ -451,7 +494,7 @@ namespace Dune
     };
 
     //! make copy constructor private
-    P1FEFunction (const P1FEFunction&);
+    P1Function (const P1Function&);
 
     // types
     typedef typename G::Traits::GlobalIdSet IDS;
@@ -462,15 +505,15 @@ namespace Dune
     typedef FieldVector<RT,m> BlockType;
     typedef BlockVector<BlockType> RepresentationType;
     typedef MultipleCodimMultipleGeomTypeMapper<G,IS,P1Layout> VM;
-    typedef typename P1ExtendOverlap<G,IS,VM>::P1IndexInfoFromGrid P1IndexInfoFromGrid;
+    typedef typename P1ExtendOverlap<G,IS,VM,LC>::P1IndexInfoFromGrid P1IndexInfoFromGrid;
 
     //! allocate data
-    P1FEFunction (const G& g,  const IS& indexset, bool extendoverlap=false)
-      : grid_(g), is(indexset), mapper_(g,indexset), oldcoeff(0)
+    P1Function (const G& g,  const IS& indexset, LC lcomm, bool extendoverlap=false)
+      : grid_(g), is(indexset), mapper_(g,indexset), lc(lcomm), oldcoeff(0)
     {
       // check if overlap extension is possible
       if (extendoverlap && g.overlapSize(0)>0)
-        DUNE_THROW(GridError,"P1FEFunction: extending overlap requires nonoverlapping grid");
+        DUNE_THROW(GridError,"P1Function: extending overlap requires nonoverlapping grid");
 
       // no extra DOFs so far
       extraDOFs = 0;
@@ -484,7 +527,7 @@ namespace Dune
         std::map<IdType,int> gid2index;
 
         // compute extension
-        P1ExtendOverlap<G,IS,VM> extender;
+        P1ExtendOverlap<G,IS,VM,LC> extender(lc);
         extender.extend(g,indexset,mapper_,borderlinks,extraDOFs,gid2index);
       }
 
@@ -494,7 +537,7 @@ namespace Dune
         coeff = new RepresentationType(mapper_.size()+extraDOFs);
       }
       catch (std::bad_alloc) {
-        std::cerr << "not enough memory in P1FEFunction" << std::endl;
+        std::cerr << "not enough memory in P1Function" << std::endl;
         throw;         // rethrow exception
       }
       dverb << "making FE function with " << mapper_.size()+extraDOFs << " components"
@@ -502,7 +545,7 @@ namespace Dune
     }
 
     //! deallocate the vector
-    ~P1FEFunction ()
+    ~P1Function ()
     {
       delete coeff;
       if (oldcoeff!=0) delete oldcoeff;
@@ -655,7 +698,7 @@ namespace Dune
       }
     }
 
-    void interpolate (const P0FEFunction<G,RT,IS,m>& u)
+    void interpolate (const P0Function<G,RT,IS,m>& u)
     {
       typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
       std::vector<char> counter(mapper_.size());
@@ -704,7 +747,7 @@ namespace Dune
     //! deliver communication object
     void fillIndexInfoFromGrid (P1IndexInfoFromGrid& info)
     {
-      P1ExtendOverlap<G,IS,VM> extender;
+      P1ExtendOverlap<G,IS,VM,LC> extender(lc);
       extender.fillIndexInfoFromGrid(grid_,is,mapper_,info);
     }
 
@@ -724,7 +767,7 @@ namespace Dune
             The old representation (with respect to the old grid) can still be accessed if
        it has been saved. It is deleted in endUpdate().
      */
-    void postAdapt (P1FEFunctionManager<G,RT>& manager)
+    void postAdapt (P1FunctionManager<G,RT>& manager)
     {
       typedef typename G::template Codim<n>::LeafIterator VLeafIterator;
       typedef typename G::template Codim<0>::LeafIterator ELeafIterator;
@@ -748,7 +791,7 @@ namespace Dune
         extraDOFs = 0;
 
         // compute extension
-        P1ExtendOverlap<G,IS,VM> extender;
+        P1ExtendOverlap<G,IS,VM,LC> extender(lc);
         extender.extend(grid_,is,mapper_,borderlinks,extraDOFs,gid2index);
       }
 
@@ -757,10 +800,10 @@ namespace Dune
         coeff = new RepresentationType(mapper_.size()+extraDOFs);         // allocate new representation
       }
       catch (std::bad_alloc) {
-        std::cerr << "not enough memory in P1FEFunction update" << std::endl;
+        std::cerr << "not enough memory in P1Function update" << std::endl;
         throw;         // rethrow exception
       }
-      std::cout << "P1 FE function enlarged to " << mapper_.size() << " components" << std::endl;
+      std::cout << "P1  function enlarged to " << mapper_.size() << " components" << std::endl;
 
       // vector of flags to store which vertex has been handled already
       std::vector<bool> visited(mapper_.size());
@@ -846,6 +889,9 @@ namespace Dune
     // we need a mapper
     VM mapper_;
 
+    // level or leafwise communication object
+    LC lc;
+
     // extra DOFs from extending nonoverlapping to overlapping grid
     int extraDOFs;
     bool extendOverlap;
@@ -861,11 +907,11 @@ namespace Dune
   /** \brief P1 finite element function on the leaf grid
    */
   template<class G, class RT, int m=1>
-  class LeafP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>
+  class LeafP1Function : public P1Function<G,RT,typename G::template Codim<0>::LeafIndexSet,LeafCommunicate<G>,m>
   {
   public:
-    LeafP1FEFunction (const G& grid, bool extendoverlap=false)
-      : P1FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet(),extendoverlap)
+    LeafP1Function (const G& grid, bool extendoverlap=false)
+      : P1Function<G,RT,typename G::template Codim<0>::LeafIndexSet,LeafCommunicate<G>,m>(grid,grid.leafIndexSet(),LeafCommunicate<G>(grid),extendoverlap)
     {}
   };
 
@@ -873,11 +919,11 @@ namespace Dune
   /** \brief P1 finite element function on a given level grid
    */
   template<class G, class RT, int m=1>
-  class LevelP1FEFunction : public P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>
+  class LevelP1Function : public P1Function<G,RT,typename G::template Codim<0>::LevelIndexSet,LevelCommunicate<G>,m>
   {
   public:
-    LevelP1FEFunction (const G& grid, int level, bool extendoverlap=false)
-      : P1FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level),extendoverlap)
+    LevelP1Function (const G& grid, int level, bool extendoverlap=false)
+      : P1Function<G,RT,typename G::template Codim<0>::LevelIndexSet,LevelCommunicate<G>,m>(grid,grid.levelIndexSet(level),LevelCommunicate<G>(grid,level),extendoverlap)
     {}
   };
 
@@ -892,13 +938,9 @@ namespace Dune
       this is actually not necessary.
    */
   template<class G, class RT>
-  class P1FEFunctionManager {
+  class P1FunctionManager {
     enum {dim=G::dimension};
     typedef typename G::ctype DT;
-    typedef LeafP1FEFunction<G,RT> FuncType;
-    typedef typename LeafP1FEFunction<G,RT>::RepresentationType RepresentationType;
-    typedef std::list<FuncType*> ListType;
-    typedef typename std::list<FuncType*>::iterator ListIteratorType;
     typedef typename G::template Codim<dim>::LeafIterator VLeafIterator;
     typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
 
@@ -915,7 +957,7 @@ namespace Dune
   public:
 
     //! manages nothing
-    P1FEFunctionManager (const G& g) : grid(g), savedmap(g), mapper(g,g.leafIndexSet())
+    P1FunctionManager (const G& g) : grid(g), savedmap(g), mapper(g,g.leafIndexSet())
     {
       // allocate index array to correct size (this possible for vertex data)
       oldindex.resize(mapper.size());
@@ -947,9 +989,6 @@ namespace Dune
 
     // store a reference to the grid that is managed
     const G& grid;
-
-    // maintain a list of registered functions
-    ListType flist;
 
     // We need a persistent consecutive enumeration
     GlobalUniversalMapper<G> savedmap;

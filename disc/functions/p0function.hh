@@ -57,8 +57,8 @@ namespace Dune
         the coefficient vector.
    */
   template<class G, class RT, typename IS, int m=1>
-  class P0FEFunction : virtual public GridFunction<G,RT,m>,
-                       virtual public L2Function<typename G::ctype,RT,G::dimension,m>
+  class P0Function : virtual public GridFunction<G,RT,m>,
+                     virtual public L2Function<typename G::ctype,RT,G::dimension,m>
   {
     //! get domain field type from the grid
     typedef typename G::ctype DT;
@@ -81,27 +81,27 @@ namespace Dune
     };
 
     //! make copy constructor private
-    P0FEFunction (const P0FEFunction&);
+    P0Function (const P0Function&);
 
   public:
     typedef BlockVector<FieldVector<RT,1> > RepresentationType;
 
     //! allocate a vector with the data
-    P0FEFunction (const G& g,  const IS& indexset) : grid_(g), is(indexset), mapper_(g,indexset)
+    P0Function (const G& g,  const IS& indexset) : grid_(g), is(indexset), mapper_(g,indexset)
     {
       oldcoeff = 0;
       try {
         coeff = new RepresentationType(mapper_.size());
       }
       catch (std::bad_alloc) {
-        std::cerr << "not enough memory in P0FEFunction" << std::endl;
+        std::cerr << "not enough memory in P0Function" << std::endl;
         throw;         // rethrow exception
       }
-      std::cout << "making FE function with " << mapper_.size() << " components" << std::endl;
+      std::cout << "making  function with " << mapper_.size() << " components" << std::endl;
     }
 
     //! deallocate the vector
-    ~P0FEFunction ()
+    ~P0Function ()
     {
       delete coeff;
       if (oldcoeff!=0) delete oldcoeff;
@@ -247,11 +247,11 @@ namespace Dune
   /** \brief P0 finite element function on the leaf grid
    */
   template<class G, class RT, int m=1>
-  class LeafP0FEFunction : public P0FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>
+  class LeafP0Function : public P0Function<G,RT,typename G::template Codim<0>::LeafIndexSet,m>
   {
   public:
-    LeafP0FEFunction (const G& grid)
-      : P0FEFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet())
+    LeafP0Function (const G& grid)
+      : P0Function<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet())
     {}
   };
 
@@ -259,11 +259,11 @@ namespace Dune
   /** \brief P0 finite element function on a given level grid
    */
   template<class G, class RT, int m=1>
-  class LevelP0FEFunction : public P0FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>
+  class LevelP0Function : public P0Function<G,RT,typename G::template Codim<0>::LevelIndexSet,m>
   {
   public:
-    LevelP0FEFunction (const G& grid, int level)
-      : P0FEFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level))
+    LevelP0Function (const G& grid, int level)
+      : P0Function<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level))
     {}
   };
 

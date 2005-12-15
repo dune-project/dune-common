@@ -38,17 +38,17 @@ namespace Dune
    *
    */
 
-  struct P1FEOperatorLink
+  struct P1OperatorLink
   {
     int first,second;
-    P1FEOperatorLink (int a, int b) : first(a),second(b) {}
-    bool operator< (const P1FEOperatorLink& x) const
+    P1OperatorLink (int a, int b) : first(a),second(b) {}
+    bool operator< (const P1OperatorLink& x) const
     {
       if (first<x.first) return true;
       if (first==x.first && second<x.second) return true;
       return false;
     }
-    bool operator== (const P1FEOperatorLink& x) const
+    bool operator== (const P1OperatorLink& x) const
     {
       if (first==x.first && second==x.second) return true;
       return false;
@@ -57,11 +57,11 @@ namespace Dune
 
   // template meta program for inserting indices
   template<int n, int c>
-  struct P1FEOperator_meta {
+  struct P1Operator_meta {
     template<class Entity, class VMapper, class AMapper, class Refelem, class Matrix>
     static void addrowscube (const Entity& e, const VMapper& vertexmapper, const AMapper& allmapper,
                              const Refelem& refelem, Matrix& A, std::vector<bool>& visited,
-                             int hangingnodes, std::set<P1FEOperatorLink>& links)
+                             int hangingnodes, std::set<P1OperatorLink>& links)
     {
       if (refelem.type(0,0)==Dune::cube)
       {
@@ -79,8 +79,8 @@ namespace Dune
               A.incrementrowsize(beta);
               if (hangingnodes>0)                             // delete standard links
               {
-                links.erase(P1FEOperatorLink(alpha,beta));
-                links.erase(P1FEOperatorLink(beta,alpha));
+                links.erase(P1OperatorLink(alpha,beta));
+                links.erase(P1OperatorLink(beta,alpha));
               }
               //                                  printf("increment row %04d\n",alpha);
               //                                  printf("increment row %04d\n",beta);
@@ -100,8 +100,8 @@ namespace Dune
           A.incrementrowsize(beta);
           if (hangingnodes>0)                 // delete standard links
           {
-            links.erase(P1FEOperatorLink(alpha,beta));
-            links.erase(P1FEOperatorLink(beta,alpha));
+            links.erase(P1OperatorLink(alpha,beta));
+            links.erase(P1OperatorLink(beta,alpha));
           }
           alpha = vertexmapper.template map<n>(e,1);
           beta = vertexmapper.template map<n>(e,3);
@@ -109,8 +109,8 @@ namespace Dune
           A.incrementrowsize(beta);
           if (hangingnodes>0)                 // delete standard links
           {
-            links.erase(P1FEOperatorLink(alpha,beta));
-            links.erase(P1FEOperatorLink(beta,alpha));
+            links.erase(P1OperatorLink(alpha,beta));
+            links.erase(P1OperatorLink(beta,alpha));
           }
           visited[index] = true;
         }
@@ -126,8 +126,8 @@ namespace Dune
           A.incrementrowsize(beta);
           if (hangingnodes>0)                 // delete standard links
           {
-            links.erase(P1FEOperatorLink(alpha,beta));
-            links.erase(P1FEOperatorLink(beta,alpha));
+            links.erase(P1OperatorLink(alpha,beta));
+            links.erase(P1OperatorLink(beta,alpha));
           }
           alpha = vertexmapper.template map<n>(e,1);
           beta = vertexmapper.template map<n>(e,3);
@@ -135,8 +135,8 @@ namespace Dune
           A.incrementrowsize(beta);
           if (hangingnodes>0)                 // delete standard links
           {
-            links.erase(P1FEOperatorLink(alpha,beta));
-            links.erase(P1FEOperatorLink(beta,alpha));
+            links.erase(P1OperatorLink(alpha,beta));
+            links.erase(P1OperatorLink(beta,alpha));
           }
           visited[index] = true;
         }
@@ -149,8 +149,8 @@ namespace Dune
           A.incrementrowsize(beta);
           if (hangingnodes>0)                 // delete standard links
           {
-            links.erase(P1FEOperatorLink(alpha,beta));
-            links.erase(P1FEOperatorLink(beta,alpha));
+            links.erase(P1OperatorLink(alpha,beta));
+            links.erase(P1OperatorLink(beta,alpha));
           }
           alpha = vertexmapper.template map<n>(e,2);
           beta = vertexmapper.template map<n>(e,4);
@@ -158,8 +158,8 @@ namespace Dune
           A.incrementrowsize(beta);
           if (hangingnodes>0)                 // delete standard links
           {
-            links.erase(P1FEOperatorLink(alpha,beta));
-            links.erase(P1FEOperatorLink(beta,alpha));
+            links.erase(P1OperatorLink(alpha,beta));
+            links.erase(P1OperatorLink(beta,alpha));
           }
           visited[index] = true;
         }
@@ -172,8 +172,8 @@ namespace Dune
           A.incrementrowsize(beta);
           if (hangingnodes>0)                 // delete standard links
           {
-            links.erase(P1FEOperatorLink(alpha,beta));
-            links.erase(P1FEOperatorLink(beta,alpha));
+            links.erase(P1OperatorLink(alpha,beta));
+            links.erase(P1OperatorLink(beta,alpha));
           }
           alpha = vertexmapper.template map<n>(e,2);
           beta = vertexmapper.template map<n>(e,3);
@@ -181,13 +181,13 @@ namespace Dune
           A.incrementrowsize(beta);
           if (hangingnodes>0)                 // delete standard links
           {
-            links.erase(P1FEOperatorLink(alpha,beta));
-            links.erase(P1FEOperatorLink(beta,alpha));
+            links.erase(P1OperatorLink(alpha,beta));
+            links.erase(P1OperatorLink(beta,alpha));
           }
           visited[index] = true;
         }
       }
-      P1FEOperator_meta<n,c-1>::addrowscube(e,vertexmapper,allmapper,refelem,A,visited,hangingnodes,links);
+      P1Operator_meta<n,c-1>::addrowscube(e,vertexmapper,allmapper,refelem,A,visited,hangingnodes,links);
       return;
     }
     template<class Entity, class VMapper, class AMapper, class Refelem, class Matrix>
@@ -273,16 +273,16 @@ namespace Dune
           visited[index] = true;
         }
       }
-      P1FEOperator_meta<n,c-1>::addindicescube(e,vertexmapper,allmapper,refelem,A,visited);
+      P1Operator_meta<n,c-1>::addindicescube(e,vertexmapper,allmapper,refelem,A,visited);
       return;
     }
   };
   template<int n>
-  struct P1FEOperator_meta<n,0> {
+  struct P1Operator_meta<n,0> {
     template<class Entity, class VMapper, class AMapper, class Refelem, class Matrix>
     static void addrowscube (const Entity& e, const VMapper& vertexmapper, const AMapper& allmapper,
                              const Refelem& refelem, Matrix& A, std::vector<bool>& visited,
-                             int hangingnodes, std::set<P1FEOperatorLink>& links)
+                             int hangingnodes, std::set<P1OperatorLink>& links)
     {
       if (refelem.type(0,0)!=Dune::cube) return;
       int corners = refelem.size(n);
@@ -294,8 +294,8 @@ namespace Dune
         A.incrementrowsize(beta);
         if (hangingnodes>0)           // delete standard links
         {
-          links.erase(P1FEOperatorLink(alpha,beta));
-          links.erase(P1FEOperatorLink(beta,alpha));
+          links.erase(P1OperatorLink(alpha,beta));
+          links.erase(P1OperatorLink(beta,alpha));
         }
         //                printf("increment row %04d\n",alpha);
         //                printf("increment row %04d\n",beta);
@@ -332,8 +332,8 @@ namespace Dune
 
      This class does not fill any entries into the matrix.
    */
-  template<class G, class RT, class IS, int m=1>
-  class P1FEOperatorBase
+  template<class G, class RT, class IS, class LC, int m=1>
+  class P1OperatorBase
   {
   public:
     // export type used to store the matrix
@@ -404,11 +404,11 @@ namespace Dune
     // 1) determine hanging nodes as described in the paper
     // 2) generate a set with additional links
     //    The standard links are deleted later on
-    bool init (const G& g, const IS& indexset, bool extendoverlap)
+    bool init (const G& g, const IS& indexset, LC lc, bool extendoverlap)
     {
       // parallel stuff we need to know
       if (extendoverlap && g.overlapSize(0)>0)
-        DUNE_THROW(GridError,"P1FEOperatorBase: extending overlap requires nonoverlapping grid");
+        DUNE_THROW(GridError,"P1OperatorBase: extending overlap requires nonoverlapping grid");
       extendOverlap = extendoverlap;
       extraDOFs = 0;
 
@@ -502,8 +502,8 @@ namespace Dune
           for (int j=0; j<refelem.size(n); j++)               // nodes in *father
             if (g2l.find(fl2g[j])==g2l.end())
             {
-              links.insert(P1FEOperatorLink(l2g[i],fl2g[j]));
-              links.insert(P1FEOperatorLink(fl2g[j],l2g[i]));
+              links.insert(P1OperatorLink(l2g[i],fl2g[j]));
+              links.insert(P1OperatorLink(fl2g[j],l2g[i]));
               //                                  std::cout << "link" << " gi=" << l2g[i] << " gj=" << fl2g[j] << std::endl;
               //                                  std::cout << "link" << " gi=" << fl2g[j] << " gj=" << l2g[i] << std::endl;
             }
@@ -516,18 +516,18 @@ namespace Dune
         std::map<int,GIDSet> borderlinks;
 
         // compute extension
-        P1ExtendOverlap<G,IS,VM> extender;
+        P1ExtendOverlap<G,IS,VM,LC> extender(lc);
         extender.extend(g,indexset,vertexmapper,borderlinks,extraDOFs,gid2index);
 
         // put in extra links due to overlap
         // loop over all neighbors of border vertices
         for (typename std::map<int,GIDSet>::iterator i=borderlinks.begin(); i!=borderlinks.end(); ++i)
           for (typename GIDSet::iterator j=(i->second).begin(); j!=(i->second).end(); ++j)
-            links.insert(P1FEOperatorLink(i->first,gid2index[*j]));
+            links.insert(P1OperatorLink(i->first,gid2index[*j]));
 
         // insert diagonal links for extra DOFs
         for (int i=0; i<extraDOFs; i++)
-          links.insert(P1FEOperatorLink(vertexmapper.size()+i,vertexmapper.size()+i));
+          links.insert(P1OperatorLink(vertexmapper.size()+i,vertexmapper.size()+i));
       }
 
       // Note: links contains now also connections that are standard.
@@ -641,9 +641,9 @@ namespace Dune
 
   public:
 
-    P1FEOperatorBase (const G& g, const IS& indexset, bool extendoverlap=false)
-      : grid(g),is(indexset),vertexmapper(g,indexset),allmapper(g,indexset),links(),
-        initialized(init(g,indexset,extendoverlap)),A(size(),size(),nnz(indexset),RepresentationType::random)
+    P1OperatorBase (const G& g, const IS& indexset, LC lcomm, bool extendoverlap=false)
+      : grid(g),is(indexset),lc(lcomm),vertexmapper(g,indexset),allmapper(g,indexset),links(),
+        initialized(init(g,indexset,lc,extendoverlap)),A(size(),size(),nnz(indexset),RepresentationType::random)
 
     {
       // be verbose
@@ -695,8 +695,8 @@ namespace Dune
             visited[index] = true;
             if (hangingnodes>0 || extendOverlap)                       // delete standard links
             {
-              links.erase(P1FEOperatorLink(alpha,beta));
-              links.erase(P1FEOperatorLink(beta,alpha));
+              links.erase(P1OperatorLink(alpha,beta));
+              links.erase(P1OperatorLink(beta,alpha));
             }
             //                            printf("increment row %04d\n",alpha);
             //                            printf("increment row %04d\n",beta);
@@ -705,12 +705,12 @@ namespace Dune
 
         // for codim n-2 to 0 we need a template metaprogram
         if (gt!=Dune::simplex)
-          P1FEOperator_meta<n,n-2>::addrowscube(*it,vertexmapper,allmapper,refelem,A,visited,hangingnodes+(extendOverlap),links);
+          P1Operator_meta<n,n-2>::addrowscube(*it,vertexmapper,allmapper,refelem,A,visited,hangingnodes+(extendOverlap),links);
       }
 
       // additional links due to hanging nodes
       std::cout << g.comm().rank() << ": " << "now links=" << links.size() << std::endl;
-      for (typename std::set<P1FEOperatorLink>::iterator i=links.begin(); i!=links.end(); ++i)
+      for (typename std::set<P1OperatorLink>::iterator i=links.begin(); i!=links.end(); ++i)
         A.incrementrowsize(i->first);
 
       // now the row sizes have been set
@@ -760,11 +760,11 @@ namespace Dune
 
         // for codim n-2 to 0 we need a template metaprogram
         if (gt!=Dune::simplex)
-          P1FEOperator_meta<n,n-2>::addindicescube(*it,vertexmapper,allmapper,refelem,A,visited);
+          P1Operator_meta<n,n-2>::addindicescube(*it,vertexmapper,allmapper,refelem,A,visited);
       }
 
       // additional links due to hanging nodes
-      for (typename std::set<P1FEOperatorLink>::iterator i=links.begin(); i!=links.end(); ++i)
+      for (typename std::set<P1OperatorLink>::iterator i=links.begin(); i!=links.end(); ++i)
         A.addindex(i->first,i->second);
 
       // now the matrix is ready for use
@@ -800,18 +800,19 @@ namespace Dune
 
       // communicate matrix entries
       MatEntryExchange datahandle(grid,gid2index,index2gid,vertexmapper,A);
-      grid.template communicate<MatEntryExchange>(datahandle,
-                                                  InteriorBorder_InteriorBorder_Interface,
-                                                  ForwardCommunication);
+      lc.template communicate<MatEntryExchange>(datahandle,
+                                                InteriorBorder_InteriorBorder_Interface,
+                                                ForwardCommunication);
     }
 
   protected:
     const G& grid;
     const IS& is;
+    LC lc;
     VM vertexmapper;
     AM allmapper;
     std::vector<bool> hanging;
-    std::set<P1FEOperatorLink> links;
+    std::set<P1OperatorLink> links;
     int hangingnodes;
     bool extendOverlap;
     int extraDOFs;
@@ -823,10 +824,10 @@ namespace Dune
 
 
 
-  /*! @brief Extends P1FEOperatorBase by a generic methods to assemble global stiffness matrix from local stiffness matrices
+  /*! @brief Extends P1OperatorBase by a generic methods to assemble global stiffness matrix from local stiffness matrices
    */
-  template<class G, class RT, class IS, class T>
-  class P1FEOperatorAssembler : public P1FEOperatorBase<G,RT,IS,T::m>
+  template<class G, class RT, class IS, class LC, class T>
+  class P1OperatorAssembler : public P1OperatorBase<G,RT,IS,LC,T::m>
   {
     typedef typename G::ctype DT;
     enum {n=G::dimension};
@@ -837,13 +838,13 @@ namespace Dune
     typedef typename G::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename G::template Codim<0>::HierarchicIterator HierarchicIterator;
     typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
-    typedef typename P1FEFunction<G,RT,IS,1>::RepresentationType VectorType;
+    typedef typename P1Function<G,RT,IS,LC,m>::RepresentationType VectorType;
     typedef typename VectorType::block_type VBlockType;
-    typedef typename P1FEOperatorBase<G,RT,IS,1>::RepresentationType MatrixType;
+    typedef typename P1OperatorBase<G,RT,IS,LC,m>::RepresentationType MatrixType;
     typedef typename MatrixType::block_type MBlockType;
     typedef typename MatrixType::RowIterator rowiterator;
     typedef typename MatrixType::ColIterator coliterator;
-    typedef typename P1FEOperatorBase<G,RT,IS,1>::VM VM;
+    typedef typename P1OperatorBase<G,RT,IS,LC,m>::VM VM;
     typedef FixedArray<BoundaryConditions::Flags,m> BCBlockType;         // componentwise boundary conditions
 
 
@@ -916,17 +917,17 @@ namespace Dune
 
 
   public:
-    P1FEOperatorAssembler (const G& g, const IS& indexset, T& _loc, bool extendoverlap=false)
-      : P1FEOperatorBase<G,RT,IS,1>(g,indexset,extendoverlap), loc(_loc)
+    P1OperatorAssembler (const G& g, const IS& indexset, LC lcomm, T& _loc, bool extendoverlap=false)
+      : P1OperatorBase<G,RT,IS,LC,m>(g,indexset,lcomm,extendoverlap), loc(_loc)
     {       }
 
 
     //! assemble operator, rhs and Dirichlet boundary conditions
-    void assemble (P1FEFunction<G,RT,IS,1>& u, P1FEFunction<G,RT,IS,1>& f)
+    void assemble (P1Function<G,RT,IS,LC,m>& u, P1Function<G,RT,IS,LC,m>& f)
     {
       // check size
       if ((*u).N()!=this->A.M() || (*f).N()!=this->A.N())
-        DUNE_THROW(MathError,"P1FEOperatorAssembler::assemble(): size mismatch");
+        DUNE_THROW(MathError,"P1OperatorAssembler::assemble(): size mismatch");
 
       // clear global stiffness matrix and right hand side
       this->A = 0;
@@ -1176,7 +1177,7 @@ namespace Dune
       if (this->extendOverlap)
       {
         AccumulateBCFlags datahandle(this->grid,this->vertexmapper,essential,*f);
-        this->grid.template communicate<AccumulateBCFlags>(datahandle,InteriorBorder_InteriorBorder_Interface,ForwardCommunication);
+        this->lc.template communicate<AccumulateBCFlags>(datahandle,InteriorBorder_InteriorBorder_Interface,ForwardCommunication);
         // on a nonvoerlapping grid we have the correct BC at all interior and border vertices
       }
       // what about the overlapping case ?
@@ -1253,7 +1254,7 @@ namespace Dune
     }
 
     //! assemble operator, rhs and Dirichlet boundary conditions
-    void interpolateHangingNodes (P1FEFunction<G,RT,IS,1>& u)
+    void interpolateHangingNodes (P1Function<G,RT,IS,LC,m>& u)
     {
       // allocate flag vector to note hanging nodes whose row has been assembled
       std::vector<unsigned char> treated(this->vertexmapper.size());
@@ -1388,22 +1389,22 @@ namespace Dune
 
   //! Leafwise assembler
   template<class G, class RT, class T>
-  class LeafP1FEOperatorAssembler : public P1FEOperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,T>
+  class LeafP1OperatorAssembler : public P1OperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,LeafCommunicate<G>,T>
   {
   public:
-    LeafP1FEOperatorAssembler (const G& grid, T& lstiff, bool extendoverlap=false)
-      : P1FEOperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,T>(grid,grid.leafIndexSet(),lstiff,extendoverlap)
+    LeafP1OperatorAssembler (const G& grid, T& lstiff, bool extendoverlap=false)
+      : P1OperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,LeafCommunicate<G>,T>(grid,grid.leafIndexSet(),LeafCommunicate<G>(grid),lstiff,extendoverlap)
     {}
   };
 
 
   //! Levelwise assembler
   template<class G, class RT, class T>
-  class LevelP1FEOperatorAssembler : public P1FEOperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,T>
+  class LevelP1OperatorAssembler : public P1OperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,LevelCommunicate<G>,T>
   {
   public:
-    LevelP1FEOperatorAssembler (const G& grid, int level, T& lstiff, bool extendoverlap=false)
-      : P1FEOperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,T>(grid,grid.levelIndexSet(level),lstiff,extendoverlap)
+    LevelP1OperatorAssembler (const G& grid, int level, T& lstiff, bool extendoverlap=false)
+      : P1OperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,LevelCommunicate<G>,T>(grid,grid.levelIndexSet(level),LevelCommunicate<G>(grid,level),lstiff,extendoverlap)
     {}
   };
 
