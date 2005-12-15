@@ -2729,12 +2729,6 @@ namespace Dune {
       return theleafindexset;
     }
 
-
-    int rank () const
-    {
-      return MultiYGrid<dim,ctype>::torus().rank();
-    }
-
 #if HAVE_MPI
     const CollectiveCommunication<MPI_Comm>& comm () const
     {
