@@ -281,6 +281,25 @@ void test_norm()
   Dune::FieldVector<double,3> a,b;
   double c;
   c = (a-b).two_norm();
+  c = two_norm(a-b);
+}
+
+void test_sproduct()
+{
+  Dune::FieldVector<double,2> v(10);
+  typedef Dune::FieldVector<double,2> VB;
+  typedef Dune::BlockVector<VB> BV;
+
+  const int sz = 3;
+  BV bv1(sz), bv2(sz);
+  bv1 = 1;
+  bv2 = 0;
+  bv2[1][0]=1;
+  bv2[1][1]=2;
+
+  double x;
+  x = bv1[0] * bv2[0];
+  x = bv1 * bv2;
 }
 
 int main()
@@ -291,6 +310,7 @@ int main()
     //      test_fvector();
     //      test_blockvector();
     test_norm();
+    test_sproduct();
     test_blockblockvector();
     test_matrix<2,3,3,4>();
 #ifdef NOPRINT

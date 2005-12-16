@@ -25,6 +25,7 @@
 #include <cmath>
 #include <complex>
 #include "iteratorfacades.hh"
+#include "helpertemplates.hh"
 #include "stdstreams.hh"
 
 struct Indent
@@ -1058,6 +1059,50 @@ namespace Dune {
   {
     return eval_infinity_norm(a);
   }
+
+  /* vector * vector */
+
+  namespace ExprTmpl {
+
+    // Vector * Vector
+    template <class A>
+    typename FieldType<A>::type
+    operator * (const Vector<A> & a, const Vector<A> & b)
+    {
+      assert(a.N() == b.N());
+      typename FieldType<A>::type x = 0;
+      for (int i=0; i<a.N(); i++)
+        x = a[i] * b[i];
+      return x;
+    }
+
+    // Expression * Vector
+    template <class A, class B>
+    typename FieldType<A>::type
+    operator * (const Vector<A> & a, const Expression<B> & b)
+    {
+      IsTrue< SameType<FieldType<A>,FieldType<B> >::value == true >::yes();
+      assert(a.N() == b.N());
+      typename FieldType<A>::type x = 0;
+      for (int i=0; i<a.N(); i++)
+        x = a[i] * b[i];
+      return x;
+    }
+
+    // Vector * Expression
+    template <class A, class B>
+    typename FieldType<A>::type
+    operator * (const Expression<A> & a, const Vector<B> & b)
+    {
+      IsTrue< SameType<FieldType<A>,FieldType<B> >::value == true >::yes();
+      assert(a.N() == b.N());
+      typename FieldType<A>::type x = 0;
+      for (int i=0; i<a.N(); i++)
+        x = a[i] * b[i];
+      return x;
+    }
+
+  } // namespace ExprTmpl
 
 } // namespace Dune
 
