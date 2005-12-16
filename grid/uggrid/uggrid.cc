@@ -972,72 +972,78 @@ void Dune::UGGrid < dim, dimworld >::createend()
   // ///////////////////////////////////////////
   //   Insert the boundary segments
   // ///////////////////////////////////////////
+  unsigned int i;
+  for (i=0; i<boundarySegments_.size(); i++) {
 
-  if (boundarySegments_.size() == 0) {
+    /** \todo Due to some UG weirdness, in 3d, CreateBoundarySegment always expects
+        this array to have four entries, even if only a triangular segment is
+        inserted.  If not, undefined values are will be introduced. */
+    int vertices_c_style[dim*2-2];
+    for (int j=0; j<dim*2-2; j++)
+      vertices_c_style[j] = boundarySegmentVertices_[i][j];
 
-    SetIterator it = boundarySegments.begin();
-    unsigned int segmentIndex = 0;
+    // Create dummy parameter ranges
+    const double alpha[2] = {0, 0};
+    const double beta[2]  = {1, 1};
 
-    for (; it != boundarySegments.end(); ++it, ++segmentIndex) {
+    // Create some boundary segment name
+    char segmentName[20];
+    if(sprintf(segmentName, "BS %d", i) < 0)
+      DUNE_THROW(GridError, "sprintf returned error code!");
 
-      const FieldVector<int, 2*dim-2>& thisSegment = *it;
-
-      int numVertices = (dim==2) ? 2 : ((thisSegment[3] == -1) ? 3 : 4);
-
-      std::vector<FieldVector<double,dimworld> > coordinates(numVertices);
-      std::vector<int> vertices(numVertices);
-
-      for (int j=0; j<numVertices; j++) {
-        coordinates[j] = vertexPositions_[thisSegment[j]];
-        vertices[j]    = isBoundaryNode[thisSegment[j]];
-      }
-
-      insertLinearSegment(vertices, coordinates, segmentIndex);
-
+    // Actually create the segment
+    if (UG_NS<dim>::CreateBoundarySegment(segmentName,                     // internal name of the boundary segment
+                                          1,                               //  id of left subdomain
+                                          2,                               //  id of right subdomain
+                                          i,         // Index of the segment
+                                          1,                        // Resolution, only for the UG graphics
+                                          vertices_c_style,
+                                          alpha,
+                                          beta,
+                                          (dim==2)
+                                          ? boundarySegmentWrapper2d
+                                          : boundarySegmentWrapper3d,
+                                          const_cast<BoundarySegment<dimworld>*>(boundarySegments_[i]))==NULL) {
+      DUNE_THROW(GridError, "Calling UG" << dim << "d::CreateBoundarySegment failed!");
     }
 
-  } else {
+    // /////////////////////////////////////////////////////////////////////
+    //   Remove this segment from the set of computed boundary segments.
+    // /////////////////////////////////////////////////////////////////////
 
-    if (noOfBSegments != boundarySegments_.size())
-      DUNE_THROW(GridError, "Please provide a complete list of boundary segments"
-                 << " when using parametrized boundaries");
-    for (unsigned int i=0; i<noOfBSegments; i++) {
+    FieldVector<int, 2*dim-2> thisSegment;
+    /** \todo Not nice: we need to copy because the array types are different */
+    for (int j=0; j<2*dim-2; j++)
+      thisSegment[j] = boundarySegmentVertices_[i][j];
+    boundarySegments.erase(thisSegment);
+  }
 
-      /** \todo Due to some UG weirdness, in 3d, CreateBoundarySegment always expects
-          this array to have four entries, even if only a triangular segment is
-          inserted.  If not, undefined values are will be introduced. */
-      int vertices_c_style[dim*2-2];
-      for (int j=0; j<dim*2-2; j++)
-        vertices_c_style[j] = boundarySegmentVertices_[i][j];
 
-      // Create dummy parameter ranges
-      const double alpha[2] = {0, 0};
-      const double beta[2]  = {1, 1};
+  // ///////////////////////////////////////////////////////////////////////
+  //   The boundary segments remaining in the std::set boundarySegments
+  //   have not been provided with an explicit parametrization.  They are
+  //   inserted into the domain as straight boundary segments.
+  // ///////////////////////////////////////////////////////////////////////
+  SetIterator it = boundarySegments.begin();
 
-      // Create some boundary segment name
-      char segmentName[20];
-      if(sprintf(segmentName, "BS %d", i) < 0)
-        DUNE_THROW(GridError, "sprintf returned error code!");
+  for (; it != boundarySegments.end(); ++it, ++i) {
 
-      // Actually create the segment
-      if (UG_NS<dim>::CreateBoundarySegment(segmentName,                       // internal name of the boundary segment
-                                            1,                                 //  id of left subdomain
-                                            2,                                 //  id of right subdomain
-                                            i,           // Index of the segment
-                                            1,                          // Resolution, only for the UG graphics
-                                            vertices_c_style,
-                                            alpha,
-                                            beta,
-                                            (dim==2)
-                                            ? boundarySegmentWrapper2d
-                                            : boundarySegmentWrapper3d,
-                                            const_cast<BoundarySegment<dimworld>*>(boundarySegments_[i]))==NULL) {
-        DUNE_THROW(GridError, "Calling UG" << dim << "d::CreateBoundarySegment failed!");
-      }
+    const FieldVector<int, 2*dim-2>& thisSegment = *it;
 
+    int numVertices = (dim==2) ? 2 : ((thisSegment[3] == -1) ? 3 : 4);
+
+    std::vector<FieldVector<double,dimworld> > coordinates(numVertices);
+    std::vector<int> vertices(numVertices);
+
+    for (int j=0; j<numVertices; j++) {
+      coordinates[j] = vertexPositions_[thisSegment[j]];
+      vertices[j]    = isBoundaryNode[thisSegment[j]];
     }
+
+    insertLinearSegment(vertices, coordinates, i);
 
   }
+
 
   // ///////////////////////////////////////////
   //   Call configureCommand and newCommand
@@ -1173,7 +1179,6 @@ insertLinearSegment(const std::vector<int>& vertices,
 
   // Choose the method which implements the shape of the boundary segment
   typename UG_NS<dim>::BndSegFuncPtr boundarySegmentFunction;
-  void* userData;
 
   if (dim==3) {
     boundarySegmentFunction = boundarySegmentWrapper3d;
@@ -1183,7 +1188,6 @@ insertLinearSegment(const std::vector<int>& vertices,
       boundarySegments_.push_back((BoundarySegment<dimworld>*) new LinearTriSegment3d(*(FieldVector<double,3>*)(&coordinates[0]),
                                                                                       *(FieldVector<double,3>*)(&coordinates[1]),
                                                                                       *(FieldVector<double,3>*)(&coordinates[2])));
-      userData = const_cast<BoundarySegment<dimworld>*>(boundarySegments_.back());
     } else {
       // Cast to a type which may be wrong, just to make the code compile.
       // But this code only gets executed when the cast is correct anyways.
@@ -1191,7 +1195,6 @@ insertLinearSegment(const std::vector<int>& vertices,
                                                                                        *(FieldVector<double,3>*)(&coordinates[1]),
                                                                                        *(FieldVector<double,3>*)(&coordinates[2]),
                                                                                        *(FieldVector<double,3>*)(&coordinates[3])));
-      userData = const_cast<BoundarySegment<dimworld>*>(boundarySegments_.back());
     }
   } else {
     boundarySegmentFunction = boundarySegmentWrapper2d;
@@ -1199,7 +1202,6 @@ insertLinearSegment(const std::vector<int>& vertices,
     // But this code only gets executed when the cast is correct anyways.
     boundarySegments_.push_back((BoundarySegment<dimworld>*) new LinearSegment2d(*(FieldVector<double,2>*)(&coordinates[0]),
                                                                                  *(FieldVector<double,2>*)(&coordinates[1])));
-    userData = const_cast<BoundarySegment<dimworld>*>(boundarySegments_.back());
   }
 
   // Actually create the segment
