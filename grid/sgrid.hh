@@ -730,11 +730,11 @@ namespace Dune {
     //! (that is the neighboring Entity)
     EntityPointer outside() const;
 
-    //! return true if intersection is with boundary. \todo connection with boundary information, processor/outer boundary
+    //! return true if intersection is with boundary.
     bool boundary () const;
 
     int boundaryId () const {
-      DUNE_THROW(NotImplemented, "Coarse grid boundary segment id");
+      if (boundary()) return count + 1;
       return 0;
     };
     //! return true if neighbor on this level exists
