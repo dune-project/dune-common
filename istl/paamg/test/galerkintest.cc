@@ -95,7 +95,6 @@ void testCoarsenIndices(int N)
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
 
   communicator.template forward<Dune::Amg::AggregatesGatherScatter<typename MatrixGraph::VertexDescriptor,ParallelIndexSet> >(gmap);
-  pinfo.freeGlobalLookup();
 
   std::cout<<"Communicated: ";
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
@@ -124,7 +123,10 @@ void testCoarsenIndices(int N)
   BCRSMat* coarseMat = productBuilder.build(mat, mg, visitedMap2, pinfo,
                                             aggregatesMap, coarseIndices.size(),
                                             Dune::EnumItem<GridFlag,overlap>());
+
+  pinfo.freeGlobalLookup();
   productBuilder.calculate(mat, aggregatesMap, *coarseMat);
+
   if(N<5) {
     Dune::printmatrix(std::cout,mat,"fine","row",9,1);
     Dune::printmatrix(std::cout,*coarseMat,"coarse","row",9,1);

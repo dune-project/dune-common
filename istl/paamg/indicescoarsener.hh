@@ -60,6 +60,15 @@ namespace Dune
        */
       typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
+      /**
+       * @brief Build the coarse index set after the aggregatio.
+       *
+       * @param fineInfo The parallel information at the fine level.
+       * @param fineGraph The graph of the fine lecel,
+       * @param vistedMap Map for marking vertices as visited.
+       * @param aggregates The mapping of unknowns onto aggregates.
+       * @return The number of unknowns on the coarse level.
+       */
       template<typename Graph, typename VM>
       static typename Graph::VertexDescriptor
       coarsen(ParallelInformation& fineInfo,
@@ -224,6 +233,7 @@ namespace Dune
             }
 
             aggregates[*index] = renumberer;
+            ++renumberer;
           }
       }
 
