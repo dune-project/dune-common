@@ -1,5 +1,6 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+// $Id$
 #ifndef DUNE_OWNERCOPY_HH
 #define DUNE_OWNERCOPY_HH
 
@@ -34,23 +35,44 @@ namespace Dune {
      @{
    */
 
-  /**
-   * @brief A class setting up standard communication for a two-valued
-     attribute set with owner/overlap/copy semantics.
-   */
 
   class OwnerOverlapCopyAttributeSet
   {
-    enum AttributeSet { owner=1, overlap=2, copy=0 };
+    enum AttributeSet {
+      owner=1, overlap=2, copy=0
+    };
   };
 
-  template <class GlobalIdType, class LocalIdType>
+  template <class G, class LocalIdType>
   class IndexInfoFromGrid
   {
   public:
+    /** @brief The type of the global index. */
+    typedef G GlobalIdType
+
+    /** @brief The type of the local index. */
+    typedef L LocalIdType;
+
+    /**
+     * @brief A triple describing a local index.
+     *
+     * The triple consists of the global index and the local
+     * index and an attribute
+     */
     typedef tripel<GlobalIdType,LocalIdType,int> IndexTripel;
+    /**
+     * @brief A triple describing a remote index.
+     *
+     * The triple consists of a process number and the global index and
+     * the attribute of the index at the remote process.
+     */
     typedef tripel<int,GlobalIdType,int> RemoteIndexTripel;
 
+    /**
+     * @brief Add a new index triple to the set of local indices.
+     *
+     * @param x The index triple.
+     */
     void addLocalIndex (const IndexTripel& x)
     {
       if (x.third!=OwnerOverlapCopyAttributeSet::owner &&
@@ -59,6 +81,12 @@ namespace Dune {
         DUNE_THROW(ISTLError,"OwnerOverlapCopyCommunication: global index not in index set");
       localindices.insert(x);
     }
+
+    /**
+     * @brief Add a new remote index triple to the set of remote indices.
+     *
+     * @param x The index triple to add.
+     */
     void addRemoteIndex (const RemoteIndexTripel& x)
     {
       if (x.third!=OwnerOverlapCopyAttributeSet::owner &&
@@ -68,16 +96,27 @@ namespace Dune {
       remoteindices.insert(x);
     }
 
+    /**
+     * @brief Get the set of indices local to the process.
+     * @return The set of local indices.
+     */
     const std::set<IndexTripel>& localIndices () const
     {
       return localindices;
     }
 
+    /**
+     * @brief Get the set of remote indices.
+     * @return the set of remote indices.
+     */
     const std::set<RemoteIndexTripel>& remoteIndices () const
     {
       return remoteindices;
     }
 
+    /**
+     * @brief Remove all indices from the sets.
+     */
     void clear ()
     {
       localindices.clear();
@@ -85,12 +124,19 @@ namespace Dune {
     }
 
   private:
+    /** @brief The set of local indices. */
     std::set<IndexTripel> localindices;
+    /** @brief The set of remote indices. */
     std::set<RemoteIndexTripel> remoteindices;
   };
 
 
 #if HAVE_MPI
+
+  /**
+   * @brief A class setting up standard communication for a two-valued
+     attribute set with owner/overlap/copy semantics.
+   */
 
   // set up communication from known distribution with owner/overlap/copy semantics
   template <class GlobalIdType, class LocalIdType>
