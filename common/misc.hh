@@ -1,11 +1,11 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+#ifndef MISC_HH
+#define MISC_HH
+
 /** \file
     \brief Miscellaneous helper stuff
  */
-
-#ifndef MISC_HH
-#define MISC_HH
 
 #include <iostream>
 #include <sstream>
@@ -34,6 +34,13 @@ namespace Dune {
 
           @{
    */
+
+  //! Return the sign of the value
+  template <class T>
+  int sign(const T& val)
+  {
+    return (val < 0 ? -1 : 1);
+  }
 
   /** \brief Compute the square of T */
   template<class T>
