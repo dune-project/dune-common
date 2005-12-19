@@ -233,7 +233,7 @@ namespace Dune {
       BlockExpr operator[] ( int i ) const {
         return ex[i];
       }
-      int N() const { return ex.N(); }
+      size_t N() const { return ex.N(); }
       double one_norm() const { return eval_one_norm(*this); }
       double one_norm_real() const { return eval_one_norm_real(*this); }
       double two_norm() const { return sqrt(eval_two_norm2(*this)); }
@@ -254,7 +254,7 @@ namespace Dune {
       typedef typename BlockType<I>::type block_type;
       typedef typename FieldType<I>::type field_type;
       //! dimension of the vector space
-      int N() const {
+      size_t N() const {
         return asImp().N();
       }
       double one_norm() const { return eval_one_norm(*this); }
@@ -324,40 +324,40 @@ namespace Dune {
         Dune::dvverb << INDENT << "Assign Vector from field_type\n";
 #endif
         ++INDENT;
-        for (int i=0; i<N(); ++i) { asImp()[i] = x; }
+        for (size_t i=0; i<N(); ++i) { asImp()[i] = x; }
         --INDENT;
         return asImp();
       }
       template <class E> Vector<I>& operator+=(const Expression<E>& x) {
-        for (int i=0; i < asImp().N(); i++) asImp()[i] += x[i];
+        for (size_t i=0; i < asImp().N(); i++) asImp()[i] += x[i];
         return asImp();
       }
       template <class V> Vector<I>& operator+=(const Vector<V>& x) {
-        for (int i=0; i < asImp().N(); i++) asImp()[i] += x[i];
+        for (size_t i=0; i < asImp().N(); i++) asImp()[i] += x[i];
         return asImp();
       }
       template <class E> Vector<I>& operator-=(const Expression<E>& x) {
-        for (int i=0; i < asImp().N(); i++) asImp()[i] -= x[i];
+        for (size_t i=0; i < asImp().N(); i++) asImp()[i] -= x[i];
         return asImp();
       }
       template <class V> Vector<I>& operator-=(const Vector<V>& x) {
-        for (int i=0; i < asImp().N(); i++) asImp()[i] -= x[i];
+        for (size_t i=0; i < asImp().N(); i++) asImp()[i] -= x[i];
         return asImp();
       }
       Vector<I>& operator+=(field_type x) {
-        for (int i=0; i < asImp().N(); i++) asImp()[i] += x;
+        for (size_t i=0; i < asImp().N(); i++) asImp()[i] += x;
         return asImp();
       }
       Vector<I>& operator-=(field_type x) {
-        for (int i=0; i < asImp().N(); i++) asImp()[i] -= x;
+        for (size_t i=0; i < asImp().N(); i++) asImp()[i] -= x;
         return asImp();
       }
       Vector<I>& operator*=(field_type x) {
-        for (int i=0; i < asImp().N(); i++) asImp()[i] *= x;
+        for (size_t i=0; i < asImp().N(); i++) asImp()[i] *= x;
         return asImp();
       }
       Vector<I>& operator/=(field_type x) {
-        for (int i=0; i < asImp().N(); i++) asImp()[i] /= x;
+        for (size_t i=0; i < asImp().N(); i++) asImp()[i] /= x;
         return asImp();
       }
     private:
@@ -380,7 +380,7 @@ namespace Dune {
 #endif
         return BlockExprImp(v[i]);
       }
-      int N() const { return v.N(); };
+      size_t N() const { return v.N(); };
       double one_norm() const { return eval_one_norm(*this); }
       double one_norm_real() const { return eval_one_norm_real(*this); }
       double two_norm() const { return sqrt(eval_two_norm2(*this)); }
@@ -468,7 +468,7 @@ namespace Dune {
       typedef typename RowType<I>::type row_type;
       typedef typename FieldType<I>::type field_type;
       //! dimension of the vector space
-      int N() const {
+      size_t N() const {
         return asImp().N();
       }
       int M() const {
@@ -714,7 +714,7 @@ namespace Dune {
         M[MyDepth<B,Mat>::value] = i;
         return SubMatrixMulVector(A,v,M,*this);
       }
-      int N() const { return -1; }; //r.begin()->N(); }
+      size_t N() const { return -1; }; //r.begin()->N(); }
       const ParentBlockType & parent;
     private:
       mutable int* M;
@@ -741,7 +741,7 @@ namespace Dune {
         M[0] = i;
         return SubMatrixMulVector(A,v,M,*this);
       }
-      int N() const { return -1; }; // { parent.begin().N(); }
+      size_t N() const { return -1; }; // { parent.begin().N(); }
     private:
       mutable int* M;
       const Mat & A;
@@ -772,7 +772,7 @@ namespace Dune {
         }
         return x;
       }
-      int N() const { return iN; };
+      size_t N() const { return iN; };
       const ParentBlockType & parent;
     private:
       mutable int* M;
@@ -799,7 +799,7 @@ namespace Dune {
         }
         return x;
       }
-      int N() const { return iN; };
+      size_t N() const { return iN; };
     private:
       const Mat & A;
       const Vec & v;
@@ -927,7 +927,7 @@ namespace Dune {
     typename FieldType<A>::type val=0; \
     Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
     ++INDENT; \
-    for (int i=0; i<a.N(); ++i) { val += eval_one_norm(a[i]); } \
+    for (size_t i=0; i<a.N(); ++i) { val += eval_one_norm(a[i]); } \
     --INDENT; \
     return val; \
   }
@@ -955,7 +955,7 @@ namespace Dune {
     typename FieldType<A>::type val=0; \
     Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
     ++INDENT; \
-    for (int i=0; i<a.N(); ++i) { val += eval_one_norm_real(a[i]); } \
+    for (size_t i=0; i<a.N(); ++i) { val += eval_one_norm_real(a[i]); } \
     --INDENT; \
     return val; \
   }
@@ -992,7 +992,7 @@ namespace Dune {
     typename FieldType<A>::type val=0; \
     Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
     ++INDENT; \
-    for (int i=0; i<a.N(); ++i) { val += eval_two_norm2(a[i]); } \
+    for (size_t i=0; i<a.N(); ++i) { val += eval_two_norm2(a[i]); } \
     --INDENT; \
     return val; \
   }
@@ -1019,7 +1019,7 @@ namespace Dune {
     typename FieldType<A>::type val=0; \
     Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
     ++INDENT; \
-    for (int i=0; i<a.N(); ++i) { val = std::max(val,eval_infinity_norm(a[i])); } \
+    for (size_t i=0; i<a.N(); ++i) { val = std::max(val,eval_infinity_norm(a[i])); } \
     --INDENT; \
     return val; \
 }
@@ -1040,7 +1040,7 @@ namespace Dune {
     typename FieldType<A>::type val=0; \
     Dune::dvverb << INDENT << "Infinity Norm of Expression\n"; \
     ++INDENT; \
-    for (int i=0; i<a.N(); ++i) { val = std::max(val,eval_infinity_norm(a[i])); } \
+    for (size_t i=0; i<a.N(); ++i) { val = std::max(val,eval_infinity_norm(a[i])); } \
     --INDENT; \
     return val; \
 }
@@ -1071,7 +1071,7 @@ namespace Dune {
     {
       assert(a.N() == b.N());
       typename FieldType<A>::type x = 0;
-      for (int i=0; i<a.N(); i++)
+      for (size_t i=0; i<a.N(); i++)
         x = a[i] * b[i];
       return x;
     }
@@ -1084,7 +1084,7 @@ namespace Dune {
       IsTrue< SameType<FieldType<A>,FieldType<B> >::value == true >::yes();
       assert(a.N() == b.N());
       typename FieldType<A>::type x = 0;
-      for (int i=0; i<a.N(); i++)
+      for (size_t i=0; i<a.N(); i++)
         x = a[i] * b[i];
       return x;
     }
@@ -1097,7 +1097,7 @@ namespace Dune {
       IsTrue< SameType<FieldType<A>,FieldType<B> >::value == true >::yes();
       assert(a.N() == b.N());
       typename FieldType<A>::type x = 0;
-      for (int i=0; i<a.N(); i++)
+      for (size_t i=0; i<a.N(); i++)
         x = a[i] * b[i];
       return x;
     }
