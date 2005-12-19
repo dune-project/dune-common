@@ -7,7 +7,6 @@
 #include "common/fvector.hh"
 #include "common/exceptions.hh"
 #include "grid/common/grid.hh"
-#include "grid/common/referenceelements.hh"
 
 /**
  * @file

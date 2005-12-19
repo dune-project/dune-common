@@ -10,7 +10,6 @@
 #include <dune/common/stdstreams.hh>
 #include <dune/common/misc.hh>
 #include <dune/grid/common/grid.hh>
-#include <dune/grid/common/referenceelements.hh>
 
 #include <dune/disc/shapefunctions/shapefunctions.hh>
 
