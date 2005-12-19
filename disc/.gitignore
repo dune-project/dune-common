@@ -1,3 +1,7 @@
 Makefile
 Makefile.in
 semantic.cache
+*.lo
+libdisc.la
+.deps
+.libs

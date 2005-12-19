@@ -10,7 +10,6 @@
 #include "common/exceptions.hh"
 #include "common/misc.hh"
 #include "grid/common/grid.hh"
-#include "grid/common/referenceelements.hh"
 
 #include "shapefunctions.hh"
 #include "lagrange/cubeshapefunctions.hh"
@@ -424,27 +423,6 @@ namespace Dune
     static P2SimplexShapeFunctionSetContainer<C,T,d> p2simplex;
     static LagrangeShapeFunctionSetContainer<C,T,d> general;
   };
-
-  template<typename C, typename T, int d>
-  P0CubeShapeFunctionSetContainer<C,T,d> LagrangeShapeFunctions<C,T,d>::p0cube;
-
-  template<typename C, typename T, int d>
-  P1CubeShapeFunctionSetContainer<C,T,d> LagrangeShapeFunctions<C,T,d>::p1cube;
-
-  template<typename C, typename T, int d>
-  P2CubeShapeFunctionSetContainer<C,T,d> LagrangeShapeFunctions<C,T,d>::p2cube;
-
-  template<typename C, typename T, int d>
-  LagrangeShapeFunctionSetContainer<C,T,d> LagrangeShapeFunctions<C,T,d>::general;
-
-  template<typename C, typename T, int d>
-  P0SimplexShapeFunctionSetContainer<C,T,d> LagrangeShapeFunctions<C,T,d>::p0simplex;
-
-  template<typename C, typename T, int d>
-  P1SimplexShapeFunctionSetContainer<C,T,d> LagrangeShapeFunctions<C,T,d>::p1simplex;
-
-  template<typename C, typename T, int d>
-  P2SimplexShapeFunctionSetContainer<C,T,d> LagrangeShapeFunctions<C,T,d>::p2simplex;
 
   /** @} */
 }

@@ -1,3 +1,7 @@
 Makefile
 Makefile.in
 semantic.cache
+*.lo
+libshapefunctions.la
+.libs
+.deps

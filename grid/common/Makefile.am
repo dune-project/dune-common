@@ -1,5 +1,8 @@
 # $Id$
 
+noinst_LTLIBRARIES = libgridcommon.la
+libgridcommon_la_SOURCES = referenceelements.cc
+
 commondir = $(includedir)/dune/grid/common
 common_HEADERS = virtualrefinement.cc  \
   defaultindexsets.hh entity.hh entitypointer.hh geometry.hh grid.hh \

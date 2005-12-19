@@ -5,7 +5,8 @@ SUBDIRS = albertagrid alu3dgrid common onedgrid sgrid uggrid yaspgrid test
 noinst_LTLIBRARIES = libgrid.la
 
 # always part of lib:
-SUBLIBS = onedgrid/libonedgrid.la
+ONEDLIB = onedgrid/libonedgrid.la
+COMMONLIB = common/libgridcommon.la
 
 # conditional parts:
 if UG
@@ -18,8 +19,7 @@ endif
 
 # construct only from sub-libraries
 libgrid_la_SOURCES =
-libgrid_la_LIBADD = $(SUBLIBS) $(UGLIB) $(ALU3DLIB)
-
+libgrid_la_LIBADD = $(ONEDLIB) $(UGLIB) $(ALU3DLIB) $(COMMONLIB)
 
 griddir = $(includedir)/dune/grid
 grid_HEADERS = albertagrid.hh \
