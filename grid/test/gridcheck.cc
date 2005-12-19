@@ -2,12 +2,12 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-/*
+/**
 
    Implements a generic grid check
 
-   TODO:
-   - check return types
+
+   \todo check return types
 
  */
 
@@ -471,8 +471,13 @@ struct GridInterface
     // number of leaf entities per codim and geometry type in this process
     g.size(0, Dune::cube);
 
+    // Check overlap and ghost size on level 0
     g.overlapSize(0,0);
     g.ghostSize(0,0);
+
+    // Check overlap and ghost size on the leaf level
+    g.overlapSize(0);
+    g.ghostSize(0);
 
     // adaption
     EntityPointer ept = g.template leafbegin<0>();
