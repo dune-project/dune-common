@@ -154,6 +154,16 @@ available for download.  You'll have to inquire via email.
 <h3>UGGrid</h3>
 
 <ol>
+<li><p>Get and Install AmiraMesh</p>
+<p>
+Once you have the tarball type
+</p><pre>
+tar xvf libamiramesh.tar
+cd libamiramesh/src
+make
+</pre>
+to install it.
+</li>
 <li>
 <p>
 Get the UG library.  You can obtain it at 
@@ -163,16 +173,11 @@ time of writing) is not new enough to be compatible with DUNE. Please
 write to one of the contact addresses given on the page
 and ask for a more recent version of UG.
 </p>
-<li><p>Install AmiraMesh</p>
-<p>
-Simply unpack amiramesh and you are done:
-</p><kbd>
-tar xvf libamiramesh.tar
-cd libamiramesh/src
-make
-</kbd>
-</li>
-<li>Move into the ug source tree.</li>
+<li>Unpack the tarball and move into the ug source tree.</li>
+    <pre>
+tar zxvf UG-3.9.1.tar.gz
+cd UG-3.9.1
+    </pre>
 
 <li><p>Build the UG Make System</p>
 <kbd>
@@ -194,7 +199,17 @@ make
     the C compiler and linker !!!
 </p></li>
 
-<li> <p>Compile UG with</p><kbd> make</kbd></li>
+<li> 
+        <p>Compile UG with</p>
+        <kbd> make</kbd>
+        <p> <b> Warning: </b> On a 64bit machine, g++-4.0 and above 
+          will currently not compile UG. This is due to a bug in UG and 
+          not fault of the compiler.  To hack your way around this
+          type
+          <kbd> touch ugpfm </kbd>
+          in the directory <kbd>UG-3.9.1/tools</kbd> before calling make.
+        </p>
+</li>
 
 <li><p>Install UG with</p> <kbd>make install</kbd></li>
 </ol>
@@ -215,8 +230,7 @@ make
 <li>
     <p>Download via HTML</p>
 <p>
-    View the CVS-version of DUNE, the DUNE-Tutorial or the
-    DUNE-Applications. There is also an option to get the full source as a
+    View the CVS-version of DUNE. There is also an option to get the full source as a
     tarball at the bottom of the page. However, those tarballs are not
     like a final release will be, the instructions in README.CVS still
     apply. 
