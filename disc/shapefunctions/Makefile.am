@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = lagrange dgspace
+SUBDIRS = lagrange dgspace test
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libshapefunctions.la
