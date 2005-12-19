@@ -4,28 +4,13 @@
 # barf on errors
 set -e
 
-# may be used to force a certain automake-version e.g. 1.7
-AMVERS=
-
-DEFAULTCONFOPT=
-
-# default values
-DEBUG=1
-OPTIM=0
-
 usage () {
     echo "Usage: ./autogen.sh [options]"
-    echo "  -i, --intel        use intel compiler"
-    echo "  -g, --gnu          use gnu compiler (default)"
-    echo "  --opts=FILE        use compiler-options from FILE"
-    echo "  -d, --debug        switch debug-opts on"
-    echo "  -n, --nodebug      switch debug-opts off"
-    echo "  -o, --optim        switch optimization on"
-    echo "  -h, --help         you already found this :)"
+    echo "  --ac=, --acversion=VERSION   use a specific VERSION of autoconf"
+    echo "  --am=, --amversion=VERSION   use a specific VERSION of automake"
+    echo "  -h,    --help                you already found this :-)"
 }
 
-# no compiler set yet
-COMPSET=0
 for OPT in "$@"; do
     set +e
     # stolen from configure...
@@ -34,51 +19,40 @@ for OPT in "$@"; do
     set -e
 
     case "$OPT" in
-	-i|--intel)   . ./icc.opts ; COMPSET=1 ;;
-	-g|--gnu)     . ./gcc.opts ; COMPSET=1 ;;
-	--opts=*)
-	    if [ -r $arg ] ; then
-	      echo "reading options from $arg..."
-	      . ./$arg ;
-	      COMPSET=1;
-	    else
-	      echo "Cannot open compiler options file $arg!" ;
-	      exit 1;
-	    fi ;;
-	-d|--debug)   DEBUG=1 ;;
-	-n|--nodebug) DEBUG=0 ;;
-	-o|--optim)   OPTIM=1 ;;
+	--ac=*|--acversion=*)
+			test "x$arg" == "x" || (usage; exit 1;)
+			ACVERSION=$arg
+			;;
+	--am=*|--amversion=*)
+			test "x$arg" == "x" || (usage; exit 1;)
+			AMVERSION=$arg
+			;;
 	-h|--help) usage ; exit 0 ;;
-	# pass unknown opts to ./configure
-	*) CONFOPT="$CONFOPT \"$OPT\"" ;;
     esac
 done
 
-# use the free compiler as default
-if [ "$COMPSET" != "1" ] ; then
-    echo "No compiler set, using GNU compiler as default"
-    . ./gcc.opts
+## report parameters
+if test "x$ACVERSION" != "x"; then
+	echo "Forcing autoconf version $ACVERSION"
+	ACVERSION=-$ACVERSION
+	if ! which autoconf$ACVERSION > /dev/null; then
+		echo
+		echo "Error: Could not find autoconf$ACVERSION"
+		echo "       Did you specify a wrong version?"
+		exit 1
+	fi
+fi
+if test "x$AMVERSION" != "x"; then
+	echo "Forcing automake version $ACVERSION"
+	AMVERSION=-$AMVERSION
+	if ! which automake$AMVERSION > /dev/null; then
+		echo
+		echo "Error: Could not find automake$AMVERSION"
+		echo "       Did you specify a wrong version?"
+		exit 1
+	fi
 fi
 
-# create flags
-COMPFLAGS="$FLAGS"
-
-# maybe add debug flag
-if [ "$DEBUG" = "1" ] ; then	
-    COMPFLAGS="$COMPFLAGS $DEBUGFLAGS"
-fi
-
-# maybe add optimization flag
-if [ "$OPTIM" = "1" ] ; then	
-    COMPFLAGS="$COMPFLAGS $OPTIMFLAGS"
-fi
-
-# check if automake-version was set
-if test "x$AMVERS" != x ; then
-  echo Warning: explicitly using automake version $AMVERS
-  # binaries are called automake-$AMVERS
-  AMVERS="-$AMVERS"
-fi
 
 ## run autotools
 
@@ -89,25 +63,17 @@ libtoolize --force
 
 # prepare everything
 echo "--> aclocal..."
-aclocal$AMVERS -I m4
+aclocal$AMVERSION -I m4
 
 # applications should provide a config.h for now
 echo "--> autoheader..."
-autoheader
+autoheader$ACVERSION
 
 echo "--> automake..."
-automake$AMVERS --add-missing
+automake$AMVERSION --add-missing
 
 echo "--> autoconf..."
-autoconf
+autoconf$ACVERSION
 
-#### start configure with special environment
-
-export CC="$COMP"
-export CXX="$CXXCOMP"
-export CPP="$COMP -E"
-
-export CFLAGS="$COMPFLAGS"
-export CXXFLAGS="$COMPFLAGS"
-
-#eval ./configure $DEFAULTCONFOPT $CONFOPT
+## tell the user what to do next
+echo "Now run ./configure to setup your Dune"

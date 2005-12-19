@@ -75,7 +75,7 @@ available for download.  You'll have to inquire via email.
 <li><p>Configure ALBERTA, e. g.</p>
     <kbd>   ./configure --prefix=/directory/to/install/alberta/to \
        --with-blas-name=blas-3 --disable-shared \
-       CXX=g++-3.4 CC=gcc-3.4 CXXCOMP=g++-3.4 COMP=gcc-3.4
+       CXX=g++-3.4 CC=gcc-3.4
 </kbd>
 <p>
     With --prefix the absolute path of the directory we install to has
@@ -85,7 +85,7 @@ available for download.  You'll have to inquire via email.
     IMPORTANT!! Always use the --disable-shared option as shared
     linking is broken in version 1.2!!
 </p><p>
-    With the variable COMP, CC and CXXCOMP, CXX we tell configure the C and C++
+    With the variable CC and CXX we tell configure the C and C++
     compiler and linker to use. These have to be the same compilers
     and linkers  you will use  to compile DUNE!!
 </p>
@@ -111,7 +111,7 @@ available for download.  You'll have to inquire via email.
 <li><p>Configure ALUGrid, e. g.</p>
     <kbd>
        ./configure --prefix=/directory/to/install/ALUGrid/to \
-       CXX=g++-3.4 CC=gcc-3.4 CXXCOMP=g++-3.4 COMP=gcc-3.4
+       CXX=g++-3.4 CC=gcc-3.4
 </kbd>
        <p>for the sequential use of ALUGrid.</p>
 <p>
@@ -119,7 +119,7 @@ available for download.  You'll have to inquire via email.
     to be given.
 </p>
 <p>
-    With the variable COMP, CC and CXXCOMP, CXX we tell configure the C and C++
+    With the variable CC and CXX we tell configure the C and C++
     compiler and linker to use. These have to be the same compilers
     and linkers you will use  to compile DUNE!!
 </p>
@@ -140,7 +140,7 @@ available for download.  You'll have to inquire via email.
     E. g. for lam-mpi:
 </p>
    <kbd> /configure --prefix=/directory/to/install/ALUGrid/to \
-       CXX=g++-3.4 CC=gcc-3.4 CXXCOMP=g++-3.4 COMP=gcc-3.4 \
+       CXX=g++-3.4 CC=gcc-3.4 \
        CPPFLAGS="-I/usr/lib/lam/include -pthread" \
        LDFLAGS="-L/usr/lib/lam/lib -llammpio -llammpi++ -llamf77mpi \
     -lmpi -llam -lutil -ldl" </kbd>
@@ -182,7 +182,7 @@ cd UG-3.9.1
 <li><p>Build the UG Make System</p>
 <kbd>
     ./autogen.sh  --prefix=my_favourite_ug_installation_path \
-   --enable-dune COMP=g++-3.4 CXXCOMP=g++-3.4 CXX=g++-3.4 CC=g++-3.4
+   --enable-dune CXX=g++-3.4 CC=g++-3.4
 </kbd>
 <p>
    With --prefix the absolute path of the directory we install to has
@@ -191,11 +191,11 @@ cd UG-3.9.1
     With --enable-dune we enable special features needed by UGGrid in
     Dune.
 </p><p>
-    With the variable COMP, CC and CXXCOMP, CXX we tell configure the C and C++
+    With the variable CC and CXX we tell configure the C and C++
     compiler and linker to use.  Don't forget that the compiler has to
     be binary-compatible with the one you're using for dune.
 </p><p>
-    !!! NOTE !!! Even CC and COMP have to be set to the C++ and not
+    !!! NOTE !!! Even CC and have to be set to the C++ and not
     the C compiler and linker !!!
 </p></li>
 
@@ -247,7 +247,7 @@ cd UG-3.9.1
     --with-amiramesh=/amiramesh/install/path \
     --with-alugrid=/ALUGrid/install/path \
     --with-alberta=/alberta/install/path \
-    --prefix=/absolute/path/to/install/dune/to CXX=g++-3.4 CXXCOMP=g++-3.4
+    --prefix=/absolute/path/to/install/dune/to CXX=g++-3.4
 </kbd></li></ul>
 <p>
    With --prefix the absolute path of the directory we install to has
@@ -256,7 +256,7 @@ cd UG-3.9.1
     The optional --with-*= parameters take the absolute pathes of the
     installed grids.
     </p><p>
-    With the variable CXXCOMP and CXX we tell configure the C++
+    With the variable CXX we tell configure the C++
     compiler and linker to use.
 </p></li>
 
