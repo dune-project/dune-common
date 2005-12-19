@@ -311,17 +311,31 @@ namespace Dune {
       return 0;
     }
 
+    /** \brief The processor overlap for parallel computing.  Always zero because
+        this is a strictly sequential grid */
+    int overlapSize(int codim) const {
+      return 0;
+    }
 
+    /** \brief The processor ghost overlap for parallel computing.  Always zero because
+        this is a strictly sequential grid */
+    int ghostSize(int codim) const {
+      return 0;
+    }
+
+    /** \brief Get the set of global ids */
     const typename Traits::GlobalIdSet& globalIdSet() const
     {
       return idSet_;
     }
 
+    /** \brief Get the set of local ids */
     const typename Traits::LocalIdSet& localIdSet() const
     {
       return idSet_;
     }
 
+    /** \brief Get an index set for the given level */
     const typename Traits::LevelIndexSet& levelIndexSet(int level) const
     {
       if (! levelIndexSets_[level]) {
@@ -333,6 +347,7 @@ namespace Dune {
       return * levelIndexSets_[level];
     }
 
+    /** \brief Get an index set for the leaf level */
     const typename Traits::LeafIndexSet& leafIndexSet() const
     {
       return leafIndexSet_;
