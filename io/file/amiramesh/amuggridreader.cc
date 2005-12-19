@@ -60,8 +60,7 @@ public:
 
 // Create the domain from an explicitly given boundary description
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
-                                                             const std::string& filename/*,
-                                                                                           std::vector<int>& isBoundaryNode*/)
+                                                             const std::string& filename)
 {
 #ifdef HAVE_PSURFACE
   int point[3] = {-1, -1, -1};
@@ -76,8 +75,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
     DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain:"
                << "StartEditing failed!");
 
-  /* Alle weiteren Anfragen an die Bibliothek beziehen sich jetzt auf das eben
-     geladen Gebiet. Maessig elegant, sollte aber gehen */
+  // All further queries to the psurface library refer to the most recently
+  // loaded parametrization.
 
   int noOfSegments = AmiraGetNoOfSegments();
   if(noOfSegments <= 0)
@@ -86,8 +85,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
   int noOfNodes = AmiraGetNoOfNodes();
   if(noOfNodes <= 0)
     DUNE_THROW(IOError, "No nodes found");
-
-  //grid.createDomain(noOfNodes, noOfSegments);
 
   static int boundaryNumber = 0;
 
@@ -106,7 +103,8 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
 
   }
   boundaryNumber++;
-  std::cout << noOfSegments << " segments created!" << std::endl;
+  std::cout << noOfSegments << " segments from psurface file " << filename
+            << " created!" << std::endl;
 
 #endif // #define HAVE_PSURFACE
 
@@ -119,7 +117,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
 {
 #ifndef HAVE_PSURFACE
   DUNE_THROW(IOError, "Dune has not been built with support for the "
-             << "AmiraMesh-Parametrization library!");
+             << " psurface library!");
 #else
   dverb << "This is the AmiraMesh reader for UGGrid<3,3>!" << std::endl;
 
@@ -130,7 +128,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
   // Load the AmiraMesh file
   // /////////////////////////////////////////////////////
   AmiraMesh* am = AmiraMesh::read(filename.c_str());
-  //std::vector<int> isBoundaryNode;
 
   if(!am)
     DUNE_THROW(IOError, "Could not open AmiraMesh file " << filename);
@@ -143,7 +140,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
 
   } else {
 
-    // Load domain from an AmiraMesh hexagrid file
+    // Load domain from an AmiraMesh tetragrid file
     createDomain(grid, domainFilename);
 
   }
@@ -176,8 +173,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::read(Dune::UGGrid<3,3>& grid,
 
 
 void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
-                                                          AmiraMesh* am/* ,
-                                                                          std::vector<int>& isBoundaryNode*/)
+                                                          AmiraMesh* am)
 {
   bool isTetraGrid = am->findData("Tetrahedra", HxINT32, 4, "Nodes");
 
@@ -364,15 +360,10 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   // /////////////////////////////////////////////////////
   // Load the AmiraMesh file
   // /////////////////////////////////////////////////////
-  /** \todo Use an auto_ptr here */
-  AmiraMesh* am = AmiraMesh::read(filename.c_str());
+  std::auto_ptr<AmiraMesh> am(AmiraMesh::read(filename.c_str()));
 
-  if(!am)
+  if(am.operator->() == NULL)
     DUNE_THROW(IOError, "2d AmiraMesh reader: File '" << filename << "' could not be read!");
-
-  // ///////////////////////////////////////
-  // Extract domain from the grid file
-  // ///////////////////////////////////////
 
   // Determine whether grid contains only triangles
   bool containsOnlyTriangles = am->findData("Triangles", HxINT32, 3, "Nodes");
@@ -390,7 +381,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   if (containsOnlyTriangles) {
     AmiraMesh::Data* triangleData = am->findData("Triangles", HxINT32, 3, "Nodes");
     if (triangleData)
-      elemData         = (int*)triangleData->dataPtr();
+      elemData = (int*)triangleData->dataPtr();
     else
       DUNE_THROW(IOError, "2D AmiraMesh loader: field 'Triangles' not found!");
 
@@ -468,8 +459,6 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
   }
 
   std::cout << "amiraloadmesh: " << noOfCreatedElem << " elements created" << std::endl;
-
-  delete am;
 
   grid.createend();
 
