@@ -35,23 +35,33 @@ namespace Dune {
    */
 
   /**
-   * @brief Categories for the solvers.
+   * @brief An overlapping schwarz operator.
    */
-
   template<class M, class X, class Y, class C>
   class OverlappingSchwarzOperator : public AssembledLinearOperator<M,X,Y>
   {
   public:
-    //! export types
+    //! \brief The type of the matrix we operate on.
     typedef M matrix_type;
+    //! \brief The type of the domain.
     typedef X domain_type;
+    //! \brief The type of the range.
     typedef Y range_type;
+    //! \brief The field type of the range
     typedef typename X::field_type field_type;
 
-    //! define the category
-    enum {category=SolverCategory::overlapping};
+    enum {
+      //! \brief The solver category.
+      category=SolverCategory::overlapping
+    };
 
-    //! constructor: just store a reference to a matrix
+    /**
+     * @brief constructor: just store a reference to a matrix.
+     *
+     * @param A The assembled matrix.
+     * @param com The communication object for syncing overlap and copy
+     * data points. (E.~g. OwnerOverlapCommunication )
+     */
     OverlappingSchwarzOperator (const M& A, const C& com)
       : _A_(A), communication(com)
     {}
@@ -86,19 +96,26 @@ namespace Dune {
 
 
 
-  //! Scalar product assuming consistent vectors in interior+border
+  /**
+   * \brief Scalar product for overlapping schwarz methods.
+   *
+   * Consistent vectors in interior and border are assumed.
+   */
   template<class X, class C>
   class OverlappingSchwarzScalarProduct : public ScalarProduct<X>
   {
   public:
-    //! export types
+    //! \brief The type of the domain.
     typedef X domain_type;
+    //!  \brief The type of the range
     typedef typename X::field_type field_type;
 
     //! define the category
     enum {category=SolverCategory::overlapping};
 
     /*! \brief Constructor needs to know the grid
+     * \param com The communication object for syncing overlap and copy
+     * data points. (E.~g. OwnerOverlapCommunication )
      */
     OverlappingSchwarzScalarProduct (const C& com)
       : communication(com)
@@ -130,7 +147,7 @@ namespace Dune {
 
 
 
-
+  //! \brief A parallel SSOR preconditioner.
   template<class M, class X, class Y, class C>
   class ParSSOR : public Preconditioner<X,Y> {
   public:
@@ -155,6 +172,8 @@ namespace Dune {
        \param A The matrix to operate on.
        \param n The number of iterations to perform.
        \param w The relaxation factor.
+       \param com The communication object for syncing overlap and copy
+     * data points. (E.~g. OwnerOverlapCommunication )
      */
     ParSSOR (const M& A, int n, field_type w, const C& c)
       : _A_(A), _n(n), _w(w), communication(c)
@@ -203,7 +222,14 @@ namespace Dune {
   };
 
 
-
+  /**
+   * @brief Block parallel preconditioner.
+   *
+   * This is essentially a wrapper that take a sequential
+   * preconditoner. In each step the sequential preconditioner
+   * is applied and then all owner data points are updates on
+   * all other processes.
+   */
   template<class X, class Y, class C>
   class BlockPreconditioner : public Preconditioner<X,Y> {
   public:
@@ -223,9 +249,9 @@ namespace Dune {
     /*! \brief Constructor.
 
        constructor gets all parameters to operate the prec.
-       \param A The matrix to operate on.
-       \param n The number of iterations to perform.
-       \param w The relaxation factor.
+       \param p The sequential preconditioner.
+       \param c The communication object for syncing overlap and copy
+       data points. (E.~g. OwnerOverlapCommunication )
      */
     BlockPreconditioner (Preconditioner<X,Y>& p, const C& c)
       : preconditioner(p), communication(c)
