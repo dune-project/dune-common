@@ -1,0 +1,13 @@
+Makefile
+Makefile.in
+.deps
+.libs
+semantic.cache
+indicestest
+selectiontest
+indexsettest
+syncertest
+bvectortest
+matrixutilstest
+gmon.out
+vctorcommtest

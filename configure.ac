@@ -172,6 +172,7 @@ AC_CONFIG_FILES([Makefile
 	 disc/shapefunctions/Makefile
 	 disc/shapefunctions/dgspace/Makefile
 	 disc/shapefunctions/lagrange/Makefile
+         disc/shapefunctions/test/Makefile
          fem/Makefile
          fem/common/Makefile
          fem/dgspace/Makefile
