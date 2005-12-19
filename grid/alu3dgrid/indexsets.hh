@@ -134,7 +134,7 @@ namespace Dune {
     //! create id set, only allowed for ALU3dGrid
     ALU3dGridGlobalIdSet(const GridType & grid) : hset_(grid.hierarchicIndexSet())
     {
-      derr << "WARNING: ALU3dGridGlobalIdSet not ready for parallel compuations right now! \n";
+      derr << "WARNING: ALU3dGridGlobalIdSet not ready for parallel computations right now! \n";
       for(int i=0; i<dim+1; i++)
         codimStart_[i] = i*codimMultiplier;
     }
