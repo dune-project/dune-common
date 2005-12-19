@@ -182,7 +182,13 @@ namespace Dune
     };
   };
 
-  //! Specialization of Geometry for mydim=0 (vertices)
+  /** \brief Specialization of Geometry for mydim=0 (vertices)
+     \ingroup GridInterface
+
+     \tparam cdim  Dimension of the surrounding space
+     \tparam GridImp The grid class whose elements we are encapsulating
+     \tparam GeometryImp The class that implements the actual geometry
+   */
   template<int cdim, class GridImp, template<int,int,class> class GeometryImp>
   class Geometry<0,cdim,GridImp,GeometryImp> {
     // save typing
