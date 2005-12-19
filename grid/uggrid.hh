@@ -138,35 +138,9 @@ namespace Dune {
      and you can use boundaries parametrized by either analytical expressions
      or high-resolution piecewise linear surfaces.
 
-     To use this module you need the UG library.  You can obtain it at
-     http://cox.iwr.uni-heidelberg.de/~ug .  Unfortunately, the version
-     of UG available for download (3.8 at the time of writing) is not new
-     enough to be compatible
-     with DUNE.  Please write to one of the contact addresses given on
-     the page mentioned above and ask for a more recent version of UG.
-
-     UG is built using the standard GNU autotools.  After unpacking
-     the tarball, please type
-     \verbatim
-      ./configure --prefix=my_ug_install_dir --enable-dune CC=g++
-     \endverbatim
-     Note that you need to force the build system to compile UG
-     as C++, which is a non-default behaviour.  If you want to use
-     UGGrid to work in parallel on a multi-processor machine add
-     the option --enable-parallel.
-
-     After that it's simply
-     \verbatim
-      make
-      make install
-     \endverbatim
-     and you're done.
-
-     After compiling UG you must tell %Dune where to find UG:
-     \verbatim
-     ./configure [OPTIONS] --with-ug=PATH_TO_UG
-     \endverbatim
-     configures the %Dune library to include the UGGrid implementation.
+     To use this module you need the UG library.  See the
+     DUNE installation notes
+     on how to obtain and install it.
 
      In your %Dune application, you can now instantiate objects of the
      type UGGrid<2,2> or UGGrid<3,3>.  You can have more than one, if
@@ -247,25 +221,25 @@ namespace Dune {
     template<int codim, PartitionIteratorType PiType>
     typename Traits::template Codim<codim>::template Partition<PiType>::LevelIterator lend (int level) const;
 
-    //! Iterator to first entity of given codim on level
+    //! Iterator to first leaf entity of given codim
     template<int codim>
     typename Traits::template Codim<codim>::LeafIterator leafbegin() const {
       return typename Traits::template Codim<codim>::template Partition<All_Partition>::LeafIterator(*this);
     }
 
-    //! one past the end on this level
+    //! one past the end of the sequence of leaf entities
     template<int codim>
     typename Traits::template Codim<codim>::LeafIterator leafend() const {
       return UGGridLeafIterator<codim,All_Partition, const UGGrid<dim,dimworld> >();
     }
 
-    //! Iterator to first entity of given codim on level
+    //! Iterator to first leaf entity of given codim
     template<int codim, PartitionIteratorType PiType>
     typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafbegin() const {
       return typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator(*this);
     }
 
-    //! one past the end on this level
+    //! one past the end of the sequence of leaf entities
     template<int codim, PartitionIteratorType PiType>
     typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafend() const {
       return UGGridLeafIterator<codim,PiType, const UGGrid<dim,dimworld> >();
@@ -366,7 +340,7 @@ namespace Dune {
     void postAdapt();
     /*@}*/
 
-    /** \brief Please doc me! */
+    /** \brief Returns UGGrid_Id for run-time type identification */
     GridIdentifier type () const { return UGGrid_Id; };
 
     unsigned int overlapSize(int codim) const {
