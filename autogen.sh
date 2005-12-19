@@ -20,11 +20,17 @@ for OPT in "$@"; do
 
     case "$OPT" in
 	--ac=*|--acversion=*)
-			test "x$arg" == "x" || (usage; exit 1;)
+			if test "x$arg" == "x"; then
+				usage; 
+				exit 1;
+			fi
 			ACVERSION=$arg
 			;;
 	--am=*|--amversion=*)
-			test "x$arg" == "x" || (usage; exit 1;)
+			if test "x$arg" == "x"; then
+				usage; 
+				exit 1;
+			fi
 			AMVERSION=$arg
 			;;
 	-h|--help) usage ; exit 0 ;;
@@ -33,7 +39,7 @@ done
 
 ## report parameters
 if test "x$ACVERSION" != "x"; then
-	echo "Forcing autoconf version $ACVERSION"
+	echo "Forcing autoconf version «$ACVERSION»"
 	ACVERSION=-$ACVERSION
 	if ! which autoconf$ACVERSION > /dev/null; then
 		echo
@@ -43,7 +49,7 @@ if test "x$ACVERSION" != "x"; then
 	fi
 fi
 if test "x$AMVERSION" != "x"; then
-	echo "Forcing automake version $ACVERSION"
+	echo "Forcing automake version «$AMVERSION»"
 	AMVERSION=-$AMVERSION
 	if ! which automake$AMVERSION > /dev/null; then
 		echo
