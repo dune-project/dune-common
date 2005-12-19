@@ -160,7 +160,7 @@ namespace Dune {
     typedef BufferedCommunicator<PIS> BC;
     typedef Interface<PIS> IF;
 
-    // gather/scatter callback for communcation
+    /** \brief gather/scatter callback for communcation */
     template<typename T>
     struct CopyGatherScatter
     {
@@ -218,7 +218,12 @@ namespace Dune {
     }
 
   public:
-
+    /**
+     * @brief Communicate values from owner data points to all other data points.
+     *
+     * @brief source The data to send from.
+     * @brief dest The data to send to.
+     */
     template<class T>
     void copyOwnerToAll (const T& source, T& dest) const
     {
@@ -230,6 +235,13 @@ namespace Dune {
       communicator.free();
     }
 
+
+    /**
+     * @brief Communicate values from owner data points to all other data points and add them to those values.
+     *
+     * @brief source The data to send from.
+     * @brief dest The data to add them communicated values to.
+     */
     template<class T>
     void addOwnerOverlapToAll (const T& source, T& dest) const
     {
@@ -241,6 +253,13 @@ namespace Dune {
       communicator.free();
     }
 
+    /**
+     * @brief Compute a global dot product of two vectors.
+     *
+     * @param x The first vector of the product.
+     * @param y The second vector of the product.
+     * @param res Reference to store the result in.
+     */
     template<class T1, class T2>
     void dot (const T1& x, const T1& y, T2& result) const
     {
@@ -260,6 +279,12 @@ namespace Dune {
       return;
     }
 
+    /**
+     * @brief Compute the global euclidian norm of a vector.
+     *
+     * @param x The vector to compute the norm of.
+     * @return The global euclidian norm of that vector.
+     */
     template<class T1>
     double norm (const T1& x) const
     {
@@ -278,6 +303,11 @@ namespace Dune {
       return sqrt(cc.sum(result));
     }
 
+    /**
+     * @brief Project a vector to somewhat???
+     *
+     * @param x The vector ton project.
+     */
     template<class T1>
     void project (T1& x) const
     {
@@ -287,9 +317,11 @@ namespace Dune {
     }
 
 
-    // Constructor
-    // containers of IndexTripel and RemoteIndexTripel sorted appropriately
-    // size is the size
+    /**
+     * @brief Constructor
+     * @param indexinfo The set of IndexTripels describing the local and remote indices.
+     * @param comm_ The communicator to use in the communication.
+     */
     OwnerOverlapCopyCommunication (const IndexInfoFromGrid<GlobalIdType,LocalIdType>& indexinfo, MPI_Comm comm_)
       : cc(comm_),OwnerToAllInterfaceBuilt(false),OwnerOverlapToAllInterfaceBuilt(false)
     {
