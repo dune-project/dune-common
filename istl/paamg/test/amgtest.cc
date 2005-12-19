@@ -37,12 +37,7 @@ int main(int argc, char** argv)
 
   BCRSMat mat = setupAnisotropic2d<BS>(N, indices, &n, 1);
 
-
-  if(N<5)
-    Dune::printmatrix(std::cout, mat, "A", "row");
-
-
-  Vector b(indices.size()), x(indices.size());
+  Vector b(mat.N()), x(mat.M());
 
   b=0;
   x=100;
