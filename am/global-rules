@@ -12,5 +12,8 @@ include $(top_srcdir)/am/sourcescheck
 # add "check-log"-target to create automated build logs
 include $(top_srcdir)/am/checklog
 
-# prevent "make check" if libdune does not yet exist
-include $(top_srcdir)/am/no-check-without-lib
+# automaticly update libs
+include $(top_srcdir)/am/update-libs
+
+# Makefile depends on "me"
+Makefile: $(top_builddir)/am/global-rules

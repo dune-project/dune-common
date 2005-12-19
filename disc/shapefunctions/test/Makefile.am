@@ -7,7 +7,7 @@ check_PROGRAMS = refelemshapefunctest
 ## common flags
 #
 
-AM_LDFLAGS = $(top_builddir)/lib/libdune.la
+AM_LDFLAGS = $(LIBDUNE)
 
 # paranoia
 DUNE_EXTRA_CHECKS =  -DDUNE_ISTL_WITH_CHECKING -DDUNE_DEVEL_MODE
@@ -21,6 +21,7 @@ AM_CPPFLAGS = $(DUNE_EXTRA_CHECKS) -g -Wall
 #
 
 refelemshapefunctest_SOURCES = refelemshapefunctest.cc
+refelemshapefunctest_DEPENDENCIES = $(LIBDUNE)
 
 ## distribution tarball
 

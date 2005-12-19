@@ -24,18 +24,21 @@ graphtest_SOURCES = graphtest.cc
 transfertest_SOURCES = transfertest.cc
 transfertest_CXXFLAGS = $(MPI_CPPFLAGS)
 transfertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+transfertest_DEPENDENCIES = $(LIBDUNE)
 
 galerkintest_SOURCES = galerkintest.cc anisotropic.hh
 galerkintest_CXXFLAGS = $(MPI_CPPFLAGS)
 galerkintest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
-
+galerkintest_DEPENDENCIES = $(LIBDUNE)
 
 hierarchytest_SOURCES = hierarchytest.cc anisotropic.hh
 hierarchytest_CXXFLAGS = $(MPI_CPPFLAGS)
 hierarchytest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+hierarchytest_DEPENDENCIES = $(LIBDUNE)
 
 amgtest_SOURCES = amgtest.cc
 amgtest_CXXFLAGS = $(MPI_CPPFLAGS)
 amgtest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+amgtest_DEPENDENCIES = $(LIBDUNE)
 
 include $(top_srcdir)/am/global-rules

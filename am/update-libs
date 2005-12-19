@@ -1,0 +1,26 @@
+# -*- Makefile -*-
+# $Id$
+#
+# -- update libs in an other directory --
+#
+# applications linking against libdune should also depend on libdune
+#
+# app_SOURCE = app.cc
+# app_LDADD = $(LIBDUNE)
+# app_DEPENDENCIES = $(LIBDUNE)
+#
+# instead, you can also write
+#
+# app_SOURCE = app.cc
+# app_LIBADD = $(LIBDUNE)
+#
+
+LIBDUNE = $(top_builddir)/lib/libdune.la
+
+%.la: MAKELIBS.force
+	make -C $$(dirname $@) $$(basename $@)
+
+.PHONY: MAKELIBS.force
+
+# Makefile depends on "me"
+Makefile: $(top_builddir)/am/update-libs

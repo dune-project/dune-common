@@ -26,3 +26,6 @@ web-install: all
 	  $(MAKE) -f $(DUNEWEBDIR)/Make.global \
             EXTRAINSTALL="$(EXTRAINSTALL)" CURDIR="$(CURDIR)" install ; \
 	fi
+
+# Makefile depends on "me"
+Makefile: $(top_builddir)/am/webstuff
