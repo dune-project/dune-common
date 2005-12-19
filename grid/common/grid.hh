@@ -12,6 +12,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/typetraits.hh>
+#include <dune/common/geometrytype.hh>
 
 namespace Dune {
 
@@ -20,7 +21,7 @@ namespace Dune {
 
      The Dune Grid module defines a general interface to a hierarchical
      finite element mesh.  The interface is independent of dimension and
-     element type (GeometryType).
+     element type.
    */
 
   /**
@@ -44,16 +45,6 @@ namespace Dune {
   /**
      @ingroup GridInterface
    */
-
-  /**
-      Enum that declares identifiers for different geometry types. This
-      list can be extended in the future. Not all meshes need to implement
-      all geometry types.
-   */
-
-  enum GeometryType {vertex,line, triangle, quadrilateral, tetrahedron,
-                     pyramid, prism, hexahedron,
-                     simplex, cube};
 
   enum AdaptationState {
     NONE ,   //!< notin' to do and notin' was done
@@ -117,34 +108,6 @@ namespace Dune {
       return "ghost";
     default :
       DUNE_THROW(NotImplemented, "name of unknown partition type requested");
-    }
-  }
-
-  inline std::string GeometryName(GeometryType type){
-    switch(type) {
-    case vertex :
-      return "vertex";
-    case line :
-      return "line";
-    case triangle :
-      return "triangle";
-    case quadrilateral :
-      return "quadrilateral";
-    case tetrahedron :
-      return "tetrahedron";
-    case pyramid :
-      return "pyramid";
-    case prism :
-      return "prism";
-    case hexahedron :
-      return "hexahedron";
-    case simplex :
-      return "simplex";
-    case cube :
-      return "cube";
-
-    default :
-      DUNE_THROW(NotImplemented, "name of unknown geometry requested");
     }
   }
 
@@ -555,12 +518,6 @@ namespace Dune {
 #include "hierarchiciterator.hh"
 #include "leafiterator.hh"
 #include "indexidset.hh"
-
-inline std::ostream& operator<< (std::ostream& s, Dune::GeometryType t)
-{
-  s << Dune::GeometryName(t);
-  return s;
-}
 
 inline std::ostream& operator<< (std::ostream& s, Dune::PartitionType t)
 {
