@@ -17,12 +17,23 @@ and refers you to more detailed documentation.
           Each is geared towards a different purpose.
         </p>
         <ul>
-          <li> <b>SGrid:</b> A structured grid in n space dimensions</li>
-          <li> <b>YaspGrid:</b> A structured parallel grid in n space dimensions</li>
-          <li> <b>UGGrid:</b> The grid manager of the UG toolbox</li>
-          <li> <b>AlbertaGrid:</b> The grid manager of the Alberta toolbox</li>
-          <li> <b>OneDGrid:</b> A sequential locally adaptive grid in one space dimension</li>
-          <li> <b>Alu3dGrid:</b> 3d nonconforming grid</li>
+          <li> <a href="$(ROOT)/doxygen/html/classDune_1_1SGrid.html">SGrid:</a> 
+            A structured grid in n space dimensions
+          </li>
+          <li> <a href="$(ROOT)/doxygen/html/classDune_1_1YaspGrid.html">YaspGrid:</a>
+            A structured parallel grid in n space dimensions
+          </li>
+          <li> <a href="$(ROOT)/doxygen/html/classDune_1_1UGGrid.html">UGGrid:</a>
+            The grid manager of the UG toolbox
+          </li>
+          <li> <a href="$(ROOT)/doxygen/html/classDune_1_1AlbertaGrid.html">AlbertaGrid:</a>
+            The grid manager of the Alberta toolbox
+          </li>
+          <li> <a href="$(ROOT)/doxygen/html/classDune_1_1OneDGrid.html">OneDGrid:</a>
+            A sequential locally adaptive grid in one space dimension
+          </li>
+          <li> <a href="$(ROOT)/doxygen/html/classDune_1_1ALU3dGrid.html">ALU3dGrid:</a>
+            A 3d hexahedral and tetrahedral grid with nonconforming refinement</li>
         </ul>
       </li>
     <br>
@@ -31,7 +42,10 @@ and refers you to more detailed documentation.
         DUNE contains ISTL (the Iterative Solver Template Library) for powerful
         linear algebra.  The main features are:
       <ul>
-        <li> Abstractions for block matrices and block vectors </li>
+        <li> Abstractions for block matrices 
+          (e.g. <a href="$(ROOT)/doxygen/html/classDune_1_1BCRSMatrix.html">compressed row storage</a>
+          and <a href="$(ROOT)/doxygen/html/classDune_1_1BDMatrix.html">block diagonal</a>)
+          and <a href="$(ROOT)/doxygen/html/classDune_1_1BlockVector.html">block vectors</a> </li>
         <li> Block structure arbitrarily nestable </li>
         <li> High performance through generic programming </li>
         <li> Expression templates for BLAS1 routines </li>
