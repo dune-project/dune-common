@@ -195,6 +195,7 @@ AC_CONFIG_FILES([Makefile
          grid/sgrid/Makefile
          grid/test/Makefile
          grid/uggrid/Makefile
+	 grid/utility/Makefile
          grid/yaspgrid/Makefile
          istl/Makefile
          istl/tutorial/Makefile
