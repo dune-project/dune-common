@@ -123,6 +123,12 @@ namespace Dune {
     //! contained
     int numberInNeighbor () const { return it().numberInNeighbor(); }
 
+    //! twist of the face seen from the inner element
+    int twistInSelf() const { return it().twistInSelf(); }
+
+    //! twist of the face seen from the outer element
+    int twistInNeighbor() const { return it().twistInNeighbor(); }
+
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
     NormalType & unitOuterNormal (const FieldVector<ctype, dim-1>& local) const
