@@ -55,13 +55,13 @@ namespace Dune {
     typedef DiscFuncArray < DiscreteFunctionSpaceType > DiscreteFunctionType;
 
     //! Type of the range field
-    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::Traits::RangeFieldType RangeFieldType;
 
     /** \brief For ISTL-compatibility */
     typedef FieldVector<RangeFieldType,1> block_type;
 
     //! Type of the grid
-    typedef typename DiscreteFunctionSpaceType::GridType GridType;
+    typedef typename DiscreteFunctionSpaceType::Traits::GridType GridType;
 
     //! the MyType
     typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscreteFunctionType;
@@ -240,10 +240,10 @@ namespace Dune {
     typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscFuncType;
 
     enum { dimrange = DiscreteFunctionSpaceType::DimRange };
-    typedef typename DiscreteFunctionSpaceType::DomainType DomainType;
-    typedef typename DiscreteFunctionSpaceType::RangeType RangeType;
-    typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
-    typedef typename DiscreteFunctionSpaceType::JacobianRangeType JacobianRangeType;
+    typedef typename DiscreteFunctionSpaceType::Traits::DomainType DomainType;
+    typedef typename DiscreteFunctionSpaceType::Traits::RangeType RangeType;
+    typedef typename DiscreteFunctionSpaceType::Traits::RangeFieldType RangeFieldType;
+    typedef typename DiscreteFunctionSpaceType::Traits::JacobianRangeType JacobianRangeType;
 
     friend class DiscFuncArray <DiscreteFunctionSpaceType>;
     friend class LocalFunctionWrapper < DiscFuncArray <DiscreteFunctionSpaceType> >;
