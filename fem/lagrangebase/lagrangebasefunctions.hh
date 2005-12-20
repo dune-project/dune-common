@@ -10,6 +10,7 @@
 #include <dune/grid/common/grid.hh>
 
 #include <dune/fem/common/fastbase.hh>
+#include <dune/fem/common/basefunctionfactory.hh>
 
 namespace Dune {
 
@@ -791,6 +792,132 @@ namespace Dune {
       return (int) (numOfBaseFct / dimrange);
     }
 
+  };
+
+  //! Factory class for base functions
+  template <class ScalarFunctionSpaceImp, int polOrd>
+  class LagrangeBaseFunctionFactory :
+    public BaseFunctionFactory<ScalarFunctionSpaceImp>
+  {
+  public:
+    typedef ScalarFunctionSpaceImp FunctionSpaceType;
+    typedef BaseFunctionInterface<FunctionSpaceType> BaseFunctionType;
+  public:
+    LagrangeBaseFunctionFactory(GeometryType geo) :
+      BaseFunctionFactory<FunctionSpaceType>(geo)
+    {}
+
+    virtual BaseFunctionType* baseFunction(int i) const
+    {
+      switch (this->geometry()) {
+      case simplex :
+        switch (FunctionSpaceType::DimDomain) {
+        case 1 :
+          return new
+                 LagrangeBaseFunction<FunctionSpaceType, line, polOrd>(i);
+        case 2 :
+          return new
+                 LagrangeBaseFunction<FunctionSpaceType, triangle, polOrd>(i);
+        case 3 :
+          return new
+                 LagrangeBaseFunction<FunctionSpaceType, tetrahedron, polOrd>(i);
+        }
+      case cube :
+        switch (FunctionSpaceType::DimDomain) {
+        case 1 :
+          return new
+                 LagrangeBaseFunction<FunctionSpaceType, line, polOrd>(i);
+        case 2 :
+          return new
+                 LagrangeBaseFunction<FunctionSpaceType, quadrilateral, polOrd>(i);
+        case 3 :
+          return new
+                 LagrangeBaseFunction<FunctionSpaceType, hexahedron, polOrd>(i);
+        }
+      case line :
+        return new
+               LagrangeBaseFunction<FunctionSpaceType, line, polOrd>(i);
+      case triangle :
+        return new
+               LagrangeBaseFunction<FunctionSpaceType, triangle, polOrd>(i);
+      case tetrahedron :
+        return new
+               LagrangeBaseFunction<FunctionSpaceType, tetrahedron, polOrd>(i);
+      case quadrilateral :
+        return new
+               LagrangeBaseFunction<FunctionSpaceType, quadrilateral, polOrd>(i);
+      case hexahedron :
+        return new
+               LagrangeBaseFunction<FunctionSpaceType, hexahedron, polOrd>(i);
+      case prism :
+        return new
+               LagrangeBaseFunction<FunctionSpaceType, prism, polOrd>(i);
+      case pyramid :
+        return new
+               LagrangeBaseFunction<FunctionSpaceType, pyramid, polOrd>(i);
+      default :
+        DUNE_THROW(NotImplemented,
+                   "The chosen geometry type is not implemented");
+      }
+      return 0;
+    }
+
+    virtual int numBaseFunctions() const
+    {
+      const int dimRange = FunctionSpaceType::DimRange;
+
+      switch (this->geometry()) {
+      case simplex :
+        switch (FunctionSpaceType::DimDomain) {
+        case 1 :
+          return
+            LagrangeDefinition<line, polOrd, dimRange>::numOfBaseFct;
+        case 2 :
+          return
+            LagrangeDefinition<triangle, polOrd, dimRange>::numOfBaseFct;
+        case 3 :
+          return
+            LagrangeDefinition<tetrahedron, polOrd, dimRange>::numOfBaseFct;
+        }
+      case cube :
+        switch (FunctionSpaceType::DimDomain) {
+        case 1 :
+          return
+            LagrangeDefinition<line, polOrd, dimRange>::numOfBaseFct;
+        case 2 :
+          return
+            LagrangeDefinition<quadrilateral, polOrd, dimRange>::numOfBaseFct;
+        case 3 :
+          return
+            LagrangeDefinition<hexahedron, polOrd, dimRange>::numOfBaseFct;
+        }
+      case line :
+        return
+          LagrangeDefinition<line, polOrd, dimRange>::numOfBaseFct;
+      case triangle :
+        return
+          LagrangeDefinition<triangle, polOrd, dimRange>::numOfBaseFct;
+      case tetrahedron :
+        return
+          LagrangeDefinition<tetrahedron, polOrd, dimRange>::numOfBaseFct;
+      case quadrilateral :
+        return
+          LagrangeDefinition<quadrilateral, polOrd, dimRange>::numOfBaseFct;
+      case hexahedron :
+        return
+          LagrangeDefinition<hexahedron, polOrd, dimRange>::numOfBaseFct;
+      case prism :
+        return
+          LagrangeDefinition<prism, polOrd, dimRange>::numOfBaseFct;
+      case pyramid :
+        return
+          LagrangeDefinition<pyramid, polOrd, dimRange>::numOfBaseFct;
+      default :
+        DUNE_THROW(NotImplemented,
+                   "The chosen geometry type is not implemented");
+      }
+      return 0;
+    }
   };
 
 } // end namespace Dune
