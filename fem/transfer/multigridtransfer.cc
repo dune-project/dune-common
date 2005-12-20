@@ -498,6 +498,62 @@ galerkinRestrict(const OperatorType& fineMat, OperatorType& coarseMat) const
 }
 
 
+// Set Occupation of Galerkin restricted coarse stiffness matrix
+template<class DiscFuncType>
+void Dune::MultiGridTransfer<DiscFuncType>::
+galerkinRestrictSetOccupation(const OperatorType& fineMat, OperatorType& coarseMat) const
+{
+  // ////////////////////////
+  // Nonsymmetric case
+  // ////////////////////////
+  typedef typename OperatorType::row_type RowType;
+  typedef typename RowType::ConstIterator ConstColumnIterator;
+
+
+  // Create index set
+  Dune::MatrixIndexSet indices(matrix_.M(), matrix_.M());
+
+  // Loop over all rows of the fine matrix
+  for (int v=0; v<fineMat.N(); v++) {
+
+    const RowType& row = fineMat[v];
+
+    // Loop over all columns of the fine matrix
+    ConstColumnIterator m    = row.begin();
+    ConstColumnIterator mEnd = row.end();
+
+    for (; m!=mEnd; ++m) {
+
+      int w = m.index();
+
+      // Loop over all coarse grid vectors iv that have v in their support
+      ConstColumnIterator im    = matrix_[v].begin();
+      ConstColumnIterator imEnd = matrix_[v].end();
+      for (; im!=imEnd; ++im) {
+
+        int iv = im.index();
+
+        // Loop over all coarse grid vectors jv that have w in their support
+        ConstColumnIterator jm    = matrix_[w].begin();
+        ConstColumnIterator jmEnd = matrix_[w].end();
+
+        for (; jm!=jmEnd; ++jm)
+          indices.add(iv, jm.index());
+
+      }
+
+    }
+
+  }
+
+  indices.exportIdx(coarseMat);
+}
+
+
+
+
+
+
 
 /***************************************************************************/
 /***************************************************************************/
