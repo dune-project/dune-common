@@ -440,13 +440,19 @@ namespace Dune
     //! Geometry of this entity
     const Geometry& geometry () const { return realEntity.geometry(); }
 
-    /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
-       This can speed up on-the-fly interpolation for linear conforming elements
-       Possibly this is sufficient for all applications we want on-the-fly.
+    /** \brief Returns an element on the next-coarser level that contains this vertex
+
+       This method is for fast implementations of interpolation for linear conforming elements.
+       Of course, there may be more than one element on the coarser grid containing this
+       vertex.  In that case it is not prescribed precisely which of those elements
+       gets returned.
      */
     EntityPointer ownersFather () const { return realEntity.ownersFather(); }
 
-    //! This entity's position in local coordinates of the owners father
+    /** \brief This vertex' position in local coordinates of the owners father
+
+       For fast implementation of P1 finite elements
+     */
     const FieldVector<ct, dim>& positionInOwnersFather () const { return realEntity.positionInOwnersFather(); }
 
     //! Copy constructor from EntityImp
