@@ -11,6 +11,9 @@
 #include "dofmanager.hh"
 //#include "dgspace/dgmapper.hh"
 
+#include <dune/fem/common/basefunctionsets.hh>
+#include <dune/fem/common/basefunctionfactory.hh>
+
 // * Note: the dofmanager could be removed from the space altogether now.
 // (Maybe this wouldn't be a clever move, though. In my view of a perfect Dune,
 // there would be one DofManager per space and the DiscreteFunctions wouldn't
@@ -23,8 +26,8 @@ namespace Dune {
   class LagrangeDiscreteFunctionSpace;
 
   template <class FunctionSpaceImp,class GridPartImp, int polOrd>
-  struct LagrangeDiscreteFunctionSpaceTraits {
-
+  struct LagrangeDiscreteFunctionSpaceTraits
+  {
     typedef FunctionSpaceImp FunctionSpaceType;
     typedef GridPartImp GridPartType;
 
@@ -41,7 +44,8 @@ namespace Dune {
 
     typedef LagrangeDiscreteFunctionSpace<
         FunctionSpaceImp, GridPartImp, polOrd> DiscreteFunctionSpaceType;
-    typedef FastBaseFunctionSet<DiscreteFunctionSpaceType> BaseFunctionSetType;
+    //typedef FastBaseFunctionSet<DiscreteFunctionSpaceType> BaseFunctionSetType;
+    typedef VectorialBaseFunctionSet<FunctionSpaceImp> BaseFunctionSetType;
     typedef LagrangeMapper<IndexSetType,polOrd,DimRange> MapperType;
   };
 
@@ -118,6 +122,10 @@ namespace Dune {
     /** \todo Please doc me! */
     typedef typename FunctionSpaceType::DomainFieldType DomainFieldType;
 
+    //! The base function factory
+    typedef LagrangeBaseFunctionFactory<
+        typename Traits::FunctionSpaceType, polOrd> FactoryType;
+
     //! dimension of value
     enum { dimVal = 1 };
 
@@ -189,12 +197,11 @@ namespace Dune {
 
     //! get the right BaseFunctionSet for a given Entity
     template <class EntityType>
-    BaseFunctionSetType* setBaseFuncSetPointer(EntityType &en,
-                                               const IndexSetType& iset);
+    BaseFunctionSetType* setBaseFuncSetPointer(EntityType &en);
 
     //! make base function set depending on GeometryType and polynomial order
-    template <GeometryType ElType, int pO >
-    BaseFunctionSetType* makeBaseSet (const IndexSetType& iset);
+    //template <GeometryType ElType, int pO >
+    //BaseFunctionSetType* makeBaseSet (const IndexSetType& iset);
 
   protected:
     //! the corresponding vector of base function sets

@@ -37,13 +37,17 @@ namespace Dune {
       int dimension = static_cast<int>( EntityType::mydimension);
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
-      if(baseFuncSet_[id] == 0 )
-        baseFuncSet_[id] = setBaseFuncSetPointer(*it, gridPart.indexSet());
+      if(baseFuncSet_[id] == 0 ) {
+        baseFuncSet_[id] = setBaseFuncSetPointer(*it);
+        mapper_ = new typename
+                  Traits::MapperType(const_cast<IndexSetType&>(gridPart.indexSet()),
+                                     baseFuncSet_[id]->numBaseFunctions());
+      }
     }
 
     // for empty functions space which can happen for BSGrid
-    if(!mapper_) makeBaseSet<line,0> (gridPart.indexSet());
-    assert(mapper_);
+    //if(!mapper_) makeBaseSet<line,0> (gridPart.indexSet());
+    //assert(mapper_);
   }
 
   template <class FunctionSpaceImp, class GridPartImp, int polOrd>
@@ -151,69 +155,84 @@ namespace Dune {
 
   template <class FunctionSpaceImp, class GridPartImp, int polOrd>
   template <class EntityType>
-  inline typename
-  LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
+  typename LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
   BaseFunctionSetType*
   LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-  setBaseFuncSetPointer ( EntityType &en,const IndexSetType & iset )
+  setBaseFuncSetPointer(EntityType& en)
   {
-    switch (en.geometry().type())
-    {
-    case line         : return makeBaseSet<line,polOrd> (iset);
-    case triangle     : return makeBaseSet<triangle,polOrd> (iset);
-    case quadrilateral : return makeBaseSet<quadrilateral,polOrd> (iset);
-    case tetrahedron  : return makeBaseSet<tetrahedron,polOrd> (iset);
-    case pyramid      : return makeBaseSet<pyramid,polOrd> (iset);
-    case prism        : return makeBaseSet<prism,polOrd> (iset);
-    case hexahedron   : return makeBaseSet<hexahedron,polOrd> (iset);
+    typedef typename ToScalarFunctionSpace<
+        typename Traits::FunctionSpaceType>::Type ScalarFunctionSpaceType;
 
-    case simplex :
-      switch (EntityType::dimension) {
-      case 1 : return makeBaseSet<line,polOrd> (iset);
-      case 2 : return makeBaseSet<triangle,polOrd> (iset);
-      case 3 : return makeBaseSet<tetrahedron,polOrd> (iset);
-      default :
-        DUNE_THROW(NotImplemented, "No Lagrange function spaces for simplices of dimension "
-                   << EntityType::dimension << "!");
-      }
-
-    case cube :
-      switch (EntityType::dimension) {
-      case 1 : return makeBaseSet<line,polOrd> (iset);
-      case 2 : return makeBaseSet<quadrilateral,polOrd> (iset);
-      case 3 : return makeBaseSet<hexahedron,polOrd> (iset);
-      default :
-        DUNE_THROW(NotImplemented,
-                   "No Lagrange function spaces for cubes of dimension "
-                   << EntityType::dimension << "!");
-      }
-
-    default : {
-      DUNE_THROW(NotImplemented, "Element type "
-                 << en.geometry().type() << " is not provided yet!");
-    }
-    }
+    LagrangeBaseFunctionFactory<
+        ScalarFunctionSpaceType, polOrd> fac(en.geometry().type());
+    return new BaseFunctionSetType(fac);
   }
+  /*
+     template <class FunctionSpaceImp, class GridPartImp, int polOrd>
+     template <class EntityType>
+     inline typename
+     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
+     BaseFunctionSetType*
+     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
+     setBaseFuncSetPointer ( EntityType &en,const IndexSetType& iset )
+     {
+     switch (en.geometry().type())
+        {
+        case line         : return makeBaseSet<line,polOrd> (iset);
+        case triangle     : return makeBaseSet<triangle,polOrd> (iset);
+        case quadrilateral: return makeBaseSet<quadrilateral,polOrd> (iset);
+        case tetrahedron  : return makeBaseSet<tetrahedron,polOrd> (iset);
+        case pyramid      : return makeBaseSet<pyramid,polOrd> (iset);
+        case prism        : return makeBaseSet<prism,polOrd> (iset);
+        case hexahedron   : return makeBaseSet<hexahedron,polOrd> (iset);
 
-  template <class FunctionSpaceImp, class GridPartImp, int polOrd>
-  template <GeometryType ElType, int pO >
-  inline typename
-  LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-  BaseFunctionSetType *
-  LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-  makeBaseSet (const IndexSetType & iset)
-  {
-    typedef LagrangeFastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType,
-        ElType, pO > BaseFuncSetType;
+        case simplex :
+          switch (EntityType::dimension) {
+          case 1: return makeBaseSet<line,polOrd> (iset);
+          case 2: return makeBaseSet<triangle,polOrd> (iset);
+          case 3: return makeBaseSet<tetrahedron,polOrd> (iset);
+          default:
+            DUNE_THROW(NotImplemented, "No Lagrange function spaces for simplices of dimension "
+                       << EntityType::dimension << "!");
+          }
 
-    BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
+        case cube :
+          switch (EntityType::dimension) {
+          case 1: return makeBaseSet<line,polOrd> (iset);
+          case 2: return makeBaseSet<quadrilateral,polOrd> (iset);
+          case 3: return makeBaseSet<hexahedron,polOrd> (iset);
+          default:
+            DUNE_THROW(NotImplemented,
+                       "No Lagrange function spaces for cubes of dimension "
+                       << EntityType::dimension << "!");
+          }
 
-    mapper_ = new MapperType (const_cast<IndexSetType&>(iset),
+        default: {
+            DUNE_THROW(NotImplemented, "Element type "
+                       << en.geometry().type() << " is not provided yet!");
+        }
+     }
+     }
+
+     template <class FunctionSpaceImp, class GridPartImp, int polOrd>
+     template <GeometryType ElType, int pO >
+     inline typename
+     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
+     BaseFunctionSetType *
+     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
+     makeBaseSet (const IndexSetType& iset)
+     {
+     typedef LagrangeFastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType,
+          ElType, pO > BaseFuncSetType;
+
+     BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
+
+     mapper_ = new MapperType (const_cast<IndexSetType&>(iset),
                               baseFuncSet->numBaseFunctions());
 
-    return baseFuncSet;
-  }
-
+     return baseFuncSet;
+     }
+   */
 } // end namespace Dune
 
 #endif
