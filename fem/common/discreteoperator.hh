@@ -48,7 +48,7 @@ namespace Dune {
     /*!
        no public method, but has to be public, because all discrete operator
        must be able to call this method an the template parameters are
-       allways diffrent.
+       allways different.
        NOTE: this method has to be overloaded by the DiscreteOperatorImp class
        ans must return the reference to local operator  */
     const LocalOperatorImp & getLocalOp () const
