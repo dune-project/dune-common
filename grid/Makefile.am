@@ -1,6 +1,7 @@
 # $Id$
 
-SUBDIRS = albertagrid alu3dgrid common onedgrid sgrid uggrid yaspgrid test
+SUBDIRS = albertagrid alu3dgrid common onedgrid sgrid uggrid utility yaspgrid \
+	test
 
 noinst_LTLIBRARIES = libgrid.la
 
