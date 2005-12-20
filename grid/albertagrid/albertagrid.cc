@@ -1995,10 +1995,10 @@ namespace Dune
         for(int j=0; j<dimworld; j++) newcoord[j] = coord[j];
       }
       //****************************************
-      if (faceMap[1] == (faceMap[0]+1)%3) {
-        return faceMap[0];
+      if (facemap[1] == (facemap[0]+1)%3) {
+        return facemap[0];
       }
-      return faceMap[1]-3;
+      return facemap[1]-3;
     }
   };
 #endif
