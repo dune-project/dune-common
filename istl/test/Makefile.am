@@ -23,12 +23,10 @@ check_PROGRAMS = $(NORMALTESTS) $(INDEXPROG)
 bvectortest_SOURCES = bvectortest.cc
 bvectortest_DEPENDENCIES = $(LIBDUNE)
 
-indicestest_SOURCES = indicestest.cc
-indicestest_DEPENDENCIES = $(LIBDUNE)
-
 matrixutilstest_SOURCES = matrixutilstest.cc laplacian.hh
 matrixutilstest_DEPENDENCIES = $(LIBDUNE)
 
+indicestest_SOURCES = indicestest.cc
 indicestest_CXXFLAGS = $(MPI_CPPFLAGS)
 indicestest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 indicestest_DEPENDENCIES = $(LIBDUNE)
