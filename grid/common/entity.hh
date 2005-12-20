@@ -461,7 +461,7 @@ namespace Dune
   protected:
     /** hide copy constructor */
     Entity(const Entity& rhs) : realEntity(rhs.realEntity) {};
-    /** hide assignement operator */
+    /** hide assignment operator */
     Entity & operator = (const Entity& rhs) {
       realEntity = rhs.realEntity;
       return *this;
