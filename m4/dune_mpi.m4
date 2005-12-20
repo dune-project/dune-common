@@ -51,6 +51,14 @@ AC_DEFUN([DUNE_MPI],[
   # implicitly sets the HAVE_MPI-define and the MPICXX-substitution
   ACX_MPI()
 
+  # disable runtest if we have a queuing system
+  AC_ARG_ENABLE(mpiruntest,
+    AC_HELP_STRING([--disable-mpiruntest],
+      [Don't try to run a MPI program during configure. (This is need if you depend on a queuing system)]),
+    [mpiruntest=$enable],
+    [mpiruntest=yes]
+  )
+
 # somehow variables like $1, $2 seem to disappear after m4... Quote them...
 dune_mpi_getflags () {
     # -- call mpiCC, remove compiler name
@@ -199,32 +207,33 @@ dune_mpi_remove () {
     LIBS="$MPI_LDFLAGS"
     CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
 
-    AC_MSG_CHECKING([whether compiling/running with $with_mpi works])
+    if test "x$mpiruntest" != "xyes" ; then
+      AC_MSG_WARN([Diabled test whether compiling/running with $with_mpi works.])    
+    else
+      AC_MSG_CHECKING([whether compiling/running with $with_mpi works])
 	
-    if test x"$with_mpi" = xLAM ; then
-      AC_MSG_NOTICE([Starting "lamboot" for checking...])
-      lamboot -H
-    fi
+      if test x"$with_mpi" = xLAM ; then
+        AC_MSG_NOTICE([Starting "lamboot" for checking...])
+        lamboot -H
+      fi
 
-    # try to create program
-    AC_RUN_IFELSE(
-      AC_LANG_SOURCE([#include <mpi.h>
+      # try to create program
+      AC_RUN_IFELSE(
+        AC_LANG_SOURCE(
+          [ #include <mpi.h>
+            int main (int argc, char** argv) { 
+	        MPI_Init(&argc, &argv); 
+            MPI_Finalize(); }]),
+        [ AC_MSG_RESULT([yes]) ],
+        [ AC_MSG_RESULT([no])
+          AC_MSG_WARN([could not compile or run MPI testprogram, deactivating MPI! See config.log for details])
+          with_mpi=no]
+      )
 
-                      int main (int argc, char** argv) { 
-	                MPI_Init(&argc, &argv); 
-                        MPI_Finalize();
-                      }
-                      ]),
-      [ AC_MSG_RESULT([yes]) ],
-      [ AC_MSG_RESULT([no])
-        AC_MSG_WARN([could not compile or run MPI testprogram, deactivating MPI! See config.log for details])
-        with_mpi=no
-      ]
-    )
-
-    if test x"$with_mpi" = xLAM ; then
-      AC_MSG_NOTICE([Stopping LAM via "lamhalt"...])
-      lamhalt -H
+      if test x"$with_mpi" = xLAM ; then
+        AC_MSG_NOTICE([Stopping LAM via "lamhalt"...])
+        lamhalt -H
+      fi
     fi
 
     # restore variables
