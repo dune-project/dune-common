@@ -13,14 +13,15 @@ AM_CONFIG_HEADER([config.h])
 AC_PROG_CXX
 AC_LANG_PUSH([C++])
 
-DUNE_CHECK_COMPILER
-
-# how to create a deprecated warning
-DUNE_CHECKDEPRECATED
-
 # don't build shared libs per default, this is way better for debugging...
 AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
+
+DUNE_CHECK_COMPILER
+DUNE_LINKCXX
+
+# how to create a deprecated warning
+DUNE_CHECKDEPRECATED
 
 # check for auxiliary tools so that it's not fatal if they're missing
 AC_CHECK_PROGS([DOXYGEN], [doxygen], [true])
