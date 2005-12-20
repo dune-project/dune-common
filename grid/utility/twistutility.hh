@@ -49,13 +49,11 @@ namespace Dune {
     {}
 
     int twistInSelf(IntersectionIterator& it) const {
-      DUNE_THROW(NotImplemented, "Hey, implement it yourself if you need it!");
       return 0;
     }
 
     int twistInNeighbor(IntersectionIterator& it) const {
-      DUNE_THROW(NotImplemented, "Hey, implement it yourself if you need it!");
-      return 0;
+      return 1;
     }
 
   private:
