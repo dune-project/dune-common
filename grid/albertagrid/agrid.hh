@@ -1005,6 +1005,12 @@ namespace Dune
     //! local number of codim 1 entity in neighbor where intersection is contained in
     int numberInNeighbor () const;
 
+    //! twist of the face seen from the inner element
+    int twistInSelf() const;
+
+    //! twist of the face seen from the outer element
+    int twistInNeighbor() const;
+
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
     typedef FieldVector<albertCtype, GridImp::dimensionworld> NormalVecType;
@@ -1092,6 +1098,9 @@ namespace Dune
     // tmp memory for normal calculation
     mutable FieldVector<albertCtype, dimworld> tmpU_;
     mutable FieldVector<albertCtype, dimworld> tmpV_;
+
+    // twist seen from the neighbor
+    mutable int twist_;
 
     //! is true when iterator finished
     bool done_;
@@ -1668,6 +1677,18 @@ namespace Dune
       typedef AlbertaGridEntity<cd,dim,const AlbertaGrid<dim,dimworld> > EntityImp;
       return static_cast<EntityImp &> (entity);
 #endif
+    }
+
+    AlbertaGridIntersectionIterator<const AlbertaGrid<dim, dimworld> >&
+    getRealIntersectionIterator(typename Traits::IntersectionIterator& it)
+    {
+      return it.realIterator;
+    }
+
+    const AlbertaGridIntersectionIterator<const AlbertaGrid<dim, dimworld> >&
+    getRealIntersectionIterator(const typename Traits::IntersectionIterator& it) const
+    {
+      return it.realIterator;
     }
 
   private:
