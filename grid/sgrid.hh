@@ -1435,6 +1435,19 @@ namespace Dune {
       return 0;
     }
 
+    SIntersectionIterator<const SGrid<dim, dimworld> >&
+    getRealIntersectionIterator(typename Traits::IntersectionIterator& it)
+    {
+      return it.realIterator;
+    }
+
+    const SIntersectionIterator<const SGrid<dim, dimworld> >&
+    getRealIntersectionIterator(const typename Traits::IntersectionIterator& it) const
+    {
+      return it.realIterator;
+    }
+
+
   private:
 
     CollectiveCommunication<SGrid> ccobj;

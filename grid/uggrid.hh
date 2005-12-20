@@ -489,6 +489,16 @@ namespace Dune {
      */
     void globalRefine(int n);
 
+    //! Get access to real iterator
+    UGGridIntersectionIterator<const UGGrid<dim, dimworld> >& getRealIntersectionIterator(typename Traits::IntersectionIterator& it) {
+      return it.realIterator;
+    }
+
+    //! Get access to real iterator
+    const UGGridIntersectionIterator<const UGGrid<dim, dimworld> >& getRealIntersectionIterator(const typename Traits::IntersectionIterator& it) const {
+      return it.realIterator;
+    }
+
   private:
     /** \brief UG multigrid, which contains the actual grid hierarchy structure */
     typename UGTypes<dimworld>::MultiGridType* multigrid_;

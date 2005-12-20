@@ -404,6 +404,16 @@ namespace Dune {
      */
     void globalRefine(int refCount);
 
+    OneDGridIntersectionIterator<const OneDGrid<dim, dimworld> >&
+    getRealIntersectionIterator(typename Traits::IntersectionIterator& it) {
+      return it.realIterator;
+    }
+
+    const OneDGridIntersectionIterator<const OneDGrid<dim, dimworld> >&
+    getRealIntersectionIterator(const typename Traits::IntersectionIterator& it) const {
+      return it.realIterator;
+    }
+
 
   private:
 
