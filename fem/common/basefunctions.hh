@@ -216,8 +216,8 @@ namespace Dune {
     typedef typename FunctionSpaceType::RangeFieldType DofType;
 
     //typedef SparseRowMatrix<DofType> MatrixType;
-    typedef Matrix<DofType> MatrixType;
-    typedef Quadrature<DofType, DomainType> QuadratureType;
+    //typedef Matrix<DofType> MatrixType;
+    // typedef QuadratureOld<DofType, DomainType> QuadratureType;
 
   public:
     //! set the default diffVar Types
@@ -286,6 +286,14 @@ namespace Dune {
       return phi*factor;
     }
 
+    template <class QuadratureType>
+    DofType evaluateSingle(int baseFunct,
+                           const QuadratureType& quad, int quadPoint,
+                           const RangeType& factor) const
+    {
+      return evaluateSingle(baseFunct, quad.point(quadPoint), factor);
+    }
+
     template <class Entity>
     DofType evaluateGradientSingle(int baseFunct,
                                    Entity& en,
@@ -305,46 +313,57 @@ namespace Dune {
       return result;
     }
 
-    template <class Entity>
-    void localMassMatrix(Entity& en, MatrixType& result) const {
-      // assert(en.geometry().type() == basefunctions.type())
-      result.resize(this->numBaseFunctions(), this->numBaseFunctions());
+    template <class Entity, class QuadratureType>
+    DofType evaluateGradientSingle(int baseFunct,
+                                   Entity& en,
+                                   const QuadratureType& quad, int quadPoint,
+                                   const JacobianRangeType& factor) const
+    {
+      return evaluateGradientSingle(baseFunct, en, quad.point(quadPoint),
+                                    factor);
+    }
 
-      RangeType phiI;
-      RangeType phiJ;
+    /*
+       template <class Entity>
+       void localMassMatrix(Entity& en, MatrixType& result) const {
+       // assert(en.geometry().type() == basefunctions.type())
+       result.resize(this->numBaseFunctions(), this->numBaseFunctions());
 
-      int order = 0;
-      QuadratureType quad(0, en.geometry().type(), order);
-      for (int q = 0; q < quad.nop(); ++q) {
+       RangeType phiI;
+       RangeType phiJ;
+
+       int order = 0;
+       QuadratureType quad(0, en.geometry().type(), order);
+       for (int q = 0; q < quad.nop(); ++q) {
         for (int i = 0; i < this->numBaseFunctions(); ++i) {
           eval(i, quad, q, phiI);
           for (int j = 0; j < this->numBaseFunctions(); ++j) {
             eval(j, quad, q, phiJ);
             assert(false); // is this correct for orthonormal base functions?
             result[i][j] = (phiI*phiJ)*quad.weight(q)*
-                           en.geometry().integrationElement(quad.point(q));
+              en.geometry().integrationElement(quad.point(q));
           }
         }
 
-      }
-    }
+       }
+       }
 
-    template <class Entity>
-    void localMassMatrixInverse(Entity& en, MatrixType& result) const {
-      localMassMatrix(en, result);
-      // *invert(result);
-    }
+       template <class Entity>
+       void localMassMatrixInverse(Entity& en, MatrixType& result) const {
+       localMassMatrix(en, result);
+       // *invert(result);
+       }
 
-    template <class Entity>
-    void localStiffnessMatrix(Entity& en, MatrixType& result) const {
-      result.resize(this->numBaseFunctions(), this->numBaseFunctions());
+       template <class Entity>
+       void localStiffnessMatrix(Entity& en, MatrixType& result) const {
+       result.resize(this->numBaseFunctions(), this->numBaseFunctions());
 
-      JacobianRangeType phiI;
-      JacobianRangeType phiJ;
+       JacobianRangeType phiI;
+       JacobianRangeType phiJ;
 
-      int order = 0;
-      QuadratureType quad(0, en.geometry().type(), order);
-      for (int q = 0; q < quad.size(); ++q) {
+       int order = 0;
+       QuadratureType quad(0, en.geometry().type(), order);
+       for (int q = 0; q < quad.size(); ++q) {
         for (int i = 0; i < this->numBaseFunctions(); ++i) {
           jacobian(i, quad, q, phiI);
           for (int j = 0; j < this->numBaseFunctions(); ++j) {
@@ -354,12 +373,13 @@ namespace Dune {
               update *= phiI[d]*phiJ[d];
             }
             result[i][j] = update*quad.weight(q)*
-                           en.geometry().integrationElement(quad.point(q));
+              en.geometry().integrationElement(quad.point(q));
           }
         }
 
-      }
-    }
+       }
+       }
+     */
 
   protected:
     //  void invert(MatrixType& mat);
