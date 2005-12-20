@@ -803,14 +803,14 @@ namespace Dune {
       typedef typename ALU3dImplTraits<elType> :: IMPLElementType IMPLElementType;
       typedef typename ALU3dImplTraits<elType> :: HasFaceType HasFaceType;
 
-      file << "!" << elType2Name( elType ) << endl;
+      file << "!" << elType2Name( elType ) << std::endl;
       {
         ALU3DSPACE LeafIterator < ALU3DSPACE VertexType > vx (mygrd) ;
-        file << endl;
+        file << std::endl;
 
         // write coordinates of the vertices
         int vxsize = vx->size();
-        file << vxsize << endl;
+        file << vxsize << std::endl;
         Array < double[3] > vxvec ( vxsize );
 
         for( vx->first(); !vx->done() ; vx->next() )
@@ -823,16 +823,16 @@ namespace Dune {
 
         for(int i=0; i<vxsize; i++)
         {
-          file << vxvec[i][0] << " " << vxvec[i][1] << " " << vxvec[i][2] << endl;
+          file << vxvec[i][0] << " " << vxvec[i][1] << " " << vxvec[i][2] << std::endl;
         }
       }
 
-      file << endl;
+      file << std::endl;
       // write element vertices
       {
         const int novx = (elType == tetra) ? 4 : 8;
         ALU3DSPACE LeafIterator < ALU3DSPACE HElementType > el (mygrd) ;
-        file << el->size() << endl;
+        file << el->size() << std::endl;
         for( el->first(); !el->done() ; el->next() )
         {
           IMPLElementType & item = static_cast<IMPLElementType &> (el->item());
@@ -841,13 +841,13 @@ namespace Dune {
             const int vxnum = item.myvertex(i)->getIndex();
             file << vxnum << " ";
           }
-          file << endl;
+          file << std::endl;
         }
       }
 
       // write boundary faces
       {
-        file << endl;
+        file << std::endl;
         const int nofaces  = (elType == tetra) ? 4 : 6;
         int bndfaces = 0;
         ALU3DSPACE LeafIterator < ALU3DSPACE HElementType > el (mygrd) ;
@@ -863,7 +863,7 @@ namespace Dune {
             }
           }
         }
-        file << bndfaces << endl;
+        file << bndfaces << std::endl;
       }
       // write boundary faces
       {
@@ -885,7 +885,7 @@ namespace Dune {
                 int vxnum = face->myvertex(0,j)->getIndex();
                 file << vxnum << " ";
               }
-              file << endl;
+              file << std::endl;
             }
           }
         }
@@ -893,13 +893,13 @@ namespace Dune {
 
       {
         ALU3DSPACE LeafIterator < ALU3DSPACE VertexType > vx (mygrd) ;
-        file << endl;
+        file << std::endl;
 
         // write coordinates of the vertices
         int vxnum = 0;
         for( vx->first(); !vx->done() ; vx->next() )
         {
-          file << vxnum << " -1" << endl;
+          file << vxnum << " -1" << std::endl;
           vxnum++;
         }
       }

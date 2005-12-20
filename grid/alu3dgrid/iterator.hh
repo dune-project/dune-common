@@ -797,6 +797,9 @@ namespace Dune {
     //! contained
     int numberInNeighbor () const;
 
+    int twistInSelf() const;
+    int twistInNeighbor() const;
+
     //! return unit outer normal, this should be dependent on local
     //! coordinates for higher order boundary
     NormalType & unitOuterNormal (const FieldVector<alu3d_ctype, dim-1>& local) const ;

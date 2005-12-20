@@ -62,6 +62,16 @@ namespace Dune {
   const int ElementTopologyMapping<hexa>::
   alu2duneVertex_[EntityCount<hexa>::numVertices] = {0, 1, 3, 2, 4, 5, 7, 6};
 
+  // actually, the orientation changes on each face, but this is compensated
+  // by the change in orientation of the reference face
+  template <>
+  const int ElementTopologyMapping<tetra>::
+  faceOrientation_[EntityCount<tetra>::numFaces] = {-1, -1, -1, -1};
+
+  template <>
+  const int ElementTopologyMapping<hexa>::
+  faceOrientation_[EntityCount<hexa>::numFaces] = {-1, 1, 1, -1, -1, 1};
+
   template <>
   const int ElementTopologyMapping<tetra>::
   dune2aluFaceVertex_[numFaces][numVerticesPerFace] = {{0, 2, 1},
@@ -70,14 +80,16 @@ namespace Dune {
                                                        {0, 2, 1}};
 
   // maps for each face the local number so that the right dune face is
-  // comming up
+  // coming up
   template <>
   const int ElementTopologyMapping<hexa>::
   dune2aluFaceVertex_[numFaces][numVerticesPerFace] = {{0, 3, 1, 2},
                                                        {0, 1, 3, 2},
                                                        {0, 1, 3, 2},
-                                                       {0, 1, 3, 2},
+                                                       //{0, 1, 3, 2}, wrong 3
                                                        {1, 0, 2, 3},
+                                                       //{1, 0, 2, 3}, wrong 4
+                                                       {0, 3, 1, 2},
                                                        {0, 3, 1, 2}};
 
   template <>
@@ -128,7 +140,7 @@ namespace Dune {
   }
 
   // alu traingle face are oriented just the other way then dune faces
-  // therefor vertex 1 and 2 are swaped because
+  // therefore vertex 1 and 2 are swapped because
   // ALUGrid tetra face are oriented just the other way compared to Dune
   // tetra faces, see also gitter_geo.cc of the ALUGrid code
   template <>

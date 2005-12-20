@@ -55,6 +55,12 @@ namespace Dune {
     //! Maps vertex index from ALU3dGrid onto Dune reference element
     static int alu2duneVertex(int index);
 
+    //! Return 1 if faces in ALU3dGrid and Dune reference element
+    //! have the same orientation (edge 0->1 is taken as reference as
+    //! they are the same in both reference elements), -1 otherwise.
+    //! The index is a Dune face index
+    static int faceOrientation(int index);
+
     //! Maps local vertex index of a face onto a global vertex index
     //! (Dune->ALU3dGrid)
     //! \param face Face index (Dune reference element)
@@ -80,8 +86,11 @@ namespace Dune {
     const static int dune2aluVertex_[numVertices];
     const static int alu2duneVertex_[numVertices];
 
+    const static int faceOrientation_[numFaces];
+
     const static int dune2aluFaceVertex_[numFaces][numVerticesPerFace];
     const static int alu2duneFaceVertex_[numFaces][numVerticesPerFace];
+
   };
 
   //! Maps indices of the Dune reference face onto the indices of the
@@ -173,6 +182,12 @@ namespace Dune {
   int ElementTopologyMapping<type>::alu2duneVertex(int index) {
     assert(index >= 0 && index < numVertices);
     return alu2duneVertex_[index];
+  }
+
+  template <ALU3dGridElementType type>
+  int ElementTopologyMapping<type>::faceOrientation(int index) {
+    assert(index >= 0 && index < numVertices);
+    return faceOrientation_[index];
   }
 
   template <ALU3dGridElementType type>

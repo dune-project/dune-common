@@ -153,8 +153,8 @@ namespace Dune {
      \brief [<em> provides \ref Dune::Grid </em>]
      \brief 3D grid with support for hexahedrons and tetrahedrons.
      @ingroup GridImplementations
-     The ALU3dGrid implements the Dune GridInterface for 3d tetrahedral
-     meshes. This grid can be locally adapted and used in parallel
+     The ALU3dGrid implements the Dune GridInterface for 3d tetrahedral and
+     hexahedral meshes. This grid can be locally adapted and used in parallel
      computations using dynamcic load balancing.
 
      @note
@@ -364,7 +364,7 @@ namespace Dune {
     int size (int codim, GeometryType type) const;
 
     //! number of grid entities on all levels for given codim
-    int global_size (int cd) const DUNE_DEPRECATED;
+    int global_size (int cd) const ;
 
     //! number of grid entities in the entire grid for given codim
     int hierSetSize (int cd) const;
@@ -494,6 +494,18 @@ namespace Dune {
     getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const
     {
       return entity.realEntity;
+    }
+
+    IntersectionIteratorWrapper<const MyType>&
+    getRealIntersectionIterator(typename Traits::IntersectionIterator& it)
+    {
+      return it.realIterator;
+    }
+
+    const IntersectionIteratorWrapper<const MyType>&
+    getRealIntersectionIterator(const typename Traits::IntersectionIterator& it)  const
+    {
+      return it.realIterator;
     }
 
     //! deliver all geometry types used in this grid

@@ -306,6 +306,7 @@ namespace Dune {
 
     // multiply with transposed because Jinv_ is already transposed
     localCoord_ = FMatrixHelp:: multTransposed(Jinv_,globalCoord_);
+
     return localCoord_;
   }
 
