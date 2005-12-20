@@ -323,6 +323,18 @@ namespace Dune {
       return 0;
     }
 
+    /** \brief The processor overlap for parallel computing.  Always zero because
+        this is a strictly sequential grid */
+    int overlapSize(int level, int codim) const {
+      return 0;
+    }
+
+    /** \brief The processor ghost overlap for parallel computing.  Always zero because
+        this is a strictly sequential grid */
+    int ghostSize(int level, int codim) const {
+      return 0;
+    }
+
     /** \brief Get the set of global ids */
     const typename Traits::GlobalIdSet& globalIdSet() const
     {
