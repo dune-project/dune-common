@@ -57,9 +57,13 @@ namespace Dune
     template <int cd>
     struct Codim
     {
+
+      /** \brief Define types needed to iterate over entities of a given partition type */
       template <PartitionIteratorType pitype>
       struct Partition
       {
+        /** \brief The iterator needed to iterate over the entities of a given codim and
+            partition type of this index set */
         typedef typename IndexSetTypes::template Codim<cd>::template Partition<pitype>::Iterator Iterator;
       };
     };
