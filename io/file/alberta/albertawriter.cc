@@ -16,8 +16,6 @@ void Dune::AlbertaWriter<GridType>::writeGrid(const GridType& grid,
     DUNE_THROW(IOError, "You can only write grids in Alberta format if dim==dimworld==2"
                << " or dim==dimworld==3.");
 
-  /** \todo Make sure this grid is conforming! */
-
   typedef typename GridType::Traits::LeafIndexSet IndexSetType;
   typedef typename IndexSetType::template Codim<0>::template Partition<All_Partition>::Iterator ElementIterator;
   typedef typename IndexSetType::template Codim<dim>::template Partition<All_Partition>::Iterator VertexIterator;
