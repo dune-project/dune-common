@@ -1,0 +1,8 @@
+Makefile
+Makefile.in
+.deps
+.libs
+test-albertawriter
+semantic.cache
+*.gcda
+*.gcno
