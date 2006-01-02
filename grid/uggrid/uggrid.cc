@@ -488,7 +488,7 @@ bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
   if (refCount==1) {
     if (UG_NS<dim>::MarkForRefinement(target,
                                       UG_NS<dim>::RED,      // red refinement rule
-                                      0)      // no user data
+                                      0)      // Irrelevant if refinement rule is not BLUE
         ) DUNE_THROW(GridError, "UG" << dim << "d::MarkForRefinement returned error code!");
 
     return true;
@@ -496,7 +496,7 @@ bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
 
     if (UG_NS<dim>::MarkForRefinement(target,
                                       UG_NS<dim>::COARSE,      // coarsen the element
-                                      0)      // no user data
+                                      0)      // Irrelevant if refinement rule is not BLUE
         ) DUNE_THROW(GridError, "UG" << dim << "d::MarkForRefinement returned error code!");
 
     return true;
@@ -507,17 +507,15 @@ bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
 
 template < int dim, int dimworld >
 bool Dune::UGGrid < dim, dimworld >::mark(const typename Traits::template Codim<0>::EntityPointer & e,
-                                          typename UG_NS<dim>::RefinementRule rule
-                                          )
+                                          typename UG_NS<dim>::RefinementRule rule,
+                                          int side)
 {
   typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
 
   if (!UG_NS<dim>::isLeaf(target))
     return false;
 
-  return UG_NS<dim>::MarkForRefinement(target,
-                                       rule,
-                                       0);   // no user data
+  return UG_NS<dim>::MarkForRefinement(target, rule, side);
 
 }
 

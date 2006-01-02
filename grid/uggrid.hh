@@ -329,9 +329,15 @@ namespace Dune {
     bool mark(int refCount, const typename Traits::template Codim<0>::EntityPointer & e );
 
     /** \brief Mark method accepting a UG refinement rule
+
+       \param e Pointer to the element to be marked for refinement
+       \param rule One of the UG refinement rules
+       \param side If rule==UG2d::BLUE (one quadrilateral is split into two rectangles)
+       you can choose the orientation of the cut by setting side==0 or side==1
      */
     bool mark(const typename Traits::template Codim<0>::EntityPointer & e,
-              typename UG_NS<dim>::RefinementRule rule);
+              typename UG_NS<dim>::RefinementRule rule,
+              int side=0);
 
     //! Triggers the grid refinement process
     bool adapt();
