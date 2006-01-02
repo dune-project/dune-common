@@ -67,7 +67,7 @@ void Dune::AlbertaWriter<GridType>::writeGrid(const GridType& grid,
 
   for (; eIt!=eEndIt; ++eIt) {
 
-    for (int i=0; i<4; i++)
+    for (int i=0; i<eIt->template count<dim>(); i++)
       ofile << indexSet.template subIndex<dim>(*eIt,i) << " ";
 
     ofile << std::endl;
