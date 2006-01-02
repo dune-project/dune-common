@@ -15,16 +15,18 @@ namespace Dune
    * @{
    */
   /**
-   * @brief define a class containin boundary condition flags
+   * @brief Define a class containing boundary condition flags
    *
    */
 
-  //! base class that defines the parameters of a the diffusion equation
+  //! base Class that defines boundary condition flags
   struct BoundaryConditions
   {
-    // these values are ordered according to precedence
-    // neumann has lowest priority
-    enum Flags {neumann=1, process=2, dirichlet=3};
+    /** \brief These values are ordered according to precedence */
+    enum Flags {neumann=1,       //!< Neumann boundary
+                process=2,        //!< Processor boundary
+                dirichlet=3       //!< Dirichlet boundary
+    };
   };
 
   /** @} */

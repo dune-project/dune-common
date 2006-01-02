@@ -905,11 +905,18 @@ namespace Dune
 
 
   /** \brief P1 finite element function on the leaf grid
+
+     \tparam G The grid
+     \tparam RT The type used for the component values of the function
+     \tparam m Vector-valued functions: number of components
    */
   template<class G, class RT, int m=1>
   class LeafP1Function : public P1Function<G,RT,typename G::template Codim<0>::LeafIndexSet,LeafCommunicate<G>,m>
   {
   public:
+    /** \brief Constructor for a given grid
+        \todo Please doc the second argument
+     */
     LeafP1Function (const G& grid, bool extendoverlap=false)
       : P1Function<G,RT,typename G::template Codim<0>::LeafIndexSet,LeafCommunicate<G>,m>(grid,grid.leafIndexSet(),LeafCommunicate<G>(grid),extendoverlap)
     {}
@@ -917,11 +924,18 @@ namespace Dune
 
 
   /** \brief P1 finite element function on a given level grid
+
+     \tparam G The grid
+     \tparam RT The type used for the component values of the function
+     \tparam m Vector-valued functions: number of components
    */
   template<class G, class RT, int m=1>
   class LevelP1Function : public P1Function<G,RT,typename G::template Codim<0>::LevelIndexSet,LevelCommunicate<G>,m>
   {
   public:
+    /** \brief Constructor for a given grid
+        \todo Please doc the third argument
+     */
     LevelP1Function (const G& grid, int level, bool extendoverlap=false)
       : P1Function<G,RT,typename G::template Codim<0>::LevelIndexSet,LevelCommunicate<G>,m>(grid,grid.levelIndexSet(level),LevelCommunicate<G>(grid,level),extendoverlap)
     {}

@@ -776,13 +776,13 @@ namespace Dune
       std::cout << grid.comm().rank() << ": " << "matrix initialized" << std::endl;
     }
 
-    //! return const reference to coefficient vector
+    //! return const reference to operator matrix
     const RepresentationType& operator* () const
     {
       return A;
     }
 
-    //! return reference to coefficient vector
+    //! return reference to operator matrix
     RepresentationType& operator* ()
     {
       return A;
