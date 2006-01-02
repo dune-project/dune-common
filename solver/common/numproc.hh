@@ -14,6 +14,8 @@ namespace Dune {
   {
   public:
 
+    NumProc() : verbosity_(FULL) {}
+
     /** \brief Different levels of verbosity */
     enum VerbosityMode {QUIET, REDUCED, FULL};
 
