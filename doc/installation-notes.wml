@@ -181,22 +181,21 @@ cd UG-3.9.1
 
 <li><p>Build the UG Make System</p>
 <kbd>
-    ./autogen.sh  --prefix=my_favourite_ug_installation_path \
+    ./configure --prefix=my_favourite_ug_installation_path \
    --enable-dune CXX=g++-3.4 CC=g++-3.4
 </kbd>
 <p>
    With --prefix the absolute path of the directory we install to has
     to be given.
 </p><p>
-    With --enable-dune we enable special features needed by UGGrid in
-    Dune.
+    With --enable-dune we enable special features needed by Dune.
 </p><p>
     With the variable CC and CXX we tell configure the C and C++
     compiler and linker to use.  Don't forget that the compiler has to
-    be binary-compatible with the one you're using for dune.
+    be binary-compatible with the one you're using for Dune.
 </p><p>
-    !!! NOTE !!! Even CC and have to be set to the C++ and not
-    the C compiler and linker !!!
+    <b>Note:</b> Even CC has to be set to the C++ and not
+    the C compiler !!!
 </p></li>
 
 <li> 
