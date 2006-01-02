@@ -53,7 +53,7 @@ namespace Dune
     typedef Geometry<mydim,mydim,GridImp,GeometryImp> ReferenceGeometry;
 
     //! return the geometry type identifier
-    GeometryType type () const { return realGeometry.type(); };
+    NewGeometryType type () const { return realGeometry.type(); };
 
     //! return the number of corners of this geometry. Corners are numbered 0...n-1
     int corners () const { return realGeometry.corners(); };
@@ -208,7 +208,7 @@ namespace Dune
     typedef ct ctype;
 
     //! return the geometry type identifier
-    GeometryType type () const { return realGeometry.type(); };
+    NewGeometryType type () const { return realGeometry.type(); };
 
     //! Return the number of corners of this geometry.
     int corners () const { return realGeometry.corners(); };
@@ -291,7 +291,7 @@ namespace Dune
     typedef Geometry<mydim,mydim,GridImp,GeometryImp> ReferenceGeometry;
 
     //! return the geometry type identifier
-    GeometryType type () const { return asImp().type(); }
+    NewGeometryType type () const { return asImp().type(); }
 
     //! return the number of corners of this geometry. Corners are numbered 0...n-1
     int corners () const { return asImp().corners(); }
@@ -377,7 +377,7 @@ namespace Dune
     typedef ct ctype;
 
     //! return the geometry type identifier
-    GeometryType type () const { return asImp().type(); }
+    NewGeometryType type () const { return asImp().type(); }
 
     //! return the number of corners of this geometry. Corners are numbered 0...n-1
     int corners () const { return asImp().corners(); }
