@@ -201,13 +201,6 @@ cd UG-3.9.1
 <li> 
         <p>Compile UG with</p>
         <kbd> make</kbd>
-        <p> <b> Warning: </b> On a 64bit machine, g++-4.0 and above 
-          will currently not compile UG. This is due to a bug in UG and 
-          not fault of the compiler.  To hack your way around this
-          type
-          <kbd> touch ugpfm </kbd>
-          in the directory <kbd>UG-3.9.1/tools</kbd> before calling make.
-        </p>
 </li>
 
 <li><p>Install UG with</p> <kbd>make install</kbd></li>
