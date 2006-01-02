@@ -60,7 +60,10 @@ namespace Dune {
   {
   public:
 
-    OneDEntityImp(int level, unsigned int id) : id_(id), level_(level), pred_(NULL), succ_(NULL)
+    OneDEntityImp(int level, unsigned int id)
+      : id_(id), level_(level),
+        markState_(NONE), adaptationState_(NONE),
+        pred_(NULL), succ_(NULL)
     {
       sons_[0] = sons_[1] = NULL;
     }
@@ -80,6 +83,7 @@ namespace Dune {
 
     unsigned int leafIndex_;
 
+    /** \brief Unique and persistent id for elements */
     unsigned int id_;
 
     //! the level of the entity
@@ -87,15 +91,18 @@ namespace Dune {
 
     //OneDGridGeometry<dim,dim, GridImp>  fatherReLocal_;
 
-    AdaptationState adaptationState;
+    /** \brief Stores requests for refinement and coarsening */
+    AdaptationState markState_;
 
+    /** \brief Stores information about prospective refinement and coarsening
+        for use in the interface method state() */
+    AdaptationState adaptationState_;
 
-
+    /** \brief Predecessor in the doubly linked list of elements */
     OneDEntityImp<1>* pred_;
 
+    /** \brief Successor in the doubly linked list of elements */
     OneDEntityImp<1>* succ_;
-
-
 
   };
 
@@ -160,10 +167,6 @@ namespace Dune {
     //! level of this element
     int level () const {return target_->level_;}
 
-    //! index is unique and consecutive per level and codim
-    //! used for access to degrees of freedom
-    int index () const {return target_->levelIndex_;}
-
     unsigned int levelIndex() const {return target_->levelIndex_;}
 
     unsigned int leafIndex() const {return target_->leafIndex_;}
@@ -175,11 +178,6 @@ namespace Dune {
      */
     //!< Default codim 1 Faces and codim == dim Vertices
     template<int cc> int count () const;
-
-    //! return index of sub entity with codim = cc and local number i
-    //! i.e. return global number of vertex i
-    /** \todo So far only implemented for cc==dim */
-    template<int cc> int subIndex (int i) const;
 
     //! Provide access to mesh entity i of given codimension. Entities
     //!  are numbered 0 ... count<cc>()-1
@@ -259,9 +257,7 @@ namespace Dune {
     //! Level of this element
     int level () const {return target_->level_;}
 
-    //! Index is unique and consecutive per level and codim
-    int index () const {return target_->levelIndex_;}
-
+    //! Level index is unique and consecutive per level and codim
     unsigned int levelIndex() const {return target_->levelIndex_;}
 
     unsigned int leafIndex() const {return target_->leafIndex_;}
@@ -282,7 +278,7 @@ namespace Dune {
     /** \brief Return index of sub entity with codim = cc and local number i
      */
     template<int cc>
-    int subIndex (int i) const {
+    int subLevelIndex (int i) const {
       assert(i==0 || i==1);
       return (cc==0)
              ? target_->levelIndex_
@@ -297,6 +293,16 @@ namespace Dune {
       return (cc==0)
              ? target_->leafIndex_
              : target_->vertex_[i]->leafIndex_;
+    }
+
+    /** \brief Return leaf index of sub entity with codim = cc and local number i
+     */
+    template<int cc>
+    int subId (int i) const {
+      assert(i==0 || i==1);
+      return (cc==0)
+             ? target_->id_
+             : target_->vertex_[i]->id_;
     }
 
     /** \brief Provide access to sub entity i of given codimension. Entities
@@ -325,7 +331,7 @@ namespace Dune {
 
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
-    OneDGridEntityPointer<0, GridImp> ownersFather () const {
+    OneDGridEntityPointer<0, GridImp> father () const {
       return OneDGridEntityPointer<0,GridImp>(target_->father_);
     }
 
@@ -339,12 +345,11 @@ namespace Dune {
        is only done for simple discretizations. Assumes that meshes are nested.
        \todo Implement this!
      */
-#if 0
-    OneDGridGeometry<dim, dim, GridImp>& geometryInFather () const {
-      DUNE_THROW(NotImplemented, "OneDGrid::father_relative_local() not implemented!");
+    const Geometry& geometryInFather () const {
+      DUNE_THROW(NotImplemented, "OneDGrid::geometryInFather() not implemented!");
 
     }
-#endif
+
     /*! Inter-level access to son elements on higher levels<=maxlevel.
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
@@ -385,7 +390,7 @@ namespace Dune {
     // ***************************************************************
 
     /** \todo Please doc me! */
-    AdaptationState state() const {return target_->adaptationState;}
+    AdaptationState state() const {return target_->adaptationState_;}
 
     void setToTarget(OneDEntityImp<1>* target) {
       target_ = target;

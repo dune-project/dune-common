@@ -295,10 +295,10 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
 
     for (eIt = elements[i].begin; eIt!=NULL; eIt = eIt->succ_) {
 
-      if (eIt->adaptationState == COARSEN)
+      if (eIt->markState_ == COARSEN)
         DUNE_THROW(NotImplemented, "Coarsening is not implemented for OneDGrid");
 #if 0
-      if (eIt->adaptationState == COARSEN
+      if (eIt->markState_ == COARSEN
           && !eIt->isLeaf()) {
 
         OneDEntityImp<1>* leftElement = eIt->pred_;
@@ -339,7 +339,7 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
   // /////////////////////////////////////////////////////////////////////////
   bool toplevelRefinement = false;
   for (eIt = elements[maxLevel()].begin; eIt!=NULL; eIt=eIt->succ_)
-    if (eIt->adaptationState == REFINED) {
+    if (eIt->markState_ == REFINED) {
       toplevelRefinement = true;
       break;
     }
@@ -359,7 +359,7 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
 
     for (eIt = elements[i].begin; eIt!=NULL; eIt = eIt->succ_) {
 
-      if (eIt->adaptationState == REFINED
+      if (eIt->markState_ == REFINED
           && eIt->isLeaf()) {
 
         // Does the left vertex exist on the next-higher level?
@@ -425,11 +425,13 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
         newElement0->vertex_[0] = leftUpperVertex;
         newElement0->vertex_[1] = centerVertex;
         newElement0->father_ = eIt;
+        newElement0->adaptationState_ = REFINED;
 
         OneDEntityImp<1>* newElement1 = new OneDEntityImp<1>(i+1, getNextFreeId(0));
         newElement1->vertex_[0] = centerVertex;
         newElement1->vertex_[1] = rightUpperVertex;
         newElement1->father_ = eIt;
+        newElement1->adaptationState_ = REFINED;
 
         // Insert new elements into element list
         if (leftNeighbor!=NULL)
@@ -523,6 +525,7 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
           newElement->vertex_[0] = leftUpperVertex;
           newElement->vertex_[1] = rightUpperVertex;
           newElement->father_ = eIt;
+          newElement->adaptationState_ = REFINED;
 
           // Insert new elements into element list
           if (leftNeighbor!=NULL)
@@ -556,7 +559,6 @@ void Dune::OneDGrid < dim, dimworld >::setIndices()
 {
   for (int i=levelIndexSets_.size(); i<maxLevel()+1; i++)
     levelIndexSets_.push_back(0);
-  //    levelIndexSets_.resize(maxLevel()+1);
 
   for (int i=0; i<=maxLevel(); i++)
     if (levelIndexSets_[i])
@@ -587,13 +589,21 @@ template <int dim, int dimworld>
 bool Dune::OneDGrid < dim, dimworld >::mark(int refCount,
                                             const typename Traits::template Codim<0>::EntityPointer & e )
 {
-  if (refCount < 0)
-    getRealEntity<0>(*e).target_->adaptationState = COARSEN;
-  else if (refCount > 0)
-    getRealEntity<0>(*e).target_->adaptationState = REFINED;
+  if (refCount < 0) {
+
+    if (getRealEntity<0>(*e).target_->level_ == 0)
+      return false;
+    else {
+      getRealEntity<0>(*e).target_->markState_ = COARSEN;
+      return true;
+    }
+
+  } else if (refCount > 0)
+    getRealEntity<0>(*e).target_->markState_ = REFINED;
   else
-    getRealEntity<0>(*e).target_->adaptationState = NONE;
-  return false;
+    getRealEntity<0>(*e).target_->markState_ = NONE;
+
+  return true;
 }
 
 // /////////////////////////////////////////////////////////////////////////

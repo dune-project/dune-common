@@ -51,7 +51,7 @@ namespace Dune {
     template<int cc>
     int subIndex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
-      return grid_->template getRealEntity<0>(e).template subIndex<cc>(i);
+      return grid_->template getRealEntity<0>(e).template subLevelIndex<cc>(i);
     }
 
     //! get number of entities of given codim, type and on this level
@@ -286,11 +286,10 @@ namespace Dune {
        We use the RemoveConst to extract the Type from the mutable class,
        because the const class is not instatiated yet.
      */
-    template<int cc>
+    template<int cd>
     GlobalIdType subId (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
-      DUNE_THROW(NotImplemented, "UGGridGlobalIdSet::subid");
-      //return grid.template getRealEntity<0>(e).template subPersistentIndex<cc>(i);
+      return grid_.template getRealEntity<0>(e).template subId<cd>(i);
     }
 
     /** \todo Should be private */

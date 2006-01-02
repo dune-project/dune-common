@@ -6,15 +6,7 @@ namespace Dune {
 
   template <int cc, int dim, class GridImp>
   class OneDGridSubEntityFactory
-  {
-#if 0
-  public:
-    static OneDGridEntity<cc,dim,GridImp>* get(OneDGridEntity<0,dim,GridImp>& me, int i)
-    {
-      DUNE_THROW(NotImplemented, "OneDGridSubEntityFactor::get() default");
-    }
-#endif
-  };
+  {};
 
   template<class GridImp>
   class OneDGridSubEntityFactory<0,1,GridImp>
