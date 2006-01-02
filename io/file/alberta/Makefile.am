@@ -1,7 +1,5 @@
 # $Id$
 
-SUBDIRS = . test
-
 albertadir = $(includedir)/dune/io/file/alberta
 alberta_HEADERS = albertawriter.cc
 
