@@ -101,19 +101,19 @@ struct UGGridGeometryPositionAccess<2,2>
 
 
 template< int mydim, int coorddim, class GridImp>
-inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
+inline NewGeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
 {
   switch (mydim)
   {
-  case 0 : return cube;
-  case 1 : return cube;
+  case 0 : return NewGeometryType(NewGeometryType::cube,0);
+  case 1 : return NewGeometryType(NewGeometryType::cube,1);
   case 2 :
 
     switch (UG_NS<coorddim>::Tag(target_)) {
     case UG2d::TRIANGLE :
-      return simplex;
+      return NewGeometryType(NewGeometryType::simplex,2);
     case UG2d::QUADRILATERAL :
-      return cube;
+      return NewGeometryType(NewGeometryType::cube,2);
     default :
       DUNE_THROW(GridError, "UGGridGeometry::type():  ERROR:  Unknown type "
                  << UG_NS<coorddim>::Tag(target_) << " found!");
@@ -123,13 +123,13 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
     switch (UG_NS<coorddim>::Tag(target_)) {
 
     case UG3d::TETRAHEDRON :
-      return simplex;
+      return NewGeometryType(NewGeometryType::simplex,3);
     case UG3d::PYRAMID :
-      return pyramid;
+      return NewGeometryType(NewGeometryType::pyramid,3);
     case UG3d::PRISM :
-      return prism;
+      return NewGeometryType(NewGeometryType::prism,3);
     case UG3d::HEXAHEDRON :
-      return cube;
+      return NewGeometryType(NewGeometryType::cube,3);
     default :
       DUNE_THROW(GridError, "UGGridGeometry::type():  ERROR:  Unknown type "
                  << UG_NS<coorddim>::Tag(target_) << " found!");
@@ -137,8 +137,6 @@ inline GeometryType UGGridGeometry<mydim,coorddim,GridImp>::type() const
     }
   }
 
-  // Just to calm the compiler
-  return simplex;
 }
 
 template< int mydim, int coorddim, class GridImp>
