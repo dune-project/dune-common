@@ -79,7 +79,7 @@ namespace Dune {
   private:
 
     /** \brief Basic type of the element */
-    BasicType basicType_;
+    BasicType basicType_ : 16;
 
     /** \brief Dimension of the element */
     short dim_;
