@@ -2,7 +2,7 @@
 
 if BUILD_DOCS
 PAGES = codingstyle.html portability.html \
-  ugreader.html tests.html features.html
+  ugreader.html tests.html features.html indexidsets.html
 endif
 
 all: $(PAGES)
