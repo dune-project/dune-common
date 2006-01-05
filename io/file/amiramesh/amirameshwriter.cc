@@ -31,11 +31,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
                               : ((containsOnlySimplices) ? 3 : 4);
 
   int noOfNodes = leafIndexSet.size(dim, vertex);
-  /** \todo This sucks.  I want a size method that gives me the number of
-      all element types */
-  int noOfElem  = 0;
-  for (unsigned int i=0; i<leafIndexSet.geomTypes(0).size(); i++)
-    noOfElem += leafIndexSet.size(0, leafIndexSet.geomTypes(0)[i]);
+  int noOfElem  = leafIndexSet.size(0);
 
   // create amiramesh object
   AmiraMesh am;
@@ -109,7 +105,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
       for (int i=0; eIt!=eEndIt; ++eIt, i++) {
 
         for (int j=0; j<4; j++)
-          //dPtr[i*4+j] = leafIndexSet.template subIndex<3>(*eIt,j)+1;
           dPtr[i*4+j] = leafIndexSet.template subIndex<dim>(*eIt,j)+1;
 
       }
@@ -123,7 +118,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
           const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
           for (int j=0; j<8; j++)
-            //dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, hexaReordering[j])+1;
             dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, hexaReordering[j])+1;
           break;
         }
@@ -131,7 +125,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
         case prism : {
           const int prismReordering[8] = {0, 1, 1, 2, 3, 4, 4, 5};
           for (int j=0; j<8; j++)
-            //dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, prismReordering[j])+1;
             dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, prismReordering[j])+1;
 
           break;
@@ -140,7 +133,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
         case pyramid : {
           const int pyramidReordering[8] = {0, 1, 2, 3, 4, 4, 4, 4};
           for (int j=0; j<8; j++)
-            //dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, pyramidReordering[j])+1;
             dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, pyramidReordering[j])+1;
 
           break;
@@ -150,7 +142,6 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
           const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
           for (int j=0; j<8; j++)
-            //dPtr[8*i + j] = leafIndexSet.template subIndex<3>(*eIt, tetraReordering[j])+1;
             dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, tetraReordering[j])+1;
 
           break;
@@ -170,15 +161,25 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     for (int i=0; eIt!=eEndIt; ++eIt, i++) {
       switch (eIt->geometry().type()) {
 
-      default :
+      case cube :
+        dPtr[i*4+0] = leafIndexSet.template subIndex<dim>(*eIt, 0)+1;
+        dPtr[i*4+1] = leafIndexSet.template subIndex<dim>(*eIt, 1)+1;
+        dPtr[i*4+2] = leafIndexSet.template subIndex<dim>(*eIt, 3)+1;
+        dPtr[i*4+3] = leafIndexSet.template subIndex<dim>(*eIt, 2)+1;
+        break;
+      case simplex :
 
-        for (int j=0; j<eIt->geometry().corners(); j++)
+        for (int j=0; j<3; j++)
           dPtr[i*maxVerticesPerElement+j] = leafIndexSet.template subIndex<dim>(*eIt, j)+1;
 
-        // If the element has less than 4 vertices use the last value
+        // If 4 vertices are expected per element use the last value
         // to fill up the remaining slots
-        for (int j=eIt->geometry().corners(); j<maxVerticesPerElement; j++)
-          dPtr[i*maxVerticesPerElement+j] = dPtr[i*maxVerticesPerElement+eIt->geometry().corners()-1];
+        if (maxVerticesPerElement==4)
+          dPtr[i*4+3] = dPtr[i*4+2];
+        break;
+      default :
+        DUNE_THROW(IOError, "Elements of type " << eIt->geometry().type()
+                                                << " cannot be written to 2d AmiraMesh files!");
       }
 
     }
@@ -356,21 +357,31 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
   } else {
 
-    typename GridType::template Codim<0>::LevelIterator element2   = grid.template lbegin<0>(level);
-    typename GridType::template Codim<0>::LevelIterator endelement = grid.template lend<0>(level);
+    typename GridType::template Codim<0>::LevelIterator eIt    = grid.template lbegin<0>(level);
+    typename GridType::template Codim<0>::LevelIterator eEndIt = grid.template lend<0>(level);
 
-    for (int i=0; element2!=endelement; ++element2, i++) {
-      switch (element2->geometry().type()) {
+    for (int i=0; eIt!=eEndIt; ++eIt, i++) {
+      switch (eIt->geometry().type()) {
 
-      default :
+cube:
+        dPtr[i*4+0] = levelIndexSet.template subIndex<dim>(*eIt, 0)+1;
+        dPtr[i*4+1] = levelIndexSet.template subIndex<dim>(*eIt, 1)+1;
+        dPtr[i*4+2] = levelIndexSet.template subIndex<dim>(*eIt, 3)+1;
+        dPtr[i*4+3] = levelIndexSet.template subIndex<dim>(*eIt, 2)+1;
+        break;
+simplex:
 
-        for (int j=0; j<element2->geometry().corners(); j++)
-          dPtr[i*maxVerticesPerElement+j] = levelIndexSet.template subIndex<dim>(*element2, j)+1;
+        for (int j=0; j<3; j++)
+          dPtr[i*maxVerticesPerElement+j] = levelIndexSet.template subIndex<dim>(*eIt, j)+1;
 
-        // If the element has less than 8 vertices use the last value
+        // If 4 vertices are expected per element use the last value
         // to fill up the remaining slots
-        for (int j=element2->geometry().corners(); j<maxVerticesPerElement; j++)
-          dPtr[i*maxVerticesPerElement+j] = dPtr[i*maxVerticesPerElement+element2->geometry().corners()-1];
+        if (maxVerticesPerElement==4)
+          dPtr[i*4+3] = dPtr[i*4+2];
+        break;
+      default :
+        DUNE_THROW(IOError, "Elements of type " << eIt->geometry().type()
+                                                << " cannot be written to 2d AmiraMesh files!");
       }
 
     }
