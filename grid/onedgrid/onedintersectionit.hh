@@ -147,24 +147,26 @@ namespace Dune {
       return 1;
     }
 
-    //! intersection of codimension 1 of this neighbor with element where
-    //! iteration started.
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
-    LocalGeometry& intersectionSelfLocal () const {
-      DUNE_THROW(NotImplemented, "Will be implemented on demand!");
+    const LocalGeometry& intersectionSelfLocal () const {
+      intersectionSelfLocal_.pos_ = (numberInSelf() == 0) ? 0 : 1;
+      return intersectionSelfLocal_;
     }
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
-    LocalGeometry& intersectionNeighborLocal () const {
-      DUNE_THROW(NotImplemented, "Will be implemented on demand!");
+    const LocalGeometry& intersectionNeighborLocal () const {
+      intersectionNeighborLocal_.pos_ = (numberInSelf() == 0) ? 1 : 0;
+      return intersectionNeighborLocal_;
     }
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in GLOBAL coordinates of the element where iteration started.
-    Geometry& intersectionGlobal () const {
-      DUNE_THROW(NotImplemented, "Will be implemented on demand!");
+    const Geometry& intersectionGlobal () const {
+      assert (neighbor_ == 0 || neighbor_ == 1);
+      intersectionGlobal_.setToTarget(center_->vertex_[neighbor_]);
+      return intersectionGlobal_;
     }
 
     //! local number of codim 1 entity in self where intersection is contained in
@@ -172,7 +174,8 @@ namespace Dune {
 
     //! local number of codim 1 entity in neighbor where intersection is contained
     int numberInNeighbor () const {
-      DUNE_THROW(NotImplemented, "number_in_neighbor");
+      // If numberInSelf is 0 then numberInNeighbor is 1 and vice versa
+      return 1-neighbor_;
     }
 
     //! return outer normal
@@ -208,6 +211,23 @@ namespace Dune {
 
     //! count on which neighbor we are lookin' at
     int neighbor_;
+
+    /** \brief The geometry that's being returned when intersectionSelfLocal() is called
+        \todo This one is returned either with coordinate 1 or zero.  Can't we make two
+        static instances of this class and return those instead of carrying them around
+        in the iterator?
+     */
+    mutable OneDGridVertex<GridImp> intersectionSelfLocal_;
+
+    /** \brief The geometry that's being returned when intersectionSelfLocal() is called
+        \todo This one is returned either with coordinate 1 or zero.  Can't we make two
+        static instances of this class and return those instead of carrying them around
+        in the iterator?
+     */
+    mutable OneDGridVertex<GridImp> intersectionNeighborLocal_;
+
+    //! The geometry that's being returned when intersectionSelfGlobal() is called
+    mutable OneDMakeableGeometry<dim-1,dimworld,GridImp> intersectionGlobal_;
 
   };
 

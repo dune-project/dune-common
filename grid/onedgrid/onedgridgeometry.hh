@@ -32,6 +32,42 @@ namespace Dune {
   /*       Specialization for faces in a 1d grid (i.e. vertices)  */
   /****************************************************************/
 
+  /** \brief Special implementation of the vertex geometry class directly holding the vertex position
+
+     This vertex geometry class directly holds the vertex position instead of a pointer to an
+     implementation class.  Therefore it can store vertices that don't actually exist in the
+     current grid.  This is necessary for methods like
+     OneDGridIntersectionIterator::intersectionSelfLocal()
+
+     \todo This class can maybe completely replace the other one
+   */
+  template<class GridImp>
+  class OneDGridVertex :
+    public Geometry<0, 1, GridImp, OneDGridGeometry>
+  {
+
+  public:
+
+    OneDGridVertex() :
+      Geometry<0, 1, GridImp, OneDGridGeometry>(OneDGridGeometry<0, 1, GridImp>())
+    {};
+
+    //! return the element type identifier (vertex)
+    NewGeometryType type () const {return NewGeometryType(NewGeometryType::cube,0);}
+
+    //! return the number of corners of this element (==1)
+    int corners () const {return 1;}
+
+    //! access to coordinates of corners. Index is the number of the corner
+    const FieldVector<OneDCType, 1>& operator[] (int i) const {
+      return pos_;
+    }
+
+    //private:
+    FieldVector<OneDCType, 1> pos_;
+
+  };
+
   template<class GridImp>
   class OneDGridGeometry <0, 1, GridImp> :
     public GeometryDefault <0, 1, GridImp,OneDGridGeometry>

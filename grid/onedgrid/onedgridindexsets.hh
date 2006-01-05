@@ -33,12 +33,11 @@ namespace Dune {
     typedef IndexSet<GridImp,OneDGridLevelIndexSet<GridImp>,OneDGridLevelIndexSetTypes<GridImp> > Base;
   public:
 
-    /** \brief Default constructor
-
-       Unfortunately we can't force the user to init grid_ and level_, because
-       OneDGridLevelIndexSets are meant to be stored in an array.
+    /** \brief Constructor for a given level of a given grid
      */
-    OneDGridLevelIndexSet () {}
+    OneDGridLevelIndexSet (const GridImp& grid, int level)
+      : grid_(&grid), level_(level)
+    {}
 
     //! get index of an entity
     template<int cd>
@@ -87,17 +86,14 @@ namespace Dune {
     }
 
     /** \todo Should be private */
-    void update(const GridImp& grid, int level) {
+    void update() {
 
-      // Commit the index set to a specific level of a specific grid
-      grid_ = &grid;
-      level_ = level;
       // ///////////////////////////////
       //   Init the element indices
       // ///////////////////////////////
       int numElements = 0;
       OneDEntityImp<1>* eIt;
-      for (eIt = grid_->elements[level].begin; eIt!=NULL; eIt = eIt->succ_)
+      for (eIt = grid_->elements[level_].begin; eIt!=NULL; eIt = eIt->succ_)
         eIt->levelIndex_ = numElements++;
 
       // Update the list of geometry types present
@@ -113,7 +109,7 @@ namespace Dune {
 
       int id = 0;
       OneDEntityImp<0>* vIt;
-      for (vIt = grid_->vertices[level].begin; vIt!=NULL; vIt = vIt->succ_)
+      for (vIt = grid_->vertices[level_].begin; vIt!=NULL; vIt = vIt->succ_)
         vIt->levelIndex_ = id++;
 
     }
@@ -188,7 +184,7 @@ namespace Dune {
         }
 
       } else {
-        DUNE_THROW(NotImplemented, "UGGridLeafIndexSet::size(codim,type) for codim neither 0 nor dim");
+        DUNE_THROW(NotImplemented, "OneDGridLeafIndexSet::size(codim,type) for codim neither 0 nor 1");
       }
     }
 

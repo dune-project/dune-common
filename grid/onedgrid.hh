@@ -266,15 +266,11 @@ namespace Dune {
 
     //! Iterator to first entity of given codim on level
     template<int codim, PartitionIteratorType PiType>
-    typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafbegin() const {
-      DUNE_THROW(NotImplemented, "Parallel leafbegin");
-    }
+    typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafbegin() const;
 
     //! one past the end on this level
     template<int codim, PartitionIteratorType PiType>
-    typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafend() const {
-      DUNE_THROW(NotImplemented, "Parallel leafend");
-    }
+    typename Traits::template Codim<codim>::template Partition<PiType>::LeafIterator leafend() const;
 
     /** \brief Number of grid entities per level and codim
      */
@@ -293,22 +289,20 @@ namespace Dune {
     //! number of leaf entities per codim in this process
     int size (int codim) const
     {
-      DUNE_THROW(NotImplemented, "not implemented");
-      return 0;
+      return leafIndexSet().size(codim);
     }
 
     //! number of entities per level, codim and geometry type in this process
     int size (int level, int codim, GeometryType type) const
     {
-      DUNE_THROW(NotImplemented, "not implemented");
-      return 0;
+      // There is only one type for each codim
+      return size(level,codim);
     }
 
     //! number of leaf entities per codim and geometry type in this process
     int size (int codim, GeometryType type) const
     {
-      DUNE_THROW(NotImplemented, "not implemented");
-      return 0;
+      return leafIndexSet().size(codim, type);
     }
 
     /** \brief The processor overlap for parallel computing.  Always zero because
@@ -352,8 +346,8 @@ namespace Dune {
     {
       if (! levelIndexSets_[level]) {
         levelIndexSets_[level] =
-          new OneDGridLevelIndexSet<const OneDGrid<dim,dimworld> >;
-        levelIndexSets_[level]->update(*this, level);
+          new OneDGridLevelIndexSet<const OneDGrid<dim,dimworld> >(*this, level);
+        levelIndexSets_[level]->update();
       }
 
       return * levelIndexSets_[level];
