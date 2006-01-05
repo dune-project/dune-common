@@ -81,6 +81,23 @@ namespace Dune {
     static void read(UGGrid<2,2>& grid,
                      const std::string& filename);
 
+    /** \brief Dummy method: read a grid together with a boundary parametrization
+
+       This method is the equivalent to the one in the 3,3-instantiation.  You
+       cannot currently store 2d parametrized boundaries in an AmiraMesh file.
+       Thus, the methods only throws an exception.  It is only here to avoid
+       compiler errors.
+
+       \param grid The grid to be read into
+       \param gridFilename The AmiraMesh file containing the grid
+       \param domainFilename The AmiraMesh file containing the boundary description
+     */
+    static void read(UGGrid<2,2>& grid,
+                     const std::string& gridFilename,
+                     const std::string& domainFilename) {
+      DUNE_THROW(NotImplemented, "No AmiraMesh-reading for 2d parametrized boundaries!");
+    }
+
   };
 
 }   // end namespace Dune
