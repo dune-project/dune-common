@@ -279,7 +279,7 @@ namespace Dune {
         {
           int idx = w.item().getIndex();
           ids_[0][idx] = buildMacroId( w.item() );
-          buildElementIds( w.item() , ids_[0][idx] );
+          buildElementIds( w.item() , ids_[0][idx] , 0);
         }
       }
 
@@ -290,7 +290,7 @@ namespace Dune {
     IdType buildVertexId(const VertexType & item )
     {
       // first the codim
-      IdType id(1);
+      IdType id(3);
 
       // then the four identifying vertex indices
       int idx = item.ident();
@@ -307,7 +307,7 @@ namespace Dune {
     {
       const GEOEdgeType & elem = static_cast<const GEOEdgeType &> (item);
       assert( elem.level () == 0);
-      assert( elem.nChild() == 0);
+      //assert( elem.nChild() == 0);
 
       // first the codim
       IdType id(2);
@@ -331,7 +331,7 @@ namespace Dune {
     {
       const GEOFaceType & elem = static_cast<const GEOFaceType &> (item);
       assert( elem.level () == 0);
-      assert( elem.nChild() == 0);
+      //assert( elem.nChild() == 0);
 
       // first the codim
       IdType id(1);
@@ -354,7 +354,7 @@ namespace Dune {
     {
       const IMPLElementType & elem = static_cast<const IMPLElementType &> (item);
       assert( elem.level () == 0);
-      assert( elem.nChild() == 0);
+      //assert( elem.nChild() == 0);
 
 
       // first the codim
@@ -389,10 +389,10 @@ namespace Dune {
       return id;
     }
 
-    void buildElementIds(const HElementType & item , const IdType & macroId )
+    void buildElementIds(const HElementType & item , const IdType & macroId , int nChild )
     {
       enum { codim = 0 };
-      ids_[codim][item.getIndex()] = createId<codim>(item,macroId,item.nChild());
+      ids_[codim][item.getIndex()] = createId<codim>(item,macroId,nChild);
       const IdType & fatherId = ids_[codim][item.getIndex()];
 
       // build id for inner vertex
@@ -423,8 +423,12 @@ namespace Dune {
 
       // build ids of all children
       {
+        int numChild = 0;
         for(const HElementType * child = item.down(); child; child =child->next() )
-          buildElementIds(*child, fatherId);
+        {
+          buildElementIds(*child, fatherId, numChild);
+          ++numChild;
+        }
       }
     }
 
@@ -452,9 +456,11 @@ namespace Dune {
 
       // build ids for all child faces
       {
+        int child = 0;
         for(const HFaceType * f = face.down () ; f ; f = f->next ())
         {
-          buildFaceIds(*f,faceId,f->nChild());
+          buildFaceIds(*f,faceId,child);
+          ++child;
         }
       }
     }
@@ -473,9 +479,11 @@ namespace Dune {
 
       // build ids for all inner edges
       {
+        int child = 0;
         for (const HEdgeType * e = edge.down () ; e ; e = e->next ())
         {
-          buildEdgeIds(*e,edgeId , e->nChild () );
+          buildEdgeIds(*e,edgeId , child );
+          ++child;
         }
       }
     }
