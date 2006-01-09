@@ -63,9 +63,6 @@ namespace Dune {
     //! Type of the grid
     typedef typename DiscreteFunctionSpaceType::Traits::GridType GridType;
 
-    //! the MyType
-    typedef DiscFuncArray <DiscreteFunctionSpaceType> DiscreteFunctionType;
-
     //! the local function implementation e
     typedef LocalFunctionArray<DiscreteFunctionSpaceType> LocalFunctionImp;
 
