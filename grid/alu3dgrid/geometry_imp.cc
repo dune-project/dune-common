@@ -651,7 +651,7 @@ namespace Dune {
       }
     }
 
-    if(biMap_) delete biMap_;
+    delete biMap_;
     biMap_ = new BilinearSurfaceMapping(coord_[0], coord_[1],
                                         coord_[2], coord_[3]);
 
@@ -669,7 +669,7 @@ namespace Dune {
       coord_[i] = coords[i];
     }
 
-    if(biMap_) delete biMap_;
+    delete biMap_;
     biMap_ = new BilinearSurfaceMapping(coord_[0], coord_[1],
                                         coord_[2], coord_[3]);
 

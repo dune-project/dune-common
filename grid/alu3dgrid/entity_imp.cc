@@ -62,9 +62,9 @@ namespace Dune {
   }
 
   template<int cd, int dim, class GridImp>
-  inline void ALU3dGridEntity<cd,dim,GridImp> :: setElement(const BSElementType & item, int twist , int face )
+  inline void ALU3dGridEntity<cd,dim,GridImp> :: setElement(const ElementType & item, int twist , int face )
   {
-    item_   = static_cast<const BSIMPLElementType *> (&item);
+    item_   = static_cast<const IMPLElementType *> (&item);
     gIndex_ = (*item_).getIndex();
     twist_  = twist;
     level_  = (*item_).level();
@@ -77,7 +77,7 @@ namespace Dune {
   inline void ALU3dGridEntity<3,3,const ALU3dGrid<3,3,hexa> > ::
   setElement(const ALU3DSPACE HElementType &el, const ALU3DSPACE VertexType &vx)
   {
-    item_   = static_cast<const BSIMPLElementType *> (&vx);
+    item_   = static_cast<const IMPLElementType *> (&vx);
     gIndex_ = (*item_).getIndex();
     level_  = (*item_).level();
     father_ = (&el);
@@ -90,7 +90,7 @@ namespace Dune {
   setElement(const ALU3DSPACE HElementType &el, const ALU3DSPACE VertexType &vx)
   {
     // * what the heck does this static_cast do!?
-    item_   = static_cast<const BSIMPLElementType *> (&vx);
+    item_   = static_cast<const IMPLElementType *> (&vx);
     gIndex_ = (*item_).getIndex();
     level_  = (*item_).level();
     father_ = (&el);
@@ -646,6 +646,7 @@ namespace Dune {
   //  --EnPointer
   //
   //*******************************************************************
+
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
   ALU3dGridEntityPointer(const GridImp & grid,
@@ -653,11 +654,24 @@ namespace Dune {
                          int twist,
                          int face )
     : grid_(grid)
-      , entity_ ( grid_.template getNewEntity<codim> ( item.level() ) )
+      , item_(&item)
+      , twist_ (twist)
+      , face_(face)
+      , entity_(0)
+  {}
+
+  template<int codim, class GridImp >
+  inline ALU3dGridEntityPointer<codim,GridImp> ::
+  ALU3dGridEntityPointer(const GridImp & grid,
+                         const HBndSegType & ghostFace )
+    : grid_(grid)
+      , item_(0)
+      , twist_ (0)
+      , face_(-1)
+      , entity_ ( grid_.template getNewEntity<codim> ( ghostFace.level() ))
   {
-    assert( entity_ );
-    if( codim == 1 ) assert( face >= 0 );
-    (*entity_).setElement( const_cast<MyHElementType &> (item), twist , face );
+    // sets entity and item pointer
+    updateGhostPointer( const_cast<HBndSegType &> (ghostFace) );
   }
 
   template<int codim, class GridImp >
@@ -666,40 +680,54 @@ namespace Dune {
     : grid_(grid)
       , entity_ ( grid_.template getNewEntity<codim> ( e.level() ) )
   {
+    // this method should only be called for codim 0 entities
+    assert( codim == 0 );
     assert( entity_ );
     (*entity_).setEntity( e );
+    item_= &(e.getItem());
   }
 
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
   ALU3dGridEntityPointer(const GridImp & grid, int level )
     : grid_(grid)
-      , entity_ ( grid_.template getNewEntity<codim> (level) )
-  {
-    (*entity_).reset( level );
-  }
+      , item_(0)
+      , twist_(0)
+      , face_(-1)
+      , entity_(0)
+  {}
 
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
   ALU3dGridEntityPointer(const ALU3dGridEntityPointerType & org)
     : grid_(org.grid_)
-      , entity_ ( grid_.template getNewEntity<codim> ( org.entity_->level() ) )
+      , item_(org.item_)
+      , twist_(org.twist_)
+      , face_(org.face_)
+      , entity_(0)
   {
-    (*entity_).setEntity( *(org.entity_) );
+    if(org.entity_)
+    {
+      //assert( org.item_ );
+      int level = org.entity_->level();
+      entity_ = grid_.template getNewEntity<codim> ( level );
+      (*entity_).setEntity( *(org.entity_) );
+    }
   }
 
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
   ~ALU3dGridEntityPointer()
   {
-    grid_.freeEntity( entity_ );
+    if(entity_) grid_.freeEntity( entity_ );
   }
 
   template<int codim, class GridImp >
   inline void ALU3dGridEntityPointer<codim,GridImp>::done ()
   {
-    // sets entity pointer in the status of an end iterator
-    (*entity_).removeElement();
+    item_ = 0;
+    // sets entity pointer in the status of an empty entity
+    if(entity_) (*entity_).removeElement();
   }
 
   template<int codim, class GridImp >
@@ -707,22 +735,50 @@ namespace Dune {
   equals (const ALU3dGridEntityPointer<codim,GridImp>& i) const
   {
     // check equality of underlying items
-    return (*entity_).equals(*(i.entity_));
+    return (item_ == i.item_);
   }
 
   template<int codim, class GridImp >
   inline typename ALU3dGridEntityPointer<codim,GridImp>::Entity &
   ALU3dGridEntityPointer<codim,GridImp>::dereference () const
   {
-    assert(entity_);
+    // don't dereference empty entity pointer
+    assert( item_ );
+    if(!entity_)
+    {
+      entity_ = grid_.template getNewEntity<codim> ( item_->level() );
+      (*entity_).setElement( const_cast<MyHElementType &> (*item_), twist_ , face_ );
+    }
     return (*entity_);
   }
 
   template<int codim, class GridImp >
   inline int ALU3dGridEntityPointer<codim,GridImp>::level () const
   {
-    assert(entity_);
-    return (*entity_).level();
+    assert( item_ );
+    return item_->level();
+  }
+
+  template<int codim, class GridImp >
+  inline void ALU3dGridEntityPointer<codim,GridImp>::
+  updateGhostPointer( ALU3DSPACE HBndSegType & ghostFace )
+  {
+    assert( entity_ );
+    (*entity_).setGhost( ghostFace );
+    // inside the method setGhost the method getGhost of the ghostFace is
+    // called and set as item
+    item_ = & ((*entity_).getItem());
+  }
+
+  template<int codim, class GridImp >
+  inline void ALU3dGridEntityPointer<codim,GridImp>::
+  updateEntityPointer( const MyHElementType & item )
+  {
+    item_ = &item;
+    if( entity_ )
+    {
+      (*entity_).setElement( const_cast<MyHElementType  &> (item) );
+    }
   }
 
 } // end namespace Dune

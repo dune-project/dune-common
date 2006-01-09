@@ -689,7 +689,6 @@ namespace Dune {
    */
   template<class GridImp>
   class ALU3dGridIntersectionIterator :
-    public ALU3dGridEntityPointer <0,GridImp> ,
     public IntersectionIteratorDefault <GridImp,ALU3dGridIntersectionIterator>
   {
     enum { dim       = GridImp::dimension };
@@ -785,9 +784,6 @@ namespace Dune {
     //!  in
     int numberInSelf () const;
 
-    //! access neighbor
-    Entity & neighEntity() const;
-
     //! intersection of codimension 1 of this neighbor with element where
     //! iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
@@ -829,10 +825,11 @@ namespace Dune {
 
     void printToScreen(int duneIdx, int aluIdx) const;
 
+    // used in printToScreen
     NormalType convert2FV(const alu3d_ctype (&p)[3]) const;
 
     // reset IntersectionIterator to first neighbour
-    void setFirstItem(ALU3DSPACE HElementType & elem, int wLevel);
+    void setFirstItem(const ALU3DSPACE HElementType & elem, int wLevel);
 
     // reset IntersectionIterator to first neighbour
     template <class EntityType>
@@ -864,8 +861,11 @@ namespace Dune {
     mutable GeometryImp intersectionSelfLocal_;
     mutable GeometryImp intersectionNeighborLocal_;
 
+    // reference to grid
+    const GridImp & grid_;
+
     //! current element from which we started the intersection iterator
-    mutable IMPLElementType* item_;
+    const IMPLElementType* item_;
 
     mutable int nFaces_;
     mutable int walkLevel_;
@@ -928,9 +928,6 @@ namespace Dune {
     //! do not allow assigment
     ALU3dGridLevelIterator<cd, pitype, GridImp> & operator = (const ALU3dGridLevelIterator<cd, pitype, GridImp> & org)  { return *this; }
 
-    //! return reference to EntityPointers entity_
-    EntityImp & myEntity () { return (*(this->entity_)); }
-
     // element index, -1 for end
     int index_;
 
@@ -983,9 +980,6 @@ namespace Dune {
     //! do not allow assigment
     ALU3dGridLeafIterator<cdim, pitype, GridImp> & operator = (const ALU3dGridLeafIterator<cdim, pitype, GridImp> & org)  { return *this; }
 
-    //! return reference to EntityPointers entity_
-    EntityImp & myEntity () { return (*(this->entity_)); }
-
     // element index, -1 for end
     int index_;
 
@@ -1027,24 +1021,15 @@ namespace Dune {
     //! increment
     void increment();
 
-    //! the normal Constructor
-    ThisType & operator = (const ALU3dGridHierarchicIterator<GridImp> &org)
-    {
-      return *this;
-    };
-
   private:
-    //! return reference to EntityPointers entity_
-    EntityImp & myEntity () { return (*(this->entity_)); }
+    //! the assignment operator
+    ThisType & operator = (const ALU3dGridHierarchicIterator<GridImp> &org);
 
     // go to next valid element
-    ALU3DSPACE HElementType * goNextElement (ALU3DSPACE HElementType * oldEl);
+    const ALU3DSPACE HElementType * goNextElement (const ALU3DSPACE HElementType * oldEl);
 
     //! element from where we started
     const ALU3DSPACE HElementType & elem_;
-
-    //! the actual element of this iterator
-    ALU3DSPACE HElementType * item_;
 
     //! maximal level to go down
     int maxlevel_;
