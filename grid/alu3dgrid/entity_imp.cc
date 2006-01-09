@@ -242,6 +242,13 @@ namespace Dune {
     isLeaf_  = ((*item_).down() == 0);
 
     /*
+       std::cout << "Elements[" << glIndex_ << "] child number is " << item_->nChild() << "\n";
+       for(int i=0; i<item_->nFaces(); ++i)
+       {
+       std::cout << item_->myhface4(i)->nChild() << " ";
+       }
+     */
+    /*
        std::cout << "Twist: ";
        for (int i = 0; i < item_->nFaces(); ++i) {
        std::cout << item_->twist(i) << ", ";

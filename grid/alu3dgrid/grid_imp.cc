@@ -67,7 +67,7 @@ namespace Dune {
 #endif
       , geomTypes_(1,(elType == tetra) ? simplex : cube)
       , hIndexSet_ (*this)
-      , globalIdSet_(*this), localIdSet_(*this)
+      , globalIdSet_(0), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
       , sizeCache_ (0)
   {
@@ -105,7 +105,7 @@ namespace Dune {
       , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
       , geomTypes_(1,(elType == tetra) ? simplex : cube)
       , hIndexSet_ (*this)
-      , globalIdSet_(*this), localIdSet_(*this)
+      , globalIdSet_(0), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
       , sizeCache_ (0)
   {}
@@ -117,7 +117,7 @@ namespace Dune {
       , myRank_(myrank)
       , geomTypes_(1,(elType == tetra) ? simplex : cube)
       , hIndexSet_ (*this)
-      , globalIdSet_ (*this)
+      , globalIdSet_ (0)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
   {}
@@ -130,7 +130,7 @@ namespace Dune {
       , myRank_(-1)
       , geomTypes_(1,(elType == tetra) ? simplex : cube)
       , hIndexSet_(*this)
-      , globalIdSet_ (*this)
+      , globalIdSet_ (0)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
       , sizeCache_ (0)
@@ -149,6 +149,7 @@ namespace Dune {
   inline ALU3dGrid<dim, dimworld, elType>::~ALU3dGrid()
   {
     for(unsigned int i=0; i<levelIndexVec_.size(); i++) delete levelIndexVec_[i];
+    delete globalIdSet_; globalIdSet_ = 0;
     delete leafIndexSet_; leafIndexSet_ = 0;
     delete sizeCache_; sizeCache_ = 0;
     delete mygrid_; mygrid_ = 0;
@@ -219,6 +220,9 @@ namespace Dune {
     {
       if(levelIndexVec_[i]) (*(levelIndexVec_[i])).calcNewIndex();
     }
+
+    // create id set new, to be improved
+    if(globalIdSet_) globalIdSet_->buildIdSet();
 
     for(unsigned int i=0; i<MAXL; i++) vertexList_[i].unsetUp2Date();
 
