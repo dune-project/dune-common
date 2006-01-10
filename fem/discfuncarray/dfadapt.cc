@@ -85,11 +85,11 @@ namespace Dune {
 
   template<class DiscreteFunctionSpaceType>
   inline void DFAdapt< DiscreteFunctionSpaceType>::
-  print(std::ostream &s )
+  print(std::ostream &s ) const
   {
     RangeFieldType sum = 0.;
-    DofIteratorType enddof = dend ( );
-    for(DofIteratorType itdof = dbegin ( ); itdof != enddof; ++itdof)
+    ConstDofIteratorType enddof = dend ( );
+    for(ConstDofIteratorType itdof = dbegin ( ); itdof != enddof; ++itdof)
     {
       s << (*itdof) << " DofValue \n";
       sum += std::abs(*itdof);
