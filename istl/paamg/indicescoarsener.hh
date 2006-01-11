@@ -38,7 +38,7 @@ namespace Dune
        */
       typedef T ParallelInformation;
 
-      typedef typename ParallelInformation::IndexSet ParallelIndexSet;
+      typedef typename ParallelInformation::ParallelIndexSet ParallelIndexSet;
 
       /**
        * @brief The type of the global index.

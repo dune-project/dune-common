@@ -51,7 +51,6 @@ int main(int argc, char** argv)
   watch.reset();
   Operator fop(mat);
 
-  typedef Dune::Amg::MatrixHierarchy<Operator,Dune::Amg::SequentialInformation> MHierarchy;
   typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
   Criterion;
   typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;

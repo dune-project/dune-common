@@ -445,7 +445,7 @@ namespace Dune
                                                   const ParallelInformation& info)
     {
       int nodes = matrix->getmat().N();
-      int totalNodes = info.globalSum(nodes);
+      int totalNodes = info.communicator().sum(nodes);
 
       return totalNodes < crit.coarsenTarget();
     }
@@ -463,15 +463,12 @@ namespace Dune
       PInfoIterator infoLevel = parallelInformation_.finest();
 
 
-      int procs;
+      int procs = infoLevel->communicator().size();
       int level = 0;
-
-
-      infoLevel->processes(&procs);
 
       for(; level < criterion.maxLevel(); ++level, ++mlevel) {
 
-        dinfo<<"Level "<<level<<" has "<<mlevel->getmat().N()<<" unknows!"<<std::endl;
+        dinfo<<infoLevel->communicator().rank()<<": Level "<<level<<" has "<<mlevel->getmat().N()<<" unknows!"<<std::endl;
 
 
         if(coarsenTargetReached(criterion, mlevel, *infoLevel))
@@ -502,26 +499,23 @@ namespace Dune
         }
         dinfo << "Building aggregates took "<<watch.elapsed()<<" seconds."<<std::endl;
 
-        ParallelInformation* coarseInfo = new ParallelInformation(infoLevel->communicator());
+
+        parallelInformation_.addCoarser(infoLevel->communicator());
+
+        PInfoIterator fineInfo = infoLevel++;
 
         typename PropertyMapTypeSelector<VertexVisitedTag,PropertiesGraph>::Type visitedMap =
           get(VertexVisitedTag(), *(Element<1>::get(graphs)));
 
         watch.reset();
         int aggregates = IndicesCoarsener<ParallelInformation,OverlapFlags>
-                         ::coarsen(*infoLevel,
+                         ::coarsen(*fineInfo,
                                    *(Element<1>::get(graphs)),
                                    visitedMap,
                                    *aggregatesMap,
-                                   *coarseInfo);
+                                   *infoLevel);
 
         GraphCreator::free(graphs);
-
-        parallelInformation_.addCoarser(*coarseInfo);
-
-        PInfoIterator fineInfo = infoLevel;
-
-        ++infoLevel;
 
         dinfo<<" Coarsening of index sets took "<<watch.elapsed()<<" seconds."<<std::endl;
 
@@ -557,7 +551,9 @@ namespace Dune
 
         dinfo<<"Calculation of Galerkin product took "<<watch.elapsed()<<" seconds."<<std::endl;
 
-        matrices_.addCoarser(MatrixArgs(*coarseMatrix, *infoLevel));
+        MatrixArgs args(*coarseMatrix, *infoLevel);
+
+        matrices_.addCoarser(args);
       }
       built_=true;
       AggregatesMap* aggregatesMap=new AggregatesMap(0);

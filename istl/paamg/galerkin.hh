@@ -282,9 +282,9 @@ namespace Dune
                                  const OverlapVertex<typename G::VertexDescriptor>* overlapVertices,
                                  const O& overlapFlags) const;
 
-      template<class S, class G, class V, class I, class O>
+      template<class S, class G, class V, class P, class O>
       void constructConnectivity(S& connected, G& graph, V& visitedMap,
-                                 const ParallelInformation<I>& pinfo,
+                                 const P& pinfo,
                                  const AggregatesMap<typename G::VertexDescriptor>& aggregates,
                                  const typename G::VertexDescriptor& seed,
                                  const OverlapVertex<typename G::VertexDescriptor>* overlapVertices,
@@ -410,15 +410,15 @@ namespace Dune
                                 const OverlapVertex<typename G::VertexDescriptor>* overlapVertices=0) const;
     };
 
-    template<class S, class G, class V, class I, class O>
+    template<class S, class G, class V, class P, class O>
     void GalerkinProduct::constructConnectivity(S& connected, G& graph, V& visitedMap,
-                                                const ParallelInformation<I>& pinfo,
+                                                const P& pinfo,
                                                 const AggregatesMap<typename G::VertexDescriptor>& aggregates,
                                                 const typename G::VertexDescriptor& seed,
                                                 const OverlapVertex<typename G::VertexDescriptor>* overlapVertices,
                                                 const O& overlap) const
     {
-      typedef typename ParallelInformation<I>::GlobalLookupIndexSet GlobalLookup;
+      typedef typename P::GlobalLookupIndexSet GlobalLookup;
       typedef typename GlobalLookup::IndexPair IndexPair;
       const GlobalLookup& lookup = pinfo.globalLookup();
       const IndexPair* pair = lookup.pair(seed);

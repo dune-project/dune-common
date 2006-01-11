@@ -66,13 +66,13 @@ namespace Dune
 
       typedef Tuple<MatrixGraph*,PropertiesGraph*,SubGraph*> GraphTuple;
 
-      template<class OF, class T, class TI>
+      template<class OF, class T, class PI>
       static GraphTuple create(const M& matrix, T& excluded,
-                               ParallelInformation<TI>& pinfo, const OF&)
+                               PI& pinfo, const OF&)
       {
         typedef OF OverlapFlags;
         MatrixGraph* mg = new MatrixGraph(matrix.getmat());
-        typedef typename ParallelInformation<TI>::IndexSet ParallelIndexSet;
+        typedef typename PI::ParallelIndexSet ParallelIndexSet;
         typedef typename ParallelIndexSet::const_iterator IndexIterator;
         IndexIterator iend = pinfo.indexSet().end();
         typename T::iterator iter=excluded.begin();

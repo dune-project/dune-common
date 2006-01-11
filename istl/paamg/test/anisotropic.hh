@@ -7,29 +7,26 @@
 #include <dune/istl/interface.hh>
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/istl/owneroverlapcopy.hh>
 
-enum GridFlag { owner, overlap   };
-
+typedef Dune::OwnerOverlapCopyAttributeSet GridAttributes;
+typedef GridAttributes::AttributeSet GridFlag;
 typedef Dune::ParallelLocalIndex<GridFlag> LocalIndex;
-typedef Dune::ParallelIndexSet<int,LocalIndex,101> ParallelIndexSet;
-typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
-typedef Dune::Interface<ParallelIndexSet> Interface;
-typedef Dune::BufferedCommunicator<ParallelIndexSet> Communicator;
 
-template<class M>
-void setupPattern(int N, M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
+template<class M, class G, class L, int n>
+void setupPattern(int N, M& mat, Dune::ParallelIndexSet<G,L,n>& indices, int overlapStart, int overlapEnd,
                   int start, int end);
 
 template<class M>
 void fillValues(int N, M& mat, int overlapStart, int overlapEnd, int start, int end);
 
 
-template<int BS>
-Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(int N, ParallelIndexSet& indices, int *nout, double eps=1.0);
+template<int BS, class G, class L, int n>
+Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(int N, Dune::ParallelIndexSet<G,L,n>& indices, int *nout, double eps=1.0);
 
 
-template<class M>
-void setupPattern(int N, M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
+template<class M, class G, class L, int s>
+void setupPattern(int N, M& mat, Dune::ParallelIndexSet<G,L,s>& indices, int overlapStart, int overlapEnd,
                   int start, int end)
 {
   int n = overlapEnd - overlapStart;
@@ -40,11 +37,11 @@ void setupPattern(int N, M& mat, ParallelIndexSet& indices, int overlapStart, in
   for(int j=0; j < N; j++)
     for(int i=overlapStart; i < overlapEnd; i++, ++iter) {
       int global = j*N+i;
-      GridFlag flag = owner;
+      GridFlag flag = GridAttributes::owner;
       bool isPublic = false;
 
       if((i<start && i > 0) || (i>= end && i < N-1))
-        flag=overlap;
+        flag=GridAttributes::overlap;
 
       if(i<start+1 || i>= end-1)
         isPublic = true;
@@ -64,7 +61,7 @@ void setupPattern(int N, M& mat, ParallelIndexSet& indices, int overlapStart, in
 
       // j direction
       // Overlap is a dirichlet border, discard neighbours
-      if(flag != overlap) {
+      if(flag != GridAttributes::overlap) {
         if(j>0)
           // lower neighbour
           iter.insert(iter.index()-n);
@@ -128,8 +125,8 @@ void fillValues(int N, M& mat, int overlapStart, int overlapEnd, int start, int 
   }
 }
 
-template<int BS>
-Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(int N, ParallelIndexSet& indices, int *nout, double eps)
+template<int BS, class G, class L, int s>
+Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(int N, Dune::ParallelIndexSet<G,L,s>& indices, int *nout, double eps)
 {
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);

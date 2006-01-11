@@ -53,8 +53,8 @@ namespace Dune
       typedef typename SmootherTraits<Smoother>::Arguments SmootherArgs;
 
       enum {
-        /** @brief The solver category which is parallel. */
-        category = SolverCategory::sequential
+        /** @brief The solver category. */
+        category = S::category
       };
 
       enum GridFlag { owner, overlap};
@@ -72,8 +72,20 @@ namespace Dune
           const SmootherArgs& smootherArgs, std::size_t gamma,
           std::size_t smoothingSteps);
 
+      /**
+       * @brief Construct an AMG with an inexact coarse solver based on the smoother.
+       *
+       * As coarse solver a prconditioned CG method with the smoother as preconditioner
+       * will be used. The matrix hierarchy is built automatically.
+       * @param fineOperator The operator on the fine level.
+       * @param pinfo The information about the parallel distribution of the data.
+       * @param criterion The coarsen criterion.
+       * @param smootherArgs The arguments for constructing the smoothers.
+       * @param gamma 1 for V-cycle, 2 for W-cycle
+       * @param smoothingSteps The number of smoothing steps for pre and postsmoothing.
+       */
       template<class C>
-      AMG(const Matrix& finematrix, const C& criterion,
+      AMG(const Matrix& fineOperator, const ParallelInformation& pinfo=PI(), const C& criterion,
           const SmootherArgs& smootherArgs=SmootherArgs(), std::size_t gamma=1,
           std::size_t smoothingSteps=2);
 
@@ -111,6 +123,8 @@ namespace Dune
       Hierarchy<Range,A>* defect_;
       /** @brief The left approximate solution of our problem. */
       Hierarchy<Domain,A>* lhs_;
+      /** @brief Scalar product on the coarse level. */
+      ScalarProduct<X>* scalarProduct_;
       /** @brief Gamma, 1 for V-cycle and 2 for W-cycle. */
       std::size_t gamma_;
       /** @brief The number of pre and postsmoothing steps. */
@@ -119,7 +133,6 @@ namespace Dune
       bool buildHierarchy_;
 
       typedef MatrixAdapter<typename Matrix::matrix_type,Domain,Range> MatrixAdapter;
-      MatrixAdapter *coarseOperator_;
       Smoother *coarseSmoother_;
     };
 
@@ -128,8 +141,8 @@ namespace Dune
                         const SmootherArgs& smootherArgs,
                         std::size_t gamma, std::size_t smoothingSteps)
       : matrices_(&matrices), smootherArgs_(smootherArgs),
-        smoothers_(), solver_(&coarseSolver), gamma_(gamma),
-        steps_(smoothingSteps), buildHierarchy_(false)
+        smoothers_(), solver_(&coarseSolver), scalarProduct_(0),
+        gamma_(gamma), steps_(smoothingSteps), buildHierarchy_(false)
     {
       assert(matrices_->isBuilt());
       //printMatrix(matrices_->finest());
@@ -138,34 +151,21 @@ namespace Dune
       matrices_->coarsenSmoother(smoothers_, smootherArgs_);
 
     }
-    /*
-       template<class M, class X, class S, class P, class A>
-       void AMG<M,X,S,P,A>::setupIndices(typename Matrix::ParallelIndexSet& indices, const Matrix& matrix)
-       {
-       typename typename Matrix::ParallelIndexSet::LocalIndex LocalIndex;
-       typedef typename Matrix::ConstIterator Iterator;
 
-       indices.beginResize();
-       Iterator end = matrix.end();
-       for(Iterator row = matrix.begin(); row!=end; ++row){
-        indices.add(row.index(), LocalIndex(row.index(), owner, false));
-       }
-       indices.endResize();
-       }
-     */
     template<class M, class X, class S, class P, class A>
     template<class C>
     AMG<M,X,S,P,A>::AMG(const Matrix& matrix,
+                        const P& pinfo,
                         const C& criterion,
                         const SmootherArgs& smootherArgs,
                         std::size_t gamma, std::size_t smoothingSteps)
       : smootherArgs_(smootherArgs),
-        smoothers_(), gamma_(gamma),
+        smoothers_(), scalarProduct_(0), gamma_(gamma),
         steps_(smoothingSteps), buildHierarchy_(true)
     {
-      IsTrue<static_cast<int>(M::category)==static_cast<int>(SolverCategory::sequential)>::yes();
-
-      MatrixHierarchy* matrices = new MatrixHierarchy(const_cast<Matrix&>(matrix));
+      IsTrue<static_cast<int>(M::category)==static_cast<int>(S::category)>::yes();
+      IsTrue<static_cast<int>(P::category)==static_cast<int>(S::category)>::yes();
+      MatrixHierarchy* matrices = new MatrixHierarchy(const_cast<Matrix&>(matrix), pinfo);
 
       matrices->template build<EmptySet<int> >(criterion);
 
@@ -181,6 +181,8 @@ namespace Dune
       if(buildHierarchy_) {
         delete matrices_;
       }
+      if(scalarProduct_)
+        delete scalarProduct_;
     }
 
     /** \copydoc Preconditioner::pre */
@@ -223,8 +225,11 @@ namespace Dune
         cargs.setMatrix(matrices_->matrices().coarsest()->getmat());
 
         coarseSmoother_ = ConstructionTraits<Smoother>::construct(cargs);
-        coarseOperator_ = new MatrixAdapter(matrices_->matrices().coarsest()->getmat());
-        solver_ = new CGSolver<X>(*coarseOperator_, *coarseSmoother_, 1E-12, 10000, 0);
+        scalarProduct_ = new OverlappingSchwarzScalarProduct<X,P>(*matrices_->parallelInformation().coarsest());
+
+        solver_ = new CGSolver<X>(const_cast<M&>(*matrices_->matrices().coarsest()),
+                                  static_cast<OverlappingSchwarzScalarProduct<X,P>&>(*scalarProduct_),
+                                  *coarseSmoother_, 1E-12, 10000, 0);
       }
     }
 
@@ -325,7 +330,6 @@ namespace Dune
       if(buildHierarchy_) {
         delete solver_;
         delete coarseSmoother_;
-        delete coarseOperator_;
       }
 
       // Postprocess all smoothers

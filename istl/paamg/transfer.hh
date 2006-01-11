@@ -4,6 +4,7 @@
 #define DUNE_AMGTRANSFER_HH
 
 #include <dune/istl/paamg/pinfo.hh>
+#include <dune/istl/owneroverlapcopy.hh>
 #include <dune/istl/paamg/aggregates.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/istl/communicator.hh>
@@ -47,7 +48,7 @@ namespace Dune
                              typename Vector::field_type damp);
 
       static void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector & fine,
-                            SequentialInformation& comm);
+                            const SequentialInformation & comm);
     };
 
     template<class V,class B, class T>
@@ -61,6 +62,19 @@ namespace Dune
 
       static void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector & fine,
                             ParallelInformation<T>& comm);
+    };
+
+    template<class V,class B, class T1, class T2>
+    class Transfer<V,BlockVector<B>,OwnerOverlapCopyCommunication<T1,T2> >
+    {
+    public:
+      typedef V Vertex;
+      typedef BlockVector<B> Vector;
+      static void prolongate(const AggregatesMap<Vertex>& aggregates, Vector& coarse, Vector& fine,
+                             typename Vector::field_type damp);
+
+      static void restrict (const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector & fine,
+                            OwnerOverlapCopyCommunication<T1,T2>& comm);
     };
 
     template<class V, class B>
@@ -85,7 +99,7 @@ namespace Dune
     inline void Transfer<V,BlockVector<B>,SequentialInformation>::restrict (const AggregatesMap<Vertex>& aggregates,
                                                                             Vector& coarse,
                                                                             const Vector & fine,
-                                                                            SequentialInformation& comm)
+                                                                            const SequentialInformation & comm)
     {
       // Set coarse vector to zero
       coarse=0;
@@ -112,8 +126,25 @@ namespace Dune
                                                                               Vector& coarse, const Vector & fine,
                                                                               ParallelInformation<T>& comm)
     {
-      Transfer<V,BlockVector<B>,SequentialInformation>::restrict (aggregates, coarse, fine);
+      Transfer<V,BlockVector<B>,SequentialInformation>::restrict (aggregates, coarse, fine, SequentialInformation());
       comm.template forward<CopyGatherScatter<BlockVector<B> > >(coarse, coarse);
+    }
+
+    template<class V, class B, class T1, class T2>
+    inline void Transfer<V,BlockVector<B>,OwnerOverlapCopyCommunication<T1,T2> >::prolongate(const AggregatesMap<Vertex>& aggregates,
+                                                                                             Vector& coarse, Vector& fine,
+                                                                                             typename Vector::field_type damp)
+    {
+      Transfer<V,BlockVector<B>,SequentialInformation>::prolongate(aggregates, coarse, fine, damp);
+    }
+
+    template<class V, class B, class T1, class T2>
+    inline void Transfer<V,BlockVector<B>,OwnerOverlapCopyCommunication<T1,T2> >::restrict (const AggregatesMap<Vertex>& aggregates,
+                                                                                            Vector& coarse, const Vector & fine,
+                                                                                            OwnerOverlapCopyCommunication<T1,T2>& comm)
+    {
+      Transfer<V,BlockVector<B>,SequentialInformation>::restrict (aggregates, coarse, fine, SequentialInformation());
+      comm.copyOwnerToAll(coarse, coarse);
     }
     /** @} */
   }    // namspace Amg

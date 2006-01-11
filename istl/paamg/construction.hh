@@ -65,6 +65,38 @@ namespace Dune
       }
     };
 
+    template<class M, class C>
+    struct OverlappingSchwarzOperatorArgs
+    {
+      OverlappingSchwarzOperatorArgs(M& matrix, C& comm)
+        : matrix_(&matrix), comm_(&comm)
+      {}
+
+      M* matrix_;
+      C* comm_;
+    };
+
+  } // end Amg namspace
+
+  // foward declaration
+  template<class M, class X, class Y, class C>
+  class OverlappingSchwarzOperator;
+
+  namespace Amg
+  {
+    template<class M, class X, class Y, class C>
+    class ConstructionTraits<OverlappingSchwarzOperator<M,X,Y,C> >
+    {
+    public:
+      typedef OverlappingSchwarzOperatorArgs<M,C> Arguments;
+
+      static inline OverlappingSchwarzOperator<M,X,Y,C>* construct(const Arguments& args)
+      {
+        return new OverlappingSchwarzOperator<M,X,Y,C>(*args.matrix_, *args.comm_);
+      }
+    };
+
+
     template<class M, class X, class Y>
     struct MatrixAdapterArgs
     {
@@ -86,7 +118,6 @@ namespace Dune
         return new MatrixAdapter<M,X,Y>(*args.matrix_);
       }
     };
-
     /*
        template<class M, class T, class X, class Y>
        struct ParallelMatrixArgs
@@ -133,6 +164,18 @@ namespace Dune
       static inline ParallelInformation<T>* construct(Arguments& args)
       {
         return new ParallelInformation<T>(args);
+      }
+    };
+
+    template<class T1, class T2>
+    class ConstructionTraits<OwnerOverlapCopyCommunication<T1,T2> >
+    {
+    public:
+      typedef const MPI_Comm Arguments;
+
+      static inline OwnerOverlapCopyCommunication<T1,T2>* construct(Arguments& args)
+      {
+        return new OwnerOverlapCopyCommunication<T1,T2>(args);
       }
     };
 
