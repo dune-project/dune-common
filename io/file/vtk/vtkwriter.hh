@@ -32,6 +32,80 @@ namespace Dune
     };
   };
 
+
+  // map type to name in data array
+  template<class T>
+  struct VTKTypeNameTraits {
+    std::string operator () (){
+      return "";
+    }
+  };
+
+  template<>
+  struct VTKTypeNameTraits<char> {
+    std::string operator () () {
+      return "Int8";
+    }
+    typedef int PrintType;
+  };
+
+  template<>
+  struct VTKTypeNameTraits<unsigned char> {
+    std::string operator () () {
+      return "UInt8";
+    }
+    typedef int PrintType;
+  };
+
+  template<>
+  struct VTKTypeNameTraits<short> {
+    std::string operator () () {
+      return "Int16";
+    }
+    typedef short PrintType;
+  };
+
+  template<>
+  struct VTKTypeNameTraits<unsigned short> {
+    std::string operator () () {
+      return "UInt16";
+    }
+    typedef unsigned short PrintType;
+  };
+
+  template<>
+  struct VTKTypeNameTraits<int> {
+    std::string operator () () {
+      return "Int32";
+    }
+    typedef int PrintType;
+  };
+
+  template<>
+  struct VTKTypeNameTraits<unsigned int> {
+    std::string operator () () {
+      return "UInt32";
+    }
+    typedef unsigned int PrintType;
+  };
+
+  template<>
+  struct VTKTypeNameTraits<float> {
+    std::string operator () () {
+      return "Float32";
+    }
+    typedef float PrintType;
+  };
+
+  template<>
+  struct VTKTypeNameTraits<double> {
+    std::string operator () () {
+      return "Float64";
+    }
+    typedef double PrintType;
+  };
+
+
   /** @brief A class providing vtk file i/o
    */
   template<class GridImp>
@@ -104,15 +178,18 @@ namespace Dune
     }
 
     //! write output; interface might change later
-    void write (const char* name, VTKOptions::Type datamode = VTKOptions::ascii)
+    void write (const char* name, VTKOptions::Type dm = VTKOptions::ascii)
     {
+      // make data mode visible to private functions
+      datamode=dm;
+
       if (grid.comm().size()==1)
       {
         std::ofstream file;
         char fullname[128];
         sprintf(fullname,"%s.vtu",name);
         file.open(fullname);
-        writeDataFile(file,datamode);
+        writeDataFile(file);
         file.close();
       }
       else
@@ -121,14 +198,14 @@ namespace Dune
         char fullname[128];
         sprintf(fullname,"%s-%04d-%04d.vtu",name,grid.comm().size(),grid.comm().rank());
         file.open(fullname);
-        writeDataFile(file,datamode);
+        writeDataFile(file);
         file.close();
         grid.comm().barrier();
         if (grid.comm().rank()==0)
         {
           sprintf(fullname,"%s-%04d.pvtu",name,grid.comm().size());
           file.open(fullname);
-          writeParallelHeader(file,name,datamode);
+          writeParallelHeader(file,name);
           file.close();
         }
         grid.comm().barrier();
@@ -138,7 +215,7 @@ namespace Dune
   private:
 
     //! write header file in parallel case to stream
-    void writeParallelHeader (std::ostream& s, const char* name, VTKOptions::Type datamode)
+    void writeParallelHeader (std::ostream& s, const char* name)
     {
       // xml header
       s << "<?xml version=\"1.0\"?>" << std::endl;
@@ -240,7 +317,7 @@ namespace Dune
 
 
     //! write data file to stream
-    void writeDataFile (std::ostream& s, VTKOptions::Type datamode)
+    void writeDataFile (std::ostream& s)
     {
       // xml header
       s << "<?xml version=\"1.0\"?>" << std::endl;
@@ -275,16 +352,16 @@ namespace Dune
       indentUp();
 
       // PointData
-      writeVertexDataConforming(s,datamode);
+      writeVertexDataConforming(s);
 
       // CellData
-      writeCellData(s,datamode);
+      writeCellData(s);
 
       // Points
-      writePointsConforming(s,datamode);
+      writePointsConforming(s);
 
       // Cells
-      writeCellsConforming(s,datamode);
+      writeCellsConforming(s);
 
       // /Piece
       indentDown();
@@ -300,36 +377,7 @@ namespace Dune
       s << "</VTKFile>" << std::endl;
     }
 
-    void writeCellDataArray (std::ostream& s, VTKFunction* func, VTKOptions::Type datamode)
-    {
-      indent(s); s << "<DataArray type=\"Float32\" Name=\"" << func->name() << "\" ";
-      if (func->ncomps()>1)
-        s << "NumberOfComponents=\"" << func->ncomps() << "\" ";
-      if (datamode==VTKOptions::ascii)
-      {
-        s << "format=\"ascii\">" << std::endl;
-        int counter = 0;
-        for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
-          if (it->partitionType()==InteriorEntity)
-          {
-            Dune::GeometryType gt = it->geometry().type();
-            for (int j=0; j<func->ncomps(); j++)
-            {
-              s << func->evaluate(j,*it,ReferenceElements<DT,n>::general(gt).position(0,0)) << " ";
-              counter++;
-              if (counter%numPerLine==0) s << std::endl;
-            }
-          }
-        if (counter%numPerLine!=0) s << std::endl;
-      }
-      else
-      {
-        s << "format=\"binary\">" << std::endl;
-      }
-      indent(s); s << "</DataArray>" << std::endl;
-    }
-
-    void writeCellData (std::ostream& s, VTKOptions::Type datamode)
+    void writeCellData (std::ostream& s)
     {
       indent(s); s << "<CellData ";
       for (functioniterator it=celldata.begin(); it!=celldata.end(); ++it)
@@ -347,51 +395,19 @@ namespace Dune
       s << ">" << std::endl;
       indentUp();
       for (functioniterator it=celldata.begin(); it!=celldata.end(); ++it)
-        writeCellDataArray(s,*it,datamode);
+      {
+        VTKAsciiDataArrayWriter<float> *p = new VTKAsciiDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps());
+        for (CellIterator i=grid.template leafbegin<0>(); i!=grid.template leafend<0>(); ++i)
+          if (i->partitionType()==InteriorEntity)
+            for (int j=0; j<(*it)->ncomps(); j++)
+              p->write((*it)->evaluate(j,*i,ReferenceElements<DT,n>::general(i->geometry().type()).position(0,0)));
+        delete p;
+      }
       indentDown();
       indent(s); s << "</CellData>" << std::endl;
     }
 
-    void writeVertexDataArrayConforming (std::ostream& s, VTKFunction* func, VTKOptions::Type datamode)
-    {
-      indent(s); s << "<DataArray type=\"Float32\" Name=\"" << func->name() << "\" ";
-      if (func->ncomps()>1)
-        s << "NumberOfComponents=\"" << func->ncomps() << "\" ";
-      if (datamode==VTKOptions::ascii)
-      {
-        s << "format=\"ascii\">" << std::endl;
-        int counter = 0;
-        std::vector<bool> visited(vertexmapper->size());
-        for (int i=0; i<visited.size(); i++) visited[i] = false;
-        for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
-          if (it->partitionType()==InteriorEntity)
-          {
-            Dune::GeometryType gt = it->geometry().type();
-            for (int i=0; i<it->template count<n>(); ++i)
-            {
-              int alpha = vertexmapper->template map<n>(*it,i);
-              if (!visited[alpha])
-              {
-                for (int j=0; j<func->ncomps(); j++)
-                {
-                  s << func->evaluate(j,*it,ReferenceElements<DT,n>::general(gt).position(i,n)) << " ";
-                  counter++;
-                  if (counter%numPerLine==0) s << std::endl;
-                }
-                visited[alpha] = true;
-              }
-            }
-          }
-        if (counter%numPerLine!=0) s << std::endl;
-      }
-      else
-      {
-        s << "format=\"binary\">" << std::endl;
-      }
-      indent(s); s << "</DataArray>" << std::endl;
-    }
-
-    void writeVertexDataConforming (std::ostream& s, VTKOptions::Type datamode)
+    void writeVertexDataConforming (std::ostream& s)
     {
       indent(s); s << "<PointData ";
       for (functioniterator it=vertexdata.begin(); it!=vertexdata.end(); ++it)
@@ -409,144 +425,183 @@ namespace Dune
       s << ">" << std::endl;
       indentUp();
       for (functioniterator it=vertexdata.begin(); it!=vertexdata.end(); ++it)
-        writeVertexDataArrayConforming(s,*it,datamode);
+      {
+        VTKAsciiDataArrayWriter<float> *p = new VTKAsciiDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps());
+        std::vector<bool> visited(vertexmapper->size());
+        for (int i=0; i<visited.size(); i++) visited[i] = false;
+        for (CellIterator eit=grid.template leafbegin<0>(); eit!=grid.template leafend<0>(); ++eit)
+          if (eit->partitionType()==InteriorEntity)
+            for (int i=0; i<eit->template count<n>(); ++i)
+            {
+              int alpha = vertexmapper->template map<n>(*eit,i);
+              if (!visited[alpha])
+              {
+                for (int j=0; j<(*it)->ncomps(); j++)
+                  p->write((*it)->evaluate(j,*eit,ReferenceElements<DT,n>::general(eit->geometry().type()).position(i,n)));
+                visited[alpha] = true;
+              }
+            }
+        delete p;
+      }
       indentDown();
       indent(s); s << "</PointData>" << std::endl;
     }
 
-    void writePointsConforming (std::ostream& s, VTKOptions::Type datamode)
+    void writePointsConforming (std::ostream& s)
     {
       indent(s); s << "<Points>" << std::endl;
       indentUp();
-      indent(s); s << "<DataArray type=\"Float32\" Name=\"Coordinates\" NumberOfComponents=\"" << "3" << "\" ";
-      if (datamode==VTKOptions::ascii)
-      {
-        s << "format=\"ascii\">" << std::endl;
-        int counter = 0;
-        std::vector<bool> visited(vertexmapper->size());
-        for (int i=0; i<visited.size(); i++) visited[i] = false;
-        for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
-          if (it->partitionType()==InteriorEntity)
-            for (int i=0; i<it->template count<n>(); ++i)
+
+      VTKAsciiDataArrayWriter<float> *p = new VTKAsciiDataArrayWriter<float>(s,"Coordinates",3);
+      std::vector<bool> visited(vertexmapper->size());
+      for (int i=0; i<visited.size(); i++) visited[i] = false;
+      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+        if (it->partitionType()==InteriorEntity)
+          for (int i=0; i<it->template count<n>(); ++i)
+          {
+            int alpha = vertexmapper->template map<n>(*it,i);
+            if (!visited[alpha])
             {
-              int alpha = vertexmapper->template map<n>(*it,i);
-              if (!visited[alpha])
-              {
-                int dimw=w;
-                for (int j=0; j<std::min(dimw,3); j++)
-                  s << it->geometry()[i][j] << " ";
-                for (int j=std::min(dimw,3); j<3; j++)
-                  s << 0 << " ";
-                counter+=3;
-                if (counter%numPerLine==0) s << std::endl;
-                visited[alpha] = true;
-              }
+              int dimw=w;
+              for (int j=0; j<std::min(dimw,3); j++)
+                p->write(it->geometry()[i][j]);
+              for (int j=std::min(dimw,3); j<3; j++)
+                p->write(0.0);
+              visited[alpha] = true;
             }
-        if (counter%numPerLine!=0) s << std::endl;
-      }
-      else
-      {
-        s << "format=\"binary\">" << std::endl;
-      }
-      indent(s); s << "</DataArray>" << std::endl;
+          }
+      delete p;
+
       indentDown();
       indent(s); s << "</Points>" << std::endl;
     }
 
-    void writeCellsConforming (std::ostream& s, VTKOptions::Type datamode)
+    void writeCellsConforming (std::ostream& s)
     {
       indent(s); s << "<Cells>" << std::endl;
       indentUp();
 
       // connectivity
-      indent(s); s << "<DataArray type=\"Int32\" Name=\"connectivity\" ";
-      if (datamode==VTKOptions::ascii)
-      {
-        s << "format=\"ascii\">" << std::endl;
-        int counter = 0;
-        for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
-          if (it->partitionType()==InteriorEntity)
-            for (int i=0; i<it->template count<n>(); ++i)
-            {
-              int alpha = vertexmapper->template map<n>(*it,renumber(*it,i));
-              s << number[alpha] << " ";
-              counter++;
-              if (counter%numPerLine==0) s << std::endl;
-            }
-        if (counter%numPerLine!=0) s << std::endl;
-      }
-      else
-      {
-        s << "format=\"binary\">" << std::endl;
-      }
-      indent(s); s << "</DataArray>" << std::endl;
+      VTKAsciiDataArrayWriter<int> *p1 = new VTKAsciiDataArrayWriter<int>(s,"connectivity",1);
+      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+        if (it->partitionType()==InteriorEntity)
+          for (int i=0; i<it->template count<n>(); ++i)
+            p1->write(number[vertexmapper->template map<n>(*it,renumber(*it,i))]);
+      delete p1;
 
       // offsets
-      indent(s); s << "<DataArray type=\"Int32\" Name=\"offsets\" ";
-      if (datamode==VTKOptions::ascii)
-      {
-        s << "format=\"ascii\">" << std::endl;
-        int counter = 0;
-        int offset = 0;
-        for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
-          if (it->partitionType()==InteriorEntity)
-          {
-            offset += it->template count<n>();
-            s << offset << " ";
-            counter++;
-            if (counter%numPerLine==0) s << std::endl;
-          }
-        if (counter%numPerLine!=0) s << std::endl;
-      }
-      else
-      {
-        s << "format=\"binary\">" << std::endl;
-      }
-      indent(s); s << "</DataArray>" << std::endl;
+      VTKAsciiDataArrayWriter<int> *p2 = new VTKAsciiDataArrayWriter<int>(s,"offsets",1);
+      int offset = 0;
+      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+        if (it->partitionType()==InteriorEntity)
+        {
+          offset += it->template count<n>();
+          p2->write(offset);
+        }
+      delete p2;
 
       // types
-      indent(s); s << "<DataArray type=\"UInt8\" Name=\"types\" ";
-      if (datamode==VTKOptions::ascii)
-      {
-        s << "format=\"ascii\">" << std::endl;
-        int counter = 0;
-        for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
-          if (it->partitionType()==InteriorEntity)
+      VTKAsciiDataArrayWriter<unsigned char> *p3 = new VTKAsciiDataArrayWriter<unsigned char>(s,"types",1);
+      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+        if (it->partitionType()==InteriorEntity)
+        {
+          unsigned char vtktype=3;
+          if (n==1)
+            vtktype=3;
+          if (n==2)
           {
-            if (n==1)
-              s << 3 << " ";
-            if (n==2)
-            {
-              if (it->geometry().type()==simplex)
-                s << 5 << " ";
-              if (it->geometry().type()==cube)
-                s << 9 << " ";
-            }
-            if (n==3)
-            {
-              if (it->geometry().type()==simplex)
-                s << 10 << " ";
-              if (it->geometry().type()==pyramid)
-                s << 14 << " ";
-              if (it->geometry().type()==prism)
-                s << 13 << " ";
-              if (it->geometry().type()==cube)
-                s << 12 << " ";
-            }
-            counter++;
-            if (counter%numPerLine==0) s << std::endl;
+            if (it->geometry().type()==simplex)
+              vtktype=5;
+            if (it->geometry().type()==cube)
+              vtktype=9;
           }
-        if (counter%numPerLine!=0) s << std::endl;
-      }
-      else
-      {
-        s << "format=\"binary\">" << std::endl;
-      }
-      indent(s); s << "</DataArray>" << std::endl;
+          if (n==3)
+          {
+            if (it->geometry().type()==simplex)
+              vtktype=10;
+            if (it->geometry().type()==pyramid)
+              vtktype=14;
+            if (it->geometry().type()==prism)
+              vtktype=13;
+            if (it->geometry().type()==cube)
+              vtktype=12;
+          }
+          p3->write(vtktype);
+        }
+      delete p3;
 
       indentDown();
       indent(s); s << "</Cells>" << std::endl;
     }
+
+    // a streaming writer for data array tags
+    template<class T>
+    class VTKAsciiDataArrayWriter {
+    public:
+      //! make a new data array writer
+      VTKAsciiDataArrayWriter (std::ostream& theStream, std::string name, int ncomps)
+        : s(theStream), counter(0), numPerLine(12)
+      {
+        VTKTypeNameTraits<T> tn;
+        s << "<DataArray type=\"" << tn() << "\" Name=\"" << name << "\" ";
+        if (ncomps>1)
+          s << "NumberOfComponents=\"" << ncomps << "\" ";
+        s << "format=\"ascii\">" << std::endl;
+      }
+
+      //! write one data element to output stream
+      void write (T data)
+      {
+        typedef typename VTKTypeNameTraits<T>::PrintType PT;
+        s << (PT) data << " ";
+        counter++;
+        if (counter%numPerLine==0) s << std::endl;
+      }
+
+      //! finish output; writes end tag
+      ~VTKAsciiDataArrayWriter ()
+      {
+        if (counter%numPerLine!=0) s << std::endl;
+        s << "</DataArray>" << std::endl;
+      }
+
+    private:
+      std::ostream& s;
+      int counter;
+      int numPerLine;
+    };
+
+    // a streaming writer for data array tags
+    template<class T>
+    class VTKBinaryDataArrayWriter {
+    public:
+      //! make a new data array writer
+      VTKBinaryDataArrayWriter (std::ostream& theStream, std::string name, int ncomps)
+        : s(theStream)
+      {
+        VTKTypeNameTraits<T> tn;
+        s << "<DataArray type=\"" << tn() << "\" Name=\"" << name << "\" ";
+        if (ncomps>1)
+          s << "NumberOfComponents=\"" << ncomps << "\" ";
+        s << "format=\"ascii\">" << std::endl;
+      }
+
+      //! write one data element to output stream
+      void write (T data)
+      {
+        typedef typename VTKTypeNameTraits<T>::PrintType PT;
+        s << (PT) data << " ";
+      }
+
+      //! finish output; writes end tag
+      ~VTKBinaryDataArrayWriter ()
+      {
+        s << "</DataArray>" << std::endl;
+      }
+
+    private:
+      std::ostream& s;
+    };
 
     // A base class for grid functions with any return type and dimension
     // Trick : use double as return type
@@ -670,7 +725,7 @@ namespace Dune
     int nvertices;
     VM* vertexmapper;
     std::vector<int> number;
-
+    VTKOptions::Type datamode;
   };
 
 
