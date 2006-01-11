@@ -3,8 +3,26 @@
 #ifndef DUNE_TWISTUTILITY_HH
 #define DUNE_TWISTUTILITY_HH
 
+#ifndef HAVE_ALBERTA
+#define HAVE_ALBERTA_FOUND 0
+#else
+#define HAVE_ALBERTA_FOUND HAVE_ALBERTA
+#endif
+
+#ifndef HAVE_ALUGRID
+#define HAVE_ALUGRID_FOUND 0
+#else
+#define HAVE_ALUGRID_FOUND HAVE_ALBERTA
+#endif
+
+#if HAVE_ALUGRID_FOUND
 #include <dune/grid/alu3dgrid.hh>
+#endif
+
+#if HAVE_ALBERTA_FOUND
 #include <dune/grid/albertagrid.hh>
+#endif
+
 #include <dune/grid/sgrid.hh>
 
 namespace Dune {
@@ -36,7 +54,7 @@ namespace Dune {
     const GridType& grid_;
   };
 
-
+#if HAVE_ALBERTA_FOUND
   template <int dim, int dimW>
   class TwistUtility<AlbertaGrid<dim, dimW> >
   {
@@ -59,8 +77,9 @@ namespace Dune {
   private:
     const GridType& grid_;
   };
+#endif
 
-
+#if HAVE_ALUGRID_FOUND
   template <int dim, int dimW, ALU3dGridElementType elType>
   class TwistUtility<ALU3dGrid<dim, dimW, elType>  >
   {
@@ -87,6 +106,7 @@ namespace Dune {
   private:
     const GridType& grid_;
   };
+#endif
 }
 
 #endif
