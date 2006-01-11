@@ -3,48 +3,29 @@
 #ifndef DUNE_STRUCTUREUTILITY_HH
 #define DUNE_STRUCTUREUTILITY_HH
 
-//#include <dune/grid/yaspgrid.hh>
+#include <dune/grid/yaspgrid.hh>
 #include <dune/grid/sgrid.hh>
 
 namespace Dune {
 
-  template <class GridImp>
+  //! defines true for all grids, specialisation for structured grids
+  template <int dim, int dimworld, class GridImp>
   struct IsUnstructured {
-    static const bool value;
+    enum { value = true };
   };
 
-  template <class GridImp>
-  const bool IsUnstructured<GridImp>::value = true;
-
-  template <int dim, int dimw>
-  struct IsUnstructured<SGrid<dim, dimw> > {
-    static const bool value;
+  //! specialisation for SGrid
+  template <int dim, int dimworld>
+  struct IsUnstructured<dim,dimworld,SGrid<dim, dimworld> > {
+    enum { value = false };
   };
 
-  template <int dim, int dimw>
-  const bool IsUnstructured<SGrid<dim, dimw> >::value = false;
-
-  /*
-     template <int dim, int dimw>
-     struct IsUnstructured<YaspGrid<dim, dimw> > {
-     static const bool value = false;
-     };
-   */
-
-  template <class GridImp>
-  struct OneGeometryType {
-    static const bool value;
+  //! specialisation for YaspGrid
+  template <int dim, int dimworld>
+  struct IsUnstructured<dim,dimworld,YaspGrid<dim, dimworld> > {
+    enum { value = false };
   };
 
-  template <class GridImp>
-  const bool OneGeometryType<GridImp>::value = true;
-
-  /*
-     template <int dim, int dimw>
-     struct OneGeometryType<UGGrid<dim, dimw> > {
-     static const bool value = false;
-     };
-   */
 } // end namespace Dune
 
 #endif

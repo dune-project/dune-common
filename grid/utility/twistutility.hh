@@ -12,7 +12,7 @@
 #ifndef HAVE_ALUGRID
 #define HAVE_ALUGRID_FOUND 0
 #else
-#define HAVE_ALUGRID_FOUND HAVE_ALBERTA
+#define HAVE_ALUGRID_FOUND HAVE_ALUGRID
 #endif
 
 #if HAVE_ALUGRID_FOUND
@@ -107,6 +107,9 @@ namespace Dune {
     const GridType& grid_;
   };
 #endif
+
+#undef HAVE_ALBERTA_FOUND
+#undef HAVE_ALUGRID_FOUND
 }
 
 #endif
