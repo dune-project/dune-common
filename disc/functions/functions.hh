@@ -11,7 +11,7 @@
 #include "grid/common/grid.hh"
 
 /**
- * @file
+ * @file dune/disc/functions/functions.hh
  * @brief  Hierarchy for functions
  * @author Peter Bastian
  */
@@ -25,15 +25,21 @@
 
  */
 
+/*! @defgroup DISC_Functions Functions Hierarchy
+   @ingroup DISC
+   @brief Hierarchy for functions
+
+   @section D1 Introduction
+   <!--=================-->
+
+   To be written
+ */
+
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Functions
    *
    * @{
-   */
-  /**
-   * @brief Hierarchy for functions
-   *
    */
 
   //! A constant for infinite differentiability order

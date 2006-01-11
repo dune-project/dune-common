@@ -27,13 +27,13 @@
 #include "functions.hh"
 
 /**
- * @file
+ * @file dune/disc/functions/p0function.hh
  * @brief  defines a class for piecewise linear finite element functions
  * @author Peter Bastian
  */
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Functions
    *
    * @{
    */

@@ -23,13 +23,24 @@
 #include "boundaryconditions.hh"
 
 /**
- * @file
+ * @file dune/disc/operators/p1operator.hh
  * @brief  defines a class for piecewise linear finite element functions
  * @author Peter Bastian
  */
+
+/*! @defgroup DISC_Operators Operators
+   @ingroup DISC
+   @brief
+
+   @section D1 Introduction
+   <!--=================-->
+
+   To be written
+ */
+
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Operators
    *
    * @{
    */

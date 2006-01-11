@@ -14,7 +14,7 @@
 #include <dune/disc/shapefunctions/shapefunctions.hh>
 
 /**
-   @file
+   @file dune/disc/shapefunctions/dgspace/monomialshapefunctions.hh
    @brief  define monomial type shape functions
    @author Christian Engwer
  */
@@ -23,7 +23,7 @@ namespace Dune
 {
 
   /**
-     @addtogroup DISC
+     @addtogroup DISC_Shapefnkt
      @{
    */
 
@@ -146,9 +146,9 @@ namespace Dune
 
   /**
      \class MonomialShapeFunctionSetCreator
-     \internal
      \brief Template Metaprogramm creating the entries for
             MonomialShapeFunctionSet
+     \internal
    */
   template <typename C,typename T, int dim, int c>
   struct MonomialShapeFunctionSetCreator
@@ -168,8 +168,8 @@ namespace Dune
 
   /**
      \copydoc MonomialShapeFunctionSetCreator
+     \brief Specializeses the beginning of the recursion
      \internal
-     Specializeses the beginning of the recursion
    */
   template <typename C,typename T, int dim>
   struct MonomialShapeFunctionSetCreator<C,T,dim,0>
@@ -192,8 +192,8 @@ namespace Dune
 
   /**
      \copydoc MonomialShapeFunctionSetCreator
+     \brief Specializeses the end of the recursion
      \internal
-     Specializeses the end of the recursion
    */
   template <typename C,typename T, int dim>
   struct MonomialShapeFunctionSetCreator<C,T,dim,dim>
@@ -314,8 +314,8 @@ namespace Dune
 
   /**
      \class MonomialShapeFunctionSetSize
-     \internal
      \brief calculates the size of a MonomialShapeFunctionSet
+     \internal
    */
   template <int dim, int order>
   struct MonomialShapeFunctionSetSize
@@ -330,8 +330,8 @@ namespace Dune
 
   /**
      \copydoc MonomialShapeFunctionSetSize
+     \brief Specializeses the end of the recursion
      \internal
-     end of recursion
    */
   template <int order>
   struct MonomialShapeFunctionSetSize<1,order>

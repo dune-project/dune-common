@@ -9,7 +9,7 @@
 #include "grid/common/grid.hh"
 
 /**
- * @file
+ * @file dune/disc/shapefunctions/lagrange/prismshapefunctions.hh
  * @brief  define Lagrange type shape functions for prism elements
  * @author Sreejith Pulloor Kuttanikkad
  */
@@ -17,7 +17,7 @@
 namespace Dune
 {
 
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Shapefnkt
    *
    * @{
    */

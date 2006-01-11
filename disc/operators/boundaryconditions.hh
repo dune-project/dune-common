@@ -4,13 +4,13 @@
 #define DUNE_BOUNDARYCONDITIONS_HH
 
 /**
- * @file
+ * @file dune/disc/operators/boundaryconditions.hh
  * @brief  Definition of boundary condition types, extend if necessary
  * @author Peter Bastian
  */
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Operators
    *
    * @{
    */

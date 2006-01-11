@@ -18,13 +18,13 @@
 #include "lagrange/simplexshapefunctions.hh"
 
 /**
- * @file
+ * @file dune/disc/shapefunctions/lagrangeshapefunctions.hh
  * @brief  define Lagrange type shape functions
  * @author Peter Bastian
  */
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Shapefnkt
    *
    * @{
    */

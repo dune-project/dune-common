@@ -13,13 +13,13 @@
 #include "grid/common/referenceelements.hh"
 
 /**
- * @file
+ * @file dune/disc/shapefunctions/lagrange/cubeshapefunctions.hh
  * @brief  define Lagrange type shape functions
  * @author Peter Bastian
  */
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Shapefnkt
    *
    * @{
    */

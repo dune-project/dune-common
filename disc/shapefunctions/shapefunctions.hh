@@ -11,20 +11,27 @@
 #include "grid/common/grid.hh"
 
 /**
- * @file
+ * @file dune/disc/shapefunctions/shapefunctions.hh
  * @brief  abstract base class for shape functions
  * @author Peter Bastian
  */
+
+/*! @defgroup DISC_Shapefnkt Shapefunctions
+   @ingroup DISC
+   @brief Interfaces for shape functions,
+   sets of shape functions and containers of sets of shape functions
+
+   @section D1 Introduction
+   <!--=================-->
+
+   To be written
+ */
+
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Shapefnkt
    *
    * @{
-   */
-  /**
-   * @brief Define abstract interface for a shape function,
-   * a set of shape functions and a container of sets of shape functions
-   *
    */
 
   /*! Abstract base class for a shape function.

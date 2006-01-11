@@ -16,13 +16,24 @@
 #include "dune/disc/operators/boundaryconditions.hh"
 
 /**
- * @file
+ * @file dune/disc/groundwater/groundwater.hh
  * @brief  Base class for defining an instance of the groundwater flow problem
  * @author Peter Bastian
  */
+
+/*! @defgroup DISC_Disc Discretizations
+   @ingroup DISC
+   @brief ready to use descritizations
+
+   @section D1 Introduction
+   <!--=================-->
+
+   To be written
+ */
+
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Disc
    *
    * @{
    */

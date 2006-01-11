@@ -9,14 +9,14 @@
 #include "grid/common/grid.hh"
 
 /**
- * @file
+ * @file dune/disc/shapefunctions/lagrange/simplexshapefunctions.hh
  * @brief  define Lagrange type shape functions for simplicial elements
  * @author Sreejith Pulloor Kuttanikkad
  */
 
 namespace Dune
 {
-  /** @addtogroup DISC
+  /** @addtogroup DISC_Shapefnkt
    *
    * @{
    */
