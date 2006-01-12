@@ -6,11 +6,13 @@
 #define DUNE_VTKWRITER_HH
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <list>
 #include <dune/common/exceptions.hh>
 #include "dune/grid/common/mcmgmapper.hh"
 #include "dune/grid/common/referenceelements.hh"
+#include "dune/disc/functions/functions.hh"
 
 /** @file
         @author Peter Bastian
@@ -623,8 +625,8 @@ namespace Dune
       // get name
       virtual std::string name () const = 0;
 
-      // non virtual destructor
-      ~VTKFunction () {}
+      // virtual destructor
+      virtual ~VTKFunction () {}
     };
 
     //!
@@ -659,6 +661,8 @@ namespace Dune
       // constructor remembers reference to a grid function
       GridFunctionWrapper (const GridFunction<GridImp,RT,m>& f, std::string s) : func(f), myname(s)
       {}
+
+      virtual ~GridFunctionWrapper() {}
 
     private:
       const GridFunction<GridImp,RT,m>& func;
