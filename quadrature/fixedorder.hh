@@ -172,15 +172,15 @@ namespace Dune {
    */
   //********************************************************************
   template< class RangeFieldType , class DomainType >
-  class Quadrature : public QuadratureDefault  < RangeFieldType ,
-                         DomainType , Quadrature < RangeFieldType , DomainType > >  {
+  class QuadratureOld : public QuadratureDefault  < RangeFieldType ,
+                            DomainType , QuadratureOld < RangeFieldType , DomainType > >  {
 
     // my Type
-    typedef Quadrature < RangeFieldType , DomainType > QuadratureType;
+    typedef QuadratureOld < RangeFieldType , DomainType > QuadratureType;
 
   public:
     //! Constructor building the quadrature
-    Quadrature ( int id , GeometryType eltype, int polOrd ) :
+    QuadratureOld ( int id , GeometryType eltype, int polOrd ) :
       order_ ( polOrd )  , eltype_ ( eltype )
     {
       switch ( eltype_ )
@@ -198,7 +198,7 @@ namespace Dune {
       }
     };
 
-    virtual ~Quadrature() {}
+    virtual ~QuadratureOld() {}
 
     //! return number of quadrature points
     int nop () const { return numQuadPoints_; };
