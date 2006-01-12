@@ -16,6 +16,8 @@ namespace Dune {
   class LevelGridPartTraits;
   template <class GridImp, PartitionIteratorType pitype>
   class LeafGridPartTraits;
+  template <class GridImp, PartitionIteratorType pitype>
+  class HierarchicGridPartTraits;
   template <class GridImp,class IndexSetImp, PartitionIteratorType pitype>
   struct DefaultGridPartTraits;
 
@@ -202,6 +204,65 @@ namespace Dune {
     };
   };
 
+
+  //**************************************************************
+  //! \brief Selects the leaf level of a grid
+  template <class GridImp, PartitionIteratorType pitype = Interior_Partition>
+  class HierarchicGridPart :
+    public GridPartDefault< HierarchicGridPartTraits<GridImp,pitype> > {
+  public:
+    //- Public typedefs and enums
+    //! Type definitions
+    typedef HierarchicGridPartTraits<GridImp,pitype> Traits;
+    //! Grid implementation type
+    typedef typename Traits::GridType GridType;
+    //! The leaf index set of the grid implementation
+    typedef typename Traits::IndexSetType IndexSetType;
+
+    //! Struct providing types of the leaf iterators on codimension cd
+    template <int cd>
+    struct Codim {
+      typedef typename Traits::template Codim<cd>::IteratorType IteratorType;
+    };
+  public:
+    //- Public methods
+    //! Constructor
+    HierarchicGridPart(const GridType& grid) :
+      GridPartDefault<Traits>(grid, isetWrapper_),
+      isetWrapper_(grid) {}
+
+    //! Begin iterator on the leaf level
+    template <int cd>
+    typename Traits::template Codim<cd>::IteratorType begin() const {
+      return this->grid().template leafbegin<cd,pitype>();
+    }
+
+    //! End iterator on the leaf level
+    template <int cd>
+    typename Traits::template Codim<cd>::IteratorType end() const {
+      return this->grid().template leafend<cd,pitype>();
+    }
+
+    //! Returns maxlevel of the grid
+    int level() const { return this->grid().maxLevel(); }
+
+  private:
+    //! GridDefaultIndexSet Wrapper
+    IndexSetType isetWrapper_;
+  };
+
+  //! Type definitions for the LeafGridPart class
+  template <class GridImp,PartitionIteratorType pitype>
+  struct HierarchicGridPartTraits {
+    typedef GridImp GridType;
+    typedef HierarchicGridPart<GridImp,pitype> GridPartType;
+    typedef DefaultGridIndexSet<GridImp,GlobalIndex> IndexSetType;
+
+    template <int cd>
+    struct Codim {
+      typedef typename GridImp::template Codim<cd>::template Partition<pitype>::LeafIterator IteratorType;
+    };
+  };
   //! quick hack, to be revised by me
   //! \brief Selects the leaf level of a grid
   template <class GridImp, class IndexSetImp , PartitionIteratorType pitype = Interior_Partition>
