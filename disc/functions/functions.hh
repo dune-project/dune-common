@@ -97,7 +97,7 @@ namespace Dune
        @param[in]  x    position to be evaluated
        @param[out] y    result vector to be filled
      */
-    void evalall (const Dune::FieldVector<DT,n>& x, Dune::FieldVector<RT,m>& y) const
+    virtual void evalall (const Dune::FieldVector<DT,n>& x, Dune::FieldVector<RT,m>& y) const
     {
       for (int i=0; i<m; ++i)
         y[i] = eval(i,x);
