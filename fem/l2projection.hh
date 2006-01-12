@@ -29,39 +29,35 @@ namespace Dune
       const typename DiscreteFunctionType::FunctionSpaceType
       & functionSpace_= discFunc.getFunctionSpace();
 
-      int level = functionSpace_.level();
-
       discFunc.clear();
 
       typedef typename FunctionSpaceType::GridType GridType;
-      typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
+      typedef typename FunctionSpaceType::IteratorType IteratorType;
       typedef typename DiscreteFunctionType::LocalFunctionType LocalFuncType;
 
-
-      const GridType & grid = functionSpace_.grid();
       const int dim = GridType::dimension;
 
       typename FunctionSpaceType::RangeType ret (0.0);
       typename FunctionSpaceType::RangeType phi (0.0);
 
-      LevelIterator it = grid.template lbegin<0> ( level );
-      LevelIterator endit = grid.template lend<0> ( level );
+      IteratorType it    = functionSpace_.begin();
+      IteratorType endit = functionSpace_.end();
+
+      assert( it != endit );
 
       // Get quadrature rule
       const QuadratureRule<double, dim>& quad = QuadratureRules<double, dim>::rule(it->geometry().type(), polOrd);
 
-      LocalFuncType lf = discFunc.newLocalFunction();
-
       for( ; it != endit ; ++it)
       {
-        discFunc.localFunction( *it , lf );
+        LocalFuncType lf = discFunc.localFunction( *it );
 
         const typename FunctionSpaceType::BaseFunctionSetType & set =
           functionSpace_.getBaseFunctionSet(*it);
 
         for(int i=0; i<lf.numberOfDofs(); i++)
         {
-          for(int qP = 0; qP < quad.size(); qP++)
+          for(unsigned int qP = 0; qP < quad.size(); qP++)
           {
             double det = (*it).geometry().integrationElement(quad[qP].position());
             f.evaluate((*it).geometry().global( quad[qP].position() ), ret);
@@ -71,9 +67,7 @@ namespace Dune
         }
       }
     }
-
   };
-
 
 } // end namespace
 
