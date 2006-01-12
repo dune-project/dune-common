@@ -32,8 +32,8 @@ namespace Dune {
   template<class G, class RT, class IS, int o>
   class DGFunction :
     virtual public GridFunction<G,RT,1>,
-    virtual public FunctionDefault<G,RT,1>,
     virtual public GridFunctionDefault<G,RT,1>,
+    virtual public FunctionDefault<typename G::ctype,RT,G::dimension,1>,
     virtual public L2Function<typename G::ctype,RT,G::dimension,1>
   {
     //! get domain field type from the grid
@@ -41,6 +41,9 @@ namespace Dune {
 
     //! get entity from the grid
     typedef typename G::template Codim<0>::Entity Entity;
+
+    //! get domain dimension from the grid
+    enum {n=G::dimension};
 
     //! make copy constructor private
     DGFunction (const DGFunction&);
@@ -51,7 +54,7 @@ namespace Dune {
     //! type of shapefunctions
     typedef Dune::MonomialShapeFunctionSetContainer<DT,RT,G::dimension,o>
     ShapeFunctionSetContainer;
-    typedef Dune::MonomialShapeFunctionSet<DT,RT,G::dimension,o>
+    typedef Dune::MonomialShapeFunctionSet<DT,RT,G::dimension>
     ShapeFunctionSet;
   public:
     typedef RT ResultType;
@@ -64,12 +67,19 @@ namespace Dune {
     DGFunction (const G& g, const IS& indexset) :
       grid_(g), is_(indexset)
     {
-      coeff.resize(is.size(0), false);
+      coeff_.resize(is_.size(0), false);
     }
 
     //! deallocate the vector
     ~DGFunction () {}
 
+    //! evaluate single component comp at global point x
+    /*! Evaluate a single component of the vector-valued
+       function.
+       @param[in] comp number of component to be evaluated
+       @param[in] x    position to be evaluated
+       \return         value of the component
+     */
     //! evaluate single component comp at global point x
     /*! Evaluate a single component of the vector-valued
        function.
@@ -95,11 +105,11 @@ namespace Dune {
       assert(comp == 0);
 
       RT value = 0;
-      ShapeFunctionSet & s = shapefnkts_(e.type(),o);
-      int eid = is.index(e);
+      const ShapeFunctionSet & s = shapefnkts_(e.geometry().type(),o);
+      int eid = is_.index(e);
       for (int i=0; i<BlockSize; ++i)
       {
-        value += coeff[eid][i] * shapefnkts_[i].evaluateFunction(0, coord);
+        value += coeff_[eid][i] * s[i].evaluateFunction(0, xi);
       }
       return value;
     }
@@ -111,7 +121,7 @@ namespace Dune {
 
        @param[in]  u    a continuous grid function
      */
-    void interpolate (const C0GridFunction<G,RT,m>& u)
+    void interpolate (const C0GridFunction<G,RT,1>& u)
     {
       DUNE_THROW(NotImplemented, "interpolate(C0GridFunction)");
     }
@@ -171,7 +181,7 @@ namespace Dune {
 
     // and a dynamically allocated vector
     RepresentationType coeff_;
-  }
+  };
 
   /** @} */
 
