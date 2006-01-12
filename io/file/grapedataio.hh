@@ -8,8 +8,11 @@
 //- Dune includes
 #include <dune/common/misc.hh>
 #include <dune/grid/common/grid.hh>
+
 #include <dune/io/file/asciiparser.hh>
 #include <dune/fem/dofmanager.hh>
+
+#include <dune/grid/sgrid.hh>
 
 //- Local includes
 
@@ -58,12 +61,56 @@ namespace Dune {
     return tmp;
   };
 
+  template <int dim, int dimworld, class GridImp>
+  class GrapeDataIOImp
+  {
+    typedef GridImp GridType;
+  public:
+    /** Write Grid with GridType file filename and time
+     *
+     * This method uses the Grid Interface Method writeGrid
+     * to actually write the grid, within this method the real file name is
+     * generated out of filename and timestep
+     */
+    inline static bool writeGrid (const GridType & grid,
+                                  const GrapeIOFileFormatType ftype, const GrapeIOStringType & fnprefix
+                                  , double time=0.0, int timestep=0, int precision = 6);
+
+    //! get Grid from file with time and timestep , return true if ok
+    inline static bool readGrid (GridType & grid,
+                                 const GrapeIOStringType & fnprefix , double & time , int timestep);
+  };
+
+  template <int dim, int dimworld>
+  class GrapeDataIOImp<dim,dimworld,SGrid<dim,dimworld> >
+  {
+    typedef SGrid<dim,dimworld> GridType;
+  public:
+    /** Write Grid with GridType file filename and time
+     *
+     * This method uses the Grid Interface Method writeGrid
+     * to actually write the grid, within this method the real file name is
+     * generated out of filename and timestep
+     */
+    inline static bool writeGrid (const GridType & grid,
+                                  const GrapeIOFileFormatType ftype, const GrapeIOStringType & fnprefix
+                                  , double time=0.0, int timestep=0, int precision = 6)
+    {
+      return false;
+    }
+
+    //! get Grid from file with time and timestep , return true if ok
+    inline static bool readGrid (GridType & grid,
+                                 const GrapeIOStringType & fnprefix , double & time , int timestep)
+    {
+      return false;
+    }
+  };
 
   template <class GridType>
   class GrapeDataIO
   {
   public:
-
     GrapeDataIO () {};
 
     /** Write Grid with GridType file filename and time
@@ -74,12 +121,20 @@ namespace Dune {
      */
     inline bool writeGrid (const GridType & grid,
                            const GrapeIOFileFormatType ftype, const GrapeIOStringType fnprefix
-                           , double time=0.0, int timestep=0, int precision = 6);
+                           , double time=0.0, int timestep=0, int precision = 6) const
+    {
+      return GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType>::
+             writeGrid(grid,ftype,fnprefix,time,timestep,precision);
+    }
 
     //! get Grid from file with time and timestep , return true if ok
     inline bool readGrid (GridType & grid,
-                          const GrapeIOStringType fnprefix , double & time , int timestep);
-
+                          const GrapeIOStringType fnprefix , double & time , int timestep)
+    {
+      return
+        GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType>::
+        readGrid(grid,fnprefix,time,timestep);
+    }
 
     /**
        Write DiscreteFunctions
@@ -99,16 +154,15 @@ namespace Dune {
   };
 
 
-  template <class GridType>
-  inline bool GrapeDataIO<GridType> :: writeGrid
-    (const GridType & grid,
-    const GrapeIOFileFormatType ftype, const GrapeIOStringType fnprefix ,
+  template <int dim, int dimworld, class GridImp>
+  inline bool GrapeDataIOImp<dim,dimworld,GridImp> :: writeGrid
+    (const GridImp & grid,
+    const GrapeIOFileFormatType ftype, const GrapeIOStringType & fnprefix ,
     double time, int timestep, int precision )
   {
-
     // write dof manager, that corresponds to grid
     {
-      typedef DofManager<GridType> DofManagerType;
+      typedef DofManager<GridImp> DofManagerType;
       typedef DofManagerFactory<DofManagerType> DMFactoryType;
 
       std::string dmname(fnprefix);
@@ -145,10 +199,9 @@ namespace Dune {
 
   }
 
-
-  template <class GridType>
-  inline bool GrapeDataIO<GridType> :: readGrid
-    (GridType & grid, const GrapeIOStringType fnprefix , double & time , int timestep)
+  template <int dim, int dimworld, class GridImp>
+  inline bool GrapeDataIOImp<dim,dimworld,GridImp> :: readGrid
+    (GridImp & grid, const GrapeIOStringType & fnprefix , double & time , int timestep)
   {
     int helpType;
 
