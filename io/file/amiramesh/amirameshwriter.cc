@@ -361,15 +361,14 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     typename GridType::template Codim<0>::LevelIterator eEndIt = grid.template lend<0>(level);
 
     for (int i=0; eIt!=eEndIt; ++eIt, i++) {
-      switch (eIt->geometry().type()) {
+      if (eIt->geometry().type().isCube()) {
 
-cube:
         dPtr[i*4+0] = levelIndexSet.template subIndex<dim>(*eIt, 0)+1;
         dPtr[i*4+1] = levelIndexSet.template subIndex<dim>(*eIt, 1)+1;
         dPtr[i*4+2] = levelIndexSet.template subIndex<dim>(*eIt, 3)+1;
         dPtr[i*4+3] = levelIndexSet.template subIndex<dim>(*eIt, 2)+1;
-        break;
-simplex:
+
+      } else if (eIt->geometry().type().isSimplex()) {
 
         for (int j=0; j<3; j++)
           dPtr[i*maxVerticesPerElement+j] = levelIndexSet.template subIndex<dim>(*eIt, j)+1;
@@ -378,8 +377,9 @@ simplex:
         // to fill up the remaining slots
         if (maxVerticesPerElement==4)
           dPtr[i*4+3] = dPtr[i*4+2];
-        break;
-      default :
+
+      } else {
+
         DUNE_THROW(IOError, "Elements of type " << eIt->geometry().type()
                                                 << " cannot be written to 2d AmiraMesh files!");
       }
