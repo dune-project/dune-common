@@ -7,6 +7,7 @@
 
 //- Dune includes
 #include <dune/grid/common/grid.hh>
+#include <dune/grid/common/defaultindexsets.hh>
 
 namespace Dune {
 
@@ -105,7 +106,8 @@ namespace Dune {
     //- Public methods
     //! Constructor
     LevelGridPart(const GridType& grid, int level) :
-      GridPartDefault<Traits>(grid, grid.levelIndexSet(level)),
+      GridPartDefault<Traits>(grid,isetWrapper_),
+      isetWrapper_(grid,level),
       level_(level) {}
 
     //! Returns first iterator on a given level
@@ -124,6 +126,8 @@ namespace Dune {
     int level() const { return level_; }
 
   private:
+    //! GridDefaultIndexSet Wrapper
+    IndexSetType isetWrapper_;
     const int level_;
   };
 
@@ -132,7 +136,7 @@ namespace Dune {
   struct LevelGridPartTraits {
     typedef GridImp GridType;
     typedef LevelGridPart<GridImp,pitype> GridPartType;
-    typedef typename GridImp::Traits::LevelIndexSet IndexSetType;
+    typedef DefaultGridIndexSet<GridImp,LevelIndex> IndexSetType;
 
     template <int cd>
     struct Codim {
@@ -162,7 +166,8 @@ namespace Dune {
     //- Public methods
     //! Constructor
     LeafGridPart(const GridType& grid) :
-      GridPartDefault<Traits>(grid, grid.leafIndexSet()) {}
+      GridPartDefault<Traits>(grid, isetWrapper_),
+      isetWrapper_(grid) {}
 
     //! Begin iterator on the leaf level
     template <int cd>
@@ -178,6 +183,10 @@ namespace Dune {
 
     //! Returns maxlevel of the grid
     int level() const { return this->grid().maxLevel(); }
+
+  private:
+    //! GridDefaultIndexSet Wrapper
+    IndexSetType isetWrapper_;
   };
 
   //! Type definitions for the LeafGridPart class
@@ -185,7 +194,7 @@ namespace Dune {
   struct LeafGridPartTraits {
     typedef GridImp GridType;
     typedef LeafGridPart<GridImp,pitype> GridPartType;
-    typedef typename GridImp::Traits :: LeafIndexSet IndexSetType;
+    typedef DefaultGridIndexSet<GridImp,LeafIndex> IndexSetType;
 
     template <int cd>
     struct Codim {
