@@ -17,7 +17,7 @@
 <li>A short list of the main <a href="$(ROOT)/devel/features.html">features</a> </li>
 <li><a href="doxygen/">The class documentation</a> (generated 
 with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
-<li><a href="$(ROOT)doxygen/html/group__GridReferenceElements.html">The Reference Elements</a></li>
+<li><a href="$(ROOT)/doxygen/html/group__GridReferenceElements.html">The Reference Elements</a></li>
 <li>The <a href="view-concept.html">view concept</a> is the
       fundamental idea of the grid interface</li>
 <li>Some information about the <a href="$(ROOT)/devel/indexidsets.html">index and id sets</a>. </li>
