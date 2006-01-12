@@ -1101,11 +1101,16 @@ namespace Dune {
       dataXtractor_.apply(str,en);
     }
 
+  private:
+    //! only called from DofManagerFactory
     //********************************************************
     // read-write Interface for index set
     //********************************************************
-    bool write(const GrapeIOFileFormatType ftype, const std::string filename, int timestep);
+    //! writes all underlying index sets to a file
+    bool write(const std::string filename, int timestep);
+    //! reads all underlying index sets from a file
     bool read(const std::string filename, int timestep);
+
     bool write_xdr(const std::string filename, int timestep);
     bool read_xdr( const std::string filename, int timestep);
   }; // end class DofManager
@@ -1242,9 +1247,8 @@ namespace Dune {
 
   template <class GridType>
   inline bool DofManager<GridType>::
-  write(const GrapeIOFileFormatType ftype, const std::string filename, int timestep)
+  write(const std::string filename, int timestep)
   {
-    assert(ftype == xdr);
     return write_xdr(filename,timestep);
   }
   template <class GridType>
@@ -1322,18 +1326,18 @@ namespace Dune {
     //! If the object does not exist, then it is created first.
     inline static DofManagerType & getDofManager (const GridType & grid)
     {
-      ListIteratorType endit = gridList_.end();
-      for(ListIteratorType it = gridList_.begin(); it!=endit; ++it)
+      // search list for dof manager
+      DofManagerType * dm = getDmFromList(grid);
+
+      // if not exists, create it
+      if(!dm)
       {
-        if( (*it).first == & grid )
-        {
-          return * ((*it).second);
-        }
+        dm = new DofManagerType ( grid );
+        assert( dm );
+        std::pair < const GridType * , DofManagerType * > tmp ( & grid , dm );
+        gridList_.insert_after( gridList_.rbegin() , tmp );
       }
 
-      DofManagerType * dm = new DofManagerType ( grid );
-      std::pair < const GridType * , DofManagerType * > tmp ( & grid , dm );
-      gridList_.insert_after( gridList_.rbegin() , tmp );
       return *dm;
     }
 
@@ -1354,7 +1358,40 @@ namespace Dune {
       }
       std::cerr << "DofManager could not deleted, because is not in list anymore! \n";
     }
+
+    //! writes DofManager of corresponding grid, when DofManager exists
+    inline static bool
+    writeDofManager(const GridType & grid, const std::string filename, int timestep)
+    {
+      DofManagerType * dm = getDmFromList(grid);
+      if(dm) return dm->write(filename,timestep);
+      return false;
+    }
+
+    //! reads DofManager of corresponding grid, when DofManager exists
+    inline static bool
+    readDofManager(const GridType & grid, const std::string filename, int timestep)
+    {
+      DofManagerType * dm = getDmFromList(grid);
+      if(dm) return dm->read(filename,timestep);
+      return false;
+    }
+
   private:
+    // return pointer to dof manager for given grid
+    inline static DofManagerType * getDmFromList(const GridType &grid)
+    {
+      ListIteratorType endit = gridList_.end();
+      for(ListIteratorType it = gridList_.begin(); it!=endit; ++it)
+      {
+        if( (*it).first == & grid )
+        {
+          return ((*it).second);
+        }
+      }
+      return 0;
+    }
+
     DofManagerFactory () {};
   };
 
