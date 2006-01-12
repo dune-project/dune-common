@@ -522,7 +522,7 @@ namespace Dune
       for(ConstIterator vertex=graph.begin(); vertex != end; ++vertex) {
         const IndexPair* pair = lookup.pair(*vertex);
 
-        if(pair!=0 && pair->local().attribute()) {
+        if(pair!=0 && overlap.contains(pair->local().attribute())) {
           overlapVertices[overlapCount].aggregate = aggregates[pair->local()];
           overlapVertices[overlapCount].vertex = pair->local();
           ++overlapCount;

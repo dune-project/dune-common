@@ -626,13 +626,16 @@ namespace Dune
                                                   const typename SmootherTraits<S>::Arguments& sargs) const
     {
       assert(smoothers.levels()==0);
-      typedef typename ParallelMatrixHierarchy::ConstIterator Iterator;
+      typedef typename ParallelMatrixHierarchy::ConstIterator MatrixIterator;
+      typedef typename ParallelInformationHierarchy::ConstIterator PinfoIterator;
       typename ConstructionTraits<S>::Arguments cargs;
       cargs.setArgs(sargs);
-      Iterator coarsest = matrices_.coarsest();
+      PinfoIterator pinfo = parallelInformation_.finest();
 
-      for(Iterator matrix = matrices_.finest(); matrix != coarsest; ++matrix) {
+      for(MatrixIterator matrix = matrices_.finest(), coarsest = matrices_.coarsest();
+          matrix != coarsest; ++matrix, ++pinfo) {
         cargs.setMatrix(matrix->getmat());
+        cargs.setComm(*pinfo);
         smoothers.addCoarser(cargs);
       }
     }
