@@ -22,8 +22,6 @@
 #include <dune/grid/common/defaultindexsets.hh>
 #include <dune/fem/transfer/datacollector.hh>
 
-#include <dune/io/file/grapedataio.hh>
-
 namespace Dune {
 
   // forward declaration
