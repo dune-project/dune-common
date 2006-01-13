@@ -689,7 +689,7 @@ namespace Dune {
    */
   template<class GridImp>
   class ALU3dGridIntersectionIterator :
-    public IntersectionIteratorDefault <GridImp,ALU3dGridIntersectionIterator>
+    public IntersectionIteratorDefaultImplementation <GridImp,ALU3dGridIntersectionIterator>
   {
     enum { dim       = GridImp::dimension };
     enum { dimworld  = GridImp::dimensionworld };
@@ -892,7 +892,7 @@ namespace Dune {
   template<int cd, PartitionIteratorType pitype, class GridImp>
   class ALU3dGridLevelIterator :
     public ALU3dGridEntityPointer <cd,GridImp> ,
-    public LevelIteratorDefault <cd,pitype,GridImp,ALU3dGridLevelIterator>
+    public LevelIteratorDefaultImplementation <cd,pitype,GridImp,ALU3dGridLevelIterator>
   {
     enum { dim       = GridImp::dimension };
     enum { dimworld  = GridImp::dimensionworld };
@@ -951,7 +951,7 @@ namespace Dune {
   //! Leaf iterator
   template<int cdim, PartitionIteratorType pitype, class GridImp>
   class ALU3dGridLeafIterator :
-    public LeafIteratorDefault<cdim, pitype, GridImp, ALU3dGridLeafIterator>,
+    public LeafIteratorDefaultImplementation<cdim, pitype, GridImp, ALU3dGridLeafIterator>,
     public ALU3dGridEntityPointer<cdim,GridImp>
   {
     enum { dim = GridImp :: dimension };
@@ -999,10 +999,11 @@ namespace Dune {
   };
 
   // - HierarchicIteraor
+  // --HierarchicIterator
   template<class GridImp>
   class ALU3dGridHierarchicIterator :
     public ALU3dGridEntityPointer<0,GridImp> ,
-    public HierarchicIteratorDefault <GridImp,ALU3dGridHierarchicIterator>
+    public HierarchicIteratorDefaultImplementation <GridImp,ALU3dGridHierarchicIterator>
   {
     enum { dim = GridImp::dimension };
     typedef ALU3dGridHierarchicIterator<GridImp> ThisType;

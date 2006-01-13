@@ -102,12 +102,12 @@ namespace Dune {
   //! Empty definition, needs to be specialized for element type
   template <int mydim, int cdim, class GridImp>
   class ALU3dGridGeometry :
-    public GeometryDefault <mydim,cdim,GridImp,ALU3dGridGeometry> {};
+    public GeometryDefaultImplementation <mydim,cdim,GridImp,ALU3dGridGeometry> {};
 
   //! Specialisation for tetrahedra
   template <int mydim, int cdim>
   class ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, tetra> > :
-    public GeometryDefault<mydim, cdim, const ALU3dGrid<3, 3, tetra>,
+    public GeometryDefaultImplementation<mydim, cdim, const ALU3dGrid<3, 3, tetra>,
         ALU3dGridGeometry> {
     typedef const ALU3dGrid<3, 3, tetra> GridImp;
 
@@ -209,7 +209,7 @@ namespace Dune {
   //! Specialisation for hexahedra
   template <int mydim, int cdim>
   class ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> > :
-    public GeometryDefault<mydim, cdim, const ALU3dGrid<3, 3, hexa>,
+    public GeometryDefaultImplementation<mydim, cdim, const ALU3dGrid<3, 3, hexa>,
         ALU3dGridGeometry> {
     typedef const ALU3dGrid<3, 3, hexa> GridImp;
     friend class ALU3dGridIntersectionIterator<GridImp>;

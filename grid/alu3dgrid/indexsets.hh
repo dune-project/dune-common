@@ -65,14 +65,14 @@ namespace Dune {
     int index (const EntityType & ep) const
     {
       enum { cd = EntityType :: codimension };
-      return (grid_.template getRealEntity<cd>(ep)).getIndex();
+      return (grid_.getRealImplementation(ep)).getIndex();
     }
 
     //! return subIndex of given entity
     template <int cd>
     int subIndex (const EntityCodim0Type & ep, int i) const
     {
-      const ALU3dGridEntity<0,dim,const GridType> & en = (grid_.template getRealEntity<0>(ep));
+      const ALU3dGridEntity<0,dim,const GridType> & en = (grid_.getRealImplementation(ep));
       return en.template getSubIndex<cd>(i);
     }
 

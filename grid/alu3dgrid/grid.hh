@@ -172,7 +172,7 @@ namespace Dune {
    */
   template <int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid :
-    public GridDefault<dim, dimworld, alu3d_ctype, ALU3dGridFamily <dim,dimworld,elType> >,
+    public GridDefaultImplementation<dim, dimworld, alu3d_ctype, ALU3dGridFamily <dim,dimworld,elType> >,
     public HasObjectStream
   {
     CompileTimeChecker<(dim      == 3)> ALU3dGrid_only_implemented_for_3dp;
@@ -192,6 +192,9 @@ namespace Dune {
     friend class ALU3dGridIntersectionIterator<const MyType>;
     friend class ALU3dGridHierarchicIterator<const MyType>;
 
+    friend class ALU3dGridHierarchicIndexSet<dim,dimworld,elType>;
+    friend class ALU3dGridGlobalIdSet<dim,dimworld,elType>;
+    friend class ALU3dGridLocalIdSet<dim,dimworld,elType>;
 
     //**********************************************************
     // The Interface Methods
@@ -402,7 +405,6 @@ namespace Dune {
     template <class DofManagerType>
     bool communicate (DofManagerType & dm);
 
-
     /** \brief ghostSize is zero for this grid  */
     int ghostSize (int level, int codim) const { return 0; }
 
@@ -486,33 +488,18 @@ namespace Dune {
     bool mark( int refCount , const typename Traits::template Codim<0>::EntityPointer & ep );
   private:
     bool mark( int refCount , const typename Traits::template Codim<0>::Entity & en );
+
   public:
-
-    template <int cd>
-    ALU3dGridEntity<cd,dim,const MyType >&
-    getRealEntity(typename Traits::template Codim<cd>::Entity& entity)
-    {
-      return entity.realEntity;
-    }
-
-    //private:
-    template <int cd>
-    const ALU3dGridEntity<cd,dim,const MyType >&
-    getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const
-    {
-      return entity.realEntity;
-    }
-
     IntersectionIteratorWrapper<const MyType>&
     getRealIntersectionIterator(typename Traits::IntersectionIterator& it)
     {
-      return it.realIterator;
+      return this->getRealImplementation(it);
     }
 
     const IntersectionIteratorWrapper<const MyType>&
     getRealIntersectionIterator(const typename Traits::IntersectionIterator& it)  const
     {
-      return it.realIterator;
+      return this->getRealImplementation(it);
     }
 
     //! deliver all geometry types used in this grid

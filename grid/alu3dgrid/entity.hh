@@ -104,7 +104,7 @@ namespace Dune {
    */
   template<int cd, int dim, class GridImp>
   class ALU3dGridEntity :
-    public EntityDefault <cd,dim,GridImp,ALU3dGridEntity>
+    public EntityDefaultImplementation <cd,dim,GridImp,ALU3dGridEntity>
   {
     enum { dimworld = GridImp::dimensionworld };
 
@@ -211,7 +211,7 @@ namespace Dune {
   //***********************
   template<int dim, class GridImp>
   class ALU3dGridEntity<0,dim,GridImp>
-    : public EntityDefault<0,dim,GridImp,ALU3dGridEntity>
+    : public EntityDefaultImplementation<0,dim,GridImp,ALU3dGridEntity>
   {
     enum { dimworld = GridImp::dimensionworld };
     typedef typename ALU3dImplTraits<GridImp::elementType>::GEOElementType GEOElementType;
@@ -404,7 +404,7 @@ namespace Dune {
    */
   template<int cd, class GridImp>
   class ALU3dGridEntityPointer :
-    public EntityPointerDefault <cd, GridImp, ALU3dGridEntityPointer<cd,GridImp> >
+    public EntityPointerDefaultImplementation <cd, GridImp, ALU3dGridEntityPointer<cd,GridImp> >
   {
     typedef ALU3dGridEntityPointer <cd,GridImp> ThisType;
     enum { dim       = GridImp::dimension };

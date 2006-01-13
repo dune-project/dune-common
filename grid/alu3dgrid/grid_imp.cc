@@ -480,7 +480,7 @@ namespace Dune {
   inline bool ALU3dGrid<dim,dimworld, elType>::
   mark(int ref, const typename Traits::template Codim<0>::Entity & ep )
   {
-    bool marked = (this->template getRealEntity<0> (ep)).mark(ref);
+    bool marked = (this->getRealImplementation(ep)).mark(ref);
     if(marked)
     {
       if(ref > 0) refineMarked_ ++ ;
@@ -979,7 +979,12 @@ namespace Dune {
                                                );
     }
 
+
     assert(mygrid_ != 0);
+
+    // check for element type
+    this->checkMacroGrid ();
+
     myGrid().duneRestore(filename.c_str());
 
     {
@@ -1033,7 +1038,8 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline void ALU3dGrid<dim, dimworld, elType>::checkMacroGrid()
   {
-    ALU3DSPACE BSLeafIteratorMaxLevel w ( myGrid() ) ;
+    typedef ALU3DSPACE LevelIterator < ALU3DSPACE HElementType > IteratorType;
+    IteratorType w( this->myGrid(), 0 );
     for (w->first () ; ! w->done () ; w->next ())
     {
       ALU3dGridElementType type = (ALU3dGridElementType) w->item().type();
