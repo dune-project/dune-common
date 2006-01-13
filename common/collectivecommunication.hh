@@ -24,7 +24,7 @@ namespace Dune
       return 0;
     }
 
-    int procs () const
+    int size () const
     {
       return 1;
     }
