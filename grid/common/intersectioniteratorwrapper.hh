@@ -11,7 +11,7 @@ namespace Dune {
   //! internal object from a object stack hold by the grid
   template <class GridImp>
   class IntersectionIteratorWrapper
-    : public IntersectionIteratorDefault<GridImp,IntersectionIteratorWrapper>
+    : public IntersectionIteratorDefaultImplementation<GridImp,IntersectionIteratorWrapper>
   {
     enum { dim = GridImp :: dimension };
     enum { dimworld = GridImp :: dimensionworld };

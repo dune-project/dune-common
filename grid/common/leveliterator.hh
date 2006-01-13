@@ -33,6 +33,8 @@ namespace Dune
       return *this;
     }
 
+    //private:
+    //! do not use this operator
     /**
        @brief Postincrement operator.
 
@@ -45,45 +47,13 @@ namespace Dune
       return tmp;
     }
 
+  public:
     /**
        @brief copy constructor from LevelIteratorImp
      */
     LevelIterator(const LevelIteratorImp<codim,pitype,const GridImp> & i) :
       EntityPointer<GridImp, LevelIteratorImp<codim,pitype,GridImp> >(i) {};
 
-  };
-
-  /**********************************************************************/
-  /**
-     @brief Interface Definition for LevelIteratorImp
-
-     @ingroup GridDevel
-   */
-  template<int codim, PartitionIteratorType pitype, class GridImp,
-      template<int,PartitionIteratorType,class> class LevelIteratorImp>
-  class LevelIteratorInterface
-  {
-  public:
-    typedef typename GridImp::template Codim<codim>::Entity Entity;
-
-    /**
-       @brief coordinate type of this Grid
-     */
-    typedef typename GridImp::ctype ctype;
-
-    /**
-       @brief prefix increment
-
-       implement this in LevelIteratorImp to increment your EntityPointerImp
-     */
-    void increment() { return asImp().increment(); }
-
-  private:
-    //  Barton-Nackman trick
-    LevelIteratorImp<codim,pitype,GridImp>& asImp ()
-    {return static_cast<LevelIteratorImp<codim,pitype,GridImp>&>(*this);}
-    const LevelIteratorImp<codim,pitype,GridImp>& asImp () const
-    {return static_cast<const LevelIteratorImp<codim,pitype,GridImp>&>(*this);}
   };
 
   //**********************************************************************
@@ -94,8 +64,7 @@ namespace Dune
    */
   template<int codim, PartitionIteratorType pitype, class GridImp,
       template<int,PartitionIteratorType,class> class LevelIteratorImp>
-  class LevelIteratorDefault
-    : public LevelIteratorInterface <codim,pitype,GridImp,LevelIteratorImp>
+  class LevelIteratorDefaultImplementation
   {
   private:
     //  Barton-Nackman trick

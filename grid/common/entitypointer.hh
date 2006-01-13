@@ -96,6 +96,9 @@ namespace Dune
     IteratorImp realIterator;
 
   public:
+    //! type of real implementation
+    typedef IteratorImp ImplementationType;
+
     // autocheck wether imp is convertable into imp::base
     typedef typename
     Dune::EnableIfInterOperable<typename IteratorImp::base,IteratorImp,
@@ -171,61 +174,21 @@ namespace Dune
     }
   };
 
-  //************************************************************************
-  // E N T I T Y P O I N T E R
-  //************************************************************************
-
-  /** \brief Same as LevelIterator but without ++. Can be used as a pointer to an Entity
-   */
-  template<int codim, class GridImp, class IteratorImp>
-  class EntityPointerInterface
-  {
-  public:
-    typedef typename GridImp::template Codim<codim>::Entity Entity;
-
-    //! know your own codimension
-    enum { codimension=codim };
-    //! know your own dimension
-    enum { dimension=GridImp::dimension };
-    //! know your own dimension of world
-    enum { dimensionworld=GridImp::dimensionworld };
-
-    //! define type used for coordinates in grid module
-    typedef typename GridImp::ctype ctype;
-
-    //! equality
-    bool equals(const IteratorImp& i) const
-    {
-      return asImp().equals(i);
-    }
-    //! dereferencing
-    Entity& dereference() const { return asImp().dereference(); }
-
-    //! ask for level of entity
-    int level () const { return asImp().level(); }
-  private:
-    //!  Barton-Nackman trick
-    IteratorImp& asImp () {
-      return static_cast<IteratorImp&>(*this);
-    }
-    const IteratorImp& asImp () const {
-      return static_cast<const IteratorImp&>(*this);
-    }
-  };
-
   //**********************************************************************
   //
   //  --EntityPointerDefault
   //
   //! Default implementation of EntityPointer.
-  //
   //**********************************************************************
   template<int codim, class GridImp, class IteratorImp>
-  class EntityPointerDefault
-    : public EntityPointerInterface <codim,GridImp,IteratorImp>
+  class EntityPointerDefaultImplementation
   {
   public:
     typedef IteratorImp base;
+
+    //! codimension of entity pointer
+    enum { codimension = codim };
+
   private:
     //!  Barton-Nackman trick
     IteratorImp& asImp () {
@@ -234,7 +197,7 @@ namespace Dune
     const IteratorImp& asImp () const {
       return static_cast<const IteratorImp&>(*this);
     }
-  }; // end LevelIteratorDefault
+  }; // end EntityPointerDefaultImplementation
 
 }
 

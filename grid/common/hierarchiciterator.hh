@@ -37,6 +37,8 @@ namespace Dune {
       return *this;
     }
 
+    //private:
+    //! should not be used
     /**
        @brief Postincrement operator.
 
@@ -49,43 +51,12 @@ namespace Dune {
       return tmp;
     }
 
+  public:
     /**
        @brief copy constructor from HierarchicIteratorImp
      */
     HierarchicIterator (const HierarchicIteratorImp<const GridImp> & i) :
       EntityPointer<GridImp,HierarchicIteratorImp<GridImp> >(i) {};
-  };
-
-  /**********************************************************************/
-  /**
-     @brief Interface Definition for HierarchicIteratorImp
-
-     @ingroup GridDevel
-   */
-  template<class GridImp, template<class> class HierarchicIteratorImp>
-  class HierarchicIteratorInterface
-  {
-  public:
-    typedef typename GridImp::template Codim<0>::Entity Entity;
-
-    /**
-       @brief coordinate type of this Grid
-     */
-    typedef typename GridImp::ctype ctype;
-
-    /**
-       @brief prefix increment
-
-       implement this in LevelIteratorImp to increment your EntityPointerImp
-     */
-    void increment() { return asImp().increment(); }
-
-  private:
-    //  Barton-Nackman trick
-    HierarchicIteratorImp<GridImp>& asImp ()
-    {return static_cast<HierarchicIteratorImp<GridImp>&>(*this);}
-    const HierarchicIteratorImp<GridImp>& asImp () const
-    {return static_cast<const HierarchicIteratorImp<GridImp>&>(*this);}
   };
 
   //**********************************************************************
@@ -95,8 +66,7 @@ namespace Dune {
      @ingroup GridDevel
    */
   template<class GridImp, template<class> class HierarchicIteratorImp>
-  class HierarchicIteratorDefault
-    : public HierarchicIteratorInterface <GridImp,HierarchicIteratorImp>
+  class HierarchicIteratorDefaultImplementation
   {
   private:
     // Barton-Nackman trick

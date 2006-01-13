@@ -92,6 +92,10 @@ namespace Dune
     enum { dimworld=GridImp::dimensionworld };
     typedef typename GridImp::ctype ct;
   public:
+
+    //! type of real implementation
+    typedef IntersectionIteratorImp<const GridImp> ImplementationType;
+
     typedef typename GridImp::template Codim<0>::Entity Entity;
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
@@ -295,133 +299,17 @@ namespace Dune
       realIterator(i.realIterator) {}
 
     typedef typename RemoveConst<GridImp>::Type mutableGridImp;
-    //! Friendship granted to grid
-    friend IntersectionIteratorImp<const GridImp>&
-    mutableGridImp::getRealIntersectionIterator(typename GridImp::Traits::IntersectionIterator& it);
-    friend const IntersectionIteratorImp<const GridImp>&
-    mutableGridImp::getRealIntersectionIterator(const typename GridImp::Traits::IntersectionIterator& it) const;
+  protected:
+    // give the GridDefaultImplementation class access to the realImp
+    friend class GridDefaultImplementation<
+        GridImp::dimension, GridImp::dimensionworld,
+        typename GridImp::ctype,
+        typename GridImp::GridFamily> ;
 
-  };
-
-  /**********************************************************************/
-  /**
-     @brief Interface Definition for IntersectionIteratorImp
-
-     @ingroup GridDevel
-   */
-  template<class GridImp, template<class> class IntersectionIteratorImp>
-  class IntersectionIteratorInterface
-  {
-    enum { dim=GridImp::dimension };
-    enum { dimworld=GridImp::dimensionworld };
-    typedef typename GridImp::ctype ct;
-  public:
-    typedef typename GridImp::template Codim<0>::Entity Entity;
-    typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
-    typedef typename GridImp::template Codim<1>::Geometry Geometry;
-    typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
-    //! know your own dimension
-    enum { dimension=dim };
-    //! know your own dimension of world
-    enum { dimensionworld=dimworld };
-    //! define type used for coordinates in grid module
-    typedef ct ctype;
-
-    //! increment
-    void increment()
-    {
-      asImp().increment();
-    }
-
-    //! return true if this intersection is with boundary. \todo connection with boundary information, processor/outer boundary
-    bool boundary () const
-    {
-      return asImp().boundary();
-    }
-
-    //! identifier for boundary segment from macro grid
-    //! (attach your boundary condition as needed)
-    int boundaryId () const
-    {
-      //    assert(& IntersectionIteratorInterface<GridImp, IntersectionIteratorImp>::boundaryId
-      //     !=
-      //       & IntersectionIteratorImp<GridImp>::boundaryId);
-      return asImp().boundaryId();
-    }
-
-    //! return true if intersection is with another element (might be on a lower level).
-    bool neighbor () const
-    {
-      return asImp().neighbor();
-    }
-
-    //! return EntityPointer to the Entity on the inside of this intersection
-    //! (that is the Entity where we started this Iterator)
-    EntityPointer inside() const
-    {
-      //   assert(& IntersectionIteratorInterface<GridImp, IntersectionIteratorImp>::inside
-      //            !=
-      //            & IntersectionIteratorImp<GridImp>::inside);
-      return asImp().inside();
-    }
-
-    //! return EntityPointer to the Entity on the outside of this intersection
-    //! (that is the neighboring Entity)
-    EntityPointer outside() const
-    {
-      //     assert(& IntersectionIteratorInterface<GridImp, IntersectionIteratorImp>::outside
-      //            !=
-      //            & IntersectionIteratorImp<GridImp>::outside);
-      return asImp().outside();
-    }
-
-    /*! @brief @copydoc IntersectionIterator::outerNormal() */
-    FieldVector<ct, dimworld> outerNormal (const FieldVector<ct, dim-1>& local) const
-    {
-      asImp().outerNormal(local);
-    }
-
-    /*! intersection of codimension 1 of this neighbor with element where iteration started.
-       Here returned element is in LOCAL coordinates of the element where iteration started.
-     */
-    const LocalGeometry& intersectionSelfLocal () const
-    {
-      return asImp().intersectionSelfLocal();
-    }
-    /*! intersection of codimension 1 of this neighbor with element where iteration started.
-       Here returned element is in LOCAL coordinates of neighbor
-     */
-    const LocalGeometry& intersectionNeighborLocal () const
-    {
-      return asImp().intersectionNeighborLocal();
-    }
-
-    /*! intersection of codimension 1 of this neighbor with element where iteration started.
-       Here returned element is in GLOBAL coordinates of the element where iteration started.
-     */
-    const Geometry& intersectionGlobal () const
-    {
-      return asImp().intersectionGlobal();
-    }
-
-    //! local number of codim 1 entity in self where intersection is contained in
-    int numberInSelf () const
-    {
-      return asImp().numberInSelf ();
-    }
-
-    //! local number of codim 1 entity in neighbor where intersection is contained in
-    int numberInNeighbor () const
-    {
-      return asImp().numberInNeighbor ();
-    }
-
-  private:
-    //!  Barton-Nackman trick
-    IntersectionIteratorImp<GridImp>& asImp ()
-    {return static_cast<IntersectionIteratorImp<GridImp>&>(*this);}
-    const IntersectionIteratorImp<GridImp>& asImp () const
-    {return static_cast<const IntersectionIteratorImp<GridImp>&>(*this);}
+    //! return reference to the real implementation
+    ImplementationType & getRealImp() { return realIterator; }
+    //! return reference to the real implementation
+    const ImplementationType & getRealImp() const { return realIterator; }
   };
 
   //**********************************************************************
@@ -431,8 +319,7 @@ namespace Dune
      @ingroup GridDevel
    */
   template<class GridImp, template<class> class IntersectionIteratorImp>
-  class IntersectionIteratorDefault
-    : public IntersectionIteratorInterface <GridImp,IntersectionIteratorImp>
+  class IntersectionIteratorDefaultImplementation
   {
     enum { dim=GridImp::dimension };
     enum { dimworld=GridImp::dimensionworld };

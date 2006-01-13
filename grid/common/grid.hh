@@ -372,11 +372,23 @@ namespace Dune {
       int dimworld,
       class ct,
       class GridFamily>
-  class GridDefault : public Grid <dim,dimworld,ct,GridFamily>
+  class GridDefaultImplementation : public Grid <dim,dimworld,ct,GridFamily>
   {
     typedef typename GridFamily::Traits::Grid GridImp;
 
   public:
+    enum {
+      //! \brief The dimension of the grid
+      dimension=dim
+    };
+
+    enum {
+      //! \brief The dimension of the world the grid lives in.
+      dimensionworld=dimworld
+    };
+
+    //! Define type used for coordinates in grid module
+    typedef ct ctype;
     //***************************************************************
     //  Interface for Adaptation
     //***************************************************************
@@ -422,6 +434,17 @@ namespace Dune {
 
     //! clean up some markers
     void postAdapt() {}
+
+  protected:
+    //! return real implementation of interface class
+    template <class InterfaceType>
+    typename InterfaceType :: ImplementationType &
+    getRealImplementation (InterfaceType &i) const { return i.getRealImp(); }
+
+    //! return real implementation of interface class
+    template <class InterfaceType>
+    const typename InterfaceType :: ImplementationType &
+    getRealImplementation (const InterfaceType &i) const { return i.getRealImp(); }
 
   protected:
     //! Barton-Nackman trick
