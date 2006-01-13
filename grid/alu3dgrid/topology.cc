@@ -86,10 +86,10 @@ namespace Dune {
   dune2aluFaceVertex_[numFaces][numVerticesPerFace] = {{0, 3, 1, 2},
                                                        {0, 1, 3, 2},
                                                        {0, 1, 3, 2},
-                                                       //{0, 1, 3, 2}, wrong 3
-                                                       {1, 0, 2, 3},
-                                                       //{1, 0, 2, 3}, wrong 4
-                                                       {0, 3, 1, 2},
+                                                       {0, 1, 3, 2}, //wrong 3
+                                                       //{1, 0, 2, 3},
+                                                       {1, 0, 2, 3}, //wrong 4
+                                                       //{0, 3, 1, 2},
                                                        {0, 3, 1, 2}};
 
   template <>
@@ -103,7 +103,7 @@ namespace Dune {
   // for hexa
   template <>
   const int ElementTopologyMapping<hexa>::
-  alu2duneFaceVertex_[numFaces][numVerticesPerFace] = {{0, 2, 3, 1},
+  alu2duneFaceVertex_[numFaces][numVerticesPerFace] = {{0, 2, 3, 1}, // to be revised
                                                        {0, 1, 3, 2},
                                                        {0, 1, 3, 2},
                                                        {0, 1, 3, 2},
