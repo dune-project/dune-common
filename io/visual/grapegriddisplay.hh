@@ -3,10 +3,25 @@
 #ifndef DUNE_GRAPEGRIDDISPLAY_HH
 #define DUNE_GRAPEGRIDDISPLAY_HH
 
+//- Dune includes
+#include <dune/grid/common/grid.hh>
+
+//-local includes
 #include "grape/grapeinclude.hh"
 
 namespace Dune
 {
+
+  // the internal grape partition iterator types
+  enum GrapePartitionIteratorType
+  {
+    g_Interior_Partition       = Interior_Partition,
+    g_InteriorBorder_Partition = InteriorBorder_Partition,
+    g_Overlap_Partition        = Overlap_Partition,
+    g_OverlapFront_Partition   = OverlapFront_Partition,
+    g_All_Partition            = All_Partition,
+    g_Ghost_Partition          = Ghost_Partition
+  };
 
   template<class GridType>
   class GrapeGridDisplay
@@ -22,7 +37,9 @@ namespace Dune
     typedef GridType MyGridType;
 
     typedef typename GridType::Traits::template Codim<0>::LevelIterator LevelIteratorType ;
-    typedef typename GridType::Traits::template Codim<0>::LeafIterator LeafIteratorType ;
+    //typedef typename GridType::Traits::template Codim<0>::template Partition<Ghost_Partition>::LeafIterator LeafIteratorType ;
+    typedef typename GridType::Traits::template Codim<0>::template Partition<All_Partition>::LeafIterator LeafIteratorType ;
+
     typedef typename GridType::Traits::LocalIdSet LocalIdSetType;
     typedef typename GridType::Traits::LeafIndexSet LeafIndexSetType;
     //typedef typename GridType::HierarchicIndexSet LeafIndexSetType;
@@ -227,8 +244,8 @@ namespace Dune
 
 } // end namespace Dune
 
-
 #include "grape/grapegriddisplay.cc"
 
-
+// undefs all defines
+#include "grape/grape_undefs.hh"
 #endif
