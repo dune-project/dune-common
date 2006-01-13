@@ -116,6 +116,9 @@ namespace Dune
 
     };
 
+    // forward declaration
+    template<class T1, class T2>
+    class OwnerOverlapCopyCommunication;
 
     template<typename T, typename O, typename T1, typename T2>
     struct AggregatesPublisher<T,O,OwnerOverlapCopyCommunication<T1,T2> >

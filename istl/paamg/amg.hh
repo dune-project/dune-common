@@ -78,16 +78,16 @@ namespace Dune
        * As coarse solver a prconditioned CG method with the smoother as preconditioner
        * will be used. The matrix hierarchy is built automatically.
        * @param fineOperator The operator on the fine level.
-       * @param pinfo The information about the parallel distribution of the data.
        * @param criterion The coarsen criterion.
        * @param smootherArgs The arguments for constructing the smoothers.
        * @param gamma 1 for V-cycle, 2 for W-cycle
        * @param smoothingSteps The number of smoothing steps for pre and postsmoothing.
+       * @param pinfo The information about the parallel distribution of the data.
        */
       template<class C>
-      AMG(const Matrix& fineOperator, const ParallelInformation& pinfo=PI(), const C& criterion,
-          const SmootherArgs& smootherArgs=SmootherArgs(), std::size_t gamma=1,
-          std::size_t smoothingSteps=2);
+      AMG(const Matrix& fineOperator, const C& criterion,
+          const SmootherArgs& smootherArgs, std::size_t gamma=1,
+          std::size_t smoothingSteps=2, const ParallelInformation& pinfo=ParallelInformation());
 
       ~AMG();
 
@@ -123,8 +123,12 @@ namespace Dune
       Hierarchy<Range,A>* defect_;
       /** @brief The left approximate solution of our problem. */
       Hierarchy<Domain,A>* lhs_;
+      /** @brief The type of the chooser of the scalar product. */
+      typedef ScalarProductChooser<X,PI,M::category> ScalarProductChooser;
+      /** @brief The type of the scalar product for the coarse solver. */
+      typedef typename ScalarProductChooser::ScalarProduct ScalarProduct;
       /** @brief Scalar product on the coarse level. */
-      ScalarProduct<X>* scalarProduct_;
+      ScalarProduct* scalarProduct_;
       /** @brief Gamma, 1 for V-cycle and 2 for W-cycle. */
       std::size_t gamma_;
       /** @brief The number of pre and postsmoothing steps. */
@@ -155,10 +159,10 @@ namespace Dune
     template<class M, class X, class S, class P, class A>
     template<class C>
     AMG<M,X,S,P,A>::AMG(const Matrix& matrix,
-                        const P& pinfo,
                         const C& criterion,
                         const SmootherArgs& smootherArgs,
-                        std::size_t gamma, std::size_t smoothingSteps)
+                        std::size_t gamma, std::size_t smoothingSteps,
+                        const P& pinfo)
       : smootherArgs_(smootherArgs),
         smoothers_(), scalarProduct_(0), gamma_(gamma),
         steps_(smoothingSteps), buildHierarchy_(true)
@@ -225,10 +229,10 @@ namespace Dune
         cargs.setComm(*matrices_->parallelInformation().coarsest());
 
         coarseSmoother_ = ConstructionTraits<Smoother>::construct(cargs);
-        scalarProduct_ = new OverlappingSchwarzScalarProduct<X,P>(*matrices_->parallelInformation().coarsest());
+        scalarProduct_ = ScalarProductChooser::construct(*matrices_->parallelInformation().coarsest());
 
         solver_ = new CGSolver<X>(const_cast<M&>(*matrices_->matrices().coarsest()),
-                                  static_cast<OverlappingSchwarzScalarProduct<X,P>&>(*scalarProduct_),
+                                  *scalarProduct_,
                                   *coarseSmoother_, 1E-12, 10000, 0);
       }
     }

@@ -57,6 +57,29 @@ namespace Dune {
     virtual ~ScalarProduct () {}
   };
 
+  /**
+   * \brief Choose the approriate scalar product for a solver category.
+   *
+   * As there is only one scalar product for each solver category it is
+   * possible to choose the appropriate product at compile time.
+   *
+   * In each specialization of the this struct there will be a typedef ScalarProduct
+   * available the defines the type  of the scalar product.
+   */
+  template<class X, class C, int c>
+  struct ScalarProductChooser
+  {
+    /** @brief The type of the communication object. */
+    typedef C communication_type;
+
+    enum {
+      /** @brief The solver category. */
+      solverCategory=c
+    };
+  };
+
+
+
   //=====================================================================
   // Implementation for ISTL-matrix based operator
   //=====================================================================
@@ -91,6 +114,22 @@ namespace Dune {
     }
   };
 
+  template<class X, class C>
+  struct ScalarProductChooser<X,C,SolverCategory::sequential>
+  {
+    /** @brief The type of the scalar product for the sequential case. */
+    typedef SeqScalarProduct<X> ScalarProduct;
+
+    enum {
+      /** @brief The solver category. */
+      solverCategory=SolverCategory::sequential
+    };
+
+    static ScalarProduct* construct(const C&)
+    {
+      return new ScalarProduct();
+    }
+  };
 
 
   /** @} end documentation */

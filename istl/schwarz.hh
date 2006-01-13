@@ -148,7 +148,24 @@ namespace Dune {
     const communication_type& communication;
   };
 
+  template<class X, class C>
+  struct ScalarProductChooser<X,C,SolverCategory::overlapping>
+  {
+    /** @brief The type of the scalar product for the overlapping case. */
+    typedef OverlappingSchwarzScalarProduct<X,C> ScalarProduct;
+    /** @brief The type of the communication object to use. */
+    typedef C communication_type;
 
+    enum {
+      /** @brief The solver category. */
+      solverCategory=SolverCategory::overlapping
+    };
+
+    static ScalarProduct* construct(const communication_type& comm)
+    {
+      return new ScalarProduct(comm);
+    }
+  };
 
 
   //! \brief A parallel SSOR preconditioner.

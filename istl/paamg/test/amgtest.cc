@@ -27,6 +27,8 @@ int main(int argc, char** argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
 
+  typedef Dune::ParallelIndexSet<int,LocalIndex,512> ParallelIndexSet;
+
   ParallelIndexSet indices;
   typedef Dune::FieldMatrix<double,BS,BS> MatrixBlock;
   typedef Dune::BCRSMatrix<MatrixBlock> BCRSMat;
