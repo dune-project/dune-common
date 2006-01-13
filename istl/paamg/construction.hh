@@ -159,7 +159,7 @@ namespace Dune
     class ConstructionTraits<ParallelInformation<T> >
     {
     public:
-      typedef const ParallelInformation<T> Arguments;
+      typedef const MPI_Comm Arguments;
 
       static inline ParallelInformation<T>* construct(Arguments& args)
       {

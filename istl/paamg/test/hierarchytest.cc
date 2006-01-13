@@ -16,7 +16,7 @@ int main(int argc, char** argv)
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
-
+  typedef Dune::ParallelIndexSet<int,LocalIndex,512> ParallelIndexSet;
   typedef Dune::Amg::ParallelInformation<ParallelIndexSet> ParallelInformation;
   typedef Dune::FieldMatrix<double,BS,BS> MatrixBlock;
   typedef Dune::BCRSMatrix<MatrixBlock> BCRSMat;
@@ -26,6 +26,8 @@ int main(int argc, char** argv)
   int n;
   ParallelInformation pinfo(MPI_COMM_WORLD);
   ParallelIndexSet& indices = pinfo.indexSet();
+
+  typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
   RemoteIndices& remoteIndices = pinfo.remoteIndices();
   BCRSMat mat = setupAnisotropic2d<BS>(N, indices, &n);
   Vector b(indices.size());
@@ -36,7 +38,7 @@ int main(int argc, char** argv)
 
   Interface interface;
 
-  typedef Dune::EnumItem<GridFlag,overlap> OverlapFlags;
+  typedef Dune::EnumItem<GridFlag,GridAttributes::overlap> OverlapFlags;
   typedef Dune::Amg::ParallelMatrix<BCRSMat,ParallelIndexSet,Vector,Vector> Operator;
   typedef Dune::Amg::MatrixHierarchy<Operator,ParallelInformation> Hierarchy;
   typedef Dune::Amg::Hierarchy<Vector> VHierarchy;
@@ -54,18 +56,9 @@ int main(int argc, char** argv)
   hierarchy.build<OverlapFlags>(criterion);
   hierarchy.coarsenVector(vh);
 
-  typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
-  Dune::Amg::SmootherTraits<Smoother>::Arguments smootherArgs;
-
-  Dune::Amg::Hierarchy<Smoother> sh;
-
-  hierarchy.coarsenSmoother(sh,smootherArgs);
 
   std::cout<<"=== Vector hierarchy has "<<vh.levels()<<" levels! ==="<<std::endl;
 
-  std::cout<<"=== Smoother hierarchy has "<<sh.levels()<<" levels! ==="<<std::endl;
-  //typedef typename Hierarchy::ConstIterator Iterator;
-  //for(Iterator level = matrices_.finest(), coarsest=matrices_.coarsest(); level!=coarsest; ++amap){
   hierarchy.recalculateGalerkin();
 
 
