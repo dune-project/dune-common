@@ -25,7 +25,7 @@ namespace Dune {
   template<int codim, PartitionIteratorType pitype, class GridImp>
   class UGGridLevelIterator :
     public Dune::UGGridEntityPointer <codim,GridImp>,
-    public LevelIteratorDefault <codim,pitype,GridImp,UGGridLevelIterator>
+    public LevelIteratorDefaultImplementation <codim,pitype,GridImp,UGGridLevelIterator>
   {
     enum {dim = GridImp::dimension};
 

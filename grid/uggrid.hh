@@ -151,7 +151,7 @@ namespace Dune {
      sander@math.fu-berlin.de
    */
   template <int dim, int dimworld>
-  class UGGrid : public GridDefault  <dim, dimworld, double, UGGridFamily<dim,dimworld> >
+  class UGGrid : public GridDefaultImplementation  <dim, dimworld, double, UGGridFamily<dim,dimworld> >
   {
 
     friend class UGGridEntity <0,dim,const UGGrid<dim,dimworld> >;
@@ -176,7 +176,10 @@ namespace Dune {
     // The Interface Methods
     //**********************************************************
   public:
+    //! type of the used GridFamily for this grid
+    typedef UGGridFamily<dim,dimworld>  GridFamily;
 
+    //! the Traits
     typedef typename UGGridFamily<dim,dimworld>::Traits Traits;
 
     //! The type used to store coordinates
@@ -497,12 +500,12 @@ namespace Dune {
 
     //! Get access to real iterator
     UGGridIntersectionIterator<const UGGrid<dim, dimworld> >& getRealIntersectionIterator(typename Traits::IntersectionIterator& it) {
-      return it.realIterator;
+      return this->getRealImplementation(it);
     }
 
     //! Get access to real iterator
     const UGGridIntersectionIterator<const UGGrid<dim, dimworld> >& getRealIntersectionIterator(const typename Traits::IntersectionIterator& it) const {
-      return it.realIterator;
+      return this->getRealImplementation(it);
     }
 
   private:
@@ -520,13 +523,13 @@ namespace Dune {
     // Access to entity implementations through the interface wrappers
     template <int cd>
     UGGridEntity<cd,dim,const UGGrid>& getRealEntity(typename Traits::template Codim<cd>::Entity& entity) {
-      return entity.realEntity;
+      return this->getRealImplementation(entity);
     }
 
     // Const access to entity implementations through the interface wrappers
     template <int cd>
     const UGGridEntity<cd,dim,const UGGrid>& getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const {
-      return entity.realEntity;
+      return this->getRealImplementation(entity);
     }
 
     // Start up the UG system

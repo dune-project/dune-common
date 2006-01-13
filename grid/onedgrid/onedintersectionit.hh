@@ -24,7 +24,7 @@ namespace Dune {
    */
   template<class GridImp>
   class OneDGridIntersectionIterator :
-    public IntersectionIteratorDefault <GridImp, OneDGridIntersectionIterator>
+    public IntersectionIteratorDefaultImplementation <GridImp, OneDGridIntersectionIterator>
   {
     enum { dim=GridImp::dimension };
     enum { dimworld=GridImp::dimensionworld };

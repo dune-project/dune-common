@@ -28,7 +28,7 @@ namespace Dune {
   template<class GridImp>
   class UGGridHierarchicIterator :
     public Dune::UGGridEntityPointer <0,GridImp>,
-    public HierarchicIteratorDefault <GridImp,UGGridHierarchicIterator>
+    public HierarchicIteratorDefaultImplementation <GridImp,UGGridHierarchicIterator>
   {
 
     friend class UGGridEntity<0,GridImp::dimension,GridImp>;

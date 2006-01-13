@@ -144,7 +144,7 @@ namespace Dune {
    */
   template<int cd, int dim, class GridImp>
   class OneDGridEntity :
-    public EntityDefault <cd,dim,GridImp,OneDGridEntity>
+    public EntityDefaultImplementation <cd,dim,GridImp,OneDGridEntity>
   {
 
     template <int codim_, PartitionIteratorType PiType_, class GridImp_>
@@ -233,7 +233,7 @@ namespace Dune {
    */
   template<int dim, class GridImp>
   class OneDGridEntity<0,dim, GridImp> :
-    public EntityDefault<0,dim,GridImp, OneDGridEntity>
+    public EntityDefaultImplementation<0,dim,GridImp, OneDGridEntity>
   {
     friend class OneDGrid <dim, GridImp::dimensionworld>;
     friend class OneDGridIntersectionIterator <GridImp>;

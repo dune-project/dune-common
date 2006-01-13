@@ -10,7 +10,7 @@ namespace Dune {
    */
   template<int codim, class GridImp>
   class OneDGridEntityPointer
-    : public EntityPointerDefault <codim, GridImp, Dune::OneDGridEntityPointer<codim,GridImp> >
+    : public EntityPointerDefaultImplementation <codim, GridImp, Dune::OneDGridEntityPointer<codim,GridImp> >
   {
     enum { dim = GridImp::dimension };
     friend class OneDGridIntersectionIterator<GridImp>;

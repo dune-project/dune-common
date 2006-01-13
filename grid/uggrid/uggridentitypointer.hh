@@ -10,7 +10,7 @@ namespace Dune {
    */
   template<int codim, class GridImp>
   class UGGridEntityPointer :
-    public EntityPointerDefault <codim, GridImp,
+    public EntityPointerDefaultImplementation <codim, GridImp,
         Dune::UGGridEntityPointer<codim,GridImp> >
   {
     enum { dim = GridImp::dimension };

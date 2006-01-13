@@ -27,7 +27,7 @@ namespace Dune {
   template<class GridImp>
   class OneDGridHierarchicIterator :
     public Dune::OneDGridEntityPointer <0,GridImp>,
-    public HierarchicIteratorDefault <GridImp, OneDGridHierarchicIterator>
+    public HierarchicIteratorDefaultImplementation <GridImp, OneDGridHierarchicIterator>
   {
     enum { dim = GridImp::dimension };
     friend class OneDGridEntity<0,dim,GridImp>;
