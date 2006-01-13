@@ -9,10 +9,17 @@
 #include <fstream>
 #include <vector>
 #include <list>
+#include <string.h>
 #include <dune/common/exceptions.hh>
 #include "dune/grid/common/mcmgmapper.hh"
 #include "dune/grid/common/referenceelements.hh"
 #include "dune/disc/functions/functions.hh"
+
+
+// namespace base64
+// {
+// #include"cencode.c"
+// }
 
 /** @file
         @author Peter Bastian
@@ -30,7 +37,7 @@ namespace Dune
   struct VTKOptions
   {
     enum Type {
-      ascii, binary, conforming, nonconforming
+      ascii, binary, binaryappended, conforming, nonconforming
     };
   };
 
@@ -185,12 +192,18 @@ namespace Dune
       // make data mode visible to private functions
       datamode=dm;
 
+      // reset byte counter for binary appended output
+      bytecount = 0;
+
       if (grid.comm().size()==1)
       {
         std::ofstream file;
         char fullname[128];
         sprintf(fullname,"%s.vtu",name);
-        file.open(fullname);
+        if (datamode==VTKOptions::binaryappended)
+          file.open(fullname,std::ios::binary);
+        else
+          file.open(fullname);
         writeDataFile(file);
         file.close();
       }
@@ -199,7 +212,10 @@ namespace Dune
         std::ofstream file;
         char fullname[128];
         sprintf(fullname,"%s-%04d-%04d.vtu",name,grid.comm().size(),grid.comm().rank());
-        file.open(fullname);
+        if (datamode==VTKOptions::binaryappended)
+          file.open(fullname,std::ios::binary);
+        else
+          file.open(fullname);
         writeDataFile(file);
         file.close();
         grid.comm().barrier();
@@ -337,14 +353,15 @@ namespace Dune
       number.resize(vertexmapper->size());
       for (int i=0; i<number.size(); i++) number[i] = -1;
       nvertices = 0;
-
       ncells = 0;
+      ncorners = 0;
       for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
           ncells++;
           for (int i=0; i<it->template count<n>(); ++i)
           {
+            ncorners++;
             int alpha = vertexmapper->template map<n>(*it,i);
             if (number[alpha]<0)
               number[alpha] = nvertices++;
@@ -368,15 +385,20 @@ namespace Dune
       // /Piece
       indentDown();
       indent(s); s << "</Piece>" << std::endl;
-      delete vertexmapper; number.clear();
 
       // /UnstructuredGrid
       indentDown();
       indent(s); s << "</UnstructuredGrid>" << std::endl;
 
+      // write appended binary dat section
+      if (datamode==VTKOptions::binaryappended)
+        writeAppendedData(s);
+
       // /VTKFile
       indentDown();
       s << "</VTKFile>" << std::endl;
+
+      delete vertexmapper; number.clear();
     }
 
     void writeCellData (std::ostream& s)
@@ -398,7 +420,13 @@ namespace Dune
       indentUp();
       for (functioniterator it=celldata.begin(); it!=celldata.end(); ++it)
       {
-        VTKAsciiDataArrayWriter<float> *p = new VTKAsciiDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps());
+        VTKDataArrayWriter<float> *p;
+        if (datamode==VTKOptions::ascii)
+          p = new VTKAsciiDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps());
+        if (datamode==VTKOptions::binary)
+          p = new VTKBinaryDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps(),(*it)->ncomps()*ncells);
+        if (datamode==VTKOptions::binaryappended)
+          p = new VTKBinaryAppendedDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps(),bytecount);
         for (CellIterator i=grid.template leafbegin<0>(); i!=grid.template leafend<0>(); ++i)
           if (i->partitionType()==InteriorEntity)
             for (int j=0; j<(*it)->ncomps(); j++)
@@ -428,7 +456,13 @@ namespace Dune
       indentUp();
       for (functioniterator it=vertexdata.begin(); it!=vertexdata.end(); ++it)
       {
-        VTKAsciiDataArrayWriter<float> *p = new VTKAsciiDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps());
+        VTKDataArrayWriter<float> *p;
+        if (datamode==VTKOptions::ascii)
+          p = new VTKAsciiDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps());
+        if (datamode==VTKOptions::binary)
+          p = new VTKBinaryDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps(),(*it)->ncomps()*nvertices);
+        if (datamode==VTKOptions::binaryappended)
+          p = new VTKBinaryAppendedDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps(),bytecount);
         std::vector<bool> visited(vertexmapper->size());
         for (int i=0; i<visited.size(); i++) visited[i] = false;
         for (CellIterator eit=grid.template leafbegin<0>(); eit!=grid.template leafend<0>(); ++eit)
@@ -454,7 +488,13 @@ namespace Dune
       indent(s); s << "<Points>" << std::endl;
       indentUp();
 
-      VTKAsciiDataArrayWriter<float> *p = new VTKAsciiDataArrayWriter<float>(s,"Coordinates",3);
+      VTKDataArrayWriter<float> *p;
+      if (datamode==VTKOptions::ascii)
+        p = new VTKAsciiDataArrayWriter<float>(s,"Coordinates",3);
+      if (datamode==VTKOptions::binary)
+        p = new VTKBinaryDataArrayWriter<float>(s,"Coordinates",3,3*nvertices);
+      if (datamode==VTKOptions::binaryappended)
+        p = new VTKBinaryAppendedDataArrayWriter<float>(s,"Coordinates",3,bytecount);
       std::vector<bool> visited(vertexmapper->size());
       for (int i=0; i<visited.size(); i++) visited[i] = false;
       for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
@@ -484,7 +524,13 @@ namespace Dune
       indentUp();
 
       // connectivity
-      VTKAsciiDataArrayWriter<int> *p1 = new VTKAsciiDataArrayWriter<int>(s,"connectivity",1);
+      VTKDataArrayWriter<int> *p1;
+      if (datamode==VTKOptions::ascii)
+        p1 = new VTKAsciiDataArrayWriter<int>(s,"connectivity",1);
+      if (datamode==VTKOptions::binary)
+        p1 = new VTKBinaryDataArrayWriter<int>(s,"connectivity",1,ncorners);
+      if (datamode==VTKOptions::binaryappended)
+        p1 = new VTKBinaryAppendedDataArrayWriter<int>(s,"connectivity",1,bytecount);
       for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
         if (it->partitionType()==InteriorEntity)
           for (int i=0; i<it->template count<n>(); ++i)
@@ -492,7 +538,13 @@ namespace Dune
       delete p1;
 
       // offsets
-      VTKAsciiDataArrayWriter<int> *p2 = new VTKAsciiDataArrayWriter<int>(s,"offsets",1);
+      VTKDataArrayWriter<int> *p2;
+      if (datamode==VTKOptions::ascii)
+        p2 = new VTKAsciiDataArrayWriter<int>(s,"offsets",1);
+      if (datamode==VTKOptions::binary)
+        p2 = new VTKBinaryDataArrayWriter<int>(s,"offsets",1,ncells);
+      if (datamode==VTKOptions::binaryappended)
+        p2 = new VTKBinaryAppendedDataArrayWriter<int>(s,"offsets",1,bytecount);
       int offset = 0;
       for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
         if (it->partitionType()==InteriorEntity)
@@ -503,7 +555,13 @@ namespace Dune
       delete p2;
 
       // types
-      VTKAsciiDataArrayWriter<unsigned char> *p3 = new VTKAsciiDataArrayWriter<unsigned char>(s,"types",1);
+      VTKDataArrayWriter<unsigned char> *p3;
+      if (datamode==VTKOptions::ascii)
+        p3 = new VTKAsciiDataArrayWriter<unsigned char>(s,"types",1);
+      if (datamode==VTKOptions::binary)
+        p3 = new VTKBinaryDataArrayWriter<unsigned char>(s,"types",1,ncells);
+      if (datamode==VTKOptions::binaryappended)
+        p3 = new VTKBinaryAppendedDataArrayWriter<unsigned char>(s,"types",1,bytecount);
       for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
@@ -536,9 +594,152 @@ namespace Dune
       indent(s); s << "</Cells>" << std::endl;
     }
 
+
+    void writeAppendedData (std::ostream& s)
+    {
+      indent(s); s << "<AppendedData encoding=\"raw\">" << std::endl;
+      indentUp();
+      indent(s); s << "_";     // indicates start of binary data
+
+      SimpleStream stream(s);
+
+      // write length before each data block
+      unsigned long blocklength;
+
+      // point data
+      for (functioniterator it=vertexdata.begin(); it!=vertexdata.end(); ++it)
+      {
+        blocklength = nvertices * (*it)->ncomps() * sizeof(float);
+        stream.write(blocklength);
+        std::vector<bool> visited(vertexmapper->size());
+        for (int i=0; i<visited.size(); i++) visited[i] = false;
+        for (CellIterator eit=grid.template leafbegin<0>(); eit!=grid.template leafend<0>(); ++eit)
+          if (eit->partitionType()==InteriorEntity)
+            for (int i=0; i<eit->template count<n>(); ++i)
+            {
+              int alpha = vertexmapper->template map<n>(*eit,i);
+              if (!visited[alpha])
+              {
+                for (int j=0; j<(*it)->ncomps(); j++)
+                {
+                  float data = (*it)->evaluate(j,*eit,ReferenceElements<DT,n>::general(eit->geometry().type()).position(i,n));
+                  stream.write(data);
+                }
+                visited[alpha] = true;
+              }
+            }
+      }
+
+      // cell data
+      for (functioniterator it=celldata.begin(); it!=celldata.end(); ++it)
+      {
+        blocklength = ncells * (*it)->ncomps() * sizeof(float);
+        stream.write(blocklength);
+        for (CellIterator i=grid.template leafbegin<0>(); i!=grid.template leafend<0>(); ++i)
+          if (i->partitionType()==InteriorEntity)
+            for (int j=0; j<(*it)->ncomps(); j++)
+            {
+              float data = (*it)->evaluate(j,*i,ReferenceElements<DT,n>::general(i->geometry().type()).position(0,0));
+              stream.write(data);
+            }
+      }
+
+      // point coordinates
+      blocklength = nvertices * 3 * sizeof(float);
+      stream.write(blocklength);
+      std::vector<bool> visited(vertexmapper->size());
+      for (int i=0; i<visited.size(); i++) visited[i] = false;
+      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+        if (it->partitionType()==InteriorEntity)
+          for (int i=0; i<it->template count<n>(); ++i)
+          {
+            int alpha = vertexmapper->template map<n>(*it,i);
+            if (!visited[alpha])
+            {
+              int dimw=w;
+              float data;
+              for (int j=0; j<std::min(dimw,3); j++)
+              {
+                data = it->geometry()[i][j];
+                stream.write(data);
+              }
+              data = 0;
+              for (int j=std::min(dimw,3); j<3; j++)
+                stream.write(data);
+              visited[alpha] = true;
+            }
+          }
+
+      // connectivity
+      blocklength = ncorners * sizeof(unsigned int);
+      stream.write(blocklength);
+      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+        if (it->partitionType()==InteriorEntity)
+          for (int i=0; i<it->template count<n>(); ++i)
+          {
+            int data = number[vertexmapper->template map<n>(*it,renumber(*it,i))];
+            stream.write(data);
+          }
+
+      // offsets
+      blocklength = ncells * sizeof(unsigned int);
+      stream.write(blocklength);
+      int offset = 0;
+      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+        if (it->partitionType()==InteriorEntity)
+        {
+          offset += it->template count<n>();
+          stream.write(offset);
+        }
+
+      // cell types
+      blocklength = ncells * sizeof(unsigned char);
+      stream.write(blocklength);
+      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+        if (it->partitionType()==InteriorEntity)
+        {
+          unsigned char vtktype=3;
+          if (n==1)
+            vtktype=3;
+          if (n==2)
+          {
+            if (it->geometry().type()==simplex)
+              vtktype=5;
+            if (it->geometry().type()==cube)
+              vtktype=9;
+          }
+          if (n==3)
+          {
+            if (it->geometry().type()==simplex)
+              vtktype=10;
+            if (it->geometry().type()==pyramid)
+              vtktype=14;
+            if (it->geometry().type()==prism)
+              vtktype=13;
+            if (it->geometry().type()==cube)
+              vtktype=12;
+          }
+          stream.write(vtktype);
+        }
+
+      s << std::endl;
+      indentDown();
+      indent(s); s << "</AppendedData>" << std::endl;
+    }
+
+    // base class for data array writers
+    template<class T>
+    class VTKDataArrayWriter
+    {
+    public:
+      virtual void write (T data) = 0;
+      virtual ~VTKDataArrayWriter () {}
+    };
+
     // a streaming writer for data array tags
     template<class T>
-    class VTKAsciiDataArrayWriter {
+    class VTKAsciiDataArrayWriter : public VTKDataArrayWriter<T>
+    {
     public:
       //! make a new data array writer
       VTKAsciiDataArrayWriter (std::ostream& theStream, std::string name, int ncomps)
@@ -575,32 +776,112 @@ namespace Dune
 
     // a streaming writer for data array tags
     template<class T>
-    class VTKBinaryDataArrayWriter {
+    class VTKBinaryDataArrayWriter : public VTKDataArrayWriter<T>
+    {
     public:
       //! make a new data array writer
-      VTKBinaryDataArrayWriter (std::ostream& theStream, std::string name, int ncomps)
-        : s(theStream)
+      VTKBinaryDataArrayWriter (std::ostream& theStream, std::string name, int ncomps, int nitems)
+        : s(theStream),bufsize(4096),n(0)
       {
+        DUNE_THROW(IOError, "binary does not work yet, use binaryappended!");
         VTKTypeNameTraits<T> tn;
         s << "<DataArray type=\"" << tn() << "\" Name=\"" << name << "\" ";
         if (ncomps>1)
           s << "NumberOfComponents=\"" << ncomps << "\" ";
-        s << "format=\"ascii\">" << std::endl;
+        s << "format=\"binary\">" << std::endl;
+        buffer = new char[bufsize*sizeof(T)];
+        code = new char[2*bufsize*sizeof(T)];
+        unsigned int size = nitems*sizeof(T);
+        char* p = reinterpret_cast<char*>(&size);
+        memcpy(buffer+n,p,sizeof(int));
+        n += sizeof(int);
+        //		base64::base64_init_encodestate(&_state);
       }
 
       //! write one data element to output stream
       void write (T data)
       {
-        typedef typename VTKTypeNameTraits<T>::PrintType PT;
-        s << (PT) data << " ";
+        if (n+sizeof(T)>bufsize)
+        {
+          // flush buffer
+          //			int codelength = base64::base64_encode_block(buffer,n,code,&_state);
+          //			s.write(code,codelength);
+          n=0;
+        }
+        char* p = reinterpret_cast<char*>(&data);
+        memcpy(buffer+n,p,sizeof(T));
+        n += sizeof(T);
       }
 
       //! finish output; writes end tag
       ~VTKBinaryDataArrayWriter ()
       {
+        int codelength;
+        if (n>0)
+        {
+          //			codelength = base64::base64_encode_block(buffer,n,code,&_state);
+          //			s.write(code,codelength);
+        }
+        //		codelength = base64::base64_encode_blockend(code,&_state);
+        s.write(code,codelength);
+        //		base64::base64_init_encodestate(&_state);
+        s << std::endl;
         s << "</DataArray>" << std::endl;
+        delete [] code;
+        delete [] buffer;
       }
 
+    private:
+      std::ostream& s;
+      //	  base64::base64_encodestate _state;
+      int bufsize;
+      char* buffer;
+      char* code;
+      int n;
+    };
+
+    // a streaming writer for data array tags
+    template<class T>
+    class VTKBinaryAppendedDataArrayWriter : public VTKDataArrayWriter<T>
+    {
+    public:
+      //! make a new data array writer
+      VTKBinaryAppendedDataArrayWriter (std::ostream& theStream, std::string name, int ncomps, unsigned int& bc)
+        : s(theStream),bytecount(bc)
+      {
+        VTKTypeNameTraits<T> tn;
+        s << "<DataArray type=\"" << tn() << "\" Name=\"" << name << "\" ";
+        if (ncomps>1)
+          s << "NumberOfComponents=\"" << ncomps << "\" ";
+        s << "format=\"appended\" offset=\""<< bytecount << "\" />" << std::endl;
+        bytecount += 4;         // header
+      }
+
+      //! write one data element to output stream
+      void write (T data)
+      {
+        bytecount += sizeof(T);
+      }
+
+    private:
+      std::ostream& s;
+      unsigned int& bytecount;
+    };
+
+
+    // write out data in binary
+    class SimpleStream
+    {
+    public:
+      SimpleStream (std::ostream& theStream)
+        : s(theStream)
+      {}
+      template<class T>
+      void write (T data)
+      {
+        char* p = reinterpret_cast<char*>(&data);
+        s.write(p,sizeof(T));
+      }
     private:
       std::ostream& s;
     };
@@ -727,9 +1008,11 @@ namespace Dune
     // temporary grid information
     int ncells;
     int nvertices;
+    int ncorners;
     VM* vertexmapper;
     std::vector<int> number;
     VTKOptions::Type datamode;
+    unsigned int bytecount;
   };
 
 
