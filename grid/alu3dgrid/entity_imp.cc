@@ -131,7 +131,7 @@ namespace Dune {
   inline const typename ALU3dGridEntity<cd,dim,GridImp>::Geometry &
   ALU3dGridEntity<cd,dim,GridImp>:: geometry() const
   {
-    assert( (cd == 1) ? (face_ >= 0) : 1 );
+    //assert( (cd == 1) ? (face_ >= 0) : 1 );
     if(!builtgeometry_) builtgeometry_ = geo_.buildGeom(*item_, twist_, face_ );
     return geo_;
   }
@@ -141,15 +141,12 @@ namespace Dune {
   ALU3dGridEntity<cd,dim,GridImp>:: ownersFather() const
   {
     assert(cd == dim); // this method only exists for codim == dim
-
     if( !father_ )
     {
       dwarn << "No Father for given Entity! \n";
       return ALU3dGridEntityPointer<0,GridImp> (grid_,(*father_));
     }
     return ALU3dGridEntityPointer<0,GridImp> (grid_,(*father_));
-
-    //assert(father_); // pointer to HElement father
   }
 
   template<int cd, int dim, class GridImp>
@@ -665,7 +662,9 @@ namespace Dune {
       , twist_ (twist)
       , face_(face)
       , entity_(0)
-  {}
+  {
+    assert( (codim == 1) ? (face_ >= 0) : 1 );
+  }
 
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
