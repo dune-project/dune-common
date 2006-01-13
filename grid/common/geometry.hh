@@ -257,8 +257,7 @@ namespace Dune
     //! return reference to the real implementation
     const GeometryImp<0,cdim,GridImp> & getRealImp() const { return realGeometry; }
 
-    //protected:
-  public:
+  protected:
     /** hide copy constructor */
     Geometry(const Geometry& rhs) : realGeometry(rhs.realGeometry) {};
     /** hide assignment operator */
