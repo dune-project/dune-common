@@ -139,9 +139,6 @@ namespace Dune {
   std::ostream& operator<<(std::ostream& os, const RemoteIndices<T>& indices);
 
   template<typename T>
-  class Communicator;
-
-  template<typename T>
   class InterfaceBuilder;
 
   template<class T>
@@ -157,7 +154,6 @@ namespace Dune {
   class RemoteIndices
   {
     friend class InterfaceBuilder<T>;
-    friend class Communicator<T>;
     friend class IndicesSyncer<T>;
     template<typename T1, typename A>
     friend void repairLocalIndexPointers(std::map<int,SLList<typename T1::GlobalIndex,A> >&,
