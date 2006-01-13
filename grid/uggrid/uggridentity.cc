@@ -376,8 +376,8 @@ inline const typename UGGridEntity<0,dim,GridImp>::Geometry& UGGridEntity < 0, d
   // we need to have a father element
   typename TargetType<0,dim>::T* fatherelement = UG_NS<dim>::EFather(target_);
   assert(fatherelement!=0);
-  fathergeo_.coordmode(); // put in the new mode
-  fathergeo_.setToTarget(fatherelement);
+  geometryInFather_.coordmode(); // put in the new mode
+  geometryInFather_.setToTarget(target_);
 
   // The task is to find out the positions of the vertices of this element
   // in the local coordinate system of the father.
@@ -396,7 +396,7 @@ inline const typename UGGridEntity<0,dim,GridImp>::Geometry& UGGridEntity < 0, d
       UG_NS<dim>::PositionInFather(fnode,tmp);
 
       // and poke them into the Geometry
-      fathergeo_.setCoords(i,tmp);
+      geometryInFather_.setCoords(i,tmp);
 
       // continue with next corner
       continue;
@@ -426,7 +426,7 @@ inline const typename UGGridEntity<0,dim,GridImp>::Geometry& UGGridEntity < 0, d
       UG_NS<dim>::getCornerLocal(fatherelement,cornerIdx,tmp);
 
       // and poke them into the Geometry
-      fathergeo_.setCoords(i,tmp);
+      geometryInFather_.setCoords(i,tmp);
 
       // continue with next corner
       continue;
@@ -453,8 +453,8 @@ inline const typename UGGridEntity<0,dim,GridImp>::Geometry& UGGridEntity < 0, d
     // and poke them into the Geometry
     FieldVector<UGCtype,dim> tmp;
     for (int k=0; k<dim; k++) tmp[k] = localCoords[k];
-    fathergeo_.setCoords(i,tmp);
+    geometryInFather_.setCoords(i,tmp);
   }
 
-  return fathergeo_;
+  return geometryInFather_;
 }

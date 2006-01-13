@@ -380,7 +380,7 @@ namespace Dune {
     UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> geo_;
 
     //! geometry for mapping into father's reference element
-    mutable UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> fathergeo_;
+    mutable UGMakeableGeometry<dim,GridImp::dimensionworld,GridImp> geometryInFather_;
 
     //! the level of the entity
     int level_;
