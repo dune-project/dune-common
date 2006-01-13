@@ -14,13 +14,13 @@
 <h2>Documentation for application writers</h2>
 
 <ul>
-<li>A short list of the main <a href="$(ROOT)/devel/features.html">features</a> </li>
-<li><a href="doxygen/">The class documentation</a> (generated 
+<li>A short list of the main <a href="$(ROOT)/doc/devel/features.html">features</a> </li>
+<li><a href="$(ROOT)/doc/doxygen/html/index.html">The class documentation</a> (generated 
 with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
-<li><a href="$(ROOT)/doxygen/html/group__GridReferenceElements.html">The Reference Elements</a></li>
-<li>The <a href="view-concept.html">view concept</a> is the
+<li><a href="$(ROOT)/doc/doxygen/html/group__GridReferenceElements.html">The Reference Elements</a></li>
+<li>The <a href="$(ROOT)/doc/view-concept.html">view concept</a> is the
       fundamental idea of the grid interface</li>
-<li>Some information about the <a href="$(ROOT)/devel/indexidsets.html">index and id sets</a>. </li>
+<li>Some information about the <a href="$(ROOT)/doc/devel/indexidsets.html">index and id sets</a>. </li>
 </ul>
 
 <h2>Documentation for developers of the core library</h2>
@@ -28,7 +28,7 @@ with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
 <ul>
 <li><a href="devel/codingstyle.html">Coding Style</a></li>
 <li><a href="doxygen/bestpractice.html">Best Practice for Doxygen</a></li>
-<li><a href="devel/ugreader.html">Howto write
+<li><a href="devel/ugreader.html">How to write
 	  file readers for the UGGrid</a></li>
 <li><a href="buildsystem.html">Understanding the build system</a>
 <li><a href="devel/portability.html">Some notes on writing
