@@ -743,45 +743,34 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
   int i=0;
   for (f = list.begin(); f!=list.end(); ++f, ++i) {
 
+    // Set element
+    childElements[i].setToTarget(Element<0>::get(*f), Element<2>::get(*f));
+
     int side = Element<1>::get(*f);
 
     // Dune numbers the faces of several elements differently than UG.
     // The following switch does the transformation
-    switch (e->geometry().type()) {
-    case cube :
+    NewGeometryType newType = childElements[i].dereference().geometry().type();
+    if (newType.isHexahedron()) {
 
-      if (dim==3) {        // hexahedron
-        const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-        side = renumbering[side];
-      } else {        // Quadrilateral
-        const int renumbering[4] = {2, 1, 3, 0};
-        side = renumbering[side];
-      }
-      break;
+      const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+      side = renumbering[side];
 
-    case simplex :
+    } else if (newType.isQuadrilateral()) {
 
-      if (dim==3) {
-        const int renumbering[4] = {3, 0, 1, 2};
-        side = renumbering[side];
-      } else {
-        const int renumbering[3] = {2, 0, 1};
-        side = renumbering[side];
-      }
-      break;
+      const int renumbering[4] = {2, 1, 3, 0};
+      side = renumbering[side];
 
-    case vertex :
-    case prism :
-    case pyramid :
-      // Do nothing
-      break;
+    } else if (newType.isTetrahedron()) {
 
-    default :
-      DUNE_THROW(NotImplemented, "Unknown element type '"
-                 << e->geometry().type() << "'found!");
+      const int renumbering[4] = {3, 0, 1, 2};
+      side = renumbering[side];
+
+    } else if (newType.isTriangle()) {
+      const int renumbering[3] = {2, 0, 1};
+      side = renumbering[side];
     }
 
-    childElements[i].setToTarget(Element<0>::get(*f), Element<2>::get(*f));
     childElementSides[i] = side;
 
   }
