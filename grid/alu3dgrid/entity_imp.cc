@@ -677,6 +677,7 @@ namespace Dune {
     updateGhostPointer( const_cast<HBndSegType &> (ghostFace) );
   }
 
+  // constructor Level,Leaf and HierarchicIterator
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
   ALU3dGridEntityPointer(const GridImp & grid, int level )
@@ -686,6 +687,8 @@ namespace Dune {
       , face_(-1)
       , entity_ ( grid_.template getNewEntity<codim> ( level ) )
   {
+    // this needs to be called
+    // have to investigate why
     (*entity_).reset(level);
   }
 
