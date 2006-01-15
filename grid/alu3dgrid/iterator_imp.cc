@@ -522,7 +522,7 @@ namespace Dune {
   ALU3dGridLevelIterator(const GridImp & grid,
                          VertexListType & vxList , int level)
     : ALU3dGridEntityPointer<codim,GridImp> (grid,level)
-      , index_(-1)
+      , endIter_(false)
       , level_(level)
       , isCopy_ (0)
   {
@@ -533,8 +533,7 @@ namespace Dune {
     if(!(*iter_).done())
     {
       assert((*iter_).size() > 0);
-      index_=0;
-      this->updateEntityPointer( (*iter_).item() );
+      this->updateEntityPointer( & (*iter_).item() );
     }
   }
 
@@ -543,7 +542,7 @@ namespace Dune {
   inline ALU3dGridLevelIterator<codim,pitype,GridImp> ::
   ALU3dGridLevelIterator(const GridImp & grid, int level)
     : ALU3dGridEntityPointer<codim,GridImp> (grid ,level)
-      , index_(-1)
+      , endIter_(true)
       , level_(level)
       , isCopy_ (0)
   {
@@ -554,7 +553,7 @@ namespace Dune {
   inline ALU3dGridLevelIterator<codim,pitype,GridImp> ::
   ALU3dGridLevelIterator(const ALU3dGridLevelIterator<codim,pitype,GridImp> & org )
     : ALU3dGridEntityPointer<codim,GridImp> ( org )
-      , index_( org.index_ )
+      , endIter_( org.endIter_ )
       , level_( org.level_ )
       , iter_ ( org.iter_ )
       , isCopy_(org.isCopy_+1)
@@ -567,18 +566,17 @@ namespace Dune {
   inline void ALU3dGridLevelIterator<codim,pitype,GridImp> :: increment ()
   {
     // if assertion is thrown then end iterator was forgotten or didnt stop
-    assert(index_ >= 0);
+    assert(!endIter_);
 
     (*iter_).next();
-    index_++;
     if ((*iter_).done())
     {
-      index_ = -1;
+      endIter_ = true;
       this->done();
       return ;
     }
 
-    this->updateEntityPointer( (*iter_).item() );
+    this->updateEntityPointer( & (*iter_).item() );
     return ;
   }
 
@@ -593,7 +591,7 @@ namespace Dune {
   ALU3dGridLeafIterator(const GridImp &grid, int level,
                         bool end, const int nlinks)
     : ALU3dGridEntityPointer <codim,GridImp> ( grid,level)
-      , index_(-1)
+      , endIter_(end)
       , level_(level)
       , isCopy_ (0)
   {
@@ -607,16 +605,16 @@ namespace Dune {
       if((!(*iter_).done()) && grid.hierSetSize(0) > 0) // else iterator empty
       {
         assert((*iter_).size() > 0);
-        index_=0;
         val_t & item = (*iter_).item();
         if( item.first )
-          this->updateEntityPointer( *item.first );
+          this->updateEntityPointer( item.first );
         else
           this->updateGhostPointer( *item.second );
       }
     }
     else
     {
+      endIter_ = true;
       this->done();
     }
   }
@@ -625,7 +623,7 @@ namespace Dune {
   inline ALU3dGridLeafIterator<cdim, pitype, GridImp> ::
   ALU3dGridLeafIterator(const ALU3dGridLeafIterator<cdim, pitype, GridImp> &org)
     : ALU3dGridEntityPointer <cdim,GridImp> ( org )
-      , index_(org.index_)
+      , endIter_(org.endIter_)
       , level_(org.level_)
       , iter_ ( org.iter_ )
       , isCopy_ (org.isCopy_+1)
@@ -638,21 +636,20 @@ namespace Dune {
   inline void ALU3dGridLeafIterator<cdim, pitype, GridImp> :: increment ()
   {
     // if assertion is thrown then end iterator was forgotten or didnt stop
-    assert(index_  >= 0);
+    assert( !endIter_ );
 
     (*iter_).next();
-    index_++;
 
     if((*iter_).done())
     {
-      index_ = -1;
+      endIter_ = true;
       this->done();
       return ;
     }
 
     val_t & item = (*iter_).item();
     if( item.first )
-      this->updateEntityPointer( *item.first );
+      this->updateEntityPointer( item.first );
     else
       this->updateGhostPointer( *item.second );
 
@@ -679,13 +676,14 @@ namespace Dune {
   {
     if (!end)
     {
-      const ALU3DSPACE HElementType * item = elem_.down();
+      ALU3DSPACE HElementType * item =
+        const_cast<ALU3DSPACE HElementType *> (elem_.down());
       if(item)
       {
         // we have children and they lie in the disired level range
         if(item->level() <= maxlevel_)
         {
-          this->updateEntityPointer( *item );
+          this->updateEntityPointer( item );
         }
         else
         { // otherwise do nothing
@@ -708,14 +706,14 @@ namespace Dune {
   {}
 
   template <class GridImp>
-  inline const ALU3DSPACE HElementType * ALU3dGridHierarchicIterator<GridImp>::
-  goNextElement(const ALU3DSPACE HElementType * oldelem )
+  inline ALU3DSPACE HElementType * ALU3dGridHierarchicIterator<GridImp>::
+  goNextElement(ALU3DSPACE HElementType * oldelem )
   {
     // strategy is:
     // - go down as far as possible and then over all children
     // - then go to father and next and down again
 
-    const ALU3DSPACE HElementType * nextelem = oldelem->down();
+    ALU3DSPACE HElementType * nextelem = oldelem->down();
     if(nextelem)
     {
       if(nextelem->level() <= maxlevel_)
@@ -748,14 +746,14 @@ namespace Dune {
   {
     assert(this->item_ != 0);
 
-    const ALU3DSPACE HElementType * nextItem = goNextElement( this->item_ );
+    ALU3DSPACE HElementType * nextItem = goNextElement( this->item_ );
     if(!nextItem)
     {
       this->done();
       return ;
     }
 
-    this->updateEntityPointer(*nextItem);
+    this->updateEntityPointer(nextItem);
     return ;
   }
 } // end namespace Dune

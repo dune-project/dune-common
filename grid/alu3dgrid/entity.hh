@@ -51,6 +51,7 @@ namespace Dune {
     typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::ImplementationType IMPLElementType;
     typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::InterfaceType MyHElementType;
 
+    friend class ALU3dGridEntityPointer < cd, GridImp >;
   public:
 
     // Constructor creating the realEntity
@@ -92,6 +93,7 @@ namespace Dune {
       this->realEntity.setEntity(org.realEntity);
     }
 
+  private:
     // return reference to internal item
     const MyHElementType & getItem () const { return this->realEntity.getItem(); }
   };
@@ -111,6 +113,7 @@ namespace Dune {
     friend class ALU3dGrid < dim , dimworld, GridImp::elementType >;
     friend class ALU3dGridEntity < 0, dim, GridImp >;
     friend class ALU3dGridLevelIterator < cd, All_Partition, GridImp >;
+    friend class ALU3dGridMakeableEntity <cd, dim, GridImp >;
 
     friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
@@ -163,10 +166,10 @@ namespace Dune {
     //! set item from other entity, mainly for copy constructor of entity pointer
     void setEntity ( const ALU3dGridEntity<cd,dim,GridImp> & org );
 
+  private:
     // return reference to internal item
     const IMPLElementType & getItem () const { return *item_; }
 
-  private:
     //! index is unique within the grid hierachy and per codim
     int getIndex () const;
 
@@ -237,6 +240,7 @@ namespace Dune {
     friend class ALU3dGridLeafIterator <1, All_Partition,GridImp>;
     friend class ALU3dGridLeafIterator <2, All_Partition,GridImp>;
     friend class ALU3dGridLeafIterator <3, All_Partition,GridImp>;
+    friend class ALU3dGridMakeableEntity<0,dim,GridImp>;
 
     friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
@@ -357,10 +361,10 @@ namespace Dune {
     //! for use in hierarchical index set
     template<int cc> int getSubIndex (int i) const;
 
+  private:
     // return reference to internal item
     const IMPLElementType & getItem () const { return *item_; }
 
-  private:
     //! index is unique within the grid hierachie and per codim
     int getIndex () const;
 
@@ -377,9 +381,6 @@ namespace Dune {
     //! the cuurent geometry
     mutable GeometryImp geo_;
     mutable bool builtgeometry_; //!< true if geometry has been constructed
-
-
-    int index_; //! level index of entity
 
     int walkLevel_; //! tells the actual level of walk put to LevelIterator..
 
@@ -417,10 +418,11 @@ namespace Dune {
     typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::InterfaceType MyHElementType;
 
     typedef ALU3DSPACE HBndSegType HBndSegType;
-    //typedef typename ALU3DSPACE ALUHElementType<cd>::ElementType  MyHElementType;
-  public:
     typedef typename ALU3dImplTraits<GridImp::elementType>::BNDFaceType BNDFaceType;
+  public:
+    //! type of Entity
     typedef typename GridImp::template Codim<cd>::Entity Entity;
+    //! underlying EntityImplementation
     typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
 
     //! typedef of my type
@@ -437,13 +439,7 @@ namespace Dune {
     ALU3dGridEntityPointer(const GridImp & grid,
                            const HBndSegType & ghostFace );
 
-    //! Constructor for EntityPointer that points to a ghost
-    ALU3dGridEntityPointer(const GridImp & grid, const ALU3dGridMakeableEntity<cd,dim,GridImp> & e );
-
-    //! Constructor for EntityPointer init of Level- and LeafIterator
-    ALU3dGridEntityPointer(const GridImp & grid, int level );
-
-    //! make empty entity pointer (to be revised)
+    //! copy constructor
     ALU3dGridEntityPointer(const ALU3dGridEntityPointerType & org);
 
     //! Destructor
@@ -458,14 +454,18 @@ namespace Dune {
     //! ask for level of entities
     int level () const ;
 
+  protected:
     //! has to be called when iterator is finished
     void done ();
 
-  protected:
+    //! Constructor for EntityPointer init of Level-, and Leaf-, and
+    //! HierarchicIterator
+    ALU3dGridEntityPointer(const GridImp & grid, int level );
+
     // update underlying item pointer and set ghost entity
     void updateGhostPointer( HBndSegType & ghostFace );
     // update underlying item pointer and set entity
-    void updateEntityPointer( const MyHElementType & item );
+    void updateEntityPointer( MyHElementType * item );
 
     // not allowed
     ThisType & operator = (const ALU3dGridEntityPointerType & org);
@@ -474,12 +474,12 @@ namespace Dune {
     const GridImp & grid_;
 
     // pointer to item
-    const MyHElementType * item_;
+    MyHElementType * item_;
 
     // twist of face, for codim 1 only
-    int twist_;
+    signed char twist_;
     // face number, for codim 1 only
-    int face_;
+    signed char face_;
 
     // entity that this EntityPointer points to
     mutable EntityImp * entity_;

@@ -213,7 +213,6 @@ namespace Dune {
     isGhost_       = org.isGhost_;
     ghost_         = org.ghost_;
     builtgeometry_ = false;
-    index_         = org.index_;
     level_         = org.level_;
     walkLevel_     = org.walkLevel_;
     glIndex_       = org.glIndex_;
@@ -233,7 +232,6 @@ namespace Dune {
     isGhost_ = false;
     ghost_ = 0;
     builtgeometry_=false;
-    index_   = -1;
     level_   = (*item_).level();
     glIndex_ = (*item_).getIndex();
     isLeaf_  = ((*item_).down() == 0);
@@ -275,7 +273,6 @@ namespace Dune {
     level_   = item_->level();
 #endif
     isGhost_ = true;
-    index_   = -1;
     builtgeometry_ = false;
 
     PLLBndFaceType * dwn =  static_cast<PLLBndFaceType *> (ghost.down());
@@ -658,7 +655,7 @@ namespace Dune {
                          int twist,
                          int face )
     : grid_(grid)
-      , item_(&item)
+      , item_(const_cast<MyHElementType *> (&item))
       , twist_ (twist)
       , face_(face)
       , entity_(0)
@@ -682,26 +679,15 @@ namespace Dune {
 
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
-  ALU3dGridEntityPointer(const GridImp & grid, const ALU3dGridMakeableEntity<codim,dim,GridImp> & e)
-    : grid_(grid)
-      , entity_ ( grid_.template getNewEntity<codim> ( e.level() ) )
-  {
-    // this method should only be called for codim 0 entities
-    assert( codim == 0 );
-    assert( entity_ );
-    (*entity_).setEntity( e );
-    item_= &(e.getItem());
-  }
-
-  template<int codim, class GridImp >
-  inline ALU3dGridEntityPointer<codim,GridImp> ::
   ALU3dGridEntityPointer(const GridImp & grid, int level )
     : grid_(grid)
       , item_(0)
       , twist_(0)
       , face_(-1)
-      , entity_(0)
-  {}
+      , entity_ ( grid_.template getNewEntity<codim> ( level ) )
+  {
+    (*entity_).reset(level);
+  }
 
   template<int codim, class GridImp >
   inline ALU3dGridEntityPointer<codim,GridImp> ::
@@ -714,7 +700,6 @@ namespace Dune {
   {
     if(org.entity_)
     {
-      //assert( org.item_ );
       int level = org.entity_->level();
       entity_ = grid_.template getNewEntity<codim> ( level );
       (*entity_).setEntity( *(org.entity_) );
@@ -725,7 +710,13 @@ namespace Dune {
   inline ALU3dGridEntityPointer<codim,GridImp> ::
   ~ALU3dGridEntityPointer()
   {
-    if(entity_) grid_.freeEntity( entity_ );
+    if(entity_)
+    {
+      (*entity_).removeElement();
+      grid_.freeEntity( entity_ );
+      entity_ = 0;
+    }
+    item_ = 0;
   }
 
   template<int codim, class GridImp >
@@ -733,7 +724,12 @@ namespace Dune {
   {
     item_ = 0;
     // sets entity pointer in the status of an empty entity
-    if(entity_) (*entity_).removeElement();
+    if(entity_)
+    {
+      (*entity_).removeElement();
+      grid_.freeEntity( entity_ );
+      entity_ = 0;
+    }
   }
 
   template<int codim, class GridImp >
@@ -753,8 +749,9 @@ namespace Dune {
     if(!entity_)
     {
       entity_ = grid_.template getNewEntity<codim> ( item_->level() );
-      (*entity_).setElement( const_cast<MyHElementType &> (*item_), twist_ , face_ );
+      (*entity_).setElement( *item_ , twist_ , face_ );
     }
+    assert( item_ == & (*entity_).getItem() );
     return (*entity_);
   }
 
@@ -773,17 +770,17 @@ namespace Dune {
     (*entity_).setGhost( ghostFace );
     // inside the method setGhost the method getGhost of the ghostFace is
     // called and set as item
-    item_ = & ((*entity_).getItem());
+    item_ = const_cast<MyHElementType *> (& ((*entity_).getItem()));
   }
 
   template<int codim, class GridImp >
   inline void ALU3dGridEntityPointer<codim,GridImp>::
-  updateEntityPointer( const MyHElementType & item )
+  updateEntityPointer( MyHElementType * item )
   {
-    item_ = &item;
-    if( entity_ )
+    item_ = item;
+    if( item_ && entity_ )
     {
-      (*entity_).setElement( const_cast<MyHElementType  &> (item) );
+      (*entity_).setElement( *item_ );
     }
   }
 
