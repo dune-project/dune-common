@@ -14,6 +14,3 @@ include $(top_srcdir)/am/checklog
 
 # automaticly update libs
 include $(top_srcdir)/am/update-libs
-
-# Makefile depends on "me"
-Makefile: $(top_builddir)/am/global-rules

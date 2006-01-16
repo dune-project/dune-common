@@ -2,6 +2,3 @@ if INKSCAPE
 .svg.png:
 	$(INKSCAPE) -e $@ $<
 endif INKSCAPE
-
-# Makefile depends on "me"
-Makefile: $(top_builddir)/am/inkscape.am

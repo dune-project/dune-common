@@ -47,7 +47,3 @@ sourcescheck-recursive:
 	fi; test -z "$$fail"
 
 .PHONY: sourcescheck sourcescheck-recursive
-
-# Makefile depends on "me"
-Makefile: $(top_builddir)/am/sourcescheck
-

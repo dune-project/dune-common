@@ -21,6 +21,3 @@ LIBDUNE = $(top_builddir)/lib/libdune.la
 	make -C $$(dirname $@) $$(basename $@)
 
 .PHONY: MAKELIBS.force
-
-# Makefile depends on "me"
-Makefile: $(top_builddir)/am/update-libs
