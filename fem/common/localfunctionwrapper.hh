@@ -6,8 +6,6 @@
 #include <vector>
 #include <stack>
 
-#include "../common/discretefunction.hh"
-
 namespace Dune {
 
   //! Stores pointers of local functions in a stack
@@ -20,18 +18,17 @@ namespace Dune {
     typedef typename DiscreteFunctionImp::LocalFunctionImp LocalFunctionImp;
 
   public:
-    typedef typename std::pair<LocalFunctionImp*, int*> StackStorageType;
+    typedef typename std::pair<LocalFunctionImp * , int* > StackStorageType;
   private:
     std::stack < StackStorageType , std::vector<StackStorageType> > lfStack_;
     const DiscreteFunctionType & df_;
 
-    StackStorageType obj_;
     int numIssuedFunctions_;
 
   public:
     //! constructor
     LocalFunctionStorage (const DiscreteFunctionType & df)
-      : df_(df) , obj_(0,0), numIssuedFunctions_(0) {}
+      : df_(df) , numIssuedFunctions_(0) {}
 
     //! delete all objects on stack
     ~LocalFunctionStorage ()
@@ -40,46 +37,49 @@ namespace Dune {
 
       while ( !lfStack_.empty() )
       {
-        obj_ = lfStack_.top();
+        StackStorageType obj = lfStack_.top();
         lfStack_.pop();
-        delete obj_.first;
-        obj_.first = 0;
-        delete obj_.second;
-        obj_.second = 0;
+        delete obj.first;
+        obj.first = 0;
+        delete obj.second;
+        obj.second = 0;
       }
     }
 
     //! get local function object
-    StackStorageType& getObject ()
+    StackStorageType getObject ()
     {
+#ifndef NDEBUG
       ++numIssuedFunctions_;
+#endif
 
       if( lfStack_.empty() )
       {
         // first pointer is the local function pointer
         // ans second pointer is the reference counter initialized with 1
-        obj_ = StackStorageType ( df_.newLocalFunctionObject(), new int (1) );
-        return obj_;
+        return StackStorageType ( df_.newLocalFunctionObject() , new int (1) );
       }
       else
       {
-        obj_ = lfStack_.top();
+        StackStorageType obj = lfStack_.top();
         lfStack_.pop();
-        return obj_;
+        return obj;
       }
     }
 
     //! push local function to stack
     void freeObject (StackStorageType & obj)
     {
+#ifndef NDEBUG
       --numIssuedFunctions_;
+#endif
       lfStack_.push(obj);
     }
 
   private:
     //! prohibited methods
-    LocalFunctionStorage ( const MyType & c); // : df_(c.df_) {};
-    MyType & operator = ( const MyType & c ); // { return *this; }
+    LocalFunctionStorage ( const MyType & c);
+    MyType & operator = ( const MyType & c );
   };
 
   template < class DFTraits > class DiscreteFunctionDefault;
@@ -119,9 +119,8 @@ namespace Dune {
     typedef typename DiscreteFunctionDefaultType::LocalFunctionStorageType LFStorage;
 
   private:
-
     // local function storage stack
-    LFStorage& storage_;
+    LFStorage & storage_;
 
     // type of stack entry
     typedef typename LFStorage :: StackStorageType StackStorageType;
@@ -129,15 +128,17 @@ namespace Dune {
     // pair storing pointer to local function and poiner to ref-counter
     StackStorageType obj_;
 
+    // reference to local function
+    LocalFunctionImp & lf_;
+
   public:
-    //! empty Constructor
-    //LocalFunctionWrapper() : storage_(0) , obj_ (0,0) {}
 
     //! Constructor initializing the underlying local function
     template < class EntityType >
     LocalFunctionWrapper(const EntityType & en, const DiscreteFunctionImp & df)
       : storage_( df.localFunctionStorage() )
         , obj_ ( storage_.getObject() )
+        , lf_ ( *obj_.first )
     {
       // init real local function with entity
       localFunc().init( en );
@@ -147,12 +148,14 @@ namespace Dune {
     LocalFunctionWrapper (const DiscreteFunctionImp & df)
       : storage_( df.localFunctionStorage() )
         , obj_( storage_.getObject() )
+        , lf_ ( *obj_.first )
     {}
 
     //! Copy constructor
     LocalFunctionWrapper(const LocalFunctionWrapper& org)
       : storage_(org.storage_)
         , obj_( org.obj_ )
+        , lf_ ( *obj_.first )
     {
       assert(*obj_.second == 1);
       ++(*(obj_.second));
@@ -232,28 +235,28 @@ namespace Dune {
     LocalFunctionImp & localFunc()
     {
       assert( obj_.first );
-      return *(obj_.first);
+      assert( &lf_ == obj_.first );
+      return lf_;
     }
     const LocalFunctionImp & localFunc() const
     {
       assert( obj_.first );
-      return *(obj_.first);
+      assert( &lf_ == obj_.first );
+      return lf_;
     }
 
     //! method remove the obj by using the storage
     void removeObj ()
     {
-      if(obj_.first)
-      {
-        assert( *(obj_.second) > 0);
-        // the second counter is left at a value of 1, so we dont have to
-        // initialize when getting the object again
-        if( (*(obj_.second)) == 1) {
-          storage_.freeObject ( obj_ );
-        }
-        else
-          --(*(obj_.second));
+      assert( obj_.first );
+      assert( *(obj_.second) > 0);
+      // the second counter is left at a value of 1, so we dont have to
+      // initialize when getting the object again
+      if( (*(obj_.second)) == 1) {
+        storage_.freeObject ( obj_ );
       }
+      else
+        --(*(obj_.second));
     }
   }; // end LocalFunctionWrapper
 
