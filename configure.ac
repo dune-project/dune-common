@@ -30,6 +30,7 @@ AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
 AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
 AC_CHECK_PROGS([DVIPS], [dvips], [true])
 AC_CHECK_PROGS([WML], [wml], [true])
+AM_CONDITIONAL([WML], [test "x$WML" != xfalse && test "x$WML" != xno])
 AC_CHECK_PROGS([PERL], [perl], [true])
 DUNE_INKSCAPE
 
