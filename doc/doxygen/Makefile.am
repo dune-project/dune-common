@@ -13,7 +13,9 @@ all: $(WHAT)
 # setting like in dune-web
 BASEDIR=../..
 CURDIR=doc/doxygen
-EXTRAINSTALL = html/*.html html/*.css html/*.png html/*.gif doxygen.log
+EXTRAINSTALL = doxygen.log
+# EXTRAINSTALL in the html subdirectory
+DOXYGENINSTALL = *.css *.png *.gif
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
@@ -26,6 +28,17 @@ doxygen-tag: FORCE
 	  $(DOXYGEN) > doxygen.log 2>&1 <&- ; \
 	  touch doxygen-tag ; \
 	fi
+
+# how to install the doxygen documentation
+doxygen-install:
+	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
+	  pushd html; \
+	    $(MAKE) -f $(DUNEWEBDIR)/Make.global \
+          EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/html" install ; \
+	  popd; \
+	fi
+
+web-install: doxygen-install
 
 # nice trick from the GNU make infopage to force a rule to run
 FORCE:
