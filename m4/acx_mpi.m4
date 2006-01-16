@@ -37,6 +37,7 @@ AC_LANG_CASE([C], [
 	AC_ARG_VAR(MPICC,[MPI C compiler command])
 	AC_CHECK_PROGS(MPICC, mpicc hcc mpcc mpcc_r mpxlc cmpicc, $CC)
 	acx_mpi_save_CC="$CC"
+	LAMMPICC="$CC"
 	CC="$MPICC"
 	AC_SUBST(MPICC)
 ],
@@ -45,6 +46,7 @@ AC_LANG_CASE([C], [
 	AC_ARG_VAR(MPICXX,[MPI C++ compiler command])
 	AC_CHECK_PROGS(MPICXX, mpic++ mpicxx mpiCC mpCC hcp mpxlC mpxlC_r cmpic++, $CXX)
 	acx_mpi_save_CXX="$CXX"
+	LAMMPICXX="$CXX"
 	CXX="$MPICXX"
 	AC_SUBST(MPICXX)
 ],
@@ -53,6 +55,7 @@ AC_LANG_CASE([C], [
 	AC_ARG_VAR(MPIF77,[MPI Fortran compiler command])
 	AC_CHECK_PROGS(MPIF77, mpif77 hf77 mpxlf mpf77 mpif90 mpf90 mpxlf90 mpxlf95 mpxlf_r cmpifc cmpif90c, $F77)
 	acx_mpi_save_F77="$F77"
+	LAMMPIF77="$F77"
 	F77="$MPIF77"
 	AC_SUBST(MPIF77)
 ])
@@ -75,13 +78,17 @@ dnl We have to use AC_TRY_COMPILE and not AC_CHECK_HEADER because the
 dnl latter uses $CPP, not $CC (which may be mpicc).
 AC_LANG_CASE([C], [if test x != x"$MPILIBS"; then
 	AC_MSG_CHECKING([for mpi.h])
+	export LAMMPICC="$acx_mpi_save_CC"
 	AC_TRY_COMPILE([#include <mpi.h>],[],[AC_MSG_RESULT(yes)], [MPILIBS=""
 		AC_MSG_RESULT(no)])
+	unset LAMMPICC
 fi],
 [C++], [if test x != x"$MPILIBS"; then
 	AC_MSG_CHECKING([for mpi.h])
+	export LAMMPICXX="$acx_mpi_save_CXX"
 	AC_TRY_COMPILE([#include <mpi.h>],[],[AC_MSG_RESULT(yes)], [MPILIBS=""
 		AC_MSG_RESULT(no)])
+	unset LAMMPICXX
 fi])
 
 AC_LANG_CASE([C], [CC="$acx_mpi_save_CC"],
