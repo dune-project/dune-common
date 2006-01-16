@@ -15,7 +15,7 @@ BASEDIR=../..
 CURDIR=doc/doxygen
 EXTRAINSTALL = doxygen.log
 # EXTRAINSTALL in the html subdirectory
-DOXYGENINSTALL = *.css *.png *.gif
+DOXYGENINSTALL = *.html *.css *.png *.gif
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
