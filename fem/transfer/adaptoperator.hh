@@ -38,7 +38,11 @@ namespace Dune {
   class AdaptMapping
   {
   public:
+    //! default constructor
     AdaptMapping () : am_ (0) {}
+
+    //! destructor
+    virtual ~AdaptMapping () {}
 
     //! all adaptation operators have this method which adapts the
     //! corresponding grid and organizes the restriction prolongation process
