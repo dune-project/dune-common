@@ -39,7 +39,7 @@ namespace Dune {
                         OutputStreamImp & sout , MapType1 & subEntities , MapType2 & vertices ,
                         MapType3 & vertexCoordsMap )
   {
-    GeometryType type = en.geometry().type();
+    NewGeometryType type = en.geometry().type();
     enum { dim = EntityType::dimension };
     typedef typename EntityType :: ctype coordType;
 
@@ -298,7 +298,7 @@ namespace Dune {
       Iterator refit  = lset.template begin<0,All_Partition>();
       assert( refit != refend );
 
-      GeometryType type = refit->geometry().type();
+      NewGeometryType type = refit->geometry().type();
 
       const ReferenceElement< coordType, dim > & refElem =
         ReferenceElements< coordType, dim >::general(type);
