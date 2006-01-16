@@ -81,16 +81,15 @@ namespace Dune {
 
   // maps for each face the local number so that the right dune face is
   // coming up
+  // parameter is local dune face number and vertex number
   template <>
   const int ElementTopologyMapping<hexa>::
-  dune2aluFaceVertex_[numFaces][numVerticesPerFace] = {{0, 3, 1, 2},
-                                                       {0, 1, 3, 2},
-                                                       {0, 1, 3, 2},
-                                                       {0, 1, 3, 2}, //wrong 3
-                                                       //{1, 0, 2, 3},
-                                                       {1, 0, 2, 3}, //wrong 4
-                                                       //{0, 3, 1, 2},
-                                                       {0, 3, 1, 2}};
+  dune2aluFaceVertex_[numFaces][numVerticesPerFace] = {{0, 3, 1, 2}, // ok
+                                                       {0, 1, 3, 2}, // ok
+                                                       {0, 1, 3, 2}, // ok
+                                                       {1, 0, 2, 3}, // ok
+                                                       {0, 3, 1, 2}, // ok
+                                                       {0, 1, 3, 2}}; // ok
 
   template <>
   const int ElementTopologyMapping<tetra>::

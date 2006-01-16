@@ -641,18 +641,18 @@ namespace Dune {
   template <>
   inline bool
   ALU3dGridGeometry<2,3, const ALU3dGrid<3, 3, hexa> > ::
-  buildGeom(const ALU3DSPACE HFaceType & item, int twist, int faceNum ) {
+  buildGeom(const ALU3DSPACE HFaceType & item, int twist, int duneFace ) {
     enum { dim = 2 };
     enum { dimworld = 3 };
 
     const GEOFaceType& face = static_cast<const GEOFaceType&> (item);
 
-    assert( faceNum >= 0 && faceNum < 6 );
+    assert( duneFace >= 0 && duneFace < 6 );
     // for all vertices of this face
     for (int i = 0; i < 4; ++i)
     {
       // Transform Dune index to ALU index and apply twist
-      int localALUIndex = ElementTopo::dune2aluFaceVertex(faceNum,i);
+      int localALUIndex = ElementTopo::dune2aluFaceVertex(duneFace,i);
       int rotatedALUIndex = FaceTopo::twist(localALUIndex, twist);
 
       const double (&p)[3] =

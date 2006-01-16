@@ -441,15 +441,15 @@ namespace Dune {
     entity (const GridImp& grid,
             const EntityType & en,
             const typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType & item,
-            int face)
+            int duneFace)
     {
-      int newFace = Topo::dune2aluFace(face);
+      int aluFace = Topo::dune2aluFace(duneFace);
       return
         ALU3dGridEntityPointer<1,GridImp>
           (grid,
-          *(getFace(item, face)),    // getFace already constains dune2aluFace
-          item.twist(newFace),
-          newFace
+          *(getFace(item, duneFace)),    // getFace already constains dune2aluFace
+          item.twist(aluFace),
+          duneFace    // we need the duneFace number here for the buildGeom method
           );
     }
   };
