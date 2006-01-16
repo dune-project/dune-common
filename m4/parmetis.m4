@@ -36,7 +36,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	    if test ! -f "$with_parmetis/$include_path/parmetis.h" ; then
 		with_parmetis=/usr/local/
 		if test ! -f "$with_metis/$include_path/parmetis.h" ; then
-		    with_parmetis=""
+		    with_parmetis="no"
 		    AC_MSG_RESULT(failed)
 		else
 		    AC_MSG_RESULT(yes)
