@@ -117,7 +117,7 @@ namespace Dune
 
   /** @brief A class providing vtk file i/o
    */
-  template<class GridImp>
+  template<class GridImp, class IS=typename GridImp::template Codim<0>::LeafIndexSet>
   class VTKWriter {
     class VTKFunction;
 
@@ -127,9 +127,7 @@ namespace Dune
     typedef typename GridImp::ctype DT;
     typedef typename GridImp::Traits::template Codim<0>::Entity Entity;
     typedef typename GridImp::Traits::template Codim<0>::Entity Cell;
-    typedef typename GridImp::Traits::template Codim<0>::LeafIterator CellIterator;
     typedef typename GridImp::Traits::template Codim<n>::Entity Vertex;
-    typedef typename GridImp::Traits::template Codim<n>::LeafIterator VertexIterator;
     typedef typename std::list<VTKFunction*>::iterator functioniterator;
 
     template<int dim>
@@ -141,12 +139,22 @@ namespace Dune
         return false;
       }
     };
-    typedef typename GridImp::template Codim<0>::LeafIndexSet IS;
+    typedef IS IndexSet;
+    static const PartitionIteratorType vtkPartition = InteriorBorder_Partition;
+    typedef typename IS::template Codim<0>::template Partition<vtkPartition>::Iterator CellIterator;
+    typedef typename IS::template Codim<n>::template Partition<vtkPartition>::Iterator VertexIterator;
     typedef MultipleCodimMultipleGeomTypeMapper<GridImp,IS,P1Layout> VM;
 
   public:
-    //! constructor from a grid
-    VTKWriter (const GridImp& g) : grid(g)
+    //! constructor from a grid (uses a leaf indexset)
+    VTKWriter (const GridImp& g) : grid(g), is(grid.leafIndexSet())
+    {
+      indentCount = 0;
+      numPerLine = 4*3;     //should be a multiple of 3 !
+    }
+
+    //! constructor from a grid and an indexset
+    VTKWriter (const GridImp& g, const IndexSet& i) : grid(g), is(i)
     {
       indentCount = 0;
       numPerLine = 4*3;     //should be a multiple of 3 !
@@ -349,13 +357,13 @@ namespace Dune
       indentUp();
 
       // Piece
-      vertexmapper = new VM(grid,grid.leafIndexSet());
+      vertexmapper = new VM(grid,is);
       number.resize(vertexmapper->size());
-      for (int i=0; i<number.size(); i++) number[i] = -1;
+      for (std::vector<int>::size_type i=0; i<number.size(); i++) number[i] = -1;
       nvertices = 0;
       ncells = 0;
       ncorners = 0;
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
           ncells++;
@@ -427,7 +435,7 @@ namespace Dune
           p = new VTKBinaryDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps(),(*it)->ncomps()*ncells);
         if (datamode==VTKOptions::binaryappended)
           p = new VTKBinaryAppendedDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps(),bytecount);
-        for (CellIterator i=grid.template leafbegin<0>(); i!=grid.template leafend<0>(); ++i)
+        for (CellIterator i=is.template begin<0,vtkPartition>(); i!=is.template end<0,vtkPartition>(); ++i)
           if (i->partitionType()==InteriorEntity)
             for (int j=0; j<(*it)->ncomps(); j++)
               p->write((*it)->evaluate(j,*i,ReferenceElements<DT,n>::general(i->geometry().type()).position(0,0)));
@@ -463,9 +471,8 @@ namespace Dune
           p = new VTKBinaryDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps(),(*it)->ncomps()*nvertices);
         if (datamode==VTKOptions::binaryappended)
           p = new VTKBinaryAppendedDataArrayWriter<float>(s,(*it)->name(),(*it)->ncomps(),bytecount);
-        std::vector<bool> visited(vertexmapper->size());
-        for (int i=0; i<visited.size(); i++) visited[i] = false;
-        for (CellIterator eit=grid.template leafbegin<0>(); eit!=grid.template leafend<0>(); ++eit)
+        std::vector<bool> visited(vertexmapper->size(), false);
+        for (CellIterator eit=is.template begin<0,vtkPartition>(); eit!=is.template end<0,vtkPartition>(); ++eit)
           if (eit->partitionType()==InteriorEntity)
             for (int i=0; i<eit->template count<n>(); ++i)
             {
@@ -495,9 +502,8 @@ namespace Dune
         p = new VTKBinaryDataArrayWriter<float>(s,"Coordinates",3,3*nvertices);
       if (datamode==VTKOptions::binaryappended)
         p = new VTKBinaryAppendedDataArrayWriter<float>(s,"Coordinates",3,bytecount);
-      std::vector<bool> visited(vertexmapper->size());
-      for (int i=0; i<visited.size(); i++) visited[i] = false;
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      std::vector<bool> visited(vertexmapper->size(), false);
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
           for (int i=0; i<it->template count<n>(); ++i)
           {
@@ -531,7 +537,7 @@ namespace Dune
         p1 = new VTKBinaryDataArrayWriter<int>(s,"connectivity",1,ncorners);
       if (datamode==VTKOptions::binaryappended)
         p1 = new VTKBinaryAppendedDataArrayWriter<int>(s,"connectivity",1,bytecount);
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
           for (int i=0; i<it->template count<n>(); ++i)
             p1->write(number[vertexmapper->template map<n>(*it,renumber(*it,i))]);
@@ -546,7 +552,7 @@ namespace Dune
       if (datamode==VTKOptions::binaryappended)
         p2 = new VTKBinaryAppendedDataArrayWriter<int>(s,"offsets",1,bytecount);
       int offset = 0;
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
           offset += it->template count<n>();
@@ -562,7 +568,7 @@ namespace Dune
         p3 = new VTKBinaryDataArrayWriter<unsigned char>(s,"types",1,ncells);
       if (datamode==VTKOptions::binaryappended)
         p3 = new VTKBinaryAppendedDataArrayWriter<unsigned char>(s,"types",1,bytecount);
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
           unsigned char vtktype=3;
@@ -611,9 +617,8 @@ namespace Dune
       {
         blocklength = nvertices * (*it)->ncomps() * sizeof(float);
         stream.write(blocklength);
-        std::vector<bool> visited(vertexmapper->size());
-        for (int i=0; i<visited.size(); i++) visited[i] = false;
-        for (CellIterator eit=grid.template leafbegin<0>(); eit!=grid.template leafend<0>(); ++eit)
+        std::vector<bool> visited(vertexmapper->size(), false);
+        for (CellIterator eit=is.template begin<0,vtkPartition>(); eit!=is.template end<0,vtkPartition>(); ++eit)
           if (eit->partitionType()==InteriorEntity)
             for (int i=0; i<eit->template count<n>(); ++i)
             {
@@ -635,7 +640,7 @@ namespace Dune
       {
         blocklength = ncells * (*it)->ncomps() * sizeof(float);
         stream.write(blocklength);
-        for (CellIterator i=grid.template leafbegin<0>(); i!=grid.template leafend<0>(); ++i)
+        for (CellIterator i=is.template begin<0,vtkPartition>(); i!=is.template end<0,vtkPartition>(); ++i)
           if (i->partitionType()==InteriorEntity)
             for (int j=0; j<(*it)->ncomps(); j++)
             {
@@ -647,9 +652,8 @@ namespace Dune
       // point coordinates
       blocklength = nvertices * 3 * sizeof(float);
       stream.write(blocklength);
-      std::vector<bool> visited(vertexmapper->size());
-      for (int i=0; i<visited.size(); i++) visited[i] = false;
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      std::vector<bool> visited(vertexmapper->size(), false);
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
           for (int i=0; i<it->template count<n>(); ++i)
           {
@@ -673,7 +677,7 @@ namespace Dune
       // connectivity
       blocklength = ncorners * sizeof(unsigned int);
       stream.write(blocklength);
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
           for (int i=0; i<it->template count<n>(); ++i)
           {
@@ -685,7 +689,7 @@ namespace Dune
       blocklength = ncells * sizeof(unsigned int);
       stream.write(blocklength);
       int offset = 0;
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
           offset += it->template count<n>();
@@ -695,7 +699,7 @@ namespace Dune
       // cell types
       blocklength = ncells * sizeof(unsigned char);
       stream.write(blocklength);
-      for (CellIterator it=grid.template leafbegin<0>(); it!=grid.template leafend<0>(); ++it)
+      for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
           unsigned char vtktype=3;
@@ -834,7 +838,7 @@ namespace Dune
     private:
       std::ostream& s;
       //	  base64::base64_encodestate _state;
-      int bufsize;
+      size_t bufsize;
       char* buffer;
       char* code;
       int n;
@@ -1001,6 +1005,9 @@ namespace Dune
     // the grid
     const GridImp& grid;
 
+    // the indexset
+    const IndexSet& is;
+
     // intend counter
     int indentCount;
     int numPerLine;
@@ -1015,6 +1022,26 @@ namespace Dune
     unsigned int bytecount;
   };
 
+  /** \brief VTKWriter on the leaf grid
+   */
+  template<class G>
+  class LeafVTKWriter : public VTKWriter<G,typename G::template Codim<0>::LeafIndexSet>
+  {
+  public:
+    LeafVTKWriter (const G& grid)
+      : VTKWriter<G,typename G::template Codim<0>::LeafIndexSet>(grid,grid.leafIndexSet())
+    {}
+  };
 
+  /** \brief VTKWriter on a given level grid
+   */
+  template<class G>
+  class LevelVTKWriter : public VTKWriter<G, typename G::template Codim<0>::LevelIndexSet>
+  {
+  public:
+    LevelVTKWriter (const G& grid, int level)
+      : VTKWriter<G,typename G::template Codim<0>::LevelIndexSet>(grid,grid.levelIndexSet(level))
+    {}
+  };
 }
 #endif
