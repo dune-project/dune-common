@@ -53,8 +53,6 @@ namespace Dune
     enum { dimensionworld=GridImp::dimensionworld /*!< dimension of world */ };
     //! define type used for coordinates in grid module
     typedef ct ctype;
-    //! the Reference Geometry
-    typedef Geometry<mydim,mydim,GridImp,GeometryImp> ReferenceGeometry;
 
     //! return the geometry type identifier
     NewGeometryType type () const { return realGeometry.type(); };
