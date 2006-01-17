@@ -63,7 +63,6 @@ namespace Dune {
     return s;
   }
 
-
   /** \brief Unique label for each type of entities that can occur in DUNE grids
 
      This class has to be extended if a grid implementation with new entity types
@@ -90,6 +89,43 @@ namespace Dune {
     NewGeometryType(BasicType basicType, unsigned int dim)
       : basicType_(basicType), dim_(dim)
     {}
+
+    NewGeometryType(Dune::GeometryType type, unsigned int dim) DUNE_DEPRECATED
+      : dim_(dim)
+    {
+      switch(type) {
+      case Dune::vertex :
+        basicType_ = Dune::NewGeometryType::cube;
+        break;
+      case Dune::line :
+        basicType_ = Dune::NewGeometryType::cube;
+        break;
+      case Dune::triangle :
+        basicType_ = Dune::NewGeometryType::simplex;
+        break;
+      case Dune::quadrilateral :
+        basicType_ = Dune::NewGeometryType::cube;
+        break;
+      case Dune::tetrahedron :
+        basicType_ = Dune::NewGeometryType::simplex;
+        break;
+      case Dune::pyramid :
+        basicType_ = Dune::NewGeometryType::pyramid;
+        break;
+      case Dune::prism :
+        basicType_ = Dune::NewGeometryType::prism;
+        break;
+      case Dune::hexahedron :
+        basicType_ = Dune::NewGeometryType::cube;
+        break;
+      case Dune::simplex :
+        basicType_ = Dune::NewGeometryType::simplex;
+        break;
+      case Dune::cube :
+        basicType_ = Dune::NewGeometryType::cube;
+        break;
+      };
+    }
 
     /** \brief Cast to old-style GeometryType
         \deprecated Only here for backward compatibility
