@@ -85,6 +85,9 @@ namespace Dune {
 
   public:
 
+    /** \brief Default constructor, not initializing anything */
+    NewGeometryType () {}
+
     /** \brief Constructor */
     NewGeometryType(BasicType basicType, unsigned int dim)
       : basicType_(basicType), dim_(dim)
