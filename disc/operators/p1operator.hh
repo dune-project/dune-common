@@ -437,7 +437,7 @@ namespace Dune
       Iterator eendit = indexset.template end<0,All_Partition>();
       for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
 
@@ -452,7 +452,7 @@ namespace Dune
       // LOOP 2 : second stage of detecting hanging nodes
       for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
 
@@ -482,7 +482,7 @@ namespace Dune
       // LOOP 3 : determine additional links due to hanging nodes
       for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
 
@@ -676,7 +676,7 @@ namespace Dune
       Iterator eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
 
@@ -733,7 +733,7 @@ namespace Dune
       // LOOP 5 : insert the nonzeros
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
         //                std::cout << "ELEM " << GeometryName(gt) << std::endl;
@@ -970,7 +970,7 @@ namespace Dune
           continue;
 
         // get access to shape functions for P1 elements
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
         sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
 
@@ -997,7 +997,7 @@ namespace Dune
 
           // determine position of hanging node in father
           EEntityPointer father=it->father();                 // the father element
-          GeometryType gtf = father->geometry().type();                 // fathers type
+          NewGeometryType gtf = father->geometry().type();                 // fathers type
           assert(gtf==gt);                 // in hanging node refinement the element type is preserved
           const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[k].position();
           FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                 // map corner to father element
@@ -1276,7 +1276,7 @@ namespace Dune
       for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
         // get access to shape functions for P1 elements
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
         sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
 
@@ -1288,7 +1288,7 @@ namespace Dune
           {
             // determine position of hanging node in father
             EEntityPointer father=it->father();                       // the father element
-            GeometryType gtf = father->geometry().type();                       // fathers type
+            NewGeometryType gtf = father->geometry().type();                       // fathers type
             assert(gtf==gt);                       // in hanging node refinement the element type is preserved
             const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[k].position();
             FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                       // map corner to father element
@@ -1322,7 +1322,7 @@ namespace Dune
       for (Iterator it = this->is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
         // get access to shape functions for P1 elements
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         //		  if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) continue;
 
         const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
@@ -1354,7 +1354,7 @@ namespace Dune
       g.mark(1,it);
 
       // check geom type, exit if not simplex
-      Dune::GeometryType gt = it->geometry().type();
+      Dune::NewGeometryType gt = it->geometry().type();
       //if (gt!=Dune::simplex && gt!=Dune::triangle && gt!=Dune::tetrahedron) return;
       assert(it->isLeaf());
 

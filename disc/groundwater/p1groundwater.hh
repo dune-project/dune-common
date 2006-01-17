@@ -110,7 +110,7 @@ namespace Dune
     void assemble (const Entity& e, int k=1)
     {
       // extract some important parameters
-      Dune::GeometryType gt = e.geometry().type();
+      Dune::NewGeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,k);
       currentsize = sfs.size();
 
@@ -183,7 +183,7 @@ namespace Dune
         // handle face on exterior boundary
         if (it.boundary())
         {
-          Dune::GeometryType gtface = it.intersectionSelfLocal().type();
+          Dune::NewGeometryType gtface = it.intersectionSelfLocal().type();
           for (size_t g=0; g<Dune::QuadratureRules<DT,n-1>::rule(gtface,p).size(); ++g)
           {
             const Dune::FieldVector<DT,n-1>& facelocal = Dune::QuadratureRules<DT,n-1>::rule(gtface,p)[g].position();

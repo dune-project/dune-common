@@ -267,7 +267,7 @@ namespace Dune
       Iterator eendit = indexset.template end<0,All_Partition>();
       for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
 
@@ -383,7 +383,7 @@ namespace Dune
       Iterator eendit = indexset.template end<0,All_Partition>();
       for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         const typename Dune::ReferenceElementContainer<DT,n>::value_type&
         refelem = ReferenceElements<DT,n>::general(gt);
 
@@ -605,7 +605,7 @@ namespace Dune
     virtual RT evallocal (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const
     {
       RT value=0;
-      Dune::GeometryType gt = e.geometry().type();     // extract type of element
+      Dune::NewGeometryType gt = e.geometry().type();     // extract type of element
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
         value += Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1)[i].evaluateFunction(0,xi)*(*coeff)[mapper_.template map<n>(e,i)][comp];
       return value;
@@ -620,7 +620,7 @@ namespace Dune
     virtual void evalalllocal (const Entity& e, const Dune::FieldVector<DT,G::dimension>& xi,
                                Dune::FieldVector<RT,m>& y) const
     {
-      Dune::GeometryType gt = e.geometry().type();     // extract type of element
+      Dune::NewGeometryType gt = e.geometry().type();     // extract type of element
       y = 0;
       for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
       {
@@ -654,7 +654,7 @@ namespace Dune
       if (order!=1) DUNE_THROW(GridError,"can only evaluate one derivative");
 
       RT value=0;
-      Dune::GeometryType gt = e.geometry().type();     // extract type of element
+      Dune::NewGeometryType gt = e.geometry().type();     // extract type of element
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
       sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
       Dune::FieldMatrix<DT,n,n> jac = e.geometry().jacobianInverseTransposed(xi);
@@ -686,7 +686,7 @@ namespace Dune
       Iterator eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
           if (!visited[mapper_.template map<n>(*it,i)])
           {
@@ -709,7 +709,7 @@ namespace Dune
       Iterator eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::GeometryType gt = it->geometry().type();
+        Dune::NewGeometryType gt = it->geometry().type();
         for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1).size(); ++i)
         {
           for (int c=0; c<m; c++)
@@ -837,7 +837,7 @@ namespace Dune
         ELevelIterator elendit = grid_.template lend<0>(level);
         for (ELevelIterator it = grid_.template lbegin<0>(level); it!=elendit; ++it)
         {
-          GeometryType gte = it->geometry().type();
+          NewGeometryType gte = it->geometry().type();
           for (int i=0; i<Dune::LagrangeShapeFunctions<DT,RT,n>::general(gte,1).size(); ++i)
           {
             int index = mapper_.template map<n>(*it,i);
@@ -845,7 +845,7 @@ namespace Dune
             {
               // OK, this is a new vertex
               EEntityPointer father=it->father();                             // the father element
-              GeometryType gtf = father->geometry().type();                             // fathers type
+              NewGeometryType gtf = father->geometry().type();                             // fathers type
               const FieldVector<DT,n>& cpos=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gte,1)[i].position();
               FieldVector<DT,n> pos = it->geometryInFather().global(cpos);                             // map corner to father element
               for (int c=0; c<m; c++)
