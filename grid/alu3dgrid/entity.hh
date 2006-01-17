@@ -476,6 +476,56 @@ namespace Dune {
     mutable EntityImp * entity_;
   };
 
+  //! ALUGridEntityPointer points to an entity
+  //! this class is the specialisation for codim 0,
+  //! it has exactly the same functionality as the ALU3dGridEntityPointerBase
+  template<class GridImp>
+  class ALU3dGridEntityPointer<0,GridImp> :
+    public ALU3dGridEntityPointerBase<0,GridImp>
+  {
+    enum { cd = 0 };
+    typedef ALU3dGridEntityPointer <cd,GridImp> ThisType;
+    enum { dim       = GridImp::dimension };
+    enum { dimworld  = GridImp::dimensionworld };
+
+    friend class ALU3dGridEntity<cd,dim,GridImp>;
+    friend class ALU3dGridEntity< 0,dim,GridImp>;
+    friend class ALU3dGrid < dim , dimworld, GridImp::elementType >;
+
+    typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::InterfaceType MyHElementType;
+
+    typedef ALU3DSPACE HBndSegType HBndSegType;
+    typedef typename ALU3dImplTraits<GridImp::elementType>::BNDFaceType BNDFaceType;
+  public:
+    //! type of Entity
+    typedef typename GridImp::template Codim<cd>::Entity Entity;
+    //! underlying EntityImplementation
+    typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
+
+    //! typedef of my type
+    typedef ThisType ALU3dGridEntityPointerType;
+
+    //! Constructor for EntityPointer that points to an element
+    ALU3dGridEntityPointer(const GridImp & grid,
+                           const MyHElementType & item)
+      : ALU3dGridEntityPointerBase<cd,GridImp> (grid,item) {}
+
+    //! Constructor for EntityPointer that points to an ghost
+    ALU3dGridEntityPointer(const GridImp & grid,
+                           const HBndSegType & ghostFace )
+      : ALU3dGridEntityPointerBase<cd,GridImp> (grid,ghostFace) {}
+
+    //! copy constructor
+    ALU3dGridEntityPointer(const ALU3dGridEntityPointerType & org)
+      : ALU3dGridEntityPointerBase<cd,GridImp> (org) {}
+
+  protected:
+    //! Constructor for EntityPointer init of Level-, and Leaf-, and
+    //! HierarchicIterator
+    ALU3dGridEntityPointer(const GridImp & grid, int level )
+      : ALU3dGridEntityPointerBase<cd,GridImp> (grid,level) {}
+  };
+
 
   template<int cd, class GridImp>
   class ALU3dGridEntityPointer :
@@ -530,57 +580,6 @@ namespace Dune {
     // face number, for codim 1 only
     const int face_;
   };
-
-  //! ALUGridEntityPointer points to an entity
-  //! this class is the specialisation for codim 0,
-  //! it has exactly the same functionality as the ALU3dGridEntityPointerBase
-  template<class GridImp>
-  class ALU3dGridEntityPointer<0,GridImp> :
-    public ALU3dGridEntityPointerBase<0,GridImp>
-  {
-    enum { cd = 0 };
-    typedef ALU3dGridEntityPointer <cd,GridImp> ThisType;
-    enum { dim       = GridImp::dimension };
-    enum { dimworld  = GridImp::dimensionworld };
-
-    friend class ALU3dGridEntity<cd,dim,GridImp>;
-    friend class ALU3dGridEntity< 0,dim,GridImp>;
-    friend class ALU3dGrid < dim , dimworld, GridImp::elementType >;
-
-    typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::InterfaceType MyHElementType;
-
-    typedef ALU3DSPACE HBndSegType HBndSegType;
-    typedef typename ALU3dImplTraits<GridImp::elementType>::BNDFaceType BNDFaceType;
-  public:
-    //! type of Entity
-    typedef typename GridImp::template Codim<cd>::Entity Entity;
-    //! underlying EntityImplementation
-    typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
-
-    //! typedef of my type
-    typedef ThisType ALU3dGridEntityPointerType;
-
-    //! Constructor for EntityPointer that points to an element
-    ALU3dGridEntityPointer(const GridImp & grid,
-                           const MyHElementType & item)
-      : ALU3dGridEntityPointerBase<cd,GridImp> (grid,item) {}
-
-    //! Constructor for EntityPointer that points to an ghost
-    ALU3dGridEntityPointer(const GridImp & grid,
-                           const HBndSegType & ghostFace )
-      : ALU3dGridEntityPointerBase<cd,GridImp> (grid,ghostFace) {}
-
-    //! copy constructor
-    ALU3dGridEntityPointer(const ALU3dGridEntityPointerType & org)
-      : ALU3dGridEntityPointerBase<cd,GridImp> (org) {}
-
-  protected:
-    //! Constructor for EntityPointer init of Level-, and Leaf-, and
-    //! HierarchicIterator
-    ALU3dGridEntityPointer(const GridImp & grid, int level )
-      : ALU3dGridEntityPointerBase<cd,GridImp> (grid,level) {}
-  };
-
 
 } // end namespace Dune
 
