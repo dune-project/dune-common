@@ -6,6 +6,7 @@
 
 #include <dune/istl/bvector.hh>
 #include <dune/istl/operators.hh>
+#include <dune/istl/owneroverlapcopy.hh>
 #include "pinfo.hh"
 
 namespace Dune
