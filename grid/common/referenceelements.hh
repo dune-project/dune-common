@@ -129,7 +129,7 @@ namespace Dune
     }
 
     //! type of (i,c)
-    virtual GeometryType type (int i, int c) const = 0;
+    virtual NewGeometryType type (int i, int c) const = 0;
 
     //! volume of the reference element
     virtual double volume () const = 0;
@@ -186,7 +186,7 @@ namespace Dune
     }
 
     //! type of (i,c)
-    GeometryType type (int i, int c) const
+    NewGeometryType type (int i, int c) const
     {
       return Imp::type(i,c);
     }
@@ -314,9 +314,9 @@ namespace Dune
     }
 
     //! type of (i,c)
-    GeometryType type (int i, int c) const
+    NewGeometryType type (int i, int c) const
     {
-      return cube;
+      return NewGeometryType(NewGeometryType::cube, dim);
     }
 
     //! volume of the reference element
@@ -489,10 +489,9 @@ namespace Dune
     typedef ReferenceCube<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const value_type& operator() (GeometryType type) const
+    const value_type& operator() (NewGeometryType type) const
     {
-      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
-           (type==hexahedron) )
+      if ( type.isCube() )
         return cube_;
       DUNE_THROW(RangeError, "expected a cube!");
     }
@@ -615,9 +614,9 @@ namespace Dune
     }
 
     //! type of (i,c)
-    GeometryType type (int i, int c) const
+    NewGeometryType type (int i, int c) const
     {
-      return simplex;
+      return NewGeometryType(NewGeometryType::simplex,dim);
     }
 
 
@@ -908,9 +907,9 @@ namespace Dune
     typedef ReferenceSimplex<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const value_type& operator() (GeometryType type) const
+    const value_type& operator() (NewGeometryType type) const
     {
-      if ( (type==simplex) || (type==triangle) || (type==tetrahedron) )
+      if ( type.isSimplex())
         return simplices;
       DUNE_THROW(RangeError, "expected a simplex!");
     }
@@ -1011,21 +1010,21 @@ namespace Dune
     }
 
     //! type of (i,c)
-    GeometryType type (int i, int c) const
+    NewGeometryType type (int i, int c) const
     {
       switch (c)
       {
-      case 3 : return cube;
-      case 2 : return cube;
-      case 0 : return prism;
+      case 3 : return NewGeometryType(NewGeometryType::cube,0);
+      case 2 : return NewGeometryType(NewGeometryType::cube,1);
+      case 0 : return NewGeometryType(NewGeometryType::prism,3);
       case 1 :
         switch (i)
         {
-        case 0 : return simplex;
-        case 1 : return cube;
-        case 2 : return cube;
-        case 3 : return cube;
-        case 4 : return simplex;
+        case 0 : return NewGeometryType(NewGeometryType::simplex,2);
+        case 1 : return NewGeometryType(NewGeometryType::cube,2);
+        case 2 : return NewGeometryType(NewGeometryType::cube,2);
+        case 3 : return NewGeometryType(NewGeometryType::cube,2);
+        case 4 : return NewGeometryType(NewGeometryType::simplex,2);
         default :
           DUNE_THROW(RangeError, "i argument out of range");
         }
@@ -1279,9 +1278,9 @@ namespace Dune
     typedef ReferencePrism<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const value_type& operator() (GeometryType type) const
+    const value_type& operator() (NewGeometryType type) const
     {
-      if (type==prism)
+      if (type.isPrism())
         return pris;
       DUNE_THROW(RangeError, "expected a prism!");
     }
@@ -1368,21 +1367,21 @@ namespace Dune
     }
 
     //! type of (i,c)
-    GeometryType type (int i, int c) const
+    NewGeometryType type (int i, int c) const
     {
       switch (c)
       {
-      case 3 : return cube;
-      case 2 : return cube;
-      case 0 : return pyramid;
+      case 3 : return NewGeometryType(NewGeometryType::cube,0);
+      case 2 : return NewGeometryType(NewGeometryType::cube,1);
+      case 0 : return NewGeometryType(NewGeometryType::pyramid,3);
       case 1 :
         switch (i)
         {
-        case 0 : return cube;
-        case 1 : return simplex;
-        case 2 : return simplex;
-        case 3 : return simplex;
-        case 4 : return simplex;
+        case 0 : return NewGeometryType(NewGeometryType::cube,2);
+        case 1 :
+        case 2 :
+        case 3 :
+        case 4 : return NewGeometryType(NewGeometryType::simplex,2);
         default :
           DUNE_THROW(RangeError, "i argument out of range");
         }
@@ -1635,9 +1634,9 @@ namespace Dune
     typedef ReferencePrism<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const value_type& operator() (GeometryType type) const
+    const value_type& operator() (NewGeometryType type) const
     {
-      if (type==pyramid)
+      if (type.isPyramid())
         return pyram;
       DUNE_THROW(RangeError, "expected a pyramid!");
     }
@@ -1663,12 +1662,11 @@ namespace Dune
     typedef ReferenceElement<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const ReferenceElement<ctype,dim>& operator() (GeometryType type) const
+    const ReferenceElement<ctype,dim>& operator() (NewGeometryType type) const
     {
-      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
-           (type==hexahedron) )
+      if ( type.isCube())
         return hcube;
-      else if( (type==simplex ) || (type==triangle ) || (type==tetrahedron))
+      else if ( type.isSimplex() )
         return simplices;
       else
         DUNE_THROW(NotImplemented, "type not implemented yet");
@@ -1690,16 +1688,15 @@ namespace Dune
     typedef ReferenceElement<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const ReferenceElement<ctype,dim>& operator() (GeometryType type) const
+    const ReferenceElement<ctype,dim>& operator() (NewGeometryType type) const
     {
-      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
-           (type==hexahedron) )
+      if ( type.isCube() )
         return hcube;
-      else if( (type==simplex ) || (type==triangle ) || (type==tetrahedron))
+      else if( type.isSimplex() )
         return simplices;
-      else if (type==prism)
+      else if ( type.isPrism() )
         return pris;
-      else if(type==pyramid)
+      else if( type.isPyramid() )
         return pyram;
       else
         DUNE_THROW(NotImplemented, "type not implemented yet");
