@@ -143,7 +143,7 @@
     cout << "Using refinementlevel = " << refinementlevel << endl << endl;
 
     // get Number of Vertices
-    cout << "Number of Vertices:
+    cout << "Number of Vertices: "
          << MyRefinement::nVertices(refinementlevel)
          << endl;
 
