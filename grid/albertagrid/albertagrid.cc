@@ -849,6 +849,8 @@ namespace Dune
     ALBERTA EL_INFO * fatherInfo = ALBERTA AlbertHelp::getFatherInfo(travStack_,elInfo_,level_);
     int fatherLevel = (level_ > 0) ? (level_-1) : 0;
 
+    assert( fatherLevel == fatherInfo->level );
+
     return AlbertaGridEntityPointer<0,GridImp> (grid_,travStack_,fatherLevel,fatherInfo,0,0,0);
   }
 
@@ -1154,6 +1156,8 @@ namespace Dune
   {
     ALBERTA EL_INFO * fatherInfo = ALBERTA AlbertHelp::getFatherInfo(travStack_,elInfo_,level_);
     int fatherLevel = (level_ > 0) ? (level_-1) : 0;
+
+    assert( fatherLevel == fatherInfo->level );
 
     return AlbertaGridEntityPointer<0,GridImp> (grid_,travStack_,fatherLevel,fatherInfo,0,0,0);
   }

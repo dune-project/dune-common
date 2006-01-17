@@ -399,6 +399,7 @@ namespace AlbertHelp
 
   static EL_INFO * getFatherInfo(TRAVERSE_STACK * stack, EL_INFO * elInfo, int level)
   {
+    assert( level == elInfo->level );
     EL_INFO * fatherInfo = 0;
 
     // if this level > 0 return father = elInfoStack -1,
@@ -407,14 +408,13 @@ namespace AlbertHelp
 
     if(level > 0)
     {
-      fatherInfo = & (stack->elinfo_stack)[stack->stack_used-1];
+      fatherInfo = & (stack->elinfo_stack)[level];
     }
     else
     {
       printf("No Father for macro element, return macro element\n");
       return elInfo;
     }
-
     return fatherInfo;
   }
 
