@@ -128,7 +128,7 @@ namespace Dune
         }
       }
       if (all_zero) {
-        s << 1;
+        s << 1 <<" ";
       }
     };
   private:
