@@ -84,7 +84,7 @@ namespace Dune
     P0Function (const P0Function&);
 
   public:
-    typedef BlockVector<FieldVector<RT,1> > RepresentationType;
+    typedef BlockVector<FieldVector<RT,m> > RepresentationType;
 
     //! allocate a vector with the data
     P0Function (const G& g,  const IS& indexset) : grid_(g), is(indexset), mapper_(g,indexset)
@@ -266,6 +266,115 @@ namespace Dune
       : P0Function<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level))
     {}
   };
+
+
+
+  /*! wrap any vector to use it as a P0 function
+   */
+  template<class G, class T>
+  class LeafP0FunctionWrapper : virtual public GridFunction<G,typename T::value_type,1>,
+                                virtual public L2Function<typename G::ctype,typename T::value_type,G::dimension,1>
+  {
+    //! get domain field type from the grid
+    typedef typename G::ctype DT;
+    typedef typename T::value_type RT;
+    typedef typename G::template Codim<0>::LeafIndexSet IS;
+    enum {m=1};
+
+    //! get domain dimension from the grid
+    enum {n=G::dimension};
+
+    //! get entity from the grid
+    typedef typename G::template Codim<0>::Entity Entity;
+
+    //! Parameter for mapper class
+    template<int dim>
+    struct P0Layout
+    {
+      bool contains (int codim, Dune::GeometryType gt)
+      {
+        if (codim==0) return true;
+        return false;
+      }
+    };
+
+    //! make some methods private
+    LeafP0FunctionWrapper (const LeafP0FunctionWrapper&);
+    LeafP0FunctionWrapper& operator= (const LeafP0FunctionWrapper&);
+
+  public:
+    typedef T RepresentationType;
+
+    //! allocate a vector with the data
+    LeafP0FunctionWrapper (const G& g, const T& v)
+      : grid(g), is(g.leafIndexSet()), mapper(g,g.leafIndexSet()), coeff(v)
+    {
+      if (mapper.size()!=v.size())
+        DUNE_THROW(MathError,"LeafP0FunctionWrapper: size of vector does not match grid size");
+
+    }
+
+    //! evaluate single component comp at global point x
+    /*! Evaluate a single component of the vector-valued
+       function.
+       @param[in] comp number of component to be evaluated
+       @param[in] x    position to be evaluated
+       \return         value of the component
+     */
+    virtual RT eval (int comp, const Dune::FieldVector<DT,n>& x) const
+    {
+      DUNE_THROW(NotImplemented, "global eval not implemented yet");
+      return 0;
+    }
+
+    //! evaluate all components at point x and store result in y
+    /*! Evaluation function for all components at once.
+       @param[in]  x    position to be evaluated
+       @param[out] y    result vector to be filled
+     */
+    virtual void evalall (const Dune::FieldVector<DT,n>& x, Dune::FieldVector<RT,m>& y) const
+    {
+      DUNE_THROW(NotImplemented, "global eval not implemented yet");
+    }
+
+    //! evaluate single component comp in the entity e at local coordinates xi
+    /*! Evaluate the function in an entity at local coordinates.
+       @param[in]  comp   number of component to be evaluated
+       @param[in]  e      reference to grid entity of codimension 0
+       @param[in]  xi     point in local coordinates of the reference element of e
+       \return            value of the component
+     */
+    virtual RT evallocal (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const
+    {
+      return coeff[mapper.map(e)];
+    }
+
+    //! evaluate all components  in the entity e at local coordinates xi
+    /*! Evaluates all components of a function at once.
+       @param[in]  e      reference to grid entity of codimension 0
+       @param[in]  xi     point in local coordinates of the reference element of e
+       @param[out] y      vector with values to be filled
+     */
+    virtual void evalalllocal (const Entity& e, const Dune::FieldVector<DT,G::dimension>& xi,
+                               Dune::FieldVector<RT,m>& y) const
+    {
+      y[0] = coeff[mapper.map(e)];
+    }
+
+  private:
+    // a reference to the grid
+    const G& grid;
+
+    // reference to index set on the grid (might be level or leaf)
+    const IS& is;
+
+    // we need a mapper
+    MultipleCodimMultipleGeomTypeMapper<G,IS,P0Layout> mapper;
+
+    // and a dynamically allocated vector
+    const T& coeff;
+  };
+
 
   /** @} */
 
