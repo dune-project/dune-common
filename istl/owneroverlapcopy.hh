@@ -60,7 +60,7 @@ namespace Dune {
   /**
    * @brief Information about the index distribution.
    *
-   * This class conatins information about indices local to
+   * This class contains information about indices local to
    * the process together with information about on which
    * processes those indices are also present together with the
    * attribute they have there.
