@@ -440,11 +440,11 @@ namespace Dune {
       for (localindex_iterator i=indexinfo.localIndices().begin(); i!=indexinfo.localIndices().end(); ++i)
       {
         if (i->third==owner)
-          pis.add(i->first,LI(i->second,owner,true));
+          pis.add(i->first,LI(i->second,OwnerOverlapCopyAttributeSet::owner,true));
         if (i->third==overlap)
-          pis.add(i->first,LI(i->second,overlap,true));
+          pis.add(i->first,LI(i->second,OwnerOverlapCopyAttributeSet::overlap,true));
         if (i->third==copy)
-          pis.add(i->first,LI(i->second,copy,true));
+          pis.add(i->first,LI(i->second,OwnerOverlapCopyAttributeSet::copy,true));
         //                std::cout << cc.rank() << ": adding index " << i->first << " " << i->second << " " << i->third << std::endl;
       }
       pis.endResize();
@@ -477,11 +477,11 @@ namespace Dune {
           // insert entry
           //                      std::cout << cc.rank() << ": adding remote index " << i->first << " " << i->second << " " << i->third << std::endl;
           if (i->third==owner)
-            modifier.insert(RX(owner,&(*pi)));
+            modifier.insert(RX(OwnerOverlapCopyAttributeSet::owner,&(*pi)));
           if (i->third==overlap)
-            modifier.insert(RX(overlap,&(*pi)));
+            modifier.insert(RX(OwnerOverlapCopyAttributeSet::overlap,&(*pi)));
           if (i->third==copy)
-            modifier.insert(RX(copy,&(*pi)));
+            modifier.insert(RX(OwnerOverlapCopyAttributeSet::copy,&(*pi)));
         }
       }
     }
