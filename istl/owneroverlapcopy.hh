@@ -173,9 +173,6 @@ namespace Dune {
     typedef typename std::set<IndexTripel>::const_iterator localindex_iterator;
     typedef typename std::set<RemoteIndexTripel>::const_iterator remoteindex_iterator;
     typedef typename OwnerOverlapCopyAttributeSet::AttributeSet AttributeSet;
-    enum attributes { owner=OwnerOverlapCopyAttributeSet::owner,
-                      overlap=OwnerOverlapCopyAttributeSet::overlap,
-                      copy=OwnerOverlapCopyAttributeSet::copy };
     typedef ParallelLocalIndex<AttributeSet> LI;
     typedef ParallelIndexSet<GlobalIdType,LI,512> PIS;
     typedef RemoteIndices<PIS> RI;
@@ -220,8 +217,8 @@ namespace Dune {
     {
       if (OwnerOverlapToAllInterfaceBuilt)
         OwnerOverlapToAllInterface.free();
-      typedef Combine<EnumItem<AttributeSet,owner>,EnumItem<AttributeSet,overlap>,AttributeSet> OwnerOverlapSet;
-      typedef Combine<OwnerOverlapSet,EnumItem<AttributeSet,copy>,AttributeSet> AllSet;
+      typedef Combine<EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::owner>,EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::overlap>,AttributeSet> OwnerOverlapSet;
+      typedef Combine<OwnerOverlapSet,EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::copy>,AttributeSet> AllSet;
       OwnerOverlapSet sourceFlags;
       AllSet destFlags;
       OwnerOverlapToAllInterface.build(ri,sourceFlags,destFlags);
@@ -232,9 +229,9 @@ namespace Dune {
     {
       if (OwnerToAllInterfaceBuilt)
         OwnerToAllInterface.free();
-      typedef EnumItem<AttributeSet,owner> OwnerSet;
-      typedef Combine<EnumItem<AttributeSet,owner>,EnumItem<AttributeSet,overlap>,AttributeSet> OwnerOverlapSet;
-      typedef Combine<OwnerOverlapSet,EnumItem<AttributeSet,copy>,AttributeSet> AllSet;
+      typedef EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::owner> OwnerSet;
+      typedef Combine<EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::owner>,EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::overlap>,AttributeSet> OwnerOverlapSet;
+      typedef Combine<OwnerOverlapSet,EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::copy>,AttributeSet> AllSet;
       OwnerOverlapSet sourceFlags;
       AllSet destFlags;
       OwnerToAllInterface.build(ri,sourceFlags,destFlags);
@@ -438,11 +435,11 @@ namespace Dune {
       pis.beginResize();
       for (localindex_iterator i=indexinfo.localIndices().begin(); i!=indexinfo.localIndices().end(); ++i)
       {
-        if (i->third==owner)
+        if (i->third==OwnerOverlapCopyAttributeSet::owner)
           pis.add(i->first,LI(i->second,OwnerOverlapCopyAttributeSet::owner,true));
-        if (i->third==overlap)
+        if (i->third==OwnerOverlapCopyAttributeSet::overlap)
           pis.add(i->first,LI(i->second,OwnerOverlapCopyAttributeSet::overlap,true));
-        if (i->third==copy)
+        if (i->third==OwnerOverlapCopyAttributeSet::copy)
           pis.add(i->first,LI(i->second,OwnerOverlapCopyAttributeSet::copy,true));
         //                std::cout << cc.rank() << ": adding index " << i->first << " " << i->second << " " << i->third << std::endl;
       }
@@ -475,11 +472,11 @@ namespace Dune {
 
           // insert entry
           //                      std::cout << cc.rank() << ": adding remote index " << i->first << " " << i->second << " " << i->third << std::endl;
-          if (i->third==owner)
+          if (i->third==OwnerOverlapCopyAttributeSet::owner)
             modifier.insert(RX(OwnerOverlapCopyAttributeSet::owner,&(*pi)));
-          if (i->third==overlap)
+          if (i->third==OwnerOverlapCopyAttributeSet::overlap)
             modifier.insert(RX(OwnerOverlapCopyAttributeSet::overlap,&(*pi)));
-          if (i->third==copy)
+          if (i->third==OwnerOverlapCopyAttributeSet::copy)
             modifier.insert(RX(OwnerOverlapCopyAttributeSet::copy,&(*pi)));
         }
       }
