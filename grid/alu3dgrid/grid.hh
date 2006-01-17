@@ -33,6 +33,8 @@ namespace Dune {
   template<int cd, PartitionIteratorType pitype, class GridImp >
   class ALU3dGridLevelIterator;
   template<int cd, class GridImp >
+  class ALU3dGridEntityPointerBase;
+  template<int cd, class GridImp >
   class ALU3dGridEntityPointer;
   template<int mydim, int coorddim, class GridImp>
   class ALU3dGridMakeableGeometry;
@@ -105,14 +107,22 @@ namespace Dune {
     //! Type of the leaf index set
     typedef AdaptiveLeafIndexSet<ALU3dGrid < dim, dimworld, elType > >  LeafIndexSetImp;
 
+    //! type of ALU3dGrids global id
     typedef bigunsignedint<6*32> GlobalIdType;
+
+    //! type of ALU3dGrids local id
     typedef int LocalIdType;
 
     typedef ALU3dGrid<dim,dimworld,elType> GridImp;
 
     struct Traits
     {
+      //! type of ALU3dGrids local id
+      typedef int LocalIdType;
+
+      //! type of ALU3dGrids global id
       typedef bigunsignedint<6*32> GlobalIdType;
+
       typedef ALU3dGrid<dim,dimworld,elType> Grid;
 
       typedef Dune::IntersectionIterator<const GridImp, IntersectionIteratorWrapper> IntersectionIterator;
@@ -145,8 +155,12 @@ namespace Dune {
 
       typedef IndexSet<GridImp,LevelIndexSetImp,DefaultLevelIteratorTypes<GridImp> > LevelIndexSet;
       typedef LeafIndexSetImp LeafIndexSet;
-      typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
       typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
+#ifdef _ALU3DGRID_PARALLEL_
+      typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
+#else
+      typedef LocalIdSet GlobalIdSet;
+#endif
     };
   };
 
@@ -184,9 +198,12 @@ namespace Dune {
     friend class ALU3dGridEntity <0,dim,const MyType>;
     friend class ALU3dGridIntersectionIterator<MyType>;
 
-    friend class ALU3dGridEntityPointer<0,const MyType >;
+    friend class ALU3dGridEntityPointerBase<0,const MyType >;
+    friend class ALU3dGridEntityPointerBase<1,const MyType >;
     friend class ALU3dGridEntityPointer<1,const MyType >;
+    friend class ALU3dGridEntityPointerBase<2,const MyType >;
     friend class ALU3dGridEntityPointer<2,const MyType >;
+    friend class ALU3dGridEntityPointerBase<3,const MyType >;
     friend class ALU3dGridEntityPointer<3,const MyType >;
 
     friend class ALU3dGridIntersectionIterator<const MyType>;
@@ -214,11 +231,15 @@ namespace Dune {
     //! Type of the hierarchic index set
     typedef ALU3dGridHierarchicIndexSet<dim,dimworld,elType> HierarchicIndexSet;
 
-    //! Type of the global id set
-    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSetImp;
-
     //! Type of the local id set
     typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSetImp;
+
+#ifdef _ALU3DGRID_PARALLEL_
+    //! Type of the global id set
+    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSetImp;
+#else
+    typedef LocalIdSetImp GlobalIdSetImp;
+#endif
 
     //! Type of the global id set
     typedef typename Traits :: GlobalIdSet GlobalIdSet;
