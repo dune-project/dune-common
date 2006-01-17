@@ -112,11 +112,15 @@ namespace Dune {
     return true;
   }
 
-  template <int dim>
-  inline static void copyCoordVec(const alu3d_ctype (& point)[dim] ,
-                                  FieldVector<alu3d_ctype,dim> & coord )
+  template<int mydim, int cdim>
+  inline void ALU3dGridGeometry<mydim,cdim, const ALU3dGrid<3, 3, tetra> > ::
+  copyCoordVec(const alu3d_ctype (& point)[cdim] ,
+               FieldVector<alu3d_ctype,cdim> & coord ) const
   {
-    std::memcpy(&coord[0],&point[0],dim*sizeof(alu3d_ctype));
+    assert( cdim == 3 );
+    coord[0] = point[0];
+    coord[1] = point[1];
+    coord[2] = point[2];
   }
 
   template <>
@@ -127,22 +131,15 @@ namespace Dune {
     enum { dimworld = 3};
 
     builtinverse_ = builtA_ = builtDetDF_ = false;
-    copyCoordVec(item.myvertex(ElementTopo::dune2aluVertex(0))->Point(), coord_[0]);
-    copyCoordVec(item.myvertex(ElementTopo::dune2aluVertex(1))->Point(), coord_[1]);
-    copyCoordVec(item.myvertex(ElementTopo::dune2aluVertex(2))->Point(), coord_[2]);
-    copyCoordVec(item.myvertex(ElementTopo::dune2aluVertex(3))->Point(), coord_[3]);
+#ifndef NDEBUG
+    for(int i=0; i<4; i++)
+      assert( ElementTopo::dune2aluVertex(i) == i );
+#endif
 
-    /*
-       for (int i=0;i<(dim+1);i++)
-       {
-       const double (&p)[3] =
-        item.myvertex(ElementTopo::dune2aluVertex(i))->Point();
-       for (int j=0;j<dimworld;j++)
-       {
-        coord_[i][j] = p[j];
-       }
-       }
-     */
+    copyCoordVec(item.myvertex(0)->Point(), coord_[0]);
+    copyCoordVec(item.myvertex(1)->Point(), coord_[1]);
+    copyCoordVec(item.myvertex(2)->Point(), coord_[2]);
+    copyCoordVec(item.myvertex(3)->Point(), coord_[3]);
     return true;
   }
 

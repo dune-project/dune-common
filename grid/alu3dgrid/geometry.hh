@@ -186,6 +186,10 @@ namespace Dune {
     // calculates the element matrix for calculation of the jacobian inverse
     void calcElMatrix () const;
 
+    // copies the values of point to the values of coord
+    void copyCoordVec (const alu3d_ctype (& point)[cdim] ,
+                       FieldVector<alu3d_ctype,cdim> & coord ) const;
+
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, mydim+1, cdim> coord_;
 
