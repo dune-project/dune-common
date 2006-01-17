@@ -221,8 +221,8 @@ namespace Dune {
       if(levelIndexVec_[i]) (*(levelIndexVec_[i])).calcNewIndex();
     }
 
-    // create id set new, to be improved
-    if(globalIdSet_) globalIdSet_->buildIdSet();
+    // update id set, i.e. insert new elements
+    if(globalIdSet_) globalIdSet_->updateIdSet();
 
     for(unsigned int i=0; i<MAXL; i++) vertexList_[i].unsetUp2Date();
 
@@ -629,7 +629,6 @@ namespace Dune {
         w->item ().resetRefinedTag();
 
         // note, resetRefinementRequest sets the request to coarsen
-        //
         //w->item ().resetRefinementRequest();
       }
     }
