@@ -231,9 +231,9 @@ namespace Dune
         coarseSmoother_ = ConstructionTraits<Smoother>::construct(cargs);
         scalarProduct_ = ScalarProductChooser::construct(*matrices_->parallelInformation().coarsest());
 
-        solver_ = new CGSolver<X>(const_cast<M&>(*matrices_->matrices().coarsest()),
-                                  *scalarProduct_,
-                                  *coarseSmoother_, 1E-12, 10000, 0);
+        solver_ = new BiCGSTABSolver<X>(const_cast<M&>(*matrices_->matrices().coarsest()),
+                                        *scalarProduct_,
+                                        *coarseSmoother_, 1E-12, 10000, 0);
       }
     }
 
