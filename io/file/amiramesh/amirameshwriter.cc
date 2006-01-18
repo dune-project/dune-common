@@ -24,7 +24,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   // hexagrid format.
   bool containsOnlySimplices =
     (leafIndexSet.geomTypes(0).size()==1)
-    && (leafIndexSet.geomTypes(0)[0] == simplex);
+    && (leafIndexSet.geomTypes(0)[0].isSimplex());
 
   int maxVerticesPerElement = (dim==3)
                               ? ((containsOnlySimplices) ? 4 : 8)
@@ -112,42 +112,35 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     } else {
 
       for (int i=0; eIt!=eEndIt; ++eIt, i++) {
-        switch (eIt->geometry().type()) {
 
-        case cube : {        // Hexahedron
+        NewGeometryType type = eIt->geometry().type();
+
+        if (type.isHexahedron()) {
 
           const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
           for (int j=0; j<8; j++)
             dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, hexaReordering[j])+1;
-          break;
-        }
 
-        case prism : {
+        } else if (type.isPrism()) {
+
           const int prismReordering[8] = {0, 1, 1, 2, 3, 4, 4, 5};
           for (int j=0; j<8; j++)
             dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, prismReordering[j])+1;
 
-          break;
-        }
+        } else if (type.isPyramid()) {
 
-        case pyramid : {
           const int pyramidReordering[8] = {0, 1, 2, 3, 4, 4, 4, 4};
           for (int j=0; j<8; j++)
             dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, pyramidReordering[j])+1;
 
-          break;
-        }
-
-        case simplex : {        // tetrahedron
+        } else if (type.isTetrahedron()) {
 
           const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
           for (int j=0; j<8; j++)
             dPtr[8*i + j] = leafIndexSet.template subIndex<dim>(*eIt, tetraReordering[j])+1;
 
-          break;
-        }
+        } else {
 
-        default :
           DUNE_THROW(NotImplemented, "Unknown element type encountered");
 
         }
@@ -159,15 +152,17 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   } else {
 
     for (int i=0; eIt!=eEndIt; ++eIt, i++) {
-      switch (eIt->geometry().type()) {
 
-      case cube :
+      NewGeometryType type = eIt->geometry().type();
+
+      if (type.isQuadrilateral()) {
+
         dPtr[i*4+0] = leafIndexSet.template subIndex<dim>(*eIt, 0)+1;
         dPtr[i*4+1] = leafIndexSet.template subIndex<dim>(*eIt, 1)+1;
         dPtr[i*4+2] = leafIndexSet.template subIndex<dim>(*eIt, 3)+1;
         dPtr[i*4+3] = leafIndexSet.template subIndex<dim>(*eIt, 2)+1;
-        break;
-      case simplex :
+
+      } else if (type.isTriangle()) {
 
         for (int j=0; j<3; j++)
           dPtr[i*maxVerticesPerElement+j] = leafIndexSet.template subIndex<dim>(*eIt, j)+1;
@@ -176,9 +171,10 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
         // to fill up the remaining slots
         if (maxVerticesPerElement==4)
           dPtr[i*4+3] = dPtr[i*4+2];
-        break;
-      default :
-        DUNE_THROW(IOError, "Elements of type " << eIt->geometry().type()
+
+      } else {
+
+        DUNE_THROW(IOError, "Elements of type " << type
                                                 << " cannot be written to 2d AmiraMesh files!");
       }
 
@@ -220,7 +216,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
   // hexagrid format.
   bool containsOnlySimplices =
     (levelIndexSet.geomTypes(0).size()==1)
-    && (levelIndexSet.geomTypes(0)[0] == simplex);
+    && (levelIndexSet.geomTypes(0)[0].isSimplex());
 
   int maxVerticesPerElement = (dim==3)
                               ? ((containsOnlySimplices) ? 4 : 8)
@@ -310,43 +306,35 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
     } else {
 
       for (int i=0; eIt!=eEndIt; ++eIt, i++) {
-        switch (eIt->geometry().type()) {
 
-        case cube : {        // Hexahedron
+        NewGeometryType eType = eIt->geometry().type();
+
+        if (eType.isHexahedron()) {
 
           const int hexaReordering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
           for (int j=0; j<8; j++)
             dPtr[8*i + j] = levelIndexSet.template subIndex<dim>(*eIt, hexaReordering[j])+1;
 
-          break;
-        }
+        } else if (eType.isPrism()) {
 
-        case prism : {
           const int prismReordering[8] = {0, 1, 1, 2, 3, 4, 4, 5};
           for (int j=0; j<8; j++)
             dPtr[8*i + j] = levelIndexSet.template subIndex<dim>(*eIt, prismReordering[j])+1;
 
-          break;
-        }
+        } else if (eType.isPyramid()) {
 
-        case pyramid : {
           const int pyramidReordering[8] = {0, 1, 2, 3, 4, 4, 4, 4};
           for (int j=0; j<8; j++)
             dPtr[8*i + j] = levelIndexSet.template subIndex<dim>(*eIt, pyramidReordering[j])+1;
 
-          break;
-        }
-
-        case simplex : {        // tetrahedron
+        } else if (eType.isTetrahedron()) {
 
           const int tetraReordering[8] = {0, 1, 2, 2, 3, 3, 3, 3};
           for (int j=0; j<8; j++)
             dPtr[8*i + j] = levelIndexSet.template subIndex<dim>(*eIt, tetraReordering[j])+1;
 
-          break;
-        }
+        } else {
 
-        default :
           DUNE_THROW(NotImplemented, "Unknown element type encountered");
 
         }
@@ -473,8 +461,8 @@ void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const GridType& grid,
   ElementIterator end     = grid.template lend<0>(level);
 
   for (; element!=end; ++element) {
-    if (element->geometry().type() != simplex &&
-        (GridType::dimension!=1 || element->geometry().type() != cube)) {
+    if (!element->geometry().type().isSimplex() &&
+        (GridType::dimension!=1 || !element->geometry().type().isCube())) {
       containsOnlyTetrahedra = false;
       break;
     }
