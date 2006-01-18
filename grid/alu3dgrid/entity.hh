@@ -51,8 +51,6 @@ namespace Dune {
     typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::ImplementationType IMPLElementType;
     typedef typename ALU3dImplTraits<GridImp::elementType>::template Codim<cd>::InterfaceType MyHElementType;
 
-    friend class ALU3dGridEntityPointer < cd, GridImp >;
-    friend class ALU3dGridEntityPointerBase < cd, GridImp >;
   public:
 
     // Constructor creating the realEntity
@@ -94,8 +92,8 @@ namespace Dune {
       this->realEntity.setEntity(org.realEntity);
     }
 
-  private:
     // return reference to internal item
+    // should be private, but the list of friends would be to long
     const MyHElementType & getItem () const { return this->realEntity.getItem(); }
   };
 
