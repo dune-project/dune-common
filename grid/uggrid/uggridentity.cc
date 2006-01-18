@@ -125,7 +125,7 @@ inline int UGGridEntity<0,dim,GridImp>::count() const
 template <int dim, class GridImp>
 inline int UGGridEntity<0, dim, GridImp>::renumberVertex(int i) const {
 
-  if (geometry().type()==cube) {
+  if (geometry().type().isCube()) {
 
     // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
     // The following two lines do the transformation
@@ -142,7 +142,7 @@ inline int UGGridEntity<0, dim, GridImp>::renumberVertex(int i) const {
 template <int dim, class GridImp>
 inline int UGGridEntity<0, dim, GridImp>::renumberFace(int i) const {
 
-  if (geometry().type()==cube) {
+  if (geometry().type().isCube()) {
 
     // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
     // The following two lines do the transformation
@@ -152,8 +152,9 @@ inline int UGGridEntity<0, dim, GridImp>::renumberFace(int i) const {
     return renumbering[i];
 
   }
-  if (geometry().type()==simplex) {
+  if (geometry().type().isSimplex()) {
 
+    /** \todo Check this */
     // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
     // The following two lines do the transformation
     // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the

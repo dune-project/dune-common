@@ -923,13 +923,13 @@ namespace Dune {
     }
 
     //! get number of entities of given codim, type and level (the level is known to the object)
-    int size (int codim, GeometryType type) const
+    int size (int codim, NewGeometryType type) const
     {
       return grid.size(level,codim);
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<GeometryType>& geomTypes (int codim) const
+    const std::vector<NewGeometryType>& geomTypes (int codim) const
     {
       return mytypes;
     }
@@ -951,7 +951,7 @@ namespace Dune {
   private:
     const GridImp& grid;
     int level;
-    std::vector<GeometryType> mytypes;
+    std::vector<NewGeometryType> mytypes;
   };
 
   // Leaf Index Set
@@ -1006,13 +1006,13 @@ namespace Dune {
     }
 
     //! get number of entities of given codim, type and level (the level is known to the object)
-    int size (int codim, GeometryType type) const
+    int size (int codim, NewGeometryType type) const
     {
       return grid.size(grid.maxLevel(),codim);
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<GeometryType>& geomTypes (int codim) const
+    const std::vector<NewGeometryType>& geomTypes (int codim) const
     {
       return mytypes;
     }
@@ -1033,7 +1033,7 @@ namespace Dune {
 
   private:
     const GridImp& grid;
-    std::vector<GeometryType> mytypes;
+    std::vector<NewGeometryType> mytypes;
   };
 
 
@@ -1258,7 +1258,7 @@ namespace Dune {
     }
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const
+    int size (int level, int codim, NewGeometryType type) const
     {
       if (type==cube) return size(level,codim);
       switch (dim-codim)
@@ -1283,7 +1283,7 @@ namespace Dune {
     }
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const
+    int size (int codim, NewGeometryType type) const
     {
       return size(maxLevel(),codim,type);
     }

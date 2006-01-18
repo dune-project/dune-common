@@ -422,20 +422,23 @@ inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
 #ifndef ModelP
   if(codim == 0)
   {
-    return this->levelIndexSet(level).size(0,simplex)+this->levelIndexSet(level).size(0,cube)
-           +this->levelIndexSet(level).size(0,pyramid)+this->levelIndexSet(level).size(0,prism);
+    return levelIndexSet(level).size(0,NewGeometryType(NewGeometryType::simplex,dim))
+           + levelIndexSet(level).size(0,NewGeometryType(NewGeometryType::cube,dim))
+           + levelIndexSet(level).size(0,NewGeometryType(NewGeometryType::pyramid,dim))
+           + levelIndexSet(level).size(0,NewGeometryType(NewGeometryType::prism,dim));
   }
   if(codim == dim)
   {
-    return this->levelIndexSet(level).size(dim,cube);
+    return this->levelIndexSet(level).size(dim,NewGeometryType(NewGeometryType::cube,0));
   }
   if (codim == dim-1)
   {
-    return this->levelIndexSet(level).size(dim-1,cube);
+    return this->levelIndexSet(level).size(dim-1,NewGeometryType(NewGeometryType::cube,1));
   }
   if (codim == 1)
   {
-    return this->levelIndexSet(level).size(1,cube)+this->levelIndexSet(level).size(1,simplex);
+    return levelIndexSet(level).size(1,NewGeometryType(NewGeometryType::cube,dim-1))
+           + levelIndexSet(level).size(1,NewGeometryType(NewGeometryType::simplex,dim-1));
   }
   DUNE_THROW(GridError, "UGGrid<" << dim << ", " << dimworld
                                   << ">::size(int level, int codim) is only implemented"
@@ -631,49 +634,33 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
   //   Change the input face number from Dune numbering to UG numbering
   // //////////////////////////////////////////////////////////////////////
 
-  switch (e->geometry().type()) {
-  case cube :
+  NewGeometryType eType = e->geometry().type();
+  if (eType.isHexahedron()) {
 
-    if (dim==3) {
-      // Dune numbers the faces of a hexahedron differently than UG.
-      // The following two lines do the transformation
-      const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-      elementSide = renumbering[elementSide];
-    } else {      // Quadrilateral
-      const int renumbering[4] = {3, 1, 0, 2};
-      elementSide = renumbering[elementSide];
-    }
-    break;
+    // Dune numbers the faces of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+    elementSide = renumbering[elementSide];
 
-  case simplex :
+  } else if (eType.isQuadrilateral()) {
 
-    if (dim==3) {      // Tetrahedron
+    const int renumbering[4] = {3, 1, 0, 2};
+    elementSide = renumbering[elementSide];
 
-      // Dune numbers the faces of a tetrahedron differently than UG.
-      // The following two lines do the transformation
-      const int renumbering[4] = {1, 2, 3, 0};
-      elementSide = renumbering[elementSide];
+  } else if (eType.isTetrahedron()) {
 
-    } else {          // Triangle
+    // Dune numbers the faces of a tetrahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[4] = {1, 2, 3, 0};
+    elementSide = renumbering[elementSide];
 
-      // Dune numbers the faces of a triangle differently from UG.
-      // The following two lines do the transformation
-      const int renumbering[3] = {1, 2, 0};
-      elementSide = renumbering[elementSide];
+  } else if (eType.isTriangle()) {
 
-    }
+    // Dune numbers the faces of a triangle differently from UG.
+    // The following two lines do the transformation
+    const int renumbering[3] = {1, 2, 0};
+    elementSide = renumbering[elementSide];
 
-    break;
-
-  case vertex :
-  case prism :
-  case pyramid :
-    // Do nothing
-    break;
-
-  default :
-    DUNE_THROW(NotImplemented, "Unknown element type '"
-               << e->geometry().type() << "'found!");
   }
 
   // ///////////////

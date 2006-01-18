@@ -51,7 +51,7 @@ namespace Dune {
     if(en.template count<codim>() != refElem.size(0,0,codim))
     {
       std::cerr << "entity index = " << lset.index(en)
-                << ", type = " << GeometryName(type)
+                << ", type = " << type
                 << std::endl
                 << "codim = " << codim
                 << std::endl
@@ -65,7 +65,7 @@ namespace Dune {
 
     for(int subEntity = 0; subEntity < refElem.size(0,0,codim); subEntity++)
     {
-      typedef std::pair < int , GeometryType > SubEntityKeyType;
+      typedef std::pair < int , NewGeometryType > SubEntityKeyType;
       {
         int numSubEntities = refElem.size(subEntity,codim,dim);
         // every entity have at least one vertex
@@ -257,7 +257,7 @@ namespace Dune {
 
     //******************************************************************
 
-    typedef std::pair < int , GeometryType > SubEntityKeyType;
+    typedef std::pair < int , NewGeometryType > SubEntityKeyType;
     typedef std::map < int , std::pair<int,int> > subEntitymapType;
     std::map < SubEntityKeyType , std::vector<int> > subEntities;
     std::map < std::vector<int> , SubEntityKeyType > vertices;
@@ -289,7 +289,7 @@ namespace Dune {
       assert( vertexCoordsMap.size() == count );
 
       // check whether size of vertices of set equals all found vertices
-      assert( count == (unsigned int)lset.size(dim,vertex) );
+      assert( count == (unsigned int)lset.size(dim,Dune::NewGeometryType(0)) );
     }
 
     {
