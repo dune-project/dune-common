@@ -172,6 +172,13 @@ namespace Dune {
     return alu2duneEdge_[index];
   }
 
+  template <>
+  int ElementTopologyMapping<tetra>::dune2aluVertex(int index) {
+    assert(index >= 0 && index < numVertices);
+    assert( dune2aluVertex_[index] == index );
+    return index;
+  }
+
   template <ALU3dGridElementType type>
   int ElementTopologyMapping<type>::dune2aluVertex(int index) {
     assert(index >= 0 && index < numVertices);
