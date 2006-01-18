@@ -38,6 +38,9 @@ namespace Dune {
        @param geometryType The geometry type of the element to refine
        @param CoordType    The C++ type of the coordinates
        @param coerceTo     The geometry type of the subelements
+       @param dim          The dimension of the refinement if any
+                           "cube" or "simplex" geometry types are
+                           used.  Ignored otherwise.
 
        Each @ref Refinement implementation has to define one or more
        specialisations of this struct to declare what it implements.
@@ -48,13 +51,13 @@ namespace Dune {
        e.g.:
        @code
        template<class CoordType>
-       struct Traits<circle, CoordType, quadrilateral>
+       struct Traits<circle, CoordType, quadrilateral, 2>
        {
        typedef SquaringTheCircle::Refinement Imp;
        };
        @endcode
      */
-    template<GeometryType geometryType, class CoordType, GeometryType coerceTo>
+    template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
     struct Traits
     {
       //! The implementation this specialisation maps to
@@ -79,6 +82,9 @@ namespace Dune {
      @param geometryType The geometry type of the element to refine
      @param CoordType    The C++ type of the coordinates
      @param coerceTo     The geometry type of the subelements
+     @param dim          The dimension of the refinement if any "cube"
+                         or "simplex" geometry types are used.
+                         Ignored otherwise.
 
      @par Member Structs:
 

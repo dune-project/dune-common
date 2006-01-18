@@ -68,7 +68,7 @@
    <!--===================================-->
 
    @code
-   template<GeometryType geometryType, class CoordType, GeometryType coerceTo>
+   template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
    class Refinement
    {
    public:
@@ -99,7 +99,7 @@
    support some additional methods:
 
    @code
-   template<GeometryType geometryType, class CoordType, GeometryType coerceTo>
+   template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
    class VertexIterator
    {
    public:
@@ -109,7 +109,7 @@
     Refinement::CoordVector coords() const;
    }
 
-   template<GeometryType geometryType, class CoordType, GeometryType coerceTo>
+   template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
    class ElementIterator
    {
    public:
@@ -135,7 +135,9 @@
    //#include <dune/grid/common/refinement/hcube.cc>
 
    // Get yourself the Refinement you need:
-   typedef Refinement<quadrilateral, SGrid<2, 2>::ctype, quadrilateral> MyRefinement;
+   typedef Refinement<cube, SGrid<2, 2>::ctype, cube, 2> MyRefinement;
+   // You can still use the old geometryTypes (no need for dim in this case)
+   //typedef Refinement<quadrilateral, SGrid<2, 2>::ctype, quadrilateral> MyRefinement;
 
    int main()
    {
@@ -192,16 +194,35 @@
     RefinementImp::Traits.  It should look like this:
     @code
    namespace Dune::RefinementImp {
+    // the "dim" template parameter is ignored, since the dimension can be infered
+    template<class CoordType, int dim>
+    struct Traits<circle, CoordType, quadrilateral, dim> {
+      typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
+    };
+
+    // we're only implementing this for dim=2
     template<class CoordType>
-    struct Traits<circle, CoordType, quadrilateral> {
+    struct Traits<sphere, CoordType, cube, 2> {
+      typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
+    };
+
+    template<class CoordType>
+    struct Traits<circle, CoordType, cube, 2> {
+      typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
+    };
+
+    template<class CoordType>
+    struct Traits<sphere, CoordType, quadrilateral, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
    }
     @endcode
     If you implement a template class, you have to specialise struct
     RefinementImp::Traits for every possible combination of
-    geometryType and coerceTo that your implementation supports.  If
-    you know a better way, feel free to tell me.
+    geometryType and coerceTo that your implementation supports.  It
+    gets easier with the new geometry types "cube" and "simplex", but
+    as long as you want to support the old types there is no way
+    around this.
    - #include "refinement/squaringthecircle.cc" from refinement.hh.
 
    This is enough to integrate your implementation into the Refinement
