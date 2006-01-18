@@ -472,8 +472,8 @@ namespace Dune
     T sum (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      //int rv=MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-      //			GenericSum_MPI_Op<T>::get(),communicator);
+      int rv=MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
+                           GenericSum_MPI_Op<T>::get(),communicator);
       return out;
     }
 
