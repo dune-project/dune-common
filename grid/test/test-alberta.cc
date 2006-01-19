@@ -17,6 +17,7 @@
 #include <dune/grid/albertagrid.hh>
 
 #include "gridcheck.cc"
+#include "checkgeometryinfather.cc"
 
 template <class GridType >
 void markOne ( GridType & grid , int num , int ref )
@@ -68,6 +69,8 @@ int main () {
         markOne(grid,0,DUNE_PROBLEM_DIM);
         gridcheck(grid);
       }
+
+      checkGeometryInFather(grid);
     };
 
   } catch (Dune::Exception &e) {
