@@ -1260,23 +1260,23 @@ namespace Dune {
     //! number of entities per level, codim and geometry type in this process
     int size (int level, int codim, NewGeometryType type) const
     {
-      if (type==cube) return size(level,codim);
+      if (type.isCube()) return size(level,codim);
       switch (dim-codim)
       {
       case 0 :
-        if (type==vertex) return size(level,codim);
+        if (type.isVertex()) return size(level,codim);
         break;
 
       case 1 :
-        if (type==line) return size(level,codim);
+        if (type.isLine()) return size(level,codim);
         break;
 
       case 2 :
-        if (type==quadrilateral) return size(level,codim);
+        if (type.isQuadrilateral()) return size(level,codim);
         break;
 
       case 3 :
-        if (type==hexahedron) return size(level,codim);
+        if (type.isHexahedron()) return size(level,codim);
         break;
       }
       return 0;
