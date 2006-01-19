@@ -9,6 +9,7 @@
 #include <dune/grid/sgrid.hh>
 
 #include "gridcheck.cc"
+#include "checkgeometryinfather.cc"
 
 int main () {
   try {
@@ -21,12 +22,18 @@ int main () {
       std::cout << std::endl << "SGrid<2,2>" << std::endl << std::endl;
       Dune::SGrid<2,2> g1(n, h);
       gridcheck(g1);
+
+      g1.globalRefine(1);
+      checkGeometryInFather(g1);
     };
 
     {
       std::cout << std::endl << "SGrid<3,3>" << std::endl << std::endl;
       Dune::SGrid<3,3> g2(n, h);
       gridcheck(g2);
+
+      g2.globalRefine(1);
+      checkGeometryInFather(g2);
     };
 
   } catch (Dune::Exception &e) {

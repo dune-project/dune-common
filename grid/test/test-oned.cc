@@ -9,6 +9,7 @@
 #include <dune/grid/onedgrid.hh>
 
 #include "gridcheck.cc"
+#include "checkgeometryinfather.cc"
 
 template <class GridType >
 void markOne ( GridType & grid , int num , int ref )
@@ -54,6 +55,8 @@ int main () try
 
     grid.globalRefine(1);
     gridcheck(grid);
+
+    checkGeometryInFather(grid);
   };
 
   return 0;

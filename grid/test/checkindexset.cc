@@ -12,6 +12,7 @@
 
 
 #include <map>
+#include <set>
 #include <vector>
 #include <limits>
 
@@ -197,6 +198,27 @@ namespace Dune {
     typedef typename GridType :: template Codim<0>:: Entity EntityCodim0Type;
     typedef typename EntityCodim0Type :: IntersectionIterator IntersectionIterator;
 
+    // ////////////////////////////////////////////////////////////////
+    //   Check whether geomTypes() returns correct result
+    // ////////////////////////////////////////////////////////////////
+    typedef typename IndexSetType :: template Codim<codim>::
+    template Partition<All_Partition> :: Iterator IteratorType;
+
+    IteratorType endit  = lset.template end<codim,All_Partition>   ();
+    IteratorType it = lset.template begin<codim,All_Partition> ();
+
+    std::set<NewGeometryType> geometryTypes;
+
+    for (; it!=endit; ++it)
+      geometryTypes.insert(it->geometry().type());
+
+    // Check whether all entries in the official geometry types list are contained in our self-computed one
+    for (int i=0; i<lset.geomTypes(codim).size(); i++)
+      assert(geometryTypes.find(lset.geomTypes(codim)[i])!=geometryTypes.end());
+
+    // And vice versa
+
+    // ... still missing
 
     //*****************************************************************
     // check size of index set
