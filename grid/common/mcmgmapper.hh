@@ -81,7 +81,7 @@ namespace Dune
     int map (const typename G::Traits::template Codim<0>::Entity& e, int i) const
     {
 
-      GeometryType gt=ReferenceElements<double,G::dimension>::general(e.geometry().type()).type(i,cc);
+      NewGeometryType gt=ReferenceElements<double,G::dimension>::general(e.geometry().type()).type(i,cc);
       return is.template subIndex<cc>(e,i) + offset[cc].find(gt)->second;
     }
 
@@ -161,7 +161,7 @@ namespace Dune
     int n;     // number of data elements required
     const G& g;
     const IS& is;
-    std::map<GeometryType,int> offset[G::dimension+1];     // for each codim provide a map with all geometry types
+    std::map<NewGeometryType,int> offset[G::dimension+1];     // for each codim provide a map with all geometry types
   };
 
 

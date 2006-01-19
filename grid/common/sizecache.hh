@@ -6,7 +6,7 @@
 namespace Dune {
 
 
-  //! oranizes the caching of sizes for one grid and one GeometryType
+  //! organizes the caching of sizes for one grid and one GeometryType
   template <class GridImp, GeometryType geomType >
   class SingleTypeSizeCache
   {
@@ -127,9 +127,9 @@ namespace Dune {
     }
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const
+    int size (int level, int codim, NewGeometryType type) const
     {
-      if(type != geomType) return 0;
+      if((GeometryType)type != geomType) return 0;
       return size(level,codim);
     }
 
@@ -147,9 +147,9 @@ namespace Dune {
     };
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const
+    int size (int codim, NewGeometryType type) const
     {
-      if(type != geomType) return 0;
+      if((GeometryType)type != geomType) return 0;
       return size(codim);
     }
 
@@ -177,10 +177,10 @@ namespace Dune {
     // counts entities with given type for given iterator
     template <class IteratorType>
     int countElements(IteratorType & it, const IteratorType & end ,
-                      GeometryType type) const
+                      NewGeometryType type) const
     {
       int count = 0;
-      if((type == simplex) || (type == cube))
+      if((type.isSimplex()) || (type.isCube()))
       {
         for( ; it != end; ++it )
         {

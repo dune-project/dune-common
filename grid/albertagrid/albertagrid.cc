@@ -4033,17 +4033,15 @@ namespace Dune
   }
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::size (int level, int codim, GeometryType type) const
+  inline int AlbertaGrid < dim, dimworld >::size (int level, int codim, NewGeometryType type) const
   {
-    if( type != simplex ) return 0;
-    return this->size(level,codim);
+    return type.isSimplex() ? this->size(level,codim) : 0;
   }
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::size (int codim, GeometryType type) const
+  inline int AlbertaGrid < dim, dimworld >::size (int codim, NewGeometryType type) const
   {
-    if( type != simplex ) return 0;
-    return this->size(codim);
+    return type.isSimplex() ? this->size(codim) : 0;
   }
 
   template < int dim, int dimworld >
