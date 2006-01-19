@@ -204,7 +204,7 @@ namespace Dune
     }
 
     //! return type of element
-    virtual GeometryType type () const
+    virtual NewGeometryType type () const
     {
       return Imp::type();
     }
@@ -235,10 +235,9 @@ namespace Dune
     //! type of objects in the container
     typedef LagrangeShapeFunctionSet<C,T,d> value_type;
 
-    const value_type& operator() (GeometryType type, int order) const
+    const value_type& operator() (NewGeometryType type, int order) const
     {
-      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
-           (type==hexahedron) )
+      if ( type.isCube() )
       {
         if (order==0) return wrappedp0cube;
         if (order==1) return wrappedp1cube;
@@ -246,7 +245,7 @@ namespace Dune
         DUNE_THROW(RangeError, "order not available for cubes");
       }
 
-      if ( (type==simplex) || (type==triangle) || (type==tetrahedron) )
+      if ( type.isSimplex() )
       {
         if (order==0) return wrappedp0simplex;
         if (order==1) return wrappedp1simplex;
@@ -254,12 +253,12 @@ namespace Dune
         DUNE_THROW(RangeError, "order not available for simplex");
       }
 
-      if ( type==pyramid)
+      if ( type.isPyramid() )
       {
         DUNE_THROW(RangeError, "No pyramid for this dimension");
       }
 
-      if ( type==prism)
+      if ( type.isPrism() )
       {
         DUNE_THROW(RangeError, "No prism for this dimension ");
       }
@@ -318,10 +317,9 @@ namespace Dune
     //! type of objects in the container
     typedef LagrangeShapeFunctionSet<C,T,3> value_type;
 
-    const value_type& operator() (GeometryType type, int order) const
+    const value_type& operator() (NewGeometryType type, int order) const
     {
-      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
-           (type==hexahedron) )
+      if ( type.isCube() )
       {
         if (order==0) return wrappedp0cube;
         if (order==1) return wrappedp1cube;
@@ -329,7 +327,7 @@ namespace Dune
         DUNE_THROW(RangeError, "order not available for cubes");
       }
 
-      if ( (type==simplex) || (type==triangle) || (type==tetrahedron) )
+      if ( type.isSimplex() )
       {
         if (order==0) return wrappedp0simplex;
         if (order==1) return wrappedp1simplex;
@@ -337,14 +335,14 @@ namespace Dune
         DUNE_THROW(RangeError, "order not available for simplex");
       }
 
-      if (type==pyramid)
+      if (type.isPyramid() )
       {
         if (order==0) return wrappedp0pyramid;
         if (order==1) return wrappedp1pyramid;
         DUNE_THROW(RangeError, "order not available for pyramid");
       }
 
-      if (type==prism)
+      if (type.isPrism())
       {
         if (order==0) return wrappedp0prism;
         if (order==1) return wrappedp1prism;

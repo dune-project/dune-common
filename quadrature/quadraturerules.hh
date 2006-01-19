@@ -62,7 +62,7 @@ namespace Dune {
     virtual int order () const = 0;
 
     //! return type of element
-    virtual GeometryType type () const = 0;
+    virtual NewGeometryType type () const = 0;
     virtual ~QuadratureRule(){}
 
   };
@@ -313,13 +313,13 @@ namespace Dune {
     }
 
     //! return type of element
-    GeometryType type () const
+    NewGeometryType type () const
     {
       return hexahedron;
     }
 
     //! appear as your own container
-    const CubeQuadratureRule& getelement (GeometryType type, int p)
+    const CubeQuadratureRule& getelement (NewGeometryType type, int p)
     {
       return *this;
     }
@@ -404,13 +404,13 @@ namespace Dune {
     }
 
     //! return type of element
-    GeometryType type () const
+    NewGeometryType type () const
     {
       return line;
     }
 
     //! appear as your own container
-    const SimplexQuadratureRule<ct,dim>& getelement (GeometryType type, int p)
+    const SimplexQuadratureRule<ct,dim>& getelement (NewGeometryType type, int p)
     {
       return *this;
     }
@@ -1137,13 +1137,13 @@ namespace Dune {
     }
 
     //! return type of element
-    GeometryType type () const
+    NewGeometryType type () const
     {
       return triangle;
     }
 
     //! appear as your own container
-    const SimplexQuadratureRule<ct,2>& getelement (GeometryType type, int p)
+    const SimplexQuadratureRule<ct,2>& getelement (NewGeometryType type, int p)
     {
       return *this;
     }
@@ -1334,13 +1334,13 @@ namespace Dune {
     }
 
     //! return type of element
-    GeometryType type () const
+    NewGeometryType type () const
     {
       return tetrahedron;
     }
 
     //! appear as your own container
-    const SimplexQuadratureRule<ct,d>& getelement (GeometryType type, int p)
+    const SimplexQuadratureRule<ct,d>& getelement (NewGeometryType type, int p)
     {
       return *this;
     }
@@ -1521,13 +1521,13 @@ namespace Dune {
     }
 
     //! return type of element
-    GeometryType type () const
+    NewGeometryType type () const
     {
       return prism;
     }
 
     //! appear as your own container
-    const PrismQuadratureRule<ct,3>& getelement (GeometryType type, int p)
+    const PrismQuadratureRule<ct,3>& getelement (NewGeometryType type, int p)
     {
       return *this;
     }
@@ -1678,13 +1678,13 @@ namespace Dune {
     }
 
     //! return type of element
-    GeometryType type () const
+    NewGeometryType type () const
     {
       return pyramid;
     }
 
     //! appear as your own container
-    const PyramidQuadratureRule<ct,3>& getelement (GeometryType type, int p)
+    const PyramidQuadratureRule<ct,3>& getelement (NewGeometryType type, int p)
     {
       return *this;
     }
@@ -1782,17 +1782,16 @@ namespace Dune {
 
 
     //! select the appropriate rule
-    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
+    const QuadratureRule<ct,dim>& operator() (NewGeometryType type, int p)
     {
-      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
-           (type==hexahedron) )
+      if (type.isCube())
       {
 
         if (p>=1 && p<=cube_maxorder)
           return *(rules[cube_order_to_index[p]]);
       }
 
-      else if( (type==simplex) || (type==triangle) || (type==tetrahedron))
+      else if(type.isSimplex())
       {
         if(dim>=2)
         {
@@ -1940,9 +1939,9 @@ namespace Dune {
 
 
     //! select the appropriate rule
-    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
+    const QuadratureRule<ct,dim>& operator() (NewGeometryType type, int p)
     {
-      if ( (type==cube) || (type==line) ||(type==simplex) )
+      if ( type.isLine() )
       {
 
         if (p>=1 && p<=cube_maxorder)
@@ -2172,17 +2171,16 @@ namespace Dune {
 
 
     //! select the appropriate rule
-    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
+    const QuadratureRule<ct,dim>& operator() (NewGeometryType type, int p)
     {
-      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
-           (type==hexahedron) )
+      if (type.isCube())
       {
 
         if (p>=1 && p<=cube_maxorder)
           return *(rules[cube_order_to_index[p]]);
       }
 
-      else if( (type==simplex) || (type==tetrahedron))
+      else if (type.isSimplex())
       {
 
         {
@@ -2191,12 +2189,12 @@ namespace Dune {
         }
 
       }
-      else if (type==prism)
+      else if (type.isPrism())
       {
         if(p>=1 && p<=prism_maxorder)
           return *(rules[prism_order_to_index[p]]);
       }
-      else if(type==pyramid)
+      else if(type.isPyramid())
       {
         if(p>=1 && p<=pyramid_maxorder)
           return *(rules[pyramid_order_to_index[p]]);
