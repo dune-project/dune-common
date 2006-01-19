@@ -23,7 +23,7 @@ void Dune::AlbertaWriter<GridType>::writeGrid(const GridType& grid,
   const IndexSetType& indexSet = grid.leafIndexSet();
 
   // Make sure the grid contains only tetrahedra.
-  if (indexSet.geomTypes(0).size()!=1 || indexSet.geomTypes(0)[0] != simplex)
+  if (indexSet.geomTypes(0).size()!=1 || !indexSet.geomTypes(0)[0].isSimplex())
     DUNE_THROW(IOError, "You can only write simplicial grids in Alberta format!");
 
   // ////////////////////////////////////////////////////
