@@ -214,7 +214,19 @@ namespace Dune {
 
     // Check whether all entries in the official geometry types list are contained in our self-computed one
     for (int i=0; i<lset.geomTypes(codim).size(); i++)
-      assert(geometryTypes.find(lset.geomTypes(codim)[i])!=geometryTypes.end());
+      if (geometryTypes.find(lset.geomTypes(codim)[i])==geometryTypes.end()) {
+        std::cerr << "There is a mismatch in the list of geometry types of codim " << codim << "." << std::endl;
+        std::cerr << "Geometry types present in the grid are:" << std::endl;
+        for (std::set<NewGeometryType>::iterator it = geometryTypes.begin(); it!=geometryTypes.end(); ++it)
+          std::cerr << "  " << *it << std::endl;
+
+        std::cerr << std::endl << "but the method geomTypes() returned:" << std::endl;
+        for (int j=0; j<lset.geomTypes(codim).size(); j++)
+          std::cerr << "  " << lset.geomTypes(codim)[j] << std::endl;
+
+        DUNE_THROW(GridError, "!");
+      }
+
 
     // And vice versa
 
