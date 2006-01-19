@@ -216,8 +216,8 @@ namespace Dune {
   class LevelDGFunction : public DGFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,o>
   {
   public:
-    LevelP1Function (const G & grid, int level)
-      : P1Function<G,RT,typename G::template Codim<0>::LevelIndexSet,o>(grid,grid.levelIndexSet(level))
+    LevelDGFunction (const G& grid, int level)
+      : DGFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,o>(grid,grid.levelIndexSet(level))
     {}
   };
 
