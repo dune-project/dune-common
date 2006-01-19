@@ -7,7 +7,7 @@ fi
 
 # start test and abort on fail
 set -e
-mpirun -np 1 test-yaspgrid
+mpirun -np 1 test-fem-yaspgrid
 set +e
 
 # possibly stop LAM again
