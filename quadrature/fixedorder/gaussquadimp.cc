@@ -5,6 +5,7 @@
 
 #include <new>
 #include <iostream>
+#include <dune/common/fvector.hh>
 
 namespace Dune {
 
