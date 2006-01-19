@@ -81,7 +81,6 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const FunctionSpaceType& coars
           FieldVector<int, 0> diffVariable;
           coarseBaseSet.evaluate(i, diffVariable, local, value);
 
-          //std::cout << "value: " << value << "\n";
           if (value[0] > 0.001)
             indices.add(globalFine, globalCoarse);
 
@@ -217,21 +216,21 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const GridType& grid, int cL, 
       if (fIt->level()==cIt->level())
         continue;
 
+      const typename EntityType::Geometry& fGeometryInFather = fIt->geometryInFather();
+
       const LagrangeShapeFunctionSet<double, double, dim>& fineBaseSet
         = Dune::LagrangeShapeFunctions<double, double, dim>::general(fIt->geometry().type(), 1);
       const int numFineBaseFct = fineBaseSet.size();
 
       for (int i=0; i<numCoarseBaseFct; i++) {
 
-        //int globalCoarse = cIt->template subIndex<dim>(i);
         int globalCoarse = coarseIndexSet.template subIndex<dim>(*cIt,i);
 
         for (int j=0; j<numFineBaseFct; j++) {
 
-          //int globalFine = fIt->template subIndex<dim>(j);
           int globalFine = fineIndexSet.template subIndex<dim>(*fIt,j);
 
-          FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
+          FieldVector<double, dim> local = fGeometryInFather.global(fineBaseSet[j].position());
 
           // Evaluate coarse grid base function
           double value = coarseBaseSet[i].evaluateFunction(0, local);
@@ -271,24 +270,24 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const GridType& grid, int cL, 
       if (fIt->level()==cIt->level())
         continue;
 
+      const typename EntityType::Geometry& fGeometryInFather = fIt->geometryInFather();
+
       const LagrangeShapeFunctionSet<double, double, dim>& fineBaseSet
         = Dune::LagrangeShapeFunctions<double, double, dim>::general(fIt->geometry().type(), 1);
       const int numFineBaseFct = fineBaseSet.size();
 
       for (int i=0; i<numCoarseBaseFct; i++) {
 
-        //int globalCoarse = cIt->template subIndex<dim>(i);
         int globalCoarse = coarseIndexSet.template subIndex<dim>(*cIt,i);
 
         for (int j=0; j<numFineBaseFct; j++) {
 
-          //int globalFine = fIt->template subIndex<dim>(j);
           int globalFine = fineIndexSet.template subIndex<dim>(*fIt,j);
 
           // Evaluate coarse grid base function at the location of the fine grid dof
 
           // first determine local fine grid dof position
-          FieldVector<double, GridType::dimension> local = cIt->geometry().local(fIt->geometry()[j]);
+          FieldVector<double, dim> local = fGeometryInFather.global(fineBaseSet[j].position());
 
           // Evaluate coarse grid base function
           double value = coarseBaseSet[i].evaluateFunction(0, local);
@@ -302,7 +301,6 @@ void Dune::MultiGridTransfer<DiscFuncType>::setup(const GridType& grid, int cL, 
           if (value > 0.001) {
             MatrixBlock matValue = identity;
             matValue *= value;
-
             mat[globalFine][globalCoarse] = matValue;
           }
 
@@ -643,8 +641,6 @@ galerkinRestrict(const Dune::SparseRowMatrix<double>& fineMat) const
 
       const RowType& row = matrix_[rowIdx];
 
-      //             ColumnIterator tciIt    = const_cast<SparseRowMatrix<double>&>(matrix_).template rbegin(rowIdx);
-      //             ColumnIterator tciEndIt = const_cast<SparseRowMatrix<double>&>(matrix_).template rend(rowIdx);
       ConstColumnIterator tciIt    = row.begin();
       ConstColumnIterator tciEndIt = row.end();
 
@@ -652,8 +648,6 @@ galerkinRestrict(const Dune::SparseRowMatrix<double>& fineMat) const
 
         double fac = mvalue * ((*tciIt)[0][0]);
 
-        //ColumnIterator tcjIt    = const_cast<SparseRowMatrix<double>&>(matrix_).template rbegin(cIt.col());
-        //ColumnIterator tcjEndIt = const_cast<SparseRowMatrix<double>&>(matrix_).template rend(cIt.col());
         ConstColumnIterator tcjIt    = matrix_[cIt.col()].begin();
         ConstColumnIterator tcjEndIt = matrix_[cIt.col()].end();
 
