@@ -223,6 +223,18 @@ namespace Dune {
 
     /*@}*/
 
+    /** \brief Check for equality */
+    bool operator==(const NewGeometryType& other) const {
+      return ( (dim()==0 && other.dim()==0)
+               || (dim()==1 && other.dim()==1)
+               || (dim()==other.dim() && basicType_==other.basicType_) );
+    }
+
+    /** \brief Check for inequality */
+    bool operator!=(const NewGeometryType& other) const {
+      return ! ((*this)==other);
+    }
+
     /** \brief Prints the type to an output stream */
     friend std::ostream& operator<< (std::ostream& s, const NewGeometryType& a)
     {
