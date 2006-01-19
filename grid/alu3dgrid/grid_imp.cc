@@ -170,7 +170,7 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline int ALU3dGrid<dim, dimworld, elType>::size(int level, int codim, GeometryType type) const
+  inline int ALU3dGrid<dim, dimworld, elType>::size(int level, int codim, NewGeometryType type) const
   {
     int mytype = (elType == tetra) ? simplex : cube;
     if(type != mytype) return 0;
@@ -187,7 +187,7 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline int ALU3dGrid<dim, dimworld, elType>::size(int codim, GeometryType type) const
+  inline int ALU3dGrid<dim, dimworld, elType>::size(int codim, NewGeometryType type) const
   {
     int mytype = (elType == tetra) ? simplex : cube;
     if(type != mytype) return 0;

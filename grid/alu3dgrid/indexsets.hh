@@ -78,7 +78,7 @@ namespace Dune {
 
     //! return size of indexset, i.e. maxindex+1
     //! for given type, if type is not exisiting within grid 0 is returned
-    int size ( int codim , GeometryType type ) const
+    int size ( int codim , NewGeometryType type ) const
     {
       assert( grid_.geomTypes(codim).size() == 1 );
       if( type != grid_.geomTypes(codim)[0] ) return 0;
@@ -94,7 +94,7 @@ namespace Dune {
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<GeometryType>& geomTypes (int codim) const
+    const std::vector<NewGeometryType>& geomTypes (int codim) const
     {
       return grid_.geomTypes(codim);
     }
