@@ -9,6 +9,7 @@
 #include <dune/grid/alu3dgrid.hh>
 
 #include "gridcheck.cc"
+#include "checkgeometryinfather.cc"
 
 using namespace Dune;
 
@@ -32,6 +33,8 @@ int main () {
           grid_hexa.globalRefine(1);
           gridcheck(grid_hexa);
         }
+
+        checkGeometryInFather(grid_hexa);
       }
       {
         ALU3dGrid<3,3,tetra>
@@ -42,6 +45,8 @@ int main () {
           grid_tetra.globalRefine(1);
           gridcheck(grid_tetra);
         }
+
+        checkGeometryInFather(grid_tetra);
       }
     };
 
