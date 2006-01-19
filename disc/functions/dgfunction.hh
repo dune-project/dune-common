@@ -20,7 +20,7 @@ namespace Dune {
    * @{
    */
 
-  //! class for P0 finite element functions on a grid
+  //! class for DG finite element functions on a grid
   /*! This class implements the interface of a
         DifferentiableGridFunction with piecewise discontinous elements
         using a monomial basis. It is assumed that all elements use the
@@ -28,6 +28,12 @@ namespace Dune {
 
         In addition to the DifferentiableGridFunction
         interface. Dereferencing delivers the coefficient vector.
+
+     \tparam G The grid
+     \tparam RT The type used for the component values of the function
+     \tparam IS The IndexSet associating the values of the funciton with
+               according entities
+     \tparam o The order of the monomial shapefunctions
    */
   template<class G, class RT, class IS, int o>
   class DGFunction :
@@ -181,6 +187,38 @@ namespace Dune {
 
     // and a dynamically allocated vector
     RepresentationType coeff_;
+  };
+
+  /**
+     \brief DG finite element function on the leaf grid
+
+     \tparam G The grid
+     \tparam RT The type used for the component values of the function
+     \tparam o The order of the monomial shapefunctions
+   */
+  template<class G, class RT, int o>
+  class LeafDGFunction : public DGFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,o>
+  {
+  public:
+    LeafDGFunction (const G& grid)
+      : DGFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,o>(grid,grid.leafIndexSet())
+    {}
+  };
+
+  /**
+     \brief DG finite element function on a given level grid
+
+     \tparam G The grid
+     \tparam RT The type used for the component values of the function
+     \tparam o The order of the monomial shapefunctions
+   */
+  template<class G, class RT, int o>
+  class LevelDGFunction : public DGFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,o>
+  {
+  public:
+    LevelP1Function (const G & grid, int level)
+      : P1Function<G,RT,typename G::template Codim<0>::LevelIndexSet,o>(grid,grid.levelIndexSet(level))
+    {}
   };
 
   /** @} */
