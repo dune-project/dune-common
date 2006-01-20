@@ -268,6 +268,7 @@
  */
 
 #include <vector>
+#include "../../common/geometrytype.hh"
 #include "../../common/fvector.hh"
 #include "refinement.hh"
 
