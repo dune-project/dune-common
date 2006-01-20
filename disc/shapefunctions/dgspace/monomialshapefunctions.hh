@@ -385,8 +385,8 @@ namespace Dune
       }
     }
 
-    /** \copydoc ShapeFunctionSetContainer::operator()(Geometry type, int order) */
-    virtual const ShapeFunctionSet& operator() (GeometryType type, int order) const
+    /** \copydoc ShapeFunctionSetContainer::operator()(NewGeometryType type, int order) */
+    virtual const ShapeFunctionSet& operator() (NewGeometryType type, int order) const
     {
       assert(order <= maxOrder);
       return *shapeFunctionSets[order];

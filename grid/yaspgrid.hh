@@ -1869,7 +1869,7 @@ namespace Dune {
     //! constructor stores reference to a grid and level
     YaspLevelIndexSet (const GridImp& g, int l) : grid(g), level(l)
     {
-      mytypes.push_back(cube);   // contains a single element type;
+      mytypes.push_back(NewGeometryType(NewGeometryType::cube,GridImp::dimension));   // contains a single element type;
     }
 
     //! get index of an entity
@@ -1945,7 +1945,7 @@ namespace Dune {
     //! constructor stores reference to a grid
     YaspLeafIndexSet (const GridImp& g) : grid(g)
     {
-      mytypes.push_back(cube);   // contains a single element type;
+      mytypes.push_back(NewGeometryType(NewGeometryType::cube,GridImp::dimension));   // contains a single element type;
     }
 
     //! get index of an entity
@@ -2306,25 +2306,7 @@ namespace Dune {
     //! number of entities per level, codim and geometry type in this process
     int size (int level, int codim, NewGeometryType type) const
     {
-      if (type==cube) return sizes[level][codim];
-      switch (dim-codim)
-      {
-      case 0 :
-        if (type==vertex) return sizes[level][codim];
-        break;
-
-      case 1 :
-        if (type==line) return sizes[level][codim];
-        break;
-
-      case 2 :
-        if (type==quadrilateral) return sizes[level][codim];
-        break;
-
-      case 3 :
-        if (type==hexahedron) return sizes[level][codim];
-        break;
-      }
+      if (type.isCube()) return sizes[level][codim];
       return 0;
     }
 
