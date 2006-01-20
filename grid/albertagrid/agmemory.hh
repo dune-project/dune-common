@@ -43,8 +43,21 @@ namespace Dune
     template <class GridType>
     ObjectType * getNewObjectEntity(const GridType &grid, int level, bool leafIt);
 
+    //! i.e. return pointer to Entity
+    template <class GridType>
+    ObjectType * getObject(const GridType &grid, int level)
+    {
+      return getNewObjectEntity(grid,level,false);
+    }
+
+    //! i.e. return pointer to Entity with calling copy constructor
+    ObjectType * getObjectCopy(const ObjectType & org);
+
     //! free, move element to stack, returns NULL
     void freeObjectEntity (ObjectType * obj);
+
+    //! free, move element to stack, returns NULL
+    void freeObject (ObjectType * obj) { freeObjectEntity(obj); }
 
   private:
     //! do not copy pointers
@@ -71,6 +84,23 @@ namespace Dune
       ObjectType * obj = objStack_.top();
       objStack_.pop();
       obj->setNewLevel(level,leafIt);
+      return obj;
+    }
+  }
+
+  template <class Object>
+  inline typename AGMemoryProvider<Object>::ObjectType *
+  AGMemoryProvider<Object>::getObjectCopy
+    (const ObjectType & org)
+  {
+    if( objStack_.empty() )
+    {
+      return ( new Object (org));
+    }
+    else
+    {
+      ObjectType * obj = objStack_.top();
+      objStack_.pop();
       return obj;
     }
   }
