@@ -261,7 +261,7 @@ namespace Dune {
   };
 
   /** \brief Prints a NewGeometryType::BasicType to an output stream */
-  std::ostream& operator<< (std::ostream& s, NewGeometryType::BasicType type)
+  inline std::ostream& operator<< (std::ostream& s, NewGeometryType::BasicType type)
   {
     switch (type) {
     case NewGeometryType::simplex : s << "simplex"; break;
