@@ -140,7 +140,7 @@
 
    @code
    template<int dimension, class CoordType>
-   VirtualRefinement<dimension, CoordType> &buildRefinement(GeometryType geometryType, GeometryType coerceTo);
+   VirtualRefinement<dimension, CoordType> &buildRefinement(NewGeometryType geometryType, NewGeometryType coerceTo);
    @endcode
 
    It is expected that you know the dimension and the coordinate type
@@ -207,9 +207,9 @@
     VirtualRefinement<dimension, CoordType>.  This is located in
     refinementvirtual.cc.
    - <strong>Layer 4</strong> defines function
-    buildRefinement(geometryType), which returns the right refinement
-    for a runtime-determined GeometryType.  It is also located in
-    refinementvirtual.cc
+    buildRefinement(geometryType, coerceTo), which returns the right
+    refinement for a runtime-determined NewGeometryType.  It is also
+    located in refinementvirtual.cc
 
    @section Implementation
    <!--================-->
@@ -219,14 +219,15 @@
    this dimension and CoordType, defines which iterators to use, and
    provides some proxy or pure virtual functions.
 
-   For each class Refinement<geometryType, CoordType, coercTo> we
+   For each class Refinement<geometryType, CoordType, coercTo, dim> we
    provide a class VirtualRefinementImp<geometryType, CoordType,
-   coercTo>, which wraps the matching class Refinement<geometryType,
-   CoordType, coercTo> and derives from the matching base class
-   VirtualRefinement<dimension, CoordType>.  Each VirtualRefinementImp
-   is a singleton and has a static instance() method which will return
-   this instance as a reference to the base class VirtualRefinement.
-   All this is done in a single template class.
+   coercTo, dim>, which wraps the matching class
+   Refinement<geometryType, CoordType, coercTo, dim> and derives from
+   the matching base class VirtualRefinement<dimension, CoordType>.
+   Each VirtualRefinementImp is a singleton and has a static instance()
+   method which will return this instance as a reference to the base
+   class VirtualRefinement.  All this is done in a single template
+   class.
 
    @subsection Iterators The iterators
    <!-------------------------------->
@@ -251,8 +252,8 @@
 
    The template function buildRefinement() has to be specialized for
    each dimension.  It makes no sense to test for
-   geometryType==quadrilateral when dimension==3.  But this way we run
-   into a limitation of C++: we can't do partial function
+   geometryType==NewGeometryType::prism when dimension==2.  But this
+   way we run into a limitation of C++: we can't do partial function
    specialisation.
 
    The workaround is to create a class RefinementBuilder with a lone

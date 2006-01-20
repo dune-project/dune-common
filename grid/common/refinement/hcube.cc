@@ -60,7 +60,7 @@ namespace Dune {
   namespace RefinementImp {
 
     /*! @brief This namespace contains the @ref Refinement implementation
-       for hypercubes (quadrilaterals, hexahedrons, etc.).
+       for hypercubes (NewGeometryType::cube).
 
        See @ref HCubeRefinement.
      */

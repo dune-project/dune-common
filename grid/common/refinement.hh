@@ -68,7 +68,7 @@
    <!--===================================-->
 
    @code
-   template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
+   template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension>
    class Refinement
    {
    public:
@@ -99,7 +99,7 @@
    support some additional methods:
 
    @code
-   template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
+   template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension>
    class VertexIterator
    {
    public:
@@ -109,7 +109,7 @@
     Refinement::CoordVector coords() const;
    }
 
-   template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
+   template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension>
    class ElementIterator
    {
    public:
@@ -135,9 +135,7 @@
    //#include <dune/grid/common/refinement/hcube.cc>
 
    // Get yourself the Refinement you need:
-   typedef Refinement<cube, SGrid<2, 2>::ctype, cube, 2> MyRefinement;
-   // You can still use the old geometryTypes (no need for dim in this case)
-   //typedef Refinement<quadrilateral, SGrid<2, 2>::ctype, quadrilateral> MyRefinement;
+   typedef Refinement<NewGeometryType::cube, SGrid<2, 2>::ctype, NewGeometryType::cube, 2> MyRefinement;
 
    int main()
    {
@@ -195,34 +193,31 @@
     @code
    namespace Dune::RefinementImp {
     // the "dim" template parameter is ignored, since the dimension can be infered
-    template<class CoordType, int dim>
-    struct Traits<circle, CoordType, quadrilateral, dim> {
+    template<class CoordType>
+    struct Traits<NewGeometryType::sphere, CoordType, NewGeometryType::cube, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
 
     // we're only implementing this for dim=2
     template<class CoordType>
-    struct Traits<sphere, CoordType, cube, 2> {
+    struct Traits<NewGeometryType::sphere, CoordType, NewGeometryType::cube, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
 
     template<class CoordType>
-    struct Traits<circle, CoordType, cube, 2> {
+    struct Traits<NewGeometryType::circle, CoordType, NewGeometryType::cube, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
 
     template<class CoordType>
-    struct Traits<sphere, CoordType, quadrilateral, 2> {
+    struct Traits<NewGeometryType::sphere, CoordType, NewGeometryType::quadrilateral, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
    }
     @endcode
     If you implement a template class, you have to specialise struct
     RefinementImp::Traits for every possible combination of
-    geometryType and coerceTo that your implementation supports.  It
-    gets easier with the new geometry types "cube" and "simplex", but
-    as long as you want to support the old types there is no way
-    around this.
+    geometryType and coerceTo that your implementation supports.
    - #include "refinement/squaringthecircle.cc" from refinement.hh.
 
    This is enough to integrate your implementation into the Refinement
@@ -248,18 +243,19 @@
    <!--------------------------------->
 
    - <strong>Layer 0</strong> declares struct
-    RefinementImp::Traits<geometryType, CoordType>.  It's member
-    typedef Imp tells which Refinement implementation to use for a
-    given geometryType (and CoordType).  It is located in
+    RefinementImp::Traits<geometryType, CoordType, coerceTo, dim>.
+    It's member typedef Imp tells which Refinement implementation to
+    use for a given geometryType (and CoordType).  It is located in
     refinementbase.cc.
    - <strong>Layer 1</strong> defines
     RefinementImp::XXX::RefinementImp.  It implements the Refinements
-    for each geometryType (and CoordType).  Also in this layer are the
-    definitions of struct RefinementImp::Traits.  This layer is
-    located in refinementXXX.cc.
+    for each geometryType, coerceTo (and CoordType).  Also in this
+    layer are the definitions of struct RefinementImp::Traits.  This
+    layer is located in refinementXXX.cc.
    - <strong>Layer 2</strong> puts it all together.  It defines class
-    Refinement<geometryType, CoordType> by deriving from the
-    corresponding RefinementImp.  It is located in refinementbase.cc.
+    Refinement<geometryType, CoordType, coerceTo, dim> by deriving
+    from the corresponding RefinementImp.  It is located in
+    refinementbase.cc.
    - There is a dummy <strong>layer 2.5</strong> which simply includes
     all the refinementXXX.cc files.  It is located in refinement.cc.
 
