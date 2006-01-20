@@ -18,6 +18,7 @@
  */
 
 #include "../../common/exceptions.hh"
+#include "../../common/geometrytype.hh"
 #include "grid.hh"
 #include "../../common/iteratorfacades.hh"
 #include "../../common/fvector.hh"
@@ -511,9 +512,9 @@ namespace Dune {
   template<int dimension, class CoordType>
   VirtualRefinement<dimension, CoordType> &
   buildRefinement( //! geometry type of the refined element
-    GeometryType geometryType,
+    NewGeometryType geometryType,
     //! geometry type of the subelements
-    GeometryType coerceTo)
+    NewGeometryType coerceTo)
   {
     return RefinementBuilder<dimension, CoordType>::build(geometryType, coerceTo);
   }
@@ -524,22 +525,22 @@ namespace Dune {
   public:
     static
     VirtualRefinement<dimension, CoordType> &
-    build(GeometryType geometryType, GeometryType coerceTo)
+    build(NewGeometryType geometryType, NewGeometryType coerceTo)
     {
-      switch(geometryType) {
-      case simplex :
-        switch(coerceTo) {
-        case simplex :
+      switch(geometryType.basicType()) {
+      case NewGeometryType::simplex :
+        switch(coerceTo.basicType()) {
+        case NewGeometryType::simplex :
           return VirtualRefinementImp<simplex, CoordType, simplex, dimension>::instance();
         default :
           break;
         }
         break;
-      case cube :
-        switch(coerceTo) {
-        case simplex :
+      case NewGeometryType::cube :
+        switch(coerceTo.basicType()) {
+        case NewGeometryType::simplex :
           return VirtualRefinementImp<cube, CoordType, simplex, dimension>::instance();
-        case cube :
+        case NewGeometryType::cube :
           return VirtualRefinementImp<cube, CoordType, cube, dimension>::instance();
         default :
           break;
@@ -548,88 +549,8 @@ namespace Dune {
       default :
         break;
       }
-      DUNE_THROW(NotImplemented, "No Refinement<" << geometryType << ", CoordType, "
-                                                  << coerceTo << " >.");
-    }
-  };
-
-  template<class CoordType>
-  class RefinementBuilder<2, CoordType>
-  {
-  public:
-    static
-    VirtualRefinement<2, CoordType> &
-    build(GeometryType geometryType, GeometryType coerceTo)
-    {
-      switch(geometryType) {
-      case triangle :
-      case simplex :
-        switch(coerceTo) {
-        case triangle :
-        case simplex :
-          return VirtualRefinementImp<simplex, CoordType, simplex, 2>::instance();
-        default :
-          break;
-        }
-        break;
-      case quadrilateral :
-      case cube :
-        switch(coerceTo) {
-        case triangle :
-        case simplex :
-          return VirtualRefinementImp<cube, CoordType, simplex, 2>::instance();
-        case quadrilateral :
-        case cube :
-          return VirtualRefinementImp<cube, CoordType, cube, 2>::instance();
-        default :
-          break;
-        }
-        break;
-      default :
-        break;
-      }
-      DUNE_THROW(NotImplemented, "No Refinement<" << geometryType << ", CoordType, "
-                                                  << coerceTo << " >.");
-    }
-  };
-
-  template<class CoordType>
-  class RefinementBuilder<3, CoordType>
-  {
-  public:
-    static
-    VirtualRefinement<3, CoordType> &
-    build(GeometryType geometryType, GeometryType coerceTo)
-    {
-      switch(geometryType) {
-      case tetrahedron :
-      case simplex :
-        switch(coerceTo) {
-        case tetrahedron :
-        case simplex :
-          return VirtualRefinementImp<simplex, CoordType, simplex, 3>::instance();
-        default :
-          break;
-        }
-        break;
-      case hexahedron :
-      case cube :
-        switch(coerceTo) {
-        case tetrahedron :
-        case simplex :
-          return VirtualRefinementImp<cube, CoordType, simplex, 3>::instance();
-        case hexahedron :
-        case cube :
-          return VirtualRefinementImp<cube, CoordType, cube, 3>::instance();
-        default :
-          break;
-        }
-        break;
-      default :
-        break;
-      }
-      DUNE_THROW(NotImplemented, "No Refinement<" << geometryType << ", CoordType, "
-                                                  << coerceTo << " >.");
+      DUNE_THROW(NotImplemented, "No Refinement<" << geometryType.basicType() << ", CoordType, "
+                                                  << coerceTo.basicType() << " >.");
     }
   };
 

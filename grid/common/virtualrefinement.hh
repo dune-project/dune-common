@@ -354,8 +354,8 @@ namespace Dune {
 
   template<int dimension, class CoordType>
   VirtualRefinement<dimension, CoordType> &
-  buildRefinement(GeometryType geometryType,
-                  GeometryType coerceTo);
+  buildRefinement(NewGeometryType geometryType,
+                  NewGeometryType coerceTo);
 
 } // namespace Dune
 
