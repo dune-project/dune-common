@@ -18,6 +18,8 @@
    @endverbatim
  */
 
+#include "../../../common/geometrytype.hh"
+
 namespace Dune {
 
   //! @brief This namespace contains the implementation of @ref
@@ -35,12 +37,10 @@ namespace Dune {
        @brief Mapping from geometryType, CoordType and coerceTo to a
               particular @ref Refinement implementation.
 
-       @param geometryType The geometry type of the element to refine
+       @param geometryType The basic geometry type of the element to refine
        @param CoordType    The C++ type of the coordinates
-       @param coerceTo     The geometry type of the subelements
-       @param dim          The dimension of the refinement if any
-                           "cube" or "simplex" geometry types are
-                           used.  Ignored otherwise.
+       @param coerceTo     The basic geometry type of the subelements
+       @param dimension    The dimension of the refinement.
 
        Each @ref Refinement implementation has to define one or more
        specialisations of this struct to declare what it implements.
@@ -57,7 +57,7 @@ namespace Dune {
        };
        @endcode
      */
-    template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
+    template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension>
     struct Traits
     {
       //! The implementation this specialisation maps to
@@ -65,7 +65,7 @@ namespace Dune {
     };
 #else // !DOXYGEN
       // Doxygen won't see this
-    template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
+    template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension>
     struct Traits;
 #endif // !DOXYGEN
   } // namespace RefinementImp
@@ -79,12 +79,10 @@ namespace Dune {
   /*! @brief Wrap each @ref Refinement implementation to get a
              consistent interface
 
-     @param geometryType The geometry type of the element to refine
+     @param geometryType The basic geometry type of the element to refine
      @param CoordType    The C++ type of the coordinates
-     @param coerceTo     The geometry type of the subelements
-     @param dim          The dimension of the refinement if any "cube"
-                         or "simplex" geometry types are used.
-                         Ignored otherwise.
+     @param coerceTo     The basic geometry type of the subelements
+     @param dimension    The dimension of the refinement.
 
      @par Member Structs:
 
@@ -93,14 +91,12 @@ namespace Dune {
      <dd>codimension template containing the SubEntityIterator</dd>
      </dl>
    */
-  template<GeometryType geometryType, class CoordType, GeometryType coerceTo, int dim=0>
+  template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension_>
   class Refinement
-    : public RefinementImp::Traits<geometryType, CoordType, coerceTo, dim>::Imp
+    : public RefinementImp::Traits<geometryType, CoordType, coerceTo, dimension_>::Imp
   {
   public:
 #ifdef DOXYGEN
-    enum { dimension /*!< Know your own dimension */ };
-
     /*! @brief The Codim struct inherited from the @ref Refinement implementation
 
        @param codimension There is a different struct Codim for each codimension
@@ -146,7 +142,7 @@ namespace Dune {
     //! Get an ElementIterator
     static ElementIterator eEnd(int level);
 #endif //DOXYGEN
-    typedef typename RefinementImp::Traits<geometryType, CoordType, coerceTo, dim>::Imp RefinementImp;
+    typedef typename RefinementImp::Traits<geometryType, CoordType, coerceTo, dimension_>::Imp RefinementImp;
 
     using RefinementImp::dimension;
 

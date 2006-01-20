@@ -383,70 +383,8 @@ namespace Dune {
     // The refinement traits
     //
 
-    // dim = 1
-
     template<class CoordType, int dim>
-    struct Traits<line, CoordType, line, dim>
-    {
-      typedef HCube::RefinementImp<1, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<line, CoordType, cube, 1>
-    {
-      typedef HCube::RefinementImp<1, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<cube, CoordType, line, 1>
-    {
-      typedef HCube::RefinementImp<1, CoordType> Imp;
-    };
-
-    // dim = 2
-
-    template<class CoordType, int dim>
-    struct Traits<quadrilateral, CoordType, quadrilateral, dim>
-    {
-      typedef HCube::RefinementImp<2, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<quadrilateral, CoordType, cube, 2>
-    {
-      typedef HCube::RefinementImp<2, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<cube, CoordType, quadrilateral, 2>
-    {
-      typedef HCube::RefinementImp<2, CoordType> Imp;
-    };
-
-    // dim = 3
-
-    template<class CoordType, int dim>
-    struct Traits<hexahedron, CoordType, hexahedron, dim>
-    {
-      typedef HCube::RefinementImp<3, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<hexahedron, CoordType, cube, 3>
-    {
-      typedef HCube::RefinementImp<3, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<cube, CoordType, hexahedron, 3>
-    {
-      typedef HCube::RefinementImp<3, CoordType> Imp;
-    };
-
-    // any dim
-
-    template<class CoordType, int dim>
-    struct Traits<cube, CoordType, cube, dim>
+    struct Traits<NewGeometryType::cube, CoordType, NewGeometryType::cube, dim>
     {
       typedef HCube::RefinementImp<dim, CoordType> Imp;
     };

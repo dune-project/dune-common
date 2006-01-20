@@ -469,64 +469,8 @@ namespace Dune {
     // The refinement traits
     //
 
-    // dim = 1
-
-    // this is already done by hcube.cc
-    //template<class CoordType, int dim>
-    //struct Traits<line, CoordType, line, dim>;
-
-    // this is alredy done by simplex.cc
-    //template<class CoordType>
-    //struct Traits<line, CoordType, simplex, 1>;
-
-    // this is already done by hcube.cc
-    //template<class CoordType>
-    //struct Traits<cube, CoordType, line, 1>
-
-    // dim = 2
-
     template<class CoordType, int dim>
-    struct Traits<quadrilateral, CoordType, triangle, dim>
-    {
-      typedef HCubeTriangulation::RefinementImp<2, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<quadrilateral, CoordType, simplex, 2>
-    {
-      typedef HCubeTriangulation::RefinementImp<2, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<cube, CoordType, triangle, 2>
-    {
-      typedef HCubeTriangulation::RefinementImp<2, CoordType> Imp;
-    };
-
-    // dim = 3
-
-    template<class CoordType, int dim>
-    struct Traits<hexahedron, CoordType, tetrahedron, dim>
-    {
-      typedef HCubeTriangulation::RefinementImp<3, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<hexahedron, CoordType, simplex, 3>
-    {
-      typedef HCubeTriangulation::RefinementImp<3, CoordType> Imp;
-    };
-
-    template<class CoordType>
-    struct Traits<cube, CoordType, tetrahedron, 3>
-    {
-      typedef HCubeTriangulation::RefinementImp<3, CoordType> Imp;
-    };
-
-    // any dim
-
-    template<class CoordType, int dim>
-    struct Traits<cube, CoordType, simplex, dim>
+    struct Traits<NewGeometryType::cube, CoordType, NewGeometryType::simplex, dim>
     {
       typedef HCubeTriangulation::RefinementImp<dim, CoordType> Imp;
     };

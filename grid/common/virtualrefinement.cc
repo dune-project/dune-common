@@ -27,18 +27,6 @@
 
 namespace Dune {
 
-  // Temporary measure for the transition to NewGeometryType
-
-  template<NewGeometryType::BasicType> struct B2G;
-  template<> struct B2G<NewGeometryType::simplex>
-  { static const GeometryType g = simplex; };
-  template<> struct B2G<NewGeometryType::cube>
-  { static const GeometryType g = cube;    };
-  template<> struct B2G<NewGeometryType::prism>
-  { static const GeometryType g = prism;   };
-  template<> struct B2G<NewGeometryType::pyramid>
-  { static const GeometryType g = pyramid; };
-
   // //////////////////////////////////////////
   //
   // The virtual base class and its iterators
@@ -284,7 +272,7 @@ namespace Dune {
     : public VirtualRefinement<dimension, CoordType>
   {
   public:
-    typedef Refinement<B2G<geometryType>::g, CoordType, B2G<coerceTo>::g, dimension> Refinement;
+    typedef Refinement<geometryType, CoordType, coerceTo, dimension> Refinement;
     typedef VirtualRefinement<dimension, CoordType> VirtualRefinement;
 
     template<int codimension>
