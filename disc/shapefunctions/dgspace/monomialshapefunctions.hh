@@ -286,7 +286,7 @@ namespace Dune
     }
 
     //! \copydoc ShapeFunctionSet::type
-    virtual GeometryType type () const
+    virtual NewGeometryType type () const
     {
       //! throw an exception... we dont' have a special geometry
 #warning what to do here?
