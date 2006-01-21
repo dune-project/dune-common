@@ -96,7 +96,7 @@ namespace Dune {
     /** \brief Constructor for vertices and segments
         \todo Add check for dim={0,1} when compiled with a suitable flag
      */
-    NewGeometryType(unsigned int dim)
+    explicit NewGeometryType(unsigned int dim)
       : basicType_(cube), dim_(dim)
     {}
 
