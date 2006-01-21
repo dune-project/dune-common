@@ -1808,6 +1808,34 @@ namespace Dune {
       DUNE_THROW(NotImplemented, "order not available");
     }
 
+    //! select the appropriate rule
+    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p) DUNE_DEPRECATED
+    {
+      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
+           (type==hexahedron) )
+      {
+
+        if (p>=1 && p<=cube_maxorder)
+          return *(rules[cube_order_to_index[p]]);
+      }
+
+      else if( (type==simplex) || (type==triangle) || (type==tetrahedron))
+      {
+        if(dim>=2)
+        {
+          if(p>=1 && p<=simplex_maxorder)
+            return *(rules[simplex_order_to_index[p]]);
+        }
+        else
+        {
+          if (p>=1 && p<=cube_maxorder)
+            return *(rules[cube_order_to_index[p]]);
+        }
+      }
+
+      DUNE_THROW(NotImplemented, "order not available");
+    }
+
     //! ConstIterator class for sequential access
     class const_iterator
     {
@@ -1943,7 +1971,19 @@ namespace Dune {
     {
       if ( type.isLine() )
       {
+        if (p>=1 && p<=cube_maxorder)
+          return *(rules[cube_order_to_index[p]]);
+      }
 
+
+      DUNE_THROW(NotImplemented, "order not available");
+    }
+
+    //! select the appropriate rule
+    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p) DUNE_DEPRECATED
+    {
+      if ( (type==cube) || (type==line) ||(type==simplex) )
+      {
         if (p>=1 && p<=cube_maxorder)
           return *(rules[cube_order_to_index[p]]);
       }
@@ -2195,6 +2235,39 @@ namespace Dune {
           return *(rules[prism_order_to_index[p]]);
       }
       else if(type.isPyramid())
+      {
+        if(p>=1 && p<=pyramid_maxorder)
+          return *(rules[pyramid_order_to_index[p]]);
+      }
+
+      DUNE_THROW(NotImplemented, "order not available");
+    }
+
+    //! select the appropriate rule
+    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p) DUNE_DEPRECATED
+    {
+      if ( (type==cube) || (type==line) || (type==quadrilateral) ||
+           (type==hexahedron) )
+      {
+
+        if (p>=1 && p<=cube_maxorder)
+          return *(rules[cube_order_to_index[p]]);
+      }
+      else if( (type==simplex) || (type==tetrahedron))
+      {
+
+        {
+          if(p>=1 && p<=simplex_maxorder)
+            return *(rules[simplex_order_to_index[p]]);
+        }
+
+      }
+      else if (type==prism)
+      {
+        if(p>=1 && p<=prism_maxorder)
+          return *(rules[prism_order_to_index[p]]);
+      }
+      else if(type==pyramid)
       {
         if(p>=1 && p<=pyramid_maxorder)
           return *(rules[pyramid_order_to_index[p]]);
