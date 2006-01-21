@@ -296,7 +296,6 @@ namespace Dune
     virtual RT eval (int comp, const Dune::FieldVector<DT,n>& xi) const
     {
       EntityPointer e = hsearch.findEntity(xi);
-      std::cout << "Level = " << e->level() << std::endl;
       return evallocal(comp,*e,e->geometry().local(xi));
     }
 
