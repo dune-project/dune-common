@@ -39,6 +39,7 @@ namespace Dune {
   class DGFunction :
     virtual public GridFunction<G,RT,1>,
     virtual public GridFunctionDefault<G,RT,1>,
+    virtual public GridFunctionGlobalEvalDefault<G,RT,IS,1>,
     virtual public FunctionDefault<typename G::ctype,RT,G::dimension,1>,
     virtual public L2Function<typename G::ctype,RT,G::dimension,1>
   {
@@ -71,7 +72,7 @@ namespace Dune {
 
     //! allocate a vector with the data
     DGFunction (const G& g, const IS& indexset) :
-      grid_(g), is_(indexset)
+      GridFunctionGlobalEvalDefault<G,RT,IS,1>(g,indexset), grid_(g), is_(indexset)
     {
       coeff_.resize(is_.size(0), false);
     }
@@ -93,11 +94,11 @@ namespace Dune {
        @param[in] x    position to be evaluated
        \return         value of the component
      */
-    virtual RT eval (int comp, const Dune::FieldVector<DT,n>& x) const
-    {
-      DUNE_THROW(NotImplemented, "global eval not implemented yet");
-      return 0;
-    }
+    //  virtual RT eval (int comp, const Dune::FieldVector<DT,n>& x) const
+    //  {
+    //    DUNE_THROW(NotImplemented, "global eval not implemented yet");
+    //    return 0;
+    //  }
 
     //! evaluate single component comp in the entity e at local coordinates xi
     /*! Evaluate the function in an entity at local coordinates.
