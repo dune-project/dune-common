@@ -143,6 +143,7 @@ namespace Dune
         for (size_t i=0; i<is.geomTypes(c).size(); i++)
           if (layout.contains(c,is.geomTypes(c)[i]))
           {
+              #warning This should be fixed!!!
             if (c<G::dimension-1)
             {
               offset[c][is.geomTypes(c)[i]] = n;
@@ -150,8 +151,8 @@ namespace Dune
             }
             else
             {
-              offset[c][cube] = n;
-              offset[c][simplex] = n;
+              offset[c][NewGeometryType(cube,c)] = n;
+              offset[c][NewGeometryType(simplex,c)] = n;
               n += is.size(c,is.geomTypes(c)[i]);
             }
           }
