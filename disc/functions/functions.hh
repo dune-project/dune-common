@@ -9,6 +9,7 @@
 #include "common/fvector.hh"
 #include "common/exceptions.hh"
 #include "grid/common/grid.hh"
+#include "grid/utility/hierarchicsearch.hh"
 
 /**
  * @file dune/disc/functions/functions.hh
@@ -262,6 +263,46 @@ namespace Dune
   };
 
 
+  //! default implementation for global evaluation of a grid function
+  template<class G, class RT, class IS, int m>
+  class GridFunctionGlobalEvalDefault : virtual public GridFunction<G,RT,m>
+  {
+    //! get domain field type from the grid
+    typedef typename G::ctype DT;
+
+    //! get domain dimension from the grid
+    enum {n=G::dimension};
+
+    //! get entity from the grid
+    typedef typename G::Traits::template Codim<0>::Entity Entity;
+
+    //! type of EntityPointer
+    typedef typename G::Traits::template Codim<0>::EntityPointer EntityPointer;
+
+  public:
+
+    GridFunctionGlobalEvalDefault(const G & _g, const IS& _is) : hsearch(_g,_is) {};
+
+    /*!
+       \brief implement global evaluation with local evaluation
+
+       The local entity is searched via a hierarchic search
+
+       @param[in]  comp   number of component to be evaluated
+       @param[in]  e      reference to grid entity of codimension 0
+       @param[in]  xi     point in local coordinates of the reference element of e
+       \return            value of the component
+     */
+    virtual RT eval (int comp, const Dune::FieldVector<DT,n>& xi) const
+    {
+      EntityPointer e = hsearch.findEntity(xi);
+      std::cout << "Level = " << e->level() << std::endl;
+      return evallocal(comp,*e,e->geometry().local(xi));
+    }
+
+  private:
+    HierarchicSearch<G,IS> hsearch;
+  };
 
 
   //! Base class for differentiable functions living on a grid
