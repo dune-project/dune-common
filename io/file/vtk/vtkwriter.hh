@@ -119,6 +119,7 @@ namespace Dune
    */
   template<class GridImp, class IS=typename GridImp::template Codim<0>::LeafIndexSet>
   class VTKWriter {
+
     class VTKFunction;
 
     // extract types
@@ -239,6 +240,66 @@ namespace Dune
     }
 
   private:
+
+    enum VTKGeometryType
+    {
+      vtkLine = 3,
+      vtkTriangle = 5,
+      vtkQuadrilateral = 9,
+      vtkTetrahedron = 10,
+      vtkHexahedron = 12,
+      vtkPrism = 13,
+      vtkPyramid = 14
+    };
+
+    //! mapping from GeometryType to VTKGeometryType
+    VTKGeometryType vtkType(const Dune::GeometryType & t) const DUNE_DEPRECATED
+    {
+      if (n==1)
+        return vtkLine;
+      if (n==2)
+      {
+        if (t==simplex)
+          return vtkTriangle;
+        if (t==cube)
+          return vtkQuadrilateral;
+      }
+      if (n==3)
+      {
+        if (t==simplex)
+          return vtkTetrahedron;
+        if (t==pyramid)
+          return vtkPyramid;
+        if (t==prism)
+          return vtkPrism;
+        if (t==cube)
+          return vtkHexahedron;
+      }
+      DUNE_THROW(IOError,"VTKWriter: unsupported GeometryType "
+                 << t << " dim " << n <<std::endl);
+    }
+
+    //! mapping from NewGeometryType to VTKGeometryType
+    VTKGeometryType vtkType(const Dune::NewGeometryType & t) const
+    {
+      unsigned char vtktype=3;
+      if (t.isLine())
+        return vtkLine;
+      if (t.isTriangle())
+        return vtkTriangle;
+      if (t.isQuadrilateral())
+        return vtkQuadrilateral;
+      if (t.isTetrahedron())
+        return vtkTetrahedron;
+      if (t.isPyramid())
+        return vtkPyramid;
+      if (t.isPrism())
+        return vtkPrism;
+      if (t.isHexahedron())
+        return vtkHexahedron;
+      DUNE_THROW(IOError,"VTKWriter: unsupported GeometryType "
+                 << t <<std::endl);
+    }
 
     //! write header file in parallel case to stream
     void writeParallelHeader (std::ostream& s, const char* name)
@@ -571,27 +632,7 @@ namespace Dune
       for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
-          unsigned char vtktype=3;
-          if (n==1)
-            vtktype=3;
-          if (n==2)
-          {
-            if (it->geometry().type()==simplex)
-              vtktype=5;
-            if (it->geometry().type()==cube)
-              vtktype=9;
-          }
-          if (n==3)
-          {
-            if (it->geometry().type()==simplex)
-              vtktype=10;
-            if (it->geometry().type()==pyramid)
-              vtktype=14;
-            if (it->geometry().type()==prism)
-              vtktype=13;
-            if (it->geometry().type()==cube)
-              vtktype=12;
-          }
+          int vtktype = vtkType(it->geometry().type());
           p3->write(vtktype);
         }
       delete p3;
@@ -702,27 +743,7 @@ namespace Dune
       for (CellIterator it=is.template begin<0,vtkPartition>(); it!=is.template end<0,vtkPartition>(); ++it)
         if (it->partitionType()==InteriorEntity)
         {
-          unsigned char vtktype=3;
-          if (n==1)
-            vtktype=3;
-          if (n==2)
-          {
-            if (it->geometry().type()==simplex)
-              vtktype=5;
-            if (it->geometry().type()==cube)
-              vtktype=9;
-          }
-          if (n==3)
-          {
-            if (it->geometry().type()==simplex)
-              vtktype=10;
-            if (it->geometry().type()==pyramid)
-              vtktype=14;
-            if (it->geometry().type()==prism)
-              vtktype=13;
-            if (it->geometry().type()==cube)
-              vtktype=12;
-          }
+          int vtktype = vtkType(it->geometry().type());
           stream.write(vtktype);
         }
 
@@ -973,29 +994,20 @@ namespace Dune
     // renumber VTK -> Dune
     int renumber (const Entity& e, int i)
     {
-      if (n==2)
+      static const int quadRenumbering[4] = {0,1,3,2};
+      static const int cubeRenumbering[8] = {0,1,3,2,4,5,7,6};
+      static const int prismRenumbering[6] = {0,2,1,3,5,4};
+      switch (vtkType(e.geometry().type()))
       {
-        if (e.geometry().type()==cube)
-        {
-          const int renumbering[4] = {0,1,3,2};
-          return renumbering[i];
-        }
+      case vtkQuadrilateral :
+        return quadRenumbering[i];
+      case vtkHexahedron :
+        return cubeRenumbering[i];
+      case vtkPrism :
+        return prismRenumbering[i];
+      default :
         return i;
       }
-      if (n==3)
-      {
-        if (e.geometry().type()==prism)
-        {
-          const int renumbering[6] = {0,2,1,3,5,4};
-          return renumbering[i];
-        }
-        if (e.geometry().type()==cube)
-        {
-          const int renumbering[8] = {0,1,3,2,4,5,7,6};
-          return renumbering[i];
-        }
-      }
-      return i;
     }
 
     // the list of registered functions
