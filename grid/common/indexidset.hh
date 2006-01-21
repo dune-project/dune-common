@@ -127,8 +127,8 @@ namespace Dune
     }
 
     /** @brief Return total number of entities of given codim as a sum
-     * for all geometry types in this index set.
-     *  \param codim A valid codimension
+       for all geometry types in this index set.
+       \param codim A valid codimension
      */
     int size (int codim) const
     {
@@ -147,6 +147,22 @@ namespace Dune
     const std::vector<NewGeometryType>& geomTypes (int codim) const
     {
       return asImp().geomTypes(codim);
+    }
+
+    /** @brief Does the index set contain this Entity?
+     */
+    template<class EntityType>
+    bool contains (const EntityType& e) const
+    {
+      enum { cd = EntityType::codimension };
+      /*
+         return asImp().template contains<cd>(e);
+       */
+      typename Codim<cd>::template Partition<All_Partition>::Iterator it=begin<cd,All_Partition>();
+      typename Codim<cd>::template Partition<All_Partition>::Iterator iend=end<cd,All_Partition>();
+      for (; it != iend; ++it)
+        if (it->level() == e.level() && index(*it) == index(e)) return true;
+      return false;
     }
 
     /** @brief Iterator to first entity of given codimension and partition type.
