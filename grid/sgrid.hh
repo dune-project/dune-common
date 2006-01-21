@@ -905,7 +905,7 @@ namespace Dune {
     //! constructor stores reference to a grid and level
     SGridLevelIndexSet (const GridImp& g, int l) : grid(g), level(l)
     {
-      mytypes.push_back(cube);   // contains a single element type;
+      mytypes.push_back(NewGeometryType(NewGeometryType::cube,dim));   // contains a single element type;
     }
 
     //! get index of an entity
@@ -980,7 +980,7 @@ namespace Dune {
     //! constructor stores reference to a grid and level
     SGridLeafIndexSet (const GridImp& g) : grid(g)
     {
-      mytypes.push_back(cube);   // contains a single element type;
+      mytypes.push_back(NewGeometryType(NewGeometryType::cube,dim));   // contains a single element type;
     }
 
     //! get index of an entity
