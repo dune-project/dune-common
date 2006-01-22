@@ -900,6 +900,7 @@ namespace Dune {
   class SGridLevelIndexSet : public IndexSet<GridImp,SGridLevelIndexSet<GridImp>,SGridLevelIndexSetTypes<GridImp> >
   {
     typedef IndexSet<GridImp,SGridLevelIndexSet<GridImp>,SGridLevelIndexSetTypes<GridImp> > Base;
+    enum { dim = GridImp::dimension };
   public:
 
     //! constructor stores reference to a grid and level
@@ -975,6 +976,7 @@ namespace Dune {
   class SGridLeafIndexSet : public IndexSet<GridImp,SGridLeafIndexSet<GridImp>,SGridLeafIndexSetTypes<GridImp> >
   {
     typedef IndexSet<GridImp,SGridLeafIndexSet<GridImp>,SGridLeafIndexSetTypes<GridImp> > Base;
+    enum { dim = GridImp::dimension };
   public:
 
     //! constructor stores reference to a grid and level
