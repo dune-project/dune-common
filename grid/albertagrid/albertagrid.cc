@@ -34,7 +34,7 @@ namespace Dune
 
   template <int mydim, int cdim, class GridImp>
   inline AlbertaGridGeometry<mydim,cdim,GridImp>::
-  AlbertaGridGeometry()
+  AlbertaGridGeometry() : myGeomType_(NewGeometryType::simplex,mydim)
   {
     // make empty element
     initGeom();
@@ -233,9 +233,9 @@ namespace Dune
   }
 
   template <int mydim, int cdim, class GridImp>
-  inline NewGeometryType AlbertaGridGeometry<mydim,cdim,GridImp>::type() const
+  inline const NewGeometryType & AlbertaGridGeometry<mydim,cdim,GridImp>::type() const
   {
-    return NewGeometryType(NewGeometryType::simplex,mydim);
+    return myGeomType_;
   }
 
   template <int mydim, int cdim, class GridImp>
@@ -3109,9 +3109,13 @@ namespace Dune
     , globalIdSet_(*this)
     , levelIndexVec_(MAXL,0)
     , leafIndexSet_ (0)
-    , geomTypes_(1,simplex)
+    , geomTypes_(dim+1,1)
     , sizeCache_ (0)
   {
+    // stored is the dim, where is the codim
+    for(int i=dim; i>= 0; i--)
+      geomTypes_[dim-i][0] = NewGeometryType(NewGeometryType::simplex,i);
+
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++) dofvecs_.elNumbers[i] = 0;
     dofvecs_.elNewCheck = 0;
     dofvecs_.owner      = 0;
@@ -3149,9 +3153,13 @@ namespace Dune
     , globalIdSet_( *this )
     , levelIndexVec_(MAXL,0)
     , leafIndexSet_ (0)
-    , geomTypes_(1,simplex)
+    , geomTypes_(dim+1,1)
     , sizeCache_ (0)
   {
+    // stored is the dim, where is the codim
+    for(int i=dim; i>= 0; i--)
+      geomTypes_[dim-i][0] = NewGeometryType(NewGeometryType::simplex,i);
+
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
 
@@ -3202,9 +3210,12 @@ namespace Dune
     , globalIdSet_( *this )
     , levelIndexVec_(MAXL,0)
     , leafIndexSet_ (0)
-    , geomTypes_(1,simplex)
+    , geomTypes_(dim+1,1)
     , sizeCache_ (0)
   {
+    for(int i=dim; i>= 0; i--)
+      geomTypes_[dim-i][0] = NewGeometryType(NewGeometryType::simplex,i);
+
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
 
@@ -3983,7 +3994,8 @@ namespace Dune
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
     if( (level > maxlevel_) || (level < 0) ) return 0;
-    assert( this->levelIndexSet(level).size(codim,simplex) == sizeCache_->size(level,codim) );
+    assert( this->levelIndexSet(level).size(codim,NewGeometryType(NewGeometryType::simplex,codim) )
+            == sizeCache_->size(level,codim) );
     assert( sizeCache_ );
     return sizeCache_->size(level,codim);
   }
@@ -4003,7 +4015,8 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int codim) const
   {
-    assert( this->leafIndexSet().size(codim,simplex) == sizeCache_->size(codim) );
+    assert( this->leafIndexSet().size(codim,NewGeometryType(NewGeometryType::simplex,codim) )
+            == sizeCache_->size(codim) );
     assert( sizeCache_ );
     return sizeCache_->size(codim);
   }
@@ -4113,7 +4126,8 @@ namespace Dune
     //if( leafIndexSet_ ) (*leafIndexSet_).compress();
 
     if(sizeCache_) delete sizeCache_;
-    sizeCache_ = new SizeCacheType (*this,true);
+    // first bool says we have simplex, second not cube, third, worryabout
+    sizeCache_ = new SizeCacheType (*this,true,false,true);
 
     // we have a new grid
     wasChanged_ = true;
