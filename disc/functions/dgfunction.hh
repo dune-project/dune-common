@@ -80,26 +80,6 @@ namespace Dune {
     //! deallocate the vector
     ~DGFunction () {}
 
-    //! evaluate single component comp at global point x
-    /*! Evaluate a single component of the vector-valued
-       function.
-       @param[in] comp number of component to be evaluated
-       @param[in] x    position to be evaluated
-       \return         value of the component
-     */
-    //! evaluate single component comp at global point x
-    /*! Evaluate a single component of the vector-valued
-       function.
-       @param[in] comp number of component to be evaluated
-       @param[in] x    position to be evaluated
-       \return         value of the component
-     */
-    //  virtual RT eval (int comp, const Dune::FieldVector<DT,n>& x) const
-    //  {
-    //    DUNE_THROW(NotImplemented, "global eval not implemented yet");
-    //    return 0;
-    //  }
-
     //! evaluate single component comp in the entity e at local coordinates xi
     /*! Evaluate the function in an entity at local coordinates.
        @param[in]  comp   number of component to be evaluated
@@ -201,8 +181,9 @@ namespace Dune {
   class LeafDGFunction : public DGFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,o>
   {
   public:
-    LeafDGFunction (const G& grid)
-      : DGFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,o>(grid,grid.leafIndexSet())
+    LeafDGFunction (const G& grid) :
+      GridFunctionGlobalEvalDefault<G,RT,typename G::template Codim<0>::LeafIndexSet,1>(grid,grid.leafIndexSet()),
+      DGFunction<G,RT,typename G::template Codim<0>::LeafIndexSet,o>(grid,grid.leafIndexSet())
     {}
   };
 
@@ -217,8 +198,9 @@ namespace Dune {
   class LevelDGFunction : public DGFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,o>
   {
   public:
-    LevelDGFunction (const G& grid, int level)
-      : DGFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,o>(grid,grid.levelIndexSet(level))
+    LevelDGFunction (const G& grid, int level) :
+      GridFunctionGlobalEvalDefault<G,RT,typename G::template Codim<0>::LevelIndexSet,1>(grid,grid.levelIndexSet(level)),
+      DGFunction<G,RT,typename G::template Codim<0>::LevelIndexSet,o>(grid,grid.levelIndexSet(level))
     {}
   };
 
