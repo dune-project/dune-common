@@ -352,7 +352,7 @@ namespace Dune {
   class SimplexQuadratureRule<ct,1> : public QuadratureRule<ct,1>
   {
   public:
-    enum {dim=1};
+    enum {d=1};
     enum {highest_order=GaussPoints::highest_order};
     typedef ct CoordType;
     typedef SimplexQuadratureRule value_type;
