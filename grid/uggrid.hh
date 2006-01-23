@@ -257,24 +257,31 @@ namespace Dune {
     {
       if (codim==0)
       {
-        if (dim==2) return size(codim,simplex)+size(codim,cube);
-        if (dim==3) return size(codim,simplex)+size(codim,cube)+size(codim,pyramid)+size(codim,prism);
+        if (dim==2)
+          return size(codim,NewGeometryType(NewGeometryType::simplex,2))
+                 + size(codim,NewGeometryType(NewGeometryType::cube,2));
+
+        if (dim==3)
+          return size(codim,NewGeometryType(NewGeometryType::simplex,3))
+                 + size(codim,NewGeometryType(NewGeometryType::pyramid,3))
+                 + size(codim,NewGeometryType(NewGeometryType::prism,3))
+                 + size(codim,NewGeometryType(NewGeometryType::cube,3));
       }
       if (codim==dim)
       {
-        return size(codim,cube);
+        return size(codim,NewGeometryType(0));
       }
       if (codim==dim-1)
       {
-        return size(codim,cube);
+        return size(codim,NewGeometryType(1));
       }
       if (codim==1)
       {
-        return size(1,cube)+size(1,simplex);
+        return size(1,NewGeometryType(NewGeometryType::simplex,dim-1))
+               + size(1, NewGeometryType(NewGeometryType::cube,dim-1));
       }
 
-      std::cout << "dim=" << dim << " codim=" << codim << std::endl;
-      DUNE_THROW(NotImplemented, "not implemented");
+      DUNE_THROW(NotImplemented, "dim=" << dim << " codim=" << codim);
       return 0;
     }
 
@@ -441,7 +448,7 @@ namespace Dune {
         \param type The GeometryType of the new element
         \param vertices The vertices of the new element, using the DUNE numbering
      */
-    void insertElement(GeometryType type,
+    void insertElement(NewGeometryType type,
                        const std::vector<unsigned int>& vertices);
 
     /*@}*/

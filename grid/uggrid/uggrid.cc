@@ -1234,69 +1234,68 @@ void Dune::UGGrid<dim, dimworld>::insertVertex(const FieldVector<double,dimworld
 }
 
 template <int dim, int dimworld>
-void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
+void Dune::UGGrid<dim, dimworld>::insertElement(NewGeometryType type,
                                                 const std::vector<unsigned int>& vertices)
 {
+  if (dim!=type.dim())
+    DUNE_THROW(GridError, "You cannot insert a " << type
+                                                 << " into a UGGrid<" << dim << "," << dimworld << ">!");
+
   int newIdx = elementVertices_.size();
 
   elementTypes_.push_back(vertices.size());
   for (unsigned int i=0; i<vertices.size(); i++)
     elementVertices_.push_back(vertices[i]);
 
-  if (dim==2) {
-    switch (type) {
-    case simplex :
-      // Everything alright
-      if (vertices.size() != 3)
-        DUNE_THROW(GridError, "You have requested to enter a triangle, but you"
-                   << " have provided " << vertices.size() << " vertices!");
-      break;
+  if (type.isTriangle()) {
+    // Everything alright
+    if (vertices.size() != 3)
+      DUNE_THROW(GridError, "You have requested to enter a triangle, but you"
+                 << " have provided " << vertices.size() << " vertices!");
 
-    case cube :
-      if (vertices.size() != 4)
-        DUNE_THROW(GridError, "You have requested to enter a quadrilateral, but you"
-                   << " have provided " << vertices.size() << " vertices!");
+  } else if (type.isQuadrilateral()) {
 
-      // DUNE and UG numberings differ --> reorder the vertices
-      elementVertices_[newIdx+2] = vertices[3];
-      elementVertices_[newIdx+3] = vertices[2];
-      break;
-    default :
-      DUNE_THROW(GridError, "You cannot insert a " << type << " into a UGGrid<2,2>!");
-    }
+    if (vertices.size() != 4)
+      DUNE_THROW(GridError, "You have requested to enter a quadrilateral, but you"
+                 << " have provided " << vertices.size() << " vertices!");
+
+    // DUNE and UG numberings differ --> reorder the vertices
+    elementVertices_[newIdx+2] = vertices[3];
+    elementVertices_[newIdx+3] = vertices[2];
+
+  } else if (type.isTetrahedron()) {
+
+    if (vertices.size() != 4)
+      DUNE_THROW(GridError, "You have requested to enter a tetrahedron, but you"
+                 << " have provided " << vertices.size() << " vertices!");
+
+  } else if (type.isPyramid()) {
+
+    if (vertices.size() != 5)
+      DUNE_THROW(GridError, "You have requested to enter a pyramid, but you"
+                 << " have provided " << vertices.size() << " vertices!");
+
+  } else if (type.isPrism()) {
+
+    if (vertices.size() != 6)
+      DUNE_THROW(GridError, "You have requested to enter a prism, but you"
+                 << " have provided " << vertices.size() << " vertices!");
+
+  } else if (type.isHexahedron()) {
+
+    if (vertices.size() != 8)
+      DUNE_THROW(GridError, "You have requested to enter a hexahedron, but you"
+                 << " have provided " << vertices.size() << " vertices!");
+
+    // DUNE and UG numberings differ --> reorder the vertices
+    elementVertices_[newIdx+2] = vertices[3];
+    elementVertices_[newIdx+3] = vertices[2];
+    elementVertices_[newIdx+6] = vertices[7];
+    elementVertices_[newIdx+7] = vertices[6];
+
   } else {
-    switch (type) {
-    case simplex :
-      if (vertices.size() != 4)
-        DUNE_THROW(GridError, "You have requested to enter a tetrahedron, but you"
-                   << " have provided " << vertices.size() << " vertices!");
-      break;
-    case pyramid :
-      if (vertices.size() != 5)
-        DUNE_THROW(GridError, "You have requested to enter a pyramid, but you"
-                   << " have provided " << vertices.size() << " vertices!");
-      break;
-    case prism :
-      if (vertices.size() != 6)
-        DUNE_THROW(GridError, "You have requested to enter a prism, but you"
-                   << " have provided " << vertices.size() << " vertices!");
-      break;
-
-    case cube :
-      if (vertices.size() != 8)
-        DUNE_THROW(GridError, "You have requested to enter a hexahedron, but you"
-                   << " have provided " << vertices.size() << " vertices!");
-
-      // DUNE and UG numberings differ --> reorder the vertices
-      elementVertices_[newIdx+2] = vertices[3];
-      elementVertices_[newIdx+3] = vertices[2];
-      elementVertices_[newIdx+6] = vertices[7];
-      elementVertices_[newIdx+7] = vertices[6];
-      break;
-    default :
-      DUNE_THROW(GridError, "You cannot insert a " << type << " into a UGGrid<3,3>!");
-
-    }
+    DUNE_THROW(GridError, "You cannot insert a " << type
+                                                 << " into a UGGrid<" << dim << "," << dimworld << ">!");
   }
 
 }
