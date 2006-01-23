@@ -809,31 +809,8 @@ namespace Dune {
 
     virtual BaseFunctionType* baseFunction(int i) const
     {
-      switch (GeometryIdentifier::fromGeo(this->geometry())) {
-      case simplex :
-        switch (FunctionSpaceType::DimDomain) {
-        case 1 :
-          return new
-                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Line, polOrd>(i);
-        case 2 :
-          return new
-                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Triangle, polOrd>(i);
-        case 3 :
-          return new
-                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Tetrahedron, polOrd>(i);
-        }
-      case cube :
-        switch (FunctionSpaceType::DimDomain) {
-        case 1 :
-          return new
-                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Line, polOrd>(i);
-        case 2 :
-          return new
-                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Quadrilateral, polOrd>(i);
-        case 3 :
-          return new
-                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Hexahedron, polOrd>(i);
-        }
+      switch (GeometryIdentifier::fromGeo(this->geometry()))
+      {
       case GeometryIdentifier::Line :
         return new
                LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Line, polOrd>(i);
@@ -866,31 +843,8 @@ namespace Dune {
     {
       const int dimRange = FunctionSpaceType::DimRange;
 
-      switch (GeometryIdentifier::fromGeo(this->geometry())) {
-      case simplex :
-        switch (FunctionSpaceType::DimDomain) {
-        case 1 :
-          return
-            LagrangeDefinition<GeometryIdentifier::Line, polOrd, dimRange>::numOfBaseFct;
-        case 2 :
-          return
-            LagrangeDefinition<GeometryIdentifier::Triangle, polOrd, dimRange>::numOfBaseFct;
-        case 3 :
-          return
-            LagrangeDefinition<GeometryIdentifier::Tetrahedron, polOrd, dimRange>::numOfBaseFct;
-        }
-      case cube :
-        switch (FunctionSpaceType::DimDomain) {
-        case 1 :
-          return
-            LagrangeDefinition<GeometryIdentifier::Line, polOrd, dimRange>::numOfBaseFct;
-        case 2 :
-          return
-            LagrangeDefinition<GeometryIdentifier::Quadrilateral, polOrd, dimRange>::numOfBaseFct;
-        case 3 :
-          return
-            LagrangeDefinition<GeometryIdentifier::Hexahedron, polOrd, dimRange>::numOfBaseFct;
-        }
+      switch (GeometryIdentifier::fromGeo(this->geometry()))
+      {
       case GeometryIdentifier::Line :
         return
           LagrangeDefinition<GeometryIdentifier::Line, polOrd, dimRange>::numOfBaseFct;
