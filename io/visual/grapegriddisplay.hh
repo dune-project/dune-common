@@ -205,29 +205,24 @@ namespace Dune
      ,  g_unknown            = GrapeInterface_three_three::gr_unknown};
 
   //! convert dune geometry types to grape geometry types with numbers
-  static inline GRAPE_ElementType convertToGrapeType ( GeometryType type , int dim )
+  static inline GRAPE_ElementType convertToGrapeType ( NewGeometryType type , int dim )
   {
-    switch(type)
+    if(dim < 3)
     {
-    case simplex :
+      if(type.isTriangle()) return g_triangle;
+      if(type.isQuadrilateral()) return g_quadrilateral;
+      if(type.isVertex()) return g_vertex;
+      if(type.isLine()) return g_line;
+    }
+    else
     {
-      if(dim == 1) return g_line;
-      if(dim == 2) return g_triangle;
-      if(dim == 3) return g_tetrahedron;
+      if(type.isTetrahedron()) return g_tetrahedron;
+      if(type.isHexahedron()) return g_hexahedron;
+      if(type.isPyramid()) return g_pyramid;
+      if(type.isPrism()) return g_prism;
     }
-    case cube :
-    {
-      if(dim == 1) return g_line;
-      if(dim == 2) return g_quadrilateral;
-      if(dim == 3) return g_hexahedron;
-    }
-    case pyramid :  return g_pyramid;
-    case prism :    return g_prism;
-    default :
-    {
-      std::cerr << "No requested conversion for GeometryType " << type << "!\n";
-    }
-    }
+
+    std::cerr << "No requested conversion for GeometryType " << type << "!\n";
     return g_unknown;
   }
 
