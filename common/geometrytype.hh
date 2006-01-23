@@ -11,58 +11,6 @@
 
 namespace Dune {
 
-  /** \brief Enum that declares identifiers for different geometry types.
-
-     This list can be extended in the future. Not all meshes need to implement
-     all geometry types.
-
-     \deprecated Only here during transition to the new ElementType class
-   */
-
-  enum GeometryType {vertex,line, triangle, quadrilateral, tetrahedron,
-                     pyramid, prism, hexahedron,
-                     simplex, cube};
-
-  /** \brief Associates a string to a GeometryType
-     \deprecated Only here during transition to the new ElementType class
-   */
-  inline std::string GeometryName(GeometryType type){
-    switch(type) {
-    case vertex :
-      return "vertex";
-    case line :
-      return "line";
-    case triangle :
-      return "triangle";
-    case quadrilateral :
-      return "quadrilateral";
-    case tetrahedron :
-      return "tetrahedron";
-    case pyramid :
-      return "pyramid";
-    case prism :
-      return "prism";
-    case hexahedron :
-      return "hexahedron";
-    case simplex :
-      return "simplex";
-    case cube :
-      return "cube";
-
-    default :
-      DUNE_THROW(NotImplemented, "name of unknown geometry requested");
-    }
-  }
-
-  /** \brief Stream output of GeometryType
-     \deprecated Only here during transition to the new ElementType class
-   */
-  inline std::ostream& operator<< (std::ostream& s, Dune::GeometryType t)
-  {
-    s << Dune::GeometryName(t);
-    return s;
-  }
-
   /** \brief Unique label for each type of entities that can occur in DUNE grids
 
      This class has to be extended if a grid implementation with new entity types
@@ -99,56 +47,6 @@ namespace Dune {
     explicit NewGeometryType(unsigned int dim)
       : basicType_(cube), dim_(dim)
     {}
-
-    NewGeometryType(Dune::GeometryType type, unsigned int dim) DUNE_DEPRECATED
-      : dim_(dim)
-    {
-      switch(type) {
-      case Dune::vertex :
-        basicType_ = Dune::NewGeometryType::cube;
-        break;
-      case Dune::line :
-        basicType_ = Dune::NewGeometryType::cube;
-        break;
-      case Dune::triangle :
-        basicType_ = Dune::NewGeometryType::simplex;
-        break;
-      case Dune::quadrilateral :
-        basicType_ = Dune::NewGeometryType::cube;
-        break;
-      case Dune::tetrahedron :
-        basicType_ = Dune::NewGeometryType::simplex;
-        break;
-      case Dune::pyramid :
-        basicType_ = Dune::NewGeometryType::pyramid;
-        break;
-      case Dune::prism :
-        basicType_ = Dune::NewGeometryType::prism;
-        break;
-      case Dune::hexahedron :
-        basicType_ = Dune::NewGeometryType::cube;
-        break;
-      case Dune::simplex :
-        basicType_ = Dune::NewGeometryType::simplex;
-        break;
-      case Dune::cube :
-        basicType_ = Dune::NewGeometryType::cube;
-        break;
-      };
-    }
-
-    /** \brief Cast to old-style GeometryType
-        \deprecated Only here for backward compatibility
-     */
-    operator GeometryType() const DUNE_DEPRECATED {
-      switch (basicType_) {
-      case simplex : return Dune::simplex;
-      case cube :    return Dune::cube;
-      case pyramid : return Dune::pyramid;
-      case prism :   return Dune::prism;
-      }
-      DUNE_THROW(Exception, "Non-existing BasicType found!");
-    }
 
     /** @name Setup Methods */
     /*@{*/
