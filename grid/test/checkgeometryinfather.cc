@@ -36,16 +36,46 @@ void checkGeometryInFather(const GridType& grid) {
     for (; eIt!=eEndIt; ++eIt) {
 
       // Get geometry in father
-      typedef typename GridType::template Codim<0>::Entity EntityType;
-      typedef typename EntityType::Geometry Geometry;
+      typedef typename GridType::template Codim<0>::Entity::Geometry Geometry;
+
       const Geometry& geometryInFather = eIt->geometryInFather();
 
-      // Various other checks
-      if (geometryInFather.type() != eIt->father()->geometry().type())
-        DUNE_THROW(GridError, "Type of father and geometryInFather differ!");
+      // //////////////////////////////////////////////////////
+      //   Check for types and constants
+      // //////////////////////////////////////////////////////
 
-      if (geometryInFather.corners() != eIt->father()->geometry().corners())
-        DUNE_THROW(GridError, "father and geometryInFather have different number of corners!");
+      /** \todo How do I check whether Geometry::ctype == GridType::ctype ? */
+      typename Geometry::ctype dummyCType = 0;
+
+      assert(Geometry::dimension==GridType::dimension);
+
+      assert(Geometry::mydimension==GridType::dimension);
+
+      assert(Geometry::coorddimension==GridType::dimensionworld);
+
+      assert(Geometry::dimensionworld==GridType::dimensionworld);
+
+      // ///////////////////////////////////////////////////////
+      //   Check the different methods
+      // ///////////////////////////////////////////////////////
+      if (geometryInFather.type() != eIt->geometry().type())
+        DUNE_THROW(GridError, "Type of geometry and geometryInFather differ!");
+
+      if (geometryInFather.corners() != eIt->geometry().corners())
+        DUNE_THROW(GridError, "entity and geometryInFather have different number of corners!");
+
+      // Compute the element center just to have an argument for the following methods
+      FieldVector<ctype, Geometry::coorddimension> center(0);
+      for (int j=0; j<geometryInFather.corners(); j++)
+        center += geometryInFather[j];
+
+      if (geometryInFather.integrationElement(center) <=0)
+        DUNE_THROW(GridError, "nonpositive integration element found!");
+
+      /** \todo Missing local() */
+      /** \todo Missing global() */
+      /** \todo Missing jacobianInverse() */
+      /** \todo Missing checkInside() */
 
       // /////////////////////////////////////////////////////////////////////////////////////
       // Check whether the positions of the vertices of geometryInFather coincide
