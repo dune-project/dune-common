@@ -458,8 +458,8 @@ namespace Dune {
       _prec.pre(x,b);                 // prepare preconditioner
       _op.applyscaleadd(-1,x,b);      // overwrite b with defect
 
-      X p(x.size());                  // the search direction
-      X q(x.size());                  // a temporary vector
+      X p(x);                  // the search direction
+      X q(x);                  // a temporary vector
 
       double def0 = _sp.norm(b);    // compute norm
       if (def0<1E-30)        // convergence check

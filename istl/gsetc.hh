@@ -401,6 +401,10 @@ namespace Dune {
       bblock rhs;
       xblock v;
 
+      // Initialize nested data structure if there are entries
+      if(A.begin()!=A.end())
+        v=x[0];
+
       rowiterator endi=A.end();
       for (rowiterator i=A.begin(); i!=endi; ++i)
       {
@@ -426,6 +430,10 @@ namespace Dune {
       bblock rhs;
       xblock v;
 
+      // Initialize nested data structure if there are entries
+      if(A.begin()!=A.end())
+        v=x[0];
+
       rowiterator endi=A.rend();
       for (rowiterator i=A.rbegin(); i!=endi; --i)
       {
@@ -450,7 +458,7 @@ namespace Dune {
       typedef typename X::block_type xblock;
       bblock rhs;
 
-      X v(x.size());     // allocate with same size
+      X v(x);     // allocate with same size
 
       rowiterator endi=A.end();
       for (rowiterator i=A.begin(); i!=endi; ++i)
