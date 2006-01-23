@@ -8,90 +8,6 @@
 
 #include <algorithm>
 
-template <int mydim, int coorddim>
-struct UGGridGeometryPositionAccess
-{};
-
-template <>
-struct UGGridGeometryPositionAccess<0,3>
-{
-  static inline
-  void get(TargetType<3,3>::T* target,
-           int i,
-           FieldVector<double, 3>& coord) {
-
-    coord[0] = target->myvertex->iv.x[0];
-    coord[1] = target->myvertex->iv.x[1];
-    coord[2] = target->myvertex->iv.x[2];
-
-  }
-
-};
-
-
-template <>
-struct UGGridGeometryPositionAccess<3,3>
-{
-  static inline
-  void get(TargetType<0,3>::T* target,
-           int i,
-           FieldVector<double, 3>& coord) {
-
-    if (UG_NS<3>::Tag(target) == UG3d::HEXAHEDRON) {
-      // Dune numbers the vertices of a hexahedron differently than UG.
-      // The following two lines do the transformation
-      const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-      i = renumbering[i];
-    }
-
-    UG3d::VERTEX* vertex = UG_NS<3>::Corner(target,i)->myvertex;
-
-    for (int j=0; j<3; j++)
-      coord[j] = vertex->iv.x[j];
-
-  }
-
-};
-
-template <>
-struct UGGridGeometryPositionAccess<0,2>
-{
-  static inline
-  void get(TargetType<2,2>::T* target,
-           int i,
-           FieldVector<double, 2>& coord) {
-
-    coord[0] = target->myvertex->iv.x[0];
-    coord[1] = target->myvertex->iv.x[1];
-
-  }
-
-};
-
-template <>
-struct UGGridGeometryPositionAccess<2,2>
-{
-  static inline
-  void get(TargetType<0,2>::T* target,
-           int i,
-           FieldVector<double, 2>& coord) {
-
-    if (UG_NS<2>::Tag(target) == UG2d::QUADRILATERAL) {
-      // Dune numbers the vertices of a quadrilateral differently than UG.
-      // The following two lines do the transformation
-      const int renumbering[4] = {0, 1, 3, 2};
-      i = renumbering[i];
-    }
-
-    UG2d::VERTEX* vertex = UG_NS<2>::Corner(target,i)->myvertex;
-
-    for (int j=0; j<2; j++)
-      coord[j] = vertex->iv.x[j];
-
-  }
-
-};
-
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -150,8 +66,43 @@ template<int mydim, int coorddim, class GridImp>
 inline const FieldVector<typename GridImp::ctype, coorddim>& UGGridGeometry<mydim,coorddim,GridImp>::
 operator [](int i) const
 {
-  if (mode_==element_mode)
-    UGGridGeometryPositionAccess<mydim,coorddim>::get(target_, i, coord_[i]);
+  // This geometry is a vertex
+  if (mydim==0) {
+    assert(i==0);
+    // The cast onto typename UGTypes<coorddim>::Node*
+    // is only correct if this geometry represents a vertex.  But this is so since
+    // we are within an if (mydim==0) clause.
+    for (int i=0; i<coorddim; i++)
+      coord_[0][i] = ((typename UGTypes<coorddim>::Node*)target_)->myvertex->iv.x[i];
+
+    return coord_[0];
+  }
+
+  // ////////////////////////////////
+  //  This geometry is an element
+  // ////////////////////////////////
+  assert(mydim==coorddim);
+
+  // Renumber the vertices of Dune numbering to UG numbering
+  if (mydim==3 && type().isHexahedron()) {
+    // Dune numbers the vertices of a hexahedron differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    i = renumbering[i];
+  }
+
+  if (mydim==2 && type().isQuadrilateral()) {
+    // Dune numbers the vertices of a quadrilateral differently than UG.
+    // The following two lines do the transformation
+    const int renumbering[4] = {0, 1, 3, 2};
+    i = renumbering[i];
+  }
+
+  if (mode_==element_mode) {
+    typename UGTypes<coorddim>::Node* corner = UG_NS<coorddim>::Corner(((typename UGTypes<coorddim>::Element*)target_),i);
+    for (int j=0; j<coorddim; j++)
+      coord_[i][j] = corner->myvertex->iv.x[j];
+  }
 
   return coord_[i];
 }
@@ -335,7 +286,7 @@ global(const FieldVector<typename GridImp::ctype, 2>& local) const
 
   FieldVector<UGCtype, 3> result;
 
-  if (elementType_ == simplex) {
+  if (elementType_.isSimplex()) {
 
     for (int i=0; i<3; i++)
       result[i] = (1.0-local[0]-local[1])*coord_[0][i]

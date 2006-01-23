@@ -29,7 +29,7 @@ namespace Dune {
       this->realGeometry.setToTarget(target);
     }
 
-    void setCoords (int n, const FieldVector<UGCtype, coorddim>& pos) {
+    void setCoords (int n, const UGCtype* pos) {
       this->realGeometry.setCoords(n,pos);
     }
 
@@ -205,11 +205,13 @@ namespace Dune {
     }
 
     //! \brief set a corner
-    void setCoords (int i, const FieldVector<UGCtype,coorddim>& pos)
+    void setCoords (int i, const UGCtype* pos)
     {
       if (mode_!=coord_mode)
         DUNE_THROW(GridError,"mode must be coord_mode!");
-      coord_[i] = pos;
+
+      for (int j=0; j<coorddim; j++)
+        coord_[i][j] = pos[j];
     }
 
     //! the vertex coordinates
@@ -254,22 +256,20 @@ namespace Dune {
 
     /** \brief Default constructor */
     UGGridGeometry()
-    {elementType_=simplex;}
+    {elementType_=NewGeometryType(NewGeometryType::simplex,2);}
 
     //! return the element type identifier (triangle or quadrilateral)
     NewGeometryType type () const {
-      return (elementType_==simplex)
-             ? NewGeometryType(NewGeometryType::simplex,2)
-             : NewGeometryType(NewGeometryType::cube,2);
+      return elementType_;
     }
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners () const {return (elementType_==simplex) ? 3 : 4;}
+    int corners () const {return (elementType_.isSimplex()) ? 3 : 4;}
 
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<UGCtype, 3>& operator[] (int i) const
     {
-      if (elementType_==cube) {
+      if (elementType_.isCube()) {
         // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
         // The following two lines do the transformation
         // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
@@ -306,11 +306,11 @@ namespace Dune {
 
     void setNumberOfCorners(int n) {
       assert(n==3 || n==4);
-      elementType_ = (n==3) ? simplex : cube;
+      elementType_ = NewGeometryType( (n==3) ? NewGeometryType::simplex : NewGeometryType::cube,2);
     }
 
     //! The element type, either triangle or quadrilateral
-    GeometryType elementType_;
+    NewGeometryType elementType_;
 
     //! the vertex coordinates
     mutable FixedArray<FieldVector<UGCtype, 3>, 4> coord_;
