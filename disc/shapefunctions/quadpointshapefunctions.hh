@@ -124,7 +124,7 @@ namespace Dune
     };
 
     //! return local coordinates of this integration point
-    const FieldVector<ct, dq>& position () const
+    const FieldVector<C, dq>& position () const
     {
       return q->position();
     }
@@ -217,7 +217,7 @@ namespace Dune
     };
 
     //! return local coordinates of integration point i
-    const FieldVector<ct, dq>& position () const
+    const FieldVector<C, dq>& position () const
     {
       return q.position();
     }
