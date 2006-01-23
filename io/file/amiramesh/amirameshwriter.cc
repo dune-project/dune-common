@@ -30,7 +30,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
                               ? ((containsOnlySimplices) ? 4 : 8)
                               : ((containsOnlySimplices) ? 3 : 4);
 
-  int noOfNodes = leafIndexSet.size(dim, vertex);
+  int noOfNodes = leafIndexSet.size(dim);
   int noOfElem  = leafIndexSet.size(0);
 
   // create amiramesh object
