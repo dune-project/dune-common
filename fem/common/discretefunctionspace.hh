@@ -24,85 +24,82 @@ namespace Dune {
     GeometryIdentifier(IdentifierType idType) :
       identifier_(idType) {}
 
-    GeometryIdentifier(int dimension, GeometryType geoType) :
+    GeometryIdentifier(int dimension, NewGeometryType geoType) :
       identifier_(GeometryIdentifier::fromGeo(dimension, geoType)) {}
 
-    operator GeometryType() const {
+    operator NewGeometryType() const {
       return GeometryIdentifier::toGeo(identifier_);
     }
     operator IdentifierType() const { return identifier_; }
 
-    static GeometryType toGeo(IdentifierType id) {
+    static NewGeometryType toGeo(IdentifierType id) {
       switch(id) {
       case Vertex :
-        return vertex;
+        return NewGeometryType(NewGeometryType::simplex,0);
       case Line :
       {
         //lines are simplices, more than cubes ;)
-        return simplex;
+        return NewGeometryType(NewGeometryType::simplex,1);
       }
       case Triangle :
+        return NewGeometryType(NewGeometryType::simplex,2);
       case Tetrahedron :
-        return simplex;
+        return NewGeometryType(NewGeometryType::simplex,3);
       case Quadrilateral :
+        return NewGeometryType(NewGeometryType::cube,2);
       case Hexahedron :
-        return cube;
+        return NewGeometryType(NewGeometryType::cube,3);
       case Pyramid :
-        return pyramid;
+        return NewGeometryType(NewGeometryType::pyramid,3);
       case Prism :
-        return prism;
+        return NewGeometryType(NewGeometryType::prism,3);
       default :
       {
         assert(false);
         abort();
         // vertex is the new unknown ;)
-        return vertex;
+        return NewGeometryType(NewGeometryType::simplex,0);
       }
       }
     }
 
-    static IdentifierType fromGeo(int dimension, GeometryType geo) {
-      switch(geo) {
-      case vertex :
-        return Vertex;
-      case simplex :
-        switch(dimension) {
-        case 1 :
-          return Line;
-        case 2 :
-          return Triangle;
-        case 3 :
-          return Tetrahedron;
-        default :
-          return Unknown;
-        }
-      case cube :
-        switch(dimension) {
-        case 1 :
-          return Line;
-        case 2 :
-          return Quadrilateral;
-        case 3 :
-          return Hexahedron;
-        default :
-          return Unknown;
-        }
-      case pyramid :
-        return Pyramid;
-      case prism :
-        return Prism;
-      // * old types (to be removed later)
-      case line :
-        return Line;
-      case triangle :
-        return Triangle;
-      case quadrilateral :
-        return Quadrilateral;
-      case tetrahedron :
-        return Tetrahedron;
-      case hexahedron :
-        return Hexahedron;
+    //! return conversion from geometry to identifier
+    static IdentifierType fromGeo(NewGeometryType geo) {
+      return fromGeo(geo.dim(),geo);
+    }
+
+    //! return conversion from geometry to identifier
+    static IdentifierType fromGeo(int dimension, NewGeometryType geo) {
+
+      switch(dim) {
+      case 0 : return Vertex;
+      case 1 : return Line;
+      case 2 :
+      {
+        if( geo.isSimplex() ) return Triangle;
+        if( geo.isCube() ) return Quadrilateral;
+
+        std::cerr<<"Wrong GeometryType in fremGrom \n";
+        DUNE_THROW(NotImplemented,"GeometryType not implemented");
+        abort();
+        return Unknown;
+      }
+      case 3 :
+      {
+        if(geo.isSimplex()) return Tetrahedron;
+        if(geo.isCube()   ) return Hexahedron;
+        if(geo.isPyramid()) return Pyramid;
+        if(geo.isPrism()  ) return Prism;
+
+        std::cerr<<"Wrong GeometryType in fremGrom \n";
+        DUNE_THROW(NotImplemented,"GeometryType not implemented");
+        abort();
+        return Unknown;
+      }
       default :
+        std::cerr<<"Wrong GeometryType in fremGrom \n";
+        DUNE_THROW(NotImplemented,"GeometryType not implemented");
+        abort();
         return Unknown;
       }
     }

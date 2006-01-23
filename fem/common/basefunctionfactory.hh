@@ -18,7 +18,7 @@ namespace Dune {
   public:
     typedef BaseFunctionInterface<FunctionSpaceImp> BaseFunctionType;
   public:
-    BaseFunctionFactory(GeometryType geo) :
+    BaseFunctionFactory(NewGeometryType geo) :
       geo_(geo)
     {}
 
@@ -26,9 +26,9 @@ namespace Dune {
 
     virtual int numBaseFunctions() const = 0;
 
-    GeometryType geometry() const { return geo_; }
+    NewGeometryType geometry() const { return geo_; }
   private:
-    GeometryType geo_;
+    NewGeometryType geo_;
   };
 
 

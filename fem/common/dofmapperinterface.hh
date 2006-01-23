@@ -75,6 +75,11 @@ namespace Dune {
       return asImp().additionalSizeEstimate();
     }
 
+    bool needCompress () const
+    {
+      return asImp().needCompress ();
+    }
+
   private:
     //! Barton-Nackman trick
     DofMapperImp &asImp()  { return static_cast<DofMapperImp &>(*this); };
