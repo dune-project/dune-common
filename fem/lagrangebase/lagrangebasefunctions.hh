@@ -15,11 +15,11 @@
 namespace Dune {
 
   //! definition of LagrangeBaseFunction, implementation via specialization
-  template<class FunctionSpaceType, GeometryType ElType, int polOrd>
+  template<class FunctionSpaceType, GeometryIdentifier::IdentifierType ElType, int polOrd>
   class LagrangeBaseFunction;
 
   //! Piecewise const base functions
-  template<class FunctionSpaceType, GeometryType ElType>
+  template<class FunctionSpaceType, GeometryIdentifier::IdentifierType ElType>
   class LagrangeBaseFunction < FunctionSpaceType , ElType , 0 >
     : public BaseFunctionInterface<FunctionSpaceType>
   {
@@ -62,12 +62,12 @@ namespace Dune {
 
   //*****************************************************************
   //
-  //! Lagrange base for lines and polynom order = 1
+  //! Lagrange base for Lines and polynom order = 1
   //! (0) 0-----1 (1)
   //
   //*****************************************************************
   template<class FunctionSpaceType>
-  class LagrangeBaseFunction < FunctionSpaceType , line , 1 >
+  class LagrangeBaseFunction < FunctionSpaceType , GeometryIdentifier::Line , 1 >
     : public BaseFunctionInterface<FunctionSpaceType>
   {
     typedef typename FunctionSpaceType::DomainType DomainType;
@@ -111,7 +111,7 @@ namespace Dune {
     virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const DomainType & x, RangeType & phi) const
     {
-      // function is linear, therefore
+      // function is Linear, therefore
       phi = 0.0 ;
     }
 
@@ -136,7 +136,7 @@ namespace Dune {
   //
   //*****************************************************************
   template<class FunctionSpaceType>
-  class LagrangeBaseFunction < FunctionSpaceType , triangle , 1 >
+  class LagrangeBaseFunction < FunctionSpaceType , GeometryIdentifier::Triangle , 1 >
     : public BaseFunctionInterface<FunctionSpaceType>
   {
     typedef typename FunctionSpaceType::DomainType DomainType;
@@ -190,20 +190,20 @@ namespace Dune {
     virtual void evaluate ( const DiffVariable<2>::Type &diffVariable,
                             const DomainType & x, RangeType & phi) const
     {
-      // function is linear, therefore
+      // function is Linear, therefore
       phi = 0.0 ;
     }
   };
 
   //*****************************************************************
   //
-  //! LagrangeBaseFunction for tetrahedrons and polynom order = 1
+  //! LagrangeBaseFunction for Tetrahedrons and polynom order = 1
   //!
   //!  see reference element Dune tetrahedra
   //!
   //*****************************************************************
   template<class FunctionSpaceType>
-  class LagrangeBaseFunction < FunctionSpaceType , tetrahedron , 1 >
+  class LagrangeBaseFunction < FunctionSpaceType , GeometryIdentifier::Tetrahedron , 1 >
     : public BaseFunctionInterface<FunctionSpaceType>
   {
     typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
@@ -254,20 +254,20 @@ namespace Dune {
     virtual void evaluate ( const DiffVariable<2>::Type &diffVariable,
                             const DomainType & x, RangeType & phi) const
     {
-      // function is linear, therfore
+      // function is Linear, therfore
       phi = 0.0 ;
     }
   };
 
   //*********************************************************************
   //
-  //! Bilinear BaseFunctions for quadrilaterals
+  //! BiLinear BaseFunctions for Quadrilaterals
   //! v(x,y) = (alpha + beta * x) * ( gamma + delta * y)
   //! see W. Hackbusch, page 162
   //
   //*********************************************************************
   template<class FunctionSpaceType>
-  class LagrangeBaseFunction<FunctionSpaceType,quadrilateral,1>
+  class LagrangeBaseFunction<FunctionSpaceType,GeometryIdentifier::Quadrilateral,1>
     : public BaseFunctionInterface<FunctionSpaceType>
   {
     typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
@@ -349,11 +349,11 @@ namespace Dune {
 
   // *********************************************************************
   //
-  //   First-order Lagrange shape functions for the pyramid
+  //   First-order Lagrange shape functions for the Pyramid
   //
   // *********************************************************************
   template<class FunctionSpaceType>
-  class LagrangeBaseFunction<FunctionSpaceType,pyramid,1>
+  class LagrangeBaseFunction<FunctionSpaceType,GeometryIdentifier::Pyramid,1>
     : public BaseFunctionInterface<FunctionSpaceType>
   {
     typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
@@ -459,7 +459,7 @@ namespace Dune {
     virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const DomainType & x, RangeType & phi) const
     {
-      std::cout << "BaseFunction for pyramid, evaluate 2nd derivative not implemented! \n";
+      std::cout << "BaseFunction for Pyramid, evaluate 2nd derivative not implemented! \n";
       phi = 0.0;
     }
 
@@ -469,11 +469,11 @@ namespace Dune {
 
   // *********************************************************************
   //
-  //   First-order Lagrange shape functions for the prism
+  //   First-order Lagrange shape functions for the Prism
   //
   // *********************************************************************
   template<class FunctionSpaceType>
-  class LagrangeBaseFunction<FunctionSpaceType,prism,1>
+  class LagrangeBaseFunction<FunctionSpaceType,GeometryIdentifier::Prism,1>
     : public BaseFunctionInterface<FunctionSpaceType>
   {
     typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
@@ -573,7 +573,7 @@ namespace Dune {
     virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const DomainType & x, RangeType & phi) const
     {
-      std::cout << "BaseFunction for pyramid, evaluate 2nd derivative not implemented! \n";
+      std::cout << "BaseFunction for Pyramid, evaluate 2nd derivative not implemented! \n";
       phi = 0.0;
     }
 
@@ -583,11 +583,11 @@ namespace Dune {
   //*********************************************************************
   //
   //
-  //! Trilinear BaseFunctions for hexahedrons
+  //! Trilinear BaseFunctions for Hexahedrons
   //! v(x,y,z) = (alpha + beta * x) * ( gamma + delta * y) * (omega + eps * z)
   //!
   //!
-  //! local node numbers and face numbers for DUNE hexahedrons
+  //! local node numbers and face numbers for DUNE Hexahedrons
   //!
   //!             6---------7
   //!            /.        /|
@@ -601,11 +601,11 @@ namespace Dune {
   //!         |.        |/
   //!         0---------1
   //!      (0,0,0)    (1,0,0)
-  //!  this is the DUNE local coordinate system for hexahedrons
+  //!  this is the DUNE local coordinate system for Hexahedrons
   //!
   //*********************************************************************
   template<class FunctionSpaceType>
-  class LagrangeBaseFunction<FunctionSpaceType,hexahedron,1>
+  class LagrangeBaseFunction<FunctionSpaceType,GeometryIdentifier::Hexahedron,1>
     : public BaseFunctionInterface<FunctionSpaceType>
   {
     typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
@@ -670,7 +670,7 @@ namespace Dune {
     virtual void evaluate ( const FieldVector<deriType, 2> &diffVariable,
                             const DomainType & x, RangeType & phi) const
     {
-      std::cout << "BaseFunction for hexahedron, evaluate 2nd derivative not implemented! \n";
+      std::cout << "BaseFunction for Hexahedron, evaluate 2nd derivative not implemented! \n";
       phi = 0.0;
     }
 
@@ -678,56 +678,56 @@ namespace Dune {
 
   //! default definition stays empty because implementation via
   //! specialization
-  template <GeometryType ElType, int polOrd ,int dimrange > struct LagrangeDefinition;
+  template <GeometryIdentifier::IdentifierType ElType, int polOrd ,int dimrange > struct LagrangeDefinition;
 
-  //! Lagrange Definition for lines
+  //! Lagrange Definition for Lines
   template <int polOrd , int dimrange >
-  struct LagrangeDefinition< line , polOrd, dimrange >
+  struct LagrangeDefinition< GeometryIdentifier::Line , polOrd, dimrange >
   {
     enum { numOfBaseFct = (dimrange * (polOrd+1)) };
   };
 
-  //! Lagrange Definition for triangles
+  //! Lagrange Definition for GeometryIdentifier::Triangles
   template <int polOrd , int dimrange >
-  struct LagrangeDefinition< triangle , polOrd, dimrange >
+  struct LagrangeDefinition< GeometryIdentifier::Triangle , polOrd, dimrange >
   {
     enum { numOfBaseFct = (dimrange * (polOrd+1) * (polOrd+2) / 2) };
   };
 
-  //! Lagrange Definition for quadrilaterals
+  //! Lagrange Definition for Quadrilaterals
   template <int polOrd , int dimrange >
-  struct LagrangeDefinition< quadrilateral , polOrd, dimrange >
+  struct LagrangeDefinition< GeometryIdentifier::Quadrilateral , polOrd, dimrange >
   {
     enum { numOfBaseFct = dimrange * (polOrd+1) * (polOrd+1) };
   };
 
-  //! Lagrange Definition for tetrahedrons
+  //! Lagrange Definition for Tetrahedrons
   template <int polOrd , int dimrange >
-  struct LagrangeDefinition< tetrahedron , polOrd, dimrange >
+  struct LagrangeDefinition< GeometryIdentifier::Tetrahedron , polOrd, dimrange >
   {
     /** \bug This formula is wrong! */
     enum { numOfBaseFct = (polOrd == 0) ? (1*dimrange) : (dimrange * 4 * polOrd) };
   };
 
-  //! Lagrange Definition for pyramids
+  //! Lagrange Definition for Pyramids
   /** \todo Generalize this to higher orders */
   template <int polOrd, int dimrange >
-  struct LagrangeDefinition< pyramid , polOrd, dimrange >
+  struct LagrangeDefinition< GeometryIdentifier::Pyramid , polOrd, dimrange >
   {
     enum { numOfBaseFct = dimrange * 5};
   };
 
-  //! Lagrange Definition for prisms
+  //! Lagrange Definition for Prisms
   /** \todo Generalize this to higher orders */
   template <int polOrd, int dimrange >
-  struct LagrangeDefinition< prism , polOrd, dimrange >
+  struct LagrangeDefinition< GeometryIdentifier::Prism , polOrd, dimrange >
   {
     enum { numOfBaseFct = dimrange * 6};
   };
 
-  //! Lagrange Definition for hexahedrons
+  //! Lagrange Definition for Hexahedrons
   template <int polOrd , int dimrange >
-  struct LagrangeDefinition< hexahedron , polOrd, dimrange >
+  struct LagrangeDefinition< GeometryIdentifier::Hexahedron , polOrd, dimrange >
   {
     enum { numOfBaseFct = dimrange * (polOrd+1) * (polOrd+1) * (polOrd+1) };
   };
@@ -748,7 +748,7 @@ namespace Dune {
    */
   //
   //*********************************************************************
-  template<class FunctionSpaceType, GeometryType ElType, int polOrd >
+  template<class FunctionSpaceType, GeometryIdentifier::IdentifierType ElType, int polOrd >
   class LagrangeFastBaseFunctionSet
     : public FastBaseFunctionSet<FunctionSpaceType >
   {
@@ -803,58 +803,58 @@ namespace Dune {
     typedef ScalarFunctionSpaceImp FunctionSpaceType;
     typedef BaseFunctionInterface<FunctionSpaceType> BaseFunctionType;
   public:
-    LagrangeBaseFunctionFactory(GeometryType geo) :
+    LagrangeBaseFunctionFactory(NewGeometryType geo) :
       BaseFunctionFactory<FunctionSpaceType>(geo)
     {}
 
     virtual BaseFunctionType* baseFunction(int i) const
     {
-      switch (this->geometry()) {
+      switch (GeometryIdentifier::fromGeo(this->geometry())) {
       case simplex :
         switch (FunctionSpaceType::DimDomain) {
         case 1 :
           return new
-                 LagrangeBaseFunction<FunctionSpaceType, line, polOrd>(i);
+                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Line, polOrd>(i);
         case 2 :
           return new
-                 LagrangeBaseFunction<FunctionSpaceType, triangle, polOrd>(i);
+                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Triangle, polOrd>(i);
         case 3 :
           return new
-                 LagrangeBaseFunction<FunctionSpaceType, tetrahedron, polOrd>(i);
+                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Tetrahedron, polOrd>(i);
         }
       case cube :
         switch (FunctionSpaceType::DimDomain) {
         case 1 :
           return new
-                 LagrangeBaseFunction<FunctionSpaceType, line, polOrd>(i);
+                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Line, polOrd>(i);
         case 2 :
           return new
-                 LagrangeBaseFunction<FunctionSpaceType, quadrilateral, polOrd>(i);
+                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Quadrilateral, polOrd>(i);
         case 3 :
           return new
-                 LagrangeBaseFunction<FunctionSpaceType, hexahedron, polOrd>(i);
+                 LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Hexahedron, polOrd>(i);
         }
-      case line :
+      case GeometryIdentifier::Line :
         return new
-               LagrangeBaseFunction<FunctionSpaceType, line, polOrd>(i);
-      case triangle :
+               LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Line, polOrd>(i);
+      case GeometryIdentifier::Triangle :
         return new
-               LagrangeBaseFunction<FunctionSpaceType, triangle, polOrd>(i);
-      case tetrahedron :
+               LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Triangle, polOrd>(i);
+      case GeometryIdentifier::Tetrahedron :
         return new
-               LagrangeBaseFunction<FunctionSpaceType, tetrahedron, polOrd>(i);
-      case quadrilateral :
+               LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Tetrahedron, polOrd>(i);
+      case GeometryIdentifier::Quadrilateral :
         return new
-               LagrangeBaseFunction<FunctionSpaceType, quadrilateral, polOrd>(i);
-      case hexahedron :
+               LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Quadrilateral, polOrd>(i);
+      case GeometryIdentifier::Hexahedron :
         return new
-               LagrangeBaseFunction<FunctionSpaceType, hexahedron, polOrd>(i);
-      case prism :
+               LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Hexahedron, polOrd>(i);
+      case GeometryIdentifier::Prism :
         return new
-               LagrangeBaseFunction<FunctionSpaceType, prism, polOrd>(i);
-      case pyramid :
+               LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Prism, polOrd>(i);
+      case GeometryIdentifier::Pyramid :
         return new
-               LagrangeBaseFunction<FunctionSpaceType, pyramid, polOrd>(i);
+               LagrangeBaseFunction<FunctionSpaceType, GeometryIdentifier::Pyramid, polOrd>(i);
       default :
         DUNE_THROW(NotImplemented,
                    "The chosen geometry type is not implemented");
@@ -866,52 +866,52 @@ namespace Dune {
     {
       const int dimRange = FunctionSpaceType::DimRange;
 
-      switch (this->geometry()) {
+      switch (GeometryIdentifier::fromGeo(this->geometry())) {
       case simplex :
         switch (FunctionSpaceType::DimDomain) {
         case 1 :
           return
-            LagrangeDefinition<line, polOrd, dimRange>::numOfBaseFct;
+            LagrangeDefinition<GeometryIdentifier::Line, polOrd, dimRange>::numOfBaseFct;
         case 2 :
           return
-            LagrangeDefinition<triangle, polOrd, dimRange>::numOfBaseFct;
+            LagrangeDefinition<GeometryIdentifier::Triangle, polOrd, dimRange>::numOfBaseFct;
         case 3 :
           return
-            LagrangeDefinition<tetrahedron, polOrd, dimRange>::numOfBaseFct;
+            LagrangeDefinition<GeometryIdentifier::Tetrahedron, polOrd, dimRange>::numOfBaseFct;
         }
       case cube :
         switch (FunctionSpaceType::DimDomain) {
         case 1 :
           return
-            LagrangeDefinition<line, polOrd, dimRange>::numOfBaseFct;
+            LagrangeDefinition<GeometryIdentifier::Line, polOrd, dimRange>::numOfBaseFct;
         case 2 :
           return
-            LagrangeDefinition<quadrilateral, polOrd, dimRange>::numOfBaseFct;
+            LagrangeDefinition<GeometryIdentifier::Quadrilateral, polOrd, dimRange>::numOfBaseFct;
         case 3 :
           return
-            LagrangeDefinition<hexahedron, polOrd, dimRange>::numOfBaseFct;
+            LagrangeDefinition<GeometryIdentifier::Hexahedron, polOrd, dimRange>::numOfBaseFct;
         }
-      case line :
+      case GeometryIdentifier::Line :
         return
-          LagrangeDefinition<line, polOrd, dimRange>::numOfBaseFct;
-      case triangle :
+          LagrangeDefinition<GeometryIdentifier::Line, polOrd, dimRange>::numOfBaseFct;
+      case GeometryIdentifier::Triangle :
         return
-          LagrangeDefinition<triangle, polOrd, dimRange>::numOfBaseFct;
-      case tetrahedron :
+          LagrangeDefinition<GeometryIdentifier::Triangle, polOrd, dimRange>::numOfBaseFct;
+      case GeometryIdentifier::Tetrahedron :
         return
-          LagrangeDefinition<tetrahedron, polOrd, dimRange>::numOfBaseFct;
-      case quadrilateral :
+          LagrangeDefinition<GeometryIdentifier::Tetrahedron, polOrd, dimRange>::numOfBaseFct;
+      case GeometryIdentifier::Quadrilateral :
         return
-          LagrangeDefinition<quadrilateral, polOrd, dimRange>::numOfBaseFct;
-      case hexahedron :
+          LagrangeDefinition<GeometryIdentifier::Quadrilateral, polOrd, dimRange>::numOfBaseFct;
+      case GeometryIdentifier::Hexahedron :
         return
-          LagrangeDefinition<hexahedron, polOrd, dimRange>::numOfBaseFct;
-      case prism :
+          LagrangeDefinition<GeometryIdentifier::Hexahedron, polOrd, dimRange>::numOfBaseFct;
+      case GeometryIdentifier::Prism :
         return
-          LagrangeDefinition<prism, polOrd, dimRange>::numOfBaseFct;
-      case pyramid :
+          LagrangeDefinition<GeometryIdentifier::Prism, polOrd, dimRange>::numOfBaseFct;
+      case GeometryIdentifier::Pyramid :
         return
-          LagrangeDefinition<pyramid, polOrd, dimRange>::numOfBaseFct;
+          LagrangeDefinition<GeometryIdentifier::Pyramid, polOrd, dimRange>::numOfBaseFct;
       default :
         DUNE_THROW(NotImplemented,
                    "The chosen geometry type is not implemented");

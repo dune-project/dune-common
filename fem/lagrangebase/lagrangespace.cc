@@ -33,7 +33,7 @@ namespace Dune {
     typedef typename GridType :: template Codim<0> :: Entity EntityType;
     IteratorType endit  = gridPart.template end<0>();
     for(IteratorType it = gridPart.template begin<0>(); it != endit; ++it) {
-      GeometryType geo = (*it).geometry().type(); // Hack
+      NewGeometryType geo = (*it).geometry().type(); // Hack
       int dimension = static_cast<int>( EntityType::mydimension);
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
@@ -76,7 +76,7 @@ namespace Dune {
   getBaseFunctionSet (EntityType &en) const
   {
 
-    GeometryType geo =  en.geometry().type();
+    NewGeometryType geo =  en.geometry().type();
     int dimension = static_cast<int>(EntityType::mydimension);
     assert(GeometryIdentifier::fromGeo(dimension,geo)<(int) baseFuncSet_.size());
     assert(GeometryIdentifier::fromGeo(dimension, geo) >= 0);
@@ -123,29 +123,6 @@ namespace Dune {
     return mapper_->mapToGlobal ( en , localNum );
   }
 
-  /*
-     template <class FunctionSpaceImp, class GridPartImp, int polOrd>
-     template< class DiscFuncType >
-     inline typename DiscFuncType :: MemObjectType &
-     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-     signIn (DiscFuncType & df) const
-     {
-     // only for gcc to pass type DofType
-     assert(mapper_ != 0);
-
-     return dm_.addDofSet( df.getStorageType() , *mapper_, df.name() );
-     }
-
-     template <class FunctionSpaceImp, class GridPartImp, int polOrd>
-     template <class DiscFuncType>
-     inline bool
-     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-     signOut (DiscFuncType & df) const
-     {
-     return dm_.removeDofSet( df.memObj() );
-     }
-   */
-
   template <class FunctionSpaceImp, class GridPartImp, int polOrd>
   const typename LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::MapperType&
   LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::mapper() const {
@@ -167,72 +144,6 @@ namespace Dune {
         ScalarFunctionSpaceType, polOrd> fac(en.geometry().type());
     return new BaseFunctionSetType(fac);
   }
-  /*
-     template <class FunctionSpaceImp, class GridPartImp, int polOrd>
-     template <class EntityType>
-     inline typename
-     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-     BaseFunctionSetType*
-     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-     setBaseFuncSetPointer ( EntityType &en,const IndexSetType& iset )
-     {
-     switch (en.geometry().type())
-        {
-        case line         : return makeBaseSet<line,polOrd> (iset);
-        case triangle     : return makeBaseSet<triangle,polOrd> (iset);
-        case quadrilateral: return makeBaseSet<quadrilateral,polOrd> (iset);
-        case tetrahedron  : return makeBaseSet<tetrahedron,polOrd> (iset);
-        case pyramid      : return makeBaseSet<pyramid,polOrd> (iset);
-        case prism        : return makeBaseSet<prism,polOrd> (iset);
-        case hexahedron   : return makeBaseSet<hexahedron,polOrd> (iset);
 
-        case simplex :
-          switch (EntityType::dimension) {
-          case 1: return makeBaseSet<line,polOrd> (iset);
-          case 2: return makeBaseSet<triangle,polOrd> (iset);
-          case 3: return makeBaseSet<tetrahedron,polOrd> (iset);
-          default:
-            DUNE_THROW(NotImplemented, "No Lagrange function spaces for simplices of dimension "
-                       << EntityType::dimension << "!");
-          }
-
-        case cube :
-          switch (EntityType::dimension) {
-          case 1: return makeBaseSet<line,polOrd> (iset);
-          case 2: return makeBaseSet<quadrilateral,polOrd> (iset);
-          case 3: return makeBaseSet<hexahedron,polOrd> (iset);
-          default:
-            DUNE_THROW(NotImplemented,
-                       "No Lagrange function spaces for cubes of dimension "
-                       << EntityType::dimension << "!");
-          }
-
-        default: {
-            DUNE_THROW(NotImplemented, "Element type "
-                       << en.geometry().type() << " is not provided yet!");
-        }
-     }
-     }
-
-     template <class FunctionSpaceImp, class GridPartImp, int polOrd>
-     template <GeometryType ElType, int pO >
-     inline typename
-     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-     BaseFunctionSetType *
-     LagrangeDiscreteFunctionSpace<FunctionSpaceImp, GridPartImp, polOrd>::
-     makeBaseSet (const IndexSetType& iset)
-     {
-     typedef LagrangeFastBaseFunctionSet < LagrangeDiscreteFunctionSpaceType,
-          ElType, pO > BaseFuncSetType;
-
-     BaseFuncSetType * baseFuncSet = new BaseFuncSetType ( *this );
-
-     mapper_ = new MapperType (const_cast<IndexSetType&>(iset),
-                              baseFuncSet->numBaseFunctions());
-
-     return baseFuncSet;
-     }
-   */
 } // end namespace Dune
-
 #endif
