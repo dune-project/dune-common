@@ -86,6 +86,7 @@ namespace Dune {
     DefaultEmptyIndexSet () {}
 
     //! return false mean the no memory has to be allocated
+    //! and no compress of date has to be done
     bool compress () { return false; }
 
     //! do nothing here, because fathers index should already exist
