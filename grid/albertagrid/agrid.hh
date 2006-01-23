@@ -1036,6 +1036,9 @@ namespace Dune
     //! coordinates for higher order boundary
     const NormalVecType & integrationOuterNormal (const LocalCoordType & local) const;
 
+    //! return level of inside entity
+    int level () const;
+
     //! reset IntersectionIterator
     template <class EntityType>
     void first(const EntityType & en, int level );
@@ -1080,7 +1083,7 @@ namespace Dune
     const GridImp& grid_;
 
     //! the actual level
-    //mutable int level_;
+    mutable int level_;
 
     //! count on which neighbor we are lookin' at
     mutable int neighborCount_;
