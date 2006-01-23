@@ -228,7 +228,13 @@ namespace Dune {
       return UG3d::GetSons(element, sonList);
     }
 
+    static int GetNodeContext(const UG3d::element* element, const UG3d::node** context) {
+      return UG3d::GetNodeContext(const_cast<UG3d::element*>(element),
+                                  const_cast<UG3d::node**>(context));
+    }
+
     //! Encapsulates the GRID_ATTR macro
+    /** \todo Why this strange construction? */
     static unsigned char Grid_Attr(const UGTypes<3>::GridType* grid) {
 #define GRID_ATTR(g) g->level+32
       return GRID_ATTR(grid);
