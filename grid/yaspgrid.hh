@@ -1870,8 +1870,7 @@ namespace Dune {
     YaspLevelIndexSet (const GridImp& g, int l) : grid(g), level(l)
     {
       // contains a single element type;
-      for (int d=0; d<=GridImp::dimension; d++)
-        mytypes.push_back(NewGeometryType(NewGeometryType::cube,d));
+      mytypes.push_back(NewGeometryType(NewGeometryType::cube,0));
     }
 
     //! get index of an entity
@@ -1948,8 +1947,7 @@ namespace Dune {
     YaspLeafIndexSet (const GridImp& g) : grid(g)
     {
       // contains a single element type;
-      for (int d=0; d<=GridImp::dimension; d++)
-        mytypes.push_back(NewGeometryType(NewGeometryType::cube,d));
+      mytypes.push_back(NewGeometryType(NewGeometryType::cube,0));
     }
 
     //! get index of an entity
