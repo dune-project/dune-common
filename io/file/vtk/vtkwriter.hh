@@ -134,7 +134,7 @@ namespace Dune
     template<int dim>
     struct P1Layout
     {
-      bool contains (int codim, Dune::GeometryType gt)
+      bool contains (int codim, Dune::NewGeometryType gt)
       {
         if (codim==dim) return true;
         return false;
@@ -251,33 +251,6 @@ namespace Dune
       vtkPrism = 13,
       vtkPyramid = 14
     };
-
-    //! mapping from GeometryType to VTKGeometryType
-    VTKGeometryType vtkType(const Dune::GeometryType & t) const DUNE_DEPRECATED
-    {
-      if (n==1)
-        return vtkLine;
-      if (n==2)
-      {
-        if (t==simplex)
-          return vtkTriangle;
-        if (t==cube)
-          return vtkQuadrilateral;
-      }
-      if (n==3)
-      {
-        if (t==simplex)
-          return vtkTetrahedron;
-        if (t==pyramid)
-          return vtkPyramid;
-        if (t==prism)
-          return vtkPrism;
-        if (t==cube)
-          return vtkHexahedron;
-      }
-      DUNE_THROW(IOError,"VTKWriter: unsupported GeometryType "
-                 << t << " dim " << n <<std::endl);
-    }
 
     //! mapping from NewGeometryType to VTKGeometryType
     VTKGeometryType vtkType(const Dune::NewGeometryType & t) const
