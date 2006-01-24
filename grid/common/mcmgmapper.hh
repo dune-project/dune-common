@@ -151,8 +151,8 @@ namespace Dune
             }
             else
             {
-              offset[c][NewGeometryType(cube,c)] = n;
-              offset[c][NewGeometryType(simplex,c)] = n;
+              offset[c][NewGeometryType(NewGeometryType::cube,c)] = n;
+              offset[c][NewGeometryType(NewGeometryType::simplex,c)] = n;
               n += is.size(c,is.geomTypes(c)[i]);
             }
           }
