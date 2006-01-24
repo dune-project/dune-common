@@ -57,7 +57,7 @@ namespace Dune {
 
     //! size of local vector blocks
     static const int BlockSize =
-      MonomialShapeFunctionSetSize<dim,o>::maxSize;
+      MonomialShapeFunctionSetSize<n,o>::maxSize;
     //! type of shapefunctions
     typedef Dune::MonomialShapeFunctionSetContainer<DT,RT,G::dimension,o>
     ShapeFunctionSetContainer;
