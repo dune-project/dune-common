@@ -236,7 +236,7 @@ inline Dune::UGGridLevelIterator<0,Dune::All_Partition,GridImp>
 Dune::UGGridEntity < 0, dim, GridImp>::father() const
 {
   UGGridLevelIterator<0,All_Partition,GridImp> it(level()-1);
-  it.setToTarget(UG_NS<dim>::EFather(target_));
+  it.setToTarget(UG_NS<dim>::EFather(target_), level()-1);
   return it;
 }
 
@@ -315,33 +315,51 @@ Dune::UGGridEntity < 0, dim, GridImp>::geometryInFather () const
       switch (UG_NS<dim>::Tag(fatherElement)) {
       case UG3d::TETRAHEDRON : {
 
-        const double coords[10][3] = {
+        // If this assert fails a refinement rule has been appeared which inserts
+        // side midpoints.  These have to be added then.
+        assert(idx!=10 && idx!=11 && idx!=12 && idx!=13);
+        const double coords[15][3] = {
           // The corners
           {0,0,0}, {1,0,0}, {0,1,0}, {0,0,1},
           // The edge midpoints
           {0.5,0,0}, {0.5,0.5,0}, {0,0.5,0},
-          {0,0,0.5}, {0.5,0,0.5}, {0,0.5,0.5}
+          {0,0,0.5}, {0.5,0,0.5}, {0,0.5,0.5},
+          // Four side midpoints.  I don't know whether they can actually appear
+          {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0},
+          // Element midpoints.  Appears in some closure refinement rules
+          {0.25,0.25,0.25}
         };
+
         geometryInFather_.setCoords(i,coords[idx]);
         break;
       }
       case UG3d::PYRAMID : {
 
-        const double coords[14][3] = {
+        // If this assert fails a refinement rule has been appeared which inserts
+        // side midpoints.  These have to be added then.
+        assert(idx!=14 && idx!=15 && idx!=16 && idx!=17 && idx!=18);
+        const double coords[19][3] = {
           // The corners
           {0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}, {0,0,1},
           // The edge midpoints
           {0.5,0,0}, {1,0.5,0}, {0.5,1,0}, {0,0.5,0},
           {0,0,0.5}, {0.5,0,0.5}, {0.5,0.5,0.5}, {0,0.5,0.5},
           // The bottom face midpoint
-          {0.5,0.5,0}
+          {0.5,0.5,0},
+          // Side midpoints of the four triangular faces
+          {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0},
+          // Element midpoints
+          {0,0,0}
         };
         geometryInFather_.setCoords(i,coords[idx]);
         break;
       }
       case UG3d::PRISM : {
-        // 19 is one too many but we have to include a dummy
-        const double coords[19][3] = {
+        // If this assert fails a refinement rule has been appeared which inserts
+        // side midpoints.  These have to be added then.
+        assert(idx!=15 && idx!=19);
+
+        const double coords[20][3] = {
           // The corners
           {0,0,0}, {1,0,0}, {0,1,0}, {0,0,1}, {1,0,1}, {0,1,1},
           // The edge midpoints
@@ -352,7 +370,9 @@ Dune::UGGridEntity < 0, dim, GridImp>::geometryInFather () const
           // which doesn't exist, because triangular faces have no midnodes
           {0,0,0},
           // The midnodes of the three quadrilateral faces
-          {0.5,0,0.5}, {0.5,0.5,0.5}, {0,0.5,0.5}
+          {0.5,0,0.5}, {0.5,0.5,0.5}, {0,0.5,0.5},
+          // Side midpoint for the second triangular face
+          {0,0,0}
         };
         geometryInFather_.setCoords(i,coords[idx]);
         break;
