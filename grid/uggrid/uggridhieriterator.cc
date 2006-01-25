@@ -27,7 +27,7 @@ void UGGridHierarchicIterator<GridImp>::increment()
   if (old_target.level < maxlevel_) {
 
     // The 30 is the macro MAX_SONS from ug/gm/gm.h
-    UGElementType* sonList[30];
+    typename UGTypes<GridImp::dimension>::Element* sonList[30];
     UG_NS<GridImp::dimension>::GetSons(old_target.element,sonList);
 
     // Load sons of old target onto the iterator stack

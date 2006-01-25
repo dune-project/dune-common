@@ -42,7 +42,7 @@ namespace Dune {
     //! Constructor
     explicit UGGridLevelIterator(int travLevel)
     {
-      this->virtualEntity_.setToTarget(0);
+      this->virtualEntity_.setToTarget(0,travLevel);
     }
 
     //! Constructor
@@ -54,14 +54,6 @@ namespace Dune {
     //! prefix increment
     void increment() {
       this->virtualEntity_.setToTarget(UG_NS<GridImp::dimension>::succ(this->virtualEntity_.getTarget()));
-    }
-
-  private:
-
-    /** \todo Move this to base class */
-    void setToTarget(typename TargetType<codim,GridImp::dimension>::T* target) {
-      //target_ = target;
-      this->virtualEntity_.setToTarget(target);
     }
 
   };

@@ -222,9 +222,6 @@ namespace Dune {
 
     friend class UGMakeableEntity<0,dim,GridImp>;
 
-    // Either UG3d::ELEMENT or UG2d:ELEMENT
-    typedef typename TargetType<0,dim>::T UGElementType;
-
     typedef typename GridImp::ctype UGCtype;
 
   public:
