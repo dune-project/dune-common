@@ -1679,7 +1679,7 @@ namespace Dune
 
     template<class G>
     Aggregator<G>::DistanceCalculator::DistanceCalculator(const SphereMap& distanceSpheres)
-      : distanceSpheres_(distanceSpheres), distance_(0)
+      : distanceSpheres_(distanceSpheres), distance_(std::numeric_limits<std::size_t>::max())
     {}
 
     template<class G>
@@ -1697,6 +1697,12 @@ namespace Dune
     template<class G>
     int Aggregator<G>::distance(const Vertex& vertex, const AggregatesMap<Vertex>& aggregates)
     {
+      typename PropertyMapTypeSelector<VertexVisitedTag,G>::Type visitedMap = get(VertexVisitedTag(), *graph_);
+      VertexList vlist;
+      typename AggregatesMap<Vertex>::DummyEdgeVisitor dummy;
+      return aggregates.template breadthFirstSearch<true,true>(vertex,
+                                                               aggregate_->id(), *graph_,
+                                                               vlist, dummy, dummy, visitedMap);
       DistanceCalculator distanceCalculator(distanceSpheres_);
       visitAggregateNeighbours(vertex, aggregate_->id(), aggregates, distanceCalculator);
       return std::max(distanceCalculator.value()+1, aggregate_->maxSphere());
@@ -1929,6 +1935,9 @@ namespace Dune
       graph_ = &graph;
 
       distanceSpheres_ = new std::size_t[aggregates.noVertices()];
+
+      for(std::size_t i=0; i < aggregates.noVertices(); ++i)
+        distanceSpheres_[i] = -1;
 
       aggregate_ = new Aggregate<G>(graph, aggregates, connected_, distanceSpheres_);
 
