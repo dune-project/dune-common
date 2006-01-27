@@ -2,14 +2,14 @@
 
 #if MPI
   MPITESTS = graphtest
-  TESTPROGS = galerkintest hierarchytest amgtest
+  TESTPROGS = galerkintest hierarchytest amgtest pamgtest transfertest
   TESTRUNS = run-galerkin run-hierarchy run-amg
 #endif
 
 # link against libcommon to utilize dune stdstreams
 AM_LDFLAGS = $(top_builddir)/common/libcommon.la
 
-NORMALTESTS = transfertest $(MPITESTS)
+NORMALTESTS = $(MPITESTS)
 
 # which tests to run
 TESTS = $(NORMALTESTS) $(TESTRUNS)
@@ -41,4 +41,8 @@ amgtest_CXXFLAGS = $(MPI_CPPFLAGS)
 amgtest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 amgtest_DEPENDENCIES = $(LIBDUNE)
 
+pamgtest_SOURCES = parallelamgtest.cc
+pamgtest_CXXFLAGS = $(MPI_CPPFLAGS)
+pamgtest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+pamgtest_DEPENDENCIES = $(LIBDUNE)
 include $(top_srcdir)/am/global-rules
