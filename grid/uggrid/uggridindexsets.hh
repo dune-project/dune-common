@@ -51,14 +51,15 @@ namespace Dune {
     template<int cd>
     int index (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
     {
-      return grid_->template getRealEntity<cd>(e).levelIndex();
+      //return grid_->template getRealEntity<cd>(e).levelIndex();
+      return grid_->getRealImplementation(e).levelIndex();
     }
 
     //! get index of subEntity of a codim 0 entity
     template<int cc>
     int subIndex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
-      return grid_->template getRealEntity<0>(e).template subIndex<cc>(i);
+      return grid_->getRealImplementation(e).template subIndex<cc>(i);
     }
 
 
@@ -201,7 +202,7 @@ namespace Dune {
       typename GridImp::Traits::template Codim<0>::LevelIterator eEndIt = grid_->template lend<0>(level_);
 
       for (; eIt!=eEndIt; ++eIt) {
-        typename TargetType<0,dim>::T* target_ = grid_->template getRealEntity<0>(*eIt).target_;
+        typename TargetType<0,dim>::T* target_ = grid_->getRealImplementation(*eIt).target_;
         // codim dim-1
         for (int i=0; i<eIt->template count<dim-1>(); i++)
         {
@@ -241,19 +242,19 @@ namespace Dune {
         // codim 0 (elements)
         NewGeometryType eType = eIt->geometry().type();
         if (eType.isSimplex()) {
-          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numSimplices_++;
+          UG_NS<dim>::levelIndex(grid_->getRealImplementation(*eIt).target_) = numSimplices_++;
         } else if (eType.isPyramid()) {
-          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numPyramids_++;
+          UG_NS<dim>::levelIndex(grid_->getRealImplementation(*eIt).target_) = numPyramids_++;
         } else if (eType.isPrism()) {
-          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numPrisms_++;
+          UG_NS<dim>::levelIndex(grid_->getRealImplementation(*eIt).target_) = numPrisms_++;
         } else if (eType.isCube()) {
-          UG_NS<dim>::levelIndex(grid_->template getRealEntity<0>(*eIt).target_) = numCubes_++;
+          UG_NS<dim>::levelIndex(grid_->getRealImplementation(*eIt).target_) = numCubes_++;
         } else {
           DUNE_THROW(GridError, "Found the GeometryType " << eIt->geometry().type()
                                                           << ", which should never occur in a UGGrid!");
         }
 
-        typename TargetType<0,dim>::T* target_ = grid_->template getRealEntity<0>(*eIt).target_;
+        typename TargetType<0,dim>::T* target_ = grid_->getRealImplementation(*eIt).target_;
 
         // codim dim-1 (edges)
         for (int i=0; i<eIt->template count<dim-1>(); i++)
@@ -317,7 +318,7 @@ namespace Dune {
 
       numVertices_ = 0;
       for (; vIt!=vEndIt; ++vIt)
-        UG_NS<dim>::levelIndex(grid_->template getRealEntity<dim>(*vIt).target_) = numVertices_++;
+        UG_NS<dim>::levelIndex(grid_->getRealImplementation(*vIt).target_) = numVertices_++;
 
       myTypes_[dim].resize(0);
       myTypes_[dim].push_back(NewGeometryType(NewGeometryType::cube,0));
@@ -379,7 +380,7 @@ namespace Dune {
     template<int cd>
     int index (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
-      return grid_.template getRealEntity<cd>(e).leafIndex();
+      return grid_.getRealImplementation(e).leafIndex();
     }
 
     //! get index of subEntity of a codim 0 entity
@@ -390,7 +391,7 @@ namespace Dune {
     template<int cc>
     int subIndex (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
-      return grid_.template getRealEntity<0>(e).template subLeafIndex<cc>(i);
+      return grid_.getRealImplementation(e).template subLeafIndex<cc>(i);
     }
 
     //! get number of entities of given codim and type
@@ -517,7 +518,7 @@ namespace Dune {
         for (; eIt!=eEndIt; ++eIt)
         {
           // get pointer to UG object
-          typename TargetType<0,dim>::T* target_ = grid_.template getRealEntity<0>(*eIt).target_;
+          typename TargetType<0,dim>::T* target_ = grid_.getRealImplementation(*eIt).target_;
 
           // codim dim-1
           for (int i=0; i<eIt->template count<dim-1>(); i++)
@@ -557,7 +558,7 @@ namespace Dune {
           if (!eIt->isLeaf()) continue;
 
           // get pointer to UG object
-          typename TargetType<0,dim>::T* target_ = grid_.template getRealEntity<0>(*eIt).target_;
+          typename TargetType<0,dim>::T* target_ = grid_.getRealImplementation(*eIt).target_;
 
           // codim dim-1 (edges)
           for (int i=0; i<eIt->template count<dim-1>(); i++)
@@ -641,13 +642,13 @@ namespace Dune {
         NewGeometryType eType = eIt->geometry().type();
 
         if (eType.isSimplex())
-          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numSimplices_++;
+          UG_NS<dim>::leafIndex(grid_.getRealImplementation(*eIt).target_) = numSimplices_++;
         else if (eType.isPyramid())
-          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numPyramids_++;
+          UG_NS<dim>::leafIndex(grid_.getRealImplementation(*eIt).target_) = numPyramids_++;
         else if (eType.isPrism())
-          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numPrisms_++;
+          UG_NS<dim>::leafIndex(grid_.getRealImplementation(*eIt).target_) = numPrisms_++;
         else if (eType.isCube())
-          UG_NS<dim>::leafIndex(grid_.template getRealEntity<0>(*eIt).target_) = numCubes_++;
+          UG_NS<dim>::leafIndex(grid_.getRealImplementation(*eIt).target_) = numCubes_++;
         else {
           DUNE_THROW(GridError, "Found the GeometryType " << eType
                                                           << ", which should never occur in a UGGrid!");
@@ -675,7 +676,7 @@ namespace Dune {
       // leaf index in node writes through to vertex !
       numVertices_ = 0;
       for (; vIt!=vEndIt; ++vIt)
-        UG_NS<dim>::leafIndex(grid_.template getRealEntity<dim>(*vIt).target_) = numVertices_++;
+        UG_NS<dim>::leafIndex(grid_.getRealImplementation(*vIt).target_) = numVertices_++;
 
       myTypes_[dim].resize(0);
       myTypes_[dim].push_back(NewGeometryType(NewGeometryType::cube,0));
@@ -716,7 +717,7 @@ namespace Dune {
     template<int cd>
     GlobalIdType id (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
-      return grid_.template getRealEntity<cd>(e).globalId();
+      return grid_.getRealImplementation(e).globalId();
     }
 
     //! get id of subEntity
@@ -727,7 +728,7 @@ namespace Dune {
     template<int cc>
     GlobalIdType subId (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
-      return grid_.template getRealEntity<0>(e).template subGlobalId<cc>(i);
+      return grid_.getRealImplementation(e).template subGlobalId<cc>(i);
     }
 
     //private:
@@ -760,7 +761,7 @@ namespace Dune {
     template<int cd>
     LocalIdType id (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
-      return grid_.template getRealEntity<cd>(e).localId();
+      return grid_.getRealImplementation(e).localId();
     }
 
     //! get id of subEntity
@@ -771,7 +772,7 @@ namespace Dune {
     template<int cc>
     LocalIdType subId (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
-      return grid_.template getRealEntity<0>(e).template subLocalId<cc>(i);
+      return grid_.getRealImplementation(e).template subLocalId<cc>(i);
     }
 
     //private:

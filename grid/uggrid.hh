@@ -505,16 +505,6 @@ namespace Dune {
      */
     void globalRefine(int n);
 
-    //! Get access to real iterator
-    UGGridIntersectionIterator<const UGGrid<dim, dimworld> >& getRealIntersectionIterator(typename Traits::IntersectionIterator& it) {
-      return this->getRealImplementation(it);
-    }
-
-    //! Get access to real iterator
-    const UGGridIntersectionIterator<const UGGrid<dim, dimworld> >& getRealIntersectionIterator(const typename Traits::IntersectionIterator& it) const {
-      return this->getRealImplementation(it);
-    }
-
   private:
     /** \brief UG multigrid, which contains the actual grid hierarchy structure */
     typename UGTypes<dimworld>::MultiGridType* multigrid_;
@@ -526,18 +516,6 @@ namespace Dune {
     std::vector<FixedArray<unsigned int, dim*2-2> > boundarySegmentVertices_;
 
     CollectiveCommunication<UGGrid> ccobj;
-
-    // Access to entity implementations through the interface wrappers
-    template <int cd>
-    UGGridEntity<cd,dim,const UGGrid>& getRealEntity(typename Traits::template Codim<cd>::Entity& entity) {
-      return this->getRealImplementation(entity);
-    }
-
-    // Const access to entity implementations through the interface wrappers
-    template <int cd>
-    const UGGridEntity<cd,dim,const UGGrid>& getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const {
-      return this->getRealImplementation(entity);
-    }
 
     // Start up the UG system
     void init(unsigned int heapSize, unsigned int envHeapSize);

@@ -482,7 +482,7 @@ bool Dune::UGGrid < dim, dimworld >::mark(int refCount,
   if (refCount==0)
     return false;
 
-  typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
+  typename TargetType<0,dim>::T* target = getRealImplementation(*e).target_;
 
   // Check whether element can be marked for refinement
   if (!EstimateHere(target))
@@ -513,7 +513,7 @@ bool Dune::UGGrid < dim, dimworld >::mark(const typename Traits::template Codim<
                                           typename UG_NS<dim>::RefinementRule rule,
                                           int side)
 {
-  typename TargetType<0,dim>::T* target = getRealEntity<0>(*e).target_;
+  typename TargetType<0,dim>::T* target = getRealImplementation(*e).target_;
 
   if (!UG_NS<dim>::isLeaf(target))
     return false;
@@ -577,7 +577,7 @@ void Dune::UGGrid <dim, dimworld>::postAdapt()
     typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(i);
 
     for (; eIt!=eEndIt; ++eIt)
-      UG_NS<dim>::WriteCW(getRealEntity<0>(*eIt).target_, UG_NS<dim>::NEWEL_CE, 0);
+      UG_NS<dim>::WriteCW(getRealImplementation(*eIt).target_, UG_NS<dim>::NEWEL_CE, 0);
 
   }
 }
@@ -668,7 +668,7 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
   // ///////////////
   if (level < maxl) {
 
-    ElementType* theElement = getRealEntity<0>(*e).target_;
+    ElementType* theElement = getRealImplementation(*e).target_;
 
     int Sons_of_Side = 0;
     ElementType* SonList[MAX_SONS];
@@ -1121,7 +1121,7 @@ void Dune::UGGrid < dim, dimworld >::createend()
   typename Traits::template Codim<0>::LevelIterator eEndIt = lend<0>(0);
 
   for (; eIt!=eEndIt; ++eIt)
-    UG_NS<dim>::WriteCW(getRealEntity<0>(*eIt).target_, UG_NS<dim>::NEWEL_CE, 0);
+    UG_NS<dim>::WriteCW(getRealImplementation(*eIt).target_, UG_NS<dim>::NEWEL_CE, 0);
 
 }
 
@@ -1304,7 +1304,7 @@ template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::setPosition(typename Traits::template Codim<dim>::EntityPointer& e,
                                                  const FieldVector<double, dimworld>& pos)
 {
-  typename TargetType<dim,dim>::T* target = getRealEntity<dim>(*e).target_;
+  typename TargetType<dim,dim>::T* target = getRealImplementation(*e).target_;
 
   for (int i=0; i<dimworld; i++)
     target->myvertex->iv.x[i] = pos[i];
@@ -1313,6 +1313,7 @@ void Dune::UGGrid < dim, dimworld >::setPosition(typename Traits::template Codim
 template < int dim, int dimworld >
 void Dune::UGGrid < dim, dimworld >::setIndices()
 {
+  /** \todo Does this leak memory when the hierarchy gets lower? */
   for (int i=levelIndexSets_.size(); i<=maxLevel(); i++)
   {
     UGGridLevelIndexSet<const UGGrid<dim,dimworld> >* p = new UGGridLevelIndexSet<const UGGrid<dim,dimworld> >();
