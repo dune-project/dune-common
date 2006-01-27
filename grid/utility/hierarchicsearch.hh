@@ -3,12 +3,17 @@
 #ifndef DUNE_GRID_HIERARCHICSEARCH_HH
 #define DUNE_GRID_HIERARCHICSEARCH_HH
 
+/** \file
+    \todo Please doc me!
+ */
+
 #include <dune/common/fvector.hh>
 #include <dune/grid/common/grid.hh>
 
 namespace Dune
 {
 
+  /** \todo Please doc me! */
   template<class Grid, class IS>
   class HierarchicSearch
   {
@@ -33,6 +38,7 @@ namespace Dune
     //! type of HierarchicIterator
     typedef typename Grid::template Codim<0>::HierarchicIterator HierarchicIterator;
 
+    /** \todo Please doc me! */
     EntityPointer hFindEntity(const EntityPointer e,
                               const FieldVector<ct,dimw>& global) const
     {
@@ -54,8 +60,10 @@ namespace Dune
     }
 
   public:
+    /** \todo Please doc me! */
     HierarchicSearch(const Grid & _g, const IS & _is) : g(_g), is(_is) {};
 
+    /** \todo Please doc me! */
     EntityPointer findEntity(const FieldVector<ct,dimw>& global) const
     {
       // loop over macro level
