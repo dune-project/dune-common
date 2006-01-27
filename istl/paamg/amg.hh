@@ -213,9 +213,9 @@ namespace Dune
       DIterator lhs = lhs_->finest();
 
       if(rhs!=rhs_->coarsest()) {
-        smoother->pre(*lhs,*rhs);
-        for(++smoother, ++lhs, ++rhs; smoother != coarsest; ++smoother, ++lhs, ++rhs)
+        for(; smoother != coarsest; ++smoother, ++lhs, ++rhs)
           smoother->pre(*lhs,*rhs);
+        smoother->pre(*lhs,*rhs);
       }
 
       if(buildHierarchy_) {
