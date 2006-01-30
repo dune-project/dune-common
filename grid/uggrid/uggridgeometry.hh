@@ -396,9 +396,9 @@ namespace Dune {
 
   };
 
-  // Include method definitions
-#include "uggridgeometry.cc"
-
 }  // namespace Dune
+
+// Include method definitions
+#include "uggridgeometry.cc"
 
 #endif
