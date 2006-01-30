@@ -353,8 +353,21 @@ namespace Dune {
        \todo Implement this!
      */
     const Geometry& geometryInFather () const {
-      DUNE_THROW(NotImplemented, "OneDGrid::geometryInFather() not implemented!");
+      assert(target_->father_);
+      assert(target_->father_->sons_[0] == target_ || target_->father_->sons_[1] == target_);
 
+      if (target_->father_->sons_[0] == target_ && target_->father_->sons_[1] == target_) {
+        // Copied element?
+        geometryInFather_.setPositions(0,1);
+      } else if (target_->father_->sons_[0] == target_) {
+        // Left son?
+        geometryInFather_.setPositions(0,0.5);
+      } else {
+        // Right son!
+        geometryInFather_.setPositions(0.5,1);
+      }
+
+      return geometryInFather_;
     }
 
     /*! Inter-level access to son elements on higher levels<=maxlevel.
@@ -407,6 +420,8 @@ namespace Dune {
 
     //! the current geometry
     OneDMakeableGeometry<dim,dim,GridImp> geo_;
+
+    mutable OneDMakeableGeometry<dim,dim,GridImp> geometryInFather_;
 
     OneDEntityImp<1>* target_;
 
