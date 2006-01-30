@@ -309,7 +309,18 @@ namespace Dune {
      *  are numbered 0 ... count<cc>()-1
      */
     template<int cc>
-    typename GridImp::template Codim<cc>::EntityPointer entity (int i) const;
+    typename GridImp::template Codim<cc>::EntityPointer entity (int i) const {
+      if (cc==0) {
+        assert(i==0);
+        // The cast is correct when this if clause is executed
+        return OneDGridLevelIterator<cc,All_Partition,GridImp>( (OneDEntityImp<1-cc>*) this->target_);
+      } else if (cc==1) {
+        assert(i==0 || i==1);
+        // The cast is correct when this if clause is executed
+        return OneDGridLevelIterator<cc,All_Partition,GridImp>( (OneDEntityImp<1-cc>*) this->target_->vertex_[i]);
+      }
+    }
+
 
     /*! Intra-level access to neighboring elements. A neighbor is an entity of codimension 0
        which has an entity of codimension 1 in commen with this entity. Access to neighbors
@@ -406,7 +417,5 @@ namespace Dune {
   }; // end of OneDGridEntity codim = 0
 
 } // namespace Dune
-
-#include "onedgridentity.cc"
 
 #endif
