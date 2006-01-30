@@ -43,14 +43,14 @@ namespace Dune {
     template<int cd>
     int index (const typename GridImp::Traits::template Codim<cd>::Entity& e) const
     {
-      return grid_->template getRealEntity<cd>(e).levelIndex();
+      return grid_->getRealImplementation(e).levelIndex();
     }
 
     //! get index of subentity of a codim 0 entity
     template<int cc>
     int subIndex (const typename GridImp::Traits::template Codim<0>::Entity& e, int i) const
     {
-      return grid_->template getRealEntity<0>(e).template subLevelIndex<cc>(i);
+      return grid_->getRealImplementation(e).template subLevelIndex<cc>(i);
     }
 
     //! get number of entities of given codim, type and on this level
@@ -152,7 +152,7 @@ namespace Dune {
     template<int cd>
     int index (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
-      return grid_.template getRealEntity<cd>(e).leafIndex();
+      return grid_.getRealImplementation(e).leafIndex();
     }
 
     //! get index of subentity of a codim 0 entity
@@ -163,7 +163,7 @@ namespace Dune {
     template<int cc>
     int subIndex (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
-      return grid_.template getRealEntity<0>(e).template subLeafIndex<cc>(i);
+      return grid_.getRealImplementation(e).template subLeafIndex<cc>(i);
     }
 
     //! get number of entities of given codim, type on the leaf level
@@ -214,14 +214,14 @@ namespace Dune {
 
       for (; eIt!=eEndIt; ++eIt) {
 
-        grid_.template getRealEntity<0>(*eIt).target_->leafIndex_ = numElements_++;
+        grid_.getRealImplementation(*eIt).target_->leafIndex_ = numElements_++;
 
       }
 
       // Update the list of geometry types present
       if (numElements_>0) {
         myTypes_.resize(1);
-        myTypes_[0] = NewGeometryType(NewGeometryType::cube,1);
+        myTypes_[0] = NewGeometryType(1);
       } else
         myTypes_.resize(0);
 
@@ -234,7 +234,7 @@ namespace Dune {
 
       numVertices_ = 0;
       for (; vIt!=vEndIt; ++vIt)
-        grid_.template getRealEntity<1>(*vIt).target_->leafIndex_ = numVertices_++;
+        grid_.getRealImplementation(*vIt).target_->leafIndex_ = numVertices_++;
 
     }
 
@@ -268,7 +268,7 @@ namespace Dune {
     template<int cd>
     GlobalIdType id (const typename RemoveConst<GridImp>::Type::Traits::template Codim<cd>::Entity& e) const
     {
-      return grid_.template getRealEntity<cd>(e).globalId();
+      return grid_.getRealImplementation(e).globalId();
     }
 
     //! get id of subentity

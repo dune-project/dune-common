@@ -400,31 +400,10 @@ namespace Dune {
      */
     void globalRefine(int refCount);
 
-    OneDGridIntersectionIterator<const OneDGrid<dim, dimworld> >&
-    getRealIntersectionIterator(typename Traits::IntersectionIterator& it) {
-      return this->getRealImplementation(it);
-    }
-
-    const OneDGridIntersectionIterator<const OneDGrid<dim, dimworld> >&
-    getRealIntersectionIterator(const typename Traits::IntersectionIterator& it) const {
-      return this->getRealImplementation(it);
-    }
-
-
   private:
 
     /** \brief Update all indices and ids */
     void setIndices();
-
-    template <int cd>
-    OneDGridEntity<cd,dim,const OneDGrid>& getRealEntity(typename Traits::template Codim<cd>::Entity& entity) {
-      return this->getRealImplementation(entity);
-    }
-
-    template <int cd>
-    const OneDGridEntity<cd,dim,const OneDGrid>& getRealEntity(const typename Traits::template Codim<cd>::Entity& entity) const {
-      return this->getRealImplementation(entity);
-    }
 
     unsigned int getNextFreeId(int codim) {
       return (codim==0) ? freeElementIdCounter_++ : freeVertexIdCounter_++;

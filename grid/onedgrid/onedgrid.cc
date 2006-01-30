@@ -611,17 +611,17 @@ bool Dune::OneDGrid < dim, dimworld >::mark(int refCount,
 {
   if (refCount < 0) {
 
-    if (getRealEntity<0>(*e).target_->level_ == 0)
+    if (getRealImplementation(*e).target_->level_ == 0)
       return false;
     else {
-      getRealEntity<0>(*e).target_->markState_ = COARSEN;
+      getRealImplementation(*e).target_->markState_ = COARSEN;
       return true;
     }
 
   } else if (refCount > 0)
-    getRealEntity<0>(*e).target_->markState_ = REFINED;
+    getRealImplementation(*e).target_->markState_ = REFINED;
   else
-    getRealEntity<0>(*e).target_->markState_ = NONE;
+    getRealImplementation(*e).target_->markState_ = NONE;
 
   return true;
 }
