@@ -240,10 +240,6 @@ namespace Dune {
     friend class OneDGridHierarchicIterator <GridImp>;
     friend class OneDGridLevelIterator <0,All_Partition,GridImp>;
 
-    template <int cc_, int dim_, class GridImp_>
-    friend class OneDGridSubEntityFactory;
-
-
   public:
     typedef typename GridImp::template Codim<0>::Geometry Geometry;
     typedef typename GridImp::template Codim<0>::LevelIterator LevelIterator;
