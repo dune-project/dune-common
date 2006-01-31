@@ -1274,6 +1274,12 @@ namespace Dune {
       a[0] = 1/a[0];
     }
 
+    //! calculates the determinant of this matrix
+    K determinant () const
+    {
+      return std::abs(a[0]);
+    }
+
     //! left multiplication
     FieldMatrix& leftmultiply (const FieldMatrix& M)
     {
