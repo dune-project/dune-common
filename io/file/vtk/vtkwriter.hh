@@ -255,7 +255,6 @@ namespace Dune
     //! mapping from NewGeometryType to VTKGeometryType
     VTKGeometryType vtkType(const Dune::NewGeometryType & t) const
     {
-      unsigned char vtktype=3;
       if (t.isLine())
         return vtkLine;
       if (t.isTriangle())
