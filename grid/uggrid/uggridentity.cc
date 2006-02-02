@@ -86,49 +86,6 @@ inline int Dune::UGGridEntity<0,dim,GridImp>::count() const
 }
 
 template <int dim, class GridImp>
-inline int Dune::UGGridEntity<0, dim, GridImp>::renumberVertex(int i) const {
-
-  if (geometry().type().isCube()) {
-
-    // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-    // The following two lines do the transformation
-    // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-    // following code works for 2d and 3d.
-    // It also works in both directions UG->DUNE, DUNE->UG !
-    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    return renumbering[i];
-
-  } else
-    return i;
-
-}
-template <int dim, class GridImp>
-inline int Dune::UGGridEntity<0, dim, GridImp>::renumberFace(int i) const {
-
-  if (geometry().type().isCube()) {
-
-    // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-    // The following two lines do the transformation
-    // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-    // following code works for 2d and 3d.
-    const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-    return renumbering[i];
-
-  }
-  if (geometry().type().isSimplex()) {
-
-    /** \todo Check this */
-    // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-    // The following two lines do the transformation
-    // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-    // following code works for 2d and 3d.
-    const int renumbering[4] = {1, 2, 0, 3};
-    return renumbering[i];
-  }
-  return i;
-}
-
-template <int dim, class GridImp>
 template <int cc>
 inline typename GridImp::template Codim<cc>::EntityPointer
 Dune::UGGridEntity<0,dim,GridImp>::entity ( int i ) const
@@ -136,7 +93,7 @@ Dune::UGGridEntity<0,dim,GridImp>::entity ( int i ) const
   assert(i>=0 && i<count<cc>());
 
   if (cc==dim) {
-    typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,renumberVertex(i));
+    typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,UGGridRenumberer<dim>::verticesDUNEtoUG(i, geometry().type()));
     return UGGridLevelIterator<cc,All_Partition,GridImp>(subEntity, level_);
   } else if (cc==0) {
     // The following cast is here to make the code compile for all cc.
