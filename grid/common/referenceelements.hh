@@ -316,7 +316,7 @@ namespace Dune
     //! type of (i,c)
     NewGeometryType type (int i, int c) const
     {
-      return NewGeometryType(NewGeometryType::cube, dim);
+      return NewGeometryType(NewGeometryType::cube, dim-c);
     }
 
     //! volume of the reference element
@@ -616,7 +616,7 @@ namespace Dune
     //! type of (i,c)
     NewGeometryType type (int i, int c) const
     {
-      return NewGeometryType(NewGeometryType::simplex,dim);
+      return NewGeometryType(NewGeometryType::simplex,dim-c);
     }
 
 
