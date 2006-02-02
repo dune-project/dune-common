@@ -96,14 +96,24 @@ namespace Dune
     //! type of real implementation
     typedef IntersectionIteratorImp<const GridImp> ImplementationType;
 
+    /** \brief Type of entity that this IntersectionIterator belongs to */
     typedef typename GridImp::template Codim<0>::Entity Entity;
+
+    /** \brief Pointer to the type of entities that this IntersectionIterator belongs to */
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
+
+    /** \brief Codim 1 geometry returned by intersectionGlobal() */
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
+
+    /** \brief Codim 1 geometry returned by intersectionLocal() */
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
+
     //! @brief export grid dimension
     enum { dimension=dim /*!< grid dimension */ };
+
     //! @brief export dimension of world
     enum { dimensionworld=dimworld /*!< dimension of world */ };
+
     //! define type used for coordinates in grid module
     typedef ct ctype;
 
