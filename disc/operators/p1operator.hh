@@ -14,6 +14,8 @@
 
 #include "dune/common/fvector.hh"
 #include "dune/common/exceptions.hh"
+#include "dune/common/exceptions.hh"
+#include "dune/common/geometrytype.hh"
 #include "dune/grid/common/grid.hh"
 #include "dune/grid/common/mcmgmapper.hh"
 #include "dune/istl/bvector.hh"
@@ -74,7 +76,7 @@ namespace Dune
                              const Refelem& refelem, Matrix& A, std::vector<bool>& visited,
                              int hangingnodes, std::set<P1OperatorLink>& links)
     {
-      if (refelem.type(0,0)==Dune::cube)
+      if (refelem.type(0,0).isCube())
       {
         for (int i=0; i<refelem.size(c); i++)           // loop over subentities of codim c of e
         {
@@ -100,7 +102,7 @@ namespace Dune
           }
         }
       }
-      if (refelem.type(0,0)==Dune::pyramid && c==1)
+      if (refelem.type(0,0).isPyramid() && c==1)
       {
         int index = allmapper.template map<c>(e,0);
         if (!visited[index])
@@ -126,7 +128,7 @@ namespace Dune
           visited[index] = true;
         }
       }
-      if (refelem.type(0,0)==Dune::prism && c==1)
+      if (refelem.type(0,0).isPrism() && c==1)
       {
         int index = allmapper.template map<c>(e,1);
         if (!visited[index])
@@ -205,7 +207,7 @@ namespace Dune
     static void addindicescube (const Entity& e, const VMapper& vertexmapper, const AMapper& allmapper,
                                 const Refelem& refelem, Matrix& A, std::vector<bool>& visited)
     {
-      if (refelem.type(0,0)==Dune::cube)
+      if (refelem.type(0,0).isCube())
       {
         for (int i=0; i<refelem.size(c); i++)
         {
@@ -226,7 +228,7 @@ namespace Dune
           }
         }
       }
-      if (refelem.type(0,0)==Dune::pyramid && c==1)
+      if (refelem.type(0,0).isPyramid() && c==1)
       {
         int index = allmapper.template map<c>(e,0);
         if (!visited[index])
@@ -242,7 +244,7 @@ namespace Dune
           visited[index] = true;
         }
       }
-      if (refelem.type(0,0)==Dune::prism && c==1)
+      if (refelem.type(0,0).isPrism() && c==1)
       {
         int index = allmapper.template map<c>(e,1);
         if (!visited[index])
@@ -295,7 +297,7 @@ namespace Dune
                              const Refelem& refelem, Matrix& A, std::vector<bool>& visited,
                              int hangingnodes, std::set<P1OperatorLink>& links)
     {
-      if (refelem.type(0,0)!=Dune::cube) return;
+      if (!refelem.type(0,0).isCube()) return;
       int corners = refelem.size(n);
       for (int j=0; j<corners/2; j++)     // uses fact that diagonals are (0,corners-1), (1,corners-2) ...
       {
@@ -317,7 +319,7 @@ namespace Dune
     static void addindicescube (const Entity& e, const VMapper& vertexmapper, const AMapper& allmapper,
                                 const Refelem& refelem, Matrix& A, std::vector<bool>& visited)
     {
-      if (refelem.type(0,0)!=Dune::cube) return;
+      if (!refelem.type(0,0).isCube()) return;
       int corners = refelem.size(n);
       for (int j=0; j<corners/2; j++)     // uses fact that diagonals are (0,corners-1), (1,corners-2) ...
       {
@@ -355,7 +357,7 @@ namespace Dune
     template<int dim>
     struct P1Layout
     {
-      bool contains (int codim, Dune::GeometryType gt)
+      bool contains (int codim, Dune::NewGeometryType gt)
       {
         if (codim==dim) return true;
         return false;
@@ -366,7 +368,7 @@ namespace Dune
     template<int dim>
     struct AllLayout
     {
-      bool contains (int codim, Dune::GeometryType gt)
+      bool contains (int codim, Dune::NewGeometryType gt)
       {
         return true;
       }
@@ -400,7 +402,7 @@ namespace Dune
 
       for (int c=0; c<n-1; c++)
       {
-        s += 2*is.size(c,cube)*(1<<(n-c-1));
+        s += 2*is.size(c,NewGeometryType(NewGeometryType::cube,G::dimension-c))*(1<<(n-c-1));
         //		  std::cout << "nnz cubes codim " << c << " is " << g.size(c,cube) << std::endl;
       }
 
@@ -685,6 +687,7 @@ namespace Dune
         {
           int index = allmapper.template map<n>(*it,i);
           int alpha = vertexmapper.template map<n>(*it,i);
+          //			  std::cout << "index=" << index << " alpha=" << alpha << std::endl;
           if (!visited[index])
           {
             A.incrementrowsize(alpha);
@@ -715,7 +718,7 @@ namespace Dune
         }
 
         // for codim n-2 to 0 we need a template metaprogram
-        if (gt!=Dune::simplex)
+        if (!gt.isSimplex())
           P1Operator_meta<n,n-2>::addrowscube(*it,vertexmapper,allmapper,refelem,A,visited,hangingnodes+(extendOverlap),links);
       }
 
@@ -770,7 +773,7 @@ namespace Dune
         }
 
         // for codim n-2 to 0 we need a template metaprogram
-        if (gt!=Dune::simplex)
+        if (!gt.isSimplex())
           P1Operator_meta<n,n-2>::addindicescube(*it,vertexmapper,allmapper,refelem,A,visited);
       }
 

@@ -129,7 +129,7 @@ namespace Dune
 
       // Loop over all quadrature points and assemble matrix and right hand side
       int p=2;
-      if (gt==simplex) p=1;
+      if (gt.isSimplex()) p=1;
       if (k>1) p=2*(k-1);
       for (size_t g=0; g<Dune::QuadratureRules<DT,n>::rule(gt,p).size(); ++g)     // run through all quadrature points
       {
