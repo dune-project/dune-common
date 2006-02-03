@@ -125,71 +125,70 @@ namespace Dune {
     typedef FieldMatrix<alu3d_ctype, 3, 3> FaceCoordinatesType;
     //! for makeRefGeometry == true a Geometry with the coordinates of the
     //! reference element is made
-    ALU3dGridGeometry();
+    inline ALU3dGridGeometry();
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
-    //NewGeometryType type () const;
-    GeometryType type () const;
+    inline const GeometryType & type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
-    int corners () const;
+    inline int corners () const;
 
     //! access to coordinates of corners. Index is the number of the corner
-    const FieldVector<alu3d_ctype, cdim>& operator[] (int i) const;
+    inline const FieldVector<alu3d_ctype, cdim>& operator[] (int i) const;
 
     //! maps a local coordinate within reference element to
     //! global coordinate in element
-    FieldVector<alu3d_ctype, cdim> global (const FieldVector<alu3d_ctype, mydim>& local) const;
+    inline FieldVector<alu3d_ctype, cdim> global (const FieldVector<alu3d_ctype, mydim>& local) const;
 
     //! maps a global coordinate within the element to a
     //! local coordinate in its reference element
-    FieldVector<alu3d_ctype,  mydim> local (const FieldVector<alu3d_ctype, cdim>& global) const;
+    inline FieldVector<alu3d_ctype,  mydim> local (const FieldVector<alu3d_ctype, cdim>& global) const;
 
     //! returns true if the point in local coordinates is inside reference element
-    bool checkInside(const FieldVector<alu3d_ctype, mydim>& local) const;
+    inline bool checkInside(const FieldVector<alu3d_ctype, mydim>& local) const;
 
     //! A(l) , see grid.hh
-    alu3d_ctype integrationElement (const FieldVector<alu3d_ctype, mydim>& local) const;
+    inline alu3d_ctype integrationElement (const FieldVector<alu3d_ctype, mydim>& local) const;
 
     //! can only be called for dim=dimworld!
-    const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, cdim>& local) const;
+    inline const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, cdim>& local) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry for out of given ALU3dGridElement
-    bool buildGeom(const IMPLElementType & item, int twist , int);
-    bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int face );
-    bool buildGeom(const FaceCoordinatesType& coords);
-    bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int );
-    bool buildGeom(const ALU3DSPACE VertexType & item, int twist, int);
+    inline bool buildGeom(const IMPLElementType & item, int twist , int);
+    inline bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int face );
+    inline bool buildGeom(const FaceCoordinatesType& coords);
+    inline bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int );
+    inline bool buildGeom(const ALU3DSPACE VertexType & item, int twist, int);
 
     //! build ghost out of internal boundary segment
-    bool buildGhost(const PLLBndFaceType & ghost);
+    inline bool buildGhost(const PLLBndFaceType & ghost);
 
     //! build geometry of local coordinates relative to father
-    template <class GeometryType>
-    bool buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom);
+    template <class GeometryImpType>
+    inline bool buildGeomInFather(const GeometryImpType &fatherGeom , const GeometryImpType & myGeom);
 
     //! print internal data
     //! no interface method
-    void print (std::ostream& ss) const;
+    inline void print (std::ostream& ss) const;
 
   private:
     //! calculates the vertex index in the reference element out of a face index
     //! and a local vertex index
-    int faceIndex(int faceIdx, int vtxIdx) const;
+    inline int faceIndex(int faceIdx, int vtxIdx) const;
 
     // generate transposed Jacobian Inverse and calculate integration_element
-    void buildJacobianInverseTransposed() const;
+    inline void buildJacobianInverseTransposed() const;
 
     // calculates the element matrix for calculation of the jacobian inverse
-    void calcElMatrix () const;
+    inline void calcElMatrix () const;
 
     // copies the values of point to the values of coord
-    void copyCoordVec (const alu3d_ctype (& point)[cdim] ,
-                       FieldVector<alu3d_ctype,cdim> & coord ) const;
+    inline void copyCoordVec (const alu3d_ctype (& point)[cdim] ,
+                              FieldVector<alu3d_ctype,cdim> & coord ) const;
 
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, mydim+1, cdim> coord_;
@@ -204,6 +203,8 @@ namespace Dune {
 
     mutable FieldVector<alu3d_ctype,cdim> tmpV_; //! temporary memory
     mutable FieldVector<alu3d_ctype,cdim> tmpU_; //! temporary memory
+
+    const GeometryType myGeomType_;
 
     //! is true if Jinv_, A and detDF_ is calced
     mutable bool builtinverse_;
@@ -240,7 +241,7 @@ namespace Dune {
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
-    NewGeometryType type () const;
+    const GeometryType & type () const;
 
     //! return the number of corners of this element. Corners are numbered 0..n-1
     int corners () const;
@@ -297,6 +298,8 @@ namespace Dune {
     mutable FieldMatrix<alu3d_ctype, Power_m_p<2,mydim>::power, cdim> coord_;
     //mutable FieldVector<alu3d_ctype, mydim> tmp1_;
     mutable FieldVector<alu3d_ctype, cdim> tmp2_;
+
+    const GeometryType myGeomType_;
 
     TrilinearMapping* triMap_;
     BilinearSurfaceMapping* biMap_;
