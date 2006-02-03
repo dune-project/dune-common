@@ -25,9 +25,15 @@
 
 namespace ALUGridSpace {
 
+  //#ifndef NDEBUG
+  //  static bool global_Geometry_lock = false;
+  //#endif
+
 #ifdef _ALU3DGRID_PARALLEL_
 
   typedef GatherScatter GatherScatterType;
+
+
 
   typedef GitterDunePll GitterType;
   typedef GitterDunePll GitterImplType;
@@ -75,8 +81,8 @@ namespace ALUGridSpace {
   typedef GitterImplType::Objects::hbndseg4_IMPL ImplBndFace4Type;
 } // end namespace ALUGridSpace
 
-
 namespace Dune {
+
   enum ALU3dGridElementType { tetra = 4, hexa = 7, mixed, error };
 
   // i.e. double or float

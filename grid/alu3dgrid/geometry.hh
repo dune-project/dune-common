@@ -129,7 +129,8 @@ namespace Dune {
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
-    NewGeometryType type () const;
+    //NewGeometryType type () const;
+    GeometryType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners () const;
@@ -193,11 +194,6 @@ namespace Dune {
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, mydim+1, cdim> coord_;
 
-    //! is true if Jinv_, A and detDF_ is calced
-    mutable bool builtinverse_;
-    mutable bool builtA_;
-    mutable bool builtDetDF_;
-
     enum { matdim = (mydim > 0) ? mydim : 1 };
     mutable FieldMatrix<alu3d_ctype,matdim,matdim> Jinv_; //!< storage for inverse of jacobian
     mutable alu3d_ctype detDF_;                           //!< storage of integration_element
@@ -208,6 +204,12 @@ namespace Dune {
 
     mutable FieldVector<alu3d_ctype,cdim> tmpV_; //! temporary memory
     mutable FieldVector<alu3d_ctype,cdim> tmpU_; //! temporary memory
+
+    //! is true if Jinv_, A and detDF_ is calced
+    mutable bool builtinverse_;
+    mutable bool builtA_;
+    mutable bool builtDetDF_;
+
   };
 
   //! Specialisation for hexahedra

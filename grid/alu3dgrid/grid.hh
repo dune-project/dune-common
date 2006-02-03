@@ -524,7 +524,7 @@ namespace Dune {
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<NewGeometryType>& geomTypes (int codim) const { return geomTypes_; }
+    const std::vector<NewGeometryType>& geomTypes (int codim) const { return geomTypes_[codim]; }
 
     //! return reference to org ALU3dGrid
     //! private method, but otherwise we have to friend class all possible
@@ -570,7 +570,10 @@ namespace Dune {
 
     // at the moment the number of different geom types is 1
     enum { numberOfGeomTypes = 1 };
-    const std::vector<NewGeometryType> geomTypes_;
+    std::vector< std::vector<NewGeometryType> > geomTypes_;
+
+    // create GeomTypes
+    void makeGeomTypes ();
 
     // our hierarchic index set
     HierarchicIndexSet hIndexSet_;
@@ -606,7 +609,7 @@ namespace Dune {
     mutable VertexListType vertexList_[MAXL];
 
     // the type of our size cache
-    typedef SingleTypeSizeCache<MyType, (elType == tetra) ? simplex : cube> SizeCacheType;
+    typedef SingleTypeSizeCache<MyType> SizeCacheType;
     SizeCacheType * sizeCache_;
 
     // new intersection iterator is a wrapper which get itersectioniteratoimp as pointers
