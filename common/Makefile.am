@@ -20,6 +20,7 @@ commoninclude_HEADERS = dlist.cc mapping.cc stdstreams.cc alignment.hh \
   typeinfo.hh typetraits.hh vectorspace.hh precision.hh bigunsignedint.hh \
   gcd.hh lcm.hh configparser.hh propertymap.hh \
   exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc collectivecommunication.hh\
-   mpicollectivecommunication.hh
+  mpicollectivecommunication.hh geometrytype.hh tripel.hh utility.hh
+
 
 include $(top_srcdir)/am/global-rules

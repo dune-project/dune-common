@@ -6,7 +6,7 @@ femcommon_HEADERS = discretefunction.cc fastbase.cc basefunctions.hh \
   combine.hh discretefunction.hh discretefunctionspace.hh \
   discreteoperator.hh dofiterator.hh dofmapperinterface.hh fastbase.hh \
   localfunction.hh localoperatordef.hh localoperator.hh objpointer.hh \
-  boundary.hh formula.hh
-
+  boundary.hh formula.hh basefunctionfactory.hh basefunctionsets.cc \
+  basefunctionsets.hh localfunctionwrapper.hh
 
 include $(top_srcdir)/am/global-rules
