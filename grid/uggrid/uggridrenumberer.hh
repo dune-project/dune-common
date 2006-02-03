@@ -27,6 +27,7 @@ namespace Dune {
     static int verticesDUNEtoUG(int i, NewGeometryType type) {
 
       if (type.isCube()) {
+        // vertices of a quadrilateral
         const int renumbering[4] = {0, 1, 3, 2};
         return renumbering[i];
       }
@@ -39,24 +40,19 @@ namespace Dune {
 
       if (type.isCube()) {
 
-        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-        // The following two lines do the transformation
-        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-        // following code works for 2d and 3d.
-        const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+        // faces of a quadrilateral
+        const int renumbering[4] = {3, 1, 0, 2};
         return renumbering[i];
 
       }
+
       if (type.isSimplex()) {
 
-        /** \todo Check this */
-        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-        // The following two lines do the transformation
-        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-        // following code works for 2d and 3d.
-        const int renumbering[4] = {1, 2, 0, 3};
+        // faces of a triangle
+        const int renumbering[3] = {1, 2, 0};
         return renumbering[i];
       }
+
       return i;
     }
 
@@ -86,24 +82,19 @@ namespace Dune {
 
       if (type.isCube()) {
 
-        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-        // The following two lines do the transformation
-        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-        // following code works for 2d and 3d.
+        // faces of a hexahedron
         const int renumbering[6] = {4, 2, 1, 3, 0, 5};
         return renumbering[i];
 
       }
+
       if (type.isSimplex()) {
 
-        /** \todo Check this */
-        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-        // The following two lines do the transformation
-        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-        // following code works for 2d and 3d.
+        // faces of a tetrahedon
         const int renumbering[4] = {1, 2, 0, 3};
         return renumbering[i];
       }
+
       return i;
     }
 
