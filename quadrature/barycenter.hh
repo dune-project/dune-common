@@ -38,48 +38,14 @@ namespace Dune {
     template <class EntityType>
     BaryCenterQuad ( EntityType &en )
     {
-      switchTheType( en.geometry().type());
+      makeQuadrature( en.geometry().type());
     };
 
     //! Constructor build the vec with the points and weights
     BaryCenterQuad ( GeometryType eltype )
     {
-      switchTheType( eltype );
+      makeQuadrature( eltype );
     }
-
-    //! Constructor build the vec with the points and weights
-    void switchTheType ( GeometryType eltype )
-    {
-      GeometryType t = eltype;
-      if(eltype == simplex)
-      {
-        if(dim == 1) t = line;
-        if(dim == 2) t = triangle;
-        if(dim == 3) t = tetrahedron;
-      }
-      if(eltype == cube)
-      {
-        if(dim == 1) t = line;
-        if(dim == 2) t = quadrilateral;
-        if(dim == 3) t = hexahedron;
-      }
-      makeTheQuad(t);
-    };
-
-
-    //! Constructor build the vec with the points and weights
-    void makeTheQuad ( GeometryType eltype )
-    {
-      switch(eltype)
-      {
-      case line :          { makeQuadrature<line> (); break; }
-      case quadrilateral : { makeQuadrature<quadrilateral> (); break; }
-      case hexahedron :    { makeQuadrature<hexahedron> (); break; }
-      case triangle :      { makeQuadrature<triangle> (); break; }
-      case tetrahedron :   { makeQuadrature<tetrahedron> (); break; }
-      default :       { std::cerr << "Unkown GeometryType in BaryCenterQuad::makeQuadrature()\n"; abort();  break; }
-      }
-    };
 
     virtual ~BaryCenterQuad () {}
 
@@ -102,23 +68,22 @@ namespace Dune {
     }
 
   private:
-    template <GeometryType ElType>
-    void makeQuadrature ()
+    void makeQuadrature (GeometryType elType)
     {
       // is called by the constructor
       typedef BaryCenterPoints< DomainType,
-          RangeFieldType,ElType,codim>  QuadInitializerType;
+          RangeFieldType,codim>  QuadInitializerType;
 
       // same story as above
-      numberOfQuadPoints_ = QuadInitializerType::numberOfQuadPoints;
-      order_              = QuadInitializerType::polynomOrder;
+      numberOfQuadPoints_ = QuadInitializerType::numberOfQuadPoints(elType);
+      order_              = QuadInitializerType::polynomOrder(elType);
 
       for(int i=0; i<numberOfQuadPoints_; i++)
       {
-        points_[i]  = QuadInitializerType::getPoint(i);
-        weights_[i] = QuadInitializerType::getWeight(i);
+        points_[i]  = QuadInitializerType::getPoint(elType,i);
+        weights_[i] = QuadInitializerType::getWeight(elType,i);
       }
-      int myType = (int) ElType;
+      int myType = 1; //(int) ElType;
       myType *= 10 * codim;
       this->setIdentifier( myType + order_);
     }

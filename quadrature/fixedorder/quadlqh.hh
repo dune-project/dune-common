@@ -6,6 +6,9 @@
 #include <dune/common/misc.hh>
 #include "gaussquadimp.hh"
 
+// the UG Quadratures
+#include "ugquadratures.hh"
+
 namespace Dune {
 
   //************************************************************************
@@ -19,138 +22,130 @@ namespace Dune {
   //
   //************************************************************************
   template <class Domain, class RangeField, int polOrd >
-  struct QuadraturePoints<Domain,RangeField,line, polOrd>
+  struct QuadraturePoints
   {
     enum { identifier = 5*(polOrd+1) };
     enum { numberOfQuadPoints_ = GaussQuadrature<Domain,RangeField,1,polOrd>::n };
-    static int numberOfQuadPoints ();
-    static int order ();
-    static Domain getPoint (int i);
-    static RangeField getWeight (int i);
+    static int numberOfQuadPoints (GeometryType type);
+    static int order (GeometryType type);
+    static Domain getPoint (GeometryType type,int i);
+    static RangeField getWeight (GeometryType type,int i);
   };
 
   template <class Domain, class RangeField , int polOrd >
-  int QuadraturePoints<Domain,RangeField,line,polOrd>::
-  numberOfQuadPoints()
+  int QuadraturePoints<Domain,RangeField,polOrd>::
+  numberOfQuadPoints(GeometryType type)
   {
-    return numberOfQuadPoints_;
+    if(type.isLine()) return GaussQuadrature<Domain,RangeField,1,polOrd>::n;
+    if(type.isQuadrilateral()) return GaussQuadrature<Domain,RangeField,2,polOrd>::n;
+    if(type.isHexahedron()) return GaussQuadrature<Domain,RangeField,3,polOrd>::n;
+
+    if(type.isSimplex())
+    {
+      int dim = type.dim();
+      int numberOfCorners = dim+1;
+      typedef UG_Quadratures::QUADRATURE QUADRATURE;
+      QUADRATURE * quad = UG_Quadratures::GetQuadratureRule(dim,numberOfCorners,polOrd);
+      return quad->nip;
+    }
+
+    assert(false);
+    abort();
+    return -1;
   }
 
   template <class Domain, class RangeField , int polOrd >
-  int QuadraturePoints<Domain,RangeField,line,polOrd>::
-  order ()
+  int QuadraturePoints<Domain,RangeField,polOrd>::
+  order (GeometryType type)
   {
+    if(type.isCube())
+      return polOrd;
+
+    if(type.isSimplex())
+    {
+      int dim = type.dim();
+      int numberOfCorners = dim+1;
+      typedef UG_Quadratures::QUADRATURE QUADRATURE;
+      QUADRATURE * quad = UG_Quadratures::GetQuadratureRule(dim,numberOfCorners,polOrd);
+      return quad->order;
+    }
+
+    assert(false);
+    abort();
     return polOrd;
   }
 
   template <class Domain, class RangeField , int polOrd >
-  RangeField QuadraturePoints<Domain,RangeField,line,polOrd>::getWeight(int i)
+  RangeField QuadraturePoints<Domain,RangeField,polOrd>::
+  getWeight(GeometryType type, int i)
   {
-    GaussQuadrature<Domain,RangeField,1,polOrd> gaussquad;
-    return gaussquad.w(i);
+    if(type.isLine())
+    {
+      static GaussQuadrature<Domain,RangeField,1,polOrd> gaussquad;
+      return gaussquad.w(i);
+    }
+    if(type.isQuadrilateral())
+    {
+      static GaussQuadrature<Domain,RangeField,2,polOrd> gaussquad;
+      return gaussquad.w(i);
+    }
+    if(type.isHexahedron())
+    {
+      static GaussQuadrature<Domain,RangeField,3,polOrd> gaussquad;
+      return gaussquad.w(i);
+    }
+
+    if(type.isSimplex())
+    {
+      int dim = type.dim();
+      int numberOfCorners = dim+1;
+      typedef UG_Quadratures::QUADRATURE QUADRATURE;
+      QUADRATURE * quad = UG_Quadratures::GetQuadratureRule(dim,numberOfCorners,polOrd);
+      RangeField ref = 1.0;
+      if(dim > 1) RangeField ref = static_cast<RangeField> (ref/((dim-1)*dim));
+      RangeField w(ref * static_cast<RangeField> (quad->weight[i]));
+      return w;
+    }
+
+    assert(false);
+    abort();
+    return -1.0;
   }
 
-  template <class Domain, class RangeField , int polOrd>
-  Domain QuadraturePoints<Domain,RangeField,line,polOrd>::getPoint(int i)
+  template <class Domain, class RangeField,int polOrd>
+  Domain QuadraturePoints<Domain,RangeField,polOrd>::
+  getPoint(GeometryType type, int i)
   {
-    // check whether dimension is 1 or not
-    //CompileTimeChecker < Domain::dimension == 1 > check;
-    GaussQuadrature<Domain,RangeField,1,polOrd> gaussquad;
-    return gaussquad.ip(i);
+    if(type.isLine())
+    {
+      static GaussQuadrature<Domain,RangeField,1,polOrd> gaussquad;
+      return gaussquad.ip(i);
+    }
+    if(type.isQuadrilateral())
+    {
+      static GaussQuadrature<Domain,RangeField,2,polOrd> gaussquad;
+      return gaussquad.ip(i);
+    }
+    if(type.isHexahedron())
+    {
+      static GaussQuadrature<Domain,RangeField,3,polOrd> gaussquad;
+      return gaussquad.ip(i);
+    }
+
+    if(type.isSimplex())
+    {
+      int numberOfCorners = type.dim()+1;
+      typedef UG_Quadratures::QUADRATURE QUADRATURE;
+      QUADRATURE * quad = UG_Quadratures::GetQuadratureRule(type.dim(),numberOfCorners,polOrd);
+      Domain tmp;
+      for(int j=0; j<dim; j++) tmp[j] = quad->local[i][j];
+      return tmp;
+    }
+
+    assert(false);
+    abort();
+    return Domain(-1.0);
   }
-
-  //**************************************************************************
-  //
-  //! specialization for quadrilaterals
-  //
-  //**************************************************************************
-  template <class Domain, class RangeField, int polOrd >
-  struct QuadraturePoints<Domain,RangeField,quadrilateral, polOrd>
-  {
-    enum { identifier = 6*(polOrd+1) };
-    enum { numberOfQuadPoints_ = GaussQuadrature<Domain,RangeField,2,polOrd>::n };
-    static int numberOfQuadPoints ();
-    static int order ();
-    static Domain getPoint (int i);
-    static RangeField getWeight (int i);
-  };
-
-  template <class Domain, class RangeField , int polOrd >
-  int QuadraturePoints<Domain,RangeField,quadrilateral,polOrd>::
-  numberOfQuadPoints()
-  {
-    return numberOfQuadPoints_;
-  }
-
-  template <class Domain, class RangeField , int polOrd >
-  int QuadraturePoints<Domain,RangeField,quadrilateral,polOrd>::
-  order ()
-  {
-    return polOrd;
-  }
-
-  template <class Domain, class RangeField , int polOrd >
-  RangeField QuadraturePoints<Domain,RangeField,quadrilateral,polOrd>::getWeight(int i)
-  {
-    GaussQuadrature<Domain,RangeField,2,polOrd> gaussquad;
-    return gaussquad.w(i);
-  }
-
-  template <class Domain, class RangeField , int polOrd>
-  Domain QuadraturePoints<Domain,RangeField,quadrilateral,polOrd>::getPoint(int i)
-  {
-    // check whether dimension is 2 or not
-    //CompileTimeChecker < Domain::dimension == 2 > check;
-    GaussQuadrature<Domain,RangeField,2,polOrd> gaussquad;
-    return gaussquad.ip(i);
-  }
-
-  //**************************************************************************
-  //
-  //! specialization for hexahedron
-  //
-  //**************************************************************************
-  template <class Domain, class RangeField, int polOrd >
-  struct QuadraturePoints<Domain,RangeField,hexahedron, polOrd>
-  {
-    enum { identifier = 7*(polOrd+1) };
-    enum { numberOfQuadPoints_ = GaussQuadrature<Domain,RangeField,3,polOrd>::n };
-    static int numberOfQuadPoints ();
-    static int order ();
-    static Domain getPoint (int i);
-    static RangeField getWeight (int i);
-  };
-
-  template <class Domain, class RangeField , int polOrd >
-  int QuadraturePoints<Domain,RangeField,hexahedron,polOrd>::
-  numberOfQuadPoints()
-  {
-    return numberOfQuadPoints_;
-  }
-
-  template <class Domain, class RangeField , int polOrd >
-  int QuadraturePoints<Domain,RangeField,hexahedron,polOrd>::
-  order ()
-  {
-    return polOrd;
-  }
-  template <class Domain, class RangeField , int polOrd >
-  RangeField QuadraturePoints<Domain,RangeField,hexahedron,polOrd>::getWeight(int i)
-  {
-    GaussQuadrature<Domain,RangeField,3,polOrd> gaussquad;
-    return gaussquad.w(i);
-  }
-
-  template <class Domain, class RangeField , int polOrd>
-  Domain QuadraturePoints<Domain,RangeField,hexahedron,polOrd>::getPoint(int i)
-  {
-    // check whether dimension is 3 or not
-    //CompileTimeChecker < Domain::dimension == 3 > dim_is_not_equal_3;
-    GaussQuadrature<Domain,RangeField,3,polOrd> gaussquad;
-    return gaussquad.ip(i);
-  }
-
 
 } // end namespace Dune
-
 #endif

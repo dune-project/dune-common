@@ -40,37 +40,6 @@ namespace Dune {
   //! a triangle is 0.5 which is the volume of the reference triangle
   //!
   //***********************************************************************
-  template <class Domain, class RangeField, GeometryType ElType, int polOrd>
-  struct QuadraturePoints
-  {
-    enum { identifier = 0 };
-    static int numberOfQuadPoints () {
-      DUNE_THROW(NotImplemented, "");
-      return -1;
-    };
-    static int order () {
-      DUNE_THROW(NotImplemented, "");
-      return -1;
-    };
-    static Domain getPoint (int i) {
-      DUNE_THROW(NotImplemented, "");
-      return Domain();
-    };
-    static RangeField getWeight (int i) {
-      DUNE_THROW(NotImplemented, "");
-      return RangeField();
-    };
-  };
-
-  template <class Domain, class RangeField, GeometryType ElType, int polOrd>
-  struct DualQuadraturePoints
-  {
-    enum { identifier = 0 };
-    enum { numberOfQuadPoints = 0 };
-    static Domain getPoint (int i) { DUNE_THROW(NotImplemented, ""); };
-    static RangeField getWeight (int i) { DUNE_THROW(NotImplemented, ""); };
-  };
-
   //**************************************************************************
   //
   //  --QuadratureInterface
