@@ -16,7 +16,8 @@ uggrid_HEADERS = uggridgeometry.cc \
   ugfunctions.hh uggridentity.hh uggridgeometry.hh \
   uggridhieriterator.hh uggridleveliterator.hh ugincludes.hh \
   ugintersectionit.hh ugtypes.hh ug_undefs.hh uggridindexsets.hh \
-  ugfunctions3d.hh uggridleafiterator.hh boundaryextractor.hh
+  ugfunctions3d.hh uggridleafiterator.hh boundaryextractor.hh \
+  uggridrenumberer.hh
 
 # tricks like undefAllMacros.pl don't have to be shipped, have they?
 # Oliver Sander: It depends. undefAllMacros.pl creates the file ug_undefs.hh
