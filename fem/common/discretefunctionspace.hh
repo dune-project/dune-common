@@ -3,7 +3,10 @@
 #ifndef DUNE_DISCRETEFUNCTIONSPACE_HH
 #define DUNE_DISCRETEFUNCTIONSPACE_HH
 
+//- Dune includes
 #include <dune/common/functionspace.hh>
+
+//- local includes
 #include "basefunctions.hh"
 
 namespace Dune {
@@ -71,7 +74,7 @@ namespace Dune {
     //! return conversion from geometry to identifier
     static IdentifierType fromGeo(int dimension, NewGeometryType geo) {
 
-      switch(dim) {
+      switch(dimension) {
       case 0 : return Vertex;
       case 1 : return Line;
       case 2 :
