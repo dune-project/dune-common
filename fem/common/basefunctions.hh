@@ -5,9 +5,6 @@
 
 #include <dune/common/mapping.hh>
 #include <dune/common/matrix.hh>
-#include <dune/fem/feop/spmatrix.hh>
-
-#include <dune/quadrature/fixedorder.hh>
 
 namespace Dune {
 
@@ -214,10 +211,6 @@ namespace Dune {
     typedef typename FunctionSpaceType::RangeFieldType DofType;
 
     typedef typename FunctionSpaceType::RangeFieldType DofType;
-
-    //typedef SparseRowMatrix<DofType> MatrixType;
-    //typedef Matrix<DofType> MatrixType;
-    // typedef QuadratureOld<DofType, DomainType> QuadratureType;
 
   public:
     //! set the default diffVar Types
