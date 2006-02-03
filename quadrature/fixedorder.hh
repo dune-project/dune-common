@@ -3,15 +3,14 @@
 #ifndef DUNE_FIXED_ORDER_QUAD_HH
 #define DUNE_FIXED_ORDER_QUAD_HH
 
-#include "common/quadrature.hh"
-
-#include <dune/common/geometryidentifier.hh>
-
+//- system includes
 #include <vector>
 
-// the specialisations
+//- Dune includes
+#include "common/quadrature.hh"
+
+//- local includes
 #include "fixedorder/quadlqh.hh"
-//#include "fixedorder/quadtetratri.hh"
 
 namespace Dune {
 
