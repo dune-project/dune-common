@@ -466,7 +466,7 @@ namespace Dune
     // here the transposed jacobian inverse is calculated
     elDet_ = std::abs( FMatrixHelp::invertMatrix_retTransposed(elMat_,Jinv_) );
 
-    if( elDet_  < 1.0e-12 ) print(std::cout);
+    //if( elDet_  < 1.0e-12 ) print(std::cout);
     assert(elDet_ > 1.0E-25 );
 
     calcedDet_ = true;

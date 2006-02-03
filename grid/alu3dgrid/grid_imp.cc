@@ -181,14 +181,14 @@ namespace Dune {
     {
       // stored is the dim, where is the codim
       for(int i=dim; i>= 0; i--)
-        geomTypes_[dim-i][0] = NewGeometryType(NewGeometryType::simplex,i);
+        geomTypes_[dim-i][0] = GeometryType(GeometryType::simplex,i);
       return;
     }
     if(elType == hexa)
     {
       // stored is the dim, where is the codim
       for(int i=dim; i>= 0; i--)
-        geomTypes_[dim-i][0] = NewGeometryType(NewGeometryType::cube,i);
+        geomTypes_[dim-i][0] = GeometryType(GeometryType::cube,i);
       return;
     }
     DUNE_THROW(GridError,"Geometrytype not implemented!");
