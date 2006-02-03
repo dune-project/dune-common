@@ -1574,13 +1574,13 @@ namespace Dune
       , level_(org.level_)
       , neighborCount_(org.neighborCount_)
       , builtNeigh_ (false)
+      , leafIt_( org.leafIt_ )
       , elInfo_ ( org.elInfo_ )
       , fakeNeigh_ ()
       , fakeSelf_ ()
       , neighGlob_ ()
       , neighElInfo_()
       , done_ ( org.done_ )
-      , leafIt_( org.leafIt_ )
   {}
 
   // assignment operator
