@@ -144,6 +144,14 @@ namespace Dune
     }
   };
 
+  template<typename C,typename T, int d>
+  inline std::ostream& operator<<(std::ostream& os,
+                                  const MonomialShapeFunction<C,T,d>& s)
+  {
+    s.print(os);
+    return os;
+  }
+
   /**
      \class MonomialShapeFunctionSetCreator
      \brief Template Metaprogramm creating the entries for
