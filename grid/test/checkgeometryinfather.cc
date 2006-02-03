@@ -3,6 +3,8 @@
 #ifndef DUNE_CHECK_GEOMETRYINFATHER_CC
 #define DUNE_CHECK_GEOMETRYINFATHER_CC
 
+#include <dune/common/typetraits.hh>
+
 /** \file
     \brief A test for the Method Geometry::geometryInFather()
  */
@@ -44,16 +46,23 @@ void checkGeometryInFather(const GridType& grid) {
       //   Check for types and constants
       // //////////////////////////////////////////////////////
 
+
       /** \todo How do I check whether Geometry::ctype == GridType::ctype ? */
-      typename Geometry::ctype dummyCType = 0;
+      IsTrue< SameType<
+              typename Geometry::ctype,
+              typename GridType::ctype>::value == true >::yes();
 
-      assert(Geometry::dimension==GridType::dimension);
+      IsTrue<static_cast<int>(Geometry::dimension)
+          == static_cast<int>(GridType::dimension)>::yes();
 
-      assert(Geometry::mydimension==GridType::dimension);
+      IsTrue<static_cast<int>(Geometry::mydimension)
+          == static_cast<int>(GridType::dimension)>::yes();
 
-      assert(Geometry::coorddimension==GridType::dimensionworld);
+      IsTrue<static_cast<int>(Geometry::coorddimension)
+          == static_cast<int>(GridType::dimensionworld)>::yes();
 
-      assert(Geometry::dimensionworld==GridType::dimensionworld);
+      IsTrue<static_cast<int>(Geometry::dimensionworld)
+          == static_cast<int>(GridType::dimensionworld)>::yes();
 
       // ///////////////////////////////////////////////////////
       //   Check the different methods
