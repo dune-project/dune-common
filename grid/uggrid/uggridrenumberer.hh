@@ -23,91 +23,91 @@ namespace Dune {
 
   public:
 
-    /** \brief Turn a local vertex number from DUNE numbering to UG numbering *
-       static int verticesDUNEtoUG(int i, NewGeometryType type) {
-
-        if (type.isCube()) {
-            const int renumbering[4] = {0, 1, 3, 2};
-            return renumbering[i];
-        }
-
-        return i;
-       }
-
-       /** \brief Turn a local face number from DUNE numbering to UG numbering *
-       static int facesDUNEtoUG(int i, NewGeometryType type) {
-
-        if (type.isCube()) {
-
-            // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-            // The following two lines do the transformation
-            // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-            // following code works for 2d and 3d.
-            const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-            return renumbering[i];
-
-        }
-        if (type.isSimplex()) {
-
-            /** \todo Check this */
-    // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-    // The following two lines do the transformation
-    // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-    // following code works for 2d and 3d.
-    const int renumbering[4] = {1, 2, 0, 3};
-    return renumbering[i];
-  }
-  return i;
-}
-
-};
-
-/** \brief DUNE and UG use different local numberings for the subentities of elements.
-    This class does the conversions for 3d-grids.
- */
-template <>
-class UGGridRenumberer<3> {
-
-public:
-
-  /** \brief Turn a local vertex number from DUNE numbering to UG numbering *
-     static int verticesDUNEtoUG(int i, NewGeometryType type) {
+    /** \brief Turn a local vertex number from DUNE numbering to UG numbering */
+    static int verticesDUNEtoUG(int i, NewGeometryType type) {
 
       if (type.isCube()) {
-          const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-          return renumbering[i];
+        const int renumbering[4] = {0, 1, 3, 2};
+        return renumbering[i];
       }
 
       return i;
-     }
+    }
 
-     /** \brief Turn a local face number from DUNE numbering to UG numbering *
-     static int facesDUNEtoUG(int i, NewGeometryType type) {
+    /** \brief Turn a local face number from DUNE numbering to UG numbering */
+    static int facesDUNEtoUG(int i, NewGeometryType type) {
 
       if (type.isCube()) {
 
-          // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-          // The following two lines do the transformation
-          // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-          // following code works for 2d and 3d.
-          const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-          return renumbering[i];
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+        return renumbering[i];
 
       }
       if (type.isSimplex()) {
 
-          /** \todo Check this */
-  // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-  // The following two lines do the transformation
-  // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-  // following code works for 2d and 3d.
-  const int renumbering[4] = {1, 2, 0, 3};
-  return renumbering[i];
-}
-return i;
-}
+        /** \todo Check this */
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        const int renumbering[4] = {1, 2, 0, 3};
+        return renumbering[i];
+      }
+      return i;
+    }
 
-};
+  };
+
+  /** \brief DUNE and UG use different local numberings for the subentities of elements.
+      This class does the conversions for 3d-grids.
+   */
+  template <>
+  class UGGridRenumberer<3> {
+
+  public:
+
+    /** \brief Turn a local vertex number from DUNE numbering to UG numbering */
+    static int verticesDUNEtoUG(int i, NewGeometryType type) {
+
+      if (type.isCube()) {
+        const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+        return renumbering[i];
+      }
+
+      return i;
+    }
+
+    /** \brief Turn a local face number from DUNE numbering to UG numbering */
+    static int facesDUNEtoUG(int i, NewGeometryType type) {
+
+      if (type.isCube()) {
+
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        const int renumbering[6] = {4, 2, 1, 3, 0, 5};
+        return renumbering[i];
+
+      }
+      if (type.isSimplex()) {
+
+        /** \todo Check this */
+        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
+        // The following two lines do the transformation
+        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
+        // following code works for 2d and 3d.
+        const int renumbering[4] = {1, 2, 0, 3};
+        return renumbering[i];
+      }
+      return i;
+    }
+
+  };
 }
 
 #endif
