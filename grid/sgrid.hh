@@ -222,7 +222,8 @@ namespace Dune {
       return l;
     }
 
-    //! index is unique and consecutive per level and codim used for access to degrees of freedom
+    //! index is unique and consecutive per level and codim
+    //! used for access to degrees of freedom
     int index () const
     {
       return compressedIndex();
@@ -247,7 +248,8 @@ namespace Dune {
     {
       if (codim!=dim)
       {
-        // encode codim, this would actually not be necessary because z is unique in codim
+        // encode codim, this would actually not be necessary
+        // because z is unique in codim
         PersistentIndexType id(codim);
 
         // encode level
@@ -336,9 +338,10 @@ namespace Dune {
   };
 
 
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
+  /**
+     A Grid is a container of grid entities. An entity is parametrized by
+     the codimension.  An entity of codimension c in dimension d is a d-c
+     dimensional object.
 
      Here: the general template
    */
@@ -371,24 +374,35 @@ namespace Dune {
     SEntity (GridImp* _grid, int _l, int _id) : SEntityBase<codim,dim,GridImp>::SEntityBase(_grid,_l,_id) {};
   };
 
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
+  /**
+     A Grid is a container of grid entities. An entity is parametrized
+     by the codimension.  An entity of codimension c in dimension d is a
+     d-c dimensional object.
 
-     Entities of codimension 0 ("elements") are defined through template specialization. Note
-     that this specialization has an extended interface compared to the general case
+     Entities of codimension 0 ("elements") are defined through template
+     specialization. Note that this specialization has an extended
+     interface compared to the general case
 
-     Entities of codimension 0  allow to visit all neighbors, where
-     a neighbor is an entity of codimension 0 which has a common entity of codimension 1 with the entity.
-     These neighbors are accessed via an iterator. This allows the implementation of
-     non-matching meshes. The number of neigbors may be different from the number of faces/edges
+     Entities of codimension 0 allow to visit all neighbors, where a
+     neighbor is an entity of codimension 0 which has a common entity of
+     codimension 1 with the entity.  These neighbors are accessed via an
+     iterator. This allows the implementation of non-matching meshes. The
+     number of neigbors may be different from the number of faces/edges
      of an element!
    */
 
   static FixedArray <int,2> zrefGlob;
   static FixedArray <int,2> zentityGlob;
 
-  /** \todo Please doc me! */
+  /**
+     A Grid is a container of grid entities. An entity is parametrized by
+     the codimension.  An entity of codimension c in dimension d is a d-c
+     dimensional object.
+
+     Entities of codimension=0 ("Cells") are defined through template
+     specialization. Note that this specialization has an extended
+     interface compared to the general case
+   */
   template<int dim, class GridImp>
   class SEntity<0,dim,GridImp> : public SEntityBase<0,dim,GridImp>,
                                  public EntityDefaultImplementation<0,dim,GridImp,SEntity>
@@ -414,7 +428,8 @@ namespace Dune {
     //! level of this element
     int level () const {return SEntityBase<0,dim,GridImp>::level();}
 
-    //! index is unique and consecutive per level and codim used for access to degrees of freedom
+    //! index is unique and consecutive per level and codim
+    //! used for access to degrees of freedom
     int index () const {return SEntityBase<0,dim,GridImp>::index();}
 
     //! only interior entities
@@ -423,12 +438,14 @@ namespace Dune {
     //! geometry of this entity
     const Geometry& geometry () const {return SEntityBase<0,dim,GridImp>::geometry();}
 
-    /*! Intra-element access to entities of codimension cc > codim. Return number of entities
-       with codimension cc.
+    /**
+       Intra-element access to entities of codimension cc > codim.
+       Return number of entities with codimension cc.
      */
     template<int cc> int count () const;
 
-    /*! Provide access to mesh entity i of given codimension. Entities
+    /**
+       Provide access to mesh entity i of given codimension. Entities
        are numbered 0 ... count<cc>()-1
      */
     template<int cc> typename Codim<cc>::EntityPointer entity (int i) const;
@@ -457,17 +474,22 @@ namespace Dune {
       return this->grid->template getRealEntity<cc>(*entity<cc>(i)).persistentIndex();
     }
 
-    /*! Intra-level access to intersections with neighboring elements.
-       A neighbor is an entity of codimension 0
-       which has an entity of codimension 1 in commen with this entity. Access to neighbors
-       is provided using iterators. This allows meshes to be nonmatching. Returns iterator
-       referencing the first neighbor.
+    /**
+       Intra-level access to intersections with neighboring elements.  A
+       neighbor is an entity of codimension 0 which has an entity of
+       codimension 1 in commen with this entity. Access to neighbors is
+       provided using iterators. This allows meshes to be
+       nonmatching. Returns iterator referencing the first neighbor.
      */
     IntersectionIterator ibegin () const;
     //! Reference to one past the last intersection
     IntersectionIterator iend () const;
 
-    //! Inter-level access to father element on coarser grid. Assumes that meshes are nested.
+    /**
+       @brief Inter-level access to father element on coarser grid.
+
+       Assumes that meshes are nested.
+     */
     EntityPointer father () const;
 
     //! return true if the entity is leaf
@@ -476,18 +498,22 @@ namespace Dune {
       return ( this->grid->maxLevel() == level() );
     }
 
-    /*! Location of this element relative to the reference element element of the father.
+    /**
+       @brief Location of this element relative to the reference element element of the father.
+
        This is sufficient to interpolate all dofs in conforming case.
        Nonconforming may require access to neighbors of father and
-       computations with local coordinates.
-       On the fly case is somewhat inefficient since dofs  are visited several times.
-       If we store interpolation matrices, this is tolerable. We assume that on-the-fly
-       implementation of numerical algorithms is only done for simple discretizations.
-       Assumes that meshes are nested.
+       computations with local coordinates.  On the fly case is somewhat
+       inefficient since dofs are visited several times.  If we store
+       interpolation matrices, this is tolerable. We assume that
+       on-the-fly implementation of numerical algorithms is only done for
+       simple discretizations.  Assumes that meshes are nested.
      */
     const Geometry& geometryInFather () const;
 
-    /*! Inter-level access to son elements on higher levels<=maxLevel.
+    /**
+       @brief Inter-level access to son elements on higher levels<=maxLevel.
+
        This is provided for sparsely stored nested unstructured meshes.
        Returns iterator to first son.
      */
@@ -530,12 +556,14 @@ namespace Dune {
     void make_father() const;
   };
 
-  /*!
-     A Grid is a container of grid entities. An entity is parametrized by the codimension.
-     An entity of codimension c in dimension d is a d-c dimensional object.
+  /**
+     A Grid is a container of grid entities. An entity is parametrized
+     by the codimension.  An entity of codimension c in dimension d is a
+     d-c dimensional object.
 
-     Entities of codimension=dimension ("vertices") are defined through template specialization. Note
-     that this specialization has an extended interface compared to the general case
+     Entities of codimension=dimension ("vertices") are defined through
+     template specialization. Note that this specialization has an
+     extended interface compared to the general case
    */
   template<int dim, class GridImp>
   class SEntity<dim,dim,GridImp> : public SEntityBase<dim,dim,GridImp>,
@@ -559,9 +587,13 @@ namespace Dune {
     //! geometry of this entity
     const Geometry& geometry () const {return SEntityBase<dim,dim,GridImp>::geometry();}
 
-    /*! Location of this vertex within a mesh entity of codimension 0 on the coarse grid.
-       This can speed up on-the-fly interpolation for linear conforming elements
-       Possibly this is sufficient for all applications we want on-the-fly.
+    /**
+       @brief Location of this vertex within a mesh entity of
+       codimension 0 on the coarse grid.
+
+       This can speed up on-the-fly interpolation for linear conforming
+       elements Possibly this is sufficient for all applications we want
+       on-the-fly.
      */
     EntityPointer ownersFather () const;
 
@@ -667,18 +699,6 @@ namespace Dune {
       // and pop the first son
       increment();
     }
-
-
-    //   const SHierarchicIterator<GridImp>&
-    //   operator = (const SHierarchicIterator<GridImp>& i)
-    //     {
-    //       static_cast<SEntityPointer<0,GridImp>&>(*this) = i;
-    //       maxLevel = i.maxLevel;
-    //       orig_l = i.orig_l;
-    //       orig_id = i.orig_id;
-    //       stack = i.stack;
-    //       return *this;
-    //     }
 
   private:
     int maxLevel;              //!< maximum level of elements to be processed
