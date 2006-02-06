@@ -177,8 +177,10 @@ namespace Dune {
   }
 
   template <>
-  int ElementTopologyMapping<tetra>::dune2aluVertex(int index) {
+  inline int ElementTopologyMapping<tetra>::dune2aluVertex(int index) {
     assert(index >= 0 && index < numVertices);
+    // at the moment this mapping is represented by the id, if this changes
+    // just remove this specialisation
     assert( dune2aluVertex_[index] == index );
     return index;
   }
