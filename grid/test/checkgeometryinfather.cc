@@ -46,8 +46,6 @@ void checkGeometryInFather(const GridType& grid) {
       //   Check for types and constants
       // //////////////////////////////////////////////////////
 
-
-      /** \todo How do I check whether Geometry::ctype == GridType::ctype ? */
       IsTrue< SameType<
               typename Geometry::ctype,
               typename GridType::ctype>::value == true >::yes();
