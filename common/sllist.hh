@@ -18,7 +18,7 @@ namespace Dune
    */
   /**
    * @file
-   * This file implements a single linked list together with
+   * \brief This file implements a single linked list together with
    * the necessary iterators.
    * @author Markus Blatt
    */
