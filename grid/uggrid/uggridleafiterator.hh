@@ -26,14 +26,13 @@ namespace Dune {
 
     UGGridLeafIterator(const GridImp& grid) : grid_(&grid) {
 
-      /** \todo Can a make the fullRefineLevel work somehow? */
-      //const int fullRefineLevel = grid_->multigrid_->fullrefineLevel;
-      const int fullRefineLevel = 0;
+      // Entities below this level are certainly not leaf entities
+      const unsigned int startingLevel = grid.leafIndexSet_.coarsestLevelWithLeafElements_;
 
       if (pitype==All_Partition || pitype==Ghost_Partition)
-        setToTarget(UG_NS<dim>::PFirstNode(grid_->multigrid_->grids[fullRefineLevel]), fullRefineLevel);
+        setToTarget(UG_NS<dim>::PFirstNode(grid_->multigrid_->grids[startingLevel]), startingLevel);
       else
-        setToTarget(UG_NS<dim>::FirstNode(grid_->multigrid_->grids[fullRefineLevel]), fullRefineLevel);
+        setToTarget(UG_NS<dim>::FirstNode(grid_->multigrid_->grids[startingLevel]), startingLevel);
 
       if (!UG_NS<dim>::isLeaf(this->virtualEntity_.getTarget()))
         increment();
@@ -92,14 +91,12 @@ namespace Dune {
 
     UGGridLeafIterator(const GridImp& grid) : grid_(&grid) {
 
-      /** \todo Can a make the fullRefineLevel work somehow? */
-      //const int fullRefineLevel = grid_->multigrid_->fullrefineLevel;
-      const int fullRefineLevel = 0;
+      const int startingLevel = grid.leafIndexSet_.coarsestLevelWithLeafElements_;
 
       if (pitype==All_Partition || pitype==Ghost_Partition)
-        setToTarget(UG_NS<dim>::PFirstElement(grid_->multigrid_->grids[fullRefineLevel]), fullRefineLevel);
+        setToTarget(UG_NS<dim>::PFirstElement(grid_->multigrid_->grids[startingLevel]), startingLevel);
       else
-        setToTarget(UG_NS<dim>::FirstElement(grid_->multigrid_->grids[fullRefineLevel]), fullRefineLevel);
+        setToTarget(UG_NS<dim>::FirstElement(grid_->multigrid_->grids[startingLevel]), startingLevel);
 
       // If this is not a leaf entity already increment to find the first leaf entity
       if (!UG_NS<dim>::isLeaf(this->virtualEntity_.getTarget()))

@@ -307,7 +307,6 @@ namespace Dune {
   {
     typedef IndexSet<GridImp,UGGridLeafIndexSet<GridImp>,UGGridLeafIndexSetTypes<GridImp> > Base;
   public:
-    //friend class UGGrid<dim,dim>;
 
     /*
        We use the RemoveConst to extract the Type from the mutable class,
@@ -442,13 +441,20 @@ namespace Dune {
       // second loop : set indices
       for (int level_=grid_.maxLevel(); level_>=0; level_--)
       {
+
+        // used to compute the coarsest level with leaf elements
+        bool containsLeafElements = false;
+
         typename GridImp::Traits::template Codim<0>::LevelIterator eIt    = grid_.template lbegin<0>(level_);
         typename GridImp::Traits::template Codim<0>::LevelIterator eEndIt = grid_.template lend<0>(level_);
 
         for (; eIt!=eEndIt; ++eIt)
         {
           // we need only look at leaf elements
-          if (!eIt->isLeaf()) continue;
+          if (!eIt->isLeaf())
+            continue;
+          else
+            containsLeafElements = true;
 
           // get pointer to UG object
           typename TargetType<0,dim>::T* target_ = grid_.getRealImplementation(*eIt).target_;
@@ -510,6 +516,10 @@ namespace Dune {
               }
             }
         }
+
+        if (containsLeafElements)
+          coarsestLevelWithLeafElements_ = level_;
+
       }
 
       // Update the list of geometry types present
@@ -578,10 +588,21 @@ namespace Dune {
         UG_NS<dim>::leafIndex(grid_.getRealImplementation(*vIt).target_) = numVertices_++;
 
       myTypes_[dim].resize(0);
-      myTypes_[dim].push_back(NewGeometryType(NewGeometryType::cube,0));
+      myTypes_[dim].push_back(NewGeometryType(0));
+
     }
 
     const GridImp& grid_;
+
+    /** \brief The lowest level that contains leaf elements
+
+       This corresponds to UG's fullRefineLevel, which is, unfortunately only
+       computed if you use some nontrivial UG algebra.  Thus we compute it
+       ourselves, and use it to speed up the leaf iterators.
+     */
+    unsigned int coarsestLevelWithLeafElements_;
+
+
 
     int numSimplices_;
     int numPyramids_;
