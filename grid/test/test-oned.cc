@@ -5,11 +5,13 @@
 #include <config.h>
 
 #include <iostream>
+#include <vector>
 
 #include <dune/grid/onedgrid.hh>
 
 #include "gridcheck.cc"
 #include "checkgeometryinfather.cc"
+#include "checkintersectionit.cc"
 
 template <class GridType >
 void markOne ( GridType & grid , int num , int ref )
@@ -33,7 +35,7 @@ void markOne ( GridType & grid , int num , int ref )
 int main () try
 {
 
-  Dune::SimpleVector<double> coords(6);
+  std::vector<double> coords(6);
   coords[0] = -1;
   coords[1] = -0.4;
   coords[2] = 0.1;
@@ -56,7 +58,11 @@ int main () try
     grid.globalRefine(1);
     gridcheck(grid);
 
+    // check the method geometryInFather()
     checkGeometryInFather(grid);
+
+    // check the intersection iterator
+    checkIntersectionIterator(grid);
   };
 
   return 0;

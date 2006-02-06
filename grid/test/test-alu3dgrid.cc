@@ -10,6 +10,7 @@
 
 #include "gridcheck.cc"
 #include "checkgeometryinfather.cc"
+#include "checkintersectionit.cc"
 
 using namespace Dune;
 
@@ -34,7 +35,11 @@ int main () {
           gridcheck(grid_hexa);
         }
 
+        // check the method geometryInFather()
         checkGeometryInFather(grid_hexa);
+
+        // check the intersection iterator and the geometries it returns
+        checkIntersectionIterator(grid_hexa);
       }
       {
         ALU3dGrid<3,3,tetra>
@@ -46,7 +51,11 @@ int main () {
           gridcheck(grid_tetra);
         }
 
+        // check the method geometryInFather()
         checkGeometryInFather(grid_tetra);
+
+        // check the intersection iterator and the geometries it returns
+        checkIntersectionIterator(grid_hexa);
       }
     };
 
