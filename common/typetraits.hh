@@ -195,7 +195,7 @@ namespace Dune
   /**
    * @brief Checks wether two types are interoperable.
    *
-   * Two types are interoperable conversions in either directions
+   * Two types are interoperable if conversions in either directions
    * exists.
    */
   template<class T1, class T2>
@@ -211,7 +211,11 @@ namespace Dune
     };
   };
 
-  /** \todo Please doc me! */
+  /**
+   * @brief Enable typedef if condition is met.
+   *
+   * Depending on the value of b the type T is provided as typedef type.
+   */
   template<bool b, typename T=void>
   struct EnableIf
   {
@@ -223,7 +227,11 @@ namespace Dune
   struct EnableIf<false,T>
   {};
 
-  /** \todo Please doc me! */
+  /**
+   * @brief Enable typedef if two types are interoperable.
+   *
+   * (also see IsInteroperable)
+   */
   template<class T1, class T2, class Type>
   struct EnableIfInterOperable
     : public EnableIf<IsInteroperable<T1,T2>::value, Type>
