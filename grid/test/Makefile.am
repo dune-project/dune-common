@@ -90,7 +90,8 @@ test_ug_DEPENDENCIES = $(LIBDUNE)
 ## distribution tarball
 
 testdir = $(includedir)/dune/grid/test/
-test_HEADERS = gridcheck.cc checkindexset.cc checkgeometryinfather.cc
+test_HEADERS = gridcheck.cc checkindexset.cc checkgeometryinfather.cc \
+               checkintersectionit.cc
 
 GRIDFILES = alberta-testgrid-2-2.al alberta-testgrid-3-3.al \
   ug-testgrid-2.am ug-testgrid-3.am
