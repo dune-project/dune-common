@@ -634,34 +634,7 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
   //   Change the input face number from Dune numbering to UG numbering
   // //////////////////////////////////////////////////////////////////////
 
-  NewGeometryType eType = e->geometry().type();
-  if (eType.isHexahedron()) {
-
-    // Dune numbers the faces of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-    elementSide = renumbering[elementSide];
-
-  } else if (eType.isQuadrilateral()) {
-
-    const int renumbering[4] = {3, 1, 0, 2};
-    elementSide = renumbering[elementSide];
-
-  } else if (eType.isTetrahedron()) {
-
-    // Dune numbers the faces of a tetrahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[4] = {1, 2, 3, 0};
-    elementSide = renumbering[elementSide];
-
-  } else if (eType.isTriangle()) {
-
-    // Dune numbers the faces of a triangle differently from UG.
-    // The following two lines do the transformation
-    const int renumbering[3] = {1, 2, 0};
-    elementSide = renumbering[elementSide];
-
-  }
+  elementSide = UGGridRenumberer<dim>::facesDUNEtoUG(elementSide, e->geometry().type());
 
   // ///////////////
   //   init list
@@ -737,27 +710,7 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
 
     // Dune numbers the faces of several elements differently than UG.
     // The following switch does the transformation
-    NewGeometryType newType = childElements[i].dereference().geometry().type();
-    if (newType.isHexahedron()) {
-
-      const int renumbering[6] = {4, 2, 1, 3, 0, 5};
-      side = renumbering[side];
-
-    } else if (newType.isQuadrilateral()) {
-
-      const int renumbering[4] = {2, 1, 3, 0};
-      side = renumbering[side];
-
-    } else if (newType.isTetrahedron()) {
-
-      const int renumbering[4] = {3, 0, 1, 2};
-      side = renumbering[side];
-
-    } else if (newType.isTriangle()) {
-      const int renumbering[3] = {2, 0, 1};
-      side = renumbering[side];
-    }
-
+    side = UGGridRenumberer<dim>::facesUGtoDUNE(side, childElements[i].dereference().geometry().type());
     childElementSides[i] = side;
 
   }
