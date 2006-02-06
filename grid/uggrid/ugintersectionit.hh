@@ -129,10 +129,7 @@ namespace Dune {
     //**********************************************************
 
     //! get neighbor on same or lower level or 0
-    typename TargetType<0,GridImp::dimensionworld>::T* getNeighbor () const;
-
-    //! renumbering of faces from UG to Dune
-    int renumberFaceUGToDune (int nSides, int i) const;
+    typename UGTypes<GridImp::dimension>::Element* getNeighbor () const;
 
     //! vector storing the outer normal
     mutable FieldVector<UGCtype, dimworld> outerNormal_;
@@ -146,8 +143,8 @@ namespace Dune {
     //! information.
     mutable UGMakeableGeometry<dim-1,dimworld,GridImp> neighGlob_;
 
-    //! This points to the same UG element as center_ does
-    typename TargetType<0,GridImp::dimensionworld>::T *center_;
+    //! The UG element the iterator was created from
+    typename UGTypes<dim>::Element *center_;
 
     //! The level we're on
     int level_;
