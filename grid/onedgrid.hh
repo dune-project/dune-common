@@ -8,7 +8,6 @@
 #include <dune/common/misc.hh>
 #include <dune/common/capabilities.hh>
 #include <dune/grid/common/grid.hh>
-#include <dune/common/simplevector.hh>
 
 
 /** \file
@@ -228,7 +227,7 @@ namespace Dune {
     typedef typename OneDGridFamily<dim,dimworld>::Traits Traits;
 
     /** \brief Constructor with an explicit set of coordinates */
-    OneDGrid(const SimpleVector<OneDCType>& coords);
+    OneDGrid(const std::vector<OneDCType>& coords);
 
     /** \brief Constructor for a uniform grid */
     OneDGrid(int numElements, double leftBoundary, double rightBoundary);

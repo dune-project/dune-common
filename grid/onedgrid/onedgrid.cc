@@ -88,7 +88,7 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(int numElements, double leftBoundary, dou
 }
 
 template <int dim, int dimworld>
-Dune::OneDGrid<dim,dimworld>::OneDGrid(const SimpleVector<OneDCType>& coords)
+Dune::OneDGrid<dim,dimworld>::OneDGrid(const std::vector<OneDCType>& coords)
   : refinementType_(LOCAL),
     leafIndexSet_(*this),
     idSet_(*this),
