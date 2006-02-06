@@ -336,7 +336,7 @@ namespace Dune {
                                                                             UGGridRenumberer<dim>::verticesDUNEtoUG(b,geometry().type()))));
       }
       if (cc==1)
-        return UG_NS<dim>::leafIndex(UG_NS<dim>::SideVector(target_,UGGridRenumberer<dim>::verticesDUNEtoUG(i,geometry().type())));
+        return UG_NS<dim>::leafIndex(UG_NS<dim>::SideVector(target_,UGGridRenumberer<dim>::facesDUNEtoUG(i,geometry().type())));
 
       DUNE_THROW(GridError, "UGGrid<" << dim << "," << dim << ">::subLeafIndex isn't implemented for cc==" << cc );
     }
