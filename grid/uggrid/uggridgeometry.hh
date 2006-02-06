@@ -8,6 +8,7 @@
  */
 
 #include "ugtypes.hh"
+#include "uggridrenumberer.hh"
 #include <dune/common/fixedarray.hh>
 #include <dune/common/fmatrix.hh>
 
@@ -49,7 +50,12 @@ namespace Dune {
       Geometry<2, 3, GridImp, UGGridGeometry>(UGGridGeometry<2,3,GridImp>())
     {};
 
-    void setCoords(int n, const FieldVector<UGCtype, 3>& pos) {
+    void setCoords(int n, const UGCtype* pos) {
+      for (int i=0; i<3; i++)
+        this->realGeometry.coord_[n][i] = pos[i];
+    }
+
+    void setCoords(int n, const FieldVector<UGCtype,3>& pos) {
       this->realGeometry.coord_[n] = pos;
     }
 
@@ -75,10 +81,14 @@ namespace Dune {
       Geometry<1, 2, GridImp, UGGridGeometry>(UGGridGeometry<1,2,GridImp>())
     {};
 
-    void setCoords(int n, const FieldVector<UGCtype, 2>& pos) {
-      this->realGeometry.coord_[n] = pos;
+    void setCoords(int n, const UGCtype* pos) {
+      for (int i=0; i<2; i++)
+        this->realGeometry.coord_[n][i] = pos[i];
     }
 
+    void setCoords(int n, const FieldVector<UGCtype,2>& pos) {
+      this->realGeometry.coord_[n] = pos;
+    }
     // Empty.  Boundary elements in a 2d grid have always two corners
     void setNumberOfCorners(int n) {}
 
@@ -269,16 +279,7 @@ namespace Dune {
     //! access to coordinates of corners. Index is the number of the corner
     const FieldVector<UGCtype, 3>& operator[] (int i) const
     {
-      if (elementType_.isCube()) {
-        // Dune numbers the vertices of a hexahedron and quadrilaterals differently than UG.
-        // The following two lines do the transformation
-        // The renumbering scheme is {0,1,3,2} for quadrilaterals, therefore, the
-        // following code works for 2d and 3d.
-        // It also works in both directions UG->DUNE, DUNE->UG !
-        const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-        return coord_[renumbering[i]];
-      } else
-        return coord_[i];
+      return coord_[UGGridRenumberer<2>::verticesDUNEtoUG(i, elementType_)];
     }
 
     //! maps a local coordinate within reference element to

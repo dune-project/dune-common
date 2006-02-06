@@ -20,8 +20,8 @@ inline Dune::NewGeometryType Dune::UGGridGeometry<mydim,coorddim,GridImp>::type(
 {
   switch (mydim)
   {
-  case 0 : return NewGeometryType(NewGeometryType::cube,0);
-  case 1 : return NewGeometryType(NewGeometryType::cube,1);
+  case 0 : return NewGeometryType(0);
+  case 1 : return NewGeometryType(1);
   case 2 :
 
     switch (UG_NS<coorddim>::Tag(target_)) {
