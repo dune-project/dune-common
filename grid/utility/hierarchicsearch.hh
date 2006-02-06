@@ -3,8 +3,10 @@
 #ifndef DUNE_GRID_HIERARCHICSEARCH_HH
 #define DUNE_GRID_HIERARCHICSEARCH_HH
 
-/** \file
-    \todo Please doc me!
+/**
+   @file
+   @brief Utility class for hierarchicly searching for an Entity
+   containing a given point.
  */
 
 #include <dune/common/fvector.hh>
@@ -13,7 +15,9 @@
 namespace Dune
 {
 
-  /** \todo Please doc me! */
+  /**
+     @brief Search an IndexSet of for an Entity containing a given point.
+   */
   template<class Grid, class IS>
   class HierarchicSearch
   {
@@ -38,7 +42,16 @@ namespace Dune
     //! type of HierarchicIterator
     typedef typename Grid::template Codim<0>::HierarchicIterator HierarchicIterator;
 
-    /** \todo Please doc me! */
+    /**
+       internal helper method
+
+       @param[in] e      EntityPointer whos children should be searched
+       @param[in] global Point you are searching for
+
+       Search the child entity containing point global. Recursively
+       recursively continue until we found an entity that is part of
+       the IndexSet.
+     */
     EntityPointer hFindEntity(const EntityPointer e,
                               const FieldVector<ct,dimw>& global) const
     {
@@ -60,10 +73,15 @@ namespace Dune
     }
 
   public:
-    /** \todo Please doc me! */
+    /**
+       @brief Construct a HierarchicSearch object from a Grid and an IndexSet
+     */
     HierarchicSearch(const Grid & _g, const IS & _is) : g(_g), is(_is) {};
 
-    /** \todo Please doc me! */
+    /**
+       @brief Search the IndexSet of this HierarchicSearch for an Entity
+       containing point global.
+     */
     EntityPointer findEntity(const FieldVector<ct,dimw>& global) const
     {
       // loop over macro level
