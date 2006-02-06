@@ -105,13 +105,14 @@ namespace Dune
     /** \brief Codim 1 geometry returned by intersectionGlobal() */
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
 
-    /** \brief Codim 1 geometry returned by intersectionLocal() */
+    /** \brief Codim 1 geometry returned by intersectionSelfLocal()
+        and intersectionNeighborLocal() */
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
 
-    //! @brief export grid dimension
+    //! @brief Export grid dimension
     enum { dimension=dim /*!< grid dimension */ };
 
-    //! @brief export dimension of world
+    //! @brief Export dimension of world
     enum { dimensionworld=dimworld /*!< dimension of world */ };
 
     //! define type used for coordinates in grid module
