@@ -59,13 +59,9 @@ void checkIntersectionIterator(const GridType& grid) {
         FieldVector<ctype, Geometry::coorddimension> center(0);
         for (int j=0; j<intersectionGlobal.corners(); j++)
           center += intersectionGlobal[j];
-        center /= (double) intersectionGlobal.corners();
-        std::cout << center << " center \n";
 
         // The geometry center in local coordinates
         FieldVector<ctype, Geometry::mydimension> localCenter = intersectionGlobal.local(center);
-
-        std::cout << localCenter << " localcenter\n";
 
         // Back to global coordinates to check for correctness
         FieldVector<ctype, Geometry::coorddimension> worldCenter = intersectionGlobal.global(localCenter);
