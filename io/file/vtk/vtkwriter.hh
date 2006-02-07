@@ -239,6 +239,50 @@ namespace Dune
       }
     }
 
+    //! write output; interface might change later
+    void pwrite (const char* name, const char* piecename, VTKOptions::Type dm = VTKOptions::ascii)
+    {
+      // make data mode visible to private functions
+      datamode=dm;
+
+      // reset byte counter for binary appended output
+      bytecount = 0;
+
+      if (grid.comm().size()==1)
+      {
+        std::ofstream file;
+        char fullname[128];
+        sprintf(fullname,"%s.vtu",name);
+        if (datamode==VTKOptions::binaryappended)
+          file.open(fullname,std::ios::binary);
+        else
+          file.open(fullname);
+        writeDataFile(file);
+        file.close();
+      }
+      else
+      {
+        std::ofstream file;
+        char fullname[128];
+        sprintf(fullname,"%s-%04d-%04d.vtu",piecename,grid.comm().size(),grid.comm().rank());
+        if (datamode==VTKOptions::binaryappended)
+          file.open(fullname,std::ios::binary);
+        else
+          file.open(fullname);
+        writeDataFile(file);
+        file.close();
+        grid.comm().barrier();
+        if (grid.comm().rank()==0)
+        {
+          sprintf(fullname,"%s-%04d.pvtu",name,grid.comm().size());
+          file.open(fullname);
+          writeParallelHeader(file,piecename);
+          file.close();
+        }
+        grid.comm().barrier();
+      }
+    }
+
   private:
 
     enum VTKGeometryType
@@ -274,7 +318,7 @@ namespace Dune
     }
 
     //! write header file in parallel case to stream
-    void writeParallelHeader (std::ostream& s, const char* name)
+    void writeParallelHeader (std::ostream& s, const char* piecename)
     {
       // xml header
       s << "<?xml version=\"1.0\"?>" << std::endl;
@@ -310,8 +354,10 @@ namespace Dune
           s << "NumberOfComponents=\"" << (*it)->ncomps() << "\" ";
         if (datamode==VTKOptions::ascii)
           s << "format=\"ascii\"/>" << std::endl;
-        else
+        if (datamode==VTKOptions::binary)
           s << "format=\"binary\"/>" << std::endl;
+        if (datamode==VTKOptions::binaryappended)
+          s << "format=\"appended\"/>" << std::endl;
       }
       indentDown();
       indent(s); s << "</PPointData>" << std::endl;
@@ -339,8 +385,10 @@ namespace Dune
           s << "NumberOfComponents=\"" << (*it)->ncomps() << "\" ";
         if (datamode==VTKOptions::ascii)
           s << "format=\"ascii\"/>" << std::endl;
-        else
+        if (datamode==VTKOptions::binary)
           s << "format=\"binary\"/>" << std::endl;
+        if (datamode==VTKOptions::binaryappended)
+          s << "format=\"appended\"/>" << std::endl;
       }
       indentDown();
       indent(s); s << "</PCellData>" << std::endl;
@@ -348,11 +396,13 @@ namespace Dune
       // PPoints
       indent(s); s << "<PPoints>" << std::endl;
       indentUp();
-      indent(s); s << "<DataArray type=\"Float32\" Name=\"Coordinates\" NumberOfComponents=\"" << "3" << "\" ";
+      indent(s); s << "<PDataArray type=\"Float32\" Name=\"Coordinates\" NumberOfComponents=\"" << "3" << "\" ";
       if (datamode==VTKOptions::ascii)
         s << "format=\"ascii\"/>" << std::endl;
-      else
+      if (datamode==VTKOptions::binary)
         s << "format=\"binary\"/>" << std::endl;
+      if (datamode==VTKOptions::binaryappended)
+        s << "format=\"appended\"/>" << std::endl;
       indentDown();
       indent(s); s << "</PPoints>" << std::endl;
 
@@ -360,7 +410,7 @@ namespace Dune
       for (int i=0; i<grid.comm().size(); i++)
       {
         char fullname[128];
-        sprintf(fullname,"%s-%04d-%04d.vtu",name,grid.comm().size(),i);
+        sprintf(fullname,"%s-%04d-%04d.vtu",piecename,grid.comm().size(),i);
         indent(s); s << "<Piece Source=\"" << fullname << "\"/>" << std::endl;
       }
 
@@ -373,7 +423,6 @@ namespace Dune
       s << "</VTKFile>" << std::endl;
 
     }
-
 
     //! write data file to stream
     void writeDataFile (std::ostream& s)
@@ -820,7 +869,7 @@ namespace Dune
           //			s.write(code,codelength);
         }
         //		codelength = base64::base64_encode_blockend(code,&_state);
-        s.write(code,codelength);
+        //              s.write(code,codelength);
         //		base64::base64_init_encodestate(&_state);
         s << std::endl;
         s << "</DataArray>" << std::endl;
