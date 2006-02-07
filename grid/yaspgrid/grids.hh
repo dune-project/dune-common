@@ -1509,10 +1509,12 @@ namespace Dune {
         double m = -1.0;
 
         for (int k=0; k<d; k++)
-          if ( ((double)size[k])/((double)dims[k]) > m )
-            m = ((double)size[k])/((double)dims[k]);
-        // if (_rank==0) std::cout << "testing " << dims << " norm=" << m << std::endl;
-
+        {
+          double mm=((double)size[k])/((double)dims[k]);
+          if (fmod((double)size[k],(double)dims[k])>0.0001) mm*=3;
+          if ( mm > m ) m = mm;
+        }
+        if (_rank==0) std::cout << "optimize_dims: " << size << "|" << dims << " norm=" << m << std::endl;
         if (m<opt)
         {
           opt = m;
