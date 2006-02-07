@@ -240,6 +240,13 @@ namespace Dune
       return realGeometry[i];
     }
 
+    /** \brief The integration element for vertices is always 1
+     */
+    ct integrationElement (const FieldVector<ct, 0>& local) const
+    {
+      return ct(1);
+    }
+
   public:
     //! copy constructor from GeometryImp
     Geometry(const GeometryImp<0,cdim,GridImp> & e) : realGeometry(e) {};
