@@ -1803,7 +1803,7 @@ namespace Dune {
       }
 
       DUNE_THROW(NotImplemented,
-                 "QuadratureRule for order " << p << "and GeometryType "
+                 "QuadratureRule for order " << p << " and GeometryType "
                                              << type << " not available");
     }
 
@@ -1948,7 +1948,7 @@ namespace Dune {
       }
 
       DUNE_THROW(NotImplemented,
-                 "QuadratureRule for order " << p << "and GeometryType "
+                 "QuadratureRule for order " << p << " and GeometryType "
                                              << type << " not available");
     }
 
@@ -2195,7 +2195,7 @@ namespace Dune {
       }
 
       DUNE_THROW(NotImplemented,
-                 "QuadratureRule for order " << p << "and GeometryType "
+                 "QuadratureRule for order " << p << " and GeometryType "
                                              << type << " not available");
     }
 
