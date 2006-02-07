@@ -193,10 +193,11 @@ namespace Dune {
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, mydim+1, cdim> coord_;
 
-    enum { matdim = (mydim > 0) ? mydim : 1 };
-    mutable FieldMatrix<alu3d_ctype,matdim,matdim> Jinv_; //!< storage for inverse of jacobian
-    mutable alu3d_ctype detDF_;                           //!< storage of integration_element
-    mutable FieldMatrix<alu3d_ctype, matdim, cdim> AT_;    //!< transformation matrix (transposed)
+    enum { matrows = (mydim > 0) ? mydim : 1 };
+    enum { matcols = (mydim > 0) ? cdim  : 1 };
+    mutable FieldMatrix<alu3d_ctype,matcols,matrows> Jinv_; //!< storage for inverse of jacobian
+    mutable alu3d_ctype detDF_;                             //!< storage of integration_element
+    mutable FieldMatrix<alu3d_ctype, matrows, cdim> AT_;    //!< transformation matrix (transposed)
 
     mutable FieldVector<alu3d_ctype, mydim> localCoord_;
     mutable FieldVector<alu3d_ctype, cdim>  globalCoord_;
@@ -296,7 +297,7 @@ namespace Dune {
 
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, Power_m_p<2,mydim>::power, cdim> coord_;
-    //mutable FieldVector<alu3d_ctype, mydim> tmp1_;
+    mutable FieldVector<alu3d_ctype, mydim> tmp1_;
     mutable FieldVector<alu3d_ctype, cdim> tmp2_;
 
     const GeometryType myGeomType_;
