@@ -240,7 +240,8 @@ namespace Dune
     }
 
     //! write output; interface might change later
-    void pwrite (const char* name,  const char* path, VTKOptions::Type dm = VTKOptions::ascii)
+    void pwrite (const char* name,  const char* path, const char* extendpath,
+                 VTKOptions::Type dm = VTKOptions::ascii)
     {
       // make data mode visible to private functions
       datamode=dm;
@@ -248,39 +249,109 @@ namespace Dune
       // reset byte counter for binary appended output
       bytecount = 0;
 
-      if (grid.comm().size()==1)
+      // do some magic because paraview can only cope with relative pathes to piece files
+      std::ofstream file;
+      char piecepath[256];
+      char relpiecepath[256];
+      int n=strlen(path);
+      int m=strlen(extendpath);
+      if (n>0 && path[0]=='/' && path[n-1]=='/')
       {
-        std::ofstream file;
-        char fullname[128];
-        sprintf(fullname,"%s%s.vtu",path,name);
-        if (datamode==VTKOptions::binaryappended)
-          file.open(fullname,std::ios::binary);
+        // 1) path is an absolute path to the directory where the pvtu file will be placed
+        // 2) extendpath is an absolute path from "/" where the pieces are placed
+        // 3) pieces are addressed relative in the pvtu files
+        if (m==0)
+        {
+          // write pieces to root :-)
+          piecepath[0] = '/';
+          piecepath[1] = '\0';
+        }
         else
-          file.open(fullname);
-        writeDataFile(file);
-        file.close();
+        {
+          // make piecepath absolute with trailing "/"
+          char *p=piecepath;
+          if (extendpath[0]!='/')
+          {
+            *p = '/';
+            p++;
+          }
+          for (int i=0; i<m; i++)
+          {
+            *p = extendpath[i];
+            p++;
+          }
+          if (*(p-1)!='/')
+          {
+            *p = '/';
+            p++;
+          }
+          *p = '\0';
+        }
+        // path and piecepath are either "/" or have leading and trailing /
+        // count slashes in path
+        int k=0;
+        const char *p=path;
+        while (*p!='\0')
+        {
+          if (*p=='/') k++;
+          p++;
+        }
+        char *pp = relpiecepath;
+        if (k>1)
+        {
+          for (int i=0; i<k; i++)
+          {
+            *pp='.'; pp++; *pp='.'; pp++; *pp='/'; pp++;
+          }
+        }
+        // now copy the extendpath
+        for (int i=0; i<m; i++)
+        {
+          if (i==0 && extendpath[i]=='/') continue;
+          *pp = extendpath[i];
+          pp++;
+        }
+        if ( pp!=relpiecepath && (*(pp-1)!='/') )
+        {
+          *pp = '/';
+          pp++;
+        }
+        *pp = '\0';
       }
       else
       {
-        std::ofstream file;
-        char fullname[128];
-        sprintf(fullname,"%s%s-%04d-%04d.vtu",path,name,grid.comm().size(),grid.comm().rank());
-        if (datamode==VTKOptions::binaryappended)
-          file.open(fullname,std::ios::binary);
+        // 1) path is a relative path to the directory where pvtu files are placed
+        // 2) extendpath is relative to where the pvtu files are and there the pieces are placed
+        if (n==0 || m==0)
+          sprintf(piecepath,"%s%s",path,extendpath);
         else
-          file.open(fullname);
-        writeDataFile(file);
-        file.close();
-        grid.comm().barrier();
-        if (grid.comm().rank()==0)
         {
-          sprintf(fullname,"%s%s-%04d.pvtu",path,name,grid.comm().size());
-          file.open(fullname);
-          writeParallelHeader(file,name,"");
-          file.close();
+          // both are non-zero
+          if (path[n-1]!='/' && extendpath[0]!='/')
+            sprintf(piecepath,"%s/%s",path,extendpath);
+          else
+            sprintf(piecepath,"%s%s",path,extendpath);
         }
-        grid.comm().barrier();
+        // the pieces are relative to the pvtu files
+        sprintf(relpiecepath,"%s",extendpath);
       }
+      char fullname[256];
+      sprintf(fullname,"%s%s-%04d-%04d.vtu",piecepath,name,grid.comm().size(),grid.comm().rank());
+      if (datamode==VTKOptions::binaryappended)
+        file.open(fullname,std::ios::binary);
+      else
+        file.open(fullname);
+      writeDataFile(file);
+      file.close();
+      grid.comm().barrier();
+      if (grid.comm().rank()==0)
+      {
+        sprintf(fullname,"%s%s-%04d.pvtu",path,name,grid.comm().size());
+        file.open(fullname);
+        writeParallelHeader(file,name,relpiecepath);
+        file.close();
+      }
+      grid.comm().barrier();
     }
 
   private:
