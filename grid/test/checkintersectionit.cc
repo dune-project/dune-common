@@ -17,7 +17,7 @@ void checkIntersectionIterator(const GridType& grid) {
 
   typedef typename GridType::ctype ctype;
 
-  // Loop over all levels except the lowest one
+  // Loop over all levels
   for (int i=0; i<=grid.maxLevel(); i++) {
 
     typedef typename GridType::template Codim<0>::LevelIterator ElementIterator;
@@ -60,6 +60,8 @@ void checkIntersectionIterator(const GridType& grid) {
         for (int j=0; j<intersectionGlobal.corners(); j++)
           center += intersectionGlobal[j];
 
+        center /= intersectionGlobal.corners();
+
         // The geometry center in local coordinates
         FieldVector<ctype, Geometry::mydimension> localCenter = intersectionGlobal.local(center);
 
@@ -92,10 +94,15 @@ void checkIntersectionIterator(const GridType& grid) {
         //   Check the geometry returned by intersectionNeighborLocal()
         // ////////////////////////////////////////////////////////////////
 
-        const typename IntersectionIterator::LocalGeometry& intersectionNeighborLocal = iIt.intersectionNeighborLocal();
+        if (iIt.neighbor()) {
 
-        if (intersectionNeighborLocal.corners() <= 0)
-          DUNE_THROW(GridError, "Local intersection has nonpositive number of corners!");
+          const typename IntersectionIterator::LocalGeometry& intersectionNeighborLocal = iIt.intersectionNeighborLocal();
+
+          if (intersectionNeighborLocal.corners() <= 0)
+            DUNE_THROW(GridError, "Local intersection has nonpositive number of corners!");
+
+        }
+
       }
     }
 
