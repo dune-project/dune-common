@@ -299,7 +299,7 @@ namespace Dune {
     template<int cd>
     GlobalIdType subId (const typename RemoveConst<GridImp>::Type::Traits::template Codim<0>::Entity& e, int i) const
     {
-      return grid_.template getRealEntity<0>(e).template subId<cd>(i);
+      return grid_.template getRealImplementation(e).template subId<cd>(i);
     }
 
     /** \todo Should be private */
