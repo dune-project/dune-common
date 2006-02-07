@@ -997,14 +997,15 @@ namespace Dune {
   class SGridLeafIndexSet : public IndexSet<GridImp,SGridLeafIndexSet<GridImp>,SGridLeafIndexSetTypes<GridImp> >
   {
     typedef IndexSet<GridImp,SGridLeafIndexSet<GridImp>,SGridLeafIndexSetTypes<GridImp> > Base;
+    enum {dim = RemoveConst<GridImp>::Type::dimension};
   public:
 
     //! constructor stores reference to a grid and level
     SGridLeafIndexSet (const GridImp& g) : grid(g)
     {
       // contains a single element type;
-      for (int codim=0; codim<=GridImp::dimension; codim++)
-        mytypes[codim].push_back(NewGeometryType(NewGeometryType::cube,GridImp::dimension-codim));
+      for (int codim=0; codim<=dim; codim++)
+        mytypes[codim].push_back(NewGeometryType(NewGeometryType::cube,dim-codim));
     }
 
     //! get index of an entity
@@ -1057,7 +1058,7 @@ namespace Dune {
 
   private:
     const GridImp& grid;
-    std::vector<NewGeometryType> mytypes[GridImp::dimension+1];
+    std::vector<NewGeometryType> mytypes[dim+1];
   };
 
 
