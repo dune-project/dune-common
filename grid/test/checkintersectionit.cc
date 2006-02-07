@@ -34,6 +34,9 @@ void checkIntersectionIterator(const GridType& grid) {
 
       for (; iIt!=iEndIt; ++iIt) {
 
+        // /////////////////////////////////////////////////////////
+        //   Check the types defined by the iterator
+        // /////////////////////////////////////////////////////////
         IsTrue< SameType<
                 typename IntersectionIterator::ctype,
                 typename GridType::ctype>::value == true >::yes();
@@ -44,7 +47,42 @@ void checkIntersectionIterator(const GridType& grid) {
         IsTrue<static_cast<int>(IntersectionIterator::dimensionworld)
             == static_cast<int>(GridType::dimensionworld)>::yes();
 
+        // //////////////////////////////////////////////////////////
+        //   Check various methods
+        // //////////////////////////////////////////////////////////
+
         assert(iIt.level() == i);
+
+        assert(eIt == iIt.inside());
+
+        // /////////////////////////////////////////////////////////////
+        //   Check the consistency of numberInSelf, numberInNeighbor
+        //   and the indices of the subface between.
+        // /////////////////////////////////////////////////////////////
+        if (iIt.neighbor()) {
+
+          typedef typename EntityType::EntityPointer EntityPointer;
+          EntityPointer outside = iIt.outside();
+          int numberInSelf     = iIt.numberInSelf();
+          int numberInNeighbor = iIt.numberInNeighbor();
+
+          if (outside->level() == eIt->level()) {
+
+            assert(grid.levelIndexSet(i).template subIndex<1>(*eIt, numberInSelf)
+                   == grid.levelIndexSet(i).template subIndex<1>(*outside, numberInNeighbor));
+
+            assert(grid.leafIndexSet().template subIndex<1>(*eIt, numberInSelf)
+                   == grid.leafIndexSet().template subIndex<1>(*outside, numberInNeighbor));
+
+            assert(grid.localIdSet().template subId<1>(*eIt, numberInSelf)
+                   == grid.localIdSet().template subId<1>(*outside, numberInNeighbor));
+
+            assert(grid.globalIdSet().template subId<1>(*eIt, numberInSelf)
+                   == grid.globalIdSet().template subId<1>(*outside, numberInNeighbor));
+
+          }
+
+        }
 
         // //////////////////////////////////////////////////////////
         //   Check the geometry returned by intersectionGlobal()
