@@ -542,34 +542,6 @@ namespace Dune {
     }
 
   };
-  //! \todo Please doc me!
-  template <int codim, int dimworld>
-  class UGGridSubEntityFactory {};
-
-  template<>
-  class UGGridSubEntityFactory<0,2> {
-  public:
-    static TargetType<0,2>::T* get(TargetType<0,2>::T* c, int i){
-      return c;
-    }
-  };
-
-  template<>
-  class UGGridSubEntityFactory<2,2> {
-  public:
-    static TargetType<2,2>::T* get(TargetType<0,2>::T* c, int i){
-      return UG_NS<2>::Corner(c, i);
-    }
-  };
-
-  template<>
-  /** \todo Method not implemented! */
-  class UGGridSubEntityFactory<1,2> {
-  public:
-    static TargetType<1,2>::T* get(TargetType<0,2>::T* c, int i){
-      DUNE_THROW(GridError, "UGGridSubEntityFactory<1,2>::get() not implemented!");
-    }
-  };
 
 } // namespace Dune
 

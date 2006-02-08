@@ -93,8 +93,12 @@ Dune::UGGridEntity<0,dim,GridImp>::entity ( int i ) const
   assert(i>=0 && i<count<cc>());
 
   if (cc==dim) {
-    typename TargetType<cc,dim>::T* subEntity = UGGridSubEntityFactory<cc,dim>::get(target_,UGGridRenumberer<dim>::verticesDUNEtoUG(i, geometry().type()));
-    return UGGridLevelIterator<cc,All_Partition,GridImp>(subEntity, level_);
+
+    typename UGTypes<dim>::Node* subEntity = UG_NS<dim>::Corner(target_,UGGridRenumberer<dim>::verticesDUNEtoUG(i, geometry().type()));
+    // The following cast is here to make the code compile for all cc.
+    // When it gets actually called, cc==0, and the cast is nonexisting.
+    return UGGridLevelIterator<cc,All_Partition,GridImp>((typename TargetType<cc,dim>::T*)subEntity, level_);
+
   } else if (cc==0) {
     // The following cast is here to make the code compile for all cc.
     // When it gets actually called, cc==0, and the cast is nonexisting.
