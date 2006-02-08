@@ -1443,10 +1443,14 @@ namespace Dune {
     //! (attach your boundary condition as needed)
     int boundaryId() const
     {
-      if (this->_it.coord(_dir)<_myself.gridlevel().cell_global().min(_dir))
-        return 2 * _dir;
-      if (this->_it.coord(_dir)>_myself.gridlevel().cell_global().max(_dir))
-        return 2 * _dir + 1;
+      /*
+         // this method returns 0 for 0th face which is wrong
+         if (this->_it.coord(_dir)<_myself.gridlevel().cell_global().min(_dir))
+         return 2 * _dir + 1;
+         if (this->_it.coord(_dir)>_myself.gridlevel().cell_global().max(_dir))
+         return 2 * _dir + 2;
+       */
+      if(boundary()) return numberInSelf()+1;
       return 0;
     }
 
