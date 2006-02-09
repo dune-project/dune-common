@@ -41,7 +41,7 @@ void setupPattern(int N, M& mat, Dune::ParallelIndexSet<G,L,s>& indices, int ove
       bool isPublic = false;
 
       if((i<start && i > 0) || (i>= end && i < N-1))
-        flag=GridAttributes::overlap;
+        flag=GridAttributes::copy;
 
       if(i<start+1 || i>= end-1)
         isPublic = true;
@@ -61,7 +61,7 @@ void setupPattern(int N, M& mat, Dune::ParallelIndexSet<G,L,s>& indices, int ove
 
       // j direction
       // Overlap is a dirichlet border, discard neighbours
-      if(flag != GridAttributes::overlap) {
+      if(flag != GridAttributes::copy) {
         if(j>0)
           // lower neighbour
           iter.insert(iter.index()-n);
