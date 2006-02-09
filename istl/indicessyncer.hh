@@ -579,21 +579,36 @@ namespace Dune
 
     registerMessageDatatype();
 
-    MessageInformation maxSize;
-    for(MessageIterator message = infoSend_.begin(); message != end; ++message) {
+    MessageInformation maxSize, dummy;
+
+    MessageIterator messageIter= infoSend_.begin();
+
+    typedef typename RemoteIndices::RemoteIndexMap::const_iterator RemoteIterator;
+    const RemoteIterator rend = remoteIndices_.end();
+
+    for(RemoteIterator remote = remoteIndices_.begin(); remote != rend; ++remote) {
+      MessageInformation* message;
       MessageInformation recv;
       MPI_Status status;
 
-      if(message->first < rank_) {
-        MPI_Send(const_cast<MessageInformation*>(&(message->second)), 1, datatype_, message->first, 122, remoteIndices_.communicator());
-        MPI_Recv(&recv, 1, datatype_, message->first, 122, remoteIndices_.communicator(), &status);
+      if(messageIter != end && messageIter->first==remote->first) {
+        // We want to send message information to that process
+        message = const_cast<MessageInformation*>(&(messageIter->second));
+        ++message;
+      }else
+        // We do not want to send information but the other process might.
+        message = &dummy;
+
+      if(remote->first < rank_) {
+        MPI_Send(message, 1, datatype_, remote->first, 122, remoteIndices_.communicator());
+        MPI_Recv(&recv, 1, datatype_, remote->first, 122, remoteIndices_.communicator(), &status);
       }else{
-        MPI_Recv(&recv, 1, datatype_, message->first, 122, remoteIndices_.communicator(), &status);
-        MPI_Send(const_cast<MessageInformation*>(&(message->second)), 1, datatype_, message->first, 122, remoteIndices_.communicator());
+        MPI_Recv(&recv, 1, datatype_, remote->first, 122, remoteIndices_.communicator(), &status);
+        MPI_Send(message, 1, datatype_, remote->first, 122, remoteIndices_.communicator());
       }
       // calculate max message size
-      maxSize.publish = std::max(maxSize.publish, message->second.publish);
-      maxSize.pairs = std::max(maxSize.pairs, message->second.pairs);
+      maxSize.publish = std::max(maxSize.publish, message->publish);
+      maxSize.pairs = std::max(maxSize.pairs, message->pairs);
       maxSize.publish = std::max(maxSize.publish, recv.publish);
       maxSize.pairs = std::max(maxSize.pairs, recv.pairs);
     }
