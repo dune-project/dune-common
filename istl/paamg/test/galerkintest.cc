@@ -128,7 +128,7 @@ void testCoarsenIndices(int N)
                                             Dune::EnumItem<GridFlag,GridAttributes::copy>());
 
   pinfo.freeGlobalLookup();
-  productBuilder.calculate(mat, aggregatesMap, *coarseMat);
+  productBuilder.calculate(mat, aggregatesMap, *coarseMat, pinfo, Dune::EnumItem<GridFlag,GridAttributes::copy>());
 
   if(N<5) {
     Dune::printmatrix(std::cout,mat,"fine","row",9,1);

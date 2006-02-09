@@ -330,7 +330,8 @@ namespace Dune
       template<typename O, typename T>
       void build(const T& criterion);
 
-      void recalculateGalerkin();
+      template<class F>
+      void recalculateGalerkin(const F& copyFlags);
 
       template<class V, class TA>
       void coarsenVector(Hierarchy<BlockVector<V,TA> >& hierarchy) const;
@@ -549,7 +550,7 @@ namespace Dune
                                             OverlapFlags());
 
         delete Element<0>::get(graphs);
-        productBuilder.calculate(mlevel->getmat(), *aggregatesMap, *coarseMatrix);
+        productBuilder.calculate(mlevel->getmat(), *aggregatesMap, *coarseMatrix, *infoLevel, OverlapFlags());
 
         dinfo<<"Calculation of Galerkin product took "<<watch.elapsed()<<" seconds."<<std::endl;
 
@@ -643,19 +644,22 @@ namespace Dune
     }
 
     template<class M, class IS, class A>
-    void MatrixHierarchy<M,IS,A>::recalculateGalerkin()
+    template<class F>
+    void MatrixHierarchy<M,IS,A>::recalculateGalerkin(const F& copyFlags)
     {
       typedef typename AggregatesMapList::iterator AggregatesMapIterator;
       typedef typename ParallelMatrixHierarchy::Iterator Iterator;
+      typedef typename ParallelInformationHierarchy::Iterator InfoIterator;
 
       AggregatesMapIterator amap = aggregatesMaps_.begin();
       GalerkinProduct productBuilder;
+      InfoIterator info = parallelInformation_.finest();
 
       for(Iterator level = matrices_.finest(), coarsest=matrices_.coarsest(); level!=coarsest; ++amap) {
         const Matrix& fine = level->getmat();
         ++level;
-        //Matrix& coarse(level->getmat());
-        productBuilder.calculate(fine, *(*amap), const_cast<Matrix&>(level->getmat()));
+        ++info;
+        productBuilder.calculate(fine, *(*amap), const_cast<Matrix&>(level->getmat()), *info, copyFlags);
 
       }
     }

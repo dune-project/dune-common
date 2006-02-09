@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 
   std::cout<<"=== Vector hierarchy has "<<vh.levels()<<" levels! ==="<<std::endl;
 
-  hierarchy.recalculateGalerkin();
+  hierarchy.recalculateGalerkin(OverlapFlags());
 
 
   MPI_Finalize();
