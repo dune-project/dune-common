@@ -177,7 +177,7 @@ namespace Dune
                                    ParallelInformation& coarseInfo)
     {
       ParallelAggregateRenumberer<Graph> renumberer(aggregates);
-      fineInfo.buildGlobalLookup(aggregates.noVertices());
+      //fineInfo.buildGlobalLookup(aggregates.noVertices());
       buildCoarseIndexSet(fineInfo, fineGraph, visitedMap, aggregates,
                           coarseInfo.indexSet(), renumberer);
       buildCoarseRemoteIndices(fineInfo.remoteIndices(), aggregates, coarseInfo.indexSet(),
