@@ -56,7 +56,7 @@ void testCoarsenIndices(int N)
   typename std::vector<bool>::iterator iter=excluded.begin();
 
   for(IndexIterator index = indices.begin(); index != iend; ++index, ++iter)
-    *iter = (index->local().attribute()==GridAttributes::overlap);
+    *iter = (index->local().attribute()==GridAttributes::copy);
 
   SubGraph sg(mg, excluded);
   PropertiesGraph pg(sg, Dune::IdentityMap(), sg.getEdgeIndexMap());
@@ -75,18 +75,18 @@ void testCoarsenIndices(int N)
 
   typename Dune::PropertyMapTypeSelector<Dune::Amg::VertexVisitedTag,PropertiesGraph>::Type visitedMap = Dune::get(Dune::Amg::VertexVisitedTag(), pg);
 
-  Dune::Amg::IndicesCoarsener<ParallelInformation,Dune::EnumItem<GridFlag,GridAttributes::overlap> >::coarsen(pinfo,
-                                                                                                              pg,
-                                                                                                              visitedMap,
-                                                                                                              aggregatesMap,
-                                                                                                              coarseInfo);
+  Dune::Amg::IndicesCoarsener<ParallelInformation,Dune::EnumItem<GridFlag,GridAttributes::copy> >::coarsen(pinfo,
+                                                                                                           pg,
+                                                                                                           visitedMap,
+                                                                                                           aggregatesMap,
+                                                                                                           coarseInfo);
   std::cout << rank <<": coarse indices: " <<coarseIndices << std::endl;
   std::cout << rank <<": coarse remote indices:"<<coarseRemote <<std::endl;
 
   typedef Dune::Interface<ParallelIndexSet> Interface;
   typedef Dune::BufferedCommunicator<ParallelIndexSet> Communicator;
   Interface interface;
-  interface.build(remoteIndices, Dune::EnumItem<GridFlag,GridAttributes::owner>(), Dune::EnumItem<GridFlag, GridAttributes::overlap>());
+  interface.build(remoteIndices, Dune::EnumItem<GridFlag,GridAttributes::owner>(), Dune::EnumItem<GridFlag, GridAttributes::copy>());
   Communicator communicator;
 
   typedef Dune::Amg::GlobalAggregatesMap<Vertex,ParallelIndexSet> GlobalMap;
@@ -125,7 +125,7 @@ void testCoarsenIndices(int N)
 
   BCRSMat* coarseMat = productBuilder.build(mat, mg, visitedMap2, pinfo,
                                             aggregatesMap, coarseIndices.size(),
-                                            Dune::EnumItem<GridFlag,GridAttributes::overlap>());
+                                            Dune::EnumItem<GridFlag,GridAttributes::copy>());
 
   pinfo.freeGlobalLookup();
   productBuilder.calculate(mat, aggregatesMap, *coarseMat);
