@@ -181,6 +181,7 @@ namespace Dune {
     typedef BufferedCommunicator<PIS> BC;
     typedef Interface<PIS> IF;
 
+
     /** \brief gather/scatter callback for communcation */
     template<typename T>
     struct CopyGatherScatter
@@ -333,6 +334,8 @@ namespace Dune {
       return sqrt(cc.sum(result));
     }
 
+    typedef EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::copy> CopyFlags;
+
     /** @brief The type of the parallel index set. */
     typedef ParallelIndexSet<GlobalIdType,LI,512> ParallelIndexSet;
 
@@ -382,6 +385,7 @@ namespace Dune {
 
     void buildGlobalLookup(std::size_t size)
     {
+      assert(!globalLookup_);
       globalLookup_ = new GlobalLookupIndexSet(pis, size);
     }
 
