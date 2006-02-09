@@ -177,7 +177,7 @@ namespace Dune
                                    ParallelInformation& coarseInfo)
     {
       ParallelAggregateRenumberer<Graph> renumberer(aggregates);
-      fineInfo.buildGlobalLookup(fineGraph.noVertices());
+      fineInfo.buildGlobalLookup(aggregates.noVertices());
       buildCoarseIndexSet(fineInfo, fineGraph, visitedMap, aggregates,
                           coarseInfo.indexSet(), renumberer);
       buildCoarseRemoteIndices(fineInfo.remoteIndices(), aggregates, coarseInfo.indexSet(),
@@ -274,7 +274,9 @@ namespace Dune
         Iterator riEnd = neighbour->second.second->end();
         for(Iterator index = neighbour->second.second->begin();
             index != riEnd; ++index) {
-          if(!E::contains(index->localIndexPair().local().attribute()))
+          if(!E::contains(index->localIndexPair().local().attribute()) &&
+             aggregates[index->localIndexPair().local()] !=
+             AggregatesMap<typename Graph::VertexDescriptor>::ISOLATED)
           {
             typename Graph::VertexDescriptor aggregate = index->localIndexPair().local();
             assert(aggregates[aggregate]<(int)attributes.size());

@@ -494,9 +494,10 @@ namespace Dune
         watch.reset();
         int noAggregates = aggregatesMap->buildAggregates(mlevel->getmat(), *(Element<1>::get(graphs)), criterion);
 
-        if(noAggregates < criterion.coarsenTarget() && procs>1) {
-          DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
-        }
+        /*	if(noAggregates < criterion.coarsenTarget() && procs>1){
+           DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
+           }
+         */
         dinfo << "Building aggregates took "<<watch.elapsed()<<" seconds."<<std::endl;
 
 
@@ -521,9 +522,10 @@ namespace Dune
 
         watch.reset();
 
+        infoLevel->buildGlobalLookup(aggregates);
         AggregatesPublisher<Vertex,OverlapFlags,ParallelInformation>::publish(*aggregatesMap,
-                                                                              *infoLevel,
-                                                                              mlevel->getmat().N());
+                                                                              *fineInfo,
+                                                                              infoLevel->globalLookup());
 
         dinfo<<"Communicating global aggregate numbers took "<<watch.elapsed()<<" seconds."<<std::endl;
 
