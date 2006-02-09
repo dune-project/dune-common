@@ -68,17 +68,16 @@ namespace Dune
 
       template<class OF, class T, class PI>
       static GraphTuple create(const M& matrix, T& excluded,
-                               PI& pinfo, const OF&)
+                               PI& pinfo, const OF& of)
       {
         typedef OF OverlapFlags;
         MatrixGraph* mg = new MatrixGraph(matrix.getmat());
         typedef typename PI::ParallelIndexSet ParallelIndexSet;
         typedef typename ParallelIndexSet::const_iterator IndexIterator;
         IndexIterator iend = pinfo.indexSet().end();
-        typename T::iterator iter=excluded.begin();
 
-        for(IndexIterator index = pinfo.indexSet().begin(); index != iend; ++index, ++iter)
-          *iter = (OverlapFlags::contains(index->local().attribute()));
+        for(IndexIterator index = pinfo.indexSet().begin(); index != iend; ++index)
+          excluded[index->local()] = of.contains(index->local().attribute());
 
         SubGraph* sg= new SubGraph(*mg, excluded);
         PropertiesGraph* pg = new PropertiesGraph(*sg, IdentityMap(), sg->getEdgeIndexMap());
