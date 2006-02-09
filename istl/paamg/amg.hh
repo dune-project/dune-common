@@ -171,7 +171,7 @@ namespace Dune
       IsTrue<static_cast<int>(P::category)==static_cast<int>(S::category)>::yes();
       MatrixHierarchy* matrices = new MatrixHierarchy(const_cast<Matrix&>(matrix), pinfo);
 
-      matrices->template build<EmptySet<int> >(criterion);
+      matrices->template build<typename P::CopyFlags>(criterion);
 
       matrices_ = matrices;
       // build the necessary smoother hierarchies
