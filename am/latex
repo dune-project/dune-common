@@ -1,0 +1,22 @@
+# Rules for latex stuff
+
+# rerun TEX if log-file suggests that
+.tex.dvi:
+	$(TEX) $*
+	while grep Rerun $*.log > /dev/null ; do \
+	  $(TEX) $* ; \
+	done
+# check if Bibtex needs to be called
+	if grep '^\\citation{' *.aux > /dev/null ; then \
+	  $(BIBTEX) $* ; \
+	  $(TEX) $* ; \
+	  while grep Rerun $*.log > /dev/null ; do \
+	    $(TEX) $* ; \
+	  done ; \
+	fi
+
+.dvi.pdf:
+	$(DVIPDF) $*
+
+.dvi.ps:
+	$(DVIPS) $*
