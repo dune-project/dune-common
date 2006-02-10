@@ -6,9 +6,13 @@ EXTRA_DIST = referencetokuhn0.svg referencetokuhn0.png \
 	     simplexvertexindex.svg simplexvertexindex.png \
 	     kuhntriangulation.svg
 
-# Update png's if possible
-noinst_DATA = referencetokuhn0.png simplexvertexindex.png \
-	      refinement.pdf refinement.ps
+if BUILD_DOCS
+ DOCS = referencetokuhn0.png simplexvertexindex.png \
+	refinement.pdf refinement.ps
+endif
+EXTRAINSTALL = refinement.pdf
+
+all: $(DOCS)
 
 refinement.dvi: refinement.tex simplexvertexindex.eps referencetokuhn0.eps kuhntriangulation.eps
 
@@ -18,11 +22,13 @@ refinement.dvi: refinement.tex simplexvertexindex.eps referencetokuhn0.eps kuhnt
 	mv $@.tmp $@
 	rm $@.png
 
-MOSTLYCLEANFILES = refinement.aux refinement.log refinement.dvi	\
-		   refinement.ps simplexvertexindex.eps		\
-		   referencetokuhn0.eps kuhntriangulation.eps
+MOSTLYCLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi *.pdf *.ps *.eps
 
 include $(top_srcdir)/am/latex
 include $(top_srcdir)/am/inkscape.am
+
+BASEDIR = ../..
+CURDIR = doc/refinement
+
 include $(top_srcdir)/am/webstuff
 include $(top_srcdir)/am/global-rules

@@ -21,6 +21,9 @@ with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
 <li>The <a href="$(ROOT)/doc/view-concept.html">view concept</a> is the
       fundamental idea of the grid interface</li>
 <li>Some information about the <a href="$(ROOT)/doc/devel/indexidsets.html">index and id sets</a>. </li>
+<li>A description of
+    <a href="$(ROOT)/doc/refinement/refinement.pdf">Refinement</a>, a
+    system for local and temporary refinements.</li>
 </ul>
 
 <h2>Documentation for developers of the core library</h2>
