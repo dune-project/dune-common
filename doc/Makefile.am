@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = devel appl doxygen layout istl
+SUBDIRS = devel appl refinement doxygen layout istl
 
 if BUILD_DOCS
  PAGES = index.html buildsystem.html view-concept.html installation-notes.html

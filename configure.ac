@@ -227,6 +227,7 @@ AC_CONFIG_FILES([Makefile
 	 doc/istl/Makefile
 	 doc/istl/comm/Makefile
 	 doc/layout/Makefile
+	 doc/refinement/Makefile
 	 doc/doxygen/Makefile
          m4/Makefile
 	 am/Makefile
