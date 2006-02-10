@@ -65,7 +65,7 @@ void testCoarsenIndices(int N)
   std::cout << "fine indices: "<<indices << std::endl;
   std::cout << "fine remote: "<<remoteIndices << std::endl;
 
-  aggregatesMap.buildAggregates(mat, pg, Criterion());
+  int noAggregates = aggregatesMap.buildAggregates(mat, pg, Criterion());
 
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
 
@@ -74,6 +74,9 @@ void testCoarsenIndices(int N)
   RemoteIndices coarseRemote = coarseInfo.remoteIndices();
 
   typename Dune::PropertyMapTypeSelector<Dune::Amg::VertexVisitedTag,PropertiesGraph>::Type visitedMap = Dune::get(Dune::Amg::VertexVisitedTag(), pg);
+
+  coarseInfo.buildGlobalLookup(noAggregates);
+  pinfo.buildGlobalLookup(aggregatesMap.noVertices());
 
   Dune::Amg::IndicesCoarsener<ParallelInformation,Dune::EnumItem<GridFlag,GridAttributes::copy> >::coarsen(pinfo,
                                                                                                            pg,
