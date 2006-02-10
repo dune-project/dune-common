@@ -1458,7 +1458,7 @@ namespace Dune {
 
     //! calculates ret = matrix * x
     template <typename K, int dim>
-    static void multAssign(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
+    static inline void multAssign(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
     {
       typedef typename FieldMatrix<K,dim,dim>::size_type size_type;
 
@@ -1474,7 +1474,7 @@ namespace Dune {
 
     //! calculates ret = matrix * x
     template <typename K, int dim>
-    static void multAssignTransposed( const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
+    static inline void multAssignTransposed( const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
     {
       typedef typename FieldMatrix<K,dim,dim>::size_type size_type;
 
@@ -1490,7 +1490,7 @@ namespace Dune {
 
     //! calculates ret = matrix * x
     template <typename K, int dim>
-    static FieldVector<K,dim> mult(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x)
+    static inline FieldVector<K,dim> mult(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x)
     {
       FieldVector<K,dim> ret;
       multAssign(matrix,x,ret);
@@ -1499,7 +1499,7 @@ namespace Dune {
 
     //! calculates ret = matrix^T * x
     template <typename K, int dim>
-    static FieldVector<K,dim> multTransposed(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x)
+    static inline FieldVector<K,dim> multTransposed(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x)
     {
       FieldVector<K,dim> ret;
       typedef typename FieldMatrix<K,dim,dim>::size_type size_type;
