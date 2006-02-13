@@ -210,8 +210,6 @@ namespace Dune {
     typedef typename FunctionSpaceType::HessianRangeType HessianRangeType;
     typedef typename FunctionSpaceType::RangeFieldType DofType;
 
-    typedef typename FunctionSpaceType::RangeFieldType DofType;
-
   public:
     //! set the default diffVar Types
     BaseFunctionSetDefault () :
