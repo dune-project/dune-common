@@ -24,6 +24,7 @@ namespace Dune {
   class GeometryIdentifier {
   public:
 
+    // this enum more specifies the highest number of es
     enum { numTypes = 10 };
 
     // in GeometryType
