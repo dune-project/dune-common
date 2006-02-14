@@ -30,19 +30,18 @@ namespace Dune
     struct DefaultSmootherArgs
     {
       /**
-       * @brief The type of matrix the smoother is for.
+       * @brief The type of the relaxation factor.
        */
-      typedef typename T::matrix_type Matrix;
+      typedef T RelaxationFactor;
 
       /**
        * @brief The numbe of iterations to perform.
        */
       int iterations;
-
       /**
        * @brief The relaxation factor to use.
        */
-      typename Matrix::field_type relaxationFactor;
+      RelaxationFactor relaxationFactor;
 
       /**
        * @brief Default constructor.
@@ -58,10 +57,16 @@ namespace Dune
     template<class T>
     struct SmootherTraits
     {
-      typedef DefaultSmootherArgs<T> Arguments;
+      typedef DefaultSmootherArgs<typename T::matrix_type::field_type> Arguments;
 
     };
 
+    template<class X, class Y, class C, class T>
+    struct SmootherTraits<BlockPreconditioner<X,Y,C,T> >
+    {
+      typedef DefaultSmootherArgs<typename T::matrix_type::field_type> Arguments;
+
+    };
     template<class T>
     class ConstructionTraits;
 
@@ -71,9 +76,9 @@ namespace Dune
     template<class T, class C=SequentialInformation>
     class DefaultConstructionArgs
     {
-      friend class ConstructionTraits<T>;
+      typedef T Matrix;
 
-      typedef typename T::matrix_type Matrix;
+      typedef DefaultSmootherArgs<typename Matrix::field_type> SmootherArgs;
 
     public:
       void setMatrix(const Matrix& matrix)
@@ -81,21 +86,37 @@ namespace Dune
         matrix_=&matrix;
       }
 
-      void setArgs(const DefaultSmootherArgs<T>& args)
+      const Matrix& getMatrix() const
+      {
+        return *matrix_;
+      }
+
+      void setArgs(const SmootherArgs& args)
       {
         args_=&args;
       }
+
+      const SmootherArgs getArgs() const
+      {
+        return *args_;
+      }
+
       void setComm(const C& comm)
       {
         comm_ = &comm;
       }
 
+      const C& getComm() const
+      {
+        return *comm_;
+      }
+
+
     private:
       const Matrix* matrix_;
-      const DefaultSmootherArgs<T>* args_;
+      const SmootherArgs* args_;
       const C* comm_;
     };
-
 
     /**
      * @brief Policy for the construction of the SeqSSOR smoother
@@ -103,12 +124,12 @@ namespace Dune
     template<class M, class X, class Y>
     struct ConstructionTraits<SeqSSOR<M,X,Y> >
     {
-      typedef DefaultConstructionArgs<SeqSSOR<M,X,Y> > Arguments;
+      typedef DefaultConstructionArgs<M> Arguments;
 
       static inline SeqSSOR<M,X,Y>* construct(Arguments& args)
       {
-        return new SeqSSOR<M,X,Y>(*(args.matrix_), args.args_->iterations,
-                                  args.args_->relaxationFactor);
+        return new SeqSSOR<M,X,Y>(args.getMatrix(), args.getArgs().iterations,
+                                  args.getArgs().relaxationFactor);
       }
 
     };
@@ -119,12 +140,12 @@ namespace Dune
     template<class M, class X, class Y>
     struct ConstructionTraits<SeqJac<M,X,Y> >
     {
-      typedef DefaultConstructionArgs<SeqJac<M,X,Y> > Arguments;
+      typedef DefaultConstructionArgs<M> Arguments;
 
       static inline SeqJac<M,X,Y>* construct(Arguments& args)
       {
-        return new SeqJac<M,X,Y>(*(args.matrix_), args.args_->iterations,
-                                 args.args_->relaxationFactor);
+        return new SeqJac<M,X,Y>(args.getMatrix(), args.getArgs().iterations,
+                                 args.getArgs().relaxationFactor);
       }
 
     };
@@ -135,15 +156,27 @@ namespace Dune
     template<class M, class X, class Y, class C>
     struct ConstructionTraits<ParSSOR<M,X,Y,C> >
     {
-      typedef DefaultConstructionArgs<ParSSOR<M,X,Y,C>,C> Arguments;
+      typedef DefaultConstructionArgs<M,C> Arguments;
 
       static inline ParSSOR<M,X,Y,C>* construct(Arguments& args)
       {
-        return new ParSSOR<M,X,Y,C>(*(args.matrix_), args.args_->iterations,
-                                    args.args_->relaxationFactor,
-                                    *args.comm_);
+        return new ParSSOR<M,X,Y,C>(args.getMatrix(), args.getArgs().iterations,
+                                    args.getArgs().relaxationFactor,
+                                    args.getComm());
       }
+    };
 
+    template<class X, class Y, class C, class T>
+    struct ConstructionTraits<BlockPreconditioner<X,Y,C,T> >
+    {
+      typedef DefaultConstructionArgs<typename T::matrix_type,C> Arguments;
+
+      static inline BlockPreconditioner<X,Y,C,T>* construct(Arguments& args)
+      {
+        return new BlockPreconditioner<X,Y,C,T>(*(new T(args.getMatrix(), args.getArgs().iterations,
+                                                        args.getArgs().relaxationFactor)),
+                                                args.getComm());
+      }
     };
   } // namespace Amg
 } // namespace Dune
