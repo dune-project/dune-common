@@ -105,7 +105,7 @@ void testCoarsenIndices(int N)
   std::cout<<"Communicated: ";
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
 
-  Dune::Amg::GalerkinProduct productBuilder;
+  Dune::Amg::GalerkinProduct<ParallelInformation> productBuilder;
 
   typedef std::vector<bool> Vector;
   typedef typename Vector::iterator Iterator;
