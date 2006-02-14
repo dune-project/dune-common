@@ -145,7 +145,9 @@ namespace Dune
 
     template<>
     class GalerkinProduct<SequentialInformation>
+      : public BaseGalerkinProduct
     {
+    public:
       /**
        * @brief Calculates the coarse matrix via a Galerkin product.
        * @param fine The matrix on the fine level.
