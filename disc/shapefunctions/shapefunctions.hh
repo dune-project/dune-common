@@ -62,9 +62,17 @@ namespace Dune
   {
   public:
     // compile time sizes
+
+    /** \brief Dimension of the reference domain */
     enum { dim=d };
+
+    /** \brief Number of components per shape function */
     enum { comps=N };        // must be available at compile time
+
+    /** \brief Type used for the coordinates */
     typedef C CoordType;
+
+    /** \brief Type used for the result values */
     typedef T ResultType;
 
     //! evaluate component comp at point x
@@ -111,12 +119,20 @@ namespace Dune
   {
   public:
     // compile time sizes
+    /** \brief Dimension of the reference domain */
     enum { dim=d };
+
+    /** \brief Number of components per shape function */
     enum { comps=N };
 
     // exported types
+    /** \brief Type used for the coordinates */
     typedef C CoordType;
+
+    /** \brief Type used for the result values */
     typedef T ResultType;
+
+    /** \brief The type of the entries in this container */
     typedef ShapeFunction<C,T,d,N> value_type;
 
     //! total number of shape functions, i.e. degrees of freedom
@@ -161,13 +177,23 @@ namespace Dune
   {
   public:
     // compile time sizes
+    /** \brief Dimension of the reference domain */
     enum { dim=d };
+
+    /** \brief Number of components per shape function */
     enum { comps=N };
+
+    /** \brief Maximum size of any ShapeFunctionSet in the container */
     enum { maxsize=M };
 
     // exported types
+    /** \brief Type used for the coordinates */
     typedef C CoordType;
+
+    /** \brief Type used for the result values */
     typedef T ResultType;
+
+    /** \brief The type of the entries in this container */
     typedef ShapeFunctionSet<C,T,d,N> value_type;
 
     //! access a shape function via type and order
