@@ -218,6 +218,11 @@ namespace Dune
         smoother->pre(*lhs,*rhs);
       }
 
+      // The precondtioner might change x and b. So we have to
+      // copy the changes to the original vectors.
+      x = *lhs_->finest();
+      b = *rhs_->finest();
+
       if(buildHierarchy_) {
         // Create the coarse Solver
         SmootherArgs sargs(smootherArgs_);
@@ -233,7 +238,7 @@ namespace Dune
 
         solver_ = new BiCGSTABSolver<X>(const_cast<M&>(*matrices_->matrices().coarsest()),
                                         *scalarProduct_,
-                                        *coarseSmoother_, 1E-12, 10000, 0);
+                                        *coarseSmoother_, 1E-20, 10000, 0);
       }
     }
 
@@ -280,7 +285,7 @@ namespace Dune
 
         // calculate defect
         *defect = *rhs;
-        matrix->getmat().mmv(static_cast<const Domain&>(*lhs), *defect);
+        matrix->applyscaleadd(-1,static_cast<const Domain&>(*lhs), *defect);
 
         //restrict defect to coarse level right hand side.
         ++rhs;
@@ -314,6 +319,7 @@ namespace Dune
         --pinfo;
 
         typename Hierarchy<Domain,A>::Iterator coarseLhs = lhs--;
+
         Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
         ::prolongate(*(*aggregates), *coarseLhs, *lhs, 1.6);
 
