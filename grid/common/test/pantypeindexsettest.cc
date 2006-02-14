@@ -30,7 +30,7 @@ void checkPanTypeIndexSet(const PanTypeIndexSet<GridType,HostIndexSet>& panTypeI
     assert(panTypeIndexSet.geomTypes(codim) == hostIndexSet.geomTypes(codim));
     assert(panTypeIndexSet.size(codim) == hostIndexSet.size(codim));
 
-    for (int i=0; i<panTypeIndexSet.geomTypes(codim).size(); i++) {
+    for (size_t i=0; i<panTypeIndexSet.geomTypes(codim).size(); i++) {
       NewGeometryType type = panTypeIndexSet.geomTypes(codim)[i];
       assert(panTypeIndexSet.size(codim,type) == hostIndexSet.size(codim,type));
     }
