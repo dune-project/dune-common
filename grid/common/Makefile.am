@@ -13,6 +13,6 @@ common_HEADERS = virtualrefinement.cc  \
   mcmgmapper.hh scsgmapper.hh universalmapper.hh sizecache.hh \
   intersectioniteratorwrapper.hh
 
-SUBDIRS = refinement
+SUBDIRS = refinement test
 
 include $(top_srcdir)/am/global-rules
