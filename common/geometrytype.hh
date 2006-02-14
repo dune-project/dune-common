@@ -159,7 +159,7 @@ namespace Dune {
         s << "pyramid";
         break;
       case prism :
-        s << "prims";
+        s << "prism";
       }
 
       return s;
@@ -174,7 +174,7 @@ namespace Dune {
     case NewGeometryType::simplex : s << "simplex"; break;
     case NewGeometryType::cube :    s << "cube";    break;
     case NewGeometryType::pyramid : s << "pyramid"; break;
-    case NewGeometryType::prism :   s << "prims";   break;
+    case NewGeometryType::prism :   s << "prism";   break;
     default : s << "[unknown NewGeometryType::BasicType: " << int(type) << "]";
     }
 
