@@ -253,7 +253,7 @@ namespace Dune {
    * is applied and then all owner data points are updates on
    * all other processes.
    */
-  template<class X, class Y, class C>
+  template<class X, class Y, class C, class T=Preconditioner<X,Y> >
   class BlockPreconditioner : public Preconditioner<X,Y> {
   public:
     //! \brief The domain type of the preconditioner.
@@ -278,7 +278,7 @@ namespace Dune {
        \param c The communication object for syncing overlap and copy
        data points. (E.~g. OwnerOverlapCommunication )
      */
-    BlockPreconditioner (Preconditioner<X,Y>& p, const communication_type& c)
+    BlockPreconditioner (T& p, const communication_type& c)
       : preconditioner(p), communication(c)
     {   }
 
