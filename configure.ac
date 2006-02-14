@@ -192,6 +192,7 @@ AC_CONFIG_FILES([Makefile
          grid/albertagrid/Makefile
          grid/alu3dgrid/Makefile
          grid/common/Makefile
+         grid/common/test/Makefile
 	 grid/common/refinement/Makefile
          grid/onedgrid/Makefile
          grid/sgrid/Makefile
