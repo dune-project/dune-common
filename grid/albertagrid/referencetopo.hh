@@ -27,7 +27,7 @@ namespace AlbertHelp {
   };
 
   // see Albert Doc page 12 for reference element
-  // if we lokk from outside, then face numbering must be clockwise
+  // if we look from outside, then face numbering must be clockwise
   // see below that the vertex numbers for each face are the same
   // but in Dune reference element not clockwise ,but this we need for
   // calculation the outer normal, see calcOuterNormal in albertagrid.cc

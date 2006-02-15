@@ -77,10 +77,10 @@ inline void fillMacroInfo(TRAVERSE_STACK *stack,
 //extern void free_leaf_data(void *leaf_data, MESH *mesh);
 //extern void free_dof(DOF *dof, MESH *mesh, int position);
 
-void enlargeTraverseStack(TRAVERSE_STACK *stack);
-static TRAVERSE_STACK *getTraverseStack(void);
-static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack);
-void printTraverseStack(TRAVERSE_STACK *stack);
+inline void enlargeTraverseStack(TRAVERSE_STACK *stack);
+inline static TRAVERSE_STACK *getTraverseStack(void);
+inline static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack);
+inline void printTraverseStack(TRAVERSE_STACK *stack);
 
 //! organize the TRAVERSE_STACK Management, so we can use the nice Albert
 //! functions get_traverse_stack and free_traverse_stack
