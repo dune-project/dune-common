@@ -47,7 +47,7 @@ namespace Dune
       inline GlobalIndex& get(std::size_t index)
       {
         const Vertex& aggregate = aggregates_[index];
-        assert(index < AggregatesMap<Vertex>::ISOLATED);
+        assert(aggregate < AggregatesMap<Vertex>::ISOLATED);
         const Dune::IndexPair<GlobalIndex,LocalIndex >* pair = indexset_.pair(aggregate);
         assert(pair!=0);
         return const_cast<GlobalIndex&>(pair->global());
