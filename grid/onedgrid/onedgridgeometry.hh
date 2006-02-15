@@ -111,6 +111,19 @@ namespace Dune {
       return target_->pos_;
     }
 
+    /** \brief Maps a local coordinate within reference element to
+     * global coordinate in element  */
+    FieldVector<OneDCType, 1> global (const FieldVector<OneDCType, 0>& local) const {
+      return target_->pos_;
+    }
+
+    /** \brief Maps a global coordinate within the element to a
+     * local coordinate in its reference element */
+    FieldVector<OneDCType, 0> local (const FieldVector<OneDCType, 1>& global) const {
+      FieldVector<OneDCType, 0> l;
+      return l;
+    }
+
     //private:
     OneDEntityImp<0>* target_;
 
