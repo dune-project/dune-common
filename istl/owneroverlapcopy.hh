@@ -295,10 +295,11 @@ namespace Dune {
     void dot (const T1& x, const T1& y, T2& result) const
     {
       // set up mask vector
-      if (mask.size()!=x.size())
+      if (mask.size()!=static_cast<typename std::vector<double>::size_type>(x.size()))
       {
         mask.resize(x.size());
-        for (int i=0; i<mask.size(); i++) mask[i] = 1;
+        for (typename std::vector<double>::size_type i=0; i<mask.size(); i++)
+          mask[i] = 1;
         for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
           if (i->local().attribute()!=OwnerOverlapCopyAttributeSet::owner)
             mask[i->local().local()] = 0;
@@ -320,10 +321,11 @@ namespace Dune {
     double norm (const T1& x) const
     {
       // set up mask vector
-      if (mask.size()!=x.size())
+      if (mask.size()!=static_cast<typename std::vector<double>::size_type>(x.size()))
       {
         mask.resize(x.size());
-        for (int i=0; i<mask.size(); i++) mask[i] = 1;
+        for (typename std::vector<double>::size_type i=0; i<mask.size(); i++)
+          mask[i] = 1;
         for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
           if (i->local().attribute()!=OwnerOverlapCopyAttributeSet::owner)
             mask[i->local().local()] = 0;

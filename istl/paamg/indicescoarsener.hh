@@ -239,7 +239,7 @@ namespace Dune
 
       coarseIndices.endResize();
 
-      assert(renumberer <= coarseIndices.size());
+      assert(static_cast<std::size_t>(renumberer) <= coarseIndices.size());
 
       // Reset the visited flags
       for(Iterator vertex=fineGraph.begin(); vertex != end; ++vertex)

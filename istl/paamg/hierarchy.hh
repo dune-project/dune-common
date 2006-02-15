@@ -411,6 +411,14 @@ namespace Dune
         return coarsenTarget_;
       }
 
+      /**
+       * @brief Whether the data should be accumulated on fewer processes on coarser levels.
+       */
+      bool accumulate() const
+      {
+        return false;
+      }
+
       CoarsenCriterion(int maxLevel=100, int coarsenTarget=1000)
         : T(), maxLevel_(maxLevel), coarsenTarget_(coarsenTarget)
       {}
@@ -499,10 +507,10 @@ namespace Dune
         watch.reset();
         int noAggregates = aggregatesMap->buildAggregates(mlevel->getmat(), *(Element<1>::get(graphs)), criterion);
 
-        /*	if(noAggregates < criterion.coarsenTarget() && procs>1){
-           DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
-           }
-         */
+        if(noAggregates < criterion.coarsenTarget() && procs>1 && criterion.accumulate()) {
+          DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
+        }
+
         dinfo << "Building aggregates took "<<watch.elapsed()<<" seconds."<<std::endl;
 
 
