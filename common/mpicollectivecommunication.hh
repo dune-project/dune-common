@@ -472,8 +472,8 @@ namespace Dune
     T sum (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      int rv=MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-                           GenericSum_MPI_Op<T>::get(),communicator);
+      MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
+                    GenericSum_MPI_Op<T>::get(),communicator);
       return out;
     }
 
@@ -489,8 +489,8 @@ namespace Dune
     T prod (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      int rv=MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-                           GenericProduct_MPI_Op<T>::get(),communicator);
+      MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
+                    GenericProduct_MPI_Op<T>::get(),communicator);
       return out;
     }
 
@@ -506,8 +506,8 @@ namespace Dune
     T min (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      int rv=MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-                           GenericMin_MPI_Op<T>::get(),communicator);
+      MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
+                    GenericMin_MPI_Op<T>::get(),communicator);
       return out;
     }
 
@@ -523,8 +523,8 @@ namespace Dune
     T max (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      int rv=MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-                           GenericMax_MPI_Op<T>::get(),communicator);
+      MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
+                    GenericMax_MPI_Op<T>::get(),communicator);
       return out;
     }
 
