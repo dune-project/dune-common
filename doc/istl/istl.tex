@@ -17,11 +17,10 @@
   stringstyle=\ttfamily, commentstyle=\it, extendedchars=true}
 
 \newif\ifpdf
-\ifx\pdfoutput\undefined
+\ifnum\ifx\pdfoutput\undefined0\else\pdfoutput\fi<1
 \pdffalse % we are not running PDFLaTeX
 \else
-\pdfoutput=1 % we are running PDFLaTeX
-\pdftrue
+\pdftrue % we are running PDFLaTeX
 \fi
 
 \ifpdf

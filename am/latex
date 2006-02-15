@@ -2,16 +2,16 @@
 
 # rerun TEX if log-file suggests that
 .tex.dvi:
-	$(TEX) $*
+	$(TEX) </dev/null $*
 	while grep Rerun $*.log > /dev/null ; do \
-	  $(TEX) $* ; \
+	  $(TEX) </dev/null $* || exit $$?; \
 	done
 # check if Bibtex needs to be called
 	if grep '^\\citation{' *.aux > /dev/null ; then \
-	  $(BIBTEX) $* ; \
-	  $(TEX) $* ; \
+	  $(BIBTEX) $* || exit $$?; \
+	  $(TEX) </dev/null $* || exit $$?; \
 	  while grep Rerun $*.log > /dev/null ; do \
-	    $(TEX) $* ; \
+	    $(TEX) </dev/null $* || exit $$?; \
 	  done ; \
 	fi
 
