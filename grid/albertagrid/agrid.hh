@@ -1453,7 +1453,7 @@ namespace Dune
 
     //! Return maximum level defined in this grid. Levels are numbered
     //! 0 ... maxLevel with 0 the coarsest level.
-    int maxLevel() const { return maxlevel_; }
+    int maxLevel() const;
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
