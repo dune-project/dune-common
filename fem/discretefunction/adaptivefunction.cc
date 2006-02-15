@@ -90,9 +90,9 @@ namespace Dune {
     assert(init_);
     assert(en.geometry().checkInside(x));
     ret *= 0.0;
-    const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
+    const BaseFunctionSetType& bSet = this->getBaseFunctionSet();
 
-    for (int i = 0; i < bSet.numBaseFunctions(); ++i)
+    for (int i = 0; i < this->numDofs(); ++i)
     {
       bSet.eval(i, x, tmp_);
       for (int l = 0; l < dimRange; ++l) {
@@ -109,7 +109,19 @@ namespace Dune {
            int quadPoint,
            RangeType& ret) const
   {
-    evaluateLocal(en, quad.point(quadPoint), ret);
+    assert(init_);
+    assert(en.geometry().checkInside(quad.point(quadPoint)));
+    ret *= 0.0;
+    const BaseFunctionSetType& bSet = this->getBaseFunctionSet();
+
+    for (int i = 0; i < this->numDofs(); ++i)
+    {
+      bSet.eval(i, quad,quadPoint, tmp_);
+      for (int l = 0; l < dimRange; ++l) {
+        ret[l] += (*values_[i]) * tmp_[l];
+      }
+    }
+    // evaluateLocal(en, quad.point(quadPoint), ret);
   }
 
   template <class DiscreteFunctionSpaceImp>
@@ -123,9 +135,9 @@ namespace Dune {
     enum { dim = EntityType::dimension };
 
     ret *= 0.0;
-    const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
+    const BaseFunctionSetType& bSet = this->getBaseFunctionSet();
 
-    for (int i = 0; i < bSet.numBaseFunctions(); ++i) {
+    for (int i = 0; i < this->numDofs(); ++i) {
       tmpGrad_ *= 0.0;
       bSet.jacobian(i, x, tmpGrad_);
 
@@ -145,16 +157,53 @@ namespace Dune {
            int quadPoint,
            JacobianRangeType& ret) const
   {
-    jacobianLocal(en, quad.point(quadPoint), ret);
+    assert(init_);
+    enum { dim = EntityType::dimension };
+
+    ret *= 0.0;
+    const BaseFunctionSetType& bSet = this->getBaseFunctionSet();
+
+    typedef FieldMatrix<DofType, dim, dim> JacobianInverseType;
+    const JacobianInverseType& jti =
+      en.geometry().jacobianInverseTransposed(quad.point(quadPoint));
+
+    JacobianRangeType tmp(0.0);
+
+    for (int i = 0; i < this->numDofs(); ++i) {
+      // tmpGrad_ *= 0.0;
+      bSet.jacobian(i, quad,quadPoint, tmpGrad_);
+      tmpGrad_ *= *values_[i];
+      /*
+         for (int l = 0; l < dimRange; ++l) {
+         tmpGrad_[l] *= *values_[i];
+         // * umtv or umv?
+         // jti.umv(tmpGrad_[l], ret[l]);
+         }
+       */
+      tmp += tmpGrad_;
+    }
+    for (int l = 0; l < dimRange; ++l)
+      jti.umv(tmp[l],ret[l]);
+    // jacobianLocal(en, quad.point(quadPoint), ret);
   }
+
+  template <class DiscreteFunctionSpaceImp>
+  const typename
+  AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::BaseFunctionSetType&
+  AdaptiveLocalFunction<DiscreteFunctionSpaceImp >::getBaseFunctionSet() const {
+    assert(baseSet_);
+    return *baseSet_;
+  }
+
 
   template <class DiscreteFunctionSpaceImp>
   template <class EntityType>
   void AdaptiveLocalFunction<DiscreteFunctionSpaceImp>::
   init(const EntityType& en)
   {
-    int numOfDof =
-      spc_.getBaseFunctionSet(en).numBaseFunctions();
+    baseSet_ = &spc_.getBaseFunctionSet(en);
+
+    int numOfDof = baseSet_->numBaseFunctions();
     values_.resize(numOfDof);
 
     for (int i = 0; i < numOfDof; ++i) {
@@ -271,7 +320,7 @@ namespace Dune {
   {
     assert(en.geometry().checkInside(x));
 
-    const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
+    const BaseFunctionSetType& bSet = this->getBaseFunctionSet();
     result *= 0.0;
 
     assert(static_cast<int>(values_.size()) == bSet.numDifferentBaseFunctions());
@@ -307,7 +356,7 @@ namespace Dune {
     typedef FieldMatrix<DofType, dim, dim> JacobianInverseType;
     result *= 0.0;
 
-    const BaseFunctionSetType& bSet = spc_.getBaseFunctionSet(en);
+    const BaseFunctionSetType& bSet = this->getBaseFunctionSet();
     const JacobianInverseType& jInv =
       en.geometry().jacobianInverseTransposed(x);
 
@@ -356,8 +405,9 @@ namespace Dune {
   template <class EntityType>
   void AdaptiveLocalFunction<CombinedSpace<ContainedFunctionSpaceImp, N, p> >::
   init(const EntityType& en) {
+    baseSet_ = &spc_.getBaseFunctionSet(en);
     int numOfDof =
-      spc_.getBaseFunctionSet(en).numDifferentBaseFunctions();
+      baseSet_.numDifferentBaseFunctions();
     values_.resize(numOfDof);
 
     for (int i = 0; i < numOfDof; ++i) {
