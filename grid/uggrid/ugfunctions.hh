@@ -390,6 +390,21 @@ namespace Dune {
       return 0;
     }
 
+    /** \brief Compute the integration element on an element face
+        \param nc Number of corners of the element face
+        \param co_global Coordinates of the corners of the face
+        \param ip_local Local coordinates where integration element is to be evaluated
+        \todo Currently, this method is not actually called
+     */
+    static double SurfaceElement(int nc,
+                                 double co_global[MAX_CORNERS_OF_ELEM][2],
+                                 double ip_local[2]) {
+      double result;
+      if (UG2d::SurfaceElement(2, nc, co_global, ip_local, &result))
+        DUNE_THROW(GridError, "UG2d::SurfaceElement returned error code!");
+      return result;
+    }
+
     //! Returns the i-th corner of a UG element
     static TargetType<2,2>::T* Corner(TargetType<0,2>::T* theElement, int i) {
       using UG2d::NODE;
