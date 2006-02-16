@@ -258,27 +258,27 @@ namespace Dune {
       if (codim==0)
       {
         if (dim==2)
-          return size(codim,NewGeometryType(NewGeometryType::simplex,2))
-                 + size(codim,NewGeometryType(NewGeometryType::cube,2));
+          return size(codim,GeometryType(GeometryType::simplex,2))
+                 + size(codim,GeometryType(GeometryType::cube,2));
 
         if (dim==3)
-          return size(codim,NewGeometryType(NewGeometryType::simplex,3))
-                 + size(codim,NewGeometryType(NewGeometryType::pyramid,3))
-                 + size(codim,NewGeometryType(NewGeometryType::prism,3))
-                 + size(codim,NewGeometryType(NewGeometryType::cube,3));
+          return size(codim,GeometryType(GeometryType::simplex,3))
+                 + size(codim,GeometryType(GeometryType::pyramid,3))
+                 + size(codim,GeometryType(GeometryType::prism,3))
+                 + size(codim,GeometryType(GeometryType::cube,3));
       }
       if (codim==dim)
       {
-        return size(codim,NewGeometryType(0));
+        return size(codim,GeometryType(0));
       }
       if (codim==dim-1)
       {
-        return size(codim,NewGeometryType(1));
+        return size(codim,GeometryType(1));
       }
       if (codim==1)
       {
-        return size(1,NewGeometryType(NewGeometryType::simplex,dim-1))
-               + size(1, NewGeometryType(NewGeometryType::cube,dim-1));
+        return size(1,GeometryType(GeometryType::simplex,dim-1))
+               + size(1, GeometryType(GeometryType::cube,dim-1));
       }
 
       DUNE_THROW(NotImplemented, "dim=" << dim << " codim=" << codim);
@@ -286,13 +286,13 @@ namespace Dune {
     }
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, NewGeometryType type) const
+    int size (int level, int codim, GeometryType type) const
     {
       return this->levelIndexSet(level).size(codim,type);
     }
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, NewGeometryType type) const
+    int size (int codim, GeometryType type) const
     {
       return this->leafIndexSet().size(codim,type);
     }
@@ -448,7 +448,7 @@ namespace Dune {
         \param type The GeometryType of the new element
         \param vertices The vertices of the new element, using the DUNE numbering
      */
-    void insertElement(NewGeometryType type,
+    void insertElement(GeometryType type,
                        const std::vector<unsigned int>& vertices);
 
     /*@}*/

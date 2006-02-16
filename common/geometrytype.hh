@@ -173,10 +173,10 @@ namespace Dune {
   inline std::ostream& operator<< (std::ostream& s, GeometryType::BasicType type)
   {
     switch (type) {
-    case NewGeometryType::simplex : s << "simplex"; break;
-    case NewGeometryType::cube :    s << "cube";    break;
-    case NewGeometryType::pyramid : s << "pyramid"; break;
-    case NewGeometryType::prism :   s << "prism";   break;
+    case GeometryType::simplex : s << "simplex"; break;
+    case GeometryType::cube :    s << "cube";    break;
+    case GeometryType::pyramid : s << "pyramid"; break;
+    case GeometryType::prism :   s << "prism";   break;
     default : s << "[unknown NewGeometryType::BasicType: " << int(type) << "]";
     }
     return s;

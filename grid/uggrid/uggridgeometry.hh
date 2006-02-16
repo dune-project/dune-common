@@ -156,7 +156,7 @@ namespace Dune {
      * UGGrid supports triangles and quadrilaterals in 2D, and
      * tetrahedra, pyramids, prisms, and hexahedra in 3D.
      */
-    NewGeometryType type () const;
+    GeometryType type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners () const;
@@ -266,10 +266,10 @@ namespace Dune {
 
     /** \brief Default constructor */
     UGGridGeometry()
-    {elementType_=NewGeometryType(NewGeometryType::simplex,2);}
+    {elementType_=GeometryType(GeometryType::simplex,2);}
 
     //! return the element type identifier (triangle or quadrilateral)
-    NewGeometryType type () const {
+    GeometryType type () const {
       return elementType_;
     }
 
@@ -309,11 +309,11 @@ namespace Dune {
 
     void setNumberOfCorners(int n) {
       assert(n==3 || n==4);
-      elementType_ = NewGeometryType( (n==3) ? NewGeometryType::simplex : NewGeometryType::cube,2);
+      elementType_ = GeometryType( (n==3) ? GeometryType::simplex : GeometryType::cube,2);
     }
 
     //! The element type, either triangle or quadrilateral
-    NewGeometryType elementType_;
+    GeometryType elementType_;
 
     //! the vertex coordinates in UG numbering
     mutable FixedArray<FieldVector<UGCtype, 3>, 4> coord_;
@@ -352,7 +352,7 @@ namespace Dune {
     {}
 
     /** \brief Return the element type identifier.  */
-    NewGeometryType type () const {return NewGeometryType(NewGeometryType::simplex,1);}
+    GeometryType type () const {return GeometryType(GeometryType::simplex,1);}
 
     //! return the number of corners of this element. This class always returns 2
     int corners () const {return 2;}

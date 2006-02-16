@@ -265,24 +265,24 @@ namespace Dune {
     }
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, NewGeometryType type) const
+    int size (int level, int codim, GeometryType type) const
     {
       // compare addresses of the method, if they are equal then derived
       // class has the method not overloaded which leads to a seg fault
       CHECK_INTERFACE_IMPLEMENTATION(
-        ((int (GridImp::*)(int,int,NewGeometryType) const) &(ThisType::size)),
-        ((int (GridImp::*)(int,int,NewGeometryType) const) &(GridImp::size)));
+        ((int (GridImp::*)(int,int,GeometryType) const) &(ThisType::size)),
+        ((int (GridImp::*)(int,int,GeometryType) const) &(GridImp::size)));
       return asImp().size(level,codim,type);
     }
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, NewGeometryType type) const
+    int size (int codim, GeometryType type) const
     {
       // compare addresses of the method, if they are equal then derived
       // class has the method not overloaded which leads to a seg fault
       CHECK_INTERFACE_IMPLEMENTATION(
-        ((int (GridImp::*)(int,NewGeometryType) const) &(ThisType::size)),
-        ((int (GridImp::*)(int,NewGeometryType) const) &(GridImp::size)));
+        ((int (GridImp::*)(int,GeometryType) const) &(ThisType::size)),
+        ((int (GridImp::*)(int,GeometryType) const) &(GridImp::size)));
       return asImp().size(codim,type);
     }
 

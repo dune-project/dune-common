@@ -129,7 +129,7 @@ namespace Dune
     }
 
     //! type of (i,c)
-    virtual NewGeometryType type (int i, int c) const = 0;
+    virtual GeometryType type (int i, int c) const = 0;
 
     //! volume of the reference element
     virtual double volume () const = 0;
@@ -186,7 +186,7 @@ namespace Dune
     }
 
     //! type of (i,c)
-    NewGeometryType type (int i, int c) const
+    GeometryType type (int i, int c) const
     {
       return Imp::type(i,c);
     }
@@ -314,9 +314,9 @@ namespace Dune
     }
 
     //! type of (i,c)
-    NewGeometryType type (int i, int c) const
+    GeometryType type (int i, int c) const
     {
-      return NewGeometryType(NewGeometryType::cube, dim-c);
+      return GeometryType(GeometryType::cube, dim-c);
     }
 
     //! volume of the reference element
@@ -489,7 +489,7 @@ namespace Dune
     typedef ReferenceCube<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const value_type& operator() (NewGeometryType type) const
+    const value_type& operator() (GeometryType type) const
     {
       if ( type.isCube() )
         return cube_;
@@ -614,9 +614,9 @@ namespace Dune
     }
 
     //! type of (i,c)
-    NewGeometryType type (int i, int c) const
+    GeometryType type (int i, int c) const
     {
-      return NewGeometryType(NewGeometryType::simplex,dim-c);
+      return GeometryType(GeometryType::simplex,dim-c);
     }
 
 
@@ -907,7 +907,7 @@ namespace Dune
     typedef ReferenceSimplex<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const value_type& operator() (NewGeometryType type) const
+    const value_type& operator() (GeometryType type) const
     {
       if ( type.isSimplex())
         return simplices;
@@ -1010,21 +1010,21 @@ namespace Dune
     }
 
     //! type of (i,c)
-    NewGeometryType type (int i, int c) const
+    GeometryType type (int i, int c) const
     {
       switch (c)
       {
-      case 3 : return NewGeometryType(NewGeometryType::cube,0);
-      case 2 : return NewGeometryType(NewGeometryType::cube,1);
-      case 0 : return NewGeometryType(NewGeometryType::prism,3);
+      case 3 : return GeometryType(GeometryType::cube,0);
+      case 2 : return GeometryType(GeometryType::cube,1);
+      case 0 : return GeometryType(GeometryType::prism,3);
       case 1 :
         switch (i)
         {
-        case 0 : return NewGeometryType(NewGeometryType::simplex,2);
-        case 1 : return NewGeometryType(NewGeometryType::cube,2);
-        case 2 : return NewGeometryType(NewGeometryType::cube,2);
-        case 3 : return NewGeometryType(NewGeometryType::cube,2);
-        case 4 : return NewGeometryType(NewGeometryType::simplex,2);
+        case 0 : return GeometryType(GeometryType::simplex,2);
+        case 1 : return GeometryType(GeometryType::cube,2);
+        case 2 : return GeometryType(GeometryType::cube,2);
+        case 3 : return GeometryType(GeometryType::cube,2);
+        case 4 : return GeometryType(GeometryType::simplex,2);
         default :
           DUNE_THROW(RangeError, "i argument out of range");
         }
@@ -1278,7 +1278,7 @@ namespace Dune
     typedef ReferencePrism<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const value_type& operator() (NewGeometryType type) const
+    const value_type& operator() (GeometryType type) const
     {
       if (type.isPrism())
         return pris;
@@ -1367,21 +1367,21 @@ namespace Dune
     }
 
     //! type of (i,c)
-    NewGeometryType type (int i, int c) const
+    GeometryType type (int i, int c) const
     {
       switch (c)
       {
-      case 3 : return NewGeometryType(NewGeometryType::cube,0);
-      case 2 : return NewGeometryType(NewGeometryType::cube,1);
-      case 0 : return NewGeometryType(NewGeometryType::pyramid,3);
+      case 3 : return GeometryType(GeometryType::cube,0);
+      case 2 : return GeometryType(GeometryType::cube,1);
+      case 0 : return GeometryType(GeometryType::pyramid,3);
       case 1 :
         switch (i)
         {
-        case 0 : return NewGeometryType(NewGeometryType::cube,2);
+        case 0 : return GeometryType(GeometryType::cube,2);
         case 1 :
         case 2 :
         case 3 :
-        case 4 : return NewGeometryType(NewGeometryType::simplex,2);
+        case 4 : return GeometryType(GeometryType::simplex,2);
         default :
           DUNE_THROW(RangeError, "i argument out of range");
         }
@@ -1634,7 +1634,7 @@ namespace Dune
     typedef ReferencePrism<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const value_type& operator() (NewGeometryType type) const
+    const value_type& operator() (GeometryType type) const
     {
       if (type.isPyramid())
         return pyram;
@@ -1662,7 +1662,7 @@ namespace Dune
     typedef ReferenceElement<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const ReferenceElement<ctype,dim>& operator() (NewGeometryType type) const
+    const ReferenceElement<ctype,dim>& operator() (GeometryType type) const
     {
       if ( type.isCube())
         return hcube;
@@ -1688,7 +1688,7 @@ namespace Dune
     typedef ReferenceElement<ctype,dim> value_type;
 
     //! return element of the container via geometry type
-    const ReferenceElement<ctype,dim>& operator() (NewGeometryType type) const
+    const ReferenceElement<ctype,dim>& operator() (GeometryType type) const
     {
       if ( type.isCube() )
         return hcube;

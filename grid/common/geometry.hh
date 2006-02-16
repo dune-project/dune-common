@@ -55,7 +55,7 @@ namespace Dune
     typedef ct ctype;
 
     //! return the geometry type identifier
-    NewGeometryType type () const { return realGeometry.type(); };
+    GeometryType type () const { return realGeometry.type(); };
 
     //! return the number of corners of this geometry. Corners are numbered 0...n-1
     int corners () const { return realGeometry.corners(); };

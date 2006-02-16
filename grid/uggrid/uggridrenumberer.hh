@@ -24,7 +24,7 @@ namespace Dune {
        This is a dummy method which simply returns i.  The real work is done
        in the class specializations.
      */
-    static int verticesDUNEtoUG(int i, NewGeometryType type) {
+    static int verticesDUNEtoUG(int i, GeometryType type) {
       return i;
     }
 
@@ -42,7 +42,7 @@ namespace Dune {
   public:
 
     /** \brief Turn a local vertex number from DUNE numbering to UG numbering */
-    static int verticesDUNEtoUG(int i, NewGeometryType type) {
+    static int verticesDUNEtoUG(int i, GeometryType type) {
 
       if (type.isCube()) {
         // vertices of a quadrilateral
@@ -54,7 +54,7 @@ namespace Dune {
     }
 
     /** \brief Turn a local face number from DUNE numbering to UG numbering */
-    static int facesDUNEtoUG(int i, NewGeometryType type) {
+    static int facesDUNEtoUG(int i, GeometryType type) {
 
       if (type.isCube()) {
 
@@ -75,7 +75,7 @@ namespace Dune {
     }
 
     /** \brief Turn a local face number from UG numbering to DUNE numbering */
-    static int facesUGtoDUNE(int i, NewGeometryType type) {
+    static int facesUGtoDUNE(int i, GeometryType type) {
 
       if (type.isCube()) {
 
@@ -126,7 +126,7 @@ namespace Dune {
   public:
 
     /** \brief Turn a local vertex number from DUNE numbering to UG numbering */
-    static int verticesDUNEtoUG(int i, NewGeometryType type) {
+    static int verticesDUNEtoUG(int i, GeometryType type) {
 
       if (type.isCube()) {
         const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
@@ -137,7 +137,7 @@ namespace Dune {
     }
 
     /** \brief Turn a local face number from DUNE numbering to UG numbering */
-    static int facesDUNEtoUG(int i, NewGeometryType type) {
+    static int facesDUNEtoUG(int i, GeometryType type) {
 
       if (type.isCube()) {
 
@@ -159,7 +159,7 @@ namespace Dune {
     }
 
     /** \brief Turn a local face number from UG numbering to DUNE numbering */
-    static int facesUGtoDUNE(int i, NewGeometryType type) {
+    static int facesUGtoDUNE(int i, GeometryType type) {
 
       if (type.isCube()) {
 
