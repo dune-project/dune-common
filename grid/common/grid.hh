@@ -537,6 +537,9 @@ namespace Dune {
     typedef typename GridFamily::Traits::Grid GridImp;
 
   public:
+    //! the traits of this class
+    typedef typename GridFamily::Traits Traits;
+
     enum {
       //! \brief The dimension of the grid
       dimension=dim
@@ -720,7 +723,8 @@ namespace Dune {
     template< int dim, int dimworld, typename ct, class GridFamily >
     struct hasLeafIterator< GridDefaultImplementation<dim,dimworld,ct,GridFamily> >
     {
-      typedef typename GridFamily::GridImp GridImp;
+      typedef GridDefaultImplementation<dim,dimworld,ct,GridFamily> GridType;
+      typedef typename GridType::Traits::Grid GridImp;
       static const bool v = hasLeafIterator<GridImp>::v;
     };
 
@@ -728,7 +732,8 @@ namespace Dune {
     template< int dim, int dimworld, typename ct, class GridFamily , int cdim >
     struct hasEntity< GridDefaultImplementation<dim,dimworld,ct,GridFamily>, cdim >
     {
-      typedef typename GridFamily::GridImp GridImp;
+      typedef GridDefaultImplementation<dim,dimworld,ct,GridFamily> GridType;
+      typedef typename GridType::Traits::Grid GridImp;
       static const bool v = hasEntity<GridImp,cdim>::v;
     };
 
