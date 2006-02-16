@@ -200,8 +200,7 @@ namespace Dune {
 
     /** \todo Remove the const casts */
     static int GetNodeContext(const UG2d::element* element, const UG2d::node** context) {
-      return UG2d::GetNodeContext(const_cast<UG2d::element*>(element),
-                                  const_cast<UG2d::node**>(context));
+      return UG2d::GetNodeContext(element, const_cast<UG2d::node**>(context));
     }
 
     //! Encapsulates the GRID_ATTR macro

@@ -229,8 +229,7 @@ namespace Dune {
     }
 
     static int GetNodeContext(const UG3d::element* element, const UG3d::node** context) {
-      return UG3d::GetNodeContext(const_cast<UG3d::element*>(element),
-                                  const_cast<UG3d::node**>(context));
+      return UG3d::GetNodeContext(element, const_cast<UG3d::node**>(context));
     }
 
     //! Encapsulates the GRID_ATTR macro
