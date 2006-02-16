@@ -299,6 +299,7 @@ template <class GridImp>
 inline typename GridImp::ctype Dune::UGGridGeometry<1,2,GridImp>::
 integrationElement (const Dune::FieldVector<typename GridImp::ctype, 1>& local) const
 {
+  // We could call UG_NS<2>::SurfaceElement, but this is faster, and not more complicated
   FieldVector<UGCtype, 2> diff = coord_[0];
   diff -= coord_[1];
   return diff.two_norm();
@@ -308,16 +309,8 @@ template <class GridImp>
 inline typename GridImp::ctype Dune::UGGridGeometry<2,3,GridImp>::
 integrationElement (const Dune::FieldVector<typename GridImp::ctype, 2>& local) const
 {
-  FieldVector<UGCtype, 3> normal;
-  FieldVector<UGCtype, 3> ba = coord_[1] - coord_[0];
-  FieldVector<UGCtype, 3> ca = coord_[2] - coord_[0];
-
-#define V3_VECTOR_PRODUCT(A,B,C) {(C)[0] = (A)[1]*(B)[2] - (A)[2]*(B)[1];\
-                                  (C)[1] = (A)[2]*(B)[0] - (A)[0]*(B)[2];\
-                                  (C)[2] = (A)[0]*(B)[1] - (A)[1]*(B)[0];}
-
-  V3_VECTOR_PRODUCT(ba, ca, normal);
-#undef V3_VECTOR_PRODUCT
-
-  return normal.two_norm();
+  // The cast in the second argument works because a FixedArray<FieldVector<T,3>,4>
+  // has the same memory layout as a T[4][3].
+  /** \todo Maybe there should be a test for this */
+  return UG_NS<3>::SurfaceElement(corners(), (const double(*)[3])&coord_,&local[0]);
 }
