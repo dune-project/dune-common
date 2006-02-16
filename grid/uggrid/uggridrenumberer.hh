@@ -8,12 +8,27 @@
     between UG and DUNE
  */
 
+#include <dune/common/geometrytype.hh>
+
 namespace Dune {
 
   /** \brief Empty generic class.  All we need is in the specializations for dim=2 and dim=3
    */
   template <int dim>
-  class UGGridRenumberer {};
+  class UGGridRenumberer {
+
+  public:
+
+    /** \brief Turn a local vertex number from DUNE numbering to UG numbering
+
+       This is a dummy method which simply returns i.  The real work is done
+       in the class specializations.
+     */
+    static int verticesDUNEtoUG(int i, NewGeometryType type) {
+      return i;
+    }
+
+  };
 
   /** \brief DUNE and UG use different local numberings for the subentities of elements.
       This class does the conversions for 2d-grids.
