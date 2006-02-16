@@ -8,6 +8,7 @@
 #include "common/fastbase.hh"
 #include "common/localfunction.hh"
 #include "common/dofiterator.hh"
+#include "dune/common/geometrytype.hh"
 #include "dofmanager.hh"
 
 #include <fstream>
@@ -94,17 +95,17 @@ namespace Dune {
   public:
 
     //! Constructor make Discrete Function
-    DFAdapt(DiscreteFunctionSpaceType& f);
+    DFAdapt(const DiscreteFunctionSpaceType& f);
 
     //! Constructor creating discrete functions with name name
     //! for given functions space f
-    DFAdapt (std::string name, DiscreteFunctionSpaceType & f ) ;
+    DFAdapt (std::string name, const DiscreteFunctionSpaceType & f ) ;
 
     //! Constructor creating discrete functions with name name
     //! for given functions space f and using given double * as vector
     //! VectorPointerType should be of the underlying array pointer type
     template <class VectorPointerType>
-    DFAdapt (std::string name, DiscreteFunctionSpaceType & f , VectorPointerType * vec ) ;
+    DFAdapt (std::string name, const DiscreteFunctionSpaceType & f , VectorPointerType * vec ) ;
 
     //! Constructor make Discrete Function
     DFAdapt (const DFAdapt <DiscreteFunctionSpaceType> & df);
@@ -120,80 +121,101 @@ namespace Dune {
     // ***********  Interface  *************************
     //! return empty object of a local fucntion
     //! old function, will be removed soon
+    inline
     LocalFunctionType newLocalFunction () DUNE_DEPRECATED;
 
     //! return local function for given entity
     template <class EntityType>
+    inline
     LocalFunctionType localFunction(const EntityType& en) const;
 
     //! update LocalFunction to given Entity en
     //! old function, will be removed soon
     template <class EntityType>
+    inline
     void localFunction ( const EntityType &en, LocalFunctionType & lf) DUNE_DEPRECATED;
 
     //! points to the first dof of type cc
+    inline
     DofIteratorType dbegin ( );
 
     //! points behind the last dof of type cc
+    inline
     DofIteratorType dend   ( );
 
     //! const version of dof iterator
+    inline
     ConstDofIteratorType dbegin ( ) const;
 
     //! const version of dof iterator
+    inline
     ConstDofIteratorType dend   ( ) const;
 
     //! set all dofs to zero
+    inline
     void clear( );
 
     //! set all dof to value x
+    inline
     void set( RangeFieldType x );
 
     //! \todo Please do me!
+    inline
     void addScaled (const DFAdapt <DiscreteFunctionSpaceType> & g,
                     const RangeFieldType &scalar);
 
     //! \todo Please do me!
     template <class EntityType>
+    inline
     void addScaledLocal (EntityType &en,
                          const DFAdapt <DiscreteFunctionSpaceType> & g,
                          const RangeFieldType &scalar);
 
     //! add g to this on local entity
     template <class EntityType>
+    inline
     void addLocal (EntityType &it,
                    const DFAdapt <DiscreteFunctionSpaceType> & g);
 
     //! add g to this on local entity
     template <class EntityType>
+    inline
     void subtractLocal (EntityType &it,
                         const DFAdapt <DiscreteFunctionSpaceType> & g);
 
     //! \todo Please do me!
     template <class EntityType>
+    inline
     void setLocal (EntityType &it, const RangeFieldType &scalar);
 
     //! print all dofs
+    inline
     void print(std::ostream& s) const;
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
+    inline
     bool write_xdr(std::string filename);
 
     //! write data of discrete function to file filename|timestep
     //! with xdr methods
+    inline
     bool read_xdr(std::string filename);
 
     //! write function data to file filename|timestep in ascii Format
+    inline
     bool write_ascii(std::string filename);
 
     //! read function data from file filename|timestep in ascii Format
+    inline
     bool read_ascii(std::string filename);
 
     //! write function data in pgm fromat file
+    inline
     bool write_pgm(std::string filename);
 
     //! read function data from pgm fromat file
+    inline
     bool read_pgm(std::string filename);
 
     //! return name of this discrete function
@@ -254,58 +276,81 @@ namespace Dune {
     typedef typename DiscreteFunctionSpaceType::Traits::RangeFieldType RangeFieldType;
     typedef typename DiscreteFunctionSpaceType::Traits::DomainType DomainType;
     typedef typename DiscreteFunctionSpaceType::Traits::RangeType RangeType;
+    typedef RangeFieldType DofType;
     typedef typename DiscreteFunctionSpaceType::Traits::JacobianRangeType JacobianRangeType;
 
     typedef typename DiscFuncType::DofArrayType DofArrayType;
-  public:
+
+    typedef typename DiscreteFunctionSpaceType::GridType GridType;
+    typedef typename GridType::Traits::LocalIdSet LocalIdSetType;
+    typedef typename LocalIdSetType::IdType IdType;
     //! Constructor
+
+  public:
+    inline
     LocalFunctionAdapt ( const DiscreteFunctionSpaceType &f ,
                          DofArrayType & dofVec );
 
     //! Destructor
+    inline
     ~LocalFunctionAdapt ();
 
     //! access to dof number num, all dofs of the dof entity
+    inline
     RangeFieldType & operator [] (int num);
 
     //! access to dof number num, all dofs of the dof entity
+    inline
     const RangeFieldType & operator [] (int num) const;
 
     //! return number of degrees of freedom
+    inline
     int numberOfDofs () const DUNE_DEPRECATED;
 
     //! return number of degrees of freedom
+    inline
     int numDofs () const;
 
     //! sum over all local base functions
     template <class EntityType>
+    inline
     void evaluate (EntityType &en, const DomainType & x, RangeType & ret) const ;
 
     template <class EntityType>
+    inline
     void evaluateLocal(EntityType &en, const DomainType & x, RangeType & ret) const ;
     //! sum over all local base functions evaluated on given quadrature point
     template <class EntityType, class QuadratureType>
+    inline
     void evaluate (EntityType &en, QuadratureType &quad, int quadPoint , RangeType & ret) const;
 
     //! sum over all local base functions evaluated on given quadrature point
     template <class EntityType, class QuadratureType>
+    inline
     void jacobian (EntityType &en, QuadratureType &quad, int quadPoint , JacobianRangeType & ret) const;
 
     template <class EntityType>
+    inline
     void jacobianLocal(EntityType& en, const DomainType& x, JacobianRangeType& ret) const ;
 
     template <class EntityType>
+    inline
     void jacobian(EntityType& en, const DomainType& x, JacobianRangeType& ret) const;
 
+    inline
     void assign(int numDof, const RangeType& dofs);
 
+    inline
+    const BaseFunctionSetType& getBaseFunctionSet() const;
   protected:
     //! update local function for given Entity
     template <class EntityType >
+    inline
     void init ( const EntityType &en ) const;
 
     //! Forbidden! Would wreak havoc
     LocalFunctionAdapt(const LocalFunctionAdapt&);
+    inline
     MyType& operator= (const MyType& other);
 
     //! needed once
@@ -331,13 +376,15 @@ namespace Dune {
     DofArrayType & dofVec_;
 
     //! the corresponding base function set
-    //BaseFunctionSetType* baseFuncSet_;
-
-    //! do we have the same base function set for all elements
-    bool uniform_;
+    mutable BaseFunctionSetType* baseSet_;
 
     //! is it initialised?
     mutable bool init_;
+
+    //!
+    mutable GeometryType geoType_;
+    mutable IdType id_;
+    const LocalIdSetType& idSet_;
   }; // end LocalFunctionAdapt
 
 } // end namespace Dune
