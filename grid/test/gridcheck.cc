@@ -509,7 +509,7 @@ struct GridInterface
       g.levelIndexSet(0).geomTypes(codim);
 
     // Instantiate all methods of LeafIndexSet
-    g.leafIndexSet().index(*g.template lbegin<0>(0));
+    g.leafIndexSet().index(*g.template leafbegin<0>());
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
     g.leafIndexSet().size(0, Dune::NewGeometryType(Dune::NewGeometryType::simplex,Grid::dimension));
@@ -778,10 +778,12 @@ void iterate(Grid &g)
   for (; it != endit; ++it)
   {
     LevelIterator l1 = it;
-    LevelIterator l2 = l1++;
+    //LevelIterator l2 = l1++;
+    LevelIterator l2 = l1; ++l1;
     assert(l2 == it);
     assert(l1 != it);
-    l2++;
+    //l2++;
+    ++l2;
     assert(l1 == l2);
     result = it->geometry().local(it->geometry().global(origin));
     typename Grid::ctype error = (result-origin).two_norm();
@@ -815,10 +817,12 @@ void iterate(Grid &g)
   for (; lit != lend; ++lit)
   {
     LeafIterator l1 = lit;
-    LeafIterator l2 = l1++;
+    //LeafIterator l2 = l1++;
+    LeafIterator l2 = l1; ++l1;
     assert(l2 == lit);
     assert(l1 != lit);
-    l2++;
+    //l2++;
+    ++l2;
     assert(l1 == l2);
 
     result = lit->geometry().local(lit->geometry().global(origin));
@@ -891,6 +895,17 @@ void gridcheck (Grid &g)
    * fails if an interface-component is missing
    */
   GridInterface<Grid>();
+
+  enum { dim      = Grid :: dimension };
+  enum { dimworld = Grid :: dimensionworld };
+  typedef typename Grid  :: ctype ctype;
+  typedef typename Grid  :: GridFamily GridFamily;
+
+  // type of GridInterface == GridDefaultImplementation
+  typedef Dune::GridDefaultImplementation<dim,dimworld,ctype,GridFamily> GridIF;
+  GridIF & gridIF = g;
+  // check functionality when grid is interpreted as reference to interface
+  GridInterface<GridIF>::check(gridIF);
 
   /*
    * now the runtime-tests
