@@ -40,7 +40,7 @@ namespace Dune
 
        @note Forwarded to LevelIteratorImp.increment()
      */
-    LevelIterator operator++(int)
+    LevelIterator operator++(int) DUNE_DEPRECATED
     {
       const LevelIterator tmp(*this);
       this->realIterator.increment();

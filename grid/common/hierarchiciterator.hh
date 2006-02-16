@@ -44,7 +44,7 @@ namespace Dune {
 
        @note Forwarded to LevelIteratorImp.increment()
      */
-    HierarchicIterator operator++(int)
+    HierarchicIterator operator++(int) DUNE_DEPRECATED
     {
       const HierarchicIterator tmp(*this);
       this->realIterator.increment();
