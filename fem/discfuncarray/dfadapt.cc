@@ -9,7 +9,7 @@ namespace Dune {
 
   template<class DiscreteFunctionSpaceType>
   inline DFAdapt< DiscreteFunctionSpaceType>::
-  DFAdapt(DiscreteFunctionSpaceType& f) :
+  DFAdapt(const DiscreteFunctionSpaceType& f) :
     DiscreteFunctionDefaultType ( f ),
     name_ ("no name"),
     dm_(DofManagerFactoryType::getDofManager(f.grid())),
@@ -22,7 +22,7 @@ namespace Dune {
   // Constructor making discrete function
   template<class DiscreteFunctionSpaceType>
   inline DFAdapt< DiscreteFunctionSpaceType>::
-  DFAdapt(std::string name, DiscreteFunctionSpaceType & f) :
+  DFAdapt(std::string name, const DiscreteFunctionSpaceType & f) :
     DiscreteFunctionDefaultType ( f ),
     name_ ((name.length() > 0) ? name : "no name"),
     dm_(DofManagerFactoryType::getDofManager(f.grid())),
@@ -35,7 +35,7 @@ namespace Dune {
   template<class DiscreteFunctionSpaceType>
   template <class VectorPointerType>
   inline DFAdapt< DiscreteFunctionSpaceType>::
-  DFAdapt(std::string name, DiscreteFunctionSpaceType & f, VectorPointerType * vector ) :
+  DFAdapt(std::string name, const DiscreteFunctionSpaceType & f, VectorPointerType * vector ) :
     DiscreteFunctionDefaultType ( f ),
     name_ ((name.length() > 0) ? name : "no name"),
     dm_(DofManagerFactoryType::getDofManager(f.grid())),
@@ -408,8 +408,10 @@ namespace Dune {
     fSpace_ ( f ),
     values_ (),
     dofVec_ ( dofVec ),
-    uniform_(true),
-    init_(false)
+    init_(false),
+    baseSet_(0),
+    id_(-1),
+    idSet_(f.grid().localIdSet())
   {}
 
 
@@ -466,9 +468,9 @@ namespace Dune {
     assert(init_);
     assert(en.geometry().checkInside(x));
     ret *= 0.0;
-    const BaseFunctionSetType& bSet = fSpace_.getBaseFunctionSet(en);
+    const BaseFunctionSetType& bSet = getBaseFunctionSet();
 
-    for (int i = 0; i < bSet.numBaseFunctions(); ++i)
+    for (int i = 0; i < numDofs(); ++i)
     {
       bSet.eval(i, x, tmp_);
       for (int l = 0; l < dimRange; ++l) {
@@ -483,7 +485,24 @@ namespace Dune {
   inline void LocalFunctionAdapt < DiscreteFunctionSpaceType>::
   evaluate (EntityType &en, QuadratureType &quad, int quadPoint, RangeType & ret) const
   {
-    evaluateLocal(en, quad.point(quadPoint), ret);
+    enum { dimRange = DiscreteFunctionSpaceType::DimRange };
+    assert(init_);
+    assert(en.geometry().checkInside(quad.point(quadPoint)));
+    ret *= 0.0;
+    const BaseFunctionSetType& bSet = getBaseFunctionSet();
+
+    for (int i = 0; i < numDofs(); ++i)
+    {
+      bSet.eval(i, quad,quadPoint, tmp_);
+      tmp_*= (*values_[i]);
+      ret += tmp_;
+      /*
+         for (int l = 0; l < dimRange; ++l) {
+         ret[l] += (*values_[i]) * tmp_[l];
+         }
+       */
+    }
+    // evaluateLocal(en, quad.point(quadPoint), ret);
   }
 
   // hier noch evaluate mit Quadrature Regel einbauen
@@ -492,7 +511,34 @@ namespace Dune {
   inline void LocalFunctionAdapt < DiscreteFunctionSpaceType>::
   jacobian (EntityType &en, QuadratureType &quad, int quadPoint, JacobianRangeType & ret) const
   {
-    jacobianLocal(en, quad.point(quadPoint), ret);
+    assert(init_);
+    enum { dim = EntityType::dimension };
+    enum { dimRange = DiscreteFunctionSpaceType::DimRange };
+
+    ret *= 0.0;
+    const BaseFunctionSetType& bSet = getBaseFunctionSet();
+    typedef FieldMatrix<DofType, dim, dim> JacobianInverseType;
+    const JacobianInverseType& jti =
+      en.geometry().jacobianInverseTransposed(quad.point(quadPoint));
+
+    JacobianRangeType tmp(0.0);
+
+    for (int i = 0; i < numDofs(); ++i) {
+      // tmpGrad_ *= 0.0;
+      bSet.jacobian(i, quad,quadPoint, tmpGrad_);
+
+      tmpGrad_ *= *values_[i];
+      tmp += tmpGrad_;
+      /*
+         for (int l = 0; l < dimRange; ++l) {
+         tmpGrad_[l] *= *values_[i];
+          // * umtv or umv?
+         }
+       */
+    }
+    for (int l = 0; l < dimRange; ++l)
+      jti.umv(tmp[l],ret[l]);
+    // jacobianLocal(en, quad.point(quadPoint), ret);
   }
 
   template<class DiscreteFunctionSpaceType>
@@ -506,9 +552,9 @@ namespace Dune {
     enum { dimRange = DiscreteFunctionSpaceType::DimRange };
 
     ret *= 0.0;
-    const BaseFunctionSetType& bSet = fSpace_.getBaseFunctionSet(en);
+    const BaseFunctionSetType& bSet = getBaseFunctionSet();
 
-    for (int i = 0; i < bSet.numBaseFunctions(); ++i) {
+    for (int i = 0; i < numDofs(); ++i) {
       tmpGrad_ *= 0.0;
       bSet.jacobian(i, x, tmpGrad_);
 
@@ -529,21 +575,38 @@ namespace Dune {
     jacobianLocal(en, xtmp_, ret);
   }
 
+
+  template<class DiscreteFunctionSpaceType>
+  inline
+  const typename
+  LocalFunctionAdapt < DiscreteFunctionSpaceType>::BaseFunctionSetType&
+  LocalFunctionAdapt < DiscreteFunctionSpaceType>::getBaseFunctionSet() const {
+    assert(init_ && baseSet_);
+    return *baseSet_;
+  }
+
+
   template<class DiscreteFunctionSpaceType>
   template <class EntityType>
   inline void LocalFunctionAdapt < DiscreteFunctionSpaceType>::
   init (const EntityType &en ) const
   {
-    if(!uniform_ || !init_)
+    //  if (id_==idSet_.id(en))
+    //    return;
+    // if(!uniform_ || !init_)
+    if(geoType_!=en.geometry().type() || !init_)
     {
-      numOfDof_ =
-        fSpace_.getBaseFunctionSet(en).numBaseFunctions();
+      baseSet_ = &fSpace_.getBaseFunctionSet(en);
+      numOfDof_ = baseSet_->numBaseFunctions();
 
       if(numOfDof_ > this->values_.size())
         this->values_.resize( numOfDof_ );
 
       init_ = true;
+      geoType_ = en.geometry().type();
     }
+
+    // id_=idSet_.id(en);
 
     for(int i=0; i<numOfDof_; i++)
       values_ [i] = &(this->dofVec_[ fSpace_.mapToGlobal ( en , i) ]);
