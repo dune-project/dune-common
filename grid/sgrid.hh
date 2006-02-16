@@ -167,6 +167,33 @@ namespace Dune {
     //! constructor, makes element from position and direction vectors
     void make (FieldMatrix<sgrid_ctype,1,cdim>& __As);
 
+    //! maps a local coordinate within reference element to global coordinate in element
+    FieldVector<sgrid_ctype, 1> global (const FieldVector<sgrid_ctype, 0>& local) const { return this->operator[] (0); }
+
+    //! maps a global coordinate within the element to a local coordinate in its reference element
+    FieldVector<sgrid_ctype, 0> local (const FieldVector<sgrid_ctype, 1>& global) const { return FieldVector<sgrid_ctype,0> (0.0); }
+
+    /*! Integration over a general element is done by integrating over the reference element
+       and using the transformation from the reference element to the global element as follows:
+       \f[\int\limits_{\Omega_e} f(x) dx = \int\limits_{\Omega_{ref}} f(g(l)) A(l) dl \f] where
+       \f$g\f$ is the local to global mapping and \f$A(l)\f$ is the integration element.
+
+       For a general map \f$g(l)\f$ involves partial derivatives of the map (surface element of
+       the first kind if \f$d=2,w=3\f$, determinant of the Jacobian of the transformation for
+       \f$d=w\f$, \f$\|dg/dl\|\f$ for \f$d=1\f$).
+
+       For linear elements, the derivatives of the map with respect to local coordinates
+       do not depend on the local coordinates and are the same over the whole element.
+
+       For a structured mesh where all edges are parallel to the coordinate axes, the
+       computation is the length, area or volume of the element is very simple to compute.
+
+       Each grid module implements the integration element with optimal efficieny. This
+       will directly translate in substantial savings in the computation of finite element
+       stiffness matrices.
+       For this specialisation the integrationElement is always 1.
+     */
+
     //! constructor with bool argument makes reference element if true, uninitialized else
     SGeometry () {};
 
@@ -175,8 +202,8 @@ namespace Dune {
      * This routine exists so that algorithms that integrate over grid
      * boundaries can also be compiled for 1d-grids.
      */
-    sgrid_ctype integration_element(const FieldVector<sgrid_ctype, 0>& local) const {
-      return 1;
+    sgrid_ctype integrationElement(const FieldVector<sgrid_ctype, 0>& local) const {
+      return 1.;
     }
 
   protected:
