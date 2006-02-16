@@ -74,12 +74,15 @@ void checkIntersectionIterator(const GridType& grid) {
             assert(grid.leafIndexSet().template subIndex<1>(*eIt, numberInSelf)
                    == grid.leafIndexSet().template subIndex<1>(*outside, numberInNeighbor));
 
+
+#if 0
+            // outcommented because implementation is currently not required
             assert(grid.localIdSet().template subId<1>(*eIt, numberInSelf)
                    == grid.localIdSet().template subId<1>(*outside, numberInNeighbor));
 
             assert(grid.globalIdSet().template subId<1>(*eIt, numberInSelf)
                    == grid.globalIdSet().template subId<1>(*outside, numberInNeighbor));
-
+#endif
           }
 
         }
