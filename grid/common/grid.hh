@@ -13,6 +13,7 @@
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/geometrytype.hh>
+#include <dune/common/capabilities.hh>
 
 namespace Dune {
 
@@ -712,6 +713,39 @@ namespace Dune {
     }
   }
 
+  // define of capabilties for the interface class
+  namespace Capabilities
+  {
+    // capabilities for the interface class depend on the implementation
+    template< int dim, int dimworld, typename ct, class GridFamily >
+    struct hasLeafIterator< GridDefaultImplementation<dim,dimworld,ct,GridFamily> >
+    {
+      typedef typename GridFamily::GridImp GridImp;
+      static const bool v = hasLeafIterator<GridImp>::v;
+    };
+
+    // capabilities for the interface class depend on the implementation
+    template< int dim, int dimworld, typename ct, class GridFamily , int cdim >
+    struct hasEntity< GridDefaultImplementation<dim,dimworld,ct,GridFamily>, cdim >
+    {
+      typedef typename GridFamily::GridImp GridImp;
+      static const bool v = hasEntity<GridImp,cdim>::v;
+    };
+
+  } // end namespace Capabilities
+
+  //! for creation of an engine interface object like Entity or Geometry
+  //! one has to derive a class to create the object because the
+  //! contructors of the interface object classes are protected
+  //! therefore here a generic implementation for this object creation is
+  //! provided
+  template <class InterfaceType>
+  struct MakeableInterfaceObject : public InterfaceType
+  {
+    typedef typename InterfaceType::ImplementationType ImplementationType;
+    //! create interface object by calling the contructor of the base class
+    MakeableInterfaceObject(const ImplementationType & realImp) : InterfaceType(realImp) {}
+  };
 }
 
 #undef CHECK_INTERFACE_IMPLEMENTATION
