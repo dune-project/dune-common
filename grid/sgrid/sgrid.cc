@@ -41,9 +41,9 @@ namespace Dune {
   }
 
   template<int mydim, int cdim, class GridImp>
-  inline NewGeometryType SGeometry<mydim,cdim,GridImp>::type () const
+  inline GeometryType SGeometry<mydim,cdim,GridImp>::type () const
   {
-    return NewGeometryType(NewGeometryType::cube,mydim);
+    return GeometryType(GeometryType::cube,mydim);
   }
 
   template<int mydim, int cdim, class GridImp>
@@ -145,9 +145,9 @@ namespace Dune {
   }
 
   template<int cdim, class GridImp>
-  inline NewGeometryType SGeometry<0,cdim,GridImp>::type () const
+  inline GeometryType SGeometry<0,cdim,GridImp>::type () const
   {
-    return NewGeometryType(NewGeometryType::cube,0);
+    return GeometryType(GeometryType::cube,0);
   }
 
   template<int cdim, class GridImp>

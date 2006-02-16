@@ -73,7 +73,7 @@ namespace Dune {
     {};
 
     //! return the element type identifier (vertex)
-    NewGeometryType type () const {return NewGeometryType(NewGeometryType::cube,0);}
+    GeometryType type () const {return GeometryType(GeometryType::cube,0);}
 
     //! return the number of corners of this element (==1)
     int corners () const {return 1;}
@@ -101,7 +101,7 @@ namespace Dune {
   public:
 
     //! return the element type identifier (vertex)
-    NewGeometryType type () const {return NewGeometryType(0);}
+    GeometryType type () const {return GeometryType(0);}
 
     //! return the number of corners of this element (==1)
     int corners () const {return 1;}
@@ -157,7 +157,7 @@ namespace Dune {
      *
      * OneDGrid obviously supports only lines
      */
-    NewGeometryType type () const {return NewGeometryType(1);}
+    GeometryType type () const {return GeometryType(1);}
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners () const {return 2;}
