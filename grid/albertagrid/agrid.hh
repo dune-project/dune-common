@@ -159,13 +159,6 @@ namespace Dune
      dimworld: Each corner is a point with dimworld coordinates.
    */
 
-  template <class InterfaceType>
-  struct CreateableInterfaceObject : public InterfaceType
-  {
-    typedef typename InterfaceType::ImplementationType ImplementationType;
-    CreateableInterfaceObject(const ImplementationType & realImp) : InterfaceType(realImp) {}
-  };
-
   //******************************************************
   //
   //  --Geometry
@@ -424,7 +417,7 @@ namespace Dune
     typedef typename GridImp::template Codim<cd>::Geometry Geometry;
     typedef typename GridImp::template Codim<cd>::LevelIterator LevelIterator;
 
-    typedef CreateableInterfaceObject<Geometry> GeometryObject;
+    typedef MakeableInterfaceObject<Geometry> GeometryObject;
 
     //! level of this element
     int level () const;
@@ -718,7 +711,7 @@ namespace Dune
     ALBERTA EL *element_;
 
     // local coordinates within father
-    typedef CreateableInterfaceObject<Geometry> GeometryObject;
+    typedef MakeableInterfaceObject<Geometry> GeometryObject;
 
     mutable GeometryObject fatherReLocalObj_;
     mutable GeometryImp & fatherReLocal_;
@@ -1064,7 +1057,7 @@ namespace Dune
     //! pointer to the EL_INFO struct storing the real element information
     mutable ALBERTA EL_INFO * elInfo_;
 
-    typedef CreateableInterfaceObject<LocalGeometry> LocalGeometryObject;
+    typedef MakeableInterfaceObject<LocalGeometry> LocalGeometryObject;
 
     // the objects holding the real implementations
     mutable LocalGeometryObject fakeNeighObj_;
