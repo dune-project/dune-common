@@ -82,23 +82,7 @@ operator [](int i) const
   // ////////////////////////////////
   assert(mydim==coorddim);
 
-  //i = UGGridRenumberer<mydim>::verticesDUNEtoUG(i,type);
-#if 1
-  // Renumber the vertices of Dune numbering to UG numbering
-  if (mydim==3 && type().isHexahedron()) {
-    // Dune numbers the vertices of a hexahedron differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[8] = {0, 1, 3, 2, 4, 5, 7, 6};
-    i = renumbering[i];
-  }
-
-  if (mydim==2 && type().isQuadrilateral()) {
-    // Dune numbers the vertices of a quadrilateral differently than UG.
-    // The following two lines do the transformation
-    const int renumbering[4] = {0, 1, 3, 2};
-    i = renumbering[i];
-  }
-#endif
+  i = UGGridRenumberer<mydim>::verticesDUNEtoUG(i,type());
 
   if (mode_==element_mode) {
     typename UGTypes<coorddim>::Node* corner = UG_NS<coorddim>::Corner(((typename UGTypes<coorddim>::Element*)target_),i);
