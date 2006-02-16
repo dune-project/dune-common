@@ -396,12 +396,21 @@ namespace Dune
   inline FieldVector<albertCtype, mydim> AlbertaGridGeometry<mydim,cdim,GridImp>::
   local(const FieldVector<albertCtype, cdim>& global) const
   {
+    // --local
+    FieldMatrix<double,mydim,cdim> A (0.0);
+    //A = coord_[0] - coord_[1];
+
+    //FMatrixHelp::invertMatrix_retTransposed(elMat_,Jinv_);
+    //FMatrixHelp::invertMatrix(elMat_,Jinv_);
+
     char text [1024];
     assert(false);
     sprintf(text,"AlbertaGridGeometry<%d,%d>::local: dim != dimworld not implemented!",mydim,cdim);
     DUNE_THROW(AlbertaError, text);
 
     localCoord_ = 0.0;
+
+    std::cout << localCoord_ << " local ist \n";
     return localCoord_;
   }
 
