@@ -62,7 +62,7 @@ namespace Dune {
     virtual int order () const = 0;
 
     //! return type of element
-    virtual NewGeometryType type () const = 0;
+    virtual GeometryType type () const = 0;
     virtual ~QuadratureRule(){}
 
   };
@@ -313,14 +313,14 @@ namespace Dune {
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static const NewGeometryType cube (NewGeometryType::cube, d);
+      static const GeometryType cube (GeometryType::cube, d);
       return cube;
     }
 
     //! appear as your own container
-    const CubeQuadratureRule& getelement (NewGeometryType type, int p)
+    const CubeQuadratureRule& getelement (GeometryType type, int p)
     {
       return *this;
     }
@@ -406,14 +406,14 @@ namespace Dune {
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static const NewGeometryType simplex (NewGeometryType::simplex, d);
+      static const GeometryType simplex (GeometryType::simplex, d);
       return simplex;
     }
 
     //! appear as your own container
-    const SimplexQuadratureRule<ct,dim>& getelement (NewGeometryType type, int p)
+    const SimplexQuadratureRule<ct,dim>& getelement (GeometryType type, int p)
     {
       return *this;
     }
@@ -1140,14 +1140,14 @@ namespace Dune {
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static const NewGeometryType simplex (NewGeometryType::simplex, d);
+      static const GeometryType simplex (GeometryType::simplex, d);
       return simplex;
     }
 
     //! appear as your own container
-    const SimplexQuadratureRule<ct,2>& getelement (NewGeometryType type, int p)
+    const SimplexQuadratureRule<ct,2>& getelement (GeometryType type, int p)
     {
       return *this;
     }
@@ -1338,14 +1338,14 @@ namespace Dune {
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static const NewGeometryType simplex (NewGeometryType::simplex, d);
+      static const GeometryType simplex (GeometryType::simplex, d);
       return simplex;
     }
 
     //! appear as your own container
-    const SimplexQuadratureRule<ct,d>& getelement (NewGeometryType type, int p)
+    const SimplexQuadratureRule<ct,d>& getelement (GeometryType type, int p)
     {
       return *this;
     }
@@ -1526,14 +1526,14 @@ namespace Dune {
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static const NewGeometryType prism (NewGeometryType::prism, d);
+      static const GeometryType prism (GeometryType::prism, d);
       return prism;
     }
 
     //! appear as your own container
-    const PrismQuadratureRule<ct,3>& getelement (NewGeometryType type, int p)
+    const PrismQuadratureRule<ct,3>& getelement (GeometryType type, int p)
     {
       return *this;
     }
@@ -1684,14 +1684,14 @@ namespace Dune {
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static const NewGeometryType pyramid (NewGeometryType::pyramid, d);
+      static const GeometryType pyramid (GeometryType::pyramid, d);
       return pyramid;
     }
 
     //! appear as your own container
-    const PyramidQuadratureRule<ct,3>& getelement (NewGeometryType type, int p)
+    const PyramidQuadratureRule<ct,3>& getelement (GeometryType type, int p)
     {
       return *this;
     }
@@ -1789,7 +1789,7 @@ namespace Dune {
 
 
     //! select the appropriate rule
-    const QuadratureRule<ct,dim>& operator() (NewGeometryType type, int p)
+    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
     {
       if (type.isCube())
       {
@@ -1939,7 +1939,7 @@ namespace Dune {
 
 
     //! select the appropriate rule
-    const QuadratureRule<ct,dim>& operator() (NewGeometryType type, int p)
+    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
     {
       if ( type.isLine() )
       {
@@ -2171,7 +2171,7 @@ namespace Dune {
 
 
     //! select the appropriate rule
-    const QuadratureRule<ct,dim>& operator() (NewGeometryType type, int p)
+    const QuadratureRule<ct,dim>& operator() (GeometryType type, int p)
     {
       if (type.isCube())
       {

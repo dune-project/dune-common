@@ -81,7 +81,7 @@ namespace Dune
     int map (const typename G::Traits::template Codim<0>::Entity& e, int i) const
     {
 
-      NewGeometryType gt=ReferenceElements<double,G::dimension>::general(e.geometry().type()).type(i,cc);
+      GeometryType gt=ReferenceElements<double,G::dimension>::general(e.geometry().type()).type(i,cc);
       //	  std::cout << "map: cc=" << cc << " gt=" << gt << " offset=" << offset[cc].find(gt)->second << std::endl;
       return is.template subIndex<cc>(e,i) + offset[cc].find(gt)->second;
     }
@@ -153,7 +153,7 @@ namespace Dune
             else               // the grid is only allowed to deliver one geometry type !
             {
               // put entry with arbitrary BasicType in the map because they are equal
-              offset[c][NewGeometryType(NewGeometryType::cube,G::dimension-c)] = n;
+              offset[c][GeometryType(GeometryType::cube,G::dimension-c)] = n;
               n += is.size(c,is.geomTypes(c)[i]);
             }
           }
@@ -163,7 +163,7 @@ namespace Dune
     int n;     // number of data elements required
     const G& g;
     const IS& is;
-    std::map<NewGeometryType,int> offset[G::dimension+1];     // for each codim provide a map with all geometry types
+    std::map<GeometryType,int> offset[G::dimension+1];     // for each codim provide a map with all geometry types
   };
 
 

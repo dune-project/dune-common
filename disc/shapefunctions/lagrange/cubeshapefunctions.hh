@@ -160,9 +160,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType cube(NewGeometryType::cube, dim);
+      static GeometryType cube(GeometryType::cube, dim);
       return cube;
     }
 
@@ -187,7 +187,7 @@ namespace Dune
     typedef T ResultType;
     typedef P0CubeShapeFunctionSet<C,T,d,P0CubeShapeFunction<C,T,d> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
       if (type.isCube()) return p0cube;
       DUNE_THROW(NotImplemented, "type not implemented yet");
@@ -365,9 +365,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType cube(NewGeometryType::cube, dim);
+      static GeometryType cube(GeometryType::cube, dim);
       return cube;
     }
 
@@ -392,7 +392,7 @@ namespace Dune
     typedef T ResultType;
     typedef P1CubeShapeFunctionSet<C,T,d,P1CubeShapeFunction<C,T,d> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
       if (type.isCube()) return p1cube;
       DUNE_THROW(NotImplemented, "type not implemented yet");
@@ -585,9 +585,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType cube(NewGeometryType::cube, dim);
+      static GeometryType cube(GeometryType::cube, dim);
       return cube;
     }
 
@@ -611,7 +611,7 @@ namespace Dune
     typedef T ResultType;
     typedef P2CubeShapeFunctionSet<C,T,d,P2CubeShapeFunction<C,T,d> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
       if (type.isCube()) return p2cube;
       DUNE_THROW(NotImplemented, "type not implemented yet");

@@ -73,7 +73,7 @@ namespace Dune
     template<int dim>
     struct P0Layout
     {
-      bool contains (int codim, Dune::NewGeometryType gt)
+      bool contains (int codim, Dune::GeometryType gt)
       {
         if (codim==0) return true;
         return false;
@@ -170,7 +170,7 @@ namespace Dune
       Iterator eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
-        Dune::NewGeometryType gt = it->geometry().type();
+        Dune::GeometryType gt = it->geometry().type();
         for (int c=0; c<m; c++)
           (*coeff)[mapper_.map(*it)][c] =
             u.evallocal(c,*it,Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
@@ -291,7 +291,7 @@ namespace Dune
     template<int dim>
     struct P0Layout
     {
-      bool contains (int codim, Dune::NewGeometryType gt)
+      bool contains (int codim, Dune::GeometryType gt)
       {
         if (codim==0) return true;
         return false;

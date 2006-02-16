@@ -113,7 +113,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
       for (int i=0; eIt!=eEndIt; ++eIt, i++) {
 
-        NewGeometryType type = eIt->geometry().type();
+        GeometryType type = eIt->geometry().type();
 
         if (type.isHexahedron()) {
 
@@ -153,7 +153,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
     for (int i=0; eIt!=eEndIt; ++eIt, i++) {
 
-      NewGeometryType type = eIt->geometry().type();
+      GeometryType type = eIt->geometry().type();
 
       if (type.isQuadrilateral()) {
 
@@ -307,7 +307,7 @@ void Dune::AmiraMeshWriter<GridType>::writeGrid(const GridType& grid,
 
       for (int i=0; eIt!=eEndIt; ++eIt, i++) {
 
-        NewGeometryType eType = eIt->geometry().type();
+        GeometryType eType = eIt->geometry().type();
 
         if (eType.isHexahedron()) {
 
@@ -455,19 +455,9 @@ void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const GridType& grid,
   // Find out whether the grid contains only tetrahedra.  If yes, then
   // it is written in TetraGrid format.  If not, it is written in
   // hexagrid format.
-  bool containsOnlyTetrahedra = true;
-
-  ElementIterator element = grid.template lbegin<0>(level);
-  ElementIterator end     = grid.template lend<0>(level);
-
-  for (; element!=end; ++element) {
-    if (!element->geometry().type().isSimplex() &&
-        (GridType::dimension!=1 || !element->geometry().type().isCube())) {
-      containsOnlyTetrahedra = false;
-      break;
-    }
-  }
-
+  bool containsOnlyTetrahedra =
+    (grid.leafIndexSet().geomTypes(0).size()==1)
+    && (grid.leafIndexSet().geomTypes(0)[0].isSimplex());
 
 
   // Get number of components

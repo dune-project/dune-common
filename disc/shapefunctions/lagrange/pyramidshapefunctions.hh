@@ -157,9 +157,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType pyramid(NewGeometryType::pyramid, dim);
+      static GeometryType pyramid(GeometryType::pyramid, dim);
       return pyramid;
     }
 
@@ -589,9 +589,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType pyramid(NewGeometryType::pyramid, dim);
+      static GeometryType pyramid(GeometryType::pyramid, dim);
       return pyramid;
     }
 
@@ -617,7 +617,7 @@ namespace Dune
     typedef T ResultType;
     typedef P0PyramidShapeFunctionSet<C,T,P0PyramidShapeFunction<C,T> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
 
       if(type.isPyramid()) return p0pyramid;
@@ -643,7 +643,7 @@ namespace Dune
     typedef T ResultType;
     typedef P1PyramidShapeFunctionSet<C,T,P1PyramidShapeFunction<C,T> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
 
       if(type.isPyramid()) return p1pyramid;

@@ -161,9 +161,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType simplex(NewGeometryType::simplex, dim);
+      static GeometryType simplex(GeometryType::simplex, dim);
       return simplex;
     }
 
@@ -188,7 +188,7 @@ namespace Dune
     typedef T ResultType;
     typedef P0SimplexShapeFunctionSet<C,T,d,P0SimplexShapeFunction<C,T,d> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
       if (type.isSimplex()) return p0simplex;
       DUNE_THROW(NotImplemented, "type not implemented yet");
@@ -356,9 +356,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType simplex(NewGeometryType::simplex, dim);
+      static GeometryType simplex(GeometryType::simplex, dim);
       return simplex;
     }
   private:
@@ -381,7 +381,7 @@ namespace Dune
     typedef T ResultType;
     typedef P1SimplexShapeFunctionSet<C,T,d,P1SimplexShapeFunction<C,T,d> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
       if (type.isSimplex()) return p1simplex;
       DUNE_THROW(NotImplemented,"type not yet implemented");
@@ -482,9 +482,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType simplex(NewGeometryType::simplex, dim);
+      static GeometryType simplex(GeometryType::simplex, dim);
       return simplex;
     }
   private:
@@ -511,7 +511,7 @@ namespace Dune
     typedef T ResultType;
     typedef P2SimplexShapeFunctionSet<C,T,dim,P2SimplexShapeFunction<C,T,dim> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
       if (type.isSimplex()) return p2simplex;
       DUNE_THROW(NotImplemented,"type not yet implemented");
@@ -817,9 +817,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType simplex(NewGeometryType::simplex, dim);
+      static GeometryType simplex(GeometryType::simplex, dim);
       return simplex;
     }
   private:
@@ -846,7 +846,7 @@ namespace Dune
     typedef T ResultType;
     typedef P2SimplexShapeFunctionSet<C,T,dim,P2SimplexShapeFunction<C,T,dim> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
       if (type.isSimplex()) return p2simplex;
       DUNE_THROW(NotImplemented,"type not yet implemented");
@@ -1333,9 +1333,9 @@ namespace Dune
     }
 
     //! return type of element
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      static NewGeometryType simplex(NewGeometryType::simplex, dim);
+      static GeometryType simplex(GeometryType::simplex, dim);
       return simplex;
     }
   private:
@@ -1363,7 +1363,7 @@ namespace Dune
     typedef T ResultType;
     typedef P2SimplexShapeFunctionSet<C,T,dim,P2SimplexShapeFunction<C,T,dim> > value_type;
 
-    const value_type& operator() (NewGeometryType type, int order) const
+    const value_type& operator() (GeometryType type, int order) const
     {
       if (type.isSimplex()) return p2simplex;
       DUNE_THROW(NotImplemented,"type not yet implemented");
