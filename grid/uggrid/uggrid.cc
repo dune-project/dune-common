@@ -422,23 +422,23 @@ inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
 #ifndef ModelP
   if(codim == 0)
   {
-    return levelIndexSet(level).size(0,NewGeometryType(NewGeometryType::simplex,dim))
-           + levelIndexSet(level).size(0,NewGeometryType(NewGeometryType::cube,dim))
-           + levelIndexSet(level).size(0,NewGeometryType(NewGeometryType::pyramid,dim))
-           + levelIndexSet(level).size(0,NewGeometryType(NewGeometryType::prism,dim));
+    return levelIndexSet(level).size(0,GeometryType(GeometryType::simplex,dim))
+           + levelIndexSet(level).size(0,GeometryType(GeometryType::cube,dim))
+           + levelIndexSet(level).size(0,GeometryType(GeometryType::pyramid,dim))
+           + levelIndexSet(level).size(0,GeometryType(GeometryType::prism,dim));
   }
   if(codim == dim)
   {
-    return this->levelIndexSet(level).size(dim,NewGeometryType(NewGeometryType::cube,0));
+    return this->levelIndexSet(level).size(dim,GeometryType(GeometryType::cube,0));
   }
   if (codim == dim-1)
   {
-    return this->levelIndexSet(level).size(dim-1,NewGeometryType(NewGeometryType::cube,1));
+    return this->levelIndexSet(level).size(dim-1,GeometryType(GeometryType::cube,1));
   }
   if (codim == 1)
   {
-    return levelIndexSet(level).size(1,NewGeometryType(NewGeometryType::cube,dim-1))
-           + levelIndexSet(level).size(1,NewGeometryType(NewGeometryType::simplex,dim-1));
+    return levelIndexSet(level).size(1,GeometryType(GeometryType::cube,dim-1))
+           + levelIndexSet(level).size(1,GeometryType(GeometryType::simplex,dim-1));
   }
   DUNE_THROW(GridError, "UGGrid<" << dim << ", " << dimworld
                                   << ">::size(int level, int codim) is only implemented"
@@ -1187,7 +1187,7 @@ void Dune::UGGrid<dim, dimworld>::insertVertex(const FieldVector<double,dimworld
 }
 
 template <int dim, int dimworld>
-void Dune::UGGrid<dim, dimworld>::insertElement(NewGeometryType type,
+void Dune::UGGrid<dim, dimworld>::insertElement(GeometryType type,
                                                 const std::vector<unsigned int>& vertices)
 {
   if (dim!=type.dim())

@@ -245,7 +245,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
       for (int j=0; j<numberOfCorners; j++)
         cornerIDs[j] = elemData[numberOfCorners*i+j]-1;
 
-      grid.insertElement(NewGeometryType(NewGeometryType::simplex,3), cornerIDs);
+      grid.insertElement(GeometryType(GeometryType::simplex,3), cornerIDs);
 
     } else {
 
@@ -262,7 +262,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
         cornerIDs[2] = thisElem[2]-1;
         cornerIDs[3] = thisElem[4]-1;
 
-        grid.insertElement(NewGeometryType(NewGeometryType::simplex,3), cornerIDs);
+        grid.insertElement(GeometryType(GeometryType::simplex,3), cornerIDs);
 
       }else if (thisElem[4]==thisElem[5] && thisElem[5]==thisElem[6]
                 && thisElem[6]==thisElem[7]) {
@@ -276,7 +276,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
         cornerIDs[3] = thisElem[3]-1;
         cornerIDs[4] = thisElem[4]-1;
 
-        grid.insertElement(NewGeometryType(NewGeometryType::pyramid,3), cornerIDs);
+        grid.insertElement(GeometryType(GeometryType::pyramid,3), cornerIDs);
 
       } else if (thisElem[1]==thisElem[2] && thisElem[5]==thisElem[6]) {
 
@@ -290,7 +290,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
         cornerIDs[4] = thisElem[5]-1;
         cornerIDs[5] = thisElem[7]-1;
 
-        grid.insertElement(NewGeometryType(NewGeometryType::prism,3), cornerIDs);
+        grid.insertElement(GeometryType(GeometryType::prism,3), cornerIDs);
 
       } else if (thisElem[2]==thisElem[3] && thisElem[6]==thisElem[7]) {
 
@@ -303,7 +303,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
         cornerIDs[4] = thisElem[5]-1;
         cornerIDs[5] = thisElem[6]-1;
 
-        grid.insertElement(NewGeometryType(NewGeometryType::prism,3), cornerIDs);
+        grid.insertElement(GeometryType(GeometryType::prism,3), cornerIDs);
 
       } else {
 
@@ -319,7 +319,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::buildGrid(UGGrid<3,3>& grid,
         cornerIDs[6] = elemData[numberOfCorners*i+7]-1;
         cornerIDs[7] = elemData[numberOfCorners*i+6]-1;
 
-        grid.insertElement(NewGeometryType(NewGeometryType::cube,3), cornerIDs);
+        grid.insertElement(GeometryType(GeometryType::cube,3), cornerIDs);
 
       }
 
@@ -423,7 +423,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
       cornerIDs[1] = elemData[3*i+1]-1;
       cornerIDs[2] = elemData[3*i+2]-1;
 
-      grid.insertElement(NewGeometryType(NewGeometryType::simplex,2), cornerIDs);
+      grid.insertElement(GeometryType(GeometryType::simplex,2), cornerIDs);
 
     } else {
 
@@ -436,7 +436,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
         cornerIDs[1] = elemData[4*i+1]-1;
         cornerIDs[2] = elemData[4*i+2]-1;
 
-        grid.insertElement(NewGeometryType(NewGeometryType::simplex,2), cornerIDs);
+        grid.insertElement(GeometryType(GeometryType::simplex,2), cornerIDs);
 
       } else {
 
@@ -448,7 +448,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<2,2> >::read(Dune::UGGrid<2,2>& grid,
         cornerIDs[2] = elemData[4*i+3]-1;
         cornerIDs[3] = elemData[4*i+2]-1;
 
-        grid.insertElement(NewGeometryType(NewGeometryType::cube,2), cornerIDs);
+        grid.insertElement(GeometryType(GeometryType::cube,2), cornerIDs);
 
       }
 
