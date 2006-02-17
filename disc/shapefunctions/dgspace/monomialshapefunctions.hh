@@ -294,7 +294,7 @@ namespace Dune
     }
 
     //! \copydoc ShapeFunctionSet::type
-    virtual NewGeometryType type () const
+    virtual GeometryType type () const
     {
       //! throw an exception... we dont' have a special geometry
 #warning what to do here?
@@ -393,8 +393,8 @@ namespace Dune
       }
     }
 
-    /** \copydoc ShapeFunctionSetContainer::operator()(NewGeometryType type, int order) */
-    virtual const ShapeFunctionSet& operator() (NewGeometryType type, int order) const
+    /** \copydoc ShapeFunctionSetContainer::operator()(GeometryType type, int order) */
+    virtual const ShapeFunctionSet& operator() (GeometryType type, int order) const
     {
       assert(order <= maxOrder);
       return *shapeFunctionSets[order];
