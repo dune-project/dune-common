@@ -2,7 +2,7 @@
 
 if UG
 if AMIRAMESH
-TESTPROGS = pantypeindexsettest
+TESTPROGS = mcmgmappertest
 endif
 endif
 
@@ -18,9 +18,9 @@ AM_LDFLAGS = $(LIBDUNE)
 
 # define the programs
 
-pantypeindexsettest_SOURCES = pantypeindexsettest.cc
-pantypeindexsettest_CXXFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
-pantypeindexsettest_LDADD = $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS) $(UG_LDFLAGS) $(UG_LIBS)
-pantypeindexsettest_DEPENDENCIES = $(LIBDUNE)
+mcmgmappertest_SOURCES = mcmgmappertest.cc
+mcmgmappertest_CXXFLAGS = $(AM_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
+mcmgmappertest_LDADD = $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS) $(UG_LDFLAGS) $(UG_LIBS)
+mcmgmappertest_DEPENDENCIES = $(LIBDUNE)
 
 include $(top_srcdir)/am/global-rules
