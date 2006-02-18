@@ -11,7 +11,7 @@ common_HEADERS = virtualrefinement.cc  \
   virtualrefinement.hh referenceelements.hh gridpart.hh \
   boundarysegment.hh gridinfo.hh indexidset.hh mapper.hh \
   mcmgmapper.hh scsgmapper.hh universalmapper.hh sizecache.hh \
-  intersectioniteratorwrapper.hh pantypeindexset.hh
+  intersectioniteratorwrapper.hh
 
 SUBDIRS = refinement test
 
