@@ -135,7 +135,7 @@ void setBoundary(Dune::BlockVector<Dune::FieldVector<double,BS> >& lhs,
     G x = i->global()/n;
     G y = i->global()%n;
 
-    if(x==0 || y ==0 || x==n-1 || y==n-1 || i->local().attribute()==GridAttributes::copy) {
+    if(x==0 || y ==0 || x==n-1 || y==n-1) {
       lhs[i->local()]=rhs[i->local()];
     }
   }
