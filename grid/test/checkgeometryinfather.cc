@@ -26,7 +26,10 @@ void checkGeometryInFather(const GridType& grid) {
 
   // We need at least two levels to do any checking
   if (grid.maxLevel()==0)
-    DUNE_THROW(GridError, "Cannot check geometryInFather() on a single-level grid!");
+  {
+    dwarn << "WARNING: Cannot check geometryInFather() on a single-level grid! \n";
+    return;
+  }
 
   // Loop over all levels except the lowest one
   for (int i=1; i<=grid.maxLevel(); i++) {
