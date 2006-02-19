@@ -46,7 +46,7 @@ namespace Dune {
   //! hierarchic index set of ALU3dGrid
   template <int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGridHierarchicIndexSet :
-    public IndexSet<ALU3dGrid<dim,dimworld,elType>,
+    public IndexSetDefaultImplementation <ALU3dGrid<dim,dimworld,elType>,
         ALU3dGridHierarchicIndexSet<dim,dimworld,elType>,
         ALU3dGridHierarchicIteratorTypes<ALU3dGrid<dim,dimworld,elType> > >
   {
@@ -130,7 +130,7 @@ namespace Dune {
   //! global id set for ALU3dGrid
   template <int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGridGlobalIdSet :
-    public IdSet < ALU3dGrid<dim,dimworld,elType> ,
+    public IdSetDefaultImplementation  < ALU3dGrid<dim,dimworld,elType> ,
         ALU3dGridGlobalIdSet<dim,dimworld,elType> ,
         typename
         ALU3dGrid<dim,dimworld,elType>::Traits::GlobalIdType >
@@ -545,7 +545,7 @@ namespace Dune {
   //! hierarchic index set of ALU3dGrid
   template <int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGridLocalIdSet :
-    public IdSet < ALU3dGrid<dim,dimworld,elType> ,
+    public IdSetDefaultImplementation < ALU3dGrid<dim,dimworld,elType> ,
         ALU3dGridLocalIdSet<dim,dimworld,elType> ,
         int >
   {
@@ -593,7 +593,6 @@ namespace Dune {
     template <int cd>
     int subId (const EntityCodim0Type & ep, int i) const
     {
-      assert( cd == dim );
       assert( hset_.size(cd) < codimMultiplier );
       return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
     }
