@@ -100,14 +100,14 @@ Dune::OneDGrid<dim,dimworld>::OneDGrid(const std::vector<OneDCType>& coords)
   elements.resize(1);
 
   // Init vertex set
-  for (int i=0; i<coords.size(); i++) {
+  for (size_t i=0; i<coords.size(); i++) {
     OneDEntityImp<0>* newVertex = new OneDEntityImp<0>(0, coords[i], getNextFreeId(1));
     vertices[0].insert_after(vertices[0].rbegin, newVertex);
   }
 
   // Init element set
   OneDEntityImp<0>* it = vertices[0].begin;
-  for (int i=0; i<coords.size()-1; i++) {
+  for (size_t i=0; i<coords.size()-1; i++) {
 
     OneDEntityImp<1>* newElement = new OneDEntityImp<1>(0, getNextFreeId(0));
     newElement->vertex_[0] = it;
