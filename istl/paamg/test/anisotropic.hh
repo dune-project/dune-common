@@ -126,15 +126,18 @@ void fillValues(int N, M& mat, int overlapStart, int overlapEnd, int start, int 
 }
 
 template<int BS, class G, class L, int s>
-void setBoundary(Dune::BlockVector<Dune::FieldVector<double,BS> >& vec, const G& n, Dune::ParallelIndexSet<G,L,s>& indices)
+void setBoundary(Dune::BlockVector<Dune::FieldVector<double,BS> >& lhs,
+                 Dune::BlockVector<Dune::FieldVector<double,BS> >& rhs,
+                 const G& n, Dune::ParallelIndexSet<G,L,s>& indices)
 {
   typedef typename Dune::ParallelIndexSet<G,L,s>::const_iterator Iter;
   for(Iter i=indices.begin(); i != indices.end(); ++i) {
     G x = i->global()/n;
     G y = i->global()%n;
 
-    if(x==0 || y ==0 || x==n-1 || y==n-1 || i->local().attribute()==GridAttributes::copy)
-      vec[i->local()]=0;
+    if(x==0 || y ==0 || x==n-1 || y==n-1 || i->local().attribute()==GridAttributes::copy) {
+      lhs[i->local()]=rhs[i->local()];
+    }
   }
 }
 
