@@ -41,7 +41,7 @@ namespace Dune {
 
   template <int dim, int dimworld>
   class AlbertaGridHierarchicIndexSet :
-    public IndexSet<AlbertaGrid<dim,dimworld>,
+    public IndexSetDefaultImplementation<AlbertaGrid<dim,dimworld>,
         AlbertaGridHierarchicIndexSet<dim,dimworld>,
         AlbertaGridHierarchicIteratorTypes<AlbertaGrid<dim,dimworld> > >
 
@@ -218,7 +218,7 @@ namespace Dune {
   //! hierarchic index set of AlbertaGrid
   template <int dim, int dimworld>
   class AlbertaGridIdSet :
-    public IdSet < AlbertaGrid<dim,dimworld> ,
+    public IdSetDefaultImplementation < AlbertaGrid<dim,dimworld> ,
         AlbertaGridIdSet<dim,dimworld> , int >
   {
     typedef AlbertaGrid<dim,dimworld> GridType;
@@ -266,7 +266,6 @@ namespace Dune {
     template <int cd>
     int subId (const EntityCodim0Type & ep, int i) const
     {
-      assert( cd == dim );
       assert( hset_.size(cd) < codimMultiplier );
       return codimStart_[cd] + hset_.template subIndex<cd>(ep,i);
     }
