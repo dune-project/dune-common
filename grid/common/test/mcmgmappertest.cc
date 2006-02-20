@@ -17,34 +17,37 @@
 
 using namespace Dune;
 
-#if 0
-template <class GridType, class HostIndexSet>
-void checkMapper(const PanTypeIndexSet<GridType,HostIndexSet>& panTypeIndexSet,
-                 const HostIndexSet& hostIndexSet)
+// Parameter for mapper class
+template<int dim>
+struct ElementDataLayout
 {
-  // //////////////////////////////////////////////////////////////
-  //   Check whether the size methods give the correct result
-  // //////////////////////////////////////////////////////////////
-
-
-  for (int codim=0; codim<=GridType::dimension; codim++) {
-    assert(panTypeIndexSet.geomTypes(codim) == hostIndexSet.geomTypes(codim));
-    assert(panTypeIndexSet.size(codim) == hostIndexSet.size(codim));
-
-    for (size_t i=0; i<panTypeIndexSet.geomTypes(codim).size(); i++) {
-      NewGeometryType type = panTypeIndexSet.geomTypes(codim)[i];
-      assert(panTypeIndexSet.size(codim,type) == hostIndexSet.size(codim,type));
-    }
-
+  bool contains (int codim, Dune::GeometryType gt)
+  {
+    return codim==0;
   }
+};
 
-  // ///////////////////////////////////////////////////////////////////////////
-  //   Check whether the index for codim 0 is consecutive and zero starting
-  // ///////////////////////////////////////////////////////////////////////////
-  typedef typename PanTypeIndexSet<GridType,HostIndexSet>::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
+template<int dim>
+struct FaceDataLayout
+{
+  bool contains (int codim, Dune::GeometryType gt)
+  {
+    return codim==1;
+  }
+};
 
-  Iterator eIt    = panTypeIndexSet.template begin<0,All_Partition>();
-  Iterator eEndIt = panTypeIndexSet.template end<0,All_Partition>();
+
+// /////////////////////////////////////////////////////////////////////////////////
+//   Check whether the index created for element data is unique, consecutive
+//   and starting from zero.
+// /////////////////////////////////////////////////////////////////////////////////
+template <class Mapper, class IndexSet>
+void checkElementDataMapper(const Mapper& mapper, const IndexSet& indexSet)
+{
+  typedef typename IndexSet::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
+
+  Iterator eIt    = indexSet.template begin<0,All_Partition>();
+  Iterator eEndIt = indexSet.template end<0,All_Partition>();
 
   int min = 1;
   int max = 0;
@@ -52,7 +55,7 @@ void checkMapper(const PanTypeIndexSet<GridType,HostIndexSet>& panTypeIndexSet,
 
   for (; eIt!=eEndIt; ++eIt) {
 
-    int index = panTypeIndexSet.template index<0>(*eIt);
+    int index = mapper.map(*eIt);
 
     min = std::min(min, index);
     max = std::max(max, index);
@@ -60,29 +63,34 @@ void checkMapper(const PanTypeIndexSet<GridType,HostIndexSet>& panTypeIndexSet,
     std::pair<std::set<int>::iterator, bool> status = indices.insert(index);
 
     if (!status.second)       // not inserted because already existing
-      DUNE_THROW(GridError, "PanTypeIndex is not unique!");
+      DUNE_THROW(GridError, "Mapper element index is not unique!");
   }
 
   if (min!=0)
-    DUNE_THROW(GridError, "PanTypeIndex is not starting from zero!");
+    DUNE_THROW(GridError, "Mapper element index is not starting from zero!");
 
-  if (max!=panTypeIndexSet.size(0)-1)
-    DUNE_THROW(GridError, "PanTypeIndex is not consecutive!");
+  if (max!=indexSet.size(0)-1)
+    DUNE_THROW(GridError, "Mapper element index is not consecutive!");
 
+}
 
-  // ///////////////////////////////////////////////////////////////////////////
-  //   Check whether the index for codim 1 is consecutive and zero starting
-  // ///////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////
+//   Check whether the index created for face data is unique, consecutive
+//   and starting from zero.
+// /////////////////////////////////////////////////////////////////////////////////
+template <class Mapper, class IndexSet>
+void checkFaceDataMapper(const Mapper& mapper, const IndexSet& indexSet)
+{
+#if 0
+  typedef typename IndexSet::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
 
-  eIt = panTypeIndexSet.template begin<0,All_Partition>();
+  Iterator eIt    = indexSet.template begin<0,All_Partition>();
+  Iterator eEndIt = indexSet.template end<0,All_Partition>();
 
   // Reset the counting variables
-  min = 1;
-  max = 0;
+  int min = 1;
+  int max = 0;
   indices.clear();
-
-  // Currently there are no iterators over codim-1 entities.  Therefore we have to
-  // simulate them with an element iterator and an intersection iterator.
 
   for (; eIt!=eEndIt; ++eIt) {
 
@@ -93,13 +101,15 @@ void checkMapper(const PanTypeIndexSet<GridType,HostIndexSet>& panTypeIndexSet,
 
     for (; iIt!=iEndIt; ++iIt) {
 
+#if 0
       // The correctness of the pan-type index for codim 0 has been checked above.
       // So now we can use it.
       if (iIt.neighbor()
           && panTypeIndexSet.template index<0>(*eIt) > panTypeIndexSet.template index<0>(*iIt.outside()))
         continue;
+#endif
 
-      int index = panTypeIndexSet.template subIndex<1>(*eIt, iIt.numberInSelf());
+      int index = mapper.map(*eIt, iIt.numberInSelf());
 
       //             std::cout << hostIndexSet.template subIndex<1>(*eIt, iIt.numberInSelf())
       //                 << "  Index: " << index << "   type: " << eIt->geometry().type() << std::endl;
@@ -109,36 +119,32 @@ void checkMapper(const PanTypeIndexSet<GridType,HostIndexSet>& panTypeIndexSet,
       std::pair<std::set<int>::iterator, bool> status = indices.insert(index);
 
       if (!status.second)         // not inserted because already existing
-        DUNE_THROW(GridError, "PanTypeIndex is not unique!");
+        DUNE_THROW(GridError, "Mapper index is not unique!");
 
     }
 
   }
 
   if (min!=0)
-    DUNE_THROW(GridError, "PanTypeIndex for codim 1 is not starting from zero!");
+    DUNE_THROW(GridError, "Mapper index for codim 1 is not starting from zero!");
 
-  if (max!=panTypeIndexSet.size(1)-1)
-    DUNE_THROW(GridError, "PanTypeIndex for codim 1 is not consecutive!");
+  if (max!=indexSet.size(1))
+    DUNE_THROW(GridError, "Mapper index for codim 1 is not consecutive!");
 
-}
 #endif
-
+}
 
 /*
-   PanTypeIndexSets only do something helpful on grids with more than one
-   element type.  So far only UGGrids do this, so we use them to test
-   the index set.
+   The MultipleGeometryMultipleCodimMapper only does something helpful on grids with more
+   than one element type.  So far only UGGrids do this, so we use them to test the mapper.
  */
 
 int main () try
 {
-#if 0
-  // ////////////////////////////////////////////////////////////////////////
-  //  Do the standard grid test for a 2d UGGrid
-  // ////////////////////////////////////////////////////////////////////////
 
-  // extra-environment to check destruction
+  // ////////////////////////////////////////////////////////////////////////
+  //  Do the test for a 2d UGGrid
+  // ////////////////////////////////////////////////////////////////////////
   {
     typedef UGGrid<2,2> GridType;
     typedef GridType::Traits::LeafIndexSet LeafIndexSetType;
@@ -152,18 +158,17 @@ int main () try
     grid.adapt();
     grid.globalRefine(1);
 
-    //       PanTypeIndexSet<GridType, LeafIndexSetType> panTypeLeafIndexSet(grid, grid.leafIndexSet());
-    //       checkPanTypeIndexSet(panTypeLeafIndexSet, grid.leafIndexSet());
+    LeafMultipleCodimMultipleGeomTypeMapper<GridType, ElementDataLayout> leafMCMGMapper(grid);
+    checkElementDataMapper(leafMCMGMapper, grid.leafIndexSet());
 
     for (int i=2; i<=grid.maxLevel(); i++) {
-      PanTypeIndexSet<GridType, LevelIndexSetType> panTypeLevelIndexSet(grid, grid.levelIndexSet(i));
-      checkPanTypeIndexSet(panTypeLevelIndexSet, grid.levelIndexSet(i));
+      LevelMultipleCodimMultipleGeomTypeMapper<GridType, ElementDataLayout> levelMCMGMapper(grid, i);
+      checkElementDataMapper(levelMCMGMapper, grid.levelIndexSet(i));
     }
-
   }
 
   // ////////////////////////////////////////////////////////////////////////
-  //  Do the standard grid test for a 3d UGGrid
+  //  Do the  test for a 3d UGGrid
   // ////////////////////////////////////////////////////////////////////////
   {
     typedef UGGrid<3,3> GridType;
@@ -178,16 +183,15 @@ int main () try
     grid.adapt();
     grid.globalRefine(1);
 
-    PanTypeIndexSet<GridType, LeafIndexSetType> panTypeLeafIndexSet(grid, grid.leafIndexSet());
-    checkPanTypeIndexSet(panTypeLeafIndexSet, grid.leafIndexSet());
+    LeafMultipleCodimMultipleGeomTypeMapper<GridType, ElementDataLayout> leafMCMGMapper(grid);
+    checkElementDataMapper(leafMCMGMapper, grid.leafIndexSet());
 
-    for (int i=0; i<=grid.maxLevel(); i++) {
-      PanTypeIndexSet<GridType, LevelIndexSetType> panTypeLevelIndexSet(grid, grid.levelIndexSet(i));
-      checkPanTypeIndexSet(panTypeLevelIndexSet, grid.levelIndexSet(i));
+    for (int i=2; i<=grid.maxLevel(); i++) {
+      LevelMultipleCodimMultipleGeomTypeMapper<GridType, ElementDataLayout> levelMCMGMapper(grid, i);
+      checkElementDataMapper(levelMCMGMapper, grid.levelIndexSet(i));
     }
-
   }
-#endif
+
   return 0;
 
 }
