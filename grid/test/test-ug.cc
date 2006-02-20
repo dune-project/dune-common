@@ -104,7 +104,7 @@ void makeHalfCircleQuad(Dune::UGGrid<2,2>& grid, bool parametrization)
   cornerIDs[2] = 3;
   cornerIDs[3] = 2;
 
-  grid.insertElement(NewGeometryType(NewGeometryType::cube,2), cornerIDs);
+  grid.insertElement(GeometryType(GeometryType::cube,2), cornerIDs);
 
   // //////////////////////////////////////
   //   Finish initialization
