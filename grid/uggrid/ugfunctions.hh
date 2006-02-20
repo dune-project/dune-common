@@ -62,7 +62,7 @@ namespace Dune {
     /** \brief The PFIRSTNODE macro which returns the first node in a
      * grid even in a parallel setting.
      */
-    static TargetType<2,2>::T* PFirstNode(UGTypes<2>::GridType* grid) {
+    static TargetType<2,2>::T* PFirstNode(const UGTypes<2>::GridType* grid) {
       using UG::PrioHGhost;
       using UG::PrioVGhost;
       using UG::PrioVHGhost;
@@ -86,7 +86,7 @@ namespace Dune {
     /** \brief The PFIRSTELEMENT macro which returns the first element in a
      * grid even in a parallel setting.
      */
-    static TargetType<0,2>::T* PFirstElement(UGTypes<2>::GridType* grid) {
+    static TargetType<0,2>::T* PFirstElement(const UGTypes<2>::GridType* grid) {
       using UG::PrioHGhost;
       using UG::PrioVGhost;
       using UG::PrioVHGhost;

@@ -59,7 +59,7 @@ namespace Dune {
     /** \brief The PFIRSTNODE macro which returns the first node in a
      * grid even in a parallel setting.
      */
-    static TargetType<3,3>::T* PFirstNode(UGTypes<3>::GridType* grid) {
+    static TargetType<3,3>::T* PFirstNode(const UGTypes<3>::GridType* grid) {
       using UG::PrioHGhost;
       using UG::PrioVGhost;
       using UG::PrioVHGhost;
@@ -71,7 +71,7 @@ namespace Dune {
     /** \brief The FIRSTNODE macro which returns the first node in a
      * grid even in a parallel setting.
      */
-    static TargetType<3,3>::T* FirstNode(UGTypes<3>::GridType* grid) {
+    static TargetType<3,3>::T* FirstNode(const UGTypes<3>::GridType* grid) {
       using UG::PrioHGhost;
       using UG::PrioVGhost;
       using UG::PrioVHGhost;
@@ -83,7 +83,7 @@ namespace Dune {
     /** \brief The PFIRSTELEMENT macro which returns the first element in a
      * grid even in a parallel setting.
      */
-    static TargetType<0,3>::T* PFirstElement(UGTypes<3>::GridType* grid) {
+    static TargetType<0,3>::T* PFirstElement(const UGTypes<3>::GridType* grid) {
       using UG::PrioHGhost;
       using UG::PrioVGhost;
       using UG::PrioVHGhost;
@@ -95,7 +95,7 @@ namespace Dune {
     /** \brief The FIRSTELEMENT macro which returns the first element in a
      * grid even in a parallel setting.
      */
-    static TargetType<0,3>::T* FirstElement(UGTypes<3>::GridType* grid) {
+    static TargetType<0,3>::T* FirstElement(const UGTypes<3>::GridType* grid) {
       using UG::PrioHGhost;
       using UG::PrioVGhost;
       using UG::PrioVHGhost;
@@ -233,7 +233,11 @@ namespace Dune {
     }
 
     //! Encapsulates the GRID_ATTR macro
-    /** \todo Why this strange construction? */
+    /** \todo I have to define GRID_ATTR myself here because I cannot include pargm.h again
+        after GRID_ATTR has been undef'ed away (it contains stuff in the namespace UG).
+        The clean solution would be to turn the macro into an inline function within
+        pargm.h.  But then pargm.h would have to include gm.h in order to know the
+        type grid, and I am reluctant to do that. */
     static unsigned char Grid_Attr(const UGTypes<3>::GridType* grid) {
 #define GRID_ATTR(g) g->level+32
       return GRID_ATTR(grid);
