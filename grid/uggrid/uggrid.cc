@@ -12,97 +12,6 @@
 #include <dune/common/sllist.hh>
 #include <dune/common/stdstreams.hh>
 
-// *********************************************************************
-//
-//  -- UGGridLevelIteratorFactory
-//
-// *********************************************************************
-
-namespace Dune {
-
-  /** \brief Default implementation, just throws an exception */
-  template <int codim, PartitionIteratorType PiType, class GridImp>
-  class UGGridLevelIteratorFactory
-  {
-  public:
-    static inline
-    UGGridLevelIterator<codim,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
-      DUNE_THROW(GridError, "Unknown LevelIterator requested");
-    }
-
-  };
-
-  // //////////////////////////////////////////////////////////////////////
-  //   Specializations for the element iterator-factories
-  //   There is no overlap.  Therefore, All_Partition and Ghost_Partition
-  //   loop over _all_ elements, and the remaining PartitionTypes only
-  //   over the interior ones.
-  // //////////////////////////////////////////////////////////////////////
-  template <class GridImp>
-  class UGGridLevelIteratorFactory<0,All_Partition,GridImp>
-  {
-  public:
-    static inline
-    UGGridLevelIterator<0,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
-
-      return UGGridLevelIterator<0,All_Partition,GridImp>(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
-    }
-
-  };
-
-  template <class GridImp>
-  class UGGridLevelIteratorFactory<0,Ghost_Partition,GridImp>
-  {
-  public:
-    static inline
-    UGGridLevelIterator<0,Ghost_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
-
-      return UGGridLevelIterator<0,Ghost_Partition,GridImp>(UG_NS<GridImp::dimension>::PFirstElement(theGrid), level);
-
-    }
-
-  };
-
-  template <PartitionIteratorType PiType,class GridImp>
-  class UGGridLevelIteratorFactory<0,PiType,GridImp>
-  {
-  public:
-    static inline
-    UGGridLevelIterator<0,PiType,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
-
-      return UGGridLevelIterator<0,PiType,GridImp>(UG_NS<GridImp::dimension>::FirstElement(theGrid), level);
-
-    }
-
-  };
-
-
-
-  template <class GridImp>
-  class UGGridLevelIteratorFactory<2,All_Partition,GridImp>
-  {
-  public:
-    static inline
-    UGGridLevelIterator<2,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
-
-      return UGGridLevelIterator<2,All_Partition,GridImp>(UG_NS<2>::PFirstNode(theGrid), level);
-    }
-
-  };
-
-  template <class GridImp>
-  class UGGridLevelIteratorFactory<3,All_Partition,GridImp>
-  {
-  public:
-    static inline
-    UGGridLevelIterator<3,All_Partition,GridImp> getIterator(typename UGTypes<GridImp::dimension>::GridType* theGrid, int level) {
-
-      return UGGridLevelIterator<3,All_Partition,GridImp>(UG_NS<3>::FirstNode(theGrid), level);
-    }
-  };
-
-}  // end namespace Dune
-
 
 using namespace Dune;
 
@@ -376,12 +285,21 @@ Dune::UGGrid<dim, dimworld>::lbegin (int level) const
   if (!multigrid_)
     DUNE_THROW(GridError, "The grid has not been properly initialized!");
 
-  typename UGTypes<dim>::GridType* theGrid = multigrid_->grids[level];
+  const typename UGTypes<dim>::GridType* theGrid = multigrid_->grids[level];
 
   if (!theGrid)
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  return UGGridLevelIteratorFactory<codim,All_Partition, const UGGrid<dim,dimworld> >::getIterator(theGrid, level);
+  if (codim==0)
+    // The seemingly pointless cast make the code compile in the cases where this if-clause
+    // does _not_ get executed.
+    return UGGridLevelIterator<codim, All_Partition, const UGGrid<dim,dimworld> >((typename TargetType<codim,dim>::T*)UG_NS<dim>::PFirstElement(theGrid), level);
+  else if (codim==dim)
+    // The seemingly pointless cast make the code compile in the cases where this if-clause
+    // does _not_ get executed.
+    return UGGridLevelIterator<codim, All_Partition, const UGGrid<dim,dimworld> >((typename TargetType<codim,dim>::T*)UG_NS<dim>::PFirstNode(theGrid), level);
+
+  DUNE_THROW(GridError, "UGGrid doesn't support level iterators of codim " << codim);
 }
 
 template<int dim, int dimworld>
@@ -397,7 +315,27 @@ Dune::UGGrid<dim, dimworld>::lbegin (int level) const
   if (!theGrid)
     DUNE_THROW(GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
-  return UGGridLevelIteratorFactory<codim,PiType, const UGGrid<dim,dimworld> >::getIterator(theGrid, level);
+  if (codim==0) {
+
+    typename UGTypes<dim>::Element* firstElement =
+      (PiType==All_Partition || PiType==Ghost_Partition)
+      ? UG_NS<dim>::PFirstElement(theGrid)
+      : UG_NS<dim>::FirstElement(theGrid);
+
+    // The seemingly pointless cast make the code compile in the cases where this if-clause
+    // does _not_ get executed.
+    return UGGridLevelIterator<codim, PiType, const UGGrid<dim,dimworld> >((typename TargetType<codim,dim>::T*)firstElement, level);
+
+  } else if (codim==dim) {
+
+    // The seemingly pointless cast make the code compile in the cases where this if-clause
+    // does _not_ get executed.
+    /** \todo Parallel vertex level iterators not properly implemented yet! */
+    return UGGridLevelIterator<codim, PiType, const UGGrid<dim,dimworld> >((typename TargetType<codim,dim>::T*)UG_NS<dim>::PFirstNode(theGrid), level);
+
+  }
+
+  DUNE_THROW(GridError, "UGGrid doesn't support level iterators of codim " << codim);
 }
 
 template < int dim, int dimworld >
