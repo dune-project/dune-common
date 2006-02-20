@@ -15,12 +15,13 @@ namespace Dune
   /** \brief Encapsulates the static part of an arbitrary Grid::Iterator
       \ingroup GridInterface
 
-      The EntityPointer can be used like a static iterator. It point to a
-      Dune::Entity and can be dereferenced, compared and knows the
-      Entities level.
+      The EntityPointer can be used like a static iterator. It points to a
+      Dune::Entity and can be dereferenced, compared and it knows the
+      Entity's level.
 
       You should be able to initialize and interpret every Dune::XxxIterator
-      as a Dune::EntityPointer. There for we need an inheritance hierarchy of
+      that iterates over entities
+      as a Dune::EntityPointer. Therefore we need an inheritance hierarchy of
       the Iterator wrappers:
       \code
       class Dune::EntityPointer<...>;
@@ -38,7 +39,7 @@ namespace Dune
          public Dune::EntityPointer<...>;
       \endcode
 
-      This hierarchy must be resambled in the implementation (i.e. SGrid):
+      This hierarchy must be mimicked in the implementation (i.e. SGrid):
       \code
       class SEntityPointer<...> :
          public Dune::EntityPointerDefault<..., SEntityPointer>;
@@ -68,19 +69,19 @@ namespace Dune
 
       Now you can compare Dune::LevelIterator with Dune::EntityPointer and
       Dune::LeafIterator with Dune::IntersectionIterator. And you can assign
-      Dune::EntityPointer from any Dune::XxxIterator class. Even more you can
+      Dune::EntityPointer from any Dune::XxxIterator class. Even more, you can
       cast an Iterator refence to a reference pointing to Dune::EntityPointer.
 
       The compiler take care that you only assign/compare Iterators from the same
       Grid.
 
       The downside (or advantage) of this inheritance is that you can
-      not use different comparsion operators and different dereference
+      not use different comparison operators and different dereference
       oprators for the different Iterators in one Grid. On the first
       sight it is a downside because one might consider it a good idea
       to have special treatment for different iterators. On the other
       hand it's very confusing for the user if different Iterators show
-      different behavior in the same situation. So now you are forced to
+      different behavior in the same situation. So now they are forced to
       show the same behavior.
 
       \tparam GridImp The grid class whose elements we are encapsulating
