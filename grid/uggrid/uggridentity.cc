@@ -382,8 +382,10 @@ template int Dune::UGGridEntity<0, 3, const Dune::UGGrid<3, 3> >::count<3>() con
 template Dune::Grid<2, 2, double, Dune::UGGridFamily<2, 2> >::Codim<0>::EntityPointer
 Dune::UGGridEntity<0, 2, const Dune::UGGrid<2, 2> >::entity<0>(int) const;
 
+#if 0   // Codim 1 EntityPointers not implemented yet
 template Dune::Grid<2, 2, double, Dune::UGGridFamily<2, 2> >::Codim<1>::EntityPointer
 Dune::UGGridEntity<0, 2, const Dune::UGGrid<2, 2> >::entity<1>(int) const;
+#endif
 
 template Dune::Grid<2, 2, double, Dune::UGGridFamily<2, 2> >::Codim<2>::EntityPointer
 Dune::UGGridEntity<0, 2, const Dune::UGGrid<2, 2> >::entity<2>(int) const;
@@ -392,11 +394,13 @@ Dune::UGGridEntity<0, 2, const Dune::UGGrid<2, 2> >::entity<2>(int) const;
 template Dune::Grid<3, 3, double, Dune::UGGridFamily<3, 3> >::Codim<0>::EntityPointer
 Dune::UGGridEntity<0, 3, const Dune::UGGrid<3, 3> >::entity<0>(int) const;
 
+#if 0   // Codim 1 and 2 EntityPointers not implemented yet
 template Dune::Grid<3, 3, double, Dune::UGGridFamily<3, 3> >::Codim<1>::EntityPointer
 Dune::UGGridEntity<0, 3, const Dune::UGGrid<3, 3> >::entity<1>(int) const;
 
 template Dune::Grid<3, 3, double, Dune::UGGridFamily<3, 3> >::Codim<2>::EntityPointer
 Dune::UGGridEntity<0, 3, const Dune::UGGrid<3, 3> >::entity<2>(int) const;
+#endif
 
 template Dune::Grid<3, 3, double, Dune::UGGridFamily<3, 3> >::Codim<3>::EntityPointer
 Dune::UGGridEntity<0, 3, const Dune::UGGrid<3, 3> >::entity<3>(int) const;
