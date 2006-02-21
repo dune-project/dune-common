@@ -68,7 +68,7 @@
    <!--===================================-->
 
    @code
-   template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension>
+   template<GeometryType::BasicType geometryType, class CoordType, GeometryType::BasicType coerceTo, int dimension>
    class Refinement
    {
    public:
@@ -99,7 +99,7 @@
    support some additional methods:
 
    @code
-   template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension>
+   template<GeometryType::BasicType geometryType, class CoordType, GeometryType::BasicType coerceTo, int dimension>
    class VertexIterator
    {
    public:
@@ -109,7 +109,7 @@
     Refinement::CoordVector coords() const;
    }
 
-   template<NewGeometryType::BasicType geometryType, class CoordType, NewGeometryType::BasicType coerceTo, int dimension>
+   template<GeometryType::BasicType geometryType, class CoordType, GeometryType::BasicType coerceTo, int dimension>
    class ElementIterator
    {
    public:
@@ -135,7 +135,7 @@
    //#include <dune/grid/common/refinement/hcube.cc>
 
    // Get yourself the Refinement you need:
-   typedef Refinement<NewGeometryType::cube, SGrid<2, 2>::ctype, NewGeometryType::cube, 2> MyRefinement;
+   typedef Refinement<GeometryType::cube, SGrid<2, 2>::ctype, GeometryType::cube, 2> MyRefinement;
 
    int main()
    {
@@ -194,23 +194,23 @@
    namespace Dune::RefinementImp {
     // the "dim" template parameter is ignored, since the dimension can be infered
     template<class CoordType>
-    struct Traits<NewGeometryType::sphere, CoordType, NewGeometryType::cube, 2> {
+    struct Traits<GeometryType::sphere, CoordType, GeometryType::cube, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
 
     // we're only implementing this for dim=2
     template<class CoordType>
-    struct Traits<NewGeometryType::sphere, CoordType, NewGeometryType::cube, 2> {
+    struct Traits<GeometryType::sphere, CoordType, GeometryType::cube, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
 
     template<class CoordType>
-    struct Traits<NewGeometryType::circle, CoordType, NewGeometryType::cube, 2> {
+    struct Traits<GeometryType::circle, CoordType, GeometryType::cube, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
 
     template<class CoordType>
-    struct Traits<NewGeometryType::sphere, CoordType, NewGeometryType::quadrilateral, 2> {
+    struct Traits<GeometryType::sphere, CoordType, GeometryType::quadrilateral, 2> {
       typedef SquaringTheCircle::RefinementImp<CoordType> Imp;
     };
    }

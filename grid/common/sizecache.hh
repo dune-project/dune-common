@@ -135,7 +135,7 @@ namespace Dune {
     }
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, NewGeometryType type) const
+    int size (int level, int codim, GeometryType type) const
     {
       // if isSimplex true, then this is a simplex counting one
       if( (isSimplex_) && (isSimplex_ != type.isSimplex()) ) return 0;
@@ -158,7 +158,7 @@ namespace Dune {
     };
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, NewGeometryType type) const
+    int size (int codim, GeometryType type) const
     {
       // if isSimplex true, then this is a simplex counting one
       if( (isSimplex_) && (isSimplex_ != type.isSimplex()) ) return 0;
@@ -175,7 +175,7 @@ namespace Dune {
       LevelIterator it  = grid_.template lbegin<codim> (level);
       LevelIterator end = grid_.template lend<codim>   (level);
 
-      NewGeometryType type (((isSimplex_) ?  NewGeometryType::simplex :  NewGeometryType::cube ),dim-codim);
+      GeometryType type (((isSimplex_) ?  GeometryType::simplex :  GeometryType::cube ),dim-codim);
       assert( type.isCube() == isCube_ );
       if( notWorry_ ) return countElements(it,end,type);
       return countElements(it,end);
@@ -187,7 +187,7 @@ namespace Dune {
       typedef typename GridType::template Codim<codim> :: LeafIterator LeafIterator;
       LeafIterator it  = grid_.template leafbegin<codim> ();
       LeafIterator end = grid_.template leafend<codim>   ();
-      NewGeometryType type (((isSimplex_) ? NewGeometryType::simplex : NewGeometryType::cube ),dim-codim);
+      GeometryType type (((isSimplex_) ? GeometryType::simplex : GeometryType::cube ),dim-codim);
       assert( type.isCube() == isCube_ );
       if( notWorry_ ) return countElements(it,end,type);
       return countElements(it,end);
@@ -196,7 +196,7 @@ namespace Dune {
     // counts entities with given type for given iterator
     template <class IteratorType>
     int countElements(IteratorType & it, const IteratorType & end ,
-                      const NewGeometryType & type ) const
+                      const GeometryType & type ) const
     {
       int count = 0;
       if((type.isSimplex()) || (type.isCube()))
@@ -238,7 +238,7 @@ namespace Dune {
     {
       // check that used grid only has simplex and/or cube as geomTypes
       // to be revised
-      const std::vector<NewGeometryType> & geomTypes = grid.geomTypes(0);
+      const std::vector<GeometryType> & geomTypes = grid.geomTypes(0);
       int found  = 0;
       int others = 0;
       for(unsigned int i=0; i<geomTypes.size(); i++)
@@ -270,7 +270,7 @@ namespace Dune {
     }
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, NewGeometryType type) const
+    int size (int level, int codim, GeometryType type) const
     {
       if( type.isSimplex()) return simplexSize_.size(level,codim);
       if( type.isCube()   ) return cubeSize_(level,codim);
@@ -287,7 +287,7 @@ namespace Dune {
     };
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, NewGeometryType type) const
+    int size (int codim, GeometryType type) const
     {
       if( type.isSimplex() ) return simplexSize_.size(codim);
       if( type.isCube()    ) return cubeSize_(codim);

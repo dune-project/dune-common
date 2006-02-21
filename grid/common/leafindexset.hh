@@ -376,7 +376,7 @@ namespace Dune {
     template <class AdLeafSet, int codim >
     struct CountElements
     {
-      static inline int count (const AdLeafSet & ls , int cd, NewGeometryType type )
+      static inline int count (const AdLeafSet & ls , int cd, GeometryType type )
       {
         if( cd == codim )
         {
@@ -391,7 +391,7 @@ namespace Dune {
     template <class AdLeafSet>
     struct CountElements<AdLeafSet,0>
     {
-      static inline int count (const AdLeafSet & ls , int cd, NewGeometryType type )
+      static inline int count (const AdLeafSet & ls , int cd, GeometryType type )
       {
         enum { codim = 0 };
         if( cd == codim )
@@ -676,7 +676,7 @@ namespace Dune {
     }
 
     //! return size of grid entities per level and codim
-    int size ( int codim , NewGeometryType type ) const
+    int size ( int codim , GeometryType type ) const
     {
       if( !codimUsed_[codim] )
       {
@@ -694,7 +694,7 @@ namespace Dune {
     }
 
     //! returns vector with geometry tpyes this index set has indices for
-    const std::vector <NewGeometryType> & geomTypes (int codim) const
+    const std::vector <GeometryType> & geomTypes (int codim) const
     {
       return hIndexSet_.geomTypes(codim);
     }
@@ -1020,7 +1020,7 @@ namespace Dune {
     //! count elements by iterating over grid and compare
     //! entities of given codim with given type
     template <int codim>
-    int countElements( NewGeometryType type ) const
+    int countElements( GeometryType type ) const
     {
       typedef typename Traits :: template Codim <codim> ::
       template Partition<All_Partition> :: Iterator IteratorType;

@@ -140,7 +140,7 @@
 
    @code
    template<int dimension, class CoordType>
-   VirtualRefinement<dimension, CoordType> &buildRefinement(NewGeometryType geometryType, NewGeometryType coerceTo);
+   VirtualRefinement<dimension, CoordType> &buildRefinement(GeometryType geometryType, GeometryType coerceTo);
    @endcode
 
    It is expected that you know the dimension and the coordinate type
@@ -208,7 +208,7 @@
     refinementvirtual.cc.
    - <strong>Layer 4</strong> defines function
     buildRefinement(geometryType, coerceTo), which returns the right
-    refinement for a runtime-determined NewGeometryType.  It is also
+    refinement for a runtime-determined GeometryType.  It is also
     located in refinementvirtual.cc
 
    @section Implementation
@@ -252,7 +252,7 @@
 
    The template function buildRefinement() has to be specialized for
    each dimension.  It makes no sense to test for
-   geometryType==NewGeometryType::prism when dimension==2.  But this
+   geometryType==GeometryType::prism when dimension==2.  But this
    way we run into a limitation of C++: we can't do partial function
    specialisation.
 
@@ -356,8 +356,8 @@ namespace Dune {
 
   template<int dimension, class CoordType>
   VirtualRefinement<dimension, CoordType> &
-  buildRefinement(NewGeometryType geometryType,
-                  NewGeometryType coerceTo);
+  buildRefinement(GeometryType geometryType,
+                  GeometryType coerceTo);
 
 } // namespace Dune
 
