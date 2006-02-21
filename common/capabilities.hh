@@ -35,6 +35,18 @@ namespace Dune
       static const bool v = false;
     };
 
+    template<class Grid>
+    struct isLevelwiseConforming
+    {
+      static const bool v = false;
+    };
+
+    template<class Grid>
+    struct hasHangingNodes
+    {
+      static const bool v = false;
+    };
+
     /*
        forward
        Capabilities::Something<const Grid>
@@ -58,6 +70,18 @@ namespace Dune
     struct isParallel<const Grid>
     {
       static const bool v = Dune::Capabilities::isParallel<Grid>::v;
+    };
+
+    template<class Grid>
+    struct isLevelwiseConforming<const Grid>
+    {
+      static const bool v = Dune::Capabilities::isLevelwiseConforming<Grid>::v;
+    };
+
+    template<class Grid>
+    struct hasHangingNodes<const Grid>
+    {
+      static const bool v = Dune::Capabilities::hasHangingNodes<Grid>::v;
     };
 
   }
