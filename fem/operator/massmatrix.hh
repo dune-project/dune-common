@@ -154,25 +154,17 @@ namespace Dune {
    * \todo Giving the quadrature order as a template parameter is
    * a hack.  It would be better to determine the optimal order automatically.
    */
-  template <class FunctionSpaceType, int blocksize, int polOrd>
+  template <class GridType, int blocksize, int polOrd>
   class MassMatrix {
 
-    //! The grid
-    typedef typename FunctionSpaceType::GridType GridType;
+    enum {dim = GridType::dimension};
+
+    enum {elementOrder = 1};
 
     typedef typename GridType::template Codim<0>::Entity EntityType;
 
     //!
     typedef FieldMatrix<double, blocksize, blocksize> MatrixBlock;
-
-    //! ???
-    typedef typename FunctionSpaceType::JacobianRangeType JacobianRange;
-
-    //! ???
-    typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
-
-    typedef typename FunctionSpaceType::RangeType RangeType;
-
 
   public:
 
@@ -180,17 +172,12 @@ namespace Dune {
     BCRSMatrix<MatrixBlock>* matrix_;
 
     /** \todo Does actually belong into the base class */
-    const GridType* grid;
-
-    /** \todo Does actually belong into the base class */
-    const FunctionSpaceType& functionSpace_;
+    const GridType* grid_;
 
     //! ???
-    MassMatrix(const FunctionSpaceType &f) :
-      functionSpace_(f)
-    {
-      grid = &f.grid();
-    }
+    MassMatrix(const GridType &grid) :
+      grid_(&grid)
+    {}
 
     //! Returns the actual matrix if it is assembled
     const BCRSMatrix<MatrixBlock>* getMatrix() const {
@@ -198,26 +185,26 @@ namespace Dune {
       return this->matrix_;
     }
 
-    /** \todo Generalize this to higher-order spaces */
     void getNeighborsPerVertex(MatrixIndexSet& nb) {
 
       int i, j;
-      int n = functionSpace_.size();
+      const typename GridType::Traits::LevelIndexSet& indexSet = grid_->levelIndexSet(grid_->maxLevel());
+      int n = indexSet.size(dim);
 
       nb.resize(n, n);
 
       typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
-      LevelIterator it = grid->template lbegin<0>( grid->maxLevel() );
-      LevelIterator endit = grid->template lend<0> ( grid->maxLevel() );
+      LevelIterator it = grid_->template lbegin<0>( grid_->maxLevel() );
+      LevelIterator endit = grid_->template lend<0> ( grid_->maxLevel() );
 
       for (; it!=endit; ++it) {
 
-        for (i=0; i<it->template count<blocksize>(); i++) {
+        for (i=0; i<it->template count<dim>(); i++) {
 
-          for (j=0; j<it->template count<blocksize>(); j++) {
+          for (j=0; j<it->template count<dim>(); j++) {
 
-            int iIdx = it->template subIndex<blocksize>(i);
-            int jIdx = it->template subIndex<blocksize>(j);
+            int iIdx = indexSet.template subIndex<dim>(*it, i);
+            int jIdx = indexSet.template subIndex<dim>(*it, j);
 
             nb.add(iIdx, jIdx);
 
@@ -232,9 +219,9 @@ namespace Dune {
     void assembleMatrix() {
 
       typedef typename GridType::template Codim<0>::LevelIterator LevelIterator;
-      typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
 
-      int n = functionSpace_.size();
+      const typename GridType::Traits::LevelIndexSet& indexSet = grid_->levelIndexSet(grid_->maxLevel());
+      int n = indexSet.size(GridType::dimension);
 
       MatrixIndexSet neighborsPerVertex;
       getNeighborsPerVertex(neighborsPerVertex);
@@ -244,17 +231,20 @@ namespace Dune {
       neighborsPerVertex.exportIdx(*matrix_);
       (*matrix_) = 0;
 
-      LevelIterator it = grid->template lbegin<0>( grid->maxLevel() );
-      LevelIterator endit = grid->template lend<0> ( grid->maxLevel() );
+      LevelIterator it = grid_->template lbegin<0>( grid_->maxLevel() );
+      LevelIterator endit = grid_->template lend<0> ( grid_->maxLevel() );
       enum {maxnumOfBaseFct = 30};
 
       Matrix<MatrixBlock> mat;
 
       for( ; it != endit; ++it ) {
 
-        const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( *it );
-        const int numOfBaseFct = baseSet.numBaseFunctions();
+        //                 const BaseFunctionSetType & baseSet = functionSpace_.getBaseFunctionSet( *it );
+        //                 const int numOfBaseFct = baseSet.numBaseFunctions();
+        const LagrangeShapeFunctionSet<double, double, dim> & baseSet
+          = Dune::LagrangeShapeFunctions<double, double, dim>::general(it->geometry().type(), elementOrder);
 
+        const int numOfBaseFct = baseSet.size();
         //printf("%d base functions on element\n", numOfBaseFct);
         mat.resize(numOfBaseFct, numOfBaseFct);
         // setup matrix
@@ -262,12 +252,12 @@ namespace Dune {
 
         for(int i=0; i<numOfBaseFct; i++) {
 
-          int row = functionSpace_.mapToGlobal( *it , i );
-          //int row = it->template subIndex<dim>(i);
+          //int row = functionSpace_.mapToGlobal( *it , i );
+          int row = indexSet.template subIndex<dim>(*it,i);
           for (int j=0; j<numOfBaseFct; j++ ) {
 
-            int col = functionSpace_.mapToGlobal( *it , j );
-            //int col = it->template subIndex<dim>(j);
+            //int col = functionSpace_.mapToGlobal( *it , j );
+            int col = indexSet.template subIndex<dim>(*it,j);
             (*matrix_)[row][col] += mat[i][j];
 
           }
@@ -281,11 +271,8 @@ namespace Dune {
     void getLocalMatrix( EntityType &entity, const int matSize, MatrixType& mat) const
     {
       int i,j;
-      const int dim = GridType::dimension;
-      typedef typename FunctionSpaceType::BaseFunctionSetType BaseFunctionSetType;
-      const BaseFunctionSetType & baseSet
-        = this->functionSpace_.getBaseFunctionSet( entity );
-
+      const LagrangeShapeFunctionSet<double, double, dim> & baseSet
+        = Dune::LagrangeShapeFunctions<double, double, dim>::general(entity.geometry().type(), elementOrder);
       // Clear local scalar matrix
       Matrix<double> scalarMat(matSize, matSize);
       for(i=0; i<matSize; i++)
@@ -303,9 +290,9 @@ namespace Dune {
         // The factor in the integral transformation formula
         const double integrationElement = entity.geometry().integrationElement(quadPos);
 
-        RangeType v[matSize];
+        double v[matSize];
         for(i=0; i<matSize; i++)
-          baseSet.eval(i,quadPos,v[i]);
+          v[i] = baseSet[i].evaluateFunction(0,quadPos);
 
         for(i=0; i<matSize; i++)
           for (int j=0; j<=i; j++ )

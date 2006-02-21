@@ -34,7 +34,7 @@ namespace Dune
 
   template <int mydim, int cdim, class GridImp>
   inline AlbertaGridGeometry<mydim,cdim,GridImp>::
-  AlbertaGridGeometry() : myGeomType_(NewGeometryType::simplex,mydim)
+  AlbertaGridGeometry() : myGeomType_(GeometryType::simplex,mydim)
   {
     // make empty element
     initGeom();
@@ -233,7 +233,7 @@ namespace Dune
   }
 
   template <int mydim, int cdim, class GridImp>
-  inline const NewGeometryType & AlbertaGridGeometry<mydim,cdim,GridImp>::type() const
+  inline const GeometryType & AlbertaGridGeometry<mydim,cdim,GridImp>::type() const
   {
     return myGeomType_;
   }
@@ -3181,7 +3181,7 @@ namespace Dune
   {
     // stored is the dim, where is the codim
     for(int i=dim; i>= 0; i--)
-      geomTypes_[dim-i][0] = NewGeometryType(NewGeometryType::simplex,i);
+      geomTypes_[dim-i][0] = GeometryType(GeometryType::simplex,i);
 
     for(int i=0; i<AlbertHelp::numOfElNumVec; i++) dofvecs_.elNumbers[i] = 0;
     dofvecs_.elNewCheck = 0;
@@ -3225,7 +3225,7 @@ namespace Dune
   {
     // stored is the dim, where is the codim
     for(int i=dim; i>= 0; i--)
-      geomTypes_[dim-i][0] = NewGeometryType(NewGeometryType::simplex,i);
+      geomTypes_[dim-i][0] = GeometryType(GeometryType::simplex,i);
 
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
@@ -3281,7 +3281,7 @@ namespace Dune
     , sizeCache_ (0)
   {
     for(int i=dim; i>= 0; i--)
-      geomTypes_[dim-i][0] = NewGeometryType(NewGeometryType::simplex,i);
+      geomTypes_[dim-i][0] = GeometryType(GeometryType::simplex,i);
 
     assert(dimworld == DIM_OF_WORLD);
     assert(dim      == DIM);
@@ -4066,7 +4066,7 @@ namespace Dune
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
     if( (level > maxlevel_) || (level < 0) ) return 0;
-    assert( this->levelIndexSet(level).size(codim,NewGeometryType(NewGeometryType::simplex,codim) )
+    assert( this->levelIndexSet(level).size(codim,GeometryType(GeometryType::simplex,codim) )
             == sizeCache_->size(level,codim) );
     assert( sizeCache_ );
     return sizeCache_->size(level,codim);
@@ -4074,13 +4074,13 @@ namespace Dune
 
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::size (int level, int codim, NewGeometryType type) const
+  inline int AlbertaGrid < dim, dimworld >::size (int level, int codim, GeometryType type) const
   {
     return type.isSimplex() ? this->size(level,codim) : 0;
   }
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::size (int codim, NewGeometryType type) const
+  inline int AlbertaGrid < dim, dimworld >::size (int codim, GeometryType type) const
   {
     return type.isSimplex() ? this->size(codim) : 0;
   }
@@ -4088,7 +4088,7 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int codim) const
   {
-    assert( this->leafIndexSet().size(codim,NewGeometryType(NewGeometryType::simplex,codim) )
+    assert( this->leafIndexSet().size(codim,GeometryType(GeometryType::simplex,codim) )
             == sizeCache_->size(codim) );
     assert( sizeCache_ );
     return sizeCache_->size(codim);

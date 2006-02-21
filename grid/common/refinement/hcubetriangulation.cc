@@ -43,7 +43,7 @@ namespace Dune {
 
     /*! @brief This namespace contains the @ref Refinement
                implementation for triangulating hypercubes
-               (NewGeometryType::cube -> NewGeometryType::simplex)
+               (GeometryType::cube -> GeometryType::simplex)
 
        See @ref HCubeTriangulation.
      */
@@ -374,8 +374,8 @@ namespace Dune {
         typedef typename GridImp::BackendRefinement BackendRefinement;
         typedef typename BackendRefinement::template Codim<dimension-mydimension>::SubEntityIterator BackendIterator;
       public:
-        NewGeometryType type() const
-        { return NewGeometryType(NewGeometryType::simplex, mydimension); }
+        GeometryType type() const
+        { return GeometryType(GeometryType::simplex, mydimension); }
 
         int corners() const
         { return mydimension + 1; }
@@ -470,7 +470,7 @@ namespace Dune {
     //
 
     template<class CoordType, int dim>
-    struct Traits<NewGeometryType::cube, CoordType, NewGeometryType::simplex, dim>
+    struct Traits<GeometryType::cube, CoordType, GeometryType::simplex, dim>
     {
       typedef HCubeTriangulation::RefinementImp<dim, CoordType> Imp;
     };

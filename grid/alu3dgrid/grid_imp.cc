@@ -212,7 +212,7 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline int ALU3dGrid<dim, dimworld, elType>::size(int codim, NewGeometryType type) const
+  inline int ALU3dGrid<dim, dimworld, elType>::size(int codim, GeometryType type) const
   {
     if(elType == tetra) if(!type.isSimplex()) return 0;
     if(elType == hexa ) if(!type.isCube   ()) return 0;

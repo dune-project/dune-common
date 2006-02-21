@@ -33,7 +33,7 @@ namespace Dune {
     typedef typename GridType :: template Codim<0> :: Entity EntityType;
     IteratorType endit  = gridPart.template end<0>();
     for(IteratorType it = gridPart.template begin<0>(); it != endit; ++it) {
-      NewGeometryType geo = (*it).geometry().type(); // Hack
+      GeometryType geo = (*it).geometry().type(); // Hack
       int dimension = static_cast<int>( EntityType::mydimension);
       GeometryIdentifier::IdentifierType id =
         GeometryIdentifier::fromGeo(dimension, geo);
@@ -76,7 +76,7 @@ namespace Dune {
   getBaseFunctionSet (EntityType &en) const
   {
 
-    NewGeometryType geo =  en.geometry().type();
+    GeometryType geo =  en.geometry().type();
     int dimension = static_cast<int>(EntityType::mydimension);
     assert(GeometryIdentifier::fromGeo(dimension,geo)<(int) baseFuncSet_.size());
     assert(GeometryIdentifier::fromGeo(dimension, geo) >= 0);

@@ -18,7 +18,7 @@ namespace Dune {
     // initialise your basefunction set with all Geometry types found in mesh
     IteratorType endit = spc.end();
     for (IteratorType it = spc.begin(); it != endit; ++it) {
-      NewGeometryType geo = it->geometry().type();
+      GeometryType geo = it->geometry().type();
       const int dimension =
         static_cast<int>(IteratorType::Entity::mydimension);
       GeometryIdentifier::IdentifierType id =

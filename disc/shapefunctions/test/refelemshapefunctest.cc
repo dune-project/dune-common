@@ -16,10 +16,10 @@ using namespace Dune;
 
 int main (int argc, char *argv[])
 {
-  Dune::NewGeometryType cube2d(Dune::NewGeometryType::cube, 2);
-  Dune::NewGeometryType cube1d(Dune::NewGeometryType::cube, 1);
+  GeometryType cube2d(GeometryType::cube, 2);
+  GeometryType cube1d(GeometryType::cube, 1);
 
   ReferenceElements<double,2>::general(cube2d).subEntity(0,1,0,2);
 
-  Dune::LagrangeShapeFunctions<double, double, 1>::general(cube1d,1);
+  LagrangeShapeFunctions<double, double, 1>::general(cube1d,1);
 }

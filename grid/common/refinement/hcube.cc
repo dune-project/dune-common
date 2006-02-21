@@ -60,7 +60,7 @@ namespace Dune {
   namespace RefinementImp {
 
     /*! @brief This namespace contains the @ref Refinement implementation
-       for hypercubes (NewGeometryType::cube).
+       for hypercubes (GeometryType::cube).
 
        See @ref HCubeRefinement.
      */
@@ -384,7 +384,7 @@ namespace Dune {
     //
 
     template<class CoordType, int dim>
-    struct Traits<NewGeometryType::cube, CoordType, NewGeometryType::cube, dim>
+    struct Traits<GeometryType::cube, CoordType, GeometryType::cube, dim>
     {
       typedef HCube::RefinementImp<dim, CoordType> Imp;
     };
