@@ -8,7 +8,7 @@
 #include <iostream>
 #include "common/fvector.hh"
 #include "common/exceptions.hh"
-#include "grid/common/grid.hh"
+#include "common/geometrytype.hh"
 
 /**
  * @file dune/disc/shapefunctions/shapefunctions.hh
