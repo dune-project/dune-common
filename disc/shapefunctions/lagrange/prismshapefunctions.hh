@@ -6,7 +6,7 @@
 #include <iostream>
 #include "common/fvector.hh"
 #include "common/exceptions.hh"
-#include "grid/common/geometrytype.hh"
+#include "common/geometrytype.hh"
 
 /**
  * @file dune/disc/shapefunctions/lagrange/prismshapefunctions.hh
