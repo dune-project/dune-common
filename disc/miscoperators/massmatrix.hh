@@ -98,7 +98,7 @@ namespace Dune
     void assemble (const Entity& e, int k=1)
     {
       // extract some important parameters
-      NewGeometryType gt = e.geometry().type();
+      GeometryType gt = e.geometry().type();
       const typename LagrangeShapeFunctionSetContainer<DT,RT,dim>::value_type& sfs
         = LagrangeShapeFunctions<DT,RT,dim>::general(gt,k);
 
