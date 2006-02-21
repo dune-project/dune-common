@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "dune/common/timer.hh"
 #include "dune/common/fvector.hh"
 #include "dune/common/exceptions.hh"
 #include "dune/common/exceptions.hh"
@@ -426,6 +427,7 @@ namespace Dune
       extraDOFs = 0;
 
       // resize the S vector needed for detecting hanging nodes
+      watch.reset();
       hanging.resize(vertexmapper.size());
       std::vector<unsigned char> S(vertexmapper.size());
       for (int i=0; i<vertexmapper.size(); i++)
@@ -434,95 +436,106 @@ namespace Dune
         hanging[i] = false;
       }
 
-      // LOOP 1 : Prepare hanging node detection
-      //          collect links of border vertices
-      Iterator eendit = indexset.template end<0,All_Partition>();
-      for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
+      // do the following only if grid may have hanging nodes
+      if (Dune::Capabilities::template hasHangingNodes<G>::v)
       {
-        Dune::NewGeometryType gt = it->geometry().type();
-        const typename Dune::ReferenceElementContainer<DT,n>::value_type&
-        refelem = ReferenceElements<DT,n>::general(gt);
-
-        // compute S value in vertex
-        for (int i=0; i<refelem.size(n); i++)
+        // LOOP 1 : Prepare hanging node detection
+        Iterator eendit = indexset.template end<0,All_Partition>();
+        for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
         {
-          int alpha = vertexmapper.template map<n>(*it,i);
-          if (S[alpha]>it->level()) S[alpha] = it->level();                 // compute minimum
-        }
-      }
+          Dune::NewGeometryType gt = it->geometry().type();
+          const typename Dune::ReferenceElementContainer<DT,n>::value_type&
+          refelem = ReferenceElements<DT,n>::general(gt);
 
-      // LOOP 2 : second stage of detecting hanging nodes
-      for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
-      {
-        Dune::NewGeometryType gt = it->geometry().type();
-        const typename Dune::ReferenceElementContainer<DT,n>::value_type&
-        refelem = ReferenceElements<DT,n>::general(gt);
-
-        // detect hanging nodes
-        IntersectionIterator endiit = it->iend();
-        for (IntersectionIterator iit = it->ibegin(); iit!=endiit; ++iit)
-          if (iit.neighbor())
+          // compute S value in vertex
+          for (int i=0; i<refelem.size(n); i++)
           {
-            // check if neighbor is on lower level
-            const EEntityPointer outside = iit.outside();
-            if (it->level()<=outside->level()) continue;
-
-            // loop over all vertices of this face
-            for (int j=0; j<refelem.size(iit.numberInSelf(),1,n); j++)
-            {
-              int alpha = vertexmapper.template map<n>(*it,refelem.subEntity(iit.numberInSelf(),1,j,n));
-              if (S[alpha]==it->level())
-                hanging[alpha] = true;
-            }
+            int alpha = vertexmapper.template map<n>(*it,i);
+            if (S[alpha]>it->level()) S[alpha] = it->level();                       // compute minimum
           }
-      }
-
-      // local to global maps
-      int l2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
-      int fl2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
-
-      // LOOP 3 : determine additional links due to hanging nodes
-      for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
-      {
-        Dune::NewGeometryType gt = it->geometry().type();
-        const typename Dune::ReferenceElementContainer<DT,n>::value_type&
-        refelem = ReferenceElements<DT,n>::general(gt);
-
-        // build local to global map
-        bool hasHangingNodes = false;           // flag set to true if this element has hanging nodes
-        for (int i=0; i<refelem.size(n); i++)
-        {
-          l2g[i] = vertexmapper.template map<n>(*it,i);
-          if (hanging[l2g[i]]) hasHangingNodes=true;
         }
-        if (!hasHangingNodes) continue;
 
-        // handle father element if hanging nodes were detected
-        // get father element
-        const EEntityPointer father = it->father();
+        // LOOP 2 : second stage of detecting hanging nodes
+        for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
+        {
+          Dune::NewGeometryType gt = it->geometry().type();
+          const typename Dune::ReferenceElementContainer<DT,n>::value_type&
+          refelem = ReferenceElements<DT,n>::general(gt);
 
-        // build local to global map for father
-        for (int i=0; i<refelem.size(n); i++)
-          fl2g[i] = vertexmapper.template map<n>(*father,i);
-
-        // a map that inverts l2g
-        std::map<int,int> g2l;
-        for (int i=0; i<refelem.size(n); i++)
-          g2l[l2g[i]] = i;
-
-        // connect all fine nodes to all coarse nodes
-        for (int i=0; i<refelem.size(n); i++)           // nodes in *it
-          for (int j=0; j<refelem.size(n); j++)               // nodes in *father
-            if (g2l.find(fl2g[j])==g2l.end())
+          // detect hanging nodes
+          IntersectionIterator endiit = it->iend();
+          for (IntersectionIterator iit = it->ibegin(); iit!=endiit; ++iit)
+            if (iit.neighbor())
             {
-              links.insert(P1OperatorLink(l2g[i],fl2g[j]));
-              links.insert(P1OperatorLink(fl2g[j],l2g[i]));
-              //                                  std::cout << "link" << " gi=" << l2g[i] << " gj=" << fl2g[j] << std::endl;
-              //                                  std::cout << "link" << " gi=" << fl2g[j] << " gj=" << l2g[i] << std::endl;
+              // check if neighbor is on lower level
+              const EEntityPointer outside = iit.outside();
+              if (it->level()<=outside->level()) continue;
+
+              // loop over all vertices of this face
+              for (int j=0; j<refelem.size(iit.numberInSelf(),1,n); j++)
+              {
+                int alpha = vertexmapper.template map<n>(*it,refelem.subEntity(iit.numberInSelf(),1,j,n));
+                if (S[alpha]==it->level())
+                  hanging[alpha] = true;
+              }
             }
+        }
+
+        // local to global maps
+        int l2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+        int fl2g[Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize];
+
+        // LOOP 3 : determine additional links due to hanging nodes
+        for (Iterator it = indexset.template begin<0,All_Partition>(); it!=eendit; ++it)
+        {
+          Dune::NewGeometryType gt = it->geometry().type();
+          const typename Dune::ReferenceElementContainer<DT,n>::value_type&
+          refelem = ReferenceElements<DT,n>::general(gt);
+
+          // build local to global map
+          bool hasHangingNodes = false;                 // flag set to true if this element has hanging nodes
+          for (int i=0; i<refelem.size(n); i++)
+          {
+            l2g[i] = vertexmapper.template map<n>(*it,i);
+            if (hanging[l2g[i]]) hasHangingNodes=true;
+          }
+          if (!hasHangingNodes) continue;
+
+          // handle father element if hanging nodes were detected
+          // get father element
+          const EEntityPointer father = it->father();
+
+          // build local to global map for father
+          for (int i=0; i<refelem.size(n); i++)
+            fl2g[i] = vertexmapper.template map<n>(*father,i);
+
+          // a map that inverts l2g
+          std::map<int,int> g2l;
+          for (int i=0; i<refelem.size(n); i++)
+            g2l[l2g[i]] = i;
+
+          // connect all fine nodes to all coarse nodes
+          for (int i=0; i<refelem.size(n); i++)                 // nodes in *it
+            for (int j=0; j<refelem.size(n); j++)                     // nodes in *father
+              if (g2l.find(fl2g[j])==g2l.end())
+              {
+                links.insert(P1OperatorLink(l2g[i],fl2g[j]));
+                links.insert(P1OperatorLink(fl2g[j],l2g[i]));
+                //                                std::cout << "link" << " gi=" << l2g[i] << " gj=" << fl2g[j] << std::endl;
+                //                                std::cout << "link" << " gi=" << fl2g[j] << " gj=" << l2g[i] << std::endl;
+              }
+        }
       }
+
+      // count hanging nodes
+      hangingnodes = 0;
+      for (int i=0; i<vertexmapper.size(); i++)
+        if (hanging[i]) hangingnodes++;
+
+      std::cout << "=== P1OperatorBase hanging node detection + add links " <<  watch.elapsed() << std::endl;
 
       // compute additional links due to extended overlap
+      watch.reset();
       if (extendOverlap)
       {
         // set of neighbors in global ids for border vertices
@@ -545,11 +558,7 @@ namespace Dune
 
       // Note: links contains now also connections that are standard.
       // So below we have throw out these connections again!
-
-      // count hanging nodes, can be used whether grid has hanging nodes at all
-      hangingnodes = 0;
-      for (int i=0; i<vertexmapper.size(); i++)
-        if (hanging[i]) hangingnodes++;
+      std::cout << "=== P1OperatorBase parallel extend overlap " <<  watch.elapsed() << std::endl;
 
       return true;
     }
@@ -675,6 +684,7 @@ namespace Dune
       for (int i=0; i<allmapper.size(); i++) visited[i] = false;
 
       // LOOP 4 : Compute row sizes
+      watch.reset();
       Iterator eendit = is.template end<0,All_Partition>();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
@@ -729,11 +739,13 @@ namespace Dune
 
       // now the row sizes have been set
       A.endrowsizes();
+      std::cout << "=== P1OperatorBase compute row sizes " <<  watch.elapsed() << std::endl;
 
       // clear the flags for the next round, actually that is not necessary because addindex takes care of this
       for (int i=0; i<allmapper.size(); i++) visited[i] = false;
 
       // LOOP 5 : insert the nonzeros
+      watch.reset();
       for (Iterator it = is.template begin<0,All_Partition>(); it!=eendit; ++it)
       {
         Dune::NewGeometryType gt = it->geometry().type();
@@ -783,6 +795,7 @@ namespace Dune
 
       // now the matrix is ready for use
       A.endindices();
+      std::cout << "=== P1OperatorBase index insertion " <<  watch.elapsed() << std::endl;
 
       // delete additional links
       links.clear();
@@ -820,6 +833,7 @@ namespace Dune
     }
 
   protected:
+    Timer watch;
     const G& grid;
     const IS& is;
     LC lc;
@@ -944,8 +958,10 @@ namespace Dune
         DUNE_THROW(MathError,"P1OperatorAssembler::assemble(): size mismatch");
 
       // clear global stiffness matrix and right hand side
+      this->watch.reset();
       this->A = 0;
       *f = 0;
+      std::cout << "=== P1OperatorBase clear matrix " <<  this->watch.elapsed() << std::endl;
 
       // allocate flag vector to hold flags for essential boundary conditions
       std::vector<BCBlockType> essential(this->vertexmapper.size());
@@ -1422,6 +1438,98 @@ namespace Dune
     {}
   };
 
+
+
+  /*! @brief Base class for local P1 assemblers
+   */
+  template<class DT, class RT, int n, int m>
+  class P1LocalStiffness
+  {
+  protected:
+    // some other sizes
+    enum {SIZE=Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize, SIZEF=SIZE};
+
+  public:
+    // types for matrics, vectors and boundary conditions
+    typedef FieldMatrix<RT,m,m> MBlockType;     // one entry in the stiffness matrix
+    typedef FieldVector<RT,m> VBlockType;       // one entry in the global vectors
+    typedef FixedArray<BoundaryConditions::Flags,m> BCBlockType;         // componentwise boundary conditions
+
+    //! Constructor
+    P1LocalStiffness ()
+    {
+      currentsize = 0;
+    }
+
+    // print contents of local stiffness matrix
+    void print (std::ostream& s, int width, int precision)
+    {
+      // set the output format
+      s.setf(std::ios_base::scientific, std::ios_base::floatfield);
+      int oldprec = s.precision();
+      s.precision(precision);
+
+      for (int i=0; i<currentsize; i++)
+      {
+        s << "FEM";              // start a new row
+        s << " ";                // space in front of each entry
+        s.width(4);              // set width for counter
+        s << i;                  // number of first entry in a line
+        for (int j=0; j<currentsize; j++)
+        {
+          s << " ";                         // space in front of each entry
+          s.width(width);                   // set width for each entry anew
+          s << A[i][j];                     // yeah, the number !
+        }
+        s << " ";                   // space in front of each entry
+        s.width(width);             // set width for each entry anew
+        s << b[i];
+        s << " ";                   // space in front of each entry
+        s.width(width);             // set width for each entry anew
+        s << bctype[i][0];
+        s << std::endl;          // start a new line
+      }
+
+
+      // reset the output format
+      s.precision(oldprec);
+      s.setf(std::ios_base::fixed, std::ios_base::floatfield);
+    }
+
+    //! access local stiffness matrix
+    /*! Access elements of the local stiffness matrix. Elements are
+       undefined without prior call to the assemble method.
+     */
+    const MBlockType& mat (int i, int j)
+    {
+      return A[i][j];
+    }
+
+    //! access right hand side
+    /*! Access elements of the right hand side vector. Elements are
+       undefined without prior call to the assemble method.
+     */
+    const VBlockType& rhs (int i)
+    {
+      return b[i];
+    }
+
+    //! access boundary condition for each dof
+    /*! Access boundary condition type for each degree of freedom. Elements are
+       undefined without prior call to the assemble method.
+     */
+    const BCBlockType bc (int i) const
+    {
+      return bctype[i];
+    }
+
+  protected:
+    // assembled data
+    int currentsize;
+    MBlockType A[SIZE][SIZE];
+    VBlockType b[SIZE];
+    BCBlockType bctype[SIZE];
+  };
 
   /** @} */
 
