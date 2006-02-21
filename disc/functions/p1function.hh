@@ -557,6 +557,7 @@ namespace Dune
        @param[in] comp number of component to be evaluated
        @param[in] x    position to be evaluated
        \return         value of the component
+       \todo Not implemented yet!
      */
     virtual RT eval (int comp, const Dune::FieldVector<DT,n>& x) const
     {
@@ -568,6 +569,7 @@ namespace Dune
     /*! Evaluation function for all components at once.
        @param[in]  x    position to be evaluated
        @param[out] y    result vector to be filled
+       \todo Not implemented yet!
      */
     virtual void evalall (const Dune::FieldVector<DT,n>& x, Dune::FieldVector<RT,m>& y) const
     {
@@ -580,6 +582,7 @@ namespace Dune
        @param[in]  d       vector giving order of derivative for each variable
        @param[in]  x       position where derivative is to be evaluated
        \return             value of the derivative
+       \todo Not implemented yet!
      */
     virtual RT derivative (int comp, const Dune::FieldVector<int,n>& d, const Dune::FieldVector<DT,n>& x) const
     {
@@ -698,6 +701,7 @@ namespace Dune
       }
     }
 
+    /** \todo Please doc me! */
     void interpolate (const P0Function<G,RT,IS,m>& u)
     {
       typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
