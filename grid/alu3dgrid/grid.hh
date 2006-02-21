@@ -683,6 +683,18 @@ namespace Dune {
     struct isParallel<const ALU3dGrid<dim, dimw, elType> > {
       static const bool v = true;
     };
+
+    template<int dim, int dimw>
+    struct isLevelwiseConforming< ALU3dGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+    template<int dim, int dimw>
+    struct hasHangingNodes< ALU3dGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
   } // end namespace Capabilities
 
 } // end namespace Dune

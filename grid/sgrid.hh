@@ -1578,6 +1578,18 @@ namespace Dune {
       static const bool v = true;
     };
 
+    template<int dim, int dimw>
+    struct isLevelwiseConforming< SGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+    template<int dim, int dimw>
+    struct hasHangingNodes< SGrid<dim,dimw> >
+    {
+      static const bool v = false;
+    };
+
   } // end namespace Capabilities
 
 } // end namespace Dune

@@ -462,6 +462,18 @@ namespace Dune {
     };
 #endif
 
+    template<int dim, int dimw>
+    struct isLevelwiseConforming< OneDGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+    template<int dim, int dimw>
+    struct hasHangingNodes< OneDGrid<dim,dimw> >
+    {
+      static const bool v = false;
+    };
+
   }
 
 } // namespace Dune

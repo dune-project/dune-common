@@ -1920,6 +1920,18 @@ namespace Dune
     {
       static const bool v = true;
     };
+
+    template<int dim, int dimw>
+    struct isLevelwiseConforming< AlbertaGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+    template<int dim, int dimw>
+    struct hasHangingNodes< AlbertaGrid<dim,dimw> >
+    {
+      static const bool v = false;
+    };
   } // end namespace Capabilities
 
 } // namespace Dune

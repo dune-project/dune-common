@@ -2168,16 +2168,18 @@ namespace Dune {
     YaspGrid (MPI_Comm comm, Dune::FieldVector<ctype, dim> L,
               Dune::FieldVector<int, dim> s,
               Dune::FieldVector<bool, dim> periodic, int overlap)
-      : MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap), ccobj(comm), theleafindexset(*this), theglobalidset(*this)
+      : MultiYGrid<dim,ctype>(comm,L,s,periodic,overlap), ccobj(comm)
 #else
     YaspGrid (Dune::FieldVector<ctype, dim> L,
               Dune::FieldVector<int, dim> s,
               Dune::FieldVector<bool, dim> periodic, int overlap)
-      : MultiYGrid<dim,ctype>(L,s,periodic,overlap), theleafindexset(*this), theglobalidset(*this)
+      : MultiYGrid<dim,ctype>(L,s,periodic,overlap)
 #endif
     {
       setsizes();
       indexsets.push_back( new YaspLevelIndexSet<const YaspGrid<dim,dimworld> >(*this,0) );
+      theleafindexset.push_back( new YaspLeafIndexSet<const YaspGrid<dim,dimworld> >(*this) );
+      theglobalidset.push_back( new YaspGlobalIdSet<const YaspGrid<dim,dimworld> >(*this) );
     }
 
     /*! Return maximum level defined in this grid. Levels are numbered
@@ -2712,12 +2714,12 @@ namespace Dune {
     // The new index sets from DDM 11.07.2005
     const typename Traits::GlobalIdSet& globalIdSet() const
     {
-      return theglobalidset;
+      return *(theglobalidset[0]);
     }
 
     const typename Traits::LocalIdSet& localIdSet() const
     {
-      return theglobalidset;
+      return *(theglobalidset[0]);
     }
 
     const typename Traits::LevelIndexSet& levelIndexSet(int level) const
@@ -2727,7 +2729,7 @@ namespace Dune {
 
     const typename Traits::LeafIndexSet& leafIndexSet() const
     {
-      return theleafindexset;
+      return *(theleafindexset[0]);
     }
 
 #if HAVE_MPI
@@ -2763,8 +2765,8 @@ namespace Dune {
 #endif
 
     std::vector<YaspLevelIndexSet<const YaspGrid<dim,dimworld> >*> indexsets;
-    YaspLeafIndexSet<const YaspGrid<dim,dimworld> > theleafindexset;
-    YaspGlobalIdSet<const YaspGrid<dim,dimworld> > theglobalidset;
+    std::vector<YaspLeafIndexSet<const YaspGrid<dim,dimworld> >*> theleafindexset;
+    std::vector<YaspGlobalIdSet<const YaspGrid<dim,dimworld> >*> theglobalidset;
 
     // Index classes need access to the real entity
     friend class Dune::YaspLevelIndexSet<const Dune::YaspGrid<dim,dimworld> >;
@@ -2949,6 +2951,18 @@ namespace Dune {
     struct isParallel< YaspGrid<dim,dimw> >
     {
       static const bool v = true;
+    };
+
+    template<int dim, int dimw>
+    struct isLevelwiseConforming< YaspGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
+    template<int dim, int dimw>
+    struct hasHangingNodes< YaspGrid<dim,dimw> >
+    {
+      static const bool v = false;
     };
 
   }
