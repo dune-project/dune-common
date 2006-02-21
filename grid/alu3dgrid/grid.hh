@@ -684,14 +684,14 @@ namespace Dune {
       static const bool v = true;
     };
 
-    template<int dim, int dimw>
-    struct isLevelwiseConforming< ALU3dGrid<dim,dimw> >
+    template<int dim, int dimw, Dune::ALU3dGridElementType elType>
+    struct isLevelwiseConforming< ALU3dGrid<dim,dimw,elType> >
     {
       static const bool v = true;
     };
 
-    template<int dim, int dimw>
-    struct hasHangingNodes< ALU3dGrid<dim,dimw> >
+    template<int dim, int dimw, Dune::ALU3dGridElementType elType>
+    struct hasHangingNodes< ALU3dGrid<dim,dimw,elType> >
     {
       static const bool v = true;
     };
