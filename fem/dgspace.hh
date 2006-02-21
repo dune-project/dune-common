@@ -136,9 +136,9 @@ namespace Dune {
 
   private:
     void setType(MonomialBaseFunctionSet<FunctionSpaceType> & b,
-                 NewGeometryType t) const {};
+                 GeometryType t) const {};
     void setType(OrthonormalBaseFunctionSet<FunctionSpaceType> & b,
-                 NewGeometryType t) const
+                 GeometryType t) const
     {
       b.changeType(t);
     };

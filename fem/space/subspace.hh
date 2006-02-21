@@ -121,7 +121,7 @@ namespace Dune {
     template <class EntityType>
     const BaseFunctionSetType& getBaseFunctionSet(EntityType& en) const
     {
-      NewGeometryType geo = en.geometry().type();
+      GeometryType geo = en.geometry().type();
       int dimension = static_cast<int>(EntityType::mydimension);
 
       assert(baseSetVec_[GeometryIdentifier::fromGeo(dimension, geo)]);

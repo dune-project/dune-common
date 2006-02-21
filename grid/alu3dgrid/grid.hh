@@ -386,10 +386,10 @@ namespace Dune {
     int size (int codim) const;
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, NewGeometryType type) const;
+    int size (int level, int codim, GeometryType type) const;
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, NewGeometryType type) const;
+    int size (int codim, GeometryType type) const;
 
     //! number of grid entities on all levels for given codim
     int global_size (int cd) const ;
@@ -524,7 +524,7 @@ namespace Dune {
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<NewGeometryType>& geomTypes (int codim) const { return geomTypes_[codim]; }
+    const std::vector<GeometryType>& geomTypes (int codim) const { return geomTypes_[codim]; }
 
     //! return reference to org ALU3dGrid
     //! private method, but otherwise we have to friend class all possible
@@ -570,7 +570,7 @@ namespace Dune {
 
     // at the moment the number of different geom types is 1
     enum { numberOfGeomTypes = 1 };
-    std::vector< std::vector<NewGeometryType> > geomTypes_;
+    std::vector< std::vector<GeometryType> > geomTypes_;
 
     // create GeomTypes
     void makeGeomTypes ();

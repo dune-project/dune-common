@@ -803,7 +803,7 @@ namespace Dune {
     typedef ScalarFunctionSpaceImp FunctionSpaceType;
     typedef BaseFunctionInterface<FunctionSpaceType> BaseFunctionType;
   public:
-    LagrangeBaseFunctionFactory(NewGeometryType geo) :
+    LagrangeBaseFunctionFactory(GeometryType geo) :
       BaseFunctionFactory<FunctionSpaceType>(geo)
     {}
 

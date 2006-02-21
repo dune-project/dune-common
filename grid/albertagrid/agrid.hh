@@ -177,7 +177,7 @@ namespace Dune
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
-    const NewGeometryType & type () const;
+    const GeometryType & type () const;
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
     int corners () const;
@@ -311,7 +311,7 @@ namespace Dune
     mutable FieldVector<albertCtype,cdim> tmpU_;
     mutable FieldVector<albertCtype,cdim> tmpZ_;
 
-    const NewGeometryType myGeomType_;
+    const GeometryType myGeomType_;
   };
 
   //******************************************************************
@@ -1532,10 +1532,10 @@ namespace Dune
     int size (int codim) const;
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, NewGeometryType type) const;
+    int size (int level, int codim, GeometryType type) const;
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, NewGeometryType type) const;
+    int size (int codim, GeometryType type) const;
 
     /** dummy collective communication */
     const CollectiveCommunication<AlbertaGrid>& comm () const
@@ -1696,7 +1696,7 @@ namespace Dune
     bool isNoElement( const ALBERTA MACRO_EL * mel) const;
 
     //! returns geometry type vector for codimension
-    const std::vector < NewGeometryType > & geomTypes (int codim) const { return geomTypes_[codim]; }
+    const std::vector < GeometryType > & geomTypes (int codim) const { return geomTypes_[codim]; }
 
   private:
     friend class Conversion<AlbertaGrid<dim, dimworld>, HasObjectStream>;
@@ -1897,7 +1897,7 @@ namespace Dune
     mutable LeafIndexSet* leafIndexSet_;
 
     //! stores geometry types of this grid
-    std::vector < std::vector< NewGeometryType > > geomTypes_;
+    std::vector < std::vector< GeometryType > > geomTypes_;
 
     // stack for storing BOUNDARY objects created during mesh creation
     std::stack < BOUNDARY * > bndStack_;

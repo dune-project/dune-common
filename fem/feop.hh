@@ -224,7 +224,7 @@ namespace Dune {
       DofIteratorType dest_it = dest.dbegin();
       ConstDofIteratorType arg_it = arg.dbegin();
 
-      const NewGeometryType t = en.geometry().type();
+      const GeometryType t = en.geometry().type();
 
       NeighIt endnit = en.iend();
       for(NeighIt nit = en.ibegin(); nit != endnit ; ++nit)
@@ -366,7 +366,7 @@ namespace Dune {
       {
         const EntityType & en = *it;
 
-        const NewGeometryType t = en.geometry().type();
+        const GeometryType t = en.geometry().type();
         NeighIt endnit = en.iend();
         for(NeighIt nit = en.ibegin(); nit != endnit ; ++nit)
         {

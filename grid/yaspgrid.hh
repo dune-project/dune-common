@@ -153,9 +153,9 @@ namespace Dune {
     typedef Geometry<mydim,mydim,GridImp,Dune::YaspGeometry> ReferenceGeometry;
 
     //! return the element type identifier
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      return NewGeometryType(NewGeometryType::cube,mydim);
+      return GeometryType(GeometryType::cube,mydim);
     }
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
@@ -288,9 +288,9 @@ namespace Dune {
     typedef Geometry<mydim,mydim,GridImp,Dune::YaspGeometry> ReferenceGeometry;
 
     //! return the element type identifier
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      return NewGeometryType(NewGeometryType::cube,mydim);
+      return GeometryType(GeometryType::cube,mydim);
     }
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
@@ -405,9 +405,9 @@ namespace Dune {
     typedef typename GridImp::ctype ctype;
 
     //! return the element type identifier
-    NewGeometryType type () const
+    GeometryType type () const
     {
-      return NewGeometryType(NewGeometryType::cube,0);
+      return GeometryType(GeometryType::cube,0);
     }
 
     //! return the number of corners of this element. Corners are numbered 0...n-1
@@ -1875,7 +1875,7 @@ namespace Dune {
     {
       // contains a single element type;
       for (int codim=0; codim<=GridImp::dimension; codim++)
-        mytypes[codim].push_back(NewGeometryType(NewGeometryType::cube,GridImp::dimension-codim));
+        mytypes[codim].push_back(GeometryType(GeometryType::cube,GridImp::dimension-codim));
     }
 
     //! get index of an entity
@@ -1893,13 +1893,13 @@ namespace Dune {
     }
 
     //! get number of entities of given codim, type and level (the level is known to the object)
-    int size (int codim, NewGeometryType type) const
+    int size (int codim, GeometryType type) const
     {
       return grid.size(level,codim);
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<NewGeometryType>& geomTypes (int codim) const
+    const std::vector<GeometryType>& geomTypes (int codim) const
     {
       return mytypes[codim];
     }
@@ -1921,7 +1921,7 @@ namespace Dune {
   private:
     const GridImp& grid;
     int level;
-    std::vector<NewGeometryType> mytypes[GridImp::dimension+1];
+    std::vector<GeometryType> mytypes[GridImp::dimension+1];
   };
 
 
@@ -1953,7 +1953,7 @@ namespace Dune {
     {
       // contains a single element type;
       for (int codim=0; codim<=GridImp::dimension; codim++)
-        mytypes[codim].push_back(NewGeometryType(NewGeometryType::cube,GridImp::dimension-codim));
+        mytypes[codim].push_back(GeometryType(GeometryType::cube,GridImp::dimension-codim));
     }
 
     //! get index of an entity
@@ -1980,13 +1980,13 @@ namespace Dune {
     }
 
     //! get number of entities of given codim, type
-    int size (int codim, NewGeometryType type) const
+    int size (int codim, GeometryType type) const
     {
       return grid.size(grid.maxLevel(),codim);
     }
 
     //! deliver all geometry types used in this grid
-    const std::vector<NewGeometryType>& geomTypes (int codim) const
+    const std::vector<GeometryType>& geomTypes (int codim) const
     {
       return mytypes[codim];
     }
@@ -2008,7 +2008,7 @@ namespace Dune {
   private:
     const GridImp& grid;
     enum { ncodim = RemoveConst<GridImp>::Type::dimension+1 };
-    std::vector<NewGeometryType> mytypes[ncodim];
+    std::vector<GeometryType> mytypes[ncodim];
   };
 
 
@@ -2315,14 +2315,14 @@ namespace Dune {
     }
 
     //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, NewGeometryType type) const
+    int size (int level, int codim, GeometryType type) const
     {
       if (type.isCube()) return sizes[level][codim];
       return 0;
     }
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, NewGeometryType type) const
+    int size (int codim, GeometryType type) const
     {
       return size(maxLevel(),codim,type);
     }

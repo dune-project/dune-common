@@ -71,7 +71,7 @@ namespace Dune
     void estimate (const Entity& e, RT& elementpart)
     {
       // extract some important parameters
-      Dune::NewGeometryType gt = e.geometry().type();
+      Dune::GeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
       DT Zero = 0;
       Dune::FieldVector<DT,n> center = e.geometry().global(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
@@ -112,13 +112,13 @@ namespace Dune
     {
 
       // extract some important parameters
-      NewGeometryType gt = e.geometry().type();
+      GeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
       DT Zero = 0;
       Dune::FieldVector<DT,n> center = e.geometry().global(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
 
       // the edge term
-      NewGeometryType gtface = it.intersectionSelfLocal().type();
+      GeometryType gtface = it.intersectionSelfLocal().type();
       int numberInSelf = it.numberInSelf();
       const Dune::FieldVector<DT,n-1>& facelocal = Dune::ReferenceElements<DT,n-1>::general(gtface).position(0,0);
       FieldVector<DT,n> local = it.intersectionSelfLocal().global(facelocal);
@@ -161,10 +161,10 @@ namespace Dune
         }
 
         // compute coefficients of flux evaluation in neighbor
-        NewGeometryType nbgt = outside->geometry().type();
+        GeometryType nbgt = outside->geometry().type();
         FieldVector<DT,n> nbcenter = outside->geometry().global(ReferenceElements<DT,n>::general(nbgt).position(0,0));
         const typename LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& nbsfs=LagrangeShapeFunctions<DT,RT,n>::general(nbgt,1);
-        NewGeometryType nbgtface = it.intersectionNeighborLocal().type();
+        GeometryType nbgtface = it.intersectionNeighborLocal().type();
         int numberInNeighbor = it.numberInNeighbor();
         const FieldVector<DT,n-1>& nbfacelocal = ReferenceElements<DT,n-1>::general(nbgtface).position(0,0);
         FieldVector<DT,n> nblocal = it.intersectionNeighborLocal().global(nbfacelocal);
@@ -244,7 +244,7 @@ namespace Dune
         assert(it->isLeaf());
 
         // get access to shape functions for P1 elements
-        Dune::NewGeometryType gt = it->geometry().type();
+        Dune::GeometryType gt = it->geometry().type();
         const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
         sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
 

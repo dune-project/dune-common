@@ -84,7 +84,7 @@ namespace Dune {
     }
 
     //! return size of set
-    int size (int codim, NewGeometryType type) const
+    int size (int codim, GeometryType type) const
     {
       return grid_.global_size(codim);
     }
@@ -96,7 +96,7 @@ namespace Dune {
     }
 
     //! return geometry types this set has indices for
-    const std::vector< NewGeometryType > & geomTypes(int codim) const
+    const std::vector< GeometryType > & geomTypes(int codim) const
     {
       // returns all simplex
       return grid_.geomTypes(codim);
