@@ -169,9 +169,11 @@ AC_CONFIG_FILES([Makefile
 	 common/Makefile
 	 common/test/Makefile
 	 disc/Makefile
-	 disc/functions/Makefile
+	 disc/elasticity/Makefile
+         disc/functions/Makefile
 	 disc/groundwater/Makefile
-	 disc/operators/Makefile
+	 disc/miscoperators/Makefile
+         disc/operators/Makefile
 	 disc/shapefunctions/Makefile
 	 disc/shapefunctions/dgspace/Makefile
 	 disc/shapefunctions/lagrange/Makefile

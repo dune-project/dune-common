@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = functions groundwater operators shapefunctions
+SUBDIRS = functions groundwater operators shapefunctions elasticity miscoperators
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libdisc.la
