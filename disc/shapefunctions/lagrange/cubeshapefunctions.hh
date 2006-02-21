@@ -9,7 +9,7 @@
 #include "common/fvector.hh"
 #include "common/exceptions.hh"
 #include "common/misc.hh"
-#include "grid/common/grid.hh"
+#include "common/geometrytype.hh"
 #include "grid/common/referenceelements.hh"
 
 /**

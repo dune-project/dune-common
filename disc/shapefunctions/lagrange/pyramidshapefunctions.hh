@@ -6,7 +6,7 @@
 #include <iostream>
 #include "common/fvector.hh"
 #include "common/exceptions.hh"
-#include "grid/common/grid.hh"
+#include "grid/common/geometrytype.hh"
 
 /**
  * @file dune/disc/shapefunctions/lagrange/pyramidshapefunctions.hh
