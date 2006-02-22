@@ -12,20 +12,14 @@
 #include <vector>
 #include <sstream>
 
-#include "common/fvector.hh"
-#include "common/fmatrix.hh"
 #include "common/exceptions.hh"
 #include "grid/common/grid.hh"
 #include "grid/common/referenceelements.hh"
-#include "istl/operators.hh"
-#include "istl/bvector.hh"
-#include "istl/bcrsmatrix.hh"
+#include "dune/common/geometrytype.hh"
 
 #include "disc/shapefunctions/lagrangeshapefunctions.hh"
-#include "disc/operators/p1operator.hh"
 #include "disc/operators/boundaryconditions.hh"
-#include "disc/functions/p0function.hh"
-#include "disc/functions/p1function.hh"
+#include "disc/operators/localstiffness.hh"
 #include "groundwater.hh"
 
 /**
@@ -66,12 +60,11 @@ namespace Dune
         - RT    type used for return values
    */
   template<class G, class RT>
-  class GroundwaterEquationLocalStiffness : public P1LocalStiffness<typename G::ctype,RT,G::dimension,1>
+  class GroundwaterEquationLocalStiffness : public LocalStiffness<G,RT,1>
   {
     // grid types
     typedef typename G::ctype DT;
     typedef typename G::Traits::template Codim<0>::Entity Entity;
-    typedef typename G::template Codim<0>::EntityPointer EEntityPointer;
     typedef typename G::Traits::IntersectionIterator IntersectionIterator;
 
   public:
@@ -79,15 +72,13 @@ namespace Dune
     // to allocate the correct size of (dense) blocks with a FieldMatrix
     enum {n=G::dimension};
     enum {m=1};
+    enum {SIZE=LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize};
 
     //! Constructor
     GroundwaterEquationLocalStiffness (const GroundwaterEquationParameters<G,RT>& params,
                                        bool procBoundaryAsDirichlet_=true)
-      : problem(params)
-    {
-      this->currentsize = 0;
-      procBoundaryAsDirichlet = procBoundaryAsDirichlet_;
-    }
+      : problem(params),procBoundaryAsDirichlet(procBoundaryAsDirichlet_)
+    {}
 
 
     //! assemble local stiffness matrix for given element and order
@@ -106,14 +97,14 @@ namespace Dune
       Dune::GeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
       sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,k);
-      this->currentsize = sfs.size();
+      setcurrentsize(sfs.size());
 
       // clear assemble data
-      for (int i=0; i<this->currentsize; i++)
+      for (int i=0; i<sfs.size(); i++)
       {
         this->b[i] = 0;
         this->bctype[i][0] = BoundaryConditions::neumann;
-        for (int j=0; j<this->currentsize; j++)
+        for (int j=0; j<sfs.size(); j++)
           this->A[i][j] = 0;
       }
 
@@ -135,8 +126,8 @@ namespace Dune
         RT factor = weight*detjac;
 
         // evaluate gradients at Gauss points
-        Dune::FieldVector<DT,n> grad[this->SIZE], temp, gv;
-        for (int i=0; i<this->currentsize; i++)
+        Dune::FieldVector<DT,n> grad[SIZE], temp, gv;
+        for (int i=0; i<sfs.size(); i++)
         {
           for (int l=0; l<n; l++)
             temp[l] = sfs[i].evaluateDerivative(0,l,local);
@@ -144,7 +135,7 @@ namespace Dune
           jac.umv(temp,grad[i]);                 // transform gradient to global ooordinates
         }
 
-        for (int i=0; i<this->currentsize; i++)           // loop over test function number
+        for (int i=0; i<sfs.size(); i++)           // loop over test function number
         {
           // rhs
           this->b[i] += q*sfs[i].evaluateFunction(0,local)*factor;
@@ -189,7 +180,7 @@ namespace Dune
             RT J = problem.J(global,e,local);
             double weightface = Dune::QuadratureRules<DT,n-1>::rule(gtface,p)[g].weight();
             DT detjacface = it.intersectionGlobal().integrationElement(facelocal);
-            for (int i=0; i<this->currentsize; i++)                       // loop over test function number
+            for (int i=0; i<sfs.size(); i++)                       // loop over test function number
               if (this->bctype[i][0]==BoundaryConditions::neumann)
               {
                 this->b[i] -= J*sfs[i].evaluateFunction(0,local)*weightface*detjacface;
@@ -205,7 +196,7 @@ namespace Dune
           continue;               // then it acts like homogeneous Neumann
 
         // now handle exterior or interior Dirichlet boundary
-        for (int i=0; i<this->currentsize; i++)           // loop over test function number
+        for (int i=0; i<sfs.size(); i++)           // loop over test function number
         {
           if (sfs[i].codim()==0) continue;                 // skip interior dof
           if (sfs[i].codim()==1)                 // handle face dofs
