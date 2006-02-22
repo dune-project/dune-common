@@ -56,7 +56,7 @@ namespace Dune
      -  m       number of components of the vector-valued function
    */
   template<class DT, class RT, int n, int m>
-  class Function
+  class FunctionBase
   {
   public:
     //! export type for domain components
@@ -84,13 +84,13 @@ namespace Dune
      */
     virtual void evalall (const Dune::FieldVector<DT,n>& x, Dune::FieldVector<RT,m>& y) const = 0;
 
-    virtual ~Function () {}
+    virtual ~FunctionBase () {}
   };
 
 
   //! A class providing default implementations for some method in class Function
   template<class DT, class RT, int n, int m>
-  class FunctionDefault : virtual public Function<DT,RT,n,m>
+  class FunctionDefault : virtual public FunctionBase<DT,RT,n,m>
   {
   public:
     //! default implemention for evaluation of all components
@@ -120,7 +120,7 @@ namespace Dune
      -  m       number of components of the vector-valued function
    */
   template<class DT, class RT, int n, int m>
-  class DifferentiableFunction : virtual public Function<DT,RT,n,m>
+  class DifferentiableFunction : virtual public FunctionBase<DT,RT,n,m>
   {
   public:
     //! evaluate partial derivative
@@ -187,7 +187,7 @@ namespace Dune
         -  m      number of components of the vector-valued function
    */
   template<class G, class RT, int m>
-  class GridFunction : virtual public Function<typename G::ctype,RT,G::dimension,m>
+  class GridFunction : virtual public FunctionBase<typename G::ctype,RT,G::dimension,m>
   {
     //! get domain field type from the grid
     typedef typename G::ctype DT;
@@ -391,7 +391,7 @@ namespace Dune
      -  m       number of components of the vector-valued function
    */
   template<class DT, class RT, int n, int m>
-  class C0Function : virtual public Function<DT,RT,n,m>
+  class C0Function : virtual public FunctionBase<DT,RT,n,m>
   {};
 
   //! Base class for continuous grid functions
@@ -447,7 +447,7 @@ namespace Dune
      -  m       number of components of the vector-valued function
    */
   template<class DT, class RT, int n, int m>
-  class L2Function : virtual public Function<DT,RT,n,m>
+  class L2Function : virtual public FunctionBase<DT,RT,n,m>
   {};
 
 
