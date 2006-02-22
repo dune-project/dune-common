@@ -24,6 +24,7 @@
 #include "dune/istl/bcrsmatrix.hh"
 #include "disc/functions/p1function.hh" // for parallel extender class
 #include "boundaryconditions.hh"
+#include "localstiffness.hh"
 
 /**
  * @file dune/disc/operators/p1operator.hh
@@ -854,12 +855,11 @@ namespace Dune
 
   /*! @brief Extends P1OperatorBase by a generic methods to assemble global stiffness matrix from local stiffness matrices
    */
-  template<class G, class RT, class IS, class LC, class T>
-  class P1OperatorAssembler : public P1OperatorBase<G,RT,IS,LC,T::m>
+  template<class G, class RT, class IS, class LC, int m>
+  class P1OperatorAssembler : public P1OperatorBase<G,RT,IS,LC,m>
   {
     typedef typename G::ctype DT;
     enum {n=G::dimension};
-    enum {m=T::m};
     typedef typename G::template Codim<0>::Entity Entity;
     typedef typename IS::template Codim<0>::template Partition<All_Partition>::Iterator Iterator;
     typedef typename IS::template Codim<n>::template Partition<All_Partition>::Iterator VIterator;
@@ -945,13 +945,13 @@ namespace Dune
 
 
   public:
-    P1OperatorAssembler (const G& g, const IS& indexset, LC lcomm, T& _loc, bool extendoverlap=false)
-      : P1OperatorBase<G,RT,IS,LC,m>(g,indexset,lcomm,extendoverlap), loc(_loc)
+    P1OperatorAssembler (const G& g, const IS& indexset, LC lcomm, bool extendoverlap=false)
+      : P1OperatorBase<G,RT,IS,LC,m>(g,indexset,lcomm,extendoverlap)
     {       }
 
 
     //! assemble operator, rhs and Dirichlet boundary conditions
-    void assemble (P1Function<G,RT,IS,LC,m>& u, P1Function<G,RT,IS,LC,m>& f)
+    void assemble (LocalStiffness<G,RT,m>& loc, P1Function<G,RT,IS,LC,m>& u, P1Function<G,RT,IS,LC,m>& f)
     {
       // check size
       if ((*u).N()!=this->A.M() || (*f).N()!=this->A.N())
@@ -1405,7 +1405,6 @@ namespace Dune
 
   private:
     std::vector<bool> marked;
-    T& loc;
 
     template<class M, class K>
     void accumulate (M& A, const K& alpha, const M& B)
@@ -1417,119 +1416,49 @@ namespace Dune
   };
 
 
-  //! Leafwise assembler
-  template<class G, class RT, class T>
-  class LeafP1OperatorAssembler : public P1OperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,LeafCommunicate<G>,T>
-  {
-  public:
-    LeafP1OperatorAssembler (const G& grid, T& lstiff, bool extendoverlap=false)
-      : P1OperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,LeafCommunicate<G>,T>(grid,grid.leafIndexSet(),LeafCommunicate<G>(grid),lstiff,extendoverlap)
-    {}
-  };
+  /*! @brief Leafwise assembler
 
+     This class serves as a base class for local assemblers. It provides
+     space and access to the local stiffness matrix. The actual assembling is done
+     in a derived class via the virtual assemble method.
 
-  //! Levelwise assembler
-  template<class G, class RT, class T>
-  class LevelP1OperatorAssembler : public P1OperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,LevelCommunicate<G>,T>
-  {
-  public:
-    LevelP1OperatorAssembler (const G& grid, int level, T& lstiff, bool extendoverlap=false)
-      : P1OperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,LevelCommunicate<G>,T>(grid,grid.levelIndexSet(level),LevelCommunicate<G>(grid,level),lstiff,extendoverlap)
-    {}
-  };
+     The template parameters are:
 
-
-
-  /*! @brief Base class for local P1 assemblers
+     - G    A grid type
+     - RT   The field type used in the elements of the stiffness matrix
+     - m    number of degrees of freedom per node (system size)
    */
-  template<class DT, class RT, int n, int m>
-  class P1LocalStiffness
+  template<class G, class RT, int m>
+  class LeafP1OperatorAssembler : public P1OperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,LeafCommunicate<G>,m>
   {
-  protected:
-    // some other sizes
-    enum {SIZE=Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::maxsize, SIZEF=SIZE};
-
   public:
-    // types for matrics, vectors and boundary conditions
-    typedef FieldMatrix<RT,m,m> MBlockType;     // one entry in the stiffness matrix
-    typedef FieldVector<RT,m> VBlockType;       // one entry in the global vectors
-    typedef FixedArray<BoundaryConditions::Flags,m> BCBlockType;         // componentwise boundary conditions
-
-    //! Constructor
-    P1LocalStiffness ()
-    {
-      currentsize = 0;
-    }
-
-    // print contents of local stiffness matrix
-    void print (std::ostream& s, int width, int precision)
-    {
-      // set the output format
-      s.setf(std::ios_base::scientific, std::ios_base::floatfield);
-      int oldprec = s.precision();
-      s.precision(precision);
-
-      for (int i=0; i<currentsize; i++)
-      {
-        s << "FEM";              // start a new row
-        s << " ";                // space in front of each entry
-        s.width(4);              // set width for counter
-        s << i;                  // number of first entry in a line
-        for (int j=0; j<currentsize; j++)
-        {
-          s << " ";                         // space in front of each entry
-          s.width(width);                   // set width for each entry anew
-          s << A[i][j];                     // yeah, the number !
-        }
-        s << " ";                   // space in front of each entry
-        s.width(width);             // set width for each entry anew
-        s << b[i];
-        s << " ";                   // space in front of each entry
-        s.width(width);             // set width for each entry anew
-        s << bctype[i][0];
-        s << std::endl;          // start a new line
-      }
-
-
-      // reset the output format
-      s.precision(oldprec);
-      s.setf(std::ios_base::fixed, std::ios_base::floatfield);
-    }
-
-    //! access local stiffness matrix
-    /*! Access elements of the local stiffness matrix. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const MBlockType& mat (int i, int j)
-    {
-      return A[i][j];
-    }
-
-    //! access right hand side
-    /*! Access elements of the right hand side vector. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const VBlockType& rhs (int i)
-    {
-      return b[i];
-    }
-
-    //! access boundary condition for each dof
-    /*! Access boundary condition type for each degree of freedom. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const BCBlockType bc (int i) const
-    {
-      return bctype[i];
-    }
-
-  protected:
-    // assembled data
-    int currentsize;
-    MBlockType A[SIZE][SIZE];
-    VBlockType b[SIZE];
-    BCBlockType bctype[SIZE];
+    LeafP1OperatorAssembler (const G& grid, bool extendoverlap=false)
+      : P1OperatorAssembler<G,RT,typename G::Traits::LeafIndexSet,LeafCommunicate<G>,m>(grid,grid.leafIndexSet(),LeafCommunicate<G>(grid),extendoverlap)
+    {}
   };
+
+
+  /*! @brief Levelwise assembler
+
+     This class serves as a base class for local assemblers. It provides
+     space and access to the local stiffness matrix. The actual assembling is done
+     in a derived class via the virtual assemble method.
+
+     The template parameters are:
+
+     - G    A grid type
+     - RT   The field type used in the elements of the stiffness matrix
+     - m    number of degrees of freedom per node (system size)
+   */
+  template<class G, class RT, int m>
+  class LevelP1OperatorAssembler : public P1OperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,LevelCommunicate<G>,m>
+  {
+  public:
+    LevelP1OperatorAssembler (const G& grid, int level, bool extendoverlap=false)
+      : P1OperatorAssembler<G,RT,typename G::Traits::LevelIndexSet,LevelCommunicate<G>,m>(grid,grid.levelIndexSet(level),LevelCommunicate<G>(grid,level),extendoverlap)
+    {}
+  };
+
 
   /** @} */
 
