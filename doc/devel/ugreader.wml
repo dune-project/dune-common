@@ -8,14 +8,7 @@
 <p>
 If you want to write a routine that reads a grid from some
 file into a Dune UGGrid object you have to know how to use the UGGrid
-grid creation interface.  This interface, being under construction,
-still reflects a few of the idiosyncracies of the underlying UG
-grid management system.  It is nevertheless fairly easy to use.
-</p>
-
-<p>
-This little text will point out the steps that are necessary
-in order to create a UGGrid object.  In the following we
+grid creation interface.  In the following we
 assume that you have a grid in some file format and an
 empty UGGrid object, created by one of its constructors.
 Hence, your file reader method signature may look like this:
@@ -123,21 +116,15 @@ grid.createend();
 If you're working on a parallel machine, and you want to set up a
 parallel grid, proceed as described on all processes.  This will
 create the grid on the master process and set up UG correctly on all
-other process.  Call loadBalance to actually distribute the grid.
+other process.  Call <tt>loadBalance()</tt> to actually distribute the grid.
 </p>
 
 <p>
 <b>WARNING:</b> UG internally requests that all boundary vertices be
 inserted before the inner ones.  That means that if your input grid
-doesn't comply with this, it will have its vertices reordered be
-createend().  So don't be surprised if you just read a grid and write
-it back to disc to find your vertex numberings changed.
-</p>
-
-<p>
-Good luck!  Remember that DUNE is still in an unstable state and that
-any interface, method or class may change without much notice.
-Subscribe to the DUNE mailing list for newest information.
+doesn't comply with this, it will have its vertices reordered by
+<tt>createend()</tt>.  So don't be surprised if you just read a grid and write
+it back to disk to find your vertex numberings changed.
 </p>
 
 <p>
