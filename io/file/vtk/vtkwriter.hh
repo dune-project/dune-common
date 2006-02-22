@@ -134,7 +134,7 @@ namespace Dune
     template<int dim>
     struct P1Layout
     {
-      bool contains (int codim, Dune::NewGeometryType gt)
+      bool contains (int codim, Dune::GeometryType gt)
       {
         if (codim==dim) return true;
         return false;
@@ -367,8 +367,8 @@ namespace Dune
       vtkPyramid = 14
     };
 
-    //! mapping from NewGeometryType to VTKGeometryType
-    VTKGeometryType vtkType(const Dune::NewGeometryType & t) const
+    //! mapping from GeometryType to VTKGeometryType
+    VTKGeometryType vtkType(const Dune::GeometryType & t) const
     {
       if (t.isLine())
         return vtkLine;
