@@ -179,7 +179,7 @@ namespace Dune {
     }
 
     //! return outer normal
-    const FieldVector<OneDCType, dimworld>& outerNormal (const FieldVector<OneDCType, dim-1>& local) const {
+    const FieldVector<typename GridImp::ctype, dimworld>& outerNormal (const FieldVector<typename GridImp::ctype, dim-1>& local) const {
       outerNormal_[0] = (neighbor_==0) ? -1 : 1;
       return outerNormal_;
     }
@@ -187,14 +187,14 @@ namespace Dune {
     //! return unit outer normal, this should be dependent on
     //! local coordinates for higher order boundary
     //! the normal is scaled with the integration element
-    const FieldVector<OneDCType, dimworld>& integrationOuterNormal (const FieldVector<OneDCType, dim-1>& local) const
+    const FieldVector<typename GridImp::ctype, dimworld>& integrationOuterNormal (const FieldVector<typename GridImp::ctype, dim-1>& local) const
     {
       outerNormal_[0] = (neighbor_==0) ? -1 : 1;
       return outerNormal_;
     }
 
     //! return unit outer normal
-    const FieldVector<OneDCType, dimworld>& unitOuterNormal (const FieldVector<OneDCType, dim-1>& local) const {
+    const FieldVector<typename GridImp::ctype, dimworld>& unitOuterNormal (const FieldVector<typename GridImp::ctype, dim-1>& local) const {
       outerNormal_[0] = (neighbor_==0) ? -1 : 1;
       return outerNormal_;
     }
@@ -207,7 +207,7 @@ namespace Dune {
     OneDEntityImp<1>* center_;
 
     //! vector storing the outer normal
-    mutable FieldVector<OneDCType, dimworld> outerNormal_;
+    mutable FieldVector<typename GridImp::ctype, dimworld> outerNormal_;
 
     //! count on which neighbor we are lookin' at
     int neighbor_;

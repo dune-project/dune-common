@@ -16,9 +16,6 @@
 
 namespace Dune
 {
-  /** \brief The type used by to store coordinates */
-  typedef double OneDCType;
-
 
   // forward declarations
   template<int codim, int dim, class GridImp> class OneDGridEntity;
@@ -191,7 +188,7 @@ namespace Dune {
      and provides local mesh refinement and coarsening.
    */
   template <int dim, int dimworld>
-  class OneDGrid : public GridDefaultImplementation <dim, dimworld,OneDCType,OneDGridFamily<dim,dimworld> >
+  class OneDGrid : public GridDefaultImplementation <dim, dimworld,double,OneDGridFamily<dim,dimworld> >
   {
 
     friend class OneDGridLevelIteratorFactory <0>;
@@ -214,6 +211,9 @@ namespace Dune {
     /** \brief OneDGrid is only implemented for 1d */
     CompileTimeChecker< (dim==1 && dimworld==1) >   Use_OneDGrid_only_for_1d;
 
+
+    /** \brief The type used by to store coordinates */
+    typedef double OneDCType;
 
     // **********************************************************
     // The Interface Methods
