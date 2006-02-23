@@ -124,6 +124,25 @@ namespace Dune {
       return l;
     }
 
+    /** \brief Returns true if the point is in the current element
+
+       This method really doesn't make much sense for a zero-dimensional
+       object.  It always returns 'true'.
+     */
+    bool checkInside(const FieldVector<typename GridImp::ctype, 0> &local) const {
+      return true;
+    }
+
+
+    /** \brief !!!
+
+       This method really doesn't make much sense for a zero-dimensional
+       object.  It always returns '1'.
+     */
+    OneDCType integrationElement (const FieldVector<OneDCType, 0>& local) const {
+      return 1;
+    }
+
     //private:
     OneDEntityImp<0>* target_;
 
