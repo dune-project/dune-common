@@ -556,7 +556,7 @@ namespace Dune
   class ReferenceSimplex
   {
   public:
-    enum {MAXE = (((dim+1)<<1)-(dim+1))+(2*((dim-1)>>1))}; // 1D=2; 2D=3; in 3D: 6 edges for a tetrahedron
+    enum {MAXE = 6}; // implement only up to 3D anyway, avoids some warnings
     enum {d=dim};
 
 
@@ -728,18 +728,18 @@ namespace Dune
 
           //edge 0 (nodes 1,2)
           // 2 = (subsizes[0][0][dim])-1 work around icc warning
-          pos[0][1][j]=(pos[1][dim][j]+pos[(subsizes[0][0][dim])-1][dim][j])/2.0;
+          pos[0][1][j]=(pos[1][dim][j]+pos[(subsizes[0][0][dim])-1][dim][j])/2;
           //edge 1 (nodes 0,2)
-          pos[1][1][j]=(pos[0][dim][j]+pos[(subsizes[0][0][dim])-1][dim][j])/2.0;
+          pos[1][1][j]=(pos[0][dim][j]+pos[(subsizes[0][0][dim])-1][dim][j])/2;
           //edge 2 (nodes 0,1)
-          pos[(subsizes[0][0][dim-1])-1][1][j]=(pos[0][dim][j]+pos[1][2][j])/2.0;
+          pos[(subsizes[0][0][dim-1])-1][1][j]=(pos[0][dim][j]+pos[1][2][j])/2;
 
           // //edge 0 (nodes 1,2)
-          //               pos[0][1][j]=(pos[1][dim][j]+pos[2][dim][j])/2.0;
+          //               pos[0][1][j]=(pos[1][dim][j]+pos[2][dim][j])/2;
           //               //edge 1 (nodes 0,2)
-          //               pos[1][1][j]=(pos[0][dim][j]+pos[2][dim][j])/2.0;
+          //               pos[1][1][j]=(pos[0][dim][j]+pos[2][dim][j])/2;
           //               //edge 2 (nodes 0,1)
-          //               pos[(subsizes[0][0][dim-1])-1][1][j]=(pos[0][dim][j]+pos[1][2][j])/2.0;
+          //               pos[(subsizes[0][0][dim-1])-1][1][j]=(pos[0][dim][j]+pos[1][2][j])/2;
         }
       }
       else if(dim==3) // tetrahedron
@@ -858,26 +858,26 @@ namespace Dune
         {
 
           //face 0 (nodes 1,2,3)
-          pos[0][1][j]=(pos[1][dim][j]+pos[2][dim][j]+pos[3][dim][j])/3.0;
+          pos[0][1][j]=(pos[1][dim][j]+pos[2][dim][j]+pos[3][dim][j])/3;
           //face 1 (nodes 0,2,3)
-          pos[1][1][j]=(pos[0][dim][j]+pos[2][dim][j]+pos[3][dim][j])/3.0;
+          pos[1][1][j]=(pos[0][dim][j]+pos[2][dim][j]+pos[3][dim][j])/3;
           //face 2 (nodes 0,1,3)
-          pos[2][1][j]=(pos[0][dim][j]+pos[1][dim][j]+pos[3][dim][j])/3.0;
+          pos[2][1][j]=(pos[0][dim][j]+pos[1][dim][j]+pos[3][dim][j])/3;
           //face 3 (nodes 0,1,2)
-          pos[3][1][j]=(pos[0][dim][j]+pos[1][dim][j]+pos[2][dim][j])/3.0;
+          pos[3][1][j]=(pos[0][dim][j]+pos[1][dim][j]+pos[2][dim][j])/3;
 
           //edge 0 (nodes 0,1)
-          pos[0][2][j]=(pos[0][dim][j]+pos[1][dim][j])/2.0;
+          pos[0][2][j]=(pos[0][dim][j]+pos[1][dim][j])/2;
           //edge 1 (nodes 1,2)
-          pos[1][2][j]=(pos[1][dim][j]+pos[2][dim][j])/2.0;
+          pos[1][2][j]=(pos[1][dim][j]+pos[2][dim][j])/2;
           //edge 2 (nodes 0,2)
-          pos[2][2][j]=(pos[0][dim][j]+pos[2][dim][j])/2.0;
+          pos[2][2][j]=(pos[0][dim][j]+pos[2][dim][j])/2;
           //edge 3 (nodes 0,3)
-          pos[3][2][j]=(pos[0][dim][j]+pos[3][dim][j])/2.0;
+          pos[3][2][j]=(pos[0][dim][j]+pos[3][dim][j])/2;
           //edge 4 (nodes 1,3)
-          pos[4][2][j]=(pos[1][dim][j]+pos[3][dim][j])/2.0;
+          pos[4][2][j]=(pos[1][dim][j]+pos[3][dim][j])/2;
           //edge 5 (nodes 2,3)
-          pos[5][2][j]=(pos[2][dim][j]+pos[3][dim][j])/2.0;
+          pos[5][2][j]=(pos[2][dim][j]+pos[3][dim][j])/2;
         }
       }
       else
@@ -1225,34 +1225,34 @@ namespace Dune
       for(int j=0; j<3; ++j)
       {
         //face 0 (nodes 0,1,2)
-        pos[0][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[2][3][j])/3.0;
+        pos[0][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[2][3][j])/3;
         //face 1 (nodes 0,1,3,4)
-        pos[1][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[3][3][j]+pos[4][3][j])/4.0;
+        pos[1][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[3][3][j]+pos[4][3][j])/4;
         //face 2 (nodes 1,2,4,5)
-        pos[2][1][j]=(pos[1][3][j]+pos[2][3][j]+pos[4][3][j]+pos[5][3][j])/4.0;
+        pos[2][1][j]=(pos[1][3][j]+pos[2][3][j]+pos[4][3][j]+pos[5][3][j])/4;
         //face 3 (nodes 0,2,3,5)
-        pos[3][1][j]=(pos[0][3][j]+pos[2][3][j]+pos[3][3][j]+pos[5][3][j])/4.0;
+        pos[3][1][j]=(pos[0][3][j]+pos[2][3][j]+pos[3][3][j]+pos[5][3][j])/4;
         //face 4 (nodes 3,4,5)
-        pos[4][1][j]=(pos[3][3][j]+pos[4][3][j]+pos[5][3][j])/3.0;
+        pos[4][1][j]=(pos[3][3][j]+pos[4][3][j]+pos[5][3][j])/3;
 
         //edge 0 (nodes 0,1)
-        pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
+        pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2;
         //edge 1 (nodes 1,2)
-        pos[1][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+        pos[1][2][j]=(pos[1][3][j]+pos[2][3][j])/2;
         //edge 2 (nodes 2,0)
-        pos[2][2][j]=(pos[2][3][j]+pos[0][3][j])/2.0;
+        pos[2][2][j]=(pos[2][3][j]+pos[0][3][j])/2;
         //edge 3 (nodes 0,3)
-        pos[3][2][j]=(pos[0][3][j]+pos[3][3][j])/2.0;
+        pos[3][2][j]=(pos[0][3][j]+pos[3][3][j])/2;
         //edge 4 (nodes 1,4)
-        pos[4][2][j]=(pos[1][3][j]+pos[4][3][j])/2.0;
+        pos[4][2][j]=(pos[1][3][j]+pos[4][3][j])/2;
         //edge 5 (nodes 2,5)
-        pos[5][2][j]=(pos[2][3][j]+pos[5][3][j])/2.0;
+        pos[5][2][j]=(pos[2][3][j]+pos[5][3][j])/2;
         //edge 6 (nodes 3,4)
-        pos[6][2][j]=(pos[3][3][j]+pos[4][3][j])/2.0;
+        pos[6][2][j]=(pos[3][3][j]+pos[4][3][j])/2;
         //edge 7 (nodes 4,5)
-        pos[7][2][j]=(pos[4][3][j]+pos[5][3][j])/2.0;
+        pos[7][2][j]=(pos[4][3][j]+pos[5][3][j])/2;
         //edge 8 (nodes 5,3)
-        pos[8][2][j]=(pos[5][3][j]+pos[3][3][j])/2.0;
+        pos[8][2][j]=(pos[5][3][j]+pos[3][3][j])/2;
 
       }
 
@@ -1582,32 +1582,32 @@ namespace Dune
       for(int j=0; j<3; ++j)
       {
         //face 0 (nodes 0,1,2,3)
-        pos[0][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[2][3][j]+pos[3][3][j])/4.0;
+        pos[0][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[2][3][j]+pos[3][3][j])/4;
         //face 1 (nodes 0,1,4)
-        pos[1][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[4][3][j])/3.0;
+        pos[1][1][j]=(pos[0][3][j]+pos[1][3][j]+pos[4][3][j])/3;
         //face 2 (nodes 1,2,4)
-        pos[2][1][j]=(pos[1][3][j]+pos[2][3][j]+pos[4][3][j])/3.0;
+        pos[2][1][j]=(pos[1][3][j]+pos[2][3][j]+pos[4][3][j])/3;
         //face 3 (nodes 2,3,4)
-        pos[3][1][j]=(pos[2][3][j]+pos[3][3][j]+pos[4][3][j])/3.0;
+        pos[3][1][j]=(pos[2][3][j]+pos[3][3][j]+pos[4][3][j])/3;
         //face 4 (nodes 3,0,4)
-        pos[4][1][j]=(pos[3][3][j]+pos[0][3][j]+pos[4][3][j])/3.0;
+        pos[4][1][j]=(pos[3][3][j]+pos[0][3][j]+pos[4][3][j])/3;
 
         //edge 0 (nodes 0,1)
-        pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2.0;
+        pos[0][2][j]=(pos[0][3][j]+pos[1][3][j])/2;
         //edge 1 (nodes 1,2)
-        pos[1][2][j]=(pos[1][3][j]+pos[2][3][j])/2.0;
+        pos[1][2][j]=(pos[1][3][j]+pos[2][3][j])/2;
         //edge 2 (nodes 2,3)
-        pos[2][2][j]=(pos[2][3][j]+pos[3][3][j])/2.0;
+        pos[2][2][j]=(pos[2][3][j]+pos[3][3][j])/2;
         //edge 3 (nodes 3,0)
-        pos[3][2][j]=(pos[3][3][j]+pos[0][3][j])/2.0;
+        pos[3][2][j]=(pos[3][3][j]+pos[0][3][j])/2;
         //edge 4 (nodes 0,4)
-        pos[4][2][j]=(pos[0][3][j]+pos[4][3][j])/2.0;
+        pos[4][2][j]=(pos[0][3][j]+pos[4][3][j])/2;
         //edge 5 (nodes 1,4)
-        pos[5][2][j]=(pos[1][3][j]+pos[4][3][j])/2.0;
+        pos[5][2][j]=(pos[1][3][j]+pos[4][3][j])/2;
         //edge 6 (nodes 2,4)
-        pos[6][2][j]=(pos[2][3][j]+pos[4][3][j])/2.0;
+        pos[6][2][j]=(pos[2][3][j]+pos[4][3][j])/2;
         //edge 7 (nodes 3,4)
-        pos[7][2][j]=(pos[3][3][j]+pos[4][3][j])/2.0;
+        pos[7][2][j]=(pos[3][3][j]+pos[4][3][j])/2;
 
 
       }
