@@ -2492,8 +2492,8 @@ namespace Dune {
       YGLI g = MultiYGrid<dim,ctype>::begin(level);
 
       // find send/recv lists or throw error
-      const std::deque<IS>* sendlist;
-      const std::deque<IS>* recvlist;
+      const std::deque<IS>* sendlist=0;
+      const std::deque<IS>* recvlist=0;
       if (codim==0)   // the elements
       {
         if (iftype==InteriorBorder_InteriorBorder_Interface)

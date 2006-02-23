@@ -72,8 +72,6 @@ namespace Dune
     {
       // extract some important parameters
       Dune::GeometryType gt = e.geometry().type();
-      const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
-      DT Zero = 0;
       Dune::FieldVector<DT,n> center = e.geometry().global(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
 
       // integral over right hand side, div(K grad u_h) = 0 for P1 elements
@@ -81,7 +79,7 @@ namespace Dune
       RT volume = e.geometry().integrationElement(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
       RT h_K = pow(volume,1.0/((double)n));
       RT integralq = 0;
-      for (int g=0; g<Dune::QuadratureRules<DT,n>::rule(gt,p).size(); ++g)     // run through all quadrature points
+      for (std::size_t g=0; g<Dune::QuadratureRules<DT,n>::rule(gt,p).size(); ++g)     // run through all quadrature points
       {
         const Dune::FieldVector<DT,n>& local = Dune::QuadratureRules<DT,n>::rule(gt,p)[g].position();           // pos of integration point
         Dune::FieldVector<DT,n> global = e.geometry().global(local);                                            // ip in global coordinates
@@ -114,12 +112,10 @@ namespace Dune
       // extract some important parameters
       GeometryType gt = e.geometry().type();
       const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
-      DT Zero = 0;
       Dune::FieldVector<DT,n> center = e.geometry().global(Dune::ReferenceElements<DT,n>::general(gt).position(0,0));
 
       // the edge term
       GeometryType gtface = it.intersectionSelfLocal().type();
-      int numberInSelf = it.numberInSelf();
       const Dune::FieldVector<DT,n-1>& facelocal = Dune::ReferenceElements<DT,n-1>::general(gtface).position(0,0);
       FieldVector<DT,n> local = it.intersectionSelfLocal().global(facelocal);
       FieldVector<DT,n> global = it.intersectionGlobal().global(facelocal);
@@ -165,7 +161,6 @@ namespace Dune
         FieldVector<DT,n> nbcenter = outside->geometry().global(ReferenceElements<DT,n>::general(nbgt).position(0,0));
         const typename LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type& nbsfs=LagrangeShapeFunctions<DT,RT,n>::general(nbgt,1);
         GeometryType nbgtface = it.intersectionNeighborLocal().type();
-        int numberInNeighbor = it.numberInNeighbor();
         const FieldVector<DT,n-1>& nbfacelocal = ReferenceElements<DT,n-1>::general(nbgtface).position(0,0);
         FieldVector<DT,n> nblocal = it.intersectionNeighborLocal().global(nbfacelocal);
         FieldMatrix<DT,n,n> nbjac = outside->geometry().jacobianInverseTransposed(nblocal);
@@ -245,8 +240,6 @@ namespace Dune
 
         // get access to shape functions for P1 elements
         Dune::GeometryType gt = it->geometry().type();
-        const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
-        sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,1);
 
         // evaluate element part of estimator
         RT elementpart;

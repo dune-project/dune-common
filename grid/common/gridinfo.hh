@@ -65,7 +65,7 @@ namespace Dune
     bool first=true;
     for (int c=0; c<=dim; c++)
     {
-      for (int i=0; i<grid.leafIndexSet().geomTypes(c).size(); i++)
+      for (std::size_t i=0; i<grid.leafIndexSet().geomTypes(c).size(); i++)
       {
         if (!first) std::cout << ",";
         std::cout << grid.leafIndexSet().geomTypes(c)[i]

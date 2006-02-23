@@ -1288,7 +1288,7 @@ namespace Dune
     {
       // allocate flag vector to note hanging nodes whose row has been assembled
       std::vector<unsigned char> treated(this->vertexmapper.size());
-      for (int i=0; i<treated.size(); i++) treated[i] = false;
+      for (std::size_t i=0; i<treated.size(); i++) treated[i] = false;
 
       // run over all leaf elements
       Iterator eendit = this->is.template end<0,All_Partition>();
@@ -1329,7 +1329,7 @@ namespace Dune
     void preMark ()
     {
       marked.resize(this->vertexmapper.size());
-      for (int i=0; i<marked.size(); i++) marked[i] = false;
+      for (std::size_t i=0; i<marked.size(); i++) marked[i] = false;
       return;
     }
 
@@ -1409,8 +1409,8 @@ namespace Dune
     template<class M, class K>
     void accumulate (M& A, const K& alpha, const M& B)
     {
-      for (int i=0; i<A.N(); i++)
-        for (int j=0; j<A.M(); j++)
+      for (std::size_t i=0; i<A.N(); i++)
+        for (std::size_t j=0; j<A.M(); j++)
           A[i][j] += alpha*B[i][j];
     }
   };

@@ -975,7 +975,7 @@ namespace Dune
   public:
 
     //! manages nothing
-    P1FunctionManager (const G& g) : grid(g), savedmap(g), mapper(g,g.leafIndexSet())
+    P1FunctionManager (const G& g) : mapper(g,g.leafIndexSet()), grid(g), savedmap(g)
     {
       // allocate index array to correct size (this possible for vertex data)
       oldindex.resize(mapper.size());
