@@ -289,14 +289,29 @@ namespace Dune {
     //! Maps a global coordinate within the element to a
     //! local coordinate in its reference element
     FieldVector<UGCtype, 2> local (const FieldVector<UGCtype, 3>& global) const {
-      DUNE_THROW(NotImplemented, "local not implemented yet!");
+      DUNE_THROW(NotImplemented, "local");
+#if 0
+      // UG_GlobalToLocalBnd doesn't seem to do what I want it to do.
+      // Actually nobody in UG seems to use it.
+      FieldVector<UGCtype,2> result;
+
+      const double* coordPtrs[4] = {&coord_[0][0], &coord_[1][0], &coord_[2][0], &coord_[3][0]};
+      if (int error = UG3d::UG_GlobalToLocalBnd(corners(), coordPtrs, &global[0], &result[0]))
+        DUNE_THROW(GridError, "UG_GlobalToLocalBnd returned error code " << error << "!");
+
+      return result;
+#endif
     }
 
     //! Returns true if the point is in the current element
-    /** \todo Not implemented yet! */
     bool checkInside(const FieldVector<UGCtype, 2> &local) const {
-      DUNE_THROW(NotImplemented, "UGGridGeometry<2,3>::checkInside() not implemented yet!");
-      return true;
+
+      // These two conditions must be fulfilled for triangles and quadrilaterals
+      if (local[0] < 0 || local[1] < 0)
+        return false;
+
+      // Now distinguish between the element types
+      return (corners()==3) ? (local[0]+local[1] <= 1) : (local[0] <= 1 && local[1] <= 1);
     }
 
     // A(l)
