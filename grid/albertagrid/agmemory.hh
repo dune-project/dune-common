@@ -25,30 +25,30 @@ namespace Dune
     ~AGMemoryProvider ();
 
     //! create object with empty constructor
-    Object * getNewObjectEntity(int l = 0)
-    {
-      if( objStack_.empty() )
-      {
+    /*
+       Object * getObject()
+       {
+       if( objStack_.empty() )
+       {
         return ( new Object () );
-      }
-      else
-      {
+       }
+       else
+       {
         ObjectType * obj = objStack_.top();
         objStack_.pop();
         return obj;
-      }
-    }
+       }
+       }
+     */
+
+    //! i.e. return pointer to Entity
+    template <class GridType, class ObjectImp>
+    ObjectType * getNewObjectEntity(const GridType &grid,
+                                    const ObjectImp * fakePointer, int level, bool leafIt);
 
     //! i.e. return pointer to Entity
     template <class GridType>
-    ObjectType * getNewObjectEntity(const GridType &grid, int level, bool leafIt);
-
-    //! i.e. return pointer to Entity
-    template <class GridType>
-    ObjectType * getObject(const GridType &grid, int level)
-    {
-      return getNewObjectEntity(grid,level,false);
-    }
+    ObjectType * getObject(const GridType &grid, int level);
 
     //! i.e. return pointer to Entity with calling copy constructor
     ObjectType * getObjectCopy(const ObjectType & org);
@@ -70,20 +70,36 @@ namespace Dune
   //  AGMemoryProvider implementation
   //
   //************************************************************************
-  template <class Object> template <class GridType>
+  template <class Object> template <class GridType, class ObjectImp>
   inline typename AGMemoryProvider<Object>::ObjectType *
   AGMemoryProvider<Object>::getNewObjectEntity
-    (const GridType &grid, int level , bool leafIt )
+    (const GridType &grid, const ObjectImp *fakePointer , int level , bool leafIt )
   {
     if( objStack_.empty() )
     {
-      return ( new Object (grid,level,leafIt) );
+      return ( new Object (ObjectImp(grid,level,leafIt)) );
     }
     else
     {
       ObjectType * obj = objStack_.top();
       objStack_.pop();
-      obj->setNewLevel(level,leafIt);
+      return obj;
+    }
+  }
+
+  template <class Object> template <class GridType>
+  inline typename AGMemoryProvider<Object>::ObjectType *
+  AGMemoryProvider<Object>::getObject
+    (const GridType &grid, int level )
+  {
+    if( objStack_.empty() )
+    {
+      return ( new Object (grid,level) );
+    }
+    else
+    {
+      ObjectType * obj = objStack_.top();
+      objStack_.pop();
       return obj;
     }
   }

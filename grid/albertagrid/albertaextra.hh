@@ -460,58 +460,129 @@ namespace AlbertHelp
 
   //*********************************************************************
 
+  static int AlbertaLeafDataHelp_processor = -1;
   // Leaf Data for Albert, only the leaf elements have this data set
-  typedef struct {
-    int processor;
-  } AlbertLeafData;
-
-  // keep element numbers
-  inline static void AlbertLeafRefine(EL *parent, EL *child[2])
+  template <int cdim, int vertices>
+  struct AlbertLeafData
   {
-    AlbertLeafData *ldata;
-    int i, processor=-1;
+#ifdef LEAFDATACOORDS
+    typedef Dune::FieldMatrix<double,vertices,cdim> CoordinateMatrixType;
+    typedef Dune::FieldVector<double,cdim> CoordinateVectorType;
+#endif
+    // type of stored data
+    typedef struct {
+#ifdef LEAFDATACOORDS
+      CoordinateMatrixType coord;
+#endif
+      double determinant;
+      int processor;
+    } Data;
 
-    ldata = (AlbertLeafData *) parent->child[1];
-    assert(ldata != 0);
-
-    processor = ldata->processor;
-
-    /* bisection ==> 2 children */
-    for(i=0; i<2; i++)
+    // keep element numbers
+    inline static void AlbertLeafRefine(EL *parent, EL *child[2])
     {
-      AlbertLeafData *ldataChi = (AlbertLeafData *) child[i]->child[1];
-      assert(ldataChi != 0);
-      ldataChi->processor = processor;
+      Data * ldata;
+      int i, processor=-1;
+
+      ldata = (Data *) parent->child[1];
+      assert(ldata != 0);
+
+      //std::cout << "Leaf refine for el = " << parent << "\n";
+
+      double childDet = 0.5 * ldata->determinant;
+      processor = ldata->processor;
+
+      /* bisection ==> 2 children */
+      for(i=0; i<2; i++)
+      {
+        Data *ldataChi = (Data *) child[i]->child[1];
+        assert(ldataChi != 0);
+        ldataChi->determinant = childDet;
+        ldataChi->processor = processor;
+
+#ifdef LEAFDATACOORDS
+        // calculate the coordinates
+        {
+          const CoordinateMatrixType &oldCoord = ldata->coord;
+          CoordinateMatrixType &coord = ldataChi->coord;
+          for (int j = 0; j < cdim; ++j)
+          {
+            coord[2][j] = 0.5 * (oldCoord[0][j] + oldCoord[1][j]);
+            coord[i  ][j] = oldCoord[2][j];
+            coord[1-i][j] = oldCoord[i][j];
+          }
+          //    std::cout << coord[0] << " " << coord[1] << " " << coord[2] << "\n";
+        }
+#endif
+      }
     }
-  }
 
-  inline static void AlbertLeafCoarsen(EL *parent, EL *child[2])
-  {
-    AlbertLeafData *ldata;
-    int i;
-
-    ldata = (AlbertLeafData *) parent->child[1];
-    assert(ldata != 0);
-    ldata->processor = -1;
-
-    /* bisection ==> 2 children */
-    for(i=0; i<2; i++)
+    inline static void AlbertLeafCoarsen(EL *parent, EL *child[2])
     {
-      AlbertLeafData *ldataChi = (AlbertLeafData *) child[i]->child[1];
-      assert(ldataChi != 0);
-      if(ldataChi->processor >= 0)
-        ldata->processor = ldataChi->processor;
-    }
-  }
+      Data *ldata;
+      int i;
 
-  // we dont need Leaf Data
-  inline static void initLeafData(LEAF_DATA_INFO * linfo)
-  {
-    linfo->leaf_data_size = sizeof(AlbertLeafData);
-    linfo->refine_leaf_data = &AlbertLeafRefine;
-    linfo->coarsen_leaf_data =&AlbertLeafCoarsen;
-    return;
-  }
+      ldata = (Data *) parent->child[1];
+      assert(ldata != 0);
+      ldata->processor = -1;
+      double & det = ldata->determinant;
+      det = 0.0;
+
+      //std::cout << "Leaf coarsen for el = " << parent << "\n";
+
+      /* bisection ==> 2 children */
+      for(i=0; i<2; i++)
+      {
+        Data *ldataChi = (Data *) child[i]->child[1];
+        assert(ldataChi != 0);
+        det += ldataChi->determinant;
+        if(ldataChi->processor >= 0)
+          ldata->processor = ldataChi->processor;
+      }
+    }
+
+    // we dont need Leaf Data
+    inline static void initLeafData(LEAF_DATA_INFO * linfo)
+    {
+      linfo->leaf_data_size = sizeof(Data);
+      linfo->refine_leaf_data  = &AlbertLeafRefine;
+      linfo->coarsen_leaf_data = &AlbertLeafCoarsen;
+      return;
+    }
+
+    // function for mesh_traverse, is called on every element
+    inline static void setLeafData(const EL_INFO * elf)
+    {
+      assert( elf->el->child[0] == 0 );
+      Data *ldata = (Data *) elf->el->child[1];
+      assert(ldata != 0);
+
+#ifdef LEAFDATACOORDS
+      for(int i=0; i<vertices; ++i)
+      {
+        CoordinateVectorType & c = ldata->coord[i];
+        const ALBERTA REAL_D & coord = elf->coord[i];
+        for(int j=0; j<cdim; ++j) c[j] = coord[j];
+        //      std::cout << c << " coord \n";
+      }
+#endif
+
+      ldata->determinant = ALBERTA el_det(elf);
+      ldata->processor   = AlbertaLeafDataHelp_processor;
+    }
+
+    // remember on which level an element realy lives
+    inline static void initLeafDataValues( MESH * mesh, int proc )
+    {
+      AlbertaLeafDataHelp_processor = proc;
+
+      // see ALBERTA Doc page 72, traverse over all hierarchical elements
+      ALBERTA mesh_traverse(mesh,-1, CALL_LEAF_EL|FILL_COORDS,setLeafData);
+
+      AlbertaLeafDataHelp_processor = -1;
+    }
+
+  }; // end of AlbertLeafData
 
   // struct holding the needed DOF_INT_VEC for AlbertGrid
   typedef struct dofvec_stack DOFVEC_STACK;
@@ -588,12 +659,12 @@ namespace AlbertHelp
     int *vec = 0;
 
     GET_DOF_VEC(vec,drv);
-
     assert(ref > 0);
 
     for(int i=0; i<ref; i++)
     {
       const EL * el = list[i].el;
+      //std::cout << "refine elNewCheck for el = " << el << "\n";
 
       // get level of father which is the absolute value
       // if value is < 0 then this just means that element
@@ -610,6 +681,11 @@ namespace AlbertHelp
     }
   }
 
+  // put element index to stack, if element is coarsend
+  inline static void coarseElNewCheck ( DOF_INT_VEC * drv , RC_LIST_EL *list, int ref)
+  {}
+
+
   // set entry for new elements to 1
   inline static void refineElOwner ( DOF_INT_VEC * drv , RC_LIST_EL *list, int ref)
   {
@@ -625,8 +701,9 @@ namespace AlbertHelp
 
     for(int i=0; i<ref; i++)
     {
-      EL * el = list[i].el;
+      const EL * el = list[i].el;
 
+      //std::cout << "refine ElOwner for el = " << el << "\n";
       val = vec[el->dof[k][nv]];
       //printf("refine owner %d \n",val);
       // in case of ghosts
@@ -783,18 +860,21 @@ namespace AlbertHelp
       // space for center dofs , i.e. element numbers
       const FE_SPACE * eSpace = get_fe_space(mesh, "center_dofs", edof, 0);
 
-      // the element numbers, ie. codim = 0
-      elNumbers[0] = get_dof_int_vec("element_numbers",eSpace);
-      elNumbers[0]->refine_interpol = &RefineNumbering<dim,0>::refineNumbers;
-      elNumbers[0]->coarse_restrict = &RefineNumbering<dim,0>::coarseNumbers;
-
+      // the first entry is called at last for refinement and coarsening
+      // the methods for the adaptation call back are put to elNewCheck
+      // refine and coarsening procedures
       elNewCheck = get_dof_int_vec("el_new_check",eSpace);
       elNewCheck->refine_interpol = &refineElNewCheck;
-      elNewCheck->coarse_restrict = 0;
+      elNewCheck->coarse_restrict = &coarseElNewCheck;
 
       elOwner = get_dof_int_vec("el_owner",eSpace);
       elOwner->refine_interpol = &refineElOwner;
       elOwner->coarse_restrict = 0;
+
+      // the element numbers, ie. codim = 0
+      elNumbers[0] = get_dof_int_vec("element_numbers",eSpace);
+      elNumbers[0]->refine_interpol = &RefineNumbering<dim,0>::refineNumbers;
+      elNumbers[0]->coarse_restrict = &RefineNumbering<dim,0>::coarseNumbers;
     }
 
     //**********************************************************************
@@ -1146,27 +1226,6 @@ namespace AlbertHelp
       MSG("bound [%d | %d | %d ]\n",mdata->boundary[i][0],mdata->boundary[i][1],mdata->boundary[i][2]);
 
 
-  }
-
-  static int AlbertHelp_processor = -1;
-  // function for mesh_traverse, is called on every element
-  inline static void setProcessor(const EL_INFO * elf)
-  {
-    AlbertLeafData *ldata = (AlbertLeafData *) elf->el->child[1];
-    assert(ldata != 0);
-
-    ldata->processor = AlbertHelp_processor;
-  }
-
-  // remember on which level an element realy lives
-  inline void initProcessor( MESH * mesh, int proc )
-  {
-    AlbertHelp_processor = proc;
-
-    // see ALBERTA Doc page 72, traverse over all hierarchical elements
-    mesh_traverse(mesh,-1, CALL_LEAF_EL|FILL_NOTHING,setProcessor);
-
-    AlbertHelp_processor = -1;
   }
 
   // function for mesh_traverse, is called on every element
