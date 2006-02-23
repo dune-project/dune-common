@@ -13,15 +13,11 @@
 #include "common/exceptions.hh"
 #include "grid/common/grid.hh"
 #include "grid/common/referenceelements.hh"
-#include "istl/operators.hh"
-#include "istl/bcrsmatrix.hh"
 
 #include <dune/quadrature/quadraturerules.hh>
 
 #include "disc/shapefunctions/lagrangeshapefunctions.hh"
-#include "disc/operators/p1operator.hh"
-#include "disc/operators/boundaryconditions.hh"
-#include "disc/functions/p1function.hh"
+#include <dune/disc/operators/localstiffness.hh>
 
 /**
  * @file
@@ -50,7 +46,7 @@ namespace Dune
         - RT    type used for return values
    */
   template<class GridType, class RT>
-  class LaplaceLocalStiffness
+  class LaplaceLocalStiffness : public LocalStiffness<GridType, RT, 1>
   {
     // grid types
     typedef typename GridType::ctype DT;
@@ -60,7 +56,6 @@ namespace Dune
 
     // some other sizes
     enum {dim=GridType::dimension};
-    enum {SIZE=Dune::LagrangeShapeFunctionSetContainer<DT,RT,dim>::maxsize};
 
   public:
 
@@ -81,13 +76,12 @@ namespace Dune
     //! Constructor
     LaplaceLocalStiffness (bool procBoundaryAsDirichlet_=true) {
 
-      currentsize = 0;
       procBoundaryAsDirichlet = procBoundaryAsDirichlet_;
 
       // For the time being:  all boundary conditions are homogeneous Neumann
       // This means no boundary condition handling is done at all
-      for (int i=0; i<SIZE; i++)
-        bctype[i] = BoundaryConditions::neumann;
+      for (int i=0; i<LocalStiffness<GridType,RT,m>::SIZE; i++)
+        this->bctype[i] = BoundaryConditions::neumann;
     }
 
 
@@ -110,10 +104,10 @@ namespace Dune
 
       // clear assemble data
       for (int i=0; i<sfs.size(); i++) {
-        b[i] = 0;
-        bctype[i][0] = BoundaryConditions::neumann;
+        this->b[i] = 0;
+        this->bctype[i][0] = BoundaryConditions::neumann;
         for (int j=0; j<sfs.size(); j++)
-          A[i][j] = 0;
+          this->A[i][j] = 0;
       }
 
       // Loop over all quadrature points and assemble matrix and right hand side
@@ -141,7 +135,7 @@ namespace Dune
         RT factor = weight*detjac;
 
         // evaluate gradients at Gauss points
-        Dune::FieldVector<DT,dim> grad[SIZE], temp;
+        Dune::FieldVector<DT,dim> grad[LocalStiffness<GridType,RT,m>::SIZE], temp;
         for (int i=0; i<sfs.size(); i++)
         {
           for (int l=0; l<dim; l++)
@@ -154,38 +148,15 @@ namespace Dune
         for (int i=0; i<sfs.size(); i++) {
 
           // matrix
-          A[i][i] += (grad[i]*grad[i])*factor;
+          this->A[i][i] += (grad[i]*grad[i])*factor;
           for (int j=0; j<i; j++)
           {
             RT t = (grad[j]*grad[i])*factor;
-            A[i][j] += t;
-            A[j][i] += t;
+            this->A[i][j] += t;
+            this->A[j][i] += t;
           }
         }
       }
-
-      //               double v[sfs.size()];
-      //               for(int i=0; i<sfs.size(); i++)
-      //                   v[i] = sfs[i].evaluateFunction(0,quadPos);
-
-      //               for(int i=0; i<sfs.size(); i++)
-      //                   for (int j=0; j<=i; j++ )
-      //                       for (int k=0; k<comp; k++)
-      //                           A[i][j][k][k] += ( v[i] * v[j] ) * factor;
-
-#if 0
-      for (int row=0; row<sfs.size(); row++)
-        for (int col=0; col<=row; col++) {
-
-          // Complete the symmetric matrix by copying the lower left triangular matrix
-          // to the upper right one
-          if (row!=col) {
-            for (int rcomp=0; rcomp<dim; rcomp++)
-              for (int ccomp=0; ccomp<dim; ccomp++)
-                A[col][row][ccomp][rcomp] = A[row][col][rcomp][ccomp];
-          }
-        }
-#endif
 
 #if 0
       // evaluate boundary conditions via intersection iterator
@@ -287,77 +258,11 @@ namespace Dune
 #endif
     }
 
-    // print contents of local stiffness matrix
-    void print (std::ostream& s, int width, int precision)
-    {
-      // set the output format
-      s.setf(std::ios_base::scientific, std::ios_base::floatfield);
-      int oldprec = s.precision();
-      s.precision(precision);
-
-      for (int i=0; i<currentsize; i++)
-      {
-        s << "FEM";              // start a new row
-        s << " ";                // space in front of each entry
-        s.width(4);              // set width for counter
-        s << i;                  // number of first entry in a line
-        for (int j=0; j<currentsize; j++)
-        {
-          s << " ";                         // space in front of each entry
-          s.width(width);                   // set width for each entry anew
-          s << A[i][j];                     // yeah, the number !
-        }
-        s << " ";                   // space in front of each entry
-        s.width(width);             // set width for each entry anew
-        s << b[i];
-        s << " ";                   // space in front of each entry
-        s.width(width);             // set width for each entry anew
-        s << bctype[i][0];
-        s << std::endl;          // start a new line
-      }
-
-
-      // reset the output format
-      s.precision(oldprec);
-      s.setf(std::ios_base::fixed, std::ios_base::floatfield);
-    }
-
-    //! access local stiffness matrix
-    /*! Access elements of the local stiffness matrix. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const MBlockType& mat (int i, int j)
-    {
-      return A[i][j];
-    }
-
-    //! access right hand side
-    /*! Access elements of the right hand side vector. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const VBlockType& rhs (int i)
-    {
-      return b[i];
-    }
-
-    //! access boundary condition for each dof
-    /*! Access boundary condition type for each degree of freedom. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const BCBlockType bc (int i) const
-    {
-      return bctype[i];
-    }
 
   private:
     // parameters given in constructor
     bool procBoundaryAsDirichlet;
 
-    // assembled data
-    int currentsize;
-    MBlockType A[SIZE][SIZE];
-    VBlockType b[SIZE];
-    BCBlockType bctype[SIZE];
   };
 
   /** @} */
