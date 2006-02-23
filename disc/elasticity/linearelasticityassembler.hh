@@ -153,6 +153,7 @@ namespace Dune
       if (k>1)
         p=2*(k-1);
 
+      p = 3;
       for (size_t g=0; g<Dune::QuadratureRules<DT,dim>::rule(gt,p).size(); ++g) {
 
         // pos of integration point
@@ -224,6 +225,8 @@ namespace Dune
               for (int ccomp=0; ccomp<dim; ccomp++) {
 
                 this->A[row][col][rcomp][ccomp] += stress*strain[col*dim + ccomp] * weight * detjac;
+                //                               printf("adding %g to %d %d %d %d\n", stress*strain[col*dim + ccomp] * weight * detjac,
+                //                                      row, col, rcomp, ccomp);
 
               }
             }
@@ -249,7 +252,6 @@ namespace Dune
 
       }
 
-#if 0
       for (int row=0; row<sfs.size(); row++)
         for (int col=0; col<=row; col++) {
 
@@ -261,9 +263,7 @@ namespace Dune
                 this->A[col][row][ccomp][rcomp] = this->A[row][col][rcomp][ccomp];
           }
         }
-#endif
 
-      std::cout << this->A[0][0] << std::endl;
 #if 0
       // evaluate boundary conditions via intersection iterator
       IntersectionIterator endit = e.iend();
@@ -452,48 +452,11 @@ namespace Dune
 
     }
 
-#if 0
-    //! access local stiffness matrix
-    /*! Access elements of the local stiffness matrix. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const MBlockType& mat (int i, int j)
-    {
-      return A[i][j];
-    }
-
-    //! access right hand side
-    /*! Access elements of the right hand side vector. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const VBlockType& rhs (int i)
-    {
-      return b[i];
-    }
-
-    //! access boundary condition for each dof
-    /*! Access boundary condition type for each degree of freedom. Elements are
-       undefined without prior call to the assemble method.
-     */
-    const BCBlockType bc (int i) const
-    {
-      return bctype[i];
-    }
-#endif
-
-
   private:
 
     // parameters given in constructor
     bool procBoundaryAsDirichlet;
 
-#if 0
-    // assembled data
-    int currentsize;
-    MBlockType A[SIZE][SIZE];
-    VBlockType b[SIZE];
-    BCBlockType bctype[SIZE];
-#endif
   };
 
   /** @} */
