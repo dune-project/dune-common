@@ -17,14 +17,10 @@
 #include "grid/common/referenceelements.hh"
 #include "istl/operators.hh"
 #include "istl/bvector.hh"
-#include "istl/bcrsmatrix.hh"
+#include <dune/disc/operators/localstiffness.hh>
 
 #include "disc/shapefunctions/lagrangeshapefunctions.hh"
-#include "disc/operators/p1operator.hh"
 #include "disc/operators/boundaryconditions.hh"
-//#include"disc/functions/p0function.hh"
-#include "disc/functions/p1function.hh"
-//#include"groundwater.hh"
 
 /**
  * @file
@@ -40,7 +36,7 @@ namespace Dune
    * @{
    */
   /**
-   * @brief compute local stiffness matrix for conforming finite elements for diffusion equation
+   * @brief compute local stiffness matrix for the linear elasticity operator
    *
    */
 
@@ -60,11 +56,11 @@ namespace Dune
 
         Template parameters are:
 
-        - Grid  a DUNE grid type
+        - GridType  a DUNE grid type
         - RT    type used for return values
    */
   template<class GridType, class RT>
-  class LinearElasticityLocalStiffness
+  class LinearElasticityLocalStiffness : public LocalStiffness<GridType,RT,GridType::dimension>
   {
     // grid types
     typedef typename GridType::ctype DT;
@@ -74,7 +70,7 @@ namespace Dune
 
     // some other sizes
     enum {dim=GridType::dimension};
-    enum {SIZE=Dune::LagrangeShapeFunctionSetContainer<DT,RT,dim>::maxsize};
+    //enum {SIZE=Dune::LagrangeShapeFunctionSetContainer<DT,RT,dim>::maxsize};
 
     //! The engineers' way of writing a symmetric second-order tensor
     typedef FieldVector<double, (dim+1)*dim/2> SymmTensor;
@@ -99,21 +95,20 @@ namespace Dune
     double nu_;
 
     //! Constructor
-    LinearElasticityLocalStiffness (  /*const GroundwaterEquationParameters<G,RT>& params, */
-      bool procBoundaryAsDirichlet_=true)
-    //: problem(params)
+    LinearElasticityLocalStiffness (bool procBoundaryAsDirichlet_=true)
+      : E_(2.5e5)
     {
 
-      E_ = 2.5e5;
+      //E_ = 2.5e5;
       nu_ = 0.3;
 
-      currentsize = 0;
+      this->currentsize_ = 0;
       procBoundaryAsDirichlet = procBoundaryAsDirichlet_;
 
       // For the time being:  all boundary conditions are homogeneous Neumann
       // This means no boundary condition handling is done at all
-      for (int i=0; i<SIZE; i++)
-        bctype[i] = BoundaryConditions::neumann;
+      for (int i=0; i<LocalStiffness<GridType,RT,m>::SIZE; i++)
+        this->bctype[i] = BoundaryConditions::neumann;
     }
 
 
@@ -134,7 +129,7 @@ namespace Dune
       const typename LagrangeShapeFunctionSetContainer<DT,RT,dim>::value_type& sfs
         = LagrangeShapeFunctions<DT,RT,dim>::general(gt,k);
 
-      currentsize = sfs.size();
+      this->currentsize_ = sfs.size();
 
       //          std::cout << "Entity:" << std::endl;
       //          for (int i=0; i<e.template count<n>(); i++)
@@ -143,10 +138,10 @@ namespace Dune
       // clear assemble data
       for (int i=0; i<sfs.size(); i++)
       {
-        b[i] = 0;
-        bctype[i][0] = BoundaryConditions::neumann;
+        this->b[i] = 0;
+        this->bctype[i][0] = BoundaryConditions::neumann;
         for (int j=0; j<sfs.size(); j++)
-          A[i][j] = 0;
+          this->A[i][j] = 0;
       }
 
       // Loop over all quadrature points and assemble matrix and right hand side
@@ -188,7 +183,7 @@ namespace Dune
         RT factor = weight*detjac;
 
         // evaluate gradients at Gauss points
-        Dune::FieldVector<DT,dim> grad[SIZE], temp, gv;
+        Dune::FieldVector<DT,dim> grad[LocalStiffness<GridType,RT,m>::SIZE], temp, gv;
         for (int i=0; i<sfs.size(); i++) {
 
           for (int l=0; l<dim; l++)
@@ -228,7 +223,7 @@ namespace Dune
 
               for (int ccomp=0; ccomp<dim; ccomp++) {
 
-                A[row][col][rcomp][ccomp] += stress*strain[col*dim + ccomp] * weight * detjac;
+                this->A[row][col][rcomp][ccomp] += stress*strain[col*dim + ccomp] * weight * detjac;
 
               }
             }
@@ -254,6 +249,7 @@ namespace Dune
 
       }
 
+#if 0
       for (int row=0; row<sfs.size(); row++)
         for (int col=0; col<=row; col++) {
 
@@ -262,40 +258,12 @@ namespace Dune
           if (row!=col) {
             for (int rcomp=0; rcomp<dim; rcomp++)
               for (int ccomp=0; ccomp<dim; ccomp++)
-                A[col][row][ccomp][rcomp] = A[row][col][rcomp][ccomp];
+                this->A[col][row][ccomp][rcomp] = this->A[row][col][rcomp][ccomp];
           }
         }
-
-#if 0
-      static int eleme = 0;
-      printf("********* Element %d **********\n", eleme++);
-      for (int row=0; row<sfs.size(); row++) {
-
-        for (int rcomp=0; rcomp<dim; rcomp++) {
-
-          for (int col=0; col<sfs.size(); col++) {
-
-            for (int ccomp=0; ccomp<dim; ccomp++) {
-
-              std::cout << A[row][col][rcomp][ccomp] << "  ";
-
-            }
-
-            std::cout << "    ";
-
-          }
-          std::cout << std::endl;
-
-
-
-        }
-
-        std::cout << std::endl;
-
-      }
-      //exit(0);
 #endif
 
+      std::cout << this->A[0][0] << std::endl;
 #if 0
       // evaluate boundary conditions via intersection iterator
       IntersectionIterator endit = e.iend();
@@ -484,41 +452,7 @@ namespace Dune
 
     }
 
-    // print contents of local stiffness matrix
-    void print (std::ostream& s, int width, int precision)
-    {
-      // set the output format
-      s.setf(std::ios_base::scientific, std::ios_base::floatfield);
-      int oldprec = s.precision();
-      s.precision(precision);
-
-      for (int i=0; i<currentsize; i++)
-      {
-        s << "FEM";              // start a new row
-        s << " ";                // space in front of each entry
-        s.width(4);              // set width for counter
-        s << i;                  // number of first entry in a line
-        for (int j=0; j<currentsize; j++)
-        {
-          s << " ";                         // space in front of each entry
-          s.width(width);                   // set width for each entry anew
-          s << A[i][j];                     // yeah, the number !
-        }
-        s << " ";                   // space in front of each entry
-        s.width(width);             // set width for each entry anew
-        s << b[i];
-        s << " ";                   // space in front of each entry
-        s.width(width);             // set width for each entry anew
-        s << bctype[i][0];
-        s << std::endl;          // start a new line
-      }
-
-
-      // reset the output format
-      s.precision(oldprec);
-      s.setf(std::ios_base::fixed, std::ios_base::floatfield);
-    }
-
+#if 0
     //! access local stiffness matrix
     /*! Access elements of the local stiffness matrix. Elements are
        undefined without prior call to the assemble method.
@@ -545,17 +479,21 @@ namespace Dune
     {
       return bctype[i];
     }
+#endif
+
 
   private:
+
     // parameters given in constructor
-    //const GroundwaterEquationParameters<G,RT>& problem;
     bool procBoundaryAsDirichlet;
 
+#if 0
     // assembled data
     int currentsize;
     MBlockType A[SIZE][SIZE];
     VBlockType b[SIZE];
     BCBlockType bctype[SIZE];
+#endif
   };
 
   /** @} */
