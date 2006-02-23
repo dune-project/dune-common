@@ -178,8 +178,10 @@ namespace Dune {
         dm_.dofCompress();
 
       // here the communicate and load-balancing should be called
-      //grid_.loadBalance(dm_);
-      //grid_.communicate(dm_);
+#ifdef _ALU3DGRID_PARALLEL_
+      grid_.loadBalance(dm_);
+      grid_.communicate(dm_);
+#endif
 
       // do cleanup
       grid_.postAdapt();
@@ -331,7 +333,6 @@ namespace Dune {
 
       LocalFunctionType vati_ =df_.localFunction( father);
       LocalFunctionType sohn_ =df_.localFunction( son   );
-
 
       if(initialize)
       {
