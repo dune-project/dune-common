@@ -104,18 +104,23 @@ void checkIntersectionIterator(const GridType& grid) {
         // The geometry center in local coordinates
         FieldVector<ctype, Geometry::mydimension> localCenter = intersectionGlobal.local(center);
 
+        // Check whether center is within the intersection
+        // This implicitly assumes convex intersections
+        if (!intersectionGlobal.checkInside(localCenter))
+          DUNE_THROW(GridError, "Center of intersectionGlobal is not within intersectionGlobal!");
+
         // Back to global coordinates to check for correctness
         FieldVector<ctype, Geometry::coorddimension> worldCenter = intersectionGlobal.global(localCenter);
         if ((center-worldCenter).infinity_norm() > 1e-6)
           DUNE_THROW(GridError, "local() and global() are not inverse to each other!");
 
 
-#if 0
         // The integration element at the element center
         ctype intElement = intersectionGlobal.integrationElement(localCenter);
         if (intElement <=0)
           DUNE_THROW(GridError, "nonpositive integration element found!");
 
+#if 0
         const FieldMatrix<ctype, Geometry::mydimension, Geometry::mydimension> jacobi
           = intersectionGlobal.jacobianInverseTransposed(localCenter);
 #endif
