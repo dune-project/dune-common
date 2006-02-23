@@ -1456,6 +1456,19 @@ namespace Dune {
       return det;
     }
 
+    //! calculates ret= A_t*A
+    template <typename K, int rows,int cols>
+    static inline void multTransposedMatrix(const FieldMatrix<K,rows,cols> &matrix, FieldMatrix<K,cols,cols>& ret)
+    {
+      typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
+
+      for(size_type i=0; i<cols; i++)
+        for(size_type j=0; j<cols; j++)
+        { ret[i][j]=0.0;
+          for(size_type k=0; k<rows; k++)
+            ret[i][j]+=matrix[k][i]*matrix[k][j];}
+    }
+
     //! calculates ret = matrix * x
     template <typename K, int dim>
     static inline void multAssign(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
@@ -1466,6 +1479,22 @@ namespace Dune {
       {
         ret[i] = 0.0;
         for(size_type j=0; j<dim; j++)
+        {
+          ret[i] += matrix[i][j]*x[j];
+        }
+      }
+    }
+
+    //! calculates ret = matrix * x
+    template <typename K, int rows,int cols>
+    static inline void multAssign(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,cols> & x, FieldVector<K,rows> & ret)
+    {
+      typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
+
+      for(size_type i=0; i<rows; i++)
+      {
+        ret[i] = 0.0;
+        for(size_type j=0; j<cols; j++)
         {
           ret[i] += matrix[i][j]*x[j];
         }
@@ -1497,16 +1526,18 @@ namespace Dune {
       return ret;
     }
 
+
+
     //! calculates ret = matrix^T * x
     template <typename K, int rows, int cols>
-    static inline FieldVector<K,rows> multTransposed(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,cols> & x)
+    static inline FieldVector<K,cols> multTransposed(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,rows> & x)
     {
-      FieldVector<K,rows> ret;
+      FieldVector<K,cols> ret;
       typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
-      for(size_type i=0; i<rows; i++)
+      for(size_type i=0; i<cols; i++)
       {
         ret[i] = 0.0;
-        for(size_type j=0; j<cols; j++)
+        for(size_type j=0; j<rows; j++)
         {
           ret[i] += matrix[j][i]*x[j];
         }
